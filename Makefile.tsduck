@@ -62,7 +62,13 @@ DESTDIR :=
 
 # External include directories and libraries.
 
-CFLAGS_INCLUDES += -I/usr/include/PCSC -I$(LIBTSDUCKDIR) -I$(LIBTSDUCKDIR)/linux --std=c++11
+ifdef MACOS
+    CFLAGS_INCLUDES += -I/usr/local/opt/pcsc-lite/include/PCSC
+    LDLIBS := -L/usr/local/opt/pcsc-lite/lib/ $(LDLIBS)
+else
+    CFLAGS_INCLUDES += -I/usr/include/PCSC
+endif
+CFLAGS_INCLUDES += -I$(LIBTSDUCKDIR) -I$(LIBTSDUCKDIR)/linux --std=c++11
 LDLIBS := -lpcsclite -ldl $(LDLIBS)
 LDFLAGS += -Wl,-E,-rpath,'$$ORIGIN'
 

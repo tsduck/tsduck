@@ -33,8 +33,13 @@
 
 include ../Makefile.tsduck
 
-# By default, download and expand LinuxSDK (if necessary).
+# By default, download and expand LinuxSDK (if necessary) on Linux only.
+ifdef MACOS
+default:
+	@true
+else
 default: dtapi
+endif
 
 EXTRA_DISTCLEAN += WinSDK.zip WinSDK LinuxSDK.zip LinuxSDK.tar.gz LinuxSDK
 RECURSE_ORDER = none

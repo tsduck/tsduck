@@ -81,12 +81,24 @@
     //!
     #define __gcc
     //!
+    //! Defined when the compiler is LLVM (clang).
+    //! In that case, __gcc is also defined since LLVM is reasonably compatible with GCC.
+    //!
+    #define __llvm
+    //!
     //! Defined when the compiler is Microsoft C/C++, the default compiler
     //! in the Microsoft Visual Studio environment. Also used on command line
     //! and batch file as the @c cl command.
     //!
     #define __msc
 
+#elif defined(__llvm__) || defined(__clang__)
+    #if !defined(__llvm)
+        #define __llvm 1
+    #endif
+    #if !defined(__gcc)
+        #define __gcc 1
+    #endif
 #elif defined(__GNUC__)
     #if !defined(__gcc)
         #define __gcc 1
@@ -122,6 +134,10 @@
     //!
     #define __linux
     //!
+    //! Defined when compiled for a MacOS target platform.
+    //!
+    #define __mac
+     //!
     //! Defined when compiled for an IBM AIX target platform.
     //!
     #define __aix
@@ -142,6 +158,10 @@
     #if !defined(__linux)
         #define __linux 1
     #endif
+#elif defined(__APPLE__)
+    #if !defined(__mac)
+        #define __mac 1
+    #endif
 #elif defined(_AIX) || defined(__aix)
     #if !defined(__aix)
         #define __aix 1
@@ -158,7 +178,7 @@
     #error "New unknown operating system, please update tsPlatform.h"
 #endif
 
-#if !defined(__unix) && (defined(__linux) || defined(__aix) || defined(__cygwin) || defined(__solaris))
+#if !defined(__unix) && (defined(__linux) || defined(__mac) || defined(__aix) || defined(__cygwin) || defined(__solaris))
     #define __unix 1
 #endif
 
@@ -215,11 +235,11 @@
     //!
     #define __sparc
 
-#elif defined(__i386__) || defined(_M_IX86)
+#elif defined(__i386__) || defined(__i386) || defined(_M_IX86)
     #if !defined(__i386)
         #define __i386 1
     #endif
-#elif defined(__amd64) || defined(__amd64__) || defined(__x86_64__) || defined(_M_X64)
+#elif defined(__amd64) || defined(__amd64__) || defined(__x86_64__) || defined(__x86_64) || defined(_M_X64)
     #if !defined(__x86_64)
         #define __x86_64 1
     #endif
@@ -259,8 +279,8 @@
 // Should really use "#warning" instead of "#error" but #warning is a
 // GCC extension while #error is standard.
 
-#if !defined(__linux) && !defined(__windows)
-    #error "TSDuck has been tested on Linux and Windows only, review this code"
+#if !defined(__linux) && !defined(__windows) && !defined(__mac)
+    #error "TSDuck has been tested on Linux, MacOS and Windows only, review this code"
 #endif
 
 #if !defined(__gcc) && !defined(__msc)

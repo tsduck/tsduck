@@ -2,14 +2,26 @@
 Building TSDuck - The MPEG Transport Stream Toolkit
 ===================================================
 
-Building scripts
-----------------
+Building tsduck binaries
+------------------------
+
+Window:
+- Execute PowerShell script build\Build.ps1.
+
+Linux:
+- Execute "make" at root level.
+
+
+Building tsduck installers
+--------------------------
+There is no need to build the tsduck binaries before building the installers.
+Building the binaries, when necessary, is part of the installer build.
 
 Window:
 - Execute PowerShell script build\Build-Installer.ps1.
 
-Linux:
-- Execute "make" at root level.
+Fedora, CentOS, Red Hat Entreprise Linux:
+- Execute "make rpm" at root level.
 
 
 Pre-requisistes: build tools
@@ -19,6 +31,7 @@ Windows:
 - Visual Studio 2015 Community Edition
 - Doxygen (http://www.doxygen.org/download.html)
 - NSIS, the NullSoft Scriptable Install System (http://nsis.sourceforge.net/)
+- CppUnit (https://sourceforge.net/projects/cppunit-msvc/files/)
 - Optional Dektec DTAPI: Execute PowerShell script dektec\Download-Install-Dtapi.ps1
   It downloads and installs the Dektec Windows SDK from the Dektec site. TSDuck
   project files will detect DTAPI automatically. See msvc2015\msvc-use-dtapi.props
@@ -50,3 +63,8 @@ Ubuntu:
 All Linux:
 - Optional Dektec DTAPI: The command "make" at the root level will automatically
   download the LinuxSDK from the Dektec site. See dektec/Makefile for details.
+
+MacOS:
+- Install Xcode and its command line utilities.
+- To install additional tools from HomeBrew:
+  $ brew install pcsc-lite cppunit doxygen

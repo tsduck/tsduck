@@ -308,11 +308,18 @@
 #    shareable libraries. Typically LD_LIBRARY_PATH on native unices and
 #    PATH on Windows-based environments such as Cygwin.
 #
+#  LLVM_VERSION
+#    Contain the current LLVM compiler version, usually in form x.y.z.
+#    Empty if LLVM is not available.
+#
 #  LOCAL_ARCH
 #    Local processor exact architecture ("i686", "x86_64", "armv7l", etc.)
 #
 #  LOCAL_OS
 #    Local operating system name in lower-case ("linux", "cygwin", etc.)
+#
+#  MACOS
+#    Defined to a non-empty value on MacOS systems.
 #
 #  MAIN_ARCH
 #    Local processor architecture family ("i386", "x86_64", "arm", etc.)
@@ -435,16 +442,29 @@ RECURSE_SUBDIRS = $(filter-out $(NORECURSE_SUBDIRS),$(if $(RECURSE_ORDER),$(RECU
 # make targets in the subdirectories (useful for "all" or "clean").
 RECURSE = for dir in $(RECURSE_SUBDIRS); do if [[ -d $$dir ]]; then $(MAKE) -C $$dir $@ $(if $(CONTINUE),,|| break); fi; done
 
-# Operating system, architecture, core count.
+# Operating system, architecture.
 LOCAL_OS   := $(shell uname -s | tr A-Z a-z)
 LOCAL_ARCH := $(shell uname -m)
-CPU_COUNT  := $(shell nproc 2>/dev/null)
-CPU_COUNT  := $(if $(CPU_COUNT),$(CPU_COUNT),1)
-CORE_COUNT := $(shell fgrep -m1 'cpu cores' /proc/cpuinfo 2>/dev/null | cut -d ' ' -f3)
-CORE_COUNT := $(if $(CORE_COUNT),$(CORE_COUNT),$(CPU_COUNT))
+ifeq ($(LOCAL_OS),darwin)
+    MACOS = true
+endif
 
-# Get current GCC version, usually in form x.y.z
+# Logical CPU and physical core count.
+ifdef MACOS
+    CPU_COUNT  := $(shell sysctl -n hw.logicalcpu 2>/dev/null)
+    CPU_COUNT  := $(if $(CPU_COUNT),$(CPU_COUNT),1)
+    CORE_COUNT := $(shell sysctl -n hw.physicalcpu 2>/dev/null)
+    CORE_COUNT := $(if $(CORE_COUNT),$(CORE_COUNT),$(CPU_COUNT))
+else
+    CPU_COUNT  := $(shell nproc 2>/dev/null)
+    CPU_COUNT  := $(if $(CPU_COUNT),$(CPU_COUNT),1)
+    CORE_COUNT := $(shell fgrep -m1 'cpu cores' /proc/cpuinfo 2>/dev/null | cut -d ' ' -f3)
+    CORE_COUNT := $(if $(CORE_COUNT),$(CORE_COUNT),$(CPU_COUNT))
+endif
+
+# Get current compiler version, usually in form x.y.z
 GCC_VERSION := $(word 3,$(shell gcc -v 2>&1 | grep '^gcc version'))
+LLVM_VERSION := $(shell clang --version 2>&1 | grep -i "llvm version" | sed -e 's/.*version *//' -e 's/ .*//')
 
 # When C++ source files are present, automatically define LDCXX.
 ifndef LDCXX
@@ -508,12 +528,25 @@ CFLAGS_OPTSIZE   = -Os -fno-strict-aliasing
 optsize:
 	+@$(MAKE) CFLAGS_OPTIMIZE="$(CFLAGS_OPTSIZE)"
 
+# On MacOS, HomeBrew development packages are installed in /usr/local.
+ifdef MACOS
+    CFLAGS_INCLUDES += /usr/local/include
+    LDLIBS := -L/usr/local/lib $(LDLIBS)
+endif
+
 # Include paths for C++ also use include paths for C.
 CXXFLAGS_INCLUDES += $(CFLAGS_INCLUDES)
 
 # Always use maximal or even paranoid warning mode.
-CFLAGS_WARNINGS   = -Werror -Wall -Wextra -Wno-unused-parameter -Wstrict-prototypes -Wmissing-prototypes
-CXXFLAGS_WARNINGS = -Werror -Wall -Wextra -Wno-unused-parameter -Woverloaded-virtual
+ifdef MACOS
+    CFLAGS_NO_WARNINGS   += -Wno-unused-parameter -Wno-unused-command-line-argument
+    CXXFLAGS_NO_WARNINGS += -Wno-unused-parameter -Wno-unused-command-line-argument
+else
+    CFLAGS_NO_WARNINGS   += -Wno-unused-parameter
+    CXXFLAGS_NO_WARNINGS += -Wno-unused-parameter
+endif
+CFLAGS_WARNINGS   = -Werror -Wall -Wextra -Wstrict-prototypes -Wmissing-prototypes $(CFLAGS_NO_WARNINGS)
+CXXFLAGS_WARNINGS = -Werror -Wall -Wextra -Woverloaded-virtual $(CXXFLAGS_NO_WARNINGS)
 
 # Compilation flags in debug mode.
 ifdef DEBUG
@@ -601,13 +634,13 @@ $(OBJDIR)/%.so: $(OBJDIR)/%.o
 $(OBJDIR)/%.dep: %.c
 	@echo '  [DEP] $<'; \
 	mkdir -p $(OBJDIR); \
-	$(CC) -MM $(CPPFLAGS) $(CFLAGS_INCLUDES) $< >$@ && \
+	$(CC) -MM $(CPPFLAGS) $(CFLAGS_INCLUDES) $(CFLAGS_NO_WARNINGS) $< >$@ && \
 	sed -i 's,\($*\)\.o[ :]*,$(OBJDIR)/\1.o $@ : ,g' $@ || \
 	rm -f $@
 $(OBJDIR)/%.dep: %.cpp
 	@echo '  [DEP] $<'; \
 	mkdir -p $(OBJDIR); \
-	$(CC) -MM $(CPPFLAGS) $(CXXFLAGS_INCLUDES) $< >$@ && \
+	$(CC) -MM $(CPPFLAGS) $(CXXFLAGS_INCLUDES) $(CXXFLAGS_NO_WARNINGS) $< >$@ && \
 	sed -i 's,\($*\)\.o[ :]*,$(OBJDIR)/\1.o $@ : ,g' $@ || \
 	rm -f $@
 
@@ -696,9 +729,9 @@ flawfinder:
 # Utilities: display predefined macros for C and C++
 .PHONY: cmacros cxxmacros
 cmacros:
-	@cpp -x c -dM /dev/null | sort
+	@$(CPP) -x c -dM /dev/null | sort
 cxxmacros:
-	@cpp -x c++ -dM /dev/null | sort
+	@$(CPP) -x c++ -dM /dev/null | sort
 
 # Cleanup Windows oddities in source files.
 # Visual C++ indents with tabs, and tabs are 4 chars wide.
