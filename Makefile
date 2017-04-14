@@ -41,6 +41,18 @@ NORECURSE_SUBDIRS += doxy
 default:
 	+@$(RECURSE)
 
-# Download the Dektec DTAPI. Automatically done during a global "make".
+# Download the Dektec DTAPI. Automatically done during a global "make" since
+# we recurse in "dektec" before "src".
 dtapi:
-	@$(MAKE) -C dektec/linux
+	@$(MAKE) -C dektec
+
+# Install files, using DESTDIR as target system root.
+.PHONY: install
+install:
+	$(MAKE) -C src $@
+	$(MAKE) -C build $@
+
+# Various build targets are redirected to build subdirectory.
+.PHONY: tarball rpm deb
+tarball rpm deb:
+	$(MAKE) -C build $@

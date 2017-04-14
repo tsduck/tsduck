@@ -37,3 +37,7 @@ include ../../Makefile.tsduck
 # Nothing to build on non-Windows systems.
 default:
 	@true
+
+.PHONY: install
+install:
+	@true

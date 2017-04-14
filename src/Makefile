@@ -38,3 +38,7 @@ include ../Makefile.tsduck
 
 default:
 	+@$(RECURSE)
+
+.PHONY: install
+install: default
+	@$(RECURSE)

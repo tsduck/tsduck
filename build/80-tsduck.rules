@@ -1,0 +1,2 @@
+# udev rules for dvb devices (sometimes also installed by dvb-apps or vdr, depending on versions)
+KERNEL=="dvb*", GROUP="video", MODE="0660"

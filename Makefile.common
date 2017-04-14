@@ -642,11 +642,13 @@ distclean: clean
 
 # List of file and directory patterns for non-source files.
 NOSOURCE = \
-    .git *.zip *.gz *.tgz [Dd]ebug* [Rr]elease* doxy doxygen *.pdf *.t2d \
-    *.o *.so *.ko *.a *.lib *.exe *.gcov *.dep .kdbgrc.* .tmp_versions \
-    *.tmp *.out *.log *.tlog core core.* vgcore.* *.stackdump \
-    .vs ipch *.ncb *.suo *.idb *.sdf *.opensdf *.vcproj.*.user \
-    *.vcxproj.user *.dll.embed.manifest.dll *.dll.embed.manifest.ilk
+    .git .svn *.zip *.gz *.tgz [Dd]ebug* [Rr]elease* doxy doxygen *.pdf *.t2d \
+    *.o *.so *.ko *.a *.lib *.obj *.exe *.dll *.gcov *.dep .kdbgrc.* \
+    tmp *.tmp *.out *.log *.tlog core core.* vgcore.* *.stackdump \
+    .vs ipch *.ncb *.suo *.idb *.sdf *.opensdf *.vcproj.*.user *.user.* \
+    *.vcxproj.user *.dll.embed.manifest.dll *.dll.embed.manifest.ilk \
+    .tmp_versions *.VC.db *.VC.dbopen *.VC.opendb *.deb *.rpm *.bz2 *.7z \
+    *~ *.bak *.autosave
 
 # Source code documentation generation.
 DOXYGEN ?= doxygen

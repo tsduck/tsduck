@@ -35,3 +35,42 @@ include ../Makefile.tsduck
 
 default:
 	@true
+
+# Install system files.
+.PHONY: install
+install: 80-tsduck.rules 80-tsduck.perms
+	install -d -m 755 $(DESTDIR)/etc/udev/rules.d
+	install -m 644 80-tsduck.rules $(DESTDIR)/etc/udev/rules.d/
+	install -d -m 755 $(DESTDIR)/etc/security/console.perms.d
+	install -m 644 80-tsduck.perms $(DESTDIR)/etc/security/console.perms.d/
+
+# Build the source tarballs for distribution.
+TARNAME := tsduck-$(TS_VERSION)
+TARFILE := $(INSTALLERDIR)/$(TARNAME).tgz
+TMPROOT := $(INSTALLERDIR)/tmp
+.PHONY: tarball
+tarball:
+	rm -rf $(TMPROOT)
+	mkdir -p $(TMPROOT)/$(TARNAME)
+	tar -C $(ROOTDIR) $(patsubst %,--exclude '%',$(NOSOURCE)) -cpf - . | tar -C $(TMPROOT)/$(TARNAME) -xpf -
+	$(MAKE) -C $(TMPROOT)/$(TARNAME) distclean
+	tar -C $(TMPROOT) -czf $(TARFILE) -p --owner=0 --group=0 $(TARNAME)
+	rm -rf $(TMPROOT)
+
+# Linux distro version.
+FC_DISTRO   := $(shell grep " release " /etc/fedora-release 2>/dev/null | sed -e 's/^.* release \([0-9]*\).*$$/\1/')
+RH_DISTRO   := $(shell grep " release " /etc/redhat-release 2>/dev/null | sed -e 's/^.* release \([0-9]*\).*$$/\1/')
+DISTRO      := $(if $(FC_DISTRO),.fc$(FC_DISTRO),$(if $(RH_DISTRO),.el$(RH_DISTRO),))
+RPM_RELEASE := 0$(DISTRO)
+
+# Build the tsduck binary RPM.
+RPMBUILDROOT ?= $(HOME)/rpmbuild
+$(RPMBUILDROOT):
+	rpmdev-setuptree
+.PHONY: rpm
+rpm: tarball $(RPMBUILDROOT)
+	cp -f $(TARFILE) $(RPMBUILDROOT)/SOURCES/
+	MAKEFLAGS= rpmbuild -bb --quiet -D 'version $(TS_VERSION)' -D 'release $(RPM_RELEASE)' tsduck.spec
+	cp -uf $(RPMBUILDROOT)/RPMS/*/tsduck-$(TS_VERSION)-$(RPM_RELEASE).*.rpm $(INSTALLERDIR)
+	cp -uf $(RPMBUILDROOT)/RPMS/*/tsduck-devel-$(TS_VERSION)-$(RPM_RELEASE).*.rpm $(INSTALLERDIR)
+	cp -uf $(RPMBUILDROOT)/SRPMS/tsduck-$(TS_VERSION)-$(RPM_RELEASE).src.rpm $(INSTALLERDIR)

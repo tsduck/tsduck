@@ -37,3 +37,4 @@ vgcore.*
 *.autosave
 .project
 doxy
+tmp

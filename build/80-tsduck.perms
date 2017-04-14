@@ -1,0 +1,3 @@
+# security settings for dvb devices (overrides those in 50-default.perms)
+<dvb>=/dev/dvb/adapter*/*
+<console> 0600 <dvb> 0660 root.video
