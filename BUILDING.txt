@@ -1,0 +1,52 @@
+===================================================
+Building TSDuck - The MPEG Transport Stream Toolkit
+===================================================
+
+Building scripts
+----------------
+
+Window:
+- Execute PowerShell script build\Build-Installer.ps1.
+
+Linux:
+- Execute "make" at root level.
+
+
+Pre-requisistes: build tools
+----------------------------
+
+Windows:
+- Visual Studio 2015 Community Edition
+- Doxygen (http://www.doxygen.org/download.html)
+- NSIS, the NullSoft Scriptable Install System (http://nsis.sourceforge.net/)
+- Optional Dektec DTAPI: Execute PowerShell script dektec\Download-Install-Dtapi.ps1
+  It downloads and installs the Dektec Windows SDK from the Dektec site. TSDuck
+  project files will detect DTAPI automatically. See msvc2015\msvc-use-dtapi.props
+  for details.
+
+Fedora:
+- Native build:
+  $ dnf install gcc-c++ doxygen pcsc-tools pcsc-lite-devel cppunit-devel
+- To build 32-bit on 64-bit system ("make m32"):
+  $ dnf install glibc-devel.i686 libstdc++-devel.i686 pcsc-lite-devel.i686 cppunit-devel.i686
+
+CentOS:
+- Same as Fedora but use command "yum" instead of "dnf".
+
+Ubuntu:
+- Native build:
+  $ apt-get install g++ doxygen pcscd libpcsclite-dev libcppunit-dev
+- To build 32-bit on 64-bit system ("make m32"), start with:
+  $ apt-get install gcc-multilib g++-multilib
+  However, there is no 32-bit cross-compiled package for pcsc and cppunit on
+  Ubuntu 64-bit. To build a 32-bit TSDuck on Ubuntu 64-bit, first force the
+  installation of the 32-bit native (not cross-compiled) 32-bit versions:
+  $ apt-get install libpcsclite-dev:i386 libcppunit-dev:i386
+  Then build TSDuck ("make m32"). But you can no longer rebuild a 64-bit
+  version since the native libraries for pcsc and cppunit were over-written.
+  So, you need to reinstall the native 64-bit versions:
+  $ apt-get install libpcsclite-dev libcppunit-dev
+
+All Linux:
+- Optional Dektec DTAPI: The command "make" at the root level will automatically
+  download the LinuxSDK from the Dektec site. See dektec/Makefile for details.

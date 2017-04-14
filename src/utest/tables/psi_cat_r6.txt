@@ -1,0 +1,13 @@
+
+* CAT, TID 1 (0x01)
+  Section: 0 (last: 0), version: 0, size: 38 bytes
+  - Descriptor 0: CA, Tag 9 (0x09), 15 bytes
+    CA System Id: 0x0500 (Viaccess), EMM PID: 55 (0x0037)
+    ECM exchange id: 0 (0x00)
+    Crypto algorithm id: 32
+    Service Operator Id: 147472 (0x024010)
+  - Descriptor 1: CA, Tag 9 (0x09), 7 bytes
+    CA System Id: 0x4ADC (SafeAccess), EMM PID: 950 (0x03B6)
+    EMM types: EMM_STB_U EMM_STB_G EMM_G EMM_U EMM_S reserved bits 0xE0
+    PPID: 1 (0x0001)
+

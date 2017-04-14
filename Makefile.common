@@ -1,0 +1,718 @@
+#-----------------------------------------------------------------------------
+#
+#  Copyright (c) 2005-2017, Thierry Lelegard
+#  All rights reserved.
+#
+#  Redistribution and use in source and binary forms, with or without
+#  modification, are permitted provided that the following conditions are met:
+#
+#  1. Redistributions of source code must retain the above copyright notice,
+#     this list of conditions and the following disclaimer.
+#  2. Redistributions in binary form must reproduce the above copyright
+#     notice, this list of conditions and the following disclaimer in the
+#     documentation and/or other materials provided with the distribution.
+#
+#  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+#  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+#  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+#  ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+#  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+#  CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+#  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+#  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+#  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+#  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+#  THE POSSIBILITY OF SUCH DAMAGE.
+#
+#-----------------------------------------------------------------------------
+#
+#  Common GNU Make definitions.
+#
+#  This file is completely generic for all kinds of projects. It should be
+#  located in the root directory of the project and included by all makefiles
+#  in the directory tree.
+#
+#  The inclusion must be expressed in relative path format.
+#  Example: include ../../Makefile.common
+#
+#  A few input variables may be defined by each makefile before including
+#  the one. See the section "Input variables" below. After inclusion, several
+#  useful variables are defined. See the section "Output variables" below.
+#
+#  By default, if the parent makefile does not define a first target before
+#  including this file, the default make target is "default" and should be
+#  defined in the parent makefile.
+#
+#  This common makefile also defines a few common targets which are usable
+#  everywhere. See the section "Common targets" below.
+#
+#-----------------------------------------------------------------------------
+#
+#  Common targets
+#  --------------
+#  The following make targets are defined by this makefile and are
+#  consequently available in all directories.
+#
+#  clean:
+#    Delete all standard intermediate or temporary files (object files, core
+#    files, etc.) for the current architecture. The production files
+#    (executables, shared libraries, etc.) and files for other architectures
+#    are not deleted. Recursively apply to all subdirectories.
+#
+#  cmacros:
+#    Display the predefined macros for the C compiler.
+#
+#  cppcheck:
+#    Run cppcheck, a C/C++ static code analyzer, on the source tree starting
+#    at the current directory.
+#
+#  cppcheck-xml:
+#    Same as cppcheck, but output in XML format.
+#
+#  cxxmacros:
+#    Display the predefined macros for the C++ compiler.
+#
+#  debug:
+#    Build the default target of the current directory with the debug options.
+#
+#  distclean:
+#    Distant clean, revert to the initial source environment, remove built
+#    files. See also the description of the input variable EXTRA_DISTCLEAN
+#    below. Recursively apply to all subdirectories.
+#
+#  doxygen:
+#    Run doxygen, the source code documentation generator. If no Doxyfile
+#    if found in the current directory, recurse in subdirectories.
+#
+#  flawfinder:
+#    Run flawfinder, a C/C++ static code analyzer, on the source tree starting
+#    at the current directory.
+#
+#  listvars:
+#    Display make variables for debug purposes.
+#
+#  m32:
+#    Build the default target of the current directory for 32-bit target
+#    (see input variable M32).
+#
+#  optsize:
+#    Alternate target to recompile with optimizations for reduced code size.
+#
+#  unixify:
+#    Recursively cleanup Windows oddities in C/C++source files, including
+#    subdirectories. By default, Visual C++ indents with tabs and tabs are 4
+#    characters wide.
+#
+#-----------------------------------------------------------------------------
+#
+#  Input variables
+#  ---------------
+#  The following variables may be set in the parent makefile before inclusion.
+#
+#  CFLAGS_INCLUDES
+#    Contains specific include options for both C and C++ (typically -I...)
+#
+#  CXXFLAGS_INCLUDES
+#    Contains additional specific include options for C++ only.
+#
+#  CFLAGS_OPTIMIZE
+#    Contains specific optimization for the gcc compiler. Defaults to -O2.
+#    Ignored if DEBUG is defined.
+#
+#  CVPATH
+#    Contains directories where *.h and *.c files are searched. "vpath"
+#    directives are defined accordingly.
+#
+#  CXXVPATH
+#    Contains directories where *.h and *.cpp files are searched. "vpath"
+#    directives are defined accordingly.
+#
+#  CPPCHECK
+#    Contains the absolute path of the cppcheck static code analyzer.
+#    If empty, cppcheck is searched in $PATH.
+#
+#  CPPCHECK_FLAGS
+#    Contains additional options for cppcheck. Typically empty since the
+#    usual options are automatically added in this makefile.
+#
+#  CPPCHECK_SOURCES
+#    List of source files or directories on which to run cppcheck.
+#    By default, use the source tree starting at current directory.
+#
+#  DEBUG
+#    If defined (any non-empty value), the debug information is included in
+#    any compilation. Optimizations are turned off.
+#
+#  DONT_BUILD_DEPS
+#    Do not attempt to build the header dependency files. Useful when the
+#    source file depend on dynamically generated header files (initially
+#    non-existent).
+#
+#  DOXYGEN
+#    Contains the absolute path of the doxygen documentation generator.
+#    If empty, doxygen is searched in $PATH.
+#
+#  DOXYGEN_FLAGS
+#    Contains the options for doxygen. Typically empty.
+#
+#  EXTRA_CLEAN
+#    List the additional files that should be deleted by "make clean".
+#    This variable can be defined after inclusion of this makefile.
+#
+#  EXTRA_DISTCLEAN
+#    List the additional files that should be deleted by "make distclean".
+#    This variable can be defined after inclusion of this makefile.
+#
+#  FLAWFINDER
+#    Contains the absolute path of the flawfinder static code analyzer.
+#    If empty, flawfinder is searched in $PATH.
+#
+#  FLAWFINDER_FLAGS
+#    Contains additional options for flawfinder. Typically empty since the
+#    usual options are automatically added in this makefile.
+#
+#  FLAWFINDER_SOURCES
+#    List of source files or directories on which to run flawfinder.
+#    By default, use the source tree starting at current directory.
+#
+#  GCOV
+#    If defined (any non-empty value), compile and link with gcov support.
+#    The preprocessing macro GCOV is also defined for C/C++ compilations.
+#
+#  LDCXX
+#    Must be defined to a non-empty value to include the C++ libraries in
+#    the link commands. Automatically defined if any C++ source file (*.cpp)
+#    is present. Define it explicitly if you need the C++ libraries without
+#    C++ source files in the make working directory.
+#
+#  M32
+#    If defined (any non-empty value), compile for 32-bit target when running
+#    in 64-bit host. More precisely, on a x86-84 host platform, generate code
+#    for i686 target (cross-compilation). Requirement:
+#    - Ubuntu: apt-get install gcc-multilib g++-multilib
+#    - Fedora: dnf install glibc-devel.i686 libstdc++-devel.i686
+#
+#  MAKEINFO
+#    Contains the absolute path of the makeinfo utility (part of Texinfo).
+#    If empty, makeinfo is searched in $PATH.
+#
+#  NODEPS
+#    List of make targets in the parent makefile which shall not enforce
+#    the generation of header dependency files. This is a bit complicated
+#    and, most of the time, there is no need to set this variable.
+#
+#    When make is invoked, the .dep files which list for each C/C++ source
+#    file the .h header dependencies are automatically updated. This is
+#    required for most targets, those which build files. Some targets are
+#    informational or do not need to build object files. In this case,
+#    rebuilding the .dep files is useless but harmless. However, in some
+#    cases such as the standard "clean" targets, the .dep files should
+#    not be rebuilt. In fact, they are deleted by the target. In these
+#    cases, the "clean" targets must not implicitly rebuild the .dep
+#    files. The standard "clean" targets are automatically added in NODEPS,
+#    there is no need to set them. However, if a makefile defines some
+#    non-standard "clean" targets, it should set them in NODEPS before
+#    inclusion of this make file.
+#
+#  RECURSE_ORDER
+#    Define which subdirectories should be used in which order in the
+#    $(RECURSE) shell command. Non-existent subdirectories are ignored.
+#    See RECURSE in the section "Output variables" below.
+#
+#    Caveat: If you do not want to recurse into subdirectories, do not
+#    define the variable as empty. If it is empty, the default will apply
+#    (all subdirectories). Instead, define its value as something that does
+#    not correspond to any existing directory (eg. RECURSE_ORDER = none).
+#
+#  TARGET_ARCH
+#    Contains the target architecture for gcc. Defaults to -march=`uname -m`.
+#    Should be overriden if your `uname -m` is not recognized by gcc.
+#
+#  TEXI2DVI
+#    Contains the absolute path of the texi2dvi utility (part of Texinfo).
+#    If empty, texi2dvi is searched in $PATH.
+#
+#-----------------------------------------------------------------------------
+#
+#  Output variables
+#  ----------------
+#  The following variables are defined in this included makefile and are
+#  available in the parent makefile after inclusion.
+#
+#  ARFLAGS
+#    Options which are applied to the archiver (ar) when adding a module into
+#    a static library.
+#
+#  CFLAGS
+#    Options which are applied to C compilations.
+#
+#  CFLAGS_INCLUDES
+#    Same as input variables with additional common include libraries.
+#
+#  CFLAGS_FULLSPEED
+#    Contains the C/C++ optimization options for maximum execution speed, at
+#    the expense of code size. Can be used in the parent makefile to specify
+#    that some selected modules should be compiled for full speed. Example:
+#
+#    $(OBJDIR)/fast1.o $(OBJDIR)/fast2.o: CFLAGS_OPTIMIZE = $(CFLAGS_FULLSPEED)
+#
+#  CFLAGS_OPTSIZE
+#    Contains the C/C++ optimization options for minimum code size.
+#    Same usage as CFLAGS_FULLSPEED.
+#
+#  COMMA
+#    Contains a comma. Use $(COMMA) wherever a plain "," is syntaxtically not
+#    allowed such as in functions.
+#
+#  CONTINUE
+#    Contains a non-empty value if "make -k" is specified (ie. continue on
+#    error). Otherwise, it is empty.
+#
+#  CORE_COUNT
+#    Contains the number of physical CPU cores in the machine.
+#
+#  CPPCHECK_FLAGS
+#    Same as input variables with additional usual options. In debug mode
+#    (when DEBUG is defined) the diagnostics are more aggressive but may
+#    generate false positives.
+#
+#  CPU_COUNT
+#    Contains the number of logical CPU's in the machine. With hyperthreaded
+#    CPU cores, CPU_COUNT is typically twice CORE_COUNT.
+#
+#  CXXFLAGS
+#    Options which are applied to C++ compilations.
+#
+#  EXE_SUFFIX
+#    Executable files suffix, ".exe" on Windows, nothing otherwise.
+#
+#  EXECS
+#    All executable files to build, based on the list of main programs from
+#    $(MODULES_MAIN).
+#
+#  FLAWFINDER_FLAGS
+#    Same as input variables with additional usual options.
+#
+#  GCC_VERSION
+#    Contain the current GCC version, usually in form x.y.z
+#
+#  HEADERS
+#    List of all header names, that is to say the list of all "f" for which
+#    a source file f.h exists.
+#
+#  LDFLAGS
+#    Options which are applied to the linker.
+#
+#  LD_LIBRARY_PATH_NAME
+#    Name of the environment variable containing the search path for the
+#    shareable libraries. Typically LD_LIBRARY_PATH on native unices and
+#    PATH on Windows-based environments such as Cygwin.
+#
+#  LOCAL_ARCH
+#    Local processor exact architecture ("i686", "x86_64", "armv7l", etc.)
+#
+#  LOCAL_OS
+#    Local operating system name in lower-case ("linux", "cygwin", etc.)
+#
+#  MAIN_ARCH
+#    Local processor architecture family ("i386", "x86_64", "arm", etc.)
+#
+#  MODULES
+#    List of all modules names, that is to say the list of all "f" for which
+#    a source file f.c or f.cpp exists.
+#
+#  MODULES_LIB
+#    List of all modules names which are not main programs, that is to say the
+#    list of all "f" for which a source file f.c or f.cpp exists and a source
+#    file f.h exists.
+#
+#  MODULES_MAIN
+#    List of all modules names which are main programs, that is to say the list
+#    of all "f" for which a source file f.c or f.cpp exists but no file f.h
+#    exists.
+#
+#  NORECURSE_SUBDIRS
+#    List of subdirectories patterns to ignore in make recursion. The parent
+#    makefile may append local subdirectories to this variable.
+#
+#  NOSOURCE
+#    List of file patterns which are typically not source files. This can
+#    be used to filter file names when creating a backup or an archive of
+#    the source files.
+#
+#  OBJDIR
+#    Name of the subdirectory which receives all generated binary files.
+#    Typically either "release-{arch}" or "debug-{arch}".
+#
+#  OBJS
+#    All object files (.o) to build, for all C/C++ source files.
+#
+#  OBJS_LIB
+#    All object files (.o) to build which are not main programs, ie. for all
+#    $(MODULES_LIB). These object files will typically go into a library.
+#
+#  OBJS_MAIN
+#    All object files (.o) to build which are main programs, ie. for all
+#    $(MODULES_MAIN).
+#
+#  RECURSE
+#    A shell command which applies the current make target to all or some
+#    subdirectories of the current directory. Can be used in make targets
+#    to recursively apply this target. By default, the $(RECURSE) command
+#    apply to all subdirectories in alphabetical order. If the input variable
+#    RECURSE_ORDER is defined and non empty, it is used as the list of
+#    subdirectories to recurse into.
+#
+#  RECURSE_SUBDIRS
+#    Actual recurse order. If the user did not define RECURSE_ORDER, use all
+#    subdirectories, except those for which we know there is nothing to make.
+#
+#  ROOTDIR
+#    Absolute path of the directory where this Makefile.common file is
+#    located. By convention, this is the root directory of the project.
+#
+#  SOURCES
+#    All C and C++ source files in the current directory.
+#
+#  SPACE
+#    Contains a space character. Use $(SPACE) to force a space wherever a " "
+#    is ignored such as in functions and expressions.
+#
+#  SUBDIRS
+#    List of all subdirectories of the current directory in alphabetical order.
+#
+#  TEXI2HTML_FLAGS
+#    Makeinfo flags used in .texi to .html transformation.
+#
+#  TEXI2INFO_FLAGS
+#    Makeinfo flags used in .texi to .info transformation.
+#
+#  TEXI2PDF_FLAGS
+#    Texi2dvi flags used in .texi to .pdf transformation.
+#
+#-----------------------------------------------------------------------------
+
+# If no target precedes the inclusion of this file, use "default" as target.
+.PHONY: first default
+first: default
+	@true
+
+# Some nerds define exotic shells as default. Stay to a known shell.
+SHELL := /bin/bash
+
+# Enforce English locale by default.
+export LANG=en_US
+
+# Representation of a space and a comma character
+EMPTY =
+SPACE = $(EMPTY) $(EMPTY)
+COMMA = ,
+
+# Recursive invocations of make should be silent
+MAKEFLAGS += --no-print-directory
+
+# Check if "make -k" is specified (ie. continue on error).
+ifneq ($(findstring k,$(filter-out --%,$(MAKEFLAGS))),)
+    CONTINUE := true
+else
+    CONTINUE :=
+endif
+
+# The directory which contains the currently included Makefile is the project root.
+ROOTDIR := $(shell cd $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST)))); pwd)
+
+# List of subdirectories in the current directory.
+SUBDIRS := $(sort $(patsubst ./%,%,$(shell find . -noleaf -mindepth 1 -maxdepth 1 -type d ! -name '.*')))
+
+# List of subdirectories to ignore in make recursion.
+NORECURSE_SUBDIRS = debug release debug-% release-% Debug Release Debug-% Release-% .vs ipch %.t2d .git
+
+# Actual recurse order. If the user did not define RECURSE_ORDER, use all
+# subdirectories, except those for which we know there is nothing to make.
+RECURSE_SUBDIRS = $(filter-out $(NORECURSE_SUBDIRS),$(if $(RECURSE_ORDER),$(RECURSE_ORDER),$(SUBDIRS)))
+
+# $(RECURSE) is a shell command which recurses the current
+# make targets in the subdirectories (useful for "all" or "clean").
+RECURSE = for dir in $(RECURSE_SUBDIRS); do if [[ -d $$dir ]]; then $(MAKE) -C $$dir $@ $(if $(CONTINUE),,|| break); fi; done
+
+# Operating system, architecture, core count.
+LOCAL_OS   := $(shell uname -s | tr A-Z a-z)
+LOCAL_ARCH := $(shell uname -m)
+CPU_COUNT  := $(shell nproc 2>/dev/null)
+CPU_COUNT  := $(if $(CPU_COUNT),$(CPU_COUNT),1)
+CORE_COUNT := $(shell fgrep -m1 'cpu cores' /proc/cpuinfo 2>/dev/null | cut -d ' ' -f3)
+CORE_COUNT := $(if $(CORE_COUNT),$(CORE_COUNT),$(CPU_COUNT))
+
+# Get current GCC version, usually in form x.y.z
+GCC_VERSION := $(word 3,$(shell gcc -v 2>&1 | grep '^gcc version'))
+
+# When C++ source files are present, automatically define LDCXX.
+ifndef LDCXX
+    ifneq ($(wildcard *.cpp),)
+        LDCXX = true
+    endif
+endif
+
+# Detect Cygwin platform. Impacts:
+# - The executables are started by the Windows loader which uses distinct environment
+#   variables for shared library resolution.
+# - The option -fPIC generates a stupid error:
+#   "-fPIC ignored for target (all code is position independent)"
+ifneq ($(subst cygwin,,$(LOCAL_OS)),$(LOCAL_OS))
+    LOCAL_OS := cygwin
+    LD_LIBRARY_PATH_NAME := PATH
+    CFLAGS_FPIC :=
+else
+    LD_LIBRARY_PATH_NAME := LD_LIBRARY_PATH
+    CFLAGS_FPIC := -fPIC
+endif
+
+# Executable files suffix
+ifeq ($(LOCAL_OS),cygwin)
+    EXE_SUFFIX := .exe
+else
+    EXE_SUFFIX :=
+endif
+
+# Define compilation flags for 32-bit cross-compilation.
+# Target architecture is skipped on ARM because of numerous variants.
+ifdef M32
+    MAIN_ARCH    = i386
+    CFLAGS_M32   = -m32
+    LDFLAGS_M32  = -m32
+    TARGET_ARCH  = -march=i686
+else
+    MAIN_ARCH    = $(shell uname -m | sed -e 's/i.86/i386/' -e 's/arm.*/arm/')
+    CFLAGS_M32   =
+    LDFLAGS_M32  =
+    TARGET_ARCH  ?= $(if $(subst arm,,$(MAIN_ARCH)),-march=$(LOCAL_ARCH:x86_64=x86-64),)
+endif
+
+# Alternate target to recompile with debug options
+.PHONY: debug
+debug:
+	+@$(MAKE) DEBUG=true
+
+# Alternate target to recompile for 32-bit target
+.PHONY: m32
+m32:
+	+@$(MAKE) M32=true
+
+# Compilation flags for various types of optimization.
+CFLAGS_OPTIMIZE ?= -O2 -fno-strict-aliasing
+CFLAGS_FULLSPEED = -O3 -fno-strict-aliasing -funroll-loops -fomit-frame-pointer
+CFLAGS_OPTSIZE   = -Os -fno-strict-aliasing
+
+# Alternate target to recompile with optimizations for reduced code size.
+.PHONY: optsize
+optsize:
+	+@$(MAKE) CFLAGS_OPTIMIZE="$(CFLAGS_OPTSIZE)"
+
+# Include paths for C++ also use include paths for C.
+CXXFLAGS_INCLUDES += $(CFLAGS_INCLUDES)
+
+# Always use maximal or even paranoid warning mode.
+CFLAGS_WARNINGS   = -Werror -Wall -Wextra -Wno-unused-parameter -Wstrict-prototypes -Wmissing-prototypes
+CXXFLAGS_WARNINGS = -Werror -Wall -Wextra -Wno-unused-parameter -Woverloaded-virtual
+
+# Compilation flags in debug mode.
+ifdef DEBUG
+    CFLAGS_DEBUG = -g -DDEBUG=1
+    LDFLAGS_DEBUG =
+else
+    CFLAGS_DEBUG = $(CFLAGS_OPTIMIZE)
+    LDFLAGS_DEBUG =
+endif
+
+# Compilation flags for code coverage using gcov.
+ifdef GCOV
+    CFLAGS_GCOV = --coverage -DGCOV=1
+    LDFLAGS_GCOV = --coverage
+else
+    CFLAGS_GCOV =
+    LDFLAGS_GCOV =
+endif
+
+# External libraries
+ifdef LDCXX
+    LDLIBS += -lstdc++
+endif
+LDLIBS += -lpthread -lrt -lm
+
+# Global compilation flags.
+# Additional flags can be passed on the "make" command line using *FLAGS_EXTRA.
+CFLAGS   = $(CFLAGS_DEBUG) $(CFLAGS_M32) $(CFLAGS_GCOV) $(CFLAGS_WARNINGS) $(CFLAGS_INCLUDES) $(TARGET_ARCH) $(CFLAGS_FPIC) -std=c99 $(CFLAGS_EXTRA)
+CXXFLAGS = $(CFLAGS_DEBUG) $(CFLAGS_M32) $(CFLAGS_GCOV) $(CXXFLAGS_WARNINGS) $(CXXFLAGS_INCLUDES) $(TARGET_ARCH) $(CFLAGS_FPIC) $(CXXFLAGS_EXTRA)
+LDFLAGS  = $(LDFLAGS_DEBUG) $(LDFLAGS_M32) $(LDFLAGS_GCOV) $(TARGET_ARCH) $(LDFLAGS_EXTRA)
+ARFLAGS  = rcU $(ARFLAGS_EXTRA)
+
+# Output subdirectories in each project directory
+ifdef DEBUG
+    OBJDIR = debug-$(MAIN_ARCH)
+else
+    OBJDIR = release-$(MAIN_ARCH)
+endif
+
+# Implicit search directives.
+ifneq ($(CVPATH),)
+    vpath %.c $(CVPATH)
+endif
+ifneq ($(CXXVPATH),)
+    vpath %.cpp $(CXXVPATH)
+endif
+ifneq ($(CVPATH)$(CXXVPATH),)
+    vpath %.h $(CVPATH) $(CXXVPATH)
+endif
+
+# Source and object files in current directory.
+SOURCES      := $(sort $(notdir $(wildcard *.c *.cpp $(addsuffix /*.c,$(CVPATH)) $(addsuffix /*.cpp,$(CXXVPATH)))))
+HEADERS      := $(sort $(notdir $(basename $(wildcard *.h $(addsuffix /*.h,$(CVPATH) $(CXXVPATH))))))
+MODULES      := $(basename $(SOURCES))
+OBJS         := $(addprefix $(OBJDIR)/,$(addsuffix .o,$(MODULES)))
+MODULES_MAIN := $(sort $(filter-out $(HEADERS),$(MODULES)))
+MODULES_LIB  := $(sort $(filter-out $(MODULES_MAIN),$(MODULES)))
+OBJS_MAIN    := $(addprefix $(OBJDIR)/,$(addsuffix .o,$(MODULES_MAIN)))
+OBJS_LIB     := $(addprefix $(OBJDIR)/,$(addsuffix .o,$(MODULES_LIB)))
+EXECS        := $(addprefix $(OBJDIR)/,$(MODULES_MAIN))
+
+# Keep intermediate files, avoid using "ar" again.
+.SECONDARY:
+
+# Compilation rules
+$(OBJDIR)/%.o: %.c
+	@echo '  [CC] $<'; \
+	mkdir -p $(OBJDIR); \
+	$(CC) $(CFLAGS) $(CPPFLAGS) -c -o $@ $<
+$(OBJDIR)/%.o: %.cpp
+	@echo '  [CXX] $<'; \
+	mkdir -p $(OBJDIR); \
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
+(%): %
+	@echo '  [AR] $<'; \
+	flock -w 60 $(patsubst %/,%,$(dir $@)) $(AR) $(ARFLAGS) $@ $<
+$(OBJDIR)/%: $(OBJDIR)/%.o
+	@echo '  [LD] $@'; \
+	$(CC) $(LDFLAGS) $^ $(LDLIBS) -o $@
+$(OBJDIR)/%.so: $(OBJDIR)/%.o
+	@echo '  [CC] $@'; \
+	$(CC) $(CFLAGS) $^ $(LDLIBS) -shared -o $@
+
+# Object files dependencies (.dep files, included by makefiles)
+$(OBJDIR)/%.dep: %.c
+	@echo '  [DEP] $<'; \
+	mkdir -p $(OBJDIR); \
+	$(CC) -MM $(CPPFLAGS) $(CFLAGS_INCLUDES) $< >$@ && \
+	sed -i 's,\($*\)\.o[ :]*,$(OBJDIR)/\1.o $@ : ,g' $@ || \
+	rm -f $@
+$(OBJDIR)/%.dep: %.cpp
+	@echo '  [DEP] $<'; \
+	mkdir -p $(OBJDIR); \
+	$(CC) -MM $(CPPFLAGS) $(CXXFLAGS_INCLUDES) $< >$@ && \
+	sed -i 's,\($*\)\.o[ :]*,$(OBJDIR)/\1.o $@ : ,g' $@ || \
+	rm -f $@
+
+# Rebuild and include all .dep files, unless the explicit targets do not require the .dep files.
+NODEPS += clean cmacros cppcheck cppcheck-xml cxxmacros debug m32 distclean doxygen flawfinder listvars unixify
+ifeq ($(DONT_BUILD_DEPS),)
+    ifneq ($(MAKECMDGOALS),)
+        DONT_BUILD_DEPS := $(if $(filter-out $(NODEPS),$(MAKECMDGOALS)),,true)
+    endif
+endif
+ifeq ($(DONT_BUILD_DEPS),)
+    -include $(addprefix $(OBJDIR)/,$(addsuffix .dep,$(notdir $(basename $(wildcard *.c *.cpp)))))
+endif
+
+# Cleanup utilities
+.PHONY: clean distclean
+clean:
+	@echo '  [CLEAN] $(CURDIR)'; \
+	rm -rf $(EXTRA_CLEAN) *~ \
+	    *.o *.ko *.a *.gcov *.dep *.tmp *.out *.log *.tlog core core.* vgcore.* *.stackdump \
+	    $(OBJDIR)/*.o $(OBJDIR)/*.ko $(OBJDIR)/*.a $(OBJDIR)/*.dep $(OBJDIR)/*.tmp $(OBJDIR)/*.out \
+	    $(OBJDIR)/*.log $(OBJDIR)/*.tlog $(OBJDIR)/core $(OBJDIR)/core.* $(OBJDIR)/vgcore.*
+	+@$(RECURSE)
+distclean: clean
+	@echo '  [DISTCLEAN] $(CURDIR)'; \
+	rm -rf $(EXTRA_DISTCLEAN) [Dd]ebug* [Rr]elease* ipch *.exe *.so .kdbgrc.* *.t2d \
+	    .vs *.ncb *.suo *.idb *.sdf *.opensdf *.vcproj.*.user \
+	    *.vcxproj.user *.dll.embed.manifest.dll *.dll.embed.manifest.ilk \
+	    *.VC.db *.VC.opendb \
+	    *.pro.user *.pro.user.* .tmp_versions
+	+@$(RECURSE)
+
+# List of file and directory patterns for non-source files.
+NOSOURCE = \
+    .git *.zip *.gz *.tgz [Dd]ebug* [Rr]elease* doxy doxygen *.pdf *.t2d \
+    *.o *.so *.ko *.a *.lib *.exe *.gcov *.dep .kdbgrc.* .tmp_versions \
+    *.tmp *.out *.log *.tlog core core.* vgcore.* *.stackdump \
+    .vs ipch *.ncb *.suo *.idb *.sdf *.opensdf *.vcproj.*.user \
+    *.vcxproj.user *.dll.embed.manifest.dll *.dll.embed.manifest.ilk
+
+# Source code documentation generation.
+DOXYGEN ?= doxygen
+.PHONY: doxygen
+doxygen:
+	@[ -e Doxyfile ] && $(DOXYGEN) || $(RECURSE)
+
+# Texinfo document generation.
+MAKEINFO ?= makeinfo
+TEXI2DVI ?= texi2dvi
+TEXI_MAJOR_VERSION = $(shell $(MAKEINFO) --version 2>/dev/null | head -1 | sed -e 's/.*  *//' -e 's/\..*//')
+TEXI_V5 = $(shell test "$(TEXI_MAJOR_VERSION)" -ge 5 2>/dev/null && echo true)
+TEXI2PDF_FLAGS  = --batch --quiet --tidy
+TEXI2HTML_FLAGS = --no-split $(if $(TEXI_V5),--set-customization-variable AVOID_MENU_REDUNDANCY=true)
+TEXI2INFO_FLAGS =
+%.pdf: %.texi
+	$(TEXI2DVI) --pdf $(TEXI2PDF_FLAGS) -o $@ $<
+%.html: %.texi
+	$(MAKEINFO) --html $(TEXI2HTML_FLAGS) -o $@ $<
+%.info: %.texi
+	$(MAKEINFO) $(TEXI2INFO_FLAGS) -o $@ $<
+
+# Static code analysis: Run cppcheck on the source code tree starting at current directory.
+# In debug mode, the diagnostics are more aggressive but may be false positive.
+CPPCHECK ?= cppcheck
+CPPCHECK_SOURCES ?= $(CURDIR)
+CPPCHECK_FLAGS += --inline-suppr --quiet --force \
+	--template="{file}:{line}: ({severity}) {id}: {message}" \
+	--enable=all --suppress=unusedFunction --suppress=missingIncludeSystem \
+	$(if $(DEBUG),--inconclusive,)
+.PHONY: cppcheck cppcheck-xml
+cppcheck:
+	$(CPPCHECK) $(CPPCHECK_FLAGS) $(CPPCHECK_SOURCES)
+cppcheck-xml:
+	$(CPPCHECK) $(CPPCHECK_FLAGS) --xml --xml-version=2 $(CPPCHECK_SOURCES)
+
+# Static code analysis: Run flawfinder on the source code tree starting at current directory.
+FLAWFINDER ?= flawfinder
+FLAWFINDER_SOURCES ?= $(CURDIR)
+FLAWFINDER_FLAGS += --quiet --dataonly
+.PHONY: flawfinder
+flawfinder:
+	$(FLAWFINDER) $(FLAWFINDER_FLAGS) $(FLAWFINDER_SOURCES)
+
+# Utilities: display predefined macros for C and C++
+.PHONY: cmacros cxxmacros
+cmacros:
+	@cpp -x c -dM /dev/null | sort
+cxxmacros:
+	@cpp -x c++ -dM /dev/null | sort
+
+# Cleanup Windows oddities in source files.
+# Visual C++ indents with tabs, and tabs are 4 chars wide.
+.PHONY: unixify
+unixify:
+	for f in $$(find . -name \*.c -o -name \*.cpp -o -name \*.h -o -name Makefile\* -name \*.sh -o -name \*.dox -o -name \*.xml -o -name \*.txt); do \
+	  expand -t 4 $$f >$$f.tmp; \
+	  chmod --reference=$$f $$f.tmp; \
+	  mv -f $$f.tmp $$f; \
+	  dos2unix -q $$f; \
+	done
+
+# Display make variables for debug purposes.
+.PHONY: listvars
+listvars:
+	@true
+	$(foreach v, \
+	  $(sort $(filter-out .% ^% @% _% *% \%% <% +% ?% BASH% LS_COLORS SSH% VTE% XDG%,$(.VARIABLES))), \
+	  $(info $(v) = "$($(v))"))

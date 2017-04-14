@@ -1,0 +1,26 @@
+/* Doxygen style customization, coming after standard Doxygen styles. */
+
+#projectlogo {
+    vertical-align: middle;
+    padding-left: 0.5em;
+}
+#projectalign {
+    vertical-align: middle;
+    padding-left: 0.5em;
+}
+#projectname {
+    font-size: 200%;
+    font-weight: bold;
+    font-family: Roboto,Arial,sans-serif;
+    padding: 0px;
+}
+#projectnumber {
+    font-size: 100%;
+    font-family: Roboto,Arial,sans-serif;
+    padding-left: 0.5em;
+}
+#projectbrief {
+    font-size: 100%;
+    font-family: Roboto,Arial,sans-serif;
+    padding-left: 0.5em;
+}

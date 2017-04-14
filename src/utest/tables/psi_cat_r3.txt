@@ -1,0 +1,9 @@
+
+* CAT, TID 1 (0x01)
+  Section: 0 (last: 0), version: 4, size: 31 bytes
+  - Descriptor 0: CA, Tag 9 (0x09), 17 bytes
+    CA System Id: 0x0100 (MediaGuard), EMM PID: 193 (0x00C1), Nb OPI: 3
+    OPI: 342 (0x0156), EMM PID: 194 (0x00C2)
+    OPI: 343 (0x0157), EMM PID: 195 (0x00C3)
+    OPI: 346 (0x015A), EMM PID: 196 (0x00C4)
+

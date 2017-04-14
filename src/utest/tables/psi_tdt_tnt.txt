@@ -1,0 +1,5 @@
+
+* TDT, TID 112 (0x70)
+  Section: 0 (last: 0), version: 0, size: 8 bytes
+  UTC time: 23/11/2007 13:25:03
+

@@ -1,0 +1,314 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2017, Thierry Lelegard
+// All rights reserved.
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
+//
+// 1. Redistributions of source code must retain the above copyright notice,
+//    this list of conditions and the following disclaimer.
+// 2. Redistributions in binary form must reproduce the above copyright
+//    notice, this list of conditions and the following disclaimer in the
+//    documentation and/or other materials provided with the distribution.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+// THE POSSIBILITY OF SUCH DAMAGE.
+//
+//----------------------------------------------------------------------------
+//
+//  Transport stream processor shared library:
+//  Regulate (slow down) the packet flow according to a bitrate.
+//
+//----------------------------------------------------------------------------
+
+#include "tsPlugin.h"
+#include "tsMonotonic.h"
+#include "tsDecimal.h"
+
+
+#define DEF_PACKET_BURST 16
+
+
+//----------------------------------------------------------------------------
+// Plugin definition
+//----------------------------------------------------------------------------
+
+namespace ts {
+    class RegulatePlugin: public ProcessorPlugin
+    {
+    public:
+        // Implementation of plugin API
+        RegulatePlugin (TSP*);
+        virtual bool start();
+        virtual bool stop() {return true;}
+        virtual BitRate getBitrate() {return _cur_bitrate;}
+        virtual Status processPacket (TSPacket&, bool&, bool&);
+
+    private:
+        // Regulation state
+        enum State {INITIAL, REGULATED, UNREGULATED};
+
+        // Private members
+        State         _state;           // Current regulation state
+        BitRate       _opt_bitrate;     // Bitrate option, zero means use input
+        BitRate       _cur_bitrate;     // Current bitrate
+        PacketCounter _opt_burst;       // Number of packets to burst at a time
+        PacketCounter _burst_pkt_max;   // Total packets in current burst
+        PacketCounter _burst_pkt_cnt;   // Countdown of packets in current burst
+        NanoSecond    _burst_min;       // Minimum delay between two bursts (ns)
+        NanoSecond    _burst_duration;  // Delay between two bursts (nano-seconds)
+        Monotonic     _burst_end;       // End of current burst
+
+        // Compute burst duration (_burst_duration and _burst_pkt_max), based on
+        // required packets/burst (command line option) and current bitrate.
+        void computeBurst();
+
+        // Process one packet in a regulated burst. Wait at end of burst.
+        Status regulatePacket (bool& flush);
+    };
+}
+
+TSPLUGIN_DECLARE_VERSION;
+TSPLUGIN_DECLARE_PROCESSOR (ts::RegulatePlugin);
+
+
+//----------------------------------------------------------------------------
+// Constructor
+//----------------------------------------------------------------------------
+
+ts::RegulatePlugin::RegulatePlugin (TSP* tsp_) :
+    ProcessorPlugin (tsp_, "Regulate the TS packets flow to a specified bitrate.", "[options]")
+{
+    option ("bitrate",      'b', POSITIVE);
+    option ("packet-burst", 'p', POSITIVE);
+
+    setHelp ("Regulate (slow down only) the TS packets flow according to a specified\n"
+             "bitrate. Useful to play a non-regulated input (such as a TS file) to a\n"
+             "non-regulated output device such as IP multicast.\n"
+             "\n"
+             "Options:\n"
+             "\n"
+             "  -b value\n"
+             "  --bitrate value\n"
+             "      Specify the bitrate in b/s. By default, use the \"input\" bitrate,\n"
+             "      typically resulting from the PCR analysis of the input file.\n"
+             "\n"
+             "  --help\n"
+             "      Display this help text.\n"
+             "\n"
+             "  -p value\n"
+             "  --packet-burst value\n"
+             "      Number of packets to burst at a time. Does not modify the average\n"
+             "      output bitrate but influence smoothing and CPU load. The default\n"
+             "      is " TS_STRINGIFY (DEF_PACKET_BURST) " packets.\n"
+             "\n"
+             "  --version\n"
+             "      Display the version number.\n");
+}
+
+
+//----------------------------------------------------------------------------
+// Start method
+//----------------------------------------------------------------------------
+
+bool ts::RegulatePlugin::start()
+{
+    // Get command line arguments
+    _opt_bitrate = intValue<BitRate> ("bitrate", 0);
+    _opt_burst = intValue<PacketCounter> ("packet-burst", DEF_PACKET_BURST);
+
+    // Compute the minimum delay between two bursts, in nano-seconds.
+    // This is a limitation of the operating system. If we try to use
+    // wait on durations lower than the minimum, this will introduce
+    // latencies which mess up the regulation. We try to request 2
+    // milliseconds as time precision and we keep what the operating
+    // system gives.
+
+    _burst_min = Monotonic::SetPrecision (2000000); // 2 milliseconds in nanoseconds
+
+    tsp->log (Severity::Verbose, "minimum packet burst duration is " + Decimal (_burst_min) + " nano-seconds");
+
+    // Reset state
+    _state = INITIAL;
+    _cur_bitrate = 0;
+    _burst_pkt_max = 0;
+    _burst_pkt_cnt = 0;
+    _burst_duration = 0;
+
+    return true;
+}
+
+
+//----------------------------------------------------------------------------
+//  Compute burst duration (_burst_duration and _burst_pkt_max), based on
+//  required packets/burst (command line option) and current bitrate.
+//----------------------------------------------------------------------------
+
+void ts::RegulatePlugin::computeBurst()
+{
+    // Assume that the packets/burst is the one specified on the command line.
+    _burst_pkt_max = _opt_burst;
+
+    // Compute corresponding duration (in nano-seconds) between two bursts.
+    assert (_cur_bitrate > 0);
+    _burst_duration = (NanoSecPerSec * PKT_SIZE * 8 * _burst_pkt_max) / _cur_bitrate;
+
+    // If the result is too small for the time precision of the operating
+    // system, recompute a larger burst duration
+    if (_burst_duration < _burst_min) {
+        _burst_duration = _burst_min;
+        _burst_pkt_max = (_burst_duration * _cur_bitrate) / (NanoSecPerSec * PKT_SIZE * 8);
+    }
+
+    if (tsp->debug()) {
+        tsp->log (Severity::Debug, "new regulation, burst: " +
+                  Decimal (_burst_duration) + " nano-seconds, " +
+                  Decimal (_burst_pkt_max) + " packets");
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Process one packet in a regulated burst. Wait at end of burst.
+//----------------------------------------------------------------------------
+
+ts::ProcessorPlugin::Status ts::RegulatePlugin::regulatePacket (bool& flush)
+{
+    if (_burst_pkt_cnt == 0 || --_burst_pkt_cnt == 0) {
+        // End of current burst.
+        // Wait until scheduled end of burst.
+        _burst_end.wait();
+        // Restart a new burst, use monotonic time
+        _burst_pkt_cnt = _burst_pkt_max;
+        _burst_end += _burst_duration;
+        // Flush current burst
+        flush = true;
+    }
+    return TSP_OK;
+}
+
+
+//----------------------------------------------------------------------------
+// Packet processing method
+//----------------------------------------------------------------------------
+
+ts::ProcessorPlugin::Status ts::RegulatePlugin::processPacket (TSPacket& pkt, bool& flush, bool& bitrate_changed)
+{
+    // Compute old and new bitrate (most often the same)
+
+    BitRate old_bitrate = _cur_bitrate;
+    _cur_bitrate = _opt_bitrate != 0 ? _opt_bitrate : tsp->bitrate();
+
+    if (tsp->verbose() && (_cur_bitrate != old_bitrate || _state == INITIAL)) {
+        // Initial state or new bitrate
+        if (_cur_bitrate == 0) {
+            tsp->verbose ("unknown bitrate, cannot regulate.");
+        }
+        else {
+            tsp->log (Severity::Verbose, "regulated at bitrate " + Decimal (_cur_bitrate) + " b/s");
+        }
+    }
+
+    // Process with state machine
+
+    switch (_state) {
+
+        case INITIAL:
+            // Initial state, will become either regulated or unregulated
+            if (_cur_bitrate == 0) {
+                // No bitrate -> unregulated
+                _state = UNREGULATED;
+                return TSP_OK; // transmit without regulation
+            }
+            else {
+                // Got a non-zero bitrate -> start regulation
+                _state = REGULATED;
+                // Compute initial burst duration: first, compute burst time
+                computeBurst();
+                // Get initial clock
+                _burst_end.getSystemTime();
+                // Compute end time of next burst
+                _burst_end += _burst_duration;
+                // We are at the start of the burst, initialize countdown
+                _burst_pkt_cnt = _burst_pkt_max;
+                // Transmit first packet of burst
+                bitrate_changed = true;
+                return regulatePacket (flush);
+            }
+            break;
+
+        case UNREGULATED:
+            // We had no bitrate, we did not regulate
+            if (_cur_bitrate == 0) {
+                // Still no bitrate, transmit without regulation, remain unregulated
+                return TSP_OK;
+            }
+            else {
+                // Finally got a bitrate.
+                // Transmit this one without regulation and flush.
+                // Will regulate next time, starting with empty (flushed) buffer.
+                _state = INITIAL;
+                bitrate_changed = true;
+                flush = true;
+                return TSP_OK;
+            }
+            break;
+
+        case REGULATED:
+            // We previously had a bitrate and we regulated the flow.
+            if (_cur_bitrate == 0) {
+                // No more bitrate, become unregulated
+                _state = UNREGULATED;
+                return TSP_OK;
+            }
+            else if (_cur_bitrate == old_bitrate) {
+                // Still the same bitrate, continue to burst
+                return regulatePacket (flush);
+            }
+            else {
+                // Got a new non-zero bitrate. Compute new burst.
+                // Revert to start time of current burst, based on previous burst duration.
+                _burst_end -= _burst_duration;
+                // Compute the estimated due elapsed time in current burst, based on
+                // previous burst duration and proportion of passed packets.
+                const NanoSecond elapsed = _burst_duration - (_burst_duration * _burst_pkt_max) / _burst_pkt_cnt;
+                // Compute new burst duration, based on new bitrate
+                computeBurst();
+                // Adjust end time of current burst. We want to close the current burst
+                // as soon as possible to restart based on new bitrate.
+                if (elapsed >= _burst_min) {
+                    // We already passed more packets that required for minimum delay.
+                    // Close current burst now.
+                    _burst_end += elapsed;
+                    _burst_pkt_cnt = 0;
+                }
+                else {
+                    // We have to wait a bit more to respect the minimum delay.
+                    // Compute haw many packets we should pass for the remaining time,
+                    // based on the new bitrate.
+                    _burst_end += _burst_min;
+                    _burst_pkt_cnt = ((_burst_min - elapsed) * _cur_bitrate) / (NanoSecPerSec * PKT_SIZE * 8);
+                }
+                // Report that the bitrate has changed
+                bitrate_changed = true;
+                return regulatePacket (flush);
+            }
+            break;
+    }
+
+    // Should never get there...
+
+    tsp->error ("internal error, invalid regulator state");
+    return TSP_END;
+}

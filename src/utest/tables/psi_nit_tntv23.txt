@@ -1,0 +1,326 @@
+
+* NIT Actual, TID 64 (0x40)
+  Section: 0 (last: 0), version: 23, size: 977 bytes
+  Network Id: 8442 (0x20FA)
+  Network information:
+  - Descriptor 0: Network Name, Tag 64 (0x40), 35 bytes
+    Name: "réseau numérique terrestre français"
+  - Descriptor 1: Linkage, Tag 74 (0x4A), 12 bytes
+    Transport stream id: 1 (0x0001)
+    Original network Id: 8442 (0x20FA)
+    Service id: 511 (0x01FF)
+    Linkage type: 0x09, system software update service
+    Private data:
+    0000:  04 00 01 5A 00                                   ...Z.
+  - Descriptor 2: Linkage, Tag 74 (0x4A), 12 bytes
+    Transport stream id: 2 (0x0002)
+    Original network Id: 8442 (0x20FA)
+    Service id: 767 (0x02FF)
+    Linkage type: 0x09, system software update service
+    Private data:
+    0000:  04 00 01 5A 00                                   ...Z.
+  - Descriptor 3: Linkage, Tag 74 (0x4A), 12 bytes
+    Transport stream id: 3 (0x0003)
+    Original network Id: 8442 (0x20FA)
+    Service id: 1023 (0x03FF)
+    Linkage type: 0x09, system software update service
+    Private data:
+    0000:  04 00 01 5A 00                                   ...Z.
+  - Descriptor 4: Linkage, Tag 74 (0x4A), 12 bytes
+    Transport stream id: 4 (0x0004)
+    Original network Id: 8442 (0x20FA)
+    Service id: 1279 (0x04FF)
+    Linkage type: 0x09, system software update service
+    Private data:
+    0000:  04 00 01 5A 00                                   ...Z.
+  - Descriptor 5: Linkage, Tag 74 (0x4A), 12 bytes
+    Transport stream id: 5 (0x0005)
+    Original network Id: 8442 (0x20FA)
+    Service id: 1535 (0x05FF)
+    Linkage type: 0x09, system software update service
+    Private data:
+    0000:  04 00 01 5A 00                                   ...Z.
+  - Descriptor 6: Linkage, Tag 74 (0x4A), 12 bytes
+    Transport stream id: 6 (0x0006)
+    Original network Id: 8442 (0x20FA)
+    Service id: 1791 (0x06FF)
+    Linkage type: 0x09, system software update service
+    Private data:
+    0000:  04 00 01 5A 00                                   ...Z.
+  - Descriptor 7: Linkage, Tag 74 (0x4A), 12 bytes
+    Transport stream id: 8 (0x0008)
+    Original network Id: 8442 (0x20FA)
+    Service id: 2303 (0x08FF)
+    Linkage type: 0x09, system software update service
+    Private data:
+    0000:  04 00 01 5A 00                                   ...Z.
+  Transport Stream Id: 1 (0x0001), Original Network Id: 8442 (0x20FA)
+  - Descriptor 0: Private Data Specifier, Tag 95 (0x5F), 4 bytes
+    Specifier: 0x00000028 (EACEM)
+  - Descriptor 1: Logical Channel Number, Tag 131 (0x83), 224 bytes
+    Service Id:   257 (0x0101), Visible: 1, Channel number:   2
+    Service Id:   260 (0x0104), Visible: 1, Channel number:   5
+    Service Id:   261 (0x0105), Visible: 1, Channel number:   7
+    Service Id:   262 (0x0106), Visible: 1, Channel number:  13
+    Service Id:   273 (0x0111), Visible: 1, Channel number:   3
+    Service Id:   274 (0x0112), Visible: 1, Channel number:   3
+    Service Id:   275 (0x0113), Visible: 1, Channel number:   3
+    Service Id:   276 (0x0114), Visible: 1, Channel number:   3
+    Service Id:   277 (0x0115), Visible: 1, Channel number:   3
+    Service Id:   278 (0x0116), Visible: 1, Channel number:   3
+    Service Id:   279 (0x0117), Visible: 1, Channel number:   3
+    Service Id:   280 (0x0118), Visible: 1, Channel number:   3
+    Service Id:   281 (0x0119), Visible: 1, Channel number:   3
+    Service Id:   282 (0x011A), Visible: 1, Channel number:   3
+    Service Id:   283 (0x011B), Visible: 1, Channel number:   3
+    Service Id:   284 (0x011C), Visible: 1, Channel number:   3
+    Service Id:   285 (0x011D), Visible: 1, Channel number:   3
+    Service Id:   286 (0x011E), Visible: 1, Channel number:   3
+    Service Id:   287 (0x011F), Visible: 1, Channel number:   3
+    Service Id:   288 (0x0120), Visible: 1, Channel number:   3
+    Service Id:   289 (0x0121), Visible: 1, Channel number:   3
+    Service Id:   290 (0x0122), Visible: 1, Channel number:   3
+    Service Id:   291 (0x0123), Visible: 1, Channel number:   3
+    Service Id:   292 (0x0124), Visible: 1, Channel number:   3
+    Service Id:   293 (0x0125), Visible: 1, Channel number:   3
+    Service Id:   294 (0x0126), Visible: 1, Channel number:   3
+    Service Id:   295 (0x0127), Visible: 1, Channel number:   3
+    Service Id:   296 (0x0128), Visible: 1, Channel number:   3
+    Service Id:   297 (0x0129), Visible: 1, Channel number:   3
+    Service Id:   298 (0x012A), Visible: 1, Channel number:   3
+    Service Id:   299 (0x012B), Visible: 1, Channel number:   3
+    Service Id:   300 (0x012C), Visible: 1, Channel number:   3
+    Service Id:   301 (0x012D), Visible: 1, Channel number:   3
+    Service Id:   302 (0x012E), Visible: 1, Channel number:   3
+    Service Id:   303 (0x012F), Visible: 1, Channel number:   3
+    Service Id:   304 (0x0130), Visible: 1, Channel number:   3
+    Service Id:   305 (0x0131), Visible: 1, Channel number:   3
+    Service Id:   306 (0x0132), Visible: 1, Channel number:   3
+    Service Id:   307 (0x0133), Visible: 1, Channel number:   3
+    Service Id:   308 (0x0134), Visible: 1, Channel number:   3
+    Service Id:   309 (0x0135), Visible: 1, Channel number:   3
+    Service Id:   310 (0x0136), Visible: 1, Channel number:   3
+    Service Id:   311 (0x0137), Visible: 1, Channel number:   3
+    Service Id:   312 (0x0138), Visible: 1, Channel number:   3
+    Service Id:   313 (0x0139), Visible: 1, Channel number:   3
+    Service Id:   314 (0x013A), Visible: 1, Channel number:   3
+    Service Id:   315 (0x013B), Visible: 1, Channel number:   3
+    Service Id:   323 (0x0143), Visible: 1, Channel number:  22
+    Service Id:   324 (0x0144), Visible: 1, Channel number:  22
+    Service Id:   368 (0x0170), Visible: 1, Channel number:  20
+    Service Id:   369 (0x0171), Visible: 1, Channel number:  21
+    Service Id:   370 (0x0172), Visible: 1, Channel number:  22
+    Service Id:   371 (0x0173), Visible: 1, Channel number:  23
+    Service Id:   372 (0x0174), Visible: 1, Channel number:  24
+    Service Id:   373 (0x0175), Visible: 1, Channel number:  25
+    Service Id:   374 (0x0176), Visible: 1, Channel number:  20
+  - Descriptor 2: Service List, Tag 65 (0x41), 168 bytes
+    Service id: 257 (0x0101), Type: 1, Digital television service
+    Service id: 260 (0x0104), Type: 1, Digital television service
+    Service id: 261 (0x0105), Type: 1, Digital television service
+    Service id: 262 (0x0106), Type: 1, Digital television service
+    Service id: 273 (0x0111), Type: 1, Digital television service
+    Service id: 274 (0x0112), Type: 1, Digital television service
+    Service id: 275 (0x0113), Type: 1, Digital television service
+    Service id: 276 (0x0114), Type: 1, Digital television service
+    Service id: 277 (0x0115), Type: 1, Digital television service
+    Service id: 278 (0x0116), Type: 1, Digital television service
+    Service id: 279 (0x0117), Type: 1, Digital television service
+    Service id: 280 (0x0118), Type: 1, Digital television service
+    Service id: 281 (0x0119), Type: 1, Digital television service
+    Service id: 282 (0x011A), Type: 1, Digital television service
+    Service id: 283 (0x011B), Type: 1, Digital television service
+    Service id: 284 (0x011C), Type: 1, Digital television service
+    Service id: 285 (0x011D), Type: 1, Digital television service
+    Service id: 286 (0x011E), Type: 1, Digital television service
+    Service id: 287 (0x011F), Type: 1, Digital television service
+    Service id: 288 (0x0120), Type: 1, Digital television service
+    Service id: 289 (0x0121), Type: 1, Digital television service
+    Service id: 290 (0x0122), Type: 1, Digital television service
+    Service id: 291 (0x0123), Type: 1, Digital television service
+    Service id: 292 (0x0124), Type: 1, Digital television service
+    Service id: 293 (0x0125), Type: 1, Digital television service
+    Service id: 294 (0x0126), Type: 1, Digital television service
+    Service id: 295 (0x0127), Type: 1, Digital television service
+    Service id: 296 (0x0128), Type: 1, Digital television service
+    Service id: 297 (0x0129), Type: 1, Digital television service
+    Service id: 298 (0x012A), Type: 1, Digital television service
+    Service id: 299 (0x012B), Type: 1, Digital television service
+    Service id: 300 (0x012C), Type: 1, Digital television service
+    Service id: 301 (0x012D), Type: 1, Digital television service
+    Service id: 302 (0x012E), Type: 1, Digital television service
+    Service id: 303 (0x012F), Type: 1, Digital television service
+    Service id: 304 (0x0130), Type: 1, Digital television service
+    Service id: 305 (0x0131), Type: 1, Digital television service
+    Service id: 306 (0x0132), Type: 1, Digital television service
+    Service id: 307 (0x0133), Type: 1, Digital television service
+    Service id: 308 (0x0134), Type: 1, Digital television service
+    Service id: 309 (0x0135), Type: 1, Digital television service
+    Service id: 310 (0x0136), Type: 1, Digital television service
+    Service id: 311 (0x0137), Type: 1, Digital television service
+    Service id: 312 (0x0138), Type: 1, Digital television service
+    Service id: 313 (0x0139), Type: 1, Digital television service
+    Service id: 314 (0x013A), Type: 1, Digital television service
+    Service id: 315 (0x013B), Type: 1, Digital television service
+    Service id: 323 (0x0143), Type: 1, Digital television service
+    Service id: 324 (0x0144), Type: 1, Digital television service
+    Service id: 368 (0x0170), Type: 1, Digital television service
+    Service id: 369 (0x0171), Type: 1, Digital television service
+    Service id: 370 (0x0172), Type: 1, Digital television service
+    Service id: 371 (0x0173), Type: 1, Digital television service
+    Service id: 372 (0x0174), Type: 1, Digital television service
+    Service id: 373 (0x0175), Type: 1, Digital television service
+    Service id: 374 (0x0176), Type: 1, Digital television service
+  - Descriptor 3: Terrestrial Delivery System, Tag 90 (0x5A), 11 bytes
+    Centre frequency: 42,949,672,950 Hz, Bandwidth: 8 MHz
+    Priority: high, Time slicing: unused, MPE-FEC: unused
+    Constellation pattern: 64-QAM
+    Hierarchy: non-hierarchical, native interleaver
+    Code rate: high prio: code 7 (reserved), low prio: 1/2
+    Guard interval: 1/32
+    OFDM transmission mode: 8k, other frequencies: no
+  Transport Stream Id: 2 (0x0002), Original Network Id: 8442 (0x20FA)
+  - Descriptor 0: Private Data Specifier, Tag 95 (0x5F), 4 bytes
+    Specifier: 0x00000028 (EACEM)
+  - Descriptor 1: Logical Channel Number, Tag 131 (0x83), 24 bytes
+    Service Id:   513 (0x0201), Visible: 1, Channel number:   8
+    Service Id:   515 (0x0203), Visible: 1, Channel number:  15
+    Service Id:   516 (0x0204), Visible: 1, Channel number:  16
+    Service Id:   517 (0x0205), Visible: 1, Channel number:  17
+    Service Id:   518 (0x0206), Visible: 1, Channel number:  18
+    Service Id:   519 (0x0207), Visible: 1, Channel number:  14
+  - Descriptor 2: Service List, Tag 65 (0x41), 18 bytes
+    Service id: 513 (0x0201), Type: 1, Digital television service
+    Service id: 515 (0x0203), Type: 1, Digital television service
+    Service id: 516 (0x0204), Type: 1, Digital television service
+    Service id: 517 (0x0205), Type: 1, Digital television service
+    Service id: 518 (0x0206), Type: 1, Digital television service
+    Service id: 519 (0x0207), Type: 1, Digital television service
+  - Descriptor 3: Terrestrial Delivery System, Tag 90 (0x5A), 11 bytes
+    Centre frequency: 42,949,672,950 Hz, Bandwidth: 8 MHz
+    Priority: high, Time slicing: unused, MPE-FEC: unused
+    Constellation pattern: 64-QAM
+    Hierarchy: non-hierarchical, native interleaver
+    Code rate: high prio: code 7 (reserved), low prio: 1/2
+    Guard interval: 1/32
+    OFDM transmission mode: 8k, other frequencies: no
+  Transport Stream Id: 3 (0x0003), Original Network Id: 8442 (0x20FA)
+  - Descriptor 0: Private Data Specifier, Tag 95 (0x5F), 4 bytes
+    Specifier: 0x00000028 (EACEM)
+  - Descriptor 1: Logical Channel Number, Tag 131 (0x83), 24 bytes
+    Service Id:   769 (0x0301), Visible: 1, Channel number:   4
+    Service Id:   770 (0x0302), Visible: 1, Channel number:  33
+    Service Id:   771 (0x0303), Visible: 1, Channel number:  32
+    Service Id:   772 (0x0304), Visible: 1, Channel number:  35
+    Service Id:   773 (0x0305), Visible: 1, Channel number:  37
+    Service Id:   774 (0x0306), Visible: 1, Channel number:  30
+  - Descriptor 2: Service List, Tag 65 (0x41), 18 bytes
+    Service id: 769 (0x0301), Type: 1, Digital television service
+    Service id: 770 (0x0302), Type: 1, Digital television service
+    Service id: 771 (0x0303), Type: 1, Digital television service
+    Service id: 772 (0x0304), Type: 1, Digital television service
+    Service id: 773 (0x0305), Type: 1, Digital television service
+    Service id: 774 (0x0306), Type: 1, Digital television service
+  - Descriptor 3: Terrestrial Delivery System, Tag 90 (0x5A), 11 bytes
+    Centre frequency: 42,949,672,950 Hz, Bandwidth: 8 MHz
+    Priority: high, Time slicing: unused, MPE-FEC: unused
+    Constellation pattern: 64-QAM
+    Hierarchy: non-hierarchical, native interleaver
+    Code rate: high prio: code 7 (reserved), low prio: 1/2
+    Guard interval: 1/32
+    OFDM transmission mode: 8k, other frequencies: no
+  Transport Stream Id: 4 (0x0004), Original Network Id: 8442 (0x20FA)
+  - Descriptor 0: Private Data Specifier, Tag 95 (0x5F), 4 bytes
+    Specifier: 0x00000028 (EACEM)
+  - Descriptor 1: Logical Channel Number, Tag 131 (0x83), 24 bytes
+    Service Id:  1025 (0x0401), Visible: 1, Channel number:   6
+    Service Id:  1026 (0x0402), Visible: 1, Channel number:   9
+    Service Id:  1027 (0x0403), Visible: 1, Channel number:  11
+    Service Id:  1028 (0x0404), Visible: 1, Channel number:  31
+    Service Id:  1029 (0x0405), Visible: 1, Channel number:  36
+    Service Id:  1030 (0x0406), Visible: 1, Channel number:  34
+  - Descriptor 2: Service List, Tag 65 (0x41), 18 bytes
+    Service id: 1025 (0x0401), Type: 1, Digital television service
+    Service id: 1026 (0x0402), Type: 1, Digital television service
+    Service id: 1027 (0x0403), Type: 1, Digital television service
+    Service id: 1028 (0x0404), Type: 1, Digital television service
+    Service id: 1029 (0x0405), Type: 1, Digital television service
+    Service id: 1030 (0x0406), Type: 1, Digital television service
+  - Descriptor 3: Terrestrial Delivery System, Tag 90 (0x5A), 11 bytes
+    Centre frequency: 42,949,672,950 Hz, Bandwidth: 8 MHz
+    Priority: high, Time slicing: unused, MPE-FEC: unused
+    Constellation pattern: 64-QAM
+    Hierarchy: non-hierarchical, native interleaver
+    Code rate: high prio: code 7 (reserved), low prio: 1/2
+    Guard interval: 1/32
+    OFDM transmission mode: 8k, other frequencies: no
+  Transport Stream Id: 5 (0x0005), Original Network Id: 8442 (0x20FA)
+  - Descriptor 0: Private Data Specifier, Tag 95 (0x5F), 4 bytes
+    Specifier: 0x00000028 (EACEM)
+  - Descriptor 1: Logical Channel Number, Tag 131 (0x83), 12 bytes
+    Service Id:  1281 (0x0501), Visible: 1, Channel number:  50
+    Service Id:  1282 (0x0502), Visible: 1, Channel number:  51
+    Service Id:  1283 (0x0503), Visible: 1, Channel number:  52
+  - Descriptor 2: Service List, Tag 65 (0x41), 9 bytes
+    Service id: 1281 (0x0501), Type: 25, Reserved service type
+    Service id: 1282 (0x0502), Type: 25, Reserved service type
+    Service id: 1283 (0x0503), Type: 25, Reserved service type
+  - Descriptor 3: Terrestrial Delivery System, Tag 90 (0x5A), 11 bytes
+    Centre frequency: 42,949,672,950 Hz, Bandwidth: 8 MHz
+    Priority: high, Time slicing: unused, MPE-FEC: unused
+    Constellation pattern: 64-QAM
+    Hierarchy: non-hierarchical, native interleaver
+    Code rate: high prio: code 7 (reserved), low prio: 1/2
+    Guard interval: 1/32
+    OFDM transmission mode: 8k, other frequencies: no
+  Transport Stream Id: 6 (0x0006), Original Network Id: 8442 (0x20FA)
+  - Descriptor 0: Private Data Specifier, Tag 95 (0x5F), 4 bytes
+    Specifier: 0x00000028 (EACEM)
+  - Descriptor 1: Logical Channel Number, Tag 131 (0x83), 20 bytes
+    Service Id:  1537 (0x0601), Visible: 1, Channel number:   1
+    Service Id:  1538 (0x0602), Visible: 1, Channel number:  12
+    Service Id:  1539 (0x0603), Visible: 1, Channel number:  38
+    Service Id:  1540 (0x0604), Visible: 1, Channel number:  39
+    Service Id:  1542 (0x0606), Visible: 1, Channel number:  10
+  - Descriptor 2: Service List, Tag 65 (0x41), 15 bytes
+    Service id: 1537 (0x0601), Type: 1, Digital television service
+    Service id: 1538 (0x0602), Type: 1, Digital television service
+    Service id: 1539 (0x0603), Type: 1, Digital television service
+    Service id: 1540 (0x0604), Type: 1, Digital television service
+    Service id: 1542 (0x0606), Type: 1, Digital television service
+  - Descriptor 3: Terrestrial Delivery System, Tag 90 (0x5A), 11 bytes
+    Centre frequency: 42,949,672,950 Hz, Bandwidth: 8 MHz
+    Priority: high, Time slicing: unused, MPE-FEC: unused
+    Constellation pattern: 64-QAM
+    Hierarchy: non-hierarchical, native interleaver
+    Code rate: high prio: code 7 (reserved), low prio: 1/2
+    Guard interval: 1/32
+    OFDM transmission mode: 8k, other frequencies: no
+  Transport Stream Id: 8 (0x0008), Original Network Id: 8442 (0x20FA)
+  - Descriptor 0: Private Data Specifier, Tag 95 (0x5F), 4 bytes
+    Specifier: 0x00000028 (EACEM)
+  - Descriptor 1: Logical Channel Number, Tag 131 (0x83), 28 bytes
+    Service Id:  2049 (0x0801), Visible: 1, Channel number:  20
+    Service Id:  2050 (0x0802), Visible: 1, Channel number:  21
+    Service Id:  2051 (0x0803), Visible: 1, Channel number:  22
+    Service Id:  2052 (0x0804), Visible: 1, Channel number:  23
+    Service Id:  2053 (0x0805), Visible: 1, Channel number:  24
+    Service Id:  2054 (0x0806), Visible: 1, Channel number:  25
+    Service Id:  2179 (0x0883), Visible: 1, Channel number:  23
+  - Descriptor 2: Service List, Tag 65 (0x41), 21 bytes
+    Service id: 2049 (0x0801), Type: 1, Digital television service
+    Service id: 2050 (0x0802), Type: 1, Digital television service
+    Service id: 2051 (0x0803), Type: 1, Digital television service
+    Service id: 2052 (0x0804), Type: 1, Digital television service
+    Service id: 2053 (0x0805), Type: 1, Digital television service
+    Service id: 2054 (0x0806), Type: 1, Digital television service
+    Service id: 2179 (0x0883), Type: 1, Digital television service
+  - Descriptor 3: Terrestrial Delivery System, Tag 90 (0x5A), 11 bytes
+    Centre frequency: 42,949,672,950 Hz, Bandwidth: 8 MHz
+    Priority: high, Time slicing: unused, MPE-FEC: unused
+    Constellation pattern: 64-QAM
+    Hierarchy: non-hierarchical, native interleaver
+    Code rate: high prio: code 7 (reserved), low prio: 1/2
+    Guard interval: 1/32
+    OFDM transmission mode: 8k, other frequencies: no
+

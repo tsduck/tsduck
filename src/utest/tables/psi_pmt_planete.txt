@@ -1,0 +1,30 @@
+
+* PMT, TID 2 (0x02)
+  Section: 0 (last: 0), version: 21, size: 119 bytes
+  Program: 772 (0x0304), PCR PID: 163 (0x00A3)
+  Program information:
+  - Descriptor 0: CA, Tag 9 (0x09), 5 bytes
+    CA System Id: 0x4ADC (SafeAccess), ECM PID: 1642 (0x066A), no CECM
+  Elementary stream: type 0x1B (AVC video), PID: 163 (0x00A3)
+  - Descriptor 0: Stream Identifier, Tag 82 (0x52), 1 bytes
+    Stream Id: 41 (0x29)
+  - Descriptor 1: AVC Video, Tag 40 (0x28), 4 bytes
+    0000:  03 00 03 00                                      ....
+  - Descriptor 2: CA, Tag 9 (0x09), 32 bytes
+    CA System Id: 0x0100 (MediaGuard)
+    ECM PID: 1641 (0x0669), OPI: 367 (0x016F)
+    Subscription, offer: 0x0000000000000010, expiration: 23/11/2007
+    ECM PID: 1640 (0x0668), OPI: 343 (0x0157)
+    Subscription, offer: 0x0000040000000004, expiration: 23/11/2007
+  Elementary stream: type 0x04 (MPEG-2 Audio), PID: 92 (0x005C)
+  - Descriptor 0: Stream Identifier, Tag 82 (0x52), 1 bytes
+    Stream Id: 42 (0x2A)
+  - Descriptor 1: ISO-639 Language, Tag 10 (0x0A), 4 bytes
+    Language: fra, Type: 0 (undefined)
+  - Descriptor 2: CA, Tag 9 (0x09), 32 bytes
+    CA System Id: 0x0100 (MediaGuard)
+    ECM PID: 1641 (0x0669), OPI: 367 (0x016F)
+    Subscription, offer: 0x0000000000000010, expiration: 23/11/2007
+    ECM PID: 1640 (0x0668), OPI: 343 (0x0157)
+    Subscription, offer: 0x0000040000000004, expiration: 23/11/2007
+

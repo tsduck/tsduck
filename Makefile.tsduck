@@ -1,0 +1,111 @@
+#-----------------------------------------------------------------------------
+#
+#  TSDuck - The MPEG Transport Stream Toolkit
+#  Copyright (c) 2005-2017, Thierry Lelegard
+#  All rights reserved.
+#
+#  Redistribution and use in source and binary forms, with or without
+#  modification, are permitted provided that the following conditions are met:
+#
+#  1. Redistributions of source code must retain the above copyright notice,
+#     this list of conditions and the following disclaimer.
+#  2. Redistributions in binary form must reproduce the above copyright
+#     notice, this list of conditions and the following disclaimer in the
+#     documentation and/or other materials provided with the distribution.
+#
+#  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+#  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+#  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+#  ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+#  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+#  CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+#  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+#  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+#  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+#  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+#  THE POSSIBILITY OF SUCH DAMAGE.
+#
+#-----------------------------------------------------------------------------
+#
+#  Common makefile definitions for the TSDuck project.
+#
+#-----------------------------------------------------------------------------
+
+
+# Standard common makefile is in same directory.
+
+include $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST))))/Makefile.common
+
+# Project specific directories and files.
+
+SRCROOT      := $(ROOTDIR)/src
+LIBTSDUCKDIR := $(SRCROOT)/libtsduck
+TSTOOLSDIR   := $(SRCROOT)/tstools
+TSPLUGINSDIR := $(SRCROOT)/tsplugins
+TSGENTABSDIR := $(SRCROOT)/tsgentables
+LIBTSDUCK    := $(LIBTSDUCKDIR)/$(OBJDIR)/libtsduck.a
+SHLIBTSDUCK  := $(LIBTSDUCKDIR)/$(OBJDIR)/tsduck.so
+TSPLUGINS    := $(sort $(filter-out tsplugin_generic,$(notdir $(basename $(wildcard $(TSPLUGINSDIR)/tsplugin_*.cpp)))))
+TSGENTABS    := $(sort $(notdir $(basename $(wildcard $(TSGENTABSDIR)/tsgentab_*.cpp))))
+
+# Product version
+
+TS_MAJOR := $(shell grep '\#define *TS_VERSION_MAJOR ' $(LIBTSDUCKDIR)/tsVersion.h | sed -e 's/.* //')
+TS_MINOR := $(shell grep '\#define *TS_VERSION_MINOR ' $(LIBTSDUCKDIR)/tsVersion.h | sed -e 's/.* //')
+TS_VERSION := $(TS_MAJOR).$(TS_MINOR)
+
+# Default installation directory prefix.
+# RPM packagers should override this in the "make install" command line.
+
+DESTDIR := 
+
+# External include directories and libraries.
+
+CFLAGS_INCLUDES += -I/usr/include/PCSC -I$(LIBTSDUCKDIR) -I$(LIBTSDUCKDIR)/linux --std=c++11
+LDLIBS := -lpcsclite -ldl $(LDLIBS)
+LDFLAGS += -Wl,-E,-rpath,'$$ORIGIN'
+
+# Get the file-system type of current directory.
+
+OBJFS := $(shell df --output=target $(CURDIR) 2>/dev/null | tail -1)
+OBJFS := $(if $(OBJFS),$(shell findmnt -n -f -o FSTYPE --target $(OBJFS) 2>/dev/null),)
+
+# Targets to create symbolic links in the object directory.
+# If the current file system is vboxfs, we are running in a VirtualBox VM
+# and the current directory is mounted from the host system. If the host
+# is Windows (which we do not know...), we cannot create symbolic links
+# here and we copy the files.
+
+.PHONY: link_tsduck link_plugins
+link_tsduck: $(OBJDIR)/tsduck.so
+link_plugins: $(addprefix $(OBJDIR)/,$(addsuffix .so,$(TSPLUGINS) $(TSGENTABS)))
+
+ifneq ($(realpath $(CURDIR)),$(realpath $(LIBTSDUCKDIR)))
+ifeq ($(OBJFS),vboxsf)
+$(OBJDIR)/%: $(LIBTSDUCKDIR)/$(OBJDIR)/%
+	@echo '  [CP] $@'; cp $^ $@
+else
+$(OBJDIR)/tsduck.so:
+	@echo '  [LN] $@'; ln -sf $(SHLIBTSDUCK) $@
+endif
+endif
+
+ifneq ($(realpath $(CURDIR)),$(realpath $(TSPLUGINSDIR)))
+ifeq ($(OBJFS),vboxsf)
+$(OBJDIR)/%: $(TSPLUGINSDIR)/$(OBJDIR)/%
+	@echo '  [CP] $@'; cp $^ $@
+else
+$(addprefix $(OBJDIR)/,$(addsuffix .so,$(TSPLUGINS))):
+	@echo '  [LN] $@'; ln -sf $(TSPLUGINSDIR)/$(OBJDIR)/$(@F) $@
+endif
+endif
+
+ifneq ($(realpath $(CURDIR)),$(realpath $(TSGENTABSDIR)))
+ifeq ($(OBJFS),vboxsf)
+$(OBJDIR)/%: $(TSGENTABSDIR)/$(OBJDIR)/%
+	@echo '  [CP] $@'; cp $^ $@
+else
+$(addprefix $(OBJDIR)/,$(addsuffix .so,$(TSGENTABS))):
+	@echo '  [LN] $@'; ln -sf $(TSGENTABSDIR)/$(OBJDIR)/$(@F) $@
+endif
+endif

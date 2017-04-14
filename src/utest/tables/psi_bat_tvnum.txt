@@ -1,0 +1,33 @@
+
+* BAT, TID 74 (0x4A)
+  Section: 0 (last: 0), version: 3, size: 137 bytes
+  Bouquet Id: 134 (0x0086)
+  Bouquet information:
+  - Descriptor 0: Bouquet Name, Tag 71 (0x47), 10 bytes
+    Name: "Tv Numéric"
+  - Descriptor 1: CA Identifier, Tag 83 (0x53), 2 bytes
+    CA System Id: 0x4ADC (SafeAccess)
+  - Descriptor 2: Country Availability, Tag 73 (0x49), 4 bytes
+    Available: yes
+    Country code: "905"
+  - Descriptor 3: Private Data Specifier, Tag 95 (0x5F), 4 bytes
+    Specifier: 0x000000A2 (SafeAccess)
+  - Descriptor 4: Subscription (SafeAccess), Tag 129 (0x81), 46 bytes
+    PPID: 1 (0x0001) "Tv Numéric"
+    Subscription ids count: 2
+    Id: 1 (0x00000001), visible: no, "Pack FTA"
+    Id: 2 (0x00000002), visible: yes, "Pack Famille"
+  Transport Stream Id: 3 (0x0003), Original Network Id: 8442 (0x20FA)
+  - Descriptor 0: Service List, Tag 65 (0x41), 6 bytes
+    Service id: 772 (0x0304), Type: 1, Digital television service
+    Service id: 773 (0x0305), Type: 1, Digital television service
+  Transport Stream Id: 4 (0x0004), Original Network Id: 8442 (0x20FA)
+  - Descriptor 0: Service List, Tag 65 (0x41), 9 bytes
+    Service id: 1028 (0x0404), Type: 1, Digital television service
+    Service id: 1029 (0x0405), Type: 1, Digital television service
+    Service id: 1030 (0x0406), Type: 1, Digital television service
+  Transport Stream Id: 6 (0x0006), Original Network Id: 8442 (0x20FA)
+  - Descriptor 0: Service List, Tag 65 (0x41), 6 bytes
+    Service id: 1539 (0x0603), Type: 1, Digital television service
+    Service id: 1540 (0x0604), Type: 1, Digital television service
+

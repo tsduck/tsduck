@@ -1,0 +1,46 @@
+
+* SDT Actual, TID 66 (0x42)
+  Section: 0 (last: 0), version: 2, size: 172 bytes
+  Transport Stream Id: 3 (0x0003)
+  Original Network Id: 8442 (0x20FA)
+  Service Id: 769 (0x0301), EITs: no, EITp/f: yes, CA mode: free
+  Running status: running
+  - Descriptor 0: Service, Tag 72 (0x48), 12 bytes
+    Service type: 0x01, Digital television service
+    Service: "CANAL+", Provider: "CNH"
+  Service Id: 770 (0x0302), EITs: no, EITp/f: yes, CA mode: controlled
+  Running status: running
+  - Descriptor 0: Service, Tag 72 (0x48), 19 bytes
+    Service type: 0x01, Digital television service
+    Service: "CANAL+ CINEMA", Provider: "CNH"
+  Service Id: 771 (0x0303), EITs: no, EITp/f: yes, CA mode: controlled
+  Running status: running
+  - Descriptor 0: Service, Tag 72 (0x48), 18 bytes
+    Service type: 0x01, Digital television service
+    Service: "CANAL+ SPORT", Provider: "CNH"
+  Service Id: 772 (0x0304), EITs: no, EITp/f: yes, CA mode: controlled
+  Running status: running
+  - Descriptor 0: Service, Tag 72 (0x48), 13 bytes
+    Service type: 0x01, Digital television service
+    Service: "PLANETE", Provider: "CNH"
+  Service Id: 773 (0x0305), EITs: no, EITp/f: yes, CA mode: controlled
+  Running status: running
+  - Descriptor 0: Service, Tag 72 (0x48), 13 bytes
+    Service type: 0x01, Digital television service
+    Service: "CANAL J", Provider: "CNH"
+  Service Id: 774 (0x0306), EITs: no, EITp/f: yes, CA mode: free
+  Running status: running
+  - Descriptor 0: Service, Tag 72 (0x48), 14 bytes
+    Service type: 0x01, Digital television service
+    Service: "TPS STAR", Provider: "CNH"
+  Service Id: 1008 (0x03F0), EITs: no, EITp/f: yes, CA mode: free
+  Running status: running
+  - Descriptor 0: Service, Tag 72 (0x48), 6 bytes
+    Service type: 0x0C, Data broadcast service
+    Service: "", Provider: "CNH"
+  Service Id: 1009 (0x03F1), EITs: no, EITp/f: yes, CA mode: free
+  Running status: running
+  - Descriptor 0: Service, Tag 72 (0x48), 6 bytes
+    Service type: 0x0C, Data broadcast service
+    Service: "", Provider: "CNH"
+

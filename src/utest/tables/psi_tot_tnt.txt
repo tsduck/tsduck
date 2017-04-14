@@ -1,0 +1,12 @@
+
+* TOT, TID 115 (0x73)
+  Section: 0 (last: 0), version: 0, size: 29 bytes
+  UTC time: 23/11/2007 13:25:14
+  - Descriptor 0: Local Time Offset, Tag 88 (0x58), 13 bytes
+    Country code: FRA
+    Region id: 0 (0x00), polarity: east of Greenwich
+    Local time offset: 01:00
+    Next change: 30/03/2008 01:00:00
+    Next time offset: 02:00
+  CRC32: 0xD8BD43A8 (OK)
+
