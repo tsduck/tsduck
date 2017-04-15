@@ -36,8 +36,16 @@
 #include "tsGuard.h"
 #include "tsArgs.h"
 
-#if defined (__windows)
+#if defined(__windows)
 #include "tsComUtils.h"
+#endif
+
+#if defined(__mac)
+#include <sys/resource.h>
+#include <mach/mach.h>
+#include <mach/message.h>
+#include <mach/kern_return.h>
+#include <mach/task_info.h>
 #endif
 
 //
@@ -212,10 +220,10 @@ std::string ts::ExecutableFile() throw(ts::Exception)
 #if defined(__windows)
 
     // Window implementation.
-    char name [1024];
-    ::DWORD length (::GetModuleFileName (NULL, name, sizeof(name)));
-    assert (length >= 0 && length <= sizeof(name));
-    return std::string (name, length);
+    char name[1024];
+    ::DWORD length = ::GetModuleFileName(NULL, name, sizeof(name));
+    assert(length >= 0 && length <= sizeof(name));
+    return std::string(name, length);
 
 #elif defined(__linux)
 
@@ -223,16 +231,33 @@ std::string ts::ExecutableFile() throw(ts::Exception)
     // /proc/self/exe is a symbolic link to the executable.
     // Read the value of the symbolic link.
     int length;
-    char name [1024];
-    if ((length = ::readlink ("/proc/self/exe", name, sizeof(name))) < 0) {
-        throw ts::Exception ("Symbolic link /proc/self/exe error", errno);
+    char name[1024];
+    if ((length = ::readlink("/proc/self/exe", name, sizeof(name))) < 0) {
+        throw ts::Exception("Symbolic link /proc/self/exe error", errno);
         return "";
     }
     else {
-        assert (length <= int (sizeof(name)));
-        return std::string (name, length);
+        assert(length <= int(sizeof(name)));
+        return std::string(name, length);
     }
 
+#elif defined(__mac)
+
+    // MacOS implementation.
+    // The function proc_pidpath is documented as "private" and "subject to change".
+    // Another option is _NSGetExecutablePath (not tested here yet).
+    int length;
+    char name[PROC_PIDPATHINFO_MAXSIZE];
+    if ((length = ::proc_pidpath(getpid(), name, sizeof(name))) < 0) {
+        throw ts::Exception("proc_pidpath error", errno);
+        return "";
+    }
+    else {
+        assert(length <= int(sizeof(name)));
+        return std::string(name, length);
+    }
+    
+    
 #else
 #error "ts::ExecutableFile not implemented on this system"
 #endif
@@ -572,12 +597,12 @@ std::string ts::ErrorCodeMessage (ts::ErrorCode code)
 // Get metrics for the current process
 //----------------------------------------------------------------------------
 
-void ts::GetProcessMetrics (ProcessMetrics& metrics) throw (ts::Exception)
+void ts::GetProcessMetrics(ProcessMetrics& metrics) throw(ts::Exception)
 {
     metrics.cpu_time = 0;
     metrics.vmem_size = 0;
 
-#if defined (__windows)
+#if defined(__windows)
 
     // Windows implementation
 
@@ -586,15 +611,16 @@ void ts::GetProcessMetrics (ProcessMetrics& metrics) throw (ts::Exception)
 
     // Get process CPU time
     ::FILETIME creation_time, exit_time, kernel_time, user_time;
-    if (::GetProcessTimes(proc, &creation_time, &exit_time, &kernel_time, &user_time) == 0)
-        throw ts::Exception("GetProcessTimes error", ::GetLastError ());
-    metrics.cpu_time = ts::Time::Win32FileTimeToMilliSecond (kernel_time) +
-        ts::Time::Win32FileTimeToMilliSecond (user_time);
+    if (::GetProcessTimes(proc, &creation_time, &exit_time, &kernel_time, &user_time) == 0) {
+        throw ts::Exception("GetProcessTimes error", ::GetLastError());
+    }
+    metrics.cpu_time = ts::Time::Win32FileTimeToMilliSecond(kernel_time) + ts::Time::Win32FileTimeToMilliSecond(user_time);
 
     // Get virtual memory size
     ::PROCESS_MEMORY_COUNTERS_EX mem_counters;
-    if (::GetProcessMemoryInfo (proc, (::PROCESS_MEMORY_COUNTERS*)&mem_counters, sizeof(mem_counters)) == 0)
-        throw ts::Exception ("GetProcessMemoryInfo error", ::GetLastError ());
+    if (::GetProcessMemoryInfo(proc, (::PROCESS_MEMORY_COUNTERS*)&mem_counters, sizeof(mem_counters)) == 0) {
+        throw ts::Exception("GetProcessMemoryInfo error", ::GetLastError());
+    }
     metrics.vmem_size = mem_counters.PrivateUsage;
 
 #elif defined (__linux)
@@ -644,15 +670,15 @@ void ts::GetProcessMetrics (ProcessMetrics& metrics) throw (ts::Exception)
     };
 
     static const char filename[] = "/proc/self/stat";
-    FILE* fp = fopen (filename, "r");
+    FILE* fp = fopen(filename, "r");
     if (fp == 0) {
-        throw ts::Exception (Format ("error opening %s", filename), errno);
+        throw ts::Exception(Format("error opening %s", filename), errno);
         return;
     }
 
     ProcessStatus ps;
     int expected = 37;
-    int count = fscanf (fp,
+    int count = fscanf(fp,
         "%d %*s %c %d %d %d %d %d %lu %lu %lu %lu %lu %lu %lu "
         "%ld %ld %ld %ld %*d %ld %lu %lu %ld %lu %lu %lu %lu "
         "%lu %lu %lu %lu %lu %lu %lu %lu %lu %d %d", 
@@ -665,10 +691,10 @@ void ts::GetProcessMetrics (ProcessMetrics& metrics) throw (ts::Exception)
         &ps.startstack, &ps.kstkesp, &ps.kstkeip, &ps.signal,
         &ps.blocked, &ps.sigignore, &ps.sigcatch, &ps.wchan,
         &ps.nswap, &ps.cnswap, &ps.exit_signal, &ps.processor);
-    fclose (fp);
+    fclose(fp);
 
     if (count != expected) {
-        throw ts::Exception (Format ("error reading %s, got %d values, expected %d", filename, count, expected));
+        throw ts::Exception(Format("error reading %s, got %d values, expected %d", filename, count, expected));
         return;
     }
 
@@ -676,10 +702,39 @@ void ts::GetProcessMetrics (ProcessMetrics& metrics) throw (ts::Exception)
     metrics.vmem_size = ps.vsize;
 
     // Evaluate CPU time
-    unsigned long jps = sysconf (_SC_CLK_TCK);   // jiffies per second
+    unsigned long jps = sysconf(_SC_CLK_TCK);   // jiffies per second
     unsigned long jiffies = ps.utime + ps.stime; // CPU time in jiffies
-    metrics.cpu_time = (MilliSecond (jiffies) * 1000) / jps;
+    metrics.cpu_time = (MilliSecond(jiffies) * 1000) / jps;
 
+#elif defined(__mac)
+
+    // MacOS implementation.
+    // First, get the virtual memory size using task_info (mach kernel).
+    ::mach_task_basic_info_data_t taskinfo;
+    TS_ZERO(taskinfo);
+    ::mach_msg_type_number_t count = MACH_TASK_BASIC_INFO_COUNT;
+    const ::kern_return_t status1 = ::task_info(::mach_task_self(), MACH_TASK_BASIC_INFO, ::task_info_t(&taskinfo), &count);
+    if (status1 != KERN_SUCCESS) {
+        throw ts::Exception("task_info error");
+        return;
+    }
+    metrics.vmem_size = taskinfo.virtual_size;
+
+    // Then get CPU time using getrusage.
+    ::rusage usage;
+    const int status2 = ::getrusage(RUSAGE_SELF, &usage);
+    if (status2 < 0) {
+        throw ts::Exception("getrusage error");
+        return;
+    }
+
+    // Add system time and user time, in milliseconds.
+    metrics.cpu_time =
+        MilliSecond(usage.ru_stime.tv_sec) * MilliSecPerSec +
+        MilliSecond(usage.ru_stime.tv_usec) / MicroSecPerMilliSec +
+        MilliSecond(usage.ru_utime.tv_sec) * MilliSecPerSec +
+        MilliSecond(usage.ru_utime.tv_usec) / MicroSecPerMilliSec;
+    
 #else
 #error "ts::GetProcessMetrics not implemented on this system"
 #endif

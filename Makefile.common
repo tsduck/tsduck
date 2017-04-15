@@ -290,11 +290,25 @@
 #    All executable files to build, based on the list of main programs from
 #    $(MODULES_MAIN).
 #
+#  F_COMMAND (function)
+#    This function searches a command with F_SEARCH. If the command is not
+#    found, return the second parameter as default value. The following
+#    example searches for a command named "gsed" and, if not found, use
+#    command "sed" as fallback: $(call F_COMMAND,gsed,sed)
+#
+#  F_SEARCH (function)
+#    This function searches a command in $PATH and in a few other predefined
+#    directories. Return the full path of the first found, empty if not found.
+#    Example: $(call F_SEARCH,ls)
+#
 #  FLAWFINDER_FLAGS
 #    Same as input variables with additional usual options.
 #
 #  GCC_VERSION
 #    Contain the current GCC version, usually in form x.y.z
+#
+#  GREP
+#    Name of "grep" command. If some "ggrep" is found, use it instead.
 #
 #  HEADERS
 #    List of all header names, that is to say the list of all "f" for which
@@ -378,6 +392,9 @@
 #    Absolute path of the directory where this Makefile.common file is
 #    located. By convention, this is the root directory of the project.
 #
+#  SED
+#    Name of "sed" command. If some "gsed" is found, use it instead.
+#
 #  SOURCES
 #    All C and C++ source files in the current directory.
 #
@@ -410,6 +427,15 @@ SHELL := /bin/bash
 # Enforce English locale by default.
 export LANG=en_US
 
+# Define functions to search commands (see comments in header)
+F_SEARCH = $(firstword $(wildcard $(addsuffix /$(1),$(subst :, ,$(PATH)) /usr/bin /usr/sbin /usr/local/bin $(HOME)/bin)))
+F_COMMAND = $(if $(call F_SEARCH,$(1)),$(call F_SEARCH,$(1)),$(2))
+
+# Find faster alternatives to sed and grep.
+SED   ?= $(call F_COMMAND,gsed,sed)
+GREP  ?= $(call F_COMMAND,ggrep,grep)
+FGREP ?= $(call F_COMMAND,gfgrep,fgrep)
+
 # Representation of a space and a comma character
 EMPTY =
 SPACE = $(EMPTY) $(EMPTY)
@@ -426,10 +452,10 @@ else
 endif
 
 # The directory which contains the currently included Makefile is the project root.
-ROOTDIR := $(shell cd $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST)))); pwd)
+ROOTDIR := $(abspath $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST)))))
 
 # List of subdirectories in the current directory.
-SUBDIRS := $(sort $(patsubst ./%,%,$(shell find . -noleaf -mindepth 1 -maxdepth 1 -type d ! -name '.*')))
+SUBDIRS = $(sort $(patsubst ./%,%,$(shell find . -noleaf -mindepth 1 -maxdepth 1 -type d ! -name '.*')))
 
 # List of subdirectories to ignore in make recursion.
 NORECURSE_SUBDIRS = debug release debug-% release-% Debug Release Debug-% Release-% .vs ipch %.t2d .git
@@ -458,13 +484,13 @@ ifdef MACOS
 else
     CPU_COUNT  := $(shell nproc 2>/dev/null)
     CPU_COUNT  := $(if $(CPU_COUNT),$(CPU_COUNT),1)
-    CORE_COUNT := $(shell fgrep -m1 'cpu cores' /proc/cpuinfo 2>/dev/null | cut -d ' ' -f3)
+    CORE_COUNT := $(shell $(FGREP) -m1 'cpu cores' /proc/cpuinfo 2>/dev/null | cut -d ' ' -f3)
     CORE_COUNT := $(if $(CORE_COUNT),$(CORE_COUNT),$(CPU_COUNT))
 endif
 
 # Get current compiler version, usually in form x.y.z
-GCC_VERSION := $(word 3,$(shell gcc -v 2>&1 | grep '^gcc version'))
-LLVM_VERSION := $(shell clang --version 2>&1 | grep -i "llvm version" | sed -e 's/.*version *//' -e 's/ .*//')
+GCC_VERSION = $(word 3,$(shell gcc -v 2>&1 | $(GREP) '^gcc version'))
+LLVM_VERSION = $(shell clang --version 2>&1 | $(GREP) -i "llvm version" | $(SED) -e 's/.*version *//' -e 's/ .*//')
 
 # When C++ source files are present, automatically define LDCXX.
 ifndef LDCXX
@@ -497,14 +523,14 @@ endif
 # Define compilation flags for 32-bit cross-compilation.
 # Target architecture is skipped on ARM because of numerous variants.
 ifdef M32
-    MAIN_ARCH    = i386
-    CFLAGS_M32   = -m32
-    LDFLAGS_M32  = -m32
-    TARGET_ARCH  = -march=i686
+    MAIN_ARCH    := i386
+    CFLAGS_M32   := -m32
+    LDFLAGS_M32  := -m32
+    TARGET_ARCH  := -march=i686
 else
-    MAIN_ARCH    = $(shell uname -m | sed -e 's/i.86/i386/' -e 's/arm.*/arm/')
-    CFLAGS_M32   =
-    LDFLAGS_M32  =
+    MAIN_ARCH    := $(shell uname -m | $(SED) -e 's/i.86/i386/' -e 's/arm.*/arm/')
+    CFLAGS_M32   :=
+    LDFLAGS_M32  :=
     TARGET_ARCH  ?= $(if $(subst arm,,$(MAIN_ARCH)),-march=$(LOCAL_ARCH:x86_64=x86-64),)
 endif
 
@@ -577,7 +603,15 @@ LDLIBS += -lpthread -lrt -lm
 CFLAGS   = $(CFLAGS_DEBUG) $(CFLAGS_M32) $(CFLAGS_GCOV) $(CFLAGS_WARNINGS) $(CFLAGS_INCLUDES) $(TARGET_ARCH) $(CFLAGS_FPIC) -std=c99 $(CFLAGS_EXTRA)
 CXXFLAGS = $(CFLAGS_DEBUG) $(CFLAGS_M32) $(CFLAGS_GCOV) $(CXXFLAGS_WARNINGS) $(CXXFLAGS_INCLUDES) $(TARGET_ARCH) $(CFLAGS_FPIC) $(CXXFLAGS_EXTRA)
 LDFLAGS  = $(LDFLAGS_DEBUG) $(LDFLAGS_M32) $(LDFLAGS_GCOV) $(TARGET_ARCH) $(LDFLAGS_EXTRA)
-ARFLAGS  = rcU $(ARFLAGS_EXTRA)
+ifdef MACOS
+  ARFLAGS = rcS $(ARFLAGS_EXTRA)
+  RANLIB  = ranlib
+  RANLIB_FLAGS = -no_warning_for_no_symbols
+else
+  ARFLAGS = rcU $(ARFLAGS_EXTRA)
+  RANLIB  = 
+  RANLIB_FLAGS = 
+endif
 
 # Output subdirectories in each project directory
 ifdef DEBUG
@@ -611,6 +645,14 @@ EXECS        := $(addprefix $(OBJDIR)/,$(MODULES_MAIN))
 # Keep intermediate files, avoid using "ar" again.
 .SECONDARY:
 
+# When using parallel make ("-j") on Linux, the command "ar" is badly handled.
+# This foolish make can run simultaneous "ar" commands on the same .a file,
+# which usually results in a corrupted library file. We have to explicitly
+# serialize access to the library file using flock. However, flock is specific
+# to Linux and not present on MacOS.
+FLOCK  := $(call F_SEARCH,flock)
+ARLOCK  = $(if $(FLOCK),$(FLOCK) -w 60 $(patsubst %/,%,$(dir $@)),)
+
 # Compilation rules
 $(OBJDIR)/%.o: %.c
 	@echo '  [CC] $<'; \
@@ -622,7 +664,7 @@ $(OBJDIR)/%.o: %.cpp
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
 (%): %
 	@echo '  [AR] $<'; \
-	flock -w 60 $(patsubst %/,%,$(dir $@)) $(AR) $(ARFLAGS) $@ $<
+	$(ARLOCK) $(AR) $(ARFLAGS) $@ $< && $(ARLOCK) $(RANLIB) $(RANLIB_FLAGS) $@
 $(OBJDIR)/%: $(OBJDIR)/%.o
 	@echo '  [LD] $@'; \
 	$(CC) $(LDFLAGS) $^ $(LDLIBS) -o $@
@@ -635,13 +677,13 @@ $(OBJDIR)/%.dep: %.c
 	@echo '  [DEP] $<'; \
 	mkdir -p $(OBJDIR); \
 	$(CC) -MM $(CPPFLAGS) $(CFLAGS_INCLUDES) $(CFLAGS_NO_WARNINGS) $< >$@ && \
-	sed -i 's,\($*\)\.o[ :]*,$(OBJDIR)/\1.o $@ : ,g' $@ || \
+	$(SED) -i 's,\($*\)\.o[ :]*,$(OBJDIR)/\1.o $@ : ,g' $@ || \
 	rm -f $@
 $(OBJDIR)/%.dep: %.cpp
 	@echo '  [DEP] $<'; \
 	mkdir -p $(OBJDIR); \
 	$(CC) -MM $(CPPFLAGS) $(CXXFLAGS_INCLUDES) $(CXXFLAGS_NO_WARNINGS) $< >$@ && \
-	sed -i 's,\($*\)\.o[ :]*,$(OBJDIR)/\1.o $@ : ,g' $@ || \
+	$(SED) -i 's,\($*\)\.o[ :]*,$(OBJDIR)/\1.o $@ : ,g' $@ || \
 	rm -f $@
 
 # Rebuild and include all .dep files, unless the explicit targets do not require the .dep files.
@@ -692,7 +734,7 @@ doxygen:
 # Texinfo document generation.
 MAKEINFO ?= makeinfo
 TEXI2DVI ?= texi2dvi
-TEXI_MAJOR_VERSION = $(shell $(MAKEINFO) --version 2>/dev/null | head -1 | sed -e 's/.*  *//' -e 's/\..*//')
+TEXI_MAJOR_VERSION = $(shell $(MAKEINFO) --version 2>/dev/null | head -1 | $(SED) -e 's/.*  *//' -e 's/\..*//')
 TEXI_V5 = $(shell test "$(TEXI_MAJOR_VERSION)" -ge 5 2>/dev/null && echo true)
 TEXI2PDF_FLAGS  = --batch --quiet --tidy
 TEXI2HTML_FLAGS = --no-split $(if $(TEXI_V5),--set-customization-variable AVOID_MENU_REDUNDANCY=true)

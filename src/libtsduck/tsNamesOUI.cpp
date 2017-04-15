@@ -1902,7 +1902,7 @@ std::string ts::names::OUI (uint32_t oui)
         case 0x00074E: return "Naughty boy";
         case 0x00074F: return "Cisco Systems";
         case 0x000750: return "Cisco Systems";
-        case 0x000751: return "m·u·t";
+        case 0x000751: return "m.u.t";
         case 0x000752: return "Rhythm Watch";
         case 0x000753: return "Beijing Qxcomm Technology";
         case 0x000754: return "Xyterra Computing";
@@ -2902,8 +2902,8 @@ std::string ts::names::OUI (uint32_t oui)
         case 0x000B5E: return "Audio Engineering Society";
         case 0x000B5F: return "Cisco Systems";
         case 0x000B60: return "Cisco Systems";
-        case 0x000B61: return "Friedrich Lütze";
-        case 0x000B62: return "Ingenieurbüro Ingo Mohnen";
+        case 0x000B61: return "Friedrich Lutze";
+        case 0x000B62: return "Ingenieurburo Ingo Mohnen";
         case 0x000B63: return "Kaleidescape";
         case 0x000B64: return "Kieback & Peter";
         case 0x000B65: return "Sy.A.C. srl";
@@ -2950,7 +2950,7 @@ std::string ts::names::OUI (uint32_t oui)
         case 0x000B8E: return "Ascent";
         case 0x000B8F: return "AKITA ELECTRONICS SYSTEMS";
         case 0x000B90: return "Adva Optical Networking";
-        case 0x000B91: return "Aglaia Gesellschaft für Bildverarbeitung und Kommunikation m";
+        case 0x000B91: return "Aglaia Gesellschaft fur Bildverarbeitung und Kommunikation m";
         case 0x000B92: return "Ascom Danmark A/S";
         case 0x000B93: return "Ritter Elektronik";
         case 0x000B94: return "Digital Monitoring Products";
@@ -3292,7 +3292,7 @@ std::string ts::names::OUI (uint32_t oui)
         case 0x000CE6: return "Meru Networks";
         case 0x000CE7: return "MediaTek";
         case 0x000CE8: return "GuangZhou AnJuBao";
-        case 0x000CE9: return "BLOOMBERG";
+        case 0x000CE9: return "Bloomberg";
         case 0x000CEA: return "aphona Kommunikationssysteme";
         case 0x000CEB: return "CNMP Networks";
         case 0x000CEC: return "Spectracom";
@@ -3301,9 +3301,9 @@ std::string ts::names::OUI (uint32_t oui)
         case 0x000CEF: return "Open Networks Engineering";
         case 0x000CF0: return "M & N";
         case 0x000CF1: return "Intel";
-        case 0x000CF2: return "GAMESA EÓLICA";
-        case 0x000CF3: return "CALL IMAGE";
-        case 0x000CF4: return "AKATSUKI ELECTRIC MFG";
+        case 0x000CF2: return "Gamesa Eolica";
+        case 0x000CF3: return "Call Image";
+        case 0x000CF4: return "Akatsuki Electric MFG";
         case 0x000CF5: return "InfoExpress";
         case 0x000CF6: return "Sitecom Europe";
         case 0x000CF7: return "Nortel Networks";
@@ -3497,7 +3497,7 @@ std::string ts::names::OUI (uint32_t oui)
         case 0x000DB7: return "SANKO ELECTRIC";
         case 0x000DB8: return "SCHILLER";
         case 0x000DB9: return "PC Engines";
-        case 0x000DBA: return "Océ Document Technologies";
+        case 0x000DBA: return "Oce Document Technologies";
         case 0x000DBB: return "Nippon Dentsu";
         case 0x000DBC: return "Cisco Systems";
         case 0x000DBD: return "Cisco Systems";
@@ -3531,14 +3531,14 @@ std::string ts::names::OUI (uint32_t oui)
         case 0x000DDA: return "ALLIED TELESIS K.K";
         case 0x000DDB: return "AIRWAVE TECHNOLOGIES";
         case 0x000DDC: return "VAC";
-        case 0x000DDD: return "PROFÝLO TELRA ELEKTRONÝK SANAYÝ VE TÝCARET A.Þ";
+        case 0x000DDD: return "Profylo Telra ElektronyK Sanayy Ve Tycaret A.";
         case 0x000DDE: return "Joyteck";
         case 0x000DDF: return "Japan Image & Network";
         case 0x000DE0: return "ICPDAS";
         case 0x000DE1: return "Control Products";
         case 0x000DE2: return "CMZ Sistemi Elettronici";
         case 0x000DE3: return "AT Sweden";
-        case 0x000DE4: return "DIGINICS";
+        case 0x000DE4: return "Diginics";
         case 0x000DE5: return "Samsung Thales";
         case 0x000DE6: return "Youngbo Engineering";
         case 0x000DE7: return "Snap-on OEM Group";
@@ -3578,10 +3578,10 @@ std::string ts::names::OUI (uint32_t oui)
         case 0x000E0A: return "SAKUMA DESIGN OFFICE";
         case 0x000E0B: return "Netac Technology";
         case 0x000E0C: return "Intel";
-        case 0x000E0D: return "HESCH Schröder";
+        case 0x000E0D: return "Hesch Schroder";
         case 0x000E0E: return "ESA elettronica S.P.A";
-        case 0x000E0F: return "ERMME";
-        case 0x000E11: return "BDT Büro- und Datentechnik";
+        case 0x000E0F: return "Ermme";
+        case 0x000E11: return "BDT Buro- und Datentechnik";
         case 0x000E12: return "Adaptive Micro Systems";
         case 0x000E13: return "Accu-Sort Systems";
         case 0x000E14: return "Visionary Solutions";
@@ -3707,7 +3707,7 @@ std::string ts::names::OUI (uint32_t oui)
         case 0x000E90: return "PONICO";
         case 0x000E91: return "Northstar Technologies";
         case 0x000E92: return "Millinet";
-        case 0x000E93: return "Milénio 3 Sistemas Electrónicos, Lda";
+        case 0x000E93: return "Milenio 3 Sistemas Electronicos, Lda";
         case 0x000E94: return "Maas International";
         case 0x000E95: return "Fujiya Denki Seisakusho";
         case 0x000E96: return "Cubic Defense Applications";
@@ -4448,7 +4448,7 @@ std::string ts::names::OUI (uint32_t oui)
         case 0x001178: return "Chiron Technology";
         case 0x001179: return "Singular Technology";
         case 0x00117A: return "Singim International";
-        case 0x00117B: return "Büchi Labortechnik";
+        case 0x00117B: return "Buchi Labortechnik";
         case 0x00117C: return "e-zy.net";
         case 0x00117D: return "ZMD America";
         case 0x00117E: return "Progeny";
@@ -4974,8 +4974,8 @@ std::string ts::names::OUI (uint32_t oui)
         case 0x001386: return "ABB/Totalflow";
         case 0x001387: return "27M Technologies";
         case 0x001388: return "WiMedia Alliance";
-        case 0x001389: return "Redes de Telefonía Móvil";
-        case 0x00138A: return "QINGDAO GOERTEK ELECTRONICS";
+        case 0x001389: return "Redes de Telefonia Movil";
+        case 0x00138A: return "Qingdao Goertek Electronics";
         case 0x00138B: return "Phantom Technologies LLC";
         case 0x00138C: return "Kumyoung";
         case 0x00138D: return "Kinghold";
@@ -5266,7 +5266,7 @@ std::string ts::names::OUI (uint32_t oui)
         case 0x0014AA: return "Ashly Audio";
         case 0x0014AB: return "Senhai Electronic Technology";
         case 0x0014AC: return "Bountiful WiFi";
-        case 0x0014AD: return "Gassner Wiege- u. Meßtechnik";
+        case 0x0014AD: return "Gassner Wiege- u. Messtechnik";
         case 0x0014AE: return "Wizlogics";
         case 0x0014AF: return "Datasym";
         case 0x0014B0: return "Naeil Community";
@@ -5401,14 +5401,14 @@ std::string ts::names::OUI (uint32_t oui)
         case 0x001531: return "KOCOM";
         case 0x001532: return "Consumer Technologies Group, LLC";
         case 0x001533: return "NADAM";
-        case 0x001534: return "A BELTRÓNICA, Companhia de Comunicações, Lda";
+        case 0x001534: return "A Beltronica, Companhia de Comunicacoes, Lda";
         case 0x001535: return "OTE Spa";
         case 0x001536: return "Powertech";
         case 0x001537: return "Ventus Networks";
         case 0x001538: return "RFID";
         case 0x001539: return "Technodrive SRL";
         case 0x00153A: return "Shenzhen Syscan Technology";
-        case 0x00153B: return "EMH Elektrizitätszähler GmbH & CoKG";
+        case 0x00153B: return "EMH Elektrizitatszahler GmbH & CoKG";
         case 0x00153C: return "Kprotech";
         case 0x00153D: return "ELIM PRODUCT";
         case 0x00153E: return "Q-Matic Sweden";
@@ -5630,7 +5630,7 @@ std::string ts::names::OUI (uint32_t oui)
         case 0x001616: return "BROWAN COMMUNICATION";
         case 0x001617: return "MSI";
         case 0x001618: return "HIVION";
-        case 0x001619: return "La Factoría de Comunicaciones Aplicadas,S.L";
+        case 0x001619: return "La Factoria de Comunicaciones Aplicadas,S.L";
         case 0x00161A: return "Dametric";
         case 0x00161B: return "Micronet";
         case 0x00161C: return "e:cue";
@@ -5652,7 +5652,7 @@ std::string ts::names::OUI (uint32_t oui)
         case 0x00162C: return "Xanboo";
         case 0x00162D: return "STNet";
         case 0x00162E: return "Space Shuttle Hi-Tech";
-        case 0x00162F: return "Geutebrück";
+        case 0x00162F: return "Geutebruck";
         case 0x001630: return "Vativ Technologies";
         case 0x001631: return "Xteam";
         case 0x001632: return "Samsung Electronics";
@@ -6157,7 +6157,7 @@ std::string ts::names::OUI (uint32_t oui)
         case 0x00182A: return "Taiwan Video & Monitor";
         case 0x00182B: return "Softier";
         case 0x00182C: return "Ascend Networks";
-        case 0x00182D: return "Artec Group OÜ";
+        case 0x00182D: return "Artec Group OU";
         case 0x00182E: return "Wireless Ventures USA";
         case 0x00182F: return "Texas Instruments";
         case 0x001830: return "Texas Instruments";
@@ -6305,7 +6305,7 @@ std::string ts::names::OUI (uint32_t oui)
         case 0x0018BE: return "ANSA";
         case 0x0018BF: return "Essence Technology Solution";
         case 0x0018C0: return "Motorola CHS";
-        case 0x0018C1: return "Almitec Informática e Comércioa";
+        case 0x0018C1: return "Almitec Informatica e Comercioa";
         case 0x0018C2: return "Firetide";
         case 0x0018C3: return "C&S Microwave";
         case 0x0018C4: return "Raba Technologies LLC";
@@ -6768,7 +6768,7 @@ std::string ts::names::OUI (uint32_t oui)
         case 0x001A8D: return "AVECS Bergen";
         case 0x001A8E: return "3Way Networks";
         case 0x001A8F: return "Nortel";
-        case 0x001A90: return "Trópico Sistemas e Telecomunicações da AmazôniaA";
+        case 0x001A90: return "Tropico Sistemas e Telecomunicacoes da Amazonia";
         case 0x001A91: return "FusionDynamic";
         case 0x001A92: return "ASUSTek COMPUTER";
         case 0x001A93: return "ERCO Leuchten";
@@ -7039,7 +7039,7 @@ std::string ts::names::OUI (uint32_t oui)
         case 0x001B9E: return "ASKEY COMPUTER";
         case 0x001B9F: return "Calyptech";
         case 0x001BA0: return "Awox";
-        case 0x001BA1: return "Åmic";
+        case 0x001BA1: return "Amic";
         case 0x001BA2: return "IDS Imaging Development Systems";
         case 0x001BA3: return "Flexit Group";
         case 0x001BA4: return "S.A.E Afikim";
@@ -7123,7 +7123,7 @@ std::string ts::names::OUI (uint32_t oui)
         case 0x001BF2: return "KWORLD COMPUTER";
         case 0x001BF3: return "TRANSRADIO SenderSysteme Berlin";
         case 0x001BF4: return "KENWIN INDUSTRIAL(HK)";
-        case 0x001BF5: return "Tellink Sistemas de Telecomunicación S.L";
+        case 0x001BF5: return "Tellink Sistemas de Telecomunicacion S.L";
         case 0x001BF6: return "CONWISE Technology";
         case 0x001BF7: return "Lund IP Products";
         case 0x001BF8: return "Digitrax";
@@ -7590,7 +7590,7 @@ std::string ts::names::OUI (uint32_t oui)
         case 0x001DC8: return "ScadaMetrcs, LLC";
         case 0x001DC9: return "GainSpan";
         case 0x001DCA: return "PAV Electronics Limited";
-        case 0x001DCB: return "Exéns Development Oy";
+        case 0x001DCB: return "Exens Development Oy";
         case 0x001DCC: return "Hetra Secure Solutions";
         case 0x001DCD: return "ARRIS Group";
         case 0x001DCE: return "ARRIS Group";
@@ -7625,8 +7625,8 @@ std::string ts::names::OUI (uint32_t oui)
         case 0x001DEB: return "DINEC International";
         case 0x001DEC: return "Marusys";
         case 0x001DED: return "Grid Net";
-        case 0x001DEE: return "NEXTVISION SISTEMAS DIGITAIS DE TELEVISÃOA";
-        case 0x001DEF: return "TRIMM";
+        case 0x001DEE: return "NextVision Sistemas Digitais De Televisaoa";
+        case 0x001DEF: return "Trimm";
         case 0x001DF0: return "Vidient Systems";
         case 0x001DF1: return "Intego Systems";
         case 0x001DF2: return "Netflix";
@@ -7634,7 +7634,7 @@ std::string ts::names::OUI (uint32_t oui)
         case 0x001DF4: return "Magellan Technology Pty Limited";
         case 0x001DF5: return "Sunshine";
         case 0x001DF6: return "Samsung Electronics";
-        case 0x001DF7: return "R. STAHL Schaltgeräte";
+        case 0x001DF7: return "R. Stahl Schaltgerate";
         case 0x001DF8: return "Webpro Vision Technology";
         case 0x001DF9: return "Cybiotronics (Far East) Limited";
         case 0x001DFA: return "Fujian LANDI Commercial Equipment";

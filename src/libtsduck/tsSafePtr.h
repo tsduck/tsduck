@@ -356,7 +356,7 @@ namespace ts {
         template <typename ST>
         SafePtr<ST,MUTEX> upcast()
         {
-            return _shared->upcast<ST>();
+            return _shared->template upcast<ST>();
         }
 
         //!
@@ -385,7 +385,7 @@ namespace ts {
         template <typename ST>
         SafePtr<ST,MUTEX> downcast()
         {
-            return _shared->downcast<ST>();
+            return _shared->template downcast<ST>();
         }
 
         //!
@@ -406,7 +406,7 @@ namespace ts {
         template <typename NEWMUTEX>
         SafePtr<T,NEWMUTEX> changeMutex()
         {
-            return _shared->changeMutex<NEWMUTEX>();
+            return _shared->template changeMutex<NEWMUTEX>();
         }
 
         //!

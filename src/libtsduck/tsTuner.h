@@ -63,17 +63,17 @@ namespace ts {
 
         // Get the list of all existing DVB tuners.
         // Return true on success, false on errors
-        static bool GetAllTuners (TunerPtrVector&, ReportInterface&);
+        static bool GetAllTuners(TunerPtrVector&, ReportInterface&);
 
         // Default constructor, 
-        Tuner ();
+        Tuner();
 
         // Destructor
-        ~Tuner ();
+        ~Tuner();
 
         // Constructor and open device name.
         // If name is empty, use "first" or "default" tuner.
-        Tuner (const std::string& device_name, bool info_only, ReportInterface&);
+        Tuner(const std::string& device_name, bool info_only, ReportInterface&);
 
         // DVB tuner "device name":
         // Linux:
@@ -89,11 +89,11 @@ namespace ts {
         // If name is empty, use "first" or "default" tuner.
         // If info_only is true, cannot tune, start or receive packet.
         // Return true on success, false on errors
-        bool open (const std::string& device_name, bool info_only, ReportInterface&);
+        bool open(const std::string& device_name, bool info_only, ReportInterface&);
 
         // Close tuner.
         // Return true on success, false on errors
-        bool close (ReportInterface&);
+        bool close(ReportInterface&);
 
         // Check if open
         bool isOpen() const {return _is_open;}
@@ -117,34 +117,34 @@ namespace ts {
         std::string deviceInfo() const {return _device_info;}
 
         // Check if a signal is present and locked
-        bool signalLocked (ReportInterface&);
+        bool signalLocked(ReportInterface&);
 
         // Return signal strength, in percent (0=bad, 100=good)
         // Return a negative value on error.
-        int signalStrength (ReportInterface&);
+        int signalStrength(ReportInterface&);
 
         // Return signal quality, in percent (0=bad, 100=good)
         // Return a negative value on error.
-        int signalQuality (ReportInterface&);
+        int signalQuality(ReportInterface&);
 
         // Tune to the specified parameters.
         // Return true on success, false on errors
-        bool tune (const TunerParameters&, ReportInterface&);
+        bool tune(const TunerParameters&, ReportInterface&);
 
         // Start receiving packets.
         // Return true on success, false on errors
-        bool start (ReportInterface&);
+        bool start(ReportInterface&);
 
         // Stop receiving packets.
         // Return true on success, false on errors
-        bool stop (ReportInterface&);
+        bool stop(ReportInterface&);
 
         // Read complete 188-byte TS packets in the buffer and return the
         // number of actually received packets (in the range 1 to max_packets).
         // If abort interface is non-zero, invoke it when I/O is interrupted
         // (in case of user-interrupt, return, otherwise retry).
         // Returning zero means error or end of input.
-        size_t receive (TSPacket* buffer, size_t max_packets, const AbortInterface*, ReportInterface&);
+        size_t receive(TSPacket* buffer, size_t max_packets, const AbortInterface*, ReportInterface&);
 
         // Get the current tuning parameters: update an existing
         // TunerParameters, modify only the properties which can
@@ -152,37 +152,37 @@ namespace ts {
         // the unknown values (those which are not reported by the
         // tuner) are reset to unknown/zero/auto values.
         // Return true on success, false on errors.
-        bool getCurrentTuning (TunerParameters&, bool reset_unknown, ReportInterface&);
+        bool getCurrentTuning(TunerParameters&, bool reset_unknown, ReportInterface&);
 
         // Timeout before getting a signal on start.
         // If zero, do not wait for signal on start.
         // Must be set before start.
         static const MilliSecond DEFAULT_SIGNAL_TIMEOUT = 5000; // 5 seconds
-        void setSignalTimeout (MilliSecond t) {_signal_timeout = t;}
-        void setSignalTimeoutSilent (bool silent) {_signal_timeout_silent = silent;}
+        void setSignalTimeout(MilliSecond t) {_signal_timeout = t;}
+        void setSignalTimeoutSilent(bool silent) {_signal_timeout_silent = silent;}
 
         // Timeout for receive operation (none by default).
         // If zero, no timeout is applied.
         // Return true on success, false on errors.
-        bool setReceiveTimeout (MilliSecond, ReportInterface&);
+        bool setReceiveTimeout(MilliSecond, ReportInterface&);
 
 #if defined(__linux) || defined(DOXYGEN) // Linux-specific operations
 
         // Poll interval for signal timeout. Must be set before start.
         static const MilliSecond DEFAULT_SIGNAL_POLL = 100;
-        void setSignalPoll (MilliSecond t) {_signal_poll = t;}
+        void setSignalPoll(MilliSecond t) {_signal_poll = t;}
 
         // Demux buffer size in bytes. Must be set before start.
         static const size_t DEFAULT_DEMUX_BUFFER_SIZE = 1024 * 1024;  // 1 MB
-        void setDemuxBufferSize (size_t s) {_demux_bufsize = s;}
+        void setDemuxBufferSize(size_t s) {_demux_bufsize = s;}
 
         // Force usage of S2API in all cases
-        void setForceS2API (bool force) {_force_s2api = force;}
-        bool getForceS2API () const {return _force_s2api;}
+        void setForceS2API(bool force) {_force_s2api = force;}
+        bool getForceS2API() const {return _force_s2api;}
 
 #if defined(__s2api) || defined(DOXYGEN)
         // Tune operation using S2API, return true on success, false on error
-        bool tuneS2API (DTVProperties&, ReportInterface&);
+        bool tuneS2API(DTVProperties&, ReportInterface&);
 #endif
 #endif
 
@@ -192,14 +192,14 @@ namespace ts {
         // the graph thread and the application thread.
         // Must be set before start.
         static const size_t DEFAULT_SINK_QUEUE_SIZE = 50;  // media samples
-        void setSinkQueueSize (size_t s) {_sink_queue_size = s;}
+        void setSinkQueueSize(size_t s) {_sink_queue_size = s;}
 
         // Enumerate all tuner-related DirectShow devices.
-        static std::ostream& EnumerateDevices (std::ostream&, const std::string& margin, ReportInterface&);
+        static std::ostream& EnumerateDevices(std::ostream&, const std::string& margin, ReportInterface&);
 #endif
 
         // Display the characteristics and status of the tuner.
-        std::ostream& displayStatus (std::ostream&, const std::string& margin, ReportInterface&);
+        std::ostream& displayStatus(std::ostream&, const std::string& margin, ReportInterface&);
 
     private:
 
@@ -231,29 +231,29 @@ namespace ts {
         bool                _rt_timer_valid;   // Receive timeout timer was created
 
         // Get current tuning parameters for specific tuners, return system error code
-        ErrorCode getCurrentTuningDVBS (TunerParametersDVBS&);
-        ErrorCode getCurrentTuningDVBC (TunerParametersDVBC&);
-        ErrorCode getCurrentTuningDVBT (TunerParametersDVBT&);
-        ErrorCode getCurrentTuningATSC (TunerParametersATSC&);
+        ErrorCode getCurrentTuningDVBS(TunerParametersDVBS&);
+        ErrorCode getCurrentTuningDVBC(TunerParametersDVBC&);
+        ErrorCode getCurrentTuningDVBT(TunerParametersDVBT&);
+        ErrorCode getCurrentTuningATSC(TunerParametersATSC&);
 
         // Clear tuner if S2API, return true on success, false on error
-        bool dtvClear (ReportInterface&);
+        bool dtvClear(ReportInterface&);
 
         // Discard all pending frontend events
-        void discardFrontendEvents (ReportInterface&);
+        void discardFrontendEvents(ReportInterface&);
 
         // Tune for specific tuners, return true on success, false on error
-        bool tuneDVBS (const TunerParametersDVBS&, ReportInterface&);
-        bool tuneDVBC (const TunerParametersDVBC&, ReportInterface&);
-        bool tuneDVBT (const TunerParametersDVBT&, ReportInterface&);
-        bool tuneATSC (const TunerParametersATSC&, ReportInterface&);
+        bool tuneDVBS(const TunerParametersDVBS&, ReportInterface&);
+        bool tuneDVBC(const TunerParametersDVBC&, ReportInterface&);
+        bool tuneDVBT(const TunerParametersDVBT&, ReportInterface&);
+        bool tuneATSC(const TunerParametersATSC&, ReportInterface&);
 
 #if defined(__s2api) || defined(DOXYGEN)
         // Convert between TSDuck and Linux S2API delivery systems.
-        DeliverySystem fromLinuxDeliverySystem (::fe_delivery_system);
-        ::fe_delivery_system toLinuxDeliverySystem (DeliverySystem);
+        DeliverySystem fromLinuxDeliverySystem(::fe_delivery_system);
+        ::fe_delivery_system toLinuxDeliverySystem(DeliverySystem);
 #endif
-#endif
+#endif // linux
        
 #if defined(__windows) || defined(DOXYGEN) // Windows properties
 
@@ -287,33 +287,33 @@ namespace ts {
 
         // Try to build the graph.
         // Return true on success, false on error
-        bool buildGraph (::IMoniker* provider_moniker, ::IMoniker* tuner_moniker, ReportInterface&);
+        bool buildGraph(::IMoniker* provider_moniker, ::IMoniker* tuner_moniker, ReportInterface&);
 
         // Try to build the part of the graph starting at the tee filter.
         // The specified base filter is either the tuner filter or some
         // other intermediate receiver filter downstream the tuner.
         // Return true on success, false on error.
-        bool buildCaptureGraph (const ComPtr <::IBaseFilter>&, ReportInterface&);
+        bool buildCaptureGraph(const ComPtr <::IBaseFilter>&, ReportInterface&);
 
         // Internal tune method, works also if the tuner is not in open state.
         // Return true on success, false on errors
-        bool internalTune (const TunerParameters&, ReportInterface&);
+        bool internalTune(const TunerParameters&, ReportInterface&);
 
         // Create an IDigitalLocator object for various types of DVB parameters.
         // Return true on success, false on errors
-        bool createLocatorDVBS (ComPtr<::IDigitalLocator>&, const TunerParametersDVBS&, ReportInterface&);
-        bool createLocatorDVBT (ComPtr<::IDigitalLocator>&, const TunerParametersDVBT&, ReportInterface&);
-        bool createLocatorDVBC (ComPtr<::IDigitalLocator>&, const TunerParametersDVBC&, ReportInterface&);
+        bool createLocatorDVBS(ComPtr<::IDigitalLocator>&, const TunerParametersDVBS&, ReportInterface&);
+        bool createLocatorDVBT(ComPtr<::IDigitalLocator>&, const TunerParametersDVBT&, ReportInterface&);
+        bool createLocatorDVBC(ComPtr<::IDigitalLocator>&, const TunerParametersDVBC&, ReportInterface&);
 
         // Get signal strength in mdB.
         // Return true if found, false if not found.
-        bool getSignalStrength_mdB (::LONG&);
+        bool getSignalStrength_mdB(::LONG&);
 
         // Locate all known interfaces in a pin or node of the tuner filter.
         // Add found interfaces in _demods, _demods2, _sigstats, _tunprops.
         // Ignore errors.
         template <class COMCLASS>
-        void findTunerSubinterfaces (ComPtr<COMCLASS>&);
+        void findTunerSubinterfaces(ComPtr<COMCLASS>&);
 
         // Search criteria for properties.
         enum PropSearch {psFIRST, psLAST, psLOWEST, psHIGHEST};
@@ -321,14 +321,15 @@ namespace ts {
         // Search all IKsPropertySet in the tuner until the specified data is found.
         // Return true if found, false if not found.
         template <typename T>
-        bool searchTunerProperty (const ::GUID& propset, ::DWORD propid, T& value, PropSearch);
+        bool searchTunerProperty(const ::GUID& propset, ::DWORD propid, T& value, PropSearch);
 
         // Find one or more tuners. Exactly one of Tuner* or TunerPtrVector* must be non-zero.
         // If Tuner* is non-zero, find the first tuner (matching _device_name if not empty).
         // If _device_name is ":integer", use integer as device index in list of DVB devices.
         // If TunerPtrVector* is non- zero, find all tuners in the system.
         // Return true on success, false on error.
-        static bool FindTuners (Tuner*, TunerPtrVector*, ReportInterface&);
-#endif
+        static bool FindTuners(Tuner*, TunerPtrVector*, ReportInterface&);
+
+#endif // windows
     };
 }

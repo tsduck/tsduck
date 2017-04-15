@@ -213,7 +213,7 @@ void ts::UserInterrupt::activate()
     struct sigaction act;
     act.sa_handler = sysHandler;
     act.sa_flags = _one_shot ? SA_ONESHOT : 0;
-    ::sigemptyset (&act.sa_mask);
+    sigemptyset(&act.sa_mask);
 
     if (::sigaction (SIGINT, &act, 0) < 0) {
         ::perror ("Error setting SIGINT handler");
@@ -257,7 +257,7 @@ void ts::UserInterrupt::deactivate ()
     struct sigaction act;
     act.sa_handler = SIG_DFL;
     act.sa_flags = 0;
-    ::sigemptyset (&act.sa_mask);
+    sigemptyset (&act.sa_mask);
 
     if (::sigaction (SIGINT, &act, NULL) < 0) {
         ::perror ("Error resetting SIGINT handler");

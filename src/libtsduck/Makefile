@@ -34,12 +34,14 @@
 
 # Some source files are located in subdirectories but should be considered as part of libtsduck.
 
-CXXVPATH = linux private
+OSDIR    := $(if $(findstring darwin,$(shell uname -s | tr A-Z a-z)),mac,linux)
+CXXVPATH  = $(OSDIR) private
 
 # Detect the presence of the Dektec DTAPI.
 # DTAPI shall be separately downloaded using "make dtapi".
 # Define NODTAPI to compile without Dektec support.
 # NODTAPI is automatically defined if no DTAPI is found.
+# DTAPI is not available for MacOS and is not downloaded, not present.
 
 DTAPI_ROOT := ../../dektec/LinuxSDK/DTAPI
 
@@ -115,4 +117,4 @@ install: $(LIBTSDUCK) $(SHLIBTSDUCK) tsduck.h
 	install -d -m 755 $(DESTDIR)/usr/lib
 	install -m 644 $(LIBTSDUCK) $(DESTDIR)/usr/lib
 	install -d -m 755 $(DESTDIR)/usr/include/tsduck
-	install -m 644 tsduck.mk ts*.h linux/ts*.h $(DESTDIR)/usr/include/tsduck
+	install -m 644 tsduck.mk ts*.h $(wildcard $(OSDIR)/ts*.h) $(DESTDIR)/usr/include/tsduck

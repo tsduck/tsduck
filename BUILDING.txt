@@ -67,4 +67,4 @@ All Linux:
 MacOS:
 - Install Xcode and its command line utilities.
 - To install additional tools from HomeBrew:
-  $ brew install pcsc-lite cppunit doxygen
+  $ brew install pcsc-lite cppunit doxygen gnu-sed grep

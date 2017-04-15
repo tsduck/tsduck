@@ -35,22 +35,22 @@
 #include "tsPlatform.h"
 
 // Zeroing an object
-#define TS_ZERO(var) ts::Zero (&(var), sizeof(var))
+#define TS_ZERO(var) ts::Zero(&(var), sizeof(var))
 
 namespace ts {
 
     // Zeroing a memory area
-    TSDUCKDLL inline void Zero (void* addr, size_t size) {
+    TSDUCKDLL inline void Zero(void* addr, size_t size) {
 #if defined (__windows)
-        ::SecureZeroMemory (addr, size);
+        ::SecureZeroMemory(addr, size);
 #else
-        ::memset (addr, 0, size);
+        ::memset(addr, 0, size);
 #endif
     }
 
     // Check if a memory area starts with the specified prefix
-    TSDUCKDLL bool StartsWith (const void* area, size_t area_size, const void* prefix, size_t prefix_size);
+    TSDUCKDLL bool StartsWith(const void* area, size_t area_size, const void* prefix, size_t prefix_size);
 
     // Locate a pattern into a memory area. Return 0 if not found
-    TSDUCKDLL const void* LocatePattern (const void* area, size_t area_size, const void* pattern, size_t pattern_size);
+    TSDUCKDLL const void* LocatePattern(const void* area, size_t area_size, const void* pattern, size_t pattern_size);
 }

@@ -440,6 +440,11 @@
 #include <PCSC/reader.h>
 #endif
 
+#if defined(__mac)
+#include <sys/mman.h>
+#include <libproc.h>
+#endif
+
 #include <string>
 #include <vector>
 #include <deque>
@@ -1999,8 +2004,11 @@ namespace ts {
     //! code. Although the performance gain is small, it can bring some improvement on cryptographic
     //! algorithms for instance.
     //!
-    //! Note: In debug mode, @c RORc reverts to @c ROR since the routine is not inlined and
+    //! Note 1: In debug mode, @c RORc reverts to @c ROR since the routine is not inlined and
     //! the constant constraint cannot be checked by the compiler.
+    //!
+    //! Note 2: With the LLVM compiler, @c RORc reverts to @c ROR since the compiled generates
+    //! an error and does not recognize the operand as a constant.
     //!
     //! @param [in] word A 32-bit word to rotate.
     //! @param [in] i The number of bits by which to rotate @a word.
@@ -2038,7 +2046,7 @@ namespace ts {
 
     TSDUCKDLL inline uint32_t ROLc (uint32_t word, const int i)
     {
-#if defined(DEBUG)
+#if defined(DEBUG) || defined(__llvm)
         return ROL (word, i);
 #else
         asm ("roll %2,%0"
@@ -2050,7 +2058,7 @@ namespace ts {
 
     TSDUCKDLL inline uint32_t RORc (uint32_t word, const int i)
     {
-#if defined(DEBUG)
+#if defined(DEBUG) || defined(__llvm)
         return ROR (word, i);
 #else
         asm ("rorl %2,%0"
@@ -2205,7 +2213,7 @@ namespace ts {
 
     TSDUCKDLL inline uint64_t ROL64c (uint64_t word, const int i)
     {
-#if defined(DEBUG)
+#if defined(DEBUG) || defined(__llvm)
         return ROL64 (word, i);
 #else
         asm ("rolq %2,%0"
@@ -2217,7 +2225,7 @@ namespace ts {
 
     TSDUCKDLL inline uint64_t ROR64c (uint64_t word, const int i)
     {
-#if defined(DEBUG)
+#if defined(DEBUG) || defined(__llvm)
         return ROR64 (word, i);
 #else
         asm ("rorq %2,%0"
@@ -2402,6 +2410,9 @@ namespace ts {
 #elif defined(__msc)
     #define FMT_SIZE_T "I"
     #define FMT_INT64  "I64"
+#elif defined(__mac)
+    #define FMT_SIZE_T "z"
+    #define FMT_INT64  "ll"
 #elif defined(__gcc) && defined(__x86_64)
     #define FMT_SIZE_T "z"
     #define FMT_INT64  "j"
