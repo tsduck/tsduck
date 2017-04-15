@@ -106,6 +106,13 @@ bool ts::SystemRandomGenerator::ready() const
 
 bool ts::SystemRandomGenerator::read (void* buffer, size_t size)
 {
+	// Always succeed when size is zero. Some PRNG return an error when zero
+	// is requested. For instance, with a zero size, the system PRNG of
+	// Windows 7 succeeds while Windows 10 fails.
+	if (size == 0) {
+		return true;
+	}
+
 #if defined (__windows)
     return _prov != 0 && ::CryptGenRandom (_prov, ::DWORD (size), reinterpret_cast <::BYTE*> (buffer));
 #else
