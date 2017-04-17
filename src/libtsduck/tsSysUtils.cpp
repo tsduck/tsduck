@@ -46,6 +46,7 @@
 #include <mach/message.h>
 #include <mach/kern_return.h>
 #include <mach/task_info.h>
+extern char **environ; // not defined in public headers
 #endif
 
 //
@@ -561,33 +562,34 @@ ts::ErrorCode ts::RenameFile (const std::string& old_path, const std::string& ne
 
 std::string ts::ErrorCodeMessage (ts::ErrorCode code)
 {
-    char message [1024];
+    char message[1024];
     char* result;
     bool found;
 
+    TS_ZERO(message);
 #if defined (__windows)
     // Windows implementation
-    ::DWORD length = ::FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM, NULL, code, 0, message, sizeof(message), NULL);
+    ::DWORD length = ::FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM, NULL, code, 0, message, sizeof(message), NULL);
     found = length > 0;
     result = message;
 #elif HAVE_INT_STRERROR_R
     // POSIX version, strerror_r returns int
-    found = 0 == strerror_r (code, message, sizeof(message));
+    found = 0 == strerror_r(code, message, sizeof(message));
     result = message;
 #else
     // GNU version, strerror_r returns char*, not necessarilly in buffer
-    result = strerror_r (code, message, sizeof(message));
+    result = strerror_r(code, message, sizeof(message));
     found = result != NULL;
 #endif
 
     if (!found) {
-        return Format ("System error %d (0x%08X)", code, code);
+        return Format("System error %d (0x%08X)", code, code);
     }
     else {
         // Make sure message is nul-terminated.
-        message [sizeof(message) - 1] = 0;
+        message[sizeof(message) - 1] = 0;
         // Remove trailing newlines (if any)
-        for (size_t i = ::strlen (result); i > 0 && (result[i-1] == '\n' || result[i-1] == '\r'); result[--i] = 0) {}
+        for (size_t i = ::strlen(result); i > 0 && (result[i-1] == '\n' || result[i-1] == '\r'); result[--i] = 0) {}
         return result;
     }
 }

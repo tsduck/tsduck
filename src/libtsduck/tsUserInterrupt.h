@@ -45,7 +45,7 @@ namespace ts {
     // - Interrupt polling through isInterrupted()/resetInterrupted().
 
     class TSDUCKDLL UserInterrupt
-#if !defined (__windows)
+#if defined(__unix)
         : private Thread
 #endif
     {
@@ -54,10 +54,10 @@ namespace ts {
         // Handler may be null.
         // If one_shot is true, the interrupt will be handled only once,
         // the second time the process will be terminated.
-        UserInterrupt (InterruptHandler* handler, bool one_shot, bool auto_activate);
+        UserInterrupt(InterruptHandler* handler, bool one_shot, bool auto_activate);
 
         // Destructor, auto-deactivate
-        ~UserInterrupt ();
+        ~UserInterrupt();
 
         // Check if active
         bool isActive() const {return _active;}
@@ -73,19 +73,30 @@ namespace ts {
         void deactivate();
 
     private:
-#if defined (__windows)
-        static ::BOOL WINAPI sysHandler (__in ::DWORD dwCtrlType);
-#else
-        static void sysHandler (int sig);
-        virtual void main();
-        volatile bool _terminate;
+#if defined(__windows)
+
+        static ::BOOL WINAPI sysHandler(__in ::DWORD dwCtrlType);
+
+#elif defined(__unix)
+
+        static void sysHandler(int sig);
+        virtual void main(); // ts::Thread implementation
+        
+        volatile bool           _terminate;
         volatile ::sig_atomic_t _got_sigint;
-        ::sem_t _sem_sigint;
+#if defined(__mac)
+        std::string             _sem_name;
+        ::sem_t*                _sem_address;
+#else
+        ::sem_t                 _sem_instance;
 #endif
+        
+#endif
+
         InterruptHandler* _handler;
-        bool _one_shot;
-        bool _active;
-        bool _interrupted;
+        bool              _one_shot;
+        bool              _active;
+        volatile bool     _interrupted;
 
         // There is only one active instance at a time
         static UserInterrupt* volatile _active_instance;

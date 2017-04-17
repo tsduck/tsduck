@@ -28,6 +28,13 @@
 //----------------------------------------------------------------------------
 
 #include "tsMutex.h"
+#include "tsTime.h"
+
+// On MacOS, we must do polling on mutex "lock with timeout".
+// We use 10 ms, expressed in nanoseconds.
+#if defined(__mac)
+    #define MUTEX_POLL_NANOSEC (10 * NanoSecPerMilliSec)
+#endif
 
 
 //----------------------------------------------------------------------------
@@ -88,6 +95,27 @@ ts::Mutex::~Mutex ()
 
 
 //----------------------------------------------------------------------------
+// This method attempts an immediate pthread "try lock".
+//----------------------------------------------------------------------------
+
+#if defined(__unix)
+bool ts::Mutex::tryLock()
+{
+    const int error = ::pthread_mutex_trylock(&_mutex);
+    if (error == 0) {
+        return true; // success, locked
+    }
+    else if (error == EBUSY) {
+        return false; // mutex already locked
+    }
+    else {
+        throw MutexError("mutex try lock", error);
+    }
+}
+#endif
+
+
+//----------------------------------------------------------------------------
 // Acquire a mutex. Block until granted or timeout.
 // Return true on success and false on error.
 //----------------------------------------------------------------------------
@@ -116,37 +144,61 @@ bool ts::Mutex::acquire(MilliSecond timeout) throw(MutexError)
 
     int error;
     if (timeout == Infinite) {
-        if ((error = ::pthread_mutex_lock (&_mutex)) == 0)
+        // Unconditional lock, wait forever if necessary.
+        if ((error = ::pthread_mutex_lock(&_mutex)) == 0) {
             return true; // success
-        else
-            throw MutexError ("mutex lock", error);
+        }
+        else {
+            throw MutexError("mutex lock", error);
+        }
     }
     else if (timeout == 0) {
-        if ((error = ::pthread_mutex_trylock (&_mutex)) == 0)
-            return true; // success
-        else if (error == EBUSY)
-            return false; // mutex already locked
-        else
-            throw MutexError ("mutex lock", error);
+        // Immediate "try lock".
+        return tryLock();
     }
     else {
+        // Non-zero finite timeout.
+#if defined(__mac)
+        // Mac implementation of POSIX does not include pthread_mutex_timedlock.
+        // We have to fall back to the infamous method of polling :((
+        // Timeout in absolute time:
+        const NanoSecond due = Time::UnixRealTimeClockNanoSeconds(timeout);
+        for (;;) {
+            // Poll once, try to lock.
+            if (tryLock()) {
+                return true; // locked
+            }
+            // How many nanoseconds until due time:
+            NanoSecond remain = due - Time::UnixRealTimeClockNanoSeconds();
+            if (remain <= 0) {
+                return false; // could not lock before timeout
+            }
+            // Sleep time:
+            remain = std::min<NanoSecond>(remain, MUTEX_POLL_NANOSEC);
+            ::timespec tspec;
+            tspec.tv_sec = time_t(remain / NanoSecPerSec);
+            tspec.tv_nsec = long(remain % NanoSecPerSec);
+            if (::nanosleep(&tspec, NULL) < 0 && errno != EINTR) {
+                // Actual error, not interrupted by a signal
+                throw MutexError("nanosleep error", errno);
+            }
+        }
+#else
+        // Standard real-time POSIX implementation using pthread_mutex_timedlock.
+        // Timeout absolute time as a struct timespec:
         ::timespec time;
-        if ((error = ::clock_gettime (CLOCK_REALTIME, &time)) != 0)
-            throw MutexError ("clock gettime error", - error);
-        // Timeout absolute time in nano-seconds:
-        int64_t nanoseconds = int64_t (time.tv_nsec) +
-            int64_t (time.tv_sec) * NanoSecPerSec +
-            timeout * 1000000;
-        // Timeout absolute time as a struc timespec:
-        time.tv_nsec = long (nanoseconds % NanoSecPerSec);
-        time.tv_sec = time_t (nanoseconds / NanoSecPerSec);
+        Time::UnixRealTimeClock(time, timeout);
         // Timed lock:
-        if ((error = ::pthread_mutex_timedlock (&_mutex, &time)) == 0)
+        if ((error = ::pthread_mutex_timedlock(&_mutex, &time)) == 0) {
             return true; // success
-        else if (error == ETIMEDOUT)
+        }
+        else if (error == ETIMEDOUT) {
             return false; // not locked after timeout
-        else
-            throw MutexError ("mutex timed lock", error);
+        }
+        else {
+            throw MutexError("mutex timed lock", error);
+        }
+#endif
     }
 
 #endif
@@ -166,7 +218,7 @@ bool ts::Mutex::release()
         return false;
     }
     else {
-#if defined (__windows)
+#if defined(__windows)
         return ::ReleaseMutex(_handle) != 0;
 #else
         return ::pthread_mutex_unlock(&_mutex) == 0;

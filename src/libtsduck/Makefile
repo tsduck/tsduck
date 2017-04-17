@@ -106,7 +106,7 @@ tsduck.h: $(ROOTDIR)/HEADER.txt $(sort $(filter-out tsduck.h %Template.h,$(wildc
 	@echo '  [REBUILD] $@'; \
 	cp $< $@; \
 	echo -e '\n#pragma once\n' >>$@; \
-	sed <<<'$(filter-out $<,$^)' >>$@ -e 's/ *\([^\. ]*\).h/#include "\1.h"\n/g'
+	$(SED) <<<'$(filter-out $<,$^)' >>$@ -e 's/ *\([^\. ]*\).h/#include "\1.h"\n/g'
 
 # Installing the shared library in same directory as executables
 

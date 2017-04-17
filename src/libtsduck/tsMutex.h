@@ -115,6 +115,12 @@ namespace ts {
 #else
         ::pthread_mutex_t _mutex;
         friend class Condition;
+
+        //!
+        //! This method attempts an immediate pthread "try lock".
+        //! @return true on success and false if can't lock now.
+        //!
+        bool tryLock();
 #endif
     };
 }

@@ -596,7 +596,10 @@ endif
 ifdef LDCXX
     LDLIBS += -lstdc++
 endif
-LDLIBS += -lpthread -lrt -lm
+LDLIBS += -lpthread -lm
+ifndef MACOS
+    LDLIBS += -lrt
+endif
 
 # Global compilation flags.
 # Additional flags can be passed on the "make" command line using *FLAGS_EXTRA.

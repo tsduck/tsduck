@@ -60,8 +60,8 @@ void ts::ThreadAttributes::InitializePriorities()
 #else
 
     // POSIX pthread implementation.
-    // First, get the scheduling policy of the current process.
-    const int schedPolicy = ::sched_getscheduler(0);
+    // First, get the scheduling policy for the current process.
+    const int schedPolicy = PthreadSchedulingPolicy();
     // On error, simply let one single priority: zero
     if (schedPolicy >= 0) {
         // Get the system min and max priorities for this scheduling policy
@@ -91,6 +91,26 @@ int ts::ThreadAttributes::GetPriority(const int& staticPriority)
     }
     return staticPriority;
 }
+
+
+//----------------------------------------------------------------------------
+// This static method is used by the implementation of ts::Thread on Unix
+// to obtain the scheduling policy to use for this process.
+//----------------------------------------------------------------------------
+
+#if defined(__unix)
+int ts::ThreadAttributes::PthreadSchedulingPolicy()
+{
+    // Get the scheduling policy of the current process.
+#if defined(__mac)
+    // On MacOS, there is no sched_getscheduler, use hard-coded SCHED_OTHER.
+    // This is far from ideal, can we do better?
+    return SCHED_OTHER;
+#else
+    return ::sched_getscheduler(0);
+#endif
+}
+#endif
 
 
 //----------------------------------------------------------------------------

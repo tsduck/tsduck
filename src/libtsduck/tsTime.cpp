@@ -303,33 +303,37 @@ ts::Time ts::Time::UnixTimeToUTC(const time_t& t)
 
 
 //----------------------------------------------------------------------------
-// This static routine gets the current real time clock and adds a delay.
+// These static routines get the current real time clock and add a delay.
 //----------------------------------------------------------------------------
 
 #if defined(__unix)
-bool ts::Time::UnixRealTimeClock(::timespec& result, const MilliSecond& delay)
+
+ts::NanoSecond ts::Time::UnixRealTimeClockNanoSeconds(const MilliSecond& delay)
 {
     // Get current time using the real-time clock.
     // Minimum resolution is a nanosecond, but much more in fact.
+    ::timespec result;
     if (::clock_gettime(CLOCK_REALTIME, &result) != 0) {
-        return false; // error getting current time
+        throw TimeError("clock_gettime error", errno);
     }
 
     // Current time in nano-seconds:
-    NanoSecond nanoseconds = int64_t(result.tv_nsec) + int64_t(result.tv_sec) * NanoSecPerSec;
+    const NanoSecond nanoseconds = NanoSecond(result.tv_nsec) + NanoSecond(result.tv_sec) * NanoSecPerSec;
 
     // Delay in nano-seconds:
     const NanoSecond nsDelay = (delay < Infinite / NanoSecPerMilliSec) ? delay * NanoSecPerMilliSec : Infinite;
 
     // Current time + delay in nano-seconds:
-    nanoseconds = (nanoseconds < Infinite - nsDelay) ? nanoseconds + nsDelay : Infinite;
+    return (nanoseconds < Infinite - nsDelay) ? nanoseconds + nsDelay : Infinite;
+}
 
-    // Current time + delay as a struct timespec:
+void ts::Time::UnixRealTimeClock(::timespec& result, const MilliSecond& delay)
+{
+    const NanoSecond nanoseconds = UnixRealTimeClockNanoSeconds(delay);
     result.tv_nsec = long(nanoseconds % NanoSecPerSec);
     result.tv_sec = time_t(nanoseconds / NanoSecPerSec);
-
-    return true;
 }
+
 #endif
 
 

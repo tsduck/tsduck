@@ -92,18 +92,14 @@ void ts::Monotonic::getSystemTime() throw (MonotonicError)
         ::FILETIME ft;
         int64_t i;
     } result;
-    ::GetSystemTimeAsFileTime (&result.ft);
+    ::GetSystemTimeAsFileTime(&result.ft);
     _value = result.i;
 
 #else
 
     // POSIX implementation
 
-    ::timespec curtime;
-    if (::clock_gettime (CLOCK_MONOTONIC, &curtime) < 0) {
-        throw MonotonicError ("clock_gettime error", errno);
-    }
-    _value = NanoSecond (curtime.tv_sec) * NanoSecPerSec + NanoSecond (curtime.tv_nsec);
+    _value = Time::UnixRealTimeClockNanoSeconds();
 
 #endif
 }
@@ -113,36 +109,60 @@ void ts::Monotonic::getSystemTime() throw (MonotonicError)
 // Wait until the time of the monotonic clock.
 //----------------------------------------------------------------------------
 
-void ts::Monotonic::wait() throw (MonotonicError)
+void ts::Monotonic::wait() throw(MonotonicError)
 {
-#if defined (__windows)
+#if defined(__windows)
 
     // Windows implementation
 
     ::LARGE_INTEGER due_time;
     due_time.QuadPart = _value;
-    if (::SetWaitableTimer (_handle, &due_time, 0, NULL, NULL, FALSE) == 0) {
-        throw MonotonicError (::GetLastError ());
+    if (::SetWaitableTimer(_handle, &due_time, 0, NULL, NULL, FALSE) == 0) {
+        throw MonotonicError(::GetLastError());
     }
-    if (::WaitForSingleObject (_handle, INFINITE) != WAIT_OBJECT_0) {
-        throw MonotonicError (::GetLastError ());
+    if (::WaitForSingleObject(_handle, INFINITE) != WAIT_OBJECT_0) {
+        throw MonotonicError(::GetLastError());
     }
 
+#elif defined(__mac)
+
+    // MacOS implementation.
+    // There is no clock_nanosleep on MacOS. We need to use a relative nanosleep which will be less precise.
+
+    for (;;) {
+        // Number of nanoseconds to wait for.
+        const NanoSecond nano = _value - Time::UnixRealTimeClockNanoSeconds();
+
+        // Exit when due time is over.
+        if (nano <= 0) {
+            break;
+        }
+
+        // Wait that number of nanoseconds.
+        ::timespec tspec;
+        tspec.tv_sec = time_t(nano / NanoSecPerSec);
+        tspec.tv_nsec = long(nano % NanoSecPerSec);
+        if (::nanosleep(&tspec, NULL) < 0 && errno != EINTR) {
+            // Actual error, not interrupted by a signal
+            throw MonotonicError("nanosleep error", errno);
+        }
+    }
+    
 #else
 
     // POSIX implementation
 
     // Compute due time
     ::timespec due;
-    due.tv_sec = _value / NanoSecPerSec;
-    due.tv_nsec = _value % NanoSecPerSec;
+    due.tv_sec = time_t(_value / NanoSecPerSec);
+    due.tv_nsec = long(_value % NanoSecPerSec);
 
     // Loop on clock_nanosleep, ignoring signals
     int status;
-    while ((status = ::clock_nanosleep (CLOCK_MONOTONIC, TIMER_ABSTIME, &due, NULL)) != 0) {
+    while ((status = ::clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &due, NULL)) != 0) {
         if (status != EINTR) {
             // Actual error, not interrupted by a signal
-            throw MonotonicError ("clock_nanosleep error", errno);
+            throw MonotonicError("clock_nanosleep error", errno);
         }
     }
 
@@ -156,7 +176,7 @@ void ts::Monotonic::wait() throw (MonotonicError)
 // requested value.
 //----------------------------------------------------------------------------
 
-ts::NanoSecond ts::Monotonic::SetPrecision (const NanoSecond& requested) throw (MonotonicError)
+ts::NanoSecond ts::Monotonic::SetPrecision(const NanoSecond& requested) throw (MonotonicError)
 {
 #if defined (__windows)
 

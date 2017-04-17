@@ -533,8 +533,20 @@ namespace ts {
         //! @param [in] unixTime A UNIX @c time_t value.
         //! @return The corresponding UTC time.
         //!
-        static Time UnixTimeToUTC (const time_t& unixTime);
+        static Time UnixTimeToUTC(const time_t& unixTime);
     
+        //!
+        //! This static routine gets the current real time clock and adds a delay in milliseconds (UNIX systems only).
+        //!
+        //! This function ensures that no overflow is possible.
+        //! This function is available on UNIX systems only
+        //! and should not be used on portable software.
+        //!
+        //! @param [in] delay Number of milliseconds to add to the current real time clock.
+        //! @return Absolute time in nanoseconds.
+        //!
+        static NanoSecond UnixRealTimeClockNanoSeconds(const MilliSecond& delay = 0);
+
         //!
         //! This static routine gets the current real time clock and adds a delay in milliseconds (UNIX systems only).
         //!
@@ -544,9 +556,8 @@ namespace ts {
         //!
         //! @param [out] result A returned UNIX @c timespec value.
         //! @param [in] delay Number of milliseconds to add to the current real time clock.
-        //! @return True on success, false on error.
         //!
-        static bool UnixRealTimeClock (::timespec& result, const MilliSecond& delay);
+        static void UnixRealTimeClock(::timespec& result, const MilliSecond& delay = 0);
 #endif
 
     private:
@@ -554,10 +565,10 @@ namespace ts {
         int64_t _value;
 
         // Private constructor from a 64-bit value
-        Time (const int64_t& value) : _value (value) {}
+        Time(const int64_t& value) : _value(value) {}
 
         // Static private routine: Build the 64-bit value from fields
-        static int64_t ToInt64 (int year, int month, int day, int hour, int minute, int second, int millisecond)
+        static int64_t ToInt64(int year, int month, int day, int hour, int minute, int second, int millisecond)
             throw(TimeError);
 
         // Number of clock ticks per millisecond:
@@ -590,7 +601,7 @@ namespace ts {
 //! @return A reference to the @a strm object.
 //! @throw ts::Tile::TimeError In case of operating system time error.
 //!
-TSDUCKDLL inline std::ostream& operator<< (std::ostream& strm, const ts::Time& time)
+TSDUCKDLL inline std::ostream& operator<<(std::ostream& strm, const ts::Time& time)
 {
-    return strm << std::string (time);
+    return strm << std::string(time);
 }

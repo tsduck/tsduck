@@ -34,16 +34,27 @@
 #include "tsUserInterrupt.h"
 #include "tsSingletonManager.h"
 #include "tsSysUtils.h"
-
+#include "tsFormat.h"
 
 ts::UserInterrupt* volatile ts::UserInterrupt::_active_instance = 0;
+
+// On UNIX platforms, we use a semaphore (sem_t). On MacOS, the address of the
+// semaphore is returned by sep_open. On other UNIX, the semaphore instance is
+// initialized by sem_init.
+#if defined(__unix)
+    #if defined(__mac)
+         #define SEM_PARAM(obj) ((obj)->_sem_address)
+    #else
+         #define SEM_PARAM(obj) (&((obj)->_sem_instance))
+    #endif
+#endif
 
 
 //----------------------------------------------------------------------------
 // Handler on UNIX platforms. Invoked in signal context.
 //----------------------------------------------------------------------------
 
-#if !defined(__windows)
+#if defined(__unix)
 void ts::UserInterrupt::sysHandler(int sig)
 {
     // There should be one active instance but just check...
@@ -59,7 +70,7 @@ void ts::UserInterrupt::sysHandler(int sig)
     // allowed in a signal handler. This is the reason why we use a semaphore
     // instead of any pthread mechanism.
 
-    if (::sem_post(&ui->_sem_sigint) < 0) {
+    if (::sem_post(SEM_PARAM(ui)) < 0) {
         ::perror("sem_post error in SIGINT handler");
         ::exit(EXIT_FAILURE);
     }
@@ -72,12 +83,12 @@ void ts::UserInterrupt::sysHandler(int sig)
 // application handler.
 //----------------------------------------------------------------------------
 
-#if !defined(__windows)
+#if defined(__unix)
 void ts::UserInterrupt::main()
 {
     while (!_terminate) {
         // Wait for the semaphore to be signaled
-        if (::sem_wait(&_sem_sigint) < 0 && errno != EINTR) {
+        if (::sem_wait(SEM_PARAM(this)) < 0 && errno != EINTR) {
             ::perror("sem_wait");
             ::exit(EXIT_FAILURE);
         }
@@ -141,12 +152,17 @@ void ts::UserInterrupt::main()
 //----------------------------------------------------------------------------
 
 ts::UserInterrupt::UserInterrupt(InterruptHandler* handler, bool one_shot, bool auto_activate) :
-#if !defined (__windows)
+#if defined(__unix)
     // stack size: 16 kB, maximum priority
     Thread(ThreadAttributes().setStackSize(16 * 1024).setPriority(ThreadAttributes::GetMaximumPriority())),
     _terminate(false),
     _got_sigint(0),
-    _sem_sigint(),
+#if defined(__mac)
+    _sem_name(Format("tsduck-%d-%" FMT_INT64 "u", int(getpid()), uint64_t(this))),
+    _sem_address(SEM_FAILED),
+#else
+    _sem_instance(),
+#endif
 #endif
     _handler(handler),
     _one_shot(one_shot),
@@ -191,33 +207,42 @@ void ts::UserInterrupt::activate()
 #if defined(__windows)
 
     // Install the console interrupt handler
-    if (SetConsoleCtrlHandler (sysHandler, TRUE) == 0) {
+    if (SetConsoleCtrlHandler(sysHandler, TRUE) == 0) {
         // Failure
         ErrorCode err = LastErrorCode();
-        std::cerr << "* Error establishing console interrupt handler: " << ErrorCodeMessage (err) << std::endl;
+        std::cerr << "* Error establishing console interrupt handler: " << ErrorCodeMessage(err) << std::endl;
         return;
     }
 
-#else
+#elif defined(__unix)
 
     _terminate = false;
     _got_sigint = 0;
 
-    // Initialize the semaphore
-    if (::sem_init (&_sem_sigint, 0, 0) < 0) {
-        ::perror ("Error initializing SIGINT semaphore");
-        ::exit (EXIT_FAILURE);
+    // Initialize the semaphore.
+#if defined(__mac)
+    // MacOS no longer supports unnamed semaphores, we need to use a named one.
+    _sem_address = ::sem_open(_sem_name.c_str(), O_CREAT, 0700, 0);
+    if (_sem_address == SEM_FAILED || _sem_address == 0) {
+        ::perror("Error initializing SIGINT semaphore");
+        ::exit(EXIT_FAILURE);
     }
-
+#else
+    if (::sem_init(&_sem_instance, 0, 0) < 0) {
+        ::perror("Error initializing SIGINT semaphore");
+        ::exit(EXIT_FAILURE);
+    }
+#endif
+    
     // Establish the signal handler
     struct sigaction act;
     act.sa_handler = sysHandler;
     act.sa_flags = _one_shot ? SA_ONESHOT : 0;
     sigemptyset(&act.sa_mask);
 
-    if (::sigaction (SIGINT, &act, 0) < 0) {
-        ::perror ("Error setting SIGINT handler");
-        ::exit (EXIT_FAILURE);
+    if (::sigaction(SIGINT, &act, 0) < 0) {
+        ::perror("Error setting SIGINT handler");
+        ::exit(EXIT_FAILURE);
     }
 
     // Start the monitor thread
@@ -239,47 +264,57 @@ void ts::UserInterrupt::activate()
 void ts::UserInterrupt::deactivate ()
 {
     // Deactivate only if active
-    Guard lock (SingletonManager::Instance()->mutex);
+    Guard lock(SingletonManager::Instance()->mutex);
     if (!_active) {
         return;
     }
-    assert (_active_instance == this);
+    assert(_active_instance == this);
 
-#if defined (__windows)
+#if defined(__windows)
 
     // Remove the console interrupt handler
-    SetConsoleCtrlHandler (sysHandler, FALSE);
+    SetConsoleCtrlHandler(sysHandler, FALSE);
 
-#else
+#elif defined(__unix)
 
     // Restore the signal handler to default behaviour
 
     struct sigaction act;
     act.sa_handler = SIG_DFL;
     act.sa_flags = 0;
-    sigemptyset (&act.sa_mask);
+    sigemptyset(&act.sa_mask);
 
-    if (::sigaction (SIGINT, &act, NULL) < 0) {
-        ::perror ("Error resetting SIGINT handler");
-        ::exit (EXIT_FAILURE);
+    if (::sigaction(SIGINT, &act, NULL) < 0) {
+        ::perror("Error resetting SIGINT handler");
+        ::exit(EXIT_FAILURE);
     }
 
     // Signal the semaphore to unlock the monitor thread
     _terminate = true;
-    if (::sem_post (&_sem_sigint) < 0) {
-        ::perror ("sem_post error in SIGINT handler");
-        ::exit (EXIT_FAILURE);
+    if (::sem_post(SEM_PARAM(this)) < 0) {
+        ::perror("sem_post error in SIGINT handler");
+        ::exit(EXIT_FAILURE);
     }
 
     // Wait for the monitor thread to terminate
     waitForTermination();
 
     // Free resources
-    if (::sem_destroy (&_sem_sigint) < 0) {
-        ::perror ("Error destroying SIGINT semaphore");
-        ::exit (EXIT_FAILURE);
+#if defined(__mac)
+    if (::sem_close(_sem_address) < 0) {
+        ::perror("sem_close error on SIGINT semaphore");
+        ::exit(EXIT_FAILURE);
     }
-
+    if (::sem_unlink(_sem_name.c_str()) < 0) {
+        ::perror("sem_unlink error on SIGINT semaphore");
+        ::exit(EXIT_FAILURE);
+    }
+#else
+    if (::sem_destroy(&_sem_instance) < 0) {
+        ::perror("Error destroying SIGINT semaphore");
+        ::exit(EXIT_FAILURE);
+    }
+#endif
 #endif
 
     // Now inactive

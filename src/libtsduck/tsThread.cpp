@@ -171,34 +171,34 @@ bool ts::Thread::start()
         return false;
     }
     // Set required stack size
-    if (_attributes._stackSize > 0 && ::pthread_attr_setstacksize (&attr, _attributes._stackSize) != 0) {
-        ::pthread_attr_destroy (&attr);
+    if (_attributes._stackSize > 0 && ::pthread_attr_setstacksize(&attr, _attributes._stackSize) != 0) {
+        ::pthread_attr_destroy(&attr);
         return false;
     }
     // Set scheduling policy identical as current process
-    if (::pthread_attr_setschedpolicy (&attr, ::sched_getscheduler (0)) != 0) {
-        ::pthread_attr_destroy (&attr);
+    if (::pthread_attr_setschedpolicy(&attr, ThreadAttributes::PthreadSchedulingPolicy()) != 0) {
+        ::pthread_attr_destroy(&attr);
         return false;
     }
     // Set scheduling priority
     ::sched_param sparam;
     sparam.sched_priority = _attributes._priority;
-    if (::pthread_attr_setschedparam (&attr, &sparam) != 0) {
-        ::pthread_attr_destroy (&attr);
+    if (::pthread_attr_setschedparam(&attr, &sparam) != 0) {
+        ::pthread_attr_destroy(&attr);
         return false;
     }
     // Use explicit scheduling attributes, do not inherit them from the current thread.
-    if (::pthread_attr_setinheritsched (&attr, PTHREAD_EXPLICIT_SCHED) != 0) {
-        ::pthread_attr_destroy (&attr);
+    if (::pthread_attr_setinheritsched(&attr, PTHREAD_EXPLICIT_SCHED) != 0) {
+        ::pthread_attr_destroy(&attr);
         return false;
     }
     // Create the thread
-    if (::pthread_create (&_pthread, &attr, Thread::ThreadProc, this) != 0) {
-        ::pthread_attr_destroy (&attr);
+    if (::pthread_create(&_pthread, &attr, Thread::ThreadProc, this) != 0) {
+        ::pthread_attr_destroy(&attr);
         return false;
     }
     // Destroy thread attributes
-    ::pthread_attr_destroy (&attr);
+    ::pthread_attr_destroy(&attr);
 
 #endif
 

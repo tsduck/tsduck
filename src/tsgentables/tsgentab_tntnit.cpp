@@ -34,6 +34,10 @@
 #include "tsGenTabPlugin.h"
 #include "tsTables.h"
 
+// 0xE9 = 233 = \351 = e acute
+// 0xE7 = 231 = \347 = c cedilla
+#define TNT_OLD_NAME_LATIN1 "r\351seau num\351rique terrestre fran\347ais"
+
 
 //----------------------------------------------------------------------------
 // Plugin definition
@@ -171,7 +175,7 @@ void ts::TNTNITPlugin::generateV26 (AbstractTablePtr& table)
 
     // Main descriptor loop
 
-    nit->descs.add (NetworkNameDescriptor ("F")); // previously "réseau numérique terrestre français"
+    nit->descs.add (NetworkNameDescriptor ("F"));
     nit->descs.add (SSULinkageDescriptor (1, nit->network_id, 0x01FF, OUI_DVB));
     nit->descs.add (SSULinkageDescriptor (2, nit->network_id, 0x02FF, OUI_DVB));
     nit->descs.add (SSULinkageDescriptor (3, nit->network_id, 0x03FF, OUI_DVB));
@@ -499,7 +503,7 @@ void ts::TNTNITPlugin::generateV25 (AbstractTablePtr& table)
 
     // Main descriptor loop
 
-    nit->descs.add (NetworkNameDescriptor ("F")); // previously "réseau numérique terrestre français"
+    nit->descs.add (NetworkNameDescriptor ("F"));
     nit->descs.add (SSULinkageDescriptor (1, nit->network_id, 0x01FF, OUI_DVB));
     nit->descs.add (SSULinkageDescriptor (2, nit->network_id, 0x02FF, OUI_DVB));
     nit->descs.add (SSULinkageDescriptor (3, nit->network_id, 0x03FF, OUI_DVB));
@@ -828,7 +832,7 @@ void ts::TNTNITPlugin::generateV24 (AbstractTablePtr& table)
     // Main descriptor loop
     // Note: SSU linkage_descriptor for L8 removed from v24
 
-    nit->descs.add (NetworkNameDescriptor ("réseau numérique terrestre français"));
+    nit->descs.add (NetworkNameDescriptor (TNT_OLD_NAME_LATIN1));
     nit->descs.add (SSULinkageDescriptor (1, nit->network_id, 0x01FF, OUI_DVB));
     nit->descs.add (SSULinkageDescriptor (2, nit->network_id, 0x02FF, OUI_DVB));
     nit->descs.add (SSULinkageDescriptor (3, nit->network_id, 0x03FF, OUI_DVB));
@@ -1324,7 +1328,7 @@ void ts::TNTNITPlugin::generateV23 (AbstractTablePtr& table)
 
     // Main descriptor loop
 
-    nit->descs.add (NetworkNameDescriptor ("réseau numérique terrestre français"));
+    nit->descs.add (NetworkNameDescriptor (TNT_OLD_NAME_LATIN1));
     nit->descs.add (SSULinkageDescriptor (1, nit->network_id, 0x01FF, OUI_DVB));
     nit->descs.add (SSULinkageDescriptor (2, nit->network_id, 0x02FF, OUI_DVB));
     nit->descs.add (SSULinkageDescriptor (3, nit->network_id, 0x03FF, OUI_DVB));

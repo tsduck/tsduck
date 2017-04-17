@@ -561,6 +561,19 @@
     #endif
 #endif
 
+// MacOS has a POSIX-compliant version of strerror_r, returning an int.
+// But fails to report this by defining HAVE_INT_STRERROR_R.
+
+#if defined(__mac) && !defined(HAVE_INT_STRERROR_R)
+#define HAVE_INT_STRERROR_R 1
+#endif
+
+// On MacOS, sigaction(2) uses the flag named SA_RESETHAND instead of SA_ONESHOT.
+
+#if defined(__mac) && !defined(SA_ONESHOT)
+#define SA_ONESHOT SA_RESETHAND
+#endif
+
 
 //----------------------------------------------------------------------------
 // Basic preprocessing features

@@ -57,10 +57,13 @@ ts::Condition::Condition() throw(ConditionError) :
         throw ConditionError("cond attr init", error);
         return;
     }
+#if !defined(__mac)
+    // The clock attribute is not implemented in MacOS, just keep the default clock.
     else if ((error = ::pthread_condattr_setclock(&attr, CLOCK_REALTIME)) != 0) {
         throw ConditionError("cond attr set clock", error);
         return;
     }
+#endif
     else if ((error = ::pthread_cond_init(&_cond, &attr)) != 0) {
         throw ConditionError("cond init", error);
         return;
@@ -163,9 +166,7 @@ bool ts::Condition::wait (Mutex& mutex, MilliSecond timeout, bool& signaled)
 
     // Get current time + timeout using the real-time clock.
     ::timespec time;
-    if (!Time::UnixRealTimeClock(time, timeout)) {
-        return false;
-    }
+    Time::UnixRealTimeClock(time, timeout);
 
     // Timed wait:
     int error;
