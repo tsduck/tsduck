@@ -44,8 +44,8 @@ LIBTSDUCKDIR := $(SRCROOT)/libtsduck
 TSTOOLSDIR   := $(SRCROOT)/tstools
 TSPLUGINSDIR := $(SRCROOT)/tsplugins
 TSGENTABSDIR := $(SRCROOT)/tsgentables
-LIBTSDUCK    := $(LIBTSDUCKDIR)/$(OBJDIR)/libtsduck.a
-SHLIBTSDUCK  := $(LIBTSDUCKDIR)/$(OBJDIR)/tsduck.so
+LIBTSDUCK    := libtsduck.a
+SHLIBTSDUCK  := tsduck.so
 TSPLUGINS    := $(sort $(filter-out tsplugin_generic,$(notdir $(basename $(wildcard $(TSPLUGINSDIR)/tsplugin_*.cpp)))))
 TSGENTABS    := $(sort $(notdir $(basename $(wildcard $(TSGENTABSDIR)/tsgentab_*.cpp))))
 
@@ -63,56 +63,31 @@ DESTDIR :=
 # External include directories and libraries.
 
 ifdef MACOS
-    CFLAGS_INCLUDES += -I/usr/local/opt/pcsc-lite/include/PCSC
+    CFLAGS_INCLUDES += -I/usr/local/opt/pcsc-lite/include/PCSC -I$(LIBTSDUCKDIR)/mac
     LDLIBS := -L/usr/local/opt/pcsc-lite/lib/ $(LDLIBS)
 else
-    CFLAGS_INCLUDES += -I/usr/include/PCSC
+    CFLAGS_INCLUDES += -I/usr/include/PCSC -I$(LIBTSDUCKDIR)/linux
 endif
-CFLAGS_INCLUDES += -I$(LIBTSDUCKDIR) -I$(LIBTSDUCKDIR)/linux --std=c++11
+CFLAGS_INCLUDES += -I$(LIBTSDUCKDIR) --std=c++11
 LDLIBS := -lpcsclite -ldl $(LDLIBS)
-LDFLAGS += -Wl,-E,-rpath,'$$ORIGIN'
+LDFLAGS_EXTRA += -Wl,-rpath,'$$ORIGIN'
 
-# Get the file-system type of current directory.
+# Targets to copy shareable objects in the object directory.
 
-OBJFS := $(shell df --output=target $(CURDIR) 2>/dev/null | tail -1)
-OBJFS := $(if $(OBJFS),$(shell findmnt -n -f -o FSTYPE --target $(OBJFS) 2>/dev/null),)
-
-# Targets to create symbolic links in the object directory.
-# If the current file system is vboxfs, we are running in a VirtualBox VM
-# and the current directory is mounted from the host system. If the host
-# is Windows (which we do not know...), we cannot create symbolic links
-# here and we copy the files.
-
-.PHONY: link_tsduck link_plugins
-link_tsduck: $(OBJDIR)/tsduck.so
-link_plugins: $(addprefix $(OBJDIR)/,$(addsuffix .so,$(TSPLUGINS) $(TSGENTABS)))
+.PHONY: copy_plugins
+copy_plugins: $(addprefix $(OBJDIR)/,$(addsuffix .so,$(TSPLUGINS) $(TSGENTABS)))
 
 ifneq ($(realpath $(CURDIR)),$(realpath $(LIBTSDUCKDIR)))
-ifeq ($(OBJFS),vboxsf)
 $(OBJDIR)/%: $(LIBTSDUCKDIR)/$(OBJDIR)/%
 	@echo '  [CP] $@'; cp $^ $@
-else
-$(OBJDIR)/tsduck.so:
-	@echo '  [LN] $@'; ln -sf $(SHLIBTSDUCK) $@
-endif
 endif
 
 ifneq ($(realpath $(CURDIR)),$(realpath $(TSPLUGINSDIR)))
-ifeq ($(OBJFS),vboxsf)
 $(OBJDIR)/%: $(TSPLUGINSDIR)/$(OBJDIR)/%
 	@echo '  [CP] $@'; cp $^ $@
-else
-$(addprefix $(OBJDIR)/,$(addsuffix .so,$(TSPLUGINS))):
-	@echo '  [LN] $@'; ln -sf $(TSPLUGINSDIR)/$(OBJDIR)/$(@F) $@
-endif
 endif
 
 ifneq ($(realpath $(CURDIR)),$(realpath $(TSGENTABSDIR)))
-ifeq ($(OBJFS),vboxsf)
 $(OBJDIR)/%: $(TSGENTABSDIR)/$(OBJDIR)/%
 	@echo '  [CP] $@'; cp $^ $@
-else
-$(addprefix $(OBJDIR)/,$(addsuffix .so,$(TSGENTABS))):
-	@echo '  [LN] $@'; ln -sf $(TSGENTABSDIR)/$(OBJDIR)/$(@F) $@
-endif
 endif

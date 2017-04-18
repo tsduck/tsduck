@@ -52,8 +52,10 @@ DTAPI_DIR  := $(basename $(basename $(DTAPI_FILE)))
 DTAPI_H    := $(DTAPI_DIR)/DTAPI/Include/DTAPI.h
 
 # Forced download of DTAPI from Dektec Web site.
+# If DTAPI_ORIGIN is defined (on the make command line for instance), it can be
+# the path of a local copy of LinuxSDK.tar.gz which is used instead of download.
 download:
-	wget -O $(DTAPI_FILE) $(DTAPI_URL)
+	$(if $(wildcard $(DTAPI_ORIGIN)),cp -f $(DTAPI_ORIGIN) $(DTAPI_FILE),wget -O $(DTAPI_FILE) $(DTAPI_URL))
 	touch $(DTAPI_FILE)
 
 # Download if not present.

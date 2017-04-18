@@ -63,14 +63,20 @@ RH_DISTRO   := $(shell grep " release " /etc/redhat-release 2>/dev/null | sed -e
 DISTRO      := $(if $(FC_DISTRO),.fc$(FC_DISTRO),$(if $(RH_DISTRO),.el$(RH_DISTRO),))
 RPM_RELEASE := 0$(DISTRO)
 
-# Build the tsduck binary RPM.
+# User's RPM build area.
 RPMBUILDROOT ?= $(HOME)/rpmbuild
 $(RPMBUILDROOT):
 	rpmdev-setuptree
-.PHONY: rpm
+
+# Build the tsduck binary RPM.
+# Reuse local Dektec Linux SDK if present.
+.PHONY: rpm rpm32
 rpm: tarball $(RPMBUILDROOT)
 	cp -f $(TARFILE) $(RPMBUILDROOT)/SOURCES/
-	MAKEFLAGS= rpmbuild -bb --quiet -D 'version $(TS_VERSION)' -D 'release $(RPM_RELEASE)' tsduck.spec
+	MAKEFLAGS=DTAPI_ORIGIN=$(ROOTDIR)/dektec/LinuxSDK.tar.gz \
+	  $(RPMBUILD) $(RPMBUILDFLAGS) -D 'version $(TS_VERSION)' -D 'release $(RPM_RELEASE)' tsduck.spec
 	cp -uf $(RPMBUILDROOT)/RPMS/*/tsduck-$(TS_VERSION)-$(RPM_RELEASE).*.rpm $(INSTALLERDIR)
 	cp -uf $(RPMBUILDROOT)/RPMS/*/tsduck-devel-$(TS_VERSION)-$(RPM_RELEASE).*.rpm $(INSTALLERDIR)
 	cp -uf $(RPMBUILDROOT)/SRPMS/tsduck-$(TS_VERSION)-$(RPM_RELEASE).src.rpm $(INSTALLERDIR)
+rpm32:
+	$(MAKE) rpm M32=true

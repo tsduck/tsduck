@@ -37,12 +37,11 @@ include ../../Makefile.tsduck
 default: shlibs
 	@true
 
-PLUGINS := $(filter-out tsplugin_generic,$(sort $(notdir $(basename $(wildcard tsplugin_*.cpp)))))
-SHLIBS  := $(addprefix $(OBJDIR)/,$(addsuffix .so,$(PLUGINS)))
+SHLIBS := $(addprefix $(OBJDIR)/,$(addsuffix .so,$(TSPLUGINS)))
 
 .PHONY: shlibs
 shlibs: $(SHLIBS)
-$(SHLIBS): $(SHLIBTSDUCK)
+$(SHLIBS): $(OBJDIR)/$(SHLIBTSDUCK)
 
 .PHONY: install
 install: $(SHLIBS)

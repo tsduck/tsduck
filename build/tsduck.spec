@@ -4,7 +4,7 @@ Release:        %{release}
 Summary:        MPEG transport stream toolkit
 
 Group:          Applications/Multimedia
-License:        Free Software
+License:        BSD
 Source0:        tsduck-%{version}.tgz
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
@@ -29,11 +29,14 @@ Requires:       %{name} = %{version}-%{release}
 The %{name}-devel package contains the static library and header files for
 developing applications that use %{name}.
 
+# Disable debuginfo package.
+%global debug_package %{nil}
+
 %prep
 %setup -q
 
 %build
-make
+make %{?_smp_mflags} %{?mflags}
 
 %install
 rm -rf $RPM_BUILD_ROOT
@@ -44,11 +47,11 @@ rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(-,root,root,-)
-/usr/bin/ts*
-/etc/udev/rules.d/80-tsduck.rules
-/etc/security/console.perms.d/80-tsduck.perms
+%{_bindir}/ts*
+%{_sysconfdir}/udev/rules.d/80-tsduck.rules
+%{_sysconfdir}/security/console.perms.d/80-tsduck.perms
 
 %files devel
 %defattr(-,root,root,-)
-/usr/lib/libtsduck.a
-/usr/include/tsduck
+%{_libdir}/libtsduck.a
+%{_includedir}/tsduck

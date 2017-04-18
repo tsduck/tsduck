@@ -9,7 +9,7 @@ Window:
 - Execute PowerShell script build\Build.ps1.
 
 Linux:
-- Execute "make" at root level.
+- Execute "make" at top level.
 
 
 Building tsduck installers
@@ -21,7 +21,8 @@ Window:
 - Execute PowerShell script build\Build-Installer.ps1.
 
 Fedora, CentOS, Red Hat Entreprise Linux:
-- Execute "make rpm" at root level.
+- Execute "make rpm" at top level.
+- Execute "make rpm32" to build a 32-bit package on a 64-bit system.
 
 
 Pre-requisistes: build tools
@@ -61,7 +62,7 @@ Ubuntu:
   $ apt-get install libpcsclite-dev libcppunit-dev
 
 All Linux:
-- Optional Dektec DTAPI: The command "make" at the root level will automatically
+- Optional Dektec DTAPI: The command "make" at the top level will automatically
   download the LinuxSDK from the Dektec site. See dektec/Makefile for details.
 
 MacOS:

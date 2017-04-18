@@ -93,12 +93,12 @@ OBJS += $(DTAPI_OBJECT)
 # use the dynamic one when building tools and plugins.
 
 .PHONY: libs
-libs: $(LIBTSDUCK) $(SHLIBTSDUCK)
-$(LIBTSDUCK): $(LIBTSDUCK)($(OBJS))
-$(SHLIBTSDUCK): $(OBJS)
+libs: $(OBJDIR)/$(LIBTSDUCK) $(OBJDIR)/$(SHLIBTSDUCK)
+$(OBJDIR)/$(LIBTSDUCK): $(OBJDIR)/$(LIBTSDUCK)($(OBJS))
+$(OBJDIR)/$(SHLIBTSDUCK): $(OBJS)
 	@echo '  [DTAPI] $(if $(DTAPI_OBJECT),using $(DTAPI_OBJECT),no DTAPI available)'; \
 	echo '  [CC] $@'; \
-	$(CC) $(CFLAGS) $^ $(LDLIBS) -shared -o $@
+	$(CC) $(CFLAGS) -Wl,-soname=$(notdir $@) $^ $(LDLIBS) -shared -o $@
 
 # The header tsduck.h includes all headers
 
@@ -120,10 +120,10 @@ tsduck.h: $(ROOTDIR)/HEADER.txt $(call GEN_FILES,) $(call GEN_FILES,linux) $(cal
 # Installing the shared library in same directory as executables
 
 .PHONY: install
-install: $(LIBTSDUCK) $(SHLIBTSDUCK) tsduck.h
+install: $(OBJDIR)/$(LIBTSDUCK) $(OBJDIR)/$(SHLIBTSDUCK) tsduck.h
 	install -d -m 755 $(DESTDIR)/usr/bin
-	install -m 755 $(SHLIBTSDUCK) $(DESTDIR)/usr/bin
-	install -d -m 755 $(DESTDIR)/usr/lib
-	install -m 644 $(LIBTSDUCK) $(DESTDIR)/usr/lib
+	install -m 755 $(OBJDIR)/$(SHLIBTSDUCK) $(DESTDIR)/usr/bin
+	install -d -m 755 $(DESTDIR)$(USRLIBDIR)
+	install -m 644 $(OBJDIR)/$(LIBTSDUCK) $(DESTDIR)$(USRLIBDIR)
 	install -d -m 755 $(DESTDIR)/usr/include/tsduck
 	install -m 644 tsduck.mk ts*.h $(wildcard $(OSDIR)/ts*.h) $(DESTDIR)/usr/include/tsduck

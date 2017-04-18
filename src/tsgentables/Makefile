@@ -37,12 +37,11 @@ include ../../Makefile.tsduck
 default: shlibs
 	@true
 
-PLUGINS := $(sort $(notdir $(basename $(wildcard tsgentab_*.cpp))))
-SHLIBS  := $(addprefix $(OBJDIR)/,$(addsuffix .so,$(PLUGINS)))
+SHLIBS := $(addprefix $(OBJDIR)/,$(addsuffix .so,$(TSGENTABS)))
 
 .PHONY: shlibs
 shlibs: $(SHLIBS)
-$(SHLIBS): $(SHLIBTSDUCK)
+$(SHLIBS): $(OBJDIR)/$(SHLIBTSDUCK)
 
 .PHONY: install
 install: $(SHLIBS)

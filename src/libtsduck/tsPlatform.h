@@ -111,6 +111,18 @@
     #error "New unknown compiler, please update tsPlatform.h"
 #endif
 
+#if defined(DOXYGEN)
+    //!
+    //! GCC version, encoded as an integer.
+    //! Example: 40805 for GCC 4.8.1.
+    //! Undefined when the compiler is not GCC or its version is unknown.
+    //!
+    #define TS_GCC_VERSION
+
+#elif defined(__GNUC__) && defined(__GNUC_MINOR__) && defined(__GNUC_PATCHLEVEL__)
+    #define TS_GCC_VERSION ((10000 * __GNUC__) + (100 * __GNUC_MINOR__) + (__GNUC_PATCHLEVEL__ % 100))
+#endif
+
 
 //----------------------------------------------------------------------------
 // Unified O/S naming: __linux, __windows, etc

@@ -34,12 +34,12 @@
 
 include ../../Makefile.tsduck
 
-default: execs link_tsduck link_plugins
+default: execs copy_plugins
 	@true
 
 .PHONY: execs
 execs: $(OBJDIR)/utest
-$(OBJDIR)/utest: $(OBJS) $(SHLIBTSDUCK)
+$(OBJDIR)/utest: $(OBJS) $(OBJDIR)/$(SHLIBTSDUCK)
 LDLIBS := -lcppunit $(LDLIBS)
 
 .PHONY: install

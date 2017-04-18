@@ -34,13 +34,13 @@
 
 include ../../Makefile.tsduck
 
-default: execs link_tsduck link_plugins
+default: execs copy_plugins
 	@true
 
 .PHONY: execs
 execs: $(EXECS)
 $(OBJDIR)/tsp: $(addprefix $(OBJDIR)/,$(addsuffix .o,$(filter tsp%,$(MODULES_LIB))))
-$(EXECS): $(SHLIBTSDUCK)
+$(EXECS): $(OBJDIR)/$(SHLIBTSDUCK)
 
 .PHONY: install
 install: $(EXECS)

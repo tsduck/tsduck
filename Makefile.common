@@ -109,23 +109,20 @@
 #  ---------------
 #  The following variables may be set in the parent makefile before inclusion.
 #
+#  ARFLAGS_EXTRA
+#    Additional options for the "ar" command.
+#    This variable can be defined after inclusion of this makefile.
+#
+#  CFLAGS_EXTRA
+#    Additional options for the C compiler.
+#    This variable can be defined after inclusion of this makefile.
+#
 #  CFLAGS_INCLUDES
 #    Contains specific include options for both C and C++ (typically -I...)
-#
-#  CXXFLAGS_INCLUDES
-#    Contains additional specific include options for C++ only.
 #
 #  CFLAGS_OPTIMIZE
 #    Contains specific optimization for the gcc compiler. Defaults to -O2.
 #    Ignored if DEBUG is defined.
-#
-#  CVPATH
-#    Contains directories where *.h and *.c files are searched. "vpath"
-#    directives are defined accordingly.
-#
-#  CXXVPATH
-#    Contains directories where *.h and *.cpp files are searched. "vpath"
-#    directives are defined accordingly.
 #
 #  CPPCHECK
 #    Contains the absolute path of the cppcheck static code analyzer.
@@ -138,6 +135,21 @@
 #  CPPCHECK_SOURCES
 #    List of source files or directories on which to run cppcheck.
 #    By default, use the source tree starting at current directory.
+#
+#  CVPATH
+#    Contains directories where *.h and *.c files are searched. "vpath"
+#    directives are defined accordingly.
+#
+#  CXXFLAGS_EXTRA
+#    Additional options for the C++ compiler.
+#    This variable can be defined after inclusion of this makefile.
+#
+#  CXXFLAGS_INCLUDES
+#    Contains additional specific include options for C++ only.
+#
+#  CXXVPATH
+#    Contains directories where *.h and *.cpp files are searched. "vpath"
+#    directives are defined accordingly.
 #
 #  DEBUG
 #    If defined (any non-empty value), the debug information is included in
@@ -185,6 +197,10 @@
 #    is present. Define it explicitly if you need the C++ libraries without
 #    C++ source files in the make working directory.
 #
+#  LDFLAGS_EXTRA
+#    Additional options for the linker.
+#    This variable can be defined after inclusion of this makefile.
+#
 #  M32
 #    If defined (any non-empty value), compile for 32-bit target when running
 #    in 64-bit host. More precisely, on a x86-84 host platform, generate code
@@ -223,6 +239,10 @@
 #    define the variable as empty. If it is empty, the default will apply
 #    (all subdirectories). Instead, define its value as something that does
 #    not correspond to any existing directory (eg. RECURSE_ORDER = none).
+#
+#  RPMBUILDFLAGS_EXTRA
+#    Additional options for the "rpmbuild" command.
+#    This variable can be defined after inclusion of this makefile.
 #
 #  TARGET_ARCH
 #    Contains the target architecture for gcc. Defaults to -march=`uname -m`.
@@ -300,6 +320,9 @@
 #    This function searches a command in $PATH and in a few other predefined
 #    directories. Return the full path of the first found, empty if not found.
 #    Example: $(call F_SEARCH,ls)
+#
+#  FGREP
+#    Name of "fgrep" command. If some "gfgrep" is found, use it instead.
 #
 #  FLAWFINDER_FLAGS
 #    Same as input variables with additional usual options.
@@ -388,6 +411,13 @@
 #    Actual recurse order. If the user did not define RECURSE_ORDER, use all
 #    subdirectories, except those for which we know there is nothing to make.
 #
+#  RPMBUILD
+#    Name of rpmbuild command.
+#
+#  RPMBUILDFLAGS
+#    Flags for rpmbuild command. If M32 is defined, the rpmbuild options
+#    build a 32-bit package.
+#
 #  ROOTDIR
 #    Absolute path of the directory where this Makefile.common file is
 #    located. By convention, this is the root directory of the project.
@@ -413,6 +443,10 @@
 #
 #  TEXI2PDF_FLAGS
 #    Texi2dvi flags used in .texi to .pdf transformation.
+#
+#  USRLIBDIR
+#    Name of the library directory for the target architecture. This is
+#    /usr/lib64 for x86_64 and /usr/lib elsewhere.
 #
 #-----------------------------------------------------------------------------
 
@@ -593,24 +627,14 @@ else
 endif
 
 # External libraries
-ifdef LDCXX
-    LDLIBS += -lstdc++
-endif
-LDLIBS += -lpthread -lm
-ifndef MACOS
-    LDLIBS += -lrt
-endif
+LDLIBS += $(if $(LDCXX),-lstdc++,) -lpthread $(if $(MACOS),,-lrt) -lm
 
 # Global compilation flags.
 # Additional flags can be passed on the "make" command line using *FLAGS_EXTRA.
 CFLAGS   = $(CFLAGS_DEBUG) $(CFLAGS_M32) $(CFLAGS_GCOV) $(CFLAGS_WARNINGS) $(CFLAGS_INCLUDES) $(TARGET_ARCH) $(CFLAGS_FPIC) -std=c99 $(CFLAGS_EXTRA)
 CXXFLAGS = $(CFLAGS_DEBUG) $(CFLAGS_M32) $(CFLAGS_GCOV) $(CXXFLAGS_WARNINGS) $(CXXFLAGS_INCLUDES) $(TARGET_ARCH) $(CFLAGS_FPIC) $(CXXFLAGS_EXTRA)
 LDFLAGS  = $(LDFLAGS_DEBUG) $(LDFLAGS_M32) $(LDFLAGS_GCOV) $(TARGET_ARCH) $(LDFLAGS_EXTRA)
-ifdef MACOS
-  ARFLAGS = rc $(ARFLAGS_EXTRA)
-else
-  ARFLAGS = rcU $(ARFLAGS_EXTRA)
-endif
+ARFLAGS  = rc$(if $(MACOS),,U) $(ARFLAGS_EXTRA)
 
 # Output subdirectories in each project directory
 ifdef DEBUG
@@ -629,6 +653,17 @@ endif
 ifneq ($(CVPATH)$(CXXVPATH),)
     vpath %.h $(CVPATH) $(CXXVPATH)
 endif
+
+# On x86_64, the libraries are installed in lib64, not lib.
+ifeq ($(MAIN_ARCH),x86_64)
+    USRLIBDIR = /usr/lib64
+else
+    USRLIBDIR = /usr/lib
+endif
+
+# RPM building.
+RPMBUILD     ?= rpmbuild
+RPMBUILDFLAGS = -ba --clean $(if $(M32),--target $(MAIN_ARCH) -D 'mflags M32=true',) $(RPMBUILDFLAGS_EXTRA)
 
 # Source and object files in current directory.
 SOURCES      := $(sort $(notdir $(wildcard *.c *.cpp $(addsuffix /*.c,$(CVPATH)) $(addsuffix /*.cpp,$(CXXVPATH)))))
@@ -669,7 +704,7 @@ $(OBJDIR)/%: $(OBJDIR)/%.o
 	$(CC) $(LDFLAGS) $^ $(LDLIBS) -o $@
 $(OBJDIR)/%.so: $(OBJDIR)/%.o
 	@echo '  [CC] $@'; \
-	$(CC) $(CFLAGS) $^ $(LDLIBS) -shared -o $@
+	$(CC) $(CFLAGS) -Wl,-soname=$(notdir $@) $^ $(LDLIBS) -shared -o $@
 
 # Object files dependencies (.dep files, included by makefiles)
 $(OBJDIR)/%.dep: %.c

@@ -53,6 +53,6 @@ install:
 	$(MAKE) -C build $@
 
 # Various build targets are redirected to build subdirectory.
-.PHONY: tarball rpm deb
-tarball rpm deb:
+.PHONY: tarball rpm rpm32 deb
+tarball rpm rpm32 deb:
 	$(MAKE) -C build $@
