@@ -607,13 +607,9 @@ CFLAGS   = $(CFLAGS_DEBUG) $(CFLAGS_M32) $(CFLAGS_GCOV) $(CFLAGS_WARNINGS) $(CFL
 CXXFLAGS = $(CFLAGS_DEBUG) $(CFLAGS_M32) $(CFLAGS_GCOV) $(CXXFLAGS_WARNINGS) $(CXXFLAGS_INCLUDES) $(TARGET_ARCH) $(CFLAGS_FPIC) $(CXXFLAGS_EXTRA)
 LDFLAGS  = $(LDFLAGS_DEBUG) $(LDFLAGS_M32) $(LDFLAGS_GCOV) $(TARGET_ARCH) $(LDFLAGS_EXTRA)
 ifdef MACOS
-  ARFLAGS = rcS $(ARFLAGS_EXTRA)
-  RANLIB  = ranlib
-  RANLIB_FLAGS = -no_warning_for_no_symbols
+  ARFLAGS = rc $(ARFLAGS_EXTRA)
 else
   ARFLAGS = rcU $(ARFLAGS_EXTRA)
-  RANLIB  = 
-  RANLIB_FLAGS = 
 endif
 
 # Output subdirectories in each project directory
@@ -667,7 +663,7 @@ $(OBJDIR)/%.o: %.cpp
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
 (%): %
 	@echo '  [AR] $<'; \
-	$(ARLOCK) $(AR) $(ARFLAGS) $@ $< && $(ARLOCK) $(RANLIB) $(RANLIB_FLAGS) $@
+	$(ARLOCK) $(AR) $(ARFLAGS) $@ $<
 $(OBJDIR)/%: $(OBJDIR)/%.o
 	@echo '  [LD] $@'; \
 	$(CC) $(LDFLAGS) $^ $(LDLIBS) -o $@

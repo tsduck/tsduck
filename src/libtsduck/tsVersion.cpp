@@ -29,14 +29,14 @@
 //
 //  Build version string
 //
+//  We also include all libtsduck header files. This is done on purpose to
+//  make sure that all inlined functions are compiled at least once. Otherwise,
+//  on Windows, the libtsduck DLL will no contain the referenced code.
+//
 //----------------------------------------------------------------------------
 
 #include "tsVersion.h"
-#include "tsFormat.h"
-#include "tsToInteger.h"
-#include "tsSysUtils.h"
-#include "tsSharedLibrary.h"
-#include "tsDektecUtils.h"
+#include "tsduck.h" // all libstduck headers
 
 
 //----------------------------------------------------------------------------

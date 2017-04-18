@@ -28,7 +28,6 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-
 #include "tsAC3Attributes.h"
 #include "tsAC3Descriptor.h"
 #include "tsAES.h"
@@ -243,4 +242,19 @@
 #include "tsVariable.h"
 #include "tsVersion.h"
 #include "tsVideoAttributes.h"
+
+#if defined(__linux)
+#include "linux/tsDTVProperties.h"
+#include "linux/tsSignalAllocator.h"
+#endif
+
+#if defined(__windows)
+#include "windows/tsComIds.h"
+#include "windows/tsComPtr.h"
+#include "windows/tsComUtils.h"
+#include "windows/tsDirectShowUtils.h"
+#include "windows/tsMediaTypeUtils.h"
+#include "windows/tsRegistryUtils.h"
+#include "windows/tsSinkFilter.h"
+#endif
 

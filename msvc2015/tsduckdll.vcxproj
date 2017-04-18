@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -289,7 +289,6 @@
     <ClCompile Include="..\src\libtsduck\tsAVCParser.cpp" />
     <ClCompile Include="..\src\libtsduck\tsAVCSequenceParameterSet.cpp" />
     <ClCompile Include="..\src\libtsduck\tsAVCVUIParameters.cpp" />
-    <ClCompile Include="..\src\libtsduck\tsBAT.cpp" />
     <ClCompile Include="..\src\libtsduck\tsBCD.cpp" />
     <ClCompile Include="..\src\libtsduck\tsBinaryTable.cpp" />
     <ClCompile Include="..\src\libtsduck\tsBinaryTableDisplay.cpp" />
@@ -298,7 +297,6 @@
     <ClCompile Include="..\src\libtsduck\tsCADescriptor.cpp" />
     <ClCompile Include="..\src\libtsduck\tsCAIdentifierDescriptor.cpp" />
     <ClCompile Include="..\src\libtsduck\tsCASFamily.cpp" />
-    <ClCompile Include="..\src\libtsduck\tsCAT.cpp" />
     <ClCompile Include="..\src\libtsduck\tsCerrReport.cpp" />
     <ClCompile Include="..\src\libtsduck\tsCipherChaining.cpp" />
     <ClCompile Include="..\src\libtsduck\tsCOM.cpp" />
@@ -322,7 +320,6 @@
     <ClCompile Include="..\src\libtsduck\tsDescriptorList.cpp" />
     <ClCompile Include="..\src\libtsduck\tsDescriptorListDisplay.cpp" />
     <ClCompile Include="..\src\libtsduck\tsDMT.cpp" />
-    <ClCompile Include="..\src\libtsduck\tsDoubleCheckLock.cpp" />
     <ClCompile Include="..\src\libtsduck\tsECMGClient.cpp" />
     <ClCompile Include="..\src\libtsduck\tsECMGSCS.cpp" />
     <ClCompile Include="..\src\libtsduck\tsEMMGMUX.cpp" />
@@ -336,7 +333,6 @@
     <ClCompile Include="..\src\libtsduck\tsFileNameRate.cpp" />
     <ClCompile Include="..\src\libtsduck\tsForkPipe.cpp" />
     <ClCompile Include="..\src\libtsduck\tsFormat.cpp" />
-    <ClCompile Include="..\src\libtsduck\tsGenTabPlugin.cpp" />
     <ClCompile Include="..\src\libtsduck\tsGuard.cpp" />
     <ClCompile Include="..\src\libtsduck\tsGuardCondition.cpp" />
     <ClCompile Include="..\src\libtsduck\tsHDSimulcastLogicalChannelDescriptor.cpp" />
@@ -358,7 +354,6 @@
     <ClCompile Include="..\src\libtsduck\tsNames.cpp" />
     <ClCompile Include="..\src\libtsduck\tsNamesOUI.cpp" />
     <ClCompile Include="..\src\libtsduck\tsNetworkNameDescriptor.cpp" />
-    <ClCompile Include="..\src\libtsduck\tsNIT.cpp" />
     <ClCompile Include="..\src\libtsduck\tsNullReport.cpp" />
     <ClCompile Include="..\src\libtsduck\tsObject.cpp" />
     <ClCompile Include="..\src\libtsduck\tsOneShotPacketizer.cpp" />
@@ -378,7 +373,6 @@
     <ClCompile Include="..\src\libtsduck\tsPrivateDataSpecifierDescriptor.cpp" />
     <ClCompile Include="..\src\libtsduck\tsPSILogger.cpp" />
     <ClCompile Include="..\src\libtsduck\tsPSILoggerOptions.cpp" />
-    <ClCompile Include="..\src\libtsduck\tsReportHandler.cpp" />
     <ClCompile Include="..\src\libtsduck\tsReportInterface.cpp" />
     <ClCompile Include="..\src\libtsduck\tsRingNode.cpp" />
     <ClCompile Include="..\src\libtsduck\tsScrambling.cpp" />
@@ -427,7 +421,6 @@
     <ClCompile Include="..\src\libtsduck\tsTSAnalyzer.cpp" />
     <ClCompile Include="..\src\libtsduck\tsTSAnalyzerOptions.cpp" />
     <ClCompile Include="..\src\libtsduck\tsTSAnalyzerReport.cpp" />
-    <ClCompile Include="..\src\libtsduck\tsTSDT.cpp" />
     <ClCompile Include="..\src\libtsduck\tsTSFileInput.cpp" />
     <ClCompile Include="..\src\libtsduck\tsTSFileInputBuffered.cpp" />
     <ClCompile Include="..\src\libtsduck\tsTSFileOutput.cpp" />

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="Source Files">
@@ -825,9 +825,6 @@
     <ClCompile Include="..\src\libtsduck\tsAVCVUIParameters.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\libtsduck\tsBAT.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\libtsduck\tsBCD.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -850,9 +847,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\src\libtsduck\tsCASFamily.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\libtsduck\tsCAT.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\src\libtsduck\tsCerrReport.cpp">
@@ -888,9 +882,6 @@
     <ClCompile Include="..\src\libtsduck\tsDataBroadcastIdDescriptor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\libtsduck\private\tsDektecUtils.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\libtsduck\private\tsDektecVPD.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -910,9 +901,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\src\libtsduck\tsDMT.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\libtsduck\tsDoubleCheckLock.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\src\libtsduck\tsECMGClient.cpp">
@@ -952,9 +940,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\src\libtsduck\tsFormat.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\libtsduck\tsGenTabPlugin.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\src\libtsduck\tsGuard.cpp">
@@ -1020,9 +1005,6 @@
     <ClCompile Include="..\src\libtsduck\tsNetworkNameDescriptor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\libtsduck\tsNIT.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\libtsduck\tsNullReport.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -1078,9 +1060,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\src\libtsduck\tsPSILoggerOptions.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\libtsduck\tsReportHandler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\src\libtsduck\tsReportInterface.cpp">
@@ -1227,9 +1206,6 @@
     <ClCompile Include="..\src\libtsduck\tsTSAnalyzerReport.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\libtsduck\tsTSDT.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\libtsduck\tsTSFileInput.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -1312,6 +1288,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\src\libtsduck\tsDektecOutputPlugin.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\libtsduck\tsDektecUtils.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\libtsduck\private\tsDektecDevice.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

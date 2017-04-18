@@ -26,18 +26,45 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
+//!
+//!  @file tsVersion.h
+//!
+//!  Version identification of TSDuck.
+//!
+//----------------------------------------------------------------------------
 
 #pragma once
 #include "tsPlatform.h"
 
+//!
+//! TSDuck major version.
+//!
 #define TS_VERSION_MAJOR  3
+//!
+//! TSDuck minor version.
+//!
 #define TS_VERSION_MINOR  0
 
+//!
+//! TSDuck namespace, containing all TSDuck classes and functions.
+//!
 namespace ts {
 
-    // Types of version formatting, for predefined option --version
-    enum VersionFormat {VERSION_SHORT, VERSION_LONG, VERSION_NSIS, VERSION_DEKTEC};
+    //!
+    //! Types of version formatting, for predefined option --version.
+    //!
+    enum VersionFormat {
+        VERSION_SHORT,   //!< Short format X.Y. 
+        VERSION_LONG,    //!< Full explanatory format.
+        VERSION_NSIS,    //!< Output an NSIS @c !define directive.
+        VERSION_DEKTEC   //!< Version of embedded Dektec DTAPI and detected Dektec drivers.
+    };
     
-    // Get formatted version.
+    //!
+    //! Get the TSDuck formatted version number.
+    //! @param [in] format Type of output, short by default.
+    //! @param [in] applicationName Name of the application to prepend to the long format.
+    //! @return The formatted version string.
+    //!
     TSDUCKDLL std::string GetVersion(VersionFormat format = VERSION_SHORT, const std::string& applicationName = std::string());
 }

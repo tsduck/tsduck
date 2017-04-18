@@ -102,11 +102,20 @@ $(SHLIBTSDUCK): $(OBJS)
 
 # The header tsduck.h includes all headers
 
-tsduck.h: $(ROOTDIR)/HEADER.txt $(sort $(filter-out tsduck.h %Template.h,$(wildcard *.h)))
+GEN_FILES = $(sort $(filter-out tsduck.h %Template.h,$(wildcard $(if $(1),$(1)/,)*.h)))
+GEN_INCLUDES = $(if $(call GEN_FILES,$(1)),$(if $(1),echo; echo -n '\#if defined(__$(1))';,) \
+    $(SED) <<<'$(call GEN_FILES,$(1))' -e 's/ *\([^\. ]*\).h/\n\#include "\1.h"/g' \
+    $(if $(1),; echo '\#endif',),true)
+
+tsduck.h: $(ROOTDIR)/HEADER.txt $(call GEN_FILES,) $(call GEN_FILES,linux) $(call GEN_FILES,mac) $(call GEN_FILES,windows)
 	@echo '  [REBUILD] $@'; \
-	cp $< $@; \
-	echo -e '\n#pragma once\n' >>$@; \
-	$(SED) <<<'$(filter-out $<,$^)' >>$@ -e 's/ *\([^\. ]*\).h/#include "\1.h"\n/g'
+	(cat $<; \
+	echo; echo -n '#pragma once'; \
+	$(call GEN_INCLUDES,); \
+	$(call GEN_INCLUDES,linux); \
+	$(call GEN_INCLUDES,mac); \
+	$(call GEN_INCLUDES,windows); \
+	echo) >$@
 
 # Installing the shared library in same directory as executables
 
