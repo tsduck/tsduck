@@ -39,6 +39,6 @@ include ../Makefile.tsduck
 default:
 	+@$(RECURSE)
 
-.PHONY: install
-install: default
+.PHONY: install install-devel
+install install-devel:
 	@$(RECURSE)

@@ -119,10 +119,11 @@ tsduck.h: $(ROOTDIR)/HEADER.txt $(call GEN_FILES,) $(call GEN_FILES,linux) $(cal
 
 # Installing the shared library in same directory as executables
 
-.PHONY: install
-install: $(OBJDIR)/$(LIBTSDUCK) $(OBJDIR)/$(SHLIBTSDUCK) tsduck.h
+.PHONY: install install-devel
+install: $(OBJDIR)/$(SHLIBTSDUCK)
 	install -d -m 755 $(DESTDIR)/usr/bin
 	install -m 755 $(OBJDIR)/$(SHLIBTSDUCK) $(DESTDIR)/usr/bin
+install-devel: $(OBJDIR)/$(LIBTSDUCK) tsduck.h
 	install -d -m 755 $(DESTDIR)$(USRLIBDIR)
 	install -m 644 $(OBJDIR)/$(LIBTSDUCK) $(DESTDIR)$(USRLIBDIR)
 	install -d -m 755 $(DESTDIR)/usr/include/tsduck

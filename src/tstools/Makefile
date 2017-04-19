@@ -42,7 +42,9 @@ execs: $(EXECS)
 $(OBJDIR)/tsp: $(addprefix $(OBJDIR)/,$(addsuffix .o,$(filter tsp%,$(MODULES_LIB))))
 $(EXECS): $(OBJDIR)/$(SHLIBTSDUCK)
 
-.PHONY: install
+.PHONY: install install-devel
 install: $(EXECS)
 	install -d -m 755 $(DESTDIR)/usr/bin
 	install -m 755 $(EXECS) $(DESTDIR)/usr/bin
+install-devel:
+	@true

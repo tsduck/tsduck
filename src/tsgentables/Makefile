@@ -43,7 +43,9 @@ SHLIBS := $(addprefix $(OBJDIR)/,$(addsuffix .so,$(TSGENTABS)))
 shlibs: $(SHLIBS)
 $(SHLIBS): $(OBJDIR)/$(SHLIBTSDUCK)
 
-.PHONY: install
+.PHONY: install install-devel
 install: $(SHLIBS)
 	install -d -m 755 $(DESTDIR)/usr/bin
 	install -m 755 $(SHLIBS) $(DESTDIR)/usr/bin
+install-devel:
+	@true

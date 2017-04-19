@@ -7,7 +7,7 @@ Group:          Applications/Multimedia
 License:        BSD
 Source0:        tsduck-%{version}.tgz
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
-
+Requires:       pcsc-lite
 BuildRequires:  gcc-c++
 BuildRequires:  gcc
 BuildRequires:  make
@@ -41,6 +41,7 @@ make %{?_smp_mflags} %{?mflags}
 %install
 rm -rf $RPM_BUILD_ROOT
 make install DESTDIR=$RPM_BUILD_ROOT
+make install-devel DESTDIR=$RPM_BUILD_ROOT
 
 %clean
 rm -rf $RPM_BUILD_ROOT

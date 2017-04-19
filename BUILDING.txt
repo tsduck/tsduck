@@ -24,6 +24,9 @@ Fedora, CentOS, Red Hat Entreprise Linux:
 - Execute "make rpm" at top level.
 - Execute "make rpm32" to build a 32-bit package on a 64-bit system.
 
+Ubuntu:
+- Execute "make deb" at top level.
+
 
 Pre-requisistes: build tools
 ----------------------------

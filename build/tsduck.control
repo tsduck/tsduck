@@ -1,0 +1,12 @@
+Package: tsduck
+Source: tsduck
+Version: {{VERSION}}
+Maintainer: Thierry Lelegard <thierry@lelegard.fr>
+Architecture: {{ARCH}}
+Section: free/video
+Priority: optional
+Depends: libc6, libstdc++6, libgcc1, libpcsclite1
+Description: MPEG Transport Stream Toolkit
+ The MPEG Transport Stream Toolkit provides some simple utilities to process
+ MPEG Transport Streams (TS), either as recorded files or live streams. The
+ structure of an MPEG TS is defined in ISO 13818-1.

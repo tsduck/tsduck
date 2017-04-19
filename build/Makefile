@@ -80,3 +80,21 @@ rpm: tarball $(RPMBUILDROOT)
 	cp -uf $(RPMBUILDROOT)/SRPMS/tsduck-$(TS_VERSION)-$(RPM_RELEASE).src.rpm $(INSTALLERDIR)
 rpm32:
 	$(MAKE) rpm M32=true
+
+# Build the tsduck DEB package.
+TMPDIR = /tmp/tsduck-deb-$(USER)
+.PHONY: deb
+deb:
+	$(MAKE) -C $(ROOTDIR) -j$(CPU_COUNT)
+	rm -rf $(TMPDIR)
+	$(MAKE) -C $(ROOTDIR) install DESTDIR=$(TMPDIR)
+	mkdir $(TMPDIR)/DEBIAN
+	sed -e 's/{{VERSION}}/$(TS_VERSION)/g' \
+	    -e 's/{{ARCH}}/$(shell dpkg-architecture -qDEB_BUILD_ARCH)/g' \
+	    tsduck.control >$(TMPDIR)/DEBIAN/control
+	sed -e 's|{{EXECS}}|$(addprefix /usr/bin/,$(TSEXECS))|g' \
+	    -e 's|{{SHLIBS}}|$(addprefix /usr/bin/,$(SHLIBTSDUCK) $(addsuffix .so,$(TSPLUGINS) $(TSGENTABS)))|g' \
+	    tsduck.postinst >$(TMPDIR)/DEBIAN/postinst
+	chmod a+x $(TMPDIR)/DEBIAN/postinst
+	dpkg --build $(TMPDIR) $(INSTALLERDIR)
+	rm -rf $(TMPDIR)

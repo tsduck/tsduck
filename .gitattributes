@@ -9,6 +9,8 @@ Makefile* text
 *.asm text
 *.pro text
 *.pri text
+*.spec text
+*.control text
 
 # Text files that will always have CRLF line endings on checkout.
 *.ps1 text eol=crlf
@@ -22,6 +24,7 @@ Makefile* text
 # Text files that will always have LF line endings on checkout.
 *.html text eol=lf
 *.sh text eol=lf
+*.postinst text eol=lf
 Makefile* text eol=lf
 
 # Binary file, do not modify on convert, whatever your git settings are.

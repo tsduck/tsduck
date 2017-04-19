@@ -42,6 +42,6 @@ execs: $(OBJDIR)/utest
 $(OBJDIR)/utest: $(OBJS) $(OBJDIR)/$(SHLIBTSDUCK)
 LDLIBS := -lcppunit $(LDLIBS)
 
-.PHONY: install
-install:
+.PHONY: install install-devel
+install install-devel:
 	@true

@@ -704,7 +704,7 @@ $(OBJDIR)/%: $(OBJDIR)/%.o
 	$(CC) $(LDFLAGS) $^ $(LDLIBS) -o $@
 $(OBJDIR)/%.so: $(OBJDIR)/%.o
 	@echo '  [CC] $@'; \
-	$(CC) $(CFLAGS) -Wl,-soname=$(notdir $@) $^ $(LDLIBS) -shared -o $@
+	$(CC) $(CFLAGS) -Wl,-soname=$(notdir $@) $(LDFLAGS) $^ $(LDLIBS) -shared -o $@
 
 # Object files dependencies (.dep files, included by makefiles)
 $(OBJDIR)/%.dep: %.c

@@ -48,6 +48,8 @@ LIBTSDUCK    := libtsduck.a
 SHLIBTSDUCK  := tsduck.so
 TSPLUGINS    := $(sort $(filter-out tsplugin_generic,$(notdir $(basename $(wildcard $(TSPLUGINSDIR)/tsplugin_*.cpp)))))
 TSGENTABS    := $(sort $(notdir $(basename $(wildcard $(TSGENTABSDIR)/tsgentab_*.cpp))))
+TSEXECS      := $(sort $(filter-out $(notdir $(basename $(wildcard $(TSTOOLSDIR)/*.h))),\
+                                    $(notdir $(basename $(wildcard $(TSTOOLSDIR)/*.cpp)))))
 
 # Product version
 

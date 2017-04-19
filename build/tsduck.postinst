@@ -1,0 +1,13 @@
+#!/bin/bash
+# TSDuck post-installation script on Ubuntu and Debian systems.
+
+if [[ "$1" = "configure" ]]; then
+    # Fix file permissions and ownership.
+    chown root:root {{EXECS}} {{SHLIBS}}
+    chmod 0755 {{EXECS}}
+    chmod 0644 {{SHLIBS}}
+    chown root:root /etc/udev/rules.d/80-tsduck.rules /etc/security/console.perms.d/80-tsduck.perms
+    chmod 0644 /etc/udev/rules.d/80-tsduck.rules /etc/security/console.perms.d/80-tsduck.perms
+fi
+
+exit 0
