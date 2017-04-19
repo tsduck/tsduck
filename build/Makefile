@@ -37,12 +37,14 @@ default:
 	@true
 
 # Install system files.
-.PHONY: install
+.PHONY: install install-devel
 install: 80-tsduck.rules 80-tsduck.perms
 	install -d -m 755 $(DESTDIR)/etc/udev/rules.d
 	install -m 644 80-tsduck.rules $(DESTDIR)/etc/udev/rules.d/
 	install -d -m 755 $(DESTDIR)/etc/security/console.perms.d
 	install -m 644 80-tsduck.perms $(DESTDIR)/etc/security/console.perms.d/
+install-devel:
+	@true
 
 # Build the source tarballs for distribution.
 TARNAME := tsduck-$(TS_VERSION)
