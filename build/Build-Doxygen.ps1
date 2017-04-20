@@ -79,7 +79,7 @@ if (-not $Version) {
     $Version = "${VersionMajor}.${VersionMinor}"
 }
 
-$env:PROJECT_NUMBER = $Version
+$env:TS_VERSION = $Version
 
 # Generate Doxygen documentation.
 Push-Location $PSScriptRoot
