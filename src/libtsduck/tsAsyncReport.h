@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Event reporting and monitoring
-//
+//!
+//!  @file
+//!  Asynchronous message report interface.
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

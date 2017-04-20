@@ -26,6 +26,11 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
+//!
+//!  @file
+//!  Declaraction of classes ts::CipherChaining and ts::CipherChainingTemplate.
+//!
+//----------------------------------------------------------------------------
 
 #pragma once
 #include "tsBlockCipher.h"

@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Identification of a transport stream
-//
+//!
+//!  @file
+//!  Identification of a transport stream
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

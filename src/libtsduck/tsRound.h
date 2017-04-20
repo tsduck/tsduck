@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Utilities for numeric rounding
-//
+//!
+//!  @file
+//!  Utilities for numeric rounding
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

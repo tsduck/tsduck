@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Definitions of a generic block of bytes.
-//
+//!
+//!  @file
+//!  Definitions of a generic block of bytes.
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

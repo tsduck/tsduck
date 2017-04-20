@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  DVB-S / DVB-S2 (satellite) tuners parameters
-//
+//!
+//!  @file
+//!  DVB-S / DVB-S2 (satellite) tuners parameters
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

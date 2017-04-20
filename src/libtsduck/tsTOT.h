@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Representation of a Time Offset Table (TOT)
-//
+//!
+//!  @file
+//!  Representation of a Time Offset Table (TOT)
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

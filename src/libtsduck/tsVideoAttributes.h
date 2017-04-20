@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Video attributes for MPEG-1 and MPEG-2.
-//
+//!
+//!  @file
+//!  Video attributes for MPEG-1 and MPEG-2.
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

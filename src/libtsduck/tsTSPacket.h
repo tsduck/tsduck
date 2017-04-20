@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Basic definition of an MPEG-2 transport packet.
-//
+//!
+//!  @file
+//!  Basic definition of an MPEG-2 transport packet.
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

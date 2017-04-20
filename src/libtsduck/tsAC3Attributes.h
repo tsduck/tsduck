@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  AC-3 (DD) and Enhanced-AC-3 (DD+) audio attributes
-//
+//!
+//!  @file
+//!  AC-3 (DD) and Enhanced-AC-3 (DD+) audio attributes
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

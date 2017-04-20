@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Abstract base class for DVB descrambler plugins.
-//
+//!
+//!  @file
+//!  Abstract base class for DVB descrambler plugins.
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

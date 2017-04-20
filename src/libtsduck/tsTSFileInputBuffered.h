@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Transport stream file input with seekable buffer.
-//
+//!
+//!  @file
+//!  Transport stream file input with seekable buffer.
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

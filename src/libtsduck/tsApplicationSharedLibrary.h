@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Application shared libraries
-//
+//!
+//!  @file
+//!  Application shared libraries
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

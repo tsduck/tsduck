@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  This class rebuilds MPEG tables and sections from TS packets
-//
+//!
+//!  @file
+//!  This class rebuilds MPEG tables and sections from TS packets
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

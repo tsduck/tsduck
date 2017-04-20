@@ -44,8 +44,8 @@ PROJECT_LOGO   = ../images/tsduck-32.png
 
 # Input and output files:
 
-FILE_PATTERNS    = *.h
-EXCLUDE_PATTERNS = *Template.h
+FILE_PATTERNS    = *.h *.dox
+EXCLUDE_PATTERNS = *Template.h tsduck.h
 INPUT            = ../src
 EXCLUDE          = ../src/libtsduck/private ../src/utest/crypto ../src/utest/tables
 RECURSIVE        = YES

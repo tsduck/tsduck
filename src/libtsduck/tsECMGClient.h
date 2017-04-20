@@ -26,10 +26,13 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  ECM generator client. Use ECMG <=> SCS protocol to request EMC's.
-//  An ECMGClient object acts as an SCS.
-//
+//!
+//!  @file
+//!  ECM generator client.
+//!
+//!  Use ECMG <=> SCS protocol to request EMC's.
+//!  An ECMGClient object acts as an SCS.
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

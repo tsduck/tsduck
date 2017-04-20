@@ -26,10 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  This abstract interface must be implemented by classes which need to be
-//  notified of tables using a SectionDemux.
-//
+//!
+//!  @file
+//!  Table handler interface.
+//!
 //----------------------------------------------------------------------------
 
 #pragma once
@@ -39,6 +39,12 @@ namespace ts {
 
     class SectionDemux;
 
+    //!
+    //! Table handler interface.
+    //!
+    //! This abstract interface must be implemented by classes which need to be
+    //! notified of tables using a SectionDemux.
+    //!
     class TSDUCKDLL TableHandlerInterface
     {
     public:

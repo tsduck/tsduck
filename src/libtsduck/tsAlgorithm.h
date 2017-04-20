@@ -27,13 +27,12 @@
 //
 //----------------------------------------------------------------------------
 //!
-//! @file tsAlgorithm.h
+//!  @file
+//!  Miscellaneous C++ algorithms supplementing the standard \<algorithm\>.
 //!
-//! Miscellaneous C++ algorithms supplementing the standard \<algorithm\>.
-//!
-//! This file declares several template functions implementing general-purpose
-//! algorithms. This header may be considered as an extension of the standard
-//! header \<algorithm\>, implementing other algorithms.
+//!  This file declares several template functions implementing general-purpose
+//!  algorithms. This header may be considered as an extension of the standard
+//!  header \<algorithm\>, implementing other algorithms.
 //!
 //----------------------------------------------------------------------------
 

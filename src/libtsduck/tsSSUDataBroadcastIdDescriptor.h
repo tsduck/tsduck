@@ -26,10 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Representation of a data_broadcast_id_descriptor for system software update
-//  (data_broadcast_id 0x000A).
-//
+//!
+//!  @file
+//!  Representation of a data_broadcast_id_descriptor for SSU.
+//!
 //----------------------------------------------------------------------------
 
 #pragma once
@@ -38,6 +38,10 @@
 
 namespace ts {
 
+    //!
+    //! Representation of a data_broadcast_id_descriptor for system software update.
+    //! The data_broadcast_id is 0x000A.
+    //!
     class TSDUCKDLL SSUDataBroadcastIdDescriptor : public AbstractDescriptor
     {
     public:

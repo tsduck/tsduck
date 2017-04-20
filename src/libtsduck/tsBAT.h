@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Representation of a Bouquet Association Table (BAT)
-//
+//!
+//!  @file
+//!  Representation of a Bouquet Association Table (BAT)
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

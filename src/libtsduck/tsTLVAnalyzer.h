@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Analysis (deserialization) of TLV messages.
-//
+//!
+//!  @file
+//!  Analysis (deserialization) of TLV messages.
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

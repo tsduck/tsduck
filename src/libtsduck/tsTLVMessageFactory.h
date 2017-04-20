@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Factory class for TLV messages
-//
+//!
+//!  @file
+//!  Factory class for TLV messages
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

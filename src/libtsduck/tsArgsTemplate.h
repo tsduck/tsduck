@@ -26,10 +26,6 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Command line arguments processing
-//
-//----------------------------------------------------------------------------
 
 #pragma once
 #include "tsToInteger.h"

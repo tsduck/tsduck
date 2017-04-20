@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Abstract base class for DVB tuners parameters
-//
+//!
+//!  @file
+//!  Abstract base class for DVB tuners parameters
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

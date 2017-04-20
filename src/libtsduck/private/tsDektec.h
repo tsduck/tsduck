@@ -27,16 +27,18 @@
 //
 //-----------------------------------------------------------------------------
 //!
-//! @file tsDektec.h
-//!
-//! Provide a safe way to include the DTAPI definition.
+//!  @file
+//!  Provide a safe way to include the DTAPI definition.
 //!
 //-----------------------------------------------------------------------------
 
 #pragma once
 #include "tsPlatform.h"
 
-#if defined(TS_NO_DTAPI)
+#if defined(DOXYGEN)
+    //! Externally defined when the DTAPI is not available.
+    #define TS_NO_DTAPI
+#elif defined(TS_NO_DTAPI)
     // An error message to display.
     #define TS_NO_DTAPI_MESSAGE "This version of TSDuck was compiled without Dektec support"
     #define DTAPI_VERSION_MAJOR 0
@@ -46,5 +48,7 @@
     #include "DTAPI.h"
 #endif
 
-// Define a synthetic major/minor version number for DTAPI
+//!
+//! Define a synthetic major/minor version number for DTAPI
+//!
 #define TS_DTAPI_VERSION ((DTAPI_VERSION_MAJOR * 100) + (DTAPI_VERSION_MINOR % 100))

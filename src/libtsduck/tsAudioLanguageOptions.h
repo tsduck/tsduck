@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Options to update the language of an audio stream in a PMT.
-//
+//!
+//!  @file
+//!  Options to update the language of an audio stream in a PMT.
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

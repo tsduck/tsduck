@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Abstract base class for MPEG PSI/SI tables with long sections
-//
+//!
+//!  @file
+//!  Abstract base class for MPEG PSI/SI tables with long sections
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

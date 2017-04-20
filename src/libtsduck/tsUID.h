@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Generate 64-bit UID, unique integer
-//
+//!
+//!  @file
+//!  A singleton which generates 64-bit UID, unique integer
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

@@ -26,11 +26,12 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  TCP connected socket, for data communication.
-//  Can be used as TCP client (using connect() method).
-//  Can be used by TCP server to receive a client connection.
-//
+//!
+//!  @file
+//!  TCP connected socket, for data communication.
+//!  Can be used as TCP client (using connect() method).
+//!  Can be used by TCP server to receive a client connection.
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

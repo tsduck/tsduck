@@ -40,7 +40,6 @@
 #include "tsBinaryTable.h"
 #include "tsSection.h"
 #include "tsPMT.h"
-#include "tsDMT.h"
 #include "tsStreamIdentifierDescriptor.h"
 
 using namespace ts;
@@ -58,14 +57,12 @@ struct Options: public Args
 
     std::string filename1;
     std::string filename2;
-    std::string tpmt_filename;
-    std::string dmts_filename;
-    uint64_t      byte_offset;
+    uint64_t    byte_offset;
     size_t      buffered_packets;
     size_t      threshold_diff;
     bool        subset;
     bool        dump;
-    uint32_t      dump_flags;
+    uint32_t    dump_flags;
     bool        normalized;
     bool        verbose;
     bool        quiet;
@@ -85,8 +82,6 @@ Options::Options (int argc, char *argv[]) :
     option ("cc-ignore",        0);
     option ("continue",        'c');
     option ("dump",            'd');
-    option ("lwpvod-tpmt",      0, Args::STRING);
-    option ("lwpvod-dmts",      0, Args::STRING);
     option ("normalized",      'n');
     option ("packet-offset",   'p', UNSIGNED);
     option ("payload-only",     0);
@@ -126,18 +121,6 @@ Options::Options (int argc, char *argv[]) :
              "\n"
              "  --help\n"
              "      Display this help text.\n"
-             "\n"
-             "  --lwpvod-dmts filename\n"
-             "      Used when comparing Logiways PushVoD asset and/or download files.\n"
-             "      Specify the name of a binary section file containing all DMT's for the\n"
-             "      asset. These DMT's are used to identify time stamps for differing\n"
-             "      packets, helping identifying audio/video problems in the asset.\n"
-             "      All DMT's must be stored in increasing order.\n"
-             "\n"
-             "  --lwpvod-tpmt filename\n"
-             "      Used when comparing Logiways PushVoD asset and/or download files.\n"
-             "      Specify the name of a binary section file containing the Transport\n"
-             "      PMT for the download service. This is required with --lwpvod-dmts.\n"
              "\n"
              "  -n\n"
              "  --normalized\n"
@@ -191,8 +174,6 @@ Options::Options (int argc, char *argv[]) :
 
     getValue (filename1, "", "", 0);
     getValue (filename2, "", "", 1);
-    getValue (tpmt_filename, "lwpvod-tpmt");
-    getValue (dmts_filename, "lwpvod-dmts");
 
     buffered_packets = intValue<size_t> ("buffered-packets", DEFAULT_BUFFERED_PACKETS);
     byte_offset = intValue<uint64_t> ("byte-offset", intValue<uint64_t> ("packet-offset", 0) * PKT_SIZE);
@@ -319,34 +300,6 @@ bool Comparator::compare (const TSPacket& pkt1, const TSPacket& pkt2, Options& o
     }
 }
 
-//----------------------------------------------------------------------------
-//  This class encapsulates all Logiways PushVoD stuff.
-//----------------------------------------------------------------------------
-
-class LogiwaysPushVoD {
-public:
-    // Constructor / destructor
-    LogiwaysPushVoD (Options& opt);
-    ~LogiwaysPushVoD ();
-
-    // Get trailing output for specified packet, "" if unknown
-    std::string getString (ts::PID pid, PacketCounter index, bool normalized);
-
-private:
-    ReportInterface&           _report;
-    std::map<ts::PID, uint8_t> _pid2tag;
-    std::ifstream              _dmt_stream;
-    SafePtr<DMT>               _dmt1;
-    SafePtr<DMT>               _dmt2;
-
-    // Read a DMT from file, return a null pointer on end of file
-    SafePtr<DMT> readDMT();
-
-    // Read DMT's until specified packet is between _dmt1 and _dmt2.
-    // Return true if packet is actually between _dmt1 and _dmt2.
-    bool readDMT (uint8_t component_tag, PacketCounter index);
-};
-
 
 //----------------------------------------------------------------------------
 //  Program entry point
@@ -357,7 +310,6 @@ int main (int argc, char *argv[])
     Options opt (argc, argv);
     TSFileInputBuffered file1 (opt.buffered_packets);
     TSFileInputBuffered file2 (opt.buffered_packets);
-    LogiwaysPushVoD lwpvod (opt);
 
     // Open files
     file1.open (opt.filename1, 1, opt.byte_offset, opt);
@@ -479,7 +431,6 @@ int main (int argc, char *argv[])
                           << ":pid1index=" << (count1[pid1] - 1)
                           << ":pid2index=" << (count2[pid2] - 1)
                           << (count2[pid2] == count1[pid1] ? ":sameindex" : "")
-                          << lwpvod.getString (pid1, count1[pid1], opt.normalized)
                           << ":" << std::endl;
             }
             else if (!opt.quiet) {
@@ -499,7 +450,7 @@ int main (int argc, char *argv[])
                 if (pid2 != pid1 || count2[pid2] != count1[pid1]) {
                     std::cout << "/" << Decimal (count2[pid2] - 1);
                 }
-                std::cout << " in PID" << lwpvod.getString (pid1, count1[pid1], opt.normalized) << std::endl;
+                std::cout << " in PID" << std::endl;
                 if (opt.dump) {
                     std::cout << "  Packet from " << file1.getFileName() << ":" << std::endl;
                     pkt1.display (std::cout, opt.dump_flags, 6);
@@ -541,222 +492,4 @@ int main (int argc, char *argv[])
     file1.close (opt);
     file2.close (opt);
     return diff_count == 0 && opt.valid() ? EXIT_SUCCESS : EXIT_FAILURE;
-}
-
-
-//----------------------------------------------------------------------------
-//  Logiways PushVoD: Constructor
-//----------------------------------------------------------------------------
-
-LogiwaysPushVoD::LogiwaysPushVoD (Options& opt) :
-    _report (opt),
-    _pid2tag (),
-    _dmt_stream ()
-{
-    // Read Transport PMT if specified
-    if (!opt.tpmt_filename.empty()) {
-        // Load sections
-        SectionPtrVector sections;
-        if (!Section::LoadFile (sections, opt.tpmt_filename, CRC32::CHECK, opt)) {
-            return; // errors were reported
-        }
-        // Check that there is only one section and that it is a PMT.
-        // Note that ISO 13818-1 specifies that a PMT shall have exactly one section.
-        if (sections.size() != 1 || sections[0]->tableId() != TID_PMT) {
-            opt.error ("file " + opt.tpmt_filename + " shall contain exactly one PMT section");
-            return;
-        }
-        // Build PMT
-        const BinaryTable bin_pmt (sections);
-        const PMT pmt (bin_pmt);
-        if (!pmt.isValid()) {
-            opt.error ("invalid PMT in " + opt.tpmt_filename);
-            return;
-        }
-        // Build pid -> tag map
-        for (PMT::StreamMap::const_iterator it = pmt.streams.begin(); it != pmt.streams.end(); ++it) {
-            const ts::PID pid = it->first;
-            const PMT::Stream& stream (it->second);
-            // Look for a stream identifier descriptor
-            StreamIdentifierDescriptor streamId;
-            stream.descs.search (DID_STREAM_ID, streamId);
-            if (streamId.isValid()) {
-                _pid2tag[pid] = streamId.component_tag;
-            }
-        }
-        if (_pid2tag.empty()) {
-            opt.error ("no PID-tag mapping in Transport PMT from " + opt.tpmt_filename);
-            return;
-        }
-    }
-
-    // Start reading DMT file
-    if (!opt.dmts_filename.empty()) {
-        // A valid TPMT must have beed read
-        if (_pid2tag.empty()) {
-            opt.error ("missing --lwpvod-tpmt, required with --lwpvod-dmts");
-            return;
-        }
-        // Open the file
-        _dmt_stream.open (opt.dmts_filename.c_str(), std::ios::in | std::ios::binary);
-        if (!_dmt_stream.is_open()) {
-            opt.error ("cannot open " + opt.dmts_filename);
-            return;
-        }
-        // Read first two DMTs
-        _dmt1 = readDMT();
-        _dmt2 = readDMT();
-    }
-}
-
-
-//----------------------------------------------------------------------------
-//  Logiways PushVoD: Destructor
-//----------------------------------------------------------------------------
-
-LogiwaysPushVoD::~LogiwaysPushVoD ()
-{
-    // Close DMT file
-    if (_dmt_stream.is_open()) {
-        _dmt_stream.close();
-    }
-}
-
-
-//----------------------------------------------------------------------------
-//  Logiways PushVoD: Read DMT's until specified packet is between _dmt1 and
-//  _dmt2. Return true if packet is actually between _dmt1 and _dmt2.
-//----------------------------------------------------------------------------
-
-bool LogiwaysPushVoD::readDMT (uint8_t tag, PacketCounter index)
-{
-    // Read DMTs until specified packet is between _dmt1 and _dmt2.
-    while (!_dmt1.isNull() && !_dmt2.isNull()) {
-        // Check if specified packet is between _dmt1 and _dmt2.
-        const DMT::EntryVector::iterator e1 = _dmt1->search (tag);
-        const DMT::EntryVector::iterator e2 = _dmt2->search (tag);
-        if (e1 == _dmt1->entries.end() || e2 == _dmt2->entries.end()) {
-            return false; // PID not longer tagged (not normal)
-        }
-        if (index < e1->packet_count) {
-            return false; // too late, the packet was before that (not normal)
-        }
-        if (index <= e2->packet_count) {
-            return true; // found
-        }
-        // Read more DMT's
-        _dmt1 = _dmt2;
-        _dmt2 = readDMT();
-    }
-    return false; // not found
-}
-
-
-//----------------------------------------------------------------------------
-//  Logiways PushVoD: Read a DMT from file, return a null pointer on EOF
-//----------------------------------------------------------------------------
-
-ts::SafePtr<ts::DMT> LogiwaysPushVoD::readDMT()
-{
-    // Return a null pointer if file is not open
-    if (!_dmt_stream.is_open()) {
-        return SafePtr<ts::DMT>();
-    }
-
-    // Read sections until a valid DMT is found
-    const SectionPtr section (new Section());
-    while (_dmt_stream) {
-        section->read (_dmt_stream, CRC32::IGNORE, _report);
-        if (_dmt_stream && section->isValid() && section->tableId() == TID_LW_DMT) {
-            BinaryTable table;
-            table.addSection (section);
-            const SafePtr<DMT> dmt (new DMT (table));
-            if (dmt->isValid()) {
-                return dmt;
-            }
-        }
-    }
-
-    // File is in error, close it and return null pointer
-    _dmt_stream.close();
-    return SafePtr<ts::DMT>();
-}
-
-
-//----------------------------------------------------------------------------
-// Get trailing output for specified packet, "" if unknown
-//----------------------------------------------------------------------------
-
-std::string LogiwaysPushVoD::getString (ts::PID pid, PacketCounter index, bool normalized)
-{
-    // Search component tag for this PID
-    const std::map<ts::PID, uint8_t>::iterator it = _pid2tag.find (pid);
-    if (it == _pid2tag.end()) {
-        return ""; // not a tagged PID
-    }
-    const uint8_t tag = it->second;
-
-    // Locate DMT segment for the PID
-    if (!readDMT (tag, index)) {
-        return "";
-    }
-    assert (!_dmt1.isNull());
-    assert (!_dmt2.isNull());
-
-    // Locate DMT entries
-    const DMT::EntryVector::iterator e1 = _dmt1->search (tag);
-    const DMT::EntryVector::iterator e2 = _dmt2->search (tag);
-    assert (e1 != _dmt1->entries.end());
-    assert (e2 != _dmt2->entries.end());
-
-    // Compute time stamp
-    int seconds;
-    if (_dmt1->time_stamp.set() && _dmt2->time_stamp.set()) {
-        if (e1->packet_count == e2->packet_count) {
-            seconds = int (_dmt1->time_stamp.value() / 90000);
-        }
-        else {
-            const uint64_t time_stamp = _dmt1->time_stamp.value() +
-                ((_dmt2->time_stamp.value() -_dmt1->time_stamp.value()) * (index - e1->packet_count)) /
-                (e2->packet_count - e1->packet_count);
-            seconds = int (time_stamp / 90000);
-        }
-    }
-    else if (_dmt1->time_stamp.set()) {
-        seconds = int (_dmt1->time_stamp.value() / 90000);
-    }
-    else if (_dmt2->time_stamp.set()) {
-        seconds = int (_dmt2->time_stamp.value() / 90000);
-    }
-    else {
-        seconds = -1;
-    }
-
-    // Compute percent in asset file
-    int percent = e1->total_packet_count == 0 ? 0 : int ((100 * index) / e1->total_packet_count);
-
-    // Build the output string
-    std::string out;
-    if (normalized) {
-        out += Format (":percent=%d", percent);
-        if (seconds >= 0) {
-            out += Format (":seconds=%d", seconds);
-        }
-    }
-    else {
-        out += Format (", %d%%", percent);
-        if (seconds >= 0) {
-            out += Format (", %d seconds", seconds);
-            const int hours = seconds / 3600;
-            const int minutes = (seconds / 60) % 60;
-            if (hours > 0 || minutes > 0) {
-                out += " (";
-                if (hours > 0) {
-                    out += Format ("%d h ", hours);
-                }
-                out += Format ("%d mn %d s)", minutes, seconds % 60);
-            }
-        }
-    }
-    return out;
 }

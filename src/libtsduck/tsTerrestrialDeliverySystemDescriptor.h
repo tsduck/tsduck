@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Representation of a terrestrial_delivery_system_descriptor
-//
+//!
+//!  @file
+//!  Representation of a terrestrial_delivery_system_descriptor
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

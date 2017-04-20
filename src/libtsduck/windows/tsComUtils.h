@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //-----------------------------------------------------------------------------
-//
-//  Windows Common Object Model (COM) utilities. Windows-specific
-//
+//!
+//!  @file
+//!  Utilities for Windows Common Object Model (COM).
+//!
 //-----------------------------------------------------------------------------
 
 #pragma once

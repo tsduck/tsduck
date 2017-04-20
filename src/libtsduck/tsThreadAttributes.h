@@ -27,9 +27,8 @@
 //
 //----------------------------------------------------------------------------
 //!
-//! @file tsThreadAttributes.h
-//!
-//! Declare the ts::ThreadAttributes class.
+//!  @file
+//!  Declare the ts::ThreadAttributes class.
 //!
 //----------------------------------------------------------------------------
 

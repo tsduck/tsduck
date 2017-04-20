@@ -26,10 +26,11 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  System-provided PRNG (pseudo-random numbers generator).
-//  Usually not the best PRNG on earth, but fine for most usages.
-//
+//!
+//!  @file
+//!  System-provided PRNG (pseudo-random numbers generator).
+//!  Usually not the best PRNG on earth, but fine for most usages.
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

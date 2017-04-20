@@ -26,9 +26,10 @@
 //  THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Helper for singleton definition
-//
+//!
+//!  @file
+//!  Helper for singleton definition
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

@@ -26,6 +26,11 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
+//!
+//!  @file
+//!  Implementation of a half-duplex line oriented telnet connection.
+//!
+//----------------------------------------------------------------------------
 
 #pragma once
 #include "tsTCPConnection.h"

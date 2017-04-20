@@ -26,10 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Electronic Code Book (ECB) mode.
-//  Template class using a BlockCipher subclass as template argument.
-//
+//!
+//!  @file
+//!  Electronic Code Book (ECB) mode.
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

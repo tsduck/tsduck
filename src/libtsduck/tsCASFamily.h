@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Conditional Access Systems families
-//
+//!
+//!  @file
+//!  Conditional Access Systems families
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

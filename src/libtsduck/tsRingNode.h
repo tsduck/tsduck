@@ -26,10 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Base class for objects being part of a ring, ie. a double-linked
-//  list with no begin or end. Not thread-safe.
-//
+//!
+//!  @file
+//!  Base class for objects being part of a ring.
+//!
 //----------------------------------------------------------------------------
 
 #pragma once
@@ -37,6 +37,10 @@
 
 namespace ts {
 
+    //!
+    //! Base class for objects being part of a ring, ie. a double-linked list with no begin or end.
+    //! Not thread-safe.
+    //!
     class TSDUCKDLL RingNode
     {
     private:

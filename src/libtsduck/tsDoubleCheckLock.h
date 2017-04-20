@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Definition of a "double check lock" as defined in ACE.
-//
+//!
+//!  @file
+//!  Definition of a "double check lock" as defined in ACE.
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

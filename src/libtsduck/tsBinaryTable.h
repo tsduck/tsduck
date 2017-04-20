@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Representation of MPEG PSI/SI tables in binary form (ie. list of sections)
-//
+//!
+//!  @file
+//!  Representation of MPEG PSI/SI tables in binary form (ie. list of sections)
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

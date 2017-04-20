@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Configuration files management
-//
+//!
+//!  @file
+//!  Configuration files management
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

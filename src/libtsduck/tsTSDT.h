@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Representation of a Transport Stream Description Table (TSDT)
-//
+//!
+//!  @file
+//!  Representation of a Transport Stream Description Table (TSDT)
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

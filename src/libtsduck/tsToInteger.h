@@ -26,6 +26,11 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
+//!
+//!  @file
+//!  Utilities to convert strings to integer.
+//!
+//----------------------------------------------------------------------------
 
 #pragma once
 #include "tsPlatform.h"

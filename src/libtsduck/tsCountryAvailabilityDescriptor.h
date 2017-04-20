@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Representation of a country_availability_descriptor
-//
+//!
+//!  @file
+//!  Representation of a country_availability_descriptor
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

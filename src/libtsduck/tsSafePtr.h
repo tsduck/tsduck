@@ -27,9 +27,8 @@
 //
 //----------------------------------------------------------------------------
 //!
-//! @file tsSafePtr.h
-//!
-//! Declare the ts::SafePtr template class.
+//!  @file
+//!  Template safe pointer (reference-counted, auto-delete, thread-safe).
 //!
 //----------------------------------------------------------------------------
 

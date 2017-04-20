@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  All headers for MPEG/DVB tables and descriptors.
-//
+//!
+//!  @file
+//!  All headers for MPEG/DVB tables and descriptors.
+//!
 //----------------------------------------------------------------------------
 
 #pragma once
@@ -37,7 +38,6 @@
 
 #include "tsBAT.h"
 #include "tsCAT.h"
-#include "tsDMT.h"
 #include "tsNIT.h"
 #include "tsPAT.h"
 #include "tsPMT.h"

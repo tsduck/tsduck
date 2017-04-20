@@ -26,10 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  A variant of DVB-T tuners parameters with an offset between a target
-//  bitrate and their theoretical bitrate
-//
+//!
+//!  @file
+//!  A variant of DVB-T tuners parameters with an bitrate offset.
+//!
 //----------------------------------------------------------------------------
 
 #pragma once
@@ -40,6 +40,10 @@ namespace ts {
     class TunerParametersBitrateDiffDVBT;
     typedef std::list<TunerParametersBitrateDiffDVBT> TunerParametersBitrateDiffDVBTList;
 
+    //!
+    //! A variant of DVB-T tuners parameters with an offset between a target
+    //! bitrate and their theoretical bitrate.
+    //!
     class TSDUCKDLL TunerParametersBitrateDiffDVBT: public TunerParametersDVBT
     {
     public:

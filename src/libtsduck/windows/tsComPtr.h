@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //-----------------------------------------------------------------------------
-//
-//  Managed pointers for COM object, auto-released (Windows-specific)
-//
+//!
+//!  @file
+//!  Managed pointers for COM objects, auto-released (Windows-specific)
+//!
 //-----------------------------------------------------------------------------
 
 #pragma once

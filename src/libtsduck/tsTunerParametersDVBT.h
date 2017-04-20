@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  DVB-T (terrestrial, OFDM) tuners parameters
-//
+//!
+//!  @file
+//!  DVB-T (terrestrial, OFDM) tuners parameters
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Representation of a Conditional Access Table (CAT)
-//
+//!
+//!  @file
+//!  Representation of a Conditional Access Table (CAT)
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Base class for AVC data, either access units or structures
-//  (AVC, Advanced Video Coding, ISO 14496-10, ITU H.264)
+//!
+//!  @file
+//!  Base class for AVC data, either access units or structures
+//! (AVC, Advanced Video Coding, ISO 14496-10, ITU H.264)
 //
 //----------------------------------------------------------------------------
 

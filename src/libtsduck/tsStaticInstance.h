@@ -27,9 +27,8 @@
 //
 //----------------------------------------------------------------------------
 //!
-//! @file tsStaticInstance.h
-//!
-//! Declare the initialization-order-safe macros for static object instances.
+//!  @file
+//!  Declare the initialization-order-safe macros for static object instances.
 //!
 //----------------------------------------------------------------------------
 

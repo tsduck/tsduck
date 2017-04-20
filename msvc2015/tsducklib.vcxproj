@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -93,7 +93,6 @@
     <ClInclude Include="..\src\libtsduck\tsDescriptor.h" />
     <ClInclude Include="..\src\libtsduck\tsDescriptorList.h" />
     <ClInclude Include="..\src\libtsduck\tsDescriptorListTemplate.h" />
-    <ClInclude Include="..\src\libtsduck\tsDMT.h" />
     <ClInclude Include="..\src\libtsduck\tsDoubleCheckLock.h" />
     <ClInclude Include="..\src\libtsduck\tsDVS042.h" />
     <ClInclude Include="..\src\libtsduck\tsDVS042Template.h" />
@@ -319,7 +318,6 @@
     <ClCompile Include="..\src\libtsduck\tsDescriptorDisplay.cpp" />
     <ClCompile Include="..\src\libtsduck\tsDescriptorList.cpp" />
     <ClCompile Include="..\src\libtsduck\tsDescriptorListDisplay.cpp" />
-    <ClCompile Include="..\src\libtsduck\tsDMT.cpp" />
     <ClCompile Include="..\src\libtsduck\tsECMGClient.cpp" />
     <ClCompile Include="..\src\libtsduck\tsECMGSCS.cpp" />
     <ClCompile Include="..\src\libtsduck\tsEMMGMUX.cpp" />

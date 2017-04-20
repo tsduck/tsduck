@@ -26,10 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Representation of a linkage_descriptor for system software update
-//  (linkage type 0x09).
-//
+//!
+//!  @file
+//!  Representation of a linkage_descriptor for SSU.
+//!
 //----------------------------------------------------------------------------
 
 #pragma once
@@ -37,6 +37,10 @@
 
 namespace ts {
 
+    //!
+    //!  Representation of a linkage_descriptor for system software update.
+    //!  SSU uses linkage type 0x09.
+    //!
     class TSDUCKDLL SSULinkageDescriptor : public AbstractDescriptor
     {
     public:

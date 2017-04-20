@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Monitoring thread for system resources used by the application.
-//
+//!
+//!  @file
+//!  Monitoring thread for system resources used by the application.
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Serialization of TLV messages.
-//
+//!
+//!  @file
+//!  Serialization of TLV messages.
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

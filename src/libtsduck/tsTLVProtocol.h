@@ -26,10 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  The class ts::tlv::Protocol defines the syntax of a TLV protocol.
-//  Used by ts::tlv::MessageFactory to validate a message.
-//
+//!
+//!  @file
+//!  A class which defines the syntax of a TLV protocol.
+//!
 //----------------------------------------------------------------------------
 
 #pragma once
@@ -40,6 +40,10 @@ namespace ts {
 
         class MessageFactory;
 
+        //!
+        //! The class ts::tlv::Protocol defines the syntax of a TLV protocol.
+        //! Used by ts::tlv::MessageFactory to validate a message.
+        //!
         class TSDUCKDLL Protocol
         {
         public:

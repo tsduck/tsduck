@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Representation of an short_event_descriptor
-//
+//!
+//!  @file
+//!  Representation of an short_event_descriptor
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

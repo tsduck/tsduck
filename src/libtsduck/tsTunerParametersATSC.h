@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  ATSC (terrestrial, cable) tuners parameters
-//
+//!
+//!  @file
+//!  ATSC (terrestrial, cable) tuners parameters
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  DVB-C (cable, QAM) tuners parameters
-//
+//!
+//!  @file
+//!  DVB-C (cable, QAM) tuners parameters
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

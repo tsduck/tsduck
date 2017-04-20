@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  TCP connection using TLV messages.
-//
+//!
+//!  @file
+//!  TCP connection using TLV messages.
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //-----------------------------------------------------------------------------
-//
-//  Allocate POSIX real-time signal numbers. Linux-specific.
-//
+//!
+//!  @file
+//!  Allocate POSIX real-time signal numbers (Linux-specific).
+//!
 //-----------------------------------------------------------------------------
 
 #pragma once

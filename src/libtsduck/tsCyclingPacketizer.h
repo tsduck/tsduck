@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Cyclic packetization of MPEG sections into Transport Stream packets.
-//
+//!
+//!  @file
+//!  Cyclic packetization of MPEG sections into Transport Stream packets.
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

@@ -26,41 +26,43 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //-----------------------------------------------------------------------------
-//
-//  DirectShow filter for DVB tuners capture, Windows-specific.
-//  With many ideas taken from VLC and Microsoft Windows SDK samples.
-//
+//!
+//!  @file
+//!  DirectShow filter for DVB tuners capture (Windows-specific).
+//!
+//!  With many ideas taken from VLC and Microsoft Windows SDK samples.
+//!
+//!  This module implements a DirectShow filter.
+//!
+//!  DirectShow is a very complicated infrastructure on Windows to support
+//!  various media processing. BDA (Broadcast Device Architecture) is the
+//!  generic device driver interface which links "broadcast devices" like
+//!  DVB receivers to DirectShow. DirectShow is consequently the only generic
+//!  way to interact with any type of DVB receiver hardware, provided that
+//!  the hardware vendor supplies BDA-compatible drivers for the device.
+//!
+//!  The "sink filter" in this module is intended to be used after a DirectShow
+//!  capture filter, as provided by the hardware vendor. We call it a "sink"
+//!  filter because it has one input pin (for MPEG-2 TS) but no output pin.
+//!  The TS "samples" are read asynchronously by the application. This filter
+//!  acts as an adapter between the push model of DirectShow and the pull model
+//!  of tsp, the transport stream processor.
+//!
+//!  This module contains several classes:
+//!
+//!  - SinkFilter         : The DirectShow filter
+//!  - SinkPin            : Input pin for SinkFilter
+//!  - SinkEnumMediaTypes : Enumerator returned by IPin::EnumMediaTypes
+//!  - SinkEnumPins       : Enumerator returned by IBaseFilter::EnumPins
+//!
+//!  The SinkPin accepts only MPEG-2 transport streams:
+//!
+//!  - Major type : MEDIATYPE_Stream
+//!  - Subtype    : MEDIASUBTYPE_MPEG2_TRANSPORT
+//!                 MEDIASUBTYPE_MPEG2_TRANSPORT_STRIDE
+//!                 KSDATAFORMAT_SUBTYPE_BDA_MPEG2_TRANSPORT
+//!
 //-----------------------------------------------------------------------------
-//
-//  This module implements a DirectShow filter.
-//
-//  DirectShow is a very complicated infrastructure on Windows to support
-//  various media processing. BDA (Broadcast Device Architecture) is the
-//  generic device driver interface which links "broadcast devices" like
-//  DVB receivers to DirectShow. DirectShow is consequently the only generic
-//  way to interact with any type of DVB receiver hardware, provided that
-//  the hardware vendor supplies BDA-compatible drivers for the device.
-//
-//  The "sink filter" in this module is intended to be used after a DirectShow
-//  capture filter, as provided by the hardware vendor. We call it a "sink"
-//  filter because it has one input pin (for MPEG-2 TS) but no output pin.
-//  The TS "samples" are read asynchronously by the application. This filter
-//  acts as an adapter between the push model of DirectShow and the pull model
-//  of tsp, the transport stream processor.
-//
-//  This module contains several classes:
-//
-//  - SinkFilter         : The DirectShow filter
-//  - SinkPin            : Input pin for SinkFilter
-//  - SinkEnumMediaTypes : Enumerator returned by ::IPin::EnumMediaTypes
-//  - SinkEnumPins       : Enumerator returned by ::IBaseFilter::EnumPins
-//
-//  The SinkPin accepts only MPEG-2 transport streams:
-//
-//  - Major type : MEDIATYPE_Stream
-//  - Subtype    : MEDIASUBTYPE_MPEG2_TRANSPORT
-//                 MEDIASUBTYPE_MPEG2_TRANSPORT_STRIDE
-//                 KSDATAFORMAT_SUBTYPE_BDA_MPEG2_TRANSPORT
 
 #pragma once
 #include "tsMutex.h"

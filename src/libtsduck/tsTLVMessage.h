@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Abstract base class for TLV messages
-//
+//!
+//!  @file
+//!  Abstract base class for TLV messages
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

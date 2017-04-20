@@ -26,10 +26,11 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Base class for MPEG tables containing only a list of descriptors.
-//  (eg. CAT, TSDT)
-//
+//!
+//!  @file
+//!  Base class for MPEG tables containing only a list of descriptors.
+//!  (eg. CAT, TSDT)
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

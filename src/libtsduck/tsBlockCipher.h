@@ -26,6 +26,11 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
+//!
+//!  @file
+//!  Abstract interface of block ciphers.
+//!
+//----------------------------------------------------------------------------
 
 #pragma once
 #include "tsPlatform.h"

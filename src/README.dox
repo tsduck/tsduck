@@ -1,0 +1,11 @@
+/** @mainpage TSDuck MPEG Transport Stream Library for C++
+
+@tableofcontents
+
+@section overview Overview
+
+This library contains general-purpose C++ classes and utilities to handle
+MPEG transport streams.
+
+
+*/

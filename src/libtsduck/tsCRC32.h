@@ -26,9 +26,12 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Cyclic Redundancy Check as used in MPEG sections
-//  Original code, authors & copyright are unclear
+//!
+//!  @file
+//!  Cyclic Redundancy Check as used in MPEG sections.
+//!
+//!  Original code, authors & copyright are unclear
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

@@ -26,10 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  This class is a singleton implementing ReportInterface on std::cerr
-//  without synchronization
-//
+//!
+//!  @file
+//!  A singleton implementing ReportInterface on std::cerr without synchronization
+//!
 //----------------------------------------------------------------------------
 
 #pragma once
@@ -38,6 +38,9 @@
 
 namespace ts {
 
+    //!
+    //! A singleton implementing ReportInterface on std::cerr without synchronization
+    //!
     class TSDUCKDLL CerrReport : public ReportInterface
     {
         // This class is a singleton. Use static Instance() method.

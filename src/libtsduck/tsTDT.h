@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Representation of a Time & Date Table (TDT)
-//
+//!
+//!  @file
+//!  Representation of a Time & Date Table (TDT)
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

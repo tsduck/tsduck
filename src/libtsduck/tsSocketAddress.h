@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  IP v4 address & port class
-//
+//!
+//!  @file
+//!  Socket address class (IP v4 address & port).
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

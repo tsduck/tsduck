@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Transport stream file output
-//
+//!
+//!  @file
+//!  Transport stream file output
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

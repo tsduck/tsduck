@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Binary Coded Decimal utilities
-//
+//!
+//!  @file
+//!  Binary Coded Decimal utilities
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

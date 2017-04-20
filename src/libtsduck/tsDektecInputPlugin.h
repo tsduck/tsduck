@@ -27,9 +27,8 @@
 //
 //----------------------------------------------------------------------------
 //!
-//! @file tsDektecInputPlugin.h
-//!
-//! Declare the ts::DektecInputPlugin class.
+//!  @file
+//!  Declare the ts::DektecInputPlugin class.
 //!
 //----------------------------------------------------------------------------
 

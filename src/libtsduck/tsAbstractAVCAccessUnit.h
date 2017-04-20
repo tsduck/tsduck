@@ -26,10 +26,11 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Base class for AVC access units, aka NALunits
-//  (AVC, Advanced Video Coding, ISO 14496-10, ITU H.264)
-//
+//!
+//!  @file
+//!  Base class for AVC access units, aka NALunits
+//!  (AVC, Advanced Video Coding, ISO 14496-10, ITU H.264)
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

@@ -26,34 +26,36 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //-----------------------------------------------------------------------------
-//
-//  Windows Common Object Model (COM) identifiers. Windows-specific
-//
+//!
+//!  @file
+//!  Declare identifiers for Windows Common Object Model (COM).
+//!
+//!  In short, declaration and definitions of GUID's is a mess !
+//!
+//!  Some GUID's are declared in standard headers in the Windows SDK but their
+//!  definition require libraries which are provided by the DirectX SDK only.
+//!
+//!  Some GUID's are either not declared in standard headers or in
+//!  headers which requires external headers. Example: most DirectShow
+//!  filters are declared in qedit.h which is included in the Windows SDK
+//!  (and VC++) but which requires dxtrans.h which comes with DirectX SDK.
+//!  We declare these GUID here. Their definition, however, are available
+//!  in libraries from the Windows SDK.
+//!
+//!  The library strmiids.lib defines some COM & DirectShow GUID's.
+//!  However, the exact list of GUID's which are defined here depends
+//!  on the Windows SDK version. Many GUID's were defined here in
+//!  Windows SDK v6.0A (Visual C++ 2008) but disappeared in Windows
+//!  SDK v7.0A (Visual C++ 2010).
+//!
+//!  @code
+//!  #pragma comment (lib, "strmiids.lib")
+//!  @endcode
+//!
 //-----------------------------------------------------------------------------
 
 #pragma once
 #include "tsPlatform.h"
-
-// In short, declaration and definitions of GUID's is a mess !
-//
-// Some GUID's are declared in standard headers in the Windows SDK but their
-// definition require libraries which are provided by the DirectX SDK only.
-//
-// Some GUID's are either not declared in standard headers or in
-// headers which requires external headers. Example: most DirectShow
-// filters are declared in qedit.h which is included in the Windows SDK
-// (and VC++) but which requires dxtrans.h which comes with DirectX SDK.
-// We declare these GUID here. Their definition, however, are available
-// in libraries from the Windows SDK.
-//
-// The library strmiids.lib defines some COM & DirectShow GUID's.
-// However, the exact list of GUID's which are defined here depends
-// on the Windows SDK version. Many GUID's were defined here in
-// Windows SDK v6.0A (Visual C++ 2008) but disappeared in Windows
-// SDK v7.0A (Visual C++ 2010).
-//
-// #pragma comment (lib, "strmiids.lib")
-
 
 // Declaration and definition of application-specific GUID's.
 // The definition is expanded in tsComIds.cpp.

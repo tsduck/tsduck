@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  User interrupt handling (Ctrl+C).
-//
+//!
+//!  @file
+//!  User interrupt handling (Ctrl+C).
+//!
 //----------------------------------------------------------------------------
 
 #pragma once
@@ -37,39 +38,62 @@
 
 namespace ts {
 
-    // An instance of this class handles the Ctrl+C user interrupt.
-    // There must be at most one active instance at a time.
-    //
-    // Can be used in two ways:
-    // - Interrupt notification through one InterruptHandler
-    // - Interrupt polling through isInterrupted()/resetInterrupted().
-
+    //!
+    //! An instance of this class handles the Ctrl+C user interrupt.
+    //! There must be at most one active instance at a time.
+    //!
+    //! Can be used in two ways:
+    //! - Interrupt notification through one InterruptHandler
+    //! - Interrupt polling through isInterrupted()/resetInterrupted().
+    //!
     class TSDUCKDLL UserInterrupt
 #if defined(__unix)
         : private Thread
 #endif
     {
     public:
-        // Constructor.
-        // Handler may be null.
-        // If one_shot is true, the interrupt will be handled only once,
-        // the second time the process will be terminated.
+        //!
+        //! Constructor.
+        //! @param [in] handler Address of interrupt handler. Can be null.
+        //! @param [in] one_shot If true, the interrupt will be handled only once,
+        //! the second time the process will be terminated.
+        //! @param [in] auto_activate If true, the interrupt handling is immediately activated.
+        //!
         UserInterrupt(InterruptHandler* handler, bool one_shot, bool auto_activate);
 
-        // Destructor, auto-deactivate
+        //!
+        //! Destructor, auto-deactivate.
+        //!
         ~UserInterrupt();
 
-        // Check if active
+        //!
+        //! Check if this interrupt handler is active.
+        //! @return True if this interrupt handler is active.
+        //!
         bool isActive() const {return _active;}
 
-        // Check if interrupt was triggered.
+        //!
+        //! Check if this interrupt was triggered.
+        //! @return True if this interrupt handler was triggered.
+        //!
         bool isInterrupted() const {return _interrupted;}
 
-        // Reset interrupt state
+        //!
+        //! Reset interrupt state.
+        //! Now, isInterrupted() will return false, until the next time the interrupt is triggered.
+        //!
         void resetInterrupted() {_interrupted = false;}
 
-        // Activate/deactivate
+        //!
+        //! Activate this interrupt handler.
+        //! Only one handler can be active at a time. This method does nothing
+        //! if this handler or another handler is already active.
+        //!
         void activate();
+        
+        //!
+        //! Deactivate this interrupt handler.
+        //!
         void deactivate();
 
     private:

@@ -154,7 +154,7 @@ namespace ts {
             void generateECM();
 
             // Invoked when an ECM is available, maybe in the context of an external thread.
-            virtual void handleECM (ecmgscs::ECMResponse&);
+            virtual void handleECM(const ecmgscs::ECMResponse&);
         };
 
         // ScramblerPlugin parameters, remain constant after start()
@@ -1007,7 +1007,7 @@ void ts::ScramblerPlugin::CryptoPeriod::generateECM()
 // Invoked when an ECM is available, maybe in the context of an external thread
 //----------------------------------------------------------------------------
 
-void ts::ScramblerPlugin::CryptoPeriod::handleECM (ecmgscs::ECMResponse& response)
+void ts::ScramblerPlugin::CryptoPeriod::handleECM(const ecmgscs::ECMResponse& response)
 {
     if (_scrambler->_channel_status.section_TSpkt_flag == 0) {
         // ECMG returns ECM in section format

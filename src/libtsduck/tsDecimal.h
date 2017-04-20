@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Format a string containing a decimal value.
-//
+//!
+//!  @file
+//!  Format a string containing a decimal value.
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

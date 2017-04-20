@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Abstract interface for abort polling.
-//
+//!
+//!  @file
+//!  Abstract interface for abort polling.
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

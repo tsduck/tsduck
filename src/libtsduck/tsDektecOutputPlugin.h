@@ -27,9 +27,8 @@
 //
 //----------------------------------------------------------------------------
 //!
-//! @file tsDektecOutputPlugin.h
-//!
-//! Declare the ts::DektecOutputPlugin class.
+//!  @file
+//!  Declare the ts::DektecOutputPlugin class.
 //!
 //----------------------------------------------------------------------------
 

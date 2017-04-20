@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Command line arguments for DVB tuners
-//
+//!
+//!  @file
+//!  Command line arguments for DVB tuners
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

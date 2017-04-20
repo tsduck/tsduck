@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Representation of a stream_identifier_descriptor.
-//
+//!
+//!  @file
+//!  Representation of a stream_identifier_descriptor.
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

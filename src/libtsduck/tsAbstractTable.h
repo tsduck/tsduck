@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Abstract base class for MPEG PSI/SI tables
-//
+//!
+//!  @file
+//!  Abstract base class for MPEG PSI/SI tables
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

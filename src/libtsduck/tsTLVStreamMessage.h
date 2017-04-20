@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Base class for DVB SimulCrypt TLV messages operating on streams.
-//
+//!
+//!  @file
+//!  Base class for DVB SimulCrypt TLV messages operating on streams.
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

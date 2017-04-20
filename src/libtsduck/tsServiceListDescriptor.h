@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Representation of a service_list_descriptor
-//
+//!
+//!  @file
+//!  Representation of a service_list_descriptor
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

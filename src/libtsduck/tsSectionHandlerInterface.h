@@ -26,10 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  This abstract interface must be implemented by classes which need to be
-//  notified of individual sections using a SectionDemux.
-//
+//!
+//!  @file
+//!  Abstract interface to receive MPEG Section from a SectionDemux.
+//!
 //----------------------------------------------------------------------------
 
 #pragma once
@@ -39,13 +39,25 @@ namespace ts {
 
     class SectionDemux;
 
+    //!
+    //! Abstract interface to receive MPEG Section from a SectionDemux.
+    //!
+    //! This abstract interface must be implemented by classes which need to be
+    //! notified of individual sections using a SectionDemux.
+    //!
     class TSDUCKDLL SectionHandlerInterface
     {
     public:
-        // This hook is invoked when a complete section is available.
-        virtual void handleSection (SectionDemux&, const Section&) = 0;
+        //!
+        //! This hook is invoked when a complete section is available.
+        //! @param [in,out] demux The demux which sends the section.
+        //! @param [in] section The new section from the demux.
+        //!
+        virtual void handleSection(SectionDemux& demux, const Section& section) = 0;
 
-        // Virtual destructor
-        virtual ~SectionHandlerInterface () {}
+        //!
+        //! Virtual destructor
+        //!
+        virtual ~SectionHandlerInterface() {}
     };
 }

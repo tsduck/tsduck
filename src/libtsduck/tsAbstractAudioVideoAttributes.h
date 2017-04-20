@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Abstract base class for MPEG audio and video attributes
-//
+//!
+//!  @file
+//!  Abstract base class for MPEG audio and video attributes
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

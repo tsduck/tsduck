@@ -26,10 +26,11 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  This abstract interface must be implemented by classes which need to be
-//  notified of asynchronous ECM generation using ECMGClient.
-//
+//!
+//!  @file
+//!  Interface for classes which need to be notified of asynchronous ECM
+//!  generation using ECMGClient.
+//!
 //----------------------------------------------------------------------------
 
 #pragma once
@@ -37,14 +38,22 @@
 
 namespace ts {
 
+    //!
+    //! Interface for classes which need to be notified of asynchronous ECM generation using ECMGClient.
+    //!
     class TSDUCKDLL ECMGClientHandlerInterface
     {
     public:
-        // This hook is invoked when an ECM is available.
-        // It is invoked in the context of an internal thread of the ECMG client object.
-        virtual void handleECM (ecmgscs::ECMResponse&) = 0;
+        //!
+        //! This hook is invoked when an ECM is available.
+        //! It is invoked in the context of an internal thread of the ECMG client object.
+        //! @param [in] response The response from the ECMG.
+        //!
+        virtual void handleECM(const ecmgscs::ECMResponse& response) = 0;
 
-        // Virtual desctructor
+        //!
+        //! Virtual desctructor
+        //!
         virtual ~ECMGClientHandlerInterface() {}
     };
 }

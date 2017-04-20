@@ -26,10 +26,6 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Format a string containing a decimal value.
-//
-//----------------------------------------------------------------------------
 
 template <typename INT>
 std::string ts::Decimal (const INT& value,

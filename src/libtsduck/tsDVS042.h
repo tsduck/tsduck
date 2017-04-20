@@ -26,23 +26,23 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  DVS 042 cipher block chaining mode.
-//  Template class using a BlockCipher subclass as template argument.
-//
-//
-//  DVS 042 has been renamed as "ANSI/SCTE 52 2003". It used to be available
-//  at http://www.scte.org/documents/pdf/ANSISCTE522003DVS042.pdf
-//  This file is no longer online. The next iteration of this standard
-//  is now "ANSI/SCTE 52 2008", available at
-//  http://www.scte.org/documents/pdf/Standards/ANSI_SCTE%2052%202008.pdf
-//  The only noticeable difference between the two versions is the handling
-//  of messages shorter than the block size. In the 2003 (DVS 042) version,
-//  the same IV (called "whitener" in the standard) is used for long and
-//  short messages. In the 2008 version, a different "whitener2" must be
-//  used for messages shorter than the block size. To avoid confusion, this
-//  implementation does no allow the handling of messages shorter than the
-//  block size.
+//!
+//!  @file
+//!  DVS 042 cipher block chaining mode.
+//!
+//!  DVS 042 has been renamed as "ANSI/SCTE 52 2003". It used to be available
+//!  at http://www.scte.org/documents/pdf/ANSISCTE522003DVS042.pdf
+//!  This file is no longer online. The next iteration of this standard
+//!  is now "ANSI/SCTE 52 2008", available at
+//!  http://www.scte.org/documents/pdf/Standards/ANSI_SCTE%2052%202008.pdf
+//!  The only noticeable difference between the two versions is the handling
+//!  of messages shorter than the block size. In the 2003 (DVS 042) version,
+//!  the same IV (called "whitener" in the standard) is used for long and
+//!  short messages. In the 2008 version, a different "whitener2" must be
+//!  used for messages shorter than the block size. To avoid confusion, this
+//!  implementation does no allow the handling of messages shorter than the
+//!  block size.
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

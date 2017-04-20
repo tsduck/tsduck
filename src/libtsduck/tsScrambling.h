@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  DVB-CSA (Digital Video Broadcasting Common Scrambling Algorithm)
-//
+//!
+//!  @file
+//!  DVB-CSA (Digital Video Broadcasting Common Scrambling Algorithm)
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

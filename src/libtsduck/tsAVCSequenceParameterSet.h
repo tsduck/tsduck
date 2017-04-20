@@ -26,10 +26,11 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Representation of an AVC sequence parameter set access unit
-//  (AVC, Advanced Video Coding, ISO 14496-10, ITU H.264)
-//
+//!
+//!  @file
+//!  Representation of an AVC sequence parameter set access unit
+//!  (AVC, Advanced Video Coding, ISO 14496-10, ITU H.264)
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

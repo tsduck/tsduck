@@ -80,7 +80,6 @@
 #include "tsCountryAvailabilityDescriptor.h"
 #include "tsCyclingPacketizer.h"
 #include "tsDES.h"
-#include "tsDMT.h"
 #include "tsDVS042.h"
 #include "tsDataBroadcastIdDescriptor.h"
 #include "tsDecimal.h"

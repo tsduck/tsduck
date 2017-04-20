@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  This class analyzes a complete transport stream.
-//
+//!
+//!  @file
+//!  A class which analyzes a complete transport stream.
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Some utilities for DVB tuners
-//
+//!
+//!  @file
+//!  Some utilities for DVB tuners
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

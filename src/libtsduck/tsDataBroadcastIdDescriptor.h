@@ -26,10 +26,11 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Representation of a generic data_broadcast_id_descriptor.
-//  Specialized classes exist, depending on the data_broadcast_id
-//
+//!
+//!  @file
+//!  Representation of a generic data_broadcast_id_descriptor.
+//!  Specialized classes exist, depending on the data_broadcast_id.
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

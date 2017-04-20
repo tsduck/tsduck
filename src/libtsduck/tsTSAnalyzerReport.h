@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  A subclass of TSAnalyzer with reporting capabilities
-//
+//!
+//!  @file
+//!  A subclass of TSAnalyzer with reporting capabilities
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

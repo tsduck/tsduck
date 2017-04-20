@@ -26,6 +26,11 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
+//!
+//!  @file
+//!  Declare some utilities on standard strings.
+//!
+//----------------------------------------------------------------------------
 
 #pragma once
 #include "tsPlatform.h"

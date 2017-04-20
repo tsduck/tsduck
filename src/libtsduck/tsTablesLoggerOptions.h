@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Options for the class TablesLogger.
-//
+//!
+//!  @file
+//!  Options for the class TablesLogger.
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  This class logs sections and tables.
-//
+//!
+//!  @file
+//!  This class logs sections and tables.
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Representation of a date in DVB SimulCrypt protocols (ETSI TS 103 197).
-//
+//!
+//!  @file
+//!  Representation of a date in DVB SimulCrypt protocols (ETSI TS 103 197).
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

@@ -26,10 +26,11 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  This abstract interface must be implemented by classes which provide
-//  MPEG sections into a Packetizer.
-//
+//!
+//!  @file
+//!  Abstract interface for classes which provides MPEG Section into
+//!  a Packetizer.
+//!
 //----------------------------------------------------------------------------
 
 #pragma once
@@ -37,6 +38,12 @@
 
 namespace ts {
 
+    //!
+    //! Abstract interface for classes which provides MPEG Section into a Packetizer.
+    //!
+    //! This abstract interface must be implemented by classes which provide
+    //! MPEG sections into a Packetizer.
+    //!
     class TSDUCKDLL SectionProviderInterface
     {
     public:

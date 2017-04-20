@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Report options for the class TSAnalyzer.
-//
+//!
+//!  @file
+//!  Report options for the class TSAnalyzer.
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

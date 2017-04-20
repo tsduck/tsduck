@@ -26,10 +26,11 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Cipher Block Chaining (CBC) mode.
-//  Template class using a BlockCipher subclass as template argument.
-//
+//!
+//!  @file
+//!  Cipher Block Chaining (CBC) mode.
+//!  Template class using a BlockCipher subclass as template argument.
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

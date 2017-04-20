@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Video attributes for Advanced Video Coding (AVC, ISO 14496-10, ITU H.264)
-//
+//!
+//!  @file
+//!  Video attributes for Advanced Video Coding (AVC, ISO 14496-10, ITU H.264)
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

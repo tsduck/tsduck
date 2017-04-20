@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Representation of a content_descriptor
-//
+//!
+//!  @file
+//!  Representation of a content_descriptor
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

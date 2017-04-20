@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  List of MPEG PSI/SI descriptors
-//
+//!
+//!  @file
+//!  List of MPEG PSI/SI descriptors
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

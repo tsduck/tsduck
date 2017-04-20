@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Abstract interface for handling interrupts.
-//
+//!
+//!  @file
+//!  Abstract interface for handling user Ctrl-C interrupts.
+//!
 //----------------------------------------------------------------------------
 
 #pragma once
@@ -36,14 +37,20 @@
 
 namespace ts {
 
+    //!
+    //! An interface to be implemented by a class to handle user Ctrl-C interrupt.
+    //!
     class TSDUCKDLL InterruptHandler
     {
     public:
-        // This hook is invoked during the requested interrupt,
-        // in the context of a dedicated thread.
+        //!
+        //! This hook is invoked during the requested interrupt, in the context of a dedicated thread.
+        //!
         virtual void handleInterrupt() = 0;
 
-        // Virtual destructor
+        //!
+        //! Virtual destructor
+        //!
         virtual ~InterruptHandler() {}
     };
 }

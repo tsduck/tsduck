@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Shared library handling (.so on UNIX, DLL on Windows)
-//
+//!
+//!  @file
+//!  Shared library handling (.so on UNIX, DLL on Windows)
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

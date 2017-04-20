@@ -26,40 +26,41 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Definitions for the TLV protocols
-//
+//!
+//!  @file
+//!  Definitions for the TLV protocols
+//!
+//!  All messages use the same structure as the DVB interfaces defined in the
+//!  "DVB Simulcrypt Head End" standard, that is to say a TLV protocol.
+//!  The messages shall have the same generic format as all connection-oriented
+//!  TLV DVB Simulcrypt protocols and illustrated as follow:
+//!
+//!  @code
+//!      generic_message
+//!      {
+//!          protocol_version      1 byte
+//!          message_type          2 bytes
+//!          message_length        2 bytes
+//!          for (i=0; i < n; i++)
+//!          {
+//!              parameter_type    2 bytes
+//!              parameter_length  2 bytes
+//!              parameter_value   <parameter_length> bytes
+//!          }
+//!      }
+//!  @endcode
+//!
+//!  The protocols use the same byte order and parameter order as DVB Simulcrypt
+//!  protocols: For parameters with a size two or more bytes, the first byte to
+//!  be transmitted will be the most significant byte. This is commonly known as
+//!  "big endian" or "MSB first". Parameters do not need to be ordered within the
+//!  generic message.
+//!
 //----------------------------------------------------------------------------
 
 #pragma once
 #include "tsPlatform.h"
 #include "tsException.h"
-
-//  TLV Protocols
-//  -------------
-//  All messages use the same structure as the DVB interfaces defined in the
-//  "DVB Simulcrypt Head End" standard, that is to say a TLV protocol.
-//  The messages shall have the same generic format as all connection-oriented
-//  TLV DVB Simulcrypt protocols and illustrated as follow:
-//
-//      generic_message
-//      {
-//          protocol_version      1 byte
-//          message_type          2 bytes
-//          message_length        2 bytes
-//          for (i=0; i < n; i++)
-//          {
-//              parameter_type    2 bytes
-//              parameter_length  2 bytes
-//              parameter_value   <parameter_length> bytes
-//          }
-//      }
-//
-//  The protocols use the same byte order and parameter order as DVB Simulcrypt
-//  protocols: For parameters with a size two or more bytes, the first byte to
-//  be transmitted will be the most significant byte. This is commonly known as
-//  "big endian" or "MSB first". Parameters do not need to be ordered within the
-//  generic message.
 
 namespace ts {
     //!

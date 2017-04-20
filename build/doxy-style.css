@@ -1,5 +1,17 @@
 /* Doxygen style customization, coming after standard Doxygen styles. */
 
+h1 {
+    font-size: 1.6em;
+}
+h2 {
+    font-size: 1.4em;
+}
+h3 {
+    font-size: 1.2em;
+}
+#headertitle {
+    font-size: 1.6em;
+}
 #projectlogo {
     vertical-align: middle;
     padding-left: 0.5em;

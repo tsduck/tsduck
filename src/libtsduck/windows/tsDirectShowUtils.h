@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //-----------------------------------------------------------------------------
-//
-//  DirectShow & BDA utilities, Windows-specific.
-//
+//!
+//!  @file
+//!  DirectShow & BDA utilities, Windows-specific.
+//!
 //-----------------------------------------------------------------------------
 
 #pragma once

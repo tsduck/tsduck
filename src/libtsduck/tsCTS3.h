@@ -26,14 +26,14 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Cipher text Stealing (CTS) mode.
-//  Template class using a BlockCipher subclass as template argument.
-//
-//
-//  Several incompatible designs of CTS exist. This one implements the
-//  description of "ECB ciphertext stealing" in
-//  http://en.wikipedia.org/wiki/Ciphertext_stealing
+//!
+//!  @file
+//!  Cipher text Stealing (CTS) mode, alternative 3.
+//!
+//!  Several incompatible designs of CTS exist. This one implements the
+//!  description of "ECB ciphertext stealing" in
+//!  http://en.wikipedia.org/wiki/Ciphertext_stealing
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

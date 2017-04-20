@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  A SectionDemux which extracts MPEG tables without external handler.
-//
+//!
+//!  @file
+//!  A SectionDemux which extracts MPEG tables without external handler.
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

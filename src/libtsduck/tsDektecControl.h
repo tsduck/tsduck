@@ -27,9 +27,8 @@
 //
 //----------------------------------------------------------------------------
 //!
-//! @file tsDektecControl.h
-//!
-//! Declare the ts::DektecControl class.
+//!  @file
+//!  A class implementing the @c tsdektec control utility.
 //!
 //----------------------------------------------------------------------------
 

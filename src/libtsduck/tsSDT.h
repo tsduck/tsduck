@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Representation of a Service Description Table (SDT)
-//
+//!
+//!  @file
+//!  Representation of a Service Description Table (SDT)
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

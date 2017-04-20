@@ -26,10 +26,11 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  A specialized form of transport stream output file with resynchronized
-//  PID and continuity counters.
-//
+//!
+//!  @file
+//!  A specialized form of transport stream output file with resynchronized
+//!  PID and continuity counters.
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

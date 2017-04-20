@@ -26,10 +26,11 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Representation of a generic CA_descriptor.
-//  Specialized classes exist, depending on the CA_system_id.
-//
+//!
+//!  @file
+//!  Representation of a generic CA_descriptor.
+//!  Specialized classes exist, depending on the CA_system_id.
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Representation of MPEG PSI/SI sections
-//
+//!
+//!  @file
+//!  Representation of MPEG PSI/SI sections
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

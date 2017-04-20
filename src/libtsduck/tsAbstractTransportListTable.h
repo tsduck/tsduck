@@ -26,10 +26,11 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Abstract base class for tables containing a list of transport stream
-//  descriptions. Common code for BAT and NIT.
-//
+//!
+//!  @file
+//!  Abstract base class for tables containing a list of transport stream
+//!  descriptions. Common code for BAT and NIT.
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

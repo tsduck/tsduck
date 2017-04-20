@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //-----------------------------------------------------------------------------
-//
-//  Encapsulation of Linux S2API (new DVB API) property lists.
-//
+//!
+//!  @file
+//!  Encapsulation of Linux S2API (new DVB API) property lists.
+//!
 //-----------------------------------------------------------------------------
 
 #pragma once

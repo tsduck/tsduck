@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Audio attributes for MPEG-1 / MPEG-2
-//
+//!
+//!  @file
+//!  Audio attributes for MPEG-1 / MPEG-2
+//!
 //----------------------------------------------------------------------------
 
 #pragma once
