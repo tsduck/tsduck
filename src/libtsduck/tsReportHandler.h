@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Abstract interface for handling report messages.
-//
+//!
+//!  @file
+//!  Abstract interface for handling report messages.
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

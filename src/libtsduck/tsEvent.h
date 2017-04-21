@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Implement an "event". See also tsEventHandler.h.
-//
+//!
+//!  @file
+//!  Implement an "event". See also tsEventHandler.h.
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

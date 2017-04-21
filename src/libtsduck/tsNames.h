@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Names of various MPEG entities (namespace ts::names)
-//
+//!
+//!  @file
+//!  Names of various MPEG entities (namespace ts::names)
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

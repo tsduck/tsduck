@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Common definition for MPEG level
-//
+//!
+//!  @file
+//!  Common definition for MPEG level
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

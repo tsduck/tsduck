@@ -26,10 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Implementation of memory buffer locked in physical memory.
-//  The template argument T is the basic element.
-//
+//!
+//!  @file
+//!  Implementation of memory buffer locked in physical memory.
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

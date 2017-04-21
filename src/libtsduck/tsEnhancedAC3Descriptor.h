@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Representation of an enhanced_AC-3_descriptor
-//
+//!
+//!  @file
+//!  Representation of an enhanced_AC-3_descriptor
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

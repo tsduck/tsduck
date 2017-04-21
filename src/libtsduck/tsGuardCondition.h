@@ -27,9 +27,8 @@
 //
 //----------------------------------------------------------------------------
 //!
-//! @file tsGuardCondition.h
-//!
-//! Declare the ts::GuardCondition class.
+//!  @file
+//!  Automatic guard class for synchronization condition (ts::Condition).
 //!
 //----------------------------------------------------------------------------
 

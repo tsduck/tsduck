@@ -28,8 +28,8 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Base class for AVC access units, aka NALunits
-//!  (AVC, Advanced Video Coding, ISO 14496-10, ITU H.264)
+//!  Base class for AVC access units, aka NALunits.
+//!  AVC is Advanced Video Coding, ISO 14496-10, ITU H.264.
 //!
 //----------------------------------------------------------------------------
 

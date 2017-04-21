@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Abstract interface for event reporting and monitoring
-//
+//!
+//!  @file
+//!  Abstract interface for event reporting and monitoring
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

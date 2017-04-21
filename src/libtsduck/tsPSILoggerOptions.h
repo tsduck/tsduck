@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Options for the class PSILogger.
-//
+//!
+//!  @file
+//!  Options for the class PSILogger.
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

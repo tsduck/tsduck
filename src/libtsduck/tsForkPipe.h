@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Fork a process and create a pipe to its standard input.
-//
+//!
+//!  @file
+//!  Fork a process and create a pipe to its standard input.
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

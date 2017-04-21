@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Utilities for IP networking
-//
+//!
+//!  @file
+//!  Utilities for IP networking
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

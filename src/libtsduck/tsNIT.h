@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Representation of a Network Information Table (NIT)
-//
+//!
+//!  @file
+//!  Representation of a Network Information Table (NIT)
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

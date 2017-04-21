@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Basic monotonic clock & timer class
-//
+//!
+//!  @file
+//!  Basic monotonic clock & timer class
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Description of a Low-Noise Block (LNB) converter in a satellite dish.
-//
+//!
+//!  @file
+//!  Description of a Low-Noise Block (LNB) converter in a satellite dish.
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

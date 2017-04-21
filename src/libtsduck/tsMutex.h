@@ -27,9 +27,8 @@
 //
 //----------------------------------------------------------------------------
 //!
-//! @file tsMutex.h
-//!
-//! Declare the ts::Mutex class.
+//!  @file
+//!  A mutex implementation which is compatible with the ts::Thread class.
 //!
 //----------------------------------------------------------------------------
 

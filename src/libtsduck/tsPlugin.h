@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Definition of the API of a tsp plugin.
-//
+//!
+//!  @file
+//!  Definition of the API of a tsp plugin.
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

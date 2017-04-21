@@ -27,12 +27,11 @@
 //
 //----------------------------------------------------------------------------
 //!
-//! @file utestCppUnitTest.h
+//!  @file
+//!  To be included by unitary tests for the C++ language using CppUnit.
 //!
-//! To be included by unitary tests for the C++ language using CppUnit.
-//!
-//! This header file provides all required headers from CppUnit to write
-//! a unitary test suite.
+//!  This header file provides all required headers from CppUnit to write
+//!  a unitary test suite.
 //!
 //----------------------------------------------------------------------------
 

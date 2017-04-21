@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Definition of the API of a tsgentab plugin.
-//
+//!
+//!  @file
+//!  Definition of the API of a tsgentab plugin.
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

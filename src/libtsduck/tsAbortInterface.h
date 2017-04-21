@@ -37,14 +37,23 @@
 
 namespace ts {
 
+    //!
+    //! An interface to check for abort.
+    //!
+    //! This interface is implemented by classes which support interrupt and abort,
+    //! for instance a Ctrl-C user interrupt.
+    //!
     class TSDUCKDLL AbortInterface
     {
     public:
-        // This abstract method checks if the application is
-        // aborting for some reason (user interrupt for instance).
+        //!
+        //! This abstract method checks if the application is aborting for some reason.
+        //! @return True if the application is aborting.
         virtual bool aborting() const = 0;
 
-        // Virtual destructor
+        //!
+        //! Virtual destructor
+        //!
         virtual ~AbortInterface() {}
     };
 }

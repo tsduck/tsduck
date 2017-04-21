@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //-----------------------------------------------------------------------------
-//
-//  DirectShow AM_MEDIA_TYPE utilities, Windows-specific.
-//
+//!
+//!  @file
+//!  DirectShow AM_MEDIA_TYPE utilities (Windows-specific).
+//!
 //-----------------------------------------------------------------------------
 
 #pragma once

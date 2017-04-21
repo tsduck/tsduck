@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Transport stream processor: Implementation of "Joint Termination"
-//
+//!
+//!  @file
+//!  Transport stream processor: Implementation of "Joint Termination"
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

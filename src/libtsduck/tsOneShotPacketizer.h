@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Packetization of MPEG sections into Transport Stream packets in one shot
-//
+//!
+//!  @file
+//!  Packetization of MPEG sections into Transport Stream packets in one shot
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  DVB SimulCrypt EMMG/PDG <=> MUX protocol
-//
+//!
+//!  @file
+//!  DVB SimulCrypt EMMG/PDG <=> MUX protocol
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

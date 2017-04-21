@@ -26,10 +26,11 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Representation of a generic linkage_descriptor.
-//  Specialized classes exist, depending on the linkage type.
-//
+//!
+//!  @file
+//!  Representation of a generic linkage_descriptor.
+//!  Specialized classes exist, depending on the linkage type.
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

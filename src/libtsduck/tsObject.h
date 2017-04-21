@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Abstract base class for objects which can be stored in a repository
-//
+//!
+//!  @file
+//!  Abstract base class for objects which can be stored in a repository
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

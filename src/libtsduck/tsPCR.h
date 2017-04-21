@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  MPEG Program Clock Reference (PCR) utilities
-//
+//!
+//!  @file
+//!  MPEG Program Clock Reference (PCR) utilities
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

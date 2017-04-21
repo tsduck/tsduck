@@ -26,10 +26,11 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Representation of a logical_channel_number_descriptor.
-//  Private descriptor, must be preceeded by the EACEM/EICTA PDS.
-//
+//!
+//!  @file
+//!  Representation of a logical_channel_number_descriptor.
+//!  This si a private descriptor, must be preceeded by the EACEM/EICTA PDS.
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

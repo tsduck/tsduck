@@ -28,9 +28,9 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Base class for AVC data, either access units or structures
-//! (AVC, Advanced Video Coding, ISO 14496-10, ITU H.264)
-//
+//!  Base class for AVC data, either access units or structures.
+//!  AVC is Advanced Video Coding, ISO 14496-10, ITU H.264.
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

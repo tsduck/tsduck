@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Transport stream processor command-line options
-//
+//!
+//!  @file
+//!  Transport stream processor command-line options
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

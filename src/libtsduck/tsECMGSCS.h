@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  DVB SimulCrypt ECMG <=> SCS protocol
-//
+//!
+//!  @file
+//!  DVB SimulCrypt ECMG <=> SCS protocol
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

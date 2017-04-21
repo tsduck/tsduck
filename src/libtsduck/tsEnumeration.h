@@ -27,9 +27,8 @@
 //
 //----------------------------------------------------------------------------
 //!
-//! @file tsEnumeration.h
-//!
-//! Declare the ts::Enumeration class.
+//!  @file
+//!  Representation of enumeration as int/string pairs.
 //!
 //----------------------------------------------------------------------------
 

@@ -27,9 +27,8 @@
 //
 //----------------------------------------------------------------------------
 //!
-//! @file tsReportFile.h
-//!
-//! Declare the ts::ReportFile class.
+//!  @file
+//!  A subclass of ts::ReportInterface which outputs messages in a text file.
 //!
 //----------------------------------------------------------------------------
 

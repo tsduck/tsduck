@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Representation of a private_data_specifier_descriptor
-//
+//!
+//!  @file
+//!  Representation of a private_data_specifier_descriptor
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

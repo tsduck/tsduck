@@ -28,8 +28,7 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Interface for classes which need to be notified of asynchronous ECM
-//!  generation using ECMGClient.
+//!  Interface to be notified of asynchronous ECM generation using ECMGClient.
 //!
 //----------------------------------------------------------------------------
 

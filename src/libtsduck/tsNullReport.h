@@ -26,10 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  This class is a singleton implementing ReportInterface which drops
-//  all messages.
-//
+//!
+//!  @file
+//!  A singleton implementing ReportInterface which drops all messages.
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

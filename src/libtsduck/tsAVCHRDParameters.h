@@ -28,8 +28,8 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  AVC HRD (Hypothetical Reference Decoder) parameters
-//!  (AVC, Advanced Video Coding, ISO 14496-10, ITU H.264)
+//!  AVC HRD (Hypothetical Reference Decoder) parameters.
+//!  AVC is Advanced Video Coding, ISO 14496-10, ITU H.264.
 //!
 //----------------------------------------------------------------------------
 

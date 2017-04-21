@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //-----------------------------------------------------------------------------
-//
-//  Windows Registry utilities. Windows-specific.
-//
+//!
+//!  @file
+//!  Windows Registry utilities (Windows-specific).
+//!
 //-----------------------------------------------------------------------------
 
 #pragma once

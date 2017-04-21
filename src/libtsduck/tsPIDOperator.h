@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Association of a PID and an "operator" id (CAS-specific).
-//
+//!
+//!  @file
+//!  Association of a PID and an "operator" id (CAS-specific).
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

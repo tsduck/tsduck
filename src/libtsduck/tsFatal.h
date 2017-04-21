@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Handles some fatal situations.
-//
+//!
+//!  @file
+//!  Handle some fatal situations.
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

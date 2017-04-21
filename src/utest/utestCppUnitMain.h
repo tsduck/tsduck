@@ -27,10 +27,8 @@
 //
 //----------------------------------------------------------------------------
 //!
-//! @file utestCppUnitMain.h
-//!
-//! Declare the utest::CppUnitMain class, tools for unitary tests main program
-//! in the C++ language using CppUnit.
+//!  @file
+//!  A class implementing the unitary tests main program using CppUnit.
 //!
 //----------------------------------------------------------------------------
 

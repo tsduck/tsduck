@@ -26,10 +26,11 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Representation of a HD_simulcast_logical_channel_descriptor.
-//  Private descriptor, must be preceeded by the EACEM/EICTA PDS.
-//
+//!
+//!  @file
+//!  Representation of a HD_simulcast_logical_channel_descriptor.
+//!  This is a private descriptor, must be preceeded by the EACEM/EICTA PDS.
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

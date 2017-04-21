@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Build a string using printf-like format.
-//
+//!
+//!  @file
+//!  Build a string using printf-like format.
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

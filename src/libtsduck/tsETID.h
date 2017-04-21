@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  "Extended Table Id", a synthetic value for identifying tables.
-//
+//!
+//!  @file
+//!  "Extended Table Id", a synthetic value for identifying tables.
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

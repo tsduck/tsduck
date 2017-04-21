@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Representation of a Program Map Table (PMT)
-//
+//!
+//!  @file
+//!  Representation of a Program Map Table (PMT)
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

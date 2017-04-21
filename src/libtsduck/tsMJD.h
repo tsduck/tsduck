@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Modified Julian Date (MJD) utilities
-//
+//!
+//!  @file
+//!  Modified Julian Date (MJD) utilities
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

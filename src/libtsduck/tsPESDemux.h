@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  This class extracts PES packets from TS packets
-//
+//!
+//!  @file
+//!  This class extracts PES packets from TS packets
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

@@ -53,15 +53,18 @@ OUTPUT_DIRECTORY = ../doxy
 
 # Error reporting:
 
-QUIET            = YES
-WARN_NO_PARAMDOC = YES
+QUIET                = YES
+WARN_NO_PARAMDOC     = YES
+WARN_IF_UNDOCUMENTED = YES
 
 # Source code analysis:
 
 JAVADOC_AUTOBRIEF     = YES
-EXTRACT_ALL           = YES
+EXTRACT_ALL           = YES # Set to NO to generate warnings for missing doc
 EXTRACT_PRIVATE       = NO
 EXTRACT_STATIC        = YES
+EXTRACT_LOCAL_CLASSES = NO
+EXTRACT_ANON_NSPACES  = NO
 HIDE_FRIEND_COMPOUNDS = YES
 INTERNAL_DOCS         = NO
 PREDEFINED           += DOXYGEN

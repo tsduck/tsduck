@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Definition for MPEG transport modulations
-//
+//!
+//!  @file
+//!  Definition for MPEG transport modulations
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

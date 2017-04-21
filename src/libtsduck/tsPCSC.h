@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  PC/SC smartcard API utilities
-//
+//!
+//!  @file
+//!  PC/SC smartcard API utilities
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

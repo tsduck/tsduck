@@ -26,11 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  This abstract interface must be implemented by classes which need to be
-//  notified of PES packets using a PESDemux. All hooks are optional, ie.
-//  they have an empty default implementation.
-//
+//!
+//!  @file
+//!  Abstract interface to be notified of PES packets using a PESDemux.
+//!
 //----------------------------------------------------------------------------
 
 #pragma once
@@ -44,6 +43,10 @@ namespace ts {
 
     class PESDemux;
 
+    //!
+    //! Abstract interface to be notified of PES packets using a PESDemux.
+    //! All hooks are optional, ie. they have an empty default implementation.
+    //!
     class TSDUCKDLL PESHandlerInterface
     {
     public:

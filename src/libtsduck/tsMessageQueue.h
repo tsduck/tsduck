@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Template message queue for inter-thread communication
-//
+//!
+//!  @file
+//!  Template message queue for inter-thread communication
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

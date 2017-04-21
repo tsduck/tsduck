@@ -37,32 +37,55 @@
 
 namespace ts {
 
+    //!
+    //! Abstract base class for MPEG audio and video attributes
+    //!
     class TSDUCKDLL AbstractAudioVideoAttributes
     {
     public:
-        // Default constructor
+        //!
+        //! Default constructor
+        //!
         AbstractAudioVideoAttributes(): _is_valid (false) {}
 
-        // Virtual destructor
+        //!
+        //! Virtual destructor
+        //!
         virtual ~AbstractAudioVideoAttributes() {}
 
-        // Check if the values in the object are valid
+        //!
+        //! Check if the values in the object are valid.
+        //! @return True if the values in the object are valid.
+        //!
         bool isValid() const {return _is_valid;}
 
-        // Invalidate content, must be rebuilt using audio/video binary data
+        //!
+        //! Invalidate the content of this instance.
+        //! It must be rebuilt using audio/video binary data.
+        //!
         void invalidate() {_is_valid = false;}
 
-        // Provides an audio/video binary data. The type of data (complete PES
-        // payload or some type of "frame" or "access unit") depends on the
-        // type of audio/video. Return true if the attributes object becomes
-        // valid or has new values.
-        virtual bool moreBinaryData (const void*, size_t) = 0;
+        //!
+        //! Provides an audio/video binary data to be analyzed by this instance.
+        //! The type of data (complete PES payload or some type of "frame" or "access unit")
+        //! depends on the type of audio/video.
+        //! @param [in] addr Address of data to be analyzed.
+        //! @param [in] size Size of data to be analyzed.
+        //! @return True if the attributes object becomes valid or has new values.
+        //!
+        virtual bool moreBinaryData(const void* addr, size_t size) = 0;
 
-        // Convert to a string object
-        virtual operator std::string () const = 0;
+        //!
+        //! Conversion operator to a string.
+        //! @return A string representing the content of this object.
+        //!
+        virtual operator std::string() const = 0;
 
     protected:
-        // It is the responsibility of the subclasses to set the valid flag
+        //!
+        //! A flag which indicates if the content of this object is valid.
+        //! It is the responsibility of the subclasses to set it.
+        //!
         bool _is_valid;
     };
 }

@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Abstract base class for hash functions
-//
+//!
+//!  @file
+//!  Abstract base class for hash functions
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

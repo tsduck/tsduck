@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Representation of a network_name_descriptor
-//
+//!
+//!  @file
+//!  Representation of a network_name_descriptor
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

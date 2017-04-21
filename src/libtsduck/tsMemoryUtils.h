@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Utility routines for memory operations.
-//
+//!
+//!  @file
+//!  Utility routines for memory operations.
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

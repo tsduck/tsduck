@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Representation of MPEG PES packets
-//
+//!
+//!  @file
+//!  Representation of MPEG PES packets
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

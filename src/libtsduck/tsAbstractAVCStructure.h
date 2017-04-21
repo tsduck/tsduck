@@ -28,8 +28,8 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Base class for AVC sub-structures inside access units
-//!  (AVC, Advanced Video Coding, ISO 14496-10, ITU H.264)
+//!  Base class for AVC sub-structures inside access units.
+//!  AVC is Advanced Video Coding, ISO 14496-10, ITU H.264.
 //!
 //----------------------------------------------------------------------------
 

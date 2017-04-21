@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Representation of an ISO_639_language_descriptor
-//
+//!
+//!  @file
+//!  Representation of an ISO_639_language_descriptor
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

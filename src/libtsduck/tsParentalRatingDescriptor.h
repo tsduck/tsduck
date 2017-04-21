@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Representation of an parental_rating_descriptor
-//
+//!
+//!  @file
+//!  Representation of an parental_rating_descriptor
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

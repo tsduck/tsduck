@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Build a string containing the hexa/ascii dump of a memory area
-//
+//!
+//!  @file
+//!  Build a string containing the hexa/ascii dump of a memory area
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

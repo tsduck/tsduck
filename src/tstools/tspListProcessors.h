@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Transport stream processor: --list-processors option
-//
+//!
+//!  @file
+//!  Transport stream processor: @c --list-processors option
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

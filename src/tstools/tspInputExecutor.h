@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Transport stream processor: Execution context of an input plugin
-//
+//!
+//!  @file
+//!  Transport stream processor: Execution context of an input plugin
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

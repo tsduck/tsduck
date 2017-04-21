@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Representation of a Program Association Table (PAT)
-//
+//!
+//!  @file
+//!  Representation of a Program Association Table (PAT)
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

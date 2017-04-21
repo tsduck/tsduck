@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Abstract "event handler" class. See also tsEvent.h.
-//
+//!
+//!  @file
+//!  Abstract "event handler" class. See also tsEvent.h.
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

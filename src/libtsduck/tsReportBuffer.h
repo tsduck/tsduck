@@ -27,9 +27,8 @@
 //
 //----------------------------------------------------------------------------
 //!
-//! @file tsReportBuffer.h
-//!
-//! Declare the ts::ReportBuffer class.
+//!  @file
+//!  A subclass of ts::ReportInterface which logs messages in an internal buffer.
 //!
 //----------------------------------------------------------------------------
 

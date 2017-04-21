@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Decode file names / repetition rates command line arguments
-//
+//!
+//!  @file
+//!  Decode file names / repetition rates command line arguments
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

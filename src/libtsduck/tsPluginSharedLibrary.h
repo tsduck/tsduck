@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  TSP plugin shared libraries
-//
+//!
+//!  @file
+//!  TSP plugin shared libraries
+//!
 //----------------------------------------------------------------------------
 
 #pragma once

@@ -26,9 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Abstract base class for PRNG's (pseudo-random numbers generators)
-//
+//!
+//!  @file
+//!  Abstract base class for PRNG's (pseudo-random numbers generators)
+//!
 //----------------------------------------------------------------------------
 
 #pragma once
