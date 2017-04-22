@@ -38,20 +38,29 @@
 #include "tsCerrReport.h"
 #include "tsEnumeration.h"
 
+#if !defined(TS_NO_DTAPI) || defined(DOXYGEN)
+
 namespace ts {
 
-#if !defined(TS_NO_DTAPI)
-                                       
     class DektecDevice;
+    //!
+    //! Vector of ts::DektecDevice.
+    //!
     typedef std::vector<DektecDevice> DektecDeviceVector;
+    //!
+    //! Vector of Dtapi::DtDeviceDesc.
+    //!
     typedef std::vector<Dtapi::DtDeviceDesc> DektecDeviceDescVector;
+    //!
+    //! Vector of Dtapi::DtHwFuncDesc.
+    //!
     typedef std::vector<Dtapi::DtHwFuncDesc> DektecPortDescVector;
-
     //!
     //! Get the error message corresponding to a DTAPI error code
+    //! @param [in] code DTAPI error code.
     //! @return An error message.
     //!
-    std::string DektecStrError(Dtapi::DTAPI_RESULT);
+    std::string DektecStrError(Dtapi::DTAPI_RESULT code);
 
     //!
     //! Description of a Dektec device.
@@ -64,11 +73,30 @@ namespace ts {
         DektecPortDescVector input;    //!< Vector of input ports.
         DektecPortDescVector output;   //!< Vector of output ports.
 
-        // Constructor
-        DektecDevice() : model(), desc(), input(), output() {}
+        //!
+        //! Constructor
+        //!
+        DektecDevice() :
+            model(),
+            desc(),
+            input(),
+            output()
+        {
+        }
 
-        // Get a Dektec device description. Return true on success.
-        // If dev_index or chan_index are negative, update them.
+        //!
+        //! Load the description of a Dektec device into this object.
+        //! @param [in,out] dev_index Index of the Dektec device to load.
+        //! If negative, search for the first device with the input or output capability
+        //! as specified by @a is_input and update @a dev_index.
+        //! @param [in,out] chan_index Index of the channel to load.
+        //! If negative, search for the first channel with the input or output capability
+        //! as specified by @a is_input and update @a chan_index.
+        //! @param [in] is_input If true, make sure the channel has input capability.
+        //! If false, make sure it has output capability.
+        //! @param [in,out] report Where to report errors.
+        //! @return True on success, false on error.
+        //!
         bool getDevice(int& dev_index, int& chan_index, bool is_input, ReportInterface& report = CERR);
 
         // Get the list of all Dektec devices in the system.
@@ -100,6 +128,6 @@ namespace ts {
         static void OneCap(std::string& str, bool condition, const std::string& name);
         static void OneCap(std::string& str, Dtapi::DtCaps cap, const std::string& name);
     };
-    
-#endif // TS_NO_DTAPI
 }
+
+#endif // TS_NO_DTAPI

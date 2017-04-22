@@ -29,7 +29,9 @@
 
 #include "tsThread.h"
 #include "tsGuard.h"
+#include "tsSysUtils.h"
 #include "tsFormat.h"
+#include "tsRound.h"
 
 
 //----------------------------------------------------------------------------
@@ -171,9 +173,13 @@ bool ts::Thread::start()
         return false;
     }
     // Set required stack size
-    if (_attributes._stackSize > 0 && ::pthread_attr_setstacksize(&attr, _attributes._stackSize) != 0) {
-        ::pthread_attr_destroy(&attr);
-        return false;
+    if (_attributes._stackSize > 0) {
+        // Round to a multiple of the page size. This is required on MacOS.
+        const size_t size = RoundUp(std::max<size_t>(PTHREAD_STACK_MIN, _attributes._stackSize), MemoryPageSize());
+        if (::pthread_attr_setstacksize(&attr, size) != 0) {
+            ::pthread_attr_destroy(&attr);
+            return false;
+        }
     }
     // Set scheduling policy identical as current process
     if (::pthread_attr_setschedpolicy(&attr, ThreadAttributes::PthreadSchedulingPolicy()) != 0) {

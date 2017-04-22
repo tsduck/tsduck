@@ -64,6 +64,7 @@ public:
     void testWildcard();
     void testHomeDirectory();
     void testProcessMetrics();
+    void testMemory();
 
     CPPUNIT_TEST_SUITE(SysUtilsTest);
     CPPUNIT_TEST(testCurrentProcessId);
@@ -82,6 +83,7 @@ public:
     CPPUNIT_TEST(testWildcard);
     CPPUNIT_TEST(testHomeDirectory);
     CPPUNIT_TEST(testProcessMetrics);
+    CPPUNIT_TEST(testMemory);
     CPPUNIT_TEST_SUITE_END();
 };
 
@@ -557,4 +559,12 @@ void SysUtilsTest::testProcessMetrics()
     CPPUNIT_ASSERT(pm2.cpu_time >= 0);
     CPPUNIT_ASSERT(pm2.cpu_time >= pm1.cpu_time);
     CPPUNIT_ASSERT(pm2.vmem_size > 0);
+}
+
+void SysUtilsTest::testMemory()
+{
+    // We can't predict the memory page size, except that it must be a multiple of 256.
+    utest::Out() << "SysUtilsTest: MemoryPageSize() = " << ts::MemoryPageSize() << " bytes" << std::endl;
+    CPPUNIT_ASSERT(ts::MemoryPageSize() > 0);
+    CPPUNIT_ASSERT(ts::MemoryPageSize() % 256 == 0);
 }

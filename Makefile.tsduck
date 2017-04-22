@@ -67,12 +67,15 @@ DESTDIR :=
 ifdef MACOS
     CFLAGS_INCLUDES += -I/usr/local/opt/pcsc-lite/include/PCSC -I$(LIBTSDUCKDIR)/mac
     LDLIBS := -L/usr/local/opt/pcsc-lite/lib/ $(LDLIBS)
+    LDFLAGS_EXTRA += -Wl,-rpath,@executable_path
+    SOFLAGS = -install_name '@rpath/$(notdir $@)'
 else
     CFLAGS_INCLUDES += -I/usr/include/PCSC -I$(LIBTSDUCKDIR)/linux
+    LDFLAGS_EXTRA += -Wl,-rpath,'$$ORIGIN'
+    SOFLAGS = -Wl,-soname=$(notdir $@)
 endif
 CFLAGS_INCLUDES += -I$(LIBTSDUCKDIR) --std=c++11
 LDLIBS := -lpcsclite -ldl $(LDLIBS)
-LDFLAGS_EXTRA += -Wl,-rpath,'$$ORIGIN'
 
 # Targets to copy shareable objects in the object directory.
 

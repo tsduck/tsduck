@@ -443,6 +443,7 @@
 #endif
 
 #if defined(__linux)
+#include <limits.h>
 #include <sys/mman.h>
 #include <byteswap.h>
 #include <linux/dvb/version.h>

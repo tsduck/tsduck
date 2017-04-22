@@ -244,6 +244,10 @@
 #    Additional options for the "rpmbuild" command.
 #    This variable can be defined after inclusion of this makefile.
 #
+#  SOFLAGS
+#    Specific options when creating shared objects (.so files).
+#    This variable can be defined after inclusion of this makefile.
+#
 #  TARGET_ARCH
 #    Contains the target architecture for gcc. Defaults to -march=`uname -m`.
 #    Should be overriden if your `uname -m` is not recognized by gcc.
@@ -302,6 +306,9 @@
 #
 #  CXXFLAGS
 #    Options which are applied to C++ compilations.
+#
+#  CYGWIN
+#    Defined to a non-empty value in a Cygwin environment.
 #
 #  EXE_SUFFIX
 #    Executable files suffix, ".exe" on Windows, nothing otherwise.
@@ -539,6 +546,7 @@ endif
 # - The option -fPIC generates a stupid error:
 #   "-fPIC ignored for target (all code is position independent)"
 ifneq ($(subst cygwin,,$(LOCAL_OS)),$(LOCAL_OS))
+    CYGWIN = true
     LOCAL_OS := cygwin
     LD_LIBRARY_PATH_NAME := PATH
     CFLAGS_FPIC :=
@@ -548,7 +556,7 @@ else
 endif
 
 # Executable files suffix
-ifeq ($(LOCAL_OS),cygwin)
+ifdef CYGWIN
     EXE_SUFFIX := .exe
 else
     EXE_SUFFIX :=
@@ -590,7 +598,7 @@ optsize:
 
 # On MacOS, HomeBrew development packages are installed in /usr/local.
 ifdef MACOS
-    CFLAGS_INCLUDES += /usr/local/include
+    CFLAGS_INCLUDES += -I/usr/local/include
     LDLIBS := -L/usr/local/lib $(LDLIBS)
 endif
 
@@ -704,7 +712,7 @@ $(OBJDIR)/%: $(OBJDIR)/%.o
 	$(CC) $(LDFLAGS) $^ $(LDLIBS) -o $@
 $(OBJDIR)/%.so: $(OBJDIR)/%.o
 	@echo '  [CC] $@'; \
-	$(CC) $(CFLAGS) -Wl,-soname=$(notdir $@) $(LDFLAGS) $^ $(LDLIBS) -shared -o $@
+	$(CC) $(CFLAGS) $(SOFLAGS) $(LDFLAGS) $^ $(LDLIBS) -shared -o $@
 
 # Object files dependencies (.dep files, included by makefiles)
 $(OBJDIR)/%.dep: %.c

@@ -167,6 +167,9 @@ namespace ts {
         // Return true on success, false on errors.
         bool setReceiveTimeout(MilliSecond, ReportInterface&);
 
+        // Get timeout for receive operation.
+        MilliSecond receiveTimeout() const {return _receive_timeout;}
+        
 #if defined(__linux) || defined(DOXYGEN) // Linux-specific operations
 
         // Poll interval for signal timeout. Must be set before start.
@@ -205,17 +208,17 @@ namespace ts {
     private:
 
         // Portable properties
-        bool        _is_open;
-        bool        _info_only;
-        TunerType   _tuner_type;
-        std::string _device_name;    // Used to open the tuner
-        std::string _device_info;    // Device-specific, can be empty
-        MilliSecond _signal_timeout;
-        bool        _signal_timeout_silent;
-        MilliSecond _receive_timeout;
+        bool              _is_open;
+        bool              _info_only;
+        TunerType         _tuner_type;
+        std::string       _device_name;    // Used to open the tuner
+        std::string       _device_info;    // Device-specific, can be empty
+        MilliSecond       _signal_timeout;
+        bool              _signal_timeout_silent;
+        MilliSecond       _receive_timeout;
         DeliverySystemSet _delivery_systems;
 
-#if defined(__linux) || defined(DOXYGEN) // Linux properties
+#if defined(__linux) // Linux properties
 
         std::string         _frontend_name;    // Frontend device name
         std::string         _demux_name;       // Demux device name
@@ -249,14 +252,14 @@ namespace ts {
         bool tuneDVBT(const TunerParametersDVBT&, ReportInterface&);
         bool tuneATSC(const TunerParametersATSC&, ReportInterface&);
 
-#if defined(__s2api) || defined(DOXYGEN)
+#if defined(__s2api)
         // Convert between TSDuck and Linux S2API delivery systems.
         DeliverySystem fromLinuxDeliverySystem(::fe_delivery_system);
         ::fe_delivery_system toLinuxDeliverySystem(DeliverySystem);
 #endif
 #endif // linux
        
-#if defined(__windows) || defined(DOXYGEN) // Windows properties
+#if defined(__windows) // Windows properties
 
         // A DirectShow graph for TS capture is usually made of the following filters:
         // - Network provider (typically "Microsoft DVBx Network Provider")

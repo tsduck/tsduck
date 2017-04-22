@@ -43,24 +43,25 @@ CXXVPATH  = $(OSDIR) private
 # NODTAPI is automatically defined if no DTAPI is found.
 # DTAPI is not available for MacOS and is not downloaded, not present.
 
-DTAPI_ROOT := ../../dektec/LinuxSDK/DTAPI
-
-ifeq ($(NODTAPI)$(DTAPI_OBJECT),)
-  # No DTAPI was preset by user. Try to find one.
-  ifeq ($(shell uname -m)$(M32),x86_64)
-    DTAPI_OBJECT_NAME := DTAPI64.o
-  else
-    DTAPI_OBJECT_NAME := DTAPI.o
-  endif
-  DTAPI_OBJECT := $(lastword $(wildcard $(DTAPI_ROOT)/Lib/*/$(DTAPI_OBJECT_NAME)))
-  DTAPI_HEADER := $(wildcard $(DTAPI_ROOT)/Include/DTAPI.h)
+ifndef MACOS
+    DTAPI_ROOT := ../../dektec/LinuxSDK/DTAPI
+    ifeq ($(NODTAPI)$(DTAPI_OBJECT),)
+        # No DTAPI was preset by user. Try to find one.
+        ifeq ($(shell uname -m)$(M32),x86_64)
+            DTAPI_OBJECT_NAME := DTAPI64.o
+        else
+            DTAPI_OBJECT_NAME := DTAPI.o
+        endif
+        DTAPI_OBJECT := $(lastword $(wildcard $(DTAPI_ROOT)/Lib/*/$(DTAPI_OBJECT_NAME)))
+        DTAPI_HEADER := $(wildcard $(DTAPI_ROOT)/Include/DTAPI.h)
+    endif
 endif
 
 ifeq ($(DTAPI_OBJECT)$(DTAPI_HEADER),)
-  NODTAPI := true
-  CXXFLAGS_INCLUDES += -DTS_NO_DTAPI=1
+    NODTAPI := true
+    CXXFLAGS_INCLUDES += -DTS_NO_DTAPI=1
 else
-  CXXFLAGS_INCLUDES += -isystem $(DTAPI_ROOT)/Include
+    CXXFLAGS_INCLUDES += -isystem $(DTAPI_ROOT)/Include
 endif
 
 # Now, we can include the common makefile.
@@ -69,7 +70,7 @@ include ../../Makefile.tsduck
 
 # Building the TSDuck library.
 
-default: libs tsduck.h
+default: tsduck.h libs
 	@true
 
 # Specific (per-module) compilation options:
@@ -98,7 +99,7 @@ $(OBJDIR)/$(LIBTSDUCK): $(OBJDIR)/$(LIBTSDUCK)($(OBJS))
 $(OBJDIR)/$(SHLIBTSDUCK): $(OBJS)
 	@echo '  [DTAPI] $(if $(DTAPI_OBJECT),using $(DTAPI_OBJECT),no DTAPI available)'; \
 	echo '  [CC] $@'; \
-	$(CC) $(CFLAGS) -Wl,-soname=$(notdir $@) $^ $(LDLIBS) -shared -o $@
+	$(CC) $(CFLAGS) $(SOFLAGS) $^ $(LDLIBS) -shared -o $@
 
 # The header tsduck.h includes all headers
 

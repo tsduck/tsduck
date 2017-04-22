@@ -32,7 +32,9 @@
 #include "tsDecimal.h"
 #include "tsFormat.h"
 
-#if !defined(TS_NO_DTAPI)
+#if defined(TS_NO_DTAPI)
+bool tsDektecDeviceIsEmpty = true; // Avoid warning about empty module.
+#else
 
 
 //-----------------------------------------------------------------------------

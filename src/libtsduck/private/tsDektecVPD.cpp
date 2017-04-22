@@ -30,7 +30,9 @@
 #include "tsDektecVPD.h"
 #include "tsMemoryUtils.h"
 
-#if !defined(TS_NO_DTAPI)
+#if defined(TS_NO_DTAPI)
+bool tsDektecVPDIsEmpty = true; // Avoid warning about empty module.
+#else
 
 
 //-----------------------------------------------------------------------------

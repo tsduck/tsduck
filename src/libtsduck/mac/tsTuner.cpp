@@ -75,14 +75,14 @@ ts::Tuner::Tuner() :
 //-----------------------------------------------------------------------------
 
 ts::Tuner::Tuner(const std::string& device_name, bool info_only, ReportInterface& report) :
-    _is_open (false),
-    _info_only (true),
-    _tuner_type (DVB_T),
-    _device_name (device_name),
-    _device_info (),
-    _signal_timeout (DEFAULT_SIGNAL_TIMEOUT),
-    _signal_timeout_silent (false),
-    _receive_timeout (0),
+    _is_open(false),
+    _info_only(true),
+    _tuner_type(DVB_T),
+    _device_name(device_name),
+    _device_info(),
+    _signal_timeout(DEFAULT_SIGNAL_TIMEOUT),
+    _signal_timeout_silent(false),
+    _receive_timeout(0),
     _delivery_systems()
 {
     report.error(NOT_IMPLEMENTED);
@@ -173,7 +173,7 @@ bool ts::Tuner::getCurrentTuning(TunerParameters& params, bool reset_unknown, Re
 // Return true on success, false on errors
 //-----------------------------------------------------------------------------
 
-bool ts::Tuner::tune (const TunerParameters& params, ReportInterface& report)
+bool ts::Tuner::tune(const TunerParameters& params, ReportInterface& report)
 {
     report.error(NOT_IMPLEMENTED);
     return false;
@@ -185,7 +185,7 @@ bool ts::Tuner::tune (const TunerParameters& params, ReportInterface& report)
 // Return true on success, false on errors
 //-----------------------------------------------------------------------------
 
-bool ts::Tuner::start (ReportInterface& report)
+bool ts::Tuner::start(ReportInterface& report)
 {
     report.error(NOT_IMPLEMENTED);
     return false;
@@ -197,7 +197,7 @@ bool ts::Tuner::start (ReportInterface& report)
 // Return true on success, false on errors
 //-----------------------------------------------------------------------------
 
-bool ts::Tuner::stop (ReportInterface& report)
+bool ts::Tuner::stop(ReportInterface& report)
 {
     report.error(NOT_IMPLEMENTED);
     return false;
@@ -210,7 +210,7 @@ bool ts::Tuner::stop (ReportInterface& report)
 // Return true on success, false on errors.
 //-----------------------------------------------------------------------------
 
-bool ts::Tuner::setReceiveTimeout (MilliSecond timeout, ReportInterface& report)
+bool ts::Tuner::setReceiveTimeout(MilliSecond timeout, ReportInterface& report)
 {
     report.error(NOT_IMPLEMENTED);
     return false;
@@ -223,8 +223,19 @@ bool ts::Tuner::setReceiveTimeout (MilliSecond timeout, ReportInterface& report)
 // Returning zero means error or end of input.
 //-----------------------------------------------------------------------------
 
-size_t ts::Tuner::receive (TSPacket* buffer, size_t max_packets, const AbortInterface* abort, ReportInterface& report)
+size_t ts::Tuner::receive(TSPacket* buffer, size_t max_packets, const AbortInterface* abort, ReportInterface& report)
 {
     report.error(NOT_IMPLEMENTED);
     return false;
+}
+
+
+//-----------------------------------------------------------------------------
+// Display the characteristics and status of the tuner.
+//-----------------------------------------------------------------------------
+
+std::ostream& ts::Tuner::displayStatus(std::ostream& strm, const std::string& margin, ReportInterface& report)
+{
+    report.error(NOT_IMPLEMENTED);
+    return strm;
 }
