@@ -1,0 +1,151 @@
+/** @page devplugin Developing TSP Plugins
+
+@tableofcontents
+
+# Plugin development workflow {#pdevworkflow}
+
+When some new kind of transport stream processing is needed, several solutions are possible:
+
+- First, check if an existing plugin or a combination of existing plugins can do the job.
+- Check if an existing plugin can be extended (by adding new options for instance).
+- As a last resort, develop a new plugin, which is relatively easy.
+
+To develop a new plugin named `foo`, follow these steps:
+
+- Create a source file named `tsplugin_foo.cpp` in the `tsplugins` subdirectory.
+
+- On Linux or MacOS systems, this new source file will be automatically recognized by
+  the Makefile and the new plugin will be built.
+
+- On Windows systems, create a project file named `tsplugin_foo.vcxproj` in the `msvc2015`
+  subdirectory (or the corresponding directory for another version of Visual Studio).
+  The fastest way is to copy another plugin's project file. Then, edit the file (this is
+  an XML file) and replace the names of the project and source file.
+  Finally, under Visual C++, add the new project in the solution (File / Add / Existing Project).
+
+In the source file, create a C++ class, derived from either ts::InputPlugin, ts::OutputPlugin
+or ts::ProcessorPlugin. If your plugin implements two capabilities (both input and output for
+instance), implement the corresponding two classes.
+
+See the class diagram of ts::Plugin for a global view of the plugin classes.
+
+Specialized descrambling plugins derive from ts::AbstractDescrambler. This abstract class
+performs the generic functions of a descrambler: service location, ECM collection,
+descrambling of elementary streams. The concrete classes which derive from
+ts::AbstractDescrambler must perform CAS-specific operations: ECM streams filtering,
+ECM deciphering, control words extraction. Most of the time, these concrete classes
+must interact with a smartcard reader containing a smartcard for the specific CAS.
+
+# Development guidelines {#pdevguidelines}
+
+Don't write a plugin from scratch. Use an existing plugin as code base (beware however
+of the pitfalls of careless copy / paste). The simplest code bases can be found in the
+plugins `null` (input), `drop` (output) , `skip` (basic packet processing), `nitscan`
+(reading content of PSI/SI), `svrename` (modifying PSI/SI on the fly).
+
+A last advice: Always create plugins which perform simple and elementary processing.
+If your requirements can be divided into two independent processing, create two distinct
+plugins. The strength of TSDuck is the flexibility, that is to say the ability to combine
+elementary processing independently and in any order.
+
+## Invoking tsp from a plugin, the ts::TSP callbacks {#pdevtsp}
+
+In its constructor, each plugin receives an associated ts::TSP object to communicate with
+the Transport Stream Processor main executable. A plugin shared library must exclusively
+use the `tsp` object for text display and must never use `std::cout`, `printf` or alike.
+
+When called in multi-threaded context, the supplied `tsp` object is thread-safe and asynchronous
+(the methods return to the caller without waiting for the message to be printed).
+
+## Joint termination support {#pdevjtem}
+
+A plugin can decide to terminate `tsp` on its own (returning end of input, output error
+or ts::ProcessorPlugin::TSP_END). The termination is unconditional, regardless of the state
+of the other plugins. Thus, if several plugins have termination conditions, `tsp` stops when
+the first plugin decides to terminate. In other words, there is an "or" operator between the
+various termination conditions.
+
+The idea behind joint termination is to terminate tsp when several plugins have jointly
+terminated their processing. If several plugins have a "joint termination" condition,
+`tsp` stops when the last plugin triggers the joint termination condition. In other words,
+there is an "and" operator between the various joint termination conditions.
+
+First, a plugin must decide to use joint termination. This is usually done in method
+ts::Plugin::start(), using ts::TSP::useJointTermination(bool) when the option
+`--joint-termination` is specified on the command line.
+
+Then, when the plugin has completed its work, it reports this using ts::TSP::jointTerminate().
+After invoking this method, any packet which is processed by the plugin may be ignored by `tsp`.
+
+# TSP design {#pdevdesign}
+
+This section is a brief description of the design and internals of `tsp`.
+It contains some reference information for tsp maintainers.
+
+This section is not useful to plugin developers. `tsp` is designed to clearly separate
+the technical aspects of the buffer management and dynamics of a chain of plugins from
+the specialized plugin processing (TS input, TS output, packet processing).
+
+## Plugin Executors {#pdevexec}
+
+Each plugin executes in a separate thread. The base class for all threads is
+ts::tsp::PluginExecutor. Derived classes are used for input, output and packet
+processing plugins.
+
+## Transport packets buffer {#pdevbuffer}
+
+There is a global buffer for TS packets. Its structure is optimized for best performance.
+
+The input thread writes incoming packets in the buffer. All packet processors update
+the packets and the output thread picks them at the same place.
+No packet is copied or moved in memory.
+
+The buffer is an array of ts::TSPacket. It is a memory-resident buffer, locked in
+physical memory to avoid virtual memory paging (see class ts::ResidentBuffer).
+
+The buffer is managed in a circular way. It is divided into logical areas, one per plugin
+thread (including input and output). These logical areas are sliding windows which move
+when packets are processed.
+
+Inside a ts::PluginExecutor object, the sliding window which is currently assigned to the
+plugin thread is defined by the index of its first packet (`_pkt_first`) and its size in
+packets (`_pkt_cnt`).
+
+The documentation of class ts::tsp::PluginExecutor contains a flat (non-circular) view
+of the buffer.
+
+When a thread terminates the processing of a bunch of packets, it moves up its first index
+and, consequently, decreases the size of its own area and accordingly increases the size
+of the area of the next plugin.
+
+The modification of the starting index and size of any area must be performed under the
+protection of a mutex. There is one global mutex for simplicity. The resulting bottleneck
+is not so important since updating a few pointers is fast.
+
+When the sliding window of a plugin is empty, the plugin thread sleeps on its `_to_do`
+condition variable. Consequently, when a thread passes packets to the next plugin
+(ie. increases the size of the sliding window of the next plugin), it must notify
+the `_to_do` condition variable of the next thread.
+
+When a packet processor decides to drop a packet, the synchronization byte (first byte
+of the packet, normally 0x47) is reset to zero. When a packet processor or the output
+executor encounters a packet starting with a zero byte, it ignores it. Note that this
+is transparent to the plugin code in the shared library. The check is performed by the
+ts::ProcessorExecutor and ts::OutputExecutor objects. When a packet is marked as dropped,
+the plugin is not invoked.
+
+All ts::PluginExecutor are chained in a ring. The first one is input and the last one
+is output. The output points back to the input so that the output executor can easily
+pass free packets to be reused by the input executor.
+
+The `_input_end` flag indicates that there is no more packet to process after those in
+the plugin's area. This condition is signaled by the previous plugin in the chain. All
+plugins, except the output plugin, may signal this condition to their successor.
+
+The `_aborted flag` indicates that the current plugin has encountered an error and has
+ceased to accept packets. This condition is checked by the previous plugin in the chain
+(which, in turn, will declare itself as aborted). All plugins, except the input plugin
+may signal this condition. In case of error, all plugins should also declare
+an `_input_end` to their successor.
+
+*/

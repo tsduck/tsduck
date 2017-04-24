@@ -44,7 +44,7 @@ PROJECT_LOGO   = ../images/tsduck-32.png
 
 # Input and output files:
 
-FILE_PATTERNS    = *.h *.dox
+FILE_PATTERNS    = *.h *.dox *.md
 EXCLUDE_PATTERNS = *Template.h tsduck.h
 INPUT            = ../src
 EXCLUDE          = ../src/libtsduck/private ../src/utest/crypto ../src/utest/tables
@@ -89,3 +89,14 @@ FULL_PATH_NAMES        = NO
 SORT_MEMBER_DOCS       = NO
 SORT_BRIEF_DOCS        = YES
 SORT_MEMBERS_CTORS_1ST = YES
+CLASS_DIAGRAMS         = YES
+CLASS_GRAPH            = YES
+COLLABORATION_GRAPH    = YES
+GROUP_GRAPHS           = YES
+INCLUDE_GRAPH          = NO
+INCLUDED_BY_GRAPH      = NO
+CALL_GRAPH             = NO
+CALLER_GRAPH           = NO
+UML_LOOK               = NO
+HAVE_DOT               = $(HAVE_DOT)
+DOT_PATH               = $(DOT_PATH)

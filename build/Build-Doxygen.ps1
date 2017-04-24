@@ -78,22 +78,40 @@ if (-not $Version) {
     $VersionMinor = (Get-Content $VersionFile | Select-String '^ *#define .*_VERSION_MINOR  *') -replace '^ *#define .*_VERSION_MINOR  *' -replace ' *$'
     $Version = "${VersionMajor}.${VersionMinor}"
 }
-
 $env:TS_VERSION = $Version
 
-# Generate Doxygen documentation.
-Push-Location $PSScriptRoot
-Write-Host "Running Doxygen..."
-doxygen
-Pop-Location
+# Check if Doxygen is installed.
+$DoxyExe = (Get-ChildItem 'C:\Program Files*\Doxygen*\bin' -Include doxygen.exe -Recurse | Select-Object FullName -First 1)
 
-# Open the browser.
-if (-not $NoOpen) {
-    $RootDir = (Split-Path -Parent $PSScriptRoot)
-    $HtmlIndex = (Join-Path (Join-Path $DoxyDir "html") "index.html")
-    if (Test-Path $HtmlIndex) {
-        Invoke-Item $HtmlIndex
+# Check if Graphviz is installed.
+$DotExe = (Get-ChildItem 'C:\Program Files*\Graphviz*\bin' -Include dot.exe -Recurse | Select-Object DirectoryName -First 1)
+if ($DotExe) {
+    $env:HAVE_DOT = "YES"
+    $env:DOT_PATH = $DotExe.DirectoryName
+}
+else {
+    $env:HAVE_DOT = "NO"
+    $env:DOT_PATH = ""
+}
+
+# Generate Doxygen documentation.
+if ($DoxyExe) {
+    Push-Location $PSScriptRoot
+    Write-Host "Running Doxygen..."
+    & $DoxyExe.FullName
+    Pop-Location
+
+    # Open the browser.
+    if (-not $NoOpen) {
+        $RootDir = (Split-Path -Parent $PSScriptRoot)
+        $HtmlIndex = (Join-Path (Join-Path $DoxyDir "html") "index.html")
+        if (Test-Path $HtmlIndex) {
+            Invoke-Item $HtmlIndex
+        }
     }
+}
+else {
+    Write-Host "Error: Doxygen not found"
 }
 
 if (-not $NoPause) {

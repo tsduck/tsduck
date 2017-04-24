@@ -36,6 +36,11 @@ include ../Makefile.tsduck
 default:
 	@true
 
+# Check if dot (from Graphviz) is installed.
+# These environment variables are used in Doxyfile.
+export DOT_PATH := $(call F_SEARCH,dot)
+export HAVE_DOT := $(if $(DOT_PATH),YES,NO)
+
 # Install system files.
 .PHONY: install install-devel
 install: 80-tsduck.rules 80-tsduck.perms

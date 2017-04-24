@@ -1,0 +1,157 @@
+# Building TSDuck   {#building}
+[TOC]
+
+TSDuck can be built on Windows, Linux and MacOS.
+
+Support for Dektec devices and DVB tuners is implemented only on Windows and Linux.
+MacOS can only support files and IP for TS input and output.
+
+
+# Pre-requisistes: build tools {#buildreq}
+
+## Windows {#reqwindows}
+
+- Visual Studio 2015 Community Edition. This is the free version of Visual Studio.
+  If can be downloaded [here](https://www.visualstudio.com/downloads/). This link
+  allows the download of the latest version of Visual Studio but offers no way to
+  download a specific previous version. As of April 2017, the Dektec Windows SDK does not
+  support VS2017, only VS2015 at best. You may download VS2015 Community Edition using the
+  [Microsoft Image Program](https://imagine.microsoft.com/en-us/Catalog/Product/101).
+
+- CppUnit binary libraries. Download [here](https://sourceforge.net/projects/cppunit-msvc/files/).
+
+- Doxygen for Windows. Download [here](http://www.doxygen.org/download.html).
+
+- Graphviz for Windows (used by Doxygen to generate graphs and diagrams).
+  Download [here](http://www.graphviz.org/Download_windows.php).
+
+- NSIS, the NullSoft Scriptable Install System.
+  Download [here](http://nsis.sourceforge.net/Download).
+  Note that TSDuck is usually built with
+  [NSIS Version 2.46](https://sourceforge.net/projects/nsis/files/NSIS%202/2.46/nsis-2.46-setup.exe/download).
+
+- Optional Dektec Windows SDK (DTAPI): Execute the PowerShell script `dektec\Download-Install-Dtapi.ps1`.
+  It downloads and installs the Dektec Windows SDK from the Dektec site.
+  Alternatively, you may download it [here](http://www.dektec.com/products/SDK/DTAPI/Downloads/WinSDK.zip).
+  TSDuck project files will detect DTAPI automatically. See the Visual Studio property
+  file `msvc2015\msvc-use-dtapi.props` for details.
+
+## Fedora {#reqfedora}
+
+- Setup for a TSDuck native build:
+~~~~
+dnf install gcc-c++ doxygen graphviz pcsc-tools pcsc-lite-devel cppunit-devel
+~~~~
+
+- Setup to build 32-bit TSDuck on 64-bit system (command `make m32`):
+~~~~
+dnf install glibc-devel.i686 libstdc++-devel.i686 pcsc-lite-devel.i686 cppunit-devel.i686
+~~~~
+
+## Red Hat Entreprise Linux, CentOS {#reqrhel}
+
+- Same as Fedora but use command `yum` instead of `dnf`.
+
+## Ubuntu {#requbuntu}
+
+- Setup for a TSDuck native build:
+~~~~
+apt-get install g++ doxygen graphviz pcscd libpcsclite-dev libcppunit-dev
+~~~~
+    
+- Setup to build 32-bit TSDuck on 64-bit system (command `make m32`), start with:
+~~~~
+    apt-get install gcc-multilib g++-multilib
+~~~~
+  However, there is no 32-bit cross-compiled package for pcsc and cppunit on
+  Ubuntu 64-bit. To build a 32-bit TSDuck on Ubuntu 64-bit, first force the
+  installation of the 32-bit native (not cross-compiled) 32-bit versions:
+~~~~
+apt-get install libpcsclite-dev:i386 libcppunit-dev:i386
+~~~~
+  Then build TSDuck (`make m32`). But you can no longer rebuild a 64-bit
+  version since the native libraries for pcsc and cppunit were over-written.
+  So, you need to reinstall the native 64-bit versions:
+~~~~
+apt-get install libpcsclite-dev libcppunit-dev
+~~~~
+
+## All Linux distros {#reqlinux}
+
+- Optional Dektec DTAPI: The command `make` at the top level will automatically
+  download the LinuxSDK from the Dektec site. See `dektec/Makefile` for details.
+
+## MacOS {#reqmac}
+
+- Install Xcode and its command line utilities.
+
+- To install additional tools from HomeBrew:
+~~~~
+brew install pcsc-lite cppunit doxygen graphviz gnu-sed grep
+~~~~
+
+
+# Building the TSDuck binaries {#buildbin}
+
+## Windows {#buildwindows}
+
+Execute the PowerShell script `build\Build.ps1`. The TSDuck binaries, executables and
+DLL's, are built in directories `msvc2015\Release-Win32` and `msvc2015\Release-x64`
+for 32-bit and 64-bit platforms respectively.
+
+## Linux and MacOS {#buildlinux}
+
+Execute the command `make` at top level. The TSDuck binaries, executables and shared
+objects (`.so`), are built in the `src` directory tree in subdirectories `release-i386`
+and `release-x86_64` for 32-bit and 64-bit platforms respectively.
+
+To build a 32-bit version of TSDuck on a 64-bit system, execute the command `make m32`.
+
+# Building the TSDuck installers {#buildinst}
+
+There is no need to build the TSDuck binaries before building the installers.
+Building the binaries, when necessary, is part of the installer build.
+
+All installation packages are dropped into the subdirectory `installers`.
+The packages are not deleted by the cleanup procedures. They are not pushed
+into the git repository either.
+
+## Windows {#instwindows}
+
+Execute the PowerShell script `build\Build-Installer.ps1`.
+Two installers are built, for 32-bit and 64-bit systems respectively.
+
+## Fedora, CentOS, Red Hat Entreprise Linux {#instrhel}
+
+Execute the command `make rpm` at top level to build a `.rpm` package for the same
+architecture as the build system. On 64-bit systems, execute the command `make rpm32`
+to build a 32-bit package.
+
+## Ubuntu {#instubuntu}
+
+Execute the command `make deb` at top level to build a `.deb` package for the same
+architecture as the build system.
+
+## Installer files {#instfiles}
+
+The following table summarizes the packages which are built and dropped
+into the `installers` directory, through a few examples, assuming that the
+current version of TSDuck is 3.0.
+
+| File name                          | Description
+| ---------------------------------- | -------------------------
+| TSDduck-3.0-src.zip                | Source archive on Windows
+| tsduck-3.0.tgz                     | Source archive on Linux and MacOS
+| tsduck_3.0_amd64.deb               | Binary package for 64-bit Ubuntu
+| tsduck-3.0-0.el7.i386.rpm          | Binary package for 32-bit Red Hat or CentOS 7.x
+| tsduck-3.0-0.el7.x86_64.rpm        | Binary package for 64-bit Red Hat or CentOS 7.x
+| tsduck-3.0-0.el7.src.rpm           | Source package for Red Hat or CentOS 7.x
+| tsduck-3.0-0.fc25.i386.rpm         | Binary package for 32-bit Fedora 25
+| tsduck-3.0-0.fc25.x86_64.rpm       | Binary package for 64-bit Fedora 25
+| tsduck-3.0-0.fc25.src.rpm          | Source package for Fedora 25
+| tsduck-devel-3.0-0.el7.i386.rpm    | Development package for 32-bit Red Hat or CentOS 7.x
+| tsduck-devel-3.0-0.el7.x86_64.rpm  | Development package for 64-bit Red Hat or CentOS 7.x
+| tsduck-devel-3.0-0.fc25.i386.rpm   | Development package for 32-bit Fedora 25
+| tsduck-devel-3.0-0.fc25.x86_64.rpm | Development package for 64-bit Fedora 25
+| TSDuck-Win32-3.0.exe               | Binary package for 32-bit Windows
+| TSDuck-Win64-3.0.exe               | Binary package for 64-bit Windows

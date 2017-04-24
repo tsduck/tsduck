@@ -108,9 +108,9 @@ GEN_INCLUDES = $(if $(call GEN_FILES,$(1)),$(if $(1),echo; echo -n '\#if defined
     $(SED) <<<'$(call GEN_FILES,$(1))' -e 's/ *\([^\. ]*\).h/\n\#include "\1.h"/g' \
     $(if $(1),; echo '\#endif',),true)
 
-tsduck.h: $(ROOTDIR)/HEADER.txt $(call GEN_FILES,) $(call GEN_FILES,linux) $(call GEN_FILES,mac) $(call GEN_FILES,windows)
+tsduck.h: $(SRCROOT)/HEADER.txt $(call GEN_FILES,) $(call GEN_FILES,linux) $(call GEN_FILES,mac) $(call GEN_FILES,windows)
 	@echo '  [REBUILD] $@'; \
-	(cat $<; \
+	(cat $(SRCROOT)/HEADER.txt; \
 	echo; echo -n '#pragma once'; \
 	$(call GEN_INCLUDES,); \
 	$(call GEN_INCLUDES,linux); \

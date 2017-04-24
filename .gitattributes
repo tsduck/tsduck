@@ -3,6 +3,8 @@
 .gitattributes text
 Makefile* text
 *.txt text
+*.dox text
+*.md text
 *.h text
 *.c text
 *.cpp text

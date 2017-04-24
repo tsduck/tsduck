@@ -25,8 +25,8 @@ Usage:
 
 Building:
 
-  TSDuck can be built on Windows and Linux systems.
-  See file BUILDING.txt for details.
+  TSDuck can be built on Windows, Linux and MacOS systems.
+  See file src/doc/building.md for details.
 
 License:
 

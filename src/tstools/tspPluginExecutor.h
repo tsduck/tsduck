@@ -30,73 +30,6 @@
 //!  @file
 //!  Transport stream processor: Execution context of a plugin
 //!
-//!
-//!  Data model
-//!  ----------
-//!  There is a global buffer for TS packets. The input thread writes incoming
-//!  packets here. All packet processors update them and the output thread
-//!  picks them for the same place.
-//!
-//!  The buffer is an array of ts::TSPacket. It is managed in a circular way.
-//!  It is divided into logical areas, one per processor (including input
-//!  and output). These logical areas are sliding windows which move when
-//!  packets are processed.
-//!
-//!  Each sliding window is defined by the index of its first packet
-//!  (_pkt_first) and its size in packets (_pkt_cnt).
-//!
-//!  Flat (non-circular) view of the buffer:
-//!
-//!  @code
-//!        output->_pkt_first            proc_1->_pkt_first
-//!        |                             |
-//!        |          proc_N->_pkt_first |          input->_pkt_first
-//!        |          |                  |          |
-//!        V          V                  V          V
-//!       +----------+----------+-------+----------+---------+
-//!  +->  |  output  |  proc N  |  ...  |  proc 1  |  input  |  ->-+
-//!  |    +----------+----------+-------+----------+---------+     |
-//!  |                                                             |
-//!  +-------------------------------------------------------------+
-//!  @endcode
-//!
-//!  When a thread terminates the processing of a bunch of packets, it moves
-//!  up its first index and, consequently, decreases the sizes of its area
-//!  and accordingly increases the size of the area of the next processor.
-//!
-//!  The modification of the starting index and size of any area must be
-//!  performed under the protection of the global mutex. There is one global
-//!  mutex for simplicity. The resulting bottleneck is not so important since
-//!  updating a few pointers is fast.
-//!
-//!  When the sliding window of a processor is empty, the processor thread
-//!  sleeps on its "_to_do" condition variable. Consequently, when a thread
-//!  passes packets to the next processor (ie. increases the size of the sliding
-//!  window of the next processor), it must notify the _to_do condition variable
-//!  of the next thread.
-//!
-//!  When a packet processor decides to drop a packet, the synchronization
-//!  byte (first byte of the packet, normally 0x47) is reset to zero. When
-//!  a packet processor or the output processor encounters a packet starting
-//!  with a zero byte, it ignores it.
-//!
-//!  All PluginExecutors are chained in a ring. The first one is input and
-//!  the last one is output. The output points back to the input so that the
-//!  output processor can easily pass free packets to be reused by the input
-//!  processor.
-//!
-//!  The "_input_end" indicates that there is no more packet to process
-//!  after those in the processor's area. This condition is signaled by
-//!  the previous processor in the chain. All processors, except the output
-//!  processor, may signal this condition to their successor.
-//!
-//!  The "_aborted" indicates that the current processor has encountered an
-//!  error and has ceased to accept packets. This condition is checked by
-//!  the previous processor in the chain (which, in turn, will declare itself
-//!  as aborted). All processors, except the input processor may signal this
-//!  condition. In case of error, all processors should also declare an
-//!  "_input_end" to their successor.
-//!
 //----------------------------------------------------------------------------
 
 #pragma once
@@ -114,7 +47,73 @@
 namespace ts {
     namespace tsp {
         //!
-        //! Execution context of a tsp plugin.
+        //!  Execution context of a tsp plugin.
+        //!
+        //!  Data model
+        //!  ----------
+        //!  There is a global buffer for TS packets. The input thread writes incoming
+        //!  packets here. All packet processors update them and the output thread
+        //!  picks them for the same place.
+        //!
+        //!  The buffer is an array of ts::TSPacket. It is managed in a circular way.
+        //!  It is divided into logical areas, one per processor (including input
+        //!  and output). These logical areas are sliding windows which move when
+        //!  packets are processed.
+        //!
+        //!  Each sliding window is defined by the index of its first packet
+        //!  (_pkt_first) and its size in packets (_pkt_cnt).
+        //!
+        //!  Flat (non-circular) view of the buffer:
+        //!
+        //!  @code
+        //!        output->_pkt_first            proc_1->_pkt_first
+        //!        |                             |
+        //!        |          proc_N->_pkt_first |          input->_pkt_first
+        //!        |          |                  |          |
+        //!        V          V                  V          V
+        //!       +----------+----------+-------+----------+---------+
+        //!  +->  |  output  |  proc N  |  ...  |  proc 1  |  input  |  ->-+
+        //!  |    +----------+----------+-------+----------+---------+     |
+        //!  |                                                             |
+        //!  +-------------------------------------------------------------+
+        //!  @endcode
+        //!
+        //!  When a thread terminates the processing of a bunch of packets, it moves
+        //!  up its first index and, consequently, decreases the sizes of its area
+        //!  and accordingly increases the size of the area of the next processor.
+        //!
+        //!  The modification of the starting index and size of any area must be
+        //!  performed under the protection of the global mutex. There is one global
+        //!  mutex for simplicity. The resulting bottleneck is not so important since
+        //!  updating a few pointers is fast.
+        //!
+        //!  When the sliding window of a processor is empty, the processor thread
+        //!  sleeps on its "_to_do" condition variable. Consequently, when a thread
+        //!  passes packets to the next processor (ie. increases the size of the sliding
+        //!  window of the next processor), it must notify the _to_do condition variable
+        //!  of the next thread.
+        //!
+        //!  When a packet processor decides to drop a packet, the synchronization
+        //!  byte (first byte of the packet, normally 0x47) is reset to zero. When
+        //!  a packet processor or the output processor encounters a packet starting
+        //!  with a zero byte, it ignores it.
+        //!
+        //!  All PluginExecutors are chained in a ring. The first one is input and
+        //!  the last one is output. The output points back to the input so that the
+        //!  output processor can easily pass free packets to be reused by the input
+        //!  processor.
+        //!
+        //!  The "_input_end" indicates that there is no more packet to process
+        //!  after those in the processor's area. This condition is signaled by
+        //!  the previous processor in the chain. All processors, except the output
+        //!  processor, may signal this condition to their successor.
+        //!
+        //!  The "_aborted" indicates that the current processor has encountered an
+        //!  error and has ceased to accept packets. This condition is checked by
+        //!  the previous processor in the chain (which, in turn, will declare itself
+        //!  as aborted). All processors, except the input processor may signal this
+        //!  condition. In case of error, all processors should also declare an
+        //!  "_input_end" to their successor.
         //!
         class PluginExecutor:
             public RingNode,
