@@ -113,7 +113,7 @@
 #if defined(DOXYGEN)
     //!
     //! GCC version, encoded as an integer.
-    //! Example: 40805 for GCC 4.8.1.
+    //! Example: 40801 for GCC 4.8.1.
     //! Undefined when the compiler is not GCC or its version is unknown.
     //!
     #define TS_GCC_VERSION

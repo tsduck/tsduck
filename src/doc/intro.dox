@@ -1,0 +1,41 @@
+/** @mainpage TSDuck MPEG Transport Stream Library for C++
+
+@tableofcontents
+
+# Overview {#overview}
+
+The TSDuck library contains general-purpose C++ classes and utilities to handle
+MPEG transport streams.
+
+Most of the code in TSDuck is located inside this library which is named `tsduck.dll`
+on Windows and `tsduck.so` on Linux and MacOS systems. All TSDuck commands, executables
+and plugins, are just small wrappers around common code in the library.
+
+# Code structure {#codestruct}
+
+Roughly, the TSDuck library provides two categories of features:
+- Operating system abstraction layer to make the application code fully portable
+  between heterogeneous platforms. This is similar to frameworks such as Qt,
+  but much more lightweight.
+- MPEG Transport Stream manipulation.
+
+All C++ declarations are located inside the namespace `ts`, either directly within
+`ts` or inside inner namespaces. All preprocessor's macros are named with prefix `TS_`.
+
+The file tsPlatform.h contains some very low level definitions such as macros
+defining the environment (processor, compiler, operating system, endianness),
+byte and bit manipulation, etc.
+
+TSDuck is heavily multi-threaded. Threading and synchronization are implemented
+through classes such as ts::Thread, ts::Mutex, ts::Condition, etc.
+
+TSDuck relies on C++ mechanisms to track the usage of resources. The library provides
+mechanisms to ensure that no dangling lock is lost through the _guard design pattern_
+(classes ts::Guard and ts::GuardCondition). The memory management is entirely based
+on the _smart pointer design pattern_ (class ts::SafePtr). All dynamically allocated
+objected are managed using smart pointers. Thus, coding in C++ is as simple as in
+Java: simply allocate objects and forget about memory management. When an object is
+no longer referenced, it is automatically deallocated. Extensive testing using tools
+like valgrind have proven this to be true.
+
+*/

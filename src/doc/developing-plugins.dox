@@ -111,8 +111,8 @@ Inside a ts::PluginExecutor object, the sliding window which is currently assign
 plugin thread is defined by the index of its first packet (`_pkt_first`) and its size in
 packets (`_pkt_cnt`).
 
-The documentation of class ts::tsp::PluginExecutor contains a flat (non-circular) view
-of the buffer.
+The documentation of class ts::tsp::PluginExecutor contains a flat (non-circular)
+@ref PacketBufferModel "view of the buffer".
 
 When a thread terminates the processing of a bunch of packets, it moves up its first index
 and, consequently, decreases the size of its own area and accordingly increases the size

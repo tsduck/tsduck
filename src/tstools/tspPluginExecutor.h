@@ -49,6 +49,8 @@ namespace ts {
         //!
         //!  Execution context of a tsp plugin.
         //!
+        //!  @anchor PacketBufferModel
+        //!
         //!  Data model
         //!  ----------
         //!  There is a global buffer for TS packets. The input thread writes incoming
@@ -63,6 +65,7 @@ namespace ts {
         //!  Each sliding window is defined by the index of its first packet
         //!  (_pkt_first) and its size in packets (_pkt_cnt).
         //!
+        //!  @anchor PacketBufferDiagram
         //!  Flat (non-circular) view of the buffer:
         //!
         //!  @code
