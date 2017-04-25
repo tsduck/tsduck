@@ -38,8 +38,12 @@
 #include "tsException.h"
 #include "tsCerrReport.h"
 
-// Executable file suffix.
-#if defined(__windows)
+//!
+//! Executable file suffix.
+//!
+#if defined(DOXYGEN)
+    #define TS_EXECUTABLE_SUFFIX "platform_specific" (".exe", ""); // for doc only
+#elif defined(__windows)
     #define TS_EXECUTABLE_SUFFIX ".exe"
 #else
     #define TS_EXECUTABLE_SUFFIX ""
@@ -47,13 +51,30 @@
 
 namespace ts {
 
-    // Directory path and search path separator
-#if defined(__windows)
+    //!
+    //! Directory separator character in file paths.
+    //!
+#if defined(DOXYGEN)
+    const char PathSeparator = platform_specific ('/', '\\'); // for doc only
+#elif defined(__windows)
     const char PathSeparator = '\\';
-    const char SearchPathSeparator = ';';
-#else
+#elif defined(__unix)
     const char PathSeparator = '/';
+#else
+    #error "Unimplemented operating system"
+#endif
+
+    //!
+    //! Separator character in search paths.
+    //!
+#if defined(DOXYGEN)
+    const char SearchPathSeparator = platform_specific (':', ';'); // for doc only
+#elif defined(__windows)
+    const char SearchPathSeparator = ';';
+#elif defined(__unix)
     const char SearchPathSeparator = ':';
+#else
+    #error "Unimplemented operating system"
 #endif
 
     //!
@@ -65,21 +86,51 @@ namespace ts {
     //!
     TSDUCKDLL std::string VernacularFilePath(const std::string& path);
 
-    // Return the directory name of a file path (eg. "dir/foo.bar" => "dir")
+    //!
+    //! Return the directory name of a file path ("dir/foo.bar" => "dir").
+    //!
+    //! @param [in] path A file path.
+    //! @return The directory name of @a path ("dir/foo.bar" => "dir").
+    //!
     TSDUCKDLL std::string DirectoryName(const std::string& path);
 
-    // Return the base name of a file path (eg. "dir/foo.bar" => "foo.bar")
-    // Remove specified suffix if present.
+    //!
+    //! Return the base file name of a file path ("dir/foo.bar" => "foo.bar").
+    //!
+    //! @param [in] path A file path.
+    //! @param [in] suffix An optional file suffix. 
+    //! If @a path ends in @a suffix, the suffix is removed.
+    //! @return The base file name of @a path ("dir/foo.bar" => "foo.bar").
+    //!
     TSDUCKDLL std::string BaseName(const std::string& path, const std::string& suffix = std::string());
 
-    // Return the suffix of a file path (eg. "dir/foo.bar" => ".bar")
+    //!
+    //! Return the suffix of a file path ("dir/foo.bar" => ".bar").
+    //!
+    //! @param [in] path A file path.
+    //! @return The suffix of @a path ("dir/foo.bar" => ".bar").
+    //!
     TSDUCKDLL std::string PathSuffix(const std::string& path);
 
-    // If the file path does not contain a suffix, add the specified one.
-    // Otherwise, return the name unchanged.
+    //!
+    //! Conditionally add a suffix to a file path.
+    //!
+    //! If the file path does not contain a suffix, add the specified one.
+    //! Otherwise, return the name unchanged.
+    //!
+    //! @param [in] path A file path.
+    //! @param [in] suffix The suffix to conditionally add.
+    //! @return The @a path with a suffix (for conditional suffix ".bar",
+    //! "dir/foo" => "dir/foo.bar" and "dir/foo.too" => "dir/foo.too").
+    //!
     TSDUCKDLL std::string AddPathSuffix(const std::string& path, const std::string& suffix);
 
-    // Return the prefix of a file path (eg. "dir/foo.bar" => "dir/foo")
+    //!
+    //! Return the prefix of a file path ("dir/foo.bar" => "dir/foo").
+    //!
+    //! @param [in] path A file path.
+    //! @return The prefix of @a path ("dir/foo.bar" => "dir/foo").
+    //!
     TSDUCKDLL std::string PathPrefix(const std::string& path);
 
     //!
@@ -88,42 +139,69 @@ namespace ts {
     //! @return The full path of the current user's home directory.
     //! @throw ts::Exception In case of operating system error.
     //!
-    TSDUCKDLL std::string UserHomeDirectory() throw(ts::Exception);
+    TSDUCKDLL std::string UserHomeDirectory();
 
-    // Return the name of the current application executable file.
-    TSDUCKDLL std::string ExecutableFile() throw(ts::Exception);
+    //!
+    //! Get the name of the current application executable file.
+    //! @return The full path of the executable file which is run in the current process.
+    //!
+    TSDUCKDLL std::string ExecutableFile();
 
-    // Return the current hostname
-    TSDUCKDLL std::string HostName() throw(ts::Exception);
+    //!
+    //! Get the name of the system host.
+    //! @return The name of the system host.
+    //!
+    TSDUCKDLL std::string HostName();
 
-    // Suspend the current thread for the specified period
-    TSDUCKDLL void SleepThread(MilliSecond delay) throw(ts::Exception);
+    //!
+    //! Suspend the current thread for the specified period.
+    //! @param [in] delay Number of milliseconds to sleep the current thread.
+    //!
+    TSDUCKDLL void SleepThread(MilliSecond delay);
 
-    // Get system memory page size
-    TSDUCKDLL size_t MemoryPageSize() throw(ts::Exception);
+    //!
+    //! Get system memory page size.
+    //! @return The system memory page size in bytes.
+    //!
+    TSDUCKDLL size_t MemoryPageSize();
 
-    // Definition of a process id
-#if defined(__windows)
+    //!
+    //! Integer type for process identifier
+    //!
+#if defined (DOXYGEN)
+    typedef platform_specific ProcessId;
+#elif defined(__windows)
     typedef ::DWORD ProcessId;
-#else
+#elif defined(__unix)
     typedef pid_t ProcessId;
+#else
+    #error "Unimplemented operating system"
 #endif
 
-    // Get current process id
-    TSDUCKDLL ProcessId CurrentProcessId() throw(ts::Exception);
+    //!
+    //! Get the current process id.
+    //! @return Identification of the current process.
+    //!
+    TSDUCKDLL ProcessId CurrentProcessId();
 
     //!
     //! Create a directory
-    //!
     //! @param [in] path A directory path.
     //! @return A system-specific error code (SYS_SUCCESS on success).
     //!
     TSDUCKDLL ErrorCode CreateDirectory(const std::string& path);
 
-    // Return the name of a directory for temporary files.
+    //!
+    //! Return the name of a directory for temporary files.
+    //! @return A system-dependent location where temporary files can be created.
+    //!
     TSDUCKDLL std::string TempDirectory();
 
-    // Return the name of a unique temporary file name.
+    //!
+    //! Return the name of a unique temporary file.
+    //! @param [in] suffix An optional suffix to add to the file name.
+    //! @return A unique temporary file name.
+    //!
     TSDUCKDLL std::string TempFile(const std::string& suffix = ".tmp");
 
     //!
@@ -134,14 +212,33 @@ namespace ts {
     //!
     TSDUCKDLL int64_t GetFileSize(const std::string& path);
 
-    // Get the UTC time of last modification of a file. Return Time::Epoch in case of error.
+    //!
+    //! Get the local time of the last modification of a file.
+    //!
+    //! @param [in] path A file path.
+    //! @return Last modification time or Time::Epoch in case of error.
+    //!
     TSDUCKDLL Time GetFileModificationTimeLocal(const std::string& path);
+
+    //!
+    //! Get the UTC time of the last modification of a file.
+    //! @param [in] path A file path.
+    //! @return Last modification time or Time::Epoch in case of error.
+    //!
     TSDUCKDLL Time GetFileModificationTimeUTC(const std::string& path);
 
-    // Check if a file or directory exists
+    //!
+    //! Check if a file or directory exists
+    //! @param [in] path A file path.
+    //! @return True if a file or directory exists with that name, false otherwise.
+    //!
     TSDUCKDLL bool FileExists(const std::string& path);
 
-    // Check if a path exists and is a directory
+    //!
+    //! Check if a path exists and is a directory.
+    //! @param [in] path A directory path.
+    //! @return True if a directory exists with that name, false otherwise.
+    //!
     TSDUCKDLL bool IsDirectory(const std::string& path);
 
     //!
@@ -155,11 +252,28 @@ namespace ts {
     //!
     TSDUCKDLL ErrorCode DeleteFile(const std::string& path);
 
-    // Truncate a file to the specified size. Return an error code.
+    //!
+    //! Truncate a file to the specified size.
+    //!
+    //! @param [in] path A file path.
+    //! @param [in] size Size in bytes after which the file shall be truncated.
+    //! @return A system-specific error code (SYS_SUCCESS on success).
+    //!
     TSDUCKDLL ErrorCode TruncateFile(const std::string& path, uint64_t size);
 
-    // Rename / move a file. Return an error code.
-    // Not guaranteed to work across volumes or file systems.
+    //!
+    //! Rename / move a file or directory.
+    //!
+    //! If the path specifies a directory, all files in the directory
+    //! are moved as well.
+    //!
+    //! This method is not guaranteed to work when the new and old names
+    //! are on distinct volumes or file systems.
+    //!
+    //! @param [in] old_path The file path of an existing file or directory.
+    //! @param [in] new_path The new name for the file or directory.
+    //! @return A system-specific error code (SYS_SUCCESS on success).
+    //!
     TSDUCKDLL ErrorCode RenameFile(const std::string& old_path, const std::string& new_path);
 
     //!
@@ -197,12 +311,20 @@ namespace ts {
         return ExpandWildcardAndAppend(container, pattern);
     }
 
-    // Check if an environment variable exists
+    //!
+    //! Check if an environment variable exists.
+    //! @param [in] varname Environment variable name.
+    //! @return True if the specified environment variable exists, false otherwise.
+    //!
     TSDUCKDLL bool EnvironmentExists(const std::string& varname);
 
-    // Get the value of an environment variable.
-    // Return default value if does not exist.
-    TSDUCKDLL std::string GetEnvironment(const std::string& varname, const std::string& defvalue = "");
+    //!
+    //! Get the value of an environment variable.
+    //! @param [in] varname Environment variable name.
+    //! @param [in] defvalue Default value if the specified environment variable does not exist.
+    //! @return The value of the specified environment variable it it exists, @a defvalue otherwise.
+    //!
+    TSDUCKDLL std::string GetEnvironment(const std::string& varname, const std::string& defvalue = std::string());
 
     //!
     //! Get the value of an environment variable containing a search path.
@@ -214,11 +336,10 @@ namespace ts {
     //! @param [out] container A container of @c std::string receiving the
     //! directory names.
     //! @param [in] name Environment variable name.
-    //! @param [in] def Default value if the specified environment
-    //! variable does not exist.
+    //! @param [in] def Default value if the specified environment variable does not exist.
     //!
     template <class CONTAINER>
-    void GetEnvironmentPath(CONTAINER& container, const std::string& name, const std::string& def = "")
+    void GetEnvironmentPath(CONTAINER& container, const std::string& name, const std::string& def = std::string())
     {
         SplitString(container, GetEnvironment(name, def), SearchPathSeparator, true);
         if (container.size() == 1 && container[0].empty()) {
@@ -282,32 +403,73 @@ namespace ts {
     //!
     TSDUCKDLL std::string ErrorCodeMessage(ErrorCode code = LastErrorCode());
 
-    // This structure contains metrics about a process
+    //!
+    //! This structure contains metrics about a process
+    //!
     struct TSDUCKDLL ProcessMetrics
     {
-        MilliSecond cpu_time;    // CPU time of the process
-        size_t      vmem_size;   // Virtual memory size in bytes
+        MilliSecond cpu_time;    //!< CPU time of the process in milliseconds.
+        size_t      vmem_size;   //!< Virtual memory size in bytes.
 
-        // Constructor.
+        //!
+        //! Default constructor.
+        //!
         ProcessMetrics() : cpu_time(-1), vmem_size(0) {}
     };
 
-    // Get metrics for the current process
-    TSDUCKDLL void GetProcessMetrics(ProcessMetrics&) throw(ts::Exception);
+    //!
+    //! Get metrics for the current process
+    //! @param [out] metrics Receive the current process metrics.
+    //! @throw ts::Exception on error.
+    //!
+    TSDUCKDLL void GetProcessMetrics(ProcessMetrics& metrics);
 
-    // Ignore SIGPIPE. On UNIX systems: writing to a broken pipe returns an
-    // error instead of killing the process. On Windows systems: does nothing.
+    //!
+    //! Ensure that writing to a broken pipe does not kill the current process.
+    //!
+    //! On UNIX systems, writing to a <i>broken pipe</i>, i.e. a pipe with
+    //! no process reading from it, kills the current process. This may not
+    //! be what you want. This functions prevents this.
+    //!
+    //! <strong>UNIX Systems:</strong> This function ignores SIGPIPE.
+    //! Writing to a broken pipe will now return an error instead of killing
+    //! the process.
+    //!
+    //! <strong>Windows systems:</strong> This function does nothing (because
+    //! there is no need to do anything).
+    //!
     TSDUCKDLL void IgnorePipeSignal();
 
-    // Put standard input / output stream in binary mode.
-    // On UNIX systems, this does not make any difference.
-    // On Windows systems, however, in a stream which is not open in
-    // binary mode, there is automatic translation between LF and CR-LF.
-    // The standard input / output are open in text mode (non-binary).
-    // These functions force them into binary mode.
-    // Return true on success, false on error.
-    // If report is a subclass or ts::Args, also terminate application.
+    //!
+    //! Put the standard input stream in binary mode.
+    //!
+    //! On UNIX systems, this does not make any difference.
+    //! On Windows systems, however, in a stream which is not open in
+    //! binary mode, there is automatic translation between LF and CR-LF.
+    //! The standard input is open in text mode (non-binary).
+    //! This function forces it into binary mode.
+    //!
+    //! @param [in,out] report Where to report errors.
+    //! If @a report is a subclass of ts::Args, also terminate application.
+    //! @return True on success, false on error.
+    //! @see SetBinaryModeStdout()
+    //!
     TSDUCKDLL bool SetBinaryModeStdin(ReportInterface& report = CERR);
+
+    //!
+    //! Put the standard output stream in binary mode.
+    //!
+    //! On UNIX systems, this does not make any difference.
+    //! On Windows systems, however, in a stream which is not open in
+    //! binary mode, there is automatic translation between LF and CR-LF.
+    //! The standard output is open in text mode (non-binary).
+    //! This function forces it into binary mode.
+    //!
+    //! @param [in,out] report Where to report errors.
+    //! If @a report is a subclass of ts::Args, also terminate application.
+    //! @return True on success, false on error.
+    //! @see SetBinaryModeStdout()
+    //!
     TSDUCKDLL bool SetBinaryModeStdout(ReportInterface& report = CERR);
 }
 

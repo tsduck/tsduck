@@ -26,6 +26,16 @@ The file tsPlatform.h contains some very low level definitions such as macros
 defining the environment (processor, compiler, operating system, endianness),
 byte and bit manipulation, etc.
 
+The file tsStringUtils.h declares utility functions to manipulate standard strings
+(`std::string`). The file tsSysUtils.h declares utility functions on top of the
+operating system and file system.
+
+The class ts::Time is a portable implementation of time (both local and UTC time).
+The class ts::Args implements a generic handling of command line arguments.
+
+The class ts::BlockCipher is the root of a hierarchy of symmetric cryptography
+classes, including chaining modes.
+
 TSDuck is heavily multi-threaded. Threading and synchronization are implemented
 through classes such as ts::Thread, ts::Mutex, ts::Condition, etc.
 

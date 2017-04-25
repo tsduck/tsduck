@@ -185,7 +185,7 @@ std::string ts::PathPrefix (const std::string& path)
 // Get the current user's home directory.
 //----------------------------------------------------------------------------
 
-std::string ts::UserHomeDirectory() throw(ts::Exception)
+std::string ts::UserHomeDirectory()
 {
 #if defined(__windows)
 
@@ -216,7 +216,7 @@ std::string ts::UserHomeDirectory() throw(ts::Exception)
 // Return the name of the current application executable file.
 //----------------------------------------------------------------------------
 
-std::string ts::ExecutableFile() throw(ts::Exception)
+std::string ts::ExecutableFile()
 {
 #if defined(__windows)
 
@@ -269,30 +269,30 @@ std::string ts::ExecutableFile() throw(ts::Exception)
 // Return the current hostname
 //----------------------------------------------------------------------------
 
-std::string ts::HostName() throw(ts::Exception)
+std::string ts::HostName()
 {
-#if defined (__windows)
+#if defined(__windows)
 
     // Window implementation.
-    char name [1024];
-    ::DWORD length (sizeof(name));
-    if (::GetComputerName (name, &length) == 0) {
-        throw ts::Exception ("GetComputerName error", ::GetLastError ());
+    char name[1024];
+    ::DWORD length(sizeof(name));
+    if (::GetComputerName(name, &length) == 0) {
+        throw ts::Exception("GetComputerName error", ::GetLastError());
         // return ""; // unreachable code
     }
     else {
-        assert (length >= 0 && length <= sizeof(name));
-        return std::string (name, length);
+        assert(length >= 0 && length <= sizeof(name));
+        return std::string(name, length);
     }
 
 #else
 
     // POSIX implementation.
-    char name [1024];
-    if (::gethostname (name, sizeof(name)) < 0)
+    char name[1024];
+    if (::gethostname(name, sizeof(name)) < 0)
         return "";
     else {
-        name [sizeof(name) - 1] = '\0';
+        name[sizeof(name) - 1] = '\0';
         return name;
     }
 
@@ -304,27 +304,27 @@ std::string ts::HostName() throw(ts::Exception)
 // Suspend the current thread for the specified period
 //----------------------------------------------------------------------------
 
-void ts::SleepThread(MilliSecond delay) throw(ts::Exception)
+void ts::SleepThread(MilliSecond delay)
 {
-#if defined (__windows)
+#if defined(__windows)
 
     // Window implementation.
-    ::Sleep (::DWORD (delay));
+    ::Sleep(::DWORD(delay));
 
 #else
 
     // POSIX implementation.
     ::timespec requested, remain;
-    requested.tv_sec = time_t (delay / 1000); // seconds
-    requested.tv_nsec = long ((delay % 1000) * 1000000); // nanoseconds
-    while (::nanosleep (&requested, &remain) < 0) {
+    requested.tv_sec = time_t(delay / 1000); // seconds
+    requested.tv_nsec = long((delay % 1000) * 1000000); // nanoseconds
+    while (::nanosleep(&requested, &remain) < 0) {
         if (errno == EINTR) {
             // Interrupted by a signal. Wait again.
             requested = remain;
         }
         else {
             // Actual error
-            throw ts::Exception ("nanosleep error", errno);
+            throw ts::Exception("nanosleep error", errno);
             break;
         }
     }
@@ -337,23 +337,23 @@ void ts::SleepThread(MilliSecond delay) throw(ts::Exception)
 // Get system memory page size
 //----------------------------------------------------------------------------
 
-size_t ts::MemoryPageSize() throw(ts::Exception)
+size_t ts::MemoryPageSize()
 {
 #if defined (__windows)
 
     ::SYSTEM_INFO sysinfo;
-    ::GetSystemInfo (&sysinfo);
-    return size_t (sysinfo.dwPageSize);
+    ::GetSystemInfo(&sysinfo);
+    return size_t(sysinfo.dwPageSize);
 
 #else
 
     // POSIX implementation.
-    long size (::sysconf (_SC_PAGESIZE));
+    long size(::sysconf(_SC_PAGESIZE));
     if (size < 0) {
-        throw ts::Exception ("sysconf (page size) error", errno);
+        throw ts::Exception("sysconf (page size) error", errno);
         size = 0;
     }
-    return size_t (size);
+    return size_t(size);
 
 #endif
 }
@@ -363,7 +363,7 @@ size_t ts::MemoryPageSize() throw(ts::Exception)
 // Get current process id
 //----------------------------------------------------------------------------
 
-ts::ProcessId ts::CurrentProcessId() throw(ts::Exception)
+ts::ProcessId ts::CurrentProcessId()
 {
 #if defined(__windows)
     return ::GetCurrentProcessId();
@@ -599,7 +599,7 @@ std::string ts::ErrorCodeMessage (ts::ErrorCode code)
 // Get metrics for the current process
 //----------------------------------------------------------------------------
 
-void ts::GetProcessMetrics(ProcessMetrics& metrics) throw(ts::Exception)
+void ts::GetProcessMetrics(ProcessMetrics& metrics)
 {
     metrics.cpu_time = 0;
     metrics.vmem_size = 0;

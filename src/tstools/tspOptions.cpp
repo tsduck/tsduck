@@ -295,7 +295,7 @@ ts::tsp::Options::Options (int argc, char *argv[]) :
 
         opt->type = type;
         opt->name = argv[start+1];
-        ToStringVector (opt->args, plugin_index - start - 2, argv + start + 2);
+        AssignContainer(opt->args, plugin_index - start - 2, argv + start + 2);
     }
 
     // Debug display

@@ -489,7 +489,7 @@ bool ts::Args::analyze(int argc, char* argv[])
         _args.clear();
     }
     else {
-        ToStringVector(_args, argc - 1, argv + 1);
+        AssignContainer(_args, argc - 1, argv + 1);
     }
     return analyze();
 }

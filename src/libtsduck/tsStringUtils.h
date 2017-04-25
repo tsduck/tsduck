@@ -37,8 +37,14 @@
 
 namespace ts {
 
-    // Vector and list of strings
+    //!
+    //! Vector of strings
+    //!
     typedef std::vector<std::string> StringVector;
+
+    //!
+    //! List of strings
+    //!
     typedef std::list<std::string> StringList;
 
     //!
@@ -65,15 +71,39 @@ namespace ts {
     //!
     TSDUCKDLL std::string ReturnTrim(const std::string& str, bool leading = true, bool trailing = true);
 
-    // Remove all occurences of substr from str.
+    //!
+    //! Remove all occurences of a substring.
+    //! @param [in,out] str Input string, to be modified.
+    //! @param [in] substr Substring to remove from @a str.
+    //! @return A reference to @a str.
+    //!
     TSDUCKDLL std::string& RemoveSubstring(std::string& str, const char* substr);
+
+    //!
+    //! Remove all occurences of a substring.
+    //! @param [in,out] str Input string, to be modified.
+    //! @param [in] substr Substring to remove from @a str.
+    //! @return A reference to @a str.
+    //!
     TSDUCKDLL inline std::string& RemoveSubstring(std::string& str, const std::string& substr)
     {
         return RemoveSubstring(str, substr.c_str());
     }
 
-    // Return a copy of str where all occurences of substr are removed.
+    //!
+    //! Remove all occurences of a substring.
+    //! @param [in] str Input string.
+    //! @param [in] substr Substring to remove from @a str.
+    //! @return A copy of @a str where all occurences of @a substr are removed.
+    //!
     TSDUCKDLL std::string ReturnRemoveSubstring(const std::string& str, const char* substr);
+
+    //!
+    //! Remove all occurences of a substring.
+    //! @param [in] str Input string.
+    //! @param [in] substr Substring to remove from @a str.
+    //! @return A copy of @a str where all occurences of @a substr are removed.
+    //!
     TSDUCKDLL std::string ReturnRemoveSubstring(const std::string& str, const std::string& substr);
 
     //!
@@ -239,33 +269,103 @@ namespace ts {
         return JoinStrings(container.begin(), container.end(), separator);
     }
 
-    // Check if a character is a space.
+    //!
+    //! Check if a character is a space.
+    //! @param [in] c An integer containing a character.
+    //! @return True if @a c is a space, tab, new line character.
+    //!
     TSDUCKDLL bool IsSpace(int c);
 
-    // Make sure european characters are detected as printable, even if isprint(3) does not.
+    //!
+    //! Make sure european characters are detected as printable, even if isprint(3) does not.
+    //! @param [in] c An integer containing a character.
+    //! @return True if @a c is a printable character, including extended european character.
+    //!
     TSDUCKDLL bool IsPrintable(int c);
 
-    // Return a printable version of a string.
+    //!
+    //! Return a printable version of a string.
+    //! @param [in] s A string.
+    //! @param [in] replacement The character which replaces non-printable characters.
+    //! @return A copy of @a s where non-printable characters are replaced by @a replacement.
+    //!
     TSDUCKDLL std::string Printable(const std::string& s, char replacement = '.');
+
+    //!
+    //! Return a printable version of a string.
+    //! @param [in] data Address of string data.
+    //! @param [in] size String length in bytes.
+    //! @param [in] replacement The character which replaces non-printable characters.
+    //! @return A copy of the string where non-printable characters are replaced by @a replacement.
+    //!
     TSDUCKDLL std::string Printable(const void* data, size_t size, char replacement = '.');
 
-    // Update a string to lower/upper case. Return a reference to string parameter.
+    //!
+    //! Update a string to lowercase.
+    //! @param [in,out] s A string which is converted to lowercase.
+    //! @return A reference to the string parameter.
+    //!
     TSDUCKDLL std::string& ToLowerCase(std::string& s);
+
+    //!
+    //! Update a string to uppercase.
+    //! @param [in,out] s A string which is converted to uppercase.
+    //! @return A reference to the string parameter.
+    //!
     TSDUCKDLL std::string& ToUpperCase(std::string& s);
 
-    // Return a lower/upper case copy of a string
+    //!
+    //! Return a lowercase copy of a string
+    //! @param [in] s A string to convert to lowercase.
+    //! @return A copy of @a s converted to lowercase.
+    //!
     TSDUCKDLL std::string LowerCaseValue(const std::string& s);
+
+    //!
+    //! Return a uppercase copy of a string
+    //! @param [in] s A string to convert to uppercase.
+    //! @return A copy of @a s converted to uppercase.
+    //!
     TSDUCKDLL std::string UpperCaseValue(const std::string& s);
 
-    // Remove all occurences of character c in string s. Return a reference to string parameter.
+    //!
+    //! Remove all occurences of character c in string s.
+    //! @param [in,out] s A string which is modified.
+    //! @param [in] c The character to remove.
+    //! @return A reference to the string parameter.
+    //!
     TSDUCKDLL std::string& RemoveCharacter(std::string& s, char c);
 
-    // Remove prefix/suffix in string. Return a reference to string parameter.
+    //!
+    //! Remove a prefix in string.
+    //! @param [in,out] s A string which is modified. If @a s starts with @a prefix, the prefix is removed.
+    //! @param [in] prefix A prefix to remove.
+    //! @return A reference to the string parameter.
+    //!
     TSDUCKDLL std::string& RemovePrefix(std::string& s, const std::string& prefix);
+
+    //!
+    //! Remove a suffix in string.
+    //! @param [in,out] s A string which is modified. If @a s ends with @a suffix, the suffix is removed.
+    //! @param [in] suffix A suffix to remove.
+    //! @return A reference to the string parameter.
+    //!
     TSDUCKDLL std::string& RemoveSuffix(std::string& s, const std::string& suffix);
 
-    // Remove prefix/suffix in string and return a copy.
+    //!
+    //! Remove a prefix in string.
+    //! @param [in,out] s An input string. If @a s starts with @a prefix, the prefix is removed.
+    //! @param [in] prefix A prefix to remove.
+    //! @return A copy of @a s with prefix removed.
+    //!
     TSDUCKDLL std::string ReturnRemovePrefix(const std::string& s, const std::string& prefix);
+
+    //!
+    //! Remove a suffix in string.
+    //! @param [in,out] s An input string. If @a s ends with @a suffix, the suffix is removed.
+    //! @param [in] suffix A suffix to remove.
+    //! @return A copy of @a s with suffix removed.
+    //!
     TSDUCKDLL std::string ReturnRemoveSuffix(const std::string& s, const std::string& suffix);
 
     //!
@@ -416,27 +516,82 @@ namespace ts {
     //!
     TSDUCKDLL std::string Justify(const std::string& left, const std::string& right, size_t width, char pad = ' ');
 
-    // Format boolean values
+    //!
+    //! Format a boolean value as "yes" or "no".
+    //! @param [in] b A boolean value.
+    //! @return "yes" is @a b is true, "no" otherwise.
+    //!
     TSDUCKDLL inline const char* YesNo(bool b) {return b ? "yes"  : "no";}
+
+    //!
+    //! Format a boolean value as "true" or "false".
+    //! @param [in] b A boolean value.
+    //! @return "true" is @a b is true, "false" otherwise.
+    //!
     TSDUCKDLL inline const char* TrueFalse(bool b) {return b ? "true" : "false";}
+
+    //!
+    //! Format a boolean value as "on" or "off".
+    //! @param [in] b A boolean value.
+    //! @return "on" is @a b is true, "off" otherwise.
+    //!
     TSDUCKDLL inline const char* OnOff(bool b) {return b ? "on"   : "off";}
 
-    // Check if two strings are identical, case-insensitive and ignoring blanks
+    //!
+    //! Check if two strings are identical, case-insensitive and ignoring blanks
+    //! @param [in] a First string.
+    //! @param [in] b Second string.
+    //! @return True if the strings are "similar", ie. identical, case-insensitive and ignoring blanks
+    //!
     TSDUCKDLL bool SimilarStrings(const std::string& a, const std::string& b);
 
-    // Same as above, but use second string from address and size
+    //!
+    //! Check if two strings are identical, case-insensitive and ignoring blanks
+    //! @param [in] a First string.
+    //! @param [in] b Address of second string.
+    //! @param [in] bsize Size of second string.
+    //! @return True if the strings are "similar", ie. identical, case-insensitive and ignoring blanks
+    //!
     TSDUCKDLL bool SimilarStrings(const std::string& a, const void* b, size_t bsize);
 
-    // Interpret a string as a sequence of hexadecimal digits (ignore blanks).
-    // Place the result into a vector of bytes.
-    // Return true on success, false on error (invalid hexa format).
-    // When returning false, the result contains everything that could
-    // be decoded before getting the error.
+    //!
+    //! Interpret a string as a sequence of hexadecimal digits (ignore blanks).
+    //! @param [out] result Decoded bytes.
+    //! @param [in] hexa_string A string as a sequence of hexadecimal digits and blanks.
+    //! @return True on success, false on error (invalid hexa format).
+    //! When returning false, the result contains everything that could
+    //! be decoded before getting the error.
+    //!
     TSDUCKDLL bool HexaDecode(std::vector<uint8_t>& result, const char* hexa_string);
+
+    //!
+    //! Interpret a string as a sequence of hexadecimal digits (ignore blanks).
+    //! @param [out] result Decoded bytes.
+    //! @param [in] hexa_string A string as a sequence of hexadecimal digits and blanks.
+    //! @return True on success, false on error (invalid hexa format).
+    //! When returning false, the result contains everything that could
+    //! be decoded before getting the error.
+    //!
     TSDUCKDLL bool HexaDecode(std::vector<uint8_t>& result, const std::string& hexa_string);
 
-    // Same as previous, but append into existing result byte vector
+    //!
+    //! Interpret a string as a sequence of hexadecimal digits (ignore blanks).
+    //! @param [in,out] result The decoded bytes are added at the end of the previous content.
+    //! @param [in] hexa_string A string as a sequence of hexadecimal digits and blanks.
+    //! @return True on success, false on error (invalid hexa format).
+    //! When returning false, the result contains everything that could
+    //! be decoded before getting the error.
+    //!
     TSDUCKDLL bool HexaDecodeAndAppend(std::vector<uint8_t>& result, const char* hexa_string);
+
+    //!
+    //! Interpret a string as a sequence of hexadecimal digits (ignore blanks).
+    //! @param [in,out] result The decoded bytes are added at the end of the previous content.
+    //! @param [in] hexa_string A string as a sequence of hexadecimal digits and blanks.
+    //! @return True on success, false on error (invalid hexa format).
+    //! When returning false, the result contains everything that could
+    //! be decoded before getting the error.
+    //!
     TSDUCKDLL bool HexaDecodeAndAppend(std::vector<uint8_t>& result, const std::string& hexa_string);
 
     //!
@@ -572,13 +727,6 @@ namespace ts {
     {
         container.clear();
         return AppendContainer(container, argc, argv);
-    }
-
-    // Assign a vector of strings from an array of C-strings.
-    // Deprecated, for compatibility only.
-    TSDUCKDLL inline StringVector& ToStringVector(StringVector& sv, int argc, char* argv[])
-    {
-        return AssignContainer(sv, argc, argv);
     }
 }
 
