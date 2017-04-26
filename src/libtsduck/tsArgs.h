@@ -43,6 +43,254 @@
 
 namespace ts {
 
+    //!
+    //! An encapsulation of command line syntax and analysis.
+    //!
+    //! The various properties of a command line (an instance of this class) are:
+    //! @li The "description" string: A short one-line description,
+    //!     e.g. "Wonderful File Copier".
+    //! @li The "syntax" string: A short one-line syntax summary,
+    //!     e.g. "[options] filename ...".
+    //! @li The "help" string: A multi-line string describing the
+    //!     usage of options and parameters.
+    //! @li The "version" string: A description of the version of the application
+    //!     e.g. "1.34-73".
+    //!
+    //! <h3>Parameters and options</h3>
+    //!
+    //! The syntax of a command line which is analyzed by this class follows the GNU
+    //! @e getopt_long(3) conventions. See the corresponding Linux manual page for details.
+    //!
+    //! In short, this means that all options have a "long name" preceded
+    //! by a double dash and optionally a short name (one dash, one letter).
+    //! Long options can be abbreviated if there is no ambiguity.
+    //! Although this syntax is inspired by Linux and the GNU utilities, the same syntax
+    //! is used in all environments where this class is compiled.
+    //! 
+    //! As an example, consider a utility which accepts the two options -\-verbose (short name ­v)
+    //! and -\-version (no short name). Then, the verbose mode can be equally triggered by ­v,
+    //! -\-verbose, -\-verb but not -\-ver since there an ambiguity with -\-version.
+    //! 
+    //! The various options are declared using an @link option() @endlink method.
+    //! An option can be declared with a mandatory value (e.g. "-\-output file.txt"),
+    //! without value (e.g. "-\-verbose") or with an optional value.
+    //! 
+    //! The options may be specified on the command line in any order.
+    //! Everything which is not an option (or the value of an option) is considered
+    //! as a @e parameter.
+    //! The syntax of the parameters is declared using an @link option() @endlink method
+    //! with an empty option name.
+    //!
+    //! When an option is declared with a mandatory value, two syntaxes are accepted:
+    //! "-\-output file.txt" or "-\-output=file.txt". When an option is declared with
+    //! an optional value, only the second form is possible, e.g. "-\-debug=2". The
+    //! form "-\-debug 2" is considered as @e option -\-debug without value (it is optional)
+    //! followed by @e parameter "2".
+    //!
+    //! Following the GNU convention, when the short one-letter form of an option is
+    //! used, the value may immediately follow the option without space.
+    //!
+    //! If the option "-\-output" has a short form "-o", all the following forms are
+    //! equivalent:
+    //! @li -\-output file.txt
+    //! @li -\-output=file.txt
+    //! @li -o file.txt
+    //! @li -ofile.txt
+    //! 
+    //! <h3>Predefined options</h3>
+    //!
+    //! The option @c -\-help is always predefined, it displays the help text and
+    //! terminates the application.
+    //!
+    //! Similarly, the option @c -\-version is also always predefined, it displays the version and
+    //! terminates the application.
+    //!
+    //! <h3>Command line argument type</h3>
+    //!
+    //! The value of options and parameters are @e typed using @link ArgType @endlink.
+    //!
+    //! For integer values, the minimum and maximum allowed values are specified
+    //! and the actual values for the command line are checked for valid integer
+    //! values. The integer values can be entered in decimal or hexadecimal
+    //! (using the 0x prefix). The comma, dot and space characters are considered
+    //! as possible "thousands separators" and are ignored.
+    //!
+    //! <h3>Error management</h3>
+    //!
+    //! There are several types of error situations:
+    //!
+    //! @li Internal coding errors: These errors are internal inconsistencies of
+    //!     the application. Examples include declaring an option with an integer
+    //!     value in the range 1..0 (min > max) or fetching the state of option
+    //!     "foo" when no such option has been declared in the syntax of the command.
+    //!     These errors are bugs in the application and are reported with severity
+    //!     @link ts::Severity::Fatal @endlink. If the declared log does not terminate the
+    //!     application on fatal errors, a default "void" processing is then applied,
+    //!     depending on the situation.
+    //!
+    //! @li Command line errors: They are user errors, when the user enters an incorrect
+    //!     command. These errors are reported with severity @link ts::Severity::Error @endlink.
+    //!     In the various analyze() methods, after the command line is completely
+    //!     analyzed and all command line errors reported, the application is terminated.
+    //!
+    //! @li Predefined help or version options: This is triggered when the user enters
+    //!     the @c -\-help or @c -\-version option. This is not really an error but the
+    //!     command is not usable. In this case, the help text is displayed and the
+    //!     command is terminated.
+    //!
+    //! When the flag @link NO_EXIT_ON_ERROR @endlink is specified, command line errors
+    //! and predefined help or version options do not terminate the application.
+    //! Instead, the analyze() method returns @c false.
+    //!
+    //! The default log is @link StdLog() @endlink. It reports error messages on the
+    //! standard error device and terminates the application on fatal errors.
+    //! Any user-defined subclass of @link ts::Log @endlink can be used to report errors.
+    //! To drop all messages, simply use an instance of @link ts::LogNull @endlink.
+    //!
+    //! <h3>Sample code</h3>
+    //!
+    //! The following sample application, a "super file merger" illustrates a typical
+    //! usage of the Args class.
+    //!
+    //! @code
+    //! #include "vArgs.h"
+    //! #include "vstring.h"
+    //! #include <iostream>
+    //! 
+    //! // Define a class which encapsulates the command line arguments.
+    //! class CommandArgs: public ts::Args
+    //! {
+    //! public:
+    //!     CommandArgs (int argc, char *argv[]);
+    //! 
+    //!     std::string inFile1;
+    //!     std::string inFile2;
+    //!     std::string outFile;
+    //!     bool        verbose;
+    //!     size_t      bufferSize;
+    //! };
+    //! 
+    //! // Constructor: define the command syntax and analyze the command line.
+    //! CommandArgs::CommandArgs (int argc, char *argv[]) :
+    //!     ts::Args ("Super file merger", "[options] file-1 [file-2]", "", "1.3.72")
+    //! {
+    //!     // Define the syntax of the command
+    //!     option ("", 0, STRING, 1, 2);
+    //!     option ("buffer-size", 'b', INTEGER, 0, 1, 256, 4096);
+    //!     option ("output", 'o', STRING);
+    //!     option ("verbose", 'v');
+    //!     setHelp ("Parameters:\n"
+    //!              "\n"
+    //!              "  file-1 : Base file to merge.\n"
+    //!              "  file-2 : Optional secondary file to merge.\n"
+    //!              "\n"
+    //!              "Options:\n"
+    //!              "\n"
+    //!              "  -b value\n"
+    //!              "  --buffer-size value\n"
+    //!              "      Buffer size in bytes, from 256 to 4096 bytes (default: 1024).\n"
+    //!              "\n"
+    //!              "  -o filename\n"
+    //!              "  --output filename\n"
+    //!              "      Specify the output file (default: standard output).\n"
+    //!              "\n"
+    //!              "  -v\n"
+    //!              "  --verbose\n"
+    //!              "      Display verbose messages.");
+    //! 
+    //!     // Analyze the command
+    //!     analyze (argc, argv);
+    //! 
+    //!     // Get the command line arguments
+    //!     getValue (inFile1, "", "", 0);
+    //!     getValue (inFile2, "", "", 1);
+    //!     getValue (outFile, "output");
+    //!     verbose = present ("verbose");
+    //!     bufferSize = intValue<size_t> ("buffer-size", 1024);
+    //! }
+    //! 
+    //! // Main program
+    //! int main (int argc, char* argv[])
+    //! {
+    //!     // Declare an object which analyzes the command line.
+    //!     CommandArgs args (argc, argv);
+    //! 
+    //!     std::cout
+    //!         << "inFile1 = \"" << args.inFile1 << "\", "
+    //!         << "inFile2 = \"" << args.inFile2 << "\", "
+    //!         << "outFile = \"" << args.outFile << "\", "
+    //!         << "verbose = " << ts::string::TrueFalse (args.verbose) << ", "
+    //!         << "bufferSize = " << args.bufferSize << std::endl;
+    //! 
+    //!     return EXIT_SUCCESS;
+    //! }
+    //! @endcode
+    //!
+    //! The following command illustrates the predefined @c -\-help option:
+    //!
+    //! @code
+    //! $ supermerge --help
+    //! 
+    //! Super file merger
+    //! 
+    //! Usage: supermerge [options] file-1 [file-2]
+    //! 
+    //! Parameters:
+    //! 
+    //!   file-1 : Base file to merge.
+    //!   file-2 : Optional secondary file to merge.
+    //! 
+    //! Options:
+    //! 
+    //!   -b value
+    //!   --buffer-size value
+    //!       Buffer size in bytes, from 256 to 4096 bytes (default: 1024).
+    //! 
+    //!   -o filename
+    //!   --output filename
+    //!       Specify the output file (default: standard output).
+    //! 
+    //!   -v
+    //!   --verbose
+    //!       Display verbose messages.
+    //! 
+    //! $
+    //! @endcode
+    //!
+    //! The following command illustrates the predefined @c -\-version option:
+    //!
+    //! @code
+    //! $ supermerge --version
+    //! 1.3.72
+    //! $
+    //! @endcode
+    //!
+    //! And the following commands illustrate various usages of the command:
+    //!
+    //! @code
+    //! $ supermerge f1
+    //! inFile1 = "f1", inFile2 = "", outFile = "", verbose = false, bufferSize = 1024
+    //! $
+    //! $ supermerge f1 f2
+    //! inFile1 = "f1", inFile2 = "f2", outFile = "", verbose = false, bufferSize = 1024
+    //! $
+    //! $ supermerge f1 f2 f3
+    //! supermerge: too many parameter, 2 maximum
+    //! $
+    //! $ supermerge f1 -o out.txt -v
+    //! inFile1 = "f1", inFile2 = "", outFile = "out.txt", verbose = true, bufferSize = 1024
+    //! $
+    //! $ supermerge f1 -o out.txt -v --buffer-size 2048
+    //! inFile1 = "f1", inFile2 = "", outFile = "out.txt", verbose = true, bufferSize = 2048
+    //! $
+    //! $ supermerge f1 -o out.txt --ver
+    //! supermerge: ambiguous option --ver (--verbose, --version)
+    //! $
+    //! $ supermerge f1 -o out.txt --verb
+    //! inFile1 = "f1", inFile2 = "", outFile = "out.txt", verbose = true, bufferSize = 1024
+    //! $
+    //! @endcode
+    //!
     class TSDUCKDLL Args: public ReportInterface
     {
     public:

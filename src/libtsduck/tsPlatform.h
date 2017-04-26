@@ -2384,7 +2384,7 @@ namespace ts {
 //! @endcode
 //!
 #if defined(DOXYGEN)
-    #define TS_PRINTF_FORMAT(formatIndex,argIndex) platform_specific
+    #define TS_PRINTF_FORMAT(formatIndex,argIndex)
 #elif defined(__gcc) && __GNUC__ >= 4
     #define TS_PRINTF_FORMAT(f,p) __attribute__((format(printf, f, p)))
 #else
