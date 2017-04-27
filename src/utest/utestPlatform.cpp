@@ -294,6 +294,8 @@ void PlatformTest::testVersion()
 {
     utest::Out() << "PlatformTest: GetVersion(VERSION_SHORT) = \"" << ts::GetVersion(ts::VERSION_SHORT) << "\"" << std::endl
                  << "PlatformTest: GetVersion(VERSION_LONG) = \"" << ts::GetVersion(ts::VERSION_LONG) << "\"" << std::endl
+                 << "PlatformTest: GetVersion(VERSION_DATE) = \"" << ts::GetVersion(ts::VERSION_DATE) << "\"" << std::endl
+                 << "PlatformTest: GetVersion(VERSION_DEKTEC) = \"" << ts::GetVersion(ts::VERSION_DEKTEC) << "\"" << std::endl
                  << "PlatformTest: GetVersion(VERSION_NSIS) = \"" << ts::GetVersion(ts::VERSION_NSIS) << "\"" << std::endl;
 
     CPPUNIT_ASSERT_EQUAL(std::string(TS_STRINGIFY(TS_VERSION_MAJOR) "." TS_STRINGIFY(TS_VERSION_MINOR)), ts::GetVersion());

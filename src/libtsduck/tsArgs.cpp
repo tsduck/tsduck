@@ -198,9 +198,17 @@ ts::Args::Args(const std::string& description, const std::string& syntax, const 
     _is_valid(false),
     _flags(flags)
 {
+    // Various options for --version.
+    const Enumeration versionOptions("short", VERSION_SHORT,
+                                     "long", VERSION_LONG,
+                                     "date", VERSION_DATE,
+                                     "dektec", VERSION_DEKTEC,
+                                     "nsis", VERSION_NSIS,
+                                     TS_NULL);
+
     // Add predefined option
     option("help");
-    option("version", 0, Enumeration("short", VERSION_SHORT, "long", VERSION_LONG, "dektec", VERSION_DEKTEC, "nsis", VERSION_NSIS, TS_NULL), 0, 1, true);
+    option("version", 0, versionOptions, 0, 1, true);
     search("help")->predefined = true;
     search("version")->predefined = true;
 }

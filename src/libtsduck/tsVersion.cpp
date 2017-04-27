@@ -54,6 +54,8 @@ std::string ts::GetVersion(VersionFormat format, const std::string& applicationN
                 "(no Dektec support) "
             #endif
                 "- version " + version;
+        case VERSION_DATE:
+            return Format("%s - %s", __DATE__, __TIME__);
         case VERSION_NSIS:
             return "!define tsduckVersion \"" + version + '"';
         case VERSION_DEKTEC:
