@@ -86,14 +86,6 @@ RequestExecutionLevel admin
 !define MUI_ICON "${RootDir}\images\tsduck.ico"
 !define MUI_UNICON "${RootDir}\images\tsduck.ico"
 
-; Language selection dialog
-!insertmacro MUI_RESERVEFILE_LANGDLL
-
-; Remember the installer language for the current user in the registry.
-!define MUI_LANGDLL_REGISTRY_ROOT "HKCU"
-!define MUI_LANGDLL_REGISTRY_KEY "${ProductKey}"
-!define MUI_LANGDLL_REGISTRY_VALUENAME "Installer Language"
-
 ; Default installation folder
 !ifdef Win64
     InstallDir "$PROGRAMFILES64\TSDuck"
