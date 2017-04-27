@@ -365,14 +365,28 @@ Export-ModuleMember -Function New-ZipFile
 # Search installed version of Visual Studio.
 #-----------------------------------------------------------------------------
 
-# Currently hardcoded to Visual Studio 2015 / MSBuild 14.0.
-$MsvcDir = "msvc2015"
-$MSBuild = "C:\Program Files (x86)\MSBuild\14.0\Bin\MSBuild.exe"
+# List of known MSBuild with corresponding version of Visual Studio,
+# in decreasinf order of preference.
+$KnownMSBuild = @(
+    @{VS = '2017'; Exe = 'C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\MSBuild\15.0\Bin\amd64\MSBuild.exe'},
+    @{VS = '2017'; Exe = 'C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\MSBuild\15.0\Bin\MSBuild.exe'},
+    @{VS = '2015'; Exe = 'C:\Program Files (x86)\MSBuild\14.0\Bin\MSBuild.exe'}
+)
+
+# Find preferred version of MSBuild.
+$MSBuild = ""
+foreach ($m in $KnownMSBuild) {
+    $MsvcDir = (Join-Path (Split-Path $PSScriptRoot -Parent) "msvc$($m.VS)")
+    if ((Test-Path $MsvcDir -PathType Container) -and (Test-Path $m.Exe)) {
+        $MSBuild = $m.Exe
+        break
+    }
+}
 
 Export-ModuleMember -Variable MsvcDir
 Export-ModuleMember -Variable MSBuild
 
 # Check presence of MSBuild.
-if (-not (Test-Path $MSBuild)) {
-    Exit-Script "MSBuild not found (no $MSBuild)"
+if (-not $MSBuild) {
+    Exit-Script "MSBuild not found"
 }

@@ -80,7 +80,7 @@ if (-not $Win32 -and -not $Win64) {
 }
 
 # We need to work in the directory the project files.
-Set-Location (Join-Path (Split-Path -Parent $PSScriptRoot) $MsvcDir)
+Set-Location $MsvcDir
 
 # Rebuild TSDuck.
 if ($Release -and $Win64) {

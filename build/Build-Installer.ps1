@@ -120,7 +120,7 @@ if (-not $NoBuild) {
 
 # Download redistributable libraries, if not already downloaded.
 if (-not $NoInstaller) {
-    & (Join-MultiPath @($RootDir, $MsvcDir, "redist", "Download-Vcredist.ps1")) -NoPause
+    & (Join-MultiPath @($MsvcDir, "redist", "Download-Vcredist.ps1")) -NoPause
 }
 
 # Build installers.

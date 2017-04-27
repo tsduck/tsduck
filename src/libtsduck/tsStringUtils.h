@@ -301,6 +301,26 @@ namespace ts {
     TSDUCKDLL std::string Printable(const void* data, size_t size, char replacement = '.');
 
     //!
+    //! Convert a character to lowercase.
+    //! @param [in] c A character to convert to lowercase.
+    //! @return @a c converted to lowercase.
+    //!
+    TSDUCKDLL inline char ToLower(char c)
+    {
+        return char(::tolower(int(c)));
+    }
+
+    //!
+    //! Convert a character to uppercase.
+    //! @param [in] c A character to convert to uppercase.
+    //! @return @a c converted to uppercase.
+    //!
+    TSDUCKDLL inline char ToUpper(char c)
+    {
+        return char(::toupper(int(c)));
+    }
+
+    //!
     //! Update a string to lowercase.
     //! @param [in,out] s A string which is converted to lowercase.
     //! @return A reference to the string parameter.

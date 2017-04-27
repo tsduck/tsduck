@@ -36,24 +36,23 @@
 #include "tsSysUtils.h"
 #include "tsFormat.h"
 
-
-ts::Exception::Exception (const std::string& w) :
-    _what (w)
+ts::Exception::Exception(const std::string& w) :
+    _what(w)
 {
-    CERR.log (Severity::Debug, "Exception: " + _what);
+    CERR.log(Severity::Debug, "Exception: " + _what);
 }
 
-ts::Exception::Exception (const std::string& w, ErrorCode error) :
-    _what (w + Format (", system error %d (0x%08X), ", error, error) + ErrorCodeMessage (error))
+ts::Exception::Exception(const std::string& w, ErrorCode error) :
+    _what(w + Format(", system error %d (0x%08X), ", error, error) + ErrorCodeMessage(error))
 {
-    CERR.log (Severity::Debug, "Exception: " + _what);
+    CERR.log(Severity::Debug, "Exception: " + _what);
 }
 
-ts::Exception::~Exception () throw ()
+ts::Exception::~Exception() throw ()
 {
 }
 
-const char* ts::Exception::what () const throw ()
+const char* ts::Exception::what() const throw ()
 {
-    return _what.c_str ();
+    return _what.c_str();
 }

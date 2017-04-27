@@ -454,15 +454,15 @@ bool ts::IsPrintable(int c)
 // Update a string to lower/upper case. Return a reference to string parameter.
 //----------------------------------------------------------------------------
 
-std::string& ts::ToLowerCase (std::string& s)
+std::string& ts::ToLowerCase(std::string& s)
 {
-    std::transform (s.begin(), s.end(), s.begin(), ::tolower);
+    std::transform(s.begin(), s.end(), s.begin(), ToLower);
     return s;
 }
 
-std::string& ts::ToUpperCase (std::string& s)
+std::string& ts::ToUpperCase(std::string& s)
 {
-    std::transform (s.begin(), s.end(), s.begin(), ::toupper);
+    std::transform(s.begin(), s.end(), s.begin(), ToUpper);
     return s;
 }
 
@@ -471,17 +471,17 @@ std::string& ts::ToUpperCase (std::string& s)
 // Return a lower/upper case copy of a string
 //----------------------------------------------------------------------------
 
-std::string ts::LowerCaseValue (const std::string& s)
+std::string ts::LowerCaseValue(const std::string& s)
 {
-    std::string res (s.length(), ' ');
-    std::transform (s.begin(), s.end(), res.begin(), ::tolower);
+    std::string res(s.length(), ' ');
+    std::transform(s.begin(), s.end(), res.begin(), ToLower);
     return res;
 }
 
-std::string ts::UpperCaseValue (const std::string& s)
+std::string ts::UpperCaseValue(const std::string& s)
 {
-    std::string res (s.length(), ' ');
-    std::transform (s.begin(), s.end(), res.begin(), ::toupper);
+    std::string res(s.length(), ' ');
+    std::transform(s.begin(), s.end(), res.begin(), ToUpper);
     return res;
 }
 

@@ -32,7 +32,7 @@
 ;  Do not invoke NSIS directly, use Build-Installer.ps1.
 ;  If Win64 is defined, generate a 64-bit installer (default: 32-bit).
 ;  If ProjectDir is defined, it designates the subdirectory containing the
-;  Visual Studio files. By default, use "msvc2015".
+;  Visual Studio files. By default, use "msvc2017".
 ;
 ;-----------------------------------------------------------------------------
 
@@ -49,13 +49,13 @@ Name "TSDuck"
 !define RootDir ".."
 !define InstallerDir "${RootDir}\installers"
 !ifndef ProjectDir
-    !define ProjectDir "msvc2015"
+    !define ProjectDir "${RootDir}\msvc2017"
 !endif
 !ifdef Win64
-    !define BinDir "${RootDir}\${ProjectDir}\Release-x64"
+    !define BinDir "${ProjectDir}\Release-x64"
     !define MsvcRedistExe "vcredist64.exe"
 !else
-    !define BinDir "${RootDir}\${ProjectDir}\Release-Win32"
+    !define BinDir "${ProjectDir}\Release-Win32"
     !define MsvcRedistExe "vcredist32.exe"
 !endif
 
@@ -158,7 +158,7 @@ Section "Install"
     CreateDirectory "$INSTDIR\setup"
     SetOutPath "$INSTDIR\setup"
     File "${BinDir}\setpath.exe"
-    File "${RootDir}\${ProjectDir}\redist\${MsvcRedistExe}"
+    File "${ProjectDir}\redist\${MsvcRedistExe}"
 
     ; Store installation folder in registry.
     WriteRegStr HKLM "${ProductKey}" "InstallDir" $INSTDIR

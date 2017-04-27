@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <!-- Must be included in .vcxproj files to use the Dektec DTAPI library -->
+
+  <!-- Define DtapiIncludePath if not already defined and DTAPI.h found in some predefined locations -->
+  <Choose>
+    <When Condition="'$(DtapiIncludePath)'!=''">
+      <!-- Already externally defined, nothing to do -->
+    </When>
+    <When Condition="Exists('C:\Program Files (x86)\DekTec\SDKs\WinSDK\DTAPI\Include\DTAPI.h')">
+      <PropertyGroup Label="UserMacros">
+        <DtapiIncludePath>C:\Program Files (x86)\DekTec\SDKs\WinSDK\DTAPI\Include</DtapiIncludePath>
+      </PropertyGroup>
+    </When>
+    <When Condition="Exists('C:\Program Files\DekTec\SDKs\WinSDK\DTAPI\Include\DTAPI.h')">
+      <PropertyGroup Label="UserMacros">
+        <DtapiIncludePath>C:\Program Files\DekTec\SDKs\WinSDK\DTAPI\Include</DtapiIncludePath>
+      </PropertyGroup>
+    </When>
+  </Choose>
+
+  <!-- Define DtapiLibraryPath if not already defined and DTAPI found in some predefined locations -->
+  <Choose>
+    <When Condition="'$(DtapiLibraryPath)'!=''">
+      <!-- Already externally defined, nothing to do -->
+    </When>
+    <When Condition="Exists('C:\Program Files (x86)\DekTec\SDKs\WinSDK\DTAPI\Lib\VC15')">
+      <PropertyGroup Label="UserMacros">
+        <DtapiLibraryPath>C:\Program Files (x86)\DekTec\SDKs\WinSDK\DTAPI\Lib</DtapiLibraryPath>
+      </PropertyGroup>
+    </When>
+    <When Condition="Exists('C:\Program Files\DekTec\SDKs\WinSDK\DTAPI\Lib\VC15')">
+      <PropertyGroup Label="UserMacros">
+        <DtapiLibraryPath>C:\Program Files\DekTec\SDKs\WinSDK\DTAPI\Lib</DtapiLibraryPath>
+      </PropertyGroup>
+    </When>
+  </Choose>
+
+  <!-- Make sure that DtapiIncludePath and DtapiLibraryPath are defined as environment variables -->
+  <ItemGroup Condition="'$(DtapiIncludePath)'!=''">
+    <BuildMacro Include="DtapiIncludePath">
+      <Value>$(DtapiIncludePath)</Value>
+    </BuildMacro>
+  </ItemGroup>
+  <ItemGroup Condition="'$(DtapiLibraryPath)'!=''">
+    <BuildMacro Include="DtapiLibraryPath">
+      <Value>$(DtapiLibraryPath)</Value>
+    </BuildMacro>
+  </ItemGroup>
+
+  <!-- Compile with or without DTAPI support -->
+  <ItemDefinitionGroup Condition="'$(DtapiIncludePath)'!=''">
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(DtapiIncludePath);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(DtapiIncludePath)'==''">
+    <ClCompile>
+      <PreprocessorDefinitions>TS_NO_DTAPI;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+
+  <!-- Link with or without DTAPI support. -->
+  <ItemDefinitionGroup Condition="'$(DtapiLibraryPath)'!=''">
+    <ClCompile>
+      <PreprocessorDefinitions>_DTAPI_DISABLE_AUTO_LINK;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <AdditionalLibraryDirectories>$(DtapiLibraryPath)\VC15;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Link>
+    <Link Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      <AdditionalDependencies>DTAPIMD.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <!-- Workaround for a bug with Feb 2017 release of Dektec DTAPI -->
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
+    </Link>
+    <Link Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      <AdditionalDependencies>DTAPI64MD.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <Link Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      <AdditionalDependencies>DTAPIMDd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <Link Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      <AdditionalDependencies>DTAPI64MDd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+
+</Project>
