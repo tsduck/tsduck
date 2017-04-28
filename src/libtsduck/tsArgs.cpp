@@ -219,17 +219,17 @@ ts::Args::Args(const std::string& description, const std::string& syntax, const 
 //----------------------------------------------------------------------------
 
 ts::Args& ts::Args::option(const char* name,
-                               char        short_name,
-                               ArgType     type,
-                               size_t      min_occur,
-                               size_t      max_occur,
-                               int64_t     min_value,
-                               int64_t     max_value,
-                               bool        optional) throw (ArgsError)
-    {
-    IOption opt (name, short_name, type, min_occur, max_occur, min_value, max_value, optional);
-    _iopts.erase (opt.name);
-    _iopts.insert (std::make_pair (opt.name, opt));
+                           char        short_name,
+                           ArgType     type,
+                           size_t      min_occur,
+                           size_t      max_occur,
+                           int64_t     min_value,
+                           int64_t     max_value,
+                           bool        optional)
+{
+    IOption opt(name, short_name, type, min_occur, max_occur, min_value, max_value, optional);
+    _iopts.erase(opt.name);
+    _iopts.insert(std::make_pair(opt.name, opt));
     return *this;
 }
 
