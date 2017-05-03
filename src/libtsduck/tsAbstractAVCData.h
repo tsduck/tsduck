@@ -38,23 +38,59 @@
 
 namespace ts {
 
+    //!
+    //! Abstract base class for AVC data, either access units or structures.
+    //!
+    //! AVC is Advanced Video Coding, ISO 14496-10, ITU H.264.
+    //!
+    //! There is no strict encapsulation of data. Each subclass exposes public fields.
+    //! This base class declares a common interface to parse, display and validate the
+    //! data.
+    //!
     class TSDUCKDLL AbstractAVCData
     {
     public:
-        // Constructor & destructor
+        //!
+        //! Constructor.
+        //!
         AbstractAVCData() : valid (false) {}
+
+        //!
+        //! Destructor.
+        //!
         virtual ~AbstractAVCData() {}
 
-        // Clear all values
+        //!
+        //! Clear all values.
+        //! Should be reimplemented by subclasses.
+        //! The data are marked invalid.
+        //!
         virtual void clear() {valid = false;}
 
-        // Parse a memory area. Return the "valid" flag.
-        virtual bool parse (const void*, size_t) = 0;
+        //!
+        //! Parse a memory area containing binary AVC data of the expected type.
+        //! Must be reimplemented by subclasses.
+        //! The data are marked as valid or invalid.
+        //! @param [in] addr Address of the binary data to parse.
+        //! @param [in] size Size in bytes of the binary data to parse.
+        //! @return The @link valid @endlink flag.
+        //!
+        virtual bool parse(const void* addr, size_t size) = 0;
 
-        // Display structure content
-        virtual std::ostream& display (std::ostream& = std::cout, const std::string& margin = "") const = 0;
+        //!
+        //! Display the content in human-readable format.
+        //! Must be reimplemented by subclasses.
+        //! @param [in,out] stream The stream where to print the content.
+        //! Standard output by default.
+        //! @param [in] margin The prefix string on each line, empty by default.
+        //! @return A reference to @a stream.
+        //!
+        virtual std::ostream& display(std::ostream& stream = std::cout, const std::string& margin = "") const = 0;
 
-        // Valid flag. Other fields are significant only if valid is true.
+        //!
+        //! Valid flag.
+        //! Other fields are significant only if @a valid is true.
+        //!
         bool valid;
 
     protected:
@@ -63,9 +99,17 @@ namespace ts {
             #pragma warning(disable:4127) // conditional expression is constant
         #endif
 
-        // Display helpers
+        //!
+        //! Display helper for subclasses.
+        //! Display an integer value.
+        //! @tparam INT An integer type.
+        //! @param [in,out] out The stream where to print the content.
+        //! @param [in] margin The prefix string on each line.
+        //! @param [in] name A name to display for the value.
+        //! @param [in] n The integer value to display.
+        //!
         template <typename INT>
-        void disp (std::ostream& out, const std::string& margin, const char* name, INT n) const
+        void disp(std::ostream& out, const std::string& margin, const char* name, INT n) const
         {
             out << margin << name << " = ";
             if (sizeof(INT) < 2) {
@@ -77,13 +121,22 @@ namespace ts {
             out << std::endl;
         }
 
+        //!
+        //! Display helper for subclasses.
+        //! Display a vector of integer value.
+        //! @tparam INT An integer type.
+        //! @param [in,out] out The stream where to print the content.
+        //! @param [in] margin The prefix string on each line.
+        //! @param [in] name A name to display for the value.
+        //! @param [in] n The integer values to display.
+        //!
         template <typename INT>
-        void disp (std::ostream& out, const std::string& margin, const char* name, std::vector<INT> n) const
+        void disp(std::ostream& out, const std::string& margin, const char* name, std::vector<INT> n) const
         {
             for (size_t i = 0; i < n.size(); ++i) {
                 out << margin << name << "[" << i << "] = ";
                 if (sizeof(INT) < 2) {
-                    out << int (n[i]);
+                    out << int(n[i]);
                 }
                 else {
                     out << n[i];
@@ -98,8 +151,14 @@ namespace ts {
     };
 }
 
-// Output operator
-TSDUCKDLL inline std::ostream& operator<< (std::ostream& strm, const ts::AbstractAVCData& data)
+//!
+//! Output operator for ts::AbstractAVCData.
+//! Use ts::AbstractAVCData::display() to format the content.
+//! @param [in,out] strm The stream where to print the content.
+//! @param [in] data The instance of a subclass of ts::AbstractAVCData to display.
+//! @return A reference to @a strm.
+//!
+TSDUCKDLL inline std::ostream& operator<<(std::ostream& strm, const ts::AbstractAVCData& data)
 {
-    return data.display (strm);
+    return data.display(strm);
 }

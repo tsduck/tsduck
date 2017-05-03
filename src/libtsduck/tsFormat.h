@@ -36,6 +36,17 @@
 #include "tsPlatform.h"
 
 namespace ts {
-    // This function builds a string using printf-like format.
-    TSDUCKDLL std::string Format (const char *format, ...) TS_PRINTF_FORMAT (1, 2);
+    //!
+    //! Builds a string using a printf-like format.
+    //!
+    //! This function has the same profile as @c printf(). The @a format
+    //! argument is followed by a variable-length list of arguments
+    //! for the format string.
+    //!
+    //! @param [in] format A C-string containing a printf-like format.
+    //! Refer to the documentation of @c vsnprintf() on the target
+    //! platform for the complete syntax of the format string.
+    //! @return A string containing the result of the formatting.
+    //!
+    TSDUCKDLL std::string Format(const char *format, ...) TS_PRINTF_FORMAT(1, 2);
 }

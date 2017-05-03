@@ -376,8 +376,11 @@ namespace ts {
         //! This method is typically invoked in the constructor of a subclass
         //! to import all option definitions of another instance.
         //!
-        //! @param [in] other Another instance from which to copy the options definitions.
-        //! @param [in] override If true, override duplicated options.
+        //! @param [in] other Another instance from which to get the options.
+        //! @param [in] override If true, override duplicated options which were
+        //!             already declared in this object. If false (the default),
+        //!             duplicated options are ignored.
+        //! @return A reference to this object.
         //!
         Args& copyOptions(const Args& other, const bool override = false);
 
@@ -400,88 +403,293 @@ namespace ts {
         //!
         static const int64_t UNLIMITED_VALUE;
 
-        // Replace elements
-        void setDescription (const std::string& description) {_description = description;}
-        void setSyntax (const std::string& syntax) {_syntax = syntax;}
-        void setHelp (const std::string& help) {_help = help;}
-        void setFlags (int flags) {_flags = flags;}
+        //!
+        //! Set the description of the command.
+        //!
+        //! @param [in] description A short one-line description, e.g. "Wonderful File Copier".
+        //!
+        void setDescription(const std::string& description) {_description = description;}
 
-        // Access elements
+        //!
+        //! Set the syntax of the command.
+        //!
+        //! @param [in] syntax A short one-line syntax summary, e.g. "[options] filename ...".
+        //!
+        void setSyntax(const std::string& syntax) {_syntax = syntax;}
+
+        //!
+        //! Set the help description of the command.
+        //!
+        //! @param [in] help A multi-line string describing the usage of options and parameters.
+        //!
+        void setHelp(const std::string& help) {_help = help;}
+
+        //!
+        //! Set the option flags of the command.
+        //!
+        //! @param [in] flags Define various options, a combination of or'ed values from @link Flags @endlink.
+        //!
+        void setFlags(int flags) {_flags = flags;}
+
+        //!
+        //! Get the description of the command.
+        //!
+        //! @return A short one-line description of the command.
+        //!
         const std::string& getDescription() const {return _description;}
+
+        //!
+        //! Get the syntax of the command.
+        //!
+        //! @return A short one-line syntax summary of the command.
+        //!
         const std::string& getSyntax() const {return _syntax;}
+
+        //!
+        //! Get the help description of the command.
+        //!
+        //! @return A multi-line string describing the usage of options and parameters.
+        //!
         const std::string& getHelp() const {return _help;}
+
+        //!
+        //! Get the option flags of the command.
+        //!
+        //! @return A combination of or'ed values from @link Flags @endlink.
+        //!
         int getFlags() const {return _flags;}
 
-        // The "shell" string is an optional prefix for the syntax line as
-        // displayed by the --help predefined option. The shell name is
-        // displayed before the application name.
+        //!
+        //! Set the "shell" string.
+        //!
+        //! The shell string is an optional prefix for the syntax line as
+        //! displayed by the -\-help predefined option. The shell name is
+        //! displayed before the application name.
+        //!
+        //! @param [in] shell Shell name string.
+        //!
         void setShell (const std::string& shell) {_shell = shell;}
+
+        //!
+        //! Get the "shell" string.
+        //!
+        //! @return The shell name string.
+        //! @see setShell()
+        //!
         const std::string& getShell() const {return _shell;}
 
-        // Load arguments and analyze them.
-        // The application name is in argv[0].
-        // Normally, in case of error, --help or --version, the application
-        // is automatically terminated. If some flags prevent the termination
-        // of the application, return true if the command is correct, false
-        // otherwise. Also return false when --help or --version is specified.
-        virtual bool analyze (int argc, char* argv[]);
-        virtual bool analyze (const std::string& app_name, const StringVector& arguments);
+        //!
+        //! Load command arguments and analyze them.
+        //!
+        //! Normally, in case of error or if @c -\-help or @c -\-version is specified, the
+        //! application is automatically terminated. If some flags prevent the termination
+        //! of the application, return @c true if the command is correct, @c false
+        //! if the command is incorrect or @c -\-help or @c -\-version is specified.
+        //!
+        //! @param [in] argc Number of arguments from command line.
+        //! @param [in] argv Arguments from command line.
+        //! The application name is in argv[0].
+        //! The subsequent elements contain the arguments.
+        //! @return By default, always return true or the application is automatically
+        //! terminated in case of error. If some flags prevent the termination
+        //! of the application, return @c true if the command is correct, @c false
+        //! if the command is incorrect or @c -\-help or @c -\-version is specified.
+        //!
+        virtual bool analyze(int argc, char* argv[]);
 
-        // This version of analyze() use a variable argument list.
-        // In order to identify the end of list, the last argument must
-        // be followed by TS_NULL.
-        virtual bool analyze (const char* app_name, const char* arg1, ...);
+        //!
+        //! Load command arguments and analyze them.
+        //!
+        //! Normally, in case of error or if @c -\-help or @c -\-version is specified, the
+        //! application is automatically terminated. If some flags prevent the termination
+        //! of the application, return @c true if the command is correct, @c false
+        //! if the command is incorrect or @c -\-help or @c -\-version is specified.
+        //!
+        //! @param [in] app_name Application name.
+        //! @param [in] arguments Arguments from command line.
+        //! @return By default, always return true or the application is automatically
+        //! terminated in case of error. If some flags prevent the termination
+        //! of the application, return @c true if the command is correct, @c false
+        //! if the command is incorrect or @c -\-help or @c -\-version is specified.
+        //!
+        virtual bool analyze(const std::string& app_name, const StringVector& arguments);
 
-        // Check if options are correct, same result as previous analyze().
+        //!
+        //! Load command arguments from a variable parameter list and analyze them.
+        //!
+        //! Normally, in case of error or if @c -\-help or @c -\-version is specified, the
+        //! application is automatically terminated. If some flags prevent the termination
+        //! of the application, return @c true if the command is correct, @c false
+        //! if the command is incorrect or @c -\-help or @c -\-version is specified.
+        //!
+        //! @param [in] app_name Application name.
+        //! @param [in] arg1 First argument from command line. Followed by other
+        //! arguments. In order to identify the end of list, the last argument must
+        //! @b must be followed by a @c TS_NULL symbol.
+        //! @return By default, always return true or the application is automatically
+        //! terminated in case of error. If some flags prevent the termination
+        //! of the application, return @c true if the command is correct, @c false
+        //! if the command is incorrect or @c -\-help or @c -\-version is specified.
+        //!
+        virtual bool analyze(const char* app_name, const char* arg1, ...);
+
+        //!
+        //! Check if options were correct during the last command line analysis.
+        //!
+        //! @return True if the last analyze() completed successfully.
+        //!
         bool valid() const {return _is_valid;}
 
-        // Force error state in the object, as if an error was reported.
+        //!
+        //! Force en error state in this object, as if an error was reported.
+        //!
         void invalidate() {_is_valid = false;}
 
-        // Get application name (from last analyze)
+        //!
+        //! Get the application name from the last command line analysis.
+        //!
+        //! @return The application name from the last command line analysis.
+        //!
         std::string appName() const {return _app_name;}
 
-        // Get the values of the options.
-        // If the option name is 0 or "", this means "parameters", not options.
+        //!
+        //! Check if an option is present in the last analyzed command line.
+        //!
+        //! @param [in] name The full name of the option. If the parameter is a null pointer or
+        //! an empty string, this specifies a parameter, not an option. If the specified option
+        //! was not declared in the syntax of the command, a fatal error is reported.
+        //! @return True if the corresponding option or parameter is present on the command line,
+        //! false otherwise.
+        //!
+        bool present(const char* name = 0) const;
 
-        // Check if option is present
-        bool present (const char* name = 0) const throw (ArgsError);
+        //!
+        //! Check the number of occurences of an option in the last analyzed command line.
+        //!
+        //! @param [in] name The full name of the option. If the parameter is a null pointer or
+        //! an empty string, this specifies a parameter, not an option. If the specified option
+        //! was not declared in the syntax of the command, a fatal error is reported.
+        //! @return The number of occurences of the corresponding option or parameter in the
+        //! command line.
+        //!
+        size_t count(const char* name = 0) const;
 
-        // Check the number of occurences of the option.
-        size_t count (const char* name = 0) const throw (ArgsError);
+        //!
+        //! Get the value of an option in the last analyzed command line.
+        //!
+        //! @param [out] value A string receiving the value of the option or parameter.
+        //! @param [in] name The full name of the option. If the parameter is a null pointer or
+        //! an empty string, this specifies a parameter, not an option. If the specified option
+        //! was not declared in the syntax of the command, a fatal error is reported.
+        //! @param [in] def_value The string to return in @a value if the option or parameter
+        //! is not present in the command line or with fewer occurences than @a index.
+        //! @param [in] index The occurence of the option to return. Zero designates the
+        //! first occurence.
+        //!
+        void getValue(std::string& value, const char* name = 0, const char* def_value = "", size_t index = 0) const;
 
-        // Get the value of an option. The index designates the occurence of
-        // the option. If the option is not present, or not with this
-        // occurence, def_value is returned.
-        void getValue (std::string& value, const char* name = 0, const char* def_value = "", size_t index = 0) const throw (ArgsError);
-        std::string value (const char* name = 0, const char* def_value = "", size_t index = 0) const throw (ArgsError);
+        //!
+        //! Get the value of an option in the last analyzed command line.
+        //!
+        //! @param [in] name The full name of the option. If the parameter is a null pointer or
+        //! an empty string, this specifies a parameter, not an option. If the specified option
+        //! was not declared in the syntax of the command, a fatal error is reported.
+        //! @param [in] def_value The string to return if the option or parameter
+        //! is not present in the command line or with fewer occurences than @a index.
+        //! @param [in] index The occurence of the option to return. Zero designates the
+        //! first occurence.
+        //! @return The value of the option or parameter.
+        //!
+        std::string value(const char* name = 0, const char* def_value = "", size_t index = 0) const;
 
-        // Return all occurences of this option in a vector
-        void getValues (StringVector& values, const char* name = 0) const throw (ArgsError);
+        //!
+        //! Get all occurences of an option in a container of strings.
+        //!
+        //! @param [out] values A container of strings receiving all values of the option or parameter.
+        //! @param [in] name The full name of the option. If the parameter is a null pointer or
+        //! an empty string, this specifies a parameter, not an option. If the specified option
+        //! was not declared in the syntax of the command, a fatal error is reported.
+        //!
+        void getValues(StringVector& values, const char* name = 0) const;
 
-        // Get all occurences of this option and interpret them as PID values
-        void getPIDSet (PIDSet& values, const char* name = 0, bool def_value = false) const throw (ArgsError);
+        //!
+        //! Get all occurences of an option and interpret them as PID values.
+        //!
+        //! @param [out] values A set of PID's receiving all values of the option or parameter.
+        //! @param [in] name The full name of the option. If the parameter is a null pointer or
+        //! an empty string, this specifies a parameter, not an option. If the specified option
+        //! was not declared in the syntax of the command, a fatal error is reported.
+        //! @param [in] def_value The boolean to set in all PID values if the option or parameter
+        //! is not present in the command line.
+        //!
+        void getPIDSet(PIDSet& values, const char* name = 0, bool def_value = false) const;
 
-        // Get the integer value of an option.
+        //!
+        //! Get the value of an integer option in the last analyzed command line.
+        //!
+        //! If the option has been declared with an integer type in the syntax of the command,
+        //! the validity of the supplied option value has been checked by the analyze() method.
+        //! If analyze() did not fail, the option value is guaranteed to be in the declared range.
+        //!
+        //! @tparam INT An integer type for the result.
+        //! @param [out] value A variable receiving the integer value of the option or parameter.
+        //! @param [in] name The full name of the option. If the parameter is a null pointer or
+        //! an empty string, this specifies a parameter, not an option. If the specified option
+        //! was not declared in the syntax of the command or declared as a non-string type,
+        //! a fatal error is reported.
+        //! @param [in] def_value The value to return in @a value if the option or parameter
+        //! is not present in the command line or with fewer occurences than @a index.
+        //! @param [in] index The occurence of the option to return. Zero designates the
+        //! first occurence.
+        //!
         template <typename INT>
-        void getIntValue (INT& value,
-                          const char* name = 0,
-                          const INT& def_value = static_cast<INT>(0),
-                          size_t index = 0) const throw (ArgsError);
+        void getIntValue(INT& value,
+                         const char* name = 0,
+                         const INT& def_value = static_cast<INT>(0),
+                         size_t index = 0) const;
 
-        // Get the integer value of an option.
+        //!
+        //! Get the value of an integer option in the last analyzed command line.
+        //!
+        //! @tparam INT An integer type for the result.
+        //! @param [in] name The full name of the option. If the parameter is a null pointer or
+        //! an empty string, this specifies a parameter, not an option. If the specified option
+        //! was not declared in the syntax of the command or declared as a non-string type,
+        //! a fatal error is reported.
+        //! @param [in] def_value The value to return if the option or parameter
+        //! is not present in the command line or with fewer occurences than @a index.
+        //! @param [in] index The occurence of the option to return. Zero designates the
+        //! first occurence.
+        //! @return The integer value of the option or parameter.
+        //!
         template <typename INT>
-        INT intValue (const char* name = 0,
-                      const INT& def_value = static_cast<INT>(0),
-                      size_t index = 0) const throw (ArgsError);
+        INT intValue(const char* name = 0,
+                     const INT& def_value = static_cast<INT>(0),
+                     size_t index = 0) const;
 
-        // Return all occurences of this option in a vector of integers.
+        //!
+        //! Get all occurences of an integer option in a vector of integers.
+        //!
+        //! @param [out] values A container of integers receiving all values of the option or parameter.
+        //! @param [in] name The full name of the option. If the parameter is a null pointer or
+        //! an empty string, this specifies a parameter, not an option. If the specified option
+        //! was not declared in the syntax of the command or declared as a non-string type,
+        //! a fatal error is reported.
+        //!
         template <typename INT>
-        void getIntValues (std::vector<INT>& values, const char* name = 0) const throw (ArgsError);
+        void getIntValues(std::vector<INT>& values, const char* name = 0) const;
 
-        // Return all occurences of this option in a set of integers.
+        //!
+        //! Get all occurences of an integer option in a set of integers.
+        //!
+        //! @param [out] values A container of integers receiving all values of the option or parameter.
+        //! @param [in] name The full name of the option. If the parameter is a null pointer or
+        //! an empty string, this specifies a parameter, not an option. If the specified option
+        //! was not declared in the syntax of the command or declared as a non-string type,
+        //! a fatal error is reported.
+        //!
         template <typename INT>
-        void getIntValues (std::set<INT>& values, const char* name = 0) const throw (ArgsError);
+        void getIntValues(std::set<INT>& values, const char* name = 0) const;
 
         //!
         //! Get an OR'ed of all values of an integer option in the last analyzed command line.
@@ -521,12 +729,20 @@ namespace ts {
         template <typename INT>
         void getBitMaskValue(INT& value, const char* name = 0, const INT& def_value = static_cast<INT>(0)) const;
 
-        // Exit application when errors were reported.
-        // If force is true, ignore flag NO_EXIT_ON_ERROR.
+        //!
+        //! Exit application when errors were reported in the last analyzed command line.
+        //!
+        //! @param [in] force If true, ignore flag @link NO_EXIT_ON_ERROR @endlink and
+        //! force application termination on error.
+        //!
         void exitOnError(bool force = false);
 
-        // Redirect report logging. Redirection cancelled if zero.
-        void redirectReport(ReportInterface*);
+        //!
+        //! Redirect report logging.
+        //!
+        //! @param [in] report Where to report errors. The redirection is cancelled if zero.
+        //!
+        void redirectReport(ReportInterface* report);
 
     protected:
         // Display an error message, as if it was produced during command line analysis.
@@ -566,7 +782,7 @@ namespace ts {
                      size_t      max_occur,
                      int64_t     min_value,
                      int64_t     max_value,
-                     bool        optional) throw (ArgsError);
+                     bool        optional);
 
             // Constructor:
             IOption (const char*        name,
@@ -574,7 +790,7 @@ namespace ts {
                      const Enumeration& enumeration,
                      size_t             min_occur,
                      size_t             max_occur,
-                     bool               optional) throw (ArgsError);
+                     bool               optional);
 
             // Displayable name
             std::string display() const;
@@ -608,7 +824,7 @@ namespace ts {
         // Locate an option description.
         // Throw excetion if not found.
         // Used by application to get values.
-        const IOption& getIOption(const char* name) const throw (ArgsError);
+        const IOption& getIOption(const char* name) const;
     };
 }
 

@@ -54,7 +54,7 @@ ts::Args::IOption::IOption (const char* name_,
                               size_t      max_occur_,
                               int64_t     min_value_,
                               int64_t     max_value_,
-                              bool        optional_) throw (ArgsError) :
+                              bool        optional_) :
 
     name        (name_ == 0 ? "" : name_),
     short_name  (short_name_),
@@ -135,7 +135,7 @@ ts::Args::IOption::IOption (const char*        name_,
                               const Enumeration& enumeration_,
                               size_t             min_occur_,
                               size_t             max_occur_,
-                              bool               optional_) throw (ArgsError) :
+                              bool               optional_) :
 
     name        (name_ == 0 ? "" : name_),
     short_name  (short_name_),
@@ -243,7 +243,7 @@ ts::Args& ts::Args::option (const char*        name,
                                 const Enumeration& enumeration,
                                 size_t             min_occur,
                                 size_t             max_occur,
-                                bool               optional) throw (ArgsError)
+                                bool               optional)
 {
     IOption opt (name, short_name, enumeration, min_occur, max_occur, optional);
     _iopts.erase (opt.name);
@@ -384,7 +384,7 @@ ts::Args::IOption* ts::Args::search (const std::string& name)
 // Throw ArgsError if option does not exist (application internal error)
 //----------------------------------------------------------------------------
 
-const ts::Args::IOption& ts::Args::getIOption (const char* name) const throw (ArgsError)
+const ts::Args::IOption& ts::Args::getIOption (const char* name) const
 {
     IOptionMap::const_iterator it = _iopts.find (name == 0 ? "" : name);
     if (it != _iopts.end()) {
@@ -400,7 +400,7 @@ const ts::Args::IOption& ts::Args::getIOption (const char* name) const throw (Ar
 // Check if option is present
 //----------------------------------------------------------------------------
 
-bool ts::Args::present (const char* name) const throw (ArgsError)
+bool ts::Args::present (const char* name) const
 {
     return !getIOption(name).values.empty();
 }
@@ -410,7 +410,7 @@ bool ts::Args::present (const char* name) const throw (ArgsError)
 // Check the number of occurences of the option.
 //----------------------------------------------------------------------------
 
-size_t ts::Args::count (const char* name) const throw (ArgsError)
+size_t ts::Args::count (const char* name) const
 {
     return getIOption(name).values.size();
 }
@@ -422,13 +422,13 @@ size_t ts::Args::count (const char* name) const throw (ArgsError)
 // occurence, defValue is returned.
 //----------------------------------------------------------------------------
 
-std::string ts::Args::value (const char* name, const char* defValue, size_t index) const throw (ArgsError)
+std::string ts::Args::value (const char* name, const char* defValue, size_t index) const
 {
     const IOption& opt (getIOption (name));
     return index >= opt.values.size() || !opt.values[index].set() ? defValue : opt.values[index].value();
 }
 
-void ts::Args::getValue (std::string& value_, const char* name, const char* defValue, size_t index) const throw (ArgsError)
+void ts::Args::getValue (std::string& value_, const char* name, const char* defValue, size_t index) const
 {
     value_ = value (name, defValue, index);
 }
@@ -438,7 +438,7 @@ void ts::Args::getValue (std::string& value_, const char* name, const char* defV
 // Return all occurences of this option in a vector
 //----------------------------------------------------------------------------
 
-void ts::Args::getValues (StringVector& values, const char* name) const throw (ArgsError)
+void ts::Args::getValues (StringVector& values, const char* name) const
 {
     const IOption& opt (getIOption(name));
 
@@ -457,16 +457,16 @@ void ts::Args::getValues (StringVector& values, const char* name) const throw (A
 // Get all occurences of this option and interpret them as PID values
 //----------------------------------------------------------------------------
 
-void ts::Args::getPIDSet (PIDSet& values, const char* name, bool defValue) const throw (ArgsError)
+void ts::Args::getPIDSet (PIDSet& values, const char* name, bool defValue) const
 {
     PID pid;
-    const IOption& opt (getIOption(name));
+    const IOption& opt(getIOption(name));
 
     if (!opt.values.empty()) {
         values.reset();
         for (ArgValueVector::const_iterator it = opt.values.begin(); it != opt.values.end(); ++it) {
             if (it->set() && ToInteger(pid, it->value(), THOUSANDS_SEPARATORS)) {
-                values.set (pid);
+                values.set(pid);
             }
         }
     }

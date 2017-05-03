@@ -66,7 +66,7 @@ namespace ts {
         bool unreferenced_pid_list;  // --unreferenced-pid-list
         bool pes_pid_list;           // --pes-pid-list
         bool service_pid_list;       // --service-pid-list service-id
-        uint16_t service_id;           //
+        uint16_t service_id;         //
         std::string prefix;          // --prefix "string"
 
         // Additional options
@@ -77,16 +77,16 @@ namespace ts {
         uint64_t suspect_max_consecutive;  // --suspect-max-consecutive
 
         // Overriden methods.
-        void setHelp (const std::string& help);
-        virtual bool analyze (int argc, char* argv[]);
-        virtual bool analyze (const std::string& app_name, const StringVector& arguments);
+        void setHelp(const std::string& help);
+        virtual bool analyze(int argc, char* argv[]);
+        virtual bool analyze(const std::string& app_name, const StringVector& arguments);
 
         // Get option values (the public fields) after analysis of another
         // ts::Args object defining the same options.
-        void getOptions (const Args&);
+        void getOptions(const Args&);
 
     private:
         // Inaccessible operations
-        virtual bool analyze (const char* app_name, const char* arg1, ...);
+        virtual bool analyze(const char* app_name, const char* arg1, ...);
     };
 }

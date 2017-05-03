@@ -90,7 +90,12 @@ namespace ts {
     };
 }
 
-// Output operator
+//!
+//! Output operator for ts::AbstractAudioVideoAttributes.
+//! @param [in,out] strm The stream where to print the content.
+//! @param [in] attr The instance of a subclass of ts::AbstractAudioVideoAttributes to display.
+//! @return A reference to @a strm.
+//!
 TSDUCKDLL inline std::ostream& operator<< (std::ostream& strm, const ts::AbstractAudioVideoAttributes& attr)
 {
     return strm << std::string (attr);

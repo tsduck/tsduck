@@ -37,15 +37,25 @@
 
 namespace ts {
 
-    // In the formatted string, the thousands are separated with commas.
-    // A minimum width and justification can be specified.
-
+    //!
+    //! Format a string containing a decimal value.
+    //! @tparam INT An integer type.
+    //! @param [in] value The integer value to format.
+    //! @param [in] min_width Minimum width of the returned string.
+    //! Padded with spaces if larger than the number of characters in the formatted number.
+    //! @param [in] right_justified If true (the default), return a right-justified string.
+    //! When false, return a left-justified string. Ignored if @a min_width is lower than
+    //! the number of characters in the formatted number.
+    //! @param [in] separator Separator string for groups of thousands, a comma by default.
+    //! @param [in] force_sign If true, force a '+' sign for positive values.
+    //! @return The formatted string.
+    //!
     template <typename INT>
-    std::string Decimal (const INT& value,
-                         size_t min_width = 0,
-                         bool right_justified = true,
-                         const char* separator = ",",
-                         bool force_sign = false);
+    std::string Decimal(const INT& value,
+                        size_t min_width = 0,
+                        bool right_justified = true,
+                        const char* separator = ",",
+                        bool force_sign = false);
 }
 
 #include "tsDecimalTemplate.h"

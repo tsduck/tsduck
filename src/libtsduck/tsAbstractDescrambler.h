@@ -50,62 +50,104 @@
 
 namespace ts {
 
+    //!
+    //! Abstract base class for DVB descrambler plugins.
+    //!
     class TSDUCKDLL AbstractDescrambler:
         public ProcessorPlugin,
         protected TableHandlerInterface,
         private Thread
     {
     public:
-        // Implementation of plugin API.
-        // If overridden by concrete descrambler,
-        // superclass must be explicitely invoked.
-        AbstractDescrambler (TSP* tsp_,
-                             const std::string& description_ = "",
-                             const std::string& syntax_ = "",
-                             const std::string& help_ = "");
+        //!
+        //! Constructor.
+        //! @param [in] tsp Object to communicate with the Transport Stream Processor main executable.
+        //! @param [in] description A short one-line description, eg. "Wonderful plugin".
+        //! @param [in] syntax A short one-line syntax summary, eg. "[options] filename ...".
+        //! @param [in] help A multi-line string describing the usage of options and parameters.
+        //!
+        AbstractDescrambler(TSP* tsp,
+                            const std::string& description = "",
+                            const std::string& syntax = "",
+                            const std::string& help = "");
+        
+        // Implementation of ProcessorPlugin interface.
+        // If overridden by descrambler subclass, superclass must be explicitely invoked.
         virtual bool stop();
         virtual BitRate getBitrate() {return 0;}
-        virtual Status processPacket (TSPacket&, bool&, bool&);
+        virtual Status processPacket(TSPacket&, bool&, bool&);
 
     protected:
-        // Specify to use DVB-CSA descrambling (the default).
-        // Must be invoked before startDescrambler()
-        void useDVBCSA () {_aes128_dvs042 = false;}
+        //!
+        //! Specify to use DVB-CSA descrambling (the default).
+        //! Must be invoked before startDescrambler()
+        //!
+        void useDVBCSA() {_aes128_dvs042 = false;}
 
-        // Specify to use AES-128 in DVS042 (single key) mode instead of DVB-CSA
-        // Must be invoked before startDescrambler()
-        void useAES128DVS042 () {_aes128_dvs042 = true;}
+        //!
+        //! Specify to use AES-128 in DVS042 (single key) mode instead of DVB-CSA.
+        //! Must be invoked before startDescrambler()
+        //!
+        void useAES128DVS042() {_aes128_dvs042 = true;}
 
-        // Set initialization vector for chained modes (not DVB-CSA)
-        // Must be invoked before startDescrambler()
-        void setIV (const ByteBlock& iv) {_iv = iv;}
+        //!
+        //! Set initialization vector for chained modes (not DVB-CSA).
+        //! Must be invoked before startDescrambler().
+        //! @param [in] iv Initialization vector.
+        //!        
+        void setIV(const ByteBlock& iv) {_iv = iv;}
 
-        // Start abstract descrambler. Should be invoked from start().
-        bool startDescrambler (bool           synchronous,      // Synchronous ECM deciphering
-                               bool           reduce_entropy,   // Perform entropy reduction on CW
-                               const Service& service,          // Service to descramble (by name, id or none)
-                               size_t         stack_usage = 0); // Stack usage for ECM deciphering (O for default)
+        //!
+        //! Start the abstract descrambler.
+        //! Should be invoked from the plugin's start() method.
+        //! @param [in] synchronous Synchronous ECM deciphering when true.
+        //! Otherwise, the method decipherECM() is invoked into another thread.
+        //! @param [in] reduce_entropy Perform entropy reduction on CW.
+        //! @param [in] service Service to descramble (by name, id or none).
+        //! @param [in] stack_usage Stack usage for asynchronous ECM deciphering (0 for default).
+        //! @return True on success, false on error.
+        //!
+        bool startDescrambler(bool           synchronous,
+                              bool           reduce_entropy,
+                              const Service& service,
+                              size_t         stack_usage = 0);
 
-        // Check a CA_descriptor from a PMT, must be implemented by concrete descramblers.
-        // If the descrambler can manage the ECM from this PID, return true.
-        // The private part of CA_descriptor is passed as priv / priv_size.
-        virtual bool checkCADescriptor (uint16_t cas_id, const uint8_t* priv, size_t priv_size) = 0;
+        //!
+        //! Check a CA_descriptor from a PMT.
+        //! Must be implemented by subclasses (concrete descramblers).
+        //! This method is invoked by the superclass when a CA_descriptor is found in a PMT.
+        //! The subclass must check if it can descramble ECM's from the corresponding PID.
+        //! @param [in] cas_id CA_system_id value.
+        //! @param [in] priv Address of the private part of the CA_descriptor.
+        //! @param [in] priv_size Size in bytes of the private part of the CA_descriptor.
+        //! @return True if the descrambler can manage the ECM from this PID.
+        //!
+        virtual bool checkCADescriptor(uint16_t cas_id, const uint8_t* priv, size_t priv_size) = 0;
 
-        // Check if the descrambler may decipher an ECM, must be implemented by concrete descramblers
-        // The ecm buffer contains the CMT section payload, without section header.
-        // Return false if this ECM cannot be deciphered.
-        // Return true if it may be deciphered, altough it may fail when actually submitted.
-        virtual bool checkECM (const uint8_t* ecm, size_t ecm_size) = 0;
+        //!
+        //! Check if the descrambler may decipher an ECM.
+        //! Must be implemented by subclasses (concrete descramblers).
+        //! @param [in] ecm Address of the CMT section payload, without section header.
+        //! @param [in] ecm_size Size in bytes of the CMT section payload, without section header.
+        //! @return False if this ECM cannot be deciphered.
+        //! True if it may be deciphered, altough it may fail when actually submitted.
+        //!
+        virtual bool checkECM(const uint8_t* ecm, size_t ecm_size) = 0;
 
-        // Decipher an ECM, return the two control words, must be implemented by concrete descramblers
-        // The ecm buffer contains the CMT section payload, without section header.
-        // The cw_even and cw_odd buffer size must be at least ts::CW_BYTES.
-        // Return true on success, false on error.
-        virtual bool decipherECM (const uint8_t* ecm, size_t ecm_size, uint8_t* cw_even, uint8_t* cw_odd) = 0;
+        //!
+        //! Decipher an ECM, return the two control words.
+        //! Must be implemented by subclasses (concrete descramblers).
+        //! @param [in] ecm Address of the CMT section payload, without section header.
+        //! @param [in] ecm_size Size in bytes of the CMT section payload, without section header.
+        //! @param [out] cw_even Address of output buffer for the even CW. The buffer size must be at least ts::CW_BYTES.
+        //! @param [out] cw_odd Address of output buffer for the odd CW. The buffer size must be at least ts::CW_BYTES.
+        //! @return True on success, false on error.
+        //!
+        virtual bool decipherECM(const uint8_t* ecm, size_t ecm_size, uint8_t* cw_even, uint8_t* cw_odd) = 0;
 
-        // Invoked by the demux when a complete table is available.
-        // If overridden by concrete descrambler,
-        // superclass must be explicitely invoked.
+    protected:
+        // Implementation of TableHandlerInterface.
+        // If overridden by a subclass, superclass must be explicitely invoked.
         virtual void handleTable (SectionDemux&, const BinaryTable&);
 
     private:
@@ -145,20 +187,20 @@ namespace ts {
         // Description of an ECM stream
         struct ECMStream
         {
-            TID         last_tid;             // Last table id (0x80 or 0x81)
-            Scrambling  key_even;             // DVB-CSA preprocessed CW (even)
-            Scrambling  key_odd;              // DVB-CSA preprocessed CW (odd)
-            DVS042<AES> dvs042;               // AES cipher in DVS 042 mode (not DVB-CSA)
+            TID         last_tid;              // Last table id (0x80 or 0x81)
+            Scrambling  key_even;              // DVB-CSA preprocessed CW (even)
+            Scrambling  key_odd;               // DVB-CSA preprocessed CW (odd)
+            DVS042<AES> dvs042;                // AES cipher in DVS 042 mode (not DVB-CSA)
             // -- start of write-protected, read-volative area --
-            volatile bool cw_valid;           // CW's are valid
-            volatile bool new_cw_even;        // New CW available (even)
-            volatile bool new_cw_odd;         // New CW available (odd)
+            volatile bool cw_valid;            // CW's are valid
+            volatile bool new_cw_even;         // New CW available (even)
+            volatile bool new_cw_odd;          // New CW available (odd)
             // -- start of protected area --
-            bool   new_ecm;                   // New ECM available
-            size_t ecm_size;                  // Used size in ECM
-            uint8_t  ecm[MAX_PSI_SECTION_SIZE]; // Last received ECM
-            uint8_t  cw_even[CW_BYTES];         // Last valid CW (even)
-            uint8_t  cw_odd[CW_BYTES];          // Last valid CW (odd)
+            bool    new_ecm;                   // New ECM available
+            size_t  ecm_size;                  // Used size in ECM
+            uint8_t ecm[MAX_PSI_SECTION_SIZE]; // Last received ECM
+            uint8_t cw_even[CW_BYTES];         // Last valid CW (even)
+            uint8_t cw_odd[CW_BYTES];          // Last valid CW (odd)
 
             // Constructor:
             ECMStream() :

@@ -43,57 +43,126 @@ namespace ts {
     //!
     namespace hexa {
 
+        //!
+        //! Default line width for the ts::Hexa() family of functions.
+        //!
         const size_t DEFAULT_LINE_WIDTH = 78;
 
+        //!
+        //! Flags for the ts::Hexa() family of functions.
+        //!
         enum Flags {
-            HEXA        = 0x0001,  // Dump hexa values
-            ASCII       = 0x0002,  // Dump ascii values
-            OFFSET      = 0x0004,  // Display address offsets
-            WIDE_OFFSET = 0x0008,  // Always wide offset
-            SINGLE_LINE = 0x0010,  // Hexa on one single line, no line feed, ignore other flags
-            BPL         = 0x0020,  // Interpret max_line_width as number of displayed Bytes Per Line (BPL)
-            C_STYLE     = 0x0040,  // C-style hexa value ("OxXX," instead of "XX")
-            BINARY      = 0x0080,  // Dump binary values ("XXXXXXXX" binary digits)
-            BIN_NIBBLE  = 0x0100,  // Binary values are grouped by nibble ("XXXX XXXX")
+            HEXA        = 0x0001,  //!< Dump hexa values.
+            ASCII       = 0x0002,  //!< Dump ascii values.
+            OFFSET      = 0x0004,  //!< Display address offsets.
+            WIDE_OFFSET = 0x0008,  //!< Always wide offset.
+            SINGLE_LINE = 0x0010,  //!< Hexa on one single line, no line feed, ignore other flags.
+            BPL         = 0x0020,  //!< Interpret @a max_line_width as number of displayed Bytes Per Line (BPL).
+            C_STYLE     = 0x0040,  //!< C-style hexa value ("0xXX," instead of "XX").
+            BINARY      = 0x0080,  //!< Dump binary values ("XXXXXXXX" binary digits).
+            BIN_NIBBLE  = 0x0100,  //!< Binary values are grouped by nibble ("XXXX XXXX").
         };
     }
 
-    // Build a string containing the hexa dump of (data, size).
-    // Each line is indented by 'indent' space chars. The maximum amount
-    // of chars per line is limited by line_width. If OFFSET is specified,
-    // the first offset value to display is 'init_offset'.
+    //!
+    //! Build a multi-line string containing the hexadecimal dump of a memory area.
+    //!
+    //! @param [in] data Starting address of the memory area to dump.
+    //! @param [in] size Size in bytes of the memory area to dump.
+    //! @param [in] flags A combination of option flags indicating how to
+    //! format the data. This is typically the result of or'ed values from the enum
+    //! type ts::hexa::Flags.
+    //! @param [in] indent Each line is indented by this number of characters.
+    //! @param [in] line_width Maximum number of characters per line.
+    //! If the flag @link ts::hexa::BPL @endlink is specified, @a line_width is interpreted as
+    //! the number of displayed byte values per line.
+    //! @param [in] init_offset If the flag @link ts::hexa::OFFSET @endlink is specified, an offset
+    //! in the memory area is displayed at the beginning of each line. In this
+    //! case, @a init_offset specified the offset value for the first byte.
+    //! @return A string containing the formatted hexadecimal dump.
+    //! Lines are separated with embedded new-line characters ('\\n').
+    //! @see ts::hexa::Flags
+    //!
+    TSDUCKDLL std::string Hexa(const void *data,
+                               size_t size,
+                               uint32_t flags = hexa::HEXA,
+                               size_t indent = 0,
+                               size_t line_width = hexa::DEFAULT_LINE_WIDTH,
+                               size_t init_offset = 0);
+    
+    //!
+    //! Build a multi-line string containing the hexadecimal dump of a memory area.
+    //!
+    //! @param [in] str String to dump.
+    //! @param [in] flags A combination of option flags indicating how to
+    //! format the data. This is typically the result of or'ed values from the enum
+    //! type ts::hexa::Flags.
+    //! @param [in] indent Each line is indented by this number of characters.
+    //! @param [in] line_width Maximum number of characters per line.
+    //! If the flag @link ts::hexa::BPL @endlink is specified, @a line_width is interpreted as
+    //! the number of displayed byte values per line.
+    //! @param [in] init_offset If the flag @link ts::hexa::OFFSET @endlink is specified, an offset
+    //! in the memory area is displayed at the beginning of each line. In this
+    //! case, @a init_offset specified the offset value for the first byte.
+    //! @return A string containing the formatted hexadecimal dump.
+    //! Lines are separated with embedded new-line characters ('\\n').
+    //! @see ts::hexa::Flags
+    //!
+    TSDUCKDLL std::string Hexa(const std::string& str,
+                               uint32_t flags = hexa::HEXA,
+                               size_t indent = 0,
+                               size_t line_width = hexa::DEFAULT_LINE_WIDTH,
+                               size_t init_offset = 0);
 
-    TSDUCKDLL std::string Hexa (const void *data,
-                              size_t size,
-                              uint32_t flags = hexa::HEXA,
-                              size_t indent = 0,
-                              size_t line_width = hexa::DEFAULT_LINE_WIDTH,
-                              size_t init_offset = 0);
+    //!
+    //! Build a multi-line string containing the hexadecimal dump of a memory area.
+    //!
+    //! @param [in] bb Byte block to dump.
+    //! @param [in] flags A combination of option flags indicating how to
+    //! format the data. This is typically the result of or'ed values from the enum
+    //! type ts::hexa::Flags.
+    //! @param [in] indent Each line is indented by this number of characters.
+    //! @param [in] line_width Maximum number of characters per line.
+    //! If the flag @link ts::hexa::BPL @endlink is specified, @a line_width is interpreted as
+    //! the number of displayed byte values per line.
+    //! @param [in] init_offset If the flag @link ts::hexa::OFFSET @endlink is specified, an offset
+    //! in the memory area is displayed at the beginning of each line. In this
+    //! case, @a init_offset specified the offset value for the first byte.
+    //! @return A string containing the formatted hexadecimal dump.
+    //! Lines are separated with embedded new-line characters ('\\n').
+    //! @see ts::hexa::Flags
+    //!
+    TSDUCKDLL std::string Hexa(const ByteBlock& bb,
+                               uint32_t flags = hexa::HEXA,
+                               size_t indent = 0,
+                               size_t line_width = hexa::DEFAULT_LINE_WIDTH,
+                               size_t init_offset = 0);
 
-    // Same with a string
 
-    TSDUCKDLL std::string Hexa (const std::string& str,
-                              uint32_t flags = hexa::HEXA,
-                              size_t indent = 0,
-                              size_t line_width = hexa::DEFAULT_LINE_WIDTH,
-                              size_t init_offset = 0);
-
-    // Same with a ByteBlock
-
-    TSDUCKDLL std::string Hexa (const ByteBlock& bb,
-                              uint32_t flags = hexa::HEXA,
-                              size_t indent = 0,
-                              size_t line_width = hexa::DEFAULT_LINE_WIDTH,
-                              size_t init_offset = 0);
-
-    // Add more dump to a string.
-    // Return a reference to the input string.
-
-    TSDUCKDLL std::string& AppendHexa (std::string& str,
-                                     const void *data,
-                                     size_t size,
-                                     uint32_t flags = hexa::HEXA,
-                                     size_t indent = 0,
-                                     size_t line_width = hexa::DEFAULT_LINE_WIDTH,
-                                     size_t init_offset = 0);
+    //!
+    //! Append a multi-line string containing the hexadecimal dump of a memory area.
+    //!
+    //! @param [in,out] str A string object. The formatted hexa string is appended to this object.
+    //! @param [in] data Starting address of the memory area to dump.
+    //! @param [in] size Size in bytes of the memory area to dump.
+    //! @param [in] flags A combination of option flags indicating how to
+    //! format the data. This is typically the result of or'ed values from the enum
+    //! type ts::hexa::Flags.
+    //! @param [in] indent Each line is indented by this number of characters.
+    //! @param [in] line_width Maximum number of characters per line.
+    //! If the flag @link ts::hexa::BPL @endlink is specified, @a line_width is interpreted as
+    //! the number of displayed byte values per line.
+    //! @param [in] init_offset If the flag @link ts::hexa::OFFSET @endlink is specified, an offset
+    //! in the memory area is displayed at the beginning of each line. In this
+    //! case, @a init_offset specified the offset value for the first byte.
+    //! @return A reference to @a str.
+    //! @see ts::hexa::Flags
+    //!
+    TSDUCKDLL std::string& AppendHexa(std::string& str,
+                                      const void *data,
+                                      size_t size,
+                                      uint32_t flags = hexa::HEXA,
+                                      size_t indent = 0,
+                                      size_t line_width = hexa::DEFAULT_LINE_WIDTH,
+                                      size_t init_offset = 0);
 }

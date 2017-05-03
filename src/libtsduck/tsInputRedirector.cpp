@@ -40,13 +40,13 @@
 // Constructor:
 //----------------------------------------------------------------------------
 
-ts::InputRedirector::InputRedirector (const std::string& name,
-                                        Args& args,
-                                        std::istream& stream,
-                                        std::ios::openmode mode) :
-    _stream (stream),
-    _previous (0),
-    _file ()
+ts::InputRedirector::InputRedirector(const std::string& name,
+                                     Args& args,
+                                     std::istream& stream,
+                                     std::ios::openmode mode) :
+    _stream(stream),
+    _previous(0),
+    _file()
 {
     if (!name.empty()) {
         _file.open (name.c_str(), mode);

@@ -37,18 +37,34 @@
 
 namespace ts {
 
+    //!
+    //! A class to redirect an output stream.
+    //!
+    //! The constructor redirects a specific output stream (@c std::cout by default) to
+    //! a given file. The destructor automatically restores the previous output stream.
+    //!
+    //! If the file name is empty, no redirection occurs, making this mechanism
+    //! quite useful for optional redirection based on command line arguments.
+    //!
     class TSDUCKDLL OutputRedirector
     {
     public:
-        // Constructor:
-        // Redirect the specified stream to the specified file name if not empty.
-        // Args is used to report errors and exit application on error
-        OutputRedirector (const std::string& name,
-                          Args& args,
-                          std::ostream& stream = std::cout,
-                          std::ios::openmode mode = std::ios::binary);
+        //!
+        //! Constructor, the output redirection is automatically started.
+        //! @param [in] name File name to which the output is redirected.
+        //! If empty, the output stream @a stream is not redirected.
+        //! @param [in,out] args Used to report errors and exit application on error.
+        //! @param [in,out] stream The output stream to redirect, @c std::cout by default.
+        //! @param [in,out] mode Mode to use to open the file, @c std::ios::binary by default.
+        //!
+        OutputRedirector(const std::string& name,
+                         Args& args,
+                         std::ostream& stream = std::cout,
+                         std::ios::openmode mode = std::ios::binary);
 
-        // Destructor: restore previous stream.
+        //!
+        //! Destructor, the output redirection is terminated and restore the previous stream.
+        //!
         ~OutputRedirector();
 
     private:

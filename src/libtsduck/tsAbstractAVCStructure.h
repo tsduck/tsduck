@@ -39,16 +39,33 @@
 
 namespace ts {
 
+    //!
+    //! Base class for AVC sub-structures inside access units.
+    //! AVC is Advanced Video Coding, ISO 14496-10, ITU H.264.
+    //!
     class TSDUCKDLL AbstractAVCStructure: public AbstractAVCData
     {
     public:
+        //!
+        //! Unified name for superclass.
+        //!
         typedef AbstractAVCData SuperClass;
 
-        // Constructor
+        //!
+        //! Constructor.
+        //!
         AbstractAVCStructure() : AbstractAVCData() {}
 
-        // Parse a memory area. Return the "valid" flag.
-        virtual bool parse (const void*, size_t);
-        virtual bool parse (AVCParser&) = 0;
+        // Implementation of AbstractAVCData interface.
+        virtual bool parse(const void*, size_t);
+        
+        //!
+        //! Parse the structure.
+        //! Must be reimplemented by subclasses.
+        //! The data are marked as valid or invalid.
+        //! @param [in,out] parser The parser of an AVC stream.
+        //! @return The @link valid @endlink flag.
+        //!
+        virtual bool parse(AVCParser& parser) = 0;
     };
 }

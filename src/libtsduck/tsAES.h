@@ -37,16 +37,18 @@
 
 namespace ts {
 
+    //!
+    //! AES block cipher
+    //!
     class TSDUCKDLL AES: public BlockCipher
     {
     public:
-        // Sizes in bytes
-        static const size_t BLOCK_SIZE = 16;
-        static const size_t MIN_KEY_SIZE = 16;
-        static const size_t MAX_KEY_SIZE = 32;
-        static const size_t MIN_ROUNDS = 10;
-        static const size_t MAX_ROUNDS = 14;
-        static const size_t DEFAULT_ROUNDS = 10; // actually depends on key size
+        static const size_t BLOCK_SIZE = 16;      //!< AES block size in bytes.
+        static const size_t MIN_KEY_SIZE = 16;    //!< AES minimum key size in bytes.
+        static const size_t MAX_KEY_SIZE = 32;    //!< AES maximum key size in bytes.
+        static const size_t MIN_ROUNDS = 10;      //!< AES minimum number of rounds.
+        static const size_t MAX_ROUNDS = 14;      //!< AES maximum number of rounds.
+        static const size_t DEFAULT_ROUNDS = 10;  //!< AES default number of rounds, actually depends on key size.
 
         // Implementation of BlockCipher interface:
         virtual std::string name() const {return "AES";}

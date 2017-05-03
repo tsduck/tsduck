@@ -37,41 +37,99 @@
 
 namespace ts {
 
+    //!
+    //! Abstract interface of block ciphers.
+    //!
     class TSDUCKDLL BlockCipher
     {
     public:
-        // Algorithm name.
+        //!
+        //! Algorithm name (informational only).
+        //! @return The algorithm name.
+        //!
         virtual std::string name() const = 0;
 
-        // Size in bytes of the block used by the algorithm.
+        //!
+        //! Size in bytes of the block used by the algorithm.
+        //! @return The size in bytes of the block used by the algorithm.
+        //!
         virtual size_t blockSize() const = 0;
 
-        // Minimum and maximum key sizes in bytes.
+        //!
+        //! Minimum key sizes in bytes.
+        //! @return The minimum key sizes in bytes.
+        //!
         virtual size_t minKeySize() const = 0;
+
+        //!
+        //! Maximum key sizes in bytes.
+        //! @return The maximum key sizes in bytes.
+        //!
         virtual size_t maxKeySize() const = 0;
 
-        // Check if a size in bytes is a valid key size
-        virtual bool isValidKeySize (size_t) const = 0;
+        //!
+        //! Check if a size in bytes is a valid key size.
+        //! @param [in] size Suggested key size in bytes.
+        //! @return True if @a size is a valid key size for the algorithm.
+        //!
+        virtual bool isValidKeySize(size_t size) const = 0;
 
-        // Minimum, maximum and default number of rounds
+        //!
+        //! Minimum number of rounds for the algorithm.
+        //! @return The minimum number of rounds for the algorithm.
+        //!
         virtual size_t minRounds() const = 0;
+
+        //!
+        //! Maximum number of rounds for the algorithm.
+        //! @return The maximum number of rounds for the algorithm.
+        //!
         virtual size_t maxRounds() const = 0;
+
+        //!
+        //! Default number of rounds for the algorithm.
+        //! @return The default number of rounds for the algorithm.
+        //!
         virtual size_t defaultRounds() const = 0;
 
-        // Schedule a new key. If rounds is zero, the default is used.
-        // Return true on success, false on error.
-        virtual bool setKey (const void* key, size_t key_length, size_t rounds = 0) = 0;
+        //!
+        //! Schedule a new key.
+        //! @param [in] key Address of key value.
+        //! @param [in] key_length Key length in bytes.
+        //! @param [in] rounds Requested number of rounds. If zero, the default is used.
+        //! @return True on success, false on error.
+        //!
+        virtual bool setKey(const void* key, size_t key_length, size_t rounds = 0) = 0;
 
-        // Encryption / decryption in ECB mode.
-        // Return true on success, false on error.
-        virtual bool encrypt (const void* plain, size_t plain_length,
-                              void* cipher, size_t cipher_maxsize,
-                              size_t* cipher_length = 0) = 0;
-        virtual bool decrypt (const void* cipher, size_t cipher_length,
-                              void* plain, size_t plain_maxsize,
-                              size_t* plain_length = 0) = 0;
+        //!
+        //! Encrypt one block of data.
+        //! @param [in] plain Address of plain text.
+        //! @param [in] plain_length Plain text length in bytes.
+        //! @param [out] cipher Address of buffer for cipher text.
+        //! @param [in] cipher_maxsize Size of @a cipher buffer.
+        //! @param [out] cipher_length Returned actual size of cipher text. Ignored if zero.
+        //! @return True on success, false on error.
+        //!
+        virtual bool encrypt(const void* plain, size_t plain_length,
+                             void* cipher, size_t cipher_maxsize,
+                             size_t* cipher_length = 0) = 0;
 
-        // Virtual destructor
+        //!
+        //! Decrypt one block of data.
+        //! @param [in] cipher Address of cipher text.
+        //! @param [in] cipher_length Cipher text length in bytes.
+        //! @param [out] plain Address of buffer for plain text.
+        //! @param [in] plain_maxsize Size of @a plain buffer.
+        //! @param [out] plain_length Returned actual size of plain text. Ignored if zero.
+        //! @return True on success, false on error.
+        //!
+        virtual bool decrypt(const void* cipher, size_t cipher_length,
+                             void* plain, size_t plain_maxsize,
+                             size_t* plain_length = 0) = 0;
+
+        //!
+        //! Virtual destructor.
+        //!
         virtual ~BlockCipher() {}
     };
 }

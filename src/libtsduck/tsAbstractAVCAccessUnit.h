@@ -39,27 +39,40 @@
 
 namespace ts {
 
+    //!
+    //! Base class for AVC access units, aka NALunits.
+    //! AVC is Advanced Video Coding, ISO 14496-10, ITU H.264.
+    //! @see ISO/IEC 14496-10 section 7.3.1
+    //!
     class TSDUCKDLL AbstractAVCAccessUnit: public AbstractAVCData
     {
     public:
+        //!
+        //! Unified name for superclass.
+        //!
         typedef AbstractAVCData SuperClass;
 
-        // Constructor
+        //!
+        //! Constructor.
+        //!
         AbstractAVCAccessUnit();
 
-        // Clear all values
+        // Implementation of AbstractAVCData interface.
         virtual void clear();
+        virtual bool parse(const void*, size_t);
 
-        // Parse a memory area. Return the "valid" flag.
-        virtual bool parse (const void*, size_t);
-
-        // See ISO/IEC 14496-10 section 7.3.1
-        uint8_t forbidden_zero_bit;
-        uint8_t nal_ref_idc;
-        uint8_t nal_unit_type;
+        uint8_t forbidden_zero_bit;  //!< See ISO/IEC 14496-10 section 7.3.1
+        uint8_t nal_ref_idc;         //!< See ISO/IEC 14496-10 section 7.3.1
+        uint8_t nal_unit_type;       //!< See ISO/IEC 14496-10 section 7.3.1
 
     protected:
-        // Parse the body of the binary access unit. Return the "valid" flag.
-        virtual bool parseBody (AVCParser&) = 0;
+        //!
+        //! Parse the body of the binary access unit.
+        //! Must be reimplemented by subclasses.
+        //! The data are marked as valid or invalid.
+        //! @param [in,out] parser The parser of an AVC stream.
+        //! @return The @link valid @endlink flag.
+        //!
+        virtual bool parseBody(AVCParser& parser) = 0;
     };
 }
