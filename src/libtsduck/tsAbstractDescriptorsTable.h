@@ -29,7 +29,6 @@
 //!
 //!  @file
 //!  Base class for MPEG tables containing only a list of descriptors.
-//!  (eg. CAT, TSDT)
 //!
 //----------------------------------------------------------------------------
 
@@ -38,26 +37,42 @@
 #include "tsDescriptorList.h"
 
 namespace ts {
-
+    //!
+    //! Base class for MPEG tables containing only a list of descriptors (eg. CAT, TSDT).
+    //!
     class TSDUCKDLL AbstractDescriptorsTable : public AbstractLongTable
     {
     public:
-        // Public members:
-        DescriptorList descs;
+        DescriptorList descs; //!< List of descriptors.
 
         // Inherited methods
-        virtual void serialize (BinaryTable& table) const;
-        virtual void deserialize (const BinaryTable& table);
+        virtual void serialize(BinaryTable& table) const;
+        virtual void deserialize(const BinaryTable& table);
 
     protected:
-        // Table_id extension (if used by subclass).
-        // When unused (CAT, TSDT), it must be left to the default value 0xFFFF.
+        //!
+        //! Table_id extension.
+        //! When unused (CAT, TSDT), it must be left to the default value 0xFFFF.
+        //!
         uint16_t _tid_ext;
 
-        // Default constructor:
-        AbstractDescriptorsTable (TID tid_, uint16_t tid_ext_, uint8_t version_, bool is_current_);
+        //!
+        //! Constructor for subclasses.
+        //! @param [in] tid Table id.
+        //! @param [in] tid_ext Table id extension.
+        //! @param [in] version Table version number.
+        //! @param [in] is_current True if table is current, false if table is next.
+        //!
+        AbstractDescriptorsTable(TID tid, uint16_t tid_ext, uint8_t version, bool is_current);
 
-        // Constructor from a binary table
-        AbstractDescriptorsTable (TID tid, const BinaryTable& table);
+        //!
+        //! Constructor from a binary table.
+        //! @param [in] tid Table id.
+        //! @param [in] table Binary table to deserialize.
+        //!
+        AbstractDescriptorsTable(TID tid, const BinaryTable& table);
+
+    private:
+        AbstractDescriptorsTable() = delete;
     };
 }

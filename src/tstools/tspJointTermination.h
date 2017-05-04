@@ -39,14 +39,24 @@
 
 namespace ts {
     namespace tsp {
-
+        //!
+        //! Implementation of "Joint Termination" in the Transport stream processor.
+        //!
+        //! This is a subclass of ts::TSP and a superclass of all plugin executors.
+        //!
         class JointTermination: public TSP
         {
         public:
-            // Constructor
-            JointTermination(Options* options, Mutex& global_mutex);
+            //!
+            //! Constructor.
+            //! @param [in] options Transport stream processor command options.
+            //! @param [in,out] global_mutex References to the global mutex to synchronize access to the packet buffer.
+            //!
+            JointTermination(const Options* options, Mutex& global_mutex);
 
-            // Destructor
+            //!
+            //! Destructor
+            //!
             virtual ~JointTermination() {}
 
             // Implementation of "joint termination", inherited from TSP.
@@ -56,16 +66,26 @@ namespace ts {
             virtual bool thisJointTerminated() const {return _jt_completed;}
 
         protected:
-            Mutex& _global_mutex; // TSP global mutex
+            Mutex& _global_mutex; //!< Reference to the TSP global mutex.
 
-            // Account for more processed packets. Return new value.
-            PacketCounter addTotalPackets (size_t incr) {return _total_packets += incr;}
+            //!
+            //! Account for more processed packets in this plugin.
+            //! @param [in] incr Add this number of processed packets.
+            //! @return New total number of processed packets.
+            //!
+            PacketCounter addTotalPackets(size_t incr) {return _total_packets += incr;}
 
-            // Get total number of processed packets
+            //!
+            //! Get total number of processed packets.
+            //! @return The total number of processed packets in this plugin.
+            //!
             PacketCounter totalPackets() const {return _total_packets;}
 
-            // Return packet number after which the "joint termination" must be applied.
-            // If no "joint termination" applies, return the maximum int value.
+            //!
+            //! Get the packet number after which the "joint termination" must be applied.
+            //! @return The packet number after which the "joint termination" must be applied.
+            //! If no "joint termination" applies, return the maximum int value.
+            //!
             PacketCounter totalPacketsBeforeJointTermination() const;
 
         private:

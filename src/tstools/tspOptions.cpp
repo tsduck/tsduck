@@ -317,7 +317,7 @@ ts::tsp::Options::Options (int argc, char *argv[]) :
 int ts::tsp::Options::nextProcOpt (int argc, char *argv[], int index, PluginType& type)
 {
     while (++index < argc) {
-        const std::string arg (argv[index]);
+        const std::string arg(argv[index]);
         if (arg == "-I" || arg == "--input") {
             type = INPUT;
             return index;
@@ -331,7 +331,7 @@ int ts::tsp::Options::nextProcOpt (int argc, char *argv[], int index, PluginType
             return index;
         }
     }
-    return std::min (argc, index);
+    return std::min(argc, index);
 }
 
 
@@ -397,6 +397,6 @@ std::string ts::tsp::Options::PluginTypeName (PluginType type)
         case INPUT:     return "input";
         case OUTPUT:    return "output";
         case PROCESSOR: return "packet processor";
-        default:        return Format ("%d (invalid)", int (type));
+        default:        return Format("%d (invalid)", int(type));
     }
 }

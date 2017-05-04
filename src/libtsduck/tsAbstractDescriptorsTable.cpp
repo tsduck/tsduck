@@ -39,10 +39,10 @@
 // Default constructor:
 //----------------------------------------------------------------------------
 
-ts::AbstractDescriptorsTable::AbstractDescriptorsTable (TID tid_, uint16_t tid_ext_, uint8_t version_, bool is_current_) :
-    AbstractLongTable (tid_, version_, is_current_),
-    descs (),
-    _tid_ext (tid_ext_)
+ts::AbstractDescriptorsTable::AbstractDescriptorsTable(TID tid_, uint16_t tid_ext_, uint8_t version_, bool is_current_) :
+    AbstractLongTable(tid_, version_, is_current_),
+    descs(),
+    _tid_ext(tid_ext_)
 {
     _is_valid = true;
 }
@@ -52,12 +52,12 @@ ts::AbstractDescriptorsTable::AbstractDescriptorsTable (TID tid_, uint16_t tid_e
 // Constructor from a binary table
 //----------------------------------------------------------------------------
 
-ts::AbstractDescriptorsTable::AbstractDescriptorsTable (TID tid, const BinaryTable& table) :
-    AbstractLongTable (tid),
-    descs (),
-    _tid_ext (0xFFFF)
+ts::AbstractDescriptorsTable::AbstractDescriptorsTable(TID tid, const BinaryTable& table) :
+    AbstractLongTable(tid),
+    descs(),
+    _tid_ext(0xFFFF)
 {
-    deserialize (table);
+    deserialize(table);
 }
 
 

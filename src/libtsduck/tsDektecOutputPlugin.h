@@ -36,13 +36,24 @@
 #include "tsPlugin.h"
 
 namespace ts {
-    // Dektec output plugin for tsp.
+    //!
+    //! Dektec output plugin for @c tsp.
+    //!
     class TSDUCKDLL DektecOutputPlugin: public OutputPlugin
     {
     public:
-        // Implementation of plugin API
-        DektecOutputPlugin(TSP*);
+        //!
+        //! Constructor.
+        //! @param [in] tsp Associated callback to @c tsp executable.
+        //!
+        DektecOutputPlugin(TSP* tsp);
+
+        //!
+        //! Destructor.
+        //!
         virtual ~DektecOutputPlugin();
+
+        // Implementation of plugin API
         virtual bool start();
         virtual bool stop();
         virtual bool send(const TSPacket*, size_t);

@@ -36,7 +36,6 @@
 #include "tsPlatform.h"
 
 namespace ts {
-
     //!
     //! Abstract interface of block ciphers.
     //!
@@ -103,6 +102,11 @@ namespace ts {
 
         //!
         //! Encrypt one block of data.
+        //!
+        //! For pure block ciphers such as AES or DES, the plain text and cipher text
+        //! must have the block size of the algorithm. For cipher chainings, the
+        //! acceptable message sizes depend on the chaining mode.
+        //!
         //! @param [in] plain Address of plain text.
         //! @param [in] plain_length Plain text length in bytes.
         //! @param [out] cipher Address of buffer for cipher text.
@@ -116,6 +120,11 @@ namespace ts {
 
         //!
         //! Decrypt one block of data.
+        //!
+        //! For pure block ciphers such as AES or DES, the plain text and cipher text
+        //! must have the block size of the algorithm. For cipher chainings, the
+        //! acceptable message sizes depend on the chaining mode.
+        //!
         //! @param [in] cipher Address of cipher text.
         //! @param [in] cipher_length Cipher text length in bytes.
         //! @param [out] plain Address of buffer for plain text.

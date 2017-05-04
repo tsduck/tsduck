@@ -72,9 +72,9 @@ namespace ts {
 
     private:
         // Unreachable ops
-        SharedLibrary ();
-        SharedLibrary (const SharedLibrary&);
-        SharedLibrary& operator= (const SharedLibrary&);
+        SharedLibrary() = delete;
+        SharedLibrary(const SharedLibrary&) = delete;
+        SharedLibrary& operator=(const SharedLibrary&) = delete;
 
         // Private members
         std::string _filename;

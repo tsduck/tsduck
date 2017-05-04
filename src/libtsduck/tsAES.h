@@ -36,7 +36,6 @@
 #include "tsBlockCipher.h"
 
 namespace ts {
-
     //!
     //! AES block cipher
     //!

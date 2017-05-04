@@ -36,48 +36,76 @@
 #include "tsBinaryTable.h"
 
 namespace ts {
-
+    //!
+    //! Abstract base class for MPEG PSI/SI tables.
+    //!
     class TSDUCKDLL AbstractTable
     {
     public:
-        // Check if the table is valid
+        //!
+        //! Check if the table is valid.
+        //! @return True if the table is valid.
+        //!
         bool isValid() const {return _is_valid;}
 
-        // Invalidate the table. Must be rebuilt.
+        //!
+        //! Invalidate the table.
+        //! This object must be rebuilt.
+        //!
         void invalidate() {_is_valid = false;}
 
-        // Get the table_id
+        //!
+        //! Get the table_id.
+        //! @return The table_id.
+        //!
         TID tableId() const {return _table_id;}
 
-        // This abstract method serializes a table.
-        // The content of the BinaryTable is replaced with a binary
-        // representation (a list of sections) of this object.
-        virtual void serialize (BinaryTable& table) const = 0;
+        //!
+        //! This abstract method serializes a table.
+        //! @param [out] bin A binary table object.
+        //! Its content is replaced with a binary representation of this object.
+        //!
+        virtual void serialize(BinaryTable& bin) const = 0;
 
-        // This abstract method deserializes a binary table.
-        // This object represents the interpretation of the binary table.
-        virtual void deserialize (const BinaryTable& table) = 0;
+        //!
+        //! This abstract method deserializes a binary table.
+        //! In case of success, this object is replaced with the interpreted content of @a bin.
+        //! In case of error, this object is invalidated.
+        //! @param [in] bin A binary table to interpret according to the table subclass.
+        //!
+        virtual void deserialize(const BinaryTable& bin) = 0;
 
-        // Virtual destructor
+        //!
+        //! Virtual destructor
+        //!
         virtual ~AbstractTable () {}
 
     protected:
-        // The table_id can be modified by subclasses only
+        //!
+        //! The table id can be modified by subclasses only
+        //!
         TID _table_id;
 
-        // It is the responsibility of the subclasses to set the valid flag
+        //!
+        //! It is the responsibility of the subclasses to set the valid flag
+        //!
         bool _is_valid;
 
-        // Protected constructor for subclasses
-        AbstractTable (TID tid) : _table_id (tid), _is_valid (false) {}
+        //!
+        //! Protected constructor for subclasses.
+        //! @param [in] tid Table id.
+        //!
+        AbstractTable(TID tid) : _table_id(tid), _is_valid(false) {}
 
     private:
         // Unreachable constructors and operators.
-        AbstractTable ();
-        AbstractTable (const AbstractTable&);
-        AbstractTable& operator= (const AbstractTable&);
+        AbstractTable() = delete;
+        AbstractTable(const AbstractTable&) = delete;
+        AbstractTable& operator=(const AbstractTable&) = delete;
     };
 
-    // Safe pointer for AbstractTable (not thread-safe)
+    //!
+    //! Safe pointer for AbstractTable (not thread-safe)
+    //!
     typedef SafePtr <AbstractTable, NullMutex> AbstractTablePtr;
 }

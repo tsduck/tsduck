@@ -37,25 +37,36 @@
 #include "tsVariable.h"
 
 namespace ts {
-
+    //!
+    //! Representation of an AC-3_descriptor.
+    //! @see ETSI 300 468, D.3.
+    //!
     class TSDUCKDLL AC3Descriptor : public AbstractDescriptor
     {
     public:
         // Public members:
-        Variable<uint8_t> component_type;
-        Variable<uint8_t> bsid;
-        Variable<uint8_t> mainid;
-        Variable<uint8_t> asvc;
-        ByteBlock       additional_info;
+        Variable<uint8_t> component_type;   //!< See ETSI 300 468, D.3.
+        Variable<uint8_t> bsid;             //!< See ETSI 300 468, D.3.
+        Variable<uint8_t> mainid;           //!< See ETSI 300 468, D.3.
+        Variable<uint8_t> asvc;             //!< See ETSI 300 468, D.3.
+        ByteBlock         additional_info;  //!< See ETSI 300 468, D.3.
 
-        // Default constructor:
+        //!
+        //! Default constructor.
+        //!
         AC3Descriptor();
 
-        // Constructor from a binary descriptor
-        AC3Descriptor (const Descriptor&);
+        //!
+        //! Constructor from a binary descriptor
+        //! @param [in] bin A binary descriptor to deserialize.
+        //!
+        AC3Descriptor(const Descriptor& bin);
 
-        // Merge inside this object missing information which can be found in other object
-        void merge (const AC3Descriptor& other);
+        //!
+        //! Merge inside this object missing information which can be found in other object.
+        //! @param [in] other Other object to get missing information from.
+        //!
+        void merge(const AC3Descriptor& other);
 
         // Inherited methods
         virtual void serialize (Descriptor&) const;

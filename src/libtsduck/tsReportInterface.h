@@ -68,7 +68,6 @@ namespace ts {
     class TSDUCKDLL ReportInterface
     {
     public:
-
         //!
         //! Constructor.
         //! The default initial report level is Info.

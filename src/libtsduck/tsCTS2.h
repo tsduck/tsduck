@@ -30,46 +30,44 @@
 //!  @file
 //!  Cipher text Stealing (CTS) mode, alternative 2.
 //!
-//!  Several incompatible designs of CTS exist. This one implements the
-//!  description in
-//!  http://csrc.nist.gov/groups/ST/toolkit/BCM/documents/ciphertext%20stealing%20proposal.pdf
-//!
 //----------------------------------------------------------------------------
 
 #pragma once
 #include "tsCipherChaining.h"
 
 namespace ts {
-
+    //!
+    //!  Cipher text Stealing (CTS) mode, alternative 2.
+    //!
+    //!  Several incompatible designs of CTS exist. This one implements the description in
+    //!  http://csrc.nist.gov/groups/ST/toolkit/BCM/documents/ciphertext%20stealing%20proposal.pdf
+    //!
+    //!  CTS can process a residue. The plain text and cipher text sizes must be
+    //!  equal to or greater than the block size of the underlying block cipher.
+    //!
+    //!  @tparam CIPHER A subclass of ts::BlockCipher, the underlying block cipher.
+    //!
     template <class CIPHER>
     class CTS2: public CipherChainingTemplate<CIPHER>
     {
     public:
-        // Constructor / destructor
+        //!
+        //! Constructor.
+        //!
         CTS2() : CipherChainingTemplate<CIPHER>(1, 1, 1) {}
 
-        // Algorithm name.
-        virtual std::string name() const {return this->algo == 0 ? "" : this->algo->name() + "-CTS2";}
-
-        // Get minimum message size. Shorter data cannot be ciphered in this mode.
+        // Implementation of CipherChaining interface.
         virtual size_t minMessageSize() const {return this->block_size;}
-
-        // Check if the chaining mode can process residue after the last multiple of the block size.
         virtual bool residueAllowed() const {return true;}
 
-        // Encryption in CTS mode.
-        // Plain size must be greater than the block size.
-        // Return true on success, false on error.
-        virtual bool encrypt (const void* plain, size_t plain_length,
-                              void* cipher, size_t cipher_maxsize,
-                              size_t* cipher_length = 0);
-
-        // Decryption in CTS mode.
-        // Cipher size must be greater than the block size.
-        // Return true on success, false on error.
-        virtual bool decrypt (const void* cipher, size_t cipher_length,
-                              void* plain, size_t plain_maxsize,
-                              size_t* plain_length = 0);
+        // Implementation of BlockCipher interface.
+        virtual std::string name() const {return this->algo == 0 ? "" : this->algo->name() + "-CTS2";}
+        virtual bool encrypt(const void* plain, size_t plain_length,
+                             void* cipher, size_t cipher_maxsize,
+                             size_t* cipher_length = 0);
+        virtual bool decrypt(const void* cipher, size_t cipher_length,
+                             void* plain, size_t plain_maxsize,
+                             size_t* plain_length = 0);
     };
 }
 

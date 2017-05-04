@@ -37,24 +37,37 @@
 
 namespace ts {
     namespace tsp {
-
+        //!
+        //! Execution context of a tsp input plugin.
+        //!
         class InputExecutor: public PluginExecutor
         {
         public:
-            // Constructor
+            //!
+            //! Constructor.
+            //! @param [in,out] options Command line options for tsp.
+            //! @param [in] pl_options Command line options for this plugin.
+            //! @param [in] attributes Creation attributes for the thread executing this plugin.
+            //! @param [in,out] global_mutex Global mutex to synchronize access to the packet buffer.
+            //!
             InputExecutor(Options* options,
                           const Options::PluginOptions* pl_options,
                           const ThreadAttributes& attributes,
                           Mutex& global_mutex);
 
-            // Initializes the buffer for all plugin executors, starting at
-            // this input executor. The buffer is pre-loaded with initial data.
-            // The initial bitrate is evaluated. The buffer is propagated
-            // to all executors. Must be executed in synchronous environment,
-            // before starting all executor threads.
-            // Return true on success, false on error.
-
-            bool initAllBuffers (PacketBuffer*);
+            //!
+            //! Initializes the packet buffer for all plugin executors, starting at this input executor.
+            //!
+            //! The buffer is pre-loaded with initial data.
+            //! The initial bitrate is evaluated.
+            //! The buffer is propagated to all executors.
+            //!
+            //! Must be executed in synchronous environment, before starting all executor threads.
+            //!
+            //! @param [out] buffer Packet buffer address.
+            //! @return True on success, false on error.
+            //!
+            bool initAllBuffers(PacketBuffer* buffer);
 
         private:
             InputPlugin*      _input;             // Plugin API

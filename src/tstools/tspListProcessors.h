@@ -28,7 +28,7 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Transport stream processor: @c --list-processors option
+//!  Transport stream processor: @c -\-list-processors option
 //!
 //----------------------------------------------------------------------------
 
@@ -37,7 +37,14 @@
 
 namespace ts {
     namespace tsp {
-        // List all processors
+        //!
+        //! List all tsp processors.
+        //!
+        //! This function is used to implement the <code>tsp -\-list-processors</code> option.
+        //! The list of tsp plugins is output on <code>std::cerr</code>.
+        //!
+        //! @param [in,out] report Where to report errors.
+        //!
         void ListProcessors(ReportInterface& report);
     }
 }

@@ -40,48 +40,83 @@ namespace ts {
     class Descriptor;
     class DescriptorList;
 
+    //!
+    //! Abstract base class for MPEG PSI/SI descriptors.
+    //!
     class TSDUCKDLL AbstractDescriptor
     {
     public:
-        // Check if the descriptor is valid
+        //!
+        //! Check if the descriptor is valid.
+        //! @return True if the descriptor object is valid, false otherwise.
+        //!
         bool isValid() const {return _is_valid;}
 
-        // Invalidate the descriptor. Must be rebuilt.
+        //!
+        //! Invalidate the descriptor.
+        //! The object must be rebuilt.
+        //!
         void invalidate() {_is_valid = false;}
 
-        // Get the descriptor tag.
+        //!
+        //! Get the descriptor tag.
+        //! @return The descriptor tag.
+        //!
         DID tag() const {return _tag;}
 
-        // This abstract method serializes a descriptor.
-        // The content of the Descriptor is replaced with a binary
-        // representation of this object.
-        virtual void serialize (Descriptor&) const = 0;
+        //!
+        //! This abstract method serializes a descriptor.
+        //! @param [out] bin A binary descriptor object.
+        //! Its content is replaced with a binary representation of this object.
+        //!
+        virtual void serialize(Descriptor& bin) const = 0;
 
-        // This abstract method deserializes a binary descriptor.
-        // This object represents the interpretation of the binary descriptor.
-        virtual void deserialize (const Descriptor&) = 0;
+        //!
+        //! This abstract method deserializes a binary descriptor.
+        //! In case of success, this object is replaced with the interpreted content of @a bin.
+        //! In case of error, this object is invalidated.
+        //! @param [in] bin A binary descriptor to interpret according to the descriptor subclass.
+        //!
+        virtual void deserialize(const Descriptor& bin) = 0;
 
-        // Deserialize from a descriptor list.
-        void deserialize (const DescriptorList&, size_t index);
+        //!
+        //! Deserialize a descriptor from a descriptor list.
+        //! In case of success, this object is replaced with the interpreted content of the binary descriptor.
+        //! In case of error, this object is invalidated.
+        //! @param [in] dlist A list of binary descriptors.
+        //! @param [in] index Index of the descriptor to deserialize in @a dlist.
+        //!
+        void deserialize(const DescriptorList& dlist, size_t index);
 
-        // Virtual destructor
+        //!
+        //! Virtual destructor
+        //!
         virtual ~AbstractDescriptor () {}
 
     protected:
-        // The descriptor tag can be modified by subclasses only
+        //!
+        //! The descriptor tag can be modified by subclasses only
+        //!
         DID _tag;
 
-        // It is the responsibility of the subclasses to set the valid flag
+        //!
+        //! It is the responsibility of the subclasses to set the valid flag
+        //!
         bool _is_valid;
 
-        // Protected constructor for subclasses
-        AbstractDescriptor (DID tag) : _tag (tag), _is_valid (false) {}
+        //!
+        //! Protected constructor for subclasses.
+        //! @param [in] tag Descriptor tag.
+        //!
+        AbstractDescriptor(DID tag) : _tag (tag), _is_valid (false) {}
 
     private:
         // Unreachable constructors and operators.
-        AbstractDescriptor ();
+        AbstractDescriptor() = delete;
     };
 
-    // Safe pointer for AbstractDescriptor (not thread-safe)
+    //!
+    //! Safe pointer for AbstractDescriptor (not thread-safe).
+    //!
     typedef SafePtr <AbstractDescriptor, NullMutex> AbstractDescriptorPtr;
 }

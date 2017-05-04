@@ -87,36 +87,33 @@ void ts::tsp::TSPInterruptHandler::handleInterrupt()
 
 int main (int argc, char *argv[])
 {
-    using namespace ts;
-    using namespace ts::tsp;
+    ts::TSPacket::SanityCheck();
 
-    TSPacket::SanityCheck();
-
-    Options opt (argc, argv);
-    CERR.setDebugLevel (opt.debug > 0 ? opt.debug : (opt.verbose ? Severity::Verbose : Severity::Info));
+    ts::tsp::Options opt(argc, argv);
+    CERR.setDebugLevel(opt.debug > 0 ? opt.debug : (opt.verbose ? ts::Severity::Verbose : ts::Severity::Info));
 
     // Process the --list-processors option
 
     if (opt.list_proc) {
-        ListProcessors (opt);
+        ts::tsp::ListProcessors(opt);
         return EXIT_SUCCESS;
     }
 
     // IP initialization required on foolish OS
 
-    if (!IPInitialize (CERR)) {
+    if (!ts::IPInitialize(CERR)) {
         return false;
     }
 
     // Prevent from being killed when writing on broken pipes.
 
-    IgnorePipeSignal();
+    ts::IgnorePipeSignal();
 
     // There is one global mutex for protected operations.
     // The resulting bottleneck of this single mutex is acceptable as long
     // as all protected operations are fast (pointer update, simple arithmetic).
 
-    Mutex global_mutex;
+    ts::Mutex global_mutex;
 
     // Load all plugins and analyze their command line arguments.
     // The first plugin is always the input and the last one is the output.
@@ -125,13 +122,13 @@ int main (int argc, char *argv[])
     // plugin has a hight priority to make room in the buffer, but not as
     // high as the input which must remain the top-most priority?
 
-    InputExecutor* input = new InputExecutor(&opt, &opt.input, ThreadAttributes().setPriority(ThreadAttributes::GetMaximumPriority()), global_mutex);
-    OutputExecutor* output = new OutputExecutor(&opt, &opt.output, ThreadAttributes().setPriority(ThreadAttributes::GetHighPriority()), global_mutex);
+    ts::tsp::InputExecutor* input = new ts::tsp::InputExecutor(&opt, &opt.input, ts::ThreadAttributes().setPriority(ts::ThreadAttributes::GetMaximumPriority()), global_mutex);
+    ts::tsp::OutputExecutor* output = new ts::tsp::OutputExecutor(&opt, &opt.output, ts::ThreadAttributes().setPriority(ts::ThreadAttributes::GetHighPriority()), global_mutex);
     output->ringInsertAfter(input);
 
-    for (Options::PluginOptionsVector::const_iterator it = opt.plugins.begin(); it != opt.plugins.end(); ++it) {
-        PluginExecutor* p = new ProcessorExecutor(&opt, &*it, ThreadAttributes(), global_mutex);
-        p->ringInsertBefore (output);
+    for (ts::tsp::Options::PluginOptionsVector::const_iterator it = opt.plugins.begin(); it != opt.plugins.end(); ++it) {
+        ts::tsp::PluginExecutor* p = new ts::tsp::ProcessorExecutor(&opt, &*it, ts::ThreadAttributes(), global_mutex);
+        p->ringInsertBefore(output);
     }
 
     // Exit on error when initializing the plugins
@@ -141,31 +138,31 @@ int main (int argc, char *argv[])
     // Create an asynchronous error logger. Can be used in multi-threaded
     // context. Set this logger as report method for all executors.
 
-    AsyncReport report(opt.verbose, opt.debug, opt.timed_log);
+    ts::AsyncReport report(opt.verbose, opt.debug, opt.timed_log);
 
-    PluginExecutor* proc = input;
+    ts::tsp::PluginExecutor* proc = input;
     do {
         proc->setReport(&report);
         proc->setDebugLevel(report.debugLevel());
-    } while ((proc = proc->ringNext<PluginExecutor>()) != input);
+    } while ((proc = proc->ringNext<ts::tsp::PluginExecutor>()) != input);
 
     // Allocate a memory-resident buffer of TS packets
 
-    ResidentBuffer<TSPacket> packet_buffer(opt.bufsize / PKT_SIZE);
+    ts::ResidentBuffer<ts::TSPacket> packet_buffer(opt.bufsize / ts::PKT_SIZE);
 
     if (!packet_buffer.isLocked()) {
-        report.verbose(Format("tsp: buffer failed to lock into physical memory (%d: ", packet_buffer.lockErrorCode()) +
-                       ErrorCodeMessage(packet_buffer.lockErrorCode()) +
+        report.verbose(ts::Format("tsp: buffer failed to lock into physical memory (%d: ", packet_buffer.lockErrorCode()) +
+                       ts::ErrorCodeMessage(packet_buffer.lockErrorCode()) +
                        "), risk of real-time issue");
     }
     report.debug("tsp: buffer size: " +
-                 Decimal(packet_buffer.count()) + " TS packets, " +
-                 Decimal(packet_buffer.count() * PKT_SIZE) + " bytes");
+                 ts::Decimal(packet_buffer.count()) + " TS packets, " +
+                 ts::Decimal(packet_buffer.count() * ts::PKT_SIZE) + " bytes");
 
     // Start all processors, except output, in reverse order (input last).
     // Exit application in case of error.
 
-    for (proc = output->ringPrevious<PluginExecutor>(); proc != output; proc = proc->ringPrevious<PluginExecutor>()) {
+    for (proc = output->ringPrevious<ts::tsp::PluginExecutor>(); proc != output; proc = proc->ringPrevious<ts::tsp::PluginExecutor>()) {
         if (!proc->plugin()->start()) {
             return EXIT_FAILURE;
         }
@@ -174,7 +171,7 @@ int main (int argc, char *argv[])
     // Initialize packet buffer in the ring of executors.
     // Exit application in case of error.
 
-    if (!input->initAllBuffers (&packet_buffer)) {
+    if (!input->initAllBuffers(&packet_buffer)) {
         return EXIT_FAILURE;
     }
 
@@ -187,12 +184,12 @@ int main (int argc, char *argv[])
 
     // Use a Ctrl+C interrupt handler
 
-    TSPInterruptHandler interrupt_handler (&report, input);
-    UserInterrupt interrupt_manager (&interrupt_handler, true, true);
+    ts::tsp::TSPInterruptHandler interrupt_handler(&report, input);
+    ts::UserInterrupt interrupt_manager(&interrupt_handler, true, true);
 
     // Create a monitoring thread if required.
 
-    SystemMonitor monitor (&report);
+    ts::SystemMonitor monitor(&report);
     if (opt.monitor) {
         monitor.start();
     }
@@ -202,14 +199,14 @@ int main (int argc, char *argv[])
     proc = input;
     do {
         proc->start();
-    } while ((proc = proc->ringNext<PluginExecutor>()) != input);
+    } while ((proc = proc->ringNext<ts::tsp::PluginExecutor>()) != input);
 
     // Wait for threads to terminate
 
     proc = input;
     do {
         proc->waitForTermination();
-    } while ((proc = proc->ringNext<PluginExecutor>()) != input);
+    } while ((proc = proc->ringNext<ts::tsp::PluginExecutor>()) != input);
 
     // Deallocate all plugins and plugin executor
 
@@ -217,7 +214,7 @@ int main (int argc, char *argv[])
     proc = input;
     do {
         last = proc->ringAlone();
-        PluginExecutor* next = proc->ringNext<PluginExecutor>();
+        ts::tsp::PluginExecutor* next = proc->ringNext<ts::tsp::PluginExecutor>();
         proc->ringRemove();
         delete proc;
         proc = next;

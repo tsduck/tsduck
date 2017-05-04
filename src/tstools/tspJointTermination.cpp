@@ -50,7 +50,7 @@ ts::PacketCounter ts::tsp::JointTermination::_jt_hightest_pkt = 0;
 // Constructor
 //----------------------------------------------------------------------------
 
-ts::tsp::JointTermination::JointTermination(Options* options, Mutex& global_mutex) :
+ts::tsp::JointTermination::JointTermination(const Options* options, Mutex& global_mutex) :
     TSP(options->verbose, options->debug),
     _global_mutex(global_mutex),
     _total_packets(0),

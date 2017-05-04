@@ -36,20 +36,27 @@
 #include "tsAbstractTable.h"
 
 namespace ts {
-
+    //!
+    //! Abstract base class for MPEG PSI/SI tables with long sections.
+    //!
     class TSDUCKDLL AbstractLongTable: public AbstractTable
     {
     public:
         // Common public members:
-        uint8_t version;
-        bool  is_current;
+        uint8_t version;     //!< Table version number.
+        bool    is_current;  //!< True if table is current, false if table is next.
 
     protected:
-        // Protected constructor for subclasses
-        AbstractLongTable (TID tid, uint8_t version_ = 0, bool is_current_ = true) :
-            AbstractTable (tid),
-            version (version_),
-            is_current (is_current_)
+        //!
+        //! Constructor for subclasses.
+        //! @param [in] tid Table id.
+        //! @param [in] version_ Table version number.
+        //! @param [in] is_current_ True if table is current, false if table is next.
+        //!
+        AbstractLongTable(TID tid, uint8_t version_ = 0, bool is_current_ = true) :
+            AbstractTable(tid),
+            version(version_),
+            is_current(is_current_)
         {
         }
     };

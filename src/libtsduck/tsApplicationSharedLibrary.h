@@ -36,23 +36,38 @@
 #include "tsSharedLibrary.h"
 
 namespace ts {
-
+    //!
+    //! Representation of an application shared library.
+    //!
     class TSDUCKDLL ApplicationSharedLibrary: public SharedLibrary
     {
     public:
-        // Constructor. The load order is the following:
-        // - Default system lookup using filename string.
-        // - If filename is a base name (no directory), search it into the
-        //   same directory as the executable.
-        // - Same as previous with specified prefix in base name.
-        // In all cases, if the filename does not contain a suffix, the standard
-        // system suffix (.so or .dll) is added.
-        ApplicationSharedLibrary (const std::string& filename, const std::string& prefix = "", bool permanent = false);
+        //!
+        //! Constructor. 
+        //!
+        //! The load order is the following:
+        //! - Default system lookup using filename string.
+        //! - If filename is a base name (no directory), search it into the same directory as the executable.
+        //! - Same as previous with specified prefix in base name.
+        //! In all cases, if the filename does not contain a suffix, the standard system suffix (.so or .dll) is added.
+        //!
+        //! @param [in] filename Share library file name. Directory and suffix are optional.
+        //! @param [in] prefix Prefix to add to @a filename if the file is not found.
+        //! @param [in] permanent If false (the default), the shared library is unloaded from the current process
+        //! when this object is destroyed. If true, the shared library remains active.
+        //!
+        ApplicationSharedLibrary(const std::string& filename, const std::string& prefix = "", bool permanent = false);
 
-        // The module name is derived from the file name without the prefix
+        //!
+        //! The module name is derived from the file name without the prefix.
+        //! @return The module name.
+        //!
         std::string moduleName() const;
 
-        // Get the prefix.
+        //!
+        //! Get the prefix.
+        //! @return The file name prefix.
+        //!
         std::string prefix() const {return _prefix;}
 
     private:

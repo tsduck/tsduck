@@ -43,9 +43,9 @@
 //----------------------------------------------------------------------------
 
 ts::tsp::PluginExecutor::PluginExecutor(Options* options,
-                                          const Options::PluginOptions* pl_options,
-                                          const ThreadAttributes& attributes,
-                                          Mutex& global_mutex) :
+                                        const Options::PluginOptions* pl_options,
+                                        const ThreadAttributes& attributes,
+                                        Mutex& global_mutex) :
     RingNode(),
     JointTermination(options, global_mutex),
     Thread(attributes),

@@ -37,7 +37,13 @@
 #include "tsByteBlock.h"
 
 namespace ts {
-
+    //!
+    //! Base class of all cipher chaining modes.
+    //!
+    //! Each instance uses a specific block cipher.
+    //! The combination of a block cipher and a chaining mode also implements
+    //! the same interface as ts::BlockCipher.
+    //!
     class TSDUCKDLL CipherChaining: public BlockCipher
     {
     public:
@@ -51,31 +57,57 @@ namespace ts {
         virtual size_t defaultRounds() const;
         virtual bool setKey(const void* key, size_t key_length, size_t rounds = 0);
 
-        // Set a new IV.
+        //!
+        //! Set a new initialization vector.
+        //! @param [in] iv Address of IV.
+        //! @param [in] iv_length IV length in bytes.
+        //! @return True on success, false on error.
+        //!
         virtual bool setIV(const void* iv, size_t iv_length);
 
-        // Minimum and maximum IV sizes in bytes.
+        //!
+        //! Get the minimum IV sizes in bytes.
+        //! @return The minimum IV sizes in bytes.
+        //!
         virtual size_t minIVSize() const {return _iv_min_size;}
+
+        //!
+        //! Get the maximum IV sizes in bytes.
+        //! @return The maximum IV sizes in bytes.
+        //!
         virtual size_t maxIVSize() const {return _iv_max_size;}
 
-        // Get minimum message size. Shorter data cannot be ciphered in this mode.
+        //!
+        //! Get the minimum message size.
+        //! Shorter data cannot be ciphered in this mode.
+        //! @return The minimum message size.
+        //!
         virtual size_t minMessageSize() const = 0;
 
-        // Check if the chaining mode can process residue after the last multiple of the block size.
+        //!
+        //! Check if the chaining mode can process residue after the last multiple of the block size.
+        //! @return True if the chaining mode can process residue after the last multiple of the block size.
+        //!
         virtual bool residueAllowed() const = 0;
 
     protected:
         // Protected fields, for chaining mode subclass implementation.
-        BlockCipher* algo;        // an instance of the block cipher
-        size_t       block_size;  // shortcut for cipher_instance.blockSize()
-        ByteBlock    iv;          // current initialization vector
-        ByteBlock    work;        // temporary working buffer
+        BlockCipher* algo;        //!< An instance of the block cipher.
+        size_t       block_size;  //!< Shortcut for algo->blockSize().
+        ByteBlock    iv;          //!< Current initialization vector.
+        ByteBlock    work;        //!< Temporary working buffer.
 
-        // Constructor for subclasses
-        CipherChaining (BlockCipher* cipher = 0,    // an instance of block cipher
-                        size_t iv_min_blocks = 1,   // min IV size in multiples of cipher block size
-                        size_t iv_max_blocks = 1,   // max IV size in multiples of cipher block size
-                        size_t work_blocks = 1);    // temp work buffer size in multiples of cipher block size
+        //!
+        //! Constructor for subclasses.
+        //! @param [in,out] cipher An instance of block cipher.
+        //! @param [in] iv_min_blocks Minimum IV size in multiples of cipher block size (default: 1).
+        //! @param [in] iv_max_blocks Maximum IV size in multiples of cipher block size (default: 1).
+        //! @param [in] work_blocks Temporary work buffer size in multiples of cipher block size (default: 1).
+        //!
+        CipherChaining (BlockCipher* cipher = 0,
+                        size_t iv_min_blocks = 1,
+                        size_t iv_max_blocks = 1,
+                        size_t work_blocks = 1);
 
     private:
         // Private fields
@@ -87,11 +119,25 @@ namespace ts {
         CipherChaining& operator=(const CipherChaining&) = delete;
     };
 
+    //!
+    //! Base class of all cipher chaining modes, template version.
+    //!
+    //! Each instance uses a specific block cipher.
+    //! The combination of a block cipher and a chaining mode also implements
+    //! the same interface as ts::BlockCipher.
+    //!
+    //! @tparam CIPHER A subclass of ts::BlockCipher, the underlying block cipher.
+    //!
     template <class CIPHER>
     class CipherChainingTemplate: public CipherChaining
     {
     protected:
-        // Constructor for subclasses
+        //!
+        //! Constructor for subclasses.
+        //! @param [in] iv_min_blocks Minimum IV size in multiples of cipher block size (default: 1).
+        //! @param [in] iv_max_blocks Maximum IV size in multiples of cipher block size (default: 1).
+        //! @param [in] work_blocks Temporary work buffer size in multiples of cipher block size (default: 1).
+        //!
         CipherChainingTemplate(size_t iv_min_blocks = 1, // min IV size in multiples of cipher block size
                                size_t iv_max_blocks = 1, // max IV size in multiples of cipher block size
                                size_t work_blocks = 1) : // temp work buffer size in multiples of cipher block size
@@ -99,7 +145,9 @@ namespace ts {
         {
         }
 
-        // Destructor
+        //!
+        //! Destructor.
+        //!
         virtual ~CipherChainingTemplate()
         {
             if (algo != 0) {

@@ -46,6 +46,6 @@ void ts::AbstractDescriptor::deserialize (const DescriptorList& dlist, size_t in
         invalidate();
     }
     else {
-        deserialize (*dlist[index]);
+        deserialize(*dlist[index]);
     }
 }

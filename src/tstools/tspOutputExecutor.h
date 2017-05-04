@@ -37,17 +37,29 @@
 
 namespace ts {
     namespace tsp {
-
+        //!
+        //! Execution context of a tsp output plugin.
+        //!
         class OutputExecutor: public PluginExecutor
         {
         public:
-            // Constructor
+            //!
+            //! Constructor.
+            //! @param [in,out] options Command line options for tsp.
+            //! @param [in] pl_options Command line options for this plugin.
+            //! @param [in] attributes Creation attributes for the thread executing this plugin.
+            //! @param [in,out] global_mutex Global mutex to synchronize access to the packet buffer.
+            //!
             OutputExecutor(Options* options,
                            const Options::PluginOptions* pl_options,
                            const ThreadAttributes& attributes,
                            Mutex& global_mutex);
 
-            // Access the shared library API
+            //!
+            //! Access the shared library API.
+            //! Override ts::tsp::PluginExecutor::plugin() with a specialized returned class.
+            //! @return Address of the plugin interface.
+            //!
             OutputPlugin* plugin() {return _output;}
 
         private:

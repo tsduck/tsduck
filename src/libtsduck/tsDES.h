@@ -36,14 +36,15 @@
 #include "tsBlockCipher.h"
 
 namespace ts {
-
+    //!
+    //! DES block cipher
+    //!
     class TSDUCKDLL DES: public BlockCipher
     {
     public:
-        // Sizes in bytes
-        static const size_t BLOCK_SIZE = 8;
-        static const size_t KEY_SIZE = 8;
-        static const size_t ROUNDS = 16;
+        static const size_t BLOCK_SIZE = 8;  //!< DES block size in bytes.
+        static const size_t KEY_SIZE = 8;    //!< DES key size in bytes.
+        static const size_t ROUNDS = 16;     //!< DES number of rounds.
 
         // Implementation of BlockCipher interface:
         virtual std::string name() const {return "DES";}

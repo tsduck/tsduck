@@ -37,41 +37,76 @@
 #include "tsMPEG.h"
 
 namespace ts {
-
-    // See ETSI TS 102 366 for the specification and encoding of AC-3 and Enhanced-AC-3.
-
-    // An AC3Attributes object is built by transmitting audio frames from
-    // PES payloads. Initially, an AC3Attributes object is invalid.
-
+    //!
+    //! AC-3 (DD) and Enhanced-AC-3 (DD+) audio attributes
+    //!
+    //! See ETSI TS 102 366 for the specification and encoding of AC-3 and Enhanced-AC-3.
+    //!
+    //! An AC3Attributes object is built by transmitting audio frames from
+    //! PES payloads. Initially, an AC3Attributes object is invalid.
+    //!
     class TSDUCKDLL AC3Attributes: public AbstractAudioVideoAttributes
     {
     public:
         // Implementation of abstract methods.
         // The "binary data" is an audio frame or PES payload.
-        virtual bool moreBinaryData (const void*, size_t);
-        virtual operator std::string () const;
+        virtual bool moreBinaryData(const void*, size_t);
+        virtual operator std::string() const;
 
-        // Check if this is Enhanced-AC-3
+        //!
+        //! Check if this is Enhanced-AC-3.
+        //! @return True for Enhanced-AC-3, false for AC-3.
+        //!
         bool isEnhancedAC3() const {return _is_valid && _eac3;}
 
-        // Bitstream identification ("bsid"), see ETSI TS 102 366
+        //!
+        //! Bitstream identification ("bsid").
+        //! @return The bitstream identification ("bsid"), see ETSI TS 102 366.
+        //!
         int bitstreamId() const {return _is_valid ? _bsid : 0;}
 
-        // Bitstream mode ("bsmod", metadata info), see ETSI TS 102 366
+        //!
+        //! Bitstream mode ("bsmod", metadata info).
+        //! @return The bitstream mode ("bsmod", metadata info), see ETSI TS 102 366.
+        //!
         int bitstreamMode() const {return _is_valid ? _bsmod : 0;}
+
+        //!
+        //! String representation of bitstream mode.
+        //! @return The string representation of bitstream mode.
+        //! @see bitstreamMode()
+        //!
         std::string bitstreamModeDescription() const;
 
-        // Audio coding mode ("acmod"), see ETSI TS 102 366
+        //!
+        //! Audio coding mode ("acmod").
+        //! @return The audio coding mode ("acmod"), see ETSI TS 102 366.
+        //!
         int audioCodingMode() const {return _is_valid ? _acmod : 0;}
+
+        //!
+        //! String representation of audio coding mode.
+        //! @return The string representation of audio coding mode.
+        //! @see audioCodingMode()
+        //!
         std::string audioCodingDescription() const;
 
-        // Sampling frequency in Hz
+        //!
+        //! Sampling frequency in Hz.
+        //! @return The sampling frequency in Hz.
+        //!
         int samplingFrequency() const {return _is_valid ? _sampling_freq : 0;}
 
-        // Check if this is Dolby Surround
+        //!
+        //! Check if this is Dolby Surround.
+        //! @return True if this is Dolby Surround.
+        //!
         bool dolbySurround() const {return _is_valid && _surround;}
 
-        // Rebuild a component_type for AC-3 descriptors
+        //!
+        //! Rebuild a component_type for AC-3 descriptors.
+        //! @return The component_type value for an AC-3 descriptor. See ETSI 300 468 V1.9.1, annex D.1.
+        //!
         uint8_t componentType() const;
 
     private:

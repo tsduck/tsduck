@@ -39,62 +39,81 @@
 #include "tsDescriptorList.h"
 
 namespace ts {
-
+    //!
+    //! Abstract base class for tables containing a list of transport stream descriptions.
+    //! Common code for BAT and NIT.
+    //!
     class TSDUCKDLL AbstractTransportListTable : public AbstractLongTable
     {
     public:
-        // List of DescriptorList's, indexed by TransportStreamId.
+        //!
+        //! List of DescriptorList's, indexed by TransportStreamId.
+        //!
         typedef std::map <TransportStreamId, DescriptorList> TransportMap;
 
-        // NIT/BAT common public members:
-        DescriptorList descs;       // top-level descriptor list
-        TransportMap   transports;  // key=onid/tsid, value=descriptor_list
-
-        // Section serialization "hint". Used in serialize() only.
-        // Indicate in which section a TS should be preferably serialized.
-        // When unspecified for a TS, the corresponding TS description is
-        // serialized in an arbitrary section.
+        //!
+        //! Map of section serialization "hint".
+        //! Used in serialize() only.
+        //! Indicate in which section a TS should be preferably serialized.
+        //! When unspecified for a TS, the corresponding TS description is
+        //! serialized in an arbitrary section.
+        //!
         typedef std::map <TransportStreamId, int> SectionHintsMap;
-        SectionHintsMap section_hints;
+
+        // NIT/BAT common public members:
+        DescriptorList  descs;          //!< Top-level descriptor list.
+        TransportMap    transports;     //!< Map of TS descriptions, key=onid/tsid, value=descriptor_list.
+        SectionHintsMap section_hints;  //!< Section serialization hints by TS.
 
         // Inherited methods
         virtual void serialize (BinaryTable& table) const;
         virtual void deserialize (const BinaryTable& table);
 
     protected:
-        // Interpretation of TID-extension differs between NIT and BAT
+        //!
+        //! Table id extension.
+        //! Interpretation of TID-extension differs between NIT and BAT.
+        //!
         uint16_t _tid_ext;
 
-        // Default constructor
-        AbstractTransportListTable (TID tid_, uint16_t tid_ext_, uint8_t version_, bool is_current_);
+        //!
+        //! Constructor for subclasses.
+        //! @param [in] tid Table id.
+        //! @param [in] tid_ext Table id extension.
+        //! @param [in] version Table version number.
+        //! @param [in] is_current True if table is current, false if table is next.
+        //!
+        AbstractTransportListTable(TID tid, uint16_t tid_ext, uint8_t version, bool is_current);
 
-        // Constructor from a binary table
-        AbstractTransportListTable (TID tid, const BinaryTable& table);
+        //!
+        //! Constructor from a binary table.
+        //! @param [in] tid Table id.
+        //! @param [in] table Binary table to deserialize.
+        //!
+        AbstractTransportListTable(TID tid, const BinaryTable& table);
 
     private:
         typedef std::set <TransportStreamId> TransportStreamIdSet;
 
         // Add a new section to a table being serialized.
         // Session number is incremented. Data and remain are reinitialized.
-        void addSection (BinaryTable& table,
-                         int& section_number,
-                         uint8_t* payload,
-                         uint8_t*& data,
-                         size_t& remain) const;
+        void addSection(BinaryTable& table,
+                        int& section_number,
+                        uint8_t* payload,
+                        uint8_t*& data,
+                        size_t& remain) const;
 
         // Same as previous, while being inside the transport loop.
-        void addSection (BinaryTable& table,
-                         int& section_number,
-                         uint8_t* payload,
-                         uint8_t*& tsll_addr,
-                         uint8_t*& data,
-                         size_t& remain) const;
+        void addSection(BinaryTable& table,
+                        int& section_number,
+                        uint8_t* payload,
+                        uint8_t*& tsll_addr,
+                        uint8_t*& data,
+                        size_t& remain) const;
 
         // Select a transport stream for serialization in current section.
         // If found, set ts_id, remove the ts id from the set and return true.
         // Otherwise, return false.
-        bool getNextTransport (TransportStreamIdSet& ts_set, 
-                               TransportStreamId& ts_id,
-                               int section_number) const;
+        bool getNextTransport(TransportStreamIdSet& ts_set, TransportStreamId& ts_id, int section_number) const;
     };
 }
