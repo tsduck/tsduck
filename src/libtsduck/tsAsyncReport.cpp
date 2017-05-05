@@ -103,10 +103,10 @@ void ts::AsyncReport::main ()
 {
     LogMessagePtr msg;
 
-    while (_log_queue.dequeue (msg) && !msg->terminate) {
+    while (_log_queue.dequeue(msg) && !msg->terminate) {
 
         // Invoke the report handler
-        _handler->handleMessage (msg->severity, msg->message);
+        _handler->handleMessage(msg->severity, msg->message);
 
         // Abort application on fatal error
         if (msg->severity == Severity::Fatal) {
@@ -115,7 +115,7 @@ void ts::AsyncReport::main ()
     }
 
     if (_max_severity >= Severity::Debug) {
-        _handler->handleMessage (Severity::Debug, "Report logging thread terminated");
+        _handler->handleMessage(Severity::Debug, "Report logging thread terminated");
     }
 }
 
@@ -134,11 +134,11 @@ void ts::AsyncReport::setMessageHandler (ReportHandler* h)
 // Default report handler
 //----------------------------------------------------------------------------
 
-void ts::AsyncReport::DefaultHandler::handleMessage (int severity, const std::string& msg)
+void ts::AsyncReport::DefaultHandler::handleMessage(int severity, const std::string& msg)
 {
     std::cerr << "* ";
     if (_report._time_stamp) {
         std::cerr << ts::Time::CurrentLocalTime().format(ts::Time::DATE | ts::Time::TIME) << " - ";
     }
-    std::cerr << Severity::Header (severity) << msg << std::endl;
+    std::cerr << Severity::Header(severity) << msg << std::endl;
 }

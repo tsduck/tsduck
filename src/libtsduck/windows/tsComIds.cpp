@@ -26,10 +26,6 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //-----------------------------------------------------------------------------
-//
-//  Windows Common Object Model (COM) identifiers. Windows-specific
-//
-//-----------------------------------------------------------------------------
 
 #define TS_COMIDS_DEFINE 1
 #include "tsComIds.h"

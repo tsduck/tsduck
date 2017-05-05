@@ -39,22 +39,25 @@
 namespace ts {
 
     //!
-    //! A singleton implementing ReportInterface on std::cerr without synchronization
+    //! A singleton implementing ReportInterface on std::cerr without synchronization.
+    //!
+    //! This class is a singleton. Use static Instance() method to access the single instance.
     //!
     class TSDUCKDLL CerrReport : public ReportInterface
     {
-        // This class is a singleton. Use static Instance() method.
         tsDeclareSingleton(CerrReport);
 
     public:
-        // Destructor
+        //! Destructor
         virtual ~CerrReport();
 
     protected:
-        // String interface implementation
+        // ReportInterface implementation
         virtual void writeLog (int severity, const std::string& msg);
     };
 }
 
-// Macro for fast access to singleton
+//!
+//! Macro for fast access to the ts::CerrReport singleton.
+//!
 #define CERR (*ts::CerrReport::Instance())

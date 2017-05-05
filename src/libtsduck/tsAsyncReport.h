@@ -28,7 +28,7 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Asynchronous message report interface.
+//!  Asynchronous message report.
 //!
 //----------------------------------------------------------------------------
 
@@ -40,28 +40,67 @@
 #include "tsThread.h"
 
 namespace ts {
-
+    //!
+    //! Asynchronous message report.
+    //!
+    //! This class logs messages asynchronously. Each time a message is logged,
+    //! the message is queued into an internal buffer and control returns immediately
+    //! to the caller without waiting. The messages are logged later in one single
+    //! low-priority thread.
+    //!
+    //! In case of a huge amount of errors, there is no avalanche effect. If a caller
+    //! cannot immediately enqueue a message or if the internal queue of messages is
+    //! full, the message is dropped. In other words, reporting messages is guaranteed
+    //! to never block, slow down or crash the application. Messages are dropped when
+    //! necessary to avoid that kind of problem.
+    //!
+    //! Messages are displayed on the standard error device by default.
+    //!
     class TSDUCKDLL AsyncReport : public ReportInterface, private Thread
     {
     public:
-        // Constructor/destructor
-        AsyncReport (bool verbose = false, int debug_level = 0, bool time_stamp = false);
-        virtual ~AsyncReport ();
+        //!
+        //! Constructor.
+        //! The default initial report level is Info.
+        //! @param [in] verbose If true, set initial report level to Verbose.
+        //! @param [in] debug_level If greater than zero, set initial report to that level and ignore @a verbose.
+        //! @param [in] time_stamp If true, time stamps are added to all messages.
+        //!
+        AsyncReport(bool verbose = false, int debug_level = 0, bool time_stamp = false);
 
-        // Set a new ReportHandler
-        void setMessageHandler (ReportHandler*);
+        //!
+        //! Destructor.
+        //!
+        virtual ~AsyncReport();
 
-        // Activate / deactivate time stamps in log messages
-        void setTimeStamp (bool on) {_time_stamp = on;}
-        bool getTimeStamp () const {return _time_stamp;}
+        //!
+        //! Set a new ReportHandler.
+        //! @param [in] handler Address of a new report handler. When zero, revert to the default
+        //! handler (log to standard error).
+        //!
+        void setMessageHandler(ReportHandler* handler);
 
-        // Synchronously terminate the report thread.
-        // Automatically performed in destructor.
+        //!
+        //! Activate or deactivate time stamps in log messages
+        //! @param [in] on If true, time stamps are added to all messages.
+        //!
+        void setTimeStamp(bool on) { _time_stamp = on; }
+
+        //!
+        //! Check if time stamps are added in log messages.
+        //! @return True if time stamps are added in log messages.
+        //!
+        bool getTimeStamp() const { return _time_stamp; }
+
+        //!
+        //! Synchronously terminate the report thread.
+        //! Automatically performed in destructor.
+        //!
         void terminate();
 
     protected:
-        // String interface implementation
-        virtual void writeLog (int severity, const std::string& msg);
+        // ReportInterface implementation.
+        virtual void writeLog(int severity, const std::string& msg);
 
     private:
         AsyncReport(const AsyncReport&) = delete;
@@ -95,8 +134,8 @@ namespace ts {
         private:
             const AsyncReport& _report;
         public:
-            DefaultHandler (const AsyncReport& report): _report (report) {}
-            virtual void handleMessage (int, const std::string&);
+            DefaultHandler(const AsyncReport& report) : _report(report) {}
+            virtual void handleMessage(int, const std::string&);
         };
 
         // Private members:

@@ -36,39 +36,70 @@
 #include "tsPlatform.h"
 
 namespace ts {
-
+    //!
+    //! Shared library handling (.so on UNIX, DLL on Windows).
+    //!
     class TSDUCKDLL SharedLibrary
     {
     public:
-        // Extension of shared library file names
-        // (".so" on UNIX, ".dll" on Windows)
+        //!
+        //! File name extension of shared library file names (".so" on UNIX, ".dll" on Windows).
+        //!
         static const char* const Extension;
 
-        // Constructor: Load a shared library
-        SharedLibrary (const std::string& filename, bool permanent = false);
+        //!
+        //! Constructor: Load a shared library
+        //! @param [in] filename Shared library file name.
+        //! @param [in] permanent If false (the default), the shared library is unloaded from the current process
+        //! when this object is destroyed. If true, the shared library remains active.
+        //!
+        SharedLibrary(const std::string& filename, bool permanent = false);
 
-        // Destructor: Unload the shared library if permanent was false.
-        ~SharedLibrary ();
+        //!
+        //! Destructor.
+        //! Unload the shared library if @a permanent was false.
+        //!
+        ~SharedLibrary();
 
-        // Check if the library was successfully loaded.
+        //!
+        //! Check if the library was successfully loaded.
+        //! @return True if the library was successfully loaded.
+        //!
         bool isLoaded() const {return _is_loaded;}
 
-        // Return a message describing the constructor error (if isLoaded() == false)
+        //!
+        //! Return a message describing the constructor error.
+        //! Useful when isLoaded() == false.
+        //! @return An error message.
+        //!
         const std::string& errorMessage() const {return _error;}
 
-        // Return actual file name of shared library.
+        //!
+        //! Return actual file name of shared library.
+        //! @return The actual file name of shared library.
+        //!
         const std::string& fileName() const {return _filename;}
 
-        // Get the value of a symbol.
-        // Return 0 on error.
-        void* getSymbol (const std::string& name) const;
+        //!
+        //! Get the value of an exported symbol inside the shared library.
+        //! @param [in] name Symbol name.
+        //! @return The symbol value or 0 on error. When the symbol is an
+        //! address, the returned value is a virtual memory address inside
+        //! the current process.
+        //!
+        void* getSymbol(const std::string& name) const;
 
     protected:
-        // Try to load an alternate file if the shared library is not yet loaded.
-        void load (const std::string& filename);
+        //!
+        //! Try to load an alternate file if the shared library is not yet loaded.
+        //! @param [in] filename Shared library file name.
+        //!
+        void load(const std::string& filename);
 
-        // Force unload, even if permanent
-        void unload ();
+        //!
+        //! Force unload, even if permanent
+        //!
+        void unload();
 
     private:
         // Unreachable ops

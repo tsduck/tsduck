@@ -57,10 +57,12 @@
 #pragma once
 #include "tsPlatform.h"
 
+#if !defined(DOXYGEN) // This file is impossible to correctly document with doxygen.
+
 // Declaration and definition of application-specific GUID's.
 // The definition is expanded in tsComIds.cpp.
 
-#ifdef TS_COMIDS_DEFINE
+#if defined(TS_COMIDS_DEFINE)
 #define TS_APP_GUID(name, l, w1, w2, b1, b2, b3, b4, b5, b6, b7, b8) \
     namespace ts {TSDUCKDLL extern const ::GUID name;} \
     const ::GUID ts::name = {l, w1, w2, {b1, b2, b3, b4, b5, b6, b7, b8}}
@@ -73,7 +75,7 @@
 // Declaration and definition of Windows-defined GUID's
 // The definition is expanded in tsComIds.cpp.
 
-#ifdef TS_COMIDS_DEFINE
+#if defined(TS_COMIDS_DEFINE)
 #define TS_WIN_GUID(name, l, w1, w2, b1, b2, b3, b4, b5, b6, b7, b8) \
     extern "C" const ::GUID name = {l, w1, w2, {b1, b2, b3, b4, b5, b6, b7, b8}}
 #else
@@ -1086,3 +1088,5 @@ TS_WIN_GUID (TIME_FORMAT_FRAME, 0x7b785570, 0x8c82, 0x11cf, 0xbc, 0x0c, 0x00, 0x
 TS_WIN_GUID (TIME_FORMAT_MEDIA_TIME, 0x7b785574, 0x8c82, 0x11cf, 0xbc, 0x0c, 0x00, 0xaa, 0x00, 0xac, 0x74, 0xf6);
 TS_WIN_GUID (TIME_FORMAT_NONE, 0x00000000, 0x0000, 0x0000, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00);
 TS_WIN_GUID (TIME_FORMAT_SAMPLE, 0x7b785572, 0x8c82, 0x11cf, 0xbc, 0x0c, 0x00, 0xaa, 0x00, 0xac, 0x74, 0xf6);
+
+#endif // DOXYGEN

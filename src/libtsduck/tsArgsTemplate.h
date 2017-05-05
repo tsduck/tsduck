@@ -36,7 +36,7 @@
 //----------------------------------------------------------------------------
 
 template <typename INT>
-void ts::Args::getIntValue(INT& value, const char* name, const INT& def_value, size_t index) const throw (ArgsError)
+void ts::Args::getIntValue(INT& value, const char* name, const INT& def_value, size_t index) const
 {
     const IOption& opt (getIOption(name));
     if (index >= opt.values.size() ||
@@ -47,7 +47,7 @@ void ts::Args::getIntValue(INT& value, const char* name, const INT& def_value, s
 }
 
 template <typename INT>
-INT ts::Args::intValue(const char* name, const INT& def_value, size_t index) const throw (ArgsError)
+INT ts::Args::intValue(const char* name, const INT& def_value, size_t index) const
 {
     INT value = def_value;
     getIntValue (value, name, def_value, index);
@@ -60,7 +60,7 @@ INT ts::Args::intValue(const char* name, const INT& def_value, size_t index) con
 //----------------------------------------------------------------------------
 
 template <typename INT>
-void ts::Args::getIntValues(std::vector<INT>& values, const char* name) const throw (ArgsError)
+void ts::Args::getIntValues(std::vector<INT>& values, const char* name) const
 {
     INT value;
     const IOption& opt (getIOption(name));
@@ -81,7 +81,7 @@ void ts::Args::getIntValues(std::vector<INT>& values, const char* name) const th
 //----------------------------------------------------------------------------
 
 template <typename INT>
-void ts::Args::getIntValues(std::set<INT>& values, const char* name) const throw (ArgsError)
+void ts::Args::getIntValues(std::set<INT>& values, const char* name) const
 {
     INT value;
     const IOption& opt(getIOption(name));

@@ -38,7 +38,7 @@
 
 namespace ts {
     //!
-    //! AC-3 (DD) and Enhanced-AC-3 (DD+) audio attributes
+    //! AC-3 (DD) and Enhanced-AC-3 (DD+) audio attributes.
     //!
     //! See ETSI TS 102 366 for the specification and encoding of AC-3 and Enhanced-AC-3.
     //!

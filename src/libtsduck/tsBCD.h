@@ -37,31 +37,40 @@
 
 namespace ts {
 
-    // Return the decimal value of a BCD-encoded byte.
-
-    TSDUCKDLL inline int DecodeBCD (uint8_t b)
+    //!
+    //! Return the decimal value of a Binary Coded Decimal (BCD) encoded byte.
+    //! @param [in] b A byte containing a BCD-encoded value.
+    //! @return The decoded value in the range 0 to 99.
+    //!
+    TSDUCKDLL inline int DecodeBCD(uint8_t b)
     {
         return 10 * (b >> 4) + (b & 0x0F);
     }
 
-    // Return a one-byte BCD representation of an integer (must be in 0..99)
-
-    TSDUCKDLL inline uint8_t EncodeBCD (int i)
+    //!
+    //! Return a one-byte Binary Coded Decimal (BCD) representation of an integer
+    //! @param [in] i The integer to encode (must be in 0..99).
+    //! @return One byte containing the BCD-encoded value of @a i.
+    //!
+    TSDUCKDLL inline uint8_t EncodeBCD(int i)
     {
         return (((i / 10) % 10) << 4) | (i % 10);
     }
 
-    // Return the decimal value of a BCD-encoded string, on bcd_count digits
-    // (bcd_count/2 bytes). Note that bcd_count can be even.
+    //!
+    //! Return the decimal value of a Binary Coded Decimal (BCD) encoded string.
+    //! @param [in] bcd Address of an array of bytes.
+    //! @param [in] bcd_count Number of BCD digits (@a bcd_count / 2 bytes). Note that @a bcd_count can be even.
+    //! @return The decoded integer value.
+    //! 
+    TSDUCKDLL uint32_t DecodeBCD(const uint8_t* bcd, size_t bcd_count);
 
-    TSDUCKDLL uint32_t DecodeBCD (const uint8_t* bcd, size_t bcd_count);
-
-    // Decode a variable-length BCD-encoded integer.
-    // Return a string representation in str.
-    // The BCD-encoded data start at bcd, on bcd_count digits
-    // (bcd_count/2 bytes).
-    // The 'decimal' value indicates the position of the virtual decimal
-    // point (-1: none, 0: before first digit, 1: after first digit, etc.)
-
-    TSDUCKDLL void BCDToString (std::string &str, const uint8_t* bcd, size_t bcd_count, int decimal);
+    //!
+    //! Decode a string representation of a variable-length Binary Coded Decimal (BCD) encoded integer.
+    //! @param [out] str Returned string representation.
+    //! @param [in] bcd Address of an array of bytes.
+    //! @param [in] bcd_count Number of BCD digits (@a bcd_count / 2 bytes). Note that @a bcd_count can be even.
+    //! @param [in] decimal Indicates the position of the virtual decimal point (-1: none, 0: before first digit, 1: after first digit, etc.)
+    //!
+    TSDUCKDLL void BCDToString(std::string &str, const uint8_t* bcd, size_t bcd_count, int decimal);
 }

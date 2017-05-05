@@ -37,10 +37,12 @@
 #include "tsMPEG.h"
 
 namespace ts {
-
-    // An AudioAttributes object is built by transmitting audio frames from
-    // PES payloads. Initially, an AudioAttributes object is invalid.
-
+    //!
+    //! Audio attributes for MPEG-1 / MPEG-2 audio.
+    //!
+    //! An AudioAttributes object is built by transmitting audio frames from
+    //! PES payloads. Initially, an AudioAttributes object is invalid.
+    //!
     class TSDUCKDLL AudioAttributes: public AbstractAudioVideoAttributes
     {
     public:
@@ -49,27 +51,54 @@ namespace ts {
         virtual bool moreBinaryData (const void*, size_t);
         virtual operator std::string () const;
 
-        // MPEG audio layer (1-3, 0 if unknown)
+        //!
+        //! MPEG audio layer.
+        //! @return The MPEG audio layer (1-3, 0 if unknown).
+        //!
         int layer() const {return _is_valid ? _layer : 0;}
+
+        //!
+        //! MPEG audio layer name.
+        //! @return A string describing the MPEG audio layer.
+        //!
         std::string layerName() const;
 
-        // Bitrate in b/s (0 if variable bitrate)
+        //!
+        //! Bitrate in bits/second.
+        //! @return The bitrate in bits/second (0 if variable bitrate).
+        //!
         BitRate bitrate() const {return _is_valid ? 1024 * _bitrate : 0;}
 
-        // Sampling frequency in Hz
+        //!
+        //! Sampling frequency in Hz.
+        //! @return The sampling frequency in Hz.
+        //!
         int samplingFrequency() const {return _is_valid ? _sampling_freq : 0;}
 
-        // Mono/stereo modes (see ISO 11172-3 or use stereoDescription)
+        //!
+        //! Get the mono/stereo mode.
+        //! @return The mono/stereo mode (see ISO 11172-3).
+        //!
         int stereoMode() const {return _is_valid ? _mode : 0;}
+
+        //!
+        //! Get the mono/stereo mode extension.
+        //! @return The mono/stereo mode extension (see ISO 11172-3).
+        //!
         int stereoModeExtension() const {return _is_valid ? _mode_extension : 0;}
+
+        //!
+        //! Mono/stereo mode name.
+        //! @return A string describing the mono/stereo mode .
+        //!
         std::string stereoDescription() const;
 
     private:
-        uint32_t  _header;          // Last audio frame header
-        int     _layer;
-        BitRate _bitrate;         // In kb/s
-        int     _sampling_freq;   // In Hz
-        int     _mode;            // See ISO 11172-3
-        int     _mode_extension;  // See ISO 11172-3
+        uint32_t _header;          // Last audio frame header
+        int      _layer;
+        BitRate  _bitrate;         // In kb/s
+        int      _sampling_freq;   // In Hz
+        int      _mode;            // See ISO 11172-3
+        int      _mode_extension;  // See ISO 11172-3
     };
 }

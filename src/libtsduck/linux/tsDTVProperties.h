@@ -39,44 +39,102 @@
 
 namespace ts {
 
+    //!
+    //! Encapsulation of Linux S2API (new DVB API) property lists.
+    //!
     class TSDUCKDLL DTVProperties
     {
     public:
-        // Constructor / destructor
+        //!
+        //! Default constructor.
+        //!
         DTVProperties();
+
+        //!
+        //! Destructor.
+        //!
         virtual ~DTVProperties();
 
-        // Get the number of properties in the buffer.
-        size_t count() const {return size_t (_prop_head.num);}
+        //!
+        //! Get the number of properties in the buffer.
+        //!
+        size_t count() const
+        {
+            return size_t(_prop_head.num);
+        }
 
-        // Add a new property. Return index in property buffer.
-        size_t add (uint32_t cmd, uint32_t data = -1);
+        //!
+        //! Add a new property.
+        //! @param [in] cmd Command code.
+        //! @param [in] data Optional command data.
+        //! @return The index in property buffer.
+        //!
+        size_t add(uint32_t cmd, uint32_t data = -1);
 
-        // Search a property in the buffer, return index in buffer or count() if not found.
-        size_t search (uint32_t cmd) const;
+        //!
+        //! Search a property in the buffer.
+        //! @param [in] cmd Command code.
+        //! @return The index of @a cmd in buffer or count() if not found.
+        //!
+        size_t search(uint32_t cmd) const;
 
-        // Get the value of a property in the buffer or UNKNOWN if not found
-        uint32_t getByCommand (uint32_t cmd) const;
+        //!
+        //! Get the value of a property in the buffer.
+        //! @param [in] cmd Command code.
+        //! @return The data value of @a cmd in buffer or @link UNKNOWN @endlink if not found.
+        //!
+        uint32_t getByCommand(uint32_t cmd) const;
 
-        // Get the value of the property at specified index or UNKNOWN if out of range
-        uint32_t getByIndex (size_t index) const {return index >= size_t (_prop_head.num) ? UNKNOWN : _prop_buffer[index].u.data;}
+        //!
+        //! Get the value of the property at a specified index.
+        //! @param [in] index Index in buffer.
+        //! @return The data value at @a index or @link UNKNOWN @endlink if out of range.
+        //!
+        uint32_t getByIndex(size_t index) const
+        {
+            return index >= size_t(_prop_head.num) ? UNKNOWN : _prop_buffer[index].u.data;
+        }
 
-        // Get the address of the dtv_properties structure for ioctl() call
-        const ::dtv_properties* getIoctlParam() const {return &_prop_head;}
-        ::dtv_properties* getIoctlParam() {return &_prop_head;}
+        //!
+        //! Get the address of the @c dtv_properties structure for @c ioctl() call.
+        //! @return The address of the @c dtv_properties structure.
+        //!
+        const ::dtv_properties* getIoctlParam() const
+        {
+            return &_prop_head;
+        }
+        
+        //!
+        //! Get the address of the @c dtv_properties structure for @c ioctl() call.
+        //! @return The address of the @c dtv_properties structure.
+        //!
+        ::dtv_properties* getIoctlParam()
+        {
+            return &_prop_head;
+        }
 
-        // Returned value for unknown data
+        //!
+        //! Returned value for unknown data.
+        //!
         static const uint32_t UNKNOWN = ~0;
 
-        // Report the content of the object (for debug purpose)
-        void report (ReportInterface&, int severity) const;
+        //!
+        //! Display the content of the object (for debug purpose).
+        //! @param [in,out] report Where to display the content.
+        //! @param [in] severity Severity level of messages (typically a debug level).
+        //!        
+        void report(ReportInterface& report, int severity) const;
 
-        // Return the name of a S2API command or zero if unknown
-        static const char* CommandNameS2API (uint32_t cmd);
+        //!
+        //! Return the name of a S2API command.
+        //! @param [in] cmd Command code.
+        //! @return A name for @a cmd or zero if unknown.
+        //!
+        static const char* CommandNameS2API(uint32_t cmd);
 
     private:
         // Private members:
-        ::dtv_property _prop_buffer [DTV_IOCTL_MAX_MSGS];
+        ::dtv_property   _prop_buffer[DTV_IOCTL_MAX_MSGS];
         ::dtv_properties _prop_head;
     };
 }

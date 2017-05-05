@@ -38,79 +38,104 @@
 #include "tsReportInterface.h"
 
 namespace ts {
+    //!
+    //! Check if an enumeration value is supported by the native implementation.
+    //!
+    //! The file @link tsModulation.h @endlink declares several enumeration types
+    //! relating to modulation features. Whenever possible, all enumerations have
+    //! identical integer values as their counterparts in the Linux DVB or Windows
+    //! DirectShow API for faster conversion. When an enum cannot be mapped to a
+    //! native value (because the feature is not supported by the operating system),
+    //! a "very negative" value is used. Very negative means "-10 or less" since
+    //! these values are never used by an implementation.
+    //!
+    //! This function checks that an enumeration value is supported by
+    //! the native implementation. If it is not, report an error message
+    //! and return false.
+    //!
+    //! @param [in] value The @c int value of an enumeration value from on the
+    //! enumeration types in file @link tsModulation.h@endlink.
+    //! @param [in] name The name of the feature or enumeration type (eg.
+    //! "FEC", "guard interval", etc.) Used to report errors.
+    //! @param [in] conv The ts::Enumeration instance for the enumeration type.
+    //! Used to report errors.
+    //! @param [in] report Where to report errors.
+    //! @return True if @a value is supported on the operating system. False if
+    //! the feature is not supported. In this case, an error message is reported
+    //! to @a report.
+    //!
+    TSDUCKDLL bool CheckModEnum(int value, const std::string& name, const Enumeration& conv, ReportInterface& report);
 
-    // Whenever possible, all enumeration have identical integer values as
-    // their counterparts in the Linux DVB or Windows DirectShow API for faster
-    // conversion. When an enum cannot be mapped to a native value,
-    // a "very negative" value is used. Very negative means "more negative
-    // than -1" since -1 is sometimes used as enum value in DirectShow.
-    
-    // This function checks that an enumeration value is supported by
-    // the native implementation. If it is not, report an error message
-    // and return false.
-
-    TSDUCKDLL bool CheckModEnum (int value, const std::string& name, const Enumeration& conv, ReportInterface&);
-
-    // Known tuner types.
-    //
-    // "Second generation" tuners are included in their base category:
-    // DVB_S includes DVB-S and DVB-S2, DVB_T includes DVB-T and DVB-T2, etc.
-
+    //!
+    //! Known tuner types.
+    //!
+    //! "Second generation" tuners are included in their base category:
+    //! DVB_S includes DVB-S and DVB-S2, DVB_T includes DVB-T and DVB-T2, etc.
+    //!
     enum TunerType {
-#if defined (__linux)
+#if defined(__linux) && !defined(DOXYGEN)
         DVB_S  = ::FE_QPSK,
         DVB_C  = ::FE_QAM,
         DVB_T  = ::FE_OFDM,
         ATSC   = ::FE_ATSC,
 #else
-        DVB_S,
-        DVB_C,
-        DVB_T,
-        ATSC,
+        DVB_S,   //!< DVB-S, DVB-S2
+        DVB_C,   //!< DVB-C, DVB-C2
+        DVB_T,   //!< DVB-T, DVB-T2
+        ATSC,    //!< ATSC
 #endif
     };
 
+    //!
+    //! Enumeration description of ts::TunerType.
+    //!
     TSDUCKDLL extern const Enumeration TunerTypeEnum;
 
-    // Delivery systems.
-
+    //!
+    //! Delivery systems.
+    //!
     enum DeliverySystem {
-        DS_UNDEFINED,
-        DS_DVB_S,
-        DS_DVB_S2,
-        DS_DVB_T,
-        DS_DVB_T2,
-        DS_DVB_C,
-        DS_DVB_C_ANNEX_AC,
-        DS_DVB_C_ANNEX_B,
-        DS_DVB_C2,
-        DS_DVB_H,
-        DS_ISDB_S,
-        DS_ISDB_T,
-        DS_ISDB_C,
-        DS_ATSC,
-        DS_ATSC_MH,
-        DS_DMB_TH,
-        DS_CMMB,
-        DS_DAB,
-        DS_DSS,
-
-        DS_COUNT // Fake value, must be last to get the number of values
+        DS_UNDEFINED,      //!< Undefined.
+        DS_DVB_S,          //!< DVB-S.
+        DS_DVB_S2,         //!< DVB-S2.
+        DS_DVB_T,          //!< DVB-T.
+        DS_DVB_T2,         //!< DVB-T2.
+        DS_DVB_C,          //!< DVB-C.
+        DS_DVB_C_ANNEX_AC, //!< DVB-C Annex A,C.
+        DS_DVB_C_ANNEX_B,  //!< DVB-C Annex B.
+        DS_DVB_C2,         //!< DVB-C2.
+        DS_DVB_H,          //!< DVB-H.
+        DS_ISDB_S,         //!< ISDB-S.
+        DS_ISDB_T,         //!< ISDB-T.
+        DS_ISDB_C,         //!< ISDB-C.
+        DS_ATSC,           //!< ATSC.
+        DS_ATSC_MH,        //!< ATSC-MH.
+        DS_DMB_TH,         //!< DMB-TH.
+        DS_CMMB,           //!< CMMB.
+        DS_DAB,            //!< DAB.
+        DS_DSS,            //!< DSS.
+        DS_COUNT           //!< Fake value, must be last to get the number of values.
     };
 
+    //!
+    //! Enumeration description of ts::DeliverySystem.
+    //!
     TSDUCKDLL extern const Enumeration DeliverySystemEnum;
 
-    // A set of delivery system values. Typically used to indicate the
-    // list of standards which are supported by a tuner.
-
+    //!
+    //! A set of delivery system values (ts::DeliverySystem).
+    //! Typically used to indicate the list of standards which are supported by a tuner.
+    //!
     typedef std::bitset<size_t(DS_COUNT)> DeliverySystemSet;
 
-    // Modulation types. Support depends on tuner types.
-
+    //!
+    //! Modulation types.
+    //! Support depends on tuner types.
+    //!
     enum Modulation {
-#if defined (__linux)
+#if defined(__linux) && !defined(DOXYGEN)
         QPSK     = ::QPSK,
-#if defined (__s2api)
+#if defined(__s2api)
         PSK_8    = ::PSK_8,
 #else
         PSK_8    = -10,
@@ -123,7 +148,7 @@ namespace ts {
         QAM_256  = ::QAM_256,
         VSB_8    = ::VSB_8,
         VSB_16   = ::VSB_16,
-#elif defined (__windows)
+#elif defined(__windows) && !defined(DOXYGEN)
         QPSK     = ::BDA_MOD_QPSK,
         PSK_8    = ::BDA_MOD_8PSK,
         QAM_AUTO = ::BDA_MOD_NOT_DEFINED,
@@ -135,50 +160,60 @@ namespace ts {
         VSB_8    = ::BDA_MOD_8VSB,
         VSB_16   = ::BDA_MOD_16VSB,
 #else
-        QPSK,
-        PSK_8,      // 8-PSK (DVB-S2)
-        QAM_AUTO,   // unspecified
-        QAM_16,
-        QAM_32,
-        QAM_64,
-        QAM_128,
-        QAM_256,
-        VSB_8,
-        VSB_16,
+        QPSK,       //!< QPSK (4-PSK, DVB-S).
+        PSK_8,      //!< 8-PSK (DVB-S2).
+        QAM_AUTO,   //!< Unspecified QAM.
+        QAM_16,     //!< QAM-16.
+        QAM_32,     //!< QAM-32.
+        QAM_64,     //!< QAM-64.
+        QAM_128,    //!< QAM-128.
+        QAM_256,    //!< QAM-256.
+        VSB_8,      //!< VSB-8.
+        VSB_16,     //!< VSB-16.
 #endif
     };
 
+    //!
+    //! Enumeration description of ts::.
+    //!
     TSDUCKDLL extern const Enumeration ModulationEnum;
 
-    // Compute the number of bits per symbol for a specified modulation.
-    // Return zero if unknown
+    //!
+    //! Compute the number of bits per symbol for a specified modulation.
+    //! @param [in] mod Modulation type.
+    //! @return Number of bits per symbol or zero if unknown.
+    //!
+    TSDUCKDLL uint32_t BitsPerSymbol(Modulation mod);
 
-    TSDUCKDLL uint32_t BitsPerSymbol (Modulation);
-
-    // Spectral inversion
-
+    //!
+    //! Spectral inversion.
+    //!
     enum SpectralInversion {
-#if defined (__linux)
+#if defined(__linux) && !defined(DOXYGEN)
         SPINV_OFF  = ::INVERSION_OFF,
         SPINV_ON   = ::INVERSION_ON,
         SPINV_AUTO = ::INVERSION_AUTO,
-#elif defined (__windows)
+#elif defined(__windows) && !defined(DOXYGEN)
         SPINV_OFF  = ::BDA_SPECTRAL_INVERSION_NORMAL,
         SPINV_ON   = ::BDA_SPECTRAL_INVERSION_INVERTED,
         SPINV_AUTO = ::BDA_SPECTRAL_INVERSION_AUTOMATIC,
 #else
-        SPINV_OFF,
-        SPINV_ON,
-        SPINV_AUTO,
+        SPINV_OFF,   //!< Inversion off.
+        SPINV_ON,    //!< Inversion on.
+        SPINV_AUTO,  //!< Automatic spectral inversion.
 #endif
-};
+    };
 
+    //!
+    //! Enumeration description of ts::SpectralInversion.
+    //!
     TSDUCKDLL extern const Enumeration SpectralInversionEnum;
 
-    // Inner Forward Error Correction
-
+    //!
+    //! Inner Forward Error Correction
+    //!
     enum InnerFEC {
-#if defined (__linux)
+#if defined(__linux) && !defined(DOXYGEN)
         FEC_NONE = ::FEC_NONE,
         FEC_AUTO = ::FEC_AUTO,
         FEC_1_2  = ::FEC_1_2,
@@ -200,7 +235,7 @@ namespace ts {
         FEC_1_4  = -13,
         FEC_2_5  = -14,
         FEC_5_11 = -15,
-#elif defined (__windows)
+#elif defined(__windows) && !defined(DOXYGEN)
         FEC_NONE = ::BDA_BCC_RATE_NOT_SET,
         FEC_AUTO = ::BDA_BCC_RATE_NOT_DEFINED,
         FEC_1_2  = ::BDA_BCC_RATE_1_2,
@@ -218,37 +253,49 @@ namespace ts {
         FEC_2_5  = ::BDA_BCC_RATE_2_5,
         FEC_5_11 = ::BDA_BCC_RATE_5_11,
 #else
-        FEC_NONE,
-        FEC_AUTO,   // unspecified
-        FEC_1_2,
-        FEC_2_3,
-        FEC_3_4,
-        FEC_4_5,
-        FEC_5_6,
-        FEC_6_7,
-        FEC_7_8,
-        FEC_8_9,
-        FEC_9_10,
-        FEC_3_5,
-        FEC_1_3,
-        FEC_1_4,
-        FEC_2_5,
-        FEC_5_11,
+        FEC_NONE,   //!< No FEC.
+        FEC_AUTO,   //!< Automatic FEC, unspecified.
+        FEC_1_2,    //!< FEC 1/2.
+        FEC_2_3,    //!< FEC 2/3.
+        FEC_3_4,    //!< FEC 3/4.
+        FEC_4_5,    //!< FEC 4/5.
+        FEC_5_6,    //!< FEC 5/6.
+        FEC_6_7,    //!< FEC 6/7.
+        FEC_7_8,    //!< FEC 7/8.
+        FEC_8_9,    //!< FEC 8/9.
+        FEC_9_10,   //!< FEC 9/10.
+        FEC_3_5,    //!< FEC 3/5.
+        FEC_1_3,    //!< FEC 1/3.
+        FEC_1_4,    //!< FEC 1/4.
+        FEC_2_5,    //!< FEC 2/5.
+        FEC_5_11,   //!< FEC 5/11.
 #endif
     };
 
+    //!
+    //! Enumeration description of ts::InnerFEC.
+    //!
     TSDUCKDLL extern const Enumeration InnerFECEnum;
 
-    // Compute the multiplier and divider of a FEC value.
-    // Return zero if unknown
+    //!
+    //! Compute the multiplier of a FEC value.
+    //! @param [in] fec Inner FEC value.
+    //! @return The multiplier (eg. 9 for FEC_9_10) or zero if unknown.
+    //!
+    TSDUCKDLL uint32_t FECMultiplier(InnerFEC fec);
 
-    TSDUCKDLL uint32_t FECMultiplier (InnerFEC);
-    TSDUCKDLL uint32_t FECDivider (InnerFEC);
+    //!
+    //! Compute the divider of a FEC value.
+    //! @param [in] fec Inner FEC value.
+    //! @return The divider (eg. 10 for FEC_9_10) or zero if unknown.
+    //!
+    TSDUCKDLL uint32_t FECDivider(InnerFEC fec);
 
-    // Polarization
-
+    //!
+    //! Polarization
+    //!
     enum Polarization {
-#if defined (__windows)
+#if defined(__windows) && !defined(DOXYGEN)
         POL_NONE       = ::BDA_POLARISATION_NOT_SET,
         POL_AUTO       = ::BDA_POLARISATION_NOT_DEFINED,
         POL_HORIZONTAL = ::BDA_POLARISATION_LINEAR_H,
@@ -256,256 +303,333 @@ namespace ts {
         POL_LEFT       = ::BDA_POLARISATION_CIRCULAR_L,
         POL_RIGHT      = ::BDA_POLARISATION_CIRCULAR_R,
 #else
-        POL_NONE,
-        POL_AUTO,
-        POL_HORIZONTAL,  // linear
-        POL_VERTICAL,    // linear
-        POL_LEFT,        // circular
-        POL_RIGHT,       // circular
+        POL_NONE,        //!< Polarization not set.
+        POL_AUTO,        //!< Polarization automatically set.
+        POL_HORIZONTAL,  //!< Horizontal linear polarization.
+        POL_VERTICAL,    //!< Vertical linear polarization.
+        POL_LEFT,        //!< Left circular polarization.
+        POL_RIGHT,       //!< Right circular polarization.
 #endif
     };
 
+    //!
+    //! Enumeration description of ts::Polarization.
+    //!
     TSDUCKDLL extern const Enumeration PolarizationEnum;
 
-    // Pilot (DVB-S2)
-
+    //!
+    //! Pilot (DVB-S2)
+    //!
     enum Pilot {
-#if defined (__linux) && defined (__s2api)
+#if defined(__linux) && defined(__s2api) && !defined(DOXYGEN)
         PILOT_AUTO = ::PILOT_AUTO,
         PILOT_ON   = ::PILOT_ON,
         PILOT_OFF  = ::PILOT_OFF,
-#elif defined (__linux) && !defined (__s2api)
+#elif defined(__linux) && !defined(__s2api) && !defined(DOXYGEN)
         PILOT_AUTO = -10,
         PILOT_ON   = -11,
         PILOT_OFF  = -12,
-#elif defined (__windows)
+#elif defined(__windows) && !defined(DOXYGEN)
         PILOT_AUTO = ::BDA_PILOT_NOT_DEFINED,
         PILOT_ON   = ::BDA_PILOT_ON,
         PILOT_OFF  = ::BDA_PILOT_OFF,
 #else
-        PILOT_AUTO,
-        PILOT_ON,
-        PILOT_OFF,
+        PILOT_AUTO,  //!< Pilot automatically set.
+        PILOT_ON,    //!< Pilot on.
+        PILOT_OFF,   //!< Pilot off.
 #endif
     };
 
+    //!
+    //! Enumeration description of ts::Pilot.
+    //!
     TSDUCKDLL extern const Enumeration PilotEnum;
 
-    // Roll-off (DVB-S2)
-
+    //!
+    //! Roll-off (DVB-S2)
+    //!
     enum RollOff {
-#if defined (__linux) && defined (__s2api)
+#if defined(__linux) && defined(__s2api) && !defined(DOXYGEN)
         ROLLOFF_AUTO = ::ROLLOFF_AUTO,
         ROLLOFF_35   = ::ROLLOFF_35,
         ROLLOFF_25   = ::ROLLOFF_25,
         ROLLOFF_20   = ::ROLLOFF_20,
-#elif defined (__linux) && !defined (__s2api)
+#elif defined(__linux) && !defined(__s2api) && !defined(DOXYGEN)
         ROLLOFF_AUTO = -10,
         ROLLOFF_35   = -11,
         ROLLOFF_25   = -12,
         ROLLOFF_20   = -13,
-#elif defined (__windows)
+#elif defined(__windows) && !defined(DOXYGEN)
         ROLLOFF_AUTO = ::BDA_ROLL_OFF_NOT_DEFINED,
         ROLLOFF_35   = ::BDA_ROLL_OFF_35,
         ROLLOFF_25   = ::BDA_ROLL_OFF_25,
         ROLLOFF_20   = ::BDA_ROLL_OFF_20,
 #else
-        ROLLOFF_AUTO,
-        ROLLOFF_35,   // Implied in DVB-S, default in DVB-S2
-        ROLLOFF_25,
-        ROLLOFF_20,
+        ROLLOFF_AUTO,  //!< Automatic rolloff.
+        ROLLOFF_35,    //!< Rolloff 35, implied in DVB-S, default in DVB-S2.
+        ROLLOFF_25,    //!< Rolloff 25.
+        ROLLOFF_20,    //!< Rolloff 20.
 #endif
     };
 
+    //!
+    //! Enumeration description of ts::RollOff.
+    //!
     TSDUCKDLL extern const Enumeration RollOffEnum;
 
-    // Bandwidth (OFDM)
-
+    //!
+    //! Bandwidth (OFDM)
+    //!
     enum BandWidth {
-#if defined (__linux)
+#if defined(__linux) && !defined(DOXYGEN)
         BW_AUTO  = ::BANDWIDTH_AUTO,
         BW_8_MHZ = ::BANDWIDTH_8_MHZ,
         BW_7_MHZ = ::BANDWIDTH_7_MHZ,
         BW_6_MHZ = ::BANDWIDTH_6_MHZ,
         BW_5_MHZ = -10,
-#elif defined (__windows)
+#elif defined(__windows) && !defined(DOXYGEN)
         BW_AUTO  = -10,
         BW_8_MHZ = 8,  // values in MHz, not enum
         BW_7_MHZ = 7,
         BW_6_MHZ = 6,
         BW_5_MHZ = 5,
 #else
-        BW_AUTO,
-        BW_8_MHZ,
-        BW_7_MHZ,
-        BW_6_MHZ,
-        BW_5_MHZ,
+        BW_AUTO,   //!< Bandwidth automatically set.
+        BW_8_MHZ,  //!< 8 MHz bandwidth.
+        BW_7_MHZ,  //!< 7 MHz bandwidth.
+        BW_6_MHZ,  //!< 6 MHz bandwidth.
+        BW_5_MHZ,  //!< 5 MHz bandwidth.
 #endif
     };
  
+    //!
+    //! Enumeration description of ts::BandWidth.
+    //!
     TSDUCKDLL extern const Enumeration BandWidthEnum;
 
-    // Get the bandwidth value in Hz.
-    // Return zero if unknown.
+    //!
+    //! Get the bandwidth value in Hz.
+    //! @param [in] bw Bandwidth enumeration value.
+    //! @return Bandwidth in Hz or zero if unknown.
+    //!
+    TSDUCKDLL uint32_t BandWidthValueHz(BandWidth bw);
 
-    TSDUCKDLL uint32_t BandWidthValueHz (BandWidth);
+    //!
+    //! Get the bandwidth code from a value in Hz.
+    //! @param [in] hz Bandwidth in Hz.
+    //! @return Bandwidth enumeration value or BW_AUTO if undefined.
+    //!
+    TSDUCKDLL BandWidth BandWidthCodeFromHz(uint32_t hz);
 
-    // Get the bandwidth code from a value in Hz.
-    // Return BW_AUTO if undefined.
-
-    TSDUCKDLL BandWidth BandWidthCodeFromHz (uint32_t);
-
-    // Transmission mode (OFDM)
-
+    //!
+    //! Transmission mode (OFDM)
+    //!
     enum TransmissionMode {
-#if defined (__linux)
+#if defined(__linux) && !defined(DOXYGEN)
         TM_AUTO = ::TRANSMISSION_MODE_AUTO,
         TM_2K   = ::TRANSMISSION_MODE_2K,
         TM_4K   = -10,
         TM_8K   = ::TRANSMISSION_MODE_8K,
-#elif (__windows)
+#elif defined(__windows) && !defined(DOXYGEN)
         TM_AUTO = ::BDA_XMIT_MODE_NOT_DEFINED,
         TM_2K   = ::BDA_XMIT_MODE_2K,
         TM_4K   = ::BDA_XMIT_MODE_4K,
         TM_8K   = ::BDA_XMIT_MODE_8K,
 #else
-        TM_AUTO,
-        TM_2K,
-        TM_4K,
-        TM_8K,
+        TM_AUTO,  //!< Transmission mode automatically set.
+        TM_2K,    //!< 2K transmission mode.
+        TM_4K,    //!< 4K transmission mode.
+        TM_8K,    //!< 8K transmission mode.
 #endif
     };
 
+    //!
+    //! Enumeration description of ts::TransmissionMode.
+    //!
     TSDUCKDLL extern const Enumeration TransmissionModeEnum;
 
-    // Guard interval (OFDM)
-
+    //!
+    //! Guard interval (OFDM)
+    //!
     enum GuardInterval {
-#if defined (__linux)
+#if defined(__linux) && !defined(DOXYGEN)
         GUARD_AUTO = ::GUARD_INTERVAL_AUTO,
         GUARD_1_32 = ::GUARD_INTERVAL_1_32,
         GUARD_1_16 = ::GUARD_INTERVAL_1_16,
         GUARD_1_8  = ::GUARD_INTERVAL_1_8,
         GUARD_1_4  = ::GUARD_INTERVAL_1_4,
-#elif defined (__windows)
+#elif defined(__windows) && !defined(DOXYGEN)
         GUARD_AUTO = ::BDA_GUARD_NOT_DEFINED,
         GUARD_1_32 = ::BDA_GUARD_1_32,
         GUARD_1_16 = ::BDA_GUARD_1_16,
         GUARD_1_8  = ::BDA_GUARD_1_8,
         GUARD_1_4  = ::BDA_GUARD_1_4,
 #else
-        GUARD_AUTO,
-        GUARD_1_32,
-        GUARD_1_16,
-        GUARD_1_8,
-        GUARD_1_4,
+        GUARD_AUTO,  //!< Guard interval automatically set.
+        GUARD_1_32,  //!< Guard interval 1/32.
+        GUARD_1_16,  //!< Guard interval 1/16.
+        GUARD_1_8,   //!< Guard interval 1/8.
+        GUARD_1_4,   //!< Guard interval 1/4.
 #endif
     };
 
+    //!
+    //! Enumeration description of ts::GuardInterval.
+    //!
     TSDUCKDLL extern const Enumeration GuardIntervalEnum;
 
-    // Compute the multiplier and divider of a guard interval value.
-    // Return zero if unknown
+    //!
+    //! Compute the multiplier of a guard interval value.
+    //! @param [in] g Guard interval value.
+    //! @return The multiplier (eg. 1 for GUARD_1_16) or zero if unknown.
+    //!
+    TSDUCKDLL uint32_t GuardIntervalMultiplier(GuardInterval g);
 
-    TSDUCKDLL uint32_t GuardIntervalMultiplier (GuardInterval);
-    TSDUCKDLL uint32_t GuardIntervalDivider (GuardInterval);
+    //!
+    //! Compute the divider of a guard interval value.
+    //! @param [in] g Guard interval value.
+    //! @return The divider (eg. 16 for GUARD_1_16) or zero if unknown.
+    //!
+    TSDUCKDLL uint32_t GuardIntervalDivider(GuardInterval g);
 
-    // Hierarchy (OFDM)
-
+    //!
+    //! Hierarchy (OFDM)
+    //!
     enum Hierarchy {
-#if defined (__linux)
+#if defined(__linux) && !defined(DOXYGEN)
         HIERARCHY_AUTO = ::HIERARCHY_AUTO,
         HIERARCHY_NONE = ::HIERARCHY_NONE,
         HIERARCHY_1    = ::HIERARCHY_1,
         HIERARCHY_2    = ::HIERARCHY_2,
         HIERARCHY_4    = ::HIERARCHY_4,
-#elif defined (__windows)
+#elif defined(__windows) && !defined(DOXYGEN)
         HIERARCHY_AUTO = ::BDA_HALPHA_NOT_DEFINED,
         HIERARCHY_NONE = ::BDA_HALPHA_NOT_SET,
         HIERARCHY_1    = ::BDA_HALPHA_1,
         HIERARCHY_2    = ::BDA_HALPHA_2,
         HIERARCHY_4    = ::BDA_HALPHA_4,
 #else
-        HIERARCHY_AUTO,
-        HIERARCHY_NONE,
-        HIERARCHY_1,
-        HIERARCHY_2,
-        HIERARCHY_4,
+        HIERARCHY_AUTO,  //!< Hierarchy automatically set.
+        HIERARCHY_NONE,  //!< No hierarchy.
+        HIERARCHY_1,     //!< Hierarchy 1.
+        HIERARCHY_2,     //!< Hierarchy 2.
+        HIERARCHY_4,     //!< Hierarchy 4.
 #endif
     };
 
+    //!
+    //! Enumeration description of ts::Hierarchy.
+    //!
     TSDUCKDLL extern const Enumeration HierarchyEnum;
 
     //!
-    //! UHF (Ultra High Frequecy) band
+    //! UHF (Ultra High Frequecy) band.
+    //!
+    //! UHF channels in MHz: frequency = 306 + 8 * channel.
+    //!
+    //! 167 kHz offsets may be applied (-1, 1, 2 or 3).
     //!
     namespace UHF {
+        
+        const uint64_t CHANNEL_BASE = 306000000;   //!< UHF band base (306 MHz).
+        const uint64_t CHANNEL_WIDTH =  8000000;   //!< UHF channel width (8 MHz).
+        const uint64_t CHANNEL_OFFSET =  166666;   //!< Optional channel offset (~167 kHz).
 
-        // UHF channels in MHz: freq = 306 + 8 * chan
-        // 167 kHz offsets may be applied (-1, 1, 2 or 3).
-        // All values below are in Hz:
+        const int FIRST_CHANNEL = 21;  //!< First channel in UHF band.
+        const int LAST_CHANNEL  = 69;  //!< Last channel in UHF band.
 
-        const uint64_t CHANNEL_BASE = 306000000;   // 306 MHz
-        const uint64_t CHANNEL_WIDTH =  8000000;   // 8 MHz
-        const uint64_t CHANNEL_OFFSET =  166666;   // ~167 kHz
-
-        const int FIRST_CHANNEL = 21;  // First channel in UHF band
-        const int LAST_CHANNEL  = 69;  // Last channel in UHF band
-
-        // Compute a frequency from channel number and optional offset count
-        TSDUCKDLL inline uint64_t Frequency (int channel, int offset_count = 0)
+        //!
+        //! Compute a UHF frequency from a channel number and optional offset count.
+        //! @param [in] channel UHF channel number.
+        //! @param [in] offset_count Optional offset count (usually from -1 to +3).
+        //! @return Frequency in Hz.
+        //!
+        TSDUCKDLL inline uint64_t Frequency(int channel, int offset_count = 0)
         {
-            return CHANNEL_BASE + uint64_t (channel) * CHANNEL_WIDTH + uint64_t (offset_count) * CHANNEL_OFFSET;
+            return CHANNEL_BASE + uint64_t(channel) * CHANNEL_WIDTH + uint64_t(offset_count) * CHANNEL_OFFSET;
         }
 
-        // Compute channel number from frequency.
-        TSDUCKDLL inline int Channel (uint64_t frequency)
+        //!
+        //! Compute a UHF channel number from a frequency.
+        //! @param [in] frequency Frequency in Hz.
+        //! @return UHF channel number.
+        //!
+        TSDUCKDLL inline int Channel(uint64_t frequency)
         {
-            return int ((frequency - CHANNEL_BASE + CHANNEL_WIDTH / 2) / CHANNEL_WIDTH);
+            return int((frequency - CHANNEL_BASE + CHANNEL_WIDTH / 2) / CHANNEL_WIDTH);
         }
 
-        // Compute offset count from frequency (approximate if necessary)
-        TSDUCKDLL int OffsetCount (uint64_t frequency);
+        //!
+        //! Compute a UHF offset count from frequency (approximate if necessary)
+        //! @param [in] frequency Frequency in Hz.
+        //! @return Offset count (positive or negative).
+        //!
+        TSDUCKDLL int OffsetCount(uint64_t frequency);
 
-        // Check if a frequency is in the UHF band
-        TSDUCKDLL inline bool InBand (uint64_t frequency, int min_offset = -3, int max_offset = 3)
+        //!
+        //! Check if a frequency is in the UHF band.
+        //! @param [in] frequency Frequency in Hz.
+        //! @param [in] min_offset Minimum allowed offset. Default: -3.
+        //! @param [in] max_offset Maximum allowed offset. Default: +3.
+        //! @return True if the frequency is in the UHF band.
+        //!
+        TSDUCKDLL inline bool InBand(uint64_t frequency, int min_offset = -3, int max_offset = 3)
         {
-            return frequency >= Frequency (FIRST_CHANNEL, min_offset) && frequency <= Frequency (LAST_CHANNEL, max_offset);
+            return frequency >= Frequency(FIRST_CHANNEL, min_offset) && frequency <= Frequency(LAST_CHANNEL, max_offset);
         }
     }
 
     //!
-    //! VHF (Very High Frequency) band III
+    //! VHF (Very High Frequency) band III.
+    //!
+    //! VHF band III channels in MHz: frequency = 142.5 + 7 * channel.
+    //!
+    //! 167 kHz offsets may be applied (-1, 1, 2 or 3).
     //!
     namespace VHF {
         
-        // VHF band III channels in MHz: freq = 142.5 + 7 * chan
-        // 167 kHz offsets may be applied (-1, 1, 2 or 3).
-        // All values below are in Hz:
+        const uint64_t CHANNEL_BASE = 142500000;  //!< VHF band base (142.5 MHz).
+        const uint64_t CHANNEL_WIDTH =  7000000;  //!< VHF channel width (7 MHz).
+        const uint64_t CHANNEL_OFFSET =  166666;  //!< Optional channel offset (~167 kHz).
 
-        const uint64_t CHANNEL_BASE = 142500000;   // 142.5 MHz
-        const uint64_t CHANNEL_WIDTH =  7000000;   // 7 MHz
-        const uint64_t CHANNEL_OFFSET =  166666;   // ~167 kHz
+        const int FIRST_CHANNEL =  5;    //!< First channel in VHF band III.
+        const int LAST_CHANNEL  = 12;    //!< Last channel in VHF band III.
 
-        const int FIRST_CHANNEL =  5;  // First channel in UHF band III
-        const int LAST_CHANNEL  = 12;  // Last channel in UHF band III
-
-        // Compute a frequency from channel number and optional offset count
-        TSDUCKDLL inline uint64_t Frequency (int channel, int offset_count = 0)
+        //!
+        //! Compute a VHF frequency from a channel number and optional offset count.
+        //! @param [in] channel VHF channel number.
+        //! @param [in] offset_count Optional offset count (usually from -1 to +3).
+        //! @return Frequency in Hz.
+        //!
+        TSDUCKDLL inline uint64_t Frequency(int channel, int offset_count = 0)
         {
-            return CHANNEL_BASE + uint64_t (channel) * CHANNEL_WIDTH + uint64_t (offset_count) * CHANNEL_OFFSET;
+            return CHANNEL_BASE + uint64_t(channel) * CHANNEL_WIDTH + uint64_t(offset_count) * CHANNEL_OFFSET;
         }
 
-        // Compute channel number from frequency.
-        TSDUCKDLL inline int Channel (uint64_t frequency)
+        //!
+        //! Compute a VHF channel number from a frequency.
+        //! @param [in] frequency Frequency in Hz.
+        //! @return VHF channel number.
+        //!
+        TSDUCKDLL inline int Channel(uint64_t frequency)
         {
-            return int ((frequency - CHANNEL_BASE + CHANNEL_WIDTH / 2) / CHANNEL_WIDTH);
+            return int((frequency - CHANNEL_BASE + CHANNEL_WIDTH / 2) / CHANNEL_WIDTH);
         }
 
-        // Compute offset count from frequency (approximate if necessary)
-        TSDUCKDLL int OffsetCount (uint64_t frequency);
+        //!
+        //! Compute a VHF offset count from frequency (approximate if necessary)
+        //! @param [in] frequency Frequency in Hz.
+        //! @return Offset count (positive or negative).
+        //!
+        TSDUCKDLL int OffsetCount(uint64_t frequency);
 
-        // Check if a frequency is in the VHF band
+        //!
+        //! Check if a frequency is in the UHF band III.
+        //! @param [in] frequency Frequency in Hz.
+        //! @param [in] min_offset Minimum allowed offset. Default: -3.
+        //! @param [in] max_offset Maximum allowed offset. Default: +3.
+        //! @return True if the frequency is in the VHF band III.
+        //!
         TSDUCKDLL inline bool InBand (uint64_t frequency, int min_offset = -3, int max_offset = 3)
         {
             return frequency >= Frequency (FIRST_CHANNEL, min_offset) && frequency <= Frequency (LAST_CHANNEL, max_offset);

@@ -822,7 +822,7 @@ namespace ts {
         IOption* search(const std::string& name);
 
         // Locate an option description.
-        // Throw excetion if not found.
+        // Throw exception if not found.
         // Used by application to get values.
         const IOption& getIOption(const char* name) const;
     };

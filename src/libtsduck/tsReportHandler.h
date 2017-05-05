@@ -36,16 +36,26 @@
 #include "tsPlatform.h"
 
 namespace ts {
-
-    // The default report handler displays the messages on the standard error.
-    // The report handler is always invoked into the same thread (serialized).
+    //!
+    //! Abstract interface for handling report messages.
+    //!
     class TSDUCKDLL ReportHandler
     {
     public:
-        // This hook is invoked for each message to log.
-        virtual void handleMessage (int severity, const std::string& msg) = 0;
+        //!
+        //! This hook is invoked for each message to log.
+        //!
+        //! A default report handler typically displays the messages on the standard error.
+        //! The report handler is always invoked into the same thread (serialized).
+        //!
+        //! @param [in] severity Message severity value from ts::Severity.
+        //! @param [in] msg Message text.
+        //!
+        virtual void handleMessage(int severity, const std::string& msg) = 0;
 
-        // Virtual destructor
-        virtual ~ReportHandler () {}
+        //!
+        //! Virtual destructor.
+        //!
+        virtual ~ReportHandler() {}
     };
 }

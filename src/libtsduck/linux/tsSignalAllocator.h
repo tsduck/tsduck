@@ -37,18 +37,26 @@
 #include "tsMutex.h"
 
 namespace ts {
-
+    //!
+    //! Allocate POSIX real-time signal numbers (Linux-specific).
+    //!
     class TSDUCKDLL SignalAllocator
     {
         // This class is a singleton. Use static Instance() method.
         tsDeclareSingleton(SignalAllocator);
 
     public:
-        // Allocate a new signal number. Return -1 if none available.
+        //!
+        //! Allocate a new signal number.
+        //! @return A POSIX real-time signal number or -1 if none available.
+        //!
         int allocate();
 
-        // Release a signal number.
-        void release(int);
+        //!
+        //! Release a signal number.
+        //! @param [in] sig A POSIX real-time signal number.
+        //!
+        void release(int sig);
 
     private:
         // Private members:
