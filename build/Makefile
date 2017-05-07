@@ -65,8 +65,8 @@ tarball:
 	rm -rf $(TMPROOT)
 
 # Linux distro version.
-FC_DISTRO   := $(shell grep " release " /etc/fedora-release 2>/dev/null | sed -e 's/^.* release \([0-9]*\).*$$/\1/')
-RH_DISTRO   := $(shell grep " release " /etc/redhat-release 2>/dev/null | sed -e 's/^.* release \([0-9]*\).*$$/\1/')
+FC_DISTRO   := $(if $(wildcard /etc/fedora-release),$(shell grep " release " /etc/fedora-release 2>/dev/null | sed -e 's/^.* release \([0-9]*\).*$$/\1/'),)
+RH_DISTRO   := $(if $(wildcard /etc/redhat-release),$(shell grep " release " /etc/redhat-release 2>/dev/null | sed -e 's/^.* release \([0-9]*\).*$$/\1/'),)
 DISTRO      := $(if $(FC_DISTRO),.fc$(FC_DISTRO),$(if $(RH_DISTRO),.el$(RH_DISTRO),))
 RPM_RELEASE := 0$(DISTRO)
 

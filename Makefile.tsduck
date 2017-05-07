@@ -53,9 +53,11 @@ TSEXECS      := $(sort $(filter-out $(notdir $(basename $(wildcard $(TSTOOLSDIR)
 
 # Product version
 
-TS_MAJOR = $(shell $(GREP) '\#define *TS_VERSION_MAJOR ' $(LIBTSDUCKDIR)/tsVersion.h | $(SED) -e 's/.* //')
-TS_MINOR = $(shell $(GREP) '\#define *TS_VERSION_MINOR ' $(LIBTSDUCKDIR)/tsVersion.h | $(SED) -e 's/.* //')
-export TS_VERSION = $(TS_MAJOR).$(TS_MINOR)
+ifndef TS_VERSION
+    TS_MAJOR   := $(shell $(GREP) '\#define *TS_VERSION_MAJOR ' $(LIBTSDUCKDIR)/tsVersion.h | $(SED) -e 's/.* //')
+    TS_MINOR   := $(shell $(GREP) '\#define *TS_VERSION_MINOR ' $(LIBTSDUCKDIR)/tsVersion.h | $(SED) -e 's/.* //')
+    TS_VERSION := $(TS_MAJOR).$(TS_MINOR)
+endif
 
 # Default installation directory prefix.
 # RPM packagers should override this in the "make install" command line.

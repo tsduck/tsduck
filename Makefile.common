@@ -465,8 +465,11 @@ first: default
 # Some nerds define exotic shells as default. Stay to a known shell.
 SHELL := /bin/bash
 
+# Export all variables by default to speed up make recursion.
+export
+
 # Enforce English locale by default.
-export LANG=en_US
+LANG=en_US
 
 # Define functions to search commands (see comments in header)
 F_SEARCH = $(firstword $(wildcard $(addsuffix /$(1),$(subst :, ,$(PATH)) /usr/bin /usr/sbin /usr/local/bin $(HOME)/bin)))
@@ -482,7 +485,7 @@ EMPTY =
 SPACE = $(EMPTY) $(EMPTY)
 COMMA = ,
 
-# Recursive invocations of make should be silent
+# Recursive invocations of make should be silent.
 MAKEFLAGS += --no-print-directory
 
 # Check if "make -k" is specified (ie. continue on error).
@@ -496,42 +499,49 @@ endif
 ROOTDIR := $(abspath $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST)))))
 
 # List of subdirectories in the current directory.
-SUBDIRS = $(sort $(patsubst ./%,%,$(shell find . -noleaf -mindepth 1 -maxdepth 1 -type d ! -name '.*')))
+SUBDIRS = $(sort $(patsubst %/,%,$(wildcard */)))
 
 # List of subdirectories to ignore in make recursion.
 NORECURSE_SUBDIRS = debug release debug-% release-% Debug Release Debug-% Release-% .vs ipch %.t2d .git
 
 # Actual recurse order. If the user did not define RECURSE_ORDER, use all
 # subdirectories, except those for which we know there is nothing to make.
-RECURSE_SUBDIRS = $(filter-out $(NORECURSE_SUBDIRS),$(if $(RECURSE_ORDER),$(RECURSE_ORDER),$(SUBDIRS)))
+RECURSE_SUBDIRS = $(filter $(SUBDIRS),$(filter-out $(NORECURSE_SUBDIRS),$(if $(RECURSE_ORDER),$(RECURSE_ORDER),$(SUBDIRS))))
 
 # $(RECURSE) is a shell command which recurses the current
 # make targets in the subdirectories (useful for "all" or "clean").
-RECURSE = for dir in $(RECURSE_SUBDIRS); do if [[ -d $$dir ]]; then $(MAKE) -C $$dir $@ $(if $(CONTINUE),,|| break); fi; done
+RECURSE = for dir in $(RECURSE_SUBDIRS); do $(MAKE) -C $$dir $@ $(if $(CONTINUE),,|| break); done
 
 # Operating system, architecture.
-LOCAL_OS   := $(shell uname -s | tr A-Z a-z)
-LOCAL_ARCH := $(shell uname -m)
+ifndef LOCAL_OS
+    LOCAL_OS   := $(shell uname -s | tr A-Z a-z)
+    LOCAL_ARCH := $(shell uname -m)
+endif
 ifeq ($(LOCAL_OS),darwin)
     MACOS = true
 endif
 
 # Logical CPU and physical core count.
-ifdef MACOS
-    CPU_COUNT  := $(shell sysctl -n hw.logicalcpu 2>/dev/null)
-    CPU_COUNT  := $(if $(CPU_COUNT),$(CPU_COUNT),1)
-    CORE_COUNT := $(shell sysctl -n hw.physicalcpu 2>/dev/null)
-    CORE_COUNT := $(if $(CORE_COUNT),$(CORE_COUNT),$(CPU_COUNT))
-else
-    CPU_COUNT  := $(shell nproc 2>/dev/null)
-    CPU_COUNT  := $(if $(CPU_COUNT),$(CPU_COUNT),1)
-    CORE_COUNT := $(shell $(FGREP) -m1 'cpu cores' /proc/cpuinfo 2>/dev/null | cut -d ' ' -f3)
-    CORE_COUNT := $(if $(CORE_COUNT),$(CORE_COUNT),$(CPU_COUNT))
+ifndef CPU_COUNT
+    ifdef MACOS
+        CPU_COUNT  := $(shell sysctl -n hw.logicalcpu 2>/dev/null)
+        CPU_COUNT  := $(if $(CPU_COUNT),$(CPU_COUNT),1)
+        CORE_COUNT := $(shell sysctl -n hw.physicalcpu 2>/dev/null)
+        CORE_COUNT := $(if $(CORE_COUNT),$(CORE_COUNT),$(CPU_COUNT))
+    else
+        CPU_COUNT  := $(shell nproc 2>/dev/null)
+        CPU_COUNT  := $(if $(CPU_COUNT),$(CPU_COUNT),1)
+        CORE_COUNT := $(shell $(FGREP) -m1 'cpu cores' /proc/cpuinfo 2>/dev/null | cut -d ' ' -f3)
+        CORE_COUNT := $(if $(CORE_COUNT),$(CORE_COUNT),$(CPU_COUNT))
+    endif
 endif
 
 # Get current compiler version, usually in form x.y.z
-GCC_VERSION = $(word 3,$(shell gcc -v 2>&1 | $(GREP) '^gcc version'))
-LLVM_VERSION = $(shell clang --version 2>&1 | $(GREP) -i "llvm version" | $(SED) -e 's/.*version *//' -e 's/ .*//')
+ifndef GCC_VERSION_DONE
+    GCC_VERSION_DONE = true
+    GCC_VERSION := $(word 3,$(shell gcc -v 2>&1 | $(GREP) '^gcc version'))
+    LLVM_VERSION := $(shell clang --version 2>&1 | $(GREP) -i "llvm version" | $(SED) -e 's/.*version *//' -e 's/ .*//')
+endif
 
 # When C++ source files are present, automatically define LDCXX.
 ifndef LDCXX
@@ -565,15 +575,15 @@ endif
 # Define compilation flags for 32-bit cross-compilation.
 # Target architecture is skipped on ARM because of numerous variants.
 ifdef M32
-    MAIN_ARCH    := i386
-    CFLAGS_M32   := -m32
-    LDFLAGS_M32  := -m32
-    TARGET_ARCH  := -march=i686
-else
-    MAIN_ARCH    := $(shell uname -m | $(SED) -e 's/i.86/i386/' -e 's/arm.*/arm/')
-    CFLAGS_M32   :=
-    LDFLAGS_M32  :=
-    TARGET_ARCH  ?= $(if $(subst arm,,$(MAIN_ARCH)),-march=$(LOCAL_ARCH:x86_64=x86-64),)
+    override MAIN_ARCH   := i386
+    override TARGET_ARCH := -march=i686
+    CFLAGS_M32  := -m32
+    LDFLAGS_M32 := -m32
+else ifndef MAIN_ARCH
+    MAIN_ARCH   := $(shell uname -m | $(SED) -e 's/i.86/i386/' -e 's/arm.*/arm/')
+    TARGET_ARCH := $(if $(subst arm,,$(MAIN_ARCH)),-march=$(LOCAL_ARCH:x86_64=x86-64),)
+    CFLAGS_M32  :=
+    LDFLAGS_M32 :=
 endif
 
 # Alternate target to recompile with debug options
@@ -768,7 +778,7 @@ NOSOURCE = \
     *~ *.bak *.autosave
 
 # Source code documentation generation.
-DOXYGEN ?= doxygen
+DOXYGEN ?= $(call F_COMMAND,doxygen,doxygen)
 .PHONY: doxygen
 doxygen:
 	@[ -e Doxyfile ] && $(DOXYGEN) || $(RECURSE)
@@ -776,8 +786,11 @@ doxygen:
 # Texinfo document generation.
 MAKEINFO ?= makeinfo
 TEXI2DVI ?= texi2dvi
-TEXI_MAJOR_VERSION = $(shell $(MAKEINFO) --version 2>/dev/null | head -1 | $(SED) -e 's/.*  *//' -e 's/\..*//')
-TEXI_V5 = $(shell test "$(TEXI_MAJOR_VERSION)" -ge 5 2>/dev/null && echo true)
+ifndef TEXI_MAJOR_VERSION
+    TEXI_MAJOR_VERSION := $(shell $(MAKEINFO) --version 2>/dev/null | head -1 | $(SED) -e 's/.*  *//' -e 's/\..*//')
+    TEXI_MAJOR_VERSION := $(if $(TEXI_MAJOR_VERSION),$(TEXI_MAJOR_VERSION),0)
+    TEXI_V5 := $(shell test "$(TEXI_MAJOR_VERSION)" -ge 5 2>/dev/null && echo true)
+endif
 TEXI2PDF_FLAGS  = --batch --quiet --tidy
 TEXI2HTML_FLAGS = --no-split $(if $(TEXI_V5),--set-customization-variable AVOID_MENU_REDUNDANCY=true)
 TEXI2INFO_FLAGS =
