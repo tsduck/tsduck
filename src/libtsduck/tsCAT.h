@@ -36,19 +36,29 @@
 #include "tsAbstractDescriptorsTable.h"
 
 namespace ts {
-
+    //!
+    //! Representation of a Conditional Access Table (CAT).
+    //! @see ISO/IEC 13818-1, ITU-T Rec. H.222.0, 2.4.4.6.
+    //!
     class TSDUCKDLL CAT : public AbstractDescriptorsTable
     {
     public:
-        // Default constructor:
-        CAT (uint8_t version_ = 0, bool is_current_ = true) :
-            AbstractDescriptorsTable (TID_CAT, 0xFFFF, version_, is_current_)
+        //!
+        //! Default constructor.
+        //! @param [in] version Table version number.
+        //! @param [in] is_current True if table is current, false if table is next.
+        //!
+        CAT(uint8_t version = 0, bool is_current = true) :
+            AbstractDescriptorsTable(TID_CAT, 0xFFFF, version, is_current)
         {
         }
 
-        // Constructor from a binary table
-        CAT (const BinaryTable& table) :
-            AbstractDescriptorsTable (TID_CAT, table)
+        //!
+        //! Constructor from a binary table.
+        //! @param [in] table Binary table to deserialize.
+        //!
+        CAT(const BinaryTable& table) :
+            AbstractDescriptorsTable(TID_CAT, table)
         {
         }
     };

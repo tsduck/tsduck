@@ -39,104 +39,174 @@
 #include "tsAbstractTable.h"
 
 namespace ts {
-
-    // A CyclingPacketizer contains various sections to be packetized on one PID.
-    //
-    // All packets are generated on demand. The generated packets have
-    // the right PID and continuity counters and can be directly injected
-    // in a transport stream.
-    //
-    // The "cycle" of the packetizer is defined as the smallest set of TS
-    // packets containing all sections, with respect to the broadcasting
-    // constraints (stuffing, specific repetition rates, etc).
-    //
-    // It is possible to set different repetition rates for sections.
-    // In that case, the target "bitrate" of the PID must be specified.
-    // The sections are inserted on a best effort basis to respect the
-    // minimum repetition rates.
-    //
-    // When the packetizer bitrate is specified as zero (the default), the
-    // target bitrate of the PID is unspecified. The repetition rates of
-    // sections are ignored.
-    //
-    // Note that when sections have different repetition rates, some
-    // sections may be repeated into one cycle of the Packetizer.
-    //
-    // Section stuffing may occur at the end of a section. If the section
-    // ends in the middle of an MPEG packet, the beginning of the next section
-    // can start immediately or can be delayed to the beginning of the next
-    // packet. In the later case, the rest of the current packet is filled
-    // with stuffing bytes (0xFF).
-    //
-    // A bitrate is specified in bits/second. Zero means undefined.
-    // A repetition rate is specified in milliseconds. Zero means undefined.
-
+    //!
+    //! Cyclic packetization of MPEG sections into Transport Stream packets.
+    //!
+    //! A CyclingPacketizer contains various sections to be packetized on one PID.
+    //!
+    //! All packets are generated on demand. The generated packets have
+    //! the right PID and continuity counters and can be directly injected
+    //! in a transport stream.
+    //!
+    //! The "cycle" of the packetizer is defined as the smallest set of TS
+    //! packets containing all sections, with respect to the broadcasting
+    //! constraints (stuffing, specific repetition rates, etc).
+    //!
+    //! It is possible to set different repetition rates for sections.
+    //! In that case, the target "bitrate" of the PID must be specified.
+    //! The sections are inserted on a best effort basis to respect the
+    //! minimum repetition rates.
+    //!
+    //! When the packetizer bitrate is specified as zero (the default), the
+    //! target bitrate of the PID is unspecified. The repetition rates of
+    //! sections are ignored.
+    //!
+    //! Note that when sections have different repetition rates, some
+    //! sections may be repeated into one cycle of the Packetizer.
+    //!
+    //! Section stuffing may occur at the end of a section. If the section
+    //! ends in the middle of an MPEG packet, the beginning of the next section
+    //! can start immediately or can be delayed to the beginning of the next
+    //! packet. In the later case, the rest of the current packet is filled
+    //! with stuffing bytes (0xFF).
+    //!
+    //! A bitrate is specified in bits/second. Zero means undefined.
+    //! A repetition rate is specified in milliseconds. Zero means undefined.
+    //!
     class TSDUCKDLL CyclingPacketizer: public Packetizer, private SectionProviderInterface
     {
     public:
-        // The following options specifies where stuffing applies.
+        //!
+        //! Specify where stuffing applies.
+        //!
         enum StuffingPolicy {
-            NEVER,  // No stuffing, always pack sections.
-            AT_END, // Stuffing at end of cycle, pack sections inside cycle.
-            ALWAYS  // Always stuffing, never pack sections
+            NEVER,  //!< No stuffing, always pack sections.
+            AT_END, //!< Stuffing at end of cycle, pack sections inside cycle.
+            ALWAYS  //!< Always stuffing, never pack sections.
         };
 
-        // Constructor
-        CyclingPacketizer (PID = PID_NULL, StuffingPolicy = AT_END, BitRate = 0);
+        //!
+        //! Default constructor.
+        //! @param [in] pid PID for generated TS packets.
+        //! @param [in] policy TS packet stuffing policy at end of packet.
+        //! @param [in] bitrate Output bitrate, zero if undefined.
+        //! Useful only when using specific repetition rates for sections
+        //!
+        CyclingPacketizer(PID pid = PID_NULL, StuffingPolicy policy = AT_END, BitRate bitrate = 0);
 
-        // Destructor
+        //!
+        //! Destructor
+        //!
         virtual ~CyclingPacketizer();
 
-        // Set/get the stuffing policy.
-        void setStuffingPolicy (StuffingPolicy sp) {_stuffing = sp;}
+        //!
+        //! Set the TS packet stuffing policy at end of packet.
+        //! @param [in] sp TS packet stuffing policy at end of packet.
+        //!
+        void setStuffingPolicy(StuffingPolicy sp)
+        {
+            _stuffing = sp;
+        }
+
+        //!
+        //! Get the TS packet stuffing policy at end of packet.
+        //! @return TS packet stuffing policy at end of packet.
+        //!
         StuffingPolicy stuffingPolicy() const {return _stuffing;}
 
-        // Set/get the bitrate of the generated PID.
-        // Useful only when using specific repetition rates for sections
-        void setBitRate (BitRate);
-        BitRate bitRate() const {return _bitrate;}
+        //!
+        //! Set the bitrate of the generated PID.
+        //! Useful only when using specific repetition rates for sections
+        //! @param [in] bitrate Output bitrate, zero if undefined.
+        //!
+        void setBitRate(BitRate bitrate);
 
-        // Add one or more sections into the packetizer.
-        // The contents of the sections are shared.
-        void addSection (const SectionPtr&, MilliSecond repetition_rate = 0);
-        void addSections (const SectionPtrVector&, MilliSecond repetition_rate = 0);
+        //!
+        //! Get the bitrate of the generated PID.
+        //! @return Output bitrate, zero if undefined.
+        //!
+        BitRate bitRate() const
+        {
+            return _bitrate;
+        }
 
-        // Add all sections of a table into the packetizer.
-        void addTable (const BinaryTable&, MilliSecond repetition_rate = 0);
-        void addTable (const AbstractTable&, MilliSecond repetition_rate = 0);
-
-        // Remove all sections with the specified table id.
-        // If one such section is currently being packetized, the rest of
-        // the section will be packetized.
-        void removeSections (TID);
-
-        // Remove all sections with the specified table id and table id extension.
-        // If one such section is currently being packetized, the rest of
-        // the section will be packetized.
-        void removeSections (TID, uint16_t);
-
-        // Remove all sections in the packetizer.
-        // If a section is currently being packetized, the rest of
-        // the section will be packetized.
-        void removeAll ();
-
-        // Reset the content of a packetizer. Becomes empty.
-        // If the last returned packet contained an unfinished section,
-        // this section will be lost. Inherited from Packetizer.
-        virtual void reset();
-
-        // Get the number of stored sections to packetize
-        SectionCounter storedSectionCount() const {return _section_count;}
+        //!
+        //! Add one section into the packetizer.
+        //! The contents of the sections are shared.
+        //! @param [in] section A smart pointer to the section to packetize.
+        //! @param [in] repetition_rate Repetition rate of the section in milliseconds.
+        //! If zero, simply packetize sections one after the other.
+        //!
+        void addSection(const SectionPtr& section, MilliSecond repetition_rate = 0);
         
-        // Return true when the last generated packet was the last packet in
-        // the cycle. Note that if the stuffing policy is NEVER, this
-        // is not reliable since it is unlikely that a packet actually
-        // terminates a cycle.
+        //!
+        //! Add some sections into the packetizer.
+        //! The contents of the sections are shared.
+        //! @param [in] sections A vector of smart pointer to the sections to packetize.
+        //! @param [in] repetition_rate Repetition rate of the sections in milliseconds.
+        //! If zero, simply packetize sections one after the other.
+        //!
+        void addSections(const SectionPtrVector& sections, MilliSecond repetition_rate = 0);
+
+        //!
+        //! Add all sections of a table into the packetizer.
+        //! The contents of the sections are shared.
+        //! @param [in] table A binary table to packetize.
+        //! @param [in] repetition_rate Repetition rate of the sections in milliseconds.
+        //! If zero, simply packetize sections one after the other.
+        //!
+        void addTable(const BinaryTable& table, MilliSecond repetition_rate = 0);
+
+        //!
+        //! Add all sections of a table into the packetizer.
+        //! The contents of the sections are shared.
+        //! @param [in] table A table to packetize.
+        //! @param [in] repetition_rate Repetition rate of the sections in milliseconds.
+        //! If zero, simply packetize sections one after the other.
+        //!
+        void addTable(const AbstractTable& table, MilliSecond repetition_rate = 0);
+
+        //!
+        //! Remove all sections with the specified table id.
+        //! If one such section is currently being packetized, the rest of the section will be packetized.
+        //! @param [in] tid The table id of the sections to remove.
+        //!
+        void removeSections(TID tid);
+
+        //!
+        //! Remove all sections with the specified table id and table id extension.
+        //! If one such section is currently being packetized, the rest of the section will be packetized.
+        //! @param [in] tid The table id of the sections to remove.
+        //! @param [in] tid_ext The table id extension of the sections to remove.
+        //!
+        void removeSections(TID tid, uint16_t tid_ext);
+
+        //!
+        //! Remove all sections in the packetizer.
+        //! If a section is currently being packetized, the rest of the section will be packetized.
+        //!
+        void removeAll();
+
+        //!
+        //! Get the number of stored sections to packetize.
+        //! @return The number of stored sections to packetize.
+        //!
+        SectionCounter storedSectionCount() const
+        {
+            return _section_count;
+        }
+
+        //!
+        //! Check if the last generated packet was the last packet in the cycle.
+        //! Note that if the stuffing policy is NEVER, this is not reliable since it is
+        //! unlikely that a packet actually terminates a cycle.
+        //! @return True when the last generated packet was the last packet in the cycle.
+        //!
         bool atCycleBoundary() const;
 
-        // Display the internal state of the packetizer, mainly for debug.
         // Inherited from Packetizer.
-        virtual std::ostream& display (std::ostream&) const;
+        virtual void reset();
+        virtual std::ostream& display(std::ostream& strm) const;
 
     private:
         // Each section is identified by a SectionDesc instance
@@ -151,13 +221,13 @@ namespace ts {
             SectionCounter last_cycle;  // Cycle index of last time the section was sent
 
             // Constructor
-            SectionDesc (const SectionPtr& sec, MilliSecond rep) :
-                section (sec), repetition (rep), last_packet (0), due_packet (0), last_cycle (0)
+            SectionDesc(const SectionPtr& sec, MilliSecond rep) :
+                section(sec), repetition(rep), last_packet(0), due_packet(0), last_cycle(0)
             {
             }
 
             // Display the internal state, mainly for debug.
-            std::ostream& display (std::ostream&) const;
+            std::ostream& display(std::ostream&) const;
         };
 
         // Safe pointer for SectionDesc (not thread-safe)
@@ -181,16 +251,16 @@ namespace ts {
 
         // Insert a scheduled section in the list, sorted by due_packet,
         // after other sections with the same due_packet.
-        void addScheduledSection (const SectionDescPtr&);
+        void addScheduledSection(const SectionDescPtr&);
 
         // Remove all sections with the specified tid/tid_ext in the specified list.
-        void removeSections (SectionDescList&, TID, uint16_t tid_ext, bool use_tid_ext, bool scheduled);
+        void removeSections(SectionDescList&, TID, uint16_t tid_ext, bool use_tid_ext, bool scheduled);
 
         // Inherited from SectionProviderInterface
-        virtual void provideSection (SectionCounter, SectionPtr&);
+        virtual void provideSection(SectionCounter, SectionPtr&);
         virtual bool doStuffing();
 
         // Hide this method, we do not want the section provider to be replaced
-        void setSectionProvider (SectionProviderInterface*);
+        void setSectionProvider(SectionProviderInterface*);
     };
 }

@@ -37,22 +37,32 @@
 #include "tsAbstractDescriptor.h"
 
 namespace ts {
-
+    //!
+    //! Representation of a generic data_broadcast_id_descriptor.
+    //! Specialized classes exist, depending on the data_broadcast_id.
+    //! @see ETSI 300 468, 6.2.12.
+    //!
     class TSDUCKDLL DataBroadcastIdDescriptor : public AbstractDescriptor
     {
     public:
         // DataBroadcastIdDescriptor public members:
-        uint16_t    data_broadcast_id;
-        ByteBlock private_data;
+        uint16_t  data_broadcast_id; //!< Data broadcast id.
+        ByteBlock private_data;      //!< Id selector bytes.
 
-        // Default constructor:
-        DataBroadcastIdDescriptor (uint16_t id = 0);
+        //!
+        //! Default constructor.
+        //! @param [in] id Data broadcast id.
+        //!
+        DataBroadcastIdDescriptor(uint16_t id = 0);
 
-        // Constructor from a binary descriptor
-        DataBroadcastIdDescriptor (const Descriptor&);
+        //!
+        //! Constructor from a binary descriptor
+        //! @param [in] bin A binary descriptor to deserialize.
+        //!
+        DataBroadcastIdDescriptor(const Descriptor& bin);
 
         // Inherited methods
-        virtual void serialize (Descriptor&) const;
-        virtual void deserialize (const Descriptor&);
+        virtual void serialize(Descriptor&) const;
+        virtual void deserialize(const Descriptor&);
     };
 }

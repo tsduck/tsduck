@@ -36,44 +36,66 @@
 #include "tsAbstractDescriptor.h"
 
 namespace ts {
-
+    //!
+    //! Representation of a content_descriptor.
+    //! @see ETSI 300 468, 6.2.9.
+    //!
     class TSDUCKDLL ContentDescriptor : public AbstractDescriptor
     {
     public:
         // Content entry
         struct Entry;
+
+        //! A list of content entries.
         typedef std::list<Entry> EntryList;
 
         // Public members:
-        EntryList entries;
+        EntryList entries;  //!< The list of content entries.  
 
-        // Default constructor
+        //!
+        //! Default constructor.
+        //!
         ContentDescriptor();
 
-        // Constructor from a binary descriptor
-        ContentDescriptor (const Descriptor&);
+        //!
+        //! Constructor from a binary descriptor
+        //! @param [in] bin A binary descriptor to deserialize.
+        //!
+        ContentDescriptor(const Descriptor& bin);
 
         // Inherited methods
         virtual void serialize (Descriptor&) const;
         virtual void deserialize (const Descriptor&);
 
-        // Content entry
+        //!
+        //! A content entry.
+        //!
         struct TSDUCKDLL Entry
         {
             // Public members
-            uint8_t content_nibble_level_1;
-            uint8_t content_nibble_level_2;
-            uint8_t user_nibble_1;
-            uint8_t user_nibble_2;
+            uint8_t content_nibble_level_1;  //!< 4 bits, see ETSI 300 468, 6.2.9.
+            uint8_t content_nibble_level_2;  //!< 4 bits, see ETSI 300 468, 6.2.9.
+            uint8_t user_nibble_1;           //!< 4 bits, see ETSI 300 468, 6.2.9.
+            uint8_t user_nibble_2;           //!< 4 bits, see ETSI 300 468, 6.2.9.
 
-            // Contructors
-            Entry (uint16_t all = 0) :
-                content_nibble_level_1 (uint8_t (all >> 12) & 0x0F),
-                content_nibble_level_2 (uint8_t (all >> 8) & 0x0F),
-                user_nibble_1 (uint8_t (all >> 4) & 0x0F),
-                user_nibble_2 (uint8_t (all) & 0x0F)
+            //!
+            //! Default contructor.
+            //! @param [in] all All 4 nibbles as a 16-bit integer.
+            //!
+            Entry(uint16_t all = 0) :
+                content_nibble_level_1(uint8_t(all >> 12) & 0x0F),
+                content_nibble_level_2(uint8_t(all >> 8) & 0x0F),
+                user_nibble_1(uint8_t(all >> 4) & 0x0F),
+                user_nibble_2(uint8_t(all) & 0x0F)
             {
             }
+            //!
+            //! Contructor.
+            //! @param [in] l1 Level 1 nibble.
+            //! @param [in] l2 Level 2 nibble.
+            //! @param [in] u1 First user nibble.
+            //! @param [in] u2 Second user nibble.
+            //!
             Entry (uint8_t l1, uint8_t l2, uint8_t u1, uint8_t u2) :
                 content_nibble_level_1 (l1),
                 content_nibble_level_2 (l2),

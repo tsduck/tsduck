@@ -36,24 +36,33 @@
 #include "tsAbstractDescriptor.h"
 
 namespace ts {
-
+    //!
+    //! Representation of a CA_identifier_descriptor.
+    //! @see ETSI 300 468, 6.2.5.
+    //!
     class TSDUCKDLL CAIdentifierDescriptor : public AbstractDescriptor
     {
     public:
         // Public members:
-        std::vector<uint16_t> casids;
+        std::vector<uint16_t> casids; //!< List of CA system ids.
 
-        // Default constructor
+        //!
+        //! Default constructor
+        //!
         CAIdentifierDescriptor();
 
-        // Constructor using a variable-length argument list.
-        // Each argument is a CA_system_id. All arguments are int, not uint16_t,
-        // since integer literals are int by default.
-        // The end of the argument list must be marked by -1.
-        CAIdentifierDescriptor (int casid, ...);
+        //!
+        //! Constructor using a variable-length argument list.
+        //! @param [in] casid Variable-length list of CA system ids. All arguments are @c int, not @c uint16_t,
+        //! since integer literals are @c int by default. The end of the argument list must be marked by -1.
+        //!
+        CAIdentifierDescriptor(int casid, ...);
 
-        // Constructor from a binary descriptor
-        CAIdentifierDescriptor (const Descriptor&);
+        //!
+        //! Constructor from a binary descriptor
+        //! @param [in] bin A binary descriptor to deserialize.
+        //!
+        CAIdentifierDescriptor(const Descriptor& bin);
 
         // Inherited methods
         virtual void serialize (Descriptor&) const;

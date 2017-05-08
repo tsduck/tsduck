@@ -37,7 +37,6 @@
 #include "tsSection.h"
 
 namespace ts {
-
     //!
     //! Abstract interface for classes which provides MPEG Section into a Packetizer.
     //!
@@ -47,21 +46,28 @@ namespace ts {
     class TSDUCKDLL SectionProviderInterface
     {
     public:
-        // This hook is invoked when a new section is required.
-        // If a null pointer is provided, no section is available.
-        // The section counter is an information on the progression
-        // (zero the first time the hook is invoked from the packetizer).
-        virtual void provideSection (SectionCounter, SectionPtr&) = 0;
+        //!
+        //! This hook is invoked when a new section is required.
+        //! @param [in] counter The section counter is an information on the progression
+        //! (zero the first time the hook is invoked from the packetizer).
+        //! @param [out] section A smart pointer to the next section to packetize.
+        //! If a null pointer is provided, no section is available.
+        //!
+        virtual void provideSection(SectionCounter counter, SectionPtr& section) = 0;
 
-        // This hook returns true if stuffing to the next transport
-        // packet boundary shall be performed before the next section.
-        //
-        // In all cases, a Packetizer never splits a section header
-        // between two packets. This is not required by the MPEG standard
-        // but some STB are known to have problems with that.
+        //!
+        //! This hook shall return true if stuffing to the next transport
+        //! packet boundary shall be performed before the next section.
+        //!
+        //! In all cases, a Packetizer never splits a section header
+        //! between two packets. This is not required by the MPEG standard
+        //! but some STB are known to have problems with that.
+        //!
         virtual bool doStuffing() = 0;
 
-        // Virtual destructor
-        virtual ~SectionProviderInterface () {}
+        //!
+        //! Virtual destructor
+        //!
+        virtual ~SectionProviderInterface() {}
     };
 }

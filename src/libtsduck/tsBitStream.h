@@ -68,7 +68,10 @@ namespace ts {
         size_t         _next_bit;   // Next bit to read
 
     public:
-        // Default constructor. Object is unusable as long as reset is not invoked.
+        //!
+        //! Default constructor.
+        //! Object is unusable as long as reset is not invoked.
+        //!
         BitStream() :
             _base(0),
             _start_bit(0),
@@ -77,13 +80,22 @@ namespace ts {
         {
         }
 
-        // Constructor using a memory area which must remain valid as long as the BitStream object is used.
+        //!
+        //! Constructor using a memory area which must remain valid as long as the BitStream object is used.
+        //! @param [in] data Address of data area to analyze.
+        //! @param [in] size_in_bits Size in bits of the data area.
+        //! @param [in] bit_offset_in_first_byte The number of initial bits to ignore in the first byte. Default: zero.
+        //!
         BitStream(const void* data, size_t size_in_bits, size_t bit_offset_in_first_byte = 0)
         {
             reset(data, size_in_bits, bit_offset_in_first_byte);
         }
 
-        // Copy constructor
+        //!
+        //! Copy constructor.
+        //! The same data area will be analyzed, starting at the current point.
+        //! @param [in] bs Other bitstream to copy.
+        //!
         BitStream(const BitStream& bs) :
             _base(bs._base),
             _start_bit(bs._start_bit),
@@ -92,7 +104,11 @@ namespace ts {
         {
         }
 
-        // Assignment (use the same buffer)
+        //!
+        //! Assignment (use the same buffer).
+        //! The same data area will be analyzed, starting at the current point.
+        //! @param [in] bs Other bitstream to copy.
+        //!
         BitStream& operator= (const BitStream& bs)
         {
             _base = bs._base;
@@ -102,13 +118,21 @@ namespace ts {
             return *this;
         }
 
-        // Check if this object is currently associated with a memory area.
+        //!
+        //! Check if this object is currently associated with a memory area.
+        //! @return True if this object is currently associated with a memory area.
+        //!
         bool isAssociated() const
         {
             return _base != 0;
         }
 
-        // Reset with a memory area which must remain valid as long as the BitStream object is used.
+        //!
+        //! Reset with a memory area which must remain valid as long as the BitStream object is used.
+        //! @param [in] data Address of data area to analyze.
+        //! @param [in] size_in_bits Size in bits of the data area.
+        //! @param [in] bit_offset_in_first_byte The number of initial bits to ignore in the first byte. Default: zero.
+        //!
         void reset(const void* data, size_t size_in_bits, size_t bit_offset_in_first_byte = 0)
         {
             _base = reinterpret_cast<const uint8_t*>(data) + (bit_offset_in_first_byte >> 3);
@@ -117,57 +141,84 @@ namespace ts {
             _next_bit = _start_bit;
         }
 
-        // Reset parsing at the specified bit offset
-        void seek (size_t bit_offset)
+        //!
+        //! Reset parsing at the specified bit offset.
+        //! @param [in] bit_offset Offset of next bit to analyze.
+        //!
+        void seek(size_t bit_offset)
         {
-            _next_bit = std::min (_end_bit, _start_bit + bit_offset);
+            _next_bit = std::min(_end_bit, _start_bit + bit_offset);
         }
 
-        // Get current bit position
-        size_t currentBitOffset () const
+        //!
+        //! Get current bit position.
+        //! @return The offset of the current bit from the starting one.
+        //!
+        size_t currentBitOffset() const
         {
-            assert (_next_bit >= _start_bit);
-            assert (_next_bit <= _end_bit);
+            assert(_next_bit >= _start_bit);
+            assert(_next_bit <= _end_bit);
             return _next_bit - _start_bit;
         }
 
-        // Get number of remaining bits
+        //!
+        //! Get number of remaining bits.
+        //! @return The number of remaining bits.
+        //!
         size_t remainingBitCount() const
         {
-            assert (_next_bit >= _start_bit);
-            assert (_next_bit <= _end_bit);
+            assert(_next_bit >= _start_bit);
+            assert(_next_bit <= _end_bit);
             return _end_bit - _next_bit;
         }
 
-        // Check at end of stream
+        //!
+        //! Check end of stream.
+        //! @return True if the end of stream is reached.
+        //!
         bool endOfStream() const
         {
             return _next_bit >= _end_bit;
         }
 
-        // Check if the current bit pointer is on a byte boundary
+        //!
+        //! Check if the current bit pointer is on a byte boundary.
+        //! @return True if the next byte to read is at the beginning of a byte.
+        //!
         bool byteAligned() const
         {
             return (_next_bit & 0x07) == 0;
         }
 
-        // Skip n bits
-        void skip (size_t n) {
+        //!
+        //! Skip bits.
+        //! @param [in] n Number of bits to skip.
+        //!
+        void skip(size_t n) {
             _next_bit = std::min(_end_bit, _next_bit + n);
         }
 
-        // Back n bits
-        void back (size_t n) {
+        //!
+        //! Back n bits.
+        //! @param [in] n Number of bits to skip back.
+        //!
+        void back(size_t n) {
             _next_bit = _start_bit + n >= _next_bit ? _start_bit : _next_bit - n;
         }
 
-        // Advance pointer to next byte boundary.
+        //!
+        //! Advance pointer to next byte boundary.
+        //!
         void skipToNextByte()
         {
-            _next_bit = std::min (_end_bit, (_next_bit + 8) & ~0x07);
+            _next_bit = std::min(_end_bit, (_next_bit + 8) & ~0x07);
         }
 
-        // Read the next bit and advance the bitstream pointer.
+        //!
+        //! Read the next bit and advance the bitstream pointer.
+        //! @param [in] def Default value to return if already at end of stream.
+        //! @return The value of the next bit.
+        //!
         uint8_t readBit(uint8_t def = 0)
         {
             if (_next_bit >= _end_bit) {
@@ -180,7 +231,13 @@ namespace ts {
             }
         }
 
-        // Read the next n bits as an integer value and advance the bitstream pointer.
+        //!
+        //! Read the next n bits as an integer value and advance the bitstream pointer.
+        //! @tparam INT An integer type for the result.
+        //! @param [in] n Number of bits to read.
+        //! @param [in] def Default value to return if less than @a n bits before end of stream.
+        //! @return The value of the next @a n bits.
+        //!
         template <typename INT> INT read(size_t n, INT def = 0)
         {
             if (_next_bit + n > _end_bit) {
@@ -195,13 +252,13 @@ namespace ts {
             // Read complete bytes
             const uint8_t* byte = _base + (_next_bit >> 3);
             while (n > 7) {
-                val = (val << 8) | INT (*byte++);
+                val = (val << 8) | INT(*byte++);
                 _next_bit += 8;
                 n -= 8;
             }
             // Read trailing bits
             while (n > 0) {
-                val = (val << 1) | INT (readBit());
+                val = (val << 1) | INT(readBit());
                 --n;
             }
             return val;

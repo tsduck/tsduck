@@ -38,55 +38,132 @@
 #include "tsSectionProviderInterface.h"
 
 namespace ts {
-
+    //!
+    //! Packetization of MPEG sections into Transport Stream packets.
+    //!
+    //! Sections are provided by an object implementing SectionProviderInterface.
+    //!
     class TSDUCKDLL Packetizer
     {
     public:
-        // Constructor.
-        Packetizer (PID = PID_NULL, SectionProviderInterface* = 0);
+        //!
+        //! Default constructor.
+        //! @param [in] pid PID for generated TS packets.
+        //! @param [in] provider An object which will be called each time a section is required.
+        //!
+        Packetizer(PID pid = PID_NULL, SectionProviderInterface* provider = 0);
 
-        // Destructor
+        //!
+        //! Destructor
+        //!
         virtual ~Packetizer() {}
 
-        // Set/get default PID for subsequent MPEG packets.
-        void setPID (PID pid) {_pid = pid & 0x1FFF;}
-        PID getPID() const {return _pid;}
+        //!
+        //! Set the default PID for subsequent MPEG packets.
+        //! @param [in] pid PID for generated TS packets.
+        //!
+        void setPID(PID pid)
+        {
+            _pid = pid & 0x1FFF;
+        }
+        
+        //!
+        //! Get the default PID for subsequent MPEG packets.
+        //! @return PID for generated TS packets.
+        //!
+        PID getPID() const
+        {
+            return _pid;
+        }
 
-        // Set/get the object which provides MPEG sections when the
-        // packetizer needs a new section
-        void setSectionProvider (SectionProviderInterface* sp) {_provider = sp;}
-        SectionProviderInterface* sectionProvider() const {return _provider;}
+        //!
+        //! Set the object which provides MPEG sections when the packetizer needs a new section.
+        //! @param [in] provider An object which will be called each time a section is required.
+        //!
+        void setSectionProvider(SectionProviderInterface* provider)
+        {
+            _provider = provider;
+        }
 
-        // Set/get continuity counter value for next MPEG packet.
-        // This counter is automatically incremented at each packet.
-        // It is usually never a good idea to change this, except
-        // maybe before generating the first packet if the continuity
-        // must be preserved with the previous content of the PID.
-        void setNextContinuityCounter (uint8_t cc) {_continuity = cc & 0x0F;}
-        uint8_t nextContinuityCounter() const {return _continuity;}
+        //!
+        //! Get the object which provides MPEG sections when the packetizer needs a new section.
+        //! @return The object which will be called each time a section is required.
+        //!
+        SectionProviderInterface* sectionProvider() const
+        {
+            return _provider;
+        }
 
-        // Check if the packet stream is exactly at a section boundary.
-        // Return true if the last returned packet contained
-        // the end of a section and no unfinished section.
-        bool atSectionBoundary() const {return _next_byte == 0;}
+        //!
+        //! Set the continuity counter value for next MPEG packet.
+        //! This counter is automatically incremented at each packet.
+        //! It is usually never a good idea to change this, except
+        //! maybe before generating the first packet if the continuity
+        //! must be preserved with the previous content of the PID.
+        //! @param [in] cc Next continuity counter.
+        //!
+        void setNextContinuityCounter(uint8_t cc)
+        {
+            _continuity = cc & 0x0F;
+        }
 
-        // Build the next MPEG packet for the list of sections.
-        // If there is no section to packetize, generate a null packet on PID_NULL.
-        void getNextPacket (TSPacket&);
+        //!
+        //! Get the continuity counter value for next MPEG packet.
+        //! @return Next continuity counter.
+        //!
+        uint8_t nextContinuityCounter() const
+        {
+            return _continuity;
+        }
 
-        // Get the number of generated packets so far
-        PacketCounter packetCount() const {return _packet_count;}
+        //!
+        //! Check if the packet stream is exactly at a section boundary.
+        //! @return True if the last returned packet contained
+        //! the end of a section and no unfinished section.
+        //!
+        bool atSectionBoundary() const
+        {
+            return _next_byte == 0;
+        }
 
-        // Get the number of completely packetized sections so far
-        SectionCounter sectionCount() const {return _section_out_count;}
+        //!
+        //! Build the next MPEG packet for the list of sections.
+        //! If there is no section to packetize, generate a null packet on PID_NULL.
+        //! @param [out] packet The next TS packet.
+        //!
+        void getNextPacket(TSPacket& packet);
 
-        // Reset the content of a packetizer. Becomes empty.
-        // If the last returned packet contained an unfinished
-        // section, this section will be lost.
+        //!
+        //! Get the number of generated packets so far.
+        //! @return The number of generated packets so far.
+        //!
+        PacketCounter packetCount() const
+        {
+            return _packet_count;
+        }
+
+        //!
+        //! Get the number of completely packetized sections so far.
+        //! @return The number of completely packetized sections so far.
+        //!
+        SectionCounter sectionCount() const
+        {
+            return _section_out_count;
+        }
+
+        //!
+        //! Reset the content of a packetizer.
+        //! The packetizer becomes empty.
+        //! If the last returned packet contained an unfinished section, this section will be lost.
+        //!
         virtual void reset();
 
-        // Display the internal state of the packetizer, mainly for debug
-        virtual std::ostream& display (std::ostream&) const;
+        //!
+        //! Display the internal state of the packetizer, mainly for debug.
+        //! @param [in,out] strm Output text stream.
+        //! @return A reference to @a strm.
+        //!
+        virtual std::ostream& display(std::ostream& strm) const;
 
     private:
         // Private members:
@@ -101,12 +178,17 @@ namespace ts {
 
         // Inaccessible operations
         Packetizer(const Packetizer&) = delete;
-        Packetizer& operator= (const Packetizer&) = delete;
+        Packetizer& operator=(const Packetizer&) = delete;
     };
 }
 
-// Display the internal state of the packetizer, mainly for debug
-inline std::ostream& operator<< (std::ostream& strm, const ts::Packetizer& pzer)
+//!
+//! Display the internal state of a packetizer, mainly for debug.
+//! @param [in,out] strm Output text stream.
+//! @param [in] pzer A packetizer to display.
+//! @return A reference to @a strm.
+//!
+inline std::ostream& operator<<(std::ostream& strm, const ts::Packetizer& pzer)
 {
-    return pzer.display (strm);
+    return pzer.display(strm);
 }

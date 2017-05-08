@@ -36,110 +36,244 @@
 #include "tsSection.h"
 
 namespace ts {
-
-    // A table is built by adding sections using addSection().
-    // When all sections are present, the table becomes valid.
-    //
-    // Sections are added using SectionPtr safe pointers. Only the
-    // pointers are copied. The sections are shared.
-    //
-    // The table_id, version and number of sections is determined when
-    // the first section is added. Subsequent sections must have the
-    // same properties.
-
+    //!
+    //! Representation of MPEG PSI/SI tables in binary form (ie. list of sections).
+    //!
+    //! A table is built by adding sections using addSection().
+    //! When all sections are present, the table becomes valid.
+    //!
+    //! Sections are added using @link SectionPtr @endlink safe pointers. Only the
+    //! pointers are copied. The sections are shared.
+    //!
+    //! The @a table_id, @a version and number of sections is determined when
+    //! the first section is added. Subsequent sections must have the
+    //! same properties.
+    //!
     class TSDUCKDLL BinaryTable
     {
     public:
-        // Constructor
-        BinaryTable ();
+        //!
+        //! Default constructor.
+        //!
+        BinaryTable();
 
-        // Copy constructor. The sections are either shared between the
-        // two tables or duplicated.
+        //!
+        //! Copy constructor.
+        //! @param [in] table Another instance to copy.
+        //! @param [in] mode The sections are either shared (ts::SHARE) between the
+        //! two tables or duplicated (ts::COPY).
+        //!
         BinaryTable(const BinaryTable& table, CopyShare mode);
 
-        // Constructor from an array of sections.
-        // If "replace" is true, duplicated sections may be replaced.
-        // If "grow" is true, the "last_section_number" of the section
-        // may be greater than the current "last_section_number".
-        // In this case, all sections which were previously added
-        // in the table are modified.
+        //!
+        //! Constructor from an array of sections.
+        //! @param [in] sections An array of smart pointers to sections.
+        //! @param [in] replace If true, duplicated sections may be replaced.
+        //! Otherwise, sections which are already present (based on section number)
+        //! are not replaced.
+        //! @param [in] grow If true, the "last_section_number" of a section
+        //! may be greater than the current "last_section_number" of the table.
+        //! In this case, all sections which were previously added in the table are modified.
+        //!
         BinaryTable(const SectionPtrVector& sections, bool replace = true, bool grow = true);
 
-        // Assignment. The sections are referenced, and thus shared
-        // between the two table objects.
+        //!
+        //! Assignment operator.
+        //! The sections are referenced, and thus shared between the two table objects.
+        //! @param [in] table Other table to assign to this object.
+        //! @return A reference to this object.
+        //!
         BinaryTable& operator=(const BinaryTable& table);
 
-        // Duplication. Similar to assignment but the sections are duplicated.
+        //!
+        //! Duplication.
+        //! Similar to assignment but the sections are duplicated.
+        //! @param [in] table Other table to duplicate into this object.
+        //! @return A reference to this object.
+        //!
         BinaryTable& copy(const BinaryTable& table);
 
-        // Comparison.
-        // The source PID are ignored, only the table contents are compared.
-        // Note: Invalid tables are never identical
+        //!
+        //! Equality operator.
+        //! The source PID's are ignored, only the table contents are compared.
+        //! Invalid tables are never identical.
+        //! @param [in] table Other table to compare.
+        //! @return True if the two tables are identical. False otherwise.
+        //!
         bool operator==(const BinaryTable& table) const;
-        bool operator!=(const BinaryTable& table) const {return !(*this == table);}
 
-        // Add a section to a table.
-        // If "replace" is true, an existing section may be replaced.
-        //
-        // If "grow" is true, the "last_section_number" of the section
-        // may be greater than the current "last_section_number".
-        // In this case, all sections which were previously added
-        // in the table are modified.
-        //
-        // AddSection returns false if the section could
-        // not be added (inconsistent property).
+        //!
+        //! Unequality operator.
+        //! The source PID's are ignored, only the table contents are compared.
+        //! Invalid tables are never identical.
+        //! @param [in] table Other table to compare.
+        //! @return True if the two tables are different. False otherwise.
+        //!
+        bool operator!=(const BinaryTable& table) const
+        {
+            return !(*this == table);
+        }
+
+        //!
+        //! Add a section to a table.
+        //! @param [in] section A smart pointers to section.
+        //! @param [in] replace If true, duplicated sections may be replaced.
+        //! Otherwise, sections which are already present (based on section number)
+        //! are not replaced.
+        //! @param [in] grow If true, the "last_section_number" of @a section
+        //! may be greater than the current "last_section_number" of the table.
+        //! In this case, all sections which were previously added in the table are modified.
+        //! @return True on succes, false if @a section could not be added (inconsistent property).
+        //!
         bool addSection(const SectionPtr& section, bool replace = true, bool grow = true);
 
-        // Add several sections to a table
+        //!
+        //! Add several sections to a table.
+        //! @param [in] sections An array of smart pointers to sections.
+        //! @param [in] replace If true, duplicated sections may be replaced.
+        //! Otherwise, sections which are already present (based on section number)
+        //! are not replaced.
+        //! @param [in] grow If true, the "last_section_number" of a section
+        //! may be greater than the current "last_section_number" of the table.
+        //! In this case, all sections which were previously added in the table are modified.
+        //! @return True on succes, false if a section could not be added (inconsistent property).
+        //!
         bool addSections(const SectionPtrVector& sections, bool replace = true, bool grow = true);
 
-        // Check if the table is valid.
+        //!
+        //! Check if the table is valid.
+        //! @return True if the table is valid (all consistent sections are present with same
+        //! table id, same version, same "last_section_number").
+        //!
         bool isValid() const {return _is_valid;}
 
-        // Clear the content of the table. The table must be rebuilt
-        // using calls to addSection.
+        //!
+        //! Clear the content of the table.
+        //! The table must be rebuilt using calls to addSection().
+        //!
         void clear();
 
-        // Fast access to main table properties.
-        // Other fields must be explicitely access through the sections.
+        //!
+        //! Fast access to the table id.
+        //! @return The table id.
+        //!
         TID tableId() const {return _tid;}
+
+        //!
+        //! Fast access to the table id extension.
+        //! @return The table id extension.
+        //!
         uint16_t tableIdExtension() const {return _tid_ext;}
+
+        //!
+        //! Fast access to the table version number.
+        //! @return The table version number.
+        //!
         uint8_t version() const {return _version;}
+
+        //!
+        //! Fast access to the source PID.
+        //! @return The source PID.
+        //!
         PID sourcePID() const {return _source_pid;}
 
-        // Modifiable properties.
-        void setTableIdExtension(uint16_t, bool recompute_crc = true);
-        void setVersion(uint8_t, bool recompute_crc = true);
-        void setSourcePID(PID);
+        //!
+        //! Set the table id of all sections in the table.
+        //! @param [in] tid The new table id.
+        //! @param [in] recompute_crc If true, immediately recompute the CRC32 of all sections.
+        //! If false, the CRC32's become invalid and must be computed later.
+        //!
+        void setTableIdExtension(uint16_t tid, bool recompute_crc = true);
 
-        // Index of first and last TS packet of the table in the demultiplexed stream.
+        //!
+        //! Set the table version number of all sections in the table.
+        //! @param [in] version The new table version number.
+        //! @param [in] recompute_crc If true, immediately recompute the CRC32 of all sections.
+        //! If false, the CRC32's become invalid and must be computed later.
+        //!
+        void setVersion(uint8_t version, bool recompute_crc = true);
+
+        //!
+        //! Set the source PID of all sections in the table.
+        //! @param [in] pid The new source PID.
+        //!
+        void setSourcePID(PID pid);
+
+        //!
+        //! Index of first TS packet of the table in the demultiplexed stream.
+        //! Valid only if the table was extracted by a section demux.
+        //! @return The first TS packet of the table in the demultiplexed stream.
+        //!
         PacketCounter getFirstTSPacketIndex() const;
+
+        //!
+        //! Index of last TS packet of the table in the demultiplexed stream.
+        //! Valid only if the table was extracted by a section demux.
+        //! @return The last TS packet of the table in the demultiplexed stream.
+        //!
         PacketCounter getLastTSPacketIndex() const;
 
-        // Return the number of sections in the table
-        size_t sectionCount() const {return _sections.size ();}
+        //!
+        //! Number of sections in the table.
+        //! @return The number of sections in the table.
+        //!
+        size_t sectionCount() const
+        {
+            return _sections.size();
+        }
 
-        // Return the total size in bytes of all sections in the table.
+        //!
+        //! Total size in bytes of all sections in the table.
+        //! @return The total size in bytes of all sections in the table.
+        //!
         size_t totalSize() const;
 
-        // Get a pointer to a section.
-        const SectionPtr& sectionAt (size_t index) const
+        //!
+        //! Get a pointer to a section.
+        //! @param [in] index Index of the section to get.
+        //! @return A safe pointer to the section or a null pointer if the specified section is not present.
+        //!
+        const SectionPtr& sectionAt(size_t index) const
         {
-            assert (index < _sections.size ());
+            assert(index < _sections.size());
             return _sections[index];
         }
 
-        // Display the table on an output stream
-        std::ostream& display (std::ostream& strm, int indent = 0, CASFamily cas = CAS_OTHER) const;
+        //!
+        //! Display the table on an output stream.
+        //! The content of the table is interpreted according to the table id.
+        //! @param [in,out] strm Output stream (text output).
+        //! @param [in] indent Indentation width.
+        //! @param [in] cas CAS family of the table. Used to interpret CAS-specific fields.
+        //! @return A reference to @a strm.
+        //!
+        std::ostream& display(std::ostream& strm, int indent = 0, CASFamily cas = CAS_OTHER) const;
 
-        // Write the binary table on standard streams.
-        std::ostream& write (std::ostream& strm, ReportInterface& report = CERR) const;
+        //!
+        //! Write the binary table on a standard stream.
+        //! @param [in,out] strm Output stream (binary output).
+        //! @param [in,out] report Where to report errors.
+        //! @return A reference to @a strm.
+        //!
+        std::ostream& write(std::ostream& strm, ReportInterface& report = CERR) const;
 
-        // Save the binary table in a file. Return true on success, false on error.
-        bool save (const char* file_name, ReportInterface& report = CERR) const;
-        bool save (const std::string& file_name, ReportInterface& report = CERR) const
+        //!
+        //! Save the binary table in a file.
+        //! @param [in] file_name Name of the output file.
+        //! @param [in,out] report Where to report errors.
+        //! @return True on success, false on error.
+        //!
+        bool save(const char* file_name, ReportInterface& report = CERR) const;
+
+        //!
+        //! Save the binary table in a file.
+        //! @param [in] file_name Name of the output file.
+        //! @param [in,out] report Where to report errors.
+        //! @return True on success, false on error.
+        //!
+        bool save(const std::string& file_name, ReportInterface& report = CERR) const
         {
-            return save (file_name.c_str(), report);
+            return save(file_name.c_str(), report);
         }
 
     private:
@@ -155,15 +289,25 @@ namespace ts {
         SectionPtrVector _sections;
     };
 
-    // Safe pointer for BinaryTable (not thread-safe)
+    //!
+    //! Safe pointer for BinaryTable (not thread-safe)
+    //!
     typedef SafePtr<BinaryTable,NullMutex> BinaryTablePtr;
 
-    // Vector of BinaryTable pointers
+    //!
+    //! Vector of BinaryTable pointers
+    //!
     typedef std::vector<BinaryTablePtr> BinaryTablePtrVector;
 }
 
-// Display operator for tables
-TSDUCKDLL inline std::ostream& operator<< (std::ostream& strm, const ts::BinaryTable& table)
+//!
+//! Display operator for tables.
+//! The content of the table is interpreted according to the table id.
+//! @param [in,out] strm Output stream (text output).
+//! @param [in] table The table to output.
+//! @return A reference to @a strm.
+//!
+TSDUCKDLL inline std::ostream& operator<<(std::ostream& strm, const ts::BinaryTable& table)
 {
-    return table.display (strm);
+    return table.display(strm);
 }

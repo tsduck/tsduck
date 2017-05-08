@@ -90,12 +90,20 @@ CFLAGS_INCLUDES += -I$(LIBTSDUCKDIR)/private
 OBJS += $(DTAPI_OBJECT)
 
 # Library containing all modules.
-# Both static and dynamic libraries are created but only
-# use the dynamic one when building tools and plugins.
+# Both static and dynamic libraries are created but only use the dynamic one when building tools and plugins.
+# On MacOS, there is no "flock" command and it is not possible to serialize access to the .a file.
+# So, we create the library in one single big command.
 
 .PHONY: libs
 libs: $(OBJDIR)/$(LIBTSDUCK) $(OBJDIR)/$(SHLIBTSDUCK)
+
+ifdef MACOS
+$(OBJDIR)/$(LIBTSDUCK): $(OBJS)
+	@echo '  [AR] $@'; $(AR) $(ARFLAGS) $@ $^
+else
 $(OBJDIR)/$(LIBTSDUCK): $(OBJDIR)/$(LIBTSDUCK)($(OBJS))
+endif
+
 $(OBJDIR)/$(SHLIBTSDUCK): $(OBJS)
 	@echo '  [DTAPI] $(if $(DTAPI_OBJECT),using $(DTAPI_OBJECT),no DTAPI available)'; \
 	echo '  [CC] $@'; \

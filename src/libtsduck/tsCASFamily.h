@@ -36,19 +36,23 @@
 #include "tsPlatform.h"
 
 namespace ts {
-
-    // Known CAS families
+    //!
+    //! Known Conditional Access Systems families
+    //!
     enum CASFamily {
-        CAS_OTHER = 0,
-        CAS_MEDIAGUARD,
-        CAS_NAGRA,
-        CAS_VIACCESS,
-        CAS_THALESCRYPT,
-        CAS_SAFEACCESS
+        CAS_OTHER = 0,    //!< Unknown CAS.
+        CAS_MEDIAGUARD,   //!< MediaGuard (Canal+ Technologies).
+        CAS_NAGRA,        //!< Nagravision.
+        CAS_VIACCESS,     //!< Viaccess.
+        CAS_THALESCRYPT,  //!< ThalesCrypt (for TPS).
+        CAS_SAFEACCESS    //!< SafeAccess (Logiways).
     };
 
-    // Return a CAS family from a CA system id.
-    // Useful to analyze CA descriptors.
-
-    TSDUCKDLL CASFamily CASFamilyOf (uint16_t ca_system_id);
+    //!
+    //! Return a CAS family from a CA system id.
+    //! Useful to analyze CA descriptors.
+    //! @param [in] ca_system_id DVB-allocated CA system id.
+    //! @return A CAS family enumeration value.
+    //!
+    TSDUCKDLL CASFamily CASFamilyOf(uint16_t ca_system_id);
 }

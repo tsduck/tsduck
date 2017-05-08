@@ -37,23 +37,34 @@
 #include "tsAbstractDescriptor.h"
 
 namespace ts {
-
+    //!
+    //! Representation of a generic CA_descriptor.
+    //! Specialized classes exist, depending on the CA_system_id.
+    //! @see ISO/IEC 13818-1, ITU-T Rec. H.222.0, 2.6.16. 
+    //!
     class TSDUCKDLL CADescriptor : public AbstractDescriptor
     {
     public:
         // CADescriptor public members:
-        uint16_t    cas_id;
-        PID       ca_pid;
-        ByteBlock private_data;
+        uint16_t  cas_id;        //!< CA system id.
+        PID       ca_pid;        //!< PID for CA tables (ECM or EMM).
+        ByteBlock private_data;  //!< CA-specific private data.
 
-        // Default constructor:
-        CADescriptor (uint16_t cas_id = 0, PID ca_pid = PID_NULL);
+        //!
+        //! Default constructor.
+        //! @param [in] cas_id CA system id.
+        //! @param [in] ca_pid PID for CA tables (ECM or EMM).
+        //!
+        CADescriptor(uint16_t cas_id = 0, PID ca_pid = PID_NULL);
 
-        // Constructor from a binary descriptor
-        CADescriptor (const Descriptor&);
+        //!
+        //! Constructor from a binary descriptor
+        //! @param [in] bin A binary descriptor to deserialize.
+        //!
+        CADescriptor(const Descriptor& bin);
 
         // Inherited methods
-        virtual void serialize (Descriptor&) const;
-        virtual void deserialize (const Descriptor&);
+        virtual void serialize(Descriptor&) const;
+        virtual void deserialize(const Descriptor&);
     };
 }

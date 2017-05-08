@@ -36,21 +36,30 @@
 #include "tsAbstractDescriptor.h"
 
 namespace ts {
-
+    //!
+    //! Representation of a bouquet_name_descriptor.
+    //! @see ETSI 300 468, 6.2.4.
+    //!
     class TSDUCKDLL BouquetNameDescriptor : public AbstractDescriptor
     {
     public:
         // BouquetNameDescriptor public members:
-        std::string name;
+        std::string name; //!< Bouquet name.
 
-        // Default constructor:
-        BouquetNameDescriptor (const std::string& = "");
+        //!
+        //! Default constructor.
+        //! @param [in] name Bouquet name.
+        //!
+        BouquetNameDescriptor(const std::string& name = "");
 
-        // Constructor from a binary descriptor
-        BouquetNameDescriptor (const Descriptor&);
+        //!
+        //! Constructor from a binary descriptor
+        //! @param [in] bin A binary descriptor to deserialize.
+        //!
+        BouquetNameDescriptor(const Descriptor& bin);
 
         // Inherited methods
-        virtual void serialize (Descriptor&) const;
-        virtual void deserialize (const Descriptor&);
+        virtual void serialize(Descriptor&) const;
+        virtual void deserialize(const Descriptor&);
     };
 }

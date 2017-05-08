@@ -38,51 +38,151 @@
 #include "tsPlatform.h"
 
 namespace ts {
-
+    //!
+    //! Cyclic Redundancy Check as used in MPEG sections.
+    //!
     class TSDUCKDLL CRC32
     {
     public:
-        // Default constructor
-        CRC32 () : _fcs (0xFFFFFFFF) {}
+        //!
+        //! Default constructor.
+        //!
+        CRC32() : _fcs(0xFFFFFFFF) {}
 
-        // Copy constructor
-        CRC32 (const CRC32& c) : _fcs (c._fcs) {}
+        //!
+        //! Copy constructor.
+        //! @param [in] c Other instance to copy. The current computation state of this
+        //! object is the same as @a c.
+        //!
+        CRC32(const CRC32& c) : _fcs(c._fcs) {}
 
-        // Constructor, compute the CRC32 of a data area
-        CRC32 (const void* data, size_t size) : _fcs (0xFFFFFFFF) {add (data, size);}
+        //!
+        //! Constructor, compute the CRC32 of a data area.
+        //! @param [in] data Address of area to analyze.
+        //! @param [in] size Size in bytes of area to analyze.
+        //!
+        CRC32(const void* data, size_t size) :
+            _fcs(0xFFFFFFFF)
+        {
+            add(data, size);
+        }
 
-        // Continue the computation of a data area, following a previous CRC32
-        void add (const void* data, size_t size);
+        //!
+        //! Continue the computation of a data area, following a previous CRC32.
+        //! @param [in] data Address of area to analyze.
+        //! @param [in] size Size in bytes of area to analyze.
+        //!
+        void add(const void* data, size_t size);
 
-        // Get the value of a CRC32
-        uint32_t value() const {return _fcs;}
+        //!
+        //! Get the value of the CRC32 as computed so far.
+        //! @return The value of the CRC32 as computed so far.
+        //!
+        uint32_t value() const
+        {
+            return _fcs;
+        }
 
-        // Convert to a 32-bit int
+        //!
+        //! Convert to a 32-bit integer.
+        //! Same as value() method.
+        //! @return The value of the CRC32 as computed so far.
+        //!
         operator uint32_t() const {return _fcs;}
 
-        // Assigment
-        CRC32& operator= (const CRC32& c) {_fcs = c._fcs; return *this;}
+        //!
+        //! Assigment operator.
+        //! @param [in] c Other instance to copy. The current computation state of this
+        //! object is the same as @a c.
+        //! @return A reference to this object.
+        //!
+        CRC32& operator=(const CRC32& c)
+        {
+            _fcs = c._fcs;
+            return *this;
+        }
 
-        // Comparisons
-        bool operator== (const CRC32& c) const {return _fcs == c._fcs;}
-        bool operator!= (const CRC32& c) const {return _fcs != c._fcs;}
-        bool operator== (uint32_t c) const {return _fcs == c;}
-        bool operator!= (uint32_t c) const {return _fcs != c;}
+        //!
+        //! Comparison operator with another CRC32 instance.
+        //! @param [in] c Other instance to compare.
+        //! @return True if the two CRC32 are identical, false otherwise.
+        //!
+        bool operator==(const CRC32& c) const
+        {
+            return _fcs == c._fcs;
+        }
 
-        // What to do with a CRC32
-        enum Validation {IGNORE, CHECK, COMPUTE};
+        //!
+        //! Comparison operator with another CRC32 instance.
+        //! @param [in] c Other instance to compare.
+        //! @return True if the two CRC32 are different, false otherwise.
+        //!
+        bool operator!=(const CRC32& c) const
+        {
+            return _fcs != c._fcs;
+        }
+
+        //!
+        //! Comparison operator with a 32-bit integer.
+        //! @param [in] c A CRC32 value to compare.
+        //! @return True if the two CRC32 are identical, false otherwise.
+        //!
+        bool operator==(uint32_t c) const
+        {
+            return _fcs == c;
+        }
+
+        //!
+        //! Comparison operator with a 32-bit integer.
+        //! @param [in] c A CRC32 value to compare.
+        //! @return True if the two CRC32 are different, false otherwise.
+        //!
+        bool operator!=(uint32_t c) const
+        {
+            return _fcs != c;
+        }
+
+        //!
+        //! Reset the CRC32 computation, restart a new computation.
+        //!
+        void reset()
+        {
+            _fcs = 0xFFFFFFFF;
+        }
+
+        //!
+        //! What to do with a CRC32.
+        //! Used when building MPEG sections.
+        //!
+        enum Validation {
+            IGNORE,   //!< Ignore the section CRC32.
+            CHECK,    //!< Check that the value of the CRC32 of the section is correct and fail if it isn't.
+            COMPUTE   //!< Recompute a fresh new CRC32 value based on the content of the section.
+        };
 
     private:
         uint32_t _fcs;
     };
 
-    // Reversed forms of operators are not member functions
+    //!
+    //! Comparison operator between a CRC32 instance and a 32-bit integer.
+    //! The reversed form of operators is a member function.
+    //! @param [in] c1 A CRC32 value to compare.
+    //! @param [in] c2 A CRC32 instance to compare.
+    //! @return True if the two CRC32 are identical, false otherwise.
+    //!
     TSDUCKDLL inline bool operator== (uint32_t c1, const CRC32& c2)
     {
         return c2 == c1;  // this one is a member function
     }
 
-    // Reversed forms of operators are not member functions
+    //!
+    //! Comparison operator between a CRC32 instance and a 32-bit integer.
+    //! The reversed form of operators is a member function.
+    //! @param [in] c1 A CRC32 value to compare.
+    //! @param [in] c2 A CRC32 instance to compare.
+    //! @return True if the two CRC32 are different, false otherwise.
+    //!
     TSDUCKDLL inline bool operator!= (uint32_t c1, const CRC32& c2)
     {
         return c2 != c1;  // this one is a member function

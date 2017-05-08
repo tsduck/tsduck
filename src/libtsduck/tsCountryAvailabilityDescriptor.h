@@ -37,24 +37,35 @@
 #include "tsStringUtils.h"
 
 namespace ts {
-
+    //!
+    //! Representation of a country_availability_descriptor.
+    //! @see ETSI 300 468, 6.2.10.
+    //!
     class TSDUCKDLL CountryAvailabilityDescriptor : public AbstractDescriptor
     {
     public:
         // Public members:
-        bool         country_availability;
-        StringVector country_codes;
+        bool         country_availability; //!< See ETSI 300 468, 6.2.10.
+        StringVector country_codes;        //!< See ETSI 300 468, 6.2.10.
 
-        // Default constructor
+        //!
+        //! Default constructor.
+        //!
         CountryAvailabilityDescriptor();
 
-        // Constructor using a variable-length argument list.
-        // Each argument is a country_code
-        // The end of the argument list must be marked by TS_NULL.
-        CountryAvailabilityDescriptor (bool availability, const char* country, ...);
+        //!
+        //! Constructor using a variable-length argument list.
+        //! @param [in] availability If true, the service is available in the specified countries.
+        //! @param [in] country Variable-length list of country codes.
+        //! The end of the argument list must be marked by TS_NULL.
+        //!
+        CountryAvailabilityDescriptor(bool availability, const char* country, ...);
 
-        // Constructor from a binary descriptor
-        CountryAvailabilityDescriptor (const Descriptor&);
+        //!
+        //! Constructor from a binary descriptor
+        //! @param [in] bin A binary descriptor to deserialize.
+        //!
+        CountryAvailabilityDescriptor(const Descriptor& bin);
 
         // Inherited methods
         virtual void serialize (Descriptor&) const;
