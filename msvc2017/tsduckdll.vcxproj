@@ -92,8 +92,6 @@
     <ClInclude Include="..\src\libtsduck\tsEnhancedAC3Descriptor.h" />
     <ClInclude Include="..\src\libtsduck\tsEnumeration.h" />
     <ClInclude Include="..\src\libtsduck\tsETID.h" />
-    <ClInclude Include="..\src\libtsduck\tsEvent.h" />
-    <ClInclude Include="..\src\libtsduck\tsEventHandler.h" />
     <ClInclude Include="..\src\libtsduck\tsException.h" />
     <ClInclude Include="..\src\libtsduck\tsExtendedEventDescriptor.h" />
     <ClInclude Include="..\src\libtsduck\tsFatal.h" />
@@ -311,8 +309,6 @@
     <ClCompile Include="..\src\libtsduck\tsEMMGMUX.cpp" />
     <ClCompile Include="..\src\libtsduck\tsEnhancedAC3Descriptor.cpp" />
     <ClCompile Include="..\src\libtsduck\tsEnumeration.cpp" />
-    <ClCompile Include="..\src\libtsduck\tsEvent.cpp" />
-    <ClCompile Include="..\src\libtsduck\tsEventHandler.cpp" />
     <ClCompile Include="..\src\libtsduck\tsException.cpp" />
     <ClCompile Include="..\src\libtsduck\tsExtendedEventDescriptor.cpp" />
     <ClCompile Include="..\src\libtsduck\tsFatal.cpp" />
