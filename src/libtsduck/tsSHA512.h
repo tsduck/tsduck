@@ -36,30 +36,31 @@
 #include "tsHash.h"
 
 namespace ts {
-
+    //!
+    //! SHA-512 hash.
+    //!
     class TSDUCKDLL SHA512: public Hash
     {
     public:
-        // Sizes in bytes
-        static const size_t HASH_SIZE  =  64;
-        static const size_t BLOCK_SIZE = 128;
+        static const size_t HASH_SIZE  =  64;  //!< SHA-512 hash size in bytes.
+        static const size_t BLOCK_SIZE = 128;  //!< SHA-512 block size in bytes.
 
         // Implementation of Hash interface:
         virtual std::string name() const {return "SHA-512";}
         virtual size_t hashSize() const {return HASH_SIZE;}
         virtual size_t blockSize() const {return BLOCK_SIZE;}
         virtual bool init();
-        virtual bool add (const void* data, size_t size);
-        virtual bool getHash (void* hash, size_t bufsize, size_t* retsize = 0);
+        virtual bool add(const void* data, size_t size);
+        virtual bool getHash(void* hash, size_t bufsize, size_t* retsize = 0);
 
-        // Constructor
+        //! Constructor
         SHA512();
 
     private:
-        void compress (const uint8_t* buf);
+        void compress(const uint8_t* buf);
         uint64_t _length;
-        uint64_t _state [8];
-        size_t _curlen;
-        uint8_t  _buf [BLOCK_SIZE];
+        uint64_t _state[8];
+        size_t   _curlen;
+        uint8_t  _buf[BLOCK_SIZE];
     };
 }

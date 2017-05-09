@@ -44,56 +44,109 @@
 #include "tsThread.h"
 
 namespace ts {
-
-    // See DVB standard ETSI TS;103.197 V1.4.1 for ECMG <=> SCS protocol.
-    //
-    // Restriction: ECMG shall support only current/next control words in ECM,
-    // meaning CW_per_msg = 2 and lead_CW = 1.
-
+    //!
+    //! A DVB-ECMG client which acts as a DVB-SCS.
+    //!
+    //! Restriction: The target ECMG shall support only current/next control words in ECM,
+    //! meaning CW_per_msg = 2 and lead_CW = 1.
+    //! @see DVB standard ETSI TS 103.197 V1.4.1 for ECMG <=> SCS protocol.
+    //!
     class TSDUCKDLL ECMGClient: private Thread
     {
     public:
-        // Constructor & destructor.
-        // If asynchronous ECM notification is used, the amount of minimum stack
-        // size for the execution of the handler can be specified.
-        ECMGClient (size_t extra_handler_stack_size = 0);
+        //!
+        //! Constructor.
+        //! @param [in] extra_handler_stack_size If asynchronous ECM notification is used,
+        //! an internal thread is created. This parameter gives the minimum amount of stack
+        //! size for the execution of the handler. Zero for defaults.
+        //!
+        ECMGClient(size_t extra_handler_stack_size = 0);
+
+        //!
+        //! Destructor.
+        //!
         ~ECMGClient();
 
-        // Connect to a remote ECMG. Perform all initial channel and stream negotiation.
-        bool connect (const SocketAddress&,
-                      uint32_t super_cas_id,
-                      uint16_t ecm_channel_id,
-                      uint16_t ecm_stream_id,
-                      uint16_t ecm_id,
-                      uint16_t nominal_cp_duration,  // unit: 100 ms, as specified by ECMG <=> SCS protocol
-                      ecmgscs::ChannelStatus&,     // initial response to channel_setup
-                      ecmgscs::StreamStatus&,      // initial response to stream_setup
-                      const AbortInterface*,
-                      ReportInterface*);
+        //!
+        //! Connect to a remote ECMG.
+        //! Perform all initial channel and stream negotiation.
+        //!
+        //! @param [in] ecmg IP address and TCP port of the ECMG.
+        //! @param [in] super_cas_id Super_CAS_id, see ECMG <=> SCS protocol.
+        //! @param [in] ecm_channel_id ECM_channel_id, see ECMG <=> SCS protocol.
+        //! @param [in] ecm_stream_id ECM_stream_id, see ECMG <=> SCS protocol.
+        //! @param [in] ecm_id ECM_id, see ECMG <=> SCS protocol.
+        //! @param [in] nominal_cp_duration Nominal crypto-period in 100 ms units.
+        //! @param [out] channel_status Initial response to channel_setup
+        //! @param [out] stream_status Initial response to stream_setup
+        //! @param [in] abort An interface to check if the application is interrupted.
+        //! @param [in,out] report Where to report errors.
+        //! @return True on success, false on error.
+        //!
+        bool connect(const SocketAddress& ecmg,
+                     uint32_t super_cas_id,
+                     uint16_t ecm_channel_id,
+                     uint16_t ecm_stream_id,
+                     uint16_t ecm_id,
+                     uint16_t nominal_cp_duration,
+                     ecmgscs::ChannelStatus& channel_status,
+                     ecmgscs::StreamStatus& stream_status,
+                     const AbortInterface* abort,
+                     ReportInterface* report);
 
-        // Synchronously generate an ECM.
-        bool generateECM (uint16_t cp_number,        // current crypto-period number
-                          const void* current_cw,  // 8-byte control word for current crypto-period
-                          const void* next_cw,     // 8-byte control word for next crypto-period
-                          const void* ac,          // access criteria, unspecified if zero
-                          size_t ac_size,          // access criteria size in bytes
-                          uint16_t cp_duration,      // unit: 100 ms, unspecified if zero
-                          ecmgscs::ECMResponse&);  // returned ECM
+        //!
+        //! Synchronously generate an ECM.
+        //!
+        //! @param [in] cp_number Current crypto-period number.
+        //! @param [in] current_cw 8-byte control word for current crypto-period.
+        //! @param [in] next_cw 8-byte control word for next crypto-period.
+        //! @param [in] ac Access criteria, unspecified if zero.
+        //! @param [in] ac_size Access criteria size in bytes.
+        //! @param [in] cp_duration Crypto-period in 100 ms units, unspecified if zero.
+        //! @param [out] response Returned ECM.
+        //! @return True on success, false on error.
+        //! 
+        bool generateECM(uint16_t cp_number,
+                         const void* current_cw,
+                         const void* next_cw,
+                         const void* ac,
+                         size_t ac_size,
+                         uint16_t cp_duration,
+                         ecmgscs::ECMResponse& response);
 
-        // Asynchronously generate an ECM. The notification of the ECM generation
-        // or error is performed through the specified handler.
-        bool submitECM (uint16_t cp_number,        // current crypto-period number
-                        const void* current_cw,  // 8-byte control word for current crypto-period
-                        const void* next_cw,     // 8-byte control word for next crypto-period
-                        const void* ac,          // access criteria, unspecified if zero
-                        size_t ac_size,          // access criteria size in bytes
-                        uint16_t cp_duration,      // unit: 100 ms, unspecified if zero
-                        ECMGClientHandlerInterface*);
+        //!
+        //! Asynchronously generate an ECM.
+        //! Submit the ECM request and return immediately.
+        //! The notification of the ECM generation or error is performed through the specified handler.
+        //!
+        //! @param [in] cp_number Current crypto-period number.
+        //! @param [in] current_cw 8-byte control word for current crypto-period.
+        //! @param [in] next_cw 8-byte control word for next crypto-period.
+        //! @param [in] ac Access criteria, unspecified if zero.
+        //! @param [in] ac_size Access criteria size in bytes.
+        //! @param [in] cp_duration Crypto-period in 100 ms units, unspecified if zero.
+        //! @param [in] handler Object which will be notified of the returned ECM.
+        //! @return True on success, false on error.
+        //! 
+        bool submitECM(uint16_t cp_number,
+                       const void* current_cw,
+                       const void* next_cw,
+                       const void* ac,
+                       size_t ac_size,
+                       uint16_t cp_duration,
+                       ECMGClientHandlerInterface* handler);
 
-        // Disconnect from remote ECMG. Close stream and channel.
+        //!
+        //! Disconnect from remote ECMG.
+        //! Close stream and channel.
+        //! @return True on success, false on error.
+        //!
         bool disconnect();
 
-        // Check if the ECMG is connected
+        //!
+        //! Check if the ECMG is connected.
+        //! @return True if the ECMG is connected.
+        //!
         bool isConnected() const {return _state == CONNECTED;}
 
     private:
@@ -135,10 +188,10 @@ namespace ts {
         virtual void main();
 
         // Report specified error message if not empty, abort connection and return false
-        bool abortConnection (const std::string&);
+        bool abortConnection(const std::string&);
 
         // Unreachable operations
-        ECMGClient (const ECMGClient&);
-        ECMGClient& operator= (const ECMGClient&);
+        ECMGClient(const ECMGClient&) = delete;
+        ECMGClient& operator=(const ECMGClient&) = delete;
     };
 }

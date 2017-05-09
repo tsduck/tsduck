@@ -48,12 +48,17 @@ namespace ts {
         // Protocol-defined values
         //---------------------------------------------------------------------
 
-        // Current version of the EMMG/PDG <=> MUX protocol
+        //! Current version of the EMMG/PDG <=> MUX protocol
         const tlv::VERSION CURRENT_VERSION = 0x03;
 
-        // All DVB-defined tags (commands and parameters).
-        // Tags is defined as struct instead of namespace to be used as traits
+        //!
+        //! All DVB-defined tags (commands and parameters).
+        //! Tags is defined as struct instead of namespace to be used as traits/
+        //!
         struct TSDUCKDLL Tags {
+            //!
+            //! EMMG/PDG <=> MUX command tags.
+            //!
             enum Command {
                 channel_setup         = 0x0011,
                 channel_test          = 0x0012,
@@ -70,6 +75,9 @@ namespace ts {
                 stream_BW_allocation  = 0x0118,
                 data_provision        = 0x0211,
             };
+            //!
+            //! EMMG/PDG <=> MUX parameter tags.
+            //!
             enum Parameter {
                 client_id             = 0x0001,
                 section_TSpkt_flag    = 0x0002,
@@ -84,8 +92,13 @@ namespace ts {
             };
         };
 
-        // All error status values
+        //!
+        //! All error status values
+        //!
         struct TSDUCKDLL Errors {
+            //!
+            //! All error status values
+            //!
             enum StatusValue {
                 inv_message           = 0x0001,
                 inv_proto_version     = 0x0002,
@@ -112,18 +125,23 @@ namespace ts {
             };
         };
 
-        // EMMG <=> MUX data types
+        //!
+        //! EMMG <=> MUX data types.
+        //!
         struct TSDUCKDLL DataTypes {
+            //!
+            //! EMMG <=> MUX data types.
+            //!
             enum {
-                EMM     = 0x00,
-                PRIVATE = 0x01,
-                ECM     = 0x02, // DVB-reserved
+                EMM     = 0x00,  //! Injected data are EMM.
+                PRIVATE = 0x01,  //! Injected data are private.
+                ECM     = 0x02,  //! Injected data are ECM, DVB-reserved.
             };
         };
 
 
         //---------------------------------------------------------------------
-        // Generic description of the EMMG/PDG <=> MUX protocol.
+        //! Generic description of the EMMG/PDG <=> MUX protocol.
         //---------------------------------------------------------------------
 
         class TSDUCKDLL Protocol : public tlv::Protocol
@@ -142,9 +160,9 @@ namespace ts {
         // Definition of all EMMG/PDG <=> MUX protocol messages
         //---------------------------------------------------------------------
 
-        // channel_setup
-        //--------------
-
+        //!
+        //! EMMG/PDG <=> MUX channel_setup command
+        //!
         class TSDUCKDLL ChannelSetup : public tlv::ChannelMessage
         {
         public:
@@ -160,9 +178,9 @@ namespace ts {
             virtual void serializeParameters (tlv::Serializer& fact) const;
         };
 
-        // channel_test
-        //-------------
-
+        //!
+        //! EMMG/PDG <=> MUX channel_test command
+        //!
         class TSDUCKDLL ChannelTest : public tlv::ChannelMessage
         {
         public:
@@ -177,9 +195,9 @@ namespace ts {
             virtual void serializeParameters (tlv::Serializer& fact) const;
         };
 
-        // channel_status
-        //---------------
-
+        //!
+        //! EMMG/PDG <=> MUX channel_status command
+        //!
         class TSDUCKDLL ChannelStatus : public tlv::ChannelMessage
         {
         public:
@@ -195,9 +213,9 @@ namespace ts {
             virtual void serializeParameters (tlv::Serializer& fact) const;
         };
 
-        // channel_close
-        //--------------
-
+        //!
+        //! EMMG/PDG <=> MUX channel_close command
+        //!
         class TSDUCKDLL ChannelClose : public tlv::ChannelMessage
         {
         public:
@@ -212,9 +230,9 @@ namespace ts {
             virtual void serializeParameters (tlv::Serializer& fact) const;
         };
 
-        // channel_error
-        //--------------
-
+        //!
+        //! EMMG/PDG <=> MUX channel_error command
+        //!
         class TSDUCKDLL ChannelError : public tlv::ChannelMessage
         {
         public:
@@ -231,9 +249,9 @@ namespace ts {
             virtual void serializeParameters (tlv::Serializer& fact) const;
         };
 
-        // stream_setup
-        //-------------
-
+        //!
+        //! EMMG/PDG <=> MUX stream_setup command
+        //!
         class TSDUCKDLL StreamSetup : public tlv::StreamMessage
         {
         public:
@@ -251,9 +269,9 @@ namespace ts {
             virtual void serializeParameters (tlv::Serializer& fact) const;
         };
 
-        // stream_test
-        //------------
-
+        //!
+        //! EMMG/PDG <=> MUX stream_test command
+        //!
         class TSDUCKDLL StreamTest : public tlv::StreamMessage
         {
         public:
@@ -269,9 +287,9 @@ namespace ts {
             virtual void serializeParameters (tlv::Serializer& fact) const;
         };
 
-        // stream_status
-        //--------------
-
+        //!
+        //! EMMG/PDG <=> MUX stream_status command
+        //!
         class TSDUCKDLL StreamStatus : public tlv::StreamMessage
         {
         public:
@@ -289,9 +307,9 @@ namespace ts {
             virtual void serializeParameters (tlv::Serializer& fact) const;
         };
 
-        // stream_close_request
-        //---------------------
-
+        //!
+        //! EMMG/PDG <=> MUX stream_close_request command
+        //!
         class TSDUCKDLL StreamCloseRequest : public tlv::StreamMessage
         {
         public:
@@ -307,9 +325,9 @@ namespace ts {
             virtual void serializeParameters (tlv::Serializer& fact) const;
         };
 
-        // stream_close_response
-        //----------------------
-
+        //!
+        //! EMMG/PDG <=> MUX stream_close_response command
+        //!
         class TSDUCKDLL StreamCloseResponse : public tlv::StreamMessage
         {
         public:
@@ -325,9 +343,9 @@ namespace ts {
             virtual void serializeParameters (tlv::Serializer& fact) const;
         };
 
-        // stream_error
-        //-------------
-
+        //!
+        //! EMMG/PDG <=> MUX stream_error command
+        //!
         class TSDUCKDLL StreamError : public tlv::StreamMessage
         {
         public:
@@ -345,9 +363,9 @@ namespace ts {
             virtual void serializeParameters (tlv::Serializer& fact) const;
         };
 
-        // stream_BW_request
-        // -----------------
-
+        //!
+        //! EMMG/PDG <=> MUX stream_BW_request command
+        //!
         class TSDUCKDLL StreamBWRequest : public tlv::StreamMessage
         {
         public:
@@ -355,7 +373,7 @@ namespace ts {
             // uint16_t channel_id; // (data_channel_id)
             // uint16_t stream_id;  // (data_stream_id)
             uint32_t client_id;
-            bool   has_bandwidth;
+            bool     has_bandwidth;
             uint16_t bandwidth;     // unit: kbits / second
         public:
             StreamBWRequest ();
@@ -365,9 +383,9 @@ namespace ts {
             virtual void serializeParameters (tlv::Serializer& fact) const;
         };
 
-        // stream_BW_allocation
-        // --------------------
-
+        //!
+        //! EMMG/PDG <=> MUX stream_BW_allocation command
+        //!
         class TSDUCKDLL StreamBWAllocation : public tlv::StreamMessage
         {
         public:
@@ -375,7 +393,7 @@ namespace ts {
             // uint16_t channel_id; // (data_channel_id)
             // uint16_t stream_id;  // (data_stream_id)
             uint32_t client_id;
-            bool   has_bandwidth;
+            bool     has_bandwidth;
             uint16_t bandwidth;     // unit: kbits / second
         public:
             StreamBWAllocation ();
@@ -385,9 +403,9 @@ namespace ts {
             virtual void serializeParameters (tlv::Serializer& fact) const;
         };
 
-        // data_provision
-        // --------------
-
+        //!
+        //! EMMG/PDG <=> MUX data_provision command
+        //!
         class TSDUCKDLL DataProvision : public tlv::StreamMessage
         {
         public:
@@ -407,7 +425,7 @@ namespace ts {
 
 
         //---------------------------------------------------------------------
-        // Generic "traits" for the EMMG/PDG <=> MUX protocol.
+        //! Generic "traits" for the EMMG/PDG <=> MUX protocol.
         //---------------------------------------------------------------------
 
         struct TSDUCKDLL Traits {

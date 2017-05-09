@@ -48,12 +48,17 @@ namespace ts {
         // Protocol-defined values
         //---------------------------------------------------------------------
 
-        // Current version of the ECMG <=> SCS protocol
+        //! Current version of the ECMG <=> SCS protocol
         const tlv::VERSION CURRENT_VERSION = 0x03;
 
-        // All DVB-defined tags (commands and parameters).
-        // Tags is defined as struct instead of namespace to be used as traits
+        //!
+        //! All DVB-defined tags (commands and parameters).
+        //! Tags is defined as struct instead of namespace to be used as traits/
+        //!
         struct TSDUCKDLL Tags {
+            //!
+            //! ECMG <=> SCS command tags.
+            //!
             enum Command {
                 channel_setup                 = 0x0001,
                 channel_test                  = 0x0002,
@@ -69,6 +74,9 @@ namespace ts {
                 CW_provision                  = 0x0201,
                 ECM_response                  = 0x0202,
             };
+            //!
+            //! ECMG <=> SCS parameter tags.
+            //!
             enum Parameter {
                 Super_CAS_id                  = 0x0001,
                 section_TSpkt_flag            = 0x0002,
@@ -100,8 +108,13 @@ namespace ts {
             };
         };
 
-        // All error status values
+        //!
+        //! All error status values
+        //!
         struct TSDUCKDLL Errors {
+            //!
+            //! All error status values
+            //!
             enum StatusValue {
                 inv_message           = 0x0001,
                 inv_proto_version     = 0x0002,
@@ -131,7 +144,7 @@ namespace ts {
 
 
         //---------------------------------------------------------------------
-        // Generic description of the ECMG <=> SCS protocol.
+        //! Generic description of the ECMG <=> SCS protocol.
         //---------------------------------------------------------------------
 
         class TSDUCKDLL Protocol : public tlv::Protocol
@@ -150,9 +163,9 @@ namespace ts {
         // Definition of all ECMG <=> SCS protocol messages
         //---------------------------------------------------------------------
 
-        // channel_setup
-        //--------------
-
+        //!
+        //! ECMG <=> SCS channel_setup command
+        //!
         class TSDUCKDLL ChannelSetup : public tlv::ChannelMessage
         {
         public:
@@ -167,9 +180,9 @@ namespace ts {
             virtual void serializeParameters (tlv::Serializer& fact) const;
         };
 
-        // channel_test
-        //-------------
-
+        //!
+        //! ECMG <=> SCS channel_test command
+        //!
         class TSDUCKDLL ChannelTest : public tlv::ChannelMessage
         {
         public:
@@ -183,24 +196,24 @@ namespace ts {
             virtual void serializeParameters (tlv::Serializer& fact) const;
         };
 
-        // channel_status
-        //---------------
-
+        //!
+        //! ECMG <=> SCS channel_status command
+        //!
         class TSDUCKDLL ChannelStatus : public tlv::ChannelMessage
         {
         public:
             // Protocol-documented fields:
             // uint16_t channel_id; // (ECM_channel_id)
-            bool   section_TSpkt_flag;
-            bool   has_AC_delay_start;
+            bool     section_TSpkt_flag;
+            bool     has_AC_delay_start;
             int16_t  AC_delay_start;
-            bool   has_AC_delay_stop;
+            bool     has_AC_delay_stop;
             int16_t  AC_delay_stop;
             int16_t  delay_start;
             int16_t  delay_stop;
-            bool   has_transition_delay_start;
+            bool     has_transition_delay_start;
             int16_t  transition_delay_start;
-            bool   has_transition_delay_stop;
+            bool     has_transition_delay_stop;
             int16_t  transition_delay_stop;
             uint16_t ECM_rep_period;
             uint16_t max_streams;
@@ -216,9 +229,9 @@ namespace ts {
             virtual void serializeParameters (tlv::Serializer& fact) const;
         };
 
-        // channel_close
-        //--------------
-
+        //!
+        //! ECMG <=> SCS channel_close command
+        //!
         class TSDUCKDLL ChannelClose : public tlv::ChannelMessage
         {
         public:
@@ -232,9 +245,9 @@ namespace ts {
             virtual void serializeParameters (tlv::Serializer& fact) const;
         };
 
-        // channel_error
-        //--------------
-
+        //!
+        //! ECMG <=> SCS channel_error command
+        //!
         class TSDUCKDLL ChannelError : public tlv::ChannelMessage
         {
         public:
@@ -250,9 +263,9 @@ namespace ts {
             virtual void serializeParameters (tlv::Serializer& fact) const;
         };
 
-        // stream_setup
-        //-------------
-
+        //!
+        //! ECMG <=> SCS stream_setup command
+        //!
         class TSDUCKDLL StreamSetup : public tlv::StreamMessage
         {
         public:
@@ -269,9 +282,9 @@ namespace ts {
             virtual void serializeParameters (tlv::Serializer& fact) const;
         };
 
-        // stream_test
-        //------------
-
+        //!
+        //! ECMG <=> SCS stream_test command
+        //!
         class TSDUCKDLL StreamTest : public tlv::StreamMessage
         {
         public:
@@ -286,9 +299,9 @@ namespace ts {
             virtual void serializeParameters (tlv::Serializer& fact) const;
         };
 
-        // stream_status
-        //--------------
-
+        //!
+        //! ECMG <=> SCS stream_status command
+        //!
         class TSDUCKDLL StreamStatus : public tlv::StreamMessage
         {
         public:
@@ -305,9 +318,9 @@ namespace ts {
             virtual void serializeParameters (tlv::Serializer& fact) const;
         };
 
-        // stream_close_request
-        //---------------------
-
+        //!
+        //! ECMG <=> SCS stream_close_request command
+        //!
         class TSDUCKDLL StreamCloseRequest : public tlv::StreamMessage
         {
         public:
@@ -322,9 +335,9 @@ namespace ts {
             virtual void serializeParameters (tlv::Serializer& fact) const;
         };
 
-        // stream_close_response
-        //----------------------
-
+        //!
+        //! ECMG <=> SCS stream_close_response command
+        //!
         class TSDUCKDLL StreamCloseResponse : public tlv::StreamMessage
         {
         public:
@@ -339,9 +352,9 @@ namespace ts {
             virtual void serializeParameters (tlv::Serializer& fact) const;
         };
 
-        // stream_error
-        //-------------
-
+        //!
+        //! ECMG <=> SCS stream_error command
+        //!
         class TSDUCKDLL StreamError : public tlv::StreamMessage
         {
         public:
@@ -358,71 +371,85 @@ namespace ts {
             virtual void serializeParameters (tlv::Serializer& fact) const;
         };
 
-        // CW_provision
-        //-------------
-
+        //!
+        //! A combination of CP number and CW for ECMG <=> SCS CW_provision command
+        //!
         struct CPCWCombination
         {
-            uint16_t    CP; // crypto-period number
-            ByteBlock CW; // control word
+            uint16_t  CP;  //! Crypto-period number.
+            ByteBlock CW;  //! Control word.
 
-            // Constructors
-            CPCWCombination (uint16_t cpn, const ByteBlock& cwb) :
-                CP (cpn),
-                CW (cwb)
+            //!
+            //! Constructor.
+            //! @param [in] cpn Crypto-period number.
+            //! @param [in] cwb Control word.
+            //!
+            CPCWCombination(uint16_t cpn, const ByteBlock& cwb) :
+                CP(cpn),
+                CW(cwb)
             {
             }
-            CPCWCombination (uint16_t cpn = 0, const void* cw_addr = 0, size_t cw_size = CW_BYTES) :
-                CP (cpn),
-                CW (cw_addr, cw_addr != 0 ? cw_size : 0)
+
+            //!
+            //! Constructor.
+            //! @param [in] cpn Crypto-period number.
+            //! @param [in] cw_addr Control word address.
+            //! @param [in] cw_size Control word size in bytes.
+            //!
+            CPCWCombination(uint16_t cpn = 0, const void* cw_addr = 0, size_t cw_size = CW_BYTES) :
+                CP(cpn),
+                CW(cw_addr, cw_addr != 0 ? cw_size : 0)
             {
             }
         };
 
+        //!
+        //! ECMG <=> SCS CW_provision command
+        //!
         class TSDUCKDLL CWProvision : public tlv::StreamMessage
         {
         public:
             // Protocol-documented fields:
             // uint16_t channel_id; // (ECM_channel_id)
             // uint16_t stream_id; // (ECM_stream_id)
-            uint16_t    CP_number;
+            uint16_t  CP_number;
             bool      has_CW_encryption;
             ByteBlock CW_encryption;
             std::vector<CPCWCombination> CP_CW_combination;
             bool      has_CP_duration;
-            uint16_t    CP_duration;
+            uint16_t  CP_duration;
             bool      has_access_criteria;
             ByteBlock access_criteria;
         public:
-            CWProvision ();
-            CWProvision (const tlv::MessageFactory& fact);
-            virtual std::string dump (size_t indent = 0) const;
+            CWProvision();
+            CWProvision(const tlv::MessageFactory& fact);
+            virtual std::string dump(size_t indent = 0) const;
         protected:
             virtual void serializeParameters (tlv::Serializer& fact) const;
         };
 
-        // ECM_response
-        //-------------
-
+        //!
+        //! ECMG <=> SCS ECM_response command
+        //!
         class TSDUCKDLL ECMResponse : public tlv::StreamMessage
         {
         public:
             // Protocol-documented fields:
             // uint16_t channel_id; // (ECM_channel_id)
             // uint16_t stream_id; // (ECM_stream_id)
-            uint16_t    CP_number;
+            uint16_t  CP_number;
             ByteBlock ECM_datagram;
         public:
-            ECMResponse ();
-            ECMResponse (const tlv::MessageFactory& fact);
-            virtual std::string dump (size_t indent = 0) const;
+            ECMResponse();
+            ECMResponse(const tlv::MessageFactory& fact);
+            virtual std::string dump(size_t indent = 0) const;
         protected:
             virtual void serializeParameters (tlv::Serializer& fact) const;
         };
 
 
         //---------------------------------------------------------------------
-        // Generic "traits" for the ECMG <=> SCS protocol.
+        //! Generic "traits" for the ECMG <=> SCS protocol.
         //---------------------------------------------------------------------
 
         struct TSDUCKDLL Traits {

@@ -187,16 +187,16 @@ bool ts::pcsc::MatchATR (const uint8_t* atr1,
 //----------------------------------------------------------------------------
 
 ::LONG ts::pcsc::SearchSmartCard (::SCARDCONTEXT  context,
-                                    std::string&    reader_name, // out
-                                    const uint8_t*    atr,
-                                    size_t          atr_size,
-                                    const uint8_t*    atr_mask,
-                                    size_t          atr_mask_size,
-                                    const uint8_t*    pwr,
-                                    size_t          pwr_size,
-                                    const uint8_t*    pwr_mask,
-                                    size_t          pwr_mask_size,
-                                    ::DWORD         timeout_ms)
+                                  std::string&    reader_name, // out
+                                  const uint8_t*  atr,
+                                  size_t          atr_size,
+                                  const uint8_t*  atr_mask,
+                                  size_t          atr_mask_size,
+                                  const uint8_t*  pwr,
+                                  size_t          pwr_size,
+                                  const uint8_t*  pwr_mask,
+                                  size_t          pwr_mask_size,
+                                  ::DWORD         timeout_ms)
 {
     reader_name = "";
 

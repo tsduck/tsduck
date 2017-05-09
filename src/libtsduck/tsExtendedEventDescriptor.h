@@ -37,49 +37,79 @@
 #include "tsDescriptorList.h"
 
 namespace ts {
-
+    //!
+    //! Representation of a extended_event_descriptor.
+    //! @see ETSI 300 468, 6.2.15.
+    //!
     class TSDUCKDLL ExtendedEventDescriptor : public AbstractDescriptor
     {
     public:
         // Item entry
         struct Entry;
+
+        //! A list of item entries.
         typedef std::list<Entry> EntryList;
 
         // Public members
-        uint8_t       descriptor_number;
-        uint8_t       last_descriptor_number;
-        std::string language_code;  // 3 characters
-        EntryList   entries;
-        std::string text;
+        uint8_t     descriptor_number;      //!< See ETSI 300 468, 6.2.15.
+        uint8_t     last_descriptor_number; //!< See ETSI 300 468, 6.2.15.
+        std::string language_code;          //!< 3 characters, see ETSI 300 468, 6.2.15.
+        EntryList   entries;                //!< The list of item entries.
+        std::string text;                   //!< See ETSI 300 468, 6.2.15.
 
-        // Default constructor:
+        //!
+        //! Default constructor.
+        //!
         ExtendedEventDescriptor();
 
-        // Constructor from a binary descriptor
-        ExtendedEventDescriptor (const Descriptor&);
+        //!
+        //! Constructor from a binary descriptor
+        //! @param [in] bin A binary descriptor to deserialize.
+        //!
+        ExtendedEventDescriptor(const Descriptor& bin);
 
-        // Split the content into several ExtendedEventDescriptor if the content
-        // is too long and add them in a descriptor list.
-        void splitAndAdd (DescriptorList&) const;
+        //!
+        //! Split into several descriptors if neccesary and add them in a descriptor list.
+        //!
+        //! Split the content into several ExtendedEventDescriptor if the content
+        //! is too long and add them in a descriptor list.
+        //! @param [in,out] dlist List of descriptors.
+        //!
+        void splitAndAdd(DescriptorList& dlist) const;
 
         // Inherited methods
-        virtual void serialize (Descriptor&) const;
-        virtual void deserialize (const Descriptor&);
+        virtual void serialize(Descriptor&) const;
+        virtual void deserialize(const Descriptor&);
 
-        // Normalize all ExtendedEventDescriptor in a descriptor list.
-        // Update all descriptor_number and last_descriptor_number per language.
-        static void NormalizeNumbering (uint8_t* desc_list_addr, size_t desc_list_size);
+        //!
+        //! Normalize all ExtendedEventDescriptor in a descriptor list.
+        //! Update all descriptor_number and last_descriptor_number per language.
+        //! @param [in,out] desc_list_addr Address of a serialized descriptor list.
+        //! @param [in] desc_list_size Descriptor list size in bytes.
+        //!
+        static void NormalizeNumbering(uint8_t* desc_list_addr, size_t desc_list_size);
 
-        // Item entry
+        //!
+        //! An item entry.
+        //!
         struct TSDUCKDLL Entry
         {
             // Public members
-            std::string item_description;
-            std::string item;
+            std::string item_description;  //!< Item description or name.
+            std::string item;              //!< Item text content.
 
-            // Contructors
-            Entry (const std::string& desc_ = "", const std::string& item_ = "") : item_description (desc_), item (item_) {}
-            Entry (const Entry& other) : item_description (other.item_description), item (other.item) {}
+            //!
+            //! Constructor.
+            //! @param [in] desc_ Item description or name.
+            //! @param [in] item_ Item text content.
+            //!
+            Entry(const std::string& desc_ = "", const std::string& item_ = "") : item_description(desc_), item(item_) {}
+
+            //!
+            //! Copy constructor.
+            //! @param [in] other Other instance to copy.
+            //!
+            Entry(const Entry& other) : item_description(other.item_description), item(other.item) {}
         };
     };
 }

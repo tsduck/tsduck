@@ -36,7 +36,6 @@
 #include "tsPlatform.h"
 
 namespace ts {
-
     //!
     //! Base class for all exceptions in TSDuck.
     //!
@@ -45,9 +44,28 @@ namespace ts {
     private:
         std::string _what;
     public:
-        explicit Exception(const std::string&);
-        explicit Exception(const std::string&, ErrorCode error);
+        //!
+        //! Constructor.
+        //! @param [in] message Error message for the exception.
+        //!
+        explicit Exception(const std::string& message);
+
+        //!
+        //! Constructor.
+        //! @param [in] message Error message for the exception.
+        //! @param [in] error System error code causing the exception.
+        //!
+        Exception(const std::string& message, ErrorCode error);
+
+        //!
+        //! Destructor.
+        //!
         virtual ~Exception() throw();
+
+        //!
+        //! Get the error message as a C-string.
+        //! @return The error message as a C-string (valid as long as this instance exists).
+        //!
         virtual const char* what() const throw();
     };
 }
@@ -75,13 +93,14 @@ namespace ts {
         }                                                         \
     }
 
-// This macro can be used to locate the source of the exception
-// in the Exception constructor message string.
-
+//!
+//! Locate the source of the exception in the Exception constructor message string.
+//!
 #define TS_SRCLOC __FILE__ ":" TS_SLINE ": "
 
+//
 // Some "standard" exceptions
-
+//
 namespace ts {
     tsDeclareException(InvalidValue);
     tsDeclareException(UninitializedVariable);

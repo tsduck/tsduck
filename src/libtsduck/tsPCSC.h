@@ -43,107 +43,163 @@ namespace ts {
     //! PC/SC smartcard API utilities
     //!
     namespace pcsc {
+        //!
+        //! Get an error message for a PC/SC error.
+        //! @param [in] status A PC/SC error code.
+        //! @return An error message for @a status.
+        //!
+        TSDUCKDLL const char* StrError(::LONG status);
 
-        // Return an error message for a PC/SC error.
+        //!
+        //! Check a PC/SC status.
+        //! @param [in] status A PC/SC error code.
+        //! @param [in] report Where to report errors.
+        //! In case of error, report an error message.
+        //! @return True if status is success, false if error.
+        //!
+        TSDUCKDLL bool Success(::LONG status, ReportInterface& report = CERR);
 
-        TSDUCKDLL const char* StrError (::LONG status);
+        //!
+        //! Check if an ATR matches an expected one.
+        //!
+        //! @param [in] atr1 Address of returned ATR.
+        //! @param [in] atr1_size Size in bytes of returned ATR.
+        //! @param [in] atr2 Address of reference ATR.
+        //! @param [in] atr2_size Size in bytes of reference ATR.
+        //! @param [in] mask Address of mask of valid bits in @a atr1.
+        //! For each bit which is set in @a mask, the corresponding bits
+        //! in the ATR are checked. For each bit which is cleared in mask,
+        //! the corresponding bit in the ATR is ignored. 
+        //! @param [in] mask_size Size in bytes of @a mask.
+        //! If @a mask is shorter than @a atr1, the missing bytes are assumed as 0xFF.
+        //! This means that missing bytes in the mask are considered as "to be
+        //! checked" in the ATR.
+        //! @return True if @a atr1 matches @a atr2, according to @a mask.
+        //!
+        TSDUCKDLL bool MatchATR(const uint8_t* atr1,
+                                size_t         atr1_size,
+                                const uint8_t* atr2,
+                                size_t         atr2_size,
+                                const uint8_t* mask = 0,
+                                size_t         mask_size = 0);
 
-        // Check a PC/SC status. In case of error, report an error message.
-        // Return true is status is success, false if error.
+        //!
+        //! Get the list of all smartcard readers in the system.
+        //! @param [in,out] context An open PC/SC context.
+        //! @param [out] readers The list of all smartcard readers.
+        //! @return A PC/SC status.
+        //!
+        TSDUCKDLL ::LONG ListReaders(::SCARDCONTEXT context, StringVector& readers);
 
-        TSDUCKDLL bool Success (::LONG status, ReportInterface& report = CERR);
-
-        // Check if an ATR matches an expected one.
-        // The parameter "mask" is the mask of valid bits in atr.
-        // For each bit which is set in mask, the correspoding bits
-        // in the ATR are checked. For each bit which is cleared in mask,
-        // the corresponding bit in the ATR is ignored. 
-        // If mask is shorter than atr, the missing bytes are assumed as 0xFF.
-        // This means that missing bytes in the mask are considered as "to be
-        // checked" in the ATR.
-
-        TSDUCKDLL bool MatchATR (const uint8_t* atr1,
-                               size_t       atr1_size,
-                               const uint8_t* atr2,
-                               size_t       atr2_size,
-                               const uint8_t* mask = 0,
-                               size_t       mask_size = 0);
-
-        // Get the list of all smartcard readers in the system.
-        // Return a PC/SC status.
-
-        TSDUCKDLL ::LONG ListReaders (::SCARDCONTEXT context, StringVector& readers);
-
-        // State of a smartcard reader, C++ counterpart of ::SCARD_READERSTATE
-
+        //!
+        //! State of a smartcard reader.
+        //! C++ counterpart of SCARD_READERSTATE.
+        //!
         struct TSDUCKDLL ReaderState
         {
-            std::string reader;
-            ByteBlock atr;
-            ::DWORD current_state;
-            ::DWORD event_state;
+            std::string reader;         //!< Smartcard reader name.
+            ByteBlock   atr;            //!< Last ATR value.
+            ::DWORD     current_state;  //!< Current reader state.
+            ::DWORD     event_state;    //!< Current event state.
 
-            // Constructor
-            ReaderState (const std::string& reader_ = "", ::DWORD current_state_ = SCARD_STATE_UNAWARE) :
-                reader (reader_),
-                atr (),
-                current_state (current_state_),
-                event_state (0)
+            //!
+            //! Constructor.
+            //! @param [in] reader_ Smartcard reader name.
+            //! @param [in] current_state_ Current reader state.
+            //!
+            ReaderState(const std::string& reader_ = "", ::DWORD current_state_ = SCARD_STATE_UNAWARE) :
+                reader(reader_),
+                atr(),
+                current_state(current_state_),
+                event_state(0)
             {
             }
         };
 
+        //!
+        //! Vector of smartcard reader states.
+        //!
         typedef std::vector<ReaderState> ReaderStateVector;
 
-        // Get the state of all smartcard readers in the system.
-        // The timeout is given in milliseconds (or use INFINITE).
-        // Upon success, readers contains the state of all readers.
-        // Return a PC/SC status.
+        //!
+        //! Get the state of all smartcard readers in the system.
+        //! @param [in,out] context An open PC/SC context.
+        //! @param [out] states Returned states of all readers.
+        //! @param [in] timeout_ms The timeout is given in milliseconds (or use INFINITE).
+        //! @return A PC/SC status.
+        //!
+        TSDUCKDLL ::LONG GetStates(::SCARDCONTEXT context,
+                                   ReaderStateVector& states,
+                                   ::DWORD timeout_ms = INFINITE);
 
-        TSDUCKDLL ::LONG GetStates (::SCARDCONTEXT context,
-                                  ReaderStateVector& states,       // out
-                                  ::DWORD timeout_ms = INFINITE);
+        //!
+        //! Get the state change of all smartcard readers in the system.
+        //! @param [in,out] context An open PC/SC context.
+        //! @param [in,out] states Updated states of all readers.
+        //! @param [in] timeout_ms The timeout is given in milliseconds (or use INFINITE).
+        //! @return A PC/SC status.
+        //!
+        TSDUCKDLL ::LONG GetStatesChange(::SCARDCONTEXT context,
+                                         ReaderStateVector& states,
+                                         ::DWORD timeout_ms = INFINITE);
 
-        // Get the state change of all smartcard readers in the system.
-        // The timeout is given in milliseconds (or use INFINITE).
-        // Upon success, readers contains the state of all readers.
-        // Return a PC/SC status.
+        //!
+        //! Search all smartcard readers for a smartcard matching an expected ATR.
+        //!
+        //! @param [in,out] context An open PC/SC context.
+        //! @param [out] reader_name Returned smartcard reader.
+        //! @param [in] atr Address of reference ATR.
+        //! If @a atr is 0, the ATR is not checked and the first smartcard is used.
+        //! @param [in] atr_size Size in bytes of reference ATR.
+        //! @param [in] atr_mask Address of mask of valid bits in @a atr.
+        //! For each bit which is set in @a atr_mask, the corresponding bits
+        //! in the ATR are checked. For each bit which is cleared in mask,
+        //! the corresponding bit in the ATR is ignored. 
+        //! @param [in] atr_mask_size Size in bytes of @a atr_mask.
+        //! If @a mask is shorter than @a atr1, the missing bytes are assumed as 0xFF.
+        //! This means that missing bytes in the mask are considered as "to be
+        //! checked" in the ATR.
+        //! @param [in] pwr Address of reference ATR at power up.
+        //! A smartcard reader is selected if its ATR matches either @a atr or @a pwr.
+        //! @param [in] pwr_size Size in bytes of reference ATR at power uo.
+        //! @param [in] pwr_mask Address of mask of valid bits in @a pwr.
+        //! @param [in] pwr_mask_size Size in bytes of @a pwr_mask.
+        //! @param [in] timeout_ms The timeout is given in milliseconds (or use INFINITE).
+        //! @return A PC/SC status.
+        //!
+        TSDUCKDLL ::LONG SearchSmartCard(::SCARDCONTEXT  context,
+                                         std::string&    reader_name,
+                                         const uint8_t*  atr = 0,
+                                         size_t          atr_size = 0,
+                                         const uint8_t*  atr_mask = 0,
+                                         size_t          atr_mask_size = 0,
+                                         const uint8_t*  pwr = 0,
+                                         size_t          pwr_size = 0,
+                                         const uint8_t*  pwr_mask = 0,
+                                         size_t          pwr_mask_size = 0,
+                                         ::DWORD         timeout_ms = INFINITE);
 
-        TSDUCKDLL ::LONG GetStatesChange (::SCARDCONTEXT context,
-                                        ReaderStateVector& states,       // in/out
-                                        ::DWORD timeout_ms = INFINITE);
-
-        // Search all smartcard readers for a smartcard matching an expected ATR.
-        //
-        // The expected "atr" is an array of bytes. If atr is 0, the ATR is not
-        // checked and the first smartcard is used.
-        //
-        // The timeout is given in milliseconds (or use INFINITE).
-        //
-        // Return a PC/SC status.
-
-        TSDUCKDLL ::LONG SearchSmartCard (::SCARDCONTEXT  context,
-                                        std::string&    reader_name, // out
-                                        const uint8_t*    atr = 0,
-                                        size_t          atr_size = 0,
-                                        const uint8_t*    atr_mask = 0,
-                                        size_t          atr_mask_size = 0,
-                                        const uint8_t*    pwr = 0,
-                                        size_t          pwr_size = 0,
-                                        const uint8_t*    pwr_mask = 0,
-                                        size_t          pwr_mask_size = 0,
-                                        ::DWORD         timeout_ms = INFINITE);
-
-        // Transmit an APDU to smartcard, read response, extract SW from response.
-        // Return a PC/SC status.
-
-        TSDUCKDLL ::LONG Transmit (::SCARDHANDLE handle,       // in
-                                 ::DWORD       protocol,     // in
-                                 const void*   send,         // in
-                                 size_t        send_size,    // in
-                                 void*         resp,         // out (SW stripped)
-                                 size_t        resp_size,    // in
-                                 uint16_t&       sw,           // out
-                                 size_t&       resp_length); // out
+        //!
+        //! Transmit an APDU to smartcard and read response.
+        //!
+        //! @param [in,out] handle PC/SC handle.
+        //! @param [in] protocol Protocol id.
+        //! @param [in] send Address of APDU data.
+        //! @param [in] send_size Size in bytes of APDU data.
+        //! @param [out] resp Address of response buffer.
+        //! Upon return, the @a resp buffer contains the APDU response, without status word (SW).
+        //! @param [in] resp_size Size in bytes of @a resp buffer.
+        //! @param [out] sw Returned status word (SW).
+        //! @param [out] resp_length Actual number of returned bytes in @a resp.
+        //! @return A PC/SC status.
+        //!
+        TSDUCKDLL ::LONG Transmit(::SCARDHANDLE handle,
+                                  ::DWORD       protocol,
+                                  const void*   send,
+                                  size_t        send_size,
+                                  void*         resp,
+                                  size_t        resp_size,
+                                  uint16_t&     sw,
+                                  size_t&       resp_length);
     }
 }

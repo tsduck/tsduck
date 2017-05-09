@@ -98,8 +98,6 @@
 #include "tsETID.h"
 #include "tsEnhancedAC3Descriptor.h"
 #include "tsEnumeration.h"
-#include "tsEvent.h"
-#include "tsEventHandler.h"
 #include "tsException.h"
 #include "tsExtendedEventDescriptor.h"
 #include "tsFatal.h"
