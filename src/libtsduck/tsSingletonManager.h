@@ -38,16 +38,25 @@
 #include "tsGuard.h"
 
 namespace ts {
-
-    // The class SingletonManager is a singleton itself.
-    // It helps the creation of all other singletons.
-    // Used only through the macro tsDefineSingleton.
-    // Never use it directly.
-
+    //!
+    //! Helper for singleton definition
+    //!
+    //! The class SingletonManager is a singleton itself.
+    //! It helps the creation of all other singletons.
+    //! Never use it directly.
+    //! Used only through the macros tsDeclareSingleton() and tsDefineSingleton().
+    //!
     class TSDUCKDLL SingletonManager
     {
     public:
+        //!
+        //! Get the instance of the singleton of this class.
+        //! @return The instance of the singleton of this class.
+        //!
         static SingletonManager* Instance();
+        //!
+        //! A global mutex used in the creation of singletons.
+        //!
         Mutex mutex;
     private:
         static SingletonManager* volatile _instance;
@@ -55,17 +64,26 @@ namespace ts {
     };
 }
 
-// The macro tsDeclareSingleton must be used inside a class declaration, eg:
-//
-//     // File: MySingle.h
-//     namespace foo {
-//         class MySingle {
-//            tsDeclareSingleton(MySingle);
-//            ....
-//
-// The class becomes a singleton, under control of the SingletonManager.
-// Use static Instance() method to get the instance of the singleton.
-
+//!
+//! Singleton class declaration.
+//!
+//! The macro tsDeclareSingleton must be used inside the singleton class declaration.
+//! @param classname Name of the singleton class, without namespace or outer class name.
+//!
+//! Example code:
+//! @code
+//! // File: MySingle.h
+//! namespace foo {
+//!     class MySingle {
+//!        tsDeclareSingleton(MySingle);
+//!        ....
+//! @endcode
+//!
+//! The class becomes a singleton, under control of the SingletonManager.
+//! Use static Instance() method to get the instance of the singleton.
+//! @see tsDefineSingleton()
+//! @hideinitializer
+//!
 #define tsDeclareSingleton(classname)                   \
     public:                                             \
         static classname* Instance();                   \
@@ -76,15 +94,25 @@ namespace ts {
         classname(const classname&) = delete;           \
         classname& operator=(const classname&) = delete
 
-// The macro tsDefineSingleton must be used in the implementation
-// of the class, eg:
-//
-//     // File: MySingle.cpp
-//     #include "MySingle.h"
-//     tsDefineSingleton(foo::MySingle);
-//     foo::MySingle::MySingle() : ... { ... }
-//     ....
-
+//!
+//! @hideinitializer
+//! Singleton class definition.
+//!
+//! The macro tsDefineSingleton must be used in the implementation of a singleton class.
+//! @param fullclassname Fully qualified name of the singleton class.
+//!
+//! Example code:
+//! @code
+//! // File: MySingle.cpp
+//! #include "MySingle.h"
+//!
+//! tsDefineSingleton(foo::MySingle);
+//!
+//! foo::MySingle::MySingle() : ... { ... }
+//! ....
+//! @endcode
+//! @see tsDeclareSingleton()
+//!
 #define tsDefineSingleton(fullclassname)                             \
     fullclassname* volatile fullclassname::_instance = 0;            \
     fullclassname* fullclassname::Instance()                         \

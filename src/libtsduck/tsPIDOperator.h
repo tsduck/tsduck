@@ -36,39 +36,89 @@
 #include "tsDescriptorList.h"
 
 namespace ts {
-
+    //!
+    //! Association of a PID and an @e operator id (CAS-specific).
+    //!
     struct TSDUCKDLL PIDOperator
     {
         // Public members
-        PID    pid;    // ECM/EMM PID
-        uint32_t oper;   // Operator id
+        PID      pid;    //!< ECM/EMM PID
+        uint32_t oper;   //!< Operator id
 
-        // Constructor
-        PIDOperator (PID pid_ = 0, uint32_t oper_ = 0) : pid (pid_), oper (oper_) {}
+        //!
+        //! Constructor.
+        //! @param [in] pid_ PID value.
+        //! @param [in] oper_ CAS-specific operator id.
+        //!
+        PIDOperator(PID pid_ = 0, uint32_t oper_ = 0) :
+            pid(pid_),
+            oper(oper_)
+        {
+        }
 
-        // Comparison operator for containers
-        bool operator< (const PIDOperator& po) const {return oper == po.oper ? pid < po.pid : oper < po.oper;}
+        //!
+        //! Comparison operator.
+        //! Not really meaningfull but required to use this class in containers.
+        //! @param [in] po Other pid/operator instance to compare.
+        //! @return True if this object logically preceeds @a po.
+        //!
+        bool operator<(const PIDOperator& po) const
+        {
+            return oper == po.oper ? pid < po.pid : oper < po.oper;
+        }
     };
 
+    //!
+    //! Specialized set of PIDOperator.
+    //!
     class TSDUCKDLL PIDOperatorSet: public std::set<PIDOperator>
     {
     public:
+        //!
+        //! Reference to the superclass.
+        //!
         typedef std::set<PIDOperator> SuperClass;
 
-        // Constructors
-        PIDOperatorSet () : SuperClass() {}
-        PIDOperatorSet (const PIDOperatorSet& set) : SuperClass (set) {}
+        //!
+        //! Default constructor.
+        //!
+        PIDOperatorSet() :
+            SuperClass()
+        {
+        }
 
-        // Search first ECM/EMM PID for a specific operator, return O if not found
-        PID pidForOper (uint32_t oper) const;
+        //!
+        //! Copy constructor.
+        //! @param [in] set Other instance to copy.
+        //!
+        PIDOperatorSet(const PIDOperatorSet& set) :
+            SuperClass(set)
+        {
+        }
 
-        // Add MediaGuard info from a list of descriptors from a PMT
-        void addMediaGuardPMT (const DescriptorList& dlist);
+        //!
+        //! Search first ECM/EMM PID for a specific operator.
+        //! @param [in] oper Operator id.
+        //! @return The PID or 0 if not found.
+        //!
+        PID pidForOper(uint32_t oper) const;
 
-        // Add MediaGuard info from a list of descriptors from a CAT
-        void addMediaGuardCAT (const DescriptorList& dlist);
+        //!
+        //! Add MediaGuard info from a list of descriptors from a PMT.
+        //! @param [in] dlist Descriptor list.
+        //!
+        void addMediaGuardPMT(const DescriptorList& dlist);
 
-        // Add SafeAccess info from a list of descriptors from a CAT
-        void addSafeAccessCAT (const DescriptorList& dlist);
+        //!
+        //! Add MediaGuard info from a list of descriptors from a CAT.
+        //! @param [in] dlist Descriptor list.
+        //!
+        void addMediaGuardCAT(const DescriptorList& dlist);
+
+        //!
+        //! Add SafeAccess info from a list of descriptors from a CAT.
+        //! @param [in] dlist Descriptor list.
+        //!
+        void addSafeAccessCAT(const DescriptorList& dlist);
     };
 }

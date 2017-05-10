@@ -38,53 +38,69 @@
 #include "tsReportInterface.h"
 
 namespace ts {
-
-    // Abstract base class of all tsgentab plugins.
-    // Plugin is a subclass of Args; each constructor is expected to define
-    // the syntax, help and option definitions for the command line.
-
+    //!
+    //! Abstract base class of all tsgentab plugins.
+    //!
+    //! GenTabPlugin is a subclass of Args; each constructor is expected to define
+    //! the syntax, help and option definitions for the command line.
+    //!
     class TSDUCKDLL GenTabPlugin: public Args
     {
     public:
+        //!
+        //! Constructor.
+        //!
+        //! @param [in] description A short one-line description, eg. "Wonderful File Copier".
+        //! @param [in] syntax A short one-line syntax summary, eg. "[options] filename ...".
+        //! @param [in] help A multi-line string describing the usage of options and parameters.
+        //!
+        GenTabPlugin(const std::string& description = "",
+                     const std::string& syntax = "",
+                     const std::string& help = "") :
+            Args(description, syntax, help)
+        {
+        }
 
-        // Constructor
-        GenTabPlugin (const std::string& description_ = "",
-                      const std::string& syntax_ = "",
-                      const std::string& help_ = "") :
-            Args (description_, syntax_, help_) {}
+        //!
+        //! Virtual destructor
+        //!
+        virtual ~GenTabPlugin() {}
 
-        // Virtual destructor
-        virtual ~GenTabPlugin () {}
-
-        // The main application invokes generate() to generate the table.
-        virtual void generate (AbstractTablePtr&) = 0;
+        //!
+        //! The main application invokes generate() to generate the table.
+        //! Must be implemented by subclasses.
+        //! @param [out] table Safe pointer to the generated table.
+        //!
+        virtual void generate(AbstractTablePtr& table) = 0;
 
     private:
         GenTabPlugin(const GenTabPlugin&) = delete;
         GenTabPlugin& operator=(const GenTabPlugin&) = delete;
     };
-
-    // All shared libraries providing a tsgentab plugin shall export
-    // a global function named "tsgentabNewPlugin" with the following profile.
-    // When invoked, it shall allocate a new object implementing
-    // ts::GenTabPlugin.
-
+    
+    //!
+    //! Tsgentab plugin interface profile.
+    //!
+    //! All shared libraries providing a tsgentab plugin shall export
+    //! a global function named @c tsgentabNewPlugin with the following profile.
+    //!
+    //! @return A new allocated object implementing ts::GenTabPlugin.
+    //!
     typedef GenTabPlugin* (*NewGenTabPluginProfile)();
 }
 
-
-//----------------------------------------------------------------------------
-//  Helper macros for shared libraries
-//----------------------------------------------------------------------------
-
-// The following macros declare the plugin allocation routines.
-// Shall be used by shared libraries which provide the plugin.
-
-#define TSGENTAB_DECLARE_PLUGIN(type)             \
-    extern "C" {                                  \
-        TS_DLL_EXPORT                           \
-        ts::GenTabPlugin* tsgentabNewPlugin ()  \
-        {                                         \
-            return new type ();                   \
-        }                                         \
+//!
+//! Export tsgentab plugin interface out of the shared library.
+//! This macro declares the plugin allocation routine.
+//! Shall be used by shared libraries which provide a tsgentab plugin.
+//! @param type Name of a subclass of ts::GenTabPlugin implementing the plugin.
+//! @hideinitializer
+//!
+#define TSGENTAB_DECLARE_PLUGIN(type)         \
+    extern "C" {                              \
+        TS_DLL_EXPORT                         \
+        ts::GenTabPlugin* tsgentabNewPlugin() \
+        {                                     \
+            return new type();                \
+        }                                     \
     }

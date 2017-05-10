@@ -37,7 +37,6 @@
 #include "tsException.h"
 
 namespace ts {
-
     //!
     //! The @c Time class implements a basic representation of time.
     //!
@@ -67,13 +66,13 @@ namespace ts {
         //! Default constructor.
         //! The initial value is the Epoch.
         //!
-        Time() throw() : _value (0) {}
+        Time() : _value(0) {}
 
         //!
         //! Copy constructor.
         //! @param [in] other Another time from which to initialize this object.
         //!
-        Time(const Time& other) throw() : _value (other._value) {}
+        Time(const Time& other) : _value(other._value) {}
 
         //!
         //! Constructor from broken-down date fields.
@@ -88,7 +87,7 @@ namespace ts {
         //! or if the resulting time is outside the representable range
         //! for the local operating system.
         //!
-        Time(int year, int month, int day, int hour, int minute, int second = 0, int millisecond = 0) throw(TimeError);
+        Time(int year, int month, int day, int hour, int minute, int second = 0, int millisecond = 0);
 
         //!
         //! Operator Time + MilliSecond => Time.
@@ -96,9 +95,9 @@ namespace ts {
         //! @return A @c Time object representing this object plus the
         //! specified number of milliseconds.
         //!
-        Time operator+ (const MilliSecond& duration) const throw()
+        Time operator+(const MilliSecond& duration) const
         {
-            return Time (_value + duration * TICKS_PER_MS);
+            return Time(_value + duration * TICKS_PER_MS);
         }
 
         //!
@@ -107,9 +106,9 @@ namespace ts {
         //! @return A @c Time object representing this object minus the
         //! specified number of milliseconds.
         //!
-        Time operator- (const MilliSecond& duration) const throw()
+        Time operator-(const MilliSecond& duration) const
         {
-            return Time (_value - duration * TICKS_PER_MS);
+            return Time(_value - duration * TICKS_PER_MS);
         }
 
         //!
@@ -117,7 +116,7 @@ namespace ts {
         //! @param [in] other Another time from which to initialize this object.
         //! @return A reference to this object.
         //!
-        Time& operator= (const Time& other) throw()
+        Time& operator=(const Time& other)
         {
             _value = other._value;
             return *this;
@@ -128,7 +127,7 @@ namespace ts {
         //! @param [in] duration A number of milliseconds to add to this object.
         //! @return A reference to this object.
         //!
-        Time& operator+= (const MilliSecond& duration) throw()
+        Time& operator+=(const MilliSecond& duration)
         {
             _value += duration * TICKS_PER_MS;
             return *this;
@@ -139,7 +138,7 @@ namespace ts {
         //! @param [in] duration A number of milliseconds to substract from this object.
         //! @return A reference to this object.
         //!
-        Time& operator-= (const MilliSecond& duration) throw()
+        Time& operator-=(const MilliSecond& duration)
         {
             _value -= duration * TICKS_PER_MS;
             return *this;
@@ -150,7 +149,7 @@ namespace ts {
         //! @param [in] other Another time to substract from this object.
         //! @return The duration, in milliseconds, between this object and the @a other object.
         //!
-        MilliSecond operator- (const Time& other) const throw()
+        MilliSecond operator-(const Time& other) const
         {
             return (_value - other._value) / TICKS_PER_MS;
         }
@@ -161,7 +160,7 @@ namespace ts {
         //! @return @c True is this object is equal to the @a other object,
         //! @c false otherwise.
         //!
-        bool operator== (const Time& other) const throw()
+        bool operator==(const Time& other) const
         {
             return _value == other._value;
         }
@@ -172,7 +171,7 @@ namespace ts {
         //! @return @c True is this object is different from the @a other object,
         //! @c false otherwise.
         //!
-        bool operator!= (const Time& other) const throw()
+        bool operator!=(const Time& other) const
         {
             return _value != other._value;
         }
@@ -183,7 +182,7 @@ namespace ts {
         //! @return @c True is this time is before the @a other object time,
         //! @c false otherwise.
         //!
-        bool operator< (const Time& other) const throw()
+        bool operator<(const Time& other) const
         {
             return _value < other._value;
         }
@@ -194,7 +193,7 @@ namespace ts {
         //! @return @c True is this time is before or equal to the @a other object time,
         //! @c false otherwise.
         //!
-        bool operator<= (const Time& other) const throw()
+        bool operator<=(const Time& other) const
         {
             return _value <= other._value;
         }
@@ -205,7 +204,7 @@ namespace ts {
         //! @return @c True is this time is after the @a other object time,
         //! @c false otherwise.
         //!
-        bool operator> (const Time& other) const throw()
+        bool operator>(const Time& other) const
         {
             return _value > other._value;
         }
@@ -216,7 +215,7 @@ namespace ts {
         //! @return @c True is this time is after or equal to the @a other object time,
         //! @c false otherwise.
         //!
-        bool operator>= (const Time& other) const throw()
+        bool operator>=(const Time& other) const
         {
             return _value >= other._value;
         }
@@ -246,7 +245,7 @@ namespace ts {
             //! @param [in] second_ Number of seconds (0 to 59).
             //! @param [in] millisecond_ Number of milliseconds (0 to 999).
             //!
-            Fields (int year_ = 0, int month_ = 0, int day_ = 0, int hour_ = 0, int minute_ = 0, int second_ = 0, int millisecond_ = 0);
+            Fields(int year_ = 0, int month_ = 0, int day_ = 0, int hour_ = 0, int minute_ = 0, int second_ = 0, int millisecond_ = 0);
 
             //!
             //! Equality operator.
@@ -254,7 +253,7 @@ namespace ts {
             //! @return @c True is this object is equal to the @a other object,
             //! @c false otherwise.
             //!
-            bool operator== (const Fields& other) const throw();
+            bool operator==(const Fields& other) const;
 
             //!
             //! Unequality operator.
@@ -262,7 +261,7 @@ namespace ts {
             //! @return @c True is this object is different from the @a other object,
             //! @c false otherwise.
             //!
-            bool operator!= (const Fields& other) const throw();
+            bool operator!=(const Fields& other) const;
         };
 
         //!
@@ -273,28 +272,28 @@ namespace ts {
         //! or if the resulting time is outside the representable range
         //! for the local operating system.
         //!
-        Time(const Fields& fields) throw(TimeError);
+        Time(const Fields& fields);
 
         //!
         //! Conversion operator from @c Time to @c Time::Fields.
         //! @return A @c Time::Fields object containing the broken-down time.
         //! @throw ts::Time::TimeError In case of operating system time error.
         //!
-        operator Fields() const throw(TimeError);
+        operator Fields() const;
 
         //!
         //! Convert a local time to UTC time.
         //! @return A UTC time from this object time, interpreted as a local time.
         //! @throw ts::Time::TimeError In case of operating system time error.
         //!
-        Time localToUTC() const throw(TimeError);
+        Time localToUTC() const;
 
         //!
         //! Convert a UTC time to local time.
         //! @return A local time from this object time, interpreted as a UTC time.
         //! @throw ts::Time::TimeError In case of operating system time error.
         //!
-        Time UTCToLocal() const throw(TimeError);
+        Time UTCToLocal() const;
 
         //!
         //! Flags indicating the list of time fields to display.
@@ -320,7 +319,7 @@ namespace ts {
         //! @return A string containing the formatted date.
         //! @throw ts::Tile::TimeError In case of operating system time error.
         //!
-        std::string format (int fields = ALL) const throw(TimeError);
+        std::string format(int fields = ALL) const;
 
         //!
         //! Conversion operator from @c Time to @c std::string.
@@ -328,9 +327,9 @@ namespace ts {
         //! @return A string containing the formatted date.
         //! @throw ts::Tile::TimeError In case of operating system time error.
         //!
-        operator std::string () const throw(TimeError)
+        operator std::string() const
         {
-            return format (ALL);
+            return format(ALL);
         }
 
         //!
@@ -338,28 +337,28 @@ namespace ts {
         //! @return The current UTC time.
         //! @throw ts::Tile::TimeError In case of operating system time error.
         //!
-        static Time CurrentUTC() throw(TimeError);
+        static Time CurrentUTC();
 
         //!
         //! Static method returning the current local time.
         //! @return The current local time.
         //! @throw ts::Tile::TimeError In case of operating system time error.
         //!
-        static Time CurrentLocalTime() throw(TimeError) {return CurrentUTC().UTCToLocal();}
+        static Time CurrentLocalTime() {return CurrentUTC().UTCToLocal();}
 
         //!
         //! Get the beginning of the current hour.
         //! @return The time for the beginning of the current hour from this object time.
         //! @throw ts::Tile::TimeError In case of operating system time error.
         //!
-        Time thisHour() const throw(TimeError);
+        Time thisHour() const;
 
         //!
         //! Get the beginning of the next hour.
         //! @return The time for the beginning of the next hour from this object time.
         //! @throw ts::Tile::TimeError In case of operating system time error.
         //!
-        Time nextHour() const throw(TimeError)
+        Time nextHour() const
         {
             return thisHour() + MilliSecPerHour;
         }
@@ -369,14 +368,14 @@ namespace ts {
         //! @return The time for the beginning of the current day from this object time.
         //! @throw ts::Tile::TimeError In case of operating system time error.
         //!
-        Time thisDay() const throw(TimeError);
+        Time thisDay() const;
 
         //!
         //! Get the beginning of the next day.
         //! @return The time for the beginning of the next day from this object time.
         //! @throw ts::Tile::TimeError In case of operating system time error.
         //!
-        Time nextDay() const throw(TimeError)
+        Time nextDay() const
         {
             return thisDay() + MilliSecPerDay;
         }
@@ -386,92 +385,185 @@ namespace ts {
         //! @return The time for the beginning of the current month from this object time.
         //! @throw ts::Tile::TimeError In case of operating system time error.
         //!
-        Time thisMonth() const throw(TimeError);
+        Time thisMonth() const;
 
         //!
         //! Get the beginning of the next month.
         //! @return The time for the beginning of the next month from this object time.
         //! @throw ts::Tile::TimeError In case of operating system time error.
         //!
-        Time nextMonth() const throw(TimeError);
+        Time nextMonth() const;
 
         //!
         //! Get the beginning of the current year.
         //! @return The time for the beginning of the current year from this object time.
         //! @throw ts::Tile::TimeError In case of operating system time error.
         //!
-        Time thisYear() const throw(TimeError);
+        Time thisYear() const;
 
         //!
         //! Get the beginning of the next year.
         //! @return The time for the beginning of the next year from this object time.
         //! @throw ts::Tile::TimeError In case of operating system time error.
         //!
-        Time nextYear() const throw(TimeError);
+        Time nextYear() const;
 
-        // These static methods return the UTC and local time for the beginning
-        // of hour or day of various specific times related to current time.
-        static inline Time ThisHourUTC() throw(TimeError)
+        //!
+        //! Get the beginning of the current hour, UTC.
+        //! @return The time for the beginning of the current hour, UTC.
+        //! @throw ts::Tile::TimeError In case of operating system time error.
+        //!
+        static inline Time ThisHourUTC()
         {
             return CurrentUTC().thisHour();
         }
-        static inline Time ThisHourLocalTime() throw(TimeError)
+
+        //!
+        //! Get the beginning of the current hour, local time.
+        //! @return The time for the beginning of the current hour, local time.
+        //! @throw ts::Tile::TimeError In case of operating system time error.
+        //!
+        static inline Time ThisHourLocalTime()
         {
             return CurrentLocalTime().thisHour();
         }
-        static inline Time NextHourUTC() throw(TimeError)
+
+        //!
+        //! Get the beginning of the next hour, UTC.
+        //! @return The time for the beginning of the next hour, UTC.
+        //! @throw ts::Tile::TimeError In case of operating system time error.
+        //!
+        static inline Time NextHourUTC()
         {
             return CurrentUTC().nextHour();
         }
-        static inline Time NextHourLocalTime() throw(TimeError)
+
+        //!
+        //! Get the beginning of the next hour, local time.
+        //! @return The time for the beginning of the next hour, local time.
+        //! @throw ts::Tile::TimeError In case of operating system time error.
+        //!
+        static inline Time NextHourLocalTime()
         {
             return CurrentLocalTime().nextHour();
         }
-        static inline Time TodayUTC() throw(TimeError)
+
+        //!
+        //! Get the beginning of the current day, UTC.
+        //! @return The time for the beginning of the current day, UTC.
+        //! @throw ts::Tile::TimeError In case of operating system time error.
+        //!
+        static inline Time TodayUTC()
         {
             return CurrentUTC().thisDay();
         }
-        static inline Time TodayLocalTime() throw(TimeError)
+
+        //!
+        //! Get the beginning of the current day, local time.
+        //! @return The time for the beginning of the current day, local time.
+        //! @throw ts::Tile::TimeError In case of operating system time error.
+        //!
+        static inline Time TodayLocalTime()
         {
             return CurrentLocalTime().thisDay();
         }
-        static inline Time TomorrowUTC() throw(TimeError)
+
+        //!
+        //! Get the beginning of the next day, UTC.
+        //! @return The time for the beginning of the next day, UTC.
+        //! @throw ts::Tile::TimeError In case of operating system time error.
+        //!
+        static inline Time TomorrowUTC()
         {
             return CurrentUTC().nextDay();
         }
-        static inline Time TomorrowLocalTime() throw(TimeError)
+
+        //!
+        //! Get the beginning of the next day, local time.
+        //! @return The time for the beginning of the next day, local time.
+        //! @throw ts::Tile::TimeError In case of operating system time error.
+        //!
+        static inline Time TomorrowLocalTime()
         {
             return CurrentLocalTime().nextDay();
         }
-        static inline Time ThisMonthUTC() throw(TimeError)
+
+        //!
+        //! Get the beginning of the current month, UTC.
+        //! @return The time for the beginning of the current month, UTC.
+        //! @throw ts::Tile::TimeError In case of operating system time error.
+        //!
+        static inline Time ThisMonthUTC()
         {
             return CurrentUTC().thisMonth();
         }
-        static inline Time ThisMonthLocalTime() throw(TimeError)
+
+        //!
+        //! Get the beginning of the current month, local time.
+        //! @return The time for the beginning of the current month, local time.
+        //! @throw ts::Tile::TimeError In case of operating system time error.
+        //!
+        static inline Time ThisMonthLocalTime()
         {
             return CurrentLocalTime().thisMonth();
         }
-        static inline Time NextMonthUTC() throw(TimeError)
+
+        //!
+        //! Get the beginning of the next month, UTC.
+        //! @return The time for the beginning of the next month, UTC.
+        //! @throw ts::Tile::TimeError In case of operating system time error.
+        //!
+        static inline Time NextMonthUTC()
         {
             return CurrentUTC().nextMonth();
         }
-        static inline Time NextMonthLocalTime() throw(TimeError)
+
+        //!
+        //! Get the beginning of the next month, local time.
+        //! @return The time for the beginning of the next month, local time.
+        //! @throw ts::Tile::TimeError In case of operating system time error.
+        //!
+        static inline Time NextMonthLocalTime()
         {
             return CurrentLocalTime().nextMonth();
         }
-        static inline Time ThisYearUTC() throw(TimeError)
+
+        //!
+        //! Get the beginning of the current year, UTC.
+        //! @return The time for the beginning of the current year, UTC.
+        //! @throw ts::Tile::TimeError In case of operating system time error.
+        //!
+        static inline Time ThisYearUTC()
         {
             return CurrentUTC().thisYear();
         }
-        static inline Time ThisYearLocalTime() throw(TimeError)
+
+        //!
+        //! Get the beginning of the current year, local time.
+        //! @return The time for the beginning of the current year, local time.
+        //! @throw ts::Tile::TimeError In case of operating system time error.
+        //!
+        static inline Time ThisYearLocalTime()
         {
             return CurrentLocalTime().thisYear();
         }
-        static inline Time NextYearUTC() throw(TimeError)
+
+        //!
+        //! Get the beginning of the next year, UTC.
+        //! @return The time for the beginning of the next year, UTC.
+        //! @throw ts::Tile::TimeError In case of operating system time error.
+        //!
+        static inline Time NextYearUTC()
         {
             return CurrentUTC().nextYear();
         }
-        static inline Time NextYearLocalTime() throw(TimeError)
+
+        //!
+        //! Get the beginning of the next year, local time.
+        //! @return The time for the beginning of the next year, local time.
+        //! @throw ts::Tile::TimeError In case of operating system time error.
+        //!
+        static inline Time NextYearLocalTime()
         {
             return CurrentLocalTime().nextYear();
         }
@@ -519,7 +611,7 @@ namespace ts {
         //! @param [in] fileTime A Win32 @c FILETIME value.
         //! @return The corresponding UTC time.
         //!
-        static Time Win32FileTimeToUTC (const ::FILETIME& fileTime);
+        static Time Win32FileTimeToUTC(const ::FILETIME& fileTime);
 #endif
 
 #if defined(__unix) || defined(DOXYGEN)
@@ -567,8 +659,7 @@ namespace ts {
         Time(const int64_t& value) : _value(value) {}
 
         // Static private routine: Build the 64-bit value from fields
-        static int64_t ToInt64(int year, int month, int day, int hour, int minute, int second, int millisecond)
-            throw(TimeError);
+        static int64_t ToInt64(int year, int month, int day, int hour, int minute, int second, int millisecond);
 
         // Number of clock ticks per millisecond:
         static const int64_t TICKS_PER_MS = 

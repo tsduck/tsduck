@@ -48,12 +48,17 @@ namespace ts {
     class TSDUCKDLL TableHandlerInterface
     {
     public:
-        // This hook is invoked when a complete table is available.
-        // Tables with long sections are reported only when a new
-        // version is available.
-        virtual void handleTable (SectionDemux&, const BinaryTable&) = 0;
+        //!
+        //! This hook is invoked when a complete table is available.
+        //! Tables with long sections are reported only when a new version is available.
+        //! @param [in,out] demux A reference to the section demux.
+        //! @param [in] table A reference to the demultiplexed table.
+        //!
+        virtual void handleTable(SectionDemux& demux, const BinaryTable& table) = 0;
 
-        // Virtual destructor
-        virtual ~TableHandlerInterface () {}
+        //!
+        //! Virtual destructor.
+        //!
+        virtual ~TableHandlerInterface() {}
     };
 }

@@ -40,69 +40,116 @@ namespace ts {
 
     class PESPacket;
 
-    // Safe pointer for PESPacket (not thread-safe)
-    typedef SafePtr <PESPacket, NullMutex> PESPacketPtr;
+    //!
+    //! Safe pointer for PESPacket (not thread-safe).
+    //!
+    typedef SafePtr<PESPacket, NullMutex> PESPacketPtr;
 
-    // Vector of PESPacket pointers
-    typedef std::vector <PESPacketPtr> PESPacketPtrVector;
+    //!
+    //! Vector of PESPacket safe pointers.
+    //!
+    typedef std::vector<PESPacketPtr> PESPacketPtrVector;
 
+    //!
+    //! Representation of MPEG PES packets.
+    //!
     class TSDUCKDLL PESPacket
     {
     public:
-        // Default constructor. PESPacket is initially marked invalid.
+        //!
+        //! Default constructor.
+        //! The PESPacket is initially marked invalid.
+        //!
         PESPacket()
         {
-            initialize (PID_NULL);
+            initialize(PID_NULL);
         }
 
-        // Copy constructor. The packet content is either shared or copied.
-        PESPacket (const PESPacket&, CopyShare);
+        //!
+        //! Copy constructor.
+        //! @param [in] other Another instance to copy.
+        //! @param [in] mode The packet's data are either shared (ts::SHARE) between the
+        //! two instances or duplicated (ts::COPY).
+        //!
+        //!
+        PESPacket(const PESPacket& other, CopyShare mode);
 
-        // Constructor from full binary content.
-        // The content is copied into the packet if valid.
-        PESPacket (const void* content, size_t content_size, PID source_pid = PID_NULL)
+        //!
+        //! Constructor from full binary content.
+        //! The content is copied into the packet if valid.
+        //! @param [in] content Address of the binary packet data.
+        //! @param [in] content_size Size in bytes of the packet.
+        //! @param [in] source_pid PID from which the packet was read.
+        //!
+        PESPacket(const void* content, size_t content_size, PID source_pid = PID_NULL)
         {
-            initialize (new ByteBlock (content, content_size), source_pid);
+            initialize(new ByteBlock(content, content_size), source_pid);
         }
 
-        // Constructor from full binary content.
-        // The content is copied into the packet if valid.
-        PESPacket (const ByteBlock& content, PID source_pid = PID_NULL)
+        //!
+        //! Constructor from full binary content.
+        //! The content is copied into the packet if valid.
+        //! @param [in] content Binary packet data.
+        //! @param [in] source_pid PID from which the packet was read.
+        //!
+        PESPacket(const ByteBlock& content, PID source_pid = PID_NULL)
         {
-            initialize (new ByteBlock (content), source_pid);
+            initialize(new ByteBlock(content), source_pid);
         }
 
-        // Constructor from full binary content.
-        // The content is referenced, and thus shared.
-        // Do not modify the referenced ByteBlock from outside the PESPacket.
-        PESPacket (const ByteBlockPtr& content_ptr, PID source_pid = PID_NULL)
+        //!
+        //! Constructor from full binary content.
+        //! The content is copied into the packet if valid.
+        //! @param [in] content_ptr Safe pointer to the binary packet data.
+        //! The content is referenced, and thus shared.
+        //! Do not modify the referenced ByteBlock from outside the PESPacket.
+        //! @param [in] source_pid PID from which the packet was read.
+        //!
+        PESPacket(const ByteBlockPtr& content_ptr, PID source_pid = PID_NULL)
         {
-            initialize (content_ptr, source_pid);
+            initialize(content_ptr, source_pid);
         }
 
-        // Reload full binary content.
-        // The content is copied into the packet if valid.
-        void reload (const void* content, size_t content_size, PID source_pid = PID_NULL)
+        //!
+        //! Reload from full binary content.
+        //! The content is copied into the packet if valid.
+        //! @param [in] content Address of the binary packet data.
+        //! @param [in] content_size Size in bytes of the packet.
+        //! @param [in] source_pid PID from which the packet was read.
+        //!
+        void reload(const void* content, size_t content_size, PID source_pid = PID_NULL)
         {
-            initialize (new ByteBlock (content, content_size), source_pid);
+            initialize(new ByteBlock(content, content_size), source_pid);
         }
 
-        // Reload full binary content.
-        // The content is copied into the packet if valid.
-        void reload (const ByteBlock& content, PID source_pid = PID_NULL)
+        //!
+        //! Reload from full binary content.
+        //! The content is copied into the packet if valid.
+        //! @param [in] content Binary packet data.
+        //! @param [in] source_pid PID from which the packet was read.
+        //!
+        void reload(const ByteBlock& content, PID source_pid = PID_NULL)
         {
-            initialize (new ByteBlock (content), source_pid);
+            initialize(new ByteBlock(content), source_pid);
         }
 
-        // Reload full binary content.
-        // The content is referenced, and thus shared.
-        // Do not modify the referenced ByteBlock from outside the PESPacket.
-        void reload (const ByteBlockPtr& content_ptr, PID source_pid = PID_NULL)
+        //!
+        //! Reload from full binary content.
+        //! The content is copied into the packet if valid.
+        //! @param [in] content_ptr Safe pointer to the binary packet data.
+        //! The content is referenced, and thus shared.
+        //! Do not modify the referenced ByteBlock from outside the PESPacket.
+        //! @param [in] source_pid PID from which the packet was read.
+        //!
+        void reload(const ByteBlockPtr& content_ptr, PID source_pid = PID_NULL)
         {
-            initialize (content_ptr, source_pid);
+            initialize(content_ptr, source_pid);
         }
 
-        // Clear packet content. Becomes invalid packets.
+        //!
+        //! Clear packet content.
+        //! Becomes an invalid packet.
+        //!
         void clear()
         {
             _is_valid = false;
@@ -111,66 +158,216 @@ namespace ts {
             _data.clear();
         }
 
-        // Assignment. The packet content is referenced, and thus shared
-        // between the two packet objects.
-        PESPacket& operator= (const PESPacket&);
+        //!
+        //! Assignment operator.
+        //! The packets are referenced, and thus shared between the two packet objects.
+        //! @param [in] other Other packet to assign to this object.
+        //! @return A reference to this object.
+        //!
+        PESPacket& operator=(const PESPacket& other);
 
-        // Duplication. Similar to assignment but the content of the packet
-        // is duplicated.
-        PESPacket& copy (const PESPacket&);
+        //!
+        //! Duplication.
+        //! Similar to assignment but the packets are duplicated.
+        //! @param [in] other Other packet to duplicate into this object.
+        //! @return A reference to this object.
+        //!
+        PESPacket& copy(const PESPacket& other);
 
-        // Check if a packet has valid content
+        //!
+        //! Check if the packet has valid content.
+        //! @return True if the packet has valid content.
+        //!
         bool isValid() const {return _is_valid;}
 
-        // Comparison.
-        // The source PID are ignored, only the packet contents are compared.
-        // Note: Invalid packets are never identical
-        bool operator== (const PESPacket&) const;
-        bool operator!= (const PESPacket& pp) const {return !(*this == pp);}
+        //!
+        //! Equality operator.
+        //! The source PID's are ignored, only the packet contents are compared.
+        //! Invalid packets are never identical.
+        //! @param [in] other Other packet to compare.
+        //! @return True if the two packets are identical. False otherwise.
+        //!
+        bool operator==(const PESPacket& other) const;
 
-        // PID from which the packet was collected
-        PID getSourcePID() const {return _source_pid;}
-        void setSourcePID (PID pid) {_source_pid = pid;}
+        //!
+        //! Unequality operator.
+        //! The source PID's are ignored, only the packet contents are compared.
+        //! Invalid packets are never identical.
+        //! @param [in] other Other packet to compare.
+        //! @return True if the two packets are different. False otherwise.
+        //!
+        bool operator!=(const PESPacket& other) const
+        {
+            return !(*this == other);
+        }
 
-        // Index of first and last TS packet of the PES packet in the demultiplexed stream
-        PacketCounter getFirstTSPacketIndex() const {return _first_pkt;}
-        PacketCounter getLastTSPacketIndex () const {return _last_pkt;}
-        void setFirstTSPacketIndex (PacketCounter i) {_first_pkt = i;}
-        void setLastTSPacketIndex  (PacketCounter i) {_last_pkt = i;}
+        //!
+        //! Get the source PID.
+        //! @return The source PID.
+        //!
+        PID getSourcePID() const
+        {
+            return _source_pid;
+        }
 
-        // Stream id
-        uint8_t getStreamId() const {return _is_valid ? (*_data)[3] : 0;}
-        void setStreamId (uint8_t sid) {if (_is_valid) (*_data)[3] = sid;}
+        //!
+        //! Set the source PID.
+        //! @param [in] pid The source PID.
+        //!
+        void setSourcePID(PID pid)
+        {
+            _source_pid = pid;
+        }
 
-        // Check if the packet has a long header
-        bool hasLongHeader() const {return _is_valid && IsLongHeaderSID ((*_data)[3]);}
+        //!
+        //! Index of first TS packet of the PES packet in the demultiplexed stream.
+        //! Usually valid only if the PES packet was extracted by a PES demux.
+        //! @return The first TS packet of the PES packet in the demultiplexed stream.
+        //!
+        PacketCounter getFirstTSPacketIndex() const
+        {
+            return _first_pkt;
+        }
 
-        // Access to the full binary content of the packet.
-        // Do not modify content.
-        // May be invalidated after modification in packet.
-        const uint8_t* content() const {return _data->data();}
-        size_t size() const {return _data->size();}
+        //!
+        //! Index of last TS packet of the PES packet in the demultiplexed stream.
+        //! Usually valid only if the PES packet was extracted by a PES demux.
+        //! @return The last TS packet of the PES packet in the demultiplexed stream.
+        //!
+        PacketCounter getLastTSPacketIndex() const
+        {
+            return _last_pkt;
+        }
 
-        // PES header and payload
-        const uint8_t* header() const {return _is_valid ? _data->data() : 0;}
-        size_t headerSize() const {return _is_valid ? _header_size : 0;}
-        const uint8_t* payload() const {return _is_valid ? _data->data() + _header_size : 0;}
-        size_t payloadSize() const {return _is_valid ? _data->size() - _header_size : 0;}
+        //!
+        //! Set the first TS packet of the PES packet in the demultiplexed stream.
+        //! @param [in] i The first TS packet of the PES packet in the demultiplexed stream.
+        //!
+        void setFirstTSPacketIndex(PacketCounter i)
+        {
+            _first_pkt = i;
+        }
 
-        // Check if the PES packet contains MPEG-2 video (also applies to MPEG-1 video)
+        //!
+        //! Set the last TS packet of the PES packet in the demultiplexed stream.
+        //! @param [in] i The last TS packet of the PES packet in the demultiplexed stream.
+        //!
+        void setLastTSPacketIndex(PacketCounter i)
+        {
+            _last_pkt = i;
+        }
+
+        //!
+        //! Stream id of the PES packet.
+        //! @return The stream id of the PES packet.
+        //!
+        uint8_t getStreamId() const
+        {
+            return _is_valid ? (*_data)[3] : 0;
+        }
+
+        //!
+        //! Set the stream id of the PES packet.
+        //! @param [in] sid The stream id of the PES packet.
+        //!
+        void setStreamId(uint8_t sid)
+        {
+            if (_is_valid) {
+                (*_data)[3] = sid;
+            }
+        }
+
+        //!
+        //! Check if the packet has a long header.
+        //! @return True if the packet has a long header.
+        //!
+        bool hasLongHeader() const
+        {
+            return _is_valid && IsLongHeaderSID((*_data)[3]);
+        }
+
+        //!
+        //! Access to the full binary content of the packet.
+        //! Do not modify content.
+        //! @return Address of the full binary content of the packet.
+        //! May be invalidated after modification in packet.
+        //!
+        const uint8_t* content() const
+        {
+            return _data->data();
+        }
+
+        //!
+        //! Size of the binary content of the packet.
+        //! @return Size of the binary content of the packet.
+        //!
+        size_t size() const
+        {
+            return _data->size();
+        }
+
+        //!
+        //! Access to the PES header of the packet.
+        //! @return Address of the PES header of the packet.
+        //!
+        const uint8_t* header() const
+        {
+            return _is_valid ? _data->data() : 0;
+        }
+
+        //!
+        //! Size of the PES header of the packet.
+        //! @return Size of the PES header of the packet.
+        //!
+        size_t headerSize() const
+        {
+            return _is_valid ? _header_size : 0;
+        }
+
+        //!
+        //! Access to the payload of the packet.
+        //! @return Address of the payload of the packet.
+        //!
+        const uint8_t* payload() const
+        {
+            return _is_valid ? _data->data() + _header_size : 0;
+        }
+
+        //!
+        //! Size of the payload of the packet.
+        //! @return Size of the payload of the packet.
+        //!
+        size_t payloadSize() const
+        {
+            return _is_valid ? _data->size() - _header_size : 0;
+        }
+
+        //!
+        //! Check if the PES packet contains MPEG-2 video.
+        //! Also applies to MPEG-1 video.
+        //! @return True if the PES packet contains MPEG-2 video.
+        //!
         bool isMPEG2Video() const;
 
-        // Check if the PES packet contains AVC.
+        //!
+        //! Check if the PES packet contains AVC / H.264 video.
+        //! @return True if the PES packet contains AVC / H.264 video.
+        //!
         bool isAVC() const;
 
-        // Check if the PES packet contains AC-3 or Enhanced-AC-3.
-        // Warning: As specified in ETSI TS 102 366, an AC-3 audio frame always
-        // starts with 0x0B77. This is what we check here. However, it is still
-        // possible that other encodings may start from time to time with 0x0B77.
-        // Thus, it is safe to say that a PID in which all PES packets start with
-        // 0x0B77 (ie isAC3() returns true) contains AC-3. However, if only
-        // a few PES packets start with 0x0B77, it is safe to say that it should be
-        // something else.
+        //!
+        //! Check if the PES packet contains AC-3 or Enhanced-AC-3 audio.
+        //!
+        //! Warning: As specified in ETSI TS 102 366, an AC-3 audio frame always
+        //! starts with 0x0B77. This is what we check here. However, it is still
+        //! possible that other encodings may start from time to time with 0x0B77.
+        //! Thus, it is safe to say that a PID in which all PES packets start with
+        //! 0x0B77 (ie isAC3() returns true) contains AC-3. However, if only
+        //! a few PES packets start with 0x0B77, it is safe to say that it should be
+        //! something else.
+        //!
+        //! @return True if the PES packet contains AC-3 or Enhanced-AC-3 audio.
+        //!
         bool isAC3() const;
 
     private:

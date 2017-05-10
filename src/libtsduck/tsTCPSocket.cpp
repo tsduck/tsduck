@@ -35,7 +35,7 @@
 #include "tsDecimal.h"
 #include "tsGuard.h"
 #include "tsMemoryUtils.h"
-
+#include "tsException.h"
 
 
 //----------------------------------------------------------------------------
@@ -64,7 +64,7 @@ bool ts::TCPSocket::open (ReportInterface& report)
 // This method is used by a server to declare that the socket has just become opened.
 //----------------------------------------------------------------------------
 
-void ts::TCPSocket::declareOpened (TS_SOCKET_T sock, ReportInterface& report) throw (ImplementationError)
+void ts::TCPSocket::declareOpened (TS_SOCKET_T sock, ReportInterface& report)
 {
     {
         Guard lock (_mutex);

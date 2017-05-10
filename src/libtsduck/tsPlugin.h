@@ -306,10 +306,9 @@ namespace ts {
     //!
     //! All shared libraries providing input capability shall export
     //! a global function named @c tspNewInput with the following profile.
-    //! When invoked, it shall allocate a new object implementing
-    //! ts::InputPlugin.
     //!
     //! @param [in] tsp Associated callback to @c tsp executable.
+    //! @return A new allocated object implementing ts::InputPlugin.
     //!
     typedef InputPlugin* (*NewInputProfile)(const TSP* tsp);
 
@@ -360,11 +359,10 @@ namespace ts {
     //! Output plugin interface profile.
     //!
     //! All shared libraries providing output capability shall export
-    //! a global function named "tspNewOutput" with the following profile.
-    //! When invoked, it shall allocate a new object implementing
-    //! ts::OutputPlugin.
+    //! a global function named @c tspNewOutput with the following profile.
     //!
     //! @param [in] tsp Associated callback to @c tsp executable.
+    //! @return A new allocated object implementing ts::OutputPlugin.
     //!
     typedef OutputPlugin* (*NewOutputProfile)(const TSP* tsp);
 
@@ -438,11 +436,10 @@ namespace ts {
     //! Packet processing plugin interface profile.
     //!
     //! All shared libraries providing packet processing shall export
-    //! a global function named "tspNewProcessor" with the following profile.
-    //! When invoked, it shall allocate a new object implementing
-    //! ts::ProcessorPlugin.
+    //! a global function named @c tspNewProcessor with the following profile.
     //!
     //! @param [in] tsp Associated callback to @c tsp executable.
+    //! @return A new allocated object implementing ts::ProcessorPlugin.
     //!
     typedef ProcessorPlugin* (*NewProcessorProfile)(const TSP* tsp);
 }
@@ -453,9 +450,9 @@ namespace ts {
 //----------------------------------------------------------------------------
 
 //!
-//! @hideinitializer
 //! Export the plugin API version number out of the shared library.
 //! All @c tsp plugin shared libraries must invoke this macro once.
+//! @hideinitializer
 //!
 #define TSPLUGIN_DECLARE_VERSION                        \
     extern "C" {                                        \
@@ -464,11 +461,11 @@ namespace ts {
     }
 
 //!
-//! @hideinitializer
 //! Export input plugin interface out of the shared library.
 //! This macro declares the plugin allocation routine.
 //! Shall be used by shared libraries which provide input capability.
 //! @param type Name of a subclass of ts::InputPlugin implementing the plugin.
+//! @hideinitializer
 //!
 #define TSPLUGIN_DECLARE_INPUT(type)               \
     extern "C" {                                   \
@@ -480,11 +477,11 @@ namespace ts {
     }
 
 //!
-//! @hideinitializer
 //! Export output plugin interface out of the shared library.
 //! This macro declares the plugin allocation routine.
 //! Shall be used by shared libraries which provide output capability.
 //! @param type Name of a subclass of ts::OutputPlugin implementing the plugin.
+//! @hideinitializer
 //!
 #define TSPLUGIN_DECLARE_OUTPUT(type)                 \
     extern "C" {                                      \
@@ -496,11 +493,11 @@ namespace ts {
     }
 
 //!
-//! @hideinitializer
 //! Export packet processing plugin interface out of the shared library.
 //! This macro declares the plugin allocation routine.
 //! Shall be used by shared libraries which provide packet processing capability.
 //! @param type Name of a subclass of ts::ProcessorPlugin implementing the plugin.
+//! @hideinitializer
 //!
 #define TSPLUGIN_DECLARE_PROCESSOR(type)                   \
     extern "C" {                                           \

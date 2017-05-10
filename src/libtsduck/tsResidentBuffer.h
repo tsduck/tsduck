@@ -36,34 +36,68 @@
 #include "tsPlatform.h"
 
 namespace ts {
-
+    //!
+    //! Implementation of memory buffer locked in physical memory.
+    //! @tparam T Type of the buffer element.
+    //!
     template <typename T = uint8_t>
     class ResidentBuffer
     {
     public:
-        // Constructor, based on required amount of T elements.
-        // Abort application is memory allocation fails.
-        // Do not abort is memory locking fails.
-        ResidentBuffer (size_t elem_count);
+        //!
+        //! Constructor, based on required amount of elements.
+        //! Abort application if memory allocation fails.
+        //! Do not abort if memory locking fails.
+        //! @param [in] elem_count Number of @a T elements.
+        //!
+        ResidentBuffer(size_t elem_count);
 
-        // Destructor
+        //!
+        //! Destructor.
+        //!
         ~ResidentBuffer();
 
-        // Check if the buffer is actually locked.
-        bool isLocked() const {return _is_locked;}
+        //!
+        //! Check if the buffer is actually locked.
+        //! @return True if the buffer is actually locked, false if locking failed.
+        //!
+        bool isLocked() const
+        {
+            return _is_locked;
+        }
 
-        // Get error code when not locked
-        ErrorCode lockErrorCode() const {return _error_code;}
+        //!
+        //! Get error code when not locked
+        //! @return The system error code when locking failed.
+        //!
+        ErrorCode lockErrorCode() const
+        {
+            return _error_code;
+        }
 
-        // Return base and element count.
-        T* base() const {return _base;}
-        size_t count() const {return _elem_count;}
+        //!
+        //! Return base address of the buffer.
+        //! @return The address of the first @a T element in the buffer.
+        //!
+        T* base() const
+        {
+            return _base;
+        }
+
+        //!
+        //! Return the number of elements in the buffer.
+        //! @return The number of @a T elements in the buffer.
+        //!
+        size_t count() const
+        {
+            return _elem_count;
+        }
 
     private:
         // Unreachable constructors and operators.
-        ResidentBuffer ();
-        ResidentBuffer (const ResidentBuffer&);
-        ResidentBuffer& operator= (const ResidentBuffer&);
+        ResidentBuffer() = delete;
+        ResidentBuffer(const ResidentBuffer&) = delete;
+        ResidentBuffer& operator=(const ResidentBuffer&) = delete;
 
         // Private members:
         char*     _allocated_base;   // First allocated address

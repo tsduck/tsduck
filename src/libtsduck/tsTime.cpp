@@ -59,9 +59,8 @@ const ts::MilliSecond ts::Time::JulianEpochOffset =
 // Constructor
 //----------------------------------------------------------------------------
 
-ts::Time::Time (int year, int month, int day, int hour, int minute, int second, int millisecond)
-    throw(TimeError) :
-    _value (ToInt64 (year, month, day, hour, minute, second, millisecond))
+ts::Time::Time (int year, int month, int day, int hour, int minute, int second, int millisecond) :
+    _value(ToInt64(year, month, day, hour, minute, second, millisecond))
 {
 }
 
@@ -70,9 +69,8 @@ ts::Time::Time (int year, int month, int day, int hour, int minute, int second, 
 // Constructor
 //----------------------------------------------------------------------------
 
-ts::Time::Time (const ts::Time::Fields& f)
-    throw(TimeError) :
-    _value (ToInt64 (f.year, f.month, f.day, f.hour, f.minute, f.second, f.millisecond))
+ts::Time::Time (const ts::Time::Fields& f) :
+    _value(ToInt64(f.year, f.month, f.day, f.hour, f.minute, f.second, f.millisecond))
 {
 }
 
@@ -97,14 +95,14 @@ ts::Time::Fields::Fields (int year_, int month_, int day_, int hour_, int minute
 // Fields comparison
 //----------------------------------------------------------------------------
 
-bool ts::Time::Fields::operator== (const Fields& f) const throw()
+bool ts::Time::Fields::operator== (const Fields& f) const
 {
     return year == f.year && month == f.month && day == f.day &&
         hour == f.hour && minute == f.minute && second == f.second &&
         millisecond == f.millisecond;
 }
 
-bool ts::Time::Fields::operator!= (const Fields& f) const throw()
+bool ts::Time::Fields::operator!= (const Fields& f) const
 {
     return year != f.year || month != f.month || day != f.day ||
         hour != f.hour || minute != f.minute || second != f.second ||
@@ -116,7 +114,7 @@ bool ts::Time::Fields::operator!= (const Fields& f) const throw()
 // Basic string representation
 //----------------------------------------------------------------------------
 
-std::string ts::Time::format(int fields) const throw(TimeError)
+std::string ts::Time::format(int fields) const
 {
     std::string s;
     s.reserve(25); // to avoid reallocs
@@ -169,7 +167,7 @@ std::string ts::Time::format(int fields) const throw(TimeError)
 // Convert a local time to an UTC time
 //----------------------------------------------------------------------------
 
-ts::Time ts::Time::localToUTC() const throw(TimeError)
+ts::Time ts::Time::localToUTC() const
 {
 #if defined(__windows)
 
@@ -205,7 +203,7 @@ ts::Time ts::Time::localToUTC() const throw(TimeError)
 // Convert an UTC time to a local time
 //----------------------------------------------------------------------------
 
-ts::Time ts::Time::UTCToLocal() const throw(TimeError)
+ts::Time ts::Time::UTCToLocal() const
 {
 #if defined(__windows)
 
@@ -242,7 +240,7 @@ ts::Time ts::Time::UTCToLocal() const throw(TimeError)
 // This static routine returns the current UTC time.
 //----------------------------------------------------------------------------
 
-ts::Time ts::Time::CurrentUTC() throw(TimeError)
+ts::Time ts::Time::CurrentUTC()
 {
 #if defined(__windows)
 
@@ -341,7 +339,7 @@ void ts::Time::UnixRealTimeClock(::timespec& result, const MilliSecond& delay)
 // Static private routine: Convert 7 fields to a 64-bit time value.
 //----------------------------------------------------------------------------
 
-int64_t ts::Time::ToInt64(int year, int month, int day, int hour, int minute, int second, int millisecond) throw(TimeError)
+int64_t ts::Time::ToInt64(int year, int month, int day, int hour, int minute, int second, int millisecond)
 {
 #if defined(__windows)
 
@@ -402,7 +400,7 @@ int64_t ts::Time::ToInt64(int year, int month, int day, int hour, int minute, in
 // Convert a time into 7 fields
 //----------------------------------------------------------------------------
 
-ts::Time::operator Fields() const throw(TimeError)
+ts::Time::operator Fields() const
 {
 #if defined (__windows)
 
@@ -431,21 +429,21 @@ ts::Time::operator Fields() const throw(TimeError)
 // These methods return the time for the beginning of hour, day, month, year.
 //----------------------------------------------------------------------------
 
-ts::Time ts::Time::thisHour() const throw(TimeError)
+ts::Time ts::Time::thisHour() const
 {
     ts::Time::Fields f (*this);
     f.minute = f.second = f.millisecond = 0;
     return ts::Time (f);
 }
 
-ts::Time ts::Time::thisDay() const throw(TimeError)
+ts::Time ts::Time::thisDay() const
 {
     ts::Time::Fields f (*this);
     f.hour = f.minute = f.second = f.millisecond = 0;
     return ts::Time (f);
 }
 
-ts::Time ts::Time::thisMonth() const throw(TimeError)
+ts::Time ts::Time::thisMonth() const
 {
     ts::Time::Fields f (*this);
     f.day = 1;
@@ -453,7 +451,7 @@ ts::Time ts::Time::thisMonth() const throw(TimeError)
     return ts::Time (f);
 }
 
-ts::Time ts::Time::nextMonth() const throw(TimeError)
+ts::Time ts::Time::nextMonth() const
 {
     ts::Time::Fields f (*this);
     f.day = 1;
@@ -465,7 +463,7 @@ ts::Time ts::Time::nextMonth() const throw(TimeError)
     return ts::Time (f);
 }
 
-ts::Time ts::Time::thisYear() const throw(TimeError)
+ts::Time ts::Time::thisYear() const
 {
     ts::Time::Fields f (*this);
     f.month = f.day = 1;
@@ -473,7 +471,7 @@ ts::Time ts::Time::thisYear() const throw(TimeError)
     return ts::Time (f);
 }
 
-ts::Time ts::Time::nextYear() const throw(TimeError)
+ts::Time ts::Time::nextYear() const
 {
     ts::Time::Fields f (*this);
     f.year++;

@@ -38,25 +38,37 @@
 #include "tsCerrReport.h"
 
 namespace ts {
+    //!
+    //! Get DVB tuner parameters from a Linux zap configuration file.
+    //!
+    //! This method reads a Linux zap configuration file, locate a channel
+    //! description and sets the TunerParameters to the values for this
+    //! channel's transponder.
+    //!
+    //! Since Linux zap configuration files are text files, they can be
+    //! used on any platform, although they are usually generated on Linux.
+    //!
+    //! @param [in] channel_name Name of the TV channel to search.
+    //! @param [in] file_name Name of the file to read.
+    //! @param [out] parameters Returned tuner parameters.
+    //! @param [in,out] report Where to report errors.
+    //! @return True on success, false on error.
+    //!
+    TSDUCKDLL bool GetTunerFromZapFile(const std::string& channel_name,
+                                       const std::string& file_name,
+                                       TunerParameters& parameters,
+                                       ReportInterface& report = CERR);
 
-    // This method reads a Linux zap configuration file, locate a channel
-    // description and sets the TunerParameters to the values for this
-    // channel's transponder.
-    //
-    // Return true on success, false on error.
-    //
-    // Note: since Linux zap configuration files are text files, they can be
-    // used on any platform, although they are usually generated on Linux.
-
-    TSDUCKDLL bool GetTunerFromZapFile (const std::string& channel_name,
-                                      const std::string& file_name,
-                                      TunerParameters& parameters,
-                                      ReportInterface& report = CERR);
-
-    // This method analyzes a delivery system descriptor (satellite,
-    // cable or terrestrial) and returns a new tuner parameters object.
-    // Return 0 if the descriptor was not correctly analyzed or is not
-    // a delivery system descriptor.
-
-    TSDUCKDLL TunerParameters* DecodeDeliveryDescriptor (const Descriptor& desc);
+    //!
+    //! Get DVB tuner parameters from a delivery system descriptor.
+    //!
+    //! This method analyzes a delivery system descriptor (satellite,
+    //! cable or terrestrial) and returns a new tuner parameters object.
+    //!
+    //! @param [in] desc A descriptor. Must be a valid delivery system descriptor.
+    //! @return A newly allocated tuner parameters object of the appropriate class.
+    //! Return 0 if the descriptor was not correctly analyzed or is not
+    //! a delivery system descriptor.
+    //!
+    TSDUCKDLL TunerParameters* DecodeDeliveryDescriptor(const Descriptor& desc);
 }

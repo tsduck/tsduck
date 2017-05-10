@@ -37,18 +37,23 @@
 #include "tsMutex.h"
 
 namespace ts {
-
+    //!
+    //! A singleton which generates 64-bit UID, unique integer
+    //!
     class TSDUCKDLL UID
     {
         // This class is a singleton. Use static Instance() method.
         tsDeclareSingleton(UID);
 
     public:
-        // Generate a new UID
+        //!
+        //! Generate a new UID.
+        //! @return A new unique 64-bit value.
+        //!
         uint64_t newUID();
 
     private:
-        Mutex _mutex;
+        Mutex    _mutex;
         uint64_t _next_uid;
     };
 }

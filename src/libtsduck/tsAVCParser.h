@@ -36,111 +36,175 @@
 #include "tsPlatform.h"
 
 namespace ts {
-
+    //!
+    //! Parser for Advanced Video Coding data.
+    //!
+    //! Advanced Video Coding is AVC, ISO/IEC 14496-10, ITU H.264.
+    //!
+    //! The naming of methods such as readBits(), i(), u(), etc. is
+    //! directly transposed from ISO/IEC 14496-10.
+    //!
     class TSDUCKDLL AVCParser
     {
     public:
-        // Constructor: Use a memory area which must remain valid as long as
-        // the AVCParser object is used.
-        AVCParser (const void* data, size_t size_in_bytes) :
-            _base (reinterpret_cast <const uint8_t*> (data)),
-            _end (_base + size_in_bytes),
-            _total_size (size_in_bytes),
-            _byte (_base),
-            _bit (0)
+        //!
+        //! Constructor.
+        //! @param [in] data Address of a memory area to parse.
+        //! It must remain valid as long as the AVCParser object is used.
+        //! @param [in] size_in_bytes Size in bytes of the memory area to parse.
+        //!
+        AVCParser(const void* data, size_t size_in_bytes) :
+            _base(reinterpret_cast<const uint8_t*>(data)),
+            _end(_base + size_in_bytes),
+            _total_size(size_in_bytes),
+            _byte(_base),
+            _bit(0)
         {
         }
 
-        // Reset with a memory area which must remain valid as long as
-        // the AVCParser object is used.
-        void reset (const void* data, size_t size_in_bytes)
+        //!
+        //! Reset with a new memory area.
+        //! @param [in] data Address of a memory area to parse.
+        //! It must remain valid as long as the AVCParser object is used.
+        //! @param [in] size_in_bytes Size in bytes of the memory area to parse.
+        //!
+        void reset(const void* data, size_t size_in_bytes)
         {
-            _base = reinterpret_cast <const uint8_t*> (data);
+            _base = reinterpret_cast<const uint8_t*>(data);
             _end = _base + size_in_bytes;
             _total_size = size_in_bytes;
             _byte = _base;
             _bit = 0;
         }
 
-        // Reset parsing at the specified point, byte offset and bit offset
-        // inside the byte. The bit offset zero is the most significant bit.
-        void reset (size_t byte_offset = 0, size_t bit_offset = 0)
+        //!
+        //! Reset parsing at the specified point.
+        //! @param [in] byte_offset Offset of first byte to analyze.
+        //! @param [in] bit_offset Offset of first bit in first byte.
+        //! The bit offset zero is the most significant bit.
+        //!
+        void reset(size_t byte_offset = 0, size_t bit_offset = 0)
         {
-            _byte = _base + std::min (byte_offset + bit_offset / 8, _total_size);
+            _byte = _base + std::min(byte_offset + bit_offset / 8, _total_size);
             _bit = bit_offset % 8;
         }
 
-        // Get number of remaining bytes (rounded down)
+        //!
+        //! Get number of remaining bytes (rounded down).
+        //! @return The number of remaining bytes (rounded down).
+        //!
         size_t remainingBytes() const
         {
-            assert (_byte >= _base);
-            assert (_byte <= _end);
-            assert (_byte < _end || _bit == 0);
+            assert(_byte >= _base);
+            assert(_byte <= _end);
+            assert(_byte < _end || _bit == 0);
             return _end - _byte - (_bit != 0);
         }
 
-        // Get number of remaining bits
+        //!
+        //! Get number of remaining bits.
+        //! @return The number of remaining bits.
+        //!
         size_t remainingBits() const
         {
-            assert (_byte >= _base);
-            assert (_byte <= _end);
-            assert (_byte < _end || _bit == 0);
-            assert (_bit < 8);
+            assert(_byte >= _base);
+            assert(_byte <= _end);
+            assert(_byte < _end || _bit == 0);
+            assert(_bit < 8);
             return 8 * (_end - _byte) - _bit;
         }
 
-        // Check at end of stream
+        //!
+        //! Check end of stream.
+        //! @return True if at end of stream.
+        //!
         bool endOfStream() const
         {
             return _byte >= _end;
         }
 
-        // The following operations are specified by ISO/EIC 14496-10.
-        // The template methods use an integer type for extracting data
-        // and returns true on success, false on error.
-
-        // Check if the current bit pointer is on a byte boundary
+        //!
+        //! Check if the current bit pointer is on a byte boundary.
+        //! @return True if the current bit pointer is on a byte boundary.
+        //!
         bool byteAligned() const
         {
             return _bit == 0;
         }
 
-        // Skip an rbsp_trailing_bits() as defined by ISO/EIC 14496-10 7.3.2.11
-        // Return true if one was found and skipped.
+        //!
+        //! Skip an rbsp_trailing_bits() as defined by ISO/EIC 14496-10 7.3.2.11.
+        //! @return True if one was found and skipped.
+        //!
         bool rbspTrailingBits();
 
-        // Provide the next n bits without advancing the bitstream pointer.
-        template <typename INT> bool nextBits (INT& val, size_t n);
+        //!
+        //! Provide the next @a n bits without advancing the bitstream pointer.
+        //! @tparam INT An integer type for the returned data.
+        //! @param [out] val Returned integer value.
+        //! @param [in] n Number of bits to read.
+        //! @return True on success, false on error.
+        //!
+        template <typename INT> bool nextBits(INT& val, size_t n);
 
-        // Read the next n bits and advance the bitstream pointer.
-        template <typename INT> bool readBits (INT& val, size_t n);
+        //!
+        //! Read the next @a n bits and advance the bitstream pointer.
+        //! @tparam INT An integer type for the returned data.
+        //! @param [out] val Returned integer value.
+        //! @param [in] n Number of bits to read.
+        //! @return True on success, false on error.
+        //!
+        template <typename INT> bool readBits(INT& val, size_t n);
 
-        // Unsigned integer using n bits.
-        template <typename INT> bool u (INT& val, size_t n)
+        //!
+        //! Read the next unsigned integer using @a n bits and advance the bitstream pointer.
+        //! @tparam INT An integer type for the returned data.
+        //! @param [out] val Returned integer value.
+        //! @param [in] n Number of bits to read.
+        //! @return True on success, false on error.
+        //!
+        template <typename INT> bool u(INT& val, size_t n)
         {
-            assert (std::numeric_limits<INT>::is_integer);
-            assert (!std::numeric_limits<INT>::is_signed);
-            return readBits (val, n);
+            assert(std::numeric_limits<INT>::is_integer);
+            assert(!std::numeric_limits<INT>::is_signed);
+            return readBits(val, n);
         }
 
-        // Signed integer using n bits.
-        template <typename INT> bool i (INT& val, size_t n)
+
+        //!
+        //! Read the next signed integer using @a n bits and advance the bitstream pointer.
+        //! @tparam INT An integer type for the returned data.
+        //! @param [out] val Returned integer value.
+        //! @param [in] n Number of bits to read.
+        //! @return True on success, false on error.
+        //!
+        template <typename INT> bool i(INT& val, size_t n)
         {
-            assert (std::numeric_limits<INT>::is_integer);
-            assert (std::numeric_limits<INT>::is_signed);
-            return readBits (val, n);
+            assert(std::numeric_limits<INT>::is_integer);
+            assert(std::numeric_limits<INT>::is_signed);
+            return readBits(val, n);
         }
 
-        // Unsigned integer Exp-Golomb-coded
-        template <typename INT> bool ue (INT& val)
+        //!
+        //! Read the next Exp-Golomb-coded unsigned integer and advance the bitstream pointer.
+        //! @tparam INT An integer type for the returned data.
+        //! @param [out] val Returned integer value.
+        //! @return True on success, false on error.
+        //!
+        template <typename INT> bool ue(INT& val)
         {
-            assert (std::numeric_limits<INT>::is_integer);
-            assert (!std::numeric_limits<INT>::is_signed);
-            return expColomb (val);
+            assert(std::numeric_limits<INT>::is_integer);
+            assert(!std::numeric_limits<INT>::is_signed);
+            return expColomb(val);
         }
 
-        // Signed integer Exp-Golomb-coded
-        template <typename INT> bool se (INT& val);
+        //!
+        //! Read the next Exp-Golomb-coded signed integer and advance the bitstream pointer.
+        //! @tparam INT An integer type for the returned data.
+        //! @param [out] val Returned integer value.
+        //! @return True on success, false on error.
+        //!
+        template <typename INT> bool se(INT& val);
 
     private:
         AVCParser() = delete;
@@ -158,7 +222,7 @@ namespace ts {
         void nextByte()
         {
             // Next byte boundary
-            assert (_byte < _end);
+            assert(_byte < _end);
             ++_byte;
             _bit = 0;
 
@@ -175,7 +239,7 @@ namespace ts {
         // Advance pointer by one bit and return the bit value
         uint8_t nextBit()
         {
-            assert (_byte < _end);
+            assert(_byte < _end);
             uint8_t b = (*_byte >> (7 - _bit)) & 0x01;
             if (++_bit > 7) {
                 nextByte();
@@ -184,7 +248,7 @@ namespace ts {
         }
 
         // Extract Exp-Golomb-coded value using n bits.
-        template <typename INT> bool expColomb (INT&);
+        template <typename INT> bool expColomb(INT&);
     };
 }
 

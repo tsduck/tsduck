@@ -50,31 +50,68 @@ namespace ts {
     class TSDUCKDLL PESHandlerInterface
     {
     public:
-        // This hook is invoked when a complete PES packet is available.
-        virtual void handlePESPacket (PESDemux&, const PESPacket&) {}
+        //!
+        //! This hook is invoked when a complete PES packet is available.
+        //! @param [in,out] demux A reference to the PES demux.
+        //! @param [in] packet The demultiplexed PES packet.
+        //!
+        virtual void handlePESPacket(PESDemux& demux, const PESPacket& packet) {}
 
-        // This hook is invoked when a video start code is encountered.
-        // The specified offset points to the start code (00 00 01 xx)
-        // in the PES packet payload. The specified size points to the next
-        // start code.
-        virtual void handleVideoStartCode (PESDemux&, const PESPacket&, uint8_t start_code, size_t offset, size_t size) {}
+        //!
+        //! This hook is invoked when a video start code is encountered.
+        //! @param [in,out] demux A reference to the PES demux.
+        //! @param [in] packet The demultiplexed PES packet.
+        //! @param [in] start_code The XX in start code (00 00 01 xx).
+        //! @param [in] offset Offset of the start code (00 00 01 xx) in the PES packet payload
+        //! @param [in] size Size of the video payload (up to next start code).
+        //!
+        virtual void handleVideoStartCode(PESDemux& demux, const PESPacket& packet, uint8_t start_code, size_t offset, size_t size) {}
 
-        // This hook is invoked when new video attributes are found in a video PID
-        virtual void handleNewVideoAttributes (PESDemux&, const PESPacket&, const VideoAttributes&) {}
+        //!
+        //! This hook is invoked when new video attributes are found in a video PID.
+        //! @param [in,out] demux A reference to the PES demux.
+        //! @param [in] packet The demultiplexed PES packet.
+        //! @param [in] attr Video attributes.
+        //!
+        virtual void handleNewVideoAttributes(PESDemux& demux, const PESPacket& packet, const VideoAttributes& attr) {}
 
-        // This hook is invoked when an AVC (ISO 14496-10, ITU H.264) access unit (aka "NALunit") is found
-        virtual void handleAVCAccessUnit (PESDemux&, const PESPacket&, uint8_t nal_unit_type, size_t offset, size_t size) {}
+        //!
+        //! This hook is invoked when an AVC (ISO 14496-10, ITU H.264) access unit (aka "NALunit") is found.
+        //! @param [in,out] demux A reference to the PES demux.
+        //! @param [in] packet The demultiplexed PES packet.
+        //! @param [in] nal_unit_type NALunit type.
+        //! @param [in] offset Offset of the start code (00 00 01 xx) in the PES packet payload.
+        //! @param [in] size Size of the video payload (up to next start code).
+        //!
+        virtual void handleAVCAccessUnit(PESDemux& demux, const PESPacket& packet, uint8_t nal_unit_type, size_t offset, size_t size) {}
 
-        // This hook is invoked when new AVC attributes are found in a video PID
-        virtual void handleNewAVCAttributes (PESDemux&, const PESPacket&, const AVCAttributes&) {}
+        //!
+        //! This hook is invoked when new AVC attributes are found in a video PID
+        //! @param [in,out] demux A reference to the PES demux.
+        //! @param [in] packet The demultiplexed PES packet.
+        //! @param [in] attr Video attributes.
+        //!
+        virtual void handleNewAVCAttributes(PESDemux& demux, const PESPacket& packet, const AVCAttributes& attr) {}
 
-        // This hook is invoked when new audio attributes are found in an audio PID
-        virtual void handleNewAudioAttributes (PESDemux&, const PESPacket&, const AudioAttributes&) {}
+        //!
+        //! This hook is invoked when new audio attributes are found in an audio PID
+        //! @param [in,out] demux A reference to the PES demux.
+        //! @param [in] packet The demultiplexed PES packet.
+        //! @param [in] attr Audio attributes.
+        //!
+        virtual void handleNewAudioAttributes(PESDemux& demux, const PESPacket& packet, const AudioAttributes& attr) {}
 
-        // This hook is invoked when new AC-3 attributes are found in an audio PID
-        virtual void handleNewAC3Attributes (PESDemux&, const PESPacket&, const AC3Attributes&) {}
+        //!
+        //! This hook is invoked when new AC-3 attributes are found in an audio PID
+        //! @param [in,out] demux A reference to the PES demux.
+        //! @param [in] packet The demultiplexed PES packet.
+        //! @param [in] attr Audio attributes.
+        //!
+        virtual void handleNewAC3Attributes(PESDemux& demux, const PESPacket& packet, const AC3Attributes& attr) {}
 
-        // Virtual destructor
-        virtual ~PESHandlerInterface () {}
+        //!
+        //! Virtual destructor.
+        //!
+        virtual ~PESHandlerInterface() {}
     };
 }

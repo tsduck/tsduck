@@ -105,4 +105,5 @@ namespace ts {
     tsDeclareException(InvalidValue);
     tsDeclareException(UninitializedVariable);
     tsDeclareException(UnimplementedMethod);
+    tsDeclareException(ImplementationError);
 }

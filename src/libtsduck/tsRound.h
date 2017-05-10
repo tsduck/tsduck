@@ -37,17 +37,29 @@
 
 namespace ts {
 
-    // Round 'x' up or down to next multiple of a factor 'f'
-
-    template <typename INT>
-    inline INT RoundDown (INT x, INT f)
+    //!
+    //! Round @a x down to previous multiple of a factor @a f.
+    //! @tparam INT An integer type.
+    //! @param [in] x An integer value.
+    //! @param [in] f A factor.
+    //! @return The value @a x rounded down to previous multiple of @a f.
+    //!
+    template<typename INT>
+    inline INT RoundDown(INT x, INT f)
     {
         return x - x % f;
     }
 
-    template <typename INT>
-    inline INT RoundUp (INT x, INT f)
+    //!
+    //! Round @a x up to next multiple of a factor @a f.
+    //! @tparam INT An integer type.
+    //! @param [in] x An integer value.
+    //! @param [in] f A factor.
+    //! @return The value @a x rounded up to next multiple of @a f.
+    //!
+    template<typename INT>
+    inline INT RoundUp(INT x, INT f)
     {
-        return RoundDown (x + f - 1, f);
+        return RoundDown(x + f - 1, f);
     }
 }

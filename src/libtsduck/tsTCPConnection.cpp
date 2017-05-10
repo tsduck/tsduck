@@ -41,7 +41,7 @@
 // has just become connected.
 //----------------------------------------------------------------------------
 
-void ts::TCPConnection::declareConnected (ReportInterface& report) throw (ImplementationError)
+void ts::TCPConnection::declareConnected (ReportInterface& report)
 {
     {
         Guard lock (_mutex);
