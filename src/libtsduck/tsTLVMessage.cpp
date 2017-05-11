@@ -41,18 +41,18 @@
 // Serialize a message.
 //----------------------------------------------------------------------------
 
-void ts::tlv::Message::serialize (Serializer& zer) const
+void ts::tlv::Message::serialize(Serializer& zer) const
 {
     // Insert the version if the message has one (depends on the protocol)
     if (_has_version) {
-        zer.putInt8 (_version);
+        zer.putInt8(_version);
     }
 
     // Open a nested factory to avoid breaking open TLV
-    Serializer pzer (zer);
-    pzer.openTLV (_tag);
-    serializeParameters (pzer);
-    pzer.closeTLV ();
+    Serializer pzer(zer);
+    pzer.openTLV(_tag);
+    serializeParameters(pzer);
+    pzer.closeTLV();
 }
 
 
@@ -62,10 +62,10 @@ void ts::tlv::Message::serialize (Serializer& zer) const
 // Can be used by subclasses.
 //----------------------------------------------------------------------------
 
-std::string ts::tlv::Message::dump (size_t indent) const
+std::string ts::tlv::Message::dump(size_t indent) const
 {
-    return dumpOptionalHexa (indent, "protocol_version", _has_version, _version) +
-        dumpHexa (indent, "message_type", _tag);
+    return dumpOptionalHexa(indent, "protocol_version", _has_version, _version) +
+        dumpHexa(indent, "message_type", _tag);
 }
 
 
@@ -73,12 +73,12 @@ std::string ts::tlv::Message::dump (size_t indent) const
 // Helper routine for dump routines in subclasses
 //----------------------------------------------------------------------------
 
-std::string ts::tlv::Message::dumpOptional (size_t indent, const char* name, bool has_value, const ByteBlock& bl, uint32_t flags)
+std::string ts::tlv::Message::dumpOptional(size_t indent, const char* name, bool has_value, const ByteBlock& bl, uint32_t flags)
 {
     return !has_value ? "" :
-        Format ("%*s%s (%" FMT_SIZE_T "d bytes) = ", int (indent), "", name, bl.size()) +
+        Format("%*s%s (%" FMT_SIZE_T "d bytes) = ", int(indent), "", name, bl.size()) +
         ((flags & hexa::SINGLE_LINE) ? "" : "\n") +
-        Hexa (bl.data (), bl.size (), flags, indent + 4) +
+        Hexa(bl.data(), bl.size(), flags, indent + 4) +
         ((flags & hexa::SINGLE_LINE) ? "\n" : "");
 }
 
@@ -87,11 +87,11 @@ std::string ts::tlv::Message::dumpOptional (size_t indent, const char* name, boo
 // Helper routine for dump routines in subclasses
 //----------------------------------------------------------------------------
 
-std::string ts::tlv::Message::dumpVector (size_t indent, const char* name, const std::vector<std::string>& val)
+std::string ts::tlv::Message::dumpVector(size_t indent, const char* name, const std::vector<std::string>& val)
 {
     std::string s;
     for (std::vector<std::string>::const_iterator it = val.begin(); it != val.end(); ++it) {
-        s += Format ("%*s%s = \"%s\"\n", int (indent), "", name, it->c_str());
+        s += Format("%*s%s = \"%s\"\n", int(indent), "", name, it->c_str());
     }
     return s;
 }

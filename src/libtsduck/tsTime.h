@@ -59,7 +59,9 @@ namespace ts {
     class TSDUCKDLL Time
     {
     public:
-        // Exceptions
+        //!
+        //! Fatal low-level time error.
+        //!
         tsDeclareException(TimeError);
 
         //!
@@ -317,7 +319,7 @@ namespace ts {
         //! should be included. This is typically the result of or'ed values from the enum
         //! type @link FieldMask @endlink.
         //! @return A string containing the formatted date.
-        //! @throw ts::Tile::TimeError In case of operating system time error.
+        //! @throw ts::Time::TimeError In case of operating system time error.
         //!
         std::string format(int fields = ALL) const;
 
@@ -325,7 +327,7 @@ namespace ts {
         //! Conversion operator from @c Time to @c std::string.
         //! Equivalent to <code>format (ALL)</code>.
         //! @return A string containing the formatted date.
-        //! @throw ts::Tile::TimeError In case of operating system time error.
+        //! @throw ts::Time::TimeError In case of operating system time error.
         //!
         operator std::string() const
         {
@@ -335,28 +337,28 @@ namespace ts {
         //!
         //! Static method returning the current UTC time.
         //! @return The current UTC time.
-        //! @throw ts::Tile::TimeError In case of operating system time error.
+        //! @throw ts::Time::TimeError In case of operating system time error.
         //!
         static Time CurrentUTC();
 
         //!
         //! Static method returning the current local time.
         //! @return The current local time.
-        //! @throw ts::Tile::TimeError In case of operating system time error.
+        //! @throw ts::Time::TimeError In case of operating system time error.
         //!
         static Time CurrentLocalTime() {return CurrentUTC().UTCToLocal();}
 
         //!
         //! Get the beginning of the current hour.
         //! @return The time for the beginning of the current hour from this object time.
-        //! @throw ts::Tile::TimeError In case of operating system time error.
+        //! @throw ts::Time::TimeError In case of operating system time error.
         //!
         Time thisHour() const;
 
         //!
         //! Get the beginning of the next hour.
         //! @return The time for the beginning of the next hour from this object time.
-        //! @throw ts::Tile::TimeError In case of operating system time error.
+        //! @throw ts::Time::TimeError In case of operating system time error.
         //!
         Time nextHour() const
         {
@@ -366,14 +368,14 @@ namespace ts {
         //!
         //! Get the beginning of the current day.
         //! @return The time for the beginning of the current day from this object time.
-        //! @throw ts::Tile::TimeError In case of operating system time error.
+        //! @throw ts::Time::TimeError In case of operating system time error.
         //!
         Time thisDay() const;
 
         //!
         //! Get the beginning of the next day.
         //! @return The time for the beginning of the next day from this object time.
-        //! @throw ts::Tile::TimeError In case of operating system time error.
+        //! @throw ts::Time::TimeError In case of operating system time error.
         //!
         Time nextDay() const
         {
@@ -383,35 +385,35 @@ namespace ts {
         //!
         //! Get the beginning of the current month.
         //! @return The time for the beginning of the current month from this object time.
-        //! @throw ts::Tile::TimeError In case of operating system time error.
+        //! @throw ts::Time::TimeError In case of operating system time error.
         //!
         Time thisMonth() const;
 
         //!
         //! Get the beginning of the next month.
         //! @return The time for the beginning of the next month from this object time.
-        //! @throw ts::Tile::TimeError In case of operating system time error.
+        //! @throw ts::Time::TimeError In case of operating system time error.
         //!
         Time nextMonth() const;
 
         //!
         //! Get the beginning of the current year.
         //! @return The time for the beginning of the current year from this object time.
-        //! @throw ts::Tile::TimeError In case of operating system time error.
+        //! @throw ts::Time::TimeError In case of operating system time error.
         //!
         Time thisYear() const;
 
         //!
         //! Get the beginning of the next year.
         //! @return The time for the beginning of the next year from this object time.
-        //! @throw ts::Tile::TimeError In case of operating system time error.
+        //! @throw ts::Time::TimeError In case of operating system time error.
         //!
         Time nextYear() const;
 
         //!
         //! Get the beginning of the current hour, UTC.
         //! @return The time for the beginning of the current hour, UTC.
-        //! @throw ts::Tile::TimeError In case of operating system time error.
+        //! @throw ts::Time::TimeError In case of operating system time error.
         //!
         static inline Time ThisHourUTC()
         {
@@ -421,7 +423,7 @@ namespace ts {
         //!
         //! Get the beginning of the current hour, local time.
         //! @return The time for the beginning of the current hour, local time.
-        //! @throw ts::Tile::TimeError In case of operating system time error.
+        //! @throw ts::Time::TimeError In case of operating system time error.
         //!
         static inline Time ThisHourLocalTime()
         {
@@ -431,7 +433,7 @@ namespace ts {
         //!
         //! Get the beginning of the next hour, UTC.
         //! @return The time for the beginning of the next hour, UTC.
-        //! @throw ts::Tile::TimeError In case of operating system time error.
+        //! @throw ts::Time::TimeError In case of operating system time error.
         //!
         static inline Time NextHourUTC()
         {
@@ -441,7 +443,7 @@ namespace ts {
         //!
         //! Get the beginning of the next hour, local time.
         //! @return The time for the beginning of the next hour, local time.
-        //! @throw ts::Tile::TimeError In case of operating system time error.
+        //! @throw ts::Time::TimeError In case of operating system time error.
         //!
         static inline Time NextHourLocalTime()
         {
@@ -451,7 +453,7 @@ namespace ts {
         //!
         //! Get the beginning of the current day, UTC.
         //! @return The time for the beginning of the current day, UTC.
-        //! @throw ts::Tile::TimeError In case of operating system time error.
+        //! @throw ts::Time::TimeError In case of operating system time error.
         //!
         static inline Time TodayUTC()
         {
@@ -461,7 +463,7 @@ namespace ts {
         //!
         //! Get the beginning of the current day, local time.
         //! @return The time for the beginning of the current day, local time.
-        //! @throw ts::Tile::TimeError In case of operating system time error.
+        //! @throw ts::Time::TimeError In case of operating system time error.
         //!
         static inline Time TodayLocalTime()
         {
@@ -471,7 +473,7 @@ namespace ts {
         //!
         //! Get the beginning of the next day, UTC.
         //! @return The time for the beginning of the next day, UTC.
-        //! @throw ts::Tile::TimeError In case of operating system time error.
+        //! @throw ts::Time::TimeError In case of operating system time error.
         //!
         static inline Time TomorrowUTC()
         {
@@ -481,7 +483,7 @@ namespace ts {
         //!
         //! Get the beginning of the next day, local time.
         //! @return The time for the beginning of the next day, local time.
-        //! @throw ts::Tile::TimeError In case of operating system time error.
+        //! @throw ts::Time::TimeError In case of operating system time error.
         //!
         static inline Time TomorrowLocalTime()
         {
@@ -491,7 +493,7 @@ namespace ts {
         //!
         //! Get the beginning of the current month, UTC.
         //! @return The time for the beginning of the current month, UTC.
-        //! @throw ts::Tile::TimeError In case of operating system time error.
+        //! @throw ts::Time::TimeError In case of operating system time error.
         //!
         static inline Time ThisMonthUTC()
         {
@@ -501,7 +503,7 @@ namespace ts {
         //!
         //! Get the beginning of the current month, local time.
         //! @return The time for the beginning of the current month, local time.
-        //! @throw ts::Tile::TimeError In case of operating system time error.
+        //! @throw ts::Time::TimeError In case of operating system time error.
         //!
         static inline Time ThisMonthLocalTime()
         {
@@ -511,7 +513,7 @@ namespace ts {
         //!
         //! Get the beginning of the next month, UTC.
         //! @return The time for the beginning of the next month, UTC.
-        //! @throw ts::Tile::TimeError In case of operating system time error.
+        //! @throw ts::Time::TimeError In case of operating system time error.
         //!
         static inline Time NextMonthUTC()
         {
@@ -521,7 +523,7 @@ namespace ts {
         //!
         //! Get the beginning of the next month, local time.
         //! @return The time for the beginning of the next month, local time.
-        //! @throw ts::Tile::TimeError In case of operating system time error.
+        //! @throw ts::Time::TimeError In case of operating system time error.
         //!
         static inline Time NextMonthLocalTime()
         {
@@ -531,7 +533,7 @@ namespace ts {
         //!
         //! Get the beginning of the current year, UTC.
         //! @return The time for the beginning of the current year, UTC.
-        //! @throw ts::Tile::TimeError In case of operating system time error.
+        //! @throw ts::Time::TimeError In case of operating system time error.
         //!
         static inline Time ThisYearUTC()
         {
@@ -541,7 +543,7 @@ namespace ts {
         //!
         //! Get the beginning of the current year, local time.
         //! @return The time for the beginning of the current year, local time.
-        //! @throw ts::Tile::TimeError In case of operating system time error.
+        //! @throw ts::Time::TimeError In case of operating system time error.
         //!
         static inline Time ThisYearLocalTime()
         {
@@ -551,7 +553,7 @@ namespace ts {
         //!
         //! Get the beginning of the next year, UTC.
         //! @return The time for the beginning of the next year, UTC.
-        //! @throw ts::Tile::TimeError In case of operating system time error.
+        //! @throw ts::Time::TimeError In case of operating system time error.
         //!
         static inline Time NextYearUTC()
         {
@@ -561,7 +563,7 @@ namespace ts {
         //!
         //! Get the beginning of the next year, local time.
         //! @return The time for the beginning of the next year, local time.
-        //! @throw ts::Tile::TimeError In case of operating system time error.
+        //! @throw ts::Time::TimeError In case of operating system time error.
         //!
         static inline Time NextYearLocalTime()
         {
@@ -689,7 +691,7 @@ namespace ts {
 //! @param [in,out] strm An standard stream in output mode.
 //! @param [in] time A @link ts::Time @endlink object.
 //! @return A reference to the @a strm object.
-//! @throw ts::Tile::TimeError In case of operating system time error.
+//! @throw ts::Time::TimeError In case of operating system time error.
 //!
 TSDUCKDLL inline std::ostream& operator<<(std::ostream& strm, const ts::Time& time)
 {

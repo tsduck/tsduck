@@ -53,7 +53,9 @@ namespace ts {
     class TSDUCKDLL Thread
     {
     public:
-        // Exceptions
+        //!
+        //! Fatal low-level threading error.
+        //!
         tsDeclareException(ThreadError);
 
         //!

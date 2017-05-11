@@ -456,8 +456,10 @@ namespace ts {
 //!
 #define TSPLUGIN_DECLARE_VERSION                        \
     extern "C" {                                        \
+        /** @cond nodoxygen */                          \
         TS_DLL_EXPORT                                   \
         int tspInterfaceVersion = ts::TSP::API_VERSION; \
+        /** @endcond */                                 \
     }
 
 //!
@@ -469,11 +471,13 @@ namespace ts {
 //!
 #define TSPLUGIN_DECLARE_INPUT(type)               \
     extern "C" {                                   \
+        /** @cond nodoxygen */                     \
         TS_DLL_EXPORT                              \
         ts::InputPlugin* tspNewInput(ts::TSP* tsp) \
         {                                          \
             return new type(tsp);                  \
         }                                          \
+        /** @endcond */                            \
     }
 
 //!
@@ -485,11 +489,13 @@ namespace ts {
 //!
 #define TSPLUGIN_DECLARE_OUTPUT(type)                 \
     extern "C" {                                      \
+        /** @cond nodoxygen */                        \
         TS_DLL_EXPORT                                 \
         ts::OutputPlugin* tspNewOutput(ts::TSP* tsp)  \
         {                                             \
             return new type(tsp);                     \
         }                                             \
+        /** @endcond */                               \
     }
 
 //!
@@ -501,9 +507,11 @@ namespace ts {
 //!
 #define TSPLUGIN_DECLARE_PROCESSOR(type)                   \
     extern "C" {                                           \
+        /** @cond nodoxygen */                             \
         TS_DLL_EXPORT                                      \
         ts::ProcessorPlugin* tspNewProcessor(ts::TSP* tsp) \
         {                                                  \
             return new type(tsp);                          \
         }                                                  \
+        /** @endcond */                                    \
     }

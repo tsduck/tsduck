@@ -40,20 +40,41 @@
 #include "tsSafePtr.h"
 
 namespace ts {
-
+    //!
+    //! Representation of a TSP plugin shared library.
+    //!
     class TSDUCKDLL PluginSharedLibrary: public ApplicationSharedLibrary
     {
     public:
-        // Constructor.
-        // When the load is successful, locate tsp plugin API and check the API version.
-        PluginSharedLibrary (const std::string& filename, ReportInterface& report = CERR);
-
-        // Public fields (valid if isLoaded)
-        NewInputProfile     new_input;
-        NewOutputProfile    new_output;
+        //!
+        //! Constructor.
+        //!
+        //! When the load is successful, the API version has been successfully checked
+        //! and the tsp plugin API has been located.
+        //!
+        //! @param [in] filename Share library file name. Directory, "tsplugin_" prefix and suffix are optional.
+        //! @param [in,out] report Where to report errors.
+        //!
+        PluginSharedLibrary(const std::string& filename, ReportInterface& report = CERR);
+        //!
+        //! Input plugin allocation function.
+        //! If null, the plugin either does not provide input capability or is not a valid TSP plugin.
+        //
+        NewInputProfile new_input;
+        //!
+        //! Output plugin allocation function.
+        //! If null, the plugin either does not provide output capability or is not a valid TSP plugin.
+        //
+        NewOutputProfile new_output;
+        //!
+        //! Packet processing plugin allocation function.
+        //! If null, the plugin either does not provide packet processing capability or is not a valid TSP plugin.
+        //
         NewProcessorProfile new_processor;
     };
 
-    // Safe pointer for PluginSharedLibrary (not thread-safe)
+    //!
+    //! Safe pointer for PluginSharedLibrary (not thread-safe).
+    //!
     typedef SafePtr <PluginSharedLibrary, NullMutex> PluginSharedLibraryPtr;
 }

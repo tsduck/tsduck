@@ -89,7 +89,7 @@ namespace ts {
 
         //!
         //! Constructor from a system "struct in_addr" structure (socket API).
-        //! @param [in] a Address of a system "struct in_addr" structure.
+        //! @param [in] a A system "struct in_addr" structure.
         //!
         IPAddress(const ::in_addr& a) :
             _addr(ntohl(a.s_addr))
@@ -98,13 +98,13 @@ namespace ts {
 
         //!
         //! Constructor from a system "struct sockaddr" structure (socket API).
-        //! @param [in] a Address of a system "struct sockaddr" structure.
+        //! @param [in] a A system "struct sockaddr" structure.
         //!
         IPAddress(const ::sockaddr& a);
 
         //!
         //! Constructor from a system "struct sockaddr_in" structure (socket API).
-        //! @param [in] a Address of a system "struct sockaddr_in" structure.
+        //! @param [in] a A system "struct sockaddr_in" structure.
         //!
         IPAddress(const ::sockaddr_in& a);
 
@@ -182,21 +182,21 @@ namespace ts {
 
         //!
         //! Copy the address into a system "struct sockaddr" structure (socket API).
-        //! @param [out] a Address of a system "struct sockaddr" structure.
+        //! @param [out] a A system "struct sockaddr" structure.
         //! @param [in] port Port number for the socket address.
         //!
         void copy(::sockaddr& a, uint16_t port) const;
 
         //!
         //! Copy the address into a system "struct sockaddr_in" structure (socket API).
-        //! @param [out] a Address of a system "struct sockaddr_in" structure.
+        //! @param [out] a A system "struct sockaddr_in" structure.
         //! @param [in] port Port number for the socket address.
         //!
         void copy(::sockaddr_in& a, uint16_t port) const;
 
         //!
         //! Copy the address into a system "struct in_addr" structure (socket API).
-        //! @param [out] a Address of a system "struct in_addr" structure.
+        //! @param [out] a A system "struct in_addr" structure.
         //!
         void copy(::in_addr& a) const {a.s_addr = htonl(_addr);}
   

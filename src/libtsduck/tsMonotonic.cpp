@@ -37,12 +37,11 @@
 #include "tsFormat.h"
 
 
-
 //----------------------------------------------------------------------------
 // System-specific initialization
 //----------------------------------------------------------------------------
 
-void ts::Monotonic::init() throw (MonotonicError)
+void ts::Monotonic::init()
 {
 #if defined (__windows)
 
@@ -81,7 +80,7 @@ ts::Monotonic::~Monotonic()
 // Get system time value
 //----------------------------------------------------------------------------
 
-void ts::Monotonic::getSystemTime() throw (MonotonicError)
+void ts::Monotonic::getSystemTime()
 {
 #if defined (__windows)
 
@@ -109,7 +108,7 @@ void ts::Monotonic::getSystemTime() throw (MonotonicError)
 // Wait until the time of the monotonic clock.
 //----------------------------------------------------------------------------
 
-void ts::Monotonic::wait() throw(MonotonicError)
+void ts::Monotonic::wait()
 {
 #if defined(__windows)
 
@@ -176,7 +175,7 @@ void ts::Monotonic::wait() throw(MonotonicError)
 // requested value.
 //----------------------------------------------------------------------------
 
-ts::NanoSecond ts::Monotonic::SetPrecision(const NanoSecond& requested) throw (MonotonicError)
+ts::NanoSecond ts::Monotonic::SetPrecision(const NanoSecond& requested)
 {
 #if defined (__windows)
 

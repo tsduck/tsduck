@@ -87,7 +87,9 @@ namespace ts {
     class TSDUCKDLL Guard
     {
     public:
-        // Exceptions
+        //!
+        //! Fatal low-level mutex guard error.
+        //!
         tsDeclareException(GuardError);
 
         //!
@@ -105,7 +107,7 @@ namespace ts {
         //! error, the object is successfully constructed but isLocked() will
         //! return false.
         //!
-        Guard(MutexInterface& mutex, MilliSecond timeout = Infinite) throw(GuardError);
+        Guard(MutexInterface& mutex, MilliSecond timeout = Infinite);
 
         //!
         //! Destructor, automatically release the mutex.

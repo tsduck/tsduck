@@ -79,7 +79,9 @@ namespace ts {
     class TSDUCKDLL GuardCondition
     {
     public:
-        // Exceptions
+        //!
+        //! Fatal low-level condition guard error.
+        //!
         tsDeclareException(GuardConditionError);
 
         //!
@@ -96,7 +98,7 @@ namespace ts {
         //! error, the object is successfully constructed but isLocked() will
         //! return false.
         //!
-        GuardCondition(Mutex& mutex, Condition& condition, MilliSecond timeout = Infinite) throw(GuardConditionError);
+        GuardCondition(Mutex& mutex, Condition& condition, MilliSecond timeout = Infinite);
 
         //!
         //! Destructor, automatically release the mutex.
@@ -128,7 +130,7 @@ namespace ts {
         //! or if the mutex was not locked (the constructor with timeout
         //! was used and the timeout expired before the mutex was acquired).
         //!
-        void signal() throw(GuardConditionError);
+        void signal();
 
         //!
         //! Wait for the condition to be signaled with a timeout.
@@ -143,7 +145,7 @@ namespace ts {
         //! or if the mutex was not locked (the constructor with timeout
         //! was used and the timeout expired before the mutex was acquired).
         //!
-        bool waitCondition(MilliSecond timeout = Infinite) throw(GuardConditionError);
+        bool waitCondition(MilliSecond timeout = Infinite);
 
     private:
         GuardCondition() = delete;

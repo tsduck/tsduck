@@ -37,35 +37,54 @@
 
 namespace ts {
 
-    // Safe pointer for Object
     class Object;
-    typedef SafePtr <Object, Mutex> ObjectPtr;
 
+    //!
+    //! Safe pointer for Object (thread-safe).
+    //!
+    typedef SafePtr<Object, Mutex> ObjectPtr;
+
+    //!
+    //! Abstract base class for objects which can be stored in a repository.
+    //!
+    //! This type of object is typically used to communicate between independent
+    //! modules or plugins.
+    //!
     class TSDUCKDLL Object
     {
     public:
+        //!
+        //! Virtual destructor.
+        //!
+        virtual ~Object()
+        {
+        }
 
-        // Virtual destructor
-        virtual ~Object() {}
+        //!
+        //! Store a safe pointer to an Object in a static thread-safe repository.
+        //! @param [in] name Each stored pointer is associated to a name.
+        //! @param [in] value Safe-pointer to the object to store.
+        //! @return The previous value which was associated to that name or a null
+        //! pointer when not previously assigned.
+        //!
+        static ObjectPtr StoreInRepository(const std::string& name, const ObjectPtr& value);
 
-        // Store a safe pointer to an Object in a static thread-safe repository.
-        // Each stored pointer is associated to a name.
-        // Return the previous value which was associated to that name or a null
-        // pointer when not previously assigned.
-        static ObjectPtr StoreInRepository (const std::string& name, const ObjectPtr& value);
+        //!
+        //! Get the safe pointer to an Object in the static thread-safe repository.
+        //! @param [in] name Name which is associated to the object.
+        //! @return A safe-pointer to the stored object or a null pointer when not found.
+        //!
+        static ObjectPtr RetrieveFromRepository(const std::string& name);
 
-        // Get the safe pointer to an Object in the static thread-safe repository
-        // which is associated to the specified name.
-        // Return a null pointer when not found, ie. ObjectPtr::isNull() is true.
-        static ObjectPtr RetrieveFromRepository (const std::string& name);
-
-        // Erase from the static thread-safe repository the value which is associated to
-        // the specified name.
-        static void EraseFromRepository (const std::string& name);
+        //!
+        //! Erase an object from the static thread-safe repository.
+        //! @param [in] name Name which is associated to the object to erase.
+        //!
+        static void EraseFromRepository(const std::string& name);
 
     private:
         // Static thread-safe repository of Object
-        static std::map <std::string, ObjectPtr> _repository;
+        static std::map<std::string, ObjectPtr> _repository;
 
         // Mutex protecting access to the static thread-safe repository of Object
         static Mutex _repository_mutex;

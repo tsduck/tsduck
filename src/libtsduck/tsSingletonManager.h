@@ -84,14 +84,16 @@ namespace ts {
 //! @see tsDefineSingleton()
 //! @hideinitializer
 //!
-#define tsDeclareSingleton(classname)                   \
-    public:                                             \
-        static classname* Instance();                   \
-    private:                                            \
-        static classname* volatile _instance;           \
-        static void CleanupSingleton();                 \
-        classname();                                    \
-        classname(const classname&) = delete;           \
+#define tsDeclareSingleton(classname)                               \
+    public:                                                         \
+        /** Get the instance of the singleton of this class. */     \
+        /** @return The instance of the singleton of this class. */ \
+        static classname* Instance();                               \
+    private:                                                        \
+        static classname* volatile _instance;                       \
+        static void CleanupSingleton();                             \
+        classname();                                                \
+        classname(const classname&) = delete;                       \
         classname& operator=(const classname&) = delete
 
 //!

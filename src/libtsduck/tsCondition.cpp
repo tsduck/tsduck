@@ -36,7 +36,7 @@
 // Constructor
 //----------------------------------------------------------------------------
 
-ts::Condition::Condition() throw(ConditionError) :
+ts::Condition::Condition() :
     _created(false)
 {
 #if defined(__windows)
@@ -100,7 +100,7 @@ ts::Condition::~Condition()
 // Signal the condition.
 //----------------------------------------------------------------------------
 
-void ts::Condition::signal() throw (ConditionError)
+void ts::Condition::signal()
 {
     if (!_created) {
         return;

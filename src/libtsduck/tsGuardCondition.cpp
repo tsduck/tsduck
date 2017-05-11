@@ -38,23 +38,23 @@
 // Constructor
 //----------------------------------------------------------------------------
 
-ts::GuardCondition::GuardCondition (Mutex& mutex, Condition& condition, MilliSecond timeout)
-    throw (GuardConditionError) :
-    _mutex (mutex),
-    _condition (condition),
-    _is_locked (false)
+ts::GuardCondition::GuardCondition (Mutex& mutex, Condition& condition, MilliSecond timeout) :
+    _mutex(mutex),
+    _condition(condition),
+    _is_locked(false)
 {
     _is_locked = mutex.acquire (timeout);
 
-    if (timeout == Infinite && !_is_locked)
+    if (timeout == Infinite && !_is_locked) {
         throw GuardConditionError ("failed to acquire mutex");
+    }
 }
 
 //----------------------------------------------------------------------------
 // Destructor.
 //----------------------------------------------------------------------------
 
-ts::GuardCondition::~GuardCondition ()
+ts::GuardCondition::~GuardCondition()
 {
     if (_is_locked) {
         _mutex.release();
@@ -67,11 +67,10 @@ ts::GuardCondition::~GuardCondition ()
 // The mutex must have been locked.
 //----------------------------------------------------------------------------
 
-void ts::GuardCondition::signal ()
-    throw (GuardConditionError)
+void ts::GuardCondition::signal()
 {
     if (!_is_locked) {
-        throw GuardConditionError ("GuardCondition: signal condition while mutex not locked");
+        throw GuardConditionError("GuardCondition: signal condition while mutex not locked");
     }
     else {
         _condition.signal();
@@ -83,12 +82,12 @@ void ts::GuardCondition::signal ()
 // The mutex must have been locked.
 //----------------------------------------------------------------------------
 
-bool ts::GuardCondition::waitCondition(MilliSecond timeout) throw(GuardConditionError)
+bool ts::GuardCondition::waitCondition(MilliSecond timeout)
 {
     if (!_is_locked) {
-        throw GuardConditionError ("GuardCondition: wait condition while mutex not locked");
+        throw GuardConditionError("GuardCondition: wait condition while mutex not locked");
     }
     else {
-        return _condition.wait (_mutex, timeout);
+        return _condition.wait(_mutex, timeout);
     }
 }

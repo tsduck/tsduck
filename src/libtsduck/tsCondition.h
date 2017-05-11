@@ -57,8 +57,10 @@ namespace ts {
     class TSDUCKDLL Condition
     {
     public:
-        // Exceptions
-        tsDeclareException (ConditionError);
+        //!
+        //! Fatal low-level condition/threading error.
+        //!
+        tsDeclareException(ConditionError);
 
         //!
         //! Default constructor.
@@ -66,7 +68,7 @@ namespace ts {
         //! @throw ts::Condition::ConditionError In case of operating system error,
         //! when the underlying system objects could not be created.
         //!
-        Condition() throw(ConditionError);
+        Condition();
 
         //!
         //! Destructor.
@@ -83,7 +85,7 @@ namespace ts {
         //! @return true on success and false on error.
         //! @throw ts::Condition::ConditionError In case of operating system error.
         //!
-        void signal() throw(ConditionError);
+        void signal();
 
         //!
         //! Wait for the condition to be signaled with a timeout,

@@ -56,8 +56,10 @@ namespace ts {
     class TSDUCKDLL Mutex: public MutexInterface
     {
     public:
-        // Exceptions
-        tsDeclareException (MutexError);
+        //!
+        //! Fatal low-level mutex error.
+        //!
+        tsDeclareException(MutexError);
 
         //!
         //! Default constructor.
@@ -65,7 +67,7 @@ namespace ts {
         //! @throw MutexError In case of operating system error,
         //! when the underlying system objects could not be created.
         //!
-        Mutex() throw(MutexError);
+        Mutex();
 
         //!
         //! Destructor.
@@ -90,7 +92,7 @@ namespace ts {
         //! @return True on success and false on error. When the timeout expires,
         //! this is not an error and true is returned.
         //!
-        virtual bool acquire(MilliSecond timeout = Infinite) throw (MutexError);
+        virtual bool acquire(MilliSecond timeout = Infinite);
 
         //!
         //! Release the mutex.

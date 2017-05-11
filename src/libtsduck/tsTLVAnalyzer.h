@@ -37,40 +37,96 @@
 
 namespace ts {
     namespace tlv {
-
+        //!
+        //! Analysis (deserialization) of TLV messages.
+        //!
         class TSDUCKDLL Analyzer
         {
         public:
-            // Constructor: associate the analyzer object with the address
-            // and size of the binary message. The corresponding memory area
-            // must remain alive as long as the object exists.
-            // Also pre-analyze the first TLV field.
-            Analyzer (const void* addr, size_t size);
+            //!
+            //! Constructor.
+            //! Associate the analyzer object with the address and size of the
+            //! binary message. The corresponding memory area must remain alive
+            //! as long as the object exists. Also pre-analyze the first TLV field.
+            //! @param [in] addr Address of the binary message.
+            //! @param [in] size Size in bytes of the binary message.
+            //!
+            Analyzer(const void* addr, size_t size);
 
-            // Check if the end of message has been reached.
-            bool endOfMessage() const {return _eom;}
+            //!
+            //! Check if the end of message has been reached.
+            //! @return True if the end of message has been reached.
+            //!
+            bool endOfMessage() const
+            {
+                return _eom;
+            }
 
-            // Check if the rest of the message is valid.
-            // When valid() becomes false, endOfMessage() also become false.
-            bool valid() const {return _valid;}
+            //!
+            //! Check if the rest of the message is valid.
+            //! When valid() becomes false, endOfMessage() also become false.
+            //! @return True if the rest of the message is valid.
+            //!
+            bool valid() const
+            {
+                return _valid;
+            }
 
-            // Return the characteristics of the current TLV field
-            const void* fieldAddr() const {return _tlv_addr;}
-            size_t fieldSize() const {return _tlv_size;}
-            TAG tag() const {return _tag;}
+            //!
+            //! Get the address of the current TLV field.
+            //! @return Address of the current TLV field.
+            //!
+            const void* fieldAddr() const
+            {
+                return _tlv_addr;
+            }
+            
+            //!
+            //! Get the complete size of the current TLV field.
+            //! @return Complete size of the current TLV field.
+            //!
+            size_t fieldSize() const
+            {
+                return _tlv_size;
+            }
+            
+            //!
+            //! Get the tag of the current TLV field.
+            //! @return Tag of the current TLV field.
+            //!
+            TAG tag() const
+            {
+                return _tag;
+            }
 
-            // Return the value in the current TLV field
-            const void* valueAddr () const {return _value_addr;}
-            LENGTH length () const {return _length;}
+            //!
+            //! Get the address of the value field in the current TLV field.
+            //! @return The address of the value field in the current TLV field.
+            //!
+            const void* valueAddr() const
+            {
+                return _value_addr;
+            }
 
-            // Analyze the next TLV field.
+            //!
+            //! Get the length of the value field in the current TLV field.
+            //! @return The length of the value field in the current TLV field.
+            //!
+            LENGTH length() const
+            {
+                return _length;
+            }
+
+            //!
+            //! Analyze the next TLV field.
+            //!
             void next();
 
         private:
             // Unreachable constructors and operators
-            Analyzer ();
-            Analyzer (const Analyzer&);
-            Analyzer& operator= (const Analyzer&);
+            Analyzer() = delete;
+            Analyzer(const Analyzer&) = delete;
+            Analyzer& operator=(const Analyzer&) = delete;
 
         private:
             // Private members

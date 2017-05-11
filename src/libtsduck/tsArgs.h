@@ -281,8 +281,10 @@ namespace ts {
     class TSDUCKDLL Args: public ReportInterface
     {
     public:
-        // Exceptions
-        tsDeclareException (ArgsError);
+        //!
+        //! Internal application error in command line argument handling.
+        //!
+        tsDeclareException(ArgsError);
 
         //!
         //! Args object flags, used in an or'ed mask.

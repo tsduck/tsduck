@@ -50,10 +50,14 @@ namespace ts {
     //!
     struct TSDUCKDLL TSPacket
     {
-        //! Public content is the 188-byte array representing the TS packet.
+        //!
+        //! The public content is the 188-byte array representing the TS packet.
+        //!
         uint8_t b[PKT_SIZE];
 
-        // Exceptions
+        //!
+        //! Internal error: access a non-existent adaptation field.
+        //!
         tsDeclareException(AdaptationFieldError);
 
         //!

@@ -98,9 +98,11 @@ namespace ts {
 //!
 #define TSGENTAB_DECLARE_PLUGIN(type)         \
     extern "C" {                              \
+        /** @cond nodoxygen */                \
         TS_DLL_EXPORT                         \
         ts::GenTabPlugin* tsgentabNewPlugin() \
         {                                     \
             return new type();                \
         }                                     \
+        /** @endcond */                       \
     }

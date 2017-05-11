@@ -79,14 +79,21 @@ namespace ts {
     class name: public ts::Exception                              \
     {                                                             \
     public:                                                       \
+        /** Constructor.                                       */ \
+        /** @param [in] w Error message for the exception.     */ \
         explicit name(const std::string& w) :                     \
             ts::Exception(#name ": " + w)                         \
         {                                                         \
         }                                                         \
+        /** Constructor.                                       */ \
+        /** @param [in] w Error message for the exception.     */ \
+        /** @param [in] code System error code.                */ \
         explicit name(const std::string& w, ts::ErrorCode code) : \
             ts::Exception(#name ": " + w, code)                   \
         {                                                         \
         }                                                         \
+        /** Constructor.                                       */ \
+        /** @param [in] code System error code.                */ \
         explicit name(ts::ErrorCode code) :                       \
             ts::Exception(#name, code)                            \
         {                                                         \
@@ -102,8 +109,20 @@ namespace ts {
 // Some "standard" exceptions
 //
 namespace ts {
+    //!
+    //! Exception for generic invalid value error.
+    //!
     tsDeclareException(InvalidValue);
+    //!
+    //! Uninitialized variable error.
+    //!
     tsDeclareException(UninitializedVariable);
+    //!
+    //! Unimplemented method error.
+    //!
     tsDeclareException(UnimplementedMethod);
+    //!
+    //! Implementation error.
+    //!
     tsDeclareException(ImplementationError);
 }

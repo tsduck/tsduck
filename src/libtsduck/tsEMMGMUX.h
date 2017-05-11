@@ -60,35 +60,35 @@ namespace ts {
             //! EMMG/PDG <=> MUX command tags.
             //!
             enum Command {
-                channel_setup         = 0x0011,
-                channel_test          = 0x0012,
-                channel_status        = 0x0013,
-                channel_close         = 0x0014,
-                channel_error         = 0x0015,
-                stream_setup          = 0x0111,
-                stream_test           = 0x0112,
-                stream_status         = 0x0113,
-                stream_close_request  = 0x0114,
-                stream_close_response = 0x0115,
-                stream_error          = 0x0116,
-                stream_BW_request     = 0x0117,
-                stream_BW_allocation  = 0x0118,
-                data_provision        = 0x0211,
+                channel_setup         = 0x0011,  //!< The channel_setup message tag.
+                channel_test          = 0x0012,  //!< The channel_test message tag.
+                channel_status        = 0x0013,  //!< The channel_status message tag.
+                channel_close         = 0x0014,  //!< The channel_close message tag.
+                channel_error         = 0x0015,  //!< The channel_error message tag.
+                stream_setup          = 0x0111,  //!< The stream_setup message tag.
+                stream_test           = 0x0112,  //!< The stream_test message tag.
+                stream_status         = 0x0113,  //!< The stream_status message tag.
+                stream_close_request  = 0x0114,  //!< The stream_close_request message tag.
+                stream_close_response = 0x0115,  //!< The stream_close_response message tag.
+                stream_error          = 0x0116,  //!< The stream_error message tag.
+                stream_BW_request     = 0x0117,  //!< The stream_BW_request message tag.
+                stream_BW_allocation  = 0x0118,  //!< The stream_BW_allocation message tag.
+                data_provision        = 0x0211,  //!< The data_provision message tag.
             };
             //!
             //! EMMG/PDG <=> MUX parameter tags.
             //!
             enum Parameter {
-                client_id             = 0x0001,
-                section_TSpkt_flag    = 0x0002,
-                data_channel_id       = 0x0003,
-                data_stream_id        = 0x0004,
-                datagram              = 0x0005,
-                bandwidth             = 0x0006,
-                data_type             = 0x0007,
-                data_id               = 0x0008,
-                error_status          = 0x7000,
-                error_information     = 0x7001,
+                client_id             = 0x0001,  //!< The client_id parameter tag.
+                section_TSpkt_flag    = 0x0002,  //!< The section_TSpkt_flag parameter tag.
+                data_channel_id       = 0x0003,  //!< The data_channel_id parameter tag.
+                data_stream_id        = 0x0004,  //!< The data_stream_id parameter tag.
+                datagram              = 0x0005,  //!< The datagram parameter tag.
+                bandwidth             = 0x0006,  //!< The bandwidth parameter tag.
+                data_type             = 0x0007,  //!< The data_type parameter tag.
+                data_id               = 0x0008,  //!< The data_id parameter tag.
+                error_status          = 0x7000,  //!< The error_status parameter tag.
+                error_information     = 0x7001,  //!< The error_information parameter tag.
             };
         };
 
@@ -100,28 +100,28 @@ namespace ts {
             //! All error status values
             //!
             enum StatusValue {
-                inv_message           = 0x0001,
-                inv_proto_version     = 0x0002,
-                inv_message_type      = 0x0003,
-                message_too_long      = 0x0004,
-                inv_data_stream_id    = 0x0005,
-                inv_data_channel_id   = 0x0006,
-                too_many_channels     = 0x0007,
-                too_many_stm_chan     = 0x0008,
-                too_many_stm_mux      = 0x0009,
-                inv_param_type        = 0x000A,
-                inv_param_length      = 0x000B,
-                missing_param         = 0x000C,
-                inv_param_value       = 0x000D,
-                inv_client_id         = 0x000E,
-                exceeded_bw           = 0x000F,
-                inv_data_id           = 0x0010,
-                channel_id_in_use     = 0x0011,
-                stream_id_in_use      = 0x0012,
-                data_id_in_use        = 0x0013,
-                client_id_in_use      = 0x0014,
-                unknown_error         = 0x7000,
-                unrecoverable_error   = 0x7001,
+                inv_message           = 0x0001,  //!< The inv_message error status value.
+                inv_proto_version     = 0x0002,  //!< The inv_proto_version error status value.
+                inv_message_type      = 0x0003,  //!< The inv_message_type error status value.
+                message_too_long      = 0x0004,  //!< The message_too_long error status value.
+                inv_data_stream_id    = 0x0005,  //!< The inv_data_stream_id error status value.
+                inv_data_channel_id   = 0x0006,  //!< The inv_data_channel_id error status value.
+                too_many_channels     = 0x0007,  //!< The too_many_channels error status value.
+                too_many_stm_chan     = 0x0008,  //!< The too_many_stm_chan error status value.
+                too_many_stm_mux      = 0x0009,  //!< The too_many_stm_mux error status value.
+                inv_param_type        = 0x000A,  //!< The inv_param_type error status value.
+                inv_param_length      = 0x000B,  //!< The inv_param_length error status value.
+                missing_param         = 0x000C,  //!< The missing_param error status value.
+                inv_param_value       = 0x000D,  //!< The inv_param_value error status value.
+                inv_client_id         = 0x000E,  //!< The inv_client_id error status value.
+                exceeded_bw           = 0x000F,  //!< The exceeded_bw error status value.
+                inv_data_id           = 0x0010,  //!< The inv_data_id error status value.
+                channel_id_in_use     = 0x0011,  //!< The channel_id_in_use error status value.
+                stream_id_in_use      = 0x0012,  //!< The stream_id_in_use error status value.
+                data_id_in_use        = 0x0013,  //!< The data_id_in_use error status value.
+                client_id_in_use      = 0x0014,  //!< The client_id_in_use error status value.
+                unknown_error         = 0x7000,  //!< The unknown_error error status value.
+                unrecoverable_error   = 0x7001,  //!< The unrecoverable_error error status value.
             };
         };
 
@@ -147,12 +147,12 @@ namespace ts {
         class TSDUCKDLL Protocol : public tlv::Protocol
         {
             // This class is a singleton. Use static Instance() method.
-            tsDeclareSingleton (Protocol);
+            tsDeclareSingleton(Protocol);
 
         public:
             // Implementation of pure virtual methods
-            virtual void factory (const tlv::MessageFactory&, tlv::MessagePtr&) const;
-            virtual void buildErrorResponse (const tlv::MessageFactory&, tlv::MessagePtr&) const;
+            virtual void factory(const tlv::MessageFactory&, tlv::MessagePtr&) const;
+            virtual void buildErrorResponse(const tlv::MessageFactory&, tlv::MessagePtr&) const;
         };
 
 
@@ -167,15 +167,26 @@ namespace ts {
         {
         public:
             // Protocol-documented fields:
-            // uint16_t channel_id; // (data_channel_id)
-            uint32_t client_id;
-            bool   section_TSpkt_flag;
-        public:
-            ChannelSetup ();
-            ChannelSetup (const tlv::MessageFactory& fact);
-            virtual std::string dump (size_t indent = 0) const;
+            // uint16_t channel_id;      // data_channel_id
+            uint32_t client_id;          //!< Client id.
+            bool     section_TSpkt_flag; //!< Use TS packets or sections.
+
+            //!
+            //! Default constructor.
+            //!
+            ChannelSetup();
+            //!
+            //! Constructor from a message factory.
+            //! @param [in] fact Message factory.
+            //!
+            ChannelSetup(const tlv::MessageFactory& fact);
+
+            // Implementation of Message.
+            virtual std::string dump(size_t indent = 0) const;
+
         protected:
-            virtual void serializeParameters (tlv::Serializer& fact) const;
+            // Implementation of Message.
+            virtual void serializeParameters(tlv::Serializer& fact) const;
         };
 
         //!
@@ -185,14 +196,25 @@ namespace ts {
         {
         public:
             // Protocol-documented fields:
-            // uint16_t channel_id; // (data_channel_id)
-            uint32_t client_id;
-        public:
-            ChannelTest ();
-            ChannelTest (const tlv::MessageFactory& fact);
-            virtual std::string dump (size_t indent = 0) const;
+            // uint16_t channel_id; // data_channel_id
+            uint32_t client_id;     //!< Client id.
+
+            //!
+            //! Default constructor.
+            //!
+            ChannelTest();
+            //!
+            //! Constructor from a message factory.
+            //! @param [in] fact Message factory.
+            //!
+            ChannelTest(const tlv::MessageFactory& fact);
+
+            // Implementation of Message.
+            virtual std::string dump(size_t indent = 0) const;
+
         protected:
-            virtual void serializeParameters (tlv::Serializer& fact) const;
+            // Implementation of Message.
+            virtual void serializeParameters(tlv::Serializer& fact) const;
         };
 
         //!
@@ -202,15 +224,26 @@ namespace ts {
         {
         public:
             // Protocol-documented fields:
-            // uint16_t channel_id; // (data_channel_id)
-            uint32_t client_id;
-            bool   section_TSpkt_flag;
-        public:
-            ChannelStatus ();
-            ChannelStatus (const tlv::MessageFactory& fact);
-            virtual std::string dump (size_t indent = 0) const;
+            // uint16_t channel_id;      // data_channel_id
+            uint32_t client_id;          //!< Client id.
+            bool     section_TSpkt_flag; //!< Use TS packets or sections.
+
+            //!
+            //! Default constructor.
+            //!
+            ChannelStatus();
+            //!
+            //! Constructor from a message factory.
+            //! @param [in] fact Message factory.
+            //!
+            ChannelStatus(const tlv::MessageFactory& fact);
+
+            // Implementation of Message.
+            virtual std::string dump(size_t indent = 0) const;
+
         protected:
-            virtual void serializeParameters (tlv::Serializer& fact) const;
+            // Implementation of Message.
+            virtual void serializeParameters(tlv::Serializer& fact) const;
         };
 
         //!
@@ -220,14 +253,25 @@ namespace ts {
         {
         public:
             // Protocol-documented fields:
-            // uint16_t channel_id; // (data_channel_id)
-            uint32_t client_id;
-        public:
-            ChannelClose ();
-            ChannelClose (const tlv::MessageFactory& fact);
-            virtual std::string dump (size_t indent = 0) const;
+            // uint16_t channel_id; // data_channel_id
+            uint32_t client_id;     //!< Client id.
+
+            //!
+            //! Default constructor.
+            //!
+            ChannelClose();
+            //!
+            //! Constructor from a message factory.
+            //! @param [in] fact Message factory.
+            //!
+            ChannelClose(const tlv::MessageFactory& fact);
+
+            // Implementation of Message.
+            virtual std::string dump(size_t indent = 0) const;
+
         protected:
-            virtual void serializeParameters (tlv::Serializer& fact) const;
+            // Implementation of Message.
+            virtual void serializeParameters(tlv::Serializer& fact) const;
         };
 
         //!
@@ -237,16 +281,27 @@ namespace ts {
         {
         public:
             // Protocol-documented fields:
-            // uint16_t channel_id; // (data_channel_id)
-            uint32_t client_id;
-            std::vector<uint16_t> error_status;
-            std::vector<uint16_t> error_information;
-        public:
-            ChannelError ();
-            ChannelError (const tlv::MessageFactory& fact);
-            virtual std::string dump (size_t indent = 0) const;
+            // uint16_t channel_id;                  // data_channel_id
+            uint32_t client_id;                      //!< Client id.
+            std::vector<uint16_t> error_status;      //!< Error code.
+            std::vector<uint16_t> error_information; //!< Error information.
+
+            //!
+            //! Default constructor.
+            //!
+            ChannelError();
+            //!
+            //! Constructor from a message factory.
+            //! @param [in] fact Message factory.
+            //!
+            ChannelError(const tlv::MessageFactory& fact);
+
+            // Implementation of Message.
+            virtual std::string dump(size_t indent = 0) const;
+
         protected:
-            virtual void serializeParameters (tlv::Serializer& fact) const;
+            // Implementation of Message.
+            virtual void serializeParameters(tlv::Serializer& fact) const;
         };
 
         //!
@@ -256,17 +311,28 @@ namespace ts {
         {
         public:
             // Protocol-documented fields:
-            // uint16_t channel_id; // (data_channel_id)
-            // uint16_t stream_id;  // (data_stream_id)
-            uint32_t client_id;
-            uint16_t data_id;
-            uint8_t  data_type;
-        public:
-            StreamSetup ();
-            StreamSetup (const tlv::MessageFactory& fact);
-            virtual std::string dump (size_t indent = 0) const;
+            // uint16_t channel_id; // data_channel_id
+            // uint16_t stream_id;  // data_stream_id
+            uint32_t client_id;     //!< Client id.
+            uint16_t data_id;       //!< Data id.
+            uint8_t  data_type;     //!< Data type.
+
+            //!
+            //! Default constructor.
+            //!
+            StreamSetup();
+            //!
+            //! Constructor from a message factory.
+            //! @param [in] fact Message factory.
+            //!
+            StreamSetup(const tlv::MessageFactory& fact);
+
+            // Implementation of Message.
+            virtual std::string dump(size_t indent = 0) const;
+
         protected:
-            virtual void serializeParameters (tlv::Serializer& fact) const;
+            // Implementation of Message.
+            virtual void serializeParameters(tlv::Serializer& fact) const;
         };
 
         //!
@@ -276,15 +342,26 @@ namespace ts {
         {
         public:
             // Protocol-documented fields:
-            // uint16_t channel_id; // (data_channel_id)
-            // uint16_t stream_id;  // (data_stream_id)
-            uint32_t client_id;
-        public:
-            StreamTest ();
-            StreamTest (const tlv::MessageFactory& fact);
-            virtual std::string dump (size_t indent = 0) const;
+            // uint16_t channel_id; // data_channel_id
+            // uint16_t stream_id;  // data_stream_id
+            uint32_t client_id;     //!< Client id.
+
+            //!
+            //! Default constructor.
+            //!
+            StreamTest();
+            //!
+            //! Constructor from a message factory.
+            //! @param [in] fact Message factory.
+            //!
+            StreamTest(const tlv::MessageFactory& fact);
+
+            // Implementation of Message.
+            virtual std::string dump(size_t indent = 0) const;
+
         protected:
-            virtual void serializeParameters (tlv::Serializer& fact) const;
+            // Implementation of Message.
+            virtual void serializeParameters(tlv::Serializer& fact) const;
         };
 
         //!
@@ -294,17 +371,28 @@ namespace ts {
         {
         public:
             // Protocol-documented fields:
-            // uint16_t channel_id; // (data_channel_id)
-            // uint16_t stream_id;  // (data_stream_id)
-            uint32_t client_id;
-            uint16_t data_id;
-            uint8_t  data_type;
-        public:
-            StreamStatus ();
-            StreamStatus (const tlv::MessageFactory& fact);
-            virtual std::string dump (size_t indent = 0) const;
+            // uint16_t channel_id; // data_channel_id
+            // uint16_t stream_id;  // data_stream_id
+            uint32_t client_id;     //!< Client id.
+            uint16_t data_id;       //!< Data id.
+            uint8_t  data_type;     //!< Data type.
+
+            //!
+            //! Default constructor.
+            //!
+            StreamStatus();
+            //!
+            //! Constructor from a message factory.
+            //! @param [in] fact Message factory.
+            //!
+            StreamStatus(const tlv::MessageFactory& fact);
+
+            // Implementation of Message.
+            virtual std::string dump(size_t indent = 0) const;
+
         protected:
-            virtual void serializeParameters (tlv::Serializer& fact) const;
+            // Implementation of Message.
+            virtual void serializeParameters(tlv::Serializer& fact) const;
         };
 
         //!
@@ -314,15 +402,26 @@ namespace ts {
         {
         public:
             // Protocol-documented fields:
-            // uint16_t channel_id; // (data_channel_id)
-            // uint16_t stream_id;  // (data_stream_id)
-            uint32_t client_id;
-        public:
-            StreamCloseRequest ();
-            StreamCloseRequest (const tlv::MessageFactory& fact);
-            virtual std::string dump (size_t indent = 0) const;
+            // uint16_t channel_id; // data_channel_id
+            // uint16_t stream_id;  // data_stream_id
+            uint32_t client_id;     //!< Client id.
+
+            //!
+            //! Default constructor.
+            //!
+            StreamCloseRequest();
+            //!
+            //! Constructor from a message factory.
+            //! @param [in] fact Message factory.
+            //!
+            StreamCloseRequest(const tlv::MessageFactory& fact);
+
+            // Implementation of Message.
+            virtual std::string dump(size_t indent = 0) const;
+
         protected:
-            virtual void serializeParameters (tlv::Serializer& fact) const;
+            // Implementation of Message.
+            virtual void serializeParameters(tlv::Serializer& fact) const;
         };
 
         //!
@@ -332,15 +431,26 @@ namespace ts {
         {
         public:
             // Protocol-documented fields:
-            // uint16_t channel_id; // (data_channel_id)
-            // uint16_t stream_id;  // (data_stream_id)
-            uint32_t client_id;
-        public:
-            StreamCloseResponse ();
-            StreamCloseResponse (const tlv::MessageFactory& fact);
-            virtual std::string dump (size_t indent = 0) const;
+            // uint16_t channel_id; // data_channel_id
+            // uint16_t stream_id;  // data_stream_id
+            uint32_t client_id;     //!< Client id.
+
+            //!
+            //! Default constructor.
+            //!
+            StreamCloseResponse();
+            //!
+            //! Constructor from a message factory.
+            //! @param [in] fact Message factory.
+            //!
+            StreamCloseResponse(const tlv::MessageFactory& fact);
+
+            // Implementation of Message.
+            virtual std::string dump(size_t indent = 0) const;
+
         protected:
-            virtual void serializeParameters (tlv::Serializer& fact) const;
+            // Implementation of Message.
+            virtual void serializeParameters(tlv::Serializer& fact) const;
         };
 
         //!
@@ -350,17 +460,28 @@ namespace ts {
         {
         public:
             // Protocol-documented fields:
-            // uint16_t channel_id; // (data_channel_id)
-            // uint16_t stream_id;  // (data_stream_id)
-            uint32_t client_id;
-            std::vector<uint16_t> error_status;
-            std::vector<uint16_t> error_information;
-        public:
-            StreamError ();
-            StreamError (const tlv::MessageFactory& fact);
-            virtual std::string dump (size_t indent = 0) const;
+            // uint16_t channel_id;                  // data_channel_id
+            // uint16_t stream_id;                   // data_stream_id
+            uint32_t client_id;                      //!< Client id.
+            std::vector<uint16_t> error_status;      //!< Error code.
+            std::vector<uint16_t> error_information; //!< Error information.
+
+            //!
+            //! Default constructor.
+            //!
+            StreamError();
+            //!
+            //! Constructor from a message factory.
+            //! @param [in] fact Message factory.
+            //!
+            StreamError(const tlv::MessageFactory& fact);
+
+            // Implementation of Message.
+            virtual std::string dump(size_t indent = 0) const;
+
         protected:
-            virtual void serializeParameters (tlv::Serializer& fact) const;
+            // Implementation of Message.
+            virtual void serializeParameters(tlv::Serializer& fact) const;
         };
 
         //!
@@ -370,17 +491,28 @@ namespace ts {
         {
         public:
             // Protocol-documented fields:
-            // uint16_t channel_id; // (data_channel_id)
-            // uint16_t stream_id;  // (data_stream_id)
-            uint32_t client_id;
-            bool     has_bandwidth;
-            uint16_t bandwidth;     // unit: kbits / second
-        public:
-            StreamBWRequest ();
-            StreamBWRequest (const tlv::MessageFactory& fact);
-            virtual std::string dump (size_t indent = 0) const;
+            // uint16_t channel_id; // data_channel_id
+            // uint16_t stream_id;  // data_stream_id
+            uint32_t client_id;     //!< Client id.
+            bool     has_bandwidth; //!< Field bandwidth is valid.
+            uint16_t bandwidth;     //!< Bandwidth in kbits / second.
+
+            //!
+            //! Default constructor.
+            //!
+            StreamBWRequest();
+            //!
+            //! Constructor from a message factory.
+            //! @param [in] fact Message factory.
+            //!
+            StreamBWRequest(const tlv::MessageFactory& fact);
+
+            // Implementation of Message.
+            virtual std::string dump(size_t indent = 0) const;
+
         protected:
-            virtual void serializeParameters (tlv::Serializer& fact) const;
+            // Implementation of Message.
+            virtual void serializeParameters(tlv::Serializer& fact) const;
         };
 
         //!
@@ -390,17 +522,28 @@ namespace ts {
         {
         public:
             // Protocol-documented fields:
-            // uint16_t channel_id; // (data_channel_id)
-            // uint16_t stream_id;  // (data_stream_id)
-            uint32_t client_id;
-            bool     has_bandwidth;
-            uint16_t bandwidth;     // unit: kbits / second
-        public:
-            StreamBWAllocation ();
-            StreamBWAllocation (const tlv::MessageFactory& fact);
-            virtual std::string dump (size_t indent = 0) const;
+            // uint16_t channel_id; // data_channel_id
+            // uint16_t stream_id;  // data_stream_id
+            uint32_t client_id;     //!< Client id.
+            bool     has_bandwidth; //!< Field bandwidth is valid.
+            uint16_t bandwidth;     //!< Bandwidth in kbits / second.
+
+            //!
+            //! Default constructor.
+            //!
+            StreamBWAllocation();
+            //!
+            //! Constructor from a message factory.
+            //! @param [in] fact Message factory.
+            //!
+            StreamBWAllocation(const tlv::MessageFactory& fact);
+
+            // Implementation of Message.
+            virtual std::string dump(size_t indent = 0) const;
+
         protected:
-            virtual void serializeParameters (tlv::Serializer& fact) const;
+            // Implementation of Message.
+            virtual void serializeParameters(tlv::Serializer& fact) const;
         };
 
         //!
@@ -410,17 +553,28 @@ namespace ts {
         {
         public:
             // Protocol-documented fields:
-            // uint16_t channel_id; // (data_channel_id, forbidden on UDP, required on TCP)
-            // uint16_t stream_id;  // (data_stream_id,  forbidden on UDP, required on TCP)
-            uint32_t client_id;
-            uint16_t data_id;
-            std::vector <ByteBlockPtr> datagram;
-        public:
-            DataProvision ();
-            DataProvision (const tlv::MessageFactory& fact);
-            virtual std::string dump (size_t indent = 0) const;
+            // uint16_t channel_id;               // data_channel_id, forbidden on UDP, required on TCP
+            // uint16_t stream_id;                // data_stream_id,  forbidden on UDP, required on TCP
+            uint32_t client_id;                   //!< Client id.
+            uint16_t data_id;                     //!< Data id (DataTypes).
+            std::vector <ByteBlockPtr> datagram;  //!< EMM or private data to send.
+
+            //!
+            //! Default constructor.
+            //!
+            DataProvision();
+            //!
+            //! Constructor from a message factory.
+            //! @param [in] fact Message factory.
+            //!
+            DataProvision(const tlv::MessageFactory& fact);
+
+            // Implementation of Message.
+            virtual std::string dump(size_t indent = 0) const;
+
         protected:
-            virtual void serializeParameters (tlv::Serializer& fact) const;
+            // Implementation of Message.
+            virtual void serializeParameters(tlv::Serializer& fact) const;
         };
 
 
@@ -429,22 +583,22 @@ namespace ts {
         //---------------------------------------------------------------------
 
         struct TSDUCKDLL Traits {
-            typedef emmgmux::Tags     Tags;
-            typedef emmgmux::Errors   Errors;
-            typedef emmgmux::Protocol Protocol;
+            typedef emmgmux::Tags     Tags;       //!< Actual set of tags for this protocol.
+            typedef emmgmux::Errors   Errors;     //!< Actual set of error codes for this protocol.
+            typedef emmgmux::Protocol Protocol;   //!< Actual protocol description.
 
-            typedef emmgmux::ChannelSetup  ChannelSetup;
-            typedef emmgmux::ChannelTest   ChannelTest;
-            typedef emmgmux::ChannelStatus ChannelStatus;
-            typedef emmgmux::ChannelClose  ChannelClose;
-            typedef emmgmux::ChannelError  ChannelError;
+            typedef emmgmux::ChannelSetup  ChannelSetup;   //!< Actual ChannelSetup message for this protocol.
+            typedef emmgmux::ChannelTest   ChannelTest;    //!< Actual ChannelTest message for this protocol.
+            typedef emmgmux::ChannelStatus ChannelStatus;  //!< Actual ChannelStatus message for this protocol.
+            typedef emmgmux::ChannelClose  ChannelClose;   //!< Actual ChannelClose message for this protocol.
+            typedef emmgmux::ChannelError  ChannelError;   //!< Actual ChannelError message for this protocol.
 
-            typedef emmgmux::StreamSetup         StreamSetup;
-            typedef emmgmux::StreamTest          StreamTest;
-            typedef emmgmux::StreamStatus        StreamStatus;
-            typedef emmgmux::StreamCloseRequest  StreamCloseRequest;
-            typedef emmgmux::StreamCloseResponse StreamCloseResponse;
-            typedef emmgmux::StreamError         StreamError;
+            typedef emmgmux::StreamSetup         StreamSetup;         //!< Actual StreamSetup message for this protocol.
+            typedef emmgmux::StreamTest          StreamTest;          //!< Actual StreamTest message for this protocol.
+            typedef emmgmux::StreamStatus        StreamStatus;        //!< Actual StreamStatus message for this protocol.
+            typedef emmgmux::StreamCloseRequest  StreamCloseRequest;  //!< Actual StreamCloseRequest message for this protocol.
+            typedef emmgmux::StreamCloseResponse StreamCloseResponse; //!< Actual StreamCloseResponse message for this protocol.
+            typedef emmgmux::StreamError         StreamError;         //!< Actual StreamError message for this protocol.
         };
     }
 }

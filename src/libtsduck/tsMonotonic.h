@@ -41,20 +41,22 @@ namespace ts {
     class TSDUCKDLL Monotonic
     {
     public:
-        // Exceptions
-        tsDeclareException (MonotonicError);
+        //!
+        //! Low-level monotonic clock error.
+        //!
+        tsDeclareException(MonotonicError);
 
         // Default constructor.
-        Monotonic() throw (MonotonicError) : _value (0) {init();}
+        Monotonic() : _value (0) {init();}
 
         // Copy constructor
-        Monotonic (const Monotonic& t) throw (MonotonicError) : _value (t._value) {init();}
+        Monotonic (const Monotonic& t) : _value (t._value) {init();}
 
         // Destructor
         ~Monotonic();
 
         // Get system time value
-        void getSystemTime() throw (MonotonicError);
+        void getSystemTime();
 
         // Assigment
         Monotonic& operator= (const Monotonic& t) {_value = t._value; return *this;}
@@ -73,19 +75,19 @@ namespace ts {
         NanoSecond operator- (const Monotonic& t) const {return (_value - t._value) * NS_PER_TICK;}
 
         // Wait until the time of the monotonic clock.
-        void wait() throw (MonotonicError);
+        void wait();
 
         // This static method requests a minimum resolution, in nano-seconds, for the timers.
         // Return the guaranteed value (can be equal to or greater than the requested value.
         // Default system resolution is 20 ms on Win32, can be too long for applications.
-        static NanoSecond SetPrecision (const NanoSecond&) throw (MonotonicError);
+        static NanoSecond SetPrecision (const NanoSecond&);
 
     private:
         // Monotonic clock value in system ticks
         int64_t _value;
 
         // System-specific initialization
-        void init() throw (MonotonicError);
+        void init();
 
 #if defined (__windows)
         // Timer handle

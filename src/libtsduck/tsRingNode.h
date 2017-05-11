@@ -39,7 +39,9 @@ namespace ts {
 
     //!
     //! Base class for objects being part of a ring, ie. a double-linked list with no begin or end.
-    //! Not thread-safe.
+    //!
+    //! This class is not thread-safe. Access to all objects which are part of the same ring
+    //! shall be synchronized.
     //!
     class TSDUCKDLL RingNode
     {
@@ -48,48 +50,76 @@ namespace ts {
         RingNode* _ring_next;
 
     public:
-        // Default constructor
+        //!
+        //! Default constructor.
+        //!
         RingNode() :
-            _ring_previous (this),
-            _ring_next (this)
+            _ring_previous(this),
+            _ring_next(this)
         {
         }
 
-        // Destructor
+        //!
+        //! Destructor.
+        //!
         virtual ~RingNode()
         {
             ringRemove();
         }
 
-        // Check if a node is alone in its own ring
+        //!
+        //! Check if the node is alone in its own ring.
+        //! @return True if the node is alone in its own ring.
+        //!
         bool ringAlone() const
         {
             return _ring_next == this;
         }
 
-        // Remove a node from the ring it belongs to and creates its own ring.
+        //!
+        //! Remove the node from the ring it belongs to and creates its own ring.
+        //!
         void ringRemove();
 
-        // Insert in a ring after or before the specified node
-        void ringInsertAfter (RingNode* o);
-        void ringInsertBefore (RingNode* o);
+        //!
+        //! Insert this object in a ring after the specified node.
+        //! @param [in] o A node of a ring. This object is inserted after @a o in the ring.
+        //!
+        void ringInsertAfter(RingNode* o);
 
-        // Next node in the ring.
+        //!
+        //! Insert this object in a ring before the specified node.
+        //! @param [in] o A node of a ring. This object is inserted before @a o in the ring.
+        //!
+        void ringInsertBefore(RingNode* o);
+
+        //!
+        //! Get the next node in the ring.
+        //! @tparam T A superclass of RingNode, the expected type of the next object in the ring.
+        //! @return Address of the next node in the ring or zero if the next node is not a subclass of @a T.
+        //!
         template <typename T>
         T* ringNext() const
         {
-            return dynamic_cast<T*> (_ring_next);
+            return dynamic_cast<T*>(_ring_next);
         }
 
-        // Previous node in the ring.
+        //!
+        //! Get the previous node in the ring.
+        //! @tparam T A superclass of RingNode, the expected type of the previous object in the ring.
+        //! @return Address of the previous node in the ring or zero if the previous node is not a subclass of @a T.
+        //!
         template <typename T>
         T* ringPrevious() const
         {
-            return dynamic_cast<T*> (_ring_previous);
+            return dynamic_cast<T*>(_ring_previous);
         }
 
-        // Count the number of element in the rings.
-        // Warning: linear response time, avoid this method when possible.
+        //!
+        //! Count the number of element in the ring.
+        //! Warning: This method has a linear response time, avoid using it when possible.
+        //! @return The number of nodes in the ring.
+        //!
         size_t ringSize() const;
 
     private:

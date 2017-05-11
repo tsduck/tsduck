@@ -42,77 +42,148 @@
 
 namespace ts {
 
-    // Safe pointer for TunerParameters
     class TunerParameters;
+
+    //!
+    //! Safe pointer for TunerParameters (thread-safe).
+    //!
     typedef SafePtr <TunerParameters, Mutex> TunerParametersPtr;
 
+    //!
+    //! Abstract base class for DVB tuners parameters.
+    //!
     class TSDUCKDLL TunerParameters: public Object
     {
     public:
-        // Get tuner type (depends on subclass)
-        TunerType tunerType() const {return _tuner_type;}
+        //!
+        //! Get the tuner type (depends on subclass).
+        //! @return The tuner type.
+        //!
+        TunerType tunerType() const
+        {
+            return _tuner_type;
+        }
 
-        // This abstract method computes the theoretical useful bitrate of a
-        // transponder, based on 188-bytes packets, in bits/second.
-        // If the characteristics of the transponder are not sufficient
-        // to compute the bitrate, return 0.
+        //!
+        //! Theoretical bitrate computation.
+        //! Must be implemented by subclasses.
+        //! @return The theoretical useful bitrate of a transponder, based
+        //! on 188-bytes packets, in bits/second. If the characteristics of
+        //! the transponder are not sufficient to compute the bitrate, return 0.
+        //!
         virtual BitRate theoreticalBitrate() const = 0;
 
-        // Attempt to convert the tuning parameters in modulation parameters
-        // for Dektec modulator cards. This is an optional method. Return true
-        // on success, false on error (includes unsupported operation).
-        virtual bool convertToDektecModulation (int& modulation_type, int& param0, int& param1, int& param2) const {return false;}
+        //!
+        //! Attempt to convert the tuning parameters in modulation parameters for Dektec modulator cards.
+        //! This is an optional method.
+        //! @param [out] modulation_type Modulation type (DTAPI_MOD_* value).
+        //! @param [out] param0 Modulation-specific paramter 0.
+        //! @param [out] param1 Modulation-specific paramter 1.
+        //! @param [out] param2 Modulation-specific paramter 2.
+        //! @return True on success, false on error (includes unsupported operation).
+        //!
+        virtual bool convertToDektecModulation(int& modulation_type, int& param0, int& param1, int& param2) const
+        {
+            return false;
+        }
 
-        // Format the tuner parameters according to the Linux DVB "zap" format
+        //!
+        //! Format the tuner parameters according to the Linux DVB "zap" format.
+        //! @return A string in Linux DVB "zap" format.
+        //!
         virtual std::string toZapFormat() const = 0;
 
-        // Format the tuner parameters as a list of options for the dvb tsp plugin.
-        // If no_local is true, the "local" options are not included.
-        // The local options are related to the local equipment (--lnb for instance)
-        // and may vary from one system to another for the same transponder.
-        virtual std::string toPluginOptions (bool no_local = false) const = 0;
+        //!
+        //! Format the tuner parameters as a list of options for the "dvb" tsp plugin.
+        //! @param [in] no_local When true, the "local" options are not included.
+        //! The local options are related to the local equipment (--lnb for instance)
+        //! and may vary from one system to another for the same transponder.
+        //! @return A string containing a command line options for the "dvb" tsp plugin.
+        //!
+        virtual std::string toPluginOptions(bool no_local = false) const = 0;
 
-        // Decode a Linux DVB "zap" specification and set the corresponding
-        // values in the tuner parameters. Return true on success, false on
-        // unsupported format.
-        virtual bool fromZapFormat (const std::string& zap) = 0;
+        //!
+        //! Decode a Linux DVB "zap" specification.
+        //! And set the corresponding values in the tuner parameters.
+        //! @param [in] zap A line of a Linux DVB "zap" file.
+        //! @return True on success, false on unsupported format.
+        //!
+        virtual bool fromZapFormat(const std::string& zap) = 0;
 
-        // Return the expected number of fields (separated by ':') in
-        // a Linux DVB "zap" specification.
-        virtual size_t zapFieldCount () const = 0;
+        //!
+        //! Expected number of fields (separated by ':') in a Linux DVB "zap" specification.
+        //! @return Expected number of fields in a Linux DVB "zap" specification.
+        //!
+        virtual size_t zapFieldCount() const = 0;
 
-        // Extract options from a TunerArgs, applying defaults when necessary.
-        // Return true on success, false on error (missing mandatory parameter,
-        // inconsistent values, etc.).
-        bool fromTunerArgs (const TunerArgs&, ReportInterface&);
+        //!
+        //! Extract options from a TunerArgs, applying defaults when necessary.
+        //! @param [in] args Tuner arguments.
+        //! @param [in,out] report Where to report errors.
+        //! @return True on success, false on error (missing mandatory parameter,
+        //! inconsistent values, etc.).
+        //!
+        bool fromTunerArgs(const TunerArgs& args, ReportInterface& report);
 
-        // Exception thrown when assigning incompatible parameter types
-        tsDeclareException (IncompatibleTunerParametersError);
+        //!
+        //! Exception thrown when assigning incompatible parameter types.
+        //!
+        tsDeclareException(IncompatibleTunerParametersError);
 
-        // Virtual assignment.
-        virtual void copy (const TunerParameters&) throw (IncompatibleTunerParametersError) = 0;
+        //!
+        //! Virtual assignment.
+        //! @param [in] params Other instance of a subclass of TunerParameters to copy.
+        //! @throw IncompatibleTunerParametersError When @a params is from an incompatible type.
+        //!
+        virtual void copy(const TunerParameters& params) throw(IncompatibleTunerParametersError) = 0;
 
-        // Virtual destructor
+        //!
+        //! Virtual destructor.
+        //!
         virtual ~TunerParameters() {}
 
-        // Allocate ("new") a TunerParameters of the appropriate subclass,
-        // depending on the tuner type. The parameters have their default values.
-        // Return zero if there is no implementation of the parameters for
-        // the given tuner type.
-        static TunerParameters* Factory (TunerType);
+        //!
+        //! Allocatea TunerParameters of the appropriate subclass, based on a tuner type.
+        //! @param [in] type Tuner type.
+        //! @return A newly allocated instance of a subclass of TunerParameters.
+        //! The parameters have their default values. Return zero if there is no
+        //! implementation of the parameters for the given tuner type.
+        //!
+        static TunerParameters* Factory(TunerType type);
 
     protected:
-        // Set by subclasses
+        //!
+        //! The tuner type is set by subclasses.
+        //!
         TunerType _tuner_type;
 
-        // Constructor for subclasses
-        TunerParameters (TunerType tuner_type) : _tuner_type (tuner_type) {}
+        //!
+        //! Constructor for subclasses.
+        //! @param [in] tuner_type Tuner type.
+        //!
+        TunerParameters(TunerType tuner_type) :
+            _tuner_type(tuner_type)
+        {
+        }
 
-        // Subclass-specific part of fromTunerArgs.
-        virtual bool fromArgs (const TunerArgs&, ReportInterface&) = 0;
+        //!
+        //! Subclass-specific part of fromTunerArgs().
+        //! @param [in] args Tuner arguments.
+        //! @param [in,out] report Where to report errors.
+        //! @return True on success, false on error (missing mandatory parameter,
+        //! inconsistent values, etc.).
+        //!
+        virtual bool fromArgs(const TunerArgs& args, ReportInterface& report) = 0;
 
-        // This protected method computes the theoretical useful bitrate of a
-        // transponder, based on 188-bytes packets, for QPSK or QAM modulation.
-        static BitRate TheoreticalBitrateForModulation (Modulation, InnerFEC, uint32_t symbol_rate);
+        //!
+        //! Theoretical useful bitrate for QPSK or QAM modulation.
+        //! This protected static method computes the theoretical useful bitrate of a
+        //! transponder, based on 188-bytes packets, for QPSK or QAM modulation.
+        //! @param [in] mod Modulation type.
+        //! @param [in] fec Inner FEC.
+        //! @param [in] symbol_rate Symbol rate.
+        //! @return Theoretical useful bitrate in bits/second or zero on error.
+        //!
+        static BitRate TheoreticalBitrateForModulation(Modulation mod, InnerFEC fec, uint32_t symbol_rate);
     };
 }

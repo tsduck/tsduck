@@ -47,60 +47,125 @@ namespace ts {
         class TSDUCKDLL Protocol
         {
         public:
-            // Constructors. Specify a version number for "messages" (version + compound TLV).
-            Protocol () : _has_version (false), _version (0) {}
-            Protocol (VERSION v) : _has_version (true), _version (v) {}
+            //!
+            //! Constructor for a protocol without version number.
+            //!
+            Protocol() :
+                _has_version(false),
+                _version(0)
+            {
+            }
 
-            // Get protocol version
-            bool hasVersion() const {return _has_version;}
-            VERSION version() const {return _version;}
-            void setVersion (VERSION v) {_has_version = true; _version = v;}
+            //!
+            //! Constructor for a protocol with version number.
+            //! The message format is version + compound TLV.
+            //! @param [in] v Expected protocol version.
+            //!
+            Protocol(VERSION v) :
+                _has_version(true),
+                _version(v)
+            {
+            }
 
-            // This method declares a command tag in the protocol.
-            // Required only for commands without parameters.
-            void add (TAG cmd_tag) {_commands[cmd_tag];}
+            //!
+            //! Check if the protocol has a protocol version number.
+            //! @return True if the message has a protocol version number.
+            //!
+            bool hasVersion() const
+            {
+                return _has_version;
+            }
 
-            // This method declares a command tag in the protocol and
-            // one of its parameters. Must be invoked for each parameter
-            // of each command. Min_size and max_size define the allowed
-            // sizes for the parameter value. Min_count and Max_count
-            // define the minimum and maximum number of occurences of
-            // this parameter in the command.
-            void add (TAG cmd_tag, TAG param_tag,
-                      size_t min_size, size_t max_size,
-                      size_t min_count, size_t max_count)
+            //!
+            //! Get the protocol version number.
+            //! @return The protocol version number.
+            //!
+            VERSION version() const
+            {
+                return _version;
+            }
+
+            //!
+            //! Change the protocol version number.
+            //! @param [in] v The new protocol version number.
+            //!
+            void setVersion(VERSION v)
+            {
+                _has_version = true;
+                _version = v;
+            }
+
+            //!
+            //! This method declares a command tag in the protocol.
+            //! Required only for commands without parameters.
+            //! @param [in] cmd_tag Message tag.
+            //!
+            void add(TAG cmd_tag) {_commands[cmd_tag];}
+
+            //!
+            //! This method declares a command tag in the protocol and one of its parameters.
+            //! Must be invoked for each parameter of each command.
+            //! @param [in] cmd_tag Message tag.
+            //! @param [in] param_tag Parameter tag.
+            //! @param [in] min_size Minimum allowed size for the parameter value. 
+            //! @param [in] max_size Maximum allowed size for the parameter value. 
+            //! @param [in] min_count Minimum number of occurences of this parameter in the command.
+            //! @param [in] max_count Maximum number of occurences of this parameter in the command.
+            //!
+            void add(TAG cmd_tag, TAG param_tag,
+                     size_t min_size, size_t max_size,
+                     size_t min_count, size_t max_count)
             {
                 Parameter p = {0, min_size, max_size, min_count, max_count};
                 _commands[cmd_tag].params[param_tag] = p;
             }
 
-            // Same but the parameter is a compound TLV structure.
-            void add (TAG cmd_tag, TAG param_tag,
-                      const Protocol* compound,
-                      size_t min_count, size_t max_count)
+            //!
+            //! This method declares a command tag in the protocol and one of its parameters.
+            //! Same as add() but with a parameter which is a compound TLV structure.
+            //! @param [in] cmd_tag Message tag.
+            //! @param [in] param_tag Parameter tag.
+            //! @param [in] compound Protocol describing the compound TLV structure.
+            //! @param [in] min_count Minimum number of occurences of this parameter in the command.
+            //! @param [in] max_count Maximum number of occurences of this parameter in the command.
+            //!
+            void add(TAG cmd_tag, TAG param_tag,
+                     const Protocol* compound,
+                     size_t min_count, size_t max_count)
             {
                 Parameter p = {compound, 0, 0, min_count, max_count};
                 _commands[cmd_tag].params[param_tag] = p;
             }
 
-            // Virtual destructor
+            //!
+            //! Virtual destructor.
+            //!
             virtual ~Protocol() {}
 
-            // This method is invoked by the MessageFactory after analysis
-            // of the command and parameters. All actual parameters
-            // have been checked for consistency with the protocol.
-            // The returned Message is allocated using the new operator.
-            virtual void factory (const MessageFactory&, MessagePtr&) const = 0;
+            //!
+            //! Generic factory method.
+            //! This pure virtual method must be implemented by subclasses.
+            //! This method is invoked by the MessageFactory after analysis
+            //! of the command and parameters. All actual parameters
+            //! have been checked for consistency with the protocol.
+            //! @param [in] mf The message factory which analyzed the binary message.
+            //! @param [out] msg Safe pointer to the new message.
+            //!
+            virtual void factory(const MessageFactory& mf, MessagePtr& msg) const = 0;
 
-            // This method creates an error response from the result of
-            // the analysis of a faulty incoming message.
-            // The returned Message is allocated using the new operator.
-            virtual void buildErrorResponse (const MessageFactory&, MessagePtr&) const = 0;
+            //!
+            //! Error response creation.
+            //! This method creates an error response from the result of
+            //! the analysis of a faulty incoming message.
+            //! @param [in] mf The message factory which analyzed the binary message.
+            //! @param [out] msg Safe pointer to the new error message.
+            //!
+            virtual void buildErrorResponse(const MessageFactory& mf, MessagePtr& msg) const = 0;
                 
         private:
             // Unreachable constructors and operators
-            Protocol (const Protocol&);
-            Protocol& operator= (const Protocol&);
+            Protocol(const Protocol&) = delete;
+            Protocol& operator=(const Protocol&) = delete;
 
             // The class MessageFactory acceeses the internal representation of the protocol.
             friend class MessageFactory;

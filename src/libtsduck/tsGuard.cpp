@@ -38,7 +38,7 @@
 // Constructor
 //----------------------------------------------------------------------------
 
-ts::Guard::Guard(MutexInterface& mutex, MilliSecond timeout) throw(GuardError) :
+ts::Guard::Guard(MutexInterface& mutex, MilliSecond timeout) :
     _mutex(mutex),
     _is_locked(false)
 {

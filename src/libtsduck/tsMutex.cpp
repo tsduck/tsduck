@@ -41,10 +41,10 @@
 // Constructor
 //----------------------------------------------------------------------------
 
-ts::Mutex::Mutex () throw (MutexError) :
-    _created (false)
+ts::Mutex::Mutex() :
+    _created(false)
 {
-#if defined (__windows)
+#if defined(__windows)
 
     // Windows implementation.
     if ((_handle = ::CreateMutex(NULL, FALSE, NULL)) == NULL) {
@@ -120,7 +120,7 @@ bool ts::Mutex::tryLock()
 // Return true on success and false on error.
 //----------------------------------------------------------------------------
 
-bool ts::Mutex::acquire(MilliSecond timeout) throw(MutexError)
+bool ts::Mutex::acquire(MilliSecond timeout)
 {
     if (!_created) {
         return false;

@@ -36,7 +36,6 @@
 #include "tsFormat.h"
 
 
-
 //----------------------------------------------------------------------------
 // Analyze the TLV message in memory.
 //----------------------------------------------------------------------------
@@ -198,7 +197,7 @@ void ts::tlv::MessageFactory::analyzeMessage()
 // Get location of the first occurence of a parameter:
 //----------------------------------------------------------------------------
 
-void ts::tlv::MessageFactory::get (TAG tag, Parameter& param) const throw (DeserializationInternalError)
+void ts::tlv::MessageFactory::get (TAG tag, Parameter& param) const
 {
     ParameterMultimap::const_iterator it = _params.find (tag);
     if (it == _params.end ()) {
@@ -232,7 +231,7 @@ void ts::tlv::MessageFactory::get (TAG tag, std::vector<Parameter>& param) const
 // Get all occurences of a parameter.
 //----------------------------------------------------------------------------
 
-void ts::tlv::MessageFactory::get (TAG tag, std::vector<bool>& param) const throw (DeserializationInternalError)
+void ts::tlv::MessageFactory::get (TAG tag, std::vector<bool>& param) const
 {
     // Reinitialize result vector
     param.clear ();
@@ -269,7 +268,7 @@ void ts::tlv::MessageFactory::get (TAG tag, std::vector<std::string>& param) con
 // Get first occurence of a parameter as a compound TLV parameter.
 //----------------------------------------------------------------------------
 
-void ts::tlv::MessageFactory::getCompound (TAG tag, MessagePtr& param) const throw (DeserializationInternalError)
+void ts::tlv::MessageFactory::getCompound (TAG tag, MessagePtr& param) const
 {
     ParameterMultimap::const_iterator it = _params.find (tag);
     if (it == _params.end ()) {
@@ -288,7 +287,7 @@ void ts::tlv::MessageFactory::getCompound (TAG tag, MessagePtr& param) const thr
 // Get all occurences of a parameter as compound TLV parameters.
 //----------------------------------------------------------------------------
 
-void ts::tlv::MessageFactory::getCompound (TAG tag, std::vector<MessagePtr>& param) const throw (DeserializationInternalError)
+void ts::tlv::MessageFactory::getCompound (TAG tag, std::vector<MessagePtr>& param) const
 {
     // Reinitialize result vector
     param.clear ();
