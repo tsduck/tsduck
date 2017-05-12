@@ -112,6 +112,7 @@ namespace ts {
         SERVICE_PROPERTY_INT(uint16_t, Id,            _id,             0,        Service Id)
         SERVICE_PROPERTY_INT(uint16_t, TSId,          _tsid,           0,        Transport Stream Id)
         SERVICE_PROPERTY_INT(uint16_t, ONId,          _onid,           0,        Original Network Id)
+        SERVICE_PROPERTY_INT(uint16_t, LCN,           _lcn,            0,        Logical Channel Number)
         SERVICE_PROPERTY_INT(PID,      PMTPID,        _pmt_pid,        PID_NULL, PMT PID)
         SERVICE_PROPERTY_INT(uint8_t,  Type,          _type,           0,        Service Type (as declared in service_descriptor))
         SERVICE_PROPERTY_INT(uint8_t,  RunningStatus, _running_status, 0,        Running status (as declared in the SDT))
