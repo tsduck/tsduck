@@ -36,39 +36,65 @@
 #include "tsAbstractDescriptor.h"
 
 namespace ts {
-
+    //!
+    //! Representation of an parental_rating_descriptor
+    //! @see ETSI 300 468, 6.2.28.
+    //!
     class TSDUCKDLL ParentalRatingDescriptor : public AbstractDescriptor
     {
     public:
         // Item entry
         struct Entry;
+
+        //!
+        //! A list of item entries.
+        //!
         typedef std::list<Entry> EntryList;
 
         // Public members
-        EntryList entries;
+        EntryList entries;  //!< The list of item entries.
 
-        // Default constructor:
+        //!
+        //! Default constructor.
+        //!
         ParentalRatingDescriptor();
 
-        // Constructor from a binary descriptor
-        ParentalRatingDescriptor (const Descriptor&);
+        //!
+        //! Constructor from a binary descriptor
+        //! @param [in] bin A binary descriptor to deserialize.
+        //!
+        ParentalRatingDescriptor(const Descriptor& bin);
 
-        // Constructor with one entry
-        ParentalRatingDescriptor (const std::string& language_, uint8_t rating_);
+        //!
+        //! Constructor with one entry.
+        //! @param [in] language ISO-639 language code, 3 characters.
+        //! @param [in] rating Parental rating.
+        //!
+        ParentalRatingDescriptor(const std::string& language, uint8_t rating);
 
         // Inherited methods
-        virtual void serialize (Descriptor&) const;
-        virtual void deserialize (const Descriptor&);
+        virtual void serialize(Descriptor&) const;
+        virtual void deserialize(const Descriptor&);
 
-        // Item entry
+        //!
+        //! Item entry/
+        //!
         struct TSDUCKDLL Entry
         {
             // Public members
-            std::string language_code;  // 3 characters
-            uint8_t       rating;
+            std::string language_code;  //!< ISO-639 language code, 3 characters.
+            uint8_t     rating;         //!< Parental rating.
 
-            // Contructors
-            Entry (const std::string& language_ = "", uint8_t rating_ = 0) : language_code (language_), rating (rating_) {}
+            //!
+            //! Constructor.
+            //! @param [in] language_ ISO-639 language code, 3 characters.
+            //! @param [in] rating_ Parental rating.
+            //!
+            Entry(const std::string& language_ = "", uint8_t rating_ = 0) :
+                language_code(language_),
+                rating(rating_)
+            {
+            }
         };
     };
 }

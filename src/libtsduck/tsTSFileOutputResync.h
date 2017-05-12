@@ -37,29 +37,55 @@
 #include "tsTSFileOutput.h"
 
 namespace ts {
-
+    //!
+    //! A specialized form of transport stream output file with resynchronized PID and continuity counters.
+    //!
+    //! On each PID, the continuity counters are automatically updated and synchronized.
+    //! It is also possible to force the PID of packets.
+    //!
     class TSDUCKDLL TSFileOutputResync: public TSFileOutput
     {
     public:
-        // Constructor / destructor
+        //!
+        //! Default constructor.
+        //!
         TSFileOutputResync() : TSFileOutput() {}
+
+        //!
+        //! Destructor.
+        //!
         virtual ~TSFileOutputResync() {}
 
         // Overrides TSFileOutput methods
-        bool open (const std::string& filename, bool append, bool keep, ReportInterface&);
+        virtual bool open(const std::string& filename, bool append, bool keep, ReportInterface& report);
 
-        // Write packets, update their continuity counters (packets are modified)
-        bool write (TSPacket*, size_t packet_count, ReportInterface&);
+        //!
+        //! Write TS packets to the file.
+        //! @param [in,out] buffer Address of first packet to write.
+        //! The continuity counters of all packets are modified.
+        //! @param [in] packet_count Number of packets to write.
+        //! @param [in,out] report Where to report errors.
+        //! @return True on success, false on error.
+        //!
+        bool write(TSPacket* buffer, size_t packet_count, ReportInterface& report);
 
-        // Write packets, force PID value, update their continuity counters (packets are modified)
-        bool write (TSPacket*, size_t packet_count, PID, ReportInterface&);
+        //!
+        //! Write TS packets to the file.
+        //! @param [in,out] buffer Address of first packet to write.
+        //! The continuity counters of all packets are modified.
+        //! @param [in] packet_count Number of packets to write.
+        //! @param [in] pid The PID of all packets is forced to this value.
+        //! @param [in,out] report Where to report errors.
+        //! @return True on success, false on error.
+        //!
+        bool write(TSPacket* buffer, size_t packet_count, PID pid, ReportInterface& report);
 
     private:
         // Private members
         uint8_t _cc[PID_MAX];  // Last continuity counter per PID
 
         // Inaccessible operations
-        TSFileOutputResync (const TSFileOutputResync&);
-        TSFileOutputResync& operator= (const TSFileOutputResync&);
+        TSFileOutputResync(const TSFileOutputResync&) = delete;
+        TSFileOutputResync& operator=(const TSFileOutputResync&) = delete;
     };
 }

@@ -36,56 +36,99 @@
 #include "tsPlatform.h"
 
 namespace ts {
-
+    //!
+    //! Identification of a transport stream.
+    //!
     struct TSDUCKDLL TransportStreamId
     {
         // Public members:
-        uint16_t transport_stream_id;
-        uint16_t original_network_id;
+        uint16_t transport_stream_id;  //!< Transport stream id.
+        uint16_t original_network_id;  //!< Original network id.
 
-        // Constructor:
-        TransportStreamId (uint16_t tsid = 0, uint16_t onid = 0) :
-            transport_stream_id (tsid),
-            original_network_id (onid)
+        //!
+        //! Constructor.
+        //! @param [in] tsid Transport stream id.
+        //! @param [in] onid Original network id.
+        //!
+        TransportStreamId(uint16_t tsid = 0, uint16_t onid = 0) :
+            transport_stream_id(tsid),
+            original_network_id(onid)
         {
         }
 
-        // "Normalized" 32-bits identifier.
-        // Upper 16-bit contain the original network id.
-        // Lower 16-bit contain the TS id
+        //!
+        //! Get a "normalized" 32-bit identifier.
+        //! The upper 16-bit contain the original network id.
+        //! The lower 16-bit contain the TS id.
+        //! @return The "normalized" 32-bit identifier of the TS.
+        //!
         uint32_t normalized() const
         {
-            return uint32_t (transport_stream_id) | (uint32_t (original_network_id) << 16);
+            return uint32_t(transport_stream_id) | (uint32_t(original_network_id) << 16);
         }
 
-        // Comparison
-        bool operator== (const TransportStreamId& tsid) const
+        //!
+        //! Comparison operator.
+        //! @param [in] tsid Another instance to compare.
+        //! @return True if this object == @a tsid.
+        //!
+        bool operator==(const TransportStreamId& tsid) const
         {
             return transport_stream_id == tsid.transport_stream_id && original_network_id == tsid.original_network_id;
         }
-        bool operator!= (const TransportStreamId& tsid) const
+
+        //!
+        //! Comparison operator.
+        //! @param [in] tsid Another instance to compare.
+        //! @return True if this object != @a tsid.
+        //!
+        bool operator!=(const TransportStreamId& tsid) const
         {
             return transport_stream_id != tsid.transport_stream_id || original_network_id != tsid.original_network_id;
         }
-        bool operator< (const TransportStreamId& tsid) const
+
+        //!
+        //! Comparison operator.
+        //! @param [in] tsid Another instance to compare.
+        //! @return True if this object < @a tsid.
+        //!
+        bool operator<(const TransportStreamId& tsid) const
         {
             return normalized() < tsid.normalized();
         }
-        bool operator<= (const TransportStreamId& tsid) const
+
+        //!
+        //! Comparison operator.
+        //! @param [in] tsid Another instance to compare.
+        //! @return True if this object <= @a tsid.
+        //!
+        bool operator<=(const TransportStreamId& tsid) const
         {
             return normalized() <= tsid.normalized();
         }
-        bool operator> (const TransportStreamId& tsid) const
+
+        //!
+        //! Comparison operator.
+        //! @param [in] tsid Another instance to compare.
+        //! @return True if this object > @a tsid.
+        //!
+        bool operator>(const TransportStreamId& tsid) const
         {
             return normalized() > tsid.normalized();
         }
-        bool operator>= (const TransportStreamId& tsid) const
+
+        //!
+        //! Comparison operator.
+        //! @param [in] tsid Another instance to compare.
+        //! @return True if this object >= @a tsid.
+        //!
+        bool operator>=(const TransportStreamId& tsid) const
         {
             return normalized() >= tsid.normalized();
         }
     };
 
     // Containers:
-    typedef std::set <TransportStreamId> TransportStreamIdSet;
-    typedef std::vector <TransportStreamId> TransportStreamIdVector;
+    typedef std::set<TransportStreamId> TransportStreamIdSet;        //!< Set of TransportStreamId.
+    typedef std::vector<TransportStreamId> TransportStreamIdVector;  //!< Vector of TransportStreamId.
 }

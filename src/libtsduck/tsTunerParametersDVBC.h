@@ -36,24 +36,28 @@
 #include "tsTunerParameters.h"
 
 namespace ts {
-
+    //!
+    //! DVB-C (cable, QAM) tuners parameters.
+    //!
     class TSDUCKDLL TunerParametersDVBC: public TunerParameters
     {
     public:
         // Public fields
-        uint64_t            frequency;   // Cable carrier frequency, in Hz.
-        SpectralInversion inversion;   // Spectral inversion, should be SPINV_AUTO.
-        uint32_t            symbol_rate; // Symbol rate
-        InnerFEC          inner_fec;   // Error correction
-        Modulation        modulation;
+        uint64_t          frequency;   //!< Cable carrier frequency, in Hz.
+        SpectralInversion inversion;   //!< Spectral inversion, should be SPINV_AUTO.
+        uint32_t          symbol_rate; //!< Symbol rate.
+        InnerFEC          inner_fec;   //!< Error correction.
+        Modulation        modulation;  //!< Modulation.
 
         // Default values
-        static const SpectralInversion DEFAULT_INVERSION = SPINV_AUTO;
-        static const uint32_t DEFAULT_SYMBOL_RATE = 6900000;
-        static const InnerFEC DEFAULT_INNER_FEC = FEC_AUTO;
-        static const Modulation DEFAULT_MODULATION = QAM_64;
+        static const SpectralInversion DEFAULT_INVERSION   = SPINV_AUTO; //!< Default value for inversion.
+        static const uint32_t          DEFAULT_SYMBOL_RATE = 6900000;    //!< Default value for symbol_rate.
+        static const InnerFEC          DEFAULT_INNER_FEC   = FEC_AUTO;   //!< Default value for inner_fec.
+        static const Modulation        DEFAULT_MODULATION  = QAM_64;     //!< Default value for modulation.
 
-        // Constructor
+        //!
+        //! Default constructor.
+        //!
         TunerParametersDVBC();
 
         // Implementation of TunerParameters API

@@ -36,44 +36,70 @@
 #include "tsAbstractDescriptor.h"
 
 namespace ts {
-
     //!
-    //!  Representation of a linkage_descriptor for system software update.
-    //!  SSU uses linkage type 0x09.
+    //! Representation of a linkage_descriptor for system software update.
+    //! SSU uses linkage type 0x09.
     //!
     class TSDUCKDLL SSULinkageDescriptor : public AbstractDescriptor
     {
     public:
-        // OUI entry
+        //!
+        //! OUI entry.
+        //!
         struct TSDUCKDLL Entry
         {
             // Public members
-            uint32_t    oui;  // 24 bits
-            ByteBlock selector;
+            uint32_t  oui;       //!< OUI, 24 bits.
+            ByteBlock selector;  //!< Selector bytes.
 
-            // Contructor
-            Entry (uint32_t oui_ = 0): oui (oui_), selector () {}
+            //!
+            //! Constructor.
+            //! @param [in] oui_ OUI, 24 bits.
+            //!
+            Entry(uint32_t oui_ = 0) :
+                oui(oui_),
+                selector()
+            {
+            }
         };
+
+        //!
+        //! List of OUI entries.
+        //!
         typedef std::list<Entry> EntryList;
 
         // SSULinkageDescriptor public members:
-        uint16_t    ts_id;      // transport_stream_id
-        uint16_t    onetw_id;   // original_network_id
-        uint16_t    service_id;
-        EntryList entries;
-        ByteBlock private_data;
+        uint16_t  ts_id;         //!< Transport stream id.
+        uint16_t  onetw_id;      //!< Original network id.
+        uint16_t  service_id;    //!< Service id.
+        EntryList entries;       //!< The list of OUI entries.
+        ByteBlock private_data;  //!< Private data.
 
-        // Default constructor:
-        SSULinkageDescriptor (uint16_t ts = 0, uint16_t onetw = 0, uint16_t service = 0);
+        //!
+        //! Default constructor.
+        //! @param [in] ts Transport stream id.
+        //! @param [in] onetw Original network id
+        //! @param [in] service Service id.
+        //!
+        SSULinkageDescriptor(uint16_t ts = 0, uint16_t onetw = 0, uint16_t service = 0);
 
-        // Constructor with one OUI
-        SSULinkageDescriptor (uint16_t ts, uint16_t onetw, uint16_t service, uint32_t oui);
+        //!
+        //! Constructor with one OUI.
+        //! @param [in] ts Transport stream id.
+        //! @param [in] onetw Original network id
+        //! @param [in] service Service id.
+        //! @param [in] oui OUI, 24 bits.
+        //!
+        SSULinkageDescriptor(uint16_t ts, uint16_t onetw, uint16_t service, uint32_t oui);
 
-        // Constructor from a binary descriptor
-        SSULinkageDescriptor (const Descriptor&);
+        //!
+        //! Constructor from a binary descriptor
+        //! @param [in] bin A binary descriptor to deserialize.
+        //!
+        SSULinkageDescriptor(const Descriptor& bin);
 
         // Inherited methods
-        virtual void serialize (Descriptor&) const;
-        virtual void deserialize (const Descriptor&);
+        virtual void serialize(Descriptor&) const;
+        virtual void deserialize(const Descriptor&);
     };
 }

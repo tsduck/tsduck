@@ -36,21 +36,30 @@
 #include "tsAbstractDescriptor.h"
 
 namespace ts {
-
+    //!
+    //! Representation of an STD_descriptor
+    //! @see ISO/IEC 13818-1, ITU-T Rec. H.222.0, 2.6.32.
+    //!
     class TSDUCKDLL STDDescriptor : public AbstractDescriptor
     {
     public:
         // Public members:
-        bool leak_valid;
+        bool leak_valid;  //!< Leak valid flag.
 
-        // Default constructor:
-        STDDescriptor (bool leak_valid_ = false);
+        //!
+        //! Default constructor.
+        //! @param [in] leak_valid Leak valid flag.
+        //!
+        STDDescriptor(bool leak_valid = false);
 
-        // Constructor from a binary descriptor
-        STDDescriptor (const Descriptor&);
+        //!
+        //! Constructor from a binary descriptor
+        //! @param [in] bin A binary descriptor to deserialize.
+        //!
+        STDDescriptor(const Descriptor& bin);
 
         // Inherited methods
-        virtual void serialize (Descriptor&) const;
-        virtual void deserialize (const Descriptor&);
+        virtual void serialize(Descriptor&) const;
+        virtual void deserialize(const Descriptor&);
     };
 }

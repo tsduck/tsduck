@@ -36,40 +36,78 @@
 #include "tsAbstractDescriptor.h"
 
 namespace ts {
-
+    //!
+    //! Representation of an ISO_639_language_descriptor
+    //! @see ISO/IEC 13818-1, ITU-T Rec. H.222.0, 2.6.18. 
+    //!
     class TSDUCKDLL ISO639LanguageDescriptor : public AbstractDescriptor
     {
     public:
-        // Language entry
+        //!
+        //! Language entry.
+        //!
         struct TSDUCKDLL Entry
         {
             // Public members
-            std::string language_code;  // 3 characters
-            uint8_t       audio_type;
+            std::string language_code;  //!< ISO-639 language code, 3 characters.
+            uint8_t     audio_type;     //!< Audio type.
 
-            // Contructors
-            Entry (const char* code = 0, uint8_t type = 0): language_code (code != 0 ? code : ""), audio_type (type) {}
-            Entry (const std::string& code, uint8_t type): language_code (code), audio_type (type) {}
+            //!
+            //! Default constructor.
+            //! @param [in] code ISO-639 language code, 3 characters, as a C-string. Can be null.
+            //! @param [in] type Audio type.
+            //!
+            Entry(const char* code = 0, uint8_t type = 0) :
+                language_code(code != 0 ? code : ""),
+                audio_type(type)
+            {
+            }
+
+            //!
+            //! Constructor.
+            //! @param [in] code ISO-639 language code, 3 characters, as a C++ string.
+            //! @param [in] type Audio type.
+            //!
+            Entry(const std::string& code, uint8_t type) :
+                language_code(code),
+                audio_type(type)
+            {
+            }
         };
+
+        //!
+        //! List of language entries.
+        //!
         typedef std::list<Entry> EntryList;
-            
-        // Maximum number of entries to fit in 255 bytes
+
+        //!
+        //! Maximum number of language entries to fit in 255 bytes.
+        //!
         static const size_t MAX_ENTRIES = 63;
 
         // ISO639LanguageDescriptor public members:
-        EntryList entries;
+        EntryList entries;  //!< List of language entries.
 
-        // Default constructor:
+        //!
+        //! Default constructor.
+        //!
         ISO639LanguageDescriptor();
 
-        // Constructor with one language code.
-        ISO639LanguageDescriptor (const std::string& code, uint8_t type);
+        //!
+        //! Constructor with one language code.
+        //! @param [in] code ISO-639 language code, 3 characters.
+        //! @param [in] type Audio type.
+        //!
+        ISO639LanguageDescriptor(const std::string& code, uint8_t type);
 
-        // Constructor from a binary descriptor
-        ISO639LanguageDescriptor (const Descriptor&);
+        //!
+        //! Constructor from a binary descriptor
+        //! @param [in] bin A binary descriptor to deserialize.
+        //!
+        ISO639LanguageDescriptor(const Descriptor& bin);
 
         // Inherited methods
-        virtual void serialize (Descriptor&) const;
-        virtual void deserialize (const Descriptor&);
+        virtual void serialize(Descriptor&) const;
+        virtual void deserialize(const Descriptor&);
     };
 }

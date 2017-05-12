@@ -37,69 +37,158 @@
 #include "tsReportInterface.h"
 
 namespace ts {
-
+    //!
+    //! Transport Stream file input.
+    //!
     class TSDUCKDLL TSFileInput
     {
     public:
-        // Constructor / destructor
-        TSFileInput () : _total_packets (0), _is_open (false), _severity (Severity::Error) {}
-        virtual ~TSFileInput ();
+        //!
+        //! Default constructor.
+        //!
+        TSFileInput() :
+            _total_packets(0),
+            _is_open(false),
+            _severity(Severity::Error)
+        {
+        }
 
-        // Open file.
-        // If filename is empty, use standard input.
-        // If repeat_count != 1, reading packets loops back to the start_offset
-        // until all repeat are done. If repeat_count == 0, infinite repeat.
-        bool open(const std::string& filename, size_t repeat_count, uint64_t start_offset, ReportInterface&);
+        //!
+        //! Destructor.
+        //!
+        virtual ~TSFileInput();
 
-        // Open file in a rewindable mode (must be a rewindable file, eg. not a pipe).
-        // There is no repeat count, rewind must be done explicitely.
-        // If filename is empty, use standard input.
-        bool open(const std::string& filename, uint64_t start_offset, ReportInterface&);
+        //!
+        //! Open the file.
+        //! @param [in] filename File name. If empty, use standard input.
+        //! Must be a regular file is @a repeat_count is not 1 or if
+        //! @a start_offset is not zero.
+        //! @param [in] repeat_count Reading packets loops back after end of
+        //! file until all repeat are done. If zero, infinitely repeat.
+        //! @param [in] start_offset Offset in bytes from the beginning of the file
+        //! where to start reading packets at each iteration.
+        //! @param [in,out] report Where to report errors.
+        //! @return True on success, false on error.
+        //!
+        bool open(const std::string& filename, size_t repeat_count, uint64_t start_offset, ReportInterface& report);
 
-        // Check if file is open.
-        bool isOpen() const {return _is_open;}
+        //!
+        //! Open the file in rewindable mode.
+        //! The file must be a rewindable file, eg. not a pipe.
+        //! There is no repeat count, rewind must be done explicitely.
+        //! @param [in] filename File name. If empty, use standard input.
+        //! @param [in] start_offset Offset in bytes from the beginning of the file
+        //! where to start reading packets.
+        //! @param [in,out] report Where to report errors.
+        //! @return True on success, false on error.
+        //! @see rewind()
+        //! @see seek()
+        //!
+        bool open(const std::string& filename, uint64_t start_offset, ReportInterface& report);
 
-        // Get/set severity level for error reporting. The default is Error.
-        int getErrorSeverityLevel() const {return _severity;}
-        void setErrorSeverityLevel(int level) {_severity = level;}
+        //!
+        //! Check if the file is open.
+        //! @return True if the file is open.
+        //!
+        bool isOpen() const
+        {
+            return _is_open;
+        }
 
-        // Get file name
-        std::string getFileName() const {return _filename;}
+        //!
+        //! Get the severity level for error reporting.
+        //! @return The severity level for error reporting.
+        //!
+        int getErrorSeverityLevel() const
+        {
+            return _severity;
+        }
 
-        // Close file.
-        bool close(ReportInterface&);
+        //!
+        //! Set the severity level for error reporting.
+        //! @param [in] level The severity level for error reporting. The default is Error.
+        //!
+        void setErrorSeverityLevel(int level)
+        {
+            _severity = level;
+        }
 
-        // Read TS packets. Return the actual number of read packets.
-        // Returning zero means error or end of file repetition.
-        size_t read (TSPacket*, size_t max_packets, ReportInterface&);
+        //!
+        //! Get the file name.
+        //! @return The file name.
+        //!
+        std::string getFileName() const
+        {
+            return _filename;
+        }
 
-        // Rewind the file to the previously specified start_offset.
-        // The file must have been open in rewindable mode.
-        bool rewind (ReportInterface& report) {return seek (0, report);}
+        //!
+        //! Close the file.
+        //! @param [in,out] report Where to report errors.
+        //! @return True on success, false on error.
+        //!
+        bool close(ReportInterface& report);
 
-        // Seek the file to the specified packet_index (plus the previously specified start_offset).
-        // The file must have been open in rewindable mode.
-        bool seek (PacketCounter, ReportInterface&);
+        //!
+        //! Read TS packets.
+        //! If the file file was opened with a @a repeat_count different from 1,
+        //! reading packets transparently loops back at end if file.
+        //! @param [out] buffer Address of reception packet buffer.
+        //! @param [in] max_packets Size of @a buffer in packets.
+        //! @param [in,out] report Where to report errors.
+        //! @return The actual number of read packets. Returning zero means
+        //! error or end of file repetition.
+        //!
+        size_t read(TSPacket* buffer, size_t max_packets, ReportInterface& report);
 
-        // Return the number of read packets
-        PacketCounter getPacketCount() const {return _total_packets;}
+        //!
+        //! Rewind the file.
+        //! The file must have been opened in rewindable mode.
+        //! If the file file was opened with a @a start_offset different from 0,
+        //! rewinding the file means restarting at this @a start_offset.
+        //! @param [in,out] report Where to report errors.
+        //! @return True on success, false on error.
+        //!
+        bool rewind(ReportInterface& report)
+        {
+            return seek(0, report);
+        }
+
+        //!
+        //! Seek the file at a specified packet index.
+        //! The file must have been opened in rewindable mode.
+        //! @param [in] packet_index Seek the file to this specified packet index
+        //! (plus the previously specified @a start_offset).
+        //! @param [in,out] report Where to report errors.
+        //! @return True on success, false on error.
+        //!
+        bool seek(PacketCounter packet_index, ReportInterface& report);
+
+        //!
+        //! Get the number of read packets.
+        //! @return The number of read packets.
+        //!
+        PacketCounter getPacketCount() const
+        {
+            return _total_packets;
+        }
 
     protected:
-        std::string   _filename;      // Input file name
-        PacketCounter _total_packets; // Total read packets
+        std::string   _filename;      //!< Input file name.
+        PacketCounter _total_packets; //!< Total read packets.
 
     private:
-        size_t   _repeat;        // Repeat count (0 means infinite)
-        size_t   _counter;       // Current repeat count
-        uint64_t _start_offset;  // Initial byte offset in file
-        bool     _is_open;       // Check if file is actually open
-        int      _severity;      // Severity level for error reporting
-        bool     _at_eof;        // End of file has been reached
-        bool     _rewindable;    // Opened in rewindable mode
-#if defined (__windows)
-        ::HANDLE _handle;        // File handle
+        size_t   _repeat;        //!< Repeat count (0 means infinite)
+        size_t   _counter;       //!< Current repeat count
+        uint64_t _start_offset;  //!< Initial byte offset in file
+        bool     _is_open;       //!< Check if file is actually open
+        int      _severity;      //!< Severity level for error reporting
+        bool     _at_eof;        //!< End of file has been reached
+        bool     _rewindable;    //!< Opened in rewindable mode
+#if defined(__windows)
+        ::HANDLE _handle;        //!< File handle
 #else
-        int      _fd;            // File descriptor
+        int      _fd;            //!< File descriptor
 #endif
 
         // Inaccessible operations
@@ -107,7 +196,7 @@ namespace ts {
         TSFileInput& operator=(const TSFileInput&) = delete;
 
         // Internal methods
-        bool openInternal(ReportInterface&);
-        bool seekInternal(uint64_t, ReportInterface&);
+        bool openInternal(ReportInterface& report);
+        bool seekInternal(uint64_t, ReportInterface& report);
     };
 }

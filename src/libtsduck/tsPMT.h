@@ -37,47 +37,85 @@
 #include "tsDescriptorList.h"
 
 namespace ts {
-
+    //!
+    //! Representation of a Program Map Table (PMT)
+    //!
     class TSDUCKDLL PMT : public AbstractLongTable
     {
     public:
-        // List of elementary streams, indexed by PID
         struct Stream;
-        typedef std::map <PID, Stream> StreamMap;
+        //!
+        //! List of elementary streams, indexed by PID.
+        //!
+        typedef std::map<PID, Stream> StreamMap;
 
         // PMT public members:
-        uint16_t         service_id;  // Service id aka "program_number"
-        PID            pcr_pid;     // PID for PCR data
-        DescriptorList descs;       // Program-level descriptor list
-        StreamMap      streams;     // key=PID, value=stream_description
+        uint16_t       service_id;  //!< Service id aka "program_number".
+        PID            pcr_pid;     //!< PID for PCR data.
+        DescriptorList descs;       //!< Program-level descriptor list.
+        StreamMap      streams;     //!< Map of stream descriptions: key=PID, value=stream_description.
 
-        // Default constructor:
-        PMT (uint8_t version_ = 0,
-             bool is_current_ = true,
-             uint16_t service_id_ = 0,
-             PID pcr_pid_ = PID_NULL);
+        //!
+        //! Default constructor.
+        //! @param [in] version Table version number.
+        //! @param [in] is_current True if table is current, false if table is next.
+        //! @param [in] service_id Service identifier.
+        //! @param [in] pcr_pid PID of the PCR. Default: none.
+        //!
+        PMT(uint8_t version = 0,
+            bool is_current = true,
+            uint16_t service_id = 0,
+            PID pcr_pid = PID_NULL);
 
-        // Constructor from a binary table
-        PMT (const BinaryTable& table);
+        //!
+        //! Constructor from a binary table.
+        //! @param [in] table Binary table to deserialize.
+        //!
+        PMT(const BinaryTable& table);
 
         // Inherited methods
-        virtual void serialize (BinaryTable& table) const;
-        virtual void deserialize (const BinaryTable& table);
+        virtual void serialize(BinaryTable& table) const;
+        virtual void deserialize(const BinaryTable& table);
 
-        // Description of an elementary stream
+        //!
+        //! Description of an elementary stream.
+        //!
         struct TSDUCKDLL Stream
         {
-            uint8_t          stream_type;  // One of ST_*
-            DescriptorList descs;        // Stream-level descriptor list
+            uint8_t        stream_type;  //!< Stream type, one of ST_* (eg ts::ST_MPEG2_VIDEO).
+            DescriptorList descs;        //!< Stream-level descriptor list.
 
-            // Constructor
-            Stream() : stream_type(0), descs() {}
+            //!
+            //! Default constructor.
+            //!
+            Stream() :
+                stream_type(0),
+                descs()
+            {
+            }
 
-            // Check if an elementary stream carries audio, video or subtitles.
-            // Does not just look at the stream type.
-            // Also analyzes the descriptor list for additional information.
+            //!
+            //! Check if an elementary stream carries audio.
+            //! Does not just look at the stream type.
+            //! Also analyzes the descriptor list for additional information.
+            //! @return True if the elementary stream carries audio.
+            //!
             bool isAudio() const;
+
+            //!
+            //! Check if an elementary stream carries video.
+            //! Does not just look at the stream type.
+            //! Also analyzes the descriptor list for additional information.
+            //! @return True if the elementary stream carries video.
+            //!
             bool isVideo() const;
+
+            //!
+            //! Check if an elementary stream carries subtitles.
+            //! Does not just look at the stream type.
+            //! Also analyzes the descriptor list for additional information.
+            //! @return True if the elementary stream carries subtitles.
+            //!
             bool isSubtitles() const;
         };
     };

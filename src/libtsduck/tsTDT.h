@@ -37,21 +37,29 @@
 #include "tsTime.h"
 
 namespace ts {
-
+    //!
+    //! Representation of a Time & Date Table (TDT)
+    //!
     class TSDUCKDLL TDT : public AbstractTable
     {
     public:
         // Public members:
-        Time utc_time;
+        Time utc_time;  //!< UTC time.
 
-        // Default constructor:
-        TDT (const Time& utc_time);
+        //!
+        //! Default constructor.
+        //! @param [in] utc_time UTC time.
+        //!
+        TDT(const Time& utc_time);
 
-        // Constructor from a binary table
-        TDT (const BinaryTable& table);
+        //!
+        //! Constructor from a binary table.
+        //! @param [in] table Binary table to deserialize.
+        //!
+        TDT(const BinaryTable& table);
 
         // Inherited methods
-        virtual void serialize (BinaryTable& table) const;
-        virtual void deserialize (const BinaryTable& table);
+        virtual void serialize(BinaryTable& table) const;
+        virtual void deserialize(const BinaryTable& table);
     };
 }

@@ -55,155 +55,365 @@
 namespace ts {
 
     class Tuner;
-    typedef SafePtr <Tuner, NullMutex> TunerPtr;
-    typedef std::vector <TunerPtr> TunerPtrVector;
+    
+    //!
+    //! Safe pointer to a DVB tuner (not thread-safe).
+    //!
+    typedef SafePtr<Tuner, NullMutex> TunerPtr;
 
+    //!
+    //! Vector of safe pointers to DVB tuners (not thread-safe).
+    //!
+    typedef std::vector<TunerPtr> TunerPtrVector;
+
+    //!
+    //! Implementation of a DVB tuner.
+    //!
+    //! The syntax of a DVB tuner "device name" depends on the operating system.
+    //!
+    //! Linux:
+    //! - Syntax: /dev/dvb/adapterA[:F[:M[:V]]]
+    //! - A = adapter number
+    //! - F = frontend number (default: 0)
+    //! - M = demux number (default: 0)
+    //! - V = dvr number (default: 0)
+    //!
+    //! Windows:
+    //! - DirectShow/BDA tuner filter name
+    //!
     class TSDUCKDLL Tuner
     {
     public:
+        //!
+        //! Get the list of all existing DVB tuners.
+        //! @param [out] tuners Returned list of DVB tuners on the system.
+        //! @param [in,out] report Where to report errors.
+        //! @return True on success, false on error.
+        //!
+        static bool GetAllTuners(TunerPtrVector& tuners, ReportInterface& report);
 
-        // Get the list of all existing DVB tuners.
-        // Return true on success, false on errors
-        static bool GetAllTuners(TunerPtrVector&, ReportInterface&);
-
-        // Default constructor, 
+        //!
+        //! Default constructor.
+        //!
         Tuner();
 
-        // Destructor
+        //!
+        //! Destructor.
+        //!
         ~Tuner();
 
-        // Constructor and open device name.
-        // If name is empty, use "first" or "default" tuner.
-        Tuner(const std::string& device_name, bool info_only, ReportInterface&);
+        //!
+        //! Constructor and open device name.
+        //! @param [in] device_name Tuner device name.
+        //! If name is empty, use "first" or "default" tuner.
+        //! @param [in] info_only If true, we will only fetch the properties of
+        //! the tuner, we won't use it to receive streams. Thus, it is possible
+        //! to open tuners which are already used to actually receive a stream.
+        //! @param [in,out] report Where to report errors.
+        //!
+        Tuner(const std::string& device_name, bool info_only, ReportInterface& report);
 
-        // DVB tuner "device name":
-        // Linux:
-        //   Syntax: /dev/dvb/adapterA[:F[:M[:V]]]
-        //   A = adapter number
-        //   F = frontend number (default: 0)
-        //   M = demux number (default: 0)
-        //   V = dvr number (default: 0)
-        // Windows:
-        //   DirectShow/BDA tuner filter name
+        //!
+        //! Open the tuner.
+        //! @param [in] device_name Tuner device name.
+        //! If name is empty, use "first" or "default" tuner.
+        //! @param [in] info_only If true, we will only fetch the properties of
+        //! the tuner, we won't use it to receive streams. Thus, it is possible
+        //! to open tuners which are already used to actually receive a stream.
+        //! @param [in,out] report Where to report errors.
+        //! @return True on success, false on error.
+        //!
+        bool open(const std::string& device_name, bool info_only, ReportInterface& report);
 
-        // Open the tuner.
-        // If name is empty, use "first" or "default" tuner.
-        // If info_only is true, cannot tune, start or receive packet.
-        // Return true on success, false on errors
-        bool open(const std::string& device_name, bool info_only, ReportInterface&);
+        //!
+        //! Close the tuner.
+        //! @param [in,out] report Where to report errors.
+        //! @return True on success, false on error.
+        //!
+        bool close(ReportInterface& report);
 
-        // Close tuner.
-        // Return true on success, false on errors
-        bool close(ReportInterface&);
+        //!
+        //! Check if the tuner is open.
+        //! @return True if the tuner is open.
+        //!
+        bool isOpen() const
+        {
+            return _is_open;
+        }
 
-        // Check if open
-        bool isOpen() const {return _is_open;}
+        //!
+        //! Get the open mode.
+        //! @return True if the tuner is open to fetch information only.
+        //! In that case, the tuner cannot receive streams.
+        //!
+        bool infoOnly() const
+        {
+            return _info_only;
+        }
 
-        // Get open mode
-        bool infoOnly() const {return _info_only;}
+        //!
+        //! Get the tuner type.
+        //! @return The tuner type.
+        //!
+        TunerType tunerType() const
+        {
+            return _tuner_type;
+        }
 
-        // Tuner type
-        TunerType tunerType() const {return _tuner_type;}
+        //!
+        //! Set of delivery systems which are supported by the tuner.
+        //! @return The set of delivery systems which are supported by the tuner.
+        //!
+        DeliverySystemSet deliverySystems() const
+        {
+            return _delivery_systems;
+        }
 
-        // Set of delivery systems which are supported by the tuner
-        DeliverySystemSet deliverySystems() const {return _delivery_systems;}
+        //!
+        //! Check if the tuner supports the specified delivery system.
+        //! @param [in] ds The delivery system to check.
+        //! @return True if the tuner supports the specified delivery system.
+        //!
+        bool hasDeliverySystem(DeliverySystem ds) const
+        {
+            return _delivery_systems.test(size_t(ds));
+        }
 
-        // Check if the tuner supports the specified delivery system
-        bool hasDeliverySystem (DeliverySystem ds) const {return _delivery_systems.test (size_t (ds));}
+        //!
+        //! Get the device name of the tuner.
+        //! @return The device name of the tuner.
+        //!
+        std::string deviceName() const
+        {
+            return _device_name;
+        }
 
-        // Get the device name of a tuner.
-        std::string deviceName() const {return _device_name;}
+        //!
+        //! Device-specific information.
+        //! @return A string with device-specific information. Can be empty.
+        //!
+        std::string deviceInfo() const
+        {
+            return _device_info;
+        }
 
-        // Device-specific, can be empty
-        std::string deviceInfo() const {return _device_info;}
+        //!
+        //! Check if a signal is present and locked.
+        //! @param [in,out] report Where to report errors.
+        //! @return True if a signal is present and locked.
+        //!
+        bool signalLocked(ReportInterface& report);
 
-        // Check if a signal is present and locked
-        bool signalLocked(ReportInterface&);
+        //!
+        //! Get the signal strength.
+        //! @param [in,out] report Where to report errors.
+        //! @return The signal strength in percent (0=bad, 100=good).
+        //! Return a negative value on error.
+        //!
+        int signalStrength(ReportInterface& report);
 
-        // Return signal strength, in percent (0=bad, 100=good)
-        // Return a negative value on error.
-        int signalStrength(ReportInterface&);
+        //!
+        //! Get the signal quality.
+        //! @param [in,out] report Where to report errors.
+        //! @return The signal quality in percent (0=bad, 100=good).
+        //! Return a negative value on error.
+        //!
+        int signalQuality(ReportInterface& report);
 
-        // Return signal quality, in percent (0=bad, 100=good)
-        // Return a negative value on error.
-        int signalQuality(ReportInterface&);
+        //!
+        //! Tune to the specified parameters.
+        //! @param [in] params Tuning parameters.
+        //! @param [in,out] report Where to report errors.
+        //! @return True on success, false on error.
+        //!
+        bool tune(const TunerParameters& params, ReportInterface& report);
 
-        // Tune to the specified parameters.
-        // Return true on success, false on errors
-        bool tune(const TunerParameters&, ReportInterface&);
+        //!
+        //! Start receiving packets.
+        //! @param [in,out] report Where to report errors.
+        //! @return True on success, false on error.
+        //!
+        bool start(ReportInterface& report);
 
-        // Start receiving packets.
-        // Return true on success, false on errors
-        bool start(ReportInterface&);
+        //!
+        //! Stop receiving packets.
+        //! @param [in,out] report Where to report errors.
+        //! @return True on success, false on error.
+        //!
+        bool stop(ReportInterface& report);
 
-        // Stop receiving packets.
-        // Return true on success, false on errors
-        bool stop(ReportInterface&);
+        //!
+        //! Receive packets.
+        //! @param [out] buffer Address of TS packet receive buffer.
+        //! Read only complete 188-byte TS packets.
+        //! @param [in] max_packets Maximum number of packets to read in @a buffer.
+        //! @param [in] abort If non-zero, invoked when I/O is interrupted
+        //! (in case of user-interrupt, return, otherwise retry).
+        //! @param [in,out] report Where to report errors.
+        //! @return The number of actually received packets (in the range 1 to @a max_packets).
+        //! Returning zero means error or end of input.
+        //!
+        size_t receive(TSPacket* buffer, size_t max_packets, const AbortInterface* abort, ReportInterface& report);
 
-        // Read complete 188-byte TS packets in the buffer and return the
-        // number of actually received packets (in the range 1 to max_packets).
-        // If abort interface is non-zero, invoke it when I/O is interrupted
-        // (in case of user-interrupt, return, otherwise retry).
-        // Returning zero means error or end of input.
-        size_t receive(TSPacket* buffer, size_t max_packets, const AbortInterface*, ReportInterface&);
+        //!
+        //! Get the current tuning parameters.
+        //! @param [in,out] params Returned tuning parameters.
+        //! Modify only the properties which can be reported by the tuner.
+        //! @param [in] reset_unknown If true, the unknown values (those
+        //! which are not reported by the tuner) are reset to unknown/zero/auto
+        //! values. Otherwise, they are left unmodified.
+        //! @param [in,out] report Where to report errors.
+        //! @return True on success, false on error.
+        //!
+        bool getCurrentTuning(TunerParameters& params, bool reset_unknown, ReportInterface& report);
 
-        // Get the current tuning parameters: update an existing
-        // TunerParameters, modify only the properties which can
-        // be reported by the tuner. If reset_unknown is true,
-        // the unknown values (those which are not reported by the
-        // tuner) are reset to unknown/zero/auto values.
-        // Return true on success, false on errors.
-        bool getCurrentTuning(TunerParameters&, bool reset_unknown, ReportInterface&);
-
-        // Timeout before getting a signal on start.
-        // If zero, do not wait for signal on start.
-        // Must be set before start.
+        //!
+        //! Default timeout before getting a signal on start.
+        //!
         static const MilliSecond DEFAULT_SIGNAL_TIMEOUT = 5000; // 5 seconds
-        void setSignalTimeout(MilliSecond t) {_signal_timeout = t;}
-        void setSignalTimeoutSilent(bool silent) {_signal_timeout_silent = silent;}
 
-        // Timeout for receive operation (none by default).
-        // If zero, no timeout is applied.
-        // Return true on success, false on errors.
-        bool setReceiveTimeout(MilliSecond, ReportInterface&);
+        //!
+        //! Set the timeout before getting a signal on start.
+        //! If zero, do not wait for signal on start.
+        //! Must be set before start().
+        //! @param [in] t Number of milliseconds to wait after start() before receiving a signal.
+        //!
+        void setSignalTimeout(MilliSecond t)
+        {
+            _signal_timeout = t;
+        }
 
-        // Get timeout for receive operation.
-        MilliSecond receiveTimeout() const {return _receive_timeout;}
+        //!
+        //! Set if an error should be reported on timeout before getting a signal on start.
+        //! Must be set before start().
+        //! @param [in] silent If true, no error message will be reported if no signal is
+        //! received after the timeout on start.
+        //!
+        void setSignalTimeoutSilent(bool silent)
+        {
+            _signal_timeout_silent = silent;
+        }
+
+        //!
+        //! Set the timeout for receive operations.
+        //! @param [in] t Number of milliseconds to wait before receiving
+        //! packets in a receive() operation. If zero (the default), no
+        //! timeout is applied.
+        //! @param [in,out] report Where to report errors.
+        //! @return True on success, false on error.
+        //!
+        bool setReceiveTimeout(MilliSecond t, ReportInterface& report);
+
+        //!
+        //! Get the timeout for receive operation.
+        //! @return The timeout for receive operation.
+        //! @see setReceiveTimeout()
+        //!
+        MilliSecond receiveTimeout() const
+        {
+            return _receive_timeout;
+        }
         
 #if defined(__linux) || defined(DOXYGEN) // Linux-specific operations
 
-        // Poll interval for signal timeout. Must be set before start.
+        //!
+        //! Default poll interval for signal timeout (Linux-specific).
+        //!
         static const MilliSecond DEFAULT_SIGNAL_POLL = 100;
-        void setSignalPoll(MilliSecond t) {_signal_poll = t;}
 
-        // Demux buffer size in bytes. Must be set before start.
+        //!
+        //! Set the poll interval for signal timeout (Linux-specific).
+        //! Must be set before start().
+        //! @param [in] t Poll interval in milliseconds.
+        //!
+        void setSignalPoll(MilliSecond t)
+        {
+            _signal_poll = t;
+        }
+
+        //!
+        //! Default demux buffer size in bytes (Linux-specific).
+        //!
         static const size_t DEFAULT_DEMUX_BUFFER_SIZE = 1024 * 1024;  // 1 MB
-        void setDemuxBufferSize(size_t s) {_demux_bufsize = s;}
 
-        // Force usage of S2API in all cases
-        void setForceS2API(bool force) {_force_s2api = force;}
-        bool getForceS2API() const {return _force_s2api;}
+        //!
+        //! Set the demux buffer size in bytes.
+        //! Must be set before start().
+        //! @param [in] s The demux buffer size in bytes.
+        //!
+        void setDemuxBufferSize(size_t s)
+        {
+            _demux_bufsize = s;
+        }
+
+        //!
+        //! Force usage of S2API in all cases (Linux-specific).
+        //! @param [in] force If true, the S2API is used in all cases.
+        //! By default, S2API, when supported, is used only with DVB-S/S2.
+        //!
+        void setForceS2API(bool force)
+        {
+            _force_s2api = force;
+        }
+        
+        //!
+        //! Check if usage of S2API is forced in all cases (Linux-specific).
+        //! @return If true, the S2API is used in all cases.
+        //! By default, S2API, when supported, is used only with DVB-S/S2.
+        //!
+        bool getForceS2API() const
+        {
+            return _force_s2api;
+        }
 
 #if defined(__s2api) || defined(DOXYGEN)
-        // Tune operation using S2API, return true on success, false on error
-        bool tuneS2API(DTVProperties&, ReportInterface&);
+        //!
+        //! Perform a tune operation using S2API (Linux-specific).
+        //! @param [in,out] props S2API DTV properties.
+        //! @param [in,out] report Where to report errors.
+        //! @return True on success, false on error.
+        //!
+        bool tuneS2API(DTVProperties& props, ReportInterface& report);
 #endif
 #endif
 
 #if defined(__windows) || defined(DOXYGEN) // Windows-specific operations
 
-        // Max number of media samples in the queue between
-        // the graph thread and the application thread.
-        // Must be set before start.
+        //!
+        //! Default max number of queued media samples (Windows-specific).
+        //! @see setSinkQueueSize().
+        //!
         static const size_t DEFAULT_SINK_QUEUE_SIZE = 50;  // media samples
-        void setSinkQueueSize(size_t s) {_sink_queue_size = s;}
 
-        // Enumerate all tuner-related DirectShow devices.
-        static std::ostream& EnumerateDevices(std::ostream&, const std::string& margin, ReportInterface&);
+        //!
+        //! Set the max number of queued media samples (Windows-specific).
+        //! Must be set before start().
+        //! @param [in] s Max number of media samples in the queue between
+        //! the graph thread and the application thread.
+        //!
+        void setSinkQueueSize(size_t s)
+        {
+            _sink_queue_size = s;
+        }
+
+        //!
+        //! Enumerate all tuner-related DirectShow devices (Windows-specific).
+        //! @param [in,out] strm Output text stream.
+        //! @param [in] margin Left margin to display.
+        //! @param [in,out] report Where to report errors.
+        //! @return A reference to @a strm.
+        //!
+        static std::ostream& EnumerateDevices(std::ostream& strm, const std::string& margin, ReportInterface& report);
 #endif
 
-        // Display the characteristics and status of the tuner.
-        std::ostream& displayStatus(std::ostream&, const std::string& margin, ReportInterface&);
+        //!
+        //! Display the characteristics and status of the tuner.
+        //! @param [in,out] strm Output text stream.
+        //! @param [in] margin Left margin to display.
+        //! @param [in,out] report Where to report errors.
+        //! @return A reference to @a strm.
+        //!
+        std::ostream& displayStatus(std::ostream& strm, const std::string& margin, ReportInterface& report);
 
     private:
 

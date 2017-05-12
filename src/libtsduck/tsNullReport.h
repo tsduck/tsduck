@@ -37,14 +37,17 @@
 #include "tsSingletonManager.h"
 
 namespace ts {
-
+    //!
+    //! A singleton implementing ReportInterface which drops all messages.
+    //!
     class TSDUCKDLL NullReport : public ReportInterface
     {
-        // This class is a singleton. Use static Instance() method.
         tsDeclareSingleton(NullReport);
 
     public:
-        // Destructor
+        //!
+        //! Destructor
+        //!
         virtual ~NullReport();
 
     protected:
@@ -53,5 +56,7 @@ namespace ts {
     };
 }
 
-// Macro for fast access to singleton
+//!
+//! Macro for fast access to the ts::NullReport singleton.
+//!
 #define NULLREP (*ts::NullReport::Instance())

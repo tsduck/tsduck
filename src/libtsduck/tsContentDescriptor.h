@@ -46,11 +46,13 @@ namespace ts {
         // Content entry
         struct Entry;
 
+        //!
         //! A list of content entries.
+        //!
         typedef std::list<Entry> EntryList;
 
         // Public members:
-        EntryList entries;  //!< The list of content entries.  
+        EntryList entries;  //!< The list of content entries.
 
         //!
         //! Default constructor.
@@ -79,7 +81,7 @@ namespace ts {
             uint8_t user_nibble_2;           //!< 4 bits, see ETSI 300 468, 6.2.9.
 
             //!
-            //! Default contructor.
+            //! Default constructor.
             //! @param [in] all All 4 nibbles as a 16-bit integer.
             //!
             Entry(uint16_t all = 0) :
@@ -90,7 +92,7 @@ namespace ts {
             {
             }
             //!
-            //! Contructor.
+            //! Constructor.
             //! @param [in] l1 Level 1 nibble.
             //! @param [in] l2 Level 2 nibble.
             //! @param [in] u1 First user nibble.

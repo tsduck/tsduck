@@ -37,7 +37,6 @@
 #include "tsVariable.h"
 
 namespace ts {
-
     //!
     //! Representation of a data_broadcast_id_descriptor for system software update.
     //! The data_broadcast_id is 0x000A.
@@ -45,35 +44,60 @@ namespace ts {
     class TSDUCKDLL SSUDataBroadcastIdDescriptor : public AbstractDescriptor
     {
     public:
-        // OUI entry
+        //!
+        //! OUI entry.
+        //!
         struct TSDUCKDLL Entry
         {
             // Public members
-            uint32_t          oui;             // 24 bits
-            uint8_t           update_type;     // 4 bits
-            Variable<uint8_t> update_version;  // 5 bits
-            ByteBlock       selector;
+            uint32_t          oui;             //!< OUI, 24 bits.
+            uint8_t           update_type;     //!< Update type, 4 bits.
+            Variable<uint8_t> update_version;  //!< Update version, 5 bits.
+            ByteBlock         selector;        //!< Selector bytes.
 
-            // Contructor
-            Entry (uint32_t oui_ = 0, uint8_t upd_ = 0): oui (oui_), update_type (upd_), update_version(), selector() {}
+            //!
+            //! Constructor.
+            //! @param [in] oui_ OUI, 24 bits.
+            //! @param [in] upd_ Update type, 4 bits.
+            //!
+            Entry(uint32_t oui_ = 0, uint8_t upd_ = 0) :
+                oui(oui_),
+                update_type(upd_),
+                update_version(),
+                selector()
+            {
+            }
         };
+
+        //!
+        //! List of OUI entries.
+        //!
         typedef std::list<Entry> EntryList;
 
         // SSUDataBroadcastIdDescriptor public members:
-        EntryList entries;
-        ByteBlock private_data;
+        EntryList entries;       //!< The list of OUI entries.
+        ByteBlock private_data;  //!< Private data.
 
-        // Default constructor:
-        SSUDataBroadcastIdDescriptor ();
+        //!
+        //! Default constructor.
+        //!
+        SSUDataBroadcastIdDescriptor();
 
-        // Constructor with one OUI
-        SSUDataBroadcastIdDescriptor (uint32_t oui, uint8_t update_type);
+        //!
+        //! Constructor with one OUI.
+        //! @param [in] oui OUI, 24 bits.
+        //! @param [in] update_type Update type, 4 bits.
+        //!
+        SSUDataBroadcastIdDescriptor(uint32_t oui, uint8_t update_type);
 
-        // Constructor from a binary descriptor
-        SSUDataBroadcastIdDescriptor (const Descriptor&);
+        //!
+        //! Constructor from a binary descriptor
+        //! @param [in] bin A binary descriptor to deserialize.
+        //!
+        SSUDataBroadcastIdDescriptor(const Descriptor& bin);
 
         // Inherited methods
-        virtual void serialize (Descriptor&) const;
-        virtual void deserialize (const Descriptor&);
+        virtual void serialize(Descriptor&) const;
+        virtual void deserialize(const Descriptor&);
     };
 }

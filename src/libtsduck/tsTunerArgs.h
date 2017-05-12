@@ -39,53 +39,79 @@
 #include "tsLNB.h"
 
 namespace ts {
-
+    //!
+    //! Command line arguments for DVB tuners.
+    //!
+    //! All values may be "set" or "unset", depending on command line arguments.
+    //! All options for all types of tuners are included here.
+    //!
     class TSDUCKDLL TunerArgs
     {
     public:
-        // All values may be "set" or "unset", depending on command line arguments.
-        // All options for all types of tuners are included here.
-
         // Public fields
-        Variable<std::string>       zap_specification;  // Linux DVB zap format
-        Variable<std::string>       channel_name;       // Use transponder containing this channel
-        Variable<std::string>       zap_file_name;      // Where channel_name is located
-        Variable<uint64_t>            frequency;          // Always in Hz
-        Variable<Polarization>      polarity;
-        Variable<LNB>               lnb;
-        Variable<SpectralInversion> inversion;
-        Variable<uint32_t>            symbol_rate;
-        Variable<InnerFEC>          inner_fec;
-        Variable<size_t>            satellite_number;
-        Variable<Modulation>        modulation;
-        Variable<BandWidth>         bandwidth;
-        Variable<InnerFEC>          fec_hp;
-        Variable<InnerFEC>          fec_lp;
-        Variable<TransmissionMode>  transmission_mode;
-        Variable<GuardInterval>     guard_interval;
-        Variable<Hierarchy>         hierarchy;
-        Variable<DeliverySystem>    delivery_system;
-        Variable<Pilot>             pilots;
-        Variable<RollOff>           roll_off;
+        Variable<std::string>       zap_specification;  //!< Linux DVB zap format.
+        Variable<std::string>       channel_name;       //!< Use transponder containing this channel.
+        Variable<std::string>       zap_file_name;      //!< Where channel_name is located.
+        Variable<uint64_t>          frequency;          //!< Frequency in Hz.
+        Variable<Polarization>      polarity;           //!< Polarity.
+        Variable<LNB>               lnb;                //!< Local dish LNB for frequency adjustment.
+        Variable<SpectralInversion> inversion;          //!< Spectral inversion.
+        Variable<uint32_t>          symbol_rate;        //!< Symbol rate.
+        Variable<InnerFEC>          inner_fec;          //!< Error correction.
+        Variable<size_t>            satellite_number;   //!< For DiSeqC (usually 0).
+        Variable<Modulation>        modulation;         //!< Constellation or modulation type.
+        Variable<BandWidth>         bandwidth;          //!< Bandwidth.
+        Variable<InnerFEC>          fec_hp;             //!< High priority stream code rate.
+        Variable<InnerFEC>          fec_lp;             //!< Low priority stream code rate.
+        Variable<TransmissionMode>  transmission_mode;  //!< Transmission mode.
+        Variable<GuardInterval>     guard_interval;     //!< Guard interval.
+        Variable<Hierarchy>         hierarchy;          //!< Hierarchy.
+        Variable<DeliverySystem>    delivery_system;    //!< Delivery system (DS_DVB_*).
+        Variable<Pilot>             pilots;             //!< Presence of pilots (DVB-S2 only).
+        Variable<RollOff>           roll_off;           //!< Roll-off factor (DVB-S2 only).
 
-        // Check if actual tuning information is set
-        bool hasTuningInfo() const {return frequency.set() || zap_specification.set() || channel_name.set();}
+        //!
+        //! Check if actual tuning information is set.
+        //! @return True if actual tuning information is set.
+        //!
+        bool hasTuningInfo() const
+        {
+            return frequency.set() || zap_specification.set() || channel_name.set();
+        }
 
-        // Reset all values, they become "unset"
+        //!
+        //! Reset all values, they become "unset"
+        //!
         void reset();
 
-        // Load arguments from command line.
-        // Args error indicator is set in case of incorrect arguments
-        void load (Args& args);
+        //!
+        //! Define command line options in an Args.
+        //! @param [in,out] args Command line arguments to update.
+        //! @param [in] allow_short_options If true, allow short one-letter options.
+        //! If false, disable them, possibly to avoid interferences with other options.
+        //!
+        static void DefineOptions(Args& args, bool allow_short_options = true);
 
-        // Define command line options in an Args.
-        static void DefineOptions (Args& args, bool allow_short_options = true);
+        //!
+        //! Add help about command line options in an Args.
+        //! @param [in,out] args Command line arguments to update.
+        //! @param [in] allow_short_options If true, allow short one-letter options.
+        //! If false, disable them, possibly to avoid interferences with other options.
+        //!
+        static void AddHelp(Args& args, bool allow_short_options = true);
 
-        // Add help about command line options in an Args
-        static void AddHelp (Args& args, bool allow_short_options = true);
+        //!
+        //! Load arguments from command line.
+        //! @param [in,out] args Command line arguments.
+        //! Args error indicator is set in case of incorrect arguments.
+        //!
+        void load(Args& args);
 
-        // Default zap file name for a given tuner type.
-        // Return an empty string if there is no default.
-        static std::string DefaultZapFile (TunerType);
+        //!
+        //! Default zap file name for a given tuner type.
+        //! @param [in] type Tuner type.
+        //! @return The default zap file or an empty string if there is no default.
+        //!
+        static std::string DefaultZapFile(TunerType type);
     };
 }

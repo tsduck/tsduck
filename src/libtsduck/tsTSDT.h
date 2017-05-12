@@ -36,19 +36,28 @@
 #include "tsAbstractDescriptorsTable.h"
 
 namespace ts {
-
+    //!
+    //! Representation of a Transport Stream Description Table (TSDT)
+    //!
     class TSDUCKDLL TSDT : public AbstractDescriptorsTable
     {
     public:
-        // Default constructor:
-        TSDT (uint8_t version_ = 0, bool is_current_ = true) :
-            AbstractDescriptorsTable (TID_TSDT, 0xFFFF, version_, is_current_)
+        //!
+        //! Default constructor.
+        //! @param [in] version Table version number.
+        //! @param [in] is_current True if table is current, false if table is next.
+        //!
+        TSDT(uint8_t version = 0, bool is_current = true) :
+            AbstractDescriptorsTable(TID_TSDT, 0xFFFF, version, is_current)
         {
         }
 
-        // Constructor from a binary table
-        TSDT (const BinaryTable& table) :
-            AbstractDescriptorsTable (TID_TSDT, table)
+        //!
+        //! Constructor from a binary table.
+        //! @param [in] table Binary table to deserialize.
+        //!
+        TSDT(const BinaryTable& table) :
+            AbstractDescriptorsTable(TID_TSDT, table)
         {
         }
     };

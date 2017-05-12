@@ -36,32 +36,40 @@
 #include "tsAbstractDescriptor.h"
 
 namespace ts {
-
+    //!
+    //! Representation of a terrestrial_delivery_system_descriptor.
+    //! @see ETSI 300 468, 6.2.13.4.
+    //!
     class TSDUCKDLL TerrestrialDeliverySystemDescriptor : public AbstractDescriptor
     {
     public:
         // TerrestrialDeliverySystemDescriptor public members:
-        uint32_t centre_frequency;   // unit is 10 Hz
-        uint8_t  bandwidth;          // 0..7 (3 bits)
-        bool   high_priority;      // Must be true if hierarchy == 0
-        bool   no_time_slicing;
-        bool   no_mpe_fec;
-        uint8_t  constellation;      // 0..3 (2 bits)
-        uint8_t  hierarchy;          // 0..7 (3 bits)
-        uint8_t  code_rate_hp;       // 0..7 (3 bits)
-        uint8_t  code_rate_lp;       // 0..7 (3 bits)
-        uint8_t  guard_interval;     // 0..3 (2 bits)
-        uint8_t  transmission_mode;  // 0..3 (2 bits)
-        bool   other_frequency;
+        uint32_t centre_frequency;   //!< Frequency, unit is 10 Hz.
+        uint8_t  bandwidth;          //!< Bandwidth, 0..7 (3 bits).
+        bool     high_priority;      //!< Must be true if hierarchy == 0.
+        bool     no_time_slicing;    //!< No time slicing.
+        bool     no_mpe_fec;         //!< NO MPE-FEC.
+        uint8_t  constellation;      //!< Constellation, 0..3 (2 bits).
+        uint8_t  hierarchy;          //!< Hierarchy, 0..7 (3 bits).
+        uint8_t  code_rate_hp;       //!< Code Rate, high priority, 0..7 (3 bits).
+        uint8_t  code_rate_lp;       //!< Code Rate, low priority, 0..7 (3 bits).
+        uint8_t  guard_interval;     //!< Guard interval, 0..3 (2 bits).
+        uint8_t  transmission_mode;  //!< Transmission mode, 0..3 (2 bits).
+        bool     other_frequency;    //!< Other frequency.
 
-        // Default constructor:
-        TerrestrialDeliverySystemDescriptor ();
+        //!
+        //! Default constructor.
+        //!
+        TerrestrialDeliverySystemDescriptor();
 
-        // Constructor from a binary descriptor
-        TerrestrialDeliverySystemDescriptor (const Descriptor&);
+        //!
+        //! Constructor from a binary descriptor.
+        //! @param [in] bin A binary descriptor to deserialize.
+        //!
+        TerrestrialDeliverySystemDescriptor(const Descriptor& bin);
 
         // Inherited methods
-        virtual void serialize (Descriptor&) const;
-        virtual void deserialize (const Descriptor&);
+        virtual void serialize(Descriptor&) const;
+        virtual void deserialize(const Descriptor&);
     };
 }

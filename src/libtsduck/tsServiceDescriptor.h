@@ -36,23 +36,34 @@
 #include "tsAbstractDescriptor.h"
 
 namespace ts {
-
+    //!
+    //! Representation of a service_descriptor.
+    //! @see ETSI 300 468, 6.2.33.
+    //!
     class TSDUCKDLL ServiceDescriptor : public AbstractDescriptor
     {
     public:
         // ServiceDescriptor public members:
-        uint8_t service_type;
-        std::string provider_name;
-        std::string service_name;
+        uint8_t     service_type;   //!< Service type.
+        std::string provider_name;  //!< Provider name.
+        std::string service_name;   //!< Service name.
 
-        // Default constructor:
-        ServiceDescriptor (uint8_t type = 0, const std::string& provider = "", const std::string& name = "");
+        //!
+        //! Default constructor.
+        //! @param [in] type Service type.
+        //! @param [in] provider Provider name.
+        //! @param [in] name Service name.
+        //!
+        ServiceDescriptor(uint8_t type = 0, const std::string& provider = "", const std::string& name = "");
 
-        // Constructor from a binary descriptor
-        ServiceDescriptor (const Descriptor&);
+        //!
+        //! Constructor from a binary descriptor
+        //! @param [in] bin A binary descriptor to deserialize.
+        //!
+        ServiceDescriptor(const Descriptor& bin);
 
         // Inherited methods
-        virtual void serialize (Descriptor&) const;
-        virtual void deserialize (const Descriptor&);
+        virtual void serialize(Descriptor&) const;
+        virtual void deserialize(const Descriptor&);
     };
 }

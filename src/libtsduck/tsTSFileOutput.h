@@ -37,38 +37,101 @@
 #include "tsReportInterface.h"
 
 namespace ts {
-
+    //!
+    //! Transport Stream file output.
+    //!
     class TSDUCKDLL TSFileOutput
     {
     public:
-        // Constructor / destructor
-        TSFileOutput () : _is_open (false), _severity (Severity::Error), _total_packets (0) {}
-        virtual ~TSFileOutput ();
+        //!
+        //! Default constructor.
+        //!
+        TSFileOutput() :
+            _is_open(false),
+            _severity(Severity::Error),
+            _total_packets(0)
+        {
+        }
 
-        // If filename is empty, use standard output.
-        bool open (const std::string& filename, bool append, bool keep, ReportInterface&);
-        bool close (ReportInterface&);
-        bool write (const TSPacket*, size_t packet_count, ReportInterface&);
+        //!
+        //! Destructor.
+        //!
+        virtual ~TSFileOutput();
 
-        // Check if file is open.
+        //!
+        //! Open or create the file.
+        //! @param [in] filename File name. If empty, use standard output.
+        //! @param [in] append Append packets to an existing file.
+        //! @param [in] keep Keep previous file with same name. Fail if it already exists.
+        //! @param [in,out] report Where to report errors.
+        //! @return True on success, false on error.
+        //!
+        virtual bool open(const std::string& filename, bool append, bool keep, ReportInterface& report);
+
+        //!
+        //! Close the file.
+        //! @param [in,out] report Where to report errors.
+        //! @return True on success, false on error.
+        //!
+        bool close(ReportInterface& report);
+
+        //!
+        //! Write TS packets to the file.
+        //! @param [in] buffer Address of first packet to write.
+        //! @param [in] packet_count Number of packets to write.
+        //! @param [in,out] report Where to report errors.
+        //! @return True on success, false on error.
+        //!
+        bool write(const TSPacket* buffer, size_t packet_count, ReportInterface& report);
+
+        //!
+        //! Check if the file is open.
+        //! @return True if the file is open.
+        //!
         bool isOpen() const {return _is_open;}
 
-        // Get/set severity level for error reporting. The default is Error.
-        int getErrorSeverityLevel() const {return _severity;}
-        void setErrorSeverityLevel (int level) {_severity = level;}
+        //!
+        //! Get the severity level for error reporting.
+        //! @return The severity level for error reporting.
+        //!
+        int getErrorSeverityLevel() const
+        {
+            return _severity;
+        }
+        
+        //!
+        //! Set the severity level for error reporting.
+        //! @param [in] level The severity level for error reporting. The default is Error.
+        //!
+        void setErrorSeverityLevel(int level)
+        {
+            _severity = level;
+        }
 
-        // Get file name
-        std::string getFileName() const {return _filename;}
+        //!
+        //! Get the file name.
+        //! @return The file name.
+        //!
+        std::string getFileName() const
+        {
+            return _filename;
+        }
 
-        // Return the number of written packets
-        PacketCounter getPacketCount() const {return _total_packets;}
+        //!
+        //! Get the number of written packets.
+        //! @return The number of written packets.
+        //!
+        PacketCounter getPacketCount() const
+        {
+            return _total_packets;
+        }
 
     private:
         std::string   _filename;      // Output file name
         bool          _is_open;       // Check if file is actually open
         int           _severity;      // Severity level for error reporting
         PacketCounter _total_packets; // Total written packets
-#if defined (__windows)
+#if defined(__windows)
         ::HANDLE      _handle;        // File handle
 #else
         int           _fd;            // File descriptor

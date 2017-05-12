@@ -37,44 +37,75 @@
 #include "tsAbstractDescriptor.h"
 
 namespace ts {
-
+    //!
+    //! Representation of a logical_channel_number_descriptor.
+    //!
+    //! This is a private descriptor, must be preceeded by the EACEM/EICTA PDS.
+    //!
     class TSDUCKDLL LogicalChannelNumberDescriptor : public AbstractDescriptor
     {
     public:
-        // Service entry
+        //!
+        //! Service entry.
+        //!
         struct TSDUCKDLL Entry
         {
             // Public members
-            uint16_t service_id;
-            bool   visible;
-            uint16_t lcn;
+            uint16_t service_id;  //!< Service id.
+            bool     visible;     //!< Service is visible.
+            uint16_t lcn;         //!< Logical channel number.
 
-            // Contructor
-            Entry (uint16_t id_ = 0, bool visible_ = true, uint16_t lcn_ = 0): service_id (id_), visible (visible_), lcn (lcn_) {}
+            //!
+            //! Constructor
+            //! @param [in] id_ Service id.
+            //! @param [in] visible_ Service is visible.
+            //! @param [in] lcn_ Logical channel number.
+            //! 
+            Entry(uint16_t id_ = 0, bool visible_ = true, uint16_t lcn_ = 0):
+                service_id(id_),
+                visible(visible_),
+                lcn(lcn_)
+            {
+            }
         };
+
+        //!
+        //! List of service entries.
+        //!
         typedef std::list<Entry> EntryList;
 
-        // Maximum number of entries to fit in 255 bytes
+        //!
+        //! Maximum number of services entries to fit in 255 bytes.
+        //!
         static const size_t MAX_ENTRIES = 63;
 
         // LogicalChannelNumberDescriptor public members:
-        EntryList entries;
+        EntryList entries;  //!< List of service entries.
 
-        // Default constructor:
+        //!
+        //! Default constructor.
+        //!
         LogicalChannelNumberDescriptor();
 
-        // Constructor from a binary descriptor
-        LogicalChannelNumberDescriptor (const Descriptor&);
+        //!
+        //! Constructor from a binary descriptor
+        //! @param [in] bin A binary descriptor to deserialize.
+        //!
+        LogicalChannelNumberDescriptor(const Descriptor& bin);
 
-        // Constructor using a variable-length argument list.
-        // Each entry is described by 2 arguments: service_id and lcn.
-        // All services are marked as visible by default.
-        // All arguments are int, not uint16_t, since integer literals are int
-        // by default. The end of the argument list must be marked by -1.
-        LogicalChannelNumberDescriptor (int service_id, int lcn, ...);
+        //!
+        //! Constructor using a variable-length argument list.
+        //! Each entry is described by 2 arguments: @a service_id and @ lcn.
+        //! All services are marked as visible by default.
+        //! All arguments are int, not uint16_t, since integer literals are int
+        //! by default. The end of the argument list must be marked by -1.
+        //! @param [in] service_id Service id.
+        //! @param [in] lcn Logical channel number.
+        //!
+        LogicalChannelNumberDescriptor(int service_id, int lcn, ...);
 
         // Inherited methods
-        virtual void serialize (Descriptor&) const;
-        virtual void deserialize (const Descriptor&);
+        virtual void serialize(Descriptor&) const;
+        virtual void deserialize(const Descriptor&);
     };
 }

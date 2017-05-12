@@ -37,7 +37,10 @@
 #include "tsRandomGenerator.h"
 
 namespace ts {
-
+    //!
+    //! System-provided PRNG (pseudo-random numbers generator).
+    //! Usually not the best PRNG on earth, but fine for most usages.
+    //!
     class TSDUCKDLL SystemRandomGenerator: public RandomGenerator
     {
     public:
@@ -46,8 +49,14 @@ namespace ts {
         virtual bool ready() const;
         virtual bool read (void*, size_t);
 
-        // Constructor / destructor
+        //!
+        //! Constructor.
+        //!
         SystemRandomGenerator();
+
+        //!
+        //! Virtual destructor
+        //!
         virtual ~SystemRandomGenerator();
 
     private:

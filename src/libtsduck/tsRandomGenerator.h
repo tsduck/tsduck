@@ -36,22 +36,39 @@
 #include "tsPlatform.h"
 
 namespace ts {
-
+    //!
+    //! Abstract base class for PRNG's (pseudo-random numbers generators).
+    //!
     class TSDUCKDLL RandomGenerator
     {
     public:
-        // Seed (add entropy) to the PRNG
-        // Return true on success, false on error.
-        virtual bool seed (const void*, size_t) = 0;
+        //!
+        //! Seed (add entropy) to the PRNG.
+        //! @param [in] addr Address of entropy data.
+        //! @param [in] size Size in bytes of entropy data.
+        //! @return True on success, false on error.
+        //!
+        virtual bool seed(const void* addr, size_t size) = 0;
 
-        // Check if PRNG is ready. If not ready, must be seeded again.
+        //!
+        //! Check if the PRNG is ready.
+        //! If not ready, it must be seeded again.
+        //! @return True if the PRNG is ready.
+        //!
         virtual bool ready() const = 0;
 
-        // Get random data.
-        // Return true on success, false on error.
-        virtual bool read (void*, size_t) = 0;
+        //!
+        //! Get random data.
+        //! @param [out] addr Address of returned random data.
+        //! @param [in] size Requested size in bytes of random data.
+        //! The method always fill the buffer.
+        //! @return True on success, false on error.
+        //!
+        virtual bool read(void* addr, size_t size) = 0;
 
-        // Virtual destructor
+        //!
+        //! Virtual destructor
+        //!
         virtual ~RandomGenerator() {}
     };
 }

@@ -36,30 +36,54 @@
 #include "tsAbstractTransportListTable.h"
 
 namespace ts {
-
+    //!
+    //! Representation of a Network Information Table (NIT)
+    //!
     class TSDUCKDLL NIT : public AbstractTransportListTable
     {
     public:
         // NIT public members:
-        uint16_t& network_id;  // network identifier
+        uint16_t& network_id;  //!< Network identifier.
 
-        // Default constructor:
-        NIT(bool is_actual_ = true, uint8_t version_ = 0, bool is_current_ = true, uint16_t network_id = 0) :
-            AbstractTransportListTable(uint8_t(is_actual_ ? TID_NIT_ACT : TID_NIT_OTH), network_id, version_, is_current_),
+        //!
+        //! Default constructor.
+        //! @param [in] is_actual True for NIT Actual Network, false for NIT Other Network.
+        //! @param [in] version Table version number.
+        //! @param [in] is_current True if table is current, false if table is next.
+        //! @param [in] net_id Network identifier.
+        //!
+        NIT(bool is_actual = true, uint8_t version = 0, bool is_current = true, uint16_t net_id = 0) :
+            AbstractTransportListTable(uint8_t(is_actual ? TID_NIT_ACT : TID_NIT_OTH), net_id, version, is_current),
             network_id(_tid_ext)
         {
         }
 
-        // Constructor from a binary table
+        //!
+        //! Constructor from a binary table.
+        //! @param [in] table Binary table to deserialize.
+        //!
         NIT(const BinaryTable& table) :
             AbstractTransportListTable(TID_NIT_ACT, table),  // TID updated by Deserialize
             network_id(_tid_ext)
         {
         }            
 
-        // Check/set if this is an "actual" NIT.
-        // True means "NIT Actual", false means "NIT Other"
-        bool isActual() const {return _table_id == TID_NIT_ACT;}
-        void setActual(bool is_actual) {_table_id = uint8_t(is_actual ? TID_NIT_ACT : TID_NIT_OTH);}
+        //!
+        //! Check if this is an "actual" NIT.
+        //! @return True for NIT Actual Network, false for NIT Other Network.
+        //!
+        bool isActual() const
+        {
+            return _table_id == TID_NIT_ACT;
+        }
+        
+        //!
+        //! Set if this is an "actual" NIT.
+        //! @param [in] is_actual True for NIT Actual Network, false for NIT Other Network.
+        //!
+        void setActual(bool is_actual)
+        {
+            _table_id = uint8_t(is_actual ? TID_NIT_ACT : TID_NIT_OTH);
+        }
     };
 }

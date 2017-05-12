@@ -36,42 +36,70 @@
 #include "tsAbstractDescriptor.h"
 
 namespace ts {
-
+    //!
+    //! Representation of a service_list_descriptor
+    //! @see ETSI 300 468, 6.2.35.
+    //!
     class TSDUCKDLL ServiceListDescriptor : public AbstractDescriptor
     {
     public:
-        // Service entry
+        //!
+        //! Service entry.
+        //!
         struct TSDUCKDLL Entry
         {
             // Public members
-            uint16_t service_id;
-            uint8_t  service_type;
+            uint16_t service_id;     //!< Service id.
+            uint8_t  service_type;   //!< Service type.
 
-            // Contructor
-            Entry (uint16_t id = 0, uint8_t type = 0): service_id (id), service_type (type) {}
+            //!
+            //! Default constructor.
+            //! @param [in] id Service id.
+            //! @param [in] type Service type.
+            //!
+            Entry(uint16_t id = 0, uint8_t type = 0) :
+                service_id(id),
+                service_type(type)
+            {
+            }
         };
+
+        //!
+        //! List of service entries.
+        //!
         typedef std::list<Entry> EntryList;
-            
-        // Maximum number of entries to fit in 255 bytes
+
+        //!
+        //! Maximum number of entries to fit in 255 bytes.
+        //!
         static const size_t MAX_ENTRIES = 85;
 
         // ServiceListDescriptor public members:
-        EntryList entries;
+        EntryList entries;  //! The list of service entries.
 
-        // Default constructor:
+        //!
+        //! Default constructor.
+        //!
         ServiceListDescriptor();
 
-        // Constructor using a variable-length argument list.
-        // Each entry is described by 2 arguments: service_id and service_type.
-        // All arguments are int, not uint16_t or uint8_t, since integer literals
-        // are int by default. The end of the argument list must be marked by -1.
-        ServiceListDescriptor (int service_id, int service_type, ...);
+        //!
+        //! Constructor using a variable-length argument list.
+        //! Each entry is described by 2 arguments: @a service_id and @ service_type.
+        //! All arguments are int, not uint16_t, since integer literals are int
+        //! by default. The end of the argument list must be marked by -1.
+        //! @param [in] service_id Service id.
+        //! @param [in] service_type Service type.
+        //!
+        ServiceListDescriptor(int service_id, int service_type, ...);
 
-        // Constructor from a binary descriptor
-        ServiceListDescriptor (const Descriptor&);
+        //!
+        //! Constructor from a binary descriptor
+        //! @param [in] bin A binary descriptor to deserialize.
+        //!
+        ServiceListDescriptor(const Descriptor& bin);
 
         // Inherited methods
-        virtual void serialize (Descriptor&) const;
-        virtual void deserialize (const Descriptor&);
+        virtual void serialize(Descriptor&) const;
+        virtual void deserialize(const Descriptor&);
     };
 }

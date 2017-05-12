@@ -36,21 +36,30 @@
 #include "tsAbstractDescriptor.h"
 
 namespace ts {
-
+    //!
+    //! Representation of a network_name_descriptor
+    //! @see ETSI 300 468, 6.2.27.
+    //!
     class TSDUCKDLL NetworkNameDescriptor : public AbstractDescriptor
     {
     public:
         // NetworkNameDescriptor public members:
-        std::string name;
+        std::string name; //!< Network name.
 
-        // Default constructor:
-        NetworkNameDescriptor (const std::string& = "");
+        //!
+        //! Default constructor.
+        //! @param [in] name Network name.
+        //!
+        NetworkNameDescriptor(const std::string& name = "");
 
-        // Constructor from a binary descriptor
-        NetworkNameDescriptor (const Descriptor&);
+        //!
+        //! Constructor from a binary descriptor
+        //! @param [in] bin A binary descriptor to deserialize.
+        //!
+        NetworkNameDescriptor(const Descriptor& bin);
 
         // Inherited methods
-        virtual void serialize (Descriptor&) const;
-        virtual void deserialize (const Descriptor&);
+        virtual void serialize(Descriptor&) const;
+        virtual void deserialize(const Descriptor&);
     };
 }

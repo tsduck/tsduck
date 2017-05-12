@@ -36,29 +36,42 @@
 #include "tsAbstractLongTable.h"
 
 namespace ts {
-
+    //!
+    //! Representation of a Program Association Table (PAT)
+    //!
     class TSDUCKDLL PAT : public AbstractLongTable
     {
     public:
-        // List of PMT PID's, indexed by service_id
-        typedef std::map <uint16_t, PID> ServiceMap;
+        //!
+        //! List of PMT PID's, indexed by service_id.
+        //!
+        typedef std::map<uint16_t, PID> ServiceMap;
 
         // Public members:
-        uint16_t     ts_id;
-        PID        nit_pid; // PID for NIT
-        ServiceMap pmts;    // key=service_id, value=pmt_pid
+        uint16_t   ts_id;    //!< Transport stream id.
+        PID        nit_pid;  //!< PID for NIT.
+        ServiceMap pmts;     //!< Map of PMT PID's: key=service_id, value=pmt_pid.
 
-        // Default constructor:
-        PAT (uint8_t  version_ = 0,
-             bool   is_current_ = true,
-             uint16_t ts_id_ = 0,
-             PID    nit_pid_ = PID_NIT);
+        //!
+        //! Default constructor.
+        //! @param [in] version Table version number.
+        //! @param [in] is_current True if table is current, false if table is next.
+        //! @param [in] ts_id Transport stream identifier.
+        //! @param [in] nit_pid PID of the NIT. Default: DVB-defined PID for NIT.
+        //!
+        PAT(uint8_t  version = 0,
+            bool     is_current = true,
+            uint16_t ts_id = 0,
+            PID      nit_pid = PID_NIT);
 
-        // Constructor from a binary table
-        PAT (const BinaryTable& table);
+        //!
+        //! Constructor from a binary table.
+        //! @param [in] table Binary table to deserialize.
+        //!
+        PAT(const BinaryTable& table);
 
         // Inherited methods
-        virtual void serialize (BinaryTable& table) const;
-        virtual void deserialize (const BinaryTable& table);
+        virtual void serialize(BinaryTable& table) const;
+        virtual void deserialize(const BinaryTable& table);
     };
 }

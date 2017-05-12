@@ -38,30 +38,46 @@
 namespace ts {
 
     class TunerParametersBitrateDiffDVBT;
+
+    //!
+    //! List of TunerParametersBitrateDiffDVBT.
+    //!
     typedef std::list<TunerParametersBitrateDiffDVBT> TunerParametersBitrateDiffDVBTList;
 
     //!
-    //! A variant of DVB-T tuners parameters with an offset between a target
-    //! bitrate and their theoretical bitrate.
+    //! A variant of DVB-T tuners parameters with an offset between a target bitrate and their theoretical bitrate.
     //!
     class TSDUCKDLL TunerParametersBitrateDiffDVBT: public TunerParametersDVBT
     {
     public:
-        // Difference between a target bitrate and the theoretial bitrate for these tuner parameters.
+        //!
+        //! Difference between a target bitrate and the theoretial bitrate for these tuner parameters.
+        //!
         int bitrate_diff;
 
-        // Constructor
+        //!
+        //! Default constructor.
+        //!
         TunerParametersBitrateDiffDVBT();
 
-        // Virtual assignment
-        virtual void copy (const TunerParameters&) throw (IncompatibleTunerParametersError);
+        //!
+        //! Comparison operator for list sort.
+        //! Sort criterion: increasing order of absolute value of bitrate_diff.
+        //! @param [in] other Other instance to compare.
+        //! @return True if this object is logically less than @a other.
+        //!
+        bool operator<(const TunerParametersBitrateDiffDVBT& other) const;
 
-        // Comparison operator for list sort: increasing order of absolute value of bitrate_diff
-        bool operator< (const TunerParametersBitrateDiffDVBT&) const;
+        //!
+        //! Build a list of all possible combinations of DVB-T parameters for a target bitrate.
+        //! @param [out] params List of all possible combinations of bandwidth, constellation,
+        //! guard interval and high-priority FEC, sorted in increasing order of bitrate
+        //! difference from a @a bitrate.
+        //! @param [in] bitrate Target bitrate in bits/second.
+        //!
+        static void EvaluateToBitrate(TunerParametersBitrateDiffDVBTList& params, BitRate bitrate);
 
-        // Build a list of all possible combinations of bandwidth, constellation, guard interval
-        // and high-priority FEC, sorted in increasing order of bitrate difference from a given
-        // target bitrate.
-        static void EvaluateToBitrate (TunerParametersBitrateDiffDVBTList&, BitRate);
+        // Reimplemented from TunerParametersDVBT
+        virtual void copy(const TunerParameters&) throw(IncompatibleTunerParametersError);
     };
 }

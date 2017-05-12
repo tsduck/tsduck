@@ -36,21 +36,30 @@
 #include "tsAbstractDescriptor.h"
 
 namespace ts {
-
+    //!
+    //! Representation of a private_data_specifier_descriptor
+    //! @see ETSI 300 468, 6.2.31.
+    //!
     class TSDUCKDLL PrivateDataSpecifierDescriptor : public AbstractDescriptor
     {
     public:
         // Public members:
-        PDS pds;
+        PDS pds; //!< Private data specifier.
 
-        // Default constructor:
-        PrivateDataSpecifierDescriptor (PDS pds_ = 0);
+        //!
+        //! Default constructor.
+        //! @param [in] pds Private data specifier.
+        //!
+        PrivateDataSpecifierDescriptor(PDS pds = 0);
 
-        // Constructor from a binary descriptor
-        PrivateDataSpecifierDescriptor (const Descriptor&);
+        //!
+        //! Constructor from a binary descriptor
+        //! @param [in] bin A binary descriptor to deserialize.
+        //!
+        PrivateDataSpecifierDescriptor(const Descriptor& bin);
 
         // Inherited methods
-        virtual void serialize (Descriptor&) const;
-        virtual void deserialize (const Descriptor&);
+        virtual void serialize(Descriptor&) const;
+        virtual void deserialize(const Descriptor&);
     };
 }

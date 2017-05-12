@@ -37,7 +37,6 @@
 #include "tsSingletonManager.h"
 
 namespace ts {
-
     //!
     //! A singleton implementing ReportInterface on std::cerr without synchronization.
     //!
@@ -48,7 +47,9 @@ namespace ts {
         tsDeclareSingleton(CerrReport);
 
     public:
+        //!
         //! Destructor
+        //!
         virtual ~CerrReport();
 
     protected:

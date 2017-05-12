@@ -36,20 +36,24 @@
 #include "tsTunerParameters.h"
 
 namespace ts {
-
+    //!
+    //! ATSC (terrestrial, cable) tuners parameters
+    //!
     class TSDUCKDLL TunerParametersATSC: public TunerParameters
     {
     public:
         // Public fields
-        uint64_t            frequency;  // Carrier frequency, in Hz.
-        SpectralInversion inversion;  // Spectral inversion, should be SPINV_AUTO.
-        Modulation        modulation;
+        uint64_t          frequency;  //!< Carrier frequency, in Hz.
+        SpectralInversion inversion;  //!< Spectral inversion, should be SPINV_AUTO.
+        Modulation        modulation; //!< Modulation type.
 
         // Default values
-        static const SpectralInversion DEFAULT_INVERSION = SPINV_AUTO;
-        static const Modulation DEFAULT_MODULATION = VSB_8;
+        static const SpectralInversion DEFAULT_INVERSION  = SPINV_AUTO;  //!< Default value for inversion.
+        static const Modulation        DEFAULT_MODULATION = VSB_8;       //!< Default value formodulation.
 
-        // Constructor
+        //!
+        //! Default constructor.
+        //!
         TunerParametersATSC();
 
         // Implementation of TunerParameters API

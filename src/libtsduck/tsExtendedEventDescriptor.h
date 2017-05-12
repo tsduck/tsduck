@@ -47,13 +47,15 @@ namespace ts {
         // Item entry
         struct Entry;
 
+        //!
         //! A list of item entries.
+        //!
         typedef std::list<Entry> EntryList;
 
         // Public members
         uint8_t     descriptor_number;      //!< See ETSI 300 468, 6.2.15.
         uint8_t     last_descriptor_number; //!< See ETSI 300 468, 6.2.15.
-        std::string language_code;          //!< 3 characters, see ETSI 300 468, 6.2.15.
+        std::string language_code;          //!< ISO-639 language code, 3 characters.
         EntryList   entries;                //!< The list of item entries.
         std::string text;                   //!< See ETSI 300 468, 6.2.15.
 

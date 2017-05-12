@@ -37,25 +37,38 @@
 #include "tsAbstractDescriptor.h"
 
 namespace ts {
-
+    //!
+    //! Representation of a generic linkage_descriptor.
+    //! Specialized classes exist, depending on the linkage type.
+    //! @see ETSI 300 468, 6.2.19.
+    //!
     class TSDUCKDLL LinkageDescriptor : public AbstractDescriptor
     {
     public:
         // LinkageDescriptor public members:
-        uint16_t    ts_id;      // transport_stream_id
-        uint16_t    onetw_id;   // original_network_id
-        uint16_t    service_id;
-        uint8_t     linkage_type;
-        ByteBlock private_data;
+        uint16_t    ts_id;         //!< Transport stream id.
+        uint16_t    onetw_id;      //!< Original network id.
+        uint16_t    service_id;    //!< Service id.
+        uint8_t     linkage_type;  //!< Linkage type, LINKAGE_* constants, eg ts::LINKAGE_INFO.
+        ByteBlock   private_data;  //!< Private data, depends on linkage type.
 
-        // Default constructor:
-        LinkageDescriptor (uint16_t ts = 0, uint16_t onetw = 0, uint16_t service = 0, uint8_t ltype = 0);
+        //!
+        //! Default constructor
+        //! @param [in] ts Transport stream id.
+        //! @param [in] onetw Original network id.
+        //! @param [in] service Service id.
+        //! @param [in] ltype Linkage type.
+        //!
+        LinkageDescriptor(uint16_t ts = 0, uint16_t onetw = 0, uint16_t service = 0, uint8_t ltype = 0);
 
-        // Constructor from a binary descriptor
-        LinkageDescriptor (const Descriptor&);
+        //!
+        //! Constructor from a binary descriptor
+        //! @param [in] bin A binary descriptor to deserialize.
+        //!
+        LinkageDescriptor(const Descriptor& bin);
 
         // Inherited methods
-        virtual void serialize (Descriptor&) const;
-        virtual void deserialize (const Descriptor&);
+        virtual void serialize(Descriptor&) const;
+        virtual void deserialize(const Descriptor&);
     };
 }

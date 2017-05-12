@@ -36,32 +36,36 @@
 #include "tsTunerParameters.h"
 
 namespace ts {
-
+    //!
+    //! DVB-T (terrestrial, OFDM) tuners parameters
+    //!
     class TSDUCKDLL TunerParametersDVBT: public TunerParameters
     {
     public:
         // Public fields
-        uint64_t            frequency;          // Carrier frequency, in Hz.
-        SpectralInversion inversion;          // Spectral inversion, should be SPINV_AUTO.
-        BandWidth         bandwidth;
-        InnerFEC          fec_hp;             // High priority stream code rate
-        InnerFEC          fec_lp;             // Low priority stream code rate
-        Modulation        modulation;         // Constellation (modulation type)
-        TransmissionMode  transmission_mode;
-        GuardInterval     guard_interval;
-        Hierarchy         hierarchy;
+        uint64_t          frequency;          //!< Carrier frequency, in Hz.
+        SpectralInversion inversion;          //!< Spectral inversion, should be SPINV_AUTO.
+        BandWidth         bandwidth;          //!< Bandwidth.
+        InnerFEC          fec_hp;             //!< High priority stream code rate.
+        InnerFEC          fec_lp;             //!< Low priority stream code rate.
+        Modulation        modulation;         //!< Constellation (modulation type).
+        TransmissionMode  transmission_mode;  //!< Transmission mode.
+        GuardInterval     guard_interval;     //!< Guard interval.
+        Hierarchy         hierarchy;          //!< Hierarchy.
 
         // Default values
-        static const SpectralInversion DEFAULT_INVERSION = SPINV_AUTO;
-        static const BandWidth DEFAULT_BANDWIDTH = BW_8_MHZ;
-        static const InnerFEC DEFAULT_FEC_HP = FEC_AUTO;
-        static const InnerFEC DEFAULT_FEC_LP = FEC_AUTO;
-        static const Modulation DEFAULT_MODULATION = QAM_64;
-        static const TransmissionMode DEFAULT_TRANSMISSION_MODE = TM_8K;
-        static const GuardInterval DEFAULT_GUARD_INTERVAL = GUARD_1_32;
-        static const Hierarchy DEFAULT_HIERARCHY = HIERARCHY_NONE;
+        static const SpectralInversion DEFAULT_INVERSION         = SPINV_AUTO;      //!< Default value for inversion.
+        static const BandWidth         DEFAULT_BANDWIDTH         = BW_8_MHZ;        //!< Default value for bandwidth.
+        static const InnerFEC          DEFAULT_FEC_HP            = FEC_AUTO;        //!< Default value for fec_hp.
+        static const InnerFEC          DEFAULT_FEC_LP            = FEC_AUTO;        //!< Default value for fec_lp.
+        static const Modulation        DEFAULT_MODULATION        = QAM_64;          //!< Default value for modulation.
+        static const TransmissionMode  DEFAULT_TRANSMISSION_MODE = TM_8K;           //!< Default value for transmission_mode.
+        static const GuardInterval     DEFAULT_GUARD_INTERVAL    = GUARD_1_32;      //!< Default value for guard_interval.
+        static const Hierarchy         DEFAULT_HIERARCHY         = HIERARCHY_NONE;  //!< Default value for hierarchy.
 
-        // Constructor
+        //!
+        //! Default constructor.
+        //!
         TunerParametersDVBT();
 
         // Implementation of TunerParameters API

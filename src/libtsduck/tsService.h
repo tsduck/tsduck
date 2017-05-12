@@ -38,172 +38,213 @@
 #include "tsStringUtils.h"
 
 namespace ts {
-
+    //!
+    //! Describe a DVB service.
+    //!
+    //! An instance of this class contains all possible properties of a
+    //! DVB service. But all properties are optional. They may be set and
+    //! cleared. Check the availability of a property before getting it.
+    //!
     class TSDUCKDLL Service
     {
     public:
-        // Default constructor
+        //!
+        //! Default constructor.
+        //!
         Service() {}
 
-        // Constructor using a string description.
-        // If the string evaluates to an integer (decimal or hexa),
-        // this is a service id, otherwise this is a service name.
-        Service (const std::string& desc) {set (desc);}
+        //!
+        //! Constructor using a string description.
+        //! @param [in] desc Service description string.
+        //! If the string evaluates to an integer (decimal or hexa),
+        //! this is a service id, otherwise this is a service name.
+        //!
+        Service(const std::string& desc)
+        {
+            set(desc);
+        }
 
-        // Reset using a string description.
-        // If the string evaluates to an integer (decimal or hexa),
-        // this is a service id, otherwise this is a service name.
-        void set (const std::string&);
+        //!
+        //! Reset using a string description.
+        //! @param [in] desc Service description string.
+        //! If the string evaluates to an integer (decimal or hexa),
+        //! this is a service id, otherwise this is a service name.
+        //!
+        void set(const std::string& desc);
 
-        // Clear all fields
+        //!
+        //! Clear all fields.
+        //!
         void clear();
 
-        // Service id
-        bool hasId() const {return _id.set();}
-        uint16_t getId() const {return _id.set() ? _id.value() : 0;}
-        bool hasId (uint16_t id) const {return _id == id;}
-        void setId (uint16_t id) {_id = id;}
-        void clearId() {_id.reset();}
+        // Accessors to the properties are repeated, use macros.
+#define SERVICE_PROPERTY(type,suffix,field,defvalue,fullname)           \
+        /** Check if the fullname is present.                        */ \
+        /** @return True if the fullname is present.                 */ \
+        bool has##suffix() const {return field.set();}                  \
+        /** Clear the fullname.                                      */ \
+        void clear##suffix() {field.reset();}                           \
+        /** Get the fullname.                                        */ \
+        /** @return The fullname or defvalue if unset.               */ \
+        type get##suffix() const {return field.set() ? field.value() : type(defvalue);}
+            
+#define SERVICE_PROPERTY_INT(type,suffix,field,defvalue,fullname)       \
+        SERVICE_PROPERTY(type, suffix, field, defvalue, fullname)       \
+        /** Set the fullname.                                        */ \
+        /** @param [in] value The fullname.                          */ \
+        void set##suffix(type value) {field = value;}                   \
+        /** Check if the fullname has a given value.                 */ \
+        /** @param [in] value The fullname to check.                 */ \
+        /** @return True if the fullname is equal to @a value.       */ \
+        bool has##suffix(type value) const {return field.set() && field == value;}
 
-        // Transport stream id
-        bool hasTSId() const {return _tsid.set();}
-        uint16_t getTSId() const {return _tsid.set() ? _tsid.value() : 0;}
-        bool hasTSId (uint16_t tsid) const {return _tsid == tsid;}
-        void setTSId (uint16_t tsid) {_tsid = tsid;}
-        void clearTSId() {_tsid.reset();}
+#define SERVICE_PROPERTY_STRING(suffix,field,fullname)                  \
+        SERVICE_PROPERTY(std::string, suffix, field, "", fullname)      \
+        /** Set the fullname.                                        */ \
+        /** @param [in] value The fullname.                          */ \
+        void set##suffix(const std::string& value) {field = value;}     \
+        /** Check if the fullname has a given value.                 */ \
+        /** @param [in] value The fullname to check.                 */ \
+        /** @return True if the fullname is similar to @a value,     */ \
+        /** case insensitive and ignoring blanks.                    */ \
+        bool has##suffix(const std::string& value) const {return field.set() && SimilarStrings(value, field.value());}
 
-        // Original network id
-        bool hasONId() const {return _onid.set();}
-        uint16_t getONId() const {return _onid.set() ? _onid.value() : 0;}
-        bool hasONId (uint16_t onid) const {return _onid == onid;}
-        void setONId (uint16_t onid) {_onid = onid;}
-        void clearONId() {_onid.reset();}
+        SERVICE_PROPERTY_INT(uint16_t, Id,            _id,             0,        Service Id)
+        SERVICE_PROPERTY_INT(uint16_t, TSId,          _tsid,           0,        Transport Stream Id)
+        SERVICE_PROPERTY_INT(uint16_t, ONId,          _onid,           0,        Original Network Id)
+        SERVICE_PROPERTY_INT(PID,      PMTPID,        _pmt_pid,        PID_NULL, PMT PID)
+        SERVICE_PROPERTY_INT(uint8_t,  Type,          _type,           0,        Service Type (as declared in service_descriptor))
+        SERVICE_PROPERTY_INT(uint8_t,  RunningStatus, _running_status, 0,        Running status (as declared in the SDT))
+        SERVICE_PROPERTY_INT(bool,     EITsPresent,   _eits_present,   false,    EIT schedule present (as declared in the SDT))
+        SERVICE_PROPERTY_INT(bool,     EITpfPresent,  _eitpf_present,  false,    EIT present/following present (as declared in the SDT))
+        SERVICE_PROPERTY_INT(bool,     CAControlled,  _ca_controlled,  false,    CA-controlled (as declared in the SDT))
 
-        // PMT PID
-        bool hasPMTPID() const {return _pmt_pid.set();}
-        PID getPMTPID() const {return _pmt_pid.set() ? _pmt_pid.value() : PID (PID_NULL);}
-        bool hasPMTPID (PID pid) const {return _pmt_pid == pid;}
-        void setPMTPID (PID pmt_pid) {_pmt_pid = pmt_pid;}
-        void clearPMTPID() {_pmt_pid.reset();}
+        SERVICE_PROPERTY_STRING(Name,     _name,     Service Name)
+        SERVICE_PROPERTY_STRING(Provider, _provider, Provider Name)
 
-        // Logical channel number
-        bool hasLCN() const {return _lcn.set();}
-        uint16_t getLCN() const {return _lcn.set() ? _lcn.value() : 0;}
-        bool hasLCN (uint16_t lcn) const {return _lcn == lcn;}
-        void setLCN (uint16_t lcn) {_lcn = lcn;}
-        void clearLCN() {_lcn.reset();}
+#undef SERVICE_PROPERTY
+#undef SERVICE_PROPERTY_INT
+#undef SERVICE_PROPERTY_STRING
 
-        // Service type (as defined in service_descriptor)
-        bool hasType() const {return _type.set();}
-        uint8_t getType() const {return _type.set() ? _type.value() : 0;}
-        bool hasType (uint8_t type) const {return _type == type;}
-        void setType (uint8_t type) {_type = type;}
-        void clearType() {_type.reset();}
-
-        // Service name
-        bool hasName() const {return _name.set();}
-        std::string getName() const {return _name.set() ? _name.value() : "";}
-        bool hasName (const std::string& name) const {return _name.set() && SimilarStrings (name, _name.value());}
-        void setName (const std::string& name) {_name = name;}
-        void clearName() {_name.reset();}
-
-        // Provider name
-        bool hasProvider() const {return _provider.set();}
-        std::string getProvider() const {return _provider.set() ? _provider.value() : "";}
-        bool hasProvider (const std::string& provider) const {return _provider.set() && SimilarStrings (provider, _provider.value());}
-        void setProvider (const std::string& provider) {_provider = provider;}
-        void clearProvider() {_provider.reset();}
-
-        // EIT schedule present (as declared in the SDT)
-        bool hasEITsPresent() const {return _eits_present.set();}
-        bool getEITsPresent() const {return _eits_present.set() ? _eits_present.value() : false;}
-        bool hasEITsPresent (bool eits_present) const {return _eits_present == eits_present;}
-        void setEITsPresent (bool eits_present) {_eits_present = eits_present;}
-        void clearEITsPresent() {_eits_present.reset();}
-
-        // EIT present/following present (as declared in the SDT)
-        bool hasEITpfPresent() const {return _eitpf_present.set();}
-        bool getEITpfPresent() const {return _eitpf_present.set() ? _eitpf_present.value() : false;}
-        bool hasEITpfPresent (bool eitpf_present) const {return _eitpf_present == eitpf_present;}
-        void setEITpfPresent (bool eitpf_present) {_eitpf_present = eitpf_present;}
-        void clearEITpfPresent() {_eitpf_present.reset();}
-
-        // CA-controlled (as declared in the SDT)
-        bool hasCAControlled() const {return _ca_controlled.set();}
-        bool getCAControlled() const {return _ca_controlled.set() ? _ca_controlled.value() : false;}
-        bool hasCAControlled (bool ca_controlled) const {return _ca_controlled == ca_controlled;}
-        void setCAControlled (bool ca_controlled) {_ca_controlled = ca_controlled;}
-        void clearCAControlled() {_ca_controlled.reset();}
-
-        // Running status (as declared in the SDT)
-        bool hasRunningStatus() const {return _running_status.set();}
-        uint8_t getRunningStatus() const {return _running_status.set() ? _running_status.value() : 0;}
-        bool hasRunningStatus (uint8_t running_status) const {return _running_status == running_status;}
-        void setRunningStatus (uint8_t running_status) {_running_status = running_status & 0x07;}
-        void clearRunningStatus() {_running_status.reset();}
-
-        // List of possible fields a Service may have set.
-        // Can be used as bitfield.
-        enum {
-            ID       = 0x0001,
-            TSID     = 0x0002,
-            ONID     = 0x0004,
-            PMT_PID  = 0x0008,
-            LCN      = 0x0010,
-            TYPE     = 0x0020,
-            NAME     = 0x0040,
-            PROVIDER = 0x0080,
-            EITS     = 0x0100,
-            EITPF    = 0x0200,
-            CA       = 0x0400,
-            RUNNING  = 0x0800,
+        //!
+        //! List of possible fields a Service may have set.
+        //! Can be used as bitfield.
+        //!
+        enum ServiceField : uint32_t {
+            ID       = 0x0001,  //!< Service id.
+            TSID     = 0x0002,  //!< Transport stream id.
+            ONID     = 0x0004,  //!< Original network id.
+            PMT_PID  = 0x0008,  //!< PMT PID.
+            LCN      = 0x0010,  //!< Logical channel number.
+            TYPE     = 0x0020,  //!< Service type (as defined in service_descriptor).
+            NAME     = 0x0040,  //!< Service name.
+            PROVIDER = 0x0080,  //!< Provider name.
+            EITS     = 0x0100,  //!< EIT schedule present (as declared in the SDT).
+            EITPF    = 0x0200,  //!< EIT present/following present (as declared in the SDT).
+            CA       = 0x0400,  //!< CA-controlled (as declared in the SDT).
+            RUNNING  = 0x0800,  //!< Running status (as declared in the SDT).
         };
 
-        // List of fields which are set in a Service
+        //!
+        //! Get the list of fields which are set in a Service.
+        //! @return The list of fields which are set in a Service as
+        //! an or'ed mask of ServiceField values.
+        //!
         uint32_t getFields() const;
 
-        // Sorting criterion using LCN, ONId, TSId, Id, name, provider, type, PMT PID
-        static bool Sort1 (const Service&, const Service&);
+        //!
+        //! Sorting criterion method, used by std::sort().
+        //! Sort order: LCN, ONId, TSId, Id, name, provider, type, PMT PID.
+        //!
+        //! If both objects have a given field set, sort according to this field.
+        //! If only one object has this field set, it comes first. If none of the
+        //! two objects have this field set, use to next criterion.
+        //!
+        //! @param [in] s1 First service.
+        //! @param [in] s2 First service.
+        //! @return True is @a s1 is logically less than @a s2, false otherwise.
+        //!
+        static bool Sort1(const Service& s1, const Service& s2);
 
-        // Sorting criterion using name, provider, LCN, ONId, TSId, Id, type, PMT PID
-        static bool Sort2 (const Service&, const Service&);
+        //!
+        //! Sorting criterion method, used by std::sort().
+        //! Sort order: name, provider, LCN, ONId, TSId, Id, type, PMT PID.
+        //!
+        //! If both objects have a given field set, sort according to this field.
+        //! If only one object has this field set, it comes first. If none of the
+        //! two objects have this field set, use to next criterion.
+        //!
+        //! @param [in] s1 First service.
+        //! @param [in] s2 First service.
+        //! @return True is @a s1 is logically less than @a s2, false otherwise.
+        //!
+        static bool Sort2(const Service& s1, const Service& s2);
 
-        // Sorting criterion using ONId, TSId, Id, type, name, provider, LCN, PMT PID
-        static bool Sort3 (const Service&, const Service&);
+        //!
+        //! Sorting criterion method, used by std::sort().
+        //! Sort order: ONId, TSId, Id, type, name, provider, LCN, PMT PID.
+        //!
+        //! If both objects have a given field set, sort according to this field.
+        //! If only one object has this field set, it comes first. If none of the
+        //! two objects have this field set, use to next criterion.
+        //!
+        //! @param [in] s1 First service.
+        //! @param [in] s2 First service.
+        //! @return True is @a s1 is logically less than @a s2, false otherwise.
+        //!
+        static bool Sort3(const Service& s1, const Service& s2);
 
-        // Display a container of services.
-        template <class ITERATOR>
-        static std::ostream& Display (std::ostream&,
-                                      const std::string& margin,
-                                      const ITERATOR& begin,
-                                      const ITERATOR& end,
-                                      bool header = true);
+        //!
+        //! Display a container of services, one line per service.
+        //! @tparam ITERATOR An iterator class in the container.
+        //! @param [in,out] strm Output text stream.
+        //! @param [in] margin The string to print as left margin.
+        //! @param [in] begin Iterator to the first object to display.
+        //! @param [in] end Iterator after the last object to display.
+        //! @param [in] header If true, display a header line first.
+        //! @return A reference to @a strm.
+        //!
+        template<class ITERATOR>
+        static std::ostream& Display(std::ostream& strm,
+                                     const std::string& margin,
+                                     const ITERATOR& begin,
+                                     const ITERATOR& end,
+                                     bool header = true);
 
-        template <class CONTAINER>
-        static std::ostream& Display (std::ostream& strm, const std::string& margin, const CONTAINER& container, bool header = true)
+        //!
+        //! Display a container of services, one line per service.
+        //! @tparam CONTAINER  A container class.
+        //! @param [in,out] strm Output text stream.
+        //! @param [in] margin The string to print as left margin.
+        //! @param [in] container Container of services to display.
+        //! @param [in] header If true, display a header line first.
+        //! @return A reference to @a strm.
+        //!
+        template<class CONTAINER>
+        static std::ostream& Display(std::ostream& strm, const std::string& margin, const CONTAINER& container, bool header = true)
         {
-            return Display (strm, margin, container.begin(), container.end(), header);
+            return Display(strm, margin, container.begin(), container.end(), header);
         }
 
     private:
-        Variable <uint16_t>      _id;
-        Variable <uint16_t>      _tsid;
-        Variable <uint16_t>      _onid;
+        Variable <uint16_t>    _id;
+        Variable <uint16_t>    _tsid;
+        Variable <uint16_t>    _onid;
         Variable <PID>         _pmt_pid;
-        Variable <uint16_t>      _lcn;
-        Variable <uint8_t>       _type;
+        Variable <uint16_t>    _lcn;
+        Variable <uint8_t>     _type;
         Variable <std::string> _name;
         Variable <std::string> _provider;
         Variable <bool>        _eits_present;
         Variable <bool>        _eitpf_present;
         Variable <bool>        _ca_controlled;
-        Variable <uint8_t>       _running_status;
+        Variable <uint8_t>     _running_status;
     };
 
     // Containers
-    typedef std::vector<Service> ServiceVector;
-    typedef std::list<Service> ServiceList;
-    typedef std::set<Service> ServiceSet;
+    typedef std::vector<Service> ServiceVector;  //!< Vector of DVB services.
+    typedef std::list<Service> ServiceList;      //!< List of DVB services.
+    typedef std::set<Service> ServiceSet;        //!< Set of DVB services.
 }
 
 #include "tsServiceTemplate.h"

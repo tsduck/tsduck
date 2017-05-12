@@ -37,35 +37,39 @@
 #include "tsLNB.h"
 
 namespace ts {
-
+    //!
+    //! DVB-S / DVB-S2 (satellite) tuners parameters.
+    //!
     class TSDUCKDLL TunerParametersDVBS: public TunerParameters
     {
     public:
         // Public fields
-        uint64_t          frequency;          // Satellite carrier frequency, in Hz.
-        Polarization      polarity;           // Polarity (POL_HORIZONTAL or POL_VERTICAL only)
-        LNB               lnb;                // Local dish LNB for frequency adjustment
-        SpectralInversion inversion;          // Spectral inversion, should be SPINV_AUTO.
-        uint32_t          symbol_rate;        // Symbol rate
-        InnerFEC          inner_fec;          // Error correction
-        size_t            satellite_number;   // For DiSeqC (usually 0)
-        DeliverySystem    delivery_system;    // Must be one of: DS_DVB_S, DS_DVB_S2
-        Modulation        modulation;         // QPSK for DVB-S, QPSK or PSK_8 for DVB-S2
-        Pilot             pilots;             // Presence of pilots (DVB-S2 only)
-        RollOff           roll_off;           // Roll-off factor (DVB-S2 only)
+        uint64_t          frequency;          //!< Satellite carrier frequency, in Hz.
+        Polarization      polarity;           //!< Polarity (POL_HORIZONTAL or POL_VERTICAL only).
+        LNB               lnb;                //!< Local dish LNB for frequency adjustment.
+        SpectralInversion inversion;          //!< Spectral inversion, should be SPINV_AUTO..
+        uint32_t          symbol_rate;        //!< Symbol rate.
+        InnerFEC          inner_fec;          //!< Error correction.
+        size_t            satellite_number;   //!< For DiSeqC (usually 0).
+        DeliverySystem    delivery_system;    //!< Must be one of: DS_DVB_S, DS_DVB_S2.
+        Modulation        modulation;         //!< QPSK for DVB-S, QPSK or PSK_8 for DVB-S2.
+        Pilot             pilots;             //!< Presence of pilots (DVB-S2 only).
+        RollOff           roll_off;           //!< Roll-off factor (DVB-S2 only).
 
         // Default values
-        static const Polarization DEFAULT_POLARITY = POL_VERTICAL;
-        static const SpectralInversion DEFAULT_INVERSION = SPINV_AUTO;
-        static const uint32_t DEFAULT_SYMBOL_RATE = 27500000;
-        static const InnerFEC DEFAULT_INNER_FEC = FEC_AUTO;
-        static const size_t DEFAULT_SATELLITE_NUMBER = 0;
-        static const DeliverySystem DEFAULT_DELIVERY_SYSTEM = DS_DVB_S;
-        static const Modulation DEFAULT_MODULATION = QPSK;
-        static const Pilot DEFAULT_PILOTS = PILOT_OFF;
-        static const RollOff DEFAULT_ROLL_OFF = ROLLOFF_35; // Implied value in DVB-S, default for DVB-S2
-
-        // Constructor
+        static const Polarization      DEFAULT_POLARITY         = POL_VERTICAL; //!< Default value for polarity.
+        static const SpectralInversion DEFAULT_INVERSION        = SPINV_AUTO;   //!< Default value for inversion.
+        static const uint32_t          DEFAULT_SYMBOL_RATE      = 27500000;     //!< Default value for symbol_rate.
+        static const InnerFEC          DEFAULT_INNER_FEC        = FEC_AUTO;     //!< Default value for inner_fec.
+        static const size_t            DEFAULT_SATELLITE_NUMBER = 0;            //!< Default value for satellite_number.
+        static const DeliverySystem    DEFAULT_DELIVERY_SYSTEM  = DS_DVB_S;     //!< Default value for delivery_system.
+        static const Modulation        DEFAULT_MODULATION       = QPSK;         //!< Default value for modulation.
+        static const Pilot             DEFAULT_PILOTS           = PILOT_OFF;    //!< Default value for pilots.
+        static const RollOff           DEFAULT_ROLL_OFF         = ROLLOFF_35;   //!< Default value for roll_off.
+                                                                                //!< Implied value in DVB-S, default for DVB-S2.
+        //!
+        //! Default constructor.
+        //!
         TunerParametersDVBS();
 
         // Implementation of TunerParameters API

@@ -122,7 +122,7 @@ namespace ts {
 
         protected:
             //!
-            //! Protected contructor for subclasses.
+            //! Protected constructor for subclasses.
             //! @param [in] tag Message tag.
             //!
             Message(TAG tag) :
@@ -133,7 +133,7 @@ namespace ts {
             }
 
             //!
-            //! Protected contructor for subclasses.
+            //! Protected constructor for subclasses.
             //! @param [in] protocol_version Protocol version.
             //! @param [in] tag Message tag.
             //!

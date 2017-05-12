@@ -36,21 +36,30 @@
 #include "tsAbstractDescriptor.h"
 
 namespace ts {
-
+    //!
+    //! Representation of a stream_identifier_descriptor.
+    //! @see ETSI 300 468, 6.2.39.
+    //!
     class TSDUCKDLL StreamIdentifierDescriptor : public AbstractDescriptor
     {
     public:
         // StreamIdentifierDescriptor public members:
-        uint8_t component_tag;
+        uint8_t component_tag;  //!< Component tag.
 
-        // Default constructor:
-        StreamIdentifierDescriptor (uint8_t ctag = 0);
+        //!
+        //! Default constructor.
+        //! @param [in] ctag Component tag.
+        //!
+        StreamIdentifierDescriptor(uint8_t ctag = 0);
 
-        // Constructor from a binary descriptor
-        StreamIdentifierDescriptor (const Descriptor&);
+        //!
+        //! Constructor from a binary descriptor.
+        //! @param [in] bin A binary descriptor to deserialize.
+        //!
+        StreamIdentifierDescriptor(const Descriptor& bin);
 
         // Inherited methods
-        virtual void serialize (Descriptor&) const;
-        virtual void deserialize (const Descriptor&);
+        virtual void serialize(Descriptor&) const;
+        virtual void deserialize(const Descriptor&);
     };
 }

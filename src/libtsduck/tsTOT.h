@@ -38,43 +38,75 @@
 #include "tsTime.h"
 
 namespace ts {
-
+    //!
+    //! Representation of a Time Offset Table (TOT)
+    //!
     class TSDUCKDLL TOT : public AbstractTable
     {
     public:
-        // Description of one region
+        //!
+        //! Description of one region.
+        //!
         struct TSDUCKDLL Region
         {
-            std::string  country;            // Must be 3-chars long
-            unsigned int region_id;
-            int          time_offset;        // Local - UTC, in minutes
-            Time         next_change;        // UTC of next time change
-            int          next_time_offset;   // Time offset after next_change
+            std::string  country;            //!< Country code, must be 3-chars long.
+            unsigned int region_id;          //!< Region id.
+            int          time_offset;        //!< Local time minus UTC, in minutes.
+            Time         next_change;        //!< UTC of next time change.
+            int          next_time_offset;   //!< Time @ time_offset after @a next_change.
 
-            // Constructor
-            Region() : country(), region_id(0), time_offset(0), next_change(), next_time_offset(0) {}
+            //!
+            //! Default constructor.
+            //!
+            Region() :
+                country(),
+                region_id(0),
+                time_offset(0),
+                next_change(),
+                next_time_offset(0)
+            {
+            }
         };
-        typedef std::vector <Region> RegionVector;
+
+        //!
+        //! Vector of region descriptions.
+        //!
+        typedef std::vector<Region> RegionVector;
 
         // Public members:
-        Time           utc_time;
-        RegionVector   regions;
-        DescriptorList descs;  // Other than local_time_offset_descriptor
+        Time           utc_time; //!< UTC time.
+        RegionVector   regions;  //!< Vector of region descriptions.
+        DescriptorList descs;    //!< Descriptor list, except local_time_offset_descriptor.
 
-        // Default constructor:
-        TOT (const Time& utc_time);
+        //!
+        //! Default constructor.
+        //! @param [in] utc_time UTC time.
+        //!
+        TOT(const Time& utc_time);
 
-        // Constructor from a binary table
-        TOT (const BinaryTable& table);
+        //!
+        //! Constructor from a binary table.
+        //! @param [in] table Binary table to deserialize.
+        //!
+        TOT(const BinaryTable& table);
 
-        // Return the local time according to a region description
-        Time localTime (const Region&) const;
+        //!
+        //! Get the local time according to a region description.
+        //! Use the UTC time from the TOT and the local time offset from the region.
+        //! @param [in] region Region to get the local time for.
+        //! @return The local time for @a region.
+        //!
+        Time localTime(const Region& region) const;
 
-        // Format a time offset in minutes
-        static std::string timeOffsetFormat (int);
+        //!
+        //! Format a time offset string.
+        //! @param minutes A time offset in minutes.
+        //! @return A string like "+hh:mm" or "-hh:mm".
+        //!
+        static std::string timeOffsetFormat(int minutes);
 
         // Inherited methods
-        virtual void serialize (BinaryTable& table) const;
-        virtual void deserialize (const BinaryTable& table);
+        virtual void serialize(BinaryTable& table) const;
+        virtual void deserialize(const BinaryTable& table);
     };
 }

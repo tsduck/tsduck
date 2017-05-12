@@ -37,31 +37,47 @@
 #include "tsDescriptorList.h"
 
 namespace ts {
-
+    //!
+    //! Representation of an short_event_descriptor.
+    //! @see ETSI 300 468, 6.2.37.
+    //!
     class TSDUCKDLL ShortEventDescriptor : public AbstractDescriptor
     {
     public:
         // Public members
-        std::string language_code;  // 3 characters
-        std::string event_name;
-        std::string text;
+        std::string language_code;  //!< ISO-639 language code, 3 characters.
+        std::string event_name;     //!< Event name.
+        std::string text;           //!< Short event description.
 
-        // Default constructor:
+        //!
+        //! Default constructor.
+        //!
         ShortEventDescriptor();
 
-        // Constructor with description
-        ShortEventDescriptor (const std::string& lang_, const std::string& name_, const std::string& text_);
+        //!
+        //! Constructor.
+        //! @param [in] lang ISO-639 language code, 3 characters.
+        //! @param [in] name Event name.
+        //! @param [in] text Short event description.
+        //!
+        ShortEventDescriptor(const std::string& lang, const std::string& name, const std::string& text);
 
-        // Constructor from a binary descriptor
-        ShortEventDescriptor (const Descriptor&);
+        //!
+        //! Constructor from a binary descriptor.
+        //! @param [in] bin A binary descriptor to deserialize.
+        //!
+        ShortEventDescriptor(const Descriptor& bin);
 
-        // Split the content into several ShortEventDescriptor if the content
-        // is too long and add them in a descriptor list. Return the number
-        // of descriptors.
-        size_t splitAndAdd (DescriptorList&) const;
+        //!
+        //! Split the content into several ShortEventDescriptor.
+        //! Split if the content is too long and add them in a descriptor list.
+        //! @param [in,out] dlist Descriptor list.
+        //! @return The number of descriptors.
+        //!
+        size_t splitAndAdd(DescriptorList& dlist) const;
 
         // Inherited methods
-        virtual void serialize (Descriptor&) const;
-        virtual void deserialize (const Descriptor&);
+        virtual void serialize(Descriptor&) const;
+        virtual void deserialize(const Descriptor&);
     };
 }
