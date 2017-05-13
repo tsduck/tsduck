@@ -38,7 +38,6 @@
 #include "tsFormat.h"
 
 namespace ts {
-
     //!
     //! Managed pointers for COM objects, auto-released (Windows-specific).
     //! @tparam COMCLASS A COM interface or object class.
@@ -312,7 +311,7 @@ namespace ts {
     };
 
     //!
-    //! Release all COM objects in a vector.
+    //! Release all COM objects in a vector (Windows-specific).
     //! Keep vector size (all elements become null pointers).
     //! @tparam COMCLASS A COM interface or object class.
     //! @param [in,out] vec A vector of COM objects to release.
@@ -326,7 +325,7 @@ namespace ts {
     }
 
     //!
-    //! Release all COM objects in a vector and clear the vector.
+    //! Release all COM objects in a vector and clear the vector (Windows-specific).
     //! @tparam COMCLASS A COM interface or object class.
     //! @param [in,out] vec A vector of COM objects to release.
     //!

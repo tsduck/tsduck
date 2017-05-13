@@ -37,7 +37,9 @@
 #include "tsException.h"
 
 namespace ts {
-
+    //!
+    //! Basic monotonic clock & timer.
+    //!
     class TSDUCKDLL Monotonic
     {
     public:
@@ -46,41 +48,147 @@ namespace ts {
         //!
         tsDeclareException(MonotonicError);
 
-        // Default constructor.
-        Monotonic() : _value (0) {init();}
+        //!
+        //! Default constructor.
+        //!
+        Monotonic() :
+            _value(0)
+        {
+            init();
+        }
 
-        // Copy constructor
-        Monotonic (const Monotonic& t) : _value (t._value) {init();}
+        //!
+        //! Copy constructor.
+        //! @param [in] t Another instance to copy.
+        //!
+        Monotonic(const Monotonic& t) :
+            _value(t._value)
+        {
+            init();
+        }
 
-        // Destructor
+        //!
+        //! Destructor.
+        //!
         ~Monotonic();
 
-        // Get system time value
+        //!
+        //! Load this object with the current system time.
+        //!
         void getSystemTime();
 
-        // Assigment
-        Monotonic& operator= (const Monotonic& t) {_value = t._value; return *this;}
+        //!
+        //! Assigment operator.
+        //! @param [in] t Another instance to copy.
+        //! @return A reference to this object.
+        //!
+        Monotonic& operator=(const Monotonic& t)
+        {
+            _value = t._value;
+            return *this;
+        }
 
-        // Comparisons
-        bool operator== (const Monotonic& t) const {return _value == t._value;}
-        bool operator!= (const Monotonic& t) const {return _value != t._value;}
-        bool operator<  (const Monotonic& t) const {return _value <  t._value;}
-        bool operator<= (const Monotonic& t) const {return _value <= t._value;}
-        bool operator>  (const Monotonic& t) const {return _value >  t._value;}
-        bool operator>= (const Monotonic& t) const {return _value >= t._value;}
+        //!
+        //! Comparison operator.
+        //! @param [in] t Another instance to compare.
+        //! @return True if this object == @a t.
+        //!
+        bool operator==(const Monotonic& t) const {return _value == t._value;}
 
-        // Arithmetic
-        Monotonic& operator+= (const NanoSecond& ns) {_value += ns / NS_PER_TICK; return *this;}
-        Monotonic& operator-= (const NanoSecond& ns) {_value -= ns / NS_PER_TICK; return *this;}
-        NanoSecond operator- (const Monotonic& t) const {return (_value - t._value) * NS_PER_TICK;}
+        //!
+        //! Comparison operator.
+        //! @param [in] t Another instance to compare.
+        //! @return True if this object != @a t.
+        //!
+        bool operator!=(const Monotonic& t) const
+        {
+            return _value != t._value;
+        }
 
-        // Wait until the time of the monotonic clock.
+        //!
+        //! Comparison operator.
+        //! @param [in] t Another instance to compare.
+        //! @return True if this object < @a t.
+        //!
+        bool operator< (const Monotonic& t) const
+        {
+            return _value <  t._value;
+        }
+
+        //!
+        //! Comparison operator.
+        //! @param [in] t Another instance to compare.
+        //! @return True if this object <= @a t.
+        //!
+        bool operator<=(const Monotonic& t) const
+        {
+            return _value <= t._value;
+        }
+
+        //!
+        //! Comparison operator.
+        //! @param [in] t Another instance to compare.
+        //! @return True if this object > @a t.
+        //!
+        bool operator> (const Monotonic& t) const
+        {
+            return _value >  t._value;
+        }
+
+        //!
+        //! Comparison operator.
+        //! @param [in] t Another instance to compare.
+        //! @return True if this object >= @a t.
+        //!
+        bool operator>=(const Monotonic& t) const
+        {
+            return _value >= t._value;
+        }
+
+        //!
+        //! Increment operator.
+        //! @param [in] ns A number of nanoseconds to add.
+        //! @return A reference to this object.
+        //!
+        Monotonic& operator+=(const NanoSecond& ns)
+        {
+            _value += ns / NS_PER_TICK;
+            return *this;
+        }
+
+        //!
+        //! Decrement operator.
+        //! @param [in] ns A number of nanoseconds to substract.
+        //! @return A reference to this object.
+        //!
+        Monotonic& operator-=(const NanoSecond& ns)
+        {
+            _value -= ns / NS_PER_TICK;
+            return *this;
+        }
+
+        //!
+        //! Difference operator.
+        //! @param [in] t Another instance.
+        //! @return The number of nanoseconds between this object and @a t. Can be negative.
+        //!
+        NanoSecond operator-(const Monotonic& t) const
+        {
+            return (_value - t._value) * NS_PER_TICK;
+        }
+
+        //!
+        //! Wait until the time of the monotonic clock.
+        //!
         void wait();
 
-        // This static method requests a minimum resolution, in nano-seconds, for the timers.
-        // Return the guaranteed value (can be equal to or greater than the requested value.
-        // Default system resolution is 20 ms on Win32, can be too long for applications.
-        static NanoSecond SetPrecision (const NanoSecond&);
+        //!
+        //! This static method requests a minimum resolution, in nano-seconds, for the timers.
+        //! @param [in] precision Requested minimum resolution in nano-seconds.
+        //! @return The guaranteed precision value (can be equal to or greater than the requested value).
+        //! The default system resolution is 20 ms on Win32, which can be too long for applications.
+        //!
+        static NanoSecond SetPrecision(const NanoSecond& precision);
 
     private:
         // Monotonic clock value in system ticks
@@ -89,7 +197,7 @@ namespace ts {
         // System-specific initialization
         void init();
 
-#if defined (__windows)
+#if defined(__windows)
         // Timer handle
         ::HANDLE _handle;
 

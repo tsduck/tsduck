@@ -36,127 +36,214 @@
 #include "tsPlatform.h"
 
 namespace ts {
-
+    //!
+    //! Description of a Low-Noise Block (LNB) converter in a satellite dish.
+    //!
+    //! Note: all frequencies are in Hz in parameters.
+    //!
+    //! Characteristics of a univeral LNB:
+    //! - Low frequency: 9.750 GHz
+    //! - High frequency: 10.600 GHz
+    //! - Switch frequency: 11.700 GHz
+    //!
     class TSDUCKDLL LNB
     {
     public:
-        // Note: all frequencies are in Hz
+        static const uint64_t UNIVERSAL_LNB_LOW_FREQUENCY    = TS_UCONST64(9750000000);  //!< Univeral LNB low frequency.
+        static const uint64_t UNIVERSAL_LNB_HIGH_FREQUENCY   = TS_UCONST64(10600000000); //!< Univeral LNB high frequency.
+        static const uint64_t UNIVERSAL_LNB_SWITCH_FREQUENCY = TS_UCONST64(11700000000); //!< Univeral LNB switch frequency.
 
-        // Characteristics of a univeral LNB:
-        // - Low frequency: 9.750 GHz
-        // - High frequency: 10.600 GHz
-        // - Switch frequency: 11.700 GHz
-        static const uint64_t UNIVERSAL_LNB_LOW_FREQUENCY    = TS_UCONST64 (9750000000);
-        static const uint64_t UNIVERSAL_LNB_HIGH_FREQUENCY   = TS_UCONST64 (10600000000);
-        static const uint64_t UNIVERSAL_LNB_SWITCH_FREQUENCY = TS_UCONST64 (11700000000);
+        static const LNB Universal; //!< Universal LNB.
+        static const LNB Null;      //!< Null LNB: satellite frequency == intermediate frequency.
 
-        // LNB constants
-        static const LNB Universal; // Universal LNB
-        static const LNB Null;      // Null LNB: satellite frequency == intermediate frequency
-
-        // Default constructor.
-        // The object is initialized with the characteristics of a univeral LNB, which are:
-        // - Low frequency: 9.750 GHz
-        // - High frequency: 10.600 GHz
-        // - Switch frequency: 11.700 GHz
+        //!
+        //! Default constructor.
+        //! The object is initialized with the characteristics of a univeral LNB.
+        //!
         LNB() :
-            _low_frequency    (UNIVERSAL_LNB_LOW_FREQUENCY),
-            _high_frequency   (UNIVERSAL_LNB_HIGH_FREQUENCY),
-            _switch_frequency (UNIVERSAL_LNB_SWITCH_FREQUENCY)
+            _low_frequency(UNIVERSAL_LNB_LOW_FREQUENCY),
+            _high_frequency(UNIVERSAL_LNB_HIGH_FREQUENCY),
+            _switch_frequency(UNIVERSAL_LNB_SWITCH_FREQUENCY)
         {
         }
 
-        // Constructor of an LNB without high band.
-        LNB (uint64_t frequency) :
-            _low_frequency    (frequency),
-            _high_frequency   (0),
-            _switch_frequency (0)
+        //!
+        //! Constructor of an LNB without high band.
+        //! @param [in] frequency Low frequency.
+        //!
+        LNB(uint64_t frequency) :
+            _low_frequency(frequency),
+            _high_frequency(0),
+            _switch_frequency(0)
         {
         }
 
-        // Constructor of an LNB with low and high band.
-        LNB (uint64_t low_frequency, uint64_t high_frequency, uint64_t switch_frequency) :
-            _low_frequency    (low_frequency),
-            _high_frequency   (high_frequency),
-            _switch_frequency (switch_frequency)
+        //!
+        //! Constructor of an LNB with low and high band.
+        //! @param [in] low_frequency Low frequency.
+        //! @param [in] high_frequency High frequency.
+        //! @param [in] switch_frequency Switch frequency.
+        //!
+        LNB(uint64_t low_frequency, uint64_t high_frequency, uint64_t switch_frequency) :
+            _low_frequency(low_frequency),
+            _high_frequency(high_frequency),
+            _switch_frequency(switch_frequency)
         {
         }
 
-        // Constructor from a normalized representation of an LNB:
-        // - "freq" if the LNB has not high band.
-        // - "low,high,switch" if the LNB has a high band.
-        // In strings, all values are in MHz.
-        // All frequencies are set to zero in case of error.
-        LNB (const char* s) :
-            _low_frequency    (0),
-            _high_frequency   (0),
-            _switch_frequency (0)
+        //!
+        //! Constructor from a normalized string representation of an LNB.
+        //! @param [in] s Normalized string representation of the LNB.
+        //! In strings, all values are in MHz. All frequencies are set to zero in case of error.
+        //! - "freq" if the LNB has no high band.
+        //! - "low,high,switch" if the LNB has a high band.
+        //!
+        LNB(const char* s) :
+            _low_frequency(0),
+            _high_frequency(0),
+            _switch_frequency(0)
         {
-            set (s);
-        }
-        LNB (const std::string& s)  :
-            _low_frequency    (0),
-            _high_frequency   (0),
-            _switch_frequency (0)
-        {
-            set (s);
+            set(s);
         }
 
-        // Check if valid (typically after initializing or converting from string)
-        bool isValid() const {return _low_frequency > 0;}
+        //!
+        //! Constructor from a normalized string representation of an LNB.
+        //! @param [in] s Normalized string representation of the LNB.
+        //! In strings, all values are in MHz. All frequencies are set to zero in case of error.
+        //! - "freq" if the LNB has no high band.
+        //! - "low,high,switch" if the LNB has a high band.
+        //!
+        LNB(const std::string& s)  :
+            _low_frequency(0),
+            _high_frequency(0),
+            _switch_frequency(0)
+        {
+            set(s);
+        }
 
-        // Get the frequencies
-        uint64_t lowFrequency() const {return _low_frequency;}
-        uint64_t highFrequency() const {return _high_frequency;}
-        uint64_t switchFrequency() const {return _switch_frequency;}
+        //!
+        //! Check if valid (typically after initializing or converting from string).
+        //! @return True if valid.
+        //!
+        bool isValid() const
+        {
+            return _low_frequency > 0;
+        }
 
-        // Check if the LNB has a high band
-        bool hasHighBand() const {return _high_frequency > 0 && _switch_frequency > 0;}
+        //!
+        //! Get the LNB low frequency.
+        //! @return The LNB low frequency.
+        //!
+        uint64_t lowFrequency() const
+        {
+            return _low_frequency;
+        }
 
-        // Check if the specified satellite carrier frequency uses the high band of the LNB.
-        bool useHighBand (uint64_t satellite_frequency) const {return hasHighBand() && satellite_frequency >= _switch_frequency;}
+        //!
+        //! Get the LNB high frequency.
+        //! @return The LNB high frequency.
+        //!
+        uint64_t highFrequency() const
+        {
+            return _high_frequency;
+        } 
 
-        // Compute the intermediate frequency from a satellite carrier
-        // frequency.
-        // The satellite carrier frequency is used to carry the signal from the
-        // satellite to the dish. This value is public and is stored in the NIT
-        // for instance. The intermediate frequency is used to carry the signal
-        // from the dish's LNB to the receiver. The way this frequency is
-        // computed depends on the characteristics of the LNB. The intermediate
-        // frequency is the one that is used by the tuner in the satellite
-        // receiver.
-        uint64_t intermediateFrequency (uint64_t satellite_frequency) const;
+        //!
+        //! Get the LNB switch frequency.
+        //! @return The LNB switch frequency.
+        //!
+        uint64_t switchFrequency() const
+        {
+            return _switch_frequency;
+        }
+
+        //!
+        //! Check if the LNB has a high band.
+        //! @return True if the LNB has a high ban.
+        //!
+        bool hasHighBand() const
+        {
+            return _high_frequency > 0 && _switch_frequency > 0;
+        }
+
+        //!
+        //! Check if the specified satellite carrier frequency uses the high band of the LNB.
+        //! @param [in] satellite_frequency Satellite carrier frequency in Hz.
+        //! @return True if @a satellite_frequency is in the high ban of the LBN.
+        //!
+        bool useHighBand(uint64_t satellite_frequency) const {return hasHighBand() && satellite_frequency >= _switch_frequency;}
+
+        //!
+        //! Compute the intermediate frequency from a satellite carrier frequency.
+        //!
+        //! The satellite carrier frequency is used to carry the signal from the
+        //! satellite to the dish. This value is public and is stored in the NIT
+        //! for instance. The intermediate frequency is used to carry the signal
+        //! from the dish's LNB to the receiver. The way this frequency is
+        //! computed depends on the characteristics of the LNB. The intermediate
+        //! frequency is the one that is used by the tuner in the satellite
+        //! receiver.
+        //!
+        //! @param [in] satellite_frequency Satellite carrier frequency in Hz.
+        //! @return Intermediate frequency between the LNB and the tuner.
+        //!
+        uint64_t intermediateFrequency(uint64_t satellite_frequency) const;
     
-        // Convert to a string object
-        // Return a normalized representation of the LNB:
-        // - "freq" if the LNB has not high band.
-        // - "low,high,switch" if the LNB has a high band.
-        // In strings, all values are in MHz.
+        //!
+        //! Convert the LNB to a string object
+        //! @return A normalized representation of the LNB. All values are in MHz.
+        //! - "freq" if the LNB has no high band.
+        //! - "low,high,switch" if the LNB has a high band.
+        //!
         operator std::string() const;
 
-        // Interpret a string as an LNB value.
-        // Return true on success, false on error.
-        // All frequencies are set to zero in case of error.
-        bool set (const char*);
-        bool set (const std::string& s) {return set(s.c_str());}
+        //!
+        //! Interpret a string as an LNB value.
+        //! @param [in] s Normalized string representation of the LNB.
+        //! In strings, all values are in MHz. All frequencies are set to zero in case of error.
+        //! - "freq" if the LNB has no high band.
+        //! - "low,high,switch" if the LNB has a high band.
+        //! @return True on success, false on error.
+        //!
+        bool set(const char* s);
 
-        // Set values of an LNB without high band.
-        void set (uint64_t frequency)
+        //!
+        //! Interpret a string as an LNB value.
+        //! @param [in] s Normalized string representation of the LNB.
+        //! In strings, all values are in MHz. All frequencies are set to zero in case of error.
+        //! - "freq" if the LNB has no high band.
+        //! - "low,high,switch" if the LNB has a high band.
+        //! @return True on success, false on error.
+        //!
+        bool set(const std::string& s) {return set(s.c_str());}
+
+        //!
+        //! Set values of an LNB without high band.
+        //! @param [in] frequency Low frequency.
+        //!
+        void set(uint64_t frequency)
         {
             _low_frequency    = frequency;
             _high_frequency   = 0;
             _switch_frequency = 0;
         }
 
-        // Set values of an LNB with low and high band.
-        void set (uint64_t low_frequency, uint64_t high_frequency, uint64_t switch_frequency)
+        //!
+        //! Set values of an LNB with low and high band.
+        //! @param [in] low_frequency Low frequency.
+        //! @param [in] high_frequency High frequency.
+        //! @param [in] switch_frequency Switch frequency.
+        //!
+        void set(uint64_t low_frequency, uint64_t high_frequency, uint64_t switch_frequency)
         {
             _low_frequency    = low_frequency;
             _high_frequency   = high_frequency;
             _switch_frequency = switch_frequency;
         }
 
-        // Set values of a univeral LNB.
+        //!
+        //! Set values of a univeral LNB.
+        //!
         void setUniversalLNB()
         {
             _low_frequency    = UNIVERSAL_LNB_LOW_FREQUENCY;
@@ -172,8 +259,13 @@ namespace ts {
     };
 }
 
-// Output operator
-TSDUCKDLL inline std::ostream& operator<< (std::ostream& strm, const ts::LNB& lnb)
+//!
+//! Output operator for LNB.
+//! @param [in,out] strm Output text stream.
+//! @param [in] lnb LNB.
+//! @return A reference to @a strm.
+//!
+TSDUCKDLL inline std::ostream& operator<<(std::ostream& strm, const ts::LNB& lnb)
 {
-    return strm << std::string (lnb);
+    return strm << std::string(lnb);
 }

@@ -30,46 +30,76 @@
 //!  @file
 //!  Windows Registry utilities (Windows-specific).
 //!
+//!  Vocabulary :
+//!  - Key        : Node of the registry (kind of "directory").
+//!  - Value_Name : Name of a value in a key.
+//!  - Value      : Value of the Value_Name.
+//!
 //-----------------------------------------------------------------------------
 
 #pragma once
 #include "tsReportInterface.h"
 
 namespace ts {
+    //!
+    //! Get a value in a registry key as a string (Windows-specific).
+    //! @param [in] key Registry key.
+    //! @param [in] value_name Name of the value in @a key.
+    //! @return An empty string if non-existent or error.
+    //!
+    TSDUCKDLL std::string GetRegistryValue(const std::string& key, const std::string& value_name = "");
 
-    // Vocabulary :
-    //   Key        : Node of the registry (kind of "directory")
-    //   Value_Name : Name of a value in a key
-    //   Value      : Value of the Value_Name
+    //!
+    //! Set the value of a registry key (Windows-specific).
+    //! @param [in] key Registry key.
+    //! @param [in] value_name Name of the value in @a key.
+    //! @param [in] value Value to set in @a value_name.
+    //! @param [in] expandable If true, set the type to REG_EXPAND_SZ.
+    //! Otherwise, set type to REG_SZ.
+    //! @return True on success, false on error.
+    //!
+    TSDUCKDLL bool SetRegistryValue(const std::string& key,
+                                    const std::string& value_name,
+                                    const std::string& value,
+                                    bool expandable = false);
 
-    // Get a value in a registry key as a string.
-    // Return an empty string if non-existent or error.
-    TSDUCKDLL std::string GetRegistryValue (const std::string& key, const std::string& value_name = "");
+    //!
+    //! Set value of a registry key (Windows-specific).
+    //! Set the data type as REG_DWORD.
+    //! @param [in] key Registry key.
+    //! @param [in] value_name Name of the value in @a key.
+    //! @param [in] value Value to set in @a value_name.
+    //! Set the data type as REG_DWORD.
+    //! @return True on success, false on error.
+    //!
+    TSDUCKDLL bool SetRegistryValue(const std::string& key, const std::string& value_name, ::DWORD value);
 
-    // Set value of a registry key.
-    // If expandable is true, set the type to REG_EXPAND_SZ.
-    // Otherwise, set type to REG_SZ.
-    // Return true on success, false on error.
-    TSDUCKDLL bool SetRegistryValue (const std::string& key, const std::string& value_name, const std::string& value, bool expandable = false);
+    //!
+    //! Delete a value of a registry key (Windows-specific).
+    //! @param [in] key Registry key.
+    //! @param [in] value_name Name of the value in @a key.
+    //! @return True on success, false on error.
+    //!
+    TSDUCKDLL bool DeleteRegistryValue(const std::string& key, const std::string& value_name);
 
-    // Set value of a registry key.
-    // Set the data type as REG_DWORD.
-    // Return true on success, false on error.
-    TSDUCKDLL bool SetRegistryValue (const std::string& key, const std::string& value_name, ::DWORD value);
+    //!
+    //! Create a registry key (Windows-specific).
+    //! @param [in] key Registry key to create.
+    //! @param [in] is_volatile If true, create a "volatile" registry key.
+    //! @return True on success, false on error.
+    //!
+    TSDUCKDLL bool CreateRegistryKey(const std::string& key, bool is_volatile = false);
 
-    // Delete a value of a registry key.
-    // Return true on success, false on error.
-    TSDUCKDLL bool DeleteRegistryValue (const std::string& key, const std::string& value_name);
+    //!
+    //! Delete a registry key (Windows-specific).
+    //! @param [in] key Registry key to delete.
+    //! @return True on success, false on error.
+    //!
+    TSDUCKDLL bool DeleteRegistryKey(const std::string& key);
 
-    // Create a registry key.
-    // Return true on success, false on error.
-    TSDUCKDLL bool CreateRegistryKey (const std::string& key, bool is_volatile = false);
-
-    // Delete a registry key.
-    // Return true on success, false on error.
-    TSDUCKDLL bool DeleteRegistryKey (const std::string& key);
-
-    // Notify all applications of a setting change.
-    // Return true on success, false on error.
+    //!
+    //! Notify all applications of a setting change (Windows-specific).
+    //! @return True on success, false on error.
+    //!
     TSDUCKDLL bool NotifySettingChange();
 }

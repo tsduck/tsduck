@@ -37,48 +37,101 @@
 #include "tsReportInterface.h"
 
 namespace ts {
-
+    //!
+    //! Fork a process and create a pipe to its standard input.
+    //!
     class TSDUCKDLL ForkPipe
     {
     public:
-        // Constructor / destructor
+        //!
+        //! Default constructor.
+        //!
         ForkPipe();
+
+        //!
+        //! Destructor.
+        //!
         ~ForkPipe();
 
-        // Create the process, open the pipe.
-        // If synchronous is true, wait for process termination in close.
-        // The pipe buffer size is used on Windows only, zero means default.
-        // Return true on success, false on error.
-        bool open (const std::string& command, bool synchronous, size_t buffer_size, ReportInterface&);
+        //!
+        //! Create the process, open the pipe.
+        //! @param [in] command The command to execute.
+        //! @param [in] synchronous If true, wait for process termination in close().
+        //! @param [in] buffer_size The pipe buffer size in bytes. Used on Windows only. Zero means default.
+        //! @param [in,out] report Where to report errors.
+        //! @return True on success, false on error.
+        //!
+        bool open(const std::string& command, bool synchronous, size_t buffer_size, ReportInterface& report);
 
-        // Close the pipe. Optionally wait for process termination.
-        // Return true on success, false on error.
-        bool close (ReportInterface&);
+        //!
+        //! Close the pipe.
+        //! Optionally wait for process termination if @a synchronous was true on open().
+        //! @param [in,out] report Where to report errors.
+        //! @return True on success, false on error.
+        //!
+        bool close(ReportInterface& report);
 
-        // Check if the process is running and the pipe is open.
-        bool isOpen() const {return _is_open;}
+        //!
+        //! Check if the process is running and the pipe is open.
+        //! @return True if the process is running and the pipe is open.
+        //!
+        bool isOpen() const
+        {
+            return _is_open;
+        }
 
-        // Check if the pipe was broken (unexpected process termination for instance)
-        bool isBroken() const {return _broken_pipe;}
+        //!
+        //! Check if the pipe was broken.
+        //! @return True if was broken (unexpected process termination for instance).
+        //!
+        bool isBroken() const
+        {
+            return _broken_pipe;
+        }
 
-        // Check if synchronous mode is active (ie. will wait for process termination).
-        bool isSynchronous() const {return _synchronous;}
+        //!
+        //! Check if synchronous mode is active (ie. will wait for process termination).
+        //! @return True if synchronous mode is active.
+        //!
+        bool isSynchronous() const
+        {
+            return _synchronous;
+        }
 
-        // Set/get "ignore abort". If set and the process aborts, do not report error
-        // when writing data.
-        void setIgnoreAbort (bool on) {_ignore_abort = on;}
-        bool getIgnoreAbort () const {return _ignore_abort;}
+        //!
+        //! Set "ignore abort".
+        //! @param [in] on If true and the process aborts, do not report error
+        //! when writing data.
+        //!
+        void setIgnoreAbort(bool on)
+        {
+            _ignore_abort = on;
+        }
 
-        // Write data to the pipe (received at process' standard input).
-        // Return true on success, false on error.
-        bool write (const void*, size_t, ReportInterface&);
+        //!
+        //! Get "ignore abort".
+        //! @return True if, when the process aborts, do not report error when writing data.
+        //!
+        bool getIgnoreAbort() const
+        {
+            return _ignore_abort;
+        }
+
+        //!
+        //! Write data to the pipe (received at process' standard input).
+        //! @param [in] addr Address of the data to write.
+        //! @param [in] size Size in bytes of the data to write.
+        //! @param [in,out] report Where to report errors.
+        //! @return True on success, false on error.
+        //!
+        bool write(const void* addr, size_t size, ReportInterface& report);
 
     private:
         bool     _is_open;       // Open and running.
         bool     _synchronous;   // Wait for child process termination in stop()
         bool     _ignore_abort;  // Ignore early termination of child process
         bool     _broken_pipe;   // Pipe is broken, do not attempt to write
-#if defined (__windows)
+#if defined(__windows)
         ::HANDLE _handle;        // Pipe output handle
         ::HANDLE _process;       // Handle to child process
 #else

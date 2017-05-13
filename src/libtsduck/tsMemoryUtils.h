@@ -35,12 +35,20 @@
 #pragma once
 #include "tsPlatform.h"
 
-// Zeroing an object
+//!
+//! Zeroing an plain memory variable.
+//! Do not use with instances of C++ classes.
+//! @param [out] var Name of a variable.
+//!
 #define TS_ZERO(var) ts::Zero(&(var), sizeof(var))
 
 namespace ts {
 
-    // Zeroing a memory area
+    //!
+    //! Zeroing a memory area.
+    //! @param [out] addr Address of a memory area to fill with zeroes.
+    //! @param [in] size Size in bytes of the memory area.
+    //!
     TSDUCKDLL inline void Zero(void* addr, size_t size) {
 #if defined (__windows)
         ::SecureZeroMemory(addr, size);
@@ -49,9 +57,23 @@ namespace ts {
 #endif
     }
 
-    // Check if a memory area starts with the specified prefix
+    //!
+    //! Check if a memory area starts with the specified prefix.
+    //! @param [in] area Address of a memory area to check.
+    //! @param [in] area_size Size in bytes of the memory area.
+    //! @param [in] prefix Address of the content of the prefix to check.
+    //! @param [in] prefix_size Size in bytes of the prefix.
+    //! @return True if @a area starts with @a prefix.
+    //!
     TSDUCKDLL bool StartsWith(const void* area, size_t area_size, const void* prefix, size_t prefix_size);
 
-    // Locate a pattern into a memory area. Return 0 if not found
+    //!
+    //! Locate a pattern into a memory area.
+    //! @param [in] area Address of a memory area to check.
+    //! @param [in] area_size Size in bytes of the memory area.
+    //! @param [in] pattern Address of the content of the pattern to check.
+    //! @param [in] pattern_size Size in bytes of the pattern.
+    //! @return Address of the first occurence of @a pattern in @a area or zero if not found.
+    //!
     TSDUCKDLL const void* LocatePattern(const void* area, size_t area_size, const void* pattern, size_t pattern_size);
 }

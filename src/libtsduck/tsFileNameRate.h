@@ -37,26 +37,39 @@
 
 namespace ts {
 
+    //!
+    //! Representation of a file name and an associated repetition rate.
+    //!
     struct TSDUCKDLL FileNameRate
     {
-        std::string file_name;    // File name
-        MilliSecond repetition;   // Repetition rate in milliseconds
+        std::string file_name;    //!< File name.
+        MilliSecond repetition;   //!< Repetition rate in milliseconds.
 
-        // Constructor
+        //!
+        //! Default constructor.
+        //!
         FileNameRate() : file_name(), repetition(0) {}
     };
 
+    //!
+    //! Vector of file names and an associated repetition rates.
+    //!
     typedef std::vector<FileNameRate> FileNameRateVector;
 
-    // Decode a list of parameters containing a list of file names with
-    // optional repetition rates in milliseconds. Each parameter is a
-    // string "name[=value]" where value is an optional repetition rate
-    // in milliseconds. Return true on success. On error, set error
-    // state in args and return false.
-
-    TSDUCKDLL bool GetFileNameRates (FileNameRateVector& files,
-                                   Args& args,
-                                   const char* option_name = 0,
-                                   MilliSecond default_rate = 0)
-                                   throw (Args::ArgsError);
+    //!
+    //! Decode a list of parameters containing a list of file names with
+    //! optional repetition rates in milliseconds.
+    //!
+    //! @param [out] files Returned vector or FileNameRate.
+    //! @param [in,out] args Instance of ts::Args containing the command line parameters.
+    //! @param [in] option_name The long name of an option. All values of this option
+    //! are fetched. Each value must be a string "name[=value]" where @e value is an
+    //! optional repetition rate in milliseconds.
+    //! @param [in] default_rate Default repetition rate for files without repetition rate.
+    //! @return True on success. On error, set error state in @a args and return false.
+    //!
+    TSDUCKDLL bool GetFileNameRates(FileNameRateVector& files,
+                                    Args& args,
+                                    const char* option_name = 0,
+                                    MilliSecond default_rate = 0);
 }

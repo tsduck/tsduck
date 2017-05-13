@@ -38,27 +38,78 @@
 
 namespace ts {
 
-    // Format the message for a COM status
-    TSDUCKDLL std::string ComMessage (::HRESULT);
+    //!
+    //! Format the message for a COM status (Windows-specific).
+    //! @param [in] status A COM status.
+    //! @return The corresponding message string.
+    //!
+    TSDUCKDLL std::string ComMessage(::HRESULT status);
 
-    // Check a COM status. In case of error, report an error message.
-    // Return true if status is success, false if error.
-    TSDUCKDLL bool ComSuccess (::HRESULT, const char* message, ReportInterface&);
-    TSDUCKDLL bool ComSuccess (::HRESULT, const std::string& message, ReportInterface&);
+    //!
+    //! Check a COM status (Windows-specific).
+    //! In case of error, report an error message.
+    //! @param [in] status A COM status.
+    //! @param [in] message Application message in case of error.
+    //! The COM message is appended to the application message.
+    //! @param [in,out] report Where to report errors.
+    //! @return True if status is success, false if error.
+    //!
+    TSDUCKDLL bool ComSuccess(::HRESULT status, const char* message, ReportInterface& report);
 
-    // Convert COM and Unicode strings to std::string (empty on error)
-    TSDUCKDLL std::string ToString (const ::VARIANT&);
-    TSDUCKDLL std::string ToString (const ::BSTR);
-    TSDUCKDLL std::string ToString (const ::WCHAR*);
+    //!
+    //! Check a COM status (Windows-specific).
+    //! In case of error, report an error message.
+    //! @param [in] status A COM status.
+    //! @param [in] message Application message in case of error.
+    //! The COM message is appended to the application message.
+    //! @param [in,out] report Where to report errors.
+    //! @return True if status is success, false if error.
+    //!
+    TSDUCKDLL bool ComSuccess(::HRESULT status, const std::string& message, ReportInterface& report);
 
-    // Format a GUID as string.
-    TSDUCKDLL std::string FormatGUID (const ::GUID&, bool with_braces = true);
+    //!
+    //! Convert a COM string to std::string (Windows-specific).
+    //! @param [in] s The COM string.
+    //! @return The equivalent C++ string or an empty string on error.
+    //!
+    TSDUCKDLL std::string ToString(const ::VARIANT& s);
 
-    // Format the name of a GUID. Resolve a few known names.
-    // Warning: Very slow, eat CPU time, use with care.
-    TSDUCKDLL std::string NameGUID (const ::GUID&);
+    //!
+    //! Convert a COM string to std::string (Windows-specific).
+    //! @param [in] s The COM string.
+    //! @return The equivalent C++ string or an empty string on error.
+    //!
+    TSDUCKDLL std::string ToString(const ::BSTR s);
 
-    // Return a string property from the "property bag" of an object
-    // (defined by an object moniker)
-    TSDUCKDLL std::string GetStringPropertyBag (::IMoniker*, const ::OLECHAR* property_name, ReportInterface&);
+    //!
+    //! Convert a Unicode string to std::string (Windows-specific).
+    //! @param [in] s The Unicode string.
+    //! @return The equivalent C++ string or an empty string on error.
+    //!
+    TSDUCKDLL std::string ToString(const ::WCHAR* s);
+
+    //!
+    //! Format a GUID as string (Windows-specific).
+    //! @param [in] guid A GUID.
+    //! @param [in] with_braces If true, add the surrounding braces "{...}".
+    //! @return The equivalent string or an empty string on error.
+    //!
+    TSDUCKDLL std::string FormatGUID(const ::GUID& guid, bool with_braces = true);
+
+    //!
+    //! Format a GUID as string and resolve a few known names (Windows-specific).
+    //! Warning: Very slow, eat CPU time, use with care.
+    //! @param [in] guid A GUID.
+    //! @return The equivalent string or an empty string on error.
+    //!
+    TSDUCKDLL std::string NameGUID(const ::GUID& guid);
+
+    //!
+    //! Get a string property from the "property bag" of an object (Windows-specific).
+    //! @param [in,out] moniker Moniker defining the object.
+    //! @param [in] property_name Name of the property to fetch.
+    //! @param [in,out] report Where to report errors.
+    //! @return The property value.
+    //!
+    TSDUCKDLL std::string GetStringPropertyBag(::IMoniker* moniker, const ::OLECHAR* property_name, ReportInterface& report);
 }

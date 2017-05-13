@@ -37,59 +37,137 @@
 #include "tsComPtr.h"
 
 namespace ts {
-
-    // Flags for pin selections. Bit masks allowed
-    enum {
-        xPIN_CONNECTED   = 0x01,
-        xPIN_UNCONNECTED = 0x02,
-        xPIN_INPUT       = 0x04,
-        xPIN_OUTPUT      = 0x08,
-        xPIN_ALL_INPUT   = xPIN_INPUT  | xPIN_CONNECTED | xPIN_UNCONNECTED,
-        xPIN_ALL_OUTPUT  = xPIN_OUTPUT | xPIN_CONNECTED | xPIN_UNCONNECTED,
-        xPIN_ALL         = xPIN_INPUT  | xPIN_OUTPUT    | xPIN_CONNECTED | xPIN_UNCONNECTED
+    //!
+    //! Flags for DirectShow filter pin selections (Windows-specific).
+    //! Bit masks allowed.
+    ///!
+    enum DirectShowPinFilter {
+        xPIN_CONNECTED   = 0x01,   //!< Filter connected pins.
+        xPIN_UNCONNECTED = 0x02,   //!< Filter unconnected pins.
+        xPIN_INPUT       = 0x04,   //!< Filter input pins.
+        xPIN_OUTPUT      = 0x08,   //!< Filter output pins.
+        xPIN_ALL_INPUT   = xPIN_INPUT  | xPIN_CONNECTED | xPIN_UNCONNECTED,   //!< Filter all input pins.
+        xPIN_ALL_OUTPUT  = xPIN_OUTPUT | xPIN_CONNECTED | xPIN_UNCONNECTED,   //!< Filter all output pins.
+        xPIN_ALL         = xPIN_INPUT  | xPIN_OUTPUT    | xPIN_CONNECTED | xPIN_UNCONNECTED   //!< Filter all pins.
     };
 
-    typedef std::vector <ComPtr <::IPin>> PinPtrVector;
+    //!
+    //! Vector of COM pointers to IPin interfaces (Windows-specific).
+    //!
+    typedef std::vector<ComPtr <::IPin>> PinPtrVector;
 
-    // Get list of pins on a filter (use flags from enum above)
-    // Return true on success, false on error.
-    TSDUCKDLL bool GetPin (PinPtrVector&, ::IBaseFilter*, int flags, ReportInterface&);
+    //!
+    //! Get the list of pins on a DirectShow filter (Windows-specific).
+    //! @param [out] pins Returned list of pins.
+    //! @param [in,out] filter DirectShow filter.
+    //! @param [in] flags Bit mask of pin selections from DirectShowPinFilter.
+    //! @param [in,out] report Where to report errors.
+    //! @return True on success, false on error.
+    //!
+    TSDUCKDLL bool GetPin(PinPtrVector& pins, ::IBaseFilter* filter, int flags, ReportInterface& report);
 
-    // Directly connect two filters using whatever output and input pin.
-    // Return true on success, false on error.
-    TSDUCKDLL bool ConnectFilters (::IGraphBuilder* graph,
-                                 ::IBaseFilter* filter1,
-                                 ::IBaseFilter* filter2,
-                                 ReportInterface&);
+    //!
+    //! Directly connect two DirectShow filters using whatever output and input pin (Windows-specific).
+    //! @param [in,out] graph DirectShow graph builder.
+    //! @param [in,out] filter1 DirectShow filter with output pins.
+    //! @param [in,out] filter2 DirectShow filter with input pins.
+    //! @param [in,out] report Where to report errors.
+    //! @return True on success, false on error.
+    //!
+    TSDUCKDLL bool ConnectFilters(::IGraphBuilder* graph,
+                                  ::IBaseFilter* filter1,
+                                  ::IBaseFilter* filter2,
+                                  ReportInterface& report);
 
-    // In a DirectShow filter graph, cleanup everything downstream
-    // a specified filter: all downstream filters are disconnected
-    // and removed from the graph.
-    // Return true on success, false on error.
-    TSDUCKDLL bool CleanupDownstream (::IGraphBuilder*, ::IBaseFilter*, ReportInterface&);
+    //!
+    //! In a DirectShow filter graph, cleanup everything downstream a specified filter (Windows-specific).
+    //! All downstream filters are disconnected and removed from the graph.
+    //! @param [in,out] graph DirectShow graph builder.
+    //! @param [in,out] filter DirectShow filter.
+    //! @param [in,out] report Where to report errors.
+    //! @return True on success, false on error.
+    //!
+    TSDUCKDLL bool CleanupDownstream(::IGraphBuilder* graph, ::IBaseFilter* filter, ReportInterface& report);
 
-    // Display the description of a DirectShow filter graph.
-    // Start either at a specified filter (first definition)
-    // or at one arbitray input filter (one with no connected
-    // input pin) in a graph (second definition).
-    // Return false on error.
-    TSDUCKDLL bool DisplayFilterGraph (std::ostream&, const ComPtr <::IBaseFilter>&, const std::string& margin, bool verbose, ReportInterface&);
-    TSDUCKDLL bool DisplayFilterGraph (std::ostream&, const ComPtr <::IGraphBuilder>&, const std::string& margin, bool verbose, ReportInterface&);
+    //!
+    //! Display the description of a DirectShow filter graph (Windows-specific).
+    //! @param [in,out] strm Output text stream.
+    //! @param [in] filter Start the graph description at this DirectShow filter.
+    //! @param [in] margin Left margin to display.
+    //! @param [in] verbose If true, display more verbose information.
+    //! @param [in,out] report Where to report errors.
+    //! @return True on success, false on error.
+    //!
+    TSDUCKDLL bool DisplayFilterGraph(std::ostream& strm,
+                                      const ComPtr<::IBaseFilter>& filter,
+                                      const std::string& margin,
+                                      bool verbose,
+                                      ReportInterface& report);
 
-    // Display all devices of the specified category
-    // Return false on error.
-    TSDUCKDLL bool DisplayDevicesByCategory (std::ostream&, const ::GUID& category, const std::string& margin, const std::string& name, ReportInterface&);
+    //!
+    //! Display the description of a DirectShow filter graph (Windows-specific).
+    //! @param [in,out] strm Output text stream.
+    //! @param [in] graph DirectShow graph builder. Start the graph description
+    //! at one arbitray input filter (one with no connected input pin) in the graph.
+    //! @param [in] margin Left margin to display.
+    //! @param [in] verbose If true, display more verbose information.
+    //! @param [in,out] report Where to report errors.
+    //! @return True on success, false on error.
+    //!  
+    TSDUCKDLL bool DisplayFilterGraph(std::ostream& strm,
+                                      const ComPtr<::IGraphBuilder>& graph,
+                                      const std::string& margin,
+                                      bool verbose,
+                                      ReportInterface& report);
 
-    // Map a DirectShow network provider class id to a tuner type.
-    // Return false if no match found.
-    TSDUCKDLL bool NetworkProviderToTunerType (const ::GUID provider_clsid, TunerType& tuner_type);
+    //!
+    //! Display all devices of the specified category (Windows-specific).
+    //! @param [in,out] strm Output text stream.
+    //! @param [in] category Category of the devices to display.
+    //! @param [in] margin Left margin to display.
+    //! @param [in] name Name of the category to display.
+    //! @param [in,out] report Where to report errors.
+    //! @return True on success, false on error.
+    //!
+    TSDUCKDLL bool DisplayDevicesByCategory(std::ostream& strm,
+                                            const ::GUID& category,
+                                            const std::string& margin,
+                                            const std::string& name,
+                                            ReportInterface& report);
 
-    // Enumerate all devices of the specified class.
-    // Fill a vector of monikers to these objects.
-    // Return true on success, false on error.
-    TSDUCKDLL bool EnumerateDevicesByClass (const ::CLSID& clsid, std::vector <ComPtr <::IMoniker>>& monikers, ReportInterface&);
+    //!
+    //! Translate a DirectShow network provider class id into a TSDuck tuner type (Windows-specific).
+    //! @param [in] provider_clsid DirectShow network provider class.
+    //! @param [out] tuner_type Returned TSDuck tuner type.
+    //! @return True on success, false if no match is found.
+    //!
+    TSDUCKDLL bool NetworkProviderToTunerType(const ::GUID provider_clsid, TunerType& tuner_type);
 
-    // Get names of a tuning space. Return empty string on error.
-    TSDUCKDLL std::string GetTuningSpaceFriendlyName (::ITuningSpace*, ReportInterface&);
-    TSDUCKDLL std::string GetTuningSpaceUniqueName (::ITuningSpace*, ReportInterface&);
+    //!
+    //! Enumerate all devices of the specified class.
+    //! Fill a vector of monikers to these objects.
+    //! @param [in] clsid Device class to enumerate.
+    //! @param [out] monikers Returned vector of monikers to all devices of class @a clsid.
+    //! @param [in,out] report Where to report errors.
+    //! @return True on success, false on error.
+    //!
+   TSDUCKDLL bool EnumerateDevicesByClass(const ::CLSID& clsid,
+                                           std::vector<ComPtr<::IMoniker>>& monikers,
+                                           ReportInterface& report);
+
+    //!
+    //! Get the user-friendly name of a DirectShow tuning space (Windows-specific).
+    //! @param [in] tuning Tuning space.
+    //! @param [in,out] report Where to report errors.
+    //! @return Tuning space name or an empty string on error.
+    //!
+    TSDUCKDLL std::string GetTuningSpaceFriendlyName(::ITuningSpace* tuning, ReportInterface& report);
+
+    //!
+    //! Get the unique name of a DirectShow tuning space (Windows-specific).
+    //! @param [in] tuning Tuning space.
+    //! @param [in,out] report Where to report errors.
+    //! @return Tuning space name or an empty string on error.
+    //!
+    TSDUCKDLL std::string GetTuningSpaceUniqueName(::ITuningSpace* tuning, ReportInterface& report);
 }

@@ -35,16 +35,15 @@
 #include "tsToInteger.h"
 
 
-
 //----------------------------------------------------------------------------
 // Decode a list of parameters containing a list of file names with
 // optional repetition rates in milliseconds.
 //----------------------------------------------------------------------------
 
-bool ts::GetFileNameRates (FileNameRateVector& files,
-                             Args& args,
-                             const char* option_name,
-                             MilliSecond default_rate) throw (Args::ArgsError)
+bool ts::GetFileNameRates(FileNameRateVector& files,
+                          Args& args,
+                          const char* option_name,
+                          MilliSecond default_rate)
 {
     // Get the string values
     StringVector strings;

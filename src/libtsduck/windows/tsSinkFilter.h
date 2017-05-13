@@ -32,36 +32,6 @@
 //!
 //!  With many ideas taken from VLC and Microsoft Windows SDK samples.
 //!
-//!  This module implements a DirectShow filter.
-//!
-//!  DirectShow is a very complicated infrastructure on Windows to support
-//!  various media processing. BDA (Broadcast Device Architecture) is the
-//!  generic device driver interface which links "broadcast devices" like
-//!  DVB receivers to DirectShow. DirectShow is consequently the only generic
-//!  way to interact with any type of DVB receiver hardware, provided that
-//!  the hardware vendor supplies BDA-compatible drivers for the device.
-//!
-//!  The "sink filter" in this module is intended to be used after a DirectShow
-//!  capture filter, as provided by the hardware vendor. We call it a "sink"
-//!  filter because it has one input pin (for MPEG-2 TS) but no output pin.
-//!  The TS "samples" are read asynchronously by the application. This filter
-//!  acts as an adapter between the push model of DirectShow and the pull model
-//!  of tsp, the transport stream processor.
-//!
-//!  This module contains several classes:
-//!
-//!  - SinkFilter         : The DirectShow filter
-//!  - SinkPin            : Input pin for SinkFilter
-//!  - SinkEnumMediaTypes : Enumerator returned by IPin::EnumMediaTypes
-//!  - SinkEnumPins       : Enumerator returned by IBaseFilter::EnumPins
-//!
-//!  The SinkPin accepts only MPEG-2 transport streams:
-//!
-//!  - Major type : MEDIATYPE_Stream
-//!  - Subtype    : MEDIASUBTYPE_MPEG2_TRANSPORT
-//!                 MEDIASUBTYPE_MPEG2_TRANSPORT_STRIDE
-//!                 KSDATAFORMAT_SUBTYPE_BDA_MPEG2_TRANSPORT
-//!
 //-----------------------------------------------------------------------------
 
 #pragma once
@@ -76,55 +46,114 @@ namespace ts {
     class SinkEnumMediaTypes;
     class SinkEnumPins;
 
-    //-------------------------------------------------------------------------
-    // SinkFilter, the DirectShow filter
-    //-------------------------------------------------------------------------
-
+    //!
+    //! The DirectShow sink filter (Windows-specific).
+    //!
+    //! This class implements a DirectShow filter.
+    //!
+    //! DirectShow is a very complicated infrastructure on Windows to support
+    //! various media processing. BDA (Broadcast Device Architecture) is the
+    //! generic device driver interface which links "broadcast devices" like
+    //! DVB receivers to DirectShow. DirectShow is consequently the only generic
+    //! way to interact with any type of DVB receiver hardware, provided that
+    //! the hardware vendor supplies BDA-compatible drivers for the device.
+    //!
+    //! The "sink filter" is intended to be used after a DirectShow
+    //! capture filter, as provided by the hardware vendor. We call it a "sink"
+    //! filter because it has one input pin (for MPEG-2 TS) but no output pin.
+    //! The TS "samples" are read asynchronously by the application. This filter
+    //! acts as an adapter between the push model of DirectShow and the pull model
+    //! of tsp, the transport stream processor.
+    //!
+    //! This module contains several classes:
+    //!
+    //! - SinkFilter         : The DirectShow filter
+    //! - SinkPin            : Input pin for SinkFilter
+    //! - SinkEnumMediaTypes : Enumerator returned by IPin::EnumMediaTypes
+    //! - SinkEnumPins       : Enumerator returned by IBaseFilter::EnumPins
+    //!
+    //! The SinkPin accepts only MPEG-2 transport streams:
+    //!
+    //! - Major type : MEDIATYPE_Stream
+    //! - Subtype    : MEDIASUBTYPE_MPEG2_TRANSPORT
+    //!                MEDIASUBTYPE_MPEG2_TRANSPORT_STRIDE
+    //!                KSDATAFORMAT_SUBTYPE_BDA_MPEG2_TRANSPORT
+    //!
     class SinkFilter : public ::IBaseFilter
     {
     public:
-        SinkFilter (ReportInterface&);
+        //!
+        //! Constructor.
+        //! @param [in,out] report Where to report errors.
+        //!
+        SinkFilter(ReportInterface& report);
+
+        //!
+        //! Destructor.
+        //!
         virtual ~SinkFilter();
 
+        //!
+        //! Get the unique input pin.
+        //! @return The unique input pin of the filter.
+        //! The returned object has one reference for the caller.
+        //! Use Release() when no longer needed.
+        //!
+        SinkPin* GetPin();
+
+        //!
+        //! Set the max number of media samples in the queue between the graph thread and the application thread.
+        //! Must be called when the graph is stopped or paused.
+        //! @param [in] maxMessages Max number of media samples in the queue between
+        //! the graph thread and the application thread.
+        //!
+        void SetMaxMessages(size_t maxMessages);
+
+        //!
+        //! Discard and release all pending media samples.
+        //!
+        void Flush();
+
+        //!
+        //! Read data from transport stream.
+        //! @param [out] buffer Address of returned TS packet buffer.
+        //! @param [in] buffer_size Size in bytes of the @a buffer.
+        //! @param [in] timeout Read timeout in milliseconds.
+        //! If timeout is not infinite and no packet has been read
+        //! within this timeout, return zero.
+        //! @return The size in bytes of the data returned in buffer.
+        //! Always return a multiple of 188, complete TS packets.
+        //! Return zero on error or end of stream.
+        //!
+        size_t Read(void* buffer, size_t buffer_size, MilliSecond timeout = Infinite);
+
+        // Implementations of COM interfaces. Not documented in Doxygen.
+        //! @cond nodoxygen
+
         // Implementation of ::IUnknown
-        STDMETHODIMP QueryInterface (REFIID riid, void** ppv);
+        STDMETHODIMP QueryInterface(REFIID riid, void** ppv);
         STDMETHODIMP_(::ULONG) AddRef();
         STDMETHODIMP_(::ULONG) Release();
 
         // Implementation of ::IPersist
-        STDMETHODIMP GetClassID (::CLSID* pClsID);
+        STDMETHODIMP GetClassID(::CLSID* pClsID);
 
         // Implementation of ::IMediaFilter
-        STDMETHODIMP GetState (::DWORD dwMSecs, ::FILTER_STATE* State);
-        STDMETHODIMP SetSyncSource (::IReferenceClock* pClock);
-        STDMETHODIMP GetSyncSource (::IReferenceClock** pClock);
+        STDMETHODIMP GetState(::DWORD dwMSecs, ::FILTER_STATE* State);
+        STDMETHODIMP SetSyncSource(::IReferenceClock* pClock);
+        STDMETHODIMP GetSyncSource(::IReferenceClock** pClock);
         STDMETHODIMP Stop();
         STDMETHODIMP Pause();
-        STDMETHODIMP Run (::REFERENCE_TIME tStart);
+        STDMETHODIMP Run(::REFERENCE_TIME tStart);
 
         // Implementation of ::IBaseFilter
-        STDMETHODIMP EnumPins (::IEnumPins** ppEnum);
-        STDMETHODIMP FindPin (::LPCWSTR Id, ::IPin** ppPin);
-        STDMETHODIMP QueryFilterInfo (::FILTER_INFO* pInfo);
-        STDMETHODIMP JoinFilterGraph (::IFilterGraph* pGraph, ::LPCWSTR pName);
-        STDMETHODIMP QueryVendorInfo (::LPWSTR* pVendorInfo);
+        STDMETHODIMP EnumPins(::IEnumPins** ppEnum);
+        STDMETHODIMP FindPin(::LPCWSTR Id, ::IPin** ppPin);
+        STDMETHODIMP QueryFilterInfo(::FILTER_INFO* pInfo);
+        STDMETHODIMP JoinFilterGraph(::IFilterGraph* pGraph, ::LPCWSTR pName);
+        STDMETHODIMP QueryVendorInfo(::LPWSTR* pVendorInfo);
 
-        // Return input pin (with one reference => use Release)
-        SinkPin* GetPin();
-
-        // Set the max number of media samples in the queue between
-        // the graph thread and the application thread. Must be called
-        // when the graph is stopped or paused.
-        void SetMaxMessages (size_t maxMessages);
-
-        // Discard and release all pending media samples
-        void Flush();
-
-        // Read data from transport stream.
-        // If timeout is not infinite and no packet has been read
-        // within this timeout, return zero.
-        // Return size in bytes, zero on error or end of stream.
-        size_t Read (void* buffer, size_t buffer_size, MilliSecond timeout = Infinite);
+        //! @endcond
 
     private:
         friend class SinkPin;
@@ -144,52 +173,65 @@ namespace ts {
         // Fill buffer/buffer_size with data from media sample in _current_sample/offset.
         // Update buffer and buffer_size.
         // If media sample completely copied, release it and nullify pointer.
-        void FillBuffer (char*& buffer, size_t& buffer_size);
+        void FillBuffer(char*& buffer, size_t& buffer_size);
     };
 
-    //-------------------------------------------------------------------------
-    // SinkPin, input pin for our SinkFilter
-    //-------------------------------------------------------------------------
-
+    //!
+    //! SinkPin, input pin for SinkFilter (Windows-specific).
+    //!
     class SinkPin: public ::IPin, public ::IMemInputPin
     {
     public:
-        SinkPin (ReportInterface&, SinkFilter*);
+        //!
+        //! Constructor.
+        //! @param [in,out] report Where to report errors.
+        //! @param [in,out] filter The associated SinkFilter.
+        //!
+        SinkPin(ReportInterface& report, SinkFilter* filter);
+
+        //!
+        //! Destructor.
+        //!
         virtual ~SinkPin();
 
+        // Implementations of COM interfaces. Not documented in Doxygen.
+        //! @cond nodoxygen
+
         // Implementation of ::IUnknown
-        STDMETHODIMP QueryInterface (REFIID riid, void** ppv);
+        STDMETHODIMP QueryInterface(REFIID riid, void** ppv);
         STDMETHODIMP_(::ULONG) AddRef();
         STDMETHODIMP_(::ULONG) Release();
 
         // Implementation of ::IPin
-        STDMETHODIMP Connect (::IPin* pReceivePin, const ::AM_MEDIA_TYPE* pmt);
-        STDMETHODIMP ReceiveConnection (::IPin* pConnector, const ::AM_MEDIA_TYPE* pmt);
-        STDMETHODIMP Disconnect ();
-        STDMETHODIMP ConnectedTo (::IPin** pPin);
-        STDMETHODIMP ConnectionMediaType (::AM_MEDIA_TYPE* pmt);
-        STDMETHODIMP QueryPinInfo (::PIN_INFO* pInfo);
-        STDMETHODIMP QueryDirection (::PIN_DIRECTION* pPinDir);
-        STDMETHODIMP QueryId (::LPWSTR* Id);
-        STDMETHODIMP QueryAccept (const ::AM_MEDIA_TYPE* pmt);
-        STDMETHODIMP EnumMediaTypes (::IEnumMediaTypes** ppEnum);
-        STDMETHODIMP QueryInternalConnections (::IPin** apPin, ::ULONG *nPin);
-        STDMETHODIMP EndOfStream ();
-        STDMETHODIMP BeginFlush ();
-        STDMETHODIMP EndFlush ();
-        STDMETHODIMP NewSegment (::REFERENCE_TIME tStart, ::REFERENCE_TIME tStop, double dRate);
+        STDMETHODIMP Connect(::IPin* pReceivePin, const ::AM_MEDIA_TYPE* pmt);
+        STDMETHODIMP ReceiveConnection(::IPin* pConnector, const ::AM_MEDIA_TYPE* pmt);
+        STDMETHODIMP Disconnect();
+        STDMETHODIMP ConnectedTo(::IPin** pPin);
+        STDMETHODIMP ConnectionMediaType(::AM_MEDIA_TYPE* pmt);
+        STDMETHODIMP QueryPinInfo(::PIN_INFO* pInfo);
+        STDMETHODIMP QueryDirection(::PIN_DIRECTION* pPinDir);
+        STDMETHODIMP QueryId(::LPWSTR* Id);
+        STDMETHODIMP QueryAccept(const ::AM_MEDIA_TYPE* pmt);
+        STDMETHODIMP EnumMediaTypes(::IEnumMediaTypes** ppEnum);
+        STDMETHODIMP QueryInternalConnections(::IPin** apPin, ::ULONG *nPin);
+        STDMETHODIMP EndOfStream();
+        STDMETHODIMP BeginFlush();
+        STDMETHODIMP EndFlush();
+        STDMETHODIMP NewSegment(::REFERENCE_TIME tStart, ::REFERENCE_TIME tStop, double dRate);
 
         // Implementation of ::IMemInputPin
-        STDMETHODIMP GetAllocator (::IMemAllocator** ppAllocator);
-        STDMETHODIMP NotifyAllocator (::IMemAllocator* pAllocator, ::BOOL bReadOnly);
-        STDMETHODIMP GetAllocatorRequirements (::ALLOCATOR_PROPERTIES* pProps);
-        STDMETHODIMP Receive (::IMediaSample* pSample);
-        STDMETHODIMP ReceiveMultiple (::IMediaSample** pSamples, long nSamples, long* nSamplesProcessed);
-        STDMETHODIMP ReceiveCanBlock ();
+        STDMETHODIMP GetAllocator(::IMemAllocator** ppAllocator);
+        STDMETHODIMP NotifyAllocator(::IMemAllocator* pAllocator, ::BOOL bReadOnly);
+        STDMETHODIMP GetAllocatorRequirements(::ALLOCATOR_PROPERTIES* pProps);
+        STDMETHODIMP Receive(::IMediaSample* pSample);
+        STDMETHODIMP ReceiveMultiple(::IMediaSample** pSamples, long nSamples, long* nSamplesProcessed);
+        STDMETHODIMP ReceiveCanBlock();
 
         // Supported media subtypes
         static const int MAX_MEDIA_SUBTYPES = 3;
-        static const ::GUID MEDIA_SUBTYPES [MAX_MEDIA_SUBTYPES];
+        static const ::GUID MEDIA_SUBTYPES[MAX_MEDIA_SUBTYPES];
+
+        //! @endcond
 
     private:
         bool             _flushing;
@@ -201,26 +243,39 @@ namespace ts {
         ::AM_MEDIA_TYPE  _cur_media_type;
     };
 
-    //-------------------------------------------------------------------------
-    // SinkEnumMediaTypes, enumerator returned by ::IPin::EnumMediaTypes
-    //-------------------------------------------------------------------------
-
+    //!
+    //! SinkEnumMediaTypes, enumerator returned by \::IPin\::EnumMediaTypes (Windows-specific).
+    //!
     class SinkEnumMediaTypes : public ::IEnumMediaTypes
     {
     public:
-        SinkEnumMediaTypes (ReportInterface&, const SinkEnumMediaTypes* cloned);
+        //!
+        //! Constructor.
+        //! @param [in,out] report Where to report errors.
+        //! @param [in] cloned Optional SinkEnumMediaTypes that we are cloning. Can be null.
+        //!
+        SinkEnumMediaTypes(ReportInterface& report, const SinkEnumMediaTypes* cloned);
+
+        //!
+        //! Destructor.
+        //!
         virtual ~SinkEnumMediaTypes();
 
+        // Implementations of COM interfaces. Not documented in Doxygen.
+        //! @cond nodoxygen
+
         // Implementation of ::IUnknown
-        STDMETHODIMP QueryInterface (REFIID riid, void** ppv);
+        STDMETHODIMP QueryInterface(REFIID riid, void** ppv);
         STDMETHODIMP_(::ULONG) AddRef();
         STDMETHODIMP_(::ULONG) Release();
 
         // Implementation of ::IEnumMediaTypes
-        STDMETHODIMP Next (::ULONG cMediaTypes, ::AM_MEDIA_TYPE** ppMediaTypes, ::ULONG* pcFetched);
-        STDMETHODIMP Skip (::ULONG cMediaTypes);
+        STDMETHODIMP Next(::ULONG cMediaTypes, ::AM_MEDIA_TYPE** ppMediaTypes, ::ULONG* pcFetched);
+        STDMETHODIMP Skip(::ULONG cMediaTypes);
         STDMETHODIMP Reset();
-        STDMETHODIMP Clone (::IEnumMediaTypes** ppEnum);
+        STDMETHODIMP Clone(::IEnumMediaTypes** ppEnum);
+
+        //! @endcond
 
     private:
         ReportInterface& _report;
@@ -228,26 +283,40 @@ namespace ts {
         int              _next; // Next media type to enumerate
     };
 
-    //-------------------------------------------------------------------------
-    // SinkEnumPins, enumerator returned by ::IBaseFilter::EnumPins
-    //-------------------------------------------------------------------------
-
+    //!
+    //! SinkEnumPins, enumerator returned by \::IBaseFilter\::EnumPins (Windows-specific).
+    //!
     class SinkEnumPins : public ::IEnumPins
     {
     public:
-        SinkEnumPins (ReportInterface&, SinkFilter*, const SinkEnumPins* cloned);
+        //!
+        //! Constructor.
+        //! @param [in,out] report Where to report errors.
+        //! @param [in,out] filter The associated SinkFilter.
+        //! @param [in] cloned Optional SinkEnumPins that we are cloning. Can be null.
+        //!
+        SinkEnumPins(ReportInterface& report, SinkFilter* filter, const SinkEnumPins* cloned);
+
+        //!
+        //! Destructor.
+        //!
         virtual ~SinkEnumPins();
 
+        // Implementations of COM interfaces. Not documented in Doxygen.
+        //! @cond nodoxygen
+
         // Implementation of ::IUnknown
-        STDMETHODIMP QueryInterface (REFIID riid, void** ppv);
+        STDMETHODIMP QueryInterface(REFIID riid, void** ppv);
         STDMETHODIMP_(::ULONG) AddRef();
         STDMETHODIMP_(::ULONG) Release();
 
         // Implementation of ::IEnumPins
-        STDMETHODIMP Next (::ULONG cPins, ::IPin** ppPins, ::ULONG* pcFetched);
-        STDMETHODIMP Skip (::ULONG cPins);
-        STDMETHODIMP Reset ();
-        STDMETHODIMP Clone (::IEnumPins** ppEnum);
+        STDMETHODIMP Next(::ULONG cPins, ::IPin** ppPins, ::ULONG* pcFetched);
+        STDMETHODIMP Skip(::ULONG cPins);
+        STDMETHODIMP Reset();
+        STDMETHODIMP Clone(::IEnumPins** ppEnum);
+
+        //! @endcond
 
     private:
         // There is only one pin to enumerate

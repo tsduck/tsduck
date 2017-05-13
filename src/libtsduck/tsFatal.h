@@ -37,13 +37,20 @@
 
 namespace ts {
 
-    // Out of virtual memory, very dangerous situation, really can't
-    // recover from that, need to abort immediately.
-
+    //!
+    //! Handle fatal memory allocation failure.
+    //! Out of virtual memory, very dangerous situation, really can't
+    //! recover from that, need to abort immediately. An emergency error
+    //! message is ouput and the application is terminated.
+    //!
     TSDUCKDLL void FatalMemoryAllocation();
 
-    // Check the value of a pointer and abort when zero (typically after a new).
-
+    //!
+    //! Check the value of a pointer and abort the application when zero.
+    //! This function is typically after a new.
+    //! @param [in] ptr The pointer to check.
+    //! @see FatalMemoryAllocation()
+    //!
     TSDUCKDLL inline void CheckNonNull(const void* ptr)
     {
         if (ptr == 0) {
