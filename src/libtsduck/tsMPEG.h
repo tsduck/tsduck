@@ -255,7 +255,7 @@ namespace ts {
     const size_t MACROBLOCK_HEIGHT = 16;
 
     //---------------------------------------------------------------------
-    // Predefined PID values
+    //! Predefined PID values
     //---------------------------------------------------------------------
 
     enum : PID {

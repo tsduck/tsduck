@@ -75,7 +75,7 @@ namespace ts {
         static const size_t MAX_ENTRIES = 85;
 
         // ServiceListDescriptor public members:
-        EntryList entries;  //! The list of service entries.
+        EntryList entries;  //!< The list of service entries.
 
         //!
         //! Default constructor.

@@ -78,6 +78,16 @@ namespace ts {
         void clear();
 
         // Accessors to the properties are repeated, use macros.
+
+        //!
+        //! Define a service property accessors, class internal use only.
+        //! @param type C++ type for the property.
+        //! @param suffix Accessor methods suffix.
+        //! @param field Internal class private field.
+        //! @param defvalue Property default value if unset.
+        //! @param fullname Explanatory description of the property.
+        //! @hideinitializer
+        //!
 #define SERVICE_PROPERTY(type,suffix,field,defvalue,fullname)           \
         /** Check if the fullname is present.                        */ \
         /** @return True if the fullname is present.                 */ \
@@ -88,6 +98,15 @@ namespace ts {
         /** @return The fullname or defvalue if unset.               */ \
         type get##suffix() const {return field.set() ? field.value() : type(defvalue);}
             
+        //!
+        //! Define an integer service property accessors, class internal use only.
+        //! @param type C++ type for the property.
+        //! @param suffix Accessor methods suffix.
+        //! @param field Internal class private field.
+        //! @param defvalue Property default value if unset.
+        //! @param fullname Explanatory description of the property.
+        //! @hideinitializer
+        //!
 #define SERVICE_PROPERTY_INT(type,suffix,field,defvalue,fullname)       \
         SERVICE_PROPERTY(type, suffix, field, defvalue, fullname)       \
         /** Set the fullname.                                        */ \
@@ -98,6 +117,13 @@ namespace ts {
         /** @return True if the fullname is equal to @a value.       */ \
         bool has##suffix(type value) const {return field.set() && field == value;}
 
+        //!
+        //! Define a string service property accessors, class internal use only.
+        //! @param suffix Accessor methods suffix.
+        //! @param field Internal class private field.
+        //! @param fullname Explanatory description of the property.
+        //! @hideinitializer
+        //!
 #define SERVICE_PROPERTY_STRING(suffix,field,fullname)                  \
         SERVICE_PROPERTY(std::string, suffix, field, "", fullname)      \
         /** Set the fullname.                                        */ \

@@ -40,19 +40,23 @@
 #include "tsFormat.h"
 
 namespace ts {
-
-    // An AVCAttributes object is built by transmitting AVC access units
-    // (aka "NALunits"). The state of the object may change after adding a
-    // "sequence parameter set" NALunit. Initially, an AVCAttributes object
-    // is invalid.
-
+    //!
+    //! Video attributes for Advanced Video Coding.
+    //!
+    //! AVC is Advanced Video Coding, ISO 14496-10, ITU H.264.
+    //!
+    //! An AVCAttributes object is built by transmitting AVC access units
+    //! (aka "NALunits"). The state of the object may change after adding a
+    //! "sequence parameter set" NALunit. Initially, an AVCAttributes object
+    //! is invalid.
+    //!
     class TSDUCKDLL AVCAttributes: public AbstractAudioVideoAttributes
     {
     public:
         // Implementation of abstract methods.
         // The "binary data" is an AVC access unit.
-        virtual bool moreBinaryData (const void*, size_t);
-        virtual operator std::string () const;
+        virtual bool moreBinaryData(const void*, size_t);
+        virtual operator std::string() const;
 
         // Get size
         size_t horizontalSize() const {return _is_valid ? _hsize : 0;}
@@ -60,19 +64,19 @@ namespace ts {
 
         // Get AVC profile and level
         int profile() const {return _is_valid ? _profile : 0;}
-        std::string profileName() const {return _is_valid ? names::AVCProfile (_profile) : "";}
+        std::string profileName() const {return _is_valid ? names::AVCProfile(_profile) : "";}
         int level() const {return _is_valid ? _level : 0;}
-        std::string levelName() const {return _is_valid ? Format ("%d.%d", _level / 10, _level % 10) : "";}
+        std::string levelName() const {return _is_valid ? Format("%d.%d", _level / 10, _level % 10) : "";}
 
         // Get chroma format (code values are CHROMA_* from tsMPEG.h, 0 if unknown)
         uint8_t chromaFormat() const {return _is_valid ? _chroma : 0;}
-        std::string chromaFormatName() const {return _is_valid ? names::ChromaFormat (_chroma) : "";}
+        std::string chromaFormatName() const {return _is_valid ? names::ChromaFormat(_chroma) : "";}
 
     private:
-        size_t _hsize;    // Horizontal size in pixel
-        size_t _vsize;    // Vertical size in pixel
-        int    _profile;  // AVC profile
-        int    _level;    // AVC level
-        uint8_t  _chroma;   // Chroma format code (CHROMA_* from tsMPEG.h)
+        size_t  _hsize;    // Horizontal size in pixel
+        size_t  _vsize;    // Vertical size in pixel
+        int     _profile;  // AVC profile
+        int     _level;    // AVC level
+        uint8_t _chroma;   // Chroma format code (CHROMA_* from tsMPEG.h)
     };
 }

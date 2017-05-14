@@ -53,6 +53,7 @@ namespace ts {
 
         //!
         //! Default constructor.
+        //! @param [in] size Initial size in bytes of the block.
         //!
         explicit ByteBlock(size_type size = 0);
 

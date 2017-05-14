@@ -52,7 +52,7 @@ namespace ts {
     //! @param [in] mjd Address of a 2-to-5 bytes area, in the format specified by a TDT.
     //! @param [in] mjd_size Size in bytes of the @a mjd area.
     //! @param [out] time Return time.
-    //! return True on success, false in case of error.
+    //! @return True on success, false in case of error.
     //!
     TSDUCKDLL bool DecodeMJD(const uint8_t* mjd, size_t mjd_size, Time& time);
 
@@ -61,7 +61,7 @@ namespace ts {
     //! @param [in] time Input time.
     //! @param [out] mjd Address of a writeable 2-to-5 bytes area.
     //! @param [in] mjd_size Size in bytes of the @a mjd area.
-    //! return True on success, false in case of error.
+    //! @return True on success, false in case of error.
     //!
     TSDUCKDLL bool EncodeMJD(const Time& time, uint8_t* mjd, size_t mjd_size);
 }

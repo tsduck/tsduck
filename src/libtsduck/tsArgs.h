@@ -410,28 +410,28 @@ namespace ts {
         //!
         //! @param [in] description A short one-line description, e.g. "Wonderful File Copier".
         //!
-        void setDescription(const std::string& description) {_description = description;}
+        virtual void setDescription(const std::string& description) {_description = description;}
 
         //!
         //! Set the syntax of the command.
         //!
         //! @param [in] syntax A short one-line syntax summary, e.g. "[options] filename ...".
         //!
-        void setSyntax(const std::string& syntax) {_syntax = syntax;}
+        virtual void setSyntax(const std::string& syntax) {_syntax = syntax;}
 
         //!
         //! Set the help description of the command.
         //!
         //! @param [in] help A multi-line string describing the usage of options and parameters.
         //!
-        void setHelp(const std::string& help) {_help = help;}
+        virtual void setHelp(const std::string& help) {_help = help;}
 
         //!
         //! Set the option flags of the command.
         //!
         //! @param [in] flags Define various options, a combination of or'ed values from @link Flags @endlink.
         //!
-        void setFlags(int flags) {_flags = flags;}
+        virtual void setFlags(int flags) {_flags = flags;}
 
         //!
         //! Get the description of the command.

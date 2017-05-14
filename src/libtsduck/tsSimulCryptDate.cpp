@@ -72,7 +72,7 @@ ts::SimulCryptDate::SimulCryptDate (int year, int month, int day, int hour, int 
 // Get from DVB SimulCrypt TLV messages
 //----------------------------------------------------------------------------
 
-void ts::SimulCryptDate::get (const tlv::MessageFactory& mf, tlv::TAG tag) throw (tlv::DeserializationInternalError)
+void ts::SimulCryptDate::get (const tlv::MessageFactory& mf, tlv::TAG tag)
 {
     // Get address and size of parameter. May raise exception if no such parameter
     tlv::MessageFactory::Parameter p;

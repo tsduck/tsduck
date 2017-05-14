@@ -39,13 +39,36 @@
 #include "tsReportInterface.h"
 
 namespace ts {
-
+    //!
+    //! Monitoring thread for system resources used by the application.
+    //!
+    //! This class starts an internal thread which periodically wakes up
+    //! and reports the usage of system resources by the current process
+    //! (virtual memory usage, CPU load). In addition to precise usage
+    //! values, it also displays an analysis of the virtual memory usage
+    //! (such as stable or leaking). 
+    //!
+    //! The reporting interval is changing over time, very fast at the
+    //! start of the application, then slower and slower:
+    //!
+    //! - Up to start + 2 mn, log every 10 seconds
+    //! - Up to start + 10 mn, log every minute
+    //! - Up to start + 20 mn, log every 2 minutes
+    //! - Up to start + 1 hour, log every 5 minutes
+    //! - After start + 1 hour, log every 30 minutes
+    //!
     class TSDUCKDLL SystemMonitor: public Thread
     {
     public:
+        //!
+        //! Constructor.
+        //! @param [in] report Where to report log data.
+        //!
+        SystemMonitor(ReportInterface* report);
 
-        // Constructor & destructor
-        SystemMonitor(ReportInterface*);
+        //!
+        //! Destructor.
+        //!
         virtual ~SystemMonitor();
 
     private:
@@ -58,8 +81,9 @@ namespace ts {
         // Inherited from Thread
         virtual void main();
 
-        // Inaccessible operations
+        // Inaccessible operations.
+        SystemMonitor() = delete;
         SystemMonitor(const SystemMonitor&) = delete;
-        SystemMonitor& operator= (const SystemMonitor&) = delete;
+        SystemMonitor& operator=(const SystemMonitor&) = delete;
     };
 }

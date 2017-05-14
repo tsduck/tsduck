@@ -108,8 +108,9 @@ namespace ts {
         //! Assignment (use the same buffer).
         //! The same data area will be analyzed, starting at the current point.
         //! @param [in] bs Other bitstream to copy.
+        //! @return A reference to this object.
         //!
-        BitStream& operator= (const BitStream& bs)
+        BitStream& operator=(const BitStream& bs)
         {
             _base = bs._base;
             _start_bit = bs._start_bit;

@@ -39,77 +39,217 @@
 #include "tsStringUtils.h"
 
 namespace ts {
-
+    //!
+    //!  Representation of a "configuration section".
+    //!
+    //!  A configuration section contains a list of "entries". Each entry has one
+    //!  or more values. A value can be interpreted as a string, integer or boolean.
+    //!
     class TSDUCKDLL ConfigSection
     {
     public:
-        // Constructor & destructor
+        //!
+        //! Constructor.
+        //!
         ConfigSection();
+
+        //!
+        //! Destructor.
+        //!
         ~ConfigSection();
 
-        // Reset content of the section
+        //!
+        //! Reset content of the section
+        //!
         void reset();
 
-        // Get the number of entries in a section
-        size_t entryCount() const {return _entries.size();}
+        //!
+        //! Get the number of entries in the section.
+        //! @return The number of entries in the section.
+        //!
+        size_t entryCount() const
+        {
+            return _entries.size();
+        }
 
-        // Get the names of all entries in a section
+        //!
+        //! Get the names of all entries in the section.
+        //! @param [out] names The returned names of all entries in the section.
+        //!
         void getEntryNames(StringVector& names) const;
 
-        // Get the number of values in an entry.
-        // Return 0 if section or entry does not exist.
+        //!
+        //! Get the number of values in an entry.
+        //! @param [in] entry Entry name.
+        //! @return The number of values in @a entry or 0 if the entry does not exist.
+        //!
         size_t valueCount(const std::string& entry) const;
 
-        // Get a value in an entry.
-        // Return defvalue if entry does not exist, or if index is out of range
+        //!
+        //! Get a value in an entry.
+        //! @param [in] entry Entry name.
+        //! @param [in] index Index of the value in the entry.
+        //! @param [in] defvalue Default value.
+        //! @return The value in the entry or @a defvalue if @a entry does not exist, or if @a index is out of range
+        //!
         const std::string& value(const std::string& entry,
                                  size_t index = 0,
                                  const std::string& defvalue = "") const;
 
-        // Same as above but interpret the content as an integer.
-        // Return defvalue if the value cannot be interpreted as an integer.
+        //!
+        //! Get an integer value in an entry.
+        //! @tparam INT An integer type.
+        //! @param [in] entry Entry name.
+        //! @param [in] index Index of the value in the entry.
+        //! @param [in] defvalue Default value.
+        //! @return The value in the entry or @a defvalue if @a entry does not exist, or if @a index is out of range.
+        //!
         template <typename INT>
         INT value(const std::string& entry, size_t index = 0, const INT& defvalue = static_cast<INT>(0)) const;
 
-        // Same as above but interpret the content as a boolean.
-        // Return defvalue if the value cannot be interpreted as a boolean.
-        // Valid boolean representations are "true"/"yes"/"1" and "false"/"no"/"0".
+        //!
+        //! Get a boolean value in an entry.
+        //! @param [in] entry Entry name.
+        //! @param [in] index Index of the value in the entry.
+        //! @param [in] defvalue Default value.
+        //! @return The value in the entry or @a defvalue if @a entry does not exist,
+        //! or if @a index is out of range, or if the value cannot be interpreted as a boolean.
+        //! Valid boolean representations are "true" / "yes" / "1" and "false" / "no" / "0".
+        //!
         bool boolValue(const std::string& entry, size_t index = 0, bool defvalue = false) const;
 
-        // Delete an entry
-        void deleteEntry(const std::string& entry) {_entries.erase(entry);}
+        //!
+        //! Delete an entry
+        //! @param [in] entry Entry name.
+        //!
+        void deleteEntry(const std::string& entry)
+        {
+            _entries.erase(entry);
+        }
 
-        // Set the value of an entry.
+        //!
+        //! Set the string value of an entry.
+        //! @param [in] entry Entry name.
+        //! @param [in] value The value to set.
+        //!
         void set(const std::string& entry, const std::string& value);
-        void set(const std::string& entry, const StringVector& value);
-        void set(const std::string& entry, const char* value) {set(entry, std::string(value));}
-        void set(const std::string& entry, bool value);
-        void set(const std::string& entry, const std::vector <bool>& value);
 
+        //!
+        //! Set the string value of an entry.
+        //! @param [in] entry Entry name.
+        //! @param [in] value The value to set.
+        //!
+        void set(const std::string& entry, const char* value)
+        {
+            set(entry, std::string(value));
+        }
+
+        //!
+        //! Set the value of an entry from a vector of strings.
+        //! @param [in] entry Entry name.
+        //! @param [in] value The values to set.
+        //!
+        void set(const std::string& entry, const StringVector& value);
+
+        //!
+        //! Set the boolean value of an entry.
+        //! @param [in] entry Entry name.
+        //! @param [in] value The value to set.
+        //!
+        void set(const std::string& entry, bool value);
+ 
+        //!
+        //! Set the value of an entry from a vector of booleans.
+        //! @param [in] entry Entry name.
+        //! @param [in] value The values to set.
+        //!
+        void set(const std::string& entry, const std::vector<bool>& value);
+
+        //!
+        //! Set the integer value of an entry.
+        //! @tparam INT An integer type.
+        //! @param [in] entry Entry name.
+        //! @param [in] value The value to set.
+        //!
         template <typename INT>
         void set(const std::string& entry, const INT& value);
 
+        //!
+        //! Set the value of an entry from a vector of integers.
+        //! @tparam INT An integer type.
+        //! @param [in] entry Entry name.
+        //! @param [in] value The values to set.
+        //!
         template <typename INT>
-        void set(const std::string& entry, const std::vector <INT>& value);
+        void set(const std::string& entry, const std::vector<INT>& value);
 
-        // Append values in an entry
+        //!
+        //! Append a string value to an entry.
+        //! @param [in] entry Entry name.
+        //! @param [in] value The value to set.
+        //!
         void append(const std::string& entry, const std::string& value);
+
+        //!
+        //! Append a string value to an entry.
+        //! @param [in] entry Entry name.
+        //! @param [in] value The value to set.
+        //!
+        void append(const std::string& entry, const char* value)
+        {
+            append(entry, std::string(value));
+        }
+
+        //!
+        //! Append a vector of strings to an entry.
+        //! @param [in] entry Entry name.
+        //! @param [in] value The values to append.
+        //!
         void append(const std::string& entry, const std::vector <std::string>& value);
-        void append(const std::string& entry, const char* value) {append(entry, std::string(value));}
+
+        //!
+        //! Append a boolean value to an entry.
+        //! @param [in] entry Entry name.
+        //! @param [in] value The value to append.
+        //!
         void append(const std::string& entry, bool value);
+
+        //!
+        //! Append a vector of booleans to an entry.
+        //! @param [in] entry Entry name.
+        //! @param [in] value The values to append.
+        //!
         void append(const std::string& entry, const std::vector<bool>& value);
 
+        //!
+        //! Append an integer value to an entry.
+        //! @tparam INT An integer type.
+        //! @param [in] entry Entry name.
+        //! @param [in] value The value to append.
+        //!
         template <typename INT>
         void append(const std::string& entry, const INT& value);
 
+        //!
+        //! Append a vector of integers to an entry.
+        //! @tparam INT An integer type.
+        //! @param [in] entry Entry name.
+        //! @param [in] value The values to append.
+        //!
         template <typename INT>
         void append(const std::string& entry, const std::vector <INT>& value);
 
-        // Set the value of an entry from a string representation:
-        //    entryname = value [, value ...]
+        //!
+        //! Set the value of an entry from a string representation.
+        //! @param [in] text Entry specification "entryname = value [, value ...]".
+        //!
         void set(const std::string& text);
 
-        // Save the content of a section in a stream
+        //!
+        //! Save the content of the section in a text streams.
+        //! @param [in,out] strm An standard stream in output mode.
+        //! @return A reference to the @a strm object.
+        //!
         std::ostream& save(std::ostream& strm) const;
 
     private:
@@ -125,10 +265,15 @@ namespace ts {
     };
 }
 
-// Output operator
+//!
+//! Output operator for the class @link ts::ConfigSection @endlink on standard text streams.
+//! @param [in,out] strm An standard stream in output mode.
+//! @param [in] config A @link ts::ConfigSection @endlink object.
+//! @return A reference to the @a strm object.
+//!
 TSDUCKDLL inline std::ostream& operator<< (std::ostream& strm, const ts::ConfigSection& config)
 {
-    return config.save (strm);
+    return config.save(strm);
 }
 
 #include "tsConfigSectionTemplate.h"

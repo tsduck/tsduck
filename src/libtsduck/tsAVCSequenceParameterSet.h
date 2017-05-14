@@ -39,10 +39,17 @@
 #include "tsMPEG.h"
 
 namespace ts {
-
+    //!
+    //! Representation of an AVC sequence parameter set access unit.
+    //!
+    //! AVC is Advanced Video Coding, ISO 14496-10, ITU H.264.
+    //!
     class TSDUCKDLL AVCSequenceParameterSet: public AbstractAVCAccessUnit
     {
     public:
+        //!
+        //! Reference to the superclass.
+        //!
         typedef AbstractAVCAccessUnit SuperClass;
 
         // Constructor from a binary access unit
@@ -78,66 +85,71 @@ namespace ts {
         // Check validity of extension fields 1 (see below)
         bool extension1() const;
 
-        // Sequence parameter set fields
-        // See ISO/IEC 14496-10 sections 7.3.2.1 and 7.4.2.1
-        uint8_t  profile_idc;
-        uint8_t  constraint_set0_flag;
-        uint8_t  constraint_set1_flag;
-        uint8_t  constraint_set2_flag;
-        uint8_t  constraint_set3_flag;
-        uint8_t  reserved_zero_4bits;
-        uint8_t  level_idc;
-        uint32_t seq_parameter_set_id;
+        // Sequence parameter set fields.
+        // See ISO/IEC 14496-10 sections 7.3.2.1 and 7.4.2.1.
+
+        uint8_t  profile_idc;                               //!< profile_idc
+        uint8_t  constraint_set0_flag;                      //!< constraint_set0_flag
+        uint8_t  constraint_set1_flag;                      //!< constraint_set1_flag
+        uint8_t  constraint_set2_flag;                      //!< constraint_set2_flag
+        uint8_t  constraint_set3_flag;                      //!< constraint_set3_flag
+        uint8_t  reserved_zero_4bits;                       //!< reserved_zero_4bits
+        uint8_t  level_idc;                                 //!< level_idc
+        uint32_t seq_parameter_set_id;                      //!< seq_parameter_set_id
         // if (extension1()) {
-            uint8_t chroma_format_idc;
+            uint8_t chroma_format_idc;                      //!< chroma_format_idc
             // if (chroma_format_idc == 3) {
-                uint8_t separate_colour_plane_flag;
+                uint8_t separate_colour_plane_flag;         //!< separate_colour_plane_flag
             // }
-            uint32_t bit_depth_luma_minus8;
-            uint32_t bit_depth_chroma_minus8;
-            uint8_t  qpprime_y_zero_transform_bypass_flag;
-            uint8_t  seq_scaling_matrix_present_flag;
+            uint32_t bit_depth_luma_minus8;                 //!< bit_depth_luma_minus8
+            uint32_t bit_depth_chroma_minus8;               //!< bit_depth_chroma_minus8
+            uint8_t  qpprime_y_zero_transform_bypass_flag;  //!< qpprime_y_zero_transform_bypass_flag
+            uint8_t  seq_scaling_matrix_present_flag;       //!< seq_scaling_matrix_present_flag
             // scaling lists not stored in class AVCSequenceParameterSet
         // }
-        uint32_t log2_max_frame_num_minus4;
-        uint32_t pic_order_cnt_type;
+        uint32_t log2_max_frame_num_minus4;                 //!< log2_max_frame_num_minus4
+        uint32_t pic_order_cnt_type;                        //!< pic_order_cnt_type
         // if (pic_order_cnt_type == 0) {
-            uint32_t log2_max_pic_order_cnt_lsb_minus4;
+            uint32_t log2_max_pic_order_cnt_lsb_minus4;     //!< log2_max_pic_order_cnt_lsb_minus4
         // }
         // else if (pic_order_cnt_type == 1) {
-            uint8_t  delta_pic_order_always_zero_flag;
-            int32_t  offset_for_non_ref_pic;
-            int32_t  offset_for_top_to_bottom_field;
-            uint32_t num_ref_frames_in_pic_order_cnt_cycle;
-            std::vector<int32_t> offset_for_ref_frame;
+            uint8_t  delta_pic_order_always_zero_flag;      //!< delta_pic_order_always_zero_flag
+            int32_t  offset_for_non_ref_pic;                //!< offset_for_non_ref_pic
+            int32_t  offset_for_top_to_bottom_field;        //!< offset_for_top_to_bottom_field
+            uint32_t num_ref_frames_in_pic_order_cnt_cycle; //!< num_ref_frames_in_pic_order_cnt_cycle
+            std::vector<int32_t> offset_for_ref_frame;      //!< offset_for_ref_frame
         // }
-        uint32_t num_ref_frames;
-        uint8_t  gaps_in_frame_num_value_allowed_flag;
-        uint32_t pic_width_in_mbs_minus1;
-        uint32_t pic_height_in_map_units_minus1;
-        uint8_t  frame_mbs_only_flag;
+        uint32_t num_ref_frames;                            //!< num_ref_frames
+        uint8_t  gaps_in_frame_num_value_allowed_flag;      //!< gaps_in_frame_num_value_allowed_flag
+        uint32_t pic_width_in_mbs_minus1;                   //!< pic_width_in_mbs_minus1
+        uint32_t pic_height_in_map_units_minus1;            //!< pic_height_in_map_units_minus1
+        uint8_t  frame_mbs_only_flag;                       //!< frame_mbs_only_flag
         // if (!frame_mbs_only_flag) {
-            uint8_t  mb_adaptive_frame_field_flag;
+            uint8_t  mb_adaptive_frame_field_flag;          //!< mb_adaptive_frame_field_flag
         // }
-        uint8_t  direct_8x8_inference_flag;
-        uint8_t  frame_cropping_flag;
+        uint8_t  direct_8x8_inference_flag;                 //!< direct_8x8_inference_flag
+        uint8_t  frame_cropping_flag;                       //!< frame_cropping_flag
         // if (frame_cropping_flag) {
-            uint32_t frame_crop_left_offset;
-            uint32_t frame_crop_right_offset;
-            uint32_t frame_crop_top_offset;
-            uint32_t frame_crop_bottom_offset;
+            uint32_t frame_crop_left_offset;                //!< frame_crop_left_offset
+            uint32_t frame_crop_right_offset;               //!< frame_crop_right_offset
+            uint32_t frame_crop_top_offset;                 //!< frame_crop_top_offset
+            uint32_t frame_crop_bottom_offset;              //!< frame_crop_bottom_offset
         // }
-        uint8_t  vui_parameters_present_flag;
+        uint8_t  vui_parameters_present_flag;               //!< vui_parameters_present_flag
         // if (vui_parameters_present_flag) {
-            AVCVUIParameters vui;
+            AVCVUIParameters vui;                           //!< vui
         // }
 
         // Validity of RBSP trailing bits
-        bool   rbsp_trailing_bits_valid;
-        size_t rbsp_trailing_bits_count;
+        bool   rbsp_trailing_bits_valid;                    //!< rbsp_trailing_bits_valid
+        size_t rbsp_trailing_bits_count;                    //!< rbsp_trailing_bits_count
 
     protected:
-        // Parse the body of the binary access unit. Return the "valid" flag.
-        virtual bool parseBody (AVCParser&);
+        //!
+        //! Parse the body of the binary access unit.
+        //! @param [in,out] parser The AVC parser.
+        //! @return The "valid" flag.
+        //!
+        virtual bool parseBody(AVCParser& parser);
     };
 }

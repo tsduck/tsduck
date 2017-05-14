@@ -113,7 +113,7 @@ namespace ts {
         bool accept(TCPConnection& client, SocketAddress& addr, ReportInterface& report = CERR);
 
         // Inherited and overridden
-        bool close(ReportInterface& report = CERR);
+        virtual bool close(ReportInterface& report = CERR);
 
     private:
         // Unreachable operations

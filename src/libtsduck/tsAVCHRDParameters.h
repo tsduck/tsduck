@@ -1,3 +1,4 @@
+
 //----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
@@ -37,36 +38,43 @@
 #include "tsAbstractAVCStructure.h"
 
 namespace ts {
-
+    //!
+    //! AVC HRD (Hypothetical Reference Decoder) parameters.
+    //!
+    //! AVC is Advanced Video Coding, ISO 14496-10, ITU H.264.
+    //!
     class TSDUCKDLL AVCHRDParameters: public AbstractAVCStructure
     {
     public:
+        //!
+        //! Reference to the superclass.
+        //!
         typedef AbstractAVCStructure SuperClass;
 
-        // Constructor from a binary area
-        AVCHRDParameters (const void* data = 0, size_t size = 0);
+        //!
+        //! Constructor from a binary area.
+        //! @param [in] data Address of binary data to analyze.
+        //! @param [in] size Size in bytes of binary data to analyze.
+        //!
+        AVCHRDParameters(const void* data = 0, size_t size = 0);
 
-        // Clear all values
+        // Inherited methods
         virtual void clear();
+        virtual bool parse(const void* data, size_t size) {return AbstractAVCStructure::parse(data, size);}
+        virtual bool parse(AVCParser&);
+        virtual std::ostream& display(std::ostream& = std::cout, const std::string& margin = "") const;
 
-        // Parse a memory area. Return the "valid" flag.
-        virtual bool parse (const void* data, size_t size) {return AbstractAVCStructure::parse (data, size);}
-        virtual bool parse (AVCParser&);
-
-        // Display structure content
-        virtual std::ostream& display (std::ostream& = std::cout, const std::string& margin = "") const;
-
-        // HRD parameters fields
-        // See ISO/IEC 14496-10 sections E.1.2 and E.2.2
-        uint32_t cpb_cnt_minus1;
-        uint8_t  bit_rate_scale;
-        uint8_t  cpb_size_scale;
-        std::vector<uint32_t> bit_rate_value_minus1;
-        std::vector<uint32_t> cpb_size_value_minus1;
-        std::vector<uint8_t>  cbr_flag;
-        uint8_t  initial_cpb_removal_delay_length_minus1;
-        uint8_t  cpb_removal_delay_length_minus1;
-        uint8_t  dpb_output_delay_length_minus1;
-        uint8_t  time_offset_length;
+        // HRD parameters fields.
+        // See ISO/IEC 14496-10 sections E.1.2 and E.2.2.
+        uint32_t cpb_cnt_minus1;                          //!< cpb_cnt_minus1
+        uint8_t  bit_rate_scale;                          //!< bit_rate_scale
+        uint8_t  cpb_size_scale;                          //!< cpb_size_scale
+        std::vector<uint32_t> bit_rate_value_minus1;      //!< bit_rate_value_minus1
+        std::vector<uint32_t> cpb_size_value_minus1;      //!< cpb_size_value_minus1
+        std::vector<uint8_t>  cbr_flag;                   //!< cbr_flag
+        uint8_t  initial_cpb_removal_delay_length_minus1; //!< initial_cpb_removal_delay_length_minus1
+        uint8_t  cpb_removal_delay_length_minus1;         //!< cpb_removal_delay_length_minus1
+        uint8_t  dpb_output_delay_length_minus1;          //!< dpb_output_delay_length_minus1
+        uint8_t  time_offset_length;                      //!< time_offset_length
     };
 }

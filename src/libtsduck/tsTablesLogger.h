@@ -41,26 +41,52 @@
 #include "tsUDPSocket.h"
 
 namespace ts {
-
+    //!
+    //! This class logs sections and tables.
+    //!
     class TSDUCKDLL TablesLogger : private TableHandlerInterface, private SectionHandlerInterface
     {
     public:
-        // Constructor & destructor
-        TablesLogger (TablesLoggerOptions&);
-        ~TablesLogger ();
+        //!
+        //! Constructor.
+        //! @param [in] options Table logging options.
+        //!
+        TablesLogger(TablesLoggerOptions& options);
 
-        // The following method feeds the logger with a TS packet.
-        void feedPacket (const TSPacket&);
+        //!
+        //! Destructor.
+        //!
+        ~TablesLogger();
 
-        // Return true when an error was found
-        bool hasErrors() const {return _abort;}
+        //!
+        //! The following method feeds the logger with a TS packet.
+        //! @param [in] pkt A new transport stream packet.
+        //!
+        void feedPacket(const TSPacket& pkt);
 
-        // Return true when operation is complete
-        // (eg. max number of logged tables reached)
-        bool completed() const {return _abort || _exit;}
+        //!
+        //! Check if an error was found.
+        //! @return True when an error was found.
+        //!
+        bool hasErrors() const
+        {
+            return _abort;
+        }
 
-        // Report the demux errors (if any)
-        void reportDemuxErrors (std::ostream&);
+        //!
+        //! Check if the operation is complete.
+        //! @return True when the operation is complete (eg. max number of logged tables reached).
+        //!
+        bool completed() const
+        {
+            return _abort || _exit;
+        }
+
+        //!
+        //! Report the demux errors (if any).
+        //! @param [in,out] strm Output text stream.
+        //!
+        void reportDemuxErrors(std::ostream& strm);
 
     private:
         TablesLoggerOptions& _opt;
@@ -74,29 +100,31 @@ namespace ts {
         UDPSocket            _sock;   // Output socket
 
         // Hooks
-        virtual void handleTable (SectionDemux&, const BinaryTable&);
-        virtual void handleSection (SectionDemux&, const Section&);
+        virtual void handleTable(SectionDemux&, const BinaryTable&);
+        virtual void handleSection(SectionDemux&, const Section&);
 
         // Save a section in a binary file
-        void saveSection (const Section&);
+        void saveSection(const Section&);
 
         // Log a section (option --log)
-        void logSection (const Section&);
+        void logSection(const Section&);
 
         // Check if a specific section must be filtered
-        bool isFiltered (const Section&) const;
+        bool isFiltered(const Section&) const;
 
         // Pre/post-display of a table or section
-        void preDisplay (PacketCounter first, PacketCounter last);
+        void preDisplay(PacketCounter first, PacketCounter last);
         void postDisplay();
 
-        //  Build header of a TLV message
-        void startMessage (ByteBlock&, uint16_t message_type, PID pid);
+        // Build header of a TLV message
+        void startMessage(ByteBlock&, uint16_t message_type, PID pid);
 
-        //  Add a section into a TLV message
-        void addSection (ByteBlock&, const Section&);
+        // Add a section into a TLV message
+        void addSection(ByteBlock&, const Section&);
     };
 
-    // Safe pointer for TablesLogger (not thread-safe)
+    //!
+    //! Safe pointer for TablesLogger (not thread-safe).
+    //!
     typedef SafePtr <TablesLogger, NullMutex> TablesLoggerPtr;
 }

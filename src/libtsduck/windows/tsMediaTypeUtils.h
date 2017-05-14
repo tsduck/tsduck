@@ -56,6 +56,7 @@ namespace ts {
     //! Copy a media type to another (Windows-specific).
     //! @param [out] dst Destination media type.
     //! @param [in] src Source media type.
+    //! @return A COM status code.
     //!
     TSDUCKDLL ::HRESULT CopyMediaType(::AM_MEDIA_TYPE& dst, const ::AM_MEDIA_TYPE& src);
 

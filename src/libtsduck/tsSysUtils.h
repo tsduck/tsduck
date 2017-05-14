@@ -370,10 +370,17 @@ namespace ts {
     //!
     TSDUCKDLL bool DeleteEnvironment(const std::string& name);
 
-    // Expand environment variables inside a file path (or any string).
-    // Environment variable references are '$name' or '${name}'.
-    // In the first form, 'name' is the longest combination of letters, digits and underscore.
-    // A combination \$ is interpreted as a literal $, not an environment variable reference.
+    //!
+    //! Expand environment variables inside a file path (or any string).
+    //!
+    //! Environment variable references '$name' or '${name}' are replaced
+    //! by the corresponding values from the environment.
+    //! In the first form, 'name' is the longest combination of letters, digits and underscore.
+    //! A combination \\$ is interpreted as a literal $, not an environment variable reference.
+    //!
+    //! @param [in] path A path string containing references to environment variables.
+    //! @return The expanded string.
+    //!
     TSDUCKDLL std::string ExpandEnvironment(const std::string& path);
 
     //!

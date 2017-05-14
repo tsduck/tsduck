@@ -56,8 +56,8 @@ namespace ts {
         //!
         AbstractAVCStructure() : AbstractAVCData() {}
 
-        // Implementation of AbstractAVCData interface.
-        virtual bool parse(const void*, size_t);
+        //! @copydoc AbstractAVCData::parse()
+        virtual bool parse(const void* addr, size_t size);
         
         //!
         //! Parse the structure.

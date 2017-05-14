@@ -50,13 +50,14 @@ namespace ts {
     public:
         //!
         //! Acquire the mutex, does nothing but successfully!
-        //! @return always true
+        //! @param [in] timeout Maximum number of milliseconds to wait for the mutex. Ignored.
+        //! @return Always true.
         //!
         virtual bool acquire(MilliSecond timeout = Infinite) {return true;}
 
         //!
         //! Release the mutex, does nothing but successfully!
-        //! @return always true
+        //! @return Always true.
         //!
         virtual bool release() {return true;}
     };

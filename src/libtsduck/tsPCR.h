@@ -37,14 +37,22 @@
 
 namespace ts {
 
-    // Size in bytes of Program Clock Reference (PCR)
+    //!
+    //! Size in bytes of a Program Clock Reference (PCR).
+    //!
     const size_t PCR_SIZE = 6;
 
-    // This routine extracts a PCR from a stream.
-    // Use 6 bytes at address b. Return a 42-bit value.
-    TSDUCKDLL uint64_t GetPCR (const uint8_t* b);
+    //!
+    //! This routine extracts a PCR from a stream.
+    //! @param [in] b Address of a 6-byte memory area containing a PCR binary value.
+    //! @return A 42-bit PCR value.
+    //!
+    TSDUCKDLL uint64_t GetPCR(const uint8_t* b);
 
-    // This routine inserts a PCR in a stream.
-    // Writes 6 bytes at address b.
-    TSDUCKDLL void PutPCR (uint8_t* b, const uint64_t& pcr);
+    //!
+    //! This routine inserts a PCR in a stream.
+    //! @param [out] b Address of a 6-byte memory area to write the PCR binary value.
+    //! @param [in] pcr A 42-bit PCR value.
+    //!
+    TSDUCKDLL void PutPCR(uint8_t* b, const uint64_t& pcr);
 }

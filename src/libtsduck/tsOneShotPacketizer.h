@@ -36,28 +36,42 @@
 #include "tsCyclingPacketizer.h"
 
 namespace ts {
-
+    //!
+    //! Packetization of MPEG sections into Transport Stream packets in one shot
+    //!
     class TSDUCKDLL OneShotPacketizer: public CyclingPacketizer
     {
     public:
-        // Constructor
-        OneShotPacketizer (PID pid = PID_NULL, bool do_stuffing = false, BitRate bitrate = 0) :
-            CyclingPacketizer (pid, do_stuffing ? ALWAYS : AT_END, bitrate)
+        //!
+        //! Default constructor.
+        //! @param [in] pid PID for generated TS packets.
+        //! @param [in] do_stuffing TS packet stuffing at end of section.
+        //! @param [in] bitrate Output bitrate, zero if undefined.
+        //! Useful only when using specific repetition rates for sections
+        //!
+        OneShotPacketizer(PID pid = PID_NULL, bool do_stuffing = false, BitRate bitrate = 0) :
+            CyclingPacketizer(pid, do_stuffing ? ALWAYS : AT_END, bitrate)
         {
         }
 
-        // Set the stuffing policy.
-        void setStuffingPolicy (bool do_stuffing)
+        //!
+        //! Set the stuffing policy.
+        //! @param [in] do_stuffing TS packet stuffing at end of section.
+        //!
+        void setStuffingPolicy(bool do_stuffing)
         {
-            CyclingPacketizer::setStuffingPolicy (do_stuffing ? ALWAYS : AT_END);
+            CyclingPacketizer::setStuffingPolicy(do_stuffing ? ALWAYS : AT_END);
         }
 
-        // Get complete cycle as one list of packets
-        void getPackets (TSPacketVector&);
+        //!
+        //! Get a complete cycle as one list of packets.
+        //! @param [out] packets Returned list of TS packets containing a complete cycle.
+        //!
+        void getPackets(TSPacketVector& packets);
 
     private:
         // Hide these methods
-        void setStuffingPolicy (StuffingPolicy);
-        void getNextPacket (TSPacket&);
+        void setStuffingPolicy(StuffingPolicy);
+        void getNextPacket(TSPacket&);
     };
 }

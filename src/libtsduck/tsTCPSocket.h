@@ -79,14 +79,14 @@ namespace ts {
         //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
-        bool open(ReportInterface& report = CERR);
+        virtual bool open(ReportInterface& report = CERR);
 
         //!
         //! Close the socket.
         //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
-        bool close(ReportInterface& report = CERR);
+        virtual bool close(ReportInterface& report = CERR);
 
         //!
         //! Check if socket is open.

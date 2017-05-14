@@ -151,12 +151,15 @@ namespace ts {
         //!
         void getAC3Attributes(PID pid, AC3Attributes& attr) const;
 
-        // Check if all PES packets on the specified PID contain AC-3 audio.
-        // Due to the way AC-3 is detected, it is possible that some PES packets
-        // are erroneously detected as AC-3. Thus, getAC3Attributes() returns
-        // a valid value since some AC-3 was detected. But, on homogeneous
-        // streams, it is safe to assume that the PID really contains AC-3 only if
-        // all PES packets contain AC-3.
+        //!
+        //! Check if all PES packets on the specified PID contain AC-3 audio.
+        //! @return True if all PES packets on the specified PID contain AC-3 audio.
+        //! Due to the way AC-3 is detected, it is possible that some PES packets
+        //! are erroneously detected as AC-3. Thus, getAC3Attributes() returns
+        //! a valid value since some AC-3 was detected. But, on homogeneous
+        //! streams, it is safe to assume that the PID really contains AC-3 only if
+        //! all PES packets contain AC-3.
+        //!
         bool allAC3(PID) const;
 
     private:

@@ -36,54 +36,64 @@
 #include "tsArgs.h"
 
 namespace ts {
-
+    //!
+    //! Report options for the class TSAnalyzer.
+    //!
+    //! The default options are
+    //! -\-ts-analysis -\-service-analysis -\-pid-analysis -\-table-analysis
+    //!
     class TSDUCKDLL TSAnalyzerOptions: public Args
     {
     public:
-        // Constructor.
-        TSAnalyzerOptions (const std::string& description = "",
-                           const std::string& syntax = "",
-                           const std::string& help = "",
-                           int flags = 0);
-
-        // Public fields, by options. The default options are
-        // --ts-analysis --service-analysis --pid-analysis --table-analysis
+        //!
+        //! Constructor.
+        //! @param [in] description A short one-line description, eg. "Wonderful File Copier".
+        //! @param [in] syntax A short one-line syntax summary, eg. "[options] filename ...".
+        //! @param [in] help A multi-line string describing the usage of options and parameters.
+        //! @param [in] flags An or'ed mask of ts::Args::Flags values.
+        //!
+        TSAnalyzerOptions(const std::string& description = "",
+                          const std::string& syntax = "",
+                          const std::string& help = "",
+                          int flags = 0);
 
         // Full analysis options:
-        bool ts_analysis;            // --ts-analysis
-        bool service_analysis;       // --service-analysis
-        bool pid_analysis;           // --pid-analysis
-        bool table_analysis;         // --table-analysis
-        bool error_analysis;         // --error-analysis
+        bool ts_analysis;            //!< Option -\-ts-analysis
+        bool service_analysis;       //!< Option -\-service-analysis
+        bool pid_analysis;           //!< Option -\-pid-analysis
+        bool table_analysis;         //!< Option -\-table-analysis
+        bool error_analysis;         //!< Option -\-error-analysis
 
         // Normalized output:
-        bool normalized;             // --normalized
+        bool normalized;             //!< Option -\-normalized
 
         // One-line report options:
-        bool service_list;           // --service-list
-        bool pid_list;               // --pid-list
-        bool global_pid_list;        // --global-pid-list
-        bool unreferenced_pid_list;  // --unreferenced-pid-list
-        bool pes_pid_list;           // --pes-pid-list
-        bool service_pid_list;       // --service-pid-list service-id
-        uint16_t service_id;         //
-        std::string prefix;          // --prefix "string"
+        bool service_list;           //!< Option -\-service-list
+        bool pid_list;               //!< Option -\-pid-list
+        bool global_pid_list;        //!< Option -\-global-pid-list
+        bool unreferenced_pid_list;  //!< Option -\-unreferenced-pid-list
+        bool pes_pid_list;           //!< Option -\-pes-pid-list
+        bool service_pid_list;       //!< Option -\-service-pid-list service-id
+        uint16_t service_id;         //!< Service id for -\-service-pid-list
+        std::string prefix;          //!< Option -\-prefix "string"
 
         // Additional options
-        std::string title;           // --title "string"
+        std::string title;           //!< Option -\-title "string"
 
         // Suspect packets detection
-        uint64_t suspect_min_error_count;  // --suspect-min-error-count
-        uint64_t suspect_max_consecutive;  // --suspect-max-consecutive
+        uint64_t suspect_min_error_count;  //!< Option -\-suspect-min-error-count
+        uint64_t suspect_max_consecutive;  //!< Option -\-suspect-max-consecutive
 
         // Overriden methods.
-        void setHelp(const std::string& help);
+        virtual void setHelp(const std::string& help);
         virtual bool analyze(int argc, char* argv[]);
         virtual bool analyze(const std::string& app_name, const StringVector& arguments);
 
-        // Get option values (the public fields) after analysis of another
-        // ts::Args object defining the same options.
-        void getOptions(const Args&);
+        //!
+        //! Get option values (the public fields) after analysis of another ts::Args object defining the same options.
+        //! @param [in] args Another ts::Args object defining the same TSAnalyzer options.
+        //!
+        void getOptions(const Args& args);
 
     private:
         // Inaccessible operations

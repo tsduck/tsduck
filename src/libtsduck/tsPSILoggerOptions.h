@@ -37,31 +37,41 @@
 #include "tsMPEG.h"
 
 namespace ts {
-
+    //!
+    //! Options for the class PSILogger.
+    //!
     class TSDUCKDLL PSILoggerOptions: public Args
     {
     public:
-        // Constructor.
-        PSILoggerOptions (const std::string& description = "",
-                          const std::string& syntax = "",
-                          const std::string& help = "",
-                          int flags = 0);
+        //!
+        //! Constructor.
+        //! @param [in] description A short one-line description, eg. "Wonderful File Copier".
+        //! @param [in] syntax A short one-line syntax summary, eg. "[options] filename ...".
+        //! @param [in] help A multi-line string describing the usage of options and parameters.
+        //! @param [in] flags An or'ed mask of ts::Args::Flags values.
+        //!
+        PSILoggerOptions(const std::string& description = "",
+                         const std::string& syntax = "",
+                         const std::string& help = "",
+                         int flags = 0);
 
         // Public fields, by options.
-        bool        all_versions;   // Display all versions of PSI tables
-        bool        clear;          // Clear stream, do not wait for a CAT
-        bool        cat_only;       // Only CAT, ignore other PSI
-        bool        dump;           // Dump all sections
-        std::string output;         // Destination name file
+        bool        all_versions;   //!< Display all versions of PSI tables.
+        bool        clear;          //!< Clear stream, do not wait for a CAT.
+        bool        cat_only;       //!< Only CAT, ignore other PSI.
+        bool        dump;           //!< Dump all sections.
+        std::string output;         //!< Destination name file.
 
         // Overriden methods.
-        void setHelp (const std::string& help);
-        virtual bool analyze (int argc, char* argv[]);
-        virtual bool analyze (const std::string& app_name, const StringVector& arguments);
+        virtual void setHelp(const std::string& help);
+        virtual bool analyze(int argc, char* argv[]);
+        virtual bool analyze(const std::string& app_name, const StringVector& arguments);
 
-        // Get option values (the public fields) after analysis of another
-        // ts::Args object defining the same options.
-        void getOptions (Args&);
+        //!
+        //! Get option values (the public fields) after analysis of another ts::Args object defining the same options.
+        //! @param [in] args Another ts::Args object defining the same PSI logger options.
+        //!
+        void getOptions(Args& args);
 
     private:
         // Inaccessible operations

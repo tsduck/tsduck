@@ -37,41 +37,95 @@
 #include "tsTSAnalyzerOptions.h"
 
 namespace ts {
-
+    //!
+    //! A subclass of TSAnalyzer with reporting capabilities.
+    //!
     class TSDUCKDLL TSAnalyzerReport: public TSAnalyzer
     {
     public:
-        // Constructor
-        TSAnalyzerReport (BitRate bitrate_hint = 0) : TSAnalyzer (bitrate_hint) {}
+        //!
+        //! Default constructor.
+        //! @param [in] bitrate_hint Optional bitrate "hint" for the analysis.
+        //! It is the user-specified bitrate in bits/seconds, based on 188-byte
+        //! packets. The bitrate hint is optional: if specified as zero, the
+        //! analysis is based on the PCR values.
+        //!
+        TSAnalyzerReport(BitRate bitrate_hint = 0) :
+            TSAnalyzer(bitrate_hint)
+        {
+        }
 
-        // Set analysis options. Must be set before feeding the first packet.
-        void setAnalysisOptions (const TSAnalyzerOptions& opt);
+        //!
+        //! Set the analysis options.
+        //! Must be set before feeding the first packet.
+        //! @param [in] opt Analysis options.
+        //!
+        void setAnalysisOptions(const TSAnalyzerOptions& opt);
 
-        // General reporting method, using options
-        std::ostream& report (std::ostream& strm, const TSAnalyzerOptions& opt);
+        //!
+        //! General reporting method, using the specified options.
+        //! @param [in,out] strm Output text stream.
+        //! @param [in] opt Analysis options.
+        //! @return A reference to @a strm.
+        //!
+        std::ostream& report(std::ostream& strm, const TSAnalyzerOptions& opt);
 
-        // The following methods display formatted analysis reports about various
-        // aspects of the transport stream: global transport stream analysis,
-        // services analysis, PID's analysis, tables.
-        std::ostream& reportTS       (std::ostream& strm, const std::string& title = "");
-        std::ostream& reportServices (std::ostream& strm, const std::string& title = "");
-        std::ostream& reportPIDs     (std::ostream& strm, const std::string& title = "");
-        std::ostream& reportTables   (std::ostream& strm, const std::string& title = "");
+        //!
+        //! Report formatted analysis about the global transport stream.
+        //! @param [in,out] strm Output text stream.
+        //! @param [in] title Title string to display.
+        //! @return A reference to @a strm.
+        //!
+        std::ostream& reportTS(std::ostream& strm, const std::string& title = "");
 
-        // This methods displays an error report
-        std::ostream& reportErrors (std::ostream& strm, const std::string& title = "");
+        //!
+        //! Report formatted analysis about services.
+        //! @param [in,out] strm Output text stream.
+        //! @param [in] title Title string to display.
+        //! @return A reference to @a strm.
+        //!
+        std::ostream& reportServices(std::ostream& strm, const std::string& title = "");
 
-        // This method displays a normalized report.
-        std::ostream& reportNormalized (std::ostream& strm, const std::string& title = "");
+        //!
+        //! Report formatted analysis about PID's.
+        //! @param [in,out] strm Output text stream.
+        //! @param [in] title Title string to display.
+        //! @return A reference to @a strm.
+        //!
+        std::ostream& reportPIDs(std::ostream& strm, const std::string& title = "");
+
+        //!
+        //! Report formatted analysis about tables.
+        //! @param [in,out] strm Output text stream.
+        //! @param [in] title Title string to display.
+        //! @return A reference to @a strm.
+        //!
+        std::ostream& reportTables(std::ostream& strm, const std::string& title = "");
+
+        //!
+        //! This methods displays an error report.
+        //! @param [in,out] strm Output text stream.
+        //! @param [in] title Title string to display.
+        //! @return A reference to @a strm.
+        //!
+        std::ostream& reportErrors(std::ostream& strm, const std::string& title = "");
+
+        //!
+        //! This methods displays a normalized report.
+        //! @param [in,out] strm Output text stream.
+        //! @param [in] title Title string to display.
+        //! @return A reference to @a strm.
+        //!
+        std::ostream& reportNormalized(std::ostream& strm, const std::string& title = "");
 
     private:
         // Display one line of a service PID list 
-        void reportServicePID (std::ostream&, const PIDContext&) const;
+        void reportServicePID(std::ostream&, const PIDContext&) const;
 
         // Display list of services a PID belongs to
-        void reportServicesForPID (std::ostream&, const PIDContext&) const;
+        void reportServicesForPID(std::ostream&, const PIDContext&) const;
 
         // Display one normalized line of a time value
-        static void reportNormalizedTime (std::ostream&, const Time&, const char* type, const std::string& country = "");
+        static void reportNormalizedTime(std::ostream&, const Time&, const char* type, const std::string& country = "");
     };
 }

@@ -36,28 +36,47 @@
 #include "tsSectionDemux.h"
 
 namespace ts {
-
+    //!
+    //! A SectionDemux which extracts MPEG tables without external handler.
+    //!
     class TSDUCKDLL StandaloneTableDemux: public SectionDemux, private TableHandlerInterface
     {
     public:
-        // Constructor
+        //!
+        //! Constructor.
+        //! @param [in] pid_filter The set of PID's to demux.
+        //!
         StandaloneTableDemux(const PIDSet& pid_filter = NoPID);
 
-        // Virtual destructor
+        //!
+        //! Destructor.
+        //!
         virtual ~StandaloneTableDemux() {}
 
-        // Return the number of demuxed tables
-        size_t tableCount() const {return _tables.size ();}
+        //!
+        //! Get the number of demuxed tables so far.
+        //! @return The number of demuxed tables so far.
+        //!
+        size_t tableCount() const
+        {
+            return _tables.size ();
+        }
 
-        // Get a pointer to a demuxed table.
+        //!
+        //! Get a pointer to a demuxed table.
+        //! @param [in] index Index of a demuxed table, from 0 to tableCount()-1.
+        //! @return A safe pointer to the corresponding table.
+        //!
         const BinaryTablePtr& tableAt(size_t index) const
         {
-            assert (index < _tables.size ());
+            assert(index < _tables.size());
             return _tables[index];
         }
 
-        // Inherited from SectionDemux
+        //! @copydoc SectionDemux::reset()
         void reset();
+
+        //! @copydoc SectionDemux::resetPID()
         void resetPID(PID pid);
 
     private:

@@ -60,7 +60,7 @@ WARN_IF_UNDOCUMENTED = YES
 # Source code analysis:
 
 JAVADOC_AUTOBRIEF     = YES
-EXTRACT_ALL           = YES # Set to NO to generate warnings for missing doc
+EXTRACT_ALL           = NO # Set to NO to generate warnings for missing doc
 EXTRACT_PRIVATE       = NO
 EXTRACT_STATIC        = YES
 EXTRACT_LOCAL_CLASSES = NO

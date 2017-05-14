@@ -240,7 +240,13 @@ namespace ts {
         TCPConnection& operator=(const TCPConnection&) = delete;
     };
 
-    // Safe pointers
-    typedef SafePtr<TCPConnection,NullMutex> TCPConnectionPtr; // single-threaded
-    typedef SafePtr<TCPConnection,Mutex> TCPConnectionPtrMT;   // multi-threaded
+    //!
+    //! Safe pointer to a TCPConnection (not thread-safe).
+    //!
+    typedef SafePtr<TCPConnection,NullMutex> TCPConnectionPtr;
+
+    //!
+    //! Safe pointer to a TCPConnection (thread-safe).
+    //!
+    typedef SafePtr<TCPConnection,Mutex> TCPConnectionPtrMT;
 }

@@ -38,24 +38,50 @@
 #include "tsPSILoggerOptions.h"
 
 namespace ts {
-
+    //!
+    //! This class logs sections and tables.
+    //!
     class TSDUCKDLL PSILogger : private TableHandlerInterface, private SectionHandlerInterface
     {
     public:
-        // Constructor & destructor
-        PSILogger (PSILoggerOptions&);
-        ~PSILogger ();
+        //!
+        //! Constructor.
+        //! @param [in] options PSI logging options.
+        //!
+        PSILogger(PSILoggerOptions& options);
 
-        // The following method feeds the logger with a TS packet.
-        void feedPacket (const TSPacket&);
+        //!
+        //! Destructor.
+        //!
+        ~PSILogger();
 
-        // Return true when an error was found
-        bool hasErrors() const {return _abort;}
+        //!
+        //! The following method feeds the logger with a TS packet.
+        //! @param [in] pkt A new transport stream packet.
+        //!
+        void feedPacket(const TSPacket& pkt);
 
-        // Return true when analysis is complete
-        bool completed() const {return _abort || (!_opt.all_versions && _pat_ok && _cat_ok && _sdt_ok && _received_pmt >= _expected_pmt);}
+        //!
+        //! Check if an error was found.
+        //! @return True when an error was found.
+        //!
+        bool hasErrors() const
+        {
+            return _abort;
+        }
 
-        // Report the demux errors (if any)
+        //!
+        //! Return true when the analysis is complete.
+        //! @return True when the analysis is complete.
+        //!
+        bool completed() const
+        {
+            return _abort || (!_opt.all_versions && _pat_ok && _cat_ok && _sdt_ok && _received_pmt >= _expected_pmt);
+        }
+
+        //!
+        //! Report the demux errors (if any).
+        //!
         void reportDemuxErrors();
 
     private:
@@ -74,10 +100,12 @@ namespace ts {
         std::ostream&     _out;           // Output file 
 
         // Hooks
-        virtual void handleTable (SectionDemux&, const BinaryTable&);
-        virtual void handleSection (SectionDemux&, const Section&);
+        virtual void handleTable(SectionDemux&, const BinaryTable&);
+        virtual void handleSection(SectionDemux&, const Section&);
     };
 
-    // Safe pointer for PSILogger (not thread-safe)
-    typedef SafePtr <PSILogger, NullMutex> PSILoggerPtr;
+    //!
+    //! Safe pointer for PSILogger (not thread-safe).
+    //!
+    typedef SafePtr<PSILogger, NullMutex> PSILoggerPtr;
 }

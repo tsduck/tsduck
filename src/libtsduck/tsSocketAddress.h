@@ -119,8 +119,11 @@ namespace ts {
 
         //!
         //! Constructor from a string "addr[:port]" or "[addr:]port".
-        //! Addr can also be a hostname which is resolved.
-        //! Set to AnyAddress and Any port if failed to resolve name.
+        //! @param [in] name A string containing either a host name or a numerical
+        //! representation of the address and optional port.
+        //! In case of error, the integer value of the address is
+        //! set to @link AnyAddress @endlink and port to @link AnyPort @endlink.
+        //! @param [in] report Where to report errors.
         //!
         SocketAddress(const std::string& name, ReportInterface& report = CERR) :
             IPAddress(),

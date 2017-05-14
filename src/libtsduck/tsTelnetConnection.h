@@ -37,33 +37,59 @@
 #include "tsMutex.h"
 
 namespace ts {
-
-    // This class supports the communication with a half-duplex line oriented telnet server.
-    // The server sends a prompt.
-    // The client sends a request.
-    // The server replies by one or more lines followed by the prompt.
-
-    // From the client point of view the interface must allow
-    // To send a request
-    // To get replies line until all the lines of the replies have been read.
-
+    //!
+    //! Implementation of a half-duplex line oriented telnet connection.
+    //!
+    //! This class supports the communication with a half-duplex line oriented telnet server:
+    //! - The server sends a prompt.
+    //! - The client sends a request.
+    //! - The server replies by one or more lines followed by the prompt.
+    //!
+    //! From the client point of view the interface must allow:
+    //! - To send a request.
+    //! - To get replies line until all the lines of the replies have been read.
+    //!
     class TSDUCKDLL TelnetConnection: public TCPConnection
     {
     public:
+        //!
+        //! Reference to the superclass.
+        //!
         typedef TCPConnection SuperClass;
 
-        // Constructor.
-        TelnetConnection(const std::string prompt);
+        //!
+        //! Constructor.
+        //! @param [in] prompt Prompt string to send to the client.
+        //!
+        TelnetConnection(const std::string prompt = std::string());
 
-        // Send a request to the server
-        bool send(const std::string&, ReportInterface&);
+        //!
+        //! Send a request to the server.
+        //! @param [in] str The string to send to the server.
+        //! @param [in,out] report Where to report errors.
+        //! @return True on success, false on error.
+        //!
+        bool send(const std::string& str, ReportInterface& report);
 
-        // Receive a line
-        // return true until the last line of the replies has been received.
-        bool receive(std::string&, const AbortInterface*, ReportInterface&);
+        //!
+        //! Receive a line.
+        //! @param [out] line The received line.
+        //! @param [in] abort If non-zero, invoked when I/O is interrupted
+        //! (in case of user-interrupt, return, otherwise retry).
+        //! @param [in,out] report Where to report errors.
+        //! @return True on success, false on error.
+        //! Return true until the last line of the replies has been received.
+        //!
+        bool receive(std::string& line, const AbortInterface* abort, ReportInterface& report);
 
-        // Receive a prompt
-        bool waitForPrompt(const AbortInterface*, ReportInterface&);
+        //!
+        //! Receive a prompt.
+        //! @param [in] abort If non-zero, invoked when I/O is interrupted
+        //! (in case of user-interrupt, return, otherwise retry).
+        //! @param [in,out] report Where to report errors.
+        //! @return True on success, false on error.
+        //!
+        bool waitForPrompt(const AbortInterface* abort, ReportInterface& report);
 
     private:
         TelnetConnection(const TelnetConnection&) = delete;

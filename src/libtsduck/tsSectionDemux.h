@@ -62,7 +62,7 @@ namespace ts {
         //!
         //! Destructor.
         //!
-        ~SectionDemux();
+        virtual ~SectionDemux();
 
         //!
         //! The following method feeds the demux with a TS packet.
