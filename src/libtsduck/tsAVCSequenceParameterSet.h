@@ -52,37 +52,75 @@ namespace ts {
         //!
         typedef AbstractAVCAccessUnit SuperClass;
 
-        // Constructor from a binary access unit
-        AVCSequenceParameterSet (const void* data = 0, size_t size = 0);
+        //!
+        //! Constructor from a binary area.
+        //! @param [in] data Address of binary data to analyze.
+        //! @param [in] size Size in bytes of binary data to analyze.
+        //!
+        AVCSequenceParameterSet(const void* data = 0, size_t size = 0);
 
-        // Clear all values
+        // Inherited methods
         virtual void clear();
+        virtual std::ostream& display(std::ostream& strm = std::cout, const std::string& margin = "") const;
 
-        // Display structure content
-        virtual std::ostream& display (std::ostream& = std::cout, const std::string& margin = "") const;
+        //!
+        //! Get chroma_format_idc, applying default value (see H.264 7.4.2.1.1).
+        //! @return The chroma_format_idc, applying default value.
+        //!
+        uint8_t chroma() const {return extension1() ? chroma_format_idc : uint8_t(CHROMA_420);}
 
-        // Get chroma_format_idc, applying default value (see H.264 7.4.2.1.1)
-        uint8_t chroma() const {return extension1() ? chroma_format_idc : uint8_t (CHROMA_420);}
-
-        // Get separate_colour_plane_flag, applying default value (see H.264 7.4.2.1.1)
+        //!
+        //! Get separate_colour_plane_flag, applying default value (see H.264 7.4.2.1.1).
+        //! @return The separate_colour_plane_flag, applying default value.
+        //!
         uint8_t separateColourPlaneFlag() const {return extension1() && chroma_format_idc == 3 ? separate_colour_plane_flag : 0;}
 
-        // ChromaArrayType variable (see H.264 7.4.2.1.1)
+        //!
+        //! The ChromaArrayType variable (see H.264 7.4.2.1.1).
+        //! @return The ChromaArrayType variable.
+        //!
         uint8_t chromaArrayType() const {return separateColourPlaneFlag() == 0 ? chroma() : 0;}
 
-        // SubWidthC and SubHeightC variables (see H.264 6.2)
+        //!
+        //! The SubWidthC variable (see H.264 6.2).
+        //! @return The SubWidthC variable (see H.264 6.2).
+        //!
         size_t subWidthC() const;
+
+        //!
+        //! The SubHeightC variable (see H.264 6.2).
+        //! @return The SubHeightC variable (see H.264 6.2).
+        //!
         size_t subHeightC() const;
 
-        // CropUnitX and CropUnitY variables (see H.264 7.4.2.1.1)
+        //!
+        //! The CropUnitX variable (see H.264 7.4.2.1.1).
+        //! @return The CropUnitX variable.
+        //!
         size_t cropUnitX() const;
+
+        //!
+        //! The CropUnitY variable (see H.264 7.4.2.1.1).
+        //! @return The CropUnitY variable.
+        //!
         size_t cropUnitY() const;
 
-        // Frame size in pixels
+        //!
+        //! Frame width in pixels.
+        //! @return The frame width in pixels.
+        //!
         size_t frameWidth() const;
+
+        //!
+        //! Frame height in pixels.
+        //! @return The frame height in pixels.
+        //!
         size_t frameHeight() const;
 
-        // Check validity of extension fields 1 (see below)
+        //!
+        //! Check validity of extension fields 1.
+        //! @return True if extension fields 1 are valid.
+        //!
         bool extension1() const;
 
         // Sequence parameter set fields.

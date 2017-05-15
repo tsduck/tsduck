@@ -58,18 +58,52 @@ namespace ts {
         virtual bool moreBinaryData(const void*, size_t);
         virtual operator std::string() const;
 
-        // Get size
+        //!
+        //! Get video horizontal size in pixels.
+        //! @return Video horizontal size in pixels.
+        //!
         size_t horizontalSize() const {return _is_valid ? _hsize : 0;}
+
+        //!
+        //! Get video vertical size in pixels.
+        //! @return Video vertical size in pixels.
+        //!
         size_t verticalSize() const {return _is_valid ? _vsize : 0;}
 
-        // Get AVC profile and level
+        //!
+        //! Get AVC profile.
+        //! @return AVC profile, 0 if unknown.
+        //!
         int profile() const {return _is_valid ? _profile : 0;}
+
+        //!
+        //! Get AVC profile name.
+        //! @return AVC profile as a string.
+        //!
         std::string profileName() const {return _is_valid ? names::AVCProfile(_profile) : "";}
+
+        //!
+        //! Get AVC level.
+        //! @return AVC level, 0 if unknown.
+        //!
         int level() const {return _is_valid ? _level : 0;}
+
+        //!
+        //! Get AVC level name.
+        //! @return AVC level as a string.
+        //!
         std::string levelName() const {return _is_valid ? Format("%d.%d", _level / 10, _level % 10) : "";}
 
-        // Get chroma format (code values are CHROMA_* from tsMPEG.h, 0 if unknown)
+        //!
+        //! Get chroma format.
+        //! @return Chroma format, code values are CHROMA_* from tsMPEG.h, 0 if unknown.
+        //!
         uint8_t chromaFormat() const {return _is_valid ? _chroma : 0;}
+
+        //!
+        //! Get chroma format name.
+        //! @return Chroma format as a string.
+        //!
         std::string chromaFormatName() const {return _is_valid ? names::ChromaFormat(_chroma) : "";}
 
     private:
