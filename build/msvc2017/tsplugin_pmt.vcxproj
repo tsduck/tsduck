@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <ImportGroup Label="PropertySheets">
+    <Import Project="msvc-common-begin.props" />
+  </ImportGroup>
+
+  <ItemGroup>
+    <ClCompile Include="..\..\src\tsplugins\tsplugin_pmt.cpp" />
+  </ItemGroup>
+
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{AD1B17E7-6268-4E46-8354-B191EEF7EBA4}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>tsplugin_pmt</RootNamespace>
+  </PropertyGroup>
+
+  <ImportGroup Label="PropertySheets">
+    <Import Project="msvc-target-dll.props" />
+    <Import Project="msvc-use-tsduckdll.props" />
+    <Import Project="msvc-common-end.props" />
+  </ImportGroup>
+
+</Project>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <ImportGroup Label="PropertySheets">
+    <Import Project="msvc-common-begin.props" />
+  </ImportGroup>
+
+  <ItemGroup>
+    <ClCompile Include="..\..\src\tsplugins\tsplugin_count.cpp" />
+  </ItemGroup>
+
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{3EE402D6-ABE8-4B1C-B318-BA15F5C6DE10}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>tsplugin_count</RootNamespace>
+  </PropertyGroup>
+
+  <ImportGroup Label="PropertySheets">
+    <Import Project="msvc-target-dll.props" />
+    <Import Project="msvc-use-tsduckdll.props" />
+    <Import Project="msvc-common-end.props" />
+  </ImportGroup>
+
+</Project>

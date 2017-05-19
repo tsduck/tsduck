@@ -376,7 +376,7 @@ $KnownMSBuild = @(
 # Find preferred version of MSBuild.
 $MSBuild = ""
 foreach ($m in $KnownMSBuild) {
-    $MsvcDir = (Join-Path (Split-Path $PSScriptRoot -Parent) "msvc$($m.VS)")
+    $MsvcDir = (Join-Path $PSScriptRoot "msvc$($m.VS)")
     if ((Test-Path $MsvcDir -PathType Container) -and (Test-Path $m.Exe)) {
         $MSBuild = $m.Exe
         break

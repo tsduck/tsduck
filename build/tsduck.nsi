@@ -49,7 +49,7 @@ Name "TSDuck"
 !define RootDir ".."
 !define InstallerDir "${RootDir}\installers"
 !ifndef ProjectDir
-    !define ProjectDir "${RootDir}\msvc2017"
+    !define ProjectDir "${RootDir}\build\msvc2017"
 !endif
 !ifdef Win64
     !define BinDir "${ProjectDir}\Release-x64"
