@@ -31,7 +31,7 @@
 #
 #-----------------------------------------------------------------------------
 
-include ../Makefile.tsduck
+include ../../Makefile.tsduck
 
 default:
 	@true
