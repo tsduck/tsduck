@@ -37,3 +37,5 @@ Makefile* text eol=lf
 *.jpg binary
 *.ico binary
 *.xcf binary
+*.docx binary
+*.pptx binary
