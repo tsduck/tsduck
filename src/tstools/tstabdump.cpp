@@ -46,50 +46,39 @@ using namespace ts;
 
 struct Options: public Args
 {
-    Options (int argc, char *argv[]);
+    Options(int argc, char *argv[]);
 
     bool         verbose;   // Verbose output
-    CASFamily    cas;       // CAS family
     StringVector infiles;   // Input file names
 };
 
-Options::Options (int argc, char *argv[]) :
-    Args ("Dump PSI/SI tables, as saved by tstables.", "[options] [filename ...]"),
-    cas (CAS_OTHER),
-    infiles ()
+Options::Options(int argc, char *argv[]) :
+    Args("Dump PSI/SI tables, as saved by tstables.", "[options] [filename ...]"),
+    infiles()
 {
-    option ("",            0,  Args::STRING);
-    option ("logiways",   'l'); // legacy
-    option ("safeaccess", 's');
-    option ("verbose",    'v');
+    option("",         0,  Args::STRING);
+    option("verbose", 'v');
 
-    setHelp ("Input file:\n"
-             "\n"
-             "  MPEG capture file (standard input if omitted).\n"
-             "\n"
-             "Options:\n"
-             "\n"
-             "  --help\n"
-             "      Display this help text.\n"
-             "\n"
-             "  -s\n"
-             "  --safeaccess\n"
-             "      Interpret ECM and EMM according to SafeAccess CAS.\n"
-             "\n"
-             "  -v\n"
-             "  --verbose\n"
-             "      Produce verbose output.\n"
-             "\n"
-             "  --version\n"
-             "      Display the version number.\n");
+    setHelp("Input file:\n"
+            "\n"
+            "  MPEG capture file (standard input if omitted).\n"
+            "\n"
+            "Options:\n"
+            "\n"
+            "  --help\n"
+            "      Display this help text.\n"
+            "\n"
+            "  -v\n"
+            "  --verbose\n"
+            "      Produce verbose output.\n"
+            "\n"
+            "  --version\n"
+            "      Display the version number.\n");
 
-    analyze (argc, argv);
+    analyze(argc, argv);
 
-    getValues (infiles, "");
-    verbose = present ("verbose");
-    if (present ("safeaccess") || present ("logiways")) {
-        cas = CAS_SAFEACCESS;
-    }
+    getValues(infiles, "");
+    verbose = present("verbose");
 }
 
 
@@ -97,7 +86,7 @@ Options::Options (int argc, char *argv[]) :
 //  Dump routine. Return true on success.
 //----------------------------------------------------------------------------
 
-bool DumpFile (Options& opt, const std::string& file_name)
+bool DumpFile(Options& opt, const std::string& file_name)
 {
     // Report file name in case of multiple files
 
@@ -112,17 +101,17 @@ bool DumpFile (Options& opt, const std::string& file_name)
 
     if (opt.infiles.size() == 0) {
         // no input file specified, use standard input
-        SetBinaryModeStdin (opt);
-        ok = Section::LoadFile (sections, std::cin, CRC32::IGNORE, opt);
+        SetBinaryModeStdin(opt);
+        ok = Section::LoadFile(sections, std::cin, CRC32::IGNORE, opt);
     }
     else {
-        ok = Section::LoadFile (sections, file_name, CRC32::IGNORE, opt);
+        ok = Section::LoadFile(sections, file_name, CRC32::IGNORE, opt);
     }
 
     if (ok) {
         // Display all sections
         for (SectionPtrVector::const_iterator it = sections.begin(); it != sections.end(); ++it) {
-            (*it)->display (std::cout, 0, opt.cas) << std::endl;
+            (*it)->display(std::cout, 0, CAS_OTHER) << std::endl;
         }
     }
 
@@ -134,19 +123,19 @@ bool DumpFile (Options& opt, const std::string& file_name)
 //  Program entry point
 //----------------------------------------------------------------------------
 
-int main (int argc, char *argv[])
+int main(int argc, char *argv[])
 {
-    Options opt (argc, argv);
+    Options opt(argc, argv);
     bool ok = true;
 
     std::cout << std::endl;
 
     if (opt.infiles.size() == 0) {
-        ok = DumpFile (opt, "");
+        ok = DumpFile(opt, "");
     }
     else {
         for (StringVector::const_iterator it = opt.infiles.begin(); it != opt.infiles.end(); ++it) {
-            ok = DumpFile (opt, *it) && ok;
+            ok = DumpFile(opt, *it) && ok;
         }
     }
 
