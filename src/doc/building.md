@@ -11,12 +11,10 @@ MacOS can only support files and IP for TS input and output.
 
 ## Windows {#reqwindows}
 
-- Visual Studio 2015 Community Edition. This is the free version of Visual Studio.
+- Visual Studio 2017 Community Edition. This is the free version of Visual Studio.
   If can be downloaded [here](https://www.visualstudio.com/downloads/). This link
   allows the download of the latest version of Visual Studio but offers no way to
-  download a specific previous version. As of April 2017, the Dektec Windows SDK does not
-  support VS2017, only VS2015 at best. You may download VS2015 Community Edition using the
-  [Microsoft Image Program](https://imagine.microsoft.com/en-us/Catalog/Product/101).
+  download a specific previous version.
 
 - CppUnit binary libraries. Download [here](https://sourceforge.net/projects/cppunit-msvc/files/).
 
@@ -34,7 +32,7 @@ MacOS can only support files and IP for TS input and output.
   It downloads and installs the Dektec Windows SDK from the Dektec site.
   Alternatively, you may download it [here](http://www.dektec.com/products/SDK/DTAPI/Downloads/WinSDK.zip).
   TSDuck project files will detect DTAPI automatically. See the Visual Studio property
-  file `msvc2015\msvc-use-dtapi.props` for details.
+  file `build\msvc2017\msvc-use-dtapi.props` for details.
 
 ## Fedora {#reqfedora}
 
@@ -96,7 +94,7 @@ brew install pcsc-lite cppunit doxygen graphviz gnu-sed grep
 ## Windows {#buildwindows}
 
 Execute the PowerShell script `build\Build.ps1`. The TSDuck binaries, executables and
-DLL's, are built in directories `msvc2015\Release-Win32` and `msvc2015\Release-x64`
+DLL's, are built in directories `msvc2017\Release-Win32` and `msvc2017\Release-x64`
 for 32-bit and 64-bit platforms respectively.
 
 ## Linux and MacOS {#buildlinux}
