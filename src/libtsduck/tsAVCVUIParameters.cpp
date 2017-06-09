@@ -41,9 +41,43 @@
 //----------------------------------------------------------------------------
 
 ts::AVCVUIParameters::AVCVUIParameters (const void* data, size_t size) :
-    AbstractAVCStructure()
+    AbstractAVCStructure(),
+    aspect_ratio_info_present_flag(0),
+    aspect_ratio_idc(0),
+    sar_width(0),
+    sar_height(0),
+    overscan_info_present_flag(0),
+    overscan_appropriate_flag(0),
+    video_signal_type_present_flag(0),
+    video_format(0),
+    video_full_range_flag(0),
+    colour_description_present_flag(0),
+    colour_primaries(0),
+    transfer_characteristics(0),
+    matrix_coefficients(0),
+    chroma_loc_info_present_flag(0),
+    chroma_sample_loc_type_top_field(0),
+    chroma_sample_loc_type_bottom_field(0),
+    timing_info_present_flag(0),
+    num_units_in_tick(0),
+    time_scale(0),
+    fixed_frame_rate_flag(0),
+    nal_hrd_parameters_present_flag(0),
+    nal_hrd(),
+    vcl_hrd_parameters_present_flag(0),
+    vcl_hrd(),
+    low_delay_hrd_flag(0),
+    pic_struct_present_flag(0),
+    bitstream_restriction_flag(0),
+    motion_vectors_over_pic_boundaries_flag(0),
+    max_bytes_per_pic_denom(0),
+    max_bits_per_mb_denom(0),
+    log2_max_mv_length_horizontal(0),
+    log2_max_mv_length_vertical(0),
+    num_reorder_frames(0),
+    max_dec_frame_buffering(0)
 {
-    parse (data, size);
+    parse(data, size);
 }
 
 

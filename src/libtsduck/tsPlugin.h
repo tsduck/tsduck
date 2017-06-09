@@ -284,12 +284,12 @@ namespace ts {
         //!
         //! Constructor.
         //!
-        //! @param [in] tsp Associated callback to @c tsp executable.
+        //! @param [in] tsp_ Associated callback to @c tsp executable.
         //! @param [in] description A short one-line description, eg. "Wonderful File Copier".
         //! @param [in] syntax A short one-line syntax summary, eg. "[options] filename ...".
         //! @param [in] help A multi-line string describing the usage of options and parameters.
         //!
-        InputPlugin(TSP* tsp,
+        InputPlugin(TSP* tsp_,
                     const std::string& description = "",
                     const std::string& syntax = "",
                     const std::string& help = "") :
@@ -338,12 +338,12 @@ namespace ts {
         //!
         //! Constructor.
         //!
-        //! @param [in] tsp Associated callback to @c tsp executable.
+        //! @param [in] tsp_ Associated callback to @c tsp executable.
         //! @param [in] description A short one-line description, eg. "Wonderful File Copier".
         //! @param [in] syntax A short one-line syntax summary, eg. "[options] filename ...".
         //! @param [in] help A multi-line string describing the usage of options and parameters.
         //!
-        OutputPlugin(TSP* tsp,
+        OutputPlugin(TSP* tsp_,
                      const std::string& description = "",
                      const std::string& syntax = "",
                      const std::string& help = "") :
@@ -415,12 +415,12 @@ namespace ts {
         //!
         //! Constructor.
         //!
-        //! @param [in] tsp Associated callback to @c tsp executable.
+        //! @param [in] tsp_ Associated callback to @c tsp executable.
         //! @param [in] description A short one-line description, eg. "Wonderful File Copier".
         //! @param [in] syntax A short one-line syntax summary, eg. "[options] filename ...".
         //! @param [in] help A multi-line string describing the usage of options and parameters.
         //!
-        ProcessorPlugin(TSP* tsp,
+        ProcessorPlugin(TSP* tsp_,
                         const std::string& description = "",
                         const std::string& syntax = "",
                         const std::string& help = "") :

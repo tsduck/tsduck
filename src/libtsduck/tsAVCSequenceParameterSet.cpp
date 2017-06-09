@@ -41,10 +41,49 @@
 // Constructor
 //----------------------------------------------------------------------------
 
-ts::AVCSequenceParameterSet::AVCSequenceParameterSet (const void* data, size_t size) :
-    AbstractAVCAccessUnit()
+ts::AVCSequenceParameterSet::AVCSequenceParameterSet(const void* data, size_t size) :
+    AbstractAVCAccessUnit(),
+    
+    profile_idc(0),
+    constraint_set0_flag(0),
+    constraint_set1_flag(0),
+    constraint_set2_flag(0),
+    constraint_set3_flag(0),
+    reserved_zero_4bits(0),
+    level_idc(0),
+    seq_parameter_set_id(0),
+    chroma_format_idc(0),
+    separate_colour_plane_flag(0),
+    bit_depth_luma_minus8(0),
+    bit_depth_chroma_minus8(0),
+    qpprime_y_zero_transform_bypass_flag(0),
+    seq_scaling_matrix_present_flag(0),
+    log2_max_frame_num_minus4(0),
+    pic_order_cnt_type(0),
+    log2_max_pic_order_cnt_lsb_minus4(0),
+    delta_pic_order_always_zero_flag(0),
+    offset_for_non_ref_pic(0),
+    offset_for_top_to_bottom_field(0),
+    num_ref_frames_in_pic_order_cnt_cycle(0),
+    offset_for_ref_frame(),
+    num_ref_frames(0),
+    gaps_in_frame_num_value_allowed_flag(0),
+    pic_width_in_mbs_minus1(0),
+    pic_height_in_map_units_minus1(0),
+    frame_mbs_only_flag(0),
+    mb_adaptive_frame_field_flag(0),
+    direct_8x8_inference_flag(0),
+    frame_cropping_flag(0),
+    frame_crop_left_offset(0),
+    frame_crop_right_offset(0),
+    frame_crop_top_offset(0),
+    frame_crop_bottom_offset(0),
+    vui_parameters_present_flag(0),
+    vui(),
+    rbsp_trailing_bits_valid(false),
+    rbsp_trailing_bits_count(0)
 {
-    parse (data, size);
+    parse(data, size);
 }
 
 

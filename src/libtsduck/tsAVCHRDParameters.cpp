@@ -35,15 +35,24 @@
 #include "tsAVCHRDParameters.h"
 
 
-
 //----------------------------------------------------------------------------
 // Constructor from a binary area
 //----------------------------------------------------------------------------
 
-ts::AVCHRDParameters::AVCHRDParameters (const void* data, size_t size) :
-    AbstractAVCStructure()
+ts::AVCHRDParameters::AVCHRDParameters(const void* data, size_t size) :
+    AbstractAVCStructure(),
+    cpb_cnt_minus1(0),
+    bit_rate_scale(0),
+    cpb_size_scale(0),
+    bit_rate_value_minus1(),
+    cpb_size_value_minus1(),
+    cbr_flag(),
+    initial_cpb_removal_delay_length_minus1(0),
+    cpb_removal_delay_length_minus1(0),
+    dpb_output_delay_length_minus1(0),
+    time_offset_length(0)
 {
-    parse (data, size);
+    parse(data, size);
 }
 
 

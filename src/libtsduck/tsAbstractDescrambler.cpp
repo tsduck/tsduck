@@ -185,6 +185,10 @@ void ts::AbstractDescrambler::handleTable (SectionDemux& demux, const BinaryTabl
             }
             break;
         }
+
+        default: {
+            // Not interested in other tables.
+        }
     }
 }
 

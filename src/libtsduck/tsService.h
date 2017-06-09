@@ -51,7 +51,7 @@ namespace ts {
         //!
         //! Default constructor.
         //!
-        Service() {}
+        Service();
 
         //!
         //! Constructor using a string description.
@@ -59,10 +59,7 @@ namespace ts {
         //! If the string evaluates to an integer (decimal or hexa),
         //! this is a service id, otherwise this is a service name.
         //!
-        Service(const std::string& desc)
-        {
-            set(desc);
-        }
+        Service(const std::string& desc);
 
         //!
         //! Reset using a string description.
@@ -254,18 +251,18 @@ namespace ts {
         }
 
     private:
-        Variable <uint16_t>    _id;
-        Variable <uint16_t>    _tsid;
-        Variable <uint16_t>    _onid;
-        Variable <PID>         _pmt_pid;
-        Variable <uint16_t>    _lcn;
-        Variable <uint8_t>     _type;
-        Variable <std::string> _name;
-        Variable <std::string> _provider;
-        Variable <bool>        _eits_present;
-        Variable <bool>        _eitpf_present;
-        Variable <bool>        _ca_controlled;
-        Variable <uint8_t>     _running_status;
+        Variable<uint16_t>    _id;
+        Variable<uint16_t>    _tsid;
+        Variable<uint16_t>    _onid;
+        Variable<PID>         _pmt_pid;
+        Variable<uint16_t>    _lcn;
+        Variable<uint8_t>     _type;
+        Variable<std::string> _name;
+        Variable<std::string> _provider;
+        Variable<bool>        _eits_present;
+        Variable<bool>        _eitpf_present;
+        Variable<bool>        _ca_controlled;
+        Variable<uint8_t>     _running_status;
     };
 
     // Containers

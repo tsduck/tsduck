@@ -40,7 +40,12 @@
 //----------------------------------------------------------------------------
 
 ts::AC3Descriptor::AC3Descriptor() :
-    AbstractDescriptor (DID_AC3)
+    AbstractDescriptor(DID_AC3),
+    component_type(),
+    bsid(),
+    mainid(),
+    asvc(),
+    additional_info()
 {
     _is_valid = true;
 }
@@ -50,10 +55,15 @@ ts::AC3Descriptor::AC3Descriptor() :
 // Constructor from a binary descriptor
 //----------------------------------------------------------------------------
 
-ts::AC3Descriptor::AC3Descriptor (const Descriptor& desc) :
-    AbstractDescriptor (DID_AC3)
+ts::AC3Descriptor::AC3Descriptor(const Descriptor& desc) :
+    AbstractDescriptor(DID_AC3),
+    component_type(),
+    bsid(),
+    mainid(),
+    asvc(),
+    additional_info()
 {
-    deserialize (desc);
+    deserialize(desc);
 }
 
 
@@ -61,7 +71,7 @@ ts::AC3Descriptor::AC3Descriptor (const Descriptor& desc) :
 // Merge inside this object missing information which can be found in other object
 //----------------------------------------------------------------------------
 
-void ts::AC3Descriptor::merge (const AC3Descriptor& other)
+void ts::AC3Descriptor::merge(const AC3Descriptor& other)
 {
     if (!component_type.set()) {
         component_type = other.component_type;

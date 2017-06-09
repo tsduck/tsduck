@@ -35,6 +35,48 @@
 #include "tsToInteger.h"
 
 
+//----------------------------------------------------------------------------
+// Default constructor.
+//----------------------------------------------------------------------------
+
+ts::Service::Service() :
+    _id(),
+    _tsid(),
+    _onid(),
+    _pmt_pid(),
+    _lcn(),
+    _type(),
+    _name(),
+    _provider(),
+    _eits_present(),
+    _eitpf_present(),
+    _ca_controlled(),
+    _running_status()
+{
+}
+
+
+//----------------------------------------------------------------------------
+// Constructor using a string description.
+//----------------------------------------------------------------------------
+
+ts::Service::Service(const std::string& desc) :
+    _id(),
+    _tsid(),
+    _onid(),
+    _pmt_pid(),
+    _lcn(),
+    _type(),
+    _name(),
+    _provider(),
+    _eits_present(),
+    _eitpf_present(),
+    _ca_controlled(),
+    _running_status()
+{
+    set(desc);
+}
+
 
 //----------------------------------------------------------------------------
 // Reset using a string description.
@@ -42,7 +84,7 @@
 // this is a service id, otherwise this is a service name.
 //----------------------------------------------------------------------------
 
-void ts::Service::set (const std::string& desc)
+void ts::Service::set(const std::string& desc)
 {
     clear();
 

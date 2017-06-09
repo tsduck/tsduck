@@ -86,7 +86,11 @@ namespace ts {
         //! @param [in] size_in_bits Size in bits of the data area.
         //! @param [in] bit_offset_in_first_byte The number of initial bits to ignore in the first byte. Default: zero.
         //!
-        BitStream(const void* data, size_t size_in_bits, size_t bit_offset_in_first_byte = 0)
+        BitStream(const void* data, size_t size_in_bits, size_t bit_offset_in_first_byte = 0) :
+            _base(0),
+            _start_bit(0),
+            _end_bit(0),
+            _next_bit(0)
         {
             reset(data, size_in_bits, bit_offset_in_first_byte);
         }

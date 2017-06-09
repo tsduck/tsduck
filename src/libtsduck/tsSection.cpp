@@ -36,16 +36,151 @@
 #include "tsCRC32.h"
 
 
+//----------------------------------------------------------------------------
+// Default constructor.
+//----------------------------------------------------------------------------
+
+ts::Section::Section() :
+    _is_valid(false),
+    _source_pid(PID_NULL),
+    _first_pkt(0),
+    _last_pkt(0),
+    _data()
+{
+}
+
+
+//----------------------------------------------------------------------------
+// Copy constructor. The section content is either shared or referenced.
+//----------------------------------------------------------------------------
+
+ts::Section::Section(const Section& sect, CopyShare mode) :
+    _is_valid(sect._is_valid),
+    _source_pid(sect._source_pid),
+    _first_pkt(sect._first_pkt),
+    _last_pkt(sect._last_pkt),
+    _data()
+{
+    switch (mode) {
+        case SHARE:
+            _data = sect._data;
+            break;
+        case COPY:
+            _data = sect._is_valid ? new ByteBlock (*sect._data) : 0;
+            break;
+        default:
+            // should not get there
+            assert (false);
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Constructor from full binary content.
+//----------------------------------------------------------------------------
+
+ts::Section::Section(const void* content,
+                     size_t content_size,
+                     PID source_pid = PID_NULL,
+                     CRC32::Validation crc_op = CRC32::IGNORE) :
+    _is_valid(false),
+    _source_pid(source_pid),
+    _first_pkt(0),
+    _last_pkt(0),
+    _data()
+{
+    initialize(new ByteBlock(content, content_size), source_pid, crc_op);
+}
+
+
+//----------------------------------------------------------------------------
+// Constructor from full binary content.
+//----------------------------------------------------------------------------
+
+ts::Section::Section(const ByteBlock& content,
+                     PID source_pid = PID_NULL,
+                     CRC32::Validation crc_op = CRC32::IGNORE) :
+    _is_valid(false),
+    _source_pid(source_pid),
+    _first_pkt(0),
+    _last_pkt(0),
+    _data()
+{
+    initialize(new ByteBlock(content), source_pid, crc_op);
+}
+
+
+//----------------------------------------------------------------------------
+// Constructor from full binary content.
+//----------------------------------------------------------------------------
+
+ts::Section::Section(const ByteBlockPtr& content_ptr,
+                     PID source_pid = PID_NULL,
+                     CRC32::Validation crc_op = CRC32::IGNORE) :
+    _is_valid(false),
+    _source_pid(source_pid),
+    _first_pkt(0),
+    _last_pkt(0),
+    _data()
+{
+    initialize(content_ptr, source_pid, crc_op);
+}
+
+
+//----------------------------------------------------------------------------
+// Constructor from a short section payload.
+//----------------------------------------------------------------------------
+
+ts::Section::Section(TID tid,
+                     bool is_private_section,
+                     const void* payload,
+                     size_t payload_size,
+                     PID source_pid = PID_NULL) :
+    _is_valid(false),
+    _source_pid(source_pid),
+    _first_pkt(0),
+    _last_pkt(0),
+    _data()
+{
+    reload(tid, is_private_section, payload, payload_size, source_pid);
+}
+
+
+//----------------------------------------------------------------------------
+// Constructor from a long section payload.
+//----------------------------------------------------------------------------
+
+ts::Section::Section(TID tid,
+                     bool is_private_section,
+                     uint16_t tid_ext,
+                     uint8_t version,
+                     bool is_current,
+                     uint8_t section_number,
+                     uint8_t last_section_number,
+                     const void* payload,
+                     size_t payload_size,
+                     PID source_pid = PID_NULL) :
+    _is_valid(false),
+    _source_pid(source_pid),
+    _first_pkt(0),
+    _last_pkt(0),
+    _data()
+{
+    reload(tid, is_private_section, tid_ext, version, is_current,
+           section_number, last_section_number,
+           payload, payload_size, source_pid);
+}
+
 
 //----------------------------------------------------------------------------
 // Reload short section
 //----------------------------------------------------------------------------
 
-void ts::Section::reload (TID tid,
-                            bool is_private_section,
-                            const void* payload,
-                            size_t payload_size,
-                            PID source_pid)
+void ts::Section::reload(TID tid,
+                         bool is_private_section,
+                         const void* payload,
+                         size_t payload_size,
+                         PID source_pid)
 {
     initialize (source_pid);
     _is_valid = SHORT_SECTION_HEADER_SIZE + payload_size <= MAX_PRIVATE_SECTION_SIZE;
@@ -62,16 +197,16 @@ void ts::Section::reload (TID tid,
 // The CRC32 is automatically computed.
 //----------------------------------------------------------------------------
 
-void ts::Section::reload (TID tid,
-                            bool is_private_section,
-                            uint16_t tid_ext,
-                            uint8_t version,
-                            bool is_current,
-                            uint8_t section_number,
-                            uint8_t last_section_number,
-                            const void* payload,
-                            size_t payload_size,
-                            PID source_pid)
+void ts::Section::reload(TID tid,
+                         bool is_private_section,
+                         uint16_t tid_ext,
+                         uint8_t version,
+                         bool is_current,
+                         uint8_t section_number,
+                         uint8_t last_section_number,
+                         const void* payload,
+                         size_t payload_size,
+                         PID source_pid)
 {
     initialize (source_pid);
     _is_valid = section_number <= last_section_number && version <= 31 &&
@@ -94,7 +229,7 @@ void ts::Section::reload (TID tid,
 // Private method: Helper for constructors.
 //----------------------------------------------------------------------------
 
-void ts::Section::initialize (PID pid)
+void ts::Section::initialize(PID pid)
 {
     _is_valid = false;
     _source_pid = pid;
@@ -108,7 +243,7 @@ void ts::Section::initialize (PID pid)
 // Private method: Helper for constructors.
 //----------------------------------------------------------------------------
 
-void ts::Section::initialize (const ByteBlockPtr& bbp, PID pid, CRC32::Validation crc_op)
+void ts::Section::initialize(const ByteBlockPtr& bbp, PID pid, CRC32::Validation crc_op)
 {
     initialize (pid);
     _data = bbp;
@@ -148,31 +283,6 @@ void ts::Section::initialize (const ByteBlockPtr& bbp, PID pid, CRC32::Validatio
 
     if (!_is_valid) {
         _data = 0;
-    }
-}
-
-
-//----------------------------------------------------------------------------
-// Copy constructor. The section content is either shared or referenced.
-//----------------------------------------------------------------------------
-
-ts::Section::Section (const Section& sect, CopyShare mode) :
-    _is_valid (sect._is_valid),
-    _source_pid (sect._source_pid),
-    _first_pkt (sect._first_pkt),
-    _last_pkt (sect._last_pkt),
-    _data ()
-{
-    switch (mode) {
-        case SHARE:
-            _data = sect._data;
-            break;
-        case COPY:
-            _data = sect._is_valid ? new ByteBlock (*sect._data) : 0;
-            break;
-        default:
-            // should not get there
-            assert (false);
     }
 }
 
