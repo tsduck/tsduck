@@ -189,4 +189,4 @@ namespace ts {
     };
 }
 
-TSGENTAB_DECLARE_PLUGIN (ts::ThisPlugin);
+TSGENTAB_DECLARE_PLUGIN(ts::ThisPlugin)

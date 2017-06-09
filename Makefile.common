@@ -623,8 +623,13 @@ else
     CFLAGS_NO_WARNINGS   += -Wno-unused-parameter
     CXXFLAGS_NO_WARNINGS += -Wno-unused-parameter
 endif
-CFLAGS_WARNINGS   = -Werror -Wall -Wextra -Wstrict-prototypes -Wmissing-prototypes $(CFLAGS_NO_WARNINGS)
-CXXFLAGS_WARNINGS = -Werror -Wall -Wextra -Woverloaded-virtual $(CXXFLAGS_NO_WARNINGS)
+COMMON_WARNINGS   = -Wpedantic -Werror -Wall -Wextra
+CFLAGS_WARNINGS   = $(COMMON_WARNINGS) -Wstrict-prototypes -Wmissing-prototypes $(CFLAGS_NO_WARNINGS)
+CXXFLAGS_WARNINGS = $(COMMON_WARNINGS) -Woverloaded-virtual $(CXXFLAGS_NO_WARNINGS)
+
+# Compilation flags for security.
+CFLAGS_SECURITY = -fstack-protector-all
+CXXFLAGS_SECURITY = $(CFLAGS_SECURITY)
 
 # Compilation flags in debug mode.
 ifdef DEBUG
@@ -648,9 +653,9 @@ endif
 LDLIBS += $(if $(LDCXX),-lstdc++,) -lpthread $(if $(MACOS),,-lrt) -lm
 
 # Global compilation flags.
-# Additional flags can be passed on the "make" command line using *FLAGS_EXTRA.
-CFLAGS   = $(CFLAGS_DEBUG) $(CFLAGS_M32) $(CFLAGS_GCOV) $(CFLAGS_WARNINGS) $(CFLAGS_INCLUDES) $(TARGET_ARCH) $(CFLAGS_FPIC) -std=c99 $(CFLAGS_EXTRA)
-CXXFLAGS = $(CFLAGS_DEBUG) $(CFLAGS_M32) $(CFLAGS_GCOV) $(CXXFLAGS_WARNINGS) $(CXXFLAGS_INCLUDES) $(TARGET_ARCH) $(CFLAGS_FPIC) $(CXXFLAGS_EXTRA)
+# Additional flags can be passed on the "make" command line using FLAGS_EXTRA.
+CFLAGS   = $(CFLAGS_DEBUG) $(CFLAGS_M32) $(CFLAGS_GCOV) $(CFLAGS_WARNINGS) $(CFLAGS_SECURITY) $(CFLAGS_INCLUDES) $(TARGET_ARCH) $(CFLAGS_FPIC) -std=c99 $(CFLAGS_EXTRA)
+CXXFLAGS = $(CFLAGS_DEBUG) $(CFLAGS_M32) $(CFLAGS_GCOV) $(CXXFLAGS_WARNINGS) $(CXXFLAGS_SECURITY) $(CXXFLAGS_INCLUDES) $(TARGET_ARCH) $(CFLAGS_FPIC) $(CXXFLAGS_EXTRA)
 LDFLAGS  = $(LDFLAGS_DEBUG) $(LDFLAGS_M32) $(LDFLAGS_GCOV) $(TARGET_ARCH) $(LDFLAGS_EXTRA)
 ARFLAGS  = rc$(if $(MACOS),,U) $(ARFLAGS_EXTRA)
 

@@ -53,8 +53,8 @@ namespace ts {
     };
 }
 
-TSPLUGIN_DECLARE_VERSION;
-TSPLUGIN_DECLARE_OUTPUT (ts::DropOutput);
+TSPLUGIN_DECLARE_VERSION
+TSPLUGIN_DECLARE_OUTPUT(ts::DropOutput)
 
 
 //----------------------------------------------------------------------------

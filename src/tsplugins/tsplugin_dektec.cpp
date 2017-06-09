@@ -30,6 +30,6 @@
 #include "tsDektecInputPlugin.h"
 #include "tsDektecOutputPlugin.h"
 
-TSPLUGIN_DECLARE_VERSION;
-TSPLUGIN_DECLARE_INPUT(ts::DektecInputPlugin);
-TSPLUGIN_DECLARE_OUTPUT(ts::DektecOutputPlugin);
+TSPLUGIN_DECLARE_VERSION
+TSPLUGIN_DECLARE_INPUT(ts::DektecInputPlugin)
+TSPLUGIN_DECLARE_OUTPUT(ts::DektecOutputPlugin)

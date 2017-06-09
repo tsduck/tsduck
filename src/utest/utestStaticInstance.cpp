@@ -78,7 +78,7 @@ void StaticInstanceTest::tearDown()
 //----------------------------------------------------------------------------
 
 // Static instance, no initializer
-TS_STATIC_INSTANCE(std::string, (), Foo1);
+TS_STATIC_INSTANCE(std::string, (), Foo1)
 
 void StaticInstanceTest::testNoInitializer()
 {
@@ -94,7 +94,7 @@ void StaticInstanceTest::testNoInitializer()
 }
 
 // Static instance, initializer with two parameters
-TS_STATIC_INSTANCE(std::string, (4, '='), Foo2);
+TS_STATIC_INSTANCE(std::string, (4, '='), Foo2)
 
 void StaticInstanceTest::testInitializerTwoArgs()
 {

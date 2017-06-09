@@ -59,7 +59,7 @@ namespace ts {
     };
 }
 
-TSGENTAB_DECLARE_PLUGIN (ts::TNTNITPlugin);
+TSGENTAB_DECLARE_PLUGIN(ts::TNTNITPlugin)
 
 
 //----------------------------------------------------------------------------

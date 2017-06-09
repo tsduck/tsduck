@@ -86,8 +86,8 @@ namespace ts {
     };
 }
 
-TSPLUGIN_DECLARE_VERSION;
-TSPLUGIN_DECLARE_PROCESSOR (ts::SlicePlugin);
+TSPLUGIN_DECLARE_VERSION
+TSPLUGIN_DECLARE_PROCESSOR(ts::SlicePlugin)
 
 
 //----------------------------------------------------------------------------
