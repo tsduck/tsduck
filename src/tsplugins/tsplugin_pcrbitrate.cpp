@@ -73,8 +73,8 @@ namespace ts {
     };
 }
 
-TSPLUGIN_DECLARE_VERSION;
-TSPLUGIN_DECLARE_PROCESSOR (ts::PCRBitratePlugin);
+TSPLUGIN_DECLARE_VERSION
+TSPLUGIN_DECLARE_PROCESSOR(ts::PCRBitratePlugin)
 
 
 //----------------------------------------------------------------------------

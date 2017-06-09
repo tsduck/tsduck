@@ -57,8 +57,8 @@ namespace ts {
     };
 }
 
-TSPLUGIN_DECLARE_VERSION;
-TSPLUGIN_DECLARE_PROCESSOR (ts::SkipPlugin);
+TSPLUGIN_DECLARE_VERSION
+TSPLUGIN_DECLARE_PROCESSOR(ts::SkipPlugin)
 
 
 //----------------------------------------------------------------------------

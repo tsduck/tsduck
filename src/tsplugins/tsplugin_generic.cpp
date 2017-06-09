@@ -53,8 +53,8 @@ namespace ts {
     };
 }
 
-TSPLUGIN_DECLARE_VERSION;
-TSPLUGIN_DECLARE_PROCESSOR (ts::GenericPlugin);
+TSPLUGIN_DECLARE_VERSION
+TSPLUGIN_DECLARE_PROCESSOR(ts::GenericPlugin)
 
 
 //----------------------------------------------------------------------------

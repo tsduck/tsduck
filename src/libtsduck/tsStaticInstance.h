@@ -60,14 +60,14 @@
 //! @code
 //! namespace ts {
 //!     namespace foo {
-//!         TS_STATIC_INSTANCE_DECLARATION (std::string, Bar);
+//!         TS_STATIC_INSTANCE_DECLARATION(std::string, Bar);
 //!     }
 //! }
 //! @endcode
 //!
 //! In the definition body file (.cpp) of the module:
 //! @code
-//! TS_STATIC_INSTANCE_DEFINITION (std::string, ("initial value"), ts::foo::Bar, Bar);
+//! TS_STATIC_INSTANCE_DEFINITION(std::string, ("initial value"), ts::foo::Bar, Bar);
 //! @endcode
 //!
 //! In application code, we use the static instance of string as follow:
@@ -84,36 +84,36 @@
 //! @see TS_STATIC_INSTANCE_DEFINITION for the @e definition part.
 //!
 #define TS_STATIC_INSTANCE_DECLARATION(ObjectClass, StaticInstanceClass) \
-    class StaticInstanceClass                                           \
-    {                                                                   \
-    public:                                                             \
-        /* Public static method to access the static instance. */       \
-        static ObjectClass& Instance();                                 \
-    private:                                                            \
-        /* The actual object */                                         \
-        ObjectClass _object;                                            \
-        /* The constructor of the static instance initializes */        \
-        /* the actual object. */                                        \
-        StaticInstanceClass();                                          \
-        /* Pointer to the actual static instance. */                    \
-        static StaticInstanceClass* volatile _instance;                 \
-        /* Inner private class responsible for creation and */          \
-        /* destruction of the static instance. */                       \
-        class Controller                                                \
-        {                                                               \
-        public:                                                         \
-            /* The controller constructor forces the creation of */     \
-            /* the static instance if not already created by an */      \
-            /* earlier method invocation. */                            \
-            Controller();                                               \
-            /* The controller destructor forces the deletion of the */  \
-            /* static instance. */                                      \
-            ~Controller();                                              \
-        };                                                              \
-        /* Only one instance of the controller. */                      \
-        static Controller _controller;                                  \
-        /* Unaccessible operations. */                                  \
-        StaticInstanceClass(const StaticInstanceClass&) = delete;       \
+    class StaticInstanceClass                                            \
+    {                                                                    \
+    public:                                                              \
+        /* Public static method to access the static instance. */        \
+        static ObjectClass& Instance();                                  \
+    private:                                                             \
+        /* The actual object */                                          \
+        ObjectClass _object;                                             \
+        /* The constructor of the static instance initializes */         \
+        /* the actual object. */                                         \
+        StaticInstanceClass();                                           \
+        /* Pointer to the actual static instance. */                     \
+        static StaticInstanceClass* volatile _instance;                  \
+        /* Inner private class responsible for creation and */           \
+        /* destruction of the static instance. */                        \
+        class Controller                                                 \
+        {                                                                \
+        public:                                                          \
+            /* The controller constructor forces the creation of */      \
+            /* the static instance if not already created by an */       \
+            /* earlier method invocation. */                             \
+            Controller();                                                \
+            /* The controller destructor forces the deletion of the */   \
+            /* static instance. */                                       \
+            ~Controller();                                               \
+        };                                                               \
+        /* Only one instance of the controller. */                       \
+        static Controller _controller;                                   \
+        /* Unaccessible operations. */                                   \
+        StaticInstanceClass(const StaticInstanceClass&) = delete;        \
         StaticInstanceClass& operator=(const StaticInstanceClass&) = delete; \
     }
 
@@ -139,43 +139,43 @@
 //! @see TS_STATIC_INSTANCE_DECLARATION for the @e declaration part and usage examples.
 //!
 #define TS_STATIC_INSTANCE_DEFINITION(ObjectClass, ObjectArgs, StaticInstancePath, StaticInstanceClass) \
-    /* The constructor of the static instance initializes */            \
-    /* the actual object. */                                            \
-    StaticInstancePath::StaticInstanceClass() :                         \
-        _object ObjectArgs                                              \
-    {                                                                   \
-    }                                                                   \
-    /* Public static method to access the instance. */                  \
-    ObjectClass& StaticInstancePath::Instance()                         \
-    {                                                                   \
-        if (_instance == 0) {                                           \
-            /* No thread synchronization here. */                       \
+    /* The constructor of the static instance initializes */             \
+    /* the actual object. */                                             \
+    StaticInstancePath::StaticInstanceClass() :                          \
+        _object ObjectArgs                                               \
+    {                                                                    \
+    }                                                                    \
+    /* Public static method to access the instance. */                   \
+    ObjectClass& StaticInstancePath::Instance()                          \
+    {                                                                    \
+        if (_instance == 0) {                                            \
+            /* No thread synchronization here. */                        \
             StaticInstanceClass* volatile tmp = new StaticInstanceClass; \
-            ts::MemoryBarrier();                                      \
-            _instance = tmp;                                            \
-        }                                                               \
-        return _instance->_object;                                      \
-    }                                                                   \
-    /* The controller constructor forces the creation of the static */  \
-    /* instance if not already created by an earlier method. */         \
-    StaticInstancePath::Controller::Controller()                        \
-    {                                                                   \
-        StaticInstanceClass::Instance();                                \
-    }                                                                   \
-    /* The controller destructor forces the deletion of the */          \
-    /* static instance. */                                              \
-    StaticInstancePath::Controller::~Controller()                       \
-    {                                                                   \
-        if (StaticInstanceClass::_instance != 0) {                      \
-            delete StaticInstanceClass::_instance;                      \
-            StaticInstanceClass::_instance = 0;                         \
-        }                                                               \
-    }                                                                   \
-    /* Pointer to the actual instance is statically initialized to */   \
-    /* zero BEFORE invoking the initialization of the module. */        \
-    StaticInstancePath* volatile StaticInstancePath::_instance = 0;     \
-    /* The controller is initialized ("constructed") DURING the */      \
-    /* initialization of the module. */                                 \
+            ts::MemoryBarrier();                                         \
+            _instance = tmp;                                             \
+        }                                                                \
+        return _instance->_object;                                       \
+    }                                                                    \
+    /* The controller constructor forces the creation of the static */   \
+    /* instance if not already created by an earlier method. */          \
+    StaticInstancePath::Controller::Controller()                         \
+    {                                                                    \
+        StaticInstanceClass::Instance();                                 \
+    }                                                                    \
+    /* The controller destructor forces the deletion of the */           \
+    /* static instance. */                                               \
+    StaticInstancePath::Controller::~Controller()                        \
+    {                                                                    \
+        if (StaticInstanceClass::_instance != 0) {                       \
+            delete StaticInstanceClass::_instance;                       \
+            StaticInstanceClass::_instance = 0;                          \
+        }                                                                \
+    }                                                                    \
+    /* Pointer to the actual instance is statically initialized to */    \
+    /* zero BEFORE invoking the initialization of the module. */         \
+    StaticInstancePath* volatile StaticInstancePath::_instance = 0;      \
+    /* The controller is initialized ("constructed") DURING the */       \
+    /* initialization of the module. */                                  \
     StaticInstancePath::Controller StaticInstancePath::_controller
 
 //!
@@ -278,8 +278,8 @@
 //! @a ObjectArgs is a list of two parameters <code>(4, '=')</code>.
 //!
 //! @code
-//! TS_STATIC_INSTANCE (std::string, (), Foo1);
-//! TS_STATIC_INSTANCE (std::string, (4, '='), Foo2);
+//! TS_STATIC_INSTANCE(std::string, (), Foo1)
+//! TS_STATIC_INSTANCE(std::string, (4, '='), Foo2)
 //! ....
 //! std::cout << "Foo1: " << Foo1::Instance() << std::endl;
 //! std::cout << "Foo2: " << Foo2::Instance() << std::endl;
@@ -292,8 +292,8 @@
 //! @param StaticInstanceClass The name of the new class which encapsulates
 //! the static instance. This class is declared by the expansion of the macro.
 //!
-#define TS_STATIC_INSTANCE(ObjectClass, ObjectArgs, StaticInstanceClass)   \
-    namespace {                                                              \
-        TS_STATIC_INSTANCE_DECLARATION (ObjectClass, StaticInstanceClass); \
-        TS_STATIC_INSTANCE_DEFINITION (ObjectClass, ObjectArgs, StaticInstanceClass, StaticInstanceClass); \
+#define TS_STATIC_INSTANCE(ObjectClass, ObjectArgs, StaticInstanceClass)  \
+    namespace {                                                           \
+        TS_STATIC_INSTANCE_DECLARATION(ObjectClass, StaticInstanceClass); \
+        TS_STATIC_INSTANCE_DEFINITION(ObjectClass, ObjectArgs, StaticInstanceClass, StaticInstanceClass); \
     }

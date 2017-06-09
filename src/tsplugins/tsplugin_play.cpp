@@ -71,8 +71,8 @@ namespace ts {
     };
 }
 
-TSPLUGIN_DECLARE_VERSION;
-TSPLUGIN_DECLARE_OUTPUT (ts::PlayPlugin);
+TSPLUGIN_DECLARE_VERSION
+TSPLUGIN_DECLARE_OUTPUT(ts::PlayPlugin)
 
 
 //----------------------------------------------------------------------------

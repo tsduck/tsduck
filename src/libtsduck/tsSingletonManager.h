@@ -116,7 +116,6 @@ namespace ts {
 //! @see tsDeclareSingleton()
 //!
 #define tsDefineSingleton(fullclassname)                             \
-    fullclassname* volatile fullclassname::_instance = 0;            \
     fullclassname* fullclassname::Instance()                         \
     {                                                                \
         if (_instance == 0) {                                        \
@@ -134,4 +133,5 @@ namespace ts {
             delete _instance;                                        \
             _instance = 0;                                           \
         }                                                            \
-    }
+    }                                                                \
+    fullclassname* volatile fullclassname::_instance = 0

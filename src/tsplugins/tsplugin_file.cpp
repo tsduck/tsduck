@@ -87,10 +87,10 @@ namespace ts {
     };
 }
 
-TSPLUGIN_DECLARE_VERSION;
-TSPLUGIN_DECLARE_INPUT (ts::FileInput);
-TSPLUGIN_DECLARE_OUTPUT (ts::FileOutput);
-TSPLUGIN_DECLARE_PROCESSOR (ts::FileProcessor);
+TSPLUGIN_DECLARE_VERSION
+TSPLUGIN_DECLARE_INPUT(ts::FileInput)
+TSPLUGIN_DECLARE_OUTPUT(ts::FileOutput)
+TSPLUGIN_DECLARE_PROCESSOR(ts::FileProcessor)
 
 
 //----------------------------------------------------------------------------

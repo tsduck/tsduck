@@ -72,8 +72,8 @@ namespace ts {
     };
 }
 
-TSPLUGIN_DECLARE_VERSION;
-TSPLUGIN_DECLARE_INPUT (ts::DVBInput);
+TSPLUGIN_DECLARE_VERSION
+TSPLUGIN_DECLARE_INPUT(ts::DVBInput)
 
 
 //----------------------------------------------------------------------------
