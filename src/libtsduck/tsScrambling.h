@@ -55,12 +55,9 @@ namespace ts {
         };
 
         //!
-        //! Constructor.
+        //! Default Constructor.
         //!
-        Scrambling():
-            _init(false)
-        {
-        }
+        Scrambling();
 
         //!
         //! Set the control word for subsequent encrypt/decrypt operations.

@@ -623,9 +623,9 @@ else
     CFLAGS_NO_WARNINGS   += -Wno-unused-parameter
     CXXFLAGS_NO_WARNINGS += -Wno-unused-parameter
 endif
-COMMON_WARNINGS   = -Wpedantic -Werror -Wall -Wextra
-CFLAGS_WARNINGS   = $(COMMON_WARNINGS) -Wstrict-prototypes -Wmissing-prototypes $(CFLAGS_NO_WARNINGS)
-CXXFLAGS_WARNINGS = $(COMMON_WARNINGS) -Woverloaded-virtual $(CXXFLAGS_NO_WARNINGS)
+COMMON_WARNINGS   = -Werror -Wall -Wextra -Wpedantic -Wformat-nonliteral -Wformat-security -Wswitch-default -Wuninitialized -Wshadow
+CFLAGS_WARNINGS   = $(COMMON_WARNINGS) -Wstrict-prototypes -Wmissing-prototypes -Winit-self $(CFLAGS_NO_WARNINGS)
+CXXFLAGS_WARNINGS = $(COMMON_WARNINGS) -Woverloaded-virtual -Wctor-dtor-privacy -Wnon-virtual-dtor -Weffc++ -Wstrict-null-sentinel -Woverloaded-virtual -Wsign-promo $(CXXFLAGS_NO_WARNINGS)
 
 # Compilation flags for security.
 CFLAGS_SECURITY = -fstack-protector-all

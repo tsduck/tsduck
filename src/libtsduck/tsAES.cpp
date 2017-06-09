@@ -1016,7 +1016,7 @@ namespace {
 // Return true on success, false on error.
 //----------------------------------------------------------------------------
 
-bool ts::AES::setKey (const void* key_, size_t key_length, size_t rounds)
+bool ts::AES::setKey(const void* key_, size_t key_length, size_t rounds)
 {
     // 3 possible key sizes for AES
     if (key_length != 16 && key_length != 24 && key_length != 32) {
@@ -1173,9 +1173,9 @@ bool ts::AES::setKey (const void* key_, size_t key_length, size_t rounds)
 // Return true on success, false on error.
 //----------------------------------------------------------------------------
 
-bool ts::AES::encrypt (const void* plain, size_t plain_length,
-                         void* cipher, size_t cipher_maxsize,
-                         size_t* cipher_length)
+bool ts::AES::encrypt(const void* plain, size_t plain_length,
+                      void* cipher, size_t cipher_maxsize,
+                      size_t* cipher_length)
 {
     if (plain_length != BLOCK_SIZE || cipher_maxsize < BLOCK_SIZE) {
         return false;
@@ -1301,9 +1301,9 @@ bool ts::AES::encrypt (const void* plain, size_t plain_length,
 // Return true on success, false on error.
 //----------------------------------------------------------------------------
 
-bool ts::AES::decrypt (const void* cipher, size_t cipher_length,
-                         void* plain, size_t plain_maxsize,
-                         size_t* plain_length)
+bool ts::AES::decrypt(const void* cipher, size_t cipher_length,
+                      void* plain, size_t plain_maxsize,
+                      size_t* plain_length)
 {
     if (cipher_length != BLOCK_SIZE || plain_maxsize < BLOCK_SIZE) {
         return false;
@@ -1422,4 +1422,14 @@ bool ts::AES::decrypt (const void* cipher, size_t cipher_length,
     }
 
     return true;
+}
+
+
+//----------------------------------------------------------------------------
+// Constructor
+//----------------------------------------------------------------------------
+
+ts::AES::AES() :
+    _Nr(0)
+{
 }

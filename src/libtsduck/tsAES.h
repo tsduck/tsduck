@@ -42,6 +42,7 @@ namespace ts {
     class TSDUCKDLL AES: public BlockCipher
     {
     public:
+        AES();                                    //!< Constructor.
         static const size_t BLOCK_SIZE = 16;      //!< AES block size in bytes.
         static const size_t MIN_KEY_SIZE = 16;    //!< AES minimum key size in bytes.
         static const size_t MAX_KEY_SIZE = 32;    //!< AES maximum key size in bytes.
@@ -68,8 +69,8 @@ namespace ts {
                              size_t* plain_length = 0);
 
     private:
-        int    _Nr;     // Number of rounds
-        uint32_t _eK[60]; // Scheduled encryption keys
-        uint32_t _dK[60]; // Scheduled decryption keys
+        int      _Nr;     //!< Number of rounds
+        uint32_t _eK[60]; //!< Scheduled encryption keys
+        uint32_t _dK[60]; //!< Scheduled decryption keys
     };
 }

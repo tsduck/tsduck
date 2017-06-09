@@ -47,14 +47,14 @@ const char* const ts::Args::THOUSANDS_SEPARATORS = ",. ";
 // Constructor for IOption
 //----------------------------------------------------------------------------
 
-ts::Args::IOption::IOption (const char* name_,
-                              char        short_name_,
-                              ArgType     type_,
-                              size_t      min_occur_,
-                              size_t      max_occur_,
-                              int64_t     min_value_,
-                              int64_t     max_value_,
-                              bool        optional_) :
+ts::Args::IOption::IOption(const char* name_,
+                           char        short_name_,
+                           ArgType     type_,
+                           size_t      min_occur_,
+                           size_t      max_occur_,
+                           int64_t     min_value_,
+                           int64_t     max_value_,
+                           bool        optional_) :
 
     name        (name_ == 0 ? "" : name_),
     short_name  (short_name_),
@@ -122,6 +122,8 @@ ts::Args::IOption::IOption (const char* name_,
             max_value = 0x1FFF;
             type = INTEGER;
             break;
+        default:
+            throw ArgsError(Format("invalid option type %d",int(type)));
     }
 }
 

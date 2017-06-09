@@ -75,10 +75,7 @@ namespace ts {
         //! Default constructor.
         //! Section is initially marked invalid.
         //!
-        Section()
-        {
-            initialize (PID_NULL);
-        }
+        Section();
 
         //!
         //! Copy constructor.
@@ -99,10 +96,7 @@ namespace ts {
         Section(const void* content,
                 size_t content_size,
                 PID source_pid = PID_NULL,
-                CRC32::Validation crc_op = CRC32::IGNORE)
-        {
-            initialize(new ByteBlock(content, content_size), source_pid, crc_op);
-        }
+                CRC32::Validation crc_op = CRC32::IGNORE);
 
         //!
         //! Constructor from full binary content.
@@ -113,10 +107,7 @@ namespace ts {
         //!
         Section(const ByteBlock& content,
                 PID source_pid = PID_NULL,
-                CRC32::Validation crc_op = CRC32::IGNORE)
-        {
-            initialize(new ByteBlock(content), source_pid, crc_op);
-        }
+                CRC32::Validation crc_op = CRC32::IGNORE);
 
         //!
         //! Constructor from full binary content.
@@ -129,10 +120,7 @@ namespace ts {
         //!
         Section(const ByteBlockPtr& content_ptr,
                 PID source_pid = PID_NULL,
-                CRC32::Validation crc_op = CRC32::IGNORE)
-        {
-            initialize(content_ptr, source_pid, crc_op);
-        }
+                CRC32::Validation crc_op = CRC32::IGNORE);
 
         //!
         //! Constructor from a short section payload.
@@ -146,10 +134,7 @@ namespace ts {
                 bool is_private_section,
                 const void* payload,
                 size_t payload_size,
-                PID source_pid = PID_NULL)
-        {
-            reload(tid, is_private_section, payload, payload_size, source_pid);
-        }
+                PID source_pid = PID_NULL);
 
         //!
         //! Constructor from a long section payload.
@@ -175,12 +160,7 @@ namespace ts {
                 uint8_t last_section_number,
                 const void* payload,
                 size_t payload_size,
-                PID source_pid = PID_NULL)
-        {
-            reload(tid, is_private_section, tid_ext, version, is_current,
-                   section_number, last_section_number,
-                   payload, payload_size, source_pid);
-        }
+                PID source_pid = PID_NULL);
 
         //!
         //! Reload from full binary content.

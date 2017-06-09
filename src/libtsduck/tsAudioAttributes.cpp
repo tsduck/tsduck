@@ -96,6 +96,7 @@ bool ts::AudioAttributes::moreBinaryData (const void* data, size_t size)
                     case 12: _bitrate = 192; break;
                     case 13: _bitrate = 224; break;
                     case 14: _bitrate = 256; break;
+                    default: _bitrate = 0; break; // reserved
                 }
                 break;
             case 2: // Layer II, lower sampling frequencies extension
@@ -115,6 +116,7 @@ bool ts::AudioAttributes::moreBinaryData (const void* data, size_t size)
                     case 12: _bitrate = 128; break;
                     case 13: _bitrate = 144; break;
                     case 14: _bitrate = 160; break;
+                    default: _bitrate = 0; break; // reserved
                 }
                 break;
         }
@@ -138,6 +140,7 @@ bool ts::AudioAttributes::moreBinaryData (const void* data, size_t size)
                     case 12: _bitrate = 384; break;
                     case 13: _bitrate = 416; break;
                     case 14: _bitrate = 448; break;
+                    default: _bitrate = 0; break; // reserved
                 }
                 break;
             case 2: // Layer II
@@ -156,6 +159,7 @@ bool ts::AudioAttributes::moreBinaryData (const void* data, size_t size)
                     case 12: _bitrate = 256; break;
                     case 13: _bitrate = 320; break;
                     case 14: _bitrate = 384; break;
+                    default: _bitrate = 0; break; // reserved
                 }
                 break;
             case 3: // Layer III
@@ -174,6 +178,7 @@ bool ts::AudioAttributes::moreBinaryData (const void* data, size_t size)
                     case 12: _bitrate = 224; break;
                     case 13: _bitrate = 256; break;
                     case 14: _bitrate = 320; break;
+                    default: _bitrate = 0; break; // reserved
                 }
                 break;
         }
@@ -187,6 +192,7 @@ bool ts::AudioAttributes::moreBinaryData (const void* data, size_t size)
             case 0: _sampling_freq = 22050; break;
             case 1: _sampling_freq = 24000; break;
             case 2: _sampling_freq = 16000; break;
+            default: _sampling_freq = 0; break; // reserved
         }
     }
     else {
@@ -194,6 +200,7 @@ bool ts::AudioAttributes::moreBinaryData (const void* data, size_t size)
             case 0: _sampling_freq = 44100; break;
             case 1: _sampling_freq = 48000; break;
             case 2: _sampling_freq = 32000; break;
+            default: _sampling_freq = 0; break; // reserved
         }
     }
 
@@ -250,7 +257,7 @@ std::string ts::AudioAttributes::layerName() const
         case 1:  return "layer I";
         case 2:  return "layer II";
         case 3:  return "layer III";
-        default: return Format ("layer %d", _layer);
+        default: return Format("layer %d", _layer);
     }
 }
 
