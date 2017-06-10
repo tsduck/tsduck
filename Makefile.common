@@ -616,16 +616,18 @@ endif
 CXXFLAGS_INCLUDES += $(CFLAGS_INCLUDES)
 
 # Always use maximal or even paranoid warning mode.
+COMMON_WARNINGS   = -Werror -Wall -Wextra -Wpedantic -Wformat-nonliteral -Wformat-security -Wswitch-default \
+                    -Wuninitialized -Wshadow -Wno-unused-parameter
+CFLAGS_WARNINGS   = $(COMMON_WARNINGS) -Wstrict-prototypes -Wmissing-prototypes -Winit-self
+CXXFLAGS_WARNINGS = $(COMMON_WARNINGS) -Woverloaded-virtual -Wctor-dtor-privacy -Wnon-virtual-dtor -Weffc++ \
+                    -Woverloaded-virtual -Wsign-promo
 ifdef MACOS
-    CFLAGS_NO_WARNINGS   += -Wno-unused-parameter -Wno-unused-command-line-argument
-    CXXFLAGS_NO_WARNINGS += -Wno-unused-parameter -Wno-unused-command-line-argument
+    CFLAGS_WARNINGS   += -Wno-unused-command-line-argument
+    CXXFLAGS_WARNINGS += -Wno-unused-command-line-argument
 else
-    CFLAGS_NO_WARNINGS   += -Wno-unused-parameter
-    CXXFLAGS_NO_WARNINGS += -Wno-unused-parameter
+    CFLAGS_WARNINGS   += 
+    CXXFLAGS_WARNINGS += -Wstrict-null-sentinel
 endif
-COMMON_WARNINGS   = -Werror -Wall -Wextra -Wpedantic -Wformat-nonliteral -Wformat-security -Wswitch-default -Wuninitialized -Wshadow
-CFLAGS_WARNINGS   = $(COMMON_WARNINGS) -Wstrict-prototypes -Wmissing-prototypes -Winit-self $(CFLAGS_NO_WARNINGS)
-CXXFLAGS_WARNINGS = $(COMMON_WARNINGS) -Woverloaded-virtual -Wctor-dtor-privacy -Wnon-virtual-dtor -Weffc++ -Wstrict-null-sentinel -Woverloaded-virtual -Wsign-promo $(CXXFLAGS_NO_WARNINGS)
 
 # Compilation flags for security.
 CFLAGS_SECURITY = -fstack-protector-all
@@ -654,8 +656,10 @@ LDLIBS += $(if $(LDCXX),-lstdc++,) -lpthread $(if $(MACOS),,-lrt) -lm
 
 # Global compilation flags.
 # Additional flags can be passed on the "make" command line using FLAGS_EXTRA.
-CFLAGS   = $(CFLAGS_DEBUG) $(CFLAGS_M32) $(CFLAGS_GCOV) $(CFLAGS_WARNINGS) $(CFLAGS_SECURITY) $(CFLAGS_INCLUDES) $(TARGET_ARCH) $(CFLAGS_FPIC) -std=c99 $(CFLAGS_EXTRA)
-CXXFLAGS = $(CFLAGS_DEBUG) $(CFLAGS_M32) $(CFLAGS_GCOV) $(CXXFLAGS_WARNINGS) $(CXXFLAGS_SECURITY) $(CXXFLAGS_INCLUDES) $(TARGET_ARCH) $(CFLAGS_FPIC) $(CXXFLAGS_EXTRA)
+CFLAGS   = $(CFLAGS_DEBUG) $(CFLAGS_M32) $(CFLAGS_GCOV) $(CFLAGS_WARNINGS) $(CFLAGS_SECURITY) $(CFLAGS_INCLUDES) \
+           $(TARGET_ARCH) $(CFLAGS_FPIC) -std=c99 $(CFLAGS_EXTRA)
+CXXFLAGS = $(CFLAGS_DEBUG) $(CFLAGS_M32) $(CFLAGS_GCOV) $(CXXFLAGS_WARNINGS) $(CXXFLAGS_SECURITY) $(CXXFLAGS_INCLUDES) \
+           $(TARGET_ARCH) $(CFLAGS_FPIC) $(CXXFLAGS_EXTRA)
 LDFLAGS  = $(LDFLAGS_DEBUG) $(LDFLAGS_M32) $(LDFLAGS_GCOV) $(TARGET_ARCH) $(LDFLAGS_EXTRA)
 ARFLAGS  = rc$(if $(MACOS),,U) $(ARFLAGS_EXTRA)
 

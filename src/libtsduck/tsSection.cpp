@@ -81,8 +81,8 @@ ts::Section::Section(const Section& sect, CopyShare mode) :
 
 ts::Section::Section(const void* content,
                      size_t content_size,
-                     PID source_pid = PID_NULL,
-                     CRC32::Validation crc_op = CRC32::IGNORE) :
+                     PID source_pid,
+                     CRC32::Validation crc_op) :
     _is_valid(false),
     _source_pid(source_pid),
     _first_pkt(0),
@@ -98,8 +98,8 @@ ts::Section::Section(const void* content,
 //----------------------------------------------------------------------------
 
 ts::Section::Section(const ByteBlock& content,
-                     PID source_pid = PID_NULL,
-                     CRC32::Validation crc_op = CRC32::IGNORE) :
+                     PID source_pid,
+                     CRC32::Validation crc_op) :
     _is_valid(false),
     _source_pid(source_pid),
     _first_pkt(0),
@@ -115,8 +115,8 @@ ts::Section::Section(const ByteBlock& content,
 //----------------------------------------------------------------------------
 
 ts::Section::Section(const ByteBlockPtr& content_ptr,
-                     PID source_pid = PID_NULL,
-                     CRC32::Validation crc_op = CRC32::IGNORE) :
+                     PID source_pid,
+                     CRC32::Validation crc_op) :
     _is_valid(false),
     _source_pid(source_pid),
     _first_pkt(0),
@@ -135,7 +135,7 @@ ts::Section::Section(TID tid,
                      bool is_private_section,
                      const void* payload,
                      size_t payload_size,
-                     PID source_pid = PID_NULL) :
+                     PID source_pid) :
     _is_valid(false),
     _source_pid(source_pid),
     _first_pkt(0),
@@ -159,7 +159,7 @@ ts::Section::Section(TID tid,
                      uint8_t last_section_number,
                      const void* payload,
                      size_t payload_size,
-                     PID source_pid = PID_NULL) :
+                     PID source_pid) :
     _is_valid(false),
     _source_pid(source_pid),
     _first_pkt(0),
@@ -491,16 +491,16 @@ std::istream& ts::Section::read (std::istream& strm, CRC32::Validation crc_op, R
 // Return true on success, false on error.
 //----------------------------------------------------------------------------
 
-bool ts::Section::LoadFile (SectionPtrVector& sections,
-                              std::istream& strm,
-                              CRC32::Validation crc_op,
-                              ReportInterface& report)
+bool ts::Section::LoadFile(SectionPtrVector& sections,
+                           std::istream& strm,
+                           CRC32::Validation crc_op,
+                           ReportInterface& report)
 {
     sections.clear();
     for (;;) {
         SectionPtr sp (new Section ());
-        if (sp->read (strm, crc_op, report)) {
-            sections.push_back (sp);
+        if (sp->read(strm, crc_op, report)) {
+            sections.push_back(sp);
         }
         else {
             break;
@@ -517,17 +517,17 @@ bool ts::Section::LoadFile (SectionPtrVector& sections,
 // Return true on success, false on error.
 //----------------------------------------------------------------------------
 
-bool ts::Section::LoadFile (SectionPtrVector& sections,
-                              const std::string& file_name,
-                              CRC32::Validation crc_op,
-                              ReportInterface& report)
+bool ts::Section::LoadFile(SectionPtrVector& sections,
+                           const std::string& file_name,
+                           CRC32::Validation crc_op,
+                           ReportInterface& report)
 {
     // Open the input file
 
     std::ifstream strm (file_name.c_str(), std::ios::in | std::ios::binary);
 
-    if (!strm.is_open ()) {
-        report.error ("cannot open " + file_name);
+    if (!strm.is_open()) {
+        report.error("cannot open " + file_name);
         return false;
     }
 
@@ -537,26 +537,26 @@ bool ts::Section::LoadFile (SectionPtrVector& sections,
     {
     private:
         const std::string& _name;
-        ReportInterface& _report;
+        ReportInterface&   _report;
     public:
         // Constructor
-        ReportWithName (const std::string& name, ReportInterface& report) :
-            _name (name),
-            _report (report)
+        ReportWithName(const std::string& name, ReportInterface& rep) :
+            _name(name),
+            _report(rep)
         {
         }
     protected:
         // Logger
-        virtual void writeLog (int severity, const std::string& msg)
+        virtual void writeLog(int severity, const std::string& msg)
         {
-            _report.log (severity, _name + ": " + msg);
+            _report.log(severity, _name + ": " + msg);
         }
     };
 
     // Load the section file
 
-    ReportWithName report_internal (file_name, report);
-    bool success = LoadFile (sections, strm, crc_op, report_internal);
+    ReportWithName report_internal(file_name, report);
+    bool success = LoadFile(sections, strm, crc_op, report_internal);
     strm.close();
     
     return success;
