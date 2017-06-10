@@ -293,7 +293,7 @@ namespace ts {
                     const std::string& description = "",
                     const std::string& syntax = "",
                     const std::string& help = "") :
-            Plugin(tsp, description, syntax, help) {}
+            Plugin(tsp_, description, syntax, help) {}
 
         //!
         //! Virtual destructor.
@@ -347,7 +347,7 @@ namespace ts {
                      const std::string& description = "",
                      const std::string& syntax = "",
                      const std::string& help = "") :
-            Plugin(tsp, description, syntax, help) {}
+            Plugin(tsp_, description, syntax, help) {}
 
         //!
         //! Virtual destructor.
@@ -424,7 +424,7 @@ namespace ts {
                         const std::string& description = "",
                         const std::string& syntax = "",
                         const std::string& help = "") :
-            Plugin(tsp, description, syntax, help) {}
+            Plugin(tsp_, description, syntax, help) {}
 
         //!
         //! Virtual destructor.
