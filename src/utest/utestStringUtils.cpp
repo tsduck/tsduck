@@ -54,6 +54,7 @@
 class StringTest: public CppUnit::TestFixture
 {
 public:
+    StringTest();
     void setUp();
     void tearDown();
     void testIsSpace();
@@ -141,9 +142,6 @@ private:
     int _nextFileIndex;
     std::string temporaryFileName(int) const;
     std::string newTemporaryFileName();
-
-public:
-    StringTest() : _nextFileIndex (0) {}
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(StringTest);
@@ -152,6 +150,13 @@ CPPUNIT_TEST_SUITE_REGISTRATION(StringTest);
 //----------------------------------------------------------------------------
 // Initialization.
 //----------------------------------------------------------------------------
+
+// Constructor.
+StringTest::StringTest() :
+    _tempFilePrefix(),
+    _nextFileIndex(0)
+{
+}
 
 // Test suite initialization method.
 void StringTest::setUp()

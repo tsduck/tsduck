@@ -62,6 +62,7 @@ namespace ts {
             PID     pid;
             uint8_t stream_type;
 
+            // Constructor.
             NewPID(PID pid_ = PID_NULL, uint8_t stype_ = 0) :
                 pid(pid_),
                 stream_type(stype_)
@@ -95,6 +96,11 @@ namespace ts {
 
         // Invoked by the demux when a complete table is available.
         virtual void handleTable (SectionDemux&, const BinaryTable&);
+
+        // Inaccessible operations
+        PMTPlugin() = delete;
+        PMTPlugin(const PMTPlugin&) = delete;
+        PMTPlugin& operator=(const PMTPlugin&) = delete;
     };
 }
 
@@ -108,7 +114,28 @@ TSPLUGIN_DECLARE_PROCESSOR(ts::PMTPlugin)
 
 ts::PMTPlugin::PMTPlugin (TSP* tsp_) :
     ProcessorPlugin (tsp_, "Perform various transformations on the PMT", "[options]"),
-    _demux (this)
+    _abort(false),
+    _ready(false),
+    _service(),
+    _removed_pid(),
+    _removed_desc(),
+    _added_pid(),
+    _moved_pid(),
+    _set_servid(false),
+    _new_servid(0),
+    _set_pcrpid(false),
+    _new_pcrpid(PID_NULL),
+    _incr_version(false),
+    _set_version(false),
+    _new_version(0),
+    _pds(0),
+    _add_stream_id(false),
+    _ac3_atsc2dvb(false),
+    _eac3_atsc2dvb(false),
+    _cleanup_priv_desc(false),
+    _languages(),
+    _demux(this),
+    _pzer()
 {
     option ("ac3-atsc2dvb",                0);
     option ("add-pid",                    'a', STRING, 0, UNLIMITED_COUNT);
@@ -508,6 +535,10 @@ void ts::PMTPlugin::handleTable (SectionDemux& demux, const BinaryTable& table)
             tsp->verbose ("PMT version %d modified", int (pmt.version));
             _pzer.removeSections (TID_PMT, pmt.service_id);
             _pzer.addTable (pmt);
+            break;
+        }
+
+        default: {
             break;
         }
     }

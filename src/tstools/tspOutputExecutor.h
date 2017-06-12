@@ -67,6 +67,11 @@ namespace ts {
 
             // Inherited from Thread
             virtual void main();
+
+            // Inaccessible operations
+            OutputExecutor() = delete;
+            OutputExecutor(const OutputExecutor&) = delete;
+            OutputExecutor& operator=(const OutputExecutor&) = delete;
         };
     }
 }

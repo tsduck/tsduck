@@ -82,8 +82,7 @@ std::string ts::Severity::Header(int severity)
                 return "Warning: ";
             case Debug:
                 return "Debug: ";
-            case Info:
-            case Verbose:
+            default: // Including Info and Verbose
                 return "";
         }
     }

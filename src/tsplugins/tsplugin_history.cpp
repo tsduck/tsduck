@@ -60,12 +60,13 @@ namespace ts {
         // Description of one PID
         struct PIDContext
         {
-            PacketCounter   pkt_count;    // Number of packets on this PID
-            PacketCounter   first_pkt;    // First packet in TS
-            PacketCounter   last_pkt;     // Last packet in TS
+            PIDContext();                   // Constructor
+            PacketCounter     pkt_count;    // Number of packets on this PID
+            PacketCounter     first_pkt;    // First packet in TS
+            PacketCounter     last_pkt;     // Last packet in TS
             uint16_t          service_id;   // One service the PID belongs to
             uint8_t           scrambling;   // Last scrambling control value
-            TID             last_tid;     // Last table on this PID
+            TID               last_tid;     // Last table on this PID
             Variable<uint8_t> pes_strid;    // PES stream id
         };
 
@@ -81,7 +82,7 @@ namespace ts {
         PacketCounter _last_tdt_pkt;      // Packet# of last TDT
         bool          _last_tdt_reported; // Last TDT already reported
         SectionDemux  _demux;             // Section filter
-        PIDContext    _cpids [PID_MAX];   // Description of each PID
+        PIDContext    _cpids[PID_MAX];    // Description of each PID
 
         // Invoked by the demux when a complete table is available.
         virtual void handleTable (SectionDemux&, const BinaryTable&);
@@ -94,6 +95,11 @@ namespace ts {
         void report (const char*, ...) TS_PRINTF_FORMAT (2, 3);
         void report (PacketCounter, const std::string&);
         void report (PacketCounter, const char*, ...) TS_PRINTF_FORMAT (3, 4);
+
+        // Inaccessible operations
+        HistoryPlugin() = delete;
+        HistoryPlugin(const HistoryPlugin&) = delete;
+        HistoryPlugin& operator=(const HistoryPlugin&) = delete;
     };
 }
 
@@ -106,16 +112,19 @@ TSPLUGIN_DECLARE_PROCESSOR(ts::HistoryPlugin)
 //----------------------------------------------------------------------------
 
 ts::HistoryPlugin::HistoryPlugin (TSP* tsp_) :
-    ProcessorPlugin (tsp_, "Report a history of major events on the transport stream.", "[options]"),
-    _current_pkt (0),
-    _report_eit (false),
-    _report_cas (false),
-    _time_all (false),
-    _suspend_after (0),
-    _last_tdt (Time::Epoch),
-    _last_tdt_pkt (0),
-    _last_tdt_reported (false),
-    _demux (this)
+    ProcessorPlugin(tsp_, "Report a history of major events on the transport stream.", "[options]"),
+    _outfile(),
+    _current_pkt(0),
+    _report_eit(false),
+    _report_cas(false),
+    _time_all(false),
+    _ignore_stream_id(false),
+    _suspend_after(0),
+    _last_tdt(Time::Epoch),
+    _last_tdt_pkt(0),
+    _last_tdt_reported(false),
+    _demux(this),
+    _cpids()
 {
     option ("cas",                      'c');
     option ("eit",                      'e');
@@ -171,6 +180,22 @@ ts::HistoryPlugin::HistoryPlugin (TSP* tsp_) :
              "\n"
              "When an output file is specified using --output-file, the sort command becomes:\n"
              "  sort -n output-file-name\n");
+}
+
+
+//----------------------------------------------------------------------------
+// Description of one PID : Constructor.
+//----------------------------------------------------------------------------
+
+ts::HistoryPlugin::PIDContext::PIDContext() :
+    pkt_count(0),
+    first_pkt(0),
+    last_pkt(0),
+    service_id(0),
+    scrambling(0),
+    last_tid(0),
+    pes_strid()
+{
 }
 
 

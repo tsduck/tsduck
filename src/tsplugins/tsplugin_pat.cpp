@@ -39,7 +39,6 @@
 #include "tsPAT.h"
 
 
-
 //----------------------------------------------------------------------------
 // Plugin definition
 //----------------------------------------------------------------------------
@@ -56,21 +55,26 @@ namespace ts {
         virtual Status processPacket (TSPacket&, bool&, bool&);
 
     private:
-        bool                _abort;        // Error (service not found, etc)
+        bool                  _abort;        // Error (service not found, etc)
         std::vector<uint16_t> _remove_serv;  // Set of services to remove
-        ServiceVector       _add_serv;     // Set of services to add
-        PID                 _new_nit_pid;  // New PID for NIT
-        bool                _remove_nit;   // Remove NIT from PAT
-        bool                _set_tsid;     // Set a new TS id
+        ServiceVector         _add_serv;     // Set of services to add
+        PID                   _new_nit_pid;  // New PID for NIT
+        bool                  _remove_nit;   // Remove NIT from PAT
+        bool                  _set_tsid;     // Set a new TS id
         uint16_t              _new_tsid;     // New TS id
-        bool                _incr_version; // Increment table version
-        bool                _set_version;  // Set a new table version
+        bool                  _incr_version; // Increment table version
+        bool                  _set_version;  // Set a new table version
         uint8_t               _new_version;  // New table version
-        SectionDemux        _demux;        // Section demux
-        CyclingPacketizer   _pzer;         // Packetizer for modified PAT
+        SectionDemux          _demux;        // Section demux
+        CyclingPacketizer     _pzer;         // Packetizer for modified PAT
 
         // Invoked by the demux when a complete table is available.
         virtual void handleTable (SectionDemux&, const BinaryTable&);
+
+        // Inaccessible operations
+        PATPlugin() = delete;
+        PATPlugin(const PATPlugin&) = delete;
+        PATPlugin& operator=(const PATPlugin&) = delete;
     };
 }
 
@@ -83,8 +87,19 @@ TSPLUGIN_DECLARE_PROCESSOR(ts::PATPlugin)
 //----------------------------------------------------------------------------
 
 ts::PATPlugin::PATPlugin (TSP* tsp_) :
-    ProcessorPlugin (tsp_, "Perform various transformations on the PAT", "[options]"),
-    _demux (this)
+    ProcessorPlugin(tsp_, "Perform various transformations on the PAT", "[options]"),
+    _abort(false),
+    _remove_serv(),
+    _add_serv(),
+    _new_nit_pid(PID_NIT),
+    _remove_nit(false),
+    _set_tsid(false),
+    _new_tsid(0),
+    _incr_version(false),
+    _set_version(false),
+    _new_version(0),
+    _demux(this),
+    _pzer()
 {
     option ("add-service",       'a', STRING, 0, UNLIMITED_COUNT);
     option ("increment-version", 'i');

@@ -278,6 +278,8 @@ void ts::Section::initialize(const ByteBlockPtr& bbp, PID pid, CRC32::Validation
                 break;
             case CRC32::IGNORE:
                 break;
+            default:
+                break;
         }
     }
 

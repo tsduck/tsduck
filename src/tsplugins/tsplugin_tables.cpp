@@ -36,7 +36,6 @@
 #include "tsTablesLogger.h"
 
 
-
 //----------------------------------------------------------------------------
 // Plugin definition
 //----------------------------------------------------------------------------
@@ -55,6 +54,11 @@ namespace ts {
     private:
         TablesLoggerPtr     _logger;
         TablesLoggerOptions _logger_options;
+
+        // Inaccessible operations
+        TablesPlugin() = delete;
+        TablesPlugin(const TablesPlugin&) = delete;
+        TablesPlugin& operator=(const TablesPlugin&) = delete;
     };
 }
 

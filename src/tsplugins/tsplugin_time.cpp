@@ -40,7 +40,6 @@
 #include "tsTDT.h"
 
 
-
 //----------------------------------------------------------------------------
 // Plugin definition
 //----------------------------------------------------------------------------
@@ -65,10 +64,10 @@ namespace ts {
             Time   time;     // ... after this UTC time
 
             // Constructor
-            TimeEvent (const Status& s, const Time& t) : status (s), time (t) {}
+            TimeEvent(const Status& s, const Time& t) : status (s), time (t) {}
 
             // Comparison, for sort algorithm
-            bool operator< (const TimeEvent& t) const {return time < t.time;}
+            bool operator<(const TimeEvent& t) const {return time < t.time;}
         };
         typedef std::vector<TimeEvent> TimeEventVector;
 
@@ -88,6 +87,11 @@ namespace ts {
 
         // Add time events in the list fro one option. Return false if a time string is invalid
         bool addEvents (const char* option, Status status);
+
+        // Inaccessible operations
+        TimePlugin() = delete;
+        TimePlugin(const TimePlugin&) = delete;
+        TimePlugin& operator=(const TimePlugin&) = delete;
     };
 }
 
@@ -100,9 +104,16 @@ TSPLUGIN_DECLARE_PROCESSOR(ts::TimePlugin)
 //----------------------------------------------------------------------------
 
 ts::TimePlugin::TimePlugin (TSP* tsp_) :
-    ProcessorPlugin (tsp_, "Schedule packets pass or drop, based on time.", "[options]"),
-    _status_names ("pass", TSP_OK, "stop", TSP_END, "drop", TSP_DROP, "null", TSP_NULL, TS_NULL),
-    _demux (this)
+    ProcessorPlugin(tsp_, "Schedule packets pass or drop, based on time.", "[options]"),
+    _status(TSP_DROP),
+    _relative(false),
+    _use_utc(false),
+    _use_tdt(false),
+    _last_time(Time::Epoch),
+    _status_names("pass", TSP_OK, "stop", TSP_END, "drop", TSP_DROP, "null", TSP_NULL, TS_NULL),
+    _demux(this),
+    _events(),
+    _next_index(0)
 {
     option ("drop",     'd', STRING, 0, UNLIMITED_COUNT);
     option ("null",     'n', STRING, 0, UNLIMITED_COUNT);

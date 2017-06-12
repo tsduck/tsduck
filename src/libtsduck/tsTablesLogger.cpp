@@ -386,6 +386,8 @@ void ts::TablesLogger::logSection (const Section& sect)
             case TID_SA_EMM_STB_G:
                 _out << "STB: all" << std::endl;
                 break;
+            default:
+                break;
         }
     }
     else {

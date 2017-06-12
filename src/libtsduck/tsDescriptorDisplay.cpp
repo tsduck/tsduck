@@ -708,12 +708,12 @@ namespace {
                 margin << "Frequency: " << freq << " GHz" << std::endl <<
                 margin << "Symbol rate: " << srate << " Msymbol/s" << std::endl <<
                 margin << "Polarization: ";
-            assert (polar < 4);
             switch (polar) {
                 case 0:  strm << "linear - horizontal"; break;
                 case 1:  strm << "linear - vertical"; break;
                 case 2:  strm << "circular - left"; break;
                 case 3:  strm << "circular - right"; break;
+                default: assert(false);
             }
             strm << std::endl << margin << "Modulation: " << (mod_system == 0 ? "DVB-S" : "DVB-S2") << ", ";
             switch (mod_type) {
@@ -721,13 +721,15 @@ namespace {
                 case 1:  strm << "QPSK"; break;
                 case 2:  strm << "8PSK"; break;
                 case 3:  strm << "16-QAM"; break;
+                default: assert(false);
             }
             if (mod_system == 1) {
                 switch (roll_off) {
-                    case 0: strm << ", alpha=0.35"; break;
-                    case 1: strm << ", alpha=0.25"; break;
-                    case 2: strm << ", alpha=0.20"; break;
-                    case 3: strm << ", undefined roll-off (3)"; break;
+                    case 0:  strm << ", alpha=0.35"; break;
+                    case 1:  strm << ", alpha=0.25"; break;
+                    case 2:  strm << ", alpha=0.20"; break;
+                    case 3:  strm << ", undefined roll-off (3)"; break;
+                    default: assert(false);
                 }
             }
             strm << std::endl << margin << "Inner FEC: ";
@@ -940,8 +942,8 @@ namespace {
     void DDterrest_delivery (std::ostream& strm, const uint8_t* data, size_t size, int indent, ts::TID tid)
     {
         if (size >= 11) {
-            const std::string margin (indent, ' ');
-            uint32_t cfreq = GetUInt32 (data);
+            const std::string margin(indent, ' ');
+            uint32_t cfreq = GetUInt32(data);
             uint8_t bwidth = data[4] >> 5;
             uint8_t prio = (data[4] >> 4) & 0x01;
             uint8_t tslice = (data[4] >> 3) & 0x01;
@@ -969,24 +971,25 @@ namespace {
                 ", Time slicing: " << (tslice ? "unused" : "used") <<
                 ", MPE-FEC: " << (mpe_fec ? "unused" : "used") << std::endl <<
                 margin << "Constellation pattern: ";
-            assert (constel < 4);
             switch (constel) {
-                case 0: strm << "QPSK"; break;
-                case 1: strm << "16-QAM"; break;
-                case 2: strm << "64-QAM"; break;
-                case 3: strm << "reserved"; break;
+                case 0:  strm << "QPSK"; break;
+                case 1:  strm << "16-QAM"; break;
+                case 2:  strm << "64-QAM"; break;
+                case 3:  strm << "reserved"; break;
+                default: assert(false);
             }
             strm << std::endl << margin << "Hierarchy: ";
-            assert (hierarchy < 8);
+            assert(hierarchy < 8);
             switch (hierarchy & 0x03) {
-                case 0: strm << "non-hierarchical"; break;
-                case 1: strm << "alpha = 1"; break;
-                case 2: strm << "alpha = 2"; break;
-                case 3: strm << "alpha = 4"; break;
+                case 0:  strm << "non-hierarchical"; break;
+                case 1:  strm << "alpha = 1"; break;
+                case 2:  strm << "alpha = 2"; break;
+                case 3:  strm << "alpha = 4"; break;
+                default: assert(false);
             }
-            strm << ", " << ((hierarchy & 0x04) ? "in-depth" : "native") <<
-                " interleaver" << std::endl <<
-                margin << "Code rate: high prio: ";
+            strm << ", " << ((hierarchy & 0x04) ? "in-depth" : "native")
+                 << " interleaver" << std::endl
+                 << margin << "Code rate: high prio: ";
             switch (rate_hp) {
                 case 0:  strm << "1/2"; break;
                 case 1:  strm << "2/3"; break;
@@ -1005,24 +1008,24 @@ namespace {
                 default: strm << "code " << int (rate_lp) << " (reserved)"; break;
             }
             strm << std::endl << margin << "Guard interval: ";
-            assert (guard < 4);
             switch (guard) {
-                case 0: strm << "1/32"; break;
-                case 1: strm << "1/16"; break;
-                case 2: strm << "1/8"; break;
-                case 3: strm << "1/4"; break;
+                case 0:  strm << "1/32"; break;
+                case 1:  strm << "1/16"; break;
+                case 2:  strm << "1/8"; break;
+                case 3:  strm << "1/4"; break;
+                default: assert(false);
             }
             strm << std::endl << margin << "OFDM transmission mode: ";
-            assert (transm < 4);
             switch (transm) {
-                case 0: strm << "2k"; break;
-                case 1: strm << "8k"; break;
-                case 2: strm << "4k"; break;
-                case 3: strm << "reserved"; break;
+                case 0:  strm << "2k"; break;
+                case 1:  strm << "8k"; break;
+                case 2:  strm << "4k"; break;
+                case 3:  strm << "reserved"; break;
+                default: assert(false);
             }
             strm << ", other frequencies: " << YesNo (other_freq) << std::endl;
         }
-        ExtraData (strm, data, size, indent);
+        ExtraData(strm, data, size, indent);
     }
 }
 
@@ -1693,8 +1696,9 @@ namespace {
             data++; size--;
             strm << margin << "Mix type: ";
             switch (mix_type) {
-                case 0: strm << "supplementary stream"; break;
-                case 1: strm << "complete and independent stream"; break;
+                case 0:  strm << "supplementary stream"; break;
+                case 1:  strm << "complete and independent stream"; break;
+                default: assert(false);
             }
             strm << std::endl << margin << "Editorial classification: ";
             switch (editorial) {
@@ -1735,14 +1739,15 @@ namespace {
             if (length > size) {
                 length = size;
             }
-            strm << margin << Format ("Data service id: %d (0x%02X)", int (data_id), int (data_id));
+            strm << margin << Format("Data service id: %d (0x%02X)", int (data_id), int (data_id));
             switch (data_id) {
-                case 1: strm << ", EBU teletext"; break;
-                case 2: strm << ", Inverted teletext"; break;
-                case 4: strm << ", VPS, Video Programming System"; break;
-                case 5: strm << ", WSS, Wide Screen Signaling"; break;
-                case 6: strm << ", Closed captioning"; break;
-                case 7: strm << ", Monochrone 4:2:2 samples"; break;
+                case 1:  strm << ", EBU teletext"; break;
+                case 2:  strm << ", Inverted teletext"; break;
+                case 4:  strm << ", VPS, Video Programming System"; break;
+                case 5:  strm << ", WSS, Wide Screen Signaling"; break;
+                case 6:  strm << ", Closed captioning"; break;
+                case 7:  strm << ", Monochrone 4:2:2 samples"; break;
+                default: strm << ", data id " << int(data_id) << " (reserved)"; break;
             }
             strm << std::endl;
             if (data_id == 1 || data_id == 2 || (data_id >= 4 && data_id <= 7)) {
@@ -1784,8 +1789,9 @@ namespace {
             // Determine display handler for the descriptor.
             DisplayDescriptorHandler handler = DDunknown;
             switch (edid) {
-                case EDID_MESSAGE: handler = DDmessage; break;
+                case EDID_MESSAGE:     handler = DDmessage; break;
                 case EDID_SUPPL_AUDIO: handler = DDsuppl_audio; break;
+                default: break;
             }
 
             // Display content of extended descriptor
@@ -1799,16 +1805,16 @@ namespace {
 // This static routine displays a list of descriptors from a memory area
 //----------------------------------------------------------------------------
 
-std::ostream& ts::Descriptor::Display (std::ostream& strm,
-                                         const void* data,
-                                         size_t size,
-                                         int indent,
-                                         TID tid,
-                                         PDS pds)
+std::ostream& ts::Descriptor::Display(std::ostream& strm,
+                                      const void* data,
+                                      size_t size,
+                                      int indent,
+                                      TID tid,
+                                      PDS pds)
 {
-    const std::string margin (indent, ' ');
-    const uint8_t* desc_start (reinterpret_cast <const uint8_t*> (data));
-    size_t desc_index (0);
+    const std::string margin(indent, ' ');
+    const uint8_t* desc_start = reinterpret_cast<const uint8_t*>(data);
+    size_t desc_index = 0;
 
     // Loop across all descriptors
 
@@ -1816,8 +1822,8 @@ std::ostream& ts::Descriptor::Display (std::ostream& strm,
 
         // Get descriptor header
 
-        uint8_t desc_tag (*desc_start++);
-        size_t desc_length (*desc_start++);
+        uint8_t desc_tag = *desc_start++;
+        size_t desc_length = *desc_start++;
         size -= 2;
 
         if (desc_length > size) {
@@ -1884,6 +1890,7 @@ std::ostream& ts::Descriptor::Display (std::ostream& strm,
             case DID_TERREST_DELIVERY:  handler = DDterrest_delivery; break;
             case DID_VBI_DATA:          handler = DDvbi_data; break;
             case DID_VBI_TELETEXT:      handler = DDteletext; break;
+            default:                    handler = DDunknown; break;
         }
 
         switch (pds) {
@@ -1907,6 +1914,7 @@ std::ostream& ts::Descriptor::Display (std::ostream& strm,
                     case DID_MH_LOGICAL_REF:      handler = DDmh_logical_ref; break;
                     case DID_RECORD_CONTROL:      handler = DDrecord_control; break;
                     case DID_SHORT_SERVICE:       handler = DDshort_service; break;
+                    default: break;
                 }
                 break;
     
@@ -1923,6 +1931,7 @@ std::ostream& ts::Descriptor::Display (std::ostream& strm,
                     case DID_PREF_NAME_ID:        handler = DDpreferred_name_id; break;
                     case DID_EACEM_STREAM_ID:     handler = DDeacem_stream_id; break;
                     case DID_HD_SIMULCAST_LCN:    handler = DDlogical_chan_num; break;
+                    default: break;
                 }
                 break;
 
@@ -1930,7 +1939,11 @@ std::ostream& ts::Descriptor::Display (std::ostream& strm,
                 // Eutelsat operator, including Fransat
                 switch (desc_tag) {
                     case DID_EUTELSAT_CHAN_NUM: handler = DDeutelsat_chan_num; break;
+                    default: break;
                 }
+                break;
+
+            default:
                 break;
         }
 

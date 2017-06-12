@@ -39,11 +39,13 @@
 // Constructor
 //----------------------------------------------------------------------------
 
-ts::UDPSocket::UDPSocket (bool auto_open, ReportInterface& report) :
-    _sock (TS_SOCKET_T_INVALID)
+ts::UDPSocket::UDPSocket(bool auto_open, ReportInterface& report) :
+    _sock(TS_SOCKET_T_INVALID),
+    _default_destination(),
+    _mcast()
 {
     if (auto_open) {
-        open (report);
+        open(report);
     }
 }
 

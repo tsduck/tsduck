@@ -52,7 +52,8 @@ namespace ts {
             //!
             Protocol() :
                 _has_version(false),
-                _version(0)
+                _version(0),
+                _commands()
             {
             }
 
@@ -63,7 +64,8 @@ namespace ts {
             //!
             Protocol(VERSION v) :
                 _has_version(true),
-                _version(v)
+                _version(v),
+                _commands()
             {
             }
 
@@ -183,6 +185,7 @@ namespace ts {
             // Description of a command:
             struct Command {
                 ParameterMap params;
+                Command() : params() {}
             };
             typedef std::map<TAG,Command> CommandMap;
 

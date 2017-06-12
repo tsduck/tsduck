@@ -207,6 +207,9 @@ void ts::ecmgscs::Protocol::buildErrorResponse (const tlv::MessageFactory& fact,
         case tlv::MissingParameter:
             status = Errors::missing_param;
             break;
+        default:
+            status = Errors::unknown_error;
+            break;
     }
 
     // Copy error_status and error_information into response
@@ -284,7 +287,7 @@ std::string ts::ecmgscs::ChannelTest::dump (size_t indent) const
 // channel_status
 //----------------------------------------------------------------------------
 
-ts::ecmgscs::ChannelStatus::ChannelStatus () :
+ts::ecmgscs::ChannelStatus::ChannelStatus() :
     ChannelMessage             (ecmgscs::Protocol::Instance()->version(), Tags::channel_status),
     section_TSpkt_flag         (false),
     has_AC_delay_start         (false),
@@ -411,14 +414,18 @@ std::string ts::ecmgscs::ChannelClose::dump (size_t indent) const
 //----------------------------------------------------------------------------
 
 ts::ecmgscs::ChannelError::ChannelError () :
-    ChannelMessage (ecmgscs::Protocol::Instance()->version(), Tags::channel_error)
+    ChannelMessage    (ecmgscs::Protocol::Instance()->version(), Tags::channel_error),
+    error_status      (),
+    error_information ()
 {
 }
 
 ts::ecmgscs::ChannelError::ChannelError (const tlv::MessageFactory& fact) :
-    ChannelMessage (fact.protocolVersion(),
-                    fact.commandTag(),
-                    fact.get<uint16_t> (Tags::ECM_channel_id))
+    ChannelMessage    (fact.protocolVersion(),
+                       fact.commandTag(),
+                       fact.get<uint16_t> (Tags::ECM_channel_id)),
+    error_status      (),
+    error_information ()
 {
     fact.get (Tags::error_status, error_status);
     fact.get (Tags::error_information, error_information);
@@ -622,15 +629,19 @@ std::string ts::ecmgscs::StreamCloseResponse::dump (size_t indent) const
 //----------------------------------------------------------------------------
 
 ts::ecmgscs::StreamError::StreamError () :
-    StreamMessage (ecmgscs::Protocol::Instance()->version(), Tags::stream_error)
+    StreamMessage     (ecmgscs::Protocol::Instance()->version(), Tags::stream_error),
+    error_status      (),
+    error_information ()
 {
 }
 
 ts::ecmgscs::StreamError::StreamError (const tlv::MessageFactory& fact) :
-    StreamMessage (fact.protocolVersion(),
-                   fact.commandTag(),
-                   fact.get<uint16_t> (Tags::ECM_channel_id),
-                   fact.get<uint16_t> (Tags::ECM_stream_id))
+    StreamMessage     (fact.protocolVersion(),
+                       fact.commandTag(),
+                       fact.get<uint16_t> (Tags::ECM_channel_id),
+                       fact.get<uint16_t> (Tags::ECM_stream_id)),
+    error_status      (),
+    error_information ()
 {
     fact.get (Tags::error_status, error_status);
     fact.get (Tags::error_information, error_information);
@@ -663,9 +674,12 @@ ts::ecmgscs::CWProvision::CWProvision () :
     StreamMessage       (ecmgscs::Protocol::Instance()->version(), Tags::CW_provision),
     CP_number           (0),
     has_CW_encryption   (false),
+    CW_encryption       (),
+    CP_CW_combination   (),
     has_CP_duration     (false),
     CP_duration         (0),
-    has_access_criteria (false)
+    has_access_criteria (false),
+    access_criteria     ()
 {
 }
 
@@ -676,9 +690,12 @@ ts::ecmgscs::CWProvision::CWProvision (const tlv::MessageFactory& fact) :
                          fact.get<uint16_t> (Tags::ECM_stream_id)),
     CP_number           (fact.get<uint16_t> (Tags::CP_number)),
     has_CW_encryption   (1 == fact.count (Tags::CW_encryption)),
+    CW_encryption       (),
+    CP_CW_combination   (),
     has_CP_duration     (1 == fact.count (Tags::CP_duration)),
     CP_duration         (!has_CP_duration ? 0 : fact.get<uint16_t> (Tags::CP_duration)),
-    has_access_criteria (1 == fact.count (Tags::access_criteria))
+    has_access_criteria (1 == fact.count (Tags::access_criteria)),
+    access_criteria     ()
 {
     if (has_CW_encryption) {
         fact.get (Tags::CW_encryption, CW_encryption);
@@ -747,7 +764,8 @@ std::string ts::ecmgscs::CWProvision::dump (size_t indent) const
 
 ts::ecmgscs::ECMResponse::ECMResponse () :
     StreamMessage (ecmgscs::Protocol::Instance()->version(), Tags::ECM_response),
-    CP_number     (0)
+    CP_number     (0),
+    ECM_datagram  ()
 {
 }
 
@@ -756,7 +774,8 @@ ts::ecmgscs::ECMResponse::ECMResponse (const tlv::MessageFactory& fact) :
                    fact.commandTag(),
                    fact.get<uint16_t> (Tags::ECM_channel_id),
                    fact.get<uint16_t> (Tags::ECM_stream_id)),
-    CP_number     (fact.get<uint16_t> (Tags::CP_number))
+    CP_number     (fact.get<uint16_t> (Tags::CP_number)),
+    ECM_datagram  ()
 {
     fact.get (Tags::ECM_datagram, ECM_datagram);
 }

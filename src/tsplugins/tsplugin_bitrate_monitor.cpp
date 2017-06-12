@@ -57,11 +57,9 @@ namespace ts {
         // Default values
         static const uint32_t DEFAULT_BITRATE_MIN = 10;
         static const uint32_t DEFAULT_BITRATE_MAX = 0xFFFFFFFF;
-
         static const uint16_t DEFAULT_TIME_WINDOW_SIZE = 5;
 
-        // Type indicating status of current bitrate, regarding
-        // allowed range
+        // Type indicating status of current bitrate, regarding allowed range
         enum RangeStatus {LOWER, IN_RANGE, GREATER};
 
         PID         _pid;                  // Monitored PID
@@ -89,6 +87,11 @@ namespace ts {
 
         // To uncomment if using method 2 for bitrate computation
         //void computeBitrate(time_t time_interval);
+
+        // Inaccessible operations
+        BitrateMonitorPlugin() = delete;
+        BitrateMonitorPlugin(const BitrateMonitorPlugin&) = delete;
+        BitrateMonitorPlugin& operator=(const BitrateMonitorPlugin&) = delete;
     };
 }
 
@@ -101,7 +104,17 @@ TSPLUGIN_DECLARE_PROCESSOR(ts::BitrateMonitorPlugin)
 //----------------------------------------------------------------------------
 
 ts::BitrateMonitorPlugin::BitrateMonitorPlugin (TSP* tsp_) :
-    ProcessorPlugin (tsp_, "Monitor bitrate for a given pid.", "[options] pid")
+    ProcessorPlugin (tsp_, "Monitor bitrate for a given pid.", "[options] pid"),
+    _pid(PID_NULL),
+    _min_bitrate(0),
+    _max_bitrate(0),
+    _last_bitrate_status(LOWER),
+    _alarm_command(),
+    _last_second(0),
+    _window_size(0),
+    _pkt_count(0),
+    _pkt_count_index(0),
+    _startup(false)
 {
     option (""             ,   0, PIDVAL, 1, 1);   // PID nb is a required parameter
     option ("alarm_command", 'a', STRING);
@@ -248,6 +261,8 @@ void ts::BitrateMonitorPlugin::computeBitrate()
                 alarmMessage = Format ("pid %u (0x%04X) - bitrate (%u bits/s) is greater than allowed maximum (%u bits/s)",
                     _pid, _pid, bitrate, _max_bitrate);
                 break;
+            default:
+                assert(false); // should not get there
         }
 
         tsp->warning (alarmMessage);

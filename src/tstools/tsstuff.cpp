@@ -52,10 +52,10 @@ namespace {
 
     struct Options: public Args
     {
-        Options (int argc, char *argv[]);
+        Options(int argc, char *argv[]);
 
         BitRate       target_bitrate;
-        ts::PID     reference_pid;
+        ts::PID       reference_pid;
         size_t        buffer_size;
         PacketCounter leading_packets;
         PacketCounter trailing_packets;
@@ -69,8 +69,20 @@ namespace {
     };
 
     // Constructor
-    Options::Options (int argc, char *argv[]) :
-        Args ("Add stuffing to a TS file to reach a target bitrate.", "[options] [input-file]")
+    Options::Options(int argc, char *argv[]) :
+        Args("Add stuffing to a TS file to reach a target bitrate.", "[options] [input-file]"),
+        target_bitrate(0),
+        reference_pid(PID_NULL),
+        buffer_size(0),
+        leading_packets(0),
+        trailing_packets(0),
+        final_inter_packet(0),
+        initial_inter_packet(0),
+        dts_based(false),
+        dyn_final_inter_packet(false),
+        dyn_initial_inter_packet(false),
+        input_file(),
+        output_file()
     {
         option ("",                      0,  Args::STRING, 0, 1);
         option ("bitrate",              'b', Args::POSITIVE, 1, 1);
@@ -242,9 +254,15 @@ namespace {
     // Stuffer constructor
     //-------------------------------------------------------------------------
 
-    Stuffer::Stuffer (Options& opt) :
-        _opt (opt),
-        _input (opt.buffer_size / PKT_SIZE)
+    Stuffer::Stuffer(Options& opt) :
+        _opt(opt),
+        _input(opt.buffer_size / PKT_SIZE),
+        _output(),
+        _current_inter_packet(0),
+        _remaining_stuff_count(0),
+        _additional_bits(0),
+        _tstamp1(),
+        _tstamp2()
     {
     }
 

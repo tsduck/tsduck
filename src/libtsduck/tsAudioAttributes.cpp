@@ -36,6 +36,20 @@
 #include "tsFormat.h"
 
 
+//----------------------------------------------------------------------------
+// Default constructor.
+//----------------------------------------------------------------------------
+
+ts::AudioAttributes::AudioAttributes() :
+    _header(0),
+    _layer(0),
+    _bitrate(0),
+    _sampling_freq(0),
+    _mode(0),
+    _mode_extension(0)
+{
+}
+
 
 //----------------------------------------------------------------------------
 // Provides an audio frame.
@@ -119,6 +133,9 @@ bool ts::AudioAttributes::moreBinaryData (const void* data, size_t size)
                     default: _bitrate = 0; break; // reserved
                 }
                 break;
+            default: // reserved
+                _bitrate = 0;
+                break;
         }
     }
     else {
@@ -180,6 +197,9 @@ bool ts::AudioAttributes::moreBinaryData (const void* data, size_t size)
                     case 14: _bitrate = 320; break;
                     default: _bitrate = 0; break; // reserved
                 }
+                break;
+            default: // reserved
+                _bitrate = 0;
                 break;
         }
     }

@@ -41,7 +41,6 @@
 #include "tsTables.h"
 
 
-
 //----------------------------------------------------------------------------
 // Plugin definition
 //----------------------------------------------------------------------------
@@ -85,6 +84,11 @@ namespace ts {
 
         // Mark all ECM PIDs from the specified descriptor list in the specified PID set
         void addECMPID (const DescriptorList&, PIDSet&);
+
+        // Inaccessible operations
+        SVRemovePlugin() = delete;
+        SVRemovePlugin(const SVRemovePlugin&) = delete;
+        SVRemovePlugin& operator=(const SVRemovePlugin&) = delete;
     };
 }
 
@@ -97,11 +101,21 @@ TSPLUGIN_DECLARE_PROCESSOR(ts::SVRemovePlugin)
 //----------------------------------------------------------------------------
 
 ts::SVRemovePlugin::SVRemovePlugin (TSP* tsp_) :
-    ProcessorPlugin (tsp_, "Remove a service.", "[options] service"),
-    _demux (this),
-    _pzer_pat (PID_PAT, CyclingPacketizer::ALWAYS),
-    _pzer_sdt_bat (PID_SDT, CyclingPacketizer::ALWAYS),
-    _pzer_nit (PID_NIT, CyclingPacketizer::ALWAYS)
+    ProcessorPlugin(tsp_, "Remove a service.", "[options] service"),
+    _abort(false),
+    _ready(false),
+    _transparent(false),
+    _service(),
+    _ignore_absent(false),
+    _ignore_bat(false),
+    _ignore_nit(false),
+    _drop_status(TSP_DROP),
+    _drop_pids(),
+    _ref_pids(),
+    _demux(this),
+    _pzer_pat(PID_PAT, CyclingPacketizer::ALWAYS),
+    _pzer_sdt_bat(PID_SDT, CyclingPacketizer::ALWAYS),
+    _pzer_nit(PID_NIT, CyclingPacketizer::ALWAYS)
 {
     option ("",               0,  STRING, 1, 1);
     option ("ignore-absent", 'a');
@@ -310,6 +324,10 @@ void ts::SVRemovePlugin::handleTable (SectionDemux& demux, const BinaryTable& ta
                 _pzer_nit.removeSections (TID_NIT_OTH, table.tableIdExtension());
                 _pzer_nit.addTable (table);
             }
+            break;
+        }
+
+        default: {
             break;
         }
     }

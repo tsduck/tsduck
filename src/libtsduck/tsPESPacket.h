@@ -60,10 +60,7 @@ namespace ts {
         //! Default constructor.
         //! The PESPacket is initially marked invalid.
         //!
-        PESPacket()
-        {
-            initialize(PID_NULL);
-        }
+        PESPacket();
 
         //!
         //! Copy constructor.
@@ -81,10 +78,7 @@ namespace ts {
         //! @param [in] content_size Size in bytes of the packet.
         //! @param [in] source_pid PID from which the packet was read.
         //!
-        PESPacket(const void* content, size_t content_size, PID source_pid = PID_NULL)
-        {
-            initialize(new ByteBlock(content, content_size), source_pid);
-        }
+        PESPacket(const void* content, size_t content_size, PID source_pid = PID_NULL);
 
         //!
         //! Constructor from full binary content.
@@ -92,10 +86,7 @@ namespace ts {
         //! @param [in] content Binary packet data.
         //! @param [in] source_pid PID from which the packet was read.
         //!
-        PESPacket(const ByteBlock& content, PID source_pid = PID_NULL)
-        {
-            initialize(new ByteBlock(content), source_pid);
-        }
+        PESPacket(const ByteBlock& content, PID source_pid = PID_NULL);
 
         //!
         //! Constructor from full binary content.
@@ -105,10 +96,7 @@ namespace ts {
         //! Do not modify the referenced ByteBlock from outside the PESPacket.
         //! @param [in] source_pid PID from which the packet was read.
         //!
-        PESPacket(const ByteBlockPtr& content_ptr, PID source_pid = PID_NULL)
-        {
-            initialize(content_ptr, source_pid);
-        }
+        PESPacket(const ByteBlockPtr& content_ptr, PID source_pid = PID_NULL);
 
         //!
         //! Reload from full binary content.
@@ -119,7 +107,8 @@ namespace ts {
         //!
         void reload(const void* content, size_t content_size, PID source_pid = PID_NULL)
         {
-            initialize(new ByteBlock(content, content_size), source_pid);
+            _source_pid = source_pid;
+            initialize(new ByteBlock(content, content_size));
         }
 
         //!
@@ -130,7 +119,8 @@ namespace ts {
         //!
         void reload(const ByteBlock& content, PID source_pid = PID_NULL)
         {
-            initialize(new ByteBlock(content), source_pid);
+            _source_pid = source_pid;
+            initialize(new ByteBlock(content));
         }
 
         //!
@@ -143,20 +133,15 @@ namespace ts {
         //!
         void reload(const ByteBlockPtr& content_ptr, PID source_pid = PID_NULL)
         {
-            initialize(content_ptr, source_pid);
+            _source_pid = source_pid;
+            initialize(content_ptr);
         }
 
         //!
         //! Clear packet content.
         //! Becomes an invalid packet.
         //!
-        void clear()
-        {
-            _is_valid = false;
-            _header_size = 0;
-            _source_pid = PID_NULL;
-            _data.clear();
-        }
+        void clear();
 
         //!
         //! Assignment operator.
@@ -379,9 +364,8 @@ namespace ts {
         PacketCounter _last_pkt;     // Index of last packet in stream
         ByteBlockPtr  _data;         // Full binary content of the packet
 
-        // Helpers for constructors
-        void initialize(PID);
-        void initialize(const ByteBlockPtr&, PID);
+        // Initialize from a binary content.
+        void initialize(const ByteBlockPtr&);
 
         // Inaccessible operations
         PESPacket(const PESPacket&) = delete;

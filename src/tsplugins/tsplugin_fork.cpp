@@ -36,7 +36,6 @@
 #include "tsForkPipe.h"
 
 
-
 //----------------------------------------------------------------------------
 // Plugin definition
 //----------------------------------------------------------------------------
@@ -58,6 +57,11 @@ namespace ts {
         size_t    _buffer_size;   // Max number of packets in buffer
         size_t    _buffer_count;  // Number of packets currently in buffer
         TSPacket* _buffer;        // Packet buffer
+
+        // Inaccessible operations
+        ForkPlugin() = delete;
+        ForkPlugin(const ForkPlugin&) = delete;
+        ForkPlugin& operator=(const ForkPlugin&) = delete;
     };
 }
 
@@ -70,8 +74,11 @@ TSPLUGIN_DECLARE_PROCESSOR(ts::ForkPlugin)
 //----------------------------------------------------------------------------
 
 ts::ForkPlugin::ForkPlugin (TSP* tsp_) :
-    ProcessorPlugin (tsp_, "Fork a process and send TS packets to its standard input.", "[options] 'command'"),
-    _buffer (0)
+    ProcessorPlugin(tsp_, "Fork a process and send TS packets to its standard input.", "[options] 'command'"),
+    _pipe(),
+    _buffer_size(0),
+    _buffer_count(0),
+    _buffer(0)
 {
     option ("",                  0,  STRING, 1, 1);
     option ("buffered-packets", 'b', POSITIVE);

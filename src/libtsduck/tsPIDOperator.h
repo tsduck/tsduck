@@ -89,10 +89,10 @@ namespace ts {
 
         //!
         //! Copy constructor.
-        //! @param [in] set Other instance to copy.
+        //! @param [in] other Other instance to copy.
         //!
-        PIDOperatorSet(const PIDOperatorSet& set) :
-            SuperClass(set)
+        PIDOperatorSet(const PIDOperatorSet& other) :
+            SuperClass(other)
         {
         }
 

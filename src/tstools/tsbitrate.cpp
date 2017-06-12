@@ -49,8 +49,8 @@ struct Options: public Args
 {
     Options (int argc, char *argv[]);
 
-    uint32_t      min_pcr;     // Min # of PCR per PID
-    uint16_t      min_pid;     // Min # of PID
+    uint32_t    min_pcr;     // Min # of PCR per PID
+    uint16_t    min_pid;     // Min # of PID
     std::string pcr_name;    // Time stamp type name
     bool        use_dts;     // Use DTS instead of PCR
     bool        all;         // All packets analysis
@@ -60,7 +60,15 @@ struct Options: public Args
 };
 
 Options::Options (int argc, char *argv[]) :
-    Args ("MPEG Transport Stream Bitrate Evaluation Utility.", "[options] [filename]")
+    Args("MPEG Transport Stream Bitrate Evaluation Utility.", "[options] [filename]"),
+    min_pcr(0),
+    min_pid(0),
+    pcr_name(),
+    use_dts(false),
+    all(false),
+    full(false),
+    value_only(false),
+    infile()
 {
     option ("",            0, Args::STRING, 0, 1);
     option ("all",        'a');

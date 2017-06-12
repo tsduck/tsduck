@@ -46,12 +46,7 @@ namespace ts {
         //!
         //! Default constructor.
         //!
-        TSFileOutput() :
-            _is_open(false),
-            _severity(Severity::Error),
-            _total_packets(0)
-        {
-        }
+        TSFileOutput();
 
         //!
         //! Destructor.

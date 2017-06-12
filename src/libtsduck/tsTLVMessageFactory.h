@@ -91,36 +91,14 @@ namespace ts {
             //! @param [in] size Size in bytes of the message.
             //! @param [in] protocol The message is validated according to this protocol.
             //!
-            MessageFactory(const void* addr, size_t size, const Protocol* protocol) :
-                _msg_base(reinterpret_cast<const uint8_t*>(addr)),
-                _msg_length(size),
-                _protocol(protocol),
-                _error_status(OK),
-                _error_info(0),
-                _error_info_is_offset(false),
-                _protocol_version(0),
-                _command_tag(0)
-            {
-                analyzeMessage();
-            }
+            MessageFactory(const void* addr, size_t size, const Protocol* protocol);
 
             //!
             //! Constructor: Analyze a TLV message in memory.
             //! @param [in] bb Binary TLV message.
             //! @param [in] protocol The message is validated according to this protocol.
             //!
-            MessageFactory(const ByteBlock &bb, const Protocol* protocol) :
-                _msg_base(bb.data()),
-                _msg_length(bb.size()),
-                _protocol(protocol),
-                _error_status(OK),
-                _error_info(0),
-                _error_info_is_offset(false),
-                _protocol_version(0),
-                _command_tag(0)
-            {
-                analyzeMessage();
-            }
+            MessageFactory(const ByteBlock &bb, const Protocol* protocol);
 
             //!
             //! Get the "error status" resulting from the analysis of the message.

@@ -393,10 +393,10 @@ std::ostream& ts::CyclingPacketizer::SectionDesc::display (std::ostream& strm) c
 // Display the internal state of the packetizer, mainly for debug
 //----------------------------------------------------------------------------
 
-std::ostream& ts::CyclingPacketizer::display (std::ostream& strm) const
+std::ostream& ts::CyclingPacketizer::display(std::ostream& strm) const
 {
     Packetizer::display (strm)
-        << "  Stuffing policy: " << _stuffing << std::endl
+        << "  Stuffing policy: " << int(_stuffing) << std::endl
         << "  Bitrate: " << Decimal (_bitrate) << " b/s" << std::endl
         << "  Current cycle: " << _current_cycle << std::endl
         << "  Remaining sections in cycle: " << _remain_in_cycle << std::endl

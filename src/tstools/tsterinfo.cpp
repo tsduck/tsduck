@@ -82,23 +82,34 @@ namespace {
 
 struct Options: public Args
 {
-    Options (int argc, char *argv[]);
+    Options(int argc, char *argv[]);
 
-    uint64_t              frequency;     // Carrier frequency from which to get UHF channel
-    int                 uhf_channel;   // UHF channel from which to compute frequency
-    int                 vhf_channel;   // VHF channel from which to compute frequency
-    int                 hf_offset;     // UHF/VHF offset from channel
-    BitRate             bitrate;       // TS bitrate from which to guess modulation parameters
-    size_t              max_guess;     // Max number of modulation parameters to guess.
+    uint64_t          frequency;     // Carrier frequency from which to get UHF channel
+    int               uhf_channel;   // UHF channel from which to compute frequency
+    int               vhf_channel;   // VHF channel from which to compute frequency
+    int               hf_offset;     // UHF/VHF offset from channel
+    BitRate           bitrate;       // TS bitrate from which to guess modulation parameters
+    size_t            max_guess;     // Max number of modulation parameters to guess.
     ts::Modulation    constellation; // Modulation parameters to compute bitrate
     ts::InnerFEC      fec_hp;
     ts::GuardInterval guard_interval;
     ts::BandWidth     bandwidth;
-    bool                simple;        // Simple output
+    bool              simple;        // Simple output
 };
 
-Options::Options (int argc, char *argv[]) :
-    Args ("DVB-Terrestrial information utility.", "[options]")
+Options::Options(int argc, char *argv[]) :
+    Args("DVB-Terrestrial information utility.", "[options]"),
+    frequency(0),
+    uhf_channel(0),
+    vhf_channel(0),
+    hf_offset(0),
+    bitrate(0),
+    max_guess(0),
+    constellation(ts::QAM_AUTO),
+    fec_hp(ts::FEC_NONE),
+    guard_interval(ts::GUARD_AUTO),
+    bandwidth(ts::BW_AUTO),
+    simple(false)
 {
     option ("bandwidth",         'w', DVBTBandWidthEnum);
     option ("bitrate",           'b', Args::UINT32);

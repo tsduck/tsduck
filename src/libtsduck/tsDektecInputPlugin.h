@@ -63,5 +63,10 @@ namespace ts {
     private:
         class Guts;
         Guts* _guts;
+
+        // Inaccessible operations
+        DektecInputPlugin() = delete;
+        DektecInputPlugin(const DektecInputPlugin&) = delete;
+        DektecInputPlugin& operator=(const DektecInputPlugin&) = delete;
     };
 }

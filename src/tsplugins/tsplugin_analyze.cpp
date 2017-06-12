@@ -69,6 +69,11 @@ namespace ts {
         void closeOutput();
         bool produceReport();
         void computeNextReportTime (const Time& current_utc, MilliSecond interval);
+
+        // Inaccessible operations
+        AnalyzePlugin() = delete;
+        AnalyzePlugin(const AnalyzePlugin&) = delete;
+        AnalyzePlugin& operator=(const AnalyzePlugin&) = delete;
     };
 }
 
@@ -80,12 +85,18 @@ TSPLUGIN_DECLARE_PROCESSOR(ts::AnalyzePlugin)
 // Constructor
 //----------------------------------------------------------------------------
 
-ts::AnalyzePlugin::AnalyzePlugin (TSP* tsp_) :
-    ProcessorPlugin (tsp_, "Transport Stream Analyzer.", "[options]"),
-    _output_name (),
-    _output_stream (),
-    _analyzer (),
-    _analyzer_options ()
+ts::AnalyzePlugin::AnalyzePlugin(TSP* tsp_) :
+    ProcessorPlugin(tsp_, "Transport Stream Analyzer.", "[options]"),
+    _output_name(),
+    _output_stream(),
+    _output(),
+    _output_interval(0),
+    _multiple_output(false),
+    _current_packet(0),
+    _next_report_time(Time::Epoch),
+    _next_report_packet(0),
+    _analyzer(),
+    _analyzer_options()
 {
     option ("interval",       'i', POSITIVE);
     option ("multiple-files", 'm');

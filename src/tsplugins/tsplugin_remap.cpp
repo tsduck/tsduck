@@ -45,7 +45,6 @@
 #include "tsStringUtils.h"
 
 
-
 //----------------------------------------------------------------------------
 // Plugin definition
 //----------------------------------------------------------------------------
@@ -62,9 +61,9 @@ namespace ts {
         virtual Status processPacket (TSPacket&, bool&, bool&);
 
     private:
-        typedef SafePtr <CyclingPacketizer, NullMutex> CyclingPacketizerPtr;
-        typedef std::map <PID, CyclingPacketizerPtr> PacketizerMap;
-        typedef std::map <PID, PID> PIDMap;
+        typedef SafePtr<CyclingPacketizer, NullMutex> CyclingPacketizerPtr;
+        typedef std::map<PID, CyclingPacketizerPtr> PacketizerMap;
+        typedef std::map<PID, PID> PIDMap;
 
         bool          _check_integrity; // Check validity of remappings
         bool          _update_psi;      // Update all PSI
@@ -85,6 +84,11 @@ namespace ts {
 
         // Process a list of descriptors, remap PIDs in CA descriptors.
         void processDescriptors (DescriptorList&, TID);
+
+        // Inaccessible operations
+        RemapPlugin() = delete;
+        RemapPlugin(const RemapPlugin&) = delete;
+        RemapPlugin& operator=(const RemapPlugin&) = delete;
     };
 }
 
@@ -98,7 +102,13 @@ TSPLUGIN_DECLARE_PROCESSOR(ts::RemapPlugin)
 
 ts::RemapPlugin::RemapPlugin (TSP* tsp_) :
     ProcessorPlugin (tsp_, "Generic PID remapper.", "[options] [pid[-pid]=newpid ...]"),
-    _demux (this)
+    _check_integrity(false),
+    _update_psi(false),
+    _pmt_ready(false),
+    _demux(this),
+    _new_pids(),
+    _pid_map(),
+    _pzer()
 {
     option ("");
     option ("no-psi", 'n');

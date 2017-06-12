@@ -95,6 +95,11 @@ namespace ts {
             // Encapsulation of the plugin's getBitrate() method,
             // taking into account the tsp input stuffing options.
             BitRate getBitrate();
+
+            // Inaccessible operations
+            InputExecutor() = delete;
+            InputExecutor(const InputExecutor&) = delete;
+            InputExecutor& operator=(const InputExecutor&) = delete;
         };
     }
 }

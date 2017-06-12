@@ -35,12 +35,25 @@
 #include "tsAVCSequenceParameterSet.h"
 
 
+//----------------------------------------------------------------------------
+// Default constructor.
+//----------------------------------------------------------------------------
+
+ts::AVCAttributes::AVCAttributes() :
+    _hsize(0),
+    _vsize(0),
+    _profile(0),
+    _level(0),
+    _chroma(0)
+{
+}
+
 
 //----------------------------------------------------------------------------
 // Convert to a string object
 //----------------------------------------------------------------------------
 
-ts::AVCAttributes::operator std::string () const
+ts::AVCAttributes::operator std::string() const
 {
     if (!_is_valid) {
         return "";

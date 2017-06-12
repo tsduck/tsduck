@@ -79,6 +79,11 @@ namespace ts {
         void processPAT (PAT&);
         void processPMT (PMT&);
         void processSDT (SDT&);
+
+        // Inaccessible operations
+        ClearPlugin() = delete;
+        ClearPlugin(const ClearPlugin&) = delete;
+        ClearPlugin& operator=(const ClearPlugin&) = delete;
     };
 }
 
@@ -92,8 +97,18 @@ TSPLUGIN_DECLARE_PROCESSOR(ts::ClearPlugin)
 
 ts::ClearPlugin::ClearPlugin (TSP* tsp_) :
     ProcessorPlugin (tsp_, "Extract clear (non scrambled) sequences of a transport stream.", "[options]"),
-    _last_tot (Time::Epoch),
-    _demux (this)
+    _abort(false),
+    _service(),
+    _pass_packets(false),
+    _drop_status(TSP_OK),
+    _video_only(false),
+    _audio_only(false),
+    _last_tot(Time::Epoch),
+    _drop_after(0),
+    _current_pkt(0),
+    _last_clear_pkt(0),
+    _clear_pids(),
+    _demux(this)
 {
     option ("audio",              'a');
     option ("drop-after-packets", 'd', POSITIVE);
@@ -216,6 +231,10 @@ void ts::ClearPlugin::handleTable (SectionDemux& demux, const BinaryTable& table
                 // Save last TOT
                 _last_tot.deserialize (table);
             }
+            break;
+        }
+
+        default: {
             break;
         }
     }

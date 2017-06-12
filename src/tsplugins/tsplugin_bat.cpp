@@ -57,24 +57,29 @@ namespace ts {
         virtual Status processPacket (TSPacket&, bool&, bool&);
 
     private:
-        bool              _abort;             // Error (service not found, etc)
-        bool              _single_bat;        // Modify one single BAT only
-        uint16_t            _bouquet_id;        // Bouquet id of the BAT to modify (if _single_bat)
-        bool              _incr_version;      // Increment table version
-        bool              _set_version;       // Set a new table version
-        uint8_t             _new_version;       // New table version
-        std::set<uint16_t>  _remove_serv;       // Set of services to remove
-        std::set<uint16_t>  _remove_ts;         // Set of transport streams to remove
-        std::vector<DID>  _removed_desc;      // Set of descriptor tags to remove
-        PDS               _pds;               // Private data specifier for removed descriptors
-        bool              _cleanup_priv_desc; // Remove private desc without preceding PDS desc
-        SectionDemux      _demux;             // Section demux
-        CyclingPacketizer _pzer;              // Packetizer for modified SDT/BAT
+        bool               _abort;             // Error (service not found, etc)
+        bool               _single_bat;        // Modify one single BAT only
+        uint16_t           _bouquet_id;        // Bouquet id of the BAT to modify (if _single_bat)
+        bool               _incr_version;      // Increment table version
+        bool               _set_version;       // Set a new table version
+        uint8_t            _new_version;       // New table version
+        std::set<uint16_t> _remove_serv;       // Set of services to remove
+        std::set<uint16_t> _remove_ts;         // Set of transport streams to remove
+        std::vector<DID>   _removed_desc;      // Set of descriptor tags to remove
+        PDS                _pds;               // Private data specifier for removed descriptors
+        bool               _cleanup_priv_desc; // Remove private desc without preceding PDS desc
+        SectionDemux       _demux;             // Section demux
+        CyclingPacketizer  _pzer;              // Packetizer for modified SDT/BAT
 
         // Invoked by the demux when a complete table is available.
         virtual void handleTable (SectionDemux&, const BinaryTable&);
         void processBAT (BAT&);
         void processDescriptorList (DescriptorList&);
+
+        // Inaccessible operations
+        BATPlugin() = delete;
+        BATPlugin(const BATPlugin&) = delete;
+        BATPlugin& operator=(const BATPlugin&) = delete;
     };
 }
 
@@ -88,7 +93,19 @@ TSPLUGIN_DECLARE_PROCESSOR(ts::BATPlugin)
 
 ts::BATPlugin::BATPlugin (TSP* tsp_) :
     ProcessorPlugin (tsp_, "Perform various transformations on the BAT.", "[options]"),
-    _demux (this)
+    _abort(false),
+    _single_bat(false),
+    _bouquet_id(0),
+    _incr_version(false),
+    _set_version(false),
+    _new_version(0),
+    _remove_serv(),
+    _remove_ts(),
+    _removed_desc(),
+    _pds(0),
+    _cleanup_priv_desc(false),
+    _demux(this),
+    _pzer()
 {
     option ("bouquet-id",                 'b', UINT16);
     option ("cleanup-private-descriptors", 0);
@@ -204,6 +221,10 @@ void ts::BATPlugin::handleTable (SectionDemux& demux, const BinaryTable& table)
                 _pzer.removeSections (table.tableId(), table.tableIdExtension());
                 _pzer.addTable (table);
             }
+        }
+
+        default: {
+            break;
         }
     }
 }

@@ -70,28 +70,29 @@ ts::Tuner::~Tuner ()
 // Default constructor, 
 //-----------------------------------------------------------------------------
 
-ts::Tuner::Tuner () :
-    _is_open (false),
-    _info_only (true),
-    _tuner_type (DVB_T),
-    _device_name (),
-    _device_info (),
-    _signal_timeout (DEFAULT_SIGNAL_TIMEOUT),
-    _signal_timeout_silent (false),
-    _receive_timeout (0),
-    _frontend_name (),
-    _demux_name (),
-    _dvr_name (),
-    _frontend_fd (-1),
-    _demux_fd (-1),
-    _dvr_fd (-1),
-    _demux_bufsize (DEFAULT_DEMUX_BUFFER_SIZE),
-    _fe_info (),
-    _force_s2api (false),
-    _signal_poll (DEFAULT_SIGNAL_POLL),
-    _rt_signal (-1),
-    _rt_timer (0),
-    _rt_timer_valid (false)
+ts::Tuner::Tuner() :
+    _is_open(false),
+    _info_only(true),
+    _tuner_type(DVB_T),
+    _device_name(),
+    _device_info(),
+    _signal_timeout(DEFAULT_SIGNAL_TIMEOUT),
+    _signal_timeout_silent(false),
+    _receive_timeout(0),
+    _delivery_systems(),
+    _frontend_name(),
+    _demux_name(),
+    _dvr_name(),
+    _frontend_fd(-1),
+    _demux_fd(-1),
+    _dvr_fd(-1),
+    _demux_bufsize(DEFAULT_DEMUX_BUFFER_SIZE),
+    _fe_info(),
+    _force_s2api(false),
+    _signal_poll(DEFAULT_SIGNAL_POLL),
+    _rt_signal(-1),
+    _rt_timer(0),
+    _rt_timer_valid(false)
 {
 }
 
@@ -100,30 +101,31 @@ ts::Tuner::Tuner () :
 // Constructor from one device name.
 //-----------------------------------------------------------------------------
 
-ts::Tuner::Tuner (const std::string& device_name, bool info_only, ReportInterface& report) :
-    _is_open (false),
-    _info_only (true),
-    _tuner_type (DVB_T),
-    _device_name (device_name),
-    _device_info (),
-    _signal_timeout (DEFAULT_SIGNAL_TIMEOUT),
-    _signal_timeout_silent (false),
-    _receive_timeout (0),
-    _frontend_name (),
-    _demux_name (),
-    _dvr_name (),
-    _frontend_fd (-1),
-    _demux_fd (-1),
-    _dvr_fd (-1),
-    _demux_bufsize (DEFAULT_DEMUX_BUFFER_SIZE),
-    _fe_info (),
-    _force_s2api (false),
-    _signal_poll (DEFAULT_SIGNAL_POLL),
-    _rt_signal (-1),
-    _rt_timer (0),
-    _rt_timer_valid (false)
+ts::Tuner::Tuner(const std::string& device_name, bool info_only, ReportInterface& report) :
+    _is_open(false),
+    _info_only(true),
+    _tuner_type(DVB_T),
+    _device_name(device_name),
+    _device_info(),
+    _signal_timeout(DEFAULT_SIGNAL_TIMEOUT),
+    _signal_timeout_silent(false),
+    _receive_timeout(0),
+    _delivery_systems(),
+    _frontend_name(),
+    _demux_name(),
+    _dvr_name(),
+    _frontend_fd(-1),
+    _demux_fd(-1),
+    _dvr_fd(-1),
+    _demux_bufsize(DEFAULT_DEMUX_BUFFER_SIZE),
+    _fe_info(),
+    _force_s2api(false),
+    _signal_poll(DEFAULT_SIGNAL_POLL),
+    _rt_signal(-1),
+    _rt_timer(0),
+    _rt_timer_valid(false)
 {
-    this->open (device_name, info_only, report);
+    this->open(device_name, info_only, report);
 }
 
 
@@ -131,17 +133,17 @@ ts::Tuner::Tuner (const std::string& device_name, bool info_only, ReportInterfac
 // Get the list of all existing DVB tuners.
 //-----------------------------------------------------------------------------
 
-bool ts::Tuner::GetAllTuners (TunerPtrVector& tuners, ReportInterface& report)
+bool ts::Tuner::GetAllTuners(TunerPtrVector& tuners, ReportInterface& report)
 {
     // Reset returned vector
     tuners.clear();
 
     // Get list of all DVB adapters
     StringVector names;
-    ExpandWildcard (names, "/dev/dvb/adapter*");
+    ExpandWildcard(names, "/dev/dvb/adapter*");
 
     // Open all tuners
-    tuners.reserve (names.size());
+    tuners.reserve(names.size());
     bool ok = true;
     for (StringVector::const_iterator it = names.begin(); it != names.end(); ++it) {
         const size_t index = tuners.size();

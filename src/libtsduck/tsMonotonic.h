@@ -51,21 +51,13 @@ namespace ts {
         //!
         //! Default constructor.
         //!
-        Monotonic() :
-            _value(0)
-        {
-            init();
-        }
+        Monotonic();
 
         //!
         //! Copy constructor.
         //! @param [in] t Another instance to copy.
         //!
-        Monotonic(const Monotonic& t) :
-            _value(t._value)
-        {
-            init();
-        }
+        Monotonic(const Monotonic& t);
 
         //!
         //! Destructor.

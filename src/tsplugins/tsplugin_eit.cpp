@@ -81,15 +81,15 @@ namespace ts {
         typedef std::map <uint32_t, ServiceDesc> ServiceMap;
 
         // EITPlugin private members
-        std::ofstream    _outfile;   // Specified output file
-        Time             _last_utc;  // Last UTC time seen in TDT
-        SectionCounter   _eitpf_act_count;
-        SectionCounter   _eitpf_oth_count;
-        SectionCounter   _eits_act_count;
-        SectionCounter   _eits_oth_count;
-        SectionDemux     _demux;     // Section filter
-        ServiceMap       _services;  // Description of services
-        Variable<uint16_t> _ts_id;     // Current TS id
+        std::ofstream      _outfile;          // Specified output file
+        Time               _last_utc;         // Last UTC time seen in TDT
+        SectionCounter     _eitpf_act_count;
+        SectionCounter     _eitpf_oth_count;
+        SectionCounter     _eits_act_count;
+        SectionCounter     _eits_oth_count;
+        SectionDemux       _demux;            // Section filter
+        ServiceMap         _services;         // Description of services
+        Variable<uint16_t> _ts_id;            // Current TS id
 
         // Return a reference to a service description
         ServiceDesc& getServiceDesc (uint16_t ts_id, uint16_t service_id);
@@ -100,6 +100,11 @@ namespace ts {
 
         // Number of days in a duration, used for EPG depth
         static int Days (const MilliSecond& ms) {return int ((ms + MilliSecPerDay - 1) / MilliSecPerDay);}
+
+        // Inaccessible operations
+        EITPlugin() = delete;
+        EITPlugin(const EITPlugin&) = delete;
+        EITPlugin& operator=(const EITPlugin&) = delete;
     };
 }
 
@@ -112,8 +117,16 @@ TSPLUGIN_DECLARE_PROCESSOR(ts::EITPlugin)
 //----------------------------------------------------------------------------
 
 ts::EITPlugin::EITPlugin (TSP* tsp_) :
-    ProcessorPlugin (tsp_, "Analyze EIT sections.", "[options]"),
-    _demux (this, this)
+    ProcessorPlugin(tsp_, "Analyze EIT sections.", "[options]"),
+    _outfile(),
+    _last_utc(),
+    _eitpf_act_count(0),
+    _eitpf_oth_count(0),
+    _eits_act_count(0),
+    _eits_oth_count(0),
+    _demux(this, this),
+    _services(),
+    _ts_id()
 {
     option ("output-file", 'o', STRING);
 
@@ -345,6 +358,10 @@ void ts::EITPlugin::handleTable (SectionDemux& demux, const BinaryTable& table)
                     _last_utc = tdt.utc_time;
                 }
             }
+            break;
+        }
+
+        default: {
             break;
         }
     }

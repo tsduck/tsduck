@@ -45,7 +45,7 @@ using namespace ts;
 
 struct Options: public Args
 {
-    Options (int argc, char *argv[]);
+    Options(int argc, char *argv[]);
 
     bool        verbose;       // Verbose output
     std::string reader;        // Optional reader name
@@ -53,8 +53,12 @@ struct Options: public Args
     ::DWORD     reset_action;  // Type of reset to apply
 };
 
-Options::Options (int argc, char *argv[]) :
-    Args ("Smartcard Listing Utility.", "[options] [reader-name]")
+Options::Options(int argc, char *argv[]) :
+    Args("Smartcard Listing Utility.", "[options] [reader-name]"),
+    verbose(false),
+    reader(),
+    timeout_ms(0),
+    reset_action(0)
 {
     option ("",            0, Args::STRING, 0, 1);
     option ("cold-reset", 'c');

@@ -46,7 +46,7 @@ namespace ts {
         //!
         //! Default constructor
         //!
-        AbstractAudioVideoAttributes(): _is_valid (false) {}
+        AbstractAudioVideoAttributes() : _is_valid(false) {}
 
         //!
         //! Virtual destructor

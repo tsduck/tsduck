@@ -48,7 +48,8 @@ const int ts::Enumeration::UNKNOWN = std::numeric_limits<int>::max();
 // Constructor from a variable list of string/int pairs.
 //----------------------------------------------------------------------------
 
-ts::Enumeration::Enumeration(const char* name, int value, ...)
+ts::Enumeration::Enumeration(const char* name, int value, ...) :
+    _map()
 {
     // Do not do anything if the null pointer is at the beginning
     if (name == 0) {

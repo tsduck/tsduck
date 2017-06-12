@@ -37,7 +37,6 @@
 #include "tsByteBlock.h"
 
 
-
 //----------------------------------------------------------------------------
 // Plugin definition
 //----------------------------------------------------------------------------
@@ -54,10 +53,15 @@ namespace ts {
         virtual Status processPacket (TSPacket&, bool&, bool&);
 
     private:
-        uint8_t     _offset_pusi;      // Start offset in packets with PUSI
-        uint8_t     _offset_non_pusi;  // Start offset in packets without PUSI
+        uint8_t   _offset_pusi;      // Start offset in packets with PUSI
+        uint8_t   _offset_non_pusi;  // Start offset in packets without PUSI
         ByteBlock _pattern;          // Binary pattern to apply
         PIDSet    _pid_list;         // Array of pid values to filter
+
+        // Inaccessible operations
+        PatternPlugin() = delete;
+        PatternPlugin(const PatternPlugin&) = delete;
+        PatternPlugin& operator=(const PatternPlugin&) = delete;
     };
 }
 
@@ -70,7 +74,11 @@ TSPLUGIN_DECLARE_PROCESSOR(ts::PatternPlugin)
 //----------------------------------------------------------------------------
 
 ts::PatternPlugin::PatternPlugin (TSP* tsp_) :
-    ProcessorPlugin (tsp_, "Replace packet payload with a binary pattern on selected PID's.", "[options] pattern")
+    ProcessorPlugin(tsp_, "Replace packet payload with a binary pattern on selected PID's.", "[options] pattern"),
+    _offset_pusi(0),
+    _offset_non_pusi(0),
+    _pattern(),
+    _pid_list()
 {
     option ("",                 0, STRING, 1, 1);
     option ("negate",          'n');

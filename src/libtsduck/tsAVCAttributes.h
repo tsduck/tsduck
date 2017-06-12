@@ -53,6 +53,11 @@ namespace ts {
     class TSDUCKDLL AVCAttributes: public AbstractAudioVideoAttributes
     {
     public:
+        //!
+        //! Default constructor.
+        //!
+        AVCAttributes();
+
         // Implementation of abstract methods.
         // The "binary data" is an AVC access unit.
         virtual bool moreBinaryData(const void*, size_t);

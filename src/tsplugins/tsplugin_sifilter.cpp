@@ -41,7 +41,6 @@
 #include "tsPMT.h"
 
 
-
 //----------------------------------------------------------------------------
 // Plugin definition
 //----------------------------------------------------------------------------
@@ -61,9 +60,9 @@ namespace ts {
         bool          _pass_pmt;    // Pass PIDs containing PMT
         bool          _pass_ecm;    // Pass PIDs containing ECM
         bool          _pass_emm;    // Pass PIDs containing EMM
-        uint16_t        _cas_id;      // CA system id for ECM or EMM
+        uint16_t      _cas_id;      // CA system id for ECM or EMM
         CASFamily     _cas_family;  // CA system id family
-        uint32_t        _cas_oper;    // CA operator for ECM or EMM
+        uint32_t      _cas_oper;    // CA operator for ECM or EMM
         Status        _drop_status; // Status for dropped packets
         PIDSet        _pass_pids;   // List of PIDs to pass
         SectionDemux  _demux;       // Section filter
@@ -83,6 +82,11 @@ namespace ts {
         // Adds all ECM/EMM PIDs from the specified descriptor list if
         // they match the optional specified CAS id, regardless of the operator id.
         void addCA (const DescriptorList& dlist, const char *name);
+
+        // Inaccessible operations
+        SIFilterPlugin() = delete;
+        SIFilterPlugin(const SIFilterPlugin&) = delete;
+        SIFilterPlugin& operator=(const SIFilterPlugin&) = delete;
     };
 }
 
@@ -95,8 +99,16 @@ TSPLUGIN_DECLARE_PROCESSOR(ts::SIFilterPlugin)
 //----------------------------------------------------------------------------
 
 ts::SIFilterPlugin::SIFilterPlugin (TSP* tsp_) :
-    ProcessorPlugin (tsp_, "Extract PID's containing the specified PSI/SI.", "[options]"),
-    _demux (this)
+    ProcessorPlugin(tsp_, "Extract PID's containing the specified PSI/SI.", "[options]"),
+    _pass_pmt(false),
+    _pass_ecm(false),
+    _pass_emm(false),
+    _cas_id(0),
+    _cas_family(CAS_OTHER),
+    _cas_oper(0),
+    _drop_status(TSP_DROP),
+    _pass_pids(),
+    _demux(this)
 {
     option ("bat",        0);
     option ("cas",        0, UINT16);
@@ -298,6 +310,10 @@ void ts::SIFilterPlugin::handleTable (SectionDemux& demux, const BinaryTable& ta
             if (pmt.isValid()) {
                 processPMT (pmt);
             }
+            break;
+        }
+
+        default: {
             break;
         }
     }

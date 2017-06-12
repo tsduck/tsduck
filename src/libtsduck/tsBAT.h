@@ -47,12 +47,12 @@ namespace ts {
 
         //!
         //! Default constructor.
-        //! @param [in] version Table version number.
-        //! @param [in] is_current True if table is current, false if table is next.
-        //! @param [in] bouquet_id Bouquet identifier.
+        //! @param [in] vers Table version number.
+        //! @param [in] cur True if table is current, false if table is next.
+        //! @param [in] id Bouquet identifier.
         //!
-        BAT(uint8_t version = 0, bool is_current = true, uint16_t bouquet_id = 0) :
-            AbstractTransportListTable(TID_BAT, bouquet_id, version, is_current),
+        BAT(uint8_t vers = 0, bool cur = true, uint16_t id = 0) :
+            AbstractTransportListTable(TID_BAT, id, vers, cur),
             bouquet_id(_tid_ext)
         {
         }

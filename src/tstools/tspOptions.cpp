@@ -44,10 +44,23 @@
 // Constructor from command line options
 //----------------------------------------------------------------------------
 
-ts::tsp::Options::Options (int argc, char *argv[]) :
-    instuff_nullpkt (0),
-    instuff_inpkt (0),
-    plugins ()
+ts::tsp::Options::Options(int argc, char *argv[]) :
+    verbose(false),
+    debug(0),
+    timed_log(false),
+    list_proc(false),
+    monitor(false),
+    ignore_jt(false),
+    bufsize(0),
+    max_flush_pkt(0),
+    max_input_pkt(0),
+    instuff_nullpkt(0),
+    instuff_inpkt(0),
+    bitrate(0),
+    bitrate_adj(0),
+    input(),
+    output(),
+    plugins()
 {
     option ("add-input-stuffing",       'a', Args::STRING);
     option ("bitrate",                  'b', Args::POSITIVE);
@@ -370,10 +383,22 @@ std::ostream& ts::tsp::Options::display (std::ostream& strm, int indent) const
 
 
 //----------------------------------------------------------------------------
+// Default constructor for plugin options.
+//----------------------------------------------------------------------------
+
+ts::tsp::Options::PluginOptions::PluginOptions() :
+    type(PROCESSOR),
+    name(),
+    args()
+{
+}
+
+
+//----------------------------------------------------------------------------
 // Display the content of the object to a stream
 //----------------------------------------------------------------------------
 
-std::ostream& ts::tsp::Options::PluginOptions::display (std::ostream& strm, int indent) const
+std::ostream& ts::tsp::Options::PluginOptions::display(std::ostream& strm, int indent) const
 {
     const std::string margin (indent, ' ');
 

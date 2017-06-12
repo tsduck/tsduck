@@ -44,7 +44,6 @@
 #include "tsNIT.h"
 
 
-
 //----------------------------------------------------------------------------
 // Plugin definition
 //----------------------------------------------------------------------------
@@ -64,11 +63,11 @@ namespace ts {
         bool              _abort;          // Error (service not found, etc)
         bool              _ready;          // Ready to pass packets
         PID               _nit_pid;        // PID for the NIT
-        uint16_t            _old_ts_id;      // Old transport stream id
+        uint16_t          _old_ts_id;      // Old transport stream id
         bool              _set_ts_id;      // Modify transport stream id
-        uint16_t            _new_ts_id;      // New transport stream id
+        uint16_t          _new_ts_id;      // New transport stream id
         bool              _set_onet_id;    // Update original network id
-        uint16_t            _new_onet_id;    // New original network id
+        uint16_t          _new_onet_id;    // New original network id
         bool              _ignore_bat;     // Do not modify the BAT
         bool              _ignore_nit;     // Do not modify the NIT
         bool              _add_bat;        // Add a new TS entry in the BAT instead of replacing
@@ -85,6 +84,11 @@ namespace ts {
         void processPAT (PAT&);
         void processSDT (SDT&);
         void processNITBAT (AbstractTransportListTable&, bool);
+
+        // Inaccessible operations
+        TSRenamePlugin() = delete;
+        TSRenamePlugin(const TSRenamePlugin&) = delete;
+        TSRenamePlugin& operator=(const TSRenamePlugin&) = delete;
     };
 }
 
@@ -97,13 +101,23 @@ TSPLUGIN_DECLARE_PROCESSOR(ts::TSRenamePlugin)
 //----------------------------------------------------------------------------
 
 ts::TSRenamePlugin::TSRenamePlugin (TSP* tsp_) :
-    ProcessorPlugin (tsp_, "Rename a transport stream.", "[options]"),
-    _abort (false),
-    _ready (false),
-    _demux (this),
-    _pzer_pat (PID_PAT, CyclingPacketizer::ALWAYS),
-    _pzer_sdt_bat (PID_SDT, CyclingPacketizer::ALWAYS),
-    _pzer_nit (PID_NIT, CyclingPacketizer::ALWAYS)
+    ProcessorPlugin(tsp_, "Rename a transport stream.", "[options]"),
+    _abort(false),
+    _ready(false),
+    _nit_pid(PID_NIT),
+    _old_ts_id(0),
+    _set_ts_id(false),
+    _new_ts_id(0),
+    _set_onet_id(false),
+    _new_onet_id(0),
+    _ignore_bat(false),
+    _ignore_nit(false),
+    _add_bat(false),
+    _add_nit(false),
+    _demux(this),
+    _pzer_pat(PID_PAT, CyclingPacketizer::ALWAYS),
+    _pzer_sdt_bat(PID_SDT, CyclingPacketizer::ALWAYS),
+    _pzer_nit(PID_NIT, CyclingPacketizer::ALWAYS)
 {
     option ("add",                 'a');
     option ("add-bat",              0);
@@ -265,6 +279,10 @@ void ts::TSRenamePlugin::handleTable (SectionDemux& demux, const BinaryTable& ta
                 _pzer_nit.removeSections (TID_NIT_OTH, table.tableIdExtension());
                 _pzer_nit.addTable (table);
             }
+            break;
+        }
+
+        default: {
             break;
         }
     }

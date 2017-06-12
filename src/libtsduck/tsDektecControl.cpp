@@ -50,7 +50,17 @@
 //----------------------------------------------------------------------------
 
 ts::DektecControl::DektecControl(int argc, char *argv[]) :
-    Args("Control a Dektec Device.", "[options] [device]")
+    Args("Control a Dektec Device.", "[options] [device]"),
+    _list_all(false),
+    _normalized(false),
+    _wait_sec(0),
+    _devindex(0),
+    _reset(false),
+    _set_led(false),
+    _led_state(0),
+    _set_input(0),
+    _set_output(0),
+    _verbose(false)
 {
     option("", 0, Args::UNSIGNED, 0, 1); // parameter is an optional integer
     option("all", 'a');
@@ -211,6 +221,8 @@ int ts::DektecControl::listDevices(const DektecDeviceVector& devices)
                 case DTAPI_CAT_USB:
                     std::cout << "  USB address: " << device.desc.m_UsbAddress << std::endl;
                     break;
+                default:
+                    break;
             }
 
             if (vpd.cl[0] != 0) {
@@ -369,6 +381,8 @@ int ts::DektecControl::listNormalizedDevices(const DektecDeviceVector& devices)
                 break;
             case DTAPI_CAT_USB:
                 std::cout << "usb:address=" << device.desc.m_UsbAddress << ":";
+                break;
+            default:
                 break;
         }
         std::cout << "nb-port=" << device.desc.m_NumPorts << ":"

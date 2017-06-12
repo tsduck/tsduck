@@ -42,60 +42,60 @@
 // Constructor for the TS analyzer
 //----------------------------------------------------------------------------
 
-ts::TSAnalyzer::TSAnalyzer (BitRate bitrate_hint) :
-    _ts_id (0),
-    _ts_id_valid (false),
-    _ts_pkt_cnt (0),
-    _invalid_sync (0),
-    _transport_errors (0),
-    _suspect_ignored (0),
-    _pid_cnt (0),
-    _scrambled_pid_cnt (0),
-    _pcr_pid_cnt (0),
-    _global_pid_cnt (0),
-    _global_scr_pids (0),
-    _global_pkt_cnt (0),
-    _global_bitrate (0),
-    _unref_pid_cnt (0),
-    _unref_scr_pids (0),
-    _unref_pkt_cnt (0),
-    _unref_bitrate (0),
-    _ts_pcr_bitrate_188 (0),
-    _ts_pcr_bitrate_204 (0),
-    _ts_user_bitrate (bitrate_hint),
-    _ts_bitrate (0),
-    _duration (0),
-    _first_utc (Time::Epoch),
-    _last_utc (Time::Epoch),
-    _first_local (Time::Epoch),
-    _last_local (Time::Epoch),
-    _first_tdt (Time::Epoch),
-    _last_tdt (Time::Epoch),
-    _first_tot (Time::Epoch),
-    _last_tot (Time::Epoch),
-    _country_code (""),
-    _scrambled_services_cnt (0),
-    _tid_present (),
-    _pids (),
-    _services (),
-    _modified (false),
-    _ts_bitrate_sum (0),
-    _ts_bitrate_cnt (0),
-    _preceding_errors (0),
-    _preceding_suspects (0),
-    _min_error_before_suspect (1),
-    _max_consecutive_suspects (1),
-    _demux (this, this),
-    _pes_demux (this)
+ts::TSAnalyzer::TSAnalyzer(BitRate bitrate_hint) :
+    _ts_id(0),
+    _ts_id_valid(false),
+    _ts_pkt_cnt(0),
+    _invalid_sync(0),
+    _transport_errors(0),
+    _suspect_ignored(0),
+    _pid_cnt(0),
+    _scrambled_pid_cnt(0),
+    _pcr_pid_cnt(0),
+    _global_pid_cnt(0),
+    _global_scr_pids(0),
+    _global_pkt_cnt(0),
+    _global_bitrate(0),
+    _unref_pid_cnt(0),
+    _unref_scr_pids(0),
+    _unref_pkt_cnt(0),
+    _unref_bitrate(0),
+    _ts_pcr_bitrate_188(0),
+    _ts_pcr_bitrate_204(0),
+    _ts_user_bitrate(bitrate_hint),
+    _ts_bitrate(0),
+    _duration(0),
+    _first_utc(Time::Epoch),
+    _last_utc(Time::Epoch),
+    _first_local(Time::Epoch),
+    _last_local(Time::Epoch),
+    _first_tdt(Time::Epoch),
+    _last_tdt(Time::Epoch),
+    _first_tot(Time::Epoch),
+    _last_tot(Time::Epoch),
+    _country_code(""),
+    _scrambled_services_cnt(0),
+    _tid_present(),
+    _pids(),
+    _services(),
+    _modified(false),
+    _ts_bitrate_sum(0),
+    _ts_bitrate_cnt(0),
+    _preceding_errors(0),
+    _preceding_suspects(0),
+    _min_error_before_suspect(1),
+    _max_consecutive_suspects(1),
+    _demux(this, this),
+    _pes_demux(this)
 {
     // Specify the PID filters to collect PSI tables.
-    _demux.addPID (PID_PAT);
-    _demux.addPID (PID_CAT);
-    _demux.addPID (PID_TSDT);
-    _demux.addPID (PID_NIT);
-    _demux.addPID (PID_RST);
-    _demux.addPID (PID_SDT);  // also BAT
-    _demux.addPID (PID_TDT);  // also TOT
+    _demux.addPID(PID_PAT);
+    _demux.addPID(PID_CAT);
+    _demux.addPID(PID_TSDT);
+    _demux.addPID(PID_NIT);
+    _demux.addPID(PID_RST);
+    _demux.addPID(PID_SDT);  // also BAT
+    _demux.addPID(PID_TDT);  // also TOT
 }
 
 
@@ -113,7 +113,7 @@ ts::TSAnalyzer::~TSAnalyzer()
 // Reset the TS analysis context.
 //----------------------------------------------------------------------------
 
-void ts::TSAnalyzer::reset ()
+void ts::TSAnalyzer::reset()
 {
     _modified = false;
     _ts_id = 0;
@@ -148,21 +148,21 @@ void ts::TSAnalyzer::reset ()
     _last_tot = Time::Epoch;
     _country_code = "";
     _scrambled_services_cnt = 0;
-    _tid_present.reset ();
-    _pids.clear ();
-    _services.clear ();
+    _tid_present.reset();
+    _pids.clear();
+    _services.clear();
     _ts_bitrate_sum = 0;
     _ts_bitrate_cnt = 0;
     _preceding_errors = 0;
     _preceding_suspects = 0;
-    _demux.reset ();
-    _pes_demux.reset ();
+    _demux.reset();
+    _pes_demux.reset();
 
     // Specify the PID filters to collect PSI tables.
-    _demux.addPID (PID_PAT);
-    _demux.addPID (PID_CAT);
-    _demux.addPID (PID_SDT);  // also BAT
-    _demux.addPID (PID_TDT);  // also TOT
+    _demux.addPID(PID_PAT);
+    _demux.addPID(PID_CAT);
+    _demux.addPID(PID_SDT);  // also BAT
+    _demux.addPID(PID_TDT);  // also TOT
 }
 
 
@@ -170,54 +170,54 @@ void ts::TSAnalyzer::reset ()
 // Constructor for the PID context
 //----------------------------------------------------------------------------
 
-ts::TSAnalyzer::PIDContext::PIDContext (PID pid_, const std::string& description_) :
-    pid (pid_),
-    description (description_),
-    comment (),
-    attributes (),
-    services (),
-    is_pmt_pid (false),
-    is_pcr_pid (false),
-    referenced (false),
-    optional (false),
-    carry_pes (false),
-    carry_section (false),
-    carry_ecm (false),
-    carry_emm (false),
-    carry_audio (false),
-    carry_video (false),
-    scrambled (false),
-    same_stream_id (false),
-    pes_stream_id (0),
-    ts_pkt_cnt (0),
-    ts_af_cnt (0),
-    unit_start_cnt (0),
-    pl_start_cnt (0),
-    pmt_cnt (0),
-    crypto_period (0),
-    unexp_discont (0),
-    exp_discont (0),
-    duplicated (0),
-    ts_sc_cnt (0),
-    inv_ts_sc_cnt (0),
-    inv_pes_start (0),
-    pcr_cnt (0),
-    ts_pcr_bitrate (0),
-    bitrate (0),
-    language (""),
-    cas_id (0),
-    cas_operator (0),
-    sections (),
-    ssu_oui (),
-    cur_continuity (0),
-    cur_ts_sc (0),
-    cur_ts_sc_pkt (0),
-    cryptop_cnt (0),
-    cryptop_ts_cnt (0),
-    last_pcr (0),
-    last_pcr_pkt (0),
-    ts_bitrate_sum (0),
-    ts_bitrate_cnt (0)
+ts::TSAnalyzer::PIDContext::PIDContext(PID pid_, const std::string& description_) :
+    pid(pid_),
+    description(description_),
+    comment(),
+    attributes(),
+    services(),
+    is_pmt_pid(false),
+    is_pcr_pid(false),
+    referenced(false),
+    optional(false),
+    carry_pes(false),
+    carry_section(false),
+    carry_ecm(false),
+    carry_emm(false),
+    carry_audio(false),
+    carry_video(false),
+    scrambled(false),
+    same_stream_id(false),
+    pes_stream_id(0),
+    ts_pkt_cnt(0),
+    ts_af_cnt(0),
+    unit_start_cnt(0),
+    pl_start_cnt(0),
+    pmt_cnt(0),
+    crypto_period(0),
+    unexp_discont(0),
+    exp_discont(0),
+    duplicated(0),
+    ts_sc_cnt(0),
+    inv_ts_sc_cnt(0),
+    inv_pes_start(0),
+    pcr_cnt(0),
+    ts_pcr_bitrate(0),
+    bitrate(0),
+    language(""),
+    cas_id(0),
+    cas_operator(0),
+    sections(),
+    ssu_oui(),
+    cur_continuity(0),
+    cur_ts_sc(0),
+    cur_ts_sc_pkt(0),
+    cryptop_cnt(0),
+    cryptop_ts_cnt(0),
+    last_pcr(0),
+    last_pcr_pkt(0),
+    ts_bitrate_sum(0),
+    ts_bitrate_cnt(0)
 {
     // Guess the initial description, based on the PID
     // Global PID's (PAT, CAT, etc) are marked as "referenced" since they
@@ -307,6 +307,8 @@ ts::TSAnalyzer::PIDContext::PIDContext (PID pid_, const std::string& description
             referenced = true;
             optional = true;
             break;
+        default:
+            break;
     }
 }
 
@@ -315,7 +317,7 @@ ts::TSAnalyzer::PIDContext::PIDContext (PID pid_, const std::string& description
 // Destructor for the PID context
 //----------------------------------------------------------------------------
 
-ts::TSAnalyzer::PIDContext::~PIDContext ()
+ts::TSAnalyzer::PIDContext::~PIDContext()
 {
 }
 
@@ -324,18 +326,18 @@ ts::TSAnalyzer::PIDContext::~PIDContext ()
 // Constructor for the ETID context
 //----------------------------------------------------------------------------
 
-ts::TSAnalyzer::ETIDContext::ETIDContext (const ETID& etid_) :
-    etid (etid_),
-    table_count (0),
-    section_count (0),
-    repetition_ts (0),
-    min_repetition_ts (0),
-    max_repetition_ts (0),
-    first_version (0),
-    last_version (0),
-    versions (),
-    first_pkt (0),
-    last_pkt (0)
+ts::TSAnalyzer::ETIDContext::ETIDContext(const ETID& etid_) :
+    etid(etid_),
+    table_count(0),
+    section_count(0),
+    repetition_ts(0),
+    min_repetition_ts(0),
+    max_repetition_ts(0),
+    first_version(0),
+    last_version(0),
+    versions(),
+    first_pkt(0),
+    last_pkt(0)
 {
 }
 
@@ -344,7 +346,7 @@ ts::TSAnalyzer::ETIDContext::ETIDContext (const ETID& etid_) :
 // Destructor for the ETID context
 //----------------------------------------------------------------------------
 
-ts::TSAnalyzer::ETIDContext::~ETIDContext ()
+ts::TSAnalyzer::ETIDContext::~ETIDContext()
 {
 }
 
@@ -353,19 +355,19 @@ ts::TSAnalyzer::ETIDContext::~ETIDContext ()
 // Constructor for the Service context
 //----------------------------------------------------------------------------
 
-ts::TSAnalyzer::ServiceContext::ServiceContext (uint16_t serv_id) :
-    service_id (serv_id),
-    orig_netw_id (0),
-    service_type (0),
-    name (""),
-    provider (""),
-    pmt_pid (0),
-    pcr_pid (0),
-    pid_cnt (0),
-    scrambled_pid_cnt (0),
-    ts_pkt_cnt (0),
-    bitrate (0),
-    carry_ssu (false)
+ts::TSAnalyzer::ServiceContext::ServiceContext(uint16_t serv_id) :
+    service_id(serv_id),
+    orig_netw_id(0),
+    service_type(0),
+    name(""),
+    provider(""),
+    pmt_pid(0),
+    pcr_pid(0),
+    pid_cnt(0),
+    scrambled_pid_cnt(0),
+    ts_pkt_cnt(0),
+    bitrate(0),
+    carry_ssu(false)
 {
 }
 
@@ -374,7 +376,7 @@ ts::TSAnalyzer::ServiceContext::ServiceContext (uint16_t serv_id) :
 // Destructor for the Service context
 //----------------------------------------------------------------------------
 
-ts::TSAnalyzer::ServiceContext::~ServiceContext ()
+ts::TSAnalyzer::ServiceContext::~ServiceContext()
 {
 }
 
@@ -385,13 +387,13 @@ ts::TSAnalyzer::ServiceContext::~ServiceContext ()
 
 std::string ts::TSAnalyzer::ServiceContext::getProvider() const
 {
-    return provider.empty() ? "(unknown)" : Printable (provider);
+    return provider.empty() ? "(unknown)" : Printable(provider);
 }
 
 std::string ts::TSAnalyzer::ServiceContext::getName() const
 {
     if (!name.empty()) {
-        return Printable (name);
+        return Printable(name);
     }
     else if (carry_ssu) {
         return "(System Software Update)";
@@ -406,18 +408,18 @@ std::string ts::TSAnalyzer::ServiceContext::getName() const
 // Return an ETID context. Allocate a new entry if ETID not found.
 //----------------------------------------------------------------------------
 
-ts::TSAnalyzer::ETIDContextPtr ts::TSAnalyzer::getETID (const Section& section)
+ts::TSAnalyzer::ETIDContextPtr ts::TSAnalyzer::getETID(const Section& section)
 {
     const ETID etid = section.etid();
-    const PIDContextPtr pc (getPID (section.sourcePID()));
-    ETIDContextMap::const_iterator it (pc->sections.find (etid));
+    const PIDContextPtr pc(getPID(section.sourcePID()));
+    ETIDContextMap::const_iterator it(pc->sections.find(etid));
 
     if (it != pc->sections.end()) {
         // ETID context found
         return it->second;
     }
     else {
-        ETIDContextPtr result (new ETIDContext (etid));
+        ETIDContextPtr result(new ETIDContext(etid));
         pc->sections [etid] = result;
         result->first_version = section.version();
         return result;
@@ -429,16 +431,16 @@ ts::TSAnalyzer::ETIDContextPtr ts::TSAnalyzer::getETID (const Section& section)
 //  Return a PID context. Allocate a new entry if PID not found.
 //----------------------------------------------------------------------------
 
-ts::TSAnalyzer::PIDContextPtr ts::TSAnalyzer::getPID (PID pid, const std::string& description)
+ts::TSAnalyzer::PIDContextPtr ts::TSAnalyzer::getPID(PID pid, const std::string& description)
 {
-    PIDContextMap::const_iterator it (_pids.find (pid));
+    PIDContextMap::const_iterator it(_pids.find(pid));
 
     if (it != _pids.end()) {
         // PID context found
         return it->second;
     }
     else {
-        PIDContextPtr result (new PIDContext (pid, description));
+        PIDContextPtr result(new PIDContext(pid, description));
         _pids [pid] = result;
         return result;
     }
@@ -449,16 +451,16 @@ ts::TSAnalyzer::PIDContextPtr ts::TSAnalyzer::getPID (PID pid, const std::string
 //  Return a service context. Allocate a new entry if service not found.
 //----------------------------------------------------------------------------
 
-ts::TSAnalyzer::ServiceContextPtr ts::TSAnalyzer::getService (uint16_t service_id)
+ts::TSAnalyzer::ServiceContextPtr ts::TSAnalyzer::getService(uint16_t service_id)
 {
-    ServiceContextMap::const_iterator it (_services.find (service_id));
+    ServiceContextMap::const_iterator it(_services.find(service_id));
 
     if (it != _services.end()) {
         // Service context found
         return it->second;
     }
     else {
-        ServiceContextPtr result (new ServiceContext (service_id));
+        ServiceContextPtr result(new ServiceContext(service_id));
         _services [service_id] = result;
         return result;
     }
@@ -470,15 +472,15 @@ ts::TSAnalyzer::ServiceContextPtr ts::TSAnalyzer::getService (uint16_t service_i
 //  services, we add the service into this list, if not already in.
 //----------------------------------------------------------------------------
 
-void ts::TSAnalyzer::PIDContext::addService (uint16_t service_id)
+void ts::TSAnalyzer::PIDContext::addService(uint16_t service_id)
 {
     // The PID now belongs to a service
     referenced = true;
 
     // Search the service in the list
-    if (services.find (service_id) == services.end()) {
+    if (services.find(service_id) == services.end()) {
         // Service id not found, add it
-        services.insert (service_id);
+        services.insert(service_id);
     }
 }
 
@@ -488,9 +490,9 @@ void ts::TSAnalyzer::PIDContext::addService (uint16_t service_id)
 // Implementation of SectionHandlerInterface
 //----------------------------------------------------------------------------
 
-void ts::TSAnalyzer::handleSection (SectionDemux&, const Section& section)
+void ts::TSAnalyzer::handleSection(SectionDemux&, const Section& section)
 {
-    ETIDContextPtr etc (getETID (section));
+    ETIDContextPtr etc(getETID(section));
     const uint8_t version = section.version();
 
     // Count one section
@@ -518,13 +520,13 @@ void ts::TSAnalyzer::handleSection (SectionDemux&, const Section& section)
                 if (rep > etc->max_repetition_ts) {
                     etc->max_repetition_ts = rep;
                 }
-                assert (etc->table_count > 2);
+                assert(etc->table_count > 2);
                 etc->repetition_ts = (_ts_pkt_cnt - etc->first_pkt + (etc->table_count - 1) / 2) / (etc->table_count - 1);
             }
         }
         etc->last_pkt = _ts_pkt_cnt;
         if (section.isLongSection()) {
-            etc->versions.set (version);
+            etc->versions.set(version);
             etc->last_version = version;
         }
     }
@@ -536,56 +538,59 @@ void ts::TSAnalyzer::handleSection (SectionDemux&, const Section& section)
 // (Implementation of TableHandlerInterface).
 //----------------------------------------------------------------------------
 
-void ts::TSAnalyzer::handleTable (SectionDemux&, const BinaryTable& table)
+void ts::TSAnalyzer::handleTable(SectionDemux&, const BinaryTable& table)
 {
     const PID pid = table.sourcePID();
     const TID tid = table.tableId();
 
     // Trace all table ids to identify missing tables
-    _tid_present.set (tid);
+    _tid_present.set(tid);
 
     // Process specific tables
     switch (tid) {
         case TID_PAT: {
-            PAT pat (table);
+            PAT pat(table);
             if (pid == PID_PAT && pat.isValid()) {
-                analyzePAT (pat);
+                analyzePAT(pat);
             }
             break;
         }
         case TID_CAT: {
-            CAT cat (table);
+            CAT cat(table);
             if (pid == PID_CAT && cat.isValid()) {
-                analyzeCAT (cat);
+                analyzeCAT(cat);
             }
             break;
         }
         case TID_PMT: {
-            PMT pmt (table);
+            PMT pmt(table);
             if (pmt.isValid()) {
-                analyzePMT (pid, pmt);
+                analyzePMT(pid, pmt);
             }
             break;
         }
         case TID_SDT_ACT: {
-            SDT sdt (table);
+            SDT sdt(table);
             if (sdt.isValid()) {
-                analyzeSDT (sdt);
+                analyzeSDT(sdt);
             }
             break;
         }
         case TID_TDT: {
-            TDT tdt (table);
+            TDT tdt(table);
             if (tdt.isValid()) {
-                analyzeTDT (tdt);
+                analyzeTDT(tdt);
             }
             break;
         }
         case TID_TOT: {
-            TOT tot (table);
+            TOT tot(table);
             if (tot.isValid()) {
-                analyzeTOT (tot);
+                analyzeTOT(tot);
             }
+            break;
+        }
+        default: {
             break;
         }
     }
@@ -596,7 +601,7 @@ void ts::TSAnalyzer::handleTable (SectionDemux&, const BinaryTable& table)
 // Analyze a PAT
 //----------------------------------------------------------------------------
 
-void ts::TSAnalyzer::analyzePAT (const PAT& pat)
+void ts::TSAnalyzer::analyzePAT(const PAT& pat)
 {
     // Get the transport stream id
     _ts_id = pat.ts_id;
@@ -604,18 +609,18 @@ void ts::TSAnalyzer::analyzePAT (const PAT& pat)
 
     // Get all PMT PID's for all services
     for (PAT::ServiceMap::const_iterator it = pat.pmts.begin(); it != pat.pmts.end(); ++it) {
-        uint16_t service_id (it->first);
-        PID pmt_pid (it->second);
+        uint16_t service_id(it->first);
+        PID pmt_pid(it->second);
         // Register the PMT PID
-        PIDContextPtr ps (getPID (pmt_pid));
+        PIDContextPtr ps(getPID(pmt_pid));
         ps->description = "PMT";
-        ps->addService (service_id);
+        ps->addService(service_id);
         ps->is_pmt_pid = true;
         ps->carry_section = true;
         // Add a filter on the referenced PID to get the PMT
-        _demux.addPID (pmt_pid);
+        _demux.addPID(pmt_pid);
         // Describe the service
-        ServiceContextPtr svp (getService (service_id));
+        ServiceContextPtr svp(getService(service_id));
         svp->pmt_pid = pmt_pid;
     }
 }
@@ -625,10 +630,10 @@ void ts::TSAnalyzer::analyzePAT (const PAT& pat)
 // Analyze a CAT
 //----------------------------------------------------------------------------
 
-void ts::TSAnalyzer::analyzeCAT (const CAT& cat)
+void ts::TSAnalyzer::analyzeCAT(const CAT& cat)
 {
     // Analyze the CA descritors to find EMM PIDs
-    analyzeDescriptors (cat.descs);
+    analyzeDescriptors(cat.descs);
 }
 
 
@@ -636,20 +641,20 @@ void ts::TSAnalyzer::analyzeCAT (const CAT& cat)
 // Analyze a PMT
 //----------------------------------------------------------------------------
 
-void ts::TSAnalyzer::analyzePMT (PID pid, const PMT& pmt)
+void ts::TSAnalyzer::analyzePMT(PID pid, const PMT& pmt)
 {
     // Count the number of PMT's on this PID
-    PIDContextPtr ps (getPID (pid));
+    PIDContextPtr ps(getPID(pid));
     ps->pmt_cnt++;
 
     // Get service description
-    ServiceContextPtr svp (getService (pmt.service_id));
+    ServiceContextPtr svp(getService(pmt.service_id));
 
     // Check that this PMT was expected on this PID
     if (svp->pmt_pid != pid) {
         // PAT/PMT inconsistency: Found a PMT on a PID which was not
         // referenced as a PMT PID in the PAT.
-        ps->addService (pmt.service_id);
+        ps->addService(pmt.service_id);
         ps->description = "PMT";
     }
 
@@ -659,29 +664,29 @@ void ts::TSAnalyzer::analyzePMT (PID pid, const PMT& pmt)
         // This PID is the PCR PID for this service. Initial description
         // will normally be replaced later by "Audio", "Video", etc.
         // Some encoders, however, generate a dedicated PID for PCR's.
-        ps = getPID (pmt.pcr_pid, "PCR (not otherwise referenced)");
+        ps = getPID(pmt.pcr_pid, "PCR (not otherwise referenced)");
         ps->is_pcr_pid = true;
-        ps->addService (pmt.service_id);
+        ps->addService(pmt.service_id);
     }
 
     // Process "program info" list of descriptors.
-    analyzeDescriptors (pmt.descs, svp.pointer());
+    analyzeDescriptors(pmt.descs, svp.pointer());
 
     // Process all "elementary stream info"
     for (PMT::StreamMap::const_iterator it = pmt.streams.begin(); it != pmt.streams.end(); ++it) {
         const PID es_pid = it->first;
-        const PMT::Stream& stream (it->second);
-        ps = getPID (es_pid);
-        ps->addService (pmt.service_id);
-        ps->carry_audio = ps->carry_audio || IsAudioST (stream.stream_type);
-        ps->carry_video = ps->carry_video || IsVideoST (stream.stream_type);
-        ps->carry_pes = ps->carry_pes || IsPES (stream.stream_type);
-        if (!ps->carry_section && IsSectionST (stream.stream_type)) {
+        const PMT::Stream& stream(it->second);
+        ps = getPID(es_pid);
+        ps->addService(pmt.service_id);
+        ps->carry_audio = ps->carry_audio || IsAudioST(stream.stream_type);
+        ps->carry_video = ps->carry_video || IsVideoST(stream.stream_type);
+        ps->carry_pes = ps->carry_pes || IsPES(stream.stream_type);
+        if (!ps->carry_section && IsSectionST(stream.stream_type)) {
             ps->carry_section = true;
-            _demux.addPID (es_pid);
+            _demux.addPID(es_pid);
         }
-        ps->description = names::StreamType (stream.stream_type);
-        analyzeDescriptors (stream.descs, svp.pointer(), ps.pointer());
+        ps->description = names::StreamType(stream.stream_type);
+        analyzeDescriptors(stream.descs, svp.pointer(), ps.pointer());
     }
 }
 
@@ -690,11 +695,11 @@ void ts::TSAnalyzer::analyzePMT (PID pid, const PMT& pmt)
 // Analyze an SDT
 //----------------------------------------------------------------------------
 
-void ts::TSAnalyzer::analyzeSDT (const SDT& sdt)
+void ts::TSAnalyzer::analyzeSDT(const SDT& sdt)
 {
     // Register characteristics of all services
     for (SDT::ServiceMap::const_iterator it = sdt.services.begin(); it != sdt.services.end(); ++it) {
-        ServiceContextPtr svp (getService (it->first)); // it->first = map key = service id
+        ServiceContextPtr svp(getService(it->first)); // it->first = map key = service id
         svp->orig_netw_id = sdt.onetw_id;
         svp->service_type = it->second.serviceType();
         svp->provider = it->second.providerName();
@@ -707,7 +712,7 @@ void ts::TSAnalyzer::analyzeSDT (const SDT& sdt)
 // Analyze a TDT
 //----------------------------------------------------------------------------
 
-void ts::TSAnalyzer::analyzeTDT (const TDT& tdt)
+void ts::TSAnalyzer::analyzeTDT(const TDT& tdt)
 {
     // Keep first and last time stamps
     if (_first_tdt == Time::Epoch) {
@@ -721,11 +726,11 @@ void ts::TSAnalyzer::analyzeTDT (const TDT& tdt)
 // Analyze a TOT
 //----------------------------------------------------------------------------
 
-void ts::TSAnalyzer::analyzeTOT (const TOT& tot)
+void ts::TSAnalyzer::analyzeTOT(const TOT& tot)
 {
     // Keep first and last time stamps, country code of first region
     if (!tot.regions.empty()) {
-        _last_tot = tot.localTime (tot.regions[0]);
+        _last_tot = tot.localTime(tot.regions[0]);
         if (_first_tot == Time::Epoch) {
             _country_code = tot.regions[0].country;
             _first_tot = _last_tot;
@@ -738,17 +743,17 @@ void ts::TSAnalyzer::analyzeTOT (const TOT& tot)
 // Return a full description, with comment and optionally attributes
 //----------------------------------------------------------------------------
 
-std::string ts::TSAnalyzer::PIDContext::fullDescription (bool include_attributes) const
+std::string ts::TSAnalyzer::PIDContext::fullDescription(bool include_attributes) const
 {
     // Additional description
-    std::string more (comment);
+    std::string more(comment);
     if (include_attributes) {
         for (StringVector::const_iterator it = attributes.begin(); it != attributes.end(); ++it) {
             if (!it->empty()) {
                 if (!more.empty()) {
-                    more.append (", ");
+                    more.append(", ");
                 }
-                more.append (*it);
+                more.append(*it);
             }
         }
     }
@@ -772,29 +777,29 @@ std::string ts::TSAnalyzer::PIDContext::fullDescription (bool include_attributes
 //  If ps is not 0, we are in the description of this PID in a PMT.
 //----------------------------------------------------------------------------
 
-void ts::TSAnalyzer::analyzeDescriptors (const DescriptorList& descs, ServiceContext* svp, PIDContext* ps)
+void ts::TSAnalyzer::analyzeDescriptors(const DescriptorList& descs, ServiceContext* svp, PIDContext* ps)
 {
     for (size_t di = 0; di < descs.count(); ++di) {
 
-        const uint8_t* data (descs[di]->payload());
-        size_t size (descs[di]->payloadSize());
+        const uint8_t* data(descs[di]->payload());
+        size_t size(descs[di]->payloadSize());
 
         switch (descs[di]->tag()) {
             case DID_CA: {
-                analyzeCADescriptor (*descs[di], svp, ps);
+                analyzeCADescriptor(*descs[di], svp, ps);
                 break;
             }
             case DID_LANGUAGE: {
                 if (size >= 4 && ps != 0) {
                     // First 3 bytes contains the audio language
-                    ps->language = std::string (reinterpret_cast <const char*> (data), 3);
+                    ps->language = std::string(reinterpret_cast<const char*>(data), 3);
                     // Next byte contains audio type, 0 is the default
-                    uint8_t audio_type (data[3]);
+                    uint8_t audio_type(data[3]);
                     if (audio_type == 0) {
-                        ps->comment = Printable (ps->language);
+                        ps->comment = Printable(ps->language);
                     }
                     else {
-                        ps->comment = Printable (ps->language) + ", " + names::AudioType (audio_type);
+                        ps->comment = Printable(ps->language) + ", " + names::AudioType(audio_type);
                     }
                 }
                 break;
@@ -834,30 +839,30 @@ void ts::TSAnalyzer::analyzeDescriptors (const DescriptorList& descs, ServiceCon
             case DID_SUBTITLING: {
                 if (size >= 4 && ps != 0) {
                     // First 3 bytes contains the language
-                    ps->language = std::string (reinterpret_cast <const char*> (data), 3);
+                    ps->language = std::string(reinterpret_cast <const char*>(data), 3);
                     // Next byte contains subtitling type
                     uint8_t type = data[3];
                     ps->description = "Subtitles";
-                    ps->comment = Printable (ps->language);
-                    AppendUnique (ps->attributes, names::SubtitlingType (type));
+                    ps->comment = Printable(ps->language);
+                    AppendUnique(ps->attributes, names::SubtitlingType(type));
                 }
                 break;
             }
             case DID_TELETEXT: {
                 if (size >= 4 && ps != 0) {
                     // First 3 bytes contains the language
-                    ps->language = std::string (reinterpret_cast <const char*> (data), 3);
+                    ps->language = std::string(reinterpret_cast <const char*>(data), 3);
                     // Next byte contains teletext type
-                    uint8_t type (data[3] >> 3);
+                    uint8_t type(data[3] >> 3);
                     ps->description = "Teletext";
-                    ps->comment = Printable (ps->language);
-                    AppendUnique (ps->attributes, names::TeletextType (type));
+                    ps->comment = Printable(ps->language);
+                    AppendUnique(ps->attributes, names::TeletextType(type));
                 }
                 break;
             }
             case DID_DATA_BROADCAST_ID: {
-                if (size >= 2 && GetUInt16 (data) == 0x000A) {
-                    // Data broadcast id 0x000A: System Software Update (SSU, ETSI TS 102 006)
+                if (size >= 2 && GetUInt16(data) == 0x000A) {
+                    // Data broadcast id 0x000A: System Software Update(SSU, ETSI TS 102 006)
                     // Skip data_broadcast_id, already checked == 0x000A
                     data += 2; size -= 2;
                     if (svp != 0) {
@@ -876,7 +881,7 @@ void ts::TSAnalyzer::analyzeDescriptors (const DescriptorList& descs, ServiceCon
                         // OUI loop:
                         while (dlength >= 6) {
                             // Fixed part (6 bytes) followed by variable-length selector
-                            uint32_t oui = GetUInt32 (data - 1) & 0x00FFFFFF; // 24 bits
+                            uint32_t oui = GetUInt32(data - 1) & 0x00FFFFFF; // 24 bits
                             uint8_t slength = data[5];
                             data += 6; size -= 6; dlength -= 6;
                             if (slength > dlength) {
@@ -884,10 +889,13 @@ void ts::TSAnalyzer::analyzeDescriptors (const DescriptorList& descs, ServiceCon
                             }
                             data += slength; size -= slength; dlength -= slength;
                             // Store OUI in PID context
-                            ps->ssu_oui.insert (oui);
+                            ps->ssu_oui.insert(oui);
                         }
                     }
                 }
+                break;
+            }
+            default: {
                 break;
             }
         }
@@ -902,18 +910,18 @@ void ts::TSAnalyzer::analyzeDescriptors (const DescriptorList& descs, ServiceCon
 //  If svp is 0, we are in the CAT.
 //----------------------------------------------------------------------------
 
-void ts::TSAnalyzer::analyzeCADescriptor (const Descriptor& desc, ServiceContext* svp, PIDContext* ps)
+void ts::TSAnalyzer::analyzeCADescriptor(const Descriptor& desc, ServiceContext* svp, PIDContext* ps)
 {
-    const uint8_t* data (desc.payload());
-    size_t size (desc.payloadSize());
+    const uint8_t* data(desc.payload());
+    size_t size(desc.payloadSize());
 
     // Analyze the common part
     if (size < 4) {
         return;
     }
-    uint16_t ca_sysid (GetUInt16 (data));
-    CASFamily cas (CASFamilyOf (ca_sysid));
-    PID ca_pid (GetUInt16 (data + 2) & 0x1FFF);
+    uint16_t ca_sysid(GetUInt16(data));
+    CASFamily cas(CASFamilyOf(ca_sysid));
+    PID ca_pid(GetUInt16(data + 2) & 0x1FFF);
     data += 4; size -= 4;
 
     // Process CA descriptor private data
@@ -922,17 +930,17 @@ void ts::TSAnalyzer::analyzeCADescriptor (const Descriptor& desc, ServiceContext
         // MediaGuard CA descriptor in a PMT
         data -= 2; size += 2;
         while (size >= 15) {
-            PID pid (GetUInt16 (data) & 0x1FFF);
-            uint16_t opi (GetUInt16 (data + 2));
+            PID pid(GetUInt16(data) & 0x1FFF);
+            uint16_t opi(GetUInt16(data + 2));
             // Found an ECM PID for the service
-            PIDContextPtr eps (getPID (pid));
-            eps->addService (svp->service_id);
+            PIDContextPtr eps(getPID(pid));
+            eps->addService(svp->service_id);
             eps->carry_ecm = true;
             eps->cas_id = ca_sysid;
             eps->cas_operator = opi;
             eps->carry_section = true;
-            _demux.addPID (ca_pid);
-            eps->description = Format ("MediaGuard ECM for OPI %d (0x%04X)", int (opi), int (opi));
+            _demux.addPID(ca_pid);
+            eps->description = Format("MediaGuard ECM for OPI %d (0x%04X)", int(opi), int(opi));
             data += 15; size -= 15;
         }
     }
@@ -940,16 +948,16 @@ void ts::TSAnalyzer::analyzeCADescriptor (const Descriptor& desc, ServiceContext
     else if (cas == CAS_MEDIAGUARD && svp == NULL && size == 4) {
 
         // MediaGuard CA descriptor in the CAT, new format
-        uint16_t etypes (GetUInt16 (data));
-        uint16_t opi (GetUInt16 (data + 2));
-        PIDContextPtr eps (getPID (ca_pid));
+        uint16_t etypes(GetUInt16(data));
+        uint16_t opi(GetUInt16(data + 2));
+        PIDContextPtr eps(getPID(ca_pid));
         eps->referenced = true;
         eps->carry_emm = true;
         eps->cas_id = ca_sysid;
         eps->cas_operator = opi;
         eps->carry_section = true;
-        _demux.addPID (ca_pid);
-        eps->description = Format ("MediaGuard EMM for OPI %d (0x%04X), EMM types: 0x%04X", int (opi), int (opi), int (etypes));
+        _demux.addPID(ca_pid);
+        eps->description = Format("MediaGuard EMM for OPI %d (0x%04X), EMM types: 0x%04X", int(opi), int(opi), int(etypes));
     }
 
     else if (cas == CAS_MEDIAGUARD && svp == NULL && size >= 1) {
@@ -957,25 +965,25 @@ void ts::TSAnalyzer::analyzeCADescriptor (const Descriptor& desc, ServiceContext
         // MediaGuard CA descriptor in the CAT, old format
         uint8_t nb_opi = data[0];
         data++; size --;
-        PIDContextPtr eps (getPID (ca_pid));
+        PIDContextPtr eps(getPID(ca_pid));
         eps->referenced = true;
         eps->carry_emm = true;
         eps->cas_id = ca_sysid;
         eps->carry_section = true;
-        _demux.addPID (ca_pid);
+        _demux.addPID(ca_pid);
         eps->description = "MediaGuard Individual EMM";
 
         while (nb_opi > 0 && size >= 4) {
-            PID pid (GetUInt16 (data) & 0x1FFF);
-            uint16_t opi (GetUInt16 (data + 2));
-            PIDContextPtr eps1 (getPID (pid));
+            PID pid(GetUInt16(data) & 0x1FFF);
+            uint16_t opi(GetUInt16(data + 2));
+            PIDContextPtr eps1(getPID(pid));
             eps1->referenced = true;
             eps1->carry_emm = true;
             eps1->cas_id = ca_sysid;
             eps1->cas_operator = opi;
             eps1->carry_section = true;
-            _demux.addPID (ca_pid);
-            eps1->description = Format ("MediaGuard Group EMM for OPI %d (0x%04X)", int (opi), int (opi));
+            _demux.addPID(ca_pid);
+            eps1->description = Format("MediaGuard Group EMM for OPI %d (0x%04X)", int(opi), int(opi));
             data += 4; size -= 4; nb_opi--;
         }
     }
@@ -985,24 +993,24 @@ void ts::TSAnalyzer::analyzeCADescriptor (const Descriptor& desc, ServiceContext
         // SafeAccess CA descriptor in the CAT
         bool first = true;
         data++; size --; // skip applicable EMM bitmask
-        PIDContextPtr eps (getPID (ca_pid));
+        PIDContextPtr eps(getPID(ca_pid));
         eps->referenced = true;
         eps->carry_emm = true;
         eps->cas_id = ca_sysid;
         eps->carry_section = true;
-        _demux.addPID (ca_pid);
+        _demux.addPID(ca_pid);
         eps->description = "SafeAccess EMM";
 
         while (size >= 2) {
-            uint16_t ppid = GetUInt16 (data);
+            uint16_t ppid = GetUInt16(data);
             data += 2; size -= 2;
             if (first) {
                 first = false;
                 eps->cas_operator = ppid;
-                eps->description += Format (" for PPID %d (0x%04X)", int (ppid), int (ppid));
+                eps->description += Format(" for PPID %d (0x%04X)", int(ppid), int(ppid));
             }
             else {
-                eps->description += Format (", %d (0x%04X)", int (ppid), int (ppid));
+                eps->description += Format(", %d (0x%04X)", int(ppid), int(ppid));
             }
         }
     }
@@ -1010,23 +1018,23 @@ void ts::TSAnalyzer::analyzeCADescriptor (const Descriptor& desc, ServiceContext
     else {
 
         // Other CA descriptor, general format
-        PIDContextPtr eps (getPID (ca_pid));
+        PIDContextPtr eps(getPID(ca_pid));
         eps->cas_id = ca_sysid;
         eps->cas_operator = 0; // no known operator concept for general CAS
         eps->carry_section = true;
-        _demux.addPID (ca_pid);
+        _demux.addPID(ca_pid);
 
         if (svp == 0) {
             // No service, this is an EMM PID
             eps->carry_emm = true;
             eps->referenced = true;
-            eps->description = names::CASId (ca_sysid) + " EMM";
+            eps->description = names::CASId(ca_sysid) + " EMM";
         }
         else {
             // Found an ECM PID for the service
             eps->carry_ecm = true;
-            eps->addService (svp->service_id);
-            eps->description = names::CASId (ca_sysid) + " ECM";
+            eps->addService(svp->service_id);
+            eps->description = names::CASId(ca_sysid) + " ECM";
         }
     }
 }
@@ -1037,9 +1045,9 @@ void ts::TSAnalyzer::analyzeCADescriptor (const Descriptor& desc, ServiceContext
 // (Implementation of PESHandlerInterface).
 //----------------------------------------------------------------------------
 
-void ts::TSAnalyzer::handleNewAudioAttributes (PESDemux&, const PESPacket& pkt, const AudioAttributes& attr)
+void ts::TSAnalyzer::handleNewAudioAttributes(PESDemux&, const PESPacket& pkt, const AudioAttributes& attr)
 {
-    AppendUnique (getPID (pkt.getSourcePID())->attributes, std::string (attr));
+    AppendUnique(getPID(pkt.getSourcePID())->attributes, std::string(attr));
 }
 
 
@@ -1048,9 +1056,9 @@ void ts::TSAnalyzer::handleNewAudioAttributes (PESDemux&, const PESPacket& pkt, 
 // (Implementation of PESHandlerInterface).
 //----------------------------------------------------------------------------
 
-void ts::TSAnalyzer::handleNewAC3Attributes (PESDemux&, const PESPacket& pkt, const AC3Attributes& attr)
+void ts::TSAnalyzer::handleNewAC3Attributes(PESDemux&, const PESPacket& pkt, const AC3Attributes& attr)
 {
-    AppendUnique (getPID (pkt.getSourcePID())->attributes, std::string (attr));
+    AppendUnique(getPID(pkt.getSourcePID())->attributes, std::string(attr));
 }
 
 
@@ -1059,9 +1067,9 @@ void ts::TSAnalyzer::handleNewAC3Attributes (PESDemux&, const PESPacket& pkt, co
 // (Implementation of PESHandlerInterface).
 //----------------------------------------------------------------------------
 
-void ts::TSAnalyzer::handleNewVideoAttributes (PESDemux&, const PESPacket& pkt, const VideoAttributes& attr)
+void ts::TSAnalyzer::handleNewVideoAttributes(PESDemux&, const PESPacket& pkt, const VideoAttributes& attr)
 {
-    AppendUnique (getPID (pkt.getSourcePID())->attributes, std::string (attr));
+    AppendUnique(getPID(pkt.getSourcePID())->attributes, std::string(attr));
 }
 
 
@@ -1070,9 +1078,9 @@ void ts::TSAnalyzer::handleNewVideoAttributes (PESDemux&, const PESPacket& pkt, 
 // (Implementation of PESHandlerInterface).
 //----------------------------------------------------------------------------
 
-void ts::TSAnalyzer::handleNewAVCAttributes (PESDemux&, const PESPacket& pkt, const AVCAttributes& attr)
+void ts::TSAnalyzer::handleNewAVCAttributes(PESDemux&, const PESPacket& pkt, const AVCAttributes& attr)
 {
-    AppendUnique (getPID (pkt.getSourcePID())->attributes, std::string (attr));
+    AppendUnique(getPID(pkt.getSourcePID())->attributes, std::string(attr));
 }
 
 
@@ -1080,9 +1088,9 @@ void ts::TSAnalyzer::handleNewAVCAttributes (PESDemux&, const PESPacket& pkt, co
 // The following method feeds the analyzer with a TS packet.
 //----------------------------------------------------------------------------
 
-void ts::TSAnalyzer::feedPacket (const TSPacket& pkt)
+void ts::TSAnalyzer::feedPacket(const TSPacket& pkt)
 {
-    bool broken_rate (false);
+    bool broken_rate(false);
 
     // Store system times of first packet
     if (_first_utc == Time::Epoch) {
@@ -1095,7 +1103,7 @@ void ts::TSAnalyzer::feedPacket (const TSPacket& pkt)
 
     // Count TS packets
     _ts_pkt_cnt++;
-    uint64_t packet_index (_ts_pkt_cnt);
+    uint64_t packet_index(_ts_pkt_cnt);
 
     // Detect and ignore invalid packets
     bool invalid_packet = false;
@@ -1114,7 +1122,7 @@ void ts::TSAnalyzer::feedPacket (const TSPacket& pkt)
     }
 
     // Detect and ignore suspect packets
-    if (_min_error_before_suspect > 0 && _max_consecutive_suspects > 0 && !pidExists (pkt.getPID())) {
+    if (_min_error_before_suspect > 0 && _max_consecutive_suspects > 0 && !pidExists(pkt.getPID())) {
         // Suspect packet detection enabled and potential suspect packet
         if (_preceding_errors >= _min_error_before_suspect || (_preceding_suspects > 0 && _preceding_suspects < _max_consecutive_suspects)) {
             _suspect_ignored++;
@@ -1129,11 +1137,11 @@ void ts::TSAnalyzer::feedPacket (const TSPacket& pkt)
     _preceding_suspects = 0;
 
     // Feed packets into the two demux
-    _demux.feedPacket (pkt);
-    _pes_demux.feedPacket (pkt);
+    _demux.feedPacket(pkt);
+    _pes_demux.feedPacket(pkt);
 
     // Get PID context
-    PIDContextPtr ps (getPID (pkt.getPID()));
+    PIDContextPtr ps(getPID(pkt.getPID()));
     ps->ts_pkt_cnt++;
 
     // Accumulate stat from packet
@@ -1213,7 +1221,7 @@ void ts::TSAnalyzer::feedPacket (const TSPacket& pkt)
         ps->last_pcr = 0;
     }
     if (pkt.hasPCR()) {
-        uint64_t pcr (pkt.getPCR());
+        uint64_t pcr(pkt.getPCR());
         // Count PID's with PCR
         if (ps->pcr_cnt++ == 0)
             _pcr_pid_cnt++;
@@ -1221,7 +1229,7 @@ void ts::TSAnalyzer::feedPacket (const TSPacket& pkt)
         if (ps->last_pcr != 0 && ps->last_pcr < pcr) {
             // Compute transport rate in b/s since last PCR
             uint64_t ts_bitrate =
-                (uint64_t (packet_index - ps->last_pcr_pkt) * SYSTEM_CLOCK_FREQ * PKT_SIZE * 8) /
+                (uint64_t(packet_index - ps->last_pcr_pkt) * SYSTEM_CLOCK_FREQ * PKT_SIZE * 8) /
                 (pcr - ps->last_pcr);
             // Per-PID statistics:
             ps->ts_bitrate_sum += ts_bitrate;
@@ -1244,7 +1252,7 @@ void ts::TSAnalyzer::feedPacket (const TSPacket& pkt)
     // So, before getting the PMT referencing a PID, we do not know if
     // this PID carries PES or not.
 
-    size_t header_size (pkt.getHeaderSize());
+    size_t header_size(pkt.getHeaderSize());
 
     if (pkt.getPUSI() && pkt.getScrambling() == SC_CLEAR && header_size <= PKT_SIZE - 3) {
 
@@ -1287,7 +1295,7 @@ void ts::TSAnalyzer::feedPacket (const TSPacket& pkt)
 // optional: if specified as zero, the analysis is based on the PCR values.
 //----------------------------------------------------------------------------
 
-void ts::TSAnalyzer::setBitrateHint (uint32_t bitrate)
+void ts::TSAnalyzer::setBitrateHint(uint32_t bitrate)
 {
     _ts_user_bitrate = bitrate;
     _modified = true;
@@ -1298,7 +1306,7 @@ void ts::TSAnalyzer::setBitrateHint (uint32_t bitrate)
 // Update the global statistics value if internal data were modified.
 //----------------------------------------------------------------------------
 
-void ts::TSAnalyzer::recomputeStatistics ()
+void ts::TSAnalyzer::recomputeStatistics()
 {
     // Don't do anything if not necessary
     if (!_modified) {
@@ -1310,10 +1318,10 @@ void ts::TSAnalyzer::recomputeStatistics ()
     _last_local = Time::CurrentLocalTime();
 
     // Compute bitrate and broadcast duration
-    _ts_pcr_bitrate_188 = _ts_bitrate_cnt == 0 ? 0 : BitRate (_ts_bitrate_sum / _ts_bitrate_cnt);
-    _ts_pcr_bitrate_204 = _ts_bitrate_cnt == 0 ? 0 : BitRate ((_ts_bitrate_sum * PKT_RS_SIZE) / (_ts_bitrate_cnt * PKT_SIZE));
+    _ts_pcr_bitrate_188 = _ts_bitrate_cnt == 0 ? 0 : BitRate(_ts_bitrate_sum / _ts_bitrate_cnt);
+    _ts_pcr_bitrate_204 = _ts_bitrate_cnt == 0 ? 0 : BitRate((_ts_bitrate_sum * PKT_RS_SIZE) / (_ts_bitrate_cnt * PKT_SIZE));
     _ts_bitrate = _ts_user_bitrate != 0 ? _ts_user_bitrate : _ts_pcr_bitrate_188;
-    _duration = _ts_bitrate == 0 ? 0 : (8000 * PKT_SIZE * uint64_t (_ts_pkt_cnt)) / _ts_bitrate;
+    _duration = _ts_bitrate == 0 ? 0 : (8000 * PKT_SIZE * uint64_t(_ts_pkt_cnt)) / _ts_bitrate;
 
     // Reinitialize all service information that will be updated PID by PID
     for (ServiceContextMap::iterator it = _services.begin(); it != _services.end(); ++it) {
@@ -1333,16 +1341,16 @@ void ts::TSAnalyzer::recomputeStatistics ()
     _unref_scr_pids = 0;
 
     for (PIDContextMap::iterator pci = _pids.begin(); pci != _pids.end(); ++pci) {
-        PIDContext& pc (*pci->second);
+        PIDContext& pc(*pci->second);
 
         // Compute TS bitrate from the PCR's of this PID
         if (pc.ts_bitrate_cnt != 0) {
-            pc.ts_pcr_bitrate = uint32_t (pc.ts_bitrate_sum / pc.ts_bitrate_cnt);
+            pc.ts_pcr_bitrate = uint32_t(pc.ts_bitrate_sum / pc.ts_bitrate_cnt);
         }
 
         // Compute average PID bitrate
         if (_ts_pkt_cnt != 0) {
-            pc.bitrate = uint32_t ((uint64_t (_ts_bitrate) * uint64_t (pc.ts_pkt_cnt)) / uint64_t (_ts_pkt_cnt));
+            pc.bitrate = uint32_t((uint64_t(_ts_bitrate) * uint64_t(pc.ts_pkt_cnt)) / uint64_t(_ts_pkt_cnt));
         }
 
         // Compute average crypto-period for this PID
@@ -1353,7 +1361,7 @@ void ts::TSAnalyzer::recomputeStatistics ()
 
         // If the PID belongs to some services, update services info.
         for (ServiceIdSet::iterator it = pc.services.begin(); it != pc.services.end(); ++it) {
-            ServiceContextPtr scp (getService (*it));
+            ServiceContextPtr scp(getService(*it));
             scp->pid_cnt++;
             scp->ts_pkt_cnt += pc.ts_pkt_cnt;
             if (pc.scrambled) {
@@ -1390,8 +1398,8 @@ void ts::TSAnalyzer::recomputeStatistics ()
 
     // Complete unreferenced and global PID's bitrates
     if (_ts_pkt_cnt != 0) {
-        _global_bitrate = uint32_t ((uint64_t(_ts_bitrate) * uint64_t (_global_pkt_cnt)) / uint64_t (_ts_pkt_cnt));
-        _unref_bitrate = uint32_t ((uint64_t (_ts_bitrate) * uint64_t (_unref_pkt_cnt)) / uint64_t (_ts_pkt_cnt));
+        _global_bitrate = uint32_t((uint64_t(_ts_bitrate) * uint64_t(_global_pkt_cnt)) / uint64_t(_ts_pkt_cnt));
+        _unref_bitrate = uint32_t((uint64_t(_ts_bitrate) * uint64_t(_unref_pkt_cnt)) / uint64_t(_ts_pkt_cnt));
     }
 
     // Complete all service information
@@ -1409,7 +1417,7 @@ void ts::TSAnalyzer::recomputeStatistics ()
             sci->second->bitrate = 0;
         }
         else {
-            sci->second->bitrate = uint32_t ((uint64_t (_ts_bitrate) * uint64_t (sci->second->ts_pkt_cnt)) / uint64_t (_ts_pkt_cnt));
+            sci->second->bitrate = uint32_t((uint64_t(_ts_bitrate) * uint64_t(sci->second->ts_pkt_cnt)) / uint64_t(_ts_pkt_cnt));
         }
     }
 
@@ -1422,13 +1430,13 @@ void ts::TSAnalyzer::recomputeStatistics ()
 // Return the list of service ids
 //----------------------------------------------------------------------------
 
-void ts::TSAnalyzer::getServiceIds (std::vector<uint16_t>& list)
+void ts::TSAnalyzer::getServiceIds(std::vector<uint16_t>& list)
 {
     recomputeStatistics();
     list.clear();
 
     for (ServiceContextMap::const_iterator it = _services.begin(); it != _services.end(); ++it) {
-        list.push_back (it->first);
+        list.push_back(it->first);
     }
 }
 
@@ -1437,14 +1445,14 @@ void ts::TSAnalyzer::getServiceIds (std::vector<uint16_t>& list)
 // Return the list of PIDs
 //----------------------------------------------------------------------------
 
-void ts::TSAnalyzer::getPIDs (std::vector<PID>& list)
+void ts::TSAnalyzer::getPIDs(std::vector<PID>& list)
 {
     recomputeStatistics();
     list.clear();
 
     for (PIDContextMap::const_iterator it = _pids.begin(); it != _pids.end(); ++it) {
         if (it->second->ts_pkt_cnt > 0) {
-            list.push_back (it->first);
+            list.push_back(it->first);
         }
     }
 }
@@ -1454,14 +1462,14 @@ void ts::TSAnalyzer::getPIDs (std::vector<PID>& list)
 // Return the list of global PIDs
 //----------------------------------------------------------------------------
 
-void ts::TSAnalyzer::getGlobalPIDs (std::vector<PID>& list)
+void ts::TSAnalyzer::getGlobalPIDs(std::vector<PID>& list)
 {
     recomputeStatistics();
     list.clear();
 
     for (PIDContextMap::const_iterator it = _pids.begin(); it != _pids.end(); ++it) {
         if (it->second->referenced && it->second->services.empty() && it->second->ts_pkt_cnt > 0) {
-            list.push_back (it->first);
+            list.push_back(it->first);
         }
     }
 }
@@ -1471,14 +1479,14 @@ void ts::TSAnalyzer::getGlobalPIDs (std::vector<PID>& list)
 // Return the list of unreferenced PIDs
 //----------------------------------------------------------------------------
 
-void ts::TSAnalyzer::getUnreferencedPIDs (std::vector<PID>& list)
+void ts::TSAnalyzer::getUnreferencedPIDs(std::vector<PID>& list)
 {
     recomputeStatistics();
     list.clear();
 
     for (PIDContextMap::const_iterator it = _pids.begin(); it != _pids.end(); ++it) {
         if (!it->second->referenced && it->second->ts_pkt_cnt > 0) {
-            list.push_back (it->first);
+            list.push_back(it->first);
         }
     }
 }
@@ -1488,14 +1496,14 @@ void ts::TSAnalyzer::getUnreferencedPIDs (std::vector<PID>& list)
 // Return the list of PIDs for one service id
 //----------------------------------------------------------------------------
 
-void ts::TSAnalyzer::getPIDsOfService (std::vector<PID>& list, uint16_t service_id)
+void ts::TSAnalyzer::getPIDsOfService(std::vector<PID>& list, uint16_t service_id)
 {
     recomputeStatistics();
     list.clear();
 
     for (PIDContextMap::const_iterator it = _pids.begin(); it != _pids.end(); ++it) {
-        if (it->second->services.count (service_id) > 0) {
-            list.push_back (it->first);
+        if (it->second->services.count(service_id) > 0) {
+            list.push_back(it->first);
         }
     }
 }
@@ -1505,14 +1513,14 @@ void ts::TSAnalyzer::getPIDsOfService (std::vector<PID>& list, uint16_t service_
 // Return the list of PIDs carrying PES packets
 //----------------------------------------------------------------------------
 
-void ts::TSAnalyzer::getPIDsWithPES (std::vector<PID>& list)
+void ts::TSAnalyzer::getPIDsWithPES(std::vector<PID>& list)
 {
     recomputeStatistics();
     list.clear();
 
     for (PIDContextMap::const_iterator it = _pids.begin(); it != _pids.end(); ++it) {
         if (it->second->carry_pes) {
-            list.push_back (it->first);
+            list.push_back(it->first);
         }
     }
 }

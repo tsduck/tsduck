@@ -52,6 +52,7 @@ std::string ts::names::TID (uint8_t tid, CASFamily cas)
                 case TID_MG_EMM_I: return "MG/EMM_I";
                 case TID_MG_EMM_C: return "MG/EMM_C";
                 case TID_MG_EMM_CG: return "MG/EMM_GC";
+                default: break;
             }
             break;
         }
@@ -72,6 +73,7 @@ std::string ts::names::TID (uint8_t tid, CASFamily cas)
                 case TID_LW_BDT: return "LW/BDT";
                 case TID_LW_VIT: return "LW/VIT";
                 case TID_LW_VCT: return "LW/VCT";
+                default: break;
             }
             break;
         }
@@ -121,6 +123,7 @@ std::string ts::names::TID (uint8_t tid, CASFamily cas)
         case TID_LW_VIT: return "LW/VIT"; // private, this default used for convenience
         case TID_LW_VCT: return "LW/VCT"; // private, this default used for convenience
         case 0xFF: return "Forbidden TID 0xFF";
+        default: break;
     }
 
     if (tid >= 0x50 && tid <= 0x5F) {
@@ -251,6 +254,7 @@ std::string ts::names::DID (uint8_t did, uint32_t pds)
         case 0x7E: return "FTA Content Management";
         case 0x7F: return "Extension Descriptor";
         case 0xFF: return "Forbidden Descriptor Id 0xFF";
+        default: break;
     }
 
     switch (pds) {
@@ -333,6 +337,7 @@ std::string ts::names::DID (uint8_t did, uint32_t pds)
                 case 0xFC: return "CMP Selection (Canal+)";
                 case 0xFD: return "Data Component (Canal+)";
                 case 0xFE: return "System Management (Canal+)";
+                default: break;
             }
             break;
     
@@ -355,6 +360,7 @@ std::string ts::names::DID (uint8_t did, uint32_t pds)
                 case DID_LW_PLAY_LIST_ENTRY: return "Play-List Entry (Logiways)";
                 case DID_LW_ORDER_CODE: return "Order code (Logiways)";
                 case DID_LW_BOUQUET_REFERENCE: return "Bouquet reference (Logiways)";
+                default: break;
             }
             break;
 
@@ -371,6 +377,7 @@ std::string ts::names::DID (uint8_t did, uint32_t pds)
                 case DID_PREF_NAME_ID: return "Preferred Name Identifier";
                 case DID_EACEM_STREAM_ID: return "EICTA Stream Identifier";
                 case DID_HD_SIMULCAST_LCN: return "HD Simulcast Logical Channel Number";
+                default: break;
             }
             break;
 
@@ -378,7 +385,11 @@ std::string ts::names::DID (uint8_t did, uint32_t pds)
             // Eutelsat operator, including Fransat
             switch (did) {
                 case DID_EUTELSAT_CHAN_NUM: return "Eutelsat Channel Number";
+                default: break;
             }
+            break;
+
+        default:
             break;
     }
 
@@ -412,13 +423,13 @@ std::string ts::names::EDID (uint8_t edid, uint32_t pds)
         case EDID_TARGET_REGION: return "Target Region";
         case EDID_TARGET_REGION_NAME: return "Target Region Name";
         case EDID_SERVICE_RELOCATED: return "Service Relocated";
-    }
-
-    if (edid < 0x80) {
-        return Format ("DVB-Reserved (0x%02X)", int (edid));
-    }
-    else {
-        return Format ("Unknown (0x%02X)", int (edid));
+        default:
+            if (edid < 0x80) {
+                return Format ("DVB-Reserved (0x%02X)", int (edid));
+            }
+            else {
+                return Format ("Unknown (0x%02X)", int (edid));
+            }
     }
 }
 
@@ -506,16 +517,20 @@ std::string ts::names::PrivateDataSpecifier (uint32_t pds)
         case 0xBBBBBBBB: return "Bertelsmann";
         case 0xECCA0001: return "ECCA";
         case 0xFCFCFCFC: return "France Telecom";
+        default:
+            if (pds >= 0x46545600 && pds <= 0x46545620) {
+                return Format ("FreeTV %d", int (pds - 0x46545600));
+            }
+            else if (pds >= 0x4F545600 && pds <= 0x4F5456FF) {
+                return Format ("OpenTV %d", int (pds - 0x4F545600));
+            }
+            else if (pds >= 0x50484900 && pds <= 0x504849FF) {
+                return Format ("Philips DVS %d", int (pds - 0x50484900));
+            }
+            else {
+                return Format ("Undefined 0x%08X", pds);
+            }
     }
-
-    if (pds >= 0x46545600 && pds <= 0x46545620)
-        return Format ("FreeTV %d", int (pds - 0x46545600));
-    else if (pds >= 0x4F545600 && pds <= 0x4F5456FF)
-        return Format ("OpenTV %d", int (pds - 0x4F545600));
-    else if (pds >= 0x50484900 && pds <= 0x504849FF)
-        return Format ("Philips DVS %d", int (pds - 0x50484900));
-    else
-        return Format ("Undefined 0x%08X", pds);
 }
 
 //----------------------------------------------------------------------------
@@ -574,12 +589,14 @@ std::string ts::names::StreamType (uint8_t type)
         case 0xCE: return "C+ CMPS ECM";
         case 0xCF: return "C+ CMPT (CMPS scenario)";
         case 0xD0: return "C+ Appli loader";
+        default:
+            if (type < 0x80) {
+                return Format ("Reserved stream type 0x%02X", int (type));
+            }
+            else {
+                return Format ("User-defined stream type 0x%02X", int (type));
+            }
     }
-
-    if (type < 0x80)
-        return Format ("Reserved stream type 0x%02X", int (type));
-    else
-        return Format ("User-defined stream type 0x%02X", int (type));
 }
 
 //----------------------------------------------------------------------------
@@ -609,16 +626,16 @@ std::string ts::names::StreamId (uint8_t sid)
         case SID_METADATA:   return "MPEG-7 MetaData";
         case SID_EXTENDED:   return "Extended stream id";
         case SID_RESERVED:   return "Reserved";
-    }
-
-    if (IsAudioSID (sid)) {
-        return Format ("Audio %d", int (sid & SID_AUDIO_MASK));
-    }
-    else if (IsVideoSID (sid)) {
-        return Format ("Video %d", int (sid & SID_VIDEO_MASK));
-    }
-    else {
-        return Format ("Invalid 0x%02X", int (sid));
+        default:
+            if (IsAudioSID (sid)) {
+                return Format ("Audio %d", int (sid & SID_AUDIO_MASK));
+            }
+            else if (IsVideoSID (sid)) {
+                return Format ("Video %d", int (sid & SID_VIDEO_MASK));
+            }
+            else {
+                return Format ("Invalid 0x%02X", int (sid));
+            }
     }
 }
 
@@ -636,16 +653,16 @@ std::string ts::names::PESStartCode (uint8_t code)
         case PST_EXTENSION:       return "Extension";
         case PST_SEQUENCE_END:    return "Sequence end";
         case PST_GROUP:           return "Group";
-    }
-
-    if (code >= PST_SYSTEM_MIN) {
-        return StreamId (code);
-    }
-    else if (code >= PST_SLICE_MIN && code <= PST_SLICE_MAX) {
-        return Format ("Slice 0x%02X", int (code));
-    }
-    else {
-        return Format ("Reserved 0x%02X", int (code));
+        default:
+            if (code >= PST_SYSTEM_MIN) {
+                return StreamId (code);
+            }
+            else if (code >= PST_SLICE_MIN && code <= PST_SLICE_MAX) {
+                return Format ("Slice 0x%02X", int (code));
+            }
+            else {
+                return Format ("Reserved 0x%02X", int (code));
+            }
     }
 }
 
@@ -660,7 +677,7 @@ std::string ts::names::AspectRatio (uint8_t ar)
         case AR_4_3:    return "4/3";
         case AR_16_9:   return "16/9";
         case AR_221:    return "2.21/1";
-        default:        return Format ("Reserved %d", int (ar));
+        default:        return Format("Reserved %d", int (ar));
     }
 }
 
@@ -675,7 +692,7 @@ std::string ts::names::ChromaFormat (uint8_t cf)
         case CHROMA_420:  return "4:2:0";
         case CHROMA_422:  return "4:2:2";
         case CHROMA_444:  return "4:4:4";
-        default:          return Format ("Reserved %d", int (cf));
+        default:          return Format("Reserved %d", int (cf));
     }
 }
 
@@ -703,7 +720,7 @@ std::string ts::names::AVCUnitType (uint8_t type)
         case AVC_AUT_SUBSETPARAMS: return "Subset sequence parameter set";
         case AVC_AUT_SLICE_NOPART: return "Coded slice without partitioning";
         case AVC_AUT_SLICE_SCALE:  return "Coded slice in scalable extension";
-        default:                   return Format ("Reserved %d", int (type));
+        default:                   return Format("Reserved %d", int (type));
     }
 }
 
@@ -758,12 +775,14 @@ std::string ts::names::ServiceType (uint8_t type)
         case 0x19: return "Advanced codec HD digital television service";
         case 0x1A: return "Advanced codec HD NVOD time-shifted service";
         case 0x1B: return "Advanced codec HD NVOD reference service";
+        default:
+            if (type < 0x80 || type == 0xFF) {
+                return Format ("Reserved service type 0x%02X", int (type));
+            }
+            else {
+                return Format ("User-defined service type 0x%02X", int (type));
+            }
     }
-
-    if (type < 0x80 || type == 0xFF)
-        return Format ("Reserved service type 0x%02X", int (type));
-    else
-        return Format ("User-defined service type 0x%02X", int (type));
 }
 
 //----------------------------------------------------------------------------
@@ -786,12 +805,14 @@ std::string ts::names::LinkageType (uint8_t type)
         case 0x0B: return "IP/MAC notification service";
         case 0x0C: return "TS containing INT BAT or NIT";
         case 0x0D: return "event linkage";
+        default:
+            if (type < 0x80 || type == 0xFF) {
+                return Format ("Reserved linkage type 0x%02X", int (type));
+            }
+            else {
+                return Format ("User-defined linkage type 0x%02X", int (type));
+            }
     }
-
-    if (type < 0x80 || type == 0xFF)
-        return Format ("Reserved linkage type 0x%02X", int (type));
-    else
-        return Format ("User-defined linkage type 0x%02X", int (type));
 }
 
 //----------------------------------------------------------------------------
@@ -806,7 +827,7 @@ std::string ts::names::TeletextType (uint8_t type)
         case 0x03: return "Additional information page";
         case 0x04: return "Programme schedule page";
         case 0x05: return "Teletext subtitles for hearing impaired";
-        default:   return Format ("Reserved teletext type 0x%02X", int (type));
+        default:   return Format("Reserved teletext type 0x%02X", int (type));
     }
 }
 
@@ -941,13 +962,13 @@ std::string ts::names::SubtitlingType (uint8_t type)
         case 0x30: return "Open (in-vision) sign language interpretation for the deaf";
         case 0x31: return "Closed sign language interpretation for the deaf";
         case 0x40: return "Video up-sampled from standard definition source";
-    }
-
-    if (type < 0xB0 || type == 0xFF) {
-        return Format ("Reserved subtitling type 0x%02X", int (type));
-    }
-    else {
-        return Format ("User-defined subtitling type 0x%02X", int (type));
+        default:
+            if (type < 0xB0 || type == 0xFF) {
+                return Format ("Reserved subtitling type 0x%02X", int (type));
+            }
+            else {
+                return Format ("User-defined subtitling type 0x%02X", int (type));
+            }
     }
 }
 
@@ -1012,6 +1033,7 @@ std::string ts::names::ComponentType (uint16_t type)
         case 0x0649: return "HE-AAC v2 receiver-mix audio description for the visually impaired";
         case 0x064A: return "HE-AAC v2 broadcaster-mix audio description for the visually impaired";
         case 0x0801: return "DVB SRM data";
+        default:     break;
     }
 
     // Dedicated types
@@ -1294,6 +1316,7 @@ std::string ts::names::BouquetId (uint16_t id)
         case 0xC002: return "Canal+";
         case 0xC003: return "Canal+ TNT";
         case 0xFF00: return "DVB System Software Update";
+        default: break;
     }
 
     if (id >= 0x1000 && id <= 0x101F) {

@@ -39,7 +39,6 @@
 #include "tsNIT.h"
 
 
-
 //----------------------------------------------------------------------------
 // Plugin definition
 //----------------------------------------------------------------------------
@@ -56,24 +55,24 @@ namespace ts {
         virtual Status processPacket (TSPacket&, bool&, bool&);
 
     private:
-        bool              _abort;             // Error (service not found, etc)
-        PID               _nit_pid;           // PID for the NIT (default: read PAT)
-        bool              _incr_version;      // Increment table version
-        bool              _set_version;       // Set a new table version
-        uint8_t             _new_version;       // New table version
-        int               _lcn_oper;          // Operation on LCN descriptors
-        int               _sld_oper;          // Operation on service_list_descriptors
-        std::set<uint16_t>  _remove_serv;       // Set of services to remove
-        std::set<uint16_t>  _remove_ts;         // Set of transport streams to remove
-        std::vector<DID>  _removed_desc;      // Set of descriptor tags to remove
-        SectionDemux      _demux;             // Section demux
-        CyclingPacketizer _pzer;              // Packetizer for modified NIT
-        PDS               _pds;               // Private data specifier for removed descriptors
-        bool              _cleanup_priv_desc; // Remove private desc without preceding PDS desc
-        bool              _update_mpe_fec;    // In terrestrial delivery
-        uint8_t             _mpe_fec;
-        bool              _update_time_slicing;  // In terrestrial delivery
-        uint8_t             _time_slicing;
+        bool               _abort;             // Error (service not found, etc)
+        PID                _nit_pid;           // PID for the NIT (default: read PAT)
+        bool               _incr_version;      // Increment table version
+        bool               _set_version;       // Set a new table version
+        uint8_t            _new_version;       // New table version
+        int                _lcn_oper;          // Operation on LCN descriptors
+        int                _sld_oper;          // Operation on service_list_descriptors
+        std::set<uint16_t> _remove_serv;       // Set of services to remove
+        std::set<uint16_t> _remove_ts;         // Set of transport streams to remove
+        std::vector<DID>   _removed_desc;      // Set of descriptor tags to remove
+        SectionDemux       _demux;             // Section demux
+        CyclingPacketizer  _pzer;              // Packetizer for modified NIT
+        PDS                _pds;               // Private data specifier for removed descriptors
+        bool               _cleanup_priv_desc; // Remove private desc without preceding PDS desc
+        bool               _update_mpe_fec;    // In terrestrial delivery
+        uint8_t            _mpe_fec;
+        bool               _update_time_slicing;  // In terrestrial delivery
+        uint8_t            _time_slicing;
 
         // Values for _lcn_oper and _sld_oper.
         enum {
@@ -87,6 +86,11 @@ namespace ts {
         virtual void handleTable (SectionDemux&, const BinaryTable&);
         void processNIT (NIT&);
         void processDescriptorList (DescriptorList&);
+
+        // Inaccessible operations
+        NITPlugin() = delete;
+        NITPlugin(const NITPlugin&) = delete;
+        NITPlugin& operator=(const NITPlugin&) = delete;
     };
 }
 
@@ -99,8 +103,25 @@ TSPLUGIN_DECLARE_PROCESSOR(ts::NITPlugin)
 //----------------------------------------------------------------------------
 
 ts::NITPlugin::NITPlugin (TSP* tsp_) :
-    ProcessorPlugin (tsp_, "Perform various transformations on the NIT Actual.", "[options]"),
-    _demux (this)
+    ProcessorPlugin(tsp_, "Perform various transformations on the NIT Actual.", "[options]"),
+    _abort(false),
+    _nit_pid(PID_NIT),
+    _incr_version(false),
+    _set_version(false),
+    _new_version(0),
+    _lcn_oper(0),
+    _sld_oper(0),
+    _remove_serv(),
+    _remove_ts(),
+    _removed_desc(),
+    _demux(this),
+    _pzer(),
+    _pds(0),
+    _cleanup_priv_desc(false),
+    _update_mpe_fec(false),
+    _mpe_fec(0),
+    _update_time_slicing(false),
+    _time_slicing(0)
 {
     option ("cleanup-private-descriptors", 0);
     option ("increment-version", 'i');
@@ -285,6 +306,10 @@ void ts::NITPlugin::handleTable (SectionDemux& demux, const BinaryTable& table)
                     _pzer.addTable (nit);
                 }
             }
+            break;
+        }
+
+        default: {
             break;
         }
     }

@@ -57,7 +57,12 @@ struct Options: public Args
 };
 
 Options::Options (int argc, char *argv[]) :
-    Args ("MPEG Transport Stream Fix Continuity Counters Utility.", "[options] filename")
+    Args("MPEG Transport Stream Fix Continuity Counters Utility.", "[options] filename"),
+    verbose(false),
+    test(false),
+    circular(false),
+    filename(),
+    file()
 {
     option ("",          0,  Args::STRING, 1, 1);
     option ("circular", 'c');

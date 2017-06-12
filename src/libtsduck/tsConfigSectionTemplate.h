@@ -58,9 +58,9 @@ INT ts::ConfigSection::value (const std::string& entry, size_t index, const INT&
 //----------------------------------------------------------------------------
 
 template <typename INT>
-void ts::ConfigSection::set (const std::string& entry, const INT& value)
+void ts::ConfigSection::set(const std::string& entry, const INT& val)
 {
-    this->set (entry, Decimal (value, 0, true, ""));
+    this->set(entry, Decimal(val, 0, true, ""));
 }
 
 //----------------------------------------------------------------------------
@@ -68,10 +68,10 @@ void ts::ConfigSection::set (const std::string& entry, const INT& value)
 //----------------------------------------------------------------------------
 
 template <typename INT>
-void ts::ConfigSection::set (const std::string& entry, const std::vector <INT>& value)
+void ts::ConfigSection::set(const std::string& entry, const std::vector <INT>& val)
 {
-    this->deleteEntry (entry);
-    this->append (entry, value);
+    this->deleteEntry(entry);
+    this->append(entry, val);
 }
 
 //----------------------------------------------------------------------------
@@ -79,9 +79,9 @@ void ts::ConfigSection::set (const std::string& entry, const std::vector <INT>& 
 //----------------------------------------------------------------------------
 
 template <typename INT>
-void ts::ConfigSection::append (const std::string& entry, const INT& value)
+void ts::ConfigSection::append(const std::string& entry, const INT& val)
 {
-    this->append (entry, Decimal (value, 0, true, ""));
+    this->append(entry, Decimal(val, 0, true, ""));
 }
 
 //----------------------------------------------------------------------------
@@ -89,9 +89,9 @@ void ts::ConfigSection::append (const std::string& entry, const INT& value)
 //----------------------------------------------------------------------------
 
 template <typename INT>
-void ts::ConfigSection::append (const std::string& entry, const std::vector <INT>& value)
+void ts::ConfigSection::append(const std::string& entry, const std::vector <INT>& val)
 {
-    for (size_t i = 0; i < value.size (); ++i) {
-        this->append (entry, std::string (value[i]));
+    for (size_t i = 0; i < val.size (); ++i) {
+        this->append(entry, std::string (val[i]));
     }
 }

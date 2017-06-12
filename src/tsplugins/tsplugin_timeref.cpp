@@ -38,7 +38,6 @@
 #include "tsCRC32.h"
 
 
-
 //----------------------------------------------------------------------------
 // Plugin definition
 //----------------------------------------------------------------------------
@@ -62,6 +61,11 @@ namespace ts {
         PacketCounter _current_pkt;       // Current packet in TS
         bool          _update_tdt;        // Update the TDT
         bool          _update_tot;        // Update the TOT
+
+        // Inaccessible operations
+        TimeRefPlugin() = delete;
+        TimeRefPlugin(const TimeRefPlugin&) = delete;
+        TimeRefPlugin& operator=(const TimeRefPlugin&) = delete;
     };
 }
 
@@ -74,7 +78,14 @@ TSPLUGIN_DECLARE_PROCESSOR(ts::TimeRefPlugin)
 //----------------------------------------------------------------------------
 
 ts::TimeRefPlugin::TimeRefPlugin (TSP* tsp_) :
-    ProcessorPlugin (tsp_, "Update TDT and TOT with a new time reference", "[options]")
+    ProcessorPlugin(tsp_, "Update TDT and TOT with a new time reference", "[options]"),
+    _add_milliseconds(0),
+    _use_timeref(false),
+    _timeref(Time::Epoch),
+    _timeref_pkt(0),
+    _current_pkt(0),
+    _update_tdt(false),
+    _update_tot(false)
 {
     option ("add",   'a', INTEGER, 0, 1, std::numeric_limits<int>::min(), std::numeric_limits<int>::max());
     option ("notdt",  0);

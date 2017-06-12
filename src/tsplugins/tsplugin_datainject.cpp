@@ -74,7 +74,8 @@ namespace ts {
         uint8_t         _data_cc;          // Continuity counter in data PID.
         BitRate         _max_bitrate;      // Max data PID's bitrate (constant after start)
         BitRate         _req_bitrate;      // Requested bitrate (used by plugin thread only)
-        BitRate         _req_bitrate_prot; // Protected reference version of _req_bitrate (reader: plugin thread, writer: server thread)
+        BitRate         _req_bitrate_prot; // Protected reference version of _req_bitrate
+                                           // (reader: plugin thread, writer: server thread)
         DoubleCheckLock _req_bitrate_lock; // Lock for _req_bitrate_prot
         size_t          _lost_packets;     // Lost packets (queue full, used by server thread only)
         TSPacketQueue   _queue;            // Queue of incoming TS packets
@@ -95,6 +96,11 @@ namespace ts {
         // Enqueue a TS packet. Invoked in the server thread.
         // Return true on success, false on error.
         bool enqueuePacket(const TSPacketPtr&);
+
+        // Inaccessible operations
+        DataInjectPlugin() = delete;
+        DataInjectPlugin(const DataInjectPlugin&) = delete;
+        DataInjectPlugin& operator=(const DataInjectPlugin&) = delete;
     };
 }
 
@@ -109,6 +115,17 @@ TSPLUGIN_DECLARE_PROCESSOR(ts::DataInjectPlugin)
 ts::DataInjectPlugin::DataInjectPlugin (TSP* tsp_) :
     ProcessorPlugin (tsp_, "DVB SimulCrypt data injector using EMMG/PDG <=> MUX protocol.", "[options]"),
     Thread(ThreadAttributes().setStackSize(SERVER_THREAD_STACK_SIZE)),
+    _pkt_current(0),
+    _pkt_next_data(0),
+   _data_pid(PID_NULL),
+    _data_cc(0),
+    _max_bitrate(0),
+    _req_bitrate(0),
+    _req_bitrate_prot(0),
+    _req_bitrate_lock(),
+    _lost_packets(0),
+    _queue(),
+    _server(),
     _client(emmgmux::Protocol::Instance(), true, 3)
 {
     option ("bitrate-max",      'b', POSITIVE);
@@ -424,6 +441,10 @@ void ts::DataInjectPlugin::main()
                         assert (m != 0);
                         ok = processDataProvision (*m, channel_status.section_TSpkt_flag == 0);
                     }
+                    break;
+                }
+
+                default: {
                     break;
                 }
             }

@@ -62,7 +62,7 @@ namespace ts {
     {
     public:
         // Implementation of plugin API
-        AESPlugin (TSP*);
+        AESPlugin(TSP*);
         virtual bool start();
         virtual bool stop() {return true;}
         virtual BitRate getBitrate() {return 0;}
@@ -91,6 +91,11 @@ namespace ts {
         void processPAT(PAT&);
         void processPMT(PMT&);
         void processSDT(SDT&);
+
+        // Inaccessible operations
+        AESPlugin() = delete;
+        AESPlugin(const AESPlugin&) = delete;
+        AESPlugin& operator=(const AESPlugin&) = delete;
     };
 }
 
@@ -102,9 +107,21 @@ TSPLUGIN_DECLARE_PROCESSOR(ts::AESPlugin)
 // Constructor
 //----------------------------------------------------------------------------
 
-ts::AESPlugin::AESPlugin (TSP* tsp_) :
-    ProcessorPlugin (tsp_, "Experimental AES scrambling of TS packets.", "[options] [service]"),
-    _demux (this)
+ts::AESPlugin::AESPlugin(TSP* tsp_) :
+    ProcessorPlugin(tsp_, "Experimental AES scrambling of TS packets.", "[options] [service]"),
+    _abort(false),
+    _descramble(false),
+    _service(),
+    _scrambled(),
+    _demux(this),
+    _ecb(),
+    _cbc(),
+    _cts1(),
+    _cts2(),
+    _cts3(),
+    _cts4(),
+    _dvs042(),
+    _chain(0)
 {
     option ("",            0,  STRING, 0, 1);
     option ("cbc",         0);
@@ -305,6 +322,9 @@ void ts::AESPlugin::handleTable (SectionDemux& demux, const BinaryTable& table)
             if (pmt.isValid() && _service.hasId (pmt.service_id)) {
                 processPMT (pmt);
             }
+            break;
+        }
+        default: {
             break;
         }
     }

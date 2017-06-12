@@ -100,6 +100,11 @@ namespace ts {
         // Analyze a list of descriptors, looking for CA descriptors.
         // All PIDs which are referenced in CA descriptors are set with the specified state.
         void analyzeCADescriptors(const DescriptorList& dlist, uint8_t pid_state);
+
+        // Inaccessible operations
+        ZapPlugin() = delete;
+        ZapPlugin(const ZapPlugin&) = delete;
+        ZapPlugin& operator=(const ZapPlugin&) = delete;
     };
 }
 
@@ -283,6 +288,10 @@ void ts::ZapPlugin::handleTable (SectionDemux& demux, const BinaryTable& table)
             if (pmt.isValid() && _service.hasId (pmt.service_id)) {
                 processPMT (pmt);
             }
+            break;
+        }
+
+        default: {
             break;
         }
     }
@@ -679,10 +688,10 @@ ts::ProcessorPlugin::Status ts::ZapPlugin::processPacket (TSPacket& pkt, bool& f
             // Replace all SDT/BAT packets with modified SDT
             _pzer_sdt.getNextPacket (pkt);
             return TSP_OK;
+
+        default:
+            // Should never get there...
+            tsp->error ("internal error, invalid PID state %d", int (_pid_state[pid]));
+            return TSP_END;
     }
-
-    // Should never get there...
-
-    tsp->error ("internal error, invalid PID state %d", int (_pid_state[pid]));
-    return TSP_END;
 }

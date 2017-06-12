@@ -34,7 +34,6 @@
 
 #include "tsPlugin.h"
 
-
 #define DEFAULT_SEPARATOR ";"
 
 
@@ -80,27 +79,32 @@ namespace ts {
             PacketCounter opcr_count;
             PacketCounter pts_count;
             PacketCounter dts_count;
-            uint64_t        first_pcr;
-            uint64_t        first_opcr;
-            uint64_t        first_pts;
-            uint64_t        last_good_pts;
-            uint64_t        first_dts;
+            uint64_t      first_pcr;
+            uint64_t      first_opcr;
+            uint64_t      first_pts;
+            uint64_t      last_good_pts;
+            uint64_t      first_dts;
 
             // Constructor
             PIDContext() :
-                packet_count (0),
-                pcr_count (0),
-                opcr_count (0),
-                pts_count (0),
-                dts_count (0),
-                first_pcr (0),
-                first_opcr (0),
-                first_pts (0),
-                last_good_pts (0),
-                first_dts (0)
+                packet_count(0),
+                pcr_count(0),
+                opcr_count(0),
+                pts_count(0),
+                dts_count(0),
+                first_pcr(0),
+                first_opcr(0),
+                first_pts(0),
+                last_good_pts(0),
+                first_dts(0)
             {
             }
         };
+
+        // Inaccessible operations
+        PCRExtractPlugin() = delete;
+        PCRExtractPlugin(const PCRExtractPlugin&) = delete;
+        PCRExtractPlugin& operator=(const PCRExtractPlugin&) = delete;
     };
 }
 
@@ -113,8 +117,19 @@ TSPLUGIN_DECLARE_PROCESSOR(ts::PCRExtractPlugin)
 //----------------------------------------------------------------------------
 
 ts::PCRExtractPlugin::PCRExtractPlugin (TSP* tsp_) :
-    ProcessorPlugin (tsp_, "Extracts PCR, OPCR, PTS, DTS from TS packet for analysis.", "[options]"),
-    _output (0)
+    ProcessorPlugin(tsp_, "Extracts PCR, OPCR, PTS, DTS from TS packet for analysis.", "[options]"),
+    _separator(),
+    _noheader(false),
+    _good_pts_only(false),
+    _get_pcr(false),
+    _get_opcr(false),
+    _get_pts(false),
+    _get_dts(false),
+    _output_name(),
+    _output_stream(),
+    _output(0),
+    _packet_count(0),
+    _stats()
 {
     option ("dts",           'd');
     option ("good-pts-only", 'g');

@@ -316,13 +316,13 @@ namespace ts {
             ::ip_mreq req;
 
             // Constructor
-            MReq()
+            MReq() : req()
             {
                 TS_ZERO(req);
             }
 
             // Constructor
-            MReq(const IPAddress& multicast_, const IPAddress& interface_)
+            MReq(const IPAddress& multicast_, const IPAddress& interface_) : req()
             {
                 TS_ZERO(req);
                 multicast_.copy(req.imr_multiaddr);

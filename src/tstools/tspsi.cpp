@@ -52,14 +52,15 @@ struct Options: public PSILoggerOptions
 };
 
 Options::Options (int argc, char *argv[]) :
-    PSILoggerOptions ("MPEG Transport Stream PSI Extraction Utility.", "[options] [filename]")
+    PSILoggerOptions("MPEG Transport Stream PSI Extraction Utility.", "[options] [filename]"),
+    infile()
 {
-    option ("", 0, STRING, 0, 1);
+    option("", 0, STRING, 0, 1);
 
-    setHelp ("Input file:\n"
-             "\n"
-             "  MPEG capture file (standard input if omitted).\n"
-             "\n");
+    setHelp("Input file:\n"
+            "\n"
+            "  MPEG capture file (standard input if omitted).\n"
+            "\n");
 
     analyze (argc, argv);
     infile = value ("");

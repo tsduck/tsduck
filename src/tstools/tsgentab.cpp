@@ -58,7 +58,12 @@ struct Options: public Args
 };
 
 Options::Options (int argc, char *argv[]) :
-    Args ("PSI/SI table generator using plugins.", "[options] plugin-name [plugin-options ...]", "", GATHER_PARAMETERS)
+    Args("PSI/SI table generator using plugins.", "[options] plugin-name [plugin-options ...]", "", GATHER_PARAMETERS),
+    plugin_name(),
+    plugin_options(),
+    output_file(),
+    binary_file(),
+    list_plugins(false)
 {
     option ("",              0,  STRING, 0, UNLIMITED_COUNT);
     option ("binary-file",  'b', STRING);

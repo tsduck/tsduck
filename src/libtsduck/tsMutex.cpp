@@ -42,7 +42,12 @@
 //----------------------------------------------------------------------------
 
 ts::Mutex::Mutex() :
-    _created(false)
+    _created(false),
+#if defined(__windows)
+    _handle(INVALID_HANDLE_VALUE)
+#else
+    _mutex(PTHREAD_MUTEX_INITIALIZER)
+#endif
 {
 #if defined(__windows)
 

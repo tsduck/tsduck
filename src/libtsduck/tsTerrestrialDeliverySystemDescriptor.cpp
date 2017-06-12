@@ -40,19 +40,19 @@
 //----------------------------------------------------------------------------
 
 ts::TerrestrialDeliverySystemDescriptor::TerrestrialDeliverySystemDescriptor() :
-    AbstractDescriptor (DID_TERREST_DELIVERY),
-    centre_frequency (0),
-    bandwidth (0),
-    high_priority (true),
-    no_time_slicing (true),
-    no_mpe_fec (true),
-    constellation (0),
-    hierarchy (0),
-    code_rate_hp (0),
-    code_rate_lp (0),
-    guard_interval (0),
-    transmission_mode (0),
-    other_frequency (false)
+    AbstractDescriptor(DID_TERREST_DELIVERY),
+    centre_frequency(0),
+    bandwidth(0),
+    high_priority(true),
+    no_time_slicing(true),
+    no_mpe_fec(true),
+    constellation(0),
+    hierarchy(0),
+    code_rate_hp(0),
+    code_rate_lp(0),
+    guard_interval(0),
+    transmission_mode(0),
+    other_frequency(false)
 {
     _is_valid = true;
 }
@@ -62,10 +62,22 @@ ts::TerrestrialDeliverySystemDescriptor::TerrestrialDeliverySystemDescriptor() :
 // Constructor from a binary descriptor
 //----------------------------------------------------------------------------
 
-ts::TerrestrialDeliverySystemDescriptor::TerrestrialDeliverySystemDescriptor (const Descriptor& desc) :
-    AbstractDescriptor (DID_TERREST_DELIVERY)
+ts::TerrestrialDeliverySystemDescriptor::TerrestrialDeliverySystemDescriptor(const Descriptor& desc) :
+    AbstractDescriptor(DID_TERREST_DELIVERY),
+    centre_frequency(0),
+    bandwidth(0),
+    high_priority(true),
+    no_time_slicing(true),
+    no_mpe_fec(true),
+    constellation(0),
+    hierarchy(0),
+    code_rate_hp(0),
+    code_rate_lp(0),
+    guard_interval(0),
+    transmission_mode(0),
+    other_frequency(false)
 {
-    deserialize (desc);
+    deserialize(desc);
 }
 
 
@@ -73,16 +85,16 @@ ts::TerrestrialDeliverySystemDescriptor::TerrestrialDeliverySystemDescriptor (co
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::TerrestrialDeliverySystemDescriptor::serialize (Descriptor& desc) const
+void ts::TerrestrialDeliverySystemDescriptor::serialize(Descriptor& desc) const
 {
     uint8_t data[13];
     data[0] = _tag;
     data[1] = 11;
-    PutUInt32 (data + 2, centre_frequency);
+    PutUInt32(data + 2, centre_frequency);
     data[6] = (bandwidth << 5) |
-              (uint8_t (high_priority) << 4) |
-              (uint8_t (no_time_slicing) << 3) |
-              (uint8_t (no_mpe_fec) << 2) |
+              (uint8_t(high_priority) << 4) |
+              (uint8_t(no_time_slicing) << 3) |
+              (uint8_t(no_mpe_fec) << 2) |
               0x03;
     data[7] = (constellation << 6) |
               ((hierarchy & 0x07) << 3) |
@@ -90,10 +102,10 @@ void ts::TerrestrialDeliverySystemDescriptor::serialize (Descriptor& desc) const
     data[8] = (code_rate_lp << 5) |
               ((guard_interval & 0x03) << 3) |
               ((transmission_mode & 0x03) << 1) |
-              (uint8_t (other_frequency));
+              (uint8_t(other_frequency));
     data[9] = data[10] = data[11] = data[12] = 0xFF;
 
-    Descriptor d (data, sizeof(data));
+    Descriptor d(data, sizeof(data));
     desc = d;
 }
 
@@ -102,13 +114,13 @@ void ts::TerrestrialDeliverySystemDescriptor::serialize (Descriptor& desc) const
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::TerrestrialDeliverySystemDescriptor::deserialize (const Descriptor& desc)
+void ts::TerrestrialDeliverySystemDescriptor::deserialize(const Descriptor& desc)
 {
     _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() >= 7;
 
     if (_is_valid) {
         const uint8_t* data = desc.payload();
-        centre_frequency = GetUInt32 (data);
+        centre_frequency = GetUInt32(data);
         bandwidth = (data[4] >> 5) & 0x07;
         high_priority = (data[4] & 0x10) != 0;
         no_time_slicing = (data[4] & 0x08) != 0;

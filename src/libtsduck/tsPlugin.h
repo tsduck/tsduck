@@ -299,6 +299,12 @@ namespace ts {
         //! Virtual destructor.
         //!
         virtual ~InputPlugin() {}
+
+    private:
+        // Inaccessible operations
+        InputPlugin() = delete;
+        InputPlugin(const InputPlugin&) = delete;
+        InputPlugin& operator=(const InputPlugin&) = delete;
     };
 
     //!
@@ -353,6 +359,12 @@ namespace ts {
         //! Virtual destructor.
         //!
         virtual ~OutputPlugin() {}
+
+    private:
+        // Inaccessible operations
+        OutputPlugin() = delete;
+        OutputPlugin(const OutputPlugin&) = delete;
+        OutputPlugin& operator=(const OutputPlugin&) = delete;
     };
 
     //!
@@ -430,6 +442,12 @@ namespace ts {
         //! Virtual destructor.
         //!
         virtual ~ProcessorPlugin() {}
+
+    private:
+        // Inaccessible operations
+        ProcessorPlugin() = delete;
+        ProcessorPlugin(const ProcessorPlugin&) = delete;
+        ProcessorPlugin& operator=(const ProcessorPlugin&) = delete;
     };
 
     //!

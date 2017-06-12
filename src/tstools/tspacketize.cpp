@@ -53,7 +53,7 @@ struct Options: public Args
     bool               continuous; // Continuous packetization
     CyclingPacketizer::StuffingPolicy stuffing_policy;
     CRC32::Validation  crc_op;     // Validate/recompute CRC32
-    ts::PID          pid;        // Target PID
+    ts::PID            pid;        // Target PID
     BitRate            bitrate;    // Target PID bitrate
     std::string        outfile;    // Output file
     FileNameRateVector infiles;    // Input file names and repetition rates
@@ -62,8 +62,16 @@ struct Options: public Args
 };
 
 Options::Options (int argc, char *argv[]) :
-    Args ("Packetize PSI/SI sections in a transport stream PID.", "[options] [input-file[=rate] ...]"),
-    infiles ()
+    Args("Packetize PSI/SI sections in a transport stream PID.", "[options] [input-file[=rate] ...]"),
+    continuous(false),
+    stuffing_policy(CyclingPacketizer::NEVER),
+    crc_op(CRC32::COMPUTE),
+    pid(PID_NULL),
+    bitrate(0),
+    outfile(),
+    infiles(),
+    verbose(false),
+    debug(false)
 {
     option ("",            0,  Args::STRING);
     option ("bitrate",    'b', Args::UNSIGNED);

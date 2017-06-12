@@ -40,7 +40,6 @@
 #include "tsMemoryUtils.h"
 
 
-
 //----------------------------------------------------------------------------
 // Plugin definition
 //----------------------------------------------------------------------------
@@ -62,13 +61,18 @@ namespace ts {
         bool          _update_cc;          // Ignore continuity counters.
         bool          _check_pid_conflict; // Check new PIDs in TS
         PIDSet        _ts_pids;            // PID's on original TS
-        uint8_t         _cc[PID_MAX];        // Continuity counters in new PID's
+        uint8_t       _cc[PID_MAX];        // Continuity counters in new PID's
         bool          _force_pid;          // PID value to force
         PID           _force_pid_value;    // PID value to force
         BitRate       _bitrate;            // Target bitrate for inserted packets
         PacketCounter _inter_pkt;          // # TS packets between 2 new PID packets
         PacketCounter _pid_next_pkt;       // Next time to insert a packet
         PacketCounter _packet_count;       // TS packet counter
+
+        // Inaccessible operations
+        MuxPlugin() = delete;
+        MuxPlugin(const MuxPlugin&) = delete;
+        MuxPlugin& operator=(const MuxPlugin&) = delete;
     };
 }
 
@@ -81,7 +85,19 @@ TSPLUGIN_DECLARE_PROCESSOR(ts::MuxPlugin)
 //----------------------------------------------------------------------------
 
 ts::MuxPlugin::MuxPlugin (TSP* tsp_) :
-    ProcessorPlugin (tsp_, "Insert TS packets in a TS.", "[options] input-file")
+    ProcessorPlugin(tsp_, "Insert TS packets in a TS.", "[options] input-file"),
+    _file(),
+    _terminate(false),
+    _update_cc(false),
+    _check_pid_conflict(false),
+    _ts_pids(),
+    _cc(),
+    _force_pid(false),
+    _force_pid_value(PID_NULL),
+    _bitrate(0),
+    _inter_pkt(0),
+    _pid_next_pkt(0),
+    _packet_count(0)
 {
     option ("",                       0,  STRING, 1, 1);
     option ("bitrate",               'b', UINT32);

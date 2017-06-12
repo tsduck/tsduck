@@ -45,13 +45,14 @@ using namespace ts;
 
 struct Options: public TablesLoggerOptions
 {
-    Options (int argc, char *argv[]);
+    Options(int argc, char *argv[]);
 
     std::string infile; // Input file name
 };
 
-Options::Options (int argc, char *argv[]) :
-    TablesLoggerOptions ("MPEG Transport Stream PSI/SI Tables Collector.", "[options] [filename]")
+Options::Options(int argc, char *argv[]) :
+    TablesLoggerOptions("MPEG Transport Stream PSI/SI Tables Collector.", "[options] [filename]"),
+    infile()
 {
     option ("", 0, STRING, 0, 1);
 

@@ -43,7 +43,6 @@
 #include "tsCOM.h"
 
 
-
 //----------------------------------------------------------------------------
 // Plugin definition
 //----------------------------------------------------------------------------
@@ -69,6 +68,11 @@ namespace ts {
         TunerArgs          _tuner_args;       // Command-line tuning arguments
         TunerParametersPtr _tuner_params;     // Tuning parameters
         BitRate            _previous_bitrate; // Previous value from getBitrate()
+
+        // Inaccessible operations
+        DVBInput() = delete;
+        DVBInput(const DVBInput&) = delete;
+        DVBInput& operator=(const DVBInput&) = delete;
     };
 }
 
@@ -81,9 +85,13 @@ TSPLUGIN_DECLARE_INPUT(ts::DVBInput)
 //----------------------------------------------------------------------------
 
 ts::DVBInput::DVBInput (TSP* tsp_) :
-    InputPlugin (tsp_, "DVB receiver device input.", "[options]"),
-    _com (*tsp_),
-    _previous_bitrate (0)
+    InputPlugin(tsp_, "DVB receiver device input.", "[options]"),
+    _com(*tsp_),
+    _device_name(),
+    _tuner(),
+    _tuner_args(),
+    _tuner_params(),
+    _previous_bitrate(0)
 {
     // Warning, the following short options are already defined in TunerArgs:
     // 'c', 'f', 'l', 'm', 'o', 's', 't', 'u', 'v', 'z'

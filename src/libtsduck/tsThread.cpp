@@ -42,7 +42,13 @@ ts::Thread::Thread() :
     _attributes(),
     _mutex(),
     _started(false),
-    _waiting(false)
+    _waiting(false),
+#if defined(__windows)
+    _handle(INVALID_HANDLE_VALUE),
+    _thread_id(0)
+#else
+    _pthread()
+#endif
 {
 }
 
@@ -55,7 +61,13 @@ ts::Thread::Thread(const ThreadAttributes& attributes) :
     _attributes(attributes),
     _mutex(),
     _started(false),
-    _waiting(false)
+    _waiting(false),
+#if defined(__windows)
+    _handle(INVALID_HANDLE_VALUE),
+    _thread_id(0)
+#else
+    _pthread()
+#endif
 {
 }
 

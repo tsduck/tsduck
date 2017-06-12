@@ -36,7 +36,7 @@
 #include "tsHexa.h"
 
 
-#if defined (TS_NEED_STATIC_CONST_DEFINITIONS)
+#if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
 const size_t ts::TablesLoggerOptions::DEFAULT_LOG_SIZE;
 #endif
 
@@ -45,9 +45,9 @@ const size_t ts::TablesLoggerOptions::DEFAULT_LOG_SIZE;
 // Set help: application specific help + generic help
 //----------------------------------------------------------------------------
 
-void ts::TablesLoggerOptions::setHelp (const std::string& help)
+void ts::TablesLoggerOptions::setHelp(const std::string& help)
 {
-    Args::setHelp (help +
+    Args::setHelp(help +
         "Options:\n"
         "\n"
         "  -a\n"
@@ -212,65 +212,66 @@ void ts::TablesLoggerOptions::setHelp (const std::string& help)
 // Constructor.
 //----------------------------------------------------------------------------
 
-ts::TablesLoggerOptions::TablesLoggerOptions (const std::string& description,
-                                                const std::string& syntax,
-                                                const std::string& help,
-                                                int flags) :
-    Args (description, syntax, "", flags),
-    mode (TEXT),
-    destination (),
-    multi_files (false),
-    flush (false),
-    udp_local (),
-    udp_ttl (0),
-    all_sections (false),
-    max_tables (0),
-    raw_dump (false),
-    raw_flags (hexa::HEXA),
-    time_stamp (false),
-    packet_index (false),
-    cas (CAS_OTHER),
-    diversified (false),
-    logger (false),
-    log_size (DEFAULT_LOG_SIZE),
-    negate_tid (false),
-    negate_tidext (false),
-    pid (),
-    tid (),
-    tidext (),
-    emm_group (),
-    emm_ua ()
+ts::TablesLoggerOptions::TablesLoggerOptions(const std::string& description,
+                                             const std::string& syntax,
+                                             const std::string& help,
+                                             int flags) :
+    Args(description, syntax, "", flags),
+    mode(TEXT),
+    destination(),
+    multi_files(false),
+    flush(false),
+    udp_local(),
+    udp_ttl(0),
+    all_sections(false),
+    max_tables(0),
+    raw_dump(false),
+    raw_flags(hexa::HEXA),
+    time_stamp(false),
+    packet_index(false),
+    cas(CAS_OTHER),
+    diversified(false),
+    logger(false),
+    log_size(DEFAULT_LOG_SIZE),
+    negate_tid(false),
+    negate_tidext(false),
+    pid(),
+    add_pmt_pids(false),
+    tid(),
+    tidext(),
+    emm_group(),
+    emm_ua()
 {
-    setHelp (help);
+    setHelp(help);
 
-    option ("all-sections"     ,   'a');
-    option ("binary-output",       'b', STRING);
-    option ("c-style",             'c');
-    option ("diversified-payload", 'd');
-    option ("flush",               'f');
-    option ("group",               'g', INTEGER, 0, 1, 0, 0x00FFFFFF);
-    option ("ip-udp",              'i', STRING);
-    option ("local-udp",            0,  STRING);
-    option ("log",                  0);
-    option ("log-size",             0,  UNSIGNED);
-    option ("logiways",            'l');  // legacy
-    option ("max-tables",          'x', POSITIVE);
-    option ("multiple-files",      'm');
-    option ("negate-pid",           0);
-    option ("negate-tid",          'n');
-    option ("negate-tid-ext",       0);
-    option ("output-file",         'o', STRING);
-    option ("packet-index",         0);
-    option ("pid",                 'p', PIDVAL, 0, UNLIMITED_COUNT);
-    option ("psi-si",               0);
-    option ("raw-dump",            'r');
-    option ("safeaccess",          's');
-    option ("tid",                 't', UINT8, 0, UNLIMITED_COUNT);
-    option ("tid-ext",             'e', UINT16, 0, UNLIMITED_COUNT);
-    option ("time-stamp",           0);
-    option ("ttl",                  0,  POSITIVE);
-    option ("ua",                  'u', POSITIVE, 0, UNLIMITED_COUNT);
-    option ("verbose",             'v');
+    option("all-sections"     ,   'a');
+    option("binary-output",       'b', STRING);
+    option("c-style",             'c');
+    option("diversified-payload", 'd');
+    option("flush",               'f');
+    option("group",               'g', INTEGER, 0, 1, 0, 0x00FFFFFF);
+    option("ip-udp",              'i', STRING);
+    option("local-udp",            0,  STRING);
+    option("log",                  0);
+    option("log-size",             0,  UNSIGNED);
+    option("logiways",            'l');  // legacy
+    option("max-tables",          'x', POSITIVE);
+    option("multiple-files",      'm');
+    option("negate-pid",           0);
+    option("negate-tid",          'n');
+    option("negate-tid-ext",       0);
+    option("output-file",         'o', STRING);
+    option("packet-index",         0);
+    option("pid",                 'p', PIDVAL, 0, UNLIMITED_COUNT);
+    option("psi-si",               0);
+    option("raw-dump",            'r');
+    option("safeaccess",          's');
+    option("tid",                 't', UINT8, 0, UNLIMITED_COUNT);
+    option("tid-ext",             'e', UINT16, 0, UNLIMITED_COUNT);
+    option("time-stamp",           0);
+    option("ttl",                  0,  POSITIVE);
+    option("ua",                  'u', POSITIVE, 0, UNLIMITED_COUNT);
+    option("verbose",             'v');
 }
 
 
@@ -279,70 +280,70 @@ ts::TablesLoggerOptions::TablesLoggerOptions (const std::string& description,
 // ts::Args object defining the same options.
 //----------------------------------------------------------------------------
 
-void ts::TablesLoggerOptions::getOptions (Args& args)
+void ts::TablesLoggerOptions::getOptions(Args& args)
 {
-    multi_files = args.present ("multiple-files");
-    flush = args.present ("flush");
-    udp_local = args.value ("local-udp");
-    udp_ttl = args.intValue ("ttl", 0);
-    all_sections = args.present ("all-sections");
-    max_tables = args.intValue<uint32_t> ("max-tables", 0);
-    time_stamp = args.present ("time-stamp");
-    packet_index = args.present ("packet-index");
-    cas = args.present ("safeaccess") || args.present ("logiways") ? CAS_SAFEACCESS : CAS_OTHER;
-    diversified = args.present ("diversified-payload");
-    logger = args.present ("log");
-    log_size = args.intValue<size_t> ("log-size", DEFAULT_LOG_SIZE);
-    negate_tid = args.present ("negate-tid");
-    negate_tidext = args.present ("negate-tid-ext");
+    multi_files = args.present("multiple-files");
+    flush = args.present("flush");
+    udp_local = args.value("local-udp");
+    udp_ttl = args.intValue("ttl", 0);
+    all_sections = args.present("all-sections");
+    max_tables = args.intValue<uint32_t>("max-tables", 0);
+    time_stamp = args.present("time-stamp");
+    packet_index = args.present("packet-index");
+    cas = args.present("safeaccess") || args.present("logiways") ? CAS_SAFEACCESS : CAS_OTHER;
+    diversified = args.present("diversified-payload");
+    logger = args.present("log");
+    log_size = args.intValue<size_t>("log-size", DEFAULT_LOG_SIZE);
+    negate_tid = args.present("negate-tid");
+    negate_tidext = args.present("negate-tid-ext");
 
-    if (args.present ("verbose")) {
-        args.setDebugLevel (Severity::Verbose);
-        this->setDebugLevel (Severity::Verbose);
+    if (args.present("verbose")) {
+        args.setDebugLevel(Severity::Verbose);
+        this->setDebugLevel(Severity::Verbose);
     }
 
-    raw_dump = args.present ("raw-dump");
+    raw_dump = args.present("raw-dump");
     raw_flags = hexa::HEXA;
-    if (args.present ("c-style")) {
+    if (args.present("c-style")) {
         raw_dump = true;
         raw_flags |= hexa::C_STYLE;
     }
 
-    if (args.present ("ip-udp")) {
+    if (args.present("ip-udp")) {
         mode = UDP;
-        destination = args.value ("ip-udp");
+        destination = args.value("ip-udp");
     }
-    else if (args.present ("binary-output")) {
+    else if (args.present("binary-output")) {
         mode = BINARY;
-        destination = args.value ("binary-output");
+        destination = args.value("binary-output");
     }
     else {
         mode = TEXT;
-        destination = args.value ("output-file");
+        destination = args.value("output-file");
     }
 
-    add_pmt_pids = args.present ("psi-si");
+    add_pmt_pids = args.present("psi-si");
 
-    if (add_pmt_pids || args.present ("pid")) {
-        args.getPIDSet (pid, "pid"); // specific pids
-        if (args.present ("negate-pid")) {
+    if (add_pmt_pids || args.present("pid")) {
+        args.getPIDSet(pid, "pid"); // specific pids
+        if (args.present("negate-pid")) {
             pid.flip();
         }
         if (add_pmt_pids) { // --psi-si
-            pid.set (PID_PAT);
-            pid.set (PID_CAT);
-            pid.set (PID_SDT); // also BAT
-            pid.set (PID_NIT);
+            pid.set(PID_PAT);
+            pid.set(PID_CAT);
+            pid.set(PID_SDT); // also BAT
+            pid.set(PID_NIT);
         }
     }
     else {
         pid.set(); // all PIDs
     }
 
-    args.getIntValues (tid, "tid");
-    args.getIntValues (tidext, "tid-ext");
-    args.getIntValues (emm_group, "group");
-    args.getIntValues (emm_ua, "ua");
+    args.getIntValues(tid, "tid");
+    args.getIntValues(tidext, "tid-ext");
+    args.getIntValues(emm_group, "group");
+    args.getIntValues(emm_ua, "ua");
 }
 
 
@@ -350,20 +351,20 @@ void ts::TablesLoggerOptions::getOptions (Args& args)
 // Overriden analysis methods.
 //----------------------------------------------------------------------------
 
-bool ts::TablesLoggerOptions::analyze (int argc, char* argv[])
+bool ts::TablesLoggerOptions::analyze(int argc, char* argv[])
 {
-    bool ok = Args::analyze (argc, argv);
+    bool ok = Args::analyze(argc, argv);
     if (ok) {
-        getOptions (*this);
+        getOptions(*this);
     }
     return ok;
 }
 
-bool ts::TablesLoggerOptions::analyze (const std::string& app_name, const StringVector& arguments)
+bool ts::TablesLoggerOptions::analyze(const std::string& app_name, const StringVector& arguments)
 {
-    bool ok = Args::analyze (app_name, arguments);
+    bool ok = Args::analyze(app_name, arguments);
     if (ok) {
-        getOptions (*this);
+        getOptions(*this);
     }
     return ok;
 }
@@ -373,7 +374,7 @@ bool ts::TablesLoggerOptions::analyze (const std::string& app_name, const String
 // Inaccessible operation. Throw exception when invoked through virtual table.
 //----------------------------------------------------------------------------
 
-bool ts::TablesLoggerOptions::analyze (const char* app_name, const char* arg1, ...)
+bool ts::TablesLoggerOptions::analyze(const char* app_name, const char* arg1, ...)
 {
-    throw UnimplementedMethod ("analyze with variable args not implemented for ts::TablesLoggerOptions");
+    throw UnimplementedMethod("analyze with variable args not implemented for ts::TablesLoggerOptions");
 }

@@ -545,5 +545,9 @@ namespace ts {
         static bool FindTuners(Tuner*, TunerPtrVector*, ReportInterface&);
 
 #endif // windows
+
+        // Inaccessible operations.
+        Tuner(const Tuner&) = delete;
+        Tuner& operator=(const Tuner&) = delete;
     };
 }

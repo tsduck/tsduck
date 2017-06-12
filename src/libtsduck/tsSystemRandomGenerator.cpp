@@ -40,16 +40,22 @@
 // Constructor 
 //----------------------------------------------------------------------------
 
-ts::SystemRandomGenerator::SystemRandomGenerator()
+ts::SystemRandomGenerator::SystemRandomGenerator() :
+#if defined(__windows)
+    _prov(0)
+#else
+    _fd(-1)
+#endif
+
 {
-#if defined (__windows)
-    if (!::CryptAcquireContext (&_prov, NULL, MS_DEF_PROV, PROV_RSA_FULL, CRYPT_VERIFYCONTEXT | CRYPT_MACHINE_KEYSET) &&
-        !::CryptAcquireContext (&_prov, NULL, MS_DEF_PROV, PROV_RSA_FULL, CRYPT_VERIFYCONTEXT | CRYPT_MACHINE_KEYSET | CRYPT_NEWKEYSET)) {
+#if defined(__windows)
+    if (!::CryptAcquireContext(&_prov, NULL, MS_DEF_PROV, PROV_RSA_FULL, CRYPT_VERIFYCONTEXT | CRYPT_MACHINE_KEYSET) &&
+        !::CryptAcquireContext(&_prov, NULL, MS_DEF_PROV, PROV_RSA_FULL, CRYPT_VERIFYCONTEXT | CRYPT_MACHINE_KEYSET | CRYPT_NEWKEYSET)) {
         _prov = 0;
     }
 #else
-    if ((_fd = ::open ("/dev/urandom", O_RDONLY)) < 0) {
-        _fd = ::open ("/dev/random", O_RDONLY);
+    if ((_fd = ::open("/dev/urandom", O_RDONLY)) < 0) {
+        _fd = ::open("/dev/random", O_RDONLY);
     }
 #endif
 }

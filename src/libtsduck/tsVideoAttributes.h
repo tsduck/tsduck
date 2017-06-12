@@ -53,7 +53,7 @@ namespace ts {
         //!
         //! Default constructor.
         //!
-        VideoAttributes(): AbstractAudioVideoAttributes(), _waiting(false) {}
+        VideoAttributes();
 
         // Implementation of abstract methods.
         // The "binary data" is a video unit, starting with a 00 00 01 xx start code.

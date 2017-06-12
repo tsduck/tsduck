@@ -54,6 +54,7 @@ struct Options: public Args
 
 Options::Options(int argc, char *argv[]) :
     Args("Dump PSI/SI tables, as saved by tstables.", "[options] [filename ...]"),
+    verbose(false),
     infiles()
 {
     option("",         0,  Args::STRING);

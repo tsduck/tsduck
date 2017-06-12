@@ -105,11 +105,11 @@ const std::string& ts::ConfigSection::value (const std::string& entry, size_t in
 
 bool ts::ConfigSection::boolValue(const std::string& entry, size_t index, bool defvalue) const
 {
-    const std::string& value(LowerCaseValue(this->value(entry, index)));
-    if (value == "true" || value == "yes" || value == "1") {
+    const std::string& val(LowerCaseValue(value(entry, index)));
+    if (val == "true" || val == "yes" || val == "1") {
         return true;
     }
-    else if (value == "false" || value == "no" || value == "0") {
+    else if (val == "false" || val == "no" || val == "0") {
         return false;
     }
     else {
@@ -121,81 +121,81 @@ bool ts::ConfigSection::boolValue(const std::string& entry, size_t index, bool d
 // Set the value of an entry.
 //----------------------------------------------------------------------------
 
-void ts::ConfigSection::set(const std::string& entry, const std::string& value)
+void ts::ConfigSection::set(const std::string& entry, const std::string& val)
 {
     Entry& ent(_entries[entry]);
     ent.clear();
-    ent.push_back(value);
+    ent.push_back(val);
 }
 
 //----------------------------------------------------------------------------
 // Set the value of an entry.
 //----------------------------------------------------------------------------
 
-void ts::ConfigSection::set(const std::string& entry, const StringVector& value)
+void ts::ConfigSection::set(const std::string& entry, const StringVector& val)
 {
-    _entries[entry] = value;
+    _entries[entry] = val;
 }
 
 //----------------------------------------------------------------------------
 // Set the boolean value of an entry.
 //----------------------------------------------------------------------------
 
-void ts::ConfigSection::set(const std::string& entry, bool value)
+void ts::ConfigSection::set(const std::string& entry, bool val)
 {
-    this->set(entry, value ? "true" : "false");
+    this->set(entry, val ? "true" : "false");
 }
 
 //----------------------------------------------------------------------------
 // Set the boolean value of an entry.
 //----------------------------------------------------------------------------
 
-void ts::ConfigSection::set(const std::string& entry, const std::vector <bool>& value)
+void ts::ConfigSection::set(const std::string& entry, const std::vector <bool>& val)
 {
     Entry& ent(_entries[entry]);
     ent.clear();
-    for (size_t i = 0; i < value.size(); ++i) {
-        ent.push_back(value[i] ? "true" : "false");
+    for (size_t i = 0; i < val.size(); ++i) {
+        ent.push_back(val[i] ? "true" : "false");
     }
 }
 
 //----------------------------------------------------------------------------
-// Append values in an antry
+// Append values in an entry
 //----------------------------------------------------------------------------
 
-void ts::ConfigSection::append(const std::string& entry, const std::string& value)
+void ts::ConfigSection::append(const std::string& entry, const std::string& val)
 {
-    _entries[entry].push_back(value);
+    _entries[entry].push_back(val);
 }
 
 //----------------------------------------------------------------------------
-// Append values in an antry
+// Append values in an entry
 //----------------------------------------------------------------------------
 
-void ts::ConfigSection::append(const std::string& entry, const StringVector& value)
+void ts::ConfigSection::append(const std::string& entry, const StringVector& val)
 {
     Entry& ent(_entries[entry]);
-    ent.insert(ent.end(), value.begin(), value.end());
+    ent.insert(ent.end(), val.begin(), val.end());
 }
 
 //----------------------------------------------------------------------------
-// Append values in an antry
+// Append values in an entry
 //----------------------------------------------------------------------------
 
-void ts::ConfigSection::append(const std::string& entry, bool value)
+void ts::ConfigSection::append(const std::string& entry, bool val)
 {
-    append(entry, value ? "true" : "false");
+    append(entry, val ? "true" : "false");
 }
                     
 //----------------------------------------------------------------------------
-// Append values in an antry
+// Append values in an entry
 //----------------------------------------------------------------------------
 
-void ts::ConfigSection::append (const std::string& entry, const std::vector <bool>& value)
+void ts::ConfigSection::append(const std::string& entry, const std::vector <bool>& val)
 {
-    Entry& ent (_entries[entry]);
-    for (size_t i = 0; i < value.size(); ++i) {
-        ent.push_back (value[i] ? "true" : "false");
+    Entry& ent(_entries[entry]);
+    for (size_t i = 0; i < val.size(); ++i) {
+        ent.push_back(val[i] ? "true" : "false");
     }
 }
 
@@ -204,15 +204,15 @@ void ts::ConfigSection::append (const std::string& entry, const std::vector <boo
 //    entryname = value [, value ...]
 //----------------------------------------------------------------------------
 
-void ts::ConfigSection::set (const std::string& line)
+void ts::ConfigSection::set(const std::string& line)
 {
-    size_t equal (line.find ('='));
+    size_t equal(line.find('='));
 
     if (equal != std::string::npos) {
-        std::string name (line, 0, equal);
-        std::string value (line, equal + 1);
-        Trim (name);
-        SplitString (_entries[name], value.c_str(), ',');
+        std::string name(line, 0, equal);
+        std::string val(line, equal + 1);
+        Trim(name);
+        SplitString(_entries[name], val.c_str(), ',');
     }
 }
 
@@ -220,7 +220,7 @@ void ts::ConfigSection::set (const std::string& line)
 // Save the content of a section in a stream
 //----------------------------------------------------------------------------
 
-std::ostream& ts::ConfigSection::save (std::ostream& strm) const
+std::ostream& ts::ConfigSection::save(std::ostream& strm) const
 {
     for (EntryMap::const_iterator ent = _entries.begin(); ent != _entries.end(); ++ent) {
         strm << ent->first << " =";

@@ -35,7 +35,6 @@
 #include "tsPlugin.h"
 
 
-
 //----------------------------------------------------------------------------
 // Plugin definition
 //----------------------------------------------------------------------------
@@ -66,6 +65,11 @@ namespace ts {
         int    min_af;           // Minimum adaptation field size (<0: no filter)
         int    max_af;           // Maximum adaptation field size (<0: no filter)
         PIDSet pid;              // PID values to filter
+
+        // Inaccessible operations
+        FilterPlugin() = delete;
+        FilterPlugin(const FilterPlugin&) = delete;
+        FilterPlugin& operator=(const FilterPlugin&) = delete;
     };
 }
 
@@ -79,7 +83,20 @@ TSPLUGIN_DECLARE_PROCESSOR(ts::FilterPlugin)
 
 ts::FilterPlugin::FilterPlugin (TSP* tsp_) :
     ProcessorPlugin (tsp_, "Filter TS packets according to various conditions.", "[options]"),
-    pid ()
+    scrambling_ctrl(0),
+    with_payload(false),
+    with_af(false),
+    with_pes(false),
+    has_pcr(false),
+    unit_start(false),
+    valid(false),
+    negate(false),
+    stuffing(false),
+    min_payload(0),
+    max_payload(0),
+    min_af(0),
+    max_af(0),
+    pid()
 {
     option ("adaptation-field",          0);
     option ("clear",                    'c');

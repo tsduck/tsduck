@@ -48,14 +48,14 @@ namespace ts {
     {
     public:
         TNTNITPlugin();
-        virtual void generate (AbstractTablePtr&);
+        virtual void generate(AbstractTablePtr&);
     private:
         bool add_service_list;
         bool split_lcn;
-        void generateV23 (AbstractTablePtr&);
-        void generateV24 (AbstractTablePtr&);
-        void generateV25 (AbstractTablePtr&);
-        void generateV26 (AbstractTablePtr&);
+        void generateV23(AbstractTablePtr&);
+        void generateV24(AbstractTablePtr&);
+        void generateV25(AbstractTablePtr&);
+        void generateV26(AbstractTablePtr&);
     };
 }
 
@@ -67,36 +67,38 @@ TSGENTAB_DECLARE_PLUGIN(ts::TNTNITPlugin)
 //----------------------------------------------------------------------------
 
 ts::TNTNITPlugin::TNTNITPlugin() :
-    GenTabPlugin ("TNT France NIT", "[options]")
+    GenTabPlugin("TNT France NIT", "[options]"),
+    add_service_list(false),
+    split_lcn(false)
 {
-    option ("nit-version",     'v', INTEGER, 0, 1, 23, 26);
-    option ("no-service-list", 'n');
-    option ("split-lcn",        0);
+    option("nit-version",     'v', INTEGER, 0, 1, 23, 26);
+    option("no-service-list", 'n');
+    option("split-lcn",        0);
 
-    setHelp ("Options:\n"
-             "\n"
-             "  --help\n"
-             "      Display this help text.\n"
-             "\n"
-             "  -v value\n"
-             "  -nit-version value\n"
-             "      Specifies the table version of the NIT. The supported versions are:\n"
-             "      - 26 (jan. 2010), the default\n"
-             "      - 25 (30 oct. 2008)\n"
-             "      - 24 (oct. 2007)\n"
-             "      - 23 (sep. 2007)\n"
-             "\n"
-             "  -n\n"
-             "  --no-service-list\n"
-             "      Omit the service_list_descriptor in each transport stream.\n"
-             "\n"
-             "  --split-lcn\n"
-             "      Split some logical_channel_number_descriptors and\n"
-             "      HD_simulcast_logical_channel_descriptors in two parts.\n"
-             "      This option is available for NIT versions 23 and 24 only.\n"
-             "\n"
-             "  --version\n"
-             "      Display the version number.\n");
+    setHelp("Options:\n"
+            "\n"
+            "  --help\n"
+            "      Display this help text.\n"
+            "\n"
+            "  -v value\n"
+            "  -nit-version value\n"
+            "      Specifies the table version of the NIT. The supported versions are:\n"
+            "      - 26 (jan. 2010), the default\n"
+            "      - 25 (30 oct. 2008)\n"
+            "      - 24 (oct. 2007)\n"
+            "      - 23 (sep. 2007)\n"
+            "\n"
+            "  -n\n"
+            "  --no-service-list\n"
+            "      Omit the service_list_descriptor in each transport stream.\n"
+            "\n"
+            "  --split-lcn\n"
+            "      Split some logical_channel_number_descriptors and\n"
+            "      HD_simulcast_logical_channel_descriptors in two parts.\n"
+            "      This option is available for NIT versions 23 and 24 only.\n"
+            "\n"
+            "  --version\n"
+            "      Display the version number.\n");
 }
 
 
@@ -104,17 +106,17 @@ ts::TNTNITPlugin::TNTNITPlugin() :
 // Table Generation
 //----------------------------------------------------------------------------
 
-void ts::TNTNITPlugin::generate (AbstractTablePtr& table)
+void ts::TNTNITPlugin::generate(AbstractTablePtr& table)
 {
-    add_service_list = !present ("no-service-list");
-    split_lcn = present ("split-lcn");
+    add_service_list = !present("no-service-list");
+    split_lcn = present("split-lcn");
 
-    switch (intValue ("nit-version", 26)) {
-        case 23: generateV23 (table); break;
-        case 24: generateV24 (table); break;
-        case 25: generateV25 (table); break;
-        case 26: generateV26 (table); break;
-        default: assert (false);
+    switch (intValue("nit-version", 26)) {
+        case 23: generateV23(table); break;
+        case 24: generateV24(table); break;
+        case 25: generateV25(table); break;
+        case 26: generateV26(table); break;
+        default: assert(false);
     }
 }
 
@@ -123,7 +125,7 @@ void ts::TNTNITPlugin::generate (AbstractTablePtr& table)
 // Table Generation - NIT version 26 - jan 2010
 //----------------------------------------------------------------------------
 
-void ts::TNTNITPlugin::generateV26 (AbstractTablePtr& table)
+void ts::TNTNITPlugin::generateV26(AbstractTablePtr& table)
 {
     // Create table
 
@@ -132,13 +134,13 @@ void ts::TNTNITPlugin::generateV26 (AbstractTablePtr& table)
 
     // Transport stream id
 
-    TransportStreamId r1 (1, NID_TNT_FRANCE);
-    TransportStreamId r2 (2, NID_TNT_FRANCE);
-    TransportStreamId r3 (3, NID_TNT_FRANCE);
-    TransportStreamId r4 (4, NID_TNT_FRANCE);
-    TransportStreamId r5 (5, NID_TNT_FRANCE);
-    TransportStreamId r6 (6, NID_TNT_FRANCE);
-    TransportStreamId l8 (8, NID_TNT_FRANCE);
+    TransportStreamId r1(1, NID_TNT_FRANCE);
+    TransportStreamId r2(2, NID_TNT_FRANCE);
+    TransportStreamId r3(3, NID_TNT_FRANCE);
+    TransportStreamId r4(4, NID_TNT_FRANCE);
+    TransportStreamId r5(5, NID_TNT_FRANCE);
+    TransportStreamId r6(6, NID_TNT_FRANCE);
+    TransportStreamId l8(8, NID_TNT_FRANCE);
 
     // The TNT NIT v26 introduces hand-crafted segmentation.
     // Each TS is placed in a specific section.
@@ -175,18 +177,18 @@ void ts::TNTNITPlugin::generateV26 (AbstractTablePtr& table)
 
     // Main descriptor loop
 
-    nit->descs.add (NetworkNameDescriptor ("F"));
-    nit->descs.add (SSULinkageDescriptor (1, nit->network_id, 0x01FF, OUI_DVB));
-    nit->descs.add (SSULinkageDescriptor (2, nit->network_id, 0x02FF, OUI_DVB));
-    nit->descs.add (SSULinkageDescriptor (3, nit->network_id, 0x03FF, OUI_DVB));
-    nit->descs.add (SSULinkageDescriptor (4, nit->network_id, 0x04FF, OUI_DVB));
-    nit->descs.add (SSULinkageDescriptor (5, nit->network_id, 0x05FF, OUI_DVB));
-    nit->descs.add (SSULinkageDescriptor (6, nit->network_id, 0x06FF, OUI_DVB));
+    nit->descs.add(NetworkNameDescriptor("F"));
+    nit->descs.add(SSULinkageDescriptor(1, nit->network_id, 0x01FF, OUI_DVB));
+    nit->descs.add(SSULinkageDescriptor(2, nit->network_id, 0x02FF, OUI_DVB));
+    nit->descs.add(SSULinkageDescriptor(3, nit->network_id, 0x03FF, OUI_DVB));
+    nit->descs.add(SSULinkageDescriptor(4, nit->network_id, 0x04FF, OUI_DVB));
+    nit->descs.add(SSULinkageDescriptor(5, nit->network_id, 0x05FF, OUI_DVB));
+    nit->descs.add(SSULinkageDescriptor(6, nit->network_id, 0x06FF, OUI_DVB));
 
     // R1
 
-    nit->transports[r1].add (PrivateDataSpecifierDescriptor (PDS_EICTA));
-    nit->transports[r1].add (LogicalChannelNumberDescriptor (
+    nit->transports[r1].add(PrivateDataSpecifierDescriptor(PDS_EICTA));
+    nit->transports[r1].add(LogicalChannelNumberDescriptor(
         0x0101,  2,    // France 2
         0x0104,  5,    // France 5
         0x0105, 19,    // France O national
@@ -244,11 +246,11 @@ void ts::TNTNITPlugin::generateV26 (AbstractTablePtr& table)
         0x0175, 25,    // Locale LCN 25
         0x0176, 20,    // France O regional IDF
         -1));
-    nit->transports[r1].add (HDSimulcastLogicalChannelDescriptor (
+    nit->transports[r1].add(HDSimulcastLogicalChannelDescriptor(
         0x0101, 52,  // France 2 -> France 2 HD
         -1));
     if (add_service_list) {
-        nit->transports[r1].add (ServiceListDescriptor (
+        nit->transports[r1].add(ServiceListDescriptor(
             0x0101, 0x01,  // France 2
             0x0104, 0x01,  // France 5
             0x0105, 0x01,  // France O
@@ -307,12 +309,12 @@ void ts::TNTNITPlugin::generateV26 (AbstractTablePtr& table)
             0x0176, 0x01,  // France O
             -1));
     }
-    nit->transports[r1].add (terrestrial_delivery);
+    nit->transports[r1].add(terrestrial_delivery);
 
     // R2
 
-    nit->transports[r2].add (PrivateDataSpecifierDescriptor (PDS_EICTA));
-    nit->transports[r2].add (LogicalChannelNumberDescriptor (
+    nit->transports[r2].add(PrivateDataSpecifierDescriptor(PDS_EICTA));
+    nit->transports[r2].add(LogicalChannelNumberDescriptor(
         0x0201,  8,    // Direct 8
         0x0203, 15,    // BFM TV
         0x0204, 16,    // i> Tele
@@ -321,7 +323,7 @@ void ts::TNTNITPlugin::generateV26 (AbstractTablePtr& table)
         0x0207, 14,    // France 4
         -1));
     if (add_service_list) {
-        nit->transports[r2].add (ServiceListDescriptor (
+        nit->transports[r2].add(ServiceListDescriptor(
             0x0201, 0x01,  // Direct 8
             0x0203, 0x01,  // BFM TV
             0x0204, 0x01,  // i> Tele
@@ -330,12 +332,12 @@ void ts::TNTNITPlugin::generateV26 (AbstractTablePtr& table)
             0x0207, 0x01,  // France 4
             -1));
     }
-    nit->transports[r2].add (terrestrial_delivery);
+    nit->transports[r2].add(terrestrial_delivery);
 
     // R3
 
-    nit->transports[r3].add (PrivateDataSpecifierDescriptor (PDS_EICTA));
-    nit->transports[r3].add (LogicalChannelNumberDescriptor (
+    nit->transports[r3].add(PrivateDataSpecifierDescriptor(PDS_EICTA));
+    nit->transports[r3].add(LogicalChannelNumberDescriptor(
         0x0301,  4,    // Canal+
         0x0302, 33,    // Canal+ Cinema
         0x0303, 32,    // Canal+ Sport

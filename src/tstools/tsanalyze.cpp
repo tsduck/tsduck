@@ -51,7 +51,9 @@ struct Options: public TSAnalyzerOptions
 };
 
 Options::Options (int argc, char *argv[]) :
-    TSAnalyzerOptions ("MPEG Transport Stream Analysis Utility.", "[options] [filename]")
+    TSAnalyzerOptions("MPEG Transport Stream Analysis Utility.", "[options] [filename]"),
+    bitrate(0),
+    infile()
 {
     option ("",         0,  Args::STRING, 0, 1);
     option ("bitrate", 'b', Args::UNSIGNED);

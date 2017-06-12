@@ -37,10 +37,9 @@
 #include "tsStringUtils.h"
 #include "tsSysUtils.h"
 
-#if defined (__windows)
+#if defined(__windows)
 #include "tsRegistryUtils.h"
 #endif
-
 
 // Pipe buffer size is used on Windows only.
 #define PIPE_BUFFER_SIZE 65536
@@ -68,6 +67,11 @@ namespace ts {
 
         // Search a file in a search path. Return true is found
         bool searchInPath (std::string& result, const StringVector& path, const std::string name);
+
+        // Inaccessible operations
+        PlayPlugin() = delete;
+        PlayPlugin(const PlayPlugin&) = delete;
+        PlayPlugin& operator=(const PlayPlugin&) = delete;
     };
 }
 
@@ -80,7 +84,10 @@ TSPLUGIN_DECLARE_OUTPUT(ts::PlayPlugin)
 //----------------------------------------------------------------------------
 
 ts::PlayPlugin::PlayPlugin (TSP* tsp_) :
-    OutputPlugin (tsp_, "Play output TS on any supported media player in the system.", "[options]")
+    OutputPlugin(tsp_, "Play output TS on any supported media player in the system.", "[options]"),
+    _use_mplayer(false),
+    _use_xine(false),
+    _pipe()
 {
     option ("mplayer", 'm');
     option ("xine",    'x');
@@ -89,7 +96,7 @@ ts::PlayPlugin::PlayPlugin (TSP* tsp_) :
              "\n"
              "  --help\n"
              "      Display this help text.\n"
-#if !defined (__windows)
+#if !defined(__windows)
              "\n"
              "  -m\n"
              "  --mplayer\n"
@@ -99,7 +106,7 @@ ts::PlayPlugin::PlayPlugin (TSP* tsp_) :
              "\n"
              "  --version\n"
              "      Display the version number.\n"
-#if !defined (__windows)
+#if !defined(__windows)
              "\n"
              "  -x\n"
              "  --xine\n"

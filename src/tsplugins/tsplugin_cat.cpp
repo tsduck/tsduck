@@ -39,7 +39,6 @@
 #include "tsDecimal.h"
 #include "tsCAT.h"
 
-
 #define DEFAULT_CAT_BITRATE 3000
 
 
@@ -59,26 +58,31 @@ namespace ts {
         virtual Status processPacket (TSPacket&, bool&, bool&);
 
     private:
-        bool                _cat_found;         // Found a CAT
-        PacketCounter       _pkt_current;       // Total number of packets
-        PacketCounter       _pkt_create_cat;    // Packet# after which a new CAT shall be created
-        PacketCounter       _pkt_insert_cat;    // Packet# after which a CAT packet shall be inserted
-        MilliSecond         _create_after_ms;   // Create a new CAT if none found after that time
-        BitRate             _cat_bitrate;       // CAT PID's bitrate (if no previous CAT)
-        PacketCounter       _cat_inter_pkt;     // Packet interval between two CAT packets
-        bool                _cleanup_priv_desc; // Remove private desc without preceding PDS desc
-        bool                _incr_version;      // Increment table version
-        bool                _set_version;       // Set a new table version
+        bool                  _cat_found;         // Found a CAT
+        PacketCounter         _pkt_current;       // Total number of packets
+        PacketCounter         _pkt_create_cat;    // Packet# after which a new CAT shall be created
+        PacketCounter         _pkt_insert_cat;    // Packet# after which a CAT packet shall be inserted
+        MilliSecond           _create_after_ms;   // Create a new CAT if none found after that time
+        BitRate               _cat_bitrate;       // CAT PID's bitrate (if no previous CAT)
+        PacketCounter         _cat_inter_pkt;     // Packet interval between two CAT packets
+        bool                  _cleanup_priv_desc; // Remove private desc without preceding PDS desc
+        bool                  _incr_version;      // Increment table version
+        bool                  _set_version;       // Set a new table version
         uint8_t               _new_version;       // New table version
         std::vector<uint16_t> _remove_casid;      // Set of CAS id to remove
         std::vector<uint16_t> _remove_pid;        // Set of EMM PID to remove
-        DescriptorList      _add_descs;         // List of descriptors to add
-        SectionDemux        _demux;             // Section demux
-        CyclingPacketizer   _pzer;              // Packetizer for modified CAT
+        DescriptorList        _add_descs;         // List of descriptors to add
+        SectionDemux          _demux;             // Section demux
+        CyclingPacketizer     _pzer;              // Packetizer for modified CAT
 
         // Invoked by the demux when a complete table is available.
         virtual void handleTable (SectionDemux&, const BinaryTable&);
         void handleCAT (CAT&);
+
+        // Inaccessible operations
+        CATPlugin() = delete;
+        CATPlugin(const CATPlugin&) = delete;
+        CATPlugin& operator=(const CATPlugin&) = delete;
     };
 }
 
@@ -92,7 +96,22 @@ TSPLUGIN_DECLARE_PROCESSOR(ts::CATPlugin)
 
 ts::CATPlugin::CATPlugin (TSP* tsp_) :
     ProcessorPlugin (tsp_, "Perform various transformations on the CAT", "[options]"),
-    _demux (this)
+    _cat_found(false),
+    _pkt_current(0),
+    _pkt_create_cat(0),
+    _pkt_insert_cat(0),
+    _create_after_ms(0),
+    _cat_bitrate(0),
+    _cat_inter_pkt(0),
+    _cleanup_priv_desc(false),
+    _incr_version(false),
+    _set_version(false),
+    _new_version(0),
+    _remove_casid(),
+    _remove_pid(),
+    _add_descs(),
+    _demux(this),
+    _pzer()
 {
     option ("add",                        'a', STRING, 0, UNLIMITED_COUNT);
     option ("bitrate",                    'b', POSITIVE);

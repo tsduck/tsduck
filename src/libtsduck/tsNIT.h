@@ -48,12 +48,12 @@ namespace ts {
         //!
         //! Default constructor.
         //! @param [in] is_actual True for NIT Actual Network, false for NIT Other Network.
-        //! @param [in] version Table version number.
-        //! @param [in] is_current True if table is current, false if table is next.
-        //! @param [in] net_id Network identifier.
+        //! @param [in] vers Table version number.
+        //! @param [in] cur True if table is current, false if table is next.
+        //! @param [in] id Network identifier.
         //!
-        NIT(bool is_actual = true, uint8_t version = 0, bool is_current = true, uint16_t net_id = 0) :
-            AbstractTransportListTable(uint8_t(is_actual ? TID_NIT_ACT : TID_NIT_OTH), net_id, version, is_current),
+        NIT(bool is_actual = true, uint8_t vers = 0, bool cur = true, uint16_t id = 0) :
+            AbstractTransportListTable(uint8_t(is_actual ? TID_NIT_ACT : TID_NIT_OTH), id, vers, cur),
             network_id(_tid_ext)
         {
         }
