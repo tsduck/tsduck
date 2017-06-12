@@ -37,7 +37,6 @@
 #include "tsTSFileInput.h"
 
 
-
 //----------------------------------------------------------------------------
 // Plugin definition
 //----------------------------------------------------------------------------
@@ -49,13 +48,18 @@ namespace ts {
     {
     public:
         // Implementation of plugin API
-        FileInput (TSP*);
+        FileInput(TSP*);
         virtual bool start();
         virtual bool stop();
         virtual BitRate getBitrate() {return 0;}
-        virtual size_t receive (TSPacket*, size_t);
+        virtual size_t receive(TSPacket*, size_t);
     private:
         TSFileInput _file;
+
+        // Inaccessible operations
+        FileInput() = delete;
+        FileInput(const FileInput&) = delete;
+        FileInput& operator=(const FileInput&) = delete;
     };
 
     // Output plugin
@@ -63,13 +67,18 @@ namespace ts {
     {
     public:
         // Implementation of plugin API
-        FileOutput (TSP*);
+        FileOutput(TSP*);
         virtual bool start();
         virtual bool stop();
         virtual BitRate getBitrate() {return 0;}
-        virtual bool send (const TSPacket*, size_t);
+        virtual bool send(const TSPacket*, size_t);
     private:
         TSFileOutput _file;
+
+        // Inaccessible operations
+        FileOutput() = delete;
+        FileOutput(const FileOutput&) = delete;
+        FileOutput& operator=(const FileOutput&) = delete;
     };
 
     // Packet processor plugin
@@ -77,13 +86,18 @@ namespace ts {
     {
     public:
         // Implementation of plugin API
-        FileProcessor (TSP*);
+        FileProcessor(TSP*);
         virtual bool start();
         virtual bool stop();
         virtual BitRate getBitrate() {return 0;}
-        virtual Status processPacket (TSPacket&, bool&, bool&);
+        virtual Status processPacket(TSPacket&, bool&, bool&);
     private:
         TSFileOutput _file;
+
+        // Inaccessible operations
+        FileProcessor() = delete;
+        FileProcessor(const FileProcessor&) = delete;
+        FileProcessor& operator=(const FileProcessor&) = delete;
     };
 }
 
@@ -98,7 +112,8 @@ TSPLUGIN_DECLARE_PROCESSOR(ts::FileProcessor)
 //----------------------------------------------------------------------------
 
 ts::FileInput::FileInput (TSP* tsp_) :
-    InputPlugin (tsp_, "Read packets from a file.", "[options] [file-name]")
+    InputPlugin(tsp_, "Read packets from a file.", "[options] [file-name]"),
+    _file()
 {
     option ("",               0,  STRING, 0, 1);
     option ("byte-offset",   'b', UNSIGNED);
@@ -145,7 +160,8 @@ ts::FileInput::FileInput (TSP* tsp_) :
 //----------------------------------------------------------------------------
 
 ts::FileOutput::FileOutput (TSP* tsp_) :
-    OutputPlugin (tsp_, "Write packets to a file.", "[options] [file-name]")
+    OutputPlugin(tsp_, "Write packets to a file.", "[options] [file-name]"),
+    _file()
 {
     option ("",        0,  STRING, 0, 1);
     option ("append", 'a');
@@ -179,7 +195,8 @@ ts::FileOutput::FileOutput (TSP* tsp_) :
 //----------------------------------------------------------------------------
 
 ts::FileProcessor::FileProcessor (TSP* tsp_) :
-    ProcessorPlugin (tsp_, "Write packets to a file and pass them to next plugin.", "[options] file-name")
+    ProcessorPlugin(tsp_, "Write packets to a file and pass them to next plugin.", "[options] file-name"),
+    _file()
 {
     option ("",        0,  STRING, 1, 1);
     option ("append", 'a');

@@ -50,6 +50,12 @@ namespace ts {
         virtual bool stop() {return true;}
         virtual BitRate getBitrate() {return 0;}
         virtual bool send (const TSPacket*, size_t) {return true;}
+
+    private:
+        // Inaccessible operations
+        DropOutput() = delete;
+        DropOutput(const DropOutput&) = delete;
+        DropOutput& operator=(const DropOutput&) = delete;
     };
 }
 

@@ -37,6 +37,28 @@
 #include "tsFormat.h"
 
 
+//----------------------------------------------------------------------------
+// Default constructor.
+//----------------------------------------------------------------------------
+
+ts::TSFileInput::TSFileInput() :
+    _filename(),
+    _total_packets(0),
+    _repeat(0),
+    _counter(0),
+    _start_offset(0),
+    _is_open(false),
+    _severity(Severity::Error),
+    _at_eof(false),
+    _rewindable(false),
+#if defined(__windows)
+    _handle(INVALID_HANDLE_VALUE)
+#else
+    _fd(-1)
+#endif
+{
+}
+
 
 //----------------------------------------------------------------------------
 // Destructor
@@ -45,7 +67,7 @@
 ts::TSFileInput::~TSFileInput()
 {
     if (_is_open) {
-        close (NULLREP);
+        close(NULLREP);
     }
 }
 
@@ -54,7 +76,7 @@ ts::TSFileInput::~TSFileInput()
 // Open file in a rewindable mode (must be a rewindable file, eg. not a pipe).
 //----------------------------------------------------------------------------
 
-bool ts::TSFileInput::open (const std::string& filename, uint64_t start_offset, ReportInterface& report)
+bool ts::TSFileInput::open(const std::string& filename, uint64_t start_offset, ReportInterface& report)
 {
     if (_is_open) {
         report.log (_severity, "already open");

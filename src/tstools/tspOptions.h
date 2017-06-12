@@ -79,6 +79,11 @@ namespace ts {
                 StringVector args;  //!< Plugin options.
 
                 //!
+                //! Default constructor.
+                //!
+                PluginOptions();
+
+                //!
                 //! Display the content of this object to a stream.
                 //! @param [in,out] strm Where to output the content.
                 //! @param [in] indent Margin size, default: none.

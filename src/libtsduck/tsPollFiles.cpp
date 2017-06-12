@@ -52,13 +52,13 @@ const ts::Enumeration ts::PolledFile::StatusEnumeration
 // Description of a polled file - Constructor
 //----------------------------------------------------------------------------
 
-ts::PolledFile::PolledFile (const std::string& name, const int64_t& size, const Time& date, const Time& now) :
-    _name (name),
-    _status (ADDED),
-    _file_size (size),
-    _file_date (date),
-    _pending (true),
-    _found_date (now)
+ts::PolledFile::PolledFile(const std::string& name, const int64_t& size, const Time& date, const Time& now) :
+    _name(name),
+    _status(ADDED),
+    _file_size(size),
+    _file_date(date),
+    _pending(true),
+    _found_date(now)
 {
 }
 
@@ -67,7 +67,7 @@ ts::PolledFile::PolledFile (const std::string& name, const int64_t& size, const 
 // Check if file has changed size or date.
 //----------------------------------------------------------------------------
 
-void ts::PolledFile::trackChange (const int64_t& size, const Time& date, const Time& now)
+void ts::PolledFile::trackChange(const int64_t& size, const Time& date, const Time& now)
 {
     if (_file_size != size || _file_date != date) {
         _status = MODIFIED;
@@ -83,60 +83,63 @@ void ts::PolledFile::trackChange (const int64_t& size, const Time& date, const T
 // This method polls files for modification.
 //----------------------------------------------------------------------------
 
-ts::PollFiles::PollFiles (const std::string& wildcard,
-                            MilliSecond poll_interval,
-                            MilliSecond min_stable_delay,
-                            PollFilesListener& listener,
-                            ReportInterface& report) :
-    _files_wildcard (wildcard),
-    _report (report),
-    _listener (listener)
+ts::PollFiles::PollFiles(const std::string& wildcard,
+                         MilliSecond poll_interval,
+                         MilliSecond min_stable_delay,
+                         PollFilesListener& listener,
+                         ReportInterface& report) :
+    _files_wildcard(wildcard),
+    _report(report),
+    _listener(listener),
+    _polled_files(),
+    _notified_files()
+
 {
-    _report.debug ("Starting PollFiles on %s, poll interval = %" FMT_INT64 "d ms, min stable delay = %" FMT_INT64 "d ms",
-                   _files_wildcard.c_str(), poll_interval, min_stable_delay);
+    _report.debug("Starting PollFiles on %s, poll interval = %" FMT_INT64 "d ms, min stable delay = %" FMT_INT64 "d ms",
+                  _files_wildcard.c_str(), poll_interval, min_stable_delay);
 
     StringVector found_files;  // Files that are found at each poll
 
     // Loop on poll 
-    while (listener.updatePollFiles (_files_wildcard, poll_interval, min_stable_delay)) {
+    while (listener.updatePollFiles(_files_wildcard, poll_interval, min_stable_delay)) {
 
         // List files, sort according to name
-        const Time now (Time::CurrentUTC());
-        ExpandWildcard (found_files, _files_wildcard);
-        std::sort (found_files.begin(), found_files.end());
+        const Time now(Time::CurrentUTC());
+        ExpandWildcard(found_files, _files_wildcard);
+        std::sort(found_files.begin(), found_files.end());
 
         // Compare currently found files with last polled state.
         PolledFileList::iterator polled = _polled_files.begin();
         for (StringVector::const_iterator found = found_files.begin(); found != found_files.end(); ++found) {
 
             // Get characteristics of next found file
-            const std::string& name (*found);
-            const int64_t size (GetFileSize (name));
-            const Time date (GetFileModificationTimeUTC (name));
+            const std::string& name(*found);
+            const int64_t size(GetFileSize(name));
+            const Time date(GetFileModificationTimeUTC(name));
 
             // Remove polled files before the found file
             while (polled != _polled_files.end() && name > (*polled)->_name) {
-                deleteFile (polled);
+                deleteFile(polled);
             }
 
             // Track change in current found file
             if (polled == _polled_files.end() || name < (*polled)->_name) {
                 // The found file is new, must be added in polled list.
-                polled = _polled_files.insert (polled, PolledFilePtr (new PolledFile (name, size, date, now)));
+                polled = _polled_files.insert(polled, PolledFilePtr(new PolledFile(name, size, date, now)));
             }
             else {
                 // The file was already there last time, track changes
-                assert (polled != _polled_files.end());
-                assert (name == (*polled)->_name);
-                (*polled)->trackChange (size, date, now);
+                assert(polled != _polled_files.end());
+                assert(name == (*polled)->_name);
+                (*polled)->trackChange(size, date, now);
             }
 
             // Check if the file need to be notified
-            PolledFilePtr& pf (*polled);
+            PolledFilePtr& pf(*polled);
             if (pf->_pending && now >= pf->_found_date + min_stable_delay) {
                 pf->_pending = false;
-                _notified_files.push_back (pf);
-                _report.debug ("PolledFiles: " + PolledFile::StatusEnumeration.name (pf->_status) + " " + name);
+                _notified_files.push_back(pf);
+                _report.debug("PolledFiles: " + PolledFile::StatusEnumeration.name(pf->_status) + " " + name);
             }
 
             // Next polled file
@@ -145,7 +148,7 @@ ts::PollFiles::PollFiles (const std::string& wildcard,
 
         // Remove all remaining polled files
         while (polled != _polled_files.end()) {
-            deleteFile (polled);
+            deleteFile(polled);
         }
 
         // Notify the listener
@@ -157,7 +160,7 @@ ts::PollFiles::PollFiles (const std::string& wildcard,
         _notified_files.clear();
 
         // Wait until next poll
-        SleepThread (poll_interval);
+        SleepThread(poll_interval);
     }
 }
 
@@ -166,12 +169,12 @@ ts::PollFiles::PollFiles (const std::string& wildcard,
 // Mark a file as deleted, move from polled to notified files.
 //----------------------------------------------------------------------------
 
-void ts::PollFiles::deleteFile (PolledFileList::iterator& polled)
+void ts::PollFiles::deleteFile(PolledFileList::iterator& polled)
 {
-    _report.debug ("PolledFiles: deleted " + (*polled)->_name);
+    _report.debug("PolledFiles: deleted " + (*polled)->_name);
     (*polled)->_status = PolledFile::DELETED;
-    _notified_files.push_back (*polled);
-    polled = _polled_files.erase (polled);
+    _notified_files.push_back(*polled);
+    polled = _polled_files.erase(polled);
 }
 
 
@@ -182,11 +185,11 @@ void ts::PollFiles::deleteFile (PolledFileList::iterator& polled)
 bool ts::PollFiles::notifyListener()
 {
     try {
-        return _listener.handlePolledFiles (_notified_files);
+        return _listener.handlePolledFiles(_notified_files);
     }
     catch (const std::exception& e) {
         const char* msg = e.what();
-        _report.error ("Exception in PollFiles listener: %s", msg == 0 ? "unknown" : msg);
+        _report.error("Exception in PollFiles listener: %s", msg == 0 ? "unknown" : msg);
         return true;
     }
 }

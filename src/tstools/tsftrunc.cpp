@@ -54,7 +54,11 @@ struct Options: public Args
 };
 
 Options::Options (int argc, char *argv[]) :
-    Args ("MPEG Transport Stream File Truncation Utility.", "[options] filename ...")
+    Args("MPEG Transport Stream File Truncation Utility.", "[options] filename ..."),
+    check_only(false),
+    verbose(false),
+    trunc_pkt(0),
+    files()
 {
     option ("",          0,  Args::STRING, 1, Args::UNLIMITED_COUNT);
     option ("packet",   'p', Args::UNSIGNED);

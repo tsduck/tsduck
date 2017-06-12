@@ -74,7 +74,23 @@ struct Options: public Args
 };
 
 Options::Options (int argc, char *argv[]) :
-    Args ("MPEG Transport Stream Files Comparison Utility.", "[options] filename-1 filename-2")
+    Args("MPEG Transport Stream Files Comparison Utility.", "[options] filename-1 filename-2"),
+    filename1(),
+    filename2(),
+    byte_offset(0),
+    buffered_packets(0),
+    threshold_diff(0),
+    subset(false),
+    dump(false),
+    dump_flags(0),
+    normalized(false),
+    verbose(false),
+    quiet(false),
+    payload_only(false),
+    pcr_ignore(false),
+    pid_ignore(false),
+    cc_ignore(false),
+    continue_all(false)
 {
     option ("",                 0,  Args::STRING, 2, 2);
     option ("buffered-packets", 0,  UNSIGNED);
@@ -204,7 +220,8 @@ Options::Options (int argc, char *argv[]) :
 //  Packet comparator class
 //----------------------------------------------------------------------------
 
-class Comparator {
+class Comparator
+{
 public:
     bool   equal;          // Compared packets are identical
     size_t compared_size;  // Size of compared data
@@ -213,25 +230,36 @@ public:
     size_t diff_count;     // Number of different bytes (can be lower than end_diff-first_diff)
 
     // Constructor
-    Comparator (const TSPacket& pkt1, const TSPacket& pkt2, Options& opt)
-    {
-        compare (pkt1, pkt2, opt);
-    }
+    Comparator(const TSPacket& pkt1, const TSPacket& pkt2, Options& opt);
 
     // Compare two TS packets, return equal
-    bool compare (const TSPacket& pkt1, const TSPacket& pkt2, Options& opt);
+    bool compare(const TSPacket& pkt1, const TSPacket& pkt2, Options& opt);
 
 private:
     // Compare two TS memory regions, return equal
-    bool compare (const uint8_t* mem1, size_t size1, const uint8_t* mem2, size_t size2);
+    bool compare(const uint8_t* mem1, size_t size1, const uint8_t* mem2, size_t size2);
 };
 
+
+//----------------------------------------------------------------------------
+//  Packet comparator constructor.
+//----------------------------------------------------------------------------
+
+Comparator::Comparator(const TSPacket& pkt1, const TSPacket& pkt2, Options& opt) :
+    equal(false),
+    compared_size(0),
+    first_diff(0),
+    end_diff(0),
+    diff_count(0)
+{
+    compare(pkt1, pkt2, opt);
+}
 
 //----------------------------------------------------------------------------
 //  Compare two memory regions.
 //----------------------------------------------------------------------------
 
-bool Comparator::compare (const uint8_t* mem1, size_t size1, const uint8_t* mem2, size_t size2)
+bool Comparator::compare(const uint8_t* mem1, size_t size1, const uint8_t* mem2, size_t size2)
 {
     diff_count = 0;
     first_diff = end_diff = compared_size = std::min (size1, size2);
@@ -253,7 +281,7 @@ bool Comparator::compare (const uint8_t* mem1, size_t size1, const uint8_t* mem2
 //  Offset in packet or in payload, depending on opt.payload_only.
 //----------------------------------------------------------------------------
 
-bool Comparator::compare (const TSPacket& pkt1, const TSPacket& pkt2, Options& opt)
+bool Comparator::compare(const TSPacket& pkt1, const TSPacket& pkt2, Options& opt)
 {
     if (pkt1.getPID() == PID_NULL || pkt2.getPID() == PID_NULL) {
         // Null packets are always considered as identical.

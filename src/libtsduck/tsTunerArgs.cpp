@@ -38,6 +38,34 @@
 #include "tsDecimal.h"
 
 
+//----------------------------------------------------------------------------
+// Default constructor.
+//----------------------------------------------------------------------------
+
+ts::TunerArgs::TunerArgs() :
+    zap_specification(),
+    channel_name(),
+    zap_file_name(),
+    frequency(),
+    polarity(),
+    lnb(),
+    inversion(),
+    symbol_rate(),
+    inner_fec(),
+    satellite_number(),
+    modulation(),
+    bandwidth(),
+    fec_hp(),
+    fec_lp(),
+    transmission_mode(),
+    guard_interval(),
+    hierarchy(),
+    delivery_system(),
+    pilots(),
+    roll_off()
+{
+}
+
 
 //----------------------------------------------------------------------------
 // Reset all values, they become "unset"

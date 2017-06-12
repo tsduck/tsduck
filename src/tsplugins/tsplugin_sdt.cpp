@@ -41,7 +41,6 @@
 #include "tsSDT.h"
 
 
-
 //----------------------------------------------------------------------------
 // Plugin definition
 //----------------------------------------------------------------------------
@@ -58,19 +57,24 @@ namespace ts {
         virtual Status processPacket (TSPacket&, bool&, bool&);
 
     private:
-        bool                _abort;             // Error (service not found, etc)
-        Service             _service;           // New or modified service
+        bool                  _abort;             // Error (service not found, etc)
+        Service               _service;           // New or modified service
         std::vector<uint16_t> _remove_serv;       // Set of services to remove
-        bool                _incr_version;      // Increment table version
-        bool                _set_version;       // Set a new table version
+        bool                  _incr_version;      // Increment table version
+        bool                  _set_version;       // Set a new table version
         uint8_t               _new_version;       // New table version
-        bool                _cleanup_priv_desc; // Remove private desc without preceding PDS desc
-        SectionDemux        _demux;             // Section demux
-        CyclingPacketizer   _pzer;              // Packetizer for modified SDT/BAT
+        bool                  _cleanup_priv_desc; // Remove private desc without preceding PDS desc
+        SectionDemux          _demux;             // Section demux
+        CyclingPacketizer     _pzer;              // Packetizer for modified SDT/BAT
 
         // Invoked by the demux when a complete table is available.
         virtual void handleTable (SectionDemux&, const BinaryTable&);
         void processSDT (SDT&);
+
+        // Inaccessible operations
+        SDTPlugin() = delete;
+        SDTPlugin(const SDTPlugin&) = delete;
+        SDTPlugin& operator=(const SDTPlugin&) = delete;
     };
 }
 
@@ -83,8 +87,16 @@ TSPLUGIN_DECLARE_PROCESSOR(ts::SDTPlugin)
 //----------------------------------------------------------------------------
 
 ts::SDTPlugin::SDTPlugin (TSP* tsp_) :
-    ProcessorPlugin (tsp_, "Perform various transformations on the SDT Actual.", "[options]"),
-    _demux (this)
+    ProcessorPlugin(tsp_, "Perform various transformations on the SDT Actual.", "[options]"),
+    _abort(false),
+    _service(),
+    _remove_serv(),
+    _incr_version(false),
+    _set_version(false),
+    _new_version(0),
+    _cleanup_priv_desc(false),
+    _demux(this),
+    _pzer()
 {
     option ("cleanup-private-descriptors", 0);
     option ("eit-pf",                      0,  INTEGER, 0, 1, 0, 1);
@@ -248,6 +260,10 @@ void ts::SDTPlugin::handleTable (SectionDemux& demux, const BinaryTable& table)
                 _pzer.removeSections (TID_BAT, table.tableIdExtension());
                 _pzer.addTable (table);
             }
+        }
+
+        default: {
+            break;
         }
     }
 }

@@ -66,6 +66,11 @@ namespace ts {
 
         // Report a line
         void report (const char*, ...) TS_PRINTF_FORMAT (2, 3);
+
+        // Inaccessible operations
+        CountPlugin() = delete;
+        CountPlugin(const CountPlugin&) = delete;
+        CountPlugin& operator=(const CountPlugin&) = delete;
     };
 }
 
@@ -78,9 +83,16 @@ TSPLUGIN_DECLARE_PROCESSOR(ts::CountPlugin)
 //----------------------------------------------------------------------------
 
 ts::CountPlugin::CountPlugin (TSP* tsp_) :
-    ProcessorPlugin (tsp_, "Count TS packets per PID.", "[options]"),
+    ProcessorPlugin(tsp_, "Count TS packets per PID.", "[options]"),
     _outfile(),
-    _pids()
+    _negate(false),
+    _pids(),
+    _brief_report(false),
+    _report_all(false),
+    _report_summary(false),
+    _report_total(false),
+    _current_pkt(0),
+    _counters()
 {
     option ("all",         'a');
     option ("brief",       'b');

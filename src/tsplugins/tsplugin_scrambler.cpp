@@ -49,7 +49,6 @@
 #include "tsPMT.h"
 #include "tsSDT.h"
 
-
 #define DEFAULT_ECM_BITRATE 30000
 #define ASYNC_HANDLER_EXTRA_STACK_SIZE (1024 * 1024)
 
@@ -155,6 +154,10 @@ namespace ts {
 
             // Invoked when an ECM is available, maybe in the context of an external thread.
             virtual void handleECM(const ecmgscs::ECMResponse&);
+
+            // Inaccessible operations
+            CryptoPeriod(const CryptoPeriod&) = delete;
+            CryptoPeriod& operator=(const CryptoPeriod&) = delete;
         };
 
         // ScramblerPlugin parameters, remain constant after start()
@@ -167,7 +170,7 @@ namespace ts {
         bool              _synchronous_ecmg;   // Synchronous ECM generation
         bool              _ignore_scrambled;   // Ignore packets which are already scrambled
         SocketAddress     _ecmg_addr;          // ECMG socket address
-        uint32_t            _super_cas_id;       // CA system & subsystem id
+        uint32_t          _super_cas_id;       // CA system & subsystem id
         ByteBlock         _access_criteria;    // AC constant value
         ByteBlock         _ca_desc_private;    // Private data to insert in CA_descriptor
         MilliSecond       _cp_duration;        // Crypto-period duration
@@ -191,7 +194,7 @@ namespace ts {
         PacketCounter     _pkt_change_ecm;     // Transition point for next ECM change
         BitRate           _ts_bitrate;         // Saved TS bitrate
         ECMGClient        _ecmg;               // Connection with the ECMG
-        uint8_t             _ecm_cc;             // Continuity counter in ECM PID.
+        uint8_t           _ecm_cc;             // Continuity counter in ECM PID.
         PIDSet            _scrambled_pids;     // List of pids to scramble
         PIDSet            _conflict_pids;      // List of pids to scramble with scrambled input packets
         PIDSet            _input_pids;         // List of input pids
@@ -226,6 +229,11 @@ namespace ts {
         void processPAT (PAT&);
         void processPMT (PMT&);
         void processSDT (SDT&);
+
+        // Inaccessible operations
+        ScramblerPlugin() = delete;
+        ScramblerPlugin(const ScramblerPlugin&) = delete;
+        ScramblerPlugin& operator=(const ScramblerPlugin&) = delete;
     };
 }
 
@@ -238,9 +246,49 @@ TSPLUGIN_DECLARE_PROCESSOR(ts::ScramblerPlugin)
 //----------------------------------------------------------------------------
 
 ts::ScramblerPlugin::ScramblerPlugin (TSP* tsp_) :
-    ProcessorPlugin (tsp_, "DVB scrambler.", "[options] service"),
-    _ecmg (ASYNC_HANDLER_EXTRA_STACK_SIZE),
-    _demux (this)
+    ProcessorPlugin(tsp_, "DVB scrambler.", "[options] service"),
+    _service(),
+    _component_level(false),
+    _use_fixed_key(false),
+    _scramble_audio(false),
+    _scramble_video(false),
+    _scramble_subtitles(false),
+    _synchronous_ecmg(false),
+    _ignore_scrambled(false),
+    _ecmg_addr(),
+    _super_cas_id(0),
+    _access_criteria(),
+    _ca_desc_private(),
+    _cp_duration(0),
+    _delay_start(0),
+    _ecm_bitrate(0),
+    _ecm_pid(PID_NULL),
+    _partial_scrambling(0),
+    _cw_mode(Scrambling::REDUCE_ENTROPY),
+    _channel_status(),
+    _stream_status(),
+    _abort(false),
+    _ready(false),
+    _degraded_mode(false),
+    _packet_count(0),
+    _scrambled_count(0),
+    _partial_clear(0),
+    _pkt_insert_ecm(0),
+    _pkt_change_cw(0),
+    _pkt_change_ecm(0),
+    _ts_bitrate(0),
+    _ecmg(ASYNC_HANDLER_EXTRA_STACK_SIZE),
+    _ecm_cc(0),
+    _scrambled_pids(),
+    _conflict_pids(),
+    _input_pids(),
+    _cp(),
+    _current_cw(0),
+    _current_ecm(0),
+    _current_key(),
+    _demux(this),
+    _pzer_pmt(),
+    _cw_gen()
 {
     option ("",                      0,  STRING, 1, 1);
     option ("access-criteria",      'a', STRING);
@@ -523,6 +571,7 @@ bool ts::ScramblerPlugin::stop()
 void ts::ScramblerPlugin::handleTable (SectionDemux& demux, const BinaryTable& table)
 {
     switch (table.tableId()) {
+        
         case TID_PAT: {
             if (table.sourcePID() == PID_PAT) {
                 PAT pat (table);
@@ -532,6 +581,7 @@ void ts::ScramblerPlugin::handleTable (SectionDemux& demux, const BinaryTable& t
             }
             break;
         }
+
         case TID_SDT_ACT: {
             if (table.sourcePID() == PID_SDT) {
                 SDT sdt (table);
@@ -541,11 +591,16 @@ void ts::ScramblerPlugin::handleTable (SectionDemux& demux, const BinaryTable& t
             }
             break;
         }
+
         case TID_PMT: {
             PMT pmt (table);
             if (pmt.isValid() && _service.hasId (pmt.service_id)) {
                 processPMT (pmt);
             }
+            break;
+        }
+
+        default: {
             break;
         }
     }
@@ -925,11 +980,13 @@ ts::ProcessorPlugin::Status ts::ScramblerPlugin::processPacket (TSPacket& pkt, b
 //----------------------------------------------------------------------------
 
 ts::ScramblerPlugin::CryptoPeriod::CryptoPeriod() :
-    _scrambler (0),
-    _cp_number (0),
-    _ecm_ok (false),
-    _ecm (),
-    _ecm_pkt_index (0)
+    _scrambler(0),
+    _cp_number(0),
+    _ecm_ok(false),
+    _ecm(),
+    _ecm_pkt_index(0),
+    _cw_current(),
+    _cw_next()
 {
 }
 

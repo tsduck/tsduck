@@ -68,7 +68,7 @@ using namespace ts;
 
 struct Options: public Args
 {
-    Options (int argc, char *argv[]);
+    Options(int argc, char *argv[]);
 
     std::string device_name;
     bool        no_offset;
@@ -85,13 +85,32 @@ struct Options: public Args
     bool        global_services;
     MilliSecond psi_timeout;
     MilliSecond signal_timeout;
-#if defined (__linux)
+#if defined(__linux)
     bool        s2api;
 #endif
 };
 
-Options::Options (int argc, char *argv[]) :
-    Args ("DVB network scanning utility.", "[options]")
+Options::Options(int argc, char *argv[]) :
+    Args("DVB network scanning utility.", "[options]"),
+    device_name(),
+    no_offset(false),
+    use_best_quality(false),
+    use_best_strength(false),
+    first_uhf_channel(0),
+    last_uhf_channel(0),
+    first_uhf_offset(0),
+    last_uhf_offset(0),
+    min_strength(0),
+    min_quality(0),
+    show_modulation(false),
+    list_services(false),
+    global_services(false),
+    psi_timeout(0),
+    signal_timeout(0)
+#if defined(__linux)
+    ,
+    s2api(false)
+#endif
 {
     option ("adapter",             'a', UNSIGNED);
     option ("best-quality",         0);
@@ -388,6 +407,7 @@ void InfoScanner::handleTable (SectionDemux&, const BinaryTable& table)
 
     // Store known tables
     switch (table.tableId()) {
+
         case TID_PAT: {
             SafePtr<PAT> pat (new PAT (table));
             if (pat->isValid()) {
@@ -399,6 +419,7 @@ void InfoScanner::handleTable (SectionDemux&, const BinaryTable& table)
             }
             break;
         }
+
         case TID_SDT_ACT: {
             SafePtr<SDT> sdt (new SDT (table));
             if (sdt->isValid()) {
@@ -406,11 +427,16 @@ void InfoScanner::handleTable (SectionDemux&, const BinaryTable& table)
             }
             break;
         }
+
         case TID_NIT_ACT: {
             SafePtr<NIT> nit (new NIT (table));
             if (nit->isValid()) {
                 _nit = nit;
             }
+            break;
+        }
+
+        default: {
             break;
         }
     }
@@ -507,6 +533,7 @@ namespace {
     void DisplayModulation (std::ostream& strm, const std::string& margin, const TunerParametersPtr& tp)
     {
         switch (tp->tunerType()) {
+
             case DVB_S: {
                 TunerParametersDVBS* tpp = dynamic_cast<TunerParametersDVBS*> (tp.pointer());
                 assert (tpp != 0);
@@ -521,6 +548,7 @@ namespace {
                 }
                 break;
             }
+
             case DVB_C: {
                 TunerParametersDVBC* tpp = dynamic_cast<TunerParametersDVBC*> (tp.pointer());
                 assert (tpp != 0);
@@ -541,6 +569,7 @@ namespace {
                 }
                 break;
             }
+
             case DVB_T: {
                 TunerParametersDVBT* tpp = dynamic_cast<TunerParametersDVBT*> (tp.pointer());
                 assert (tpp != 0);
@@ -573,6 +602,7 @@ namespace {
                 }
                 break;
             }
+
             case ATSC: {
                 TunerParametersATSC* tpp = dynamic_cast<TunerParametersATSC*> (tp.pointer());
                 assert (tpp != 0);
@@ -585,6 +615,10 @@ namespace {
                 if (tpp->modulation != ts::QAM_AUTO) {
                     strm << margin << "Modulation: " << ModulationEnum.name (tpp->modulation) << std::endl;
                 }
+                break;
+            }
+
+            default: {
                 break;
             }
         }

@@ -36,7 +36,6 @@
 #include "tsDecimal.h"
 #include "tsPCRAnalyzer.h"
 
-
 #define DEF_MIN_PCR_CNT  128
 #define DEF_MIN_PID        1
 
@@ -70,6 +69,11 @@ namespace ts {
         // which vary only by less than the following factor.
 
         static const BitRate REPORT_THRESHOLD = 500000; // 100 b/s on a 50 Mb/s stream
+
+        // Inaccessible operations
+        PCRBitratePlugin() = delete;
+        PCRBitratePlugin(const PCRBitratePlugin&) = delete;
+        PCRBitratePlugin& operator=(const PCRBitratePlugin&) = delete;
     };
 }
 
@@ -82,9 +86,10 @@ TSPLUGIN_DECLARE_PROCESSOR(ts::PCRBitratePlugin)
 //----------------------------------------------------------------------------
 
 ts::PCRBitratePlugin::PCRBitratePlugin (TSP* tsp_) :
-    ProcessorPlugin (tsp_, "Permanently recompute bitrate based on PCR analysis.", "[options]"),
-    _pcr_analyzer (),
-    _bitrate (0)
+    ProcessorPlugin(tsp_, "Permanently recompute bitrate based on PCR analysis.", "[options]"),
+    _pcr_analyzer(),
+    _bitrate(0),
+    _pcr_name()
 {
     option ("dts",     'd');
     option ("min-pcr",  0, POSITIVE);

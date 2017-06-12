@@ -70,14 +70,32 @@ ts::Tuner::~Tuner ()
 // Default constructor, 
 //-----------------------------------------------------------------------------
 
-ts::Tuner::Tuner () :
-    _is_open (false),
-    _info_only (true),
-    _tuner_type (DVB_T),
-    _signal_timeout (DEFAULT_SIGNAL_TIMEOUT),
-    _signal_timeout_silent (false),
-    _receive_timeout (0),
-    _sink_queue_size (DEFAULT_SINK_QUEUE_SIZE)
+ts::Tuner::Tuner() :
+    _is_open(false),
+    _info_only(true),
+    _tuner_type(DVB_T),
+    _device_name(),
+    _device_info(),
+    _signal_timeout(DEFAULT_SIGNAL_TIMEOUT),
+    _signal_timeout_silent(false),
+    _receive_timeout(0),
+    _delivery_systems(),
+    _sink_queue_size(DEFAULT_SINK_QUEUE_SIZE),
+    _graph(),
+    _media_control(),
+    _sink_filter(),
+    _provider_filter(),
+    _provider_name(),
+    _net_provider(),
+    _tuner(),
+    _tuning_space(),
+    _tuning_space_fname(),
+    _tuning_space_uname(),
+    _tuner_filter(),
+    _demods(),
+    _demods2(),
+    _sigstats(),
+    _tunprops()
 {
 }
 
@@ -86,17 +104,33 @@ ts::Tuner::Tuner () :
 // Constructor from one device name.
 //-----------------------------------------------------------------------------
 
-ts::Tuner::Tuner (const std::string& device_name, bool info_only, ReportInterface& report) :
-    _is_open (false),
-    _info_only (true),
-    _tuner_type (DVB_T),
-    _device_name (device_name),
-    _signal_timeout (DEFAULT_SIGNAL_TIMEOUT),
-    _signal_timeout_silent (false),
-    _receive_timeout (0),
-    _sink_queue_size (DEFAULT_SINK_QUEUE_SIZE)
+ts::Tuner::Tuner(const std::string& device_name, bool info_only, ReportInterface& report) :
+    _is_open(false),
+    _info_only(true),
+    _tuner_type(DVB_T),
+    _device_name(device_name),
+    _device_info(),
+    _signal_timeout(DEFAULT_SIGNAL_TIMEOUT),
+    _signal_timeout_silent(false),
+    _receive_timeout(0),
+    _sink_queue_size(DEFAULT_SINK_QUEUE_SIZE),
+    _graph(),
+    _media_control(),
+    _sink_filter(),
+    _provider_filter(),
+    _provider_name(),
+    _net_provider(),
+    _tuner(),
+    _tuning_space(),
+    _tuning_space_fname(),
+    _tuning_space_uname(),
+    _tuner_filter(),
+    _demods(),
+    _demods2(),
+    _sigstats(),
+    _tunprops()
 {
-    this->open (device_name, info_only, report);
+    this->open(device_name, info_only, report);
 }
 
 

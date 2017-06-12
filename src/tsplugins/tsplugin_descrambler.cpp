@@ -57,11 +57,16 @@ namespace ts {
         virtual Status processPacket (TSPacket&, bool&, bool&);
 
     private:
-        Scrambling::EntropyMode _cw_mode;        // CW entropy mode
-        std::list<ByteBlock> _cw_list;           // List of control words
-        std::list<ByteBlock>::iterator _next_cw; // Next control word
-        Scrambling _key;                         // Preprocessed current control word
-        uint8_t _last_scv;                         // Scrambling_control_value in last packet
+        Scrambling::EntropyMode        _cw_mode;  // CW entropy mode
+        std::list<ByteBlock>           _cw_list;  // List of control words
+        std::list<ByteBlock>::iterator _next_cw;  // Next control word
+        Scrambling                     _key;      // Preprocessed current control word
+        uint8_t                        _last_scv; // Scrambling_control_value in last packet
+
+        // Inaccessible operations
+        DescramblerPlugin() = delete;
+        DescramblerPlugin(const DescramblerPlugin&) = delete;
+        DescramblerPlugin& operator=(const DescramblerPlugin&) = delete;
     };
 }
 
@@ -74,7 +79,12 @@ TSPLUGIN_DECLARE_PROCESSOR(ts::DescramblerPlugin)
 //----------------------------------------------------------------------------
 
 ts::DescramblerPlugin::DescramblerPlugin (TSP* tsp_) :
-    ProcessorPlugin (tsp_, "DVB descrambler using static control words.", "[options]")
+    ProcessorPlugin (tsp_, "DVB descrambler using static control words.", "[options]"),
+    _cw_mode(Scrambling::REDUCE_ENTROPY),
+    _cw_list(),
+    _next_cw(),
+    _key(),
+    _last_scv(0)
 {
     option ("cw",                   'c', STRING);
     option ("cw-file",              'f', STRING);

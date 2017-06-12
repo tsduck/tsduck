@@ -38,6 +38,38 @@
 
 
 //----------------------------------------------------------------------------
+// Default constructor.
+//----------------------------------------------------------------------------
+
+ts::Monotonic::Monotonic() :
+    _value(0),
+#if defined(__windows)
+    _handle(INVALID_HANDLE_VALUE)
+#else
+    _jps(0)
+#endif
+{
+    init();
+}
+
+
+//----------------------------------------------------------------------------
+// Copy constructor.
+//----------------------------------------------------------------------------
+
+ts::Monotonic::Monotonic(const Monotonic& t) :
+    _value(t._value),
+#if defined(__windows)
+    _handle(INVALID_HANDLE_VALUE)
+#else
+    _jps(0)
+#endif
+{
+    init();
+}
+
+
+//----------------------------------------------------------------------------
 // System-specific initialization
 //----------------------------------------------------------------------------
 
@@ -47,17 +79,17 @@ void ts::Monotonic::init()
 
     // Windows implementation
 
-    if ((_handle = ::CreateWaitableTimer (NULL, FALSE, NULL)) == NULL) {
-        throw MonotonicError (::GetLastError ());
+    if ((_handle = ::CreateWaitableTimer(NULL, FALSE, NULL)) == NULL) {
+        throw MonotonicError(::GetLastError());
     }
 
 #else
 
     // POSIX implementation
 
-    _jps = sysconf (_SC_CLK_TCK); // jiffies per second
+    _jps = sysconf(_SC_CLK_TCK); // jiffies per second
     if (_jps <= 0) {
-        throw MonotonicError ("system error: cannot get clock tick");
+        throw MonotonicError("system error: cannot get clock tick");
     }
 
 #endif
@@ -70,8 +102,8 @@ void ts::Monotonic::init()
 
 ts::Monotonic::~Monotonic()
 {
-#if defined (__windows)
-    ::CloseHandle (_handle);
+#if defined(__windows)
+    ::CloseHandle(_handle);
 #endif
 }
 
@@ -82,7 +114,7 @@ ts::Monotonic::~Monotonic()
 
 void ts::Monotonic::getSystemTime()
 {
-#if defined (__windows)
+#if defined(__windows)
 
     // Windows implementation
 
@@ -177,16 +209,16 @@ void ts::Monotonic::wait()
 
 ts::NanoSecond ts::Monotonic::SetPrecision(const NanoSecond& requested)
 {
-#if defined (__windows)
+#if defined(__windows)
 
     // Windows implementation
 
     // Timer precisions use milliseconds on Windows. Convert requested value in ms.
-    ::UINT good = std::max (::UINT (1), ::UINT (requested / 1000000));
+    ::UINT good = std::max(::UINT(1), ::UINT(requested / 1000000));
 
     // Try requested value
-    if (::timeBeginPeriod (good) == TIMERR_NOERROR) {
-        return std::max (requested, 1000000 * NanoSecond (good));
+    if (::timeBeginPeriod(good) == TIMERR_NOERROR) {
+        return std::max(requested, 1000000 * NanoSecond(good));
     }
 
     // Requested value failed. Try doubling the value repeatedly.
@@ -194,16 +226,16 @@ ts::NanoSecond ts::Monotonic::SetPrecision(const NanoSecond& requested)
     ::UINT fail = good;
     do {
         if (good >= 1000) { // 1000 ms = 1 s
-            throw MonotonicError ("cannot get system timer precision");
+            throw MonotonicError("cannot get system timer precision");
         }
         good = 2 * good;
-    } while (::timeBeginPeriod (good) != TIMERR_NOERROR);
+    } while (::timeBeginPeriod(good) != TIMERR_NOERROR);
 
     // Now, repeatedly try to divide between 'fail' and 'good'. At most 10 tries.
     for (size_t count = 10; count > 0 && good > fail + 1; --count) {
         ::UINT val = fail + (good - fail) / 2;
-        if (::timeBeginPeriod (val) == TIMERR_NOERROR) {
-            ::timeEndPeriod (good);
+        if (::timeBeginPeriod(val) == TIMERR_NOERROR) {
+            ::timeEndPeriod(good);
             good = val;
         }
         else {
@@ -212,7 +244,7 @@ ts::NanoSecond ts::Monotonic::SetPrecision(const NanoSecond& requested)
     }
 
     // Return last good value in nanoseconds
-    return 1000000 * NanoSecond (good);
+    return 1000000 * NanoSecond(good);
 
 #else
 
@@ -220,7 +252,7 @@ ts::NanoSecond ts::Monotonic::SetPrecision(const NanoSecond& requested)
 
     // The timer precision cannot be changed. Simply get the smallest delay.
     Monotonic m; // constructor initializes _jps
-    return std::max (requested, NanoSecond (NanoSecPerSec / m._jps));
+    return std::max(requested, NanoSecond(NanoSecPerSec / m._jps));
 
 #endif
 }

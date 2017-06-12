@@ -38,7 +38,6 @@
 #include "tsCASFamily.h"
 
 
-
 //----------------------------------------------------------------------------
 // Plugin definition
 //----------------------------------------------------------------------------
@@ -67,6 +66,11 @@ namespace ts {
 
         // Adds all ECM/EMM PIDs from the specified descriptor list
         void addCA (const DescriptorList& dlist, TID parent_table);
+
+        // Inaccessible operations
+        RMOrphanPlugin() = delete;
+        RMOrphanPlugin(const RMOrphanPlugin&) = delete;
+        RMOrphanPlugin& operator=(const RMOrphanPlugin&) = delete;
     };
 }
 
@@ -79,8 +83,10 @@ TSPLUGIN_DECLARE_PROCESSOR(ts::RMOrphanPlugin)
 //----------------------------------------------------------------------------
 
 ts::RMOrphanPlugin::RMOrphanPlugin (TSP* tsp_) :
-    ProcessorPlugin (tsp_, "Remove orphan (unreferenced) PID's.", "[options]"),
-    _demux (this)
+    ProcessorPlugin(tsp_, "Remove orphan (unreferenced) PID's.", "[options]"),
+    _drop_status(TSP_DROP),
+    _pass_pids(),
+    _demux(this)
 {
     option ("stuffing", 's');
 
@@ -218,6 +224,10 @@ void ts::RMOrphanPlugin::handleTable (SectionDemux& demux, const BinaryTable& ta
                     addCA (it->second.descs, TID_PMT);
                 }
             }
+            break;
+        }
+
+        default: {
             break;
         }
     }

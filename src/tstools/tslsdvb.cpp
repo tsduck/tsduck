@@ -50,15 +50,24 @@ struct Options: public Args
 
     std::string device_name;  // Name of device to list (empty means all)
     bool        verbose;      // Verbose output
-#if defined (__linux)
+#if defined(__linux)
     bool        s2api;        // Force usage of S2API
-#elif defined (__windows)
+#elif defined(__windows)
     bool        enum_devices; // Enumerate DirectShow devices
 #endif
 };
 
 Options::Options (int argc, char *argv[]) :
-    Args ("DVB Devices Listing Utility.", "[options] [device]")
+    Args("DVB Devices Listing Utility.", "[options] [device]"),
+    device_name(),
+    verbose(false)
+#if defined(__linux)
+    ,
+    s2api(false)
+#elif defined(__windows)
+    ,
+    enum_devices(false)
+#endif
 {
     option ("",          0,  STRING, 0, 1);
     option ("adapter",  'a', UNSIGNED);

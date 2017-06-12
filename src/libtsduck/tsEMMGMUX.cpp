@@ -212,6 +212,9 @@ void ts::emmgmux::Protocol::buildErrorResponse (const tlv::MessageFactory& fact,
         case tlv::MissingParameter:
             status = Errors::missing_param;
             break;
+        default:
+            status = Errors::unknown_error;
+            break;
     }
 
     // Copy error_status and error_information into response
@@ -368,16 +371,20 @@ std::string ts::emmgmux::ChannelClose::dump (size_t indent) const
 //----------------------------------------------------------------------------
 
 ts::emmgmux::ChannelError::ChannelError () :
-    ChannelMessage (emmgmux::Protocol::Instance()->version(), Tags::channel_error),
-    client_id      (0)
+    ChannelMessage    (emmgmux::Protocol::Instance()->version(), Tags::channel_error),
+    client_id         (0),
+    error_status      (),
+    error_information ()
 {
 }
 
 ts::emmgmux::ChannelError::ChannelError (const tlv::MessageFactory& fact) :
-    ChannelMessage (fact.protocolVersion(),
-                    fact.commandTag(),
-                    fact.get<uint16_t> (Tags::data_channel_id)),
-    client_id      (fact.get<uint32_t> (Tags::client_id))
+    ChannelMessage    (fact.protocolVersion(),
+                       fact.commandTag(),
+                       fact.get<uint16_t> (Tags::data_channel_id)),
+    client_id         (fact.get<uint32_t> (Tags::client_id)),
+    error_status      (),
+    error_information ()
 {
     fact.get (Tags::error_status, error_status);
     fact.get (Tags::error_information, error_information);
@@ -603,17 +610,21 @@ std::string ts::emmgmux::StreamCloseResponse::dump (size_t indent) const
 //----------------------------------------------------------------------------
 
 ts::emmgmux::StreamError::StreamError () :
-    StreamMessage (emmgmux::Protocol::Instance()->version(), Tags::stream_error),
-    client_id     (0)
+    StreamMessage     (emmgmux::Protocol::Instance()->version(), Tags::stream_error),
+    client_id         (0),
+    error_status      (),
+    error_information ()
 {
 }
 
 ts::emmgmux::StreamError::StreamError (const tlv::MessageFactory& fact) :
-    StreamMessage (fact.protocolVersion(),
-                   fact.commandTag(),
-                   fact.get<uint16_t> (Tags::data_channel_id),
-                   fact.get<uint16_t> (Tags::data_stream_id)),
-    client_id     (fact.get<uint32_t> (Tags::client_id))
+    StreamMessage     (fact.protocolVersion(),
+                       fact.commandTag(),
+                       fact.get<uint16_t> (Tags::data_channel_id),
+                       fact.get<uint16_t> (Tags::data_stream_id)),
+    client_id         (fact.get<uint32_t> (Tags::client_id)),
+    error_status      (),
+    error_information ()
 {
     fact.get (Tags::error_status, error_status);
     fact.get (Tags::error_information, error_information);
@@ -735,7 +746,8 @@ std::string ts::emmgmux::StreamBWAllocation::dump (size_t indent) const
 ts::emmgmux::DataProvision::DataProvision () :
     StreamMessage (emmgmux::Protocol::Instance()->version(), Tags::data_provision),
     client_id     (0),
-    data_id       (0)
+    data_id       (0),
+    datagram      ()
 {
 }
 
@@ -745,7 +757,8 @@ ts::emmgmux::DataProvision::DataProvision (const tlv::MessageFactory& fact) :
                    fact.get<uint16_t> (Tags::data_channel_id),
                    fact.get<uint16_t> (Tags::data_stream_id)),
     client_id     (fact.get<uint32_t> (Tags::client_id)),
-    data_id       (fact.get<uint16_t> (Tags::data_id))
+    data_id       (fact.get<uint16_t> (Tags::data_id)),
+    datagram      ()
 {
     std::vector <tlv::MessageFactory::Parameter> params;
     fact.get (Tags::datagram, params);

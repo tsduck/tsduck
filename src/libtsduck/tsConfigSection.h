@@ -130,114 +130,114 @@ namespace ts {
         //!
         //! Set the string value of an entry.
         //! @param [in] entry Entry name.
-        //! @param [in] value The value to set.
+        //! @param [in] val The value to set.
         //!
-        void set(const std::string& entry, const std::string& value);
+        void set(const std::string& entry, const std::string& val);
 
         //!
         //! Set the string value of an entry.
         //! @param [in] entry Entry name.
-        //! @param [in] value The value to set.
+        //! @param [in] val The value to set.
         //!
-        void set(const std::string& entry, const char* value)
+        void set(const std::string& entry, const char* val)
         {
-            set(entry, std::string(value));
+            set(entry, std::string(val));
         }
 
         //!
         //! Set the value of an entry from a vector of strings.
         //! @param [in] entry Entry name.
-        //! @param [in] value The values to set.
+        //! @param [in] val The values to set.
         //!
-        void set(const std::string& entry, const StringVector& value);
+        void set(const std::string& entry, const StringVector& val);
 
         //!
         //! Set the boolean value of an entry.
         //! @param [in] entry Entry name.
-        //! @param [in] value The value to set.
+        //! @param [in] val The value to set.
         //!
-        void set(const std::string& entry, bool value);
+        void set(const std::string& entry, bool val);
  
         //!
         //! Set the value of an entry from a vector of booleans.
         //! @param [in] entry Entry name.
-        //! @param [in] value The values to set.
+        //! @param [in] val The values to set.
         //!
-        void set(const std::string& entry, const std::vector<bool>& value);
+        void set(const std::string& entry, const std::vector<bool>& val);
 
         //!
         //! Set the integer value of an entry.
         //! @tparam INT An integer type.
         //! @param [in] entry Entry name.
-        //! @param [in] value The value to set.
+        //! @param [in] val The value to set.
         //!
         template <typename INT>
-        void set(const std::string& entry, const INT& value);
+        void set(const std::string& entry, const INT& val);
 
         //!
         //! Set the value of an entry from a vector of integers.
         //! @tparam INT An integer type.
         //! @param [in] entry Entry name.
-        //! @param [in] value The values to set.
+        //! @param [in] val The values to set.
         //!
         template <typename INT>
-        void set(const std::string& entry, const std::vector<INT>& value);
+        void set(const std::string& entry, const std::vector<INT>& val);
 
         //!
         //! Append a string value to an entry.
         //! @param [in] entry Entry name.
-        //! @param [in] value The value to set.
+        //! @param [in] val The value to set.
         //!
-        void append(const std::string& entry, const std::string& value);
+        void append(const std::string& entry, const std::string& val);
 
         //!
         //! Append a string value to an entry.
         //! @param [in] entry Entry name.
-        //! @param [in] value The value to set.
+        //! @param [in] val The value to set.
         //!
-        void append(const std::string& entry, const char* value)
+        void append(const std::string& entry, const char* val)
         {
-            append(entry, std::string(value));
+            append(entry, std::string(val));
         }
 
         //!
         //! Append a vector of strings to an entry.
         //! @param [in] entry Entry name.
-        //! @param [in] value The values to append.
+        //! @param [in] val The values to append.
         //!
-        void append(const std::string& entry, const std::vector <std::string>& value);
+        void append(const std::string& entry, const std::vector <std::string>& val);
 
         //!
         //! Append a boolean value to an entry.
         //! @param [in] entry Entry name.
-        //! @param [in] value The value to append.
+        //! @param [in] val The value to append.
         //!
-        void append(const std::string& entry, bool value);
+        void append(const std::string& entry, bool val);
 
         //!
         //! Append a vector of booleans to an entry.
         //! @param [in] entry Entry name.
-        //! @param [in] value The values to append.
+        //! @param [in] val The values to append.
         //!
-        void append(const std::string& entry, const std::vector<bool>& value);
+        void append(const std::string& entry, const std::vector<bool>& val);
 
         //!
         //! Append an integer value to an entry.
         //! @tparam INT An integer type.
         //! @param [in] entry Entry name.
-        //! @param [in] value The value to append.
+        //! @param [in] val The value to append.
         //!
         template <typename INT>
-        void append(const std::string& entry, const INT& value);
+        void append(const std::string& entry, const INT& val);
 
         //!
         //! Append a vector of integers to an entry.
         //! @tparam INT An integer type.
         //! @param [in] entry Entry name.
-        //! @param [in] value The values to append.
+        //! @param [in] val The values to append.
         //!
         template <typename INT>
-        void append(const std::string& entry, const std::vector <INT>& value);
+        void append(const std::string& entry, const std::vector <INT>& val);
 
         //!
         //! Set the value of an entry from a string representation.
@@ -254,11 +254,11 @@ namespace ts {
 
     private:
         // An entry is a vector of strings.
-        typedef std::vector <std::string> Entry;
+        typedef std::vector<std::string> Entry;
 
         // Content of a section.
         // The map key is the entry name.
-        typedef std::map <std::string, Entry> EntryMap;
+        typedef std::map<std::string, Entry> EntryMap;
 
         // Private members:
         EntryMap _entries;

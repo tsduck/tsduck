@@ -35,6 +35,32 @@
 #include "tsFormat.h"
 
 
+//----------------------------------------------------------------------------
+// Constructor.
+//----------------------------------------------------------------------------
+
+ts::VideoAttributes::VideoAttributes() :
+    AbstractAudioVideoAttributes(),
+    _hsize(0),
+    _vsize(0),
+    _ar_code(0),
+    _progressive(false),
+    _interlaced(false),
+    _cf_code(0),
+    _fr_num(0),
+    _fr_div(0),
+    _bitrate(0),
+    _vbv_size(0),
+    _waiting(false),
+    _sh_hsize(0),
+    _sh_vsize(0),
+    _sh_ar_code(0),
+    _sh_fr_code(0),
+    _sh_bitrate(0),
+    _sh_vbv_size(0)
+{
+}
+
 
 //----------------------------------------------------------------------------
 // Convert to a string object

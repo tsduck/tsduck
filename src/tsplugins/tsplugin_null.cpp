@@ -35,7 +35,6 @@
 #include "tsPlugin.h"
 
 
-
 //----------------------------------------------------------------------------
 // Plugin definition
 //----------------------------------------------------------------------------
@@ -45,15 +44,20 @@ namespace ts {
     {
     public:
         // Implementation of plugin API
-        NullInput (TSP*);
+        NullInput(TSP*);
         virtual bool start();
         virtual bool stop() {return true;}
         virtual BitRate getBitrate() {return 0;}
-        virtual size_t receive (TSPacket*, size_t);
+        virtual size_t receive(TSPacket*, size_t);
 
     private:
         PacketCounter _max_count;   // Number of packets to generate
         PacketCounter _count;       // Number of generated packets
+
+        // Inaccessible operations
+        NullInput() = delete;
+        NullInput(const NullInput&) = delete;
+        NullInput& operator=(const NullInput&) = delete;
     };
 }
 
@@ -66,7 +70,9 @@ TSPLUGIN_DECLARE_INPUT(ts::NullInput)
 //----------------------------------------------------------------------------
 
 ts::NullInput::NullInput (TSP* tsp_) :
-    InputPlugin (tsp_, "Generate null packets.", "[options] [count]")
+    InputPlugin(tsp_, "Generate null packets.", "[options] [count]"),
+    _max_count(0),
+    _count(0)
 {
     option ("",                   0,  UNSIGNED, 0, 1);
     option ("joint-termination", 'j');

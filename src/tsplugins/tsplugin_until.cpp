@@ -36,7 +36,6 @@
 #include "tsTime.h"
 
 
-
 //----------------------------------------------------------------------------
 // Plugin definition
 //----------------------------------------------------------------------------
@@ -66,6 +65,11 @@ namespace ts {
         bool           _started;          // First packet was received
         bool           _terminated;       // Final condition is met
         bool           _transparent;      // Pass all packets, no longer check conditions
+
+        // Inaccessible operations
+        UntilPlugin() = delete;
+        UntilPlugin(const UntilPlugin&) = delete;
+        UntilPlugin& operator=(const UntilPlugin&) = delete;
     };
 }
 
@@ -78,7 +82,20 @@ TSPLUGIN_DECLARE_PROCESSOR(ts::UntilPlugin)
 //----------------------------------------------------------------------------
 
 ts::UntilPlugin::UntilPlugin (TSP* tsp_) :
-    ProcessorPlugin (tsp_, "Copy packets until one of the specified conditions is met.", "[options]")
+    ProcessorPlugin(tsp_, "Copy packets until one of the specified conditions is met.", "[options]"),
+    _exclude_last(false),
+    _pack_max(0),
+    _pack_cnt(0),
+    _unit_start_max(0),
+    _unit_start_cnt(0),
+    _null_seq_max(0),
+    _null_seq_cnt(0),
+    _msec_max(0),
+    _start_time(Time::Epoch),
+    _previous_pid(PID_NULL),
+    _started(false),
+    _terminated(false),
+    _transparent(false)
 {
     option ("bytes",               'b', UNSIGNED);
     option ("exclude-last",        'e');

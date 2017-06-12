@@ -75,6 +75,11 @@ namespace ts {
         // Process specific tables
         void processPAT (const PAT&);
         void processNIT (const NIT&);
+
+        // Inaccessible operations
+        NITScanPlugin() = delete;
+        NITScanPlugin(const NITScanPlugin&) = delete;
+        NITScanPlugin& operator=(const NITScanPlugin&) = delete;
     };
 }
 
@@ -87,9 +92,19 @@ TSPLUGIN_DECLARE_PROCESSOR(ts::NITScanPlugin)
 //----------------------------------------------------------------------------
 
 ts::NITScanPlugin::NITScanPlugin (TSP* tsp_) :
-    ProcessorPlugin (tsp_, "Analyze the NIT and output a list of tuning information.", "[options]"),
-    _output (0),
-    _demux (this)
+    ProcessorPlugin(tsp_, "Analyze the NIT and output a list of tuning information.", "[options]"),
+    _output_name(),
+    _output_stream(),
+    _output(0),
+    _comment_prefix(),
+    _use_comment(false),
+    _terminate(false),
+    _dvb_options(false),
+    _no_nit(false),
+    _all_nits(false),
+    _nit_pid(PID_NIT),
+    _nit_count(0),
+    _demux(this)
 {
     option ("all-nits",    'a');
     option ("comment",     'c', STRING, 0, 1, 0, 0, true);
@@ -234,6 +249,10 @@ void ts::NITScanPlugin::handleTable (SectionDemux& demux, const BinaryTable& tab
                     processNIT (nit);
                 }
             }
+            break;
+        }
+
+        default: {
             break;
         }
     }

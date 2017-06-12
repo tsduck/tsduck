@@ -35,7 +35,6 @@
 #include "tsPlugin.h"
 
 
-
 //----------------------------------------------------------------------------
 // Plugin definition
 //----------------------------------------------------------------------------
@@ -56,6 +55,11 @@ namespace ts {
         int _opt_inpkt;   // inpkt parameter
         int _in_count;    // Input packet count (0 to inpkt)
         int _rem_count;   // Current number of packets to remove
+
+        // Inaccessible operations
+        ReducePlugin() = delete;
+        ReducePlugin(const ReducePlugin&) = delete;
+        ReducePlugin& operator=(const ReducePlugin&) = delete;
     };
 }
 
@@ -68,7 +72,11 @@ TSPLUGIN_DECLARE_PROCESSOR(ts::ReducePlugin)
 //----------------------------------------------------------------------------
 
 ts::ReducePlugin::ReducePlugin (TSP* tsp_) :
-    ProcessorPlugin (tsp_, "Reduce the TS bitrate by removing stuffing packets.", "[options] rempkt inpkt")
+    ProcessorPlugin(tsp_, "Reduce the TS bitrate by removing stuffing packets.", "[options] rempkt inpkt"),
+    _opt_rempkt(0),
+    _opt_inpkt(0),
+    _in_count(0),
+    _rem_count(0)
 {
     option ("", 0, POSITIVE, 2, 2);
 

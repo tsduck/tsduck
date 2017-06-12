@@ -35,7 +35,6 @@
 #include "tsduck.h"
 
 
-
 //----------------------------------------------------------------------------
 // Plugin definition
 //----------------------------------------------------------------------------
@@ -45,11 +44,17 @@ namespace ts {
     {
     public:
         // Implementation of plugin API
-        GenericPlugin (TSP*);
+        GenericPlugin(TSP*);
         virtual bool start();
         virtual bool stop();
         virtual BitRate getBitrate();
-        virtual Status processPacket (TSPacket&, bool&, bool&);
+        virtual Status processPacket(TSPacket&, bool&, bool&);
+
+    private:
+        // Inaccessible operations
+        GenericPlugin() = delete;
+        GenericPlugin(const GenericPlugin&) = delete;
+        GenericPlugin& operator=(const GenericPlugin&) = delete;
     };
 }
 
@@ -61,16 +66,16 @@ TSPLUGIN_DECLARE_PROCESSOR(ts::GenericPlugin)
 // Constructor
 //----------------------------------------------------------------------------
 
-ts::GenericPlugin::GenericPlugin (TSP* tsp_) :
-    ProcessorPlugin (tsp_, "Generic packet processor.", "[options]")
+ts::GenericPlugin::GenericPlugin(TSP* tsp_) :
+    ProcessorPlugin(tsp_, "Generic packet processor.", "[options]")
 {
-    setHelp ("Options:\n"
-             "\n"
-             "  --help\n"
-             "      Display this help text.\n"
-             "\n"
-             "  --version\n"
-             "      Display the version number.\n");
+    setHelp("Options:\n"
+            "\n"
+            "  --help\n"
+            "      Display this help text.\n"
+            "\n"
+            "  --version\n"
+            "      Display the version number.\n");
 }
 
 
@@ -108,7 +113,7 @@ ts::BitRate ts::GenericPlugin::getBitrate()
 // Packet processing method
 //----------------------------------------------------------------------------
 
-ts::ProcessorPlugin::Status ts::GenericPlugin::processPacket (TSPacket& pkt, bool& flush, bool& bitrate_changed)
+ts::ProcessorPlugin::Status ts::GenericPlugin::processPacket(TSPacket& pkt, bool& flush, bool& bitrate_changed)
 {
     return TSP_OK;
 }

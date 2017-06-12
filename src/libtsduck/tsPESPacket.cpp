@@ -35,28 +35,95 @@
 
 
 //----------------------------------------------------------------------------
-// Helper for constructors
+// Default constructor.
 //----------------------------------------------------------------------------
 
-void ts::PESPacket::initialize (PID pid)
+ts::PESPacket::PESPacket() :
+    _is_valid(false),
+    _header_size(0),
+    _source_pid(PID_NULL),
+    _first_pkt(0),
+    _last_pkt(0),
+    _data()
 {
-    // Initially invalid
-    _is_valid = false;
-    _header_size = 0;
-    _source_pid = pid;
-    _first_pkt = 0;
-    _last_pkt = 0;
-    _data = 0;
 }
 
 
 //----------------------------------------------------------------------------
-// Helper for constructors
+// Copy constructor. The packet content is either shared or copied.
 //----------------------------------------------------------------------------
 
-void ts::PESPacket::initialize (const ByteBlockPtr& bbp, PID pid)
+ts::PESPacket::PESPacket(const PESPacket& pp, CopyShare mode) :
+    _is_valid(pp._is_valid),
+    _header_size(pp._header_size),
+    _source_pid(pp._source_pid),
+    _first_pkt(pp._first_pkt),
+    _last_pkt(pp._last_pkt),
+    _data()
 {
-    initialize (pid);
+    switch (mode) {
+        case SHARE:
+            _data = pp._data;
+            break;
+        case COPY:
+            _data = pp._is_valid ? new ByteBlock (*pp._data) : 0;
+            break;
+        default:
+            // should not get there
+            assert (false);
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Constructors from binary content.
+//----------------------------------------------------------------------------
+
+ts::PESPacket::PESPacket(const void* content, size_t content_size, PID source_pid) :
+    _is_valid(false),
+    _header_size(0),
+    _source_pid(source_pid),
+    _first_pkt(0),
+    _last_pkt(0),
+    _data()
+{
+    initialize(new ByteBlock(content, content_size));
+}
+
+ts::PESPacket::PESPacket(const ByteBlock& content, PID source_pid) :
+    _is_valid(false),
+    _header_size(0),
+    _source_pid(source_pid),
+    _first_pkt(0),
+    _last_pkt(0),
+    _data()
+{
+    initialize(new ByteBlock(content));
+}
+
+ts::PESPacket::PESPacket(const ByteBlockPtr& content_ptr, PID source_pid) :
+    _is_valid(false),
+    _header_size(0),
+    _source_pid(source_pid),
+    _first_pkt(0),
+    _last_pkt(0),
+    _data()
+{
+    initialize(content_ptr);
+}
+
+
+//----------------------------------------------------------------------------
+// Initialize from a binary content.
+//----------------------------------------------------------------------------
+
+void ts::PESPacket::initialize (const ByteBlockPtr& bbp)
+{
+    _is_valid = false;
+    _header_size = 0;
+    _first_pkt = 0;
+    _last_pkt = 0;
+    _data = 0;
 
     if (bbp.isNull()) {
         return;
@@ -75,7 +142,7 @@ void ts::PESPacket::initialize (const ByteBlockPtr& bbp, PID pid)
     }
 
     // Packet structure depends on stream_id
-    if (IsLongHeaderSID (data[3])) {
+    if (IsLongHeaderSID(data[3])) {
         // Header size
         if (size < 9) {
             return;
@@ -97,28 +164,15 @@ void ts::PESPacket::initialize (const ByteBlockPtr& bbp, PID pid)
 
 
 //----------------------------------------------------------------------------
-// Copy constructor. The packet content is either shared or copied.
+// Clear packet content.
 //----------------------------------------------------------------------------
 
-ts::PESPacket::PESPacket (const PESPacket& pp, CopyShare mode) :
-    _is_valid (pp._is_valid),
-    _header_size (pp._header_size),
-    _source_pid (pp._source_pid),
-    _first_pkt (pp._first_pkt),
-    _last_pkt (pp._last_pkt),
-    _data ()
+void ts::PESPacket::clear()
 {
-    switch (mode) {
-        case SHARE:
-            _data = pp._data;
-            break;
-        case COPY:
-            _data = pp._is_valid ? new ByteBlock (*pp._data) : 0;
-            break;
-        default:
-            // should not get there
-            assert (false);
-    }
+    _is_valid = false;
+    _header_size = 0;
+    _source_pid = PID_NULL;
+    _data.clear();
 }
 
 

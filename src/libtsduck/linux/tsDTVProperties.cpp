@@ -46,11 +46,10 @@ const uint32_t ts::DTVProperties::UNKNOWN;
 // Constructor
 //-----------------------------------------------------------------------------
 
-ts::DTVProperties::DTVProperties()
+ts::DTVProperties::DTVProperties() :
+    _prop_head({ 0, _prop_buffer})
 {
-    ::memset (_prop_buffer, 0xFF, sizeof (_prop_buffer));
-    _prop_head.num = 0;
-    _prop_head.props = _prop_buffer;
+    ::memset(_prop_buffer, 0xFF, sizeof(_prop_buffer));
 }
 
 

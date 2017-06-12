@@ -45,7 +45,6 @@
 #include "tsNIT.h"
 
 
-
 //----------------------------------------------------------------------------
 // Plugin definition
 //----------------------------------------------------------------------------
@@ -64,7 +63,7 @@ namespace ts {
     private:
         bool              _abort;          // Error (service not found, etc)
         bool              _pat_found;      // PAT was found, ready to pass packets
-        uint16_t            _ts_id;          // Tranport stream id
+        uint16_t          _ts_id;          // Tranport stream id
         Service           _new_service;    // New service name & id
         Service           _old_service;    // Old service name & id
         bool              _ignore_bat;     // Do not modify the BAT
@@ -84,6 +83,11 @@ namespace ts {
         void processSDT (SDT&);
         void processNITBAT (AbstractTransportListTable&);
         void processNITBATDescriptorList (DescriptorList&);
+
+        // Inaccessible operations
+        SVRenamePlugin() = delete;
+        SVRenamePlugin(const SVRenamePlugin&) = delete;
+        SVRenamePlugin& operator=(const SVRenamePlugin&) = delete;
     };
 }
 
@@ -96,17 +100,19 @@ TSPLUGIN_DECLARE_PROCESSOR(ts::SVRenamePlugin)
 //----------------------------------------------------------------------------
 
 ts::SVRenamePlugin::SVRenamePlugin (TSP* tsp_) :
-    ProcessorPlugin (tsp_, "Rename a service, assign a new service name and/or new service id.", "[options] service"),
-    _abort (false),
-    _new_service (),
-    _old_service (),
-    _ignore_bat (false),
-    _ignore_nit (false),
-    _demux (this),
-    _pzer_pat (PID_PAT, CyclingPacketizer::ALWAYS),
-    _pzer_pmt (PID_NULL, CyclingPacketizer::ALWAYS),
-    _pzer_sdt_bat (PID_SDT, CyclingPacketizer::ALWAYS),
-    _pzer_nit (PID_NIT, CyclingPacketizer::ALWAYS)
+    ProcessorPlugin(tsp_, "Rename a service, assign a new service name and/or new service id.", "[options] service"),
+    _abort(false),
+    _pat_found(false),
+    _ts_id(0),
+    _new_service(),
+    _old_service(),
+    _ignore_bat(false),
+    _ignore_nit(false),
+    _demux(this),
+    _pzer_pat(PID_PAT, CyclingPacketizer::ALWAYS),
+    _pzer_pmt(PID_NULL, CyclingPacketizer::ALWAYS),
+    _pzer_sdt_bat(PID_SDT, CyclingPacketizer::ALWAYS),
+    _pzer_nit(PID_NIT, CyclingPacketizer::ALWAYS)
 {
     option ("",                0,  STRING, 1, 1);
     option ("free-ca-mode",   'f', INTEGER, 0, 1, 0, 1);
@@ -325,6 +331,10 @@ void ts::SVRenamePlugin::handleTable (SectionDemux& demux, const BinaryTable& ta
             // NIT Other are passed unmodified
             _pzer_nit.removeSections (TID_NIT_OTH, table.tableIdExtension());
             _pzer_nit.addTable (table);
+            break;
+        }
+
+        default: {
             break;
         }
     }

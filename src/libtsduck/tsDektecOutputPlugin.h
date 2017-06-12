@@ -59,8 +59,9 @@ namespace ts {
         virtual bool send(const TSPacket*, size_t);
         virtual BitRate getBitrate();
 
-#if !defined(TS_NO_DTAPI)
     private:
+
+#if !defined(TS_NO_DTAPI)
         class Guts;
         Guts* _guts;
 
@@ -75,5 +76,10 @@ namespace ts {
         // Set modulation parameters (modulators only). Return true on success, false on error.
         bool setModulation(int& modulation_type);
 #endif
+
+        // Inaccessible operations
+        DektecOutputPlugin() = delete;
+        DektecOutputPlugin(const DektecOutputPlugin&) = delete;
+        DektecOutputPlugin& operator=(const DektecOutputPlugin&) = delete;
     };
 }

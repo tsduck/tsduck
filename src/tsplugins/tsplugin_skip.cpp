@@ -35,7 +35,6 @@
 #include "tsPlugin.h"
 
 
-
 //----------------------------------------------------------------------------
 // Plugin definition
 //----------------------------------------------------------------------------
@@ -54,6 +53,11 @@ namespace ts {
     private:
         PacketCounter skip_count;
         bool          use_stuffing;
+
+        // Inaccessible operations
+        SkipPlugin() = delete;
+        SkipPlugin(const SkipPlugin&) = delete;
+        SkipPlugin& operator=(const SkipPlugin&) = delete;
     };
 }
 
@@ -66,8 +70,9 @@ TSPLUGIN_DECLARE_PROCESSOR(ts::SkipPlugin)
 //----------------------------------------------------------------------------
 
 ts::SkipPlugin::SkipPlugin (TSP* tsp_) :
-    ProcessorPlugin (tsp_, "Skip leading TS packets of a stream.", "[options] count"),
-    skip_count (0)
+    ProcessorPlugin(tsp_, "Skip leading TS packets of a stream.", "[options] count"),
+    skip_count(0),
+    use_stuffing(false)
 {
     option ("",          0, UNSIGNED, 1, 1);
     option ("stuffing", 's');

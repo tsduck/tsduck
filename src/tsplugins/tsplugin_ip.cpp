@@ -39,7 +39,6 @@
 #include "tsDecimal.h"
 #include "tsTime.h"
 
-
 // Grouping TS packets in UDP packets
 
 #define DEF_PACKET_BURST     7  // 1316 B, fits (with headers) in Ethernet MTU
@@ -58,12 +57,12 @@ namespace ts {
     {
     public:
         // Implementation of plugin API
-        IPInput (TSP*);
+        IPInput(TSP*);
         virtual ~IPInput ();
         virtual bool start();
         virtual bool stop();
         virtual BitRate getBitrate();
-        virtual size_t receive (TSPacket*, size_t);
+        virtual size_t receive(TSPacket*, size_t);
 
     private:
         UDPSocket     _sock;               // Incoming socket
@@ -78,7 +77,12 @@ namespace ts {
         PacketCounter _packets_1;          // Number of received packets since _start_1
         size_t        _inbuf_count;        // Remaining TS packets in inbuf
         size_t        _inbuf_next;         // Index in inbuf of next TS packet to return
-        uint8_t         _inbuf[MAX_IP_SIZE]; // Input buffer
+        uint8_t       _inbuf[MAX_IP_SIZE]; // Input buffer
+
+        // Inaccessible operations
+        IPInput() = delete;
+        IPInput(const IPInput&) = delete;
+        IPInput& operator=(const IPInput&) = delete;
     };
 
     // Output plugin
@@ -96,7 +100,12 @@ namespace ts {
     private:
         UDPSocket _sock;        // Outgoing socket
         size_t    _pkt_burst;   // Number of TS packets per UDP message
-    };
+
+        // Inaccessible operations
+        IPOutput() = delete;
+        IPOutput(const IPOutput&) = delete;
+        IPOutput& operator=(const IPOutput&) = delete;
+     };
 }
 
 TSPLUGIN_DECLARE_VERSION
@@ -109,10 +118,20 @@ TSPLUGIN_DECLARE_OUTPUT(ts::IPOutput)
 //----------------------------------------------------------------------------
 
 ts::IPInput::IPInput (TSP* tsp_) :
-    InputPlugin (tsp_, "Receive TS packets from UDP/IP, multicast or unicast.", "[options] [address:]port"),
-    _sock (false, *tsp_),
-    _inbuf_count (0),
-    _inbuf_next (0)
+    InputPlugin(tsp_, "Receive TS packets from UDP/IP, multicast or unicast.", "[options] [address:]port"),
+    _sock(false, *tsp_),
+    _eval_time(0),
+    _display_time(0),
+    _next_display(Time::Epoch),
+    _start(Time::Epoch),
+    _packets(0),
+    _start_0(Time::Epoch),
+    _packets_0(0),
+    _start_1(Time::Epoch),
+    _packets_1(0),
+    _inbuf_count(0),
+    _inbuf_next(0),
+    _inbuf()
 {
     option ("",                     0,  STRING, 1, 1);
     option ("buffer-size",         'b', UNSIGNED);
@@ -170,9 +189,9 @@ ts::IPInput::IPInput (TSP* tsp_) :
 //----------------------------------------------------------------------------
 
 ts::IPOutput::IPOutput (TSP* tsp_) :
-    OutputPlugin (tsp_, "Send TS packets using UDP/IP, multicast or unicast.", "[options] address:port"),
-    _sock (false, *tsp_),
-    _pkt_burst (DEF_PACKET_BURST)
+    OutputPlugin(tsp_, "Send TS packets using UDP/IP, multicast or unicast.", "[options] address:port"),
+    _sock(false, *tsp_),
+    _pkt_burst(DEF_PACKET_BURST)
 {
     option ("",               0,  STRING, 1, 1);
     option ("local-address", 'l', STRING);

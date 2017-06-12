@@ -42,10 +42,17 @@
 //----------------------------------------------------------------------------
 
 ts::ForkPipe::ForkPipe() :
-    _is_open (false),
-    _synchronous (false),
-    _ignore_abort (false),
-    _broken_pipe (false)
+    _is_open(false),
+    _synchronous(false),
+    _ignore_abort(false),
+    _broken_pipe(false),
+#if defined(__windows)
+    _handle(INVALID_HANDLE_VALUE),
+    _process(INVALID_HANDLE_VALUE)
+#else
+    _fpid(0),
+    _fd(-1)
+#endif
 {
     // We will handle broken-pipe errors, don't kill us for that.
     IgnorePipeSignal();

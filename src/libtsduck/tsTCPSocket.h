@@ -61,18 +61,12 @@ namespace ts {
         //!
         //! Constructor.
         //!
-        TCPSocket() :
-            _sock(TS_SOCKET_T_INVALID)
-        {
-        }
+        TCPSocket();
 
         //!
         //! Destructor.
         //!
-        virtual ~TCPSocket()
-        {
-            close(NULLREP);
-        }
+        virtual ~TCPSocket();
 
         //!
         //! Open the socket.

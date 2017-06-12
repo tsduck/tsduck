@@ -40,8 +40,16 @@
 //----------------------------------------------------------------------------
 
 ts::EnhancedAC3Descriptor::EnhancedAC3Descriptor() :
-    AbstractDescriptor (DID_ENHANCED_AC3),
-    mixinfoexists (false)
+    AbstractDescriptor(DID_ENHANCED_AC3),
+    component_type(),
+    bsid(),
+    mainid(),
+    asvc(),
+    mixinfoexists(false),
+    substream1(),
+    substream2(),
+    substream3(),
+    additional_info()
 {
     _is_valid = true;
 }
@@ -52,8 +60,16 @@ ts::EnhancedAC3Descriptor::EnhancedAC3Descriptor() :
 //----------------------------------------------------------------------------
 
 ts::EnhancedAC3Descriptor::EnhancedAC3Descriptor (const Descriptor& desc) :
-    AbstractDescriptor (DID_ENHANCED_AC3),
-    mixinfoexists (false)
+    AbstractDescriptor(DID_ENHANCED_AC3),
+    component_type(),
+    bsid(),
+    mainid(),
+    asvc(),
+    mixinfoexists(false),
+    substream1(),
+    substream2(),
+    substream3(),
+    additional_info()
 {
     deserialize (desc);
 }

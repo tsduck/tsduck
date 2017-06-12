@@ -44,11 +44,11 @@ namespace ts {
     public:
         //!
         //! Default constructor.
-        //! @param [in] version Table version number.
-        //! @param [in] is_current True if table is current, false if table is next.
+        //! @param [in] vers Table version number.
+        //! @param [in] cur True if table is current, false if table is next.
         //!
-        TSDT(uint8_t version = 0, bool is_current = true) :
-            AbstractDescriptorsTable(TID_TSDT, 0xFFFF, version, is_current)
+        TSDT(uint8_t vers = 0, bool cur = true) :
+            AbstractDescriptorsTable(TID_TSDT, 0xFFFF, vers, cur)
         {
         }
 

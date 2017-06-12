@@ -36,7 +36,6 @@
 #include "tsPSILogger.h"
 
 
-
 //----------------------------------------------------------------------------
 // Plugin definition
 //----------------------------------------------------------------------------
@@ -55,6 +54,11 @@ namespace ts {
     private:
         PSILoggerPtr     _logger;
         PSILoggerOptions _logger_options;
+
+        // Inaccessible operations
+        PSIPlugin() = delete;
+        PSIPlugin(const PSIPlugin&) = delete;
+        PSIPlugin& operator=(const PSIPlugin&) = delete;
     };
 }
 

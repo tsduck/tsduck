@@ -49,13 +49,16 @@ struct Options: public Args
 {
     Options (int argc, char *argv[]);
 
-    uint32_t      dump_flags;  // Dump options for Hexa and Packet::dump
+    uint32_t    dump_flags;  // Dump options for Hexa and Packet::dump
     bool        raw_file;    // Raw dump of file, not TS packets
     std::string infile;      // Input file name
 };
 
 Options::Options (int argc, char *argv[]) :
-    Args ("MPEG Transport Stream Packet Dump Utility.", "[options] [filename]")
+    Args("MPEG Transport Stream Packet Dump Utility.", "[options] [filename]"),
+    dump_flags(0),
+    raw_file(false),
+    infile()
 {
     option ("",              0,  Args::STRING, 0, 1);
     option ("ascii",        'a');

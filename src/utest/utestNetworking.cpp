@@ -49,6 +49,7 @@
 class NetworkingTest: public CppUnit::TestFixture
 {
 public:
+    NetworkingTest();
     void setUp();
     void tearDown();
     void testIPAddressConstructors();
@@ -79,6 +80,12 @@ CPPUNIT_TEST_SUITE_REGISTRATION(NetworkingTest);
 //----------------------------------------------------------------------------
 // Initialization.
 //----------------------------------------------------------------------------
+
+// Constructor.
+NetworkingTest::NetworkingTest() :
+    _previousSeverity(0)
+{
+}
 
 // Test suite initialization method.
 void NetworkingTest::setUp()

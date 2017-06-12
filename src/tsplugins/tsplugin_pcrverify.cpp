@@ -57,14 +57,21 @@ namespace ts {
         // Description of one PID
         struct PIDContext
         {
-            uint64_t        last_pcr_value;   // Last PCR value in this PID
+            uint64_t      last_pcr_value;   // Last PCR value in this PID
             PacketCounter last_pcr_packet;  // Packet index containing last PCR
+
+            // Constructor
+            PIDContext() :
+                last_pcr_value(0),
+                last_pcr_packet(0)
+            {
+            }
         };
 
         // PCRVerifyPlugin private members
         bool          _absolute;         // Use PCR absolute value, not micro-second
         BitRate       _bitrate;          // Expected bitrate (0 if unknown)
-        int64_t         _jitter_max;       // Max jitter in PCR units
+        int64_t       _jitter_max;       // Max jitter in PCR units
         bool          _time_stamp;       // Display time stamps
         PIDSet        _pid_list;         // Array of pid values to filter
         PacketCounter _packet_count;     // Global packets count
@@ -77,13 +84,18 @@ namespace ts {
         static const int64_t PCR_PER_MICRO_SEC = int64_t (SYSTEM_CLOCK_FREQ) / MicroSecPerSec;
         static const int64_t DEFAULT_JITTER_MAX_US = 1000; // 1000 us = 1 ms
         static const int64_t DEFAULT_JITTER_MAX = DEFAULT_JITTER_MAX_US * PCR_PER_MICRO_SEC;
+
+        // Inaccessible operations
+        PCRVerifyPlugin() = delete;
+        PCRVerifyPlugin(const PCRVerifyPlugin&) = delete;
+        PCRVerifyPlugin& operator=(const PCRVerifyPlugin&) = delete;
     };
 }
 
 TSPLUGIN_DECLARE_VERSION
 TSPLUGIN_DECLARE_PROCESSOR(ts::PCRVerifyPlugin)
 
-#if defined (TS_NEED_STATIC_CONST_DEFINITIONS)
+#if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
 const int64_t ts::PCRVerifyPlugin::PCR_PER_MICRO_SEC;
 const int64_t ts::PCRVerifyPlugin::DEFAULT_JITTER_MAX_US;
 const int64_t ts::PCRVerifyPlugin::DEFAULT_JITTER_MAX;
@@ -95,7 +107,17 @@ const int64_t ts::PCRVerifyPlugin::DEFAULT_JITTER_MAX;
 //----------------------------------------------------------------------------
 
 ts::PCRVerifyPlugin::PCRVerifyPlugin (TSP* tsp_) :
-    ProcessorPlugin (tsp_, "Verify PCR's from TS packets.", "[options]")
+    ProcessorPlugin(tsp_, "Verify PCR's from TS packets.", "[options]"),
+    _absolute(false),
+    _bitrate(0),
+    _jitter_max(0),
+    _time_stamp(false),
+    _pid_list(),
+    _packet_count(0),
+    _nb_pcr_ok(0),
+    _nb_pcr_nok(0),
+    _nb_pcr_unchecked(0),
+    _stats()
 {
     option ("absolute",   'a');
     option ("bitrate",    'b', POSITIVE);

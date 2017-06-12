@@ -59,7 +59,12 @@ struct Options: public Args
 };
 
 Options::Options (int argc, char *argv[]) :
-    Args ("MPEG Transport Stream Time (TDT/TOT) Extraction Utility.", "[options] [filename]")
+    Args("MPEG Transport Stream Time (TDT/TOT) Extraction Utility.", "[options] [filename]"),
+    no_tdt(false),
+    no_tot(false),
+    all(false),
+    verbose(false),
+    infile()
 {
     option ("",         0, Args::STRING, 0, 1);
     option ("all",     'a');

@@ -52,12 +52,17 @@ namespace ts {
         virtual Status processPacket (TSPacket&, bool&, bool&);
 
     private:
-        uint16_t _pid;             // Target PID
-        int    _opt_addpkt;      // addpkt in addpkt/inpkt parameter
-        int    _opt_inpkt;       // inpkt in addpkt/inpkt parameter
-        uint8_t  _next_cc;         // Current continuity counter in PID
-        int    _in_count;        // Input packet countdown for next insertion 
-        int    _add_count;       // Current number of packets to add
+        uint16_t _pid;         // Target PID
+        int      _opt_addpkt;  // addpkt in addpkt/inpkt parameter
+        int      _opt_inpkt;   // inpkt in addpkt/inpkt parameter
+        uint8_t  _next_cc;     // Current continuity counter in PID
+        int      _in_count;    // Input packet countdown for next insertion 
+        int      _add_count;   // Current number of packets to add
+
+        // Inaccessible operations
+        BoostPIDPlugin() = delete;
+        BoostPIDPlugin(const BoostPIDPlugin&) = delete;
+        BoostPIDPlugin& operator=(const BoostPIDPlugin&) = delete;
     };
 }
 
@@ -70,7 +75,13 @@ TSPLUGIN_DECLARE_PROCESSOR(ts::BoostPIDPlugin)
 //----------------------------------------------------------------------------
 
 ts::BoostPIDPlugin::BoostPIDPlugin (TSP* tsp_) :
-    ProcessorPlugin (tsp_, "Boost the bitrate of a PID, stealing stuffing packets.", "[options] pid addpkt inpkt")
+    ProcessorPlugin (tsp_, "Boost the bitrate of a PID, stealing stuffing packets.", "[options] pid addpkt inpkt"),
+    _pid(PID_NULL),
+    _opt_addpkt(0),
+    _opt_inpkt(0),
+    _next_cc(0),
+    _in_count(0),
+    _add_count(0)
 {
     option ("", 0, UNSIGNED, 3, 3);
 

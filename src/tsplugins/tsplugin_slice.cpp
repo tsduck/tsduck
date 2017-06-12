@@ -38,7 +38,6 @@
 #include "tsDecimal.h"
 
 
-
 //----------------------------------------------------------------------------
 // Plugin definition
 //----------------------------------------------------------------------------
@@ -59,7 +58,7 @@ namespace ts {
         struct SliceEvent
         {
             // Public fields
-            Status status;   // Packet status to return ...
+            Status   status;   // Packet status to return ...
             uint64_t value;    // ... after this packet or milli-second
 
             // Constructor
@@ -75,7 +74,7 @@ namespace ts {
         bool              _ignore_pcr;   // Do not use PCR's, rely on previous plugins' bitrate
         Status            _status;       // Current packet status to return
         PacketCounter     _packet_cnt;   // Packet counter
-        uint64_t            _time_factor;  // Factor to apply to get milli-seconds
+        uint64_t          _time_factor;  // Factor to apply to get milli-seconds
         const Enumeration _status_names; // Names of packet status
         PCRAnalyzer       _pcr_analyzer; // PCR analyzer for time stamping
         SliceEventVector  _events;       // Sorted list of time events to apply
@@ -83,6 +82,11 @@ namespace ts {
 
         // Add event in the list from one option.
         void addEvents (const char* option, Status status);
+
+        // Inaccessible operations
+        SlicePlugin() = delete;
+        SlicePlugin(const SlicePlugin&) = delete;
+        SlicePlugin& operator=(const SlicePlugin&) = delete;
     };
 }
 
@@ -95,8 +99,16 @@ TSPLUGIN_DECLARE_PROCESSOR(ts::SlicePlugin)
 //----------------------------------------------------------------------------
 
 ts::SlicePlugin::SlicePlugin (TSP* tsp_) :
-    ProcessorPlugin (tsp_, "Pass or drop packets based on packet numbers.", "[options]"),
-    _status_names ("pass", TSP_OK, "stop", TSP_END, "drop", TSP_DROP, "null", TSP_NULL, TS_NULL)
+    ProcessorPlugin(tsp_, "Pass or drop packets based on packet numbers.", "[options]"),
+    _use_time(false),
+    _ignore_pcr(false),
+    _status(TSP_OK),
+    _packet_cnt(0),
+    _time_factor(0),
+    _status_names("pass", TSP_OK, "stop", TSP_END, "drop", TSP_DROP, "null", TSP_NULL, TS_NULL),
+    _pcr_analyzer(),
+    _events(),
+    _next_index(0)
 {
     option ("drop",          'd', UNSIGNED, 0, UNLIMITED_COUNT);
     option ("ignore-pcr",    'i');

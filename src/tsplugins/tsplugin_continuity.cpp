@@ -37,7 +37,6 @@
 #include "tsDecimal.h"
 
 
-
 //----------------------------------------------------------------------------
 // Plugin definition
 //----------------------------------------------------------------------------
@@ -56,7 +55,12 @@ namespace ts {
     private:
         std::string   _tag;            // Message tag
         PacketCounter _packet_count;   // TS packet count
-        uint8_t         _cc[PID_MAX];    // Continuity counter by PID
+        uint8_t       _cc[PID_MAX];    // Continuity counter by PID
+
+        // Inaccessible operations
+        ContinuityPlugin() = delete;
+        ContinuityPlugin(const ContinuityPlugin&) = delete;
+        ContinuityPlugin& operator=(const ContinuityPlugin&) = delete;
     };
 }
 

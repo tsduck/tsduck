@@ -867,6 +867,10 @@ bool ts::DektecOutputPlugin::start()
             _guts->mute_on_stop = true;
             break;
         }
+        default:
+            // Unknown device.
+            modulation_type = -1;
+            break;
     }
 
     // Reset output channel
@@ -1123,6 +1127,7 @@ bool ts::DektecOutputPlugin::setModulation (int& modulation_type)
                     case PILOT_ON:  pilots = DTAPI_MOD_S2_PILOTS; break;
                     case PILOT_OFF: pilots = DTAPI_MOD_S2_NOPILOTS; break;
                     case PILOT_AUTO: break;
+                    default: break;
                 }
                 switch (input_dvbs->inner_fec) {
                     case FEC_1_2: fec = DTAPI_MOD_1_2; break;

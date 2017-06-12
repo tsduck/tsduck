@@ -37,6 +37,23 @@
 #include "tsFormat.h"
 
 
+//----------------------------------------------------------------------------
+// Default constructor.
+//----------------------------------------------------------------------------
+
+ts::TSFileOutput::TSFileOutput() :
+    _filename(),
+    _is_open(false),
+    _severity(Severity::Error),
+    _total_packets(0),
+#if defined(__windows)
+    _handle(INVALID_HANDLE_VALUE)
+#else
+    _fd(-1)
+#endif
+{
+}
+
 
 //----------------------------------------------------------------------------
 // Open method

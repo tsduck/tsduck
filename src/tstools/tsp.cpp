@@ -54,17 +54,23 @@ namespace ts {
         class TSPInterruptHandler: public InterruptHandler
         {
         public:
-            TSPInterruptHandler (AsyncReport* report, PluginExecutor* first_plugin) :
-                _report (report),
-                _first_plugin (first_plugin)
-            {
-            }
+            TSPInterruptHandler(AsyncReport* report = 0, PluginExecutor* first_plugin = 0);
             virtual void handleInterrupt();
         private:
-            AsyncReport* _report;
+            AsyncReport*    _report;
             PluginExecutor* _first_plugin;
+
+            // Inaccessible operations
+            TSPInterruptHandler(const TSPInterruptHandler&) = delete;
+            TSPInterruptHandler& operator=(const TSPInterruptHandler&) = delete;
         };
     }
+}
+
+ts::tsp::TSPInterruptHandler::TSPInterruptHandler(AsyncReport* report, PluginExecutor* first_plugin) :
+    _report(report),
+    _first_plugin(first_plugin)
+{
 }
 
 void ts::tsp::TSPInterruptHandler::handleInterrupt()

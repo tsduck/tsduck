@@ -46,12 +46,7 @@ namespace ts {
         //!
         //! Default constructor.
         //!
-        TSFileInput() :
-            _total_packets(0),
-            _is_open(false),
-            _severity(Severity::Error)
-        {
-        }
+        TSFileInput();
 
         //!
         //! Destructor.

@@ -41,7 +41,6 @@
 #include "tsMemoryUtils.h"
 
 
-
 //----------------------------------------------------------------------------
 // Plugin definition
 //----------------------------------------------------------------------------
@@ -72,7 +71,7 @@ namespace ts {
         bool            _audio_attributes;
         size_t          _max_dump_size;
         size_t          _max_dump_count;
-        uint32_t          _hexa_flags;
+        uint32_t        _hexa_flags;
         size_t          _hexa_bpl;
         int             _min_payload;    // Minimum payload size (<0: no filter)
         int             _max_payload;    // Maximum payload size (<0: no filter)
@@ -89,6 +88,11 @@ namespace ts {
         virtual void handleNewAVCAttributes (PESDemux&, const PESPacket&, const AVCAttributes&);
         virtual void handleNewAudioAttributes (PESDemux&, const PESPacket&, const AudioAttributes&);
         virtual void handleNewAC3Attributes (PESDemux&, const PESPacket&, const AC3Attributes&);
+
+        // Inaccessible operations
+        PESPlugin() = delete;
+        PESPlugin(const PESPlugin&) = delete;
+        PESPlugin& operator=(const PESPlugin&) = delete;
     };
 }
 
@@ -101,8 +105,25 @@ TSPLUGIN_DECLARE_PROCESSOR(ts::PESPlugin)
 //----------------------------------------------------------------------------
 
 ts::PESPlugin::PESPlugin (TSP* tsp_) :
-    ProcessorPlugin (tsp_, "Analyze PES packets.", "[options]"),
-    _demux (this)
+    ProcessorPlugin(tsp_, "Analyze PES packets.", "[options]"),
+    _abort(false),
+    _outfile(),
+    _trace_packets(false),
+    _trace_packet_index(false),
+    _dump_pes_header(false),
+    _dump_pes_payload(false),
+    _dump_start_code(false),
+    _dump_nal_units(false),
+    _nal_unit_filter(),
+    _video_attributes(false),
+    _audio_attributes(false),
+    _max_dump_size(0),
+    _max_dump_count(0),
+    _hexa_flags(0),
+    _hexa_bpl(0),
+    _min_payload(0),
+    _max_payload(0),
+    _demux(this)
 {
     option ("audio-attributes",    'a');
     option ("avc-access-unit",      0);
@@ -461,6 +482,9 @@ void ts::PESPlugin::handleAVCAccessUnit (PESDemux&, const PESPacket& pkt, uint8_
         case AVC_AUT_SEQPARAMS: {
             AVCSequenceParameterSet params (pkt.payload() + offset, size);
             params.display (out, "  ");
+            break;
+        }
+        default: {
             break;
         }
     }

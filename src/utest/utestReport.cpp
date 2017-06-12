@@ -44,6 +44,7 @@
 class ReportTest: public CppUnit::TestFixture
 {
 public:
+    ReportTest();
     void setUp();
     void tearDown();
     void testSeverity();
@@ -70,6 +71,12 @@ CPPUNIT_TEST_SUITE_REGISTRATION(ReportTest);
 //----------------------------------------------------------------------------
 // Initialization.
 //----------------------------------------------------------------------------
+
+// Constructor.
+ReportTest::ReportTest() :
+    _fileName()
+{
+}
 
 // Test suite initialization method.
 void ReportTest::setUp()

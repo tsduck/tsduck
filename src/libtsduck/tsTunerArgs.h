@@ -71,6 +71,11 @@ namespace ts {
         Variable<RollOff>           roll_off;           //!< Roll-off factor (DVB-S2 only).
 
         //!
+        //! Default constructor.
+        //!
+        TunerArgs();
+
+        //!
         //! Check if actual tuning information is set.
         //! @return True if actual tuning information is set.
         //!

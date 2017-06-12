@@ -71,7 +71,16 @@ struct Options: public Args
 };
 
 Options::Options (int argc, char *argv[]) :
-    Args ("MPEG Transport Stream Resynchronizer.", "[options] [filename]")
+    Args("MPEG Transport Stream Resynchronizer.", "[options] [filename]"),
+    sync_size(0),
+    contig_size(0),
+    packet_size(0),
+    header_size(0),
+    verbose(false),
+    cont_sync(false),
+    keep(false),
+    infile(),
+    outfile()
 {
     option ("",                0,  STRING, 0, 1);
     option ("continue",       'c');

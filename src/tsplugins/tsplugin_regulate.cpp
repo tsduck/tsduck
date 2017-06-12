@@ -36,7 +36,6 @@
 #include "tsMonotonic.h"
 #include "tsDecimal.h"
 
-
 #define DEF_PACKET_BURST 16
 
 
@@ -76,6 +75,11 @@ namespace ts {
 
         // Process one packet in a regulated burst. Wait at end of burst.
         Status regulatePacket (bool& flush);
+
+        // Inaccessible operations
+        RegulatePlugin() = delete;
+        RegulatePlugin(const RegulatePlugin&) = delete;
+        RegulatePlugin& operator=(const RegulatePlugin&) = delete;
     };
 }
 
@@ -88,7 +92,16 @@ TSPLUGIN_DECLARE_PROCESSOR(ts::RegulatePlugin)
 //----------------------------------------------------------------------------
 
 ts::RegulatePlugin::RegulatePlugin (TSP* tsp_) :
-    ProcessorPlugin (tsp_, "Regulate the TS packets flow to a specified bitrate.", "[options]")
+    ProcessorPlugin(tsp_, "Regulate the TS packets flow to a specified bitrate.", "[options]"),
+    _state(INITIAL),
+    _opt_bitrate(0),
+    _cur_bitrate(0),
+    _opt_burst(0),
+    _burst_pkt_max(0),
+    _burst_pkt_cnt(0),
+    _burst_min(0),
+    _burst_duration(0),
+    _burst_end()
 {
     option ("bitrate",      'b', POSITIVE);
     option ("packet-burst", 'p', POSITIVE);
@@ -224,7 +237,7 @@ ts::ProcessorPlugin::Status ts::RegulatePlugin::processPacket (TSPacket& pkt, bo
 
     switch (_state) {
 
-        case INITIAL:
+        case INITIAL: {
             // Initial state, will become either regulated or unregulated
             if (_cur_bitrate == 0) {
                 // No bitrate -> unregulated
@@ -247,8 +260,9 @@ ts::ProcessorPlugin::Status ts::RegulatePlugin::processPacket (TSPacket& pkt, bo
                 return regulatePacket (flush);
             }
             break;
+        }
 
-        case UNREGULATED:
+        case UNREGULATED: {
             // We had no bitrate, we did not regulate
             if (_cur_bitrate == 0) {
                 // Still no bitrate, transmit without regulation, remain unregulated
@@ -264,8 +278,9 @@ ts::ProcessorPlugin::Status ts::RegulatePlugin::processPacket (TSPacket& pkt, bo
                 return TSP_OK;
             }
             break;
+        }
 
-        case REGULATED:
+        case REGULATED: {
             // We previously had a bitrate and we regulated the flow.
             if (_cur_bitrate == 0) {
                 // No more bitrate, become unregulated
@@ -305,6 +320,11 @@ ts::ProcessorPlugin::Status ts::RegulatePlugin::processPacket (TSPacket& pkt, bo
                 return regulatePacket (flush);
             }
             break;
+        }
+
+        default: {
+            assert(false);
+        }
     }
 
     // Should never get there...

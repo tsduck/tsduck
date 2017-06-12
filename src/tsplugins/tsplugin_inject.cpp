@@ -37,7 +37,6 @@
 #include "tsFileNameRate.h"
 #include "tsDecimal.h"
 
-
 #define DEF_EVALUATE_INTERVAL 100
 
 
@@ -74,6 +73,11 @@ namespace ts {
         PacketCounter      _cycle_count;     // Number of insertion cycles
         CyclingPacketizer  _pzer;            // Packetizer for table
         CyclingPacketizer::StuffingPolicy _stuffing_policy;
+
+        // Inaccessible operations
+        InjectPlugin() = delete;
+        InjectPlugin(const InjectPlugin&) = delete;
+        InjectPlugin& operator=(const InjectPlugin&) = delete;
     };
 }
 
@@ -86,7 +90,24 @@ TSPLUGIN_DECLARE_PROCESSOR(ts::InjectPlugin)
 //----------------------------------------------------------------------------
 
 ts::InjectPlugin::InjectPlugin (TSP* tsp_) :
-    ProcessorPlugin (tsp_, "Inject tables and sections in a TS.", "[options] input-file[=rate] ...")
+    ProcessorPlugin(tsp_, "Inject tables and sections in a TS.", "[options] input-file[=rate] ..."),
+    _infiles(),
+    _specific_rates(false),
+    _inject_pid(PID_NULL),
+    _crc_op(CRC32::CHECK),
+    _replace(false),
+    _terminate(false),
+    _completed(false),
+    _repeat_count(0),
+    _pid_bitrate(0),
+    _pid_inter_pkt(0),
+    _pid_next_pkt(0),
+    _packet_count(0),
+    _replaced_count(0),
+    _eval_interval(0),
+    _cycle_count(0),
+    _pzer(),
+    _stuffing_policy(CyclingPacketizer::NEVER)
 {
     option ("",                   0,  STRING, 1, UNLIMITED_COUNT);
     option ("bitrate",           'b', UINT32);

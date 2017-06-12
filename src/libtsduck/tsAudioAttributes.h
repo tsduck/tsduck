@@ -46,6 +46,11 @@ namespace ts {
     class TSDUCKDLL AudioAttributes: public AbstractAudioVideoAttributes
     {
     public:
+        //!
+        //! Default constructor.
+        //!
+        AudioAttributes();
+
         // Implementation of abstract methods.
         // The "binary data" is an audio frame or PES payload.
         virtual bool moreBinaryData (const void*, size_t);

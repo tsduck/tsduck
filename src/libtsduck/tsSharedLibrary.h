@@ -59,7 +59,7 @@ namespace ts {
         //! Destructor.
         //! Unload the shared library if @a permanent was false.
         //!
-        ~SharedLibrary();
+        virtual ~SharedLibrary();
 
         //!
         //! Check if the library was successfully loaded.
