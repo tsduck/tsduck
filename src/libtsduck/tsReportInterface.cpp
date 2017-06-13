@@ -86,10 +86,6 @@ std::string ts::Severity::Header(int severity)
                 return "";
         }
     }
-
-    // should not get there
-    assert(false);
-    return "";
 }
 
 
