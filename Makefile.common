@@ -617,8 +617,9 @@ CXXFLAGS_INCLUDES += $(CFLAGS_INCLUDES)
 
 # Always use maximal or even paranoid warning mode.
 COMMON_WARNINGS   = -Werror -Wall -Wextra -Wpedantic -Wformat-nonliteral -Wformat-security -Wswitch-default \
-                    -Wuninitialized -Wshadow -Wno-unused-parameter
-CFLAGS_WARNINGS   = $(COMMON_WARNINGS) -Wstrict-prototypes -Wmissing-prototypes -Winit-self
+                    -Wuninitialized -Wshadow -Wno-unused-parameter -Wfloat-equal -Wundef -Wpointer-arith -Wcast-align
+CFLAGS_WARNINGS   = $(COMMON_WARNINGS) -Wstrict-prototypes -Wmissing-prototypes -Winit-self -Wtraditional \
+                    -Wbad-function-cast -Wc++-compat
 CXXFLAGS_WARNINGS = $(COMMON_WARNINGS) -Woverloaded-virtual -Wctor-dtor-privacy -Wnon-virtual-dtor -Weffc++ \
                     -Woverloaded-virtual -Wsign-promo
 ifdef MACOS
@@ -630,8 +631,9 @@ else
 endif
 
 # Compilation flags for security.
-CFLAGS_SECURITY = -fstack-protector-all
-CXXFLAGS_SECURITY = $(CFLAGS_SECURITY)
+COMMON_SECURITY   = -fstack-protector-all
+CFLAGS_SECURITY   = $(COMMON_SECURITY)
+CXXFLAGS_SECURITY = $(COMMON_SECURITY)
 
 # Compilation flags in debug mode.
 ifdef DEBUG

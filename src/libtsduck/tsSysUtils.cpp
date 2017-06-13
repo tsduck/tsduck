@@ -567,12 +567,12 @@ std::string ts::ErrorCodeMessage (ts::ErrorCode code)
     bool found;
 
     TS_ZERO(message);
-#if defined (__windows)
+#if defined(__windows)
     // Windows implementation
     ::DWORD length = ::FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM, NULL, code, 0, message, sizeof(message), NULL);
     found = length > 0;
     result = message;
-#elif HAVE_INT_STRERROR_R
+#elif defined(HAVE_INT_STRERROR_R)
     // POSIX version, strerror_r returns int
     found = 0 == strerror_r(code, message, sizeof(message));
     result = message;
