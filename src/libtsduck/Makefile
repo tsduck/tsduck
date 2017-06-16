@@ -76,13 +76,13 @@ default: tsduck.h libs
 # Specific (per-module) compilation options:
 
 $(OBJDIR)/tsAES.o:        CFLAGS_OPTIMIZE = $(CFLAGS_FULLSPEED)
-$(OBJDIR)/tsScrambling.o: CFLAGS_OPTIMIZE = $(CFLAGS_FULLSPEED)
 $(OBJDIR)/tsDES.o:        CFLAGS_OPTIMIZE = $(CFLAGS_FULLSPEED)
 $(OBJDIR)/tsTDES.o:       CFLAGS_OPTIMIZE = $(CFLAGS_FULLSPEED)
 $(OBJDIR)/tsSHA1.o:       CFLAGS_OPTIMIZE = $(CFLAGS_FULLSPEED)
 $(OBJDIR)/tsSHA256.o:     CFLAGS_OPTIMIZE = $(CFLAGS_FULLSPEED)
 $(OBJDIR)/tsSHA512.o:     CFLAGS_OPTIMIZE = $(CFLAGS_FULLSPEED)
 $(OBJDIR)/tsMD5.o:        CFLAGS_OPTIMIZE = $(CFLAGS_FULLSPEED)
+$(OBJDIR)/tsScrambling.o: CFLAGS_OPTIMIZE = $(CFLAGS_FULLSPEED)
 
 # Dektec code is encapsulated into the TSDuck library.
 
