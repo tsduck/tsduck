@@ -35,13 +35,12 @@
 #include "tsSysUtils.h"
 
 
-
 //----------------------------------------------------------------------------
 // Extension of shared library file names
 //----------------------------------------------------------------------------
 
 const char* const ts::SharedLibrary::Extension =
-#if defined (__windows)
+#if defined(__windows)
     ".dll";
 #else
     ".so";
@@ -52,18 +51,19 @@ const char* const ts::SharedLibrary::Extension =
 // Constructor: Load a shared library
 //----------------------------------------------------------------------------
 
-ts::SharedLibrary::SharedLibrary (const std::string& filename, bool permanent) :
-    _filename (),
-    _error (),
-    _is_loaded (false),
-    _permanent (permanent),
-#if defined (__windows)
-    _module (0)
+ts::SharedLibrary::SharedLibrary(const std::string& filename, bool permanent, ReportInterface& report) :
+    _report(report),
+    _filename(),
+    _error(),
+    _is_loaded(false),
+    _permanent(permanent),
+#if defined(__windows)
+    _module(0)
 #else
-    _dl (0)
+    _dl(0)
 #endif
 {
-    load (filename);
+    load(filename);
 }
 
 
@@ -71,7 +71,7 @@ ts::SharedLibrary::SharedLibrary (const std::string& filename, bool permanent) :
 // Destructor: Unload the shared library
 //----------------------------------------------------------------------------
 
-ts::SharedLibrary::~SharedLibrary ()
+ts::SharedLibrary::~SharedLibrary()
 {
     if (!_permanent) {
         unload();
@@ -83,26 +83,27 @@ ts::SharedLibrary::~SharedLibrary ()
 // Try to load an alternate file if the shared library is not yet loaded.
 //----------------------------------------------------------------------------
 
-void ts::SharedLibrary::load (const std::string& filename)
+void ts::SharedLibrary::load(const std::string& filename)
 {
     if (_is_loaded) {
         return; // already loaded
     }
 
     _filename = filename;
+    _report.debug("trying to load " + _filename);
 
-#if defined (__windows)
-    _module = ::LoadLibraryEx (_filename.c_str(), NULL, 0);
+#if defined(__windows)
+    _module = ::LoadLibraryEx(_filename.c_str(), NULL, 0);
     _is_loaded = _module != 0;
     if (!_is_loaded) {
-        _error = ErrorCodeMessage ();
+        _error = ErrorCodeMessage();
     }
 #else
-    _dl = ::dlopen (_filename.c_str(), RTLD_NOW | RTLD_GLOBAL);
+    _dl = ::dlopen(_filename.c_str(), RTLD_NOW | RTLD_GLOBAL);
     _is_loaded = _dl != 0;
     if (!_is_loaded) {
-        const char* err (dlerror ());
-        _error = err == 0 ? "" : std::string (err);
+        const char* err(dlerror());
+        _error = err == 0 ? "" : std::string(err);
     }
 #endif
 
@@ -111,9 +112,10 @@ void ts::SharedLibrary::load (const std::string& filename)
         if (_error.empty()) {
             _error = "error loading " + filename;
         }
-        else if (_error.find (filename) == std::string::npos) {
+        else if (_error.find(filename) == std::string::npos) {
             _error = filename + ": " + _error;
         }
+        _report.debug(_error);
     }
 }
 
@@ -122,13 +124,13 @@ void ts::SharedLibrary::load (const std::string& filename)
 // Force unload, even if permanent
 //----------------------------------------------------------------------------
 
-void ts::SharedLibrary::unload ()
+void ts::SharedLibrary::unload()
 {
     if (_is_loaded) {
-#if defined (__windows)
-        ::FreeLibrary (_module);
+#if defined(__windows)
+        ::FreeLibrary(_module);
 #else
-        ::dlclose (_dl);
+        ::dlclose(_dl);
 #endif
         _is_loaded = false;
     }
@@ -139,16 +141,21 @@ void ts::SharedLibrary::unload ()
 // Get the value of a symbol. Return 0 on error.
 //----------------------------------------------------------------------------
 
-void* ts::SharedLibrary::getSymbol (const std::string& name) const
+void* ts::SharedLibrary::getSymbol(const std::string& name) const
 {
     if (!_is_loaded) {
         return 0;
     }
     else {
-#if defined (__windows)
-        return ::GetProcAddress (_module, name.c_str());
+        void* result = 0;
+#if defined(__windows)
+        result = ::GetProcAddress(_module, name.c_str());
 #else
-        return ::dlsym (_dl, name.c_str());
+        result = ::dlsym(_dl, name.c_str());
 #endif
+        if (result == 0) {
+            _report.debug("symbol " + name + " not found in " + _filename);
+        }
+        return result;
     }
 }

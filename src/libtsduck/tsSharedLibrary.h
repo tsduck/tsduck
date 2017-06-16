@@ -34,6 +34,7 @@
 
 #pragma once
 #include "tsPlatform.h"
+#include "tsNullReport.h"
 
 namespace ts {
     //!
@@ -52,8 +53,9 @@ namespace ts {
         //! @param [in] filename Shared library file name.
         //! @param [in] permanent If false (the default), the shared library is unloaded from the current process
         //! when this object is destroyed. If true, the shared library remains active.
+        //! @param [in,out] report Where to report errors.
         //!
-        SharedLibrary(const std::string& filename, bool permanent = false);
+        SharedLibrary(const std::string& filename, bool permanent = false, ReportInterface& report = NULLREP);
 
         //!
         //! Destructor.
@@ -108,6 +110,7 @@ namespace ts {
         SharedLibrary& operator=(const SharedLibrary&) = delete;
 
         // Private members
+        ReportInterface& _report;
         std::string _filename;
         std::string _error;
         bool _is_loaded;
