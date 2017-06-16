@@ -170,7 +170,7 @@ bool ts::ForkPipe::open (const std::string& command, bool synchronous, size_t bu
         // Close the now extraneous file descriptor.
         ::close (filedes[0]);
         // Execute the command. Should not return.
-        ::execl ("/bin/sh", "/bin/sh", "-c", command.c_str(), NULL);
+        ::execl ("/bin/sh", "/bin/sh", "-c", command.c_str(), TS_NULL);
         ::perror ("exec error");
         ::exit (EXIT_FAILURE);
         assert (false); // should never get there
