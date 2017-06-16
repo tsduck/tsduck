@@ -34,6 +34,7 @@
 
 #pragma once
 #include "tsSharedLibrary.h"
+#include "tsNullReport.h"
 
 namespace ts {
     //!
@@ -55,8 +56,12 @@ namespace ts {
         //! @param [in] prefix Prefix to add to @a filename if the file is not found.
         //! @param [in] permanent If false (the default), the shared library is unloaded from the current process
         //! when this object is destroyed. If true, the shared library remains active.
+        //! @param [in,out] report Where to report errors.
         //!
-        ApplicationSharedLibrary(const std::string& filename, const std::string& prefix = "", bool permanent = false);
+        ApplicationSharedLibrary(const std::string& filename,
+                                 const std::string& prefix = "",
+                                 bool permanent = false,
+                                 ReportInterface& report = NULLREP);
 
         //!
         //! The module name is derived from the file name without the prefix.

@@ -47,36 +47,36 @@
 // When the load is successful, locate tsp plugin API and check the API version.
 //----------------------------------------------------------------------------
 
-ts::PluginSharedLibrary::PluginSharedLibrary (const std::string& filename, ReportInterface& report) :
-    ApplicationSharedLibrary (filename, "tsplugin_", true),
-    new_input (0),
-    new_output (0),
-    new_processor (0)
+ts::PluginSharedLibrary::PluginSharedLibrary(const std::string& filename, ReportInterface& report) :
+    ApplicationSharedLibrary(filename, "tsplugin_", true, report),
+    new_input(0),
+    new_output(0),
+    new_processor(0)
 {
     // If still not loaded, error
     if (!isLoaded()) {
-        report.error (errorMessage());
+        report.error(errorMessage());
         return;
     }
 
     // Locate and check the API version
-    const std::string path (fileName());
-    const int* version = reinterpret_cast<const int*> (getSymbol ("tspInterfaceVersion"));
+    const std::string path(fileName());
+    const int* version = reinterpret_cast<const int*>(getSymbol("tspInterfaceVersion"));
 
     if (version == 0) {
-        report.error ("no symbol tspInterfaceVersion in " + path);
+        report.error("no symbol tspInterfaceVersion in " + path);
         unload();
         return;
     }
 
     if (*version != TSP::API_VERSION) {
-        report.error ("incompatible API version %d in %s, expected %d", *version, path.c_str(), TSP::API_VERSION);
+        report.error("incompatible API version %d in %s, expected %d", *version, path.c_str(), TSP::API_VERSION);
         unload();
         return;
     }
 
     // Load the plugin entry points
-    new_input = reinterpret_cast<NewInputProfile> (getSymbol ("tspNewInput"));
-    new_output = reinterpret_cast<NewOutputProfile> (getSymbol ("tspNewOutput"));
-    new_processor = reinterpret_cast<NewProcessorProfile> (getSymbol ("tspNewProcessor"));
+    new_input = reinterpret_cast<NewInputProfile>(getSymbol("tspNewInput"));
+    new_output = reinterpret_cast<NewOutputProfile>(getSymbol("tspNewOutput"));
+    new_processor = reinterpret_cast<NewProcessorProfile>(getSymbol("tspNewProcessor"));
 }

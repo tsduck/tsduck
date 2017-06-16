@@ -40,28 +40,31 @@
 // Constructor.
 //----------------------------------------------------------------------------
 
-ts::ApplicationSharedLibrary::ApplicationSharedLibrary (const std::string& filename, const std::string& prefix, bool permanent) :
-    SharedLibrary (filename, permanent),
-    _prefix (prefix)
+ts::ApplicationSharedLibrary::ApplicationSharedLibrary(const std::string& filename,
+                                                       const std::string& prefix,
+                                                       bool permanent,
+                                                       ReportInterface& report) :
+    SharedLibrary(filename, permanent, report),
+    _prefix(prefix)
 {
-    const std::string basename (BaseName (filename));
-    const std::string suffix (PathSuffix (filename));
-    const std::string execdir (DirectoryName (ExecutableFile()));
+    const std::string basename(BaseName(filename));
+    const std::string suffix(PathSuffix(filename));
+    const std::string execdir(DirectoryName(ExecutableFile()));
     const bool nodir = basename == filename;
 
     // If not loaded, try with standard extension
     if (!isLoaded() && suffix.empty()) {
-        load (filename + SharedLibrary::Extension);
+        load(filename + SharedLibrary::Extension);
     }
 
     // Then, try in same directory as executable
     if (!isLoaded() && nodir) {
-        load (AddPathSuffix (execdir + PathSeparator + basename, SharedLibrary::Extension));
+        load(AddPathSuffix(execdir + PathSeparator + basename, SharedLibrary::Extension));
     }
 
     // Finally, try in same directory as executable with prefix
     if (!isLoaded() && nodir) {
-        load (AddPathSuffix (execdir + PathSeparator + prefix + basename, SharedLibrary::Extension));
+        load(AddPathSuffix(execdir + PathSeparator + prefix + basename, SharedLibrary::Extension));
     }
 }
 
@@ -72,6 +75,6 @@ ts::ApplicationSharedLibrary::ApplicationSharedLibrary (const std::string& filen
 
 std::string ts::ApplicationSharedLibrary::moduleName() const
 {
-    const std::string name (PathPrefix (BaseName (fileName())));
-    return !_prefix.empty() && name.find (_prefix) == 0 ? name.substr (_prefix.size()) : name;
+    const std::string name(PathPrefix(BaseName(fileName())));
+    return !_prefix.empty() && name.find(_prefix) == 0 ? name.substr(_prefix.size()) : name;
 }
