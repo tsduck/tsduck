@@ -33,6 +33,8 @@
 
 include ../Makefile.tsduck
 
+EXTRA_DISTCLEAN += build-tsduck-*
+
 default:
 	@true
 

@@ -1,1 +1,5 @@
+# NSIS temporary file
 tsduck-tmp.nsh
+
+# QtCreator build workspace
+build-tsduck-*
