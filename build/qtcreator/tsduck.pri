@@ -31,13 +31,15 @@
 #
 #-----------------------------------------------------------------------------
 
-
 # Do not use Qt, we just use Qt Creator as a general-purpose C++ IDE.
 CONFIG *= thread
 CONFIG *= largefile
 CONFIG *= c++11
+CONFIG *= unversioned_libname
+CONFIG *= no_plugin_name_prefix
 CONFIG -= qt
 CONFIG -= debug_and_release
+CONFIG -= app_bundle
 DEFINES -= UNICODE
 
 # Define the symbol DEBUG in debug mode.
@@ -45,7 +47,7 @@ CONFIG(debug, debug|release):DEFINES += DEBUG
 
 # Project directories.
 PROJROOT = $$_PRO_FILE_PWD_/../../..
-SRCROOT = $$PROJROOT/src
+SRCROOT  = $$PROJROOT/src
 
 # Currently do not use DTAPI with Qt Creator.
 DEFINES += TS_NO_DTAPI=1
@@ -54,28 +56,41 @@ DEFINES += TS_NO_DTAPI=1
 CONFIG -= warn_off
 CONFIG *= warn_on
 
-# Make sure header files are found.
-unix:QMAKE_CXXFLAGS += -I/usr/include/PCSC
-unix:QMAKE_CXXFLAGS += -I/usr/include/PCSC
-QMAKE_CXXFLAGS += -I$$SRCROOT/libtsduck -I$$SRCROOT/libtsduck/private
-unix:QMAKE_CXXFLAGS += -I$$SRCROOT/libtsduck/linux
-INCLUDEPATH += $$SRCROOT/libtsduck $$SRCROOT/libtsduck/private
-unix:INCLUDEPATH += $$SRCROOT/libtsduck
-
-# GCC specific options.
-unix|mingw|gcc {
+# Other configuration.
+QMAKE_CXXFLAGS += -I$$SRCROOT/libtsduck
+INCLUDEPATH += $$SRCROOT/libtsduck
+linux|mac|mingw {
+    # GCC/clang options
     QMAKE_CXXFLAGS_WARN_ON = -Werror -Wall -Wextra \
-        -Wpedantic -Wformat-nonliteral -Wformat-security -Wswitch-default -Wuninitialized \
-        -Wshadow -Wno-unused-parameter -Wfloat-equal -Wundef -Wpointer-arith -Wcast-align \
-        -Woverloaded-virtual -Wctor-dtor-privacy -Wnon-virtual-dtor -Weffc++ -Woverloaded-virtual \
-        -Wsign-promo -Wstrict-null-sentinel
+        -Wpedantic -Wformat-nonliteral -Wformat-security -Wswitch-default -Wuninitialized -Wshadow \
+        -Wno-unused-parameter -Wfloat-equal -Wpointer-arith -Woverloaded-virtual -Wctor-dtor-privacy \
+        -Wnon-virtual-dtor -Weffc++ -Woverloaded-virtual -Wsign-promo
     QMAKE_CXXFLAGS += -fno-strict-aliasing -fstack-protector-all
 }
-
-# Applications using libtsduck shall use "CONFIG += libtsduck".
+linux|mingw {
+    QMAKE_CXXFLAGS_WARN_ON += -Wundef -Wcast-align -Wstrict-null-sentinel
+}
+linux {
+    QMAKE_CXXFLAGS += -I$$SRCROOT/libtsduck/linux -I/usr/include/PCSC
+    INCLUDEPATH += $$SRCROOT/libtsduck/linux
+    #@@@ QMAKE_LFLAGS_SONAME = -Wl,-soname=
+    #@@@ QMAKE_REL_RPATH_BASE = $ORIGIN
+}
+mac {
+    QMAKE_CXXFLAGS_WARN_ON += -Wno-unused-command-line-argument
+    QMAKE_CXXFLAGS += -I$$SRCROOT/libtsduck/mac -I/usr/local/include -I/usr/local/opt/pcsc-lite/include/PCSC
+    INCLUDEPATH += $$SRCROOT/libtsduck/mac
+    LIBS += -L/usr/local/lib -L/usr/local/opt/pcsc-lite/lib
+    QMAKE_EXTENSION_SHLIB = so
+}
+win32|win64 {
+    QMAKE_CXXFLAGS += -I$$SRCROOT/libtsduck/windows
+    INCLUDEPATH += $$SRCROOT/libtsduck/windows
+}
 libtsduck {
-    LIBS += -L../libtsduck -ltsduck -lpcsclite
-    PRE_TARGETDEPS += ../libtsduck/libtsduck.so
-    INCLUDEPATH += ../libtsduck
+    # Applications using libtsduck shall use "CONFIG += libtsduck".
+    LIBS += ../libtsduck/tsduck.so
+    PRE_TARGETDEPS += ../libtsduck/tsduck.so
     DEPENDPATH += ../libtsduck
 }
+LIBS += -lpcsclite
