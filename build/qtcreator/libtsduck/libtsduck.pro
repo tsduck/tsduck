@@ -1,16 +1,10 @@
+CONFIG += plugin
 include(../tsduck.pri)
 TEMPLATE = lib
 TARGET = tsduck
-
-unix {
-    HEADERS += \
-        ../../../src/libtsduck/linux/tsDTVProperties.h \
-        ../../../src/libtsduck/linux/tsSignalAllocator.h
-    SOURCES += \
-        ../../../src/libtsduck/linux/tsDTVProperties.cpp \
-        ../../../src/libtsduck/linux/tsSignalAllocator.cpp \
-        ../../../src/libtsduck/linux/tsTuner.cpp
-}
+QMAKE_CXXFLAGS += -I$$SRCROOT/libtsduck/private
+INCLUDEPATH += $$SRCROOT/libtsduck/private
+QMAKE_POST_LINK += install_name_tool -id $$OUT_PWD/tsduck.so $$OUT_PWD/tsduck.so $$escape_expand(\\n\\t)
 
 HEADERS += \
     ../../../src/libtsduck/tsAbortInterface.h \
@@ -415,3 +409,37 @@ SOURCES += \
     ../../../src/libtsduck/tsUserInterrupt.cpp \
     ../../../src/libtsduck/tsVersion.cpp \
     ../../../src/libtsduck/tsVideoAttributes.cpp
+
+linux {
+    HEADERS += \
+        ../../../src/libtsduck/linux/tsDTVProperties.h \
+        ../../../src/libtsduck/linux/tsSignalAllocator.h
+    SOURCES += \
+        ../../../src/libtsduck/linux/tsDTVProperties.cpp \
+        ../../../src/libtsduck/linux/tsSignalAllocator.cpp \
+        ../../../src/libtsduck/linux/tsTuner.cpp
+}
+
+mac {
+    SOURCES += \
+        ../../../src/libtsduck/mac/tsTuner.cpp
+}
+
+win32|win64 {
+    HEADERS += \
+        ../../../src/libtsduck/windows/tsComIds.h \
+        ../../../src/libtsduck/windows/tsComPtr.h \
+        ../../../src/libtsduck/windows/tsComUtils.h \
+        ../../../src/libtsduck/windows/tsDirectShowUtils.h \
+        ../../../src/libtsduck/windows/tsMediaTypeUtils.h \
+        ../../../src/libtsduck/windows/tsRegistryUtils.h \
+        ../../../src/libtsduck/windows/tsSinkFilter.h
+    SOURCES += \ 
+        ../../../src/libtsduck/windows/tsComIds.cpp \
+        ../../../src/libtsduck/windows/tsComUtils.cpp \
+        ../../../src/libtsduck/windows/tsDirectShowUtils.cpp \
+        ../../../src/libtsduck/windows/tsMediaTypeUtils.cpp \
+        ../../../src/libtsduck/windows/tsRegistryUtils.cpp \
+        ../../../src/libtsduck/windows/tsSinkFilter.cpp \
+        ../../../src/libtsduck/windows/tsTuner.cpp
+}
