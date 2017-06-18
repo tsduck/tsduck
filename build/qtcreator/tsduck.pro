@@ -90,4 +90,24 @@ SUBDIRS += \
     tsplugin_tsrename \
     tsplugin_until \
     tsplugin_zap \
-    utest
+    utest \
+    tsanalyze \
+    tsbitrate \
+    tscmp \
+    tsdate \
+    tsdektec \
+    tsdump \
+    tsfixcc \
+    tsftrunc \
+    tsgentab \
+    tslsdvb \
+    tsp \
+    tspacketize \
+    tspsi \
+    tsresync \
+    tsscan \
+    tssmartcard \
+    tsstuff \
+    tstabdump \
+    tstables \
+    tsterinfo
