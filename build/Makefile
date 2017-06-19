@@ -34,6 +34,7 @@
 include ../Makefile.tsduck
 
 EXTRA_DISTCLEAN += build-tsduck-*
+NORECURSE_SUBDIRS += build-tsduck-%
 
 default:
 	@true

@@ -4,7 +4,8 @@ TEMPLATE = lib
 TARGET = tsduck
 QMAKE_CXXFLAGS += -I$$SRCROOT/libtsduck/private
 INCLUDEPATH += $$SRCROOT/libtsduck/private
-QMAKE_POST_LINK += install_name_tool -id $$OUT_PWD/tsduck.so $$OUT_PWD/tsduck.so $$escape_expand(\\n\\t)
+linux:QMAKE_LFLAGS += -Wl,-soname=tsduck.so
+mac:QMAKE_POST_LINK += install_name_tool -id $$OUT_PWD/tsduck.so $$OUT_PWD/tsduck.so $$escape_expand(\\n\\t)
 
 HEADERS += \
     ../../../src/libtsduck/tsAbortInterface.h \
