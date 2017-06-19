@@ -502,7 +502,7 @@ ROOTDIR := $(abspath $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST)))))
 SUBDIRS = $(sort $(patsubst %/,%,$(wildcard */)))
 
 # List of subdirectories to ignore in make recursion.
-NORECURSE_SUBDIRS = debug release debug-% release-% Debug Release Debug-% Release-% .vs ipch %.t2d .git
+NORECURSE_SUBDIRS += debug release debug-% release-% Debug Release Debug-% Release-% .vs ipch %.t2d .git
 
 # Actual recurse order. If the user did not define RECURSE_ORDER, use all
 # subdirectories, except those for which we know there is nothing to make.

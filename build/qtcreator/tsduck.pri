@@ -73,8 +73,6 @@ linux|mingw {
 linux {
     QMAKE_CXXFLAGS += -I$$SRCROOT/libtsduck/linux -I/usr/include/PCSC
     INCLUDEPATH += $$SRCROOT/libtsduck/linux
-    #@@@ QMAKE_LFLAGS_SONAME = -Wl,-soname=
-    #@@@ QMAKE_REL_RPATH_BASE = $ORIGIN
 }
 mac {
     QMAKE_CXXFLAGS_WARN_ON += -Wno-unused-command-line-argument
@@ -89,6 +87,7 @@ win32|win64 {
 }
 libtsduck {
     # Applications using libtsduck shall use "CONFIG += libtsduck".
+    linux:QMAKE_LFLAGS += -Wl,--rpath=\'\$\$ORIGIN/../libtsduck\'
     LIBS += ../libtsduck/tsduck.so
     PRE_TARGETDEPS += ../libtsduck/tsduck.so
     DEPENDPATH += ../libtsduck
