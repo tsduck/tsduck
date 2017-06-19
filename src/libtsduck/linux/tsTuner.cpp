@@ -42,7 +42,6 @@
 #include "tsFormat.h"
 #include "tsMemoryUtils.h"
 
-
 #define MAX_OVERFLOW  8   // Maximum consecutive overflow
 
 #if defined (TS_NEED_STATIC_CONST_DEFINITIONS)
@@ -50,6 +49,53 @@ const ts::MilliSecond ts::Tuner::DEFAULT_SIGNAL_TIMEOUT;
 const ts::MilliSecond ts::Tuner::DEFAULT_SIGNAL_POLL;
 const size_t ts::Tuner::DEFAULT_DEMUX_BUFFER_SIZE;
 #endif
+
+
+//-----------------------------------------------------------------------------
+// Ioctl hell
+//-----------------------------------------------------------------------------
+//
+// The documentation of the LinuxTV API is/was a joke, unprecise, confusing,
+// etc. There is ambiguity about the following ioctl's:
+//
+//   FE_SET_TONE, FE_SET_VOLTAGE, FE_DISEQC_SEND_BURST.
+//
+// These ioctl's take an enum value as input. In the old V3 API, the parameter
+// is passed by value. In the V4 / S2API documentation, it is passed by reference.
+// Most sample programs (a bit old) use the "pass by value" method.
+//
+// V3 documentation: https://www.linuxtv.org/docs/dvbapi/dvbapi.html
+//   int ioctl(int fd, int request = FE_SET_TONE, fe_sec_tone_mode_t tone);
+//   int ioctl(int fd, int request = FE_SET_VOLTAGE, fe_sec_voltage_t voltage);
+//   int ioctl(int fd, int request = FE_DISEQC_SEND_BURST, fe_sec_mini_cmd_t burst);
+//
+// V4 / S2API documentation: https://www.linuxtv.org/downloads/v4l-dvb-apis-new/uapi/dvb/frontend_fcalls.html
+//   int ioctl(int fd, FE_SET_TONE, enum fe_sec_tone_mode *tone)
+//   int ioctl(int fd, FE_SET_VOLTAGE, enum fe_sec_voltage *voltage)
+//   int ioctl(int fd, FE_DISEQC_SEND_BURST, enum fe_sec_mini_cmd *tone)
+//
+// Interestingly, the following ioctl's which take an int as argument use the
+// "pass by value" method in S2API:
+//
+//   FE_ENABLE_HIGH_LNB_VOLTAGE, FE_SET_FRONTEND_TUNE_MODE
+//
+// To isolate that mess from the rest of the code, the define the following wrappers.
+//
+
+namespace {
+    inline int ioctl_fe_set_tone(int fd, fe_sec_tone_mode_t tone)
+    {
+        return ::ioctl(fd, FE_SET_TONE, tone);
+    }
+    inline int ioctl_fe_set_voltage(int fd, fe_sec_voltage_t voltage)
+    {
+        return ::ioctl(fd, FE_SET_VOLTAGE, voltage);
+    }
+    inline int ioctl_fe_diseqc_send_burst(int fd, fe_sec_mini_cmd_t burst)
+    {
+        return ::ioctl(fd, FE_DISEQC_SEND_BURST, burst);
+    }
+}
 
 
 //-----------------------------------------------------------------------------
@@ -666,11 +712,11 @@ bool ts::Tuner::getCurrentTuning (TunerParameters& params, bool reset_unknown, R
 void ts::Tuner::discardFrontendEvents (ReportInterface& report)
 {
     ::dvb_frontend_event event;
-    report.debug ("starting discarding frontend events");
-    while (::ioctl (_frontend_fd, FE_GET_EVENT, &event) >= 0) {
-        report.debug ("one frontend event discarded");
+    report.debug("starting discarding frontend events");
+    while (::ioctl(_frontend_fd, FE_GET_EVENT, &event) >= 0) {
+        report.debug("one frontend event discarded");
     }
-    report.debug ("finished discarding frontend events");
+    report.debug("finished discarding frontend events");
 }
 
 
@@ -717,7 +763,7 @@ bool ts::Tuner::dtvClear (ReportInterface& report)
 bool ts::Tuner::tuneDVBS (const TunerParametersDVBS& params, ReportInterface& report)
 {
     // Clear tuner state if using S2API
-    if (!dtvClear (report)) {
+    if (!dtvClear(report)) {
         return false;
     }
 
@@ -749,20 +795,19 @@ bool ts::Tuner::tuneDVBS (const TunerParametersDVBS& params, ReportInterface& re
     delay.tv_nsec = 15000000; // 15 ms
 
     // Stop 22 kHz continuous tone (was on if previously tuned on high band)
-    if (::ioctl (_frontend_fd, FE_SET_TONE, SEC_TONE_OFF) < 0) {
+    if (ioctl_fe_set_tone(_frontend_fd, SEC_TONE_OFF) < 0) {
         report.error ("DVB frontend FE_SET_TONE error: " + ErrorCodeMessage());
         return false;
     }
 
     // Setup polarisation voltage: 13V for vertical polarisation, 18V for horizontal
-    ::fe_sec_voltage_t voltage = params.polarity == POL_VERTICAL ? SEC_VOLTAGE_13 : SEC_VOLTAGE_18;
-    if (::ioctl (_frontend_fd, FE_SET_VOLTAGE, voltage) < 0) {
-        report.error ("DVB frontend FE_SET_VOLTAGE error: " + ErrorCodeMessage());
+    if (ioctl_fe_set_voltage(_frontend_fd, params.polarity == POL_VERTICAL ? SEC_VOLTAGE_13 : SEC_VOLTAGE_18) < 0) {
+        report.error("DVB frontend FE_SET_VOLTAGE error: " + ErrorCodeMessage());
         return false;
     }
 
     // Wait at least 15ms.
-    ::nanosleep (&delay, NULL);
+    ::nanosleep(&delay, NULL);
 
     // Send tone burst: A for satellite 0, B for satellite 1.
     // Notes:
@@ -776,14 +821,13 @@ bool ts::Tuner::tuneDVBS (const TunerParametersDVBS& params, ReportInterface& re
     //      mailing list suggests that the szap code should be (satellite_number & 0x01).
     //      In reply to this report, the answer was "thanks, committed" but it does
     //      not appear to be committed. Here, we use the "probably correct" code.
-    ::fe_sec_mini_cmd_t mini_cmd = (params.satellite_number == 0) ? SEC_MINI_A : SEC_MINI_B;
-    if (::ioctl (_frontend_fd, FE_DISEQC_SEND_BURST, mini_cmd) < 0) {
-        report.error ("DVB frontend FE_DISEQC_SEND_BURST error: " + ErrorCodeMessage());
+    if (ioctl_fe_diseqc_send_burst(_frontend_fd, params.satellite_number == 0 ? SEC_MINI_A : SEC_MINI_B) < 0) {
+        report.error("DVB frontend FE_DISEQC_SEND_BURST error: " + ErrorCodeMessage());
         return false;
     }
 
     // Wait 15ms
-    ::nanosleep (&delay, NULL);
+    ::nanosleep(&delay, NULL);
 
     // Send DiSEqC commands. See DiSEqC spec ...
     const bool high_band = params.lnb.useHighBand (params.frequency);
@@ -799,8 +843,8 @@ bool ts::Tuner::tuneDVBS (const TunerParametersDVBS& params, ReportInterface& re
     cmd.msg[4] = 0x00;  // Unused
     cmd.msg[5] = 0x00;  // Unused
 
-    if (::ioctl (_frontend_fd, FE_DISEQC_SEND_MASTER_CMD, &cmd) < 0) {
-        report.error ("DVB frontend FE_DISEQC_SEND_MASTER_CMD error: " + ErrorCodeMessage());
+    if (::ioctl(_frontend_fd, FE_DISEQC_SEND_MASTER_CMD, &cmd) < 0) {
+        report.error("DVB frontend FE_DISEQC_SEND_MASTER_CMD error: " + ErrorCodeMessage());
         return false;
     }
 
@@ -808,18 +852,17 @@ bool ts::Tuner::tuneDVBS (const TunerParametersDVBS& params, ReportInterface& re
     ::nanosleep (&delay, NULL);
 
     // Start the 22kHz continuous tone when tuning to a transponder in the high band
-    const ::fe_sec_tone_mode_t tone = high_band ? SEC_TONE_ON : SEC_TONE_OFF;
-    if (::ioctl (_frontend_fd, FE_SET_TONE, tone) < 0) {
-        report.error ("DVB frontend FE_SET_TONE error: " + ErrorCodeMessage());
+    if (::ioctl_fe_set_tone(_frontend_fd, high_band ? SEC_TONE_ON : SEC_TONE_OFF) < 0) {
+        report.error("DVB frontend FE_SET_TONE error: " + ErrorCodeMessage());
         return false;
     }
 
     // End of dish setup, now configure the tuner
-    if (!CheckModEnum (params.inversion, "spectral inversion", SpectralInversionEnum, report) ||
-        !CheckModEnum (params.inner_fec, "FEC", InnerFECEnum, report) ||
-        !CheckModEnum (params.modulation, "modulation", ModulationEnum, report) ||
-        !CheckModEnum (params.pilots, "pilots", PilotEnum, report) ||
-        !CheckModEnum (params.roll_off, "roll-off factor", RollOffEnum, report)) {
+    if (!CheckModEnum(params.inversion, "spectral inversion", SpectralInversionEnum, report) ||
+        !CheckModEnum(params.inner_fec, "FEC", InnerFECEnum, report) ||
+        !CheckModEnum(params.modulation, "modulation", ModulationEnum, report) ||
+        !CheckModEnum(params.pilots, "pilots", PilotEnum, report) ||
+        !CheckModEnum(params.roll_off, "roll-off factor", RollOffEnum, report)) {
         return false;
     }
 
@@ -832,15 +875,15 @@ bool ts::Tuner::tuneDVBS (const TunerParametersDVBS& params, ReportInterface& re
 #if defined (__s2api)
 
     DTVProperties props;
-    props.add (DTV_DELIVERY_SYSTEM, uint32_t(toLinuxDeliverySystem (params.delivery_system)));
-    props.add (DTV_FREQUENCY, intermediate_frequency);
-    props.add (DTV_MODULATION, uint32_t(params.modulation));
-    props.add (DTV_SYMBOL_RATE, params.symbol_rate);
-    props.add (DTV_INNER_FEC, uint32_t(params.inner_fec));
-    props.add (DTV_INVERSION, uint32_t(params.inversion));
-    props.add (DTV_ROLLOFF, uint32_t(params.roll_off));
-    props.add (DTV_PILOT, uint32_t(params.pilots));
-    props.add (DTV_TUNE);
+    props.add(DTV_DELIVERY_SYSTEM, uint32_t(toLinuxDeliverySystem (params.delivery_system)));
+    props.add(DTV_FREQUENCY, intermediate_frequency);
+    props.add(DTV_MODULATION, uint32_t(params.modulation));
+    props.add(DTV_SYMBOL_RATE, params.symbol_rate);
+    props.add(DTV_INNER_FEC, uint32_t(params.inner_fec));
+    props.add(DTV_INVERSION, uint32_t(params.inversion));
+    props.add(DTV_ROLLOFF, uint32_t(params.roll_off));
+    props.add(DTV_PILOT, uint32_t(params.pilots));
+    props.add(DTV_TUNE);
 
     if (!tuneS2API (props, report)) {
         return false;
@@ -855,7 +898,7 @@ bool ts::Tuner::tuneDVBS (const TunerParametersDVBS& params, ReportInterface& re
     fep.u.qpsk.symbol_rate = params.symbol_rate;
     fep.u.qpsk.fec_inner = ::fe_code_rate_t (params.inner_fec);
 
-    if (::ioctl (_frontend_fd, FE_SET_FRONTEND, &fep) < 0) {
+    if (::ioctl(_frontend_fd, FE_SET_FRONTEND, &fep) < 0) {
         report.error ("tuning error on " + _frontend_name + ": " + ErrorCodeMessage());
         return false;
     }
