@@ -174,22 +174,21 @@ bool ts::TunerParametersDVBS::fromZapFormat (const std::string& zap)
 // Format the tuner parameters as a list of options for the dvb tsp plugin.
 //----------------------------------------------------------------------------
 
-std::string ts::TunerParametersDVBS::toPluginOptions (bool no_local) const
+std::string ts::TunerParametersDVBS::toPluginOptions(bool no_local) const
 {
     std::string local_options;
     if (!no_local) {
-        local_options = " --lnb " + std::string (lnb) +
-            Format (" --satellite-number %" FMT_SIZE_T "d", satellite_number);
+        local_options = " --lnb " + std::string(lnb) + Format(" --satellite-number %" FMT_SIZE_T "d", satellite_number);
     }
 
-    return Format ("--frequency %" FMT_INT64 "u --symbol-rate %d", frequency, int (symbol_rate)) +
-        " --fec-inner " + InnerFECEnum.name (inner_fec) +
-        " --spectral-inversion " + SpectralInversionEnum.name (inversion) +
-        " --polarity " + PolarizationEnum.name (polarity) +
-        " --delivery-system " + DeliverySystemEnum.name (delivery_system) +
-        " --modulation " + ModulationEnum.name (modulation) +
-        " --pilots " + PilotEnum.name (pilots) +
-        " --roll-off " + RollOffEnum.name (roll_off) +
+    return Format("--frequency %" FMT_INT64 "u --symbol-rate %d", frequency, int(symbol_rate)) +
+        " --fec-inner " + InnerFECEnum.name(inner_fec) +
+        " --spectral-inversion " + SpectralInversionEnum.name(inversion) +
+        " --polarity " + PolarizationEnum.name(polarity) +
+        " --delivery-system " + DeliverySystemEnum.name(delivery_system) +
+        " --modulation " + ModulationEnum.name(modulation) +
+        " --pilots " + PilotEnum.name(pilots) +
+        " --roll-off " + RollOffEnum.name(roll_off) +
         local_options;
 }
 

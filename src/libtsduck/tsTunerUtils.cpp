@@ -99,7 +99,7 @@ bool ts::GetTunerFromZapFile (const std::string& channel_name,
 // a delivery system descriptor.
 //----------------------------------------------------------------------------
 
-ts::TunerParameters* ts::DecodeDeliveryDescriptor (const Descriptor& desc)
+ts::TunerParameters* ts::DecodeDeliveryDescriptor(const Descriptor& desc)
 {
     // All delivery system descriptors have a common payload size of 11 bytes.
     if (!desc.isValid() || desc.payloadSize() < 11) {
@@ -108,21 +108,22 @@ ts::TunerParameters* ts::DecodeDeliveryDescriptor (const Descriptor& desc)
     const uint8_t* data = desc.payload();
 
     switch (desc.tag()) {
+
         case DID_SAT_DELIVERY: {
             // Satellite delivery system descriptor
             TunerParametersDVBS* tp = new TunerParametersDVBS();
-            uint8_t polar = (data[6] >> 5) & 0x03;
-            uint8_t inner_fec = data[10] & 0x0F;
-            tp->frequency = DecodeBCD (data, 8) * 10000;
-            switch (polar) {
+            tp->frequency = uint64_t(DecodeBCD(data, 8)) * 10000;
+            tp->symbol_rate = DecodeBCD(data + 7, 7) * 100;
+            // Polarity.
+            switch ((data[6] >> 5) & 0x03) {
                 case 0: tp->polarity = POL_HORIZONTAL; break;
                 case 1: tp->polarity = POL_VERTICAL; break;
                 case 2: tp->polarity = POL_LEFT; break;
                 case 3: tp->polarity = POL_RIGHT; break;
                 default: assert (false);
             }
-            tp->symbol_rate = DecodeBCD (data + 7, 7) * 100;
-            switch (inner_fec) {
+            // Inner FEC.
+            switch (data[10] & 0x0F) {
                 case 1:  tp->inner_fec = FEC_1_2; break;
                 case 2:  tp->inner_fec = FEC_2_3; break;
                 case 3:  tp->inner_fec = FEC_3_4; break;
@@ -135,15 +136,44 @@ ts::TunerParameters* ts::DecodeDeliveryDescriptor (const Descriptor& desc)
                 case 15: tp->inner_fec = FEC_NONE; break;
                 default: tp->inner_fec = FEC_AUTO; break;
             }
+            // Modulation type.
+            switch (data[6] & 0x03) {
+                case 0: tp->modulation = QAM_AUTO; break;
+                case 1: tp->modulation = QPSK; break;
+                case 2: tp->modulation = PSK_8; break;
+                case 3: tp->modulation = QAM_16; break;
+                default: assert(false);
+            }
+            // Modulation system.
+            switch ((data[6] >> 2) & 0x01) {
+                case 0:
+                    tp->delivery_system = DS_DVB_S;
+                    tp->roll_off = ROLLOFF_AUTO;
+                    break;
+                case 1:
+                    tp->delivery_system = DS_DVB_S2;
+                    // Roll off.
+                    switch ((data[6] >> 3) & 0x03) {
+                        case 0: tp->roll_off = ROLLOFF_35; break;
+                        case 1: tp->roll_off = ROLLOFF_25; break;
+                        case 2: tp->roll_off = ROLLOFF_20; break;
+                        case 3: tp->roll_off = ROLLOFF_AUTO; break;
+                        default: assert(false);
+                    }
+                    break;
+                default:
+                    assert(false);
+            }
             return tp;
         }
+
         case DID_CABLE_DELIVERY: {
             // Cable delivery system descriptor
             TunerParametersDVBC* tp = new TunerParametersDVBC();
             uint8_t modulation = data[6];
             uint8_t inner_fec = data[10] & 0x0F;
-            tp->frequency = DecodeBCD (data, 8) * 100;
-            tp->symbol_rate = DecodeBCD (data + 7, 7) * 100;
+            tp->frequency = uint64_t(DecodeBCD(data, 8)) * 100;
+            tp->symbol_rate = DecodeBCD(data + 7, 7) * 100;
             switch (inner_fec) {
                 case 1:  tp->inner_fec = FEC_1_2; break;
                 case 2:  tp->inner_fec = FEC_2_3; break;
@@ -167,10 +197,11 @@ ts::TunerParameters* ts::DecodeDeliveryDescriptor (const Descriptor& desc)
             }
             return tp;
         }
+
         case DID_TERREST_DELIVERY: {
             // Terrestrial delivery system descriptor
             TunerParametersDVBT* tp = new TunerParametersDVBT();
-            uint32_t freq = GetUInt32 (data);
+            uint64_t freq = GetUInt32 (data);
             uint8_t bwidth = data[4] >> 5;
             uint8_t constel = data[5] >> 6;
             uint8_t hierarchy = (data[5] >> 3) & 0x07;
@@ -230,6 +261,7 @@ ts::TunerParameters* ts::DecodeDeliveryDescriptor (const Descriptor& desc)
             }
             return tp;
         }
+
         default: {
             // Not a known delivery descriptor
             return 0;
