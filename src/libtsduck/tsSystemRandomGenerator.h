@@ -45,9 +45,9 @@ namespace ts {
     {
     public:
         // Implementation of RandomGenerator interface:
-        virtual bool seed (const void*, size_t);
+        virtual bool seed(const void*, size_t);
         virtual bool ready() const;
-        virtual bool read (void*, size_t);
+        virtual bool read(void*, size_t);
 
         //!
         //! Constructor.

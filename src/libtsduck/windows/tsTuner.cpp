@@ -60,9 +60,9 @@ const size_t ts::Tuner::DEFAULT_SINK_QUEUE_SIZE;
 // Destructor
 //-----------------------------------------------------------------------------
 
-ts::Tuner::~Tuner ()
+ts::Tuner::~Tuner()
 {
-    close (NULLREP);
+    close(NULLREP);
 }
 
 
@@ -148,14 +148,14 @@ bool ts::Tuner::GetAllTuners(TunerPtrVector& tuners, ReportInterface& report)
 // Open the tuner.
 //-----------------------------------------------------------------------------
 
-bool ts::Tuner::open (const std::string& device_name, bool info_only, ReportInterface& report)
+bool ts::Tuner::open(const std::string& device_name, bool info_only, ReportInterface& report)
 {
     if (_is_open) {
-        report.error ("DVB tuner already open");
+        report.error("DVB tuner already open");
         return false;
     }
     _device_name = device_name;
-    if (!FindTuners (this, 0, report)) {
+    if (!FindTuners(this, 0, report)) {
         return false;
     }
     else if (_is_open) {
@@ -163,11 +163,11 @@ bool ts::Tuner::open (const std::string& device_name, bool info_only, ReportInte
         return true;
     }
     else if (device_name.empty()) {
-        report.error ("No DVB tuner device");
+        report.error("No DVB tuner device");
         return false;
     }
     else {
-        report.error ("DVB device \"" + device_name + "\" not found");
+        report.error("DVB device \"" + device_name + "\" not found");
         return false;
     }
 }
@@ -177,7 +177,7 @@ bool ts::Tuner::open (const std::string& device_name, bool info_only, ReportInte
 // Close tuner.
 //-----------------------------------------------------------------------------
 
-bool ts::Tuner::close (ReportInterface& report)
+bool ts::Tuner::close(ReportInterface& report)
 {
     _is_open = false;
     _device_name.clear();
@@ -193,10 +193,10 @@ bool ts::Tuner::close (ReportInterface& report)
     _tuning_space_fname.clear();
     _tuning_space_uname.clear();
     _tuner_filter.release();
-    ComVectorClear (_demods);
-    ComVectorClear (_demods2);
-    ComVectorClear (_sigstats);
-    ComVectorClear (_tunprops);
+    ComVectorClear(_demods);
+    ComVectorClear(_demods2);
+    ComVectorClear(_sigstats);
+    ComVectorClear(_tunprops);
     return true;
 }
 
@@ -687,7 +687,7 @@ bool ts::Tuner::createLocatorDVBC (ComPtr<::IDigitalLocator>& locator,
                                      const TunerParametersDVBC& params,
                                      ReportInterface& report)
 {
-    ComPtr <::IDVBCLocator> loc (CLSID_DVBCLocator, ::IID_IDVBCLocator, report);
+    ComPtr<::IDVBCLocator> loc (CLSID_DVBCLocator, ::IID_IDVBCLocator, report);
 
     if (loc.isNull() ||
         !CheckModEnum (params.inversion, "spectral inversion", SpectralInversionEnum, report) ||

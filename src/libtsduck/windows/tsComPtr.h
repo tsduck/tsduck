@@ -191,7 +191,7 @@ namespace ts {
         //!
         ComPtr<COMCLASS>& operator=(const ComPtr<COMCLASS>& p)
         {
-            return assign (p);
+            return assign(p);
         }
 
         //!
