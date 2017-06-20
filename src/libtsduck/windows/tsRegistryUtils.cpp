@@ -255,7 +255,7 @@ bool DeleteRegistryValue (const std::string& key, const std::string& value_name)
     }
 
     // Delete the value
-    hr = ::RegDeleteValue (hkey, value_name.c_str());   
+    hr = ::RegDeleteValue (hkey, value_name.c_str());
     bool success = hr == ERROR_SUCCESS;
     ::RegCloseKey (hkey);
     return success;

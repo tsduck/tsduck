@@ -81,7 +81,7 @@ bool ts::pcsc::Success (::LONG status, ReportInterface& report)
     status = ::SCardListReaders (context, 0, names, &names_size);
 
     // Build the string vector
-    
+
     if (status == SCARD_S_SUCCESS) {
         size_t len;
         for (const char* p = names; (len = strlen (p)) != 0; p += len + 1) {
@@ -104,7 +104,7 @@ bool ts::pcsc::Success (::LONG status, ReportInterface& report)
                                     ::DWORD timeout_ms)
 {
     // Allocate and initializes a structure array
-    
+
     ::SCARD_READERSTATE* c_states = new ::SCARD_READERSTATE [states.size()];
     CheckNonNull (c_states);
 
@@ -171,12 +171,12 @@ bool ts::pcsc::MatchATR (const uint8_t* atr1,
                            size_t       mask_size)
 {
     bool match = atr1_size == atr2_size;
-        
+
     for (size_t i = 0; match && i < atr1_size; ++i) {
         uint8_t m = i < mask_size ? mask[i] : 0xFF;
         match = (atr1[i] & m) == (atr2[i] & m);
     }
-        
+
     return match;
 }
 

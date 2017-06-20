@@ -89,7 +89,7 @@ void ts::ParentalRatingDescriptor::serialize (Descriptor& desc) const
         bbp->append (it->language_code);
         bbp->appendUInt8 (it->rating);
     }
-    
+
     (*bbp)[0] = _tag;
     (*bbp)[1] = uint8_t(bbp->size() - 2);
     Descriptor d (bbp, SHARE);

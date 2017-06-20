@@ -73,7 +73,7 @@ void ts::SHA1::compress (const uint8_t* buf)
 
     /* expand it */
     for (i = 16; i < 80; i++) {
-        W[i] = ROL(W[i-3] ^ W[i-8] ^ W[i-14] ^ W[i-16], 1); 
+        W[i] = ROL(W[i-3] ^ W[i-8] ^ W[i-14] ^ W[i-16], 1);
     }
 
     /* compress */
@@ -82,7 +82,7 @@ void ts::SHA1::compress (const uint8_t* buf)
     #define FF1(a,b,c,d,e,i) e = (ROLc(a, 5) + F1(b,c,d) + e + W[i] + 0x6ed9eba1UL); b = ROLc(b, 30);
     #define FF2(a,b,c,d,e,i) e = (ROLc(a, 5) + F2(b,c,d) + e + W[i] + 0x8f1bbcdcUL); b = ROLc(b, 30);
     #define FF3(a,b,c,d,e,i) e = (ROLc(a, 5) + F3(b,c,d) + e + W[i] + 0xca62c1d6UL); b = ROLc(b, 30);
- 
+
     for (i = 0; i < 20; ) {
         FF0(a,b,c,d,e,i++);
         FF0(e,a,b,c,d,i++);
@@ -92,7 +92,7 @@ void ts::SHA1::compress (const uint8_t* buf)
     }
 
     /* round two */
-    for (; i < 40; )  { 
+    for (; i < 40; )  {
         FF1(a,b,c,d,e,i++);
         FF1(e,a,b,c,d,i++);
         FF1(d,e,a,b,c,i++);
@@ -101,7 +101,7 @@ void ts::SHA1::compress (const uint8_t* buf)
     }
 
     /* round three */
-    for (; i < 60; )  { 
+    for (; i < 60; )  {
         FF2(a,b,c,d,e,i++);
         FF2(e,a,b,c,d,i++);
         FF2(d,e,a,b,c,i++);
@@ -110,7 +110,7 @@ void ts::SHA1::compress (const uint8_t* buf)
     }
 
     /* round four */
-    for (; i < 80; )  { 
+    for (; i < 80; )  {
         FF3(a,b,c,d,e,i++);
         FF3(e,a,b,c,d,i++);
         FF3(d,e,a,b,c,i++);
@@ -151,7 +151,7 @@ bool ts::SHA1::add (const void* data, size_t size)
             _length += BLOCK_SIZE * 8;
             in += BLOCK_SIZE;
             size -= BLOCK_SIZE;
-        } 
+        }
         else {
             n = std::min (size, (BLOCK_SIZE - _curlen));
             ::memcpy(_buf + _curlen, in, n);

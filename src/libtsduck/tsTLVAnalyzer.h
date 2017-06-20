@@ -80,7 +80,7 @@ namespace ts {
             {
                 return _tlv_addr;
             }
-            
+
             //!
             //! Get the complete size of the current TLV field.
             //! @return Complete size of the current TLV field.
@@ -89,7 +89,7 @@ namespace ts {
             {
                 return _tlv_size;
             }
-            
+
             //!
             //! Get the tag of the current TLV field.
             //! @return Tag of the current TLV field.

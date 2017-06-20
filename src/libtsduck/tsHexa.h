@@ -89,7 +89,7 @@ namespace ts {
                                size_t indent = 0,
                                size_t line_width = hexa::DEFAULT_LINE_WIDTH,
                                size_t init_offset = 0);
-    
+
     //!
     //! Build a multi-line string containing the hexadecimal dump of a memory area.
     //!

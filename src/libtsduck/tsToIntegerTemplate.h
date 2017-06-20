@@ -37,7 +37,7 @@
 // warning in the module. Note the #pragma warning(pop) at the end of file.
 //
 // warning C4127: conditional expression is constant
-// 
+//
 #if defined(__msc)
     #pragma warning(push)
     #pragma warning(disable:4127)

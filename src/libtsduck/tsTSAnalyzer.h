@@ -353,7 +353,7 @@ namespace ts {
             //! Return a full description, with comment and optionally attributes.
             //! @param [in] include_attributes Include the PID attributes in the description.
             //! @return The PID description.
-            //!           
+            //!
             std::string fullDescription(bool include_attributes) const;
 
         private:

@@ -455,14 +455,14 @@ void ArgsTest::testOptionalValue()
     CPPUNIT_ASSERT(args.count ("") == 2);
     CPPUNIT_ASSERT(args.present ("opt8"));
     CPPUNIT_ASSERT(args.intValue<uint32_t> ("opt8") == 0);
-    
+
     CPPUNIT_ASSERT(args.analyze ("test", "a", "--opt8=2", TS_NULL));
     CPPUNIT_ASSERT(args.count ("") == 1);
     CPPUNIT_ASSERT(args.present ("opt8"));
     CPPUNIT_ASSERT(args.intValue<uint32_t> ("opt8") == 2);
 }
 
-// Test case: 
+// Test case:
 void ArgsTest::testMissingParameter()
 {
     ts::ReportBuffer<> log;
@@ -473,7 +473,7 @@ void ArgsTest::testMissingParameter()
     CPPUNIT_ASSERT(log.getMessages() == "Error: missing parameter");
 }
 
-// Test case: 
+// Test case:
 void ArgsTest::testTooManyParameters()
 {
     ts::ReportBuffer<> log;
@@ -484,7 +484,7 @@ void ArgsTest::testTooManyParameters()
     CPPUNIT_ASSERT(log.getMessages() == "Error: too many parameter, 2 maximum");
 }
 
-// Test case: 
+// Test case:
 void ArgsTest::testAmbiguousOption()
 {
     ts::ReportBuffer<> log;
@@ -495,7 +495,7 @@ void ArgsTest::testAmbiguousOption()
     CPPUNIT_ASSERT(log.getMessages() == "Error: ambiguous option --opt (--opt1, --opt2)");
 }
 
-// Test case: 
+// Test case:
 void ArgsTest::testInvalidIntegerOption()
 {
     ts::ReportBuffer<> log;
@@ -506,7 +506,7 @@ void ArgsTest::testInvalidIntegerOption()
     CPPUNIT_ASSERT(log.getMessages() == "Error: invalid integer value x for option --opt3");
 }
 
-// Test case: 
+// Test case:
 void ArgsTest::testIntegerTooLow()
 {
     ts::ReportBuffer<> log;
@@ -517,7 +517,7 @@ void ArgsTest::testIntegerTooLow()
     CPPUNIT_ASSERT(log.getMessages() == "Error: value for option --opt3 must be >= -4");
 }
 
-// Test case: 
+// Test case:
 void ArgsTest::testIntegerTooHigh()
 {
     ts::ReportBuffer<> log;
@@ -528,7 +528,7 @@ void ArgsTest::testIntegerTooHigh()
     CPPUNIT_ASSERT(log.getMessages() == "Error: value for option --opt3 must be <= 7");
 }
 
-// Test case: 
+// Test case:
 void ArgsTest::testInvalidEnum()
 {
     ts::ReportBuffer<> log;
@@ -539,7 +539,7 @@ void ArgsTest::testInvalidEnum()
     CPPUNIT_ASSERT_EQUAL(std::string("Error: invalid value x for option --opt9 (-c), use one of val1, val2, val3"), log.getMessages());
 }
 
-// Test case: 
+// Test case:
 void ArgsTest::testValidEnum()
 {
     ts::ReportBuffer<> log;
@@ -549,7 +549,7 @@ void ArgsTest::testValidEnum()
     CPPUNIT_ASSERT_EQUAL(32, args.intValue<int>("opt9"));
 }
 
-// Test case: 
+// Test case:
 void ArgsTest::testBitMask()
 {
     ts::ReportBuffer<> log;

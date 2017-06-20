@@ -175,7 +175,7 @@ void CryptoTest::testCipher(ts::BlockCipher& algo,
     const std::string name(algo.name() + " test vector " + ts::Decimal(tv_index + 1) + "/" + ts::Decimal(tv_count));
     std::vector<uint8_t> tmp(std::max(plain_size, cipher_size));
     size_t retsize;
-        
+
     CPPUNIT_ASSERT(algo.setKey(key, key_size));
 
     CPPUNIT_ASSERT(algo.encrypt(plain, plain_size, &tmp[0], tmp.size(), &retsize));

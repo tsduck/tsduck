@@ -46,7 +46,7 @@ ts::TelnetConnection::TelnetConnection(const std::string prompt) :
     TCPConnection(),
     _received(0),
     _prompt(prompt),
-    _mutex() 
+    _mutex()
 {
 }
 

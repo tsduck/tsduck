@@ -105,7 +105,7 @@ namespace ts {
         //! @param [in] cp_duration Crypto-period in 100 ms units, unspecified if zero.
         //! @param [out] response Returned ECM.
         //! @return True on success, false on error.
-        //! 
+        //!
         bool generateECM(uint16_t cp_number,
                          const void* current_cw,
                          const void* next_cw,
@@ -127,7 +127,7 @@ namespace ts {
         //! @param [in] cp_duration Crypto-period in 100 ms units, unspecified if zero.
         //! @param [in] handler Object which will be notified of the returned ECM.
         //! @return True on success, false on error.
-        //! 
+        //!
         bool submitECM(uint16_t cp_number,
                        const void* current_cw,
                        const void* next_cw,

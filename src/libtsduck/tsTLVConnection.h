@@ -106,7 +106,7 @@ namespace ts {
             {
                 _auto_error_response = on;
             }
-            
+
             //!
             //! Get invalid message threshold.
             //! @return When non-zero, the connection is automatically disconnected

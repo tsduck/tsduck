@@ -52,8 +52,8 @@ bool ts::CTS1<CIPHER>::encrypt (const void* plain, size_t plain_length,
                                   void* cipher, size_t cipher_maxsize,
                                   size_t* cipher_length)
 {
-    if (this->algo == 0 || 
-        this->iv.size() != this->block_size || 
+    if (this->algo == 0 ||
+        this->iv.size() != this->block_size ||
         this->work.size() < 2 * this->block_size ||
         cipher_maxsize < plain_length) {
         return false;

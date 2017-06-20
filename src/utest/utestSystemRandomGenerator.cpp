@@ -96,7 +96,7 @@ void SystemRandomGeneratorTest::testSystemRandomGenerator()
 
     ts::ByteBlock data1(1000, 0);
     ts::ByteBlock data2(1000, 0);
-    
+
     CPPUNIT_ASSERT(data1 == data2);
     CPPUNIT_ASSERT_EQUAL(data1.size(), size_t(std::count(data1.begin(), data1.end(), 0)));
     CPPUNIT_ASSERT_EQUAL(data2.size(), size_t(std::count(data2.begin(), data2.end(), 0)));

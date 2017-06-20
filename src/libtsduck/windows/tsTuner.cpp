@@ -138,9 +138,9 @@ ts::Tuner::Tuner(const std::string& device_name, bool info_only, ReportInterface
 // Get the list of all existing DVB tuners.
 //-----------------------------------------------------------------------------
 
-bool ts::Tuner::GetAllTuners (TunerPtrVector& tuners, ReportInterface& report)
+bool ts::Tuner::GetAllTuners(TunerPtrVector& tuners, ReportInterface& report)
 {
-    return FindTuners (0, &tuners, report);
+    return FindTuners(0, &tuners, report);
 }
 
 
@@ -982,16 +982,16 @@ std::ostream& ts::Tuner::displayStatus (std::ostream& strm, const std::string& m
 // Enumerate all tuner-related DirectShow devices.
 //-----------------------------------------------------------------------------
 
-std::ostream& ts::Tuner::EnumerateDevices (std::ostream& strm, const std::string& margin, ReportInterface& report)
+std::ostream& ts::Tuner::EnumerateDevices(std::ostream& strm, const std::string& margin, ReportInterface& report)
 {
-#define _D_(cat) DisplayDevicesByCategory (strm, cat, margin, #cat, report)
-    _D_ (KSCATEGORY_BDA_NETWORK_PROVIDER);
-    _D_ (KSCATEGORY_BDA_TRANSPORT_INFORMATION);
-    _D_ (KSCATEGORY_CAPTURE);
-//  _D_ (KSCATEGORY_SPLITTER);
-    _D_ (KSCATEGORY_TVTUNER);
-    _D_ (KSCATEGORY_BDA_RECEIVER_COMPONENT);
-    _D_ (KSCATEGORY_BDA_NETWORK_TUNER);
+#define _D_(cat) DisplayDevicesByCategory(strm, cat, margin, #cat, report)
+    _D_(KSCATEGORY_BDA_NETWORK_PROVIDER);
+    _D_(KSCATEGORY_BDA_TRANSPORT_INFORMATION);
+    _D_(KSCATEGORY_CAPTURE);
+//  _D_(KSCATEGORY_SPLITTER);
+    _D_(KSCATEGORY_TVTUNER);
+    _D_(KSCATEGORY_BDA_RECEIVER_COMPONENT);
+    _D_(KSCATEGORY_BDA_NETWORK_TUNER);
     return strm;
 #undef _D_
 }
@@ -1003,21 +1003,21 @@ std::ostream& ts::Tuner::EnumerateDevices (std::ostream& strm, const std::string
 //-----------------------------------------------------------------------------
 
 template <class COMCLASS>
-void ts::Tuner::findTunerSubinterfaces (ComPtr<COMCLASS>& obj)
+void ts::Tuner::findTunerSubinterfaces(ComPtr<COMCLASS>& obj)
 {
-#define _D_(iface,vect)                                            \
-    {                                                              \
-        ComPtr <iface> iobj;                                       \
-        iobj.queryInterface (obj.pointer(), IID_##iface, NULLREP); \
-        if (!iobj.isNull()) {                                      \
-            vect.push_back (iobj);                                 \
-        }                                                          \
+#define _D_(iface,vect)                                           \
+    {                                                             \
+        ComPtr<iface> iobj;                                       \
+        iobj.queryInterface(obj.pointer(), IID_##iface, NULLREP); \
+        if (!iobj.isNull()) {                                     \
+            vect.push_back(iobj);                                 \
+        }                                                         \
     }
 
-    _D_ (IBDA_DigitalDemodulator,  _demods);
-    _D_ (IBDA_DigitalDemodulator2, _demods2);
-    _D_ (IBDA_SignalStatistics,    _sigstats);
-    _D_ (IKsPropertySet,           _tunprops);
+    _D_(IBDA_DigitalDemodulator,  _demods);
+    _D_(IBDA_DigitalDemodulator2, _demods2);
+    _D_(IBDA_SignalStatistics,    _sigstats);
+    _D_(IKsPropertySet,           _tunprops);
 #undef _D_
 }
 
@@ -1026,14 +1026,14 @@ void ts::Tuner::findTunerSubinterfaces (ComPtr<COMCLASS>& obj)
 // Private static method: Find one or more tuners.
 //-----------------------------------------------------------------------------
 
-bool ts::Tuner::FindTuners (Tuner* tuner, TunerPtrVector* tuner_list, ReportInterface& report)
+bool ts::Tuner::FindTuners(Tuner* tuner, TunerPtrVector* tuner_list, ReportInterface& report)
 {
     // ReportInterface to use when errors shall be reported in debug mode only
-    ReportInterface& debug_report (report.debug() ? report : NULLREP);
+    ReportInterface& debug_report(report.debug() ? report : NULLREP);
 
     // Exactly one of Tuner* or TunerPtrVector* must be non-zero.
-    assert (tuner == 0 || tuner_list == 0);
-    assert (tuner != 0 || tuner_list != 0);
+    assert(tuner == 0 || tuner_list == 0);
+    assert(tuner != 0 || tuner_list != 0);
 
     // Reset content of tuner vector
     if (tuner_list != 0) {
@@ -1043,14 +1043,14 @@ bool ts::Tuner::FindTuners (Tuner* tuner, TunerPtrVector* tuner_list, ReportInte
     // Check if tuner device name is ":integer"
     int dvb_device_index = -1;
     if (tuner != 0 && !tuner->_device_name.empty() && tuner->_device_name[0] == ':') {
-        ToInteger (dvb_device_index, tuner->_device_name.substr (1));
+        ToInteger(dvb_device_index, tuner->_device_name.substr(1));
     }
 
     // Enumerate all filters with category KSCATEGORY_BDA_NETWORK_TUNER.
     // These filters are usually installed by vendors of hardware tuners
     // when they provide BDA-compatible drivers.
-    std::vector <ComPtr <::IMoniker>> tuner_monikers;
-    if (!EnumerateDevicesByClass (KSCATEGORY_BDA_NETWORK_TUNER, tuner_monikers, report)) {
+    std::vector<ComPtr<::IMoniker>> tuner_monikers;
+    if (!EnumerateDevicesByClass(KSCATEGORY_BDA_NETWORK_TUNER, tuner_monikers, report)) {
         return false;
     }
 
@@ -1058,16 +1058,16 @@ bool ts::Tuner::FindTuners (Tuner* tuner, TunerPtrVector* tuner_list, ReportInte
     for (size_t dvb_device_current = 0; dvb_device_current < tuner_monikers.size(); ++dvb_device_current) {
 
         // Get friendly name of this tuner filter
-        const std::string tuner_name (GetStringPropertyBag (tuner_monikers[dvb_device_current].pointer(), L"FriendlyName", debug_report));
-        report.debug ("found tuner filter \"" + tuner_name + "\"");
+        const std::string tuner_name(GetStringPropertyBag(tuner_monikers[dvb_device_current].pointer(), L"FriendlyName", debug_report));
+        report.debug("found tuner filter \"" + tuner_name + "\"");
 
         // If a device name was specified, filter this name.
         if (tuner != 0 && !tuner->_device_name.empty()) {
-            if (dvb_device_index >= 0 && int (dvb_device_current) != dvb_device_index) {
+            if (dvb_device_index >= 0 && int(dvb_device_current) != dvb_device_index) {
                 // Device specified by index, but not this one, try next tuner
                 continue;
             }
-            else if (dvb_device_index < 0 && !SimilarStrings (tuner->_device_name, tuner_name)) {
+            else if (dvb_device_index < 0 && !SimilarStrings(tuner->_device_name, tuner_name)) {
                 // Device specified by name, but not this one, try next tuner
                 // Since the filter names are long and complicated, ignore case and blanks (use SimilarStrings).
                 continue;
@@ -1078,8 +1078,8 @@ bool ts::Tuner::FindTuners (Tuner* tuner, TunerPtrVector* tuner_list, ReportInte
 
         // Enumerate all filters with category KSCATEGORY_BDA_NETWORK_PROVIDER
         // and try to build a graph with the tuner.
-        std::vector <ComPtr <::IMoniker>> provider_monikers;
-        if (!EnumerateDevicesByClass (KSCATEGORY_BDA_NETWORK_PROVIDER, provider_monikers, report)) {
+        std::vector<ComPtr<::IMoniker>> provider_monikers;
+        if (!EnumerateDevicesByClass(KSCATEGORY_BDA_NETWORK_PROVIDER, provider_monikers, report)) {
             return false;
         }
 
@@ -1087,11 +1087,11 @@ bool ts::Tuner::FindTuners (Tuner* tuner, TunerPtrVector* tuner_list, ReportInte
         for (size_t provider_index = 0; provider_index < provider_monikers.size(); ++provider_index) {
 
             // Use specified Tuner or allocate one
-            TunerPtr tptr (tuner == 0 ? new Tuner : 0);
-            Tuner& tref (tuner == 0 ? *tptr : *tuner);
+            TunerPtr tptr(tuner == 0 ? new Tuner : 0);
+            Tuner& tref(tuner == 0 ? *tptr : *tuner);
 
             // Try to build a graph from this network provider and tuner
-            if (!tref.buildGraph (provider_monikers[provider_index].pointer(), tuner_monikers[dvb_device_current].pointer(), report)) {
+            if (!tref.buildGraph(provider_monikers[provider_index].pointer(), tuner_monikers[dvb_device_current].pointer(), report)) {
                 continue;
             }
 

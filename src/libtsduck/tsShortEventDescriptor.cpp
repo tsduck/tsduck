@@ -146,7 +146,7 @@ void ts::ShortEventDescriptor::serialize (Descriptor& desc) const
     bbp->append(event_name);
     bbp->appendUInt8(uint8_t(text.length()));
     bbp->append(text);
-    
+
     (*bbp)[0] = _tag;
     (*bbp)[1] = uint8_t(bbp->size() - 2);
     Descriptor d(bbp, SHARE);

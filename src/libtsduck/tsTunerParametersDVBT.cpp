@@ -295,7 +295,7 @@ ts::BitRate ts::TunerParametersDVBT::theoreticalBitrate() const
     // Reference: ETSI EN 300 744 V1.5.1
     // (DVB; Framing structure, channel coding and modulation
     // for digital terrestrial television).
-    // 
+    //
     //  BW = bandwidth in Hz
     //  BM = bandwidth in MHz = BW / 1000000
     //  TM = transmission mode in K

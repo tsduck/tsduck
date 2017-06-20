@@ -101,7 +101,7 @@ bool ts::CTS4<CIPHER>::decrypt (const void* cipher, size_t cipher_length,
                                   void* plain, size_t plain_maxsize,
                                   size_t* plain_length)
 {
-    if (this->algo == 0 || 
+    if (this->algo == 0 ||
         this->work.size() < this->block_size ||
         cipher_length < this->block_size ||
         plain_maxsize < cipher_length) {

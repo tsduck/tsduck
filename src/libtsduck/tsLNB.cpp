@@ -64,7 +64,7 @@ uint64_t ts::LNB::intermediateFrequency (uint64_t satellite_frequency) const
     }
 }
 
-    
+
 //----------------------------------------------------------------------------
 // Convert to a string object
 // Return a normalized representation of the LNB:

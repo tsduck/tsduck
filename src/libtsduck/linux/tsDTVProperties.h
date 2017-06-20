@@ -103,7 +103,7 @@ namespace ts {
         {
             return &_prop_head;
         }
-        
+
         //!
         //! Get the address of the @c dtv_properties structure for @c ioctl() call.
         //! @return The address of the @c dtv_properties structure.
@@ -122,7 +122,7 @@ namespace ts {
         //! Display the content of the object (for debug purpose).
         //! @param [in,out] report Where to display the content.
         //! @param [in] severity Severity level of messages (typically a debug level).
-        //!        
+        //!
         void report(ReportInterface& report, int severity) const;
 
         //!

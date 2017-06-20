@@ -307,7 +307,7 @@ size_t ts::SinkFilter::Read (void* buffer, size_t buffer_size, MilliSecond timeo
 
     // Then, read from media queue
     while (remain > 0 && timeout > 0) {
-        
+
         // Wait for the queue not being empty
         TRACE ((5, "SinkFilter::Read, waiting for packets, timeout = %" FMT_INT64 "d milliseconds", timeout));
         const Time start (Time::CurrentUTC());

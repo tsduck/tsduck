@@ -35,20 +35,19 @@
 #include "tsAbstractTransportListTable.h"
 
 
-
 //----------------------------------------------------------------------------
 // Default constructor
 //----------------------------------------------------------------------------
 
-ts::AbstractTransportListTable::AbstractTransportListTable (TID tid_,
-                                                              uint16_t tid_ext_,
-                                                              uint8_t version_,
-                                                              bool is_current_) :
-    AbstractLongTable (tid_, version_, is_current_),
-    descs (),
-    transports (),
-    section_hints (),
-    _tid_ext (tid_ext_)
+ts::AbstractTransportListTable::AbstractTransportListTable(TID tid_,
+                                                           uint16_t tid_ext_,
+                                                           uint8_t version_,
+                                                           bool is_current_) :
+    AbstractLongTable(tid_, version_, is_current_),
+    descs(),
+    transports(),
+    section_hints(),
+    _tid_ext(tid_ext_)
 {
     _is_valid = true;
 }
@@ -73,7 +72,7 @@ ts::AbstractTransportListTable::AbstractTransportListTable (TID tid, const Binar
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::AbstractTransportListTable::deserialize (const BinaryTable& table)
+void ts::AbstractTransportListTable::deserialize(const BinaryTable& table)
 {
     // Clear table content
     _is_valid = false;
@@ -160,21 +159,21 @@ void ts::AbstractTransportListTable::deserialize (const BinaryTable& table)
 // Session number is incremented. Data and remain are reinitialized.
 //----------------------------------------------------------------------------
 
-void ts::AbstractTransportListTable::addSection (BinaryTable& table,
-                                                   int& section_number,
-                                                   uint8_t* payload,
-                                                   uint8_t*& data,
-                                                   size_t& remain) const
+void ts::AbstractTransportListTable::addSection(BinaryTable& table,
+                                                int& section_number,
+                                                uint8_t* payload,
+                                                uint8_t*& data,
+                                                size_t& remain) const
 {
-    table.addSection (new Section (_table_id,
-                                   true,   // is_private_section
-                                   _tid_ext,
-                                   version,
-                                   is_current,
-                                   uint8_t(section_number),
-                                   uint8_t(section_number),   //last_section_number
-                                   payload,
-                                   data - payload)); // payload_size,
+    table.addSection(new Section(_table_id,
+                                 true,   // is_private_section
+                                 _tid_ext,
+                                 version,
+                                 is_current,
+                                 uint8_t(section_number),
+                                 uint8_t(section_number),   //last_section_number
+                                 payload,
+                                 data - payload)); // payload_size,
 
     // Reinitialize pointers.
     remain += data - payload;
@@ -187,26 +186,26 @@ void ts::AbstractTransportListTable::addSection (BinaryTable& table,
 // Private method: Same as previous, while being inside the transport loop.
 //----------------------------------------------------------------------------
 
-void ts::AbstractTransportListTable::addSection (BinaryTable& table,
-                                                   int& section_number,
-                                                   uint8_t* payload,
-                                                   uint8_t*& tsll_addr,
-                                                   uint8_t*& data,
-                                                   size_t& remain) const
+void ts::AbstractTransportListTable::addSection(BinaryTable& table,
+                                                int& section_number,
+                                                uint8_t* payload,
+                                                uint8_t*& tsll_addr,
+                                                uint8_t*& data,
+                                                size_t& remain) const
 {
     // Update transport_stream_loop_length in current section
-    PutUInt16 (tsll_addr, 0xF000 | uint16_t (data - tsll_addr - 2));
+    PutUInt16(tsll_addr, 0xF000 | uint16_t(data - tsll_addr - 2));
 
     // Add current section, open a new one
-    addSection (table, section_number, payload, data, remain);
+    addSection(table, section_number, payload, data, remain);
 
     // Insert a zero-length global descriptor loop
-    assert (remain >= 4);
-    PutUInt16 (data, 0xF000);
+    assert(remain >= 4);
+    PutUInt16(data, 0xF000);
 
     // Reserve transport_stream_loop_length.
     tsll_addr = data + 2;
-    PutUInt16 (data + 2, 0xF000);
+    PutUInt16(data + 2, 0xF000);
     data += 4;
     remain -= 4;
 }
@@ -218,16 +217,16 @@ void ts::AbstractTransportListTable::addSection (BinaryTable& table,
 // Otherwise, return false.
 //----------------------------------------------------------------------------
 
-bool ts::AbstractTransportListTable::getNextTransport (TransportStreamIdSet& ts_set, 
-                                                         TransportStreamId& ts_id,
-                                                         int section_number) const
+bool ts::AbstractTransportListTable::getNextTransport(TransportStreamIdSet& ts_set,
+                                                      TransportStreamId& ts_id,
+                                                      int section_number) const
 {
     // Search one TS which should be serialized in current section
     for (TransportStreamIdSet::const_iterator it = ts_set.begin(); it != ts_set.end(); ++it) {
-        const SectionHintsMap::const_iterator hint (section_hints.find (*it));
-        if (hint != section_hints.end() && hint->second == section_number && transports.find (*it) != transports.end()) {
+        const SectionHintsMap::const_iterator hint(section_hints.find(*it));
+        if (hint != section_hints.end() && hint->second == section_number && transports.find(*it) != transports.end()) {
             ts_id = *it;
-            ts_set.erase (it);
+            ts_set.erase(it);
             return true;
         }
     }
@@ -253,7 +252,7 @@ bool ts::AbstractTransportListTable::getNextTransport (TransportStreamIdSet& ts_
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::AbstractTransportListTable::serialize (BinaryTable& table) const
+void ts::AbstractTransportListTable::serialize(BinaryTable& table) const
 {
     // Reinitialize table object
     table.clear ();
@@ -266,14 +265,14 @@ void ts::AbstractTransportListTable::serialize (BinaryTable& table) const
     // Build a set of TS id to serialize.
     TransportStreamIdSet ts_set;
     for (TransportMap::const_iterator it = transports.begin(); it != transports.end(); ++it) {
-        ts_set.insert (it->first);
+        ts_set.insert(it->first);
     }
 
     // Build the sections
-    uint8_t payload [MAX_PSI_LONG_SECTION_PAYLOAD_SIZE];
-    int section_number (0);
-    uint8_t* data (payload);
-    size_t remain (sizeof(payload));
+    uint8_t payload[MAX_PSI_LONG_SECTION_PAYLOAD_SIZE];
+    int section_number(0);
+    uint8_t* data(payload);
+    size_t remain(sizeof(payload));
 
     // Add top-level descriptor list.
     // If the descriptor list is too long to fit into one section,
@@ -282,7 +281,7 @@ void ts::AbstractTransportListTable::serialize (BinaryTable& table) const
 
         // Add the descriptor list (or part of it).
         // Reserve 2 extra bytes at end, for the rest of the section
-        assert (remain > 2);
+        assert(remain > 2);
         remain -= 2;
         start_index = descs.lengthSerialize (data, remain, start_index);
         remain += 2;
@@ -291,15 +290,15 @@ void ts::AbstractTransportListTable::serialize (BinaryTable& table) const
         if (start_index == descs.count()) {
             break;
         }
-        assert (start_index < descs.count());
+        assert(start_index < descs.count());
 
         // Need to close the section and open a new one.
         // Add a zero transport_stream_loop_length.
-        assert (remain >= 2);
-        PutUInt16 (data, 0xF000);
+        assert(remain >= 2);
+        PutUInt16(data, 0xF000);
         data += 2;
         remain -= 2;
-        addSection (table, section_number, payload, data, remain);
+        addSection(table, section_number, payload, data, remain);
     }
 
     // Reserve transport_stream_loop_length.
@@ -367,10 +366,10 @@ void ts::AbstractTransportListTable::serialize (BinaryTable& table) const
 
             // Not all descriptors were written, the section is full.
             // Open a new one and continue with this transport.
-            addSection (table, section_number, payload, tsll_addr, data, remain);
+            addSection(table, section_number, payload, tsll_addr, data, remain);
         }
     }
 
-    // Add partial section
-    addSection (table, section_number, payload, tsll_addr, data, remain);
+    // Add partial section.
+    addSection(table, section_number, payload, tsll_addr, data, remain);
 }

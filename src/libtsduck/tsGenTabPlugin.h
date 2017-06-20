@@ -77,7 +77,7 @@ namespace ts {
         GenTabPlugin(const GenTabPlugin&) = delete;
         GenTabPlugin& operator=(const GenTabPlugin&) = delete;
     };
-    
+
     //!
     //! Tsgentab plugin interface profile.
     //!

@@ -154,7 +154,7 @@ void ts::PSILogger::handleTable (SectionDemux&, const BinaryTable& table)
                 }
                 // Also include NIT (considered as a PMT)
                 _demux.addPID (pat.nit_pid != PID_NULL ? pat.nit_pid : PID (PID_NIT));
-                _expected_pmt++;  
+                _expected_pmt++;
             }
             // Display the content of the PAT
             _out << table;

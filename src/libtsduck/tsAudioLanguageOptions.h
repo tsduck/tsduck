@@ -53,7 +53,7 @@ namespace ts {
     //! inside the PMT, starting with 1. The default location is "A1", ie. the
     //! first audio stream inside the PMT.
     //! Audio streams are numbered in increasing order of PID value.
-    //! 
+    //!
     class TSDUCKDLL AudioLanguageOptions
     {
     public:

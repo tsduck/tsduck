@@ -55,7 +55,7 @@ std::string ts::Decimal (const INT& value,
         #pragma warning(push)
         #pragma warning(disable:4146)
         #endif
-        
+
         ivalue = -value;
 
         #ifdef __msc

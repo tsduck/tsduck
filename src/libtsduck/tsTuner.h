@@ -482,22 +482,22 @@ namespace ts {
         //   - MPEG-2 demultiplexer
         //   - TIF (Transport Information Filter)
 
-        size_t                   _sink_queue_size;     // Media sample queue size
-        ComPtr <::IGraphBuilder> _graph;               // The graph (subclass of IFilterGraph)
-        ComPtr <::IMediaControl> _media_control;       // ... interface of graph
-        ComPtr <SinkFilter>      _sink_filter;         // Sink filter to TSDuck
-        ComPtr <::IBaseFilter>   _provider_filter;     // Network provider filter
-        std::string              _provider_name;       // ... filter friendly name
-        ComPtr <::IBDA_NetworkProvider> _net_provider; // ... interface of provider_filter
-        ComPtr <::ITuner>        _tuner;               // ... interface of provider_filter
-        ComPtr <::ITuningSpace>  _tuning_space;        // ... associated to provider_filter
-        std::string              _tuning_space_fname;  // ... friendly name
-        std::string              _tuning_space_uname;  // ... unique name
-        ComPtr <::IBaseFilter>   _tuner_filter;        // Tuner filter
-        std::vector <ComPtr <::IBDA_DigitalDemodulator>>  _demods;   // ... all its demod interfaces
-        std::vector <ComPtr <::IBDA_DigitalDemodulator2>> _demods2;  // ... all its demod (2nd gen) interfaces
-        std::vector <ComPtr <::IBDA_SignalStatistics>>    _sigstats; // ... all its signal stat interfaces
-        std::vector <ComPtr <::IKsPropertySet>>           _tunprops; // ... all its property set interfaces
+        size_t                  _sink_queue_size;     // Media sample queue size
+        ComPtr<::IGraphBuilder> _graph;               // The graph (subclass of IFilterGraph)
+        ComPtr<::IMediaControl> _media_control;       // ... interface of graph
+        ComPtr<SinkFilter>      _sink_filter;         // Sink filter to TSDuck
+        ComPtr<::IBaseFilter>   _provider_filter;     // Network provider filter
+        std::string             _provider_name;       // ... filter friendly name
+        ComPtr<::IBDA_NetworkProvider> _net_provider; // ... interface of provider_filter
+        ComPtr<::ITuner>        _tuner;               // ... interface of provider_filter
+        ComPtr<::ITuningSpace>  _tuning_space;        // ... associated to provider_filter
+        std::string             _tuning_space_fname;  // ... friendly name
+        std::string             _tuning_space_uname;  // ... unique name
+        ComPtr<::IBaseFilter>   _tuner_filter;        // Tuner filter
+        std::vector<ComPtr<::IBDA_DigitalDemodulator>>  _demods;   // ... all its demod interfaces
+        std::vector<ComPtr<::IBDA_DigitalDemodulator2>> _demods2;  // ... all its demod (2nd gen) interfaces
+        std::vector<ComPtr<::IBDA_SignalStatistics>>    _sigstats; // ... all its signal stat interfaces
+        std::vector<ComPtr<::IKsPropertySet>>           _tunprops; // ... all its property set interfaces
 
         // Try to build the graph.
         // Return true on success, false on error
@@ -514,7 +514,7 @@ namespace ts {
         bool internalTune(const TunerParameters&, ReportInterface&);
 
         // Create an IDigitalLocator object for various types of DVB parameters.
-        // Return true on success, false on errors
+        // Return true on success, false on error.
         bool createLocatorDVBS(ComPtr<::IDigitalLocator>&, const TunerParametersDVBS&, ReportInterface&);
         bool createLocatorDVBT(ComPtr<::IDigitalLocator>&, const TunerParametersDVBT&, ReportInterface&);
         bool createLocatorDVBC(ComPtr<::IDigitalLocator>&, const TunerParametersDVBC&, ReportInterface&);

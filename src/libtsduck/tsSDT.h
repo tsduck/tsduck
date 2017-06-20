@@ -83,7 +83,7 @@ namespace ts {
         {
             return _table_id == TID_SDT_ACT;
         }
-        
+
         //!
         //! Set if this is an "actual" SDT.
         //! @param [in] is_actual True for SDT Actual TS, false for SDT Other TS.

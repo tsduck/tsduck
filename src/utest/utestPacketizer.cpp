@@ -101,7 +101,7 @@ void PacketizerTest::DemuxTable(ts::BinaryTablePtr& binTable, const char* name, 
         demux.feedPacket (pkt[pi]);
     }
     CPPUNIT_ASSERT_EQUAL(size_t(1), demux.tableCount());
- 
+
     binTable = demux.tableAt(0);
     CPPUNIT_ASSERT(!binTable.isNull());
     CPPUNIT_ASSERT(binTable->isValid());

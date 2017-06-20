@@ -123,7 +123,7 @@ bool ts::AudioLanguageOptions::getFromArgs (Args& args, const char* option_name,
             goto error;
         }
     }
-    
+
     return true;
 
  error:

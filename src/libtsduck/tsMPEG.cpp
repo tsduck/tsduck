@@ -74,7 +74,7 @@ bool ts::IsPES (uint8_t st)
 
 bool ts::IsVideoST (uint8_t st)
 {
-    return 
+    return
         st == ST_MPEG1_VIDEO ||
         st == ST_MPEG2_VIDEO ||
         st == ST_MPEG4_VIDEO ||

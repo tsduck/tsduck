@@ -206,7 +206,7 @@ std::string ts::NameGUID (const ::GUID& guid)
     // Check some predefined GUID values
 
 #define _N_(g) if (g == guid) {return #g;}
-    
+
     _N_ (GUID_NULL);
 
 //  _N_ (IID_IBDAComparable);

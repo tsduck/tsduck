@@ -299,7 +299,7 @@ namespace ts {
     #define TS_SOCKET_ERR_NOTCONN platform_specific
 
 #elif defined (__windows)
-    
+
     #define TS_SOCKET_T                ::SOCKET
     #define TS_SOCKET_T_INVALID        INVALID_SOCKET
     #define TS_SOCKET_SOCKLEN_T        int
@@ -320,7 +320,7 @@ namespace ts {
     #define TS_SOCKET_ERR_NOTCONN      WSAENOTCONN
 
 #elif defined(__unix)
-        
+
     #define TS_SOCKET_T                int
     #define TS_SOCKET_T_INVALID        (-1)
     #define TS_SOCKET_SOCKLEN_T        ::socklen_t

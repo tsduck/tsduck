@@ -293,7 +293,7 @@ void ts::SDT::serialize (BinaryTable& table) const
         addSection (table, section_number, payload, data, remain);
     }
 }
-    
+
 
 //----------------------------------------------------------------------------
 // Default constructor for SDT::Service
