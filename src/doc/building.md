@@ -56,7 +56,7 @@ dnf install glibc-devel.i686 libstdc++-devel.i686 pcsc-lite-devel.i686 cppunit-d
 ~~~~
 apt-get install g++ doxygen graphviz pcscd libpcsclite-dev libcppunit-dev
 ~~~~
-    
+
 - Setup to build 32-bit TSDuck on 64-bit system (command `make m32`), start with:
 ~~~~
     apt-get install gcc-multilib g++-multilib

@@ -166,7 +166,7 @@ bool ts::MD5::add (const void* data, size_t size)
             _length += BLOCK_SIZE * 8;
             in += BLOCK_SIZE;
             size -= BLOCK_SIZE;
-        } 
+        }
         else {
             n = std::min (size, (BLOCK_SIZE - _curlen));
             ::memcpy(_buf + _curlen, in, n);

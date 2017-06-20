@@ -77,7 +77,7 @@ namespace ts {
         virtual bool add(const void* data, size_t size) = 0;
 
         //!
-        //! Get the resulting hash value.        
+        //! Get the resulting hash value.
         //! @param [out] hash Address of returned hash buffer.
         //! @param [in] bufsize Size in bytes of hash buffer.
         //! @param [out] retsize Address of an integer receiving

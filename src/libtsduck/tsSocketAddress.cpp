@@ -58,7 +58,7 @@ ts::SocketAddress::SocketAddress (const ::sockaddr_in& s) :
 {
 }
 
-  
+
 //----------------------------------------------------------------------------
 // Decode a string "addr[:port]" or "[addr:]port".
 // Addr can also be a hostname which is resolved.

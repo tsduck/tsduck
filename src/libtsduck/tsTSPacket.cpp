@@ -253,7 +253,7 @@ uint64_t ts::TSPacket::getPDTS (size_t offset) const
     }
     else {
         return (uint64_t (b[offset] & 0x0E) << 29) |
-            (uint64_t (GetUInt16 (b + offset + 1) & 0xFFFE) << 14) | 
+            (uint64_t (GetUInt16 (b + offset + 1) & 0xFFFE) << 14) |
             (uint64_t (GetUInt16 (b + offset + 3)) >> 1);
     }
 }

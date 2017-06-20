@@ -90,7 +90,7 @@ void ts::IPAddress::copy (::sockaddr_in& s, uint16_t port) const
     s.sin_port = htons (port);
 }
 
-  
+
 //----------------------------------------------------------------------------
 // Set address
 //----------------------------------------------------------------------------
@@ -100,7 +100,7 @@ void ts::IPAddress::setAddress(uint8_t b1, uint8_t b2, uint8_t b3, uint8_t b4)
     _addr = (uint32_t(b1) << 24) | (uint32_t(b2) << 16) | (uint32_t(b3) << 8) | uint32_t(b4);
 }
 
-    
+
 //----------------------------------------------------------------------------
 // Decode a string or hostname which is resolved.
 // Return true on success, false on error.

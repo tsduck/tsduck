@@ -94,7 +94,7 @@ void ts::Packetizer::getNextPacket (TSPacket& pkt)
     uint16_t pusi = 0x0000;         // payload_unit_start_indicator (set: 0x4000)
     uint8_t pointer_field = 0x00;   // pointer_field (used only if pusi is set)
     size_t remain_in_section = _section->size() - _next_byte;
-    bool do_stuffing = true;      // do we need to insert stuffing at end of packet? 
+    bool do_stuffing = true;      // do we need to insert stuffing at end of packet?
     SectionPtr next_section (0);  // next section after current one
 
     // Check if it is possible that a new section may start in the middle

@@ -39,7 +39,7 @@
 template <class ITERATOR>
 std::ostream& ts::Service::Display (std::ostream& strm,
                                       const std::string& margin,
-                                      const ITERATOR& begin, 
+                                      const ITERATOR& begin,
                                       const ITERATOR& end,
                                       bool header)
 {

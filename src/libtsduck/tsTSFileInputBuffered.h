@@ -88,7 +88,7 @@ namespace ts {
         {
             return _buffer.size() - _total_count;
         }
-        
+
         //!
         //! Get the number of TS packets in the buffer.
         //! @return The number of TS packets in the buffer.
@@ -179,7 +179,7 @@ namespace ts {
 
         //!
         //! Seek to the specified absolute position, if it is inside the buffer.
-        //! @param [in] position Absolute packet index in the file.        
+        //! @param [in] position Absolute packet index in the file.
         //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!

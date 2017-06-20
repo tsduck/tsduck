@@ -84,7 +84,7 @@ void DirectShowTest::testDevices()
 
     // List devices by category
 #define _C_(cat) ts::DisplayDevicesByCategory(utest::Out(), cat, "", #cat, CERR)
-    
+
     _C_(KSCATEGORY_BDA_NETWORK_PROVIDER);
     _C_(KSCATEGORY_BDA_TRANSPORT_INFORMATION);
     _C_(KSCATEGORY_CAPTURE);

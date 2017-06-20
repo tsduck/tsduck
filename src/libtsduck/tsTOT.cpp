@@ -244,7 +244,7 @@ void ts::TOT::serialize (BinaryTable& table) const
     remain -= 4;
     size_t next_index = dlist.lengthSerialize (data, remain);
     if (next_index != dlist.count()) {
-        // Could not serialize all descriptors 
+        // Could not serialize all descriptors
         // No simple way to report this error.
         // Add error processing here later.
     }

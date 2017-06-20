@@ -66,7 +66,7 @@ ts::SectionDemux::Status::Status (const SectionDemux& demux) :
 {
     demux.getStatus (*this);
 }
-        
+
 
 //----------------------------------------------------------------------------
 // Demux status information - Reset content

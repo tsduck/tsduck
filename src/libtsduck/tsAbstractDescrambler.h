@@ -70,7 +70,7 @@ namespace ts {
                             const std::string& description = "",
                             const std::string& syntax = "",
                             const std::string& help = "");
-        
+
         // Implementation of ProcessorPlugin interface.
         // If overridden by descrambler subclass, superclass must be explicitely invoked.
         virtual bool stop();
@@ -94,7 +94,7 @@ namespace ts {
         //! Set initialization vector for chained modes (not DVB-CSA).
         //! Must be invoked before startDescrambler().
         //! @param [in] iv Initialization vector.
-        //!        
+        //!
         void setIV(const ByteBlock& iv) {_iv = iv;}
 
         //!

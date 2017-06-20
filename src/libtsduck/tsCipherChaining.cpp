@@ -63,7 +63,7 @@ size_t ts::CipherChaining::maxKeySize() const
 {
     return algo == 0 ? 0 : algo->maxKeySize();
 }
-       
+
 bool ts::CipherChaining::isValidKeySize(size_t size) const
 {
     return algo == 0 ? 0 : algo->isValidKeySize(size);

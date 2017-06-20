@@ -39,7 +39,7 @@
 namespace ts {
     //!
     //! Namespace for TLV protocols (Tag / Length / Value)
-    //!    
+    //!
     namespace tlv {
         //
         // Basic meta-data in DVB TLV protocols

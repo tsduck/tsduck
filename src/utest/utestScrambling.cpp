@@ -91,7 +91,7 @@ namespace {
         ts::TSPacket plain;
         ts::TSPacket cipher;
     };
-    
+
     const ScramblingTestVector scrambling_test_vectors[] = {
         // Payload size: 184 bytes, no residue
         {
@@ -184,7 +184,7 @@ void ScramblingTest::testScrambling()
         const size_t header_size = vec->plain.getHeaderSize();
         const size_t payload_size = vec->plain.getPayloadSize();
         const uint8_t scv = vec->cipher.getScrambling();
-        
+
         utest::Out() << "ScramblingTest: " << ti << ", header: " << header_size <<
               " byte, payload: " << payload_size <<
               " bytes, PID: " << vec->plain.getPID() <<

@@ -336,7 +336,7 @@ namespace {
                 data += 5; size -= 5;
                 if (length > size)
                     length = size;
-                strm << margin << "Service Id: " << servid << 
+                strm << margin << "Service Id: " << servid <<
                     Format (" (0x%04X)", int (servid)) <<
                     ", EITs: " << YesNo (eits) <<
                     ", EITp/f: " << YesNo (eitpf) <<

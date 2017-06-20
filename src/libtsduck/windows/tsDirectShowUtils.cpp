@@ -835,7 +835,7 @@ bool ts::DisplayFilterGraph (std::ostream& strm, const ComPtr <::IBaseFilter>& s
         if (!GetPin (pins, filter.pointer(), xPIN_OUTPUT | xPIN_CONNECTED, report)) {
             return false;
         }
- 
+
         // Display the filter info
         char bar = pins.size() > 1 ? '|' : ' ';
         if (verbose) {

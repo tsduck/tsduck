@@ -68,7 +68,7 @@ namespace ts {
         //! @param [in] p Another ComPtr instance.
         //!
         ComPtr(const ComPtr<COMCLASS>& p) :
-            _ptr (p.pointer())
+            _ptr(p.pointer())
         {
             if (_ptr != 0) {
                 _ptr->AddRef();
@@ -79,18 +79,18 @@ namespace ts {
         //! Constructor using CoCreateInstance().
         //! If the COM object is successfully created, it becomes managed and
         //! its reference count is unchanged (== 1).
-        //!       
+        //!
         //! @param [in] class_id Class id of the COM object to create.
         //! @param [in] interface_id Id of the interface we request in the object.
         //! @param [in] report Where to report errors.
-        //!       
+        //!
         //! Example:
         //! @code
         //! ComPtr<::ICreateDevEnum> enum_devices(::CLSID_SystemDeviceEnum, ::IID_ICreateDevEnum, report);
         //! @endcode
-        //!       
+        //!
         ComPtr(const IID& class_id, const IID& interface_id, ReportInterface& report = CERR) :
-            _ptr (0)
+            _ptr(0)
         {
             createInstance(class_id, interface_id, report);
         }
@@ -220,12 +220,12 @@ namespace ts {
         ComPtr<COMCLASS>& createInstance(const IID& class_id, const IID& interface_id, ReportInterface& report = CERR)
         {
             release();
-            ::HRESULT hr = ::CoCreateInstance (class_id,               // Class ID for object
-                                               NULL,                   // Not part of an aggregate
-                                               ::CLSCTX_INPROC_SERVER, // Object "runs" in same process
-                                               interface_id,           // ID of interface we request
-                                               (void**)&_ptr);         // Returned pointer to interface
-            if (!ComSuccess (hr, "CoCreateInstance", report)) {
+            ::HRESULT hr = ::CoCreateInstance(class_id,               // Class ID for object
+                                              NULL,                   // Not part of an aggregate
+                                              ::CLSCTX_INPROC_SERVER, // Object "runs" in same process
+                                              interface_id,           // ID of interface we request
+                                              (void**)&_ptr);         // Returned pointer to interface
+            if (!ComSuccess(hr, "CoCreateInstance", report)) {
                 _ptr = 0;
             }
             return *this;
@@ -244,9 +244,9 @@ namespace ts {
         ComPtr<COMCLASS>& queryInterface(::IUnknown* obj, const IID& interface_id, ReportInterface& report = CERR)
         {
             release();
-            assert (obj != 0);
-            ::HRESULT hr = obj->QueryInterface (interface_id, (void**)&_ptr);
-            if (!ComSuccess (hr, "IUnknown::QueryInterface", report)) {
+            assert(obj != 0);
+            ::HRESULT hr = obj->QueryInterface(interface_id, (void**)&_ptr);
+            if (!ComSuccess(hr, "IUnknown::QueryInterface", report)) {
                 _ptr = 0;
             }
             return *this;
@@ -265,12 +265,12 @@ namespace ts {
         ComPtr<COMCLASS>& bindToObject(::IMoniker* moniker, const IID& interface_id, ReportInterface& report = CERR)
         {
             release();
-            assert (moniker != 0);
-            ::HRESULT hr = moniker->BindToObject (0,               // No cached context
-                                                  0,               // Not part of a composite
-                                                  interface_id,    // ID of interface we request
-                                                  (void**)&_ptr);  // Returned pointer to interface
-            if (!ComSuccess (hr, "IMoniker::BindToObject", report)) {
+            assert(moniker != 0);
+            ::HRESULT hr = moniker->BindToObject(0,               // No cached context
+                                                 0,               // Not part of a composite
+                                                 interface_id,    // ID of interface we request
+                                                 (void**)&_ptr);  // Returned pointer to interface
+            if (!ComSuccess(hr, "IMoniker::BindToObject", report)) {
                 _ptr = 0;
             }
             return *this;
@@ -284,7 +284,7 @@ namespace ts {
         bool expose(const IID& iid) const
         {
             ::IUnknown* iface;
-            if (_ptr != 0 && SUCCEEDED (_ptr->QueryInterface (iid, (void**)&iface))) {
+            if (_ptr != 0 && SUCCEEDED(_ptr->QueryInterface(iid, (void**)&iface))) {
                 iface->Release();
                 return true;
             }
@@ -300,13 +300,13 @@ namespace ts {
         //!
         std::string className() const
         {
-            ::GUID guid (GUID_NULL);
+            ::GUID guid(GUID_NULL);
             ::IPersist* persist;
-            if (_ptr != 0 && SUCCEEDED (_ptr->QueryInterface (::IID_IPersist, (void**)&persist))) {
-                persist->GetClassID (&guid);
+            if (_ptr != 0 && SUCCEEDED(_ptr->QueryInterface(::IID_IPersist, (void**)&persist))) {
+                persist->GetClassID(&guid);
                 persist->Release();
             }
-            return guid == GUID_NULL ? "" : NameGUID (guid);
+            return guid == GUID_NULL ? "" : NameGUID(guid);
         }
     };
 
@@ -317,7 +317,7 @@ namespace ts {
     //! @param [in,out] vec A vector of COM objects to release.
     //!
     template <class COMCLASS>
-    void ComVectorRelease (std::vector<ComPtr<COMCLASS>>& vec)
+    void ComVectorRelease(std::vector<ComPtr<COMCLASS>>& vec)
     {
         for (std::vector<ComPtr<COMCLASS>>::iterator it = vec.begin(); it != vec.end(); ++it) {
             it->release();
@@ -329,11 +329,10 @@ namespace ts {
     //! @tparam COMCLASS A COM interface or object class.
     //! @param [in,out] vec A vector of COM objects to release.
     //!
-    // Release all COM objects in a vector then clear vector.
     template <class COMCLASS>
-    void ComVectorClear (std::vector<ComPtr<COMCLASS>>& vec)
+    void ComVectorClear(std::vector<ComPtr<COMCLASS>>& vec)
     {
-        ComVectorRelease (vec);
+        ComVectorRelease(vec);
         vec.clear();
     }
 }

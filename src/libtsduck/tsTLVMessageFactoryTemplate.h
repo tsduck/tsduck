@@ -57,7 +57,7 @@ void ts::tlv::MessageFactory::checkParamSize (TAG tag, const ParameterMultimap::
 // Get first occurence of an integer parameter:
 //----------------------------------------------------------------------------
 
-template <typename INT> 
+template <typename INT>
 INT ts::tlv::MessageFactory::get (TAG tag) const
 {
     ParameterMultimap::const_iterator it = _params.find (tag);

@@ -401,7 +401,7 @@ namespace ts {
         BW_5_MHZ,  //!< 5 MHz bandwidth.
 #endif
     };
- 
+
     //!
     //! Enumeration description of ts::BandWidth.
     //!
@@ -530,7 +530,7 @@ namespace ts {
     //! 167 kHz offsets may be applied (-1, 1, 2 or 3).
     //!
     namespace UHF {
-        
+
         const uint64_t CHANNEL_BASE = 306000000;   //!< UHF band base (306 MHz).
         const uint64_t CHANNEL_WIDTH =  8000000;   //!< UHF channel width (8 MHz).
         const uint64_t CHANNEL_OFFSET =  166666;   //!< Optional channel offset (~167 kHz).
@@ -587,7 +587,7 @@ namespace ts {
     //! 167 kHz offsets may be applied (-1, 1, 2 or 3).
     //!
     namespace VHF {
-        
+
         const uint64_t CHANNEL_BASE = 142500000;  //!< VHF band base (142.5 MHz).
         const uint64_t CHANNEL_WIDTH =  7000000;  //!< VHF channel width (7 MHz).
         const uint64_t CHANNEL_OFFSET =  166666;  //!< Optional channel offset (~167 kHz).

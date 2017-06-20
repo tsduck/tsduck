@@ -76,7 +76,7 @@ namespace ts {
         {
             return _status;
         }
-        
+
     private:
         friend class PollFiles;
 

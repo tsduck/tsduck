@@ -16,7 +16,7 @@
 #include "tsSHA256.h"
 
 #define Ch(x,y,z)  (z ^ (x & (y ^ z)))
-#define Maj(x,y,z) (((x | y) & z) | (x & y)) 
+#define Maj(x,y,z) (((x | y) & z) | (x & y))
 #define S(x, n)    (RORc ((x),(n)))
 #define R(x, n)    (((x) & 0xFFFFFFFF) >> (n))
 #define Sigma0(x)  (S(x, 2) ^ S(x, 13) ^ S(x, 22))
@@ -79,7 +79,7 @@ void ts::SHA256::compress (const uint8_t* buf)
     /* fill W[16..63] */
     for (size_t i = 16; i < 64; i++) {
         W[i] = Gamma1(W[i - 2]) + W[i - 7] + Gamma0(W[i - 15]) + W[i - 16];
-    }        
+    }
 
     /* Compress */
 #define RND(a,b,c,d,e,f,g,h,i,ki)                    \
@@ -153,8 +153,8 @@ void ts::SHA256::compress (const uint8_t* buf)
     RND(S[2],S[3],S[4],S[5],S[6],S[7],S[0],S[1],62,0xbef9a3f7);
     RND(S[1],S[2],S[3],S[4],S[5],S[6],S[7],S[0],63,0xc67178f2);
 
-#undef RND     
-    
+#undef RND
+
     /* feedback */
     for (size_t i = 0; i < 8; i++) {
         _state[i] = _state[i] + S[i];
@@ -181,7 +181,7 @@ bool ts::SHA256::add (const void* data, size_t size)
             _length += BLOCK_SIZE * 8;
             in += BLOCK_SIZE;
             size -= BLOCK_SIZE;
-        } 
+        }
         else {
             n = std::min (size, (BLOCK_SIZE - _curlen));
             ::memcpy(_buf + _curlen, in, n);

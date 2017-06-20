@@ -16,7 +16,7 @@
 #include "tsSHA512.h"
 
 #define Ch(x,y,z)  (z ^ (x & (y ^ z)))
-#define Maj(x,y,z) (((x | y) & z) | (x & y)) 
+#define Maj(x,y,z) (((x | y) & z) | (x & y))
 #define S(x, n)    (ROR64c(x, n))
 #define R(x, n)    (((x) & TS_UCONST64(0xFFFFFFFFFFFFFFFF)) >> uint64_t(n))
 #define Sigma0(x)  (S(x, 28) ^ S(x, 34) ^ S(x, 39))
@@ -31,45 +31,45 @@
 
 namespace {
     const uint64_t K[80] = {
-        TS_UCONST64 (0x428a2f98d728ae22), TS_UCONST64 (0x7137449123ef65cd), 
+        TS_UCONST64 (0x428a2f98d728ae22), TS_UCONST64 (0x7137449123ef65cd),
         TS_UCONST64 (0xb5c0fbcfec4d3b2f), TS_UCONST64 (0xe9b5dba58189dbbc),
-        TS_UCONST64 (0x3956c25bf348b538), TS_UCONST64 (0x59f111f1b605d019), 
+        TS_UCONST64 (0x3956c25bf348b538), TS_UCONST64 (0x59f111f1b605d019),
         TS_UCONST64 (0x923f82a4af194f9b), TS_UCONST64 (0xab1c5ed5da6d8118),
-        TS_UCONST64 (0xd807aa98a3030242), TS_UCONST64 (0x12835b0145706fbe), 
+        TS_UCONST64 (0xd807aa98a3030242), TS_UCONST64 (0x12835b0145706fbe),
         TS_UCONST64 (0x243185be4ee4b28c), TS_UCONST64 (0x550c7dc3d5ffb4e2),
-        TS_UCONST64 (0x72be5d74f27b896f), TS_UCONST64 (0x80deb1fe3b1696b1), 
+        TS_UCONST64 (0x72be5d74f27b896f), TS_UCONST64 (0x80deb1fe3b1696b1),
         TS_UCONST64 (0x9bdc06a725c71235), TS_UCONST64 (0xc19bf174cf692694),
-        TS_UCONST64 (0xe49b69c19ef14ad2), TS_UCONST64 (0xefbe4786384f25e3), 
+        TS_UCONST64 (0xe49b69c19ef14ad2), TS_UCONST64 (0xefbe4786384f25e3),
         TS_UCONST64 (0x0fc19dc68b8cd5b5), TS_UCONST64 (0x240ca1cc77ac9c65),
-        TS_UCONST64 (0x2de92c6f592b0275), TS_UCONST64 (0x4a7484aa6ea6e483), 
+        TS_UCONST64 (0x2de92c6f592b0275), TS_UCONST64 (0x4a7484aa6ea6e483),
         TS_UCONST64 (0x5cb0a9dcbd41fbd4), TS_UCONST64 (0x76f988da831153b5),
-        TS_UCONST64 (0x983e5152ee66dfab), TS_UCONST64 (0xa831c66d2db43210), 
+        TS_UCONST64 (0x983e5152ee66dfab), TS_UCONST64 (0xa831c66d2db43210),
         TS_UCONST64 (0xb00327c898fb213f), TS_UCONST64 (0xbf597fc7beef0ee4),
-        TS_UCONST64 (0xc6e00bf33da88fc2), TS_UCONST64 (0xd5a79147930aa725), 
+        TS_UCONST64 (0xc6e00bf33da88fc2), TS_UCONST64 (0xd5a79147930aa725),
         TS_UCONST64 (0x06ca6351e003826f), TS_UCONST64 (0x142929670a0e6e70),
-        TS_UCONST64 (0x27b70a8546d22ffc), TS_UCONST64 (0x2e1b21385c26c926), 
+        TS_UCONST64 (0x27b70a8546d22ffc), TS_UCONST64 (0x2e1b21385c26c926),
         TS_UCONST64 (0x4d2c6dfc5ac42aed), TS_UCONST64 (0x53380d139d95b3df),
-        TS_UCONST64 (0x650a73548baf63de), TS_UCONST64 (0x766a0abb3c77b2a8), 
+        TS_UCONST64 (0x650a73548baf63de), TS_UCONST64 (0x766a0abb3c77b2a8),
         TS_UCONST64 (0x81c2c92e47edaee6), TS_UCONST64 (0x92722c851482353b),
         TS_UCONST64 (0xa2bfe8a14cf10364), TS_UCONST64 (0xa81a664bbc423001),
         TS_UCONST64 (0xc24b8b70d0f89791), TS_UCONST64 (0xc76c51a30654be30),
-        TS_UCONST64 (0xd192e819d6ef5218), TS_UCONST64 (0xd69906245565a910), 
+        TS_UCONST64 (0xd192e819d6ef5218), TS_UCONST64 (0xd69906245565a910),
         TS_UCONST64 (0xf40e35855771202a), TS_UCONST64 (0x106aa07032bbd1b8),
-        TS_UCONST64 (0x19a4c116b8d2d0c8), TS_UCONST64 (0x1e376c085141ab53), 
+        TS_UCONST64 (0x19a4c116b8d2d0c8), TS_UCONST64 (0x1e376c085141ab53),
         TS_UCONST64 (0x2748774cdf8eeb99), TS_UCONST64 (0x34b0bcb5e19b48a8),
-        TS_UCONST64 (0x391c0cb3c5c95a63), TS_UCONST64 (0x4ed8aa4ae3418acb), 
+        TS_UCONST64 (0x391c0cb3c5c95a63), TS_UCONST64 (0x4ed8aa4ae3418acb),
         TS_UCONST64 (0x5b9cca4f7763e373), TS_UCONST64 (0x682e6ff3d6b2b8a3),
-        TS_UCONST64 (0x748f82ee5defb2fc), TS_UCONST64 (0x78a5636f43172f60), 
+        TS_UCONST64 (0x748f82ee5defb2fc), TS_UCONST64 (0x78a5636f43172f60),
         TS_UCONST64 (0x84c87814a1f0ab72), TS_UCONST64 (0x8cc702081a6439ec),
-        TS_UCONST64 (0x90befffa23631e28), TS_UCONST64 (0xa4506cebde82bde9), 
+        TS_UCONST64 (0x90befffa23631e28), TS_UCONST64 (0xa4506cebde82bde9),
         TS_UCONST64 (0xbef9a3f7b2c67915), TS_UCONST64 (0xc67178f2e372532b),
-        TS_UCONST64 (0xca273eceea26619c), TS_UCONST64 (0xd186b8c721c0c207), 
+        TS_UCONST64 (0xca273eceea26619c), TS_UCONST64 (0xd186b8c721c0c207),
         TS_UCONST64 (0xeada7dd6cde0eb1e), TS_UCONST64 (0xf57d4f7fee6ed178),
-        TS_UCONST64 (0x06f067aa72176fba), TS_UCONST64 (0x0a637dc5a2c898a6), 
+        TS_UCONST64 (0x06f067aa72176fba), TS_UCONST64 (0x0a637dc5a2c898a6),
         TS_UCONST64 (0x113f9804bef90dae), TS_UCONST64 (0x1b710b35131c471b),
-        TS_UCONST64 (0x28db77f523047d84), TS_UCONST64 (0x32caab7b40c72493), 
+        TS_UCONST64 (0x28db77f523047d84), TS_UCONST64 (0x32caab7b40c72493),
         TS_UCONST64 (0x3c9ebe0a15c9bebc), TS_UCONST64 (0x431d67c49c100d4c),
-        TS_UCONST64 (0x4cc5d4becb3e42b6), TS_UCONST64 (0x597f299cfc657e2a), 
+        TS_UCONST64 (0x4cc5d4becb3e42b6), TS_UCONST64 (0x597f299cfc657e2a),
         TS_UCONST64 (0x5fcb6fab3ad6faec), TS_UCONST64 (0x6c44198c4a475817)
     };
 }
@@ -129,7 +129,7 @@ void ts::SHA512::compress (const uint8_t* buf)
     /* fill W[16..79] */
     for (size_t i = 16; i < 80; i++) {
         W[i] = Gamma1(W[i - 2]) + W[i - 7] + Gamma0(W[i - 15]) + W[i - 16];
-    }        
+    }
 
     /* Compress */
 #define RND(a,b,c,d,e,f,g,h,i)                       \
@@ -177,7 +177,7 @@ bool ts::SHA512::add (const void* data, size_t size)
             _length += BLOCK_SIZE * 8;
             in += BLOCK_SIZE;
             size -= BLOCK_SIZE;
-        } 
+        }
         else {
             n = std::min (size, (BLOCK_SIZE - _curlen));
             ::memcpy(_buf + _curlen, in, n);
@@ -225,7 +225,7 @@ bool ts::SHA512::getHash (void* hash, size_t bufsize, size_t* retsize)
         _curlen = 0;
     }
 
-    /* pad upto 120 bytes of zeroes 
+    /* pad upto 120 bytes of zeroes
      * note: that from 112 to 120 is the 64 MSB of the length.  We assume that you won't hash
      * > 2^64 bits of data... :-)
      */

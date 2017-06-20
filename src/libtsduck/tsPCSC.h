@@ -69,7 +69,7 @@ namespace ts {
         //! @param [in] mask Address of mask of valid bits in @a atr1.
         //! For each bit which is set in @a mask, the corresponding bits
         //! in the ATR are checked. For each bit which is cleared in mask,
-        //! the corresponding bit in the ATR is ignored. 
+        //! the corresponding bit in the ATR is ignored.
         //! @param [in] mask_size Size in bytes of @a mask.
         //! If @a mask is shorter than @a atr1, the missing bytes are assumed as 0xFF.
         //! This means that missing bytes in the mask are considered as "to be
@@ -154,7 +154,7 @@ namespace ts {
         //! @param [in] atr_mask Address of mask of valid bits in @a atr.
         //! For each bit which is set in @a atr_mask, the corresponding bits
         //! in the ATR are checked. For each bit which is cleared in mask,
-        //! the corresponding bit in the ATR is ignored. 
+        //! the corresponding bit in the ATR is ignored.
         //! @param [in] atr_mask_size Size in bytes of @a atr_mask.
         //! If @a mask is shorter than @a atr1, the missing bytes are assumed as 0xFF.
         //! This means that missing bytes in the mask are considered as "to be

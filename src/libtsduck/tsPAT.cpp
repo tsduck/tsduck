@@ -51,7 +51,7 @@ ts::PAT::PAT (uint8_t  version_,
 {
     _is_valid = true;
 }
-    
+
 
 //----------------------------------------------------------------------------
 // Constructor from a binary table
@@ -65,7 +65,7 @@ ts::PAT::PAT (const BinaryTable& table) :
 {
     deserialize (table);
 }
-    
+
 
 //----------------------------------------------------------------------------
 // Deserialization

@@ -198,7 +198,7 @@ void SafePtrTest::testSafePtr()
         CPPUNIT_ASSERT(TestData::InstanceCount() == 2);
         p2.reset (tmp);
     }
-    
+
     CPPUNIT_ASSERT(p1.count() == 3);
     CPPUNIT_ASSERT(p2.count() == 3);
     CPPUNIT_ASSERT(p3.count() == 3);
@@ -213,7 +213,7 @@ void SafePtrTest::testSafePtr()
     CPPUNIT_ASSERT(TestData::InstanceCount() == 1);
 
     p2 = new TestData (41);
-    
+
     CPPUNIT_ASSERT(p1.count() == 2);
     CPPUNIT_ASSERT(p2.count() == 1);
     CPPUNIT_ASSERT(p3.count() == 2);
@@ -228,7 +228,7 @@ void SafePtrTest::testSafePtr()
     {
         // Object pointed by p2 no longer managed but still valid
         TestData* px = p2.release ();
-    
+
         CPPUNIT_ASSERT(p1.count() == 2);
         CPPUNIT_ASSERT(p2.count() == 1);
         CPPUNIT_ASSERT(p3.count() == 2);

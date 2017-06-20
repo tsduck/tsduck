@@ -125,7 +125,7 @@ ts::ResidentBuffer<T>::ResidentBuffer (size_t elem_count) :
 template <typename T>
 ts::ResidentBuffer<T>::~ResidentBuffer ()
 {
-    // Unlock from physical memory 
+    // Unlock from physical memory
     if (_is_locked) {
 #if defined (__windows)
         ::VirtualUnlock (_locked_base, _locked_size);

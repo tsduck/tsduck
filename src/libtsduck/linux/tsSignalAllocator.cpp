@@ -50,7 +50,7 @@ ts::SignalAllocator::SignalAllocator() :
 {
     for (size_t n = 0; n < _signal_count; n++) {
         _signals[n] = false;
-    }    
+    }
 }
 
 

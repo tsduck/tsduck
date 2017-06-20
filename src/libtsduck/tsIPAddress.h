@@ -199,7 +199,7 @@ namespace ts {
         //! @param [out] a A system "struct in_addr" structure.
         //!
         void copy(::in_addr& a) const {a.s_addr = htonl(_addr);}
-  
+
         //!
         //! Decode a string, numeric address or hostname which is resolved.
         //! @param [in] name A string containing either a host name or a numerical

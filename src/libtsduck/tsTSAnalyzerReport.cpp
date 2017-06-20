@@ -178,7 +178,7 @@ std::ostream& ts::TSAnalyzerReport::reportTS (std::ostream& strm, const std::str
     ReportHeader (strm, "TRANSPORT STREAM ANALYSIS REPORT", title);
 
     strm << '|' << std::string (77, '=') << '|' << std::endl <<
-        
+
         "|  Transport Stream Id: " <<
         JustifyRight (_ts_id_valid ? Format (" %d (0x%04X)", (int)_ts_id, (int)_ts_id) : " Unknown", 21, '.') <<
         "  |  Services: " <<
@@ -190,7 +190,7 @@ std::ostream& ts::TSAnalyzerReport::reportTS (std::ostream& strm, const std::str
         "  |  PID's: Total: " <<
         JustifyRight (Format (" %" FMT_SIZE_T "u", _pid_cnt), 12, '.') <<
         "  |" << std::endl <<
-        
+
         "|  TS packets: " <<
         JustifyRight (" " + Decimal (_ts_pkt_cnt), 30, '.') <<
         "  |         Clear: " <<
@@ -238,8 +238,8 @@ std::ostream& ts::TSAnalyzerReport::reportTS (std::ostream& strm, const std::str
     if (_duration == 0)
         strm << JustifyRight (" Unknown", 57, '.');
     else {
-        strm << JustifyRight (" " + Decimal (_duration / 1000) + " sec (" + 
-                              Decimal (_duration / 60000)+ " mn " + 
+        strm << JustifyRight (" " + Decimal (_duration / 1000) + " sec (" +
+                              Decimal (_duration / 60000)+ " mn " +
                               Format ("%d", int ((_duration / 1000) % 60)) + " sec)", 57, '.');
     }
     strm << "  |" << std::endl <<
@@ -284,7 +284,7 @@ std::ostream& ts::TSAnalyzerReport::reportTS (std::ostream& strm, const std::str
 
 
 //----------------------------------------------------------------------------
-// Display header of a service PID list 
+// Display header of a service PID list
 //----------------------------------------------------------------------------
 
 namespace {
@@ -307,7 +307,7 @@ namespace {
 }
 
 //----------------------------------------------------------------------------
-// Display one line of a service PID list 
+// Display one line of a service PID list
 //----------------------------------------------------------------------------
 
 void ts::TSAnalyzerReport::reportServicePID (std::ostream& strm, const PIDContext& pc) const
@@ -350,7 +350,7 @@ std::ostream& ts::TSAnalyzerReport::reportServices (std::ostream& strm, const st
 
     strm << '|' << std::string (77, '=') << '|' << std::endl <<
         "|  Global PID's                                                               |" << std::endl <<
-        JustifyLeft ("|  TS packets: " + Decimal (_global_pkt_cnt) + 
+        JustifyLeft ("|  TS packets: " + Decimal (_global_pkt_cnt) +
                      Format (", PID's: %" FMT_SIZE_T "u (clear: %" FMT_SIZE_T "u, scrambled: %" FMT_SIZE_T "u)",
                              _global_pid_cnt, _global_pid_cnt - _global_scr_pids, _global_scr_pids),
                      78) <<
@@ -369,7 +369,7 @@ std::ostream& ts::TSAnalyzerReport::reportServices (std::ostream& strm, const st
     if (_unref_pid_cnt > 0) {
         strm << '|' << std::string (77, '=') << '|' << std::endl <<
             "|  Unreferenced PID's                                                         |" << std::endl <<
-            JustifyLeft ("|  TS packets: " + Decimal (_unref_pkt_cnt) + 
+            JustifyLeft ("|  TS packets: " + Decimal (_unref_pkt_cnt) +
                          Format (", PID's: %" FMT_SIZE_T "u (clear: %" FMT_SIZE_T "u, scrambled: %" FMT_SIZE_T "u)",
                                  _unref_pid_cnt, _unref_pid_cnt - _unref_scr_pids, _unref_scr_pids),
                          78) <<

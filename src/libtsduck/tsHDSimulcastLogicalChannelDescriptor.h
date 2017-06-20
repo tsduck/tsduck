@@ -60,7 +60,7 @@ namespace ts {
             //! @param [in] id_ Service id.
             //! @param [in] visible_ Service is visible.
             //! @param [in] lcn_ Logical channel number.
-            //! 
+            //!
             Entry(uint16_t id_ = 0, bool visible_ = true, uint16_t lcn_ = 0):
                 service_id(id_),
                 visible(visible_),
