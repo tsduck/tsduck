@@ -73,31 +73,31 @@ Options::Options(int argc, char *argv[]) :
     option("prepend", 'p');
     option("remove",  'r');
 
-    setHelp ("Directory:\n"
-             "\n"
-             "  A directory to add or remove to the system Path.\n"
-             "\n"
-             "Options\n"
-             "\n"
-             "  -a\n"
-             "  --append\n"
-             "    Append the directory to the system path (the default).\n"
-             "\n"
-             "  --help\n"
-             "      Display this help text.\n"
-             "\n"
-             "  -p\n"
-             "  --prepend\n"
-             "    Prepend the directory to the system path.\n"
-             "\n"
-             "  -r\n"
-             "  --remove\n"
-             "    Remove the directory from the system path.\n"
-             "\n"
-             "  --version\n"
-             "      Display the version number.\n");
+    setHelp("Directory:\n"
+            "\n"
+            "  A directory to add or remove to the system Path.\n"
+            "\n"
+            "Options\n"
+            "\n"
+            "  -a\n"
+            "  --append\n"
+            "    Append the directory to the system path (the default).\n"
+            "\n"
+            "  --help\n"
+            "      Display this help text.\n"
+            "\n"
+            "  -p\n"
+            "  --prepend\n"
+            "    Prepend the directory to the system path.\n"
+            "\n"
+            "  -r\n"
+            "  --remove\n"
+            "    Remove the directory from the system path.\n"
+            "\n"
+            "  --version\n"
+            "      Display the version number.\n");
 
-    analyze (argc, argv);
+    analyze(argc, argv);
 
     directory = value("");
     if (present("append")) {

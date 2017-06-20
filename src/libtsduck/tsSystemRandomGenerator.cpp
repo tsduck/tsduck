@@ -35,7 +35,6 @@
 #include "tsSystemRandomGenerator.h"
 
 
-
 //----------------------------------------------------------------------------
 // Constructor 
 //----------------------------------------------------------------------------
@@ -46,7 +45,6 @@ ts::SystemRandomGenerator::SystemRandomGenerator() :
 #else
     _fd(-1)
 #endif
-
 {
 #if defined(__windows)
     if (!::CryptAcquireContext(&_prov, NULL, MS_DEF_PROV, PROV_RSA_FULL, CRYPT_VERIFYCONTEXT | CRYPT_MACHINE_KEYSET) &&
@@ -67,14 +65,14 @@ ts::SystemRandomGenerator::SystemRandomGenerator() :
 
 ts::SystemRandomGenerator::~SystemRandomGenerator()
 {
-#if defined (__windows)
+#if defined(__windows)
     if (_prov != 0) {
-        ::CryptReleaseContext (_prov, 0);
+        ::CryptReleaseContext(_prov, 0);
         _prov = 0;
     }
 #else
     if (_fd >= 0) {
-        ::close (_fd);
+        ::close(_fd);
         _fd = -1;
     }
 #endif
@@ -85,7 +83,7 @@ ts::SystemRandomGenerator::~SystemRandomGenerator()
 // Seed (add entropy). Return true on success, false on error.
 //----------------------------------------------------------------------------
 
-bool ts::SystemRandomGenerator::seed (const void* data, size_t size)
+bool ts::SystemRandomGenerator::seed(const void* data, size_t size)
 {
     // System random generators do not need to be seeded
     return true;
@@ -98,7 +96,7 @@ bool ts::SystemRandomGenerator::seed (const void* data, size_t size)
 
 bool ts::SystemRandomGenerator::ready() const
 {
-#if defined (__windows)
+#if defined(__windows)
     return _prov != 0;
 #else
     return _fd >= 0;
@@ -110,24 +108,24 @@ bool ts::SystemRandomGenerator::ready() const
 // Get random data. Return true on success, false on error.
 //----------------------------------------------------------------------------
 
-bool ts::SystemRandomGenerator::read (void* buffer, size_t size)
+bool ts::SystemRandomGenerator::read(void* buffer, size_t size)
 {
-	// Always succeed when size is zero. Some PRNG return an error when zero
-	// is requested. For instance, with a zero size, the system PRNG of
-	// Windows 7 succeeds while Windows 10 fails.
-	if (size == 0) {
-		return true;
-	}
+    // Always succeed when size is zero. Some PRNG return an error when zero
+    // is requested. For instance, with a zero size, the system PRNG of
+    // Windows 7 succeeds while Windows 10 fails.
+    if (size == 0) {
+        return true;
+    }
 
-#if defined (__windows)
-    return _prov != 0 && ::CryptGenRandom (_prov, ::DWORD (size), reinterpret_cast <::BYTE*> (buffer));
+#if defined(__windows)
+    return _prov != 0 && ::CryptGenRandom(_prov, ::DWORD(size), reinterpret_cast<::BYTE*>(buffer));
 #else
     bool ok = _fd >= 0;
-    char* data = reinterpret_cast <char*> (buffer);
+    char* data = reinterpret_cast<char*>(buffer);
     while (ok && size > 0) {
-        ssize_t insize = ::read (_fd, data, size);
+        ssize_t insize = ::read(_fd, data, size);
         if ((ok = insize > 0)) {
-            assert (size_t (insize) <= size);
+            assert(size_t(insize) <= size);
             size -= insize;
             data += insize;
         }
