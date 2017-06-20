@@ -218,15 +218,15 @@ bool ts::NITScanPlugin::stop()
 // Invoked by the demux when a complete table is available.
 //----------------------------------------------------------------------------
 
-void ts::NITScanPlugin::handleTable (SectionDemux& demux, const BinaryTable& table)
+void ts::NITScanPlugin::handleTable(SectionDemux& demux, const BinaryTable& table)
 {
     switch (table.tableId()) {
 
         case TID_PAT: {
             if (table.sourcePID() == PID_PAT) {
-                PAT pat (table);
+                PAT pat(table);
                 if (pat.isValid()) {
-                    processPAT (pat);
+                    processPAT(pat);
                 }
             }
             break;
@@ -234,9 +234,9 @@ void ts::NITScanPlugin::handleTable (SectionDemux& demux, const BinaryTable& tab
 
         case TID_NIT_ACT: {
             if (table.sourcePID() == _nit_pid) {
-                NIT nit (table);
+                NIT nit(table);
                 if (nit.isValid()) {
-                    processNIT (nit);
+                    processNIT(nit);
                 }
             }
             break;
@@ -244,9 +244,9 @@ void ts::NITScanPlugin::handleTable (SectionDemux& demux, const BinaryTable& tab
 
         case TID_NIT_OTH: {
             if (_all_nits && table.sourcePID() == _nit_pid) {
-                NIT nit (table);
+                NIT nit(table);
                 if (nit.isValid()) {
-                    processNIT (nit);
+                    processNIT(nit);
                 }
             }
             break;
@@ -263,20 +263,20 @@ void ts::NITScanPlugin::handleTable (SectionDemux& demux, const BinaryTable& tab
 //  This method processes a Program Association Table (PAT).
 //----------------------------------------------------------------------------
 
-void ts::NITScanPlugin::processPAT (const PAT& pat)
+void ts::NITScanPlugin::processPAT(const PAT& pat)
 {
     if (pat.nit_pid != PID_NULL) {
         // Extract NIT PID from PAT
         _nit_pid = pat.nit_pid;
         // Filter sections on this PID
-        _demux.addPID (_nit_pid);
+        _demux.addPID(_nit_pid);
     }
     if (_nit_pid == PID_NULL) {
-        tsp->error ("NIT PID not found in PAT");
+        tsp->error("NIT PID not found in PAT");
         _no_nit = true;
     }
     else {
-        tsp->verbose ("NIT PID is %d (0x%04X) in PAT", int (_nit_pid), int (_nit_pid));
+        tsp->verbose("NIT PID is %d (0x%04X) in PAT", int (_nit_pid), int (_nit_pid));
     }
 }
 
@@ -285,22 +285,22 @@ void ts::NITScanPlugin::processPAT (const PAT& pat)
 //  This method processes a NIT
 //----------------------------------------------------------------------------
 
-void ts::NITScanPlugin::processNIT (const NIT& nit)
+void ts::NITScanPlugin::processNIT(const NIT& nit)
 {
-    tsp->debug ("got a NIT, version %d, network Id: %d (0x%04X)", int (nit.version), int (nit.network_id), int (nit.network_id));
+    tsp->debug("got a NIT, version %d, network Id: %d (0x%04X)", int(nit.version), int(nit.network_id), int(nit.network_id));
 
     // Count the number of NIT's
     _nit_count++;
 
     // Process each TS descriptor list
     for (NIT::TransportMap::const_iterator it = nit.transports.begin(); it != nit.transports.end(); ++it) {
-        const TransportStreamId& tsid (it->first);
-        const DescriptorList& dlist (it->second);
+        const TransportStreamId& tsid(it->first);
+        const DescriptorList& dlist(it->second);
 
         // Loop on all descriptors for the current TS
         for (size_t i = 0; i < dlist.count(); ++i) {
             // Try to get delivery system information from current descriptor
-            TunerParameters* tp = DecodeDeliveryDescriptor (*dlist[i]);
+            TunerParameters* tp = DecodeDeliveryDescriptor(*dlist[i]);
             if (tp != 0) {
                 // Optional comment
                 if (_use_comment) {
@@ -326,10 +326,10 @@ void ts::NITScanPlugin::processNIT (const NIT& nit)
 // Packet processing method
 //----------------------------------------------------------------------------
 
-ts::ProcessorPlugin::Status ts::NITScanPlugin::processPacket (TSPacket& pkt, bool& flush, bool& bitrate_changed)
+ts::ProcessorPlugin::Status ts::NITScanPlugin::processPacket(TSPacket& pkt, bool& flush, bool& bitrate_changed)
 {
     // Filter interesting sections
-    _demux.feedPacket (pkt);
+    _demux.feedPacket(pkt);
 
     // Exit after NIT analysis if required
     return _terminate && (_nit_count > 0 || _no_nit) ? TSP_END : TSP_OK;
