@@ -38,14 +38,16 @@ include $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST))))/Makefile.common
 
 # Project specific directories and files.
 
+STATIC_LIBTSDUCK := libtsduck.a
+SHARED_LIBTSDUCK := tsduck.so
+
 INSTALLERDIR := $(ROOTDIR)/installers
 SRCROOT      := $(ROOTDIR)/src
 LIBTSDUCKDIR := $(SRCROOT)/libtsduck
 TSTOOLSDIR   := $(SRCROOT)/tstools
 TSPLUGINSDIR := $(SRCROOT)/tsplugins
 TSGENTABSDIR := $(SRCROOT)/tsgentables
-LIBTSDUCK    := libtsduck.a
-SHLIBTSDUCK  := tsduck.so
+LIBTSDUCK    := $(LIBTSDUCKDIR)/$(OBJDIR)/$(STATIC_LIBTSDUCK)
 TSPLUGINS    := $(sort $(filter-out tsplugin_generic,$(notdir $(basename $(wildcard $(TSPLUGINSDIR)/tsplugin_*.cpp)))))
 TSGENTABS    := $(sort $(notdir $(basename $(wildcard $(TSGENTABSDIR)/tsgentab_*.cpp))))
 TSEXECS      := $(sort $(filter-out $(notdir $(basename $(wildcard $(TSTOOLSDIR)/*.h))),\

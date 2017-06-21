@@ -31,7 +31,6 @@
 #
 #-----------------------------------------------------------------------------
 
-
 include ../../Makefile.tsduck
 
 default: execs copy_plugins
@@ -40,7 +39,7 @@ default: execs copy_plugins
 .PHONY: execs
 execs: $(EXECS)
 $(OBJDIR)/tsp: $(addprefix $(OBJDIR)/,$(addsuffix .o,$(filter tsp%,$(MODULES_LIB))))
-$(EXECS): $(OBJDIR)/$(SHLIBTSDUCK)
+$(EXECS): $(OBJDIR)/$(SHARED_LIBTSDUCK)
 
 .PHONY: install install-devel
 install: $(EXECS)
