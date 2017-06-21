@@ -462,11 +462,11 @@
 first: default
 	@true
 
+# General note: To speed up make recursion, some variables are exported when
+# their definition take some time.
+
 # Some nerds define exotic shells as default. Stay to a known shell.
 SHELL := /bin/bash
-
-# Export all variables by default to speed up make recursion.
-export
 
 # Enforce English locale by default.
 LANG=en_US
@@ -474,11 +474,13 @@ LANG=en_US
 # Define functions to search commands (see comments in header)
 F_SEARCH = $(firstword $(wildcard $(addsuffix /$(1),$(subst :, ,$(PATH)) /usr/bin /usr/sbin /usr/local/bin $(HOME)/bin)))
 F_COMMAND = $(if $(call F_SEARCH,$(1)),$(call F_SEARCH,$(1)),$(2))
+export F_SEARCH F_COMMAND
 
 # Find faster alternatives to sed and grep.
 SED   ?= $(call F_COMMAND,gsed,sed)
 GREP  ?= $(call F_COMMAND,ggrep,grep)
 FGREP ?= $(call F_COMMAND,gfgrep,fgrep)
+export SED GREP FGREP
 
 # Representation of a space and a comma character
 EMPTY =
@@ -514,8 +516,8 @@ RECURSE = for dir in $(RECURSE_SUBDIRS); do $(MAKE) -C $$dir $@ $(if $(CONTINUE)
 
 # Operating system, architecture.
 ifndef LOCAL_OS
-    LOCAL_OS   := $(shell uname -s | tr A-Z a-z)
-    LOCAL_ARCH := $(shell uname -m)
+    export LOCAL_OS   := $(shell uname -s | tr A-Z a-z)
+    export LOCAL_ARCH := $(shell uname -m)
 endif
 ifeq ($(LOCAL_OS),darwin)
     MACOS = true
@@ -524,29 +526,29 @@ endif
 # Logical CPU and physical core count.
 ifndef CPU_COUNT
     ifdef MACOS
-        CPU_COUNT  := $(shell sysctl -n hw.logicalcpu 2>/dev/null)
-        CPU_COUNT  := $(if $(CPU_COUNT),$(CPU_COUNT),1)
-        CORE_COUNT := $(shell sysctl -n hw.physicalcpu 2>/dev/null)
-        CORE_COUNT := $(if $(CORE_COUNT),$(CORE_COUNT),$(CPU_COUNT))
+        export CPU_COUNT  := $(shell sysctl -n hw.logicalcpu 2>/dev/null)
+        export CPU_COUNT  := $(if $(CPU_COUNT),$(CPU_COUNT),1)
+        export CORE_COUNT := $(shell sysctl -n hw.physicalcpu 2>/dev/null)
+        export CORE_COUNT := $(if $(CORE_COUNT),$(CORE_COUNT),$(CPU_COUNT))
     else
-        CPU_COUNT  := $(shell nproc 2>/dev/null)
-        CPU_COUNT  := $(if $(CPU_COUNT),$(CPU_COUNT),1)
-        CORE_COUNT := $(shell $(FGREP) -m1 'cpu cores' /proc/cpuinfo 2>/dev/null | cut -d ' ' -f3)
-        CORE_COUNT := $(if $(CORE_COUNT),$(CORE_COUNT),$(CPU_COUNT))
+        export CPU_COUNT  := $(shell nproc 2>/dev/null)
+        export CPU_COUNT  := $(if $(CPU_COUNT),$(CPU_COUNT),1)
+        export CORE_COUNT := $(shell $(FGREP) -m1 'cpu cores' /proc/cpuinfo 2>/dev/null | cut -d ' ' -f3)
+        export CORE_COUNT := $(if $(CORE_COUNT),$(CORE_COUNT),$(CPU_COUNT))
     endif
 endif
 
 # Get current compiler version, usually in form x.y.z
 ifndef GCC_VERSION_DONE
-    GCC_VERSION_DONE = true
-    GCC_VERSION := $(word 3,$(shell gcc -v 2>&1 | $(GREP) '^gcc version'))
-    LLVM_VERSION := $(shell clang --version 2>&1 | $(GREP) -i "llvm version" | $(SED) -e 's/.*version *//' -e 's/ .*//')
+    export GCC_VERSION_DONE = true
+    export GCC_VERSION := $(word 3,$(shell gcc -v 2>&1 | $(GREP) '^gcc version'))
+    export LLVM_VERSION := $(shell clang --version 2>&1 | $(GREP) -i "llvm version" | $(SED) -e 's/.*version *//' -e 's/ .*//')
 endif
 
 # When C++ source files are present, automatically define LDCXX.
 ifndef LDCXX
     ifneq ($(wildcard *.cpp),)
-        LDCXX = true
+        export LDCXX = true
     endif
 endif
 
@@ -585,6 +587,7 @@ else ifndef MAIN_ARCH
     CFLAGS_M32  :=
     LDFLAGS_M32 :=
 endif
+export MAIN_ARCH TARGET_ARCH
 
 # Alternate target to recompile with debug options
 .PHONY: debug
@@ -713,8 +716,9 @@ EXECS        := $(addprefix $(OBJDIR)/,$(MODULES_MAIN))
 # which usually results in a corrupted library file. We have to explicitly
 # serialize access to the library file using flock. However, flock is specific
 # to Linux and not present on MacOS.
-FLOCK  := $(call F_SEARCH,flock)
-ARLOCK  = $(if $(FLOCK),$(FLOCK) -w 60 $(patsubst %/,%,$(dir $@)),)
+FLOCK ?= $(call F_SEARCH,flock)
+ARLOCK = $(if $(FLOCK),$(FLOCK) -w 60 $(patsubst %/,%,$(dir $@)),)
+export FLOCK
 
 # Compilation rules
 $(OBJDIR)/%.o: %.c
@@ -798,9 +802,9 @@ doxygen:
 MAKEINFO ?= makeinfo
 TEXI2DVI ?= texi2dvi
 ifndef TEXI_MAJOR_VERSION
-    TEXI_MAJOR_VERSION := $(shell $(MAKEINFO) --version 2>/dev/null | head -1 | $(SED) -e 's/.*  *//' -e 's/\..*//')
-    TEXI_MAJOR_VERSION := $(if $(TEXI_MAJOR_VERSION),$(TEXI_MAJOR_VERSION),0)
-    TEXI_V5 := $(shell test "$(TEXI_MAJOR_VERSION)" -ge 5 2>/dev/null && echo true)
+    export TEXI_MAJOR_VERSION := $(shell $(MAKEINFO) --version 2>/dev/null | head -1 | $(SED) -e 's/.*  *//' -e 's/\..*//')
+    export TEXI_MAJOR_VERSION := $(if $(TEXI_MAJOR_VERSION),$(TEXI_MAJOR_VERSION),0)
+    export TEXI_V5 := $(shell test "$(TEXI_MAJOR_VERSION)" -ge 5 2>/dev/null && echo true)
 endif
 TEXI2PDF_FLAGS  = --batch --quiet --tidy
 TEXI2HTML_FLAGS = --no-split $(if $(TEXI_V5),--set-customization-variable AVOID_MENU_REDUNDANCY=true)

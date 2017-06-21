@@ -48,17 +48,20 @@ TSTOOLSDIR   := $(SRCROOT)/tstools
 TSPLUGINSDIR := $(SRCROOT)/tsplugins
 TSGENTABSDIR := $(SRCROOT)/tsgentables
 LIBTSDUCK    := $(LIBTSDUCKDIR)/$(OBJDIR)/$(STATIC_LIBTSDUCK)
-TSPLUGINS    := $(sort $(filter-out tsplugin_generic,$(notdir $(basename $(wildcard $(TSPLUGINSDIR)/tsplugin_*.cpp)))))
-TSGENTABS    := $(sort $(notdir $(basename $(wildcard $(TSGENTABSDIR)/tsgentab_*.cpp))))
-TSEXECS      := $(sort $(filter-out $(notdir $(basename $(wildcard $(TSTOOLSDIR)/*.h))),\
-                                    $(notdir $(basename $(wildcard $(TSTOOLSDIR)/*.cpp)))))
+
+ifndef TSPLUGINS
+    export TSPLUGINS := $(sort $(filter-out tsplugin_generic,$(notdir $(basename $(wildcard $(TSPLUGINSDIR)/tsplugin_*.cpp)))))
+    export TSGENTABS := $(sort $(notdir $(basename $(wildcard $(TSGENTABSDIR)/tsgentab_*.cpp))))
+    export TSEXECS   := $(sort $(filter-out $(notdir $(basename $(wildcard $(TSTOOLSDIR)/*.h))),\
+                                            $(notdir $(basename $(wildcard $(TSTOOLSDIR)/*.cpp)))))
+endif
 
 # Product version
 
 ifndef TS_VERSION
-    TS_MAJOR   := $(shell $(GREP) '\#define *TS_VERSION_MAJOR ' $(LIBTSDUCKDIR)/tsVersion.h | $(SED) -e 's/.* //')
-    TS_MINOR   := $(shell $(GREP) '\#define *TS_VERSION_MINOR ' $(LIBTSDUCKDIR)/tsVersion.h | $(SED) -e 's/.* //')
-    TS_VERSION := $(TS_MAJOR).$(TS_MINOR)
+    export TS_MAJOR   := $(shell $(GREP) '\#define *TS_VERSION_MAJOR ' $(LIBTSDUCKDIR)/tsVersion.h | $(SED) -e 's/.* //')
+    export TS_MINOR   := $(shell $(GREP) '\#define *TS_VERSION_MINOR ' $(LIBTSDUCKDIR)/tsVersion.h | $(SED) -e 's/.* //')
+    export TS_VERSION := $(TS_MAJOR).$(TS_MINOR)
 endif
 
 # Default installation directory prefix.
