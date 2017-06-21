@@ -95,16 +95,16 @@ OBJS += $(DTAPI_OBJECT)
 # So, we create the library in one single big command.
 
 .PHONY: libs
-libs: $(OBJDIR)/$(LIBTSDUCK) $(OBJDIR)/$(SHLIBTSDUCK)
+libs: $(OBJDIR)/$(STATIC_LIBTSDUCK) $(OBJDIR)/$(SHARED_LIBTSDUCK)
 
 ifdef MACOS
-$(OBJDIR)/$(LIBTSDUCK): $(OBJS)
+$(OBJDIR)/$(STATIC_LIBTSDUCK): $(OBJS)
 	@echo '  [AR] $@'; $(AR) $(ARFLAGS) $@ $^
 else
-$(OBJDIR)/$(LIBTSDUCK): $(OBJDIR)/$(LIBTSDUCK)($(OBJS))
+$(OBJDIR)/$(STATIC_LIBTSDUCK): $(OBJDIR)/$(STATIC_LIBTSDUCK)($(OBJS))
 endif
 
-$(OBJDIR)/$(SHLIBTSDUCK): $(OBJS)
+$(OBJDIR)/$(SHARED_LIBTSDUCK): $(OBJS)
 	@echo '  [DTAPI] $(if $(DTAPI_OBJECT),using $(DTAPI_OBJECT),no DTAPI available)'; \
 	echo '  [CC] $@'; \
 	$(CC) $(CFLAGS) $(SOFLAGS) $^ $(LDLIBS) -shared -o $@
@@ -129,11 +129,11 @@ tsduck.h: $(SRCROOT)/HEADER.txt $(call GEN_FILES,) $(call GEN_FILES,linux) $(cal
 # Installing the shared library in same directory as executables
 
 .PHONY: install install-devel
-install: $(OBJDIR)/$(SHLIBTSDUCK)
+install: $(OBJDIR)/$(SHARED_LIBTSDUCK)
 	install -d -m 755 $(DESTDIR)/usr/bin
-	install -m 755 $(OBJDIR)/$(SHLIBTSDUCK) $(DESTDIR)/usr/bin
-install-devel: $(OBJDIR)/$(LIBTSDUCK) tsduck.h
+	install -m 755 $(OBJDIR)/$(SHARED_LIBTSDUCK) $(DESTDIR)/usr/bin
+install-devel: $(OBJDIR)/$(STATIC_LIBTSDUCK) tsduck.h
 	install -d -m 755 $(DESTDIR)$(USRLIBDIR)
-	install -m 644 $(OBJDIR)/$(LIBTSDUCK) $(DESTDIR)$(USRLIBDIR)
+	install -m 644 $(OBJDIR)/$(STATIC_LIBTSDUCK) $(DESTDIR)$(USRLIBDIR)
 	install -d -m 755 $(DESTDIR)/usr/include/tsduck
 	install -m 644 tsduck.mk ts*.h $(wildcard $(OSDIR)/ts*.h) $(DESTDIR)/usr/include/tsduck

@@ -31,7 +31,6 @@
 #
 #-----------------------------------------------------------------------------
 
-
 include ../../Makefile.tsduck
 
 default: execs copy_plugins
@@ -39,7 +38,7 @@ default: execs copy_plugins
 
 .PHONY: execs
 execs: $(OBJDIR)/utest
-$(OBJDIR)/utest: $(OBJS) $(OBJDIR)/$(SHLIBTSDUCK)
+$(OBJDIR)/utest: $(OBJS) $(OBJDIR)/$(SHARED_LIBTSDUCK)
 LDLIBS := -lcppunit $(LDLIBS)
 
 .PHONY: install install-devel

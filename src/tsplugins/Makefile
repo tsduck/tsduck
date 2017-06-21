@@ -31,7 +31,6 @@
 #
 #-----------------------------------------------------------------------------
 
-
 include ../../Makefile.tsduck
 
 default: shlibs
@@ -41,7 +40,7 @@ SHLIBS := $(addprefix $(OBJDIR)/,$(addsuffix .so,$(TSPLUGINS)))
 
 .PHONY: shlibs
 shlibs: $(SHLIBS)
-$(SHLIBS): $(OBJDIR)/$(SHLIBTSDUCK)
+$(SHLIBS): $(OBJDIR)/$(SHARED_LIBTSDUCK)
 
 .PHONY: install install-devel
 install: $(SHLIBS)

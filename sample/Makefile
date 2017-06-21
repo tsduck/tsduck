@@ -27,24 +27,11 @@
 #
 #-----------------------------------------------------------------------------
 #
-#  Makefile for tsgentables.
+#  There is nothing to build here, but cleanup is required.
 #
 #-----------------------------------------------------------------------------
 
-include ../../Makefile.tsduck
+include ../Makefile.tsduck
 
-default: shlibs
-	@true
-
-SHLIBS := $(addprefix $(OBJDIR)/,$(addsuffix .so,$(TSGENTABS)))
-
-.PHONY: shlibs
-shlibs: $(SHLIBS)
-$(SHLIBS): $(OBJDIR)/$(SHARED_LIBTSDUCK)
-
-.PHONY: install install-devel
-install: $(SHLIBS)
-	install -d -m 755 $(DESTDIR)/usr/bin
-	install -m 755 $(SHLIBS) $(DESTDIR)/usr/bin
-install-devel:
+default:
 	@true
