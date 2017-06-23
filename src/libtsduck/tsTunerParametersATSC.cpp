@@ -77,11 +77,29 @@ void ts::TunerParametersATSC::copy (const TunerParameters& obj) throw (Incompati
 // Format the tuner parameters as a list of options for the dvb tsp plugin.
 //----------------------------------------------------------------------------
 
-std::string ts::TunerParametersATSC::toPluginOptions (bool no_local) const
+std::string ts::TunerParametersATSC::toPluginOptions(bool no_local) const
 {
-    return Format ("--frequency %" FMT_INT64 "u", frequency) +
-        " --modulation " + ModulationEnum.name (modulation) +
-        " --spectral-inversion " + SpectralInversionEnum.name (inversion);
+    return Format("--frequency %" FMT_INT64 "u", frequency) +
+        " --modulation " + ModulationEnum.name(modulation) +
+        " --spectral-inversion " + SpectralInversionEnum.name(inversion);
+}
+
+
+//----------------------------------------------------------------------------
+// Display a description of the modulation paramters on a stream, line by line.
+//----------------------------------------------------------------------------
+
+void ts::TunerParametersATSC::displayParameters(std::ostream& strm, const std::string& margin, bool verbose) const
+{
+    if (frequency != 0) {
+        strm << margin << "Carrier frequency: " << Decimal(frequency) << " Hz" << std::endl;
+    }
+    if (inversion != SPINV_AUTO) {
+        strm << margin << "Spectral inversion: " << SpectralInversionEnum.name(inversion) << std::endl;
+    }
+    if (modulation != QAM_AUTO) {
+        strm << margin << "Modulation: " << ModulationEnum.name(modulation) << std::endl;
+    }
 }
 
 
@@ -89,7 +107,7 @@ std::string ts::TunerParametersATSC::toPluginOptions (bool no_local) const
 // Extract options from a TunerArgs, applying defaults when necessary.
 //----------------------------------------------------------------------------
 
-bool ts::TunerParametersATSC::fromArgs (const TunerArgs& tuner, ReportInterface& report)
+bool ts::TunerParametersATSC::fromArgs(const TunerArgs& tuner, ReportInterface& report)
 {
     if (!tuner.frequency.set()) {
         report.error ("no frequency specified, use option --frequency");

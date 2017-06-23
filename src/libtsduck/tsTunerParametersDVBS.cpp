@@ -194,6 +194,48 @@ std::string ts::TunerParametersDVBS::toPluginOptions(bool no_local) const
 
 
 //----------------------------------------------------------------------------
+// Display a description of the modulation paramters on a stream, line by line.
+//----------------------------------------------------------------------------
+
+void ts::TunerParametersDVBS::displayParameters(std::ostream& strm, const std::string& margin, bool verbose) const
+{
+    if (verbose || delivery_system != DS_DVB_S) {
+        strm << margin << "Delivery system: " << DeliverySystemEnum.name(delivery_system) << std::endl;
+    }
+    if (frequency != 0) {
+        strm << margin << "Carrier frequency: " << Decimal(frequency) << " Hz" << std::endl;
+    }
+    if (polarity != POL_AUTO) {
+        strm << margin << "Polarity: " << PolarizationEnum.name(polarity) << std::endl;
+    }
+    if (inversion != SPINV_AUTO) {
+        strm << margin << "Spectral inversion: " << SpectralInversionEnum.name(inversion) << std::endl;
+    }
+    if (symbol_rate != 0) {
+        strm << margin << "Symbol rate: " << Decimal(symbol_rate) << " symb/s" << std::endl;
+    }
+    if ((verbose || delivery_system != DS_DVB_S) && modulation != QAM_AUTO) {
+        strm << margin << "Modulation: " << ModulationEnum.name(modulation) << std::endl;
+    }
+    if (inner_fec != ts::FEC_AUTO) {
+        strm << margin << "FEC inner: " << InnerFECEnum.name(inner_fec) << std::endl;
+    }
+    if ((verbose || delivery_system != DS_DVB_S) && pilots != PILOT_AUTO) {
+        strm << margin << "Pilots: " << PilotEnum.name(pilots) << std::endl;
+    }
+    if ((verbose || delivery_system != DS_DVB_S) && roll_off != ROLLOFF_AUTO) {
+        strm << margin << "Roll-off: " << RollOffEnum.name(roll_off) << std::endl;
+    }
+    if (verbose) {
+        strm << margin << "LNB: " << std::string(lnb) << std::endl;
+    }
+    if (verbose) {
+        strm << margin << "Satellite number: " << satellite_number << std::endl;
+    }
+}
+
+
+//----------------------------------------------------------------------------
 // Extract options from a TunerArgs, applying defaults when necessary.
 //----------------------------------------------------------------------------
 

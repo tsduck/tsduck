@@ -523,107 +523,6 @@ bool InfoScanner::getServices(ts::ServiceList& services) const
 
 
 //----------------------------------------------------------------------------
-//  Display current modulation parameters
-//----------------------------------------------------------------------------
-
-namespace {
-    void DisplayModulation(std::ostream& strm, const std::string& margin, const ts::TunerParametersPtr& tp)
-    {
-        switch (tp->tunerType()) {
-
-            case ts::DVB_S: {
-                ts::TunerParametersDVBS* tpp = dynamic_cast<ts::TunerParametersDVBS*>(tp.pointer());
-                assert(tpp != 0);
-                if (tpp->inversion != ts::SPINV_AUTO) {
-                    strm << margin << "Spectral inversion: " << ts::SpectralInversionEnum.name(tpp->inversion) << std::endl;
-                }
-                if (tpp->symbol_rate != 0) {
-                    strm << margin << "Symbol rate: " << ts::Decimal(tpp->symbol_rate) << " symb/s" << std::endl;
-                }
-                if (tpp->inner_fec != ts::FEC_AUTO) {
-                    strm << margin << "FEC inner: " << ts::InnerFECEnum.name(tpp->inner_fec) << std::endl;
-                }
-                break;
-            }
-
-            case ts::DVB_C: {
-                ts::TunerParametersDVBC* tpp = dynamic_cast<ts::TunerParametersDVBC*>(tp.pointer());
-                assert(tpp != 0);
-                if (tpp->frequency != 0) {
-                    strm << margin << "Carrier frequency: " << ts::Decimal(tpp->frequency) << " Hz" << std::endl;
-                }
-                if (tpp->inversion != ts::SPINV_AUTO) {
-                    strm << margin << "Spectral inversion: " << ts::SpectralInversionEnum.name(tpp->inversion) << std::endl;
-                }
-                if (tpp->symbol_rate != 0) {
-                    strm << margin << "Symbol rate: " << ts::Decimal(tpp->symbol_rate) << " symb/s" << std::endl;
-                }
-                if (tpp->inner_fec != ts::FEC_AUTO) {
-                    strm << margin << "FEC inner: " << ts::InnerFECEnum.name(tpp->inner_fec) << std::endl;
-                }
-                if (tpp->modulation != ts::QAM_AUTO) {
-                    strm << margin << "Modulation: " << ts::ModulationEnum.name(tpp->modulation) << std::endl;
-                }
-                break;
-            }
-
-            case ts::DVB_T: {
-                ts::TunerParametersDVBT* tpp = dynamic_cast<ts::TunerParametersDVBT*>(tp.pointer());
-                assert(tpp != 0);
-                if (tpp->frequency != 0) {
-                    strm << margin << "Carrier frequency: " << ts::Decimal(tpp->frequency) << " Hz" << std::endl;
-                }
-                if (tpp->inversion != ts::SPINV_AUTO) {
-                    strm << margin << "Spectral inversion: " << ts::SpectralInversionEnum.name(tpp->inversion) << std::endl;
-                }
-                if (tpp->modulation != ts::QAM_AUTO) {
-                    strm << margin << "Constellation: " <<ts:: ModulationEnum.name(tpp->modulation) << std::endl;
-                }
-                if (tpp->fec_hp != ts::FEC_AUTO) {
-                    strm << margin << "HP streams FEC: " << ts::InnerFECEnum.name(tpp->fec_hp) << std::endl;
-                }
-                if (tpp->fec_lp != ts::FEC_AUTO) {
-                    strm << margin << "LP streams FEC: " << ts::InnerFECEnum.name(tpp->fec_lp) << std::endl;
-                }
-                if (tpp->guard_interval != ts::GUARD_AUTO) {
-                    strm << margin << "Guard interval: " << ts::GuardIntervalEnum.name(tpp->guard_interval) << std::endl;
-                }
-                if (tpp->bandwidth != ts::BW_AUTO) {
-                    strm << margin << "Bandwidth: " << ts::BandWidthEnum.name(tpp->bandwidth) << std::endl;
-                }
-                if (tpp->transmission_mode != ts::TM_AUTO) {
-                    strm << margin << "Transmission mode: " << ts::TransmissionModeEnum.name(tpp->transmission_mode) << std::endl;
-                }
-                if (tpp->hierarchy != ts::HIERARCHY_AUTO) {
-                    strm << margin << "Hierarchy: " << ts::HierarchyEnum.name(tpp->hierarchy) << std::endl;
-                }
-                break;
-            }
-
-            case ts::ATSC: {
-                ts::TunerParametersATSC* tpp = dynamic_cast<ts::TunerParametersATSC*>(tp.pointer());
-                assert(tpp != 0);
-                if (tpp->frequency != 0) {
-                    strm << margin << "Carrier frequency: " << ts::Decimal(tpp->frequency) << " Hz" << std::endl;
-                }
-                if (tpp->inversion != ts::SPINV_AUTO) {
-                    strm << margin << "Spectral inversion: " << ts::SpectralInversionEnum.name(tpp->inversion) << std::endl;
-                }
-                if (tpp->modulation != ts::QAM_AUTO) {
-                    strm << margin << "Modulation: " << ts::ModulationEnum.name(tpp->modulation) << std::endl;
-                }
-                break;
-            }
-
-            default: {
-                break;
-            }
-        }
-    }
-}
-
-
-//----------------------------------------------------------------------------
 //  Analyze and display relevant TS info
 //----------------------------------------------------------------------------
 
@@ -648,7 +547,7 @@ namespace {
         ts::TunerParametersPtr tparams;
         info.getTunerParameters(tparams);
         if (opt.show_modulation && !tparams.isNull()) {
-            DisplayModulation(strm, margin, tparams);
+            tparams->displayParameters(strm, margin);
         }
 
         // Display services
