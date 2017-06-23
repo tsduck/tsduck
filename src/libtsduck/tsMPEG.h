@@ -935,6 +935,16 @@ namespace ts {
         EDID_TARGET_REGION      = 0x09, //!< Ext.DID for target_region_descriptor
         EDID_TARGET_REGION_NAME = 0x0A, //!< Ext.DID for target_region_name_descriptor
         EDID_SERVICE_RELOCATED  = 0x0B, //!< Ext.DID for service_relocated_descriptor
+        EDID_XAIT_PID           = 0x0C, //!< Ext.DID for XAIT_PID_descriptor
+        EDID_C2_DELIVERY        = 0x0D, //!< Ext.DID for C2_delivery_system_descriptor
+        EDID_DTS_HD_AUDIO       = 0x0E, //!< Ext.DID for DTS_HD_audio_stream_descriptor
+        EDID_DTS_NEURAL         = 0x0F, //!< Ext.DID for DTS_Neural_descriptor
+        EDID_VIDEO_DEPTH_RANGE  = 0x10, //!< Ext.DID for video_depth_range_descriptor
+        EDID_T2MI               = 0x11, //!< Ext.DID for T2MI_descriptor
+        EDID_URI_LINKAGE        = 0x13, //!< Ext.DID for URI_linkage_descriptor
+        EDID_CI_ANCILLARY_DATA  = 0x14, //!< Ext.DID for CI_ancillary_data_descriptor
+        EDID_AC4                = 0x15, //!< Ext.DID for AC4_descriptor
+        EDID_C2_BUNDLE_DELIVERY = 0x16, //!< Ext.DID for C2_bundle_system_delivery_descriptor
     };
 
     //---------------------------------------------------------------------

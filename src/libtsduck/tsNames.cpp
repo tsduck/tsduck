@@ -423,6 +423,16 @@ std::string ts::names::EDID (uint8_t edid, uint32_t pds)
         case EDID_TARGET_REGION: return "Target Region";
         case EDID_TARGET_REGION_NAME: return "Target Region Name";
         case EDID_SERVICE_RELOCATED: return "Service Relocated";
+        case EDID_XAIT_PID: return "XAIT PID";
+        case EDID_C2_DELIVERY: return "C2 Delivery System";
+        case EDID_DTS_HD_AUDIO: return "DTS-HD Audio Stream";
+        case EDID_DTS_NEURAL: return "DTS Neural";
+        case EDID_VIDEO_DEPTH_RANGE: return "Video Depth Range";
+        case EDID_T2MI: return "T2MI";
+        case EDID_URI_LINKAGE: return "URI Linkage";
+        case EDID_CI_ANCILLARY_DATA: return "CI Ancillary Data";
+        case EDID_AC4: return "AC-4";
+        case EDID_C2_BUNDLE_DELIVERY: return "C2 Bundle Delivery System";
         default:
             if (edid < 0x80) {
                 return Format ("DVB-Reserved (0x%02X)", int (edid));

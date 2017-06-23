@@ -1,16 +1,15 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-
   <ImportGroup Label="PropertySheets">
     <Import Project="msvc-common-begin.props" />
   </ImportGroup>
-
   <ItemGroup>
     <ClInclude Include="..\..\src\libtsduck\tsAbortInterface.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAbstractAudioVideoAttributes.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAbstractAVCAccessUnit.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAbstractAVCData.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAbstractAVCStructure.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsAbstractDeliverySystemDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAbstractDescrambler.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAbstractDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAbstractDescriptorsTable.h" />
@@ -253,10 +252,10 @@
     <ClInclude Include="..\..\src\libtsduck\windows\tsRegistryUtils.h" />
     <ClInclude Include="..\..\src\libtsduck\windows\tsSinkFilter.h" />
   </ItemGroup>
-
   <ItemGroup>
     <ClCompile Include="..\..\src\libtsduck\tsAbstractAVCAccessUnit.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAbstractAVCStructure.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsAbstractDeliverySystemDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAbstractDescrambler.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAbstractDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAbstractDescriptorsTable.cpp" />
@@ -429,31 +428,25 @@
     <ClCompile Include="..\..\src\libtsduck\windows\tsSinkFilter.cpp" />
     <ClCompile Include="..\..\src\libtsduck\windows\tsTuner.cpp" />
   </ItemGroup>
-
   <PropertyGroup Label="Globals">
     <ProjectGuid>{1AD31049-26B0-4922-89CF-778040DFC51E}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>tsduckdll</RootNamespace>
   </PropertyGroup>
-
   <ImportGroup Label="PropertySheets">
     <Import Project="msvc-target-dll.props" />
     <Import Project="msvc-use-dtapi.props" />
   </ImportGroup>
-
   <PropertyGroup>
     <TargetName>tsduck</TargetName>
   </PropertyGroup>
-
   <ItemDefinitionGroup>
     <ClCompile>
       <AdditionalIncludeDirectories>$(RepositoryRootDir)\src\libtsduck;$(RepositoryRootDir)\src\libtsduck\windows;$(RepositoryRootDir)\src\libtsduck\private;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_TSDUCKDLL_IMPL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
-
   <ImportGroup Label="PropertySheets">
     <Import Project="msvc-common-end.props" />
   </ImportGroup>
-
 </Project>

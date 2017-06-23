@@ -15,6 +15,7 @@ HEADERS += \
     ../../../src/libtsduck/tsAbstractAVCStructure.h \
     ../../../src/libtsduck/tsAbstractDescrambler.h \
     ../../../src/libtsduck/tsAbstractDescriptor.h \
+    ../../../src/libtsduck/tsAbstractDeliverySystemDescriptor.h \
     ../../../src/libtsduck/tsAbstractDescriptorsTable.h \
     ../../../src/libtsduck/tsAbstractLongTable.h \
     ../../../src/libtsduck/tsAbstractTable.h \
@@ -251,6 +252,7 @@ SOURCES += \
     ../../../src/libtsduck/tsAbstractDescrambler.cpp \
     ../../../src/libtsduck/tsAbstractDescriptor.cpp \
     ../../../src/libtsduck/tsAbstractDescriptorsTable.cpp \
+    ../../../src/libtsduck/tsAbstractDeliverySystemDescriptor.cpp \
     ../../../src/libtsduck/tsAbstractTransportListTable.cpp \
     ../../../src/libtsduck/tsAC3Attributes.cpp \
     ../../../src/libtsduck/tsAC3Descriptor.cpp \
