@@ -103,6 +103,15 @@ namespace ts {
         virtual std::string toPluginOptions(bool no_local = false) const = 0;
 
         //!
+        //! Display a description of the modulation paramters on a stream, line by line.
+        //! @param [in,out] strm Where to display the parameters. 
+        //! @param [in] margin Left margin to display.
+        //! @param [in] verbose When false, display only essentials parameters.
+        //! When true, display all parameters.
+        //!
+        virtual void displayParameters(std::ostream& strm, const std::string& margin = std::string(), bool verbose = false) const = 0;
+
+        //!
         //! Decode a Linux DVB "zap" specification.
         //! And set the corresponding values in the tuner parameters.
         //! @param [in] zap A line of a Linux DVB "zap" file.
@@ -118,6 +127,7 @@ namespace ts {
 
         //!
         //! Extract options from a TunerArgs, applying defaults when necessary.
+        //! Parameters with irrelevant values (auto, none, etc) are not displayed.
         //! @param [in] args Tuner arguments.
         //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error (missing mandatory parameter,

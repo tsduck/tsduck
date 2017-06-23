@@ -59,11 +59,12 @@ namespace ts {
         // Implementation of TunerParameters API
         virtual BitRate theoreticalBitrate() const {return 0;} // unknown for ATSC/VSB
         virtual std::string toZapFormat() const {return "";} //TODO: unimplemented
-        virtual std::string toPluginOptions (bool no_local = false) const;
-        virtual bool fromZapFormat (const std::string& zap) {return false;} //TODO: unimplemented
-        virtual size_t zapFieldCount () const {return 0;} //TODO: unimplemented
-        virtual void copy (const TunerParameters&) throw (IncompatibleTunerParametersError);
+        virtual std::string toPluginOptions(bool no_local = false) const;
+        virtual void displayParameters(std::ostream& strm, const std::string& margin = std::string(), bool verbose = false) const;
+        virtual bool fromZapFormat(const std::string& zap) {return false;} //TODO: unimplemented
+        virtual size_t zapFieldCount() const {return 0;} //TODO: unimplemented
+        virtual void copy(const TunerParameters&) throw (IncompatibleTunerParametersError);
     protected:
-        virtual bool fromArgs (const TunerArgs&, ReportInterface&);
+        virtual bool fromArgs(const TunerArgs&, ReportInterface&);
     };
 }

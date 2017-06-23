@@ -245,6 +245,42 @@ std::string ts::TunerParametersDVBT::toPluginOptions (bool no_local) const
 
 
 //----------------------------------------------------------------------------
+// Display a description of the modulation paramters on a stream, line by line.
+//----------------------------------------------------------------------------
+
+void ts::TunerParametersDVBT::displayParameters(std::ostream& strm, const std::string& margin, bool verbose) const
+{
+    if (frequency != 0) {
+        strm << margin << "Carrier frequency: " << Decimal(frequency) << " Hz" << std::endl;
+    }
+    if (inversion != SPINV_AUTO) {
+        strm << margin << "Spectral inversion: " << SpectralInversionEnum.name(inversion) << std::endl;
+    }
+    if (modulation != QAM_AUTO) {
+        strm << margin << "Constellation: " << ModulationEnum.name(modulation) << std::endl;
+    }
+    if (fec_hp != FEC_AUTO) {
+        strm << margin << "HP streams FEC: " << InnerFECEnum.name(fec_hp) << std::endl;
+    }
+    if (fec_lp != FEC_AUTO) {
+        strm << margin << "LP streams FEC: " << InnerFECEnum.name(fec_lp) << std::endl;
+    }
+    if (guard_interval != GUARD_AUTO) {
+        strm << margin << "Guard interval: " << GuardIntervalEnum.name(guard_interval) << std::endl;
+    }
+    if (bandwidth != BW_AUTO) {
+        strm << margin << "Bandwidth: " << BandWidthEnum.name(bandwidth) << std::endl;
+    }
+    if (transmission_mode != TM_AUTO) {
+        strm << margin << "Transmission mode: " << TransmissionModeEnum.name(transmission_mode) << std::endl;
+    }
+    if (hierarchy != HIERARCHY_AUTO) {
+        strm << margin << "Hierarchy: " << HierarchyEnum.name(hierarchy) << std::endl;
+    }
+}
+
+
+//----------------------------------------------------------------------------
 // Extract options from a TunerArgs, applying defaults when necessary.
 //----------------------------------------------------------------------------
 

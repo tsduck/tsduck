@@ -175,12 +175,36 @@ bool ts::TunerParametersDVBC::fromZapFormat (const std::string& zap)
 // Format the tuner parameters as a list of options for the dvb tsp plugin.
 //----------------------------------------------------------------------------
 
-std::string ts::TunerParametersDVBC::toPluginOptions (bool no_local) const
+std::string ts::TunerParametersDVBC::toPluginOptions(bool no_local) const
 {
-    return Format ("--frequency %" FMT_INT64 "u --symbol-rate %d", frequency, int (symbol_rate)) +
-        " --fec-inner " + InnerFECEnum.name (inner_fec) +
-        " --spectral-inversion " + SpectralInversionEnum.name (inversion) +
-        " --modulation " + ModulationEnum.name (modulation);
+    return Format("--frequency %" FMT_INT64 "u --symbol-rate %d", frequency, int(symbol_rate)) +
+        " --fec-inner " + InnerFECEnum.name(inner_fec) +
+        " --spectral-inversion " + SpectralInversionEnum.name(inversion) +
+        " --modulation " + ModulationEnum.name(modulation);
+}
+
+
+//----------------------------------------------------------------------------
+// Display a description of the modulation paramters on a stream, line by line.
+//----------------------------------------------------------------------------
+
+void ts::TunerParametersDVBC::displayParameters(std::ostream& strm, const std::string& margin, bool verbose) const
+{
+    if (frequency != 0) {
+        strm << margin << "Carrier frequency: " << Decimal(frequency) << " Hz" << std::endl;
+    }
+    if (inversion != SPINV_AUTO) {
+        strm << margin << "Spectral inversion: " << SpectralInversionEnum.name(inversion) << std::endl;
+    }
+    if (symbol_rate != 0) {
+        strm << margin << "Symbol rate: " << ts::Decimal(symbol_rate) << " symb/s" << std::endl;
+    }
+    if (inner_fec != FEC_AUTO) {
+        strm << margin << "FEC inner: " << ts::InnerFECEnum.name(inner_fec) << std::endl;
+    }
+    if (modulation != QAM_AUTO) {
+        strm << margin << "Modulation: " << ModulationEnum.name(modulation) << std::endl;
+    }
 }
 
 
