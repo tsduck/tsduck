@@ -153,7 +153,7 @@ namespace ts {
         virtual ~TunerParameters() {}
 
         //!
-        //! Allocatea TunerParameters of the appropriate subclass, based on a tuner type.
+        //! Allocate a TunerParameters of the appropriate subclass, based on a tuner type.
         //! @param [in] type Tuner type.
         //! @return A newly allocated instance of a subclass of TunerParameters.
         //! The parameters have their default values. Return zero if there is no

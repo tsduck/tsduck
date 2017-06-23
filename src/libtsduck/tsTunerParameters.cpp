@@ -44,14 +44,14 @@
 // depending on the tuner type. The parameters have their default values.
 //----------------------------------------------------------------------------
 
-ts::TunerParameters* ts::TunerParameters::Factory (TunerType tuner_type)
+ts::TunerParameters* ts::TunerParameters::Factory(TunerType tuner_type)
 {
     switch (tuner_type) {
         case DVB_S: return new TunerParametersDVBS();
         case DVB_C: return new TunerParametersDVBC();
         case DVB_T: return new TunerParametersDVBT();
         case ATSC:  return new TunerParametersATSC();
-        default:    return 0;
+        default:    assert(false); return 0;
     }
 }
 
