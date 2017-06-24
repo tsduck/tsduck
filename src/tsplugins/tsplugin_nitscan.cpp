@@ -300,22 +300,20 @@ void ts::NITScanPlugin::processNIT(const NIT& nit)
         // Loop on all descriptors for the current TS
         for (size_t i = 0; i < dlist.count(); ++i) {
             // Try to get delivery system information from current descriptor
-            TunerParameters* tp = DecodeDeliveryDescriptor(*dlist[i]);
-            if (tp != 0) {
+            TunerParametersPtr tp(DecodeDeliveryDescriptor(*dlist[i]));
+            if (!tp.isNull()) {
                 // Optional comment
                 if (_use_comment) {
                     *_output << _comment_prefix
-                             << Format ("TS id: %d (0x%04X), original network id: %d (0x%04X), from NIT v%d on network id: %d (0x%04X)",
-                                        int (tsid.transport_stream_id), int (tsid.transport_stream_id),
-                                        int (tsid.original_network_id), int (tsid.original_network_id),
-                                        int (nit.version),
-                                        int (nit.network_id), int (nit.network_id))
+                             << Format("TS id: %d (0x%04X), original network id: %d (0x%04X), from NIT v%d on network id: %d (0x%04X)",
+                                       int(tsid.transport_stream_id), int(tsid.transport_stream_id),
+                                       int(tsid.original_network_id), int(tsid.original_network_id),
+                                       int(nit.version),
+                                       int(nit.network_id), int(nit.network_id))
                              << std::endl;
                 }
                 // Output the tuning information
                 *_output << (_dvb_options ? tp->toPluginOptions(true) : tp->toZapFormat()) << std::endl;
-                // Free object allocated by DecodeDeliveryDescriptor
-                delete tp;
             }
         }
     }

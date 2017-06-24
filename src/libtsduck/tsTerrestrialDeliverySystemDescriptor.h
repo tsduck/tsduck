@@ -33,14 +33,14 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsAbstractDescriptor.h"
+#include "tsAbstractDeliverySystemDescriptor.h"
 
 namespace ts {
     //!
     //! Representation of a terrestrial_delivery_system_descriptor.
     //! @see ETSI 300 468, 6.2.13.4.
     //!
-    class TSDUCKDLL TerrestrialDeliverySystemDescriptor : public AbstractDescriptor
+    class TSDUCKDLL TerrestrialDeliverySystemDescriptor : public AbstractDeliverySystemDescriptor
     {
     public:
         // TerrestrialDeliverySystemDescriptor public members:

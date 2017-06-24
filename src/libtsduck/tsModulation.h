@@ -577,6 +577,16 @@ namespace ts {
         {
             return frequency >= Frequency(FIRST_CHANNEL, min_offset) && frequency <= Frequency(LAST_CHANNEL, max_offset);
         }
+
+        //!
+        //! Return a human-readable description of a UHF channel.
+        //! @param [in] channel UHF channel number.
+        //! @param [in] offset UHF channel offset count. Displayed only if non-zero.
+        //! @param [in] strength Signal strength in percent. Ignored if negative.
+        //! @param [in] quality Signal quality in percent. Ignored if negative.
+        //! @return Channel description.
+        //!
+        TSDUCKDLL std::string Description(int channel, int offset, int strength = -1, int quality = -1);
     }
 
     //!

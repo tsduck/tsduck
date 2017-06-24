@@ -32,7 +32,8 @@
 //----------------------------------------------------------------------------
 
 #include "tsModulation.h"
-
+#include "tsDecimal.h"
+#include "tsFormat.h"
 
 
 //----------------------------------------------------------------------------
@@ -338,4 +339,35 @@ int ts::VHF::OffsetCount (uint64_t frequency)
     int off = int (int64_t (frequency) - int64_t (CHANNEL_BASE) - int64_t (Channel (frequency) * CHANNEL_WIDTH));
     int count = (std::abs (off) + int (CHANNEL_OFFSET / 2)) / int (CHANNEL_OFFSET);
     return off < 0 ? -count : count;
+}
+
+
+//----------------------------------------------------------------------------
+// Return a human-readable description of a UHF channel.
+//----------------------------------------------------------------------------
+
+std::string ts::UHF::Description(int channel, int offset, int strength, int quality)
+{
+    const uint64_t freq = UHF::Frequency(channel, offset);
+    const int mhz = int(freq / 1000000);
+    const int khz = int((freq % 1000000) / 1000);
+    std::string desc("channel ");
+    desc += Decimal(channel);
+    if (offset != 0) {
+        desc += ", offset ";
+        desc += Decimal(offset, 0, true, ",", true);
+    }
+    desc += " (";
+    desc += Decimal(mhz);
+    if (khz > 0) {
+        desc += Format(".%03d", khz);
+    }
+    desc += " MHz)";
+    if (strength >= 0) {
+        desc += Format(", strength: %d%%", strength);
+    }
+    if (quality >= 0) {
+        desc += Format(", quality: %d%%", quality);
+    }
+    return desc;
 }

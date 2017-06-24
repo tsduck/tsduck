@@ -47,7 +47,7 @@ namespace ts {
     //!
     //! Safe pointer for TunerParameters (thread-safe).
     //!
-    typedef SafePtr <TunerParameters, Mutex> TunerParametersPtr;
+    typedef SafePtr<TunerParameters, Mutex> TunerParametersPtr;
 
     //!
     //! Abstract base class for DVB tuners parameters.
