@@ -244,7 +244,8 @@ HEADERS += \
     ../../../src/libtsduck/tsUserInterrupt.h \
     ../../../src/libtsduck/tsVariable.h \
     ../../../src/libtsduck/tsVersion.h \
-    ../../../src/libtsduck/tsVideoAttributes.h
+    ../../../src/libtsduck/tsVideoAttributes.h \
+    ../../../src/libtsduck/tsTSScanner.h
 
 SOURCES += \
     ../../../src/libtsduck/tsAbstractAVCAccessUnit.cpp \
@@ -411,7 +412,8 @@ SOURCES += \
     ../../../src/libtsduck/tsUID.cpp \
     ../../../src/libtsduck/tsUserInterrupt.cpp \
     ../../../src/libtsduck/tsVersion.cpp \
-    ../../../src/libtsduck/tsVideoAttributes.cpp
+    ../../../src/libtsduck/tsVideoAttributes.cpp \
+    ../../../src/libtsduck/tsTSScanner.cpp
 
 linux {
     HEADERS += \

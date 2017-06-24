@@ -52,16 +52,6 @@ namespace ts {
         DeliverySystem deliverySystem() const {return _system;}
 
         //!
-        //! Fill a tuner parameters object with data from the descriptor.
-        //! @param [in,out] parameters Address of a tuner parameter.
-        //! The parameters are updated with data from the descriptor.
-        //! Other fields are left unmodified.
-        //! @return True on success, false on error (invalid descriptor,
-        //! incorrect type of tuner parameters).
-        //!
-        virtual bool toTunerParameters(TunerParameters* parameters) const = 0;
-
-        //!
         //! Virtual destructor
         //!
         virtual ~AbstractDeliverySystemDescriptor() {}
@@ -75,6 +65,7 @@ namespace ts {
         //!
         //! Protected constructor for subclasses.
         //! @param [in] tag Descriptor tag.
+        //! @param [in] system The delivery system.
         //!
         AbstractDeliverySystemDescriptor(DID tag, DeliverySystem system);
 

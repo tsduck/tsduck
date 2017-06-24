@@ -38,11 +38,7 @@
 #include "tsTunerParametersDVBC.h"
 #include "tsTunerParametersDVBS.h"
 #include "tsTunerParametersATSC.h"
-#include "tsSectionDemux.h"
-#include "tsService.h"
-#include "tsPAT.h"
-#include "tsSDT.h"
-#include "tsNIT.h"
+#include "tsTSScanner.h"
 #include "tsTime.h"
 #include "tsFormat.h"
 #include "tsDecimal.h"
@@ -56,7 +52,6 @@
 #define DEFAULT_FIRST_OFFSET  (-2)
 #define DEFAULT_LAST_OFFSET   (+2)
 #define OFFSET_EXTEND         3
-#define BUFFER_PACKET_COUNT   10000 // packets
 
 
 //----------------------------------------------------------------------------
@@ -291,238 +286,6 @@ Options::Options(int argc, char *argv[]) :
 
 
 //----------------------------------------------------------------------------
-//  Format a UHF signal description
-//----------------------------------------------------------------------------
-
-namespace {
-    std::string Description(int channel, int offset)
-    {
-        uint64_t freq = ts::UHF::Frequency(channel, offset);
-        int mhz = int(freq / 1000000);
-        int khz = int((freq % 1000000) / 1000);
-        return "channel " + ts::Decimal(channel) +
-            (offset == 0 ? "" : ", offset " + ts::Decimal(offset, 0, true, ",", true)) +
-            " (" + ts::Decimal(mhz) + (khz == 0 ? "" : ts::Format(".%03d", khz)) + " MHz)";
-    }
-
-    std::string Description(int channel, int offset, int strength, int quality)
-    {
-        return Description(channel, offset) + 
-            (strength < 0 ? "" : ts::Format(", strength: %d%%", strength)) +
-            (quality < 0 ? "" : ts::Format(", quality: %d%%", quality));
-    }
-}
-
-
-//----------------------------------------------------------------------------
-//  Scan information in a MUX.
-//----------------------------------------------------------------------------
-
-class InfoScanner: private ts::TableHandlerInterface
-{
-public:
-    InfoScanner(ts::Tuner&, ts::MilliSecond timeout, bool pat_only, ts::ReportInterface&);
-
-    // Get the list of services and tables
-    bool getServices(ts::ServiceList&) const;
-    void getTunerParameters(ts::TunerParametersPtr& tp) const {tp = _tparams;}
-    void getPAT(ts::SafePtr<ts::PAT>& pat) const {pat = _pat;}
-    void getSDT(ts::SafePtr<ts::SDT>& sdt) const {sdt = _sdt;}
-    void getNIT(ts::SafePtr<ts::NIT>& nit) const {nit = _nit;}
-
-private:
-    bool                   _pat_only;
-    bool                   _completed;
-    ts::ReportInterface&   _report;
-    ts::SectionDemux       _demux;
-    ts::TunerParametersPtr _tparams;
-    ts::SafePtr<ts::PAT>   _pat;
-    ts::SafePtr<ts::SDT>   _sdt;
-    ts::SafePtr<ts::NIT>   _nit;
-
-    virtual void handleTable(ts::SectionDemux&, const ts::BinaryTable&);
-};
-
-
-// Constructor
-InfoScanner::InfoScanner(ts::Tuner& tuner, ts::MilliSecond timeout, bool pat_only, ts::ReportInterface& report) :
-    _pat_only(pat_only),
-    _completed(false),
-    _report(report),
-    _demux(this),
-    _tparams(),
-    _pat(),
-    _sdt(),
-    _nit()
-{
-    // Collect PAT, SDT, NIT
-    _demux.addPID(ts::PID_PAT);
-    if (!_pat_only) {
-        _demux.addPID(ts::PID_SDT);
-        _demux.addPID(ts::PID_NIT);
-    }
-
-    // Start packet acquisition
-    if (!tuner.start(_report)) {
-        return;
-    }
-
-    // Get current tuning parameters.
-    _tparams = ts::TunerParameters::Factory(tuner.tunerType());
-    if (!_tparams.isNull() && !tuner.getCurrentTuning(*_tparams, true, _report)) {
-        _tparams.clear();
-    }
-
-    // Deadline for table collection
-    const ts::Time deadline(ts::Time::CurrentUTC() + timeout);
-
-    // Allocate packet buffer on heap (risk of stack overflow)
-    ts::TSPacket* buffer = new ts::TSPacket[BUFFER_PACKET_COUNT];
-
-    // Read packets and analyze tables until completed
-    while (!_completed && ts::Time::CurrentUTC() < deadline) {
-        size_t pcount = tuner.receive(buffer, BUFFER_PACKET_COUNT, 0, _report);
-        _report.debug("got %" FMT_SIZE_T "u packets", pcount);
-        if (pcount == 0) { // error
-            break;
-        }
-        for (size_t n = 0; !_completed && n < pcount; ++n) {
-            _demux.feedPacket(buffer[n]);
-        }
-    }
-    delete[] buffer;
-
-    // Stop packet acquisition
-    tuner.stop(_report);
-}
-
-
-// This hook is invoked for each new table
-void InfoScanner::handleTable(ts::SectionDemux&, const ts::BinaryTable& table)
-{
-    _report.debug("got table id 0x%02X on PID 0x%04X", int(table.tableId()), int(table.sourcePID()));
-
-    // Store known tables
-    switch (table.tableId()) {
-
-        case ts::TID_PAT: {
-            ts::SafePtr<ts::PAT> pat(new ts::PAT(table));
-            if (pat->isValid()) {
-                _pat = pat;
-                if (_pat->nit_pid != ts::PID_NULL && _pat->nit_pid != ts::PID_NIT) {
-                    // Non standard NIT PID
-                    _demux.addPID(ts::PID_NIT);
-                }
-            }
-            break;
-        }
-
-        case ts::TID_SDT_ACT: {
-            ts::SafePtr<ts::SDT> sdt(new ts::SDT(table));
-            if (sdt->isValid()) {
-                _sdt = sdt;
-            }
-            break;
-        }
-
-        case ts::TID_NIT_ACT: {
-            ts::SafePtr<ts::NIT> nit(new ts::NIT(table));
-            if (nit->isValid()) {
-                _nit = nit;
-            }
-            break;
-        }
-
-        default: {
-            break;
-        }
-    }
-
-    // When all tables are ready, stop collection
-    _completed = !_pat.isNull() && (_pat_only || (!_sdt.isNull() && !_nit.isNull()));
-}
-
-
-// Get the list of services and tables
-bool InfoScanner::getServices(ts::ServiceList& services) const
-{
-    services.clear();
-
-    if (_pat.isNull()) {
-        _report.warning("No PAT found, services are unknown");
-        return false;
-    }
-
-    if (_sdt.isNull()) {
-        _report.warning("No SDT found, services names are unknown");
-        // do not return, collect services
-    }
-
-    // Loop on all services in the PAT
-    for (ts::PAT::ServiceMap::const_iterator it = _pat->pmts.begin(); it != _pat->pmts.end(); ++it) {
-
-        // Service id, PMT PID and TS id are extracted from the PAT
-        ts::Service srv;
-        srv.setId(it->first);
-        srv.setPMTPID(it->second);
-        srv.setTSId(_pat->ts_id);
-
-        // Original netw. id, service type, name and provider are extracted from the SDT.
-        if (!_sdt.isNull()) {
-            srv.setONId(_sdt->onetw_id);
-            // Search service in the SDT
-            const ts::SDT::ServiceMap::const_iterator sit = _sdt->services.find(srv.getId());
-            if (sit != _sdt->services.end()) {
-                const uint8_t type = sit->second.serviceType();
-                const std::string name = sit->second.serviceName();
-                const std::string provider = sit->second.providerName();
-                if (type != 0) {
-                    srv.setType(type);
-                }
-                if (!name.empty()) {
-                    srv.setName(name);
-                }
-                if (!provider.empty()) {
-                    srv.setProvider(provider);
-                }
-            }
-        }
-
-        // Logical channel number is extracted from the NIT.
-        // Since locating the TS in the NIT requires the ONId, the SDT must be there as well.
-        if (!_nit.isNull() && !_sdt.isNull()) {
-            // Search the TS in the NIT
-            const ts::TransportStreamId ts(srv.getTSId(), srv.getONId());
-            const ts::NIT::TransportMap::const_iterator tit = _nit->transports.find(ts);
-            if (tit != _nit->transports.end()) {
-                const ts::DescriptorList& dlist(tit->second);
-                // Loop on all logical_channel_number_descriptors
-                for (size_t i = dlist.search(ts::DID_LOGICAL_CHANNEL_NUM, 0, ts::PDS_EICTA);
-                     i < dlist.count() && !srv.hasLCN();
-                     i = dlist.search(ts::DID_LOGICAL_CHANNEL_NUM, i + 1, ts::PDS_EICTA)) {
-
-                    const uint8_t* data = dlist[i]->payload();
-                    size_t size = dlist[i]->payloadSize();
-                    while (size >= 4 && !srv.hasLCN()) {
-                        if (ts::GetUInt16(data) == srv.getId()) {
-                            srv.setLCN(ts::GetUInt16(data + 2) & 0x03FF);
-                        }
-                        data += 4;
-                        size -= 4;
-                    }
-                }
-            }
-        }
-
-        // Add new service definition in result
-        services.push_back(srv);
-    }
-
-    return true;
-}
-
-
-//----------------------------------------------------------------------------
 //  Analyze and display relevant TS info
 //----------------------------------------------------------------------------
 
@@ -532,7 +295,7 @@ namespace {
         const bool get_services = opt.list_services || opt.global_services;
 
         // Collect info
-        InfoScanner info(tuner, opt.psi_timeout, !get_services, opt);
+        ts::TSScanner info(tuner, opt.psi_timeout, !get_services, opt);
 
         // Display TS Id
         ts::SafePtr<ts::PAT> pat;
@@ -722,7 +485,7 @@ bool OffsetScanner::tryOffset(int offset)
         // Get signal quality & strength
         const int strength = _tuner.signalStrength(_opt);
         const int quality = _tuner.signalQuality(_opt);
-        _opt.verbose(Description(_channel, offset, strength, quality));
+        _opt.verbose(ts::UHF::Description(_channel, offset, strength, quality));
 
         if (strength >= 0 && strength <= _opt.min_strength) {
             // Strength is supported but too low
@@ -790,7 +553,7 @@ namespace {
 
                 // Report channel characteristics
                 std::cout << "* UHF "
-                          << Description(chan, offscan.bestOffset(), tuner.signalStrength(opt), tuner.signalQuality(opt))
+                          << ts::UHF::Description(chan, offscan.bestOffset(), tuner.signalStrength(opt), tuner.signalQuality(opt))
                           << std::endl;
 
                 // Analyze PSI/SI if required

@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ImportGroup Label="PropertySheets">
     <Import Project="msvc-common-begin.props" />
@@ -220,6 +220,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsToIntegerTemplate.h" />
     <ClInclude Include="..\..\src\libtsduck\tsTOT.h" />
     <ClInclude Include="..\..\src\libtsduck\tsTransportStreamId.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsTSScanner.h" />
     <ClInclude Include="..\..\src\libtsduck\tsTSAnalyzer.h" />
     <ClInclude Include="..\..\src\libtsduck\tsTSAnalyzerOptions.h" />
     <ClInclude Include="..\..\src\libtsduck\tsTSAnalyzerReport.h" />
@@ -399,6 +400,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsTLVSerializer.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsToInteger.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsTOT.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsTSScanner.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsTSAnalyzer.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsTSAnalyzerOptions.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsTSAnalyzerReport.cpp" />

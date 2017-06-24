@@ -32,7 +32,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsTerrestrialDeliverySystemDescriptor.h"
-
+#include "tsTunerParametersDVBT.h"
 
 
 //----------------------------------------------------------------------------
@@ -40,7 +40,7 @@
 //----------------------------------------------------------------------------
 
 ts::TerrestrialDeliverySystemDescriptor::TerrestrialDeliverySystemDescriptor() :
-    AbstractDescriptor(DID_TERREST_DELIVERY),
+    AbstractDeliverySystemDescriptor(DID_TERREST_DELIVERY, DS_DVB_T),
     centre_frequency(0),
     bandwidth(0),
     high_priority(true),
@@ -63,7 +63,7 @@ ts::TerrestrialDeliverySystemDescriptor::TerrestrialDeliverySystemDescriptor() :
 //----------------------------------------------------------------------------
 
 ts::TerrestrialDeliverySystemDescriptor::TerrestrialDeliverySystemDescriptor(const Descriptor& desc) :
-    AbstractDescriptor(DID_TERREST_DELIVERY),
+    AbstractDeliverySystemDescriptor(DID_TERREST_DELIVERY, DS_DVB_T),
     centre_frequency(0),
     bandwidth(0),
     high_priority(true),
