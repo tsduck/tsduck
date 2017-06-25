@@ -135,11 +135,7 @@ namespace ts {
     enum Modulation {
 #if defined(__linux) && !defined(DOXYGEN)
         QPSK     = ::QPSK,
-#if defined(__s2api)
         PSK_8    = ::PSK_8,
-#else
-        PSK_8    = -10,
-#endif
         QAM_AUTO = ::QAM_AUTO,
         QAM_16   = ::QAM_16,
         QAM_32   = ::QAM_32,
@@ -224,13 +220,8 @@ namespace ts {
         FEC_6_7  = ::FEC_6_7,
         FEC_7_8  = ::FEC_7_8,
         FEC_8_9  = ::FEC_8_9,
-#if defined (__s2api)
         FEC_9_10 = ::FEC_9_10,
         FEC_3_5  = ::FEC_3_5,
-#else
-        FEC_9_10 = -10,
-        FEC_3_5  = -11,
-#endif
         FEC_1_3  = -12,
         FEC_1_4  = -13,
         FEC_2_5  = -14,
@@ -321,14 +312,10 @@ namespace ts {
     //! Pilot (DVB-S2)
     //!
     enum Pilot {
-#if defined(__linux) && defined(__s2api) && !defined(DOXYGEN)
+#if defined(__linux) && !defined(DOXYGEN)
         PILOT_AUTO = ::PILOT_AUTO,
         PILOT_ON   = ::PILOT_ON,
         PILOT_OFF  = ::PILOT_OFF,
-#elif defined(__linux) && !defined(__s2api) && !defined(DOXYGEN)
-        PILOT_AUTO = -10,
-        PILOT_ON   = -11,
-        PILOT_OFF  = -12,
 #elif defined(__windows) && !defined(DOXYGEN)
         PILOT_AUTO = ::BDA_PILOT_NOT_DEFINED,
         PILOT_ON   = ::BDA_PILOT_ON,
@@ -349,16 +336,11 @@ namespace ts {
     //! Roll-off (DVB-S2)
     //!
     enum RollOff {
-#if defined(__linux) && defined(__s2api) && !defined(DOXYGEN)
+#if defined(__linux) && !defined(DOXYGEN)
         ROLLOFF_AUTO = ::ROLLOFF_AUTO,
         ROLLOFF_35   = ::ROLLOFF_35,
         ROLLOFF_25   = ::ROLLOFF_25,
         ROLLOFF_20   = ::ROLLOFF_20,
-#elif defined(__linux) && !defined(__s2api) && !defined(DOXYGEN)
-        ROLLOFF_AUTO = -10,
-        ROLLOFF_35   = -11,
-        ROLLOFF_25   = -12,
-        ROLLOFF_20   = -13,
 #elif defined(__windows) && !defined(DOXYGEN)
         ROLLOFF_AUTO = ::BDA_ROLL_OFF_NOT_DEFINED,
         ROLLOFF_35   = ::BDA_ROLL_OFF_35,

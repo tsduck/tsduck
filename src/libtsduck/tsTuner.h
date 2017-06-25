@@ -347,34 +347,12 @@ namespace ts {
         }
 
         //!
-        //! Force usage of S2API in all cases (Linux-specific).
-        //! @param [in] force If true, the S2API is used in all cases.
-        //! By default, S2API, when supported, is used only with DVB-S/S2.
-        //!
-        void setForceS2API(bool force)
-        {
-            _force_s2api = force;
-        }
-        
-        //!
-        //! Check if usage of S2API is forced in all cases (Linux-specific).
-        //! @return If true, the S2API is used in all cases.
-        //! By default, S2API, when supported, is used only with DVB-S/S2.
-        //!
-        bool getForceS2API() const
-        {
-            return _force_s2api;
-        }
-
-#if defined(__s2api) || defined(DOXYGEN)
-        //!
-        //! Perform a tune operation using S2API (Linux-specific).
-        //! @param [in,out] props S2API DTV properties.
+        //! Perform a tune operation (Linux-specific).
+        //! @param [in,out] props DTV properties.
         //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool tuneS2API(DTVProperties& props, ReportInterface& report);
-#endif
+        bool tune(DTVProperties& props, ReportInterface& report);
 #endif
 
 #if defined(__windows) || defined(DOXYGEN) // Windows-specific operations
@@ -438,7 +416,6 @@ namespace ts {
         int                 _dvr_fd;           // DVR device file descriptor
         unsigned long       _demux_bufsize;    // Demux device buffer size
         ::dvb_frontend_info _fe_info;          // Front-end characteristics
-        bool                _force_s2api;      // Force usage of S2API
         MilliSecond         _signal_poll;
         int                 _rt_signal;        // Receive timeout signal number
         ::timer_t           _rt_timer;         // Receive timeout timer
@@ -450,7 +427,7 @@ namespace ts {
         ErrorCode getCurrentTuningDVBT(TunerParametersDVBT&);
         ErrorCode getCurrentTuningATSC(TunerParametersATSC&);
 
-        // Clear tuner if S2API, return true on success, false on error
+        // Clear tuner, return true on success, false on error
         bool dtvClear(ReportInterface&);
 
         // Discard all pending frontend events
@@ -462,11 +439,10 @@ namespace ts {
         bool tuneDVBT(const TunerParametersDVBT&, ReportInterface&);
         bool tuneATSC(const TunerParametersATSC&, ReportInterface&);
 
-#if defined(__s2api)
-        // Convert between TSDuck and Linux S2API delivery systems.
+        // Convert between TSDuck and Linux delivery systems.
         DeliverySystem fromLinuxDeliverySystem(::fe_delivery_system);
         ::fe_delivery_system toLinuxDeliverySystem(DeliverySystem);
-#endif
+
 #endif // linux
        
 #if defined(__windows) // Windows properties

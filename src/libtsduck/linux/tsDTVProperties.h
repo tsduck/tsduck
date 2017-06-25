@@ -28,19 +28,17 @@
 //-----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Encapsulation of Linux S2API (new DVB API) property lists.
+//!  Encapsulation of Linux DVB property lists.
 //!
 //-----------------------------------------------------------------------------
 
 #pragma once
 #include "tsReportInterface.h"
 
-#if defined (__s2api)
-
 namespace ts {
 
     //!
-    //! Encapsulation of Linux S2API (new DVB API) property lists.
+    //! Encapsulation of Linux DVB property lists.
     //!
     class TSDUCKDLL DTVProperties
     {
@@ -126,11 +124,11 @@ namespace ts {
         void report(ReportInterface& report, int severity) const;
 
         //!
-        //! Return the name of a S2API command.
+        //! Return the name of a command.
         //! @param [in] cmd Command code.
         //! @return A name for @a cmd or zero if unknown.
         //!
-        static const char* CommandNameS2API(uint32_t cmd);
+        static const char* CommandName(uint32_t cmd);
 
     private:
         // Private members:
@@ -138,5 +136,3 @@ namespace ts {
         ::dtv_properties _prop_head;
     };
 }
-
-#endif // __s2api

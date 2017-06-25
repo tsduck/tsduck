@@ -77,9 +77,6 @@ struct Options: public ts::Args
     bool            global_services;
     ts::MilliSecond psi_timeout;
     ts::MilliSecond signal_timeout;
-#if defined(__linux)
-    bool            s2api;
-#endif
 };
 
 Options::Options(int argc, char *argv[]) :
@@ -99,10 +96,6 @@ Options::Options(int argc, char *argv[]) :
     global_services(false),
     psi_timeout(0),
     signal_timeout(0)
-#if defined(__linux)
-    ,
-    s2api(false)
-#endif
 {
     option("adapter",             'a', UNSIGNED);
     option("best-quality",         0);
@@ -123,9 +116,6 @@ Options::Options(int argc, char *argv[]) :
     option("uhf-band",            'u');
     option("timeout",             't', INTEGER, 0, 1, MIN_LOCK_TIMEOUT, UNLIMITED_VALUE);
     option("verbose",             'v');
-#if defined(__linux)
-    option("s2api",               '2');
-#endif
 
     setHelp("Options:\n"
             "\n"
@@ -213,15 +203,6 @@ Options::Options(int argc, char *argv[]) :
             "      Useful only with --service-list. The default is " +
             ts::Decimal(DEFAULT_PSI_TIMEOUT) + " milli-seconds.\n"
             "\n"
-#if defined(__linux)
-            "  -2\n"
-            "  --s2api\n"
-            "      On Linux kernel 2.6.28 and higher, this option forces the usage of the\n"
-            "      S2API for communication with the DVB drivers. By default, for DVB-C and\n"
-            "      DVB-T, the legacy Linux DVB API V3 is still used. The DVB-S and DVB-S2\n"
-            "      tuners always use the S2API.\n"
-            "\n"
-#endif
             "  -s\n"
             "  --service-list\n"
             "      Read SDT of each channel and display the list of services.\n"
@@ -263,10 +244,6 @@ Options::Options(int argc, char *argv[]) :
     psi_timeout       = intValue<ts::MilliSecond>("psi-timeout", DEFAULT_PSI_TIMEOUT);
     signal_timeout    = intValue<ts::MilliSecond>("timeout", DEFAULT_LOCK_TIMEOUT);
     device_name       = value("device-name");
-
-#if defined(__linux)
-    s2api = present("s2api");
-#endif
 
     if (present("adapter")) {
         if (device_name.empty()) {
@@ -586,10 +563,6 @@ int main(int argc, char *argv[])
     tuner.setSignalTimeout(opt.signal_timeout);
     tuner.setSignalTimeoutSilent(true);
     tuner.setReceiveTimeout(opt.psi_timeout, opt);
-
-#if defined(__linux)
-    tuner.setForceS2API(opt.s2api);
-#endif
 
     // Only one currently supported mode: UHF-band scanning
     return UHFScan(opt, tuner);

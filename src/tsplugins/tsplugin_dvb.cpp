@@ -99,13 +99,12 @@ ts::DVBInput::DVBInput (TSP* tsp_) :
     option ("device-name",    'd', STRING);
     option ("timeout",         0,  UNSIGNED);
     option ("receive-timeout", 0,  UNSIGNED);
-#if defined (__linux)
+#if defined(__linux)
     option ("buffer-size",    'b', UNSIGNED);
     option ("demux",           0,  UNSIGNED);
     option ("dvr",             0,  UNSIGNED);
     option ("frontend",        0,  UNSIGNED);
-    option ("s2api",          '2');
-#elif defined (__windows)
+#elif defined(__windows)
     option ("queue-size",      0, UNSIGNED);
 #endif
 
@@ -171,15 +170,6 @@ ts::DVBInput::DVBInput (TSP* tsp_) :
              "      To disable the timeout and wait indefinitely for packets, specify zero.\n"
              "      This is the default.\n"
              "\n"
-#if defined (__linux)
-             "  -2\n"
-             "  --s2api\n"
-             "      On Linux kernel 2.6.28 and higher, this option forces the usage of the\n"
-             "      S2API for communication with the DVB drivers. By default, for DVB-C and\n"
-             "      DVB-T, the legacy Linux DVB API V3 is still used. The DVB-S and DVB-S2\n"
-             "      tuners always use the S2API.\n"
-             "\n"
-#endif
              "  --timeout seconds\n"
              "      Specifies the timeout, in seconds, for DVB signal locking. If no signal\n"
              "      is detected after this timeout, the command aborts. To disable the\n"
@@ -219,8 +209,7 @@ bool ts::DVBInput::start()
         return false;
     }
 
-#if defined (__linux)
-    _tuner.setForceS2API (present ("s2api"));
+#if defined(__linux)
     _tuner.setSignalPoll (Tuner::DEFAULT_SIGNAL_POLL);
     _tuner.setDemuxBufferSize (intValue ("buffer-size", Tuner::DEFAULT_DEMUX_BUFFER_SIZE));
     if (present ("adapter") || present ("frontend") || present ("demux") || present ("dvr")) {
@@ -234,7 +223,7 @@ bool ts::DVBInput::start()
             return false;
         }
     }
-#elif defined (__windows)
+#elif defined(__windows)
     _tuner.setSinkQueueSize (intValue ("queue-size", Tuner::DEFAULT_SINK_QUEUE_SIZE));
     if (present ("adapter")) {
         if (_device_name.empty()) {

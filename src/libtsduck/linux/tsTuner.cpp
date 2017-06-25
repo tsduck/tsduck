@@ -61,7 +61,7 @@ const size_t ts::Tuner::DEFAULT_DEMUX_BUFFER_SIZE;
 //   FE_SET_TONE, FE_SET_VOLTAGE, FE_DISEQC_SEND_BURST.
 //
 // These ioctl's take an enum value as input. In the old V3 API, the parameter
-// is passed by value. In the V4 / S2API documentation, it is passed by reference.
+// is passed by value. In the V5 documentation, it is passed by reference.
 // Most sample programs (a bit old) use the "pass by value" method.
 //
 // V3 documentation: https://www.linuxtv.org/docs/dvbapi/dvbapi.html
@@ -69,13 +69,13 @@ const size_t ts::Tuner::DEFAULT_DEMUX_BUFFER_SIZE;
 //   int ioctl(int fd, int request = FE_SET_VOLTAGE, fe_sec_voltage_t voltage);
 //   int ioctl(int fd, int request = FE_DISEQC_SEND_BURST, fe_sec_mini_cmd_t burst);
 //
-// V4 / S2API documentation: https://www.linuxtv.org/downloads/v4l-dvb-apis-new/uapi/dvb/frontend_fcalls.html
+// V5 documentation: https://www.linuxtv.org/downloads/v4l-dvb-apis-new/uapi/dvb/frontend_fcalls.html
 //   int ioctl(int fd, FE_SET_TONE, enum fe_sec_tone_mode *tone)
 //   int ioctl(int fd, FE_SET_VOLTAGE, enum fe_sec_voltage *voltage)
 //   int ioctl(int fd, FE_DISEQC_SEND_BURST, enum fe_sec_mini_cmd *tone)
 //
 // Interestingly, the following ioctl's which take an int as argument use the
-// "pass by value" method in S2API:
+// "pass by value" method in V5:
 //
 //   FE_ENABLE_HIGH_LNB_VOLTAGE, FE_SET_FRONTEND_TUNE_MODE
 //
@@ -134,7 +134,6 @@ ts::Tuner::Tuner() :
     _dvr_fd(-1),
     _demux_bufsize(DEFAULT_DEMUX_BUFFER_SIZE),
     _fe_info(),
-    _force_s2api(false),
     _signal_poll(DEFAULT_SIGNAL_POLL),
     _rt_signal(-1),
     _rt_timer(0),
@@ -165,7 +164,6 @@ ts::Tuner::Tuner(const std::string& device_name, bool info_only, ReportInterface
     _dvr_fd(-1),
     _demux_bufsize(DEFAULT_DEMUX_BUFFER_SIZE),
     _fe_info(),
-    _force_s2api(false),
     _signal_poll(DEFAULT_SIGNAL_POLL),
     _rt_signal(-1),
     _rt_timer(0),
@@ -435,10 +433,6 @@ ts::ErrorCode ts::Tuner::getCurrentTuningDVBS (TunerParametersDVBS& params)
     // returns the intermediate frequency and there is no unique satellite
     // frequency for a given intermediate frequency.
 
-    // With DVB-S, we use S2API whenever it is supported. Option --s2api is ignored.
-
-#if defined (__s2api)
-
     DTVProperties props;
     props.add (DTV_INVERSION);
     props.add (DTV_SYMBOL_RATE);
@@ -460,22 +454,6 @@ ts::ErrorCode ts::Tuner::getCurrentTuningDVBS (TunerParametersDVBS& params)
     params.pilots = Pilot (props.getByCommand (DTV_PILOT));
     params.roll_off = RollOff (props.getByCommand (DTV_ROLLOFF));
 
-#else // Legacy Linux DVB API
-
-    ::dvb_frontend_parameters fep;
-    if (::ioctl (_frontend_fd, FE_GET_FRONTEND, &fep) < 0) {
-        return LastErrorCode();
-    }
-    params.inversion = SpectralInversion(fep.inversion);
-    params.symbol_rate = uint32_t(fep.u.qpsk.symbol_rate);
-    params.inner_fec = InnerFEC(fep.u.qpsk.fec_inner);
-    params.delivery_system = DS_DVB_S;
-    params.modulation = QPSK;
-    params.pilots = PILOT_AUTO;
-    params.roll_off = ROLLOFF_AUTO;
-
-#endif
-
     return SYS_SUCCESS;
 }
 
@@ -486,45 +464,22 @@ ts::ErrorCode ts::Tuner::getCurrentTuningDVBS (TunerParametersDVBS& params)
 
 ts::ErrorCode ts::Tuner::getCurrentTuningDVBC (TunerParametersDVBC& params)
 {
-    // With DVB-C, we use S2API only when forced.
+    DTVProperties props;
+    props.add (DTV_FREQUENCY);
+    props.add (DTV_INVERSION);
+    props.add (DTV_SYMBOL_RATE);
+    props.add (DTV_INNER_FEC);
+    props.add (DTV_MODULATION);
 
-#if defined (__s2api)
-
-    if (_force_s2api) {
-        DTVProperties props;
-        props.add (DTV_FREQUENCY);
-        props.add (DTV_INVERSION);
-        props.add (DTV_SYMBOL_RATE);
-        props.add (DTV_INNER_FEC);
-        props.add (DTV_MODULATION);
-
-        if (::ioctl (_frontend_fd, FE_GET_PROPERTY, props.getIoctlParam()) < 0) {
-            return LastErrorCode();
-        }
-
-        params.frequency = props.getByCommand (DTV_FREQUENCY);
-        params.inversion = SpectralInversion (props.getByCommand (DTV_INVERSION));
-        params.symbol_rate = props.getByCommand (DTV_SYMBOL_RATE);
-        params.inner_fec = InnerFEC (props.getByCommand (DTV_INNER_FEC));
-        params.modulation = Modulation (props.getByCommand (DTV_MODULATION));
+    if (::ioctl (_frontend_fd, FE_GET_PROPERTY, props.getIoctlParam()) < 0) {
+        return LastErrorCode();
     }
-    else {
 
-#endif
-
-        ::dvb_frontend_parameters fep;
-        if (::ioctl (_frontend_fd, FE_GET_FRONTEND, &fep) < 0) {
-            return LastErrorCode();
-        }
-        params.frequency = fep.frequency;
-        params.inversion = SpectralInversion(fep.inversion);
-        params.symbol_rate = uint32_t(fep.u.qam.symbol_rate);
-        params.inner_fec = InnerFEC(fep.u.qam.fec_inner);
-        params.modulation = Modulation(fep.u.qam.modulation);
-
-#if defined (__s2api)
-    }
-#endif
+    params.frequency = props.getByCommand (DTV_FREQUENCY);
+    params.inversion = SpectralInversion (props.getByCommand (DTV_INVERSION));
+    params.symbol_rate = props.getByCommand (DTV_SYMBOL_RATE);
+    params.inner_fec = InnerFEC (props.getByCommand (DTV_INNER_FEC));
+    params.modulation = Modulation (props.getByCommand (DTV_MODULATION));
 
     return SYS_SUCCESS;
 }
@@ -536,58 +491,30 @@ ts::ErrorCode ts::Tuner::getCurrentTuningDVBC (TunerParametersDVBC& params)
 
 ts::ErrorCode ts::Tuner::getCurrentTuningDVBT (TunerParametersDVBT& params)
 {
-    // With DVB-T, we use S2API only when forced.
+    DTVProperties props;
+    props.add (DTV_FREQUENCY);
+    props.add (DTV_INVERSION);
+    props.add (DTV_BANDWIDTH_HZ);
+    props.add (DTV_CODE_RATE_HP);
+    props.add (DTV_CODE_RATE_LP);
+    props.add (DTV_MODULATION);
+    props.add (DTV_TRANSMISSION_MODE);
+    props.add (DTV_GUARD_INTERVAL);
+    props.add (DTV_HIERARCHY);
 
-#if defined (__s2api)
-
-    if (_force_s2api) {
-        DTVProperties props;
-        props.add (DTV_FREQUENCY);
-        props.add (DTV_INVERSION);
-        props.add (DTV_BANDWIDTH_HZ);
-        props.add (DTV_CODE_RATE_HP);
-        props.add (DTV_CODE_RATE_LP);
-        props.add (DTV_MODULATION);
-        props.add (DTV_TRANSMISSION_MODE);
-        props.add (DTV_GUARD_INTERVAL);
-        props.add (DTV_HIERARCHY);
-
-        if (::ioctl (_frontend_fd, FE_GET_PROPERTY, props.getIoctlParam()) < 0) {
-            return LastErrorCode();
-        }
-
-        params.frequency = props.getByCommand (DTV_FREQUENCY);
-        params.inversion = SpectralInversion (props.getByCommand (DTV_INVERSION));
-        params.bandwidth = BandWidthCodeFromHz (props.getByCommand (DTV_BANDWIDTH_HZ));
-        params.fec_hp = InnerFEC (props.getByCommand (DTV_CODE_RATE_HP));
-        params.fec_lp = InnerFEC (props.getByCommand (DTV_CODE_RATE_LP));
-        params.modulation = Modulation (props.getByCommand (DTV_MODULATION));
-        params.transmission_mode = TransmissionMode (props.getByCommand (DTV_TRANSMISSION_MODE));
-        params.guard_interval = GuardInterval (props.getByCommand (DTV_GUARD_INTERVAL));
-        params.hierarchy = Hierarchy (props.getByCommand (DTV_HIERARCHY));
+    if (::ioctl (_frontend_fd, FE_GET_PROPERTY, props.getIoctlParam()) < 0) {
+        return LastErrorCode();
     }
-    else {
 
-#endif
-
-        ::dvb_frontend_parameters fep;
-        if (::ioctl (_frontend_fd, FE_GET_FRONTEND, &fep) < 0) {
-            return LastErrorCode();
-        }
-
-        params.frequency = fep.frequency;
-        params.inversion = SpectralInversion (fep.inversion);
-        params.bandwidth = BandWidth (fep.u.ofdm.bandwidth);
-        params.fec_hp = InnerFEC (fep.u.ofdm.code_rate_HP);
-        params.fec_lp = InnerFEC (fep.u.ofdm.code_rate_LP);
-        params.modulation = Modulation (fep.u.ofdm.constellation);
-        params.transmission_mode = TransmissionMode (fep.u.ofdm.transmission_mode);
-        params.guard_interval = GuardInterval (fep.u.ofdm.guard_interval);
-        params.hierarchy = Hierarchy (fep.u.ofdm.hierarchy_information);
-
-#if defined (__s2api)
-    }
-#endif
+    params.frequency = props.getByCommand (DTV_FREQUENCY);
+    params.inversion = SpectralInversion (props.getByCommand (DTV_INVERSION));
+    params.bandwidth = BandWidthCodeFromHz (props.getByCommand (DTV_BANDWIDTH_HZ));
+    params.fec_hp = InnerFEC (props.getByCommand (DTV_CODE_RATE_HP));
+    params.fec_lp = InnerFEC (props.getByCommand (DTV_CODE_RATE_LP));
+    params.modulation = Modulation (props.getByCommand (DTV_MODULATION));
+    params.transmission_mode = TransmissionMode (props.getByCommand (DTV_TRANSMISSION_MODE));
+    params.guard_interval = GuardInterval (props.getByCommand (DTV_GUARD_INTERVAL));
+    params.hierarchy = Hierarchy (props.getByCommand (DTV_HIERARCHY));
 
     return SYS_SUCCESS;
 }
@@ -599,39 +526,18 @@ ts::ErrorCode ts::Tuner::getCurrentTuningDVBT (TunerParametersDVBT& params)
 
 ts::ErrorCode ts::Tuner::getCurrentTuningATSC (TunerParametersATSC& params)
 {
-    // With ATSC, we use S2API only when forced.
+    DTVProperties props;
+    props.add (DTV_FREQUENCY);
+    props.add (DTV_INVERSION);
+    props.add (DTV_MODULATION);
 
-#if defined (__s2api)
-
-    if (_force_s2api) {
-        DTVProperties props;
-        props.add (DTV_FREQUENCY);
-        props.add (DTV_INVERSION);
-        props.add (DTV_MODULATION);
-
-        if (::ioctl (_frontend_fd, FE_GET_PROPERTY, props.getIoctlParam()) < 0) {
-            return LastErrorCode();
-        }
-
-        params.frequency = props.getByCommand (DTV_FREQUENCY);
-        params.inversion = SpectralInversion (props.getByCommand (DTV_INVERSION));
-        params.modulation = Modulation (props.getByCommand (DTV_MODULATION));
+    if (::ioctl (_frontend_fd, FE_GET_PROPERTY, props.getIoctlParam()) < 0) {
+        return LastErrorCode();
     }
-    else {
 
-#endif
-
-        ::dvb_frontend_parameters fep;
-        if (::ioctl (_frontend_fd, FE_GET_FRONTEND, &fep) < 0) {
-            return LastErrorCode();
-        }
-        params.frequency = fep.frequency;
-        params.inversion = SpectralInversion (fep.inversion);
-        params.modulation = Modulation (fep.u.vsb.modulation);
-
-#if defined (__s2api)
-    }
-#endif
+    params.frequency = props.getByCommand (DTV_FREQUENCY);
+    params.inversion = SpectralInversion (props.getByCommand (DTV_INVERSION));
+    params.modulation = Modulation (props.getByCommand (DTV_MODULATION));
 
     return SYS_SUCCESS;
 }
@@ -721,12 +627,10 @@ void ts::Tuner::discardFrontendEvents (ReportInterface& report)
 
 
 //-----------------------------------------------------------------------------
-// Tune operation using S2API, return true on success, false on error
+// Tune operation, return true on success, false on error
 //-----------------------------------------------------------------------------
 
-#if defined (__s2api)
-
-bool ts::Tuner::tuneS2API (DTVProperties& props, ReportInterface& report)
+bool ts::Tuner::tune(DTVProperties& props, ReportInterface& report)
 {
     report.debug ("tuning on " + _frontend_name);
     props.report (report, Severity::Debug);
@@ -737,22 +641,16 @@ bool ts::Tuner::tuneS2API (DTVProperties& props, ReportInterface& report)
     return true;
 }
 
-#endif
-
 
 //-----------------------------------------------------------------------------
-// Clear tuner if S2API, return true on success, false on error
+// Clear tuner, return true on success, false on error
 //-----------------------------------------------------------------------------
 
 bool ts::Tuner::dtvClear (ReportInterface& report)
 {
-#if defined (__s2api)
     DTVProperties props;
     props.add (DTV_CLEAR);
-    return tuneS2API (props, report);
-#else
-    return true;
-#endif
+    return tune(props, report);
 }
 
 
@@ -762,7 +660,7 @@ bool ts::Tuner::dtvClear (ReportInterface& report)
 
 bool ts::Tuner::tuneDVBS (const TunerParametersDVBS& params, ReportInterface& report)
 {
-    // Clear tuner state if using S2API
+    // Clear tuner state.
     if (!dtvClear(report)) {
         return false;
     }
@@ -869,10 +767,7 @@ bool ts::Tuner::tuneDVBS (const TunerParametersDVBS& params, ReportInterface& re
     // For DVB-S/S2, Linux DVB API uses an intermediate frequency in kHz
     const uint32_t intermediate_frequency = uint32_t(params.lnb.intermediateFrequency (params.frequency) / 1000);
 
-    // With DVB-S, we use S2API whenever it is supported. Option --s2api is ignored.
     discardFrontendEvents (report);
-
-#if defined (__s2api)
 
     DTVProperties props;
     props.add(DTV_DELIVERY_SYSTEM, uint32_t(toLinuxDeliverySystem (params.delivery_system)));
@@ -885,27 +780,7 @@ bool ts::Tuner::tuneDVBS (const TunerParametersDVBS& params, ReportInterface& re
     props.add(DTV_PILOT, uint32_t(params.pilots));
     props.add(DTV_TUNE);
 
-    if (!tuneS2API (props, report)) {
-        return false;
-    }
-
-#else // Legacy Linux DVB API
-
-    ::dvb_frontend_parameters fep;
-    TS_ZERO (fep);
-    fep.frequency = intermediate_frequency;
-    fep.inversion = ::fe_spectral_inversion_t (params.inversion);
-    fep.u.qpsk.symbol_rate = params.symbol_rate;
-    fep.u.qpsk.fec_inner = ::fe_code_rate_t (params.inner_fec);
-
-    if (::ioctl(_frontend_fd, FE_SET_FRONTEND, &fep) < 0) {
-        report.error ("tuning error on " + _frontend_name + ": " + ErrorCodeMessage());
-        return false;
-    }
-
-#endif
-
-    return true;
+    return tune(props, report);
 }
 
 
@@ -921,50 +796,20 @@ bool ts::Tuner::tuneDVBC (const TunerParametersDVBC& params, ReportInterface& re
         return false;
     }
 
-    // With DVB-C, we use S2API only when forced.
-
     discardFrontendEvents (report);
 
-#if defined (__s2api)
-
-    if (_force_s2api) {
-        if (!dtvClear (report)) {
-            return false;
-        }
-        DTVProperties props;
-        props.add (DTV_FREQUENCY, uint32_t(params.frequency));
-        props.add (DTV_MODULATION, uint32_t(params.modulation));
-        props.add (DTV_INVERSION, uint32_t(params.inversion));
-        props.add (DTV_INNER_FEC, uint32_t(params.inner_fec));
-        props.add (DTV_SYMBOL_RATE, params.symbol_rate);
-        props.add (DTV_TUNE);
-
-        if (!tuneS2API (props, report)) {
-            return false;
-        }
+    if (!dtvClear (report)) {
+        return false;
     }
-    else {
+    DTVProperties props;
+    props.add (DTV_FREQUENCY, uint32_t(params.frequency));
+    props.add (DTV_MODULATION, uint32_t(params.modulation));
+    props.add (DTV_INVERSION, uint32_t(params.inversion));
+    props.add (DTV_INNER_FEC, uint32_t(params.inner_fec));
+    props.add (DTV_SYMBOL_RATE, params.symbol_rate);
+    props.add (DTV_TUNE);
 
-#endif
-
-        ::dvb_frontend_parameters fep;
-        TS_ZERO (fep);
-        fep.frequency = uint32_t(params.frequency);
-        fep.inversion = ::fe_spectral_inversion_t(params.inversion);
-        fep.u.qam.symbol_rate = params.symbol_rate;
-        fep.u.qam.fec_inner = ::fe_code_rate_t(params.inner_fec);
-        fep.u.qam.modulation = ::fe_modulation_t(params.modulation);
-
-        if (::ioctl(_frontend_fd, FE_SET_FRONTEND, &fep) < 0) {
-            report.error ("tuning error on " + _frontend_name + ": " + ErrorCodeMessage());
-            return false;
-        }
-
-#if defined (__s2api)
-    }
-#endif
-
-    return true;
+    return tune(props, report);
 }
 
 
@@ -985,61 +830,27 @@ bool ts::Tuner::tuneDVBT (const TunerParametersDVBT& params, ReportInterface& re
         return false;
     }
 
-    // With DVB-T, we use S2API only when forced.
-
     discardFrontendEvents (report);
 
-#if defined (__s2api)
-
-    if (_force_s2api) {
-        if (!dtvClear (report)) {
-            return false;
-        }
-        DTVProperties props;
-        const uint32_t bwhz = BandWidthValueHz(params.bandwidth);
-        props.add(DTV_FREQUENCY, uint32_t (params.frequency));
-        props.add(DTV_MODULATION, uint32_t (params.modulation));
-        props.add(DTV_INVERSION, uint32_t (params.inversion));
-        if (bwhz > 0) {
-            props.add(DTV_BANDWIDTH_HZ, bwhz);
-        }
-        props.add(DTV_CODE_RATE_HP, uint32_t (params.fec_hp));
-        props.add(DTV_CODE_RATE_LP, uint32_t (params.fec_lp));
-        props.add(DTV_TRANSMISSION_MODE, uint32_t (params.transmission_mode));
-        props.add(DTV_GUARD_INTERVAL, uint32_t (params.guard_interval));
-        props.add(DTV_HIERARCHY, uint32_t (params.hierarchy));
-        props.add(DTV_TUNE);
-
-        if (!tuneS2API (props, report)) {
-            return false;
-        }
+    if (!dtvClear (report)) {
+        return false;
     }
-    else {
-
-#endif
-
-        ::dvb_frontend_parameters fep;
-        TS_ZERO (fep);
-        fep.frequency = uint32_t (params.frequency);
-        fep.inversion = ::fe_spectral_inversion_t (params.inversion);
-        fep.u.ofdm.bandwidth = ::fe_bandwidth_t (params.bandwidth);
-        fep.u.ofdm.code_rate_HP = ::fe_code_rate_t (params.fec_hp);
-        fep.u.ofdm.code_rate_LP = ::fe_code_rate_t (params.fec_lp);
-        fep.u.ofdm.constellation = ::fe_modulation_t (params.modulation);
-        fep.u.ofdm.transmission_mode = ::fe_transmit_mode_t (params.transmission_mode);
-        fep.u.ofdm.guard_interval = ::fe_guard_interval_t (params.guard_interval);
-        fep.u.ofdm.hierarchy_information = ::fe_hierarchy_t (params.hierarchy);
-
-        if (::ioctl (_frontend_fd, FE_SET_FRONTEND, &fep) < 0) {
-            report.error ("tuning error on " + _frontend_name + ": " + ErrorCodeMessage());
-            return false;
-        }
-
-#if defined (__s2api)
+    DTVProperties props;
+    const uint32_t bwhz = BandWidthValueHz(params.bandwidth);
+    props.add(DTV_FREQUENCY, uint32_t (params.frequency));
+    props.add(DTV_MODULATION, uint32_t (params.modulation));
+    props.add(DTV_INVERSION, uint32_t (params.inversion));
+    if (bwhz > 0) {
+        props.add(DTV_BANDWIDTH_HZ, bwhz);
     }
-#endif
+    props.add(DTV_CODE_RATE_HP, uint32_t (params.fec_hp));
+    props.add(DTV_CODE_RATE_LP, uint32_t (params.fec_lp));
+    props.add(DTV_TRANSMISSION_MODE, uint32_t (params.transmission_mode));
+    props.add(DTV_GUARD_INTERVAL, uint32_t (params.guard_interval));
+    props.add(DTV_HIERARCHY, uint32_t (params.hierarchy));
+    props.add(DTV_TUNE);
 
-    return true;
+    return tune(props, report);
 }
 
 
@@ -1054,46 +865,19 @@ bool ts::Tuner::tuneATSC (const TunerParametersATSC& params, ReportInterface& re
         return false;
     }
 
-    // With ATSC, we use S2API only when forced.
-
     discardFrontendEvents (report);
 
-#if defined (__s2api)
-
-    if (_force_s2api) {
-        if (!dtvClear (report)) {
-            return false;
-        }
-        DTVProperties props;
-        props.add (DTV_FREQUENCY, uint32_t (params.frequency));
-        props.add (DTV_MODULATION, uint32_t (params.modulation));
-        props.add (DTV_INVERSION, uint32_t (params.inversion));
-        props.add (DTV_TUNE);
-
-        if (!tuneS2API (props, report)) {
-            return false;
-        }
+    if (!dtvClear (report)) {
+        return false;
     }
-    else {
 
-#endif
+    DTVProperties props;
+    props.add (DTV_FREQUENCY, uint32_t (params.frequency));
+    props.add (DTV_MODULATION, uint32_t (params.modulation));
+    props.add (DTV_INVERSION, uint32_t (params.inversion));
+    props.add (DTV_TUNE);
 
-        ::dvb_frontend_parameters fep;
-        TS_ZERO (fep);
-        fep.frequency = uint32_t (params.frequency);
-        fep.inversion = ::fe_spectral_inversion_t (params.inversion);
-        fep.u.vsb.modulation = ::fe_modulation_t (params.modulation);
-
-        if (::ioctl (_frontend_fd, FE_SET_FRONTEND, &fep) < 0) {
-            report.error ("tuning error on " + _frontend_name + ": " + ErrorCodeMessage());
-            return false;
-        }
-
-#if defined (__s2api)
-    }
-#endif
-
-    return true;
+    return tune(props, report);
 }
 
 
@@ -1750,12 +1534,10 @@ std::ostream& ts::Tuner::displayStatus (std::ostream& strm, const std::string& m
 
 
 //-----------------------------------------------------------------------------
-// Convert between TSDuck and Linux S2API delivery systems.
+// Convert between TSDuck and Linux delivery systems.
 //-----------------------------------------------------------------------------
 
-#if defined (__s2api)
-
-ts::DeliverySystem ts::Tuner::fromLinuxDeliverySystem (::fe_delivery_system ds)
+ts::DeliverySystem ts::Tuner::fromLinuxDeliverySystem(::fe_delivery_system ds)
 {
     switch (ds) {
         case ::SYS_DVBC_ANNEX_AC: return DS_DVB_C_ANNEX_AC;
@@ -1801,5 +1583,3 @@ ts::DeliverySystem ts::Tuner::fromLinuxDeliverySystem (::fe_delivery_system ds)
         default:         return ::SYS_UNDEFINED;
     }
 }
-
-#endif
