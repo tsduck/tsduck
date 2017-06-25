@@ -560,19 +560,6 @@
     #define TS_DVB_API_VERSION ((DVB_API_VERSION * 100) + DVB_API_VERSION_MINOR)
 #endif
 
-// Definition of S2API on Linux
-
-#if defined(DOXYGEN)
-    //!
-    //! Defined when the Linux DVB S2 API is available.
-    //!
-    #define __s2api
-#elif defined(__linux) && defined(DVB_API_VERSION)
-    #if DVB_API_VERSION >= 5
-        #define __s2api 1
-    #endif
-#endif
-
 // MacOS has a POSIX-compliant version of strerror_r, returning an int.
 // But fails to report this by defining HAVE_INT_STRERROR_R.
 

@@ -50,9 +50,7 @@ struct Options: public Args
 
     std::string device_name;  // Name of device to list (empty means all)
     bool        verbose;      // Verbose output
-#if defined(__linux)
-    bool        s2api;        // Force usage of S2API
-#elif defined(__windows)
+#if defined(__windows)
     bool        enum_devices; // Enumerate DirectShow devices
 #endif
 };
@@ -61,10 +59,7 @@ Options::Options (int argc, char *argv[]) :
     Args("DVB Devices Listing Utility.", "[options] [device]"),
     device_name(),
     verbose(false)
-#if defined(__linux)
-    ,
-    s2api(false)
-#elif defined(__windows)
+#if defined(__windows)
     ,
     enum_devices(false)
 #endif
@@ -73,10 +68,9 @@ Options::Options (int argc, char *argv[]) :
     option ("adapter",  'a', UNSIGNED);
     option ("debug",    'd', POSITIVE, 0, 1, 0, 0, true);
     option ("verbose",  'v');
-#if defined (__linux)
+#if defined(__linux)
     option ("frontend", 'f', UNSIGNED); // legacy option
-    option ("s2api",    '2');
-#elif defined (__windows)
+#elif defined(__windows)
     option ("enumerate-devices", 'e');
 #endif
 
@@ -122,15 +116,6 @@ Options::Options (int argc, char *argv[]) :
              "  --help\n"
              "      Display this help text.\n"
              "\n"
-#if defined (__linux)
-             "  -2\n"
-             "  --s2api\n"
-             "      On Linux kernel 2.6.28 and higher, this option forces the usage of the\n"
-             "      S2API for communication with the DVB drivers. By default, for DVB-C and\n"
-             "      DVB-T, the legacy Linux DVB API V3 is still used. The DVB-S and DVB-S2\n"
-             "      tuners always use the S2API.\n"
-             "\n"
-#endif
              "  -v\n"
              "  --verbose\n"
              "      Produce verbose output.\n"
@@ -145,7 +130,6 @@ Options::Options (int argc, char *argv[]) :
     setDebugLevel (present ("debug") ? intValue ("debug", 1) : Severity::Info);
 
 #if defined (__linux)
-    s2api = present ("s2api");
     if (present ("adapter") || present ("frontend")) {
         if (device_name.empty()) {
             device_name = Format ("/dev/dvb/adapter%d:%d", intValue ("adapter", 0), intValue ("frontend", 0));
@@ -182,11 +166,6 @@ namespace {
         if (!tuner.isOpen()) {
             return;
         }
-
-        // Linux-specific mode
-#if defined (__linux)
-        tuner.setForceS2API (opt.s2api);
-#endif
 
         // Display name and type
 #if defined (__windows)

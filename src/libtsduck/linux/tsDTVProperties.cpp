@@ -27,15 +27,12 @@
 //
 //-----------------------------------------------------------------------------
 //
-//  Encapsulation of Linux S2API (new DVB API) property lists.
+//  Encapsulation of Linux DVB property lists.
 //
 //-----------------------------------------------------------------------------
 
 #include "tsDTVProperties.h"
 #include "tsFormat.h"
-
-
-#if defined (__s2api)
 
 #if defined (TS_NEED_STATIC_CONST_DEFINITIONS)
 const uint32_t ts::DTVProperties::UNKNOWN;
@@ -114,22 +111,22 @@ void ts::DTVProperties::report(ReportInterface& report, int severity) const
         return;
     }
 
-    report.log (severity, "%d DTVProperties:", int (_prop_head.num));
+    report.log(severity, "%d DTVProperties:", int(_prop_head.num));
     for (size_t i = 0; i < _prop_head.num; ++i) {
-        const ::dtv_property& prop (_prop_head.props[i]);
-        const char* name = CommandNameS2API (prop.cmd);
-        report.log (severity, Format ("[%d] cmd = %d (%s), data = %d (0x%08X)",
-                                      int (i), int (prop.cmd), name == 0 ? "?" : name,
-                                      int (prop.u.data), int (prop.u.data)));
+        const ::dtv_property& prop(_prop_head.props[i]);
+        const char* name = CommandName(prop.cmd);
+        report.log(severity, Format("[%d] cmd = %d (%s), data = %d (0x%08X)",
+                                    int(i), int(prop.cmd), name == 0 ? "?" : name,
+                                    int(prop.u.data), int(prop.u.data)));
     }
 }
 
 
 //-----------------------------------------------------------------------------
-// Return the name of a S2API command or zero if unknown
+// Return the name of a command or zero if unknown
 //-----------------------------------------------------------------------------
 
-const char* ts::DTVProperties::CommandNameS2API (uint32_t cmd)
+const char* ts::DTVProperties::CommandName(uint32_t cmd)
 {
     switch (cmd) {
         case DTV_UNDEFINED: return "DTV_UNDEFINED";
@@ -192,5 +189,3 @@ const char* ts::DTVProperties::CommandNameS2API (uint32_t cmd)
         default: return 0;
     }
 }
-
-#endif // __s2api
