@@ -55,6 +55,7 @@ namespace ts {
 
         //!
         //! Get the number of properties in the buffer.
+        //! @return The number of properties in the buffer.
         //!
         size_t count() const
         {

@@ -846,14 +846,18 @@ cxxmacros:
 	@$(CPP) -x c++ -dM /dev/null | sort
 
 # Cleanup Windows oddities in source files.
-# Visual C++ indents with tabs, and tabs are 4 chars wide.
+# Many IDE's indent with tabs, and tabs are 4 chars wide.
+# Tabs shall not be expanded in Makefiles.
 .PHONY: unixify
 unixify:
-	for f in $$(find . -name \*.c -o -name \*.cpp -o -name \*.h -o -name Makefile\* -name \*.sh -o -name \*.dox -o -name \*.xml -o -name \*.txt); do \
+	for f in $$(find . -name \*.c -o -name \*.cpp -o -name \*.h -o -name \*.sh -o -name \*.dox -o -name \*.md -o -name \*.xml -o -name \*.txt); do \
 	  expand -t 4 $$f >$$f.tmp; \
 	  chmod --reference=$$f $$f.tmp; \
 	  mv -f $$f.tmp $$f; \
+	done
+	for f in $$(find . -name \*.c -o -name \*.cpp -o -name \*.h -o -name Makefile\* -o -name \*.sh -o -name \*.dox -o -name \*.md -o -name \*.xml -o -name \*.txt); do \
 	  dos2unix -q $$f; \
+	  sed -i -e 's/  *$//' $$f; \
 	done
 
 # Display make variables for debug purposes.
