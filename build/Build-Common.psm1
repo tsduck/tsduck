@@ -369,8 +369,9 @@ Export-ModuleMember -Function New-ZipFile
 # in decreasinf order of preference.
 $KnownMSBuild = @(
     @{VS = '2017'; Exe = 'C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\MSBuild\15.0\Bin\amd64\MSBuild.exe'},
-    @{VS = '2017'; Exe = 'C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\MSBuild\15.0\Bin\MSBuild.exe'},
-    @{VS = '2015'; Exe = 'C:\Program Files (x86)\MSBuild\14.0\Bin\MSBuild.exe'}
+    @{VS = '2017'; Exe = 'C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\MSBuild\15.0\Bin\MSBuild.exe'}
+    # Removed support for VS2015 (project files no longer maintained).
+    # @{VS = '2015'; Exe = 'C:\Program Files (x86)\MSBuild\14.0\Bin\MSBuild.exe'}
 )
 
 # Find preferred version of MSBuild.
