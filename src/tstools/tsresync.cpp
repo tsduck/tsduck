@@ -374,7 +374,7 @@ int main (int argc, char *argv[])
             std::cerr << "* Found synchronization after " << Decimal (start - sync_buf) << " bytes" << std::endl
                       << "* Packet size is " << resync.inputPacketSize() << " bytes";
             if (resync.inputHeaderSize() > 0) {
-                std::cerr << " (" << resync.inputHeaderSize() << "-byte header)";                
+                std::cerr << " (" << resync.inputHeaderSize() << "-byte header)";
             }
             std::cerr << std::endl;
         }

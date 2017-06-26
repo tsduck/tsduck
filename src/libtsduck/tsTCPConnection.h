@@ -213,7 +213,7 @@ namespace ts {
         //! @param [in,out] report Where to report error.
         //!
         virtual void handleConnected(ReportInterface& report = CERR) {}
-        
+
         //!
         //! This virtual method can be overriden by subclasses to be notified of disconnection.
         //! All subclasses should explicitely invoke their superclass' handlers.
@@ -234,7 +234,7 @@ namespace ts {
 
         // Shutdown the socket.
         bool shutdownSocket(int how, ReportInterface& report = CERR);
-        
+
         // Unreachable operations
         TCPConnection(const TCPConnection&) = delete;
         TCPConnection& operator=(const TCPConnection&) = delete;

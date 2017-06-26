@@ -116,10 +116,10 @@ void NetworkingTest::testIPAddressConstructors()
 
     ts::IPAddress a1;
     CPPUNIT_ASSERT(a1.address() == ts::IPAddress::AnyAddress);
-    
+
     ts::IPAddress a2(0x01020304);
     CPPUNIT_ASSERT(a2.address() == 0x01020304);
-    
+
     ts::IPAddress a3(1, 2, 3, 4);
     CPPUNIT_ASSERT(a3.address() == 0x01020304);
 

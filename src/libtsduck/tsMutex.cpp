@@ -75,7 +75,7 @@ ts::Mutex::Mutex() :
     if ((error = ::pthread_mutexattr_destroy (&attr)) != 0) {
         throw MutexError ("mutex attr destroy", error);
     }
-    
+
 #endif
 
     _created = true;
@@ -130,7 +130,7 @@ bool ts::Mutex::acquire(MilliSecond timeout)
     if (!_created) {
         return false;
     }
-    
+
 #if defined(__windows)
 
     const ::DWORD wintimeout(timeout == Infinite ? INFINITE : ::DWORD(timeout));

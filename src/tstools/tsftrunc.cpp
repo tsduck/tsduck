@@ -111,7 +111,7 @@ int main (int argc, char *argv[])
     ErrorCode err;
 
     for (StringVector::const_iterator file = opt.files.begin(); file != opt.files.end(); ++file) {
-    
+
         // Get file size
 
         int64_t size = GetFileSize (*file);

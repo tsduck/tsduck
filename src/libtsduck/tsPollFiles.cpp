@@ -100,7 +100,7 @@ ts::PollFiles::PollFiles(const std::string& wildcard,
 
     StringVector found_files;  // Files that are found at each poll
 
-    // Loop on poll 
+    // Loop on poll
     while (listener.updatePollFiles(_files_wildcard, poll_interval, min_stable_delay)) {
 
         // List files, sort according to name

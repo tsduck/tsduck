@@ -56,7 +56,7 @@ namespace ts {
         int      _opt_addpkt;  // addpkt in addpkt/inpkt parameter
         int      _opt_inpkt;   // inpkt in addpkt/inpkt parameter
         uint8_t  _next_cc;     // Current continuity counter in PID
-        int      _in_count;    // Input packet countdown for next insertion 
+        int      _in_count;    // Input packet countdown for next insertion
         int      _add_count;   // Current number of packets to add
 
         // Inaccessible operations

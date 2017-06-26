@@ -224,7 +224,7 @@ int main (int argc, char *argv[])
         count++;
     } while (opt.valid() && (opt.continuous || !pzer.atCycleBoundary()));
 
-    
+
     if (opt.verbose) {
         std::cerr << "* Generated " << Decimal (count) << " TS packets" << std::endl;
     }

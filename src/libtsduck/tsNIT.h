@@ -66,7 +66,7 @@ namespace ts {
             AbstractTransportListTable(TID_NIT_ACT, table),  // TID updated by Deserialize
             network_id(_tid_ext)
         {
-        }            
+        }
 
         //!
         //! Check if this is an "actual" NIT.
@@ -76,7 +76,7 @@ namespace ts {
         {
             return _table_id == TID_NIT_ACT;
         }
-        
+
         //!
         //! Set if this is an "actual" NIT.
         //! @param [in] is_actual True for NIT Actual Network, false for NIT Other Network.

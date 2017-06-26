@@ -144,7 +144,7 @@ void ts::UserInterrupt::main()
 }
 #endif
 
-        
+
 //----------------------------------------------------------------------------
 // Constructor.
 // If one_shot is true, the interrupt will be handled only once,
@@ -233,7 +233,7 @@ void ts::UserInterrupt::activate()
         ::exit(EXIT_FAILURE);
     }
 #endif
-    
+
     // Establish the signal handler
     struct sigaction act;
     act.sa_handler = sysHandler;

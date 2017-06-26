@@ -257,8 +257,8 @@ std::string ts::ExecutableFile()
         assert(length <= int(sizeof(name)));
         return std::string(name, length);
     }
-    
-    
+
+
 #else
 #error "ts::ExecutableFile not implemented on this system"
 #endif
@@ -683,7 +683,7 @@ void ts::GetProcessMetrics(ProcessMetrics& metrics)
     int count = fscanf(fp,
         "%d %*s %c %d %d %d %d %d %lu %lu %lu %lu %lu %lu %lu "
         "%ld %ld %ld %ld %*d %ld %lu %lu %ld %lu %lu %lu %lu "
-        "%lu %lu %lu %lu %lu %lu %lu %lu %lu %d %d", 
+        "%lu %lu %lu %lu %lu %lu %lu %lu %lu %d %d",
         &ps.pid, &ps.state, &ps.ppid, &ps.pgrp, &ps.session,
         &ps.tty_nr, &ps.tpgid, &ps.flags, &ps.minflt,
         &ps.cminflt, &ps.majflt, &ps.cmajflt, &ps.utime,
@@ -736,7 +736,7 @@ void ts::GetProcessMetrics(ProcessMetrics& metrics)
         MilliSecond(usage.ru_stime.tv_usec) / MicroSecPerMilliSec +
         MilliSecond(usage.ru_utime.tv_sec) * MilliSecPerSec +
         MilliSecond(usage.ru_utime.tv_usec) / MicroSecPerMilliSec;
-    
+
 #else
 #error "ts::GetProcessMetrics not implemented on this system"
 #endif

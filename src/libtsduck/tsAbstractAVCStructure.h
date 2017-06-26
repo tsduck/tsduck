@@ -58,7 +58,7 @@ namespace ts {
 
         //! @copydoc AbstractAVCData::parse()
         virtual bool parse(const void* addr, size_t size);
-        
+
         //!
         //! Parse the structure.
         //! Must be reimplemented by subclasses.

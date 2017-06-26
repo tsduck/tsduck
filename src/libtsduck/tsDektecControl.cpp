@@ -345,7 +345,7 @@ void ts::DektecControl::listNormalizedCapabilities(size_t device_index, size_t c
 int ts::DektecControl::listNormalizedDevices(const DektecDeviceVector& devices)
 {
 #if !defined(TS_NO_DTAPI)
-    
+
     Dtapi::DTAPI_RESULT status;
 
     // Display DTAPI and device drivers versions

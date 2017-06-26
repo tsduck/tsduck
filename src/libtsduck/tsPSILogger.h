@@ -97,7 +97,7 @@ namespace ts {
         PacketCounter     _scrambled_packets_cnt;
         SectionDemux      _demux;
         std::ofstream     _outfile;
-        std::ostream&     _out;           // Output file 
+        std::ostream&     _out;           // Output file
 
         // Hooks
         virtual void handleTable(SectionDemux&, const BinaryTable&);

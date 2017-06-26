@@ -178,7 +178,7 @@ void ts::Monotonic::wait()
             throw MonotonicError("nanosleep error", errno);
         }
     }
-    
+
 #else
 
     // POSIX implementation

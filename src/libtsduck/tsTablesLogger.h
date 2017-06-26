@@ -96,7 +96,7 @@ namespace ts {
         PacketCounter        _packet_count;
         SectionDemux         _demux;
         std::ofstream        _outfile;
-        std::ostream&        _out;    // Output file 
+        std::ostream&        _out;    // Output file
         UDPSocket            _sock;   // Output socket
 
         // Hooks

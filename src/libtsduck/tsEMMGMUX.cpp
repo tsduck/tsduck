@@ -332,7 +332,7 @@ std::string ts::emmgmux::ChannelStatus::dump (size_t indent) const
         dumpDecimal (indent, "section_TSpkt_flag", section_TSpkt_flag ? 1 : 0);
 }
 
-    
+
 //----------------------------------------------------------------------------
 // channel_close
 //----------------------------------------------------------------------------

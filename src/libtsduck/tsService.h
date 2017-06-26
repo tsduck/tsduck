@@ -94,7 +94,7 @@ namespace ts {
         /** Get the fullname.                                        */ \
         /** @return The fullname or defvalue if unset.               */ \
         type get##suffix() const {return field.set() ? field.value() : type(defvalue);}
-            
+
         //!
         //! Define an integer service property accessors, class internal use only.
         //! @param type C++ type for the property.

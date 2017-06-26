@@ -113,7 +113,7 @@ ts::Tuner::~Tuner ()
 
 
 //-----------------------------------------------------------------------------
-// Default constructor, 
+// Default constructor,
 //-----------------------------------------------------------------------------
 
 ts::Tuner::Tuner() :
@@ -675,15 +675,15 @@ bool ts::Tuner::tuneDVBS (const TunerParametersDVBS& params, ReportInterface& re
     // horizontal). When they see a 22kHz signal at their input they switch
     // into the high band and use a somewhat higher intermediate frequency
     // to downconvert the signal.
-    // 
+    //
     // When your satellite equipment contains a DiSEqC switch device to switch
     // between different satellites you have to send the according DiSEqC
     // commands, usually command 0x38. Take a look into the DiSEqC spec
     // available at http://www.eutelsat.org/ for the complete list of commands.
-    // 
+    //
     // The burst signal is used in old equipments and by cheap satellite A/B
     // switches.
-    // 
+    //
     // Voltage, burst and 22kHz tone have to be consistent to the values
     // encoded in the DiSEqC commands.
 
@@ -956,7 +956,7 @@ bool ts::Tuner::start (ReportInterface& report)
     // The Linux DVB API defines two types of filters: sections and PES.
     // A section filter actually filter sections. On the other hand, a
     // so-called "PES" filter is based on PID's, not PES headers.
-    // These PID's may contain anything, not limited to PES data. 
+    // These PID's may contain anything, not limited to PES data.
     // The magic value 0x2000 is used in the Linux DVB API to say
     // "all PID's" (remember that the max value for a PID is 0x1FFF).
     // Specifying a "PES filter" with PID 0x2000, we get the full TS.
@@ -1488,7 +1488,7 @@ std::ostream& ts::Tuner::displayStatus (std::ostream& strm, const std::string& m
     Display (strm, margin, "  Step", Decimal (hz_factor * _fe_info.frequency_stepsize), "Hz");
     Display (strm, margin, "  Tolerance", Decimal (hz_factor * _fe_info.frequency_tolerance), "Hz");
 
-    // Display symbol rate characteristics. 
+    // Display symbol rate characteristics.
 
     if (params_dvbs != 0 || params_dvbc != 0) {
         strm << margin << "Symbol rates:" << std::endl;

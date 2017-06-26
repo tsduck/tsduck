@@ -207,7 +207,7 @@ namespace ts {
 
             // Default constructor:
             ETIDContext() :
-                version(0), 
+                version(0),
                 sect_expected(0),
                 sect_received(0),
                 sects()

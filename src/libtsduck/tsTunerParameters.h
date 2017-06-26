@@ -112,7 +112,7 @@ namespace ts {
 
         //!
         //! Display a description of the modulation paramters on a stream, line by line.
-        //! @param [in,out] strm Where to display the parameters. 
+        //! @param [in,out] strm Where to display the parameters.
         //! @param [in] margin Left margin to display.
         //! @param [in] verbose When false, display only essentials parameters.
         //! When true, display all parameters.

@@ -551,7 +551,7 @@ void ts::TunerArgs::addHelp(Args& args) const
             "      - On Windows, the default file is %APPDATA%\\tsduck\\Xzap\\channels.conf,\n"
             "        where X is either 's', 'c' or 't'.\n";
     }
-    
+
     args.setHelp(args.getHelp() + help);
 }
 

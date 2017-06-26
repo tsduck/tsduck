@@ -286,9 +286,9 @@ ts::ProcessorPlugin::Status ts::PCRVerifyPlugin::processPacket (TSPacket& pkt, b
             }
             else {
                 _nb_pcr_nok++;
-                // Jitter in bits at current bitrate 
+                // Jitter in bits at current bitrate
                 int64_t bit_jit = (ajit * bitrate) / SYSTEM_CLOCK_FREQ;
-                tsp->info ((_time_stamp ? (Time::CurrentLocalTime().format (Time::DATE | Time::TIME) + ", ") : "") + 
+                tsp->info ((_time_stamp ? (Time::CurrentLocalTime().format (Time::DATE | Time::TIME) + ", ") : "") +
                            Format ("PID %d (0x%04X), PCR jitter: ", int (pid), int (pid)) +
                            Decimal (jit) + " = " +
                            Decimal (ajit / PCR_PER_MICRO_SEC) + " micro-seconds = " +

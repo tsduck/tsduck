@@ -168,7 +168,7 @@ namespace ts {
         //!   (client side) will be only allowed through this interface. Incoming client
         //!   connections (server side) will be accepted only when they arrive through
         //!   the selected interface.
-        //! 
+        //!
         //! The port number part of the socket address must be one of:
         //! - @link SocketAddress::AnyPort @endlink. The socket is bound to an
         //!   arbitrary unused local TCP port. This is the usual configuration for

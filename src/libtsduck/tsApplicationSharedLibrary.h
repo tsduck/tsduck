@@ -44,7 +44,7 @@ namespace ts {
     {
     public:
         //!
-        //! Constructor. 
+        //! Constructor.
         //!
         //! The load order is the following:
         //! - Default system lookup using filename string.

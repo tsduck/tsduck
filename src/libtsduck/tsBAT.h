@@ -65,6 +65,6 @@ namespace ts {
             AbstractTransportListTable(TID_BAT, table),
             bouquet_id(_tid_ext)
         {
-        }            
+        }
     };
 }

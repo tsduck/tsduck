@@ -112,7 +112,7 @@ namespace ts {
         //!   unconditionally sent through this interface. Incoming UDP packets for the
         //!   selected port will be accepted only when they arrive through the selected
         //!   interface.
-        //! 
+        //!
         //! The port number part of the socket address must be one of:
         //! - @link SocketAddress::AnyPort @endlink. The socket is bound to an
         //!   arbitrary unused local UDP port.

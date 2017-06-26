@@ -136,7 +136,7 @@ public:
 
 // Safe pointer for GenTabSharedLibrary (not thread-safe)
 typedef SafePtr <GenTabSharedLibrary, NullMutex> GenTabSharedLibraryPtr;
-    
+
 
 //----------------------------------------------------------------------------
 // List all plugins

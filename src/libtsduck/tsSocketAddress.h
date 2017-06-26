@@ -196,7 +196,7 @@ namespace ts {
         {
             IPAddress::clear();
         }
-        
+
         //!
         //! Clear port.
         //!
@@ -222,7 +222,7 @@ namespace ts {
         {
             IPAddress::copy(s, _port);
         }
-        
+
         //!
         //! Copy into a system "struct sockaddr_in" structure (socket API).
         //! @param [out] s A system "struct sockaddr_in" structure.

@@ -86,7 +86,7 @@ int main (int argc, char *argv[])
         logger.feedPacket (pkt);
     }
 
-    // Report errors 
+    // Report errors
     if (opt.verbose() && !logger.hasErrors()) {
         logger.reportDemuxErrors (std::cerr);
     }

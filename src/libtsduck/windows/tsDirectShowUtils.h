@@ -113,7 +113,7 @@ namespace ts {
     //! @param [in] verbose If true, display more verbose information.
     //! @param [in,out] report Where to report errors.
     //! @return True on success, false on error.
-    //!  
+    //!
     TSDUCKDLL bool DisplayFilterGraph(std::ostream& strm,
                                       const ComPtr<::IGraphBuilder>& graph,
                                       const std::string& margin,

@@ -1258,7 +1258,7 @@ void ts::TSAnalyzer::feedPacket(const TSPacket& pkt)
 
         // Got a "unit start indicator" in a clear packet.
         // This may be the start of a section or a PES packet.
-        
+
         if (pkt.b [header_size] != 0x00 || pkt.b [header_size + 1] != 0x00 || pkt.b [header_size + 2] != 0x01) {
             // Got an invalid PES start code. This is not an error if the
             // PID carries sections (we may not yet know this, so count

@@ -292,7 +292,7 @@ namespace ts {
         {
             return ::memcmp(_data, t._data, SIZE) != 0;
         }
- 
+
         //!
         //! Lower operator.
         //! @param [in] t Another date to compare with this object.
@@ -302,7 +302,7 @@ namespace ts {
         {
             return ::memcmp(_data, t._data, SIZE) < 0;
         }
-  
+
         //!
         //! Lower or equal operator.
         //! @param [in] t Another date to compare with this object.
@@ -312,7 +312,7 @@ namespace ts {
         {
             return ::memcmp(_data, t._data, SIZE) <= 0;
         }
-  
+
         //!
         //! Greater operator.
         //! @param [in] t Another date to compare with this object.
@@ -322,7 +322,7 @@ namespace ts {
         {
             return ::memcmp(_data, t._data, SIZE) > 0;
         }
-   
+
         //!
         //! Greater or equal operator.
         //! @param [in] t Another date to compare with this object.

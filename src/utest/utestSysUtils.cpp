@@ -316,7 +316,7 @@ void SysUtilsTest::testErrorCode()
 void SysUtilsTest::testUid()
 {
     utest::Out() << "SysUtilsTest: newUid() = 0x" << ts::Format("%016" FMT_INT64 "X", ts::UID::Instance()->newUID()) << std::endl;
-    
+
     CPPUNIT_ASSERT(ts::UID::Instance()->newUID() != ts::UID::Instance()->newUID());
     CPPUNIT_ASSERT(ts::UID::Instance()->newUID() != ts::UID::Instance()->newUID());
     CPPUNIT_ASSERT(ts::UID::Instance()->newUID() != ts::UID::Instance()->newUID());
@@ -330,7 +330,7 @@ void SysUtilsTest::testVernacularFilePath()
 #elif defined(__unix)
     CPPUNIT_ASSERT(ts::VernacularFilePath ("C:\\alpha/beta\\gamma") == "C:/alpha/beta/gamma");
     CPPUNIT_ASSERT(ts::VernacularFilePath ("/alpha-beta/gamma") == "/alpha-beta/gamma");
-#endif    
+#endif
 }
 
 void SysUtilsTest::testFilePaths()

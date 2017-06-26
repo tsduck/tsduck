@@ -188,6 +188,6 @@ bool ts::Condition::wait (Mutex& mutex, MilliSecond timeout, bool& signaled)
         // Error
         throw ConditionError("cond timed wait", error);
     }
-    
+
 #endif
 }

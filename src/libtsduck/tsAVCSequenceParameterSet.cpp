@@ -43,7 +43,7 @@
 
 ts::AVCSequenceParameterSet::AVCSequenceParameterSet(const void* data, size_t size) :
     AbstractAVCAccessUnit(),
-    
+
     profile_idc(0),
     constraint_set0_flag(0),
     constraint_set1_flag(0),
@@ -278,7 +278,7 @@ bool ts::AVCSequenceParameterSet::parseBody (AVCParser& parser)
         valid = parser.ue (log2_max_pic_order_cnt_lsb_minus4);
     }
     else if (valid && pic_order_cnt_type == 1) {
-        valid = 
+        valid =
             parser.u(delta_pic_order_always_zero_flag, 1) &&
             parser.se(offset_for_non_ref_pic) &&
             parser.se(offset_for_top_to_bottom_field) &&

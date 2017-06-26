@@ -98,7 +98,7 @@ ts::TablesLogger::TablesLogger (TablesLoggerOptions& opt) :
 
         case TablesLoggerOptions::UDP: {
             // Create UDP socket.
-            _abort = 
+            _abort =
                 !_sock.open (_opt) ||
                 !_sock.setDefaultDestination (_opt.destination, _opt) ||
                 (!_opt.udp_local.empty() && !_sock.setOutgoingMulticast (_opt.udp_local, _opt)) ||

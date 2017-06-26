@@ -151,7 +151,7 @@ namespace {
                 Format (" (0x%02X)", int (startup_version)) << std::endl <<
                 margin << "Required version, min: " << int (req_version) <<
                 Format (" (0x%02X)", int (req_version)) <<
-                ", max: " << int (max_version) << 
+                ", max: " << int (max_version) <<
                 Format (" (0x%02X)", int (max_version)) << std::endl;
         }
         ExtraData (strm, data, size, indent);
@@ -957,7 +957,7 @@ namespace {
             bool other_freq = (data[6] & 0x01) != 0;
             data += 11; size -= 11;
 
-            strm << margin << "Centre frequency: " << 
+            strm << margin << "Centre frequency: " <<
                 Decimal (10 * uint64_t (cfreq)) << " Hz, Bandwidth: ";
             switch (bwidth) {
                 case 0:  strm << "8 MHz"; break;
@@ -1290,7 +1290,7 @@ namespace {
             bool lfe_flag = ((data[4] >> 2) & 0x01) != 0;
             uint8_t extended_surround_flag = data[4] & 0x03;
             data += 5; size -= 5;
- 
+
             strm << margin << "Sample rate code: " << names::DTSSampleRateCode (sample_rate_code) << std::endl
                  << margin << "Bit rate code: " << names::DTSBitRateCode (bit_rate_code) << std::endl
                  << margin << "NBLKS: " << int (nblks) << std::endl
@@ -1502,7 +1502,7 @@ namespace {
         const std::string margin (indent, ' ');
         uint16_t service, channel;
         uint8_t visible;
- 
+
         while (size >= 4) {
             service = GetUInt16 (data);
             visible = (data[2] >> 7) & 0x01;
@@ -1526,7 +1526,7 @@ namespace {
     void DDeutelsat_chan_num (std::ostream& strm, const uint8_t* data, size_t size, int indent, ts::TID tid)
     {
         const std::string margin (indent, ' ');
- 
+
         while (size >= 8) {
             const uint16_t onid = GetUInt16 (data);
             const uint16_t tsid = GetUInt16 (data + 2);
@@ -1917,7 +1917,7 @@ std::ostream& ts::Descriptor::Display(std::ostream& strm,
                     default: break;
                 }
                 break;
-    
+
             case PDS_TPS:
                 // Incorrect use of TPS private data, TPS broadcasters should
                 // use EACEM/EICTA PDS instead.

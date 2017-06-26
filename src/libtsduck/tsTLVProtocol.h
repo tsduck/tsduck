@@ -109,8 +109,8 @@ namespace ts {
             //! Must be invoked for each parameter of each command.
             //! @param [in] cmd_tag Message tag.
             //! @param [in] param_tag Parameter tag.
-            //! @param [in] min_size Minimum allowed size for the parameter value. 
-            //! @param [in] max_size Maximum allowed size for the parameter value. 
+            //! @param [in] min_size Minimum allowed size for the parameter value.
+            //! @param [in] max_size Maximum allowed size for the parameter value.
             //! @param [in] min_count Minimum number of occurences of this parameter in the command.
             //! @param [in] max_count Maximum number of occurences of this parameter in the command.
             //!
@@ -163,7 +163,7 @@ namespace ts {
             //! @param [out] msg Safe pointer to the new error message.
             //!
             virtual void buildErrorResponse(const MessageFactory& mf, MessagePtr& msg) const = 0;
-                
+
         private:
             // Unreachable constructors and operators
             Protocol(const Protocol&) = delete;

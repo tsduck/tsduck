@@ -54,7 +54,7 @@ namespace ts {
     //!  object.
     //!
     //!  @b Limitation: The automatic deletion of the pointed object occurs
-    //!  @em only when the reference counter reaches zero. There are 
+    //!  @em only when the reference counter reaches zero. There are
     //!  cases where this never happens. Typically, when two objects reference
     //!  each other but are no longer referenced anywhere else, these two objects
     //!  are lost forever and will never be deleted. So, beware that smart

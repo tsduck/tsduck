@@ -205,7 +205,7 @@ Options::Options (int argc, char *argv[]) :
     verbose = !quiet && present ("verbose");
     dump = !quiet && present ("dump");
 
-    dump_flags = 
+    dump_flags =
         TSPacket::DUMP_TS_HEADER |    // Format TS headers
         TSPacket::DUMP_PES_HEADER |   // Format PES headers
         TSPacket::DUMP_RAW |          // Full dump of packet
@@ -348,7 +348,7 @@ int main (int argc, char *argv[])
     if (opt.normalized) {
         std::cout << "file:file=1:filename=" << file1.getFileName() << ":" << std::endl
                   << "file:file=2:filename=" << file2.getFileName() << ":" << std::endl;
-        
+
     }
     else if (opt.verbose) {
         std::cout << "* Comparing " << file1.getFileName() << " and " << file2.getFileName() << std::endl;
