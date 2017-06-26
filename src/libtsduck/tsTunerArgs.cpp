@@ -139,8 +139,8 @@ void ts::TunerArgs::load(Args& args)
         device_name = Format("/dev/dvb/adapter%d", adapter);
 #elif defined(__windows)
         device_name = Format(":%d", adapter);
-    }
 #endif
+    }
 
     // Tuning options.
     if (!_info_only) {

@@ -547,7 +547,6 @@ namespace {
 
         // Process each TS descriptor list in the NIT.
         for (ts::NIT::TransportMap::const_iterator it = nit->transports.begin(); it != nit->transports.end(); ++it) {
-            const ts::TransportStreamId& tsid(it->first);
             const ts::DescriptorList& dlist(it->second);
 
             // Loop on all descriptors for the current TS.
