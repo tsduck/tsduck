@@ -138,7 +138,7 @@ namespace ts {
         //! If zero, simply packetize sections one after the other.
         //!
         void addSection(const SectionPtr& section, MilliSecond repetition_rate = 0);
-        
+
         //!
         //! Add some sections into the packetizer.
         //! The contents of the sections are shared.

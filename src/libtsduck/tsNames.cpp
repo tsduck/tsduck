@@ -340,7 +340,7 @@ std::string ts::names::DID (uint8_t did, uint32_t pds)
                 default: break;
             }
             break;
-    
+
         case PDS_LOGIWAYS:
             switch (did) {
                 case DID_LW_SUBSCRIPTION: return "Subscription (Logiways)";

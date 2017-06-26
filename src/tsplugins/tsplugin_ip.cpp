@@ -252,7 +252,7 @@ bool ts::IPInput::start()
     if (!dest_addr.resolve (destination, *tsp)) {
         return false;
     }
-    
+
     // If a destination address is specified, it must be a multicast address
     if (dest_addr.hasAddress() && !dest_addr.isMulticast()) {
         tsp->error ("address " + std::string (dest_addr) + " is not multicast");

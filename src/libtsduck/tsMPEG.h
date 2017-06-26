@@ -82,7 +82,7 @@ namespace ts {
     //! only 17 hours to transmit.
     //!
     typedef uint64_t PacketCounter;
-    
+
     //!
     //! Number of sections.
     //!
@@ -179,7 +179,7 @@ namespace ts {
     //! PIDSet constant with all PID's set.
     //!
     TSDUCKDLL extern const PIDSet AllPIDs;
-    
+
     //!
     //! Size (in bits) of a Continuity Counter (CC) field.
     //!
@@ -300,7 +300,7 @@ namespace ts {
     //! Subfactor of MPEG-2 System Clock subfrequency, used by PTS and DTS.
     //!
     const uint32_t SYSTEM_CLOCK_SUBFACTOR = 300;
-    
+
     //!
     //! MPEG-2 System Clock subfrequency in Hz, used by PTS and DTS (90 Kb/s).
     //!
@@ -310,7 +310,7 @@ namespace ts {
     //! Mask for PTS and DTS values (wrap up at 2**33).
     //!
     const uint64_t PTS_DTS_MASK = TS_UCONST64(0x00000001FFFFFFFF);
-    
+
     //!
     //! Scale factor for PTS and DTS values (wrap up at 2**33).
     //!
@@ -548,7 +548,7 @@ namespace ts {
 
     //! Size of the CRC32 field in a long section.
     const size_t SECTION_CRC32_SIZE = 4;
-    
+
     //! Maximum size of a PSI section (MPEG-defined).
     const size_t MAX_PSI_SECTION_SIZE = 1024;
 
@@ -654,7 +654,7 @@ namespace ts {
         TID_LW_VCT        = 0x93, //!< Table id for Logiways VoD Command Table
 
         // Valid in MediaGuard CAS context:
-    
+
         TID_MG_EMM_U      = 0x82, //!< Table id for MediaGuard EMM-U
         TID_MG_EMM_A      = 0x83, //!< Table id for MediaGuard EMM-A
         TID_MG_EMM_I      = 0x85, //!< Table id for MediaGuard EMM-I

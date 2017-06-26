@@ -88,7 +88,7 @@ namespace ts {
         {
             _pid_filter.set(pid);
         }
-        
+
         //!
         //! Remove one PID to filter.
         //! @param [in] pid The PID to no longer filter.

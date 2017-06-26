@@ -158,7 +158,7 @@ namespace ts {
         {
             return _data->data() + 2;
         }
-        
+
         //!
         //! Access to the payload of the descriptor.
         //! @return Address of the payload of the descriptor.
@@ -184,7 +184,7 @@ namespace ts {
         //! @param [in] size Size in bytes of the new payload data.
         //!
         void replacePayload(const void* data, size_t size);
-        
+
         //!
         //! Replace the payload of the descriptor.
         //! The tag is unchanged, the size is adjusted.

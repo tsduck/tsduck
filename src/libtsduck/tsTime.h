@@ -627,7 +627,7 @@ namespace ts {
         //! @return The corresponding UTC time.
         //!
         static Time UnixTimeToUTC(const time_t& unixTime);
-    
+
         //!
         //! This static routine gets the current real time clock and adds a delay in milliseconds (UNIX systems only).
         //!
@@ -664,7 +664,7 @@ namespace ts {
         static int64_t ToInt64(int year, int month, int day, int hour, int minute, int second, int millisecond);
 
         // Number of clock ticks per millisecond:
-        static const int64_t TICKS_PER_MS = 
+        static const int64_t TICKS_PER_MS =
 #if defined(__windows)
             // On Win32, a FILETIME is a 64-bit value representing the number
             // of 100-nanosecond intervals since January 1, 1601.

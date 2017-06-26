@@ -98,7 +98,7 @@ namespace ts {
     //! Return the base file name of a file path ("dir/foo.bar" => "foo.bar").
     //!
     //! @param [in] path A file path.
-    //! @param [in] suffix An optional file suffix. 
+    //! @param [in] suffix An optional file suffix.
     //! If @a path ends in @a suffix, the suffix is removed.
     //! @return The base file name of @a path ("dir/foo.bar" => "foo.bar").
     //!
@@ -387,7 +387,7 @@ namespace ts {
     //! Define a container type holding all environment variables.
     //!
     //! For each element in the container, the @e key is the name of an
-    //! environment variable and the @e value is the corresponding value 
+    //! environment variable and the @e value is the corresponding value
     //! of this environment variable.
     //!
     typedef std::map<std::string, std::string> Environment;

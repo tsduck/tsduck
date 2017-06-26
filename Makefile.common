@@ -857,7 +857,7 @@ unixify:
 	done
 	for f in $$(find . -name \*.c -o -name \*.cpp -o -name \*.h -o -name Makefile\* -o -name \*.sh -o -name \*.dox -o -name \*.md -o -name \*.xml -o -name \*.txt); do \
 	  dos2unix -q $$f; \
-	  sed -i -e 's/  *$//' $$f; \
+	  sed -i -e 's/  *$$//' $$f; \
 	done
 
 # Display make variables for debug purposes.

@@ -409,7 +409,7 @@ std::ostream& ts::tsp::Options::PluginOptions::display(std::ostream& strm, int i
     for (size_t i = 0; i < args.size(); ++i) {
         strm << margin << "Arg[" << i << "]: \"" << args[i] << "\"" << std::endl;
     }
-         
+
     return strm;
 }
 

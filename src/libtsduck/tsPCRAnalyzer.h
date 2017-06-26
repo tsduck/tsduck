@@ -172,7 +172,7 @@ namespace ts {
         void processDiscountinuity();
 
         // Analysis of one PID
-        struct PIDAnalysis 
+        struct PIDAnalysis
         {
             // Constructor:
             PIDAnalysis();

@@ -55,7 +55,7 @@
 namespace ts {
 
     class Tuner;
-    
+
     //!
     //! Safe pointer to a DVB tuner (not thread-safe).
     //!
@@ -313,7 +313,7 @@ namespace ts {
         {
             return _receive_timeout;
         }
-        
+
 #if defined(__linux) || defined(DOXYGEN) // Linux-specific operations
 
         //!
@@ -444,7 +444,7 @@ namespace ts {
         ::fe_delivery_system toLinuxDeliverySystem(DeliverySystem);
 
 #endif // linux
-       
+
 #if defined(__windows) // Windows properties
 
         // A DirectShow graph for TS capture is usually made of the following filters:

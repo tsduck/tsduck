@@ -146,7 +146,7 @@ namespace ts {
         uint64_t highFrequency() const
         {
             return _high_frequency;
-        } 
+        }
 
         //!
         //! Get the LNB switch frequency.
@@ -188,7 +188,7 @@ namespace ts {
         //! @return Intermediate frequency between the LNB and the tuner.
         //!
         uint64_t intermediateFrequency(uint64_t satellite_frequency) const;
-    
+
         //!
         //! Convert the LNB to a string object
         //! @return A normalized representation of the LNB. All values are in MHz.

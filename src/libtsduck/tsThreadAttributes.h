@@ -157,7 +157,7 @@ namespace ts {
         //! @code
         //! sudo chrt -f 50 /path/to/executable arguments ...
         //! @endcode
-        //! 
+        //!
         //! The following command displays the detailed priorities and scheduling
         //! policies of all processes and threads:
         //! @code

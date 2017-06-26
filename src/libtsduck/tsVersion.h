@@ -53,13 +53,13 @@ namespace ts {
     //! Types of version formatting, for predefined option --version.
     //!
     enum VersionFormat {
-        VERSION_SHORT,   //!< Short format X.Y. 
+        VERSION_SHORT,   //!< Short format X.Y.
         VERSION_LONG,    //!< Full explanatory format.
         VERSION_DATE,    //!< Build date.
         VERSION_NSIS,    //!< Output an NSIS @c !define directive.
         VERSION_DEKTEC   //!< Version of embedded Dektec DTAPI and detected Dektec drivers.
     };
-    
+
     //!
     //! Get the TSDuck formatted version number.
     //! @param [in] format Type of output, short by default.

@@ -365,7 +365,7 @@ int64_t ts::Time::ToInt64(int year, int month, int day, int hour, int minute, in
 
     // Convert using mktime.
     ::tm stime;
-    stime.tm_year = year - 1900;                                      
+    stime.tm_year = year - 1900;
     stime.tm_mon = month - 1; // 0..11
     stime.tm_mday = day;
     stime.tm_hour = hour;
@@ -380,7 +380,7 @@ int64_t ts::Time::ToInt64(int year, int month, int day, int hour, int minute, in
         return 0;
     }
 
-    // Add the GMT offset since mktime() uses stime as a local time 
+    // Add the GMT offset since mktime() uses stime as a local time
 #if defined(__sun)
     int gmt_offset(::gmtoffset(stime.tm_isdst));
 #elif defined(__hpux) || defined(_AIX)

@@ -66,7 +66,7 @@ namespace ts {
         {
             _pid = pid & 0x1FFF;
         }
-        
+
         //!
         //! Get the default PID for subsequent MPEG packets.
         //! @return PID for generated TS packets.
@@ -170,7 +170,7 @@ namespace ts {
         SectionProviderInterface* _provider;
         PID            _pid;
         uint8_t          _continuity;        // Continuity counter for next packet
-        SectionPtr     _section;           // Current section to insert 
+        SectionPtr     _section;           // Current section to insert
         size_t         _next_byte;         // Next byte to insert in current section
         PacketCounter  _packet_count;      // Number of generated packets
         SectionCounter _section_out_count; // Number of output (packetized) sections

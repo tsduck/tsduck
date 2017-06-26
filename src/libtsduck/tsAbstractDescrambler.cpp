@@ -442,10 +442,10 @@ void ts::AbstractDescrambler::processECM (ECMStream& estream)
 
     if (ok) {
         tsp->debug ("even CW: %02X %02X %02X %02X %02X %02X %02X %02X",
-                    int (cw_even[0]), int (cw_even[1]), int (cw_even[2]), int (cw_even[3]), 
+                    int (cw_even[0]), int (cw_even[1]), int (cw_even[2]), int (cw_even[3]),
                     int (cw_even[4]), int (cw_even[5]), int (cw_even[6]), int (cw_even[7]));
         tsp->debug ("odd CW:  %02X %02X %02X %02X %02X %02X %02X %02X",
-                    int (cw_odd[0]), int (cw_odd[1]), int (cw_odd[2]), int (cw_odd[3]), 
+                    int (cw_odd[0]), int (cw_odd[1]), int (cw_odd[2]), int (cw_odd[3]),
                     int (cw_odd[4]), int (cw_odd[5]), int (cw_odd[6]), int (cw_odd[7]));
     }
 
@@ -657,7 +657,7 @@ ts::ProcessorPlugin::Status ts::AbstractDescrambler::processPacket (TSPacket& pk
             tsp->debug ("packet %" FMT_INT64 "d, PID %d (0x%04X), new CW (%s): %02X %02X %02X %02X %02X %02X %02X %02X",
                         _packet_count - 1, int (pid), int (pid),
                         scv == SC_EVEN_KEY ? "even" : "odd",
-                        int (cw[0]), int (cw[1]), int (cw[2]), int (cw[3]), 
+                        int (cw[0]), int (cw[1]), int (cw[2]), int (cw[3]),
                         int (cw[4]), int (cw[5]), int (cw[6]), int (cw[7]));
         }
     }

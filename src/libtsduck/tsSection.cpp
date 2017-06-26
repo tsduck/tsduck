@@ -472,7 +472,7 @@ std::istream& ts::Section::read (std::istream& strm, CRC32::Validation crc_op, R
         // Truncated section
         if (insize > 0) {
             strm.setstate (std::ios::failbit);
-            report.error ("truncated section" + AfterBytes (position) + 
+            report.error ("truncated section" + AfterBytes (position) +
                           ", got " + Decimal (insize) + " bytes, expected " + Decimal (secsize));
         }
     }
@@ -560,6 +560,6 @@ bool ts::Section::LoadFile(SectionPtrVector& sections,
     ReportWithName report_internal(file_name, report);
     bool success = LoadFile(sections, strm, crc_op, report_internal);
     strm.close();
-    
+
     return success;
 }

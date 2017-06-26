@@ -183,7 +183,7 @@ bool ts::BitrateMonitorPlugin::start()
     _max_bitrate = intValue<uint32_t> ("max", (uint32_t) DEFAULT_BITRATE_MAX);
 
     if (_min_bitrate > _max_bitrate) {
-        tsp->error("bad parameters, bitrate min (%u) > max (%u), exiting", 
+        tsp->error("bad parameters, bitrate min (%u) > max (%u), exiting",
             _min_bitrate, _max_bitrate);
         return false;
     }
@@ -204,7 +204,7 @@ bool ts::BitrateMonitorPlugin::start()
 // The given string parameter describes the alarm.
 //----------------------------------------------------------------------------
 
-void ts::BitrateMonitorPlugin::runAlarmCommand(const std::string& parameter) 
+void ts::BitrateMonitorPlugin::runAlarmCommand(const std::string& parameter)
 {
     // Do nothing if alarm command was not specified
     if (_alarm_command != "") {
@@ -223,7 +223,7 @@ void ts::BitrateMonitorPlugin::runAlarmCommand(const std::string& parameter)
 // is out of allowed range, or back in it.
 //----------------------------------------------------------------------------
 
-void ts::BitrateMonitorPlugin::computeBitrate() 
+void ts::BitrateMonitorPlugin::computeBitrate()
 {
     // Bitrate is computed with the following formula :
     // (Sum of packets received during the last time window) * (packet size) /
@@ -279,11 +279,11 @@ void ts::BitrateMonitorPlugin::computeBitrate()
 
 
 //----------------------------------------------------------------------------
-// Mzthod 2 - Compute bitrate for the monitored PID. Report an alarm if the 
+// Mzthod 2 - Compute bitrate for the monitored PID. Report an alarm if the
 // bitrate is out of allowed range, or back in it.
 //----------------------------------------------------------------------------
 
-//void ts::BitrateMonitorPlugin::computeBitrate(time_t time_interval) 
+//void ts::BitrateMonitorPlugin::computeBitrate(time_t time_interval)
 //{
 //  // Bitrate is computed with the following formula :
 //  // (Sum of packets received during the last time interval) * (packet size) /
@@ -363,7 +363,7 @@ ts::ProcessorPlugin::Status ts::BitrateMonitorPlugin::processPacket (TSPacket& p
         _last_second = now;
     }
 
-    // If packet's PID matches, increment the number of packets 
+    // If packet's PID matches, increment the number of packets
     // received during the current second.
     if (pkt.getPID() == _pid) _pkt_count[_pkt_count_index]++;
 

@@ -723,7 +723,7 @@ ts::DektecOutputPlugin::DektecOutputPlugin(TSP* tsp_) :
             "\n"
             "  --t2-guard-interval value\n"
             "      DVB-T2 modulators: indicates the guard interval. Must be one of:\n"
-            "      1/128, 1/32, 1/16, 19/256, 1/8, 19/128, 1/4. The default is 1/128.\n"   
+            "      1/128, 1/32, 1/16, 19/256, 1/8, 19/128, 1/4. The default is 1/128.\n"
             "\n"
             "  --t2-l1-modulation value\n"
             "      DVB-T2 modulators: indicate the modulation type used for the L1-post\n"
@@ -1456,7 +1456,7 @@ ts::BitRate ts::DektecOutputPlugin::getBitrate()
             tsp->error("error getting Dektec device output bitrate: " + DektecStrError(status));
             bitrate = 0;
         }
-    }        
+    }
     return bitrate;
 }
 

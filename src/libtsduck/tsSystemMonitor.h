@@ -46,7 +46,7 @@ namespace ts {
     //! and reports the usage of system resources by the current process
     //! (virtual memory usage, CPU load). In addition to precise usage
     //! values, it also displays an analysis of the virtual memory usage
-    //! (such as stable or leaking). 
+    //! (such as stable or leaking).
     //!
     //! The reporting interval is changing over time, very fast at the
     //! start of the application, then slower and slower:

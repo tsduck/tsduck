@@ -61,15 +61,15 @@ namespace ts {
     //! Long options can be abbreviated if there is no ambiguity.
     //! Although this syntax is inspired by Linux and the GNU utilities, the same syntax
     //! is used in all environments where this class is compiled.
-    //! 
+    //!
     //! As an example, consider a utility which accepts the two options @c -\-verbose (short name ­v)
     //! and @c -\-version (no short name). Then, the verbose mode can be equally triggered by ­@c -v,
     //! @c -\-verbose, @c -\-verb but not @c -\-ver since there an ambiguity with @c -\-version.
-    //! 
+    //!
     //! The various options are declared using an @link option() @endlink method.
     //! An option can be declared with a mandatory value (e.g. "--output file.txt"),
     //! without value (e.g. "--verbose") or with an optional value.
-    //! 
+    //!
     //! The options may be specified on the command line in any order.
     //! Everything which is not an option (or the value of an option) is considered
     //! as a @e parameter.
@@ -91,7 +91,7 @@ namespace ts {
     //! @li -\-output=file.txt
     //! @li -o file.txt
     //! @li -ofile.txt
-    //! 
+    //!
     //! <h3>Predefined options</h3>
     //!
     //! The option @c -\-help is always predefined, it displays the help text and
@@ -151,20 +151,20 @@ namespace ts {
     //! #include "tsArgs.h"
     //! #include "tsStringUtils.h"
     //! #include <iostream>
-    //! 
+    //!
     //! // Define a class which encapsulates the command line arguments.
     //! class CommandArgs: public ts::Args
     //! {
     //! public:
     //!     CommandArgs(int argc, char *argv[]);
-    //! 
+    //!
     //!     std::string inFile1;
     //!     std::string inFile2;
     //!     std::string outFile;
     //!     bool        verbose;
     //!     size_t      bufferSize;
     //! };
-    //! 
+    //!
     //! // Constructor: define the command syntax and analyze the command line.
     //! CommandArgs::CommandArgs(int argc, char *argv[]) :
     //!     ts::Args("Super file merger", "[options] file-1 [file-2]")
@@ -192,10 +192,10 @@ namespace ts {
     //!             "  -v\n"
     //!             "  --verbose\n"
     //!             "      Display verbose messages.");
-    //! 
+    //!
     //!     // Analyze the command
     //!     analyze(argc, argv);
-    //! 
+    //!
     //!     // Get the command line arguments
     //!     getValue(inFile1, "", "", 0);
     //!     getValue(inFile2, "", "", 1);
@@ -203,20 +203,20 @@ namespace ts {
     //!     verbose = present("verbose");
     //!     bufferSize = intValue<size_t>("buffer-size", 1024);
     //! }
-    //! 
+    //!
     //! // Main program
     //! int main(int argc, char* argv[])
     //! {
     //!     // Declare an object which analyzes the command line.
     //!     CommandArgs args(argc, argv);
-    //! 
+    //!
     //!     std::cout
     //!         << "inFile1 = \"" << args.inFile1 << "\", "
     //!         << "inFile2 = \"" << args.inFile2 << "\", "
     //!         << "outFile = \"" << args.outFile << "\", "
     //!         << "verbose = " << ts::TrueFalse(args.verbose) << ", "
     //!         << "bufferSize = " << args.bufferSize << std::endl;
-    //! 
+    //!
     //!     return EXIT_SUCCESS;
     //! }
     //! @endcode
@@ -225,30 +225,30 @@ namespace ts {
     //!
     //! @code
     //! $ supermerge --help
-    //! 
+    //!
     //! Super file merger
-    //! 
+    //!
     //! Usage: supermerge [options] file-1 [file-2]
-    //! 
+    //!
     //! Parameters:
-    //! 
+    //!
     //!   file-1 : Base file to merge.
     //!   file-2 : Optional secondary file to merge.
-    //! 
+    //!
     //! Options:
-    //! 
+    //!
     //!   -b value
     //!   --buffer-size value
     //!       Buffer size in bytes, from 256 to 4096 bytes (default: 1024).
-    //! 
+    //!
     //!   -o filename
     //!   --output filename
     //!       Specify the output file (default: standard output).
-    //! 
+    //!
     //!   -v
     //!   --verbose
     //!       Display verbose messages.
-    //! 
+    //!
     //! $
     //! @endcode
     //!

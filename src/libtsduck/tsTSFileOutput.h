@@ -93,7 +93,7 @@ namespace ts {
         {
             return _severity;
         }
-        
+
         //!
         //! Set the severity level for error reporting.
         //! @param [in] level The severity level for error reporting. The default is Error.

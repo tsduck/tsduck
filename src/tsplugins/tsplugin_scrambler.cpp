@@ -571,7 +571,7 @@ bool ts::ScramblerPlugin::stop()
 void ts::ScramblerPlugin::handleTable (SectionDemux& demux, const BinaryTable& table)
 {
     switch (table.tableId()) {
-        
+
         case TID_PAT: {
             if (table.sourcePID() == PID_PAT) {
                 PAT pat (table);
@@ -1078,7 +1078,7 @@ void ts::ScramblerPlugin::CryptoPeriod::handleECM(const ecmgscs::ECMResponse& re
         OneShotPacketizer pzer (_scrambler->_ecm_pid, true);
         pzer.addSection (sp);
         pzer.getPackets (_ecm);
-        
+
     }
     else if (response.ECM_datagram.size() % PKT_SIZE != 0) {
         // ECMG returns ECM in packet format, but not an integral number of packets

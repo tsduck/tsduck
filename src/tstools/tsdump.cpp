@@ -120,7 +120,7 @@ Options::Options (int argc, char *argv[]) :
     infile = value ("");
     raw_file = present ("raw-file");
 
-    dump_flags = 
+    dump_flags =
         TSPacket::DUMP_TS_HEADER |    // Format TS headers
         TSPacket::DUMP_PES_HEADER |   // Format PES headers
         TSPacket::DUMP_RAW |          // Full dump of packet

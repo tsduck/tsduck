@@ -427,7 +427,7 @@ void ts::DataInjectPlugin::main()
                         emmgmux::StreamBWRequest* m = dynamic_cast <emmgmux::StreamBWRequest*> (msg.pointer());
                         assert (m != 0);
                         ok = processBandwidthRequest (*m);
-                    }                    
+                    }
                     break;
                 }
 

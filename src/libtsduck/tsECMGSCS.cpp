@@ -379,7 +379,7 @@ std::string ts::ecmgscs::ChannelStatus::dump (size_t indent) const
         dumpDecimal (indent, "max_comp_time", max_comp_time);
 }
 
-    
+
 //----------------------------------------------------------------------------
 // channel_close
 //----------------------------------------------------------------------------

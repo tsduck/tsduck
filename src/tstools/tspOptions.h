@@ -127,7 +127,7 @@ namespace ts {
             Options() = delete;
             Options(const Options&) = delete;
             Options& operator=(const Options&) = delete;
-            
+
             //!
             //! Search the next plugin option.
             //! @param [in] argc Number of arguments from command line.

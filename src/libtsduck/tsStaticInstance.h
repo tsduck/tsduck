@@ -205,7 +205,7 @@
 //! objects are fully constructed.
 //!
 //! However, there are cases where a static object is used by the initialization
-//! routine of another module. This is typically the case when a static object 
+//! routine of another module. This is typically the case when a static object
 //! references another static object in its constructor. Usually, this is not
 //! as obvious as it seems. If the constructor of a static object in module A invokes
 //! a static method from another module B, you do not know if this static method

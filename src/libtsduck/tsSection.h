@@ -219,7 +219,7 @@ namespace ts {
                     const void* payload,
                     size_t payload_size,
                     PID source_pid = PID_NULL);
-        
+
         //!
         //! Reload from a long section payload.
         //! The provided payload does not contain the CRC32.

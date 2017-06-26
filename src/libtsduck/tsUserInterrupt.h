@@ -90,7 +90,7 @@ namespace ts {
         //! if this handler or another handler is already active.
         //!
         void activate();
-        
+
         //!
         //! Deactivate this interrupt handler.
         //!
@@ -105,7 +105,7 @@ namespace ts {
 
         static void sysHandler(int sig);
         virtual void main(); // ts::Thread implementation
-        
+
         volatile bool           _terminate;
         volatile ::sig_atomic_t _got_sigint;
 #if defined(__mac)
@@ -114,7 +114,7 @@ namespace ts {
 #else
         ::sem_t                 _sem_instance;
 #endif
-        
+
 #endif
 
         InterruptHandler* _handler;

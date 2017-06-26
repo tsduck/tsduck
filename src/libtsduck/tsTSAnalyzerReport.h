@@ -119,7 +119,7 @@ namespace ts {
         std::ostream& reportNormalized(std::ostream& strm, const std::string& title = "");
 
     private:
-        // Display one line of a service PID list 
+        // Display one line of a service PID list
         void reportServicePID(std::ostream&, const PIDContext&) const;
 
         // Display list of services a PID belongs to

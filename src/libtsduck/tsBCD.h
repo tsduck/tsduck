@@ -63,7 +63,7 @@ namespace ts {
     //! @param [in] bcd_count Number of BCD digits (@a bcd_count / 2 bytes).
     //! Note that @a bcd_count can be even.
     //! @return The decoded integer value.
-    //! 
+    //!
     TSDUCKDLL uint32_t DecodeBCD(const uint8_t* bcd, size_t bcd_count);
 
     //!

@@ -103,7 +103,7 @@ namespace ts {
         {
             release();
         }
-        
+
         //!
         //! Check if null pointer.
         //! @return True if this is a null pointer (no object).
@@ -211,12 +211,12 @@ namespace ts {
         //! Assign using CoCreateInstance().
         //! If the COM object is successfully created, it becomes managed and
         //! its reference count is unchanged (== 1).
-        //!       
+        //!
         //! @param [in] class_id Class id of the COM object to create.
         //! @param [in] interface_id Id of the interface we request in the object.
         //! @param [in] report Where to report errors.
         //! @return A reference to this object.
-        //!       
+        //!
         ComPtr<COMCLASS>& createInstance(const IID& class_id, const IID& interface_id, ReportInterface& report = CERR)
         {
             release();
@@ -235,7 +235,7 @@ namespace ts {
         //! Assign using IUnknown::QueryInterface
         //! If the COM interface is successfully retrieved, it becomes managed and
         //! its reference count is unchanged (== 1).
-        //!       
+        //!
         //! @param [in] obj A COM object.
         //! @param [in] interface_id Id of the interface we request in the object.
         //! @param [in] report Where to report errors.
@@ -256,7 +256,7 @@ namespace ts {
         //! Assign using IMoniker::BindToObject
         //! If the COM interface is successfully retrieved, it becomes managed and
         //! its reference count is unchanged (== 1).
-        //!       
+        //!
         //! @param [in] moniker The moniker to use.
         //! @param [in] interface_id Id of the interface we request in the object.
         //! @param [in] report Where to report errors.

@@ -67,7 +67,7 @@ ts::Tuner::~Tuner()
 
 
 //-----------------------------------------------------------------------------
-// Default constructor, 
+// Default constructor,
 //-----------------------------------------------------------------------------
 
 ts::Tuner::Tuner() :
@@ -370,7 +370,7 @@ bool ts::Tuner::getCurrentTuning (TunerParameters& params, bool reset_unknown, R
     }
 
     // Search individual tuning parameters
-    bool found;    
+    bool found;
     switch (_tuner_type) {
 
         case DVB_S: {
@@ -491,11 +491,11 @@ bool ts::Tuner::getCurrentTuning (TunerParameters& params, bool reset_unknown, R
             // Other DVB-T parameters, not supported in IBDA_DigitalDemodulator
             // but which may be supported as properties.
             ::TransmissionMode tm = ::BDA_XMIT_MODE_NOT_SET;
-            tpp->transmission_mode = 
+            tpp->transmission_mode =
                 searchTunerProperty (KSPROPSETID_BdaDigitalDemodulator, KSPROPERTY_BDA_TRANSMISSION_MODE, tm, psFIRST) ?
                 ts::TransmissionMode (tm) : TM_AUTO;
             ::GuardInterval gi = ::BDA_GUARD_NOT_SET;
-            tpp->guard_interval = 
+            tpp->guard_interval =
                 searchTunerProperty (KSPROPSETID_BdaDigitalDemodulator, KSPROPERTY_BDA_GUARD_INTERVAL, gi, psFIRST) ?
                 GuardInterval (gi) : GUARD_AUTO;
             // Other DVB-T parameters, not supported at all
@@ -622,7 +622,7 @@ bool ts::Tuner::internalTune (const TunerParameters& params, ReportInterface& re
         }
     }
 
-    // Set the locator in the tune request    
+    // Set the locator in the tune request
     if (!locator.isNull()) {
         hr = tune_request->put_Locator (locator.pointer());
         if (!ComSuccess (hr, "ITuneRequest::put_Locator", report)) {
@@ -932,7 +932,7 @@ size_t ts::Tuner::receive (TSPacket* buffer, size_t max_packets, const AbortInte
     // Read packets from the tuner device
 
     size_t got_size;
-    
+
     if (_receive_timeout <= 0) {
         got_size = _sink_filter->Read (buffer, max_packets * PKT_SIZE);
     }
@@ -971,7 +971,7 @@ std::ostream& ts::Tuner::displayStatus (std::ostream& strm, const std::string& m
     strm << margin << "Network provider: " << _provider_name << std::endl
          << std::endl
          << margin << "DirectShow graph:" << std::endl;
-    
+
     DisplayFilterGraph (strm, _graph, margin + "  ", true, report);
 
     return strm;
@@ -1434,7 +1434,7 @@ bool ts::Tuner::buildCaptureGraph (const ComPtr <::IBaseFilter>& base_filter, Re
 
     // Try to connect the "base" filter (tuner or receiver) to the tee filter.
     bool ok = ConnectFilters (_graph.pointer(), base_filter.pointer(), tee_filter.pointer(), debug_report);
-    
+
     // Create branch A of graph: Create a sink filter, add it to the graph and connect it to the tee.
     ComPtr <SinkFilter> sink_filter (new SinkFilter (report));
     if (ok) {

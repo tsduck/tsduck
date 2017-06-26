@@ -328,7 +328,7 @@ void ts::ZapPlugin::processSDT (SDT& sdt)
         return;
     }
 
-    // If the service id was previously unknown wait for the PAT. 
+    // If the service id was previously unknown wait for the PAT.
     // If a service id was known but was different, we need to rescan the PAT.
 
     if (!_service.hasId (service_id)) {

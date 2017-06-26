@@ -131,7 +131,7 @@ namespace ts {
         {
             return _sections[name];
         }
-        
+
         //!
         //! Index operator: get a reference to a section inside the configuration file instance.
         //! Create the section if it does not exist.

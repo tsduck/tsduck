@@ -157,7 +157,7 @@ namespace ts {
         //! @param [in] val The value to set.
         //!
         void set(const std::string& entry, bool val);
- 
+
         //!
         //! Set the value of an entry from a vector of booleans.
         //! @param [in] entry Entry name.

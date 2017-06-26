@@ -153,12 +153,12 @@ bool ts::AVCVUIParameters::parse (AVCParser& parser)
     valid = valid && parser.u (video_signal_type_present_flag, 1);
 
     if (valid && video_signal_type_present_flag == 1) {
-        valid = 
+        valid =
             parser.u (video_format, 3) &&
             parser.u (video_full_range_flag, 1) &&
             parser.u (colour_description_present_flag, 1);
         if (valid && colour_description_present_flag == 1) {
-            valid = 
+            valid =
                 parser.u (colour_primaries, 8) &&
                 parser.u (transfer_characteristics, 8) &&
                 parser.u (matrix_coefficients, 8);
@@ -168,7 +168,7 @@ bool ts::AVCVUIParameters::parse (AVCParser& parser)
     valid = valid && parser.u (chroma_loc_info_present_flag, 1);
 
     if (valid && chroma_loc_info_present_flag == 1) {
-        valid = 
+        valid =
             parser.ue (chroma_sample_loc_type_top_field) &&
             parser.ue (chroma_sample_loc_type_bottom_field);
     }
@@ -176,7 +176,7 @@ bool ts::AVCVUIParameters::parse (AVCParser& parser)
     valid = valid && parser.u (timing_info_present_flag, 1);
 
     if (valid && timing_info_present_flag == 1) {
-        valid = 
+        valid =
             parser.u (num_units_in_tick, 32) &&
             parser.u (time_scale, 32) &&
             parser.u (fixed_frame_rate_flag, 1);

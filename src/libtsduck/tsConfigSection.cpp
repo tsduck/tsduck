@@ -186,7 +186,7 @@ void ts::ConfigSection::append(const std::string& entry, bool val)
 {
     append(entry, val ? "true" : "false");
 }
-                    
+
 //----------------------------------------------------------------------------
 // Append values in an entry
 //----------------------------------------------------------------------------

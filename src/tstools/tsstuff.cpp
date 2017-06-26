@@ -447,7 +447,7 @@ namespace {
         // Remaining number of bits to stuff representing less than one packet
         _additional_bits = 0;
 
-        // Locate first two time stamps, 
+        // Locate first two time stamps,
         _tstamp1.reset();
         _tstamp2.reset();
         evaluateNextStuffing();
