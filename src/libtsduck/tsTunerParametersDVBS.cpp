@@ -32,6 +32,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsTunerParametersDVBS.h"
+#include "tsTunerArgs.h"
 #include "tsDektec.h"
 #include "tsEnumeration.h"
 #include "tsDecimal.h"
@@ -190,6 +191,46 @@ std::string ts::TunerParametersDVBS::toPluginOptions(bool no_local) const
         " --pilots " + PilotEnum.name(pilots) +
         " --roll-off " + RollOffEnum.name(roll_off) +
         local_options;
+}
+
+
+//----------------------------------------------------------------------------
+// Format a short description (frequency and essential parameters).
+//----------------------------------------------------------------------------
+
+std::string ts::TunerParametersDVBS::shortDescription(int strength, int quality) const
+{
+    std::string desc = Decimal(frequency) + " Hz";
+    switch (polarity) {
+        case POL_HORIZONTAL:
+            desc += " H";
+            break;
+        case POL_VERTICAL:
+            desc += " V";
+            break;
+        case POL_LEFT:
+            desc += " L";
+            break;
+        case POL_RIGHT:
+            desc += " R";
+            break;
+        default:
+            break;
+    }
+    if (delivery_system != DS_DVB_S) {
+        desc += " (" + DeliverySystemEnum.name(delivery_system);
+        if (modulation != QAM_AUTO) {
+            desc += ", " + ModulationEnum.name(modulation);
+        }
+        desc += ")";
+    }
+    if (strength >= 0) {
+        desc += Format(", strength: %d%%", strength);
+    }
+    if (quality >= 0) {
+        desc += Format(", quality: %d%%", quality);
+    }
+    return desc;
 }
 
 

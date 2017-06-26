@@ -34,11 +34,15 @@
 
 #pragma once
 #include "tsArgs.h"
+#include "tsTunerParameters.h"
 #include "tsVariable.h"
 #include "tsModulation.h"
 #include "tsLNB.h"
 
 namespace ts {
+
+    class Tuner;
+
     //!
     //! Command line arguments for DVB tuners.
     //!
@@ -49,6 +53,15 @@ namespace ts {
     {
     public:
         // Public fields
+        std::string                 device_name;        //!< Name of tuner device.
+        MilliSecond                 signal_timeout;     //!< Signal locking timeout in milliseconds.
+        MilliSecond                 receive_timeout;    //!< Packet received timeout in milliseconds.
+#if defined(__linux) || defined(DOXYGEN)
+        size_t                      demux_buffer_size;  //!< Demux buffer size in bytes (Linux-specific).
+#endif
+#if defined(__windows) || defined(DOXYGEN)
+        size_t                      demux_queue_size;   //!< Max number of queued media samples (Windows-specific).
+#endif
         Variable<std::string>       zap_specification;  //!< Linux DVB zap format.
         Variable<std::string>       channel_name;       //!< Use transponder containing this channel.
         Variable<std::string>       zap_file_name;      //!< Where channel_name is located.
@@ -72,8 +85,10 @@ namespace ts {
 
         //!
         //! Default constructor.
+        //! @param [in] info_only If true, the tuner will not be used to tune, just to get information.
+        //! @param [in] allow_short_options If true, allow short one-letter options.
         //!
-        TunerArgs();
+        TunerArgs(bool info_only = false, bool allow_short_options = true);
 
         //!
         //! Check if actual tuning information is set.
@@ -92,18 +107,16 @@ namespace ts {
         //!
         //! Define command line options in an Args.
         //! @param [in,out] args Command line arguments to update.
-        //! @param [in] allow_short_options If true, allow short one-letter options.
         //! If false, disable them, possibly to avoid interferences with other options.
         //!
-        static void DefineOptions(Args& args, bool allow_short_options = true);
+        void defineOptions(Args& args) const;
 
         //!
         //! Add help about command line options in an Args.
         //! @param [in,out] args Command line arguments to update.
-        //! @param [in] allow_short_options If true, allow short one-letter options.
         //! If false, disable them, possibly to avoid interferences with other options.
         //!
-        static void AddHelp(Args& args, bool allow_short_options = true);
+        void addHelp(Args& args) const;
 
         //!
         //! Load arguments from command line.
@@ -113,10 +126,31 @@ namespace ts {
         void load(Args& args);
 
         //!
+        //! Open a tuner and configure it according to the parameters in this object.
+        //! @param [in,out] tuner The tuner to open and configure.
+        //! @param [in,out] report Where to report errors.
+        //! @return True on success, false on error.
+        //!
+        bool configureTuner(Tuner& tuner, ReportInterface& report) const;
+
+        //!
+        //! Tune to the specified parameters.
+        //! @param [in,out] tuner The tuner to configure.
+        //! @param [out] params Safe pointer to tuning parameters.
+        //! @param [in,out] report Where to report errors.
+        //! @return True on success, false on error.
+        //!
+        bool tune(Tuner& tuner, TunerParametersPtr& params, ReportInterface& report) const;
+
+        //!
         //! Default zap file name for a given tuner type.
         //! @param [in] type Tuner type.
         //! @return The default zap file or an empty string if there is no default.
         //!
         static std::string DefaultZapFile(TunerType type);
+
+    private:
+        const bool _info_only;
+        const bool _allow_short_options;
     };
 }

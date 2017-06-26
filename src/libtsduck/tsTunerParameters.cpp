@@ -37,6 +37,7 @@
 #include "tsTunerParametersDVBT.h"
 #include "tsTunerParametersATSC.h"
 #include "tsTunerUtils.h"
+#include "tsTunerArgs.h"
 
 
 //----------------------------------------------------------------------------

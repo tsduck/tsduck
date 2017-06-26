@@ -45,7 +45,7 @@
 #include "tsDecimal.h"
 #include "tsToInteger.h"
 
-#if defined (TS_NEED_STATIC_CONST_DEFINITIONS)
+#if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
 const ts::MilliSecond ts::Tuner::DEFAULT_SIGNAL_TIMEOUT;
 const size_t ts::Tuner::DEFAULT_SINK_QUEUE_SIZE;
 #endif

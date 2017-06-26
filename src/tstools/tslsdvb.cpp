@@ -34,120 +34,70 @@
 #include "tsArgs.h"
 #include "tsCOM.h"
 #include "tsTuner.h"
+#include "tsTunerArgs.h"
 #include "tsFormat.h"
 #include "tsSysUtils.h"
-
-using namespace ts;
 
 
 //----------------------------------------------------------------------------
 //  Command line options
 //----------------------------------------------------------------------------
 
-struct Options: public Args
+struct Options: public ts::Args
 {
-    Options (int argc, char *argv[]);
+    Options(int argc, char *argv[]);
 
-    std::string device_name;  // Name of device to list (empty means all)
-    bool        verbose;      // Verbose output
-#if defined(__windows)
-    bool        enum_devices; // Enumerate DirectShow devices
-#endif
+    ts::TunerArgs tuner;        // Name of device to list (unspecified means all).
+    bool          verbose;      // Verbose output
+    bool          enum_devices; // Enumerate DirectShow devices (Windows only).
 };
 
 Options::Options (int argc, char *argv[]) :
-    Args("DVB Devices Listing Utility.", "[options] [device]"),
-    device_name(),
-    verbose(false)
-#if defined(__windows)
-    ,
+    ts::Args("DVB Devices Listing Utility.", "[options]"),
+    tuner(true, true),
+    verbose(false),
     enum_devices(false)
-#endif
 {
-    option ("",          0,  STRING, 0, 1);
-    option ("adapter",  'a', UNSIGNED);
-    option ("debug",    'd', POSITIVE, 0, 1, 0, 0, true);
-    option ("verbose",  'v');
-#if defined(__linux)
-    option ("frontend", 'f', UNSIGNED); // legacy option
-#elif defined(__windows)
-    option ("enumerate-devices", 'e');
+    option("debug", 'd', POSITIVE, 0, 1, 0, 0, true);
+    option("verbose", 'v');
+#if defined(__windows)
+    option("enumerate-devices", 'e');
 #endif
 
-    setHelp ("Device:\n"
-             "\n"
-#if defined (__linux)
-             "  Name of device to list, usually /dev/dvb/adapterA[:F] where\n"
-             "  A = adapter number and F = frontend number (default: 0).\n"
-             "  The legacy options --adapter and --frontend can also be used\n"
-             "  instead of the device name.\n"
-#elif defined (__windows)
-             "  Name of device to list. This is a DirectShow/BDA tuner filter name\n"
-             "  (not case sensitive, blanks are ignored).\n"
+    setHelp("By default, without device name or adapter, all DVB devices are listed.\n"
+            "\n"
+            "Options:\n"
+            "\n"
+#if defined(__windows)
+            "  -e\n"
+            "  --enumerate-devices\n"
+            "      Enumerate all relevant DirectShow devices and filters.\n"
+            "      Very verbose output, for debug only.\n"
+            "\n"
 #endif
-             "  By default, all DVB devices are listed.\n"
-             "\n"
-             "Options:\n"
-             "\n"
-             "  -a N\n"
-             "  --adapter N\n"
-#if defined (__linux)
-             "      Specifies the Linux DVB adapter N (/dev/dvb/adapterN).\n"
-#elif defined (__windows)
-             "      Specifies the Nth DVB adapter in the system.\n"
-#endif
-             "      This option can be used instead of device name.\n"
-             "      Use the tslsdvb utility to list all DVB devices.\n"
-             "\n"
-#if defined (__windows)
-             "  -e\n"
-             "  --enumerate-devices\n"
-             "      Enumerate all relevant DirectShow devices and filters.\n"
-             "      Very verbose output, for debug only.\n"
-             "\n"
-#endif
-#if defined (__linux)
-             "  -f N\n"
-             "  --frontend N\n"
-             "      Specifies the frontend N (/dev/dvb/adapter?/frontendN) in the adapter.\n"
-             "      This option can be used instead of device name.\n"
-             "\n"
-#endif
-             "  --help\n"
-             "      Display this help text.\n"
-             "\n"
-             "  -v\n"
-             "  --verbose\n"
-             "      Produce verbose output.\n"
-             "\n"
-             "  --version\n"
-             "      Display the version number.\n");
+            "  --help\n"
+            "      Display this help text.\n"
+            "\n"
+            "  -v\n"
+            "  --verbose\n"
+            "      Produce verbose output.\n"
+            "\n"
+            "  --version\n"
+            "      Display the version number.\n");
 
-    analyze (argc, argv);
+    // Add common tuner options.
+    tuner.defineOptions(*this);
+    tuner.addHelp(*this);
 
-    getValue (device_name);
-    verbose = present ("verbose");
-    setDebugLevel (present ("debug") ? intValue ("debug", 1) : Severity::Info);
+    // Analyze command line options.
+    analyze(argc, argv);
+    tuner.load(*this);
 
-#if defined (__linux)
-    if (present ("adapter") || present ("frontend")) {
-        if (device_name.empty()) {
-            device_name = Format ("/dev/dvb/adapter%d:%d", intValue ("adapter", 0), intValue ("frontend", 0));
-        }
-        else {
-            error ("--adapter and --frontend cannot be used with device name");
-        }
-    }
-#elif defined (__windows)
-    enum_devices = present ("enumerate-devices");
-    if (present ("adapter")) {
-        if (device_name.empty()) {
-            device_name = Format (":%d", intValue ("adapter", 0));
-        }
-        else {
-            error ("--adapter cannot be used with device name");
-        }
-    }
+    verbose = present("verbose");
+    setDebugLevel(present("debug") ? intValue("debug", 1) : ts::Severity::Info);
+
+#if defined(__windows)
+    enum_devices = present("enumerate-devices");
 #endif
 
     exitOnError();
@@ -160,7 +110,7 @@ Options::Options (int argc, char *argv[]) :
 //----------------------------------------------------------------------------
 
 namespace {
-    void ListTuner (Tuner& tuner, int tuner_index, Options& opt)
+    void ListTuner(ts::Tuner& tuner, int tuner_index, Options& opt)
     {
         // If not opened, nothing to display.
         if (!tuner.isOpen()) {
@@ -168,14 +118,14 @@ namespace {
         }
 
         // Display name and type
-#if defined (__windows)
+#if defined(__windows)
         if (tuner_index >= 0) {
             std::cout << tuner_index << ": ";
         }
 #endif
-        const std::string info (tuner.deviceInfo());
+        const std::string info(tuner.deviceInfo());
         bool something = !info.empty();
-        const DeliverySystemSet systems (tuner.deliverySystems());
+        const ts::DeliverySystemSet systems(tuner.deliverySystems());
 
         std::cout << tuner.deviceName() << " (";
         if (something) {
@@ -186,7 +136,7 @@ namespace {
                 if (something) {
                     std::cout << ", ";
                 }
-                std::cout << DeliverySystemEnum.name(int(ds));
+                std::cout << ts::DeliverySystemEnum.name(int(ds));
                 something = true;
             }
         }
@@ -195,7 +145,7 @@ namespace {
         // Display verbose information
         if (opt.verbose) {
             std::cout << std::endl;
-            tuner.displayStatus (std::cout, "  ", opt);
+            tuner.displayStatus(std::cout, "  ", opt);
             std::cout << std::endl;
         }
     }
@@ -208,29 +158,29 @@ namespace {
 //----------------------------------------------------------------------------
 
 namespace {
-    void ListMain (Options& opt)
+    void ListMain(Options& opt)
     {
         // List DVB tuner devices
-        if (!opt.device_name.empty()) {
-            // One device name specified
-            Tuner tuner (opt.device_name, true, opt);
-            ListTuner (tuner, -1, opt);
+        if (!opt.tuner.device_name.empty()) {
+            // One device name specified.
+            ts::Tuner tuner(opt.tuner.device_name, true, opt);
+            ListTuner(tuner, -1, opt);
         }
         else {
-            // List all tuners
-            TunerPtrVector tuners;
-            if (!Tuner::GetAllTuners (tuners, opt)) {
+            // List all tuners.
+            ts::TunerPtrVector tuners;
+            if (!ts::Tuner::GetAllTuners(tuners, opt)) {
                 return;
             }
             else if (tuners.empty()) {
-                opt.error ("no DVB device found");
+                opt.error("no DVB device found");
             }
             else {
                 if (opt.verbose) {
                     std::cout << std::endl;
                 }
                 for (size_t i = 0; i < tuners.size(); ++i) {
-                    ListTuner (*tuners[i], tuners.size() == 1 ? -1 : int (i), opt);
+                    ListTuner(*tuners[i], tuners.size() == 1 ? -1 : int(i), opt);
                 }
             }
         }
@@ -238,7 +188,7 @@ namespace {
         // Enumerate all DirectShow devices on Windows
 #if defined (__windows)
         if (opt.enum_devices) {
-            Tuner::EnumerateDevices (std::cout, "", opt);
+            ts::Tuner::EnumerateDevices(std::cout, "", opt);
         }
 #endif
     }
@@ -249,13 +199,13 @@ namespace {
 //  Program entry point
 //----------------------------------------------------------------------------
 
-int main (int argc, char *argv[])
+int main(int argc, char *argv[])
 {
-    Options opt (argc, argv);
-    COM com (opt);
+    Options opt(argc, argv);
+    ts::COM com(opt);
 
     if (com.isInitialized()) {
-        ListMain (opt);
+        ListMain(opt);
     }
 
     opt.exitOnError();

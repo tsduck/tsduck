@@ -62,6 +62,7 @@ namespace ts {
 
         // Implementation of TunerParameters API
         virtual BitRate theoreticalBitrate() const {return TheoreticalBitrateForModulation (modulation, inner_fec, symbol_rate);}
+        virtual std::string shortDescription(int strength = -1, int quality = -1) const;
         virtual std::string toZapFormat() const;
         virtual std::string toPluginOptions(bool no_local = false) const;
         virtual void displayParameters(std::ostream& strm, const std::string& margin = std::string(), bool verbose = false) const;

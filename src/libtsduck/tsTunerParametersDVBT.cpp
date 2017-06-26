@@ -32,10 +32,10 @@
 //----------------------------------------------------------------------------
 
 #include "tsTunerParametersDVBT.h"
+#include "tsTunerArgs.h"
 #include "tsEnumeration.h"
 #include "tsDecimal.h"
 #include "tsFormat.h"
-
 
 #if defined (TS_NEED_STATIC_CONST_DEFINITIONS)
 const ts::SpectralInversion ts::TunerParametersDVBT::DEFAULT_INVERSION;
@@ -241,6 +241,51 @@ std::string ts::TunerParametersDVBT::toPluginOptions (bool no_local) const
         " --transmission-mode " + TransmissionModeEnum.name (transmission_mode) +
         " --guard-interval " + GuardIntervalEnum.name (guard_interval) +
         " --hierarchy " + HierarchyEnum.name (hierarchy);
+}
+
+
+//----------------------------------------------------------------------------
+// Format a short description (frequency and essential parameters).
+//----------------------------------------------------------------------------
+
+std::string ts::TunerParametersDVBT::shortDescription(int strength, int quality) const
+{
+    std::string desc;
+    const char* band = 0;
+    int channel = 0;
+    int offset = 0;
+
+    if (UHF::InBand(frequency)) {
+        band = "UHF";
+        channel = UHF::Channel(frequency);
+        offset = UHF::OffsetCount(frequency);
+    }
+    else if (VHF::InBand(frequency)) {
+        band = "VHF";
+        channel = VHF::Channel(frequency);
+        offset = VHF::OffsetCount(frequency);
+    }
+
+    if (band != 0) {
+        desc += Format("%s channel %d", band, channel);
+        if (offset != 0) {
+            desc += Format(", offset %+d", offset);
+        }
+        desc += " (";
+    }
+    desc += Decimal(frequency) + " Hz";
+    if (band != 0) {
+        desc += ")";
+    }
+
+    if (strength >= 0) {
+        desc += Format(", strength: %d%%", strength);
+    }
+    if (quality >= 0) {
+        desc += Format(", quality: %d%%", quality);
+    }
+
+    return desc;
 }
 
 

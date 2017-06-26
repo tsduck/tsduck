@@ -58,6 +58,7 @@ namespace ts {
 
         // Implementation of TunerParameters API
         virtual BitRate theoreticalBitrate() const {return 0;} // unknown for ATSC/VSB
+        virtual std::string shortDescription(int strength = -1, int quality = -1) const;
         virtual std::string toZapFormat() const {return "";} //TODO: unimplemented
         virtual std::string toPluginOptions(bool no_local = false) const;
         virtual void displayParameters(std::ostream& strm, const std::string& margin = std::string(), bool verbose = false) const;

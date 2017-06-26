@@ -32,9 +32,9 @@
 //----------------------------------------------------------------------------
 
 #include "tsTunerParametersATSC.h"
+#include "tsTunerArgs.h"
 #include "tsDecimal.h"
 #include "tsFormat.h"
-
 
 #if defined (TS_NEED_STATIC_CONST_DEFINITIONS)
 const ts::SpectralInversion ts::TunerParametersATSC::DEFAULT_INVERSION;
@@ -82,6 +82,23 @@ std::string ts::TunerParametersATSC::toPluginOptions(bool no_local) const
     return Format("--frequency %" FMT_INT64 "u", frequency) +
         " --modulation " + ModulationEnum.name(modulation) +
         " --spectral-inversion " + SpectralInversionEnum.name(inversion);
+}
+
+
+//----------------------------------------------------------------------------
+// Format a short description (frequency and essential parameters).
+//----------------------------------------------------------------------------
+
+std::string ts::TunerParametersATSC::shortDescription(int strength, int quality) const
+{
+    std::string desc(Decimal(frequency) + " Hz, " + ModulationEnum.name(modulation));
+    if (strength >= 0) {
+        desc += Format(", strength: %d%%", strength);
+    }
+    if (quality >= 0) {
+        desc += Format(", quality: %d%%", quality);
+    }
+    return desc;
 }
 
 
