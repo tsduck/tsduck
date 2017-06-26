@@ -32,10 +32,10 @@
 //----------------------------------------------------------------------------
 
 #include "tsTunerParametersDVBC.h"
+#include "tsTunerArgs.h"
 #include "tsEnumeration.h"
 #include "tsDecimal.h"
 #include "tsFormat.h"
-
 
 #if defined (TS_NEED_STATIC_CONST_DEFINITIONS)
 const ts::SpectralInversion ts::TunerParametersDVBC::DEFAULT_INVERSION;
@@ -181,6 +181,23 @@ std::string ts::TunerParametersDVBC::toPluginOptions(bool no_local) const
         " --fec-inner " + InnerFECEnum.name(inner_fec) +
         " --spectral-inversion " + SpectralInversionEnum.name(inversion) +
         " --modulation " + ModulationEnum.name(modulation);
+}
+
+
+//----------------------------------------------------------------------------
+// Format a short description (frequency and essential parameters).
+//----------------------------------------------------------------------------
+
+std::string ts::TunerParametersDVBC::shortDescription(int strength, int quality) const
+{
+    std::string desc(Decimal(frequency) + " Hz, " + ModulationEnum.name(modulation));
+    if (strength >= 0) {
+        desc += Format(", strength: %d%%", strength);
+    }
+    if (quality >= 0) {
+        desc += Format(", quality: %d%%", quality);
+    }
+    return desc;
 }
 
 

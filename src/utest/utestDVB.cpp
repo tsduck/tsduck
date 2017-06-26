@@ -36,6 +36,7 @@
 #include "tsTunerParametersDVBC.h"
 #include "tsTunerParametersDVBT.h"
 #include "tsTunerUtils.h"
+#include "tsTunerArgs.h"
 #include "tsDecimal.h"
 #include "utestCppUnitTest.h"
 
@@ -93,7 +94,8 @@ void DVBTest::tearDown()
 void DVBTest::testTunerArgs()
 {
     ts::Args args("Test tuner", "[options]", "<help intro>\n");
-    ts::TunerArgs::AddHelp(args);
+    ts::TunerArgs tuner_args;
+    tuner_args.addHelp(args);
     utest::Out() << "DVBTest:: TunerArgs: " << std::endl << args.getHelp() << std::endl;
 }
 
@@ -101,8 +103,8 @@ void DVBTest::testZapFiles()
 {
     utest::Out() << "DVBTest: DefaultZapFile(DVB_S): " << ts::TunerArgs::DefaultZapFile(ts::DVB_S) << std::endl
                  << "DVBTest: DefaultZapFile(DVB_C): " << ts::TunerArgs::DefaultZapFile(ts::DVB_C) << std::endl
-                 << "DVBTest: DefaultZapFile (DVB_T): " << ts::TunerArgs::DefaultZapFile(ts::DVB_T) << std::endl
-                 << "DVBTest: DefaultZapFile (ATSC):  " << ts::TunerArgs::DefaultZapFile(ts::ATSC) << std::endl;
+                 << "DVBTest: DefaultZapFile(DVB_T): " << ts::TunerArgs::DefaultZapFile(ts::DVB_T) << std::endl
+                 << "DVBTest: DefaultZapFile(ATSC):  " << ts::TunerArgs::DefaultZapFile(ts::ATSC)  << std::endl;
 }
 
 void DVBTest::testParameters(const ts::TunerParameters& params)
@@ -123,7 +125,8 @@ void DVBTest::testParameters(const ts::TunerParameters& params)
     CPPUNIT_ASSERT(ptr->toPluginOptions() == opts);
 
     ts::Args args;
-    ts::TunerArgs::DefineOptions(args);
+    ts::TunerArgs tuner_args;
+    tuner_args.defineOptions(args);
     ts::StringVector args_vec;
     ts::SplitString(args_vec, opts, ' ');
     CPPUNIT_ASSERT(args.analyze("", args_vec));

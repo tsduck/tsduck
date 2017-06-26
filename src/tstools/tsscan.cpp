@@ -34,18 +34,21 @@
 #include "tsArgs.h"
 #include "tsCOM.h"
 #include "tsTuner.h"
+#include "tsTunerUtils.h"
+#include "tsTunerArgs.h"
 #include "tsTunerParametersDVBT.h"
 #include "tsTunerParametersDVBC.h"
 #include "tsTunerParametersDVBS.h"
 #include "tsTunerParametersATSC.h"
 #include "tsTSScanner.h"
+#include "tsNIT.h"
+#include "tsTransportStreamId.h"
+#include "tsDescriptorList.h"
 #include "tsTime.h"
 #include "tsFormat.h"
 #include "tsDecimal.h"
 #include "tsNullReport.h"
 
-#define MIN_LOCK_TIMEOUT      100 // ms
-#define DEFAULT_LOCK_TIMEOUT  800 // ms
 #define DEFAULT_PSI_TIMEOUT   5000 // ms
 #define DEFAULT_MIN_STRENGTH  10
 #define DEFAULT_MIN_QUALITY   10
@@ -62,7 +65,9 @@ struct Options: public ts::Args
 {
     Options(int argc, char *argv[]);
 
-    std::string     device_name;
+    ts::TunerArgs   tuner;
+    bool            uhf_scan;
+    bool            nit_scan;
     bool            no_offset;
     bool            use_best_quality;
     bool            use_best_strength;
@@ -76,12 +81,13 @@ struct Options: public ts::Args
     bool            list_services;
     bool            global_services;
     ts::MilliSecond psi_timeout;
-    ts::MilliSecond signal_timeout;
 };
 
 Options::Options(int argc, char *argv[]) :
     ts::Args("DVB network scanning utility.", "[options]"),
-    device_name(),
+    tuner(false, true),
+    uhf_scan(false),
+    nit_scan(false),
     no_offset(false),
     use_best_quality(false),
     use_best_strength(false),
@@ -94,40 +100,35 @@ Options::Options(int argc, char *argv[]) :
     show_modulation(false),
     list_services(false),
     global_services(false),
-    psi_timeout(0),
-    signal_timeout(0)
+    psi_timeout(0)
 {
-    option("adapter",             'a', UNSIGNED);
+    // Warning, the following short options are already defined in TunerArgs:
+    // 'a', 'c', 'd', 'f', 'm', 's', 'z'
     option("best-quality",         0);
     option("best-strength",        0);
     option("debug",                0,  POSITIVE, 0, 1, 0, 0, true);
-    option("device-name",         'd', STRING);
-    option("first-uhf-channel",   'f', INTEGER, 0, 1, ts::UHF::FIRST_CHANNEL, ts::UHF::LAST_CHANNEL);
+    option("first-uhf-channel",    0,  INTEGER, 0, 1, ts::UHF::FIRST_CHANNEL, ts::UHF::LAST_CHANNEL);
     option("first-offset",         0,  INTEGER, 0, 1, -40, +40);
     option("global-service-list", 'g');
-    option("last-uhf-channel",    'l', INTEGER, 0, 1, ts::UHF::FIRST_CHANNEL, ts::UHF::LAST_CHANNEL);
+    option("last-uhf-channel",     0, INTEGER, 0, 1, ts::UHF::FIRST_CHANNEL, ts::UHF::LAST_CHANNEL);
     option("last-offset",          0,  INTEGER, 0, 1, -40, +40);
     option("min-quality",          0,  INTEGER, 0, 1, 0, 100);
     option("min-strength",         0,  INTEGER, 0, 1, 0, 100);
-    option("modulation",          'm');
     option("no-offset",           'n');
     option("psi-timeout",          0,  UNSIGNED);
-    option("service-list",        's');
+    option("service-list",        'l');
+    option("show-modulation",      0);
     option("uhf-band",            'u');
-    option("timeout",             't', INTEGER, 0, 1, MIN_LOCK_TIMEOUT, UNLIMITED_VALUE);
     option("verbose",             'v');
+    tuner.defineOptions(*this);
 
-    setHelp("Options:\n"
+    setHelp("If tuning parameters are present (frequency or channel reference), the NIT is\n"
+            "read on the specified frequency and a full scan of the corresponding network is\n"
+            "performed.\n"
             "\n"
-            "  -a N\n"
-            "  --adapter N\n"
-#if defined(__linux)
-            "      Specifies the Linux DVB adapter N (/dev/dvb/adapterN).\n"
-#elif defined(__windows)
-            "      Specifies the Nth DVB adapter in the system.\n"
-#endif
-            "      This option can be used instead of device name.\n"
-            "      Use the tslsdvb utility to list all DVB devices.\n"
+            "By default, without specific frequency, an UHF-band scanning is performed.\n"
+            "\n"
+            "Options:\n"
             "\n"
             "  --best-quality\n"
             "      With UHF-band scanning, for each channel, use the offset with the\n"
@@ -139,21 +140,6 @@ Options::Options(int argc, char *argv[]) :
             "      best signal strength. By default, use the average of lowest and highest\n"
             "      offsets with required minimum quality and strength.\n"
             "\n"
-            "  -d \"name\"\n"
-            "  --device-name \"name\"\n"
-#if defined(__linux)
-            "      Specify the DVB receiver device name, /dev/dvb/adapterA[:F[:M[:V]]]\n"
-            "      where A = adapter number, F = frontend number (default: 0), M = demux\n"
-            "      number (default: 0), V = dvr number (default: 0). The option --adapter\n"
-            "      can also be used instead of the device name.\n"
-#elif defined(__windows)
-            "      Specify the DVB receiver device name. This is a DirectShow/BDA tuner\n"
-            "      filter name (not case sensitive, blanks are ignored).\n"
-#endif
-            "      By default, the first DVB receiver device is used.\n"
-            "      Use the tslsdvb utility to list all devices.\n"
-            "\n"
-            "  -f value\n"
             "  --first-uhf-channel value\n"
             "      For UHF-band scanning, specify the first channel to scan (default: " +
             ts::Decimal(ts::UHF::FIRST_CHANNEL) + ").\n"
@@ -171,7 +157,6 @@ Options::Options(int argc, char *argv[]) :
             "  --help\n"
             "      Display this help text.\n"
             "\n"
-            "  -l value\n"
             "  --last-uhf-channel value\n"
             "      For UHF-band scanning, specify the last channel to scan (default: " +
             ts::Decimal(ts::UHF::LAST_CHANNEL) + ").\n"
@@ -189,10 +174,6 @@ Options::Options(int argc, char *argv[]) :
             "      Minimum signal strength percentage. Frequencies with lower signal\n"
             "      strength are ignored (default: " + ts::Decimal(DEFAULT_MIN_STRENGTH) + "%).\n"
             "\n"
-            "  -m\n"
-            "  --modulation\n"
-            "      Display modulation parameters when possible.\n"
-            "\n"
             "  -n\n"
             "  --no-offset\n"
             "      For UHF-band scanning, scan only the central frequency of each channel.\n"
@@ -203,20 +184,16 @@ Options::Options(int argc, char *argv[]) :
             "      Useful only with --service-list. The default is " +
             ts::Decimal(DEFAULT_PSI_TIMEOUT) + " milli-seconds.\n"
             "\n"
-            "  -s\n"
+            "  -l\n"
             "  --service-list\n"
             "      Read SDT of each channel and display the list of services.\n"
             "\n"
+            "  --show-modulation\n"
+            "      Display modulation parameters when possible.\n"
+            "\n"
             "  -u\n"
             "  --uhf-band\n"
-            "      Perform DVB-T UHF-band scanning. Currently, this is the only supported\n"
-            "      scanning method.\n"
-            "\n"
-            "  -t milliseconds\n"
-            "  --timeout milliseconds\n"
-            "      Specifies the timeout, in milli-seconds, for DVB signal locking. If no\n"
-            "      signal is detected after this timeout, the frequency is skipped. The\n"
-            "      default is " + ts::Decimal(DEFAULT_LOCK_TIMEOUT) + " milli-seconds.\n"
+            "      Perform a complete DVB-T UHF-band scanning. Do not use the NIT.\n"
             "\n"
             "  -v\n"
             "  --verbose\n"
@@ -224,16 +201,20 @@ Options::Options(int argc, char *argv[]) :
             "\n"
             "  --version\n"
             "      Display the version number.\n");
+    tuner.addHelp(*this);
 
     analyze(argc, argv);
+    tuner.load(*this);
 
     setDebugLevel(present("debug") ? intValue("debug", ts::Severity::Debug) : present("verbose") ? ts::Severity::Verbose : ts::Severity::Info);
 
+    uhf_scan          = present("uhf-band");
+    nit_scan          = tuner.hasTuningInfo();
     use_best_quality  = present("best-quality");
     use_best_strength = present("best-strength");
     first_uhf_channel = intValue("first-uhf-channel", ts::UHF::FIRST_CHANNEL);
     last_uhf_channel  = intValue("last-uhf-channel", ts::UHF::LAST_CHANNEL);
-    show_modulation   = present("modulation");
+    show_modulation   = present("show-modulation");
     no_offset         = present("no-offset");
     first_uhf_offset  = no_offset ? 0 : intValue("first-offset", DEFAULT_FIRST_OFFSET);
     last_uhf_offset   = no_offset ? 0 : intValue("last-offset", DEFAULT_LAST_OFFSET);
@@ -242,20 +223,13 @@ Options::Options(int argc, char *argv[]) :
     list_services     = present("service-list");
     global_services   = present("global-service-list");
     psi_timeout       = intValue<ts::MilliSecond>("psi-timeout", DEFAULT_PSI_TIMEOUT);
-    signal_timeout    = intValue<ts::MilliSecond>("timeout", DEFAULT_LOCK_TIMEOUT);
-    device_name       = value("device-name");
 
-    if (present("adapter")) {
-        if (device_name.empty()) {
-#if defined(__linux)
-            device_name = ts::Format("/dev/dvb/adapter%d", intValue("adapter", 0));
-#elif defined(__windows)
-            device_name = ts::Format(":%d", intValue("adapter", 0));
-#endif
-        }
-        else {
-            error("--adapter cannot be used with --device-name");
-        }
+    if (nit_scan && uhf_scan) {
+        error("do not specify tuning parameters with --uhf-band");
+    }
+    if (!uhf_scan && !nit_scan) {
+        // Default is UHF scan.
+        uhf_scan = true;
     }
 
     exitOnError();
@@ -267,7 +241,12 @@ Options::Options(int argc, char *argv[]) :
 //----------------------------------------------------------------------------
 
 namespace {
-    void DisplayTS(std::ostream& strm, const std::string& margin, Options& opt, ts::Tuner& tuner, ts::ServiceList& global_services)
+    void DisplayTS(std::ostream& strm,
+                   const std::string& margin,
+                   Options& opt,
+                   ts::Tuner& tuner,
+                   ts::TunerParametersPtr tparams,
+                   ts::ServiceList& global_services)
     {
         const bool get_services = opt.list_services || opt.global_services;
 
@@ -284,10 +263,13 @@ namespace {
         }
 
         // Display modulation parameters
-        ts::TunerParametersPtr tparams;
-        info.getTunerParameters(tparams);
-        if (opt.show_modulation && !tparams.isNull()) {
-            tparams->displayParameters(strm, margin);
+        if (opt.show_modulation) {
+            if (tparams.isNull()) {
+                info.getTunerParameters(tparams);
+            }
+            if (!tparams.isNull()) {
+                tparams->displayParameters(strm, margin);
+            }
         }
 
         // Display services
@@ -511,14 +493,12 @@ bool OffsetScanner::tryOffset(int offset)
 //----------------------------------------------------------------------------
 
 namespace {
-    int UHFScan(Options& opt, ts::Tuner& tuner)
+    void UHFScan(Options& opt, ts::Tuner& tuner, ts::ServiceList& all_services)
     {
-        ts::ServiceList all_services;
-
         // UHF means DVB-T
         if (tuner.tunerType() != ts::DVB_T) {
             opt.error("UHF scanning needs DVB-T, tuner " + tuner.deviceName() + " is " + ts::TunerTypeEnum.name(tuner.tunerType()));
-            return EXIT_FAILURE;
+            return;
         }
 
         // Loop on all selected UHF channels
@@ -534,8 +514,90 @@ namespace {
                           << std::endl;
 
                 // Analyze PSI/SI if required
-                DisplayTS(std::cout, "  ", opt, tuner, all_services);
+                DisplayTS(std::cout, "  ", opt, tuner, ts::TunerParametersPtr(), all_services);
             }
+        }
+    }
+}
+
+
+//----------------------------------------------------------------------------
+//  NIT-based scanning
+//----------------------------------------------------------------------------
+
+namespace {
+    void NITScan(Options& opt, ts::Tuner& tuner, ts::ServiceList& all_services)
+    {
+        // Tune to the reference transponder.
+        ts::TunerParametersPtr params;
+        if (!opt.tuner.tune(tuner, params, opt)) {
+            return;
+        }
+
+        // Collect info on reference transponder.
+        ts::TSScanner info(tuner, opt.psi_timeout, false, opt);
+
+        // Get the collected NIT
+        ts::SafePtr<ts::NIT> nit;
+        info.getNIT(nit);
+        if (nit.isNull()) {
+            opt.error("cannot scan network, no NIT found on specified transponder");
+            return;
+        }
+
+        // Process each TS descriptor list in the NIT.
+        for (ts::NIT::TransportMap::const_iterator it = nit->transports.begin(); it != nit->transports.end(); ++it) {
+            const ts::TransportStreamId& tsid(it->first);
+            const ts::DescriptorList& dlist(it->second);
+
+            // Loop on all descriptors for the current TS.
+            for (size_t i = 0; i < dlist.count(); ++i) {
+                // Try to get delivery system information from current descriptor
+                ts::TunerParametersPtr tp(ts::DecodeDeliveryDescriptor(*dlist[i]));
+                if (!tp.isNull()) {
+                    // Got a delivery descriptor, this is the description of one transponder.
+                    // Tune to this transponder.
+                    opt.debug("* tuning to " + tp->toPluginOptions(true));
+                    if (tuner.tune(*tp, opt)) {
+
+                        // Report channel characteristics
+                        std::cout << "* Frequency: " << tp->shortDescription(tuner.signalStrength(opt), tuner.signalQuality(opt)) << std::endl;
+
+                        // Analyze PSI/SI if required
+                        DisplayTS(std::cout, "  ", opt, tuner, tp, all_services);
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+//----------------------------------------------------------------------------
+//  Main code. Isolated from main() to ensure that destructors are invoked
+//  before COM uninitialize.
+//----------------------------------------------------------------------------
+
+namespace {
+    void MainCode(Options& opt)
+    {
+        ts::ServiceList all_services;
+
+        // Initialize tuner.
+        ts::Tuner tuner;
+        tuner.setSignalTimeoutSilent(true);
+        if (!opt.tuner.configureTuner(tuner, opt)) {
+            return;
+        }
+
+        if (opt.uhf_scan) {
+            UHFScan(opt, tuner, all_services);
+        }
+        else if (opt.nit_scan) {
+            NITScan(opt, tuner, all_services);
+        }
+        else {
+            opt.fatal("inconsistent options, internal error");
         }
 
         // Report global list of services if required
@@ -544,8 +606,6 @@ namespace {
             std::cout << std::endl;
             ts::Service::Display(std::cout, "", all_services);
         }
-
-        return EXIT_SUCCESS;
     }
 }
 
@@ -558,12 +618,11 @@ int main(int argc, char *argv[])
 {
     Options opt(argc, argv);
     ts::COM com(opt);
-    ts::Tuner tuner(opt.device_name, false, opt);
 
-    tuner.setSignalTimeout(opt.signal_timeout);
-    tuner.setSignalTimeoutSilent(true);
-    tuner.setReceiveTimeout(opt.psi_timeout, opt);
+    if (com.isInitialized()) {
+        MainCode(opt);
+    }
 
-    // Only one currently supported mode: UHF-band scanning
-    return UHFScan(opt, tuner);
+    opt.exitOnError();
+    return EXIT_SUCCESS;
 }

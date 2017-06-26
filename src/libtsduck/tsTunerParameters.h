@@ -36,12 +36,12 @@
 #include "tsObject.h"
 #include "tsMPEG.h"
 #include "tsModulation.h"
-#include "tsTunerArgs.h"
 #include "tsSafePtr.h"
 #include "tsException.h"
 
 namespace ts {
 
+    class TunerArgs;
     class TunerParameters;
 
     //!
@@ -86,6 +86,14 @@ namespace ts {
         {
             return false;
         }
+
+        //!
+        //! Format a short description (frequency and essential parameters).
+        //! @param [in] strength Signal strength in percent. Ignored if negative.
+        //! @param [in] quality Signal quality in percent. Ignored if negative.
+        //! @return A description string.
+        //!
+        virtual std::string shortDescription(int strength = -1, int quality = -1) const = 0;
 
         //!
         //! Format the tuner parameters according to the Linux DVB "zap" format.
