@@ -49,9 +49,9 @@
 
 template <typename INT>
 bool ts::ToInteger(INT& value,
-                     const char* from,
-                     size_t length,
-                     const char* thousandSeparators)
+                   const char* from,
+                   size_t length,
+                   const char* thousandSeparators)
 {
     typedef typename std::numeric_limits<INT> limits;
 
@@ -141,10 +141,10 @@ bool ts::ToInteger(INT& value,
 
 template <class CONTAINER>
 bool ts::ToIntegers(CONTAINER& container,
-                      const char* from,
-                      size_t length,
-                      const char* thousandSeparators,
-                      const char* listSeparators)
+                    const char* from,
+                    size_t length,
+                    const char* thousandSeparators,
+                    const char* listSeparators)
 {
     // Let's name INT the integer type.
     // In all STL standard containers, value_type is a typedef for the element type.

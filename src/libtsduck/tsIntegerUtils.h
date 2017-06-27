@@ -26,58 +26,39 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  This module contains the display routines for class ts::BinaryTable
-//
+//!
+//!  @file
+//!  Some utilities on integers.
+//!
 //----------------------------------------------------------------------------
 
-#include "tsBinaryTable.h"
-#include "tsFormat.h"
-#include "tsNames.h"
+#pragma once
+#include "tsPlatform.h"
 
+namespace ts {
+    //!
+    //! Perform a bounded addition without overflow.
+    //! @tparam INT An integer type, any size, signed or unsigned.
+    //! @param [in] a First integer.
+    //! @param [in] b Second integer.
+    //! @return The value @a a + @a b. The value is @e bounded, in
+    //! case of underflow or overflow, the result is the min or max
+    //! value of the type, respectively.
+    //!
+    template <typename INT>
+    INT BoundedAdd(INT a, INT b);
 
-
-//----------------------------------------------------------------------------
-// Display the table on an output stream
-//----------------------------------------------------------------------------
-
-std::ostream& ts::BinaryTable::display (std::ostream& strm, int indent, CASFamily cas, const TLVSyntaxVector& tlv) const
-{
-    const std::string margin (indent, ' ');
-
-    // Filter invalid tables
-
-    if (!_is_valid) {
-        return strm;
-    }
-
-    // Compute total size of table
-
-    size_t total_size (0);
-    for (size_t i = 0; i < _sections.size(); ++i) {
-        total_size += _sections[i]->size();
-    }
-
-    // Display common header lines.
-    // If PID is the null PID, this means "unknown PID"
-
-    strm << margin << "* " << names::TID (_tid, cas)
-         << ", TID " << int (_tid)
-         << Format (" (0x%02X)", int (_tid));
-    if (_source_pid != PID_NULL) {
-        strm << ", PID " << _source_pid << Format (" (0x%04X)", int (_source_pid));
-    }
-    strm << std::endl
-         << margin << "  Version: " << int (_version)
-         << ", sections: " << _sections.size()
-         << ", total size: " << total_size << " bytes" << std::endl;
-
-    // Loop across all sections
-
-    for (size_t i = 0; i < _sections.size(); ++i) {
-        strm << margin << "  - Section " << i << ":" << std::endl;
-        _sections[i]->display (strm, indent + 4, cas, true, tlv);
-    }
-
-    return strm;
+    //!
+    //! Perform a bounded subtraction without overflow.
+    //! @tparam INT An integer type, any size, signed or unsigned.
+    //! @param [in] a First integer.
+    //! @param [in] b Second integer.
+    //! @return The value @a a - @a b. The value is @e bounded, in
+    //! case of underflow or overflow, the result is the min or max
+    //! value of the type, respectively.
+    //!
+    template <typename INT>
+    INT BoundedSub(INT a, INT b);
 }
+
+#include "tsIntegerUtilsTemplate.h"

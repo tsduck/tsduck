@@ -186,6 +186,22 @@ void ts::TablesLoggerOptions::setHelp(const std::string& help)
         "  --time-stamp\n"
         "      Display a time stamp (current local time) with each table.\n"
         "\n"
+        "  --tlv syntax\n"
+        "      For sections of unknown types, this option specifies how to interpret\n"
+        "      some parts of the section payload as TLV records. Several --tlv options\n"
+        "      are allowed, each one describes a part of the section payload.\n"
+        "\n"
+        "      Each syntax string has the form \"start,size,tagSize,lengthSize,order\".\n"
+        "      The start and size fields define the offset and size of the TLV area\n"
+        "      in the section payload. If the size field is \"auto\", the TLV extends up\n"
+        "      to the end of the section. If the start field is \"auto\", the longest\n"
+        "      TLV area in the section payload will be used. The fields tagSize and\n"
+        "      lengthSize indicate the size in bytes of the Tag and Length fields in\n"
+        "      the TLV structure. The field order must be either \"msb\" or \"lsb\" and\n"
+        "      indicates the byte order of the Tag and Length fields.\n"
+        "\n"
+        "      All fields are optional. The default values are \"auto,auto,1,1,msb\".\n"
+        "\n"
         "  --ttl value\n"
         "      With --ip-udp, specifies the TTL (Time-To-Live) socket option.\n"
         "      The actual option is either \"Unicast TTL\" or \"Multicast TTL\",\n"
@@ -267,6 +283,7 @@ ts::TablesLoggerOptions::TablesLoggerOptions(const std::string& description,
     option("tid",                 't', UINT8, 0, UNLIMITED_COUNT);
     option("tid-ext",             'e', UINT16, 0, UNLIMITED_COUNT);
     option("time-stamp",           0);
+    option("tlv",                  0,  STRING, 0, UNLIMITED_COUNT);
     option("ttl",                  0,  POSITIVE);
     option("ua",                  'u', POSITIVE, 0, UNLIMITED_COUNT);
     option("verbose",             'v');
@@ -294,6 +311,7 @@ void ts::TablesLoggerOptions::getOptions(Args& args)
     log_size = args.intValue<size_t>("log-size", DEFAULT_LOG_SIZE);
     negate_tid = args.present("negate-tid");
     negate_tidext = args.present("negate-tid-ext");
+    TLVSyntax::getArgs(tlvSyntax, *this, "tlv");
 
     if (args.present("verbose")) {
         args.setDebugLevel(Severity::Verbose);
