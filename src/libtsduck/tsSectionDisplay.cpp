@@ -497,9 +497,9 @@ std::ostream& ts::Section::display (std::ostream& strm, int indent, CASFamily ca
     // If PID is the null PID, this means "unknown PID"
 
     if (!no_header) {
-        strm << margin << "* " << names::TID(tid, cas) << ", TID " << tid << Format(" (0x%02X)", tid);
+        strm << margin << "* " << names::TID(tid, cas) << ", TID " << int(tid) << Format(" (0x%02X)", tid);
         if (_source_pid != PID_NULL) {
-            strm << ", PID " << _source_pid << Format(" (0x%04X)", int(_source_pid));
+            strm << ", PID " << int(_source_pid) << Format(" (0x%04X)", int(_source_pid));
         }
         strm << std::endl
              << margin << "  Section: " << int(sectionNumber())
