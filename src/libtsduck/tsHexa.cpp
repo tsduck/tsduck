@@ -35,7 +35,6 @@
 #include "tsFormat.h"
 
 
-
 //----------------------------------------------------------------------------
 // Build a string containing the hexa dump of (data, size).
 // Each line is indented by 'indent' space chars. The maximum amount
@@ -43,15 +42,15 @@
 // the first offset value to display is 'init_offset'.
 //----------------------------------------------------------------------------
 
-std::string ts::Hexa (const void *data,
-                        size_t size,
-                        uint32_t flags,
-                        size_t indent,
-                        size_t line_width,
-                        size_t init_offset)
+std::string ts::Hexa(const void *data,
+                     size_t size,
+                     uint32_t flags,
+                     size_t indent,
+                     size_t line_width,
+                     size_t init_offset)
 {
     std::string s;
-    AppendHexa (s, data, size, flags, indent, line_width, init_offset);
+    AppendHexa(s, data, size, flags, indent, line_width, init_offset);
     return s;
 }
 
@@ -60,14 +59,14 @@ std::string ts::Hexa (const void *data,
 // Same with a string
 //----------------------------------------------------------------------------
 
-std::string ts::Hexa (const std::string& str,
-                        uint32_t flags,
-                        size_t indent,
-                        size_t line_width,
-                        size_t init_offset)
+std::string ts::Hexa(const std::string& str,
+                     uint32_t flags,
+                     size_t indent,
+                     size_t line_width,
+                     size_t init_offset)
 {
     std::string s;
-    AppendHexa (s, str.c_str(), str.length(), flags, indent, line_width, init_offset);
+    AppendHexa(s, str.c_str(), str.length(), flags, indent, line_width, init_offset);
     return s;
 }
 
@@ -76,14 +75,14 @@ std::string ts::Hexa (const std::string& str,
 // Same with a ByteBlock
 //----------------------------------------------------------------------------
 
-std::string ts::Hexa (const ByteBlock& bb,
-                        uint32_t flags,
-                        size_t indent,
-                        size_t line_width,
-                        size_t init_offset)
+std::string ts::Hexa(const ByteBlock& bb,
+                     uint32_t flags,
+                     size_t indent,
+                     size_t line_width,
+                     size_t init_offset)
 {
     std::string s;
-    AppendHexa (s, bb.data(), bb.size(), flags, indent, line_width, init_offset);
+    AppendHexa(s, bb.data(), bb.size(), flags, indent, line_width, init_offset);
     return s;
 }
 
@@ -93,15 +92,15 @@ std::string ts::Hexa (const ByteBlock& bb,
 // Return a reference to the input string.
 //----------------------------------------------------------------------------
 
-std::string& ts::AppendHexa (std::string& str,
-                               const void *data,
-                               size_t size,
-                               uint32_t flags,
-                               size_t indent,
-                               size_t line_width,
-                               size_t init_offset)
+std::string& ts::AppendHexa(std::string& str,
+                            const void *data,
+                            size_t size,
+                            uint32_t flags,
+                            size_t indent,
+                            size_t line_width,
+                            size_t init_offset)
 {
-    const uint8_t* raw (static_cast <const uint8_t*> (data));
+    const uint8_t* raw(static_cast <const uint8_t*> (data));
 
     // Make sure we have something to display (default is hexa)
     if ((flags & (hexa::HEXA | hexa::C_STYLE | hexa::BINARY | hexa::BIN_NIBBLE | hexa::ASCII)) == 0) {

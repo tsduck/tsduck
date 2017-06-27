@@ -186,6 +186,8 @@ HEADERS += \
     ../../../src/libtsduck/tsStaticInstance.h \
     ../../../src/libtsduck/tsSTDDescriptor.h \
     ../../../src/libtsduck/tsStreamIdentifierDescriptor.h \
+    ../../../src/libtsduck/tsIntegerUtils.h \
+    ../../../src/libtsduck/tsIntegerUtilsTemplate.h \
     ../../../src/libtsduck/tsStringUtils.h \
     ../../../src/libtsduck/tsStringUtilsTemplate.h \
     ../../../src/libtsduck/tsSystemMonitor.h \

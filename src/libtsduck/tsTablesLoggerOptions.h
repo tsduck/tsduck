@@ -36,6 +36,7 @@
 #include "tsArgs.h"
 #include "tsMPEG.h"
 #include "tsCASFamily.h"
+#include "tsTLVSyntax.h"
 
 namespace ts {
     //!
@@ -90,6 +91,7 @@ namespace ts {
         std::set<uint16_t> tidext;    //!< TID-ext values to filter.
         std::set<uint32_t> emm_group; //!< Shared EMM group numbers to filter.
         std::set<uint32_t> emm_ua;    //!< Individual EMM unique addresses to filter.
+        TLVSyntaxVector    tlvSyntax; //!< TLV syntax to apply to unknown sections.
 
         //!
         //! Default table log size.

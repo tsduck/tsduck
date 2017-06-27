@@ -34,6 +34,7 @@
 
 #pragma once
 #include "tsSection.h"
+#include "tsTLVSyntax.h"
 
 namespace ts {
     //!
@@ -245,9 +246,10 @@ namespace ts {
         //! @param [in,out] strm Output stream (text output).
         //! @param [in] indent Indentation width.
         //! @param [in] cas CAS family of the table. Used to interpret CAS-specific fields.
+        //! @param [in] tlv A set of TLV syntax to display for sections of unknown type.
         //! @return A reference to @a strm.
         //!
-        std::ostream& display(std::ostream& strm, int indent = 0, CASFamily cas = CAS_OTHER) const;
+        std::ostream& display(std::ostream& strm, int indent = 0, CASFamily cas = CAS_OTHER, const TLVSyntaxVector& tlv = TLVSyntaxVector()) const;
 
         //!
         //! Write the binary table on a standard stream.
