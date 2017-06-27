@@ -35,7 +35,6 @@
 #include "tsException.h"
 #include "tsHexa.h"
 
-
 #if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
 const size_t ts::TablesLoggerOptions::DEFAULT_LOG_SIZE;
 #endif
@@ -244,7 +243,7 @@ ts::TablesLoggerOptions::TablesLoggerOptions(const std::string& description,
 {
     setHelp(help);
 
-    option("all-sections"     ,   'a');
+    option("all-sections",        'a');
     option("binary-output",       'b', STRING);
     option("c-style",             'c');
     option("diversified-payload", 'd');
@@ -254,7 +253,6 @@ ts::TablesLoggerOptions::TablesLoggerOptions(const std::string& description,
     option("local-udp",            0,  STRING);
     option("log",                  0);
     option("log-size",             0,  UNSIGNED);
-    option("logiways",            'l');  // legacy
     option("max-tables",          'x', POSITIVE);
     option("multiple-files",      'm');
     option("negate-pid",           0);
@@ -290,7 +288,7 @@ void ts::TablesLoggerOptions::getOptions(Args& args)
     max_tables = args.intValue<uint32_t>("max-tables", 0);
     time_stamp = args.present("time-stamp");
     packet_index = args.present("packet-index");
-    cas = args.present("safeaccess") || args.present("logiways") ? CAS_SAFEACCESS : CAS_OTHER;
+    cas = args.present("safeaccess") ? CAS_SAFEACCESS : CAS_OTHER;
     diversified = args.present("diversified-payload");
     logger = args.present("log");
     log_size = args.intValue<size_t>("log-size", DEFAULT_LOG_SIZE);

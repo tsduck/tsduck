@@ -36,14 +36,11 @@
 #include "tsTablesLogger.h"
 
 
-using namespace ts;
-
-
 //----------------------------------------------------------------------------
 //  Command line options
 //----------------------------------------------------------------------------
 
-struct Options: public TablesLoggerOptions
+struct Options: public ts::TablesLoggerOptions
 {
     Options(int argc, char *argv[]);
 
@@ -51,18 +48,18 @@ struct Options: public TablesLoggerOptions
 };
 
 Options::Options(int argc, char *argv[]) :
-    TablesLoggerOptions("MPEG Transport Stream PSI/SI Tables Collector.", "[options] [filename]"),
+    ts::TablesLoggerOptions("MPEG Transport Stream PSI/SI Tables Collector.", "[options] [filename]"),
     infile()
 {
-    option ("", 0, STRING, 0, 1);
+    option("", 0, STRING, 0, 1);
 
-    setHelp ("Input file:\n"
-             "\n"
-             "  MPEG capture file (standard input if omitted).\n"
-             "\n");
+    setHelp("Input file:\n"
+            "\n"
+            "  MPEG capture file (standard input if omitted).\n"
+            "\n");
 
-    analyze (argc, argv);
-    infile = value ("");
+    analyze(argc, argv);
+    infile = value("");
 }
 
 
@@ -74,21 +71,21 @@ int main (int argc, char *argv[])
 {
     Options opt (argc, argv);
     // IP initialization required when using UDP
-    if (opt.mode == TablesLoggerOptions::UDP && !IPInitialize()) {
+    if (opt.mode == ts::TablesLoggerOptions::UDP && !ts::IPInitialize()) {
         return EXIT_FAILURE;
     }
-    InputRedirector input (opt.infile, opt);
-    TablesLogger logger (opt);
-    TSPacket pkt;
+    ts::InputRedirector input(opt.infile, opt);
+    ts::TablesLogger logger(opt);
+    ts::TSPacket pkt;
 
     // Read all packets in the file and pass them to the logger
-    while (!logger.completed() && pkt.read (std::cin, true, opt)) {
-        logger.feedPacket (pkt);
+    while (!logger.completed() && pkt.read(std::cin, true, opt)) {
+        logger.feedPacket(pkt);
     }
 
     // Report errors
     if (opt.verbose() && !logger.hasErrors()) {
-        logger.reportDemuxErrors (std::cerr);
+        logger.reportDemuxErrors(std::cerr);
     }
 
     return logger.hasErrors() ? EXIT_FAILURE : EXIT_SUCCESS;
