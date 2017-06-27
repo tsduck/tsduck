@@ -26,48 +26,9 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//!
-//!  @file
-//!  Base class for DVB SimulCrypt TLV messages operating on channels.
-//!
+//
+//  Representation of a Tag, Length, Value (TVL) syntax.
+//
 //----------------------------------------------------------------------------
 
-#pragma once
-#include "tsTLVMessage.h"
-
-namespace ts {
-    namespace tlv {
-        //!
-        //! Base class for DVB SimulCrypt TLV messages operating on channels.
-        //!
-        class TSDUCKDLL ChannelMessage : public Message
-        {
-        public:
-            // Protocol-documented fields:
-            uint16_t channel_id;  //!< Channel id.
-
-            //!
-            //! Constructor.
-            //! @param [in] tag Message tag.
-            //! @param [in] ch_id Channel id.
-            //!
-            ChannelMessage(TAG tag, uint16_t ch_id = 0) :
-                Message(tag),
-                channel_id(ch_id)
-            {
-            }
-
-            //!
-            //! Constructor.
-            //! @param [in] protocol_version Protocol version.
-            //! @param [in] tag Message tag.
-            //! @param [in] ch_id Channel id.
-            //!
-            ChannelMessage(VERSION protocol_version, TAG tag, uint16_t ch_id = 0) :
-                Message(protocol_version, tag),
-                channel_id(ch_id)
-            {
-            }
-        };
-    }
-}
+#include "tsTLVSyntax.h"

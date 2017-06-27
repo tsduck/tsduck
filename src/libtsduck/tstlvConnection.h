@@ -34,9 +34,9 @@
 
 #pragma once
 #include "tsTCPConnection.h"
-#include "tsTLVProtocol.h"
+#include "tstlvProtocol.h"
 #include "tsMutex.h"
-#include "tsTLVMessage.h"
+#include "tstlvMessage.h"
 
 namespace ts {
     namespace tlv {
@@ -139,4 +139,4 @@ namespace ts {
     }
 }
 
-#include "tsTLVConnectionTemplate.h"
+#include "tstlvConnectionTemplate.h"

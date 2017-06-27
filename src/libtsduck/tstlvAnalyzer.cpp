@@ -27,71 +27,72 @@
 //
 //----------------------------------------------------------------------------
 //
-//  Abstract base class for TLV messages
+//  Analysis (deserialization) of TLV messages.
 //
 //----------------------------------------------------------------------------
 
-#include "tsTLVMessage.h"
-#include "tsHexa.h"
-#include "tsFormat.h"
+#include "tstlvAnalyzer.h"
 
 
 
 //----------------------------------------------------------------------------
-// Serialize a message.
+// Constructor: associate the analyzer object with the address
+// and size of the binary message. The corresponding memory area
+// must remain alive as long as the object exists.
+// Also pre-analyze the first TLV field.
 //----------------------------------------------------------------------------
 
-void ts::tlv::Message::serialize(Serializer& zer) const
+ts::tlv::Analyzer::Analyzer (const void* addr, size_t size) :
+    _base       (static_cast<const char*> (addr)),
+    _end        (_base + size),
+    _eom        (size == 0),
+    _valid      (true),
+    _tlv_addr   (_base),
+    _tlv_size   (0),
+    _tag        (0),
+    _value_addr (_base),
+    _length     (0)
 {
-    // Insert the version if the message has one (depends on the protocol)
-    if (_has_version) {
-        zer.putInt8(_version);
+    next();
+}
+
+
+//----------------------------------------------------------------------------
+//  This method analyzes the next TLV field in the stream
+//----------------------------------------------------------------------------
+
+void ts::tlv::Analyzer::next ()
+{
+    // Don't change if already at end of message or structure error found
+    if (_eom || !_valid) {
+        return;
     }
 
-    // Open a nested factory to avoid breaking open TLV
-    Serializer pzer(zer);
-    pzer.openTLV(_tag);
-    serializeParameters(pzer);
-    pzer.closeTLV();
-}
+    // Compute address of next TLV
+    _tlv_addr = _value_addr + _length;
 
-
-//----------------------------------------------------------------------------
-// Dump routine. Create a string representing the message content.
-// The implementation in the base class dumps the common fields.
-// Can be used by subclasses.
-//----------------------------------------------------------------------------
-
-std::string ts::tlv::Message::dump(size_t indent) const
-{
-    return dumpOptionalHexa(indent, "protocol_version", _has_version, _version) +
-        dumpHexa(indent, "message_type", _tag);
-}
-
-
-//----------------------------------------------------------------------------
-// Helper routine for dump routines in subclasses
-//----------------------------------------------------------------------------
-
-std::string ts::tlv::Message::dumpOptional(size_t indent, const char* name, bool has_value, const ByteBlock& bl, uint32_t flags)
-{
-    return !has_value ? "" :
-        Format("%*s%s (%" FMT_SIZE_T "d bytes) = ", int(indent), "", name, bl.size()) +
-        ((flags & hexa::SINGLE_LINE) ? "" : "\n") +
-        Hexa(bl.data(), bl.size(), flags, indent + 4) +
-        ((flags & hexa::SINGLE_LINE) ? "\n" : "");
-}
-
-
-//----------------------------------------------------------------------------
-// Helper routine for dump routines in subclasses
-//----------------------------------------------------------------------------
-
-std::string ts::tlv::Message::dumpVector(size_t indent, const char* name, const std::vector<std::string>& val)
-{
-    std::string s;
-    for (std::vector<std::string>::const_iterator it = val.begin(); it != val.end(); ++it) {
-        s += Format("%*s%s = \"%s\"\n", int(indent), "", name, it->c_str());
+    // Detect end of message
+    if (_tlv_addr == _end) {
+        _eom = true;
+        return;
     }
-    return s;
+
+    // Check if there is enough space for tag and length fields
+    if (_tlv_addr + sizeof(TAG) + sizeof(LENGTH) > _end) {
+        _eom = true;
+        _valid = false;
+        return;
+    }
+
+    // Get tag, length and value
+    _tag = GetUInt16 (_tlv_addr);
+    _length = GetUInt16 (_tlv_addr + sizeof(TAG));
+    _value_addr = _tlv_addr + sizeof(TAG) + sizeof(LENGTH);
+    _tlv_size = _value_addr + _length - _tlv_addr;
+
+    // Check that the value fit in the message
+    if (_value_addr + _length > _end) {
+        _eom = true;
+        _valid = false;
+    }
 }

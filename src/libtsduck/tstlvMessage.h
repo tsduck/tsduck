@@ -33,7 +33,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsTLVSerializer.h"
+#include "tstlvSerializer.h"
 #include "tsHexa.h"
 #include "tsFormat.h"
 #include "tsSafePtr.h"

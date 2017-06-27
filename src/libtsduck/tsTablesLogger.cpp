@@ -33,7 +33,7 @@
 
 #include "tsTablesLogger.h"
 #include "tsPAT.h"
-#include "tsTLV.h"
+#include "tstlv.h"
 #include "tsTime.h"
 #include "tsSimulCryptDate.h"
 #include "tsFormat.h"

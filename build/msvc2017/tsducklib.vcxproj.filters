@@ -610,37 +610,40 @@
     <ClInclude Include="..\..\src\libtsduck\tsduck.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\libtsduck\tsTLV.h">
+    <ClInclude Include="..\..\src\libtsduck\tstlv.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\libtsduck\tsTLVAnalyzer.h">
+    <ClInclude Include="..\..\src\libtsduck\tstlvAnalyzer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\libtsduck\tsTLVChannelMessage.h">
+    <ClInclude Include="..\..\src\libtsduck\tstlvChannelMessage.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\libtsduck\tsTLVConnection.h">
+    <ClInclude Include="..\..\src\libtsduck\tstlvConnection.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\libtsduck\tsTLVConnectionTemplate.h">
+    <ClInclude Include="..\..\src\libtsduck\tstlvConnectionTemplate.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\libtsduck\tsTLVMessage.h">
+    <ClInclude Include="..\..\src\libtsduck\tstlvMessage.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\libtsduck\tsTLVMessageFactory.h">
+    <ClInclude Include="..\..\src\libtsduck\tstlvMessageFactory.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\libtsduck\tsTLVMessageFactoryTemplate.h">
+    <ClInclude Include="..\..\src\libtsduck\tstlvMessageFactoryTemplate.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\libtsduck\tsTLVProtocol.h">
+    <ClInclude Include="..\..\src\libtsduck\tstlvProtocol.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\libtsduck\tsTLVSerializer.h">
+    <ClInclude Include="..\..\src\libtsduck\tstlvSerializer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\libtsduck\tsTLVStreamMessage.h">
+    <ClInclude Include="..\..\src\libtsduck\tstlvStreamMessage.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\libtsduck\tsTLVSyntax.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\libtsduck\tsToInteger.h">
@@ -1167,16 +1170,19 @@
     <ClCompile Include="..\..\src\libtsduck\tsTime.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\libtsduck\tsTLVAnalyzer.cpp">
+    <ClCompile Include="..\..\src\libtsduck\tstlvAnalyzer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\libtsduck\tsTLVMessage.cpp">
+    <ClCompile Include="..\..\src\libtsduck\tstlvMessage.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\libtsduck\tsTLVMessageFactory.cpp">
+    <ClCompile Include="..\..\src\libtsduck\tstlvMessageFactory.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\libtsduck\tsTLVSerializer.cpp">
+    <ClCompile Include="..\..\src\libtsduck\tstlvSerializer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\libtsduck\tsTLVSyntax.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\libtsduck\tsToInteger.cpp">

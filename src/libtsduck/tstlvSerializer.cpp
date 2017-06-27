@@ -31,7 +31,7 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsTLVSerializer.h"
+#include "tstlvSerializer.h"
 #include "tsFormat.h"
 #include "tsHexa.h"
 

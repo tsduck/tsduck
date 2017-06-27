@@ -33,7 +33,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsTLVMessage.h"
+#include "tstlvMessage.h"
 
 namespace ts {
     namespace tlv {

@@ -33,8 +33,8 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsTLVProtocol.h"
-#include "tsTLVStreamMessage.h"
+#include "tstlvProtocol.h"
+#include "tstlvStreamMessage.h"
 #include "tsSingletonManager.h"
 #include "tsMPEG.h"
 

@@ -32,7 +32,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsECMGSCS.h"
-#include "tsTLVMessageFactory.h"
+#include "tstlvMessageFactory.h"
 #include "tsMPEG.h"
 
 

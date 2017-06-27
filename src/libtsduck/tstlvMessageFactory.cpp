@@ -31,8 +31,8 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsTLVMessageFactory.h"
-#include "tsTLVAnalyzer.h"
+#include "tstlvMessageFactory.h"
+#include "tstlvAnalyzer.h"
 #include "tsFormat.h"
 
 

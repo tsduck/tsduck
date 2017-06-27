@@ -35,7 +35,7 @@
 #include "tsPlugin.h"
 #include "tsOneShotPacketizer.h"
 #include "tsEMMGMUX.h"
-#include "tsTLVConnection.h"
+#include "tstlvConnection.h"
 #include "tsTCPServer.h"
 #include "tsDecimal.h"
 #include "tsMessageQueue.h"
