@@ -37,7 +37,7 @@
 
 #pragma once
 #include "tsECMGClientHandlerInterface.h"
-#include "tsTLVConnection.h"
+#include "tstlvConnection.h"
 #include "tsMessageQueue.h"
 #include "tsCondition.h"
 #include "tsMutex.h"

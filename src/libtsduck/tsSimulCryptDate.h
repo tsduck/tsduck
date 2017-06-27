@@ -34,8 +34,8 @@
 
 #pragma once
 #include "tsTime.h"
-#include "tsTLVSerializer.h"
-#include "tsTLVMessageFactory.h"
+#include "tstlvSerializer.h"
+#include "tstlvMessageFactory.h"
 #include "tsMemoryUtils.h"
 
 namespace ts {

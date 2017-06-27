@@ -33,7 +33,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsTLVProtocol.h"
+#include "tstlvProtocol.h"
 
 namespace ts {
     namespace tlv {
@@ -366,4 +366,4 @@ namespace ts {
     }
 }
 
-#include "tsTLVMessageFactoryTemplate.h"
+#include "tstlvMessageFactoryTemplate.h"

@@ -206,17 +206,18 @@ HEADERS += \
     ../../../src/libtsduck/tsThread.h \
     ../../../src/libtsduck/tsThreadAttributes.h \
     ../../../src/libtsduck/tsTime.h \
-    ../../../src/libtsduck/tsTLV.h \
-    ../../../src/libtsduck/tsTLVAnalyzer.h \
-    ../../../src/libtsduck/tsTLVChannelMessage.h \
-    ../../../src/libtsduck/tsTLVConnection.h \
-    ../../../src/libtsduck/tsTLVConnectionTemplate.h \
-    ../../../src/libtsduck/tsTLVMessage.h \
-    ../../../src/libtsduck/tsTLVMessageFactory.h \
-    ../../../src/libtsduck/tsTLVMessageFactoryTemplate.h \
-    ../../../src/libtsduck/tsTLVProtocol.h \
-    ../../../src/libtsduck/tsTLVSerializer.h \
-    ../../../src/libtsduck/tsTLVStreamMessage.h \
+    ../../../src/libtsduck/tstlv.h \
+    ../../../src/libtsduck/tstlvAnalyzer.h \
+    ../../../src/libtsduck/tstlvChannelMessage.h \
+    ../../../src/libtsduck/tstlvConnection.h \
+    ../../../src/libtsduck/tstlvConnectionTemplate.h \
+    ../../../src/libtsduck/tstlvMessage.h \
+    ../../../src/libtsduck/tstlvMessageFactory.h \
+    ../../../src/libtsduck/tstlvMessageFactoryTemplate.h \
+    ../../../src/libtsduck/tstlvProtocol.h \
+    ../../../src/libtsduck/tstlvSerializer.h \
+    ../../../src/libtsduck/tstlvStreamMessage.h \
+    ../../../src/libtsduck/tsTLVSyntax.h \
     ../../../src/libtsduck/tsToInteger.h \
     ../../../src/libtsduck/tsToIntegerTemplate.h \
     ../../../src/libtsduck/tsTOT.h \
@@ -386,10 +387,11 @@ SOURCES += \
     ../../../src/libtsduck/tsThread.cpp \
     ../../../src/libtsduck/tsThreadAttributes.cpp \
     ../../../src/libtsduck/tsTime.cpp \
-    ../../../src/libtsduck/tsTLVAnalyzer.cpp \
-    ../../../src/libtsduck/tsTLVMessage.cpp \
-    ../../../src/libtsduck/tsTLVMessageFactory.cpp \
-    ../../../src/libtsduck/tsTLVSerializer.cpp \
+    ../../../src/libtsduck/tstlvAnalyzer.cpp \
+    ../../../src/libtsduck/tstlvMessage.cpp \
+    ../../../src/libtsduck/tstlvMessageFactory.cpp \
+    ../../../src/libtsduck/tstlvSerializer.cpp \
+    ../../../src/libtsduck/tsTLVSyntax.cpp \
     ../../../src/libtsduck/tsToInteger.cpp \
     ../../../src/libtsduck/tsTOT.cpp \
     ../../../src/libtsduck/tsTSAnalyzer.cpp \
