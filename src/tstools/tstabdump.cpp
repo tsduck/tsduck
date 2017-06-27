@@ -37,27 +37,24 @@
 #include "tsSysUtils.h"
 
 
-using namespace ts;
-
-
 //----------------------------------------------------------------------------
 //  Command line options
 //----------------------------------------------------------------------------
 
-struct Options: public Args
+struct Options: public ts::Args
 {
     Options(int argc, char *argv[]);
 
-    bool         verbose;   // Verbose output
-    StringVector infiles;   // Input file names
+    bool             verbose;   // Verbose output
+    ts::StringVector infiles;   // Input file names
 };
 
 Options::Options(int argc, char *argv[]) :
-    Args("Dump PSI/SI tables, as saved by tstables.", "[options] [filename ...]"),
+    ts::Args("Dump PSI/SI tables, as saved by tstables.", "[options] [filename ...]"),
     verbose(false),
     infiles()
 {
-    option("",         0,  Args::STRING);
+    option("",         0, ts::Args::STRING);
     option("verbose", 'v');
 
     setHelp("Input file:\n"
@@ -90,29 +87,27 @@ Options::Options(int argc, char *argv[]) :
 bool DumpFile(Options& opt, const std::string& file_name)
 {
     // Report file name in case of multiple files
-
     if (opt.verbose && opt.infiles.size() > 1) {
         std::cout << "* File: " << file_name << std::endl << std::endl;
     }
 
     // Load all sections
-
-    SectionPtrVector sections;
+    ts::SectionPtrVector sections;
     bool ok;
 
     if (opt.infiles.size() == 0) {
         // no input file specified, use standard input
         SetBinaryModeStdin(opt);
-        ok = Section::LoadFile(sections, std::cin, CRC32::IGNORE, opt);
+        ok = ts::Section::LoadFile(sections, std::cin, ts::CRC32::IGNORE, opt);
     }
     else {
-        ok = Section::LoadFile(sections, file_name, CRC32::IGNORE, opt);
+        ok = ts::Section::LoadFile(sections, file_name, ts::CRC32::IGNORE, opt);
     }
 
     if (ok) {
         // Display all sections
-        for (SectionPtrVector::const_iterator it = sections.begin(); it != sections.end(); ++it) {
-            (*it)->display(std::cout, 0, CAS_OTHER) << std::endl;
+        for (ts::SectionPtrVector::const_iterator it = sections.begin(); it != sections.end(); ++it) {
+            (*it)->display(std::cout, 0, ts::CAS_OTHER) << std::endl;
         }
     }
 
@@ -135,7 +130,7 @@ int main(int argc, char *argv[])
         ok = DumpFile(opt, "");
     }
     else {
-        for (StringVector::const_iterator it = opt.infiles.begin(); it != opt.infiles.end(); ++it) {
+        for (ts::StringVector::const_iterator it = opt.infiles.begin(); it != opt.infiles.end(); ++it) {
             ok = DumpFile(opt, *it) && ok;
         }
     }
