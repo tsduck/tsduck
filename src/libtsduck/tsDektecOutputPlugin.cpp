@@ -44,7 +44,7 @@
 #include "tsTunerParametersATSC.h"
 #include "tsModulation.h"
 #include "tsDecimal.h"
-#include "tsRound.h"
+#include "tsIntegerUtils.h"
 #include "tsFormat.h"
 
 

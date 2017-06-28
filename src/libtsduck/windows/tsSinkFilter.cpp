@@ -41,7 +41,7 @@
 #include "tsTime.h"
 #include "tsGuard.h"
 #include "tsGuardCondition.h"
-#include "tsRound.h"
+#include "tsIntegerUtils.h"
 #include "tsDecimal.h"
 #include "tsHexa.h"
 

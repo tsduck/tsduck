@@ -159,7 +159,6 @@ HEADERS += \
     ../../../src/libtsduck/tsResidentBuffer.h \
     ../../../src/libtsduck/tsResidentBufferTemplate.h \
     ../../../src/libtsduck/tsRingNode.h \
-    ../../../src/libtsduck/tsRound.h \
     ../../../src/libtsduck/tsSafePtr.h \
     ../../../src/libtsduck/tsSafePtrTemplate.h \
     ../../../src/libtsduck/tsScrambling.h \
@@ -315,6 +314,7 @@ SOURCES += \
     ../../../src/libtsduck/tsHDSimulcastLogicalChannelDescriptor.cpp \
     ../../../src/libtsduck/tsHexa.cpp \
     ../../../src/libtsduck/tsInputRedirector.cpp \
+    ../../../src/libtsduck/tsIntegerUtils.cpp \
     ../../../src/libtsduck/tsIPAddress.cpp \
     ../../../src/libtsduck/tsIPUtils.cpp \
     ../../../src/libtsduck/tsISO639LanguageDescriptor.cpp \

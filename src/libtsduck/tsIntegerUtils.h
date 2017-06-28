@@ -59,6 +59,48 @@ namespace ts {
     //!
     template <typename INT>
     INT BoundedSub(INT a, INT b);
+
+    //!
+    //! Round @a x down to previous multiple of a factor @a f.
+    //! @tparam INT An integer type.
+    //! @param [in] x An integer value.
+    //! @param [in] f A factor.
+    //! @return The value @a x rounded down to previous multiple of @a f.
+    //!
+    template<typename INT>
+    inline INT RoundDown(INT x, INT f)
+    {
+        return x - x % f;
+    }
+
+    //!
+    //! Round @a x up to next multiple of a factor @a f.
+    //! @tparam INT An integer type.
+    //! @param [in] x An integer value.
+    //! @param [in] f A factor.
+    //! @return The value @a x rounded up to next multiple of @a f.
+    //!
+    template<typename INT>
+    inline INT RoundUp(INT x, INT f)
+    {
+        return RoundDown(x + f - 1, f);
+    }
+
+    //!
+    //! Compute the maximum width of the decimal representation of an integer type.
+    //! @param [in] typeSize Size of the integer type in bytes (result of @c sizeof).
+    //! @param [in] digitSeparatorSize Size in characters of the digit-grouping separator.
+    //! @return The maximum width in characters.
+    //!
+    size_t MaxDecimalWidth(size_t typeSize, size_t digitSeparatorSize = 0);
+
+    //!
+    //! Compute the maximum width of the hexadecimal representation of an integer type.
+    //! @param [in] typeSize Size of the integer type in bytes (result of @c sizeof).
+    //! @param [in] digitSeparatorSize Size in characters of the digit-grouping separator.
+    //! @return The maximum width in characters.
+    //!
+    size_t MaxHexaWidth(size_t typeSize, size_t digitSeparatorSize = 0);
 }
 
 #include "tsIntegerUtilsTemplate.h"

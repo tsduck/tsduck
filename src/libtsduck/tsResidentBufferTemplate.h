@@ -33,7 +33,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsRound.h"
+#include "tsIntegerUtils.h"
 #include "tsSysUtils.h"
 #include "tsFatal.h"
 

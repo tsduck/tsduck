@@ -175,7 +175,7 @@ bool ts::TLVSyntax::locateTLV(const uint8_t* data, size_t dataSize, size_t& tlvS
     else {
         // Auto start index, need to find the best matching TLV area.
         for (size_t index = 0; index < dataSize - tlvSize; index++) {
-            const size_t size = longestTLV(data, dataSize, tlvStart);
+            const size_t size = longestTLV(data, dataSize, index);
             if (size > tlvSize) {
                 // Found a longer match.
                 tlvStart = index;
