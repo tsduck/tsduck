@@ -28,11 +28,11 @@
 //----------------------------------------------------------------------------
 
 template <typename INT>
-std::string ts::Decimal (const INT& value,
-                           size_t min_width,
-                           bool right_justified,
-                           const char* separator,
-                           bool force_sign)
+std::string ts::Decimal(const INT& value,
+                        size_t min_width,
+                        bool right_justified,
+                        const char* separator,
+                        bool force_sign)
 {
     // We build the result string in s IN REVERSE ORDER
     std::string s;
@@ -45,7 +45,7 @@ std::string ts::Decimal (const INT& value,
     // If the value is negative, format the absolute value.
     // The test "value != 0 && value < 1" means "value < 0"
     // but avoid GCC warning when the type is unsigned.
-    bool negative (value != 0 && value < 1);
+    bool negative(value != 0 && value < 1);
 
     INT ivalue;
     if (negative) {
@@ -68,12 +68,12 @@ std::string ts::Decimal (const INT& value,
 
     // Format the value
     if (ivalue == 0) {
-        s.push_back ('0');
+        s.push_back('0');
     }
     else {
-        int count (0);
+        int count(0);
         while (ivalue != 0) {
-            s.push_back ('0' + int (ivalue % 10));
+            s.push_back('0' + int(ivalue % 10));
             ivalue = ivalue / 10;
             if (++count % 3 == 0 && ivalue != 0) {
                 s += sep;
@@ -81,23 +81,23 @@ std::string ts::Decimal (const INT& value,
         }
     }
     if (negative) {
-        s.push_back ('-');
+        s.push_back('-');
     }
     else if (force_sign) {
-        s.push_back ('+');
+        s.push_back('+');
     }
 
     // Reverse characters in string
-    std::reverse (s.begin(), s.end());
+    std::reverse(s.begin(), s.end());
 
     // Return the formatted result
     if (s.size() >= min_width) {
         return s;
     }
     else if (right_justified) {
-        return std::string (min_width - s.size(), ' ') + s;
+        return std::string(min_width - s.size(), ' ') + s;
     }
     else {
-        return s + std::string (min_width - s.size(), ' ');
+        return s + std::string(min_width - s.size(), ' ');
     }
 }

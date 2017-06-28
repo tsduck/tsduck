@@ -31,7 +31,7 @@
 #include "tsGuard.h"
 #include "tsSysUtils.h"
 #include "tsFormat.h"
-#include "tsRound.h"
+#include "tsIntegerUtils.h"
 
 
 //----------------------------------------------------------------------------

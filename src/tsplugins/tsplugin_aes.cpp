@@ -38,7 +38,7 @@
 #include "tsCyclingPacketizer.h"
 #include "tsDecimal.h"
 #include "tsHexa.h"
-#include "tsRound.h"
+#include "tsIntegerUtils.h"
 #include "tsPAT.h"
 #include "tsPMT.h"
 #include "tsSDT.h"

@@ -34,6 +34,7 @@
 #include "tsSection.h"
 #include "tsDescriptor.h"
 #include "tsStringUtils.h"
+#include "tsIntegerUtils.h"
 #include "tsFormat.h"
 #include "tsDecimal.h"
 #include "tsNames.h"
@@ -71,7 +72,7 @@ namespace {
 //----------------------------------------------------------------------------
 
 namespace {
-    void DisplayUnkownSection (std::ostream& strm, const ts::Section& section, int indent, const ts::TLVSyntaxVector& tlv)
+    void DisplayUnkownSection(std::ostream& strm, const ts::Section& section, int indent, const ts::TLVSyntaxVector& tlv)
     {
         const std::string margin(indent, ' ');
 
@@ -87,13 +88,18 @@ namespace {
         const uint8_t* const payload = section.payload();
         const size_t payloadSize = section.payloadSize();
         size_t index = 0;
+
         for (ts::TLVSyntaxVector::const_iterator it = tlv.begin(); it != tlv.end() && index < payloadSize; ++it) {
+
             size_t start = 0;
             size_t size = 0;
+
             if (it->locateTLV(payload, payloadSize, start, size) && start >= index && size > 0) {
+
                 // Display binary data preceding TLV.
                 strm << ts::Hexa(payload + index, start - index, ts::hexa::HEXA | ts::hexa::ASCII | ts::hexa::OFFSET, indent, ts::hexa::DEFAULT_LINE_WIDTH, index);
                 index = start;
+
                 // Display TLV fields.
                 while (index < start + size && index < payloadSize) {
                     uint32_t tag = 0;
@@ -102,17 +108,30 @@ namespace {
                     if (header == 0 || index + header + length > payloadSize) {
                         break;
                     }
-                    strm << margin << "Tag: " << tag << ts::Format(" (0x%0*X)", int(it->getTagSize()), int(tag)) << ", length: " << length << " bytes, value: ";
-                    if (length < 8) {
+                    strm << margin
+                         << ts::Format("%04X:  Tag: %*u (0x%0*X), length: %*u bytes, value: ",
+                                       int(index),
+                                       int(ts::MaxDecimalWidth(it->getTagSize())), int(tag),
+                                       int(ts::MaxHexaWidth(it->getTagSize())), int(tag),
+                                       int(ts::MaxDecimalWidth(it->getLengthSize())), int(length));
+                    if (length <= 8) {
+                        // If value is short, display it on the same line.
                         strm << ts::Hexa(payload + index + header, length, ts::hexa::HEXA | ts::hexa::SINGLE_LINE) << std::endl;
                     }
                     else {
-                        strm << std::endl << ts::Hexa(payload + index + header, length, ts::hexa::HEXA | ts::hexa::BPL, indent + 5, 16);
+                        strm << std::endl
+                             << ts::Hexa(payload + index + header, length, ts::hexa::HEXA | ts::hexa::ASCII | ts::hexa::OFFSET, indent, ts::hexa::DEFAULT_LINE_WIDTH, index + header);
                     }
                     index += header + length;
                 }
+
+                // Display a separator after TLV area.
+                if (index < payloadSize) {
+                    strm << margin << ts::Format("%04X:  End of TLV area", int(index)) << std::endl;
+                }
             }
         }
+
         // Display remaining binary data.
         strm << ts::Hexa(payload + index, payloadSize - index, ts::hexa::HEXA | ts::hexa::ASCII | ts::hexa::OFFSET, indent, ts::hexa::DEFAULT_LINE_WIDTH, index);
     }

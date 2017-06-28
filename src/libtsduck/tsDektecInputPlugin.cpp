@@ -39,7 +39,7 @@
 #include "tsDektecVPD.h"
 #include "tsFormat.h"
 #include "tsDecimal.h"
-#include "tsRound.h"
+#include "tsIntegerUtils.h"
 #include "tsFatal.h"
 
 
