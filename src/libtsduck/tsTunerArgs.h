@@ -107,21 +107,19 @@ namespace ts {
         //!
         //! Define command line options in an Args.
         //! @param [in,out] args Command line arguments to update.
-        //! If false, disable them, possibly to avoid interferences with other options.
         //!
         void defineOptions(Args& args) const;
 
         //!
         //! Add help about command line options in an Args.
         //! @param [in,out] args Command line arguments to update.
-        //! If false, disable them, possibly to avoid interferences with other options.
         //!
         void addHelp(Args& args) const;
 
         //!
         //! Load arguments from command line.
-        //! @param [in,out] args Command line arguments.
         //! Args error indicator is set in case of incorrect arguments.
+        //! @param [in,out] args Command line arguments.
         //!
         void load(Args& args);
 

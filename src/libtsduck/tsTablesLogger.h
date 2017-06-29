@@ -33,10 +33,10 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsMPEG.h"
+#include "tsTablesDisplay.h"
 #include "tsTSPacket.h"
 #include "tsSectionDemux.h"
-#include "tsTablesLoggerOptions.h"
+#include "tsTablesLoggerArgs.h"
 #include "tsSocketAddress.h"
 #include "tsUDPSocket.h"
 
@@ -44,14 +44,18 @@ namespace ts {
     //!
     //! This class logs sections and tables.
     //!
-    class TSDUCKDLL TablesLogger : private TableHandlerInterface, private SectionHandlerInterface
+    class TSDUCKDLL TablesLogger : 
+        private TablesDisplay,
+        private TableHandlerInterface,
+        private SectionHandlerInterface
     {
     public:
         //!
         //! Constructor.
         //! @param [in] options Table logging options.
+        //! @param [in,out] report Where to log errors.
         //!
-        TablesLogger(TablesLoggerOptions& options);
+        TablesLogger(const TablesLoggerArgs& options, ReportInterface& report);
 
         //!
         //! Destructor.
@@ -89,15 +93,16 @@ namespace ts {
         void reportDemuxErrors(std::ostream& strm);
 
     private:
-        TablesLoggerOptions& _opt;
-        bool                 _abort;
-        bool                 _exit;
-        uint32_t               _table_count;
-        PacketCounter        _packet_count;
-        SectionDemux         _demux;
-        std::ofstream        _outfile;
-        std::ostream&        _out;    // Output file
-        UDPSocket            _sock;   // Output socket
+        const TablesLoggerArgs& _opt;
+        ReportInterface& _report;
+        bool             _abort;
+        bool             _exit;
+        uint32_t         _table_count;
+        PacketCounter    _packet_count;
+        SectionDemux     _demux;
+        std::ofstream    _outfile;
+        std::ostream&    _out;    // Output file
+        UDPSocket        _sock;   // Output socket
 
         // Hooks
         virtual void handleTable(SectionDemux&, const BinaryTable&);
@@ -121,6 +126,12 @@ namespace ts {
 
         // Add a section into a TLV message
         void addSection(ByteBlock&, const Section&);
+
+    private:
+        // Inacessible operations.
+        TablesLogger() = delete;
+        TablesLogger(const TablesLogger&) = delete;
+        TablesLogger& operator=(const TablesLogger&) = delete;
     };
 
     //!

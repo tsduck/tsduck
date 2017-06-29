@@ -33,22 +33,26 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsTSPacket.h"
+#include "tsTablesDisplay.h"
 #include "tsSectionDemux.h"
-#include "tsPSILoggerOptions.h"
+#include "tsPSILoggerArgs.h"
 
 namespace ts {
     //!
     //! This class logs sections and tables.
     //!
-    class TSDUCKDLL PSILogger : private TableHandlerInterface, private SectionHandlerInterface
+    class TSDUCKDLL PSILogger :
+        private TablesDisplay,
+        private TableHandlerInterface,
+        private SectionHandlerInterface
     {
     public:
         //!
         //! Constructor.
         //! @param [in] options PSI logging options.
+        //! @param [in,out] report Where to log errors.
         //!
-        PSILogger(PSILoggerOptions& options);
+        PSILogger(PSILoggerArgs& options, ReportInterface& report);
 
         //!
         //! Destructor.
@@ -85,19 +89,20 @@ namespace ts {
         void reportDemuxErrors();
 
     private:
-        PSILoggerOptions& _opt;
-        bool              _abort;
-        bool              _pat_ok;        // Got a PAT
-        bool              _cat_ok;        // Got a CAT or not interested in CAT
-        bool              _sdt_ok;        // Got an SDT
-        bool              _bat_ok;        // Got an SDT
-        int               _expected_pmt;  // Expected PMT count
-        int               _received_pmt;  // Received PMT count
-        PacketCounter     _clear_packets_cnt;
-        PacketCounter     _scrambled_packets_cnt;
-        SectionDemux      _demux;
-        std::ofstream     _outfile;
-        std::ostream&     _out;           // Output file
+        const PSILoggerArgs& _opt;
+        ReportInterface& _report;
+        bool             _abort;
+        bool             _pat_ok;        // Got a PAT
+        bool             _cat_ok;        // Got a CAT or not interested in CAT
+        bool             _sdt_ok;        // Got an SDT
+        bool             _bat_ok;        // Got an SDT
+        int              _expected_pmt;  // Expected PMT count
+        int              _received_pmt;  // Received PMT count
+        PacketCounter    _clear_packets_cnt;
+        PacketCounter    _scrambled_packets_cnt;
+        SectionDemux     _demux;
+        std::ofstream    _outfile;
+        std::ostream&    _out;           // Output file
 
         // Hooks
         virtual void handleTable(SectionDemux&, const BinaryTable&);

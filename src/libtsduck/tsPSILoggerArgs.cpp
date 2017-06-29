@@ -31,19 +31,34 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsPSILoggerOptions.h"
+#include "tsPSILoggerArgs.h"
 #include "tsException.h"
 
 
-
 //----------------------------------------------------------------------------
-// Set help: application specific help + generic help
+// Constructor.
 //----------------------------------------------------------------------------
 
-void ts::PSILoggerOptions::setHelp (const std::string& help)
+ts::PSILoggerArgs::PSILoggerArgs() :
+    SuperClass(),
+    all_versions(false),
+    clear(false),
+    cat_only(false),
+    dump(false),
+    output()
 {
-    Args::setHelp (help +
-        "Options:\n"
+}
+
+
+//----------------------------------------------------------------------------
+// Add help about command line options in an Args
+//----------------------------------------------------------------------------
+
+void ts::PSILoggerArgs::addHelp(Args& args) const
+{
+    std::string help =
+        "\n"
+        "PSI logging options:\n"
         "\n"
         "  -a\n"
         "  --all-versions\n"
@@ -76,81 +91,45 @@ void ts::PSILoggerOptions::setHelp (const std::string& help)
         "      Produce verbose output.\n"
         "\n"
         "  --version\n"
-        "      Display the version number.\n");
+        "      Display the version number.\n";
+
+    args.setHelp(args.getHelp() + help);
+
+    // Let superclass add its own help.
+    SuperClass::addHelp(args);
 }
 
 
 //----------------------------------------------------------------------------
-// Constructor.
+// Define command line options in an Args.
 //----------------------------------------------------------------------------
 
-ts::PSILoggerOptions::PSILoggerOptions (const std::string& description,
-                                          const std::string& syntax,
-                                          const std::string& help,
-                                          int flags) :
-    Args (description, syntax, "", flags),
-    all_versions (false),
-    clear (false),
-    cat_only (false),
-    dump (false),
-    output ()
+void ts::PSILoggerArgs::defineOptions(Args& args) const
 {
-    setHelp (help);
+    args.option("all-versions", 'a');
+    args.option("cat-only",      0);
+    args.option("clear",        'c');
+    args.option("debug",         0, Args::POSITIVE, 0, 1, 0, 0, true);
+    args.option("dump",         'd');
+    args.option("verbose",      'v');
+    args.option("output-file",  'o', Args::STRING);
 
-    option ("all-versions", 'a');
-    option ("cat-only",      0);
-    option ("clear",        'c');
-    option ("debug",         0, POSITIVE, 0, 1, 0, 0, true);
-    option ("dump",         'd');
-    option ("verbose",      'v');
-    option ("output-file",  'o', STRING);
+    // Let superclass defines its own options.
+    SuperClass::defineOptions(args);
 }
 
 
 //----------------------------------------------------------------------------
-// Get option values (the public fields) after analysis of another
-// ts::Args object defining the same options.
+// Load arguments from command line.
+// Args error indicator is set in case of incorrect arguments
 //----------------------------------------------------------------------------
 
-void ts::PSILoggerOptions::getOptions (Args& args)
+void ts::PSILoggerArgs::load(Args& args)
 {
-    setDebugLevel (args.present ("debug") ? args.intValue ("debug", Severity::Debug) : args.present ("verbose") ? Severity::Verbose : Severity::Info);
-    all_versions = args.present ("all-versions");
-    clear = args.present ("clear");
-    cat_only = args.present ("cat-only");
-    dump = args.present ("dump");
-    output = args.value ("output-file");
-}
-
-
-//----------------------------------------------------------------------------
-// Overriden analysis methods.
-//----------------------------------------------------------------------------
-
-bool ts::PSILoggerOptions::analyze (int argc, char* argv[])
-{
-    bool ok = Args::analyze (argc, argv);
-    if (ok) {
-        getOptions (*this);
-    }
-    return ok;
-}
-
-bool ts::PSILoggerOptions::analyze (const std::string& app_name, const StringVector& arguments)
-{
-    bool ok = Args::analyze (app_name, arguments);
-    if (ok) {
-        getOptions (*this);
-    }
-    return ok;
-}
-
-
-//----------------------------------------------------------------------------
-// Inaccessible operation. Throw exception when invoked through virtual table.
-//----------------------------------------------------------------------------
-
-bool ts::PSILoggerOptions::analyze(const char* app_name, const char* arg1, ...)
-{
-    throw UnimplementedMethod("analyze with variable args not implemented for ts::PSILoggerOptions");
+    args.setDebugLevel(args.present("debug") ? args.intValue("debug", Severity::Debug) : args.present("verbose") ? Severity::Verbose : Severity::Info);
+    all_versions = args.present("all-versions");
+    clear = args.present("clear");
+    cat_only = args.present("cat-only");
+    dump = args.present("dump");
+    output = args.value("output-file");
 }

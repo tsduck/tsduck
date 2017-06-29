@@ -32,7 +32,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsPAT.h"
-
+#include "tsFormat.h"
 
 
 //----------------------------------------------------------------------------
@@ -188,4 +188,38 @@ void ts::PAT::serialize (BinaryTable& table) const
                                        payload,
                                        data - payload)); // payload_size,
     }
+}
+
+
+//----------------------------------------------------------------------------
+// A static method to display a PAT section.
+//----------------------------------------------------------------------------
+
+void ts::PAT::DisplaySection(std::ostream & strm, const ts::Section & section, int indent)
+{
+    if (section.tableId() != TID_PAT) {
+        return;
+    }
+
+    const std::string margin(indent, ' ');
+    const uint8_t* data = section.payload();
+    size_t size = section.payloadSize();
+    uint16_t tsid = section.tableIdExtension();
+
+    strm << margin << ts::Format("TS id:   %5d (0x%04X)", int(tsid), int(tsid)) << std::endl;
+
+    // Loop through all program / pid pairs
+    while (size >= 4) {
+        uint16_t program = GetUInt16(data);
+        uint16_t pid = GetUInt16(data + 2) & 0x1FFF;
+        data += 4; size -= 4;
+        strm << margin
+             << Format("%s %5d (0x%04X)  PID: %4d (0x%04X)",
+                       program == 0 ? "NIT:    " : "Program:",
+                       int(program), int(program),
+                       int(pid), int(pid))
+            << std::endl;
+    }
+
+    displayExtraData(strm, data, size, indent);
 }

@@ -27,27 +27,58 @@
 //
 //----------------------------------------------------------------------------
 //
-//  Options for the class TablesLogger.
+//  Command line arguments for the class TablesLogger.
 //
 //----------------------------------------------------------------------------
 
-#include "tsTablesLoggerOptions.h"
+#include "tsTablesLoggerArgs.h"
 #include "tsException.h"
 #include "tsHexa.h"
 
 #if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
-const size_t ts::TablesLoggerOptions::DEFAULT_LOG_SIZE;
+const size_t ts::TablesLoggerArgs::DEFAULT_LOG_SIZE;
 #endif
 
 
 //----------------------------------------------------------------------------
-// Set help: application specific help + generic help
+// Default constructor.
 //----------------------------------------------------------------------------
 
-void ts::TablesLoggerOptions::setHelp(const std::string& help)
+ts::TablesLoggerArgs::TablesLoggerArgs() :
+    SuperClass(),
+    mode(TEXT),
+    destination(),
+    multi_files(false),
+    flush(false),
+    udp_local(),
+    udp_ttl(0),
+    udp_raw(false),
+    all_sections(false),
+    max_tables(0),
+    time_stamp(false),
+    packet_index(false),
+    diversified(false),
+    logger(false),
+    log_size(DEFAULT_LOG_SIZE),
+    negate_tid(false),
+    negate_tidext(false),
+    pid(),
+    add_pmt_pids(false),
+    tid(),
+    tidext()
 {
-    Args::setHelp(help +
-        "Options:\n"
+}
+
+
+//----------------------------------------------------------------------------
+// Add help about command line options in an Args
+//----------------------------------------------------------------------------
+
+void ts::TablesLoggerArgs::addHelp(Args& args) const
+{
+    std::string help =
+        "\n"
+        "Tables and sections logging options:\n"
         "\n"
         "  -a\n"
         "  --all-sections\n"
@@ -62,11 +93,6 @@ void ts::TablesLoggerOptions::setHelp(const std::string& help)
         "      By default, the tables are interpreted and formatted as text.\n"
         "      See also option -m, --multiple-files.\n"
         "\n"
-        "  -c\n"
-        "  --c-style\n"
-        "      Same as --raw-dump (no interpretation of section) but dump the\n"
-        "      bytes in C-language style.\n"
-        "\n"
         "  -d\n"
         "  --diversified-payload\n"
         "      Select only sections with \"diversified\" payload. This means that\n"
@@ -77,12 +103,6 @@ void ts::TablesLoggerOptions::setHelp(const std::string& help)
         "  -f\n"
         "  --flush\n"
         "      Flush output after each display.\n"
-        "\n"
-        "  -g value\n"
-        "  --group value\n"
-        "      When the table is an EMM, select only shared EMM with the specified\n"
-        "      group number. Meaningful only if --safeaccess is specified.\n"
-        "      Several -g or --group options may be specified.\n"
         "\n"
         "  --help\n"
         "      Display this help text.\n"
@@ -143,6 +163,10 @@ void ts::TablesLoggerOptions::setHelp(const std::string& help)
         "  --output-file filename\n"
         "      File name for text output.\n"
         "\n"
+        "  --no-encapsulation\n"
+        "      With --ip-udp, send the tables as raw binary messages in UDP packets\n"
+        "      By default, the tables are formatted into TLV messages.\n"
+        "\n"
         "  --packet-index\n"
         "      Display the index of the first and last TS packet of each displayed\n"
         "      section or table.\n"
@@ -160,16 +184,6 @@ void ts::TablesLoggerOptions::setHelp(const std::string& help)
         "      and BAT. Note that EIT, TDT and TOT are not included. Use --pid 18\n"
         "      to get EIT and --pid 20 to get TDT and TOT.\n"
         "\n"
-        "  -r\n"
-        "  --raw-dump\n"
-        "      Raw dump of section, no interpretation. With --ip-udp, the tables\n"
-        "      are sent as raw binary messages in UDP packets (by default, they\n"
-        "      are formatted into TLV messages).\n"
-        "\n"
-        "  -s\n"
-        "  --safeaccess\n"
-        "      Interpret ECM and EMM according to SafeAccess CAS.\n"
-        "\n"
         "  -t value\n"
         "  --tid value\n"
         "      TID filter: select sections with this TID (table id) value.\n"
@@ -186,116 +200,67 @@ void ts::TablesLoggerOptions::setHelp(const std::string& help)
         "  --time-stamp\n"
         "      Display a time stamp (current local time) with each table.\n"
         "\n"
-        "  --tlv syntax\n"
-        "      For sections of unknown types, this option specifies how to interpret\n"
-        "      some parts of the section payload as TLV records. Several --tlv options\n"
-        "      are allowed, each one describes a part of the section payload.\n"
-        "\n"
-        "      Each syntax string has the form \"start,size,tagSize,lengthSize,order\".\n"
-        "      The start and size fields define the offset and size of the TLV area\n"
-        "      in the section payload. If the size field is \"auto\", the TLV extends up\n"
-        "      to the end of the section. If the start field is \"auto\", the longest\n"
-        "      TLV area in the section payload will be used. The fields tagSize and\n"
-        "      lengthSize indicate the size in bytes of the Tag and Length fields in\n"
-        "      the TLV structure. The field order must be either \"msb\" or \"lsb\" and\n"
-        "      indicates the byte order of the Tag and Length fields.\n"
-        "\n"
-        "      All fields are optional. The default values are \"auto,auto,1,1,msb\".\n"
-        "\n"
         "  --ttl value\n"
         "      With --ip-udp, specifies the TTL (Time-To-Live) socket option.\n"
         "      The actual option is either \"Unicast TTL\" or \"Multicast TTL\",\n"
         "      depending on the destination address. Remember that the default\n"
         "      Multicast TTL is 1 on most systems.\n"
         "\n"
-        "  -u value\n"
-        "  --ua value\n"
-        "      When the table is an EMM, select only individual EMM with the specified\n"
-        "      unique address. Meaningful only if --safeaccess is specified.\n"
-        "      Several -u or --ua options may be specified.\n"
-        "\n"
         "  -v\n"
         "  --verbose\n"
         "      Produce verbose output.\n"
         "\n"
         "  --version\n"
-        "      Display the version number.\n");
+        "      Display the version number.\n";
+
+    args.setHelp(args.getHelp() + help);
+
+    // Let superclass add its own help.
+    SuperClass::addHelp(args);
 }
 
 
 //----------------------------------------------------------------------------
-// Constructor.
+// Define command line options in an Args.
 //----------------------------------------------------------------------------
 
-ts::TablesLoggerOptions::TablesLoggerOptions(const std::string& description,
-                                             const std::string& syntax,
-                                             const std::string& help,
-                                             int flags) :
-    Args(description, syntax, "", flags),
-    mode(TEXT),
-    destination(),
-    multi_files(false),
-    flush(false),
-    udp_local(),
-    udp_ttl(0),
-    all_sections(false),
-    max_tables(0),
-    raw_dump(false),
-    raw_flags(hexa::HEXA),
-    time_stamp(false),
-    packet_index(false),
-    cas(CAS_OTHER),
-    diversified(false),
-    logger(false),
-    log_size(DEFAULT_LOG_SIZE),
-    negate_tid(false),
-    negate_tidext(false),
-    pid(),
-    add_pmt_pids(false),
-    tid(),
-    tidext(),
-    emm_group(),
-    emm_ua()
+void ts::TablesLoggerArgs::defineOptions(Args& args) const
 {
-    setHelp(help);
+    args.option("all-sections",        'a');
+    args.option("binary-output",       'b', Args::STRING);
+    args.option("diversified-payload", 'd');
+    args.option("flush",               'f');
+    args.option("ip-udp",              'i', Args::STRING);
+    args.option("local-udp",            0,  Args::STRING);
+    args.option("log",                  0);
+    args.option("log-size",             0,  Args::UNSIGNED);
+    args.option("max-tables",          'x', Args::POSITIVE);
+    args.option("multiple-files",      'm');
+    args.option("negate-pid",           0);
+    args.option("negate-tid",          'n');
+    args.option("negate-tid-ext",       0);
+    args.option("output-file",         'o', Args::STRING);
+    args.option("no-encapsulation",     0);
+    args.option("packet-index",         0);
+    args.option("pid",                 'p', Args::PIDVAL, 0, Args::UNLIMITED_COUNT);
+    args.option("psi-si",               0);
+    args.option("tid",                 't', Args::UINT8,  0, Args::UNLIMITED_COUNT);
+    args.option("tid-ext",             'e', Args::UINT16, 0, Args::UNLIMITED_COUNT);
+    args.option("time-stamp",           0);
+    args.option("ttl",                  0,  Args::POSITIVE);
+    args.option("verbose",             'v');
 
-    option("all-sections",        'a');
-    option("binary-output",       'b', STRING);
-    option("c-style",             'c');
-    option("diversified-payload", 'd');
-    option("flush",               'f');
-    option("group",               'g', INTEGER, 0, 1, 0, 0x00FFFFFF);
-    option("ip-udp",              'i', STRING);
-    option("local-udp",            0,  STRING);
-    option("log",                  0);
-    option("log-size",             0,  UNSIGNED);
-    option("max-tables",          'x', POSITIVE);
-    option("multiple-files",      'm');
-    option("negate-pid",           0);
-    option("negate-tid",          'n');
-    option("negate-tid-ext",       0);
-    option("output-file",         'o', STRING);
-    option("packet-index",         0);
-    option("pid",                 'p', PIDVAL, 0, UNLIMITED_COUNT);
-    option("psi-si",               0);
-    option("raw-dump",            'r');
-    option("safeaccess",          's');
-    option("tid",                 't', UINT8, 0, UNLIMITED_COUNT);
-    option("tid-ext",             'e', UINT16, 0, UNLIMITED_COUNT);
-    option("time-stamp",           0);
-    option("tlv",                  0,  STRING, 0, UNLIMITED_COUNT);
-    option("ttl",                  0,  POSITIVE);
-    option("ua",                  'u', POSITIVE, 0, UNLIMITED_COUNT);
-    option("verbose",             'v');
+    // Let superclass defines its own options.
+    SuperClass::defineOptions(args);
 }
 
 
 //----------------------------------------------------------------------------
-// Get option values (the public fields) after analysis of another
-// ts::Args object defining the same options.
+// Load arguments from command line.
+// Args error indicator is set in case of incorrect arguments
 //----------------------------------------------------------------------------
 
-void ts::TablesLoggerOptions::getOptions(Args& args)
+void ts::TablesLoggerArgs::load(Args& args)
 {
     multi_files = args.present("multiple-files");
     flush = args.present("flush");
@@ -305,29 +270,20 @@ void ts::TablesLoggerOptions::getOptions(Args& args)
     max_tables = args.intValue<uint32_t>("max-tables", 0);
     time_stamp = args.present("time-stamp");
     packet_index = args.present("packet-index");
-    cas = args.present("safeaccess") ? CAS_SAFEACCESS : CAS_OTHER;
     diversified = args.present("diversified-payload");
     logger = args.present("log");
     log_size = args.intValue<size_t>("log-size", DEFAULT_LOG_SIZE);
     negate_tid = args.present("negate-tid");
     negate_tidext = args.present("negate-tid-ext");
-    TLVSyntax::getArgs(tlvSyntax, *this, "tlv");
 
     if (args.present("verbose")) {
         args.setDebugLevel(Severity::Verbose);
-        this->setDebugLevel(Severity::Verbose);
-    }
-
-    raw_dump = args.present("raw-dump");
-    raw_flags = hexa::HEXA;
-    if (args.present("c-style")) {
-        raw_dump = true;
-        raw_flags |= hexa::C_STYLE;
     }
 
     if (args.present("ip-udp")) {
         mode = UDP;
         destination = args.value("ip-udp");
+        udp_raw = args.present("no-encapsulation");
     }
     else if (args.present("binary-output")) {
         mode = BINARY;
@@ -358,39 +314,7 @@ void ts::TablesLoggerOptions::getOptions(Args& args)
 
     args.getIntValues(tid, "tid");
     args.getIntValues(tidext, "tid-ext");
-    args.getIntValues(emm_group, "group");
-    args.getIntValues(emm_ua, "ua");
-}
 
-
-//----------------------------------------------------------------------------
-// Overriden analysis methods.
-//----------------------------------------------------------------------------
-
-bool ts::TablesLoggerOptions::analyze(int argc, char* argv[])
-{
-    bool ok = Args::analyze(argc, argv);
-    if (ok) {
-        getOptions(*this);
-    }
-    return ok;
-}
-
-bool ts::TablesLoggerOptions::analyze(const std::string& app_name, const StringVector& arguments)
-{
-    bool ok = Args::analyze(app_name, arguments);
-    if (ok) {
-        getOptions(*this);
-    }
-    return ok;
-}
-
-
-//----------------------------------------------------------------------------
-// Inaccessible operation. Throw exception when invoked through virtual table.
-//----------------------------------------------------------------------------
-
-bool ts::TablesLoggerOptions::analyze(const char* app_name, const char* arg1, ...)
-{
-    throw UnimplementedMethod("analyze with variable args not implemented for ts::TablesLoggerOptions");
+    // Load options which where defined in superclass.
+    SuperClass::load(args);
 }

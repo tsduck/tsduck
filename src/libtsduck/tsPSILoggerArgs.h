@@ -28,32 +28,34 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Options for the class PSILogger.
+//!  Command line arguments for the class PSILogger.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsArgs.h"
-#include "tsMPEG.h"
+#include "tsTablesDisplayArgs.h"
 
 namespace ts {
     //!
-    //! Options for the class PSILogger.
+    //! Command line arguments for the class PSILogger.
     //!
-    class TSDUCKDLL PSILoggerOptions: public Args
+    class TSDUCKDLL PSILoggerArgs: public TablesDisplayArgs
     {
     public:
         //!
-        //! Constructor.
-        //! @param [in] description A short one-line description, eg. "Wonderful File Copier".
-        //! @param [in] syntax A short one-line syntax summary, eg. "[options] filename ...".
-        //! @param [in] help A multi-line string describing the usage of options and parameters.
-        //! @param [in] flags An or'ed mask of ts::Args::Flags values.
+        //! Explicit reference to superclass.
         //!
-        PSILoggerOptions(const std::string& description = "",
-                         const std::string& syntax = "",
-                         const std::string& help = "",
-                         int flags = 0);
+        typedef TablesDisplayArgs SuperClass;
+
+        //!
+        //! Constructor.
+        //!
+        PSILoggerArgs();
+
+        //!
+        //! Virtual destructor.
+        //!
+        ~PSILoggerArgs() {}
 
         // Public fields, by options.
         bool        all_versions;   //!< Display all versions of PSI tables.
@@ -62,19 +64,23 @@ namespace ts {
         bool        dump;           //!< Dump all sections.
         std::string output;         //!< Destination name file.
 
-        // Overriden methods.
-        virtual void setHelp(const std::string& help);
-        virtual bool analyze(int argc, char* argv[]);
-        virtual bool analyze(const std::string& app_name, const StringVector& arguments);
+        //!
+        //! Define command line options in an Args.
+        //! @param [in,out] args Command line arguments to update.
+        //!
+        virtual void defineOptions(Args& args) const;
 
         //!
-        //! Get option values (the public fields) after analysis of another ts::Args object defining the same options.
-        //! @param [in] args Another ts::Args object defining the same PSI logger options.
+        //! Add help about command line options in an Args.
+        //! @param [in,out] args Command line arguments to update.
         //!
-        void getOptions(Args& args);
+        virtual void addHelp(Args& args) const;
 
-    private:
-        // Inaccessible operations
-        virtual bool analyze(const char* app_name, const char* arg1, ...);
+        //!
+        //! Load arguments from command line.
+        //! Args error indicator is set in case of incorrect arguments.
+        //! @param [in,out] args Command line arguments.
+        //!
+        virtual void load(Args& args);
     };
 }

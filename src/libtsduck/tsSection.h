@@ -581,17 +581,6 @@ namespace ts {
         std::ostream& write(std::ostream& strm, ReportInterface& report = CERR) const;
 
         //!
-        //! Display the section on an output stream with full interpretation
-        //! @param [in,out] strm A standard stream in output mode (text mode).
-        //! @param [in] indent Indicates the base indentation of lines.
-        //! @param [in] cas CAS family, for CAS-specific information.
-        //! @param [in] no_header If true, do not display the section header.
-        //! @param [in] tlv A set of TLV syntax to display for sections of unknown type.
-        //! @return A reference to the @a strm object.
-        //!
-        std::ostream& display(std::ostream& strm, int indent = 0, CASFamily cas = CAS_OTHER, bool no_header = false, const TLVSyntaxVector& tlv = TLVSyntaxVector()) const;
-
-        //!
         //! Hexa dump the section on an output stream without interpretation of the payload.
         //! @param [in,out] strm A standard stream in output mode (text mode).
         //! @param [in] indent Indicates the base indentation of lines.
@@ -642,16 +631,4 @@ namespace ts {
         // Inaccessible operations
         Section(const Section&) = delete;
     };
-}
-
-//!
-//! Display operator for sections.
-//! The content of the section is interpreted according to the table id.
-//! @param [in,out] strm Output stream (text output).
-//! @param [in] section The section to output.
-//! @return A reference to @a strm.
-//!
-TSDUCKDLL inline std::ostream& operator<<(std::ostream& strm, const ts::Section& section)
-{
-    return section.display(strm);
 }

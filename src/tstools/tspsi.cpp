@@ -44,7 +44,7 @@ using namespace ts;
 //  Command line options
 //----------------------------------------------------------------------------
 
-struct Options: public PSILoggerOptions
+struct Options: public PSILoggerArgs
 {
     Options (int argc, char *argv[]);
 
@@ -52,7 +52,7 @@ struct Options: public PSILoggerOptions
 };
 
 Options::Options (int argc, char *argv[]) :
-    PSILoggerOptions("MPEG Transport Stream PSI Extraction Utility.", "[options] [filename]"),
+    PSILoggerArgs("MPEG Transport Stream PSI Extraction Utility.", "[options] [filename]"),
     infile()
 {
     option("", 0, STRING, 0, 1);

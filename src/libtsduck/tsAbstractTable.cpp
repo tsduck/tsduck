@@ -26,48 +26,19 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//!
-//!  @file
-//!  Representation of a Time & Date Table (TDT)
-//!
+
+#include "tsAbstractTable.h"
+#include "tsHexa.h"
+
+
+//----------------------------------------------------------------------------
+// A utility method to dump extraneous bytes after the expected section data.
 //----------------------------------------------------------------------------
 
-#pragma once
-#include "tsAbstractTable.h"
-#include "tsTime.h"
-
-namespace ts {
-    //!
-    //! Representation of a Time & Date Table (TDT)
-    //!
-    class TSDUCKDLL TDT : public AbstractTable
-    {
-    public:
-        // Public members:
-        Time utc_time;  //!< UTC time.
-
-        //!
-        //! Default constructor.
-        //! @param [in] utc_time UTC time.
-        //!
-        TDT(const Time& utc_time);
-
-        //!
-        //! Constructor from a binary table.
-        //! @param [in] table Binary table to deserialize.
-        //!
-        TDT(const BinaryTable& table);
-
-        // Inherited methods
-        virtual void serialize(BinaryTable& table) const;
-        virtual void deserialize(const BinaryTable& table);
-
-        //!
-        //! A static method to display a TDT section.
-        //! @param [in,out] strm Output text stream.
-        //! @param [in] section A safe pointer to the section to display.
-        //! @param [in] indent Indentation width.
-        //!
-        static void DisplaySection(std::ostream& strm, const ts::Section& section, int indent);
-    };
+void ts::AbstractTable::displayExtraData(std::ostream& strm, const void *data, size_t size, int indent)
+{
+    if (size > 0) {
+        strm << std::string(indent, ' ') << "Extraneous " << size << " bytes:" << std::endl
+             << Hexa(data, size, hexa::HEXA | hexa::ASCII | hexa::OFFSET, indent);
+    }
 }

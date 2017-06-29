@@ -32,6 +32,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsArgs.h"
+#include "tsTablesDisplay.h"
 #include "tsCASFamily.h"
 #include "tsSection.h"
 #include "tsSysUtils.h"
@@ -45,17 +46,22 @@ struct Options: public ts::Args
 {
     Options(int argc, char *argv[]);
 
-    bool             verbose;   // Verbose output
-    ts::StringVector infiles;   // Input file names
+    bool                  verbose;   // Verbose output
+    ts::StringVector      infiles;   // Input file names
+    ts::TablesDisplayArgs display;   // Options about displaying tables
 };
 
 Options::Options(int argc, char *argv[]) :
     ts::Args("Dump PSI/SI tables, as saved by tstables.", "[options] [filename ...]"),
     verbose(false),
-    infiles()
+    infiles(),
+    display()
 {
-    option("",         0, ts::Args::STRING);
+    // Warning, the following short options are already defined in TablesDisplayArgs:
+    // 'c', 'r'
+    option("", 0, ts::Args::STRING);
     option("verbose", 'v');
+    display.defineOptions(*this);
 
     setHelp("Input file:\n"
             "\n"
@@ -72,8 +78,10 @@ Options::Options(int argc, char *argv[]) :
             "\n"
             "  --version\n"
             "      Display the version number.\n");
+    display.addHelp(*this);
 
     analyze(argc, argv);
+    display.load(*this);
 
     getValues(infiles, "");
     verbose = present("verbose");
@@ -105,9 +113,10 @@ bool DumpFile(Options& opt, const std::string& file_name)
     }
 
     if (ok) {
-        // Display all sections
+        // Display all sections.
+        ts::TablesDisplay display(opt.display, opt);
         for (ts::SectionPtrVector::const_iterator it = sections.begin(); it != sections.end(); ++it) {
-            (*it)->display(std::cout, 0, ts::CAS_OTHER) << std::endl;
+            display.displaySection(std::cout, **it);
         }
     }
 

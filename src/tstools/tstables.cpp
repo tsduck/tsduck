@@ -40,26 +40,30 @@
 //  Command line options
 //----------------------------------------------------------------------------
 
-struct Options: public ts::TablesLoggerOptions
+struct Options: public ts::Args
 {
     Options(int argc, char *argv[]);
 
-    std::string infile; // Input file name
+    std::string          infile;  // Input file name
+    ts::TablesLoggerArgs logger;  // Table logging options
 };
 
 Options::Options(int argc, char *argv[]) :
-    ts::TablesLoggerOptions("MPEG Transport Stream PSI/SI Tables Collector.", "[options] [filename]"),
-    infile()
+    ts::Args("MPEG Transport Stream PSI/SI Tables Collector.", "[options] [filename]"),
+    infile(),
+    logger()
 {
     option("", 0, STRING, 0, 1);
+    logger.defineOptions(*this);
 
     setHelp("Input file:\n"
             "\n"
-            "  MPEG capture file (standard input if omitted).\n"
-            "\n");
+            "  MPEG capture file (standard input if omitted).\n");
+    logger.addHelp(*this);
 
     analyze(argc, argv);
     infile = value("");
+    logger.load(*this);
 }
 
 
@@ -67,15 +71,15 @@ Options::Options(int argc, char *argv[]) :
 //  Program entry point
 //----------------------------------------------------------------------------
 
-int main (int argc, char *argv[])
+int main(int argc, char *argv[])
 {
     Options opt (argc, argv);
     // IP initialization required when using UDP
-    if (opt.mode == ts::TablesLoggerOptions::UDP && !ts::IPInitialize()) {
+    if (opt.logger.mode == ts::TablesLoggerArgs::UDP && !ts::IPInitialize()) {
         return EXIT_FAILURE;
     }
     ts::InputRedirector input(opt.infile, opt);
-    ts::TablesLogger logger(opt);
+    ts::TablesLogger logger(opt.logger, opt);
     ts::TSPacket pkt;
 
     // Read all packets in the file and pass them to the logger

@@ -188,25 +188,6 @@ bool ts::TLVSyntax::locateTLV(const uint8_t* data, size_t dataSize, size_t& tlvS
 
 
 //----------------------------------------------------------------------------
-// Decode a list of TLVSyntax from command line arguments.
-//----------------------------------------------------------------------------
-
-bool ts::TLVSyntax::getArgs(std::vector<TLVSyntax>& tlvs, Args& args, const char* name)
-{
-    bool ok = true;
-    tlvs.clear();
-    const size_t count = args.count(name);
-    for (size_t i = 0; i < count; ++i) {
-        TLVSyntax tlv;
-        ok = tlv.fromString(args.value(name, "", i), args) && ok;
-        tlvs.push_back(tlv);
-    }
-    std::sort(tlvs.begin(), tlvs.end());
-    return ok;
-}
-
-
-//----------------------------------------------------------------------------
 // Compute the size of the longest TLV area starting at tlvStart.
 //----------------------------------------------------------------------------
 

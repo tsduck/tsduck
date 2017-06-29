@@ -138,17 +138,6 @@ namespace ts {
         bool locateTLV(const uint8_t* data, size_t dataSize, size_t& tlvStart, size_t& tlvSize) const;
 
         //!
-        //! Decode a list of TLVSyntax from command line arguments.
-        //! @param [out] tlvs A container of TLVSyntax receiving all values of the option or parameter.
-        //! @param [in,out] args A set of command line arguments. Also used to report errors.
-        //! @param [in] name The full name of the option. If the parameter is a null pointer or
-        //! an empty string, this specifies a parameter, not an option. If the specified option
-        //! was not declared in the syntax of the command, a fatal error is reported.
-        //! @return True on success, false on error.
-        //!
-        static bool getArgs(std::vector<TLVSyntax>& tlvs, Args& args, const char* name = 0);
-
-        //!
         //! Comparison operator, typically used to sort containers of TLVSyntax.
         //! @param [in] other Other instance to compare.
         //! @return True if this object logically preceeds @a other.

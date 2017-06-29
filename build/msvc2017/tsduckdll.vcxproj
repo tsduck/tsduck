@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ImportGroup Label="PropertySheets">
     <Import Project="msvc-common-begin.props" />
@@ -87,6 +87,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsECMGClient.h" />
     <ClInclude Include="..\..\src\libtsduck\tsECMGClientHandlerInterface.h" />
     <ClInclude Include="..\..\src\libtsduck\tsECMGSCS.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsEIT.h" />
     <ClInclude Include="..\..\src\libtsduck\tsEMMGMUX.h" />
     <ClInclude Include="..\..\src\libtsduck\tsEnhancedAC3Descriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsEnumeration.h" />
@@ -148,7 +149,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsPollFiles.h" />
     <ClInclude Include="..\..\src\libtsduck\tsPrivateDataSpecifierDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsPSILogger.h" />
-    <ClInclude Include="..\..\src\libtsduck\tsPSILoggerOptions.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsPSILoggerArgs.h" />
     <ClInclude Include="..\..\src\libtsduck\tsRandomGenerator.h" />
     <ClInclude Include="..\..\src\libtsduck\tsReportBuffer.h" />
     <ClInclude Include="..\..\src\libtsduck\tsReportBufferTemplate.h" />
@@ -193,8 +194,10 @@
     <ClInclude Include="..\..\src\libtsduck\tsSysUtilsTemplate.h" />
     <ClInclude Include="..\..\src\libtsduck\tsTableHandlerInterface.h" />
     <ClInclude Include="..\..\src\libtsduck\tsTables.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsTablesDisplay.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsTablesDisplayArgs.h" />
     <ClInclude Include="..\..\src\libtsduck\tsTablesLogger.h" />
-    <ClInclude Include="..\..\src\libtsduck\tsTablesLoggerOptions.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsTablesLoggerArgs.h" />
     <ClInclude Include="..\..\src\libtsduck\tsTCPConnection.h" />
     <ClInclude Include="..\..\src\libtsduck\tsTCPServer.h" />
     <ClInclude Include="..\..\src\libtsduck\tsTCPSocket.h" />
@@ -262,6 +265,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsAbstractDescrambler.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAbstractDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAbstractDescriptorsTable.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsAbstractTable.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAbstractTransportListTable.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAC3Attributes.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAC3Descriptor.cpp" />
@@ -276,9 +280,9 @@
     <ClCompile Include="..\..\src\libtsduck\tsAVCParser.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAVCSequenceParameterSet.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAVCVUIParameters.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsBAT.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsBCD.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsBinaryTable.cpp" />
-    <ClCompile Include="..\..\src\libtsduck\tsBinaryTableDisplay.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsBouquetNameDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsByteBlock.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsCADescriptor.cpp" />
@@ -308,6 +312,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsDescriptorListDisplay.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsECMGClient.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsECMGSCS.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsEIT.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsEMMGMUX.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsEnhancedAC3Descriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsEnumeration.cpp" />
@@ -339,6 +344,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsNames.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsNamesOUI.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsNetworkNameDescriptor.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsNIT.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsNullReport.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsObject.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsOneShotPacketizer.cpp" />
@@ -357,14 +363,13 @@
     <ClCompile Include="..\..\src\libtsduck\tsPollFiles.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsPrivateDataSpecifierDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsPSILogger.cpp" />
-    <ClCompile Include="..\..\src\libtsduck\tsPSILoggerOptions.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsPSILoggerArgs.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsReportInterface.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsRingNode.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsScrambling.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsSDT.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsSection.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsSectionDemux.cpp" />
-    <ClCompile Include="..\..\src\libtsduck\tsSectionDisplay.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsService.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsServiceDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsServiceListDescriptor.cpp" />
@@ -385,8 +390,10 @@
     <ClCompile Include="..\..\src\libtsduck\tsSystemMonitor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsSystemRandomGenerator.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsSysUtils.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsTablesDisplay.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsTablesDisplayArgs.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsTablesLogger.cpp" />
-    <ClCompile Include="..\..\src\libtsduck\tsTablesLoggerOptions.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsTablesLoggerArgs.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsTCPConnection.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsTCPServer.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsTCPSocket.cpp" />

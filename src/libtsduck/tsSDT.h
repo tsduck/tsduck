@@ -60,7 +60,7 @@ namespace ts {
         //! @param [in] is_actual True for SDT Actual TS, false for SDT Other TS.
         //! @param [in] version Table version number.
         //! @param [in] is_current True if table is current, false if table is next.
-        //! @param [in] ts_id Tranport stream identifier.
+        //! @param [in] ts_id Transport stream identifier.
         //! @param [in] onetw_id Original network id.
         //!
         SDT(bool is_actual = true,
@@ -90,7 +90,7 @@ namespace ts {
         //!
         void setActual(bool is_actual)
         {
-            _table_id = TID(is_actual ? TID_SDT_ACT : TID_SDT_OTH);
+            _table_id = is_actual ? TID_SDT_ACT : TID_SDT_OTH;
         }
 
         //!
@@ -199,6 +199,14 @@ namespace ts {
             //!
             void setType(uint8_t service_type);
         };
+
+        //!
+        //! A static method to display a SDT section.
+        //! @param [in,out] strm Output text stream.
+        //! @param [in] section A safe pointer to the section to display.
+        //! @param [in] indent Indentation width.
+        //!
+        static void DisplaySection(std::ostream& strm, const ts::Section& section, int indent);
 
     private:
         // Add a new section to a table being serialized

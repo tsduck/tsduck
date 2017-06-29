@@ -26,58 +26,57 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  This module contains the display routines for class ts::BinaryTable
-//
+//!
+//!  @file
+//!  Command line arguments to display PSI/SI tables.
+//!
 //----------------------------------------------------------------------------
 
-#include "tsBinaryTable.h"
-#include "tsFormat.h"
-#include "tsNames.h"
+#pragma once
+#include "tsArgs.h"
+#include "tsCASFamily.h"
+#include "tsTLVSyntax.h"
 
+namespace ts {
+    //!
+    //! Command line arguments to display PSI/SI tables.
+    //!
+    class TSDUCKDLL TablesDisplayArgs
+    {
+    public:
+        // Public fields
+        CASFamily       cas;             //!< CAS family to interpret CAS-specific fields.
+        bool            raw_dump;        //!< Raw dump of section, no interpretation.
+        uint32_t        raw_flags;       //!< Dump flags in raw mode.
+        TLVSyntaxVector tlv_syntax;      //!< TLV syntax to apply to unknown sections.
 
+        //!
+        //! Default constructor.
+        //!
+        TablesDisplayArgs();
 
-//----------------------------------------------------------------------------
-// Display the table on an output stream
-//----------------------------------------------------------------------------
+        //!
+        //! Virtual destructor.
+        //!
+        ~TablesDisplayArgs() {}
 
-std::ostream& ts::BinaryTable::display (std::ostream& strm, int indent, CASFamily cas, const TLVSyntaxVector& tlv) const
-{
-    const std::string margin (indent, ' ');
+        //!
+        //! Define command line options in an Args.
+        //! @param [in,out] args Command line arguments to update.
+        //!
+        virtual void defineOptions(Args& args) const;
 
-    // Filter invalid tables
+        //!
+        //! Add help about command line options in an Args.
+        //! @param [in,out] args Command line arguments to update.
+        //!
+        virtual void addHelp(Args& args) const;
 
-    if (!_is_valid) {
-        return strm;
-    }
-
-    // Compute total size of table
-
-    size_t total_size (0);
-    for (size_t i = 0; i < _sections.size(); ++i) {
-        total_size += _sections[i]->size();
-    }
-
-    // Display common header lines.
-    // If PID is the null PID, this means "unknown PID"
-
-    strm << margin << "* " << names::TID (_tid, cas)
-         << ", TID " << int (_tid)
-         << Format (" (0x%02X)", int (_tid));
-    if (_source_pid != PID_NULL) {
-        strm << ", PID " << _source_pid << Format (" (0x%04X)", int (_source_pid));
-    }
-    strm << std::endl
-         << margin << "  Version: " << int (_version)
-         << ", sections: " << _sections.size()
-         << ", total size: " << total_size << " bytes" << std::endl;
-
-    // Loop across all sections
-
-    for (size_t i = 0; i < _sections.size(); ++i) {
-        strm << margin << "  - Section " << i << ":" << std::endl;
-        _sections[i]->display (strm, indent + 4, cas, true, tlv);
-    }
-
-    return strm;
+        //!
+        //! Load arguments from command line.
+        //! Args error indicator is set in case of incorrect arguments.
+        //! @param [in,out] args Command line arguments.
+        //!
+        virtual void load(Args& args);
+    };
 }

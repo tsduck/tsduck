@@ -37,7 +37,6 @@
 #include "tsFormat.h"
 #include "tsPAT.h"
 
-
 #define MIN_CLEAR_PACKETS 100000
 
 
@@ -45,28 +44,30 @@
 // Constructor
 //----------------------------------------------------------------------------
 
-ts::PSILogger::PSILogger (PSILoggerOptions& opt) :
-    _opt (opt),
-    _abort (false),
-    _pat_ok (_opt.cat_only),
-    _cat_ok (_opt.clear),
-    _sdt_ok (_opt.cat_only),
-    _bat_ok (false),
-    _expected_pmt (0),
-    _received_pmt (0),
-    _clear_packets_cnt (0),
-    _scrambled_packets_cnt (0),
-    _demux (this, _opt.dump ? this : 0),
-    _outfile (),
-    _out (_opt.output.empty() ? std::cout : _outfile)
+ts::PSILogger::PSILogger (PSILoggerArgs& opt, ReportInterface& report) :
+    TablesDisplay(opt, report),
+    _opt(opt),
+    _report(report),
+    _abort(false),
+    _pat_ok(_opt.cat_only),
+    _cat_ok(_opt.clear),
+    _sdt_ok(_opt.cat_only),
+    _bat_ok(false),
+    _expected_pmt(0),
+    _received_pmt(0),
+    _clear_packets_cnt(0),
+    _scrambled_packets_cnt(0),
+    _demux(this, _opt.dump ? this : 0),
+    _outfile(),
+    _out(_opt.output.empty() ? std::cout : _outfile)
 {
     // Open/create the destination
     if (!_opt.output.empty()) {
         // Open a text file as output (default: standard output)
-        _opt.verbose ("creating " + _opt.output);
-        _outfile.open (_opt.output.c_str(), std::ios::out);
+        _report.verbose("creating " + _opt.output);
+        _outfile.open(_opt.output.c_str(), std::ios::out);
         if (!_outfile) {
-            _opt.error ("cannot create " + _opt.output);
+            _report.error("cannot create " + _opt.output);
             _abort = true;
             return;
         }
@@ -74,12 +75,12 @@ ts::PSILogger::PSILogger (PSILoggerOptions& opt) :
 
     // Specify the PID filters
     if (!_opt.cat_only) {
-        _demux.addPID (PID_PAT);
-        _demux.addPID (PID_TSDT);
-        _demux.addPID (PID_SDT);
+        _demux.addPID(PID_PAT);
+        _demux.addPID(PID_TSDT);
+        _demux.addPID(PID_SDT);
     }
     if (!_opt.clear) {
-        _demux.addPID (PID_CAT);
+        _demux.addPID(PID_CAT);
     }
 
     // Initial blank line
@@ -101,10 +102,10 @@ ts::PSILogger::~PSILogger()
 // The following method feeds the logger with a TS packet.
 //----------------------------------------------------------------------------
 
-void ts::PSILogger::feedPacket (const TSPacket& pkt)
+void ts::PSILogger::feedPacket(const TSPacket& pkt)
 {
     // Feed the packet to the demux
-    _demux.feedPacket (pkt);
+    _demux.feedPacket(pkt);
 
     // On clear streams, there is no CAT (usually). To avoid waiting indefinitely,
     // if no CAT and no scrambled packet is found after a defined number of packets
@@ -125,7 +126,7 @@ void ts::PSILogger::feedPacket (const TSPacket& pkt)
 // This hook is invoked when a complete table is available.
 //----------------------------------------------------------------------------
 
-void ts::PSILogger::handleTable (SectionDemux&, const BinaryTable& table)
+void ts::PSILogger::handleTable(SectionDemux&, const BinaryTable& table)
 {
     assert(table.sectionCount() > 0);
 
@@ -135,65 +136,65 @@ void ts::PSILogger::handleTable (SectionDemux&, const BinaryTable& table)
     switch (table.tableId()) {
 
         case TID_PAT: {
-            PAT pat (table);
+            PAT pat(table);
             if (pid != PID_PAT) {
                 // A PAT is only expected on PID 0
-                _out << Format ("* Got unexpected PAT on PID %d (0x%04X)", pid, pid) << std::endl;
+                _out << Format("* Got unexpected PAT on PID %d (0x%04X)", pid, pid) << std::endl;
             }
             else if (pat.isValid()) {
                 // Got the PAT.
                 _pat_ok = true;
                 // Stop filtering the PAT PID if we don't need all versions.
                 if (!_opt.all_versions) {
-                    _demux.removePID (pid);
+                    _demux.removePID(pid);
                 }
                 // Add a filter on each referenced PID to get the PMT
                 for (PAT::ServiceMap::const_iterator it = pat.pmts.begin(); it != pat.pmts.end(); ++it) {
-                    _demux.addPID (it->second);
+                    _demux.addPID(it->second);
                     _expected_pmt++;
                 }
                 // Also include NIT (considered as a PMT)
-                _demux.addPID (pat.nit_pid != PID_NULL ? pat.nit_pid : PID (PID_NIT));
+                _demux.addPID(pat.nit_pid != PID_NULL ? pat.nit_pid : PID(PID_NIT));
                 _expected_pmt++;
             }
             // Display the content of the PAT
-            _out << table;
+            displayTable(_out, table);
             break;
         }
 
         case TID_CAT: {
             if (pid != PID_CAT) {
                 // A CAT is only expected on PID 1
-                _out << Format ("* Got unexpected CAT on PID %d (0x%04X)", pid, pid) << std::endl;
+                _out << Format("* Got unexpected CAT on PID %d (0x%04X)", pid, pid) << std::endl;
             }
             else {
                 // Got the CAT.
                 _cat_ok = true;
                 // Stop filtering the CAT PID if we don't need all versions.
                 if (!_opt.all_versions) {
-                    _demux.removePID (pid);
+                    _demux.removePID(pid);
                 }
             }
             // Display the table
-            _out << table;
+            displayTable(_out, table);
             break;
         }
 
-        case TID_NIT_ACT:  // NIT is considered as a PMT
+        case TID_NIT_ACT:  // NIT and PMT are processed identically.
         case TID_PMT: {
             // Stop filtering this PID if we don't need all versions.
             if (!_opt.all_versions) {
-                _demux.removePID (pid);
+                _demux.removePID(pid);
                 _received_pmt++;
             }
-            _out << table;
+            displayTable(_out, table);
             break;
         }
 
         case TID_NIT_OTH: {
             // Ignore NIT for other networks if only one version required
             if (_opt.all_versions) {
-                _out << table;
+                displayTable(_out, table);
             }
             break;
         }
@@ -201,26 +202,26 @@ void ts::PSILogger::handleTable (SectionDemux&, const BinaryTable& table)
         case TID_TSDT: {
             if (pid != PID_TSDT) {
                 // A TSDT is only expected on PID 0x0002
-                _out << Format ("* Got unexpected TSDT on PID %d (0x%04X)", pid, pid) << std::endl;
+                _out << Format("* Got unexpected TSDT on PID %d (0x%04X)", pid, pid) << std::endl;
             }
             else if (!_opt.all_versions) {
-                _demux.removePID (pid);
+                _demux.removePID(pid);
             }
-            _out << table;
+            displayTable(_out, table);
             break;
         }
 
         case TID_SDT_ACT: {
             if (pid != PID_SDT) {
                 // An SDT is only expected on PID 0x0011
-                _out << Format ("* Got unexpected SDT on PID %d (0x%04X)", pid, pid) << std::endl;
-                _out << table;
+                _out << Format("* Got unexpected SDT on PID %d (0x%04X)", pid, pid) << std::endl;
+                displayTable(_out, table);
             }
             else if (_opt.all_versions || !_sdt_ok) {
                 _sdt_ok = true;
                 // We cannot stop filtering this PID if we don't need all versions
                 // since a BAT can also be found here.
-                _out << table;
+                displayTable(_out, table);
             }
             break;
         }
@@ -228,7 +229,7 @@ void ts::PSILogger::handleTable (SectionDemux&, const BinaryTable& table)
         case TID_SDT_OTH: {
             // Ignore SDT for other networks if only one version required
             if (_opt.all_versions) {
-                _out << table;
+                displayTable(_out, table);
             }
             break;
         }
@@ -236,22 +237,22 @@ void ts::PSILogger::handleTable (SectionDemux&, const BinaryTable& table)
         case TID_BAT: {
             if (pid != PID_BAT) {
                 // An SDT is only expected on PID 0x0011
-                _out << Format ("* Got unexpected BAT on PID %d (0x%04X)", pid, pid) << std::endl;
-                _out << table;
+                _out << Format("* Got unexpected BAT on PID %d (0x%04X)", pid, pid) << std::endl;
+                displayTable(_out, table);
             }
             else if (_opt.all_versions || !_bat_ok) {
                 // Got the BAT.
                 _bat_ok = true;
                 // We cannot stop filtering this PID if we don't need all versions
                 // since the SDT can also be found here.
-                _out << table;
+                displayTable(_out, table);
             }
             break;
         }
 
         default: {
-            if (_opt.verbose()) {
-                _out << Format ("* Got unexpected TID %d (0x%02X) on PID %d (0x%04X)", tid, tid, pid, pid) << std::endl;
+            if (_report.verbose()) {
+                _out << Format("* Got unexpected TID %d (0x%02X) on PID %d (0x%04X)", tid, tid, pid, pid) << std::endl;
             }
         }
     }
@@ -265,9 +266,9 @@ void ts::PSILogger::handleTable (SectionDemux&, const BinaryTable& table)
 // Only used with option --all-sections
 //----------------------------------------------------------------------------
 
-void ts::PSILogger::handleSection (SectionDemux&, const Section& sect)
+void ts::PSILogger::handleSection(SectionDemux&, const Section& sect)
 {
-    sect.dump (_out) << std::endl;
+    sect.dump(_out) << std::endl;
 }
 
 
@@ -278,8 +279,8 @@ void ts::PSILogger::handleSection (SectionDemux&, const Section& sect)
 void ts::PSILogger::reportDemuxErrors ()
 {
     if (_demux.hasErrors()) {
-        SectionDemux::Status status (_demux);
+        SectionDemux::Status status(_demux);
         _out << "* PSI/SI analysis errors:" << std::endl;
-        status.display (_out, 4, true);
+        status.display(_out, 4, true);
     }
 }

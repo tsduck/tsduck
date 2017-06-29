@@ -28,34 +28,35 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Options for the class TablesLogger.
+//!  Command line arguments for the class TablesLogger.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsArgs.h"
+#include "tsTablesDisplayArgs.h"
 #include "tsMPEG.h"
-#include "tsCASFamily.h"
-#include "tsTLVSyntax.h"
 
 namespace ts {
     //!
-    //! Options for the class TablesLogger.
+    //! Command line arguments for the class TablesLogger.
     //!
-    class TSDUCKDLL TablesLoggerOptions: public Args
+    class TSDUCKDLL TablesLoggerArgs: public TablesDisplayArgs
     {
     public:
         //!
-        //! Constructor.
-        //! @param [in] description A short one-line description, eg. "Wonderful File Copier".
-        //! @param [in] syntax A short one-line syntax summary, eg. "[options] filename ...".
-        //! @param [in] help A multi-line string describing the usage of options and parameters.
-        //! @param [in] flags An or'ed mask of ts::Args::Flags values.
+        //! Explicit reference to superclass.
         //!
-        TablesLoggerOptions(const std::string& description = "",
-                            const std::string& syntax = "",
-                            const std::string& help = "",
-                            int flags = 0);
+        typedef TablesDisplayArgs SuperClass;
+
+        //!
+        //! Constructor.
+        //!
+        TablesLoggerArgs();
+
+        //!
+        //! Virtual destructor.
+        //!
+        ~TablesLoggerArgs() {}
 
         //!
         //! Type of logging destination.
@@ -73,13 +74,11 @@ namespace ts {
         bool         flush;           //!< Flush output file.
         std::string  udp_local;       //!< Name of outgoing local address (empty if unspecified).
         int          udp_ttl;         //!< Time-to-live socket option.
+        bool         udp_raw;         //!< UDP messages contain raw sections, not structured messages.
         bool         all_sections;    //!< Collect all sections, as they appear.
         uint32_t     max_tables;      //!< Max number of tables to dump.
-        bool         raw_dump;        //!< Raw dump of section, no interpretation.
-        uint32_t     raw_flags;       //!< Dump flags in raw mode.
         bool         time_stamp;      //!< Display time stamps with each table.
         bool         packet_index;    //!< Display packet index with each table.
-        CASFamily    cas;             //!< CAS family.
         bool         diversified;     //!< Payload must be diversified.
         bool         logger;          //!< Table logger.
         size_t       log_size;        //!< Size of table to log.
@@ -89,9 +88,6 @@ namespace ts {
         bool         add_pmt_pids;    //!< Add PMT PID's when one is found.
         std::set<uint8_t>  tid;       //!< TID values to filter.
         std::set<uint16_t> tidext;    //!< TID-ext values to filter.
-        std::set<uint32_t> emm_group; //!< Shared EMM group numbers to filter.
-        std::set<uint32_t> emm_ua;    //!< Individual EMM unique addresses to filter.
-        TLVSyntaxVector    tlvSyntax; //!< TLV syntax to apply to unknown sections.
 
         //!
         //! Default table log size.
@@ -110,19 +106,23 @@ namespace ts {
             return mode == TEXT && destination.empty();
         }
 
-        // Overriden methods.
-        virtual void setHelp(const std::string& help);
-        virtual bool analyze(int argc, char* argv[]);
-        virtual bool analyze(const std::string& app_name, const StringVector& arguments);
+        //!
+        //! Define command line options in an Args.
+        //! @param [in,out] args Command line arguments to update.
+        //!
+        virtual void defineOptions(Args& args) const;
 
         //!
-        //! Get option values (the public fields) after analysis of another ts::Args object defining the same options.
-        //! @param [in] args Another ts::Args object defining the same table logger options.
+        //! Add help about command line options in an Args.
+        //! @param [in,out] args Command line arguments to update.
         //!
-        void getOptions(Args& args);
+        virtual void addHelp(Args& args) const;
 
-    private:
-        // Inaccessible operations
-        virtual bool analyze(const char* app_name, const char* arg1, ...);
+        //!
+        //! Load arguments from command line.
+        //! Args error indicator is set in case of incorrect arguments.
+        //! @param [in,out] args Command line arguments.
+        //!
+        virtual void load(Args& args);
     };
 }
