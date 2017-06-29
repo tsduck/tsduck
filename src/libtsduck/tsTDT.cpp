@@ -35,14 +35,13 @@
 #include "tsMJD.h"
 
 
-
 //----------------------------------------------------------------------------
 // Default constructor:
 //----------------------------------------------------------------------------
 
-ts::TDT::TDT (const Time& utc_time_) :
-    AbstractTable (TID_TDT),
-    utc_time (utc_time_)
+ts::TDT::TDT(const Time& utc_time_) :
+    AbstractTable(TID_TDT),
+    utc_time(utc_time_)
 {
     _is_valid = true;
 }
@@ -52,11 +51,11 @@ ts::TDT::TDT (const Time& utc_time_) :
 // Constructor from a binary table
 //----------------------------------------------------------------------------
 
-ts::TDT::TDT (const BinaryTable& table) :
-    AbstractTable (TID_TDT),
-    utc_time ()
+ts::TDT::TDT(const BinaryTable& table) :
+    AbstractTable(TID_TDT),
+    utc_time()
 {
-    deserialize (table);
+    deserialize(table);
 }
 
 
@@ -64,7 +63,7 @@ ts::TDT::TDT (const BinaryTable& table) :
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::TDT::deserialize (const BinaryTable& table)
+void ts::TDT::deserialize(const BinaryTable& table)
 {
     // Clear table content
     _is_valid = false;
@@ -75,9 +74,9 @@ void ts::TDT::deserialize (const BinaryTable& table)
     }
 
     // Reference to single section
-    const Section& sect (*table.sectionAt(0));
-    const uint8_t* data (sect.payload());
-    size_t remain (sect.payloadSize());
+    const Section& sect(*table.sectionAt(0));
+    const uint8_t* data(sect.payload());
+    size_t remain(sect.payloadSize());
 
     // Abort if not a TDT
     if (sect.tableId() != TID_TDT || remain < MJD_SIZE) {
@@ -85,7 +84,7 @@ void ts::TDT::deserialize (const BinaryTable& table)
     }
 
     // Get UTC time
-    DecodeMJD (data, MJD_SIZE, utc_time);
+    DecodeMJD(data, MJD_SIZE, utc_time);
     _is_valid = true;
 }
 
@@ -94,7 +93,7 @@ void ts::TDT::deserialize (const BinaryTable& table)
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::TDT::serialize (BinaryTable& table) const
+void ts::TDT::serialize(BinaryTable& table) const
 {
     // Reinitialize table object
     table.clear();
@@ -105,12 +104,33 @@ void ts::TDT::serialize (BinaryTable& table) const
     }
 
     // Encode the data in MJD in the payload (5 bytes)
-    uint8_t payload [MJD_SIZE];
-    EncodeMJD (utc_time, payload, MJD_SIZE);
+    uint8_t payload[MJD_SIZE];
+    EncodeMJD(utc_time, payload, MJD_SIZE);
 
     // Add the section in the table
-    table.addSection (new Section (TID_TDT, // tid
-                                   true,    // is_private_section
-                                   payload,
-                                   MJD_SIZE));
+    table.addSection(new Section(TID_TDT, // tid
+                                 true,    // is_private_section
+                                 payload,
+                                 MJD_SIZE));
+}
+
+
+//----------------------------------------------------------------------------
+// A static method to display a TDT section.
+//----------------------------------------------------------------------------
+
+void ts::TDT::DisplaySection(std::ostream& strm, const Section& section, int indent)
+{
+    const uint8_t* data = section.payload();
+    size_t size = section.payloadSize();
+
+    if (size >= 5) {
+        Time time;
+        DecodeMJD(data, 5, time);
+        data += 5; size -= 5;
+        strm << std::string(indent, ' ') << "UTC time: "
+             << time.format(Time::DATE | Time::TIME) << std::endl;
+    }
+
+    displayExtraData(strm, data, size, indent);
 }

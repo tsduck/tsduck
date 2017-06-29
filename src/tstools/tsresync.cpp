@@ -40,23 +40,22 @@
 #include "tsFatal.h"
 #include "tsMPEG.h"
 
-using namespace ts;
+#define MIN_SYNC_SIZE       (1024)              // 1 kB
+#define MAX_SYNC_SIZE       (8 * 1024 * 1024)   // 8 MB
+#define DEFAULT_SYNC_SIZE   (1024 * 1024)       // 1 MB
 
-#define MIN_SYNC_SIZE     (1024)              // 1 kB
-#define MAX_SYNC_SIZE     (8 * 1024 * 1024)   // 8 MB
-#define DEFAULT_SYNC_SIZE (1024 * 1024)       // 1 MB
-
-#define MIN_CONTIG_SIZE     (2 * PKT_SIZE)    // 2 transport packets
-#define MAX_CONTIG_SIZE     (8 * 1024 * 1024) // 8 MB
-#define DEFAULT_CONTIG_SIZE (512 * 1024)      // 512 kB
+#define MIN_CONTIG_SIZE     (2 * ts::PKT_SIZE)  // 2 transport packets
+#define MAX_CONTIG_SIZE     (8 * 1024 * 1024)   // 8 MB
+#define DEFAULT_CONTIG_SIZE (512 * 1024)        // 512 kB
 
 
 //----------------------------------------------------------------------------
 //  Command line options
 //----------------------------------------------------------------------------
 
-struct Options: public Args
+class Options: public ts::Args
 {
+public:
     Options (int argc, char *argv[]);
 
     size_t      sync_size;   // number of initial bytes to analyze for resync
@@ -70,8 +69,8 @@ struct Options: public Args
     std::string outfile;     // Output file name
 };
 
-Options::Options (int argc, char *argv[]) :
-    Args("MPEG Transport Stream Resynchronizer.", "[options] [filename]"),
+Options::Options(int argc, char *argv[]) :
+    ts::Args("MPEG Transport Stream Resynchronizer.", "[options] [filename]"),
     sync_size(0),
     contig_size(0),
     packet_size(0),
@@ -82,84 +81,84 @@ Options::Options (int argc, char *argv[]) :
     infile(),
     outfile()
 {
-    option ("",                0,  STRING, 0, 1);
-    option ("continue",       'c');
-    option ("header-size",    'h', UNSIGNED);
-    option ("keep",           'k');
-    option ("min-contiguous", 'm', INTEGER, 0, 1, MIN_CONTIG_SIZE, MAX_CONTIG_SIZE);
-    option ("packet-size",    'p', INTEGER, 0, 1, PKT_SIZE, 0x7FFFFFFFL);
-    option ("output",         'o', STRING);
-    option ("sync-size",      's', INTEGER, 0, 1, MIN_SYNC_SIZE, MAX_SYNC_SIZE);
-    option ("verbose",        'v');
+    option("",                0,  STRING, 0, 1);
+    option("continue",       'c');
+    option("header-size",    'h', UNSIGNED);
+    option("keep",           'k');
+    option("min-contiguous", 'm', INTEGER, 0, 1, MIN_CONTIG_SIZE, MAX_CONTIG_SIZE);
+    option("packet-size",    'p', INTEGER, 0, 1, ts::PKT_SIZE, 0x7FFFFFFFL);
+    option("output",         'o', STRING);
+    option("sync-size",      's', INTEGER, 0, 1, MIN_SYNC_SIZE, MAX_SYNC_SIZE);
+    option("verbose",        'v');
 
-    setHelp ("Input file:\n"
-             "\n"
-             "  MPEG transport stream file (standard input if omitted).\n"
-             "\n"
-             "Options:\n"
-             "\n"
-             "  -c\n"
-             "  --continue\n"
-             "      Continue re-resynchronizing after loss of synchronization.\n"
-             "      By default, stop after first packet not starting with 0x47.\n"
-             "\n"
-             "  -h value\n"
-             "  --header-size value\n"
-             "      When used with --packet-size, specifies the size of extra data preceeding\n"
-             "      each packet in the input file. The default is zero.\n"
-             "\n"
-             "  --help\n"
-             "      Display this help text.\n"
-             "\n"
-             "  -k\n"
-             "  --keep\n"
-             "      Keep TS packet size from input to output file. By default, strip extra\n"
-             "      data and reduce packets to 188 bytes. See option --packet-size for a\n"
-             "      description of supported input packet sizes.\n"
-             "\n"
-             "  -m value\n"
-             "  --min-contiguous value\n"
-             "      Minimum size containing contiguous valid packets to consider a slice of\n"
-             "      input file as containing actual packets (default: 512 kB).\n"
-             "\n"
-             "  -o filename\n"
-             "  --output filename\n"
-             "      Output file name (standard output by default).\n"
-             "\n"
-             "  -p value\n"
-             "  --packet-size value\n"
-             "      Expected TS packet size in bytes. By default, try 188-byte (standard),\n"
-             "      204-byte (trailing 16-byte Reed-Solomon outer FEC), 192-byte (leading\n"
-             "      4-byte timestamp in M2TS/Blu-ray disc files). If the input file contains\n"
-             "      any other type of packet encapsulation, use options --packet-size and\n"
-             "      --header-size.\n"
-             "\n"
-             "  -s value\n"
-             "  --sync-size value\n"
-             "      Number of initial bytes to analyze to find start of packet\n"
-             "      synchronization (default: 1 MB).\n"
-             "\n"
-             "  -v\n"
-             "  --verbose\n"
-             "      Display verbose information.\n"
-             "\n"
-             "  --version\n"
-             "      Display the version number.\n");
+    setHelp("Input file:\n"
+            "\n"
+            "  MPEG transport stream file (standard input if omitted).\n"
+            "\n"
+            "Options:\n"
+            "\n"
+            "  -c\n"
+            "  --continue\n"
+            "      Continue re-resynchronizing after loss of synchronization.\n"
+            "      By default, stop after first packet not starting with 0x47.\n"
+            "\n"
+            "  -h value\n"
+            "  --header-size value\n"
+            "      When used with --packet-size, specifies the size of extra data preceeding\n"
+            "      each packet in the input file. The default is zero.\n"
+            "\n"
+            "  --help\n"
+            "      Display this help text.\n"
+            "\n"
+            "  -k\n"
+            "  --keep\n"
+            "      Keep TS packet size from input to output file. By default, strip extra\n"
+            "      data and reduce packets to 188 bytes. See option --packet-size for a\n"
+            "      description of supported input packet sizes.\n"
+            "\n"
+            "  -m value\n"
+            "  --min-contiguous value\n"
+            "      Minimum size containing contiguous valid packets to consider a slice of\n"
+            "      input file as containing actual packets (default: 512 kB).\n"
+            "\n"
+            "  -o filename\n"
+            "  --output filename\n"
+            "      Output file name (standard output by default).\n"
+            "\n"
+            "  -p value\n"
+            "  --packet-size value\n"
+            "      Expected TS packet size in bytes. By default, try 188-byte (standard),\n"
+            "      204-byte (trailing 16-byte Reed-Solomon outer FEC), 192-byte (leading\n"
+            "      4-byte timestamp in M2TS/Blu-ray disc files). If the input file contains\n"
+            "      any other type of packet encapsulation, use options --packet-size and\n"
+            "      --header-size.\n"
+            "\n"
+            "  -s value\n"
+            "  --sync-size value\n"
+            "      Number of initial bytes to analyze to find start of packet\n"
+            "      synchronization (default: 1 MB).\n"
+            "\n"
+            "  -v\n"
+            "  --verbose\n"
+            "      Display verbose information.\n"
+            "\n"
+            "  --version\n"
+            "      Display the version number.\n");
 
-    analyze (argc, argv);
+    analyze(argc, argv);
 
-    infile = value ("");
-    outfile = value ("output");
-    sync_size = intValue<size_t> ("sync-size", DEFAULT_SYNC_SIZE);
-    contig_size = intValue<size_t> ("min-contiguous", DEFAULT_CONTIG_SIZE);
-    header_size = intValue<size_t> ("header-size", 0);
-    packet_size = intValue<size_t> ("packet-size", 0);
-    verbose = present ("verbose");
-    keep = present ("keep");
-    cont_sync = present ("continue");
+    infile = value("");
+    outfile = value("output");
+    sync_size = intValue<size_t>("sync-size", DEFAULT_SYNC_SIZE);
+    contig_size = intValue<size_t>("min-contiguous", DEFAULT_CONTIG_SIZE);
+    header_size = intValue<size_t>("header-size", 0);
+    packet_size = intValue<size_t>("packet-size", 0);
+    verbose = present("verbose");
+    keep = present("keep");
+    cont_sync = present("continue");
 
-    if (packet_size > 0 && header_size + PKT_SIZE > packet_size) {
-        error ("specified --header-size too large for specified --packet-size");
+    if (packet_size > 0 && header_size + ts::PKT_SIZE > packet_size) {
+        error("specified --header-size too large for specified --packet-size");
     }
 
     exitOnError();
@@ -177,7 +176,7 @@ class Resynchronizer
 public:
 
     // Reset the analysis of input data.
-    void reset ()
+    void reset()
     {
         _status = RS_OK;
         _in_pkt_size = 0;
@@ -187,7 +186,7 @@ public:
     // Look for MPEG packets in a buffer, according to an assumed packet size.
     // If the complete buffer matches the packet size, set input and output packet
     // sizes and return true. Return false otherwise.
-    bool checkSync (const uint8_t* buf, size_t buf_size, size_t pkt_size, size_t header_size);
+    bool checkSync(const uint8_t* buf, size_t buf_size, size_t pkt_size, size_t header_size);
 
     // Get packet sizes, as determined by checkSync(). Size is zero if no valid packet size found.
     size_t inputPacketSize() const {return _in_pkt_size;}
@@ -201,34 +200,34 @@ public:
 
     // Get/set status
     Status status() const {return _status;}
-    void setStatus (Status status) {_status = status;}
+    void setStatus(Status status) {_status = status;}
 
     // Read input data, return read size (zero on end of file or error)
-    size_t readData (uint8_t* buf, size_t size);
+    size_t readData(uint8_t* buf, size_t size);
 
     // Write one output packet from input packet.
-    bool writePacket (const uint8_t* input_packet);
+    bool writePacket(const uint8_t* input_packet);
 
     // Constructor
-    Resynchronizer (bool keep_packet_size) :
-        _status (RS_OK),
-        _keep_packet_size (keep_packet_size),
-        _out_size (0),
-        _in_pkt_size (0),
-        _in_header_size (0),
-        _out_pkt_size (0),
-        _out_header_size (0)
+    Resynchronizer(bool keep_packet_size) :
+        _status(RS_OK),
+        _keep_packet_size(keep_packet_size),
+        _out_size(0),
+        _in_pkt_size(0),
+        _in_header_size(0),
+        _out_pkt_size(0),
+        _out_header_size(0)
     {
     }
 
 private:
-    Status _status;            // Processing status
-    bool   _keep_packet_size;  // Same packet size on output file
+    Status   _status;            // Processing status
+    bool     _keep_packet_size;  // Same packet size on output file
     uint64_t _out_size;          // Size of output file
-    size_t _in_pkt_size;       // TS packet size in input stream (188, 204, 192)
-    size_t _in_header_size;    // Header size before TS packet in input stream (0, 4)
-    size_t _out_pkt_size;      // TS packet size in output stream
-    size_t _out_header_size;   // Header size before TS packet in output stream
+    size_t   _in_pkt_size;       // TS packet size in input stream (188, 204, 192)
+    size_t   _in_header_size;    // Header size before TS packet in input stream (0, 4)
+    size_t   _out_pkt_size;      // TS packet size in output stream
+    size_t   _out_header_size;   // Header size before TS packet in output stream
 };
 
 
@@ -236,12 +235,12 @@ private:
 // Read input data, return read size (zero on end of file or error)
 //----------------------------------------------------------------------------
 
-size_t Resynchronizer::readData (uint8_t* buf, size_t size)
+size_t Resynchronizer::readData(uint8_t* buf, size_t size)
 {
     std::streamsize got = 0;
-    std::streamsize remain = std::streamsize (size);
+    std::streamsize remain = std::streamsize(size);
     while (remain > 0) {
-        if (std::cin.read (reinterpret_cast <char*> (buf + got), remain)) {
+        if (std::cin.read(reinterpret_cast <char*> (buf + got), remain)) {
             const std::streamsize count = std::cin.gcount();
             got += count;
             remain -= count;
@@ -253,7 +252,7 @@ size_t Resynchronizer::readData (uint8_t* buf, size_t size)
             break;
         }
     }
-    return size_t (got);
+    return size_t(got);
 }
 
 
@@ -261,10 +260,10 @@ size_t Resynchronizer::readData (uint8_t* buf, size_t size)
 // Write one output packet from input packet.
 //----------------------------------------------------------------------------
 
-bool Resynchronizer::writePacket (const uint8_t* input_packet)
+bool Resynchronizer::writePacket(const uint8_t* input_packet)
 {
-    const char* out_pkt = reinterpret_cast <const char*> (input_packet + _in_header_size - _out_header_size);
-    if (std::cout.write (out_pkt, static_cast <std::streamsize> (_out_pkt_size))) {
+    const char* out_pkt = reinterpret_cast<const char*>(input_packet + _in_header_size - _out_header_size);
+    if (std::cout.write(out_pkt, std::streamsize(_out_pkt_size))) {
         _out_size += _out_pkt_size;
         return true;
     }
@@ -280,14 +279,14 @@ bool Resynchronizer::writePacket (const uint8_t* input_packet)
 //  Look for MPEG packets in a buffer, according to an assumed packet size.
 //----------------------------------------------------------------------------
 
-bool Resynchronizer::checkSync (const uint8_t* buf, size_t buf_size, size_t pkt_size, size_t header_size)
+bool Resynchronizer::checkSync(const uint8_t* buf, size_t buf_size, size_t pkt_size, size_t header_size)
 {
-    assert (pkt_size >= header_size + PKT_SIZE);
+    assert(pkt_size >= header_size + ts::PKT_SIZE);
     const uint8_t* end = buf + buf_size - pkt_size + 1;
 
     // Check if the buffer contains packets with the appropriate size
     while (buf < end) {
-        if (buf[header_size] != SYNC_BYTE) {
+        if (buf[header_size] != ts::SYNC_BYTE) {
             return false; // not found
         }
         buf += pkt_size;
@@ -296,7 +295,7 @@ bool Resynchronizer::checkSync (const uint8_t* buf, size_t buf_size, size_t pkt_
     // Packets found all along the buffer
     _in_pkt_size = pkt_size;
     _in_header_size = header_size;
-    _out_pkt_size = _keep_packet_size ? pkt_size : PKT_SIZE;
+    _out_pkt_size = _keep_packet_size ? pkt_size : ts::PKT_SIZE;
     _out_header_size = _keep_packet_size ? header_size : 0;
     return true;
 }
@@ -306,15 +305,15 @@ bool Resynchronizer::checkSync (const uint8_t* buf, size_t buf_size, size_t pkt_
 //  Program entry point
 //----------------------------------------------------------------------------
 
-int main (int argc, char *argv[])
+int main(int argc, char *argv[])
 {
-    Options opt (argc, argv);
-    InputRedirector input (opt.infile, opt);
-    OutputRedirector output (opt.outfile, opt);
-    Resynchronizer resync (opt.keep);
+    Options opt(argc, argv);
+    ts::InputRedirector input(opt.infile, opt);
+    ts::OutputRedirector output(opt.outfile, opt);
+    Resynchronizer resync(opt.keep);
 
     // Synchronization buffer
-    ByteBlock sync_buf_bb (opt.sync_size + opt.contig_size);
+    ts::ByteBlock sync_buf_bb(opt.sync_size + opt.contig_size);
     uint8_t* const sync_buf = sync_buf_bb.data();
     size_t const sync_buf_size = sync_buf_bb.size();
 
@@ -328,50 +327,50 @@ int main (int argc, char *argv[])
         resync.reset();
 
         // Read the initial buffer. We use these data to look for packet sync.
-        size_t const read_size = resync.readData (sync_buf + sync_pre_size, sync_buf_size - sync_pre_size);
+        size_t const read_size = resync.readData(sync_buf + sync_pre_size, sync_buf_size - sync_pre_size);
         size_t const sync_size = sync_pre_size + read_size;
         uint8_t* const sync_end = sync_buf + sync_size;
 
         if (opt.verbose) {
-            std::cerr << "* Analyzing " << prefix_fn << " " << Decimal (sync_size) << " bytes" << std::endl;
+            std::cerr << "* Analyzing " << prefix_fn << " " << ts::Decimal(sync_size) << " bytes" << std::endl;
             prefix_fn = "next";
         }
 
         // Look for a range of packets for at least --min-contiguous bytes
-        size_t const search_size = std::min (opt.contig_size, sync_size);
+        size_t const search_size = std::min(opt.contig_size, sync_size);
         uint8_t* const end_search = sync_end - search_size + 1;
 
         // Search a range of valid packets. Try all expected packet sizes.
         const uint8_t* start;
         for (start = sync_buf; start < end_search; start++) {
             if (opt.packet_size > 0) {
-                if (resync.checkSync (start, search_size, opt.packet_size, opt.header_size)) {
+                if (resync.checkSync(start, search_size, opt.packet_size, opt.header_size)) {
                     // Found user-specified encapsulation of TS packets
                     break;
                 }
             }
             else {
-                if (resync.checkSync (start, search_size, PKT_SIZE, 0)) {
+                if (resync.checkSync(start, search_size, ts::PKT_SIZE, 0)) {
                     // Found standard TS packets
                     break;
                 }
-                if (resync.checkSync (start, search_size, PKT_RS_SIZE, 0)) {
+                if (resync.checkSync(start, search_size, ts::PKT_RS_SIZE, 0)) {
                     // Found TS packets with trailing Reed-Solomon outer FEC
                     break;
                 }
-                if (resync.checkSync (start, search_size, PKT_M2TS_SIZE, M2TS_HEADER_SIZE)) {
+                if (resync.checkSync(start, search_size, ts::PKT_M2TS_SIZE, ts::M2TS_HEADER_SIZE)) {
                     // Found TS packets with leading 4-byte timestamp (M2TS format, blu-ray discs)
                     break;
                 }
             }
         }
         if (resync.inputPacketSize() == 0) {
-            std::cerr << "* Cannot find MPEG TS packets after " << Decimal (search_size) << " bytes" << std::endl;
+            std::cerr << "* Cannot find MPEG TS packets after " << ts::Decimal(search_size) << " bytes" << std::endl;
             resync.setStatus (RS_ERROR);
             break;
         }
         if (opt.verbose) {
-            std::cerr << "* Found synchronization after " << Decimal (start - sync_buf) << " bytes" << std::endl
+            std::cerr << "* Found synchronization after " << ts::Decimal(start - sync_buf) << " bytes" << std::endl
                       << "* Packet size is " << resync.inputPacketSize() << " bytes";
             if (resync.inputHeaderSize() > 0) {
                 std::cerr << " (" << resync.inputHeaderSize() << "-byte header)";
@@ -380,8 +379,8 @@ int main (int argc, char *argv[])
         }
 
         // Output initial sync buffer, starting at first valid packet, writing all valid packets
-        while (start <= sync_end - resync.inputPacketSize() && start[resync.inputHeaderSize()] == SYNC_BYTE) {
-            if (!resync.writePacket (start)) {
+        while (start <= sync_end - resync.inputPacketSize() && start[resync.inputHeaderSize()] == ts::SYNC_BYTE) {
+            if (!resync.writePacket(start)) {
                 break;
             }
             start += resync.inputPacketSize();
@@ -396,33 +395,33 @@ int main (int argc, char *argv[])
         }
         else {
             sync_pre_size = sync_end - start;
-            ::memmove (sync_buf, start, sync_pre_size);
+            ::memmove(sync_buf, start, sync_pre_size);
         }
 
         // If more than one packet left, out of sync
         if (sync_pre_size >= resync.inputPacketSize()) {
-            resync.setStatus (RS_SYNC_LOST);
+            resync.setStatus(RS_SYNC_LOST);
         }
 
         // Read the rest of the input file
         while (resync.status() == RS_OK) {
-            assert (sync_pre_size < resync.inputPacketSize());
+            assert(sync_pre_size < resync.inputPacketSize());
             // Read the next packet
             const size_t remain_size = resync.inputPacketSize() - sync_pre_size;
-            if (resync.readData (sync_buf + sync_pre_size, remain_size) != remain_size) {
-                resync.setStatus (RS_EOF);
+            if (resync.readData(sync_buf + sync_pre_size, remain_size) != remain_size) {
+                resync.setStatus(RS_EOF);
             }
-            else if (sync_buf[resync.inputHeaderSize()] != SYNC_BYTE) {
+            else if (sync_buf[resync.inputHeaderSize()] != ts::SYNC_BYTE) {
                 std::cerr << "*** Synchronization lost after "
-                          << Decimal (resync.outputFilePackets()) << " TS packets" << std::endl
-                          << Format ("*** Got 0x%02X instead of 0x%02X at start of TS packet", int (sync_buf[resync.inputHeaderSize()]), SYNC_BYTE)
+                          << ts::Decimal(resync.outputFilePackets()) << " TS packets" << std::endl
+                          << ts::Format("*** Got 0x%02X instead of 0x%02X at start of TS packet", int(sync_buf[resync.inputHeaderSize()]), ts::SYNC_BYTE)
                           << std::endl;
-                resync.setStatus (RS_SYNC_LOST);
+                resync.setStatus(RS_SYNC_LOST);
                 // Will resynchronize with sync buffer pre-loaded
                 sync_pre_size = resync.inputPacketSize();
             }
             else {
-                resync.writePacket (sync_buf);
+                resync.writePacket(sync_buf);
                 sync_pre_size = 0;
             }
         }
@@ -430,8 +429,8 @@ int main (int argc, char *argv[])
     } while (resync.status() == RS_OK || (resync.status() == RS_SYNC_LOST && opt.cont_sync));
 
     if (opt.verbose) {
-        std::cerr << "* Output " << Decimal (resync.outputFileBytes()) << " bytes, "
-                  << Decimal (resync.outputFilePackets()) << " " << resync.outputPacketSize() << "-byte packets" << std::endl;
+        std::cerr << "* Output " << ts::Decimal(resync.outputFileBytes()) << " bytes, "
+                  << ts::Decimal(resync.outputFilePackets()) << " " << resync.outputPacketSize() << "-byte packets" << std::endl;
     }
 
     return resync.status() == RS_EOF ? EXIT_SUCCESS : EXIT_FAILURE;

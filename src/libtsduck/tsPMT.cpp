@@ -32,7 +32,8 @@
 //----------------------------------------------------------------------------
 
 #include "tsPMT.h"
-
+#include "tsFormat.h"
+#include "tsNames.h"
 
 
 //----------------------------------------------------------------------------
@@ -254,4 +255,62 @@ bool ts::PMT::Stream::isSubtitles() const
     }
     // After all, no subtitle here...
     return false;
+}
+
+
+//----------------------------------------------------------------------------
+// A static method to display a PMT section.
+//----------------------------------------------------------------------------
+
+void ts::PMT::DisplaySection(std::ostream & strm, const ts::Section & section, int indent)
+{
+    const std::string margin(indent, ' ');
+    const uint8_t* data = section.payload();
+    size_t size = section.payloadSize();
+
+    if (size >= 4) {
+        // Fixed part
+        PID pid = GetUInt16(data) & 0x1FFF;
+        size_t info_length = GetUInt16(data + 2) & 0x0FFF;
+        data += 4; size -= 4;
+        if (info_length > size) {
+            info_length = size;
+        }
+        strm << margin << "Program: " << section.tableIdExtension()
+             << Format(" (0x%04X)", int(section.tableIdExtension()))
+             << ", PCR PID: ";
+        if (pid == PID_NULL) {
+            strm << "none";
+        }
+        else {
+            strm << pid << Format(" (0x%04X)", int(pid));
+        }
+        strm << std::endl;
+
+        // Process and display "program info"
+        if (info_length > 0) {
+            strm << margin << "Program information:" << std::endl;
+            Descriptor::Display(strm, data, info_length, indent, section.tableId());
+        }
+        data += info_length; size -= info_length;
+
+        // Process and display "elementary stream info"
+        while (size >= 5) {
+            uint8_t stream = *data;
+            PID es_pid = GetUInt16(data + 1) & 0x1FFF;
+            size_t es_info_length = GetUInt16(data + 3) & 0x0FFF;
+            data += 5; size -= 5;
+            if (es_info_length > size) {
+                es_info_length = size;
+            }
+            strm << margin << "Elementary stream: type "
+                 << Format("0x%02X", int(stream))
+                 << " (" << names::StreamType(stream)
+                 << "), PID: " << es_pid << Format(" (0x%04X)", int(es_pid)) << std::endl;
+            Descriptor::Display(strm, data, es_info_length, indent, section.tableId());
+            data += es_info_length; size -= es_info_length;
+        }
+    }
+
+    displayExtraData(strm, data, size, indent);
 }

@@ -269,11 +269,11 @@ size_t ts::BinaryTable::totalSize() const
 // Add several sections to a table
 //----------------------------------------------------------------------------
 
-bool ts::BinaryTable::addSections (const SectionPtrVector& sections, bool replace, bool grow)
+bool ts::BinaryTable::addSections(const SectionPtrVector& sections, bool replace, bool grow)
 {
     bool ok = true;
     for (size_t n = 0; n < sections.size(); n++) {
-        ok = addSection (sections[n], replace, grow) && ok;
+        ok = addSection(sections[n], replace, grow) && ok;
     }
     return ok;
 }
@@ -284,7 +284,7 @@ bool ts::BinaryTable::addSections (const SectionPtrVector& sections, bool replac
 // When all sections are present, the table becomes valid.
 //----------------------------------------------------------------------------
 
-bool ts::BinaryTable::addSection (const SectionPtr& sect, bool replace, bool grow)
+bool ts::BinaryTable::addSection(const SectionPtr& sect, bool replace, bool grow)
 {
     // Reject invalid sections
 
@@ -298,37 +298,37 @@ bool ts::BinaryTable::addSection (const SectionPtr& sect, bool replace, bool gro
 
     if (_sections.size() == 0) {
         // This is the first section, set the various parameters
-        _sections.resize (size_t (sect->lastSectionNumber()) + 1);
-        assert (index < int (_sections.size()));
+        _sections.resize(size_t(sect->lastSectionNumber()) + 1);
+        assert(index < int(_sections.size()));
         _tid = sect->tableId();
         _tid_ext = sect->tableIdExtension();
         _version = sect->version();
-        _source_pid = sect->sourcePID ();
-        _missing_count = int (_sections.size());
+        _source_pid = sect->sourcePID();
+        _missing_count = int(_sections.size());
     }
     else if (sect->tableId() != _tid || sect->tableIdExtension() != _tid_ext || sect->version() != _version) {
         // Not the same table
         return false;
     }
-    else if (!grow && (index >= int (_sections.size()) || size_t (sect->lastSectionNumber()) != _sections.size() - 1)) {
+    else if (!grow && (index >= int(_sections.size()) || size_t(sect->lastSectionNumber()) != _sections.size() - 1)) {
         // Incompatible number of sections
         return false;
     }
-    else if (size_t (sect->lastSectionNumber()) != _sections.size() - 1) {
+    else if (size_t(sect->lastSectionNumber()) != _sections.size() - 1) {
         // Incompatible number of sections but the table is allowed to grow
-        if (size_t (sect->lastSectionNumber()) < _sections.size() - 1) {
+        if (size_t(sect->lastSectionNumber()) < _sections.size() - 1) {
             // The new section must be updated
-            sect->setLastSectionNumber (uint8_t (int (_sections.size()) - 1));
+            sect->setLastSectionNumber(uint8_t(int(_sections.size()) - 1));
         }
         else {
             // The table must be updated (more sections)
-            _missing_count += int (sect->lastSectionNumber()) + 1 - int (_sections.size());
-            _sections.resize (size_t (sect->lastSectionNumber()) + 1);
-            assert (index < int (_sections.size()));
+            _missing_count += int(sect->lastSectionNumber()) + 1 - int(_sections.size());
+            _sections.resize(size_t(sect->lastSectionNumber()) + 1);
+            assert(index < int(_sections.size()));
             // Modify all previously entered sections
-            for (int si = 0; si < int (_sections.size()); ++si) {
-                if (!_sections[si].isNull ()) {
-                    _sections[si]->setLastSectionNumber (sect->lastSectionNumber());
+            for (int si = 0; si < int(_sections.size()); ++si) {
+                if (!_sections[si].isNull()) {
+                    _sections[si]->setLastSectionNumber(sect->lastSectionNumber());
                 }
             }
         }
@@ -336,7 +336,7 @@ bool ts::BinaryTable::addSection (const SectionPtr& sect, bool replace, bool gro
 
     // Now add the section
 
-    if (_sections[index].isNull ()) {
+    if (_sections[index].isNull()) {
         // The section was not present, add it
         _sections[index] = sect;
         _missing_count--;
@@ -353,7 +353,7 @@ bool ts::BinaryTable::addSection (const SectionPtr& sect, bool replace, bool gro
     // The table becomes valid if there is no more missing section
 
     _is_valid = _missing_count == 0;
-    assert (_missing_count >= 0);
+    assert(_missing_count >= 0);
 
     return true;
 }
@@ -363,15 +363,15 @@ bool ts::BinaryTable::addSection (const SectionPtr& sect, bool replace, bool gro
 // Write the binary table on standard streams.
 //----------------------------------------------------------------------------
 
-std::ostream& ts::BinaryTable::write (std::ostream& strm, ReportInterface& report) const
+std::ostream& ts::BinaryTable::write(std::ostream& strm, ReportInterface& report) const
 {
     if (!_is_valid) {
-        report.error ("invalid table, cannot write it to file");
-        strm.setstate (std::ios::failbit);
+        report.error("invalid table, cannot write it to file");
+        strm.setstate(std::ios::failbit);
     }
     else {
         // Write all sections to the file
-        for (size_t n = 0; n < _sections.size() && _sections[n]->write (strm, report); ++n) {
+        for (size_t n = 0; n < _sections.size() && _sections[n]->write(strm, report); ++n) {
         }
     }
     return strm;
@@ -382,15 +382,15 @@ std::ostream& ts::BinaryTable::write (std::ostream& strm, ReportInterface& repor
 // Save the binary table in a file. Return true on success, false on error.
 //----------------------------------------------------------------------------
 
-bool ts::BinaryTable::save (const char* file_name, ReportInterface& report) const
+bool ts::BinaryTable::save(const char* file_name, ReportInterface& report) const
 {
-    std::ofstream outfile (file_name, std::ios::out | std::ios::binary);
+    std::ofstream outfile(file_name, std::ios::out | std::ios::binary);
     if (!outfile) {
         report.error ("error creating %s", file_name);
         return false;
     }
     else {
-        write (outfile, report);
+        write(outfile, report);
         const bool ok = outfile.good();
         outfile.close();
         return ok;

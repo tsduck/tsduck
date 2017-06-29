@@ -34,6 +34,10 @@
 #include "tsSection.h"
 #include "tsDecimal.h"
 #include "tsCRC32.h"
+#include "tsFormat.h"
+#include "tsDecimal.h"
+#include "tsNames.h"
+#include "tsHexa.h"
 
 
 //----------------------------------------------------------------------------
@@ -438,7 +442,7 @@ namespace {
 // section, wrong crc), the failbit of the stream is set.
 //----------------------------------------------------------------------------
 
-std::istream& ts::Section::read (std::istream& strm, CRC32::Validation crc_op, ReportInterface& report)
+std::istream& ts::Section::read(std::istream& strm, CRC32::Validation crc_op, ReportInterface& report)
 {
     // Invalidate current content
     clear();
@@ -450,37 +454,37 @@ std::istream& ts::Section::read (std::istream& strm, CRC32::Validation crc_op, R
 
     // Section size and content
     size_t secsize = 3; // short header size
-    ByteBlockPtr secdata (0);
+    ByteBlockPtr secdata(0);
 
     // Read short header
     uint8_t header[3];
-    std::streampos position (strm.tellg());
-    strm.read (reinterpret_cast <char*> (header), 3);
-    size_t insize = size_t (strm.gcount());
+    std::streampos position(strm.tellg());
+    strm.read(reinterpret_cast <char*> (header), 3);
+    size_t insize = size_t(strm.gcount());
 
     // Read rest of the section
     if (insize == 3) {
-        secsize += GetUInt16 (header + 1) & 0x0FFF;
-        secdata = new ByteBlock (secsize);
-        CheckNonNull (secdata.pointer());
-        ::memcpy (secdata->data(), header, 3);
-        strm.read (reinterpret_cast <char*> (secdata->data() + 3), std::streamsize (secsize - 3));
-        insize += size_t (strm.gcount());
+        secsize += GetUInt16(header + 1) & 0x0FFF;
+        secdata = new ByteBlock(secsize);
+        CheckNonNull(secdata.pointer());
+        ::memcpy(secdata->data(), header, 3);
+        strm.read(reinterpret_cast <char*> (secdata->data() + 3), std::streamsize(secsize - 3));
+        insize += size_t(strm.gcount());
     }
 
     if (insize != secsize) {
         // Truncated section
         if (insize > 0) {
-            strm.setstate (std::ios::failbit);
-            report.error ("truncated section" + AfterBytes (position) +
-                          ", got " + Decimal (insize) + " bytes, expected " + Decimal (secsize));
+            strm.setstate(std::ios::failbit);
+            report.error("truncated section" + AfterBytes(position) +
+                         ", got " + Decimal(insize) + " bytes, expected " + Decimal(secsize));
         }
     }
     else {
         // Section fully read
-        reload (secdata, PID_NULL, crc_op);
+        reload(secdata, PID_NULL, crc_op);
         if (!_is_valid) {
-            report.error ("invalid section" + AfterBytes (position));
+            report.error("invalid section" + AfterBytes(position));
         }
     }
 
@@ -562,4 +566,43 @@ bool ts::Section::LoadFile(SectionPtrVector& sections,
     strm.close();
 
     return success;
+}
+
+
+//----------------------------------------------------------------------------
+// Dump the section on an output stream
+//----------------------------------------------------------------------------
+
+std::ostream& ts::Section::dump(std::ostream& strm, int indent, CASFamily cas, bool no_header) const
+{
+    const std::string margin(indent, ' ');
+    const TID tid(tableId());
+
+    // Filter invalid section
+    if (!_is_valid) {
+        return strm;
+    }
+
+    // Display common header lines.
+    // If PID is the null PID, this means "unknown PID"
+    if (!no_header) {
+        strm << margin << "* Section dump"
+             << Format(", PID %d (0x%04X)", int(_source_pid), int(_source_pid))
+             << Format(", TID %d (0x%02X)", tid, tid)
+             << " (" << names::TID(tid, cas) << ")" << std::endl
+             << margin << "  Section size: " << size()
+             << " bytes, header: " << (isLongSection() ? "long" : "short") << std::endl;
+        if (isLongSection()) {
+            strm << margin
+                 << Format("  TIDext: %d (0x%04X)", int(tableIdExtension()), int(tableIdExtension()))
+                 << ", version: " << int(version())
+                 << ", index: " << int(sectionNumber())
+                 << ", last: " << int(lastSectionNumber())
+                 << ", " << (isNext() ? "next" : "current") << std::endl;
+        }
+    }
+
+    // Display section body
+    strm << Hexa(content(), size(), hexa::HEXA | hexa::ASCII | hexa::OFFSET, indent + 2);
+    return strm;
 }

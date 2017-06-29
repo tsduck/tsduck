@@ -63,7 +63,7 @@ namespace ts {
         //! @param [in] table Binary table to deserialize.
         //!
         NIT(const BinaryTable& table) :
-            AbstractTransportListTable(TID_NIT_ACT, table),  // TID updated by Deserialize
+            AbstractTransportListTable(TID_NIT_ACT, table),  // TID updated by deserialize()
             network_id(_tid_ext)
         {
         }
@@ -85,5 +85,13 @@ namespace ts {
         {
             _table_id = uint8_t(is_actual ? TID_NIT_ACT : TID_NIT_OTH);
         }
+
+        //!
+        //! A static method to display a NIT section.
+        //! @param [in,out] strm Output text stream.
+        //! @param [in] section A safe pointer to the section to display.
+        //! @param [in] indent Indentation width.
+        //!
+        static void DisplaySection(std::ostream& strm, const ts::Section& section, int indent);
     };
 }

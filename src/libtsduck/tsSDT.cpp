@@ -33,18 +33,19 @@
 
 #include "tsSDT.h"
 #include "tsStringUtils.h"
-
+#include "tsFormat.h"
+#include "tsNames.h"
 
 
 //----------------------------------------------------------------------------
-// Default constructor:
+// Default constructor
 //----------------------------------------------------------------------------
 
 ts::SDT::SDT(bool is_actual_,
-               uint8_t version_,
-               bool is_current_,
-               uint16_t ts_id_,
-               uint16_t onetw_id_) :
+             uint8_t version_,
+             bool is_current_,
+             uint16_t ts_id_,
+             uint16_t onetw_id_) :
     AbstractLongTable(TID(is_actual_ ? TID_SDT_ACT : TID_SDT_OTH), version_, is_current_),
     ts_id(ts_id_),
     onetw_id(onetw_id_),
@@ -59,7 +60,7 @@ ts::SDT::SDT(bool is_actual_,
 //----------------------------------------------------------------------------
 
 ts::SDT::SDT(const BinaryTable& table) :
-    AbstractLongTable(TID_SDT_ACT),  // updated by Deserialize
+    AbstractLongTable(TID_SDT_ACT),  // updated by deserialize()
     ts_id(0),
     onetw_id(0),
     services()
@@ -182,15 +183,15 @@ void ts::SDT::deserialize (const BinaryTable& table)
 // Session number is incremented. Data and remain are reinitialized.
 //----------------------------------------------------------------------------
 
-void ts::SDT::addSection (BinaryTable& table,
-                            int& section_number,
-                            uint8_t* payload,
-                            uint8_t*& data,
-                            size_t& remain) const
+void ts::SDT::addSection(BinaryTable& table,
+                         int& section_number,
+                         uint8_t* payload,
+                         uint8_t*& data,
+                         size_t& remain) const
 {
-    table.addSection (new Section (_table_id,
-                                   true,    // is_private_section
-                                   ts_id,   // tid_ext
+    table.addSection(new Section(_table_id,
+                                 true,    // is_private_section
+                                 ts_id,   // tid_ext
                                    version,
                                    is_current,
                                    uint8_t(section_number),
@@ -481,4 +482,58 @@ void ts::SDT::Service::setType (uint8_t service_type)
         uint8_t* payload (descs[index]->payload());
         payload[0] = service_type;
     }
+}
+
+
+//----------------------------------------------------------------------------
+// A static method to display a SDT section.
+//----------------------------------------------------------------------------
+
+void ts::SDT::DisplaySection(std::ostream& strm, const Section& section, int indent)
+{
+    const std::string margin(indent, ' ');
+    const uint8_t* data = section.payload();
+    size_t size = section.payloadSize();
+
+    strm << margin << "Transport Stream Id: " << section.tableIdExtension()
+         << Format(" (0x%04X)", int(section.tableIdExtension()))
+         << std::endl;
+
+    if (size >= 2) {
+        uint16_t nwid = GetUInt16(data);
+        strm << margin << "Original Network Id: " << nwid
+             << Format(" (0x%04X)", int(nwid))
+             << std::endl;
+        data += 2; size -= 2;
+        if (size >= 1) {
+            data += 1; size -= 1; // unused byte
+        }
+
+        // Loop across all services
+        while (size >= 5) {
+            uint16_t servid = GetUInt16(data);
+            bool eits = (data[2] >> 1) & 0x01;
+            bool eitpf = data[2] & 0x01;
+            uint16_t length_bytes = GetUInt16(data + 3);
+            uint8_t running_status = uint8_t(length_bytes >> 13);
+            bool ca_mode = (length_bytes >> 12) & 0x01;
+            size_t length = length_bytes & 0x0FFF;
+            data += 5; size -= 5;
+            if (length > size) {
+                length = size;
+            }
+            strm << margin << "Service Id: " << servid
+                 << Format(" (0x%04X)", int(servid))
+                 << ", EITs: " << YesNo(eits)
+                 << ", EITp/f: " << YesNo(eitpf)
+                 << ", CA mode: " << (ca_mode ? "controlled" : "free")
+                 << std::endl << margin
+                 << "Running status: " << names::RunningStatus(running_status)
+                 << std::endl;
+            Descriptor::Display(strm, data, length, indent, section.tableId());
+            data += length; size -= length;
+        }
+    }
+
+    displayExtraData(strm, data, size, indent);
 }

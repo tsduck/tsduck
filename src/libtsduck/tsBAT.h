@@ -66,5 +66,13 @@ namespace ts {
             bouquet_id(_tid_ext)
         {
         }
+
+        //!
+        //! A static method to display a BAT section.
+        //! @param [in,out] strm Output text stream.
+        //! @param [in] section A safe pointer to the section to display.
+        //! @param [in] indent Indentation width.
+        //!
+        static void DisplaySection(std::ostream& strm, const ts::Section& section, int indent);
     };
 }

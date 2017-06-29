@@ -49,6 +49,14 @@ namespace ts {
         virtual void serialize(BinaryTable& table) const;
         virtual void deserialize(const BinaryTable& table);
 
+        //!
+        //! A static method to display a section.
+        //! @param [in,out] strm Output text stream.
+        //! @param [in] section A safe pointer to the section to display.
+        //! @param [in] indent Indentation width.
+        //!
+        static void DisplaySection(std::ostream& strm, const ts::Section& section, int indent);
+
     protected:
         //!
         //! Table_id extension.

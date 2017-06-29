@@ -89,6 +89,7 @@ HEADERS += \
     ../../../src/libtsduck/tsECMGClient.h \
     ../../../src/libtsduck/tsECMGClientHandlerInterface.h \
     ../../../src/libtsduck/tsECMGSCS.h \
+    ../../../src/libtsduck/tsEIT.h \
     ../../../src/libtsduck/tsEMMGMUX.h \
     ../../../src/libtsduck/tsEnhancedAC3Descriptor.h \
     ../../../src/libtsduck/tsEnumeration.h \
@@ -148,7 +149,7 @@ HEADERS += \
     ../../../src/libtsduck/tsPollFiles.h \
     ../../../src/libtsduck/tsPrivateDataSpecifierDescriptor.h \
     ../../../src/libtsduck/tsPSILogger.h \
-    ../../../src/libtsduck/tsPSILoggerOptions.h \
+    ../../../src/libtsduck/tsPSILoggerArgs.h \
     ../../../src/libtsduck/tsRandomGenerator.h \
     ../../../src/libtsduck/tsReportBuffer.h \
     ../../../src/libtsduck/tsReportBufferTemplate.h \
@@ -196,7 +197,7 @@ HEADERS += \
     ../../../src/libtsduck/tsTableHandlerInterface.h \
     ../../../src/libtsduck/tsTables.h \
     ../../../src/libtsduck/tsTablesLogger.h \
-    ../../../src/libtsduck/tsTablesLoggerOptions.h \
+    ../../../src/libtsduck/tsTablesLoggerArgs.h \
     ../../../src/libtsduck/tsTCPConnection.h \
     ../../../src/libtsduck/tsTCPServer.h \
     ../../../src/libtsduck/tsTCPSocket.h \
@@ -247,6 +248,8 @@ HEADERS += \
     ../../../src/libtsduck/tsVariable.h \
     ../../../src/libtsduck/tsVersion.h \
     ../../../src/libtsduck/tsVideoAttributes.h \
+    ../../../src/libtsduck/tsTablesDisplay.h \
+    ../../../src/libtsduck/tsTablesDisplayArgs.h \
     ../../../src/libtsduck/tsTSScanner.h
 
 SOURCES += \
@@ -256,6 +259,7 @@ SOURCES += \
     ../../../src/libtsduck/tsAbstractDescriptor.cpp \
     ../../../src/libtsduck/tsAbstractDescriptorsTable.cpp \
     ../../../src/libtsduck/tsAbstractDeliverySystemDescriptor.cpp \
+    ../../../src/libtsduck/tsAbstractTable.cpp \
     ../../../src/libtsduck/tsAbstractTransportListTable.cpp \
     ../../../src/libtsduck/tsAC3Attributes.cpp \
     ../../../src/libtsduck/tsAC3Descriptor.cpp \
@@ -270,9 +274,9 @@ SOURCES += \
     ../../../src/libtsduck/tsAVCParser.cpp \
     ../../../src/libtsduck/tsAVCSequenceParameterSet.cpp \
     ../../../src/libtsduck/tsAVCVUIParameters.cpp \
+    ../../../src/libtsduck/tsBAT.cpp \
     ../../../src/libtsduck/tsBCD.cpp \
     ../../../src/libtsduck/tsBinaryTable.cpp \
-    ../../../src/libtsduck/tsBinaryTableDisplay.cpp \
     ../../../src/libtsduck/tsBouquetNameDescriptor.cpp \
     ../../../src/libtsduck/tsByteBlock.cpp \
     ../../../src/libtsduck/tsCADescriptor.cpp \
@@ -300,6 +304,7 @@ SOURCES += \
     ../../../src/libtsduck/tsDescriptorListDisplay.cpp \
     ../../../src/libtsduck/tsECMGClient.cpp \
     ../../../src/libtsduck/tsECMGSCS.cpp \
+    ../../../src/libtsduck/tsEIT.cpp \
     ../../../src/libtsduck/tsEMMGMUX.cpp \
     ../../../src/libtsduck/tsEnhancedAC3Descriptor.cpp \
     ../../../src/libtsduck/tsEnumeration.cpp \
@@ -331,6 +336,7 @@ SOURCES += \
     ../../../src/libtsduck/tsNames.cpp \
     ../../../src/libtsduck/tsNamesOUI.cpp \
     ../../../src/libtsduck/tsNetworkNameDescriptor.cpp \
+    ../../../src/libtsduck/tsNIT.cpp \
     ../../../src/libtsduck/tsNullReport.cpp \
     ../../../src/libtsduck/tsObject.cpp \
     ../../../src/libtsduck/tsOneShotPacketizer.cpp \
@@ -349,14 +355,13 @@ SOURCES += \
     ../../../src/libtsduck/tsPollFiles.cpp \
     ../../../src/libtsduck/tsPrivateDataSpecifierDescriptor.cpp \
     ../../../src/libtsduck/tsPSILogger.cpp \
-    ../../../src/libtsduck/tsPSILoggerOptions.cpp \
+    ../../../src/libtsduck/tsPSILoggerArgs.cpp \
     ../../../src/libtsduck/tsReportInterface.cpp \
     ../../../src/libtsduck/tsRingNode.cpp \
     ../../../src/libtsduck/tsScrambling.cpp \
     ../../../src/libtsduck/tsSDT.cpp \
     ../../../src/libtsduck/tsSection.cpp \
     ../../../src/libtsduck/tsSectionDemux.cpp \
-    ../../../src/libtsduck/tsSectionDisplay.cpp \
     ../../../src/libtsduck/tsService.cpp \
     ../../../src/libtsduck/tsServiceDescriptor.cpp \
     ../../../src/libtsduck/tsServiceListDescriptor.cpp \
@@ -378,7 +383,7 @@ SOURCES += \
     ../../../src/libtsduck/tsSystemRandomGenerator.cpp \
     ../../../src/libtsduck/tsSysUtils.cpp \
     ../../../src/libtsduck/tsTablesLogger.cpp \
-    ../../../src/libtsduck/tsTablesLoggerOptions.cpp \
+    ../../../src/libtsduck/tsTablesLoggerArgs.cpp \
     ../../../src/libtsduck/tsTCPConnection.cpp \
     ../../../src/libtsduck/tsTCPServer.cpp \
     ../../../src/libtsduck/tsTCPSocket.cpp \
@@ -417,6 +422,8 @@ SOURCES += \
     ../../../src/libtsduck/tsUserInterrupt.cpp \
     ../../../src/libtsduck/tsVersion.cpp \
     ../../../src/libtsduck/tsVideoAttributes.cpp \
+    ../../../src/libtsduck/tsTablesDisplay.cpp \
+    ../../../src/libtsduck/tsTablesDisplayArgs.cpp \
     ../../../src/libtsduck/tsTSScanner.cpp
 
 linux {

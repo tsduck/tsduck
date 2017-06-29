@@ -80,6 +80,17 @@ namespace ts {
         //!
         virtual ~AbstractTable () {}
 
+        //!
+        //! Profile of a function to display a section.
+        //! Each subclass should provide a staic function named @e DisplaySection
+        //! which displays a section of its table-it.
+        //!
+        //! @param [in,out] strm Output text stream.
+        //! @param [in] section A safe pointer to the section to display.
+        //! @param [in] indent Indentation width.
+        //!
+        typedef void (*DisplaySectionFunction)(std::ostream& strm, const ts::Section& section, int indent);
+
     protected:
         //!
         //! The table id can be modified by subclasses only
@@ -96,6 +107,16 @@ namespace ts {
         //! @param [in] tid Table id.
         //!
         AbstractTable(TID tid) : _table_id(tid), _is_valid(false) {}
+
+        //!
+        //! A utility method to dump extraneous bytes after the expected section data.
+        //! Useful for static displaySection() methods.
+        //! @param [in,out] strm Output text stream.
+        //! @param [in] data Address of extra data to dump.
+        //! @param [in] size Size of extra data to dump.
+        //! @param [in] indent Indentation width.
+        //!
+        static void displayExtraData(std::ostream& strm, const void *data, size_t size, int indent);
 
     private:
         // Unreachable constructors and operators.

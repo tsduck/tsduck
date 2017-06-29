@@ -241,17 +241,6 @@ namespace ts {
         }
 
         //!
-        //! Display the table on an output stream.
-        //! The content of the table is interpreted according to the table id.
-        //! @param [in,out] strm Output stream (text output).
-        //! @param [in] indent Indentation width.
-        //! @param [in] cas CAS family of the table. Used to interpret CAS-specific fields.
-        //! @param [in] tlv A set of TLV syntax to display for sections of unknown type.
-        //! @return A reference to @a strm.
-        //!
-        std::ostream& display(std::ostream& strm, int indent = 0, CASFamily cas = CAS_OTHER, const TLVSyntaxVector& tlv = TLVSyntaxVector()) const;
-
-        //!
         //! Write the binary table on a standard stream.
         //! @param [in,out] strm Output stream (binary output).
         //! @param [in,out] report Where to report errors.
@@ -300,16 +289,4 @@ namespace ts {
     //! Vector of BinaryTable pointers
     //!
     typedef std::vector<BinaryTablePtr> BinaryTablePtrVector;
-}
-
-//!
-//! Display operator for tables.
-//! The content of the table is interpreted according to the table id.
-//! @param [in,out] strm Output stream (text output).
-//! @param [in] table The table to output.
-//! @return A reference to @a strm.
-//!
-TSDUCKDLL inline std::ostream& operator<<(std::ostream& strm, const ts::BinaryTable& table)
-{
-    return table.display(strm);
 }

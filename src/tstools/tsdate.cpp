@@ -33,6 +33,7 @@
 
 #include "tsArgs.h"
 #include "tsInputRedirector.h"
+#include "tsTablesDisplay.h"
 #include "tsSectionDemux.h"
 #include "tsStringUtils.h"
 #include "tsNames.h"
@@ -40,16 +41,15 @@
 #include "tsTOT.h"
 #include "tsFormat.h"
 
-using namespace ts;
-
 
 //----------------------------------------------------------------------------
 //  Command line options
 //----------------------------------------------------------------------------
 
-struct Options: public Args
+class Options: public ts::Args
 {
-    Options (int argc, char *argv[]);
+public:
+    Options(int argc, char *argv[]);
 
     bool        no_tdt;      // Do not try to get a TDT
     bool        no_tot;      // Do not try to get a TOT
@@ -58,54 +58,54 @@ struct Options: public Args
     std::string infile;      // Input file name
 };
 
-Options::Options (int argc, char *argv[]) :
-    Args("MPEG Transport Stream Time (TDT/TOT) Extraction Utility.", "[options] [filename]"),
+Options::Options(int argc, char *argv[]) :
+    ts::Args("MPEG Transport Stream Time (TDT/TOT) Extraction Utility.", "[options] [filename]"),
     no_tdt(false),
     no_tot(false),
     all(false),
     verbose(false),
     infile()
 {
-    option ("",         0, Args::STRING, 0, 1);
-    option ("all",     'a');
-    option ("notdt",    0);
-    option ("notot",    0);
-    option ("verbose", 'v');
+    option("",         0, Args::STRING, 0, 1);
+    option("all",     'a');
+    option("notdt",    0);
+    option("notot",    0);
+    option("verbose", 'v');
 
-    setHelp ("Input file:\n"
-             "\n"
-             "  MPEG capture file (standard input if omitted).\n"
-             "\n"
-             "Options:\n"
-             "\n"
-             "  -a\n"
-             "  --all\n"
-             "      Report all TDT/TOT tables (default: report only the first table\n"
-             "      of each type).\n"
-             "\n"
-             "  --help\n"
-             "      Display this help text.\n"
-             "\n"
-             "  --notdt\n"
-             "      Ignore Time & Date Table (TDT).\n"
-             "\n"
-             "  --notot\n"
-             "      Ignore Time Offset Table (TOT).\n"
-             "\n"
-             "  -v\n"
-             "  --verbose\n"
-             "      Produce verbose output.\n"
-             "\n"
-             "  --version\n"
-             "      Display the version number.\n");
+    setHelp("Input file:\n"
+            "\n"
+            "  MPEG capture file (standard input if omitted).\n"
+            "\n"
+            "Options:\n"
+            "\n"
+            "  -a\n"
+            "  --all\n"
+            "      Report all TDT/TOT tables (default: report only the first table\n"
+            "      of each type).\n"
+            "\n"
+            "  --help\n"
+            "      Display this help text.\n"
+            "\n"
+            "  --notdt\n"
+            "      Ignore Time & Date Table (TDT).\n"
+            "\n"
+            "  --notot\n"
+            "      Ignore Time Offset Table (TOT).\n"
+            "\n"
+            "  -v\n"
+            "  --verbose\n"
+            "      Produce verbose output.\n"
+            "\n"
+            "  --version\n"
+            "      Display the version number.\n");
 
-    analyze (argc, argv);
+    analyze(argc, argv);
 
-    infile = value ("");
-    all = present ("all");
-    verbose = present ("verbose");
-    no_tdt = present ("notdt");
-    no_tot = present ("notot");
+    infile = value("");
+    all = present("all");
+    verbose = present("verbose");
+    no_tdt = present("notdt");
+    no_tot = present("notot");
 }
 
 
@@ -113,19 +113,21 @@ Options::Options (int argc, char *argv[]) :
 //  Table handler: receives TOT and TDT
 //----------------------------------------------------------------------------
 
-class TableHandler: public TableHandlerInterface
+class TableHandler: public ts::TableHandlerInterface
 {
 private:
-    const Options& _opt;
-    bool _tdt_ok;  // Finished TDT processing
-    bool _tot_ok;  // Finished TOT processing
+    const Options&    _opt;
+    ts::TablesDisplay _display;
+    bool              _tdt_ok;  // Finished TDT processing
+    bool              _tot_ok;  // Finished TOT processing
 
 public:
     // Constructor
-    TableHandler (const Options& opt) :
-        _opt (opt),
-        _tdt_ok (opt.no_tdt),
-        _tot_ok (opt.no_tot)
+    TableHandler(Options& opt) :
+        _opt(opt),
+        _display(ts::TablesDisplayArgs(), opt),
+        _tdt_ok(opt.no_tdt),
+        _tot_ok(opt.no_tot)
     {
     }
 
@@ -136,7 +138,7 @@ public:
     }
 
     // This hook is invoked when a complete table is available.
-    virtual void handleTable (SectionDemux&, const BinaryTable&);
+    virtual void handleTable(ts::SectionDemux&, const ts::BinaryTable&);
 };
 
 
@@ -144,20 +146,20 @@ public:
 // This hook is invoked when a complete table is available.
 //----------------------------------------------------------------------------
 
-void TableHandler::handleTable (SectionDemux&, const BinaryTable& table)
+void TableHandler::handleTable(ts::SectionDemux&, const ts::BinaryTable& table)
 {
     switch (table.tableId()) {
 
-        case TID_TDT: {
+        case ts::TID_TDT: {
             if (_opt.no_tdt) {
                 break;
             }
             _tdt_ok = !_opt.all;
             if (_opt.verbose) {
-                std::cout << table << std::endl;
+                _display.displayTable(std::cout, table) << std::endl;
                 break;
             }
-            TDT tdt (table);
+            ts::TDT tdt(table);
             if (!tdt.isValid()) {
                 break;
             }
@@ -165,31 +167,31 @@ void TableHandler::handleTable (SectionDemux&, const BinaryTable& table)
             break;
         }
 
-        case TID_TOT: {
+        case ts::TID_TOT: {
             if (_opt.no_tot) {
                 break;
             }
             _tot_ok = !_opt.all;
             if (_opt.verbose) {
-                std::cout << table << std::endl;
+                _display.displayTable(std::cout, table) << std::endl;
                 break;
             }
-            TOT tot (table);
+            ts::TOT tot(table);
             if (!tot.isValid()) {
                 break;
             }
             std::cout << "* TOT UTC time: " << tot.utc_time << std::endl;
-            for (TOT::RegionVector::const_iterator it = tot.regions.begin(); it != tot.regions.end(); ++it) {
-                std::cout << "  Country: " << Printable (it->country)
+            for (ts::TOT::RegionVector::const_iterator it = tot.regions.begin(); it != tot.regions.end(); ++it) {
+                std::cout << "  Country: " << ts::Printable(it->country)
                           << ", region: " << it->region_id
                           << std::endl
-                          << "  Local time:   " << tot.localTime (*it)
+                          << "  Local time:   " << tot.localTime(*it)
                           << ", local time offset: "
-                          << TOT::timeOffsetFormat (it->time_offset)
+                          << ts::TOT::timeOffsetFormat(it->time_offset)
                           << std::endl
                           << "  Next change:  " << it->next_change
                           << ", next time offset:  "
-                          << TOT::timeOffsetFormat (it->next_time_offset)
+                          << ts::TOT::timeOffsetFormat(it->next_time_offset)
                           << std::endl;
             }
             break;
@@ -199,9 +201,8 @@ void TableHandler::handleTable (SectionDemux&, const BinaryTable& table)
             if (_opt.verbose) {
                 const ts::TID tid = table.tableId();
                 const ts::PID pid = table.sourcePID();
-                std::cout << "* Got unexpected " << names::TID (tid)
-                          << Format (", TID %d (0x%02X) on PID %d (0x%04X)",
-                                     int (tid), int (tid), int (pid), int (pid))
+                std::cout << "* Got unexpected " << ts::names::TID(tid)
+                          << ts::Format(", TID %d (0x%02X) on PID %d (0x%04X)", int(tid), int(tid), int(pid), int(pid))
                           << std::endl;
                 }
         }
@@ -213,18 +214,18 @@ void TableHandler::handleTable (SectionDemux&, const BinaryTable& table)
 //  Program entry point
 //----------------------------------------------------------------------------
 
-int main (int argc, char *argv[])
+int main(int argc, char *argv[])
 {
-    Options opt (argc, argv);
-    TableHandler handler (opt);
-    SectionDemux demux (&handler);
-    InputRedirector input (opt.infile, opt);
-    TSPacket pkt;
+    Options opt(argc, argv);
+    TableHandler handler(opt);
+    ts::SectionDemux demux(&handler);
+    ts::InputRedirector input(opt.infile, opt);
+    ts::TSPacket pkt;
 
-    demux.addPID (PID_TDT);  // also equal PID_TOT
+    demux.addPID(ts::PID_TDT);  // also equal PID_TOT
 
-    while (!handler.completed() && pkt.read (std::cin, true, opt)) {
-        demux.feedPacket (pkt);
+    while (!handler.completed() && pkt.read(std::cin, true, opt)) {
+        demux.feedPacket(pkt);
     }
 
     return EXIT_SUCCESS;

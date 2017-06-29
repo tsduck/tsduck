@@ -45,15 +45,15 @@ namespace ts {
     {
     public:
         // Implementation of plugin API
-        TablesPlugin (TSP*);
+        TablesPlugin(TSP*);
         virtual bool start();
         virtual bool stop();
-        virtual BitRate getBitrate() {return 0;}
-        virtual Status processPacket (TSPacket&, bool&, bool&);
+        virtual BitRate getBitrate() { return 0; }
+        virtual Status processPacket(TSPacket&, bool&, bool&);
 
     private:
-        TablesLoggerPtr     _logger;
-        TablesLoggerOptions _logger_options;
+        TablesLoggerPtr  _logger;
+        TablesLoggerArgs _logger_options;
 
         // Inaccessible operations
         TablesPlugin() = delete;
@@ -70,13 +70,13 @@ TSPLUGIN_DECLARE_PROCESSOR(ts::TablesPlugin)
 // Constructor
 //----------------------------------------------------------------------------
 
-ts::TablesPlugin::TablesPlugin (TSP* tsp_) :
-    ProcessorPlugin (tsp_, "Collect PSI/SI Tables.", "[options]"),
+ts::TablesPlugin::TablesPlugin(TSP* tsp_) :
+    ProcessorPlugin(tsp_, "Collect PSI/SI Tables.", "[options]"),
     _logger(),
     _logger_options()
 {
-    copyOptions (_logger_options);
-    setHelp (_logger_options.getHelp());
+    _logger_options.defineOptions(*this);
+    _logger_options.addHelp(*this);
 }
 
 
@@ -86,9 +86,8 @@ ts::TablesPlugin::TablesPlugin (TSP* tsp_) :
 
 bool ts::TablesPlugin::start()
 {
-    _logger_options.redirectReport (tsp);
-    _logger_options.getOptions (*this);
-    _logger = new TablesLogger (_logger_options);
+    _logger_options.load(*this);
+    _logger = new TablesLogger(_logger_options, *tsp);
     return !_logger->hasErrors();
 }
 
