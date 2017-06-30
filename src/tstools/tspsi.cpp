@@ -36,34 +36,34 @@
 #include "tsPSILogger.h"
 
 
-using namespace ts;
-
-
-
 //----------------------------------------------------------------------------
 //  Command line options
 //----------------------------------------------------------------------------
 
-struct Options: public PSILoggerArgs
+struct Options: public ts::Args
 {
-    Options (int argc, char *argv[]);
+    Options(int argc, char *argv[]);
 
-    std::string infile;  // Input file name
+    std::string       infile;  // Input file name
+    ts::PSILoggerArgs logger;  // Table logging options
 };
 
-Options::Options (int argc, char *argv[]) :
-    PSILoggerArgs("MPEG Transport Stream PSI Extraction Utility.", "[options] [filename]"),
-    infile()
+Options::Options(int argc, char *argv[]) :
+    ts::Args("MPEG Transport Stream PSI Extraction Utility.", "[options] [filename]"),
+    infile(),
+    logger()
 {
     option("", 0, STRING, 0, 1);
+    logger.defineOptions(*this);
 
     setHelp("Input file:\n"
             "\n"
-            "  MPEG capture file (standard input if omitted).\n"
-            "\n");
+            "  MPEG capture file (standard input if omitted).\n");
+    logger.addHelp(*this);
 
-    analyze (argc, argv);
-    infile = value ("");
+    analyze(argc, argv);
+    infile = value("");
+    logger.load(*this);
 }
 
 
@@ -73,19 +73,19 @@ Options::Options (int argc, char *argv[]) :
 
 int main (int argc, char *argv[])
 {
-    Options opt (argc, argv);
-    InputRedirector input (opt.infile, opt);
-    PSILogger logger (opt);
-    TSPacket pkt;
+    Options opt(argc, argv);
+    ts::InputRedirector input(opt.infile, opt);
+    ts::PSILogger logger(opt.logger, opt);
+    ts::TSPacket pkt;
 
     // Read all packets in the file and pass them to the logger
-    while (!logger.completed() && pkt.read (std::cin, true, opt)) {
-        logger.feedPacket (pkt);
+    while (!logger.completed() && pkt.read(std::cin, true, opt)) {
+        logger.feedPacket(pkt);
     }
 
     // Report errors
     if (opt.verbose()) {
-        logger.reportDemuxErrors ();
+        logger.reportDemuxErrors();
     }
 
     return EXIT_SUCCESS;
