@@ -53,7 +53,8 @@ namespace ts {
     //! Types of version formatting, for predefined option --version.
     //!
     enum VersionFormat {
-        VERSION_SHORT,   //!< Short format X.Y.
+        VERSION_SHORT,   //!< Short format X.Y-R.
+        VERSION_GLOBAL,  //!< Short format X.Y-R with highest revision number of all TSDuck files.
         VERSION_LONG,    //!< Full explanatory format.
         VERSION_DATE,    //!< Build date.
         VERSION_NSIS,    //!< Output an NSIS @c !define directive.
