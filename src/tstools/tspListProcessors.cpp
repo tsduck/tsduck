@@ -35,6 +35,7 @@
 #include "tsSysUtils.h"
 #include "tsStringUtils.h"
 #include "tsPluginSharedLibrary.h"
+TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

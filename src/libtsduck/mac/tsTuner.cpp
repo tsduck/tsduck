@@ -35,6 +35,7 @@
 //-----------------------------------------------------------------------------
 
 #include "tsTuner.h"
+TSDUCK_SOURCE;
 
 #define NOT_IMPLEMENTED "DVB tuners are not implemented on macOS"
 

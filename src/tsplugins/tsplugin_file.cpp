@@ -35,6 +35,7 @@
 #include "tsPlugin.h"
 #include "tsTSFileOutput.h"
 #include "tsTSFileInput.h"
+TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

@@ -33,6 +33,7 @@
 
 #include "tsTSScanner.h"
 #include "tsTime.h"
+TSDUCK_SOURCE;
 
 #define BUFFER_PACKET_COUNT  10000 // packets
 

@@ -36,6 +36,7 @@
 #include "tsCASFamily.h"
 #include "tsSection.h"
 #include "tsSysUtils.h"
+TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

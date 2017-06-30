@@ -34,7 +34,7 @@
 #include "tstlvMessage.h"
 #include "tsHexa.h"
 #include "tsFormat.h"
-
+TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

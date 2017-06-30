@@ -36,6 +36,7 @@
 #include "tsDecimal.h"
 #include "tsHexa.h"
 #include "tsFormat.h"
+TSDUCK_SOURCE;
 
 #define ECM_THREAD_STACK_OVERHEAD (16  * 1024)  // Stack usage in this module
 #define ECM_THREAD_STACK_USAGE    (128 * 1024)  // Default stack usage for CAS

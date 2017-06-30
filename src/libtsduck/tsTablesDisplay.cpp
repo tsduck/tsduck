@@ -48,6 +48,7 @@
 #include "tsBAT.h"
 #include "tsTOT.h"
 #include "tsTDT.h"
+TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

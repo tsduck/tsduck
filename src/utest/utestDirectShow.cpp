@@ -32,6 +32,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsPlatform.h"
+TSDUCK_SOURCE;
 #if defined (__windows)
 
 #include "tsTunerUtils.h"

@@ -41,7 +41,7 @@
 #include "tsMessageQueue.h"
 #include "tsDoubleCheckLock.h"
 #include "tsThread.h"
-
+TSDUCK_SOURCE;
 
 #define DEFAULT_PACKET_QUEUE_SIZE 100  // Maximum number of TS packets in queue
 #define SERVER_BACKLOG            1    // One connection at a time

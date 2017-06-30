@@ -33,6 +33,7 @@
 
 #include "tsFileNameRate.h"
 #include "tsToInteger.h"
+TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

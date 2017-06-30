@@ -34,6 +34,7 @@
 #include "tspOptions.h"
 #include "tsDecimal.h"
 #include "tsFormat.h"
+TSDUCK_SOURCE;
 
 #define DEF_BUFSIZE_MB           16  // mega-bytes
 #define DEF_BITRATE_INTERVAL      5  // seconds

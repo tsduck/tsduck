@@ -35,7 +35,7 @@
 #include "tsDecimal.h"
 #include "tsGuard.h"
 #include "tsMemoryUtils.h"
-
+TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

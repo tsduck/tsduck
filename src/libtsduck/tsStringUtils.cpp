@@ -33,6 +33,8 @@
 
 #include "tsStringUtils.h"
 #include <cctype>
+TSDUCK_SOURCE;
+
 
 //----------------------------------------------------------------------------
 // Trim leading & trailing spaces in a string

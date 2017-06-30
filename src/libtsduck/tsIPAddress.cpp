@@ -35,10 +35,11 @@
 #include "tsToInteger.h"
 #include "tsFormat.h"
 #include "tsMemoryUtils.h"
-
+TSDUCK_SOURCE;
 
 // Local host address
 const ts::IPAddress ts::IPAddress::LocalHost(127, 0, 0, 1);
+
 
 //----------------------------------------------------------------------------
 // Constructors

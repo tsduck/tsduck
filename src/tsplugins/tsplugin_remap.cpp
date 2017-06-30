@@ -43,6 +43,7 @@
 #include "tsSafePtr.h"
 #include "tsToInteger.h"
 #include "tsStringUtils.h"
+TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

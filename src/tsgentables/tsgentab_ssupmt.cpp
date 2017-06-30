@@ -36,6 +36,7 @@
 #include "tsTables.h"
 #include "tsStringUtils.h"
 #include "tsFormat.h"
+TSDUCK_SOURCE;
 
 #define DEFAULT_OUI OUI_DVB
 

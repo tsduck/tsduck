@@ -34,6 +34,7 @@
 
 #include "tsPlugin.h"
 #include "tsForkPipe.h"
+TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

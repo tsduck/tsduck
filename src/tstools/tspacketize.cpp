@@ -37,6 +37,7 @@
 #include "tsCyclingPacketizer.h"
 #include "tsDecimal.h"
 #include "tsSysUtils.h"
+TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

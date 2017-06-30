@@ -39,6 +39,7 @@
 #include "tsNames.h"
 #include "tsFormat.h"
 #include "tsTables.h"
+TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

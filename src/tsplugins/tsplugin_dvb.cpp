@@ -41,6 +41,7 @@
 #include "tsFormat.h"
 #include "tsDecimal.h"
 #include "tsCOM.h"
+TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

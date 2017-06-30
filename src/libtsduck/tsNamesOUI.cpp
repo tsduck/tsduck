@@ -34,6 +34,7 @@
 
 #include "tsNames.h"
 #include "tsFormat.h"
+TSDUCK_SOURCE;
 
 
 std::string ts::names::OUI (uint32_t oui)

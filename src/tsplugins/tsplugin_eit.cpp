@@ -41,6 +41,7 @@
 #include "tsTime.h"
 #include "tsMJD.h"
 #include "tsFormat.h"
+TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

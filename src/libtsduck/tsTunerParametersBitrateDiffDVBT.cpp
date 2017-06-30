@@ -35,7 +35,7 @@
 #include "tsTunerParametersBitrateDiffDVBT.h"
 #include "tsModulation.h"
 #include "tsGuard.h"
-
+TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

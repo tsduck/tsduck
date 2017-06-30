@@ -44,6 +44,7 @@
 #include "tsFormat.h"
 #include "tsSysUtils.h"
 #include "tsStringUtils.h"
+TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

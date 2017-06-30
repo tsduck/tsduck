@@ -44,6 +44,7 @@
 #include "tsComPtr.h"
 #include "tsDecimal.h"
 #include "tsToInteger.h"
+TSDUCK_SOURCE;
 
 #if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
 const ts::MilliSecond ts::Tuner::DEFAULT_SIGNAL_TIMEOUT;

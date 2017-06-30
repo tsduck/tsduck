@@ -41,6 +41,7 @@
 #include "tsSection.h"
 #include "tsPMT.h"
 #include "tsStreamIdentifierDescriptor.h"
+TSDUCK_SOURCE;
 
 using namespace ts;
 

@@ -37,6 +37,7 @@
 #include "tsCyclingPacketizer.h"
 #include "tsService.h"
 #include "tsPAT.h"
+TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

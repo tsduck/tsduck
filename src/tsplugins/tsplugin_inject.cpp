@@ -36,6 +36,7 @@
 #include "tsCyclingPacketizer.h"
 #include "tsFileNameRate.h"
 #include "tsDecimal.h"
+TSDUCK_SOURCE;
 
 #define DEF_EVALUATE_INTERVAL 100
 

@@ -35,7 +35,7 @@
 #include "tsAbstractDescriptor.h"
 #include "tsStringUtils.h"
 #include "tsPrivateDataSpecifierDescriptor.h"
-
+TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

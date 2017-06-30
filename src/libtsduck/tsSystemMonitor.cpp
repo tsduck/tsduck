@@ -37,10 +37,9 @@
 #include "tsDecimal.h"
 #include "tsFormat.h"
 #include "tsTime.h"
-
+TSDUCK_SOURCE;
 
 // Stack size for the monitor thread
-
 #define MONITOR_STACK_SIZE (64 * 1024)
 
 

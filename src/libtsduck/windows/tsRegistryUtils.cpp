@@ -36,6 +36,7 @@
 #include "tsStringUtils.h"
 #include "tsFormat.h"
 #include "tsFatal.h"
+TSDUCK_SOURCE;
 
 
 //-----------------------------------------------------------------------------

@@ -33,7 +33,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsRingNode.h"
-
+TSDUCK_SOURCE;
 
 
 // Insert in a ring after the specified node

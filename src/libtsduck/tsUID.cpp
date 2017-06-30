@@ -43,7 +43,7 @@
 #include "tsGuard.h"
 #include "tsSysUtils.h"
 #include "tsTime.h"
-
+TSDUCK_SOURCE;
 
 // Define singleton instance
 tsDefineSingleton (ts::UID);

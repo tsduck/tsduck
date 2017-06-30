@@ -35,6 +35,7 @@
 #include "tsHexa.h"
 #include "tsFormat.h"
 #include "tsPCSC.h"
+TSDUCK_SOURCE;
 
 using namespace ts;
 

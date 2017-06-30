@@ -36,6 +36,7 @@
 #include "tsGuard.h"
 #include "tsMemoryUtils.h"
 #include "tsException.h"
+TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

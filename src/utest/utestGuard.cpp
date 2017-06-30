@@ -33,6 +33,7 @@
 
 #include "tsGuard.h"
 #include "utestCppUnitTest.h"
+TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

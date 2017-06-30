@@ -35,6 +35,7 @@
 #include "tsStringUtils.h"
 #include "tsToInteger.h"
 #include "tsIntegerUtils.h"
+TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

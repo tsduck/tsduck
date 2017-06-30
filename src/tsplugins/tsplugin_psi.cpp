@@ -34,6 +34,7 @@
 
 #include "tsPlugin.h"
 #include "tsPSILogger.h"
+TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

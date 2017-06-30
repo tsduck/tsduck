@@ -35,7 +35,7 @@
 #include "tsFormat.h"
 #include "tsDecimal.h"
 #include "tsNames.h"
-
+TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

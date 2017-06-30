@@ -49,6 +49,7 @@
 #include "tsDecimal.h"
 #include "tsHexa.h"
 #include "utestCppUnitTest.h"
+TSDUCK_SOURCE;
 
 #include "crypto/tv_aes.h"
 #include "crypto/tv_aes_chain.h"

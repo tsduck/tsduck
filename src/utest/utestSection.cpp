@@ -34,6 +34,7 @@
 #include "tsSection.h"
 #include "tsNames.h"
 #include "utestCppUnitTest.h"
+TSDUCK_SOURCE;
 
 #include "tables/psi_tot_tnt_sections.h"
 #include "tables/psi_bat_tvnum_sections.h"

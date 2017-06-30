@@ -33,7 +33,7 @@
 
 #include "tspOutputExecutor.h"
 #include "tsDecimal.h"
-
+TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

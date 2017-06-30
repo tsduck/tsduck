@@ -31,6 +31,7 @@
 #if defined (__windows)
 #include "tsComUtils.h"
 #endif
+TSDUCK_SOURCE;
 
 ts::COM::COM(ReportInterface& report) :
     _is_init(false)

@@ -33,6 +33,7 @@
 
 #include "tsAVCAttributes.h"
 #include "tsAVCSequenceParameterSet.h"
+TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

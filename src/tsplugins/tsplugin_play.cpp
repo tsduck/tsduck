@@ -36,6 +36,7 @@
 #include "tsForkPipe.h"
 #include "tsStringUtils.h"
 #include "tsSysUtils.h"
+TSDUCK_SOURCE;
 
 #if defined(__windows)
 #include "tsRegistryUtils.h"

@@ -35,6 +35,7 @@
 #include "tsTSPacket.h"
 #include "tsNames.h"
 #include "utestCppUnitTest.h"
+TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

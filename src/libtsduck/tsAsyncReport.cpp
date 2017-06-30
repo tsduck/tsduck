@@ -33,7 +33,7 @@
 
 #include "tsAsyncReport.h"
 #include "tsFormat.h"
-
+TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

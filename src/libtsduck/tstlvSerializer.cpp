@@ -34,7 +34,7 @@
 #include "tstlvSerializer.h"
 #include "tsFormat.h"
 #include "tsHexa.h"
-
+TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

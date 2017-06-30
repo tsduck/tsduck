@@ -40,6 +40,7 @@
 #include "tsSysUtils.h"
 #include "tsCerrReport.h"
 #include "utestCppUnitTest.h"
+TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

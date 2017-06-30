@@ -39,6 +39,7 @@
 #include "tsSDT.h"
 #include "tsNames.h"
 #include "utestCppUnitTest.h"
+TSDUCK_SOURCE;
 
 #include "tables/psi_pat_r4_packets.h"
 #include "tables/psi_pmt_planete_packets.h"

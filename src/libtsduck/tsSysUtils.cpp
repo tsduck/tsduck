@@ -35,6 +35,7 @@
 #include "tsMutex.h"
 #include "tsGuard.h"
 #include "tsArgs.h"
+TSDUCK_SOURCE;
 
 #if defined(__windows)
 #include "tsComUtils.h"

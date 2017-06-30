@@ -34,6 +34,7 @@
 #include "tsArgs.h"
 #include "tsInputRedirector.h"
 #include "tsTablesLogger.h"
+TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

@@ -38,6 +38,7 @@
 #include "tsUserInterrupt.h"
 #include "tsSysUtils.h"
 #include "utestCppUnitTest.h"
+TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

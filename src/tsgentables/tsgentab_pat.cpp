@@ -34,6 +34,7 @@
 #include "tsGenTabPlugin.h"
 #include "tsTables.h"
 #include "tsStringUtils.h"
+TSDUCK_SOURCE;
 
 namespace ts {
     class ThisPlugin: public GenTabPlugin

@@ -35,6 +35,7 @@
 #include "tsPlugin.h"
 #include "tsMonotonic.h"
 #include "tsDecimal.h"
+TSDUCK_SOURCE;
 
 #define DEF_PACKET_BURST 16
 

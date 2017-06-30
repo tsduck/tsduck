@@ -39,6 +39,7 @@
 #include "tsTables.h"
 #include "tsAudioLanguageOptions.h"
 #include "tsFormat.h"
+TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

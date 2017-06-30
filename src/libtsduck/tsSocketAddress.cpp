@@ -34,7 +34,7 @@
 #include "tsSocketAddress.h"
 #include "tsToInteger.h"
 #include "tsFormat.h"
-
+TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

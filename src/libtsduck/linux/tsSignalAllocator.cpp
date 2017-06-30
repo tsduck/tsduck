@@ -32,6 +32,7 @@
 //-----------------------------------------------------------------------------
 
 #include "tsSignalAllocator.h"
+TSDUCK_SOURCE;
 
 // Define singleton instance
 tsDefineSingleton (ts::SignalAllocator);

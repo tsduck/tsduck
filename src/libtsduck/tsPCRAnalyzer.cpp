@@ -33,7 +33,7 @@
 
 #include "tsPCRAnalyzer.h"
 #include "tsMemoryUtils.h"
-
+TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

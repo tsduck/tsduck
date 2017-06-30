@@ -36,6 +36,7 @@
 #include "tsNames.h"
 #include "tsFormat.h"
 #include "tsPAT.h"
+TSDUCK_SOURCE;
 
 #define MIN_CLEAR_PACKETS 100000
 

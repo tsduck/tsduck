@@ -34,6 +34,7 @@
 #include "tsArgs.h"
 #include "tsInputRedirector.h"
 #include "tsPSILogger.h"
+TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

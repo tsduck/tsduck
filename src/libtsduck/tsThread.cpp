@@ -32,6 +32,7 @@
 #include "tsSysUtils.h"
 #include "tsFormat.h"
 #include "tsIntegerUtils.h"
+TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

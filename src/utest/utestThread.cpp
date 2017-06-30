@@ -43,6 +43,7 @@
 #include "tsSysUtils.h"
 #include "tsFormat.h"
 #include "utestCppUnitTest.h"
+TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

@@ -33,6 +33,7 @@
 
 #include "tsService.h"
 #include "tsToInteger.h"
+TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

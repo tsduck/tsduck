@@ -35,6 +35,7 @@
 #include "tsReportBuffer.h"
 #include "tsVersion.h"
 #include "utestCppUnitTest.h"
+TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

@@ -37,6 +37,7 @@
 #include "tsTunerArgs.h"
 #include "tsFormat.h"
 #include "tsSysUtils.h"
+TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

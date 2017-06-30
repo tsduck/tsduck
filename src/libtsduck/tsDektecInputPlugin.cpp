@@ -41,6 +41,7 @@
 #include "tsDecimal.h"
 #include "tsIntegerUtils.h"
 #include "tsFatal.h"
+TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

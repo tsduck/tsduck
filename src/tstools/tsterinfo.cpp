@@ -34,6 +34,7 @@
 #include "tsArgs.h"
 #include "tsTunerParametersBitrateDiffDVBT.h"
 #include "tsDecimal.h"
+TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

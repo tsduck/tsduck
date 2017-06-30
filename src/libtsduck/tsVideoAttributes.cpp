@@ -33,6 +33,7 @@
 
 #include "tsVideoAttributes.h"
 #include "tsFormat.h"
+TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

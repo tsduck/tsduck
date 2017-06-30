@@ -36,6 +36,7 @@
 #include "tsSectionDemux.h"
 #include "tsTables.h"
 #include "tsCASFamily.h"
+TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

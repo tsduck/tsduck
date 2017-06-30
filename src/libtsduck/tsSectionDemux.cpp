@@ -33,7 +33,7 @@
 
 #include "tsSectionDemux.h"
 #include "tsDecimal.h"
-
+TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

@@ -37,6 +37,7 @@
 #include "tsTime.h"
 #include "tsUID.h"
 #include "utestCppUnitTest.h"
+TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

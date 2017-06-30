@@ -34,6 +34,7 @@
 #include "tsModulation.h"
 #include "tsDecimal.h"
 #include "tsFormat.h"
+TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

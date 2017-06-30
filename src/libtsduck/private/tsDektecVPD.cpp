@@ -29,6 +29,7 @@
 
 #include "tsDektecVPD.h"
 #include "tsMemoryUtils.h"
+TSDUCK_SOURCE;
 
 #if defined(TS_NO_DTAPI)
 bool tsDektecVPDIsEmpty = true; // Avoid warning about empty module.
