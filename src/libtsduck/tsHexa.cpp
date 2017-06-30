@@ -47,10 +47,11 @@ std::string ts::Hexa(const void *data,
                      uint32_t flags,
                      size_t indent,
                      size_t line_width,
-                     size_t init_offset)
+                     size_t init_offset,
+                     size_t inner_indent)
 {
     std::string s;
-    AppendHexa(s, data, size, flags, indent, line_width, init_offset);
+    AppendHexa(s, data, size, flags, indent, line_width, init_offset, inner_indent);
     return s;
 }
 
@@ -63,10 +64,11 @@ std::string ts::Hexa(const std::string& str,
                      uint32_t flags,
                      size_t indent,
                      size_t line_width,
-                     size_t init_offset)
+                     size_t init_offset,
+                     size_t inner_indent)
 {
     std::string s;
-    AppendHexa(s, str.c_str(), str.length(), flags, indent, line_width, init_offset);
+    AppendHexa(s, str.c_str(), str.length(), flags, indent, line_width, init_offset, inner_indent);
     return s;
 }
 
@@ -79,10 +81,11 @@ std::string ts::Hexa(const ByteBlock& bb,
                      uint32_t flags,
                      size_t indent,
                      size_t line_width,
-                     size_t init_offset)
+                     size_t init_offset,
+                     size_t inner_indent)
 {
     std::string s;
-    AppendHexa(s, bb.data(), bb.size(), flags, indent, line_width, init_offset);
+    AppendHexa(s, bb.data(), bb.size(), flags, indent, line_width, init_offset, inner_indent);
     return s;
 }
 
@@ -98,9 +101,10 @@ std::string& ts::AppendHexa(std::string& str,
                             uint32_t flags,
                             size_t indent,
                             size_t line_width,
-                            size_t init_offset)
+                            size_t init_offset,
+                            size_t inner_indent)
 {
-    const uint8_t* raw(static_cast <const uint8_t*> (data));
+    const uint8_t* raw = static_cast<const uint8_t*>(data);
 
     // Make sure we have something to display (default is hexa)
     if ((flags & (hexa::HEXA | hexa::C_STYLE | hexa::BINARY | hexa::BIN_NIBBLE | hexa::ASCII)) == 0) {
@@ -131,14 +135,14 @@ std::string& ts::AppendHexa(std::string& str,
 
     // Specific case: simple dump, everything on one line.
     if (flags & hexa::SINGLE_LINE) {
-        str.reserve (str.length() + (hexa_width + 1) * size);
+        str.reserve(str.length() + (hexa_width + 1) * size);
         for (size_t i = 0; i < size; ++i) {
             if (i > 0) {
-                str.append (1, ' ');
+                str.append(1, ' ');
             }
-            str.append (byte_prefix);
-            str.append (Format ("%02X", int (raw [i])));
-            str.append (byte_suffix);
+            str.append(byte_prefix);
+            str.append(Format("%02X", int(raw[i])));
+            str.append(byte_suffix);
         }
         return str;
     }
@@ -174,10 +178,10 @@ std::string& ts::AppendHexa(std::string& str,
     }
 
     // Pre-allocation to avoid too frequent reallocations.
-    str.reserve (str.length() + (hexa_width + bin_width + 5) * size);
+    str.reserve(str.length() + indent + inner_indent + (hexa_width + bin_width + 5) * size);
 
     // Number of non-byte characters
-    size_t add_width = indent;
+    size_t add_width = indent + inner_indent;
     if (offset_width != 0) {
         add_width += offset_width + 3;
     }
@@ -217,48 +221,49 @@ std::string& ts::AppendHexa(std::string& str,
         size_t line_size = line + bytes_per_line <= size ? bytes_per_line : size - line;
 
         // Beginning of line
-        str.append (indent, ' ');
+        str.append(indent, ' ');
         if (flags & hexa::OFFSET) {
-            str.append (Format ("%0*" FMT_SIZE_T "X:  ", int (offset_width), init_offset + line));
+            str.append(Format("%0*" FMT_SIZE_T "X:  ", int(offset_width), init_offset + line));
         }
+        str.append(inner_indent, ' ');
 
         // Hexa dump
         if (flags & hexa::HEXA) {
             for (size_t byte = 0; byte < line_size; byte++) {
-                str.append (byte_prefix);
-                str.append (Format ("%02X", int (raw [line + byte])));
-                str.append (byte_suffix);
+                str.append(byte_prefix);
+                str.append(Format("%02X", int(raw[line + byte])));
+                str.append(byte_suffix);
                 if (byte < bytes_per_line - 1) {
-                    str.append (1, ' ');
+                    str.append(1, ' ');
                 }
             }
             if (flags & (hexa::BINARY | hexa::ASCII)) { // more to come
                 if (line_size < bytes_per_line) {
-                    str.append ((hexa_width + 1) * (bytes_per_line - line_size) - 1, ' ');
+                    str.append((hexa_width + 1) * (bytes_per_line - line_size) - 1, ' ');
                 }
-                str.append (2, ' ');
+                str.append(2, ' ');
             }
         }
 
         // Binary dump
         if (flags & hexa::BINARY) {
             for (size_t byte = 0; byte < line_size; byte++) {
-                int b = int (raw [line + byte]);
+                int b = int(raw[line + byte]);
                 for (int i = 7; i >= 0; i--) {
-                    str.append (1, '0' + ((b >> i) & 0x01));
+                    str.append(1, '0' + ((b >> i) & 0x01));
                     if (i == 4 && (flags & hexa::BIN_NIBBLE)) {
-                        str.append (1, '.');
+                        str.append(1, '.');
                     }
                 }
                 if (byte < bytes_per_line - 1) {
-                    str.append (1, ' ');
+                    str.append(1, ' ');
                 }
             }
             if (flags & hexa::ASCII) { // more to come
                 if (line_size < bytes_per_line) {
-                    str.append ((bin_width + 1) * (bytes_per_line - line_size) - 1, ' ');
+                    str.append((bin_width + 1) * (bytes_per_line - line_size) - 1, ' ');
                 }
-                str.append (2, ' ');
+                str.append(2, ' ');
             }
         }
 
@@ -267,12 +272,12 @@ std::string& ts::AppendHexa(std::string& str,
             for (size_t byte = 0; byte < line_size; byte++) {
                 // Make sure european characters are detected as printable,
                 // even if isprint(3) does not.
-                uint8_t c = raw [line + byte];
+                uint8_t c = raw[line + byte];
                 bool printable = isprint (c) || c >= 0xA0;
-                str.push_back (printable ? c : '.');
+                str.push_back(printable ? c : '.');
             }
         }
-        str.push_back ('\n');
+        str.push_back('\n');
     }
 
     return str;

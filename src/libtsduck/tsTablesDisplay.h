@@ -74,20 +74,53 @@ namespace ts {
         std::ostream& displaySection(std::ostream& strm, const Section& section, int indent = 0, CASFamily cas = CAS_OTHER, bool no_header = false);
 
     private:
-        const TablesDisplayArgs& _opt;
-        ReportInterface&         _report;
-
-        // Profile of ancillary functions to display sections.
-        typedef void (*displaySectionHandler)(std::ostream& strm, const ts::Section& section, int indent);
-
-        // Ancillary function to display an unknown section
+        //!
+        //! Display the content of an unknown section.
+        //! The command-line formatting options are used to analyze the content.
+        //! @param [in,out] strm Output text stream.
+        //! @param [in] section The section to display.
+        //! @param [in] indent Indentation width.
+        //!
         void displayUnkownSection(std::ostream& strm, const ts::Section& section, int indent);
 
-        // The actual CAS family to use.
+        //!
+        //! The actual CAS family to use.
+        //! @param [in] cas CAS family of the table. If different from CAS_OTHER, override the CAS family in TablesDisplayArgs.
+        //! @return The actual CAS family to use.
+        //!
         CASFamily casFamily(CASFamily cas) const
         {
             return cas != CAS_OTHER ? cas : _opt.cas;
         }
+
+        //!
+        //! Display a memory area containing a list of TLV records.
+        //!
+        //! The displayed area extends from @a data to @a data + @a tlvStart + @a tlvSize.
+        //! - From @a data to @a data + @a tlvStart : Raw data.
+        //! - From @a data + @a tlvStart to @a data + @a tlvStart + @a tlvSize : TLV records.
+        //!
+        //! @param [in,out] strm Output text stream.
+        //! @param [in] data Starting address of memory area.
+        //! @param [in] tlvStart Starting index of TLV records after @data.
+        //! @param [in] tlvSize Size in bytes of the TLV area.
+        //! @param [in] dataOffset Display offset of @a data.
+        //! @param [in] indent Left margin size.
+        //! @param [in] innerIndent Inner margin size.
+        //! @param [in] tlv TLV syntax.
+        //!
+        void displayTLV(std::ostream& strm,
+                        const uint8_t* data,
+                        size_t tlvStart,
+                        size_t tlvSize,
+                        size_t dataOffset,
+                        int indent,
+                        int innerIndent,
+                        const TLVSyntax& tlv);
+
+        // Private fields.
+        const TablesDisplayArgs& _opt;
+        ReportInterface&         _report;
 
         // Inaccessible operations.
         TablesDisplay() = delete;

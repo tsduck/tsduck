@@ -154,18 +154,38 @@ std::ostream& ts::TablesDisplay::displaySection(std::ostream& strm, const Sectio
     }
     else {
         switch (tid) {
-            case TID_PAT:     handler = PAT::DisplaySection; break;
-            case TID_CAT:     handler = CAT::DisplaySection; break;
-            case TID_PMT:     handler = PMT::DisplaySection; break;
-            case TID_TSDT:    handler = TSDT::DisplaySection; break;
+            case TID_PAT:
+                handler = PAT::DisplaySection;
+                break;
+            case TID_CAT:
+                handler = CAT::DisplaySection;
+                break;
+            case TID_PMT:
+                handler = PMT::DisplaySection;
+                break;
+            case TID_TSDT:
+                handler = TSDT::DisplaySection;
+                break;
             case TID_NIT_ACT:
-            case TID_NIT_OTH: handler = NIT::DisplaySection; break;
-            case TID_BAT:     handler = BAT::DisplaySection; break;
+            case TID_NIT_OTH:
+                handler = NIT::DisplaySection;
+                break;
+            case TID_BAT:
+                handler = BAT::DisplaySection;
+                break;
             case TID_SDT_ACT:
-            case TID_SDT_OTH: handler = SDT::DisplaySection; break;
-            case TID_TDT:     handler = TDT::DisplaySection; break;
-            case TID_TOT:     handler = TOT::DisplaySection; break;
-            default:          handler = 0; break;
+            case TID_SDT_OTH:
+                handler = SDT::DisplaySection;
+                break;
+            case TID_TDT:
+                handler = TDT::DisplaySection;
+                break;
+            case TID_TOT:
+                handler = TOT::DisplaySection;
+                break;
+            default:
+                handler = 0;
+                break;
         }
     }
     if (handler != 0) {
@@ -194,54 +214,117 @@ void ts::TablesDisplay::displayUnkownSection(std::ostream& strm, const ts::Secti
              << std::endl;
     }
 
-    // Display section payload.
+    // Section payload.
     const uint8_t* const payload = section.payload();
     const size_t payloadSize = section.payloadSize();
+
+    // Current index to display in payload.
     size_t index = 0;
 
+    // Loop on all possible TLV syntaxen.
     for (TLVSyntaxVector::const_iterator it = _opt.tlv_syntax.begin(); it != _opt.tlv_syntax.end() && index < payloadSize; ++it) {
 
-        size_t start = 0;
-        size_t size = 0;
+        // Can we locate a TLV area after current index?
+        size_t tlvStart = 0;
+        size_t tlvSize = 0;
+        if (it->locateTLV(payload, payloadSize, tlvStart, tlvSize) && tlvStart >= index && tlvSize > 0) {
 
-        if (it->locateTLV(payload, payloadSize, start, size) && start >= index && size > 0) {
-
-            // Display binary data preceding TLV.
-            strm << Hexa(payload + index, start - index, hexa::HEXA | hexa::ASCII | hexa::OFFSET, indent, hexa::DEFAULT_LINE_WIDTH, index);
-            index = start;
-
-            // Display TLV fields.
-            while (index < start + size && index < payloadSize) {
-                uint32_t tag = 0;
-                size_t length = 0;
-                size_t header = it->getTagAndLength(payload + index, payloadSize - index, tag, length);
-                if (header == 0 || index + header + length > payloadSize) {
-                    break;
-                }
-                strm << margin
-                     << Format("%04X:  Tag: %*u (0x%0*X), length: %*u bytes, value: ",
-                               int(index),
-                               int(MaxDecimalWidth(it->getTagSize())), int(tag),
-                               int(MaxHexaWidth(it->getTagSize())), int(tag),
-                               int(MaxDecimalWidth(it->getLengthSize())), int(length));
-                if (length <= 8) {
-                    // If value is short, display it on the same line.
-                    strm << Hexa(payload + index + header, length, hexa::HEXA | hexa::SINGLE_LINE) << std::endl;
-                }
-                else {
-                    strm << std::endl
-                         << Hexa(payload + index + header, length, hexa::HEXA | hexa::ASCII | hexa::OFFSET, indent, hexa::DEFAULT_LINE_WIDTH, index + header);
-                }
-                index += header + length;
-            }
+            // Display TLV fields, from index to end of TLV area.
+            const size_t endIndex = index + tlvStart + tlvSize;
+            displayTLV(strm,               // output stream
+                       payload + index,    // start of area to display
+                       tlvStart - index,   // offset of TLV records in area to display
+                       tlvSize,            // total size of TLV records
+                       index,              // offset to display for start of area
+                       indent,             // left margin
+                       0,                  // inner margin
+                       *it);               // TLV syntax
+            index = endIndex;
 
             // Display a separator after TLV area.
             if (index < payloadSize) {
-                strm << margin << Format("%04X:  End of TLV area", int(index)) << std::endl;
+                strm << Format("%*s%04X:  End of TLV area", indent, "", int(index)) << std::endl;
             }
         }
     }
 
     // Display remaining binary data.
     strm << Hexa(payload + index, payloadSize - index, hexa::HEXA | hexa::ASCII | hexa::OFFSET, indent, hexa::DEFAULT_LINE_WIDTH, index);
+}
+
+
+//----------------------------------------------------------------------------
+// Display a memory area containing a list of TLV records.
+//----------------------------------------------------------------------------
+
+void ts::TablesDisplay::displayTLV(std::ostream& strm,
+                                   const uint8_t* data,
+                                   size_t tlvStart,
+                                   size_t tlvSize,
+                                   size_t dataOffset,
+                                   int indent,
+                                   int innerIndent,
+                                   const TLVSyntax& tlv)
+{
+    // We use the same syntax for the optional embedded TLV, except that it is automatically located.
+    TLVSyntax tlvInner(tlv);
+    tlvInner.setAutoLocation();
+
+    // Display binary data preceding TLV, from data to data + tlvStart.
+    strm << Hexa(data, tlvStart, hexa::HEXA | hexa::ASCII | hexa::OFFSET, indent, hexa::DEFAULT_LINE_WIDTH, dataOffset, innerIndent);
+
+    // Display TLV fields, from data + tlvStart to data + tlvStart + tlvSize.
+    size_t index = tlvStart;
+    const size_t endIndex = tlvStart + tlvSize;
+    while (index < endIndex) {
+
+        // Get TLV header (tag, length)
+        uint32_t tag = 0;
+        size_t valueSize = 0;
+        const size_t headerSize = tlv.getTagAndLength(data + index, endIndex - index, tag, valueSize);
+        if (headerSize == 0 || index + headerSize + valueSize > endIndex) {
+            break; // no more TLV record
+        }
+
+        // Location of value area.
+        const uint8_t* const value = data + index + headerSize;
+        const size_t valueOffset = dataOffset + index + headerSize;
+
+        // Description of the TLV record.
+        strm << Format("%*s%04X:  %*sTag: %*u (0x%0*X), length: %*u bytes, value: ",
+                       indent, "",
+                       int(dataOffset + index),
+                       innerIndent, "",
+                       int(MaxDecimalWidth(tlv.getTagSize())), int(tag),
+                       int(MaxHexaWidth(tlv.getTagSize())), int(tag),
+                       int(MaxDecimalWidth(tlv.getLengthSize())), int(valueSize));
+
+        // Display the value field.
+        size_t tlvInnerStart = 0;
+        size_t tlvInnerSize = 0;
+        if (_opt.min_nested_tlv > 0 && valueSize >= _opt.min_nested_tlv && tlvInner.locateTLV(value, valueSize, tlvInnerStart, tlvInnerSize)) {
+            // Found a nested TLV area.
+            strm << std::endl;
+            displayTLV(strm, value, tlvInnerStart, tlvInnerSize, valueOffset, indent, innerIndent + 2, tlvInner);
+        }
+        else if (valueSize <= 8) {
+            // If value is short, display it on the same line.
+            strm << Hexa(value, valueSize, hexa::HEXA | hexa::SINGLE_LINE) << std::endl;
+        }
+        else {
+            strm << std::endl
+                 << Hexa(value, valueSize, hexa::HEXA | hexa::ASCII | hexa::OFFSET, indent, hexa::DEFAULT_LINE_WIDTH, valueOffset, innerIndent + 2);
+        }
+
+        // Point after current TLV record.
+        index += headerSize + valueSize;
+    }
+
+    // Display a separator after TLV area.
+    if (index > tlvStart && index < endIndex) {
+        strm << Format("%*s%04X:  %*sEnd of TLV area", indent, "", int(index), innerIndent, "") << std::endl;
+    }
+
+    // Display remaining binary data.
+    strm << Hexa(data + index, endIndex - index, hexa::HEXA | hexa::ASCII | hexa::OFFSET, indent, hexa::DEFAULT_LINE_WIDTH, dataOffset + index, innerIndent);
 }

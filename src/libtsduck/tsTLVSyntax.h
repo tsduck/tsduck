@@ -86,6 +86,14 @@ namespace ts {
         bool set(int start = -1, int size = -1, size_t tagSize = 1, size_t lengthSize = 1, bool msb = true, ReportInterface& report = CERR);
 
         //!
+        //! Update the TLV syntax to automatically locate the TLV area.
+        //!
+        void setAutoLocation()
+        {
+            _start = _size = -1;
+        }
+
+        //!
         //! Get the size in bytes of the Tag field.
         //! @return The size in bytes of the Tag field.
         //!

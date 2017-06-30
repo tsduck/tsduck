@@ -169,7 +169,7 @@ bool ts::TLVSyntax::locateTLV(const uint8_t* data, size_t dataSize, size_t& tlvS
         else {
             tlvStart = _start;
             tlvSize = longestTLV(data, dataSize, _start);
-            return true;
+            return tlvSize > 0;
         }
     }
     else {
