@@ -46,7 +46,7 @@ TSDUCK_SOURCE;
 //----------------------------------------------------------------------------
 
 ts::PSILogger::PSILogger (PSILoggerArgs& opt, ReportInterface& report) :
-    TablesDisplay(opt, report),
+    TablesDisplay(opt),
     _opt(opt),
     _report(report),
     _abort(false),

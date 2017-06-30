@@ -46,9 +46,8 @@ namespace ts {
         //!
         //! Constructor.
         //! @param [in] options Table logging options.
-        //! @param [in,out] report Where to log errors.
         //!
-        TablesDisplay(const TablesDisplayArgs& options, ReportInterface& report);
+        explicit TablesDisplay(const TablesDisplayArgs& options = TablesDisplayArgs());
 
         //!
         //! Display a table on the output stream.
@@ -120,10 +119,8 @@ namespace ts {
 
         // Private fields.
         const TablesDisplayArgs& _opt;
-        ReportInterface&         _report;
 
         // Inaccessible operations.
-        TablesDisplay() = delete;
         TablesDisplay(const TablesDisplay&) = delete;
         TablesDisplay& operator=(const TablesDisplay&) = delete;
     };

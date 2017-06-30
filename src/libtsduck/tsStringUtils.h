@@ -748,6 +748,17 @@ namespace ts {
         container.clear();
         return AppendContainer(container, argc, argv);
     }
+
+    //!
+    //! Get the length of the longest string in a container of strings.
+    //!
+    //! @tparam CONTAINER A container class of @c std::string as defined by the
+    //! C++ Standard Template Library (STL).
+    //! @param [in] container A container of @c std::string.
+    //! @return The length of the longest string in @a container.
+    //!
+    template <class CONTAINER>
+    size_t LargestLength(const CONTAINER& container);
 }
 
 #include "tsStringUtilsTemplate.h"

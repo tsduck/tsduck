@@ -126,7 +126,7 @@ public:
     // Constructor
     TableHandler(Options& opt) :
         _opt(opt),
-        _display(ts::TablesDisplayArgs(), opt),
+        _display(ts::TablesDisplayArgs()),
         _tdt_ok(opt.no_tdt),
         _tot_ok(opt.no_tot)
     {
