@@ -68,6 +68,7 @@ ts::EIT::EIT(bool is_actual_,
 
 ts::EIT::EIT(const BinaryTable& table) :
     AbstractLongTable(TID_EIT_PF_ACT),  // updated by deserialize()
+    service_id(0),
     ts_id(0),
     onetw_id(0),
     segment_last(0),
