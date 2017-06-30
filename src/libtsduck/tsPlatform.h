@@ -2663,14 +2663,14 @@ namespace ts {
 #if defined(__gcc)
 #define TS_SET_BUILD_MARK(s) static __attribute__ ((used)) const char* const _tsBuildMark = (s)
 #else
-#define TS_SET_BUILD_MARK(s)                     \
-    namespace {                                  \
-        class _tsBuildMarkClass {                \
-        public:                                  \
-            const char* const str;               \
-            _RCSINFO(const char* _s): str(_s) {} \
-        };                                       \
-        const _tsBuildMarkClass _tsBuildMark(s); \
+#define TS_SET_BUILD_MARK(s)                              \
+    namespace {                                           \
+        class _tsBuildMarkClass {                         \
+        public:                                           \
+            const char* const str;                        \
+            _tsBuildMarkClass(const char* _s): str(_s) {} \
+        };                                                \
+        const _tsBuildMarkClass _tsBuildMark(s);          \
     }
 
 #endif
@@ -2680,7 +2680,8 @@ namespace ts {
 // The first character in the prefix will be used as field separator.
 //
 #define TS_BUILD_MARK_SEPARATOR "|"
-#define TS_BUILD_MARK_PREFIX    TS_BUILD_MARK_SEPARATOR "@($%)" TS_BUILD_MARK_SEPARATOR
+#define TS_BUILD_MARK_MARKER    "@($%)"
+#define TS_BUILD_MARK_PREFIX    TS_BUILD_MARK_SEPARATOR TS_BUILD_MARK_MARKER TS_BUILD_MARK_SEPARATOR
 
 #endif // DOXYGEN
 

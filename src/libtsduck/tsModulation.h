@@ -170,7 +170,7 @@ namespace ts {
     };
 
     //!
-    //! Enumeration description of ts::.
+    //! Enumeration description of ts::Modulation.
     //!
     TSDUCKDLL extern const Enumeration ModulationEnum;
 

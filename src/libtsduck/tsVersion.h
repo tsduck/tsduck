@@ -33,7 +33,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsPlatform.h"
+#include "tsEnumeration.h"
 
 //!
 //! TSDuck major version.
@@ -57,14 +57,35 @@ namespace ts {
         VERSION_LONG,    //!< Full explanatory format.
         VERSION_DATE,    //!< Build date.
         VERSION_NSIS,    //!< Output an NSIS @c !define directive.
-        VERSION_DEKTEC   //!< Version of embedded Dektec DTAPI and detected Dektec drivers.
+        VERSION_DEKTEC,  //!< Version of embedded Dektec DTAPI and detected Dektec drivers.
+        VERSION_FILES    //!< Complete list of all TSDuck files with revision.
     };
+
+    //!
+    //! Enumeration description of ts::VersionFormat.
+    //! Typically used to implement the -\-version command line option.
+    //!
+    TSDUCKDLL extern const Enumeration VersionFormatEnum;
 
     //!
     //! Get the TSDuck formatted version number.
     //! @param [in] format Type of output, short by default.
     //! @param [in] applicationName Name of the application to prepend to the long format.
+    //! @param [in] revisionFile Extract the revision number from this file (use current executable if empty).
     //! @return The formatted version string.
     //!
-    TSDUCKDLL std::string GetVersion(VersionFormat format = VERSION_SHORT, const std::string& applicationName = std::string());
+    TSDUCKDLL std::string GetVersion(VersionFormat format = VERSION_SHORT,
+                                     const std::string& applicationName = std::string(),
+                                     const std::string& revisionFile = std::string());
+
+    //!
+    //! Get the TSDuck revision number as integer from a binary file.
+    //! The revision number is in fact the most recent compilation date in the file.
+    //! The revision number for June 30 2017 is 20170630 for instance.
+    //! @param [in] fileName Extract the revision number from this file (use current executable if empty).
+    //! @param [in] includeLibrary If true, also look for revision number in the TSDuck common code shared
+    //! library in same directory as the specified file.
+    //! @return The revision number or zero if not found.
+    //!
+    TSDUCKDLL int GetRevision(const std::string& fileName = std::string(), bool includeLibrary = true);
 }
