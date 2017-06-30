@@ -164,7 +164,7 @@ void ts::TablesLoggerArgs::addHelp(Args& args) const
         "      File name for text output.\n"
         "\n"
         "  --no-encapsulation\n"
-        "      With --ip-udp, send the tables as raw binary messages in UDP packets\n"
+        "      With --ip-udp, send the tables as raw binary messages in UDP packets.\n"
         "      By default, the tables are formatted into TLV messages.\n"
         "\n"
         "  --packet-index\n"
