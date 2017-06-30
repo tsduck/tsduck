@@ -46,6 +46,7 @@ TSDUCK_SOURCE;
 
 const ts::Enumeration ts::VersionFormatEnum
     ("short",  ts::VERSION_SHORT,
+     "global", ts::VERSION_GLOBAL,
      "long",   ts::VERSION_LONG,
      "date",   ts::VERSION_DATE,
      "nsis",   ts::VERSION_NSIS,
@@ -119,7 +120,7 @@ std::string ts::GetVersion(VersionFormat format, const std::string& applicationN
         }
         case VERSION_NSIS: {
             // A definition directive for NSIS.
-            return "!define tsduckVersion \"" + GetVersion(VERSION_SHORT, applicationName, revisionFile) + '"';
+            return "!define tsduckVersion \"" + GetVersion(VERSION_GLOBAL, applicationName, revisionFile) + '"';
         }
         case VERSION_DEKTEC: {
             // The version of Dektec components.
@@ -127,12 +128,22 @@ std::string ts::GetVersion(VersionFormat format, const std::string& applicationN
         }
         case VERSION_SHORT: {
             // The simple version with the revision from the current executable and the TSDuck library.
-            std::string version(TS_STRINGIFY(TS_VERSION_MAJOR) "." TS_STRINGIFY(TS_VERSION_MINOR));
             const int revision = GetRevision(revisionFile, true);
-            if (revision != 0) {
-                version += Format("-%d", revision);
+            return revision == 0 ?
+                Format("%d.%d", TS_VERSION_MAJOR, TS_VERSION_MINOR) :
+                Format("%d.%d-%d", TS_VERSION_MAJOR, TS_VERSION_MINOR, revision);
+        }
+        case VERSION_GLOBAL: {
+            // Same as short but use the highest revision of all TSDuck files.
+            StringVector files;
+            GetAllModules(files);
+            int revision = 0;
+            for (StringVector::const_iterator it = files.begin(); it != files.end(); ++it) {
+                revision = std::max(revision, GetRevision(*it, false));
             }
-            return version;
+            return revision == 0 ?
+                Format("%d.%d", TS_VERSION_MAJOR, TS_VERSION_MINOR) :
+                Format("%d.%d-%d", TS_VERSION_MAJOR, TS_VERSION_MINOR, revision);
         }
         case VERSION_FILES: {
             // A list of revisions for all files.
