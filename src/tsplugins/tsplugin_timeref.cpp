@@ -36,6 +36,7 @@
 #include "tsTime.h"
 #include "tsMJD.h"
 #include "tsCRC32.h"
+TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

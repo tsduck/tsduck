@@ -37,6 +37,7 @@
 #include "tsVariable.h"
 #include "tsDecimal.h"
 #include "tsFormat.h"
+TSDUCK_SOURCE;
 
 using namespace ts;
 

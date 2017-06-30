@@ -34,7 +34,7 @@
 #include "tsLNB.h"
 #include "tsFormat.h"
 #include "tsToInteger.h"
-
+TSDUCK_SOURCE;
 
 // LNB constants
 const ts::LNB ts::LNB::Universal; // default values

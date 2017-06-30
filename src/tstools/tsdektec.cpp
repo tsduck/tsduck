@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsDektecControl.h"
+TSDUCK_SOURCE;
 
 int main(int argc, char *argv[])
 {

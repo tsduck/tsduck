@@ -30,6 +30,7 @@
 #include "tsDektecUtils.h"
 #include "tsDektec.h"
 #include "tsFormat.h"
+TSDUCK_SOURCE;
 
 
 //-----------------------------------------------------------------------------

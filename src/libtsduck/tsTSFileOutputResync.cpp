@@ -34,7 +34,7 @@
 
 #include "tsTSFileOutputResync.h"
 #include "tsMemoryUtils.h"
-
+TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

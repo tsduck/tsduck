@@ -39,6 +39,7 @@
 #include "tsService.h"
 #include "tsPAT.h"
 #include "tsSDT.h"
+TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

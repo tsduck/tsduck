@@ -29,6 +29,7 @@
 
 #include "tsDektecInputPlugin.h"
 #include "tsDektecOutputPlugin.h"
+TSDUCK_SOURCE;
 
 TSPLUGIN_DECLARE_VERSION
 TSPLUGIN_DECLARE_INPUT(ts::DektecInputPlugin)

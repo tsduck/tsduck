@@ -42,6 +42,7 @@
 #include "tsCAT.h"
 #include "tsSDT.h"
 #include "tsFormat.h"
+TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

@@ -34,7 +34,7 @@
 #include "tsPCSC.h"
 #include "tsFatal.h"
 #include "tsMemoryUtils.h"
-
+TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

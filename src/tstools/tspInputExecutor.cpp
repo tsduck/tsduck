@@ -37,6 +37,7 @@
 #include "tsHexa.h"
 #include "tsFormat.h"
 #include "tsTime.h"
+TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

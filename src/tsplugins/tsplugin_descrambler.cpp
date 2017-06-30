@@ -38,7 +38,7 @@
 #include "tsStringUtils.h"
 #include "tsByteBlock.h"
 #include "tsHexa.h"
-
+TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

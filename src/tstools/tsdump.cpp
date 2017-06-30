@@ -37,6 +37,7 @@
 #include "tsDecimal.h"
 #include "tsHexa.h"
 #include "tsTSPacket.h"
+TSDUCK_SOURCE;
 
 using namespace ts;
 

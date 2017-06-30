@@ -35,7 +35,7 @@
 #include "tsPlugin.h"
 #include "tsDecimal.h"
 #include "tsMemoryUtils.h"
-
+TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

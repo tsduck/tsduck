@@ -35,6 +35,7 @@
 #include "tsCerrReport.h"
 #include "tsSysUtils.h"
 #include "tsFormat.h"
+TSDUCK_SOURCE;
 
 ts::Exception::Exception(const std::string& w) :
     _what(w)

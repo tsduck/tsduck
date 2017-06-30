@@ -10,6 +10,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsScrambling.h"
+TSDUCK_SOURCE;
 
 // Operations on 64-bit areas.
 

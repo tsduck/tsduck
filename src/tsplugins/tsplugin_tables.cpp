@@ -34,6 +34,7 @@
 
 #include "tsPlugin.h"
 #include "tsTablesLogger.h"
+TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

@@ -36,6 +36,7 @@
 #include "tsNames.h"
 #include "tsBCD.h"
 #include "tsMJD.h"
+TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

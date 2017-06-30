@@ -39,6 +39,7 @@
 #include "tsDecimal.h"
 #include "tsFormat.h"
 #include "tsNullReport.h"
+TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

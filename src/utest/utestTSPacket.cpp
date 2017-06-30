@@ -33,6 +33,7 @@
 
 #include "tsTSPacket.h"
 #include "utestCppUnitTest.h"
+TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

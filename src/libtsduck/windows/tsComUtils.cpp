@@ -38,6 +38,7 @@
 #include "tsRegistryUtils.h"
 #include "tsFormat.h"
 #include "tsFatal.h"
+TSDUCK_SOURCE;
 
 
 //-----------------------------------------------------------------------------

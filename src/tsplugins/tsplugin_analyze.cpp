@@ -35,7 +35,7 @@
 #include "tsPlugin.h"
 #include "tsTSAnalyzerReport.h"
 #include "tsSysUtils.h"
-
+TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

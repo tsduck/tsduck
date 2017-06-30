@@ -33,6 +33,7 @@
 
 #include "tsDoubleCheckLock.h"
 #include "utestCppUnitTest.h"
+TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

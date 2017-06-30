@@ -32,6 +32,7 @@
 #include "tsFormat.h"
 #include "tsSysUtils.h"
 #include "tsVersion.h"
+TSDUCK_SOURCE;
 
 // Unlimited number of occurences
 const size_t ts::Args::UNLIMITED_COUNT = std::numeric_limits<size_t>::max();

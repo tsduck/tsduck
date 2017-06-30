@@ -33,6 +33,7 @@
 
 #include "tsRingNode.h"
 #include "utestCppUnitTest.h"
+TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

@@ -38,7 +38,6 @@
 #include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/ui/text/TextTestRunner.h>
 
-
 //
 // A file name which discards all output
 //

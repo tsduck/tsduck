@@ -33,7 +33,7 @@
 
 #include "tsApplicationSharedLibrary.h"
 #include "tsSysUtils.h"
-
+TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

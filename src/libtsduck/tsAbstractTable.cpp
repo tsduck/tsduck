@@ -29,6 +29,7 @@
 
 #include "tsAbstractTable.h"
 #include "tsHexa.h"
+TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

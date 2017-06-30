@@ -33,6 +33,7 @@
 #include "tsDektecUtils.h"
 #include "tsDektecDevice.h"
 #include "tsDektecVPD.h"
+TSDUCK_SOURCE;
 
 // Portable definitions of LED colors.
 #if defined(TS_NO_DTAPI)

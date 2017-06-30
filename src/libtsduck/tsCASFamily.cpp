@@ -32,9 +32,13 @@
 //----------------------------------------------------------------------------
 
 #include "tsCASFamily.h"
+TSDUCK_SOURCE;
 
+
+//----------------------------------------------------------------------------
 // Return a CAS family from a CA system id.
 // Useful to analyze CA descriptors.
+//----------------------------------------------------------------------------
 
 ts::CASFamily ts::CASFamilyOf (uint16_t casid)
 {

@@ -39,6 +39,7 @@
 #include "tsTime.h"
 #include "tsTables.h"
 #include "tsFormat.h"
+TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

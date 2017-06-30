@@ -37,7 +37,7 @@
 #include "tsTunerParametersDVBT.h"
 #include "tsBCD.h"
 #include "tsSysUtils.h"
-
+TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

@@ -38,6 +38,7 @@
 #include "tsTunerParametersATSC.h"
 #include "tsTunerUtils.h"
 #include "tsTunerArgs.h"
+TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

@@ -35,6 +35,7 @@
 #include "tsMPEG.h"
 #include "tsDecimal.h"
 #include "tsSysUtils.h"
+TSDUCK_SOURCE;
 
 using namespace ts;
 

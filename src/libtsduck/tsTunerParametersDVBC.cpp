@@ -36,6 +36,7 @@
 #include "tsEnumeration.h"
 #include "tsDecimal.h"
 #include "tsFormat.h"
+TSDUCK_SOURCE;
 
 #if defined (TS_NEED_STATIC_CONST_DEFINITIONS)
 const ts::SpectralInversion ts::TunerParametersDVBC::DEFAULT_INVERSION;

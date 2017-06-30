@@ -32,7 +32,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsObject.h"
-
+TSDUCK_SOURCE;
 
 // Static thread-safe repository of Object
 std::map <std::string, ts::ObjectPtr> ts::Object::_repository;

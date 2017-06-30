@@ -33,6 +33,7 @@
 
 #include "tsTerrestrialDeliverySystemDescriptor.h"
 #include "tsTunerParametersDVBT.h"
+TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

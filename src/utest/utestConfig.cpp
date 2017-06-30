@@ -34,6 +34,7 @@
 #include "tsConfigFile.h"
 #include "tsSysUtils.h"
 #include "utestCppUnitTest.h"
+TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

@@ -38,6 +38,7 @@
 #include "tsSysUtils.h"
 #include "tsDecimal.h"
 #include "tsTime.h"
+TSDUCK_SOURCE;
 
 // Grouping TS packets in UDP packets
 

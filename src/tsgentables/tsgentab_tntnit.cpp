@@ -33,6 +33,7 @@
 
 #include "tsGenTabPlugin.h"
 #include "tsTables.h"
+TSDUCK_SOURCE;
 
 // 0xE9 = 233 = \351 = e acute
 // 0xE7 = 231 = \347 = c cedilla

@@ -39,6 +39,7 @@
 #include "tsTunerArgs.h"
 #include "tsDecimal.h"
 #include "utestCppUnitTest.h"
+TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

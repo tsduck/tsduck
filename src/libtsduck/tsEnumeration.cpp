@@ -37,6 +37,7 @@
 #include "tsToInteger.h"
 #include "tsStringUtils.h"
 #include "tsDecimal.h"
+TSDUCK_SOURCE;
 
 //
 // Values for "not found"

@@ -36,6 +36,7 @@
 #include "tsPCRAnalyzer.h"
 #include "tsEnumeration.h"
 #include "tsDecimal.h"
+TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

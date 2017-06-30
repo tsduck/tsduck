@@ -32,6 +32,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsFormat.h"
+TSDUCK_SOURCE;
 
 
 std::string ts::Format (const char *format, ...)

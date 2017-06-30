@@ -33,6 +33,7 @@
 
 #include "tsStaticInstance.h"
 #include "utestCppUnitTest.h"
+TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

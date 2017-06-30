@@ -34,7 +34,7 @@
 #include "tsEMMGMUX.h"
 #include "tstlvMessageFactory.h"
 #include "tsMPEG.h"
-
+TSDUCK_SOURCE;
 
 // Define protocol singleton instance
 tsDefineSingleton (ts::emmgmux::Protocol);

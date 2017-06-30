@@ -33,6 +33,7 @@
 
 #include "tsResidentBuffer.h"
 #include "utestCppUnitTest.h"
+TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

@@ -37,6 +37,7 @@
 #include "tsHexa.h"
 #include "tsPCRAnalyzer.h"
 #include "tsFormat.h"
+TSDUCK_SOURCE;
 
 using namespace ts;
 

@@ -40,6 +40,7 @@
 #include "tsTDT.h"
 #include "tsTOT.h"
 #include "tsFormat.h"
+TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

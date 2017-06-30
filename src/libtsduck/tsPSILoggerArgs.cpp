@@ -33,6 +33,7 @@
 
 #include "tsPSILoggerArgs.h"
 #include "tsException.h"
+TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

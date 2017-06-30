@@ -34,6 +34,7 @@
 #include "tsAlgorithm.h"
 #include "utestCppUnitTest.h"
 #include <cstdarg>
+TSDUCK_SOURCE;
 
 // We test our algorithms on elements of type 'Id'
 namespace {

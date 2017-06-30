@@ -38,6 +38,7 @@
 #include "tsToInteger.h"
 #include "tsTime.h"
 #include "tsTDT.h"
+TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

@@ -38,6 +38,7 @@
 #include "tsDecimal.h"
 #include "tsNames.h"
 #include "tsHexa.h"
+TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

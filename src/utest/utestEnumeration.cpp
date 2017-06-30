@@ -34,6 +34,7 @@
 #include "tsEnumeration.h"
 #include "tsStringUtils.h"
 #include "utestCppUnitTest.h"
+TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

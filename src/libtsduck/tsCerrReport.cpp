@@ -33,6 +33,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsCerrReport.h"
+TSDUCK_SOURCE;
 
 // Define singleton instance
 tsDefineSingleton(ts::CerrReport);

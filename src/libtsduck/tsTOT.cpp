@@ -36,7 +36,7 @@
 #include "tsBCD.h"
 #include "tsCRC32.h"
 #include "tsFormat.h"
-
+TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

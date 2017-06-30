@@ -34,6 +34,7 @@
 #include "tsSystemRandomGenerator.h"
 #include "tsByteBlock.h"
 #include "utestCppUnitTest.h"
+TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

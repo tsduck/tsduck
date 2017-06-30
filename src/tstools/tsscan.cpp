@@ -48,6 +48,7 @@
 #include "tsFormat.h"
 #include "tsDecimal.h"
 #include "tsNullReport.h"
+TSDUCK_SOURCE;
 
 #define DEFAULT_PSI_TIMEOUT   5000 // ms
 #define DEFAULT_MIN_STRENGTH  10

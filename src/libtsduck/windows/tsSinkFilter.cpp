@@ -44,6 +44,7 @@
 #include "tsIntegerUtils.h"
 #include "tsDecimal.h"
 #include "tsHexa.h"
+TSDUCK_SOURCE;
 
 #if defined (DEBUG)
 #define TRACE(arglist) _report.log arglist

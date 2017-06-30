@@ -35,7 +35,7 @@
 #include "tsGuardCondition.h"
 #include "tsGuard.h"
 #include "tsDecimal.h"
-
+TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

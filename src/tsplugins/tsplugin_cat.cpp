@@ -38,6 +38,7 @@
 #include "tsCADescriptor.h"
 #include "tsDecimal.h"
 #include "tsCAT.h"
+TSDUCK_SOURCE;
 
 #define DEFAULT_CAT_BITRATE 3000
 

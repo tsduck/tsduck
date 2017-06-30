@@ -39,6 +39,7 @@
 #include "tsNullMutex.h"
 #include "tsSafePtr.h"
 #include "tsSysUtils.h"
+TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

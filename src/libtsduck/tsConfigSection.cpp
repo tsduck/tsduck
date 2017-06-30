@@ -35,6 +35,7 @@
 
 #include "tsConfigSection.h"
 #include "tsStringUtils.h"
+TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

@@ -34,6 +34,7 @@
 #include "tstlvMessageFactory.h"
 #include "tstlvAnalyzer.h"
 #include "tsFormat.h"
+TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

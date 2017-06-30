@@ -34,6 +34,7 @@
 #include "tsSafePtr.h"
 #include "tsMutex.h"
 #include "utestCppUnitTest.h"
+TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

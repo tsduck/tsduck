@@ -42,6 +42,7 @@
 #include "tsHexa.h"
 #include "tsTime.h"
 #include "tsCASFamily.h"
+TSDUCK_SOURCE;
 
 using namespace ts;
 

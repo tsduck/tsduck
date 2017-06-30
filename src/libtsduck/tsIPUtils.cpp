@@ -33,7 +33,7 @@
 
 #include "tsIPUtils.h"
 #include "tsIPAddress.h"
-
+TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

@@ -40,6 +40,7 @@
 #include "tsSysUtils.h"
 #include "tsByteBlock.h"
 #include "utestCppUnitTest.h"
+TSDUCK_SOURCE;
 
 #if defined(__unix)
 #include <sys/types.h>

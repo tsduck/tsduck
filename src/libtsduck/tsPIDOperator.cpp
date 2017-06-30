@@ -33,6 +33,7 @@
 
 #include "tsPIDOperator.h"
 #include "tsCASFamily.h"
+TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

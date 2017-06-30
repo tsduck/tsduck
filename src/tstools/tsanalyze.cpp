@@ -34,52 +34,51 @@
 #include "tsTSAnalyzerReport.h"
 #include "tsTSAnalyzerOptions.h"
 #include "tsInputRedirector.h"
-
-using namespace ts;
+TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------
 //  Command line options
 //----------------------------------------------------------------------------
 
-struct Options: public TSAnalyzerOptions
+struct Options: public ts::TSAnalyzerOptions
 {
-    Options (int argc, char *argv[]);
+    Options(int argc, char *argv[]);
 
-    BitRate     bitrate;     // Expected bitrate (188-byte packets)
-    std::string infile;      // Input file name
+    ts::BitRate bitrate;  // Expected bitrate (188-byte packets)
+    std::string infile;   // Input file name
 };
 
-Options::Options (int argc, char *argv[]) :
-    TSAnalyzerOptions("MPEG Transport Stream Analysis Utility.", "[options] [filename]"),
+Options::Options(int argc, char *argv[]) :
+    ts::TSAnalyzerOptions("MPEG Transport Stream Analysis Utility.", "[options] [filename]"),
     bitrate(0),
     infile()
 {
-    option ("",         0,  Args::STRING, 0, 1);
-    option ("bitrate", 'b', Args::UNSIGNED);
+    option("",         0,  Args::STRING, 0, 1);
+    option("bitrate", 'b', Args::UNSIGNED);
 
-    setHelp ("Input file:\n"
-             "\n"
-             "  MPEG capture file (standard input if omitted).\n"
-             "\n"
-             "Options:\n"
-             "\n"
-             "  -b value\n"
-             "  --bitrate value\n"
-             "      Specifies the bitrate of the transport stream in bits/second\n"
-             "      (based on 188-byte packets). By default, the bitrate is\n"
-             "      evaluated using the PCR in the transport stream.\n"
-             "\n"
-             "  --help\n"
-             "      Display this help text.\n"
-             "\n"
-             "  --version\n"
-             "      Display the version number.\n");
+    setHelp("Input file:\n"
+            "\n"
+            "  MPEG capture file (standard input if omitted).\n"
+            "\n"
+            "Options:\n"
+            "\n"
+            "  -b value\n"
+            "  --bitrate value\n"
+            "      Specifies the bitrate of the transport stream in bits/second\n"
+            "      (based on 188-byte packets). By default, the bitrate is\n"
+            "      evaluated using the PCR in the transport stream.\n"
+            "\n"
+            "  --help\n"
+            "      Display this help text.\n"
+            "\n"
+            "  --version\n"
+            "      Display the version number.\n");
 
-    analyze (argc, argv);
+    analyze(argc, argv);
 
-    infile = value ("");
-    bitrate = intValue<BitRate> ("bitrate");
+    infile = value("");
+    bitrate = intValue<ts::BitRate>("bitrate");
 }
 
 
@@ -87,20 +86,20 @@ Options::Options (int argc, char *argv[]) :
 //  Program entry point
 //----------------------------------------------------------------------------
 
-int main (int argc, char *argv[])
+int main(int argc, char *argv[])
 {
-    Options opt (argc, argv);
-    TSAnalyzerReport analyzer (opt.bitrate);
-    InputRedirector input (opt.infile, opt);
-    TSPacket pkt;
+    Options opt(argc, argv);
+    ts::TSAnalyzerReport analyzer(opt.bitrate);
+    ts::InputRedirector input(opt.infile, opt);
+    ts::TSPacket pkt;
 
-    analyzer.setAnalysisOptions (opt);
+    analyzer.setAnalysisOptions(opt);
 
-    while (pkt.read (std::cin, true, opt)) {
-        analyzer.feedPacket (pkt);
+    while (pkt.read(std::cin, true, opt)) {
+        analyzer.feedPacket(pkt);
     }
 
-    analyzer.report (std::cout, opt);
+    analyzer.report(std::cout, opt);
 
     return EXIT_SUCCESS;
 }

@@ -33,6 +33,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsPlugin.h"
+TSDUCK_SOURCE;
 
 #define DEFAULT_SEPARATOR ";"
 

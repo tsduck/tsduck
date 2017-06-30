@@ -38,7 +38,7 @@
 #include "tsServiceDescriptor.h"
 #include "tsService.h"
 #include "tsBAT.h"
-
+TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

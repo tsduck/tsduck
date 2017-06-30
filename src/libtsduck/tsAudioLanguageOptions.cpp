@@ -33,7 +33,7 @@
 
 #include "tsAudioLanguageOptions.h"
 #include "tsToInteger.h"
-
+TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

@@ -33,7 +33,7 @@
 
 #include "tsDescriptor.h"
 #include "tsMemoryUtils.h"
-
+TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

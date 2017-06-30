@@ -36,13 +36,13 @@
 #include "tspInputExecutor.h"
 #include "tspOutputExecutor.h"
 #include "tspProcessorExecutor.h"
-
 #include "tsAsyncReport.h"
 #include "tsSystemMonitor.h"
 #include "tsResidentBuffer.h"
 #include "tsIPUtils.h"
 #include "tsDecimal.h"
 #include "tsFormat.h"
+TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------
