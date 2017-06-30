@@ -99,7 +99,7 @@ deb:
 	rm -rf $(TMPDIR)
 	$(MAKE) -C $(ROOTDIR) install DESTDIR=$(TMPDIR)
 	mkdir $(TMPDIR)/DEBIAN
-	sed -e 's/{{VERSION}}/$(shell $(TSTOOLSDIR)/$(OBJDIR)/tsp --version=global)/g' \
+	sed -e 's/{{VERSION}}/$(shell $(TSTOOLSDIR)/$(OBJDIR)/tsp --version=global 2>&1)/g' \
 	    -e 's/{{ARCH}}/$(shell dpkg-architecture -qDEB_BUILD_ARCH)/g' \
 	    tsduck.control >$(TMPDIR)/DEBIAN/control
 	sed -e 's|{{EXECS}}|$(addprefix /usr/bin/,$(TSEXECS))|g' \
