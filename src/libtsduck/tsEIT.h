@@ -63,6 +63,7 @@ namespace ts {
         //! @param [in] is_actual True for EIT Actual TS, false for EIT Other TS.
         //! @param [in] is_pf True for EIT present/following, false for EIT schedule.
         //! @param [in] eits_index For EIT schedule, index from 0x00 to 0x0F, ignored for EIT present/following.
+        //! @return The corresponding table id.
         //!
         static TID ComputeTableId(bool is_actual, bool is_pf, uint8_t eits_index = 0);
 
