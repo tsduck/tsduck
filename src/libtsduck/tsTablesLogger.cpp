@@ -47,7 +47,7 @@ TSDUCK_SOURCE;
 //----------------------------------------------------------------------------
 
 ts::TablesLogger::TablesLogger(const TablesLoggerArgs& opt, ReportInterface& report) :
-    TablesDisplay(opt, report),
+    TablesDisplay(opt),
     _opt(opt),
     _report(report),
     _abort(false),

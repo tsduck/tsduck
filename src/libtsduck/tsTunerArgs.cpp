@@ -140,6 +140,9 @@ void ts::TunerArgs::load(Args& args)
         device_name = Format("/dev/dvb/adapter%d", adapter);
 #elif defined(__windows)
         device_name = Format(":%d", adapter);
+#else
+        // Does not mean anything, just for error messages.
+        device_name = Format("DVB adapter %d", adapter);
 #endif
     }
 

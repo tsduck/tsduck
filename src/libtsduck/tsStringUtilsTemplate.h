@@ -131,11 +131,11 @@ std::string ts::JoinStrings(ITERATOR begin, ITERATOR end, const std::string& sep
 
 template <class CONTAINER>
 CONTAINER& ts::SplitLines(CONTAINER& lines,
-                            const std::string& str,
-                            size_t maxWidth,
-                            const std::string& otherSeparators,
-                            const std::string& nextMargin,
-                            bool forceSplit)
+                          const std::string& str,
+                          size_t maxWidth,
+                          const std::string& otherSeparators,
+                          const std::string& nextMargin,
+                          bool forceSplit)
 {
     // Cleanup container
     lines.clear();
@@ -269,4 +269,19 @@ template <class CONTAINER>
 bool ts::SaveStrings(const CONTAINER& container, const std::string& fileName, bool append)
 {
     return SaveStrings(container.begin(), container.end(), fileName, append);
+}
+
+
+//----------------------------------------------------------------------------
+// Get the length of the longest string in a container of strings.
+//----------------------------------------------------------------------------
+
+template <class CONTAINER>
+size_t ts::LargestLength(const CONTAINER& container)
+{
+    size_t largest = 0;
+    for (typename CONTAINER::const_iterator it = container.begin(); it != container.end(); ++it) {
+        largest = std::max(largest, it->length());
+    }
+    return largest;
 }

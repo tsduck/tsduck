@@ -86,7 +86,13 @@ namespace {
 #endif
 
         // Append all TSDuck shared library files.
-        return ts::ExpandWildcardAndAppend(files, (dir + "ts*") + ts::SharedLibrary::Extension);
+        if (!ts::ExpandWildcardAndAppend(files, (dir + "ts*") + ts::SharedLibrary::Extension)) {
+            return false;
+        }
+
+        // Sort the array.
+        std::sort(files.begin(), files.end());
+        return true;
     }
 }
 
@@ -99,6 +105,7 @@ std::string ts::GetVersion(VersionFormat format, const std::string& applicationN
 {
     switch (format) {
         case VERSION_LONG: {
+            // The long explanatory version.
             return (applicationName.empty() ? "" : applicationName + ": ") +
                 "TSDuck - The MPEG Transport Stream Toolkit "
             #if defined(TS_NO_DTAPI)
@@ -107,15 +114,19 @@ std::string ts::GetVersion(VersionFormat format, const std::string& applicationN
                 "- version " + GetVersion(VERSION_SHORT, applicationName, revisionFile);
         }
         case VERSION_DATE: {
+            // The build date.
             return Format("%s - %s", __DATE__, __TIME__);
         }
         case VERSION_NSIS: {
+            // A definition directive for NSIS.
             return "!define tsduckVersion \"" + GetVersion(VERSION_SHORT, applicationName, revisionFile) + '"';
         }
         case VERSION_DEKTEC: {
+            // The version of Dektec components.
             return GetDektecVersions();
         }
         case VERSION_SHORT: {
+            // The simple version with the revision from the current executable and the TSDuck library.
             std::string version(TS_STRINGIFY(TS_VERSION_MAJOR) "." TS_STRINGIFY(TS_VERSION_MINOR));
             const int revision = GetRevision(revisionFile, true);
             if (revision != 0) {
@@ -123,7 +134,22 @@ std::string ts::GetVersion(VersionFormat format, const std::string& applicationN
             }
             return version;
         }
+        case VERSION_FILES: {
+            // A list of revisions for all files.
+            StringVector files;
+            GetAllModules(files);
+            std::string list("Revision  File\n--------  ");
+            list.append(std::max<size_t>(4, LargestLength(files)), '-');
+            for (StringVector::const_iterator it = files.begin(); it != files.end(); ++it) {
+                const int rev = GetRevision(*it, false);
+                if (rev != 0) {
+                    list.append(Format("\n%8d  %s", rev, it->c_str()));
+                }
+            }
+            return list;
+        }
         default: {
+            // Undefined type, return an empty string.
             return std::string();
         }
     }
@@ -163,7 +189,7 @@ namespace {
         word.clear();
         char c;
         while (word.size() < max_size && (file >> c) && (c != delim)) {
-            word += c;
+            word.append(1, c);
         }
         ts::Trim(word);
     }
@@ -252,7 +278,8 @@ int ts::GetRevision(const std::string& fileName, bool includeLibrary)
     int rev;
     char c;
 
-    // Search for the revision in the specified file
+    // Search for the revision in the specified file.
+    file >> std::noskipws;
     while (file >> c) {
 
         // Loop on bytes until we find the first one of the build marker.
