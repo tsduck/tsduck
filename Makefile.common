@@ -784,7 +784,7 @@ distclean: clean
 
 # List of file and directory patterns for non-source files.
 NOSOURCE = \
-    .git .svn *.zip *.gz *.tgz [Dd]ebug* [Rr]elease* doxy doxygen *.pdf *.t2d \
+    .git .svn *.zip *.gz *.tgz [Dd]ebug* [Rr]elease* doxy doxygen *.t2d \
     *.o *.so *.ko *.a *.lib *.obj *.exe *.dll *.gcov *.dep .kdbgrc.* \
     tmp *.tmp *.out *.log *.tlog core core.* vgcore.* *.stackdump \
     .vs ipch *.ncb *.suo *.idb *.sdf *.opensdf *.vcproj.*.user *.user.* \
