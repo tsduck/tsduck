@@ -49,6 +49,7 @@ namespace ts {
         bool            raw_dump;        //!< Raw dump of section, no interpretation.
         uint32_t        raw_flags;       //!< Dump flags in raw mode.
         TLVSyntaxVector tlv_syntax;      //!< TLV syntax to apply to unknown sections.
+        size_t          min_nested_tlv;  //!< Minimum size of a TLV record after which it is interpreted as a nested TLV (0=disabled).
 
         //!
         //! Default constructor.
@@ -58,7 +59,7 @@ namespace ts {
         //!
         //! Virtual destructor.
         //!
-        ~TablesDisplayArgs() {}
+        virtual ~TablesDisplayArgs() {}
 
         //!
         //! Define command line options in an Args.

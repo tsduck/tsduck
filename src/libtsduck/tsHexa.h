@@ -79,6 +79,7 @@ namespace ts {
     //! @param [in] init_offset If the flag @link ts::hexa::OFFSET @endlink is specified, an offset
     //! in the memory area is displayed at the beginning of each line. In this
     //! case, @a init_offset specified the offset value for the first byte.
+    //! @param [in] inner_indent Add this indentation before hexa/ascii dump, after offset.
     //! @return A string containing the formatted hexadecimal dump.
     //! Lines are separated with embedded new-line characters ('\\n').
     //! @see ts::hexa::Flags
@@ -88,7 +89,8 @@ namespace ts {
                                uint32_t flags = hexa::HEXA,
                                size_t indent = 0,
                                size_t line_width = hexa::DEFAULT_LINE_WIDTH,
-                               size_t init_offset = 0);
+                               size_t init_offset = 0,
+                               size_t inner_indent = 0);
 
     //!
     //! Build a multi-line string containing the hexadecimal dump of a memory area.
@@ -104,6 +106,7 @@ namespace ts {
     //! @param [in] init_offset If the flag @link ts::hexa::OFFSET @endlink is specified, an offset
     //! in the memory area is displayed at the beginning of each line. In this
     //! case, @a init_offset specified the offset value for the first byte.
+    //! @param [in] inner_indent Add this indentation before hexa/ascii dump, after offset.
     //! @return A string containing the formatted hexadecimal dump.
     //! Lines are separated with embedded new-line characters ('\\n').
     //! @see ts::hexa::Flags
@@ -112,7 +115,8 @@ namespace ts {
                                uint32_t flags = hexa::HEXA,
                                size_t indent = 0,
                                size_t line_width = hexa::DEFAULT_LINE_WIDTH,
-                               size_t init_offset = 0);
+                               size_t init_offset = 0,
+                               size_t inner_indent = 0);
 
     //!
     //! Build a multi-line string containing the hexadecimal dump of a memory area.
@@ -128,6 +132,7 @@ namespace ts {
     //! @param [in] init_offset If the flag @link ts::hexa::OFFSET @endlink is specified, an offset
     //! in the memory area is displayed at the beginning of each line. In this
     //! case, @a init_offset specified the offset value for the first byte.
+    //! @param [in] inner_indent Add this indentation before hexa/ascii dump, after offset.
     //! @return A string containing the formatted hexadecimal dump.
     //! Lines are separated with embedded new-line characters ('\\n').
     //! @see ts::hexa::Flags
@@ -136,7 +141,8 @@ namespace ts {
                                uint32_t flags = hexa::HEXA,
                                size_t indent = 0,
                                size_t line_width = hexa::DEFAULT_LINE_WIDTH,
-                               size_t init_offset = 0);
+                               size_t init_offset = 0,
+                               size_t inner_indent = 0);
 
 
     //!
@@ -155,6 +161,7 @@ namespace ts {
     //! @param [in] init_offset If the flag @link ts::hexa::OFFSET @endlink is specified, an offset
     //! in the memory area is displayed at the beginning of each line. In this
     //! case, @a init_offset specified the offset value for the first byte.
+    //! @param [in] inner_indent Add this indentation before hexa/ascii dump, after offset.
     //! @return A reference to @a str.
     //! @see ts::hexa::Flags
     //!
@@ -164,5 +171,6 @@ namespace ts {
                                       uint32_t flags = hexa::HEXA,
                                       size_t indent = 0,
                                       size_t line_width = hexa::DEFAULT_LINE_WIDTH,
-                                      size_t init_offset = 0);
+                                      size_t init_offset = 0,
+                                      size_t inner_indent = 0);
 }

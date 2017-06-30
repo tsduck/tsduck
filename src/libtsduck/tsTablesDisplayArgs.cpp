@@ -42,7 +42,8 @@
 ts::TablesDisplayArgs::TablesDisplayArgs() :
     raw_dump(false),
     raw_flags(hexa::HEXA),
-    tlv_syntax()
+    tlv_syntax(),
+    min_nested_tlv(0)
 {
 }
 
@@ -61,6 +62,12 @@ void ts::TablesDisplayArgs::addHelp(Args& args) const
         "  --c-style\n"
         "      Same as --raw-dump (no interpretation of section) but dump the\n"
         "      bytes in C-language style.\n"
+        "\n"
+        "  --nested-tlv[=min-size]\n"
+        "      With option --tlv, try to interpret the value field of each TLV record as\n"
+        "      another TLV area. If the min-size value is specified, the nested TLV\n"
+        "      interpretation is performed only on value fields larger than this size.\n"
+        "      The syntax of the nested TLV is the same as the enclosing TLV.\n"
         "\n"
         "  -r\n"
         "  --raw-dump\n"
@@ -93,6 +100,7 @@ void ts::TablesDisplayArgs::addHelp(Args& args) const
 void ts::TablesDisplayArgs::defineOptions(Args& args) const
 {
     args.option("c-style", 'c');
+    args.option("nested-tlv", 0, Args::POSITIVE, 0, 1, 0, 0, true);
     args.option("raw-dump", 'r');
     args.option("tlv", 0, Args::STRING, 0, Args::UNLIMITED_COUNT);
 }
@@ -111,6 +119,11 @@ void ts::TablesDisplayArgs::load(Args& args)
         raw_dump = true;
         raw_flags |= hexa::C_STYLE;
     }
+
+    // The --nested-tlv has an optional value.
+    // If present without value, use 1, meaning all non-empty TLV records.
+    // If not present, we use 0, which means no nested TLV.
+    min_nested_tlv = args.present("nested-tlv") ? args.intValue<size_t>("nested-tlv", 1) : 0;
 
     // Get all TLV syntax specifications.
     tlv_syntax.clear();

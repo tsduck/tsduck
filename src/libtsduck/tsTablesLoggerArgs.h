@@ -56,7 +56,7 @@ namespace ts {
         //!
         //! Virtual destructor.
         //!
-        ~TablesLoggerArgs() {}
+        virtual ~TablesLoggerArgs() {}
 
         //!
         //! Type of logging destination.
