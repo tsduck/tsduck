@@ -165,7 +165,10 @@ void ArgsTest::testHelp()
 
     log.resetMessages();
     CPPUNIT_ASSERT(!args.analyze("test", "--version=short", TS_NULL));
-    CPPUNIT_ASSERT_EQUAL(std::string(TS_STRINGIFY(TS_VERSION_MAJOR) "." TS_STRINGIFY(TS_VERSION_MINOR)), log.getMessages());
+    const std::string version(log.getMessages());
+    const size_t dash = version.find('-');
+    CPPUNIT_ASSERT(dash != std::string::npos);
+    CPPUNIT_ASSERT_EQUAL(std::string(TS_STRINGIFY(TS_VERSION_MAJOR) "." TS_STRINGIFY(TS_VERSION_MINOR)), version.substr(0, dash));
 }
 
 // Test case: copy options
