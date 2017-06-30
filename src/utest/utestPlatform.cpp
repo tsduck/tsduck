@@ -299,8 +299,12 @@ void PlatformTest::testVersion()
                  << "PlatformTest: GetVersion(VERSION_DEKTEC) = \"" << ts::GetVersion(ts::VERSION_DEKTEC) << "\"" << std::endl
                  << "PlatformTest: GetVersion(VERSION_NSIS) = \"" << ts::GetVersion(ts::VERSION_NSIS) << "\"" << std::endl;
 
-    CPPUNIT_ASSERT_EQUAL(std::string(TS_STRINGIFY(TS_VERSION_MAJOR) "." TS_STRINGIFY(TS_VERSION_MINOR)), ts::GetVersion());
-    CPPUNIT_ASSERT_EQUAL(std::string(TS_STRINGIFY(TS_VERSION_MAJOR) "." TS_STRINGIFY(TS_VERSION_MINOR)), ts::GetVersion(ts::VERSION_SHORT));
+    const std::string version(ts::GetVersion());
+    const size_t dash = version.find('-');
+    CPPUNIT_ASSERT(dash != std::string::npos);
+    CPPUNIT_ASSERT_EQUAL(std::string(TS_STRINGIFY(TS_VERSION_MAJOR) "." TS_STRINGIFY(TS_VERSION_MINOR)), version.substr(0, dash));
+
+    CPPUNIT_ASSERT_EQUAL(ts::GetVersion(), ts::GetVersion(ts::VERSION_SHORT));
     CPPUNIT_ASSERT(ts::GetVersion(ts::VERSION_SHORT) != ts::GetVersion(ts::VERSION_LONG));
     CPPUNIT_ASSERT(ts::GetVersion(ts::VERSION_SHORT) != ts::GetVersion(ts::VERSION_NSIS));
 }
