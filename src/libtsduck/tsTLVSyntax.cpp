@@ -59,11 +59,11 @@ ts::TLVSyntax::TLVSyntax(int start, int size, size_t tagSize, size_t lengthSize,
 bool ts::TLVSyntax::set(int start, int size, size_t tagSize, size_t lengthSize, bool msb, ReportInterface& report)
 {
     if (tagSize != 1 && tagSize != 2 && tagSize != 4) {
-        report.error("invalid tag size %d", tagSize);
+        report.error("invalid tag size %" FMT_SIZE_T "d", tagSize);
         return false;
     }
     else if (lengthSize != 1 && lengthSize != 2 && lengthSize != 4) {
-        report.error("invalid length size %d", lengthSize);
+        report.error("invalid length size %" FMT_SIZE_T "d", lengthSize);
         return false;
     }
     else {
@@ -145,8 +145,6 @@ size_t ts::TLVSyntax::getTagAndLength(const uint8_t* data, size_t size, uint32_t
 
 bool ts::TLVSyntax::locateTLV(const uint8_t* data, size_t dataSize, size_t& tlvStart, size_t& tlvSize) const
 {
-    const size_t headerSize = _tagSize + _lengthSize;
-
     // Default values.
     tlvStart = tlvSize = 0;
 
