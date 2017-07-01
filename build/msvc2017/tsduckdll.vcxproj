@@ -455,7 +455,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(RepositoryRootDir)\src\libtsduck;$(RepositoryRootDir)\src\libtsduck\windows;$(RepositoryRootDir)\src\libtsduck\private;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(TSDuckRootDir)\src\libtsduck;$(TSDuckRootDir)\src\libtsduck\windows;$(TSDuckRootDir)\src\libtsduck\private;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_TSDUCKDLL_IMPL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>

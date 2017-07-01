@@ -10,8 +10,8 @@
     <IntDir>$(OutDir)$(ProjectName)\</IntDir>
   </PropertyGroup>
 
-  <PropertyGroup Label="UserMacros">
-    <RepositoryRootDir>$(SolutionDir)\..\..\</RepositoryRootDir>
+  <PropertyGroup Label="UserMacros" Condition="'$(TSDuckRootDir)'==''">
+    <TSDuckRootDir>$(SolutionDir)\..\..\</TSDuckRootDir>
   </PropertyGroup>
 
   <ItemDefinitionGroup>
