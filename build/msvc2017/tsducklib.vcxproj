@@ -452,7 +452,7 @@
   </ImportGroup>
   <ItemDefinitionGroup>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(RepositoryRootDir)\src\libtsduck;$(RepositoryRootDir)\src\libtsduck\windows;$(RepositoryRootDir)\src\libtsduck\private;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(TSDuckRootDir)\src\libtsduck;$(TSDuckRootDir)\src\libtsduck\windows;$(TSDuckRootDir)\src\libtsduck\private;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
   <ImportGroup Label="PropertySheets">

@@ -389,8 +389,14 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "setpath", "setpath.vcxproj"
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tspacketize", "tspacketize.vcxproj", "{1F038043-2FD9-4FCB-9C06-38B24F824794}"
+	ProjectSection(ProjectDependencies) = postProject
+		{1AD31049-26B0-4922-89CF-778040DFC51E} = {1AD31049-26B0-4922-89CF-778040DFC51E}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tspsi", "tspsi.vcxproj", "{70E2F6EF-FADC-4BB1-8DC5-029F6A74F083}"
+	ProjectSection(ProjectDependencies) = postProject
+		{1AD31049-26B0-4922-89CF-778040DFC51E} = {1AD31049-26B0-4922-89CF-778040DFC51E}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
