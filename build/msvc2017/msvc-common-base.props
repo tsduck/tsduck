@@ -6,13 +6,30 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
 
   <PropertyGroup Label="Configuration">
-    <OutDir>$(SolutionDir)\$(Configuration)-$(Platform)\</OutDir>
+    <OutDir>$(SolutionDir)$(Configuration)-$(Platform)\</OutDir>
     <IntDir>$(OutDir)$(ProjectName)\</IntDir>
   </PropertyGroup>
 
-  <PropertyGroup Label="UserMacros" Condition="'$(TSDuckRootDir)'==''">
-    <TSDuckRootDir>$(SolutionDir)\..\..\</TSDuckRootDir>
-  </PropertyGroup>
+  <Choose>
+    <When Condition="Exists('$(SolutionDir)tsduck.sln')">
+      <!-- Inside TSDuck solution -->
+      <PropertyGroup Label="UserMacros">
+        <TSDuckRootDir>$(SolutionDir)..\..\</TSDuckRootDir>
+      </PropertyGroup>
+    </When>
+    <When Condition="Exists('$(SolutionDir)..\..\..\tsduck\build\msvc2017\tsduck.sln')">
+      <!-- Inside another solution, same structure, side by side with TSDuck -->
+      <PropertyGroup Label="UserMacros">
+        <TSDuckRootDir>$(SolutionDir)..\..\..\tsduck\</TSDuckRootDir>
+      </PropertyGroup>
+    </When>
+    <Otherwise>
+      <!-- Probably an error ... -->
+      <PropertyGroup Label="UserMacros">
+        <TSDuckRootDir>$(SolutionDir)</TSDuckRootDir>
+      </PropertyGroup>
+    </Otherwise>
+  </Choose>
 
   <ItemDefinitionGroup>
     <ClCompile>
