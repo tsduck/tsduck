@@ -120,8 +120,9 @@ void ts::TDT::serialize(BinaryTable& table) const
 // A static method to display a TDT section.
 //----------------------------------------------------------------------------
 
-void ts::TDT::DisplaySection(std::ostream& strm, const Section& section, int indent)
+void ts::TDT::DisplaySection(TablesDisplay& display, const ts::Section& section, int indent)
 {
+    std::ostream& strm(display.out());
     const uint8_t* data = section.payload();
     size_t size = section.payloadSize();
 
@@ -133,5 +134,5 @@ void ts::TDT::DisplaySection(std::ostream& strm, const Section& section, int ind
              << time.format(Time::DATE | Time::TIME) << std::endl;
     }
 
-    displayExtraData(strm, data, size, indent);
+    DisplayExtraData(display, data, size, indent);
 }

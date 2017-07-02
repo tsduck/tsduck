@@ -34,6 +34,7 @@
 
 #pragma once
 #include "tsBinaryTable.h"
+#include "tsTablesDisplay.h"
 
 namespace ts {
     //!
@@ -85,11 +86,11 @@ namespace ts {
         //! Each subclass should provide a staic function named @e DisplaySection
         //! which displays a section of its table-it.
         //!
-        //! @param [in,out] strm Output text stream.
+        //! @param [in,out] display Display engine.
         //! @param [in] section A safe pointer to the section to display.
         //! @param [in] indent Indentation width.
         //!
-        typedef void (*DisplaySectionFunction)(std::ostream& strm, const ts::Section& section, int indent);
+        typedef void (*DisplaySectionFunction)(TablesDisplay& display, const ts::Section& section, int indent);
 
     protected:
         //!
@@ -110,13 +111,13 @@ namespace ts {
 
         //!
         //! A utility method to dump extraneous bytes after the expected section data.
-        //! Useful for static displaySection() methods.
-        //! @param [in,out] strm Output text stream.
+        //! Useful for static DisplaySection() methods.
+        //! @param [in,out] display Display engine.
         //! @param [in] data Address of extra data to dump.
         //! @param [in] size Size of extra data to dump.
         //! @param [in] indent Indentation width.
         //!
-        static void displayExtraData(std::ostream& strm, const void *data, size_t size, int indent);
+        static void DisplayExtraData(TablesDisplay& display, const void *data, size_t size, int indent);
 
     private:
         // Unreachable constructors and operators.

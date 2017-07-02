@@ -268,8 +268,9 @@ void ts::TOT::serialize (BinaryTable& table) const
 // A static method to display a TOT section.
 //----------------------------------------------------------------------------
 
-void ts::TOT::DisplaySection(std::ostream & strm, const Section& section, int indent)
+void ts::TOT::DisplaySection(TablesDisplay& display, const ts::Section& section, int indent)
 {
+    std::ostream& strm(display.out());
     const std::string margin(indent, ' ');
     const uint8_t* data = section.payload();
     size_t size = section.payloadSize();
@@ -308,5 +309,5 @@ void ts::TOT::DisplaySection(std::ostream & strm, const Section& section, int in
         }
     }
 
-    displayExtraData(strm, data, size, indent);
+    DisplayExtraData(display, data, size, indent);
 }

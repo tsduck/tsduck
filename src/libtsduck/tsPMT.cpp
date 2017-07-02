@@ -263,8 +263,9 @@ bool ts::PMT::Stream::isSubtitles() const
 // A static method to display a PMT section.
 //----------------------------------------------------------------------------
 
-void ts::PMT::DisplaySection(std::ostream & strm, const ts::Section & section, int indent)
+void ts::PMT::DisplaySection(TablesDisplay& display, const ts::Section& section, int indent)
 {
+    std::ostream& strm(display.out());
     const std::string margin(indent, ' ');
     const uint8_t* data = section.payload();
     size_t size = section.payloadSize();
@@ -313,5 +314,5 @@ void ts::PMT::DisplaySection(std::ostream & strm, const ts::Section & section, i
         }
     }
 
-    displayExtraData(strm, data, size, indent);
+    DisplayExtraData(display, data, size, indent);
 }

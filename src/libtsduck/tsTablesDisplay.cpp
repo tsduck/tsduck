@@ -252,7 +252,7 @@ std::ostream& ts::TablesDisplay::displaySection(const Section& section, int inde
         }
     }
     if (handler != 0) {
-        handler(strm, section, indent);
+        handler(*this, section, indent);
     }
     else {
         displayUnkownSection(section, indent);
