@@ -84,7 +84,7 @@ int main (int argc, char *argv[])
 {
     Options opt(argc, argv);
     ts::InputRedirector input(opt.infile, opt);
-    ts::TablesDisplay display(opt.display);
+    ts::TablesDisplay display(opt.display, opt);
     ts::PSILogger logger(opt.logger, display, opt);
     ts::TSPacket pkt;
 

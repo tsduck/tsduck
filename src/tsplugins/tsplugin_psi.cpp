@@ -77,7 +77,7 @@ ts::PSIPlugin::PSIPlugin(TSP* tsp_) :
     ProcessorPlugin(tsp_, "Extract PSI Information.", "[options]"),
     _display_options(),
     _logger_options(),
-    _display(_display_options),
+    _display(_display_options, *tsp),
     _logger()
 {
     _logger_options.defineOptions(*this);

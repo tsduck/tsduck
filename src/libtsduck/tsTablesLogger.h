@@ -101,9 +101,8 @@ namespace ts {
         uint32_t         _table_count;
         PacketCounter    _packet_count;
         SectionDemux     _demux;
-        std::ofstream    _outfile;
-        std::ostream&    _out;    // Output file
-        UDPSocket        _sock;   // Output socket
+        std::ofstream    _outfile;  // Binary output file.
+        UDPSocket        _sock;     // Output socket.
 
         // Hooks
         virtual void handleTable(SectionDemux&, const BinaryTable&);
@@ -138,5 +137,5 @@ namespace ts {
     //!
     //! Safe pointer for TablesLogger (not thread-safe).
     //!
-    typedef SafePtr <TablesLogger, NullMutex> TablesLoggerPtr;
+    typedef SafePtr<TablesLogger,NullMutex> TablesLoggerPtr;
 }

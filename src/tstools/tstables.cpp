@@ -88,7 +88,7 @@ int main(int argc, char *argv[])
         return EXIT_FAILURE;
     }
     ts::InputRedirector input(opt.infile, opt);
-    ts::TablesDisplay display(opt.display);
+    ts::TablesDisplay display(opt.display, opt);
     ts::TablesLogger logger(opt.logger, display, opt);
     ts::TSPacket pkt;
 

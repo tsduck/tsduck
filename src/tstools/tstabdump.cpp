@@ -117,9 +117,9 @@ bool DumpFile(Options& opt, const std::string& file_name)
 
     if (ok) {
         // Display all sections.
-        ts::TablesDisplay display(opt.display);
+        ts::TablesDisplay display(opt.display, opt);
         for (ts::SectionPtrVector::const_iterator it = sections.begin(); it != sections.end(); ++it) {
-            display.displaySection(std::cout, **it);
+            display.displaySection(**it);
         }
     }
 

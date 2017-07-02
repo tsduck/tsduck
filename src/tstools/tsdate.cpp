@@ -117,7 +117,7 @@ Options::Options(int argc, char *argv[]) :
 class TableHandler: public ts::TableHandlerInterface
 {
 private:
-    const Options&    _opt;
+    Options&          _opt;
     ts::TablesDisplay _display;
     bool              _tdt_ok;  // Finished TDT processing
     bool              _tot_ok;  // Finished TOT processing
@@ -126,7 +126,7 @@ public:
     // Constructor
     TableHandler(Options& opt) :
         _opt(opt),
-        _display(ts::TablesDisplayArgs()),
+        _display(ts::TablesDisplayArgs(), _opt),
         _tdt_ok(opt.no_tdt),
         _tot_ok(opt.no_tot)
     {
@@ -157,7 +157,7 @@ void TableHandler::handleTable(ts::SectionDemux&, const ts::BinaryTable& table)
             }
             _tdt_ok = !_opt.all;
             if (_opt.verbose) {
-                _display.displayTable(std::cout, table) << std::endl;
+                _display.displayTable(table) << std::endl;
                 break;
             }
             ts::TDT tdt(table);
@@ -174,7 +174,7 @@ void TableHandler::handleTable(ts::SectionDemux&, const ts::BinaryTable& table)
             }
             _tot_ok = !_opt.all;
             if (_opt.verbose) {
-                _display.displayTable(std::cout, table) << std::endl;
+                _display.displayTable(table) << std::endl;
                 break;
             }
             ts::TOT tot(table);

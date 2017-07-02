@@ -45,9 +45,12 @@ namespace ts {
     public:
         //!
         //! Constructor.
+        //! By default, all displays are done on @c std::cout.
+        //! Use redirect() to redirect the output to a file.
         //! @param [in] options Table logging options.
+        //! @param [in,out] report Where to log errors.
         //!
-        explicit TablesDisplay(const TablesDisplayArgs& options = TablesDisplayArgs());
+        TablesDisplay(const TablesDisplayArgs& options, ReportInterface& report);
 
         //!
         //! Virtual destructor.
@@ -57,35 +60,51 @@ namespace ts {
         //!
         //! Display a table on the output stream.
         //! The content of the table is interpreted according to the table id.
-        //! @param [in,out] strm Output text stream.
         //! @param [in] table The table to display.
         //! @param [in] indent Indentation width.
         //! @param [in] cas CAS family of the table. If different from CAS_OTHER, override the CAS family in TablesDisplayArgs.
-        //! @return A reference to @a strm.
+        //! @return A reference to the output stream.
         //!
-        virtual std::ostream& displayTable(std::ostream& strm, const BinaryTable& table, int indent = 0, CASFamily cas = CAS_OTHER);
+        virtual std::ostream& displayTable(const BinaryTable& table, int indent = 0, CASFamily cas = CAS_OTHER);
 
         //!
         //! Display a section on the output stream.
         //! The content of the table is interpreted according to the table id.
-        //! @param [in,out] strm Output text stream.
         //! @param [in] section The section to display.
         //! @param [in] indent Indentation width.
         //! @param [in] cas CAS family of the table. If different from CAS_OTHER, override the CAS family in TablesDisplayArgs.
         //! @param [in] no_header If true, do not display the section header.
-        //! @return A reference to @a strm.
+        //! @return A reference to the output stream.
         //!
-        virtual std::ostream& displaySection(std::ostream& strm, const Section& section, int indent = 0, CASFamily cas = CAS_OTHER, bool no_header = false);
+        virtual std::ostream& displaySection(const Section& section, int indent = 0, CASFamily cas = CAS_OTHER, bool no_header = false);
+
+        //!
+        //! Redirect the output stream to a file.
+        //! The previous file is closed.
+        //! @param [in] file_name The file name to create. If empty, reset to @c std::cout.
+        //! @return True on success, false on error.
+        //!
+        virtual bool redirect(const std::string& file_name = std::string());
+
+        //!
+        //! Get the current output stream.
+        //! @return A reference to the output stream.
+        //!
+        virtual std::ostream& out();
+
+        //!
+        //! Flush the text output.
+        //!
+        virtual void flush();
 
     private:
         //!
         //! Display the content of an unknown section.
         //! The command-line formatting options are used to analyze the content.
-        //! @param [in,out] strm Output text stream.
         //! @param [in] section The section to display.
         //! @param [in] indent Indentation width.
         //!
-        void displayUnkownSection(std::ostream& strm, const ts::Section& section, int indent);
+        void displayUnkownSection(const ts::Section& section, int indent);
 
         //!
         //! The actual CAS family to use.
@@ -104,7 +123,6 @@ namespace ts {
         //! - From @a data to @a data + @a tlvStart : Raw data.
         //! - From @a data + @a tlvStart to @a data + @a tlvStart + @a tlvSize : TLV records.
         //!
-        //! @param [in,out] strm Output text stream.
         //! @param [in] data Starting address of memory area.
         //! @param [in] tlvStart Starting index of TLV records after @data.
         //! @param [in] tlvSize Size in bytes of the TLV area.
@@ -113,8 +131,7 @@ namespace ts {
         //! @param [in] innerIndent Inner margin size.
         //! @param [in] tlv TLV syntax.
         //!
-        void displayTLV(std::ostream& strm,
-                        const uint8_t* data,
+        void displayTLV(const uint8_t* data,
                         size_t tlvStart,
                         size_t tlvSize,
                         size_t dataOffset,
@@ -124,8 +141,12 @@ namespace ts {
 
         // Private fields.
         const TablesDisplayArgs& _opt;
+        ReportInterface&         _report;
+        std::ofstream            _outfile;
+        bool                     _use_outfile;
 
         // Inaccessible operations.
+        TablesDisplay() = delete;
         TablesDisplay(const TablesDisplay&) = delete;
         TablesDisplay& operator=(const TablesDisplay&) = delete;
     };
