@@ -490,8 +490,9 @@ void ts::SDT::Service::setType (uint8_t service_type)
 // A static method to display a SDT section.
 //----------------------------------------------------------------------------
 
-void ts::SDT::DisplaySection(std::ostream& strm, const Section& section, int indent)
+void ts::SDT::DisplaySection(TablesDisplay& display, const ts::Section& section, int indent)
 {
+    std::ostream& strm(display.out());
     const std::string margin(indent, ' ');
     const uint8_t* data = section.payload();
     size_t size = section.payloadSize();
@@ -536,5 +537,5 @@ void ts::SDT::DisplaySection(std::ostream& strm, const Section& section, int ind
         }
     }
 
-    displayExtraData(strm, data, size, indent);
+    DisplayExtraData(display, data, size, indent);
 }

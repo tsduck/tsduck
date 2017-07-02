@@ -40,8 +40,9 @@ TSDUCK_SOURCE;
 // A static method to display a NIT section.
 //----------------------------------------------------------------------------
 
-void ts::NIT::DisplaySection(std::ostream& strm, const Section& section, int indent)
+void ts::NIT::DisplaySection(TablesDisplay& display, const ts::Section& section, int indent)
 {
+    std::ostream& strm(display.out());
     const std::string margin(indent, ' ');
     const uint8_t* data = section.payload();
     size_t size = section.payloadSize();
@@ -89,5 +90,5 @@ void ts::NIT::DisplaySection(std::ostream& strm, const Section& section, int ind
         }
     }
 
-    displayExtraData(strm, data, size, indent);
+    DisplayExtraData(display, data, size, indent);
 }

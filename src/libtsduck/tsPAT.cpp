@@ -196,12 +196,9 @@ void ts::PAT::serialize (BinaryTable& table) const
 // A static method to display a PAT section.
 //----------------------------------------------------------------------------
 
-void ts::PAT::DisplaySection(std::ostream & strm, const ts::Section & section, int indent)
+void ts::PAT::DisplaySection(TablesDisplay& display, const ts::Section& section, int indent)
 {
-    if (section.tableId() != TID_PAT) {
-        return;
-    }
-
+    std::ostream& strm(display.out());
     const std::string margin(indent, ' ');
     const uint8_t* data = section.payload();
     size_t size = section.payloadSize();
@@ -222,5 +219,5 @@ void ts::PAT::DisplaySection(std::ostream & strm, const ts::Section & section, i
             << std::endl;
     }
 
-    displayExtraData(strm, data, size, indent);
+    DisplayExtraData(display, data, size, indent);
 }

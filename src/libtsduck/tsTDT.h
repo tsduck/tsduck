@@ -63,11 +63,11 @@ namespace ts {
         virtual void deserialize(const BinaryTable& table);
 
         //!
-        //! A static method to display a TDT section.
-        //! @param [in,out] strm Output text stream.
+        //! A static method to display a section.
+        //! @param [in,out] display Display engine.
         //! @param [in] section A safe pointer to the section to display.
         //! @param [in] indent Indentation width.
         //!
-        static void DisplaySection(std::ostream& strm, const ts::Section& section, int indent);
+        static void DisplaySection(TablesDisplay& display, const ts::Section& section, int indent);
     };
 }

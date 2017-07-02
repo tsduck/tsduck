@@ -149,7 +149,7 @@ void ts::AbstractDescriptorsTable::serialize (BinaryTable& table) const
 // A static method to display a section.
 //----------------------------------------------------------------------------
 
-void ts::AbstractDescriptorsTable::DisplaySection(std::ostream& strm, const Section& section, int indent)
+void ts::AbstractDescriptorsTable::DisplaySection(TablesDisplay& display, const ts::Section& section, int indent)
 {
-    Descriptor::Display(strm, section.payload(), section.payloadSize(), indent, section.tableId());
+    Descriptor::Display(display.out(), section.payload(), section.payloadSize(), indent, section.tableId());
 }

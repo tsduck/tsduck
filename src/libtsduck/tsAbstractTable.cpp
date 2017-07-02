@@ -36,10 +36,10 @@ TSDUCK_SOURCE;
 // A utility method to dump extraneous bytes after the expected section data.
 //----------------------------------------------------------------------------
 
-void ts::AbstractTable::displayExtraData(std::ostream& strm, const void *data, size_t size, int indent)
+void ts::AbstractTable::DisplayExtraData(TablesDisplay& display, const void *data, size_t size, int indent)
 {
     if (size > 0) {
-        strm << std::string(indent, ' ') << "Extraneous " << size << " bytes:" << std::endl
-             << Hexa(data, size, hexa::HEXA | hexa::ASCII | hexa::OFFSET, indent);
+        display.out() << std::string(indent, ' ') << "Extraneous " << size << " bytes:" << std::endl
+                      << Hexa(data, size, hexa::HEXA | hexa::ASCII | hexa::OFFSET, indent);
     }
 }
