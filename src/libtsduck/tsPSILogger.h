@@ -42,7 +42,6 @@ namespace ts {
     //! This class logs sections and tables.
     //!
     class TSDUCKDLL PSILogger :
-        private TablesDisplay,
         private TableHandlerInterface,
         private SectionHandlerInterface
     {
@@ -50,9 +49,10 @@ namespace ts {
         //!
         //! Constructor.
         //! @param [in] options PSI logging options.
+        //! @param [in,out] display Object to display tables and sections.
         //! @param [in,out] report Where to log errors.
         //!
-        PSILogger(PSILoggerArgs& options, ReportInterface& report);
+        PSILogger(PSILoggerArgs& options, TablesDisplay& display, ReportInterface& report);
 
         //!
         //! Destructor.
@@ -90,6 +90,7 @@ namespace ts {
 
     private:
         const PSILoggerArgs& _opt;
+        TablesDisplay&   _display;
         ReportInterface& _report;
         bool             _abort;
         bool             _pat_ok;        // Got a PAT

@@ -45,26 +45,34 @@ struct Options: public ts::Args
 {
     Options(int argc, char *argv[]);
 
-    std::string       infile;  // Input file name
-    ts::PSILoggerArgs logger;  // Table logging options
+    std::string           infile;   // Input file name
+    ts::PSILoggerArgs     logger;   // Table logging options
+    ts::TablesDisplayArgs display;  // Table formatting options.
 };
 
 Options::Options(int argc, char *argv[]) :
     ts::Args("MPEG Transport Stream PSI Extraction Utility.", "[options] [filename]"),
     infile(),
-    logger()
+    logger(),
+    display()
 {
     option("", 0, STRING, 0, 1);
     logger.defineOptions(*this);
+    display.defineOptions(*this);
 
     setHelp("Input file:\n"
             "\n"
             "  MPEG capture file (standard input if omitted).\n");
     logger.addHelp(*this);
+    display.addHelp(*this);
 
     analyze(argc, argv);
+
     infile = value("");
     logger.load(*this);
+    display.load(*this);
+
+    exitOnError();
 }
 
 
@@ -76,7 +84,8 @@ int main (int argc, char *argv[])
 {
     Options opt(argc, argv);
     ts::InputRedirector input(opt.infile, opt);
-    ts::PSILogger logger(opt.logger, opt);
+    ts::TablesDisplay display(opt.display);
+    ts::PSILogger logger(opt.logger, display, opt);
     ts::TSPacket pkt;
 
     // Read all packets in the file and pass them to the logger

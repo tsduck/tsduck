@@ -33,21 +33,16 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsTablesDisplayArgs.h"
+#include "tsArgs.h"
 #include "tsMPEG.h"
 
 namespace ts {
     //!
     //! Command line arguments for the class TablesLogger.
     //!
-    class TSDUCKDLL TablesLoggerArgs: public TablesDisplayArgs
+    class TSDUCKDLL TablesLoggerArgs
     {
     public:
-        //!
-        //! Explicit reference to superclass.
-        //!
-        typedef TablesDisplayArgs SuperClass;
-
         //!
         //! Constructor.
         //!

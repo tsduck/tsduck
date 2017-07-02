@@ -50,6 +50,11 @@ namespace ts {
         explicit TablesDisplay(const TablesDisplayArgs& options = TablesDisplayArgs());
 
         //!
+        //! Virtual destructor.
+        //!
+        virtual ~TablesDisplay() {}
+
+        //!
         //! Display a table on the output stream.
         //! The content of the table is interpreted according to the table id.
         //! @param [in,out] strm Output text stream.
@@ -58,7 +63,7 @@ namespace ts {
         //! @param [in] cas CAS family of the table. If different from CAS_OTHER, override the CAS family in TablesDisplayArgs.
         //! @return A reference to @a strm.
         //!
-        std::ostream& displayTable(std::ostream& strm, const BinaryTable& table, int indent = 0, CASFamily cas = CAS_OTHER);
+        virtual std::ostream& displayTable(std::ostream& strm, const BinaryTable& table, int indent = 0, CASFamily cas = CAS_OTHER);
 
         //!
         //! Display a section on the output stream.
@@ -70,7 +75,7 @@ namespace ts {
         //! @param [in] no_header If true, do not display the section header.
         //! @return A reference to @a strm.
         //!
-        std::ostream& displaySection(std::ostream& strm, const Section& section, int indent = 0, CASFamily cas = CAS_OTHER, bool no_header = false);
+        virtual std::ostream& displaySection(std::ostream& strm, const Section& section, int indent = 0, CASFamily cas = CAS_OTHER, bool no_header = false);
 
     private:
         //!

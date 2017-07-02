@@ -46,9 +46,11 @@ TSDUCK_SOURCE;
 // Constructor
 //----------------------------------------------------------------------------
 
-ts::TablesLogger::TablesLogger(const TablesLoggerArgs& opt, ReportInterface& report) :
-    TablesDisplay(opt),
+ts::TablesLogger::TablesLogger(const TablesLoggerArgs& opt, TablesDisplay& display, ReportInterface& report) :
+    TableHandlerInterface(),
+    SectionHandlerInterface(),
     _opt(opt),
+    _display(display),
     _report(report),
     _abort(false),
     _exit(false),
@@ -176,7 +178,7 @@ void ts::TablesLogger::handleTable(SectionDemux&, const BinaryTable& table)
             }
             else {
                 // Full table formatting
-                displayTable(_out, table) << std::endl;
+                _display.displayTable(_out, table) << std::endl;
             }
             postDisplay();
             break;
@@ -249,7 +251,7 @@ void ts::TablesLogger::handleSection(SectionDemux&, const Section& sect)
             }
             else {
                 // Full section formatting.
-                displaySection(_out, sect) << std::endl;
+                _display.displaySection(_out, sect) << std::endl;
             }
             postDisplay();
             break;

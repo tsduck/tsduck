@@ -46,7 +46,6 @@ const size_t ts::TablesLoggerArgs::DEFAULT_LOG_SIZE;
 //----------------------------------------------------------------------------
 
 ts::TablesLoggerArgs::TablesLoggerArgs() :
-    SuperClass(),
     mode(TEXT),
     destination(),
     multi_files(false),
@@ -215,9 +214,6 @@ void ts::TablesLoggerArgs::addHelp(Args& args) const
         "      Display the version number.\n";
 
     args.setHelp(args.getHelp() + help);
-
-    // Let superclass add its own help.
-    SuperClass::addHelp(args);
 }
 
 
@@ -250,9 +246,6 @@ void ts::TablesLoggerArgs::defineOptions(Args& args) const
     args.option("time-stamp",           0);
     args.option("ttl",                  0,  Args::POSITIVE);
     args.option("verbose",             'v');
-
-    // Let superclass defines its own options.
-    SuperClass::defineOptions(args);
 }
 
 
@@ -315,7 +308,4 @@ void ts::TablesLoggerArgs::load(Args& args)
 
     args.getIntValues(tid, "tid");
     args.getIntValues(tidext, "tid-ext");
-
-    // Load options which where defined in superclass.
-    SuperClass::load(args);
 }

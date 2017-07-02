@@ -82,10 +82,12 @@ Options::Options(int argc, char *argv[]) :
     display.addHelp(*this);
 
     analyze(argc, argv);
-    display.load(*this);
 
     getValues(infiles, "");
     verbose = present("verbose");
+    display.load(*this);
+
+    exitOnError();
 }
 
 
