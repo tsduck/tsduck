@@ -285,17 +285,6 @@ namespace ts {
         //!
         size_t lengthSerialize(uint8_t*& addr, size_t& size, size_t start = 0) const;
 
-        //!
-        //! Display the descriptor list on an output stream.
-        //! @param [in,out] strm Output stream (text output).
-        //! @param [in] indent Indentation width.
-        //! @param [in] tid Table id of table containing the descriptor list.
-        //! This is optional. Used by some descriptors the interpretation of which may
-        //! vary depending on the table that they are in.
-        //! @return A reference to @a strm.
-        //!
-        std::ostream& display(std::ostream& strm, int indent = 0, TID tid = TID_NULL) const;
-
     private:
         // Each entry contains a descriptor and its corresponding private data specifier.
         struct Element
@@ -317,17 +306,6 @@ namespace ts {
         // When it can be removed, the current PDS of all subsequent descriptors is updated.
         bool prepareRemovePDS(const ElementVector::iterator&);
     };
-}
-
-//!
-//! Display operator for descriptor lists.
-//! @param [in,out] strm Output stream (text output).
-//! @param [in] dlist The descriptor list to output.
-//! @return A reference to @a strm.
-//!
-TSDUCKDLL inline std::ostream& operator<<(std::ostream& strm, const ts::DescriptorList& dlist)
-{
-    return dlist.display(strm);
 }
 
 #include "tsDescriptorListTemplate.h"

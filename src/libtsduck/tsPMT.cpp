@@ -314,5 +314,5 @@ void ts::PMT::DisplaySection(TablesDisplay& display, const ts::Section& section,
         }
     }
 
-    DisplayExtraData(display, data, size, indent);
+    display.displayExtraData(data, size, indent);
 }

@@ -309,5 +309,5 @@ void ts::EIT::DisplaySection(TablesDisplay& display, const ts::Section& section,
         data += loop_length; size -= loop_length;
     }
 
-    DisplayExtraData(display, data, size, indent);
+    display.displayExtraData(data, size, indent);
 }

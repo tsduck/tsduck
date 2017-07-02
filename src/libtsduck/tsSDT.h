@@ -203,10 +203,10 @@ namespace ts {
         //!
         //! A static method to display a section.
         //! @param [in,out] display Display engine.
-        //! @param [in] section A safe pointer to the section to display.
+        //! @param [in] section The section to display.
         //! @param [in] indent Indentation width.
         //!
-        static void DisplaySection(TablesDisplay& display, const ts::Section& section, int indent);
+        static void DisplaySection(TablesDisplay& display, const Section& section, int indent);
 
     private:
         // Add a new section to a table being serialized

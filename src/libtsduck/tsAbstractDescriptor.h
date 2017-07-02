@@ -39,6 +39,7 @@ namespace ts {
 
     class Descriptor;
     class DescriptorList;
+    class TablesDisplay;
 
     //!
     //! Abstract base class for MPEG PSI/SI descriptors.
@@ -92,6 +93,19 @@ namespace ts {
         //! Virtual destructor
         //!
         virtual ~AbstractDescriptor () {}
+
+        //!
+        //! Profile of a function to display a descriptor.
+        //! Each subclass should provide a static function named @e DisplayDescriptor
+        //! which displays a descriptor of its type.
+        //!
+        //! @param [in,out] display Display engine.
+        //! @param [in] did Descriptor id.
+        //! @param [in] payload Address of the descriptor payload.
+        //! @param [in] size Size in bytes of the descriptor payload.
+        //! @param [in] indent Indentation width.
+        //!
+        typedef void (*DisplayDescriptorFunction)(TablesDisplay& display, DID did, const uint8_t* payload, size_t size, int indent);
 
     protected:
         //!

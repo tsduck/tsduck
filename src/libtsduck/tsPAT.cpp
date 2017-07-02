@@ -219,5 +219,5 @@ void ts::PAT::DisplaySection(TablesDisplay& display, const ts::Section& section,
             << std::endl;
     }
 
-    DisplayExtraData(display, data, size, indent);
+    display.displayExtraData(data, size, indent);
 }

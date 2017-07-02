@@ -35,6 +35,9 @@
 #pragma once
 #include "tsTablesDisplayArgs.h"
 #include "tsBinaryTable.h"
+#include "tsSection.h"
+#include "tsDescriptor.h"
+#include "tsDescriptorList.h"
 
 namespace ts {
     //!
@@ -77,6 +80,89 @@ namespace ts {
         //! @return A reference to the output stream.
         //!
         virtual std::ostream& displaySection(const Section& section, int indent = 0, CASFamily cas = CAS_OTHER, bool no_header = false);
+
+        //!
+        //! Display a descriptor on the output stream.
+        //! @param [in] desc The descriptor to display.
+        //! @param [in] indent Indentation width.
+        //! @param [in] tid Table id of table containing the descriptors.
+        //! This is optional. Used by some descriptors the interpretation of which may
+        //! vary depending on the table that they are in.
+        //! @param [in] pds Private Data Specifier. Used to interpret private descriptors.
+        //! @param [in] cas CAS family of the table. If different from CAS_OTHER, override the CAS family in TablesDisplayArgs.
+        //! @return A reference to the output stream.
+        //!
+        virtual std::ostream& displayDescriptor(const Descriptor& desc,
+                                               int indent = 0,
+                                               TID tid = TID_NULL,
+                                               PDS pds = 0,
+                                               CASFamily cas = CAS_OTHER);
+
+        //!
+        //! Display a descriptor on the output stream.
+        //! @param [in] did Descriptor id.
+        //! @param [in] payload Address of the descriptor payload.
+        //! @param [in] size Size in bytes of the descriptor payload.
+        //! @param [in] indent Indentation width.
+        //! @param [in] tid Table id of table containing the descriptors.
+        //! This is optional. Used by some descriptors the interpretation of which may
+        //! vary depending on the table that they are in.
+        //! @param [in] pds Private Data Specifier. Used to interpret private descriptors.
+        //! @param [in] cas CAS family of the table. If different from CAS_OTHER, override the CAS family in TablesDisplayArgs.
+        //! @return A reference to the output stream.
+        //!
+        virtual std::ostream& displayDescriptorData(DID did,
+                                                    const uint8_t* payload,
+                                                    size_t size,
+                                                    int indent = 0,
+                                                    TID tid = TID_NULL,
+                                                    PDS pds = 0,
+                                                    CASFamily cas = CAS_OTHER);
+
+        //!
+        //! Display a list of descriptors from a memory area
+        //! @param [in] data Address of the descriptor list.
+        //! @param [in] size Size in bytes of the descriptor list.
+        //! @param [in] indent Indentation width.
+        //! @param [in] tid Table id of table containing the descriptors.
+        //! This is optional. Used by some descriptors the interpretation of which may
+        //! vary depending on the table that they are in.
+        //! @param [in] pds Private Data Specifier. Used to interpret private descriptors.
+        //! @param [in] cas CAS family of the table. If different from CAS_OTHER, override the CAS family in TablesDisplayArgs.
+        //! @return A reference to the output stream.
+        //!
+        virtual std::ostream& displayDescriptorList(const void* data,
+                                                    size_t size,
+                                                    int indent = 0,
+                                                    TID tid = TID_NULL,
+                                                    PDS pds = 0,
+                                                    CASFamily cas = CAS_OTHER);
+
+        //!
+        //! Display a list of descriptors.
+        //! @param [in] list Descriptor list.
+        //! @param [in] indent Indentation width.
+        //! @param [in] tid Table id of table containing the descriptors.
+        //! This is optional. Used by some descriptors the interpretation of which may
+        //! vary depending on the table that they are in.
+        //! @param [in] pds Private Data Specifier. Used to interpret private descriptors.
+        //! @param [in] cas CAS family of the table. If different from CAS_OTHER, override the CAS family in TablesDisplayArgs.
+        //! @return A reference to the output stream.
+        //!
+        virtual std::ostream& displayDescriptorList(const DescriptorList& list,
+                                                    int indent = 0,
+                                                    TID tid = TID_NULL,
+                                                    PDS pds = 0,
+                                                    CASFamily cas = CAS_OTHER);
+
+        //!
+        //! A utility method to dump extraneous bytes after expected data.
+        //! @param [in] data Address of extra data to dump.
+        //! @param [in] size Size of extra data to dump.
+        //! @param [in] indent Indentation width.
+        //! @return A reference to the output stream.
+        //!
+        virtual std::ostream& displayExtraData(const void *data, size_t size, int indent = 0);
 
         //!
         //! Redirect the output stream to a file.

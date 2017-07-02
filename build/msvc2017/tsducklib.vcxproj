@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ImportGroup Label="PropertySheets">
     <Import Project="msvc-common-begin.props" />
@@ -265,7 +265,6 @@
     <ClCompile Include="..\..\src\libtsduck\tsAbstractDescrambler.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAbstractDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAbstractDescriptorsTable.cpp" />
-    <ClCompile Include="..\..\src\libtsduck\tsAbstractTable.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAbstractTransportListTable.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAC3Attributes.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAC3Descriptor.cpp" />
@@ -309,7 +308,6 @@
     <ClCompile Include="..\..\src\libtsduck\tsDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsDescriptorDisplay.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsDescriptorList.cpp" />
-    <ClCompile Include="..\..\src\libtsduck\tsDescriptorListDisplay.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsECMGClient.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsECMGSCS.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsEIT.cpp" />
