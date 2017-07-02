@@ -121,6 +121,21 @@ bool ts::TablesDisplay::redirect(const std::string& file_name)
 
 
 //----------------------------------------------------------------------------
+// A utility method to dump extraneous bytes after expected data.
+//----------------------------------------------------------------------------
+
+std::ostream& ts::TablesDisplay::displayExtraData(const void* data, size_t size, int indent)
+{
+    std::ostream& strm(out());
+    if (size > 0) {
+        strm << std::string(indent, ' ') << "Extraneous " << size << " bytes:" << std::endl
+             << Hexa(data, size, hexa::HEXA | hexa::ASCII | hexa::OFFSET, indent);
+    }
+    return strm;
+}
+
+
+//----------------------------------------------------------------------------
 // Display a table on the output stream.
 //----------------------------------------------------------------------------
 
@@ -391,4 +406,107 @@ void ts::TablesDisplay::displayTLV(const uint8_t* data,
 
     // Display remaining binary data.
     strm << Hexa(data + index, endIndex - index, hexa::HEXA | hexa::ASCII | hexa::OFFSET, indent, hexa::DEFAULT_LINE_WIDTH, dataOffset + index, innerIndent);
+}
+
+
+//----------------------------------------------------------------------------
+// Display a descriptor on the output stream.
+//----------------------------------------------------------------------------
+
+std::ostream& ts::TablesDisplay::displayDescriptor(const Descriptor& desc, int indent, TID tid, PDS pds, CASFamily cas)
+{
+    if (desc.isValid()) {
+        return displayDescriptorData(desc.tag(), desc.payload(), desc.payloadSize(), indent, tid, pds, cas);
+    }
+    else {
+        return out();
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Display a list of descriptors from a memory area
+//----------------------------------------------------------------------------
+
+std::ostream& ts::TablesDisplay::displayDescriptorList(const void* data, size_t size, int indent, TID tid, PDS pds, CASFamily cas)
+{
+    std::ostream& strm(out());
+    const std::string margin(indent, ' ');
+    const uint8_t* desc_start = reinterpret_cast<const uint8_t*>(data);
+    size_t desc_index = 0;
+
+    // Loop across all descriptors
+    while (size >= 2) {  // descriptor header size
+
+        // Get descriptor header
+        uint8_t desc_tag = *desc_start++;
+        size_t desc_length = *desc_start++;
+        size -= 2;
+
+        if (desc_length > size) {
+            strm << margin << "- Invalid descriptor length: " << desc_length
+                 << " (" << size << " bytes allocated)" << std::endl;
+            break;
+        }
+
+        // Display descriptor header
+        strm << margin << "- Descriptor " << desc_index++
+             << ": " << names::DID(desc_tag, pds) << ", Tag " << int(desc_tag)
+             << Format(" (0x%02X), ", int(desc_tag)) << desc_length << " bytes" << std::endl;
+
+        // If the descriptor contains a private_data_specifier, keep it
+        // to establish a private context.
+        if (desc_tag == DID_PRIV_DATA_SPECIF && desc_length >= 4) {
+            pds = GetUInt32(desc_start);
+        }
+
+        // Display descriptor.
+        displayDescriptorData(desc_tag, desc_start, desc_length, indent + 2, tid, pds, cas);
+
+        // Move to next descriptor for next iteration
+        desc_start += desc_length;
+        size -= desc_length;
+    }
+
+    // Report extraneous bytes
+    displayExtraData(desc_start, size, indent);
+    return strm;
+}
+
+
+//----------------------------------------------------------------------------
+// Display a list of descriptors.
+//----------------------------------------------------------------------------
+
+std::ostream& ts::TablesDisplay::displayDescriptorList(const DescriptorList& list, int indent, TID tid, PDS pds, CASFamily cas)
+{
+    std::ostream& strm(out());
+    const std::string margin(indent, ' ');
+
+    for (size_t i = 0; i < list.count(); ++i) {
+        const DescriptorPtr& desc(list[i]);
+        if (!desc.isNull()) {
+            pds = list.privateDataSpecifier(i);
+            strm << margin << "- Descriptor " << i
+                 << ": " << names::DID(desc->tag(), pds) << ", Tag " << int(desc->tag())
+                 << Format(" (0x%02X), ", int(desc->tag())) << desc->size() << " bytes" << std::endl;
+            displayDescriptor(*desc, indent + 2, tid, pds, cas);
+        }
+    }
+
+    return strm;
+}
+
+
+//----------------------------------------------------------------------------
+// Display a descriptor on the output stream.
+//----------------------------------------------------------------------------
+
+std::ostream& ts::TablesDisplay::displayDescriptorData(DID did, const uint8_t* payload, size_t size, int indent, TID tid, ts::PDS pds, ts::CASFamily cas)
+{
+    std::ostream& strm(out());
+
+    // TODO
+
+    return strm;
 }

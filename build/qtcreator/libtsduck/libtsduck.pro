@@ -259,7 +259,6 @@ SOURCES += \
     ../../../src/libtsduck/tsAbstractDescriptor.cpp \
     ../../../src/libtsduck/tsAbstractDescriptorsTable.cpp \
     ../../../src/libtsduck/tsAbstractDeliverySystemDescriptor.cpp \
-    ../../../src/libtsduck/tsAbstractTable.cpp \
     ../../../src/libtsduck/tsAbstractTransportListTable.cpp \
     ../../../src/libtsduck/tsAC3Attributes.cpp \
     ../../../src/libtsduck/tsAC3Descriptor.cpp \
@@ -301,7 +300,6 @@ SOURCES += \
     ../../../src/libtsduck/tsDescriptor.cpp \
     ../../../src/libtsduck/tsDescriptorDisplay.cpp \
     ../../../src/libtsduck/tsDescriptorList.cpp \
-    ../../../src/libtsduck/tsDescriptorListDisplay.cpp \
     ../../../src/libtsduck/tsECMGClient.cpp \
     ../../../src/libtsduck/tsECMGSCS.cpp \
     ../../../src/libtsduck/tsEIT.cpp \

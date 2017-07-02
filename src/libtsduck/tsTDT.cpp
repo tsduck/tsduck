@@ -134,5 +134,5 @@ void ts::TDT::DisplaySection(TablesDisplay& display, const ts::Section& section,
              << time.format(Time::DATE | Time::TIME) << std::endl;
     }
 
-    DisplayExtraData(display, data, size, indent);
+    display.displayExtraData(data, size, indent);
 }
