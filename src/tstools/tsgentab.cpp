@@ -247,8 +247,9 @@ int main(int argc, char *argv[])
     // Display formatted version of table
     if (opt.binary_file.empty() || !opt.output_file.empty()) {
         ts::OutputRedirector output(opt.output_file, opt, std::cout, std::ios::out);
-        ts::TablesDisplay display;
-        display.displayTable(std::cout, bin_table);
+        ts::TablesDisplayArgs display_args;
+        ts::TablesDisplay display(display_args, opt);
+        display.displayTable(bin_table);
     }
 
     return EXIT_SUCCESS;

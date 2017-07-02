@@ -55,9 +55,68 @@ TSDUCK_SOURCE;
 // Constructor.
 //----------------------------------------------------------------------------
 
-ts::TablesDisplay::TablesDisplay(const TablesDisplayArgs& options) :
-    _opt(options)
+ts::TablesDisplay::TablesDisplay(const TablesDisplayArgs& options, ReportInterface& report) :
+    _opt(options),
+    _report(report),
+    _outfile(),
+    _use_outfile(false)
 {
+}
+
+
+//----------------------------------------------------------------------------
+// Get the current output stream.
+//----------------------------------------------------------------------------
+
+std::ostream& ts::TablesDisplay::out()
+{
+    return _use_outfile ? _outfile : std::cout;
+}
+
+
+//----------------------------------------------------------------------------
+// Flush the text output.
+//----------------------------------------------------------------------------
+
+void ts::TablesDisplay::flush()
+{
+    // Flush the output.
+    out().flush();
+
+    // On Windows, we must force the lower-level standard output.
+#if !defined(__windows)
+    if (!_use_outfile) {
+        ::fflush(stdout);
+        ::fsync(STDOUT_FILENO);
+    }
+#endif
+}
+
+
+//----------------------------------------------------------------------------
+// Redirect the output stream to a file.
+//----------------------------------------------------------------------------
+
+bool ts::TablesDisplay::redirect(const std::string& file_name)
+{
+    // Close previous file, if any.
+    if (_use_outfile) {
+        _outfile.close();
+        _use_outfile = false;
+    }
+
+    // Open new file if any.
+    if (!file_name.empty()) {
+        _report.verbose("creating " + file_name);
+        _outfile.open(file_name.c_str(), std::ios::out);
+        if (!_outfile) {
+            _report.error("cannot create " + file_name);
+            return false;
+        }
+        _use_outfile = true;
+    }
+
+    return true;
 }
 
 
@@ -65,8 +124,10 @@ ts::TablesDisplay::TablesDisplay(const TablesDisplayArgs& options) :
 // Display a table on the output stream.
 //----------------------------------------------------------------------------
 
-std::ostream& ts::TablesDisplay::displayTable(std::ostream& strm, const BinaryTable& table, int indent, CASFamily cas)
+std::ostream& ts::TablesDisplay::displayTable(const BinaryTable& table, int indent, CASFamily cas)
 {
+    std::ostream& strm(out());
+
     // Filter invalid tables
     if (!table.isValid()) {
         return strm;
@@ -105,7 +166,7 @@ std::ostream& ts::TablesDisplay::displayTable(std::ostream& strm, const BinaryTa
     // Loop across all sections.
     for (size_t i = 0; i < table.sectionCount(); ++i) {
         strm << margin << "  - Section " << i << ":" << std::endl;
-        displaySection(strm, *table.sectionAt(i), indent + 4, cas, true);
+        displaySection(*table.sectionAt(i), indent + 4, cas, true);
     }
 
     return strm;
@@ -116,8 +177,10 @@ std::ostream& ts::TablesDisplay::displayTable(std::ostream& strm, const BinaryTa
 // Display a section on the output stream.
 //----------------------------------------------------------------------------
 
-std::ostream& ts::TablesDisplay::displaySection(std::ostream& strm, const Section& section, int indent, CASFamily cas, bool no_header)
+std::ostream& ts::TablesDisplay::displaySection(const Section& section, int indent, CASFamily cas, bool no_header)
 {
+    std::ostream& strm(out());
+
     // Filter invalid section
     if (!section.isValid()) {
         return strm;
@@ -192,7 +255,7 @@ std::ostream& ts::TablesDisplay::displaySection(std::ostream& strm, const Sectio
         handler(strm, section, indent);
     }
     else {
-        displayUnkownSection(strm, section, indent);
+        displayUnkownSection(section, indent);
     }
     return strm;
 }
@@ -202,8 +265,9 @@ std::ostream& ts::TablesDisplay::displaySection(std::ostream& strm, const Sectio
 // Ancillary function to display an unknown section
 //----------------------------------------------------------------------------
 
-void ts::TablesDisplay::displayUnkownSection(std::ostream& strm, const ts::Section& section, int indent)
+void ts::TablesDisplay::displayUnkownSection(const ts::Section& section, int indent)
 {
+    std::ostream& strm(out());
     const std::string margin(indent, ' ');
 
     // The table id extension was not yet displayed since it depends on the table id.
@@ -231,8 +295,7 @@ void ts::TablesDisplay::displayUnkownSection(std::ostream& strm, const ts::Secti
 
             // Display TLV fields, from index to end of TLV area.
             const size_t endIndex = index + tlvStart + tlvSize;
-            displayTLV(strm,               // output stream
-                       payload + index,    // start of area to display
+            displayTLV(payload + index,    // start of area to display
                        tlvStart - index,   // offset of TLV records in area to display
                        tlvSize,            // total size of TLV records
                        index,              // offset to display for start of area
@@ -257,8 +320,7 @@ void ts::TablesDisplay::displayUnkownSection(std::ostream& strm, const ts::Secti
 // Display a memory area containing a list of TLV records.
 //----------------------------------------------------------------------------
 
-void ts::TablesDisplay::displayTLV(std::ostream& strm,
-                                   const uint8_t* data,
+void ts::TablesDisplay::displayTLV(const uint8_t* data,
                                    size_t tlvStart,
                                    size_t tlvSize,
                                    size_t dataOffset,
@@ -266,6 +328,8 @@ void ts::TablesDisplay::displayTLV(std::ostream& strm,
                                    int innerIndent,
                                    const TLVSyntax& tlv)
 {
+    std::ostream& strm(out());
+
     // We use the same syntax for the optional embedded TLV, except that it is automatically located.
     TLVSyntax tlvInner(tlv);
     tlvInner.setAutoLocation();
@@ -305,7 +369,7 @@ void ts::TablesDisplay::displayTLV(std::ostream& strm,
         if (_opt.min_nested_tlv > 0 && valueSize >= _opt.min_nested_tlv && tlvInner.locateTLV(value, valueSize, tlvInnerStart, tlvInnerSize)) {
             // Found a nested TLV area.
             strm << std::endl;
-            displayTLV(strm, value, tlvInnerStart, tlvInnerSize, valueOffset, indent, innerIndent + 2, tlvInner);
+            displayTLV(value, tlvInnerStart, tlvInnerSize, valueOffset, indent, innerIndent + 2, tlvInner);
         }
         else if (valueSize <= 8) {
             // If value is short, display it on the same line.

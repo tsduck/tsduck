@@ -1958,16 +1958,3 @@ std::ostream& ts::Descriptor::Display(std::ostream& strm,
 
     return strm;
 }
-
-
-//----------------------------------------------------------------------------
-// Display the descriptor on an output stream
-//----------------------------------------------------------------------------
-
-std::ostream& ts::Descriptor::display (std::ostream& strm, int indent, ts::TID tid, PDS pds) const
-{
-    if (isValid()) {
-        Display (strm, content(), size(), indent, tid, pds);
-    }
-    return strm;
-}

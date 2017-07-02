@@ -221,22 +221,6 @@ namespace ts {
         }
 
         //!
-        //! Display the descriptor on an output stream.
-        //! The content of the descriptor is interpreted according to the descriptor id.
-        //! @param [in,out] strm Output stream (text output).
-        //! @param [in] indent Indentation width.
-        //! @param [in] tid Table id of table containing the descriptor.
-        //! This is optional. Used by some descriptors the interpretation of which may
-        //! vary depending on the table that they are in.
-        //! @param [in] pds Private Data Specifier. Used to interpret private descriptors.
-        //! @return A reference to @a strm.
-        //!
-        std::ostream& display(std::ostream& strm,
-                              int indent = 0,
-                              TID tid = TID_NULL,
-                              PDS pds = 0) const;
-
-        //!
         //! This static routine displays a list of descriptors from a memory area
         //! @param [in,out] strm Output stream (text output).
         //! @param [in] data Address of the descriptor list.
@@ -272,17 +256,4 @@ namespace ts {
     //! Use class DescriptorList for advanced features.
     //!
     typedef std::vector<DescriptorPtr> DescriptorPtrVector;
-}
-
-
-//!
-//! Display operator for descriptors.
-//! The content of the descriptor is interpreted according to the descriptor id.
-//! @param [in,out] strm Output stream (text output).
-//! @param [in] desc The descriptor to output.
-//! @return A reference to @a strm.
-//!
-TSDUCKDLL inline std::ostream& operator<<(std::ostream& strm, const ts::Descriptor& desc)
-{
-    return desc.display(strm);
 }

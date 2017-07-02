@@ -60,20 +60,12 @@ ts::PSILogger::PSILogger (PSILoggerArgs& opt, TablesDisplay& display, ReportInte
     _received_pmt(0),
     _clear_packets_cnt(0),
     _scrambled_packets_cnt(0),
-    _demux(this, _opt.dump ? this : 0),
-    _outfile(),
-    _out(_opt.output.empty() ? std::cout : _outfile)
+    _demux(this, _opt.dump ? this : 0)
 {
     // Open/create the destination
-    if (!_opt.output.empty()) {
-        // Open a text file as output (default: standard output)
-        _report.verbose("creating " + _opt.output);
-        _outfile.open(_opt.output.c_str(), std::ios::out);
-        if (!_outfile) {
-            _report.error("cannot create " + _opt.output);
-            _abort = true;
-            return;
-        }
+    if (!_display.redirect(_opt.output)) {
+        _abort = true;
+        return;
     }
 
     // Specify the PID filters
@@ -87,7 +79,7 @@ ts::PSILogger::PSILogger (PSILoggerArgs& opt, TablesDisplay& display, ReportInte
     }
 
     // Initial blank line
-    _out << std::endl;
+    _display.out() << std::endl;
 }
 
 
@@ -133,8 +125,9 @@ void ts::PSILogger::handleTable(SectionDemux&, const BinaryTable& table)
 {
     assert(table.sectionCount() > 0);
 
-    const TID tid(table.tableId());
-    const PID pid(table.sourcePID());
+    std::ostream& strm(_display.out());
+    const TID tid = table.tableId();
+    const PID pid = table.sourcePID();
 
     switch (table.tableId()) {
 
@@ -142,7 +135,7 @@ void ts::PSILogger::handleTable(SectionDemux&, const BinaryTable& table)
             PAT pat(table);
             if (pid != PID_PAT) {
                 // A PAT is only expected on PID 0
-                _out << Format("* Got unexpected PAT on PID %d (0x%04X)", pid, pid) << std::endl;
+                strm << Format("* Got unexpected PAT on PID %d (0x%04X)", pid, pid) << std::endl;
             }
             else if (pat.isValid()) {
                 // Got the PAT.
@@ -161,14 +154,14 @@ void ts::PSILogger::handleTable(SectionDemux&, const BinaryTable& table)
                 _expected_pmt++;
             }
             // Display the content of the PAT
-            _display.displayTable(_out, table);
+            _display.displayTable(table);
             break;
         }
 
         case TID_CAT: {
             if (pid != PID_CAT) {
                 // A CAT is only expected on PID 1
-                _out << Format("* Got unexpected CAT on PID %d (0x%04X)", pid, pid) << std::endl;
+                strm << Format("* Got unexpected CAT on PID %d (0x%04X)", pid, pid) << std::endl;
             }
             else {
                 // Got the CAT.
@@ -179,7 +172,7 @@ void ts::PSILogger::handleTable(SectionDemux&, const BinaryTable& table)
                 }
             }
             // Display the table
-            _display.displayTable(_out, table);
+            _display.displayTable(table);
             break;
         }
 
@@ -190,14 +183,14 @@ void ts::PSILogger::handleTable(SectionDemux&, const BinaryTable& table)
                 _demux.removePID(pid);
                 _received_pmt++;
             }
-            _display.displayTable(_out, table);
+            _display.displayTable(table);
             break;
         }
 
         case TID_NIT_OTH: {
             // Ignore NIT for other networks if only one version required
             if (_opt.all_versions) {
-                _display.displayTable(_out, table);
+                _display.displayTable(table);
             }
             break;
         }
@@ -205,26 +198,26 @@ void ts::PSILogger::handleTable(SectionDemux&, const BinaryTable& table)
         case TID_TSDT: {
             if (pid != PID_TSDT) {
                 // A TSDT is only expected on PID 0x0002
-                _out << Format("* Got unexpected TSDT on PID %d (0x%04X)", pid, pid) << std::endl;
+                strm << Format("* Got unexpected TSDT on PID %d (0x%04X)", pid, pid) << std::endl;
             }
             else if (!_opt.all_versions) {
                 _demux.removePID(pid);
             }
-            _display.displayTable(_out, table);
+            _display.displayTable(table);
             break;
         }
 
         case TID_SDT_ACT: {
             if (pid != PID_SDT) {
                 // An SDT is only expected on PID 0x0011
-                _out << Format("* Got unexpected SDT on PID %d (0x%04X)", pid, pid) << std::endl;
-                _display.displayTable(_out, table);
+                strm << Format("* Got unexpected SDT on PID %d (0x%04X)", pid, pid) << std::endl;
+                _display.displayTable(table);
             }
             else if (_opt.all_versions || !_sdt_ok) {
                 _sdt_ok = true;
                 // We cannot stop filtering this PID if we don't need all versions
                 // since a BAT can also be found here.
-                _display.displayTable(_out, table);
+                _display.displayTable(table);
             }
             break;
         }
@@ -232,7 +225,7 @@ void ts::PSILogger::handleTable(SectionDemux&, const BinaryTable& table)
         case TID_SDT_OTH: {
             // Ignore SDT for other networks if only one version required
             if (_opt.all_versions) {
-                _display.displayTable(_out, table);
+                _display.displayTable(table);
             }
             break;
         }
@@ -240,27 +233,27 @@ void ts::PSILogger::handleTable(SectionDemux&, const BinaryTable& table)
         case TID_BAT: {
             if (pid != PID_BAT) {
                 // An SDT is only expected on PID 0x0011
-                _out << Format("* Got unexpected BAT on PID %d (0x%04X)", pid, pid) << std::endl;
-                _display.displayTable(_out, table);
+                strm << Format("* Got unexpected BAT on PID %d (0x%04X)", pid, pid) << std::endl;
+                _display.displayTable(table);
             }
             else if (_opt.all_versions || !_bat_ok) {
                 // Got the BAT.
                 _bat_ok = true;
                 // We cannot stop filtering this PID if we don't need all versions
                 // since the SDT can also be found here.
-                _display.displayTable(_out, table);
+                _display.displayTable(table);
             }
             break;
         }
 
         default: {
             if (_report.verbose()) {
-                _out << Format("* Got unexpected TID %d (0x%02X) on PID %d (0x%04X)", tid, tid, pid, pid) << std::endl;
+                strm << Format("* Got unexpected TID %d (0x%02X) on PID %d (0x%04X)", tid, tid, pid, pid) << std::endl;
             }
         }
     }
 
-    _out << std::endl;
+    strm << std::endl;
 }
 
 
@@ -271,7 +264,7 @@ void ts::PSILogger::handleTable(SectionDemux&, const BinaryTable& table)
 
 void ts::PSILogger::handleSection(SectionDemux&, const Section& sect)
 {
-    sect.dump(_out) << std::endl;
+    sect.dump(_display.out()) << std::endl;
 }
 
 
@@ -283,7 +276,7 @@ void ts::PSILogger::reportDemuxErrors ()
 {
     if (_demux.hasErrors()) {
         SectionDemux::Status status(_demux);
-        _out << "* PSI/SI analysis errors:" << std::endl;
-        status.display(_out, 4, true);
+        _display.out() << "* PSI/SI analysis errors:" << std::endl;
+        status.display(_display.out(), 4, true);
     }
 }

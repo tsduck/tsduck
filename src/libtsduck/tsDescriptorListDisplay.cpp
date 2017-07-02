@@ -39,10 +39,10 @@ TSDUCK_SOURCE;
 // Display a descriptor list on an output stream
 //----------------------------------------------------------------------------
 
-std::ostream& ts::DescriptorList::display (std::ostream& strm, int indent, TID tid) const
+std::ostream& ts::DescriptorList::display(std::ostream& strm, int indent, TID tid) const
 {
     for (size_t i = 0; i < _list.size(); ++i) {
-        _list[i].desc->display (strm, indent, tid, _list[i].pds);
+        Descriptor::Display(strm, _list[i].desc->content(), _list[i].desc->size(), indent, tid, _list[i].pds);
     }
     return strm;
 }

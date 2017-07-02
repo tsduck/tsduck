@@ -58,7 +58,6 @@ ts::TablesLogger::TablesLogger(const TablesLoggerArgs& opt, TablesDisplay& displ
     _packet_count(0),
     _demux(0, 0, opt.pid),
     _outfile(),
-    _out(opt.useCout() ? std::cout : _outfile),
     _sock(false, report)
 {
     // Set either a table or section handler, depending on --all-sections
@@ -73,15 +72,9 @@ ts::TablesLogger::TablesLogger(const TablesLoggerArgs& opt, TablesDisplay& displ
     switch (_opt.mode) {
 
         case TablesLoggerArgs::TEXT: {
-            if (!_opt.destination.empty()) {
-                // Open a text file as output (default: standard output)
-                _report.verbose("creating " + _opt.destination);
-                _outfile.open(_opt.destination.c_str(), std::ios::out);
-                if (!_outfile) {
-                    _report.error("cannot create " + _opt.destination);
-                    _abort = true;
-                    return;
-                }
+            if (!_display.redirect(_opt.destination)) {
+                _abort = true;
+                return;
             }
             break;
         }
@@ -178,7 +171,7 @@ void ts::TablesLogger::handleTable(SectionDemux&, const BinaryTable& table)
             }
             else {
                 // Full table formatting
-                _display.displayTable(_out, table) << std::endl;
+                _display.displayTable(table) << std::endl;
             }
             postDisplay();
             break;
@@ -251,7 +244,7 @@ void ts::TablesLogger::handleSection(SectionDemux&, const Section& sect)
             }
             else {
                 // Full section formatting.
-                _display.displaySection(_out, sect) << std::endl;
+                _display.displaySection(sect) << std::endl;
             }
             postDisplay();
             break;
@@ -338,28 +331,30 @@ void ts::TablesLogger::saveSection(const Section& sect)
 
 void ts::TablesLogger::logSection(const Section& sect)
 {
+    std::ostream& strm(_display.out());
+
     // Display time stamp if required
     if (_opt.time_stamp) {
-        _out << Time::CurrentLocalTime() << ": ";
+        strm << Time::CurrentLocalTime() << ": ";
     }
 
     // Display packet index if required
     if (_opt.packet_index) {
-        _out << "Packet " << Decimal(sect.getFirstTSPacketIndex())
+        strm << "Packet " << Decimal(sect.getFirstTSPacketIndex())
              << " to " << Decimal(sect.getLastTSPacketIndex())
              << ", ";
     }
 
     size_t size = _opt.log_size <= sect.payloadSize() ? _opt.log_size : sect.payloadSize();
-    _out << Format("PID 0x%04X, TID 0x%02X", int(sect.sourcePID()), int(sect.tableId()));
+    strm << Format("PID 0x%04X, TID 0x%02X", int(sect.sourcePID()), int(sect.tableId()));
     if (sect.isLongSection()) {
-        _out << Format(", TIDext 0x%04X, V%d", int(sect.tableIdExtension()), int(sect.version()));
+        strm << Format(", TIDext 0x%04X, V%d", int(sect.tableIdExtension()), int(sect.version()));
     }
-    _out << ": " << Hexa(sect.payload(), size, hexa::SINGLE_LINE);
+    strm << ": " << Hexa(sect.payload(), size, hexa::SINGLE_LINE);
     if (sect.payloadSize() > size) {
-        _out << " ...";
+        strm << " ...";
     }
-    _out << std::endl;
+    strm << std::endl;
 }
 
 
@@ -398,24 +393,26 @@ bool ts::TablesLogger::isFiltered(const Section& sect) const
 
 void ts::TablesLogger::preDisplay(PacketCounter first, PacketCounter last)
 {
+    std::ostream& strm(_display.out());
+
     // Initial spacing
     if (_table_count == 0 && !_opt.logger) {
-        _out << std::endl;
+        strm << std::endl;
     }
 
     // Display time stamp if required
     if ((_opt.time_stamp || _opt.packet_index) && !_opt.logger) {
-        _out << "* ";
+        strm << "* ";
         if (_opt.time_stamp) {
-            _out << "At " << Time::CurrentLocalTime();
+            strm << "At " << Time::CurrentLocalTime();
         }
         if (_opt.packet_index && _opt.time_stamp) {
-            _out << ", ";
+            strm << ", ";
         }
         if (_opt.packet_index) {
-            _out << "First TS packet: " << Decimal(first) << ", last: " << Decimal(last);
+            strm << "First TS packet: " << Decimal(first) << ", last: " << Decimal(last);
         }
-        _out << std::endl;
+        strm << std::endl;
     }
 }
 
@@ -428,13 +425,7 @@ void ts::TablesLogger::postDisplay()
 {
     // Flush output file if required
     if (_opt.flush) {
-        _out.flush();
-#if !defined(__windows)
-        if (_opt.useCout()) {
-            ::fflush(stdout);
-            ::fsync(STDOUT_FILENO);
-        }
-#endif
+        _display.flush();
     }
 }
 
