@@ -53,8 +53,10 @@ namespace ts {
         virtual Status processPacket(TSPacket&, bool&, bool&);
 
     private:
-        TablesLoggerPtr  _logger;
-        TablesLoggerArgs _logger_options;
+        TablesDisplayArgs _display_options;
+        TablesLoggerArgs  _logger_options;
+        TablesDisplay     _display;
+        TablesLoggerPtr   _logger;
 
         // Inaccessible operations
         TablesPlugin() = delete;
@@ -73,11 +75,16 @@ TSPLUGIN_DECLARE_PROCESSOR(ts::TablesPlugin)
 
 ts::TablesPlugin::TablesPlugin(TSP* tsp_) :
     ProcessorPlugin(tsp_, "Collect PSI/SI Tables.", "[options]"),
-    _logger(),
-    _logger_options()
+    _display_options(),
+    _logger_options(),
+    _display(_display_options),
+    _logger()
 {
     _logger_options.defineOptions(*this);
+    _display_options.defineOptions(*this);
+
     _logger_options.addHelp(*this);
+    _display_options.addHelp(*this);
 }
 
 
@@ -88,7 +95,7 @@ ts::TablesPlugin::TablesPlugin(TSP* tsp_) :
 bool ts::TablesPlugin::start()
 {
     _logger_options.load(*this);
-    _logger = new TablesLogger(_logger_options, *tsp);
+    _logger = new TablesLogger(_logger_options, _display, *tsp);
     return !_logger->hasErrors();
 }
 

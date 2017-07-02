@@ -33,20 +33,15 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsTablesDisplayArgs.h"
+#include "tsArgs.h"
 
 namespace ts {
     //!
     //! Command line arguments for the class PSILogger.
     //!
-    class TSDUCKDLL PSILoggerArgs: public TablesDisplayArgs
+    class TSDUCKDLL PSILoggerArgs
     {
     public:
-        //!
-        //! Explicit reference to superclass.
-        //!
-        typedef TablesDisplayArgs SuperClass;
-
         //!
         //! Constructor.
         //!

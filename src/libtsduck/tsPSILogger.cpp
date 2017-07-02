@@ -45,9 +45,11 @@ TSDUCK_SOURCE;
 // Constructor
 //----------------------------------------------------------------------------
 
-ts::PSILogger::PSILogger (PSILoggerArgs& opt, ReportInterface& report) :
-    TablesDisplay(opt),
+ts::PSILogger::PSILogger (PSILoggerArgs& opt, TablesDisplay& display, ReportInterface& report) :
+    TableHandlerInterface(),
+    SectionHandlerInterface(),
     _opt(opt),
+    _display(display),
     _report(report),
     _abort(false),
     _pat_ok(_opt.cat_only),
@@ -159,7 +161,7 @@ void ts::PSILogger::handleTable(SectionDemux&, const BinaryTable& table)
                 _expected_pmt++;
             }
             // Display the content of the PAT
-            displayTable(_out, table);
+            _display.displayTable(_out, table);
             break;
         }
 
@@ -177,7 +179,7 @@ void ts::PSILogger::handleTable(SectionDemux&, const BinaryTable& table)
                 }
             }
             // Display the table
-            displayTable(_out, table);
+            _display.displayTable(_out, table);
             break;
         }
 
@@ -188,14 +190,14 @@ void ts::PSILogger::handleTable(SectionDemux&, const BinaryTable& table)
                 _demux.removePID(pid);
                 _received_pmt++;
             }
-            displayTable(_out, table);
+            _display.displayTable(_out, table);
             break;
         }
 
         case TID_NIT_OTH: {
             // Ignore NIT for other networks if only one version required
             if (_opt.all_versions) {
-                displayTable(_out, table);
+                _display.displayTable(_out, table);
             }
             break;
         }
@@ -208,7 +210,7 @@ void ts::PSILogger::handleTable(SectionDemux&, const BinaryTable& table)
             else if (!_opt.all_versions) {
                 _demux.removePID(pid);
             }
-            displayTable(_out, table);
+            _display.displayTable(_out, table);
             break;
         }
 
@@ -216,13 +218,13 @@ void ts::PSILogger::handleTable(SectionDemux&, const BinaryTable& table)
             if (pid != PID_SDT) {
                 // An SDT is only expected on PID 0x0011
                 _out << Format("* Got unexpected SDT on PID %d (0x%04X)", pid, pid) << std::endl;
-                displayTable(_out, table);
+                _display.displayTable(_out, table);
             }
             else if (_opt.all_versions || !_sdt_ok) {
                 _sdt_ok = true;
                 // We cannot stop filtering this PID if we don't need all versions
                 // since a BAT can also be found here.
-                displayTable(_out, table);
+                _display.displayTable(_out, table);
             }
             break;
         }
@@ -230,7 +232,7 @@ void ts::PSILogger::handleTable(SectionDemux&, const BinaryTable& table)
         case TID_SDT_OTH: {
             // Ignore SDT for other networks if only one version required
             if (_opt.all_versions) {
-                displayTable(_out, table);
+                _display.displayTable(_out, table);
             }
             break;
         }
@@ -239,14 +241,14 @@ void ts::PSILogger::handleTable(SectionDemux&, const BinaryTable& table)
             if (pid != PID_BAT) {
                 // An SDT is only expected on PID 0x0011
                 _out << Format("* Got unexpected BAT on PID %d (0x%04X)", pid, pid) << std::endl;
-                displayTable(_out, table);
+                _display.displayTable(_out, table);
             }
             else if (_opt.all_versions || !_bat_ok) {
                 // Got the BAT.
                 _bat_ok = true;
                 // We cannot stop filtering this PID if we don't need all versions
                 // since the SDT can also be found here.
-                displayTable(_out, table);
+                _display.displayTable(_out, table);
             }
             break;
         }

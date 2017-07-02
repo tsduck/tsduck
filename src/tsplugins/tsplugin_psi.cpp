@@ -53,8 +53,10 @@ namespace ts {
         virtual Status processPacket (TSPacket&, bool&, bool&);
 
     private:
-        PSILoggerPtr  _logger;
-        PSILoggerArgs _logger_options;
+        TablesDisplayArgs _display_options;
+        PSILoggerArgs     _logger_options;
+        TablesDisplay     _display;
+        PSILoggerPtr      _logger;
 
         // Inaccessible operations
         PSIPlugin() = delete;
@@ -73,11 +75,16 @@ TSPLUGIN_DECLARE_PROCESSOR(ts::PSIPlugin)
 
 ts::PSIPlugin::PSIPlugin(TSP* tsp_) :
     ProcessorPlugin(tsp_, "Extract PSI Information.", "[options]"),
-    _logger(),
-    _logger_options()
+    _display_options(),
+    _logger_options(),
+    _display(_display_options),
+    _logger()
 {
     _logger_options.defineOptions(*this);
+    _display_options.defineOptions(*this);
+
     _logger_options.addHelp(*this);
+    _display_options.addHelp(*this);
 }
 
 
@@ -88,7 +95,7 @@ ts::PSIPlugin::PSIPlugin(TSP* tsp_) :
 bool ts::PSIPlugin::start()
 {
     _logger_options.load(*this);
-    _logger = new PSILogger(_logger_options, *tsp);
+    _logger = new PSILogger(_logger_options, _display, *tsp);
     return !_logger->hasErrors();
 }
 
@@ -108,7 +115,7 @@ bool ts::PSIPlugin::stop()
 // Packet processing method
 //----------------------------------------------------------------------------
 
-ts::ProcessorPlugin::Status ts::PSIPlugin::processPacket (TSPacket& pkt, bool& flush, bool& bitrate_changed)
+ts::ProcessorPlugin::Status ts::PSIPlugin::processPacket(TSPacket& pkt, bool& flush, bool& bitrate_changed)
 {
     _logger->feedPacket(pkt);
     return _logger->completed() ? TSP_END : TSP_OK;

@@ -41,7 +41,6 @@ TSDUCK_SOURCE;
 //----------------------------------------------------------------------------
 
 ts::PSILoggerArgs::PSILoggerArgs() :
-    SuperClass(),
     all_versions(false),
     clear(false),
     cat_only(false),
@@ -95,9 +94,6 @@ void ts::PSILoggerArgs::addHelp(Args& args) const
         "      Display the version number.\n";
 
     args.setHelp(args.getHelp() + help);
-
-    // Let superclass add its own help.
-    SuperClass::addHelp(args);
 }
 
 
@@ -114,9 +110,6 @@ void ts::PSILoggerArgs::defineOptions(Args& args) const
     args.option("dump",         'd');
     args.option("verbose",      'v');
     args.option("output-file",  'o', Args::STRING);
-
-    // Let superclass defines its own options.
-    SuperClass::defineOptions(args);
 }
 
 
