@@ -35,6 +35,8 @@
 
 #pragma once
 #include "tsAbstractDescriptor.h"
+#include "tsSafePtr.h"
+#include "tsMutex.h"
 
 namespace ts {
     //!
@@ -79,4 +81,9 @@ namespace ts {
         virtual void serialize(Descriptor&) const;
         virtual void deserialize(const Descriptor&);
     };
+
+    //!
+    //! Safe pointer to a CADescriptor (thread-safe).
+    //!
+    typedef SafePtr<CADescriptor,Mutex> CADescriptorPtr;
 }

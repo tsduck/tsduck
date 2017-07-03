@@ -149,6 +149,8 @@ std::ostream& ts::TablesDisplay::displayTable(const BinaryTable& table, int inde
     }
 
     const std::string margin(indent, ' ');
+    const TID tid = table.tableId();
+    cas = casFamily(cas);
 
     // Compute total size of table
     size_t total_size = 0;
@@ -157,17 +159,21 @@ std::ostream& ts::TablesDisplay::displayTable(const BinaryTable& table, int inde
     }
 
     // Display common header lines.
-    strm << margin << "* " << names::TID(table.tableId(), casFamily(cas))
+    strm << margin << "* " << names::TID(tid, cas)
          << ", TID " << int(table.tableId())
          << Format(" (0x%02X)", int(table.tableId()));
     if (table.sourcePID() != PID_NULL) {
         // If PID is the null PID, this means "unknown PID"
         strm << ", PID " << table.sourcePID() << Format(" (0x%04X)", int(table.sourcePID()));
     }
-    strm << std::endl
-         << margin << "  Version: " << int(table.version())
-         << ", sections: " << table.sectionCount()
-         << ", total size: " << total_size << " bytes" << std::endl;
+    strm << std::endl;
+    if (table.sectionCount() == 1 && table.sectionAt(0)->isShortSection()) {
+        strm << margin << "  Short section";
+    }
+    else {
+        strm << margin << "  Version: " << int(table.version()) << ", sections: " << table.sectionCount();
+    }
+    strm << ", total size: " << total_size << " bytes" << std::endl;
 
     // Loop across all sections.
     for (size_t i = 0; i < table.sectionCount(); ++i) {
@@ -200,6 +206,7 @@ std::ostream& ts::TablesDisplay::displaySection(const Section& section, int inde
 
     const std::string margin(indent, ' ');
     const TID tid = section.tableId();
+    cas = casFamily(cas);
 
     // Display common header lines.
     if (!no_header) {
@@ -208,16 +215,34 @@ std::ostream& ts::TablesDisplay::displaySection(const Section& section, int inde
             // If PID is the null PID, this means "unknown PID"
             strm << ", PID " << int(section.sourcePID()) << ts::Format(" (0x%04X)", int(section.sourcePID()));
         }
-        strm << std::endl
-             << margin << "  Section: " << int(section.sectionNumber())
-             << " (last: " << int(section.lastSectionNumber())
-             << "), version: " << int(section.version())
-             << ", size: " << section.size() << " bytes" << std::endl;
+        strm << std::endl;
+        if (section.isShortSection()) {
+            strm << margin << "  Short section";
+        }
+        else {
+            strm << margin << "  Section: " << int(section.sectionNumber())
+                << " (last: " << int(section.lastSectionNumber())
+                << "), version: " << int(section.version());
+        }
+        strm << ", size: " << section.size() << " bytes" << std::endl;
         indent += 2;
     }
 
     // Display section body
+    return displaySectionData(section, indent, cas);
+}
+
+
+//----------------------------------------------------------------------------
+// Display a section on the output stream.
+//----------------------------------------------------------------------------
+
+std::ostream& ts::TablesDisplay::displaySectionData(const Section& section, int indent, CASFamily cas)
+{
     AbstractTable::DisplaySectionFunction handler = 0;
+    const TID tid = section.tableId();
+    cas = casFamily(cas);
+
     if (tid >= TID_EIT_MIN && tid <= TID_EIT_MAX) { // 34 values
         handler = EIT::DisplaySection;
     }
@@ -262,7 +287,7 @@ std::ostream& ts::TablesDisplay::displaySection(const Section& section, int inde
     else {
         displayUnkownSection(section, indent);
     }
-    return strm;
+    return out();
 }
 
 

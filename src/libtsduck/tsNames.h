@@ -47,7 +47,7 @@ namespace ts {
         //! @param [in] cas CAS family for EMM/ECM table ids.
         //! @return The corresponding name.
         //!
-        TSDUCKDLL std::string TID(uint8_t tid, CASFamily cas = CAS_OTHER);
+        TSDUCKDLL std::string TID(uint8_t tid, ts::CASFamily cas = CAS_OTHER);
 
         //!
         //! Name of Descriptor ID.
@@ -155,6 +155,13 @@ namespace ts {
         //! @return The corresponding name.
         //!
         TSDUCKDLL std::string CASId(uint16_t casid);
+
+        //!
+        //! Name of Conditional Access Families.
+        //! @param [in] cas CAS family
+        //! @return The corresponding name.
+        //!
+        TSDUCKDLL std::string CASFamily(ts::CASFamily cas);
 
         //!
         //! Name of Running Status (in SDT).
