@@ -32,6 +32,8 @@
 //----------------------------------------------------------------------------
 
 #include "tsCAIdentifierDescriptor.h"
+#include "tsFormat.h"
+#include "tsNames.h"
 TSDUCK_SOURCE;
 
 
@@ -121,4 +123,24 @@ void ts::CAIdentifierDescriptor::deserialize (const Descriptor& desc)
             size -= 2;
         }
     }
+}
+
+
+//----------------------------------------------------------------------------
+// Static method to display a descriptor.
+//----------------------------------------------------------------------------
+
+void ts::CAIdentifierDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+{
+    std::ostream& strm(display.out());
+        const std::string margin(indent, ' ');
+
+    while (size >= 2) {
+        uint16_t cas_id = GetUInt16(data);
+        data += 2; size -= 2;
+        strm << margin << "CA System Id: " << Format("0x%04X", int(cas_id))
+             << " (" << names::CASId(cas_id) << ")" << std::endl;
+    }
+
+    display.displayExtraData(data, size, indent);
 }

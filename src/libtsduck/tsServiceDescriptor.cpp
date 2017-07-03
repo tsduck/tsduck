@@ -32,6 +32,9 @@
 //----------------------------------------------------------------------------
 
 #include "tsServiceDescriptor.h"
+#include "tsFormat.h"
+#include "tsHexa.h"
+#include "tsNames.h"
 TSDUCK_SOURCE;
 
 
@@ -121,4 +124,61 @@ void ts::ServiceDescriptor::deserialize (const Descriptor& desc)
         provider_name.clear();
         service_name.clear();
     }
+}
+
+
+//----------------------------------------------------------------------------
+// Static method to display a descriptor.
+//----------------------------------------------------------------------------
+
+void ts::ServiceDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+{
+    std::ostream& strm(display.out());
+    const std::string margin(indent, ' ');
+
+    if (size >= 2) {
+
+        // Service type
+        uint8_t stype = *data;
+        data += 1; size -= 1;
+        strm << margin << Format("Service type: 0x%02X, ", int(stype))
+             << names::ServiceType(stype) << std::endl;
+        
+        // Provider name
+        size_t plength;
+        if (size < 1) {
+            plength = 0;
+        }
+        else {
+            plength = *data;
+            data += 1; size -= 1;
+            if (plength > size) {
+                plength = size;
+            }
+        }
+        const uint8_t* provider = data;
+        data += plength; size -= plength;
+        
+        // Service name
+        size_t slength;
+        if (size < 1) {
+            slength = 0;
+        }
+        else {
+            slength = *data;
+            data += 1; size -= 1;
+            if (slength > size) {
+                slength = size;
+            }
+        }
+        const uint8_t* service = data;
+        data += slength; size -= slength;
+        
+        // Display names
+        strm << margin << "Service: \"" << Printable(service, slength)
+             << "\", Provider: \"" << Printable(provider, plength) << "\""
+             << std::endl;
+    }
+
+    display.displayExtraData(data, size, indent);
 }

@@ -32,6 +32,8 @@
 //----------------------------------------------------------------------------
 
 #include "tsContentDescriptor.h"
+#include "tsFormat.h"
+#include "tsNames.h"
 TSDUCK_SOURCE;
 
 
@@ -97,4 +99,26 @@ void ts::ContentDescriptor::deserialize (const Descriptor& desc)
             data += 2; size -= 2;
         }
     }
+}
+
+
+//----------------------------------------------------------------------------
+// Static method to display a descriptor.
+//----------------------------------------------------------------------------
+
+void ts::ContentDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+{
+    std::ostream& strm(display.out());
+    const std::string margin(indent, ' ');
+
+    while (size >= 2) {
+        uint8_t content = data[0];
+        uint8_t user = data[1];
+        data += 2; size -= 2;
+        strm << margin << Format("Content: 0x%02X", int(content))
+             << ", " << names::Content(content)
+             << Format(" / User: 0x%02X", int(user)) << std::endl;
+    }
+
+    display.displayExtraData(data, size, indent);
 }

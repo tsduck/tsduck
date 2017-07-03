@@ -40,10 +40,7 @@
 TSDUCK_SOURCE;
 
 
-//----------------------------------------------------------------------------
 // Enumeration description of ts::VersionFormat.
-//----------------------------------------------------------------------------
-
 const ts::Enumeration ts::VersionFormatEnum
     ("short",  ts::VERSION_SHORT,
      "global", ts::VERSION_GLOBAL,
@@ -53,6 +50,24 @@ const ts::Enumeration ts::VersionFormatEnum
      "dektec", ts::VERSION_DEKTEC,
      "files",  ts::VERSION_FILES,
      TS_NULL);
+
+// Month names in compiler-generated dates.
+namespace {
+    const ts::Enumeration MonthEnum
+        ("jan", 1,
+         "feb", 2,
+         "mar", 3,
+         "apr", 4,
+         "may", 5,
+         "jun", 6,
+         "jul", 7,
+         "aug", 8,
+         "sep", 9,
+         "oct", 10,
+         "nov", 11,
+         "dec", 12,
+         TS_NULL);
+}
 
 
 //----------------------------------------------------------------------------
@@ -228,45 +243,8 @@ namespace {
             return 0;
         }
         
-        const std::string monthName(ts::LowerCaseValue(word.substr(0, 3)));
-        int month = 0;
-        if (monthName == "jan") {
-            month = 1;
-        }
-        else if (monthName == "feb") {
-            month = 2;
-        }
-        else if (monthName == "mar") {
-            month = 3;
-        }
-        else if (monthName == "apr") {
-            month = 4;
-        }
-        else if (monthName == "may") {
-            month = 5;
-        }
-        else if (monthName == "jun") {
-            month = 6;
-        }
-        else if (monthName == "jul") {
-            month = 7;
-        }
-        else if (monthName == "aug") {
-            month = 8;
-        }
-        else if (monthName == "sep") {
-            month = 9;
-        }
-        else if (monthName == "oct") {
-            month = 10;
-        }
-        else if (monthName == "nov") {
-            month = 11;
-        }
-        else if (monthName == "dec") {
-            month = 12;
-        }
-        else {
+        const int month = MonthEnum.value(word.substr(0, 3), false);
+        if (month == ts::Enumeration::UNKNOWN) {
             return 0;
         }
 

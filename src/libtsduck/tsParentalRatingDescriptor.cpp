@@ -32,6 +32,9 @@
 //----------------------------------------------------------------------------
 
 #include "tsParentalRatingDescriptor.h"
+#include "tsFormat.h"
+#include "tsHexa.h"
+#include "tsNames.h"
 TSDUCK_SOURCE;
 
 
@@ -115,4 +118,34 @@ void ts::ParentalRatingDescriptor::deserialize (const Descriptor& desc)
         entries.push_back (Entry (std::string (reinterpret_cast <const char*> (data), 3), data[3]));
         data += 4; size -= 4;
     }
+}
+
+
+//----------------------------------------------------------------------------
+// Static method to display a descriptor.
+//----------------------------------------------------------------------------
+
+void ts::ParentalRatingDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+{
+    std::ostream& strm(display.out());
+    const std::string margin(indent, ' ');
+
+    while (size >= 4) {
+        uint8_t rating = data[3];
+        strm << margin << "Country code: " << Printable(data, 3)
+             << Format(", rating: 0x%02d ", int(rating));
+        if (rating == 0) {
+            strm << "(undefined)";
+        }
+        else if (rating <= 0x0F) {
+            strm << "(min. " << int(rating + 3) << " years)";
+        }
+        else {
+            strm << "(broadcaster-defined)";
+        }
+        strm << std::endl;
+        data += 4; size -= 4;
+    }
+
+    display.displayExtraData(data, size, indent);
 }

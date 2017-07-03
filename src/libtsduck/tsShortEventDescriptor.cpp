@@ -182,3 +182,40 @@ void ts::ShortEventDescriptor::deserialize (const Descriptor& desc)
     text = std::string (reinterpret_cast <const char*> (data), text_length);
     data += text_length; size -= text_length;
 }
+
+
+//----------------------------------------------------------------------------
+// Static method to display a descriptor.
+//----------------------------------------------------------------------------
+
+void ts::ShortEventDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+{
+    std::ostream& strm(display.out());
+    const std::string margin(indent, ' ');
+
+    if (size >= 4) {
+        const std::string lang(Printable(data, 3));
+        size_t length = data[3];
+        data += 4; size -= 4;
+        if (length > size) {
+            length = size;
+        }
+        strm << margin << "Language: " << lang << std::endl
+             << margin << "Event name: \"" << Printable(data, length) << "\"" << std::endl;
+        data += length; size -= length;
+        if (size < 1) {
+            length = 0;
+        }
+        else {
+            length = *data;
+            data += 1; size -= 1;
+            if (length > size) {
+                length = size;
+            }
+        }
+        strm << margin << "Description: \"" << Printable(data, length) << "\"" << std::endl;
+        data += length; size -= length;
+    }
+
+    display.displayExtraData(data, size, indent);
+}

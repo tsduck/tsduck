@@ -29,7 +29,7 @@
 //!
 //!  @file
 //!  Representation of a logical_channel_number_descriptor.
-//!  This si a private descriptor, must be preceeded by the EACEM/EICTA PDS.
+//!  This is a private descriptor, must be preceeded by the EACEM/EICTA PDS.
 //!
 //----------------------------------------------------------------------------
 
@@ -41,6 +41,7 @@ namespace ts {
     //! Representation of a logical_channel_number_descriptor.
     //!
     //! This is a private descriptor, must be preceeded by the EACEM/EICTA PDS.
+    //! @see EACEM Technical Report Number TR-030, 9.2.11.2.
     //!
     class TSDUCKDLL LogicalChannelNumberDescriptor : public AbstractDescriptor
     {
@@ -103,6 +104,18 @@ namespace ts {
         //! @param [in] lcn Logical channel number.
         //!
         LogicalChannelNumberDescriptor(int service_id, int lcn, ...);
+
+        //!
+        //! Static method to display a descriptor.
+        //! @param [in,out] display Display engine.
+        //! @param [in] did Descriptor id.
+        //! @param [in] payload Address of the descriptor payload.
+        //! @param [in] size Size in bytes of the descriptor payload.
+        //! @param [in] indent Indentation width.
+        //! @param [in] tid Table id of table containing the descriptors.
+        //! @param [in] pds Private Data Specifier. Used to interpret private descriptors.
+        //!
+        static void DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* payload, size_t size, int indent, TID tid, PDS pds);
 
         // Inherited methods
         virtual void serialize(Descriptor&) const;

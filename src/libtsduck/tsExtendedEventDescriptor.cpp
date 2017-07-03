@@ -32,6 +32,9 @@
 //----------------------------------------------------------------------------
 
 #include "tsExtendedEventDescriptor.h"
+#include "tsFormat.h"
+#include "tsHexa.h"
+#include "tsNames.h"
 TSDUCK_SOURCE;
 
 #define MAX_DESC_SIZE 255
@@ -302,4 +305,63 @@ void ts::ExtendedEventDescriptor::NormalizeNumbering (uint8_t* desc_base, size_t
         }
         data += len; size -= len;
     }
+}
+
+
+//----------------------------------------------------------------------------
+// Static method to display a descriptor.
+//----------------------------------------------------------------------------
+
+void ts::ExtendedEventDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+{
+    std::ostream& strm(display.out());
+    const std::string margin(indent, ' ');
+
+    if (size >= 5) {
+        uint8_t desc_num = data[0];
+        std::string lang(Printable(data + 1, 3));
+        size_t length = data[4];
+        data += 5; size -= 5;
+        if (length > size) {
+            length = size;
+        }
+        strm << margin << "Descriptor number: " << int((desc_num >> 4) & 0x0F)
+             << ", last: " << int(desc_num & 0x0F) << std::endl
+             << margin << "Language: " << lang << std::endl;
+        while (length > 0) {
+            size_t len = data[0];
+            data++; size--; length--;
+            if (len > length) {
+                len = length;
+            }
+            strm << margin << "\"" << Printable(data, len) << "\" : \"";
+            data += len; size -= len; length -= len;
+            if (length == 0) {
+                len = 0;
+            }
+            else {
+                len = data[0];
+                data++; size--; length--;
+                if (len > length) {
+                    len = length;
+                }
+            }
+            strm << Printable(data, len) << "\"" << std::endl;
+            data += len; size -= len; length -= len;
+        }
+        if (size < 1) {
+            length = 0;
+        }
+        else {
+            length = data[0];
+            data++; size--;
+            if (length > size) {
+                length = size;
+            }
+        }
+        strm << margin << "Description: \"" << Printable(data, length) << "\"" << std::endl;
+        data += length; size -= length;
+    }
+
+    display.displayExtraData(data, size, indent);
 }

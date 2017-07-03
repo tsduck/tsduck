@@ -55,11 +55,12 @@ void ts::NIT::DisplaySection(TablesDisplay& display, const ts::Section& section,
         // Display network information
         size_t loop_length = GetUInt16(data) & 0x0FFF;
         data += 2; size -= 2;
-        if (loop_length > size)
+        if (loop_length > size) {
             loop_length = size;
+        }
         if (loop_length > 0) {
             strm << margin << "Network information:" << std::endl;
-            Descriptor::Display(strm, data, loop_length, indent, section.tableId());
+            display.displayDescriptorList(data, loop_length, indent, section.tableId());
         }
         data += loop_length; size -= loop_length;
 
@@ -84,7 +85,7 @@ void ts::NIT::DisplaySection(TablesDisplay& display, const ts::Section& section,
                      << Format(" (0x%04X)", int(tsid))
                      << ", Original Network Id: " << nwid
                      << Format(" (0x%04X)", int(nwid)) << std::endl;
-                Descriptor::Display(strm, data, length, indent, section.tableId());
+                display.displayDescriptorList(data, length, indent, section.tableId());
                 data += length; size -= length; loop_length -= length;
             }
         }

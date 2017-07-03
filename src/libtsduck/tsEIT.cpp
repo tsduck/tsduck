@@ -305,7 +305,7 @@ void ts::EIT::DisplaySection(TablesDisplay& display, const ts::Section& section,
              << margin << Format("Duration: %02d:%02d:%02d", hour, min, sec) << std::endl
              << margin << "Running status: " << names::RunningStatus(run) << std::endl
              << margin << "CA mode: " << (ca_mode ? "controlled" : "free") << std::endl;
-        Descriptor::Display(strm, data, loop_length, indent, section.tableId());
+        display.displayDescriptorList(data, loop_length, indent, section.tableId());
         data += loop_length; size -= loop_length;
     }
 

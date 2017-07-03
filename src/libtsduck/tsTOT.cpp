@@ -289,7 +289,7 @@ void ts::TOT::DisplaySection(TablesDisplay& display, const ts::Section& section,
             if (length > size) {
                 length = size;
             }
-            Descriptor::Display(strm, data, length, indent, section.tableId());
+            display.displayDescriptorList(data, length, indent, section.tableId());
             data += length; size -= length;
         }
 

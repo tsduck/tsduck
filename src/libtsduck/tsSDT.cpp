@@ -532,7 +532,7 @@ void ts::SDT::DisplaySection(TablesDisplay& display, const ts::Section& section,
                  << std::endl << margin
                  << "Running status: " << names::RunningStatus(running_status)
                  << std::endl;
-            Descriptor::Display(strm, data, length, indent, section.tableId());
+            display.displayDescriptorList(data, length, indent, section.tableId());
             data += length; size -= length;
         }
     }

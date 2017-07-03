@@ -193,6 +193,17 @@ namespace ts {
         void displayUnkownSection(const ts::Section& section, int indent);
 
         //!
+        //! Display the content of an unknown descriptor.
+        //! @param [in] did Descriptor id.
+        //! @param [in] payload Address of the descriptor payload.
+        //! @param [in] size Size in bytes of the descriptor payload.
+        //! @param [in] indent Indentation width.
+        //! @param [in] tid Table id of table containing the descriptors.
+        //! @param [in] pds Private Data Specifier. Used to interpret private descriptors.
+        //!
+        void displayUnkownDescriptor(DID did, const uint8_t* payload, size_t size, int indent, TID tid, PDS pds);
+
+        //!
         //! The actual CAS family to use.
         //! @param [in] cas CAS family of the table. If different from CAS_OTHER, override the CAS family in TablesDisplayArgs.
         //! @return The actual CAS family to use.

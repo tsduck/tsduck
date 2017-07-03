@@ -33,6 +33,9 @@
 //----------------------------------------------------------------------------
 
 #include "tsCADescriptor.h"
+#include "tsFormat.h"
+#include "tsHexa.h"
+#include "tsNames.h"
 TSDUCK_SOURCE;
 
 
@@ -99,4 +102,39 @@ void ts::CADescriptor::deserialize (const Descriptor& desc)
         ca_pid = GetUInt16 (data + 2) & 0x1FFF;
         private_data.copy (data + 4, size - 4);
     }
+}
+
+
+//----------------------------------------------------------------------------
+// Static method to display a descriptor.
+//----------------------------------------------------------------------------
+
+void ts::CADescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+{
+    std::ostream& strm(display.out());
+
+    if (size >= 4) {
+        const std::string margin(indent, ' ');
+
+        // Extract common part
+        uint16_t sysid = GetUInt16(data);
+        uint16_t pid = GetUInt16(data + 2) & 0x1FFF;
+        CASFamily cas = CASFamilyOf(sysid);
+        const char *dtype = tid == TID_CAT ? "EMM" : (tid == TID_PMT ? "ECM" : "CA");
+        data += 4; size -= 4;
+
+        strm << margin << "CA System Id: " << Format("0x%04X", int(sysid))
+             << " (" << names::CASId(sysid) << "), "
+             << dtype << " PID: " << pid
+             << Format(" (0x%04X)", int(pid)) << std::endl;
+
+        // CA private part.
+        if (size > 0) {
+            strm << margin << "Private CA data:" << std::endl
+                 << Hexa(data, size, hexa::HEXA | hexa::ASCII | hexa::OFFSET, indent);
+            data += size; size = 0;
+        }
+    }
+
+    display.displayExtraData(data, size, indent);
 }

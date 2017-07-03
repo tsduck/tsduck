@@ -32,6 +32,9 @@
 //----------------------------------------------------------------------------
 
 #include "tsEnhancedAC3Descriptor.h"
+#include "tsFormat.h"
+#include "tsHexa.h"
+#include "tsNames.h"
 TSDUCK_SOURCE;
 
 
@@ -209,4 +212,70 @@ void ts::EnhancedAC3Descriptor::deserialize (const Descriptor& desc)
         }
         additional_info.copy (data, size);
     }
+}
+
+
+//----------------------------------------------------------------------------
+// Static method to display a descriptor.
+//----------------------------------------------------------------------------
+
+void ts::EnhancedAC3Descriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+{
+    std::ostream& strm(display.out());
+    const std::string margin(indent, ' ');
+
+    if (size >= 1) {
+        uint8_t flags = data[0];
+        data++; size--;
+
+        if ((flags & 0x80) && size >= 1) { // component_type
+            uint8_t type = data[0];
+            data++; size--;
+            strm << margin << Format("Component type: 0x%02X ", int(type))
+                 << " (" << names::AC3ComponentType(type) << ")" << std::endl;
+        }
+        if ((flags & 0x40) && size >= 1) { // bsid
+            uint8_t bsid = data[0];
+            data++; size--;
+            strm << margin << Format("AC-3 coding version: %d (0x%02X)", int(bsid), int(bsid)) << std::endl;
+        }
+        if ((flags & 0x20) && size >= 1) { // mainid
+            uint8_t mainid = data[0];
+            data++; size--;
+            strm << margin << Format("Main audio service id: %d (0x%02X)", int(mainid), int(mainid)) << std::endl;
+        }
+        if ((flags & 0x10) && size >= 1) { // asvc
+            uint8_t asvc = data[0];
+            data++; size--;
+            strm << margin << Format("Associated to: 0x%02X", int(asvc)) << std::endl;
+        }
+        if (flags & 0x08) {
+            strm << margin << "Substream 0: Mixing control metadata" << std::endl;
+        }
+        if ((flags & 0x04) && size >= 1) { // substream1
+            uint8_t type = data[0];
+            data++; size--;
+            strm << margin << Format("Substream 1: 0x%02X", int(type))
+                 << " (" << names::AC3ComponentType(type) << ")" << std::endl;
+        }
+        if ((flags & 0x02) && size >= 1) { // substream2
+            uint8_t type = data[0];
+            data++; size--;
+            strm << margin << Format("Substream 2: 0x%02X", int(type))
+                 << " (" << names::AC3ComponentType(type) << ")" << std::endl;
+        }
+        if ((flags & 0x01) && size >= 1) { // substream3
+            uint8_t type = data[0];
+            data++; size--;
+            strm << margin << Format("Substream 3: 0x%02X", int(type))
+                 << " (" << names::AC3ComponentType(type) << ")" << std::endl;
+        }
+        if (size > 0) {
+            strm << margin << "Additional information:" << std::endl
+                 << Hexa(data, size, hexa::HEXA | hexa::ASCII | hexa::OFFSET, indent);
+            data += size; size = 0;
+        }
+    }
+
+    display.displayExtraData(data, size, indent);
 }

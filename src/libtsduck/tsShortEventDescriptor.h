@@ -79,5 +79,17 @@ namespace ts {
         // Inherited methods
         virtual void serialize(Descriptor&) const;
         virtual void deserialize(const Descriptor&);
+
+        //!
+        //! Static method to display a descriptor.
+        //! @param [in,out] display Display engine.
+        //! @param [in] did Descriptor id.
+        //! @param [in] payload Address of the descriptor payload.
+        //! @param [in] size Size in bytes of the descriptor payload.
+        //! @param [in] indent Indentation width.
+        //! @param [in] tid Table id of table containing the descriptors.
+        //! @param [in] pds Private Data Specifier. Used to interpret private descriptors.
+        //!
+        static void DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* payload, size_t size, int indent, TID tid, PDS pds);
     };
 }

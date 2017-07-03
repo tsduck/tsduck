@@ -61,6 +61,28 @@ namespace ts {
         //!
         DataBroadcastIdDescriptor(const Descriptor& bin);
 
+        //!
+        //! Static method to display a descriptor.
+        //! @param [in,out] display Display engine.
+        //! @param [in] did Descriptor id.
+        //! @param [in] payload Address of the descriptor payload.
+        //! @param [in] size Size in bytes of the descriptor payload.
+        //! @param [in] indent Indentation width.
+        //! @param [in] tid Table id of table containing the descriptors.
+        //! @param [in] pds Private Data Specifier. Used to interpret private descriptors.
+        //!
+        static void DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* payload, size_t size, int indent, TID tid, PDS pds);
+
+        //!
+        //! Static method to display a data broadcast selector bytes.
+        //! @param [in,out] display Display engine.
+        //! @param [in] data Address of the selector bytes.
+        //! @param [in] size Size in bytes of the selector bytes.
+        //! @param [in] indent Indentation width.
+        //! @param [in] dbid Data broadcast id.
+        //!
+        static void DisplaySelectorBytes(TablesDisplay& display, const uint8_t* data, size_t size, int indent, uint16_t dbid);
+
         // Inherited methods
         virtual void serialize(Descriptor&) const;
         virtual void deserialize(const Descriptor&);
