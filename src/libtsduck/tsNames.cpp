@@ -42,7 +42,7 @@ TSDUCK_SOURCE;
 // Table ID. Use CAS family for EMM/ECM table ids.
 //----------------------------------------------------------------------------
 
-std::string ts::names::TID (uint8_t tid, CASFamily cas)
+std::string ts::names::TID(uint8_t tid, ts::CASFamily cas)
 {
     switch (cas) {
         case CAS_MEDIAGUARD: {
@@ -83,6 +83,11 @@ std::string ts::names::TID (uint8_t tid, CASFamily cas)
         }
     }
 
+    std::string casName;
+    if (cas != CAS_OTHER) {
+        casName = names::CASFamily(cas) + " ";
+    }
+
     switch (tid) {
         case 0x00: return "PAT";
         case 0x01: return "CAT";
@@ -117,8 +122,8 @@ std::string ts::names::TID (uint8_t tid, CASFamily cas)
         case 0x78: return "MPE-FEC";
         case 0x7E: return "DIT";
         case 0x7F: return "SIT";
-        case 0x80: return "ECM (0x80)";
-        case 0x81: return "ECM (0x81)";
+        case 0x80: return casName + "ECM (0x80)";
+        case 0x81: return casName + "ECM (0x81)";
         case TID_LW_DMT: return "LW/DMT"; // private, this default used for convenience
         case TID_LW_BDT: return "LW/BDT"; // private, this default used for convenience
         case TID_LW_VIT: return "LW/VIT"; // private, this default used for convenience
@@ -128,19 +133,19 @@ std::string ts::names::TID (uint8_t tid, CASFamily cas)
     }
 
     if (tid >= 0x50 && tid <= 0x5F) {
-        return Format ("EIT schedule Actual (0x%02X)", int (tid));
+        return Format("EIT schedule Actual (0x%02X)", int(tid));
     }
     else if (tid >= 0x60 && tid <= 0x6F) {
-        return Format ("EIT schedule Other (0x%02X)", int (tid));
+        return Format("EIT schedule Other (0x%02X)", int(tid));
     }
     else if (tid >= 0x82 && tid <= 0x8F) {
-        return Format ("EMM (0x%02X)", int (tid));
+        return Format("%sEMM (0x%02X)", casName.c_str(), int(tid));
     }
     else if (tid < 0x40) {
-        return Format ("MPEG-Reserved (0x%02X)", int (tid));
+        return Format("MPEG-Reserved (0x%02X)", int(tid));
     }
     else {
-        return Format ("DVB-Reserved (0x%02X)", int (tid));
+        return Format("DVB-Reserved (0x%02X)", int(tid));
     }
 }
 
@@ -395,13 +400,13 @@ std::string ts::names::DID (uint8_t did, uint32_t pds)
     }
 
     if (did < 0x40) {
-        return Format ("MPEG-Reserved (0x%02X)", int (did));
+        return Format("MPEG-Reserved (0x%02X)", int(did));
     }
     else if (did < 0x80) {
-        return Format ("DVB-Reserved (0x%02X)", int (did));
+        return Format("DVB-Reserved (0x%02X)", int(did));
     }
     else {
-        return Format ("Unknown (0x%02X)", int (did));
+        return Format("Unknown (0x%02X)", int(did));
     }
 }
 
@@ -409,7 +414,7 @@ std::string ts::names::DID (uint8_t did, uint32_t pds)
 // Extended descriptor ID. Use private data specified (pds) if edid >= 0x80.
 //----------------------------------------------------------------------------
 
-std::string ts::names::EDID (uint8_t edid, uint32_t pds)
+std::string ts::names::EDID(uint8_t edid, uint32_t pds)
 {
     switch (edid) {
         case EDID_IMAGE_ICON: return "Image Icon";
@@ -842,11 +847,30 @@ std::string ts::names::TeletextType (uint8_t type)
     }
 }
 
+
+//----------------------------------------------------------------------------
+// Name of Conditional Access Families.
+//----------------------------------------------------------------------------
+
+std::string ts::names::CASFamily(ts::CASFamily cas)
+{
+    switch (cas) {
+        case CAS_OTHER:       return "Other";
+        case CAS_MEDIAGUARD:  return "MediaGuard";
+        case CAS_NAGRA:       return "Nagravision";
+        case CAS_VIACCESS:    return "Viaccess";
+        case CAS_THALESCRYPT: return "ThalesCrypt";
+        case CAS_SAFEACCESS:  return "SafeAccess";
+        default:              return Format("CAS Family %d", int(cas));
+    }
+}
+
+
 //----------------------------------------------------------------------------
 // Conditional Access System Id (in CA Descriptor)
 //----------------------------------------------------------------------------
 
-std::string ts::names::CASId (uint16_t ca_sysid)
+std::string ts::names::CASId(uint16_t ca_sysid)
 {
     struct Name {
         uint16_t first;
@@ -913,7 +937,7 @@ std::string ts::names::CASId (uint16_t ca_sysid)
         }
     }
 
-    return Format ("Unknown CAS 0x%04X", int (ca_sysid));
+    return Format("Unknown CAS 0x%04X", int(ca_sysid));
 }
 
 //----------------------------------------------------------------------------

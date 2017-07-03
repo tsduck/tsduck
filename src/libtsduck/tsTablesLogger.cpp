@@ -57,6 +57,7 @@ ts::TablesLogger::TablesLogger(const TablesLoggerArgs& opt, TablesDisplay& displ
     _table_count(0),
     _packet_count(0),
     _demux(0, 0, opt.pid),
+    _cas_mapper(report),
     _outfile(),
     _sock(false, report)
 {
@@ -131,6 +132,7 @@ ts::TablesLogger::~TablesLogger()
 void ts::TablesLogger::feedPacket(const TSPacket& pkt)
 {
     _demux.feedPacket(pkt);
+    _cas_mapper.feedPacket(pkt);
     _packet_count++;
 }
 
@@ -171,7 +173,7 @@ void ts::TablesLogger::handleTable(SectionDemux&, const BinaryTable& table)
             }
             else {
                 // Full table formatting
-                _display.displayTable(table) << std::endl;
+                _display.displayTable(table, 0, _cas_mapper.casFamily(table.sourcePID())) << std::endl;
             }
             postDisplay();
             break;
@@ -244,7 +246,7 @@ void ts::TablesLogger::handleSection(SectionDemux&, const Section& sect)
             }
             else {
                 // Full section formatting.
-                _display.displaySection(sect) << std::endl;
+                _display.displaySection(sect, 0, _cas_mapper.casFamily(sect.sourcePID())) << std::endl;
             }
             postDisplay();
             break;

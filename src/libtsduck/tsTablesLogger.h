@@ -39,6 +39,7 @@
 #include "tsTablesLoggerArgs.h"
 #include "tsSocketAddress.h"
 #include "tsUDPSocket.h"
+#include "tsCASMapper.h"
 
 namespace ts {
     //!
@@ -101,6 +102,7 @@ namespace ts {
         uint32_t         _table_count;
         PacketCounter    _packet_count;
         SectionDemux     _demux;
+        CASMapper        _cas_mapper;
         std::ofstream    _outfile;  // Binary output file.
         UDPSocket        _sock;     // Output socket.
 

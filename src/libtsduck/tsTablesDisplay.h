@@ -82,6 +82,16 @@ namespace ts {
         virtual std::ostream& displaySection(const Section& section, int indent = 0, CASFamily cas = CAS_OTHER, bool no_header = false);
 
         //!
+        //! Display the payload of a section on the output stream.
+        //! The content of the table is interpreted according to the table id.
+        //! @param [in] section The section to display.
+        //! @param [in] indent Indentation width.
+        //! @param [in] cas CAS family of the table. If different from CAS_OTHER, override the CAS family in TablesDisplayArgs.
+        //! @return A reference to the output stream.
+        //!
+        virtual std::ostream& displaySectionData(const Section& section, int indent = 0, CASFamily cas = CAS_OTHER);
+
+        //!
         //! Display a descriptor on the output stream.
         //! @param [in] desc The descriptor to display.
         //! @param [in] indent Indentation width.
@@ -99,7 +109,7 @@ namespace ts {
                                                CASFamily cas = CAS_OTHER);
 
         //!
-        //! Display a descriptor on the output stream.
+        //! Display the payload of a descriptor on the output stream.
         //! @param [in] did Descriptor id.
         //! @param [in] payload Address of the descriptor payload.
         //! @param [in] size Size in bytes of the descriptor payload.

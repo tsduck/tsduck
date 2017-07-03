@@ -268,7 +268,8 @@ HEADERS += \
     ../../../src/libtsduck/tsTeletextDescriptor.h \
     ../../../src/libtsduck/tsSupplementaryAudioDescriptor.h \
     ../../../src/libtsduck/tsSubtitlingDescriptor.h \
-    ../../../src/libtsduck/tsSatelliteDeliverySystemDescriptor.h
+    ../../../src/libtsduck/tsSatelliteDeliverySystemDescriptor.h \
+    ../../../src/libtsduck/tsCASMapper.h
 
 SOURCES += \
     ../../../src/libtsduck/tsAbstractAVCAccessUnit.cpp \
@@ -457,7 +458,8 @@ SOURCES += \
     ../../../src/libtsduck/tsTeletextDescriptor.cpp \
     ../../../src/libtsduck/tsSupplementaryAudioDescriptor.cpp \
     ../../../src/libtsduck/tsSubtitlingDescriptor.cpp \
-    ../../../src/libtsduck/tsSatelliteDeliverySystemDescriptor.cpp
+    ../../../src/libtsduck/tsSatelliteDeliverySystemDescriptor.cpp \
+    ../../../src/libtsduck/tsCASMapper.cpp
 
 linux {
     HEADERS += \
