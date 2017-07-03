@@ -250,7 +250,25 @@ HEADERS += \
     ../../../src/libtsduck/tsVideoAttributes.h \
     ../../../src/libtsduck/tsTablesDisplay.h \
     ../../../src/libtsduck/tsTablesDisplayArgs.h \
-    ../../../src/libtsduck/tsTSScanner.h
+    ../../../src/libtsduck/tsTSScanner.h \
+    ../../../src/libtsduck/tsAACDescriptor.h \
+    ../../../src/libtsduck/tsApplicationSignallingDescriptor.h \
+    ../../../src/libtsduck/tsCableDeliverySystemDescriptor.h \
+    ../../../src/libtsduck/tsComponentDescriptor.h \
+    ../../../src/libtsduck/tsDataBroadcastDescriptor.h \
+    ../../../src/libtsduck/tsDTSDescriptor.h \
+    ../../../src/libtsduck/tsEacemPreferredNameIdentifierDescriptor.h \
+    ../../../src/libtsduck/tsEacemPreferredNameListDescriptor.h \
+    ../../../src/libtsduck/tsEacemStreamIdentifierDescriptor.h \
+    ../../../src/libtsduck/tsEutelsatChannelNumberDescriptor.h \
+    ../../../src/libtsduck/tsLocalTimeOffsetDescriptor.h \
+    ../../../src/libtsduck/tsMessageDescriptor.h \
+    ../../../src/libtsduck/tsVBITeletextDescriptor.h \
+    ../../../src/libtsduck/tsVBIDataDescriptor.h \
+    ../../../src/libtsduck/tsTeletextDescriptor.h \
+    ../../../src/libtsduck/tsSupplementaryAudioDescriptor.h \
+    ../../../src/libtsduck/tsSubtitlingDescriptor.h \
+    ../../../src/libtsduck/tsSatelliteDeliverySystemDescriptor.h
 
 SOURCES += \
     ../../../src/libtsduck/tsAbstractAVCAccessUnit.cpp \
@@ -298,7 +316,6 @@ SOURCES += \
     ../../../src/libtsduck/tsDektecUtils.cpp \
     ../../../src/libtsduck/tsDES.cpp \
     ../../../src/libtsduck/tsDescriptor.cpp \
-    ../../../src/libtsduck/tsDescriptorDisplay.cpp \
     ../../../src/libtsduck/tsDescriptorList.cpp \
     ../../../src/libtsduck/tsECMGClient.cpp \
     ../../../src/libtsduck/tsECMGSCS.cpp \
@@ -422,7 +439,25 @@ SOURCES += \
     ../../../src/libtsduck/tsVideoAttributes.cpp \
     ../../../src/libtsduck/tsTablesDisplay.cpp \
     ../../../src/libtsduck/tsTablesDisplayArgs.cpp \
-    ../../../src/libtsduck/tsTSScanner.cpp
+    ../../../src/libtsduck/tsTSScanner.cpp \
+    ../../../src/libtsduck/tsAACDescriptor.cpp \
+    ../../../src/libtsduck/tsApplicationSignallingDescriptor.cpp \
+    ../../../src/libtsduck/tsCableDeliverySystemDescriptor.cpp \
+    ../../../src/libtsduck/tsComponentDescriptor.cpp \
+    ../../../src/libtsduck/tsDataBroadcastDescriptor.cpp \
+    ../../../src/libtsduck/tsDTSDescriptor.cpp \
+    ../../../src/libtsduck/tsEacemPreferredNameIdentifierDescriptor.cpp \
+    ../../../src/libtsduck/tsEacemPreferredNameListDescriptor.cpp \
+    ../../../src/libtsduck/tsEacemStreamIdentifierDescriptor.cpp \
+    ../../../src/libtsduck/tsEutelsatChannelNumberDescriptor.cpp \
+    ../../../src/libtsduck/tsLocalTimeOffsetDescriptor.cpp \
+    ../../../src/libtsduck/tsMessageDescriptor.cpp \
+    ../../../src/libtsduck/tsVBITeletextDescriptor.cpp \
+    ../../../src/libtsduck/tsVBIDataDescriptor.cpp \
+    ../../../src/libtsduck/tsTeletextDescriptor.cpp \
+    ../../../src/libtsduck/tsSupplementaryAudioDescriptor.cpp \
+    ../../../src/libtsduck/tsSubtitlingDescriptor.cpp \
+    ../../../src/libtsduck/tsSatelliteDeliverySystemDescriptor.cpp
 
 linux {
     HEADERS += \
