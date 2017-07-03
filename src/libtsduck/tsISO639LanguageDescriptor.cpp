@@ -32,6 +32,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsISO639LanguageDescriptor.h"
+#include "tsNames.h"
 TSDUCK_SOURCE;
 
 
@@ -115,4 +116,25 @@ void ts::ISO639LanguageDescriptor::deserialize (const Descriptor& desc)
             size -= 4;
         }
     }
+}
+
+
+//----------------------------------------------------------------------------
+// Static method to display a descriptor.
+//----------------------------------------------------------------------------
+
+void ts::ISO639LanguageDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+{
+    std::ostream& strm(display.out());
+    const std::string margin(indent, ' ');
+
+    while (size >= 4) {
+        uint8_t type = data[3];
+        strm << margin << "Language: " << Printable(data, 3)
+             << ", Type: " << int(type)
+             << " (" << names::AudioType(type) << ")" << std::endl;
+        data += 4; size -= 4;
+    }
+
+    display.displayExtraData(data, size, indent);
 }

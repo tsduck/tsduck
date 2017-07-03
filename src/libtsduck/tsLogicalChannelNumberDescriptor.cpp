@@ -33,6 +33,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsLogicalChannelNumberDescriptor.h"
+#include "tsFormat.h"
 TSDUCK_SOURCE;
 
 
@@ -40,9 +41,9 @@ TSDUCK_SOURCE;
 // Default constructor:
 //----------------------------------------------------------------------------
 
-ts::LogicalChannelNumberDescriptor::LogicalChannelNumberDescriptor () :
-    AbstractDescriptor (DID_LOGICAL_CHANNEL_NUM),
-    entries ()
+ts::LogicalChannelNumberDescriptor::LogicalChannelNumberDescriptor() :
+    AbstractDescriptor(DID_LOGICAL_CHANNEL_NUM),
+    entries()
 {
     _is_valid = true;
 }
@@ -124,4 +125,28 @@ void ts::LogicalChannelNumberDescriptor::deserialize (const Descriptor& desc)
             size -= 4;
         }
     }
+}
+
+
+//----------------------------------------------------------------------------
+// Static method to display a descriptor.
+//----------------------------------------------------------------------------
+
+void ts::LogicalChannelNumberDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+{
+    std::ostream& strm(display.out());
+    const std::string margin(indent, ' ');
+
+    while (size >= 4) {
+        const uint16_t service = GetUInt16(data);
+        const uint8_t visible = (data[2] >> 7) & 0x01;
+        const uint16_t channel = GetUInt16(data + 2) & 0x03FF;
+        data += 4; size -= 4;
+        strm << margin
+            << Format("Service Id: %5d (0x%04X), Visible: %1d, Channel number: %3d",
+                      int(service), int(service), int(visible), int(channel))
+            << std::endl;
+    }
+
+    display.displayExtraData(data, size, indent);
 }

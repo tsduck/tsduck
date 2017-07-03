@@ -39,9 +39,9 @@ TSDUCK_SOURCE;
 // Default constructor:
 //----------------------------------------------------------------------------
 
-ts::NetworkNameDescriptor::NetworkNameDescriptor (const std::string& name_) :
-    AbstractDescriptor (DID_NETWORK_NAME),
-    name (name_)
+ts::NetworkNameDescriptor::NetworkNameDescriptor(const std::string& name_) :
+    AbstractDescriptor(DID_NETWORK_NAME),
+    name(name_)
 {
     _is_valid = true;
 }
@@ -51,11 +51,11 @@ ts::NetworkNameDescriptor::NetworkNameDescriptor (const std::string& name_) :
 // Constructor from a binary descriptor
 //----------------------------------------------------------------------------
 
-ts::NetworkNameDescriptor::NetworkNameDescriptor (const Descriptor& desc) :
-    AbstractDescriptor (DID_NETWORK_NAME),
-    name ()
+ts::NetworkNameDescriptor::NetworkNameDescriptor(const Descriptor& desc) :
+    AbstractDescriptor(DID_NETWORK_NAME),
+    name()
 {
-    deserialize (desc);
+    deserialize(desc);
 }
 
 
@@ -63,21 +63,21 @@ ts::NetworkNameDescriptor::NetworkNameDescriptor (const Descriptor& desc) :
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::NetworkNameDescriptor::serialize (Descriptor& desc) const
+void ts::NetworkNameDescriptor::serialize(Descriptor& desc) const
 {
     if (name.length() > 255) {
         desc.invalidate();
         return;
     }
 
-    ByteBlockPtr bbp (new ByteBlock (2));
-    CheckNonNull (bbp.pointer());
+    ByteBlockPtr bbp(new ByteBlock(2));
+    CheckNonNull(bbp.pointer());
 
     (*bbp)[0] = _tag;
     (*bbp)[1] = uint8_t(name.length());
-    bbp->append (name);
+    bbp->append(name);
 
-    Descriptor d (bbp, SHARE);
+    Descriptor d(bbp, SHARE);
     desc = d;
 }
 
@@ -86,14 +86,24 @@ void ts::NetworkNameDescriptor::serialize (Descriptor& desc) const
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::NetworkNameDescriptor::deserialize (const Descriptor& desc)
+void ts::NetworkNameDescriptor::deserialize(const Descriptor& desc)
 {
     _is_valid = desc.isValid() && desc.tag() == _tag;
 
     if (_is_valid) {
-        name.assign (reinterpret_cast <const char*> (desc.payload()), desc.payloadSize());
+        name.assign(reinterpret_cast <const char*> (desc.payload()), desc.payloadSize());
     }
     else {
         name.clear();
     }
+}
+
+
+//----------------------------------------------------------------------------
+// Static method to display a descriptor.
+//----------------------------------------------------------------------------
+
+void ts::NetworkNameDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* payload, size_t size, int indent, TID tid, PDS pds)
+{
+    display.out() << std::string(indent, ' ') << "Name: \"" << Printable(payload, size) << "\"" << std::endl;
 }

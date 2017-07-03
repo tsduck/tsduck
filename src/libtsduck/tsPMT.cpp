@@ -292,7 +292,7 @@ void ts::PMT::DisplaySection(TablesDisplay& display, const ts::Section& section,
         // Process and display "program info"
         if (info_length > 0) {
             strm << margin << "Program information:" << std::endl;
-            Descriptor::Display(strm, data, info_length, indent, section.tableId());
+            display.displayDescriptorList(data, info_length, indent, section.tableId());
         }
         data += info_length; size -= info_length;
 
@@ -309,7 +309,7 @@ void ts::PMT::DisplaySection(TablesDisplay& display, const ts::Section& section,
                  << Format("0x%02X", int(stream))
                  << " (" << names::StreamType(stream)
                  << "), PID: " << es_pid << Format(" (0x%04X)", int(es_pid)) << std::endl;
-            Descriptor::Display(strm, data, es_info_length, indent, section.tableId());
+            display.displayDescriptorList(data, es_info_length, indent, section.tableId());
             data += es_info_length; size -= es_info_length;
         }
     }

@@ -32,6 +32,8 @@
 //----------------------------------------------------------------------------
 
 #include "tsPrivateDataSpecifierDescriptor.h"
+#include "tsFormat.h"
+#include "tsNames.h"
 TSDUCK_SOURCE;
 
 
@@ -86,4 +88,24 @@ void ts::PrivateDataSpecifierDescriptor::deserialize (const Descriptor& desc)
     if (_is_valid) {
         pds = GetUInt32 (desc.payload());
     }
+}
+
+
+//----------------------------------------------------------------------------
+// Static method to display a descriptor.
+//----------------------------------------------------------------------------
+
+void ts::PrivateDataSpecifierDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+{
+    std::ostream& strm(display.out());
+    const std::string margin(indent, ' ');
+
+    if (size >= 4) {
+        uint32_t sp = GetUInt32(data);
+        data += 4; size -= 4;
+        strm << margin << Format("Specifier: 0x%08X", sp)
+             << " (" << names::PrivateDataSpecifier(sp) << ")" << std::endl;
+    }
+
+    display.displayExtraData(data, size, indent);
 }

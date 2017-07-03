@@ -33,6 +33,9 @@
 //----------------------------------------------------------------------------
 
 #include "tsLinkageDescriptor.h"
+#include "tsFormat.h"
+#include "tsHexa.h"
+#include "tsNames.h"
 TSDUCK_SOURCE;
 
 
@@ -40,13 +43,13 @@ TSDUCK_SOURCE;
 // Default constructor:
 //----------------------------------------------------------------------------
 
-ts::LinkageDescriptor::LinkageDescriptor (uint16_t ts, uint16_t onetw, uint16_t service, uint8_t ltype) :
-    AbstractDescriptor (DID_LINKAGE),
-    ts_id (ts),
-    onetw_id (onetw),
-    service_id (service),
-    linkage_type (ltype),
-    private_data ()
+ts::LinkageDescriptor::LinkageDescriptor(uint16_t ts, uint16_t onetw, uint16_t service, uint8_t ltype) :
+    AbstractDescriptor(DID_LINKAGE),
+    ts_id(ts),
+    onetw_id(onetw),
+    service_id(service),
+    linkage_type(ltype),
+    private_data()
 {
     _is_valid = true;
 }
@@ -56,15 +59,15 @@ ts::LinkageDescriptor::LinkageDescriptor (uint16_t ts, uint16_t onetw, uint16_t 
 // Constructor from a binary descriptor
 //----------------------------------------------------------------------------
 
-ts::LinkageDescriptor::LinkageDescriptor (const Descriptor& desc) :
-    AbstractDescriptor (DID_LINKAGE),
-    ts_id (0),
-    onetw_id (0),
-    service_id (0),
-    linkage_type (0),
-    private_data ()
+ts::LinkageDescriptor::LinkageDescriptor(const Descriptor& desc) :
+    AbstractDescriptor(DID_LINKAGE),
+    ts_id(0),
+    onetw_id(0),
+    service_id(0),
+    linkage_type(0),
+    private_data()
 {
-    deserialize (desc);
+    deserialize(desc);
 }
 
 
@@ -72,20 +75,20 @@ ts::LinkageDescriptor::LinkageDescriptor (const Descriptor& desc) :
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::LinkageDescriptor::serialize (Descriptor& desc) const
+void ts::LinkageDescriptor::serialize(Descriptor& desc) const
 {
-    ByteBlockPtr bbp (new ByteBlock (2));
-    CheckNonNull (bbp.pointer());
+    ByteBlockPtr bbp(new ByteBlock(2));
+    CheckNonNull(bbp.pointer());
 
-    bbp->appendUInt16 (ts_id);
-    bbp->appendUInt16 (onetw_id);
-    bbp->appendUInt16 (service_id);
-    bbp->appendUInt8 (linkage_type);
-    bbp->append (private_data);
+    bbp->appendUInt16(ts_id);
+    bbp->appendUInt16(onetw_id);
+    bbp->appendUInt16(service_id);
+    bbp->appendUInt8(linkage_type);
+    bbp->append(private_data);
 
     (*bbp)[0] = _tag;
     (*bbp)[1] = uint8_t(bbp->size() - 2);
-    Descriptor d (bbp, SHARE);
+    Descriptor d(bbp, SHARE);
     desc = d;
 }
 
@@ -94,7 +97,7 @@ void ts::LinkageDescriptor::serialize (Descriptor& desc) const
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::LinkageDescriptor::deserialize (const Descriptor& desc)
+void ts::LinkageDescriptor::deserialize(const Descriptor& desc)
 {
     _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() >= 7;
     private_data.clear();
@@ -108,4 +111,101 @@ void ts::LinkageDescriptor::deserialize (const Descriptor& desc)
         linkage_type = data[6];
         private_data.copy (data + 7, size - 7);
     }
+}
+
+
+//----------------------------------------------------------------------------
+// Static method to display a descriptor.
+//----------------------------------------------------------------------------
+
+void ts::LinkageDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+{
+    std::ostream& strm(display.out());
+    const std::string margin(indent, ' ');
+
+    if (size >= 7) {
+
+        // Fixed part
+        uint16_t tsid = GetUInt16(data);
+        uint16_t onid = GetUInt16(data + 2);
+        uint16_t servid = GetUInt16(data + 4);
+        uint8_t ltype = data[6];
+        data += 7; size -= 7;
+        strm << margin << "Transport stream id: " << tsid << Format(" (0x%04X)", int(tsid)) << std::endl
+             << margin << "Original network Id: " << onid << Format(" (0x%04X)", int(onid)) << std::endl
+             << margin << "Service id: " << servid << Format(" (0x%04X)", int(servid)) << std::endl
+             << margin << "Linkage type: " << Format("0x%02X", int(ltype))
+             << ", " << names::LinkageType(ltype) << std::endl;
+
+        // Variable part
+        if (ltype == 0x08 && size >= 1) {
+            // Mobile hand-over
+            uint8_t hand_over = *data >> 4;
+            uint8_t origin = *data & 0x01;
+            data += 1; size -= 1;
+            const char *name;
+            switch (hand_over) {
+                case 0x01: name = "identical service in neighbour country"; break;
+                case 0x02: name = "local variation of same service"; break;
+                case 0x03: name = "associated service"; break;
+                default:   name = "unknown"; break;
+            }
+            strm << margin << "Hand-over type: " << Format("0x%02X", int(hand_over))
+                 << ", " << name << ", Origin: " << (origin ? "SDT" : "NIT") << std::endl;
+            if ((hand_over == 0x01 || hand_over == 0x02 || hand_over == 0x03) && size >= 2) {
+                uint16_t nwid = GetUInt16(data);
+                data += 2; size -= 2;
+                strm << margin << "Network id: " << nwid << Format(" (0x%04X)", int(nwid)) << std::endl;
+            }
+            if (origin == 0x00 && size >= 2) {
+                uint16_t org_servid = GetUInt16(data);
+                data += 2; size -= 2;
+                strm << margin << "Original service id: " << org_servid << Format(" (0x%04X)", int(org_servid)) << std::endl;
+            }
+        }
+        else if (ltype == 0x09 && size >= 1) {
+            // System Software Update (ETSI TS 102 006)
+            uint8_t dlength = data[0];
+            data += 1; size -= 1;
+            if (dlength > size) {
+                dlength = uint8_t(size);
+            }
+            while (dlength >= 4) {
+                uint32_t oui = GetUInt32(data - 1) & 0x00FFFFFF; // 24 bits
+                uint8_t slength = data[3];
+                data += 4; size -= 4; dlength -= 4;
+                const uint8_t* sdata = data;
+                if (slength > dlength) {
+                    slength = dlength;
+                }
+                data += slength; size -= slength; dlength -= slength;
+                strm << margin << Format("OUI: 0x%06X (", int(oui)) << names::OUI(oui) << ")" << std::endl;
+                if (slength > 0) {
+                    strm << margin << "Selector data:" << std::endl
+                         << Hexa(sdata, slength, hexa::HEXA | hexa::ASCII, indent);
+                }
+            }
+        }
+        else if (ltype == 0x0A && size >= 1) {
+            // TS with System Software Update BAT or NIT (ETSI TS 102 006)
+            uint8_t ttype = data[0];
+            data += 1; size -= 1;
+            strm << margin << "SSU table type: ";
+            switch (ttype) {
+                case 0x01: strm << "NIT"; break;
+                case 0x02: strm << "BAT"; break;
+                default:   strm << Format("0x%02x", int(ttype)); break;
+            }
+            strm << std::endl;
+        }
+
+        // Remaining private data
+        if (size > 0) {
+            strm << margin << "Private data:" << std::endl
+                 << Hexa(data, size, hexa::HEXA | hexa::ASCII | hexa::OFFSET, indent);
+            data += size; size = 0;
+        }
+    }
+
+    display.displayExtraData(data, size, indent);
 }

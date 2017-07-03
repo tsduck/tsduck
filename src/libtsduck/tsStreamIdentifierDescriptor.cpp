@@ -32,6 +32,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsStreamIdentifierDescriptor.h"
+#include "tsFormat.h"
 TSDUCK_SOURCE;
 
 
@@ -87,4 +88,22 @@ void ts::StreamIdentifierDescriptor::deserialize (const Descriptor& desc)
     if (_is_valid) {
         component_tag = GetUInt8 (desc.payload());
     }
+}
+
+
+//----------------------------------------------------------------------------
+// Static method to display a descriptor.
+//----------------------------------------------------------------------------
+
+void ts::StreamIdentifierDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+{
+    std::ostream& strm(display.out());
+
+    if (size >= 1) {
+        uint8_t id = data[0];
+        data += 1; size -= 1;
+        strm << Format("%*sComponent tag: %d (0x%02X)", indent, "", int(id), int(id)) << std::endl;
+    }
+
+    display.displayExtraData(data, size, indent);
 }

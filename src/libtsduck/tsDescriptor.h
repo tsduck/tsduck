@@ -220,25 +220,6 @@ namespace ts {
             return !(*this == desc);
         }
 
-        //!
-        //! This static routine displays a list of descriptors from a memory area
-        //! @param [in,out] strm Output stream (text output).
-        //! @param [in] data Address of the descriptor list.
-        //! @param [in] size Size in bytes of the descriptor list.
-        //! @param [in] indent Indentation width.
-        //! @param [in] tid Table id of table containing the descriptors.
-        //! This is optional. Used by some descriptors the interpretation of which may
-        //! vary depending on the table that they are in.
-        //! @param [in] pds Private Data Specifier. Used to interpret private descriptors.
-        //! @return A reference to @a strm.
-        //!
-        static std::ostream& Display(std::ostream& strm,
-                                     const void* data,
-                                     size_t size,
-                                     int indent = 0,
-                                     TID tid = TID_NULL,
-                                     PDS pds = 0);
-
     private:
         Descriptor(const Descriptor&) = delete;
 
