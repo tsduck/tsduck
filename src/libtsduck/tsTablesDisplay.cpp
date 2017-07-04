@@ -56,6 +56,16 @@ ts::TablesDisplay::TablesDisplay(const TablesDisplayArgs& options, ReportInterfa
 
 
 //----------------------------------------------------------------------------
+// The actual CAS family to use.
+//----------------------------------------------------------------------------
+
+ts::CASFamily ts::TablesDisplay::casFamily(CASFamily cas) const
+{
+    return cas != CAS_OTHER ? cas : _opt.cas;
+}
+
+
+//----------------------------------------------------------------------------
 // Get the current output stream.
 //----------------------------------------------------------------------------
 
@@ -285,7 +295,7 @@ std::ostream& ts::TablesDisplay::displaySectionData(const Section& section, int 
         handler(*this, section, indent);
     }
     else {
-        displayUnkownSection(section, indent);
+        displayUnkownSectionData(section, indent);
     }
     return out();
 }
@@ -305,7 +315,7 @@ void ts::TablesDisplay::displayUnkownDescriptor(DID did, const uint8_t * payload
 // Display an unknown section
 //----------------------------------------------------------------------------
 
-void ts::TablesDisplay::displayUnkownSection(const ts::Section& section, int indent)
+void ts::TablesDisplay::displayUnkownSectionData(const ts::Section& section, int indent)
 {
     std::ostream& strm(out());
     const std::string margin(indent, ' ');

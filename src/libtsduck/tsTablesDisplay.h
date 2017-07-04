@@ -186,21 +186,30 @@ namespace ts {
         //! Get the current output stream.
         //! @return A reference to the output stream.
         //!
-        virtual std::ostream& out();
+        std::ostream& out();
+
+        //!
+        //! Get the current output report.
+        //! @return A reference to the current output report.
+        //!
+        ReportInterface& report()
+        {
+            return _report;
+        }
 
         //!
         //! Flush the text output.
         //!
         virtual void flush();
 
-    private:
+    protected:
         //!
         //! Display the content of an unknown section.
         //! The command-line formatting options are used to analyze the content.
         //! @param [in] section The section to display.
         //! @param [in] indent Indentation width.
         //!
-        void displayUnkownSection(const ts::Section& section, int indent);
+        void displayUnkownSectionData(const ts::Section& section, int indent);
 
         //!
         //! Display the content of an unknown descriptor.
@@ -218,10 +227,7 @@ namespace ts {
         //! @param [in] cas CAS family of the table. If different from CAS_OTHER, override the CAS family in TablesDisplayArgs.
         //! @return The actual CAS family to use.
         //!
-        CASFamily casFamily(CASFamily cas) const
-        {
-            return cas != CAS_OTHER ? cas : _opt.cas;
-        }
+        virtual CASFamily casFamily(CASFamily cas) const;
 
         //!
         //! Display a memory area containing a list of TLV records.
@@ -246,7 +252,7 @@ namespace ts {
                         int innerIndent,
                         const TLVSyntax& tlv);
 
-        // Private fields.
+    private:
         const TablesDisplayArgs& _opt;
         ReportInterface&         _report;
         std::ofstream            _outfile;

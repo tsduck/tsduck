@@ -121,8 +121,6 @@ void ts::TablesLoggerArgs::addHelp(Args& args) const
         "\n"
         "  --log\n"
         "      Short one-line log of each table instead of full table display.\n"
-        "      When --safeaccess is specified and the table is an EMM, log only the\n"
-        "      type and address of the EMM.\n"
         "\n"
         "  --log-size value\n"
         "      With option --log, specify how many bytes are displayed at the\n"

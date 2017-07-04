@@ -42,19 +42,19 @@ namespace ts {
     struct TSDUCKDLL PIDOperator
     {
         // Public members
-        PID      pid;    //!< ECM/EMM PID
-        uint32_t oper;   //!< Operator id
+        PID      pid;     //!< ECM/EMM PID
+        bool     is_emm;  //!< True for EMM PID, false for ECM PID.
+        uint16_t cas_id;  //!< CAS identifier.
+        uint32_t oper;    //!< Operator id
 
         //!
         //! Constructor.
         //! @param [in] pid_ PID value.
+        //! @param [in] is_emm_ True for EMM PID, false for ECM PID.
+        //! @param [in] cas_id_ CAS identifier.
         //! @param [in] oper_ CAS-specific operator id.
         //!
-        PIDOperator(PID pid_ = 0, uint32_t oper_ = 0) :
-            pid(pid_),
-            oper(oper_)
-        {
-        }
+        PIDOperator(PID pid_ = 0, bool is_emm_ = false, uint16_t cas_id_ = 0, uint32_t oper_ = 0);
 
         //!
         //! Comparison operator.
@@ -62,10 +62,7 @@ namespace ts {
         //! @param [in] po Other pid/operator instance to compare.
         //! @return True if this object logically preceeds @a po.
         //!
-        bool operator<(const PIDOperator& po) const
-        {
-            return oper == po.oper ? pid < po.pid : oper < po.oper;
-        }
+        bool operator<(const PIDOperator& po) const;
     };
 
     //!
@@ -102,6 +99,13 @@ namespace ts {
         //! @return The PID or 0 if not found.
         //!
         PID pidForOper(uint32_t oper) const;
+
+        //!
+        //! Add all known operator info from a list of descriptors from a CAT or PMT.
+        //! @param [in] dlist Descriptor list.
+        //! @param [in] is_cat True is @a dlist is taken from a CAT, false for a PMT.
+        //!
+        void addAllOperators(const DescriptorList& dlist, bool is_cat);
 
         //!
         //! Add MediaGuard info from a list of descriptors from a PMT.

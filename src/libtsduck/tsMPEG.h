@@ -1039,6 +1039,22 @@ namespace ts {
     };
 
     //---------------------------------------------------------------------
+    //! DVB-assigned CA System Identifier values
+    //---------------------------------------------------------------------
+
+    enum : uint16_t {
+        CASID_MEDIAGUARD_MIN  = 0x0100,  //!< Minimum CAS Id value for MediaGuard.
+        CASID_MEDIAGUARD_MAX  = 0x01FF,  //!< Maximum CAS Id value for MediaGuard.
+        CASID_VIACCESS_MIN    = 0x0500,  //!< Minimum CAS Id value for Viaccess.
+        CASID_VIACCESS_MAX    = 0x05FF,  //!< Maximum CAS Id value for Viaccess.
+        CASID_NAGRA_MIN       = 0x1800,  //!< Minimum CAS Id value for Nagravision.
+        CASID_NAGRA_MAX       = 0x18FF,  //!< Maximum CAS Id value for Nagravision.
+        CASID_THALESCRYPT_MIN = 0x4A80,  //!< Minimum CAS Id value for ThalesCrypt.
+        CASID_THALESCRYPT_MAX = 0x4A8F,  //!< Maximum CAS Id value for ThalesCrypt.
+        CASID_SAFEACCESS      = 0x4ADC,  //!< CAS Id value for SafeAccess.
+    };
+
+    //---------------------------------------------------------------------
     //! DVB-assigned Network Identifier values
     //---------------------------------------------------------------------
 
