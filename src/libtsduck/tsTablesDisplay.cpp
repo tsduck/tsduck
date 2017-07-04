@@ -305,7 +305,7 @@ std::ostream& ts::TablesDisplay::displaySectionData(const Section& section, int 
 // Display the payload of a section on the output stream as a one-line "log" message.
 //----------------------------------------------------------------------------
 
-std::ostream& ts::TablesDisplay::logSectionData(const Section& section, const std::string& header, size_t max_bytes, int indent, CASFamily cas)
+std::ostream& ts::TablesDisplay::logSectionData(const Section& section, const std::string& header, size_t max_bytes, CASFamily cas)
 {
     std::ostream& strm(out());
 
