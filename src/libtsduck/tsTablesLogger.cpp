@@ -333,30 +333,32 @@ void ts::TablesLogger::saveSection(const Section& sect)
 
 void ts::TablesLogger::logSection(const Section& sect)
 {
-    std::ostream& strm(_display.out());
+    std::string header;
 
-    // Display time stamp if required
+    // Display time stamp if required.
     if (_opt.time_stamp) {
-        strm << Time::CurrentLocalTime() << ": ";
+        header += std::string(Time::CurrentLocalTime());
+        header += ": ";
     }
 
-    // Display packet index if required
+    // Display packet index if required.
     if (_opt.packet_index) {
-        strm << "Packet " << Decimal(sect.getFirstTSPacketIndex())
-             << " to " << Decimal(sect.getLastTSPacketIndex())
-             << ", ";
+        header += "Packet ";
+        header += Decimal(sect.getFirstTSPacketIndex());
+        header += " to ";
+        header += Decimal(sect.getLastTSPacketIndex());
+        header += ", ";
     }
 
-    size_t size = _opt.log_size <= sect.payloadSize() ? _opt.log_size : sect.payloadSize();
-    strm << Format("PID 0x%04X, TID 0x%02X", int(sect.sourcePID()), int(sect.tableId()));
+    // Table identification.
+    header += Format("PID 0x%04X, TID 0x%02X", int(sect.sourcePID()), int(sect.tableId()));
     if (sect.isLongSection()) {
-        strm << Format(", TIDext 0x%04X, V%d", int(sect.tableIdExtension()), int(sect.version()));
+        header += Format(", TIDext 0x%04X, V%d", int(sect.tableIdExtension()), int(sect.version()));
     }
-    strm << ": " << Hexa(sect.payload(), size, hexa::SINGLE_LINE);
-    if (sect.payloadSize() > size) {
-        strm << " ...";
-    }
-    strm << std::endl;
+    header += ": ";
+
+    // Output the line through the display object.
+    _display.logSectionData(sect, header, _opt.log_size, 0, _cas_mapper.casFamily(sect.sourcePID()));
 }
 
 

@@ -314,9 +314,9 @@ namespace ts {
             uint32_t     bitrate;         //!< Average PID bitrate in b/s.
             std::string  language;        //!< For audio or subtitles (3 chars).
             uint16_t     cas_id;          //!< For EMM and ECM streams.
-            uint32_t     cas_operator;    //!< For EMM and ECM streams, when applicable.
-            ETIDContextMap sections;      //!< List of sections in this PID.
-            std::set<uint32_t> ssu_oui;   //!< Set of applicable OUI's for SSU.
+            std::set<uint32_t> cas_operators; //!< Operators for EMM and ECM streams, when applicable.
+            ETIDContextMap     sections;      //!< List of sections in this PID.
+            std::set<uint32_t> ssu_oui;       //!< Set of applicable OUI's for SSU.
 
             // Public members - Analysis data:
             uint8_t        cur_continuity;  //!< Current continuity count.
