@@ -96,14 +96,12 @@ namespace ts {
         //! @param [in] section The section to display.
         //! @param [in] header Header string to display as prefix on the line.
         //! @param [in] max_bytes Maximum number of bytes to log from the section. 0 means unlimited.
-        //! @param [in] indent Indentation width.
         //! @param [in] cas CAS family of the table. If different from CAS_OTHER, override the CAS family in TablesDisplayArgs.
         //! @return A reference to the output stream.
         //!
         virtual std::ostream& logSectionData(const Section& section,
                                              const std::string& header = std::string(),
                                              size_t max_bytes = 0,
-                                             int indent = 0,
                                              CASFamily cas = CAS_OTHER);
 
         //!
