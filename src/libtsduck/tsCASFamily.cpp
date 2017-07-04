@@ -32,6 +32,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsCASFamily.h"
+#include "tsMPEG.h"
 TSDUCK_SOURCE;
 
 
@@ -42,19 +43,19 @@ TSDUCK_SOURCE;
 
 ts::CASFamily ts::CASFamilyOf (uint16_t casid)
 {
-    if (casid >= 0x0100 && casid <= 0x01FF) {
+    if (casid >= CASID_MEDIAGUARD_MIN && casid <= CASID_MEDIAGUARD_MAX) {
         return CAS_MEDIAGUARD;
     }
-    else if (casid >= 0x0500 && casid <= 0x05FF) {
+    else if (casid >= CASID_VIACCESS_MIN && casid <= CASID_VIACCESS_MAX) {
         return CAS_VIACCESS;
     }
-    else if (casid >= 0x1800 && casid <= 0x18FF) {
+    else if (casid >= CASID_NAGRA_MIN && casid <= CASID_NAGRA_MAX) {
         return CAS_NAGRA;
     }
-    else if (casid >= 0x4A80 && casid <= 0x4A8F) {
+    else if (casid >= CASID_THALESCRYPT_MIN && casid <= CASID_THALESCRYPT_MAX) {
         return CAS_THALESCRYPT;
     }
-    else if (casid == 0x4ADC) {
+    else if (casid == CASID_SAFEACCESS) {
         return CAS_SAFEACCESS;
     }
     else {
