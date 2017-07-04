@@ -358,7 +358,7 @@ void ts::TablesLogger::logSection(const Section& sect)
     header += ": ";
 
     // Output the line through the display object.
-    _display.logSectionData(sect, header, _opt.log_size, 0, _cas_mapper.casFamily(sect.sourcePID()));
+    _display.logSectionData(sect, header, _opt.log_size, _cas_mapper.casFamily(sect.sourcePID()));
 }
 
 
