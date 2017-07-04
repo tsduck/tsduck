@@ -44,36 +44,54 @@ TSDUCK_SOURCE;
 
 std::string ts::names::TID(uint8_t tid, ts::CASFamily cas)
 {
+    std::string casName;
+    if (cas != CAS_OTHER) {
+        casName = names::CASFamily(cas) + " ";
+    }
+
     switch (cas) {
         case CAS_MEDIAGUARD: {
             switch (tid) {
-                case TID_MG_EMM_U: return "MG/EMM_U";
-                case TID_MG_EMM_A: return "MG/EMM_A";
-                case TID_MG_EMM_G: return "MG/EMM_G";
-                case TID_MG_EMM_I: return "MG/EMM_I";
-                case TID_MG_EMM_C: return "MG/EMM_C";
-                case TID_MG_EMM_CG: return "MG/EMM_GC";
+                case TID_MG_EMM_U:  return casName + "EMM-U";
+                case TID_MG_EMM_A:  return casName + "EMM-A";
+                case TID_MG_EMM_G:  return casName + "EMM-G";
+                case TID_MG_EMM_I:  return casName + "EMM-I";
+                case TID_MG_EMM_C:  return casName + "EMM-C";
+                case TID_MG_EMM_CG: return casName + "EMM-GC";
+                default: break;
+            }
+            break;
+        }
+        case CAS_VIACCESS:
+        {
+            switch (tid) {
+                case TID_VIA_EMM_U:    return casName + "EMM-U";
+                case TID_VIA_EMM_GA_E: return casName + "EMM-GA (even)";
+                case TID_VIA_EMM_GA_O: return casName + "EMM-GA (odd)";
+                case TID_VIA_EMM_GH_E: return casName + "EMM-GH (even)";
+                case TID_VIA_EMM_GH_O: return casName + "EMM-GH (odd)";
+                case TID_VIA_EMM_S:    return casName + "EMM-S";
                 default: break;
             }
             break;
         }
         case CAS_SAFEACCESS: {
             switch (tid) {
-                case TID_SA_CECM_82: return "SA/CECM (0x82)";
-                case TID_SA_CECM_83: return "SA/CECM (0x83)";
-                case TID_SA_EMM_STB_U: return "SA/EMM_STB_U";
-                case TID_SA_EMM_STB_G: return "SA/EMM_STB_G (all)";
-                case TID_SA_EMM_A: return "SA/EMM_A";
-                case TID_SA_EMM_U: return "SA/EMM_U";
-                case TID_SA_EMM_S: return "SA/EMM_S";
-                case TID_SA_EMM_CAM_G: return "SA/EMM_CAM_G";
-                case TID_SA_RECM_8A: return "SA/RECM (0x8A)";
-                case TID_SA_RECM_8B: return "SA/RECM (0x8B)";
-                case TID_SA_EMM_T: return "SA/EMM_T";
-                case TID_LW_DMT: return "LW/DMT";
-                case TID_LW_BDT: return "LW/BDT";
-                case TID_LW_VIT: return "LW/VIT";
-                case TID_LW_VCT: return "LW/VCT";
+                case TID_SA_CECM_82:   return casName + "CECM (even)";
+                case TID_SA_CECM_83:   return casName + "CECM (odd)";
+                case TID_SA_EMM_STB_U: return casName + "EMM-STB-U";
+                case TID_SA_EMM_STB_G: return casName + "EMM-STB-G (all)";
+                case TID_SA_EMM_A:     return casName + "EMM-A";
+                case TID_SA_EMM_U:     return casName + "EMM-U";
+                case TID_SA_EMM_S:     return casName + "EMM-S";
+                case TID_SA_EMM_CAM_G: return casName + "EMM-CAM-G";
+                case TID_SA_RECM_8A:   return casName + "RECM (even)";
+                case TID_SA_RECM_8B:   return casName + "RECM (odd)";
+                case TID_SA_EMM_T:     return casName + "EMM-T";
+                case TID_LW_DMT:       return "LW/DMT";
+                case TID_LW_BDT:       return "LW/BDT";
+                case TID_LW_VIT:       return "LW/VIT";
+                case TID_LW_VCT:       return "LW/VCT";
                 default: break;
             }
             break;
@@ -81,11 +99,6 @@ std::string ts::names::TID(uint8_t tid, ts::CASFamily cas)
         default: {
             break;
         }
-    }
-
-    std::string casName;
-    if (cas != CAS_OTHER) {
-        casName = names::CASFamily(cas) + " ";
     }
 
     switch (tid) {
@@ -122,12 +135,8 @@ std::string ts::names::TID(uint8_t tid, ts::CASFamily cas)
         case 0x78: return "MPE-FEC";
         case 0x7E: return "DIT";
         case 0x7F: return "SIT";
-        case 0x80: return casName + "ECM (0x80)";
-        case 0x81: return casName + "ECM (0x81)";
-        case TID_LW_DMT: return "LW/DMT"; // private, this default used for convenience
-        case TID_LW_BDT: return "LW/BDT"; // private, this default used for convenience
-        case TID_LW_VIT: return "LW/VIT"; // private, this default used for convenience
-        case TID_LW_VCT: return "LW/VCT"; // private, this default used for convenience
+        case 0x80: return casName + "ECM (even)";
+        case 0x81: return casName + "ECM (odd)";
         case 0xFF: return "Forbidden TID 0xFF";
         default: break;
     }

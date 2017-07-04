@@ -207,7 +207,7 @@ ts::TSAnalyzer::PIDContext::PIDContext(PID pid_, const std::string& description_
     bitrate(0),
     language(""),
     cas_id(0),
-    cas_operator(0),
+    cas_operators(),
     sections(),
     ssu_oui(),
     cur_continuity(0),
@@ -920,9 +920,9 @@ void ts::TSAnalyzer::analyzeCADescriptor(const Descriptor& desc, ServiceContext*
     if (size < 4) {
         return;
     }
-    uint16_t ca_sysid(GetUInt16(data));
-    CASFamily cas(CASFamilyOf(ca_sysid));
-    PID ca_pid(GetUInt16(data + 2) & 0x1FFF);
+    const uint16_t ca_sysid = GetUInt16(data);
+    const CASFamily cas = CASFamilyOf(ca_sysid);
+    const PID ca_pid = GetUInt16(data + 2) & 0x1FFF;
     data += 4; size -= 4;
 
     // Process CA descriptor private data
@@ -938,7 +938,7 @@ void ts::TSAnalyzer::analyzeCADescriptor(const Descriptor& desc, ServiceContext*
             eps->addService(svp->service_id);
             eps->carry_ecm = true;
             eps->cas_id = ca_sysid;
-            eps->cas_operator = opi;
+            eps->cas_operators.insert(opi);
             eps->carry_section = true;
             _demux.addPID(ca_pid);
             eps->description = Format("MediaGuard ECM for OPI %d (0x%04X)", int(opi), int(opi));
@@ -946,7 +946,7 @@ void ts::TSAnalyzer::analyzeCADescriptor(const Descriptor& desc, ServiceContext*
         }
     }
 
-    else if (cas == CAS_MEDIAGUARD && svp == NULL && size == 4) {
+    else if (cas == CAS_MEDIAGUARD && svp == 0 && size == 4) {
 
         // MediaGuard CA descriptor in the CAT, new format
         uint16_t etypes(GetUInt16(data));
@@ -955,13 +955,13 @@ void ts::TSAnalyzer::analyzeCADescriptor(const Descriptor& desc, ServiceContext*
         eps->referenced = true;
         eps->carry_emm = true;
         eps->cas_id = ca_sysid;
-        eps->cas_operator = opi;
+        eps->cas_operators.insert(opi);
         eps->carry_section = true;
         _demux.addPID(ca_pid);
         eps->description = Format("MediaGuard EMM for OPI %d (0x%04X), EMM types: 0x%04X", int(opi), int(opi), int(etypes));
     }
 
-    else if (cas == CAS_MEDIAGUARD && svp == NULL && size >= 1) {
+    else if (cas == CAS_MEDIAGUARD && svp == 0 && size >= 1) {
 
         // MediaGuard CA descriptor in the CAT, old format
         uint8_t nb_opi = data[0];
@@ -981,7 +981,7 @@ void ts::TSAnalyzer::analyzeCADescriptor(const Descriptor& desc, ServiceContext*
             eps1->referenced = true;
             eps1->carry_emm = true;
             eps1->cas_id = ca_sysid;
-            eps1->cas_operator = opi;
+            eps1->cas_operators.insert(opi);
             eps1->carry_section = true;
             _demux.addPID(ca_pid);
             eps1->description = Format("MediaGuard Group EMM for OPI %d (0x%04X)", int(opi), int(opi));
@@ -989,10 +989,9 @@ void ts::TSAnalyzer::analyzeCADescriptor(const Descriptor& desc, ServiceContext*
         }
     }
 
-    else if (cas == CAS_SAFEACCESS && svp == NULL && size >= 1) {
+    else if (cas == CAS_SAFEACCESS && svp == 0 && size >= 1) {
 
         // SafeAccess CA descriptor in the CAT
-        bool first = true;
         data++; size --; // skip applicable EMM bitmask
         PIDContextPtr eps(getPID(ca_pid));
         eps->referenced = true;
@@ -1005,14 +1004,55 @@ void ts::TSAnalyzer::analyzeCADescriptor(const Descriptor& desc, ServiceContext*
         while (size >= 2) {
             uint16_t ppid = GetUInt16(data);
             data += 2; size -= 2;
-            if (first) {
-                first = false;
-                eps->cas_operator = ppid;
+            if (eps->cas_operators.empty()) {
                 eps->description += Format(" for PPID %d (0x%04X)", int(ppid), int(ppid));
             }
             else {
                 eps->description += Format(", %d (0x%04X)", int(ppid), int(ppid));
             }
+            eps->cas_operators.insert(ppid);
+        }
+    }
+
+    else if (cas == CAS_VIACCESS) {
+
+        // Viaccess CA descriptor in the CAT or PMT
+        PIDContextPtr eps(getPID(ca_pid));
+        eps->referenced = true;
+        eps->cas_id = ca_sysid;
+        eps->carry_section = true;
+        _demux.addPID(ca_pid);
+
+        if (svp == 0) {
+            // No service, this is an EMM PID
+            eps->carry_emm = true;
+            eps->description = "Viaccess EMM";
+        }
+        else {
+            // Found an ECM PID for the service
+            eps->carry_ecm = true;
+            eps->addService(svp->service_id);
+            eps->description = "Viaccess ECM";
+        }
+
+        while (size >= 2) {
+            const uint8_t tag = data[0];
+            size_t len = data[1];
+            data += 2; size -= 2;
+            if (len > size) {
+                len = size;
+            }
+            if (tag == 0x14 && len == 3) {
+                const uint32_t soid = GetUInt24(data);
+                if (eps->cas_operators.empty()) {
+                    eps->description += Format(" for SOID %d (0x%06X)", int(soid), int(soid));
+                }
+                else {
+                    eps->description += Format(", %d (0x%06X)", int(soid), int(soid));
+                }
+                eps->cas_operators.insert(soid);
+            }
+            data += len; size -= len;
         }
     }
 
@@ -1020,15 +1060,14 @@ void ts::TSAnalyzer::analyzeCADescriptor(const Descriptor& desc, ServiceContext*
 
         // Other CA descriptor, general format
         PIDContextPtr eps(getPID(ca_pid));
+        eps->referenced = true;
         eps->cas_id = ca_sysid;
-        eps->cas_operator = 0; // no known operator concept for general CAS
         eps->carry_section = true;
         _demux.addPID(ca_pid);
 
         if (svp == 0) {
             // No service, this is an EMM PID
             eps->carry_emm = true;
-            eps->referenced = true;
             eps->description = names::CASId(ca_sysid) + " EMM";
         }
         else {

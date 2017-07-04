@@ -154,11 +154,20 @@ Section "Install"
     File "${BinDir}\ts*.exe"
     File "${BinDir}\ts*.dll"
 
+    ; Documentation
+    CreateDirectory "$INSTDIR\doc"
+    SetOutPath "$INSTDIR\doc"
+    File "${RootDir}\doc\tsduck.pdf"
+
     ; Setup tools
     CreateDirectory "$INSTDIR\setup"
     SetOutPath "$INSTDIR\setup"
     File "${BinDir}\setpath.exe"
     File "${ProjectDir}\redist\${MsvcRedistExe}"
+
+    ; Create shortcuts in start menu (documentation only).
+    CreateDirectory "$SMPROGRAMS\TSDuck"
+    CreateShortCut "$SMPROGRAMS\TSDuck\TSDuck User's Guide.lnk" "$INSTDIR\doc\tsduck.pdf"
 
     ; Store installation folder in registry.
     WriteRegStr HKLM "${ProductKey}" "InstallDir" $INSTDIR
@@ -197,11 +206,15 @@ Section "Uninstall"
 
     ; Delete product files.
     RMDir /r "$0\bin"
+    RMDir /r "$0\doc"
     Delete "$0\setup\setpath.exe"
     Delete "$0\setup\${MsvcRedistExe}"
     RMDir "$0\setup"
     Delete "$0\TSDuckUninstall.exe"
     RMDir "$0"
+
+    ; Delete start menu entries  
+    RMDir /r "$SMPROGRAMS\TSDuck"
 
     ; Delete registry entries
     DeleteRegKey HKCU "${ProductKey}"

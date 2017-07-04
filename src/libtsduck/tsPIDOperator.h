@@ -124,5 +124,12 @@ namespace ts {
         //! @param [in] dlist Descriptor list.
         //!
         void addSafeAccessCAT(const DescriptorList& dlist);
+
+        //!
+        //! Add Viaccess info from a list of descriptors from a CAT or PMT.
+        //! @param [in] dlist Descriptor list.
+        //! @param [in] is_cat True is @a dlist is taken from a CAT, false for a PMT.
+        //!
+        void addViaccess(const DescriptorList& dlist, bool is_cat);
     };
 }

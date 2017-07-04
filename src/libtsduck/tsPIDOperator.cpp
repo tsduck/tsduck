@@ -98,6 +98,7 @@ void ts::PIDOperatorSet::addAllOperators(const DescriptorList& dlist, bool is_ca
     else {
         addMediaGuardPMT(dlist);
     }
+    addViaccess(dlist, is_cat);
 }
 
 
@@ -120,7 +121,7 @@ void ts::PIDOperatorSet::addMediaGuardPMT(const DescriptorList& dlist)
         }
 
         // Get CA system id
-        uint16_t sysid = GetUInt16(desc);
+        const uint16_t sysid = GetUInt16(desc);
         desc += 2; size -= 2;
 
         // Ignore descriptor if not MediaGuard
@@ -157,7 +158,7 @@ void ts::PIDOperatorSet::addMediaGuardCAT(const DescriptorList& dlist)
         }
 
         // Get CA system id and first EMM PID
-        uint16_t sysid = GetUInt16(desc);
+        const uint16_t sysid = GetUInt16(desc);
         PID pid = GetUInt16(desc + 2) & 0x1FFF;
         uint16_t oper;
         desc += 4; size -= 4;
@@ -224,6 +225,52 @@ void ts::PIDOperatorSet::addSafeAccessCAT(const DescriptorList& dlist)
             uint16_t oper = GetUInt16(desc);
             insert(PIDOperator(pid, true, sysid, oper));
             desc += 2; size -= 2;
+        }
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Add Viaccess info from a list of descriptors from a CAT or PMT.
+//----------------------------------------------------------------------------
+
+void ts::PIDOperatorSet::addViaccess(const DescriptorList& dlist, bool is_cat)
+{
+    // Loop on all CA descriptors
+    for (size_t index = dlist.search(DID_CA); index < dlist.count(); index = dlist.search(DID_CA, index + 1)) {
+
+        // Descriptor payload
+        const uint8_t* desc = dlist[index]->payload();
+        size_t size = dlist[index]->payloadSize();
+
+        // Ignore descriptor if too short
+        if (size < 4) {
+            continue;
+        }
+
+        // Get CA system id and EMM PID
+        const uint16_t sysid = GetUInt16(desc);
+        const PID pid = GetUInt16(desc + 2) & 0x1FFF;
+        desc += 4; size -= 4;
+
+        // Ignore descriptor if not Viaccess.
+        if (CASFamilyOf(sysid) != CAS_VIACCESS) {
+            continue;
+        }
+
+        // Analyze all TLV in the descriptor, collecting SOID parameters.
+        while (size >= 2) {
+            const uint8_t tag = desc[0];
+            size_t len = desc[1];
+            desc += 2; size -= 2;
+            if (len > size) {
+                len = size;
+            }
+            if (tag == 0x14 && len == 3) {
+                const uint32_t oper = GetUInt24(desc);
+                insert(PIDOperator(pid, is_cat, sysid, oper));
+            }
+            desc += len; size -= len;
         }
     }
 }

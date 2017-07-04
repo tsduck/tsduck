@@ -1056,8 +1056,8 @@ std::ostream& ts::TSAnalyzerReport::reportNormalized (std::ostream& strm, const 
         if (pc.cas_id != 0) {
             strm << "cas=" << pc.cas_id << ":";
         }
-        if (pc.cas_operator != 0) {
-            strm << "operator=" << pc.cas_operator << ":";
+        for (std::set<uint32_t>::const_iterator it2 = pc.cas_operators.begin(); it2 != pc.cas_operators.end(); ++it2) {
+            strm << "operator=" << (*it2) << ":";
         }
         strm << "access=" << (pc.scrambled ? "scrambled" : "clear") << ":";
         if (pc.crypto_period != 0 && _ts_bitrate != 0) {

@@ -302,6 +302,31 @@ std::ostream& ts::TablesDisplay::displaySectionData(const Section& section, int 
 
 
 //----------------------------------------------------------------------------
+// Display the payload of a section on the output stream as a one-line "log" message.
+//----------------------------------------------------------------------------
+
+std::ostream& ts::TablesDisplay::logSectionData(const Section& section, const std::string& header, size_t max_bytes, int indent, CASFamily cas)
+{
+    std::ostream& strm(out());
+
+    // Number of bytes to log.
+    size_t log_size = section.payloadSize();
+    if (max_bytes > 0 && max_bytes < log_size) {
+        log_size = max_bytes;
+    }
+
+    // Output exactly one line.
+    strm << header << Hexa(section.payload(), log_size, hexa::SINGLE_LINE);
+    if (section.payloadSize() > log_size) {
+        strm << " ...";
+    }
+    strm << std::endl;
+
+    return strm;
+}
+
+
+//----------------------------------------------------------------------------
 // Display the content of an unknown descriptor.
 //----------------------------------------------------------------------------
 
