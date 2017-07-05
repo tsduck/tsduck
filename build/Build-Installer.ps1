@@ -89,6 +89,10 @@ $RootDir = (Split-Path -Parent $PSScriptRoot)
 $SrcDir = (Join-Path $RootDir "src")
 $InstallerDir = (Join-Path $RootDir "installers")
 
+# Get location of Visual Studio and project files.
+$VS = Search-VisualStudio
+$MsvcDir = $VS.MsvcDir
+
 # Apply defaults.
 if (-not $Win32 -and -not $Win64) {
     $Win32 = $true

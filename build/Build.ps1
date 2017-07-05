@@ -79,30 +79,34 @@ if (-not $Win32 -and -not $Win64) {
     $Win64 = $true
 }
 
+# Get location of Visual Studio and project files.
+$VS = Search-VisualStudio
+$SolutionFileName = "tsduck.sln"
+
 # We need to work in the directory the project files.
-Set-Location $MsvcDir
+Set-Location $VS.MsvcDir
 
 # Rebuild TSDuck.
 if ($Release -and $Win64) {
-    & $MSBuild tsduck.sln /nologo /maxcpucount /property:Configuration=Release /property:Platform=x64
+    & $VS.MSBuild $SolutionFileName /nologo /maxcpucount /property:Configuration=Release /property:Platform=x64
     if ($LastExitCode -ne 0) {
         Exit-Script -NoPause:$NoPause "Error building 64-bit Release"
     }
 }
 if ($Release -and $Win32) {
-    & $MSBuild tsduck.sln /nologo /maxcpucount /property:Configuration=Release /property:Platform=Win32
+    & $VS.MSBuild $SolutionFileName /nologo /maxcpucount /property:Configuration=Release /property:Platform=Win32
     if ($LastExitCode -ne 0) {
         Exit-Script -NoPause:$NoPause "Error building 32-bit Release"
     }
 }
 if ($Debug -and $Win64) {
-    & $MSBuild tsduck.sln /nologo /maxcpucount /property:Configuration=Debug /property:Platform=x64
+    & $VS.MSBuild $SolutionFileName /nologo /maxcpucount /property:Configuration=Debug /property:Platform=x64
     if ($LastExitCode -ne 0) {
         Exit-Script -NoPause:$NoPause "Error building 64-bit Debug"
     }
 }
 if ($Debug -and $Win32) {
-    & $MSBuild tsduck.sln /nologo /maxcpucount /property:Configuration=Release /property:Platform=Win32
+    & $VS.MSBuild $SolutionFileName /nologo /maxcpucount /property:Configuration=Release /property:Platform=Win32
     if ($LastExitCode -ne 0) {
         Exit-Script -NoPause:$NoPause "Error building 32-bit Debug"
     }
