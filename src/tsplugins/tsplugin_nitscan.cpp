@@ -50,32 +50,34 @@ namespace ts {
     {
     public:
         // Implementation of plugin API
-        NITScanPlugin (TSP*);
+        NITScanPlugin(TSP*);
         virtual bool start();
         virtual bool stop();
         virtual BitRate getBitrate() {return 0;}
-        virtual Status processPacket (TSPacket&, bool&, bool&);
+        virtual Status processPacket(TSPacket&, bool&, bool&);
 
     private:
-        std::string   _output_name;    // Output file name
-        std::ofstream _output_stream;  // Output file stream
-        std::ostream* _output;         // Actual output stream
-        std::string   _comment_prefix; // Prefix for comment lines
-        bool          _use_comment;    // Add comment line
-        bool          _terminate;      // Terminate after one NIT
-        bool          _dvb_options;    // Output format: dvb plugin options
-        bool          _no_nit;         // Error, no NIT found
-        bool          _all_nits;       // Also include all "NIT other"
-        PID           _nit_pid;        // PID for the NIT (default: read PAT)
-        size_t        _nit_count;      // Number of analyzed NIT's
-        SectionDemux  _demux;          // Section demux
+        std::string   _output_name;     // Output file name
+        std::ofstream _output_stream;   // Output file stream
+        std::ostream* _output;          // Actual output stream
+        std::string   _comment_prefix;  // Prefix for comment lines
+        std::string   _variable_prefix; // Prefix for environment variable names
+        bool          _use_comment;     // Add comment line
+        bool          _use_variable;    // Environment variable format
+        bool          _terminate;       // Terminate after one NIT
+        bool          _dvb_options;     // Output format: dvb plugin options
+        bool          _no_nit;          // Error, no NIT found
+        bool          _all_nits;        // Also include all "NIT other"
+        PID           _nit_pid;         // PID for the NIT (default: read PAT)
+        size_t        _nit_count;       // Number of analyzed NIT's
+        SectionDemux  _demux;           // Section demux
 
         // Invoked by the demux when a complete table is available.
-        virtual void handleTable (SectionDemux&, const BinaryTable&);
+        virtual void handleTable(SectionDemux&, const BinaryTable&);
 
         // Process specific tables
-        void processPAT (const PAT&);
-        void processNIT (const NIT&);
+        void processPAT(const PAT&);
+        void processNIT(const NIT&);
 
         // Inaccessible operations
         NITScanPlugin() = delete;
@@ -92,13 +94,15 @@ TSPLUGIN_DECLARE_PROCESSOR(ts::NITScanPlugin)
 // Constructor
 //----------------------------------------------------------------------------
 
-ts::NITScanPlugin::NITScanPlugin (TSP* tsp_) :
+ts::NITScanPlugin::NITScanPlugin(TSP* tsp_) :
     ProcessorPlugin(tsp_, "Analyze the NIT and output a list of tuning information.", "[options]"),
     _output_name(),
     _output_stream(),
     _output(0),
     _comment_prefix(),
+    _variable_prefix(),
     _use_comment(false),
+    _use_variable(false),
     _terminate(false),
     _dvb_options(false),
     _no_nit(false),
@@ -107,55 +111,63 @@ ts::NITScanPlugin::NITScanPlugin (TSP* tsp_) :
     _nit_count(0),
     _demux(this)
 {
-    option ("all-nits",    'a');
-    option ("comment",     'c', STRING, 0, 1, 0, 0, true);
-    option ("dvb-options", 'd');
-    option ("output-file", 'o', STRING);
-    option ("pid",         'p', PIDVAL);
-    option ("terminate",   't');
+    option("all-nits",    'a');
+    option("comment",     'c', STRING, 0, 1, 0, 0, true);
+    option("dvb-options", 'd');
+    option("output-file", 'o', STRING);
+    option("pid",         'p', PIDVAL);
+    option("terminate",   't');
+    option("variable",    'v', STRING, 0, 1, 0, 0, true);
 
-    setHelp ("Options:\n"
-             "\n"
-             "  -a\n"
-             "  --all-nits\n"
-             "      Analyze all NIT's (NIT actual and NIT other). By default, only the\n"
-             "      NIT actual is analyzed.\n"
-             "\n"
-             "  -c[prefix]\n"
-             "  --comment[=prefix]\n"
-             "      Add a comment line before each tuning information. The optional prefix\n"
-             "      designates the comment prefix. If the option --comment is present but the\n"
-             "      prefix is omitted, the default prefix is \"# \".\n"
-             "\n"
-             "  -d\n"
-             "  --dvb-options\n"
-             "      The characteristics of each transponder are formatted as a list of\n"
-             "      command-line options for the tsp plugin \"dvb\" such as --frequency,\n"
-             "      --symbol-rate, etc. By default, the tuning information are formatted\n"
-             "      as Linux DVB \"zap\" configuration files as used by the standard\n"
-             "      utilities \"szap\", \"czap\" and \"tzap\".\n"
-             "\n"
-             "  --help\n"
-             "      Display this help text.\n"
-             "\n"
-             "  -o filename\n"
-             "  --output-file filename\n"
-             "      Specify the output text file for the analysis result.\n"
-             "      By default, use the standard output.\n"
-             "\n"
-             "  -p value\n"
-             "  --pid value\n"
-             "      Specify the PID on which the NIT is expected. By default, the PAT\n"
-             "      is analyzed to get the PID of the NIT. DVB-compliant networks should\n"
-             "      use PID 16 (0x0010) for the NIT and signal it in the PAT.\n"
-             "\n"
-             "  -t\n"
-             "  --terminate\n"
-             "      Stop the packet transmission after the first NIT is analyzed.\n"
-             "      Should be specified when tsp is used only to scan the NIT.\n"
-             "\n"
-             "  --version\n"
-             "      Display the version number.\n");
+    setHelp("Options:\n"
+            "\n"
+            "  -a\n"
+            "  --all-nits\n"
+            "      Analyze all NIT's (NIT actual and NIT other). By default, only the\n"
+            "      NIT actual is analyzed.\n"
+            "\n"
+            "  -c[prefix]\n"
+            "  --comment[=prefix]\n"
+            "      Add a comment line before each tuning information. The optional prefix\n"
+            "      designates the comment prefix. If the option --comment is present but the\n"
+            "      prefix is omitted, the default prefix is \"# \".\n"
+            "\n"
+            "  -d\n"
+            "  --dvb-options\n"
+            "      The characteristics of each transponder are formatted as a list of\n"
+            "      command-line options for the tsp plugin \"dvb\" such as --frequency,\n"
+            "      --symbol-rate, etc. By default, the tuning information are formatted\n"
+            "      as Linux DVB \"zap\" configuration files as used by the standard\n"
+            "      utilities \"szap\", \"czap\" and \"tzap\".\n"
+            "\n"
+            "  --help\n"
+            "      Display this help text.\n"
+            "\n"
+            "  -o filename\n"
+            "  --output-file filename\n"
+            "      Specify the output text file for the analysis result.\n"
+            "      By default, use the standard output.\n"
+            "\n"
+            "  -p value\n"
+            "  --pid value\n"
+            "      Specify the PID on which the NIT is expected. By default, the PAT\n"
+            "      is analyzed to get the PID of the NIT. DVB-compliant networks should\n"
+            "      use PID 16 (0x0010) for the NIT and signal it in the PAT.\n"
+            "\n"
+            "  -t\n"
+            "  --terminate\n"
+            "      Stop the packet transmission after the first NIT is analyzed.\n"
+            "      Should be specified when tsp is used only to scan the NIT.\n"
+            "\n"
+            "  -v[prefix]\n"
+            "  --variable[=prefix]\n"
+            "      Each tuning information line is output as a shell environment variable\n"
+            "      definition. The name of each variable is built from a prefix and the TS\n"
+            "      id. The default prefix is \"TS\" and can be changed through the optional\n"
+            "      value of the option --variable.\n"
+            "\n"
+            "  --version\n"
+            "      Display the version number.\n");
 }
 
 
@@ -166,18 +178,20 @@ ts::NITScanPlugin::NITScanPlugin (TSP* tsp_) :
 bool ts::NITScanPlugin::start()
 {
     // Get option values
-    _output_name = value ("output-file");
-    _all_nits = present ("all-nits");
-    _terminate = present ("terminate");
-    _dvb_options = present ("dvb-options");
-    _nit_pid = intValue<PID> ("pid", PID_NULL);
-    _use_comment = present ("comment");
-    _comment_prefix = value ("comment", "# ");
+    _output_name = value("output-file");
+    _all_nits = present("all-nits");
+    _terminate = present("terminate");
+    _dvb_options = present("dvb-options");
+    _nit_pid = intValue<PID>("pid", PID_NULL);
+    _use_comment = present("comment");
+    _comment_prefix = value("comment", "# ");
+    _use_variable = present("variable");
+    _variable_prefix = value("variable", "TS");
 
     // Initialize the demux. When the NIT PID is specified, filter this one,
     // otherwise the PAT is filtered to get the NIT PID.
     _demux.reset();
-    _demux.addPID (_nit_pid != PID_NULL ? _nit_pid : PID (PID_PAT));
+    _demux.addPID(_nit_pid != PID_NULL ? _nit_pid : PID(PID_PAT));
 
     // Initialize other states
     _no_nit = false;
@@ -189,9 +203,9 @@ bool ts::NITScanPlugin::start()
     }
     else {
         _output = &_output_stream;
-        _output_stream.open (_output_name.c_str());
+        _output_stream.open(_output_name.c_str());
         if (!_output_stream) {
-            tsp->error ("cannot create file %s", _output_name.c_str());
+            tsp->error("cannot create file %s", _output_name.c_str());
             return false;
         }
     }
@@ -313,8 +327,15 @@ void ts::NITScanPlugin::processNIT(const NIT& nit)
                                        int(nit.network_id), int(nit.network_id))
                              << std::endl;
                 }
-                // Output the tuning information
-                *_output << (_dvb_options ? tp->toPluginOptions(true) : tp->toZapFormat()) << std::endl;
+                // Output the tuning information, optionally in a variable definition.
+                if (_use_variable) {
+                    *_output << _variable_prefix << int(tsid.transport_stream_id) << "=\"";
+                }
+                *_output << (_dvb_options ? tp->toPluginOptions(true) : tp->toZapFormat());
+                if (_use_variable) {
+                    *_output << "\"";
+                }
+                *_output << std::endl;
             }
         }
     }
