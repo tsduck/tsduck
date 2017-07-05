@@ -250,7 +250,7 @@ namespace ts {
         //! - From @a data + @a tlvStart to @a data + @a tlvStart + @a tlvSize : TLV records.
         //!
         //! @param [in] data Starting address of memory area.
-        //! @param [in] tlvStart Starting index of TLV records after @data.
+        //! @param [in] tlvStart Starting index of TLV records after @a data.
         //! @param [in] tlvSize Size in bytes of the TLV area.
         //! @param [in] dataOffset Display offset of @a data.
         //! @param [in] indent Left margin size.
