@@ -159,7 +159,7 @@ ts::FilterPlugin::FilterPlugin (TSP* tsp_) :
              "\n"
              "  -p value\n"
              "  --pid value\n"
-             "      PID filter: select packets with this PID value,\n"
+             "      PID filter: select packets with this PID value.\n"
              "      Several -p or --pid options may be specified.\n"
              "\n"
              "  --scrambling-control value\n"

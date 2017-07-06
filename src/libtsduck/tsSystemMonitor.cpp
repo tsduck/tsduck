@@ -33,6 +33,7 @@
 
 #include "tsSystemMonitor.h"
 #include "tsGuardCondition.h"
+#include "tsIntegerUtils.h"
 #include "tsSysUtils.h"
 #include "tsDecimal.h"
 #include "tsFormat.h"
@@ -96,25 +97,6 @@ namespace {
         }
         else { // more than 8 MB => use MB
             return ts::Decimal (value / (1024 * 1024), 0, true, ",", force_sign) + " MB";
-        }
-    }
-}
-
-
-//----------------------------------------------------------------------------
-//  Format a CPU load in percentage
-//----------------------------------------------------------------------------
-
-namespace {
-    std::string LoadString (ts::MilliSecond cpu, ts::MilliSecond elapsed)
-    {
-        if (elapsed == 0) {
-            return "?";
-        }
-        else {
-            int load = int ((100 * cpu) / elapsed); // CPU load % (integral)
-            int load_d = int (((10000 * cpu) / elapsed) % 100); // CPU load 2 decimals
-            return ts::Format ("%d.%02d%%", load, load_d);
         }
     }
 }
@@ -220,9 +202,9 @@ void ts::SystemMonitor::main()
         // Format CPU load.
 
         message += ", CPU:";
-        message += LoadString (metrics.cpu_time - last_metrics.cpu_time, current_time - last_time);
+        message += PercentageString(metrics.cpu_time - last_metrics.cpu_time, current_time - last_time);
         message += " (average:";
-        message += LoadString (metrics.cpu_time - start_metrics.cpu_time, current_time - start_time);
+        message += PercentageString(metrics.cpu_time - start_metrics.cpu_time, current_time - start_time);
         message += ")";
 
         // Display monitoring status

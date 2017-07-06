@@ -398,6 +398,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tspsi", "tspsi.vcxproj", "{
 		{1AD31049-26B0-4922-89CF-778040DFC51E} = {1AD31049-26B0-4922-89CF-778040DFC51E}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tsplugin_stuffanalyze", "tsplugin_stuffanalyze.vcxproj", "{0C40EBC7-F8D4-417A-81B0-5B6437063097}"
+	ProjectSection(ProjectDependencies) = postProject
+		{1AD31049-26B0-4922-89CF-778040DFC51E} = {1AD31049-26B0-4922-89CF-778040DFC51E}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -1038,6 +1043,14 @@ Global
 		{70E2F6EF-FADC-4BB1-8DC5-029F6A74F083}.Release|Win32.Build.0 = Release|Win32
 		{70E2F6EF-FADC-4BB1-8DC5-029F6A74F083}.Release|x64.ActiveCfg = Release|x64
 		{70E2F6EF-FADC-4BB1-8DC5-029F6A74F083}.Release|x64.Build.0 = Release|x64
+		{0C40EBC7-F8D4-417A-81B0-5B6437063097}.Debug|Win32.ActiveCfg = Debug|Win32
+		{0C40EBC7-F8D4-417A-81B0-5B6437063097}.Debug|Win32.Build.0 = Debug|Win32
+		{0C40EBC7-F8D4-417A-81B0-5B6437063097}.Debug|x64.ActiveCfg = Debug|x64
+		{0C40EBC7-F8D4-417A-81B0-5B6437063097}.Debug|x64.Build.0 = Debug|x64
+		{0C40EBC7-F8D4-417A-81B0-5B6437063097}.Release|Win32.ActiveCfg = Release|Win32
+		{0C40EBC7-F8D4-417A-81B0-5B6437063097}.Release|Win32.Build.0 = Release|Win32
+		{0C40EBC7-F8D4-417A-81B0-5B6437063097}.Release|x64.ActiveCfg = Release|x64
+		{0C40EBC7-F8D4-417A-81B0-5B6437063097}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

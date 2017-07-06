@@ -47,6 +47,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsCAIdentifierDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsCASFamily.h" />
     <ClInclude Include="..\..\src\libtsduck\tsCASMapper.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsCASSelectionArgs.h" />
     <ClInclude Include="..\..\src\libtsduck\tsCAT.h" />
     <ClInclude Include="..\..\src\libtsduck\tsCBC.h" />
     <ClInclude Include="..\..\src\libtsduck\tsCBCTemplate.h" />
@@ -310,6 +311,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsCAIdentifierDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsCASFamily.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsCASMapper.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsCASSelectionArgs.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsCerrReport.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsCipherChaining.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsCOM.cpp" />
