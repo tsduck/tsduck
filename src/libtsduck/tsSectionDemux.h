@@ -91,6 +91,12 @@ namespace ts {
         void addPID(PID pid) {_pid_filter.set(pid);}
 
         //!
+        //! Add several PID's to filter.
+        //! @param [in] pids The list of new PID's to filter.
+        //!
+        void addPIDs(const PIDSet& pids) { _pid_filter |= pids; }
+
+        //!
         //! Remove one PID to filter.
         //! @param [in] pid The PID to no longer filter.
         //!

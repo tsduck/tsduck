@@ -112,6 +112,29 @@ INT ts::BoundedSub(INT a, INT b)
     }
 }
 
+
+//----------------------------------------------------------------------------
+// Format a percentage string.
+//----------------------------------------------------------------------------
+
+template<typename INT>
+std::string ts::PercentageString(INT value, INT total)
+{
+    if (total < 0) {
+        return "?";
+    }
+    if (total == 0) {
+        return "0.00%";
+    }
+    else {
+        // Integral percentage
+        const int p1 = int((100 * uint64_t(value)) / uint64_t(total));
+        // Percentage first 2 decimals
+        const int p2 = int(((10000 * uint64_t(value)) / uint64_t(total)) % 100);
+        return ts::Format("%d.%02d%%", p1, p2);
+    }
+}
+
 #if defined(__msc)
 #pragma warning(pop)
 #endif
