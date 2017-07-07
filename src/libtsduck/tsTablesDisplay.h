@@ -237,7 +237,7 @@ namespace ts {
 
         //!
         //! The actual CAS family to use.
-        //! @param [in] cas CAS family of the table. If different from CAS_OTHER, override the CAS family in TablesDisplayArgs.
+        //! @param [in] cas CAS family of the table. If different from CAS_OTHER, can be overridden by subclass.
         //! @return The actual CAS family to use.
         //!
         virtual CASFamily casFamily(CASFamily cas) const;

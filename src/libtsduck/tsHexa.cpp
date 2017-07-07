@@ -111,6 +111,10 @@ std::string& ts::AppendHexa(std::string& str,
     if ((flags & (hexa::HEXA | hexa::C_STYLE | hexa::BINARY | hexa::BIN_NIBBLE | hexa::ASCII)) == 0) {
         flags |= hexa::HEXA;
     }
+    if ((flags & hexa::COMPACT) != 0) {
+        // COMPACT implies SINGLE_LINE.
+        flags |= hexa::SINGLE_LINE;
+    }
 
     // Width of an hexa byte: "XX" (2) or "0xXX," (5)
     size_t hexa_width;
@@ -138,7 +142,7 @@ std::string& ts::AppendHexa(std::string& str,
     if (flags & hexa::SINGLE_LINE) {
         str.reserve(str.length() + (hexa_width + 1) * size);
         for (size_t i = 0; i < size; ++i) {
-            if (i > 0) {
+            if (i > 0 && (flags & hexa::COMPACT) == 0) {
                 str.append(1, ' ');
             }
             str.append(byte_prefix);

@@ -10,6 +10,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsAbstractAVCAccessUnit.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAbstractAVCData.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAbstractAVCStructure.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsAbstractCASDate.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAbstractDeliverySystemDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAbstractDescrambler.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAbstractDescriptor.h" />
@@ -128,6 +129,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsLocalTimeOffsetDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsLogicalChannelNumberDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsMD5.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsMediaGuardDate.h" />
     <ClInclude Include="..\..\src\libtsduck\tsMemoryUtils.h" />
     <ClInclude Include="..\..\src\libtsduck\tsMessageDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsMessageQueue.h" />
@@ -174,6 +176,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsResidentBuffer.h" />
     <ClInclude Include="..\..\src\libtsduck\tsResidentBufferTemplate.h" />
     <ClInclude Include="..\..\src\libtsduck\tsRingNode.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsSafeAccessDate.h" />
     <ClInclude Include="..\..\src\libtsduck\tsSafePtr.h" />
     <ClInclude Include="..\..\src\libtsduck\tsSafePtrTemplate.h" />
     <ClInclude Include="..\..\src\libtsduck\tsSatelliteDeliverySystemDescriptor.h" />
@@ -269,6 +272,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsVBIDataDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsVBITeletextDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsVersion.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsViaccessDate.h" />
     <ClInclude Include="..\..\src\libtsduck\tsVideoAttributes.h" />
     <ClInclude Include="..\..\src\libtsduck\windows\tsComIds.h" />
     <ClInclude Include="..\..\src\libtsduck\windows\tsComPtr.h" />
@@ -282,6 +286,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsAACDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAbstractAVCAccessUnit.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAbstractAVCStructure.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsAbstractCASDate.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAbstractDeliverySystemDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAbstractDescrambler.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAbstractDescriptor.cpp" />

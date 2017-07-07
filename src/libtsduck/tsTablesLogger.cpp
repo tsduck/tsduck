@@ -368,26 +368,16 @@ void ts::TablesLogger::logSection(const Section& sect)
 
 bool ts::TablesLogger::isFiltered(const Section& sect) const
 {
-    // Filter by TID / TIDext
-    bool tid_set = _opt.tid.find(sect.tableId()) != _opt.tid.end();
-    bool tidext_set = _opt.tidext.find(sect.tableIdExtension()) != _opt.tidext.end();
-    bool ok =
+    const bool tid_set = _opt.tid.find(sect.tableId()) != _opt.tid.end();
+    const bool tidext_set = _opt.tidext.find(sect.tableIdExtension()) != _opt.tidext.end();
+
+    return
         // TID ok
         (_opt.tid.empty() || (tid_set && !_opt.negate_tid) || (!tid_set && _opt.negate_tid)) &&
         // TIDext ok
-        (!sect.isLongSection() || _opt.tidext.empty() || (tidext_set && !_opt.negate_tidext) || (!tidext_set && _opt.negate_tidext));
-
-    // Filter diversified sections
-    if (ok && _opt.diversified && sect.payloadSize() >= 2) {
-        const uint8_t* pl = sect.payload();
-        size_t end = sect.payloadSize() - 1;
-        ok = false;
-        for (size_t i = 0; !ok && i < end; ++i) {
-            ok = pl[i] != pl[i+1];
-        }
-    }
-
-    return ok;
+        (!sect.isLongSection() || _opt.tidext.empty() || (tidext_set && !_opt.negate_tidext) || (!tidext_set && _opt.negate_tidext)) &&
+        // Diversified payload ok
+        (!_opt.diversified || sect.hasDiversifiedPayload());
 }
 
 

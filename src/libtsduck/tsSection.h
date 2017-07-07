@@ -562,6 +562,15 @@ namespace ts {
         void recomputeCRC();
 
         //!
+        //! Check if the section has a "diversified" payload.
+        //! A payload is "diversified" if its size is 2 bytes or more and if
+        //! it contains at least 2 different byte values (not all 0x00 or not
+        //! all 0xFF for instance).
+        //! @return True if the payload is diversified.
+        //!
+        bool hasDiversifiedPayload() const;
+
+        //!
         //! Read a section from standard streams (binary mode).
         //! @param [in,out] strm A standard stream in input mode.
         //! If a section is invalid (eof before end of section, wrong crc),
