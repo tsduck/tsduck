@@ -330,7 +330,7 @@ ts::Section& ts::Section::copy (const Section& sect)
 // Comparison. Note: Invalid sections are never identical
 //----------------------------------------------------------------------------
 
-bool ts::Section::operator== (const Section& sect) const
+bool ts::Section::operator==(const Section& sect) const
 {
     return _is_valid && sect._is_valid && (_data == sect._data || *_data == *sect._data);
 }
@@ -340,12 +340,31 @@ bool ts::Section::operator== (const Section& sect) const
 // This method recomputes and replaces the CRC32 of the section.
 //----------------------------------------------------------------------------
 
-void ts::Section::recomputeCRC ()
+void ts::Section::recomputeCRC()
 {
     if (isLongSection()) {
         const size_t size = _data->size() - 4;
-        PutUInt32 (_data->data() + size, CRC32 (_data->data(), size).value());
+        PutUInt32(_data->data() + size, CRC32(_data->data(), size).value());
     }
+}
+
+
+//----------------------------------------------------------------------------
+// Check if the section has a "diversified" payload.
+//----------------------------------------------------------------------------
+
+bool ts::Section::hasDiversifiedPayload() const
+{
+    if (_is_valid && payloadSize() >= 2) {
+        const uint8_t* pl = payload();
+        size_t end = payloadSize() - 1;
+        for (size_t i = 0; i < end; ++i) {
+            if (pl[i] != pl[i + 1]) {
+                return true;
+            }
+        }
+    }
+    return false;
 }
 
 

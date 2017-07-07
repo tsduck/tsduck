@@ -61,7 +61,9 @@ ts::TablesDisplay::TablesDisplay(const TablesDisplayArgs& options, ReportInterfa
 
 ts::CASFamily ts::TablesDisplay::casFamily(CASFamily cas) const
 {
-    return cas != CAS_OTHER ? cas : _opt.cas;
+    // Default implementation keeps the proposed CAS.
+    // A subclass may change this behavior.
+    return cas;
 }
 
 

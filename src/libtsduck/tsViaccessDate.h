@@ -28,55 +28,67 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Command line arguments to display PSI/SI tables.
+//!  Representation of a Viaccess date.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsArgs.h"
-#include "tsCASFamily.h"
-#include "tsTLVSyntax.h"
+#include "tsAbstractCASDate.h"
 
 namespace ts {
     //!
-    //! Command line arguments to display PSI/SI tables.
+    //! Representation of a Viaccess date.
     //!
-    class TSDUCKDLL TablesDisplayArgs
+    class TSDUCKDLL ViaccessDate: public AbstractCASDate
     {
     public:
-        // Public fields
-        bool            raw_dump;        //!< Raw dump of section, no interpretation.
-        uint32_t        raw_flags;       //!< Dump flags in raw mode.
-        TLVSyntaxVector tlv_syntax;      //!< TLV syntax to apply to unknown sections.
-        size_t          min_nested_tlv;  //!< Minimum size of a TLV record after which it is interpreted as a nested TLV (0=disabled).
+        //!
+        //! Default constructor, from a 16-bit integer.
+        //! @param [in] value 16-bit binary representation of the date.
+        //!
+        ViaccessDate(uint16_t value = InvalidDate) :
+            AbstractCASDate(1980, value)
+        {
+        }
 
         //!
-        //! Default constructor.
+        //! Copy constructor.
+        //! @param [in] date another date to assign.
         //!
-        TablesDisplayArgs();
+        ViaccessDate(const ViaccessDate& date) :
+            AbstractCASDate(1980, date)
+        {
+        }
 
         //!
-        //! Virtual destructor.
+        //! Constructor from fields.
+        //! @param [in] year Year number.
+        //! @param [in] month Month number.
+        //! @param [in] day Day number.
         //!
-        virtual ~TablesDisplayArgs() {}
+        ViaccessDate(int year, int month, int day) :
+            AbstractCASDate(1980, year, month, day)
+        {
+        }
 
         //!
-        //! Define command line options in an Args.
-        //! @param [in,out] args Command line arguments to update.
+        //! Constructor from a Time object.
+        //! @param [in] time A Time object.
         //!
-        virtual void defineOptions(Args& args) const;
+        ViaccessDate(const Time& time) :
+            AbstractCASDate(1980, time)
+        {
+        }
 
         //!
-        //! Add help about command line options in an Args.
-        //! @param [in,out] args Command line arguments to update.
-        //!
-        virtual void addHelp(Args& args) const;
-
-        //!
-        //! Load arguments from command line.
-        //! Args error indicator is set in case of incorrect arguments.
-        //! @param [in,out] args Command line arguments.
-        //!
-        virtual void load(Args& args);
+        //! Assignment operator.
+        //! @param [in] date A data to assign.
+        //! @return A reference to this object.
+        //!        
+        ViaccessDate& operator=(const AbstractCASDate& date)
+        {
+            AbstractCASDate::operator=(date);
+            return *this;
+        }
     };
 }

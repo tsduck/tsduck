@@ -26,57 +26,56 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//!
-//!  @file
-//!  Command line arguments to display PSI/SI tables.
-//!
+//
+//  Base class for representation of a CAS date.
+//  This general format is used by several CAS vendors.
+//
 //----------------------------------------------------------------------------
 
-#pragma once
-#include "tsArgs.h"
-#include "tsCASFamily.h"
-#include "tsTLVSyntax.h"
+#include "tsAbstractCASDate.h"
+TSDUCK_SOURCE;
 
-namespace ts {
-    //!
-    //! Command line arguments to display PSI/SI tables.
-    //!
-    class TSDUCKDLL TablesDisplayArgs
-    {
-    public:
-        // Public fields
-        bool            raw_dump;        //!< Raw dump of section, no interpretation.
-        uint32_t        raw_flags;       //!< Dump flags in raw mode.
-        TLVSyntaxVector tlv_syntax;      //!< TLV syntax to apply to unknown sections.
-        size_t          min_nested_tlv;  //!< Minimum size of a TLV record after which it is interpreted as a nested TLV (0=disabled).
 
-        //!
-        //! Default constructor.
-        //!
-        TablesDisplayArgs();
+//-----------------------------------------------------------------------------
+// Compute the 16-bit value.
+// Subclass specific, cannot be compared between subclasses
+//-----------------------------------------------------------------------------
 
-        //!
-        //! Virtual destructor.
-        //!
-        virtual ~TablesDisplayArgs() {}
+uint16_t ts::AbstractCASDate::toUInt16(int year, int month, int day) const
+{
+    if (year >= _year_base && year <= _year_base + 127 && month >= 1 && month <= 12 && day >= 1 && day <= 31) {
+        return (uint16_t(year - _year_base) << 9) | ((uint16_t(month) & 0x000F) << 5) | (uint16_t(day) & 0x001F);
+    }
+    else {
+        return InvalidDate;
+    }
+}
 
-        //!
-        //! Define command line options in an Args.
-        //! @param [in,out] args Command line arguments to update.
-        //!
-        virtual void defineOptions(Args& args) const;
 
-        //!
-        //! Add help about command line options in an Args.
-        //! @param [in,out] args Command line arguments to update.
-        //!
-        virtual void addHelp(Args& args) const;
+//-----------------------------------------------------------------------------
+// Constructor from Time
+//-----------------------------------------------------------------------------
 
-        //!
-        //! Load arguments from command line.
-        //! Args error indicator is set in case of incorrect arguments.
-        //! @param [in,out] args Command line arguments.
-        //!
-        virtual void load(Args& args);
-    };
+ts::AbstractCASDate::AbstractCASDate(int year_base, const Time& t) :
+    _year_base(year_base),
+    _value(0)
+{
+    const Time::Fields f(t);
+    _value = toUInt16(f.year, f.month, f.day);
+}
+
+
+//-----------------------------------------------------------------------------
+// Assigment
+//-----------------------------------------------------------------------------
+
+ts::AbstractCASDate& ts::AbstractCASDate::operator=(const AbstractCASDate& date)
+{
+    if (_year_base == date._year_base) {
+        _value = date._value;
+    }
+    else {
+        _value = toUInt16(date.year(), date.month(), date.day());
+    }
+    return *this;
 }

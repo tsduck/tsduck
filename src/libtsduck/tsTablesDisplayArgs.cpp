@@ -41,7 +41,6 @@ TSDUCK_SOURCE;
 //----------------------------------------------------------------------------
 
 ts::TablesDisplayArgs::TablesDisplayArgs() :
-    cas(CAS_OTHER),
     raw_dump(false),
     raw_flags(hexa::HEXA),
     tlv_syntax(),

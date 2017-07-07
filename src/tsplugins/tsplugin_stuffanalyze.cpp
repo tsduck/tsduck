@@ -323,25 +323,15 @@ void ts::StuffAnalyzePlugin::handleSection(SectionDemux& demux, const Section& s
         _pid_contexts[pid] = ctx;
     }
 
-    // Check if this is a stuffing section.
-    bool stuffing = section.payloadSize() >= 2;
-    if (stuffing) {
-        const uint8_t* const pl = section.payload();
-        const size_t end = section.payloadSize() - 1;
-        for (size_t i = 0; i < end; ++i) {
-            if (pl[i] != pl[i + 1]) {
-                stuffing = false;
-                break;
-            }
-        }
-    }
-
     // Count sizes.
     ctx->total_sections += 1;
     ctx->total_bytes += section.size();
     _total.total_sections += 1;
     _total.total_bytes += section.size();
-    if (stuffing) {
+
+    if (!section.hasDiversifiedPayload()) {
+        // The section payload is full of identical values, all 00, all FF, whatever.
+        // We consider this as a stuffing section.
         ctx->stuffing_sections += 1;
         ctx->stuffing_bytes += section.size();
         _total.stuffing_sections += 1;

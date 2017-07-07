@@ -61,6 +61,7 @@ namespace ts {
             C_STYLE     = 0x0040,  //!< C-style hexa value ("0xXX," instead of "XX").
             BINARY      = 0x0080,  //!< Dump binary values ("XXXXXXXX" binary digits).
             BIN_NIBBLE  = 0x0100,  //!< Binary values are grouped by nibble ("XXXX XXXX").
+            COMPACT     = 0x0200,  //!< Same as SINGLE_LINE but use a compact display without space.
         };
     }
 
