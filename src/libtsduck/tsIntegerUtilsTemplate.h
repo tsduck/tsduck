@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
+#include "tsFormat.h"
 
 //
 // In this module, we work on formal integer types INT. We use std::numeric_limits<INT> to test the
