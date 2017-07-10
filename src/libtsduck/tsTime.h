@@ -616,18 +616,15 @@ namespace ts {
         static Time Win32FileTimeToUTC(const ::FILETIME& fileTime);
 #endif
 
-#if defined(__unix) || defined(DOXYGEN)
         //!
-        //! This static routine converts a UNIX @c time_t to a UTC time (UNIX systems only).
-        //!
-        //! This function is available on UNIX systems only
-        //! and should not be used on portable software.
+        //! This static routine converts a UNIX @c time_t to a UTC time.
         //!
         //! @param [in] unixTime A UNIX @c time_t value.
         //! @return The corresponding UTC time.
         //!
-        static Time UnixTimeToUTC(const time_t& unixTime);
+        static Time UnixTimeToUTC(const uint32_t unixTime);
 
+#if defined(__unix) || defined(DOXYGEN)
         //!
         //! This static routine gets the current real time clock and adds a delay in milliseconds (UNIX systems only).
         //!

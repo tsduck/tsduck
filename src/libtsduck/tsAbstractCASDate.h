@@ -99,19 +99,13 @@ namespace ts {
         //! Convert to a Time object.
         //! @return The Time object.
         //!        
-        operator Time() const
-        {
-            return isValid() ? Time(year(), month(), day(), 0, 0) : Time::Epoch;
-        }
+        operator Time() const;
 
         //!
         //! Convert to a string object.
         //! @return The string object.
         //!        
-        operator std::string() const
-        {
-            return isValid() ? Format("%04d/%02d/%02d", year(), month(), day()) : "?";
-        }
+        operator std::string() const;
 
         //!
         //! Assignment operator.

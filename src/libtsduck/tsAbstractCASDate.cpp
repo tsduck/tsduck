@@ -79,3 +79,23 @@ ts::AbstractCASDate& ts::AbstractCASDate::operator=(const AbstractCASDate& date)
     }
     return *this;
 }
+
+
+//-----------------------------------------------------------------------------
+// Convert to a string object.
+//-----------------------------------------------------------------------------
+
+ts::AbstractCASDate::operator std::string() const
+{
+    return isValid() ? Format("%04d-%02d-%02d", year(), month(), day()) : "?";
+}
+
+
+//-----------------------------------------------------------------------------
+// Convert to a Time object.
+//-----------------------------------------------------------------------------
+
+ts::AbstractCASDate::operator ts::Time() const
+{
+    return isValid() ? Time(year(), month(), day(), 0, 0) : Time::Epoch;
+}
