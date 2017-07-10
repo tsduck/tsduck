@@ -41,26 +41,38 @@ else
 default: dtapi
 endif
 
-EXTRA_DISTCLEAN += WinSDK.zip WinSDK LinuxSDK.zip LinuxSDK.tar.gz LinuxSDK
+EXTRA_DISTCLEAN += WinSDK*.zip WinSDK LinuxSDK.zip LinuxSDK*.tar.gz LinuxSDK LinuxSDK.version
 RECURSE_ORDER = none
 
-.PHONY: download expand dtapi
+.PHONY: copy download sdkfile getversion expand dtapi
 
-DTAPI_URL  := http://www.dektec.com/products/SDK/DTAPI/Downloads/LinuxSDK.tar.gz
-DTAPI_FILE := $(notdir $(DTAPI_URL))
-DTAPI_DIR  := $(basename $(basename $(DTAPI_FILE)))
-DTAPI_H    := $(DTAPI_DIR)/DTAPI/Include/DTAPI.h
+# The download URL is a generic one ending in ../LatestLinuxSDK.
+DEKTEC_URL = http://www.dektec.com/products/SDK/DTAPI/Downloads/LatestLinuxSDK
 
-# Forced download of DTAPI from Dektec Web site.
-# If DTAPI_ORIGIN is defined (on the make command line for instance), it can be
-# the path of a local copy of LinuxSDK.tar.gz which is used instead of download.
-download:
-	$(if $(wildcard $(DTAPI_ORIGIN)),cp -f $(DTAPI_ORIGIN) $(DTAPI_FILE),wget -O $(DTAPI_FILE) $(DTAPI_URL))
+# The actual file is redirected as ../LinuxSDK_v5.06.2017.0.tar.gz for instance.
+# The file LinuxSDK.version is created to contain the actual file name.
+DTNAME_FILE = LinuxSDK.version
+
+# If DTAPI_ORIGIN is defined (on the make command line for instance), it is the
+# path of a local copy of LinuxSDK*.tar.gz which is used instead of download.
+# The name of the tarball is either from DTAPI_ORIGIN, LinuxSDK.version or empty.
+DTAPI_FILE = $(if $(wildcard $(DTAPI_ORIGIN)),$(notdir $(DTAPI_ORIGIN)),$(if $(wildcard $(DTNAME_FILE)),$(shell cat $(DTNAME_FILE)),))
+
+# The tarball file always expands as LinuxSDK.
+DTAPI_DIR = LinuxSDK
+DTAPI_H   = $(DTAPI_DIR)/DTAPI/Include/DTAPI.h
+
+# Get the LinuxSDK tarball, either from a local copy or download.
+copy:
+	cp -f $(DTAPI_ORIGIN) $(DTAPI_FILE)
+download: getversion
+	curl -L '$(DEKTEC_URL)' -o $(DTAPI_FILE)
+sdkfile: $(if $(wildcard $(DTAPI_ORIGIN)),copy,download)
 	touch $(DTAPI_FILE)
 
-# Download if not present.
-$(DTAPI_FILE):
-	$(MAKE) download
+# Get version of LinuxSDK.
+getversion:
+	curl -D /dev/stdout '$(DEKTEC_URL)' | grep -i 'Location:' | sed -e 's/.*: *//' -e 's/.*\///' -e 's/\r//g' >$(DTNAME_FILE)
 
 # Forced expand of LinuxSDK.
 expand: 
@@ -71,5 +83,5 @@ expand:
 # Expand LinuxSDK if archive is newer.
 dtapi: $(DTAPI_H)
 	@true
-$(DTAPI_H): $(DTAPI_FILE)
+$(DTAPI_H): $(if $(wildcard $(DTAPI_FILE)),$(DTAPI_FILE),sdkfile)
 	$(MAKE) expand
