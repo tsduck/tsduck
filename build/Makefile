@@ -78,12 +78,14 @@ RPMBUILDROOT ?= $(HOME)/rpmbuild
 $(RPMBUILDROOT):
 	rpmdev-setuptree
 
-# Build the tsduck binary RPM.
 # Reuse local Dektec Linux SDK if present.
+DTAPI_ORIGIN = $(if $(wildcard $(ROOTDIR)/dektec/LinuxSDK.version),$(ROOTDIR)/dektec/$(shell cat '$(ROOTDIR)/dektec/LinuxSDK.version'),)
+
+# Build the tsduck binary RPM.
 .PHONY: rpm rpm32
 rpm: tarball $(RPMBUILDROOT)
 	cp -f $(TARFILE) $(RPMBUILDROOT)/SOURCES/
-	MAKEFLAGS=DTAPI_ORIGIN=$(ROOTDIR)/dektec/LinuxSDK.tar.gz \
+	$(if $(wildcard $(DTAPI_ORIGIN)),MAKEFLAGS=DTAPI_ORIGIN=$(DTAPI_ORIGIN),) \
 	  $(RPMBUILD) $(RPMBUILDFLAGS) -D 'version $(TS_VERSION)' -D 'release $(RPM_RELEASE)' tsduck.spec
 	cp -uf $(RPMBUILDROOT)/RPMS/*/tsduck-$(TS_VERSION)-$(RPM_RELEASE).*.rpm $(INSTALLERDIR)
 	cp -uf $(RPMBUILDROOT)/RPMS/*/tsduck-devel-$(TS_VERSION)-$(RPM_RELEASE).*.rpm $(INSTALLERDIR)
