@@ -542,6 +542,7 @@ endif
 ifndef GCC_VERSION_DONE
     export GCC_VERSION_DONE = true
     export GCC_VERSION := $(word 3,$(shell gcc -v 2>&1 | $(GREP) '^gcc version'))
+    export GCC_MAJOR := $(firstword $(subst .,$(SPACE),$(GCC_VERSION)))
     export LLVM_VERSION := $(shell clang --version 2>&1 | $(GREP) -i "llvm version" | $(SED) -e 's/.*version *//' -e 's/ .*//')
 endif
 
@@ -619,12 +620,18 @@ endif
 CXXFLAGS_INCLUDES += $(CFLAGS_INCLUDES)
 
 # Always use maximal or even paranoid warning mode.
-COMMON_WARNINGS   = -Werror -Wall -Wextra -Wpedantic -Wformat-nonliteral -Wformat-security -Wswitch-default \
-                    -Wuninitialized -Wshadow -Wno-unused-parameter -Wfloat-equal -Wundef -Wpointer-arith
+COMMON_WARNINGS   = -Werror -Wall -Wextra -Wformat-nonliteral -Wformat-security -Wswitch-default \
+                    -Wuninitialized -Wno-unused-parameter -Wfloat-equal -Wundef -Wpointer-arith
 CFLAGS_WARNINGS   = $(COMMON_WARNINGS) -Wstrict-prototypes -Wmissing-prototypes -Winit-self -Wtraditional \
                     -Wbad-function-cast -Wc++-compat
-CXXFLAGS_WARNINGS = $(COMMON_WARNINGS) -Woverloaded-virtual -Wctor-dtor-privacy -Wnon-virtual-dtor -Weffc++ \
+CXXFLAGS_WARNINGS = $(COMMON_WARNINGS) -Woverloaded-virtual -Wctor-dtor-privacy -Wnon-virtual-dtor \
                     -Woverloaded-virtual -Wsign-promo
+ifneq (,$(or $(MACOS),$(subst 4,,$(lastword $(sort 4 $(GCC_MAJOR))))))
+    # Use these warnings on MacOS or with GCC 5.x and higher only.
+    # They are supported with GCC 4.x but are totally insane before 5.x.
+    COMMON_WARNINGS += -Wshadow -Wpedantic
+    CXXFLAGS_WARNINGS += -Weffc++
+endif
 ifdef MACOS
     CFLAGS_WARNINGS   += -Wno-unused-command-line-argument
     CXXFLAGS_WARNINGS += -Wno-unused-command-line-argument
