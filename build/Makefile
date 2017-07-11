@@ -68,10 +68,11 @@ tarball:
 	rm -rf $(TMPROOT)
 
 # Linux distro version.
-FC_DISTRO   = $(if $(wildcard /etc/fedora-release),$(shell grep " release " /etc/fedora-release 2>/dev/null | sed -e 's/^.* release \([0-9]*\).*$$/\1/'),)
-RH_DISTRO   = $(if $(wildcard /etc/redhat-release),$(shell grep " release " /etc/redhat-release 2>/dev/null | sed -e 's/^.* release \([0-9]*\).*$$/\1/'),)
-DISTRO      = $(if $(FC_DISTRO),.fc$(FC_DISTRO),$(if $(RH_DISTRO),.el$(RH_DISTRO),))
-RPM_RELEASE = $(shell date +%Y%m%d)$(DISTRO)
+FC_DISTRO    = $(if $(wildcard /etc/fedora-release),$(shell grep " release " /etc/fedora-release 2>/dev/null | sed -e 's/^.* release \([0-9]*\).*$$/\1/'),)
+RH_DISTRO    = $(if $(wildcard /etc/redhat-release),$(shell grep " release " /etc/redhat-release 2>/dev/null | sed -e 's/^.* release \([0-9]*\).*$$/\1/'),)
+DISTRO       = $(if $(FC_DISTRO),.fc$(FC_DISTRO),$(if $(RH_DISTRO),.el$(RH_DISTRO),))
+RELEASE_DATE = $(shell date +%Y%m%d)
+RPM_RELEASE  = $(RELEASE_DATE)$(DISTRO)
 
 # User's RPM build area.
 RPMBUILDROOT ?= $(HOME)/rpmbuild
@@ -102,7 +103,7 @@ deb-main:
 	rm -rf $(TMPDIR)
 	$(MAKE) -C $(ROOTDIR) install DESTDIR=$(TMPDIR)
 	mkdir $(TMPDIR)/DEBIAN
-	sed -e 's/{{VERSION}}/$(shell $(TSTOOLSDIR)/$(OBJDIR)/tsp --version=global 2>&1)/g' \
+	sed -e 's/{{VERSION}}/$(TS_VERSION)-$(RELEASE_DATE)/g' \
 	    -e 's/{{ARCH}}/$(shell dpkg-architecture -qDEB_BUILD_ARCH)/g' \
 	    tsduck.control >$(TMPDIR)/DEBIAN/control
 	sed -e 's|{{EXECS}}|$(addprefix /usr/bin/,$(TSEXECS))|g' \
@@ -116,7 +117,7 @@ deb-dev:
 	rm -rf $(TMPDIR)
 	$(MAKE) -C $(ROOTDIR) install-devel DESTDIR=$(TMPDIR)
 	mkdir $(TMPDIR)/DEBIAN
-	sed -e 's/{{VERSION}}/$(shell $(TSTOOLSDIR)/$(OBJDIR)/tsp --version=global 2>&1)/g' \
+	sed -e 's/{{VERSION}}/$(TS_VERSION)-$(RELEASE_DATE)/g' \
 	    -e 's/{{ARCH}}/$(shell dpkg-architecture -qDEB_BUILD_ARCH)/g' \
 	    tsduck-dev.control >$(TMPDIR)/DEBIAN/control
 	cp tsduck-dev.postinst $(TMPDIR)/DEBIAN/postinst
