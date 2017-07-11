@@ -95,8 +95,9 @@ rpm32:
 
 # Build the tsduck DEB package.
 TMPDIR = /tmp/tsduck-deb-$(USER)
-.PHONY: deb
-deb:
+.PHONY: deb deb-main deb-dev
+deb: deb-main deb-dev
+deb-main:
 	$(MAKE) -C $(ROOTDIR) -j$(CPU_COUNT)
 	rm -rf $(TMPDIR)
 	$(MAKE) -C $(ROOTDIR) install DESTDIR=$(TMPDIR)
@@ -107,6 +108,18 @@ deb:
 	sed -e 's|{{EXECS}}|$(addprefix /usr/bin/,$(TSEXECS))|g' \
 	    -e 's|{{SHLIBS}}|$(addprefix /usr/bin/,$(SHARED_LIBTSDUCK) $(addsuffix .so,$(TSPLUGINS) $(TSGENTABS)))|g' \
 	    tsduck.postinst >$(TMPDIR)/DEBIAN/postinst
+	chmod a+x $(TMPDIR)/DEBIAN/postinst
+	dpkg --build $(TMPDIR) $(INSTALLERDIR)
+	rm -rf $(TMPDIR)
+deb-dev:
+	$(MAKE) -C $(ROOTDIR) -j$(CPU_COUNT)
+	rm -rf $(TMPDIR)
+	$(MAKE) -C $(ROOTDIR) install-devel DESTDIR=$(TMPDIR)
+	mkdir $(TMPDIR)/DEBIAN
+	sed -e 's/{{VERSION}}/$(shell $(TSTOOLSDIR)/$(OBJDIR)/tsp --version=global 2>&1)/g' \
+	    -e 's/{{ARCH}}/$(shell dpkg-architecture -qDEB_BUILD_ARCH)/g' \
+	    tsduck-dev.control >$(TMPDIR)/DEBIAN/control
+	cp tsduck-dev.postinst $(TMPDIR)/DEBIAN/postinst
 	chmod a+x $(TMPDIR)/DEBIAN/postinst
 	dpkg --build $(TMPDIR) $(INSTALLERDIR)
 	rm -rf $(TMPDIR)
