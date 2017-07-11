@@ -33,13 +33,17 @@
 
 include ../../Makefile.tsduck
 
-default: execs copy_plugins
+default: execs $(OBJDIR)/setenv.sh
 	@true
 
 .PHONY: execs
 execs: $(EXECS)
 $(OBJDIR)/tsp: $(addprefix $(OBJDIR)/,$(addsuffix .o,$(filter tsp%,$(MODULES_LIB))))
-$(EXECS): $(OBJDIR)/$(SHARED_LIBTSDUCK)
+$(EXECS): $(LIBTSDUCKDIR)/$(OBJDIR)/$(SHARED_LIBTSDUCK)
+
+$(OBJDIR)/setenv.sh: Makefile
+	echo "export LD_LIBRARY_PATH=$(realpath $(LIBTSDUCKDIR)/$(OBJDIR))" >$@
+	echo "export TSPLUGINS_PATH=$(realpath $(TSPLUGINSDIR)/$(OBJDIR)):$(realpath $(TSGENTABSDIR)/$(OBJDIR))" >>$@
 
 .PHONY: install install-devel
 install: $(EXECS)
