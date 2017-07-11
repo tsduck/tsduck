@@ -51,14 +51,14 @@ namespace ts {
 
         //!
         //! Constructor.
-        //!
-        //! The load order is the following:
-        //! - Default system lookup using filename string.
-        //! - If filename is a base name (no directory), search it into the same directory as the executable.
-        //! - Same as previous with specified prefix in base name.
-        //! In all cases, if the filename does not contain a suffix, the standard system suffix (.so or .dll) is added.
-        //!
-        //! @param [in] filename Share library file name. Directory and suffix are optional.
+        //! @param [in] filename Shared library file name. Directory and suffix are optional.
+        //! If @a filename contains a directory, the specified file is used directly, with
+        //! and without suffix (.so, .dll). If @a filename is just a name without directory,
+        //! a search algorithm is used. All directories in @a library_path are searched.
+        //! Then the same directory as the executable is searched. In each directory, a
+        //! file with @a prefix is searched. Then, if not found, without prefix.
+        //! Finally, when everything failed, @a filename is searched with the default
+        //! system lookup mechanism.
         //! @param [in] prefix Prefix to add to @a filename if the file is not found.
         //! @param [in] library_path Name of an environment variable, an optional list of directories to search, similar to @c LD_LIBARY_PATH.
         //! @param [in] permanent If false (the default), the shared library is unloaded from the current process

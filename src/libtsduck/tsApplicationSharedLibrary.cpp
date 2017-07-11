@@ -48,21 +48,21 @@ ts::ApplicationSharedLibrary::ApplicationSharedLibrary(const std::string& filena
                                                        const std::string& library_path,
                                                        bool permanent,
                                                        ReportInterface& report) :
-    SharedLibrary(filename, permanent, report),
+    // Do not load in superclass since plain filename is not the first choice.
+    SharedLibrary("", permanent, report),
     _prefix(prefix)
 {
+    // Without file name, nothing to do.
+    if (filename.empty()) {
+        return;
+    }
+    
     const std::string basename(BaseName(filename));
     const std::string suffix(PathSuffix(filename));
-    const bool nodir = basename == filename;
+    const bool has_directory = basename != filename;
 
-    // If not loaded, try with standard extension
-    if (!isLoaded() && suffix.empty()) {
-        load(filename + SharedLibrary::Extension);
-    }
-
-    // If still not loaded, search in several directories if the original name has no directory part.
-    if (!isLoaded() && nodir) {
-
+    if (!has_directory) {
+        // There is no directory in file name, use search rules.
         // Get a list of directories from environment variable.
         StringList dirs;
         if (!library_path.empty()) {
@@ -72,16 +72,27 @@ ts::ApplicationSharedLibrary::ApplicationSharedLibrary(const std::string& filena
         // Then, try in same directory as executable
         dirs.push_back(DirectoryName(ExecutableFile()));
 
-       // Try in each directory.
-       for (StringList::const_iterator it = dirs.begin(); !isLoaded() && it != dirs.end(); ++it) {
-           // Try specific name only.
-           load(AddPathSuffix(*it + PathSeparator + basename, SharedLibrary::Extension));
+        // Try in each directory.
+        for (StringList::const_iterator it = dirs.begin(); !isLoaded() && it != dirs.end(); ++it) {
+            // First, try name with prefix.
+            load(AddPathSuffix(*it + PathSeparator + prefix + basename, SharedLibrary::Extension));
+            
+            // And then try specified name without prefix.
+            if (!isLoaded()) {
+                load(AddPathSuffix(*it + PathSeparator + basename, SharedLibrary::Extension));
+            }
+        }
+    }
+    
+    // With a directory in name or if still not loaded, try the standard system lookup rules.
+    if (!isLoaded()) {
+        // Try plain 
+        load(filename);
 
-           // And try with prefix
-           if (!isLoaded()) {
-               load(AddPathSuffix(*it + PathSeparator + prefix + basename, SharedLibrary::Extension));
-           }
-       }
+        // If not loaded, try with standard extension if filename had no extension.
+        if (!isLoaded() && suffix.empty()) {
+            load(filename + SharedLibrary::Extension);
+        }
     }
 }
 
