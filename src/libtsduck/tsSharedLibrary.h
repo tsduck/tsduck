@@ -55,7 +55,7 @@ namespace ts {
         //! when this object is destroyed. If true, the shared library remains active.
         //! @param [in,out] report Where to report errors.
         //!
-        SharedLibrary(const std::string& filename, bool permanent = false, ReportInterface& report = NULLREP);
+        explicit SharedLibrary(const std::string& filename, bool permanent = false, ReportInterface& report = NULLREP);
 
         //!
         //! Destructor.
@@ -104,11 +104,6 @@ namespace ts {
         void unload();
 
     private:
-        // Unreachable ops
-        SharedLibrary() = delete;
-        SharedLibrary(const SharedLibrary&) = delete;
-        SharedLibrary& operator=(const SharedLibrary&) = delete;
-
         // Private members
         ReportInterface& _report;
         std::string _filename;
@@ -120,5 +115,10 @@ namespace ts {
 #else
         void* _dl; // dlopen/dlclose handle
 #endif
+
+        // Unreachable operations.
+        SharedLibrary() = delete;
+        SharedLibrary(const SharedLibrary&) = delete;
+        SharedLibrary& operator=(const SharedLibrary&) = delete;
     };
 }

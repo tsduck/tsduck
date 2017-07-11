@@ -35,6 +35,7 @@
 #pragma once
 #include "tsSharedLibrary.h"
 #include "tsNullReport.h"
+#include "tsStringUtils.h"
 
 namespace ts {
     //!
@@ -43,6 +44,11 @@ namespace ts {
     class TSDUCKDLL ApplicationSharedLibrary: public SharedLibrary
     {
     public:
+        //!
+        //! Name of the environment variable which contains a list of paths for plugins.
+        //!
+        static const char* const PluginsPathEnvironmentVariable;
+
         //!
         //! Constructor.
         //!
@@ -54,14 +60,16 @@ namespace ts {
         //!
         //! @param [in] filename Share library file name. Directory and suffix are optional.
         //! @param [in] prefix Prefix to add to @a filename if the file is not found.
+        //! @param [in] library_path Name of an environment variable, an optional list of directories to search, similar to @c LD_LIBARY_PATH.
         //! @param [in] permanent If false (the default), the shared library is unloaded from the current process
         //! when this object is destroyed. If true, the shared library remains active.
         //! @param [in,out] report Where to report errors.
         //!
-        ApplicationSharedLibrary(const std::string& filename,
-                                 const std::string& prefix = "",
-                                 bool permanent = false,
-                                 ReportInterface& report = NULLREP);
+        explicit ApplicationSharedLibrary(const std::string& filename,
+                                          const std::string& prefix = std::string(),
+                                          const std::string& library_path = std::string(),
+                                          bool permanent = false,
+                                          ReportInterface& report = NULLREP);
 
         //!
         //! The module name is derived from the file name without the prefix.
@@ -75,7 +83,20 @@ namespace ts {
         //!
         std::string prefix() const {return _prefix;}
 
+        //!
+        //! Get a list of plugins.
+        //! @param [out] files List of shared library files.
+        //! @param [in] prefix Prefix for plugin names.
+        //! @param [in] library_path Name of an environment variable, an optional list of directories to search, similar to @c LD_LIBARY_PATH.
+        //!
+        static void GetPluginList(StringVector& files, const std::string& prefix, const std::string& library_path = std::string());
+
     private:
         std::string _prefix;
+
+        // Unreachable operations.
+        ApplicationSharedLibrary() = delete;
+        ApplicationSharedLibrary(const ApplicationSharedLibrary&) = delete;
+        ApplicationSharedLibrary& operator=(const ApplicationSharedLibrary&) = delete;
     };
 }

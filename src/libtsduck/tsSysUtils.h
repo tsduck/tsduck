@@ -342,7 +342,7 @@ namespace ts {
     void GetEnvironmentPath(CONTAINER& container, const std::string& name, const std::string& def = std::string())
     {
         SplitString(container, GetEnvironment(name, def), SearchPathSeparator, true);
-        if (container.size() == 1 && container[0].empty()) {
+        if (container.size() == 1 && container.front().empty()) {
             // Path was actually empty
             container.clear();
         }

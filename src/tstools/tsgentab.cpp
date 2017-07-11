@@ -122,7 +122,7 @@ public:
 
     // Constructor.
     GenTabSharedLibrary(const std::string& filename, ts::ReportInterface& report) :
-        ApplicationSharedLibrary(filename, "tsgentab_", true),
+        ApplicationSharedLibrary(filename, "tsgentab_", ts::ApplicationSharedLibrary::PluginsPathEnvironmentVariable, true),
         new_plugin(0)
     {
         if (isLoaded()) {
@@ -145,14 +145,9 @@ typedef ts::SafePtr<GenTabSharedLibrary,ts::NullMutex> GenTabSharedLibraryPtr;
 namespace  {
     void ListPlugins(ts::ReportInterface& report)
     {
-        const std::string pattern(ts::DirectoryName(ts::ExecutableFile()) + ts::PathSeparator + "tsgentab_*" + ts::SharedLibrary::Extension);
-
         // Get list of shared library files
         ts::StringVector files;
-        if (!ts::ExpandWildcard(files, pattern)) {
-            report.error("error resolving " + pattern);
-            return;
-        }
+        ts::ApplicationSharedLibrary::GetPluginList(files, "tsgentab_", ts::ApplicationSharedLibrary::PluginsPathEnvironmentVariable);
 
         // Build list of names and load shared libraries
         ts::StringVector names(files.size());

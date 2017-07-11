@@ -48,7 +48,7 @@ TSDUCK_SOURCE;
 //----------------------------------------------------------------------------
 
 ts::PluginSharedLibrary::PluginSharedLibrary(const std::string& filename, ReportInterface& report) :
-    ApplicationSharedLibrary(filename, "tsplugin_", true, report),
+    ApplicationSharedLibrary(filename, "tsplugin_", PluginsPathEnvironmentVariable, true, report),
     new_input(0),
     new_output(0),
     new_processor(0)

@@ -55,22 +55,31 @@ namespace ts {
         //! @param [in] filename Share library file name. Directory, "tsplugin_" prefix and suffix are optional.
         //! @param [in,out] report Where to report errors.
         //!
-        PluginSharedLibrary(const std::string& filename, ReportInterface& report = CERR);
+        explicit PluginSharedLibrary(const std::string& filename, ReportInterface& report = CERR);
+
         //!
         //! Input plugin allocation function.
         //! If null, the plugin either does not provide input capability or is not a valid TSP plugin.
-        //
+        //!
         NewInputProfile new_input;
+
         //!
         //! Output plugin allocation function.
         //! If null, the plugin either does not provide output capability or is not a valid TSP plugin.
-        //
+        //!
         NewOutputProfile new_output;
+
         //!
         //! Packet processing plugin allocation function.
         //! If null, the plugin either does not provide packet processing capability or is not a valid TSP plugin.
-        //
+        //!
         NewProcessorProfile new_processor;
+
+    private:
+        // Unreachable operations.
+        PluginSharedLibrary() = delete;
+        PluginSharedLibrary(const PluginSharedLibrary&) = delete;
+        PluginSharedLibrary& operator=(const PluginSharedLibrary&) = delete;
     };
 
     //!

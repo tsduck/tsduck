@@ -44,27 +44,22 @@ TSDUCK_SOURCE;
 
 void ts::tsp::ListProcessors (ReportInterface& report)
 {
-    const std::string pattern (DirectoryName (ExecutableFile()) + PathSeparator + "tsplugin_*" + SharedLibrary::Extension);
-
     // Get list of shared library files
 
     StringVector files;
-    if (!ExpandWildcard (files, pattern)) {
-        report.error ("error resolving " + pattern);
-        return;
-    }
+    ApplicationSharedLibrary::GetPluginList(files, "tsplugin_", ts::ApplicationSharedLibrary::PluginsPathEnvironmentVariable);
 
     // Build list of names and load shared libraries
 
-    StringVector names (files.size());
-    std::vector <PluginSharedLibraryPtr> shlibs (files.size());
+    StringVector names(files.size());
+    std::vector<PluginSharedLibraryPtr> shlibs(files.size());
     size_t name_width = 0;
 
     for (size_t i = 0; i < files.size(); ++i) {
-        shlibs[i] = new PluginSharedLibrary (files[i], report);
+        shlibs[i] = new PluginSharedLibrary(files[i], report);
         names[i] = shlibs[i]->moduleName();
         if (shlibs[i]->isLoaded()) {
-            name_width = std::max (name_width, names[i].size());
+            name_width = std::max(name_width, names[i].size());
         }
     }
 
@@ -73,8 +68,8 @@ void ts::tsp::ListProcessors (ReportInterface& report)
     std::cerr << std::endl << "List of tsp input plugins:" << std::endl << std::endl;
     for (size_t i = 0; i < files.size(); ++i) {
         if (shlibs[i]->isLoaded() && shlibs[i]->new_input != 0) {
-            Plugin* p = shlibs[i]->new_input (0);
-            std::cerr << "  " << JustifyLeft (names[i] + ' ', name_width + 1, '.')
+            Plugin* p = shlibs[i]->new_input(0);
+            std::cerr << "  " << JustifyLeft(names[i] + ' ', name_width + 1, '.')
                       << " " << p->getDescription() << std::endl;
             delete p;
         }
@@ -83,7 +78,7 @@ void ts::tsp::ListProcessors (ReportInterface& report)
     std::cerr << std::endl << "List of tsp output plugins:" << std::endl << std::endl;
     for (size_t i = 0; i < files.size(); ++i) {
         if (shlibs[i]->isLoaded() && shlibs[i]->new_output != 0) {
-            Plugin* p = shlibs[i]->new_output (0);
+            Plugin* p = shlibs[i]->new_output(0);
             std::cerr << "  " << JustifyLeft (names[i] + ' ', name_width + 1, '.')
                       << " " << p->getDescription() << std::endl;
             delete p;
@@ -93,8 +88,8 @@ void ts::tsp::ListProcessors (ReportInterface& report)
     std::cerr << std::endl << "List of tsp packet processor plugins:" << std::endl << std::endl;
     for (size_t i = 0; i < files.size(); ++i) {
         if (shlibs[i]->isLoaded() && shlibs[i]->new_processor != 0) {
-            Plugin* p = shlibs[i]->new_processor (0);
-            std::cerr << "  " << JustifyLeft (names[i] + ' ', name_width + 1, '.')
+            Plugin* p = shlibs[i]->new_processor(0);
+            std::cerr << "  " << JustifyLeft(names[i] + ' ', name_width + 1, '.')
                       << " " << p->getDescription() << std::endl;
             delete p;
         }
