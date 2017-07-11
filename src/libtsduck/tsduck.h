@@ -67,6 +67,8 @@
 #include "tsCADescriptor.h"
 #include "tsCAIdentifierDescriptor.h"
 #include "tsCASFamily.h"
+#include "tsCASMapper.h"
+#include "tsCASSelectionArgs.h"
 #include "tsCAT.h"
 #include "tsCBC.h"
 #include "tsCOM.h"
