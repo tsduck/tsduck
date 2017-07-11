@@ -64,7 +64,9 @@ ts::SharedLibrary::SharedLibrary(const std::string& filename, bool permanent, Re
     _dl(0)
 #endif
 {
-    load(filename);
+    if (!filename.empty()) {
+        load(filename);
+    }
 }
 
 
