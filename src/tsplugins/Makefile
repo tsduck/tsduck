@@ -40,7 +40,7 @@ SHLIBS := $(addprefix $(OBJDIR)/,$(addsuffix .so,$(TSPLUGINS)))
 
 .PHONY: shlibs
 shlibs: $(SHLIBS)
-$(SHLIBS): $(OBJDIR)/$(SHARED_LIBTSDUCK)
+$(SHLIBS): $(LIBTSDUCKDIR)/$(OBJDIR)/$(SHARED_LIBTSDUCK)
 
 .PHONY: install install-devel
 install: $(SHLIBS)

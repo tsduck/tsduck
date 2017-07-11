@@ -83,23 +83,3 @@ else
 endif
 CFLAGS_INCLUDES += -I$(LIBTSDUCKDIR) --std=c++11
 LDLIBS := -lpcsclite -ldl $(LDLIBS)
-
-# Targets to copy shareable objects in the object directory.
-
-.PHONY: copy_plugins
-copy_plugins: $(addprefix $(OBJDIR)/,$(addsuffix .so,$(TSPLUGINS) $(TSGENTABS)))
-
-ifneq ($(realpath $(CURDIR)),$(realpath $(LIBTSDUCKDIR)))
-$(OBJDIR)/%: $(LIBTSDUCKDIR)/$(OBJDIR)/%
-	@echo '  [CP] $@'; cp $^ $@
-endif
-
-ifneq ($(realpath $(CURDIR)),$(realpath $(TSPLUGINSDIR)))
-$(OBJDIR)/%: $(TSPLUGINSDIR)/$(OBJDIR)/%
-	@echo '  [CP] $@'; cp $^ $@
-endif
-
-ifneq ($(realpath $(CURDIR)),$(realpath $(TSGENTABSDIR)))
-$(OBJDIR)/%: $(TSGENTABSDIR)/$(OBJDIR)/%
-	@echo '  [CP] $@'; cp $^ $@
-endif
