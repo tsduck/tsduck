@@ -79,7 +79,7 @@ namespace {
     {
     public:
         int i;
-        R(int i_): i(i_) {}
+        explicit R(int i_): i(i_) {}
     };
 }
 

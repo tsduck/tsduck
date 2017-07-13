@@ -71,17 +71,18 @@ ts::ForkPipe::~ForkPipe()
 // Return true on success, false on error.
 //----------------------------------------------------------------------------
 
-bool ts::ForkPipe::open (const std::string& command, bool synchronous, size_t buffer_size, ReportInterface& report)
+// Flawfinder: ignore: this is our open(), not ::open().
+bool ts::ForkPipe::open(const std::string& command, bool synchronous, size_t buffer_size, ReportInterface& report)
 {
     if (_is_open) {
-        report.error ("pipe is already open");
+        report.error("pipe is already open");
         return false;
     }
 
     _broken_pipe = false;
     _synchronous = synchronous;
 
-    report.debug ("creating process \"" + command + "\"");
+    report.debug("creating process \"" + command + "\"");
 
 #if defined (__windows)
 
@@ -112,18 +113,19 @@ bool ts::ForkPipe::open (const std::string& command, bool synchronous, size_t bu
     TS_ZERO (si);
     si.cb = sizeof(si);
     si.hStdInput = read_handle;
-    si.hStdOutput = ::GetStdHandle (STD_OUTPUT_HANDLE);
-    si.hStdError = ::GetStdHandle (STD_ERROR_HANDLE);
+    si.hStdOutput = ::GetStdHandle(STD_OUTPUT_HANDLE);
+    si.hStdError = ::GetStdHandle(STD_ERROR_HANDLE);
     si.dwFlags = STARTF_USESTDHANDLES;
 
     // ::CreateProcess may modify the user-supplied command line (ugly!)
-    std::string cmd (command);
-    char* cmdp = const_cast<char*> (cmd.c_str());
+    std::string cmd(command);
+    char* cmdp = const_cast<char*>(cmd.c_str());
 
     // Create the process
     ::PROCESS_INFORMATION pi;
-    if (::CreateProcess (NULL, cmdp, NULL, NULL, TRUE, 0, NULL, NULL, &si, &pi) == 0) {
-        report.error ("error creating pipe: " + ErrorCodeMessage());
+    // Flawfinder: ignore: CreateProcess causes a new program to execute and is difficult to use safely.
+    if (::CreateProcess(NULL, cmdp, NULL, NULL, TRUE, 0, NULL, NULL, &si, &pi) == 0) {
+        report.error("error creating pipe: " + ErrorCodeMessage());
         return false;
     }
 
@@ -133,14 +135,14 @@ bool ts::ForkPipe::open (const std::string& command, bool synchronous, size_t bu
     }
     else {
         _process = INVALID_HANDLE_VALUE;
-        ::CloseHandle (pi.hProcess);
+        ::CloseHandle(pi.hProcess);
     }
-    ::CloseHandle (pi.hThread);
+    ::CloseHandle(pi.hThread);
 
     // Keep the writing end-point of pipe for data transmission.
     // Close the reading end-point of pipe.
     _handle = write_handle;
-    ::CloseHandle (read_handle);
+    ::CloseHandle(read_handle);
 
 #else // UNIX
 
@@ -170,6 +172,7 @@ bool ts::ForkPipe::open (const std::string& command, bool synchronous, size_t bu
         // Close the now extraneous file descriptor.
         ::close (filedes[0]);
         // Execute the command. Should not return.
+        // Flawfinder: ignore: execl causes a new program to execute and is difficult to use safely.
         ::execl ("/bin/sh", "/bin/sh", "-c", command.c_str(), TS_NULL);
         ::perror ("exec error");
         ::exit (EXIT_FAILURE);

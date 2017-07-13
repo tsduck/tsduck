@@ -234,7 +234,7 @@ namespace ts {
         //!
         void getBinary(const void* a)
         {
-            ::memcpy(_data, a, SIZE);
+            ::memcpy(_data, a, SIZE);  // Flawfinder: ignore: memcpy()
         }
 
         //!
@@ -243,7 +243,7 @@ namespace ts {
         //!
         void putBinary(void* a) const
         {
-            ::memcpy(a, _data, SIZE);
+            ::memcpy(a, _data, SIZE);  // Flawfinder: ignore: memcpy()
         }
 
         //!

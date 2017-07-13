@@ -161,7 +161,7 @@ void ts::Packetizer::getNextPacket (TSPacket& pkt)
     while (remain_in_packet > 0) {
         // Copy a part of the current section in the packet
         size_t length = remain_in_section < remain_in_packet ? remain_in_section : remain_in_packet;
-        ::memcpy (data, _section->content() + _next_byte, length);
+        ::memcpy(data, _section->content() + _next_byte, length);  // Flawfinder: ignore: memcpy()
         // Advance pointers
         data += length;
         remain_in_packet -= length;

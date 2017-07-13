@@ -201,9 +201,9 @@ size_t ts::TSFileInputBuffered::read (TSPacket* user_buffer, size_t max_packets,
     // The following loop is executed from 0 to 2 times only.
     while (_current_offset < _total_count && max_packets > 0) {
         const size_t current_index = (_first_index + _current_offset) % buffer_size;
-        const size_t count = std::min (max_packets, buffer_size - current_index);
+        const size_t count = std::min(max_packets, buffer_size - current_index);
         assert (count > 0);
-        ::memcpy (user_buffer, &_buffer[current_index], count * PKT_SIZE);
+        ::memcpy(user_buffer, &_buffer[current_index], count * PKT_SIZE);  // Flawfinder: ignore: memcpy()
         user_buffer += count;
         max_packets -= count;
         _current_offset += count;
@@ -211,7 +211,7 @@ size_t ts::TSFileInputBuffered::read (TSPacket* user_buffer, size_t max_packets,
     }
 
     // Then, read the rest directly from the file into the user's buffer.
-    size_t user_count = TSFileInput::read (user_buffer, max_packets, report);
+    size_t user_count = TSFileInput::read(user_buffer, max_packets, report);
     _in_packets += user_count;
 
     // Finally, read back the rest into our buffer. We do the exchanges that way
@@ -220,7 +220,7 @@ size_t ts::TSFileInputBuffered::read (TSPacket* user_buffer, size_t max_packets,
     // into our buffer.
     if (user_count >= buffer_size) {
         // Completely replace the buffer content.
-        ::memcpy (&_buffer[0], user_buffer + user_count - buffer_size, buffer_size * PKT_SIZE);
+        ::memcpy(&_buffer[0], user_buffer + user_count - buffer_size, buffer_size * PKT_SIZE);  // Flawfinder: ignore: memcpy()
         _first_index = 0;
         _current_offset = _total_count = buffer_size;
     }
@@ -232,7 +232,7 @@ size_t ts::TSFileInputBuffered::read (TSPacket* user_buffer, size_t max_packets,
             const size_t index = (_first_index + _total_count) % buffer_size;
             const size_t count = std::min (user_count, buffer_size - index);
             assert (count > 0);
-            ::memcpy (&_buffer[index], user_buffer, count * PKT_SIZE);
+            ::memcpy(&_buffer[index], user_buffer, count * PKT_SIZE);  // Flawfinder: ignore: memcpy()
             user_buffer += count;
             user_count -= count;
             _total_count += count;
@@ -241,11 +241,11 @@ size_t ts::TSFileInputBuffered::read (TSPacket* user_buffer, size_t max_packets,
         // Then, override the beginning of the buffer
         while (user_count > 0) {
             // If we get there, the buffer must be full
-            assert (_current_offset == buffer_size);
-            assert (_total_count == buffer_size);
-            const size_t count = std::min (user_count, buffer_size - _first_index);
-            assert (count > 0);
-            ::memcpy (&_buffer[_first_index], user_buffer, count * PKT_SIZE);
+            assert(_current_offset == buffer_size);
+            assert(_total_count == buffer_size);
+            const size_t count = std::min(user_count, buffer_size - _first_index);
+            assert(count > 0);
+            ::memcpy(&_buffer[_first_index], user_buffer, count * PKT_SIZE);  // Flawfinder: ignore: memcpy()
             user_buffer += count;
             user_count -= count;
             _first_index = (_first_index + count) % buffer_size;

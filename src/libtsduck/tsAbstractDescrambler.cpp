@@ -388,15 +388,16 @@ void ts::AbstractDescrambler::processCMT (const Section& sect)
         _mutex.acquire();
     }
 
-    // Copy the ECM into the PID context
-    ::memcpy (estream->ecm, sect.payload(), sect.payloadSize());
+    // Copy the ECM into the PID context.
+    // Flawfinder: ignore: memcpy()
+    ::memcpy(estream->ecm, sect.payload(), sect.payloadSize());
     estream->ecm_size = sect.payloadSize();
     estream->new_ecm = true;
 
-    // Decipher the ECM
+    // Decipher the ECM.
     if (_synchronous) {
         // Synchronous mode: directly decipher the ECM
-        processECM (*estream);
+        processECM(*estream);
     }
     else {
         // Asynchronous mode: signal the ECM to the ECM processing thread.
@@ -418,8 +419,8 @@ void ts::AbstractDescrambler::processECM (ECMStream& estream)
 
     uint8_t ecm [MAX_PSI_SECTION_SIZE];
     size_t ecm_size = estream.ecm_size;
-    assert (estream.ecm_size <= sizeof(ecm));
-    ::memcpy (ecm, estream.ecm, estream.ecm_size);
+    assert(estream.ecm_size <= sizeof(ecm));
+    ::memcpy(ecm, estream.ecm, estream.ecm_size);  // Flawfinder: ignore: memcpy()
     estream.new_ecm = false;
 
     // In asynchronous mode, release the mutex.
@@ -430,24 +431,24 @@ void ts::AbstractDescrambler::processECM (ECMStream& estream)
 
     // Here, we have an ECM to decipher.
 
-    tsp->debug ("packet %" FMT_INT64 "d, decipher ECM, %" FMT_SIZE_T "d bytes: %02X %02X %02X %02X %02X %02X %02X %02X ...",
-                _packet_count - 1, ecm_size,
-                int (ecm[0]), int (ecm[1]), int (ecm[2]), int (ecm[3]),
-                int (ecm[4]), int (ecm[5]), int (ecm[6]), int (ecm[7]));
+    tsp->debug("packet %" FMT_INT64 "d, decipher ECM, %" FMT_SIZE_T "d bytes: %02X %02X %02X %02X %02X %02X %02X %02X ...",
+               _packet_count - 1, ecm_size,
+               int(ecm[0]), int(ecm[1]), int(ecm[2]), int(ecm[3]),
+               int(ecm[4]), int(ecm[5]), int(ecm[6]), int(ecm[7]));
 
     // Submit the ECM to the CAS (subclass)
 
     uint8_t cw_even [CW_BYTES];
     uint8_t cw_odd [CW_BYTES];
-    bool ok = decipherECM (ecm, ecm_size, cw_even, cw_odd);
+    bool ok = decipherECM(ecm, ecm_size, cw_even, cw_odd);
 
     if (ok) {
-        tsp->debug ("even CW: %02X %02X %02X %02X %02X %02X %02X %02X",
-                    int (cw_even[0]), int (cw_even[1]), int (cw_even[2]), int (cw_even[3]),
-                    int (cw_even[4]), int (cw_even[5]), int (cw_even[6]), int (cw_even[7]));
-        tsp->debug ("odd CW:  %02X %02X %02X %02X %02X %02X %02X %02X",
-                    int (cw_odd[0]), int (cw_odd[1]), int (cw_odd[2]), int (cw_odd[3]),
-                    int (cw_odd[4]), int (cw_odd[5]), int (cw_odd[6]), int (cw_odd[7]));
+        tsp->debug("even CW: %02X %02X %02X %02X %02X %02X %02X %02X",
+                   int(cw_even[0]), int(cw_even[1]), int(cw_even[2]), int(cw_even[3]),
+                   int(cw_even[4]), int(cw_even[5]), int(cw_even[6]), int(cw_even[7]));
+        tsp->debug("odd CW:  %02X %02X %02X %02X %02X %02X %02X %02X",
+                   int(cw_odd[0]), int(cw_odd[1]), int(cw_odd[2]), int(cw_odd[3]),
+                   int(cw_odd[4]), int(cw_odd[5]), int(cw_odd[6]), int(cw_odd[7]));
     }
 
     // In asynchronous mode, relock the mutex.
@@ -465,12 +466,12 @@ void ts::AbstractDescrambler::processECM (ECMStream& estream)
         if (!estream.cw_valid || ::memcmp (estream.cw_even, cw_even, CW_BYTES) != 0) {
             // Previous even CW was either invalid or different from new one
             estream.new_cw_even = true;
-            ::memcpy (estream.cw_even, cw_even, CW_BYTES);
+            ::memcpy(estream.cw_even, cw_even, CW_BYTES);  // Flawfinder: ignore: memcpy()
         }
         if (!estream.cw_valid || ::memcmp (estream.cw_odd, cw_odd, CW_BYTES) != 0) {
             // Previous odd CW was either invalid or different from new one
             estream.new_cw_odd = true;
-            ::memcpy (estream.cw_odd, cw_odd, CW_BYTES);
+            ::memcpy(estream.cw_odd, cw_odd, CW_BYTES);  // Flawfinder: ignore: memcpy()
         }
     }
 
@@ -609,8 +610,8 @@ ts::ProcessorPlugin::Status ts::AbstractDescrambler::processPacket (TSPacket& pk
                 return TSP_END;
             }
             uint8_t key[2 * CW_BYTES];
-            ::memcpy (key, pecm->cw_even, CW_BYTES);
-            ::memcpy (key + CW_BYTES, pecm->cw_odd, CW_BYTES);
+            ::memcpy(key, pecm->cw_even, CW_BYTES);            // Flawfinder: ignore: memcpy()
+            ::memcpy(key + CW_BYTES, pecm->cw_odd, CW_BYTES);  // Flawfinder: ignore: memcpy()
             if (!pecm->dvs042.setKey (key, 2 * CW_BYTES)) {
                 tsp->error ("error setting descrambling key in AES-128/DVS042 engine");
                 _abort = true;
@@ -620,11 +621,11 @@ ts::ProcessorPlugin::Status ts::AbstractDescrambler::processPacket (TSPacket& pk
             pecm->new_cw_odd = false;
         }
         else if (scv == SC_EVEN_KEY) {
-            pecm->key_even.init (pecm->cw_even, _cw_mode);
+            pecm->key_even.init(pecm->cw_even, _cw_mode);
             pecm->new_cw_even = false;
         }
         else {
-            pecm->key_odd.init (pecm->cw_odd, _cw_mode);
+            pecm->key_odd.init(pecm->cw_odd, _cw_mode);
             pecm->new_cw_odd = false;
         }
 
@@ -643,7 +644,7 @@ ts::ProcessorPlugin::Status ts::AbstractDescrambler::processPacket (TSPacket& pk
             tsp->error ("AES decrypt error");
             return TSP_END;
         }
-        ::memcpy (pl, tmp, pl_size);
+        ::memcpy (pl, tmp, pl_size);  // Flawfinder: ignore: memcpy()
     }
     else {
         Scrambling& scr (scv == SC_EVEN_KEY ? pecm->key_even : pecm->key_odd);

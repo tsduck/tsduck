@@ -67,7 +67,7 @@ namespace ts {
         ForkPipe _pipe;
 
         // Search a file in a search path. Return true is found
-        bool searchInPath (std::string& result, const StringVector& path, const std::string name);
+        bool searchInPath (std::string& result, const StringVector& path, const std::string& name);
 
         // Inaccessible operations
         PlayPlugin() = delete;
@@ -142,7 +142,7 @@ bool ts::PlayPlugin::send (const TSPacket* buffer, size_t packet_count)
 // Search a file in a search path. Return empty string if not found
 //----------------------------------------------------------------------------
 
-bool ts::PlayPlugin::searchInPath (std::string& result, const StringVector& path, const std::string name)
+bool ts::PlayPlugin::searchInPath (std::string& result, const StringVector& path, const std::string& name)
 {
     for (StringVector::const_iterator it = path.begin(); it != path.end(); ++it) {
         if (!it->empty()) {

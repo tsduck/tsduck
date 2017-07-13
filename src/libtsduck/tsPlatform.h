@@ -537,9 +537,11 @@
 // Other Microsoft VC oddities....
 
 #if defined(__windows) && !defined(DOXYGEN)
-    #define snprintf    _snprintf
-    #define vsnprintf   _vsnprintf
-    #define strcasecmp  _stricmp
+    // Flawfinder: ignore
+    #define snprintf _snprintf
+    // Flawfinder: ignore
+    #define vsnprintf _vsnprintf
+    #define strcasecmp _stricmp
     #define strncasecmp _strnicmp
 #endif
 
@@ -2373,6 +2375,7 @@ namespace ts {
 #if defined(DOXYGEN)
     #define TS_PRINTF_FORMAT(formatIndex,argIndex)
 #elif defined(__gcc) && __GNUC__ >= 4
+    // Flawfinder: ignore
     #define TS_PRINTF_FORMAT(f,p) __attribute__((format(printf, f, p)))
 #else
     #define TS_PRINTF_FORMAT(f,p)
@@ -2457,11 +2460,12 @@ namespace ts {
 //! The variable-length list of arguments for the format are assumed
 //! to immediately follow the format argument.
 //!
-#define TS_FORMAT_STRING(string_var,format_arg)                         \
+#define TS_FORMAT_STRING(string_var,format_arg)                           \
 {                                                                         \
     va_list ap__;                                                         \
     va_start(ap__, format_arg);                                           \
     char buf1__[256];                                                     \
+    /* Flawfinder: ignore */                                              \
     int size1__ = ::vsnprintf(buf1__, sizeof(buf1__), format_arg, ap__);  \
     va_end(ap__);                                                         \
     if (size1__ < int(sizeof(buf1__))) {                                  \
@@ -2470,6 +2474,7 @@ namespace ts {
     else {                                                                \
         char *buf2__ = new char[size1__ + 1];                             \
         va_start(ap__, format_arg);                                       \
+        /* Flawfinder: ignore */                                          \
         int size2__ = ::vsnprintf(buf1__, size1__ + 1, format_arg, ap__); \
         va_end(ap__);                                                     \
         assert(size2__ <= size1__);                                       \

@@ -367,6 +367,7 @@ std::ostream& ts::BinaryTable::write(std::ostream& strm, ReportInterface& report
 {
     if (!_is_valid) {
         report.error("invalid table, cannot write it to file");
+        // Flawfinder: ignore: completely fooled here, std::ostream::setstate has nothing to do with PRNG.
         strm.setstate(std::ios::failbit);
     }
     else {

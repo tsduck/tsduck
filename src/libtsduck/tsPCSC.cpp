@@ -84,8 +84,8 @@ bool ts::pcsc::Success (::LONG status, ReportInterface& report)
 
     if (status == SCARD_S_SUCCESS) {
         size_t len;
-        for (const char* p = names; (len = strlen (p)) != 0; p += len + 1) {
-            readers.push_back (p);
+        for (const char* p = names; (len = ::strlen(p)) != 0; p += len + 1) {  // Flawfinder: ignore: strlen()
+            readers.push_back(p);
         }
     }
 
@@ -113,17 +113,18 @@ bool ts::pcsc::Success (::LONG status, ReportInterface& report)
         c_states[i].szReader = states[i].reader.c_str();
         c_states[i].dwCurrentState = states[i].current_state;
         c_states[i].cbAtr = ::DWORD (std::min (sizeof(c_states[i].rgbAtr), states[i].atr.size()));
-        ::memcpy (c_states[i].rgbAtr, states[i].atr.data(), c_states[i].cbAtr);
+        // Flawfinder: ignore: memcpy()
+        ::memcpy(c_states[i].rgbAtr, states[i].atr.data(), c_states[i].cbAtr);
     }
 
     // Check status of all smartcard readers
 
-    ::LONG status = ::SCardGetStatusChange (context, timeout_ms, c_states, ::DWORD (states.size()));
+    ::LONG status = ::SCardGetStatusChange(context, timeout_ms, c_states, ::DWORD(states.size()));
 
     if (status == SCARD_S_SUCCESS) {
         for (size_t i = 0; i < states.size(); ++i) {
             states[i].event_state = c_states[i].dwEventState;
-            states[i].atr.copy (c_states[i].rgbAtr, std::min (::DWORD (sizeof(c_states[i].rgbAtr)), c_states[i].cbAtr));
+            states[i].atr.copy(c_states[i].rgbAtr, std::min (::DWORD(sizeof(c_states[i].rgbAtr)), c_states[i].cbAtr));
         }
     }
 

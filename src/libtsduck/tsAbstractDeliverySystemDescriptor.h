@@ -65,9 +65,9 @@ namespace ts {
         //!
         //! Protected constructor for subclasses.
         //! @param [in] tag Descriptor tag.
-        //! @param [in] system The delivery system.
+        //! @param [in] sys The delivery system.
         //!
-        AbstractDeliverySystemDescriptor(DID tag, DeliverySystem system);
+        AbstractDeliverySystemDescriptor(DID tag, DeliverySystem sys);
 
     private:
         // Unreachable constructors and operators.

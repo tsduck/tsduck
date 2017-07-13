@@ -1014,8 +1014,8 @@ void ts::ScramblerPlugin::CryptoPeriod::initNext (const CryptoPeriod& previous)
 {
     _scrambler = previous._scrambler;
     _cp_number = previous._cp_number + 1;
-    ::memcpy (_cw_current, previous._cw_next, sizeof(_cw_current));
-    _scrambler->_cw_gen.read (_cw_next, sizeof(_cw_next));
+    ::memcpy(_cw_current, previous._cw_next, sizeof(_cw_current));  // Flawfinder: ignore: memcpy()
+    _scrambler->_cw_gen.read(_cw_next, sizeof(_cw_next));
     generateECM();
 }
 
@@ -1090,7 +1090,7 @@ void ts::ScramblerPlugin::CryptoPeriod::handleECM(const ecmgscs::ECMResponse& re
     else {
         // ECMG returns ECM in packet format
         _ecm.resize(response.ECM_datagram.size() / PKT_SIZE);
-        ::memcpy(&_ecm[0].b, response.ECM_datagram.data(), response.ECM_datagram.size());
+        ::memcpy(&_ecm[0].b, response.ECM_datagram.data(), response.ECM_datagram.size());  // Flawfinder: ignore: memcpy()
     }
 
     _scrambler->tsp->debug ("got ECM for crypto-period %d, %" FMT_SIZE_T "d packets", int (_cp_number), _ecm.size());

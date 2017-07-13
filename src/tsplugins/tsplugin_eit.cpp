@@ -445,7 +445,7 @@ void ts::EITPlugin::handleSection (SectionDemux& demux, const Section& sect)
             size_t loop_length = GetUInt16 (data + 10) & 0x0FFF;
             data += 12; size -= 12;
             loop_length = std::min (loop_length, size);
-            data += size; size -= size;
+            data += loop_length; size -= loop_length;
         }
     }
 }

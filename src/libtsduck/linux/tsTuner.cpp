@@ -170,6 +170,7 @@ ts::Tuner::Tuner(const std::string& device_name, bool info_only, ReportInterface
     _rt_timer(0),
     _rt_timer_valid(false)
 {
+    // Flawfinder: ignore: this is our open(), not ::open().
     this->open(device_name, info_only, report);
 }
 
@@ -209,7 +210,8 @@ bool ts::Tuner::GetAllTuners(TunerPtrVector& tuners, ReportInterface& report)
 // Open the tuner.
 //-----------------------------------------------------------------------------
 
-bool ts::Tuner::open (const std::string& device_name, bool info_only, ReportInterface& report)
+// Flawfinder: ignore: this is our open(), not ::open().
+bool ts::Tuner::open(const std::string& device_name, bool info_only, ReportInterface& report)
 {
     if (_is_open) {
         report.error ("DVB tuner already open");
@@ -259,18 +261,19 @@ bool ts::Tuner::open (const std::string& device_name, bool info_only, ReportInte
     // All configuration and setup operations are non-blocking anyway.
     // Reading events, however, is a blocking operation.
 
-    if ((_frontend_fd = ::open (_frontend_name.c_str(), (info_only ? O_RDONLY : O_RDWR) | O_NONBLOCK)) < 0) {
-        report.error ("error opening " + _frontend_name + ": " + ErrorCodeMessage());
+    // Flawfinder: ignore: trusted open()
+    if ((_frontend_fd = ::open(_frontend_name.c_str(), (info_only ? O_RDONLY : O_RDWR) | O_NONBLOCK)) < 0) {
+        report.error("error opening " + _frontend_name + ": " + ErrorCodeMessage());
         return false;
     }
 
     // Get characteristics of the frontend
 
-    if (::ioctl (_frontend_fd, FE_GET_INFO, &_fe_info) < 0) {
-        report.error ("error getting info on " + _frontend_name + ": " + ErrorCodeMessage());
-        return close (report) || false;
+    if (::ioctl(_frontend_fd, FE_GET_INFO, &_fe_info) < 0) {
+        report.error("error getting info on " + _frontend_name + ": " + ErrorCodeMessage());
+        return close(report) || false;
     }
-    _fe_info.name [sizeof (_fe_info.name) - 1] = 0;
+    _fe_info.name[sizeof(_fe_info.name) - 1] = 0;
     _device_info = _fe_info.name;
     _delivery_systems.reset();
 
@@ -280,16 +283,16 @@ bool ts::Tuner::open (const std::string& device_name, bool info_only, ReportInte
             _delivery_systems.set (DS_DVB_S);
 #if TS_DVB_API_VERSION >= 501
             if ((_fe_info.caps & FE_CAN_2G_MODULATION) != 0) {
-                _delivery_systems.set (DS_DVB_S2);
+                _delivery_systems.set(DS_DVB_S2);
             }
 #endif
             break;
         case ::FE_QAM:
             _tuner_type = DVB_C;
-            _delivery_systems.set (DS_DVB_C);
+            _delivery_systems.set(DS_DVB_C);
 #if TS_DVB_API_VERSION >= 501
             if ((_fe_info.caps & FE_CAN_2G_MODULATION) != 0) {
-                _delivery_systems.set (DS_DVB_C2);
+                _delivery_systems.set(DS_DVB_C2);
             }
 #endif
             break;
@@ -298,7 +301,7 @@ bool ts::Tuner::open (const std::string& device_name, bool info_only, ReportInte
             _delivery_systems.set (DS_DVB_T);
 #if TS_DVB_API_VERSION >= 501
             if ((_fe_info.caps & FE_CAN_2G_MODULATION) != 0) {
-                _delivery_systems.set (DS_DVB_T2);
+                _delivery_systems.set(DS_DVB_T2);
             }
 #endif
             break;
@@ -306,8 +309,8 @@ bool ts::Tuner::open (const std::string& device_name, bool info_only, ReportInte
             _tuner_type = ATSC;
             break;
         default:
-            report.error ("unsupported frontend type %d on %s (%s)", int (_fe_info.type), _frontend_name.c_str(), _fe_info.name);
-            return close (report) || false;
+            report.error("unsupported frontend type %d on %s (%s)", int (_fe_info.type), _frontend_name.c_str(), _fe_info.name);
+            return close(report) || false;
     }
 
     // Open DVB adapter DVR (tap for TS packets) and adapter demux
@@ -316,13 +319,15 @@ bool ts::Tuner::open (const std::string& device_name, bool info_only, ReportInte
         _dvr_fd = _demux_fd = -1;
     }
     else {
-        if ((_dvr_fd = ::open (_dvr_name.c_str(), O_RDONLY)) < 0) {
-            report.error ("error opening " + _dvr_name + ": " + ErrorCodeMessage());
-            return close (report) || false;
+        // Flawfinder: ignore: trusted ::open().
+        if ((_dvr_fd = ::open(_dvr_name.c_str(), O_RDONLY)) < 0) {
+            report.error("error opening " + _dvr_name + ": " + ErrorCodeMessage());
+            return close(report) || false;
         }
-        if ((_demux_fd = ::open (_demux_name.c_str(), O_RDWR)) < 0) {
-            report.error ("error opening " + _demux_name + ": " + ErrorCodeMessage());
-            return close (report) || false;
+        // Flawfinder: ignore: trusted ::open().
+        if ((_demux_fd = ::open(_demux_name.c_str(), O_RDWR)) < 0) {
+            report.error("error opening " + _demux_name + ": " + ErrorCodeMessage());
+            return close(report) || false;
         }
     }
 

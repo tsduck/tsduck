@@ -86,7 +86,7 @@ void ts::FreeMediaType (::AM_MEDIA_TYPE& mt)
             return E_OUTOFMEMORY;
         }
         else {
-            ::CopyMemory (dst.pbFormat, src.pbFormat, dst.cbFormat);
+            ::CopyMemory(dst.pbFormat, src.pbFormat, dst.cbFormat);  // Flawfinder: ignore: CopyMemory()
         }
     }
     if (dst.pUnk != NULL) {

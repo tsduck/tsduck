@@ -323,6 +323,7 @@ void PlatformTest::testFormats()
 
     ui64 = 0;
     ui64--; // all binary ones
+    // Flawfinder: ignore: snprintf()
     ::snprintf(buffer, sizeof(buffer), "<%" FMT_INT64 "X>", ui64);
     buffer[sizeof(buffer) - 1] = '\0';
 
@@ -337,7 +338,6 @@ void PlatformTest::testMemoryBarrier()
 
     int i = 1;
     ts::MemoryBarrier();
-    // cppcheck-suppress redundantAssignment - done on purpose, we test memory barrier
     i = 2;
     CPPUNIT_ASSERT_EQUAL(2, i);
 }

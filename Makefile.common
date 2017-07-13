@@ -98,6 +98,10 @@
 #  optsize:
 #    Alternate target to recompile with optimizations for reduced code size.
 #
+#  scan-build:
+#    Run scan-build, the clang C/C++ static code analyzer, on the source tree
+#    starting at the current directory.
+#
 #  unixify:
 #    Recursively cleanup Windows oddities in C/C++source files, including
 #    subdirectories. By default, Visual C++ indents with tabs and tabs are 4
@@ -243,6 +247,18 @@
 #  RPMBUILDFLAGS_EXTRA
 #    Additional options for the "rpmbuild" command.
 #    This variable can be defined after inclusion of this makefile.
+#
+#  SCANBUILD
+#    Contains the absolute path of the scan-build static code analyzer.
+#    If empty, scan-build is searched in $PATH.
+#
+#  SCANBUILD_FLAGS
+#    Contains additional options for scan-build. Typically empty since the
+#    usual options are automatically added in this makefile.
+#
+#  SCANBUILD_SOURCES
+#    List of source files or directories on which to run scan-build.
+#    By default, use the source tree starting at current directory.
 #
 #  SOFLAGS
 #    Specific options when creating shared objects (.so files).
@@ -428,6 +444,9 @@
 #  ROOTDIR
 #    Absolute path of the directory where this Makefile.common file is
 #    located. By convention, this is the root directory of the project.
+#
+#  SCANBUILD_FLAGS
+#    Same as input variables with additional usual options.
 #
 #  SED
 #    Name of "sed" command. If some "gsed" is found, use it instead.
@@ -761,7 +780,7 @@ $(OBJDIR)/%.dep: %.cpp
 	rm -f $@
 
 # Rebuild and include all .dep files, unless the explicit targets do not require the .dep files.
-NODEPS += clean cmacros cppcheck cppcheck-xml cxxmacros debug m32 distclean doxygen flawfinder listvars unixify
+NODEPS += clean cmacros cppcheck cppcheck-xml cxxmacros debug m32 distclean doxygen flawfinder listvars scan-build unixify
 ifeq ($(DONT_BUILD_DEPS),)
     ifneq ($(MAKECMDGOALS),)
         DONT_BUILD_DEPS := $(if $(filter-out $(NODEPS),$(MAKECMDGOALS)),,true)
@@ -827,7 +846,7 @@ TEXI2INFO_FLAGS =
 # In debug mode, the diagnostics are more aggressive but may be false positive.
 CPPCHECK ?= cppcheck
 CPPCHECK_SOURCES ?= $(CURDIR)
-CPPCHECK_FLAGS += --inline-suppr --quiet --force \
+CPPCHECK_FLAGS += $(CXXFLAGS_INCLUDES) --inline-suppr --quiet --force \
 	--template="{file}:{line}: ({severity}) {id}: {message}" \
 	--enable=all --suppress=unusedFunction --suppress=missingIncludeSystem \
 	$(if $(DEBUG),--inconclusive,)
@@ -844,6 +863,14 @@ FLAWFINDER_FLAGS += --quiet --dataonly
 .PHONY: flawfinder
 flawfinder:
 	$(FLAWFINDER) $(FLAWFINDER_FLAGS) $(FLAWFINDER_SOURCES)
+
+# Static code analysis: Run scan-build on the source code tree starting at current directory.
+SCANBUILD ?= scan-build
+SCANBUILD_SOURCES ?= $(CURDIR)
+SCANBUILD_FLAGS += -o $(OBJDIR)
+.PHONY: scan-build
+scan-build:
+	$(SCANBUILD) $(SCANBUILD_FLAGS) $(MAKE) -C $(SCANBUILD_SOURCES)
 
 # Utilities: display predefined macros for C and C++
 .PHONY: cmacros cxxmacros

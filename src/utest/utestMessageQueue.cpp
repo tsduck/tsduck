@@ -100,7 +100,7 @@ namespace {
     private:
         TestQueue& _queue;
     public:
-        MessageQueueTestThread(TestQueue& queue) :
+        explicit MessageQueueTestThread(TestQueue& queue) :
             Thread(),
             _queue(queue)
         {

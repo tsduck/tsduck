@@ -297,20 +297,22 @@ std::istream& ts::TSPacket::read (std::istream& strm, bool check_sync, ReportInt
     if (insize == PKT_SIZE) {
         // Got a complete TS packet
         if (check_sync && b[0] != SYNC_BYTE) {
-            // Complete packet read but wrong sync byte
-            strm.setstate (std::ios::failbit);
-            report.error ("synchronization lost" + AfterPackets (position) +
-                          Format (", got 0x%02X instead of 0x%02X at start of TS packet", int (b[0]), int (SYNC_BYTE)));
+            // Complete packet read but wrong sync byte.
+            // Flawfinder: ignore: completely fooled here, std::ostream::setstate has nothing to do with PRNG.
+            strm.setstate(std::ios::failbit);
+            report.error("synchronization lost" + AfterPackets (position) +
+                         Format(", got 0x%02X instead of 0x%02X at start of TS packet", int(b[0]), int(SYNC_BYTE)));
         }
     }
     else if (!strm.eof()) {
         // Not an EOF, actual I/O error
-        report.error ("I/O error while reading TS packet" + AfterPackets (position));
+        report.error("I/O error while reading TS packet" + AfterPackets (position));
     }
     else if (insize > 0) {
-        // EOF, got partial packet
-        strm.setstate (std::ios::failbit);
-        report.error ("truncated TS packet (" + Decimal (insize) + " bytes)" + AfterPackets (position));
+        // EOF, got partial packet.
+        // Flawfinder: ignore: completely fooled here, std::ostream::setstate has nothing to do with PRNG.
+        strm.setstate(std::ios::failbit);
+        report.error("truncated TS packet (" + Decimal (insize) + " bytes)" + AfterPackets (position));
     }
 
     return strm;

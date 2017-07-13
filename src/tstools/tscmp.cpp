@@ -371,14 +371,14 @@ int main (int argc, char *argv[])
 
     // Read and compare all packets in the files
     TSPacket pkt1, pkt2;
-    size_t read1, read2 = 0;
-    ts::PID pid1, pid2 = PID_NULL;
+    size_t read2 = 0;
+    ts::PID pid2 = PID_NULL;
 
     for (;;) {
 
         // Read one packet in file1
-        read1 = file1.read (&pkt1, 1, opt);
-        pid1 = pkt1.getPID();
+        size_t read1 = file1.read (&pkt1, 1, opt);
+        ts::PID pid1 = pkt1.getPID();
         count1[pid1]++;
 
         // If currently not skipping packets, read one packet in file2

@@ -141,11 +141,12 @@ bool ts::ECMGClient::connect (const SocketAddress& ecmg_address,
     }
 
     // Perform TCP connection to ECMG server
-    if (!_connection.open (*_report)) {
+    // Flawfinder: ignore: this is our open(), not ::open().
+    if (!_connection.open(*_report)) {
         return false;
     }
-    if (!_connection.connect (ecmg_address, *_report)) {
-        _connection.close (*_report);
+    if (!_connection.connect(ecmg_address, *_report)) {
+        _connection.close(*_report);
         return false;
     }
 
@@ -153,8 +154,8 @@ bool ts::ECMGClient::connect (const SocketAddress& ecmg_address,
     ecmgscs::ChannelSetup channel_setup;
     channel_setup.channel_id = ecm_channel_id;
     channel_setup.Super_CAS_id = super_cas_id;
-    if (!_connection.send (channel_setup, *_report)) {
-        return abortConnection ("");
+    if (!_connection.send(channel_setup, *_report)) {
+        return abortConnection("");
     }
 
     // Tell the receiver thread to start listening for incoming messages

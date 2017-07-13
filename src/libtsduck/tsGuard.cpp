@@ -59,7 +59,7 @@ ts::Guard::~Guard() throw(GuardError)
     if (_is_locked) {
         _is_locked = !_mutex.release();
         if (_is_locked) {
-            // cppcheck-suppress exceptThrowInDestructor // done on purpose
+            // obsolete: cppcheck-suppress exceptThrowInDestructor // done on purpose
             throw GuardError("Guard failed to release mutex");
         }
     }

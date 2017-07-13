@@ -109,6 +109,7 @@ namespace ts {
                          const char* from,
                          const char* thousandSeparators = "")
     {
+        // Flawfinder: ignore: strlen()
         return from != 0 && ToInteger<INT>(value, from, ::strlen(from), thousandSeparators);
     }
 
@@ -222,6 +223,7 @@ namespace ts {
                            const char* thousandSeparators = "",
                            const char* listSeparators = ", ")
     {
+        // Flawfinder: ignore: strlen()
         return from != 0 && ToIntegers<CONTAINER>(container, from, ::strlen(from), thousandSeparators, listSeparators);
     }
 

@@ -105,6 +105,7 @@ bool ts::Tuner::GetAllTuners(TunerPtrVector& tuners, ReportInterface& report)
 // Open the tuner.
 //-----------------------------------------------------------------------------
 
+// Flawfinder: ignore: this is our open(), not ::open().
 bool ts::Tuner::open(const std::string& device_name, bool info_only, ReportInterface& report)
 {
     report.error(NOT_IMPLEMENTED);

@@ -76,14 +76,20 @@ bool ts::CTS4<CIPHER>::encrypt(const void* plain, size_t plain_length,
     assert(plain_length > this->block_size);
     const size_t residue_size = plain_length - this->block_size;
 
+    // Flawfinder: ignore: memcpy()
     ::memcpy(this->work.data(), pt + residue_size, this->block_size - residue_size);
+    // Flawfinder: ignore: memcpy()
     ::memcpy(this->work.data() + this->block_size - residue_size, pt + this->block_size, residue_size);
+
     if (!this->algo->encrypt(this->work.data(), this->block_size, ct + residue_size, this->block_size)) {
         return false;
     }
 
+    // Flawfinder: ignore: memcpy()
     ::memcpy(this->work.data(), pt, residue_size);
+    // Flawfinder: ignore: memcpy()
     ::memcpy(this->work.data() + residue_size, ct + residue_size, this->block_size - residue_size);
+
     if (!this->algo->encrypt(this->work.data(), this->block_size, ct, this->block_size)) {
         return false;
     }
@@ -129,8 +135,11 @@ bool ts::CTS4<CIPHER>::decrypt (const void* cipher, size_t cipher_length,
 
     assert(cipher_length <= this->block_size);
 
+    // Flawfinder: ignore: memcpy()
     ::memcpy(this->work.data(), pt - this->block_size + cipher_length, this->block_size - cipher_length);
+    // Flawfinder: ignore: memcpy()
     ::memcpy(this->work.data() + this->block_size - cipher_length, ct, cipher_length);
+
     if (!this->algo->decrypt(this->work.data(), this->block_size, pt - this->block_size + cipher_length, this->block_size)) {
         return false;
     }

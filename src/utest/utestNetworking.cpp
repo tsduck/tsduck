@@ -365,7 +365,7 @@ namespace {
         uint16_t _portNumber;
     public:
         // Constructor
-        TCPClient (uint16_t portNumber):
+        explicit TCPClient (uint16_t portNumber):
             _portNumber(portNumber)
         {
         }
@@ -487,7 +487,7 @@ namespace {
         uint16_t _portNumber;
     public:
         // Constructor
-        UDPClient(uint16_t portNumber) :
+        explicit UDPClient(uint16_t portNumber) :
             _portNumber(portNumber)
         {
         }
