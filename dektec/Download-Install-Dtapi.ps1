@@ -34,7 +34,7 @@
 
  .PARAMETER ForceDownload
 
-  Force a download even if the DTAPI is alread downloaded.
+  Force a download even if the DTAPI is already downloaded.
 
  .PARAMETER NoInstall
 
@@ -54,15 +54,11 @@ param(
     [switch]$NoPause = $false
 )
 
-$DtapiUrl = "http://www.dektec.com/products/SDK/DTAPI/Downloads/WinSDK.zip"
+$DektecUrl = "http://www.dektec.com/downloads/SDK/"
 $DtapiInstaller = "DekTec SDK - Windows Setup.exe"
 
 # Local file names.
 $RootDir = $PSScriptRoot
-$DtapiZipName = (Split-Path -Leaf $DtapiUrl)
-$DtapiZipFile = (Join-Path $RootDir $DtapiZipName)
-$DtapiDir = (Join-Path $RootDir ([io.fileinfo] $DtapiZipName).BaseName)
-$DtapiSetup = (Join-Path $DtapiDir $DtapiInstaller)
 
 # A function to exit this script.
 function Exit-Script([string]$Message = "")
@@ -77,6 +73,36 @@ function Exit-Script([string]$Message = "")
     }
     exit $Code
 }
+
+# Get the HTML page for Dektec SDK downloads.
+$status = 0
+$message = ""
+try {
+    $response = Invoke-WebRequest $DektecUrl
+    $status = [int] [Math]::Floor($response.StatusCode / 100)
+}
+catch {
+    $message = $_.Exception.Message
+}
+if ($status -ne 1 -and $status -ne 2) {
+    if ($message -eq "" -and (Test-Path variable:response)) {
+        Exit-Script "Status code $($response.StatusCode), $($response.StatusDescription)"
+    }
+    else {
+        Exit-Script "#### Error accessing ${DektecUrl}: $message"
+    }
+}
+
+# Parse HTML page to locate the WinSDK file.
+$sdk = $response.ParsedHtml.getElementsByTagName("a") | Where-Object { $_.href -like "*/WinSDK*.zip" } | Select-Object -First 1
+$sdkRef = $sdk.href -replace '^about:',''
+
+# Build the absolute URL from base URL (the download page) and href link.
+$DtapiUrl = (New-Object -TypeName 'System.Uri' -ArgumentList ([System.Uri]$DektecUrl),$sdkref)
+$DtapiZipName = (Split-Path -Leaf $DtapiUrl.toString())
+$DtapiZipFile = (Join-Path $RootDir $DtapiZipName)
+$DtapiDir = (Join-Path $RootDir ([io.fileinfo] $DtapiZipName).BaseName)
+$DtapiSetup = (Join-Path $DtapiDir $DtapiInstaller)
 
 # Download WinSDK.zip
 if (-not $ForceDownload -and (Test-Path $DtapiZipFile)) {
