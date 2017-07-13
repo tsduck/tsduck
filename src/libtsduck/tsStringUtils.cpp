@@ -98,7 +98,7 @@ std::string ts::ReturnRemoveSubstring (const std::string& str, const std::string
 
 std::string& ts::RemoveSubstring(std::string& str, const char* substr)
 {
-    const size_t len = ::strlen(substr);
+    const size_t len = ::strlen(substr);  // Flawfinder: ignore: strlen()
     if (len > 0) {
         size_t index;
         while (!str.empty() && (index = str.find(substr)) != std::string::npos) {
@@ -222,7 +222,7 @@ bool ts::EndWith (const std::string& s, const char* suffix)
         return false;
     }
     size_t iString = s.length();
-    size_t iSuffix = ::strlen (suffix);
+    size_t iSuffix = ::strlen(suffix);  // Flawfinder: ignore: strlen()
     if (iString < iSuffix) {
         return false;
     }
@@ -247,7 +247,7 @@ bool ts::EndWithInsensitive (const std::string& s, const char* suffix)
         return false;
     }
     size_t iString = s.length();
-    size_t iSuffix = ::strlen (suffix);
+    size_t iSuffix = ::strlen(suffix);  // Flawfinder: ignore: strlen()
     if (iString < iSuffix) {
         return false;
     }
@@ -397,7 +397,7 @@ bool ts::HexaDecodeAndAppend (std::vector<uint8_t>& result, const std::string& h
 
 bool ts::HexaDecodeAndAppend (std::vector<uint8_t>& result, const char* hexa_string)
 {
-    result.reserve (result.size() + ::strlen (hexa_string) / 2);
+    result.reserve(result.size() + ::strlen(hexa_string) / 2);  // Flawfinder: ignore: strlen()
     const std::locale loc;
     bool got_first_nibble = false;
     uint8_t byte = 0;

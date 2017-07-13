@@ -103,8 +103,12 @@ bool ts::DektecDevice::GetAllPorts(DektecPortDescVector& ports, bool is_input, b
 
 std::string ts::DektecDevice::GetDeviceDescription(const Dtapi::DtDeviceDesc& dev)
 {
+    // Flawfinder: ignore: statically-sized arrays can be improperly restricted.
     char str[64];
-    Dtapi::DTAPI_RESULT status = Dtapi::DtapiDtDeviceDesc2String(const_cast<Dtapi::DtDeviceDesc*>(&dev), DTAPI_DVC2STR_TYPE_NMB, str, sizeof(str));
+    Dtapi::DTAPI_RESULT status = Dtapi::DtapiDtDeviceDesc2String(const_cast<Dtapi::DtDeviceDesc*>(&dev),
+                                                                 DTAPI_DVC2STR_TYPE_NMB,
+                                                                 str,
+                                                                 sizeof(str));
     if (status == DTAPI_OK) {
         str[sizeof(str) - 1] = '\0';
         return str;
@@ -218,8 +222,12 @@ std::string ts::DektecDevice::GetInterfaceDescription(const Dtapi::DtHwFuncDesc&
 
     // If none found, use DTAPI function
     if (desc.empty()) {
+        // Flawfinder: ignore: statically-sized arrays can be improperly restricted.
         char str[64];
-        Dtapi::DTAPI_RESULT status = Dtapi::DtapiDtHwFuncDesc2String(const_cast<Dtapi::DtHwFuncDesc*>(&port), DTAPI_HWF2STR_ITF_TYPE, str, sizeof(str));
+        Dtapi::DTAPI_RESULT status = Dtapi::DtapiDtHwFuncDesc2String(const_cast<Dtapi::DtHwFuncDesc*>(&port),
+                                                                     DTAPI_HWF2STR_ITF_TYPE,
+                                                                     str,
+                                                                     sizeof(str));
         str[status == DTAPI_OK ? sizeof(str) - 1 : 0] = '\0';
         desc = str;
     }

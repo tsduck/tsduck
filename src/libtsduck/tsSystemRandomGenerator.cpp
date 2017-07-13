@@ -53,8 +53,8 @@ ts::SystemRandomGenerator::SystemRandomGenerator() :
         _prov = 0;
     }
 #else
-    if ((_fd = ::open("/dev/urandom", O_RDONLY)) < 0) {
-        _fd = ::open("/dev/random", O_RDONLY);
+    if ((_fd = ::open("/dev/urandom", O_RDONLY)) < 0) {  // Flawfinder: ignore: open()
+        _fd = ::open("/dev/random", O_RDONLY);           // Flawfinder: ignore: open()
     }
 #endif
 }

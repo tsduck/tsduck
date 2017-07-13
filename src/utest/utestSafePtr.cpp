@@ -76,8 +76,11 @@ namespace {
         static int _instanceCount;
     public:
         // Constructor
-        TestData(int value) : _value(value) {_instanceCount++;}
-        TestData(const TestData& other) : _value(other._value) {_instanceCount++;}
+        explicit TestData(int value) : _value(value) {_instanceCount++;}
+        explicit TestData(const TestData& other) : _value(other._value) {_instanceCount++;}
+
+        // Assignment is different from copy constructor, do not increment instance count.
+        TestData& operator=(const TestData& other) {if (&other != this) _value = other._value; return *this;}
 
         // Destructor
         virtual ~TestData() {_instanceCount--;}
@@ -311,14 +314,14 @@ namespace {
     {
     public:
         // Constructor
-        SubTestData1 (int value) : TestData (value) {}
+        explicit SubTestData1 (int value) : TestData (value) {}
     };
 
     class SubTestData2: public TestData
     {
     public:
         // Constructor
-        SubTestData2 (int value) : TestData (value) {}
+        explicit SubTestData2 (int value) : TestData (value) {}
     };
 
     typedef ts::SafePtr<SubTestData1> SubTestData1Ptr;

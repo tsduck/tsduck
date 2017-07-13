@@ -96,6 +96,7 @@ void ts::SharedLibrary::load(const std::string& filename)
     _report.debug("trying to load " + _filename);
 
 #if defined(__windows)
+    // Flawfinder: ignore: LoadLibraryEx: Ensure that the full path to the library is specified
     _module = ::LoadLibraryEx(_filename.c_str(), NULL, 0);
     _is_loaded = _module != 0;
     if (!_is_loaded) {

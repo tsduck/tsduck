@@ -80,28 +80,6 @@ namespace ts {
         ByteBlock(const char* str);
 
         //!
-        //! Return a pointer to the beginning of the raw data.
-        //! @return a pointer to the beginning of the raw data.
-        //! May be invalidated when the vector changes.
-        //! Return a null pointer if the vector is empty.
-        //!
-        const uint8_t* data() const
-        {
-            return size() == 0 ? 0 : &(*this)[0];
-        }
-
-        //!
-        //! Return a pointer to the beginning of the raw data.
-        //! @return a pointer to the beginning of the raw data.
-        //! May be invalidated when the vector changes.
-        //! Return a null pointer if the vector is empty.
-        //!
-        uint8_t* data()
-        {
-            return size() == 0 ? 0 : &(*this)[0];
-        }
-
-        //!
         //! Replace the content of a byte block.
         //! @param [in] data Address of the new area to copy.
         //! @param [in] size Size of the area to copy.
@@ -131,7 +109,7 @@ namespace ts {
         void append(const void* data, size_type size)
         {
             if (size > 0 && data != 0) {
-                ::memcpy(enlarge(size), data, size);
+                ::memcpy(enlarge(size), data, size);  // Flawfinder: ignore: memcpy()
             }
         }
 

@@ -187,12 +187,12 @@ void ts::Section::reload(TID tid,
                          size_t payload_size,
                          PID source_pid)
 {
-    initialize (source_pid);
+    initialize(source_pid);
     _is_valid = SHORT_SECTION_HEADER_SIZE + payload_size <= MAX_PRIVATE_SECTION_SIZE;
-    _data = new ByteBlock (SHORT_SECTION_HEADER_SIZE + payload_size);
-    PutUInt8 (_data->data(), tid);
-    PutUInt16 (_data->data() + 1, (is_private_section ? 0x4000 : 0x0000) | 0x3000 | uint16_t (payload_size & 0x0FFF));
-    ::memcpy (_data->data() + 3, payload, payload_size);
+    _data = new ByteBlock(SHORT_SECTION_HEADER_SIZE + payload_size);
+    PutUInt8(_data->data(), tid);
+    PutUInt16(_data->data() + 1, (is_private_section ? 0x4000 : 0x0000) | 0x3000 | uint16_t (payload_size & 0x0FFF));
+    ::memcpy(_data->data() + 3, payload, payload_size);  // Flawfinder: ignore: memcpy()
 }
 
 
@@ -216,17 +216,17 @@ void ts::Section::reload(TID tid,
     initialize (source_pid);
     _is_valid = section_number <= last_section_number && version <= 31 &&
         LONG_SECTION_HEADER_SIZE + payload_size + SECTION_CRC32_SIZE <= MAX_PRIVATE_SECTION_SIZE;
-    _data = new ByteBlock (LONG_SECTION_HEADER_SIZE + payload_size + SECTION_CRC32_SIZE);
-    PutUInt8 (_data->data(), tid);
-    PutUInt16 (_data->data() + 1,
-               0x8000 | (is_private_section ? 0x4000 : 0x0000) | 0x3000 |
-               uint16_t ((LONG_SECTION_HEADER_SIZE - 3 + payload_size + SECTION_CRC32_SIZE) & 0x0FFF));
-    PutUInt16 (_data->data() + 3, tid_ext);
-    PutUInt8 (_data->data() + 5, 0xC0 | ((version & 0x1F) << 1) | (is_current ? 0x01 : 0x00));
-    PutUInt8 (_data->data() + 6, section_number);
-    PutUInt8 (_data->data() + 7, last_section_number);
-    ::memcpy (_data->data() + 8, payload, payload_size);
-    recomputeCRC ();
+    _data = new ByteBlock(LONG_SECTION_HEADER_SIZE + payload_size + SECTION_CRC32_SIZE);
+    PutUInt8(_data->data(), tid);
+    PutUInt16(_data->data() + 1,
+              0x8000 | (is_private_section ? 0x4000 : 0x0000) | 0x3000 |
+              uint16_t((LONG_SECTION_HEADER_SIZE - 3 + payload_size + SECTION_CRC32_SIZE) & 0x0FFF));
+    PutUInt16(_data->data() + 3, tid_ext);
+    PutUInt8(_data->data() + 5, 0xC0 | ((version & 0x1F) << 1) | (is_current ? 0x01 : 0x00));
+    PutUInt8(_data->data() + 6, section_number);
+    PutUInt8(_data->data() + 7, last_section_number);
+    ::memcpy(_data->data() + 8, payload, payload_size);  // Flawfinder: ignore: memcpy()
+    recomputeCRC();
 }
 
 
@@ -487,17 +487,19 @@ std::istream& ts::Section::read(std::istream& strm, CRC32::Validation crc_op, Re
         secsize += GetUInt16(header + 1) & 0x0FFF;
         secdata = new ByteBlock(secsize);
         CheckNonNull(secdata.pointer());
-        ::memcpy(secdata->data(), header, 3);
-        strm.read(reinterpret_cast <char*> (secdata->data() + 3), std::streamsize(secsize - 3));
+        ::memcpy(secdata->data(), header, 3);  // Flawfinder: ignore: memcpy()
+        strm.read(reinterpret_cast <char*>(secdata->data() + 3), std::streamsize(secsize - 3));
         insize += size_t(strm.gcount());
     }
 
     if (insize != secsize) {
         // Truncated section
         if (insize > 0) {
+            // Flawfinder: ignore: completely fooled here, std::ostream::setstate has nothing to do with PRNG.
             strm.setstate(std::ios::failbit);
             report.error("truncated section" + AfterBytes(position) +
-                         ", got " + Decimal(insize) + " bytes, expected " + Decimal(secsize));
+                         ", got " + Decimal(insize) +
+                         " bytes, expected " + Decimal(secsize));
         }
     }
     else {

@@ -213,13 +213,13 @@ void ts::TOT::serialize (BinaryTable& table) const
         const Region& reg (regions[i]);
 
         // Serialize one region in the descriptor
-        ::memcpy (desc_data, reg.country.c_str(), 3);
-        desc_data[3] = uint8_t (reg.region_id << 2) | (reg.time_offset < 0 ? 0x03 : 0x02);
-        desc_data[4] = EncodeBCD (::abs (reg.time_offset) / 60);
-        desc_data[5] = EncodeBCD (::abs (reg.time_offset) % 60);
-        EncodeMJD (reg.next_change, desc_data + 6, 5);
-        desc_data[11] = EncodeBCD (::abs (reg.next_time_offset) / 60);
-        desc_data[12] = EncodeBCD (::abs (reg.next_time_offset) % 60);
+        ::memcpy (desc_data, reg.country.c_str(), 3);  // Flawfinder: ignore: memcpy()
+        desc_data[3] = uint8_t(reg.region_id << 2) | (reg.time_offset < 0 ? 0x03 : 0x02);
+        desc_data[4] = EncodeBCD(::abs(reg.time_offset) / 60);
+        desc_data[5] = EncodeBCD(::abs(reg.time_offset) % 60);
+        EncodeMJD(reg.next_change, desc_data + 6, 5);
+        desc_data[11] = EncodeBCD(::abs(reg.next_time_offset) / 60);
+        desc_data[12] = EncodeBCD(::abs(reg.next_time_offset) % 60);
         desc_data += 13;
         desc_remain -= 13;
 
@@ -228,8 +228,8 @@ void ts::TOT::serialize (BinaryTable& table) const
         if (i == regions.size() - 1 || desc_remain < 13) {
             // Create one descriptor
             descbuf[0] = DID_LOCAL_TIME_OFFSET;
-            descbuf[1] = uint8_t (desc_data - (descbuf + 2));
-            dlist.add (descbuf);
+            descbuf[1] = uint8_t(desc_data - (descbuf + 2));
+            dlist.add(descbuf);
             // Reinitialize descriptor buffer
             desc_data = descbuf + 2;
             desc_remain = sizeof(descbuf) - 2;
@@ -237,7 +237,7 @@ void ts::TOT::serialize (BinaryTable& table) const
     }
 
     // Append the "other" descriptors to the list
-    dlist.add (descs);
+    dlist.add(descs);
 
     // Insert descriptor list (with leading length field).
     // Keep 4 bytes for CRC.
@@ -250,17 +250,17 @@ void ts::TOT::serialize (BinaryTable& table) const
     }
 
     // Add the section in the table (include CRC)
-    table.addSection (new Section (TID_TOT,
-                                   true,   // is_private_section
-                                   payload,
-                                   data + 4 - payload));
+    table.addSection(new Section(TID_TOT,
+                                 true,   // is_private_section
+                                 payload,
+                                 data + 4 - payload));
 
     // Now artificially rebuild a CRC at end of section
-    const Section& sect (*table.sectionAt(0));
-    data = const_cast <uint8_t*> (sect.content());
-    size_t size (sect.size());
-    assert (size > 4);
-    PutUInt32 (data + size - 4, CRC32 (data, size - 4).value());
+    const Section& sect(*table.sectionAt(0));
+    data = const_cast <uint8_t*>(sect.content());
+    size_t size = sect.size();
+    assert(size > 4);
+    PutUInt32(data + size - 4, CRC32(data, size - 4).value());
 }
 
 

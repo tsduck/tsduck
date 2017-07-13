@@ -234,12 +234,14 @@ std::string ts::ExecutableFile()
     // Read the value of the symbolic link.
     int length;
     char name[1024];
+    // Flawfinder: ignore: readlink does not terminate with ASCII NUL.
     if ((length = ::readlink("/proc/self/exe", name, sizeof(name))) < 0) {
         throw ts::Exception("Symbolic link /proc/self/exe error", errno);
         return "";
     }
     else {
         assert(length <= int(sizeof(name)));
+        // We handle here the fact that readlink does not terminate with ASCII NUL.
         return std::string(name, length);
     }
 
@@ -466,12 +468,13 @@ ts::Time ts::GetFileModificationTimeLocal (const std::string& path)
 // Check if a file or directory exists
 //----------------------------------------------------------------------------
 
-bool ts::FileExists (const std::string& path)
+bool ts::FileExists(const std::string& path)
 {
 #if defined (__windows)
-    return ::GetFileAttributes (path.c_str()) != INVALID_FILE_ATTRIBUTES;
+    return ::GetFileAttributes(path.c_str()) != INVALID_FILE_ATTRIBUTES;
 #else
-    return ::access (path.c_str(), F_OK) == 0;
+    // Flawfinder: ignore
+    return ::access(path.c_str(), F_OK) == 0;
 #endif
 }
 
@@ -590,6 +593,7 @@ std::string ts::ErrorCodeMessage (ts::ErrorCode code)
         // Make sure message is nul-terminated.
         message[sizeof(message) - 1] = 0;
         // Remove trailing newlines (if any)
+        // Flawfinder: ignore: strlen()
         for (size_t i = ::strlen(result); i > 0 && (result[i-1] == '\n' || result[i-1] == '\r'); result[--i] = 0) {}
         return result;
     }
@@ -633,41 +637,41 @@ void ts::GetProcessMetrics(ProcessMetrics& metrics)
     //  Definition of data available from /proc/<pid>/stat
     //  See man page for proc(5) for more details.
     struct ProcessStatus {
-        int           pid;       // The process id.
-        char          state;     // One char from "RSDZTW"
-        int           ppid;      // The PID of the parent.
-        int           pgrp;      // The process group ID of the process.
-        int           session;   // The session ID of the process.
-        int           tty_nr;    // The tty the process uses.
-        int           tpgid;     // Process group ID which owns the tty
-        unsigned long flags;     // The flags of the process.
-        unsigned long minflt;    // Minor faults the process made
-        unsigned long cminflt;   // Minor faults the process's children made
-        unsigned long majflt;    // Major faults the process made
-        unsigned long cmajflt;   // Major faults the process's children made
-        unsigned long utime;     // Number of jiffies in user mode
-        unsigned long stime;     // Number of jiffies in kernel mode
-        long          cutime;    // Jiffies process's children in user mode
-        long          cstime;    // Jiffies process's children in kernel mode
-        long          priority;  // Standard nice value, plus fifteen.
-        long          nice;      // Nice value, from 19 (nicest) to -19 (not nice)
+        int           pid;         // The process id.
+        char          state;       // One char from "RSDZTW"
+        int           ppid;        // The PID of the parent.
+        int           pgrp;        // The process group ID of the process.
+        int           session;     // The session ID of the process.
+        int           tty_nr;      // The tty the process uses.
+        int           tpgid;       // Process group ID which owns the tty
+        unsigned long flags;       // The flags of the process.
+        unsigned long minflt;      // Minor faults the process made
+        unsigned long cminflt;     // Minor faults the process's children made
+        unsigned long majflt;      // Major faults the process made
+        unsigned long cmajflt;     // Major faults the process's children made
+        unsigned long utime;       // Number of jiffies in user mode
+        unsigned long stime;       // Number of jiffies in kernel mode
+        long          cutime;      // Jiffies process's children in user mode
+        long          cstime;      // Jiffies process's children in kernel mode
+        long          priority;    // Standard nice value, plus fifteen.
+        long          nice;        // Nice value, from 19 (nicest) to -19 (not nice)
         long          itrealvalue; // Jiffies before the next SIGALRM
-        unsigned long starttime; // Jiffies the process started after system boot
-        unsigned long vsize;     // Virtual memory size in bytes.
-        long          rss;       // Resident Set Size
-        unsigned long rlim;      // Current limit in bytes on the rss
-        unsigned long startcode; // Address above which program text can run.
-        unsigned long endcode;   // Address below which program text can run.
-        unsigned long startstack;// Address of the start of the stack
-        unsigned long kstkesp;   // Current value of esp (stack pointer)
-        unsigned long kstkeip;   // Current EIP (instruction pointer).
-        unsigned long signal;    // Bitmap of pending signals (usually 0).
-        unsigned long blocked;   // Bitmap of blocked signals
-        unsigned long sigignore; // Bitmap of ignored signals.
-        unsigned long sigcatch;  // Bitmap of catched signals.
-        unsigned long wchan;     // "Channel" in which the process is waiting
-        unsigned long nswap;     // Number of pages swapped - not maintained.
-        unsigned long cnswap;    // Cumulative nswap for child processes.
+        unsigned long starttime;   // Jiffies the process started after system boot
+        unsigned long vsize;       // Virtual memory size in bytes.
+        long          rss;         // Resident Set Size
+        unsigned long rlim;        // Current limit in bytes on the rss
+        unsigned long startcode;   // Address above which program text can run.
+        unsigned long endcode;     // Address below which program text can run.
+        unsigned long startstack;  // Address of the start of the stack
+        unsigned long kstkesp;     // Current value of esp (stack pointer)
+        unsigned long kstkeip;     // Current EIP (instruction pointer).
+        unsigned long signal;      // Bitmap of pending signals (usually 0).
+        unsigned long blocked;     // Bitmap of blocked signals
+        unsigned long sigignore;   // Bitmap of ignored signals.
+        unsigned long sigcatch;    // Bitmap of catched signals.
+        unsigned long wchan;       // "Channel" in which the process is waiting
+        unsigned long nswap;       // Number of pages swapped - not maintained.
+        unsigned long cnswap;      // Cumulative nswap for child processes.
         int           exit_signal; // Signal to be sent to parent when we die.
         int           processor;   // CPU number last executed on.
     };
@@ -813,6 +817,7 @@ bool ts::EnvironmentExists (const std::string& name)
     char unused[2];
     return ::GetEnvironmentVariable(name.c_str(), unused, sizeof(unused)) != 0;
 #else
+    // Flawfinder: ignore: Environment variables are untrustable input.
     return ::getenv(name.c_str()) != 0;
 #endif
 }
@@ -837,6 +842,7 @@ std::string ts::GetEnvironment (const std::string& name, const std::string& def)
     }
     return size <= 0 ? def : std::string(&value[0], std::min<size_t>(size, value.size()));
 #else
+    // Flawfinder: ignore: Environment variables are untrustable input.
     const char* value = ::getenv(name.c_str());
     return value != 0 ? value : def;
 #endif
@@ -972,7 +978,7 @@ void ts::GetEnvironment(Environment& env)
     const ::LPTCH strings = ::GetEnvironmentStrings();
     if (strings != 0) {
         size_t len;
-        for (char* p = strings; (len = ::strlen(p)) != 0; p += len + 1) {
+        for (char* p = strings; (len = ::strlen(p)) != 0; p += len + 1) {  // Flawfinder: ignore: strlen()
             AddNameValue(env, std::string(p, len));
         }
         ::FreeEnvironmentStrings(strings);

@@ -61,7 +61,7 @@ ts::ByteBlock::ByteBlock (const void* data, size_type size) :
     ByteVector (size)
 {
     if (size > 0) {
-        ::memcpy (&(*this)[0], data, size);
+        ::memcpy(&(*this)[0], data, size);  // Flawfinder: ignore: memcpy()
     }
 }
 
@@ -69,11 +69,11 @@ ts::ByteBlock::ByteBlock (const void* data, size_type size) :
 // Constructor from a C string
 //----------------------------------------------------------------------------
 
-ts::ByteBlock::ByteBlock (const char* str) :
-    ByteVector (strlen (str))
+ts::ByteBlock::ByteBlock(const char* str) :
+    ByteVector(::strlen(str))  // Flawfinder: ignore: strlen()
 {
     if (size() > 0) {
-        ::memcpy (&(*this)[0], str, strlen (str));
+        ::memcpy(data(), str, size());  // Flawfinder: ignore: memcpy()
     }
 }
 
@@ -81,11 +81,11 @@ ts::ByteBlock::ByteBlock (const char* str) :
 // Replace the content of a byte block.
 //----------------------------------------------------------------------------
 
-void ts::ByteBlock::copy (const void* data, size_type size)
+void ts::ByteBlock::copy(const void* data_, size_type size_)
 {
-    resize (size);
-    if (size > 0) {
-        ::memcpy (&(*this)[0], data, size);
+    resize(size_);
+    if (size_ > 0) {
+        ::memcpy(data(), data_, size_);  // Flawfinder: ignore: memcpy()
     }
 }
 
@@ -93,10 +93,10 @@ void ts::ByteBlock::copy (const void* data, size_type size)
 // Increase size by n and return pointer to new n-byte area
 //----------------------------------------------------------------------------
 
-void* ts::ByteBlock::enlarge (size_type n)
+void* ts::ByteBlock::enlarge(size_type n)
 {
     size_type oldsize = this->size();
-    resize (oldsize + n);
+    resize(oldsize + n);
     return &(*this)[oldsize];
 }
 
@@ -105,8 +105,8 @@ void* ts::ByteBlock::enlarge (size_type n)
 // (the STL equivalent uses iterators, not indices).
 //----------------------------------------------------------------------------
 
-void ts::ByteBlock::erase (size_type first, size_type size)
+void ts::ByteBlock::erase(size_type first, size_type size)
 {
-    assert (first + size <= this->size());
-    ByteVector::erase (begin() + first, begin() + first + size);
+    assert(first + size <= this->size());
+    ByteVector::erase(begin() + first, begin() + first + size);
 }

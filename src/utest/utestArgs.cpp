@@ -196,8 +196,8 @@ namespace {
     class TestArgs: public ts::Args
     {
     public:
-        TestArgs(ts::ReportInterface* log) :
-            ts::Args ("{description}", "{syntax}", "{help}", ts::Args::NO_EXIT_ON_ERROR)
+        explicit TestArgs(ts::ReportInterface* log) :
+            ts::Args("{description}", "{syntax}", "{help}", ts::Args::NO_EXIT_ON_ERROR)
         {
             redirectReport(log);
             option("",      0,  ts::Args::STRING, 1, 2);

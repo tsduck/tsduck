@@ -40,16 +40,17 @@ TSDUCK_SOURCE;
 // Constructor:
 //----------------------------------------------------------------------------
 
-ts::OutputRedirector::OutputRedirector (const std::string& name,
-                                          Args& args,
-                                          std::ostream& stream,
-                                          std::ios::openmode mode) :
-    _stream (stream),
-    _previous (0),
-    _file ()
+ts::OutputRedirector::OutputRedirector(const std::string& name,
+                                       Args& args,
+                                       std::ostream& stream,
+                                       std::ios::openmode mode) :
+    _stream(stream),
+    _previous(0),
+    _file()
 {
+    // Flawfinder: ignore: this is our open(), not ::open().
     if (!name.empty()) {
-        _file.open (name.c_str(), mode);
+        _file.open(name.c_str(), mode);
         if (_file) {
             _previous = _stream.rdbuf (_file.rdbuf());
         }
@@ -60,7 +61,7 @@ ts::OutputRedirector::OutputRedirector (const std::string& name,
     }
     else if (&stream == &std::cout && (mode | std::ios::binary) == mode) {
         // Try to put standard output in binary mode
-        SetBinaryModeStdout (args);
+        SetBinaryModeStdout(args);
     }
 }
 

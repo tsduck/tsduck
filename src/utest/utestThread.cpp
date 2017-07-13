@@ -97,7 +97,7 @@ namespace {
     class ThreadConstructor: public ts::Thread
     {
     public:
-        ThreadConstructor(const ts::ThreadAttributes& attributes) :
+        explicit ThreadConstructor(const ts::ThreadAttributes& attributes) :
             ts::Thread(attributes)
         {
         }

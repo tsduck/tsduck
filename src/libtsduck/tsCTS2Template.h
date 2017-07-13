@@ -167,7 +167,7 @@ bool ts::CTS2<CIPHER>::decrypt (const void* cipher, size_t cipher_length,
             pt[this->block_size + i] = ct[i] ^ this->work[i];
         }
         // Rebuild Cn-1 in work
-        ::memcpy(this->work.data(), ct, residue_size);
+        ::memcpy(this->work.data(), ct, residue_size);  // Flawfinder: ignore: memcpy()
         // Pn-1 = decrypt (Cn-1)
         if (!this->algo->decrypt(this->work.data(), this->block_size, pt, this->block_size)) {
             return false;

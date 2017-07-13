@@ -49,18 +49,19 @@ ts::InputRedirector::InputRedirector(const std::string& name,
     _file()
 {
     if (!name.empty()) {
-        _file.open (name.c_str(), mode);
+        // Flawfinder: ignore: this is our open(), not ::open().
+        _file.open(name.c_str(), mode);
         if (_file) {
-            _previous = _stream.rdbuf (_file.rdbuf());
+            _previous = _stream.rdbuf(_file.rdbuf());
         }
         else {
-            args.error ("cannot open file " + name);
-            args.exitOnError ();
+            args.error("cannot open file " + name);
+            args.exitOnError();
         }
     }
     else if (&stream == &std::cin && (mode | std::ios::binary) == mode) {
         // Try to put standard input in binary mode
-        SetBinaryModeStdin (args);
+        SetBinaryModeStdin(args);
     }
 }
 
@@ -72,7 +73,7 @@ ts::InputRedirector::InputRedirector(const std::string& name,
 ts::InputRedirector::~InputRedirector()
 {
     if (_previous != 0) {
-        _stream.rdbuf (_previous);
+        _stream.rdbuf(_previous);
         _previous = 0;
     }
     if (_file.is_open()) {

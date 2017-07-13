@@ -144,12 +144,11 @@ namespace {
     class TestData
     {
     private:
-        TestData() = delete;
         int _value;
         static int _instanceCount;
     public:
         // Constructors
-        TestData(int value) : _value(value) {_instanceCount++;}
+        explicit TestData(int value = 0) : _value(value) {_instanceCount++;}
         TestData(const TestData& other) : _value(other._value) {_instanceCount++;}
         TestData& operator=(const TestData& other) {_value = other._value; return *this;}
         bool operator==(const TestData& other) {return _value == other._value;}

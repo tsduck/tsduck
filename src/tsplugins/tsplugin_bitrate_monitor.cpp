@@ -27,7 +27,6 @@
 //
 //----------------------------------------------------------------------------
 //
-//  Transport stream processor shared library:
 //  Monitor PID bitrate
 //  Copyright 2005-2011, Jerome Leveque
 //----------------------------------------------------------------------------
@@ -116,41 +115,40 @@ ts::BitrateMonitorPlugin::BitrateMonitorPlugin (TSP* tsp_) :
     _pkt_count_index(0),
     _startup(false)
 {
-    option (""             ,   0, PIDVAL, 1, 1);   // PID nb is a required parameter
-    option ("alarm_command", 'a', STRING);
-    option ("time_interval", 't', UINT16);
-    option ("min"          ,   0, UINT32);
-    option ("max"          ,   0, UINT32);
+    option(""             ,   0, PIDVAL, 1, 1);   // PID nb is a required parameter
+    option("alarm_command", 'a', STRING);
+    option("time_interval", 't', UINT16);
+    option("min"          ,   0, UINT32);
+    option("max"          ,   0, UINT32);
 
-
-    setHelp ("Pid:\n"
-             "      Specifies the PID to monitor.\n"
-             "\n"
-             "Options:\n"
-             "\n"
-             "  -a command\n"
-             "  --alarm_command command\n"
-             "      Command to be run when an alarm is detected\n"
-             "      (bitrate out of range).\n"
-             "\n"
-             "  --min value\n"
-             "      Set minimum allowed value for bitrate (bits/s).\n"
-             "      Default value = 10 bits/s.\n"
-             "\n"
-             "  --max value\n"
-             "      Set maximum allowed value for bitrate (bits/s).\n"
-             "      Default value = 2^32 bits/s.\n"
-             "\n"
-             "  -t value\n"
-             "  --time_interval value\n"
-             "      Time interval (in seconds) used to compute the bitrate.\n"
-             "      Default value = 5 seconds.\n"
-             "\n"
-             "  --help\n"
-             "      Display this help text.\n"
-             "\n"
-             "  --version\n"
-             "      Display the version number.\n");
+    setHelp("Pid:\n"
+            "      Specifies the PID to monitor.\n"
+            "\n"
+            "Options:\n"
+            "\n"
+            "  -a command\n"
+            "  --alarm_command command\n"
+            "      Command to be run when an alarm is detected\n"
+            "      (bitrate out of range).\n"
+            "\n"
+            "  --min value\n"
+            "      Set minimum allowed value for bitrate (bits/s).\n"
+            "      Default value = 10 bits/s.\n"
+            "\n"
+            "  --max value\n"
+            "      Set maximum allowed value for bitrate (bits/s).\n"
+            "      Default value = 2^32 bits/s.\n"
+            "\n"
+            "  -t value\n"
+            "  --time_interval value\n"
+            "      Time interval (in seconds) used to compute the bitrate.\n"
+            "      Default value = 5 seconds.\n"
+            "\n"
+            "  --help\n"
+            "      Display this help text.\n"
+            "\n"
+            "  --version\n"
+            "      Display the version number.\n");
 }
 
 
@@ -189,9 +187,7 @@ bool ts::BitrateMonitorPlugin::start()
     }
 
     _last_bitrate_status = IN_RANGE;
-
     _last_second = time (NULL);
-
     _startup = true;
 
     return true;
@@ -208,11 +204,10 @@ void ts::BitrateMonitorPlugin::runAlarmCommand(const std::string& parameter)
 {
     // Do nothing if alarm command was not specified
     if (_alarm_command != "") {
-
-        std::string completeCommand = _alarm_command + " " + '"' + parameter + '"';
-
-        if (system(completeCommand.c_str()) != 0) {
-            tsp->severe("unable to run alarm command %s", completeCommand.c_str());
+        const std::string completeCommand(_alarm_command + " " + '"' + parameter + '"');
+        // Flawfinder: ignore: system causes a new program to execute and is difficult to use safely.
+        if (::system(completeCommand.c_str()) != 0) {
+            tsp->error("unable to run alarm command %s", completeCommand.c_str());
         }
     }
 }
@@ -239,27 +234,31 @@ void ts::BitrateMonitorPlugin::computeBitrate()
 
     // Check the bitrate value, regarding the allowed range.
     RangeStatus new_bitrate_status;
-    if (bitrate < _min_bitrate) new_bitrate_status = LOWER;
-    else if (bitrate > _max_bitrate) new_bitrate_status = GREATER;
-    else new_bitrate_status = IN_RANGE;
+    if (bitrate < _min_bitrate) {
+        new_bitrate_status = LOWER;
+    }
+    else if (bitrate > _max_bitrate) {
+        new_bitrate_status = GREATER;
+    }
+    else {
+        new_bitrate_status = IN_RANGE;
+    }
 
     // Report an error, if the bitrate status has changed.
     if (new_bitrate_status != _last_bitrate_status) {
-
         std::string alarmMessage;
-
         switch (new_bitrate_status) {
             case LOWER:
-                alarmMessage = Format ("pid %u (0x%04X) - bitrate (%u bits/s) is lower than allowed minimum (%u bits/s)",
-                    _pid, _pid, bitrate, _min_bitrate);
+                alarmMessage = Format("pid %u (0x%04X) - bitrate (%u bits/s) is lower than allowed minimum (%u bits/s)",
+                                      _pid, _pid, bitrate, _min_bitrate);
                 break;
             case IN_RANGE:
-                alarmMessage = Format ("pid %u (0x%04X) - bitrate (%u bits/s) is back in allowed range (%u-%u bits/s)",
-                    _pid, _pid, bitrate, _min_bitrate, _max_bitrate);
+                alarmMessage = Format("pid %u (0x%04X) - bitrate (%u bits/s) is back in allowed range (%u-%u bits/s)",
+                                      _pid, _pid, bitrate, _min_bitrate, _max_bitrate);
                 break;
             case GREATER:
-                alarmMessage = Format ("pid %u (0x%04X) - bitrate (%u bits/s) is greater than allowed maximum (%u bits/s)",
-                    _pid, _pid, bitrate, _max_bitrate);
+                alarmMessage = Format("pid %u (0x%04X) - bitrate (%u bits/s) is greater than allowed maximum (%u bits/s)",
+                                      _pid, _pid, bitrate, _max_bitrate);
                 break;
             default:
                 assert(false); // should not get there
@@ -273,13 +272,12 @@ void ts::BitrateMonitorPlugin::computeBitrate()
         // Update status
         _last_bitrate_status = new_bitrate_status;
     }
-
 }
 
 
 
 //----------------------------------------------------------------------------
-// Mzthod 2 - Compute bitrate for the monitored PID. Report an alarm if the
+// Method 2 - Compute bitrate for the monitored PID. Report an alarm if the
 // bitrate is out of allowed range, or back in it.
 //----------------------------------------------------------------------------
 
@@ -330,7 +328,6 @@ void ts::BitrateMonitorPlugin::computeBitrate()
 //}
 
 
-
 //----------------------------------------------------------------------------
 // Packet processing method
 //----------------------------------------------------------------------------
@@ -365,8 +362,9 @@ ts::ProcessorPlugin::Status ts::BitrateMonitorPlugin::processPacket (TSPacket& p
 
     // If packet's PID matches, increment the number of packets
     // received during the current second.
-    if (pkt.getPID() == _pid) _pkt_count[_pkt_count_index]++;
-
+    if (pkt.getPID() == _pid) {
+        _pkt_count[_pkt_count_index]++;
+    }
 
     // NOTE : the following lines implement an other way for bitrate
     // computation. This alternative can be used if packets are not

@@ -181,7 +181,7 @@ bool ts::SHA512::add (const void* data, size_t size)
         }
         else {
             n = std::min (size, (BLOCK_SIZE - _curlen));
-            ::memcpy(_buf + _curlen, in, n);
+            ::memcpy(_buf + _curlen, in, n);  // Flawfinder: ignore: memcpy()
             _curlen += n;
             in += n;
             size -= n;
