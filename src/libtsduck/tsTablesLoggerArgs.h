@@ -81,6 +81,7 @@ namespace ts {
         bool         negate_tidext;   //!< Negate tidext filter (exclude selected tidexts).
         PIDSet       pid;             //!< PID values to filter.
         bool         add_pmt_pids;    //!< Add PMT PID's when one is found.
+        bool         no_duplicate;    //!< Exclude duplicated short sections on a PID.
         std::set<uint8_t>  tid;       //!< TID values to filter.
         std::set<uint16_t> tidext;    //!< TID-ext values to filter.
 

@@ -59,7 +59,8 @@ ts::TablesLogger::TablesLogger(const TablesLoggerArgs& opt, TablesDisplay& displ
     _demux(0, 0, opt.pid),
     _cas_mapper(report),
     _outfile(),
-    _sock(false, report)
+    _sock(false, report),
+    _shortSections()
 {
     // Set either a table or section handler, depending on --all-sections
     if (_opt.all_sections) {
@@ -144,6 +145,7 @@ void ts::TablesLogger::feedPacket(const TSPacket& pkt)
 void ts::TablesLogger::handleTable(SectionDemux&, const BinaryTable& table)
 {
     assert(table.sectionCount() > 0);
+    const PID pid = table.sourcePID();
 
     // Add PMT PID's when necessary
     if (_opt.add_pmt_pids && table.tableId() == TID_PAT) {
@@ -163,6 +165,18 @@ void ts::TablesLogger::handleTable(SectionDemux&, const BinaryTable& table)
         return;
     }
 
+    // Ignore duplicate tables with a short section.
+    if (_opt.no_duplicate && table.isShortSection()) {
+        if (_shortSections[pid].isNull() || *_shortSections[pid] != *table.sectionAt(0)) {
+            // Not the same section, keep it for next time.
+            _shortSections[pid] = new Section(*table.sectionAt(0), COPY);
+        }
+        else {
+            // Same section as previously, ignore it.
+            return;
+        }
+    }
+
     switch (_opt.mode) {
 
         case TablesLoggerArgs::TEXT: {
@@ -173,7 +187,7 @@ void ts::TablesLogger::handleTable(SectionDemux&, const BinaryTable& table)
             }
             else {
                 // Full table formatting
-                _display.displayTable(table, 0, _cas_mapper.casFamily(table.sourcePID())) << std::endl;
+                _display.displayTable(table, 0, _cas_mapper.casFamily(pid)) << std::endl;
             }
             postDisplay();
             break;
@@ -200,7 +214,7 @@ void ts::TablesLogger::handleTable(SectionDemux&, const BinaryTable& table)
             }
             else {
                 // Build a TLV message. Each section is a separate PRM_SECTION parameter.
-                startMessage(bb, tlv::MSG_LOG_TABLE, table.sourcePID());
+                startMessage(bb, tlv::MSG_LOG_TABLE, pid);
                 for (size_t i = 0; i < table.sectionCount(); ++i) {
                     addSection(bb, *table.sectionAt(i));
                 }

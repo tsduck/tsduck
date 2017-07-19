@@ -360,6 +360,16 @@ bool ts::BinaryTable::addSection(const SectionPtr& sect, bool replace, bool grow
 
 
 //----------------------------------------------------------------------------
+// Check if this is a table with one short section.
+//----------------------------------------------------------------------------
+
+bool ts::BinaryTable::isShortSection() const
+{
+    return _sections.size() == 1 && !_sections[0].isNull() && _sections[0]->isShortSection();
+}
+
+
+//----------------------------------------------------------------------------
 // Write the binary table on standard streams.
 //----------------------------------------------------------------------------
 

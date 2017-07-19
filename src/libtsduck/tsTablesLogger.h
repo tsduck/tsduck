@@ -105,6 +105,7 @@ namespace ts {
         CASMapper        _cas_mapper;
         std::ofstream    _outfile;  // Binary output file.
         UDPSocket        _sock;     // Output socket.
+        std::map<PID,SectionPtr> _shortSections;   // Tracking duplicate short sections by PID.
 
         // Hooks
         virtual void handleTable(SectionDemux&, const BinaryTable&);

@@ -64,6 +64,7 @@ ts::TablesLoggerArgs::TablesLoggerArgs() :
     negate_tidext(false),
     pid(),
     add_pmt_pids(false),
+    no_duplicate(false),
     tid(),
     tidext()
 {
@@ -157,13 +158,19 @@ void ts::TablesLoggerArgs::addHelp(Args& args) const
         "      Negate the TID extension filter: specified TID extensions are\n"
         "      excluded.\n"
         "\n"
-        "  -o filename\n"
-        "  --output-file filename\n"
-        "      File name for text output.\n"
+        "  --no-duplicate\n"
+        "      Do not report consecutive identical tables with a short section in the\n"
+        "      same PID. This can be useful for ECM's. This is the way to display new\n"
+        "      ECM's only. By default, tables with long sections are reported only when\n"
+        "      a new version is detected but tables with a short section are all reported.\n"
         "\n"
         "  --no-encapsulation\n"
         "      With --ip-udp, send the tables as raw binary messages in UDP packets.\n"
         "      By default, the tables are formatted into TLV messages.\n"
+        "\n"
+        "  -o filename\n"
+        "  --output-file filename\n"
+        "      File name for text output.\n"
         "\n"
         "  --packet-index\n"
         "      Display the index of the first and last TS packet of each displayed\n"
@@ -234,8 +241,9 @@ void ts::TablesLoggerArgs::defineOptions(Args& args) const
     args.option("negate-pid",           0);
     args.option("negate-tid",          'n');
     args.option("negate-tid-ext",       0);
-    args.option("output-file",         'o', Args::STRING);
+    args.option("no-duplicate",         0);
     args.option("no-encapsulation",     0);
+    args.option("output-file",         'o', Args::STRING);
     args.option("packet-index",         0);
     args.option("pid",                 'p', Args::PIDVAL, 0, Args::UNLIMITED_COUNT);
     args.option("psi-si",               0);
@@ -267,6 +275,7 @@ void ts::TablesLoggerArgs::load(Args& args)
     log_size = args.intValue<size_t>("log-size", DEFAULT_LOG_SIZE);
     negate_tid = args.present("negate-tid");
     negate_tidext = args.present("negate-tid-ext");
+    no_duplicate = args.present("no-duplicate");
 
     if (args.present("verbose")) {
         args.setDebugLevel(Severity::Verbose);

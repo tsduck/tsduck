@@ -241,6 +241,12 @@ namespace ts {
         }
 
         //!
+        //! Check if this is a table with one short section.
+        //! @return True if this is a table with one short section.
+        //!
+        bool isShortSection() const;
+
+        //!
         //! Write the binary table on a standard stream.
         //! @param [in,out] strm Output stream (binary output).
         //! @param [in,out] report Where to report errors.
