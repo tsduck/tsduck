@@ -161,7 +161,7 @@ void ts::TablesLogger::handleTable(SectionDemux&, const BinaryTable& table)
     }
 
     // Ignore table if not to be filtered
-    if (!isFiltered(*table.sectionAt(0))) {
+    if (!isFiltered(*table.sectionAt(0), _cas_mapper.casFamily(table.sourcePID()))) {
         return;
     }
 
@@ -246,7 +246,7 @@ void ts::TablesLogger::handleTable(SectionDemux&, const BinaryTable& table)
 void ts::TablesLogger::handleSection(SectionDemux&, const Section& sect)
 {
     // Ignore section if not to be filtered
-    if (!isFiltered(sect)) {
+    if (!isFiltered(sect, _cas_mapper.casFamily(sect.sourcePID()))) {
         return;
     }
 
@@ -380,7 +380,7 @@ void ts::TablesLogger::logSection(const Section& sect)
 //  Check if a specific section must be filtered
 //----------------------------------------------------------------------------
 
-bool ts::TablesLogger::isFiltered(const Section& sect) const
+bool ts::TablesLogger::isFiltered(const Section& sect, CASFamily cas) const
 {
     const bool tid_set = _opt.tid.find(sect.tableId()) != _opt.tid.end();
     const bool tidext_set = _opt.tidext.find(sect.tableIdExtension()) != _opt.tidext.end();

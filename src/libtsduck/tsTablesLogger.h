@@ -46,8 +46,8 @@ namespace ts {
     //! This class logs sections and tables.
     //!
     class TSDUCKDLL TablesLogger : 
-        private TableHandlerInterface,
-        private SectionHandlerInterface
+        protected TableHandlerInterface,
+        protected SectionHandlerInterface
     {
     public:
         //!
@@ -61,7 +61,7 @@ namespace ts {
         //!
         //! Destructor.
         //!
-        ~TablesLogger();
+        virtual ~TablesLogger();
 
         //!
         //! The following method feeds the logger with a TS packet.
@@ -93,6 +93,26 @@ namespace ts {
         //!
         void reportDemuxErrors(std::ostream& strm);
 
+    protected:
+        // Implementation of interfaces.
+        virtual void handleTable(SectionDemux&, const BinaryTable&);
+        virtual void handleSection(SectionDemux&, const Section&);
+
+        //!
+        //! Log a section (option @c --log).
+        //! @param [in] section The section to log.
+        //!
+        virtual void logSection(const Section& section);
+
+        //!
+        //! Check if a specific section must be filtered and displayed.
+        //! @param [in] section The section to check.
+        //! @param [in] cas The CAS family for this section.
+        //! @return True if the section is filtered and must be displayed.
+        //! False if the section shall not be displayed.
+        //!
+        virtual bool isFiltered(const Section& section, CASFamily cas) const;
+
     private:
         const TablesLoggerArgs& _opt;
         TablesDisplay&   _display;
@@ -107,18 +127,8 @@ namespace ts {
         UDPSocket        _sock;     // Output socket.
         std::map<PID,SectionPtr> _shortSections;   // Tracking duplicate short sections by PID.
 
-        // Hooks
-        virtual void handleTable(SectionDemux&, const BinaryTable&);
-        virtual void handleSection(SectionDemux&, const Section&);
-
         // Save a section in a binary file
         void saveSection(const Section&);
-
-        // Log a section (option --log)
-        void logSection(const Section&);
-
-        // Check if a specific section must be filtered
-        bool isFiltered(const Section&) const;
 
         // Pre/post-display of a table or section
         void preDisplay(PacketCounter first, PacketCounter last);
@@ -131,7 +141,7 @@ namespace ts {
         void addSection(ByteBlock&, const Section&);
 
     private:
-        // Inacessible operations.
+        // Inaccessible operations.
         TablesLogger() = delete;
         TablesLogger(const TablesLogger&) = delete;
         TablesLogger& operator=(const TablesLogger&) = delete;
