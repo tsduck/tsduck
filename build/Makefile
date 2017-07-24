@@ -46,11 +46,16 @@ export HAVE_DOT := $(if $(DOT_PATH),YES,NO)
 
 # Install system files.
 .PHONY: install install-devel
+ifdef MACOS
+install:
+	@true
+else
 install: 80-tsduck.rules 80-tsduck.perms
 	install -d -m 755 $(DESTDIR)/etc/udev/rules.d
 	install -m 644 80-tsduck.rules $(DESTDIR)/etc/udev/rules.d/
 	install -d -m 755 $(DESTDIR)/etc/security/console.perms.d
 	install -m 644 80-tsduck.perms $(DESTDIR)/etc/security/console.perms.d/
+endif
 install-devel:
 	@true
 
