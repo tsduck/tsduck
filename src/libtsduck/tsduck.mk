@@ -32,6 +32,9 @@
 #  Installed in same directory as TSDuck header files.
 #  To be included by Makefile of third-party applications using TSDuck library.
 #
+#  If TS_STATIC is defined, the application is linked against the TSDuck
+#  library. Otherwise, the dynamic library is used.
+#
 #------------------------------------------------------------------------------
 
 # Check local platform.
@@ -42,8 +45,23 @@ TS_MAC    := $(if $(subst darwin,,$(TS_SYSTEM)),,true)
 # The TSDuck include directory is the one that contains the currently included makefile.
 TS_INCLUDE_DIR := $(abspath $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST)))))
 
-# Specific include directories
-CFLAGS += -isystem /usr/include/PCSC -isystem $(TS_INCLUDE_DIR)
+# Build options
+ifdef TS_MAC
+    TS_INCLUDES += -I/usr/local/opt/pcsc-lite/include/PCSC -I$(TS_INCLUDE_DIR)
+    LDLIBS += -L/usr/local/opt/pcsc-lite/lib
+    ifndef TS_STATIC
+        LDFLAGS += -Wl,-rpath,@executable_path,-rpath,/usr/bin
+    endif
+else
+    TS_INCLUDES += -I/usr/include/PCSC -I$(TS_INCLUDE_DIR)
+    ifndef TS_STATIC
+        LDFLAGS += -Wl,-rpath,'$$ORIGIN',-rpath,/usr/bin
+    endif
+endif
+
+# Includes may use either CFLAGS of CXXFLAGS
+CFLAGS += $(TS_INCLUDES)
+CXXFLAGS += $(TS_INCLUDES)
 
 # External libraries
-LDLIBS += -ltsduck -lpcsclite -lpthread $(if $(TS_MAC),,-lrt) -ldl -lm -lstdc++
+LDLIBS += $(if $(TS_STATIC),-ltsduck,/usr/bin/tsduck.so) -lpcsclite -lpthread $(if $(TS_MAC),,-lrt) -ldl -lm -lstdc++

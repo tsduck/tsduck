@@ -271,17 +271,17 @@
 #include "tstlvStreamMessage.h"
 
 #if defined(__linux)
-#include "linux/tsDTVProperties.h"
-#include "linux/tsSignalAllocator.h"
+#include "tsDTVProperties.h"
+#include "tsSignalAllocator.h"
 #endif
 
 #if defined(__windows)
-#include "windows/tsComIds.h"
-#include "windows/tsComPtr.h"
-#include "windows/tsComUtils.h"
-#include "windows/tsDirectShowUtils.h"
-#include "windows/tsMediaTypeUtils.h"
-#include "windows/tsRegistryUtils.h"
-#include "windows/tsSinkFilter.h"
+#include "tsComIds.h"
+#include "tsComPtr.h"
+#include "tsComUtils.h"
+#include "tsDirectShowUtils.h"
+#include "tsMediaTypeUtils.h"
+#include "tsRegistryUtils.h"
+#include "tsSinkFilter.h"
 #endif
 
