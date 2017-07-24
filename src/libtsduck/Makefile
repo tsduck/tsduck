@@ -113,7 +113,7 @@ $(OBJDIR)/$(SHARED_LIBTSDUCK): $(OBJS)
 
 GEN_FILES = $(sort $(filter-out tsduck.h %Template.h,$(wildcard $(if $(1),$(1)/,)*.h)))
 GEN_INCLUDES = $(if $(call GEN_FILES,$(1)),$(if $(1),echo; echo -n '\#if defined(__$(1))';,) \
-    $(SED) <<<'$(call GEN_FILES,$(1))' -e 's/ *\([^\. ]*\).h/\n\#include "\1.h"/g' \
+    $(SED) <<<'$(call GEN_FILES,$(1))' -e 's| *$(if $(1),$(1)/,)\([^\. ]*\).h|\n\#include "\1.h"|g' \
     $(if $(1),; echo '\#endif',),true)
 
 tsduck.h: $(SRCROOT)/HEADER.txt $(call GEN_FILES,) $(call GEN_FILES,linux) $(call GEN_FILES,mac) $(call GEN_FILES,windows)
