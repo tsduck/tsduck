@@ -36,6 +36,23 @@ TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------
+// Handle a fatal error.
+// An emergency message is output and the application is terminated.
+//----------------------------------------------------------------------------
+
+void ts::FatalError(const char* message, size_t length)
+{
+#if defined (__windows)
+    ::DWORD written;
+    ::WriteFile(::GetStdHandle(STD_ERROR_HANDLE), message, ::DWORD(length), &written, 0);
+#else
+    TS_UNUSED ssize_t n = ::write(STDERR_FILENO, message, length);
+#endif
+    ::exit(EXIT_FAILURE);
+}
+
+
+//----------------------------------------------------------------------------
 // Out of virtual memory, very dangerous situation, really can't
 // recover from that, need to abort immediately. We can't even
 // try to use some sophisticated C++ library since it may require
@@ -46,13 +63,5 @@ void ts::FatalMemoryAllocation ()
 {
     static const char err[] = "\n\n*** Fatal virtual memory allocation failure, aborting...\n\n";
     static const size_t err_size = sizeof(err) - 1;
-
-#if defined (__windows)
-    ::DWORD written;
-    ::WriteFile (::GetStdHandle (STD_ERROR_HANDLE), err, ::DWORD (err_size), &written, 0);
-#else
-    TS_UNUSED ssize_t n = ::write (STDERR_FILENO, err, err_size);
-#endif
-
-    ::exit (EXIT_FAILURE);
+    FatalError(err, err_size);
 }

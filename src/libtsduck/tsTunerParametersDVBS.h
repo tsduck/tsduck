@@ -80,7 +80,7 @@ namespace ts {
         virtual void displayParameters(std::ostream& strm, const std::string& margin = std::string(), bool verbose = false) const;
         virtual bool fromZapFormat(const std::string& zap);
         virtual size_t zapFieldCount() const {return 4;}
-        virtual void copy(const TunerParameters&) throw(IncompatibleTunerParametersError);
+        virtual void copy(const TunerParameters&);
         virtual bool convertToDektecModulation(int&, int&, int&, int&) const;
     protected:
         virtual bool fromArgs(const TunerArgs&, ReportInterface&);

@@ -73,7 +73,7 @@ ts::TunerParametersDVBT::TunerParametersDVBT() :
 // Virtual assignment
 //----------------------------------------------------------------------------
 
-void ts::TunerParametersDVBT::copy (const TunerParameters& obj) throw (IncompatibleTunerParametersError)
+void ts::TunerParametersDVBT::copy (const TunerParameters& obj)
 {
     const TunerParametersDVBT* other = dynamic_cast <const TunerParametersDVBT*> (&obj);
     if (other == 0) {

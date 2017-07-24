@@ -153,7 +153,7 @@ namespace ts {
         //! @param [in] params Other instance of a subclass of TunerParameters to copy.
         //! @throw IncompatibleTunerParametersError When @a params is from an incompatible type.
         //!
-        virtual void copy(const TunerParameters& params) throw(IncompatibleTunerParametersError) = 0;
+        virtual void copy(const TunerParameters& params) = 0;
 
         //!
         //! Virtual destructor.

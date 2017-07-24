@@ -32,6 +32,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsTSPacket.h"
+#include "tsMemoryUtils.h"
 #include "utestCppUnitTest.h"
 TSDUCK_SOURCE;
 
@@ -82,6 +83,7 @@ void TSPacketTest::testPacket()
     ts::NullPacket.display(utest::Out(), ts::TSPacket::DUMP_TS_HEADER | ts::TSPacket::DUMP_RAW);
 
     ts::TSPacket packets[7];
+    TS_ZERO(packets); // to avoid unreferenced or uninitialized warning
+
     CPPUNIT_ASSERT_EQUAL(size_t(7 * ts::PKT_SIZE), sizeof(packets));
-    packets[0].getPID(); // to avoid unreferenced warning
 }

@@ -37,7 +37,6 @@
 #include "tsException.h"
 
 namespace ts {
-
     //!
     //! A template class which defines a @e variable which can be either initialized or uninitialized.
     //!
@@ -158,7 +157,7 @@ namespace ts {
         //! @return A constant reference to the @a T value inside the variable.
         //! @throw UninitializedVariable If the variable is uninitialized.
         //!
-        const T& value() const throw(UninitializedVariable)
+        const T& value() const
         {
             if (_access != 0) {
                 return *_access;
@@ -174,7 +173,7 @@ namespace ts {
         //! @return A reference to the @a T value inside the variable.
         //! @throw UninitializedVariable If the variable is uninitialized.
         //!
-        T& value() throw(UninitializedVariable)
+        T& value()
         {
             if (_access != 0) {
                 return *_access;

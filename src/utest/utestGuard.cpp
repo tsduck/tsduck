@@ -32,6 +32,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsGuard.h"
+#include "tsSysUtils.h"
 #include "utestCppUnitTest.h"
 TSDUCK_SOURCE;
 
@@ -52,7 +53,7 @@ public:
     CPPUNIT_TEST_SUITE(GuardTest);
     CPPUNIT_TEST(testGuard);
     CPPUNIT_TEST_EXCEPTION(testAcquireFailed, ts::Guard::GuardError);
-    CPPUNIT_TEST_EXCEPTION(testReleaseFailed, ts::Guard::GuardError);
+    CPPUNIT_TEST(testReleaseFailed);
     CPPUNIT_TEST_SUITE_END();
 };
 
@@ -73,10 +74,10 @@ namespace {
         const bool _failResult;
     public:
         // Constructor
-        MutexTest (bool acquireResult = true, bool failResult = true) :
-            _count (0),
-            _acquireResult (acquireResult),
-            _failResult (failResult)
+        MutexTest(bool acquireResult = true, bool failResult = true) :
+            _count(0),
+            _acquireResult(acquireResult),
+            _failResult(failResult)
         {
         }
 
@@ -96,7 +97,7 @@ namespace {
 
         // Release the mutex.
         // Return true on success and false on error.
-        virtual bool release ()
+        virtual bool release()
         {
             _count--;
             return _failResult;
@@ -134,10 +135,10 @@ void GuardTest::testGuard()
     MutexTest mutex;
     CPPUNIT_ASSERT(mutex.count() == 0);
     {
-        ts::Guard gard1 (mutex);
+        ts::Guard gard1(mutex);
         CPPUNIT_ASSERT(mutex.count() == 1);
         {
-            ts::Guard gard2 (mutex);
+            ts::Guard gard2(mutex);
             CPPUNIT_ASSERT(mutex.count() == 2);
         }
         CPPUNIT_ASSERT(mutex.count() == 1);
@@ -148,22 +149,29 @@ void GuardTest::testGuard()
 // Test case: acquire() error is properly handled.
 void GuardTest::testAcquireFailed()
 {
-    MutexTest mutex (false, true);
+    MutexTest mutex(false, true);
     CPPUNIT_ASSERT(mutex.count() == 0);
     {
-        ts::Guard gard (mutex);
-        CPPUNIT_FAIL ("mutex.acquire() passed, should not get there");
+        ts::Guard gard(mutex);
+        CPPUNIT_FAIL("mutex.acquire() passed, should not get there");
     }
 }
 
 // Test case: release() error is properly handled.
 void GuardTest::testReleaseFailed()
 {
-    MutexTest mutex (true, false);
-    CPPUNIT_ASSERT(mutex.count() == 0);
-    {
-        ts::Guard gard (mutex);
-        CPPUNIT_ASSERT(mutex.count() == 1);
+    if (ts::EnvironmentExists("UTEST_FATAL_CRASH_ALLOWED")) {
+        std::cerr << "FatalTest: Guard destructor should fail !" << std::endl
+                  << "Unset UTEST_FATAL_CRASH_ALLOWED to skip the crash test" << std::endl;
+        MutexTest mutex(true, false);
+        CPPUNIT_ASSERT(mutex.count() == 0);
+        {
+            ts::Guard gard(mutex);
+            CPPUNIT_ASSERT(mutex.count() == 1);
+        }
+        CPPUNIT_FAIL("mutex.release() passed, should not get there");
     }
-    CPPUNIT_FAIL ("mutex.release() passed, should not get there");
+    else {
+        utest::Out() << "FatalTest: crash test for failing Guard destructor skipped, define UTEST_FATAL_CRASH_ALLOWED to force it" << std::endl;
+    }
 }
