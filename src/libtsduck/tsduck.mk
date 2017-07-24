@@ -48,20 +48,18 @@ TS_INCLUDE_DIR := $(abspath $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST))))
 # Build options
 ifdef TS_MAC
     TS_INCLUDES += -I/usr/local/opt/pcsc-lite/include/PCSC -I$(TS_INCLUDE_DIR)
-    LDLIBS += -L/usr/local/opt/pcsc-lite/lib
+    LDLIBS += $(if $(TS_STATIC),-L/usr/local/lib -ltsduck,/usr/local/bin/tsduck.so) -L/usr/local/opt/pcsc-lite/lib -lpcsclite -lpthread -ldl -lm -lstdc++
     ifndef TS_STATIC
-        LDFLAGS += -Wl,-rpath,@executable_path,-rpath,/usr/bin
+        LDFLAGS += -Wl,-rpath,@executable_path,-rpath,/usr/local/bin
     endif
 else
     TS_INCLUDES += -I/usr/include/PCSC -I$(TS_INCLUDE_DIR)
+    LDLIBS += $(if $(TS_STATIC),-ltsduck,/usr/bin/tsduck.so) -lpcsclite -lpthread -lrt -ldl -lm -lstdc++
     ifndef TS_STATIC
         LDFLAGS += -Wl,-rpath,'$$ORIGIN',-rpath,/usr/bin
     endif
 endif
 
 # Includes may use either CFLAGS of CXXFLAGS
-CFLAGS += $(TS_INCLUDES)
-CXXFLAGS += $(TS_INCLUDES)
-
-# External libraries
-LDLIBS += $(if $(TS_STATIC),-ltsduck,/usr/bin/tsduck.so) -lpcsclite -lpthread $(if $(TS_MAC),,-lrt) -ldl -lm -lstdc++
+CFLAGS += $(TS_INCLUDES) --std=c++11
+CXXFLAGS += $(TS_INCLUDES) --std=c++11

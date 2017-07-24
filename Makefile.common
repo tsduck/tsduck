@@ -472,7 +472,8 @@
 #
 #  USRLIBDIR
 #    Name of the library directory for the target architecture. This is
-#    /usr/lib64 for x86_64 and /usr/lib elsewhere.
+#    /usr/lib64 for x86_64 and /usr/lib elsewhere on Linux, /usr/local/lib
+#    on MacOS.
 #
 #-----------------------------------------------------------------------------
 
@@ -713,11 +714,7 @@ ifneq ($(CVPATH)$(CXXVPATH),)
 endif
 
 # On x86_64, the libraries are installed in lib64, not lib.
-ifeq ($(MAIN_ARCH),x86_64)
-    USRLIBDIR = /usr/lib64
-else
-    USRLIBDIR = /usr/lib
-endif
+USRLIBDIR = $(if $(MACOS),/usr/local/lib,$(if $(subst x86_64,,$(MAIN_ARCH)),/usr/lib,/usr/lib64))
 
 # RPM building.
 RPMBUILD     ?= rpmbuild

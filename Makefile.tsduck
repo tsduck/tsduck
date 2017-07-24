@@ -66,8 +66,10 @@ endif
 
 # Default installation directory prefix.
 # RPM packagers should override this in the "make install" command line.
+# On MacOS, use /usr/local instead of /usr because of SIP.
 
 DESTDIR := 
+SYSDIR := $(if $(MACOS),/usr/local,/usr)
 
 # External include directories and libraries.
 

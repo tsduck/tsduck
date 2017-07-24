@@ -44,7 +44,7 @@ $(SHLIBS): $(LIBTSDUCKDIR)/$(OBJDIR)/$(SHARED_LIBTSDUCK)
 
 .PHONY: install install-devel
 install: $(SHLIBS)
-	install -d -m 755 $(DESTDIR)/usr/bin
-	install -m 755 $(SHLIBS) $(DESTDIR)/usr/bin
+	install -d -m 755 $(DESTDIR)$(SYSDIR)/bin
+	install -m 755 $(SHLIBS) $(DESTDIR)$(SYSDIR)/bin
 install-devel:
 	@true
