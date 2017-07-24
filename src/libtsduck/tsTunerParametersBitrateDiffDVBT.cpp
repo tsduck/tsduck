@@ -53,7 +53,7 @@ ts::TunerParametersBitrateDiffDVBT::TunerParametersBitrateDiffDVBT() :
 // Virtual assignment
 //----------------------------------------------------------------------------
 
-void ts::TunerParametersBitrateDiffDVBT::copy (const TunerParameters& obj) throw (IncompatibleTunerParametersError)
+void ts::TunerParametersBitrateDiffDVBT::copy (const TunerParameters& obj)
 {
     const TunerParametersBitrateDiffDVBT* other = dynamic_cast <const TunerParametersBitrateDiffDVBT*> (&obj);
     if (other == 0) {

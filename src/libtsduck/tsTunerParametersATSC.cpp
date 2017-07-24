@@ -60,7 +60,7 @@ ts::TunerParametersATSC::TunerParametersATSC() :
 // Virtual assignment
 //----------------------------------------------------------------------------
 
-void ts::TunerParametersATSC::copy (const TunerParameters& obj) throw (IncompatibleTunerParametersError)
+void ts::TunerParametersATSC::copy (const TunerParameters& obj)
 {
     const TunerParametersATSC* other = dynamic_cast <const TunerParametersATSC*> (&obj);
     if (other == 0) {

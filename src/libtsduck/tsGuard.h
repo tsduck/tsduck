@@ -37,7 +37,6 @@
 #include "tsException.h"
 
 namespace ts {
-
     //!
     //! Automatic guard class for mutex (ts::MutexInterface).
     //!
@@ -116,7 +115,7 @@ namespace ts {
         //! during the release of the mutex, i.e. when
         //! ts::MutexInterface::release() returns false.
         //!
-        virtual ~Guard() throw(GuardError);
+        virtual ~Guard();
 
         //!
         //! Check if the mutex was actually locked.

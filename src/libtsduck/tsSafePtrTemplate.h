@@ -64,7 +64,7 @@ ts::SafePtr<T,MUTEX>& ts::SafePtr<T,MUTEX>::operator= (const SafePtr<T,MUTEX>& s
 //----------------------------------------------------------------------------
 
 template <typename T, class MUTEX>
-ts::SafePtr<T,MUTEX>& ts::SafePtr<T,MUTEX>::operator= (T* p) throw (std::bad_alloc)
+ts::SafePtr<T,MUTEX>& ts::SafePtr<T,MUTEX>::operator=(T* p)
 {
     _shared->detach ();
     _shared = new SafePtrShared (p);

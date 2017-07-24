@@ -36,12 +36,20 @@
 #include "tsPlatform.h"
 
 namespace ts {
+    //!
+    //! Handle a fatal error.
+    //! An emergency message is output and the application is terminated.
+    //! @param [in] message Address of an emergency error message to output.
+    //! @param [in] length Length of @a message. The caller must specify @a length
+    //! in a static way. In that kind of fatal error, we can't even dare to call strlen().
+    //!
+    TSDUCKDLL void FatalError(const char* message, size_t length);
 
     //!
     //! Handle fatal memory allocation failure.
     //! Out of virtual memory, very dangerous situation, really can't
     //! recover from that, need to abort immediately. An emergency error
-    //! message is ouput and the application is terminated.
+    //! message is output and the application is terminated.
     //!
     TSDUCKDLL void FatalMemoryAllocation();
 

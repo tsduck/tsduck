@@ -39,7 +39,6 @@
 #include "tsNullMutex.h"
 
 namespace ts {
-
     //!
     //!  Template safe pointer (reference-counted, auto-delete, thread-safe).
     //!
@@ -89,7 +88,6 @@ namespace ts {
     class SafePtr
     {
     public:
-
         //!
         //! Default constructor using an optional unmanaged object.
         //!
@@ -114,8 +112,8 @@ namespace ts {
         //! @exception std::bad_alloc Thrown if insufficient memory
         //! is available for internal safe pointer management.
         //!
-        SafePtr (T* p = 0) throw (std::bad_alloc) :
-            _shared (new SafePtrShared (p))
+        SafePtr(T* p = 0) :
+            _shared(new SafePtrShared(p))
         {
         }
 
@@ -127,8 +125,8 @@ namespace ts {
         //!
         //! @param [in] sp Another safe pointer instance.
         //!
-        SafePtr (const SafePtr<T,MUTEX> &sp) :
-            _shared (sp._shared->attach ())
+        SafePtr(const SafePtr<T,MUTEX> &sp) :
+            _shared(sp._shared->attach())
         {
         }
 
@@ -139,7 +137,7 @@ namespace ts {
         //! is decremented. When the reference counter reaches zero, the
         //! pointed object is automatically deleted.
         //!
-        ~SafePtr ();
+        ~SafePtr();
 
         //!
         //! Assignment between safe pointers.
@@ -153,7 +151,7 @@ namespace ts {
         //! @param [in] sp The value to assign.
         //! @return A reference to this object.
         //!
-        SafePtr<T,MUTEX>& operator= (const SafePtr<T,MUTEX>& sp);
+        SafePtr<T,MUTEX>& operator=(const SafePtr<T,MUTEX>& sp);
 
         //!
         //! Assignment from a standard pointer @c T*.
@@ -177,7 +175,7 @@ namespace ts {
         //! @exception std::bad_alloc Thrown if insufficient memory
         //! is available for internal safe pointer management.
         //!
-        SafePtr<T,MUTEX>& operator= (T* p) throw (std::bad_alloc);
+        SafePtr<T,MUTEX>& operator=(T* p);
 
         //!
         //! Equality operator.
@@ -194,7 +192,7 @@ namespace ts {
         //! @return True if both safe pointers reference the same object
         //! and false otherwise.
         //!
-        bool operator== (const SafePtr<T,MUTEX> &sp) const
+        bool operator==(const SafePtr<T,MUTEX> &sp) const
         {
             return sp._shared == this->_shared;
         }
@@ -214,7 +212,7 @@ namespace ts {
         //! @return True if both safe pointers reference distinct objects
         //! and false otherwise.
         //!
-        bool operator!= (const SafePtr<T,MUTEX> &sp) const
+        bool operator!=(const SafePtr<T,MUTEX> &sp) const
         {
             return sp._shared != this->_shared;
         }
@@ -233,7 +231,7 @@ namespace ts {
         //!     void open();
         //! };
         //!
-        //! ts::SafePtr<Foo> ptr (new Foo ());
+        //! ts::SafePtr<Foo> ptr(new Foo);
         //! ptr->open();
         //! @endcode
         //!
@@ -256,10 +254,10 @@ namespace ts {
         //!
         //! Example:
         //! @code
-        //! void f (Foo&);
+        //! void f(Foo&);
         //!
-        //! ts::SafePtr<Foo> ptr (new Foo ());
-        //! f (*ptr);
+        //! ts::SafePtr<Foo> ptr(new Foo);
+        //! f(*ptr);
         //! @endcode
         //!
         //! If this object is the null pointer, the operator will likely throw an exception.
@@ -304,9 +302,9 @@ namespace ts {
         //!
         //! @param [in] p A pointer to an object of class @a T.
         //!
-        void reset (T *p = 0)
+        void reset(T *p = 0)
         {
-            _shared->reset (p);
+            _shared->reset(p);
         }
 
         //!
@@ -319,10 +317,10 @@ namespace ts {
         //! @exception std::bad_alloc Thrown if insufficient memory
         //! is available for internal safe pointer management.
         //!
-        void clear() throw (std::bad_alloc)
+        void clear()
         {
-            _shared->detach ();
-            _shared = new SafePtrShared (0);
+            _shared->detach();
+            _shared = new SafePtrShared(0);
         }
 
         //!
@@ -462,12 +460,12 @@ namespace ts {
 
         public:
             // Constructor. Initial reference count is 1.
-            SafePtrShared(T* p = 0) : _ptr (p), _ref_count (1), _mutex ()
+            SafePtrShared(T* p = 0) : _ptr(p), _ref_count(1), _mutex()
             {
             }
 
             // Destructor. Deallocate actual object (if any).
-            ~SafePtrShared ();
+            ~SafePtrShared();
 
             // Same semantics as SafePtr counterparts:
             T* release();

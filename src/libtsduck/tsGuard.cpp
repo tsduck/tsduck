@@ -32,6 +32,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsGuard.h"
+#include "tsFatal.h"
 TSDUCK_SOURCE;
 
 
@@ -54,13 +55,15 @@ ts::Guard::Guard(MutexInterface& mutex, MilliSecond timeout) :
 // Destructor
 //----------------------------------------------------------------------------
 
-ts::Guard::~Guard() throw(GuardError)
+ts::Guard::~Guard()
 {
     if (_is_locked) {
         _is_locked = !_mutex.release();
         if (_is_locked) {
-            // obsolete: cppcheck-suppress exceptThrowInDestructor // done on purpose
-            throw GuardError("Guard failed to release mutex");
+            // With C++11, destructors are no longer allowed to throw an exception.
+            static const char err[] = "\n\n*** Fatal error: Guard failed to release mutex in destructor, aborting...\n\n";
+            static const size_t err_size = sizeof(err) - 1;
+            FatalError(err, err_size);
         }
     }
 }

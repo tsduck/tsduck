@@ -64,7 +64,7 @@ namespace ts {
         virtual void displayParameters(std::ostream& strm, const std::string& margin = std::string(), bool verbose = false) const;
         virtual bool fromZapFormat(const std::string& zap) {return false;} //TODO: unimplemented
         virtual size_t zapFieldCount() const {return 0;} //TODO: unimplemented
-        virtual void copy(const TunerParameters&) throw (IncompatibleTunerParametersError);
+        virtual void copy(const TunerParameters&);
     protected:
         virtual bool fromArgs(const TunerArgs&, ReportInterface&);
     };
