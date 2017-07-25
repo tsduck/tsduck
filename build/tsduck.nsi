@@ -41,6 +41,8 @@ Name "TSDuck"
 !verbose push
 !verbose 0
 !include "MUI2.nsh"
+!include "Sections.nsh"
+!include "TextFunc.nsh"
 !include "WinMessages.nsh"
 !include "x64.nsh"
 !verbose pop
@@ -71,6 +73,9 @@ Name "TSDuck"
     OutFile "${InstallerDir}\TSDuck-Win32-${tsduckVersion}.exe"
 !endif
 
+; Registry key for environment variables
+!define EnvironmentKey '"SYSTEM\CurrentControlSet\Control\Session Manager\Environment"'
+
 ; Registry entry for product info and uninstallation info.
 !define ProductKey "Software\TSDuck"
 !define UninstallKey "Software\Microsoft\Windows\CurrentVersion\Uninstall\TSDuck"
@@ -81,12 +86,12 @@ XPStyle on
 ; Request administrator privileges for Windows Vista and higher.
 RequestExecutionLevel admin
 
-; "Modern User Interface" (MUI) settings
+; "Modern User Interface" (MUI) settings.
 !define MUI_ABORTWARNING
 !define MUI_ICON "${RootDir}\images\tsduck.ico"
 !define MUI_UNICON "${RootDir}\images\tsduck.ico"
 
-; Default installation folder
+; Default installation folder.
 !ifdef Win64
     InstallDir "$PROGRAMFILES64\TSDuck"
 !else
@@ -96,15 +101,18 @@ RequestExecutionLevel admin
 ; Get installation folder from registry if available from a previous installation.
 InstallDirRegKey HKLM "${ProductKey}" "InstallDir"
 
-; Installer pages
+; Installer pages. The function ComponentsPre is invoked before the components page.
+!insertmacro MUI_PAGE_LICENSE "${RootDir}\LICENSE.txt"
+!define MUI_PAGE_CUSTOMFUNCTION_PRE ComponentsPre
+!insertmacro MUI_PAGE_COMPONENTS
 !insertmacro MUI_PAGE_DIRECTORY
 !insertmacro MUI_PAGE_INSTFILES
 
-; Uninstaller pages
+; Uninstaller pages.
 !insertmacro MUI_UNPAGE_CONFIRM
 !insertmacro MUI_UNPAGE_INSTFILES
 
-; Languages
+; Languages.
 !insertmacro MUI_LANGUAGE "English"
 
 ;-----------------------------------------------------------------------------
@@ -140,10 +148,11 @@ function un.onInit
 functionEnd
 
 ;-----------------------------------------------------------------------------
-; Installation section
+; Installation sections
 ;-----------------------------------------------------------------------------
 
-Section "Install"
+; Installation of command-line tools and plugins.
+Section "Tools & Plugins" SectionTools
 
     ; Work on "all users" context, not current user.
     SetShellVarContext all
@@ -154,29 +163,87 @@ Section "Install"
     File "${BinDir}\ts*.exe"
     File "${BinDir}\ts*.dll"
 
-    ; Documentation
+SectionEnd
+
+; Installation of documentation files.
+Section "Documentation" SectionDocumentation
+
+    ; Work on "all users" context, not current user.
+    SetShellVarContext all
+
+    ; Documentation files.
     CreateDirectory "$INSTDIR\doc"
     SetOutPath "$INSTDIR\doc"
     File "${RootDir}\doc\tsduck.pdf"
 
-    ; Setup tools
+    ; Create shortcuts in start menu.
+    CreateDirectory "$SMPROGRAMS\TSDuck"
+    CreateShortCut "$SMPROGRAMS\TSDuck\TSDuck User's Guide.lnk" "$INSTDIR\doc\tsduck.pdf"
+
+SectionEnd
+
+; Installation of development environment for third-party applications.
+; Unselected by default (/o).
+Section /o "Development" SectionDevelopment
+
+    ; Work on "all users" context, not current user.
+    SetShellVarContext all
+
+    ; TSDuck header files.
+    CreateDirectory "$INSTDIR\include"
+    SetOutPath "$INSTDIR\include"
+    File "${RootDir}\src\libtsduck\*.h"
+    File "${RootDir}\src\libtsduck\windows\*.h"
+
+    ; TSDuck libraries.
+    CreateDirectory "$INSTDIR\lib"
+    CreateDirectory "$INSTDIR\lib\Release-Win32"
+    SetOutPath "$INSTDIR\lib\Release-Win32"
+    File "${ProjectDir}\Release-Win32\tsduck.lib"
+    File "${ProjectDir}\Release-Win32\tsduck.dll"
+
+    CreateDirectory "$INSTDIR\lib\Release-Win64"
+    SetOutPath "$INSTDIR\lib\Release-Win64"
+    File "${ProjectDir}\Release-x64\tsduck.lib"
+    File "${ProjectDir}\Release-x64\tsduck.dll"
+
+    CreateDirectory "$INSTDIR\lib\Debug-Win32"
+    SetOutPath "$INSTDIR\lib\Debug-Win32"
+    File "${ProjectDir}\Debug-Win32\tsduck.lib"
+    File "${ProjectDir}\Debug-Win32\tsduck.dll"
+
+    CreateDirectory "$INSTDIR\lib\Debug-Win64"
+    SetOutPath "$INSTDIR\lib\Debug-Win64"
+    File "${ProjectDir}\Debug-x64\tsduck.lib"
+    File "${ProjectDir}\Debug-x64\tsduck.dll"
+
+    ; Visual Studio property files.
+    SetOutPath "$INSTDIR"
+    File "${RootDir}\build\tsduck.props"
+
+SectionEnd
+
+; Common final mandatory section.
+; Not selectable, not displayed (because of leading '-' in name).
+Section "-Common" SectionCommon
+
+    ; Work on "all users" context, not current user.
+    SetShellVarContext all
+
+    ; Setup tools.
     CreateDirectory "$INSTDIR\setup"
     SetOutPath "$INSTDIR\setup"
     File "${BinDir}\setpath.exe"
     File "${ProjectDir}\redist\${MsvcRedistExe}"
 
-    ; Create shortcuts in start menu (documentation only).
-    CreateDirectory "$SMPROGRAMS\TSDuck"
-    CreateShortCut "$SMPROGRAMS\TSDuck\TSDuck User's Guide.lnk" "$INSTDIR\doc\tsduck.pdf"
+    ; Add an environment variable to TSDuck root.
+    WriteRegStr HKLM ${EnvironmentKey} "TSDUCK" "$INSTDIR"
 
     ; Store installation folder in registry.
     WriteRegStr HKLM "${ProductKey}" "InstallDir" $INSTDIR
 
     ; Install or reinstall the Visual C++ redistributable library.
     ExecWait '"$INSTDIR\setup\${MsvcRedistExe}" /q /norestart'
-
-    ; Add binaries folder to system path
-    ExecWait '"$INSTDIR\setup\setpath.exe" --prepend "$INSTDIR\bin"'
 
     ; Create uninstaller
     WriteUninstaller "$INSTDIR\TSDuckUninstall.exe"
@@ -187,7 +254,74 @@ Section "Install"
     WriteRegStr HKLM "${UninstallKey}" "DisplayIcon" "$INSTDIR\TSDuckUninstall.exe"
     WriteRegStr HKLM "${UninstallKey}" "UninstallString" "$INSTDIR\TSDuckUninstall.exe"
 
+    ; Remember installation selections in registry.
+    ; Cleanup previously installed options which are now unselected.
+    ${If} ${SectionIsSelected} ${SectionTools}
+        WriteRegStr HKLM "${ProductKey}" "InstallTools" "true"
+        ; Add binaries folder to system path
+        ExecWait '"$INSTDIR\setup\setpath.exe" --prepend "$INSTDIR\bin"'
+    ${Else}
+        WriteRegStr HKLM "${ProductKey}" "InstallTools" "false"
+        ; Remove previous installation of tools & plugins.
+        RMDir /r "$INSTDIR\bin"
+        ; Remove binaries folder from system path
+        ExecWait '"$INSTDIR\setup\setpath.exe" --remove "$INSTDIR\bin"'
+    ${EndIf}
+    ${If} ${SectionIsSelected} ${SectionDocumentation}
+        WriteRegStr HKLM "${ProductKey}" "InstallDocumentation" "true"
+    ${Else}
+        WriteRegStr HKLM "${ProductKey}" "InstallDocumentation" "false"
+        ; Remove previous installation of documentation.
+        RMDir /r "$INSTDIR\doc"
+        RMDir /r "$SMPROGRAMS\TSDuck"
+    ${EndIf}
+    ${If} ${SectionIsSelected} ${SectionDevelopment}
+        WriteRegStr HKLM "${ProductKey}" "InstallDevelopment" "true"
+    ${Else}
+        WriteRegStr HKLM "${ProductKey}" "InstallDevelopment" "false"
+        ; Remove previous installation of development environment.
+        RMDir /r "$INSTDIR\include"
+        RMDir /r "$INSTDIR\lib"
+        Delete "$INSTDIR\tsduck.props"
+    ${EndIf}
+
 SectionEnd
+
+; Description of installation sections (displayed by mouse hover).
+!insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
+    !insertmacro MUI_DESCRIPTION_TEXT ${SectionTools} \
+        "TSDuck command-line tools and plugins."
+    !insertmacro MUI_DESCRIPTION_TEXT ${SectionDocumentation} \
+        "TSDuck user's guide."
+    !insertmacro MUI_DESCRIPTION_TEXT ${SectionDevelopment} \
+        "TSDuck development environment, for use from third-party applications manipulating MPEG transport streams."
+!insertmacro MUI_FUNCTION_DESCRIPTION_END
+
+; This function is called before the "components" page.
+; It presets the selections identically to the previous installation.
+function ComponentsPre
+    ReadRegStr $0 HKLM "${ProductKey}" "InstallTools"
+    ${If} $0 == "true"
+        !insertmacro SelectSection ${SectionTools}
+    ${EndIf}
+    ${If} $0 == "false"
+        !insertmacro UnSelectSection ${SectionTools}
+    ${EndIf}
+    ReadRegStr $0 HKLM "${ProductKey}" "InstallDocumentation"
+    ${If} $0 == "true"
+        !insertmacro SelectSection ${SectionDocumentation}
+    ${EndIf}
+    ${If} $0 == "false"
+        !insertmacro UnSelectSection ${SectionDocumentation}
+    ${EndIf}
+    ReadRegStr $0 HKLM "${ProductKey}" "InstallDevelopment"
+    ${If} $0 == "true"
+        !insertmacro SelectSection ${SectionDevelopment}
+    ${EndIf}
+    ${If} $0 == "false"
+        !insertmacro UnSelectSection ${SectionDevelopment}
+    ${EndIf}
+functionEnd
 
 ;-----------------------------------------------------------------------------
 ; Uninstallation section
@@ -207,6 +341,9 @@ Section "Uninstall"
     ; Delete product files.
     RMDir /r "$0\bin"
     RMDir /r "$0\doc"
+    RMDir /r "$0\include"
+    RMDir /r "$0\lib"
+    Delete "$0\tsduck.props"
     Delete "$0\setup\setpath.exe"
     Delete "$0\setup\${MsvcRedistExe}"
     RMDir "$0\setup"
@@ -220,5 +357,6 @@ Section "Uninstall"
     DeleteRegKey HKCU "${ProductKey}"
     DeleteRegKey HKLM "${ProductKey}"
     DeleteRegKey HKLM "${UninstallKey}"
+    DeleteRegValue HKLM ${EnvironmentKey} "TSDUCK"
 
 SectionEnd

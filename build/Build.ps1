@@ -106,7 +106,7 @@ if ($Debug -and $Win64) {
     }
 }
 if ($Debug -and $Win32) {
-    & $VS.MSBuild $SolutionFileName /nologo /maxcpucount /property:Configuration=Release /property:Platform=Win32
+    & $VS.MSBuild $SolutionFileName /nologo /maxcpucount /property:Configuration=Debug /property:Platform=Win32
     if ($LastExitCode -ne 0) {
         Exit-Script -NoPause:$NoPause "Error building 32-bit Debug"
     }

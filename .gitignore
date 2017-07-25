@@ -10,6 +10,7 @@
 [Rr]elease-*
 [Dd]ebug
 [Dd]ebug-*
+x64
 *.sdf
 *.suo
 *.opensdf

@@ -138,7 +138,7 @@ current version of TSDuck is 3.1-20170711.
 
 | File name                                 | Description
 | ----------------------------------------- | -------------------------
-| TSDduck-3.0-src.zip                       | Source archive on Windows
+| TSDduck-3.1-src.zip                       | Source archive on Windows
 | tsduck-3.1.tgz                            | Source archive on Linux and MacOS
 | tsduck_3.1-20170711_amd64.deb             | Binary package for 64-bit Ubuntu
 | tsduck-3.1-20170711.el7.i386.rpm          | Binary package for 32-bit Red Hat or CentOS 7.x
@@ -154,3 +154,13 @@ current version of TSDuck is 3.1-20170711.
 | tsduck-devel-3.1-20170711.fc25.x86_64.rpm | Development package for 64-bit Fedora 25
 | TSDuck-Win32-3.1-20170711.exe             | Binary package for 32-bit Windows
 | TSDuck-Win64-3.1-20170711.exe             | Binary package for 64-bit Windows
+
+On Linux systems, there are two different packages. The package `tsduck` contains
+the tools and plugins. This is the only required package if you just need to use
+TSDuck. The package named `tsduck-devel` (or `tsduck-dev` on Ubuntu) contains the
+development environment. It is useful only for third-party applications which use
+the TSDuck library.
+
+On Windows systems, there is only one binary installer which contains the tools,
+plugins, documentation and development environment. The user can select which
+components shall be installed. The development environment is unselected by default.
