@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--  TSDuck - The MPEG Transport Stream Toolkit                    -->
+<!--  Visual Studio or MSBuild property file to use TSDuck library  -->
+
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <!-- Select appropriate directory for binary libraries -->
+  <Choose>
+    <When Condition="'$(Configuration)|$(Platform)'=='Release|x64' OR '$(Configuration)|$(Platform)'=='Release|Win64'">
+      <PropertyGroup Label="UserMacros">
+        <TSDUCKLIB>$(TSDUCK)\lib\Release-Win64</TSDUCKLIB>
+      </PropertyGroup>
+    </When>
+    <When Condition="'$(Configuration)|$(Platform)'=='Debug|x64' OR '$(Configuration)|$(Platform)'=='Debug|Win64'">
+      <PropertyGroup Label="UserMacros">
+        <TSDUCKLIB>$(TSDUCK)\lib\Debug-Win64</TSDUCKLIB>
+      </PropertyGroup>
+    </When>
+    <When Condition="'$(Configuration)|$(Platform)'=='Release|x32' OR '$(Configuration)|$(Platform)'=='Release|Win32'">
+      <PropertyGroup Label="UserMacros">
+        <TSDUCKLIB>$(TSDUCK)\lib\Release-Win32</TSDUCKLIB>
+      </PropertyGroup>
+    </When>
+    <When Condition="'$(Configuration)|$(Platform)'=='Debug|x32' OR '$(Configuration)|$(Platform)'=='Debug|Win32'">
+      <PropertyGroup Label="UserMacros">
+        <TSDUCKLIB>$(TSDUCK)\lib\Debug-Win32</TSDUCKLIB>
+      </PropertyGroup>
+    </When>
+  </Choose>
+
+  <!-- Compilation and link options -->
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(TSDUCK)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>tsduck.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(TSDUCKLIB);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Link>
+  </ItemDefinitionGroup>
+
+  <!-- Copy TSDuck DLL into project directory to allow direct testing -->
+  <Target Name="CopyTSDuckToDestination">
+    <Message Text="Copying $(TSDUCKLIB)\tsduck.dll to $(OutDir)" />
+    <Copy SourceFiles="$(TSDUCKLIB)\tsduck.dll" DestinationFolder="$(OutDir)" SkipUnchangedFiles="true" />
+  </Target>
+  <PropertyGroup>
+    <PrepareForRunDependsOn>$(PrepareForRunDependsOn);CopyTSDuckToDestination</PrepareForRunDependsOn>
+  </PropertyGroup>
+
+</Project>

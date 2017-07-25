@@ -6,12 +6,10 @@
 # library in /usr/bin. Define TS_STATIC to link against the TSDuck static
 # library: make TS_STATIC=true
 
-ifeq ($(shell uname -s),Darwin)
-   # Mac
-   include /usr/local/include/tsduck/tsduck.mk
-else
-   # Linux
-   include /usr/include/tsduck/tsduck.mk
+ifeq ($(shell uname -s),Darwin) # Mac
+    include /usr/local/include/tsduck/tsduck.mk
+else # Linux
+    include /usr/include/tsduck/tsduck.mk
 endif
 
 default: myexec

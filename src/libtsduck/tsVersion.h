@@ -42,7 +42,7 @@
 //!
 //! TSDuck minor version.
 //!
-#define TS_VERSION_MINOR  1
+#define TS_VERSION_MINOR  2
 
 //!
 //! TSDuck namespace, containing all TSDuck classes and functions.
