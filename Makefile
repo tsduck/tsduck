@@ -61,3 +61,8 @@ install install-devel:
 .PHONY: tarball rpm rpm32 deb
 tarball rpm rpm32 deb:
 	$(MAKE) -C build $@
+
+# Count lines of code.
+.PHONY: cloc
+cloc:
+	cloc . --exclude-dir=installers,images,dektec,doxy,cov-int --exclude-ext=.tgz,.tar.gz,.tar,.pdf,.pptx,.docx

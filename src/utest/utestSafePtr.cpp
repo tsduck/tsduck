@@ -336,12 +336,10 @@ void SafePtrTest::testDowncast()
     CPPUNIT_ASSERT(TestData::InstanceCount() == 1);
     CPPUNIT_ASSERT(!p.isNull());
 
-#if !defined (V_SYS_NO_RTTI)
     SubTestData1Ptr p1 (p.downcast<SubTestData1>());
     CPPUNIT_ASSERT(p1.isNull());
     CPPUNIT_ASSERT(!p.isNull());
     CPPUNIT_ASSERT(TestData::InstanceCount() == 1);
-#endif
 
     SubTestData2Ptr p2 (p.downcast<SubTestData2>());
     CPPUNIT_ASSERT(!p2.isNull());

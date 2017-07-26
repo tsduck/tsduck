@@ -35,6 +35,7 @@
 #pragma once
 #include "tsPlatform.h"
 #include "tsFatal.h"
+#include "tsGuard.h"
 #include "tsMutex.h"
 #include "tsNullMutex.h"
 
@@ -473,9 +474,6 @@ namespace ts {
             T* pointer();
             int count();
             bool isNull();
-            template <typename ST> SafePtr<ST,MUTEX> downcast();
-            template <typename ST> SafePtr<ST,MUTEX> upcast();
-            template <typename NEWMUTEX> SafePtr<T,NEWMUTEX> changeMutex();
 
             // Increment reference count and return this.
             SafePtrShared* attach();
@@ -483,6 +481,42 @@ namespace ts {
             // Decrement reference count and deallocate this if needed.
             // Return true is deleted, false otherwise.
             bool detach();
+
+            // The following three methods have the same semantics as their SafePtr counterparts.
+            // Their definitions were previously in file tsSafePtrTemplate.h. But the double
+            // template construct caused a failure in Coverity. So we inline them here now.
+            // Note that GCC, Clang and Visual Studio always worked properly with the
+            // separate definitions.
+
+            // Perform a class downcast (cast to a subclass).
+            template <typename ST> SafePtr<ST,MUTEX> downcast()
+            {
+                Guard lock(_mutex);
+                ST* sp = dynamic_cast<ST*>(_ptr);
+                if (sp != 0) {
+                    // Successful downcast, the original safe pointer must be released.
+                    _ptr = 0;
+                }
+                return SafePtr<ST,MUTEX>(sp);
+            }
+
+            // Perform a class upcast.
+            template <typename ST> SafePtr<ST,MUTEX> upcast()
+            {
+                Guard lock(_mutex);
+                ST* sp = _ptr;
+                _ptr = 0;
+                return SafePtr<ST,MUTEX>(sp);
+            }
+
+            // Change mutex type.
+            template <typename NEWMUTEX> SafePtr<T,NEWMUTEX> changeMutex()
+            {
+                Guard lock (_mutex);
+                T* sp = _ptr;
+                _ptr = 0;
+                return SafePtr<T,NEWMUTEX> (sp);
+            }
         };
 
         //! @endcond

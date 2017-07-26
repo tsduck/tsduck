@@ -62,6 +62,11 @@
 #  cmacros:
 #    Display the predefined macros for the C compiler.
 #
+#  coverity:
+#    Run coverity, a C/C++ static code analyzer, on the source tree starting
+#    at the current directory. Here, we only support the "Coverity Scan
+#    Self-Build" free online service for open-source projects.
+#
 #  cppcheck:
 #    Run cppcheck, a C/C++ static code analyzer, on the source tree starting
 #    at the current directory.
@@ -127,6 +132,18 @@
 #  CFLAGS_OPTIMIZE
 #    Contains specific optimization for the gcc compiler. Defaults to -O2.
 #    Ignored if DEBUG is defined.
+#
+#  COVERITY
+#    Contains the absolute path of the Coverity static code analyzer.
+#    If empty, cov-build (Coverity analyzer) is searched in $PATH.
+#
+#  COVERITY_DIR
+#    Directory where cov-build creates the report. The default is the
+#    recommended name for the scan.coverity online service: cov-int
+#
+#  COVERITY_SOURCES
+#    Root directory on which to run coverity.
+#    By default, use the source tree starting at current directory.
 #
 #  CPPCHECK
 #    Contains the absolute path of the cppcheck static code analyzer.
@@ -524,7 +541,7 @@ ROOTDIR := $(abspath $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST)))))
 SUBDIRS = $(sort $(patsubst %/,%,$(wildcard */)))
 
 # List of subdirectories to ignore in make recursion.
-NORECURSE_SUBDIRS += debug release debug-% release-% Debug Release Debug-% Release-% .vs ipch %.t2d .git
+NORECURSE_SUBDIRS += debug release debug-% release-% Debug Release Debug-% Release-% .vs ipch %.t2d .git cov-int
 
 # Actual recurse order. If the user did not define RECURSE_ORDER, use all
 # subdirectories, except those for which we know there is nothing to make.
@@ -777,7 +794,7 @@ $(OBJDIR)/%.dep: %.cpp
 	rm -f $@
 
 # Rebuild and include all .dep files, unless the explicit targets do not require the .dep files.
-NODEPS += clean cmacros cppcheck cppcheck-xml cxxmacros debug m32 distclean doxygen flawfinder listvars scan-build unixify
+NODEPS += clean cmacros coverity cppcheck cppcheck-xml cxxmacros debug m32 distclean doxygen flawfinder listvars scan-build unixify
 ifeq ($(DONT_BUILD_DEPS),)
     ifneq ($(MAKECMDGOALS),)
         DONT_BUILD_DEPS := $(if $(filter-out $(NODEPS),$(MAKECMDGOALS)),,true)
@@ -801,7 +818,7 @@ distclean: clean
 	rm -rf $(EXTRA_DISTCLEAN) [Dd]ebug* [Rr]elease* ipch *.exe *.so .kdbgrc.* *.t2d \
 	    .vs *.ncb *.suo *.idb *.sdf *.opensdf *.vcproj.*.user \
 	    *.vcxproj.user *.dll.embed.manifest.dll *.dll.embed.manifest.ilk \
-	    *.VC.db *.VC.opendb \
+	    *.VC.db *.VC.opendb cov-int cov-int.* \
 	    *.pro.user *.pro.user.* .tmp_versions
 	+@$(RECURSE)
 
@@ -813,7 +830,7 @@ NOSOURCE = \
     .vs ipch *.ncb *.suo *.idb *.sdf *.opensdf *.vcproj.*.user *.user.* \
     *.vcxproj.user *.dll.embed.manifest.dll *.dll.embed.manifest.ilk \
     .tmp_versions *.VC.db *.VC.dbopen *.VC.opendb *.deb *.rpm *.bz2 *.7z \
-    *~ *.bak *.autosave
+    *~ *.bak *.autosave cov-int
 
 # Source code documentation generation.
 DOXYGEN ?= $(call F_COMMAND,doxygen,doxygen)
@@ -838,6 +855,16 @@ TEXI2INFO_FLAGS =
 	$(MAKEINFO) --html $(TEXI2HTML_FLAGS) -o $@ $<
 %.info: %.texi
 	$(MAKEINFO) $(TEXI2INFO_FLAGS) -o $@ $<
+
+# Static code analysis: Run Coverity.
+COVERITY ?= cov-build
+COVERITY_DIR ?= cov-int
+COVERITY_SOURCES ?= $(CURDIR)
+.PHONY: coverity
+coverity:
+	rm -rf $(COVERITY_DIR)
+	$(COVERITY) --dir $(COVERITY_DIR) $(MAKE) -C $(COVERITY_SOURCES)
+	tar czf $(COVERITY_DIR).tgz $(COVERITY_DIR)
 
 # Static code analysis: Run cppcheck on the source code tree starting at current directory.
 # In debug mode, the diagnostics are more aggressive but may be false positive.

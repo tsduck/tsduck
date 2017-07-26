@@ -28,7 +28,6 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsGuard.h"
 
 
 //----------------------------------------------------------------------------
@@ -149,58 +148,6 @@ bool ts::SafePtr<T,MUTEX>::SafePtrShared::isNull()
 {
     Guard lock (_mutex);
     return _ptr == 0;
-}
-
-
-//----------------------------------------------------------------------------
-// Perform a class upcast
-//----------------------------------------------------------------------------
-
-template <typename T, class MUTEX>
-template <typename ST>
-ts::SafePtr<ST,MUTEX> ts::SafePtr<T,MUTEX>::SafePtrShared::upcast()
-{
-    Guard lock (_mutex);
-    ST* sp = _ptr;
-    _ptr = 0;
-    return SafePtr<ST,MUTEX> (sp);
-}
-
-
-//----------------------------------------------------------------------------
-// Perform a class downcast
-//----------------------------------------------------------------------------
-
-template <typename T, class MUTEX>
-template <typename ST>
-ts::SafePtr<ST,MUTEX> ts::SafePtr<T,MUTEX>::SafePtrShared::downcast()
-{
-    Guard lock (_mutex);
-#if defined (V_SYS_NO_RTTI)
-    ST* sp = reinterpret_cast<ST*> (_ptr);
-#else
-    ST* sp = dynamic_cast<ST*> (_ptr);
-#endif
-    if (sp != 0) {
-        // Successful downcast, the original safe pointer is released.
-        _ptr = 0;
-    }
-    return SafePtr<ST,MUTEX> (sp);
-}
-
-
-//----------------------------------------------------------------------------
-// Change mutex type.
-//----------------------------------------------------------------------------
-
-template <typename T, class MUTEX>
-template <typename NEWMUTEX>
-ts::SafePtr<T,NEWMUTEX> ts::SafePtr<T,MUTEX>::SafePtrShared::changeMutex()
-{
-    Guard lock (_mutex);
-    T* sp = _ptr;
-    _ptr = 0;
-    return SafePtr<T,NEWMUTEX> (sp);
 }
 
 
