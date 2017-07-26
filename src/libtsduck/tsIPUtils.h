@@ -300,45 +300,45 @@ namespace ts {
 
 #elif defined (__windows)
 
-    #define TS_SOCKET_T                ::SOCKET
-    #define TS_SOCKET_T_INVALID        INVALID_SOCKET
-    #define TS_SOCKET_SOCKLEN_T        int
-    #define TS_SOCKET_SSIZE_T          int
-    #define TS_SOCKET_TTL_T            ::DWORD
-    #define TS_SOCKET_MC_TTL_T         ::DWORD
-    #define V_SYS_SOCKET_L_LINGER_T(x) (static_cast<u_short>(x))
-    #define V_SYS_SOCKET_PKTINFO_T     ::DWORD
-    #define TS_SOCKOPT_T(x)            (reinterpret_cast<const char*>(x))
-    #define TS_RECVBUF_T(x)            (reinterpret_cast<char*>(x))
-    #define TS_SENDBUF_T(x)            (reinterpret_cast<const char*>(x))
-    #define TS_SOCKET_IOCTL            ::ioctlsocket
-    #define TS_SOCKET_CLOSE            ::closesocket
-    #define TS_SOCKET_SHUT_RDWR        SD_BOTH
-    #define TS_SOCKET_SHUT_RD          SD_RECEIVE
-    #define TS_SOCKET_SHUT_WR          SD_SEND
-    #define TS_SOCKET_ERR_RESET        WSAECONNRESET
-    #define TS_SOCKET_ERR_NOTCONN      WSAENOTCONN
+    #define TS_SOCKET_T             ::SOCKET
+    #define TS_SOCKET_T_INVALID     INVALID_SOCKET
+    #define TS_SOCKET_SOCKLEN_T     int
+    #define TS_SOCKET_SSIZE_T       int
+    #define TS_SOCKET_TTL_T         ::DWORD
+    #define TS_SOCKET_MC_TTL_T      ::DWORD
+    #define TS_SOCKET_L_LINGER_T(x) (static_cast<u_short>(x))
+    #define TS_SOCKET_PKTINFO_T     ::DWORD
+    #define TS_SOCKOPT_T(x)         (reinterpret_cast<const char*>(x))
+    #define TS_RECVBUF_T(x)         (reinterpret_cast<char*>(x))
+    #define TS_SENDBUF_T(x)         (reinterpret_cast<const char*>(x))
+    #define TS_SOCKET_IOCTL         ::ioctlsocket
+    #define TS_SOCKET_CLOSE         ::closesocket
+    #define TS_SOCKET_SHUT_RDWR     SD_BOTH
+    #define TS_SOCKET_SHUT_RD       SD_RECEIVE
+    #define TS_SOCKET_SHUT_WR       SD_SEND
+    #define TS_SOCKET_ERR_RESET     WSAECONNRESET
+    #define TS_SOCKET_ERR_NOTCONN   WSAENOTCONN
 
 #elif defined(__unix)
 
-    #define TS_SOCKET_T                int
-    #define TS_SOCKET_T_INVALID        (-1)
-    #define TS_SOCKET_SOCKLEN_T        ::socklen_t
-    #define TS_SOCKET_SSIZE_T          ::ssize_t
-    #define TS_SOCKET_TTL_T            int
-    #define TS_SOCKET_MC_TTL_T         unsigned char
-    #define V_SYS_SOCKET_L_LINGER_T(x) (static_cast<int>(x))
-    #define V_SYS_SOCKET_PKTINFO_T     int
-    #define TS_SOCKOPT_T(x)            (x)
-    #define TS_RECVBUF_T(x)            (x)
-    #define TS_SENDBUF_T(x)            (x)
-    #define TS_SOCKET_IOCTL            ::ioctl
-    #define TS_SOCKET_CLOSE            ::close
-    #define TS_SOCKET_SHUT_RDWR        SHUT_RDWR
-    #define TS_SOCKET_SHUT_RD          SHUT_RD
-    #define TS_SOCKET_SHUT_WR          SHUT_WR
-    #define TS_SOCKET_ERR_RESET        EPIPE
-    #define TS_SOCKET_ERR_NOTCONN      ENOTCONN
+    #define TS_SOCKET_T             int
+    #define TS_SOCKET_T_INVALID     (-1)
+    #define TS_SOCKET_SOCKLEN_T     ::socklen_t
+    #define TS_SOCKET_SSIZE_T       ::ssize_t
+    #define TS_SOCKET_TTL_T         int
+    #define TS_SOCKET_MC_TTL_T      unsigned char
+    #define TS_SOCKET_L_LINGER_T(x) (static_cast<int>(x))
+    #define TS_SOCKET_PKTINFO_T     int
+    #define TS_SOCKOPT_T(x)         (x)
+    #define TS_RECVBUF_T(x)         (x)
+    #define TS_SENDBUF_T(x)         (x)
+    #define TS_SOCKET_IOCTL         ::ioctl
+    #define TS_SOCKET_CLOSE         ::close
+    #define TS_SOCKET_SHUT_RDWR     SHUT_RDWR
+    #define TS_SOCKET_SHUT_RD       SHUT_RD
+    #define TS_SOCKET_SHUT_WR       SHUT_WR
+    #define TS_SOCKET_ERR_RESET     EPIPE
+    #define TS_SOCKET_ERR_NOTCONN   ENOTCONN
 
 #else
     #error "check socket compatibility macros on this platform"
