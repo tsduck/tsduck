@@ -39,3 +39,4 @@ vgcore.*
 .project
 doxy
 tmp
+cov-int
