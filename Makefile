@@ -41,6 +41,7 @@ NORECURSE_SUBDIRS += doxy
 CPPCHECK_SOURCES   = src
 FLAWFINDER_SOURCES = src
 SCANBUILD_SOURCES  = src
+COVERITY_SOURCES   = src
 
 # By default, recurse make target in all subdirectories
 default:
