@@ -27,8 +27,8 @@ TSDUCK_SOURCE;
 //----------------------------------------------------------------------------
 
 ts::SHA1::SHA1() :
-    _length (0),
-    _curlen (0)
+    _length(0),
+    _curlen(0)
 {
     init();
 }
@@ -56,29 +56,29 @@ bool ts::SHA1::init()
 // Compress part of message
 //----------------------------------------------------------------------------
 
-void ts::SHA1::compress (const uint8_t* buf)
+void ts::SHA1::compress(const uint8_t* buf)
 {
     uint32_t a,b,c,d,e,W[80],i;
 
-    /* copy the state into 512-bits into W[0..15] */
+    // Copy the state into 512-bits into W[0..15]
     for (i = 0; i < 16; i++) {
         W[i] = GetUInt32 (buf + 4*i);
     }
 
-    /* copy state */
+    // Copy state
     a = _state[0];
     b = _state[1];
     c = _state[2];
     d = _state[3];
     e = _state[4];
 
-    /* expand it */
+    // Expand it
     for (i = 16; i < 80; i++) {
         W[i] = ROL(W[i-3] ^ W[i-8] ^ W[i-14] ^ W[i-16], 1);
     }
 
-    /* compress */
-    /* round one */
+    // Compress
+    // Round one
     #define FF0(a,b,c,d,e,i) e = (ROLc(a, 5) + F0(b,c,d) + e + W[i] + 0x5a827999UL); b = ROLc(b, 30);
     #define FF1(a,b,c,d,e,i) e = (ROLc(a, 5) + F1(b,c,d) + e + W[i] + 0x6ed9eba1UL); b = ROLc(b, 30);
     #define FF2(a,b,c,d,e,i) e = (ROLc(a, 5) + F2(b,c,d) + e + W[i] + 0x8f1bbcdcUL); b = ROLc(b, 30);
@@ -92,7 +92,7 @@ void ts::SHA1::compress (const uint8_t* buf)
         FF0(b,c,d,e,a,i++);
     }
 
-    /* round two */
+    // Round two
     for (; i < 40; )  {
         FF1(a,b,c,d,e,i++);
         FF1(e,a,b,c,d,i++);
@@ -101,7 +101,7 @@ void ts::SHA1::compress (const uint8_t* buf)
         FF1(b,c,d,e,a,i++);
     }
 
-    /* round three */
+    // Round three
     for (; i < 60; )  {
         FF2(a,b,c,d,e,i++);
         FF2(e,a,b,c,d,i++);
@@ -110,7 +110,7 @@ void ts::SHA1::compress (const uint8_t* buf)
         FF2(b,c,d,e,a,i++);
     }
 
-    /* round four */
+    // Round four
     for (; i < 80; )  {
         FF3(a,b,c,d,e,i++);
         FF3(e,a,b,c,d,i++);
@@ -124,7 +124,7 @@ void ts::SHA1::compress (const uint8_t* buf)
     #undef FF2
     #undef FF3
 
-    /* store */
+    // Store
     _state[0] += a;
     _state[1] += b;
     _state[2] += c;
@@ -138,12 +138,12 @@ void ts::SHA1::compress (const uint8_t* buf)
 // Return true on success, false on error.
 //----------------------------------------------------------------------------
 
-bool ts::SHA1::add (const void* data, size_t size)
+bool ts::SHA1::add(const void* data, size_t size)
 {
-    const uint8_t* in = reinterpret_cast<const uint8_t*> (data);
+    const uint8_t* in = reinterpret_cast<const uint8_t*>(data);
     size_t n;
 
-    if (_curlen > sizeof(_buf)) {
+    if (_curlen >= sizeof(_buf)) {
         return false;
     }
     while (size > 0) {
@@ -154,8 +154,8 @@ bool ts::SHA1::add (const void* data, size_t size)
             size -= BLOCK_SIZE;
         }
         else {
-            n = std::min (size, (BLOCK_SIZE - _curlen));
-            ::memcpy(_buf + _curlen, in, n);  // Flawfinder: ignore: memcpy()
+            n = std::min(size, (BLOCK_SIZE - _curlen));
+            ::memcpy(_buf + _curlen, in, n);
             _curlen += n;
             in += n;
             size -= n;

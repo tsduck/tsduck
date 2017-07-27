@@ -31,8 +31,8 @@ TSDUCK_SOURCE;
 //----------------------------------------------------------------------------
 
 ts::SHA256::SHA256() :
-    _length (0),
-    _curlen (0)
+    _length(0),
+    _curlen(0)
 {
     init();
 }
@@ -173,7 +173,7 @@ bool ts::SHA256::add (const void* data, size_t size)
     const uint8_t* in = reinterpret_cast<const uint8_t*> (data);
     size_t n;
 
-    if (_curlen > sizeof(_buf)) {
+    if (_curlen >= sizeof(_buf)) {
         return false;
     }
     while (size > 0) {
@@ -185,7 +185,7 @@ bool ts::SHA256::add (const void* data, size_t size)
         }
         else {
             n = std::min (size, (BLOCK_SIZE - _curlen));
-            ::memcpy(_buf + _curlen, in, n);  // Flawfinder: ignore: memcpy()
+            ::memcpy(_buf + _curlen, in, n);
             _curlen += n;
             in += n;
             size -= n;

@@ -42,19 +42,19 @@ TSDUCK_SOURCE;
 // Minimum number of PID's, each with a minimum number of PCR"s.
 //----------------------------------------------------------------------------
 
-ts::PCRAnalyzer::PCRAnalyzer (size_t min_pid, size_t min_pcr) :
-    _use_dts (false),
-    _min_pid (std::max<size_t> (1, min_pid)),
-    _min_pcr (std::max<size_t> (1, min_pcr)),
-    _bitrate_valid (false),
-    _ts_pkt_cnt (0),
-    _ts_bitrate_188 (0),
-    _ts_bitrate_204 (0),
-    _ts_bitrate_cnt (0),
-    _completed_pids (0),
-    _pcr_pids (0)
+ts::PCRAnalyzer::PCRAnalyzer(size_t min_pid, size_t min_pcr) :
+    _use_dts(false),
+    _min_pid(std::max<size_t>(1, min_pid)),
+    _min_pcr(std::max<size_t>(1, min_pcr)),
+    _bitrate_valid(false),
+    _ts_pkt_cnt(0),
+    _ts_bitrate_188(0),
+    _ts_bitrate_204(0),
+    _ts_bitrate_cnt(0),
+    _completed_pids(0),
+    _pcr_pids(0)
 {
-    TS_ZERO (_pid);
+    TS_ZERO(_pid);
 }
 
 
@@ -62,7 +62,7 @@ ts::PCRAnalyzer::PCRAnalyzer (size_t min_pid, size_t min_pcr) :
 // Destructor
 //----------------------------------------------------------------------------
 
-ts::PCRAnalyzer::~PCRAnalyzer ()
+ts::PCRAnalyzer::~PCRAnalyzer()
 {
     reset();
 }
@@ -72,14 +72,14 @@ ts::PCRAnalyzer::~PCRAnalyzer ()
 // PIDAnalysis constructor
 //----------------------------------------------------------------------------
 
-ts::PCRAnalyzer::PIDAnalysis::PIDAnalysis () :
-    ts_pkt_cnt (0),
-    cur_continuity (0),
-    last_pcr_value (0),
-    last_pcr_packet (0),
-    ts_bitrate_188 (0),
-    ts_bitrate_204 (0),
-    ts_bitrate_cnt (0)
+ts::PCRAnalyzer::PIDAnalysis::PIDAnalysis() :
+    ts_pkt_cnt(0),
+    cur_continuity(0),
+    last_pcr_value(0),
+    last_pcr_packet(0),
+    ts_bitrate_188(0),
+    ts_bitrate_204(0),
+    ts_bitrate_cnt(0)
 {
 }
 
@@ -88,25 +88,25 @@ ts::PCRAnalyzer::PIDAnalysis::PIDAnalysis () :
 // PCRAnalyzez::Status constructors
 //----------------------------------------------------------------------------
 
-ts::PCRAnalyzer::Status::Status () :
-    bitrate_valid (false),
-    bitrate_188 (0),
-    bitrate_204 (0),
-    packet_count (0),
-    pcr_count (0),
-    pcr_pids (0)
+ts::PCRAnalyzer::Status::Status() :
+    bitrate_valid(false),
+    bitrate_188(0),
+    bitrate_204(0),
+    packet_count(0),
+    pcr_count(0),
+    pcr_pids(0)
 {
 }
 
-ts::PCRAnalyzer::Status::Status (const PCRAnalyzer& an) :
-    bitrate_valid (false),
-    bitrate_188 (0),
-    bitrate_204 (0),
-    packet_count (0),
-    pcr_count (0),
-    pcr_pids (0)
+ts::PCRAnalyzer::Status::Status(const PCRAnalyzer& an) :
+    bitrate_valid(false),
+    bitrate_188(0),
+    bitrate_204(0),
+    packet_count(0),
+    pcr_count(0),
+    pcr_pids(0)
 {
-    an.getStatus (*this);
+    an.getStatus(*this);
 }
 
 
@@ -114,10 +114,10 @@ ts::PCRAnalyzer::Status::Status (const PCRAnalyzer& an) :
 // Reset all collected information
 //----------------------------------------------------------------------------
 
-void ts::PCRAnalyzer::reset (size_t min_pid, size_t min_pcr)
+void ts::PCRAnalyzer::reset(size_t min_pid, size_t min_pcr)
 {
-    _min_pid = std::max<size_t> (1, min_pid);
-    _min_pcr = std::max<size_t> (1, min_pcr);
+    _min_pid = std::max<size_t>(1, min_pid);
+    _min_pcr = std::max<size_t>(1, min_pcr);
     reset();
 }
 
@@ -126,7 +126,7 @@ void ts::PCRAnalyzer::reset (size_t min_pid, size_t min_pcr)
 // Reset all collected information
 //----------------------------------------------------------------------------
 
-void ts::PCRAnalyzer::reset ()
+void ts::PCRAnalyzer::reset()
 {
     _bitrate_valid = false;
     _ts_pkt_cnt = 0;
@@ -149,15 +149,15 @@ void ts::PCRAnalyzer::reset ()
 // Reset all collected information and use DTS instead of PCR from now on.
 //----------------------------------------------------------------------------
 
-void ts::PCRAnalyzer::resetAndUseDTS ()
+void ts::PCRAnalyzer::resetAndUseDTS()
 {
     reset();
     _use_dts = true;
 }
 
-void ts::PCRAnalyzer::resetAndUseDTS (size_t min_pid, size_t min_dts)
+void ts::PCRAnalyzer::resetAndUseDTS(size_t min_pid, size_t min_dts)
 {
-    reset (min_pid, min_dts);
+    reset(min_pid, min_dts);
     _use_dts = true;
 }
 
@@ -182,14 +182,14 @@ void ts::PCRAnalyzer::processDiscountinuity()
 // (based on 188-byte or 204-byte packets).
 //----------------------------------------------------------------------------
 
-ts::BitRate ts::PCRAnalyzer::bitrate188 () const
+ts::BitRate ts::PCRAnalyzer::bitrate188() const
 {
-    return _ts_bitrate_cnt == 0 ? 0 : BitRate (_ts_bitrate_188 / _ts_bitrate_cnt);
+    return _ts_bitrate_cnt == 0 ? 0 : BitRate(_ts_bitrate_188 / _ts_bitrate_cnt);
 }
 
-ts::BitRate ts::PCRAnalyzer::bitrate204 () const
+ts::BitRate ts::PCRAnalyzer::bitrate204() const
 {
-    return _ts_bitrate_cnt == 0 ? 0 : BitRate (_ts_bitrate_204 / _ts_bitrate_cnt);
+    return _ts_bitrate_cnt == 0 ? 0 : BitRate(_ts_bitrate_204 / _ts_bitrate_cnt);
 }
 
 
@@ -198,16 +198,16 @@ ts::BitRate ts::PCRAnalyzer::bitrate204 () const
 // (based on 188-byte or 204-byte packets).
 //----------------------------------------------------------------------------
 
-ts::BitRate ts::PCRAnalyzer::bitrate188 (PID pid) const
+ts::BitRate ts::PCRAnalyzer::bitrate188(PID pid) const
 {
-    return pid > PID_MAX || _ts_bitrate_cnt == 0 || _pid[pid] == 0 ? 0 :
-        BitRate ((_ts_bitrate_188 * _pid[pid]->ts_pkt_cnt) / (_ts_bitrate_cnt * _ts_pkt_cnt));
+    return pid >= PID_MAX || _ts_bitrate_cnt == 0 || _ts_pkt_cnt == 0 || _pid[pid] == 0 ? 0 :
+        BitRate((_ts_bitrate_188 * _pid[pid]->ts_pkt_cnt) / (_ts_bitrate_cnt * _ts_pkt_cnt));
 }
 
-ts::BitRate ts::PCRAnalyzer::bitrate204 (PID pid) const
+ts::BitRate ts::PCRAnalyzer::bitrate204(PID pid) const
 {
-    return pid > PID_MAX || _ts_bitrate_cnt == 0 || _pid[pid] == 0 ? 0 :
-        BitRate ((_ts_bitrate_204 * _pid[pid]->ts_pkt_cnt) / (_ts_bitrate_cnt * _ts_pkt_cnt));
+    return pid >= PID_MAX || _ts_bitrate_cnt == 0 || _ts_pkt_cnt == 0 || _pid[pid] == 0 ? 0 :
+        BitRate((_ts_bitrate_204 * _pid[pid]->ts_pkt_cnt) / (_ts_bitrate_cnt * _ts_pkt_cnt));
 }
 
 
@@ -215,9 +215,9 @@ ts::BitRate ts::PCRAnalyzer::bitrate204 (PID pid) const
 // Return the number of TS packets on a PID
 //----------------------------------------------------------------------------
 
-ts::PacketCounter ts::PCRAnalyzer::packetCount (PID pid) const
+ts::PacketCounter ts::PCRAnalyzer::packetCount(PID pid) const
 {
-    return pid > PID_MAX || _pid[pid] == 0 ? 0 : _pid[pid]->ts_pkt_cnt;
+    return pid >= PID_MAX || _pid[pid] == 0 ? 0 : _pid[pid]->ts_pkt_cnt;
 }
 
 
@@ -225,7 +225,7 @@ ts::PacketCounter ts::PCRAnalyzer::packetCount (PID pid) const
 // Return all global results at once.
 //----------------------------------------------------------------------------
 
-void ts::PCRAnalyzer::getStatus (Status& stat) const
+void ts::PCRAnalyzer::getStatus(Status& stat) const
 {
     stat.bitrate_valid = _bitrate_valid;
     stat.bitrate_188   = bitrate188();
@@ -241,20 +241,20 @@ void ts::PCRAnalyzer::getStatus (Status& stat) const
 // Return true if we have collected enough packet to evaluate TS bitrate.
 //----------------------------------------------------------------------------
 
-bool ts::PCRAnalyzer::feedPacket (const TSPacket& pkt)
+bool ts::PCRAnalyzer::feedPacket(const TSPacket& pkt)
 {
     // Count one more packet in the TS
     _ts_pkt_cnt++;
 
     // Reject invalid packets, suspected TS corruption
-    if (!pkt.hasValidSync ()) {
+    if (!pkt.hasValidSync()) {
         processDiscountinuity();
         return _bitrate_valid;
     }
 
     // Find PID context
-    const PID pid = pkt.getPID ();
-    assert (pid < PID_MAX);
+    const PID pid = pkt.getPID();
+    assert(pid < PID_MAX);
 
     PIDAnalysis* ps = _pid[pid];
     if (ps == 0) {
@@ -273,13 +273,13 @@ bool ts::PCRAnalyzer::feedPacket (const TSPacket& pkt)
         // First packet on this PID, initialize continuity
         ps->cur_continuity = continuity_cnt;
     }
-    else if (pkt.getDiscontinuityIndicator ()) {
+    else if (pkt.getDiscontinuityIndicator()) {
         // Expected discontinuity
         broken_rate = true;
     }
-    else if (pkt.hasPayload ()) {
+    else if (pkt.hasPayload()) {
         // Packet has payload. Compute next continuity counter.
-        uint8_t next_cont ((ps->cur_continuity + 1) & 0x0F);
+        uint8_t next_cont((ps->cur_continuity + 1) & 0x0F);
         // The countinuity counter must be either identical to previous one
         // (duplicated packet) or adjacent.
         broken_rate = continuity_cnt != ps->cur_continuity && continuity_cnt != next_cont;

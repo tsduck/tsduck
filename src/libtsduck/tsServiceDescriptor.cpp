@@ -42,11 +42,11 @@ TSDUCK_SOURCE;
 // Default constructor:
 //----------------------------------------------------------------------------
 
-ts::ServiceDescriptor::ServiceDescriptor (uint8_t type, const std::string& provider, const std::string& name) :
-    AbstractDescriptor (DID_SERVICE),
-    service_type (type),
-    provider_name (provider),
-    service_name (name)
+ts::ServiceDescriptor::ServiceDescriptor(uint8_t type, const std::string& provider, const std::string& name) :
+    AbstractDescriptor(DID_SERVICE),
+    service_type(type),
+    provider_name(provider),
+    service_name(name)
 {
     _is_valid = true;
 }
@@ -56,13 +56,13 @@ ts::ServiceDescriptor::ServiceDescriptor (uint8_t type, const std::string& provi
 // Constructor from a binary descriptor
 //----------------------------------------------------------------------------
 
-ts::ServiceDescriptor::ServiceDescriptor (const Descriptor& desc) :
-    AbstractDescriptor (DID_SERVICE),
-    service_type (0),
-    provider_name (),
-    service_name ()
+ts::ServiceDescriptor::ServiceDescriptor(const Descriptor& desc) :
+    AbstractDescriptor(DID_SERVICE),
+    service_type(0),
+    provider_name(),
+    service_name()
 {
-    deserialize (desc);
+    deserialize(desc);
 }
 
 
@@ -70,15 +70,15 @@ ts::ServiceDescriptor::ServiceDescriptor (const Descriptor& desc) :
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::ServiceDescriptor::serialize (Descriptor& desc) const
+void ts::ServiceDescriptor::serialize(Descriptor& desc) const
 {
     if (provider_name.length() + service_name.length() > 252) {
         desc.invalidate();
         return;
     }
 
-    ByteBlockPtr bbp (new ByteBlock (2));
-    CheckNonNull (bbp.pointer());
+    ByteBlockPtr bbp(new ByteBlock(2));
+    CheckNonNull(bbp.pointer());
 
     bbp->appendUInt8(service_type);
     bbp->appendUInt8(uint8_t(provider_name.length()));
@@ -97,7 +97,7 @@ void ts::ServiceDescriptor::serialize (Descriptor& desc) const
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::ServiceDescriptor::deserialize (const Descriptor& desc)
+void ts::ServiceDescriptor::deserialize(const Descriptor& desc)
 {
     _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() >= 3;
 
@@ -108,13 +108,13 @@ void ts::ServiceDescriptor::deserialize (const Descriptor& desc)
         size_t len = data[1];
         _is_valid = 2 + len < size;
         if (_is_valid) {
-            provider_name.assign (reinterpret_cast <const char*> (data + 2), len);
+            provider_name.assign(reinterpret_cast<const char*>(data + 2), len);
             data += 2 + len;
             size -= 2 + len;
             len = data[0];
             _is_valid = 1 + len <= size;
             if (_is_valid) {
-                service_name.assign (reinterpret_cast <const char*> (data + 1), len);
+                service_name.assign(reinterpret_cast<const char*>(data + 1), len);
             }
         }
     }
@@ -145,16 +145,10 @@ void ts::ServiceDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, c
              << names::ServiceType(stype) << std::endl;
         
         // Provider name
-        size_t plength;
-        if (size < 1) {
-            plength = 0;
-        }
-        else {
-            plength = *data;
-            data += 1; size -= 1;
-            if (plength > size) {
-                plength = size;
-            }
+        size_t plength = *data;
+        data += 1; size -= 1;
+        if (plength > size) {
+            plength = size;
         }
         const uint8_t* provider = data;
         data += plength; size -= plength;

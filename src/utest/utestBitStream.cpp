@@ -155,7 +155,10 @@ void BitStreamTest::testAssignment()
     CPPUNIT_ASSERT(bs2.remainingBitCount() == 83);
     CPPUNIT_ASSERT(!bs2.endOfStream());
 
+    // Returned value ignored on purpose, we just want to move on in the bitstream.
+    // coverity[CHECKED_RETURN]
     bs2.readBit();
+    // coverity[CHECKED_RETURN]
     bs2.readBit();
 
     CPPUNIT_ASSERT(bs1.isAssociated());
@@ -232,9 +235,12 @@ void BitStreamTest::testByteAligned()
 
     CPPUNIT_ASSERT(!bs1.byteAligned());
 
+    // Returned value ignored on purpose, we just want to move on in the bitstream.
+    // coverity[CHECKED_RETURN]
     bs1.readBit();
     CPPUNIT_ASSERT(bs1.byteAligned());
 
+    // coverity[CHECKED_RETURN]
     bs1.readBit();
     CPPUNIT_ASSERT(!bs1.byteAligned());
 

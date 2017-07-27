@@ -92,16 +92,16 @@ std::string ts::VernacularFilePath(const std::string& path)
 
 std::string ts::DirectoryName(const std::string& path)
 {
-    std::string::size_type sep = path.rfind (PathSeparator);
+    std::string::size_type sep = path.rfind(PathSeparator);
 
     if (sep == std::string::npos) {
         return ".";                 // No '/' in path => current directory
     }
     else if (sep == 0) {
-        return path.substr (0, 1);  // '/' at beginning => root
+        return path.substr(0, 1);  // '/' at beginning => root
     }
     else {
-        return path.substr (0, sep);
+        return path.substr(0, sep);
     }
 }
 
@@ -128,10 +128,10 @@ std::string ts::BaseName(const std::string& path, const std::string& suffix)
 // Return the suffix of a file path (eg. "dir/foo.bar" => ".bar")
 //----------------------------------------------------------------------------
 
-std::string ts::PathSuffix (const std::string& path)
+std::string ts::PathSuffix(const std::string& path)
 {
-    std::string::size_type sep = path.rfind (PathSeparator);
-    std::string::size_type dot = path.rfind ('.');
+    std::string::size_type sep = path.rfind(PathSeparator);
+    std::string::size_type dot = path.rfind('.');
 
     if (dot == std::string::npos) {
         return "";  // no dot in path
@@ -140,7 +140,7 @@ std::string ts::PathSuffix (const std::string& path)
         return "";  // dot in directory part, not in base name
     }
     else {
-        return path.substr (dot); // dot in base name
+        return path.substr(dot); // dot in base name
     }
 }
 
@@ -150,10 +150,10 @@ std::string ts::PathSuffix (const std::string& path)
 // Otherwise, return the name unchanged.
 //----------------------------------------------------------------------------
 
-std::string ts::AddPathSuffix (const std::string& path, const std::string& suffix)
+std::string ts::AddPathSuffix(const std::string& path, const std::string& suffix)
 {
-    std::string::size_type sep = path.rfind (PathSeparator);
-    std::string::size_type dot = path.rfind ('.');
+    std::string::size_type sep = path.rfind(PathSeparator);
+    std::string::size_type dot = path.rfind('.');
 
     if (dot == std::string::npos || (sep != std::string::npos && dot < sep)) {
         return path + suffix;
@@ -168,17 +168,20 @@ std::string ts::AddPathSuffix (const std::string& path, const std::string& suffi
 // Return the prefix of a file path (eg. "dir/foo.bar" => "dir/foo")
 //----------------------------------------------------------------------------
 
-std::string ts::PathPrefix (const std::string& path)
+std::string ts::PathPrefix(const std::string& path)
 {
-    std::string::size_type sep = path.rfind (PathSeparator);
-    std::string::size_type dot = path.rfind ('.');
+    std::string::size_type sep = path.rfind(PathSeparator);
+    std::string::size_type dot = path.rfind('.');
 
-    if (dot == std::string::npos)
+    if (dot == std::string::npos) {
         return path;  // no dot in path
-    else if (sep != std::string::npos && dot < sep)
+    }
+    else if (sep != std::string::npos && dot < sep) {
         return path;  // dot in directory part, not in base name
-    else
-        return path.substr (0, dot); // dot in base name
+    }
+    else {
+        return path.substr(0, dot); // dot in base name
+    }
 }
 
 
@@ -198,11 +201,11 @@ std::string ts::UserHomeDirectory()
     ::DWORD length = sizeof(name);
     const ::BOOL status = ::GetUserProfileDirectory(process, name, &length);
     const ::DWORD error = ::GetLastError();
-    ::CloseHandle (process);
+    ::CloseHandle(process);
     if (status == 0) {
         throw ts::Exception("error getting user profile directory", ::GetLastError());
     }
-    name[std::max<::DWORD>(0, std::min<::DWORD>(length, sizeof (name) - 1))] = '\0';
+    name[std::max<::DWORD>(0, std::min<::DWORD>(length, sizeof(name) - 1))] = '\0';
     return std::string(name);
 
 #else
@@ -237,7 +240,6 @@ std::string ts::ExecutableFile()
     // Flawfinder: ignore: readlink does not terminate with ASCII NUL.
     if ((length = ::readlink("/proc/self/exe", name, sizeof(name))) < 0) {
         throw ts::Exception("Symbolic link /proc/self/exe error", errno);
-        return "";
     }
     else {
         assert(length <= int(sizeof(name)));
@@ -254,7 +256,6 @@ std::string ts::ExecutableFile()
     char name[PROC_PIDPATHINFO_MAXSIZE];
     if ((length = ::proc_pidpath(getpid(), name, sizeof(name))) < 0) {
         throw ts::Exception("proc_pidpath error", errno);
-        return "";
     }
     else {
         assert(length <= int(sizeof(name)));
@@ -281,7 +282,6 @@ std::string ts::HostName()
     ::DWORD length(sizeof(name));
     if (::GetComputerName(name, &length) == 0) {
         throw ts::Exception("GetComputerName error", ::GetLastError());
-        // return ""; // unreachable code
     }
     else {
         assert(length >= 0 && length <= sizeof(name));
@@ -342,7 +342,7 @@ void ts::SleepThread(MilliSecond delay)
 
 size_t ts::MemoryPageSize()
 {
-#if defined (__windows)
+#if defined(__windows)
 
     ::SYSTEM_INFO sysinfo;
     ::GetSystemInfo(&sysinfo);
@@ -351,10 +351,9 @@ size_t ts::MemoryPageSize()
 #else
 
     // POSIX implementation.
-    long size(::sysconf(_SC_PAGESIZE));
+    long size = ::sysconf(_SC_PAGESIZE);
     if (size < 0) {
         throw ts::Exception("sysconf (page size) error", errno);
-        size = 0;
     }
     return size_t(size);
 
@@ -394,7 +393,7 @@ ts::ErrorCode ts::CreateDirectory(const std::string& path)
 // Return the name of a directory for temporary files.
 //----------------------------------------------------------------------------
 
-std::string ts::TempDirectory ()
+std::string ts::TempDirectory()
 {
 #if defined(__windows)
     char buf[2048];
@@ -428,15 +427,15 @@ std::string ts::TempFile(const std::string& suffix)
 // Get the size in byte of a file. Return -1 in case of error.
 //----------------------------------------------------------------------------
 
-int64_t ts::GetFileSize (const std::string& path)
+int64_t ts::GetFileSize(const std::string& path)
 {
-#if defined (__windows)
+#if defined(__windows)
     ::WIN32_FILE_ATTRIBUTE_DATA info;
-    return ::GetFileAttributesEx (path.c_str(), ::GetFileExInfoStandard, &info) == 0 ? -1 :
-        (int64_t (info.nFileSizeHigh) << 32) | (int64_t (info.nFileSizeLow) & 0xFFFFFFFFL);
+    return ::GetFileAttributesEx(path.c_str(), ::GetFileExInfoStandard, &info) == 0 ? -1 :
+        (int64_t(info.nFileSizeHigh) << 32) | (int64_t(info.nFileSizeLow) & 0xFFFFFFFFL);
 #else
     struct stat st;
-    return ::stat (path.c_str(), &st) < 0 ? -1 : int64_t (st.st_size);
+    return ::stat(path.c_str(), &st) < 0 ? -1 : int64_t(st.st_size);
 #endif
 }
 
@@ -446,20 +445,20 @@ int64_t ts::GetFileSize (const std::string& path)
 // Return Time::Epoch in case of error.
 //----------------------------------------------------------------------------
 
-ts::Time ts::GetFileModificationTimeUTC (const std::string& path)
+ts::Time ts::GetFileModificationTimeUTC(const std::string& path)
 {
-#if defined (__windows)
+#if defined(__windows)
     ::WIN32_FILE_ATTRIBUTE_DATA info;
-    return ::GetFileAttributesEx (path.c_str(), ::GetFileExInfoStandard, &info) == 0 ? Time::Epoch : Time::Win32FileTimeToUTC (info.ftLastWriteTime);
+    return ::GetFileAttributesEx(path.c_str(), ::GetFileExInfoStandard, &info) == 0 ? Time::Epoch : Time::Win32FileTimeToUTC(info.ftLastWriteTime);
 #else
     struct stat st;
-    return ::stat (path.c_str(), &st) < 0 ? Time::Epoch : Time::UnixTimeToUTC (st.st_mtime);
+    return ::stat(path.c_str(), &st) < 0 ? Time::Epoch : Time::UnixTimeToUTC(st.st_mtime);
 #endif
 }
 
-ts::Time ts::GetFileModificationTimeLocal (const std::string& path)
+ts::Time ts::GetFileModificationTimeLocal(const std::string& path)
 {
-    const Time time (GetFileModificationTimeUTC (path));
+    const Time time(GetFileModificationTimeUTC(path));
     return time == Time::Epoch ? time : time.UTCToLocal();
 }
 
@@ -470,7 +469,7 @@ ts::Time ts::GetFileModificationTimeLocal (const std::string& path)
 
 bool ts::FileExists(const std::string& path)
 {
-#if defined (__windows)
+#if defined(__windows)
     return ::GetFileAttributes(path.c_str()) != INVALID_FILE_ATTRIBUTES;
 #else
     // Flawfinder: ignore
@@ -485,12 +484,12 @@ bool ts::FileExists(const std::string& path)
 
 bool ts::IsDirectory(const std::string& path)
 {
-#if defined (__windows)
-    const ::DWORD attr = ::GetFileAttributes (path.c_str());
+#if defined(__windows)
+    const ::DWORD attr = ::GetFileAttributes(path.c_str());
     return attr != INVALID_FILE_ATTRIBUTES && (attr & FILE_ATTRIBUTE_DIRECTORY) != 0;
 #else
     struct stat st;
-    return ::stat (path.c_str(), &st) == 0 && S_ISDIR (st.st_mode);
+    return ::stat(path.c_str(), &st) == 0 && S_ISDIR(st.st_mode);
 #endif
 }
 
@@ -501,7 +500,7 @@ bool ts::IsDirectory(const std::string& path)
 
 ts::ErrorCode ts::DeleteFile(const std::string& path)
 {
-#if defined (__windows)
+#if defined(__windows)
     if (IsDirectory(path)) {
         return ::RemoveDirectory(path.c_str()) == 0 ? ::GetLastError() : SYS_SUCCESS;
     }
@@ -518,28 +517,28 @@ ts::ErrorCode ts::DeleteFile(const std::string& path)
 // Truncate a file to the specified size. Return an error code.
 //----------------------------------------------------------------------------
 
-ts::ErrorCode ts::TruncateFile (const std::string& path, uint64_t size)
+ts::ErrorCode ts::TruncateFile(const std::string& path, uint64_t size)
 {
-#if defined (__windows)
+#if defined(__windows)
 
-    ::LONG size_high = ::LONG (size >> 32);
+    ::LONG size_high = ::LONG(size >> 32);
     ::DWORD status = ERROR_SUCCESS;
-    ::HANDLE h = ::CreateFile (path.c_str(), GENERIC_WRITE, 0, 0, OPEN_EXISTING, 0, 0);
+    ::HANDLE h = ::CreateFile(path.c_str(), GENERIC_WRITE, 0, 0, OPEN_EXISTING, 0, 0);
     if (h == INVALID_HANDLE_VALUE) {
         return ::GetLastError();
     }
-    else if (::SetFilePointer (h, ::LONG (size), &size_high, FILE_BEGIN) == INVALID_SET_FILE_POINTER) {
+    else if (::SetFilePointer(h, ::LONG(size), &size_high, FILE_BEGIN) == INVALID_SET_FILE_POINTER) {
         status = ::GetLastError();
     }
-    else if (::SetEndOfFile (h) == 0) {
+    else if (::SetEndOfFile(h) == 0) {
         status = ::GetLastError();
     }
-    ::CloseHandle (h);
+    ::CloseHandle(h);
     return status;
 
 #else
 
-    return ::truncate (path.c_str(), off_t (size)) < 0 ? errno : 0;
+    return ::truncate(path.c_str(), off_t(size)) < 0 ? errno : 0;
 
 #endif
 }
@@ -550,12 +549,12 @@ ts::ErrorCode ts::TruncateFile (const std::string& path, uint64_t size)
 // Not guaranteed to work across volumes or file systems.
 //----------------------------------------------------------------------------
 
-ts::ErrorCode ts::RenameFile (const std::string& old_path, const std::string& new_path)
+ts::ErrorCode ts::RenameFile(const std::string& old_path, const std::string& new_path)
 {
-#if defined (__windows)
-    return ::MoveFile (old_path.c_str(), new_path.c_str()) == 0 ? ::GetLastError() : ERROR_SUCCESS;
+#if defined(__windows)
+    return ::MoveFile(old_path.c_str(), new_path.c_str()) == 0 ? ::GetLastError() : ERROR_SUCCESS;
 #else
-    return ::rename (old_path.c_str(), new_path.c_str()) < 0 ? errno : 0;
+    return ::rename(old_path.c_str(), new_path.c_str()) < 0 ? errno : 0;
 #endif
 }
 
@@ -564,7 +563,7 @@ ts::ErrorCode ts::RenameFile (const std::string& old_path, const std::string& ne
 // Format an error code into a string
 //----------------------------------------------------------------------------
 
-std::string ts::ErrorCodeMessage (ts::ErrorCode code)
+std::string ts::ErrorCodeMessage(ts::ErrorCode code)
 {
     char message[1024];
     char* result;
@@ -630,7 +629,7 @@ void ts::GetProcessMetrics(ProcessMetrics& metrics)
     }
     metrics.vmem_size = mem_counters.PrivateUsage;
 
-#elif defined (__linux)
+#elif defined(__linux)
 
     // Linux implementation.
 
@@ -755,8 +754,8 @@ void ts::GetProcessMetrics(ProcessMetrics& metrics)
 
 void ts::IgnorePipeSignal()
 {
-#if !defined (__windows)
-    ::signal (SIGPIPE, SIG_IGN);
+#if !defined(__windows)
+    ::signal(SIGPIPE, SIG_IGN);
 #endif
 }
 
@@ -772,15 +771,15 @@ void ts::IgnorePipeSignal()
 // If report is a subclass or ts::Args, also terminate application.
 //----------------------------------------------------------------------------
 
-bool ts::SetBinaryModeStdin (ReportInterface& report)
+bool ts::SetBinaryModeStdin(ReportInterface& report)
 {
-#if defined (__windows)
-    report.debug ("setting standard input to binary mode");
-    if (::_setmode (_fileno (stdin), _O_BINARY) < 0) {
-        report.error ("cannot set standard input to binary mode");
-        Args* args = dynamic_cast<Args*> (&report);
+#if defined(__windows)
+    report.debug("setting standard input to binary mode");
+    if (::_setmode(_fileno(stdin), _O_BINARY) < 0) {
+        report.error("cannot set standard input to binary mode");
+        Args* args = dynamic_cast<Args*>(&report);
         if (args != 0) {
-            args->exitOnError ();
+            args->exitOnError();
         }
         return false;
     }
@@ -788,15 +787,15 @@ bool ts::SetBinaryModeStdin (ReportInterface& report)
     return true;
 }
 
-bool ts::SetBinaryModeStdout (ReportInterface& report)
+bool ts::SetBinaryModeStdout(ReportInterface& report)
 {
-#if defined (__windows)
-    report.debug ("setting standard output to binary mode");
-    if (::_setmode (_fileno (stdout), _O_BINARY) < 0) {
-        report.error ("cannot set standard output to binary mode");
-        Args* args = dynamic_cast<Args*> (&report);
+#if defined(__windows)
+    report.debug("setting standard output to binary mode");
+    if (::_setmode(_fileno(stdout), _O_BINARY) < 0) {
+        report.error("cannot set standard output to binary mode");
+        Args* args = dynamic_cast<Args*>(&report);
         if (args != 0) {
-            args->exitOnError ();
+            args->exitOnError();
         }
         return false;
     }
@@ -809,7 +808,7 @@ bool ts::SetBinaryModeStdout (ReportInterface& report)
 // Check if an environment variable exists
 //----------------------------------------------------------------------------
 
-bool ts::EnvironmentExists (const std::string& name)
+bool ts::EnvironmentExists(const std::string& name)
 {
     Guard lock(_environmentMutex);
 
@@ -828,7 +827,7 @@ bool ts::EnvironmentExists (const std::string& name)
 // Return default value if does not exist.
 //----------------------------------------------------------------------------
 
-std::string ts::GetEnvironment (const std::string& name, const std::string& def)
+std::string ts::GetEnvironment(const std::string& name, const std::string& def)
 {
     Guard lock(_environmentMutex);
 
@@ -891,11 +890,11 @@ bool ts::DeleteEnvironment(const std::string& name)
 // A combination \$ is interpreted as a literal $, not an environment variable reference.
 //----------------------------------------------------------------------------
 
-std::string ts::ExpandEnvironment (const std::string& path)
+std::string ts::ExpandEnvironment(const std::string& path)
 {
-    const size_t len (path.length());
-    std::string expanded ("");
-    expanded.reserve (2 * len);
+    const size_t len = path.length();
+    std::string expanded;
+    expanded.reserve(2 * len);
     size_t index = 0;
     while (index < len) {
         if (path[index] == '\\' && index+1 < len && path[index+1] == '$') {
@@ -914,31 +913,31 @@ std::string ts::ExpandEnvironment (const std::string& path)
             if (++index < len) {
                 if (path[index] == '{') {
                     // '${name}' format
-                    const size_t last = path.find ('}', index);
+                    const size_t last = path.find('}', index);
                     if (last == std::string::npos) {
-                        varname = path.substr (index + 1);
+                        varname = path.substr(index + 1);
                         index = len;
                     }
                     else {
-                        varname = path.substr (index + 1, last - index - 1);
+                        varname = path.substr(index + 1, last - index - 1);
                         index = last + 1;
                     }
                 }
                 else {
                     // '$name' format
-                    const size_t last = path.find_first_not_of ("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_", index);
+                    const size_t last = path.find_first_not_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_", index);
                     if (last == std::string::npos) {
-                        varname = path.substr (index);
+                        varname = path.substr(index);
                         index = len;
                     }
                     else {
-                        varname = path.substr (index, last - index);
+                        varname = path.substr(index, last - index);
                         index = last;
                     }
                 }
             }
             // Second, replace environment variable
-            expanded += GetEnvironment (varname);
+            expanded += GetEnvironment(varname);
         }
     }
     return expanded;

@@ -29,6 +29,7 @@
 
 #include "tsTime.h"
 #include "tsFormat.h"
+#include "tsMemoryUtils.h"
 TSDUCK_SOURCE;
 
 
@@ -181,18 +182,19 @@ ts::Time ts::Time::localToUTC() const
 
 #else
 
-    time_t seconds(_value / (1000 * TICKS_PER_MS));
+    time_t seconds = _value / (1000 * TICKS_PER_MS);
     ::tm stime;
+    TS_ZERO(stime);
     if (::localtime_r(&seconds, &stime) == 0) {
         throw TimeError("gmtime_r error");
     }
 
 #if defined(__sun)
-    int gmt_offset(::gmtoffset(stime.tm_isdst));
+    int gmt_offset = ::gmtoffset(stime.tm_isdst);
 #elif defined(__hpux) || defined(_AIX)
-    int gmt_offset(::gmtoffset(seconds));
+    int gmt_offset = ::gmtoffset(seconds);
 #else
-    int gmt_offset(stime.tm_gmtoff);
+    int gmt_offset = stime.tm_gmtoff;
 #endif
 
     return Time(_value - int64_t(gmt_offset) * 1000 * TICKS_PER_MS);
@@ -217,18 +219,19 @@ ts::Time ts::Time::UTCToLocal() const
 
 #else
 
-    time_t seconds(_value / (1000 * TICKS_PER_MS));
+    time_t seconds = _value / (1000 * TICKS_PER_MS);
     ::tm stime;
+    TS_ZERO(stime);
     if (::localtime_r(&seconds, &stime) == 0) {
         throw TimeError("localtime_r error");
     }
 
 #if defined(__sun)
-    int gmt_offset(::gmtoffset(stime.tm_isdst));
+    int gmt_offset = ::gmtoffset(stime.tm_isdst);
 #elif defined(__hpux) || defined(_AIX)
-    int gmt_offset(::gmtoffset(seconds));
+    int gmt_offset = ::gmtoffset(seconds);
 #else
-    int gmt_offset(stime.tm_gmtoff);
+    int gmt_offset = stime.tm_gmtoff;
 #endif
 
     return Time(_value + int64_t(gmt_offset) * 1000 * TICKS_PER_MS);
@@ -371,6 +374,7 @@ int64_t ts::Time::ToInt64(int year, int month, int day, int hour, int minute, in
 
     // Convert using mktime.
     ::tm stime;
+    TS_ZERO(stime);
     stime.tm_year = year - 1900;
     stime.tm_mon = month - 1; // 0..11
     stime.tm_mday = day;
@@ -379,7 +383,7 @@ int64_t ts::Time::ToInt64(int year, int month, int day, int hour, int minute, in
     stime.tm_sec = second;
     stime.tm_isdst = -1; // undefined
 
-    time_t seconds(::mktime(&stime));
+    time_t seconds = ::mktime(&stime);
 
     if (seconds == time_t(-1)) {
         throw TimeError("mktime error");
@@ -388,11 +392,11 @@ int64_t ts::Time::ToInt64(int year, int month, int day, int hour, int minute, in
 
     // Add the GMT offset since mktime() uses stime as a local time
 #if defined(__sun)
-    int gmt_offset(::gmtoffset(stime.tm_isdst));
+    int gmt_offset = ::gmtoffset(stime.tm_isdst);
 #elif defined(__hpux) || defined(_AIX)
-    int gmt_offset(::gmtoffset(seconds));
+    int gmt_offset = ::gmtoffset(seconds);
 #else
-    int gmt_offset(stime.tm_gmtoff);
+    int gmt_offset = stime.tm_gmtoff;
 #endif
     seconds += gmt_offset;
 

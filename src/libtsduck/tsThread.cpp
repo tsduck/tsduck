@@ -179,13 +179,13 @@ bool ts::Thread::start()
 
 #else
 
-    // POSIX pthread implementation
+    // POSIX pthread implementation.
     // Create thread attributes.
     ::pthread_attr_t attr;
     if (::pthread_attr_init(&attr) != 0) {
         return false;
     }
-    // Set required stack size
+    // Set required stack size.
     if (_attributes._stackSize > 0) {
         // Round to a multiple of the page size. This is required on MacOS.
         const size_t size = RoundUp(std::max<size_t>(PTHREAD_STACK_MIN, _attributes._stackSize), MemoryPageSize());
@@ -194,12 +194,18 @@ bool ts::Thread::start()
             return false;
         }
     }
-    // Set scheduling policy identical as current process
+    // Set scheduling policy identical as current process.
+    // Note: Coverity seems out of its mind here:
+    //   CID 158305 (#1 of 1): Argument cannot be negative (NEGATIVE_RETURNS)
+    //   6. negative_returns: ts::ThreadAttributes::PthreadSchedulingPolicy() is passed to a parameter that cannot be negative
+    // But pthread_attr_setschedpolicy second argument is signed:
+    //   int pthread_attr_setschedpolicy(pthread_attr_t *attr, int policy);
+    // coverity[NEGATIVE_RETURNS]
     if (::pthread_attr_setschedpolicy(&attr, ThreadAttributes::PthreadSchedulingPolicy()) != 0) {
         ::pthread_attr_destroy(&attr);
         return false;
     }
-    // Set scheduling priority
+    // Set scheduling priority.
     ::sched_param sparam;
     sparam.sched_priority = _attributes._priority;
     if (::pthread_attr_setschedparam(&attr, &sparam) != 0) {

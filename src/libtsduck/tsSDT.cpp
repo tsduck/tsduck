@@ -193,12 +193,12 @@ void ts::SDT::addSection(BinaryTable& table,
     table.addSection(new Section(_table_id,
                                  true,    // is_private_section
                                  ts_id,   // tid_ext
-                                   version,
-                                   is_current,
-                                   uint8_t(section_number),
-                                   uint8_t(section_number),   //last_section_number
-                                   payload,
-                                   data - payload)); // payload_size,
+                                 version,
+                                 is_current,
+                                 uint8_t(section_number),
+                                 uint8_t(section_number),   //last_section_number
+                                 payload,
+                                 data - payload)); // payload_size,
 
     // Reinitialize pointers.
     // Restart after constant part of payload (3 bytes).
@@ -212,7 +212,7 @@ void ts::SDT::addSection(BinaryTable& table,
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::SDT::serialize (BinaryTable& table) const
+void ts::SDT::serialize(BinaryTable& table) const
 {
     // Reinitialize table object
     table.clear();
@@ -223,14 +223,14 @@ void ts::SDT::serialize (BinaryTable& table) const
     }
 
     // Build the sections
-    uint8_t payload [MAX_PSI_LONG_SECTION_PAYLOAD_SIZE];
-    int section_number (0);
-    uint8_t* data (payload);
-    size_t remain (sizeof(payload));
+    uint8_t payload[MAX_PSI_LONG_SECTION_PAYLOAD_SIZE];
+    int section_number(0);
+    uint8_t* data(payload);
+    size_t remain(sizeof(payload));
 
     // Add original_network_id and one reserved byte at beginning of the
     // payload (will remain identical in all sections).
-    PutUInt16 (data, onetw_id);
+    PutUInt16(data, onetw_id);
     data[2] = 0xFF;
     data += 3;
     remain -= 3;
@@ -238,20 +238,20 @@ void ts::SDT::serialize (BinaryTable& table) const
     // Add all services
     for (ServiceMap::const_iterator it = services.begin(); it != services.end(); ++it) {
 
-        const uint16_t service_id (it->first);
-        const Service& serv (it->second);
+        const uint16_t service_id(it->first);
+        const Service& serv(it->second);
 
         // If we cannot at least add the fixed part, open a new section
         if (remain < 5) {
-            addSection (table, section_number, payload, data, remain);
+            addSection(table, section_number, payload, data, remain);
         }
 
         // Insert the characteristics of the service. When the section is
         // not large enough to hold the entire descriptor list, open a
         // new section for the rest of the descriptors. In that case, the
         // common properties of the service must be repeated.
-        bool starting (true);
-        size_t start_index (0);
+        bool starting(true);
+        size_t start_index(0);
 
         while (starting || start_index < serv.descs.count()) {
 
@@ -262,21 +262,21 @@ void ts::SDT::serialize (BinaryTable& table) const
             // one section. In that case, the service description
             // will span two sections later.
             if (starting && 5 + serv.descs.binarySize() > remain) {
-                addSection (table, section_number, payload, data, remain);
+                addSection(table, section_number, payload, data, remain);
             }
 
             starting = false;
 
             // Insert common characteristics of the service
-            assert (remain >= 5);
-            PutUInt16 (data, service_id);
+            assert(remain >= 5);
+            PutUInt16(data, service_id);
             data[2] = 0xFC | (serv.EITs_present ? 0x02 : 0x00) | (serv.EITpf_present ? 0x01 : 0x00);
             data += 3;
             remain -= 3;
 
             // Insert descriptors (all or some).
-            uint8_t* flags (data);
-            start_index = serv.descs.lengthSerialize (data, remain, start_index);
+            uint8_t* flags(data);
+            start_index = serv.descs.lengthSerialize(data, remain, start_index);
 
             // The following fields are inserted in the 4 "reserved" bits
             // of the descriptor_loop_length.
@@ -285,14 +285,14 @@ void ts::SDT::serialize (BinaryTable& table) const
             // If not all descriptors were written, the section is full.
             // Open a new one and continue with this service.
             if (start_index < serv.descs.count()) {
-                addSection (table, section_number, payload, data, remain);
+                addSection(table, section_number, payload, data, remain);
             }
         }
     }
 
     // Add partial section (if there is one)
     if (data > payload + 3 || table.sectionCount() == 0) {
-        addSection (table, section_number, payload, data, remain);
+        addSection(table, section_number, payload, data, remain);
     }
 }
 
@@ -301,12 +301,12 @@ void ts::SDT::serialize (BinaryTable& table) const
 // Default constructor for SDT::Service
 //----------------------------------------------------------------------------
 
-ts::SDT::Service::Service () :
-    EITs_present (false),
-    EITpf_present (false),
-    running_status (0),
-    CA_controlled (false),
-    descs ()
+ts::SDT::Service::Service() :
+    EITs_present(false),
+    EITpf_present(false),
+    running_status(0),
+    CA_controlled(false),
+    descs()
 {
 }
 
@@ -316,10 +316,10 @@ ts::SDT::Service::Service () :
 // the first DVB "service descriptor", if there is one in the list).
 //----------------------------------------------------------------------------
 
-uint8_t ts::SDT::Service::serviceType () const
+uint8_t ts::SDT::Service::serviceType() const
 {
     // Locate the service descriptor
-    const size_t index (descs.search (DID_SERVICE));
+    const size_t index(descs.search(DID_SERVICE));
 
     if (index >= descs.count() || descs[index]->payloadSize() < 1) {
         return 0; // "reserved" service_type value
@@ -329,26 +329,26 @@ uint8_t ts::SDT::Service::serviceType () const
     }
 }
 
-std::string ts::SDT::Service::providerName () const
+std::string ts::SDT::Service::providerName() const
 {
     // Locate the service descriptor
-    const size_t index (descs.search (DID_SERVICE));
+    const size_t index(descs.search(DID_SERVICE));
     size_t size;
 
     if (index >= descs.count() || (size = descs[index]->payloadSize()) < 2) {
         return "";
     }
     else {
-        const uint8_t* data (descs[index]->payload());
-        size_t length (std::min (size_t (data[1]), size - 2));
-        return std::string (reinterpret_cast<const char*> (data + 2), length);
+        const uint8_t* data(descs[index]->payload());
+        size_t length(std::min(size_t(data[1]), size - 2));
+        return std::string(reinterpret_cast<const char*>(data + 2), length);
     }
 }
 
-std::string ts::SDT::Service::serviceName () const
+std::string ts::SDT::Service::serviceName() const
 {
     // Locate the service descriptor
-    const size_t index (descs.search (DID_SERVICE));
+    const size_t index(descs.search(DID_SERVICE));
     size_t size;
 
     if (index >= descs.count() || (size = descs[index]->payloadSize()) < 2) {
@@ -356,8 +356,8 @@ std::string ts::SDT::Service::serviceName () const
     }
     else {
         // First skip service provider name
-        const uint8_t* data (descs[index]->payload());
-        size_t length (std::min (size_t (data[1]), size - 2));
+        const uint8_t* data(descs[index]->payload());
+        size_t length(std::min(size_t(data[1]), size - 2));
         data += 2 + length;
         size -= 2 + length;
         // Then extract the service name
@@ -365,8 +365,8 @@ std::string ts::SDT::Service::serviceName () const
             return "";
         }
         else {
-            length = std::min (size_t (data[0]), size - 1);
-            return std::string (reinterpret_cast<const char*> (data + 1), length);
+            length = std::min(size_t(data[0]), size - 1);
+            return std::string(reinterpret_cast<const char*>(data + 1), length);
         }
     }
 }
@@ -376,31 +376,31 @@ std::string ts::SDT::Service::serviceName () const
 // Modify the service_descriptor with the new name.
 //----------------------------------------------------------------------------
 
-void ts::SDT::Service::setName (const std::string& name, uint8_t service_type)
+void ts::SDT::Service::setName(const std::string& name, uint8_t service_type)
 {
     // Locate the service descriptor
-    const size_t index (descs.search (DID_SERVICE));
+    const size_t index(descs.search(DID_SERVICE));
 
     if (index >= descs.count() || descs[index]->payloadSize() < 2) {
         // No valid service_descriptor, add a new one.
-        ByteBlock data (5);
+        ByteBlock data(5);
         data[0] = DID_SERVICE; // tag
-        data[1] = uint8_t (3 + name.length()); // descriptor length
+        data[1] = uint8_t(3 + name.length()); // descriptor length
         data[2] = service_type;
         data[3] = 0; // provider name length
-        data[4] = uint8_t (name.length());
-        data.append (name.c_str(), name.length());
-        descs.add (DescriptorPtr (new Descriptor (data)));
+        data[4] = uint8_t(name.length());
+        data.append(name.c_str(), name.length());
+        descs.add(DescriptorPtr(new Descriptor(data)));
     }
     else {
         // Replace service name in existing descriptor
-        const uint8_t* payload (descs[index]->payload());
-        size_t payload_size (descs[index]->payloadSize());
-        size_t provider_length (std::min (size_t (payload[1]), payload_size - 2));
-        ByteBlock new_payload (payload, 2 + provider_length);
-        new_payload.push_back (uint8_t (name.length()));
-        new_payload.append (name.c_str(), name.length());
-        descs[index]->replacePayload (new_payload);
+        const uint8_t* payload(descs[index]->payload());
+        size_t payload_size(descs[index]->payloadSize());
+        size_t provider_length(std::min(size_t(payload[1]), payload_size - 2));
+        ByteBlock new_payload(payload, 2 + provider_length);
+        new_payload.push_back(uint8_t(name.length()));
+        new_payload.append(name.c_str(), name.length());
+        descs[index]->replacePayload(new_payload);
     }
 }
 
@@ -409,15 +409,17 @@ void ts::SDT::Service::setName (const std::string& name, uint8_t service_type)
 // Modify the service_descriptor with the new provider name.
 //----------------------------------------------------------------------------
 
-void ts::SDT::Service::setProvider (const std::string& provider, uint8_t service_type)
+void ts::SDT::Service::setProvider(const std::string& provider, uint8_t service_type)
 {
     // Locate the service descriptor
-    const size_t index = descs.search (DID_SERVICE);
+    const size_t index = descs.search(DID_SERVICE);
     const uint8_t* payload = index >= descs.count() ? 0 : descs[index]->payload();
     const size_t payload_size = index >= descs.count() ? 0 : descs[index]->payloadSize();
 
     // Locate existing service type
     if (payload_size >= 1) {
+        // If payload_size > 0, then payload cannot be null. 
+        // coverity[FORWARD_NULL]
         service_type = payload[0];
     }
 
@@ -427,33 +429,33 @@ void ts::SDT::Service::setProvider (const std::string& provider, uint8_t service
     if (payload_size >= 2) {
         size_t provider_size = payload[1];
         if (2 + provider_size + 1 <= payload_size) {
-            name_size = std::min (size_t (payload [2 + provider_size]), payload_size - 2 - provider_size - 1);
+            name_size = std::min(size_t(payload[2 + provider_size]), payload_size - 2 - provider_size - 1);
             name = payload + 2 + provider_size + 1;
         }
     }
 
     if (payload_size == 0) {
         // No valid service_descriptor, add a new one.
-        ByteBlock data (4);
+        ByteBlock data(4);
         data[0] = DID_SERVICE; // tag
-        data[1] = uint8_t (3 + provider.length()); // descriptor length
+        data[1] = uint8_t(3 + provider.length()); // descriptor length
         data[2] = service_type;
-        data[3] = uint8_t (provider.length());
-        data.append (provider.c_str(), provider.length());
-        data.appendUInt8 (0); // service name length
-        descs.add (DescriptorPtr (new Descriptor (data)));
+        data[3] = uint8_t(provider.length());
+        data.append(provider.c_str(), provider.length());
+        data.appendUInt8(0); // service name length
+        descs.add(DescriptorPtr(new Descriptor(data)));
     }
     else {
         // Replace provider name in existing descriptor
-        ByteBlock new_payload (2);
+        ByteBlock new_payload(2);
         new_payload[0] = service_type;
-        new_payload[1] = uint8_t (provider.length());
-        new_payload.append (provider.c_str(), provider.length());
-        new_payload.appendUInt8 (uint8_t (name_size));
+        new_payload[1] = uint8_t(provider.length());
+        new_payload.append(provider.c_str(), provider.length());
+        new_payload.appendUInt8(uint8_t(name_size));
         if (name_size > 0) {
-            new_payload.append (name, name_size);
+            new_payload.append(name, name_size);
         }
-        descs[index]->replacePayload (new_payload);
+        descs[index]->replacePayload(new_payload);
     }
 }
 
@@ -462,25 +464,25 @@ void ts::SDT::Service::setProvider (const std::string& provider, uint8_t service
 // Modify the service_descriptor with the new service type.
 //----------------------------------------------------------------------------
 
-void ts::SDT::Service::setType (uint8_t service_type)
+void ts::SDT::Service::setType(uint8_t service_type)
 {
     // Locate the service descriptor
-    const size_t index (descs.search (DID_SERVICE));
+    const size_t index(descs.search(DID_SERVICE));
     size_t size;
 
     if (index >= descs.count() || (size = descs[index]->payloadSize()) < 2) {
         // No valid service_descriptor, add a new one.
-        ByteBlock data (5);
+        ByteBlock data(5);
         data[0] = DID_SERVICE;  // tag
         data[1] = 3;            // descriptor length
         data[2] = service_type;
         data[3] = 0;            // provider name length
         data[4] = 0;            // service name length
-        descs.add (DescriptorPtr (new Descriptor (data)));
+        descs.add(DescriptorPtr(new Descriptor(data)));
     }
     else if (descs[index]->payloadSize() > 0) {
         // Replace service type in existing descriptor
-        uint8_t* payload (descs[index]->payload());
+        uint8_t* payload(descs[index]->payload());
         payload[0] = service_type;
     }
 }

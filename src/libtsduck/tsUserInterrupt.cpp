@@ -269,6 +269,12 @@ void ts::UserInterrupt::deactivate ()
     if (!_active) {
         return;
     }
+
+    // CID 158209 (#1 of 1): Side effect in assertion (ASSERT_SIDE_EFFECT)
+    // assert_side_effect: Argument ts::UserInterrupt::_active_instance of assert() has a side effect because the
+    // variable is volatile. The containing function might work differently in a non-debug build.
+    // ==> False positive, there is no side effect here, even with volatile data.
+    // coverity[ASSERT_SIDE_EFFECT]
     assert(_active_instance == this);
 
 #if defined(__windows)
