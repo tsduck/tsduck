@@ -45,12 +45,12 @@ TSDUCK_SOURCE;
 //----------------------------------------------------------------------------
 
 ts::tsp::InputExecutor::InputExecutor(Options* options,
-                                        const Options::PluginOptions* pl_options,
-                                        const ThreadAttributes& attributes,
-                                        Mutex& global_mutex) :
+                                      const Options::PluginOptions* pl_options,
+                                      const ThreadAttributes& attributes,
+                                      Mutex& global_mutex) :
 
     PluginExecutor(options, pl_options, attributes, global_mutex),
-    _input(dynamic_cast<InputPlugin*> (_shlib)),
+    _input(dynamic_cast<InputPlugin*>(_shlib)),
     _instuff_nullpkt(options->instuff_nullpkt),
     _instuff_inpkt(options->instuff_inpkt),
     _input_bitrate(options->bitrate),
@@ -74,16 +74,16 @@ ts::tsp::InputExecutor::InputExecutor(Options* options,
 // Return true on success, false on error.
 //----------------------------------------------------------------------------
 
-bool ts::tsp::InputExecutor::initAllBuffers (PacketBuffer* buffer)
+bool ts::tsp::InputExecutor::initAllBuffers(PacketBuffer* buffer)
 {
     // Pre-load half of the buffer with packets from the input device.
-    const size_t pkt_read = receiveAndStuff (buffer->base(), buffer->count() / 2);
+    const size_t pkt_read = receiveAndStuff(buffer->base(), buffer->count() / 2);
 
     if (pkt_read == 0) {
         return false; // receive error
     }
 
-    debug ("initial buffer load: " + Decimal (pkt_read) + " packets, " + Decimal (pkt_read * PKT_SIZE) + " bytes");
+    debug("initial buffer load: " + Decimal(pkt_read) + " packets, " + Decimal(pkt_read * PKT_SIZE) + " bytes");
 
     // Try to evaluate the initial input bitrate.
     // First, ask the plugin to evaluate its bitrate.
@@ -92,8 +92,8 @@ bool ts::tsp::InputExecutor::initAllBuffers (PacketBuffer* buffer)
         // The input device cannot evaluate a bitrate.
         // Try to determine the original bitrate from PCR analysis.
         // Say we need at least 32 PCR's per PID, on at least 1 PID.
-        PCRAnalyzer zer (1, 32); // 1 PID, 32 PCR's
-        for (size_t p = 0; p < pkt_read && !zer.feedPacket (buffer->base()[p]); p++) {}
+        PCRAnalyzer zer(1, 32); // 1 PID, 32 PCR's
+        for (size_t p = 0; p < pkt_read && !zer.feedPacket(buffer->base()[p]); p++) {}
         if (zer.bitrateIsValid()) {
             init_bitrate = zer.bitrate188();
         }
@@ -103,33 +103,33 @@ bool ts::tsp::InputExecutor::initAllBuffers (PacketBuffer* buffer)
         // Since DTS are less accurate than PCR, analyze all packets in
         // buffer, do not stop when bitrate is supposedly known.
         PCRAnalyzer zer;
-        zer.resetAndUseDTS (1, 32); // 1 PID, 32 DTS
+        zer.resetAndUseDTS(1, 32); // 1 PID, 32 DTS
         for (size_t p = 0; p < pkt_read; p++) {
-            zer.feedPacket (buffer->base()[p]);
+            zer.feedPacket(buffer->base()[p]);
         }
         if (zer.bitrateIsValid()) {
             init_bitrate = zer.bitrate188();
         }
     }
     if (init_bitrate == 0) {
-        verbose ("unknown input bitrate");
+        verbose("unknown input bitrate");
     }
     else {
-        verbose ("input bitrate is " + Decimal (init_bitrate) + " b/s");
+        verbose("input bitrate is " + Decimal(init_bitrate) + " b/s");
     }
 
     // Indicate that the loaded packets are now available to the next packet processor.
     PluginExecutor* next = ringNext<PluginExecutor>();
-    next->initBuffer (buffer, 0, pkt_read, pkt_read == 0, pkt_read == 0, init_bitrate);
+    next->initBuffer(buffer, 0, pkt_read, pkt_read == 0, pkt_read == 0, init_bitrate);
 
     // The rest of the buffer belongs to this input processor for reading
     // additional packets. All other processors have an implicit empty buffer
     // (_pkt_first and _pkt_cnt are zero).
-    initBuffer (buffer, pkt_read % buffer->count(), buffer->count() - pkt_read, pkt_read == 0, pkt_read == 0, init_bitrate);
+    initBuffer(buffer, pkt_read % buffer->count(), buffer->count() - pkt_read, pkt_read == 0, pkt_read == 0, init_bitrate);
 
     // Propagate initial input bitrate to all processors
     while ((next = next->ringNext<PluginExecutor>()) != this) {
-        next->initBuffer (buffer, 0, 0, pkt_read == 0, pkt_read == 0, init_bitrate);
+        next->initBuffer(buffer, 0, 0, pkt_read == 0, pkt_read == 0, init_bitrate);
     }
 
     return true;
@@ -141,7 +141,7 @@ bool ts::tsp::InputExecutor::initAllBuffers (PacketBuffer* buffer)
 // taking into account the tsp input stuffing options.
 //----------------------------------------------------------------------------
 
-ts::BitRate ts::tsp::InputExecutor::getBitrate ()
+ts::BitRate ts::tsp::InputExecutor::getBitrate()
 {
     // Get bitrate from plugin
     BitRate bitrate = _input_bitrate > 0 ? _input_bitrate : _input->getBitrate();
@@ -151,7 +151,7 @@ ts::BitRate ts::tsp::InputExecutor::getBitrate ()
         return bitrate;
     }
     else {
-        return BitRate ((uint64_t (bitrate) * uint64_t (_instuff_nullpkt + _instuff_inpkt)) / uint64_t (_instuff_inpkt));
+        return BitRate((uint64_t(bitrate) * uint64_t(_instuff_nullpkt + _instuff_inpkt)) / uint64_t(_instuff_inpkt));
     }
 }
 
@@ -161,7 +161,7 @@ ts::BitRate ts::tsp::InputExecutor::getBitrate ()
 // checking the validity of the input.
 //----------------------------------------------------------------------------
 
-size_t ts::tsp::InputExecutor::receiveAndValidate (TSPacket* buffer, size_t max_packets)
+size_t ts::tsp::InputExecutor::receiveAndValidate(TSPacket* buffer, size_t max_packets)
 {
     // If synchronization lost, report an error
     if (_in_sync_lost) {
@@ -169,7 +169,7 @@ size_t ts::tsp::InputExecutor::receiveAndValidate (TSPacket* buffer, size_t max_
     }
 
     // Invoke the plugin receive method
-    size_t count = _input->receive (buffer, max_packets);
+    size_t count = _input->receive(buffer, max_packets);
 
     // Validate sync byte (0x47) at beginning of each packet
     for (size_t n = 0; n < count; ++n) {
@@ -179,18 +179,19 @@ size_t ts::tsp::InputExecutor::receiveAndValidate (TSPacket* buffer, size_t max_
         }
         else {
             // Report error
-            error ("synchronization lost after " + Decimal (_total_in_packets) +
-                   Format (" packets, got 0x%02X instead of 0x%02X", int (buffer[n].b[0]), int (SYNC_BYTE)));
+            error("synchronization lost after " + Decimal(_total_in_packets) +
+                  Format(" packets, got 0x%02X instead of 0x%02X", int(buffer[n].b[0]), int(SYNC_BYTE)));
             // In debug mode, partial dump of input
             // (one packet before lost of sync and 3 packets starting at lost of sync).
             if (debugLevel() >= 1) {
                 if (n > 0) {
-                    debug ("content of packet before lost of synchronization:\n" +
-                           Hexa (buffer[n-1].b, PKT_SIZE, hexa::HEXA | hexa::OFFSET | hexa::BPL, 4, 16));
+                    debug("content of packet before lost of synchronization:\n" +
+                          Hexa(buffer[n-1].b, PKT_SIZE, hexa::HEXA | hexa::OFFSET | hexa::BPL, 4, 16));
                 }
-                size_t dump_count = std::min<size_t> (3, count - n);
-                debug ("data at lost of synchronization:\n" +
-                       Hexa (buffer[n].b, dump_count * PKT_SIZE, hexa::HEXA | hexa::OFFSET | hexa::BPL, 4, 16));
+                size_t dump_count = std::min<size_t>(3, count - n);
+                // Coverity false positive: The dumped area is within bounds.
+                // coverity[OVERRUN]
+                debug("data at lost of synchronization:\n" + Hexa(buffer[n].b, dump_count * PKT_SIZE, hexa::HEXA | hexa::OFFSET | hexa::BPL, 4, 16));
             }
             // Ignore subsequent packets
             count = n;
@@ -207,12 +208,12 @@ size_t ts::tsp::InputExecutor::receiveAndValidate (TSPacket* buffer, size_t max_
 // taking into account the tsp input stuffing options.
 //----------------------------------------------------------------------------
 
-size_t ts::tsp::InputExecutor::receiveAndStuff (TSPacket* buffer, size_t max_packets)
+size_t ts::tsp::InputExecutor::receiveAndStuff(TSPacket* buffer, size_t max_packets)
 {
     // If there is no --add-input-stuffing option, simply call the plugin
     if (_instuff_inpkt == 0) {
-        const size_t count = receiveAndValidate (buffer, max_packets);
-        addTotalPackets (count);
+        const size_t count = receiveAndValidate(buffer, max_packets);
+        addTotalPackets(count);
         return count;
     }
 
@@ -242,11 +243,11 @@ size_t ts::tsp::InputExecutor::receiveAndStuff (TSPacket* buffer, size_t max_pac
         // Read input packets from the plugin
         max_packets = pkt_remain < _instuff_inpkt_remain ? pkt_remain : _instuff_inpkt_remain;
 
-        size_t pkt_in = receiveAndValidate (buffer, max_packets);
+        size_t pkt_in = receiveAndValidate(buffer, max_packets);
 
-        assert (pkt_in <= pkt_remain);
-        assert (pkt_in <= _instuff_inpkt_remain);
-        assert (pkt_in <= max_packets);
+        assert(pkt_in <= pkt_remain);
+        assert(pkt_in <= _instuff_inpkt_remain);
+        assert(pkt_in <= max_packets);
 
         buffer += pkt_in;
         pkt_remain -= pkt_in;
@@ -267,7 +268,7 @@ size_t ts::tsp::InputExecutor::receiveAndStuff (TSPacket* buffer, size_t max_pac
         }
     }
 
-    addTotalPackets (pkt_done);
+    addTotalPackets(pkt_done);
     return pkt_done;
 }
 
@@ -278,10 +279,10 @@ size_t ts::tsp::InputExecutor::receiveAndStuff (TSPacket* buffer, size_t max_pac
 
 void ts::tsp::InputExecutor::main()
 {
-    debug ("input thread started");
+    debug("input thread started");
 
-    Time current_time (Time::CurrentUTC());
-    Time bitrate_due_time (current_time + _bitrate_adj);
+    Time current_time(Time::CurrentUTC());
+    Time bitrate_due_time(current_time + _bitrate_adj);
     bool input_end, aborted;
 
     do {
@@ -291,7 +292,7 @@ void ts::tsp::InputExecutor::main()
         size_t pkt_first, pkt_max;
         BitRate bitrate;
 
-        waitWork (pkt_first, pkt_max, bitrate, input_end, aborted);
+        waitWork(pkt_first, pkt_max, bitrate, input_end, aborted);
 
         // If the next thread has given up, give up too since our packets are now useless.
 
@@ -307,7 +308,7 @@ void ts::tsp::InputExecutor::main()
 
         // Now read at most the specified number of packets
 
-        size_t pkt_read = receiveAndStuff (_buffer->base() + pkt_first, pkt_max);
+        size_t pkt_read = receiveAndStuff(_buffer->base() + pkt_first, pkt_max);
 
         if (pkt_read == 0) {
             input_end = true;
@@ -325,14 +326,14 @@ void ts::tsp::InputExecutor::main()
                 // Keep this bitrate
                 _tsp_bitrate = bitrate;
                 if (debug()) {
-                    debug ("input: got bitrate " + Decimal (bitrate) + " b/s, next try in " + Decimal (_bitrate_adj) + " ms");
+                    debug("input: got bitrate " + Decimal(bitrate) + " b/s, next try in " + Decimal(_bitrate_adj) + " ms");
                 }
             }
         }
 
         // Pass received packets to next processor
 
-        passPackets (pkt_read, _tsp_bitrate, input_end, false);
+        passPackets(pkt_read, _tsp_bitrate, input_end, false);
 
     } while (!input_end);
 
@@ -340,6 +341,6 @@ void ts::tsp::InputExecutor::main()
 
     _input->stop();
 
-    std::string status (aborted ? "aborted" : "terminated");
-    debug ("input thread " + status + " after " + Decimal (totalPackets()) + " packets");
+    std::string status(aborted ? "aborted" : "terminated");
+    debug("input thread " + status + " after " + Decimal(totalPackets()) + " packets");
 }

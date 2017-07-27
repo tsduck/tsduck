@@ -127,6 +127,9 @@ void RingTest::testRingNode()
         CPPUNIT_ASSERT(r1.ringPrevious<R>() == &r5);
     }
 
+    // After this point, coverity is lost.
+    // It does not realize that r5 removed itself from the r1-r3 ring in its detructor.
+
     CPPUNIT_ASSERT(r1.ringSize() == 3);
     CPPUNIT_ASSERT(r1.ringNext<R>() == &r2);
     CPPUNIT_ASSERT(r1.ringPrevious<R>() == &r3);
@@ -142,4 +145,10 @@ void RingTest::testRingNode()
     CPPUNIT_ASSERT(r1.ringSize() == 1);
     CPPUNIT_ASSERT(r1.ringNext<R>() == &r1);
     CPPUNIT_ASSERT(r1.ringPrevious<R>() == &r1);
+
+    // Coverity false positive:
+    //   CID 158192 (#1-2 of 2): Pointer to local outside scope (RETURN_LOCAL)
+    //   34. use_invalid_in_call: In r1.<unnamed>::R::~R(), using r1->_ring_previous, which points to an out-of-scope variable r5.
+    // This is incorrect: r5 was auto-removed by its destructor at end of its scope.
+    // coverity[RETURN_LOCAL]
 }
