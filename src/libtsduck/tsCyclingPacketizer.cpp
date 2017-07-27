@@ -42,17 +42,17 @@ TSDUCK_SOURCE;
 // Constructor
 //----------------------------------------------------------------------------
 
-ts::CyclingPacketizer::CyclingPacketizer (PID pid, StuffingPolicy stuffing, BitRate bitrate) :
-    Packetizer (pid, this),
-    _stuffing (stuffing),
-    _bitrate (bitrate),
-    _section_count (0),
-    _sched_sections (),
-    _other_sections (),
-    _sched_packets (0),
-    _current_cycle (1),
-    _remain_in_cycle (0),
-    _cycle_end (UNDEFINED)
+ts::CyclingPacketizer::CyclingPacketizer(PID pid, StuffingPolicy stuffing, BitRate bitrate) :
+    Packetizer(pid, this),
+    _stuffing(stuffing),
+    _bitrate(bitrate),
+    _section_count(0),
+    _sched_sections(),
+    _other_sections(),
+    _sched_packets(0),
+    _current_cycle(1),
+    _remain_in_cycle(0),
+    _cycle_end(UNDEFINED)
 {
 }
 
@@ -70,10 +70,10 @@ ts::CyclingPacketizer::~CyclingPacketizer()
 // Add sections into the packetizer.
 //----------------------------------------------------------------------------
 
-void ts::CyclingPacketizer::addSections (const SectionPtrVector& sects, MilliSecond rep_rate)
+void ts::CyclingPacketizer::addSections(const SectionPtrVector& sects, MilliSecond rep_rate)
 {
     for (SectionPtrVector::const_iterator it = sects.begin(); it != sects.end(); ++it) {
-        addSection (*it, rep_rate);
+        addSection(*it, rep_rate);
     }
 }
 
@@ -82,10 +82,10 @@ void ts::CyclingPacketizer::addSections (const SectionPtrVector& sects, MilliSec
 // Add all sections of a table into the packetizer.
 //----------------------------------------------------------------------------
 
-void ts::CyclingPacketizer::addTable (const BinaryTable& table, MilliSecond rep_rate)
+void ts::CyclingPacketizer::addTable(const BinaryTable& table, MilliSecond rep_rate)
 {
     for (size_t i = 0; i < table.sectionCount(); ++i) {
-        addSection (table.sectionAt(i), rep_rate);
+        addSection(table.sectionAt(i), rep_rate);
     }
 }
 
@@ -94,11 +94,11 @@ void ts::CyclingPacketizer::addTable (const BinaryTable& table, MilliSecond rep_
 // Add all sections of a table into the packetizer.
 //----------------------------------------------------------------------------
 
-void ts::CyclingPacketizer::addTable (const AbstractTable& table, MilliSecond rep_rate)
+void ts::CyclingPacketizer::addTable(const AbstractTable& table, MilliSecond rep_rate)
 {
     BinaryTable bin;
-    table.serialize (bin);
-    addTable (bin, rep_rate);
+    table.serialize(bin);
+    addTable(bin, rep_rate);
 }
 
 
@@ -107,12 +107,12 @@ void ts::CyclingPacketizer::addTable (const AbstractTable& table, MilliSecond re
 // sections with the same due_packet.
 //----------------------------------------------------------------------------
 
-void ts::CyclingPacketizer::addScheduledSection (const SectionDescPtr& sect)
+void ts::CyclingPacketizer::addScheduledSection(const SectionDescPtr& sect)
 {
     const PacketCounter due_packet = sect->due_packet;
     SectionDescList::iterator it;
     for (it = _sched_sections.begin(); it != _sched_sections.end() && (*it)->due_packet <= due_packet; ++it) {}
-    _sched_sections.insert (it, sect);
+    _sched_sections.insert(it, sect);
 }
 
 
@@ -120,18 +120,18 @@ void ts::CyclingPacketizer::addScheduledSection (const SectionDescPtr& sect)
 // Add a section into the packetizer.
 //----------------------------------------------------------------------------
 
-void ts::CyclingPacketizer::addSection (const SectionPtr& sect, MilliSecond rep_rate)
+void ts::CyclingPacketizer::addSection(const SectionPtr& sect, MilliSecond rep_rate)
 {
-    SectionDescPtr desc (new SectionDesc (sect, rep_rate));
+    SectionDescPtr desc(new SectionDesc(sect, rep_rate));
 
     if (rep_rate == 0 || _bitrate == 0) {
         // Unschedule section, simply add it at end of queue
-        _other_sections.push_back (desc);
+        _other_sections.push_back(desc);
     }
     else {
         // Scheduled section, its due time is "now"
         desc->due_packet = packetCount();
-        addScheduledSection (desc);
+        addScheduledSection(desc);
         _sched_packets += sect->packetCount();
     }
 
@@ -144,10 +144,10 @@ void ts::CyclingPacketizer::addSection (const SectionPtr& sect, MilliSecond rep_
 // Remove all sections with the specified table id.
 //----------------------------------------------------------------------------
 
-void ts::CyclingPacketizer::removeSections (TID tid)
+void ts::CyclingPacketizer::removeSections(TID tid)
 {
-    removeSections (_sched_sections, tid, 0, false, true);
-    removeSections (_other_sections, tid, 0, false, false);
+    removeSections(_sched_sections, tid, 0, false, true);
+    removeSections(_other_sections, tid, 0, false, false);
 }
 
 
@@ -155,10 +155,10 @@ void ts::CyclingPacketizer::removeSections (TID tid)
 // Remove all sections with the specified table id and table id extension.
 //----------------------------------------------------------------------------
 
-void ts::CyclingPacketizer::removeSections (TID tid, uint16_t tid_ext)
+void ts::CyclingPacketizer::removeSections(TID tid, uint16_t tid_ext)
 {
-    removeSections (_sched_sections, tid, tid_ext, true, true);
-    removeSections (_other_sections, tid, tid_ext, true, false);
+    removeSections(_sched_sections, tid, tid_ext, true, true);
+    removeSections(_other_sections, tid, tid_ext, true, false);
 }
 
 
@@ -166,25 +166,25 @@ void ts::CyclingPacketizer::removeSections (TID tid, uint16_t tid_ext)
 // Remove all sections with the specified tid/tid_ext in the specified list.
 //----------------------------------------------------------------------------
 
-void ts::CyclingPacketizer::removeSections (SectionDescList& list, TID tid, uint16_t tid_ext, bool use_tid_ext, bool scheduled)
+void ts::CyclingPacketizer::removeSections(SectionDescList& list, TID tid, uint16_t tid_ext, bool use_tid_ext, bool scheduled)
 {
-    SectionDescList::iterator it (list.begin());
+    SectionDescList::iterator it(list.begin());
     while (it != list.end()) {
-        const SectionDescPtr& sp (*it);
-        const Section& sect (*sp->section);
+        const SectionDescPtr& sp(*it);
+        const Section& sect(*sp->section);
         if (sect.tableId() == tid && (!use_tid_ext || sect.tableIdExtension() == tid_ext)) {
             // Section match, remove it
-            assert (_section_count > 0);
+            assert(_section_count > 0);
             _section_count--;
             if (sp->last_cycle != _current_cycle) {
-                assert (_remain_in_cycle > 0);
+                assert(_remain_in_cycle > 0);
                 _remain_in_cycle--;
             }
             if (scheduled) {
-                assert (_sched_packets >= sect.packetCount());
+                assert(_sched_packets >= sect.packetCount());
                 _sched_packets -= sect.packetCount();
             }
-            it = list.erase (it);
+            it = list.erase(it);
         }
         else {
             ++it;
@@ -197,7 +197,7 @@ void ts::CyclingPacketizer::removeSections (SectionDescList& list, TID tid, uint
 // Remove all sections in the packetized.
 //----------------------------------------------------------------------------
 
-void ts::CyclingPacketizer::removeAll ()
+void ts::CyclingPacketizer::removeAll()
 {
     _section_count = 0;
     _remain_in_cycle = 0;
@@ -225,7 +225,7 @@ void ts::CyclingPacketizer::reset()
 // Useful only when using specific repetition rates for sections
 //----------------------------------------------------------------------------
 
-void ts::CyclingPacketizer::setBitRate (BitRate new_bitrate)
+void ts::CyclingPacketizer::setBitRate(BitRate new_bitrate)
 {
     if (_bitrate == new_bitrate) {
         // Do not do anything if bitrate unchanged.
@@ -235,7 +235,7 @@ void ts::CyclingPacketizer::setBitRate (BitRate new_bitrate)
         // Bitrate now unknown, unable to schedule sections, move them all
         // into the list of unscheduled sections.
         while (!_sched_sections.empty()) {
-            _other_sections.push_back (_sched_sections.front());
+            _other_sections.push_back(_sched_sections.front());
             _sched_sections.pop_front();
         }
         _sched_packets = 0;
@@ -243,8 +243,8 @@ void ts::CyclingPacketizer::setBitRate (BitRate new_bitrate)
     else if (_bitrate == 0) {
         // Bitrate was null but is not now. Move all scheduled sections
         // out of list of unscheduled sections.
-        const PacketCounter current_packet (packetCount());
-        SectionDescList::iterator it (_other_sections.begin());
+        const PacketCounter current_packet(packetCount());
+        SectionDescList::iterator it(_other_sections.begin());
         while (it != _other_sections.end()) {
             if ((*it)->repetition == 0) {
                 // Not a scheduled section
@@ -252,12 +252,12 @@ void ts::CyclingPacketizer::setBitRate (BitRate new_bitrate)
             }
             else {
                 // Scheduled section
-                const SectionDescPtr sp (*it);
-                it = _other_sections.erase (it);
+                const SectionDescPtr sp(*it);
+                it = _other_sections.erase(it);
                 if (sp->due_packet < current_packet) {
                     sp->due_packet = current_packet;
                 }
-                addScheduledSection (sp);
+                addScheduledSection(sp);
                 _sched_packets += sp->section->packetCount();
             }
         }
@@ -266,11 +266,11 @@ void ts::CyclingPacketizer::setBitRate (BitRate new_bitrate)
         // Old and new bitrate not null. Compute new due packet for all
         // scheduled sections and re-sort list according to new due packet.
         SectionDescList tmp_list;
-        tmp_list.swap (_sched_sections);
+        tmp_list.swap(_sched_sections);
         while (!tmp_list.empty()) {
-            SectionDesc* sp (tmp_list.back().pointer());
-            sp->due_packet = sp->last_packet + PacketDistance (new_bitrate, sp->repetition);
-            addScheduledSection (tmp_list.back());
+            SectionDesc* sp(tmp_list.back().pointer());
+            sp->due_packet = sp->last_packet + PacketDistance(new_bitrate, sp->repetition);
+            addScheduledSection(tmp_list.back());
             tmp_list.pop_back();
         }
     }
@@ -285,10 +285,10 @@ void ts::CyclingPacketizer::setBitRate (BitRate new_bitrate)
 // If a null pointer is provided, no section is available.
 //----------------------------------------------------------------------------
 
-void ts::CyclingPacketizer::provideSection (SectionCounter counter, SectionPtr& sect)
+void ts::CyclingPacketizer::provideSection(SectionCounter counter, SectionPtr& sect)
 {
-    const PacketCounter current_packet (packetCount());
-    SectionDescPtr sp (0);
+    const PacketCounter current_packet(packetCount());
+    SectionDescPtr sp(0);
 
     // Cycle end is initially undefined.
     // Will be defined only if end of cycle encountered.
@@ -315,15 +315,15 @@ void ts::CyclingPacketizer::provideSection (SectionCounter counter, SectionPtr& 
         _sched_sections.pop_front();
         // Reschedule the section. Make sure we add at least one packet to
         // ensure that all scheduled sections may pass.
-        sp->due_packet = current_packet + std::max (PacketCounter (1), PacketDistance (_bitrate, sp->repetition));
-        addScheduledSection (sp);
+        sp->due_packet = current_packet + std::max(PacketCounter(1), PacketDistance(_bitrate, sp->repetition));
+        addScheduledSection(sp);
     }
     else if (!_other_sections.empty()) {
         // An unscheduled section is ready
         sp = _other_sections.front();
         _other_sections.pop_front();
         // Move section back at end of queue
-        _other_sections.push_back (sp);
+        _other_sections.push_back(sp);
     }
 
     if (sp.isNull()) {
@@ -339,7 +339,7 @@ void ts::CyclingPacketizer::provideSection (SectionCounter counter, SectionPtr& 
         if (sp->last_cycle != _current_cycle) {
             // First time this section is sent in this cycle
             sp->last_cycle = _current_cycle;
-            assert (_remain_in_cycle > 0);
+            assert(_remain_in_cycle > 0);
             if (--_remain_in_cycle == 0) {
                 // No more section in this cycle, this section is the last one in the cycle
                 _cycle_end = counter;
@@ -370,6 +370,8 @@ bool ts::CyclingPacketizer::doStuffing()
 
 bool ts::CyclingPacketizer::atCycleBoundary() const
 {
+    // Coverity false positive:  _cycle_end + 1 overflows only if _cycle_end == UNDEFINED, which is excluded just before.
+    // coverity[INTEGER_OVERFLOW]
     return atSectionBoundary() && _cycle_end != UNDEFINED && _cycle_end + 1 == sectionCount();
 }
 
@@ -378,10 +380,10 @@ bool ts::CyclingPacketizer::atCycleBoundary() const
 // Display the internal state of the packetizer SectionDesc, mainly for debug
 //----------------------------------------------------------------------------
 
-std::ostream& ts::CyclingPacketizer::SectionDesc::display (std::ostream& strm) const
+std::ostream& ts::CyclingPacketizer::SectionDesc::display(std::ostream& strm) const
 {
     return strm
-        << "    - " << names::TID (section->tableId()) << std::endl
+        << "    - " << names::TID(section->tableId()) << std::endl
         << "      Repetition rate: " << repetition << " ms" << std::endl
         << "      Last provided at cycle: " << last_cycle << std::endl
         << "      Last provided at packet: " << last_packet << std::endl
@@ -395,21 +397,21 @@ std::ostream& ts::CyclingPacketizer::SectionDesc::display (std::ostream& strm) c
 
 std::ostream& ts::CyclingPacketizer::display(std::ostream& strm) const
 {
-    Packetizer::display (strm)
+    Packetizer::display(strm)
         << "  Stuffing policy: " << int(_stuffing) << std::endl
-        << "  Bitrate: " << Decimal (_bitrate) << " b/s" << std::endl
+        << "  Bitrate: " << Decimal(_bitrate) << " b/s" << std::endl
         << "  Current cycle: " << _current_cycle << std::endl
         << "  Remaining sections in cycle: " << _remain_in_cycle << std::endl
-        << "  Section cycle end: " << (_cycle_end == UNDEFINED ? "undefined" : Decimal (_cycle_end)) << std::endl
+        << "  Section cycle end: " << (_cycle_end == UNDEFINED ? "undefined" : Decimal(_cycle_end)) << std::endl
         << "  Stored sections: " << _section_count << std::endl
         << "  Scheduled sections: " << _sched_sections.size() << std::endl
         << "  Scheduled packets max: " << _sched_packets << std::endl;
     for (SectionDescList::const_iterator it = _sched_sections.begin(); it != _sched_sections.end(); ++it) {
-        (*it)->display (strm);
+        (*it)->display(strm);
     }
     strm << "  Unscheduled sections: " << _other_sections.size() << std::endl;
     for (SectionDescList::const_iterator it = _other_sections.begin(); it != _other_sections.end(); ++it) {
-        (*it)->display (strm);
+        (*it)->display(strm);
     }
     return strm;
 }

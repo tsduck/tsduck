@@ -88,6 +88,8 @@ void ReportTest::setUp()
 // Test suite cleanup method.
 void ReportTest::tearDown()
 {
+    // Returned value ignored on purpose, end of test, temporary file may not even exists.
+    // coverity[CHECKED_RETURN]
     ts::DeleteFile(_fileName);
 }
 

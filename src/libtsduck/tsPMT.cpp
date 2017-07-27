@@ -41,16 +41,12 @@ TSDUCK_SOURCE;
 // Default constructor:
 //----------------------------------------------------------------------------
 
-ts::PMT::PMT (uint8_t version_,
-                bool is_current_,
-                uint16_t service_id_,
-                PID pcr_pid_) :
-
-    AbstractLongTable (TID_PMT, version_, is_current_),
-    service_id (service_id_),
-    pcr_pid (pcr_pid_),
-    descs (),
-    streams ()
+ts::PMT::PMT(uint8_t version_, bool is_current_, uint16_t service_id_, PID pcr_pid_) :
+    AbstractLongTable(TID_PMT, version_, is_current_),
+    service_id(service_id_),
+    pcr_pid(pcr_pid_),
+    descs(),
+    streams()
 {
     _is_valid = true;
 }
@@ -60,14 +56,14 @@ ts::PMT::PMT (uint8_t version_,
 // Constructor from a binary table
 //----------------------------------------------------------------------------
 
-ts::PMT::PMT (const BinaryTable& table) :
-    AbstractLongTable (TID_PMT),
-    service_id (0),
-    pcr_pid (PID_NULL),
-    descs (),
-    streams ()
+ts::PMT::PMT(const BinaryTable& table) :
+    AbstractLongTable(TID_PMT),
+    service_id(0),
+    pcr_pid(PID_NULL),
+    descs(),
+    streams()
 {
-    deserialize (table);
+    deserialize(table);
 }
 
 
@@ -75,7 +71,7 @@ ts::PMT::PMT (const BinaryTable& table) :
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::PMT::deserialize (const BinaryTable& table)
+void ts::PMT::deserialize(const BinaryTable& table)
 {
     // Clear table content
     _is_valid = false;
@@ -93,7 +89,7 @@ void ts::PMT::deserialize (const BinaryTable& table)
     for (size_t si = 0; si < table.sectionCount(); ++si) {
 
         // Reference to current section
-        const Section& sect (*table.sectionAt(si));
+        const Section& sect(*table.sectionAt(si));
 
         // Get common properties (should be identical in all sections)
         version = sect.version();
@@ -101,14 +97,14 @@ void ts::PMT::deserialize (const BinaryTable& table)
         service_id = sect.tableIdExtension();
 
         // Analyze the section payload:
-        const uint8_t* data (sect.payload());
-        size_t remain (sect.payloadSize());
+        const uint8_t* data(sect.payload());
+        size_t remain(sect.payloadSize());
 
         // Get PCR PID
         if (remain < 2) {
             return;
         }
-        pcr_pid = GetUInt16 (data) & 0x1FFF;
+        pcr_pid = GetUInt16(data) & 0x1FFF;
         data += 2;
         remain -= 2;
 
@@ -116,24 +112,24 @@ void ts::PMT::deserialize (const BinaryTable& table)
         if (remain < 2) {
             return;
         }
-        size_t info_length (GetUInt16 (data) & 0x0FFF);
+        size_t info_length(GetUInt16(data) & 0x0FFF);
         data += 2;
         remain -= 2;
-        info_length = std::min (info_length, remain);
-        descs.add (data, info_length);
+        info_length = std::min(info_length, remain);
+        descs.add(data, info_length);
         data += info_length;
         remain -= info_length;
 
         // Get elementary streams description
         while (remain >= 5) {
-            PID pid = GetUInt16 (data + 1) & 0x1FFF;
-            Stream& str (streams[pid]);
+            PID pid = GetUInt16(data + 1) & 0x1FFF;
+            Stream& str(streams[pid]);
             str.stream_type = data[0];
-            info_length = GetUInt16 (data + 3) & 0x0FFF;
+            info_length = GetUInt16(data + 3) & 0x0FFF;
             data += 5;
             remain -= 5;
-            info_length = std::min (info_length, remain);
-            str.descs.add (data, info_length);
+            info_length = std::min(info_length, remain);
+            str.descs.add(data, info_length);
             data += info_length;
             remain -= info_length;
         }
@@ -147,10 +143,10 @@ void ts::PMT::deserialize (const BinaryTable& table)
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::PMT::serialize (BinaryTable& table) const
+void ts::PMT::serialize(BinaryTable& table) const
 {
     // Reinitialize table object
-    table.clear ();
+    table.clear();
 
     // Return an empty table if not valid
     if (!_is_valid) {
@@ -160,35 +156,28 @@ void ts::PMT::serialize (BinaryTable& table) const
     // Build the section. Note that a PMT is not allowed to use more than
     // one section, see ISO/IEC 13818-1:2000 2.4.4.8 & 2.4.4.9
     uint8_t payload [MAX_PSI_LONG_SECTION_PAYLOAD_SIZE];
-    uint8_t* data (payload);
-    size_t remain (sizeof(payload));
+    uint8_t* data(payload);
+    size_t remain(sizeof(payload));
 
     // Add PCR PID
-    PutUInt16 (data, pcr_pid | 0xE000);
+    PutUInt16(data, pcr_pid | 0xE000);
     data += 2;
     remain -= 2;
 
     // Insert program_info descriptor list (with leading length field)
-    descs.lengthSerialize (data, remain);
+    descs.lengthSerialize(data, remain);
 
     // Add description of all elementary streams
     for (StreamMap::const_iterator it = streams.begin(); it != streams.end() && remain >= 5; ++it) {
 
-        // Check that there is enough remaining space
-        if (remain < 5) {
-            // Not enough space in section. A PMT cannot have more than one section.
-            // Return with table left in invalid state.
-            return;
-        }
-
         // Insert stream type and pid
         data[0] = it->second.stream_type;
-        PutUInt16 (data + 1, it->first | 0xE000); // PID
+        PutUInt16(data + 1, it->first | 0xE000); // PID
         data += 3;
         remain -= 3;
 
         // Insert descriptor list for elem. stream (with leading length field)
-        size_t next_index = it->second.descs.lengthSerialize (data, remain);
+        size_t next_index = it->second.descs.lengthSerialize(data, remain);
         if (next_index != it->second.descs.count()) {
             // Not enough space to serialize all descriptors in the section.
             // A PMT cannot have more than one section.
@@ -198,15 +187,15 @@ void ts::PMT::serialize (BinaryTable& table) const
     }
 
     // Add one single section in the table
-    table.addSection (new Section (TID_PMT,          // tid
-                                   false,            // is_private_section
-                                   service_id,       // tid_ext
-                                   version,
-                                   is_current,
-                                   0,                // section_number,
-                                   0,                // last_section_number
-                                   payload,
-                                   data - payload)); // payload_size,
+    table.addSection(new Section(TID_PMT,          // tid
+                                 false,            // is_private_section
+                                 service_id,       // tid_ext
+                                 version,
+                                 is_current,
+                                 0,                // section_number,
+                                 0,                // last_section_number
+                                 payload,
+                                 data - payload)); // payload_size,
 }
 
 
@@ -218,7 +207,7 @@ void ts::PMT::serialize (BinaryTable& table) const
 
 bool ts::PMT::Stream::isVideo() const
 {
-    return IsVideoST (stream_type);
+    return IsVideoST(stream_type);
 }
 
 bool ts::PMT::Stream::isAudio() const
@@ -226,21 +215,21 @@ bool ts::PMT::Stream::isAudio() const
     // AC-3 or HE-AAC components may have "PES private data" stream type
     // but are identifier by specific descriptors.
 
-    return IsAudioST (stream_type) ||
-        descs.search (DID_DTS) < descs.count() ||
-        descs.search (DID_AC3) < descs.count() ||
-        descs.search (DID_ENHANCED_AC3) < descs.count() ||
-        descs.search (DID_AAC) < descs.count();
+    return IsAudioST(stream_type) ||
+        descs.search(DID_DTS) < descs.count() ||
+        descs.search(DID_AC3) < descs.count() ||
+        descs.search(DID_ENHANCED_AC3) < descs.count() ||
+        descs.search(DID_AAC) < descs.count();
 }
 
 bool ts::PMT::Stream::isSubtitles() const
 {
     // A subtitling descriptor always indicates subtitles.
-    if (descs.search (DID_SUBTITLING) < descs.count()) {
+    if (descs.search(DID_SUBTITLING) < descs.count()) {
         return true;
     }
     // A teletext descriptor may indicate subtitles
-    for (size_t index = 0; (index = descs.search (DID_TELETEXT, index)) < descs.count(); ++index) {
+    for (size_t index = 0; (index = descs.search(DID_TELETEXT, index)) < descs.count(); ++index) {
         // Get descriptor payload
         const uint8_t* data = descs[index]->payload();
         size_t size = descs[index]->payloadSize();

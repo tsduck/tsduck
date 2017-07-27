@@ -130,4 +130,16 @@ void RingTest::testRingNode()
     CPPUNIT_ASSERT(r1.ringSize() == 3);
     CPPUNIT_ASSERT(r1.ringNext<R>() == &r2);
     CPPUNIT_ASSERT(r1.ringPrevious<R>() == &r3);
+
+    r2.ringRemove();
+
+    CPPUNIT_ASSERT(r1.ringSize() == 2);
+    CPPUNIT_ASSERT(r1.ringNext<R>() == &r3);
+    CPPUNIT_ASSERT(r1.ringPrevious<R>() == &r3);
+
+    r3.ringRemove();
+
+    CPPUNIT_ASSERT(r1.ringSize() == 1);
+    CPPUNIT_ASSERT(r1.ringNext<R>() == &r1);
+    CPPUNIT_ASSERT(r1.ringPrevious<R>() == &r1);
 }

@@ -28,7 +28,7 @@
 //----------------------------------------------------------------------------
 //
 //  Transport stream processor shared library:
-//  Modify the time reference of a T (update TDT and TOT)
+//  Modify the time reference of a TS (update TDT and TOT)
 //
 //----------------------------------------------------------------------------
 
@@ -48,11 +48,11 @@ namespace ts {
     {
     public:
         // Implementation of plugin API
-        TimeRefPlugin (TSP*);
+        TimeRefPlugin(TSP*);
         virtual bool start();
         virtual bool stop() {return true;}
         virtual BitRate getBitrate() {return 0;}
-        virtual Status processPacket (TSPacket&, bool&, bool&);
+        virtual Status processPacket(TSPacket&, bool&, bool&);
 
     private:
         MilliSecond   _add_milliseconds;  // Add this to all time values
@@ -78,7 +78,7 @@ TSPLUGIN_DECLARE_PROCESSOR(ts::TimeRefPlugin)
 // Constructor
 //----------------------------------------------------------------------------
 
-ts::TimeRefPlugin::TimeRefPlugin (TSP* tsp_) :
+ts::TimeRefPlugin::TimeRefPlugin(TSP* tsp_) :
     ProcessorPlugin(tsp_, "Update TDT and TOT with a new time reference", "[options]"),
     _add_milliseconds(0),
     _use_timeref(false),
@@ -88,36 +88,36 @@ ts::TimeRefPlugin::TimeRefPlugin (TSP* tsp_) :
     _update_tdt(false),
     _update_tot(false)
 {
-    option ("add",   'a', INTEGER, 0, 1, std::numeric_limits<int>::min(), std::numeric_limits<int>::max());
-    option ("notdt",  0);
-    option ("notot",  0);
-    option ("start", 's', STRING);
+    option("add",   'a', INTEGER, 0, 1, std::numeric_limits<int>::min(), std::numeric_limits<int>::max());
+    option("notdt",  0);
+    option("notot",  0);
+    option("start", 's', STRING);
 
-    setHelp ("Options:\n"
-             "\n"
-             "  -a seconds\n"
-             "  --add seconds\n"
-             "      Add the specified number of seconds to all UTC time. Specify a negative\n"
-             "      value to make the time reference go backward.\n"
-             "\n"
-             "  --help\n"
-             "      Display this help text.\n"
-             "\n"
-             "  --notdt\n"
-             "      Do not update TDT.\n"
-             "\n"
-             "  --notot\n"
-             "      Do not update TOT.\n"
-             "\n"
-             "  -s time\n"
-             "  --start time\n"
-             "      Specify a new UTC date & time reference for the first packet in the\n"
-             "      stream. Then, the time reference is updated according to the number\n"
-             "      of packets and the bitrate. A time value must be in the format\n"
-             "      \"year/month/day:hour:minute:second\".\n"
-             "\n"
-             "  --version\n"
-             "      Display the version number.\n");
+    setHelp("Options:\n"
+            "\n"
+            "  -a seconds\n"
+            "  --add seconds\n"
+            "      Add the specified number of seconds to all UTC time. Specify a negative\n"
+            "      value to make the time reference go backward.\n"
+            "\n"
+            "  --help\n"
+            "      Display this help text.\n"
+            "\n"
+            "  --notdt\n"
+            "      Do not update TDT.\n"
+            "\n"
+            "  --notot\n"
+            "      Do not update TOT.\n"
+            "\n"
+            "  -s time\n"
+            "  --start time\n"
+            "      Specify a new UTC date & time reference for the first packet in the\n"
+            "      stream. Then, the time reference is updated according to the number\n"
+            "      of packets and the bitrate. A time value must be in the format\n"
+            "      \"year/month/day:hour:minute:second\".\n"
+            "\n"
+            "  --version\n"
+            "      Display the version number.\n");
 }
 
 
@@ -140,14 +140,14 @@ bool ts::TimeRefPlugin::start()
             // Decode an absolute time string
             int year, month, day, hour, minute, second;
             char unused;
-            if (::sscanf (start.c_str(), "%d/%d/%d:%d:%d:%d%c", &year, &month, &day, &hour, &minute, &second, &unused) != 6) {
-                tsp->error ("invalid time value \"%s\" (use \"year/month/day:hour:minute:second\")", start.c_str());
+            if (::sscanf(start.c_str(), "%d/%d/%d:%d:%d:%d%c", &year, &month, &day, &hour, &minute, &second, &unused) != 6) {
+                tsp->error("invalid time value \"%s\" (use \"year/month/day:hour:minute:second\")", start.c_str());
                 return false;
             }
-            _timeref = Time (year, month, day, hour, minute, second);
+            _timeref = Time(year, month, day, hour, minute, second);
         }
         catch (Time::TimeError) {
-            tsp->error ("at least one invalid value in \"%s\"", start.c_str());
+            tsp->error("at least one invalid value in \"%s\"", start.c_str());
             return false;
         }
     }
@@ -160,7 +160,7 @@ bool ts::TimeRefPlugin::start()
 // Packet processing method
 //----------------------------------------------------------------------------
 
-ts::ProcessorPlugin::Status ts::TimeRefPlugin::processPacket (TSPacket& pkt, bool& flush, bool& bitrate_changed)
+ts::ProcessorPlugin::Status ts::TimeRefPlugin::processPacket(TSPacket& pkt, bool& flush, bool& bitrate_changed)
 {
     // TDT and TOT are short sections which fit into one packet. Moreover, we need to update
     // each packet directly. Consequently, we do not use a demux and directly hack the packet.
@@ -184,11 +184,11 @@ ts::ProcessorPlugin::Status ts::TimeRefPlugin::processPacket (TSPacket& pkt, boo
     }
     uint8_t* const section = pkt.b + offset;
     uint8_t* const payload = section + SHORT_SECTION_HEADER_SIZE;
-    TID tid = ok ? section[0] : TID (TID_NULL);
-    const size_t payload_size = ok ? (GetUInt16 (section + 1) & 0x0FFF) : 0;
+    TID tid = ok ? section[0] : TID(TID_NULL);
+    const size_t payload_size = ok ? (GetUInt16(section + 1) & 0x0FFF) : 0;
     ok = payload + payload_size <= pkt.b + PKT_SIZE;
     if (!ok) {
-        tsp->warning ("got TDT/TOT PID packet with no complete section inside, cannot update");
+        tsp->warning("got TDT/TOT PID packet with no complete section inside, cannot update");
         return TSP_OK;
     }
     const size_t section_size = SHORT_SECTION_HEADER_SIZE + payload_size;
@@ -198,20 +198,20 @@ ts::ProcessorPlugin::Status ts::TimeRefPlugin::processPacket (TSPacket& pkt, boo
         return TSP_OK;
     }
     if (tid != TID_TDT && tid != TID_TOT) {
-        tsp->warning ("found table_id %d (0x%02X) in TDT/TOT PID", int (tid), int (tid));
+        tsp->warning("found table_id %d (0x%02X) in TDT/TOT PID", int(tid), int(tid));
         return TSP_OK;
     }
 
     // Check section size
     if ((tid == TID_TDT && payload_size < MJD_SIZE) || (tid == TID_TOT && payload_size < MJD_SIZE + 4)) {
-        tsp->warning ("invalid TDT/TOD, payload too short: %" FMT_SIZE_T "d bytes", payload_size);
+        tsp->warning("invalid TDT/TOD, payload too short: %" FMT_SIZE_T "d bytes", payload_size);
         return TSP_OK;
     }
 
     // Check TOT CRC if needs to be updated
     if (tid == TID_TOT && !_use_timeref) {
-        if (CRC32 (section, section_size - 4) != GetUInt32 (section + section_size - 4)) {
-            tsp->warning ("incorrect CRC in TOT, cannot reliably update");
+        if (CRC32(section, section_size - 4) != GetUInt32(section + section_size - 4)) {
+            tsp->warning("incorrect CRC in TOT, cannot reliably update");
             return TSP_OK;
         }
     }
@@ -222,28 +222,30 @@ ts::ProcessorPlugin::Status ts::TimeRefPlugin::processPacket (TSPacket& pkt, boo
     if (_use_timeref) {
         const BitRate bitrate = tsp->bitrate();
         if (bitrate == 0) {
-            tsp->warning ("unknown bitrate cannot reliably update TDT/TOT");
+            tsp->warning("unknown bitrate cannot reliably update TDT/TOT");
             return TSP_OK;
         }
-        _timeref += PacketInterval (bitrate, _current_pkt - _timeref_pkt);
+        _timeref += PacketInterval(bitrate, _current_pkt - _timeref_pkt);
         _timeref_pkt = _current_pkt;
         time = _timeref;
     }
-    else if (!DecodeMJD (payload, MJD_SIZE, time)) {
-        tsp->warning ("error decoding UTC time from TDT/TOT");
+    else if (!DecodeMJD(payload, MJD_SIZE, time)) {
+        tsp->warning("error decoding UTC time from TDT/TOT");
         return TSP_OK;
     }
 
     time += _add_milliseconds;
 
-    if (!EncodeMJD (time, payload, MJD_SIZE)) {
-        tsp->warning ("error encoding UTC time into TDT/TOT");
+    // Coverity false positive: payload + MJD_SIZE is within packet boudaries.
+    // coverity[OVERRUN)
+    if (!EncodeMJD(time, payload, MJD_SIZE)) {
+        tsp->warning("error encoding UTC time into TDT/TOT");
         return TSP_OK;
     }
 
     // Recompute CRC in TOT
     if (tid == TID_TOT) {
-        PutUInt32 (section + section_size - 4, CRC32 (section, section_size - 4));
+        PutUInt32(section + section_size - 4, CRC32(section, section_size - 4));
     }
 
     return TSP_OK;

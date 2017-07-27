@@ -379,14 +379,15 @@ ts::Args::IOption* ts::Args::search (const std::string& name)
 // Throw ArgsError if option does not exist (application internal error)
 //----------------------------------------------------------------------------
 
-const ts::Args::IOption& ts::Args::getIOption (const char* name) const
+const ts::Args::IOption& ts::Args::getIOption(const char* name) const
 {
-    IOptionMap::const_iterator it = _iopts.find (name == 0 ? "" : name);
+    const std::string name1(name == 0 ? "" : name);
+    IOptionMap::const_iterator it = _iopts.find(name1);
     if (it != _iopts.end()) {
         return it->second;
     }
     else {
-        throw ArgsError (_app_name + ": application internal error, option " + name + " undefined");
+        throw ArgsError(_app_name + ": application internal error, option " + name1 + " undefined");
     }
 }
 

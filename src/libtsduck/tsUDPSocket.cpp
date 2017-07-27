@@ -45,6 +45,8 @@ ts::UDPSocket::UDPSocket(bool auto_open, ReportInterface& report) :
     _mcast()
 {
     if (auto_open) {
+        // Returned value ignored on purpose, the socket is marked as closed in the object on error.
+        // coverity[CHECKED_RETURN]
         open(report);
     }
 }
