@@ -1,0 +1,15 @@
+===================================
+TSDuck Change Log and Release Notes
+===================================
+
+Version 3.2-20170525
+
+- Added the development environment in the Windows Installer. This is used to
+  develop third-party applications using the TSDuck library. On Ubuntu, added
+  the tsduck-dev package. On RPM-based distros, the tsduck-devel package
+  already existed.
+
+- Added option --no-duplicate to tstables and tables plugin.
+
+- Added TSPLUGINS_PATH environment variable to use tsp and tsgentab plugins
+  outside the directory of the TSDuck executables.
