@@ -81,7 +81,9 @@ param(
 
 # PowerShell execution policy.
 Set-StrictMode -Version 3
-Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process -Force -ErrorAction:SilentlyContinue
+if (((Get-ExecutionPolicy) -ne "Unrestricted") -and ((Get-ExecutionPolicy) -ne "RemoteSigned")) {
+    Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process -Force -ErrorAction:SilentlyContinue
+}
 Import-Module -Force -Name (Join-Path $PSScriptRoot Build-Common.psm1)
 
 # Get the project directories.
@@ -100,7 +102,7 @@ if (-not $Win32 -and -not $Win64) {
 }
 
 # Requires .NET 4.5 to build zip files (need compression methods).
-if (-not $NoSource -or -not $NoStandalone) {
+if (-not $NoSource) {
     $DotNetVersion = Get-DotNetVersion
     if ($DotNetVersion -lt 405) {
         $DotNetString = "v" + [int]($DotNetVersion / 100) + "." + ($DotNetVersion % 100)

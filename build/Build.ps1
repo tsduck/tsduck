@@ -67,7 +67,9 @@ param(
 
 # PowerShell execution policy.
 Set-StrictMode -Version 3
-Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process -Force -ErrorAction:SilentlyContinue
+if (((Get-ExecutionPolicy) -ne "Unrestricted") -and ((Get-ExecutionPolicy) -ne "RemoteSigned")) {
+    Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process -Force -ErrorAction:SilentlyContinue
+}
 Import-Module -Force -Name (Join-Path $PSScriptRoot Build-Common.psm1)
 
 # Apply defaults.
