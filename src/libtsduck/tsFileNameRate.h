@@ -34,6 +34,7 @@
 
 #pragma once
 #include "tsArgs.h"
+#include "tsTime.h"
 
 namespace ts {
 
@@ -43,33 +44,96 @@ namespace ts {
     struct TSDUCKDLL FileNameRate
     {
         std::string file_name;    //!< File name.
+        ts::Time    file_date;    //!< Last modification date of file.
         MilliSecond repetition;   //!< Repetition rate in milliseconds.
 
         //!
         //! Default constructor.
+        //! @param [in] name File name.
+        //! @param [in] rep  Repetition rate in milliseconds.
         //!
-        FileNameRate() : file_name(), repetition(0) {}
+        explicit FileNameRate(const std::string& name = std::string(), MilliSecond rep = 0);
+
+        //!
+        //! Comparison operator.
+        //! @param [in] other Other instance to compare.
+        //! @return True if this instance is equal to @a other.
+        //!
+        bool operator==(const FileNameRate& other);
+
+        //!
+        //! Comparison operator.
+        //! @param [in] other Other instance to compare.
+        //! @return True if this instance is different from @a other.
+        //!
+        bool operator!=(const FileNameRate& other)
+        {
+            return !(*this == other);
+        }
+
+        //!
+        //! Comparison "less than" operator.
+        //! It does not really makes sense. Only defined to allow usage in containers.
+        //! @param [in] other Other instance to compare.
+        //! @return True if this instance is less than to @a other.
+        //!
+        bool operator<(const FileNameRate& other);
+
+        //!
+        //! Scan the file for update.
+        //! Update the modification date of the file in @a file_date.
+        //! @return True if the file has changed or is scanned for the first time
+        //! or has been deleted.
+        //!
+        bool scanFile();
     };
 
     //!
-    //! Vector of file names and an associated repetition rates.
+    //! Specialized list of file names and an associated repetition rates.
     //!
-    typedef std::vector<FileNameRate> FileNameRateVector;
+    class TSDUCKDLL FileNameRateList : public std::list<FileNameRate>
+    {
+    public:
+        //!
+        //! Reference to the superclass.
+        //!
+        typedef std::list<FileNameRate> SuperClass;
 
-    //!
-    //! Decode a list of parameters containing a list of file names with
-    //! optional repetition rates in milliseconds.
-    //!
-    //! @param [out] files Returned vector or FileNameRate.
-    //! @param [in,out] args Instance of ts::Args containing the command line parameters.
-    //! @param [in] option_name The long name of an option. All values of this option
-    //! are fetched. Each value must be a string "name[=value]" where @e value is an
-    //! optional repetition rate in milliseconds.
-    //! @param [in] default_rate Default repetition rate for files without repetition rate.
-    //! @return True on success. On error, set error state in @a args and return false.
-    //!
-    TSDUCKDLL bool GetFileNameRates(FileNameRateVector& files,
-                                    Args& args,
-                                    const char* option_name = 0,
-                                    MilliSecond default_rate = 0);
+        //!
+        //! Default constructor.
+        //!
+        FileNameRateList() :
+            SuperClass()
+        {
+        }
+
+        //!
+        //! Copy constructor.
+        //! @param [in] other Other instance to copy.
+        //!
+        FileNameRateList(const FileNameRateList& other) :
+            SuperClass(other)
+        {
+        }
+
+        //!
+        //! Decode a list of parameters containing a list of file names with
+        //! optional repetition rates in milliseconds.
+        //!
+        //! @param [in,out] args Instance of ts::Args containing the command line parameters.
+        //! @param [in] option_name The long name of an option. All values of this option
+        //! are fetched. Each value must be a string "name[=value]" where @e value is an
+        //! optional repetition rate in milliseconds.
+        //! @param [in] default_rate Default repetition rate for files without repetition rate.
+        //! @return True on success. On error, set error state in @a args and return false.
+        //!
+        bool getArgs(Args& args, const char* option_name = 0, MilliSecond default_rate = 0);
+
+        //!
+        //! Scan the files for update.
+        //! Update the modification dates of the files.
+        //! @return Number of files which changed.
+        //!
+        size_t scanFiles();
+    };
 }

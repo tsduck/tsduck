@@ -33,7 +33,71 @@
 
 #include "tsFileNameRate.h"
 #include "tsToInteger.h"
+#include "tsSysUtils.h"
 TSDUCK_SOURCE;
+
+
+//----------------------------------------------------------------------------
+// Default constructor.
+//----------------------------------------------------------------------------
+
+ts::FileNameRate::FileNameRate(const std::string& name, MilliSecond rep) :
+    file_name(name),
+    file_date(),
+    repetition(rep) 
+{
+}
+
+
+//----------------------------------------------------------------------------
+// Comparison operators.
+//----------------------------------------------------------------------------
+
+bool ts::FileNameRate::operator==(const FileNameRate& other)
+{
+    return file_name == other.file_name && file_date == other.file_date && repetition == other.repetition;
+}
+
+bool ts::FileNameRate::operator<(const FileNameRate& other)
+{
+    return file_name < other.file_name || file_date < other.file_date || repetition < other.repetition;
+}
+
+
+//----------------------------------------------------------------------------
+// Scan the file for update.
+//----------------------------------------------------------------------------
+
+bool ts::FileNameRate::scanFile()
+{
+    if (file_name.empty()) {
+        // No file, no change...
+        return false;
+    }
+    else {
+        // Get new file time, will get Epoch if the file does not exist.
+        const Time date = GetFileModificationTimeLocal(file_name);
+        const bool changed = date != file_date;
+        file_date = date;
+        return changed;
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Scan the files for update.
+//----------------------------------------------------------------------------
+
+size_t ts::FileNameRateList::scanFiles()
+{
+    size_t count = 0;
+    for (iterator it = begin(); it != end(); ++it) {
+        if (it->scanFile()) {
+            ++count;
+        }
+    }
+    return count;
+}
 
 
 //----------------------------------------------------------------------------
@@ -41,35 +105,33 @@ TSDUCK_SOURCE;
 // optional repetition rates in milliseconds.
 //----------------------------------------------------------------------------
 
-bool ts::GetFileNameRates(FileNameRateVector& files,
-                          Args& args,
-                          const char* option_name,
-                          MilliSecond default_rate)
+bool ts::FileNameRateList::getArgs(Args& args, const char* option_name, MilliSecond default_rate)
 {
     // Get the string values
     StringVector strings;
-    args.getValues (strings, option_name);
+    args.getValues(strings, option_name);
 
     // Decode the args
-    files.clear();
-    files.resize (strings.size());
+    clear();
     bool success = true;
 
     for (size_t i = 0; i < strings.size(); ++i) {
-        std::string::size_type eq = strings[i].find ('=');
+        const std::string::size_type eq = strings[i].find('=');
+        FileNameRate file;
         if (eq == std::string::npos) {
             // No '=' found
-            files[i].file_name = strings[i];
-            files[i].repetition = default_rate;
+            file.file_name = strings[i];
+            file.repetition = default_rate;
         }
         else {
-            files[i].file_name = strings[i].substr (0, eq);
-            if (!ToInteger (files[i].repetition, strings[i].substr (eq + 1)) || files[i].repetition <= 0) {
-                args.error ("invalid repetition rate for file " + files[i].file_name);
-                files[i].repetition = default_rate;
+            file.file_name = strings[i].substr(0, eq);
+            if (!ToInteger(file.repetition, strings[i].substr(eq + 1)) || file.repetition <= 0) {
+                args.error("invalid repetition rate for file " + file.file_name);
+                file.repetition = default_rate;
                 success = false;
             }
         }
+        push_back(file);
     }
 
     return success;
