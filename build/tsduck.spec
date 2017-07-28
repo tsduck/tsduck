@@ -51,6 +51,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_bindir}/ts*
 %{_sysconfdir}/udev/rules.d/80-tsduck.rules
 %{_sysconfdir}/security/console.perms.d/80-tsduck.perms
+%doc CHANGELOG.txt LICENSE.txt doc/tsduck.pdf
 
 %files devel
 %defattr(-,root,root,-)
