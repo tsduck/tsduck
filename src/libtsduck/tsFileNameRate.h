@@ -35,6 +35,7 @@
 #pragma once
 #include "tsArgs.h"
 #include "tsTime.h"
+#include "tsNullReport.h"
 
 namespace ts {
 
@@ -82,10 +83,11 @@ namespace ts {
         //!
         //! Scan the file for update.
         //! Update the modification date of the file in @a file_date.
+        //! @param [in] report Where to report a verbose message when a file changed.
         //! @return True if the file has changed or is scanned for the first time
         //! or has been deleted.
         //!
-        bool scanFile();
+        bool scanFile(ReportInterface& report = NULLREP);
     };
 
     //!
@@ -132,8 +134,9 @@ namespace ts {
         //!
         //! Scan the files for update.
         //! Update the modification dates of the files.
+        //! @param [in] report Where to report a verbose message when a file changed.
         //! @return Number of files which changed.
         //!
-        size_t scanFiles();
+        size_t scanFiles(ReportInterface& report = NULLREP);
     };
 }

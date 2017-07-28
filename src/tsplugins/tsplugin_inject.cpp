@@ -36,9 +36,11 @@
 #include "tsCyclingPacketizer.h"
 #include "tsFileNameRate.h"
 #include "tsDecimal.h"
+#include "tsSysUtils.h"
 TSDUCK_SOURCE;
 
-#define DEF_EVALUATE_INTERVAL 100
+#define DEF_EVALUATE_INTERVAL 100    // In packets
+#define DEF_POLL_FILE_MS      1000   // In milliseconds
 
 
 //----------------------------------------------------------------------------
@@ -57,23 +59,33 @@ namespace ts {
         virtual Status processPacket (TSPacket&, bool&, bool&);
 
     private:
-        FileNameRateList   _infiles;         // Input file names and repetition rates
-        bool               _specific_rates;  // Some input files have specific repetition rates
-        PID                _inject_pid;      // Target PID
-        CRC32::Validation  _crc_op;          // Validate/recompute CRC32
-        bool               _replace;         // Replace existing PID content
-        bool               _terminate;       // Terminate processing when insertion is complete
-        bool               _completed;       // Last cycle terminated
-        size_t             _repeat_count;    // Repeat cycle, zero means infinite
-        BitRate            _pid_bitrate;     // Target bitrate for new PID
-        PacketCounter      _pid_inter_pkt;   // # TS packets between 2 new PID packets
-        PacketCounter      _pid_next_pkt;    // Next time to insert a packet
-        PacketCounter      _packet_count;    // TS packet counter
-        PacketCounter      _replaced_count;  // PID packet counter in --replace mode
-        PacketCounter      _eval_interval;   // PID bitrate re-evaluation interval
-        PacketCounter      _cycle_count;     // Number of insertion cycles
-        CyclingPacketizer  _pzer;            // Packetizer for table
+        FileNameRateList   _infiles;           // Input file names and repetition rates
+        bool               _specific_rates;    // Some input files have specific repetition rates
+        PID                _inject_pid;        // Target PID
+        CRC32::Validation  _crc_op;            // Validate/recompute CRC32
+        bool               _replace;           // Replace existing PID content
+        bool               _poll_files;        // Poll the presence of input files at regular intervals
+        MilliSecond        _poll_files_ms;     // Interval in milliseconds between two file polling
+        Time               _poll_file_next;    // Next UTC time of poll file
+        bool               _terminate;         // Terminate processing when insertion is complete
+        bool               _completed;         // Last cycle terminated
+        size_t             _repeat_count;      // Repeat cycle, zero means infinite
+        BitRate            _pid_bitrate;       // Target bitrate for new PID
+        PacketCounter      _pid_inter_pkt;     // # TS packets between 2 new PID packets
+        PacketCounter      _pid_next_pkt;      // Next time to insert a packet
+        PacketCounter      _packet_count;      // TS packet counter
+        PacketCounter      _pid_packet_count;  // Packet counter in -PID to replace
+        PacketCounter      _eval_interval;     // PID bitrate re-evaluation interval
+        PacketCounter      _cycle_count;       // Number of insertion cycles
+        CyclingPacketizer  _pzer;              // Packetizer for table
         CyclingPacketizer::StuffingPolicy _stuffing_policy;
+
+        // Reload files, reset packetizer.
+        // Return true on success, false on error.
+        bool reloadFiles();
+
+        // Replace current packet with one from the packetizer.
+        void replacePacket(TSPacket& pkt);
 
         // Inaccessible operations
         InjectPlugin() = delete;
@@ -97,6 +109,9 @@ ts::InjectPlugin::InjectPlugin (TSP* tsp_) :
     _inject_pid(PID_NULL),
     _crc_op(CRC32::CHECK),
     _replace(false),
+    _poll_files(false),
+    _poll_files_ms(DEF_POLL_FILE_MS),
+    _poll_file_next(),
     _terminate(false),
     _completed(false),
     _repeat_count(0),
@@ -104,7 +119,7 @@ ts::InjectPlugin::InjectPlugin (TSP* tsp_) :
     _pid_inter_pkt(0),
     _pid_next_pkt(0),
     _packet_count(0),
-    _replaced_count(0),
+    _pid_packet_count(0),
     _eval_interval(0),
     _cycle_count(0),
     _pzer(),
@@ -117,6 +132,7 @@ ts::InjectPlugin::InjectPlugin (TSP* tsp_) :
     option("inter-packet",      'i', UINT32);
     option("joint-termination", 'j');
     option("pid",               'p', PIDVAL, 1, 1);
+    option("poll-files",         0);
     option("repeat",             0,  POSITIVE);
     option("replace",           'r');
     option("stuffing",          's');
@@ -172,6 +188,13 @@ ts::InjectPlugin::InjectPlugin (TSP* tsp_) :
             "      option --bitrate or --inter-packet. Exactly one option --replace,\n"
             "      --bitrate or --inter-packet must be specified.\n"
             "\n"
+            "  --poll-files\n"
+            "      Poll the presence and modification date of the input files. When a file\n"
+            "      is created, modified or deleted, reload all files at the next section\n"
+            "      boundary. When a file is deleted, its sections are no longer injected.\n"
+            "      By default, all input files are loaded once at initialization time and\n"
+            "      an error is generated if a file is missing.\n"
+            "\n"
             "  --repeat count\n"
             "      Repeat the insertion of a complete cycle of sections the specified number\n"
             "      of times. By default, the sections are infinitely repeated.\n"
@@ -207,12 +230,12 @@ ts::InjectPlugin::InjectPlugin (TSP* tsp_) :
 bool ts::InjectPlugin::start()
 {
     // Get command line arguments
-
     _inject_pid = intValue<PID>("pid", PID_NULL);
     _repeat_count = intValue<size_t>("repeat", 0);
     _terminate = present("terminate");
     tsp->useJointTermination(present("joint-termination"));
     _replace = present("replace");
+    _poll_files = present("poll-files");
     _crc_op = present("force-crc") ? CRC32::COMPUTE : CRC32::CHECK;
     _pid_bitrate = intValue<BitRate>("bitrate", 0);
     _pid_inter_pkt = intValue<PacketCounter>("inter-packet", 0);
@@ -221,11 +244,14 @@ bool ts::InjectPlugin::start()
     if (present("stuffing")) {
         _stuffing_policy = CyclingPacketizer::ALWAYS;
     }
-    else if (_repeat_count == 0) {
+    else if (_repeat_count == 0 && !_poll_files) {
         _stuffing_policy = CyclingPacketizer::NEVER;
     }
     else {
-        // Need at least stuffing at end of cycle to all cycle boundary detection
+        // Need at least stuffing at end of cycle to all cycle boundary detection.
+        // This is required if we need to stop after a number of cycles.
+        // This is also required with --poll-files since we need to restart
+        // the cycles when a file has changed.
         _stuffing_policy = CyclingPacketizer::AT_END;
     }
 
@@ -239,38 +265,76 @@ bool ts::InjectPlugin::start()
     }
 
     // Exactly one option --replace, --bitrate, --inter-packet must be specified.
-
     if (_replace + (_pid_bitrate != 0) + (_pid_inter_pkt != 0) != 1) {
         tsp->error("specify exactly one of --replace, --bitrate, --inter-packet");
     }
 
-    // Reinitialize packetizer
+    // Load sections from input files.
+    if (!reloadFiles()) {
+        return false;
+    }
 
+    // Initiate file polling.
+    if (_poll_files) {
+        _poll_file_next = Time::CurrentUTC() + _poll_files_ms;
+    }
+
+    _completed = false;
+    _packet_count = 0;
+    _pid_packet_count = 0;
+    _pid_next_pkt = 0;
+    _cycle_count = 0;
+    return true;
+}
+
+
+//----------------------------------------------------------------------------
+// Reload files, reset packetizer.
+//----------------------------------------------------------------------------
+
+bool ts::InjectPlugin::reloadFiles()
+{
+    // Reinitialize packetizer
     _pzer.reset();
     _pzer.setPID(_inject_pid);
     _pzer.setStuffingPolicy(_stuffing_policy);
     _pzer.setBitRate(_pid_bitrate);  // non-zero only if --bitrate is specified
 
     // Load sections from input files
-
+    bool success = true;
     _specific_rates = false;
     SectionPtrVector sections;
+
     for (FileNameRateList::const_iterator it = _infiles.begin(); it != _infiles.end(); ++it) {
-        if (!Section::LoadFile(sections, it->file_name, _crc_op, *tsp)) {
-            return false;
+        // With --poll-files, we ignore non-existent files.
+        if (_poll_files && !FileExists(it->file_name)) {
+            continue;
         }
-        _pzer.addSections(sections, it->repetition);
-        _specific_rates = _specific_rates || it->repetition != 0;
-        std::string srate(it->repetition > 0 ? Decimal(it->repetition) + " ms": "unspecified");
-        tsp->verbose("loaded %" FMT_SIZE_T "d sections from %s repetition rate: %s", sections.size(), it->file_name.c_str(), srate.c_str());
+        if (!Section::LoadFile(sections, it->file_name, _crc_op, *tsp)) {
+            success = false;
+        }
+        else {
+            _pzer.addSections(sections, it->repetition);
+            _specific_rates = _specific_rates || it->repetition != 0;
+            std::string srate(it->repetition > 0 ? Decimal(it->repetition) + " ms" : "unspecified");
+            tsp->verbose("loaded %" FMT_SIZE_T "d sections from %s repetition rate: %s", sections.size(), it->file_name.c_str(), srate.c_str());
+        }
     }
 
-    _completed = false;
-    _packet_count = 0;
-    _replaced_count = 0;
-    _pid_next_pkt = 0;
-    _cycle_count = 0;
-    return true;
+    return success;
+}
+
+
+//----------------------------------------------------------------------------
+// Replace current packet with one from the packetizer.
+//----------------------------------------------------------------------------
+
+void ts::InjectPlugin::replacePacket(TSPacket& pkt)
+{
+    _pzer.getNextPacket(pkt);
+    if (_pzer.atCycleBoundary()) {
+        _cycle_count++;
+    }
 }
 
 
@@ -291,9 +355,6 @@ ts::ProcessorPlugin::Status ts::InjectPlugin::processPacket(TSPacket& pkt, bool&
     //      the potential section-specific repetition rates. If --bitrate
     //      was specified, this is already done. If --inter-packet was
     //      specified, we compute the PID bitrate based on the TS bitrate.
-    //  (3) The PID bitrate must also be set in --replace mode but we
-    //      cannot have a significant idea of the PID bitrate before
-    //      some time. We must also regularly re-evaluate the PID bitrate.
 
     if (_packet_count == 0) {
         if (_pid_bitrate != 0) {
@@ -320,26 +381,41 @@ ts::ProcessorPlugin::Status ts::InjectPlugin::processPacket(TSPacket& pkt, bool&
             }
         }
     }
-    if (_replace && _specific_rates && _replaced_count == _eval_interval && _packet_count > 0) {
-        // Case (3): In --replace mode, re-evaluate PID bitrate every N packets
-        BitRate ts_bitrate = tsp->bitrate();
-        _pid_bitrate = BitRate((PacketCounter(ts_bitrate) * _replaced_count) / _packet_count);
+
+    // The PID bitrate must also be set in --replace mode but we cannot have a significant idea of
+    // the PID bitrate before some time. We must also regularly re-evaluate the PID bitrate.
+    if (pid == _inject_pid) {
+        _pid_packet_count++;
+    }
+    if (_replace && _specific_rates && _pid_packet_count == _eval_interval && _packet_count > 0) {
+        const BitRate ts_bitrate = tsp->bitrate();
+        _pid_bitrate = BitRate((PacketCounter(ts_bitrate) * _pid_packet_count) / _packet_count);
         if (_pid_bitrate == 0) {
             tsp->warning("input bitrate unknown or too low, section-specific repetition rates will be ignored");
         }
         else {
             _pzer.setBitRate(_pid_bitrate);
             if (tsp->debug()) {
-                tsp->log(Severity::Debug,"transport bitrate: " + Decimal(ts_bitrate) +
-                         " b/s, new PID bitrate: " + Decimal(_pid_bitrate));
+                tsp->log(Severity::Debug, "transport bitrate: " + Decimal(ts_bitrate) + " b/s, new PID bitrate: " + Decimal(_pid_bitrate));
             }
         }
-        _replaced_count = 0;
+        _pid_packet_count = 0;
         _packet_count = 0;
     }
 
-    // If last packet was the end of repetition count, process insertion completion
+    // Poll files when necessary.
+    // Do that only at section boundary in the output PID to avoid truncated sections.
+    if (_poll_files && _pzer.atSectionBoundary() && Time::CurrentUTC() >= _poll_file_next && _infiles.scanFiles(*tsp)) {
+        // Some files have changed. Reset packetizer and reload files.
+        reloadFiles();
+        // Plan next file polling.
+        _poll_file_next += _poll_files_ms;
+    }
 
+    // Now really process the current packet.
+    _packet_count++;
+
+    // If last packet was the end of repetition count, process insertion completion.
     if (!_completed && _repeat_count > 0 && _cycle_count >= _repeat_count) {
         _completed = true;
         if (_terminate) {
@@ -352,43 +428,30 @@ ts::ProcessorPlugin::Status ts::InjectPlugin::processPacket(TSPacket& pkt, bool&
         }
     }
 
-    // If the input PID is the target PID, either replace the packet
-    // or generate an error.
-
+    // If the input PID is the target PID, either replace the packet or generate an error.
     if (pid == _inject_pid) {
         if (_replace) {
             // Replace content of packet with new one
-            _replaced_count++;
             if (_completed) {
                 // All cycles complete, replace PID with stuffing
                 return TSP_NULL;
             }
             else {
-                _pzer.getNextPacket(pkt);
-                if (_pzer.atCycleBoundary()) {
-                    _cycle_count++;
-                }
+                replacePacket(pkt);
                 return TSP_OK;
             }
         }
         else {
             // Don't replace. Target PID should not be present on input.
-            tsp->error("PID %d (0x%04X) already exists, specify --replace or use another PID, aborting",
-                       int(_inject_pid), int(_inject_pid));
+            tsp->error("PID %d (0x%04X) already exists, specify --replace or use another PID, aborting", int(_inject_pid), int(_inject_pid));
             return TSP_END;
         }
     }
 
     // In non-replace mode (new PID insertion), replace stuffing packets when needed.
-
-    _packet_count++;
-
     if (!_replace && !_completed && pid == PID_NULL && _packet_count >= _pid_next_pkt) {
-        _pzer.getNextPacket(pkt);
+        replacePacket(pkt);
         _pid_next_pkt += _pid_inter_pkt;
-        if (_pzer.atCycleBoundary()) {
-            _cycle_count++;
-        }
     }
 
     return TSP_OK;
