@@ -55,7 +55,7 @@ struct Options: public ts::Args
     ts::PID                pid;        // Target PID
     ts::BitRate            bitrate;    // Target PID bitrate
     std::string            outfile;    // Output file
-    ts::FileNameRateVector infiles;    // Input file names and repetition rates
+    ts::FileNameRateList   infiles;    // Input file names and repetition rates
     bool                   verbose;    // Verbose mode
     bool                   debug;      // Debug mode
 };
@@ -150,13 +150,13 @@ Options::Options(int argc, char *argv[]) :
     pid = intValue<ts::PID>("pid", ts::PID_NULL);
     bitrate = intValue<ts::BitRate>("bitrate");
     outfile = value("output");
-    GetFileNameRates(infiles, *this);
+    infiles.getArgs(*this);
     debug = present("debug");
     verbose = debug || present("verbose");
 
     // If any non-zero repetition rate is specified, make sure that a bitrate
     // is specified.
-    for (ts::FileNameRateVector::const_iterator it = infiles.begin(); it != infiles.end(); ++it) {
+    for (ts::FileNameRateList::const_iterator it = infiles.begin(); it != infiles.end(); ++it) {
         if (it->repetition != 0 && bitrate == 0) {
             error("the PID bitrate must be specified when repetition rates are used");
             break;
@@ -192,7 +192,7 @@ int main (int argc, char *argv[])
         }
     }
     else {
-        for (ts::FileNameRateVector::const_iterator it = opt.infiles.begin(); it != opt.infiles.end(); ++it) {
+        for (ts::FileNameRateList::const_iterator it = opt.infiles.begin(); it != opt.infiles.end(); ++it) {
             if (!ts::Section::LoadFile(sections, it->file_name, opt.crc_op, opt)) {
                 return EXIT_FAILURE;
             }

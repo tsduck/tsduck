@@ -57,7 +57,7 @@ namespace ts {
         virtual Status processPacket (TSPacket&, bool&, bool&);
 
     private:
-        FileNameRateVector _infiles;         // Input file names and repetition rates
+        FileNameRateList   _infiles;         // Input file names and repetition rates
         bool               _specific_rates;  // Some input files have specific repetition rates
         PID                _inject_pid;      // Target PID
         CRC32::Validation  _crc_op;          // Validate/recompute CRC32
@@ -229,7 +229,7 @@ bool ts::InjectPlugin::start()
         _stuffing_policy = CyclingPacketizer::AT_END;
     }
 
-    if (!GetFileNameRates(_infiles, *this)) {
+    if (!_infiles.getArgs(*this)) {
         return false;
     }
 
@@ -255,15 +255,14 @@ bool ts::InjectPlugin::start()
 
     _specific_rates = false;
     SectionPtrVector sections;
-    for (FileNameRateVector::const_iterator it = _infiles.begin(); it != _infiles.end(); ++it) {
+    for (FileNameRateList::const_iterator it = _infiles.begin(); it != _infiles.end(); ++it) {
         if (!Section::LoadFile(sections, it->file_name, _crc_op, *tsp)) {
             return false;
         }
         _pzer.addSections(sections, it->repetition);
         _specific_rates = _specific_rates || it->repetition != 0;
         std::string srate(it->repetition > 0 ? Decimal(it->repetition) + " ms": "unspecified");
-        tsp->verbose("loaded %" FMT_SIZE_T "d sections from %s repetition rate: %s",
-                     sections.size(), it->file_name.c_str(), srate.c_str());
+        tsp->verbose("loaded %" FMT_SIZE_T "d sections from %s repetition rate: %s", sections.size(), it->file_name.c_str(), srate.c_str());
     }
 
     _completed = false;
