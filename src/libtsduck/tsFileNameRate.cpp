@@ -68,7 +68,7 @@ bool ts::FileNameRate::operator<(const FileNameRate& other)
 // Scan the file for update.
 //----------------------------------------------------------------------------
 
-bool ts::FileNameRate::scanFile()
+bool ts::FileNameRate::scanFile(ReportInterface& report)
 {
     if (file_name.empty()) {
         // No file, no change...
@@ -78,6 +78,9 @@ bool ts::FileNameRate::scanFile()
         // Get new file time, will get Epoch if the file does not exist.
         const Time date = GetFileModificationTimeLocal(file_name);
         const bool changed = date != file_date;
+        if (changed) {
+            report.verbose("file %s %s", file_name.c_str(), file_date == Time::Epoch ? "created" : (date == Time::Epoch ? "deleted" : "modified"));
+        }
         file_date = date;
         return changed;
     }
@@ -88,11 +91,11 @@ bool ts::FileNameRate::scanFile()
 // Scan the files for update.
 //----------------------------------------------------------------------------
 
-size_t ts::FileNameRateList::scanFiles()
+size_t ts::FileNameRateList::scanFiles(ReportInterface& report)
 {
     size_t count = 0;
     for (iterator it = begin(); it != end(); ++it) {
-        if (it->scanFile()) {
+        if (it->scanFile(report)) {
             ++count;
         }
     }

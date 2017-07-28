@@ -2,6 +2,14 @@
 TSDuck Change Log and Release Notes
 ===================================
 
+Version 3.2-20170528
+
+- Added option --poll-file to inject plugin.
+
+- Bug fix: In tstables and tables plugin, the option --max-tables was not
+  accurate when several small tables (eg. EMM's) were packed in the same
+  TS packet. This is fixed.
+
 Version 3.2-20170525
 
 - Added the development environment in the Windows Installer. This is used to

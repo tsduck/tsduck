@@ -144,6 +144,11 @@ void ts::TablesLogger::feedPacket(const TSPacket& pkt)
 
 void ts::TablesLogger::handleTable(SectionDemux&, const BinaryTable& table)
 {
+    // Give up if completed.
+    if (completed()) {
+        return;
+    }
+
     assert(table.sectionCount() > 0);
     const PID pid = table.sourcePID();
 
@@ -245,6 +250,11 @@ void ts::TablesLogger::handleTable(SectionDemux&, const BinaryTable& table)
 
 void ts::TablesLogger::handleSection(SectionDemux&, const Section& sect)
 {
+    // Give up if completed.
+    if (completed()) {
+        return;
+    }
+
     // Ignore section if not to be filtered
     if (!isFiltered(sect, _cas_mapper.casFamily(sect.sourcePID()))) {
         return;
