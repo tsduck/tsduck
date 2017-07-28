@@ -38,6 +38,7 @@
 #include "tsDecimal.h"
 #include "tsNames.h"
 #include "tsHexa.h"
+#include "tsMemoryUtils.h"
 TSDUCK_SOURCE;
 
 
@@ -355,16 +356,7 @@ void ts::Section::recomputeCRC()
 
 bool ts::Section::hasDiversifiedPayload() const
 {
-    if (_is_valid && payloadSize() >= 2) {
-        const uint8_t* pl = payload();
-        size_t end = payloadSize() - 1;
-        for (size_t i = 0; i < end; ++i) {
-            if (pl[i] != pl[i + 1]) {
-                return true;
-            }
-        }
-    }
-    return false;
+    return _is_valid && !IdenticalBytes(payload(), payloadSize());
 }
 
 

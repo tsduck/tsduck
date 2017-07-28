@@ -69,3 +69,23 @@ const void* ts::LocatePattern (const void* area, size_t area_size, const void* p
     }
     return 0; // not found
 }
+
+//----------------------------------------------------------------------------
+// Check if a memory area contains all identical byte values.
+//----------------------------------------------------------------------------
+
+bool ts::IdenticalBytes(const void * area, size_t area_size)
+{
+    if (area_size < 2) {
+        return false;
+    }
+    else {
+        const uint8_t* d = reinterpret_cast<const uint8_t*>(area);
+        for (size_t i = 0; i < area_size - 1; ++i) {
+            if (d[i] != d[i + 1]) {
+                return false;
+            }
+        }
+        return true;
+    }
+}
