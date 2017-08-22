@@ -69,6 +69,15 @@ namespace ts {
     TSDUCKDLL extern const Enumeration VersionFormatEnum;
 
     //!
+    //! Add the specification of one or more files to check for revision number.
+    //! @param [in] wildcard A string specifying one or more files to check for
+    //! revision number. This can be a wildcard to match more than one file.
+    //! Do not specify a directory, do not specify file extensions (no ".exe",
+    //! no ".dll", no ".so").
+    //!
+    TSDUCKDLL void AddRevisionFile(const std::string& wildcard);
+
+    //!
     //! Get the TSDuck formatted version number.
     //! @param [in] format Type of output, short by default.
     //! @param [in] applicationName Name of the application to prepend to the long format.
