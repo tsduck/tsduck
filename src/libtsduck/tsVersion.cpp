@@ -71,6 +71,20 @@ namespace {
 
 
 //----------------------------------------------------------------------------
+// Add the specification of one or more files to check for revision number.
+//----------------------------------------------------------------------------
+
+namespace {
+    std::set<std::string> RevisionFilesPattern {std::string("ts*")};
+}
+
+void ts::AddRevisionFile(const std::string& wildcard)
+{
+    RevisionFilesPattern.insert(wildcard);
+}
+
+
+//----------------------------------------------------------------------------
 // Get the list of all TSDuck executables and shared libraries.
 //----------------------------------------------------------------------------
 
@@ -82,28 +96,27 @@ namespace {
         // Directory name of executables and libraries.
         const std::string dir(ts::DirectoryName(ts::ExecutableFile()) + ts::PathSeparator);
 
-        // Get all TSDuck executable file names.
+        // Loop on all file name templates. The default is "ts*" only.
+        for (std::set<std::string>::const_iterator it1 = RevisionFilesPattern.begin(); it1 != RevisionFilesPattern.end(); ++it1) {
+            const std::string& name(*it1);
+
+            // Get all TSDuck executable file names.
 #if defined(__windows)
-        // Windows: all ts*.exe files
-        if (!ts::ExpandWildcard(files, dir + "ts*.exe")) {
-            return false;
-        }
+            // Windows: all .exe files
+            ts::ExpandWildcardAndAppend(files, dir + name + ".exe");
 #else
-        // UNIX: all ts* files without extension (no dot).
-        ts::StringVector allfiles;
-        if (!ts::ExpandWildcard(allfiles, dir + "ts*")) {
-            return false;
-        }
-        for (ts::StringVector::const_iterator it = allfiles.begin(); it != allfiles.end(); ++it) {
-            if (it->find('.') == std::string::npos) {
-                files.push_back(*it);
+            // UNIX: all ts* files without extension (no dot).
+            ts::StringVector allfiles;
+            ts::ExpandWildcard(allfiles, dir + name);
+            for (ts::StringVector::const_iterator it2 = allfiles.begin(); it2 != allfiles.end(); ++it2) {
+                if (it2->find('.') == std::string::npos) {
+                    files.push_back(*it2);
+                }
             }
-        }
 #endif
 
-        // Append all TSDuck shared library files.
-        if (!ts::ExpandWildcardAndAppend(files, (dir + "ts*") + ts::SharedLibrary::Extension)) {
-            return false;
+            // Append all TSDuck shared library files.
+            ts::ExpandWildcardAndAppend(files, dir + name + ts::SharedLibrary::Extension);
         }
 
         // Sort the array.
