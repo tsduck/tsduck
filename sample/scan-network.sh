@@ -141,6 +141,9 @@ done
 [[ -z "$OUTDIR" ]] && OUTDIR="$NETNAME-$DATE"
 mkdir -p "$OUTDIR" || error "error creating $OUTDIR"
 
+# Additional tuning options.
+DVBOPTS="--receive-timeout 5000"
+
 #-----------------------------------------------------------------------------
 # Scan the NIT on reference transport stream.
 #-----------------------------------------------------------------------------
@@ -153,7 +156,7 @@ if [[ -s "$NITFILE" ]] && $REUSE; then
 else
     info scanning the NIT
     tsp -v \
-        -I dvb $NITTUNE \
+        -I dvb $DVBOPTS $NITTUNE \
         -P nitscan --output-file "$NITFILE_PATH" --dvb-options --comment --terminate \
         -O drop
 fi
@@ -163,7 +166,6 @@ fi
 #-----------------------------------------------------------------------------
 
 TSID=
-OUTPLUG=drop
 while read line; do
     line=$(sed <<<$line -e 's/\r$//')
     if grep <<<$line -q "# TS id:"; then
@@ -193,16 +195,16 @@ while read line; do
             info "analyzing TS id $TSID during $DURATION seconds"
             if $CAPTURE; then
                 tsp -v \
-                    -I dvb $line \
+                    -I dvb $DVBOPTS $line \
                     -P until --seconds $DURATION \
                     -P analyze --output-file "$ANFILE_PATH" \
                     -O file "$TSFILE_PATH"
             else
                 tsp -v \
-                    -I dvb $line \
+                    -I dvb $DVBOPTS $line \
                     -P until --seconds $DURATION \
                     -P analyze --output-file "$ANFILE_PATH" \
-                    -O $OUTPLUG
+                    -O drop
             fi
         fi
     fi
