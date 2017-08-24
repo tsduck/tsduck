@@ -2468,7 +2468,10 @@ namespace ts {
     /* Flawfinder: ignore */                                              \
     int size1__ = ::vsnprintf(buf1__, sizeof(buf1__), format_arg, ap__);  \
     va_end(ap__);                                                         \
-    if (size1__ < int(sizeof(buf1__))) {                                  \
+    if (size1__ < 0) {                                                    \
+        string_var = "(vsnprintf error)";                                 \
+    }                                                                     \
+    else if (size1__ < int(sizeof(buf1__))) {                             \
         string_var = std::string(buf1__, size1__);                        \
     }                                                                     \
     else {                                                                \
@@ -2477,8 +2480,13 @@ namespace ts {
         /* Flawfinder: ignore */                                          \
         int size2__ = ::vsnprintf(buf1__, size1__ + 1, format_arg, ap__); \
         va_end(ap__);                                                     \
-        assert(size2__ <= size1__);                                       \
-        string_var = std::string(buf2__, size2__);                        \
+        if (size2__ < 0) {                                                \
+            string_var = "(vsnprintf error)";                             \
+        }                                                                 \
+        else {                                                            \
+            assert(size2__ <= size1__);                                   \
+            string_var = std::string(buf2__, size2__);                    \
+        }                                                                 \
         delete [] buf2__;                                                 \
     }                                                                     \
 }

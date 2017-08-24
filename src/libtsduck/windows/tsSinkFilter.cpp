@@ -62,20 +62,20 @@ namespace {
 // SinkFilter, the DirectShow filter
 //-----------------------------------------------------------------------------
 
-ts::SinkFilter::SinkFilter (ReportInterface& report) :
+ts::SinkFilter::SinkFilter(ReportInterface& report) :
     _mutex(),
     _not_empty(),
     _queue(),
-    _max_messages (0),
-    _current_sample (NULL),
-    _current_offset (0),
-    _report (report),
-    _ref_count (1),
-    _state (::State_Stopped),
-    _graph (NULL),
-    _pin (new SinkPin (report, this))
+    _max_messages(0),
+    _sample_buffer(),
+    _sample_offset(0),
+    _report(report),
+    _ref_count(1),
+    _state(::State_Stopped),
+    _graph(NULL),
+    _pin(new SinkPin(report, this))
 {
-    TRACE ((1, "SinkFilter constructor, ref=%ld", _ref_count));
+    TRACE((1, "SinkFilter constructor, ref=%ld", _ref_count));
     // Initialize packet format to default
     _stride.dwOffset = 0;
     _stride.dwPacketLength = PKT_SIZE;
@@ -84,23 +84,23 @@ ts::SinkFilter::SinkFilter (ReportInterface& report) :
 
 ts::SinkFilter::~SinkFilter()
 {
-    TRACE ((1, "SinkFilter destructor"));
+    TRACE((1, "SinkFilter destructor"));
     Flush();
     _pin->Release();
 }
 
 // Implementation of ::IUnknown
 
-STDMETHODIMP ts::SinkFilter::QueryInterface (REFIID riid, void** ppv)
+STDMETHODIMP ts::SinkFilter::QueryInterface(REFIID riid, void** ppv)
 {
     if (riid == ::IID_IUnknown || riid == ::IID_IPersist || riid == ::IID_IMediaFilter || riid == ::IID_IBaseFilter) {
-        TRACE ((1, "SinkFilter::QueryInterface: OK"));
+        TRACE((1, "SinkFilter::QueryInterface: OK"));
         AddRef();
-        *ppv = static_cast<::IBaseFilter*> (this);
+        *ppv = static_cast<::IBaseFilter*>(this);
         return S_OK;
     }
     else {
-        TRACE ((1, "SinkFilter::QueryInterface: no interface " + NameGUID (riid)));
+        TRACE((1, "SinkFilter::QueryInterface: no interface " + NameGUID(riid)));
         *ppv = NULL;
         return E_NOINTERFACE;
     }
@@ -108,25 +108,27 @@ STDMETHODIMP ts::SinkFilter::QueryInterface (REFIID riid, void** ppv)
 
 STDMETHODIMP_(::ULONG) ts::SinkFilter::AddRef()
 {
-    ::LONG c = ::InterlockedIncrement (&_ref_count);
-    TRACE ((2, "SinkFilter::AddRef, ref=%ld", c));
+    ::LONG c = ::InterlockedIncrement(&_ref_count);
+    TRACE((2, "SinkFilter::AddRef, ref=%ld", c));
     return c;
 }
 
 STDMETHODIMP_(::ULONG) ts::SinkFilter::Release()
 {
-    ::LONG c = ::InterlockedDecrement (&_ref_count);
-    TRACE ((2, "SinkFilter::Release, ref=%ld", c));
-    if (c == 0) delete this;
+    ::LONG c = ::InterlockedDecrement(&_ref_count);
+    TRACE((2, "SinkFilter::Release, ref=%ld", c));
+    if (c == 0) {
+        delete this;
+    }
     return c;
 }
 
 // Implementation of ::IPersist
 
-STDMETHODIMP ts::SinkFilter::GetClassID (::CLSID* pClsID)
+STDMETHODIMP ts::SinkFilter::GetClassID(::CLSID* pClsID)
 {
-    TRACE ((1, "SinkFilter::GetClassID"));
-    if (pClsID == NULL)  {
+    TRACE((1, "SinkFilter::GetClassID"));
+    if (pClsID == NULL) {
         return E_POINTER;
     }
     else {
@@ -137,9 +139,9 @@ STDMETHODIMP ts::SinkFilter::GetClassID (::CLSID* pClsID)
 
 // Implementation of ::IMediaFilter
 
-STDMETHODIMP ts::SinkFilter::GetState (::DWORD dwMSecs, ::FILTER_STATE* State)
+STDMETHODIMP ts::SinkFilter::GetState(::DWORD dwMSecs, ::FILTER_STATE* State)
 {
-    TRACE ((1, "SinkFilter::GetState"));
+    TRACE((1, "SinkFilter::GetState"));
     if (State == NULL) {
         return E_POINTER;
     }
@@ -149,16 +151,16 @@ STDMETHODIMP ts::SinkFilter::GetState (::DWORD dwMSecs, ::FILTER_STATE* State)
     }
 }
 
-STDMETHODIMP ts::SinkFilter::SetSyncSource (::IReferenceClock* pClock)
+STDMETHODIMP ts::SinkFilter::SetSyncSource(::IReferenceClock* pClock)
 {
-    TRACE ((1, "SinkFilter::SetSyncSource"));
+    TRACE((1, "SinkFilter::SetSyncSource"));
     // Don't care about reference clock;
     return S_OK;
 }
 
-STDMETHODIMP ts::SinkFilter::GetSyncSource (::IReferenceClock** pClock)
+STDMETHODIMP ts::SinkFilter::GetSyncSource(::IReferenceClock** pClock)
 {
-    TRACE ((1, "SinkFilter::GetSyncSource"));
+    TRACE((1, "SinkFilter::GetSyncSource"));
     if (pClock == NULL) {
         return E_POINTER;
     }
@@ -170,7 +172,7 @@ STDMETHODIMP ts::SinkFilter::GetSyncSource (::IReferenceClock** pClock)
 
 STDMETHODIMP ts::SinkFilter::Stop()
 {
-    TRACE ((1, "SinkFilter::Stop"));
+    TRACE((1, "SinkFilter::Stop"));
     _pin->EndFlush();
     _state = ::State_Stopped;
     return S_OK;
@@ -178,27 +180,27 @@ STDMETHODIMP ts::SinkFilter::Stop()
 
 STDMETHODIMP ts::SinkFilter::Pause()
 {
-    TRACE ((1, "SinkFilter::Pause"));
+    TRACE((1, "SinkFilter::Pause"));
     _state = ::State_Paused;
     return S_OK;
 }
 
-STDMETHODIMP ts::SinkFilter::Run (::REFERENCE_TIME tStart)
+STDMETHODIMP ts::SinkFilter::Run(::REFERENCE_TIME tStart)
 {
-    TRACE ((1, "SinkFilter::Run"));
+    TRACE((1, "SinkFilter::Run"));
     _state = ::State_Running;
     return S_OK;
 }
 
 // Implementation of ::IBaseFilter
 
-STDMETHODIMP ts::SinkFilter::EnumPins (::IEnumPins** ppEnum)
+STDMETHODIMP ts::SinkFilter::EnumPins(::IEnumPins** ppEnum)
 {
-    TRACE ((1, "SinkFilter::EnumPins"));
+    TRACE((1, "SinkFilter::EnumPins"));
     if (ppEnum == NULL) {
         return E_POINTER;
     }
-    else if ((*ppEnum = new SinkEnumPins (_report, this, NULL)) == NULL) {
+    else if ((*ppEnum = new SinkEnumPins(_report, this, NULL)) == NULL) {
         return E_OUTOFMEMORY;
     }
     else {
@@ -206,9 +208,9 @@ STDMETHODIMP ts::SinkFilter::EnumPins (::IEnumPins** ppEnum)
     }
 }
 
-STDMETHODIMP ts::SinkFilter::FindPin (::LPCWSTR Id, ::IPin** ppPin)
+STDMETHODIMP ts::SinkFilter::FindPin(::LPCWSTR Id, ::IPin** ppPin)
 {
-    TRACE ((1, "SinkFilter::FindPin"));
+    TRACE((1, "SinkFilter::FindPin"));
     if (ppPin == NULL) {
         return E_POINTER;
     }
@@ -219,7 +221,7 @@ STDMETHODIMP ts::SinkFilter::FindPin (::LPCWSTR Id, ::IPin** ppPin)
     }
 }
 
-STDMETHODIMP ts::SinkFilter::QueryFilterInfo (::FILTER_INFO* pInfo)
+STDMETHODIMP ts::SinkFilter::QueryFilterInfo(::FILTER_INFO* pInfo)
 {
     TRACE ((1, "SinkFilter::QueryFilterInfo"));
     if (pInfo == NULL) {
@@ -235,16 +237,16 @@ STDMETHODIMP ts::SinkFilter::QueryFilterInfo (::FILTER_INFO* pInfo)
     return S_OK;
 }
 
-STDMETHODIMP ts::SinkFilter::JoinFilterGraph (::IFilterGraph* pGraph, ::LPCWSTR pName)
+STDMETHODIMP ts::SinkFilter::JoinFilterGraph(::IFilterGraph* pGraph, ::LPCWSTR pName)
 {
-    TRACE ((1, "SinkFilter::JoinFilterGraph: %s graph", pGraph != NULL ? "joining" : "leaving"));
+    TRACE((1, "SinkFilter::JoinFilterGraph: %s graph", pGraph != NULL ? "joining" : "leaving"));
     _graph = pGraph;
     return S_OK;
 }
 
-STDMETHODIMP ts::SinkFilter::QueryVendorInfo (::LPWSTR* pVendorInfo)
+STDMETHODIMP ts::SinkFilter::QueryVendorInfo(::LPWSTR* pVendorInfo)
 {
-    TRACE ((1, "SinkFilter::QueryVendorInfo"));
+    TRACE((1, "SinkFilter::QueryVendorInfo"));
     if (pVendorInfo != NULL) {
         *pVendorInfo = NULL;
     }
@@ -255,7 +257,7 @@ STDMETHODIMP ts::SinkFilter::QueryVendorInfo (::LPWSTR* pVendorInfo)
 
 ts::SinkPin* ts::SinkFilter::GetPin()
 {
-    TRACE ((1, "SinkFilter::GetPin"));
+    TRACE((1, "SinkFilter::GetPin"));
     _pin->AddRef();
     return _pin;
 }
@@ -263,9 +265,9 @@ ts::SinkPin* ts::SinkFilter::GetPin()
 // Set the max number of media samples in the queue between
 // the graph thread and the application thread.
 
-void ts::SinkFilter::SetMaxMessages (size_t maxMessages)
+void ts::SinkFilter::SetMaxMessages(size_t maxMessages)
 {
-    TRACE ((1, "SinkFilter::SetMaxMessages"));
+    TRACE((1, "SinkFilter::SetMaxMessages"));
     _max_messages = maxMessages;
 }
 
@@ -273,12 +275,10 @@ void ts::SinkFilter::SetMaxMessages (size_t maxMessages)
 
 void ts::SinkFilter::Flush()
 {
-    TRACE ((1, "SinkFilter::Flush"));
-    Guard lock (_mutex);
-    if (_current_sample != NULL) {
-        _current_sample->Release();
-        _current_sample = NULL;
-    }
+    TRACE((1, "SinkFilter::Flush"));
+    Guard lock(_mutex);
+    _sample_buffer.clear();
+    _sample_offset = 0;
     while (_queue.size() > 0) {
         ::IMediaSample* ms = _queue.front();
         _queue.pop_front();
@@ -291,32 +291,28 @@ void ts::SinkFilter::Flush()
 // Read data from transport stream.
 // Return size in bytes, zero on error or end of stream.
 
-size_t ts::SinkFilter::Read (void* buffer, size_t buffer_size, MilliSecond timeout)
+size_t ts::SinkFilter::Read(void* buffer, size_t buffer_size, MilliSecond timeout)
 {
-    TRACE ((2, "SinkFilter::Read"));
-    buffer_size = RoundDown (buffer_size, PKT_SIZE);
+    TRACE((2, "SinkFilter::Read"));
     size_t remain = buffer_size;
-    char* data = reinterpret_cast<char*> (buffer);
+    char* data = reinterpret_cast<char*>(buffer);
 
-    GuardCondition lock (_mutex, _not_empty);
+    GuardCondition lock(_mutex, _not_empty);
 
-    // First, get data from last media sample
-    if (_current_sample != NULL) {
-        FillBuffer (data, remain);
-    }
-    assert (_current_sample == NULL || remain == 0);
+    // First, get data from buffered media samples.
+    FillBuffer(data, remain);
 
-    // Then, read from media queue
-    while (remain > 0 && timeout > 0) {
+    // Then, read from media queue if there is still some free space in the user's buffer.
+    while (remain >= PKT_SIZE && timeout > 0) {
 
         // Wait for the queue not being empty
-        TRACE ((5, "SinkFilter::Read, waiting for packets, timeout = %" FMT_INT64 "d milliseconds", timeout));
-        const Time start (Time::CurrentUTC());
-        while (_queue.size() == 0 && lock.waitCondition (timeout));
+        TRACE((5, "SinkFilter::Read, waiting for packets, timeout = %" FMT_INT64 "d milliseconds", timeout));
+        const Time start(Time::CurrentUTC());
+        while (_queue.size() == 0 && lock.waitCondition(timeout));
         if (timeout != Infinite) {
             timeout -= Time::CurrentUTC() - start;
         }
-        TRACE ((5, "SinkFilter::Read, end of waiting for packets, queue size = %" FMT_SIZE_T "d", _queue.size()));
+        TRACE((5, "SinkFilter::Read, end of waiting for packets, queue size = %" FMT_SIZE_T "d", _queue.size()));
 
         // If still nothing in the queue, there was an error
         // (most likely a timeout in waiting for condition.
@@ -326,83 +322,107 @@ size_t ts::SinkFilter::Read (void* buffer, size_t buffer_size, MilliSecond timeo
         }
 
         // Dequeue one message
-        _current_sample = _queue.front();
-        _current_offset = 0;
+        ::IMediaSample* ms = _queue.front();
         _queue.pop_front();
 
         // Null pointer means end of stream
-        if (_current_sample == NULL) {
+        if (ms == NULL) {
             if (remain < buffer_size) {
-                // Some data were read. Push eof back in queue.
+                // Some data were already read for the user, this call will succeed.
+                // Push eof back in queue so that eof will be reported next time.
                 _queue.push_front (NULL);
             }
             // Stop filling the buffer
             break;
         }
 
+        // Locate data area in the media sample.
+        ::LONG ms_size = ms->GetActualDataLength();
+        ::BYTE* ms_buffer;
+        if (!ComSuccess(ms->GetPointer(&ms_buffer), "IMediaSample::GetPointer", _report)) {
+            // Error getting media sample address
+            ms_size = 0;
+        }
+
+        // Copy the media sample in the internal sample buffer.
+        _sample_buffer.append(ms_buffer, ms_size);
+
+        // We no longer need the media sample COM object, release it.
+        ms->Release();
+
         // Copy data from media sample into user buffer
-        FillBuffer (data, remain);
-        assert (_current_sample == NULL || remain == 0);
+        FillBuffer(data, remain);
     }
 
-    TRACE ((2, "SinkFilter::Read, returning %" FMT_SIZE_T "d bytes", buffer_size - remain));
+    TRACE((2, "SinkFilter::Read, returning %" FMT_SIZE_T "d bytes", buffer_size - remain));
     return buffer_size - remain;
 }
 
-// Fill buffer/buffer_size with data from current media sample.
-// Update buffer and buffer_size.
-// If media sample completely copied, release it and nullify pointer.
+// Fill buffer/buffer_size with data from media samples in _sample_buffer.
 
-void ts::SinkFilter::FillBuffer (char*& buffer, size_t& buffer_size)
+void ts::SinkFilter::FillBuffer(char*& buffer, size_t& buffer_size)
 {
-    assert (_stride.dwPacketLength == PKT_SIZE);
+    assert(_stride.dwPacketLength == PKT_SIZE);
 
-    // It as been observed on Windows that some packets are corrupted
-    // (not starting with 0x47). To avoid breaking the stream, we
-    // look for corrupted packets and we remove them.
-    size_t corrupted_count = 0;
+    // It as been observed on Windows that some packets are truncated or corrupted
+    // (not starting with 0x47). To avoid breaking the stream, we always try to resynchronize.
+    // To do that, we consider that a packet is valid only when surrounded by two 0x47.
+    // The first 0x47 ensures that the beginning of the packet is found.
+    // The second 0x47 ensures that the packet was not truncated (next packet starts right after).
+    // This means that we never read the last packet in the internal buffer. When only
+    // one packet remains in the buffer, we wait for the next media sample to check the
+    // next 0x47.
 
-    // Size and base address of current media sample
-    ::LONG media_size = _current_sample->GetActualDataLength();
-    ::BYTE* media_buffer;
-    if (media_size % _stride.dwStride != 0) {
-        _report.debug ("media sample size is %d bytes, not a multiple of stride size (%d bytes)", int (media_size), int (_stride.dwStride));
-    }
-    if (!ComSuccess (_current_sample->GetPointer (&media_buffer), "IMediaSample::GetPointer", _report)) {
-        // Error getting media sample address
-        media_size = 0;
-    }
+    size_t corrupted_chunks = 0;
+    size_t corrupted_bytes = 0;
 
-    // Copy packets from current media sample to buffer
-    if (media_size > 0) {
-        // Remaining size
-        assert (_current_offset < size_t (media_size));
-        media_size -= ::LONG(_current_offset);
-        // Copy packet by packet, detecting and skipping corrupted packets
-        while (buffer_size >= PKT_SIZE && media_size >= ::LONG (_stride.dwStride)) {
-            if (media_buffer[_current_offset + _stride.dwOffset] == SYNC_BYTE) {
-                ::memcpy(buffer, media_buffer + _current_offset + _stride.dwOffset, PKT_SIZE);  // Flawfinder: ignore: memcpy()
-                buffer += PKT_SIZE;
-                buffer_size -= PKT_SIZE;
+    assert(buffer != NULL);
+    assert(_sample_offset <= _sample_buffer.size());
+
+    // Copy packet by packet, detecting and skipping corrupted chunks.
+    while (buffer_size >= PKT_SIZE && _sample_offset + size_t(_stride.dwStride + _stride.dwOffset) < _sample_buffer.size()) {
+
+        if (_sample_buffer[_sample_offset + _stride.dwOffset] == SYNC_BYTE &&
+            _sample_buffer[_sample_offset + _stride.dwOffset + _stride.dwStride] == SYNC_BYTE)
+        {
+            // Current position contains a valid delimited packet.
+            ::memcpy(buffer, _sample_buffer.data() + _sample_offset + _stride.dwOffset, PKT_SIZE);  // Flawfinder: ignore: memcpy()
+            buffer += PKT_SIZE;
+            buffer_size -= PKT_SIZE;
+            _sample_offset += _stride.dwStride;
+        }
+        else {
+            // Current position does not contain a valid packet.
+            // Look for at least two 0x47 with a distance of 188 bytes to resynchronize.
+            size_t dropped = 0;
+            while (_sample_offset + size_t(_stride.dwStride + _stride.dwOffset) < _sample_buffer.size()) {
+                if (_sample_buffer[_sample_offset + _stride.dwOffset] == SYNC_BYTE &&
+                    _sample_buffer[_sample_offset + _stride.dwOffset + _stride.dwStride] == SYNC_BYTE)
+                {
+                    // Found a valid delimited packet.
+                    break;
+                }
+                else {
+                    _sample_offset++;
+                    dropped++;
+                }
             }
-            else {
-                corrupted_count++;
-            }
-            _current_offset += _stride.dwStride;
-            media_size -= _stride.dwStride;
+
+            TRACE((5, "SinkFilter::FillBuffer, dropped %d corrupted bytes", int(dropped)));
+            corrupted_bytes += dropped;
+            corrupted_chunks++;
         }
     }
 
-    // Report corrupted packet count
-    if (corrupted_count > 0) {
-        _report.verbose ("tuner packet synchronization lost, dropping " + Decimal (corrupted_count) + " packets, " + Decimal (corrupted_count * PKT_SIZE) + " bytes");
+    // Remove returned packets or skipped corrupted data from the internal sample buffer.
+    if (_sample_offset > 0) {
+        _sample_buffer.erase(0, _sample_offset);
+        _sample_offset = 0;
     }
 
-    // If current media sample is terminated, release it.
-    if (media_size < ::LONG (_stride.dwStride)) {
-        _current_sample->Release();
-        _current_sample = NULL;
-        _current_offset = 0;
+    // Report corrupted packet count
+    if (corrupted_chunks > 0) {
+        _report.verbose("tuner packet synchronization lost, dropped " + Decimal(corrupted_bytes) + " bytes in " + Decimal(corrupted_chunks) + " chunks");
     }
 }
 
@@ -411,42 +431,42 @@ void ts::SinkFilter::FillBuffer (char*& buffer, size_t& buffer_size)
 // SinkPin, input pin for our SinkFilter
 //-----------------------------------------------------------------------------
 
-ts::SinkPin::SinkPin (ReportInterface& report, SinkFilter* filter) :
-    _flushing (false),
-    _input_overflow (false),
-    _report (report),
-    _ref_count (1),
-    _filter (filter),
-    _partner (NULL)
+ts::SinkPin::SinkPin(ReportInterface& report, SinkFilter* filter) :
+    _flushing(false),
+    _input_overflow(false),
+    _report(report),
+    _ref_count(1),
+    _filter(filter),
+    _partner(NULL)
 {
-    TRACE ((1, "SinkPin constructor, ref=%ld", _ref_count));
-    InitMediaType (_cur_media_type);
+    TRACE((1, "SinkPin constructor, ref=%ld", _ref_count));
+    InitMediaType(_cur_media_type);
 }
 
 ts::SinkPin::~SinkPin()
 {
-    TRACE ((1, "SinkPin destructor"));
-    FreeMediaType (_cur_media_type);
+    TRACE((1, "SinkPin destructor"));
+    FreeMediaType(_cur_media_type);
 }
 
 // Implementation of ::IUnknown
 
-STDMETHODIMP ts::SinkPin::QueryInterface (REFIID riid, void** ppv)
+STDMETHODIMP ts::SinkPin::QueryInterface(REFIID riid, void** ppv)
 {
     if (riid == ::IID_IUnknown || riid == ::IID_IPin) {
-        TRACE ((1, "SinkPin::QueryInterface: IPin, OK"));
+        TRACE((1, "SinkPin::QueryInterface: IPin, OK"));
         AddRef();
-        *ppv = static_cast<::IPin*> (this);
+        *ppv = static_cast<::IPin*>(this);
         return S_OK;
     }
     else if (riid == ::IID_IMemInputPin) {
-        TRACE ((1, "SinkPin::QueryInterface: IMemInputPin, OK"));
+        TRACE((1, "SinkPin::QueryInterface: IMemInputPin, OK"));
         AddRef();
         *ppv = static_cast<::IMemInputPin*> (this);
         return S_OK;
     }
     else {
-        TRACE ((1, "SinkPin::QueryInterface: no interface " + NameGUID (riid)));
+        TRACE((1, "SinkPin::QueryInterface: no interface " + NameGUID(riid)));
         *ppv = NULL;
         return E_NOINTERFACE;
     }
@@ -454,24 +474,26 @@ STDMETHODIMP ts::SinkPin::QueryInterface (REFIID riid, void** ppv)
 
 STDMETHODIMP_(::ULONG) ts::SinkPin::AddRef()
 {
-    ::LONG c = ::InterlockedIncrement (&_ref_count);
-    TRACE ((2, "SinkPin::AddRef, ref=%ld", c));
+    ::LONG c = ::InterlockedIncrement(&_ref_count);
+    TRACE((2, "SinkPin::AddRef, ref=%ld", c));
     return c;
 }
 
 STDMETHODIMP_(::ULONG) ts::SinkPin::Release()
 {
-    ::LONG c = ::InterlockedDecrement (&_ref_count);
-    TRACE ((2, "SinkPin::Release, ref=%ld", c));
-    if (c == 0) delete this;
+    ::LONG c = ::InterlockedDecrement(&_ref_count);
+    TRACE((2, "SinkPin::Release, ref=%ld", c));
+    if (c == 0) {
+        delete this;
+    }
     return c;
 }
 
 // Implementation of ::IPin
 
-STDMETHODIMP ts::SinkPin::Connect (::IPin* pReceivePin, const ::AM_MEDIA_TYPE* pmt)
+STDMETHODIMP ts::SinkPin::Connect(::IPin* pReceivePin, const ::AM_MEDIA_TYPE* pmt)
 {
-    TRACE ((1, "SinkPin::Connect: checking"));
+    TRACE((1, "SinkPin::Connect: checking"));
     if (_filter->_state != ::State_Stopped) {
         return VFW_E_NOT_STOPPED; // dynamic reconnection not supported
     }
@@ -481,13 +503,13 @@ STDMETHODIMP ts::SinkPin::Connect (::IPin* pReceivePin, const ::AM_MEDIA_TYPE* p
     if (pmt != NULL && QueryAccept (pmt) != S_OK) {
         return VFW_E_TYPE_NOT_ACCEPTED; // unsupported media type
     }
-    TRACE ((1, "SinkPin::Connect: OK"));
+    TRACE((1, "SinkPin::Connect: OK"));
     return S_OK;
 }
 
-STDMETHODIMP ts::SinkPin::ReceiveConnection (::IPin* pConnector, const ::AM_MEDIA_TYPE* pmt)
+STDMETHODIMP ts::SinkPin::ReceiveConnection(::IPin* pConnector, const ::AM_MEDIA_TYPE* pmt)
 {
-    TRACE ((1, "SinkPin::ReceiveConnection: checking"));
+    TRACE((1, "SinkPin::ReceiveConnection: checking"));
     if (_filter->_state == ::State_Running) {
         return VFW_E_NOT_STOPPED; // dynamic reconnection not supported
     }
@@ -497,12 +519,13 @@ STDMETHODIMP ts::SinkPin::ReceiveConnection (::IPin* pConnector, const ::AM_MEDI
     if (pConnector == NULL || pmt == NULL) {
         return E_POINTER;
     }
-    if (QueryAccept (pmt) != S_OK) {
+    if (QueryAccept(pmt) != S_OK) {
         return VFW_E_TYPE_NOT_ACCEPTED;
     }
-    TRACE ((1, "SinkPin::ReceiveConnection: connected"));
+    TRACE((1, "SinkPin::ReceiveConnection: connected"));
     _flushing = false;
     _input_overflow = false;
+ 
     // Get transport packet format
     if (pmt->subtype == ::MEDIASUBTYPE_MPEG2_TRANSPORT_STRIDE && pmt->formattype == ::FORMAT_None && pmt->pbFormat != NULL) {
         assert (pmt->cbFormat >= sizeof (::MPEG2_TRANSPORT_STRIDE)); // already checked in QueryAccept
@@ -529,20 +552,20 @@ STDMETHODIMP ts::SinkPin::ReceiveConnection (::IPin* pConnector, const ::AM_MEDI
     _partner = pConnector;
     _partner->AddRef();
     // Copy media type into pin
-    FreeMediaType (_cur_media_type);
-    return CopyMediaType (_cur_media_type, *pmt);
+    FreeMediaType(_cur_media_type);
+    return CopyMediaType(_cur_media_type, *pmt);
 }
 
-STDMETHODIMP ts::SinkPin::Disconnect ()
+STDMETHODIMP ts::SinkPin::Disconnect()
 {
-    TRACE ((1, "SinkPin::Disconnect: checking"));
+    TRACE((1, "SinkPin::Disconnect: checking"));
     if (_partner == NULL) {
         return S_FALSE; // not connected
     }
     if (_filter->_state != ::State_Stopped) {
         return VFW_E_NOT_STOPPED;
     }
-    TRACE ((1, "SinkPin::Disconnect: disconnected"));
+    TRACE((1, "SinkPin::Disconnect: disconnected"));
     _partner->Release();
     _partner = NULL;
     return S_OK;
@@ -827,7 +850,9 @@ STDMETHODIMP_(::ULONG) ts::SinkEnumMediaTypes::Release()
 {
     ::LONG c = ::InterlockedDecrement (&_ref_count);
     TRACE ((2, "SinkEnumMediaTypes::Release, ref=%ld", c));
-    if (c == 0) delete this;
+    if (c == 0) {
+        delete this;
+    }
     return c;
 }
 
@@ -934,7 +959,9 @@ STDMETHODIMP_(::ULONG) ts::SinkEnumPins::Release()
 {
     ::LONG c = ::InterlockedDecrement (&_ref_count);
     TRACE ((2, "SinkEnumPins::Release, ref=%ld", c));
-    if (c == 0) delete this;
+    if (c == 0) {
+        delete this;
+    }
     return c;
 }
 
