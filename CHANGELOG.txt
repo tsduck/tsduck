@@ -2,6 +2,11 @@
 TSDuck Change Log and Release Notes
 ===================================
 
+Version 3.2-20170824
+
+- Improved robustness of DVB tuner reception on Windows. Explicitly
+  resynchronizes on valid packets when the driver misses data.
+
 Version 3.2-20170528
 
 - Added option --poll-file to inject plugin.

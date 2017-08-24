@@ -35,6 +35,7 @@
 //-----------------------------------------------------------------------------
 
 #pragma once
+#include "tsByteBlock.h"
 #include "tsMutex.h"
 #include "tsCondition.h"
 #include "tsReportInterface.h"
@@ -161,8 +162,8 @@ namespace ts {
         Condition        _not_empty;         // Signaled when some message is inserted
         std::deque <::IMediaSample*> _queue; // Queue of input
         size_t           _max_messages;
-        ::IMediaSample*  _current_sample;    // Unfinished media sample
-        size_t           _current_offset;    // Next offset in _current_sample
+        ByteBlock        _sample_buffer;     // Collected media samples
+        size_t           _sample_offset;     // Next offset in _sample_buffer
         ReportInterface& _report;
         ::LONG volatile  _ref_count;
         ::FILTER_STATE   _state;
@@ -170,9 +171,11 @@ namespace ts {
         SinkPin*         _pin;
         ::MPEG2_TRANSPORT_STRIDE _stride;    // Description of packet structure
 
-        // Fill buffer/buffer_size with data from media sample in _current_sample/offset.
-        // Update buffer and buffer_size.
-        // If media sample completely copied, release it and nullify pointer.
+        //!
+        //! Fill the user's buffer with data from media samples in _sample_buffer.
+        //! @param [in,out] buffer Address of user's buffer. Updated after last read packet.
+        //! @param [in,out] size Size in bytes of user's buffer. Updated after last read packet.
+        //!
         void FillBuffer(char*& buffer, size_t& buffer_size);
     };
 
