@@ -21,6 +21,11 @@ must not be misrepresented as being the original software.
 distribution.
 */
 
+/*
+Modifications required to pass with gcc option -Werror=effc++
+Done by Thierry Lelegard for integration within TSDuck
+*/
+
 #ifndef TINYXML2_INCLUDED
 #define TINYXML2_INCLUDED
 
@@ -192,10 +197,11 @@ template <class T, int INITIAL_SIZE>
 class DynArray
 {
 public:
-    DynArray() {
-        _mem = _pool;
-        _allocated = INITIAL_SIZE;
-        _size = 0;
+    DynArray() :
+        _mem( _pool ),
+        _allocated( INITIAL_SIZE ),
+        _size( 0 )
+    {
     }
 
     ~DynArray() {
@@ -333,7 +339,7 @@ template< int ITEM_SIZE >
 class MemPoolT : public MemPool
 {
 public:
-    MemPoolT() : _root(0), _currentAllocs(0), _nAllocs(0), _maxAllocs(0), _nUntracked(0)	{}
+    MemPoolT() : _blockPtrs(), _root(0), _currentAllocs(0), _nAllocs(0), _maxAllocs(0), _nUntracked(0)	{}
     ~MemPoolT() {
         Clear();
     }
@@ -1211,7 +1217,7 @@ public:
 private:
     enum { BUF_SIZE = 200 };
 
-    XMLAttribute() : _parseLineNum( 0 ), _next( 0 ), _memPool( 0 ) {}
+    XMLAttribute() : _name(), _value(), _parseLineNum( 0 ), _next( 0 ), _memPool( 0 ) {}
     virtual ~XMLAttribute()	{}
 
     XMLAttribute( const XMLAttribute& );	// not supported
@@ -1947,17 +1953,11 @@ class TINYXML2_LIB XMLHandle
 {
 public:
     /// Create a handle from any node (at any depth of the tree.) This can be a null pointer.
-    XMLHandle( XMLNode* node )												{
-        _node = node;
-    }
+    XMLHandle( XMLNode* node ) : _node(node) {}
     /// Create a handle from a node.
-    XMLHandle( XMLNode& node )												{
-        _node = &node;
-    }
+    XMLHandle( XMLNode& node ) : _node(&node) {}
     /// Copy constructor
-    XMLHandle( const XMLHandle& ref )										{
-        _node = ref._node;
-    }
+    XMLHandle( const XMLHandle& ref ) : _node(ref._node) {}
     /// Assignment
     XMLHandle& operator=( const XMLHandle& ref )							{
         _node = ref._node;
@@ -2030,15 +2030,9 @@ private:
 class TINYXML2_LIB XMLConstHandle
 {
 public:
-    XMLConstHandle( const XMLNode* node )											{
-        _node = node;
-    }
-    XMLConstHandle( const XMLNode& node )											{
-        _node = &node;
-    }
-    XMLConstHandle( const XMLConstHandle& ref )										{
-        _node = ref._node;
-    }
+    XMLConstHandle( const XMLNode* node ) : _node(node) {}
+    XMLConstHandle( const XMLNode& node ) : _node(&node) {}
+    XMLConstHandle( const XMLConstHandle& ref ) : _node(ref._node) {}
 
     XMLConstHandle& operator=( const XMLConstHandle& ref )							{
         _node = ref._node;
@@ -2252,6 +2246,9 @@ private:
     bool _restrictedEntityFlag[ENTITY_RANGE];
 
     DynArray< char, 20 > _buffer;
+
+    XMLPrinter( const XMLPrinter& ) = delete;
+    XMLPrinter& operator=( const XMLPrinter& ) = delete;
 };
 
 
