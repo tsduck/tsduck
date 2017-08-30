@@ -297,6 +297,7 @@ void PlatformTest::testVersion()
                  << "PlatformTest: GetVersion(VERSION_LONG) = \"" << ts::GetVersion(ts::VERSION_LONG) << "\"" << std::endl
                  << "PlatformTest: GetVersion(VERSION_DATE) = \"" << ts::GetVersion(ts::VERSION_DATE) << "\"" << std::endl
                  << "PlatformTest: GetVersion(VERSION_DEKTEC) = \"" << ts::GetVersion(ts::VERSION_DEKTEC) << "\"" << std::endl
+                 << "PlatformTest: GetVersion(VERSION_TINYXML) = \"" << ts::GetVersion(ts::VERSION_TINYXML) << "\"" << std::endl
                  << "PlatformTest: GetVersion(VERSION_NSIS) = \"" << ts::GetVersion(ts::VERSION_NSIS) << "\"" << std::endl;
 
     const std::string version(ts::GetVersion());

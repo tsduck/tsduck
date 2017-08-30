@@ -83,5 +83,5 @@ else
     LDFLAGS_EXTRA += -Wl,-rpath,'$$ORIGIN'
     SOFLAGS = -Wl,-soname=$(notdir $@)
 endif
-CFLAGS_INCLUDES += -I$(LIBTSDUCKDIR) --std=c++11
+CFLAGS_INCLUDES += -I$(LIBTSDUCKDIR) -I$(LIBTSDUCKDIR)/tinyxml --std=c++11
 LDLIBS := -lpcsclite -ldl $(LDLIBS)

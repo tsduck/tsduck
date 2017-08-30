@@ -1,10 +1,8 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-
   <ImportGroup Label="PropertySheets">
     <Import Project="msvc-common-begin.props" />
   </ImportGroup>
-
   <ItemGroup>
     <ClCompile Include="..\..\src\utest\utest.cpp" />
     <ClCompile Include="..\..\src\utest\utestAlgorithm.cpp" />
@@ -45,8 +43,8 @@
     <ClCompile Include="..\..\src\utest\utestTime.cpp" />
     <ClCompile Include="..\..\src\utest\utestTSPacket.cpp" />
     <ClCompile Include="..\..\src\utest\utestVariable.cpp" />
+    <ClCompile Include="..\..\src\utest\utestXML.cpp" />
   </ItemGroup>
-
   <ItemGroup>
     <ClInclude Include="..\..\src\utest\crypto\tv_aes.h" />
     <ClInclude Include="..\..\src\utest\crypto\tv_aes_chain.h" />
@@ -61,18 +59,15 @@
     <ClInclude Include="..\..\src\utest\utestCppUnitMain.h" />
     <ClInclude Include="..\..\src\utest\utestCppUnitTest.h" />
   </ItemGroup>
-
   <PropertyGroup Label="Globals">
     <ProjectGuid>{2FFD7D6C-F3BF-4ED6-8593-20AC70A83AC1}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>utests-tsducklib</RootNamespace>
   </PropertyGroup>
-
   <ImportGroup Label="PropertySheets">
     <Import Project="msvc-target-exe.props" />
     <Import Project="msvc-use-tsducklib.props" />
     <Import Project="$(CppUnitRoot)\CppUnit.props" />
     <Import Project="msvc-common-end.props" />
   </ImportGroup>
-
 </Project>

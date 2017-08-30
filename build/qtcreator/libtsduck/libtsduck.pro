@@ -263,6 +263,7 @@ HEADERS += \
     ../../../src/libtsduck/tsVersion.h \
     ../../../src/libtsduck/tsViaccessDate.h \
     ../../../src/libtsduck/tsVideoAttributes.h \
+    ../../../src/libtsduck/tsXML.h \
     ../../../src/libtsduck/tsduck.h \
     ../../../src/libtsduck/tstlv.h \
     ../../../src/libtsduck/tstlvAnalyzer.h \
@@ -275,6 +276,7 @@ HEADERS += \
     ../../../src/libtsduck/tstlvProtocol.h \
     ../../../src/libtsduck/tstlvSerializer.h \
     ../../../src/libtsduck/tstlvStreamMessage.h \
+    ../../../src/libtsduck/tinyxml/tinyxml2.h
 
 SOURCES += \
     ../../../src/libtsduck/tsAACDescriptor.cpp \
@@ -466,7 +468,8 @@ SOURCES += \
     ../../../src/libtsduck/tstlvAnalyzer.cpp \
     ../../../src/libtsduck/tstlvMessage.cpp \
     ../../../src/libtsduck/tstlvMessageFactory.cpp \
-    ../../../src/libtsduck/tstlvSerializer.cpp
+    ../../../src/libtsduck/tstlvSerializer.cpp \
+    ../../../src/libtsduck/tinyxml/tinyxml2.cpp
     
 linux {
     HEADERS += \

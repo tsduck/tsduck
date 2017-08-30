@@ -43,6 +43,12 @@
 #include <cppunit/TestAssert.h>
 
 //!
+//! @hideinitializer
+//! Assert that two objects which can be converted to a string are identical.
+//!
+#define CPPUNIT_ASSERT_STRINGS_EQUAL(expected,actual) CPPUNIT_ASSERT_EQUAL(std::string(expected),std::string(actual))
+
+//!
 //! Unitary tests namespace
 //!
 namespace utest {

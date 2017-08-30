@@ -35,7 +35,7 @@
 # Some source files are located in subdirectories but should be considered as part of libtsduck.
 
 OSDIR    := $(if $(findstring darwin,$(shell uname -s | tr A-Z a-z)),mac,linux)
-CXXVPATH  = $(OSDIR) private
+CXXVPATH  = $(OSDIR) private tinyxml
 
 # Detect the presence of the Dektec DTAPI.
 # DTAPI shall be separately downloaded using "make dtapi".
@@ -136,4 +136,4 @@ install-devel: $(OBJDIR)/$(STATIC_LIBTSDUCK) tsduck.h
 	install -d -m 755 $(DESTDIR)$(USRLIBDIR)
 	install -m 644 $(OBJDIR)/$(STATIC_LIBTSDUCK) $(DESTDIR)$(USRLIBDIR)
 	install -d -m 755 $(DESTDIR)$(SYSDIR)/include/tsduck
-	install -m 644 tsduck.mk ts*.h $(wildcard $(OSDIR)/ts*.h) $(DESTDIR)$(SYSDIR)/include/tsduck
+	install -m 644 tsduck.mk ts*.h $(wildcard $(OSDIR)/ts*.h) $(wildcard tinyxml/ts*.h) $(DESTDIR)$(SYSDIR)/include/tsduck

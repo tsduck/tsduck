@@ -5,7 +5,7 @@
 
   <ItemDefinitionGroup>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(TSDuckRootDir)src\libtsduck;$(TSDuckRootDir)src\libtsduck\windows;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(TSDuckRootDir)src\libtsduck;$(TSDuckRootDir)src\libtsduck\windows;$(TSDuckRootDir)src\libtsduck\tinyxml;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_TSDUCKDLL_USE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>

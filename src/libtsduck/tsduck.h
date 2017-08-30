@@ -260,6 +260,7 @@
 #include "tsVersion.h"
 #include "tsViaccessDate.h"
 #include "tsVideoAttributes.h"
+#include "tsXML.h"
 #include "tstlv.h"
 #include "tstlvAnalyzer.h"
 #include "tstlvChannelMessage.h"
