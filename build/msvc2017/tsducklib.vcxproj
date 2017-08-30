@@ -1,9 +1,10 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ImportGroup Label="PropertySheets">
     <Import Project="msvc-common-begin.props" />
   </ImportGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\src\libtsduck\tinyxml\tinyxml2.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAACDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAbortInterface.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAbstractAudioVideoAttributes.h" />
@@ -274,6 +275,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsVersion.h" />
     <ClInclude Include="..\..\src\libtsduck\tsViaccessDate.h" />
     <ClInclude Include="..\..\src\libtsduck\tsVideoAttributes.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsXML.h" />
     <ClInclude Include="..\..\src\libtsduck\windows\tsComIds.h" />
     <ClInclude Include="..\..\src\libtsduck\windows\tsComPtr.h" />
     <ClInclude Include="..\..\src\libtsduck\windows\tsComUtils.h" />
@@ -283,6 +285,7 @@
     <ClInclude Include="..\..\src\libtsduck\windows\tsSinkFilter.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\src\libtsduck\tinyxml\tinyxml2.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAACDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAbstractAVCAccessUnit.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAbstractAVCStructure.cpp" />
@@ -494,7 +497,7 @@
   </ImportGroup>
   <ItemDefinitionGroup>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(TSDuckRootDir)\src\libtsduck;$(TSDuckRootDir)\src\libtsduck\windows;$(TSDuckRootDir)\src\libtsduck\private;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(TSDuckRootDir)\src\libtsduck;$(TSDuckRootDir)\src\libtsduck\windows;$(TSDuckRootDir)\src\libtsduck\private;$(TSDuckRootDir)src\libtsduck\tinyxml;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
   <ImportGroup Label="PropertySheets">

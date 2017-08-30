@@ -59,6 +59,7 @@ namespace ts {
         VERSION_DATE,    //!< Build date.
         VERSION_NSIS,    //!< Output an NSIS @c !define directive.
         VERSION_DEKTEC,  //!< Version of embedded Dektec DTAPI and detected Dektec drivers.
+        VERSION_TINYXML, //!< Version of embedded TinyXML-2.
         VERSION_FILES    //!< Complete list of all TSDuck files with revision.
     };
 

@@ -196,6 +196,7 @@ Section /o "Development" SectionDevelopment
     SetOutPath "$INSTDIR\include"
     File "${RootDir}\src\libtsduck\*.h"
     File "${RootDir}\src\libtsduck\windows\*.h"
+    File "${RootDir}\src\libtsduck\tinyxml\*.h"
 
     ; TSDuck libraries.
     CreateDirectory "$INSTDIR\lib"

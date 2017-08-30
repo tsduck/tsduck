@@ -42,13 +42,14 @@ TSDUCK_SOURCE;
 
 // Enumeration description of ts::VersionFormat.
 const ts::Enumeration ts::VersionFormatEnum
-    ("short",  ts::VERSION_SHORT,
-     "global", ts::VERSION_GLOBAL,
-     "long",   ts::VERSION_LONG,
-     "date",   ts::VERSION_DATE,
-     "nsis",   ts::VERSION_NSIS,
-     "dektec", ts::VERSION_DEKTEC,
-     "files",  ts::VERSION_FILES,
+    ("short",   ts::VERSION_SHORT,
+     "global",  ts::VERSION_GLOBAL,
+     "long",    ts::VERSION_LONG,
+     "date",    ts::VERSION_DATE,
+     "nsis",    ts::VERSION_NSIS,
+     "dektec",  ts::VERSION_DEKTEC,
+     "tinyxml", ts::VERSION_TINYXML,
+     "files",   ts::VERSION_FILES,
      TS_NULL);
 
 // Month names in compiler-generated dates.
@@ -136,11 +137,7 @@ std::string ts::GetVersion(VersionFormat format, const std::string& applicationN
         case VERSION_LONG: {
             // The long explanatory version.
             return (applicationName.empty() ? "" : applicationName + ": ") +
-                "TSDuck - The MPEG Transport Stream Toolkit "
-            #if defined(TS_NO_DTAPI)
-                "(no Dektec support) "
-            #endif
-                "- version " + GetVersion(VERSION_SHORT, applicationName, revisionFile);
+                "TSDuck - The MPEG Transport Stream Toolkit - version " + GetVersion(VERSION_SHORT, applicationName, revisionFile);
         }
         case VERSION_DATE: {
             // The build date.
@@ -153,6 +150,10 @@ std::string ts::GetVersion(VersionFormat format, const std::string& applicationN
         case VERSION_DEKTEC: {
             // The version of Dektec components.
             return GetDektecVersions();
+        }
+        case VERSION_TINYXML: {
+            // The version of TinyXML-2.
+            return Format("TinyXML-2 %d.%d.%d", TIXML2_MAJOR_VERSION, TIXML2_MINOR_VERSION, TIXML2_PATCH_VERSION);
         }
         case VERSION_SHORT: {
             // The simple version with the revision from the current executable and the TSDuck library.
