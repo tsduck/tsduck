@@ -801,7 +801,7 @@ ifeq ($(DONT_BUILD_DEPS),)
     endif
 endif
 ifeq ($(DONT_BUILD_DEPS),)
-    -include $(addprefix $(OBJDIR)/,$(addsuffix .dep,$(notdir $(basename $(wildcard *.c *.cpp)))))
+    -include $(addprefix $(OBJDIR)/,$(addsuffix .dep,$(notdir $(basename $(wildcard *.c *.cpp $(addsuffix /*.c,$(CVPATH)) $(addsuffix /*.cpp,$(CXXVPATH)))))))
 endif
 
 # Cleanup utilities
