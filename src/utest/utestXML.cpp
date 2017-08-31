@@ -33,6 +33,7 @@
 
 #include "tsXML.h"
 #include "tsStringUtils.h"
+#include "tsCerrReport.h"
 #include "utestCppUnitTest.h"
 TSDUCK_SOURCE;
 
@@ -48,10 +49,14 @@ public:
     void tearDown();
     void testDocument();
     void testVisitor();
+    void testInvalid();
+    void testValidation();
 
     CPPUNIT_TEST_SUITE(XMLTest);
     CPPUNIT_TEST(testDocument);
     CPPUNIT_TEST(testVisitor);
+    CPPUNIT_TEST(testInvalid);
+    CPPUNIT_TEST(testValidation);
     CPPUNIT_TEST_SUITE_END();
 };
 
@@ -266,4 +271,49 @@ void XMLTest::testVisitor()
 
     CPPUNIT_ASSERT(doc.Accept(&visitor));
     CPPUNIT_ASSERT(visitor.AtEnd());
+}
+
+void XMLTest::testInvalid()
+{
+    // Incorrect XML document
+    static const char* xmlContent =
+        "<?xml version='1.0' encoding='UTF-8'?>\n"
+        "<foo>\n"
+        "</bar>";
+
+    tinyxml2::XMLDocument doc;
+    CPPUNIT_ASSERT_EQUAL(tinyxml2::XML_ERROR_MISMATCHED_ELEMENT, doc.Parse(xmlContent));
+    CPPUNIT_ASSERT_STRINGS_EQUAL("foo", doc.GetErrorStr1());
+    CPPUNIT_ASSERT_STRINGS_EQUAL("", doc.GetErrorStr2());
+}
+
+void XMLTest::testValidation()
+{
+    ts::XML xml(CERR);
+
+    tinyxml2::XMLDocument model;
+    CPPUNIT_ASSERT(xml.loadDocument(model, "tsduck.xml"));
+
+    static const char* xmlContent =
+        "<?xml version='1.0' encoding='UTF-8'?>\n"
+        "<tsduck>\n"
+        "  <PAT version='2' transport_stream_id='27'>\n"
+        "    <service service_id='1' program_map_PID='1000'/>\n"
+        "    <service service_id='2' program_map_PID='2000'/>\n"
+        "    <service service_id='3' program_map_PID='3000'/>\n"
+        "  </PAT>\n"
+        "  <PMT version='3' service_id='789' PCR_PID='3004'>\n"
+        "    <CA_descriptor CA_system_id='500' CA_PID='3005'>\n"
+        "      <private_data>00 01 02 03 04</private_data>\n"
+        "    </CA_descriptor>\n"
+        "    <component stream_type='0x04' elementary_PID='3006'>\n"
+        "      <CA_descriptor CA_system_id='500' CA_PID='3007'>\n"
+        "        <private_data>10 11 12 13 14 15</private_data>\n"
+        "      </CA_descriptor>\n"
+        "    </component>\n"
+        "  </PMT>\n"
+        "</tsduck>";
+
+    tinyxml2::XMLDocument doc;
+    CPPUNIT_ASSERT(xml.parseDocument(doc, xmlContent));
 }

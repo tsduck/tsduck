@@ -1458,5 +1458,8 @@
     <ClCompile Include="..\..\src\libtsduck\tinyxml\tinyxml2.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\libtsduck\tsXML.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

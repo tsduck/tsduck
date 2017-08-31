@@ -28,7 +28,7 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Encapsulation of TinyXML-2 header.
+//!  XML utilities for TinyXML-2.
 //!  All applications should use this header file instead of tinyxml.h.
 //!
 //!  - TinXML-2 home page: http://leethomason.github.io/tinyxml2/
@@ -38,7 +38,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsPlatform.h"
+#include "tsNullReport.h"
 
 // Definitions which are used by TinyXML-2.
 #if defined(__windows) && defined(_TSDUCKDLL_IMPL) && !defined(TINYXML2_EXPORT)
@@ -48,3 +48,70 @@
 #endif
 
 #include "tinyxml2.h"
+
+namespace ts {
+    //!
+    //! XML utility class with error reporting.
+    //!
+    class TSDUCKDLL XML
+    {
+    public:
+        //!
+        //! Default constructor.
+        //! @param [in,out] report Where to report errors. Default to null report.
+        //! This report will be used to report all errors when using this object.
+        //!
+        explicit XML(ReportInterface& report = NULLREP);
+
+        //!
+        //! Load an XML file.
+        //! @param [out] doc TinyXML document object to load.
+        //! @param [in] fileName Name of the XML file to load.
+        //! @param [in] search If true, use a search algorithm for the XML file:
+        //! If @a fileName is not found and does not contain any directory part, search this file
+        //! in the following places:
+        //! - Directory of the current executable.
+        //! - All directories in @c TSPLUGINS_PATH environment variable.
+        //! - All directories in @c LD_LIBRARY_PATH environment variable (UNIX only).
+        //! - All directories in @c PATH (UNIX) or @c Path (Windows) environment variable.
+        //! @return True on success, false on error.
+        //!
+        bool loadDocument(tinyxml2::XMLDocument& doc, const std::string& fileName, bool search = true);
+
+        //!
+        //! Parse an XML document.
+        //! @param [out] doc TinyXML document object to load.
+        //! @param [in] xmlContent Content of the XML document.
+        //! @return True on success, false on error.
+        //!
+        bool parseDocument(tinyxml2::XMLDocument& doc, const std::string& xmlContent);
+
+        //!
+        //! Report an error on the registered report interface.
+        //! @param [in] message Application-specific error message.
+        //! @param [in] code TinyXML error code.
+        //! @param [in] node Optional node which triggered the error.
+        //!
+        void reportError(const std::string& message, tinyxml2::XMLError code = tinyxml2::XML_SUCCESS, tinyxml2::XMLNode* node = 0);
+
+        //!
+        //! Search a file.
+        //! @param [in] fileName Name of the file to search.
+        //! If @a fileName is not found and does not contain any directory part, search this file
+        //! in the following places:
+        //! - Directory of the current executable.
+        //! - All directories in @c TSPLUGINS_PATH environment variable.
+        //! - All directories in @c LD_LIBRARY_PATH environment variable (UNIX only).
+        //! - All directories in @c PATH (UNIX) or @c Path (Windows) environment variable.
+        //! @return The path to an existing file or an empty string if not found.
+        //!
+        static std::string SearchFile(const std::string& fileName);
+
+    private:
+        ReportInterface& _report;
+
+        // Inaccessible operations.
+        XML(const XML&) = delete;
+        XML& operator=(const XML&) = delete;
+    };
+}
