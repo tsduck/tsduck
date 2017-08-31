@@ -162,6 +162,7 @@ Section "Tools & Plugins" SectionTools
     SetOutPath "$INSTDIR\bin"
     File "${BinDir}\ts*.exe"
     File "${BinDir}\ts*.dll"
+    File "${RootDir}\src\libtsduck\tsduck.xml"
 
 SectionEnd
 
