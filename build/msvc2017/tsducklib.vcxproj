@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ImportGroup Label="PropertySheets">
     <Import Project="msvc-common-begin.props" />
@@ -478,6 +478,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsVBITeletextDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsVersion.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsVideoAttributes.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsXML.cpp" />
     <ClCompile Include="..\..\src\libtsduck\windows\tsComIds.cpp" />
     <ClCompile Include="..\..\src\libtsduck\windows\tsComUtils.cpp" />
     <ClCompile Include="..\..\src\libtsduck\windows\tsDirectShowUtils.cpp" />

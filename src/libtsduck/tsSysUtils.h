@@ -49,6 +49,19 @@
     #define TS_EXECUTABLE_SUFFIX ""
 #endif
 
+//!
+//! Environment variable containing the command search path.
+//!
+#if defined(DOXYGEN)
+    #define TS_COMMAND_PATH "platform_specific" ("PATH", "Path"); // for doc only
+#elif defined(__windows)
+    #define TS_COMMAND_PATH "Path"
+#elif defined(__unix)
+    #define TS_COMMAND_PATH "PATH"
+#else
+    #error "Unimplemented operating system"
+#endif
+
 namespace ts {
 
     //!

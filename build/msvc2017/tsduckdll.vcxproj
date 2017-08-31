@@ -478,6 +478,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsVBITeletextDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsVersion.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsVideoAttributes.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsXML.cpp" />
     <ClCompile Include="..\..\src\libtsduck\windows\tsComIds.cpp" />
     <ClCompile Include="..\..\src\libtsduck\windows\tsComUtils.cpp" />
     <ClCompile Include="..\..\src\libtsduck\windows\tsDirectShowUtils.cpp" />
@@ -507,4 +508,7 @@
   <ImportGroup Label="PropertySheets">
     <Import Project="msvc-common-end.props" />
   </ImportGroup>
+  <Target Name="AfterBuild">
+    <Copy SourceFiles="..\..\src\libtsduck\tsduck.xml" DestinationFolder="$(OutDir)"/>
+  </Target>
 </Project>
