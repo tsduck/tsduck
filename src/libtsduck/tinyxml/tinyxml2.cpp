@@ -270,8 +270,9 @@ void StrPair::CollapseWhitespace()
 
 const char* StrPair::GetStr()
 {
-    TIXMLASSERT( _start );
-    TIXMLASSERT( _end );
+    if ( _start == 0 || _end == 0 ) {
+        return "";
+    }
     if ( _flags & NEEDS_FLUSH ) {
         *_end = 0;
         _flags ^= NEEDS_FLUSH;
