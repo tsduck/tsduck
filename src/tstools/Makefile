@@ -42,7 +42,7 @@ $(OBJDIR)/tsp: $(addprefix $(OBJDIR)/,$(addsuffix .o,$(filter tsp%,$(MODULES_LIB
 $(EXECS): $(LIBTSDUCKDIR)/$(OBJDIR)/$(SHARED_LIBTSDUCK)
 
 $(OBJDIR)/setenv.sh: Makefile
-	echo "export LD_LIBRARY_PATH=$(realpath $(LIBTSDUCKDIR)/$(OBJDIR))" >$@
+	echo "export LD_LIBRARY_PATH=$(realpath $(LIBTSDUCKDIR)/$(OBJDIR)):$(realpath $(LIBTSDUCKDIR))" >$@
 	echo "export TSPLUGINS_PATH=$(realpath $(TSPLUGINSDIR)/$(OBJDIR)):$(realpath $(TSGENTABSDIR)/$(OBJDIR))" >>$@
 
 .PHONY: install install-devel
