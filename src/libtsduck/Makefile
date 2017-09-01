@@ -84,6 +84,10 @@ $(OBJDIR)/tsSHA512.o:     CFLAGS_OPTIMIZE = $(CFLAGS_FULLSPEED)
 $(OBJDIR)/tsMD5.o:        CFLAGS_OPTIMIZE = $(CFLAGS_FULLSPEED)
 $(OBJDIR)/tsScrambling.o: CFLAGS_OPTIMIZE = $(CFLAGS_FULLSPEED)
 
+ifdef MACOS
+    $(OBJDIR)/tinyxml2.o: CXXFLAGS := $(subst -Wformat-nonliteral,,$(CXXFLAGS))
+endif
+
 # Dektec code is encapsulated into the TSDuck library.
 
 CFLAGS_INCLUDES += -I$(LIBTSDUCKDIR)/private
