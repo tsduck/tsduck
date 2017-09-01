@@ -6,6 +6,7 @@ LIBS += -lcppunit
 QMAKE_POST_LINK += cp ../tsplugin_drop/tsplugin_drop.so . $$escape_expand(\\n\\t)
 QMAKE_POST_LINK += cp ../tsplugin_null/tsplugin_null.so . $$escape_expand(\\n\\t)
 QMAKE_POST_LINK += cp ../tsplugin_skip/tsplugin_skip.so . $$escape_expand(\\n\\t)
+QMAKE_POST_LINK += cp $$SRCROOT/libtsduck/tsduck.xml . $$escape_expand(\\n\\t)
 
 HEADERS += \
     ../../../src/utest/utestCppUnitMain.h \
@@ -50,4 +51,5 @@ SOURCES += \
     ../../../src/utest/utestThreadAttributes.cpp \
     ../../../src/utest/utestTime.cpp \
     ../../../src/utest/utestTSPacket.cpp \
-    ../../../src/utest/utestVariable.cpp
+    ../../../src/utest/utestVariable.cpp \
+    ../../../src/utest/utestXML.cpp
