@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ImportGroup Label="PropertySheets">
     <Import Project="msvc-common-begin.props" />
@@ -268,6 +268,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsTunerUtils.h" />
     <ClInclude Include="..\..\src\libtsduck\tsUDPSocket.h" />
     <ClInclude Include="..\..\src\libtsduck\tsUID.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsUnicodeUtils.h" />
     <ClInclude Include="..\..\src\libtsduck\tsUserInterrupt.h" />
     <ClInclude Include="..\..\src\libtsduck\tsVariable.h" />
     <ClInclude Include="..\..\src\libtsduck\tsVBIDataDescriptor.h" />
@@ -473,6 +474,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsTunerUtils.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsUDPSocket.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsUID.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsUnicodeUtils.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsUserInterrupt.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsVBIDataDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsVBITeletextDescriptor.cpp" />
@@ -509,6 +511,6 @@
     <Import Project="msvc-common-end.props" />
   </ImportGroup>
   <Target Name="AfterBuild">
-    <Copy SourceFiles="..\..\src\libtsduck\tsduck.xml" DestinationFolder="$(OutDir)"/>
+    <Copy SourceFiles="..\..\src\libtsduck\tsduck.xml" DestinationFolder="$(OutDir)" />
   </Target>
 </Project>

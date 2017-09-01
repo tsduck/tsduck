@@ -39,7 +39,7 @@
 
 #pragma once
 #include "tsNullReport.h"
-#include <locale>
+#include "tsUnicodeUtils.h"
 
 // Definitions which are used by TinyXML-2.
 #if defined(__windows) && defined(_TSDUCKDLL_IMPL) && !defined(TINYXML2_EXPORT)
@@ -125,39 +125,12 @@ namespace ts {
         static std::string SearchFile(const std::string& fileName);
 
         //!
-        //! Convert an UTF-8 string into UTF-16.
-        //! @param [in] utf8 A string in UTF-8 representation.
-        //! @return The equivalent UTF-16 string.
-        //!
-        static std::u16string toUTF16(const std::string& utf8);
-
-        //!
-        //! Convert an UTF-16 string into UTF-8.
-        //! @param [in] utf16 A string in UTF-16 representation.
-        //! @return The equivalent UTF-8 string.
-        //!
-        static std::string toUTF8(const std::u16string& utf16);
-
-        //!
-        //! Check if two UTF-8 strings, as returned by TinyXML-2, are identical.
-        //! @param [in] s1 First string to compare.
-        //! @param [in] s2 Second string to compare.
-        //! @param [in] caseSensitive If true (the default), the comparison is
-        //! case-sensitive. When false, the comparison is not case-sensitive.
-        //! @param [in] loc The locale into which the operation is performed.
-        //! Useful only when @a caseSensitive is false.
-        //! The default value is the classic ANSI-C locale.
-        //! @return True is @a s1 and @a s2 are identical.
-        //!
-        static bool utf8Equal(const char* s1, const char* s2, bool caseSensitive = true, const std::locale& loc = std::locale::classic());
-
-        //!
         //! Safely return a name of an XML element.
         //! @param [in] e An XML element.
         //! @return A valid UTF-8 string, the name of @a e or an empty string
         //! if @a e is NULL or its name is NULL.
         //!
-        static const char* elementName(const tinyxml2::XMLElement* e);
+        static const char* ElementName(const tinyxml2::XMLElement* e);
 
         //!
         //! Check if two XML elements have the same name, case-insensitive.
@@ -165,9 +138,9 @@ namespace ts {
         //! @param [in] e2 An XML element.
         //! @return True is @a e1 and @a e2 are identical.
         //!
-        static bool haveSameName(const tinyxml2::XMLElement* e1, const tinyxml2::XMLElement* e2)
+        static bool HaveSameName(const tinyxml2::XMLElement* e1, const tinyxml2::XMLElement* e2)
         {
-            return utf8Equal(elementName(e1), elementName(e2), false);
+            return UTF8Equal(ElementName(e1), ElementName(e2), false);
         }
 
         //!
