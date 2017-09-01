@@ -36,7 +36,14 @@
 #include "tsSysUtils.h"
 #include "tsStringUtils.h"
 #include "tsApplicationSharedLibrary.h"
+#include <codecvt>
 TSDUCK_SOURCE;
+
+// References in XML model files.
+// Example: <_any in="_descriptors"/>
+// means: accept all children of <_descriptors> in root of document.
+#define TSXML_REF_NODE "_any"
+#define TSXML_REF_ATTR "in"
 
 
 //----------------------------------------------------------------------------
@@ -88,6 +95,87 @@ void ts::XML::reportError(const std::string& message, tinyxml2::XMLError code, t
             msg += Format("error code %d", int(code));
         }
         _report.error(msg);
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Convert between UTF-and UTF-16.
+//----------------------------------------------------------------------------
+
+// Warning: There is a bug in MSVC 2015 and 2017 (don't know about future releases).
+// Need an ugly workaround.
+
+#if defined(_MSC_VER) && _MSC_VER >= 1900
+
+std::u16string ts::XML::toUTF16(const std::string& utf8)
+{
+    std::wstring_convert<std::codecvt_utf8_utf16<int16_t>, int16_t> convert;
+    const std::basic_string<int16_t> result(convert.from_bytes(utf8));
+    return std::u16string(reinterpret_cast<const char16_t*>(result.data()), result.size());
+}
+
+std::string ts::XML::toUTF8(const std::u16string& utf16)
+{
+    std::wstring_convert<std::codecvt_utf8_utf16<int16_t>, int16_t> convert;
+    const int16_t* p = reinterpret_cast<const int16_t*>(utf16.data());
+    return convert.to_bytes(p, p + utf16.size());
+}
+
+#else
+
+std::u16string ts::XML::toUTF16(const std::string& utf8)
+{
+    std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> convert;
+    return convert.from_bytes(utf8);
+}
+
+std::string ts::XML::toUTF8(const std::u16string& utf16)
+{
+    std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> convert;
+    return convert.to_bytes(utf16);
+}
+
+#endif
+
+
+//----------------------------------------------------------------------------
+// Check if two UTF-8 strings, as returned by TinyXML-2, are identical.
+//----------------------------------------------------------------------------
+
+bool ts::XML::utf8Equal(const char* s1, const char* s2, bool caseSensitive, const std::locale& loc)
+{
+    if (caseSensitive) {
+        return tinyxml2::XMLUtil::StringEqual(s1, s2);
+    }
+    else {
+        const std::u16string u1(toUTF16(std::string(s1)));
+        const std::u16string u2(toUTF16(std::string(s2)));
+        if (u1.length() != u2.length()) {
+            return false;
+        }
+        for (std::u16string::size_type i = 0; i < u1.length(); ++i) {
+            if (std::toupper(s1[i], loc) != std::toupper(s2[i], loc)) {
+                return false;
+            }
+        }
+        return true;
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Safely return a name of an XML element.
+//----------------------------------------------------------------------------
+
+const char* ts::XML::elementName(const tinyxml2::XMLElement* e)
+{
+    if (e == 0) {
+        return "";
+    }
+    else {
+        const char* name = e->Name();
+        return name == 0 ? "" : name;
     }
 }
 
@@ -174,4 +262,175 @@ bool ts::XML::loadDocument(tinyxml2::XMLDocument& doc, const std::string& fileNa
         reportError("Error load XML file " + actualFileName, code, &doc);
     }
     return ok;
+}
+
+
+//----------------------------------------------------------------------------
+// Find an attribute, case-insensitive, in an XML element.
+//----------------------------------------------------------------------------
+
+const tinyxml2::XMLAttribute* ts::XML::findAttribute(const tinyxml2::XMLElement* elem, const char* name, bool silent)
+{
+    // Filter invalid parameters.
+    if (elem == 0 || name == 0 || name[0] == '\0') {
+        if (!silent) {
+            reportError("ts::XML::findAttribute internal error, null parameter");
+        }
+        return 0;
+    }
+
+    // Loop on all attributes.
+    for (const tinyxml2::XMLAttribute* attr = elem->FirstAttribute(); attr != 0; attr = attr->Next()) {
+        if (utf8Equal(attr->Name(), name, false)) {
+            return attr;
+        }
+    }
+
+    // Attribute not found.
+    if (!silent) {
+        reportError(Format("Attribute '%s' not found in <%s>, line %d", name, elementName(elem), elem->GetLineNum()));
+    }
+    return 0;
+}
+
+
+//----------------------------------------------------------------------------
+// Find the first child element in an XML element by name, case-insensitive.
+//----------------------------------------------------------------------------
+
+const tinyxml2::XMLElement* ts::XML::findFirstChild(const tinyxml2::XMLElement* elem, const char* name, bool silent)
+{
+    // Filter invalid parameters.
+    if (elem == 0 || name == 0 || name[0] == '\0') {
+        if (!silent) {
+            reportError("ts::XML::findFirstChild internal error, null parameter");
+        }
+        return 0;
+    }
+
+    // Loop on all children.
+    for (const tinyxml2::XMLElement* child = elem->FirstChildElement(); child != 0; child = child->NextSiblingElement()) {
+        if (utf8Equal(child->Name(), name, false)) {
+            return child;
+        }
+    }
+
+    // Child node not found.
+    if (!silent) {
+        reportError(Format("Child node <%s> not found in <%s>, line %d", name, elementName(elem), elem->GetLineNum()));
+    }
+    return 0;
+}
+
+
+//----------------------------------------------------------------------------
+// Find a child element by name in an XML model element.
+//----------------------------------------------------------------------------
+
+const tinyxml2::XMLElement* ts::XML::findModelElement(const tinyxml2::XMLElement* elem, const char* name)
+{
+    // Filter invalid parameters.
+    if (elem == 0 || name == 0 || name[0] == '\0') {
+        return 0;
+    }
+
+    // Loop on all children.
+    for (const tinyxml2::XMLElement* child = elem->FirstChildElement(); child != 0; child = child->NextSiblingElement()) {
+        if (utf8Equal(child->Name(), name, false)) {
+            // Found the child.
+            return child;
+        }
+        else if (utf8Equal(child->Name(), TSXML_REF_NODE, false)) {
+            // The model contains a reference to a child of the root of the document.
+            // Example: <_any in="_descriptors"/> => child is the <_any> node.
+            // Find the reference name, "_descriptors" in the example.
+            const tinyxml2::XMLAttribute* attr = findAttribute(child, TSXML_REF_ATTR, true);
+            const char* refName = attr == 0 ? 0 : attr->Value();
+            if (refName == 0) {
+                reportError(Format("Invalid XML model, missing or empty attribute '%s' in <%s> line %d", TSXML_REF_ATTR, elementName(child), child->GetLineNum()));
+            }
+            else {
+                // Locate the referenced node inside the model root.
+                const tinyxml2::XMLDocument* document = elem->GetDocument();
+                const tinyxml2::XMLElement* root = document == 0 ? 0 : document->RootElement();
+                const tinyxml2::XMLElement* refElem = root == 0 ? 0 : findFirstChild(root, refName, true);
+                if (refElem == 0) {
+                    // The referenced element does not exist.
+                    reportError(Format("Invalid XML model, <%s> not found in model root, referenced in line %d", refName, attr->GetLineNum()));
+                }
+                else {
+                    // Check if the child is found inside the referenced element.
+                    const tinyxml2::XMLElement* e = findModelElement(refElem, name);
+                    if (e != 0) {
+                        return e;
+                    }
+                }
+            }
+        }
+    }
+
+    // Child node not found.
+    return 0;
+}
+
+
+//----------------------------------------------------------------------------
+// Validate an XML document.
+//----------------------------------------------------------------------------
+
+bool ts::XML::validateDocument(const tinyxml2::XMLDocument& model, const tinyxml2::XMLDocument& doc)
+{
+    const tinyxml2::XMLElement* modelRoot = model.RootElement();
+    const tinyxml2::XMLElement* docRoot = doc.RootElement();
+
+    if (haveSameName(modelRoot, docRoot)) {
+        return validateElement(modelRoot, docRoot);
+    }
+    else {
+        reportError(Format("Invalid XML document, expected <%s> as root, found <%s>", elementName(modelRoot), elementName(docRoot)));
+        return false;
+    }
+}
+
+bool ts::XML::validateElement(const tinyxml2::XMLElement* model, const tinyxml2::XMLElement* doc)
+{
+    if (model == 0) {
+        reportError("Invalid XML model document");
+        return false;
+    }
+    if (doc == 0) {
+        reportError("Invalid XML document");
+        return false;
+    }
+
+    // Report all errors, return final status at the end.
+    bool success = true;
+
+    // Check that all attributes in doc exist in model.
+    for (const tinyxml2::XMLAttribute* attr = doc->FirstAttribute(); attr != 0; attr = attr->Next()) {
+        const char* name = attr->Name();
+        if (name != 0 && findAttribute(model, name, true) == 0) {
+            // The corresponding attribute does not exist in the model.
+            reportError(Format("Unexpected attribute '%s' in <%s>, line %d", name, elementName(doc), attr->GetLineNum()));
+            success = false;
+        }
+    }
+
+    // Check that all children elements in doc exist in model.
+    for (const tinyxml2::XMLElement* docChild = doc->FirstChildElement(); docChild != 0; docChild = docChild->NextSiblingElement()) {
+        const char* name = docChild->Name();
+        if (name != 0) {
+            const tinyxml2::XMLElement* modelChild = findModelElement(model, name);
+            if (modelChild == 0) {
+                // The corresponding node does not exist in the model.
+                reportError(Format("Unexpected node <%s> in <%s>, line %d", name, elementName(doc), docChild->GetLineNum()));
+                success = false;
+            }
+            else if (!validateElement(modelChild, docChild)) {
+                success = false;
+            }
+        }
+    }
+
+    return success;
 }

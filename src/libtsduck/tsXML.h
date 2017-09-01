@@ -39,6 +39,7 @@
 
 #pragma once
 #include "tsNullReport.h"
+#include <locale>
 
 // Definitions which are used by TinyXML-2.
 #if defined(__windows) && defined(_TSDUCKDLL_IMPL) && !defined(TINYXML2_EXPORT)
@@ -87,6 +88,22 @@ namespace ts {
         bool parseDocument(tinyxml2::XMLDocument& doc, const std::string& xmlContent);
 
         //!
+        //! Validate an XML document.
+        //!
+        //! This is a minimal mechanism, much less powerful than XML-Schema.
+        //! But since TinyXML does not supports schema, this is a cheap alternative.
+        //!
+        //! @param [in] model The model document. This document contains the structure
+        //! of a valid document, with all possible elements and attributes. There is
+        //! no type checking, no cardinality check. Comments and texts are ignored.
+        //! The values of attributes are ignored.
+        //! @param [in] doc The document to validate.
+        //! @return True if @a doc matches @a model, false if it does not.
+        //! Validation errors are reported through this object.
+        //!
+        bool validateDocument(const tinyxml2::XMLDocument& model, const tinyxml2::XMLDocument& doc);
+
+        //!
         //! Report an error on the registered report interface.
         //! @param [in] message Application-specific error message.
         //! @param [in] code TinyXML error code.
@@ -107,8 +124,92 @@ namespace ts {
         //!
         static std::string SearchFile(const std::string& fileName);
 
+        //!
+        //! Convert an UTF-8 string into UTF-16.
+        //! @param [in] utf8 A string in UTF-8 representation.
+        //! @return The equivalent UTF-16 string.
+        //!
+        static std::u16string toUTF16(const std::string& utf8);
+
+        //!
+        //! Convert an UTF-16 string into UTF-8.
+        //! @param [in] utf16 A string in UTF-16 representation.
+        //! @return The equivalent UTF-8 string.
+        //!
+        static std::string toUTF8(const std::u16string& utf16);
+
+        //!
+        //! Check if two UTF-8 strings, as returned by TinyXML-2, are identical.
+        //! @param [in] s1 First string to compare.
+        //! @param [in] s2 Second string to compare.
+        //! @param [in] caseSensitive If true (the default), the comparison is
+        //! case-sensitive. When false, the comparison is not case-sensitive.
+        //! @param [in] loc The locale into which the operation is performed.
+        //! Useful only when @a caseSensitive is false.
+        //! The default value is the classic ANSI-C locale.
+        //! @return True is @a s1 and @a s2 are identical.
+        //!
+        static bool utf8Equal(const char* s1, const char* s2, bool caseSensitive = true, const std::locale& loc = std::locale::classic());
+
+        //!
+        //! Safely return a name of an XML element.
+        //! @param [in] e An XML element.
+        //! @return A valid UTF-8 string, the name of @a e or an empty string
+        //! if @a e is NULL or its name is NULL.
+        //!
+        static const char* elementName(const tinyxml2::XMLElement* e);
+
+        //!
+        //! Check if two XML elements have the same name, case-insensitive.
+        //! @param [in] e1 An XML element.
+        //! @param [in] e2 An XML element.
+        //! @return True is @a e1 and @a e2 are identical.
+        //!
+        static bool haveSameName(const tinyxml2::XMLElement* e1, const tinyxml2::XMLElement* e2)
+        {
+            return utf8Equal(elementName(e1), elementName(e2), false);
+        }
+
+        //!
+        //! Find an attribute, case-insensitive, in an XML element.
+        //! @param [in] elem An XML element.
+        //! @param [in] name Name of the attribute to search.
+        //! @param [in] silent If true, do not report error.
+        //! @return Attribute address or zero if not found.
+        //!
+        const tinyxml2::XMLAttribute* findAttribute(const tinyxml2::XMLElement* elem, const char* name, bool silent = false);
+
+        //!
+        //! Find the first child element in an XML element by name, case-insensitive.
+        //! @param [in] elem An XML element.
+        //! @param [in] name Name of the child element to search.
+        //! @param [in] silent If true, do not report error.
+        //! @return Child element address or zero if not found.
+        //!
+        const tinyxml2::XMLElement* findFirstChild(const tinyxml2::XMLElement* elem, const char* name, bool silent = false);
+
     private:
         ReportInterface& _report;
+
+        //!
+        //! Validate an XML tree of elements, used by validateDocument().
+        //! @param [in] model The model document. This document contains the structure
+        //! of a valid document, with all possible elements and attributes. There is
+        //! no type checking, no cardinality check. Comments and texts are ignored.
+        //! The values of attributes are ignored.
+        //! @param [in] doc The document to validate.
+        //! @return True if @a doc matches @a model, false if it does not.
+        //! Validation errors are reported through this object.
+        //!
+        bool validateElement(const tinyxml2::XMLElement* model, const tinyxml2::XMLElement* doc);
+
+        //!
+        //! Find a child element by name in an XML model element.
+        //! @param [in] elem An XML element in a model document.
+        //! @param [in] name Name of the child element to search.
+        //! @return Address of the child model or zero if not found.
+        //!
+        const tinyxml2::XMLElement* findModelElement(const tinyxml2::XMLElement* elem, const char* name);
 
         // Inaccessible operations.
         XML(const XML&) = delete;
