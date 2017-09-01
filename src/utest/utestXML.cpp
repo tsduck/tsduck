@@ -307,13 +307,14 @@ void XMLTest::testValidation()
         "      <private_data>00 01 02 03 04</private_data>\n"
         "    </CA_descriptor>\n"
         "    <component stream_type='0x04' elementary_PID='3006'>\n"
-        "      <CA_descriptor CA_system_id='500' CA_PID='3007'>\n"
+        "      <ca_descriptor ca_system_id='500' ca_PID='3007'>\n"
         "        <private_data>10 11 12 13 14 15</private_data>\n"
-        "      </CA_descriptor>\n"
+        "      </ca_descriptor>\n"
         "    </component>\n"
         "  </PMT>\n"
         "</tsduck>";
 
     tinyxml2::XMLDocument doc;
     CPPUNIT_ASSERT(xml.parseDocument(doc, xmlContent));
+    CPPUNIT_ASSERT(xml.validateDocument(model, doc));
 }
