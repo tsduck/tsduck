@@ -193,7 +193,7 @@ namespace ts {
         //!
         //! A subclass of TinyXML printer class which can control the indentation width.
         //!
-        class Printer : public tinyxml2::XMLPrinter
+        class TSDUCKDLL Printer : public tinyxml2::XMLPrinter
         {
         public:
             //!
