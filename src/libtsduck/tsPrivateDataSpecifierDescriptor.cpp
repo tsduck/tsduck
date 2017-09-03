@@ -109,3 +109,23 @@ void ts::PrivateDataSpecifierDescriptor::DisplayDescriptor(TablesDisplay& displa
 
     display.displayExtraData(data, size, indent);
 }
+
+
+//----------------------------------------------------------------------------
+// XML serialization
+//----------------------------------------------------------------------------
+
+ts::XML::Element* ts::PrivateDataSpecifierDescriptor::toXML(XML& xml, XML::Document& doc) const
+{
+    return 0; // TODO @@@@
+}
+
+
+//----------------------------------------------------------------------------
+// XML deserialization
+//----------------------------------------------------------------------------
+
+void ts::PrivateDataSpecifierDescriptor::fromXML(XML& xml, const XML::Element* element)
+{
+    // TODO @@@@
+}

@@ -209,3 +209,23 @@ void ts::LinkageDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, c
 
     display.displayExtraData(data, size, indent);
 }
+
+
+//----------------------------------------------------------------------------
+// XML serialization
+//----------------------------------------------------------------------------
+
+ts::XML::Element* ts::LinkageDescriptor::toXML(XML& xml, XML::Document& doc) const
+{
+    return 0; // TODO @@@@
+}
+
+
+//----------------------------------------------------------------------------
+// XML deserialization
+//----------------------------------------------------------------------------
+
+void ts::LinkageDescriptor::fromXML(XML& xml, const XML::Element* element)
+{
+    // TODO @@@@
+}

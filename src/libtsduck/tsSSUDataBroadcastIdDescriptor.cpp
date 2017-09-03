@@ -145,3 +145,23 @@ void ts::SSUDataBroadcastIdDescriptor::deserialize (const Descriptor& desc)
         private_data.copy (data, size);
     }
 }
+
+
+//----------------------------------------------------------------------------
+// XML serialization
+//----------------------------------------------------------------------------
+
+ts::XML::Element* ts::SSUDataBroadcastIdDescriptor::toXML(XML& xml, XML::Document& doc) const
+{
+    return 0; // TODO @@@@
+}
+
+
+//----------------------------------------------------------------------------
+// XML deserialization
+//----------------------------------------------------------------------------
+
+void ts::SSUDataBroadcastIdDescriptor::fromXML(XML& xml, const XML::Element* element)
+{
+    // TODO @@@@
+}

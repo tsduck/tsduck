@@ -150,3 +150,23 @@ void ts::HDSimulcastLogicalChannelDescriptor::DisplayDescriptor(TablesDisplay& d
 
     display.displayExtraData(data, size, indent);
 }
+
+
+//----------------------------------------------------------------------------
+// XML serialization
+//----------------------------------------------------------------------------
+
+ts::XML::Element* ts::HDSimulcastLogicalChannelDescriptor::toXML(XML& xml, XML::Document& doc) const
+{
+    return 0; // TODO @@@@
+}
+
+
+//----------------------------------------------------------------------------
+// XML deserialization
+//----------------------------------------------------------------------------
+
+void ts::HDSimulcastLogicalChannelDescriptor::fromXML(XML& xml, const XML::Element* element)
+{
+    // TODO @@@@
+}

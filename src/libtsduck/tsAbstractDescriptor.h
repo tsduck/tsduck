@@ -93,6 +93,24 @@ namespace ts {
         void deserialize(const DescriptorList& dlist, size_t index);
 
         //!
+        //! This abstract method converts the descriptor to XML.
+        //! @param [in,out] xml XML utility for error reporting
+        //! @param [in,out] doc Document into which the XML tree is to be created.
+        //! The new XML structure is allocated in the document.
+        //! @return The new XML element.
+        //!
+        virtual XML::Element* toXML(XML& xml, XML::Document& doc) const = 0;
+
+        //!
+        //! This abstract converts an XML structure to a descriptor.
+        //! In case of success, this object is replaced with the interpreted content of the XML structure.
+        //! In case of error, this object is invalidated.
+        //! @param [in,out] xml XML utility for error reporting
+        //! @param [in] element XML element to convert.
+        //!
+        virtual void fromXML(XML& xml, const XML::Element* element) = 0;
+
+        //!
         //! Virtual destructor
         //!
         virtual ~AbstractDescriptor () {}

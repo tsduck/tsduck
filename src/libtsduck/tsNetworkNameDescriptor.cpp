@@ -107,3 +107,23 @@ void ts::NetworkNameDescriptor::DisplayDescriptor(TablesDisplay& display, DID di
 {
     display.out() << std::string(indent, ' ') << "Name: \"" << Printable(payload, size) << "\"" << std::endl;
 }
+
+
+//----------------------------------------------------------------------------
+// XML serialization
+//----------------------------------------------------------------------------
+
+ts::XML::Element* ts::NetworkNameDescriptor::toXML(XML& xml, XML::Document& doc) const
+{
+    return 0; // TODO @@@@
+}
+
+
+//----------------------------------------------------------------------------
+// XML deserialization
+//----------------------------------------------------------------------------
+
+void ts::NetworkNameDescriptor::fromXML(XML& xml, const XML::Element* element)
+{
+    // TODO @@@@
+}

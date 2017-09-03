@@ -109,3 +109,23 @@ void ts::EacemStreamIdentifierDescriptor::DisplayDescriptor(TablesDisplay& displ
 
     display.displayExtraData(data, size, indent);
 }
+
+
+//----------------------------------------------------------------------------
+// XML serialization
+//----------------------------------------------------------------------------
+
+ts::XML::Element* ts::EacemStreamIdentifierDescriptor::toXML(XML& xml, XML::Document& doc) const
+{
+    return 0; // TODO @@@@
+}
+
+
+//----------------------------------------------------------------------------
+// XML deserialization
+//----------------------------------------------------------------------------
+
+void ts::EacemStreamIdentifierDescriptor::fromXML(XML& xml, const XML::Element* element)
+{
+    // TODO @@@@
+}

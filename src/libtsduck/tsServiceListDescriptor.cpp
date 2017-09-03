@@ -145,3 +145,23 @@ void ts::ServiceListDescriptor::DisplayDescriptor(TablesDisplay& display, DID di
 
     display.displayExtraData(data, size, indent);
 }
+
+
+//----------------------------------------------------------------------------
+// XML serialization
+//----------------------------------------------------------------------------
+
+ts::XML::Element* ts::ServiceListDescriptor::toXML(XML& xml, XML::Document& doc) const
+{
+    return 0; // TODO @@@@
+}
+
+
+//----------------------------------------------------------------------------
+// XML deserialization
+//----------------------------------------------------------------------------
+
+void ts::ServiceListDescriptor::fromXML(XML& xml, const XML::Element* element)
+{
+    // TODO @@@@
+}

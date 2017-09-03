@@ -159,3 +159,23 @@ void ts::SSULinkageDescriptor::deserialize (const Descriptor& desc)
         }
     }
 }
+
+
+//----------------------------------------------------------------------------
+// XML serialization
+//----------------------------------------------------------------------------
+
+ts::XML::Element* ts::SSULinkageDescriptor::toXML(XML& xml, XML::Document& doc) const
+{
+    return 0; // TODO @@@@
+}
+
+
+//----------------------------------------------------------------------------
+// XML deserialization
+//----------------------------------------------------------------------------
+
+void ts::SSULinkageDescriptor::fromXML(XML& xml, const XML::Element* element)
+{
+    // TODO @@@@
+}
