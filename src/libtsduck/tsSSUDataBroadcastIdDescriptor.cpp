@@ -41,7 +41,7 @@ TSDUCK_SOURCE;
 //----------------------------------------------------------------------------
 
 ts::SSUDataBroadcastIdDescriptor::SSUDataBroadcastIdDescriptor () :
-    AbstractDescriptor (DID_DATA_BROADCAST_ID),
+    AbstractDescriptor (DID_DATA_BROADCAST_ID, "SSU_data_broadcast_id_descriptor"),
     entries (),
     private_data ()
 {
@@ -54,7 +54,7 @@ ts::SSUDataBroadcastIdDescriptor::SSUDataBroadcastIdDescriptor () :
 //----------------------------------------------------------------------------
 
 ts::SSUDataBroadcastIdDescriptor::SSUDataBroadcastIdDescriptor (uint32_t oui, uint8_t update_type) :
-    AbstractDescriptor (DID_DATA_BROADCAST_ID),
+    AbstractDescriptor (DID_DATA_BROADCAST_ID, "SSU_data_broadcast_id_descriptor"),
     entries (),
     private_data ()
 {
@@ -68,7 +68,7 @@ ts::SSUDataBroadcastIdDescriptor::SSUDataBroadcastIdDescriptor (uint32_t oui, ui
 //----------------------------------------------------------------------------
 
 ts::SSUDataBroadcastIdDescriptor::SSUDataBroadcastIdDescriptor (const Descriptor& desc) :
-    AbstractDescriptor (DID_DATA_BROADCAST_ID),
+    AbstractDescriptor (DID_DATA_BROADCAST_ID, "SSU_data_broadcast_id_descriptor"),
     entries (),
     private_data ()
 {

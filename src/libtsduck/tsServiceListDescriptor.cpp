@@ -42,7 +42,7 @@ TSDUCK_SOURCE;
 //----------------------------------------------------------------------------
 
 ts::ServiceListDescriptor::ServiceListDescriptor () :
-    AbstractDescriptor (DID_SERVICE_LIST),
+    AbstractDescriptor (DID_SERVICE_LIST, "service_list_descriptor"),
     entries ()
 {
     _is_valid = true;
@@ -54,7 +54,7 @@ ts::ServiceListDescriptor::ServiceListDescriptor () :
 //----------------------------------------------------------------------------
 
 ts::ServiceListDescriptor::ServiceListDescriptor (const Descriptor& desc) :
-    AbstractDescriptor (DID_SERVICE_LIST),
+    AbstractDescriptor (DID_SERVICE_LIST, "service_list_descriptor"),
     entries ()
 {
     deserialize (desc);
@@ -68,7 +68,7 @@ ts::ServiceListDescriptor::ServiceListDescriptor (const Descriptor& desc) :
 //----------------------------------------------------------------------------
 
 ts::ServiceListDescriptor::ServiceListDescriptor (int service_id, int service_type, ...) :
-    AbstractDescriptor (DID_SERVICE_LIST),
+    AbstractDescriptor (DID_SERVICE_LIST, "service_list_descriptor"),
     entries ()
 {
     _is_valid = true;

@@ -45,7 +45,7 @@ TSDUCK_SOURCE;
 //----------------------------------------------------------------------------
 
 ts::ExtendedEventDescriptor::ExtendedEventDescriptor() :
-    AbstractDescriptor (DID_EXTENDED_EVENT),
+    AbstractDescriptor (DID_EXTENDED_EVENT, "extended_event_descriptor"),
     descriptor_number (0),
     last_descriptor_number (0),
     language_code (),
@@ -61,7 +61,7 @@ ts::ExtendedEventDescriptor::ExtendedEventDescriptor() :
 //----------------------------------------------------------------------------
 
 ts::ExtendedEventDescriptor::ExtendedEventDescriptor (const Descriptor& desc) :
-    AbstractDescriptor (DID_EXTENDED_EVENT),
+    AbstractDescriptor (DID_EXTENDED_EVENT, "extended_event_descriptor"),
     descriptor_number (0),
     last_descriptor_number (0),
     language_code (),

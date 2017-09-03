@@ -42,7 +42,7 @@ TSDUCK_SOURCE;
 //----------------------------------------------------------------------------
 
 ts::TerrestrialDeliverySystemDescriptor::TerrestrialDeliverySystemDescriptor() :
-    AbstractDeliverySystemDescriptor(DID_TERREST_DELIVERY, DS_DVB_T),
+    AbstractDeliverySystemDescriptor(DID_TERREST_DELIVERY, DS_DVB_T, "terrestrial_delivery_system_descriptor"),
     centre_frequency(0),
     bandwidth(0),
     high_priority(true),
@@ -65,7 +65,7 @@ ts::TerrestrialDeliverySystemDescriptor::TerrestrialDeliverySystemDescriptor() :
 //----------------------------------------------------------------------------
 
 ts::TerrestrialDeliverySystemDescriptor::TerrestrialDeliverySystemDescriptor(const Descriptor& desc) :
-    AbstractDeliverySystemDescriptor(DID_TERREST_DELIVERY, DS_DVB_T),
+    AbstractDeliverySystemDescriptor(DID_TERREST_DELIVERY, DS_DVB_T, "terrestrial_delivery_system_descriptor"),
     centre_frequency(0),
     bandwidth(0),
     high_priority(true),

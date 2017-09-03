@@ -40,7 +40,7 @@ TSDUCK_SOURCE;
 //----------------------------------------------------------------------------
 
 ts::STDDescriptor::STDDescriptor (bool leak_valid_) :
-    AbstractDescriptor (DID_STD),
+    AbstractDescriptor (DID_STD, "STD_descriptor"),
     leak_valid (leak_valid_)
 {
     _is_valid = true;
@@ -52,7 +52,7 @@ ts::STDDescriptor::STDDescriptor (bool leak_valid_) :
 //----------------------------------------------------------------------------
 
 ts::STDDescriptor::STDDescriptor (const Descriptor& desc) :
-    AbstractDescriptor (DID_STD),
+    AbstractDescriptor (DID_STD, "STD_descriptor"),
     leak_valid (false)
 {
     deserialize (desc);

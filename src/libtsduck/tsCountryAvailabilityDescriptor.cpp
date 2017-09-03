@@ -40,7 +40,7 @@ TSDUCK_SOURCE;
 //----------------------------------------------------------------------------
 
 ts::CountryAvailabilityDescriptor::CountryAvailabilityDescriptor() :
-    AbstractDescriptor (DID_COUNTRY_AVAIL),
+    AbstractDescriptor (DID_COUNTRY_AVAIL, "country_availability_descriptor"),
     country_availability (true),
     country_codes ()
 {
@@ -53,7 +53,7 @@ ts::CountryAvailabilityDescriptor::CountryAvailabilityDescriptor() :
 //----------------------------------------------------------------------------
 
 ts::CountryAvailabilityDescriptor::CountryAvailabilityDescriptor (const Descriptor& desc) :
-    AbstractDescriptor (DID_COUNTRY_AVAIL),
+    AbstractDescriptor (DID_COUNTRY_AVAIL, "country_availability_descriptor"),
     country_availability (true),
     country_codes ()
 {
@@ -68,7 +68,7 @@ ts::CountryAvailabilityDescriptor::CountryAvailabilityDescriptor (const Descript
 //----------------------------------------------------------------------------
 
 ts::CountryAvailabilityDescriptor::CountryAvailabilityDescriptor (bool availability, const char* country, ...) :
-    AbstractDescriptor (DID_COUNTRY_AVAIL),
+    AbstractDescriptor (DID_COUNTRY_AVAIL, "country_availability_descriptor"),
     country_availability (availability),
     country_codes ()
 {

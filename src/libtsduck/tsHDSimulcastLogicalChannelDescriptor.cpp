@@ -42,7 +42,7 @@ TSDUCK_SOURCE;
 //----------------------------------------------------------------------------
 
 ts::HDSimulcastLogicalChannelDescriptor::HDSimulcastLogicalChannelDescriptor () :
-    AbstractDescriptor (DID_HD_SIMULCAST_LCN, PDS_EACEM),
+    AbstractDescriptor (DID_HD_SIMULCAST_LCN, "HD_simulcast_logical_channel_descriptor", PDS_EACEM),
     entries ()
 {
     _is_valid = true;
@@ -54,7 +54,7 @@ ts::HDSimulcastLogicalChannelDescriptor::HDSimulcastLogicalChannelDescriptor () 
 //----------------------------------------------------------------------------
 
 ts::HDSimulcastLogicalChannelDescriptor::HDSimulcastLogicalChannelDescriptor (const Descriptor& desc) :
-    AbstractDescriptor (DID_HD_SIMULCAST_LCN, PDS_EACEM),
+    AbstractDescriptor (DID_HD_SIMULCAST_LCN, "HD_simulcast_logical_channel_descriptor", PDS_EACEM),
     entries ()
 {
     deserialize (desc);
@@ -70,7 +70,7 @@ ts::HDSimulcastLogicalChannelDescriptor::HDSimulcastLogicalChannelDescriptor (co
 //----------------------------------------------------------------------------
 
 ts::HDSimulcastLogicalChannelDescriptor::HDSimulcastLogicalChannelDescriptor (int service_id, int lcn, ...) :
-    AbstractDescriptor (DID_HD_SIMULCAST_LCN),
+    AbstractDescriptor (DID_HD_SIMULCAST_LCN, "HD_simulcast_logical_channel_descriptor", PDS_EACEM),
     entries ()
 {
     _is_valid = true;

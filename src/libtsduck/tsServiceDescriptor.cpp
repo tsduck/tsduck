@@ -43,7 +43,7 @@ TSDUCK_SOURCE;
 //----------------------------------------------------------------------------
 
 ts::ServiceDescriptor::ServiceDescriptor(uint8_t type, const std::string& provider, const std::string& name) :
-    AbstractDescriptor(DID_SERVICE),
+    AbstractDescriptor(DID_SERVICE, "service_descriptor"),
     service_type(type),
     provider_name(provider),
     service_name(name)
@@ -57,7 +57,7 @@ ts::ServiceDescriptor::ServiceDescriptor(uint8_t type, const std::string& provid
 //----------------------------------------------------------------------------
 
 ts::ServiceDescriptor::ServiceDescriptor(const Descriptor& desc) :
-    AbstractDescriptor(DID_SERVICE),
+    AbstractDescriptor(DID_SERVICE, "service_descriptor"),
     service_type(0),
     provider_name(),
     service_name()

@@ -160,6 +160,11 @@ namespace ts {
         DID _tag;
 
         //!
+        //! XML descriptor name.
+        //!
+        const char* const _xml_name;
+
+        //!
         //! It is the responsibility of the subclasses to set the valid flag
         //!
         bool _is_valid;
@@ -172,9 +177,16 @@ namespace ts {
         //!
         //! Protected constructor for subclasses.
         //! @param [in] tag Descriptor tag.
+        //! @param [in] xml_name Descriptor name, as used in XML structures.
         //! @param [in] pds Required private data specifier if this is a private descriptor.
         //!
-        AbstractDescriptor(DID tag, PDS pds = 0) : _tag (tag), _is_valid (false), _required_pds(pds) {}
+        AbstractDescriptor(DID tag, const char* xml_name, PDS pds = 0) :
+            _tag (tag),
+            _xml_name(xml_name),
+            _is_valid (false),
+            _required_pds(pds)
+        {
+        }
 
     private:
         // Unreachable constructors and operators.

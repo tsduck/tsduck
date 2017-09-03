@@ -44,7 +44,7 @@ TSDUCK_SOURCE;
 //----------------------------------------------------------------------------
 
 ts::DataBroadcastIdDescriptor::DataBroadcastIdDescriptor (uint16_t id) :
-    AbstractDescriptor (DID_DATA_BROADCAST_ID),
+    AbstractDescriptor (DID_DATA_BROADCAST_ID, "data_broadcast_id_descriptor"),
     data_broadcast_id (id),
     private_data ()
 {
@@ -57,7 +57,7 @@ ts::DataBroadcastIdDescriptor::DataBroadcastIdDescriptor (uint16_t id) :
 //----------------------------------------------------------------------------
 
 ts::DataBroadcastIdDescriptor::DataBroadcastIdDescriptor (const Descriptor& desc) :
-    AbstractDescriptor (DID_DATA_BROADCAST_ID),
+    AbstractDescriptor (DID_DATA_BROADCAST_ID, "data_broadcast_id_descriptor"),
     data_broadcast_id (0),
     private_data ()
 {

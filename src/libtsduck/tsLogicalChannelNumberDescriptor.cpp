@@ -42,7 +42,7 @@ TSDUCK_SOURCE;
 //----------------------------------------------------------------------------
 
 ts::LogicalChannelNumberDescriptor::LogicalChannelNumberDescriptor() :
-    AbstractDescriptor(DID_LOGICAL_CHANNEL_NUM, PDS_EACEM),
+    AbstractDescriptor(DID_LOGICAL_CHANNEL_NUM, "logical_channel_number_descriptor", PDS_EACEM),
     entries()
 {
     _is_valid = true;
@@ -54,7 +54,7 @@ ts::LogicalChannelNumberDescriptor::LogicalChannelNumberDescriptor() :
 //----------------------------------------------------------------------------
 
 ts::LogicalChannelNumberDescriptor::LogicalChannelNumberDescriptor (const Descriptor& desc) :
-    AbstractDescriptor (DID_LOGICAL_CHANNEL_NUM, PDS_EACEM),
+    AbstractDescriptor (DID_LOGICAL_CHANNEL_NUM, "logical_channel_number_descriptor", PDS_EACEM),
     entries ()
 {
     deserialize (desc);
@@ -70,7 +70,7 @@ ts::LogicalChannelNumberDescriptor::LogicalChannelNumberDescriptor (const Descri
 //----------------------------------------------------------------------------
 
 ts::LogicalChannelNumberDescriptor::LogicalChannelNumberDescriptor (int service_id, int lcn, ...) :
-    AbstractDescriptor (DID_LOGICAL_CHANNEL_NUM),
+    AbstractDescriptor (DID_LOGICAL_CHANNEL_NUM, "logical_channel_number_descriptor", PDS_EACEM),
     entries ()
 {
     _is_valid = true;

@@ -42,7 +42,7 @@ TSDUCK_SOURCE;
 //----------------------------------------------------------------------------
 
 ts::ContentDescriptor::ContentDescriptor() :
-    AbstractDescriptor (DID_CONTENT),
+    AbstractDescriptor (DID_CONTENT, "content_descriptor"),
     entries ()
 {
     _is_valid = true;
@@ -54,7 +54,7 @@ ts::ContentDescriptor::ContentDescriptor() :
 //----------------------------------------------------------------------------
 
 ts::ContentDescriptor::ContentDescriptor (const Descriptor& desc) :
-    AbstractDescriptor (DID_CONTENT),
+    AbstractDescriptor (DID_CONTENT, "content_descriptor"),
     entries ()
 {
     deserialize (desc);
