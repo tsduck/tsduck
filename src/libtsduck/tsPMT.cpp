@@ -42,7 +42,7 @@ TSDUCK_SOURCE;
 //----------------------------------------------------------------------------
 
 ts::PMT::PMT(uint8_t version_, bool is_current_, uint16_t service_id_, PID pcr_pid_) :
-    AbstractLongTable(TID_PMT, version_, is_current_),
+    AbstractLongTable(TID_PMT, "PMT", version_, is_current_),
     service_id(service_id_),
     pcr_pid(pcr_pid_),
     descs(),
@@ -57,7 +57,7 @@ ts::PMT::PMT(uint8_t version_, bool is_current_, uint16_t service_id_, PID pcr_p
 //----------------------------------------------------------------------------
 
 ts::PMT::PMT(const BinaryTable& table) :
-    AbstractLongTable(TID_PMT),
+    AbstractLongTable(TID_PMT, "PMT"),
     service_id(0),
     pcr_pid(PID_NULL),
     descs(),
@@ -304,4 +304,24 @@ void ts::PMT::DisplaySection(TablesDisplay& display, const ts::Section& section,
     }
 
     display.displayExtraData(data, size, indent);
+}
+
+
+//----------------------------------------------------------------------------
+// XML serialization
+//----------------------------------------------------------------------------
+
+ts::XML::Element* ts::PMT::toXML(XML& xml, XML::Document& doc) const
+{
+    return 0; // TODO @@@@
+}
+
+
+//----------------------------------------------------------------------------
+// XML deserialization
+//----------------------------------------------------------------------------
+
+void ts::PMT::fromXML(XML& xml, const XML::Element* element)
+{
+    // TODO @@@@
 }

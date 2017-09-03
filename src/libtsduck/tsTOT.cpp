@@ -43,11 +43,11 @@ TSDUCK_SOURCE;
 // Default constructor:
 //----------------------------------------------------------------------------
 
-ts::TOT::TOT (const Time& utc_time_) :
-    AbstractTable (TID_TDT),
-    utc_time (utc_time_),
-    regions (),
-    descs ()
+ts::TOT::TOT(const Time& utc_time_) :
+    AbstractTable(TID_TOT, "TOT"),
+    utc_time(utc_time_),
+    regions(),
+    descs()
 {
     _is_valid = true;
 }
@@ -57,13 +57,13 @@ ts::TOT::TOT (const Time& utc_time_) :
 // Constructor from a binary table
 //----------------------------------------------------------------------------
 
-ts::TOT::TOT (const BinaryTable& table) :
-    AbstractTable (TID_TOT),
-    utc_time (),
-    regions (),
-    descs ()
+ts::TOT::TOT(const BinaryTable& table) :
+    AbstractTable(TID_TOT, "TOT"),
+    utc_time(),
+    regions(),
+    descs()
 {
-    deserialize (table);
+    deserialize(table);
 }
 
 
@@ -310,4 +310,24 @@ void ts::TOT::DisplaySection(TablesDisplay& display, const ts::Section& section,
     }
 
     display.displayExtraData(data, size, indent);
+}
+
+
+//----------------------------------------------------------------------------
+// XML serialization
+//----------------------------------------------------------------------------
+
+ts::XML::Element* ts::TOT::toXML(XML& xml, XML::Document& doc) const
+{
+    return 0; // TODO @@@@
+}
+
+
+//----------------------------------------------------------------------------
+// XML deserialization
+//----------------------------------------------------------------------------
+
+void ts::TOT::fromXML(XML& xml, const XML::Element* element)
+{
+    // TODO @@@@
 }

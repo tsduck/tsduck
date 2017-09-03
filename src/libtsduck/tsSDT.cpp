@@ -47,7 +47,7 @@ ts::SDT::SDT(bool is_actual_,
              bool is_current_,
              uint16_t ts_id_,
              uint16_t onetw_id_) :
-    AbstractLongTable(TID(is_actual_ ? TID_SDT_ACT : TID_SDT_OTH), version_, is_current_),
+    AbstractLongTable(TID(is_actual_ ? TID_SDT_ACT : TID_SDT_OTH), "SDT", version_, is_current_),
     ts_id(ts_id_),
     onetw_id(onetw_id_),
     services()
@@ -61,7 +61,7 @@ ts::SDT::SDT(bool is_actual_,
 //----------------------------------------------------------------------------
 
 ts::SDT::SDT(const BinaryTable& table) :
-    AbstractLongTable(TID_SDT_ACT),  // updated by deserialize()
+    AbstractLongTable(TID_SDT_ACT, "SDT"),  // TID will be updated by deserialize()
     ts_id(0),
     onetw_id(0),
     services()
@@ -540,4 +540,24 @@ void ts::SDT::DisplaySection(TablesDisplay& display, const ts::Section& section,
     }
 
     display.displayExtraData(data, size, indent);
+}
+
+
+//----------------------------------------------------------------------------
+// XML serialization
+//----------------------------------------------------------------------------
+
+ts::XML::Element* ts::SDT::toXML(XML& xml, XML::Document& doc) const
+{
+    return 0; // TODO @@@@
+}
+
+
+//----------------------------------------------------------------------------
+// XML deserialization
+//----------------------------------------------------------------------------
+
+void ts::SDT::fromXML(XML& xml, const XML::Element* element)
+{
+    // TODO @@@@
 }

@@ -59,14 +59,14 @@ ts::XML::XML(ReportInterface& report) :
 // Report an error on the registered report interface.
 //----------------------------------------------------------------------------
 
-void ts::XML::reportError(const std::string& message, tinyxml2::XMLError code, tinyxml2::XMLNode* node)
+void ts::XML::reportError(const std::string& message, tinyxml2::XMLError code, Node* node)
 {
     if (code == tinyxml2::XML_SUCCESS) {
         _report.error(message);
     }
     else {
         // Get associated document and error.
-        tinyxml2::XMLDocument* doc = node == 0 ? 0 : node->GetDocument();
+        Document* doc = node == 0 ? 0 : node->GetDocument();
         const char* err1 = doc == 0 ? 0 : doc->GetErrorStr1();
         const char* err2 = doc == 0 ? 0 : doc->GetErrorStr2();
 
@@ -82,7 +82,7 @@ void ts::XML::reportError(const std::string& message, tinyxml2::XMLError code, t
         }
         const char* name = 0;
         if (int(code) >= 0 && code < tinyxml2::XML_ERROR_COUNT) {
-            name = tinyxml2::XMLDocument::ErrorIDToName(code);
+            name = Document::ErrorIDToName(code);
         }
         if (name != 0 && name[0] != '\0') {
             msg += " (";
@@ -102,7 +102,7 @@ void ts::XML::reportError(const std::string& message, tinyxml2::XMLError code, t
 // Safely return a name of an XML element.
 //----------------------------------------------------------------------------
 
-const char* ts::XML::ElementName(const tinyxml2::XMLElement* e)
+const char* ts::XML::ElementName(const Element* e)
 {
     if (e == 0) {
         return "";
@@ -118,7 +118,7 @@ const char* ts::XML::ElementName(const tinyxml2::XMLElement* e)
 // Parse an XML document.
 //----------------------------------------------------------------------------
 
-bool ts::XML::parseDocument(tinyxml2::XMLDocument& doc, const std::string& xmlContent)
+bool ts::XML::parseDocument(Document& doc, const std::string& xmlContent)
 {
     const tinyxml2::XMLError code = doc.Parse(xmlContent.c_str());
     const bool ok = code == tinyxml2::XML_SUCCESS;
@@ -178,7 +178,7 @@ std::string ts::XML::SearchFile(const std::string& fileName)
 // Load an XML file.
 //----------------------------------------------------------------------------
 
-bool ts::XML::loadDocument(tinyxml2::XMLDocument& doc, const std::string& fileName, bool search)
+bool ts::XML::loadDocument(Document& doc, const std::string& fileName, bool search)
 {
     // Actual file name to load after optional search in directories.
     const std::string actualFileName(search ? SearchFile(fileName) : fileName);
@@ -203,7 +203,7 @@ bool ts::XML::loadDocument(tinyxml2::XMLDocument& doc, const std::string& fileNa
 // Find an attribute, case-insensitive, in an XML element.
 //----------------------------------------------------------------------------
 
-const tinyxml2::XMLAttribute* ts::XML::findAttribute(const tinyxml2::XMLElement* elem, const char* name, bool silent)
+const ts::XML::Attribute* ts::XML::findAttribute(const Element* elem, const char* name, bool silent)
 {
     // Filter invalid parameters.
     if (elem == 0 || name == 0 || name[0] == '\0') {
@@ -214,7 +214,7 @@ const tinyxml2::XMLAttribute* ts::XML::findAttribute(const tinyxml2::XMLElement*
     }
 
     // Loop on all attributes.
-    for (const tinyxml2::XMLAttribute* attr = elem->FirstAttribute(); attr != 0; attr = attr->Next()) {
+    for (const Attribute* attr = elem->FirstAttribute(); attr != 0; attr = attr->Next()) {
         if (UTF8Equal(attr->Name(), name, false)) {
             return attr;
         }
@@ -232,7 +232,7 @@ const tinyxml2::XMLAttribute* ts::XML::findAttribute(const tinyxml2::XMLElement*
 // Find the first child element in an XML element by name, case-insensitive.
 //----------------------------------------------------------------------------
 
-const tinyxml2::XMLElement* ts::XML::findFirstChild(const tinyxml2::XMLElement* elem, const char* name, bool silent)
+const ts::XML::Element* ts::XML::findFirstChild(const Element* elem, const char* name, bool silent)
 {
     // Filter invalid parameters.
     if (elem == 0 || name == 0 || name[0] == '\0') {
@@ -243,7 +243,7 @@ const tinyxml2::XMLElement* ts::XML::findFirstChild(const tinyxml2::XMLElement* 
     }
 
     // Loop on all children.
-    for (const tinyxml2::XMLElement* child = elem->FirstChildElement(); child != 0; child = child->NextSiblingElement()) {
+    for (const Element* child = elem->FirstChildElement(); child != 0; child = child->NextSiblingElement()) {
         if (UTF8Equal(child->Name(), name, false)) {
             return child;
         }
@@ -261,7 +261,7 @@ const tinyxml2::XMLElement* ts::XML::findFirstChild(const tinyxml2::XMLElement* 
 // Initialize an XML document.
 //----------------------------------------------------------------------------
 
-tinyxml2::XMLElement*ts::XML::initializeDocument(tinyxml2::XMLDocument* doc, const std::string& rootName, const std::string& declaration)
+ts::XML::Element* ts::XML::initializeDocument(Document* doc, const std::string& rootName, const std::string& declaration)
 {
     // Filter incorrect parameters.
     if (doc == 0 || rootName.empty()) {
@@ -275,7 +275,7 @@ tinyxml2::XMLElement*ts::XML::initializeDocument(tinyxml2::XMLDocument* doc, con
     doc->InsertFirstChild(doc->NewDeclaration(declaration.empty() ? 0 : declaration.c_str()));
 
     // Create the document root.
-    tinyxml2::XMLElement* root = doc->NewElement(rootName.c_str());
+    Element* root = doc->NewElement(rootName.c_str());
     if (root != 0) {
         doc->InsertEndChild(root);
     }
@@ -288,7 +288,7 @@ tinyxml2::XMLElement*ts::XML::initializeDocument(tinyxml2::XMLDocument* doc, con
 // Add a new child element at the end of a node.
 //----------------------------------------------------------------------------
 
-tinyxml2::XMLElement*ts::XML::addElement(tinyxml2::XMLElement* parent, const std::string& childName)
+ts::XML::Element* ts::XML::addElement(Element* parent, const std::string& childName)
 {
     // Filter incorrect parameters.
     if (parent == 0 || childName.empty()) {
@@ -296,7 +296,7 @@ tinyxml2::XMLElement*ts::XML::addElement(tinyxml2::XMLElement* parent, const std
     }
 
     // Get the associated document.
-    tinyxml2::XMLDocument* doc = parent->GetDocument();
+    Document* doc = parent->GetDocument();
     if (doc == 0) {
         // Should not happen, but who knows...
         reportError(Format("Internal XML error, no document found for element <%s>", ElementName(parent)));
@@ -304,7 +304,7 @@ tinyxml2::XMLElement*ts::XML::addElement(tinyxml2::XMLElement* parent, const std
     }
 
     // Create the new element.
-    tinyxml2::XMLElement* child = doc->NewElement(childName.c_str());
+    Element* child = doc->NewElement(childName.c_str());
     if (child != 0) {
         parent->InsertEndChild(child);
     }
@@ -317,7 +317,7 @@ tinyxml2::XMLElement*ts::XML::addElement(tinyxml2::XMLElement* parent, const std
 // Find a child element by name in an XML model element.
 //----------------------------------------------------------------------------
 
-const tinyxml2::XMLElement* ts::XML::findModelElement(const tinyxml2::XMLElement* elem, const char* name)
+const ts::XML::Element* ts::XML::findModelElement(const Element* elem, const char* name)
 {
     // Filter invalid parameters.
     if (elem == 0 || name == 0 || name[0] == '\0') {
@@ -325,7 +325,7 @@ const tinyxml2::XMLElement* ts::XML::findModelElement(const tinyxml2::XMLElement
     }
 
     // Loop on all children.
-    for (const tinyxml2::XMLElement* child = elem->FirstChildElement(); child != 0; child = child->NextSiblingElement()) {
+    for (const Element* child = elem->FirstChildElement(); child != 0; child = child->NextSiblingElement()) {
         if (UTF8Equal(child->Name(), name, false)) {
             // Found the child.
             return child;
@@ -334,23 +334,23 @@ const tinyxml2::XMLElement* ts::XML::findModelElement(const tinyxml2::XMLElement
             // The model contains a reference to a child of the root of the document.
             // Example: <_any in="_descriptors"/> => child is the <_any> node.
             // Find the reference name, "_descriptors" in the example.
-            const tinyxml2::XMLAttribute* attr = findAttribute(child, TSXML_REF_ATTR, true);
+            const Attribute* attr = findAttribute(child, TSXML_REF_ATTR, true);
             const char* refName = attr == 0 ? 0 : attr->Value();
             if (refName == 0) {
                 reportError(Format("Invalid XML model, missing or empty attribute '%s' in <%s> line %d", TSXML_REF_ATTR, ElementName(child), child->GetLineNum()));
             }
             else {
                 // Locate the referenced node inside the model root.
-                const tinyxml2::XMLDocument* document = elem->GetDocument();
-                const tinyxml2::XMLElement* root = document == 0 ? 0 : document->RootElement();
-                const tinyxml2::XMLElement* refElem = root == 0 ? 0 : findFirstChild(root, refName, true);
+                const Document* document = elem->GetDocument();
+                const Element* root = document == 0 ? 0 : document->RootElement();
+                const Element* refElem = root == 0 ? 0 : findFirstChild(root, refName, true);
                 if (refElem == 0) {
                     // The referenced element does not exist.
                     reportError(Format("Invalid XML model, <%s> not found in model root, referenced in line %d", refName, attr->GetLineNum()));
                 }
                 else {
                     // Check if the child is found inside the referenced element.
-                    const tinyxml2::XMLElement* e = findModelElement(refElem, name);
+                    const Element* e = findModelElement(refElem, name);
                     if (e != 0) {
                         return e;
                     }
@@ -368,10 +368,10 @@ const tinyxml2::XMLElement* ts::XML::findModelElement(const tinyxml2::XMLElement
 // Validate an XML document.
 //----------------------------------------------------------------------------
 
-bool ts::XML::validateDocument(const tinyxml2::XMLDocument& model, const tinyxml2::XMLDocument& doc)
+bool ts::XML::validateDocument(const Document& model, const Document& doc)
 {
-    const tinyxml2::XMLElement* modelRoot = model.RootElement();
-    const tinyxml2::XMLElement* docRoot = doc.RootElement();
+    const Element* modelRoot = model.RootElement();
+    const Element* docRoot = doc.RootElement();
 
     if (HaveSameName(modelRoot, docRoot)) {
         return validateElement(modelRoot, docRoot);
@@ -382,7 +382,7 @@ bool ts::XML::validateDocument(const tinyxml2::XMLDocument& model, const tinyxml
     }
 }
 
-bool ts::XML::validateElement(const tinyxml2::XMLElement* model, const tinyxml2::XMLElement* doc)
+bool ts::XML::validateElement(const Element* model, const Element* doc)
 {
     if (model == 0) {
         reportError("Invalid XML model document");
@@ -397,7 +397,7 @@ bool ts::XML::validateElement(const tinyxml2::XMLElement* model, const tinyxml2:
     bool success = true;
 
     // Check that all attributes in doc exist in model.
-    for (const tinyxml2::XMLAttribute* attr = doc->FirstAttribute(); attr != 0; attr = attr->Next()) {
+    for (const Attribute* attr = doc->FirstAttribute(); attr != 0; attr = attr->Next()) {
         const char* name = attr->Name();
         if (name != 0 && findAttribute(model, name, true) == 0) {
             // The corresponding attribute does not exist in the model.
@@ -407,10 +407,10 @@ bool ts::XML::validateElement(const tinyxml2::XMLElement* model, const tinyxml2:
     }
 
     // Check that all children elements in doc exist in model.
-    for (const tinyxml2::XMLElement* docChild = doc->FirstChildElement(); docChild != 0; docChild = docChild->NextSiblingElement()) {
+    for (const Element* docChild = doc->FirstChildElement(); docChild != 0; docChild = docChild->NextSiblingElement()) {
         const char* name = docChild->Name();
         if (name != 0) {
-            const tinyxml2::XMLElement* modelChild = findModelElement(model, name);
+            const Element* modelChild = findModelElement(model, name);
             if (modelChild == 0) {
                 // The corresponding node does not exist in the model.
                 reportError(Format("Unexpected node <%s> in <%s>, line %d", name, ElementName(doc), docChild->GetLineNum()));

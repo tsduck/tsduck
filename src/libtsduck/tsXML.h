@@ -64,6 +64,16 @@ namespace ts {
         //!
         explicit XML(ReportInterface& report = NULLREP);
 
+        typedef tinyxml2::XMLAttribute   Attribute;    //!< Shortcut for TinyXML-2 attribute.
+        typedef tinyxml2::XMLComment     Comment;      //!< Shortcut for TinyXML-2 comment.
+        typedef tinyxml2::XMLDeclaration Declaration;  //!< Shortcut for TinyXML-2 declaration.
+        typedef tinyxml2::XMLDocument    Document;     //!< Shortcut for TinyXML-2 document.
+        typedef tinyxml2::XMLElement     Element;      //!< Shortcut for TinyXML-2 element.
+        typedef tinyxml2::XMLNode        Node;         //!< Shortcut for TinyXML-2 node.
+        typedef tinyxml2::XMLText        Text;         //!< Shortcut for TinyXML-2 text.
+        typedef tinyxml2::XMLUnknown     Unknown;      //!< Shortcut for TinyXML-2 unknown node.
+        typedef tinyxml2::XMLVisitor     Visitor;      //!< Shortcut for TinyXML-2 visitor.
+
         //!
         //! Load an XML file.
         //! @param [out] doc TinyXML document object to load.
@@ -77,7 +87,7 @@ namespace ts {
         //! - All directories in @c PATH (UNIX) or @c Path (Windows) environment variable.
         //! @return True on success, false on error.
         //!
-        bool loadDocument(tinyxml2::XMLDocument& doc, const std::string& fileName, bool search = true);
+        bool loadDocument(Document& doc, const std::string& fileName, bool search = true);
 
         //!
         //! Parse an XML document.
@@ -85,7 +95,7 @@ namespace ts {
         //! @param [in] xmlContent Content of the XML document.
         //! @return True on success, false on error.
         //!
-        bool parseDocument(tinyxml2::XMLDocument& doc, const std::string& xmlContent);
+        bool parseDocument(Document& doc, const std::string& xmlContent);
 
         //!
         //! Validate an XML document.
@@ -101,7 +111,7 @@ namespace ts {
         //! @return True if @a doc matches @a model, false if it does not.
         //! Validation errors are reported through this object.
         //!
-        bool validateDocument(const tinyxml2::XMLDocument& model, const tinyxml2::XMLDocument& doc);
+        bool validateDocument(const Document& model, const Document& doc);
 
         //!
         //! Report an error on the registered report interface.
@@ -109,7 +119,7 @@ namespace ts {
         //! @param [in] code TinyXML error code.
         //! @param [in] node Optional node which triggered the error.
         //!
-        void reportError(const std::string& message, tinyxml2::XMLError code = tinyxml2::XML_SUCCESS, tinyxml2::XMLNode* node = 0);
+        void reportError(const std::string& message, tinyxml2::XMLError code = tinyxml2::XML_SUCCESS, Node* node = 0);
 
         //!
         //! Search a file.
@@ -130,7 +140,7 @@ namespace ts {
         //! @return A valid UTF-8 string, the name of @a e or an empty string
         //! if @a e is NULL or its name is NULL.
         //!
-        static const char* ElementName(const tinyxml2::XMLElement* e);
+        static const char* ElementName(const Element* e);
 
         //!
         //! Check if two XML elements have the same name, case-insensitive.
@@ -138,7 +148,7 @@ namespace ts {
         //! @param [in] e2 An XML element.
         //! @return True is @a e1 and @a e2 are identical.
         //!
-        static bool HaveSameName(const tinyxml2::XMLElement* e1, const tinyxml2::XMLElement* e2)
+        static bool HaveSameName(const tinyxml2::XMLElement* e1, const Element* e2)
         {
             return UTF8Equal(ElementName(e1), ElementName(e2), false);
         }
@@ -150,7 +160,7 @@ namespace ts {
         //! @param [in] silent If true, do not report error.
         //! @return Attribute address or zero if not found.
         //!
-        const tinyxml2::XMLAttribute* findAttribute(const tinyxml2::XMLElement* elem, const char* name, bool silent = false);
+        const Attribute* findAttribute(const Element* elem, const char* name, bool silent = false);
 
         //!
         //! Find the first child element in an XML element by name, case-insensitive.
@@ -159,7 +169,7 @@ namespace ts {
         //! @param [in] silent If true, do not report error.
         //! @return Child element address or zero if not found.
         //!
-        const tinyxml2::XMLElement* findFirstChild(const tinyxml2::XMLElement* elem, const char* name, bool silent = false);
+        const Element* findFirstChild(const Element* elem, const char* name, bool silent = false);
 
         //!
         //! Initialize an XML document.
@@ -170,7 +180,7 @@ namespace ts {
         //! is used, specifying UTF-8 as format.
         //! @return New root element of the document or null on error.
         //!
-        tinyxml2::XMLElement* initializeDocument(tinyxml2::XMLDocument* doc, const std::string& rootName, const std::string& declaration = std::string());
+        Element* initializeDocument(Document* doc, const std::string& rootName, const std::string& declaration = std::string());
 
         //!
         //! Add a new child element at the end of a node.
@@ -178,7 +188,7 @@ namespace ts {
         //! @param [in] childName Name of new child element to create.
         //! @return New child element or null on error.
         //!
-        tinyxml2::XMLElement* addElement(tinyxml2::XMLElement* parent, const std::string& childName);
+        Element* addElement(Element* parent, const std::string& childName);
 
         //!
         //! A subclass of TinyXML printer class which can control the indentation width.
@@ -219,7 +229,7 @@ namespace ts {
         //! @return True if @a doc matches @a model, false if it does not.
         //! Validation errors are reported through this object.
         //!
-        bool validateElement(const tinyxml2::XMLElement* model, const tinyxml2::XMLElement* doc);
+        bool validateElement(const Element* model, const Element* doc);
 
         //!
         //! Find a child element by name in an XML model element.
@@ -227,7 +237,7 @@ namespace ts {
         //! @param [in] name Name of the child element to search.
         //! @return Address of the child model or zero if not found.
         //!
-        const tinyxml2::XMLElement* findModelElement(const tinyxml2::XMLElement* elem, const char* name);
+        const Element* findModelElement(const Element* elem, const char* name);
 
         // Inaccessible operations.
         XML(const XML&) = delete;

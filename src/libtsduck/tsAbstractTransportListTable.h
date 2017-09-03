@@ -68,6 +68,8 @@ namespace ts {
         // Inherited methods
         virtual void serialize (BinaryTable& table) const;
         virtual void deserialize (const BinaryTable& table);
+        virtual XML::Element* toXML(XML& xml, XML::Document& doc) const;
+        virtual void fromXML(XML& xml, const XML::Element* element);
 
     protected:
         //!
@@ -79,18 +81,20 @@ namespace ts {
         //!
         //! Constructor for subclasses.
         //! @param [in] tid Table id.
+        //! @param [in] xml_name Table name, as used in XML structures.
         //! @param [in] tid_ext Table id extension.
         //! @param [in] version Table version number.
         //! @param [in] is_current True if table is current, false if table is next.
         //!
-        AbstractTransportListTable(TID tid, uint16_t tid_ext, uint8_t version, bool is_current);
+        AbstractTransportListTable(TID tid, const char* xml_name, uint16_t tid_ext, uint8_t version, bool is_current);
 
         //!
         //! Constructor from a binary table.
         //! @param [in] tid Table id.
+        //! @param [in] xml_name Table name, as used in XML structures.
         //! @param [in] table Binary table to deserialize.
         //!
-        AbstractTransportListTable(TID tid, const BinaryTable& table);
+        AbstractTransportListTable(TID tid, const char* xml_name, const BinaryTable& table);
 
     private:
         typedef std::set <TransportStreamId> TransportStreamIdSet;

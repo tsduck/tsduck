@@ -41,7 +41,7 @@ TSDUCK_SOURCE;
 //----------------------------------------------------------------------------
 
 ts::TDT::TDT(const Time& utc_time_) :
-    AbstractTable(TID_TDT),
+    AbstractTable(TID_TDT, "TDT"),
     utc_time(utc_time_)
 {
     _is_valid = true;
@@ -53,7 +53,7 @@ ts::TDT::TDT(const Time& utc_time_) :
 //----------------------------------------------------------------------------
 
 ts::TDT::TDT(const BinaryTable& table) :
-    AbstractTable(TID_TDT),
+    AbstractTable(TID_TDT, "TDT"),
     utc_time()
 {
     deserialize(table);
@@ -135,4 +135,24 @@ void ts::TDT::DisplaySection(TablesDisplay& display, const ts::Section& section,
     }
 
     display.displayExtraData(data, size, indent);
+}
+
+
+//----------------------------------------------------------------------------
+// XML serialization
+//----------------------------------------------------------------------------
+
+ts::XML::Element* ts::TDT::toXML(XML& xml, XML::Document& doc) const
+{
+    return 0; // TODO @@@@
+}
+
+
+//----------------------------------------------------------------------------
+// XML deserialization
+//----------------------------------------------------------------------------
+
+void ts::TDT::fromXML(XML& xml, const XML::Element* element)
+{
+    // TODO @@@@
 }
