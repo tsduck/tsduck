@@ -51,12 +51,14 @@ public:
     void testVisitor();
     void testInvalid();
     void testValidation();
+    void testCreation();
 
     CPPUNIT_TEST_SUITE(XMLTest);
     CPPUNIT_TEST(testDocument);
     CPPUNIT_TEST(testVisitor);
     CPPUNIT_TEST(testInvalid);
     CPPUNIT_TEST(testValidation);
+    CPPUNIT_TEST(testCreation);
     CPPUNIT_TEST_SUITE_END();
 };
 
@@ -317,4 +319,65 @@ void XMLTest::testValidation()
     tinyxml2::XMLDocument doc;
     CPPUNIT_ASSERT(xml.parseDocument(doc, xmlContent));
     CPPUNIT_ASSERT(xml.validateDocument(model, doc));
+}
+
+void XMLTest::testCreation()
+{
+    ts::XML xml(CERR);
+    tinyxml2::XMLDocument doc;
+    tinyxml2::XMLElement* e1 = 0;
+    tinyxml2::XMLElement* e2 = 0;
+
+    tinyxml2::XMLElement* root = xml.initializeDocument(&doc, "theRoot");
+    CPPUNIT_ASSERT(root != 0);
+
+    CPPUNIT_ASSERT((e1 = xml.addElement(root, "child1")) != 0);
+    e1->SetAttribute("str", "a string");
+    e1->SetAttribute("int", -47);
+    CPPUNIT_ASSERT(xml.addElement(e1, "subChild1") != 0);
+    CPPUNIT_ASSERT((e2 = xml.addElement(e1, "subChild2")) != 0);
+    e2->SetAttribute("int64", TS_CONST64(0x7FFFFFFFFFFFFFFF));
+    CPPUNIT_ASSERT((e2 = xml.addElement(root, "child2")) != 0);
+    CPPUNIT_ASSERT(xml.addElement(e2, "fooBar") != 0);
+
+    ts::XML::Printer printer(2);
+    doc.Print(&printer);
+    std::string text(printer.CStr());
+    utest::Out() << "XMLTest::testCreation: " << text << std::endl;
+
+    ts::SubstituteAll(text, "\r", "");
+    CPPUNIT_ASSERT_STRINGS_EQUAL(
+                "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+                "<theRoot>\n"
+                "  <child1 str=\"a string\" int=\"-47\">\n"
+                "    <subChild1/>\n"
+                "    <subChild2 int64=\"9223372036854775807\"/>\n"
+                "  </child1>\n"
+                "  <child2>\n"
+                "    <fooBar/>\n"
+                "  </child2>\n"
+                "</theRoot>\n",
+                text);
+
+    Visitor visitor(
+        "EnterDocument", "",
+        "Declaration", "xml version=\"1.0\" encoding=\"UTF-8\"",
+        "EnterElement", "theRoot",
+        "EnterElement", "child1",
+        "EnterElement", "subChild1",
+        "ExitElement", "subChild1",
+        "EnterElement", "subChild2",
+        "ExitElement", "subChild2",
+        "ExitElement", "child1",
+        "EnterElement", "child2",
+        "EnterElement", "fooBar",
+        "ExitElement", "fooBar",
+        "ExitElement", "child2",
+        "ExitElement", "theRoot",
+        "ExitDocument", "",
+        TS_NULL
+    );
+
+    CPPUNIT_ASSERT(doc.Accept(&visitor));
+    CPPUNIT_ASSERT(visitor.AtEnd());
 }
