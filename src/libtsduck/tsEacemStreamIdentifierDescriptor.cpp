@@ -42,7 +42,7 @@ TSDUCK_SOURCE;
 //----------------------------------------------------------------------------
 
 ts::EacemStreamIdentifierDescriptor::EacemStreamIdentifierDescriptor(uint8_t version_) :
-    AbstractDescriptor(DID_EACEM_STREAM_ID),
+    AbstractDescriptor(DID_EACEM_STREAM_ID, PDS_EACEM),
     version(version_)
 {
     _is_valid = true;
@@ -54,7 +54,7 @@ ts::EacemStreamIdentifierDescriptor::EacemStreamIdentifierDescriptor(uint8_t ver
 //----------------------------------------------------------------------------
 
 ts::EacemStreamIdentifierDescriptor::EacemStreamIdentifierDescriptor(const Descriptor& desc) :
-    AbstractDescriptor(DID_EACEM_STREAM_ID),
+    AbstractDescriptor(DID_EACEM_STREAM_ID, PDS_EACEM),
     version(0)
 {
     deserialize(desc);

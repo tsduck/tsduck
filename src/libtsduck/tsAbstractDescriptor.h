@@ -69,6 +69,21 @@ namespace ts {
         DID tag() const {return _tag;}
 
         //!
+        //! Get the required private data specifier.
+        //! @return The private data specifier which is required to interpret correctly
+        //! this descriptor in a section. Return zero if this descriptor is a DVB-defined
+        //! or MPEG-defined descriptor, not a private specifier.
+        //!
+        PDS requiredPDS() const {return _required_pds;}
+
+        //!
+        //! Check if this descriptor is a private descriptor.
+        //! @return True if this descriptor is a private descriptor,
+        //! false if it is a DVB-defined or MPEG-defined descriptor.
+        //!
+        bool isPrivateDescriptor() const {return _required_pds != 0;}
+
+        //!
         //! This abstract method serializes a descriptor.
         //! @param [out] bin A binary descriptor object.
         //! Its content is replaced with a binary representation of this object.
@@ -150,10 +165,16 @@ namespace ts {
         bool _is_valid;
 
         //!
+        //! Required private data specified.
+        //!
+        const PDS _required_pds;
+
+        //!
         //! Protected constructor for subclasses.
         //! @param [in] tag Descriptor tag.
+        //! @param [in] pds Required private data specifier if this is a private descriptor.
         //!
-        AbstractDescriptor(DID tag) : _tag (tag), _is_valid (false) {}
+        AbstractDescriptor(DID tag, PDS pds = 0) : _tag (tag), _is_valid (false), _required_pds(pds) {}
 
     private:
         // Unreachable constructors and operators.

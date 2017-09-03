@@ -42,7 +42,7 @@ TSDUCK_SOURCE;
 //----------------------------------------------------------------------------
 
 ts::EutelsatChannelNumberDescriptor::EutelsatChannelNumberDescriptor() :
-    AbstractDescriptor(DID_EUTELSAT_CHAN_NUM),
+    AbstractDescriptor(DID_EUTELSAT_CHAN_NUM, PDS_EUTELSAT),
     entries()
 {
     _is_valid = true;
@@ -54,7 +54,7 @@ ts::EutelsatChannelNumberDescriptor::EutelsatChannelNumberDescriptor() :
 //----------------------------------------------------------------------------
 
 ts::EutelsatChannelNumberDescriptor::EutelsatChannelNumberDescriptor(const Descriptor& desc) :
-    AbstractDescriptor(DID_EUTELSAT_CHAN_NUM),
+    AbstractDescriptor(DID_EUTELSAT_CHAN_NUM, PDS_EUTELSAT),
     entries()
 {
     deserialize(desc);
