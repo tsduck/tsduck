@@ -279,3 +279,23 @@ void ts::EnhancedAC3Descriptor::DisplayDescriptor(TablesDisplay& display, DID di
 
     display.displayExtraData(data, size, indent);
 }
+
+
+//----------------------------------------------------------------------------
+// XML serialization
+//----------------------------------------------------------------------------
+
+ts::XML::Element* ts::EnhancedAC3Descriptor::toXML(XML& xml, XML::Document& doc) const
+{
+    return 0; // TODO @@@@
+}
+
+
+//----------------------------------------------------------------------------
+// XML deserialization
+//----------------------------------------------------------------------------
+
+void ts::EnhancedAC3Descriptor::fromXML(XML& xml, const XML::Element* element)
+{
+    // TODO @@@@
+}

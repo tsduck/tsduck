@@ -176,3 +176,23 @@ void ts::ServiceDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, c
 
     display.displayExtraData(data, size, indent);
 }
+
+
+//----------------------------------------------------------------------------
+// XML serialization
+//----------------------------------------------------------------------------
+
+ts::XML::Element* ts::ServiceDescriptor::toXML(XML& xml, XML::Document& doc) const
+{
+    return 0; // TODO @@@@
+}
+
+
+//----------------------------------------------------------------------------
+// XML deserialization
+//----------------------------------------------------------------------------
+
+void ts::ServiceDescriptor::fromXML(XML& xml, const XML::Element* element)
+{
+    // TODO @@@@
+}

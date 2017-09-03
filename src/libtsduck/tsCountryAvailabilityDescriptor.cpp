@@ -154,3 +154,23 @@ void ts::CountryAvailabilityDescriptor::DisplayDescriptor(TablesDisplay& display
 
     display.displayExtraData(data, size, indent);
 }
+
+
+//----------------------------------------------------------------------------
+// XML serialization
+//----------------------------------------------------------------------------
+
+ts::XML::Element* ts::CountryAvailabilityDescriptor::toXML(XML& xml, XML::Document& doc) const
+{
+    return 0; // TODO @@@@
+}
+
+
+//----------------------------------------------------------------------------
+// XML deserialization
+//----------------------------------------------------------------------------
+
+void ts::CountryAvailabilityDescriptor::fromXML(XML& xml, const XML::Element* element)
+{
+    // TODO @@@@
+}

@@ -144,3 +144,23 @@ void ts::CAIdentifierDescriptor::DisplayDescriptor(TablesDisplay& display, DID d
 
     display.displayExtraData(data, size, indent);
 }
+
+
+//----------------------------------------------------------------------------
+// XML serialization
+//----------------------------------------------------------------------------
+
+ts::XML::Element* ts::CAIdentifierDescriptor::toXML(XML& xml, XML::Document& doc) const
+{
+    return 0; // TODO @@@@
+}
+
+
+//----------------------------------------------------------------------------
+// XML deserialization
+//----------------------------------------------------------------------------
+
+void ts::CAIdentifierDescriptor::fromXML(XML& xml, const XML::Element* element)
+{
+    // TODO @@@@
+}

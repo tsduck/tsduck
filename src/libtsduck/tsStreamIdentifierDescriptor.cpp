@@ -107,3 +107,23 @@ void ts::StreamIdentifierDescriptor::DisplayDescriptor(TablesDisplay& display, D
 
     display.displayExtraData(data, size, indent);
 }
+
+
+//----------------------------------------------------------------------------
+// XML serialization
+//----------------------------------------------------------------------------
+
+ts::XML::Element* ts::StreamIdentifierDescriptor::toXML(XML& xml, XML::Document& doc) const
+{
+    return 0; // TODO @@@@
+}
+
+
+//----------------------------------------------------------------------------
+// XML deserialization
+//----------------------------------------------------------------------------
+
+void ts::StreamIdentifierDescriptor::fromXML(XML& xml, const XML::Element* element)
+{
+    // TODO @@@@
+}

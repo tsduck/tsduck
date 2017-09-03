@@ -150,3 +150,23 @@ void ts::LogicalChannelNumberDescriptor::DisplayDescriptor(TablesDisplay& displa
 
     display.displayExtraData(data, size, indent);
 }
+
+
+//----------------------------------------------------------------------------
+// XML serialization
+//----------------------------------------------------------------------------
+
+ts::XML::Element* ts::LogicalChannelNumberDescriptor::toXML(XML& xml, XML::Document& doc) const
+{
+    return 0; // TODO @@@@
+}
+
+
+//----------------------------------------------------------------------------
+// XML deserialization
+//----------------------------------------------------------------------------
+
+void ts::LogicalChannelNumberDescriptor::fromXML(XML& xml, const XML::Element* element)
+{
+    // TODO @@@@
+}

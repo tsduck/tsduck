@@ -137,3 +137,23 @@ void ts::CADescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const 
 
     display.displayExtraData(data, size, indent);
 }
+
+
+//----------------------------------------------------------------------------
+// XML serialization
+//----------------------------------------------------------------------------
+
+ts::XML::Element* ts::CADescriptor::toXML(XML& xml, XML::Document& doc) const
+{
+    return 0; // TODO @@@@
+}
+
+
+//----------------------------------------------------------------------------
+// XML deserialization
+//----------------------------------------------------------------------------
+
+void ts::CADescriptor::fromXML(XML& xml, const XML::Element* element)
+{
+    // TODO @@@@
+}

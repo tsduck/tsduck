@@ -365,3 +365,23 @@ void ts::ExtendedEventDescriptor::DisplayDescriptor(TablesDisplay& display, DID 
 
     display.displayExtraData(data, size, indent);
 }
+
+
+//----------------------------------------------------------------------------
+// XML serialization
+//----------------------------------------------------------------------------
+
+ts::XML::Element* ts::ExtendedEventDescriptor::toXML(XML& xml, XML::Document& doc) const
+{
+    return 0; // TODO @@@@
+}
+
+
+//----------------------------------------------------------------------------
+// XML deserialization
+//----------------------------------------------------------------------------
+
+void ts::ExtendedEventDescriptor::fromXML(XML& xml, const XML::Element* element)
+{
+    // TODO @@@@
+}

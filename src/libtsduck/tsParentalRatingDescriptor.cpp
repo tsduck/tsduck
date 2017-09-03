@@ -149,3 +149,23 @@ void ts::ParentalRatingDescriptor::DisplayDescriptor(TablesDisplay& display, DID
 
     display.displayExtraData(data, size, indent);
 }
+
+
+//----------------------------------------------------------------------------
+// XML serialization
+//----------------------------------------------------------------------------
+
+ts::XML::Element* ts::ParentalRatingDescriptor::toXML(XML& xml, XML::Document& doc) const
+{
+    return 0; // TODO @@@@
+}
+
+
+//----------------------------------------------------------------------------
+// XML deserialization
+//----------------------------------------------------------------------------
+
+void ts::ParentalRatingDescriptor::fromXML(XML& xml, const XML::Element* element)
+{
+    // TODO @@@@
+}

@@ -201,3 +201,23 @@ void ts::DataBroadcastIdDescriptor::DisplaySelectorBytes(TablesDisplay & display
         data += size; size = 0;
     }
 }
+
+
+//----------------------------------------------------------------------------
+// XML serialization
+//----------------------------------------------------------------------------
+
+ts::XML::Element* ts::DataBroadcastIdDescriptor::toXML(XML& xml, XML::Document& doc) const
+{
+    return 0; // TODO @@@@
+}
+
+
+//----------------------------------------------------------------------------
+// XML deserialization
+//----------------------------------------------------------------------------
+
+void ts::DataBroadcastIdDescriptor::fromXML(XML& xml, const XML::Element* element)
+{
+    // TODO @@@@
+}

@@ -233,3 +233,23 @@ void ts::TerrestrialDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& d
 
     display.displayExtraData(data, size, indent);
 }
+
+
+//----------------------------------------------------------------------------
+// XML serialization
+//----------------------------------------------------------------------------
+
+ts::XML::Element* ts::TerrestrialDeliverySystemDescriptor::toXML(XML& xml, XML::Document& doc) const
+{
+    return 0; // TODO @@@@
+}
+
+
+//----------------------------------------------------------------------------
+// XML deserialization
+//----------------------------------------------------------------------------
+
+void ts::TerrestrialDeliverySystemDescriptor::fromXML(XML& xml, const XML::Element* element)
+{
+    // TODO @@@@
+}

@@ -75,6 +75,8 @@ namespace ts {
         // Inherited methods
         virtual void serialize(Descriptor&) const;
         virtual void deserialize(const Descriptor&);
+        virtual XML::Element* toXML(XML& xml, XML::Document& doc) const;
+        virtual void fromXML(XML& xml, const XML::Element* element);
 
         //!
         //! Item entry.

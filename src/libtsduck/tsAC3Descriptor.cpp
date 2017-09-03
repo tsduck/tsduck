@@ -210,3 +210,23 @@ void ts::AC3Descriptor::DisplayDescriptor(TablesDisplay& display, DID did, const
 
     display.displayExtraData(data, size, indent);
 }
+
+
+//----------------------------------------------------------------------------
+// XML serialization
+//----------------------------------------------------------------------------
+
+ts::XML::Element* ts::AC3Descriptor::toXML(XML& xml, XML::Document& doc) const
+{
+    return 0; // TODO @@@@
+}
+
+
+//----------------------------------------------------------------------------
+// XML deserialization
+//----------------------------------------------------------------------------
+
+void ts::AC3Descriptor::fromXML(XML& xml, const XML::Element* element)
+{
+    // TODO @@@@
+}
