@@ -35,6 +35,7 @@
 #pragma once
 #include "tsBinaryTable.h"
 #include "tsTablesDisplay.h"
+#include "tsXML.h"
 
 namespace ts {
     //!
@@ -77,6 +78,24 @@ namespace ts {
         virtual void deserialize(const BinaryTable& bin) = 0;
 
         //!
+        //! This abstract method converts the table to XML.
+        //! @param [in,out] xml XML utility for error reporting
+        //! @param [in,out] doc Document into which the XML tree is to be created.
+        //! The new XML structure is allocated in the document.
+        //! @return The new XML element.
+        //!
+        virtual XML::Element* toXML(XML& xml, XML::Document& doc) const = 0;
+
+        //!
+        //! This abstract converts an XML structure to a table.
+        //! In case of success, this object is replaced with the interpreted content of the XML structure.
+        //! In case of error, this object is invalidated.
+        //! @param [in,out] xml XML utility for error reporting
+        //! @param [in] element XML element to convert.
+        //!
+        virtual void fromXML(XML& xml, const XML::Element* element) = 0;
+
+        //!
         //! Virtual destructor
         //!
         virtual ~AbstractTable () {}
@@ -94,9 +113,14 @@ namespace ts {
 
     protected:
         //!
-        //! The table id can be modified by subclasses only
+        //! The table id can be modified by subclasses only.
         //!
         TID _table_id;
+
+        //!
+        //! The table name can be modified by subclasses only.
+        //!
+        const char* _xml_name;
 
         //!
         //! It is the responsibility of the subclasses to set the valid flag
@@ -106,8 +130,9 @@ namespace ts {
         //!
         //! Protected constructor for subclasses.
         //! @param [in] tid Table id.
+        //! @param [in] xml_name Table name, as used in XML structures.
         //!
-        AbstractTable(TID tid) : _table_id(tid), _is_valid(false) {}
+        AbstractTable(TID tid, const char* xml_name) : _table_id(tid), _xml_name(xml_name), _is_valid(false) {}
 
     private:
         // Unreachable constructors and operators.

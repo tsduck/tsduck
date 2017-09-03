@@ -95,10 +95,10 @@ void XMLTest::testDocument()
         "  <node4/>\n"
         "</root>\n";
 
-    tinyxml2::XMLDocument doc;
+    ts::XML::Document doc;
     CPPUNIT_ASSERT_EQUAL(tinyxml2::XML_SUCCESS, doc.Parse(document));
 
-    tinyxml2::XMLElement* root = doc.RootElement();
+    ts::XML::Element* root = doc.RootElement();
     CPPUNIT_ASSERT(root != 0);
     CPPUNIT_ASSERT(root->Name() != 0);
     CPPUNIT_ASSERT(!root->NoChildren());
@@ -107,7 +107,7 @@ void XMLTest::testDocument()
     CPPUNIT_ASSERT_STRINGS_EQUAL("val1", root->Attribute("attr1"));
     CPPUNIT_ASSERT(root->Attribute("nonexistent") == 0);
 
-    tinyxml2::XMLElement* elem = root->FirstChildElement();
+    ts::XML::Element* elem = root->FirstChildElement();
     CPPUNIT_ASSERT(elem != 0);
     CPPUNIT_ASSERT(elem->Name() != 0);
     CPPUNIT_ASSERT(!elem->NoChildren());
@@ -151,7 +151,7 @@ void XMLTest::testDocument()
 }
 
 namespace {
-    class Visitor : public tinyxml2::XMLVisitor
+    class Visitor : public ts::XML::Visitor
     {
     private:
         ts::StringList _ref;
@@ -184,56 +184,56 @@ namespace {
             return _iter == _ref.end();
         }
 
-        virtual bool VisitEnter(const tinyxml2::XMLDocument& doc)
+        virtual bool VisitEnter(const ts::XML::Document& doc)
         {
             utest::Out() << "XMLTest::Visitor::VisitEnter (document)" << std::endl;
             AssertNext("EnterDocument", "");
             return true;
         }
 
-        virtual bool VisitExit(const tinyxml2::XMLDocument& doc) 
+        virtual bool VisitExit(const ts::XML::Document& doc)
         {
             utest::Out() << "XMLTest::Visitor::VisitExit (document)" << std::endl;
             AssertNext("ExitDocument", "");
             return true;
         }
 
-        virtual bool VisitEnter(const tinyxml2::XMLElement& element, const tinyxml2::XMLAttribute* firstAttribute)
+        virtual bool VisitEnter(const ts::XML::Element& element, const ts::XML::Attribute* firstAttribute)
         {
             utest::Out() << "XMLTest::Visitor::VisitEnter (element) name='" << element.Name() << "'" << std::endl;
             AssertNext("EnterElement", element.Name());
             return true;
         }
 
-        virtual bool VisitExit(const tinyxml2::XMLElement& element)
+        virtual bool VisitExit(const ts::XML::Element& element)
         {
             utest::Out() << "XMLTest::Visitor::VisitExit (element) name='" << element.Name() << "'" << std::endl;
             AssertNext("ExitElement", element.Name());
             return true;
         }
 
-        virtual bool Visit(const tinyxml2::XMLDeclaration& declaration)
+        virtual bool Visit(const ts::XML::Declaration& declaration)
         {
             utest::Out() << "XMLTest::Visitor::Visit (declaration) value='" << declaration.Value() << "'" << std::endl;
             AssertNext("Declaration", declaration.Value());
             return true;
         }
 
-        virtual bool Visit(const tinyxml2::XMLText& text)
+        virtual bool Visit(const ts::XML::Text& text)
         {
             utest::Out() << "XMLTest::Visitor::Visit (text) value='" << text.Value() << "'" << std::endl;
             AssertNext("Text", text.Value());
             return true;
         }
 
-        virtual bool Visit(const tinyxml2::XMLComment& comment)
+        virtual bool Visit(const ts::XML::Comment& comment)
         {
             utest::Out() << "XMLTest::Visitor::Visit (comment) value='" << comment.Value() << "'" << std::endl;
             AssertNext("Comment", comment.Value());
             return true;
         }
 
-        virtual bool Visit(const tinyxml2::XMLUnknown& unknown)
+        virtual bool Visit(const ts::XML::Unknown& unknown)
         {
             utest::Out() << "XMLTest::Visitor::Visit (unknown) value='" << unknown.Value() << "'" << std::endl;
             AssertNext("Unknown", unknown.Value());
@@ -268,7 +268,7 @@ void XMLTest::testVisitor()
         TS_NULL
     );
 
-    tinyxml2::XMLDocument doc;
+    ts::XML::Document doc;
     CPPUNIT_ASSERT_EQUAL(tinyxml2::XML_SUCCESS, doc.Parse(document));
 
     CPPUNIT_ASSERT(doc.Accept(&visitor));
@@ -283,7 +283,7 @@ void XMLTest::testInvalid()
         "<foo>\n"
         "</bar>";
 
-    tinyxml2::XMLDocument doc;
+    ts::XML::Document doc;
     CPPUNIT_ASSERT_EQUAL(tinyxml2::XML_ERROR_MISMATCHED_ELEMENT, doc.Parse(xmlContent));
     CPPUNIT_ASSERT_STRINGS_EQUAL("foo", doc.GetErrorStr1());
     CPPUNIT_ASSERT_STRINGS_EQUAL("", doc.GetErrorStr2());
@@ -293,7 +293,7 @@ void XMLTest::testValidation()
 {
     ts::XML xml(CERR);
 
-    tinyxml2::XMLDocument model;
+    ts::XML::Document model;
     CPPUNIT_ASSERT(xml.loadDocument(model, "tsduck.xml"));
 
     static const char* xmlContent =
@@ -316,7 +316,7 @@ void XMLTest::testValidation()
         "  </PMT>\n"
         "</tsduck>";
 
-    tinyxml2::XMLDocument doc;
+    ts::XML::Document doc;
     CPPUNIT_ASSERT(xml.parseDocument(doc, xmlContent));
     CPPUNIT_ASSERT(xml.validateDocument(model, doc));
 }
@@ -324,11 +324,11 @@ void XMLTest::testValidation()
 void XMLTest::testCreation()
 {
     ts::XML xml(CERR);
-    tinyxml2::XMLDocument doc;
-    tinyxml2::XMLElement* e1 = 0;
-    tinyxml2::XMLElement* e2 = 0;
+    ts::XML::Document doc;
+    ts::XML::Element* e1 = 0;
+    ts::XML::Element* e2 = 0;
 
-    tinyxml2::XMLElement* root = xml.initializeDocument(&doc, "theRoot");
+    ts::XML::Element* root = xml.initializeDocument(&doc, "theRoot");
     CPPUNIT_ASSERT(root != 0);
 
     CPPUNIT_ASSERT((e1 = xml.addElement(root, "child1")) != 0);

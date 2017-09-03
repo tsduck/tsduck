@@ -41,10 +41,11 @@ TSDUCK_SOURCE;
 //----------------------------------------------------------------------------
 
 ts::AbstractTransportListTable::AbstractTransportListTable(TID tid_,
+                                                           const char* xml_name,
                                                            uint16_t tid_ext_,
                                                            uint8_t version_,
                                                            bool is_current_) :
-    AbstractLongTable(tid_, version_, is_current_),
+    AbstractLongTable(tid_, xml_name, version_, is_current_),
     descs(),
     transports(),
     section_hints(),
@@ -58,14 +59,14 @@ ts::AbstractTransportListTable::AbstractTransportListTable(TID tid_,
 // Constructor from a binary table
 //----------------------------------------------------------------------------
 
-ts::AbstractTransportListTable::AbstractTransportListTable (TID tid, const BinaryTable& table) :
-    AbstractLongTable (tid),
-    descs (),
-    transports (),
-    section_hints (),
-    _tid_ext (0xFFFF)
+ts::AbstractTransportListTable::AbstractTransportListTable (TID tid, const char* xml_name, const BinaryTable& table) :
+    AbstractLongTable(tid, xml_name),
+    descs(),
+    transports(),
+    section_hints(),
+    _tid_ext(0xFFFF)
 {
-    deserialize (table);
+    deserialize(table);
 }
 
 
@@ -373,4 +374,24 @@ void ts::AbstractTransportListTable::serialize(BinaryTable& table) const
 
     // Add partial section.
     addSection(table, section_number, payload, tsll_addr, data, remain);
+}
+
+
+//----------------------------------------------------------------------------
+// XML serialization
+//----------------------------------------------------------------------------
+
+ts::XML::Element* ts::AbstractTransportListTable::toXML(XML& xml, XML::Document& doc) const
+{
+    return 0; // TODO @@@@
+}
+
+
+//----------------------------------------------------------------------------
+// XML deserialization
+//----------------------------------------------------------------------------
+
+void ts::AbstractTransportListTable::fromXML(XML& xml, const XML::Element* element)
+{
+    // TODO @@@@
 }

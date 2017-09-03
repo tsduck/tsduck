@@ -51,7 +51,7 @@ ts::EIT::EIT(bool is_actual_,
              uint16_t service_id_,
              uint16_t ts_id_,
              uint16_t onetw_id_) :
-    AbstractLongTable(ComputeTableId(is_actual_, is_pf_, eits_index_), version_, is_current_),
+    AbstractLongTable(ComputeTableId(is_actual_, is_pf_, eits_index_), "EIT", version_, is_current_),
     service_id(service_id_),
     ts_id(ts_id_),
     onetw_id(onetw_id_),
@@ -68,7 +68,7 @@ ts::EIT::EIT(bool is_actual_,
 //----------------------------------------------------------------------------
 
 ts::EIT::EIT(const BinaryTable& table) :
-    AbstractLongTable(TID_EIT_PF_ACT),  // updated by deserialize()
+    AbstractLongTable(TID_EIT_PF_ACT, "EIT"),  // TID will be updated by deserialize()
     service_id(0),
     ts_id(0),
     onetw_id(0),
@@ -310,4 +310,24 @@ void ts::EIT::DisplaySection(TablesDisplay& display, const ts::Section& section,
     }
 
     display.displayExtraData(data, size, indent);
+}
+
+
+//----------------------------------------------------------------------------
+// XML serialization
+//----------------------------------------------------------------------------
+
+ts::XML::Element* ts::EIT::toXML(XML& xml, XML::Document& doc) const
+{
+    return 0; // TODO @@@@
+}
+
+
+//----------------------------------------------------------------------------
+// XML deserialization
+//----------------------------------------------------------------------------
+
+void ts::EIT::fromXML(XML& xml, const XML::Element* element)
+{
+    // TODO @@@@
 }

@@ -36,6 +36,7 @@
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsMPEG.h"
+#include "tsXML.h"
 
 namespace ts {
 

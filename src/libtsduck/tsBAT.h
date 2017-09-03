@@ -52,7 +52,7 @@ namespace ts {
         //! @param [in] id Bouquet identifier.
         //!
         BAT(uint8_t vers = 0, bool cur = true, uint16_t id = 0) :
-            AbstractTransportListTable(TID_BAT, id, vers, cur),
+            AbstractTransportListTable(TID_BAT, "BAT", id, vers, cur),
             bouquet_id(_tid_ext)
         {
         }
@@ -62,7 +62,7 @@ namespace ts {
         //! @param [in] table Binary table to deserialize.
         //!
         BAT(const BinaryTable& table) :
-            AbstractTransportListTable(TID_BAT, table),
+            AbstractTransportListTable(TID_BAT, "BAT", table),
             bouquet_id(_tid_ext)
         {
         }

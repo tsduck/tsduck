@@ -49,7 +49,7 @@ namespace ts {
         //! @param [in] cur True if table is current, false if table is next.
         //!
         CAT(uint8_t vers = 0, bool cur = true) :
-            AbstractDescriptorsTable(TID_CAT, 0xFFFF, vers, cur)
+            AbstractDescriptorsTable(TID_CAT, "CAT", 0xFFFF, vers, cur)
         {
         }
 
@@ -58,7 +58,7 @@ namespace ts {
         //! @param [in] table Binary table to deserialize.
         //!
         CAT(const BinaryTable& table) :
-            AbstractDescriptorsTable(TID_CAT, table)
+            AbstractDescriptorsTable(TID_CAT, "CAT", table)
         {
         }
     };

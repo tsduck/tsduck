@@ -50,11 +50,12 @@ namespace ts {
         //!
         //! Constructor for subclasses.
         //! @param [in] tid Table id.
+        //! @param [in] xml_name Table name, as used in XML structures.
         //! @param [in] version_ Table version number.
         //! @param [in] is_current_ True if table is current, false if table is next.
         //!
-        AbstractLongTable(TID tid, uint8_t version_ = 0, bool is_current_ = true) :
-            AbstractTable(tid),
+        AbstractLongTable(TID tid, const char* xml_name, uint8_t version_ = 0, bool is_current_ = true) :
+            AbstractTable(tid, xml_name),
             version(version_),
             is_current(is_current_)
         {

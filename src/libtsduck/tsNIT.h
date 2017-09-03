@@ -53,7 +53,7 @@ namespace ts {
         //! @param [in] id Network identifier.
         //!
         NIT(bool is_actual = true, uint8_t vers = 0, bool cur = true, uint16_t id = 0) :
-            AbstractTransportListTable(uint8_t(is_actual ? TID_NIT_ACT : TID_NIT_OTH), id, vers, cur),
+            AbstractTransportListTable(uint8_t(is_actual ? TID_NIT_ACT : TID_NIT_OTH), "NIT", id, vers, cur),
             network_id(_tid_ext)
         {
         }
@@ -63,7 +63,7 @@ namespace ts {
         //! @param [in] table Binary table to deserialize.
         //!
         NIT(const BinaryTable& table) :
-            AbstractTransportListTable(TID_NIT_ACT, table),  // TID updated by deserialize()
+            AbstractTransportListTable(TID_NIT_ACT, "NIT", table),  // TID updated by deserialize()
             network_id(_tid_ext)
         {
         }

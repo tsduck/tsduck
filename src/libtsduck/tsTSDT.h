@@ -48,7 +48,7 @@ namespace ts {
         //! @param [in] cur True if table is current, false if table is next.
         //!
         TSDT(uint8_t vers = 0, bool cur = true) :
-            AbstractDescriptorsTable(TID_TSDT, 0xFFFF, vers, cur)
+            AbstractDescriptorsTable(TID_TSDT, "TSDT", 0xFFFF, vers, cur)
         {
         }
 
@@ -57,7 +57,7 @@ namespace ts {
         //! @param [in] table Binary table to deserialize.
         //!
         TSDT(const BinaryTable& table) :
-            AbstractDescriptorsTable(TID_TSDT, table)
+            AbstractDescriptorsTable(TID_TSDT, "TSDT", table)
         {
         }
     };

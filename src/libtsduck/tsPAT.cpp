@@ -40,15 +40,15 @@ TSDUCK_SOURCE;
 // Default constructor
 //----------------------------------------------------------------------------
 
-ts::PAT::PAT (uint8_t  version_,
-                bool   is_current_,
-                uint16_t ts_id_,
-                PID    nit_pid_) :
+ts::PAT::PAT(uint8_t  version_,
+             bool   is_current_,
+             uint16_t ts_id_,
+             PID    nit_pid_) :
 
-    AbstractLongTable (TID_PAT, version_, is_current_),
-    ts_id (ts_id_),
-    nit_pid (nit_pid_),
-    pmts ()
+    AbstractLongTable(TID_PAT, "PAT", version_, is_current_),
+    ts_id(ts_id_),
+    nit_pid(nit_pid_),
+    pmts()
 {
     _is_valid = true;
 }
@@ -58,13 +58,13 @@ ts::PAT::PAT (uint8_t  version_,
 // Constructor from a binary table
 //----------------------------------------------------------------------------
 
-ts::PAT::PAT (const BinaryTable& table) :
-    AbstractLongTable (TID_PAT),
-    ts_id (0),
-    nit_pid (PID_NULL),
-    pmts ()
+ts::PAT::PAT(const BinaryTable& table) :
+    AbstractLongTable(TID_PAT, "PAT"),
+    ts_id(0),
+    nit_pid(PID_NULL),
+    pmts()
 {
-    deserialize (table);
+    deserialize(table);
 }
 
 
@@ -220,4 +220,24 @@ void ts::PAT::DisplaySection(TablesDisplay& display, const ts::Section& section,
     }
 
     display.displayExtraData(data, size, indent);
+}
+
+
+//----------------------------------------------------------------------------
+// XML serialization
+//----------------------------------------------------------------------------
+
+ts::XML::Element* ts::PAT::toXML(XML& xml, XML::Document& doc) const
+{
+    return 0; // TODO @@@@
+}
+
+
+//----------------------------------------------------------------------------
+// XML deserialization
+//----------------------------------------------------------------------------
+
+void ts::PAT::fromXML(XML& xml, const XML::Element* element)
+{
+    // TODO @@@@
 }
