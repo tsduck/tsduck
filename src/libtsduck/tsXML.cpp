@@ -258,6 +258,62 @@ const tinyxml2::XMLElement* ts::XML::findFirstChild(const tinyxml2::XMLElement* 
 
 
 //----------------------------------------------------------------------------
+// Initialize an XML document.
+//----------------------------------------------------------------------------
+
+tinyxml2::XMLElement*ts::XML::initializeDocument(tinyxml2::XMLDocument* doc, const std::string& rootName, const std::string& declaration)
+{
+    // Filter incorrect parameters.
+    if (doc == 0 || rootName.empty()) {
+        return 0;
+    }
+
+    // Cleanup all previous content of the document.
+    doc->DeleteChildren();
+
+    // Create the initial declaration. When empty, tinyxml2 creates the default declaration.
+    doc->InsertFirstChild(doc->NewDeclaration(declaration.empty() ? 0 : declaration.c_str()));
+
+    // Create the document root.
+    tinyxml2::XMLElement* root = doc->NewElement(rootName.c_str());
+    if (root != 0) {
+        doc->InsertEndChild(root);
+    }
+
+    return root;
+}
+
+
+//----------------------------------------------------------------------------
+// Add a new child element at the end of a node.
+//----------------------------------------------------------------------------
+
+tinyxml2::XMLElement*ts::XML::addElement(tinyxml2::XMLElement* parent, const std::string& childName)
+{
+    // Filter incorrect parameters.
+    if (parent == 0 || childName.empty()) {
+        return 0;
+    }
+
+    // Get the associated document.
+    tinyxml2::XMLDocument* doc = parent->GetDocument();
+    if (doc == 0) {
+        // Should not happen, but who knows...
+        reportError(Format("Internal XML error, no document found for element <%s>", ElementName(parent)));
+        return 0;
+    }
+
+    // Create the new element.
+    tinyxml2::XMLElement* child = doc->NewElement(childName.c_str());
+    if (child != 0) {
+        parent->InsertEndChild(child);
+    }
+
+    return child;
+}
+
+
+//----------------------------------------------------------------------------
 // Find a child element by name in an XML model element.
 //----------------------------------------------------------------------------
 
@@ -367,4 +423,21 @@ bool ts::XML::validateElement(const tinyxml2::XMLElement* model, const tinyxml2:
     }
 
     return success;
+}
+
+
+//----------------------------------------------------------------------------
+// A subclass of TinyXML printer class which can control the indentation width.
+//----------------------------------------------------------------------------
+
+ts::XML::Printer::Printer(int indent, FILE* file, bool compact, int depth) :
+    tinyxml2::XMLPrinter(file, compact, depth),
+    _indent(std::max(0, indent))
+{
+}
+
+void ts::XML::Printer::PrintSpace(int depth)
+{
+    const std::string margin(_indent * depth, ' ');
+    Print(margin.c_str());
 }

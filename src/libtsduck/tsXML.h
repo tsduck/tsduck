@@ -161,6 +161,51 @@ namespace ts {
         //!
         const tinyxml2::XMLElement* findFirstChild(const tinyxml2::XMLElement* elem, const char* name, bool silent = false);
 
+        //!
+        //! Initialize an XML document.
+        //! @param [in,out] doc The document to initialize. All existing children are deleted.
+        //! The initial declaration and root are created.
+        //! @param [in] rootName Name of the root element to create.
+        //! @param [in] declaration Optional XML declaration. When omitted, the standard declaration
+        //! is used, specifying UTF-8 as format.
+        //! @return New root element of the document or null on error.
+        //!
+        tinyxml2::XMLElement* initializeDocument(tinyxml2::XMLDocument* doc, const std::string& rootName, const std::string& declaration = std::string());
+
+        //!
+        //! Add a new child element at the end of a node.
+        //! @param [in,out] parent Parent node.
+        //! @param [in] childName Name of new child element to create.
+        //! @return New child element or null on error.
+        //!
+        tinyxml2::XMLElement* addElement(tinyxml2::XMLElement* parent, const std::string& childName);
+
+        //!
+        //! A subclass of TinyXML printer class which can control the indentation width.
+        //!
+        class Printer : public tinyxml2::XMLPrinter
+        {
+        public:
+            //!
+            //! Constructor.
+            //! @param [in] indent Indentation width of each level.
+            //! @param [in] file If specified, this will print to the file. Else it will print to memory.
+            //! @param [in] compact If true, then output is created with only required whitespace and newlines.
+            //! @param [in] depth Initial depth.
+            //!
+            explicit Printer(int indent = 2, FILE* file = 0, bool compact = false, int depth = 0);
+
+        protected:
+            //!
+            //! Prints out the space before an element.
+            //! @param [in] depth Nesting level of the element.
+            //!
+            virtual void PrintSpace(int depth);
+
+        private:
+            int _indent;  //!< Indentation width of each level.
+        };
+
     private:
         ReportInterface& _report;
 
