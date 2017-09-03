@@ -40,7 +40,7 @@ TSDUCK_SOURCE;
 //----------------------------------------------------------------------------
 
 ts::NetworkNameDescriptor::NetworkNameDescriptor(const std::string& name_) :
-    AbstractDescriptor(DID_NETWORK_NAME),
+    AbstractDescriptor(DID_NETWORK_NAME, "network_name_descriptor"),
     name(name_)
 {
     _is_valid = true;
@@ -52,7 +52,7 @@ ts::NetworkNameDescriptor::NetworkNameDescriptor(const std::string& name_) :
 //----------------------------------------------------------------------------
 
 ts::NetworkNameDescriptor::NetworkNameDescriptor(const Descriptor& desc) :
-    AbstractDescriptor(DID_NETWORK_NAME),
+    AbstractDescriptor(DID_NETWORK_NAME, "network_name_descriptor"),
     name()
 {
     deserialize(desc);

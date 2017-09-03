@@ -44,7 +44,7 @@ TSDUCK_SOURCE;
 //----------------------------------------------------------------------------
 
 ts::CADescriptor::CADescriptor (uint16_t cas_id_, PID ca_pid_) :
-    AbstractDescriptor (DID_CA),
+    AbstractDescriptor (DID_CA, "CA_descriptor"),
     cas_id (cas_id_),
     ca_pid (ca_pid_),
     private_data ()
@@ -58,7 +58,7 @@ ts::CADescriptor::CADescriptor (uint16_t cas_id_, PID ca_pid_) :
 //----------------------------------------------------------------------------
 
 ts::CADescriptor::CADescriptor (const Descriptor& desc) :
-    AbstractDescriptor (DID_CA),
+    AbstractDescriptor (DID_CA, "CA_descriptor"),
     cas_id (0),
     ca_pid (PID_NULL),
     private_data ()

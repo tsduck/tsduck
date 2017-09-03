@@ -42,7 +42,7 @@ TSDUCK_SOURCE;
 //----------------------------------------------------------------------------
 
 ts::PrivateDataSpecifierDescriptor::PrivateDataSpecifierDescriptor (PDS pds_) :
-    AbstractDescriptor (DID_PRIV_DATA_SPECIF),
+    AbstractDescriptor (DID_PRIV_DATA_SPECIF, "private_data_specifier_descriptor"),
     pds (pds_)
 {
     _is_valid = true;
@@ -54,7 +54,7 @@ ts::PrivateDataSpecifierDescriptor::PrivateDataSpecifierDescriptor (PDS pds_) :
 //----------------------------------------------------------------------------
 
 ts::PrivateDataSpecifierDescriptor::PrivateDataSpecifierDescriptor (const Descriptor& desc) :
-    AbstractDescriptor (DID_PRIV_DATA_SPECIF),
+    AbstractDescriptor (DID_PRIV_DATA_SPECIF, "private_data_specifier_descriptor"),
     pds (0)
 {
     deserialize (desc);

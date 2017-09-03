@@ -43,7 +43,7 @@ TSDUCK_SOURCE;
 //----------------------------------------------------------------------------
 
 ts::EnhancedAC3Descriptor::EnhancedAC3Descriptor() :
-    AbstractDescriptor(DID_ENHANCED_AC3),
+    AbstractDescriptor(DID_ENHANCED_AC3, "enhanced_AC3_descriptor"),
     component_type(),
     bsid(),
     mainid(),
@@ -63,7 +63,7 @@ ts::EnhancedAC3Descriptor::EnhancedAC3Descriptor() :
 //----------------------------------------------------------------------------
 
 ts::EnhancedAC3Descriptor::EnhancedAC3Descriptor (const Descriptor& desc) :
-    AbstractDescriptor(DID_ENHANCED_AC3),
+    AbstractDescriptor(DID_ENHANCED_AC3, "enhanced_AC3_descriptor"),
     component_type(),
     bsid(),
     mainid(),

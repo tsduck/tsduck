@@ -41,7 +41,7 @@ TSDUCK_SOURCE;
 //----------------------------------------------------------------------------
 
 ts::StreamIdentifierDescriptor::StreamIdentifierDescriptor (uint8_t ctag) :
-    AbstractDescriptor (DID_STREAM_ID),
+    AbstractDescriptor (DID_STREAM_ID, "stream_identifier_descriptor"),
     component_tag (ctag)
 {
     _is_valid = true;
@@ -53,7 +53,7 @@ ts::StreamIdentifierDescriptor::StreamIdentifierDescriptor (uint8_t ctag) :
 //----------------------------------------------------------------------------
 
 ts::StreamIdentifierDescriptor::StreamIdentifierDescriptor (const Descriptor& desc) :
-    AbstractDescriptor (DID_STREAM_ID),
+    AbstractDescriptor (DID_STREAM_ID, "stream_identifier_descriptor"),
     component_tag (0)
 {
     deserialize (desc);

@@ -43,7 +43,7 @@ TSDUCK_SOURCE;
 //----------------------------------------------------------------------------
 
 ts::ParentalRatingDescriptor::ParentalRatingDescriptor() :
-    AbstractDescriptor (DID_PARENTAL_RATING),
+    AbstractDescriptor (DID_PARENTAL_RATING, "parental_rating_descriptor"),
     entries ()
 {
     _is_valid = true;
@@ -55,7 +55,7 @@ ts::ParentalRatingDescriptor::ParentalRatingDescriptor() :
 //----------------------------------------------------------------------------
 
 ts::ParentalRatingDescriptor::ParentalRatingDescriptor (const Descriptor& desc) :
-    AbstractDescriptor (DID_PARENTAL_RATING),
+    AbstractDescriptor (DID_PARENTAL_RATING, "parental_rating_descriptor"),
     entries ()
 {
     deserialize (desc);
@@ -67,7 +67,7 @@ ts::ParentalRatingDescriptor::ParentalRatingDescriptor (const Descriptor& desc) 
 //----------------------------------------------------------------------------
 
 ts::ParentalRatingDescriptor::ParentalRatingDescriptor (const std::string& language_, uint8_t rating_) :
-    AbstractDescriptor (DID_PARENTAL_RATING),
+    AbstractDescriptor (DID_PARENTAL_RATING, "parental_rating_descriptor"),
     entries ()
 {
     _is_valid = true;

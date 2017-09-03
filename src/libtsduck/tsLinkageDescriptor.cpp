@@ -44,7 +44,7 @@ TSDUCK_SOURCE;
 //----------------------------------------------------------------------------
 
 ts::LinkageDescriptor::LinkageDescriptor(uint16_t ts, uint16_t onetw, uint16_t service, uint8_t ltype) :
-    AbstractDescriptor(DID_LINKAGE),
+    AbstractDescriptor(DID_LINKAGE, "linkage_descriptor"),
     ts_id(ts),
     onetw_id(onetw),
     service_id(service),
@@ -60,7 +60,7 @@ ts::LinkageDescriptor::LinkageDescriptor(uint16_t ts, uint16_t onetw, uint16_t s
 //----------------------------------------------------------------------------
 
 ts::LinkageDescriptor::LinkageDescriptor(const Descriptor& desc) :
-    AbstractDescriptor(DID_LINKAGE),
+    AbstractDescriptor(DID_LINKAGE, "linkage_descriptor"),
     ts_id(0),
     onetw_id(0),
     service_id(0),

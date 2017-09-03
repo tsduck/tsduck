@@ -41,7 +41,7 @@ TSDUCK_SOURCE;
 //----------------------------------------------------------------------------
 
 ts::ISO639LanguageDescriptor::ISO639LanguageDescriptor () :
-    AbstractDescriptor (DID_LANGUAGE),
+    AbstractDescriptor (DID_LANGUAGE, "ISO_639_language_descriptor"),
     entries ()
 {
     _is_valid = true;
@@ -53,7 +53,7 @@ ts::ISO639LanguageDescriptor::ISO639LanguageDescriptor () :
 //----------------------------------------------------------------------------
 
 ts::ISO639LanguageDescriptor::ISO639LanguageDescriptor (const Descriptor& desc) :
-    AbstractDescriptor (DID_LANGUAGE),
+    AbstractDescriptor (DID_LANGUAGE, "ISO_639_language_descriptor"),
     entries ()
 {
     deserialize (desc);
@@ -65,7 +65,7 @@ ts::ISO639LanguageDescriptor::ISO639LanguageDescriptor (const Descriptor& desc) 
 //----------------------------------------------------------------------------
 
 ts::ISO639LanguageDescriptor::ISO639LanguageDescriptor (const std::string& code, uint8_t type) :
-    AbstractDescriptor (DID_LANGUAGE),
+    AbstractDescriptor (DID_LANGUAGE, "ISO_639_language_descriptor"),
     entries ()
 {
     _is_valid = true;

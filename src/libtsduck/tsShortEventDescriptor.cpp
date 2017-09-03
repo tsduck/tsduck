@@ -40,7 +40,7 @@ TSDUCK_SOURCE;
 //----------------------------------------------------------------------------
 
 ts::ShortEventDescriptor::ShortEventDescriptor() :
-    AbstractDescriptor (DID_SHORT_EVENT),
+    AbstractDescriptor (DID_SHORT_EVENT, "short_event_descriptor"),
     language_code (),
     event_name (),
     text ()
@@ -54,7 +54,7 @@ ts::ShortEventDescriptor::ShortEventDescriptor() :
 //----------------------------------------------------------------------------
 
 ts::ShortEventDescriptor::ShortEventDescriptor (const std::string& lang_, const std::string& name_, const std::string& text_) :
-    AbstractDescriptor (DID_SHORT_EVENT),
+    AbstractDescriptor (DID_SHORT_EVENT, "short_event_descriptor"),
     language_code (lang_),
     event_name (name_),
     text (text_)
@@ -68,7 +68,7 @@ ts::ShortEventDescriptor::ShortEventDescriptor (const std::string& lang_, const 
 //----------------------------------------------------------------------------
 
 ts::ShortEventDescriptor::ShortEventDescriptor (const Descriptor& desc) :
-    AbstractDescriptor (DID_SHORT_EVENT),
+    AbstractDescriptor (DID_SHORT_EVENT, "short_event_descriptor"),
     language_code (),
     event_name (),
     text ()

@@ -118,9 +118,9 @@ namespace ts {
         TID _table_id;
 
         //!
-        //! The table name can be modified by subclasses only.
+        //! XML table name.
         //!
-        const char* _xml_name;
+        const char* const _xml_name;
 
         //!
         //! It is the responsibility of the subclasses to set the valid flag
@@ -132,7 +132,12 @@ namespace ts {
         //! @param [in] tid Table id.
         //! @param [in] xml_name Table name, as used in XML structures.
         //!
-        AbstractTable(TID tid, const char* xml_name) : _table_id(tid), _xml_name(xml_name), _is_valid(false) {}
+        AbstractTable(TID tid, const char* xml_name) :
+            _table_id(tid),
+            _xml_name(xml_name),
+            _is_valid(false)
+        {
+        }
 
     private:
         // Unreachable constructors and operators.

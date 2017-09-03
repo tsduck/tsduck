@@ -41,7 +41,7 @@ TSDUCK_SOURCE;
 //----------------------------------------------------------------------------
 
 ts::BouquetNameDescriptor::BouquetNameDescriptor(const std::string& name_) :
-    AbstractDescriptor(DID_BOUQUET_NAME),
+    AbstractDescriptor(DID_BOUQUET_NAME, "bouquet_name_descriptor"),
     name(name_)
 {
     _is_valid = true;
@@ -53,7 +53,7 @@ ts::BouquetNameDescriptor::BouquetNameDescriptor(const std::string& name_) :
 //----------------------------------------------------------------------------
 
 ts::BouquetNameDescriptor::BouquetNameDescriptor(const Descriptor& desc) :
-    AbstractDescriptor(DID_BOUQUET_NAME),
+    AbstractDescriptor(DID_BOUQUET_NAME, "bouquet_name_descriptor"),
     name()
 {
     deserialize(desc);

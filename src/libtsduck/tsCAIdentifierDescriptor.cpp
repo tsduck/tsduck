@@ -42,7 +42,7 @@ TSDUCK_SOURCE;
 //----------------------------------------------------------------------------
 
 ts::CAIdentifierDescriptor::CAIdentifierDescriptor() :
-    AbstractDescriptor (DID_CA_ID),
+    AbstractDescriptor (DID_CA_ID, "CA_identifier_descriptor"),
     casids ()
 {
     _is_valid = true;
@@ -54,7 +54,7 @@ ts::CAIdentifierDescriptor::CAIdentifierDescriptor() :
 //----------------------------------------------------------------------------
 
 ts::CAIdentifierDescriptor::CAIdentifierDescriptor (const Descriptor& desc) :
-    AbstractDescriptor (DID_CA_ID),
+    AbstractDescriptor (DID_CA_ID, "CA_identifier_descriptor"),
     casids ()
 {
     deserialize (desc);
@@ -69,7 +69,7 @@ ts::CAIdentifierDescriptor::CAIdentifierDescriptor (const Descriptor& desc) :
 //----------------------------------------------------------------------------
 
 ts::CAIdentifierDescriptor::CAIdentifierDescriptor (int casid, ...) :
-    AbstractDescriptor (DID_CA_ID),
+    AbstractDescriptor (DID_CA_ID, "CA_identifier_descriptor"),
     casids ()
 {
     _is_valid = true;

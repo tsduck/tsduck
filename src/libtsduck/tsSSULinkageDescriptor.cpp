@@ -41,7 +41,7 @@ TSDUCK_SOURCE;
 //----------------------------------------------------------------------------
 
 ts::SSULinkageDescriptor::SSULinkageDescriptor (uint16_t ts, uint16_t onetw, uint16_t service) :
-    AbstractDescriptor (DID_LINKAGE),
+    AbstractDescriptor (DID_LINKAGE, "SSU_linkage_descriptor"),
     ts_id (ts),
     onetw_id (onetw),
     service_id (service),
@@ -57,7 +57,7 @@ ts::SSULinkageDescriptor::SSULinkageDescriptor (uint16_t ts, uint16_t onetw, uin
 //----------------------------------------------------------------------------
 
 ts::SSULinkageDescriptor::SSULinkageDescriptor (uint16_t ts, uint16_t onetw, uint16_t service, uint32_t oui) :
-    AbstractDescriptor (DID_LINKAGE),
+    AbstractDescriptor (DID_LINKAGE, "SSU_linkage_descriptor"),
     ts_id (ts),
     onetw_id (onetw),
     service_id (service),
@@ -74,7 +74,7 @@ ts::SSULinkageDescriptor::SSULinkageDescriptor (uint16_t ts, uint16_t onetw, uin
 //----------------------------------------------------------------------------
 
 ts::SSULinkageDescriptor::SSULinkageDescriptor (const Descriptor& desc) :
-    AbstractDescriptor (DID_LINKAGE),
+    AbstractDescriptor (DID_LINKAGE, "SSU_linkage_descriptor"),
     ts_id (0),
     onetw_id (0),
     service_id (0),
