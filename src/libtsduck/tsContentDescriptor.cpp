@@ -34,7 +34,9 @@
 #include "tsContentDescriptor.h"
 #include "tsFormat.h"
 #include "tsNames.h"
+#include "tsXMLTables.h"
 TSDUCK_SOURCE;
+TS_XML_DESCRIPTOR_FACTORY(ts::ContentDescriptor, content_descriptor);
 
 
 //----------------------------------------------------------------------------
@@ -121,4 +123,24 @@ void ts::ContentDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, c
     }
 
     display.displayExtraData(data, size, indent);
+}
+
+
+//----------------------------------------------------------------------------
+// XML serialization
+//----------------------------------------------------------------------------
+
+ts::XML::Element* ts::ContentDescriptor::toXML(XML& xml, XML::Document& doc) const
+{
+    return 0; // TODO @@@@
+}
+
+
+//----------------------------------------------------------------------------
+// XML deserialization
+//----------------------------------------------------------------------------
+
+void ts::ContentDescriptor::fromXML(XML& xml, const XML::Element* element)
+{
+    // TODO @@@@
 }

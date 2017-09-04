@@ -33,7 +33,26 @@
 
 #include "tsNIT.h"
 #include "tsFormat.h"
+#include "tsXMLTables.h"
 TSDUCK_SOURCE;
+TS_XML_TABLE_FACTORY(ts::NIT, NIT);
+
+
+//----------------------------------------------------------------------------
+// Constructors
+//----------------------------------------------------------------------------
+
+ts::NIT::NIT(bool is_actual, uint8_t vers, bool cur, uint16_t id) :
+    AbstractTransportListTable(uint8_t(is_actual ? TID_NIT_ACT : TID_NIT_OTH), "NIT", id, vers, cur),
+    network_id(_tid_ext)
+{
+}
+
+ts::NIT::NIT(const BinaryTable& table) :
+    AbstractTransportListTable(TID_NIT_ACT, "NIT", table),  // TID updated by deserialize()
+    network_id(_tid_ext)
+{
+}
 
 
 //----------------------------------------------------------------------------
@@ -92,4 +111,24 @@ void ts::NIT::DisplaySection(TablesDisplay& display, const ts::Section& section,
     }
 
     display.displayExtraData(data, size, indent);
+}
+
+
+//----------------------------------------------------------------------------
+// XML serialization
+//----------------------------------------------------------------------------
+
+ts::XML::Element* ts::NIT::toXML(XML& xml, XML::Document& doc) const
+{
+    return 0; // TODO @@@@
+}
+
+
+//----------------------------------------------------------------------------
+// XML deserialization
+//----------------------------------------------------------------------------
+
+void ts::NIT::fromXML(XML& xml, const XML::Element* element)
+{
+    // TODO @@@@
 }

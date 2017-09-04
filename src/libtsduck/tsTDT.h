@@ -50,7 +50,7 @@ namespace ts {
         //! Default constructor.
         //! @param [in] utc_time UTC time.
         //!
-        TDT(const Time& utc_time);
+        TDT(const Time& utc_time = Time::Epoch);
 
         //!
         //! Constructor from a binary table.

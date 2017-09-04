@@ -84,6 +84,12 @@ namespace ts {
         bool isPrivateDescriptor() const {return _required_pds != 0;}
 
         //!
+        //! Get the XMl node name representing this descriptor.
+        //! @return The XML node name.
+        //!
+        std::string xmlName() const {return _xml_name == 0 ? std::string() : std::string(_xml_name);}
+
+        //!
         //! This abstract method serializes a descriptor.
         //! @param [out] bin A binary descriptor object.
         //! Its content is replaced with a binary representation of this object.

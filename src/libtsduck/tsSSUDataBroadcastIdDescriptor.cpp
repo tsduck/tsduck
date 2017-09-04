@@ -33,7 +33,9 @@
 //----------------------------------------------------------------------------
 
 #include "tsSSUDataBroadcastIdDescriptor.h"
+#include "tsXMLTables.h"
 TSDUCK_SOURCE;
+TS_XML_DESCRIPTOR_FACTORY(ts::SSUDataBroadcastIdDescriptor, SSU_data_broadcast_id_descriptor);
 
 
 //----------------------------------------------------------------------------

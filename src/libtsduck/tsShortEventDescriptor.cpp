@@ -32,7 +32,9 @@
 //----------------------------------------------------------------------------
 
 #include "tsShortEventDescriptor.h"
+#include "tsXMLTables.h"
 TSDUCK_SOURCE;
+TS_XML_DESCRIPTOR_FACTORY(ts::ShortEventDescriptor, short_event_descriptor);
 
 
 //----------------------------------------------------------------------------

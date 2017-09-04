@@ -35,7 +35,9 @@
 #include "tsStringUtils.h"
 #include "tsFormat.h"
 #include "tsNames.h"
+#include "tsXMLTables.h"
 TSDUCK_SOURCE;
+TS_XML_TABLE_FACTORY(ts::SDT, SDT);
 
 
 //----------------------------------------------------------------------------

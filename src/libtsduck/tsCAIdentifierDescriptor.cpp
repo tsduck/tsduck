@@ -34,7 +34,9 @@
 #include "tsCAIdentifierDescriptor.h"
 #include "tsFormat.h"
 #include "tsNames.h"
+#include "tsXMLTables.h"
 TSDUCK_SOURCE;
+TS_XML_DESCRIPTOR_FACTORY(ts::CAIdentifierDescriptor, CA_identifier_descriptor);
 
 
 //----------------------------------------------------------------------------

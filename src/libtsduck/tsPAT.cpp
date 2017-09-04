@@ -33,7 +33,9 @@
 
 #include "tsPAT.h"
 #include "tsFormat.h"
+#include "tsXMLTables.h"
 TSDUCK_SOURCE;
+TS_XML_TABLE_FACTORY(ts::PAT, PAT);
 
 
 //----------------------------------------------------------------------------

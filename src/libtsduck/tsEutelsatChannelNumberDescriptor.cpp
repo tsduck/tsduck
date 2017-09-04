@@ -34,7 +34,9 @@
 
 #include "tsEutelsatChannelNumberDescriptor.h"
 #include "tsFormat.h"
+#include "tsXMLTables.h"
 TSDUCK_SOURCE;
+TS_XML_DESCRIPTOR_FACTORY(ts::EutelsatChannelNumberDescriptor, eutelsat_channel_number_descriptor);
 
 
 //----------------------------------------------------------------------------

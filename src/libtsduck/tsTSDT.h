@@ -47,18 +47,12 @@ namespace ts {
         //! @param [in] vers Table version number.
         //! @param [in] cur True if table is current, false if table is next.
         //!
-        TSDT(uint8_t vers = 0, bool cur = true) :
-            AbstractDescriptorsTable(TID_TSDT, "TSDT", 0xFFFF, vers, cur)
-        {
-        }
+        TSDT(uint8_t vers = 0, bool cur = true);
 
         //!
         //! Constructor from a binary table.
         //! @param [in] table Binary table to deserialize.
         //!
-        TSDT(const BinaryTable& table) :
-            AbstractDescriptorsTable(TID_TSDT, "TSDT", table)
-        {
-        }
+        TSDT(const BinaryTable& table);
     };
 }

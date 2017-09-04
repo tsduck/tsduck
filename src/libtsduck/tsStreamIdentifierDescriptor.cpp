@@ -33,16 +33,18 @@
 
 #include "tsStreamIdentifierDescriptor.h"
 #include "tsFormat.h"
+#include "tsXMLTables.h"
 TSDUCK_SOURCE;
+TS_XML_DESCRIPTOR_FACTORY(ts::StreamIdentifierDescriptor, stream_identifier_descriptor);
 
 
 //----------------------------------------------------------------------------
 // Default constructor:
 //----------------------------------------------------------------------------
 
-ts::StreamIdentifierDescriptor::StreamIdentifierDescriptor (uint8_t ctag) :
-    AbstractDescriptor (DID_STREAM_ID, "stream_identifier_descriptor"),
-    component_tag (ctag)
+ts::StreamIdentifierDescriptor::StreamIdentifierDescriptor(uint8_t ctag) :
+    AbstractDescriptor(DID_STREAM_ID, "stream_identifier_descriptor"),
+    component_tag(ctag)
 {
     _is_valid = true;
 }
@@ -52,11 +54,11 @@ ts::StreamIdentifierDescriptor::StreamIdentifierDescriptor (uint8_t ctag) :
 // Constructor from a binary descriptor
 //----------------------------------------------------------------------------
 
-ts::StreamIdentifierDescriptor::StreamIdentifierDescriptor (const Descriptor& desc) :
-    AbstractDescriptor (DID_STREAM_ID, "stream_identifier_descriptor"),
-    component_tag (0)
+ts::StreamIdentifierDescriptor::StreamIdentifierDescriptor(const Descriptor& desc) :
+    AbstractDescriptor(DID_STREAM_ID, "stream_identifier_descriptor"),
+    component_tag(0)
 {
-    deserialize (desc);
+    deserialize(desc);
 }
 
 

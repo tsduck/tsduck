@@ -375,23 +375,3 @@ void ts::AbstractTransportListTable::serialize(BinaryTable& table) const
     // Add partial section.
     addSection(table, section_number, payload, tsll_addr, data, remain);
 }
-
-
-//----------------------------------------------------------------------------
-// XML serialization
-//----------------------------------------------------------------------------
-
-ts::XML::Element* ts::AbstractTransportListTable::toXML(XML& xml, XML::Document& doc) const
-{
-    return 0; // TODO @@@@
-}
-
-
-//----------------------------------------------------------------------------
-// XML deserialization
-//----------------------------------------------------------------------------
-
-void ts::AbstractTransportListTable::fromXML(XML& xml, const XML::Element* element)
-{
-    // TODO @@@@
-}
