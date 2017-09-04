@@ -37,6 +37,45 @@ TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------
+// Protected constructor for subclasses.
+//----------------------------------------------------------------------------
+
+ts::AbstractDescriptor::AbstractDescriptor(DID tag, const char* xml_name, PDS pds) :
+    _tag(tag),
+    _xml_name(xml_name),
+    _is_valid(false),
+    _required_pds(pds)
+{
+}
+
+
+//----------------------------------------------------------------------------
+// Copy constructor and assignment.
+// Not really needed but compilers may warn that pointer members require
+// explicit copy.
+//----------------------------------------------------------------------------
+
+ts::AbstractDescriptor::AbstractDescriptor(const AbstractDescriptor& other) :
+    _tag(other._tag),
+    _xml_name(other._xml_name), // static storage
+    _is_valid(other._is_valid),
+    _required_pds(other._required_pds)
+{
+}
+
+ts::AbstractDescriptor& ts::AbstractDescriptor::operator=(const AbstractDescriptor& other)
+{
+    if (&other != this) {
+        _tag = other._tag;
+        _xml_name = other._xml_name; // static storage
+        _is_valid = other._is_valid;
+        _required_pds = other._required_pds;
+    }
+    return *this;
+}
+
+
+//----------------------------------------------------------------------------
 // Deserialize from a descriptor list.
 //----------------------------------------------------------------------------
 

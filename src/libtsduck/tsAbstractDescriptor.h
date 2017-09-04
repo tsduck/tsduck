@@ -159,6 +159,19 @@ namespace ts {
                                                   TID tid,
                                                   PDS pds);
 
+        //!
+        //! Copy constructor.
+        //! @param [in] other Other instance to copy.
+        //!
+        AbstractDescriptor(const AbstractDescriptor& other);
+
+        //!
+        //! Assignment operator.
+        //! @param [in] other Other instance to copy.
+        //! @return A reference to this object.
+        //!
+        AbstractDescriptor& operator=(const AbstractDescriptor& other);
+
     protected:
         //!
         //! The descriptor tag can be modified by subclasses only
@@ -168,7 +181,7 @@ namespace ts {
         //!
         //! XML descriptor name.
         //!
-        const char* const _xml_name;
+        const char* _xml_name;
 
         //!
         //! It is the responsibility of the subclasses to set the valid flag
@@ -178,7 +191,7 @@ namespace ts {
         //!
         //! Required private data specified.
         //!
-        const PDS _required_pds;
+        PDS _required_pds;
 
         //!
         //! Protected constructor for subclasses.
@@ -186,13 +199,7 @@ namespace ts {
         //! @param [in] xml_name Descriptor name, as used in XML structures.
         //! @param [in] pds Required private data specifier if this is a private descriptor.
         //!
-        AbstractDescriptor(DID tag, const char* xml_name, PDS pds = 0) :
-            _tag (tag),
-            _xml_name(xml_name),
-            _is_valid (false),
-            _required_pds(pds)
-        {
-        }
+        AbstractDescriptor(DID tag, const char* xml_name, PDS pds = 0);
 
     private:
         // Unreachable constructors and operators.

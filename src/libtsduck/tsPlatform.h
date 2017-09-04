@@ -2685,7 +2685,6 @@ namespace ts {
         };                                                \
         const _tsBuildMarkClass _tsBuildMark(s);          \
     }
-
 #endif
 
 //
