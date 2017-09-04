@@ -34,7 +34,9 @@
 
 #include "tsEacemStreamIdentifierDescriptor.h"
 #include "tsFormat.h"
+#include "tsXMLTables.h"
 TSDUCK_SOURCE;
+TS_XML_DESCRIPTOR_FACTORY(ts::EacemStreamIdentifierDescriptor, eacem_stream_identifier_descriptor);
 
 
 //----------------------------------------------------------------------------
@@ -42,7 +44,7 @@ TSDUCK_SOURCE;
 //----------------------------------------------------------------------------
 
 ts::EacemStreamIdentifierDescriptor::EacemStreamIdentifierDescriptor(uint8_t version_) :
-    AbstractDescriptor(DID_EACEM_STREAM_ID, "EACEM_stream_identifier_descriptor", PDS_EACEM),
+    AbstractDescriptor(DID_EACEM_STREAM_ID, "eacem_stream_identifier_descriptor", PDS_EACEM),
     version(version_)
 {
     _is_valid = true;
@@ -54,7 +56,7 @@ ts::EacemStreamIdentifierDescriptor::EacemStreamIdentifierDescriptor(uint8_t ver
 //----------------------------------------------------------------------------
 
 ts::EacemStreamIdentifierDescriptor::EacemStreamIdentifierDescriptor(const Descriptor& desc) :
-    AbstractDescriptor(DID_EACEM_STREAM_ID, "EACEM_stream_identifier_descriptor", PDS_EACEM),
+    AbstractDescriptor(DID_EACEM_STREAM_ID, "eacem_stream_identifier_descriptor", PDS_EACEM),
     version(0)
 {
     deserialize(desc);

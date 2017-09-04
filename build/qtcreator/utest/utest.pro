@@ -52,4 +52,5 @@ SOURCES += \
     ../../../src/utest/utestTime.cpp \
     ../../../src/utest/utestTSPacket.cpp \
     ../../../src/utest/utestVariable.cpp \
-    ../../../src/utest/utestXML.cpp
+    ../../../src/utest/utestXML.cpp \
+    ../../../src/utest/utestXMLTables.cpp

@@ -36,7 +36,9 @@
 #include "tsNames.h"
 #include "tsBCD.h"
 #include "tsMJD.h"
+#include "tsXMLTables.h"
 TSDUCK_SOURCE;
+TS_XML_TABLE_FACTORY(ts::EIT, EIT);
 
 
 //----------------------------------------------------------------------------

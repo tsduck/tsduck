@@ -194,6 +194,22 @@ CONTAINER& ts::SplitLines(CONTAINER& lines,
 
 
 //----------------------------------------------------------------------------
+// Check if a container of strings contains something similar to a string.
+//----------------------------------------------------------------------------
+
+template <class CONTAINER>
+bool ts::ContainSimilarString(const CONTAINER& container, const std::string& str)
+{
+    for (typename CONTAINER::const_iterator it = container.begin(); it != container.end(); ++it) {
+        if (SimilarStrings(*it, str)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+
+//----------------------------------------------------------------------------
 // Append an array of C-strings to a container of strings.
 // Return a reference to the container.
 //----------------------------------------------------------------------------

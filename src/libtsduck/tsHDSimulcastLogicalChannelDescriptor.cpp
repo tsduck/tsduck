@@ -34,7 +34,9 @@
 
 #include "tsHDSimulcastLogicalChannelDescriptor.h"
 #include "tsFormat.h"
+#include "tsXMLTables.h"
 TSDUCK_SOURCE;
+TS_XML_DESCRIPTOR_FACTORY(ts::HDSimulcastLogicalChannelDescriptor, HD_simulcast_logical_channel_descriptor);
 
 
 //----------------------------------------------------------------------------

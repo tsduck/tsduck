@@ -256,6 +256,7 @@ HEADERS += \
     ../../../src/libtsduck/tsTunerUtils.h \
     ../../../src/libtsduck/tsUDPSocket.h \
     ../../../src/libtsduck/tsUID.h \
+    ../../../src/libtsduck/tsUnicodeUtils.h \
     ../../../src/libtsduck/tsUserInterrupt.h \
     ../../../src/libtsduck/tsVBIDataDescriptor.h \
     ../../../src/libtsduck/tsVBITeletextDescriptor.h \
@@ -264,6 +265,7 @@ HEADERS += \
     ../../../src/libtsduck/tsViaccessDate.h \
     ../../../src/libtsduck/tsVideoAttributes.h \
     ../../../src/libtsduck/tsXML.h \
+    ../../../src/libtsduck/tsXMLTables.h \
     ../../../src/libtsduck/tsduck.h \
     ../../../src/libtsduck/tstlv.h \
     ../../../src/libtsduck/tstlvAnalyzer.h \
@@ -276,9 +278,7 @@ HEADERS += \
     ../../../src/libtsduck/tstlvProtocol.h \
     ../../../src/libtsduck/tstlvSerializer.h \
     ../../../src/libtsduck/tstlvStreamMessage.h \
-    ../../../src/libtsduck/tinyxml/tinyxml2.h \
-    ../../../src/libtsduck/tsUnicodeUtils.h \
-    ../../../src/libtsduck/tsXML.h
+    ../../../src/libtsduck/tinyxml/tinyxml2.h
 
 SOURCES += \
     ../../../src/libtsduck/tsAACDescriptor.cpp \
@@ -314,6 +314,7 @@ SOURCES += \
     ../../../src/libtsduck/tsCASFamily.cpp \
     ../../../src/libtsduck/tsCASMapper.cpp \
     ../../../src/libtsduck/tsCASSelectionArgs.cpp \
+    ../../../src/libtsduck/tsCAT.cpp \
     ../../../src/libtsduck/tsCOM.cpp \
     ../../../src/libtsduck/tsCRC32.cpp \
     ../../../src/libtsduck/tsCableDeliverySystemDescriptor.cpp \
@@ -435,6 +436,7 @@ SOURCES += \
     ../../../src/libtsduck/tsTSAnalyzer.cpp \
     ../../../src/libtsduck/tsTSAnalyzerOptions.cpp \
     ../../../src/libtsduck/tsTSAnalyzerReport.cpp \
+    ../../../src/libtsduck/tsTSDT.cpp \
     ../../../src/libtsduck/tsTSFileInput.cpp \
     ../../../src/libtsduck/tsTSFileInputBuffered.cpp \
     ../../../src/libtsduck/tsTSFileOutput.cpp \
@@ -462,18 +464,19 @@ SOURCES += \
     ../../../src/libtsduck/tsTunerUtils.cpp \
     ../../../src/libtsduck/tsUDPSocket.cpp \
     ../../../src/libtsduck/tsUID.cpp \
+    ../../../src/libtsduck/tsUnicodeUtils.cpp \
     ../../../src/libtsduck/tsUserInterrupt.cpp \
     ../../../src/libtsduck/tsVBIDataDescriptor.cpp \
     ../../../src/libtsduck/tsVBITeletextDescriptor.cpp \
     ../../../src/libtsduck/tsVersion.cpp \
     ../../../src/libtsduck/tsVideoAttributes.cpp \
+    ../../../src/libtsduck/tsXML.cpp \
+    ../../../src/libtsduck/tsXMLTables.cpp \
     ../../../src/libtsduck/tstlvAnalyzer.cpp \
     ../../../src/libtsduck/tstlvMessage.cpp \
     ../../../src/libtsduck/tstlvMessageFactory.cpp \
     ../../../src/libtsduck/tstlvSerializer.cpp \
-    ../../../src/libtsduck/tinyxml/tinyxml2.cpp \
-    ../../../src/libtsduck/tsUnicodeUtils.cpp \
-    ../../../src/libtsduck/tsXML.cpp
+    ../../../src/libtsduck/tinyxml/tinyxml2.cpp
     
 linux {
     HEADERS += \

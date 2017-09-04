@@ -32,16 +32,18 @@
 //----------------------------------------------------------------------------
 
 #include "tsSTDDescriptor.h"
+#include "tsXMLTables.h"
 TSDUCK_SOURCE;
+TS_XML_DESCRIPTOR_FACTORY(ts::STDDescriptor, STD_descriptor);
 
 
 //----------------------------------------------------------------------------
 // Default constructor:
 //----------------------------------------------------------------------------
 
-ts::STDDescriptor::STDDescriptor (bool leak_valid_) :
-    AbstractDescriptor (DID_STD, "STD_descriptor"),
-    leak_valid (leak_valid_)
+ts::STDDescriptor::STDDescriptor(bool leak_valid_) :
+    AbstractDescriptor(DID_STD, "STD_descriptor"),
+    leak_valid(leak_valid_)
 {
     _is_valid = true;
 }
@@ -51,11 +53,11 @@ ts::STDDescriptor::STDDescriptor (bool leak_valid_) :
 // Constructor from a binary descriptor
 //----------------------------------------------------------------------------
 
-ts::STDDescriptor::STDDescriptor (const Descriptor& desc) :
-    AbstractDescriptor (DID_STD, "STD_descriptor"),
-    leak_valid (false)
+ts::STDDescriptor::STDDescriptor(const Descriptor& desc) :
+    AbstractDescriptor(DID_STD, "STD_descriptor"),
+    leak_valid(false)
 {
-    deserialize (desc);
+    deserialize(desc);
 }
 
 

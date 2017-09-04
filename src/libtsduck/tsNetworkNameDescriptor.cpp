@@ -32,7 +32,9 @@
 //----------------------------------------------------------------------------
 
 #include "tsNetworkNameDescriptor.h"
+#include "tsXMLTables.h"
 TSDUCK_SOURCE;
+TS_XML_DESCRIPTOR_FACTORY(ts::NetworkNameDescriptor, network_name_descriptor);
 
 
 //----------------------------------------------------------------------------

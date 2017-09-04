@@ -34,16 +34,18 @@
 #include "tsPrivateDataSpecifierDescriptor.h"
 #include "tsFormat.h"
 #include "tsNames.h"
+#include "tsXMLTables.h"
 TSDUCK_SOURCE;
+TS_XML_DESCRIPTOR_FACTORY(ts::PrivateDataSpecifierDescriptor, private_data_specifier_descriptor);
 
 
 //----------------------------------------------------------------------------
 // Default constructor:
 //----------------------------------------------------------------------------
 
-ts::PrivateDataSpecifierDescriptor::PrivateDataSpecifierDescriptor (PDS pds_) :
-    AbstractDescriptor (DID_PRIV_DATA_SPECIF, "private_data_specifier_descriptor"),
-    pds (pds_)
+ts::PrivateDataSpecifierDescriptor::PrivateDataSpecifierDescriptor(PDS pds_) :
+    AbstractDescriptor(DID_PRIV_DATA_SPECIF, "private_data_specifier_descriptor"),
+    pds(pds_)
 {
     _is_valid = true;
 }
@@ -53,11 +55,11 @@ ts::PrivateDataSpecifierDescriptor::PrivateDataSpecifierDescriptor (PDS pds_) :
 // Constructor from a binary descriptor
 //----------------------------------------------------------------------------
 
-ts::PrivateDataSpecifierDescriptor::PrivateDataSpecifierDescriptor (const Descriptor& desc) :
-    AbstractDescriptor (DID_PRIV_DATA_SPECIF, "private_data_specifier_descriptor"),
-    pds (0)
+ts::PrivateDataSpecifierDescriptor::PrivateDataSpecifierDescriptor(const Descriptor& desc) :
+    AbstractDescriptor(DID_PRIV_DATA_SPECIF, "private_data_specifier_descriptor"),
+    pds(0)
 {
-    deserialize (desc);
+    deserialize(desc);
 }
 
 

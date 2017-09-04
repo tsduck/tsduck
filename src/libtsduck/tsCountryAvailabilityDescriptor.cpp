@@ -32,7 +32,9 @@
 //----------------------------------------------------------------------------
 
 #include "tsCountryAvailabilityDescriptor.h"
+#include "tsXMLTables.h"
 TSDUCK_SOURCE;
+TS_XML_DESCRIPTOR_FACTORY(ts::CountryAvailabilityDescriptor, country_availability_descriptor);
 
 
 //----------------------------------------------------------------------------

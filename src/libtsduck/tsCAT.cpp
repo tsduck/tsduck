@@ -26,34 +26,27 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//!
-//!  @file
-//!  Representation of a Conditional Access Table (CAT)
-//!
+//
+//  Representation of a Conditional Access Table (CAT)
+//
 //----------------------------------------------------------------------------
 
-#pragma once
-#include "tsAbstractDescriptorsTable.h"
+#include "tsCAT.h"
+#include "tsXMLTables.h"
+TSDUCK_SOURCE;
+TS_XML_TABLE_FACTORY(ts::CAT, CAT);
 
-namespace ts {
-    //!
-    //! Representation of a Conditional Access Table (CAT).
-    //! @see ISO/IEC 13818-1, ITU-T Rec. H.222.0, 2.4.4.6.
-    //!
-    class TSDUCKDLL CAT : public AbstractDescriptorsTable
-    {
-    public:
-        //!
-        //! Default constructor.
-        //! @param [in] vers Table version number.
-        //! @param [in] cur True if table is current, false if table is next.
-        //!
-        CAT(uint8_t vers = 0, bool cur = true);
 
-        //!
-        //! Constructor from a binary table.
-        //! @param [in] table Binary table to deserialize.
-        //!
-        CAT(const BinaryTable& table);
-    };
+//----------------------------------------------------------------------------
+// Constructors
+//----------------------------------------------------------------------------
+
+ts::CAT::CAT(uint8_t vers, bool cur) :
+    AbstractDescriptorsTable(TID_CAT, "CAT", 0xFFFF, vers, cur)
+{
+}
+
+ts::CAT::CAT(const BinaryTable& table) :
+    AbstractDescriptorsTable(TID_CAT, "CAT", table)
+{
 }

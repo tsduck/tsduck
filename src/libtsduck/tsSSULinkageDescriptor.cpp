@@ -33,20 +33,22 @@
 //----------------------------------------------------------------------------
 
 #include "tsSSULinkageDescriptor.h"
+#include "tsXMLTables.h"
 TSDUCK_SOURCE;
+TS_XML_DESCRIPTOR_FACTORY(ts::SSULinkageDescriptor, SSU_linkage_descriptor);
 
 
 //----------------------------------------------------------------------------
 // Default constructor:
 //----------------------------------------------------------------------------
 
-ts::SSULinkageDescriptor::SSULinkageDescriptor (uint16_t ts, uint16_t onetw, uint16_t service) :
-    AbstractDescriptor (DID_LINKAGE, "SSU_linkage_descriptor"),
-    ts_id (ts),
-    onetw_id (onetw),
-    service_id (service),
-    entries (),
-    private_data ()
+ts::SSULinkageDescriptor::SSULinkageDescriptor(uint16_t ts, uint16_t onetw, uint16_t service) :
+    AbstractDescriptor(DID_LINKAGE, "SSU_linkage_descriptor"),
+    ts_id(ts),
+    onetw_id(onetw),
+    service_id(service),
+    entries(),
+    private_data()
 {
     _is_valid = true;
 }
@@ -56,15 +58,15 @@ ts::SSULinkageDescriptor::SSULinkageDescriptor (uint16_t ts, uint16_t onetw, uin
 // Constructor with one OUI
 //----------------------------------------------------------------------------
 
-ts::SSULinkageDescriptor::SSULinkageDescriptor (uint16_t ts, uint16_t onetw, uint16_t service, uint32_t oui) :
-    AbstractDescriptor (DID_LINKAGE, "SSU_linkage_descriptor"),
-    ts_id (ts),
-    onetw_id (onetw),
-    service_id (service),
-    entries (),
-    private_data ()
+ts::SSULinkageDescriptor::SSULinkageDescriptor(uint16_t ts, uint16_t onetw, uint16_t service, uint32_t oui) :
+    AbstractDescriptor(DID_LINKAGE, "SSU_linkage_descriptor"),
+    ts_id(ts),
+    onetw_id(onetw),
+    service_id(service),
+    entries(),
+    private_data()
 {
-    entries.push_back (Entry (oui));
+    entries.push_back(Entry(oui));
     _is_valid = true;
 }
 
@@ -73,15 +75,15 @@ ts::SSULinkageDescriptor::SSULinkageDescriptor (uint16_t ts, uint16_t onetw, uin
 // Constructor from a binary descriptor
 //----------------------------------------------------------------------------
 
-ts::SSULinkageDescriptor::SSULinkageDescriptor (const Descriptor& desc) :
-    AbstractDescriptor (DID_LINKAGE, "SSU_linkage_descriptor"),
-    ts_id (0),
-    onetw_id (0),
-    service_id (0),
-    entries (),
-    private_data ()
+ts::SSULinkageDescriptor::SSULinkageDescriptor(const Descriptor& desc) :
+    AbstractDescriptor(DID_LINKAGE, "SSU_linkage_descriptor"),
+    ts_id(0),
+    onetw_id(0),
+    service_id(0),
+    entries(),
+    private_data()
 {
-    deserialize (desc);
+    deserialize(desc);
 }
 
 
@@ -89,7 +91,7 @@ ts::SSULinkageDescriptor::SSULinkageDescriptor (const Descriptor& desc) :
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::SSULinkageDescriptor::serialize (Descriptor& desc) const
+void ts::SSULinkageDescriptor::serialize(Descriptor& desc) const
 {
     ByteBlockPtr bbp (new ByteBlock (2));
     CheckNonNull (bbp.pointer());

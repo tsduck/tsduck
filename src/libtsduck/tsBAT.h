@@ -51,21 +51,17 @@ namespace ts {
         //! @param [in] cur True if table is current, false if table is next.
         //! @param [in] id Bouquet identifier.
         //!
-        BAT(uint8_t vers = 0, bool cur = true, uint16_t id = 0) :
-            AbstractTransportListTable(TID_BAT, "BAT", id, vers, cur),
-            bouquet_id(_tid_ext)
-        {
-        }
+        BAT(uint8_t vers = 0, bool cur = true, uint16_t id = 0);
 
         //!
         //! Constructor from a binary table.
         //! @param [in] table Binary table to deserialize.
         //!
-        BAT(const BinaryTable& table) :
-            AbstractTransportListTable(TID_BAT, "BAT", table),
-            bouquet_id(_tid_ext)
-        {
-        }
+        BAT(const BinaryTable& table);
+
+        // Inherited methods
+        virtual XML::Element* toXML(XML& xml, XML::Document& doc) const;
+        virtual void fromXML(XML& xml, const XML::Element* element);
 
         //!
         //! A static method to display a BAT section.

@@ -34,7 +34,9 @@
 
 #include "tsLogicalChannelNumberDescriptor.h"
 #include "tsFormat.h"
+#include "tsXMLTables.h"
 TSDUCK_SOURCE;
+TS_XML_DESCRIPTOR_FACTORY(ts::LogicalChannelNumberDescriptor, logical_channel_number_descriptor);
 
 
 //----------------------------------------------------------------------------

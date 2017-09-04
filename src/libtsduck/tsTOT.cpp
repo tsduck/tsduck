@@ -36,7 +36,9 @@
 #include "tsBCD.h"
 #include "tsCRC32.h"
 #include "tsFormat.h"
+#include "tsXMLTables.h"
 TSDUCK_SOURCE;
+TS_XML_TABLE_FACTORY(ts::TOT, TOT);
 
 
 //----------------------------------------------------------------------------

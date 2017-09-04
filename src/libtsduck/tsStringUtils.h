@@ -575,6 +575,19 @@ namespace ts {
     TSDUCKDLL bool SimilarStrings(const std::string& a, const void* b, size_t bsize);
 
     //!
+    //! Check if a container of strings contains something similar to a given string.
+    //!
+    //! @tparam CONTAINER A container class of @c std::string as defined by the
+    //! C++ Standard Template Library (STL).
+    //! @param [in] container A container of @c std::string.
+    //! @param [in] str A string to search.
+    //! @return True if @a container contains a string similar to @a str.
+    //! @see SimilarStrings
+    //!
+    template <class CONTAINER>
+    bool ContainSimilarString(const CONTAINER& container, const std::string& str);
+
+    //!
     //! Interpret a string as a sequence of hexadecimal digits (ignore blanks).
     //! @param [out] result Decoded bytes.
     //! @param [in] hexa_string A string as a sequence of hexadecimal digits and blanks.

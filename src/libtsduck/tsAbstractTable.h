@@ -63,6 +63,12 @@ namespace ts {
         TID tableId() const {return _table_id;}
 
         //!
+        //! Get the XMl node name representing this table.
+        //! @return The XML node name.
+        //!
+        std::string xmlName() const {return _xml_name == 0 ? std::string() : std::string(_xml_name);}
+
+        //!
         //! This abstract method serializes a table.
         //! @param [out] bin A binary table object.
         //! Its content is replaced with a binary representation of this object.
@@ -149,5 +155,10 @@ namespace ts {
     //!
     //! Safe pointer for AbstractTable (not thread-safe)
     //!
-    typedef SafePtr <AbstractTable, NullMutex> AbstractTablePtr;
+    typedef SafePtr<AbstractTable,NullMutex> AbstractTablePtr;
+
+    //!
+    //! Vector of BinaryTable pointers
+    //!
+    typedef std::vector<AbstractTablePtr> AbstractTablePtrVector;
 }

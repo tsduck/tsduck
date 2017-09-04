@@ -35,7 +35,9 @@
 #include "tsFormat.h"
 #include "tsHexa.h"
 #include "tsNames.h"
+#include "tsXMLTables.h"
 TSDUCK_SOURCE;
+TS_XML_DESCRIPTOR_FACTORY(ts::AC3Descriptor, AC3_descriptor);
 
 
 //----------------------------------------------------------------------------

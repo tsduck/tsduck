@@ -139,6 +139,9 @@
     <ClCompile Include="..\..\src\utest\utestXML.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\utest\utestXMLTables.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\utest\utestCppUnitMain.h">

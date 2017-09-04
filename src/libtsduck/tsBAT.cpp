@@ -33,7 +33,26 @@
 
 #include "tsBAT.h"
 #include "tsFormat.h"
+#include "tsXMLTables.h"
 TSDUCK_SOURCE;
+TS_XML_TABLE_FACTORY(ts::BAT, BAT);
+
+
+//----------------------------------------------------------------------------
+// Constructors
+//----------------------------------------------------------------------------
+
+ts::BAT::BAT(uint8_t vers, bool cur, uint16_t id) :
+    AbstractTransportListTable(TID_BAT, "BAT", id, vers, cur),
+    bouquet_id(_tid_ext)
+{
+}
+
+ts::BAT::BAT(const BinaryTable& table) :
+    AbstractTransportListTable(TID_BAT, "BAT", table),
+    bouquet_id(_tid_ext)
+{
+}
 
 
 //----------------------------------------------------------------------------
@@ -90,4 +109,24 @@ void ts::BAT::DisplaySection(TablesDisplay& display, const ts::Section& section,
     }
 
     display.displayExtraData(data, size, indent);
+}
+
+
+//----------------------------------------------------------------------------
+// XML serialization
+//----------------------------------------------------------------------------
+
+ts::XML::Element* ts::BAT::toXML(XML& xml, XML::Document& doc) const
+{
+    return 0; // TODO @@@@
+}
+
+
+//----------------------------------------------------------------------------
+// XML deserialization
+//----------------------------------------------------------------------------
+
+void ts::BAT::fromXML(XML& xml, const XML::Element* element)
+{
+    // TODO @@@@
 }

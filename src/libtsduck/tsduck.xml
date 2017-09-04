@@ -186,14 +186,12 @@
   <!-- Definitions of descriptors -->
   <_descriptors>
 
-      <!-- Generic descriptor -->
       <generic_descriptor tag="uint8, required">
         Generic descriptor with binary payload, to be used when a specific
         descriptor is not yet implemented. The body of this element shall
         contain an even number of hexadecimal digits.
       </generic_descriptor>
 
-      <!-- AC3_descriptor -->
       <AC3_descriptor component_type="uint8, optional"
                       bsid="uint8, optional"
                       mainid="uint8, optional"
@@ -203,7 +201,6 @@
         </additional_info>
       </AC3_descriptor>
 
-      <!-- AC3_audio_stream_descriptor -->
       <AC3_audio_stream_descriptor sample_rate_code="uint3, required"
                                    bsid="uint5, required"
                                    bit_rate_code="uint6, required"
@@ -224,7 +221,6 @@
         </additional_info>
       </AC3_audio_stream_descriptor>
 
-      <!-- AVC_video_descriptor -->
       <AVC_video_descriptor profile_idc="uint8, required"
                             constraint_set0="bool, required"
                             constraint_set1="bool, required"
@@ -234,10 +230,8 @@
                             AVC_still_present="bool, required"
                             AVC_24_hour_picture="bool, required"/>
 
-      <!-- bouquet_name_descriptor -->
       <bouquet_name_descriptor bouquet_name="string, required"/>
 
-      <!-- CA_descriptor -->
       <CA_descriptor CA_system_id="uint16, required"
                      CA_PID="uint13, required">
         <private_data>
@@ -245,13 +239,11 @@
         </private_data>
       </CA_descriptor>
 
-      <!-- CA_identifier_descriptor -->
       <CA_identifier_descriptor>
         <!-- One per CAS -->
         <CA_system_id value="uint16, required"/>
       </CA_identifier_descriptor>
 
-      <!-- content_descriptor -->
       <content_descriptor>
         <!-- One per classification -->
         <content content_nibble_level_1="uint4, required"
@@ -259,13 +251,11 @@
                  user_byte="uint8, required"/>
       </content_descriptor>
 
-      <!-- country_availability_descriptor -->
       <country_availability_descriptor country_availability="bool, required">
         <!-- One per country -->
         <country country_code="char3, required"/>
       </country_availability_descriptor>
 
-      <!-- data_broadcast_descriptor -->
       <data_broadcast_descriptor data_broadcast_id="uint16, required"
                                  component_tag="uint8, required"
                                  language_code="char3, required">
@@ -273,12 +263,12 @@
         <text>String</text>
       </data_broadcast_descriptor>
 
-      <!-- data_broadcast_id_descriptor -->
       <data_broadcast_id_descriptor data_broadcast_id="uint16, required">
         <selector_bytes>Hexadecimal content</selector_bytes>
       </data_broadcast_id_descriptor>
 
-      <!-- enhanced_AC3_descriptor -->
+      <eacem_stream_identifier_descriptor version_byte="uint8, required"/>
+
       <enhanced_AC3_descriptor mixinfoexists="bool, required"
                                component_type="uint8, optional"
                                bsid="uint8, optional"
@@ -292,7 +282,6 @@
         </additional_info>
       </enhanced_AC3_descriptor>
 
-      <!-- eutelsat_channel_number_descriptor -->
       <eutelsat_channel_number_descriptor>
         <!-- One per service -->
         <service original_network_id="uint16, required"
@@ -301,7 +290,6 @@
                  eutelsat_channel_number="uint10, required"/>
       </eutelsat_channel_number_descriptor>
 
-      <!-- extended_event_descriptor -->
       <extended_event_descriptor descriptor_number="uint8, required"
                                  last_descriptor_number="uint8, required"
                                  language_code="char3, required">
@@ -313,7 +301,6 @@
         </item>
       </extended_event_descriptor>
         
-      <!-- HD_simulcast_logical_channel_descriptor -->
       <HD_simulcast_logical_channel_descriptor>
         <!-- One per service -->
         <service service_id="uint16, required"
@@ -321,14 +308,12 @@
                  visible_service="bool, default=true"/>
       </HD_simulcast_logical_channel_descriptor>
 
-      <!-- ISO_639_language_descriptor -->
       <ISO_639_language_descriptor>
         <!-- One per language -->
         <language code="char3, required"
                   audio_type="uint8, required"/>
       </ISO_639_language_descriptor>
 
-      <!-- local_time_offset_descriptor -->
       <local_time_offset_descriptor>
         <!-- One per region -->
         <region country_code="char3, required"
@@ -339,7 +324,6 @@
         <!-- local_time_offset and next_time_offset: -780 to +780 minutes (-13 to +13 hours) -->
       </local_time_offset_descriptor>
 
-      <!-- logical_channel_number_descriptor -->
       <logical_channel_number_descriptor>
         <!-- One per service -->
         <service service_id="uint16, required"
@@ -347,32 +331,26 @@
                  visible_service="bool, default=true"/>
       </logical_channel_number_descriptor>
 
-      <!-- message_descriptor -->
       <message_descriptor message_id="uint8, required"
                           language_code="char3, required">
         <text>String</text>
       </message_descriptor>
 
-      <!-- network_name_descriptor -->
       <network_name_descriptor network_name="string, required"/>
 
-      <!-- parental_rating_descriptor -->
       <parental_rating_descriptor>
         <!-- One per country -->
-          <country country_code="char3, required"
-                   rating="uint8, required"/>
+        <country country_code="char3, required"
+                 rating="uint8, required"/>
       </parental_rating_descriptor>
 
-      <!-- private_data_specifier_descriptor -->
       <private_data_specifier_descriptor private_data_specifier="uint32, required"/>
 
-      <!-- S2_satellite_delivery_system_descriptor -->
       <S2_satellite_delivery_system_descriptor
           backwards_compatibility="bool, required"
           scrambling_sequence_index="uint18, optional"
           input_stream_identifier="uint8, optional"/>
 
-      <!-- satellite_delivery_system_descriptor -->
       <satellite_delivery_system_descriptor
           frequency="SatelliteFrequencyGHz, required"
           orbital_position="SatelliteOrbitalPosition, required"
@@ -384,30 +362,24 @@
           symbol_rate="SatelliteSymbolRate, required"
           FEC_inner="InnerFEC, required"/>
 
-      <!-- service_descriptor -->
       <service_descriptor service_type="uint8, required"
                           service_provider_name="string, required"
                           service_name="string, required"/>
 
-      <!-- service_list_descriptor -->
       <service_list_descriptor>
         <service service_id="uint16, required"
                  service_type="uint8, required"/>
       </service_list_descriptor>
 
-      <!-- short_event_descriptor -->
       <short_event_descriptor language_code="char3, required">
         <event_name>String</event_name>
         <text>String</text>
       </short_event_descriptor>
 
-      <!-- STD_descriptor -->
       <STD_descriptor leak_valid="bool, required"/>
 
-      <!-- stream_identifier_descriptor -->
       <stream_identifier_descriptor component_tag="uint8, required"/>
 
-      <!-- subtitling_descriptor -->
       <subtitling_descriptor>
         <!-- One per subtitle -->
         <subtitling language_code="char3, required"
@@ -416,7 +388,6 @@
                     ancillary_page_id="uint16, required"/>
       </subtitling_descriptor>
 
-      <!-- supplementary_audio_descriptor -->
       <supplementary_audio_descriptor
           mix_type="uint1, required"
           editorial_classification="uint5, required"
@@ -426,7 +397,6 @@
         </private_data>
       </supplementary_audio_descriptor>
 
-      <!-- teletext_descriptor -->
       <teletext_descriptor>
         <!-- One per page -->
         <teletext language_code="char3, required"
@@ -435,7 +405,6 @@
                   teletext_page_number="uint8, required"/>
       </teletext_descriptor>
 
-      <!-- terrestrial_delivery_system_descriptor -->
       <terrestrial_delivery_system_descriptor
           centre_frequency="TerrestrialFrequencyHz, required"
           bandwidth="TerrestrialBandwidth, required"

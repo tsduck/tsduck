@@ -26,34 +26,27 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//!
-//!  @file
-//!  Representation of a Conditional Access Table (CAT)
-//!
+//
+//  Representation of a Transport Stream Description Table (TSDT)
+//
 //----------------------------------------------------------------------------
 
-#pragma once
-#include "tsAbstractDescriptorsTable.h"
+#include "tsTSDT.h"
+#include "tsXMLTables.h"
+TSDUCK_SOURCE;
+TS_XML_TABLE_FACTORY(ts::TSDT, TSDT);
 
-namespace ts {
-    //!
-    //! Representation of a Conditional Access Table (CAT).
-    //! @see ISO/IEC 13818-1, ITU-T Rec. H.222.0, 2.4.4.6.
-    //!
-    class TSDUCKDLL CAT : public AbstractDescriptorsTable
-    {
-    public:
-        //!
-        //! Default constructor.
-        //! @param [in] vers Table version number.
-        //! @param [in] cur True if table is current, false if table is next.
-        //!
-        CAT(uint8_t vers = 0, bool cur = true);
 
-        //!
-        //! Constructor from a binary table.
-        //! @param [in] table Binary table to deserialize.
-        //!
-        CAT(const BinaryTable& table);
-    };
+//----------------------------------------------------------------------------
+// Constructors
+//----------------------------------------------------------------------------
+
+ts::TSDT::TSDT(uint8_t vers, bool cur) :
+    AbstractDescriptorsTable(TID_TSDT, "TSDT", 0xFFFF, vers, cur)
+{
+}
+
+ts::TSDT::TSDT(const BinaryTable& table) :
+    AbstractDescriptorsTable(TID_TSDT, "TSDT", table)
+{
 }

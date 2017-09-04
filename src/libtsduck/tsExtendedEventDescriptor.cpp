@@ -35,7 +35,9 @@
 #include "tsFormat.h"
 #include "tsHexa.h"
 #include "tsNames.h"
+#include "tsXMLTables.h"
 TSDUCK_SOURCE;
+TS_XML_DESCRIPTOR_FACTORY(ts::ExtendedEventDescriptor, extended_event_descriptor);
 
 #define MAX_DESC_SIZE 255
 

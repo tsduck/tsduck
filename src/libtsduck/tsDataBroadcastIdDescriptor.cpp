@@ -36,17 +36,19 @@
 #include "tsFormat.h"
 #include "tsHexa.h"
 #include "tsNames.h"
+#include "tsXMLTables.h"
 TSDUCK_SOURCE;
+TS_XML_DESCRIPTOR_FACTORY(ts::DataBroadcastIdDescriptor, data_broadcast_id_descriptor);
 
 
 //----------------------------------------------------------------------------
 // Default constructor:
 //----------------------------------------------------------------------------
 
-ts::DataBroadcastIdDescriptor::DataBroadcastIdDescriptor (uint16_t id) :
-    AbstractDescriptor (DID_DATA_BROADCAST_ID, "data_broadcast_id_descriptor"),
-    data_broadcast_id (id),
-    private_data ()
+ts::DataBroadcastIdDescriptor::DataBroadcastIdDescriptor(uint16_t id) :
+    AbstractDescriptor(DID_DATA_BROADCAST_ID, "data_broadcast_id_descriptor"),
+    data_broadcast_id(id),
+    private_data()
 {
     _is_valid = true;
 }
@@ -56,12 +58,12 @@ ts::DataBroadcastIdDescriptor::DataBroadcastIdDescriptor (uint16_t id) :
 // Constructor from a binary descriptor
 //----------------------------------------------------------------------------
 
-ts::DataBroadcastIdDescriptor::DataBroadcastIdDescriptor (const Descriptor& desc) :
-    AbstractDescriptor (DID_DATA_BROADCAST_ID, "data_broadcast_id_descriptor"),
-    data_broadcast_id (0),
-    private_data ()
+ts::DataBroadcastIdDescriptor::DataBroadcastIdDescriptor(const Descriptor& desc) :
+    AbstractDescriptor(DID_DATA_BROADCAST_ID, "data_broadcast_id_descriptor"),
+    data_broadcast_id(0),
+    private_data()
 {
-    deserialize (desc);
+    deserialize(desc);
 }
 
 

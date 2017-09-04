@@ -82,7 +82,7 @@ namespace ts {
         //! Default constructor.
         //! @param [in] utc_time UTC time.
         //!
-        TOT(const Time& utc_time);
+        TOT(const Time& utc_time = Time::Epoch);
 
         //!
         //! Constructor from a binary table.

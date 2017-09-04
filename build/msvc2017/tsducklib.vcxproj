@@ -277,6 +277,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsViaccessDate.h" />
     <ClInclude Include="..\..\src\libtsduck\tsVideoAttributes.h" />
     <ClInclude Include="..\..\src\libtsduck\tsXML.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsXMLTables.h" />
     <ClInclude Include="..\..\src\libtsduck\windows\tsComIds.h" />
     <ClInclude Include="..\..\src\libtsduck\windows\tsComPtr.h" />
     <ClInclude Include="..\..\src\libtsduck\windows\tsComUtils.h" />
@@ -321,6 +322,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsCASFamily.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsCASMapper.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsCASSelectionArgs.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsCAT.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsCerrReport.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsCipherChaining.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsCOM.cpp" />
@@ -455,6 +457,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsTLVSyntax.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsToInteger.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsTOT.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsTSDT.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsTSScanner.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsTSAnalyzer.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsTSAnalyzerOptions.cpp" />
@@ -481,6 +484,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsVersion.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsVideoAttributes.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsXML.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsXMLTables.cpp" />
     <ClCompile Include="..\..\src\libtsduck\windows\tsComIds.cpp" />
     <ClCompile Include="..\..\src\libtsduck\windows\tsComUtils.cpp" />
     <ClCompile Include="..\..\src\libtsduck\windows\tsDirectShowUtils.cpp" />
