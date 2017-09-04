@@ -224,8 +224,8 @@ namespace ts {
         {                                             \
             return new classname;                     \
         }                                             \
-        ts::XMLTables::RegisterTableType _XMLRegister_##xmlname(#xmlname, _XMLFactory_##xmlname); \
-}
+    }                                                 \
+    static ts::XMLTables::RegisterTableType _XMLRegister_##xmlname(#xmlname, _XMLFactory_##xmlname)
 
 //!
 //! @hideinitializer
@@ -238,5 +238,5 @@ namespace ts {
         {                                                  \
             return new classname;                          \
         }                                                  \
-        ts::XMLTables::RegisterDescriptorType _XMLRegister_##xmlname(#xmlname, _XMLFactory_##xmlname); \
-}
+    }                                                      \
+    static ts::XMLTables::RegisterDescriptorType _XMLRegister_##xmlname(#xmlname, _XMLFactory_##xmlname)
