@@ -59,7 +59,7 @@ Options::Options (int argc, char *argv[]) :
     verbose(false),
     enum_devices(false)
 {
-    option("debug", 'd', POSITIVE, 0, 1, 0, 0, true);
+    option("debug", 0, POSITIVE, 0, 1, 0, 0, true);
     option("verbose", 'v');
 #if defined(__windows)
     option("enumerate-devices", 'e');
@@ -118,22 +118,31 @@ namespace {
             return;
         }
 
-        // Display name and type
-#if defined(__windows)
-        if (tuner_index >= 0) {
-            std::cout << tuner_index << ": ";
-        }
-#endif
+        // Get tuner information.
         const std::string info(tuner.deviceInfo());
         bool something = !info.empty();
         const ts::DeliverySystemSet systems(tuner.deliverySystems());
 
-        std::cout << tuner.deviceName() << " (";
+        // Display name. On Windows, since names are weird, always display
+        // the adapter number and use quotes around tuner name.
+#if defined(__windows)
+        if (tuner_index >= 0) {
+            std::cout << tuner_index << ": ";
+        }
+        std::cout << '"';
+#endif
+        std::cout << tuner.deviceName();
+#if defined(__windows)
+        std::cout << '"';
+#endif
+
+        // Display tuner information.
+        std::cout << " (";
         if (something) {
             std::cout << info;
         }
         for (size_t ds = 0; ds < systems.size(); ++ds) {
-            if (systems.test (ds)) {
+            if (systems.test(ds)) {
                 if (something) {
                     std::cout << ", ";
                 }
@@ -181,7 +190,7 @@ namespace {
                     std::cout << std::endl;
                 }
                 for (size_t i = 0; i < tuners.size(); ++i) {
-                    ListTuner(*tuners[i], tuners.size() == 1 ? -1 : int(i), opt);
+                    ListTuner(*tuners[i], i, opt);
                 }
             }
         }
