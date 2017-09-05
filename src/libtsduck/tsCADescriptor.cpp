@@ -36,9 +36,11 @@
 #include "tsFormat.h"
 #include "tsHexa.h"
 #include "tsNames.h"
-#include "tsXMLTables.h"
+#include "tsTablesFactory.h"
 TSDUCK_SOURCE;
-TS_XML_DESCRIPTOR_FACTORY(ts::CADescriptor, CA_descriptor);
+TS_XML_DESCRIPTOR_FACTORY(ts::CADescriptor, "CA_descriptor");
+TS_ID_DESCRIPTOR_FACTORY(ts::CADescriptor, ts::EDID(ts::DID_CA));
+TS_ID_DESCRIPTOR_DISPLAY(ts::CADescriptor::DisplayDescriptor, ts::EDID(ts::DID_CA));
 
 
 //----------------------------------------------------------------------------

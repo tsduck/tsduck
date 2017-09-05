@@ -36,9 +36,11 @@
 #include "tsBCD.h"
 #include "tsCRC32.h"
 #include "tsFormat.h"
-#include "tsXMLTables.h"
+#include "tsTablesFactory.h"
 TSDUCK_SOURCE;
-TS_XML_TABLE_FACTORY(ts::TOT, TOT);
+TS_XML_TABLE_FACTORY(ts::TOT, "TOT");
+TS_ID_TABLE_FACTORY(ts::TOT, ts::TID_TOT);
+TS_ID_SECTION_DISPLAY(ts::TOT::DisplaySection, ts::TID_TOT);
 
 
 //----------------------------------------------------------------------------

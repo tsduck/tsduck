@@ -34,16 +34,20 @@
 #include "tsServiceListDescriptor.h"
 #include "tsFormat.h"
 #include "tsNames.h"
+#include "tsTablesFactory.h"
 TSDUCK_SOURCE;
+TS_XML_DESCRIPTOR_FACTORY(ts::ServiceListDescriptor, "service_descriptor");
+TS_ID_DESCRIPTOR_FACTORY(ts::ServiceListDescriptor, ts::EDID(ts::DID_SERVICE_LIST));
+TS_ID_DESCRIPTOR_DISPLAY(ts::ServiceListDescriptor::DisplayDescriptor, ts::EDID(ts::DID_SERVICE_LIST));
 
 
 //----------------------------------------------------------------------------
 // Default constructor:
 //----------------------------------------------------------------------------
 
-ts::ServiceListDescriptor::ServiceListDescriptor () :
-    AbstractDescriptor (DID_SERVICE_LIST, "service_list_descriptor"),
-    entries ()
+ts::ServiceListDescriptor::ServiceListDescriptor() :
+    AbstractDescriptor(DID_SERVICE_LIST, "service_list_descriptor"),
+    entries()
 {
     _is_valid = true;
 }
@@ -53,11 +57,11 @@ ts::ServiceListDescriptor::ServiceListDescriptor () :
 // Constructor from a binary descriptor
 //----------------------------------------------------------------------------
 
-ts::ServiceListDescriptor::ServiceListDescriptor (const Descriptor& desc) :
-    AbstractDescriptor (DID_SERVICE_LIST, "service_list_descriptor"),
-    entries ()
+ts::ServiceListDescriptor::ServiceListDescriptor(const Descriptor& desc) :
+    AbstractDescriptor(DID_SERVICE_LIST, "service_list_descriptor"),
+    entries()
 {
-    deserialize (desc);
+    deserialize(desc);
 }
 
 

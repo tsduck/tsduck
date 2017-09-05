@@ -34,9 +34,11 @@
 #include "tsPrivateDataSpecifierDescriptor.h"
 #include "tsFormat.h"
 #include "tsNames.h"
-#include "tsXMLTables.h"
+#include "tsTablesFactory.h"
 TSDUCK_SOURCE;
-TS_XML_DESCRIPTOR_FACTORY(ts::PrivateDataSpecifierDescriptor, private_data_specifier_descriptor);
+TS_XML_DESCRIPTOR_FACTORY(ts::PrivateDataSpecifierDescriptor, "private_data_specifier_descriptor");
+TS_ID_DESCRIPTOR_FACTORY(ts::PrivateDataSpecifierDescriptor, ts::EDID(ts::DID_PRIV_DATA_SPECIF));
+TS_ID_DESCRIPTOR_DISPLAY(ts::PrivateDataSpecifierDescriptor::DisplayDescriptor, ts::EDID(ts::DID_PRIV_DATA_SPECIF));
 
 
 //----------------------------------------------------------------------------

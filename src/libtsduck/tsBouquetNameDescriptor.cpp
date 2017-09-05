@@ -33,9 +33,11 @@
 
 #include "tsBouquetNameDescriptor.h"
 #include "tsStringUtils.h"
-#include "tsXMLTables.h"
+#include "tsTablesFactory.h"
 TSDUCK_SOURCE;
-TS_XML_DESCRIPTOR_FACTORY(ts::BouquetNameDescriptor, bouquet_name_descriptor);
+TS_XML_DESCRIPTOR_FACTORY(ts::BouquetNameDescriptor, "bouquet_name_descriptor");
+TS_ID_DESCRIPTOR_FACTORY(ts::BouquetNameDescriptor, ts::EDID(ts::DID_BOUQUET_NAME));
+TS_ID_DESCRIPTOR_DISPLAY(ts::BouquetNameDescriptor::DisplayDescriptor, ts::EDID(ts::DID_BOUQUET_NAME));
 
 
 //----------------------------------------------------------------------------

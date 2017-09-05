@@ -33,19 +33,19 @@
 //----------------------------------------------------------------------------
 
 #include "tsSSUDataBroadcastIdDescriptor.h"
-#include "tsXMLTables.h"
+#include "tsTablesFactory.h"
 TSDUCK_SOURCE;
-TS_XML_DESCRIPTOR_FACTORY(ts::SSUDataBroadcastIdDescriptor, SSU_data_broadcast_id_descriptor);
+TS_XML_DESCRIPTOR_FACTORY(ts::SSUDataBroadcastIdDescriptor, "SSU_data_broadcast_id_descriptor");
 
 
 //----------------------------------------------------------------------------
 // Default constructor:
 //----------------------------------------------------------------------------
 
-ts::SSUDataBroadcastIdDescriptor::SSUDataBroadcastIdDescriptor () :
-    AbstractDescriptor (DID_DATA_BROADCAST_ID, "SSU_data_broadcast_id_descriptor"),
-    entries (),
-    private_data ()
+ts::SSUDataBroadcastIdDescriptor::SSUDataBroadcastIdDescriptor() :
+    AbstractDescriptor(DID_DATA_BROADCAST_ID, "SSU_data_broadcast_id_descriptor"),
+    entries(),
+    private_data()
 {
     _is_valid = true;
 }
@@ -56,11 +56,11 @@ ts::SSUDataBroadcastIdDescriptor::SSUDataBroadcastIdDescriptor () :
 //----------------------------------------------------------------------------
 
 ts::SSUDataBroadcastIdDescriptor::SSUDataBroadcastIdDescriptor (uint32_t oui, uint8_t update_type) :
-    AbstractDescriptor (DID_DATA_BROADCAST_ID, "SSU_data_broadcast_id_descriptor"),
-    entries (),
-    private_data ()
+    AbstractDescriptor(DID_DATA_BROADCAST_ID, "SSU_data_broadcast_id_descriptor"),
+    entries(),
+    private_data()
 {
-    entries.push_back (Entry (oui, update_type));
+    entries.push_back(Entry(oui, update_type));
     _is_valid = true;
 }
 
@@ -69,12 +69,12 @@ ts::SSUDataBroadcastIdDescriptor::SSUDataBroadcastIdDescriptor (uint32_t oui, ui
 // Constructor from a binary descriptor
 //----------------------------------------------------------------------------
 
-ts::SSUDataBroadcastIdDescriptor::SSUDataBroadcastIdDescriptor (const Descriptor& desc) :
-    AbstractDescriptor (DID_DATA_BROADCAST_ID, "SSU_data_broadcast_id_descriptor"),
-    entries (),
-    private_data ()
+ts::SSUDataBroadcastIdDescriptor::SSUDataBroadcastIdDescriptor(const Descriptor& desc) :
+    AbstractDescriptor(DID_DATA_BROADCAST_ID, "SSU_data_broadcast_id_descriptor"),
+    entries(),
+    private_data()
 {
-    deserialize (desc);
+    deserialize(desc);
 }
 
 

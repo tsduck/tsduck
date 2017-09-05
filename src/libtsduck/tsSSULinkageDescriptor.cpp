@@ -33,9 +33,9 @@
 //----------------------------------------------------------------------------
 
 #include "tsSSULinkageDescriptor.h"
-#include "tsXMLTables.h"
+#include "tsTablesFactory.h"
 TSDUCK_SOURCE;
-TS_XML_DESCRIPTOR_FACTORY(ts::SSULinkageDescriptor, SSU_linkage_descriptor);
+TS_XML_DESCRIPTOR_FACTORY(ts::SSULinkageDescriptor, "SSU_linkage_descriptor");
 
 
 //----------------------------------------------------------------------------

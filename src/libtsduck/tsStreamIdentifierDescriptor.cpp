@@ -33,9 +33,11 @@
 
 #include "tsStreamIdentifierDescriptor.h"
 #include "tsFormat.h"
-#include "tsXMLTables.h"
+#include "tsTablesFactory.h"
 TSDUCK_SOURCE;
-TS_XML_DESCRIPTOR_FACTORY(ts::StreamIdentifierDescriptor, stream_identifier_descriptor);
+TS_XML_DESCRIPTOR_FACTORY(ts::StreamIdentifierDescriptor, "stream_identifier_descriptor");
+TS_ID_DESCRIPTOR_FACTORY(ts::StreamIdentifierDescriptor, ts::EDID(ts::DID_STREAM_ID));
+TS_ID_DESCRIPTOR_DISPLAY(ts::StreamIdentifierDescriptor::DisplayDescriptor, ts::EDID(ts::DID_STREAM_ID));
 
 
 //----------------------------------------------------------------------------

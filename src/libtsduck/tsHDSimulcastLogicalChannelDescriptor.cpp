@@ -34,9 +34,15 @@
 
 #include "tsHDSimulcastLogicalChannelDescriptor.h"
 #include "tsFormat.h"
-#include "tsXMLTables.h"
+#include "tsTablesFactory.h"
 TSDUCK_SOURCE;
-TS_XML_DESCRIPTOR_FACTORY(ts::HDSimulcastLogicalChannelDescriptor, HD_simulcast_logical_channel_descriptor);
+TS_XML_DESCRIPTOR_FACTORY(ts::HDSimulcastLogicalChannelDescriptor, "HD_simulcast_logical_channel_descriptor");
+TS_ID_DESCRIPTOR_FACTORY(ts::HDSimulcastLogicalChannelDescriptor, ts::EDID(ts::DID_HD_SIMULCAST_LCN, ts::PDS_EACEM));
+TS_ID_DESCRIPTOR_DISPLAY(ts::HDSimulcastLogicalChannelDescriptor::DisplayDescriptor, ts::EDID(ts::DID_HD_SIMULCAST_LCN, ts::PDS_EACEM));
+
+// Incorrect use of TPS private data, TPS broadcasters should use EACEM/EICTA PDS instead.
+TS_ID_DESCRIPTOR_FACTORY(ts::HDSimulcastLogicalChannelDescriptor, ts::EDID(ts::DID_HD_SIMULCAST_LCN, ts::PDS_TPS));
+TS_ID_DESCRIPTOR_DISPLAY(ts::HDSimulcastLogicalChannelDescriptor::DisplayDescriptor, ts::EDID(ts::DID_HD_SIMULCAST_LCN, ts::PDS_TPS));
 
 
 //----------------------------------------------------------------------------

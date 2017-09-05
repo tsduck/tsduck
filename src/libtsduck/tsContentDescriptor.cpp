@@ -34,9 +34,11 @@
 #include "tsContentDescriptor.h"
 #include "tsFormat.h"
 #include "tsNames.h"
-#include "tsXMLTables.h"
+#include "tsTablesFactory.h"
 TSDUCK_SOURCE;
-TS_XML_DESCRIPTOR_FACTORY(ts::ContentDescriptor, content_descriptor);
+TS_XML_DESCRIPTOR_FACTORY(ts::ContentDescriptor, "content_descriptor");
+TS_ID_DESCRIPTOR_FACTORY(ts::ContentDescriptor, ts::EDID(ts::DID_CONTENT));
+TS_ID_DESCRIPTOR_DISPLAY(ts::ContentDescriptor::DisplayDescriptor, ts::EDID(ts::DID_CONTENT));
 
 
 //----------------------------------------------------------------------------
@@ -44,8 +46,8 @@ TS_XML_DESCRIPTOR_FACTORY(ts::ContentDescriptor, content_descriptor);
 //----------------------------------------------------------------------------
 
 ts::ContentDescriptor::ContentDescriptor() :
-    AbstractDescriptor (DID_CONTENT, "content_descriptor"),
-    entries ()
+    AbstractDescriptor(DID_CONTENT, "content_descriptor"),
+    entries()
 {
     _is_valid = true;
 }
@@ -55,11 +57,11 @@ ts::ContentDescriptor::ContentDescriptor() :
 // Constructor from a binary descriptor
 //----------------------------------------------------------------------------
 
-ts::ContentDescriptor::ContentDescriptor (const Descriptor& desc) :
-    AbstractDescriptor (DID_CONTENT, "content_descriptor"),
-    entries ()
+ts::ContentDescriptor::ContentDescriptor(const Descriptor& desc) :
+    AbstractDescriptor(DID_CONTENT, "content_descriptor"),
+    entries()
 {
-    deserialize (desc);
+    deserialize(desc);
 }
 
 
@@ -67,7 +69,7 @@ ts::ContentDescriptor::ContentDescriptor (const Descriptor& desc) :
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::ContentDescriptor::serialize (Descriptor& desc) const
+void ts::ContentDescriptor::serialize(Descriptor& desc) const
 {
     ByteBlockPtr bbp (new ByteBlock (2));
     CheckNonNull (bbp.pointer());

@@ -32,9 +32,11 @@
 //----------------------------------------------------------------------------
 
 #include "tsSTDDescriptor.h"
-#include "tsXMLTables.h"
+#include "tsTablesFactory.h"
 TSDUCK_SOURCE;
-TS_XML_DESCRIPTOR_FACTORY(ts::STDDescriptor, STD_descriptor);
+TS_XML_DESCRIPTOR_FACTORY(ts::STDDescriptor, "STD_descriptor");
+TS_ID_DESCRIPTOR_FACTORY(ts::STDDescriptor, ts::EDID(ts::DID_STD));
+TS_ID_DESCRIPTOR_DISPLAY(ts::STDDescriptor::DisplayDescriptor, ts::EDID(ts::DID_STD));
 
 
 //----------------------------------------------------------------------------

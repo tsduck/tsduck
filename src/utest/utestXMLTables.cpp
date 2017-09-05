@@ -32,6 +32,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsXMLTables.h"
+#include "tsBinaryTable.h"
 #include "tsStringUtils.h"
 #include "tsCerrReport.h"
 #include "utestCppUnitTest.h"
@@ -78,18 +79,5 @@ void XMLTablesTest::tearDown()
 
 void XMLTablesTest::testRegistrations()
 {
-    ts::StringList names;
-
-    ts::XMLTables::GetRegisteredTableNames(names);
-    utest::Out() << "XMLTablesTest::testRegistrations: tables: " << ts::JoinStrings(names) << std::endl;
-
-    CPPUNIT_ASSERT(!names.empty());
-    CPPUNIT_ASSERT(ts::ContainSimilarString(names, "PAT"));
-    CPPUNIT_ASSERT(ts::ContainSimilarString(names, "PMT"));
-
-    ts::XMLTables::GetRegisteredDescriptorNames(names);
-    utest::Out() << "XMLTablesTest::testRegistrations: descriptors: " << ts::JoinStrings(names) << std::endl;
-
-    CPPUNIT_ASSERT(!names.empty());
-    CPPUNIT_ASSERT(ts::ContainSimilarString(names, "ca_descriptor"));
+  
 }

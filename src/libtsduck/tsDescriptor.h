@@ -35,7 +35,7 @@
 #pragma once
 #include "tsPlatform.h"
 #include "tsByteBlock.h"
-#include "tsSafePtr.h"
+#include "tsTablesPtr.h"
 #include "tsMPEG.h"
 
 namespace ts {
@@ -226,15 +226,4 @@ namespace ts {
         // Private fields
         ByteBlockPtr _data; // full binary content of the descriptor
     };
-
-    //!
-    //! Safe pointer for Descriptor (not thread-safe)
-    //!
-    typedef SafePtr<Descriptor, NullMutex> DescriptorPtr;
-
-    //!
-    //! Vector of Descriptor pointers
-    //! Use class DescriptorList for advanced features.
-    //!
-    typedef std::vector<DescriptorPtr> DescriptorPtrVector;
 }

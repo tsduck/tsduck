@@ -191,6 +191,15 @@ namespace ts {
         Element* addElement(Element* parent, const std::string& childName);
 
         //!
+        //! Add a new text containing hexadecimal data inside a node.
+        //! @param [in,out] parent Parent node.
+        //! @param [in] data Address of binary data.
+        //! @param [in] size Size in bytes of binary data.
+        //! @return New child element or null on error.
+        //!
+        Text* addHexaText(Element* parent, const void* data, size_t size);
+
+        //!
         //! A subclass of TinyXML printer class which can control the indentation width.
         //!
         class TSDUCKDLL Printer : public tinyxml2::XMLPrinter
@@ -218,6 +227,14 @@ namespace ts {
 
     private:
         ReportInterface& _report;
+
+        //!
+        //! Get the document of a node.
+        //! Display error if there is none.
+        //! @param [in] node The node to locate.
+        //! @return The document or zero if not found.
+        //!
+        Document* documentOf(Node* node);
 
         //!
         //! Validate an XML tree of elements, used by validateDocument().

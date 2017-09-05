@@ -34,6 +34,7 @@
 
 #pragma once
 #include "tsBinaryTable.h"
+#include "tsTablesPtr.h"
 #include "tsTablesDisplay.h"
 #include "tsXML.h"
 
@@ -106,17 +107,6 @@ namespace ts {
         //!
         virtual ~AbstractTable () {}
 
-        //!
-        //! Profile of a function to display a section.
-        //! Each subclass should provide a static function named @e DisplaySection
-        //! which displays a section of its table-id.
-        //!
-        //! @param [in,out] display Display engine.
-        //! @param [in] section The section to display.
-        //! @param [in] indent Indentation width.
-        //!
-        typedef void (*DisplaySectionFunction)(TablesDisplay& display, const Section& section, int indent);
-
     protected:
         //!
         //! The table id can be modified by subclasses only.
@@ -151,14 +141,4 @@ namespace ts {
         AbstractTable(const AbstractTable&) = delete;
         AbstractTable& operator=(const AbstractTable&) = delete;
     };
-
-    //!
-    //! Safe pointer for AbstractTable (not thread-safe)
-    //!
-    typedef SafePtr<AbstractTable,NullMutex> AbstractTablePtr;
-
-    //!
-    //! Vector of BinaryTable pointers
-    //!
-    typedef std::vector<AbstractTablePtr> AbstractTablePtrVector;
 }

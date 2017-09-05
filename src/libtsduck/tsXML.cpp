@@ -33,6 +33,7 @@
 
 #include "tsXML.h"
 #include "tsFormat.h"
+#include "tsHexa.h"
 #include "tsSysUtils.h"
 #include "tsStringUtils.h"
 #include "tsApplicationSharedLibrary.h"
@@ -285,6 +286,25 @@ ts::XML::Element* ts::XML::initializeDocument(Document* doc, const std::string& 
 
 
 //----------------------------------------------------------------------------
+// Get the document of a node.
+//----------------------------------------------------------------------------
+
+ts::XML::Document* ts::XML::documentOf(Node* node)
+{
+    if (node == 0) {
+        return 0;
+    }
+    Document* doc = node->GetDocument();
+    if (doc == 0) {
+        // Should not happen, but who knows...
+        reportError(Format("Internal XML error, no document found for XML node"));
+        return 0;
+    }
+    return doc;
+}
+
+
+//----------------------------------------------------------------------------
 // Add a new child element at the end of a node.
 //----------------------------------------------------------------------------
 
@@ -296,10 +316,8 @@ ts::XML::Element* ts::XML::addElement(Element* parent, const std::string& childN
     }
 
     // Get the associated document.
-    Document* doc = parent->GetDocument();
+    Document* doc = documentOf(parent);
     if (doc == 0) {
-        // Should not happen, but who knows...
-        reportError(Format("Internal XML error, no document found for element <%s>", ElementName(parent)));
         return 0;
     }
 
@@ -309,6 +327,35 @@ ts::XML::Element* ts::XML::addElement(Element* parent, const std::string& childN
         parent->InsertEndChild(child);
     }
 
+    return child;
+}
+
+
+//----------------------------------------------------------------------------
+// Add a new text containing hexadecimal data inside a node.
+//----------------------------------------------------------------------------
+
+ts::XML::Text* ts::XML::addHexaText(Element* parent, const void* data, size_t size)
+{
+    // Filter incorrect parameters.
+    if (parent == 0 || data == 0) {
+        return 0;
+    }
+
+    // Get the associated document.
+    Document* doc = documentOf(parent);
+    if (doc == 0) {
+        return 0;
+    }
+
+    // Format the data.
+    std::string hex("\n" + Hexa(data, size, hexa::HEXA | hexa::BPL, 2, 16) + "\n");
+
+    // Add the text node.
+    Text* child = doc->NewText(hex.c_str());
+    if (child != 0) {
+        parent->InsertEndChild(child);
+    }
     return child;
 }
 

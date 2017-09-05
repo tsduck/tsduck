@@ -100,6 +100,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsECMGClient.h" />
     <ClInclude Include="..\..\src\libtsduck\tsECMGClientHandlerInterface.h" />
     <ClInclude Include="..\..\src\libtsduck\tsECMGSCS.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsEDID.h" />
     <ClInclude Include="..\..\src\libtsduck\tsEIT.h" />
     <ClInclude Include="..\..\src\libtsduck\tsEMMGMUX.h" />
     <ClInclude Include="..\..\src\libtsduck\tsEnhancedAC3Descriptor.h" />
@@ -217,8 +218,10 @@
     <ClInclude Include="..\..\src\libtsduck\tsTables.h" />
     <ClInclude Include="..\..\src\libtsduck\tsTablesDisplay.h" />
     <ClInclude Include="..\..\src\libtsduck\tsTablesDisplayArgs.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsTablesFactory.h" />
     <ClInclude Include="..\..\src\libtsduck\tsTablesLogger.h" />
     <ClInclude Include="..\..\src\libtsduck\tsTablesLoggerArgs.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsTablesPtr.h" />
     <ClInclude Include="..\..\src\libtsduck\tsTCPConnection.h" />
     <ClInclude Include="..\..\src\libtsduck\tsTCPServer.h" />
     <ClInclude Include="..\..\src\libtsduck\tsTCPSocket.h" />
@@ -437,6 +440,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsSysUtils.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsTablesDisplay.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsTablesDisplayArgs.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsTablesFactory.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsTablesLogger.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsTablesLoggerArgs.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsTCPConnection.cpp" />

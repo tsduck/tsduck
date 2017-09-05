@@ -33,9 +33,13 @@
 
 #include "tsNIT.h"
 #include "tsFormat.h"
-#include "tsXMLTables.h"
+#include "tsTablesFactory.h"
 TSDUCK_SOURCE;
-TS_XML_TABLE_FACTORY(ts::NIT, NIT);
+TS_XML_TABLE_FACTORY(ts::NIT, "NIT");
+TS_ID_TABLE_FACTORY(ts::NIT, ts::TID_NIT_ACT);
+TS_ID_TABLE_FACTORY(ts::NIT, ts::TID_NIT_OTH);
+TS_ID_SECTION_DISPLAY(ts::NIT::DisplaySection, ts::TID_NIT_ACT);
+TS_ID_SECTION_DISPLAY(ts::NIT::DisplaySection, ts::TID_NIT_OTH);
 
 
 //----------------------------------------------------------------------------

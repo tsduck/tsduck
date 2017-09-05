@@ -32,9 +32,11 @@
 //----------------------------------------------------------------------------
 
 #include "tsCountryAvailabilityDescriptor.h"
-#include "tsXMLTables.h"
+#include "tsTablesFactory.h"
 TSDUCK_SOURCE;
-TS_XML_DESCRIPTOR_FACTORY(ts::CountryAvailabilityDescriptor, country_availability_descriptor);
+TS_XML_DESCRIPTOR_FACTORY(ts::CountryAvailabilityDescriptor, "country_availability_descriptor");
+TS_ID_DESCRIPTOR_FACTORY(ts::CountryAvailabilityDescriptor, ts::EDID(ts::DID_COUNTRY_AVAIL));
+TS_ID_DESCRIPTOR_DISPLAY(ts::CountryAvailabilityDescriptor::DisplayDescriptor, ts::EDID(ts::DID_COUNTRY_AVAIL));
 
 
 //----------------------------------------------------------------------------
@@ -42,9 +44,9 @@ TS_XML_DESCRIPTOR_FACTORY(ts::CountryAvailabilityDescriptor, country_availabilit
 //----------------------------------------------------------------------------
 
 ts::CountryAvailabilityDescriptor::CountryAvailabilityDescriptor() :
-    AbstractDescriptor (DID_COUNTRY_AVAIL, "country_availability_descriptor"),
-    country_availability (true),
-    country_codes ()
+    AbstractDescriptor(DID_COUNTRY_AVAIL, "country_availability_descriptor"),
+    country_availability(true),
+    country_codes()
 {
     _is_valid = true;
 }
@@ -54,12 +56,12 @@ ts::CountryAvailabilityDescriptor::CountryAvailabilityDescriptor() :
 // Constructor from a binary descriptor
 //----------------------------------------------------------------------------
 
-ts::CountryAvailabilityDescriptor::CountryAvailabilityDescriptor (const Descriptor& desc) :
-    AbstractDescriptor (DID_COUNTRY_AVAIL, "country_availability_descriptor"),
-    country_availability (true),
-    country_codes ()
+ts::CountryAvailabilityDescriptor::CountryAvailabilityDescriptor(const Descriptor& desc) :
+    AbstractDescriptor(DID_COUNTRY_AVAIL, "country_availability_descriptor"),
+    country_availability(true),
+    country_codes()
 {
-    deserialize (desc);
+    deserialize(desc);
 }
 
 
@@ -69,20 +71,20 @@ ts::CountryAvailabilityDescriptor::CountryAvailabilityDescriptor (const Descript
 // The end of the argument list must be marked by TS_NULL.
 //----------------------------------------------------------------------------
 
-ts::CountryAvailabilityDescriptor::CountryAvailabilityDescriptor (bool availability, const char* country, ...) :
-    AbstractDescriptor (DID_COUNTRY_AVAIL, "country_availability_descriptor"),
-    country_availability (availability),
-    country_codes ()
+ts::CountryAvailabilityDescriptor::CountryAvailabilityDescriptor(bool availability, const char* country, ...) :
+    AbstractDescriptor(DID_COUNTRY_AVAIL, "country_availability_descriptor"),
+    country_availability(availability),
+    country_codes()
 {
     _is_valid = true;
     if (country != TS_NULL) {
-        country_codes.push_back (country);
+        country_codes.push_back(country);
         va_list ap;
-        va_start (ap, country);
-        while ((country = va_arg (ap, const char*)) != TS_NULL) {
-            country_codes.push_back (country);
+        va_start(ap, country);
+        while ((country = va_arg(ap, const char*)) != TS_NULL) {
+            country_codes.push_back(country);
         }
-        va_end (ap);
+        va_end(ap);
     }
 }
 

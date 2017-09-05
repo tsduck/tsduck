@@ -34,6 +34,7 @@
 
 #pragma once
 #include "tsDescriptor.h"
+#include "tsTablesPtr.h"
 #include "tsTablesDisplay.h"
 #include "tsMPEG.h"
 #include "tsXML.h"
@@ -137,29 +138,6 @@ namespace ts {
         virtual ~AbstractDescriptor () {}
 
         //!
-        //! Profile of a function to display a descriptor.
-        //! Each subclass should provide a static function named @e DisplayDescriptor
-        //! which displays a descriptor of its type.
-        //!
-        //! @param [in,out] display Display engine.
-        //! @param [in] did Descriptor id.
-        //! @param [in] payload Address of the descriptor payload.
-        //! @param [in] size Size in bytes of the descriptor payload.
-        //! @param [in] indent Indentation width.
-        //! @param [in] tid Table id of table containing the descriptors.
-        //! This is optional. Used by some descriptors the interpretation of which may
-        //! vary depending on the table that they are in.
-        //! @param [in] pds Private Data Specifier. Used to interpret private descriptors.
-        //!
-        typedef void (*DisplayDescriptorFunction)(TablesDisplay& display,
-                                                  DID did,
-                                                  const uint8_t* payload,
-                                                  size_t size,
-                                                  int indent,
-                                                  TID tid,
-                                                  PDS pds);
-
-        //!
         //! Copy constructor.
         //! @param [in] other Other instance to copy.
         //!
@@ -205,9 +183,4 @@ namespace ts {
         // Unreachable constructors and operators.
         AbstractDescriptor() = delete;
     };
-
-    //!
-    //! Safe pointer for AbstractDescriptor (not thread-safe).
-    //!
-    typedef SafePtr <AbstractDescriptor, NullMutex> AbstractDescriptorPtr;
 }

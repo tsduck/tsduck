@@ -35,9 +35,11 @@
 #include "tsFormat.h"
 #include "tsHexa.h"
 #include "tsNames.h"
-#include "tsXMLTables.h"
+#include "tsTablesFactory.h"
 TSDUCK_SOURCE;
-TS_XML_DESCRIPTOR_FACTORY(ts::ExtendedEventDescriptor, extended_event_descriptor);
+TS_XML_DESCRIPTOR_FACTORY(ts::ExtendedEventDescriptor, "extended_event_descriptor");
+TS_ID_DESCRIPTOR_FACTORY(ts::ExtendedEventDescriptor, ts::EDID(ts::DID_EXTENDED_EVENT));
+TS_ID_DESCRIPTOR_DISPLAY(ts::ExtendedEventDescriptor::DisplayDescriptor, ts::EDID(ts::DID_EXTENDED_EVENT));
 
 #define MAX_DESC_SIZE 255
 
@@ -47,12 +49,12 @@ TS_XML_DESCRIPTOR_FACTORY(ts::ExtendedEventDescriptor, extended_event_descriptor
 //----------------------------------------------------------------------------
 
 ts::ExtendedEventDescriptor::ExtendedEventDescriptor() :
-    AbstractDescriptor (DID_EXTENDED_EVENT, "extended_event_descriptor"),
-    descriptor_number (0),
-    last_descriptor_number (0),
-    language_code (),
-    entries (),
-    text ()
+    AbstractDescriptor(DID_EXTENDED_EVENT, "extended_event_descriptor"),
+    descriptor_number(0),
+    last_descriptor_number(0),
+    language_code(),
+    entries(),
+    text()
 {
     _is_valid = true;
 }
@@ -62,15 +64,15 @@ ts::ExtendedEventDescriptor::ExtendedEventDescriptor() :
 // Constructor from a binary descriptor
 //----------------------------------------------------------------------------
 
-ts::ExtendedEventDescriptor::ExtendedEventDescriptor (const Descriptor& desc) :
-    AbstractDescriptor (DID_EXTENDED_EVENT, "extended_event_descriptor"),
-    descriptor_number (0),
-    last_descriptor_number (0),
-    language_code (),
-    entries (),
-    text ()
+ts::ExtendedEventDescriptor::ExtendedEventDescriptor(const Descriptor& desc) :
+    AbstractDescriptor(DID_EXTENDED_EVENT, "extended_event_descriptor"),
+    descriptor_number(0),
+    last_descriptor_number(0),
+    language_code(),
+    entries(),
+    text()
 {
-    deserialize (desc);
+    deserialize(desc);
 }
 
 

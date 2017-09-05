@@ -35,7 +35,9 @@
 #include "tsFormat.h"
 #include "tsHexa.h"
 #include "tsNames.h"
+#include "tsTablesFactory.h"
 TSDUCK_SOURCE;
+TS_ID_DESCRIPTOR_DISPLAY(ts::ComponentDescriptor::DisplayDescriptor, ts::EDID(ts::DID_COMPONENT));
 
 
 //----------------------------------------------------------------------------

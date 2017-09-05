@@ -35,9 +35,13 @@
 #include "tsStringUtils.h"
 #include "tsFormat.h"
 #include "tsNames.h"
-#include "tsXMLTables.h"
+#include "tsTablesFactory.h"
 TSDUCK_SOURCE;
-TS_XML_TABLE_FACTORY(ts::SDT, SDT);
+TS_XML_TABLE_FACTORY(ts::SDT, "SDT");
+TS_ID_TABLE_FACTORY(ts::SDT, ts::TID_SDT_ACT);
+TS_ID_TABLE_FACTORY(ts::SDT, ts::TID_SDT_OTH);
+TS_ID_SECTION_DISPLAY(ts::SDT::DisplaySection, ts::TID_SDT_ACT);
+TS_ID_SECTION_DISPLAY(ts::SDT::DisplaySection, ts::TID_SDT_OTH);
 
 
 //----------------------------------------------------------------------------

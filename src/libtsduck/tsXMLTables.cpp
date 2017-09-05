@@ -32,6 +32,10 @@
 //----------------------------------------------------------------------------
 
 #include "tsXMLTables.h"
+#include "tsAbstractTable.h"
+#include "tsAbstractDescriptor.h"
+#include "tsBinaryTable.h"
+#include "tsTablesFactory.h"
 #include "tsStringUtils.h"
 #include "tsFormat.h"
 TSDUCK_SOURCE;
@@ -44,6 +48,22 @@ TSDUCK_SOURCE;
 ts::XMLTables::XMLTables() :
     _tables()
 {
+}
+
+
+//----------------------------------------------------------------------------
+// Add a table in the file.
+//----------------------------------------------------------------------------
+
+void ts::XMLTables::add(const AbstractTablePtr& table)
+{
+    if (!table.isNull() && table->isValid()) {
+        BinaryTablePtr bin(new BinaryTable);
+        table->serialize(*bin);
+        if (bin->isValid()) {
+            add(bin);
+        }
+    }
 }
 
 
@@ -91,6 +111,7 @@ bool ts::XMLTables::parseDocument(XML& xml, const XML::Document& doc)
         if (name != 0) {
 
             // Get the table factory for that kind of XML tag.
+            /*@@@@@@@@@@@@@@@@@@@@@@@@@
             TableFactories::const_iterator it = TableFactories::Instance()->find(std::string(name));
 
             if (it == TableFactories::Instance()->end()) {
@@ -108,6 +129,8 @@ bool ts::XMLTables::parseDocument(XML& xml, const XML::Document& doc)
                     success = false;
                 }
             }
+
+            @@@@@@@@@@@@@@*/
         }
     }
     return success;
@@ -115,7 +138,7 @@ bool ts::XMLTables::parseDocument(XML& xml, const XML::Document& doc)
 
 
 //----------------------------------------------------------------------------
-// Generate XML file or content.
+// Create XML file or text.
 //----------------------------------------------------------------------------
 
 bool ts::XMLTables::save(const std::string& file_name, ReportInterface& report) const
@@ -152,6 +175,11 @@ std::string ts::XMLTables::toText(ReportInterface& report) const
     return text;
 }
 
+
+//----------------------------------------------------------------------------
+// Generate an XML document.
+//----------------------------------------------------------------------------
+
 bool ts::XMLTables::generateDocument(XML& xml, XML::Printer& printer) const
 {
     // Initialize the document structure.
@@ -162,10 +190,34 @@ bool ts::XMLTables::generateDocument(XML& xml, XML::Printer& printer) const
     }
 
     // Format all tables.
-    for (AbstractTablePtrVector::const_iterator it = _tables.begin(); it != _tables.end(); ++it) {
-        const AbstractTablePtr& table(*it);
+    for (BinaryTablePtrVector::const_iterator it = _tables.begin(); it != _tables.end(); ++it) {
+        const BinaryTablePtr& table(*it);
         if (!table.isNull() && table->isValid()) {
-            XML::Element* node = table->toXML(xml, doc);
+
+            // The XML node we will generate.
+            XML::Element* node = 0;
+
+            // Do we know how to deserialize this table?
+            TablesFactory::TableFactory fac = TablesFactory::Instance()->getTableFactory(table->tableId());
+            if (fac != 0) {
+                // We know how to deserialize this table.
+                AbstractTablePtr tp = fac();
+                if (!tp.isNull()) {
+                    // Deserialize from binary to object.
+                    tp->deserialize(*table);
+                    if (tp->isValid()) {
+                        // Serialize from object to XML.
+                        node = tp->toXML(xml, doc);
+                    }
+                }
+            }
+
+            // If we could not generate a typed node, generate a generic one.
+            if (node == 0) {
+                node = ToGenericTable(xml, doc, *table);
+            }
+
+            // Finaly add the XML node inside the document.
             if (node != 0) {
                 root->InsertEndChild(node);
             }
@@ -179,44 +231,63 @@ bool ts::XMLTables::generateDocument(XML& xml, XML::Printer& printer) const
 
 
 //----------------------------------------------------------------------------
-// Table factories.
+// This method converts a generic table to XML.
 //----------------------------------------------------------------------------
 
-tsDefineSingleton(ts::XMLTables::TableFactories);
-
-ts::XMLTables::TableFactories::TableFactories() {}
-
-ts::XMLTables::RegisterTableType::RegisterTableType(const std::string& node_name, TableFactory factory)
+ts::XML::Element* ts::XMLTables::ToGenericTable(XML& xml, XML::Document& doc, const BinaryTable& table)
 {
-    TableFactories::Instance()->insert(std::pair<std::string,TableFactory>(node_name, factory));
-}
-
-void ts::XMLTables::GetRegisteredTableNames(StringList& names)
-{
-    names.clear();
-    for (std::map<std::string,TableFactory>::const_iterator it = TableFactories::Instance()->begin(); it != TableFactories::Instance()->end(); ++it) {
-        names.push_back(it->first);
+    // Filter invalid tables.
+    if (!table.isValid()) {
+        return 0;
     }
-}
 
+    if (table.isShortSection()) {
+        // Create a short section node.
+        SectionPtr section(table.sectionAt(0));
+        if (section.isNull()) {
+            return 0;
+        }
+        XML::Element* root = doc.NewElement("generic_short_table");
+        if (root == 0) {
+            return 0;
+        }
+        root->SetAttribute("table_id", int(table.tableId()));
+        root->SetAttribute("private", int(section->isPrivateSection()));
+        root->SetAttribute("reserved1", int((section->content()[1] >> 4) && 0x03));
+        xml.addHexaText(root, section->payload(), section->payloadSize());
+        return root;
+    }
+    else {
+        // Create a long section.
+        XML::Element* root = doc.NewElement("generic_long_table");
+        if (root == 0) {
+            return 0;
+        }
 
-//----------------------------------------------------------------------------
-// Descriptor factories.
-//----------------------------------------------------------------------------
+        // Collect table information from the first section.
+        if (table.sectionCount() == 0) {
+            return 0;
+        }
+        SectionPtr section(table.sectionAt(0));
+        if (section.isNull()) {
+            return 0;
+        }
+        root->SetAttribute("table_id", int(table.tableId()));
+        root->SetAttribute("table_id_ext", int(table.tableIdExtension()));
+        root->SetAttribute("version", int(table.version()));
+        root->SetAttribute("current", section->isCurrent());
+        root->SetAttribute("private", int(section->isPrivateSection()));
+        root->SetAttribute("reserved1", int((section->content()[1] >> 4) && 0x03));
+        root->SetAttribute("reserved2", int((section->content()[5] >> 6) && 0x03));
 
-tsDefineSingleton(ts::XMLTables::DescriptorFactories);
-
-ts::XMLTables::DescriptorFactories::DescriptorFactories() {}
-
-ts::XMLTables::RegisterDescriptorType::RegisterDescriptorType(const std::string& node_name, DescriptorFactory factory)
-{
-    DescriptorFactories::Instance()->insert(std::pair<std::string,DescriptorFactory>(node_name, factory));
-}
-
-void ts::XMLTables::GetRegisteredDescriptorNames(StringList& names)
-{
-    names.clear();
-    for (std::map<std::string,DescriptorFactory>::const_iterator it = DescriptorFactories::Instance()->begin(); it != DescriptorFactories::Instance()->end(); ++it) {
-        names.push_back(it->first);
+        // Add each section in binary format.
+        for (size_t index = 0; index < table.sectionCount(); ++index) {
+            section = table.sectionAt(index);
+            if (!section.isNull() && section->isValid()) {
+                XML::Element* child = xml.addElement(root, "section");
+                xml.addHexaText(child, section->payload(), section->payloadSize());
+            }
+        }
+        return root;
     }
 }

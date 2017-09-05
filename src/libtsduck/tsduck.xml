@@ -179,7 +179,8 @@
     <!-- One per section -->
     <section>
       The body of the section elements shall contain an even number of
-      hexadecimal digits, the payload of the long section.
+      hexadecimal digits, the payload of the long section. The CRC32
+      field is not part of this payload, it will be recomputed.
     </section>
   </generic_long_table>
 
