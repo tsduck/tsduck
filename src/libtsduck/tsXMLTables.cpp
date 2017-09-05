@@ -253,7 +253,7 @@ ts::XML::Element* ts::XMLTables::ToGenericTable(XML& xml, XML::Document& doc, co
         }
         root->SetAttribute("table_id", int(table.tableId()));
         root->SetAttribute("private", int(section->isPrivateSection()));
-        root->SetAttribute("reserved1", int((section->content()[1] >> 4) && 0x03));
+        root->SetAttribute("reserved1", int((section->content()[1] >> 4) & 0x03));
         xml.addHexaText(root, section->payload(), section->payloadSize());
         return root;
     }
@@ -277,8 +277,8 @@ ts::XML::Element* ts::XMLTables::ToGenericTable(XML& xml, XML::Document& doc, co
         root->SetAttribute("version", int(table.version()));
         root->SetAttribute("current", section->isCurrent());
         root->SetAttribute("private", int(section->isPrivateSection()));
-        root->SetAttribute("reserved1", int((section->content()[1] >> 4) && 0x03));
-        root->SetAttribute("reserved2", int((section->content()[5] >> 6) && 0x03));
+        root->SetAttribute("reserved1", int((section->content()[1] >> 4) & 0x03));
+        root->SetAttribute("reserved2", int((section->content()[5] >> 6) & 0x03));
 
         // Add each section in binary format.
         for (size_t index = 0; index < table.sectionCount(); ++index) {
