@@ -33,18 +33,20 @@
 
 #include "tsISO639LanguageDescriptor.h"
 #include "tsNames.h"
-#include "tsXMLTables.h"
+#include "tsTablesFactory.h"
 TSDUCK_SOURCE;
-TS_XML_DESCRIPTOR_FACTORY(ts::ISO639LanguageDescriptor, ISO_639_language_descriptor);
+TS_XML_DESCRIPTOR_FACTORY(ts::ISO639LanguageDescriptor, "ISO_639_language_descriptor");
+TS_ID_DESCRIPTOR_FACTORY(ts::ISO639LanguageDescriptor, ts::EDID(ts::DID_LANGUAGE));
+TS_ID_DESCRIPTOR_DISPLAY(ts::ISO639LanguageDescriptor::DisplayDescriptor, ts::EDID(ts::DID_LANGUAGE));
 
 
 //----------------------------------------------------------------------------
 // Default constructor:
 //----------------------------------------------------------------------------
 
-ts::ISO639LanguageDescriptor::ISO639LanguageDescriptor () :
-    AbstractDescriptor (DID_LANGUAGE, "ISO_639_language_descriptor"),
-    entries ()
+ts::ISO639LanguageDescriptor::ISO639LanguageDescriptor() :
+    AbstractDescriptor(DID_LANGUAGE, "ISO_639_language_descriptor"),
+    entries()
 {
     _is_valid = true;
 }
@@ -54,11 +56,11 @@ ts::ISO639LanguageDescriptor::ISO639LanguageDescriptor () :
 // Constructor from a binary descriptor
 //----------------------------------------------------------------------------
 
-ts::ISO639LanguageDescriptor::ISO639LanguageDescriptor (const Descriptor& desc) :
-    AbstractDescriptor (DID_LANGUAGE, "ISO_639_language_descriptor"),
-    entries ()
+ts::ISO639LanguageDescriptor::ISO639LanguageDescriptor(const Descriptor& desc) :
+    AbstractDescriptor(DID_LANGUAGE, "ISO_639_language_descriptor"),
+    entries()
 {
-    deserialize (desc);
+    deserialize(desc);
 }
 
 

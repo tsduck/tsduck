@@ -234,8 +234,10 @@ HEADERS += \
     ../../../src/libtsduck/tsTables.h \
     ../../../src/libtsduck/tsTablesDisplay.h \
     ../../../src/libtsduck/tsTablesDisplayArgs.h \
+    ../../../src/libtsduck/tsTablesFactory.h \
     ../../../src/libtsduck/tsTablesLogger.h \
     ../../../src/libtsduck/tsTablesLoggerArgs.h \
+    ../../../src/libtsduck/tsTablesPtr.h \
     ../../../src/libtsduck/tsTeletextDescriptor.h \
     ../../../src/libtsduck/tsTelnetConnection.h \
     ../../../src/libtsduck/tsTerrestrialDeliverySystemDescriptor.h \
@@ -445,6 +447,7 @@ SOURCES += \
     ../../../src/libtsduck/tsTSScanner.cpp \
     ../../../src/libtsduck/tsTablesDisplay.cpp \
     ../../../src/libtsduck/tsTablesDisplayArgs.cpp \
+    ../../../src/libtsduck/tsTablesFactory.cpp \
     ../../../src/libtsduck/tsTablesLogger.cpp \
     ../../../src/libtsduck/tsTablesLoggerArgs.cpp \
     ../../../src/libtsduck/tsTeletextDescriptor.cpp \

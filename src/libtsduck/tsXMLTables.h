@@ -34,9 +34,7 @@
 
 #pragma once
 #include "tsXML.h"
-#include "tsAbstractTable.h"
-#include "tsAbstractDescriptor.h"
-#include "tsSingletonManager.h"
+#include "tsTablesPtr.h"
 
 namespace ts {
     //!
@@ -85,7 +83,7 @@ namespace ts {
         //! Fast access to the list of loaded tables.
         //! @return A constant reference to the internal list of loaded tables.
         //!
-        const AbstractTablePtrVector& tables() const
+        const BinaryTablePtrVector& tables() const
         {
             return _tables;
         }
@@ -94,7 +92,7 @@ namespace ts {
         //! Get a copy of the list of loaded tables.
         //! @param [out] tables The list of loaded tables.
         //!
-        void getTables(AbstractTablePtrVector& tables) const
+        void getTables(BinaryTablePtrVector& tables) const
         {
             tables.assign(_tables.begin(), _tables.end());
         }
@@ -109,75 +107,32 @@ namespace ts {
 
         //!
         //! Add a table in the file.
-        //! @param [in] table The table to add.
+        //! @param [in] table The binary table to add.
         //!
-        void add(const AbstractTablePtr& table)
+        void add(const BinaryTablePtr& table)
         {
             _tables.push_back(table);
         }
 
         //!
-        //! Get the list of all registered XML names for tables.
-        //! @param [out] names List of all registered XML names for tables.
+        //! Add a table in the file.
+        //! The table is serialized
+        //! @param [in] table The table to add.
         //!
-        static void GetRegisteredTableNames(StringList& names);
+        void add(const AbstractTablePtr& table);
 
         //!
-        //! Get the list of all registered XML names for descriptors.
-        //! @param [out] names List of all registered XML names for descriptors.
+        //! This method converts a generic table to XML.
+        //! @param [in,out] xml XML utility for error reporting
+        //! @param [in,out] doc Document into which the XML tree is to be created.
+        //! The new XML structure is allocated in the document.
+        //! @param [in] table The table to serialize.
+        //! @return The new XML element or zero if @a table is invalid.
         //!
-        static void GetRegisteredDescriptorNames(StringList& names);
-
-        //!
-        //! Profile of a function which creates a table.
-        //!
-        typedef AbstractTablePtr (*TableFactory)();
-
-        //!
-        //! Profile of a function which creates a descriptor.
-        //!
-        typedef AbstractDescriptorPtr (*DescriptorFactory)();
-
-        //!
-        //! Register a table factory for a given XML node name.
-        //!
-        class RegisterTableType
-        {
-        public:
-            //!
-            //! The constructor registers a table factory for a given XML node name.
-            //! @param [in] node_name Name of XML nodes implementing this table.
-            //! @param [in] factory Function which creates a table of the appropriate type.
-            //!
-            RegisterTableType(const std::string& node_name, TableFactory factory);
-
-        private:
-            RegisterTableType() = delete;
-            RegisterTableType(const RegisterTableType&) = delete;
-            RegisterTableType& operator=(const RegisterTableType&) = delete;
-        };
-
-        //!
-        //! Register a descriptor factory for a given XML node name.
-        //!
-        class RegisterDescriptorType
-        {
-        public:
-            //!
-            //! The constructor registers a descriptor factory for a given XML node name.
-            //! @param [in] node_name Name of XML nodes implementing this descriptor.
-            //! @param [in] factory Function which creates a descriptor of the appropriate type.
-            //!
-            RegisterDescriptorType(const std::string& node_name, DescriptorFactory factory);
-
-        private:
-            RegisterDescriptorType() = delete;
-            RegisterDescriptorType(const RegisterDescriptorType&) = delete;
-            RegisterDescriptorType& operator=(const RegisterDescriptorType&) = delete;
-        };
+        static XML::Element* ToGenericTable(XML& xml, XML::Document& doc, const BinaryTable& table);
 
     private:
-        AbstractTablePtrVector _tables;   //!< Loaded tables.
+        BinaryTablePtrVector _tables;   //!< Loaded tables.
 
         //!
         //! Parse an XML document.
@@ -194,49 +149,5 @@ namespace ts {
         //! @return True on success, false on error.
         //!
         bool generateDocument(XML& xml, XML::Printer& printer) const;
-
-        //!
-        //! A singleton class which tracks all table factories.
-        //!
-        class TSDUCKDLL TableFactories : public std::map<std::string, TableFactory>
-        {
-            tsDeclareSingleton(TableFactories);
-        };
-
-        //!
-        //! A singleton class which tracks all descriptor factories.
-        //!
-        class TSDUCKDLL DescriptorFactories : public std::map<std::string, DescriptorFactory>
-        {
-            tsDeclareSingleton(DescriptorFactories);
-        };
     };
 }
-
-//!
-//! @hideinitializer
-//! Registration of the XML name of a subclass of ts::AbstractTable.
-//! This macro is typically used in the .cpp file of a table.
-//!
-#define TS_XML_TABLE_FACTORY(classname, xmlname)      \
-    namespace {                                       \
-        ts::AbstractTablePtr _XMLFactory_##xmlname()  \
-        {                                             \
-            return new classname;                     \
-        }                                             \
-    }                                                 \
-    static ts::XMLTables::RegisterTableType _XMLRegister_##xmlname(#xmlname, _XMLFactory_##xmlname)
-
-//!
-//! @hideinitializer
-//! Registration of the XML name of a subclass of ts::AbstractDescriptor.
-//! This macro is typically used in the .cpp file of a descriptor.
-//!
-#define TS_XML_DESCRIPTOR_FACTORY(classname, xmlname)      \
-    namespace {                                            \
-        ts::AbstractDescriptorPtr _XMLFactory_##xmlname()  \
-        {                                                  \
-            return new classname;                          \
-        }                                                  \
-    }                                                      \
-    static ts::XMLTables::RegisterDescriptorType _XMLRegister_##xmlname(#xmlname, _XMLFactory_##xmlname)

@@ -33,9 +33,11 @@
 
 #include "tsBAT.h"
 #include "tsFormat.h"
-#include "tsXMLTables.h"
+#include "tsTablesFactory.h"
 TSDUCK_SOURCE;
-TS_XML_TABLE_FACTORY(ts::BAT, BAT);
+TS_ID_TABLE_FACTORY(ts::BAT, ts::TID_BAT);
+TS_XML_TABLE_FACTORY(ts::BAT, "BAT");
+TS_ID_SECTION_DISPLAY(ts::BAT::DisplaySection, ts::TID_BAT);
 
 
 //----------------------------------------------------------------------------

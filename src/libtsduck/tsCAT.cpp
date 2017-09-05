@@ -32,9 +32,11 @@
 //----------------------------------------------------------------------------
 
 #include "tsCAT.h"
-#include "tsXMLTables.h"
+#include "tsTablesFactory.h"
 TSDUCK_SOURCE;
-TS_XML_TABLE_FACTORY(ts::CAT, CAT);
+TS_ID_TABLE_FACTORY(ts::CAT, ts::TID_CAT);
+TS_XML_TABLE_FACTORY(ts::CAT, "CAT");
+TS_ID_SECTION_DISPLAY(ts::CAT::DisplaySection, ts::TID_CAT);
 
 
 //----------------------------------------------------------------------------

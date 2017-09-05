@@ -26,24 +26,64 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Representation of a VBI_teletext_descriptor
-//
+//!
+//!  @file
+//!  Forward declarations for MPEG PSI/SI types.
+//!  Useful to avoid interdependencies of header files.
+//!
 //----------------------------------------------------------------------------
 
-#include "tsVBITeletextDescriptor.h"
-#include "tsTeletextDescriptor.h"
-#include "tsTablesFactory.h"
-TSDUCK_SOURCE;
-TS_ID_DESCRIPTOR_DISPLAY(ts::VBITeletextDescriptor::DisplayDescriptor, ts::EDID(ts::DID_VBI_TELETEXT));
+#pragma once
+#include "tsSafePtr.h"
 
+namespace ts {
 
-//----------------------------------------------------------------------------
-// Static method to display a descriptor.
-//----------------------------------------------------------------------------
+    class AbstractDescriptor;
+    class AbstractTable;
+    class BinaryTable;
+    class Descriptor;
+    class DescriptorList;
 
-void ts::VBITeletextDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
-{
-    // Same encoding as teletext_descriptor.
-    TeletextDescriptor::DisplayDescriptor(display, did, data, size, indent, tid, pds);
+    //!
+    //! Safe pointer for AbstractDescriptor (not thread-safe).
+    //!
+    typedef SafePtr<AbstractDescriptor,NullMutex> AbstractDescriptorPtr;
+
+    //!
+    //! Vector of AbstractDescriptor pointers
+    //!
+    typedef std::vector<AbstractDescriptorPtr> AbstractDescriptorPtrVector;
+
+    //!
+    //! Safe pointer for AbstractTable (not thread-safe)
+    //!
+    typedef SafePtr<AbstractTable,NullMutex> AbstractTablePtr;
+
+    //!
+    //! Vector of BinaryTable pointers
+    //!
+    typedef std::vector<AbstractTablePtr> AbstractTablePtrVector;
+
+    //!
+    //! Safe pointer for BinaryTable (not thread-safe)
+    //!
+    typedef SafePtr<BinaryTable,NullMutex> BinaryTablePtr;
+
+    //!
+    //! Vector of BinaryTable pointers
+    //!
+    typedef std::vector<BinaryTablePtr> BinaryTablePtrVector;
+
+    //!
+    //! Safe pointer for Descriptor (not thread-safe)
+    //!
+    typedef SafePtr<Descriptor, NullMutex> DescriptorPtr;
+
+    //!
+    //! Vector of Descriptor pointers
+    //! Use class DescriptorList for advanced features.
+    //! @see DescriptorList
+    //!
+    typedef std::vector<DescriptorPtr> DescriptorPtrVector;
 }
+

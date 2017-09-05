@@ -34,9 +34,15 @@
 
 #include "tsEacemStreamIdentifierDescriptor.h"
 #include "tsFormat.h"
-#include "tsXMLTables.h"
+#include "tsTablesFactory.h"
 TSDUCK_SOURCE;
-TS_XML_DESCRIPTOR_FACTORY(ts::EacemStreamIdentifierDescriptor, eacem_stream_identifier_descriptor);
+TS_XML_DESCRIPTOR_FACTORY(ts::EacemStreamIdentifierDescriptor, "eacem_stream_identifier_descriptor");
+TS_ID_DESCRIPTOR_FACTORY(ts::EacemStreamIdentifierDescriptor, ts::EDID(ts::DID_EACEM_STREAM_ID, ts::PDS_EACEM));
+TS_ID_DESCRIPTOR_DISPLAY(ts::EacemStreamIdentifierDescriptor::DisplayDescriptor, ts::EDID(ts::DID_EACEM_STREAM_ID, ts::PDS_EACEM));
+
+// Incorrect use of TPS private data, TPS broadcasters should use EACEM/EICTA PDS instead.
+TS_ID_DESCRIPTOR_FACTORY(ts::EacemStreamIdentifierDescriptor, ts::EDID(ts::DID_EACEM_STREAM_ID, ts::PDS_TPS));
+TS_ID_DESCRIPTOR_DISPLAY(ts::EacemStreamIdentifierDescriptor::DisplayDescriptor, ts::EDID(ts::DID_EACEM_STREAM_ID, ts::PDS_TPS));
 
 
 //----------------------------------------------------------------------------

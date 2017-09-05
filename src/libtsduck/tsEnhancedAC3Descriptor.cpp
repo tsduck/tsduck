@@ -35,9 +35,11 @@
 #include "tsFormat.h"
 #include "tsHexa.h"
 #include "tsNames.h"
-#include "tsXMLTables.h"
+#include "tsTablesFactory.h"
 TSDUCK_SOURCE;
-TS_XML_DESCRIPTOR_FACTORY(ts::EnhancedAC3Descriptor, enhanced_AC3_descriptor);
+TS_XML_DESCRIPTOR_FACTORY(ts::EnhancedAC3Descriptor, "enhanced_AC3_descriptor");
+TS_ID_DESCRIPTOR_FACTORY(ts::EnhancedAC3Descriptor, ts::EDID(ts::DID_ENHANCED_AC3));
+TS_ID_DESCRIPTOR_DISPLAY(ts::EnhancedAC3Descriptor::DisplayDescriptor, ts::EDID(ts::DID_ENHANCED_AC3));
 
 
 //----------------------------------------------------------------------------

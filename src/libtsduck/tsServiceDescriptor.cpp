@@ -35,9 +35,11 @@
 #include "tsFormat.h"
 #include "tsHexa.h"
 #include "tsNames.h"
-#include "tsXMLTables.h"
+#include "tsTablesFactory.h"
 TSDUCK_SOURCE;
-TS_XML_DESCRIPTOR_FACTORY(ts::ServiceDescriptor, service_descriptor);
+TS_XML_DESCRIPTOR_FACTORY(ts::ServiceDescriptor, "service_descriptor");
+TS_ID_DESCRIPTOR_FACTORY(ts::ServiceDescriptor, ts::EDID(ts::DID_SERVICE));
+TS_ID_DESCRIPTOR_DISPLAY(ts::ServiceDescriptor::DisplayDescriptor, ts::EDID(ts::DID_SERVICE));
 
 
 //----------------------------------------------------------------------------

@@ -37,7 +37,9 @@
 #include "tsNames.h"
 #include "tsBCD.h"
 #include "tsMJD.h"
+#include "tsTablesFactory.h"
 TSDUCK_SOURCE;
+TS_ID_DESCRIPTOR_DISPLAY(ts::LocalTimeOffsetDescriptor::DisplayDescriptor, ts::EDID(ts::DID_LOCAL_TIME_OFFSET));
 
 
 //----------------------------------------------------------------------------

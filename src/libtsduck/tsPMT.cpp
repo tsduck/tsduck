@@ -34,9 +34,11 @@
 #include "tsPMT.h"
 #include "tsFormat.h"
 #include "tsNames.h"
-#include "tsXMLTables.h"
+#include "tsTablesFactory.h"
 TSDUCK_SOURCE;
-TS_XML_TABLE_FACTORY(ts::PMT, PMT);
+TS_XML_TABLE_FACTORY(ts::PMT, "PMT");
+TS_ID_TABLE_FACTORY(ts::PMT, ts::TID_PMT);
+TS_ID_SECTION_DISPLAY(ts::PMT::DisplaySection, ts::TID_PMT);
 
 
 //----------------------------------------------------------------------------

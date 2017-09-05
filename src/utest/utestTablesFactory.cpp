@@ -27,23 +27,68 @@
 //
 //----------------------------------------------------------------------------
 //
-//  Representation of a VBI_teletext_descriptor
+//  CppUnit test suite for ts::TablesFactory.
 //
 //----------------------------------------------------------------------------
 
-#include "tsVBITeletextDescriptor.h"
-#include "tsTeletextDescriptor.h"
 #include "tsTablesFactory.h"
+#include "tsStringUtils.h"
+#include "utestCppUnitTest.h"
 TSDUCK_SOURCE;
-TS_ID_DESCRIPTOR_DISPLAY(ts::VBITeletextDescriptor::DisplayDescriptor, ts::EDID(ts::DID_VBI_TELETEXT));
 
 
 //----------------------------------------------------------------------------
-// Static method to display a descriptor.
+// The test fixture
 //----------------------------------------------------------------------------
 
-void ts::VBITeletextDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+class TablesFactoryTest: public CppUnit::TestFixture
 {
-    // Same encoding as teletext_descriptor.
-    TeletextDescriptor::DisplayDescriptor(display, did, data, size, indent, tid, pds);
+public:
+    void setUp();
+    void tearDown();
+    void testRegistrations();
+
+    CPPUNIT_TEST_SUITE(TablesFactoryTest);
+    CPPUNIT_TEST(testRegistrations);
+    CPPUNIT_TEST_SUITE_END();
+};
+
+CPPUNIT_TEST_SUITE_REGISTRATION(TablesFactoryTest);
+
+
+//----------------------------------------------------------------------------
+// Initialization.
+//----------------------------------------------------------------------------
+
+// Test suite initialization method.
+void TablesFactoryTest::setUp()
+{
+}
+
+// Test suite cleanup method.
+void TablesFactoryTest::tearDown()
+{
+}
+
+
+//----------------------------------------------------------------------------
+// Unitary tests.
+//----------------------------------------------------------------------------
+
+void TablesFactoryTest::testRegistrations()
+{
+    ts::StringList names;
+
+    ts::TablesFactory::Instance()->getRegisteredTableNames(names);
+    utest::Out() << "TablesFactoryTest::testRegistrations: table names: " << ts::JoinStrings(names) << std::endl;
+
+    CPPUNIT_ASSERT(!names.empty());
+    CPPUNIT_ASSERT(ts::ContainSimilarString(names, "PAT"));
+    CPPUNIT_ASSERT(ts::ContainSimilarString(names, "PMT"));
+
+    ts::TablesFactory::Instance()->getRegisteredDescriptorNames(names);
+    utest::Out() << "TablesFactoryTest::testRegistrations: descriptor names: " << ts::JoinStrings(names) << std::endl;
+
+    CPPUNIT_ASSERT(!names.empty());
+    CPPUNIT_ASSERT(ts::ContainSimilarString(names, "ca_descriptor"));
 }

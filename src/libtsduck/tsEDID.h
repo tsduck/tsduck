@@ -28,7 +28,7 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  "Extended Table Id", a synthetic value for identifying tables.
+//!  "Extended Descriptor Id", a synthetic value for identifying descriptors.
 //!
 //----------------------------------------------------------------------------
 
@@ -37,96 +37,96 @@
 
 namespace ts {
     //!
-    //! Extended MPEG table id.
+    //! Extended MPEG descriptor id.
     //!
-    //! For convenience, it is sometimes useful to identify tables using an
-    //! "extended TID", a combination of TID and TIDext. On one PID, two tables
-    //! with the same TID but with different TIDext are considered as distinct
-    //! tables. By convention, the TIDext is always zero with short sections.
+    //! For convenience, it is sometimes useful to identify descriptors using
+    //! an "extended DID", a combination of DID, PDS or descriptor tag
+    //! extension.
     //!
-    class TSDUCKDLL ETID
+    class TSDUCKDLL EDID
     {
     private:
-        uint32_t _etid; // 7-bit: unused, 1-bit: long table, 8-bit: tid, 16-bit: tid-ext
+        uint64_t _edid; // 32-bit: PDS/extension, 24-bit: unused, 8-bit: did
     public:
         //!
-        //! Constructor from a short table id.
-        //! Short tables have no TIDext.
-        //! @param [in] tid Table id.
+        //! Constructor.
+        //! @param [in] did Descriptor tag.
+        //! @param [in] ext Private data specifier when @a did >= 0x80.
+        //! Descriptor tag extension when @a did == 0x7F.
+        //! Ignored when @a did < 0x7F.
         //!
-        explicit ETID(TID tid = 0xFF) : _etid((uint32_t(tid) & 0xFF) << 16) {}
+        explicit EDID(DID did = 0xFF, uint32_t ext = 0xFFFFFFFF) : _edid((uint64_t(ext) << 32) | (did & 0xFF)) {}
 
         //!
-        //! Constructor from a long table id and tid-ext.
-        //! @param [in] tid Table id.
-        //! @param [in] tid_ext Table id extension.
+        //! Check if the descriptor is a private one.
+        //! @return True if the descriptor is a private one.
         //!
-        ETID(TID tid, uint16_t tid_ext): _etid(0x01000000 | ((uint32_t(tid) & 0xFF) << 16) | (uint32_t(tid_ext) & 0xFFFF)) {}
+        bool isPrivateDescriptor() const {return (_edid & 0xFF) > 0x7F;}
 
         //!
-        //! Check if the table is a long one.
-        //! @return True if the table is a long one.
+        //! Check if the descriptor is an extension descriptor.
+        //! @return True if the descriptor is an extension descriptor.
         //!
-        bool isLongSection() const {return (_etid & 0x01000000) != 0;}
+        bool isExtensionDescriptor() const {return (_edid & 0xFF) == 0x7F;}
 
         //!
-        //! Check if the table is a short one.
-        //! @return True if the table is a short one.
+        //! Get the descriptor id (aka tag).
+        //! @return The descriptor id.
         //!
-        bool isShortSection() const {return (_etid & 0x01000000) == 0;}
+        DID did() const {return DID(_edid & 0xFF);}
 
         //!
-        //! Get the table id.
-        //! @return The table id.
+        //! Get the private data specifier.
+        //! @return The private data specifier or 0xFFFFFFFF if this is not a private descriptor.
         //!
-        TID tid() const {return TID((_etid >> 16) & 0xFF);}
+        PDS pds() const {return did() >= 0x80 ? PDS((_edid >> 32) & 0xFFFFFFFF) : PDS(0xFFFFFFFF);}
 
         //!
-        //! Get the table id extension.
-        //! @return The table id extension.
+        //! Get the descriptor tag extension.
+        //! @return The descriptor tag extension or 0xFF if this is not an extension descriptor.
         //!
-        uint16_t tidExt() const {return uint16_t(_etid & 0xFFFF);}
+        DID didExt() const {return did() == DID_EXTENSION ? DID((_edid >> 32) & 0xFF) : DID(0xFF);}
 
         //!
         //! Comparison operator.
         //! @param [in] e Other instance to compare.
         //! @return True is this object == @a e.
         //!
-        bool operator ==(const ETID& e) const {return _etid == e._etid;}
+        bool operator ==(const EDID& e) const {return _edid == e._edid;}
 
         //!
         //! Comparison operator.
         //! @param [in] e Other instance to compare.
         //! @return True is this object != @a e.
         //!
-        bool operator !=(const ETID& e) const {return _etid != e._etid;}
+        bool operator !=(const EDID& e) const {return _edid != e._edid;}
 
         //!
         //! Comparison operator.
         //! @param [in] e Other instance to compare.
         //! @return True is this object < @a e.
         //!
-        bool operator <(const ETID& e) const {return _etid <  e._etid;}
+        bool operator <(const EDID& e) const {return _edid <  e._edid;}
 
         //!
         //! Comparison operator.
         //! @param [in] e Other instance to compare.
         //! @return True is this object <= @a e.
         //!
-        bool operator <=(const ETID& e) const {return _etid <= e._etid;}
+        bool operator <=(const EDID& e) const {return _edid <= e._edid;}
 
         //!
         //! Comparison operator.
         //! @param [in] e Other instance to compare.
         //! @return True is this object > @a e.
         //!
-        bool operator >(const ETID& e) const {return _etid >  e._etid;}
+        bool operator >(const EDID& e) const {return _edid >  e._edid;}
 
         //!
         //! Comparison operator.
         //! @param [in] e Other instance to compare.
         //! @return True is this object >= @a e.
         //!
-        bool operator >=(const ETID& e) const {return _etid >= e._etid;}
+        bool operator >=(const EDID& e) const {return _edid >= e._edid;}
     };
 }

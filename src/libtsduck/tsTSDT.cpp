@@ -32,9 +32,11 @@
 //----------------------------------------------------------------------------
 
 #include "tsTSDT.h"
-#include "tsXMLTables.h"
+#include "tsTablesFactory.h"
 TSDUCK_SOURCE;
-TS_XML_TABLE_FACTORY(ts::TSDT, TSDT);
+TS_XML_TABLE_FACTORY(ts::TSDT, "TSDT");
+TS_ID_TABLE_FACTORY(ts::TSDT, ts::TID_TSDT);
+TS_ID_SECTION_DISPLAY(ts::TSDT::DisplaySection, ts::TID_TSDT);
 
 
 //----------------------------------------------------------------------------

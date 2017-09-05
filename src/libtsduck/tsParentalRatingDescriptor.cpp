@@ -35,9 +35,11 @@
 #include "tsFormat.h"
 #include "tsHexa.h"
 #include "tsNames.h"
-#include "tsXMLTables.h"
+#include "tsTablesFactory.h"
 TSDUCK_SOURCE;
-TS_XML_DESCRIPTOR_FACTORY(ts::ParentalRatingDescriptor, parental_rating_descriptor);
+TS_XML_DESCRIPTOR_FACTORY(ts::ParentalRatingDescriptor, "parental_rating_descriptor");
+TS_ID_DESCRIPTOR_FACTORY(ts::ParentalRatingDescriptor, ts::EDID(ts::DID_PARENTAL_RATING));
+TS_ID_DESCRIPTOR_DISPLAY(ts::ParentalRatingDescriptor::DisplayDescriptor, ts::EDID(ts::DID_PARENTAL_RATING));
 
 
 //----------------------------------------------------------------------------
@@ -45,8 +47,8 @@ TS_XML_DESCRIPTOR_FACTORY(ts::ParentalRatingDescriptor, parental_rating_descript
 //----------------------------------------------------------------------------
 
 ts::ParentalRatingDescriptor::ParentalRatingDescriptor() :
-    AbstractDescriptor (DID_PARENTAL_RATING, "parental_rating_descriptor"),
-    entries ()
+    AbstractDescriptor(DID_PARENTAL_RATING, "parental_rating_descriptor"),
+    entries()
 {
     _is_valid = true;
 }
@@ -56,11 +58,11 @@ ts::ParentalRatingDescriptor::ParentalRatingDescriptor() :
 // Constructor from a binary descriptor
 //----------------------------------------------------------------------------
 
-ts::ParentalRatingDescriptor::ParentalRatingDescriptor (const Descriptor& desc) :
-    AbstractDescriptor (DID_PARENTAL_RATING, "parental_rating_descriptor"),
-    entries ()
+ts::ParentalRatingDescriptor::ParentalRatingDescriptor(const Descriptor& desc) :
+    AbstractDescriptor(DID_PARENTAL_RATING, "parental_rating_descriptor"),
+    entries()
 {
-    deserialize (desc);
+    deserialize(desc);
 }
 
 

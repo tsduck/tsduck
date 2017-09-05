@@ -32,9 +32,11 @@
 //----------------------------------------------------------------------------
 
 #include "tsShortEventDescriptor.h"
-#include "tsXMLTables.h"
+#include "tsTablesFactory.h"
 TSDUCK_SOURCE;
-TS_XML_DESCRIPTOR_FACTORY(ts::ShortEventDescriptor, short_event_descriptor);
+TS_XML_DESCRIPTOR_FACTORY(ts::ShortEventDescriptor, "short_event_descriptor");
+TS_ID_DESCRIPTOR_FACTORY(ts::ShortEventDescriptor, ts::EDID(ts::DID_SHORT_EVENT));
+TS_ID_DESCRIPTOR_DISPLAY(ts::ShortEventDescriptor::DisplayDescriptor, ts::EDID(ts::DID_SHORT_EVENT));
 
 
 //----------------------------------------------------------------------------
@@ -42,10 +44,10 @@ TS_XML_DESCRIPTOR_FACTORY(ts::ShortEventDescriptor, short_event_descriptor);
 //----------------------------------------------------------------------------
 
 ts::ShortEventDescriptor::ShortEventDescriptor() :
-    AbstractDescriptor (DID_SHORT_EVENT, "short_event_descriptor"),
-    language_code (),
-    event_name (),
-    text ()
+    AbstractDescriptor(DID_SHORT_EVENT, "short_event_descriptor"),
+    language_code(),
+    event_name(),
+    text()
 {
     _is_valid = true;
 }
@@ -55,11 +57,11 @@ ts::ShortEventDescriptor::ShortEventDescriptor() :
 // Constructor with description
 //----------------------------------------------------------------------------
 
-ts::ShortEventDescriptor::ShortEventDescriptor (const std::string& lang_, const std::string& name_, const std::string& text_) :
-    AbstractDescriptor (DID_SHORT_EVENT, "short_event_descriptor"),
-    language_code (lang_),
-    event_name (name_),
-    text (text_)
+ts::ShortEventDescriptor::ShortEventDescriptor(const std::string& lang_, const std::string& name_, const std::string& text_) :
+    AbstractDescriptor(DID_SHORT_EVENT, "short_event_descriptor"),
+    language_code(lang_),
+    event_name(name_),
+    text(text_)
 {
     _is_valid = true;
 }
@@ -69,13 +71,13 @@ ts::ShortEventDescriptor::ShortEventDescriptor (const std::string& lang_, const 
 // Constructor from a binary descriptor
 //----------------------------------------------------------------------------
 
-ts::ShortEventDescriptor::ShortEventDescriptor (const Descriptor& desc) :
-    AbstractDescriptor (DID_SHORT_EVENT, "short_event_descriptor"),
-    language_code (),
-    event_name (),
-    text ()
+ts::ShortEventDescriptor::ShortEventDescriptor(const Descriptor& desc) :
+    AbstractDescriptor(DID_SHORT_EVENT, "short_event_descriptor"),
+    language_code(),
+    event_name(),
+    text()
 {
-    deserialize (desc);
+    deserialize(desc);
 }
 
 

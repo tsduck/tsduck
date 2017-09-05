@@ -34,6 +34,7 @@
 
 #pragma once
 #include "tsSection.h"
+#include "tsTablesPtr.h"
 #include "tsTLVSyntax.h"
 
 namespace ts {
@@ -285,14 +286,4 @@ namespace ts {
         int              _missing_count;
         SectionPtrVector _sections;
     };
-
-    //!
-    //! Safe pointer for BinaryTable (not thread-safe)
-    //!
-    typedef SafePtr<BinaryTable,NullMutex> BinaryTablePtr;
-
-    //!
-    //! Vector of BinaryTable pointers
-    //!
-    typedef std::vector<BinaryTablePtr> BinaryTablePtrVector;
 }

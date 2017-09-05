@@ -36,9 +36,6 @@
 #include "tsDescriptor.h"
 
 namespace ts {
-
-    class AbstractDescriptor;
-
     //!
     //! List of MPEG PSI/SI descriptors.
     //!

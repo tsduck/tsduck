@@ -34,9 +34,11 @@
 #include "tsTerrestrialDeliverySystemDescriptor.h"
 #include "tsTunerParametersDVBT.h"
 #include "tsDecimal.h"
-#include "tsXMLTables.h"
+#include "tsTablesFactory.h"
 TSDUCK_SOURCE;
-TS_XML_DESCRIPTOR_FACTORY(ts::TerrestrialDeliverySystemDescriptor, terrestrial_delivery_system_descriptor);
+TS_XML_DESCRIPTOR_FACTORY(ts::TerrestrialDeliverySystemDescriptor, "terrestrial_delivery_system_descriptor");
+TS_ID_DESCRIPTOR_FACTORY(ts::TerrestrialDeliverySystemDescriptor, ts::EDID(ts::DID_TERREST_DELIVERY));
+TS_ID_DESCRIPTOR_DISPLAY(ts::TerrestrialDeliverySystemDescriptor::DisplayDescriptor, ts::EDID(ts::DID_TERREST_DELIVERY));
 
 
 //----------------------------------------------------------------------------

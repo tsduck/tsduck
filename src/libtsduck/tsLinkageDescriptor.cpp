@@ -36,9 +36,11 @@
 #include "tsFormat.h"
 #include "tsHexa.h"
 #include "tsNames.h"
-#include "tsXMLTables.h"
+#include "tsTablesFactory.h"
 TSDUCK_SOURCE;
-TS_XML_DESCRIPTOR_FACTORY(ts::LinkageDescriptor, linkage_descriptor);
+TS_XML_DESCRIPTOR_FACTORY(ts::LinkageDescriptor, "linkage_descriptor");
+TS_ID_DESCRIPTOR_FACTORY(ts::LinkageDescriptor, ts::EDID(ts::DID_LINKAGE));
+TS_ID_DESCRIPTOR_DISPLAY(ts::LinkageDescriptor::DisplayDescriptor, ts::EDID(ts::DID_LINKAGE));
 
 
 //----------------------------------------------------------------------------

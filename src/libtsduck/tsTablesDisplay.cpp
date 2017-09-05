@@ -32,7 +32,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsTablesDisplay.h"
-#include "tsTables.h"
+#include "tsTablesFactory.h"
 #include "tsFormat.h"
 #include "tsDecimal.h"
 #include "tsHexa.h"
@@ -251,48 +251,8 @@ std::ostream& ts::TablesDisplay::displaySection(const Section& section, int inde
 
 std::ostream& ts::TablesDisplay::displaySectionData(const Section& section, int indent, CASFamily cas)
 {
-    AbstractTable::DisplaySectionFunction handler = 0;
-    const TID tid = section.tableId();
-    cas = casFamily(cas);
+    TablesFactory::DisplaySectionFunction handler = TablesFactory::Instance()->getSectionDisplay(section.tableId());
 
-    if (tid >= TID_EIT_MIN && tid <= TID_EIT_MAX) { // 34 values
-        handler = EIT::DisplaySection;
-    }
-    else {
-        switch (tid) {
-            case TID_PAT:
-                handler = PAT::DisplaySection;
-                break;
-            case TID_CAT:
-                handler = CAT::DisplaySection;
-                break;
-            case TID_PMT:
-                handler = PMT::DisplaySection;
-                break;
-            case TID_TSDT:
-                handler = TSDT::DisplaySection;
-                break;
-            case TID_NIT_ACT:
-            case TID_NIT_OTH:
-                handler = NIT::DisplaySection;
-                break;
-            case TID_BAT:
-                handler = BAT::DisplaySection;
-                break;
-            case TID_SDT_ACT:
-            case TID_SDT_OTH:
-                handler = SDT::DisplaySection;
-                break;
-            case TID_TDT:
-                handler = TDT::DisplaySection;
-                break;
-            case TID_TOT:
-                handler = TOT::DisplaySection;
-                break;
-            default:
-                break;
-        }
-    }
     if (handler != 0) {
         handler(*this, section, indent);
     }
@@ -567,92 +527,29 @@ std::ostream& ts::TablesDisplay::displayDescriptorList(const DescriptorList& lis
 std::ostream& ts::TablesDisplay::displayDescriptorData(DID did, const uint8_t* payload, size_t size, int indent, TID tid, ts::PDS pds, CASFamily cas)
 {
     std::ostream& strm(out());
-    AbstractDescriptor::DisplayDescriptorFunction handler = 0;
 
-    switch (did) {
-        case DID_AAC:               handler = AACDescriptor::DisplayDescriptor; break;
-        case DID_AC3:               handler = AC3Descriptor::DisplayDescriptor; break;
-        case DID_APPLI_SIGNALLING:  handler = ApplicationSignallingDescriptor::DisplayDescriptor; break;
-        case DID_BOUQUET_NAME:      handler = BouquetNameDescriptor::DisplayDescriptor; break;
-        case DID_CA:                handler = CADescriptor::DisplayDescriptor; break;
-        case DID_CA_ID:             handler = CAIdentifierDescriptor::DisplayDescriptor; break;
-        case DID_CABLE_DELIVERY:    handler = CableDeliverySystemDescriptor::DisplayDescriptor; break; 
-        case DID_COMPONENT:         handler = ComponentDescriptor::DisplayDescriptor; break;
-        case DID_CONTENT:           handler = ContentDescriptor::DisplayDescriptor; break;
-        case DID_COUNTRY_AVAIL:     handler = CountryAvailabilityDescriptor::DisplayDescriptor; break;
-        case DID_DATA_BROADCAST:    handler = DataBroadcastDescriptor::DisplayDescriptor; break;
-        case DID_DATA_BROADCAST_ID: handler = DataBroadcastIdDescriptor::DisplayDescriptor; break;
-        case DID_DTS:               handler = DTSDescriptor::DisplayDescriptor; break;
-        case DID_ENHANCED_AC3:      handler = EnhancedAC3Descriptor::DisplayDescriptor; break;
-        case DID_EXTENDED_EVENT:    handler = ExtendedEventDescriptor::DisplayDescriptor; break;
-        case DID_LANGUAGE:          handler = ISO639LanguageDescriptor::DisplayDescriptor; break;
-        case DID_LINKAGE:           handler = LinkageDescriptor::DisplayDescriptor; break;
-        case DID_LOCAL_TIME_OFFSET: handler = LocalTimeOffsetDescriptor::DisplayDescriptor; break;
-        case DID_NETWORK_NAME:      handler = NetworkNameDescriptor::DisplayDescriptor; break;
-        case DID_PARENTAL_RATING:   handler = ParentalRatingDescriptor::DisplayDescriptor; break;
-        case DID_PRIV_DATA_SPECIF:  handler = PrivateDataSpecifierDescriptor::DisplayDescriptor; break;
-        case DID_SAT_DELIVERY:      handler = SatelliteDeliverySystemDescriptor::DisplayDescriptor; break;
-        case DID_SERVICE:           handler = ServiceDescriptor::DisplayDescriptor; break;
-        case DID_SERVICE_LIST:      handler = ServiceListDescriptor::DisplayDescriptor; break;
-        case DID_SHORT_EVENT:       handler = ShortEventDescriptor::DisplayDescriptor; break;
-        case DID_STD:               handler = STDDescriptor::DisplayDescriptor; break;
-        case DID_STREAM_ID:         handler = StreamIdentifierDescriptor::DisplayDescriptor; break;
-        case DID_SUBTITLING:        handler = SubtitlingDescriptor::DisplayDescriptor; break;
-        case DID_TELETEXT:          handler = TeletextDescriptor::DisplayDescriptor; break;
-        case DID_TERREST_DELIVERY:  handler = TerrestrialDeliverySystemDescriptor::DisplayDescriptor; break;
-        case DID_VBI_DATA:          handler = VBIDataDescriptor::DisplayDescriptor; break;
-        case DID_VBI_TELETEXT:      handler = VBITeletextDescriptor::DisplayDescriptor; break;
-        case DID_EXTENSION: {
-            // Extension descriptor.
-            if (size >= 1) {
-                // Get extended descriptor tag
-                const uint8_t edid = *payload++;
-                size--;
-                // Display extended descriptor header
-                strm << std::string(indent, ' ') << "Extended descriptor: " << names::EDID(edid, 0)
-                     << Format(", Tag %d (0x%02X)", int(edid), int(edid)) << std::endl;
-                // Determine display handler for the descriptor.
-                switch (edid) {
-                    case EDID_MESSAGE:     handler = MessageDescriptor::DisplayDescriptor; break;
-                    case EDID_SUPPL_AUDIO: handler = SupplementaryAudioDescriptor::DisplayDescriptor; break;
-                    default: break;
-                }
-            }
-            break;
-        }
-        default:
-            break;
+    // Compute extended descriptor id.
+    EDID edid;
+    if (did >= 0x80) {
+        // Private descriptor.
+        edid = EDID(did, pds);
     }
-    
-    switch (pds) {
-        case PDS_TPS:
-            // Incorrect use of TPS private data, TPS broadcasters should
-            // use EACEM/EICTA PDS instead.
-        case PDS_EICTA:
-            // European Association of Consumer Electronics Manufacturers.
-            // Descriptors are defined in IEC/CENELEC 62216-1
-            // "Baseline terrestrial receiver specification"
-            switch (did) {
-                case DID_LOGICAL_CHANNEL_NUM: handler = LogicalChannelNumberDescriptor::DisplayDescriptor; break;
-                case DID_PREF_NAME_LIST:      handler = EacemPreferredNameListDescriptor::DisplayDescriptor; break;
-                case DID_PREF_NAME_ID:        handler = EacemPreferredNameIdentifierDescriptor::DisplayDescriptor; break;
-                case DID_EACEM_STREAM_ID:     handler = EacemStreamIdentifierDescriptor::DisplayDescriptor; break;
-                case DID_HD_SIMULCAST_LCN:    handler = HDSimulcastLogicalChannelDescriptor::DisplayDescriptor; break;
-                default: break;
-            }
-            break;
-
-        case PDS_EUTELSAT:
-            // Eutelsat operator, including Fransat.
-            switch (did) {
-                case DID_EUTELSAT_CHAN_NUM: handler = EutelsatChannelNumberDescriptor::DisplayDescriptor; break;
-                default: break;
-            }
-            break;
-
-        default:
-            break;
+    else if (did == DID_EXTENSION && size >= 1) {
+        // Extension descriptor, the extension id is in the first byte of the payload.
+        const uint8_t ext = *payload++;
+        edid = EDID(did, ext);
+        size--;
+        // Display extended descriptor header
+        strm << std::string(indent, ' ') << "Extended descriptor: " << names::EDID(ext, 0)
+             << Format(", Tag %d (0x%02X)", int(ext), int(ext)) << std::endl;
     }
+    else {
+        // Simple descriptor.
+        edid = EDID(did);
+    }
+
+    // Locate the display handler for this descriptor payload.
+    TablesFactory::DisplayDescriptorFunction handler = TablesFactory::Instance()->getDescriptorDisplay(edid);
 
     if (handler != 0) {
         handler(*this, did, payload, size, indent, tid, pds);
