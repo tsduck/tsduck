@@ -4,6 +4,8 @@ TSDuck Change Log and Release Notes
 
 Version (next)
 
+- Added option --pid to plugin descrambler.
+
 - Improved robustness of DVB tuner reception on Windows. Explicitly
   resynchronizes on valid packets when the driver misses data.
 
