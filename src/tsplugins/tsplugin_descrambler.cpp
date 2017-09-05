@@ -62,6 +62,7 @@ namespace ts {
         std::list<ByteBlock>::iterator _next_cw;  // Next control word
         Scrambling                     _key;      // Preprocessed current control word
         uint8_t                        _last_scv; // Scrambling_control_value in last packet
+        PIDSet                         _pids;     // List of PID's to descramble
 
         // Inaccessible operations
         DescramblerPlugin() = delete;
@@ -84,11 +85,13 @@ ts::DescramblerPlugin::DescramblerPlugin (TSP* tsp_) :
     _cw_list(),
     _next_cw(),
     _key(),
-    _last_scv(0)
+    _last_scv(0),
+    _pids()
 {
     option ("cw",                   'c', STRING);
     option ("cw-file",              'f', STRING);
     option ("no-entropy-reduction", 'n');
+    option ("pid",                  'p', PIDVAL, 0, UNLIMITED_COUNT);
 
     setHelp ("Options:\n"
              "\n"
@@ -111,6 +114,11 @@ ts::DescramblerPlugin::DescramblerPlugin (TSP* tsp_) :
              "  --no-entropy-reduction\n"
              "      Do not perform CW entropy reduction to 48 bits. Keep full 64-bits CW.\n"
              "\n"
+             "  -p value\n"
+             "  --pid value\n"
+             "      Descramble packets with this PID value. Several -p or --pid options may be\n"
+             "      specified. By default, all PID's with scrambled packets are descrambled.\n"
+             "\n"
              "  --version\n"
              "      Display the version number.\n");
 }
@@ -122,8 +130,8 @@ ts::DescramblerPlugin::DescramblerPlugin (TSP* tsp_) :
 
 bool ts::DescramblerPlugin::start()
 {
-    // Get entropy mode
-    _cw_mode = present ("no-entropy-reduction") ? Scrambling::FULL_CW : Scrambling::REDUCE_ENTROPY;
+    _cw_mode = present("no-entropy-reduction") ? Scrambling::FULL_CW : Scrambling::REDUCE_ENTROPY;
+    getPIDSet(_pids, "pid", true);
 
     // Get control words as list of strings
     std::list<std::string> lines;
@@ -175,8 +183,9 @@ bool ts::DescramblerPlugin::start()
 
 ts::ProcessorPlugin::Status ts::DescramblerPlugin::processPacket (TSPacket& pkt, bool& flush, bool& bitrate_changed)
 {
-    // If the packet has no payload, there is nothing to descramble
-    if (!pkt.hasPayload()) {
+    // If the packet has no payload, there is nothing to descramble.
+    // Also filter out PID's which are not descrambled.
+    if (!pkt.hasPayload() || !_pids.test(pkt.getPID())) {
         return TSP_OK;
     }
 
