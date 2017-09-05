@@ -280,17 +280,18 @@ void ts::TunerArgs::defineOptions(Args& args) const
     args.option("adapter", _allow_short_options ? 'a' : 0, Args::UNSIGNED);
     args.option("device-name", _allow_short_options ? 'd' : 0, Args::STRING);
 
-    // Reception parameters.
-    args.option("receive-timeout", 0, Args::UNSIGNED);
-    args.option("signal-timeout", 0, Args::UNSIGNED);
+    if (!_info_only) {
+
+        // Reception parameters.
+        args.option("receive-timeout", 0, Args::UNSIGNED);
+        args.option("signal-timeout", 0, Args::UNSIGNED);
 #if defined(__linux)
-    args.option("demux-buffer-size", 0, Args::UNSIGNED);
+        args.option("demux-buffer-size", 0, Args::UNSIGNED);
 #elif defined(__windows)
-    args.option("demux-queue-size", 0, Args::UNSIGNED);
+        args.option("demux-queue-size", 0, Args::UNSIGNED);
 #endif
 
-    // Tuning options.
-    if (!_info_only) {
+        // Tuning options.
         args.option("bandwidth", 0, BandWidthEnum);
         args.option("channel-transponder", _allow_short_options ? 'c' : 0, Args::STRING);
         args.option("delivery-system", 0, DeliverySystemEnum);
