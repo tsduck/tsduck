@@ -114,7 +114,7 @@
            original_network_id="uint16, required"
            service_id="uint16, required"
            event_id="uint16, required"
-           running="bool, required"/>
+           running_status="undefined|not-running|starting|pausing|running|off-air, required"/>
   </RST>
 
   <!-- Service Description Table -->
@@ -127,8 +127,7 @@
     <service service_id="uint16, required"
              EIT_schedule="bool, default=false"
              EIT_present_following="bool, default=false"
-             running_status="uint3, default=0"
-             CA_mode="bool, default=false">
+             running_status="undefined|not-running|starting|pausing|running|off-air, default=undefined">
       <_any in="_descriptors"/>
     </service>
   </SDT>

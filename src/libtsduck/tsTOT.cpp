@@ -37,6 +37,7 @@
 #include "tsCRC32.h"
 #include "tsFormat.h"
 #include "tsTablesFactory.h"
+#include "tsXMLTables.h"
 TSDUCK_SOURCE;
 TS_XML_TABLE_FACTORY(ts::TOT, "TOT");
 TS_ID_TABLE_FACTORY(ts::TOT, ts::TID_TOT);
@@ -323,7 +324,29 @@ void ts::TOT::DisplaySection(TablesDisplay& display, const ts::Section& section,
 
 ts::XML::Element* ts::TOT::toXML(XML& xml, XML::Element* parent) const
 {
-    return 0; // TODO @@@@
+    XML::Element* root = _is_valid ? xml.addElement(parent, _xml_name) : 0;
+    xml.setDateTimeAttribute(root, "UTC_time", utc_time);
+
+    // Add one local_time_offset_descriptor per set of regions.
+    // Each local_time_offset_descriptor can contain up to 19 regions.
+    LocalTimeOffsetDescriptor lto;
+    for (RegionVector::const_iterator it = regions.begin(); it != regions.end(); ++it) {
+        lto.regions.push_back(*it);
+        if (lto.regions.size() >= LocalTimeOffsetDescriptor::MAX_REGION) {
+            // The descriptor is full, flush it in the list.
+            lto.toXML(xml, root);
+            lto.regions.clear();
+        }
+    }
+    if (!lto.regions.empty()) {
+        // The descriptor is not empty, flush it in the list.
+        lto.toXML(xml, root);
+    }
+
+    // Add other descriptors.
+    XMLTables::ToXML(xml, root, descs);
+
+    return root;
 }
 
 
@@ -333,5 +356,30 @@ ts::XML::Element* ts::TOT::toXML(XML& xml, XML::Element* parent) const
 
 void ts::TOT::fromXML(XML& xml, const XML::Element* element)
 {
-    // TODO @@@@
+    regions.clear();
+    descs.clear();
+    DescriptorList orig;
+
+    // Get all descriptors in a separated list.
+    _is_valid =
+        checkXMLName(xml, element) &&
+        xml.getDateTimeAttribute(utc_time, element, "UTC_time", true) &&
+        XMLTables::FromDescriptorListXML(orig, xml, element);
+
+    // Then, split local_time_offset_descriptor and others.
+    for (size_t index = 0; _is_valid && index < orig.count(); ++index) {
+        if (!orig[index].isNull() && orig[index]->isValid()) {
+            if (orig[index]->tag() != DID_LOCAL_TIME_OFFSET) {
+                // Not a local_time_offset_descriptor, add to descriptor list.
+                descs.add(orig[index]);
+            }
+            else {
+                // Decode local_time_offset_descriptor in the list of regions.
+                LocalTimeOffsetDescriptor lto(*orig[index]);
+                if (lto.isValid()) {
+                    regions.insert(regions.end(), lto.regions.begin(), lto.regions.end());
+                }
+            }
+        }
+    }
 }

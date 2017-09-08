@@ -46,6 +46,7 @@
 #include "tsStringUtils.h"
 #include "tsUnicodeUtils.h"
 #include "tsEnumeration.h"
+#include "tsTime.h"
 
 // Definitions which are used by TinyXML-2.
 #if defined(__windows) && defined(_TSDUCKDLL_IMPL) && !defined(TINYXML2_EXPORT)
@@ -211,9 +212,17 @@ namespace ts {
         //! @param [in] name Name of the attribute.
         //! @param [in] required If true, generate an error if the attribute is not found.
         //! @param [in] defValue Default value to return if the attribute is not present.
+        //! @param [in] minSize Minimum allowed size for the value string.
+        //! @param [in] maxSize Maximum allowed size for the value string.
         //! @return True on success, false on error.
         //!
-        bool getAttribute(std::string& value, const Element* elem, const std::string& name, bool required = false, const std::string& defValue = std::string());
+        bool getAttribute(std::string& value,
+                          const Element* elem,
+                          const std::string& name, 
+                          bool required = false, 
+                          const std::string& defValue = std::string(),
+                          size_t minSize = 0,
+                          size_t maxSize = UNLIMITED);
 
         //!
         //! Get a boolean attribute of an XML element.
@@ -282,6 +291,17 @@ namespace ts {
         //! @return True on success, false on error.
         //!
         bool getEnumAttribute(int& value, const Enumeration& definition, const Element* elem, const std::string& name, bool required = false, int defValue = 0);
+
+        //!
+        //! Get a date/time attribute of an XML element.
+        //! @param [out] value Returned value of the attribute.
+        //! @param [in] elem An XML element.
+        //! @param [in] name Name of the attribute.
+        //! @param [in] required If true, generate an error if the attribute is not found.
+        //! @param [in] defValue Default value to return if the attribute is not present.
+        //! @return True on success, false on error.
+        //!
+        bool getDateTimeAttribute(Time& value, const Element* elem, const std::string& name, bool required = false, const Time& defValue = Time());
 
         //!
         //! Find all children elements in an XML element by name, case-insensitive.
@@ -365,11 +385,19 @@ namespace ts {
         //!
         //! Set an enumeration attribute of a node.
         //! @param [in] definition The definition of enumeration values.
-        //! @param [in] elem An XML element.
+        //! @param [in,out] element The element which receives the attribute.
         //! @param [in] name Attribute name.
         //! @param [in] value Attribute value.
         //!
         void setEnumAttribute(const Enumeration& definition, Element* elem, const std::string& name, int value);
+
+        //!
+        //! Set a date/time attribute of an XML element.
+        //! @param [in,out] element The element which receives the attribute.
+        //! @param [in] name Attribute name.
+        //! @param [in] value Attribute value.
+        //!
+        void setDateTimeAttribute(Element* elem, const std::string& name, const Time& value);
 
         //!
         //! Add a new text containing hexadecimal data inside a node.
@@ -379,6 +407,21 @@ namespace ts {
         //! @return New child element or null on error.
         //!
         Text* addHexaText(Element* parent, const void* data, size_t size);
+
+        //!
+        //! Convert a time into a string, as required in attributes.
+        //! @param [in] value Time value.
+        //! @return The corresponding string.
+        //!
+        static std::string ToString(const Time& value);
+
+        //!
+        //! Convert a string into a time, as required in attributes.
+        //! @param [in,out] value Time value. Unmodified in case of error.
+        //! @param [in] str Time value as a string.
+        //! @return True on success, false on error.
+        //!
+        static bool FromString(Time& value, const std::string& str);
 
         //!
         //! A subclass of TinyXML printer class which can control the indentation width.

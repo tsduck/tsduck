@@ -41,11 +41,46 @@ namespace ts {
     //! Representation of a local_time_offset_descriptor.
     //! @see ETSI 300 468, 6.2.20.
     //!
-    //! Incomplete implementation, to be completed.
-    //!
-    class TSDUCKDLL LocalTimeOffsetDescriptor
+    class TSDUCKDLL LocalTimeOffsetDescriptor : public AbstractDescriptor
     {
     public:
+        //!
+        //! Description of one region.
+        //!
+        struct TSDUCKDLL Region
+        {
+            Region();                        //!< Default constructor.
+            std::string  country;            //!< Country code, must be 3-chars long.
+            unsigned int region_id;          //!< Region id.
+            int          time_offset;        //!< Local time minus UTC, in minutes.
+            Time         next_change;        //!< UTC of next time change.
+            int          next_time_offset;   //!< Time @a time_offset after @a next_change.
+        };
+
+        //!
+        //! Vector of region descriptions.
+        //!
+        typedef std::vector<Region> RegionVector;
+
+        //!
+        //! Maximum number of regions per descriptor.
+        //!
+        static const size_t MAX_REGION = 19;
+
+        // LocalTimeOffsetDescriptor public members:
+        RegionVector regions;  //!< Vector of region descriptions.
+
+        //!
+        //! Default constructor.
+        //!
+        LocalTimeOffsetDescriptor();
+
+        //!
+        //! Constructor from a binary descriptor
+        //! @param [in] bin A binary descriptor to deserialize.
+        //!
+        LocalTimeOffsetDescriptor(const Descriptor& bin);
+
         //!
         //! Static method to display a descriptor.
         //! @param [in,out] display Display engine.
@@ -57,5 +92,11 @@ namespace ts {
         //! @param [in] pds Private Data Specifier. Used to interpret private descriptors.
         //!
         static void DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* payload, size_t size, int indent, TID tid, PDS pds);
+
+        // Inherited methods
+        virtual void serialize(Descriptor&) const;
+        virtual void deserialize(const Descriptor&);
+        virtual XML::Element* toXML(XML& xml, XML::Element* parent) const;
+        virtual void fromXML(XML& xml, const XML::Element* element);
     };
 }

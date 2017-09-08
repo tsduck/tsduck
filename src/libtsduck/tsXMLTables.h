@@ -177,8 +177,8 @@ namespace ts {
 
         //!
         //! This method decodes an XML list of descriptors.
-        //! @param [out] Returned descriptor list.
-        //! @param [out] Returned list of non-descriptor XML elements.
+        //! @param [out] list Returned descriptor list.
+        //! @param [out] others Returned list of non-descriptor XML elements.
         //! All these elements are not null and their names are in @a allowedOthers.
         //! @param [in,out] xml XML utility for error reporting
         //! @param [in] parent The XML element containing all descriptors.
@@ -190,8 +190,8 @@ namespace ts {
 
         //!
         //! This method decodes an XML list of descriptors.
-        //! @param [out] Returned descriptor list.
-        //! @param [out] Returned list of non-descriptor XML elements.
+        //! @param [out] list Returned descriptor list.
+        //! @param [out] others Returned list of non-descriptor XML elements.
         //! All these elements are not null and their names are in @a allowedOthers.
         //! @param [in,out] xml XML utility for error reporting
         //! @param [in] parent The XML element containing all descriptors.
@@ -207,7 +207,7 @@ namespace ts {
 
         //!
         //! This method decodes an XML list of descriptors.
-        //! @param [out] Returned descriptor list.
+        //! @param [out] list Returned descriptor list.
         //! @param [in,out] xml XML utility for error reporting
         //! @param [in] parent The XML element containing all descriptors.
         //! All children must be valid descriptors.
@@ -220,7 +220,7 @@ namespace ts {
         }
 
         //!
-        //! This method decodes a <generic_short_table> or <generic_long_table>.
+        //! This method decodes a \<generic_short_table> or \<generic_long_table>.
         //! @param [in,out] xml XML utility for error reporting
         //! @param [in] elem The XML element.
         //! @return A safe pointer to the decoded table or a null pointer on error.
@@ -228,7 +228,7 @@ namespace ts {
         static BinaryTablePtr FromGenericTableXML(XML& xml, const XML::Element* elem);
 
         //!
-        //! This method decodes a <generic_descriptor>.
+        //! This method decodes a \<generic_descriptor>.
         //! @param [in,out] xml XML utility for error reporting
         //! @param [in] elem The XML element.
         //! @return A safe pointer to the decoded descriptor or a null pointer on error.

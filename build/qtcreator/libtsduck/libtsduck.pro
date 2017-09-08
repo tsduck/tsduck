@@ -177,6 +177,7 @@ HEADERS += \
     ../../../src/libtsduck/tsResidentBuffer.h \
     ../../../src/libtsduck/tsResidentBufferTemplate.h \
     ../../../src/libtsduck/tsRingNode.h \
+    ../../../src/libtsduck/tsRST.h \
     ../../../src/libtsduck/tsSDT.h \
     ../../../src/libtsduck/tsSHA1.h \
     ../../../src/libtsduck/tsSHA256.h \
@@ -299,6 +300,7 @@ SOURCES += \
     ../../../src/libtsduck/tsAbstractDescrambler.cpp \
     ../../../src/libtsduck/tsAbstractDescriptor.cpp \
     ../../../src/libtsduck/tsAbstractDescriptorsTable.cpp \
+    ../../../src/libtsduck/tsAbstractTable.h \
     ../../../src/libtsduck/tsAbstractTransportListTable.cpp \
     ../../../src/libtsduck/tsApplicationSharedLibrary.cpp \
     ../../../src/libtsduck/tsApplicationSignallingDescriptor.cpp \
@@ -401,6 +403,7 @@ SOURCES += \
     ../../../src/libtsduck/tsPrivateDataSpecifierDescriptor.cpp \
     ../../../src/libtsduck/tsReportInterface.cpp \
     ../../../src/libtsduck/tsRingNode.cpp \
+    ../../../src/libtsduck/tsRST.cpp \
     ../../../src/libtsduck/tsSDT.cpp \
     ../../../src/libtsduck/tsSHA1.cpp \
     ../../../src/libtsduck/tsSHA256.cpp \

@@ -32,6 +32,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsAbstractDescriptorsTable.h"
+#include "tsXMLTables.h"
 TSDUCK_SOURCE;
 
 
@@ -161,7 +162,11 @@ void ts::AbstractDescriptorsTable::DisplaySection(TablesDisplay& display, const 
 
 ts::XML::Element* ts::AbstractDescriptorsTable::toXML(XML& xml, XML::Element* parent) const
 {
-    return 0; // TODO @@@@
+    XML::Element* root = _is_valid ? xml.addElement(parent, _xml_name) : 0;
+    xml.setIntAttribute(root, "version", version);
+    xml.setBoolAttribute(root, "current", is_current);
+    XMLTables::ToXML(xml, root, descs);
+    return root;
 }
 
 
@@ -171,5 +176,10 @@ ts::XML::Element* ts::AbstractDescriptorsTable::toXML(XML& xml, XML::Element* pa
 
 void ts::AbstractDescriptorsTable::fromXML(XML& xml, const XML::Element* element)
 {
-    // TODO @@@@
+    descs.clear();
+    _is_valid =
+        checkXMLName(xml, element) &&
+        xml.getIntAttribute<uint8_t>(version, element, "version", false, 0, 0, 31) &&
+        xml.getBoolAttribute(is_current, element, "current", false, true) &&
+        XMLTables::FromDescriptorListXML(descs, xml, element);
 }

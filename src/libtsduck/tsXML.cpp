@@ -36,6 +36,7 @@
 #include "tsHexa.h"
 #include "tsSysUtils.h"
 #include "tsStringUtils.h"
+#include "tsToInteger.h"
 #include "tsApplicationSharedLibrary.h"
 TSDUCK_SOURCE;
 
@@ -289,7 +290,13 @@ const ts::XML::Element* ts::XML::findFirstChild(const Element* elem, const std::
 // Get a string attribute of an XML element.
 //----------------------------------------------------------------------------
 
-bool ts::XML::getAttribute(std::string& value, const Element* elem, const std::string& name, bool required, const std::string& defValue)
+bool ts::XML::getAttribute(std::string& value,
+                           const Element* elem,
+                           const std::string& name,
+                           bool required,
+                           const std::string& defValue,
+                           size_t minSize,
+                           size_t maxSize)
 {
     const Attribute* attr = findAttribute(elem, name, !required);
     if (attr == 0) {
@@ -300,8 +307,26 @@ bool ts::XML::getAttribute(std::string& value, const Element* elem, const std::s
     else {
         // Attribute found, get its value.
         const char* val = attr->Value();
-        value.assign(val == 0 ? "" : val);
-        return true;
+        if (val == 0) {
+            val = "";
+        }
+
+        // Check value size.
+        const size_t len = ::strlen(val);
+        if (len >= minSize && len <= maxSize) {
+            value.assign(val);
+            return true;
+        }
+        else if (maxSize == UNLIMITED) {
+            reportError(Format("Incorrect value for attribute '%s' in <%s>, line %d, contains %" FMT_SIZE_T "d characters, at least %" FMT_SIZE_T "d required",
+                               name.c_str(), ElementName(elem), elem->GetLineNum(), len, minSize));
+            return false;
+        }
+        else {
+            reportError(Format("Incorrect value for attribute '%s' in <%s>, line %d, contains %" FMT_SIZE_T "d characters, allowed %" FMT_SIZE_T "d to %" FMT_SIZE_T "d",
+                               name.c_str(), ElementName(elem), elem->GetLineNum(), len, minSize, maxSize));
+            return false;
+        }
     }
 }
 
@@ -352,6 +377,27 @@ bool ts::XML::getEnumAttribute(int& value, const Enumeration& definition, const 
         value = val;
         return true;
     }
+}
+
+
+//----------------------------------------------------------------------------
+// Get a date/time attribute of an XML element.
+//----------------------------------------------------------------------------
+
+bool ts::XML::getDateTimeAttribute(Time& value, const Element* elem, const std::string& name, bool required, const Time& defValue)
+{
+    std::string str;
+    if (!getAttribute(str, elem, name, required, ToString(defValue))) {
+        return false;
+    }
+
+    // Analyze the time string.
+    const bool ok = FromString(value, str);
+    if (!ok) {
+        reportError(Format("'%s' is not a valid date/time for attribute '%s' in <%s>, line %d, use \"YYYY-MM-DD hh:mm:ss\"",
+                           str.c_str(), name.c_str(), ElementName(elem), elem->GetLineNum()));
+    }
+    return ok;
 }
 
 
@@ -551,6 +597,62 @@ void ts::XML::setBoolAttribute(Element* element, const std::string& name, bool v
 void ts::XML::setEnumAttribute(const Enumeration& definition, Element* elem, const std::string& name, int value)
 {
     setAttribute(elem, name, definition.name((value)));
+}
+
+
+//----------------------------------------------------------------------------
+// Convert a time into a string, as required in attributes.
+//----------------------------------------------------------------------------
+
+std::string ts::XML::ToString(const Time& value)
+{
+    const Time::Fields f(value);
+    return Format("%04d-%02d-%02d %02d:%02d:%02d", f.year, f.month, f.day, f.hour, f.minute, f.second);
+}
+
+
+//----------------------------------------------------------------------------
+// Convert a string into a time, as required in attributes.
+//----------------------------------------------------------------------------
+
+bool ts::XML::FromString(Time& value, const std::string& str)
+{
+    StringVector main;
+    StringVector date;
+    StringVector time;
+
+    SplitString(main, str, ' ', true);
+    bool ok = main.size() == 2;
+    if (ok) {
+        SplitString(date, main[0], '-', true);
+        SplitString(time, main[1], ':', true);
+        ok = date.size() == 3 && time.size() == 3;
+    }
+
+    Time::Fields f;
+    ok = ok &&
+        ToInteger(f.year,   date[0]) &&
+        ToInteger(f.month,  date[1]) && f.month  >= 1 && f.month  <= 12 &&
+        ToInteger(f.day,    date[2]) && f.day    >= 1 && f.day    <= 31 &&
+        ToInteger(f.hour,   time[0]) && f.hour   >= 0 && f.hour   <= 23 &&
+        ToInteger(f.minute, time[1]) && f.minute >= 0 && f.minute <= 59 &&
+        ToInteger(f.second, time[2]) && f.second >= 0 && f.second <= 59;
+
+    if (ok) {
+        value = Time(f);
+    }
+
+    return ok;
+}
+
+
+//----------------------------------------------------------------------------
+// Set a date/time attribute of an XML element.
+//----------------------------------------------------------------------------
+
+void ts::XML::setDateTimeAttribute(Element* elem, const std::string& name, const Time& value)
+{
+    setAttribute(elem, name, ToString(value));
 }
 
 

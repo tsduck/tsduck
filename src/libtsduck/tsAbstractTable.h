@@ -67,7 +67,7 @@ namespace ts {
         //! Get the XMl node name representing this table.
         //! @return The XML node name.
         //!
-        std::string xmlName() const {return _xml_name == 0 ? std::string() : std::string(_xml_name);}
+        std::string xmlName() const;
 
         //!
         //! This abstract method serializes a table.
@@ -133,6 +133,14 @@ namespace ts {
             _is_valid(false)
         {
         }
+
+        //!
+        //! Check that an XML element has the right name for this table.
+        //! @param [in,out] xml XML utility for error reporting
+        //! @param [in] element XML element to check.
+        //! @return True on success, false on error.
+        //!
+        bool checkXMLName(XML& xml, const XML::Element* element) const;
 
     private:
         // Unreachable constructors and operators.

@@ -180,6 +180,7 @@
 #include "tsReportInterface.h"
 #include "tsResidentBuffer.h"
 #include "tsRingNode.h"
+#include "tsRST.h"
 #include "tsSDT.h"
 #include "tsSHA1.h"
 #include "tsSHA256.h"

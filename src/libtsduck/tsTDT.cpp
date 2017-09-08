@@ -148,7 +148,9 @@ void ts::TDT::DisplaySection(TablesDisplay& display, const ts::Section& section,
 
 ts::XML::Element* ts::TDT::toXML(XML& xml, XML::Element* parent) const
 {
-    return 0; // TODO @@@@
+    XML::Element* root = _is_valid ? xml.addElement(parent, _xml_name) : 0;
+    xml.setDateTimeAttribute(root, "UTC_time", utc_time);
+    return root;
 }
 
 
@@ -158,5 +160,7 @@ ts::XML::Element* ts::TDT::toXML(XML& xml, XML::Element* parent) const
 
 void ts::TDT::fromXML(XML& xml, const XML::Element* element)
 {
-    // TODO @@@@
+    _is_valid =
+        checkXMLName(xml, element) &&
+        xml.getDateTimeAttribute(utc_time, element, "UTC_time", true);
 }
