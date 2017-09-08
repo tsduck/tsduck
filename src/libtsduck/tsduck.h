@@ -104,6 +104,7 @@
 #include "tsECMGClient.h"
 #include "tsECMGClientHandlerInterface.h"
 #include "tsECMGSCS.h"
+#include "tsEDID.h"
 #include "tsEIT.h"
 #include "tsEMMGMUX.h"
 #include "tsETID.h"

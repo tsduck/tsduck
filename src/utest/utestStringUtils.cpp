@@ -715,7 +715,7 @@ void StringTest::testHexa()
     const std::string hex1 (ts::Hexa (_bytes, 40));
     const char* ref1 =
         "00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F 10 11 12 13 14 15 16 17 18 19\n"
-        "1A 1B 1C 1D 1E 1F 20 21 22 23 24 25 26 27 \n";
+        "1A 1B 1C 1D 1E 1F 20 21 22 23 24 25 26 27\n";
     CPPUNIT_ASSERT(hex1 == ref1);
 
     const std::string hex2 (ts::Hexa (_bytes, 40, ts::hexa::HEXA | ts::hexa::ASCII));
@@ -758,7 +758,7 @@ void StringTest::testHexa()
     const std::string hex6 (ts::Hexa (_bytes + 32, 20, ts::hexa::HEXA | ts::hexa::C_STYLE));
     const char* ref6 =
         "0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 0x28, 0x29, 0x2A, 0x2B,\n"
-        "0x2C, 0x2D, 0x2E, 0x2F, 0x30, 0x31, 0x32, 0x33, \n";
+        "0x2C, 0x2D, 0x2E, 0x2F, 0x30, 0x31, 0x32, 0x33,\n";
     CPPUNIT_ASSERT(hex6 == ref6);
 
     const std::string hex7 (ts::Hexa (_bytes + 32, 10, ts::hexa::BINARY | ts::hexa::ASCII));

@@ -359,7 +359,7 @@ namespace ts {
         template <typename INT>
         void setIntAttribute(Element* element, const std::string& name, INT value, bool hexa = false)
         {
-            setAttribute(element, name, hexa ? Format("0x%0*" FMT_INT64 "X", 2 * sizeof(INT), int64_t(value)) : Decimal(value));
+            setAttribute(element, name, hexa ? Format("0x%0*" FMT_INT64 "X", int(2 * sizeof(INT)), int64_t(value)) : Decimal(value));
         }
 
         //!
