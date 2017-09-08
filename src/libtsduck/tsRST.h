@@ -28,57 +28,68 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Representation of a Time Offset Table (TOT)
+//!  Representation of a Running Status Table (RST)
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
 #include "tsAbstractTable.h"
-#include "tsDescriptorList.h"
-#include "tsLocalTimeOffsetDescriptor.h"
-#include "tsTime.h"
+#include "tsEnumeration.h"
 
 namespace ts {
     //!
-    //! Representation of a Time Offset Table (TOT)
+    //! Representation of a Running Status Table (RST).
     //!
-    class TSDUCKDLL TOT : public AbstractTable
+    class TSDUCKDLL RST : public AbstractTable
     {
     public:
-        typedef LocalTimeOffsetDescriptor::Region       Region;        //!< Alias from LocalTimeOffsetDescriptor.
-        typedef LocalTimeOffsetDescriptor::RegionVector RegionVector;  //!< Alias from LocalTimeOffsetDescriptor.
+        //!
+        //! Description of an event.
+        //!
+        struct TSDUCKDLL Event
+        {
+            uint16_t transport_stream_id;  //!< Transport stream id.
+            uint16_t original_network_id;  //!< Original network id.
+            uint16_t service_id;           //!< Service id.
+            uint16_t event_id;             //!< Event id.
+            uint8_t  running_status;       //!< Running status of the event.
 
-        // Public members:
-        Time           utc_time; //!< UTC time.
-        RegionVector   regions;  //!< Vector of region descriptions.
-        DescriptorList descs;    //!< Descriptor list, except local_time_offset_descriptor.
+            //!
+            //! Default constructor.
+            //!
+            Event() :
+                transport_stream_id(0),
+                original_network_id(0),
+                service_id(0),
+                event_id(0),
+                running_status(0)
+            {
+            }
+        };
+        
+        //!
+        //! List of Events.
+        //!
+        typedef std::list<Event> EventList;
+
+        // RST public members:
+        EventList events;  //!< List of events with a running status.
+
+        //!
+        //! Definition of names for running status values.
+        //!
+        static const Enumeration RunningStatusNames;
 
         //!
         //! Default constructor.
-        //! @param [in] utc_time UTC time.
         //!
-        TOT(const Time& utc_time = Time::Epoch);
+        RST();
 
         //!
         //! Constructor from a binary table.
         //! @param [in] table Binary table to deserialize.
         //!
-        TOT(const BinaryTable& table);
-
-        //!
-        //! Get the local time according to a region description.
-        //! Use the UTC time from the TOT and the local time offset from the region.
-        //! @param [in] region Region to get the local time for.
-        //! @return The local time for @a region.
-        //!
-        Time localTime(const Region& region) const;
-
-        //!
-        //! Format a time offset string.
-        //! @param minutes A time offset in minutes.
-        //! @return A string like "+hh:mm" or "-hh:mm".
-        //!
-        static std::string timeOffsetFormat(int minutes);
+        RST(const BinaryTable& table);
 
         // Inherited methods
         virtual void serialize(BinaryTable& table) const;

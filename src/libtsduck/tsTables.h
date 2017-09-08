@@ -42,6 +42,7 @@
 #include "tsNIT.h"
 #include "tsPAT.h"
 #include "tsPMT.h"
+#include "tsRST.h"
 #include "tsSDT.h"
 #include "tsTDT.h"
 #include "tsTOT.h"

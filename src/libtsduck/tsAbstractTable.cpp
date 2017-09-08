@@ -27,74 +27,31 @@
 //
 //----------------------------------------------------------------------------
 //
-//  Abstract base class for MPEG PSI/SI descriptors
+//  Abstract base class for MPEG PSI/SI tables
 //
 //----------------------------------------------------------------------------
 
-#include "tsAbstractDescriptor.h"
-#include "tsDescriptorList.h"
-TSDUCK_SOURCE;
+#include "tsAbstractTable.h"
+#include "tsTablesPtr.h"
+#include "tsTablesDisplay.h"
+#include "tsXML.h"
 
 
 //----------------------------------------------------------------------------
-// Protected constructor for subclasses.
+// Get the XMl node name representing this table.
 //----------------------------------------------------------------------------
 
-ts::AbstractDescriptor::AbstractDescriptor(DID tag, const char* xml_name, PDS pds) :
-    _tag(tag),
-    _xml_name(xml_name),
-    _is_valid(false),
-    _required_pds(pds)
+std::string ts::AbstractTable::xmlName() const
 {
+    return _xml_name == 0 ? std::string() : std::string(_xml_name);
 }
 
 
 //----------------------------------------------------------------------------
-// Copy constructor and assignment.
-// Not really needed but compilers may warn that pointer members require
-// explicit copy.
+// Check that an XML element has the right name for this table.
 //----------------------------------------------------------------------------
 
-ts::AbstractDescriptor::AbstractDescriptor(const AbstractDescriptor& other) :
-    _tag(other._tag),
-    _xml_name(other._xml_name), // static storage
-    _is_valid(other._is_valid),
-    _required_pds(other._required_pds)
-{
-}
-
-ts::AbstractDescriptor& ts::AbstractDescriptor::operator=(const AbstractDescriptor& other)
-{
-    if (&other != this) {
-        _tag = other._tag;
-        _xml_name = other._xml_name; // static storage
-        _is_valid = other._is_valid;
-        _required_pds = other._required_pds;
-    }
-    return *this;
-}
-
-
-//----------------------------------------------------------------------------
-// Deserialize from a descriptor list.
-//----------------------------------------------------------------------------
-
-void ts::AbstractDescriptor::deserialize(const DescriptorList& dlist, size_t index)
-{
-    if (index > dlist.count()) {
-        invalidate();
-    }
-    else {
-        deserialize(*dlist[index]);
-    }
-}
-
-
-//----------------------------------------------------------------------------
-// Check that an XML element has the right name for this descriptor.
-//----------------------------------------------------------------------------
-
-bool ts::AbstractDescriptor::checkXMLName(XML& xml, const XML::Element* element) const
+bool ts::AbstractTable::checkXMLName(XML& xml, const XML::Element* element) const
 {
     if (element == 0) {
         return false;

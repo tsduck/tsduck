@@ -34,6 +34,7 @@
 #include "tsBAT.h"
 #include "tsFormat.h"
 #include "tsTablesFactory.h"
+#include "tsXMLTables.h"
 TSDUCK_SOURCE;
 TS_ID_TABLE_FACTORY(ts::BAT, ts::TID_BAT);
 TS_XML_TABLE_FACTORY(ts::BAT, "BAT");
@@ -120,7 +121,19 @@ void ts::BAT::DisplaySection(TablesDisplay& display, const ts::Section& section,
 
 ts::XML::Element* ts::BAT::toXML(XML& xml, XML::Element* parent) const
 {
-    return 0; // TODO @@@@
+    XML::Element* root = _is_valid ? xml.addElement(parent, _xml_name) : 0;
+    xml.setIntAttribute(root, "version", version);
+    xml.setBoolAttribute(root, "current", is_current);
+    xml.setIntAttribute(root, "bouquet_id", bouquet_id, true);
+    XMLTables::ToXML(xml, root, descs);
+
+    for (TransportMap::const_iterator it = transports.begin(); it != transports.end(); ++it) {
+        XML::Element* e = xml.addElement(root, "transport_stream");
+        xml.setIntAttribute(e, "transport_stream_id", it->first.transport_stream_id, true);
+        xml.setIntAttribute(e, "original_network_id", it->first.original_network_id, true);
+        XMLTables::ToXML(xml, e, it->second);
+    }
+    return root;
 }
 
 
@@ -130,5 +143,22 @@ ts::XML::Element* ts::BAT::toXML(XML& xml, XML::Element* parent) const
 
 void ts::BAT::fromXML(XML& xml, const XML::Element* element)
 {
-    // TODO @@@@
+    descs.clear();
+    transports.clear();
+
+    XML::ElementVector children;
+    _is_valid =
+        checkXMLName(xml, element) &&
+        xml.getIntAttribute<uint8_t>(version, element, "version", false, 0, 0, 31) &&
+        xml.getBoolAttribute(is_current, element, "current", false, true) &&
+        xml.getIntAttribute<uint16_t>(bouquet_id, element, "bouquet_id", true, 0, 0x0000, 0xFFFF) &&
+        XMLTables::FromDescriptorListXML(descs, children, xml, element, "transport_stream");
+
+    for (size_t index = 0; _is_valid && index < children.size(); ++index) {
+        TransportStreamId ts;
+        _is_valid =
+            xml.getIntAttribute<uint16_t>(ts.transport_stream_id, children[index], "transport_stream_id", true, 0, 0x0000, 0xFFFF) &&
+            xml.getIntAttribute<uint16_t>(ts.original_network_id, children[index], "original_network_id", true, 0, 0x0000, 0xFFFF) &&
+            XMLTables::FromDescriptorListXML(transports[ts], xml, children[index]);
+    }
 }

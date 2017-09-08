@@ -178,6 +178,14 @@ namespace ts {
         //!
         AbstractDescriptor(DID tag, const char* xml_name, PDS pds = 0);
 
+        //!
+        //! Check that an XML element has the right name for this descriptor.
+        //! @param [in,out] xml XML utility for error reporting
+        //! @param [in] element XML element to check.
+        //! @return True on success, false on error.
+        //!
+        bool checkXMLName(XML& xml, const XML::Element* element) const;
+
     private:
         // Unreachable constructors and operators.
         AbstractDescriptor() = delete;

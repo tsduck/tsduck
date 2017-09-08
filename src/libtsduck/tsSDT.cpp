@@ -32,10 +32,12 @@
 //----------------------------------------------------------------------------
 
 #include "tsSDT.h"
+#include "tsRST.h"
 #include "tsStringUtils.h"
 #include "tsFormat.h"
 #include "tsNames.h"
 #include "tsTablesFactory.h"
+#include "tsXMLTables.h"
 TSDUCK_SOURCE;
 TS_XML_TABLE_FACTORY(ts::SDT, "SDT");
 TS_ID_TABLE_FACTORY(ts::SDT, ts::TID_SDT_ACT);
@@ -555,7 +557,23 @@ void ts::SDT::DisplaySection(TablesDisplay& display, const ts::Section& section,
 
 ts::XML::Element* ts::SDT::toXML(XML& xml, XML::Element* parent) const
 {
-    return 0; // TODO @@@@
+    XML::Element* root = _is_valid ? xml.addElement(parent, _xml_name) : 0;
+    xml.setIntAttribute(root, "version", version);
+    xml.setBoolAttribute(root, "current", is_current);
+    xml.setIntAttribute(root, "transport_stream_id", ts_id, true);
+    xml.setIntAttribute(root, "original_network_id", onetw_id, true);
+    xml.setBoolAttribute(root, "actual", isActual());
+
+    for (ServiceMap::const_iterator it = services.begin(); it != services.end(); ++it) {
+        XML::Element* e = xml.addElement(root, "service");
+        xml.setIntAttribute(e, "service_id", it->first, true);
+        xml.setBoolAttribute(e, "EIT_schedule", it->second.EITs_present);
+        xml.setBoolAttribute(e, "EIT_present_following", it->second.EITpf_present);
+        xml.setBoolAttribute(e, "CA_mode", it->second.CA_controlled);
+        xml.setEnumAttribute(RST::RunningStatusNames, e, "running_status", it->second.running_status);
+        XMLTables::ToXML(xml, e, it->second.descs);
+    }
+    return root;
 }
 
 
@@ -565,5 +583,36 @@ ts::XML::Element* ts::SDT::toXML(XML& xml, XML::Element* parent) const
 
 void ts::SDT::fromXML(XML& xml, const XML::Element* element)
 {
-    // TODO @@@@
+    services.clear();
+
+    XML::ElementVector children;
+    bool actual = true;
+
+    _is_valid =
+        checkXMLName(xml, element) &&
+        xml.getIntAttribute<uint8_t>(version, element, "version", false, 0, 0, 31) &&
+        xml.getBoolAttribute(is_current, element, "current", false, true) &&
+        xml.getIntAttribute<uint16_t>(ts_id, element, "transport_stream_id", true, 0, 0x0000, 0xFFFF) &&
+        xml.getIntAttribute<uint16_t>(onetw_id, element, "original_network_id", true, 0, 0x0000, 0xFFFF) &&
+        xml.getBoolAttribute(actual, element, "actual", false, true) &&
+        xml.getChildren(children, element, "service");
+
+    setActual(actual);
+
+    for (size_t index = 0; _is_valid && index < children.size(); ++index) {
+        uint16_t id = 0;
+        Service srv;
+        int rs = 0;
+        _is_valid =
+            xml.getIntAttribute<uint16_t>(id, children[index], "service_id", true, 0, 0x0000, 0xFFFF) &&
+            xml.getBoolAttribute(srv.EITs_present, children[index], "EIT_schedule", false, false) &&
+            xml.getBoolAttribute(srv.EITpf_present, children[index], "EIT_present_following", false, false) &&
+            xml.getBoolAttribute(srv.CA_controlled, children[index], "CA_mode", false, false) &&
+            xml.getEnumAttribute(rs, RST::RunningStatusNames, children[index], "running_status", false, 0) &&
+            XMLTables::FromDescriptorListXML(srv.descs, xml, children[index]);
+        if (_is_valid) {
+            srv.running_status = uint8_t(rs);
+            services[id] = srv;
+        }
+    }
 }

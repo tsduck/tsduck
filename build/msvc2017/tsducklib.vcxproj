@@ -178,6 +178,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsResidentBuffer.h" />
     <ClInclude Include="..\..\src\libtsduck\tsResidentBufferTemplate.h" />
     <ClInclude Include="..\..\src\libtsduck\tsRingNode.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsRST.h" />
     <ClInclude Include="..\..\src\libtsduck\tsSafeAccessDate.h" />
     <ClInclude Include="..\..\src\libtsduck\tsSafePtr.h" />
     <ClInclude Include="..\..\src\libtsduck\tsSafePtrTemplate.h" />
@@ -299,6 +300,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsAbstractDescrambler.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAbstractDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAbstractDescriptorsTable.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsAbstractTable.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAbstractTransportListTable.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAC3Attributes.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAC3Descriptor.cpp" />
@@ -411,6 +413,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsPSILoggerArgs.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsReportInterface.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsRingNode.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsRST.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsSatelliteDeliverySystemDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsScrambling.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsSDT.cpp" />

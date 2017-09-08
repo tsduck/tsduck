@@ -35,6 +35,7 @@
 #include "tsFormat.h"
 #include "tsNames.h"
 #include "tsTablesFactory.h"
+#include "tsXMLTables.h"
 TSDUCK_SOURCE;
 TS_XML_TABLE_FACTORY(ts::PMT, "PMT");
 TS_ID_TABLE_FACTORY(ts::PMT, ts::TID_PMT);
@@ -317,7 +318,22 @@ void ts::PMT::DisplaySection(TablesDisplay& display, const ts::Section& section,
 
 ts::XML::Element* ts::PMT::toXML(XML& xml, XML::Element* parent) const
 {
-    return 0; // TODO @@@@
+    XML::Element* root = _is_valid ? xml.addElement(parent, _xml_name) : 0;
+    xml.setIntAttribute(root, "version", version);
+    xml.setBoolAttribute(root, "current", is_current);
+    xml.setIntAttribute(root, "service_id", service_id, true);
+    if (pcr_pid != PID_NULL) {
+        xml.setIntAttribute(root, "PCR_PID", pcr_pid);
+    }
+    XMLTables::ToXML(xml, root, descs);
+    
+    for (StreamMap::const_iterator it = streams.begin(); it != streams.end(); ++it) {
+        XML::Element* e = xml.addElement(root, "component");
+        xml.setIntAttribute(e, "elementary_PID", it->first, true);
+        xml.setIntAttribute(e, "stream_type", it->second.stream_type, true);
+        XMLTables::ToXML(xml, e, it->second.descs);
+    }
+    return root;
 }
 
 
@@ -327,5 +343,27 @@ ts::XML::Element* ts::PMT::toXML(XML& xml, XML::Element* parent) const
 
 void ts::PMT::fromXML(XML& xml, const XML::Element* element)
 {
-    // TODO @@@@
+    descs.clear();
+    streams.clear();
+
+    XML::ElementVector children;
+    _is_valid =
+        checkXMLName(xml, element) &&
+        xml.getIntAttribute<uint8_t>(version, element, "version", false, 0, 0, 31) &&
+        xml.getBoolAttribute(is_current, element, "current", false, true) &&
+        xml.getIntAttribute<uint16_t>(service_id, element, "service_id", true, 0, 0x0000, 0xFFFF) &&
+        xml.getIntAttribute<PID>(pcr_pid, element, "PCR_PID", false, PID_NULL, 0x0000, 0x1FFF) &&
+        XMLTables::FromDescriptorListXML(descs, children, xml, element, "component");
+
+    for (size_t index = 0; _is_valid && index < children.size(); ++index) {
+        PID pid = PID_NULL;
+        Stream stream;
+        _is_valid =
+            xml.getIntAttribute<uint8_t>(stream.stream_type, children[index], "stream_type", true, 0, 0x00, 0xFF) &&
+            xml.getIntAttribute<PID>(pid, children[index], "elementary_PID", true, 0, 0x0000, 0x1FFF) &&
+            XMLTables::FromDescriptorListXML(stream.descs, xml, children[index]);
+        if (_is_valid) {
+            streams[pid] = stream;
+        }
+    }
 }
