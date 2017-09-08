@@ -282,6 +282,11 @@ std::string& ts::AppendHexa(std::string& str,
                 str.push_back(printable ? c : '.');
             }
         }
+
+        // Insert a new-line, cleanup spurious spaces.
+        while (!str.empty() && str.back() == ' ') {
+            str.pop_back();
+        }
         str.push_back('\n');
     }
 

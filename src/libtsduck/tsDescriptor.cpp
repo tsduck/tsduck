@@ -41,20 +41,40 @@ TSDUCK_SOURCE;
 // Note that the max size of a descriptor is 257 bytes: 2 (header) + 255
 //----------------------------------------------------------------------------
 
-ts::Descriptor::Descriptor (const void* addr, size_t size) :
-    _data (size >= 2 && size < 258 && (reinterpret_cast<const uint8_t*>(addr))[1] == size - 2 ? new ByteBlock (addr, size) : 0)
+ts::Descriptor::Descriptor(const void* addr, size_t size) :
+    _data(size >= 2 && size < 258 && (reinterpret_cast<const uint8_t*>(addr))[1] == size - 2 ? new ByteBlock(addr, size) : 0)
 {
 }
 
-ts::Descriptor::Descriptor (const ByteBlock& bb) :
-    _data (bb.size () >= 2 && bb.size() < 258 && bb[1] == bb.size() - 2 ? new ByteBlock (bb) : 0)
+ts::Descriptor::Descriptor(const ByteBlock& bb) :
+    _data(bb.size() >= 2 && bb.size() < 258 && bb[1] == bb.size() - 2 ? new ByteBlock(bb) : 0)
 {
 }
 
-ts::Descriptor::Descriptor (const ByteBlockPtr& bbp, CopyShare mode) :
-    _data (0)
+ts::Descriptor::Descriptor(DID tag, const void* data, size_t size) :
+    _data(size < 256 ? new ByteBlock(size + 2) : 0)
 {
-    if (!bbp.isNull() && bbp->size () >= 2 && bbp->size() < 258 && (*bbp)[1] == bbp->size() - 2) {
+    if (!_data.isNull()) {
+        (*_data)[0] = tag;
+        (*_data)[1] = uint8_t(size);
+        ::memcpy(_data->data() + 2, data, size);
+    }
+}
+
+ts::Descriptor::Descriptor(DID tag, const ByteBlock& data) :
+    _data(data.size() < 256 ? new ByteBlock(2) : 0)
+{
+    if (!_data.isNull()) {
+        (*_data)[0] = tag;
+        (*_data)[1] = uint8_t(data.size());
+        _data->append(data);
+    }
+}
+
+ts::Descriptor::Descriptor(const ByteBlockPtr& bbp, CopyShare mode) :
+    _data(0)
+{
+    if (!bbp.isNull() && bbp->size() >= 2 && bbp->size() < 258 && (*bbp)[1] == bbp->size() - 2) {
         switch (mode) {
             case SHARE:
                 _data = bbp;
@@ -82,6 +102,31 @@ ts::Descriptor::Descriptor (const Descriptor& desc, CopyShare mode) :
         default:
             // should not get there
             assert (false);
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Get the extended descriptor id.
+//----------------------------------------------------------------------------
+
+ts::EDID ts::Descriptor::edid(PDS pds) const
+{
+    if (!isValid()) {
+        return EDID();  // invalid value.
+    }
+    const DID did = tag();
+    if (did >= 0x80) {
+        // Private descriptor.
+        return EDID(did, pds);
+    }
+    else if (did == DID_EXTENSION && payloadSize() > 0) {
+        // Extension descriptor.
+        return EDID(did, payload()[0]);
+    }
+    else {
+        // Standard descriptor.
+        return EDID(did);
     }
 }
 

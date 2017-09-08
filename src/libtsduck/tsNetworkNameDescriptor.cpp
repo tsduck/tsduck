@@ -117,7 +117,7 @@ void ts::NetworkNameDescriptor::DisplayDescriptor(TablesDisplay& display, DID di
 // XML serialization
 //----------------------------------------------------------------------------
 
-ts::XML::Element* ts::NetworkNameDescriptor::toXML(XML& xml, XML::Document& doc) const
+ts::XML::Element* ts::NetworkNameDescriptor::toXML(XML& xml, XML::Element* parent) const
 {
     return 0; // TODO @@@@
 }

@@ -588,6 +588,20 @@ namespace ts {
     bool ContainSimilarString(const CONTAINER& container, const std::string& str);
 
     //!
+    //! Locate into a map an element with a similar string.
+    //!
+    //! @tparam CONTAINER A map container class using @c std::string as key.
+    //! @param [in] container A map container with @c std::string keys.
+    //! @param [in] key A key string.
+    //! @return An iterator to the first element of @a container with a key value
+    //! which is similar to @a key according to SimilarStrings(). Return @a container.end()
+    //! if not found.
+    //! @see SimilarStrings
+    //!
+    template <class CONTAINER>
+    typename CONTAINER::const_iterator FindSimilar(const CONTAINER& container, const std::string& key);
+
+    //!
     //! Interpret a string as a sequence of hexadecimal digits (ignore blanks).
     //! @param [out] result Decoded bytes.
     //! @param [in] hexa_string A string as a sequence of hexadecimal digits and blanks.

@@ -211,7 +211,7 @@ void ts::DataBroadcastIdDescriptor::DisplaySelectorBytes(TablesDisplay & display
 // XML serialization
 //----------------------------------------------------------------------------
 
-ts::XML::Element* ts::DataBroadcastIdDescriptor::toXML(XML& xml, XML::Document& doc) const
+ts::XML::Element* ts::DataBroadcastIdDescriptor::toXML(XML& xml, XML::Element* parent) const
 {
     return 0; // TODO @@@@
 }

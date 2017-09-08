@@ -123,7 +123,7 @@ void ts::EacemStreamIdentifierDescriptor::DisplayDescriptor(TablesDisplay& displ
 // XML serialization
 //----------------------------------------------------------------------------
 
-ts::XML::Element* ts::EacemStreamIdentifierDescriptor::toXML(XML& xml, XML::Document& doc) const
+ts::XML::Element* ts::EacemStreamIdentifierDescriptor::toXML(XML& xml, XML::Element* parent) const
 {
     return 0; // TODO @@@@
 }

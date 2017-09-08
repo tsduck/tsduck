@@ -159,7 +159,7 @@ void ts::AbstractDescriptorsTable::DisplaySection(TablesDisplay& display, const 
 // XML serialization
 //----------------------------------------------------------------------------
 
-ts::XML::Element* ts::AbstractDescriptorsTable::toXML(XML& xml, XML::Document& doc) const
+ts::XML::Element* ts::AbstractDescriptorsTable::toXML(XML& xml, XML::Element* parent) const
 {
     return 0; // TODO @@@@
 }

@@ -116,6 +116,21 @@ const char* ts::XML::ElementName(const Element* e)
 
 
 //----------------------------------------------------------------------------
+// Safely return he depth of an XML element.
+//----------------------------------------------------------------------------
+
+int ts::XML::NodeDepth(const Node* e)
+{
+    int depth = -1;
+    while (e != 0) {
+        e = e->Parent();
+        depth++;
+    }
+    return std::max(0, depth);
+}
+
+
+//----------------------------------------------------------------------------
 // Parse an XML document.
 //----------------------------------------------------------------------------
 
@@ -201,16 +216,31 @@ bool ts::XML::loadDocument(Document& doc, const std::string& fileName, bool sear
 
 
 //----------------------------------------------------------------------------
+// Convert a document to an XML string.
+//----------------------------------------------------------------------------
+
+std::string ts::XML::toString(const Document& doc, int indent)
+{
+    // Use a printer with the requested indentation.
+    Printer printer(indent);
+    doc.Print(&printer);
+
+    // Extract the resulting string and normalize end of lines.
+    std::string text(printer.CStr());
+    SubstituteAll(text, "\r", "");
+
+    return text;
+}
+
+
+//----------------------------------------------------------------------------
 // Find an attribute, case-insensitive, in an XML element.
 //----------------------------------------------------------------------------
 
-const ts::XML::Attribute* ts::XML::findAttribute(const Element* elem, const char* name, bool silent)
+const ts::XML::Attribute* ts::XML::findAttribute(const Element* elem, const std::string& name, bool silent)
 {
     // Filter invalid parameters.
-    if (elem == 0 || name == 0 || name[0] == '\0') {
-        if (!silent) {
-            reportError("ts::XML::findAttribute internal error, null parameter");
-        }
+    if (elem == 0 || name.empty()) {
         return 0;
     }
 
@@ -223,7 +253,7 @@ const ts::XML::Attribute* ts::XML::findAttribute(const Element* elem, const char
 
     // Attribute not found.
     if (!silent) {
-        reportError(Format("Attribute '%s' not found in <%s>, line %d", name, ElementName(elem), elem->GetLineNum()));
+        reportError(Format("Attribute '%s' not found in <%s>, line %d", name.c_str(), ElementName(elem), elem->GetLineNum()));
     }
     return 0;
 }
@@ -233,28 +263,189 @@ const ts::XML::Attribute* ts::XML::findAttribute(const Element* elem, const char
 // Find the first child element in an XML element by name, case-insensitive.
 //----------------------------------------------------------------------------
 
-const ts::XML::Element* ts::XML::findFirstChild(const Element* elem, const char* name, bool silent)
+const ts::XML::Element* ts::XML::findFirstChild(const Element* elem, const std::string& name, bool silent)
 {
     // Filter invalid parameters.
-    if (elem == 0 || name == 0 || name[0] == '\0') {
-        if (!silent) {
-            reportError("ts::XML::findFirstChild internal error, null parameter");
-        }
+    if (elem == 0 || name.empty()) {
         return 0;
     }
 
     // Loop on all children.
     for (const Element* child = elem->FirstChildElement(); child != 0; child = child->NextSiblingElement()) {
-        if (UTF8Equal(child->Name(), name, false)) {
+        if (UTF8Equal(child->Name(), name.c_str(), false)) {
             return child;
         }
     }
 
     // Child node not found.
     if (!silent) {
-        reportError(Format("Child node <%s> not found in <%s>, line %d", name, ElementName(elem), elem->GetLineNum()));
+        reportError(Format("Child node <%s> not found in <%s>, line %d", name.c_str(), ElementName(elem), elem->GetLineNum()));
     }
     return 0;
+}
+
+
+//----------------------------------------------------------------------------
+// Get a string attribute of an XML element.
+//----------------------------------------------------------------------------
+
+bool ts::XML::getAttribute(std::string& value, const Element* elem, const std::string& name, bool required, const std::string& defValue)
+{
+    const Attribute* attr = findAttribute(elem, name, !required);
+    if (attr == 0) {
+        // Attribute not present.
+        value = defValue;
+        return !required;
+    }
+    else {
+        // Attribute found, get its value.
+        const char* val = attr->Value();
+        value.assign(val == 0 ? "" : val);
+        return true;
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Get a boolean attribute of an XML element.
+//----------------------------------------------------------------------------
+
+bool ts::XML::getBoolAttribute(bool& value, const Element* elem, const std::string& name, bool required, bool defValue)
+{
+    std::string str;
+    if (!getAttribute(str, elem, name, required, TrueFalse(defValue))) {
+        return false;
+    }
+    else if (SimilarStrings(str, "true") || SimilarStrings(str, "yes") || SimilarStrings(str, "1")) {
+        value = true;
+        return true;
+    }
+    else if (SimilarStrings(str, "false") || SimilarStrings(str, "no") || SimilarStrings(str, "0")) {
+        value = false;
+        return true;
+    }
+    else {
+        reportError(Format("'%s' is not a valid boolean value for attribute '%s' in <%s>, line %d",
+                           str.c_str(), name.c_str(), ElementName(elem), elem->GetLineNum()));
+        return false;
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Get an enumeration attribute of an XML element.
+//----------------------------------------------------------------------------
+
+bool ts::XML::getEnumAttribute(int& value, const Enumeration& definition, const Element* elem, const std::string& name, bool required, int defValue)
+{
+    std::string str;
+    if (!getAttribute(str, elem, name, required, Decimal(defValue))) {
+        return false;
+    }
+    const int val = definition.value(str, false);
+    if (val == Enumeration::UNKNOWN) {
+        reportError(Format("'%s' is not a valid value for attribute '%s' in <%s>, line %d",
+                           str.c_str(), name.c_str(), ElementName(elem), elem->GetLineNum()));
+        return false;
+    }
+    else {
+        value = val;
+        return true;
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Find all children elements in an XML element by name, case-insensitive.
+//----------------------------------------------------------------------------
+
+bool ts::XML::getChildren(ElementVector& children, const Element* elem, const std::string& name, size_t minCount, size_t maxCount)
+{
+    children.clear();
+
+    // Filter invalid parameters.
+    if (elem == 0 || name.empty()) {
+        return 0;
+    }
+
+    // Loop on all children.
+    for (const Element* child = elem->FirstChildElement(); child != 0; child = child->NextSiblingElement()) {
+        if (UTF8Equal(child->Name(), name.c_str(), false)) {
+            children.push_back(child);
+        }
+    }
+
+    // Check cardinality.
+    if (children.size() >= minCount && children.size() <= maxCount) {
+        return true;
+    }
+    else if (maxCount == UNLIMITED) {
+        reportError(Format("<%s>, line %d, contains %" FMT_SIZE_T "d <%s>, at least %" FMT_SIZE_T "d required",
+                           ElementName(elem), elem->GetLineNum(), children.size(), name.c_str(), minCount));
+        return false;
+    }
+    else {
+        reportError(Format("<%s>, line %d, contains %" FMT_SIZE_T "d <%s>, allowed %" FMT_SIZE_T "d to %" FMT_SIZE_T "d",
+                           ElementName(elem), elem->GetLineNum(), children.size(), name.c_str(), minCount, maxCount));
+        return false;
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Get a text child of an element.
+//----------------------------------------------------------------------------
+
+bool ts::XML::getText(std::string& data, const Element* elem, bool trim)
+{
+    data.clear();
+    if (elem == 0) {
+        return false;
+    }
+
+    // Locate text children.
+    for (const Node* node = elem->FirstChild(); node != 0; node = node->NextSibling()) {
+        const Text* text = node->ToText();
+        if (text != 0) {
+            const char* s = text->Value();
+            if (s != 0) {
+                data.append(s);
+            }
+        }
+    }
+
+    if (trim) {
+        Trim(data);
+    }
+    return true;
+}
+
+
+//----------------------------------------------------------------------------
+// Get a text child of an element containing hexadecimal data).
+//----------------------------------------------------------------------------
+
+bool ts::XML::getHexaText(ByteBlock& data, const Element* elem, size_t minSize, size_t maxSize)
+{
+    data.clear();
+    if (elem == 0) {
+        return false;
+    }
+    
+    // Get text children.
+    std::string text;
+    if (!getText(text, elem)) {
+        return false;
+    }
+
+    // Interpret hexa data.
+    if (HexaDecode(data, text)) {
+        return true;
+    }
+    else {
+        reportError(Format("Invalid hexadecimal content in <%s>, line %d", ElementName(elem), elem->GetLineNum()));
+        return false;
+    }
 }
 
 
@@ -332,6 +523,38 @@ ts::XML::Element* ts::XML::addElement(Element* parent, const std::string& childN
 
 
 //----------------------------------------------------------------------------
+// Set an attribute to a node.
+//----------------------------------------------------------------------------
+
+void ts::XML::setAttribute(Element* element, const std::string& name, const std::string& value)
+{
+    if (element != 0 && !name.empty()) {
+        element->SetAttribute(name.c_str(), value.c_str());
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Set a bool attribute to a node.
+//----------------------------------------------------------------------------
+
+void ts::XML::setBoolAttribute(Element* element, const std::string& name, bool value)
+{
+    setAttribute(element, name, TrueFalse(value));
+}
+
+
+//----------------------------------------------------------------------------
+// Set an enumeration attribute of a node.
+//----------------------------------------------------------------------------
+
+void ts::XML::setEnumAttribute(const Enumeration& definition, Element* elem, const std::string& name, int value)
+{
+    setAttribute(elem, name, definition.name((value)));
+}
+
+
+//----------------------------------------------------------------------------
 // Add a new text containing hexadecimal data inside a node.
 //----------------------------------------------------------------------------
 
@@ -349,7 +572,8 @@ ts::XML::Text* ts::XML::addHexaText(Element* parent, const void* data, size_t si
     }
 
     // Format the data.
-    std::string hex("\n" + Hexa(data, size, hexa::HEXA | hexa::BPL, 2, 16) + "\n");
+    const int depth = NodeDepth(parent);
+    std::string hex("\n" + Hexa(data, size, hexa::HEXA | hexa::BPL, 2 * depth, 16) + std::string(2 * std::max(0, depth - 1), ' '));
 
     // Add the text node.
     Text* child = doc->NewText(hex.c_str());

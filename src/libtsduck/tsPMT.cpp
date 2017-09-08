@@ -315,7 +315,7 @@ void ts::PMT::DisplaySection(TablesDisplay& display, const ts::Section& section,
 // XML serialization
 //----------------------------------------------------------------------------
 
-ts::XML::Element* ts::PMT::toXML(XML& xml, XML::Document& doc) const
+ts::XML::Element* ts::PMT::toXML(XML& xml, XML::Element* parent) const
 {
     return 0; // TODO @@@@
 }

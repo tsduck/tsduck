@@ -164,7 +164,7 @@ void ts::HDSimulcastLogicalChannelDescriptor::DisplayDescriptor(TablesDisplay& d
 // XML serialization
 //----------------------------------------------------------------------------
 
-ts::XML::Element* ts::HDSimulcastLogicalChannelDescriptor::toXML(XML& xml, XML::Document& doc) const
+ts::XML::Element* ts::HDSimulcastLogicalChannelDescriptor::toXML(XML& xml, XML::Element* parent) const
 {
     return 0; // TODO @@@@
 }

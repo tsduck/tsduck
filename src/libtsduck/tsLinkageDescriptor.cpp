@@ -219,7 +219,7 @@ void ts::LinkageDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, c
 // XML serialization
 //----------------------------------------------------------------------------
 
-ts::XML::Element* ts::LinkageDescriptor::toXML(XML& xml, XML::Document& doc) const
+ts::XML::Element* ts::LinkageDescriptor::toXML(XML& xml, XML::Element* parent) const
 {
     return 0; // TODO @@@@
 }

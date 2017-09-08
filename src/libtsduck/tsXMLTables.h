@@ -35,6 +35,7 @@
 #pragma once
 #include "tsXML.h"
 #include "tsTablesPtr.h"
+#include "tsStringUtils.h"
 
 namespace ts {
     //!
@@ -54,15 +55,7 @@ namespace ts {
         //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool load(const std::string& file_name, ReportInterface& report);
-
-        //!
-        //! Save an XML file.
-        //! @param [in] file_name XML file name.
-        //! @param [in,out] report Where to report errors.
-        //! @return True on success, false on error.
-        //!
-        bool save(const std::string& file_name, ReportInterface& report) const;
+        bool loadXML(const std::string& file_name, ReportInterface& report);
 
         //!
         //! Parse an XML content.
@@ -70,12 +63,20 @@ namespace ts {
         //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool parse(const std::string& xml_content, ReportInterface& report);
+        bool parseXML(const std::string& xml_content, ReportInterface& report);
+
+        //!
+        //! Save an XML file.
+        //! @param [in] file_name XML file name.
+        //! @param [in,out] report Where to report errors.
+        //! @return True on success, false on error.
+        //!
+        bool saveXML(const std::string& file_name, ReportInterface& report) const;
 
         //!
         //! Serialize as XML text.
         //! @param [in,out] report Where to report errors.
-        //! @return XML text, empty on error.
+        //! @return Complete XML document text, empty on error.
         //!
         std::string toText(ReportInterface& report) const;
 
@@ -121,15 +122,118 @@ namespace ts {
         //!
         void add(const AbstractTablePtr& table);
 
+        //--------------------------------------------------------------------
+        // PSI/SI to XML utilities.
+        //--------------------------------------------------------------------
+
         //!
-        //! This method converts a generic table to XML.
+        //! This method converts a table to the appropriate XML tree.
         //! @param [in,out] xml XML utility for error reporting
-        //! @param [in,out] doc Document into which the XML tree is to be created.
-        //! The new XML structure is allocated in the document.
+        //! @param [in,out] parent The parent node for the new XML tree.
         //! @param [in] table The table to serialize.
         //! @return The new XML element or zero if @a table is invalid.
         //!
-        static XML::Element* ToGenericTable(XML& xml, XML::Document& doc, const BinaryTable& table);
+        static XML::Element* ToXML(XML& xml, XML::Element* parent, const BinaryTable& table);
+
+        //!
+        //! This method converts a descriptor to the appropriate XML tree.
+        //! @param [in,out] xml XML utility for error reporting
+        //! @param [in,out] parent The parent node for the new XML tree.
+        //! @param [in] desc The descriptor to serialize.
+        //! @return The new XML element or zero if @a table is invalid.
+        //!
+        static XML::Element* ToXML(XML& xml, XML::Element* parent, const Descriptor& desc);
+
+        //!
+        //! This method converts a list of descriptors to XML.
+        //! @param [in,out] xml XML utility for error reporting
+        //! @param [in,out] parent The parent node for the all descriptors.
+        //! @param [in] list The list of descriptors to serialize.
+        //! @return True on success, false on error.
+        //!
+        static bool ToXML(XML& xml, XML::Element* parent, const DescriptorList& list);
+
+        //!
+        //! This method converts a generic table to XML.
+        //! @param [in,out] xml XML utility for error reporting
+        //! @param [in,out] parent The parent node for the new XML tree.
+        //! @param [in] table The table to serialize.
+        //! @return The new XML element or zero if @a table is invalid.
+        //!
+        static XML::Element* ToGenericTable(XML& xml, XML::Element* parent, const BinaryTable& table);
+
+        //!
+        //! This method converts a generic descriptor to XML.
+        //! @param [in,out] xml XML utility for error reporting
+        //! @param [in,out] parent The parent node for the new XML tree.
+        //! @param [in] desc The descriptor to serialize.
+        //! @return The new XML element or zero if @a desc is invalid.
+        //!
+        static XML::Element* ToGenericDescriptor(XML& xml, XML::Element* parent, const Descriptor& desc);
+
+        //--------------------------------------------------------------------
+        // XML to PSI/SI utilities.
+        //--------------------------------------------------------------------
+
+        //!
+        //! This method decodes an XML list of descriptors.
+        //! @param [out] Returned descriptor list.
+        //! @param [out] Returned list of non-descriptor XML elements.
+        //! All these elements are not null and their names are in @a allowedOthers.
+        //! @param [in,out] xml XML utility for error reporting
+        //! @param [in] parent The XML element containing all descriptors.
+        //! @param [in] allowedOthers A list of allowed element names inside @a parent
+        //! which are not descriptors.
+        //! @return True on success, false on error.
+        //!
+        static bool FromDescriptorListXML(DescriptorList& list, XML::ElementVector& others, XML& xml, const XML::Element* parent, const StringList& allowedOthers);
+
+        //!
+        //! This method decodes an XML list of descriptors.
+        //! @param [out] Returned descriptor list.
+        //! @param [out] Returned list of non-descriptor XML elements.
+        //! All these elements are not null and their names are in @a allowedOthers.
+        //! @param [in,out] xml XML utility for error reporting
+        //! @param [in] parent The XML element containing all descriptors.
+        //! @param [in] allowedOthers A comma-separated list of allowed element names inside @a parent
+        //! which are not descriptors.
+        //! @return True on success, false on error.
+        //!
+        static bool FromDescriptorListXML(DescriptorList& list, XML::ElementVector& others, XML& xml, const XML::Element* parent, const std::string& allowedOthers)
+        {
+            StringList allowed;
+            return FromDescriptorListXML(list, others, xml, parent, SplitString(allowed, allowedOthers));
+        }
+
+        //!
+        //! This method decodes an XML list of descriptors.
+        //! @param [out] Returned descriptor list.
+        //! @param [in,out] xml XML utility for error reporting
+        //! @param [in] parent The XML element containing all descriptors.
+        //! All children must be valid descriptors.
+        //! @return True on success, false on error.
+        //!
+        static bool FromDescriptorListXML(DescriptorList& list, XML& xml, const XML::Element* parent)
+        {
+            XML::ElementVector others;
+            return FromDescriptorListXML(list, others, xml, parent, StringList());
+        }
+
+        //!
+        //! This method decodes a <generic_short_table> or <generic_long_table>.
+        //! @param [in,out] xml XML utility for error reporting
+        //! @param [in] elem The XML element.
+        //! @return A safe pointer to the decoded table or a null pointer on error.
+        //!
+        static BinaryTablePtr FromGenericTableXML(XML& xml, const XML::Element* elem);
+
+        //!
+        //! This method decodes a <generic_descriptor>.
+        //! @param [in,out] xml XML utility for error reporting
+        //! @param [in] elem The XML element.
+        //! @return A safe pointer to the decoded descriptor or a null pointer on error.
+        //!
+        static DescriptorPtr FromGenericDescriptorXML(XML& xml, const XML::Element* elem);
 
     private:
         BinaryTablePtrVector _tables;   //!< Loaded tables.

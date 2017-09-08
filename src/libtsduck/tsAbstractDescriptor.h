@@ -117,11 +117,10 @@ namespace ts {
         //!
         //! This abstract method converts the descriptor to XML.
         //! @param [in,out] xml XML utility for error reporting
-        //! @param [in,out] doc Document into which the XML tree is to be created.
-        //! The new XML structure is allocated in the document.
+        //! @param [in,out] parent The parent node for the new XML tree.
         //! @return The new XML element.
         //!
-        virtual XML::Element* toXML(XML& xml, XML::Document& doc) const = 0;
+        virtual XML::Element* toXML(XML& xml, XML::Element* parent) const = 0;
 
         //!
         //! This abstract converts an XML structure to a descriptor.
