@@ -117,7 +117,7 @@ void ts::StreamIdentifierDescriptor::DisplayDescriptor(TablesDisplay& display, D
 // XML serialization
 //----------------------------------------------------------------------------
 
-ts::XML::Element* ts::StreamIdentifierDescriptor::toXML(XML& xml, XML::Document& doc) const
+ts::XML::Element* ts::StreamIdentifierDescriptor::toXML(XML& xml, XML::Element* parent) const
 {
     return 0; // TODO @@@@
 }

@@ -39,7 +39,13 @@
 
 #pragma once
 #include "tsNullReport.h"
+#include "tsFormat.h"
+#include "tsDecimal.h"
+#include "tsToInteger.h"
+#include "tsByteBlock.h"
+#include "tsStringUtils.h"
 #include "tsUnicodeUtils.h"
+#include "tsEnumeration.h"
 
 // Definitions which are used by TinyXML-2.
 #if defined(__windows) && defined(_TSDUCKDLL_IMPL) && !defined(TINYXML2_EXPORT)
@@ -54,6 +60,12 @@ namespace ts {
     //!
     //! XML utility class with error reporting.
     //!
+    //! These utilities are designed for simple use and resistance to errors.
+    //! The idea is that the application uses successive methods without
+    //! intermediate error checking and checks errors at the end only.
+    //! Specifically, an operation is ignored when invoked with null parameters.
+    //! These null parameters are typically the result of previous errors.
+    //!
     class TSDUCKDLL XML
     {
     public:
@@ -64,15 +76,21 @@ namespace ts {
         //!
         explicit XML(ReportInterface& report = NULLREP);
 
-        typedef tinyxml2::XMLAttribute   Attribute;    //!< Shortcut for TinyXML-2 attribute.
-        typedef tinyxml2::XMLComment     Comment;      //!< Shortcut for TinyXML-2 comment.
-        typedef tinyxml2::XMLDeclaration Declaration;  //!< Shortcut for TinyXML-2 declaration.
-        typedef tinyxml2::XMLDocument    Document;     //!< Shortcut for TinyXML-2 document.
-        typedef tinyxml2::XMLElement     Element;      //!< Shortcut for TinyXML-2 element.
-        typedef tinyxml2::XMLNode        Node;         //!< Shortcut for TinyXML-2 node.
-        typedef tinyxml2::XMLText        Text;         //!< Shortcut for TinyXML-2 text.
-        typedef tinyxml2::XMLUnknown     Unknown;      //!< Shortcut for TinyXML-2 unknown node.
-        typedef tinyxml2::XMLVisitor     Visitor;      //!< Shortcut for TinyXML-2 visitor.
+        typedef tinyxml2::XMLAttribute      Attribute;     //!< Shortcut for TinyXML-2 attribute.
+        typedef tinyxml2::XMLComment        Comment;       //!< Shortcut for TinyXML-2 comment.
+        typedef tinyxml2::XMLDeclaration    Declaration;   //!< Shortcut for TinyXML-2 declaration.
+        typedef tinyxml2::XMLDocument       Document;      //!< Shortcut for TinyXML-2 document.
+        typedef tinyxml2::XMLElement        Element;       //!< Shortcut for TinyXML-2 element.
+        typedef tinyxml2::XMLNode           Node;          //!< Shortcut for TinyXML-2 node.
+        typedef tinyxml2::XMLText           Text;          //!< Shortcut for TinyXML-2 text.
+        typedef tinyxml2::XMLUnknown        Unknown;       //!< Shortcut for TinyXML-2 unknown node.
+        typedef tinyxml2::XMLVisitor        Visitor;       //!< Shortcut for TinyXML-2 visitor.
+        typedef std::vector<const Element*> ElementVector; //!< Vector of constant elements.
+
+        //!
+        //! Specify an unlimited number of elements.
+        //!
+        static const size_t UNLIMITED = std::numeric_limits<size_t>::max();
 
         //!
         //! Load an XML file.
@@ -135,6 +153,14 @@ namespace ts {
         static std::string SearchFile(const std::string& fileName);
 
         //!
+        //! Convert a document to an XML string.
+        //! @param [in] doc The document to format.
+        //! @param [in] indent Indentation width of each level.
+        //! @return The content of the XML document.
+        //!
+        std::string toString(const Document& doc, int indent = 2);
+
+        //!
         //! Safely return a name of an XML element.
         //! @param [in] e An XML element.
         //! @return A valid UTF-8 string, the name of @a e or an empty string
@@ -143,12 +169,19 @@ namespace ts {
         static const char* ElementName(const Element* e);
 
         //!
+        //! Safely return he depth of an XML element.
+        //! @param [in] e An XML node.
+        //! @return The depth of the element, ie. the number of ancestors.
+        //!
+        static int NodeDepth(const Node* e);
+
+        //!
         //! Check if two XML elements have the same name, case-insensitive.
         //! @param [in] e1 An XML element.
         //! @param [in] e2 An XML element.
         //! @return True is @a e1 and @a e2 are identical.
         //!
-        static bool HaveSameName(const tinyxml2::XMLElement* e1, const Element* e2)
+        static bool HaveSameName(const Element* e1, const Element* e2)
         {
             return UTF8Equal(ElementName(e1), ElementName(e2), false);
         }
@@ -160,7 +193,7 @@ namespace ts {
         //! @param [in] silent If true, do not report error.
         //! @return Attribute address or zero if not found.
         //!
-        const Attribute* findAttribute(const Element* elem, const char* name, bool silent = false);
+        const Attribute* findAttribute(const Element* elem, const std::string& name, bool silent = false);
 
         //!
         //! Find the first child element in an XML element by name, case-insensitive.
@@ -169,7 +202,116 @@ namespace ts {
         //! @param [in] silent If true, do not report error.
         //! @return Child element address or zero if not found.
         //!
-        const Element* findFirstChild(const Element* elem, const char* name, bool silent = false);
+        const Element* findFirstChild(const Element* elem, const std::string& name, bool silent = false);
+
+        //!
+        //! Get a string attribute of an XML element.
+        //! @param [out] value Returned value of the attribute.
+        //! @param [in] elem An XML element.
+        //! @param [in] name Name of the attribute.
+        //! @param [in] required If true, generate an error if the attribute is not found.
+        //! @param [in] defValue Default value to return if the attribute is not present.
+        //! @return True on success, false on error.
+        //!
+        bool getAttribute(std::string& value, const Element* elem, const std::string& name, bool required = false, const std::string& defValue = std::string());
+
+        //!
+        //! Get a boolean attribute of an XML element.
+        //! @param [out] value Returned value of the attribute.
+        //! @param [in] elem An XML element.
+        //! @param [in] name Name of the attribute.
+        //! @param [in] required If true, generate an error if the attribute is not found.
+        //! @param [in] defValue Default value to return if the attribute is not present.
+        //! @return True on success, false on error.
+        //!
+        bool getBoolAttribute(bool& value, const Element* elem, const std::string& name, bool required = false, bool defValue = false);
+
+        //!
+        //! Get an integer attribute of an XML element.
+        //! @tparam INT An integer type.
+        //! @param [out] value Returned value of the attribute.
+        //! @param [in] elem An XML element.
+        //! @param [in] name Name of the attribute.
+        //! @param [in] required If true, generate an error if the attribute is not found.
+        //! @param [in] defValue Default value to return if the attribute is not present.
+        //! @param [in] minValue Minimum allowed value for the attribute.
+        //! @param [in] maxValue Maximum allowed value for the attribute.
+        //! @return True on success, false on error.
+        //!
+        template <typename INT>
+        bool getIntAttribute(INT& value,
+                             const Element* elem,
+                             const std::string& name,
+                             bool required = false,
+                             INT defValue = 0,
+                             INT minValue = std::numeric_limits<INT>::min(),
+                             INT maxValue = std::numeric_limits<INT>::max())
+        {
+            INT val;
+            std::string str;
+            if (!getAttribute(str, elem, name, required, Decimal(defValue))) {
+                return false;
+            }
+            else if (!ToInteger(val, str, ",")) {
+                reportError(Format("'%s' is not a valid integer value for attribute '%s' in <%s>, line %d",
+                                   str.c_str(), name.c_str(), ElementName(elem), elem->GetLineNum()));
+                return false;
+            }
+            else if (value < minValue || value > maxValue) {
+                const std::string min(Decimal(minValue));
+                const std::string max(Decimal(maxValue));
+                reportError(Format("'%s' must be in range %s to %s for attribute '%s' in <%s>, line %d",
+                                   str.c_str(), min.c_str(), max.c_str(), name.c_str(), ElementName(elem), elem->GetLineNum()));
+                return false;
+            }
+            else {
+                value = val;
+                return true;
+            }
+        }
+
+        //!
+        //! Get an enumeration attribute of an XML element.
+        //! Integer literals and integer values are accepted in the attribute.
+        //! @param [out] value Returned value of the attribute.
+        //! @param [in] definition The definition of enumeration values.
+        //! @param [in] elem An XML element.
+        //! @param [in] name Name of the attribute.
+        //! @param [in] required If true, generate an error if the attribute is not found.
+        //! @param [in] defValue Default value to return if the attribute is not present.
+        //! @return True on success, false on error.
+        //!
+        bool getEnumAttribute(int& value, const Enumeration& definition, const Element* elem, const std::string& name, bool required = false, int defValue = 0);
+
+        //!
+        //! Find all children elements in an XML element by name, case-insensitive.
+        //! @param [out] children Returned vector of all children.
+        //! @param [in] elem An XML element.
+        //! @param [in] name Name of the child element to search.
+        //! @param [in] minCount Minimum required number of elements of that name.
+        //! @param [in] maxCount Maximum allowed number of elements of that name.
+        //! @return True on success, false on error.
+        //!
+        bool getChildren(ElementVector& children, const Element* elem, const std::string& name, size_t minCount = 0, size_t maxCount = UNLIMITED);
+
+        //!
+        //! Get text children of an element.
+        //! @param [out] data The content of the text children.
+        //! @param [in] elem An XML containing text.
+        //! @param [in] trim If true, remove leading and trailing spaces.
+        //! @return True on success, false on error.
+        //!
+        bool getText(std::string& data, const Element* elem, bool trim = true);
+
+        //!
+        //! Get a text child of an element containing hexadecimal data).
+        //! @param [out] data Buffer receiving the decoded hexadecimal data.
+        //! @param [in] elem An XML containing an hexadecimal text.
+        //! @param [in] minSize Minimum size of the returned data.
+        //! @param [in] maxSize Maximum size of the returned data.
+        //! @return True on success, false on error.
+        //!
+        bool getHexaText(ByteBlock& data, const Element* elem, size_t minSize = 0, size_t maxSize = UNLIMITED);
 
         //!
         //! Initialize an XML document.
@@ -189,6 +331,45 @@ namespace ts {
         //! @return New child element or null on error.
         //!
         Element* addElement(Element* parent, const std::string& childName);
+
+        //!
+        //! Set a string attribute to a node.
+        //! @param [in,out] element The element which receives the attribute.
+        //! @param [in] name Attribute name.
+        //! @param [in] value Attribute value.
+        //!
+        void setAttribute(Element* element, const std::string& name, const std::string& value);
+
+        //!
+        //! Set a bool attribute to a node.
+        //! @param [in,out] element The element which receives the attribute.
+        //! @param [in] name Attribute name.
+        //! @param [in] value Attribute value.
+        //!
+        void setBoolAttribute(Element* element, const std::string& name, bool value);
+
+        //!
+        //! Set an attribute with an integer value to a node.
+        //! @tparam INT An integer type.
+        //! @param [in,out] element The element which receives the attribute.
+        //! @param [in] name Attribute name.
+        //! @param [in] value Attribute value.
+        //! @param [in] hexa If true, use an hexadecimal representation (0x...).
+        //!
+        template <typename INT>
+        void setIntAttribute(Element* element, const std::string& name, INT value, bool hexa = false)
+        {
+            setAttribute(element, name, hexa ? Format("0x%0*" FMT_INT64 "X", 2 * sizeof(INT), int64_t(value)) : Decimal(value));
+        }
+
+        //!
+        //! Set an enumeration attribute of a node.
+        //! @param [in] definition The definition of enumeration values.
+        //! @param [in] elem An XML element.
+        //! @param [in] name Attribute name.
+        //! @param [in] value Attribute value.
+        //!
+        void setEnumAttribute(const Enumeration& definition, Element* elem, const std::string& name, int value);
 
         //!
         //! Add a new text containing hexadecimal data inside a node.

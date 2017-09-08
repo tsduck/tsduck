@@ -63,5 +63,21 @@ namespace ts {
     //! The default value is the classic ANSI-C locale.
     //! @return True is @a s1 and @a s2 are identical.
     //!
-    TSDUCKDLL bool UTF8Equal(const char* s1, const char* s2, bool caseSensitive = true, const std::locale& loc = std::locale::classic());
+    TSDUCKDLL bool UTF8Equal(const std::string& s1, const std::string& s2, bool caseSensitive = true, const std::locale& loc = std::locale::classic());
+
+    //!
+    //! Check if two UTF-8 strings are identical.
+    //! @param [in] s1 First string to compare.
+    //! @param [in] s2 Second string to compare.
+    //! @param [in] caseSensitive If true (the default), the comparison is
+    //! case-sensitive. When false, the comparison is not case-sensitive.
+    //! @param [in] loc The locale into which the operation is performed.
+    //! Useful only when @a caseSensitive is false.
+    //! The default value is the classic ANSI-C locale.
+    //! @return True is @a s1 and @a s2 are identical.
+    //!
+    TSDUCKDLL inline bool UTF8Equal(const char* s1, const char* s2, bool caseSensitive = true, const std::locale& loc = std::locale::classic())
+    {
+        return UTF8Equal(std::string(s1 == 0 ? "" : s1), std::string(s2 == 0 ? "" : s2), caseSensitive, loc);
+    }
 }

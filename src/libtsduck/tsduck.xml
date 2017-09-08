@@ -143,19 +143,16 @@
 
   <!-- Generic short table -->
   <generic_short_table table_id="uint8, required"
-                       private="uint1, default=1"
-                       reserved1="uint2, default=3">
+                       private="bool, default=true">
 
     Generic table with binary payload of one short section,
     to be used when a specific table is not yet implemented.
     The body of this element shall contain an even number of
     hexadecimal digits, the payload of the short section.
 
-    The private indicator shall be zero on MPEG-defined sections
-    and preferably one on DVB-defined and user-defined sections.
+    The private indicator shall be false on MPEG-defined sections
+    and preferably true on DVB-defined and user-defined sections.
 
-    The reserved1 2-bit field is immediately before the section length.
-    
   </generic_short_table>
 
   <!-- Generic long table -->
@@ -163,18 +160,13 @@
                       table_id_ext="uint16, default=0xFFFF"
                       version="uint5, default=0"
                       current="bool, default=true"
-                      private="uint1, default=1"
-                      reserved1="uint2, default=3"
-                      reserved2="uint2, default=3">
+                      private="bool, default=true">
 
     Generic table with binary payload of long sections,
     to be used when a specific table is not yet implemented.
 
-    The private indicator shall be zero on MPEG-defined sections
-    and preferably one on DVB-defined and user-defined sections.
-
-    The reserved1 2-bit field is immediately before the section length.
-    The reserved2 2-bit field is immediately before the version number.
+    The private indicator shall be false on MPEG-defined sections
+    and preferably true on DVB-defined and user-defined sections.
 
     <!-- One per section -->
     <section>

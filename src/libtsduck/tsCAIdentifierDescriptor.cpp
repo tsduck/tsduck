@@ -154,7 +154,7 @@ void ts::CAIdentifierDescriptor::DisplayDescriptor(TablesDisplay& display, DID d
 // XML serialization
 //----------------------------------------------------------------------------
 
-ts::XML::Element* ts::CAIdentifierDescriptor::toXML(XML& xml, XML::Document& doc) const
+ts::XML::Element* ts::CAIdentifierDescriptor::toXML(XML& xml, XML::Element* parent) const
 {
     return 0; // TODO @@@@
 }

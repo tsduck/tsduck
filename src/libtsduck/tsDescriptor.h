@@ -37,6 +37,7 @@
 #include "tsByteBlock.h"
 #include "tsTablesPtr.h"
 #include "tsMPEG.h"
+#include "tsEDID.h"
 
 namespace ts {
     //!
@@ -57,6 +58,23 @@ namespace ts {
         //! two descriptors or duplicated (ts::COPY).
         //!
         Descriptor(const Descriptor& desc, CopyShare mode);
+
+        //!
+        //! Constructor from tag and payload.
+        //! The content is copied into the section if valid.
+        //! @param [in] tag Descriptor tag.
+        //! @param [in] data Address of the descriptor payload.
+        //! @param [in] size Size in bytes of the descriptor payload.
+        //!
+        Descriptor(DID tag, const void* data, size_t size);
+
+        //!
+        //! Constructor from tag and payload.
+        //! The content is copied into the section if valid.
+        //! @param [in] tag Descriptor tag.
+        //! @param [in] data Descriptor payload.
+        //!
+        Descriptor(DID tag, const ByteBlock& data);
 
         //!
         //! Constructor from full binary content.
@@ -131,6 +149,13 @@ namespace ts {
         {
             return _data.isNull() ? 0 : _data->at(0);
         }
+
+        //!
+        //! Get the extended descriptor id.
+        //! @param [in] pds Associated private descriptor.
+        //! @return The extended descriptor id.
+        //!
+        EDID edid(PDS pds = 0) const;
 
         //!
         //! Access to the full binary content of the descriptor.

@@ -375,7 +375,7 @@ void ts::ExtendedEventDescriptor::DisplayDescriptor(TablesDisplay& display, DID 
 // XML serialization
 //----------------------------------------------------------------------------
 
-ts::XML::Element* ts::ExtendedEventDescriptor::toXML(XML& xml, XML::Document& doc) const
+ts::XML::Element* ts::ExtendedEventDescriptor::toXML(XML& xml, XML::Element* parent) const
 {
     return 0; // TODO @@@@
 }

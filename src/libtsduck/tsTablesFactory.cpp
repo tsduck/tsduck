@@ -32,6 +32,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsTablesFactory.h"
+#include "tsStringUtils.h"
 TSDUCK_SOURCE;
 
 tsDefineSingleton(ts::TablesFactory);
@@ -119,13 +120,13 @@ ts::TablesFactory::DescriptorFactory ts::TablesFactory::getDescriptorFactory(con
 
 ts::TablesFactory::TableFactory ts::TablesFactory::getTableFactory(const std::string& node_name) const
 {
-    std::map<std::string,TableFactory>::const_iterator it = _tableNames.find(node_name);
+    std::map<std::string,TableFactory>::const_iterator it = FindSimilar(_tableNames, node_name);
     return it != _tableNames.end() ? it->second : 0;
 }
 
 ts::TablesFactory::DescriptorFactory ts::TablesFactory::getDescriptorFactory(const std::string& node_name) const
 {
-    std::map<std::string,DescriptorFactory>::const_iterator it = _descriptorNames.find(node_name);
+    std::map<std::string,DescriptorFactory>::const_iterator it = FindSimilar(_descriptorNames, node_name);
     return it != _descriptorNames.end() ? it->second : 0;
 }
 

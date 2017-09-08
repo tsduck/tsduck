@@ -61,7 +61,7 @@ namespace ts {
         // Inherited methods
         virtual void serialize(BinaryTable& table) const;
         virtual void deserialize(const BinaryTable& table);
-        virtual XML::Element* toXML(XML& xml, XML::Document& doc) const;
+        virtual XML::Element* toXML(XML& xml, XML::Element* parent) const;
         virtual void fromXML(XML& xml, const XML::Element* element);
 
         //!

@@ -164,7 +164,7 @@ void ts::LogicalChannelNumberDescriptor::DisplayDescriptor(TablesDisplay& displa
 // XML serialization
 //----------------------------------------------------------------------------
 
-ts::XML::Element* ts::LogicalChannelNumberDescriptor::toXML(XML& xml, XML::Document& doc) const
+ts::XML::Element* ts::LogicalChannelNumberDescriptor::toXML(XML& xml, XML::Element* parent) const
 {
     return 0; // TODO @@@@
 }

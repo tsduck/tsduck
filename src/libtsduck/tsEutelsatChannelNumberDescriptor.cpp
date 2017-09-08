@@ -139,7 +139,7 @@ void ts::EutelsatChannelNumberDescriptor::DisplayDescriptor(TablesDisplay& displ
 // XML serialization
 //----------------------------------------------------------------------------
 
-ts::XML::Element* ts::EutelsatChannelNumberDescriptor::toXML(XML& xml, XML::Document& doc) const
+ts::XML::Element* ts::EutelsatChannelNumberDescriptor::toXML(XML& xml, XML::Element* parent) const
 {
     return 0; // TODO @@@@
 }

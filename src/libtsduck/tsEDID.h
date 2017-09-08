@@ -58,6 +58,12 @@ namespace ts {
         explicit EDID(DID did = 0xFF, uint32_t ext = 0xFFFFFFFF) : _edid((uint64_t(ext) << 32) | (did & 0xFF)) {}
 
         //!
+        //! Check if the extended descriptor id is valid.
+        //! @return True if valid.
+        //!
+        bool isValid() const {return (_edid & 0xFF) != 0xFF;}
+
+        //!
         //! Check if the descriptor is a private one.
         //! @return True if the descriptor is a private one.
         //!

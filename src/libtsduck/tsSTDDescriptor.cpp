@@ -117,7 +117,7 @@ void ts::STDDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const
 // XML serialization
 //----------------------------------------------------------------------------
 
-ts::XML::Element* ts::STDDescriptor::toXML(XML& xml, XML::Document& doc) const
+ts::XML::Element* ts::STDDescriptor::toXML(XML& xml, XML::Element* parent) const
 {
     return 0; // TODO @@@@
 }

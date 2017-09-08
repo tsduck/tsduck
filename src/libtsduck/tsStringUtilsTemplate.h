@@ -301,3 +301,18 @@ size_t ts::LargestLength(const CONTAINER& container)
     }
     return largest;
 }
+
+
+//----------------------------------------------------------------------------
+// Locate into a map an element with a similar string.
+//----------------------------------------------------------------------------
+
+template <class CONTAINER>
+typename CONTAINER::const_iterator ts::FindSimilar(const CONTAINER& container, const std::string& key)
+{
+    typename CONTAINER::const_iterator it = container.begin();
+    while (it != container.end() && !SimilarStrings(key, it->first)) {
+        ++it;
+    }
+    return it;
+}

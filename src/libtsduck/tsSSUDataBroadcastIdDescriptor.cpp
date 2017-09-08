@@ -153,7 +153,7 @@ void ts::SSUDataBroadcastIdDescriptor::deserialize (const Descriptor& desc)
 // XML serialization
 //----------------------------------------------------------------------------
 
-ts::XML::Element* ts::SSUDataBroadcastIdDescriptor::toXML(XML& xml, XML::Document& doc) const
+ts::XML::Element* ts::SSUDataBroadcastIdDescriptor::toXML(XML& xml, XML::Element* parent) const
 {
     return 0; // TODO @@@@
 }

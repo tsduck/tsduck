@@ -243,7 +243,7 @@ void ts::TerrestrialDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& d
 // XML serialization
 //----------------------------------------------------------------------------
 
-ts::XML::Element* ts::TerrestrialDeliverySystemDescriptor::toXML(XML& xml, XML::Document& doc) const
+ts::XML::Element* ts::TerrestrialDeliverySystemDescriptor::toXML(XML& xml, XML::Element* parent) const
 {
     return 0; // TODO @@@@
 }

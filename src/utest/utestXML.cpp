@@ -330,8 +330,11 @@ void XMLTest::testCreation()
 
     ts::XML::Element* root = xml.initializeDocument(&doc, "theRoot");
     CPPUNIT_ASSERT(root != 0);
+    CPPUNIT_ASSERT_EQUAL(0, ts::XML::NodeDepth(&doc));
+    CPPUNIT_ASSERT_EQUAL(1, ts::XML::NodeDepth(root));
 
     CPPUNIT_ASSERT((e1 = xml.addElement(root, "child1")) != 0);
+    CPPUNIT_ASSERT_EQUAL(2, ts::XML::NodeDepth(e1));
     e1->SetAttribute("str", "a string");
     e1->SetAttribute("int", -47);
     CPPUNIT_ASSERT(xml.addElement(e1, "subChild1") != 0);
@@ -340,12 +343,9 @@ void XMLTest::testCreation()
     CPPUNIT_ASSERT((e2 = xml.addElement(root, "child2")) != 0);
     CPPUNIT_ASSERT(xml.addElement(e2, "fooBar") != 0);
 
-    ts::XML::Printer printer(2);
-    doc.Print(&printer);
-    std::string text(printer.CStr());
+    std::string text(xml.toString(doc));
     utest::Out() << "XMLTest::testCreation: " << text << std::endl;
 
-    ts::SubstituteAll(text, "\r", "");
     CPPUNIT_ASSERT_STRINGS_EQUAL(
                 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
                 "<theRoot>\n"

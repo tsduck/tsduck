@@ -155,7 +155,7 @@ void ts::ServiceListDescriptor::DisplayDescriptor(TablesDisplay& display, DID di
 // XML serialization
 //----------------------------------------------------------------------------
 
-ts::XML::Element* ts::ServiceListDescriptor::toXML(XML& xml, XML::Document& doc) const
+ts::XML::Element* ts::ServiceListDescriptor::toXML(XML& xml, XML::Element* parent) const
 {
     return 0; // TODO @@@@
 }

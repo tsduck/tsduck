@@ -80,23 +80,20 @@ std::string ts::ToUTF8(const std::u16string& utf16)
 // Check if two UTF-8 strings are identical.
 //----------------------------------------------------------------------------
 
-bool ts::UTF8Equal(const char* s1, const char* s2, bool caseSensitive, const std::locale& loc)
+bool ts::UTF8Equal(const std::string& s1, const std::string& s2, bool caseSensitive, const std::locale& loc)
 {
-    if (s1 == 0 || s2 == 0) {
-        return false;
-    }
-    else if (s1 == s2) {
+    if (s1 == s2) {
         return true;
     }
     else if (caseSensitive) {
         // Not case sensitive, this is a basic string memory comparison.
-        return ::strcmp(s1, s2);
+        return s1 == s2;
     }
     else {
         // Case sensitive comparison. First convert to UTF-16 and compare 16-bit codes.
         // Yes, I know, UTF-16 is not UTF-32...
-        const std::u16string u1(ToUTF16(std::string(s1)));
-        const std::u16string u2(ToUTF16(std::string(s2)));
+        const std::u16string u1(ToUTF16(s1));
+        const std::u16string u2(ToUTF16(s2));
         if (u1.length() != u2.length()) {
             return false;
         }
