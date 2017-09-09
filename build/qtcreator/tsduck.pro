@@ -109,6 +109,7 @@ SUBDIRS += \
     tsscan \
     tssmartcard \
     tsstuff \
+    tstabcomp \
     tstabdump \
     tstables \
     tsterinfo

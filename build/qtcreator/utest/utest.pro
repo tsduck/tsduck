@@ -55,3 +55,6 @@ SOURCES += \
     ../../../src/utest/utestVariable.cpp \
     ../../../src/utest/utestXML.cpp \
     ../../../src/utest/utestXMLTables.cpp
+
+DISTFILES += \
+    ../../../src/utest/tables/ts2headers.sh

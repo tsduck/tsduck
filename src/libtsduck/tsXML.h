@@ -409,6 +409,17 @@ namespace ts {
         Text* addHexaText(Element* parent, const void* data, size_t size);
 
         //!
+        //! Add a new text containing hexadecimal data inside a node.
+        //! @param [in,out] parent Parent node.
+        //! @param [in] data Binary data.
+        //! @return New child element or null on error.
+        //!
+        Text* addHexaText(Element* parent, const ByteBlock& data)
+        {
+            return addHexaText(parent, data.data(), data.size());
+        }
+
+        //!
         //! Convert a time into a string, as required in attributes.
         //! @param [in] value Time value.
         //! @return The corresponding string.

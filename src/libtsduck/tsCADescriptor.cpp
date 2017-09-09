@@ -149,7 +149,14 @@ void ts::CADescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const 
 
 ts::XML::Element* ts::CADescriptor::toXML(XML& xml, XML::Element* parent) const
 {
-    return 0; // TODO @@@@
+    XML::Element* root = _is_valid ? xml.addElement(parent, _xml_name) : 0;
+    xml.setIntAttribute(root, "CA_system_id", cas_id, true);
+    xml.setIntAttribute(root, "CA_PID", ca_pid, true);
+    if (!private_data.empty()) {
+        XML::Element* priv = xml.addElement(root, "private_data");
+        xml.addHexaText(priv, private_data);
+    }
+    return root;
 }
 
 
@@ -159,5 +166,14 @@ ts::XML::Element* ts::CADescriptor::toXML(XML& xml, XML::Element* parent) const
 
 void ts::CADescriptor::fromXML(XML& xml, const XML::Element* element)
 {
-    // TODO @@@@
+    private_data.clear();
+    XML::ElementVector children;
+    _is_valid =
+        checkXMLName(xml, element) &&
+        xml.getIntAttribute<uint16_t>(cas_id, element, "CA_system_id", true, 0, 0x0000, 0xFFFF) &&
+        xml.getIntAttribute<PID>(ca_pid, element, "CA_PID", true, 0, 0x0000, 0x1FFF) &&
+        xml.getChildren(children, element, "private_data", 0, 1);
+    if (_is_valid && !children.empty()) {
+        _is_valid = xml.getHexaText(private_data, children[0], 0, MAX_DESCRIPTOR_SIZE - 6);
+    }
 }

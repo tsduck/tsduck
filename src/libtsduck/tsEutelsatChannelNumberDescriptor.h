@@ -41,6 +41,8 @@ namespace ts {
     //! Representation of an Eutelsat_channel_number_descriptor.
     //!
     //! This is a private descriptor, must be preceeded by the Eutelsat PDS.
+    //! See document "Via Eutelsat Fransat set-top-box specification",
+    //! Version 0.0.7, October 2009, section 2.2.3.
     //!
     class TSDUCKDLL EutelsatChannelNumberDescriptor : public AbstractDescriptor
     {

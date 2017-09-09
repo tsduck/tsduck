@@ -121,7 +121,9 @@ void ts::PrivateDataSpecifierDescriptor::DisplayDescriptor(TablesDisplay& displa
 
 ts::XML::Element* ts::PrivateDataSpecifierDescriptor::toXML(XML& xml, XML::Element* parent) const
 {
-    return 0; // TODO @@@@
+    XML::Element* root = _is_valid ? xml.addElement(parent, _xml_name) : 0;
+    xml.setIntAttribute(root, "private_data_specifier", pds, true);
+    return root;
 }
 
 
@@ -131,5 +133,7 @@ ts::XML::Element* ts::PrivateDataSpecifierDescriptor::toXML(XML& xml, XML::Eleme
 
 void ts::PrivateDataSpecifierDescriptor::fromXML(XML& xml, const XML::Element* element)
 {
-    // TODO @@@@
+    _is_valid =
+        checkXMLName(xml, element) &&
+        xml.getIntAttribute<PDS>(pds, element, "private_data_specifier", true);
 }

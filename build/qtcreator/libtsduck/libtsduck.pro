@@ -174,6 +174,7 @@ HEADERS += \
     ../../../src/libtsduck/tsReportFileTemplate.h \
     ../../../src/libtsduck/tsReportHandler.h \
     ../../../src/libtsduck/tsReportInterface.h \
+    ../../../src/libtsduck/tsReportWithPrefix.h \
     ../../../src/libtsduck/tsResidentBuffer.h \
     ../../../src/libtsduck/tsResidentBufferTemplate.h \
     ../../../src/libtsduck/tsRingNode.h \
@@ -402,6 +403,7 @@ SOURCES += \
     ../../../src/libtsduck/tsPollFiles.cpp \
     ../../../src/libtsduck/tsPrivateDataSpecifierDescriptor.cpp \
     ../../../src/libtsduck/tsReportInterface.cpp \
+    ../../../src/libtsduck/tsReportWithPrefix.cpp \
     ../../../src/libtsduck/tsRingNode.cpp \
     ../../../src/libtsduck/tsRST.cpp \
     ../../../src/libtsduck/tsSDT.cpp \
@@ -517,3 +519,7 @@ win32|win64 {
         ../../../src/libtsduck/windows/tsSinkFilter.cpp \
         ../../../src/libtsduck/windows/tsTuner.cpp
 }
+
+DISTFILES += \
+    ../../../src/libtsduck/tsduck.xml \
+    ../../../src/libtsduck/tsduck.mk

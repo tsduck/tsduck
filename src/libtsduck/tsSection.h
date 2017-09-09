@@ -36,26 +36,13 @@
 #include "tsPlatform.h"
 #include "tsCerrReport.h"
 #include "tsByteBlock.h"
-#include "tsSafePtr.h"
+#include "tsTablesPtr.h"
 #include "tsCASFamily.h"
 #include "tsCRC32.h"
 #include "tsETID.h"
 #include "tsTLVSyntax.h"
 
 namespace ts {
-
-    class Section;
-
-    //!
-    //! Safe pointer for Section (not thread-safe).
-    //!
-    typedef SafePtr<Section, NullMutex> SectionPtr;
-
-    //!
-    //! Vector of Section pointers.
-    //!
-    typedef std::vector<SectionPtr> SectionPtrVector;
-
     //!
     //! Representation of MPEG PSI/SI sections.
     //!
@@ -615,7 +602,7 @@ namespace ts {
         //!
         //! This static method reads all sections from the specified file.
         //! @param [out] sections Returned list of sections.
-        //! @param [in,out] file_name Name of the file to read.
+        //! @param [in] file_name Name of the file to read.
         //! @param [in] crc_op How to process the CRC32 of the input packet.
         //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
