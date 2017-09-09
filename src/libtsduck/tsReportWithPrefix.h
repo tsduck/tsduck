@@ -28,73 +28,59 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Forward declarations for MPEG PSI/SI types.
-//!  Useful to avoid interdependencies of header files.
+//!  An encapsulation of ReportInterface with a message prefix.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsSafePtr.h"
+#include "tsReportInterface.h"
 
 namespace ts {
+    //!
+    //! An encapsulation of ReportInterface with a message prefix.
+    //!
+    //! This class encapsulates another instance of ReportInterface and
+    //! prepend all messages with a prefix.
+    //!
+    class TSDUCKDLL ReportWithPrefix : public ReportInterface
+    {
+    public:
+        //!
+        //! Constructor.
+        //! @param [in] report The actual object which is used to report.
+        //! @param [in] prefix The prefix to prepend to all messages.
+        //!
+        explicit ReportWithPrefix(ReportInterface& report, const std::string& prefix = std::string());
 
-    class AbstractDescriptor;
-    class AbstractTable;
-    class BinaryTable;
-    class Descriptor;
-    class DescriptorList;
-    class Section;
+        //!
+        //! Get the current prefix to display.
+        //! @return The current prefix to display.
+        //!
+        std::string prefix() const
+        {
+            return _prefix;
+        }
 
-    //!
-    //! Safe pointer for AbstractDescriptor (not thread-safe).
-    //!
-    typedef SafePtr<AbstractDescriptor,NullMutex> AbstractDescriptorPtr;
+        //!
+        //! Set the prefix to display.
+        //! @return The current prefix to display.
+        //!
+        void setPrefix(const std::string& prefix)
+        {
+            _prefix = prefix;
+        }
 
-    //!
-    //! Vector of AbstractDescriptor pointers
-    //!
-    typedef std::vector<AbstractDescriptorPtr> AbstractDescriptorPtrVector;
+    protected:
+        // Inherited methods.
+        virtual void writeLog(int severity, const std::string& msg);
 
-    //!
-    //! Safe pointer for AbstractTable (not thread-safe)
-    //!
-    typedef SafePtr<AbstractTable,NullMutex> AbstractTablePtr;
+    private:
+        ReportInterface& _report;  //!< The actual object which is used to report
+        std::string      _prefix;  //!< The prefix to prepend to all messages
 
-    //!
-    //! Safe pointer for Section (not thread-safe).
-    //!
-    typedef SafePtr<Section, NullMutex> SectionPtr;
-
-    //!
-    //! Vector of Section pointers.
-    //!
-    typedef std::vector<SectionPtr> SectionPtrVector;
-
-    //!
-    //! Vector of BinaryTable pointers
-    //!
-    typedef std::vector<AbstractTablePtr> AbstractTablePtrVector;
-
-    //!
-    //! Safe pointer for BinaryTable (not thread-safe)
-    //!
-    typedef SafePtr<BinaryTable,NullMutex> BinaryTablePtr;
-
-    //!
-    //! Vector of BinaryTable pointers
-    //!
-    typedef std::vector<BinaryTablePtr> BinaryTablePtrVector;
-
-    //!
-    //! Safe pointer for Descriptor (not thread-safe)
-    //!
-    typedef SafePtr<Descriptor, NullMutex> DescriptorPtr;
-
-    //!
-    //! Vector of Descriptor pointers
-    //! Use class DescriptorList for advanced features.
-    //! @see DescriptorList
-    //!
-    typedef std::vector<DescriptorPtr> DescriptorPtrVector;
+        // Inaccessible methods.
+        ReportWithPrefix() = delete;
+        ReportWithPrefix(const ReportWithPrefix&) = delete;
+        ReportWithPrefix& operator=(const ReportWithPrefix&) = delete;
+    };
 }
-

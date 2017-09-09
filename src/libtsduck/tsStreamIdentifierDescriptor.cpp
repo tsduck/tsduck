@@ -119,7 +119,9 @@ void ts::StreamIdentifierDescriptor::DisplayDescriptor(TablesDisplay& display, D
 
 ts::XML::Element* ts::StreamIdentifierDescriptor::toXML(XML& xml, XML::Element* parent) const
 {
-    return 0; // TODO @@@@
+    XML::Element* root = _is_valid ? xml.addElement(parent, _xml_name) : 0;
+    xml.setIntAttribute(root, "component_tag", component_tag, true);
+    return root;
 }
 
 
@@ -129,5 +131,7 @@ ts::XML::Element* ts::StreamIdentifierDescriptor::toXML(XML& xml, XML::Element* 
 
 void ts::StreamIdentifierDescriptor::fromXML(XML& xml, const XML::Element* element)
 {
-    // TODO @@@@
+    _is_valid =
+        checkXMLName(xml, element) &&
+        xml.getIntAttribute<uint8_t>(component_tag, element, "component_tag", true);
 }

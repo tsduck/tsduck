@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26403.7
+VisualStudioVersion = 15.0.26430.14
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "utests-tsduckdll", "utests-tsduckdll.vcxproj", "{A5E2A70F-CA57-460C-9BE0-473BD61DF467}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -402,6 +402,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tsplugin_stuffanalyze", "ts
 	ProjectSection(ProjectDependencies) = postProject
 		{1AD31049-26B0-4922-89CF-778040DFC51E} = {1AD31049-26B0-4922-89CF-778040DFC51E}
 	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tstabcomp", "tstabcomp.vcxproj", "{09ECDA70-7979-4D1E-B590-60DC6F1E6673}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -1051,6 +1053,14 @@ Global
 		{0C40EBC7-F8D4-417A-81B0-5B6437063097}.Release|Win32.Build.0 = Release|Win32
 		{0C40EBC7-F8D4-417A-81B0-5B6437063097}.Release|x64.ActiveCfg = Release|x64
 		{0C40EBC7-F8D4-417A-81B0-5B6437063097}.Release|x64.Build.0 = Release|x64
+		{09ECDA70-7979-4D1E-B590-60DC6F1E6673}.Debug|Win32.ActiveCfg = Debug|Win32
+		{09ECDA70-7979-4D1E-B590-60DC6F1E6673}.Debug|Win32.Build.0 = Debug|Win32
+		{09ECDA70-7979-4D1E-B590-60DC6F1E6673}.Debug|x64.ActiveCfg = Debug|x64
+		{09ECDA70-7979-4D1E-B590-60DC6F1E6673}.Debug|x64.Build.0 = Debug|x64
+		{09ECDA70-7979-4D1E-B590-60DC6F1E6673}.Release|Win32.ActiveCfg = Release|Win32
+		{09ECDA70-7979-4D1E-B590-60DC6F1E6673}.Release|Win32.Build.0 = Release|Win32
+		{09ECDA70-7979-4D1E-B590-60DC6F1E6673}.Release|x64.ActiveCfg = Release|x64
+		{09ECDA70-7979-4D1E-B590-60DC6F1E6673}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

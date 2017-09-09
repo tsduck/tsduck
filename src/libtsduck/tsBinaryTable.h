@@ -261,18 +261,55 @@ namespace ts {
         //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool save(const char* file_name, ReportInterface& report = CERR) const;
+        bool save(const std::string& file_name, ReportInterface& report = CERR) const;
 
         //!
-        //! Save the binary table in a file.
-        //! @param [in] file_name Name of the output file.
+        //! This static method reads all tables from the specified file.
+        //! The file shall contain all sections of each table contiguously
+        //! and in increasing order of section numbers.
+        //! @param [out] tables Returned list of tables.
+        //! @param [in,out] strm A standard stream in input mode (binary mode).
+        //! @param [in] crc_op How to process the CRC32 of the input sections.
         //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool save(const std::string& file_name, ReportInterface& report = CERR) const
-        {
-            return save(file_name.c_str(), report);
-        }
+        static bool LoadFile(BinaryTablePtrVector& tables,
+                             std::istream& strm,
+                             CRC32::Validation crc_op = CRC32::IGNORE,
+                             ReportInterface& report = CERR);
+
+        //!
+        //! This static method reads all tables from the specified file.
+        //! The file shall contain all sections of each table contiguously
+        //! and in increasing order of section numbers.
+        //! @param [out] tables Returned list of tables.
+        //! @param [in] file_name Name of the file to read.
+        //! @param [in] crc_op How to process the CRC32 of the input sections.
+        //! @param [in,out] report Where to report errors.
+        //! @return True on success, false on error.
+        //!
+        static bool LoadFile(BinaryTablePtrVector& tables,
+                             const std::string& file_name,
+                             CRC32::Validation crc_op = CRC32::IGNORE,
+                             ReportInterface& report = CERR);
+
+        //!
+        //! This static method writes all tables to the specified file.
+        //! @param [in] tables List of tables to write.
+        //! @param [in,out] strm A standard stream in output mode (binary mode).
+        //! @param [in,out] report Where to report errors.
+        //! @return A reference to @a strm.
+        //!
+        static std::ostream& SaveFile(const BinaryTablePtrVector& tables, std::ostream& strm, ReportInterface& report = CERR);
+
+        //!
+        //! This static method writes all tables to the specified file.
+        //! @param [in] tables List of tables to write.
+        //! @param [in] file_name Name of the file to write.
+        //! @param [in,out] report Where to report errors.
+        //! @return True on success, false on error.
+        //!
+        static bool SaveFile(const BinaryTablePtrVector& tables, const std::string& file_name, ReportInterface& report = CERR);
 
     private:
         BinaryTable(const BinaryTable& table) = delete;

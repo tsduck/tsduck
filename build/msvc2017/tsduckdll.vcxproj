@@ -175,6 +175,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsReportFileTemplate.h" />
     <ClInclude Include="..\..\src\libtsduck\tsReportHandler.h" />
     <ClInclude Include="..\..\src\libtsduck\tsReportInterface.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsReportWithPrefix.h" />
     <ClInclude Include="..\..\src\libtsduck\tsResidentBuffer.h" />
     <ClInclude Include="..\..\src\libtsduck\tsResidentBufferTemplate.h" />
     <ClInclude Include="..\..\src\libtsduck\tsRingNode.h" />
@@ -412,6 +413,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsPSILogger.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsPSILoggerArgs.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsReportInterface.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsReportWithPrefix.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsRingNode.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsRST.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsSatelliteDeliverySystemDescriptor.cpp" />

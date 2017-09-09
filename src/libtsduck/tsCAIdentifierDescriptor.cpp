@@ -156,7 +156,12 @@ void ts::CAIdentifierDescriptor::DisplayDescriptor(TablesDisplay& display, DID d
 
 ts::XML::Element* ts::CAIdentifierDescriptor::toXML(XML& xml, XML::Element* parent) const
 {
-    return 0; // TODO @@@@
+    XML::Element* root = _is_valid ? xml.addElement(parent, _xml_name) : 0;
+    for (size_t i = 0; i < casids.size(); ++i) {
+        XML::Element* e = xml.addElement(root, "CA_system_id");
+        xml.setIntAttribute(e, "value", casids[i], true);
+    }
+    return root;
 }
 
 
@@ -166,5 +171,16 @@ ts::XML::Element* ts::CAIdentifierDescriptor::toXML(XML& xml, XML::Element* pare
 
 void ts::CAIdentifierDescriptor::fromXML(XML& xml, const XML::Element* element)
 {
-    // TODO @@@@
+    casids.clear();
+    XML::ElementVector children;
+    _is_valid =
+        checkXMLName(xml, element) &&
+        xml.getChildren(children, element, "CA_system_id", 0, (MAX_DESCRIPTOR_SIZE - 2) / 2);
+    for (size_t i = 0; _is_valid && i < children.size(); ++i) {
+        uint16_t id = 0;
+        _is_valid = xml.getIntAttribute<uint16_t>(id, children[i], "value", true, 0, 0x0000, 0xFFFF);
+        if (_is_valid) {
+            casids.push_back(id);
+        }
+    }
 }

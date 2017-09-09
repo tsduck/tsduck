@@ -141,8 +141,9 @@
   </TOT>
 
   <!-- Generic short table -->
-  <generic_short_table table_id="uint8, required"
-                       private="bool, default=true">
+  <generic_short_table
+      table_id="uint8, required"
+      private="bool, default=true">
 
     Generic table with binary payload of one short section,
     to be used when a specific table is not yet implemented.
@@ -155,11 +156,12 @@
   </generic_short_table>
 
   <!-- Generic long table -->
-  <generic_long_table table_id="uint8, required"
-                      table_id_ext="uint16, default=0xFFFF"
-                      version="uint5, default=0"
-                      current="bool, default=true"
-                      private="bool, default=true">
+  <generic_long_table
+      table_id="uint8, required"
+      table_id_ext="uint16, default=0xFFFF"
+      version="uint5, default=0"
+      current="bool, default=true"
+      private="bool, default=true">
 
     Generic table with binary payload of long sections,
     to be used when a specific table is not yet implemented.
@@ -178,238 +180,246 @@
   <!-- Definitions of descriptors -->
   <_descriptors>
 
-      <generic_descriptor tag="uint8, required">
-        Generic descriptor with binary payload, to be used when a specific
-        descriptor is not yet implemented. The body of this element shall
-        contain an even number of hexadecimal digits.
-      </generic_descriptor>
+    <generic_descriptor tag="uint8, required">
+      Generic descriptor with binary payload, to be used when a specific
+      descriptor is not yet implemented. The body of this element shall
+      contain an even number of hexadecimal digits.
+    </generic_descriptor>
 
-      <AC3_descriptor component_type="uint8, optional"
-                      bsid="uint8, optional"
-                      mainid="uint8, optional"
-                      asvc="uint8, optional">
-        <additional_info>
-          Hexadecimal content
-        </additional_info>
-      </AC3_descriptor>
+    <AC3_descriptor
+        component_type="uint8, optional"
+        bsid="uint8, optional"
+        mainid="uint8, optional"
+        asvc="uint8, optional">
+      <additional_info>
+        Hexadecimal content
+      </additional_info>
+    </AC3_descriptor>
 
-      <AC3_audio_stream_descriptor sample_rate_code="uint3, required"
-                                   bsid="uint5, required"
-                                   bit_rate_code="uint6, required"
-                                   surround_mode="uint2, required"
-                                   bsmod="uint3, required"
-                                   num_channels="uint4, required"
-                                   full_svc="bool, required"
-                                   langcod="uint8, optional"
-                                   langcod2="uint8, optional"
-                                   mainid="uint3, optional"
-                                   priority="uint2, optional"
-                                   asvcflags="uint8, optional"
-                                   text="string, optional"
-                                   language="char3, optional"
-                                   language_2="char3, optional">
-        <additional_info>
-          Hexadecimal content
-        </additional_info>
-      </AC3_audio_stream_descriptor>
+    <AC3_audio_stream_descriptor
+        sample_rate_code="uint3, required"
+        bsid="uint5, required"
+        bit_rate_code="uint6, required"
+        surround_mode="uint2, required"
+        bsmod="uint3, required"
+        num_channels="uint4, required"
+        full_svc="bool, required"
+        langcod="uint8, optional"
+        langcod2="uint8, optional"
+        mainid="uint3, optional"
+        priority="uint2, optional"
+        asvcflags="uint8, optional"
+        text="string, optional"
+        language="char3, optional"
+        language_2="char3, optional">
+      <additional_info>
+        Hexadecimal content
+      </additional_info>
+    </AC3_audio_stream_descriptor>
 
-      <AVC_video_descriptor profile_idc="uint8, required"
-                            constraint_set0="bool, required"
-                            constraint_set1="bool, required"
-                            constraint_set2="bool, required"
-                            AVC_compatible_flags="uint5, required"
-                            level_idc="uint8, required"
-                            AVC_still_present="bool, required"
-                            AVC_24_hour_picture="bool, required"/>
+    <AVC_video_descriptor
+        profile_idc="uint8, required"
+        constraint_set0="bool, required"
+        constraint_set1="bool, required"
+        constraint_set2="bool, required"
+        AVC_compatible_flags="uint5, required"
+        level_idc="uint8, required"
+        AVC_still_present="bool, required"
+        AVC_24_hour_picture="bool, required"/>
 
-      <bouquet_name_descriptor bouquet_name="string, required"/>
+    <bouquet_name_descriptor bouquet_name="string, required"/>
 
-      <CA_descriptor CA_system_id="uint16, required"
-                     CA_PID="uint13, required">
-        <private_data>
-          Hexadecimal content
-        </private_data>
-      </CA_descriptor>
+    <CA_descriptor
+        CA_system_id="uint16, required"
+        CA_PID="uint13, required">
+      <private_data>
+        Hexadecimal content
+      </private_data>
+    </CA_descriptor>
 
-      <CA_identifier_descriptor>
-        <!-- One per CAS -->
-        <CA_system_id value="uint16, required"/>
-      </CA_identifier_descriptor>
+    <CA_identifier_descriptor>
+      <!-- One per CAS -->
+      <CA_system_id value="uint16, required"/>
+    </CA_identifier_descriptor>
 
-      <content_descriptor>
-        <!-- One per classification -->
-        <content content_nibble_level_1="uint4, required"
-                 content_nibble_level_2="uint4, required"
-                 user_byte="uint8, required"/>
-      </content_descriptor>
+    <content_descriptor>
+      <!-- One per classification -->
+      <content content_nibble_level_1="uint4, required"
+               content_nibble_level_2="uint4, required"
+               user_byte="uint8, required"/>
+    </content_descriptor>
 
-      <country_availability_descriptor country_availability="bool, required">
-        <!-- One per country -->
-        <country country_code="char3, required"/>
-      </country_availability_descriptor>
+    <country_availability_descriptor country_availability="bool, required">
+      <!-- One per country -->
+      <country country_code="char3, required"/>
+    </country_availability_descriptor>
 
-      <data_broadcast_descriptor data_broadcast_id="uint16, required"
-                                 component_tag="uint8, required"
-                                 language_code="char3, required">
-        <selector_bytes>Hexadecimal content</selector_bytes>
-        <text>String</text>
-      </data_broadcast_descriptor>
+    <data_broadcast_descriptor
+        data_broadcast_id="uint16, required"
+        component_tag="uint8, required"
+        language_code="char3, required">
+      <selector_bytes>Hexadecimal content</selector_bytes>
+      <text>String</text>
+    </data_broadcast_descriptor>
 
-      <data_broadcast_id_descriptor data_broadcast_id="uint16, required">
-        <selector_bytes>Hexadecimal content</selector_bytes>
-      </data_broadcast_id_descriptor>
+    <data_broadcast_id_descriptor data_broadcast_id="uint16, required">
+      <selector_bytes>Hexadecimal content</selector_bytes>
+    </data_broadcast_id_descriptor>
 
-      <eacem_stream_identifier_descriptor version_byte="uint8, required"/>
+    <eacem_stream_identifier_descriptor version_byte="uint8, required"/>
 
-      <enhanced_AC3_descriptor mixinfoexists="bool, required"
-                               component_type="uint8, optional"
-                               bsid="uint8, optional"
-                               mainid="uint8, optional"
-                               asvc="uint8, optional"
-                               substream1="uint8, optional"
-                               substream2="uint8, optional"
-                               substream3="uint8, optional">
-        <additional_info>
-          Hexadecimal content
-        </additional_info>
-      </enhanced_AC3_descriptor>
+    <enhanced_AC3_descriptor
+        mixinfoexists="bool, required"
+        component_type="uint8, optional"
+        bsid="uint8, optional"
+        mainid="uint8, optional"
+        asvc="uint8, optional"
+        substream1="uint8, optional"
+        substream2="uint8, optional"
+        substream3="uint8, optional">
+      <additional_info>
+        Hexadecimal content
+      </additional_info>
+    </enhanced_AC3_descriptor>
 
-      <eutelsat_channel_number_descriptor>
-        <!-- One per service -->
-        <service original_network_id="uint16, required"
-                 transport_stream_id="uint16, required"
-                 service_id="uint16, required"
-                 eutelsat_channel_number="uint10, required"/>
-      </eutelsat_channel_number_descriptor>
+    <eutelsat_channel_number_descriptor>
+      <!-- One per service -->
+      <service original_network_id="uint16, required"
+               transport_stream_id="uint16, required"
+               service_id="uint16, required"
+               eutelsat_channel_number="uint10, required"/>
+    </eutelsat_channel_number_descriptor>
 
-      <extended_event_descriptor descriptor_number="uint8, required"
-                                 last_descriptor_number="uint8, required"
-                                 language_code="char3, required">
-        <text>String</text>
-        <!-- One per item -->
-        <item>
-          <description>String</description>
-          <name>String</name>
-        </item>
-      </extended_event_descriptor>
-        
-      <HD_simulcast_logical_channel_descriptor>
-        <!-- One per service -->
-        <service service_id="uint16, required"
-                 logical_channel_number="uint10, required"
-                 visible_service="bool, default=true"/>
-      </HD_simulcast_logical_channel_descriptor>
+    <extended_event_descriptor
+        descriptor_number="uint8, required"
+        last_descriptor_number="uint8, required"
+        language_code="char3, required">
+      <text>String</text>
+      <!-- One per item -->
+      <item>
+        <description>String</description>
+        <name>String</name>
+      </item>
+    </extended_event_descriptor>
+    
+    <HD_simulcast_logical_channel_descriptor>
+      <!-- One per service -->
+      <service service_id="uint16, required"
+               logical_channel_number="uint10, required"
+               visible_service="bool, default=true"/>
+    </HD_simulcast_logical_channel_descriptor>
 
-      <ISO_639_language_descriptor>
-        <!-- One per language -->
-        <language code="char3, required"
-                  audio_type="uint8, required"/>
-      </ISO_639_language_descriptor>
+    <ISO_639_language_descriptor>
+      <!-- One per language -->
+      <language code="char3, required"
+                audio_type="uint8, required"/>
+    </ISO_639_language_descriptor>
 
-      <local_time_offset_descriptor>
-        <!-- One per region -->
-        <region country_code="char3, required"
-                country_region_id="uint6, required"
-                local_time_offset="int, required"
-                time_of_change="YYYY-MM-DD hh:mm:ss, required"
-                next_time_offset="int, required"/>
-        <!-- local_time_offset and next_time_offset: -780 to +780 minutes (-13 to +13 hours) -->
-      </local_time_offset_descriptor>
+    <local_time_offset_descriptor>
+      <!-- One per region -->
+      <region country_code="char3, required"
+              country_region_id="uint6, required"
+              local_time_offset="int, required"
+              time_of_change="YYYY-MM-DD hh:mm:ss, required"
+              next_time_offset="int, required"/>
+      <!-- local_time_offset and next_time_offset: -780 to +780 minutes (-13 to +13 hours) -->
+    </local_time_offset_descriptor>
 
-      <logical_channel_number_descriptor>
-        <!-- One per service -->
-        <service service_id="uint16, required"
-                 logical_channel_number="uint10, required"
-                 visible_service="bool, default=true"/>
-      </logical_channel_number_descriptor>
+    <logical_channel_number_descriptor>
+      <!-- One per service -->
+      <service service_id="uint16, required"
+               logical_channel_number="uint10, required"
+               visible_service="bool, default=true"/>
+    </logical_channel_number_descriptor>
 
-      <message_descriptor message_id="uint8, required"
-                          language_code="char3, required">
-        <text>String</text>
-      </message_descriptor>
+    <message_descriptor message_id="uint8, required"
+                        language_code="char3, required">
+      <text>String</text>
+    </message_descriptor>
 
-      <network_name_descriptor network_name="string, required"/>
+    <network_name_descriptor network_name="string, required"/>
 
-      <parental_rating_descriptor>
-        <!-- One per country -->
-        <country country_code="char3, required"
-                 rating="uint8, required"/>
-      </parental_rating_descriptor>
+    <parental_rating_descriptor>
+      <!-- One per country -->
+      <country country_code="char3, required"
+               rating="uint8, required"/>
+    </parental_rating_descriptor>
 
-      <private_data_specifier_descriptor private_data_specifier="uint32, required"/>
+    <private_data_specifier_descriptor private_data_specifier="uint32, required"/>
 
-      <S2_satellite_delivery_system_descriptor
-          backwards_compatibility="bool, required"
-          scrambling_sequence_index="uint18, optional"
-          input_stream_identifier="uint8, optional"/>
+    <S2_satellite_delivery_system_descriptor
+        backwards_compatibility="bool, required"
+        scrambling_sequence_index="uint18, optional"
+        input_stream_identifier="uint8, optional"/>
 
-      <satellite_delivery_system_descriptor
-          frequency="SatelliteFrequencyGHz, required"
-          orbital_position="SatelliteOrbitalPosition, required"
-          west_east_flag="SatelliteOrbitalDirection, required"
-          polarization="SatellitePolarization, required"
-          roll_off="uint2, optional"
-          modulation_system="SatelliteModulationSystem, required"
-          modulation_type="SatelliteModulationType, required"
-          symbol_rate="SatelliteSymbolRate, required"
-          FEC_inner="InnerFEC, required"/>
+    <satellite_delivery_system_descriptor
+        frequency="SatelliteFrequencyGHz, required"
+        orbital_position="SatelliteOrbitalPosition, required"
+        west_east_flag="SatelliteOrbitalDirection, required"
+        polarization="SatellitePolarization, required"
+        roll_off="uint2, optional"
+        modulation_system="SatelliteModulationSystem, required"
+        modulation_type="SatelliteModulationType, required"
+        symbol_rate="SatelliteSymbolRate, required"
+        FEC_inner="InnerFEC, required"/>
 
-      <service_descriptor service_type="uint8, required"
-                          service_provider_name="string, required"
-                          service_name="string, required"/>
+    <service_descriptor
+        service_type="uint8, required"
+        service_provider_name="string, required"
+        service_name="string, required"/>
 
-      <service_list_descriptor>
-        <service service_id="uint16, required"
-                 service_type="uint8, required"/>
-      </service_list_descriptor>
+    <service_list_descriptor>
+      <service service_id="uint16, required"
+               service_type="uint8, required"/>
+    </service_list_descriptor>
 
-      <short_event_descriptor language_code="char3, required">
-        <event_name>String</event_name>
-        <text>String</text>
-      </short_event_descriptor>
+    <short_event_descriptor language_code="char3, required">
+      <event_name>String</event_name>
+      <text>String</text>
+    </short_event_descriptor>
 
-      <STD_descriptor leak_valid="bool, required"/>
+    <STD_descriptor leak_valid="bool, required"/>
 
-      <stream_identifier_descriptor component_tag="uint8, required"/>
+    <stream_identifier_descriptor component_tag="uint8, required"/>
 
-      <subtitling_descriptor>
-        <!-- One per subtitle -->
-        <subtitling language_code="char3, required"
-                    subtitling_type="uint8, required"
-                    composition_page_id="uint16, required"
-                    ancillary_page_id="uint16, required"/>
-      </subtitling_descriptor>
+    <subtitling_descriptor>
+      <!-- One per subtitle -->
+      <subtitling language_code="char3, required"
+                  subtitling_type="uint8, required"
+                  composition_page_id="uint16, required"
+                  ancillary_page_id="uint16, required"/>
+    </subtitling_descriptor>
 
-      <supplementary_audio_descriptor
-          mix_type="uint1, required"
-          editorial_classification="uint5, required"
-          language_code="char3, optional">
-        <private_data>
-          Hexadecimal content
-        </private_data>
-      </supplementary_audio_descriptor>
+    <supplementary_audio_descriptor
+        mix_type="uint1, required"
+        editorial_classification="uint5, required"
+        language_code="char3, optional">
+      <private_data>
+        Hexadecimal content
+      </private_data>
+    </supplementary_audio_descriptor>
 
-      <teletext_descriptor>
-        <!-- One per page -->
-        <teletext language_code="char3, required"
-                  teletext_type="uint5, required"
-                  teletext_magazine_number="uint3, required"
-                  teletext_page_number="uint8, required"/>
-      </teletext_descriptor>
+    <teletext_descriptor>
+      <!-- One per page -->
+      <teletext language_code="char3, required"
+                teletext_type="uint5, required"
+                teletext_magazine_number="uint3, required"
+                teletext_page_number="uint8, required"/>
+    </teletext_descriptor>
 
-      <terrestrial_delivery_system_descriptor
-          centre_frequency="TerrestrialFrequencyHz, required"
-          bandwidth="TerrestrialBandwidth, required"
-          priority="TerrestrialPriority, required"
-          time_slicing="bool, required"
-          MPE-FEC="bool, required"
-          constellation="TerrestrialConstellation, required"
-          hierarchy_information="uint3, required"
-          code_rate-HP_stream="TerrestrialCodeRate, required"
-          code_rate-LP_stream="TerrestrialCodeRate, required"
-          guard_interval="TerrestrialGuardInterval, required"
-          transmission_mode="TerrestrialTransmissionMode, required"
-          other_frequency="bool, required"/>
+    <terrestrial_delivery_system_descriptor
+        centre_frequency="TerrestrialFrequencyHz, required"
+        bandwidth="TerrestrialBandwidth, required"
+        priority="TerrestrialPriority, required"
+        time_slicing="bool, required"
+        MPE-FEC="bool, required"
+        constellation="TerrestrialConstellation, required"
+        hierarchy_information="uint3, required"
+        code_rate-HP_stream="TerrestrialCodeRate, required"
+        code_rate-LP_stream="TerrestrialCodeRate, required"
+        guard_interval="TerrestrialGuardInterval, required"
+        transmission_mode="TerrestrialTransmissionMode, required"
+        other_frequency="bool, required"/>
 
   </_descriptors>
 

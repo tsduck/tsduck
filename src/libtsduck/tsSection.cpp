@@ -39,6 +39,7 @@
 #include "tsNames.h"
 #include "tsHexa.h"
 #include "tsMemoryUtils.h"
+#include "tsReportWithPrefix.h"
 TSDUCK_SOURCE;
 
 
@@ -498,6 +499,7 @@ std::istream& ts::Section::read(std::istream& strm, CRC32::Validation crc_op, Re
         // Section fully read
         reload(secdata, PID_NULL, crc_op);
         if (!_is_valid) {
+            strm.setstate(std::ios::failbit);
             report.error("invalid section" + AfterBytes(position));
         }
     }
@@ -517,8 +519,9 @@ bool ts::Section::LoadFile(SectionPtrVector& sections,
                            ReportInterface& report)
 {
     sections.clear();
+
     for (;;) {
-        SectionPtr sp (new Section ());
+        SectionPtr sp(new Section);
         if (sp->read(strm, crc_op, report)) {
             sections.push_back(sp);
         }
@@ -542,40 +545,17 @@ bool ts::Section::LoadFile(SectionPtrVector& sections,
                            CRC32::Validation crc_op,
                            ReportInterface& report)
 {
-    // Open the input file
+    sections.clear();
 
-    std::ifstream strm (file_name.c_str(), std::ios::in | std::ios::binary);
-
+    // Open the input file.
+    std::ifstream strm(file_name.c_str(), std::ios::in | std::ios::binary);
     if (!strm.is_open()) {
         report.error("cannot open " + file_name);
         return false;
     }
 
-    // This internal class reports the messages with file name added.
-
-    class ReportWithName: public ReportInterface
-    {
-    private:
-        const std::string& _name;
-        ReportInterface&   _report;
-    public:
-        // Constructor
-        ReportWithName(const std::string& name, ReportInterface& rep) :
-            _name(name),
-            _report(rep)
-        {
-        }
-    protected:
-        // Logger
-        virtual void writeLog(int severity, const std::string& msg)
-        {
-            _report.log(severity, _name + ": " + msg);
-        }
-    };
-
     // Load the section file
-
-    ReportWithName report_internal(file_name, report);
+    ReportWithPrefix report_internal(report, file_name + ": ");
     bool success = LoadFile(sections, strm, crc_op, report_internal);
     strm.close();
 
