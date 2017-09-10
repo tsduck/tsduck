@@ -63,7 +63,7 @@ namespace ts {
 
         //!
         //! Set the prefix to display.
-        //! @return The current prefix to display.
+        //! @param [in] prefix The prefix to prepend to all messages.
         //!
         void setPrefix(const std::string& prefix)
         {
