@@ -40,3 +40,6 @@ vgcore.*
 doxy
 tmp
 cov-int
+*.bin
+*.ts
+*.trp

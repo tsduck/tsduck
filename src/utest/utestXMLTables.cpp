@@ -39,6 +39,9 @@
 #include "utestCppUnitTest.h"
 TSDUCK_SOURCE;
 
+#include "tables/psi_pat1_xml.h"
+#include "tables/psi_pat1_sections.h"
+
 
 //----------------------------------------------------------------------------
 // The test fixture
@@ -52,12 +55,18 @@ public:
     void testGenericDescriptor();
     void testGenericShortTable();
     void testGenericLongTable();
+    void testPAT1();
 
     CPPUNIT_TEST_SUITE(XMLTablesTest);
     CPPUNIT_TEST(testGenericDescriptor);
     CPPUNIT_TEST(testGenericShortTable);
     CPPUNIT_TEST(testGenericLongTable);
+    CPPUNIT_TEST(testPAT1);
     CPPUNIT_TEST_SUITE_END();
+
+private:
+    // Unitary test for one table.
+    void testTable(const char* name, const char* ref_xml, const uint8_t* ref_sections, size_t ref_sections_size);
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(XMLTablesTest);
@@ -75,6 +84,32 @@ void XMLTablesTest::setUp()
 // Test suite cleanup method.
 void XMLTablesTest::tearDown()
 {
+}
+
+
+//----------------------------------------------------------------------------
+// Unitary test for one table.
+//----------------------------------------------------------------------------
+
+void XMLTablesTest::testTable(const char* name, const char* ref_xml, const uint8_t* ref_sections, size_t ref_sections_size)
+{
+    utest::Out() << "XMLTablesTest: Testing " << name << std::endl;
+
+    // Convert XML reference content to binary tables.
+    ts::XMLTables xml;
+    CPPUNIT_ASSERT(xml.parseXML(ref_xml, CERR));
+
+    // Serialize binary tables to section data.
+    std::ostringstream strm;
+    CPPUNIT_ASSERT(ts::BinaryTable::SaveFile(xml.tables(), strm, CERR));
+
+    // Compare serialized section data to reference section data.
+    const std::string sections(strm.str());
+    CPPUNIT_ASSERT_EQUAL(ref_sections_size, sections.size());
+    CPPUNIT_ASSERT_EQUAL(0, ::memcmp(ref_sections, sections.data(), ref_sections_size));
+
+    // Convert binary tables to XML.
+    CPPUNIT_ASSERT_STRINGS_EQUAL(ref_xml, xml.toText(CERR));
 }
 
 
@@ -271,4 +306,9 @@ void XMLTablesTest::testGenericLongTable()
     CPPUNIT_ASSERT(sec->isCurrent());
     CPPUNIT_ASSERT_EQUAL(sizeof(refData1), sec->payloadSize());
     CPPUNIT_ASSERT(ts::ByteBlock(sec->payload(), sec->payloadSize()) == ts::ByteBlock(refData1, sizeof(refData1)));
+}
+
+void XMLTablesTest::testPAT1()
+{
+    testTable("PAT1", psi_pat1_xml, psi_pat1_sections, sizeof(psi_pat1_sections));
 }

@@ -56,7 +56,7 @@ bool ts::AbstractTable::checkXMLName(XML& xml, const XML::Element* element) cons
     if (element == 0) {
         return false;
     }
-    else if (UTF8Equal(_xml_name, element->Name(), false)) {
+    else if (!UTF8Equal(_xml_name, element->Name(), false)) {
         xml.reportError(Format("Incorrect <%s>, expected <%s>", XML::ElementName(element), _xml_name));
         return false;
     }

@@ -32,6 +32,11 @@
 //----------------------------------------------------------------------------
 
 #include "tsArgs.h"
+#include "tsSysUtils.h"
+#include "tsStringUtils.h"
+#include "tsBinaryTable.h"
+#include "tsXMLTables.h"
+#include "tsReportWithPrefix.h"
 TSDUCK_SOURCE;
 
 
@@ -44,19 +49,19 @@ struct Options: public ts::Args
     Options(int argc, char *argv[]);
 
     ts::StringVector infiles;   // Input file names.
-    std::string      outfile;   // Output file name.
+    std::string      outfile;   // Output file path.
+    bool             outdir;    // Output name is a directory.
     bool             compile;   // Explicit compilation.
     bool             decompile; // Explicit decompilation.
-    bool             verbose;   // Verbose output
 };
 
 Options::Options(int argc, char *argv[]) :
     ts::Args("PSI/SI tables compiler.", "[options] filename ..."),
     infiles(),
     outfile(),
+    outdir(false),
     compile(false),
-    decompile(false),
-    verbose(false)
+    decompile(false)
 {
     option("",           0,  ts::Args::STRING, 1);
     option("compile",   'c');
@@ -85,11 +90,13 @@ Options::Options(int argc, char *argv[]) :
             "  --help\n"
             "      Display this help text.\n"
             "\n"
-            "  -o filename\n"
-            "  --output filename\n"
-            "      Specify the output file name. This is allowed only if there is only one\n"
-            "      input file. By default, the output file has the same name as the input\n"
-            "      and extension .bin (compile) or .xml (decompile).\n"
+            "  -o filepath\n"
+            "  --output filepath\n"
+            "      Specify the output file name. By default, the output file has the same\n"
+            "      name as the input and extension .bin (compile) or .xml (decompile). If\n"
+            "      the specified path is a directory, the output file is built from this\n"
+            "      directory and default file name. If more than one input file is specified,\n"
+            "      the output path, if present, must be a directory name.\n"
             "\n"
             "  -v\n"
             "  --verbose\n"
@@ -104,10 +111,14 @@ Options::Options(int argc, char *argv[]) :
     getValue(outfile, "output");
     compile = present("compile");
     decompile = present("decompile");
-    verbose = present("verbose");
+    outdir = !outfile.empty() && ts::IsDirectory(outfile);
 
-    if (infiles.size() > 1 && !outfile.empty()) {
-        error("cannot specify --output with more than one input file");
+    if (present("verbose")) {
+        setDebugLevel(ts::Severity::Verbose);
+    }
+
+    if (infiles.size() > 1 && !outfile.empty() && !outdir) {
+        error("with more than one input file, --output must be a directory");
     }
     if (compile && decompile) {
         error("specify either --compile or --decompile but not both");
@@ -122,7 +133,12 @@ Options::Options(int argc, char *argv[]) :
 
 bool CompileXML(Options& opt, const std::string& infile, const std::string& outfile)
 {
-    return false; //@@@@
+    opt.verbose("Compiling " + infile + " to " + outfile);
+    ts::ReportWithPrefix report(opt, infile + ": ");
+
+    // Load XML file, convert tables to binary and save binary file.
+    ts::XMLTables xml;
+    return xml.loadXML(infile, report) && ts::BinaryTable::SaveFile(xml.tables(), outfile, report);
 }
 
 
@@ -132,7 +148,19 @@ bool CompileXML(Options& opt, const std::string& infile, const std::string& outf
 
 bool DecompileBinary(Options& opt, const std::string& infile, const std::string& outfile)
 {
-    return false; //@@@@
+    opt.verbose("Decompiling " + infile + " to " + outfile);
+    ts::ReportWithPrefix report(opt, infile + ": ");
+
+    // Load binary tables.
+    ts::BinaryTablePtrVector tables;
+    if (!ts::BinaryTable::LoadFile(tables, infile, ts::CRC32::CHECK, report)) {
+        return false;
+    }
+
+    // Convert tables to XML and save XML file.
+    ts::XMLTables xml;
+    xml.add(tables);
+    return xml.saveXML(outfile, report);
 }
 
 
@@ -142,7 +170,41 @@ bool DecompileBinary(Options& opt, const std::string& infile, const std::string&
 
 bool ProcessFile(Options& opt, const std::string& infile)
 {
-    return false; //@@@@
+    const std::string ext(ts::LowerCaseValue(ts::PathSuffix(infile)));
+    const bool isXML = ext == ".xml";
+    const bool isBin = ext == ".bin";
+    const bool compile = opt.compile || isXML;
+    const bool decompile = opt.decompile || isBin;
+    const char* const outExt = compile ? ".bin" : ".xml";
+
+    // Compute output file name with default file type.
+    std::string outname(opt.outfile);
+    if (outname.empty()) {
+        outname = ts::PathPrefix(infile) + outExt;
+    }
+    else if (opt.outdir) {
+        outname += ts::PathSeparator + ts::PathPrefix(ts::BaseName(infile)) + outExt;
+    }
+
+    // Process the input file, starting with error cases.
+    if (!compile && !decompile) {
+        opt.error("don't know what to do with file " + infile + ", unknown file type, specify --compile or --decompile");
+        return false;
+    }
+    else if (compile && isBin) {
+        opt.error("cannot compile binary file " + infile);
+        return false;
+    }
+    else if (decompile && isXML) {
+        opt.error("cannot decompile XML file " + infile);
+        return false;
+    }
+    else if (compile) {
+        return CompileXML(opt, infile, outname);
+    }
+    else {
+        return DecompileBinary(opt, infile, outname);
+    }
 }
 
 
@@ -155,7 +217,9 @@ int main(int argc, char *argv[])
     Options opt(argc, argv);
     bool ok = true;
     for (size_t i = 0; i < opt.infiles.size(); ++i) {
-        ok = ProcessFile(opt, opt.infiles[i]) && ok;
+        if (!opt.infiles[i].empty()) {
+            ok = ProcessFile(opt, opt.infiles[i]) && ok;
+        }
     }
     return ok ? EXIT_SUCCESS : EXIT_FAILURE;
 }
