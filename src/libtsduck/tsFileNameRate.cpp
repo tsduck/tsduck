@@ -44,7 +44,8 @@ TSDUCK_SOURCE;
 ts::FileNameRate::FileNameRate(const std::string& name, MilliSecond rep) :
     file_name(name),
     file_date(),
-    repetition(rep) 
+    repetition(rep) ,
+    retry_count(0)
 {
 }
 
@@ -68,7 +69,7 @@ bool ts::FileNameRate::operator<(const FileNameRate& other)
 // Scan the file for update.
 //----------------------------------------------------------------------------
 
-bool ts::FileNameRate::scanFile(ReportInterface& report)
+bool ts::FileNameRate::scanFile(size_t retry, ReportInterface& report)
 {
     if (file_name.empty()) {
         // No file, no change...
@@ -79,10 +80,12 @@ bool ts::FileNameRate::scanFile(ReportInterface& report)
         const Time date = GetFileModificationTimeLocal(file_name);
         const bool changed = date != file_date;
         if (changed) {
+            file_date = date;
+            retry_count = retry;
             report.verbose("file %s %s", file_name.c_str(), file_date == Time::Epoch ? "created" : (date == Time::Epoch ? "deleted" : "modified"));
         }
-        file_date = date;
-        return changed;
+        // Return true if file was changed or some retries are allowed.
+        return changed || retry_count > 0;
     }
 }
 
@@ -91,11 +94,11 @@ bool ts::FileNameRate::scanFile(ReportInterface& report)
 // Scan the files for update.
 //----------------------------------------------------------------------------
 
-size_t ts::FileNameRateList::scanFiles(ReportInterface& report)
+size_t ts::FileNameRateList::scanFiles(size_t retry, ReportInterface& report)
 {
     size_t count = 0;
     for (iterator it = begin(); it != end(); ++it) {
-        if (it->scanFile(report)) {
+        if (it->scanFile(retry, report)) {
             ++count;
         }
     }

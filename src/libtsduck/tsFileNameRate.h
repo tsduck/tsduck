@@ -47,6 +47,7 @@ namespace ts {
         std::string file_name;    //!< File name.
         ts::Time    file_date;    //!< Last modification date of file.
         MilliSecond repetition;   //!< Repetition rate in milliseconds.
+        size_t      retry_count;  //!< Number of allowed retry in case of error when using the file.
 
         //!
         //! Default constructor.
@@ -83,11 +84,12 @@ namespace ts {
         //!
         //! Scan the file for update.
         //! Update the modification date of the file in @a file_date.
+        //! @param [in] retry Number of allowed retry in case of error when using the file.
         //! @param [in] report Where to report a verbose message when a file changed.
         //! @return True if the file has changed or is scanned for the first time
         //! or has been deleted.
         //!
-        bool scanFile(ReportInterface& report = NULLREP);
+        bool scanFile(size_t retry = 1, ReportInterface& report = NULLREP);
     };
 
     //!
@@ -134,9 +136,10 @@ namespace ts {
         //!
         //! Scan the files for update.
         //! Update the modification dates of the files.
+        //! @param [in] retry Number of allowed retry in case of error when using the file.
         //! @param [in] report Where to report a verbose message when a file changed.
         //! @return Number of files which changed.
         //!
-        size_t scanFiles(ReportInterface& report = NULLREP);
+        size_t scanFiles(size_t retry = 1, ReportInterface& report = NULLREP);
     };
 }

@@ -39,8 +39,9 @@
 #include "tsSysUtils.h"
 TSDUCK_SOURCE;
 
-#define DEF_EVALUATE_INTERVAL 100    // In packets
+#define DEF_EVALUATE_INTERVAL  100   // In packets
 #define DEF_POLL_FILE_MS      1000   // In milliseconds
+#define FILE_RETRY               3   // Number of retries to open files
 
 
 //----------------------------------------------------------------------------
@@ -305,15 +306,20 @@ bool ts::InjectPlugin::reloadFiles()
     _specific_rates = false;
     SectionPtrVector sections;
 
-    for (FileNameRateList::const_iterator it = _infiles.begin(); it != _infiles.end(); ++it) {
+    for (FileNameRateList::iterator it = _infiles.begin(); it != _infiles.end(); ++it) {
         // With --poll-files, we ignore non-existent files.
         if (_poll_files && !FileExists(it->file_name)) {
             continue;
         }
         if (!Section::LoadFile(sections, it->file_name, _crc_op, *tsp)) {
             success = false;
+            if (it->retry_count > 0) {
+                it->retry_count--;
+            }
         }
         else {
+            // File successfully loaded.
+            it->retry_count = 0;  // no longer needed to retry
             _pzer.addSections(sections, it->repetition);
             _specific_rates = _specific_rates || it->repetition != 0;
             std::string srate(it->repetition > 0 ? Decimal(it->repetition) + " ms" : "unspecified");
@@ -405,7 +411,7 @@ ts::ProcessorPlugin::Status ts::InjectPlugin::processPacket(TSPacket& pkt, bool&
 
     // Poll files when necessary.
     // Do that only at section boundary in the output PID to avoid truncated sections.
-    if (_poll_files && _pzer.atSectionBoundary() && Time::CurrentUTC() >= _poll_file_next && _infiles.scanFiles(*tsp)) {
+    if (_poll_files && _pzer.atSectionBoundary() && Time::CurrentUTC() >= _poll_file_next && _infiles.scanFiles(FILE_RETRY, *tsp) > 0) {
         // Some files have changed. Reset packetizer and reload files.
         reloadFiles();
         // Plan next file polling.
