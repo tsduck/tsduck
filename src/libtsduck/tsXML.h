@@ -389,7 +389,7 @@ namespace ts {
         //! @param [in] name Attribute name.
         //! @param [in] value Attribute value.
         //!
-        void setEnumAttribute(const Enumeration& definition, Element* elem, const std::string& name, int value);
+        void setEnumAttribute(const Enumeration& definition, Element* element, const std::string& name, int value);
 
         //!
         //! Set a date/time attribute of an XML element.
@@ -397,7 +397,7 @@ namespace ts {
         //! @param [in] name Attribute name.
         //! @param [in] value Attribute value.
         //!
-        void setDateTimeAttribute(Element* elem, const std::string& name, const Time& value);
+        void setDateTimeAttribute(Element* element, const std::string& name, const Time& value);
 
         //!
         //! Add a new text containing hexadecimal data inside a node.
