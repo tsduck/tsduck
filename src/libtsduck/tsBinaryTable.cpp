@@ -447,7 +447,7 @@ bool ts::BinaryTable::LoadFile(BinaryTablePtrVector& tables, std::istream& strm,
         std::streampos position(strm.tellg());
         SectionPtr sp(new Section);
         if (!sp->read(strm, crc_op, report)) {
-            return false;
+            break; // error or end of file
         }
 
         // Check the sequence of section numbers.

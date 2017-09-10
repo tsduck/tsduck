@@ -39,3 +39,4 @@ Makefile* text eol=lf
 *.xcf binary
 *.docx binary
 *.pptx binary
+*.bin binary

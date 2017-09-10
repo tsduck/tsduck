@@ -116,6 +116,15 @@ namespace ts {
         }
 
         //!
+        //! Add several tables in the file.
+        //! @param [in] tables The binary tables to add.
+        //!
+        void add(const BinaryTablePtrVector& tables)
+        {
+            _tables.insert(_tables.end(), tables.begin(), tables.end());
+        }
+
+        //!
         //! Add a table in the file.
         //! The table is serialized
         //! @param [in] table The table to add.

@@ -42,8 +42,9 @@ $(OBJDIR)/utest: $(OBJS) $(LIBTSDUCKDIR)/$(OBJDIR)/$(SHARED_LIBTSDUCK)
 LDLIBS := -lcppunit $(LDLIBS)
 
 $(OBJDIR)/setenv.sh: Makefile
-	echo "export LD_LIBRARY_PATH=$(realpath $(LIBTSDUCKDIR)/$(OBJDIR)):$(realpath $(LIBTSDUCKDIR))" >$@
-	echo "export TSPLUGINS_PATH=$(realpath $(TSPLUGINSDIR)/$(OBJDIR))" >>$@
+	echo '[[ ":$$PATH:" != *:$(realpath $(OBJDIR)):* ]] && export PATH="$(realpath $(OBJDIR)):$$PATH"' >$@
+	echo 'export LD_LIBRARY_PATH="$(realpath $(LIBTSDUCKDIR)/$(OBJDIR))"' >>$@
+	echo 'export TSPLUGINS_PATH="$(realpath $(TSPLUGINSDIR)/$(OBJDIR)):$(realpath $(LIBTSDUCKDIR))"' >>$@
 
 .PHONY: install install-devel
 install install-devel:
