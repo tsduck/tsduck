@@ -48,7 +48,20 @@ dnf install glibc-devel.i686 libstdc++-devel.i686 pcsc-lite-devel.i686 cppunit-d
 
 ## Red Hat Entreprise Linux, CentOS {#reqrhel}
 
-- Same as Fedora but use command `yum` instead of `dnf`.
+- First, perform the same setup as Fedora but use command `yum` instead of `dnf`.
+
+- Additionally, building TSDuck on Linux requires GCC 5.x or higher. On RHEL/CentOS 7.3
+  (latest release as of this writing), GCC is installed with version 4.8.5 and building
+  TSDuck fails. To install GCC 5.* on CentOS, execute the following commands:
+~~~~
+yum install centos-release-scl
+yum install devtoolset-4-gcc*
+~~~~
+
+- Then in you `.bashrc` file, add:
+~~~~
+source /opt/rh/devtoolset-4/enable
+~~~~
 
 ## Ubuntu {#requbuntu}
 
