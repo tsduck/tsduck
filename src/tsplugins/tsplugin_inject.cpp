@@ -307,11 +307,11 @@ bool ts::InjectPlugin::reloadFiles()
     SectionPtrVector sections;
 
     for (FileNameRateList::iterator it = _infiles.begin(); it != _infiles.end(); ++it) {
-        // With --poll-files, we ignore non-existent files.
         if (_poll_files && !FileExists(it->file_name)) {
-            continue;
+            // With --poll-files, we ignore non-existent files.
+            it->retry_count = 0;  // no longer needed to retry
         }
-        if (!Section::LoadFile(sections, it->file_name, _crc_op, *tsp)) {
+        else if (!Section::LoadFile(sections, it->file_name, _crc_op, *tsp)) {
             success = false;
             if (it->retry_count > 0) {
                 it->retry_count--;
@@ -411,11 +411,13 @@ ts::ProcessorPlugin::Status ts::InjectPlugin::processPacket(TSPacket& pkt, bool&
 
     // Poll files when necessary.
     // Do that only at section boundary in the output PID to avoid truncated sections.
-    if (_poll_files && _pzer.atSectionBoundary() && Time::CurrentUTC() >= _poll_file_next && _infiles.scanFiles(FILE_RETRY, *tsp) > 0) {
-        // Some files have changed. Reset packetizer and reload files.
-        reloadFiles();
+    if (_poll_files && _pzer.atSectionBoundary() && Time::CurrentUTC() >= _poll_file_next) {
+        if (_infiles.scanFiles(FILE_RETRY, *tsp) > 0) {
+            // Some files have changed. Reset packetizer and reload files.
+            reloadFiles();
+        }
         // Plan next file polling.
-        _poll_file_next += _poll_files_ms;
+        _poll_file_next = Time::CurrentUTC() + _poll_files_ms;
     }
 
     // Now really process the current packet.

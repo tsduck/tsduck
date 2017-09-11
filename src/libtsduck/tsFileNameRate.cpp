@@ -45,7 +45,7 @@ ts::FileNameRate::FileNameRate(const std::string& name, MilliSecond rep) :
     file_name(name),
     file_date(),
     repetition(rep) ,
-    retry_count(0)
+    retry_count(1)
 {
 }
 
@@ -80,9 +80,9 @@ bool ts::FileNameRate::scanFile(size_t retry, ReportInterface& report)
         const Time date = GetFileModificationTimeLocal(file_name);
         const bool changed = date != file_date;
         if (changed) {
+            report.verbose("file %s %s", file_name.c_str(), file_date == Time::Epoch ? "created" : (date == Time::Epoch ? "deleted" : "modified"));
             file_date = date;
             retry_count = retry;
-            report.verbose("file %s %s", file_name.c_str(), file_date == Time::Epoch ? "created" : (date == Time::Epoch ? "deleted" : "modified"));
         }
         // Return true if file was changed or some retries are allowed.
         return changed || retry_count > 0;
