@@ -2,14 +2,21 @@
 TSDuck Change Log and Release Notes
 ===================================
 
-Version (next)
+Version 3.2-20170911
 
 - Added option --pid to plugin descrambler.
+
+- Improved robustness of option --poll-file ('inject' plugin). Mitigate
+  possible race condition when the plugin tries to open a section file
+  while it is created/copied by the user. Now retry later.
 
 - Improved robustness of DVB tuner reception on Windows. Explicitly
   resynchronizes on valid packets when the driver misses data.
 
 - Adjusted output of tslsdvb on Windows to better identify tuner names.
+
+- Integrated Dektec DTAPI v5.27.0.97 (Dektec SDK v2017.08.0) on pre-built
+  binaries for Windows and Linux.
 
 Version 3.2-20170528
 
