@@ -48,7 +48,10 @@ dnf install glibc-devel.i686 libstdc++-devel.i686 pcsc-lite-devel.i686 cppunit-d
 
 ## Red Hat Entreprise Linux, CentOS {#reqrhel}
 
-- First, perform the same setup as Fedora but use command `yum` instead of `dnf`.
+- Setup for a TSDuck native build:
+~~~~
+yum install gcc-c++ doxygen graphviz curl pcsc-tools pcsc-lite-devel cppunit-devel
+~~~~
 
 - Additionally, building TSDuck on Linux requires GCC 5.x or higher. On RHEL/CentOS 7.3
   (latest release as of this writing), GCC is installed with version 4.8.5 and building
@@ -62,6 +65,9 @@ yum install devtoolset-4-gcc*
 ~~~~
 source /opt/rh/devtoolset-4/enable
 ~~~~
+
+- Please note that it is not possible to build a 32-bit TSDuck on a 64-bit CentOS since
+  the i386 packages are not available for the GCC 5.x runtime.
 
 ## Ubuntu {#requbuntu}
 
