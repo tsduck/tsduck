@@ -37,6 +37,8 @@
 #include "tsBinaryTable.h"
 #include "tsXMLTables.h"
 #include "tsReportWithPrefix.h"
+#include "tsInputRedirector.h"
+#include "tsOutputRedirector.h"
 TSDUCK_SOURCE;
 
 
@@ -53,6 +55,7 @@ struct Options: public ts::Args
     bool             outdir;    // Output name is a directory.
     bool             compile;   // Explicit compilation.
     bool             decompile; // Explicit decompilation.
+    bool             xml_model; // Display XML model instead of compilation.
 };
 
 Options::Options(int argc, char *argv[]) :
@@ -61,13 +64,15 @@ Options::Options(int argc, char *argv[]) :
     outfile(),
     outdir(false),
     compile(false),
-    decompile(false)
+    decompile(false),
+    xml_model(false)
 {
-    option("",           0,  ts::Args::STRING, 1);
+    option("",           0,  ts::Args::STRING);
     option("compile",   'c');
     option("decompile", 'd');
     option("output",    'o', ts::Args::STRING);
     option("verbose",   'v');
+    option("xml-model", 'x');
 
     setHelp("Input files:\n"
             "\n"
@@ -103,7 +108,14 @@ Options::Options(int argc, char *argv[]) :
             "      Produce verbose output.\n"
             "\n"
             "  --version\n"
-            "      Display the version number.\n");
+            "      Display the version number.\n"
+            "\n"
+            "  -x\n"
+            "  --xml-model\n"
+            "      Display the XML model of the table files. This model is not a full\n"
+            "      XML-Schema, this is an informal template file which describes the\n"
+            "      expected syntax of TSDuck XML files. If --output is specified, save\n"
+            "      the model here. Do not specify input files.\n");
 
     analyze(argc, argv);
 
@@ -111,12 +123,16 @@ Options::Options(int argc, char *argv[]) :
     getValue(outfile, "output");
     compile = present("compile");
     decompile = present("decompile");
+    xml_model = present("xml-model");
     outdir = !outfile.empty() && ts::IsDirectory(outfile);
 
     if (present("verbose")) {
         setDebugLevel(ts::Severity::Verbose);
     }
 
+    if (!infiles.empty() && xml_model) {
+        error("do not specify input files with --xml-model");
+    }
     if (infiles.size() > 1 && !outfile.empty() && !outdir) {
         error("with more than one input file, --output must be a directory");
     }
@@ -124,6 +140,41 @@ Options::Options(int argc, char *argv[]) :
         error("specify either --compile or --decompile but not both");
     }
     exitOnError();
+}
+
+
+//----------------------------------------------------------------------------
+//  Display the XML model.
+//----------------------------------------------------------------------------
+
+bool DisplayModel(Options& opt)
+{
+    // Locate the model file.
+    const std::string inName(ts::XML::SearchFile("tsduck.xml"));
+    if (inName.empty()) {
+        opt.error("XML model file not found");
+        return false;
+    }
+    opt.verbose("original model file is " + inName);
+
+    // Save to a file. Default to stdout.
+    std::string outName(opt.outfile);
+    if (opt.outdir) {
+        // Specified output is a directory, add default name.
+        outName.push_back(ts::PathSeparator);
+        outName.append("tsduck.xml");
+    }
+    if (!outName.empty()) {
+        opt.verbose("saving model file to " + outName);
+    }
+
+    // Redirect input and output, exit in case of error.
+    ts::InputRedirector in(inName, opt);
+    ts::OutputRedirector out(outName, opt);
+
+    // Display / copy the XML model.
+    std::cout << std::cin.rdbuf();
+    return true;
 }
 
 
@@ -216,9 +267,14 @@ int main(int argc, char *argv[])
 {
     Options opt(argc, argv);
     bool ok = true;
-    for (size_t i = 0; i < opt.infiles.size(); ++i) {
-        if (!opt.infiles[i].empty()) {
-            ok = ProcessFile(opt, opt.infiles[i]) && ok;
+    if (opt.xml_model) {
+        ok = DisplayModel(opt);
+    }
+    else {
+        for (size_t i = 0; i < opt.infiles.size(); ++i) {
+            if (!opt.infiles[i].empty()) {
+                ok = ProcessFile(opt, opt.infiles[i]) && ok;
+            }
         }
     }
     return ok ? EXIT_SUCCESS : EXIT_FAILURE;
