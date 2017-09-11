@@ -190,7 +190,7 @@ namespace {
                     std::cout << std::endl;
                 }
                 for (size_t i = 0; i < tuners.size(); ++i) {
-                    ListTuner(*tuners[i], i, opt);
+                    ListTuner(*tuners[i], int(i), opt);
                 }
             }
         }
