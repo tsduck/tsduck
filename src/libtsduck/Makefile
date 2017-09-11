@@ -140,4 +140,4 @@ install-devel: $(OBJDIR)/$(STATIC_LIBTSDUCK) tsduck.h
 	install -d -m 755 $(DESTDIR)$(USRLIBDIR)
 	install -m 644 $(OBJDIR)/$(STATIC_LIBTSDUCK) $(DESTDIR)$(USRLIBDIR)
 	install -d -m 755 $(DESTDIR)$(SYSDIR)/include/tsduck
-	install -m 644 tsduck.mk ts*.h $(wildcard $(OSDIR)/ts*.h) $(wildcard tinyxml/ts*.h) $(DESTDIR)$(SYSDIR)/include/tsduck
+	install -m 644 tsduck.mk ts*.h $(wildcard $(OSDIR)/ts*.h) $(wildcard tinyxml/*.h) $(DESTDIR)$(SYSDIR)/include/tsduck
