@@ -231,5 +231,5 @@ void ts::DataBroadcastIdDescriptor::fromXML(XML& xml, const XML::Element* elemen
     _is_valid =
         checkXMLName(xml, element) &&
         xml.getIntAttribute<uint16_t>(data_broadcast_id, element, "data_broadcast_id", true, 0, 0x0000, 0xFFFF) &&
-        xml.getHexaTextChild(private_data, element, "selector_bytes", false, MAX_DESCRIPTOR_SIZE - 2);
+        xml.getHexaTextChild(private_data, element, "selector_bytes", false, 0, MAX_DESCRIPTOR_SIZE - 2);
 }

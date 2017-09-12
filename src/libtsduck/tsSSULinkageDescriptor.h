@@ -34,6 +34,7 @@
 
 #pragma once
 #include "tsAbstractDescriptor.h"
+#include "tsLinkageDescriptor.h"
 
 namespace ts {
     //!
@@ -97,6 +98,19 @@ namespace ts {
         //! @param [in] bin A binary descriptor to deserialize.
         //!
         SSULinkageDescriptor(const Descriptor& bin);
+
+        //!
+        //! Constructor from a linkage_descriptor.
+        //! @param [in] desc A linkage_descriptor to convert.
+        //! The data_broadcast_id must be 0x000A.
+        //!
+        SSULinkageDescriptor(const LinkageDescriptor& desc);
+
+        //!
+        //! Convert to a linkage_descriptor.
+        //! @param [out] desc A linkage_descriptor to convert.
+        //!
+        void toLinkageDescriptor(LinkageDescriptor& desc) const;
 
         // Inherited methods
         virtual void serialize(Descriptor&) const;

@@ -44,6 +44,39 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::LinkageDescriptor::DisplayDescriptor, ts::EDID(ts::
 
 
 //----------------------------------------------------------------------------
+// Constructors for substructures
+//----------------------------------------------------------------------------
+
+ts::LinkageDescriptor::MobileHandoverInfo::MobileHandoverInfo() :
+    handover_type(0),
+    origin_type(0),
+    network_id(0),
+    initial_service_id(0)
+{
+}
+
+ts::LinkageDescriptor::EventLinkageInfo::EventLinkageInfo() :
+    target_event_id(0),
+    target_listed(0),
+    event_simulcast(0)
+{
+}
+
+ts::LinkageDescriptor::ExtendedEventLinkageInfo::ExtendedEventLinkageInfo() :
+    target_event_id(0),
+    target_listed(0),
+    event_simulcast(0),
+    link_type(0),
+    target_id_type(0),
+    user_defined_id(0),
+    target_transport_stream_id(0),
+    target_original_network_id(),
+    target_service_id()
+{
+}
+
+
+//----------------------------------------------------------------------------
 // Default constructor:
 //----------------------------------------------------------------------------
 
@@ -53,6 +86,9 @@ ts::LinkageDescriptor::LinkageDescriptor(uint16_t ts, uint16_t onetw, uint16_t s
     onetw_id(onetw),
     service_id(service),
     linkage_type(ltype),
+    mobile_handover_info(),
+    event_linkage_info(),
+    extended_event_linkage_info(),
     private_data()
 {
     _is_valid = true;
@@ -69,6 +105,9 @@ ts::LinkageDescriptor::LinkageDescriptor(const Descriptor& desc) :
     onetw_id(0),
     service_id(0),
     linkage_type(0),
+    mobile_handover_info(),
+    event_linkage_info(),
+    extended_event_linkage_info(),
     private_data()
 {
     deserialize(desc);
@@ -89,6 +128,8 @@ void ts::LinkageDescriptor::serialize(Descriptor& desc) const
     bbp->appendUInt16(service_id);
     bbp->appendUInt8(linkage_type);
     bbp->append(private_data);
+
+    //@@@
 
     (*bbp)[0] = _tag;
     (*bbp)[1] = uint8_t(bbp->size() - 2);
@@ -113,6 +154,9 @@ void ts::LinkageDescriptor::deserialize(const Descriptor& desc)
         onetw_id = GetUInt16 (data + 2);
         service_id = GetUInt16 (data + 4);
         linkage_type = data[6];
+
+        //@@@
+
         private_data.copy (data + 7, size - 7);
     }
 }

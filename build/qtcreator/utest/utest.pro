@@ -57,4 +57,5 @@ SOURCES += \
     ../../../src/utest/utestXMLTables.cpp
 
 DISTFILES += \
-    ../../../src/utest/tables/ts2headers.sh
+    ../../../src/utest/tables/ts2headers.sh \
+    ../../../src/utest/tables/psi_all.xml

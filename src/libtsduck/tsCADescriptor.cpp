@@ -169,5 +169,5 @@ void ts::CADescriptor::fromXML(XML& xml, const XML::Element* element)
         checkXMLName(xml, element) &&
         xml.getIntAttribute<uint16_t>(cas_id, element, "CA_system_id", true, 0, 0x0000, 0xFFFF) &&
         xml.getIntAttribute<PID>(ca_pid, element, "CA_PID", true, 0, 0x0000, 0x1FFF) &&
-        xml.getHexaTextChild(private_data, element, "private_data", false, MAX_DESCRIPTOR_SIZE - 4);
+        xml.getHexaTextChild(private_data, element, "private_data", false, 0, MAX_DESCRIPTOR_SIZE - 4);
 }

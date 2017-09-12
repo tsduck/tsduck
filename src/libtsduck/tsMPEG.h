@@ -973,6 +973,9 @@ namespace ts {
         LINKAGE_SSU_TABLE       = 0x0A, //!< TS containing SSU BAT or NIT
         LINKAGE_IP_NOTIFY       = 0x0B, //!< IP/MAC notification service
         LINKAGE_INT_BAT_NIT     = 0x0C, //!< TS containing INT BAT or NIT
+        LINKAGE_EVENT           = 0x0D, //!< Event linkage
+        LINKAGE_EXT_EVENT_MIN   = 0x0E, //!< Extented event linkage, first value
+        LINKAGE_EXT_EVENT_MAX   = 0x1F, //!< Extented event linkage, last value
     };
 
     //---------------------------------------------------------------------
