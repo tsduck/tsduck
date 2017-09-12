@@ -101,6 +101,26 @@
       <service service_id="0xBF46" logical_channel_number="45" visible_service="true"/>
       <service service_id="0x2195" logical_channel_number="789" visible_service="false"/>
     </logical_channel_number_descriptor>
+    <linkage_descriptor transport_stream_id="0x1345" original_network_id="0x987F" service_id="0xCDFE" linkage_type="0x08">
+      <mobile_hand-over_info hand_over_type="2" origin_type="NIT" network_id="0x3434" initial_service_id="0x8764"/>
+      <private_data>
+        01 45 E8 45
+      </private_data>
+    </linkage_descriptor>
+    <linkage_descriptor transport_stream_id="0x1345" original_network_id="0x987F" service_id="0xCDFE" linkage_type="0x0D">
+      <event_linkage_info target_event_id="0x3444" target_listed="true" event_simulcast="false"/>
+    </linkage_descriptor>
+    <linkage_descriptor transport_stream_id="0x1545" original_network_id="0x987F" service_id="0xC1FE" linkage_type="0x0F">
+      <extended_event_linkage_info>
+        <event target_event_id="0x1234" target_listed="true" event_simulcast="false" link_type="1" target_id_type="3"
+            user_defined_id="0x3445" target_original_network_id="0x8764" target_service_id="0x6742"/>
+        <event target_event_id="0x7634" target_listed="false" event_simulcast="true" link_type="1" target_id_type="1"
+            target_transport_stream_id="0x8764"/>
+      </extended_event_linkage_info>
+      <private_data>
+        01 45 E8
+      </private_data>
+    </linkage_descriptor>
     <message_descriptor message_id="0x67" language_code="zaf">
       <text>The message</text>
     </message_descriptor>
@@ -141,7 +161,7 @@
     </teletext_descriptor>
     <terrestrial_delivery_system_descriptor
         centre_frequency="841,465,000"
-        bandwidth="9mhz"
+        bandwidth="8mhz"
         priority="LP"
         no_time_slicing="true"
         no_MPE_FEC="false"

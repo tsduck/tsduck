@@ -35,7 +35,6 @@
 #include "tsSSULinkageDescriptor.h"
 #include "tsTablesFactory.h"
 TSDUCK_SOURCE;
-TS_XML_DESCRIPTOR_FACTORY(ts::SSULinkageDescriptor, "SSU_linkage_descriptor");
 
 
 //----------------------------------------------------------------------------
@@ -43,7 +42,7 @@ TS_XML_DESCRIPTOR_FACTORY(ts::SSULinkageDescriptor, "SSU_linkage_descriptor");
 //----------------------------------------------------------------------------
 
 ts::SSULinkageDescriptor::SSULinkageDescriptor(uint16_t ts, uint16_t onetw, uint16_t service) :
-    AbstractDescriptor(DID_LINKAGE, "SSU_linkage_descriptor"),
+    AbstractDescriptor(DID_LINKAGE, ""),  // No XML conversion.
     ts_id(ts),
     onetw_id(onetw),
     service_id(service),
@@ -59,7 +58,7 @@ ts::SSULinkageDescriptor::SSULinkageDescriptor(uint16_t ts, uint16_t onetw, uint
 //----------------------------------------------------------------------------
 
 ts::SSULinkageDescriptor::SSULinkageDescriptor(uint16_t ts, uint16_t onetw, uint16_t service, uint32_t oui) :
-    AbstractDescriptor(DID_LINKAGE, "SSU_linkage_descriptor"),
+    AbstractDescriptor(DID_LINKAGE, ""),  // No XML conversion.
     ts_id(ts),
     onetw_id(onetw),
     service_id(service),
@@ -76,7 +75,7 @@ ts::SSULinkageDescriptor::SSULinkageDescriptor(uint16_t ts, uint16_t onetw, uint
 //----------------------------------------------------------------------------
 
 ts::SSULinkageDescriptor::SSULinkageDescriptor(const Descriptor& desc) :
-    AbstractDescriptor(DID_LINKAGE, "SSU_linkage_descriptor"),
+    AbstractDescriptor(DID_LINKAGE, ""),  // No XML conversion.
     ts_id(0),
     onetw_id(0),
     service_id(0),
@@ -84,6 +83,46 @@ ts::SSULinkageDescriptor::SSULinkageDescriptor(const Descriptor& desc) :
     private_data()
 {
     deserialize(desc);
+}
+
+
+//----------------------------------------------------------------------------
+// Constructor from a linkage_descriptor.
+//----------------------------------------------------------------------------
+
+ts::SSULinkageDescriptor::SSULinkageDescriptor(const ts::LinkageDescriptor& desc) :
+    AbstractDescriptor(DID_LINKAGE, ""),  // No XML conversion.
+    ts_id(0),
+    onetw_id(0),
+    service_id(0),
+    entries(),
+    private_data()
+{
+    _is_valid = desc.isValid() && desc.linkage_type == LINKAGE_SSU;
+    if (_is_valid) {
+        // Convert using serialization / deserialization.
+        Descriptor bin;
+        desc.serialize(bin);
+        deserialize(bin);
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Convert to a linkage_descriptor.
+//----------------------------------------------------------------------------
+
+void ts::SSULinkageDescriptor::toLinkageDescriptor(ts::LinkageDescriptor& desc) const
+{
+    if (_is_valid) {
+        // Convert using serialization / deserialization.
+        Descriptor bin;
+        serialize(bin);
+        desc.deserialize(bin);
+    }
+    else {
+        desc.invalidate();
+    }
 }
 
 
@@ -169,7 +208,11 @@ void ts::SSULinkageDescriptor::deserialize (const Descriptor& desc)
 
 ts::XML::Element* ts::SSULinkageDescriptor::toXML(XML& xml, XML::Element* parent) const
 {
-    return 0; // TODO @@@@
+    // There is no specific representation of this descriptor.
+    // Convert to a linkage_descriptor.
+    LinkageDescriptor desc;
+    toLinkageDescriptor(desc);
+    return desc.toXML(xml, parent);
 }
 
 
@@ -179,5 +222,8 @@ ts::XML::Element* ts::SSULinkageDescriptor::toXML(XML& xml, XML::Element* parent
 
 void ts::SSULinkageDescriptor::fromXML(XML& xml, const XML::Element* element)
 {
-    // TODO @@@@
+    // There is no specific representation of this descriptor.
+    // We cannot be called since there is no registration in the XML factory.
+    xml.reportError("Internal error, there is no XML representation for SSULinkageDescriptor");
+    _is_valid = false;
 }

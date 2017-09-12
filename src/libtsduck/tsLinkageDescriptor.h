@@ -35,6 +35,7 @@
 
 #pragma once
 #include "tsAbstractDescriptor.h"
+#include "tsVariable.h"
 
 namespace ts {
     //!
@@ -45,12 +46,63 @@ namespace ts {
     class TSDUCKDLL LinkageDescriptor : public AbstractDescriptor
     {
     public:
+        //!
+        //! Definition of mobile_hand-over_info when linkage_type == LINKAGE_HAND_OVER
+        //!
+        class TSDUCKDLL MobileHandoverInfo
+        {
+        public:
+            MobileHandoverInfo();         //!< Default constructor.
+            uint8_t  handover_type;       //!< Hand-over type, 4 bits.
+            uint8_t  origin_type;         //!< Origin type, 0 = NIT, 1 = SDT.
+            uint16_t network_id;          //!< Network when handover_type == 0x01, 0x02, 0x03.
+            uint16_t initial_service_id;  //!< Initial service when origin_type == 0x00
+        };
+
+        //!
+        //! Definition of event_linkage_info when linkage_type == LINKAGE_EVENT
+        //!
+        class TSDUCKDLL EventLinkageInfo
+        {
+        public:
+            EventLinkageInfo();         //!< Default constructor.
+            uint16_t target_event_id;   //!< Target event.
+            bool     target_listed;     //!< Service is listed in SDT.
+            bool     event_simulcast;   //!< Target and source event are simulcast.
+        };
+
+        //!
+        //! Definition of extended_event_linkage_info when linkage_type in LINKAGE_EXT_EVENT_MIN .. LINKAGE_EXT_EVENT_MAX
+        //!
+        class TSDUCKDLL ExtendedEventLinkageInfo
+        {
+        public:
+            ExtendedEventLinkageInfo();                      //!< Default constructor.
+            uint16_t           target_event_id;              //!< Target event.
+            bool               target_listed;                //!< Service is listed in SDT.
+            bool               event_simulcast;              //!< Target and source event are simulcast.
+            uint8_t            link_type;                    //!< Link type, 2 bits.
+            uint8_t            target_id_type;               //!< Target type, 2 bits.
+            uint16_t           user_defined_id;              //!< User-defined id when target_id_type == 3
+            uint16_t           target_transport_stream_id;   //!< Target TS when target_id_type == 1
+            Variable<uint16_t> target_original_network_id;   //!< Optional target original network.
+            Variable<uint16_t> target_service_id;            //!< Optional target service.
+        };
+
+        //!
+        //! List of extended event info.
+        //!
+        typedef std::list<ExtendedEventLinkageInfo> ExtendedEventLinkageList;
+
         // LinkageDescriptor public members:
         uint16_t    ts_id;         //!< Transport stream id.
         uint16_t    onetw_id;      //!< Original network id.
         uint16_t    service_id;    //!< Service id.
         uint8_t     linkage_type;  //!< Linkage type, LINKAGE_* constants, eg ts::LINKAGE_INFO.
-        ByteBlock   private_data;  //!< Private data, depends on linkage type.
+        MobileHandoverInfo       mobile_handover_info;         //!< mobile_hand-over_info when linkage_type == LINKAGE_HAND_OVER.
+        EventLinkageInfo         event_linkage_info;           //!< event_linkage_info when linkage_type == LINKAGE_EVENT.
+        ExtendedEventLinkageList extended_event_linkage_info;  //!< extended_event_linkage_info when linkage_type in LINKAGE_EXT_EVENT_MIN .. LINKAGE_EXT_EVENT_MAX.
+        ByteBlock                private_data;                 //!< Private data, depends on linkage type.
 
         //!
         //! Default constructor

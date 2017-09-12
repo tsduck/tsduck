@@ -208,4 +208,5 @@ void ts::SSUDataBroadcastIdDescriptor::fromXML(XML& xml, const XML::Element* ele
     // There is no specific representation of this descriptor.
     // We cannot be called since there is no registration in the XML factory.
     xml.reportError("Internal error, there is no XML representation for SSUDataBroadcastIdDescriptor");
+    _is_valid = false;
 }
