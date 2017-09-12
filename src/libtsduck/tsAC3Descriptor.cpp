@@ -222,7 +222,15 @@ void ts::AC3Descriptor::DisplayDescriptor(TablesDisplay& display, DID did, const
 
 ts::XML::Element* ts::AC3Descriptor::toXML(XML& xml, XML::Element* parent) const
 {
-    return 0; // TODO @@@@
+    XML::Element* root = _is_valid ? xml.addElement(parent, _xml_name) : 0;
+    xml.setOptionalIntAttribute(root, "component_type", component_type, true);
+    xml.setOptionalIntAttribute(root, "bsid", bsid, true);
+    xml.setOptionalIntAttribute(root, "mainid", mainid, true);
+    xml.setOptionalIntAttribute(root, "asvc", asvc, true);
+    if (!additional_info.empty()) {
+        xml.addHexaText(xml.addElement(root, "additional_info"), additional_info);
+    }
+    return root;
 }
 
 
@@ -232,5 +240,11 @@ ts::XML::Element* ts::AC3Descriptor::toXML(XML& xml, XML::Element* parent) const
 
 void ts::AC3Descriptor::fromXML(XML& xml, const XML::Element* element)
 {
-    // TODO @@@@
+    _is_valid =
+        checkXMLName(xml, element) &&
+        xml.getOptionalIntAttribute(component_type, element, "component_type") &&
+        xml.getOptionalIntAttribute(bsid, element, "bsid") &&
+        xml.getOptionalIntAttribute(mainid, element, "mainid") &&
+        xml.getOptionalIntAttribute(asvc, element, "asvc") &&
+        xml.getHexaTextChild(additional_info, element, "additional_info", false, 0, MAX_DESCRIPTOR_SIZE - 8);
 }

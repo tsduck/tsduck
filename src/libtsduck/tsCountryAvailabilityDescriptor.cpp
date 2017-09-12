@@ -166,7 +166,13 @@ void ts::CountryAvailabilityDescriptor::DisplayDescriptor(TablesDisplay& display
 
 ts::XML::Element* ts::CountryAvailabilityDescriptor::toXML(XML& xml, XML::Element* parent) const
 {
-    return 0; // TODO @@@@
+    XML::Element* root = _is_valid ? xml.addElement(parent, _xml_name) : 0;
+    xml.setBoolAttribute(root, "country_availability", country_availability);
+    for (StringVector::const_iterator it = country_codes.begin(); it != country_codes.end(); ++it) {
+        XML::Element* e = xml.addElement(root, "country");
+        xml.setAttribute(e, "country_code", *it);
+    }
+    return root;
 }
 
 
@@ -176,5 +182,18 @@ ts::XML::Element* ts::CountryAvailabilityDescriptor::toXML(XML& xml, XML::Elemen
 
 void ts::CountryAvailabilityDescriptor::fromXML(XML& xml, const XML::Element* element)
 {
-    // TODO @@@@
+    country_codes.clear();
+
+    XML::ElementVector children;
+    _is_valid =
+        checkXMLName(xml, element) &&
+        xml.getChildren(children, element, "country", 0, MAX_ENTRIES);
+
+    for (size_t i = 0; _is_valid && i < children.size(); ++i) {
+        std::string name;
+        _is_valid = xml.getAttribute(name, children[i], "country_code", true, "", 3, 3);
+        if (_is_valid) {
+            country_codes.push_back(name);
+        }
+    }
 }

@@ -46,7 +46,7 @@
 -->
 <tsduck>
 
-  <!-- Program Association Tavle -->
+  <!-- Program Association Table -->
   <PAT version="uint5, default=0"
        current="bool, default=true"
        transport_stream_id="uint16, required"
@@ -131,6 +131,28 @@
       <_any in="_descriptors"/>
     </service>
   </SDT>
+
+  <!-- Event Information Table -->
+  <!-- If type="pf", this is an EITp/f -->
+  <!-- If type="uint4", this is an EITs with TID 0x50+type (actual) or 0x60+type (other) -->  
+  <EIT type="pf|uint4, default=pf"
+       version="uint5, default=0"
+       current="bool, default=true"
+       actual="bool, default=true"
+       service_id="uint16, required"
+       transport_stream_id="uint16, required"
+       original_network_id="uint16, required"
+       segment_last_section_number="uint8, required"
+       last_table_id="uint8, required">
+    <!-- One per event -->
+    <event event_id="uint16, required"
+           start_time="YYYY-MM-DD hh:mm:ss, required"
+           duration="hh:mm:ss, required"
+           running_status="undefined|not-running|starting|pausing|running|off-air, default=undefined"
+           free_CA_mode="bool, default=false">
+      <_any in="_descriptors"/>
+    </event>
+  </EIT>
 
   <!-- Time and Date Table -->
   <TDT UTC_time="YYYY-MM-DD hh:mm:ss, required"/>
@@ -315,6 +337,41 @@
                 audio_type="uint8, required"/>
     </ISO_639_language_descriptor>
 
+    <linkage_descriptor
+        transport_stream_id="uint16, required"
+        original_network_id="uint16, required"
+        service_id="uint16, required"
+        linkage_type="uint8, required">
+      <!-- if linkage_type == 0x08 -->
+      <mobile_hand-over_info
+          hand_over_type="uint4, required"
+          origin_type="NIT|SDT, required"
+          network_id="uint16, required if hand-over_type is 0x01, 0x02, 0x03"
+          initial_service_id="uint16, required if origin_type is NIT"/>
+      <!-- else if linkage_type == 0x0D -->
+      <event_linkage_info
+          target_event_id="uint16, required"
+          target_listed="bool, required"
+          event_simulcast="bool, required"/>
+      <!-- else if linkage_type >= 0x0E && linkage_type <= 0x1F -->
+      <extended_event_linkage_info>
+        <!-- For each event -->
+        <event
+            target_event_id="uint16, required"
+            target_listed="bool, required"
+            event_simulcast="bool, required"
+            link_type="uint2, required"
+            target_id_type="uint2, required"
+            user_defined_id="uint16, required if target_id_type == 3"
+            target_transport_stream_id="uint16, required if target_id_type == 1"
+            target_original_network_id="uint16, optional"
+            target_service_id="uint16, optional"/>
+      </extended_event_linkage_info>
+      <private_data>
+        Hexadecimal content
+      </private_data>
+    </linkage_descriptor>
+
     <local_time_offset_descriptor>
       <!-- One per region -->
       <region country_code="char3, required"
@@ -345,7 +402,7 @@
                rating="uint8, required"/>
     </parental_rating_descriptor>
 
-    <private_data_specifier_descriptor private_data_specifier="uint32, required"/>
+    <private_data_specifier_descriptor private_data_specifier="uint32|eacem|eutelsat, required"/>
 
     <S2_satellite_delivery_system_descriptor
         backwards_compatibility="bool, required"
@@ -353,15 +410,15 @@
         input_stream_identifier="uint8, optional"/>
 
     <satellite_delivery_system_descriptor
-        frequency="SatelliteFrequencyGHz, required"
-        orbital_position="SatelliteOrbitalPosition, required"
-        west_east_flag="SatelliteOrbitalDirection, required"
-        polarization="SatellitePolarization, required"
-        roll_off="uint2, optional"
-        modulation_system="SatelliteModulationSystem, required"
-        modulation_type="SatelliteModulationType, required"
+        frequency="SatelliteFrequencyHz, required"
+        orbital_position="SatelliteOrbitalPosition, eg. 19.2, required"
+        west_east_flag="east|west, required"
+        polarization="horizontal|vertical, required"
+        roll_off="0.35|0.25|0.20|reserved, default=0.35"
+        modulation_system="DVB-S|DVB-S2, default=DVB-S"
+        modulation_type="auto|QPSK|8PSK|16-QAM, default=QPSK"
         symbol_rate="SatelliteSymbolRate, required"
-        FEC_inner="InnerFEC, required"/>
+        FEC_inner="undefined|1/2|2/3|3/4|5/6|7/8|8/9|3/5|4/5|9/10|none|, required"/>
 
     <service_descriptor
         service_type="uint8, required"
@@ -409,16 +466,16 @@
 
     <terrestrial_delivery_system_descriptor
         centre_frequency="TerrestrialFrequencyHz, required"
-        bandwidth="TerrestrialBandwidth, required"
-        priority="TerrestrialPriority, required"
-        time_slicing="bool, required"
-        MPE-FEC="bool, required"
-        constellation="TerrestrialConstellation, required"
+        bandwidth="8MHz|7MHz|6MHz|5MHz, required"
+        priority="HP|LP, required"
+        no_time_slicing="bool, required"
+        no_MPE_FEC="bool, required"
+        constellation="QPSK|16-QAM|64-QAM, required"
         hierarchy_information="uint3, required"
-        code_rate-HP_stream="TerrestrialCodeRate, required"
-        code_rate-LP_stream="TerrestrialCodeRate, required"
-        guard_interval="TerrestrialGuardInterval, required"
-        transmission_mode="TerrestrialTransmissionMode, required"
+        code_rate_HP_stream="1/2|2/3|3/4|5/6|7/8, required"
+        code_rate_LP_stream="1/2|2/3|3/4|5/6|7/8, required"
+        guard_interval="1/32|1/16|1/8|1/4, required"
+        transmission_mode="2k|8k|4k, required"
         other_frequency="bool, required"/>
 
   </_descriptors>

@@ -34,6 +34,7 @@
 
 #pragma once
 #include "tsXML.h"
+#include "tsMPEG.h"
 #include "tsTablesPtr.h"
 #include "tsStringUtils.h"
 
@@ -149,9 +150,10 @@ namespace ts {
         //! @param [in,out] xml XML utility for error reporting
         //! @param [in,out] parent The parent node for the new XML tree.
         //! @param [in] desc The descriptor to serialize.
+        //! @param [in] pds Associated private data specifier.
         //! @return The new XML element or zero if @a table is invalid.
         //!
-        static XML::Element* ToXML(XML& xml, XML::Element* parent, const Descriptor& desc);
+        static XML::Element* ToXML(XML& xml, XML::Element* parent, const Descriptor& desc, PDS pds = 0);
 
         //!
         //! This method converts a list of descriptors to XML.

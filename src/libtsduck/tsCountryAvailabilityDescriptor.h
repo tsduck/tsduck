@@ -49,6 +49,11 @@ namespace ts {
         StringVector country_codes;        //!< See ETSI 300 468, 6.2.10.
 
         //!
+        //! Maximum number of entries to fit in 255 bytes.
+        //!
+        static const size_t MAX_ENTRIES = 84;
+
+        //!
         //! Default constructor.
         //!
         CountryAvailabilityDescriptor();

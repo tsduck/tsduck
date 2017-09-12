@@ -222,15 +222,13 @@ void ts::RST::fromXML(XML& xml, const XML::Element* element)
 
     for (size_t index = 0; _is_valid && index < children.size(); ++index) {
         Event event;
-        int rs = 0;
         _is_valid =
             xml.getIntAttribute<uint16_t>(event.transport_stream_id, children[index], "transport_stream_id", true, 0, 0x0000, 0xFFFF) &&
             xml.getIntAttribute<uint16_t>(event.original_network_id, children[index], "original_network_id", true, 0, 0x0000, 0xFFFF) &&
             xml.getIntAttribute<uint16_t>(event.service_id, children[index], "service_id", true, 0, 0x0000, 0xFFFF) &&
             xml.getIntAttribute<uint16_t>(event.event_id, children[index], "event_id", true, 0, 0x0000, 0xFFFF) &&
-            xml.getEnumAttribute(rs, RunningStatusNames, children[index], "running_status", true);
+            xml.getIntEnumAttribute<uint8_t>(event.running_status, RunningStatusNames, children[index], "running_status", true);
         if (_is_valid) {
-            event.running_status = uint8_t(rs);
             events.push_back(event);
         }
     }

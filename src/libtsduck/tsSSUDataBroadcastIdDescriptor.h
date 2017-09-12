@@ -34,6 +34,7 @@
 
 #pragma once
 #include "tsAbstractDescriptor.h"
+#include "tsDataBroadcastIdDescriptor.h"
 #include "tsVariable.h"
 
 namespace ts {
@@ -95,6 +96,19 @@ namespace ts {
         //! @param [in] bin A binary descriptor to deserialize.
         //!
         SSUDataBroadcastIdDescriptor(const Descriptor& bin);
+
+        //!
+        //! Constructor from a data_broadcast_id_descriptor.
+        //! @param [in] desc A data_broadcast_id_descriptor to convert.
+        //! The data_broadcast_id must be 0x000A.
+        //!
+        SSUDataBroadcastIdDescriptor(const DataBroadcastIdDescriptor& desc);
+
+        //!
+        //! Convert to a data_broadcast_id_descriptor.
+        //! @param [out] desc A data_broadcast_id_descriptor to convert.
+        //!
+        void toDataBroadcastIdDescriptor(DataBroadcastIdDescriptor& desc) const;
 
         // Inherited methods
         virtual void serialize(Descriptor&) const;

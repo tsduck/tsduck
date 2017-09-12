@@ -157,7 +157,13 @@ void ts::ServiceListDescriptor::DisplayDescriptor(TablesDisplay& display, DID di
 
 ts::XML::Element* ts::ServiceListDescriptor::toXML(XML& xml, XML::Element* parent) const
 {
-    return 0; // TODO @@@@
+    XML::Element* root = _is_valid ? xml.addElement(parent, _xml_name) : 0;
+    for (EntryList::const_iterator it = entries.begin(); it != entries.end(); ++it) {
+        XML::Element* e = xml.addElement(root, "service");
+        xml.setIntAttribute(e, "service_id", it->service_id, true);
+        xml.setIntAttribute(e, "service_type", it->service_type, true);
+    }
+    return root;
 }
 
 
@@ -167,5 +173,20 @@ ts::XML::Element* ts::ServiceListDescriptor::toXML(XML& xml, XML::Element* paren
 
 void ts::ServiceListDescriptor::fromXML(XML& xml, const XML::Element* element)
 {
-    // TODO @@@@
+    entries.clear();
+
+    XML::ElementVector children;
+    _is_valid =
+        checkXMLName(xml, element) &&
+        xml.getChildren(children, element, "service", 0, MAX_ENTRIES);
+
+    for (size_t i = 0; _is_valid && i < children.size(); ++i) {
+        Entry entry;
+        _is_valid =
+            xml.getIntAttribute<uint16_t>(entry.service_id, children[i], "service_id", true, 0, 0x0000, 0xFFFF) &&
+            xml.getIntAttribute<uint8_t>(entry.service_type, children[i], "service_type", true, 0, 0x00, 0xFF);
+        if (_is_valid) {
+            entries.push_back(entry);
+        }
+    }
 }

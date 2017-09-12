@@ -116,13 +116,26 @@ void ts::PrivateDataSpecifierDescriptor::DisplayDescriptor(TablesDisplay& displa
 
 
 //----------------------------------------------------------------------------
+// Known PDS names in XML files.
+//----------------------------------------------------------------------------
+
+namespace {
+    const ts::Enumeration KnownPDS(
+        "eacem",    ts::PDS_EACEM,
+        "eutelsat", ts::PDS_EUTELSAT,
+        TS_NULL
+    );
+}
+
+
+//----------------------------------------------------------------------------
 // XML serialization
 //----------------------------------------------------------------------------
 
 ts::XML::Element* ts::PrivateDataSpecifierDescriptor::toXML(XML& xml, XML::Element* parent) const
 {
     XML::Element* root = _is_valid ? xml.addElement(parent, _xml_name) : 0;
-    xml.setIntAttribute(root, "private_data_specifier", pds, true);
+    xml.setIntEnumAttribute(KnownPDS, root, "private_data_specifier", pds);
     return root;
 }
 
@@ -135,5 +148,5 @@ void ts::PrivateDataSpecifierDescriptor::fromXML(XML& xml, const XML::Element* e
 {
     _is_valid =
         checkXMLName(xml, element) &&
-        xml.getIntAttribute<PDS>(pds, element, "private_data_specifier", true);
+        xml.getIntEnumAttribute(pds, KnownPDS, element, "private_data_specifier", true);
 }

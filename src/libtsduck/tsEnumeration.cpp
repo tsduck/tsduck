@@ -37,6 +37,7 @@
 #include "tsToInteger.h"
 #include "tsStringUtils.h"
 #include "tsDecimal.h"
+#include "tsFormat.h"
 TSDUCK_SOURCE;
 
 //
@@ -146,10 +147,18 @@ int ts::Enumeration::value(const std::string& name, bool caseSensitive) const
 // Get the name from a value.
 //----------------------------------------------------------------------------
 
-std::string ts::Enumeration::name(int value) const
+std::string ts::Enumeration::name(int value, bool hexa, size_t hexDigitCount) const
 {
     const EnumMap::const_iterator it = _map.find(value);
-    return it == _map.end() ? Decimal(value, 0, true, "") : it->second;
+    if (it != _map.end()) {
+        return it->second;
+    }
+    else if (hexa) {
+        return Format("0x%0*X", int(hexDigitCount), value);
+    }
+    else {
+        return Decimal(value, 0, true, "");
+    }
 }
 
 

@@ -166,7 +166,14 @@ void ts::LogicalChannelNumberDescriptor::DisplayDescriptor(TablesDisplay& displa
 
 ts::XML::Element* ts::LogicalChannelNumberDescriptor::toXML(XML& xml, XML::Element* parent) const
 {
-    return 0; // TODO @@@@
+    XML::Element* root = _is_valid ? xml.addElement(parent, _xml_name) : 0;
+    for (EntryList::const_iterator it = entries.begin(); it != entries.end(); ++it) {
+        XML::Element* e = xml.addElement(root, "service");
+        xml.setIntAttribute(e, "service_id", it->service_id, true);
+        xml.setIntAttribute(e, "logical_channel_number", it->lcn, false);
+        xml.setBoolAttribute(e, "visible_service", it->visible);
+    }
+    return root;
 }
 
 
@@ -176,5 +183,21 @@ ts::XML::Element* ts::LogicalChannelNumberDescriptor::toXML(XML& xml, XML::Eleme
 
 void ts::LogicalChannelNumberDescriptor::fromXML(XML& xml, const XML::Element* element)
 {
-    // TODO @@@@
+    entries.clear();
+
+    XML::ElementVector children;
+    _is_valid =
+        checkXMLName(xml, element) &&
+        xml.getChildren(children, element, "service", 0, MAX_ENTRIES);
+
+    for (size_t i = 0; _is_valid && i < children.size(); ++i) {
+        Entry entry;
+        _is_valid =
+            xml.getIntAttribute<uint16_t>(entry.service_id, children[i], "service_id", true, 0, 0x0000, 0xFFFF) &&
+            xml.getIntAttribute<uint16_t>(entry.lcn, children[i], "logical_channel_number", true, 0, 0x0000, 0x03FF) &&
+            xml.getBoolAttribute(entry.visible, children[i], "visible_service", false, true);
+        if (_is_valid) {
+            entries.push_back(entry);
+        }
+    }
 }
