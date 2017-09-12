@@ -377,7 +377,18 @@ void ts::ExtendedEventDescriptor::DisplayDescriptor(TablesDisplay& display, DID 
 
 ts::XML::Element* ts::ExtendedEventDescriptor::toXML(XML& xml, XML::Element* parent) const
 {
-    return 0; // TODO @@@@
+    XML::Element* root = _is_valid ? xml.addElement(parent, _xml_name) : 0;
+    xml.setIntAttribute(root, "descriptor_number", descriptor_number, false);
+    xml.setIntAttribute(root, "last_descriptor_number", last_descriptor_number, false);
+    xml.setAttribute(root, "language_code", language_code);
+    xml.addText(xml.addElement(root, "text"), text);
+
+    for (EntryList::const_iterator it = entries.begin(); it != entries.end(); ++it) {
+        XML::Element* e = xml.addElement(root, "item");
+        xml.addText(xml.addElement(e, "description"), it->item_description);
+        xml.addText(xml.addElement(e, "name"), it->item);
+    }
+    return root;
 }
 
 
@@ -387,5 +398,26 @@ ts::XML::Element* ts::ExtendedEventDescriptor::toXML(XML& xml, XML::Element* par
 
 void ts::ExtendedEventDescriptor::fromXML(XML& xml, const XML::Element* element)
 {
-    // TODO @@@@
+    language_code.clear();
+    text.clear();
+    entries.clear();
+
+    XML::ElementVector children;
+    _is_valid =
+        checkXMLName(xml, element) &&
+        xml.getIntAttribute(descriptor_number, element, "descriptor_number", true) &&
+        xml.getIntAttribute(last_descriptor_number, element, "last_descriptor_number", true) &&
+        xml.getAttribute(language_code, element, "language_code", true, "", 3, 3) &&
+        xml.getTextChild(text, element, "text") &&
+        xml.getChildren(children, element, "item");
+
+    for (size_t i = 0; _is_valid && i < children.size(); ++i) {
+        Entry entry;
+        _is_valid =
+            xml.getTextChild(entry.item_description, children[i], "description") &&
+            xml.getTextChild(entry.item, children[i], "name");
+        if (_is_valid) {
+            entries.push_back(entry);
+        }
+    }
 }

@@ -185,7 +185,7 @@ bool DisplayModel(Options& opt)
 bool CompileXML(Options& opt, const std::string& infile, const std::string& outfile)
 {
     opt.verbose("Compiling " + infile + " to " + outfile);
-    ts::ReportWithPrefix report(opt, infile + ": ");
+    ts::ReportWithPrefix report(opt, ts::BaseName(infile) + ": ");
 
     // Load XML file, convert tables to binary and save binary file.
     ts::XMLTables xml;
@@ -200,7 +200,7 @@ bool CompileXML(Options& opt, const std::string& infile, const std::string& outf
 bool DecompileBinary(Options& opt, const std::string& infile, const std::string& outfile)
 {
     opt.verbose("Decompiling " + infile + " to " + outfile);
-    ts::ReportWithPrefix report(opt, infile + ": ");
+    ts::ReportWithPrefix report(opt, ts::BaseName(infile) + ": ");
 
     // Load binary tables.
     ts::BinaryTablePtrVector tables;

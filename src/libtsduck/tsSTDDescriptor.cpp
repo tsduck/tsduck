@@ -119,7 +119,9 @@ void ts::STDDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const
 
 ts::XML::Element* ts::STDDescriptor::toXML(XML& xml, XML::Element* parent) const
 {
-    return 0; // TODO @@@@
+    XML::Element* root = _is_valid ? xml.addElement(parent, _xml_name) : 0;
+    xml.setBoolAttribute(root, "leak_valid", leak_valid);
+    return root;
 }
 
 
@@ -129,5 +131,7 @@ ts::XML::Element* ts::STDDescriptor::toXML(XML& xml, XML::Element* parent) const
 
 void ts::STDDescriptor::fromXML(XML& xml, const XML::Element* element)
 {
-    // TODO @@@@
+    _is_valid =
+        checkXMLName(xml, element) &&
+        xml.getBoolAttribute(leak_valid, element, "leak_valid", true);
 }

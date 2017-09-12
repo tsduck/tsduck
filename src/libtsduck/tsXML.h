@@ -47,6 +47,7 @@
 #include "tsUnicodeUtils.h"
 #include "tsEnumeration.h"
 #include "tsTime.h"
+#include "tsVariable.h"
 
 // Definitions which are used by TinyXML-2.
 #if defined(__windows) && defined(_TSDUCKDLL_IMPL) && !defined(TINYXML2_EXPORT)
@@ -280,6 +281,41 @@ namespace ts {
         }
 
         //!
+        //! Get an optional integer attribute of an XML element.
+        //! @tparam INT An integer type.
+        //! @param [out] value Returned value of the attribute. If the attribute is ot present, the variable is reset.
+        //! @param [in] elem An XML element.
+        //! @param [in] name Name of the attribute.
+        //! @param [in] minValue Minimum allowed value for the attribute.
+        //! @param [in] maxValue Maximum allowed value for the attribute.
+        //! @return True on success, false on error.
+        //!
+        template <typename INT>
+        bool getOptionalIntAttribute(Variable<INT>& value,
+                                     const Element* elem,
+                                     const std::string& name,
+                                     INT minValue = std::numeric_limits<INT>::min(),
+                                     INT maxValue = std::numeric_limits<INT>::max())
+        {
+            INT v = 0;
+            if (findAttribute(elem, name, true) == 0) {
+                // Attribute not present, ok.
+                value.reset();
+                return true;
+            }
+            else if (getIntAttribute<INT>(v, elem, name, false, 0, minValue, maxValue)) {
+                // Attribute present, correct value.
+                value = v;
+                return true;
+            }
+            else {
+                // Attribute present, incorrect value.
+                value.reset();
+                return false;
+            }
+        }
+
+        //!
         //! Get an enumeration attribute of an XML element.
         //! Integer literals and integer values are accepted in the attribute.
         //! @param [out] value Returned value of the attribute.
@@ -293,6 +329,27 @@ namespace ts {
         bool getEnumAttribute(int& value, const Enumeration& definition, const Element* elem, const std::string& name, bool required = false, int defValue = 0);
 
         //!
+        //! Get an enumeration attribute of an XML element.
+        //! Integer literals and integer values are accepted in the attribute.
+        //! @tparam INT An integer type.
+        //! @param [out] value Returned value of the attribute.
+        //! @param [in] definition The definition of enumeration values.
+        //! @param [in] elem An XML element.
+        //! @param [in] name Name of the attribute.
+        //! @param [in] required If true, generate an error if the attribute is not found.
+        //! @param [in] defValue Default value to return if the attribute is not present.
+        //! @return True on success, false on error.
+        //!
+        template <typename INT>
+        bool getIntEnumAttribute(INT& value, const Enumeration& definition, const Element* elem, const std::string& name, bool required = false, INT defValue = INT(0))
+        {
+            int v = 0;
+            const bool ok = getEnumAttribute(v, definition, elem, name, required, int(defValue));
+            value = ok ? INT(v) : defValue;
+            return ok;
+        }
+
+        //!
         //! Get a date/time attribute of an XML element.
         //! @param [out] value Returned value of the attribute.
         //! @param [in] elem An XML element.
@@ -302,6 +359,17 @@ namespace ts {
         //! @return True on success, false on error.
         //!
         bool getDateTimeAttribute(Time& value, const Element* elem, const std::string& name, bool required = false, const Time& defValue = Time());
+
+        //!
+        //! Get a time attribute of an XML element in "hh:mm:ss" format.
+        //! @param [out] value Returned value of the attribute.
+        //! @param [in] elem An XML element.
+        //! @param [in] name Name of the attribute.
+        //! @param [in] required If true, generate an error if the attribute is not found.
+        //! @param [in] defValue Default value to return if the attribute is not present.
+        //! @return True on success, false on error.
+        //!
+        bool getTimeAttribute(Second& value, const Element* elem, const std::string& name, bool required = false, Second defValue = 0);
 
         //!
         //! Find all children elements in an XML element by name, case-insensitive.
@@ -315,16 +383,56 @@ namespace ts {
         bool getChildren(ElementVector& children, const Element* elem, const std::string& name, size_t minCount = 0, size_t maxCount = UNLIMITED);
 
         //!
+        //! Get text in a child of an element.
+        //! @param [out] data The content of the text in the child element.
+        //! @param [in] elem An XML element.
+        //! @param [in] name Name of the child element to search.
+        //! @param [in] trim If true, remove leading and trailing spaces.
+        //! @param [in] required If true, generate an error if the child element is not found.
+        //! @param [in] defValue Default value to return if the child element is not present.
+        //! @param [in] minSize Minimum allowed size for the value string.
+        //! @param [in] maxSize Maximum allowed size for the value string.
+        //! @return True on success, false on error.
+        //!
+        bool getTextChild(std::string& data,
+                          const Element* elem,
+                          const std::string& name,
+                          bool trim = true,
+                          bool required = false,
+                          const std::string& defValue = std::string(),
+                          size_t minSize = 0,
+                          size_t maxSize = UNLIMITED);
+
+        //!
         //! Get text children of an element.
         //! @param [out] data The content of the text children.
         //! @param [in] elem An XML containing text.
         //! @param [in] trim If true, remove leading and trailing spaces.
+        //! @param [in] minSize Minimum allowed size for the value string.
+        //! @param [in] maxSize Maximum allowed size for the value string.
         //! @return True on success, false on error.
         //!
-        bool getText(std::string& data, const Element* elem, bool trim = true);
+        bool getText(std::string& data, const Element* elem, bool trim = true, size_t minSize = 0, size_t maxSize = UNLIMITED);
 
         //!
-        //! Get a text child of an element containing hexadecimal data).
+        //! Get text in a child containing hexadecimal data.
+        //! @param [out] data The content of the text in the child element.
+        //! @param [in] elem An XML element.
+        //! @param [in] name Name of the child element to search.
+        //! @param [in] required If true, generate an error if the child element is not found.
+        //! @param [in] minSize Minimum allowed size for the value string.
+        //! @param [in] maxSize Maximum allowed size for the value string.
+        //! @return True on success, false on error.
+        //!
+        bool getHexaTextChild(ByteBlock& data,
+                              const Element* elem,
+                              const std::string& name,
+                              bool required = false,
+                              size_t minSize = 0,
+                              size_t maxSize = UNLIMITED);
+
+        //!
+        //! Get a text child of an element containing hexadecimal data.
         //! @param [out] data Buffer receiving the decoded hexadecimal data.
         //! @param [in] elem An XML containing an hexadecimal text.
         //! @param [in] minSize Minimum size of the returned data.
@@ -351,6 +459,34 @@ namespace ts {
         //! @return New child element or null on error.
         //!
         Element* addElement(Element* parent, const std::string& childName);
+
+        //!
+        //! Add a new text inside a node.
+        //! @param [in,out] parent Parent node.
+        //! @param [in] text Text string to add.
+        //! @return New child element or null on error.
+        //!
+        Text* addText(Element* parent, const std::string& text);
+
+        //!
+        //! Add a new text containing hexadecimal data inside a node.
+        //! @param [in,out] parent Parent node.
+        //! @param [in] data Address of binary data.
+        //! @param [in] size Size in bytes of binary data.
+        //! @return New child element or null on error.
+        //!
+        Text* addHexaText(Element* parent, const void* data, size_t size);
+
+        //!
+        //! Add a new text containing hexadecimal data inside a node.
+        //! @param [in,out] parent Parent node.
+        //! @param [in] data Binary data.
+        //! @return New child element or null on error.
+        //!
+        Text* addHexaText(Element* parent, const ByteBlock& data)
+        {
+            return addHexaText(parent, data.data(), data.size());
+        }
 
         //!
         //! Set a string attribute to a node.
@@ -383,6 +519,22 @@ namespace ts {
         }
 
         //!
+        //! Set an optional attribute with an integer value to a node.
+        //! @tparam INT An integer type.
+        //! @param [in,out] element The element which receives the attribute.
+        //! @param [in] name Attribute name.
+        //! @param [in] value Attribute optional value. If the variable is not set, no attribute is set.
+        //! @param [in] hexa If true, use an hexadecimal representation (0x...).
+        //!
+        template <typename INT>
+        void setOptionalIntAttribute(Element* element, const std::string& name, const Variable<INT>& value, bool hexa = false)
+        {
+            if (value.set()) {
+                setIntAttribute<INT>(element, name, value.value(), hexa);
+            }
+        }
+
+        //!
         //! Set an enumeration attribute of a node.
         //! @param [in] definition The definition of enumeration values.
         //! @param [in,out] element The element which receives the attribute.
@@ -390,6 +542,20 @@ namespace ts {
         //! @param [in] value Attribute value.
         //!
         void setEnumAttribute(const Enumeration& definition, Element* element, const std::string& name, int value);
+
+        //!
+        //! Set an enumeration attribute of a node.
+        //! @tparam INT An integer type.
+        //! @param [in] definition The definition of enumeration values.
+        //! @param [in,out] element The element which receives the attribute.
+        //! @param [in] name Attribute name.
+        //! @param [in] value Attribute value.
+        //!
+        template <typename INT>
+        void setIntEnumAttribute(const Enumeration& definition, Element* element, const std::string& name, INT value)
+        {
+            setAttribute(element, name, definition.name(int(value), true, 2 * sizeof(INT)));
+        }
 
         //!
         //! Set a date/time attribute of an XML element.
@@ -400,31 +566,34 @@ namespace ts {
         void setDateTimeAttribute(Element* element, const std::string& name, const Time& value);
 
         //!
-        //! Add a new text containing hexadecimal data inside a node.
-        //! @param [in,out] parent Parent node.
-        //! @param [in] data Address of binary data.
-        //! @param [in] size Size in bytes of binary data.
-        //! @return New child element or null on error.
+        //! Set a time attribute of an XML element in "hh:mm:ss" format.
+        //! @param [in,out] element The element which receives the attribute.
+        //! @param [in] name Attribute name.
+        //! @param [in] value Attribute value.
         //!
-        Text* addHexaText(Element* parent, const void* data, size_t size);
+        void setTimeAttribute(Element* element, const std::string& name, Second value);
 
         //!
-        //! Add a new text containing hexadecimal data inside a node.
-        //! @param [in,out] parent Parent node.
-        //! @param [in] data Binary data.
-        //! @return New child element or null on error.
+        //! Convert a date/time into a string, as required in attributes.
+        //! @param [in] value Time value.
+        //! @return The corresponding string.
         //!
-        Text* addHexaText(Element* parent, const ByteBlock& data)
-        {
-            return addHexaText(parent, data.data(), data.size());
-        }
+        static std::string DateTimeToString(const Time& value);
 
         //!
         //! Convert a time into a string, as required in attributes.
         //! @param [in] value Time value.
         //! @return The corresponding string.
         //!
-        static std::string ToString(const Time& value);
+        static std::string TimeToString(Second value);
+
+        //!
+        //! Convert a string into a date/time, as required in attributes.
+        //! @param [in,out] value Time value. Unmodified in case of error.
+        //! @param [in] str Time value as a string.
+        //! @return True on success, false on error.
+        //!
+        static bool DateTimeFromString(Time& value, const std::string& str);
 
         //!
         //! Convert a string into a time, as required in attributes.
@@ -432,7 +601,7 @@ namespace ts {
         //! @param [in] str Time value as a string.
         //! @return True on success, false on error.
         //!
-        static bool FromString(Time& value, const std::string& str);
+        static bool TimeFromString(Second& value, const std::string& str);
 
         //!
         //! A subclass of TinyXML printer class which can control the indentation width.

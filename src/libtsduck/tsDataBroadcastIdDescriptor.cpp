@@ -213,7 +213,12 @@ void ts::DataBroadcastIdDescriptor::DisplaySelectorBytes(TablesDisplay & display
 
 ts::XML::Element* ts::DataBroadcastIdDescriptor::toXML(XML& xml, XML::Element* parent) const
 {
-    return 0; // TODO @@@@
+    XML::Element* root = _is_valid ? xml.addElement(parent, _xml_name) : 0;
+    xml.setIntAttribute(root, "data_broadcast_id", data_broadcast_id, true);
+    if (!private_data.empty()) {
+        xml.addHexaText(xml.addElement(root, "selector_bytes"), private_data);
+    }
+    return root;
 }
 
 
@@ -223,5 +228,8 @@ ts::XML::Element* ts::DataBroadcastIdDescriptor::toXML(XML& xml, XML::Element* p
 
 void ts::DataBroadcastIdDescriptor::fromXML(XML& xml, const XML::Element* element)
 {
-    // TODO @@@@
+    _is_valid =
+        checkXMLName(xml, element) &&
+        xml.getIntAttribute<uint16_t>(data_broadcast_id, element, "data_broadcast_id", true, 0, 0x0000, 0xFFFF) &&
+        xml.getHexaTextChild(private_data, element, "selector_bytes", false, MAX_DESCRIPTOR_SIZE - 2);
 }

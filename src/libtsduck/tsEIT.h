@@ -149,11 +149,7 @@ namespace ts {
 
     private:
         // Add a new section to a table being serialized
-        // Session number is incremented. Data and remain are reinitialized.
-        void addSection(BinaryTable& table,
-                        int& section_number,
-                        uint8_t* payload,
-                        uint8_t*& data,
-                        size_t& remain) const;
+        // Section number is incremented. Data and remain are reinitialized.
+        void addSection(BinaryTable& table, int& section_number, uint8_t* payload, uint8_t*& data, size_t& remain) const;
     };
 }

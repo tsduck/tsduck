@@ -35,7 +35,6 @@
 #include "tsSSUDataBroadcastIdDescriptor.h"
 #include "tsTablesFactory.h"
 TSDUCK_SOURCE;
-TS_XML_DESCRIPTOR_FACTORY(ts::SSUDataBroadcastIdDescriptor, "SSU_data_broadcast_id_descriptor");
 
 
 //----------------------------------------------------------------------------
@@ -43,7 +42,7 @@ TS_XML_DESCRIPTOR_FACTORY(ts::SSUDataBroadcastIdDescriptor, "SSU_data_broadcast_
 //----------------------------------------------------------------------------
 
 ts::SSUDataBroadcastIdDescriptor::SSUDataBroadcastIdDescriptor() :
-    AbstractDescriptor(DID_DATA_BROADCAST_ID, "SSU_data_broadcast_id_descriptor"),
+    AbstractDescriptor(DID_DATA_BROADCAST_ID, ""),  // No XML conversion.
     entries(),
     private_data()
 {
@@ -56,7 +55,7 @@ ts::SSUDataBroadcastIdDescriptor::SSUDataBroadcastIdDescriptor() :
 //----------------------------------------------------------------------------
 
 ts::SSUDataBroadcastIdDescriptor::SSUDataBroadcastIdDescriptor (uint32_t oui, uint8_t update_type) :
-    AbstractDescriptor(DID_DATA_BROADCAST_ID, "SSU_data_broadcast_id_descriptor"),
+    AbstractDescriptor(DID_DATA_BROADCAST_ID, ""),  // No XML conversion.
     entries(),
     private_data()
 {
@@ -70,11 +69,48 @@ ts::SSUDataBroadcastIdDescriptor::SSUDataBroadcastIdDescriptor (uint32_t oui, ui
 //----------------------------------------------------------------------------
 
 ts::SSUDataBroadcastIdDescriptor::SSUDataBroadcastIdDescriptor(const Descriptor& desc) :
-    AbstractDescriptor(DID_DATA_BROADCAST_ID, "SSU_data_broadcast_id_descriptor"),
+    AbstractDescriptor(DID_DATA_BROADCAST_ID, ""),  // No XML conversion.
     entries(),
     private_data()
 {
     deserialize(desc);
+}
+
+
+//----------------------------------------------------------------------------
+// Constructor from a data_broadcast_id_descriptor.
+//----------------------------------------------------------------------------
+
+ts::SSUDataBroadcastIdDescriptor::SSUDataBroadcastIdDescriptor(const DataBroadcastIdDescriptor& desc) :
+    AbstractDescriptor(DID_DATA_BROADCAST_ID, ""),  // No XML conversion.
+    entries(),
+    private_data()
+{
+    _is_valid = desc.isValid() && desc.data_broadcast_id == 0x000A;
+    if (_is_valid) {
+        // Convert using serialization / deserialization.
+        Descriptor bin;
+        desc.serialize(bin);
+        deserialize(bin);
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Convert to a data_broadcast_id_descriptor.
+//----------------------------------------------------------------------------
+
+void ts::SSUDataBroadcastIdDescriptor::toDataBroadcastIdDescriptor(DataBroadcastIdDescriptor& desc) const
+{
+    if (_is_valid) {
+        // Convert using serialization / deserialization.
+        Descriptor bin;
+        serialize(bin);
+        desc.deserialize(bin);
+    }
+    else {
+        desc.invalidate();
+    }
 }
 
 
@@ -155,7 +191,11 @@ void ts::SSUDataBroadcastIdDescriptor::deserialize (const Descriptor& desc)
 
 ts::XML::Element* ts::SSUDataBroadcastIdDescriptor::toXML(XML& xml, XML::Element* parent) const
 {
-    return 0; // TODO @@@@
+    // There is no specific representation of this descriptor.
+    // Convert to a data_broadcast_id_descriptor.
+    DataBroadcastIdDescriptor desc;
+    toDataBroadcastIdDescriptor(desc);
+    return desc.toXML(xml, parent);
 }
 
 
@@ -165,5 +205,7 @@ ts::XML::Element* ts::SSUDataBroadcastIdDescriptor::toXML(XML& xml, XML::Element
 
 void ts::SSUDataBroadcastIdDescriptor::fromXML(XML& xml, const XML::Element* element)
 {
-    // TODO @@@@
+    // There is no specific representation of this descriptor.
+    // We cannot be called since there is no registration in the XML factory.
+    xml.reportError("Internal error, there is no XML representation for SSUDataBroadcastIdDescriptor");
 }

@@ -152,7 +152,7 @@ namespace ts {
 
         //!
         //! Get the extended descriptor id.
-        //! @param [in] pds Associated private descriptor.
+        //! @param [in] pds Associated private data specifier.
         //! @return The extended descriptor id.
         //!
         EDID edid(PDS pds = 0) const;

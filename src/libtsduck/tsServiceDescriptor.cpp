@@ -204,7 +204,7 @@ void ts::ServiceDescriptor::fromXML(XML& xml, const XML::Element* element)
 {
     _is_valid =
         checkXMLName(xml, element) &&
-        xml.getIntAttribute<uint8_t>(service_type, element, "", true) &&
+        xml.getIntAttribute<uint8_t>(service_type, element, "service_type", true) &&
         xml.getAttribute(provider_name, element, "service_provider_name", true) &&
         xml.getAttribute(service_name, element, "service_name", true);
 }

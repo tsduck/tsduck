@@ -55,6 +55,11 @@ namespace ts {
         EntryList entries;  //!< The list of content entries.
 
         //!
+        //! Maximum number of entries to fit in 255 bytes.
+        //!
+        static const size_t MAX_ENTRIES = 127;
+
+        //!
         //! Default constructor.
         //!
         ContentDescriptor();

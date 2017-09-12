@@ -55,6 +55,12 @@ namespace ts {
         EntryList entries;  //!< The list of item entries.
 
         //!
+        //! Maximum number of services entries to fit in 255 bytes.
+        //!
+        static const size_t MAX_ENTRIES = 63;
+
+
+        //!
         //! Default constructor.
         //!
         ParentalRatingDescriptor();

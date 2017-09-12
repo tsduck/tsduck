@@ -34,9 +34,12 @@
 #include "tsEIT.h"
 #include "tsFormat.h"
 #include "tsNames.h"
+#include "tsRST.h"
 #include "tsBCD.h"
 #include "tsMJD.h"
+#include "tsStringUtils.h"
 #include "tsTablesFactory.h"
+#include "tsXMLTables.h"
 TSDUCK_SOURCE;
 TS_XML_TABLE_FACTORY(ts::EIT, "EIT");
 TS_ID_TABLE_RANGE_FACTORY(ts::EIT, ts::TID_EIT_MIN, ts::TID_EIT_MAX);
@@ -218,7 +221,87 @@ void ts::EIT::deserialize(const BinaryTable& table)
 
 void ts::EIT::serialize(BinaryTable& table) const
 {
-    //@@ TODO
+    // Reinitialize table object
+    table.clear();
+
+    // Return an empty table if not valid
+    if (!_is_valid) {
+        return;
+    }
+
+    // Build the sections
+    uint8_t payload[MAX_PSI_LONG_SECTION_PAYLOAD_SIZE];
+    int section_number = 0;
+    uint8_t* data = payload;
+    size_t remain = sizeof(payload);
+
+    // The first 6 bytes are identical in all section. Build them once.
+    PutUInt16(data, ts_id);
+    PutUInt16(data + 2, onetw_id);
+    data[4] = segment_last;
+    data[5] = last_table_id;
+    data += 6;
+    remain -= 6;
+
+    // Add all events
+    for (EventMap::const_iterator it = events.begin(); it != events.end(); ++it) {
+
+        const uint16_t event_id = it->first;
+        const Event& event(it->second);
+
+        // If we cannot at least add the fixed part, open a new section
+        if (remain < 12) {
+            addSection(table, section_number, payload, data, remain);
+        }
+
+        // Insert the characteristics of the event. When the section is
+        // not large enough to hold the entire descriptor list, open a
+        // new section for the rest of the descriptors. In that case, the
+        // common properties of the event must be repeated.
+        bool starting = true;
+        size_t start_index = 0;
+
+        while (starting || start_index < event.descs.count()) {
+
+            // If we are at the beginning of an event description, make sure that the
+            // entire event description fits in the section. If it does not fit, start
+            // a new section. Note that huge event descriptions may not fit into one
+            // section. In that case, the event description will span two sections later.
+            if (starting && 12 + event.descs.binarySize() > remain) {
+                addSection(table, section_number, payload, data, remain);
+            }
+
+            starting = false;
+
+            // Insert common characteristics of the service
+            assert(remain >= 12);
+            PutUInt16(data, event_id);
+            EncodeMJD(event.start_time, data + 2, 5);
+            data[7] = EncodeBCD(int(event.duration / 3600));
+            data[8] = EncodeBCD(int((event.duration / 60) % 60));
+            data[9] = EncodeBCD(int(event.duration % 60));
+            data += 10;
+            remain -= 10;
+
+            // Insert descriptors (all or some).
+            uint8_t* flags = data;
+            start_index = event.descs.lengthSerialize(data, remain, start_index);
+
+            // The following fields are inserted in the 4 "reserved" bits of the descriptor_loop_length.
+            flags[0] = (flags[0] & 0x0F) | (event.running_status << 5) | (event.CA_controlled ? 0x10 : 0x00);
+
+            // If not all descriptors were written, the section is full.
+            // Open a new one and continue with this service.
+            if (start_index < event.descs.count()) {
+                addSection(table, section_number, payload, data, remain);
+            }
+        }
+    }
+
+    // Add partial section (if there is one)
+    if (data > payload + 6 || table.sectionCount() == 0) {
+        addSection(table, section_number, payload, data, remain);
+    }
 }
 
 
@@ -238,12 +321,11 @@ void ts::EIT::addSection(BinaryTable& table, int& section_number, uint8_t* paylo
                                  uint8_t(section_number), //last_section_number
                                  payload,
                                  data - payload)); // payload_size,
-
  
     // Reinitialize pointers.
-    // Restart after constant part of payload (3 bytes).
-    remain += data - payload - 3;
-    data = payload + 3;
+    // Restart after constant part of payload (6 bytes).
+    remain += data - payload - 6;
+    data = payload + 6;
     section_number++;
 }
 
@@ -323,7 +405,32 @@ void ts::EIT::DisplaySection(TablesDisplay& display, const ts::Section& section,
 
 ts::XML::Element* ts::EIT::toXML(XML& xml, XML::Element* parent) const
 {
-    return 0; // TODO @@@@
+    XML::Element* root = _is_valid ? xml.addElement(parent, _xml_name) : 0;
+    if (isPresentFollowing()) {
+        xml.setAttribute(root, "type", "pf");
+    }
+    else {
+        xml.setIntAttribute(root, "type", _table_id - (isActual() ? TID_EIT_S_ACT_MIN : TID_EIT_S_OTH_MIN));
+    }
+    xml.setIntAttribute(root, "version", version);
+    xml.setBoolAttribute(root, "current", is_current);
+    xml.setBoolAttribute(root, "actual", isActual());
+    xml.setIntAttribute(root, "service_id", service_id, true);
+    xml.setIntAttribute(root, "transport_stream_id", ts_id, true);
+    xml.setIntAttribute(root, "original_network_id", onetw_id, true);
+    xml.setIntAttribute(root, "segment_last_section_number", segment_last, true);
+    xml.setIntAttribute(root, "last_table_id", last_table_id, true);
+
+    for (EventMap::const_iterator it = events.begin(); it != events.end(); ++it) {
+        XML::Element* e = xml.addElement(root, "event");
+        xml.setIntAttribute(e, "event_id", it->first, true);
+        xml.setDateTimeAttribute(e, "start_time", it->second.start_time);
+        xml.setTimeAttribute(e, "duration", it->second.duration);
+        xml.setEnumAttribute(RST::RunningStatusNames, e, "running_status", it->second.running_status);
+        xml.setBoolAttribute(e, "free_CA_mode", it->second.CA_controlled);
+        XMLTables::ToXML(xml, e, it->second.descs);
+    }
+    return root;
 }
 
 
@@ -333,5 +440,54 @@ ts::XML::Element* ts::EIT::toXML(XML& xml, XML::Element* parent) const
 
 void ts::EIT::fromXML(XML& xml, const XML::Element* element)
 {
-    // TODO @@@@
+    events.clear();
+    std::string type;
+    bool actual = 0;
+
+    XML::ElementVector children;
+    _is_valid =
+        checkXMLName(xml, element) &&
+        xml.getAttribute(type, element, "type", false, "pf") &&
+        xml.getIntAttribute<uint8_t>(version, element, "version", false, 0, 0, 31) &&
+        xml.getBoolAttribute(is_current, element, "current", false, true) &&
+        xml.getBoolAttribute(actual, element, "actual", false, true) &&
+        xml.getIntAttribute<uint16_t>(service_id, element, "service_id", true, 0, 0x0000, 0xFFFF) &&
+        xml.getIntAttribute<uint16_t>(ts_id, element, "transport_stream_id", true, 0, 0x0000, 0xFFFF) &&
+        xml.getIntAttribute<uint16_t>(onetw_id, element, "original_network_id", true, 0, 0x00, 0xFFFF) &&
+        xml.getIntAttribute<uint8_t>(segment_last, element, "segment_last_section_number", true, 0, 0x00, 0xFF) &&
+        xml.getIntAttribute<TID>(last_table_id, element, "last_table_id", true, 0, 0x00, 0xFF) &&
+        xml.getChildren(children, element, "event");
+
+    // Update table id.
+    if (_is_valid) {
+        if (SimilarStrings(type, "pf")) {
+            // This is an EIT p/f
+            _table_id = actual ? TID_EIT_PF_ACT : TID_EIT_PF_OTH;
+        }
+        else if (ToInteger(_table_id, type)) {
+            // This is an EIT schedule
+            _table_id += actual ? TID_EIT_S_ACT_MIN : TID_EIT_S_OTH_MIN;
+        }
+        else {
+            xml.reportError(Format("'%s' is not a valid value for attribute 'type' in <%s>, line %d",
+                                   type.c_str(), XML::ElementName(element), element->GetLineNum()));
+            _is_valid = false;
+        }
+    }
+
+    // Get all events.
+    for (size_t i = 0; _is_valid && i < children.size(); ++i) {
+        Event event;
+        uint16_t event_id = 0;
+        _is_valid =
+            xml.getIntAttribute<uint16_t>(event_id, children[i], "event_id", true, 0, 0x0000, 0xFFFF) &&
+            xml.getDateTimeAttribute(event.start_time, children[i], "start_time", true) &&
+            xml.getTimeAttribute(event.duration, children[i], "duration", true) &&
+            xml.getIntEnumAttribute<uint8_t>(event.running_status, RST::RunningStatusNames, children[i], "running_status", false, 0) &&
+            xml.getBoolAttribute(event.CA_controlled, children[i], "free_CA_mode", false, false) &&
+            XMLTables::FromDescriptorListXML(event.descs, xml, children[i]);
+        if (_is_valid) {
+            events[event_id] = event;
+        }
+    }
 }

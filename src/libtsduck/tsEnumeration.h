@@ -181,12 +181,15 @@ namespace ts {
         //! Get the name from a value.
         //!
         //! @param [in] value An integer value to search.
-        //! @return The corresponding string or a decimal representation of
-        //! @a value if not found. If several names were registered with
-        //! the same value, one of them is returned but which one is
-        //! returned is unspecified.
+        //! @param [in] hexa If true and no name exists for @a value, return the value
+        //! as an hexadecimal string with "0x" prefix instead of decimal.
+        //! @param [in] hexDigitCount When an hexadecimal value is returned, specify the
+        //! minimum number of digits.
+        //! @return The corresponding string or a numeric representation of @a value if not found.
+        //! If several names were registered with the same value, one of them is returned but which
+        //! one is returned is unspecified.
         //!
-        std::string name(int value) const;
+        std::string name(int value, bool hexa = false, size_t hexDigitCount = 0) const;
 
         //!
         //! Return a comma-separated list of all names for a list of integer values.

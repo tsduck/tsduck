@@ -255,7 +255,7 @@ ts::XML::Element* ts::XMLTables::ToXML(XML& xml, XML::Element* parent, const Bin
 // This method converts a descriptor to the appropriate XML tree.
 //----------------------------------------------------------------------------
 
-ts::XML::Element* ts::XMLTables::ToXML(XML& xml, XML::Element* parent, const Descriptor& desc)
+ts::XML::Element* ts::XMLTables::ToXML(XML& xml, XML::Element* parent, const Descriptor& desc, PDS pds)
 {
     // Filter invalid descriptors.
     if (!desc.isValid()) {
@@ -266,7 +266,7 @@ ts::XML::Element* ts::XMLTables::ToXML(XML& xml, XML::Element* parent, const Des
     XML::Element* node = 0;
 
     // Do we know how to deserialize this descriptor?
-    TablesFactory::DescriptorFactory fac = TablesFactory::Instance()->getDescriptorFactory(desc.edid());
+    TablesFactory::DescriptorFactory fac = TablesFactory::Instance()->getDescriptorFactory(desc.edid(pds));
     if (fac != 0) {
         // We know how to deserialize it.
         AbstractDescriptorPtr dp = fac();
@@ -298,7 +298,7 @@ bool ts::XMLTables::ToXML(XML& xml, XML::Element* parent, const DescriptorList& 
     bool success = true;
     for (size_t index = 0; index < list.count(); ++index) {
         const DescriptorPtr desc(list[index]);
-        if (desc.isNull() || ToXML(xml, parent, *desc) == 0) {
+        if (desc.isNull() || ToXML(xml, parent, *desc, list.privateDataSpecifier(index)) == 0) {
             success = false;
         }
     }

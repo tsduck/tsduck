@@ -120,7 +120,9 @@ void ts::BouquetNameDescriptor::DisplayDescriptor(TablesDisplay& display, DID di
 
 ts::XML::Element* ts::BouquetNameDescriptor::toXML(XML& xml, XML::Element* parent) const
 {
-    return 0; // TODO @@@@
+    XML::Element* root = _is_valid ? xml.addElement(parent, _xml_name) : 0;
+    xml.setAttribute(root, "bouquet_name", name);
+    return root;
 }
 
 
@@ -130,5 +132,7 @@ ts::XML::Element* ts::BouquetNameDescriptor::toXML(XML& xml, XML::Element* paren
 
 void ts::BouquetNameDescriptor::fromXML(XML& xml, const XML::Element* element)
 {
-    // TODO @@@@
+    _is_valid =
+        checkXMLName(xml, element) &&
+        xml.getAttribute(name, element, "bouquet_name", true, "", 0, MAX_DESCRIPTOR_SIZE - 2);
 }

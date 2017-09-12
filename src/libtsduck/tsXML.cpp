@@ -387,14 +387,35 @@ bool ts::XML::getEnumAttribute(int& value, const Enumeration& definition, const 
 bool ts::XML::getDateTimeAttribute(Time& value, const Element* elem, const std::string& name, bool required, const Time& defValue)
 {
     std::string str;
-    if (!getAttribute(str, elem, name, required, ToString(defValue))) {
+    if (!getAttribute(str, elem, name, required, DateTimeToString(defValue))) {
         return false;
     }
 
     // Analyze the time string.
-    const bool ok = FromString(value, str);
+    const bool ok = DateTimeFromString(value, str);
     if (!ok) {
         reportError(Format("'%s' is not a valid date/time for attribute '%s' in <%s>, line %d, use \"YYYY-MM-DD hh:mm:ss\"",
+                           str.c_str(), name.c_str(), ElementName(elem), elem->GetLineNum()));
+    }
+    return ok;
+}
+
+
+//----------------------------------------------------------------------------
+// Get a time attribute of an XML element in "hh:mm:ss" format.
+//----------------------------------------------------------------------------
+
+bool ts::XML::getTimeAttribute(Second& value, const Element* elem, const std::string& name, bool required, Second defValue)
+{
+    std::string str;
+    if (!getAttribute(str, elem, name, required, TimeToString(defValue))) {
+        return false;
+    }
+
+    // Analyze the time string.
+    const bool ok = TimeFromString(value, str);
+    if (!ok) {
+        reportError(Format("'%s' is not a valid time for attribute '%s' in <%s>, line %d, use \"hh:mm:ss\"",
                            str.c_str(), name.c_str(), ElementName(elem), elem->GetLineNum()));
     }
     return ok;
@@ -439,17 +460,48 @@ bool ts::XML::getChildren(ElementVector& children, const Element* elem, const st
 
 
 //----------------------------------------------------------------------------
+// Get text in a child of an element.
+//----------------------------------------------------------------------------
+
+bool ts::XML::getTextChild(std::string& data,
+                           const Element* elem,
+                           const std::string& name,
+                           bool trim,
+                           bool required,
+                           const std::string& defValue,
+                           size_t minSize,
+                           size_t maxSize)
+{
+    // Get child node.
+    ElementVector child;
+    if (!getChildren(child, elem, name, required ? 1 : 0, 1)) {
+        data.clear();
+        return false;
+    }
+
+    // Get value in child node.
+    if (child.empty()) {
+        data = defValue;
+        return true;
+    }
+    else {
+        return getText(data, child[0], trim, minSize, maxSize);
+    }
+}
+
+
+//----------------------------------------------------------------------------
 // Get a text child of an element.
 //----------------------------------------------------------------------------
 
-bool ts::XML::getText(std::string& data, const Element* elem, bool trim)
+bool ts::XML::getText(std::string& data, const Element* elem, bool trim, size_t minSize, size_t maxSize)
 {
     data.clear();
     if (elem == 0) {
         return false;
     }
 
-    // Locate text children.
+    // Locate and concatenate text children.
     for (const Node* node = elem->FirstChild(); node != 0; node = node->NextSibling()) {
         const Text* text = node->ToText();
         if (text != 0) {
@@ -459,11 +511,49 @@ bool ts::XML::getText(std::string& data, const Element* elem, bool trim)
             }
         }
     }
-
     if (trim) {
         Trim(data);
     }
-    return true;
+
+    // Check value size.
+    const size_t len = data.length();
+    if (len >= minSize && len <= maxSize) {
+        return true;
+    }
+    else if (maxSize == UNLIMITED) {
+        reportError(Format("Incorrect text in <%s>, line %d, contains %" FMT_SIZE_T "d characters, at least %" FMT_SIZE_T "d required",
+                           ElementName(elem), elem->GetLineNum(), len, minSize));
+        return false;
+    }
+    else {
+        reportError(Format("Incorrect text in <%s>, line %d, contains %" FMT_SIZE_T "d characters, allowed %" FMT_SIZE_T "d to %" FMT_SIZE_T "d",
+                           ElementName(elem), elem->GetLineNum(), len, minSize, maxSize));
+        return false;
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Get text in a child containing hexadecimal data.
+//----------------------------------------------------------------------------
+
+bool ts::XML::getHexaTextChild(ByteBlock& data, const Element* elem, const std::string& name, bool required, size_t minSize, size_t maxSize)
+{
+    // Get child node.
+    ElementVector child;
+    if (!getChildren(child, elem, name, required ? 1 : 0, 1)) {
+        data.clear();
+        return false;
+    }
+
+    // Get value in child node.
+    if (child.empty()) {
+        data.clear();
+        return true;
+    }
+    else {
+        return getHexaText(data, child[0], minSize, maxSize);
+    }
 }
 
 
@@ -485,11 +575,24 @@ bool ts::XML::getHexaText(ByteBlock& data, const Element* elem, size_t minSize, 
     }
 
     // Interpret hexa data.
-    if (HexaDecode(data, text)) {
+    if (!HexaDecode(data, text)) {
+        reportError(Format("Invalid hexadecimal content in <%s>, line %d", ElementName(elem), elem->GetLineNum()));
+        return false;
+    }
+    
+    // Check value size.
+    const size_t len = data.size();
+    if (len >= minSize && len <= maxSize) {
         return true;
     }
+    else if (maxSize == UNLIMITED) {
+        reportError(Format("Incorrect hexa content in <%s>, line %d, contains %" FMT_SIZE_T "d bytes, at least %" FMT_SIZE_T "d required",
+                           ElementName(elem), elem->GetLineNum(), len, minSize));
+        return false;
+    }
     else {
-        reportError(Format("Invalid hexadecimal content in <%s>, line %d", ElementName(elem), elem->GetLineNum()));
+        reportError(Format("Incorrect hexa content in <%s>, line %d, contains %" FMT_SIZE_T "d bytes, allowed %" FMT_SIZE_T "d to %" FMT_SIZE_T "d",
+                           ElementName(elem), elem->GetLineNum(), len, minSize, maxSize));
         return false;
     }
 }
@@ -604,7 +707,7 @@ void ts::XML::setEnumAttribute(const Enumeration& definition, Element* elem, con
 // Convert a time into a string, as required in attributes.
 //----------------------------------------------------------------------------
 
-std::string ts::XML::ToString(const Time& value)
+std::string ts::XML::DateTimeToString(const Time& value)
 {
     const Time::Fields f(value);
     return Format("%04d-%02d-%02d %02d:%02d:%02d", f.year, f.month, f.day, f.hour, f.minute, f.second);
@@ -612,10 +715,20 @@ std::string ts::XML::ToString(const Time& value)
 
 
 //----------------------------------------------------------------------------
+// Convert a time into a string, as required in attributes.
+//----------------------------------------------------------------------------
+
+std::string ts::XML::TimeToString(Second value)
+{
+    return Format("%02d:%02d:%02d", int(value / 3600), int((value / 60) % 60), int(value % 60));
+}
+
+
+//----------------------------------------------------------------------------
 // Convert a string into a time, as required in attributes.
 //----------------------------------------------------------------------------
 
-bool ts::XML::FromString(Time& value, const std::string& str)
+bool ts::XML::DateTimeFromString(Time& value, const std::string& str)
 {
     StringVector main;
     StringVector date;
@@ -647,12 +760,73 @@ bool ts::XML::FromString(Time& value, const std::string& str)
 
 
 //----------------------------------------------------------------------------
+// Convert a string into a time, as required in attributes.
+//----------------------------------------------------------------------------
+
+bool ts::XML::TimeFromString(Second& value, const std::string& str)
+{
+    StringVector time;
+    Second hours = 0;
+    Second minutes = 0;
+    Second seconds = 0;
+
+    SplitString(time, str, ':', true);
+    bool ok = time.size() == 3 &&
+        ToInteger(hours,   time[0]) && hours   >= 0 && hours   <= 23 &&
+        ToInteger(minutes, time[1]) && minutes >= 0 && minutes <= 59 &&
+        ToInteger(seconds, time[2]) && seconds >= 0 && seconds <= 59;
+
+    if (ok) {
+        value = (hours * 3600) + (minutes * 60) + seconds;
+    }
+
+    return ok;
+}
+
+
+//----------------------------------------------------------------------------
 // Set a date/time attribute of an XML element.
 //----------------------------------------------------------------------------
 
 void ts::XML::setDateTimeAttribute(Element* elem, const std::string& name, const Time& value)
 {
-    setAttribute(elem, name, ToString(value));
+    setAttribute(elem, name, DateTimeToString(value));
+}
+
+
+//----------------------------------------------------------------------------
+// Set a time attribute of an XML element in "hh:mm:ss" format.
+//----------------------------------------------------------------------------
+
+void ts::XML::setTimeAttribute(Element* element, const std::string& name, Second value)
+{
+    setAttribute(element, name, TimeToString(value));
+}
+
+
+//----------------------------------------------------------------------------
+// Add a new text inside a node.
+//----------------------------------------------------------------------------
+
+ts::XML::Text* ts::XML::addText(Element* parent, const std::string& text)
+{
+    // Filter incorrect parameters.
+    if (parent == 0) {
+        return 0;
+    }
+
+    // Get the associated document.
+    Document* doc = documentOf(parent);
+    if (doc == 0) {
+        return 0;
+    }
+
+    // Add the text node.
+    Text* child = doc->NewText(text.c_str());
+    if (child != 0) {
+        parent->InsertEndChild(child);
+    }
+    return child;
 }
 
 
@@ -667,22 +841,12 @@ ts::XML::Text* ts::XML::addHexaText(Element* parent, const void* data, size_t si
         return 0;
     }
 
-    // Get the associated document.
-    Document* doc = documentOf(parent);
-    if (doc == 0) {
-        return 0;
-    }
-
     // Format the data.
     const int depth = NodeDepth(parent);
-    std::string hex("\n" + Hexa(data, size, hexa::HEXA | hexa::BPL, 2 * depth, 16) + std::string(2 * std::max(0, depth - 1), ' '));
+    const std::string hex("\n" + Hexa(data, size, hexa::HEXA | hexa::BPL, 2 * depth, 16) + std::string(2 * std::max(0, depth - 1), ' '));
 
     // Add the text node.
-    Text* child = doc->NewText(hex.c_str());
-    if (child != 0) {
-        parent->InsertEndChild(child);
-    }
-    return child;
+    return addText(parent, hex);
 }
 
 
