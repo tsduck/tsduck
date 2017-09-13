@@ -33,9 +33,222 @@
 
 #include "tsSatelliteDeliverySystemDescriptor.h"
 #include "tsBCD.h"
+#include "tsToInteger.h"
 #include "tsTablesFactory.h"
+#include "tsXMLTables.h"
 TSDUCK_SOURCE;
+TS_XML_DESCRIPTOR_FACTORY(ts::SatelliteDeliverySystemDescriptor, "satellite_delivery_system_descriptor");
+TS_ID_DESCRIPTOR_FACTORY(ts::SatelliteDeliverySystemDescriptor, ts::EDID(ts::DID_SAT_DELIVERY));
 TS_ID_DESCRIPTOR_DISPLAY(ts::SatelliteDeliverySystemDescriptor::DisplayDescriptor, ts::EDID(ts::DID_SAT_DELIVERY));
+
+
+//----------------------------------------------------------------------------
+// Default constructor:
+//----------------------------------------------------------------------------
+
+ts::SatelliteDeliverySystemDescriptor::SatelliteDeliverySystemDescriptor() :
+    AbstractDeliverySystemDescriptor(DID_SAT_DELIVERY, DS_DVB_S, "satellite_delivery_system_descriptor"),
+    frequency(0),
+    orbital_position(0),
+    eastNotWest(false),
+    polarization(0),
+    roll_off(0),
+    dvbS2(false),
+    modulation_type(0),
+    symbol_rate(0),
+    FEC_inner(0)
+{
+    _is_valid = true;
+}
+
+
+//----------------------------------------------------------------------------
+// Constructor from a binary descriptor
+//----------------------------------------------------------------------------
+
+ts::SatelliteDeliverySystemDescriptor::SatelliteDeliverySystemDescriptor(const Descriptor& desc) :
+    AbstractDeliverySystemDescriptor(DID_SAT_DELIVERY, DS_DVB_S, "satellite_delivery_system_descriptor"),
+    frequency(0),
+    orbital_position(0),
+    eastNotWest(false),
+    polarization(0),
+    roll_off(0),
+    dvbS2(false),
+    modulation_type(0),
+    symbol_rate(0),
+    FEC_inner(0)
+{
+    deserialize(desc);
+}
+
+
+//----------------------------------------------------------------------------
+// Serialization
+//----------------------------------------------------------------------------
+
+void ts::SatelliteDeliverySystemDescriptor::serialize (Descriptor& desc) const
+{
+    uint8_t data[13];
+    data[0] = _tag;
+    data[1] = 11;
+    EncodeBCD(data + 2, 8, frequency);
+    EncodeBCD(data + 6, 4, orbital_position);
+    data[8] = (eastNotWest ? 0x80 : 0x00) |
+        ((polarization & 0x03) << 5) |
+        (dvbS2 ? ((roll_off & 0x03) << 3) : 0x00) |
+        (dvbS2 ? 0x04 : 0x00) |
+        (modulation_type & 0x03);
+    EncodeBCD(data + 9, 7, symbol_rate);
+    data[12] = (data[12] & 0xF0) | (FEC_inner & 0x0F);
+
+    Descriptor d (data, sizeof(data));
+    desc = d;
+}
+
+
+//----------------------------------------------------------------------------
+// Deserialization
+//----------------------------------------------------------------------------
+
+void ts::SatelliteDeliverySystemDescriptor::deserialize (const Descriptor& desc)
+{
+    if (!(_is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() == 11)) {
+        return;
+    }
+
+    const uint8_t* data = desc.payload();
+
+    frequency = DecodeBCD(data, 8);
+    orbital_position = uint16_t(DecodeBCD(data + 4, 4));
+    eastNotWest = (data[6] & 0x80) != 0;
+    polarization = (data[6] >> 5) & 0x03;
+    dvbS2 = (data[6] & 0x04) != 0;
+    roll_off = dvbS2 ? ((data[6] >> 3) & 0x03) : 0x00;
+    modulation_type = data[6] & 0x03;
+    symbol_rate = DecodeBCD(data + 7, 7);
+    FEC_inner = data[10] & 0x0F;
+}
+
+
+//----------------------------------------------------------------------------
+// Enumerations for XML.
+//----------------------------------------------------------------------------
+
+namespace {
+    const ts::Enumeration DirectionNames(
+        "west", 0,
+        "east", 1,
+        TS_NULL);
+
+    const ts::Enumeration PolarizationNames(
+        "horizontal", 0,
+        "vertical", 1,
+        "left", 2,
+        "right", 3,
+        TS_NULL);
+
+    const ts::Enumeration RollOffNames(
+        "0.35", 0,
+        "0.25", 1,
+        "0.20", 2,
+        "reserved", 3,
+        TS_NULL);
+
+    const ts::Enumeration SystemNames(
+        "DVB-S", 0,
+        "DVB-S2", 1,
+        TS_NULL);
+
+    const ts::Enumeration ModulationNames(
+        "auto", 0,
+        "QPSK", 1,
+        "8PSK", 2,
+        "16-QAM", 3,
+        TS_NULL);
+
+    const ts::Enumeration CodeRateNames(
+        "undefined", 0,
+        "1/2", 1,
+        "2/3", 2,
+        "3/4", 3,
+        "5/6", 4,
+        "7/8", 5,
+        "8/9", 6,
+        "3/5", 7,
+        "4/5", 8,
+        "9/10", 9,
+        TS_NULL
+    );
+}
+
+
+//----------------------------------------------------------------------------
+// XML serialization
+//----------------------------------------------------------------------------
+
+ts::XML::Element* ts::SatelliteDeliverySystemDescriptor::toXML(XML& xml, XML::Element* parent) const
+{
+    XML::Element* root = _is_valid ? xml.addElement(parent, _xml_name) : 0;
+    xml.setIntAttribute(root, "frequency", 10000 * uint64_t(frequency), false);
+    xml.setAttribute(root, "orbital_position", Format("%d.%d", int(orbital_position / 10), int(orbital_position % 10)));
+    xml.setIntEnumAttribute(DirectionNames, root, "west_east_flag", eastNotWest);
+    xml.setIntEnumAttribute(PolarizationNames, root, "polarization", polarization);
+    xml.setIntEnumAttribute(RollOffNames, root, "roll_off", roll_off);
+    xml.setIntEnumAttribute(SystemNames, root, "modulation_system", dvbS2);
+    xml.setIntEnumAttribute(ModulationNames, root, "modulation_type", modulation_type);
+    xml.setIntAttribute(root, "symbol_rate", 100 * uint64_t(symbol_rate), false);
+    xml.setIntEnumAttribute(CodeRateNames, root, "FEC_inner", FEC_inner);
+    return root;
+}
+
+/*
+
+modulation_type="|||, default=QPSK"
+symbol_rate="SatelliteSymbolRate, required"
+FEC_inner="undefined|1/2|2/3|3/4|5/6|7/8|8/9|3/5|4/5|9/10|none|, required"/>
+*/
+
+//----------------------------------------------------------------------------
+// XML deserialization
+//----------------------------------------------------------------------------
+
+void ts::SatelliteDeliverySystemDescriptor::fromXML(XML& xml, const XML::Element* element)
+{
+    uint64_t freq = 0;
+    uint64_t symrate = 0;
+    std::string orbit;
+
+    _is_valid =
+        checkXMLName(xml, element) &&
+        xml.getIntAttribute<uint64_t>(freq, element, "frequency", true) &&
+        xml.getAttribute(orbit, element, "orbital_position", true) &&
+        xml.getIntEnumAttribute(eastNotWest, DirectionNames, element, "west_east_flag", true) &&
+        xml.getIntEnumAttribute(polarization, PolarizationNames, element, "polarization", true) &&
+        xml.getIntEnumAttribute<uint8_t>(roll_off, RollOffNames, element, "roll_off", false, 0) &&
+        xml.getIntEnumAttribute(dvbS2, SystemNames, element, "modulation_system", false, false) &&
+        xml.getIntEnumAttribute<uint8_t>(modulation_type, ModulationNames, element, "modulation_type", false, 1) &&
+        xml.getIntAttribute<uint64_t>(symrate, element, "symbol_rate", true) &&
+        xml.getIntEnumAttribute(FEC_inner, CodeRateNames, element, "FEC_inner", true);
+
+    if (_is_valid) {
+        frequency = uint32_t(freq / 10000);
+        symbol_rate = uint32_t(symrate / 100);
+
+        // Expected orbital position is "XX.X" as in "19.2".
+        StringVector fields;
+        uint16_t p1 = 0;
+        uint16_t p2 = 0;
+        SplitString(fields, orbit, '.');
+        _is_valid = fields.size() == 2 && ToInteger(p1, fields[0]) && ToInteger(p2, fields[1]) && p2 < 10;
+        if (_is_valid) {
+            orbital_position = (p1 * 10) + p2;
+        }
+        else {
+            xml.reportError(Format("Invalid value '%s' for attribute 'orbital_position' in <%s> at line %d, use 'nn.n'",
+                                   orbit.c_str(), XML::ElementName(element), element->GetLineNum()));
+        }
+    }
+}
 
 
 //----------------------------------------------------------------------------

@@ -67,14 +67,14 @@ ts::STDDescriptor::STDDescriptor(const Descriptor& desc) :
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::STDDescriptor::serialize (Descriptor& desc) const
+void ts::STDDescriptor::serialize(Descriptor& desc) const
 {
     uint8_t data[3];
     data[0] = _tag;
     data[1] = 1;
     data[2] = leak_valid ? 0xFF : 0xFE;
 
-    Descriptor d (data, sizeof(data));
+    Descriptor d(data, sizeof(data));
     desc = d;
 }
 

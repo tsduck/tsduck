@@ -37,7 +37,114 @@
 #include "tsNames.h"
 #include "tsTablesFactory.h"
 TSDUCK_SOURCE;
+TS_XML_DESCRIPTOR_FACTORY(ts::MessageDescriptor, "message_descriptor");
+TS_ID_DESCRIPTOR_FACTORY(ts::MessageDescriptor, ts::EDID(ts::DID_EXTENSION, ts::EDID_MESSAGE));
 TS_ID_DESCRIPTOR_DISPLAY(ts::MessageDescriptor::DisplayDescriptor, ts::EDID(ts::DID_EXTENSION, ts::EDID_MESSAGE));
+
+
+//----------------------------------------------------------------------------
+// Constructor.
+//----------------------------------------------------------------------------
+
+ts::MessageDescriptor::MessageDescriptor() :
+    AbstractDescriptor(DID_EXTENSION, "message_descriptor"),
+    message_id(0),
+    language_code(),
+    message()
+{
+    _is_valid = true;
+}
+
+ts::MessageDescriptor::MessageDescriptor(uint8_t id, const std::string& lang, const std::string& text) :
+    AbstractDescriptor(DID_EXTENSION, "message_descriptor"),
+    message_id(id),
+    language_code(lang),
+    message(text)
+{
+    _is_valid = true;
+}
+
+ts::MessageDescriptor::MessageDescriptor(const Descriptor& bin) :
+    AbstractDescriptor(DID_EXTENSION, "message_descriptor"),
+    message_id(0),
+    language_code(),
+    message()
+{
+    deserialize(bin);
+}
+
+
+//----------------------------------------------------------------------------
+// Serialization
+//----------------------------------------------------------------------------
+
+void ts::MessageDescriptor::serialize(Descriptor& desc) const
+{
+    if (!_is_valid || language_code.length() != 3 || 7 + message.length() > MAX_DESCRIPTOR_SIZE) {
+        desc.invalidate();
+        return;
+    }
+
+    ByteBlockPtr bbp(new ByteBlock(2));
+    CheckNonNull(bbp.pointer());
+
+    bbp->appendUInt8(EDID_MESSAGE);
+    bbp->appendUInt8(message_id);
+    bbp->append(language_code);
+    bbp->append(message);
+
+    (*bbp)[0] = _tag;
+    (*bbp)[1] = uint8_t(bbp->size() - 2);
+    Descriptor d(bbp, SHARE);
+    desc = d;
+}
+
+
+//----------------------------------------------------------------------------
+// Deserialization
+//----------------------------------------------------------------------------
+
+void ts::MessageDescriptor::deserialize(const Descriptor& desc)
+{
+    const uint8_t* data = desc.payload();
+    size_t size = desc.payloadSize();
+
+    if (!(_is_valid = desc.isValid() && desc.tag() == _tag && size >= 5 && data[0] == EDID_MESSAGE)) {
+        return;
+    }
+
+    message_id = data[1];
+    language_code = std::string(reinterpret_cast<const char*>(data + 2), 3);
+    message = std::string(reinterpret_cast<const char*>(data + 5), size - 5);
+}
+
+
+//----------------------------------------------------------------------------
+// XML serialization
+//----------------------------------------------------------------------------
+
+ts::XML::Element* ts::MessageDescriptor::toXML(XML& xml, XML::Element* parent) const
+{
+    XML::Element* root = _is_valid ? xml.addElement(parent, _xml_name) : 0;
+    xml.setIntAttribute(root, "message_id", message_id);
+    xml.setAttribute(root, "language_code", language_code);
+    xml.addText(xml.addElement(root, "text"), message);
+    return root;
+}
+
+
+//----------------------------------------------------------------------------
+// XML deserialization
+//----------------------------------------------------------------------------
+
+void ts::MessageDescriptor::fromXML(XML& xml, const XML::Element* element)
+{
+    _is_valid =
+        checkXMLName(xml, element) &&
+        xml.getIntAttribute(message_id, element, "message_id", true) &&
+        xml.getAttribute(language_code, element, "language_code", true, "", 3, 3) &&
+        xml.getTextChild(message, element, "text");
+}
 
 
 //----------------------------------------------------------------------------

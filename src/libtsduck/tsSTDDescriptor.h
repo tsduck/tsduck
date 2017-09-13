@@ -50,7 +50,7 @@ namespace ts {
         //! Default constructor.
         //! @param [in] leak_valid Leak valid flag.
         //!
-        STDDescriptor(bool leak_valid = false);
+        explicit STDDescriptor(bool leak_valid = false);
 
         //!
         //! Constructor from a binary descriptor

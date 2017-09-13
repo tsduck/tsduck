@@ -218,27 +218,6 @@
       </additional_info>
     </AC3_descriptor>
 
-    <AC3_audio_stream_descriptor
-        sample_rate_code="uint3, required"
-        bsid="uint5, required"
-        bit_rate_code="uint6, required"
-        surround_mode="uint2, required"
-        bsmod="uint3, required"
-        num_channels="uint4, required"
-        full_svc="bool, required"
-        langcod="uint8, optional"
-        langcod2="uint8, optional"
-        mainid="uint3, optional"
-        priority="uint2, optional"
-        asvcflags="uint8, optional"
-        text="string, optional"
-        language="char3, optional"
-        language_2="char3, optional">
-      <additional_info>
-        Hexadecimal content
-      </additional_info>
-    </AC3_audio_stream_descriptor>
-
     <AVC_video_descriptor
         profile_idc="uint8, required"
         constraint_set0="bool, required"
@@ -343,8 +322,8 @@
         service_id="uint16, required"
         linkage_type="uint8, required">
       <!-- if linkage_type == 0x08 -->
-      <mobile_hand-over_info
-          hand_over_type="uint4, required"
+      <mobile_handover_info
+          handover_type="uint4, required"
           origin_type="NIT|SDT, required"
           network_id="uint16, required if hand-over_type is 0x01, 0x02, 0x03"
           initial_service_id="uint16, required if origin_type is NIT"/>
@@ -413,7 +392,7 @@
         frequency="SatelliteFrequencyHz, required"
         orbital_position="SatelliteOrbitalPosition, eg. 19.2, required"
         west_east_flag="east|west, required"
-        polarization="horizontal|vertical, required"
+        polarization="horizontal|vertical|left|right, required"
         roll_off="0.35|0.25|0.20|reserved, default=0.35"
         modulation_system="DVB-S|DVB-S2, default=DVB-S"
         modulation_type="auto|QPSK|8PSK|16-QAM, default=QPSK"

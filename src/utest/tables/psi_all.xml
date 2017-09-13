@@ -102,7 +102,7 @@
       <service service_id="0x2195" logical_channel_number="789" visible_service="false"/>
     </logical_channel_number_descriptor>
     <linkage_descriptor transport_stream_id="0x1345" original_network_id="0x987F" service_id="0xCDFE" linkage_type="0x08">
-      <mobile_hand-over_info hand_over_type="2" origin_type="NIT" network_id="0x3434" initial_service_id="0x8764"/>
+      <mobile_handover_info handover_type="2" origin_type="NIT" network_id="0x3434" initial_service_id="0x8764"/>
       <private_data>
         01 45 E8 45
       </private_data>
@@ -172,26 +172,6 @@
         guard_interval="1/16"
         transmission_mode="8k"
         other_frequency="false"/>
-    <AC3_audio_stream_descriptor
-        sample_rate_code="1"
-        bsid="12"
-        bit_rate_code="47"
-        surround_mode="2"
-        bsmod="4"
-        num_channels="8"
-        full_svc="true"
-        langcod="2"
-        langcod2="78"
-        mainid="7"
-        priority="1"
-        asvcflags="45"
-        text="azerty"
-        language="fre"
-        language_2="deu">
-      <additional_info>
-        01 02 45 89
-      </additional_info>
-    </AC3_audio_stream_descriptor>
     <AVC_video_descriptor
         profile_idc="45"
         constraint_set0="true"

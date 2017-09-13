@@ -37,7 +37,131 @@
 #include "tsNames.h"
 #include "tsTablesFactory.h"
 TSDUCK_SOURCE;
+TS_XML_DESCRIPTOR_FACTORY(ts::SupplementaryAudioDescriptor, "supplementary_audio_descriptor");
+TS_ID_DESCRIPTOR_FACTORY(ts::SupplementaryAudioDescriptor, ts::EDID(ts::DID_EXTENSION, ts::EDID_SUPPL_AUDIO));
 TS_ID_DESCRIPTOR_DISPLAY(ts::SupplementaryAudioDescriptor::DisplayDescriptor, ts::EDID(ts::DID_EXTENSION, ts::EDID_SUPPL_AUDIO));
+
+
+//----------------------------------------------------------------------------
+// Constructor.
+//----------------------------------------------------------------------------
+
+ts::SupplementaryAudioDescriptor::SupplementaryAudioDescriptor() :
+    AbstractDescriptor(DID_EXTENSION, "supplementary_audio_descriptor"),
+    mix_type(0),
+    editorial_classification(0),
+    language_code(),
+    private_data()
+{
+    _is_valid = true;
+}
+
+ts::SupplementaryAudioDescriptor::SupplementaryAudioDescriptor(const Descriptor& bin) :
+    AbstractDescriptor(DID_EXTENSION, "supplementary_audio_descriptor"),
+    mix_type(0),
+    editorial_classification(0),
+    language_code(),
+    private_data()
+{
+    deserialize(bin);
+}
+
+
+//----------------------------------------------------------------------------
+// Serialization
+//----------------------------------------------------------------------------
+
+void ts::SupplementaryAudioDescriptor::serialize(Descriptor& desc) const
+{
+    if (!_is_valid || (!language_code.empty() && language_code.length() != 3) || 2 + language_code.length() + private_data.size() > MAX_DESCRIPTOR_SIZE) {
+        desc.invalidate();
+        return;
+    }
+
+    ByteBlockPtr bbp(new ByteBlock(2));
+    CheckNonNull(bbp.pointer());
+
+    bbp->appendUInt8(EDID_SUPPL_AUDIO);
+    bbp->appendUInt8((mix_type << 7) |
+                     ((editorial_classification & 0x1F) << 2) |
+                     0x02 |
+                     (language_code.empty() ? 0x00 : 0x01));
+    bbp->append(language_code);
+    bbp->append(private_data);
+
+    (*bbp)[0] = _tag;
+    (*bbp)[1] = uint8_t(bbp->size() - 2);
+    Descriptor d(bbp, SHARE);
+    desc = d;
+}
+
+
+//----------------------------------------------------------------------------
+// Deserialization
+//----------------------------------------------------------------------------
+
+void ts::SupplementaryAudioDescriptor::deserialize(const Descriptor& desc)
+{
+    language_code.clear();
+    private_data.clear();
+
+    const uint8_t* data = desc.payload();
+    size_t size = desc.payloadSize();
+
+    if (!(_is_valid = desc.isValid() && desc.tag() == _tag && size >= 2 && data[0] == EDID_SUPPL_AUDIO)) {
+        return;
+    }
+
+    mix_type = (data[1] >> 7) & 0x01;
+    editorial_classification = (data[1] >> 2) & 0x1F;
+    const bool has_lang = (data[1] & 0x01) != 0;
+    data += 2; size -= 2;
+
+    if (has_lang) {
+        if (size < 3) {
+            _is_valid = false;
+            return;
+        }
+        language_code = std::string(reinterpret_cast<const char*>(data), 3);
+        data += 3; size -= 3;
+    }
+
+    private_data.copy(data, size);
+}
+
+
+//----------------------------------------------------------------------------
+// XML serialization
+//----------------------------------------------------------------------------
+
+ts::XML::Element* ts::SupplementaryAudioDescriptor::toXML(XML& xml, XML::Element* parent) const
+{
+    XML::Element* root = _is_valid ? xml.addElement(parent, _xml_name) : 0;
+    xml.setIntAttribute(root, "mix_type", mix_type);
+    xml.setIntAttribute(root, "editorial_classification", editorial_classification, true);
+    if (!language_code.empty()) {
+        xml.setAttribute(root, "language_code", language_code);
+    }
+    if (!private_data.empty()) {
+        xml.addHexaText(xml.addElement(root, "private_data"), private_data);
+    }
+    return root;
+}
+
+
+//----------------------------------------------------------------------------
+// XML deserialization
+//----------------------------------------------------------------------------
+
+void ts::SupplementaryAudioDescriptor::fromXML(XML& xml, const XML::Element* element)
+{
+    _is_valid =
+        checkXMLName(xml, element) &&
+        xml.getIntAttribute<uint8_t>(mix_type, element, "mix_type", true, 0, 0, 1) &&
+        xml.getIntAttribute<uint8_t>(editorial_classification, element, "editorial_classification", true, 0, 0x00, 0x1F) &&
+        xml.getAttribute(language_code, element, "language_code", false, "", 3, 3) &&
+        xml.getHexaTextChild(private_data, element, "private_data", false, 0, MAX_DESCRIPTOR_SIZE - 7);
+}
 
 
 //----------------------------------------------------------------------------

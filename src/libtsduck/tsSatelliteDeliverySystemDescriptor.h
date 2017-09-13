@@ -40,11 +40,37 @@ namespace ts {
     //! Representation of a satellite_delivery_system_descriptor.
     //! @see ETSI 300 468, 6.2.13.2.
     //!
-    //! Incomplete implementation, to be completed.
-    //!
-    class TSDUCKDLL SatelliteDeliverySystemDescriptor
+    class TSDUCKDLL SatelliteDeliverySystemDescriptor : public AbstractDeliverySystemDescriptor
     {
     public:
+        // SatelliteDeliverySystemDescriptor public members:
+        uint32_t frequency;          //!< Frequency, unit is 10 kHz.
+        uint16_t orbital_position;   //!< Orbital position, unit is 0.1 degree.
+        bool     eastNotWest;        //!< True for East, false for West.
+        uint8_t  polarization;       //!< Polarization, 0..3 (2 bits).
+        uint8_t  roll_off;           //!< Roll-off factor, 0..3 (2 bits).
+        bool     dvbS2;              //!< True for DVB-S2, false for DVB-S.
+        uint8_t  modulation_type;    //!< Modulation type, 0..3 (2 bits).
+        uint32_t symbol_rate;        //!< Symbol rate, unit is 100 symbol/s.
+        uint8_t  FEC_inner;          //!< FEC inner, 4 bits.
+
+        //!
+        //! Default constructor.
+        //!
+        SatelliteDeliverySystemDescriptor();
+
+        //!
+        //! Constructor from a binary descriptor.
+        //! @param [in] bin A binary descriptor to deserialize.
+        //!
+        SatelliteDeliverySystemDescriptor(const Descriptor& bin);
+
+        // Inherited methods
+        virtual void serialize(Descriptor&) const;
+        virtual void deserialize(const Descriptor&);
+        virtual XML::Element* toXML(XML& xml, XML::Element* parent) const;
+        virtual void fromXML(XML& xml, const XML::Element* element);
+
         //!
         //! Static method to display a descriptor.
         //! @param [in,out] display Display engine.

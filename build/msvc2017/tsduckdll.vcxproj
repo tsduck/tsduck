@@ -36,6 +36,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsAVCParser.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAVCParserTemplate.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAVCSequenceParameterSet.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsAVCVideoDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAVCVUIParameters.h" />
     <ClInclude Include="..\..\src\libtsduck\tsBAT.h" />
     <ClInclude Include="..\..\src\libtsduck\tsBCD.h" />
@@ -180,6 +181,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsResidentBufferTemplate.h" />
     <ClInclude Include="..\..\src\libtsduck\tsRingNode.h" />
     <ClInclude Include="..\..\src\libtsduck\tsRST.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsS2SatelliteDeliverySystemDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsSafeAccessDate.h" />
     <ClInclude Include="..\..\src\libtsduck\tsSafePtr.h" />
     <ClInclude Include="..\..\src\libtsduck\tsSafePtrTemplate.h" />
@@ -316,6 +318,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsAVCHRDParameters.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAVCParser.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAVCSequenceParameterSet.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsAVCVideoDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAVCVUIParameters.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsBAT.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsBCD.cpp" />
@@ -416,6 +419,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsReportWithPrefix.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsRingNode.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsRST.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsS2SatelliteDeliverySystemDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsSatelliteDeliverySystemDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsScrambling.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsSDT.cpp" />
