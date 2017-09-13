@@ -28,38 +28,45 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Representation of a supplementary_audio_descriptor
+//!  Representation of an AVC_video_descriptor
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
 #include "tsAbstractDescriptor.h"
-#include "tsVariable.h"
 
 namespace ts {
     //!
-    //! Representation of a supplementary_audio_descriptor.
-    //! @see ETSI 300 468, 6.4.10.
+    //! Representation of an AVC_video_descriptor.
     //!
-    class TSDUCKDLL SupplementaryAudioDescriptor : public AbstractDescriptor
+    //! This MPG-defined descriptor is not defined in ISO/IEC 13818-1,
+    //! ITU-T Rec. H.222.0. See its "Amendment 3: Transport of AVC video
+    //! over ITU-T Rec. H.222.0 | ISO/IEC 13818-1 streams" (document W5771),
+    //! section 2.6.54.
+    //!
+    class TSDUCKDLL AVCVideoDescriptor : public AbstractDescriptor
     {
     public:
-        // MessageDescriptor public members:
-        uint8_t     mix_type;                  //!< Complete or dependent stream, 1 bit.
-        uint8_t     editorial_classification;  //!< Editorial classification, 5 bits.
-        std::string language_code;             //!< ISO-639 language code, 3 characters or empty.
-        ByteBlock   private_data;              //!< Private data.
+        // Public members:
+        uint8_t profile_idc;           //!< Same as AVC concept.
+        bool    constraint_set0;       //!< Same as AVC concept.
+        bool    constraint_set1;       //!< Same as AVC concept.
+        bool    constraint_set2;       //!< Same as AVC concept.
+        uint8_t AVC_compatible_flags;  //!< Same as AVC concept.
+        uint8_t level_idc;             //!< Same as AVC concept.
+        bool    AVC_still_present;     //!< May contain still pictures.
+        bool    AVC_24_hour_picture;   //!< May contain 25-hour pictures.
 
         //!
         //! Default constructor.
         //!
-        SupplementaryAudioDescriptor();
+        AVCVideoDescriptor();
 
         //!
-        //! Constructor from a binary descriptor.
+        //! Constructor from a binary descriptor
         //! @param [in] bin A binary descriptor to deserialize.
         //!
-        SupplementaryAudioDescriptor(const Descriptor& bin);
+        AVCVideoDescriptor(const Descriptor& bin);
 
         // Inherited methods
         virtual void serialize(Descriptor&) const;

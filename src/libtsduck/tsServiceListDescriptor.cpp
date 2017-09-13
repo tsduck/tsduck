@@ -36,7 +36,7 @@
 #include "tsNames.h"
 #include "tsTablesFactory.h"
 TSDUCK_SOURCE;
-TS_XML_DESCRIPTOR_FACTORY(ts::ServiceListDescriptor, "service_descriptor");
+TS_XML_DESCRIPTOR_FACTORY(ts::ServiceListDescriptor, "service_list_descriptor");
 TS_ID_DESCRIPTOR_FACTORY(ts::ServiceListDescriptor, ts::EDID(ts::DID_SERVICE_LIST));
 TS_ID_DESCRIPTOR_DISPLAY(ts::ServiceListDescriptor::DisplayDescriptor, ts::EDID(ts::DID_SERVICE_LIST));
 

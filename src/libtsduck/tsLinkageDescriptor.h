@@ -53,6 +53,8 @@ namespace ts {
         {
         public:
             MobileHandoverInfo();         //!< Default constructor.
+            void clear();                 //!< Clear object content.
+
             uint8_t  handover_type;       //!< Hand-over type, 4 bits.
             uint8_t  origin_type;         //!< Origin type, 0 = NIT, 1 = SDT.
             uint16_t network_id;          //!< Network when handover_type == 0x01, 0x02, 0x03.
@@ -66,6 +68,8 @@ namespace ts {
         {
         public:
             EventLinkageInfo();         //!< Default constructor.
+            void clear();               //!< Clear object content.
+
             uint16_t target_event_id;   //!< Target event.
             bool     target_listed;     //!< Service is listed in SDT.
             bool     event_simulcast;   //!< Target and source event are simulcast.
@@ -78,6 +82,8 @@ namespace ts {
         {
         public:
             ExtendedEventLinkageInfo();                      //!< Default constructor.
+            void clear();                                    //!< Clear object content.
+
             uint16_t           target_event_id;              //!< Target event.
             bool               target_listed;                //!< Service is listed in SDT.
             bool               event_simulcast;              //!< Target and source event are simulcast.
@@ -118,6 +124,11 @@ namespace ts {
         //! @param [in] bin A binary descriptor to deserialize.
         //!
         LinkageDescriptor(const Descriptor& bin);
+
+        //!
+        //! Clear object content.
+        //!
+        void clear();
 
         // Inherited methods
         virtual void serialize(Descriptor&) const;

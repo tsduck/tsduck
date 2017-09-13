@@ -28,38 +28,39 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Representation of a supplementary_audio_descriptor
+//!  Representation of an S2_satellite_delivery_system_descriptor.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
 #include "tsAbstractDescriptor.h"
-#include "tsVariable.h"
 
 namespace ts {
     //!
-    //! Representation of a supplementary_audio_descriptor.
-    //! @see ETSI 300 468, 6.4.10.
+    //! Representation of an S2_satellite_delivery_system_descriptor.
     //!
-    class TSDUCKDLL SupplementaryAudioDescriptor : public AbstractDescriptor
+    //! @see ETSI 300 468, 6.2.13.3.
+    //!
+    class TSDUCKDLL S2SatelliteDeliverySystemDescriptor : public AbstractDescriptor
     {
     public:
-        // MessageDescriptor public members:
-        uint8_t     mix_type;                  //!< Complete or dependent stream, 1 bit.
-        uint8_t     editorial_classification;  //!< Editorial classification, 5 bits.
-        std::string language_code;             //!< ISO-639 language code, 3 characters or empty.
-        ByteBlock   private_data;              //!< Private data.
+        // Public members:
+        bool     scrambling_sequence_selector;        //!< See ETSI 300 468, 6.2.13.3.
+        bool     multiple_input_stream_flag;          //!< See ETSI 300 468, 6.2.13.3.
+        bool     backwards_compatibility_indicator;   //!< See ETSI 300 468, 6.2.13.3.
+        uint32_t scrambling_sequence_index;           //!< See ETSI 300 468, 6.2.13.3, 18-bit value.
+        uint8_t  input_stream_identifier;             //!< See ETSI 300 468, 6.2.13.3.
 
         //!
         //! Default constructor.
         //!
-        SupplementaryAudioDescriptor();
+        S2SatelliteDeliverySystemDescriptor();
 
         //!
-        //! Constructor from a binary descriptor.
+        //! Constructor from a binary descriptor
         //! @param [in] bin A binary descriptor to deserialize.
         //!
-        SupplementaryAudioDescriptor(const Descriptor& bin);
+        S2SatelliteDeliverySystemDescriptor(const Descriptor& bin);
 
         // Inherited methods
         virtual void serialize(Descriptor&) const;

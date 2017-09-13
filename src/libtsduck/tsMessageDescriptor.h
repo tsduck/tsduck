@@ -34,18 +34,45 @@
 
 #pragma once
 #include "tsAbstractDescriptor.h"
-#include "tsVariable.h"
 
 namespace ts {
     //!
     //! Representation of a message_descriptor.
     //! @see ETSI 300 468, 6.4.7.
     //!
-    //! Incomplete implementation, to be completed.
-    //!
-    class TSDUCKDLL MessageDescriptor
+    class TSDUCKDLL MessageDescriptor : public AbstractDescriptor
     {
     public:
+        // MessageDescriptor public members:
+        uint8_t     message_id;     //!< Message identifier.
+        std::string language_code;  //!< ISO-639 language code, 3 characters.
+        std::string message;        //!< Message content.
+
+        //!
+        //! Default constructor.
+        //!
+        MessageDescriptor();
+
+        //!
+        //! Constructor.
+        //! @param [in] id Message id.
+        //! @param [in] lang ISO-639 language code, 3 characters.
+        //! @param [in] text Message content.
+        //!
+        MessageDescriptor(uint8_t id, const std::string& lang, const std::string& text);
+
+        //!
+        //! Constructor from a binary descriptor.
+        //! @param [in] bin A binary descriptor to deserialize.
+        //!
+        MessageDescriptor(const Descriptor& bin);
+
+        // Inherited methods
+        virtual void serialize(Descriptor&) const;
+        virtual void deserialize(const Descriptor&);
+        virtual XML::Element* toXML(XML& xml, XML::Element* parent) const;
+        virtual void fromXML(XML& xml, const XML::Element* element);
+
         //!
         //! Static method to display a descriptor.
         //! @param [in,out] display Display engine.

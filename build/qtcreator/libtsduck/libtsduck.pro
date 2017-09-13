@@ -17,6 +17,7 @@ HEADERS += \
     ../../../src/libtsduck/tsAVCParser.h \
     ../../../src/libtsduck/tsAVCParserTemplate.h \
     ../../../src/libtsduck/tsAVCSequenceParameterSet.h \
+    ../../../src/libtsduck/tsAVCVideoDescriptor.h \
     ../../../src/libtsduck/tsAVCVUIParameters.h \
     ../../../src/libtsduck/tsAbortInterface.h \
     ../../../src/libtsduck/tsAbstractAVCAccessUnit.h \
@@ -179,6 +180,7 @@ HEADERS += \
     ../../../src/libtsduck/tsResidentBufferTemplate.h \
     ../../../src/libtsduck/tsRingNode.h \
     ../../../src/libtsduck/tsRST.h \
+    ../../../src/libtsduck/tsS2SatelliteDeliverySystemDescriptor.h \
     ../../../src/libtsduck/tsSDT.h \
     ../../../src/libtsduck/tsSHA1.h \
     ../../../src/libtsduck/tsSHA256.h \
@@ -293,6 +295,7 @@ SOURCES += \
     ../../../src/libtsduck/tsAVCHRDParameters.cpp \
     ../../../src/libtsduck/tsAVCParser.cpp \
     ../../../src/libtsduck/tsAVCSequenceParameterSet.cpp \
+    ../../../src/libtsduck/tsAVCVideoDescriptor.cpp \
     ../../../src/libtsduck/tsAVCVUIParameters.cpp \
     ../../../src/libtsduck/tsAbstractAVCAccessUnit.cpp \
     ../../../src/libtsduck/tsAbstractAVCStructure.cpp \
@@ -406,6 +409,7 @@ SOURCES += \
     ../../../src/libtsduck/tsReportWithPrefix.cpp \
     ../../../src/libtsduck/tsRingNode.cpp \
     ../../../src/libtsduck/tsRST.cpp \
+    ../../../src/libtsduck/tsS2SatelliteDeliverySystemDescriptor.h \
     ../../../src/libtsduck/tsSDT.cpp \
     ../../../src/libtsduck/tsSHA1.cpp \
     ../../../src/libtsduck/tsSHA256.cpp \

@@ -40,19 +40,44 @@ TSDUCK_SOURCE;
 // (bcd_count/2 bytes). Note that bcd_count can be even.
 //----------------------------------------------------------------------------
 
-uint32_t ts::DecodeBCD (const uint8_t* bcd, size_t bcd_count)
+uint32_t ts::DecodeBCD(const uint8_t* bcd, size_t bcd_count)
 {
-    uint32_t result (0);
+    uint32_t result = 0;
 
     for (size_t index = 0; index < bcd_count; index++) {
-        if (index % 2 == 0)
+        if (index % 2 == 0) {
             result = 10 * result + (*bcd >> 4);
-        else
+        }
+        else {
             result = 10 * result + (*bcd++ & 0x0F);
+        }
     }
 
     return result;
 }
+
+
+//----------------------------------------------------------------------------
+// Encode a Binary Coded Decimal (BCD) string.
+//----------------------------------------------------------------------------
+
+void ts::EncodeBCD(uint8_t* bcd, size_t bcd_count, uint32_t value)
+{
+    if (bcd_count > 0) {
+        bcd += (bcd_count - 1) / 2;
+        for (size_t index = bcd_count; index > 0; --index) {
+            if (index % 2 == 0) {
+                *bcd = (*bcd & 0xF0) | (value % 10);
+            }
+            else {
+                *bcd = (*bcd & 0x0F) | ((value % 10) << 4);
+                bcd--;
+            }
+            value = value / 10;
+        }
+    }
+}
+
 
 //----------------------------------------------------------------------------
 // Decode a variable-length BCD-encoded integer.
@@ -63,11 +88,11 @@ uint32_t ts::DecodeBCD (const uint8_t* bcd, size_t bcd_count)
 // point (-1: none, 0: before first digit, 1: after first digit, etc.)
 //----------------------------------------------------------------------------
 
-void ts::BCDToString (std::string &str, const uint8_t* bcd, size_t bcd_count, int decimal)
+void ts::BCDToString(std::string &str, const uint8_t* bcd, size_t bcd_count, int decimal)
 {
     // Cleanup result string and over-pre-allocate
-    str.clear ();
-    str.reserve (bcd_count + 2);
+    str.clear();
+    str.reserve(bcd_count + 2);
 
     // Insert Decimal point in first position
     if (decimal == 0) {

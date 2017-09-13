@@ -67,6 +67,16 @@ namespace ts {
     TSDUCKDLL uint32_t DecodeBCD(const uint8_t* bcd, size_t bcd_count);
 
     //!
+    //! Encode a Binary Coded Decimal (BCD) string.
+    //! @param [out] bcd Address of an array of bytes.
+    //! Its size must be at least (@a bcd_count + 1) / 2 bytes.
+    //! @param [in] bcd_count Number of BCD digits.
+    //! Note that @a bcd_count can be even.
+    //! @param [in] value The value to encode.
+    //!
+    TSDUCKDLL void EncodeBCD(uint8_t* bcd, size_t bcd_count, uint32_t value);
+
+    //!
     //! Decode a string representation of a variable-length Binary Coded Decimal (BCD) encoded integer.
     //! @param [out] str Returned string representation.
     //! @param [in] bcd Address of an array of bytes.
