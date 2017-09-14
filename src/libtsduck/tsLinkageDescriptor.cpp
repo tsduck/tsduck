@@ -474,18 +474,18 @@ ts::XML::Element* ts::LinkageDescriptor::toXML(XML& xml, XML::Element* parent) c
 
     if (linkage_type == LINKAGE_HAND_OVER) {
         XML::Element* e = xml.addElement(root, "mobile_handover_info");
-        xml.setIntAttribute(e, "handover_type", mobile_handover_info.handover_type);
+        xml.setIntAttribute(e, "handover_type", mobile_handover_info.handover_type, true);
         xml.setIntEnumAttribute(OriginTypeNames, e, "origin_type", mobile_handover_info.origin_type);
         if (mobile_handover_info.handover_type >= 1 && mobile_handover_info.handover_type <= 3) {
-            xml.setIntAttribute(e, "network_id", mobile_handover_info.network_id);
+            xml.setIntAttribute(e, "network_id", mobile_handover_info.network_id, true);
         }
         if (mobile_handover_info.origin_type == 0x00) {
-            xml.setIntAttribute(e, "initial_service_id", mobile_handover_info.initial_service_id);
+            xml.setIntAttribute(e, "initial_service_id", mobile_handover_info.initial_service_id, true);
         }
     }
     else if (linkage_type == LINKAGE_EVENT) {
         XML::Element* e = xml.addElement(root, "event_linkage_info");
-        xml.setIntAttribute(e, "target_event_id", event_linkage_info.target_event_id);
+        xml.setIntAttribute(e, "target_event_id", event_linkage_info.target_event_id, true);
         xml.setBoolAttribute(e, "target_listed", event_linkage_info.target_listed);
         xml.setBoolAttribute(e, "event_simulcast", event_linkage_info.event_simulcast);
     }
@@ -493,22 +493,22 @@ ts::XML::Element* ts::LinkageDescriptor::toXML(XML& xml, XML::Element* parent) c
         XML::Element* extInfo = xml.addElement(root, "extended_event_linkage_info");
         for (ExtendedEventLinkageList::const_iterator it = extended_event_linkage_info.begin(); it != extended_event_linkage_info.end(); ++it) {
             XML::Element* e = xml.addElement(extInfo, "event");
-            xml.setIntAttribute(e, "target_event_id", it->target_event_id);
+            xml.setIntAttribute(e, "target_event_id", it->target_event_id, true);
             xml.setBoolAttribute(e, "target_listed", it->target_listed);
             xml.setBoolAttribute(e, "event_simulcast", it->event_simulcast);
-            xml.setIntAttribute(e, "link_type", it->link_type);
-            xml.setIntAttribute(e, "target_id_type", it->target_id_type);
+            xml.setIntAttribute(e, "link_type", it->link_type, true);
+            xml.setIntAttribute(e, "target_id_type", it->target_id_type, true);
             if (it->target_id_type == 3) {
-                xml.setIntAttribute(e, "user_defined_id", it->user_defined_id);
+                xml.setIntAttribute(e, "user_defined_id", it->user_defined_id, true);
             }
             if (it->target_id_type == 1) {
-                xml.setIntAttribute(e, "target_transport_stream_id", it->target_transport_stream_id);
+                xml.setIntAttribute(e, "target_transport_stream_id", it->target_transport_stream_id, true);
             }
             if (it->target_original_network_id.set()) {
-                xml.setIntAttribute(e, "target_original_network_id", it->target_original_network_id.value());
+                xml.setIntAttribute(e, "target_original_network_id", it->target_original_network_id.value(), true);
             }
             if (it->target_service_id.set()) {
-                xml.setIntAttribute(e, "target_service_id", it->target_service_id.value());
+                xml.setIntAttribute(e, "target_service_id", it->target_service_id.value(), true);
             }
         }
     }

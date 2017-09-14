@@ -187,6 +187,7 @@ void ts::CountryAvailabilityDescriptor::fromXML(XML& xml, const XML::Element* el
     XML::ElementVector children;
     _is_valid =
         checkXMLName(xml, element) &&
+        xml.getBoolAttribute(country_availability, element, "country_availability", true) &&
         xml.getChildren(children, element, "country", 0, MAX_ENTRIES);
 
     for (size_t i = 0; _is_valid && i < children.size(); ++i) {
