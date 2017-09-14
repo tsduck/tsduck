@@ -323,7 +323,7 @@ ts::XML::Element* ts::PMT::toXML(XML& xml, XML::Element* parent) const
     xml.setBoolAttribute(root, "current", is_current);
     xml.setIntAttribute(root, "service_id", service_id, true);
     if (pcr_pid != PID_NULL) {
-        xml.setIntAttribute(root, "PCR_PID", pcr_pid);
+        xml.setIntAttribute(root, "PCR_PID", pcr_pid, true);
     }
     XMLTables::ToXML(xml, root, descs);
     

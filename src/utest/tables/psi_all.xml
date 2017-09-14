@@ -35,13 +35,13 @@
   </TSDT>
   <NIT version="0" current="true" network_id="0x4589" actual="true">
     <network_name_descriptor network_name="net 1"/>
-    <transport_stream transport_stream_id="0x1234" original_network_id="0x0682">
-      <bouquet_name_descriptor bouquet_name="nit 1"/>
-      <bouquet_name_descriptor bouquet_name="nit 2"/>
-    </transport_stream>
     <transport_stream transport_stream_id="0x0014" original_network_id="0x0282">
       <bouquet_name_descriptor bouquet_name="nit 11"/>
       <bouquet_name_descriptor bouquet_name="nit 12"/>
+    </transport_stream>
+    <transport_stream transport_stream_id="0x1234" original_network_id="0x0682">
+      <bouquet_name_descriptor bouquet_name="nit 1"/>
+      <bouquet_name_descriptor bouquet_name="nit 2"/>
     </transport_stream>
   </NIT>
   <NIT version="0" current="true" network_id="0x4589" actual="false">
@@ -156,8 +156,8 @@
       </private_data>
     </supplementary_audio_descriptor>
     <teletext_descriptor>
-      <teletext language_code="ezg" teletext_type="0x12" teletext_magazine_number="45" teletext_page_number="54"/>
-      <teletext language_code="reh" teletext_type="0x04" teletext_magazine_number="56" teletext_page_number="7"/>
+      <teletext language_code="ezg" teletext_type="0x12" page_number="889"/>
+      <teletext language_code="reh" teletext_type="0x04" page_number="7"/>
     </teletext_descriptor>
     <terrestrial_delivery_system_descriptor
         centre_frequency="841,465,000"
@@ -201,7 +201,7 @@
     <event transport_stream_id="0x1269" original_network_id="0x3543" service_id="0x5656" event_id="0x4573" running_status="running"/>
   </RST>
   <SDT version="2" current="true" transport_stream_id="0x7896" original_network_id="0x46AC" actual="true">
-    <service service_id="0x4659" EIT_schedule="false" EIT_present_following="true" running_status="undefined">
+    <service service_id="0x4659" EIT_schedule="false" EIT_present_following="true" running_status="undefined" ca_mode="false">
       <country_availability_descriptor country_availability="true">
         <country country_code="abc"/>
         <country country_code="def"/>
@@ -210,7 +210,7 @@
         <country country_code="xyz"/>
       </country_availability_descriptor>
     </service>
-    <service service_id="0x46A9" EIT_schedule="true" EIT_present_following="false" running_status="pausing">
+    <service service_id="0x46A9" EIT_schedule="true" EIT_present_following="false" running_status="pausing" ca_mode="true">
       <country_availability_descriptor country_availability="false">
         <country country_code="yui"/>
       </country_availability_descriptor>
@@ -228,7 +228,7 @@
   <EIT type="pf" version="2" current="true" actual="true"
        service_id="0x0234" transport_stream_id="0x4661" original_network_id="0x621A"
        segment_last_section_number="0x03" last_table_id="0x4E">
-    <event event_id="0x7684" start_time="2017-09-21 14:28:30" duration="01:47:44" running_status="starting" free_CA_mode="true">
+    <event event_id="0x7684" start_time="2017-09-21 14:28:30" duration="01:47:44" running_status="starting" CA_mode="true">
       <short_event_descriptor language_code="egt">
         <event_name>Event name</event_name>
         <text>Event description</text>
@@ -238,7 +238,7 @@
   <EIT type="8" version="4" current="true" actual="false"
        service_id="0x0666" transport_stream_id="0x4693" original_network_id="0x1268"
        segment_last_section_number="0x12" last_table_id="0x69">
-    <event event_id="0x7684" start_time="2017-09-21 14:28:30" duration="01:47:44" running_status="starting" free_CA_mode="true">
+    <event event_id="0x7684" start_time="2017-09-21 14:28:30" duration="01:47:44" running_status="starting" CA_mode="true">
       <short_event_descriptor language_code="egt">
         <event_name>Event name</event_name>
         <text>Event description</text>

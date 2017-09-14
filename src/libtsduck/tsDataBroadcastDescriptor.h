@@ -34,18 +34,39 @@
 
 #pragma once
 #include "tsAbstractDescriptor.h"
-#include "tsVariable.h"
 
 namespace ts {
     //!
     //! Representation of a data_broadcast_descriptor.
     //! @see ETSI 300 468, 6.2.11.
     //!
-    //! Incomplete implementation, to be completed.
-    //!
-    class TSDUCKDLL DataBroadcastDescriptor
+    class TSDUCKDLL DataBroadcastDescriptor : public AbstractDescriptor
     {
     public:
+        // Public members
+        uint16_t    data_broadcast_id;  //!< Data broadcast id.
+        uint8_t     component_tag;      //!< Component tag.
+        ByteBlock   selector_bytes;     //!< Selector bytes.
+        std::string language_code;      //!< ISO-639 language code, 3 characters.
+        std::string text;               //!< Text description.
+
+        //!
+        //! Default constructor.
+        //!
+        DataBroadcastDescriptor();
+
+        //!
+        //! Constructor from a binary descriptor
+        //! @param [in] bin A binary descriptor to deserialize.
+        //!
+        DataBroadcastDescriptor(const Descriptor& bin);
+
+        // Inherited methods
+        virtual void serialize(Descriptor&) const;
+        virtual void deserialize(const Descriptor&);
+        virtual XML::Element* toXML(XML& xml, XML::Element* parent) const;
+        virtual void fromXML(XML& xml, const XML::Element* element);
+
         //!
         //! Static method to display a descriptor.
         //! @param [in,out] display Display engine.

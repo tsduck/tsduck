@@ -201,12 +201,6 @@ ts::XML::Element* ts::SatelliteDeliverySystemDescriptor::toXML(XML& xml, XML::El
     return root;
 }
 
-/*
-
-modulation_type="|||, default=QPSK"
-symbol_rate="SatelliteSymbolRate, required"
-FEC_inner="undefined|1/2|2/3|3/4|5/6|7/8|8/9|3/5|4/5|9/10|none|, required"/>
-*/
 
 //----------------------------------------------------------------------------
 // XML deserialization

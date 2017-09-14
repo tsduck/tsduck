@@ -137,7 +137,7 @@ void ts::ParentalRatingDescriptor::DisplayDescriptor(TablesDisplay& display, DID
     while (size >= 4) {
         uint8_t rating = data[3];
         strm << margin << "Country code: " << Printable(data, 3)
-             << Format(", rating: 0x%02d ", int(rating));
+             << Format(", rating: 0x%02X ", int(rating));
         if (rating == 0) {
             strm << "(undefined)";
         }

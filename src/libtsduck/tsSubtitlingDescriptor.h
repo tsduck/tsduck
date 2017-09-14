@@ -41,11 +41,60 @@ namespace ts {
     //! Representation of a subtitling_descriptor.
     //! @see ETSI 300 468, 6.2.41.
     //!
-    //! Incomplete implementation, to be completed.
-    //!
-    class TSDUCKDLL SubtitlingDescriptor
+    class TSDUCKDLL SubtitlingDescriptor : public AbstractDescriptor
     {
     public:
+        //!
+        //! An item entry.
+        //!
+        struct TSDUCKDLL Entry
+        {
+            // Public members
+            std::string language_code;         //!< ISO-639 language code, 3 characters.
+            uint8_t     subtitling_type;       //!< Subtitling type.
+            uint16_t    composition_page_id;   //!< Composition page identifier.
+            uint16_t    ancillary_page_id;     //!< Ancillary page identifier.
+
+            //!
+            //! Default constructor.
+            //! @param [in] code ISO-639 language code, 3 characters, as a C-string. Can be null.
+            //! @param [in] subt Subtitling type.
+            //! @param [in] comp Composition page identifier.
+            //! @param [in] ancil Ancillary page identifier.
+            //!
+            Entry(const char* code = 0, uint8_t subt = 0, uint16_t comp = 0, uint16_t ancil = 0);
+        };
+
+        //!
+        //! List of language entries.
+        //!
+        typedef std::list<Entry> EntryList;
+
+        //!
+        //! Maximum number of language entries to fit in 255 bytes.
+        //!
+        static const size_t MAX_ENTRIES = 31;
+
+        // Public members
+        EntryList entries;  //!< The list of item entries in the descriptor.
+
+        //!
+        //! Default constructor.
+        //!
+        SubtitlingDescriptor();
+
+        //!
+        //! Constructor from a binary descriptor
+        //! @param [in] bin A binary descriptor to deserialize.
+        //!
+        SubtitlingDescriptor(const Descriptor& bin);
+
+        // Inherited methods
+        virtual void serialize(Descriptor&) const;
+        virtual void deserialize(const Descriptor&);
+        virtual XML::Element* toXML(XML& xml, XML::Element* parent) const;
+        virtual void fromXML(XML& xml, const XML::Element* element);
+
         //!
         //! Static method to display a descriptor.
         //! @param [in,out] display Display engine.

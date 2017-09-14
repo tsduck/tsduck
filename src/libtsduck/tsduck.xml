@@ -127,7 +127,8 @@
     <service service_id="uint16, required"
              EIT_schedule="bool, default=false"
              EIT_present_following="bool, default=false"
-             running_status="undefined|not-running|starting|pausing|running|off-air, default=undefined">
+             running_status="undefined|not-running|starting|pausing|running|off-air, default=undefined"
+             CA_mode="bool, default=false">
       <_any in="_descriptors"/>
     </service>
   </SDT>
@@ -149,7 +150,7 @@
            start_time="YYYY-MM-DD hh:mm:ss, required"
            duration="hh:mm:ss, required"
            running_status="undefined|not-running|starting|pausing|running|off-air, default=undefined"
-           free_CA_mode="bool, default=false">
+           CA_mode="bool, default=false">
       <_any in="_descriptors"/>
     </event>
   </EIT>
@@ -439,8 +440,7 @@
       <!-- One per page -->
       <teletext language_code="char3, required"
                 teletext_type="uint5, required"
-                teletext_magazine_number="uint3, required"
-                teletext_page_number="uint8, required"/>
+                page_number="uint16, required"/>
     </teletext_descriptor>
 
     <terrestrial_delivery_system_descriptor

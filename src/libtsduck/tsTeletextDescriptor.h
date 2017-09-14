@@ -34,18 +34,88 @@
 
 #pragma once
 #include "tsAbstractDescriptor.h"
-#include "tsVariable.h"
 
 namespace ts {
     //!
     //! Representation of a teletext_descriptor.
     //! @see ETSI 300 468, 6.2.43.
     //!
-    //! Incomplete implementation, to be completed.
-    //!
-    class TSDUCKDLL TeletextDescriptor
+    class TSDUCKDLL TeletextDescriptor : public AbstractDescriptor
     {
     public:
+        //!
+        //! An item entry.
+        //!
+        struct TSDUCKDLL Entry
+        {
+            // Public members
+            uint8_t     teletext_type;      //!< Teletext type, 5 bits.
+            uint16_t    page_number;        //!< Teletext page number, combination of page and magazine number.
+            std::string language_code;      //!< ISO-639 language code, 3 characters.
+
+            //!
+            //! Default constructor.
+            //! @param [in] type Teletext type, 5 bits.
+            //! @param [in] page Teletext page number, combination of page and magazine number.
+            //! @param [in] code ISO-639 language code, 3 characters, as a C-string. Can be null.
+            //!
+            Entry(uint8_t type = 0, uint16_t page = 0, const char* code = 0);
+
+            //!
+            //! Build a full Teletext page number from magazine and page numbers.
+            //! In Teletext, a "page number" is built from two data, the magazine and page numbers.
+            //! The binary descriptor contains these two values.
+            //! @param [in] teletext_magazine_number Teletext magazine number, 3-bit value from descriptor.
+            //! @param [in] teletext_page_number Teletext page number, 8-bit value from descriptor.
+            //! @return Full page number.
+            //!
+            void setFullNumber(uint8_t teletext_magazine_number, uint8_t teletext_page_number);
+
+            //!
+            //! Extract magazine number from the full Teletext page number.
+            //! @return Teletext magazine number, 3-bit value from descriptor.
+            //! @see setFullNumber()
+            //!
+            uint8_t pageNumber() const;
+
+            //!
+            //! Extract page number from then full Teletext page number.
+            //! @return Teletext page number, 8-bit value from descriptor.
+            //! @see setFullNumber()
+            //!
+            uint8_t magazineNumber() const;
+        };
+
+        //!
+        //! List of language entries.
+        //!
+        typedef std::list<Entry> EntryList;
+
+        //!
+        //! Maximum number of language entries to fit in 255 bytes.
+        //!
+        static const size_t MAX_ENTRIES = 51;
+
+        // Public members
+        EntryList entries;  //!< The list of item entries in the descriptor.
+
+        //!
+        //! Default constructor.
+        //!
+        TeletextDescriptor();
+
+        //!
+        //! Constructor from a binary descriptor
+        //! @param [in] bin A binary descriptor to deserialize.
+        //!
+        TeletextDescriptor(const Descriptor& bin);
+
+        // Inherited methods
+        virtual void serialize(Descriptor&) const;
+        virtual void deserialize(const Descriptor&);
+        virtual XML::Element* toXML(XML& xml, XML::Element* parent) const;
+        virtual void fromXML(XML& xml, const XML::Element* element);
+
         //!
         //! Static method to display a descriptor.
         //! @param [in,out] display Display engine.

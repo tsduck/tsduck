@@ -506,6 +506,9 @@
     <ClCompile Include="..\..\src\libtsduck\windows\tsSinkFilter.cpp" />
     <ClCompile Include="..\..\src\libtsduck\windows\tsTuner.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <Xml Include="..\..\src\libtsduck\tsduck.xml" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{1AD31049-26B0-4922-89CF-778040DFC51E}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>

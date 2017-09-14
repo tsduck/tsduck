@@ -139,7 +139,7 @@ ts::XML::Element* ts::ContentDescriptor::toXML(XML& xml, XML::Element* parent) c
         XML::Element* e = xml.addElement(root, "content");
         xml.setIntAttribute(e, "content_nibble_level_1", it->content_nibble_level_1);
         xml.setIntAttribute(e, "content_nibble_level_2", it->content_nibble_level_2);
-        xml.setIntAttribute(e, "user_byte", (it->user_nibble_1 << 4) | it->user_nibble_2, true);
+        xml.setIntAttribute(e, "user_byte", uint8_t((it->user_nibble_1 << 4) | it->user_nibble_2), true);
     }
     return root;
 }

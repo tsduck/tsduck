@@ -38,7 +38,36 @@
 #include "tsNames.h"
 #include "tsTablesFactory.h"
 TSDUCK_SOURCE;
+TS_XML_DESCRIPTOR_FACTORY(ts::DataBroadcastDescriptor, "data_broadcast_descriptor");
+TS_ID_DESCRIPTOR_FACTORY(ts::DataBroadcastDescriptor, ts::EDID(ts::DID_DATA_BROADCAST));
 TS_ID_DESCRIPTOR_DISPLAY(ts::DataBroadcastDescriptor::DisplayDescriptor, ts::EDID(ts::DID_DATA_BROADCAST));
+
+
+//----------------------------------------------------------------------------
+// Constructors.
+//----------------------------------------------------------------------------
+
+ts::DataBroadcastDescriptor::DataBroadcastDescriptor() :
+    AbstractDescriptor(DID_DATA_BROADCAST, "data_broadcast_descriptor"),
+    data_broadcast_id(0),
+    component_tag(0),
+    selector_bytes(),
+    language_code(),
+    text()
+{
+    _is_valid = true;
+}
+
+ts::DataBroadcastDescriptor::DataBroadcastDescriptor(const Descriptor& desc) :
+    AbstractDescriptor(DID_DATA_BROADCAST, "data_broadcast_descriptor"),
+    data_broadcast_id(0),
+    component_tag(0),
+    selector_bytes(),
+    language_code(),
+    text()
+{
+    deserialize(desc);
+}
 
 
 //----------------------------------------------------------------------------
@@ -81,4 +110,109 @@ void ts::DataBroadcastDescriptor::DisplayDescriptor(TablesDisplay& display, DID 
     }
 
     display.displayExtraData(data, size, indent);
+}
+
+
+//----------------------------------------------------------------------------
+// Serialization
+//----------------------------------------------------------------------------
+
+void ts::DataBroadcastDescriptor::serialize (Descriptor& desc) const
+{
+    if (language_code.length() != 3 || selector_bytes.size() + text.size() + 10 > MAX_DESCRIPTOR_SIZE) {
+        desc.invalidate();
+        return;
+    }
+
+    ByteBlockPtr bbp(new ByteBlock(2));
+    CheckNonNull(bbp.pointer());
+
+    bbp->appendUInt16(data_broadcast_id);
+    bbp->appendUInt8(component_tag);
+    bbp->appendUInt8(int8_t(selector_bytes.size()));
+    bbp->append(selector_bytes);
+    bbp->append(language_code);
+    bbp->appendUInt8(int8_t(text.size()));
+    bbp->append(text);
+
+    (*bbp)[0] = _tag;
+    (*bbp)[1] = uint8_t(bbp->size() - 2);
+    Descriptor d(bbp, SHARE);
+    desc = d;
+}
+
+
+//----------------------------------------------------------------------------
+// Deserialization
+//----------------------------------------------------------------------------
+
+void ts::DataBroadcastDescriptor::deserialize (const Descriptor& desc)
+{
+    selector_bytes.clear();
+    language_code.clear();
+    text.clear();
+
+    if (!(_is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() >= 8)) {
+        return;
+    }
+
+    const uint8_t* data = desc.payload();
+    size_t size = desc.payloadSize();
+
+    data_broadcast_id = GetUInt16(data);
+    component_tag = GetUInt8(data + 2);
+    size_t length = GetUInt8(data + 3);
+    data += 4; size -= 4;
+
+    if (length + 4 > size) {
+        _is_valid = false;
+        return;
+    }
+    selector_bytes.copy(data, length);
+    data += length; size -= length;
+
+    language_code = std::string(reinterpret_cast<const char*>(data), 3);
+    length = GetUInt8(data + 3);
+    data += 4; size -= 4;
+
+    _is_valid = size == length;
+    if (_is_valid) {
+        text = std::string(reinterpret_cast<const char*>(data), length);
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// XML serialization
+//----------------------------------------------------------------------------
+
+ts::XML::Element* ts::DataBroadcastDescriptor::toXML(XML& xml, XML::Element* parent) const
+{
+    XML::Element* root = _is_valid ? xml.addElement(parent, _xml_name) : 0;
+    xml.setIntAttribute(root, "data_broadcast_id", data_broadcast_id, true);
+    xml.setIntAttribute(root, "component_tag", component_tag, true);
+    xml.setAttribute(root, "language_code", language_code);
+    xml.addHexaText(xml.addElement(root, "selector_bytes"), selector_bytes);
+    xml.addText(xml.addElement(root, "text"), text);
+    return root;
+}
+
+
+//----------------------------------------------------------------------------
+// XML deserialization
+//----------------------------------------------------------------------------
+
+void ts::DataBroadcastDescriptor::fromXML(XML& xml, const XML::Element* element)
+{
+    selector_bytes.clear();
+    language_code.clear();
+    text.clear();
+
+    _is_valid =
+        checkXMLName(xml, element) &&
+        xml.getIntAttribute<uint16_t>(data_broadcast_id, element, "data_broadcast_id", true) &&
+        xml.getIntAttribute<uint8_t>(component_tag, element, "component_tag", true) &&
+        xml.getAttribute(language_code, element, "language_code", true, "", 3, 3) &&
+        xml.getHexaTextChild(selector_bytes, element, "selector_bytes", true) &&
+        xml.getTextChild(text, element, "text", true, false);
 }

@@ -151,7 +151,7 @@ void ts::LocalTimeOffsetDescriptor::DisplayDescriptor(TablesDisplay& display, DI
     std::ostream& strm(display.out());
     const std::string margin(indent, ' ');
 
-    if (size >= 3) {
+    while (size >= 3) {
         // Country code is a 3-byte string
         strm << margin << "Country code: " << Printable(data, 3) << std::endl;
         data += 3; size -= 3;
