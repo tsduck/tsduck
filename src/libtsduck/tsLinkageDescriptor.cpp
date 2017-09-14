@@ -513,7 +513,9 @@ ts::XML::Element* ts::LinkageDescriptor::toXML(XML& xml, XML::Element* parent) c
         }
     }
 
-    xml.addHexaText(xml.addElement(root, "private_data"), private_data);
+    if (!private_data.empty()) {
+        xml.addHexaText(xml.addElement(root, "private_data"), private_data);
+    }
     return root;
 }
 
@@ -570,15 +572,15 @@ void ts::LinkageDescriptor::fromXML(XML& xml, const XML::Element* element)
         for (size_t i = 0; _is_valid && i < eventElements.size(); ++i) {
             ExtendedEventLinkageInfo info;
             _is_valid =
-                xml.getIntAttribute<uint16_t>(info.target_event_id, eventElements[0], "target_event_id", true) &&
-                xml.getBoolAttribute(info.target_listed, eventElements[0], "target_listed", true) &&
-                xml.getBoolAttribute(info.event_simulcast, eventElements[0], "event_simulcast", true) &&
-                xml.getIntAttribute<uint8_t>(info.link_type, eventElements[0], "link_type", true, 0, 0, 3) &&
-                xml.getIntAttribute<uint8_t>(info.target_id_type, eventElements[0], "target_id_type", true, 0, 0, 3) &&
-                xml.getIntAttribute<uint16_t>(info.user_defined_id, eventElements[0], "user_defined_id", info.target_id_type == 3) &&
-                xml.getIntAttribute<uint16_t>(info.target_transport_stream_id, eventElements[0], "target_transport_stream_id", info.target_id_type == 1) &&
-                xml.getOptionalIntAttribute<uint16_t>(info.target_original_network_id, eventElements[0], "target_original_network_id") &&
-                xml.getOptionalIntAttribute<uint16_t>(info.target_service_id, eventElements[0], "target_service_id");
+                xml.getIntAttribute<uint16_t>(info.target_event_id, eventElements[i], "target_event_id", true) &&
+                xml.getBoolAttribute(info.target_listed, eventElements[i], "target_listed", true) &&
+                xml.getBoolAttribute(info.event_simulcast, eventElements[i], "event_simulcast", true) &&
+                xml.getIntAttribute<uint8_t>(info.link_type, eventElements[i], "link_type", true, 0, 0, 3) &&
+                xml.getIntAttribute<uint8_t>(info.target_id_type, eventElements[i], "target_id_type", true, 0, 0, 3) &&
+                xml.getIntAttribute<uint16_t>(info.user_defined_id, eventElements[i], "user_defined_id", info.target_id_type == 3) &&
+                xml.getIntAttribute<uint16_t>(info.target_transport_stream_id, eventElements[i], "target_transport_stream_id", info.target_id_type == 1) &&
+                xml.getOptionalIntAttribute<uint16_t>(info.target_original_network_id, eventElements[i], "target_original_network_id") &&
+                xml.getOptionalIntAttribute<uint16_t>(info.target_service_id, eventElements[i], "target_service_id");
             if (_is_valid) {
                 extended_event_linkage_info.push_back(info);
             }

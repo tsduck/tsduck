@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <tsduck>
-  <PAT version="8" current="true" transport_stream_id="0x0012" network_PID="16">
+  <PAT version="8" current="true" transport_stream_id="0x0012" network_PID="0x0010">
     <service service_id="0x0001" program_map_PID="0x1234"/>
     <service service_id="0x0002" program_map_PID="0x0678"/>
   </PAT>
@@ -22,7 +22,7 @@
   </CAT>
   <PMT version="4" current="true" service_id="0x0456" PCR_PID="0x1234">
     <CA_descriptor CA_system_id="0x0777" CA_PID="0x0251"/>
-    <component stream_type="0x12" elementary_PID="0x0567">
+    <component elementary_PID="0x0567" stream_type="0x12">
       <ISO_639_language_descriptor>
         <language code="fre" audio_type="0x45"/>
         <language code="deu" audio_type="0x78"/>
@@ -46,7 +46,7 @@
   </NIT>
   <NIT version="0" current="true" network_id="0x4589" actual="false">
     <network_name_descriptor network_name="net 21"/>
-    <AC3_descriptor component_type="45" bsid="7" mainid="78" asvc="4">
+    <AC3_descriptor component_type="0x2D" bsid="0x07" mainid="0x4E" asvc="0x04">
       <additional_info>
         01 02
       </additional_info>
@@ -60,26 +60,27 @@
       <content content_nibble_level_1="2" content_nibble_level_2="10" user_byte="0x66"/>
     </content_descriptor>
     <data_broadcast_descriptor data_broadcast_id="0x4567" component_tag="0xAC" language_code="xyz">
-      <selector_bytes>01 02 56 89</selector_bytes>
+      <selector_bytes>
+        01 02 56 89
+      </selector_bytes>
       <text>This is the text</text>
     </data_broadcast_descriptor>
     <data_broadcast_id_descriptor data_broadcast_id="0x786C">
-      <selector_bytes>01 89 65</selector_bytes>
+      <selector_bytes>
+        01 89 65
+      </selector_bytes>
     </data_broadcast_id_descriptor>
     <private_data_specifier_descriptor private_data_specifier="eacem"/>
     <eacem_stream_identifier_descriptor version_byte="0x78"/>
-    <enhanced_AC3_descriptor mixinfoexists="true" component_type="0x43" bsid="0x78" mainid="0x68"
-        asvc="0x67" substream1="0xB8" substream2="0xC5" substream3="0x45">
+    <enhanced_AC3_descriptor mixinfoexists="true" component_type="0x43" bsid="0x78" mainid="0x68" asvc="0x67" substream1="0xB8" substream2="0xC5" substream3="0x45">
       <additional_info>
         56 98 23 B8 CF
       </additional_info>
     </enhanced_AC3_descriptor>
     <private_data_specifier_descriptor private_data_specifier="eutelsat"/>
     <eutelsat_channel_number_descriptor>
-      <service original_network_id="0x3494" transport_stream_id="0xB674" service_id="0x78BF"
-               eutelsat_channel_number="45"/>
-      <service original_network_id="0x3784" transport_stream_id="0xB623" service_id="0x22BF"
-               eutelsat_channel_number="157"/>
+      <service original_network_id="0x3494" transport_stream_id="0xB674" service_id="0x78BF" eutelsat_channel_number="45"/>
+      <service original_network_id="0x3784" transport_stream_id="0xB623" service_id="0x22BF" eutelsat_channel_number="157"/>
     </eutelsat_channel_number_descriptor>
     <extended_event_descriptor descriptor_number="1" last_descriptor_number="4" language_code="egg">
       <text>The text</text>
@@ -102,7 +103,7 @@
       <service service_id="0x2195" logical_channel_number="789" visible_service="false"/>
     </logical_channel_number_descriptor>
     <linkage_descriptor transport_stream_id="0x1345" original_network_id="0x987F" service_id="0xCDFE" linkage_type="0x08">
-      <mobile_handover_info handover_type="2" origin_type="NIT" network_id="0x3434" initial_service_id="0x8764"/>
+      <mobile_handover_info handover_type="0x02" origin_type="NIT" network_id="0x3434" initial_service_id="0x8764"/>
       <private_data>
         01 45 E8 45
       </private_data>
@@ -112,10 +113,8 @@
     </linkage_descriptor>
     <linkage_descriptor transport_stream_id="0x1545" original_network_id="0x987F" service_id="0xC1FE" linkage_type="0x0F">
       <extended_event_linkage_info>
-        <event target_event_id="0x1234" target_listed="true" event_simulcast="false" link_type="1" target_id_type="3"
-            user_defined_id="0x3445" target_original_network_id="0x8764" target_service_id="0x6742"/>
-        <event target_event_id="0x7634" target_listed="false" event_simulcast="true" link_type="1" target_id_type="1"
-            target_transport_stream_id="0x8764"/>
+        <event target_event_id="0x1234" target_listed="true" event_simulcast="false" link_type="0x01" target_id_type="0x03" user_defined_id="0x3445" target_original_network_id="0x8764" target_service_id="0x6742"/>
+        <event target_event_id="0x7634" target_listed="false" event_simulcast="true" link_type="0x01" target_id_type="0x01" target_transport_stream_id="0x8764"/>
       </extended_event_linkage_info>
       <private_data>
         01 45 E8
@@ -125,15 +124,12 @@
       <text>The message</text>
     </message_descriptor>
     <parental_rating_descriptor>
-      <country country_code="qsd" rating="34"/>
-      <country country_code="ger" rating="7"/>
+      <country country_code="qsd" rating="0x22"/>
+      <country country_code="ger" rating="0x07"/>
     </parental_rating_descriptor>
     <private_data_specifier_descriptor private_data_specifier="0x54654BD5"/>
-    <S2_satellite_delivery_system_descriptor backwards_compatibility="false" scrambling_sequence_index="0x74"
-        input_stream_identifier="0x45"/>
-    <satellite_delivery_system_descriptor
-        frequency="12,094,000,000" orbital_position="19.2" west_east_flag="east" polarization="vertical"
-        roll_off="0.20" modulation_system="dvb-s2" modulation_type="8psk" symbol_rate="23,900,000" FEC_inner="5/6"/>
+    <S2_satellite_delivery_system_descriptor backwards_compatibility="false" scrambling_sequence_index="0x00000074" input_stream_identifier="0x45"/>
+    <satellite_delivery_system_descriptor frequency="12,094,000,000" orbital_position="19.2" west_east_flag="east" polarization="vertical" roll_off="0.20" modulation_system="DVB-S2" modulation_type="8PSK" symbol_rate="23,900,000" FEC_inner="5/6"/>
     <service_descriptor service_type="0x65" service_provider_name="Azerty" service_name="The Service"/>
     <service_list_descriptor>
       <service service_id="0x5461" service_type="0x56"/>
@@ -150,37 +146,17 @@
       <subtitling language_code="rth" subtitling_type="0x65" composition_page_id="0x8921" ancillary_page_id="0x6216"/>
       <subtitling language_code="gtf" subtitling_type="0x61" composition_page_id="0x1239" ancillary_page_id="0x2139"/>
     </subtitling_descriptor>
-    <supplementary_audio_descriptor mix_type="1" editorial_classification="6" language_code="rtg">
+    <supplementary_audio_descriptor mix_type="1" editorial_classification="0x06" language_code="rtg">
       <private_data>
         01 65 68 96 32
       </private_data>
     </supplementary_audio_descriptor>
     <teletext_descriptor>
       <teletext language_code="ezg" teletext_type="0x12" page_number="889"/>
-      <teletext language_code="reh" teletext_type="0x04" page_number="7"/>
+      <teletext language_code="reh" teletext_type="0x04" page_number="387"/>
     </teletext_descriptor>
-    <terrestrial_delivery_system_descriptor
-        centre_frequency="841,465,000"
-        bandwidth="8mhz"
-        priority="LP"
-        no_time_slicing="true"
-        no_MPE_FEC="false"
-        constellation="64-QAM"
-        hierarchy_information="5"
-        code_rate_HP_stream="3/4"
-        code_rate_LP_stream="2/3"
-        guard_interval="1/16"
-        transmission_mode="8k"
-        other_frequency="false"/>
-    <AVC_video_descriptor
-        profile_idc="45"
-        constraint_set0="true"
-        constraint_set1="false"
-        constraint_set2="true"
-        AVC_compatible_flags="23"
-        level_idc="78"
-        AVC_still_present="true"
-        AVC_24_hour_picture="false"/>
+    <terrestrial_delivery_system_descriptor centre_frequency="841,465,000" bandwidth="8MHz" priority="LP" no_time_slicing="true" no_MPE_FEC="false" constellation="64-QAM" hierarchy_information="5" code_rate_HP_stream="3/4" code_rate_LP_stream="2/3" guard_interval="1/16" transmission_mode="8k" other_frequency="false"/>
+    <AVC_video_descriptor profile_idc="0x2D" constraint_set0="true" constraint_set1="false" constraint_set2="true" AVC_compatible_flags="0x17" level_idc="0x4E" AVC_still_present="true" AVC_24_hour_picture="false"/>
     <transport_stream transport_stream_id="0x6543" original_network_id="0x9876">
       <bouquet_name_descriptor bouquet_name="nit 21"/>
       <bouquet_name_descriptor bouquet_name="nit 22"/>
@@ -201,7 +177,7 @@
     <event transport_stream_id="0x1269" original_network_id="0x3543" service_id="0x5656" event_id="0x4573" running_status="running"/>
   </RST>
   <SDT version="2" current="true" transport_stream_id="0x7896" original_network_id="0x46AC" actual="true">
-    <service service_id="0x4659" EIT_schedule="false" EIT_present_following="true" running_status="undefined" ca_mode="false">
+    <service service_id="0x4659" EIT_schedule="false" EIT_present_following="true" CA_mode="false" running_status="undefined">
       <country_availability_descriptor country_availability="true">
         <country country_code="abc"/>
         <country country_code="def"/>
@@ -210,7 +186,7 @@
         <country country_code="xyz"/>
       </country_availability_descriptor>
     </service>
-    <service service_id="0x46A9" EIT_schedule="true" EIT_present_following="false" running_status="pausing" ca_mode="true">
+    <service service_id="0x46A9" EIT_schedule="true" EIT_present_following="false" CA_mode="true" running_status="pausing">
       <country_availability_descriptor country_availability="false">
         <country country_code="yui"/>
       </country_availability_descriptor>
@@ -219,15 +195,11 @@
   <TDT UTC_time="2017-09-12 14:27:12"/>
   <TOT UTC_time="2017-09-12 14:28:10">
     <local_time_offset_descriptor>
-      <region country_code="abc" country_region_id="1" local_time_offset="-120"
-              time_of_change="2018-03-07 02:00:00" next_time_offset="60"/>
-      <region country_code="erg" country_region_id="17" local_time_offset="120"
-              time_of_change="2018-03-07 04:00:00" next_time_offset="90"/>
+      <region country_code="abc" country_region_id="1" local_time_offset="-120" time_of_change="2018-03-07 02:00:00" next_time_offset="-60"/>
+      <region country_code="erg" country_region_id="17" local_time_offset="120" time_of_change="2018-03-07 04:00:00" next_time_offset="90"/>
     </local_time_offset_descriptor>
   </TOT>
-  <EIT type="pf" version="2" current="true" actual="true"
-       service_id="0x0234" transport_stream_id="0x4661" original_network_id="0x621A"
-       segment_last_section_number="0x03" last_table_id="0x4E">
+  <EIT type="pf" version="2" current="true" actual="true" service_id="0x0234" transport_stream_id="0x4661" original_network_id="0x621A" segment_last_section_number="0x03" last_table_id="0x4E">
     <event event_id="0x7684" start_time="2017-09-21 14:28:30" duration="01:47:44" running_status="starting" CA_mode="true">
       <short_event_descriptor language_code="egt">
         <event_name>Event name</event_name>
@@ -235,9 +207,7 @@
       </short_event_descriptor>
     </event>
   </EIT>
-  <EIT type="8" version="4" current="true" actual="false"
-       service_id="0x0666" transport_stream_id="0x4693" original_network_id="0x1268"
-       segment_last_section_number="0x12" last_table_id="0x69">
+  <EIT type="8" version="4" current="true" actual="false" service_id="0x0666" transport_stream_id="0x4693" original_network_id="0x1268" segment_last_section_number="0x12" last_table_id="0x69">
     <event event_id="0x7684" start_time="2017-09-21 14:28:30" duration="01:47:44" running_status="starting" CA_mode="true">
       <short_event_descriptor language_code="egt">
         <event_name>Event name</event_name>

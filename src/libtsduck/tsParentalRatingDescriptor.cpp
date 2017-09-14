@@ -110,7 +110,7 @@ void ts::ParentalRatingDescriptor::serialize (Descriptor& desc) const
 
 void ts::ParentalRatingDescriptor::deserialize (const Descriptor& desc)
 {
-    if (!(_is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() % 4 != 0)) {
+    if (!(_is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() % 4 == 0)) {
         return;
     }
 

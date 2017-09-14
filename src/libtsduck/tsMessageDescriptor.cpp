@@ -126,7 +126,7 @@ void ts::MessageDescriptor::deserialize(const Descriptor& desc)
 ts::XML::Element* ts::MessageDescriptor::toXML(XML& xml, XML::Element* parent) const
 {
     XML::Element* root = _is_valid ? xml.addElement(parent, _xml_name) : 0;
-    xml.setIntAttribute(root, "message_id", message_id);
+    xml.setIntAttribute(root, "message_id", message_id, true);
     xml.setAttribute(root, "language_code", language_code);
     xml.addText(xml.addElement(root, "text"), message);
     return root;

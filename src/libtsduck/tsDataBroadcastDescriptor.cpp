@@ -192,7 +192,9 @@ ts::XML::Element* ts::DataBroadcastDescriptor::toXML(XML& xml, XML::Element* par
     xml.setIntAttribute(root, "data_broadcast_id", data_broadcast_id, true);
     xml.setIntAttribute(root, "component_tag", component_tag, true);
     xml.setAttribute(root, "language_code", language_code);
-    xml.addHexaText(xml.addElement(root, "selector_bytes"), selector_bytes);
+    if (!selector_bytes.empty()) {
+        xml.addHexaText(xml.addElement(root, "selector_bytes"), selector_bytes);
+    }
     xml.addText(xml.addElement(root, "text"), text);
     return root;
 }

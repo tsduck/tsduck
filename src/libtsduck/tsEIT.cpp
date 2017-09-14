@@ -196,7 +196,7 @@ void ts::EIT::deserialize(const BinaryTable& table)
             const int hour = DecodeBCD(data[7]);
             const int min = DecodeBCD(data[8]);
             const int sec = DecodeBCD(data[9]);
-            event.duration = ((hour * 24) + min) * 60 + sec;
+            event.duration = (hour * 3600) + (min * 60) + sec;
             event.running_status = (data[10] >> 5) & 0x07;
             event.CA_controlled = (data[10] >> 4) & 0x01;
 
