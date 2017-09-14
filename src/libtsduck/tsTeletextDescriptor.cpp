@@ -191,7 +191,7 @@ ts::XML::Element* ts::TeletextDescriptor::toXML(XML& xml, XML::Element* parent) 
         XML::Element* e = xml.addElement(root, "teletext");
         xml.setAttribute(e, "language_code", it->language_code);
         xml.setIntAttribute(e, "teletext_type", it->teletext_type, true);
-        xml.setIntAttribute(e, "page_number", it->page_number, true);
+        xml.setIntAttribute(e, "page_number", it->page_number);
     }
     return root;
 }

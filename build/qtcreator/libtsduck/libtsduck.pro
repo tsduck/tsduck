@@ -284,8 +284,7 @@ HEADERS += \
     ../../../src/libtsduck/tstlvProtocol.h \
     ../../../src/libtsduck/tstlvSerializer.h \
     ../../../src/libtsduck/tstlvStreamMessage.h \
-    ../../../src/libtsduck/tinyxml/tinyxml2.h \
-    ../../../src/libtsduck/tsS2SatelliteDeliverySystemDescriptor.h
+    ../../../src/libtsduck/tinyxml/tinyxml2.h
 
 SOURCES += \
     ../../../src/libtsduck/tsAACDescriptor.cpp \
@@ -410,7 +409,7 @@ SOURCES += \
     ../../../src/libtsduck/tsReportWithPrefix.cpp \
     ../../../src/libtsduck/tsRingNode.cpp \
     ../../../src/libtsduck/tsRST.cpp \
-    ../../../src/libtsduck/tsS2SatelliteDeliverySystemDescriptor.h \
+    ../../../src/libtsduck/tsS2SatelliteDeliverySystemDescriptor.cpp \
     ../../../src/libtsduck/tsSDT.cpp \
     ../../../src/libtsduck/tsSHA1.cpp \
     ../../../src/libtsduck/tsSHA256.cpp \
@@ -489,8 +488,7 @@ SOURCES += \
     ../../../src/libtsduck/tstlvMessage.cpp \
     ../../../src/libtsduck/tstlvMessageFactory.cpp \
     ../../../src/libtsduck/tstlvSerializer.cpp \
-    ../../../src/libtsduck/tinyxml/tinyxml2.cpp \
-    ../../../src/libtsduck/tsS2SatelliteDeliverySystemDescriptor.cpp
+    ../../../src/libtsduck/tinyxml/tinyxml2.cpp
     
 linux {
     HEADERS += \

@@ -144,7 +144,7 @@ ts::XML::Element* ts::EutelsatChannelNumberDescriptor::toXML(XML& xml, XML::Elem
     XML::Element* root = _is_valid ? xml.addElement(parent, _xml_name) : 0;
     for (EntryList::const_iterator it = entries.begin(); it != entries.end(); ++it) {
         XML::Element* e = xml.addElement(root, "service");
-        xml.setIntAttribute(e, "original_network_id=", it->onetw_id, true);
+        xml.setIntAttribute(e, "original_network_id", it->onetw_id, true);
         xml.setIntAttribute(e, "transport_stream_id", it->ts_id, true);
         xml.setIntAttribute(e, "service_id", it->service_id, true);
         xml.setIntAttribute(e, "eutelsat_channel_number", it->ecn, false);

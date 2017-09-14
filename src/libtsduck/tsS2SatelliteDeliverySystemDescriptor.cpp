@@ -179,10 +179,10 @@ ts::XML::Element* ts::S2SatelliteDeliverySystemDescriptor::toXML(XML& xml, XML::
     XML::Element* root = _is_valid ? xml.addElement(parent, _xml_name) : 0;
     xml.setBoolAttribute(root, "backwards_compatibility", backwards_compatibility_indicator);
     if (scrambling_sequence_selector) {
-        xml.setIntAttribute(root, "scrambling_sequence_index", scrambling_sequence_index);
+        xml.setIntAttribute(root, "scrambling_sequence_index", scrambling_sequence_index, true);
     }
     if (multiple_input_stream_flag) {
-        xml.setIntAttribute(root, "input_stream_identifier", input_stream_identifier);
+        xml.setIntAttribute(root, "input_stream_identifier", input_stream_identifier, true);
     }
     return root;
 }
