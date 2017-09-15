@@ -1,0 +1,328 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+
+  <!-- NIT for the French terrestrial network (TNT), version 26 -->
+
+  <NIT version="26"network_id="0x20FA" actual="true">
+
+    <network_name_descriptor network_name="F"/>
+
+    <linkage_descriptor transport_stream_id="0x0001" original_network_id="0x20FA" service_id="0x01FF" linkage_type="0x09">
+      <private_data>
+        04 00 01 5A 00
+      </private_data>
+    </linkage_descriptor>
+
+    <linkage_descriptor transport_stream_id="0x0002" original_network_id="0x20FA" service_id="0x02FF" linkage_type="0x09">
+      <private_data>
+        04 00 01 5A 00
+      </private_data>
+    </linkage_descriptor>
+
+    <linkage_descriptor transport_stream_id="0x0003" original_network_id="0x20FA" service_id="0x03FF" linkage_type="0x09">
+      <private_data>
+        04 00 01 5A 00
+      </private_data>
+    </linkage_descriptor>
+
+    <linkage_descriptor transport_stream_id="0x0004" original_network_id="0x20FA" service_id="0x04FF" linkage_type="0x09">
+      <private_data>
+        04 00 01 5A 00
+      </private_data>
+    </linkage_descriptor>
+
+    <linkage_descriptor transport_stream_id="0x0005" original_network_id="0x20FA" service_id="0x05FF" linkage_type="0x09">
+      <private_data>
+        04 00 01 5A 00
+      </private_data>
+    </linkage_descriptor>
+
+    <linkage_descriptor transport_stream_id="0x0006" original_network_id="0x20FA" service_id="0x06FF" linkage_type="0x09">
+      <private_data>
+        04 00 01 5A 00
+      </private_data>
+    </linkage_descriptor>
+
+    <transport_stream transport_stream_id="0x0001" original_network_id="0x20FA">
+      <private_data_specifier_descriptor private_data_specifier="eacem"/>
+      <logical_channel_number_descriptor>
+        <service service_id="0x0101" logical_channel_number="2" visible_service="true"/>
+        <service service_id="0x0104" logical_channel_number="5" visible_service="true"/>
+        <service service_id="0x0105" logical_channel_number="19" visible_service="true"/>
+        <service service_id="0x0106" logical_channel_number="13" visible_service="true"/>
+        <service service_id="0x0111" logical_channel_number="3" visible_service="true"/>
+        <service service_id="0x0112" logical_channel_number="3" visible_service="true"/>
+        <service service_id="0x0113" logical_channel_number="3" visible_service="true"/>
+        <service service_id="0x0114" logical_channel_number="3" visible_service="true"/>
+        <service service_id="0x0115" logical_channel_number="3" visible_service="true"/>
+        <service service_id="0x0116" logical_channel_number="3" visible_service="true"/>
+        <service service_id="0x0117" logical_channel_number="3" visible_service="true"/>
+        <service service_id="0x0118" logical_channel_number="3" visible_service="true"/>
+        <service service_id="0x0119" logical_channel_number="3" visible_service="true"/>
+        <service service_id="0x011A" logical_channel_number="3" visible_service="true"/>
+        <service service_id="0x011B" logical_channel_number="3" visible_service="true"/>
+        <service service_id="0x011C" logical_channel_number="3" visible_service="true"/>
+        <service service_id="0x011D" logical_channel_number="3" visible_service="true"/>
+        <service service_id="0x011E" logical_channel_number="3" visible_service="true"/>
+        <service service_id="0x011F" logical_channel_number="3" visible_service="true"/>
+        <service service_id="0x0120" logical_channel_number="3" visible_service="true"/>
+        <service service_id="0x0121" logical_channel_number="3" visible_service="true"/>
+        <service service_id="0x0122" logical_channel_number="3" visible_service="true"/>
+        <service service_id="0x0123" logical_channel_number="3" visible_service="true"/>
+        <service service_id="0x0124" logical_channel_number="3" visible_service="true"/>
+        <service service_id="0x0125" logical_channel_number="3" visible_service="true"/>
+        <service service_id="0x0126" logical_channel_number="3" visible_service="true"/>
+        <service service_id="0x0127" logical_channel_number="3" visible_service="true"/>
+        <service service_id="0x0128" logical_channel_number="3" visible_service="true"/>
+        <service service_id="0x0129" logical_channel_number="3" visible_service="true"/>
+        <service service_id="0x012A" logical_channel_number="3" visible_service="true"/>
+        <service service_id="0x012B" logical_channel_number="3" visible_service="true"/>
+        <service service_id="0x012C" logical_channel_number="3" visible_service="true"/>
+        <service service_id="0x012D" logical_channel_number="3" visible_service="true"/>
+        <service service_id="0x012E" logical_channel_number="3" visible_service="true"/>
+        <service service_id="0x012F" logical_channel_number="3" visible_service="true"/>
+        <service service_id="0x0130" logical_channel_number="3" visible_service="true"/>
+        <service service_id="0x0131" logical_channel_number="3" visible_service="true"/>
+        <service service_id="0x0132" logical_channel_number="3" visible_service="true"/>
+        <service service_id="0x0133" logical_channel_number="3" visible_service="true"/>
+        <service service_id="0x0134" logical_channel_number="3" visible_service="true"/>
+        <service service_id="0x0135" logical_channel_number="3" visible_service="true"/>
+        <service service_id="0x0136" logical_channel_number="3" visible_service="true"/>
+        <service service_id="0x0137" logical_channel_number="3" visible_service="true"/>
+        <service service_id="0x0138" logical_channel_number="3" visible_service="true"/>
+        <service service_id="0x0139" logical_channel_number="3" visible_service="true"/>
+        <service service_id="0x013A" logical_channel_number="3" visible_service="true"/>
+        <service service_id="0x013B" logical_channel_number="3" visible_service="true"/>
+        <service service_id="0x0143" logical_channel_number="22" visible_service="true"/>
+        <service service_id="0x0144" logical_channel_number="22" visible_service="true"/>
+        <service service_id="0x0170" logical_channel_number="20" visible_service="true"/>
+        <service service_id="0x0171" logical_channel_number="21" visible_service="true"/>
+        <service service_id="0x0172" logical_channel_number="22" visible_service="true"/>
+        <service service_id="0x0173" logical_channel_number="23" visible_service="true"/>
+        <service service_id="0x0174" logical_channel_number="24" visible_service="true"/>
+        <service service_id="0x0175" logical_channel_number="25" visible_service="true"/>
+        <service service_id="0x0176" logical_channel_number="20" visible_service="true"/>
+      </logical_channel_number_descriptor>
+      <HD_simulcast_logical_channel_descriptor>
+        <service service_id="0x0101" logical_channel_number="52" visible_service="true"/>
+      </HD_simulcast_logical_channel_descriptor>
+      <service_list_descriptor>
+        <service service_id="0x0101" service_type="0x01"/>
+        <service service_id="0x0104" service_type="0x01"/>
+        <service service_id="0x0105" service_type="0x01"/>
+        <service service_id="0x0106" service_type="0x01"/>
+        <service service_id="0x0111" service_type="0x01"/>
+        <service service_id="0x0112" service_type="0x01"/>
+        <service service_id="0x0113" service_type="0x01"/>
+        <service service_id="0x0114" service_type="0x01"/>
+        <service service_id="0x0115" service_type="0x01"/>
+        <service service_id="0x0116" service_type="0x01"/>
+        <service service_id="0x0117" service_type="0x01"/>
+        <service service_id="0x0118" service_type="0x01"/>
+        <service service_id="0x0119" service_type="0x01"/>
+        <service service_id="0x011A" service_type="0x01"/>
+        <service service_id="0x011B" service_type="0x01"/>
+        <service service_id="0x011C" service_type="0x01"/>
+        <service service_id="0x011D" service_type="0x01"/>
+        <service service_id="0x011E" service_type="0x01"/>
+        <service service_id="0x011F" service_type="0x01"/>
+        <service service_id="0x0120" service_type="0x01"/>
+        <service service_id="0x0121" service_type="0x01"/>
+        <service service_id="0x0122" service_type="0x01"/>
+        <service service_id="0x0123" service_type="0x01"/>
+        <service service_id="0x0124" service_type="0x01"/>
+        <service service_id="0x0125" service_type="0x01"/>
+        <service service_id="0x0126" service_type="0x01"/>
+        <service service_id="0x0127" service_type="0x01"/>
+        <service service_id="0x0128" service_type="0x01"/>
+        <service service_id="0x0129" service_type="0x01"/>
+        <service service_id="0x012A" service_type="0x01"/>
+        <service service_id="0x012B" service_type="0x01"/>
+        <service service_id="0x012C" service_type="0x01"/>
+        <service service_id="0x012D" service_type="0x01"/>
+        <service service_id="0x012E" service_type="0x01"/>
+        <service service_id="0x012F" service_type="0x01"/>
+        <service service_id="0x0130" service_type="0x01"/>
+        <service service_id="0x0131" service_type="0x01"/>
+        <service service_id="0x0132" service_type="0x01"/>
+        <service service_id="0x0133" service_type="0x01"/>
+        <service service_id="0x0134" service_type="0x01"/>
+        <service service_id="0x0135" service_type="0x01"/>
+        <service service_id="0x0136" service_type="0x01"/>
+        <service service_id="0x0137" service_type="0x01"/>
+        <service service_id="0x0138" service_type="0x01"/>
+        <service service_id="0x0139" service_type="0x01"/>
+        <service service_id="0x013A" service_type="0x01"/>
+        <service service_id="0x013B" service_type="0x01"/>
+        <service service_id="0x0143" service_type="0x01"/>
+        <service service_id="0x0144" service_type="0x01"/>
+        <service service_id="0x0170" service_type="0x01"/>
+        <service service_id="0x0171" service_type="0x01"/>
+        <service service_id="0x0172" service_type="0x01"/>
+        <service service_id="0x0173" service_type="0x01"/>
+        <service service_id="0x0174" service_type="0x01"/>
+        <service service_id="0x0175" service_type="0x01"/>
+        <service service_id="0x0176" service_type="0x01"/>
+      </service_list_descriptor>
+      <terrestrial_delivery_system_descriptor
+          centre_frequency="42,949,672,950" bandwidth="8MHz" priority="HP" no_time_slicing="true" no_MPE_FEC="true"
+          constellation="64-QAM" hierarchy_information="0" code_rate_HP_stream="0x07" code_rate_LP_stream="1/2"
+          guard_interval="1/32" transmission_mode="8k" other_frequency="false"/>
+    </transport_stream>
+
+    <transport_stream transport_stream_id="0x0002" original_network_id="0x20FA">
+      <private_data_specifier_descriptor private_data_specifier="eacem"/>
+      <logical_channel_number_descriptor>
+        <service service_id="0x0201" logical_channel_number="8" visible_service="true"/>
+        <service service_id="0x0203" logical_channel_number="15" visible_service="true"/>
+        <service service_id="0x0204" logical_channel_number="16" visible_service="true"/>
+        <service service_id="0x0205" logical_channel_number="17" visible_service="true"/>
+        <service service_id="0x0206" logical_channel_number="18" visible_service="true"/>
+        <service service_id="0x0207" logical_channel_number="14" visible_service="true"/>
+      </logical_channel_number_descriptor>
+      <service_list_descriptor>
+        <service service_id="0x0201" service_type="0x01"/>
+        <service service_id="0x0203" service_type="0x01"/>
+        <service service_id="0x0204" service_type="0x01"/>
+        <service service_id="0x0205" service_type="0x01"/>
+        <service service_id="0x0206" service_type="0x01"/>
+        <service service_id="0x0207" service_type="0x01"/>
+      </service_list_descriptor>
+      <terrestrial_delivery_system_descriptor
+          centre_frequency="42,949,672,950" bandwidth="8MHz" priority="HP" no_time_slicing="true" no_MPE_FEC="true"
+          constellation="64-QAM" hierarchy_information="0" code_rate_HP_stream="0x07" code_rate_LP_stream="1/2"
+          guard_interval="1/32" transmission_mode="8k" other_frequency="false"/>
+    </transport_stream>
+
+    <transport_stream transport_stream_id="0x0003" original_network_id="0x20FA">
+      <private_data_specifier_descriptor private_data_specifier="eacem"/>
+      <logical_channel_number_descriptor>
+        <service service_id="0x0301" logical_channel_number="4" visible_service="true"/>
+        <service service_id="0x0302" logical_channel_number="33" visible_service="true"/>
+        <service service_id="0x0303" logical_channel_number="32" visible_service="true"/>
+        <service service_id="0x0304" logical_channel_number="35" visible_service="true"/>
+        <service service_id="0x0305" logical_channel_number="37" visible_service="true"/>
+        <service service_id="0x0306" logical_channel_number="30" visible_service="true"/>
+      </logical_channel_number_descriptor>
+      <service_list_descriptor>
+        <service service_id="0x0301" service_type="0x01"/>
+        <service service_id="0x0302" service_type="0x01"/>
+        <service service_id="0x0303" service_type="0x01"/>
+        <service service_id="0x0304" service_type="0x01"/>
+        <service service_id="0x0305" service_type="0x01"/>
+        <service service_id="0x0306" service_type="0x01"/>
+      </service_list_descriptor>
+      <terrestrial_delivery_system_descriptor
+          centre_frequency="42,949,672,950" bandwidth="8MHz" priority="HP" no_time_slicing="true" no_MPE_FEC="true"
+          constellation="64-QAM" hierarchy_information="0" code_rate_HP_stream="0x07" code_rate_LP_stream="1/2"
+          guard_interval="1/32" transmission_mode="8k" other_frequency="false"/>
+    </transport_stream>
+
+    <transport_stream transport_stream_id="0x0004" original_network_id="0x20FA">
+      <private_data_specifier_descriptor private_data_specifier="eacem"/>
+      <logical_channel_number_descriptor>
+        <service service_id="0x0401" logical_channel_number="6" visible_service="true"/>
+        <service service_id="0x0402" logical_channel_number="9" visible_service="true"/>
+        <service service_id="0x0403" logical_channel_number="11" visible_service="true"/>
+        <service service_id="0x0404" logical_channel_number="31" visible_service="true"/>
+        <service service_id="0x0407" logical_channel_number="57" visible_service="true"/>
+      </logical_channel_number_descriptor>
+      <HD_simulcast_logical_channel_descriptor>
+        <service service_id="0x0401" logical_channel_number="56" visible_service="true"/>
+        <service service_id="0x0407" logical_channel_number="7" visible_service="true"/>
+      </HD_simulcast_logical_channel_descriptor>
+      <service_list_descriptor>
+        <service service_id="0x0401" service_type="0x01"/>
+        <service service_id="0x0402" service_type="0x01"/>
+        <service service_id="0x0403" service_type="0x01"/>
+        <service service_id="0x0404" service_type="0x01"/>
+        <service service_id="0x0407" service_type="0x01"/>
+      </service_list_descriptor>
+      <terrestrial_delivery_system_descriptor
+          centre_frequency="42,949,672,950" bandwidth="8MHz" priority="HP" no_time_slicing="true" no_MPE_FEC="true"
+          constellation="64-QAM" hierarchy_information="0" code_rate_HP_stream="0x07" code_rate_LP_stream="1/2"
+          guard_interval="1/32" transmission_mode="8k" other_frequency="false"/>
+    </transport_stream>
+
+    <transport_stream transport_stream_id="0x0005" original_network_id="0x20FA">
+      <private_data_specifier_descriptor private_data_specifier="eacem"/>
+      <logical_channel_number_descriptor>
+        <service service_id="0x0501" logical_channel_number="51" visible_service="true"/>
+        <service service_id="0x0502" logical_channel_number="52" visible_service="true"/>
+        <service service_id="0x0503" logical_channel_number="56" visible_service="true"/>
+      </logical_channel_number_descriptor>
+      <HD_simulcast_logical_channel_descriptor>
+        <service service_id="0x0501" logical_channel_number="1" visible_service="true"/>
+        <service service_id="0x0502" logical_channel_number="2" visible_service="true"/>
+        <service service_id="0x0503" logical_channel_number="6" visible_service="true"/>
+      </HD_simulcast_logical_channel_descriptor>
+      <service_list_descriptor>
+        <service service_id="0x0501" service_type="0x01"/>
+        <service service_id="0x0502" service_type="0x01"/>
+        <service service_id="0x0503" service_type="0x01"/>
+      </service_list_descriptor>
+      <terrestrial_delivery_system_descriptor
+          centre_frequency="42,949,672,950" bandwidth="8MHz" priority="HP" no_time_slicing="true" no_MPE_FEC="true"
+          constellation="64-QAM" hierarchy_information="0" code_rate_HP_stream="0x07" code_rate_LP_stream="1/2"
+          guard_interval="1/32" transmission_mode="8k" other_frequency="false"/>
+    </transport_stream>
+
+    <transport_stream transport_stream_id="0x0006" original_network_id="0x20FA">
+      <private_data_specifier_descriptor private_data_specifier="eacem"/>
+      <logical_channel_number_descriptor>
+        <service service_id="0x0601" logical_channel_number="1" visible_service="true"/>
+        <service service_id="0x0602" logical_channel_number="12" visible_service="true"/>
+        <service service_id="0x0603" logical_channel_number="38" visible_service="true"/>
+        <service service_id="0x0604" logical_channel_number="39" visible_service="true"/>
+        <service service_id="0x0605" logical_channel_number="36" visible_service="true"/>
+        <service service_id="0x0606" logical_channel_number="10" visible_service="true"/>
+        <service service_id="0x0607" logical_channel_number="7" visible_service="true"/>
+      </logical_channel_number_descriptor>
+      <HD_simulcast_logical_channel_descriptor>
+        <service service_id="0x0601" logical_channel_number="51" visible_service="true"/>
+        <service service_id="0x0607" logical_channel_number="57" visible_service="true"/>
+      </HD_simulcast_logical_channel_descriptor>
+      <service_list_descriptor>
+        <service service_id="0x0601" service_type="0x01"/>
+        <service service_id="0x0602" service_type="0x01"/>
+        <service service_id="0x0603" service_type="0x01"/>
+        <service service_id="0x0604" service_type="0x01"/>
+        <service service_id="0x0605" service_type="0x01"/>
+        <service service_id="0x0606" service_type="0x01"/>
+        <service service_id="0x0607" service_type="0x01"/>
+      </service_list_descriptor>
+      <terrestrial_delivery_system_descriptor
+          centre_frequency="42,949,672,950" bandwidth="8MHz" priority="HP" no_time_slicing="true" no_MPE_FEC="true"
+          constellation="64-QAM" hierarchy_information="0" code_rate_HP_stream="0x07" code_rate_LP_stream="1/2"
+          guard_interval="1/32" transmission_mode="8k" other_frequency="false"/>
+    </transport_stream>
+
+    <transport_stream transport_stream_id="0x0008" original_network_id="0x20FA">
+      <private_data_specifier_descriptor private_data_specifier="eacem"/>
+      <logical_channel_number_descriptor>
+        <service service_id="0x0801" logical_channel_number="20" visible_service="true"/>
+        <service service_id="0x0802" logical_channel_number="21" visible_service="true"/>
+        <service service_id="0x0803" logical_channel_number="22" visible_service="true"/>
+        <service service_id="0x0804" logical_channel_number="23" visible_service="true"/>
+        <service service_id="0x0805" logical_channel_number="24" visible_service="true"/>
+        <service service_id="0x0806" logical_channel_number="25" visible_service="true"/>
+        <service service_id="0x0883" logical_channel_number="23" visible_service="true"/>
+      </logical_channel_number_descriptor>
+      <service_list_descriptor>
+        <service service_id="0x0801" service_type="0x01"/>
+        <service service_id="0x0802" service_type="0x01"/>
+        <service service_id="0x0803" service_type="0x01"/>
+        <service service_id="0x0804" service_type="0x01"/>
+        <service service_id="0x0805" service_type="0x01"/>
+        <service service_id="0x0806" service_type="0x01"/>
+        <service service_id="0x0883" service_type="0x01"/>
+      </service_list_descriptor>
+      <terrestrial_delivery_system_descriptor
+          centre_frequency="42,949,672,950" bandwidth="8MHz" priority="HP" no_time_slicing="true" no_MPE_FEC="true"
+          constellation="64-QAM" hierarchy_information="0" code_rate_HP_stream="0x07" code_rate_LP_stream="1/2"
+          guard_interval="1/32" transmission_mode="8k" other_frequency="false"/>
+    </transport_stream>
+
+  </NIT>
+
+</tsduck>

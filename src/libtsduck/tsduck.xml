@@ -406,6 +406,7 @@
         service_name="string, required"/>
 
     <service_list_descriptor>
+      <!-- One per service -->
       <service service_id="uint16, required"
                service_type="uint8, required"/>
     </service_list_descriptor>

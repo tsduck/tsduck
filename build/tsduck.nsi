@@ -177,6 +177,7 @@ Section "Documentation" SectionDocumentation
     SetOutPath "$INSTDIR\doc"
     File "${RootDir}\doc\tsduck.pdf"
     File "${RootDir}\CHANGELOG.txt"
+    File "${RootDir}\LICENSE.txt"
 
     ; Create shortcuts in start menu.
     CreateDirectory "$SMPROGRAMS\TSDuck"

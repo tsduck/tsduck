@@ -41,6 +41,8 @@ TSDUCK_SOURCE;
 
 #include "tables/psi_pat1_xml.h"
 #include "tables/psi_pat1_sections.h"
+#include "tables/psi_all_xml.h"
+#include "tables/psi_all_sections.h"
 
 
 //----------------------------------------------------------------------------
@@ -56,12 +58,14 @@ public:
     void testGenericShortTable();
     void testGenericLongTable();
     void testPAT1();
+    void testAllTables();
 
     CPPUNIT_TEST_SUITE(XMLTablesTest);
     CPPUNIT_TEST(testGenericDescriptor);
     CPPUNIT_TEST(testGenericShortTable);
     CPPUNIT_TEST(testGenericLongTable);
     CPPUNIT_TEST(testPAT1);
+    CPPUNIT_TEST(testAllTables);
     CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -88,8 +92,17 @@ void XMLTablesTest::tearDown()
 
 
 //----------------------------------------------------------------------------
-// Unitary test for one table.
+// Unitary tests from XML tables.
 //----------------------------------------------------------------------------
+
+#define TESTTABLE(name, data)                                                                     \
+    void XMLTablesTest::test##name()                                                              \
+    {                                                                                             \
+        testTable(#name, psi_##data##_xml, psi_##data##_sections, sizeof(psi_##data##_sections)); \
+    }
+
+TESTTABLE(PAT1, pat1)
+TESTTABLE(AllTables, all)
 
 void XMLTablesTest::testTable(const char* name, const char* ref_xml, const uint8_t* ref_sections, size_t ref_sections_size)
 {
@@ -114,7 +127,7 @@ void XMLTablesTest::testTable(const char* name, const char* ref_xml, const uint8
 
 
 //----------------------------------------------------------------------------
-// Unitary tests.
+// Other unitary tests.
 //----------------------------------------------------------------------------
 
 void XMLTablesTest::testGenericDescriptor()
@@ -306,9 +319,4 @@ void XMLTablesTest::testGenericLongTable()
     CPPUNIT_ASSERT(sec->isCurrent());
     CPPUNIT_ASSERT_EQUAL(sizeof(refData1), sec->payloadSize());
     CPPUNIT_ASSERT(ts::ByteBlock(sec->payload(), sec->payloadSize()) == ts::ByteBlock(refData1, sizeof(refData1)));
-}
-
-void XMLTablesTest::testPAT1()
-{
-    testTable("PAT1", psi_pat1_xml, psi_pat1_sections, sizeof(psi_pat1_sections));
 }

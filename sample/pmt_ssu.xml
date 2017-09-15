@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+
+  <!-- Sample PMT for an SSU service (System Software Update) -->
+
+  <PMT service_id="0x04F0">
+    <component elementary_PID="0x1F00" stream_type="0x0B">
+      <data_broadcast_id_descriptor data_broadcast_id="0x000A">
+        <selector_bytes>
+          0C 00 12 22 F1 DF 06 FF FF FF FF F0 F0
+        </selector_bytes>
+      </data_broadcast_id_descriptor>
+    </component>
+  </PMT>
+  
+</tsduck>
