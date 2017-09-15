@@ -120,14 +120,16 @@ void ts::S2SatelliteDeliverySystemDescriptor::deserialize (const Descriptor& des
     data += 1; size -= 1;
 
     if (scrambling_sequence_selector) {
-        if (!(_is_valid = size >= 3)) {
+        _is_valid = size >= 3;
+        if (!_is_valid) {
             return;
         }
         scrambling_sequence_index = GetUInt24(data) & 0x0003FFFF;
         data += 3; size -= 3;
     }
     if (multiple_input_stream_flag) {
-        if (!(_is_valid = size >= 1)) {
+        _is_valid = size >= 1;
+        if (!_is_valid) {
             return;
         }
         input_stream_identifier = GetUInt8(data);

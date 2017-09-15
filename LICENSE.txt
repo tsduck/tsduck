@@ -11,10 +11,10 @@ Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met:
 
 1. Redistributions of source code must retain the above copyright notice,
-   this list of conditions and the following disclaimer. 
+   this list of conditions and the following disclaimer.
 2. Redistributions in binary form must reproduce the above copyright
    notice, this list of conditions and the following disclaimer in the
-   documentation and/or other materials provided with the distribution. 
+   documentation and/or other materials provided with the distribution.
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
 "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -28,3 +28,53 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
 LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
 ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
+
+                              --------------------
+
+                        Licenses of third-party libraries
+
+                                ==== DTAPI ====
+
+Copyright (C) 2000-2017 DekTec Digital Video B.V.
+
+Redistribution and use in source and binary forms, with or without modification, are
+permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice, this list
+   of conditions and the following disclaimer.
+
+2. Redistributions in binary format must reproduce the above copyright notice, this
+   list of conditions and the following disclaimer in the documentation.
+
+THIS SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+INCLUDING BUT NOT LIMITED TO WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL DEKTEC DIGITAL VIDEO BV, ITS AGENTS OR ITS EMPLOYEES BE LIABLE FOR
+ANY DIRECT, INDIRECT, CONSEQUENTIAL, INCIDENTAL, OR OTHER DAMAGES (INCLUDING DAMAGES
+FOR THE LOSS OF USE, INFORMATION, GOODWILL, PROFIT, WORK STOPPAGE, DATA, BUSINESS OR
+REVENUE) UNDER ANY CIRCUMSTANCES, OR UNDER ANY LEGAL THEORY, WHETHER IN CONTRACT, IN
+TORT, IN NEGLIGENCE, OR OTHERWISE, ARISING FROM THE USE OF, OR INABILITY TO USE THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
+
+                              ==== TinyXML-2 ====
+
+Original code by Lee Thomason (www.grinninglizard.com)
+
+This software is provided 'as-is', without any express or implied
+warranty. In no event will the authors be held liable for any
+damages arising from the use of this software.
+
+Permission is granted to anyone to use this software for any
+purpose, including commercial applications, and to alter it and
+redistribute it freely, subject to the following restrictions:
+
+1. The origin of this software must not be misrepresented; you must
+not claim that you wrote the original software. If you use this
+software in a product, an acknowledgment in the product documentation
+would be appreciated but is not required.
+
+2. Altered source versions must be plainly marked as such, and
+must not be misrepresented as being the original software.
+
+3. This notice may not be removed or altered from any source
+distribution.
