@@ -2,7 +2,7 @@
 TSDuck Change Log and Release Notes
 ===================================
 
-Version 3.3
+Version 3.3-20170915
 
 - Added command tstabcomp, the PSI/SI table compiler from/to XML files.
   The command tsgentab is now deprecated and will be removed in some
