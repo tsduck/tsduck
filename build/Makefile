@@ -51,10 +51,10 @@ install:
 	@true
 else
 install: 80-tsduck.rules 80-tsduck.perms
-	install -d -m 755 $(DESTDIR)/etc/udev/rules.d
-	install -m 644 80-tsduck.rules $(DESTDIR)/etc/udev/rules.d/
-	install -d -m 755 $(DESTDIR)/etc/security/console.perms.d
-	install -m 644 80-tsduck.perms $(DESTDIR)/etc/security/console.perms.d/
+	install -d -m 755 $(ETCDIR)/udev/rules.d
+	install -m 644 80-tsduck.rules $(ETCDIR)/udev/rules.d/
+	install -d -m 755 $(ETCDIR)/security/console.perms.d
+	install -m 644 80-tsduck.perms $(ETCDIR)/security/console.perms.d/
 endif
 install-devel:
 	@true
@@ -106,7 +106,7 @@ deb: deb-main deb-dev
 deb-main:
 	$(MAKE) -C $(ROOTDIR) -j$(CPU_COUNT)
 	rm -rf $(TMPDIR)
-	$(MAKE) -C $(ROOTDIR) install DESTDIR=$(TMPDIR)
+	$(MAKE) -C $(ROOTDIR) install SYSROOT=$(TMPDIR)
 	mkdir $(TMPDIR)/DEBIAN
 	sed -e 's/{{VERSION}}/$(TS_VERSION)-$(RELEASE_DATE)/g' \
 	    -e 's/{{ARCH}}/$(shell dpkg-architecture -qDEB_BUILD_ARCH)/g' \
@@ -120,7 +120,7 @@ deb-main:
 deb-dev:
 	$(MAKE) -C $(ROOTDIR) -j$(CPU_COUNT)
 	rm -rf $(TMPDIR)
-	$(MAKE) -C $(ROOTDIR) install-devel DESTDIR=$(TMPDIR)
+	$(MAKE) -C $(ROOTDIR) install-devel SYSROOT=$(TMPDIR)
 	mkdir $(TMPDIR)/DEBIAN
 	sed -e 's/{{VERSION}}/$(TS_VERSION)-$(RELEASE_DATE)/g' \
 	    -e 's/{{ARCH}}/$(shell dpkg-architecture -qDEB_BUILD_ARCH)/g' \

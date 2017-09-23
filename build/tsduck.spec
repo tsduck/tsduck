@@ -40,8 +40,8 @@ make %{?_smp_mflags} %{?mflags}
 
 %install
 rm -rf $RPM_BUILD_ROOT
-make install DESTDIR=$RPM_BUILD_ROOT
-make install-devel DESTDIR=$RPM_BUILD_ROOT
+make install SYSROOT=$RPM_BUILD_ROOT
+make install-devel SYSROOT=$RPM_BUILD_ROOT
 
 %clean
 rm -rf $RPM_BUILD_ROOT
