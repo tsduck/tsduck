@@ -69,4 +69,4 @@ Binaries for development environment:
 **Warning:** On Windows 64 bits, if you use DVB tuners which come with 32-bit drivers and DirectShow filters, you must use the 32 bits version of TSDuck. The 64-bit version of TSDuck cannot work with 32-bit drivers and filters.
 EOF
 
-# rm -f $HTMLFILE $LINKFILE
+rm -f $HTMLFILE $LINKFILE
