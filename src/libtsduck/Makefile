@@ -134,10 +134,10 @@ tsduck.h: $(SRCROOT)/HEADER.txt $(call GEN_FILES,) $(call GEN_FILES,linux) $(cal
 
 .PHONY: install install-devel
 install: $(OBJDIR)/$(SHARED_LIBTSDUCK)
-	install -d -m 755 $(DESTDIR)$(SYSDIR)/bin
-	install -m 644 $(OBJDIR)/$(SHARED_LIBTSDUCK) tsduck.xml $(DESTDIR)$(SYSDIR)/bin
+	install -d -m 755 $(SYSROOT)$(SYSPREFIX)/bin
+	install -m 644 $(OBJDIR)/$(SHARED_LIBTSDUCK) tsduck.xml $(SYSROOT)$(SYSPREFIX)/bin
 install-devel: $(OBJDIR)/$(STATIC_LIBTSDUCK) tsduck.h
-	install -d -m 755 $(DESTDIR)$(USRLIBDIR)
-	install -m 644 $(OBJDIR)/$(STATIC_LIBTSDUCK) $(DESTDIR)$(USRLIBDIR)
-	install -d -m 755 $(DESTDIR)$(SYSDIR)/include/tsduck
-	install -m 644 tsduck.mk ts*.h $(wildcard $(OSDIR)/ts*.h) $(wildcard tinyxml/*.h) $(DESTDIR)$(SYSDIR)/include/tsduck
+	install -d -m 755 $(SYSROOT)$(USRLIBDIR)
+	install -m 644 $(OBJDIR)/$(STATIC_LIBTSDUCK) $(SYSROOT)$(USRLIBDIR)
+	install -d -m 755 $(SYSROOT)$(SYSPREFIX)/include/tsduck
+	install -m 644 tsduck.mk ts*.h $(wildcard $(OSDIR)/ts*.h) $(wildcard tinyxml/*.h) $(SYSROOT)$(SYSPREFIX)/include/tsduck

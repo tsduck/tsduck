@@ -48,7 +48,7 @@ $(OBJDIR)/setenv.sh: Makefile
 
 .PHONY: install install-devel
 install: $(EXECS)
-	install -d -m 755 $(DESTDIR)$(SYSDIR)/bin
-	install -m 755 $(EXECS) $(DESTDIR)$(SYSDIR)/bin
+	install -d -m 755 $(SYSROOT)$(SYSPREFIX)/bin
+	install -m 755 $(EXECS) $(SYSROOT)$(SYSPREFIX)/bin
 install-devel:
 	@true

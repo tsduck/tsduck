@@ -52,7 +52,7 @@ default:
 dtapi:
 	@$(MAKE) -C dektec
 
-# Install files, using DESTDIR as target system root.
+# Install files, using SYSROOT as target system root if necessary.
 .PHONY: install install-devel
 install install-devel:
 	$(MAKE) -C src $@

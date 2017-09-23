@@ -281,6 +281,10 @@
 #    Specific options when creating shared objects (.so files).
 #    This variable can be defined after inclusion of this makefile.
 #
+#  SYSPREFIX
+#    Optional installation prefix. If not defined, will be set on output.
+#    See SYSPREFIX in "Output variables".
+#
 #  TARGET_ARCH
 #    Contains the target architecture for gcc. Defaults to -march=`uname -m`.
 #    Should be overriden if your `uname -m` is not recognized by gcc.
@@ -342,6 +346,10 @@
 #
 #  CYGWIN
 #    Defined to a non-empty value in a Cygwin environment.
+#
+#  ETCDIR
+#    Name of the system configuration directory. This is /etc if $(SYSPREFIX)
+#    is /usr and $(SYSPREFIX)/etc otherwise.
 #
 #  EXE_SUFFIX
 #    Executable files suffix, ".exe" on Windows, nothing otherwise.
@@ -478,6 +486,10 @@
 #  SUBDIRS
 #    List of all subdirectories of the current directory in alphabetical order.
 #
+#  SYSPREFIX
+#    Installation prefix. If not set on input, defined as /usr/local on macOS
+#    and /usr on other Unix (including Linux).
+#
 #  TEXI2HTML_FLAGS
 #    Makeinfo flags used in .texi to .html transformation.
 #
@@ -489,8 +501,7 @@
 #
 #  USRLIBDIR
 #    Name of the library directory for the target architecture. This is
-#    /usr/lib64 for x86_64 and /usr/lib elsewhere on Linux, /usr/local/lib
-#    on MacOS.
+#    $(SYSPREFIX)/lib64 for Linux x86_64 and $(SYSPREFIX)/lib elsewhere.
 #
 #-----------------------------------------------------------------------------
 
@@ -730,8 +741,11 @@ ifneq ($(CVPATH)$(CXXVPATH),)
     vpath %.h $(CVPATH) $(CXXVPATH)
 endif
 
+# On macOS, /usr/local is used without system privileges.
 # On x86_64, the libraries are installed in lib64, not lib.
-USRLIBDIR = $(if $(MACOS),/usr/local/lib,$(if $(subst x86_64,,$(MAIN_ARCH)),/usr/lib,/usr/lib64))
+SYSPREFIX ?= $(if $(MACOS),/usr/local,/usr)
+ETCDIR    ?= $(if $(subst /usr,,$(SYSPREFIX)),$(SYSPREFIX)/etc,/etc)
+USRLIBDIR ?= $(if $(subst linux-x86_64,,$(LOCAL_OS)-$(MAIN_ARCH)),$(SYSPREFIX)/lib,$(SYSPREFIX)/lib64))
 
 # RPM building.
 RPMBUILD     ?= rpmbuild

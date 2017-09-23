@@ -64,12 +64,10 @@ ifndef TS_VERSION
     export TS_VERSION := $(TS_MAJOR).$(TS_MINOR)
 endif
 
-# Default installation directory prefix.
+# Default installation root.
 # RPM packagers should override this in the "make install" command line.
-# On MacOS, use /usr/local instead of /usr because of SIP.
 
-DESTDIR := 
-SYSDIR := $(if $(MACOS),/usr/local,/usr)
+SYSROOT =
 
 # External include directories and libraries.
 
