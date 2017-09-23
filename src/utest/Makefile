@@ -33,7 +33,13 @@
 
 include ../../Makefile.tsduck
 
-default: execs $(OBJDIR)/setenv.sh
+ifdef NOTEST
+    TARGETS =
+else
+    TARGETS = execs $(OBJDIR)/setenv.sh
+endif
+
+default: $(TARGETS)
 	@true
 
 .PHONY: execs
