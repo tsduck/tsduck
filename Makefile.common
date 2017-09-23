@@ -745,7 +745,7 @@ endif
 # On x86_64, the libraries are installed in lib64, not lib.
 SYSPREFIX ?= $(if $(MACOS),/usr/local,/usr)
 ETCDIR    ?= $(if $(subst /usr,,$(SYSPREFIX)),$(SYSPREFIX)/etc,/etc)
-USRLIBDIR ?= $(if $(subst linux-x86_64,,$(LOCAL_OS)-$(MAIN_ARCH)),$(SYSPREFIX)/lib,$(SYSPREFIX)/lib64))
+USRLIBDIR ?= $(if $(subst linux-x86_64,,$(LOCAL_OS)-$(MAIN_ARCH)),$(SYSPREFIX)/lib,$(SYSPREFIX)/lib64)
 
 # RPM building.
 RPMBUILD     ?= rpmbuild

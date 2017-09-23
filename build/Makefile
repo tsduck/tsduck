@@ -51,10 +51,10 @@ install:
 	@true
 else
 install: 80-tsduck.rules 80-tsduck.perms
-	install -d -m 755 $(ETCDIR)/udev/rules.d
-	install -m 644 80-tsduck.rules $(ETCDIR)/udev/rules.d/
-	install -d -m 755 $(ETCDIR)/security/console.perms.d
-	install -m 644 80-tsduck.perms $(ETCDIR)/security/console.perms.d/
+	install -d -m 755 $(SYSROOT)$(ETCDIR)/udev/rules.d
+	install -m 644 80-tsduck.rules $(SYSROOT)$(ETCDIR)/udev/rules.d/
+	install -d -m 755 $(SYSROOT)$(ETCDIR)/security/console.perms.d
+	install -m 644 80-tsduck.perms $(SYSROOT)$(ETCDIR)/security/console.perms.d/
 endif
 install-devel:
 	@true
