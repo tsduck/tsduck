@@ -108,7 +108,7 @@ int main (int argc, char *argv[])
     // IP initialization required on foolish OS
 
     if (!ts::IPInitialize(CERR)) {
-        return false;
+        return EXIT_FAILURE;
     }
 
     // Prevent from being killed when writing on broken pipes.
