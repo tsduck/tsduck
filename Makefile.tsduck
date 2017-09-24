@@ -46,12 +46,10 @@ SRCROOT      := $(ROOTDIR)/src
 LIBTSDUCKDIR := $(SRCROOT)/libtsduck
 TSTOOLSDIR   := $(SRCROOT)/tstools
 TSPLUGINSDIR := $(SRCROOT)/tsplugins
-TSGENTABSDIR := $(SRCROOT)/tsgentables
 LIBTSDUCK    := $(LIBTSDUCKDIR)/$(OBJDIR)/$(STATIC_LIBTSDUCK)
 
 ifndef TSPLUGINS
     export TSPLUGINS := $(sort $(filter-out tsplugin_generic,$(notdir $(basename $(wildcard $(TSPLUGINSDIR)/tsplugin_*.cpp)))))
-    export TSGENTABS := $(sort $(notdir $(basename $(wildcard $(TSGENTABSDIR)/tsgentab_*.cpp))))
     export TSEXECS   := $(sort $(filter-out $(notdir $(basename $(wildcard $(TSTOOLSDIR)/*.h))),\
                                             $(notdir $(basename $(wildcard $(TSTOOLSDIR)/*.cpp)))))
 endif

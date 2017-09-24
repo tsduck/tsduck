@@ -113,7 +113,6 @@ HEADERS += \
     ../../../src/libtsduck/tsFileNameRate.h \
     ../../../src/libtsduck/tsForkPipe.h \
     ../../../src/libtsduck/tsFormat.h \
-    ../../../src/libtsduck/tsGenTabPlugin.h \
     ../../../src/libtsduck/tsGuard.h \
     ../../../src/libtsduck/tsGuardCondition.h \
     ../../../src/libtsduck/tsHDSimulcastLogicalChannelDescriptor.h \

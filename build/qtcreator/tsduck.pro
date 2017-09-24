@@ -35,9 +35,6 @@ TEMPLATE = subdirs
 CONFIG += ordered
 SUBDIRS += \
     libtsduck \
-    tsgentab_pat \
-    tsgentab_ssupmt \
-    tsgentab_tntnit \
     tsplugin_aes \
     tsplugin_analyze \
     tsplugin_bat \
@@ -100,7 +97,6 @@ SUBDIRS += \
     tsdump \
     tsfixcc \
     tsftrunc \
-    tsgentab \
     tslsdvb \
     tsp \
     tspacketize \

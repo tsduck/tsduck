@@ -2,6 +2,12 @@
 TSDuck Change Log and Release Notes
 ===================================
 
+Version (next)
+
+- Removed command tsgentab and associated plugins. This command is now
+  obsolete and has been superseded by the more general tstabcomp, the
+  PSI/SI table compiler.
+
 Version 3.3-20170915
 
 - Added command tstabcomp, the PSI/SI table compiler from/to XML files.
