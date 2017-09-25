@@ -109,6 +109,26 @@ namespace ts {
     //!
     template <typename ELEMENT, class CONTAINER>
     bool AppendUnique(CONTAINER& container, const ELEMENT& e);
+
+    //!
+    //! Get the size of the smallest object in a container of objects having a @c size() method.
+    //!
+    //! @tparam CONTAINER A container class as defined by the C++ Standard Template Library (STL).
+    //! @param [in] container A container of objects.
+    //! @return The size of the smallest object in @a container.
+    //!
+    template <class CONTAINER>
+    size_t SmallestSize(const CONTAINER& container);
+
+    //!
+    //! Get the size of the largest object in a container of objects having a @c size() method.
+    //!
+    //! @tparam CONTAINER A container class as defined by the C++ Standard Template Library (STL).
+    //! @param [in] container A container of objects.
+    //! @return The size of the largest object in @a container.
+    //!
+    template <class CONTAINER>
+    size_t LargestSize(const CONTAINER& container);
 }
 
 #include "tsAlgorithmTemplate.h"

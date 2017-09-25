@@ -68,6 +68,7 @@ HEADERS += \
     ../../../src/libtsduck/tsCTS4Template.h \
     ../../../src/libtsduck/tsCableDeliverySystemDescriptor.h \
     ../../../src/libtsduck/tsCerrReport.h \
+    ../../../src/libtsduck/tsChar.h \
     ../../../src/libtsduck/tsCipherChaining.h \
     ../../../src/libtsduck/tsComponentDescriptor.h \
     ../../../src/libtsduck/tsCondition.h \
@@ -208,6 +209,7 @@ HEADERS += \
     ../../../src/libtsduck/tsStandaloneTableDemux.h \
     ../../../src/libtsduck/tsStaticInstance.h \
     ../../../src/libtsduck/tsStreamIdentifierDescriptor.h \
+    ../../../src/libtsduck/tsString.h \
     ../../../src/libtsduck/tsStringUtils.h \
     ../../../src/libtsduck/tsStringUtilsTemplate.h \
     ../../../src/libtsduck/tsSubtitlingDescriptor.h \
@@ -326,6 +328,7 @@ SOURCES += \
     ../../../src/libtsduck/tsCRC32.cpp \
     ../../../src/libtsduck/tsCableDeliverySystemDescriptor.cpp \
     ../../../src/libtsduck/tsCerrReport.cpp \
+    ../../../src/libtsduck/tsChar.cpp \
     ../../../src/libtsduck/tsCipherChaining.cpp \
     ../../../src/libtsduck/tsComponentDescriptor.cpp \
     ../../../src/libtsduck/tsCondition.cpp \
@@ -430,6 +433,7 @@ SOURCES += \
     ../../../src/libtsduck/tsSocketAddress.cpp \
     ../../../src/libtsduck/tsStandaloneTableDemux.cpp \
     ../../../src/libtsduck/tsStreamIdentifierDescriptor.cpp \
+    ../../../src/libtsduck/tsString.cpp \
     ../../../src/libtsduck/tsStringUtils.cpp \
     ../../../src/libtsduck/tsSubtitlingDescriptor.cpp \
     ../../../src/libtsduck/tsSupplementaryAudioDescriptor.cpp \

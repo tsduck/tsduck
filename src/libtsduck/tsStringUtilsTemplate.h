@@ -289,21 +289,6 @@ bool ts::SaveStrings(const CONTAINER& container, const std::string& fileName, bo
 
 
 //----------------------------------------------------------------------------
-// Get the length of the longest string in a container of strings.
-//----------------------------------------------------------------------------
-
-template <class CONTAINER>
-size_t ts::LargestLength(const CONTAINER& container)
-{
-    size_t largest = 0;
-    for (typename CONTAINER::const_iterator it = container.begin(); it != container.end(); ++it) {
-        largest = std::max(largest, it->length());
-    }
-    return largest;
-}
-
-
-//----------------------------------------------------------------------------
 // Locate into a map an element with a similar string.
 //----------------------------------------------------------------------------
 
