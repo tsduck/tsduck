@@ -52,10 +52,10 @@ TSDUCK_SOURCE;
 // The test fixture
 //----------------------------------------------------------------------------
 
-class StringTest: public CppUnit::TestFixture
+class StringUtilsTest: public CppUnit::TestFixture
 {
 public:
-    StringTest();
+    StringUtilsTest();
     void setUp();
     void tearDown();
     void testIsSpace();
@@ -97,7 +97,7 @@ public:
     void testEnd();
     void testSubstitute();
 
-    CPPUNIT_TEST_SUITE(StringTest);
+    CPPUNIT_TEST_SUITE(StringUtilsTest);
     CPPUNIT_TEST(testIsSpace);
     CPPUNIT_TEST(testIsPrint);
     CPPUNIT_TEST(testToPrintableCopy);
@@ -145,7 +145,7 @@ private:
     std::string newTemporaryFileName();
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION(StringTest);
+CPPUNIT_TEST_SUITE_REGISTRATION(StringUtilsTest);
 
 
 //----------------------------------------------------------------------------
@@ -153,14 +153,14 @@ CPPUNIT_TEST_SUITE_REGISTRATION(StringTest);
 //----------------------------------------------------------------------------
 
 // Constructor.
-StringTest::StringTest() :
+StringUtilsTest::StringUtilsTest() :
     _tempFilePrefix(),
     _nextFileIndex(0)
 {
 }
 
 // Test suite initialization method.
-void StringTest::setUp()
+void StringUtilsTest::setUp()
 {
     // Select the directory name and prefix for temporary files
     _tempFilePrefix = ts::TempFile(".");
@@ -170,27 +170,27 @@ void StringTest::setUp()
 }
 
 // Test suite cleanup method.
-void StringTest::tearDown()
+void StringUtilsTest::tearDown()
 {
     // Delete all temporary files
     std::vector<std::string> tempFiles;
     ts::ExpandWildcard(tempFiles, _tempFilePrefix + "*");
     for (std::vector<std::string>::const_iterator i = tempFiles.begin(); i != tempFiles.end(); ++i) {
-        utest::Out() << "StringTest: deleting temporary file \"" << *i << "\"" << std::endl;
+        utest::Out() << "StringUtilsTest: deleting temporary file \"" << *i << "\"" << std::endl;
         ts::DeleteFile (*i);
     }
     _nextFileIndex = 0;
 }
 
 // Get the name of a temporary file from an index
-std::string StringTest::temporaryFileName (int index) const
+std::string StringUtilsTest::temporaryFileName (int index) const
 {
     const std::string name (_tempFilePrefix + ts::Format ("%03d", index));
     return name;
 }
 
 // Get the name of the next temporary file
-std::string StringTest::newTemporaryFileName()
+std::string StringUtilsTest::newTemporaryFileName()
 {
     return temporaryFileName (_nextFileIndex++);
 }
@@ -222,7 +222,7 @@ namespace {
 // Test cases
 //----------------------------------------------------------------------------
 
-void StringTest::testIsSpace()
+void StringUtilsTest::testIsSpace()
 {
     CPPUNIT_ASSERT(ts::IsSpace (' '));
     CPPUNIT_ASSERT(ts::IsSpace ('\n'));
@@ -235,7 +235,7 @@ void StringTest::testIsSpace()
     CPPUNIT_ASSERT(!ts::IsSpace ('\0'));
 }
 
-void StringTest::testIsPrint()
+void StringUtilsTest::testIsPrint()
 {
     CPPUNIT_ASSERT(ts::IsPrintable('a'));
     CPPUNIT_ASSERT(ts::IsPrintable('.'));
@@ -247,36 +247,36 @@ void StringTest::testIsPrint()
     CPPUNIT_ASSERT(!ts::IsPrintable('\177'));
 }
 
-void StringTest::testToPrintableCopy()
+void StringUtilsTest::testToPrintableCopy()
 {
     CPPUNIT_ASSERT(ts::Printable("a.\t0\n\177 ") == "a..0.. ");
 }
 
-void StringTest::testToLowerString()
+void StringUtilsTest::testToLowerString()
 {
     std::string s("aAZzeR65=eR");
     ts::ToLowerCase(s);
     CPPUNIT_ASSERT(s == "aazzer65=er");
 }
 
-void StringTest::testToUpperString()
+void StringUtilsTest::testToUpperString()
 {
     std::string s("aAZzeR65=eR");
     ts::ToUpperCase(s);
     CPPUNIT_ASSERT(s == "AAZZER65=ER");
 }
 
-void StringTest::testToLowerCopy()
+void StringUtilsTest::testToLowerCopy()
 {
     CPPUNIT_ASSERT(ts::LowerCaseValue("aAZzeR65=eR") == "aazzer65=er");
 }
 
-void StringTest::testToUpperCopy()
+void StringUtilsTest::testToUpperCopy()
 {
     CPPUNIT_ASSERT(ts::UpperCaseValue("aAZzeR65=eR") == "AAZZER65=ER");
 }
 
-void StringTest::testTrim()
+void StringUtilsTest::testTrim()
 {
     std::string s;
 
@@ -313,7 +313,7 @@ void StringTest::testTrim()
     CPPUNIT_ASSERT(s == "abc");
 }
 
-void StringTest::testTrimCopy()
+void StringUtilsTest::testTrimCopy()
 {
     CPPUNIT_ASSERT(ts::ReturnTrim("  abc  ") == "abc");
     CPPUNIT_ASSERT(ts::ReturnTrim("  abc  ", true, false) == "abc  ");
@@ -325,7 +325,7 @@ void StringTest::testTrimCopy()
     CPPUNIT_ASSERT(ts::ReturnTrim("abc", false, false) == "abc");
 }
 
-void StringTest::testRemove()
+void StringUtilsTest::testRemove()
 {
     std::string s;
 
@@ -363,7 +363,7 @@ void StringTest::testRemove()
     CPPUNIT_ASSERT(s == "fooAZfoo==fooBARfoo");
 }
 
-void StringTest::testRemoveCopy()
+void StringUtilsTest::testRemoveCopy()
 {
     std::string s;
 
@@ -386,7 +386,7 @@ void StringTest::testRemoveCopy()
     CPPUNIT_ASSERT(ts::ReturnRemoveSubstring(s, "z") == "fooAZfoo==fooBARfoo");
 }
 
-void StringTest::testRemovePrefix()
+void StringUtilsTest::testRemovePrefix()
 {
     std::string s;
 
@@ -407,7 +407,7 @@ void StringTest::testRemovePrefix()
     CPPUNIT_ASSERT(s == "");
 }
 
-void StringTest::testRemovePrefixCopy()
+void StringUtilsTest::testRemovePrefixCopy()
 {
     CPPUNIT_ASSERT(ts::ReturnRemoveSubstring("abcdef", "ab") == "cdef");
     CPPUNIT_ASSERT(ts::ReturnRemoveSubstring("abcdef", "xy") == "abcdef");
@@ -415,7 +415,7 @@ void StringTest::testRemovePrefixCopy()
     CPPUNIT_ASSERT(ts::ReturnRemoveSubstring("", "ab") == "");
 }
 
-void StringTest::testRemoveSuffix()
+void StringUtilsTest::testRemoveSuffix()
 {
     std::string s;
 
@@ -436,7 +436,7 @@ void StringTest::testRemoveSuffix()
     CPPUNIT_ASSERT(s == "");
 }
 
-void StringTest::testRemoveSuffixCopy()
+void StringUtilsTest::testRemoveSuffixCopy()
 {
     CPPUNIT_ASSERT(ts::ReturnRemoveSuffix("abcdef", "ef") == "abcd");
     CPPUNIT_ASSERT(ts::ReturnRemoveSuffix("abcdef", "xy") == "abcdef");
@@ -444,7 +444,7 @@ void StringTest::testRemoveSuffixCopy()
     CPPUNIT_ASSERT(ts::ReturnRemoveSuffix("", "ef") == "");
 }
 
-void StringTest::testAppendUnique()
+void StringUtilsTest::testAppendUnique()
 {
     std::list<std::string> var;
     std::list<std::string> ref;
@@ -469,7 +469,7 @@ void StringTest::testAppendUnique()
     CPPUNIT_ASSERT(var == ref);
 }
 
-void StringTest::testAppendContainer()
+void StringUtilsTest::testAppendContainer()
 {
     const char* arr1[] = {"ab", "cde", "", "fghi"};
     std::list <std::string> var;
@@ -492,7 +492,7 @@ void StringTest::testAppendContainer()
     CPPUNIT_ASSERT(ts::AppendContainer (var, 4, arr2) == ref);
 }
 
-void StringTest::testAssignContainer()
+void StringUtilsTest::testAssignContainer()
 {
     const char* arr1[] = {"ab", "cde", "", "fghi"};
     std::vector <std::string> var;
@@ -514,7 +514,7 @@ void StringTest::testAssignContainer()
     CPPUNIT_ASSERT(ts::AssignContainer (var, 4, arr2) == ref);
 }
 
-void StringTest::testSplit()
+void StringUtilsTest::testSplit()
 {
     std::vector <std::string> v1;
     ts::SplitString(v1, "az, ,  fr,  ze ,t");
@@ -552,7 +552,7 @@ void StringTest::testSplit()
     CPPUNIT_ASSERT(v4[2] == "e ,t");
 }
 
-void StringTest::testJoin()
+void StringUtilsTest::testJoin()
 {
     std::vector <std::string> v;
     v.push_back("az");
@@ -562,7 +562,7 @@ void StringTest::testJoin()
     CPPUNIT_ASSERT(ts::JoinStrings(++v.begin(), v.end()) == "sd, tg");
 }
 
-void StringTest::testBreakLines()
+void StringUtilsTest::testBreakLines()
 {
     std::vector <std::string> v1;
     ts::SplitLines(v1, "aze arf erf r+oih zf", 8);
@@ -601,7 +601,7 @@ void StringTest::testBreakLines()
     CPPUNIT_ASSERT(v5[2] == "fnb ff");
 }
 
-void StringTest::testJustifyLeft()
+void StringUtilsTest::testJustifyLeft()
 {
     CPPUNIT_ASSERT(ts::JustifyLeft ("abc", 8) == "abc     ");
     CPPUNIT_ASSERT(ts::JustifyLeft ("abc", 8, '.') == "abc.....");
@@ -609,7 +609,7 @@ void StringTest::testJustifyLeft()
     CPPUNIT_ASSERT(ts::JustifyLeft ("abcdefghij", 8, ' ', true) == "abcdefgh");
 }
 
-void StringTest::testJustifyRight()
+void StringUtilsTest::testJustifyRight()
 {
     CPPUNIT_ASSERT(ts::JustifyRight ("abc", 8) == "     abc");
     CPPUNIT_ASSERT(ts::JustifyRight ("abc", 8, '.') == ".....abc");
@@ -617,7 +617,7 @@ void StringTest::testJustifyRight()
     CPPUNIT_ASSERT(ts::JustifyRight ("abcdefghij", 8, ' ', true) == "cdefghij");
 }
 
-void StringTest::testJustifyCentered()
+void StringUtilsTest::testJustifyCentered()
 {
     CPPUNIT_ASSERT(ts::JustifyCentered ("abc", 8) == "  abc   ");
     CPPUNIT_ASSERT(ts::JustifyCentered ("abc", 8, '.') == "..abc...");
@@ -625,7 +625,7 @@ void StringTest::testJustifyCentered()
     CPPUNIT_ASSERT(ts::JustifyCentered ("abcdefghij", 8, ' ', true) == "abcdefgh");
 }
 
-void StringTest::testJustify()
+void StringUtilsTest::testJustify()
 {
     CPPUNIT_ASSERT(ts::Justify ("abc", "def", 8) == "abc  def");
     CPPUNIT_ASSERT(ts::Justify ("abc", "def", 8, '.') == "abc..def");
@@ -633,25 +633,25 @@ void StringTest::testJustify()
     CPPUNIT_ASSERT(ts::Justify ("abcde", "fghij", 8) == "abcdefghij");
 }
 
-void StringTest::testYesNo()
+void StringUtilsTest::testYesNo()
 {
     CPPUNIT_ASSERT(std::string (ts::YesNo (true)) == "yes");
     CPPUNIT_ASSERT(std::string (ts::YesNo (false)) == "no");
 }
 
-void StringTest::testTrueFalse()
+void StringUtilsTest::testTrueFalse()
 {
     CPPUNIT_ASSERT(std::string (ts::TrueFalse (true)) == "true");
     CPPUNIT_ASSERT(std::string (ts::TrueFalse (false)) == "false");
 }
 
-void StringTest::testOnOff()
+void StringUtilsTest::testOnOff()
 {
     CPPUNIT_ASSERT(std::string (ts::OnOff (true)) == "on");
     CPPUNIT_ASSERT(std::string (ts::OnOff (false)) == "off");
 }
 
-void StringTest::testSimilarStrings()
+void StringUtilsTest::testSimilarStrings()
 {
     CPPUNIT_ASSERT(ts::SimilarStrings ("", ""));
     CPPUNIT_ASSERT(ts::SimilarStrings ("aZer tY", "  AZE R T Y    "));
@@ -660,7 +660,7 @@ void StringTest::testSimilarStrings()
     CPPUNIT_ASSERT(!ts::SimilarStrings ("az", ""));
 }
 
-void StringTest::testFormat()
+void StringUtilsTest::testFormat()
 {
     CPPUNIT_ASSERT(ts::Format("test") == "test");
     CPPUNIT_ASSERT(ts::Format("a = %d", 1) == "a = 1");
@@ -693,7 +693,7 @@ namespace {
     }
 }
 
-void StringTest::testHexaDecode()
+void StringUtilsTest::testHexaDecode()
 {
     ts::ByteBlock bytes;
 
@@ -710,7 +710,7 @@ void StringTest::testHexaDecode()
     CPPUNIT_ASSERT(bytes.empty());
 }
 
-void StringTest::testHexa()
+void StringUtilsTest::testHexa()
 {
     const std::string hex1 (ts::Hexa (_bytes, 40));
     const char* ref1 =
@@ -774,7 +774,7 @@ void StringTest::testHexa()
     CPPUNIT_ASSERT(hex8 == ref8);
 }
 
-void StringTest::testDecimal()
+void StringUtilsTest::testDecimal()
 {
     CPPUNIT_ASSERT_EQUAL(std::string("0"), ts::Decimal(0));
     CPPUNIT_ASSERT_EQUAL(std::string("0"), ts::Decimal(0L));
@@ -792,7 +792,7 @@ void StringTest::testDecimal()
     CPPUNIT_ASSERT_EQUAL(std::string("-1,234,567,890,123,456"), ts::Decimal(TS_CONST64(-1234567890123456)));
 }
 
-void StringTest::testLoadSave()
+void StringUtilsTest::testLoadSave()
 {
     std::list<std::string> ref;
     for (int i = 1; i <= 20; ++i) {
@@ -834,7 +834,7 @@ void StringTest::testLoadSave()
     CPPUNIT_ASSERT(load3 == ref3);
 }
 
-void StringTest::testToInteger()
+void StringUtilsTest::testToInteger()
 {
     CPPUNIT_ASSERT(ts::ToIntegerDigit ('0') == 0);
     CPPUNIT_ASSERT(ts::ToIntegerDigit ('9') == 9);
@@ -922,7 +922,7 @@ void StringTest::testToInteger()
     CPPUNIT_ASSERT(i32List == i32Ref);
 }
 
-void StringTest::testStart()
+void StringUtilsTest::testStart()
 {
     CPPUNIT_ASSERT(ts::StartWith ("azertyuiop", "azer"));
     CPPUNIT_ASSERT(!ts::StartWith ("azertyuiop", "aZer"));
@@ -950,7 +950,7 @@ void StringTest::testStart()
     CPPUNIT_ASSERT(!ts::StartWithInsensitive ("", "abcd"));
 }
 
-void StringTest::testEnd()
+void StringUtilsTest::testEnd()
 {
     CPPUNIT_ASSERT(ts::EndWith ("azertyuiop", "uiop"));
     CPPUNIT_ASSERT(!ts::EndWith ("azertyuiop", "uiOp"));
@@ -978,7 +978,7 @@ void StringTest::testEnd()
     CPPUNIT_ASSERT(!ts::EndWithInsensitive ("", "abcd"));
 }
 
-void StringTest::testSubstitute()
+void StringUtilsTest::testSubstitute()
 {
     CPPUNIT_ASSERT(ts::ReturnSubstituteAll("", "", "") == "");
     CPPUNIT_ASSERT(ts::ReturnSubstituteAll("abcdefabcdef", "ab", "xyz") == "xyzcdefxyzcdef");

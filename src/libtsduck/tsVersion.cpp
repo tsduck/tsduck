@@ -179,7 +179,7 @@ std::string ts::GetVersion(VersionFormat format, const std::string& applicationN
             StringVector files;
             GetAllModules(files);
             std::string list("Revision  File\n--------  ");
-            list.append(std::max<size_t>(4, LargestLength(files)), '-');
+            list.append(std::max<size_t>(4, LargestSize(files)), '-');
             for (StringVector::const_iterator it = files.begin(); it != files.end(); ++it) {
                 const int rev = GetRevision(*it, false);
                 if (rev != 0) {

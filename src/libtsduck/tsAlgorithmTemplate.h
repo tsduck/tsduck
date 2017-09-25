@@ -126,3 +126,33 @@ bool ts::AppendUnique(CONTAINER& container, const ELEMENT& e)
     container.push_back(e);
     return true; // new object inserted
 }
+
+
+//----------------------------------------------------------------------------
+// Get the size of the smallest/largest object in a container.
+//----------------------------------------------------------------------------
+
+template <class CONTAINER>
+size_t ts::SmallestSize(const CONTAINER& container)
+{
+    if (container.empty()) {
+        return 0;
+    }
+    else {
+        size_t smallest = std::numeric_limits<size_t>::max();
+        for (typename CONTAINER::const_iterator it = container.begin(); smallest > 0 && it != container.end(); ++it) {
+            smallest = std::min(smallest, it->size());
+        }
+        return smallest;
+    }
+}
+
+template <class CONTAINER>
+size_t ts::LargestSize(const CONTAINER& container)
+{
+    size_t largest = 0;
+    for (typename CONTAINER::const_iterator it = container.begin(); it != container.end(); ++it) {
+        largest = std::max(largest, it->size());
+    }
+    return largest;
+}

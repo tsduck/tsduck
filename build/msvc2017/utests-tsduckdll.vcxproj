@@ -35,6 +35,7 @@
     <ClCompile Include="..\..\src\utest\utestSection.cpp" />
     <ClCompile Include="..\..\src\utest\utestSingleton.cpp" />
     <ClCompile Include="..\..\src\utest\utestStaticInstance.cpp" />
+    <ClCompile Include="..\..\src\utest\utestString.cpp" />
     <ClCompile Include="..\..\src\utest\utestStringUtils.cpp" />
     <ClCompile Include="..\..\src\utest\utestSystemRandomGenerator.cpp" />
     <ClCompile Include="..\..\src\utest\utestSysUtils.cpp" />
