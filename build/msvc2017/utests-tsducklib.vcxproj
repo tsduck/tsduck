@@ -4,6 +4,7 @@
     <Import Project="msvc-common-begin.props" />
   </ImportGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\src\utest\dependenciesForStaticLib.cpp" />
     <ClCompile Include="..\..\src\utest\utest.cpp" />
     <ClCompile Include="..\..\src\utest\utestAlgorithm.cpp" />
     <ClCompile Include="..\..\src\utest\utestArgs.cpp" />

@@ -44,7 +44,8 @@ default: $(TARGETS)
 
 .PHONY: execs
 execs: $(OBJDIR)/utest
-$(OBJDIR)/utest: $(OBJS) $(LIBTSDUCKDIR)/$(OBJDIR)/$(SHARED_LIBTSDUCK)
+
+$(OBJDIR)/utest: $(subst $(OBJDIR)/dependenciesForStaticLib.o,,$(OBJS)) $(LIBTSDUCKDIR)/$(OBJDIR)/$(SHARED_LIBTSDUCK)
 LDLIBS := -lcppunit $(LDLIBS)
 
 $(OBJDIR)/setenv.sh: Makefile

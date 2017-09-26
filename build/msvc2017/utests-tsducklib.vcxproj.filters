@@ -148,6 +148,9 @@
     <ClCompile Include="..\..\src\utest\utestString.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\utest\dependenciesForStaticLib.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\utest\utestCppUnitMain.h">
