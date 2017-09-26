@@ -44,7 +44,8 @@ ts::TablesDisplayArgs::TablesDisplayArgs() :
     raw_dump(false),
     raw_flags(hexa::HEXA),
     tlv_syntax(),
-    min_nested_tlv(0)
+    min_nested_tlv(0),
+    default_pds(0)
 {
 }
 
@@ -63,6 +64,14 @@ void ts::TablesDisplayArgs::addHelp(Args& args) const
         "  --c-style\n"
         "      Same as --raw-dump (no interpretation of section) but dump the\n"
         "      bytes in C-language style.\n"
+        "\n"
+        "  --default-pds value\n"
+        "      Default private data specifier. This option is meaningful only when the\n"
+        "      signalization is incorrect, when private descriptors appear in tables\n"
+        "      without a preceding private_data_specifier_descriptor. The specified\n"
+        "      value is used as private data specified to interpret private descriptors.\n"
+        "      The PDS value can be an integer or one of (not case-sensitive):\n"
+        "      " + PrivateDataSpecifierEnum.nameList() + ".\n"
         "\n"
         "  --nested-tlv[=min-size]\n"
         "      With option --tlv, try to interpret the value field of each TLV record as\n"
@@ -101,6 +110,7 @@ void ts::TablesDisplayArgs::addHelp(Args& args) const
 void ts::TablesDisplayArgs::defineOptions(Args& args) const
 {
     args.option("c-style", 'c');
+    args.option("default-pds", 0, PrivateDataSpecifierEnum);
     args.option("nested-tlv", 0, Args::POSITIVE, 0, 1, 0, 0, true);
     args.option("raw-dump", 'r');
     args.option("tlv", 0, Args::STRING, 0, Args::UNLIMITED_COUNT);
@@ -114,6 +124,7 @@ void ts::TablesDisplayArgs::defineOptions(Args& args) const
 
 void ts::TablesDisplayArgs::load(Args& args)
 {
+    args.getIntValue(default_pds, "default-pds");
     raw_dump = args.present("raw-dump");
     raw_flags = hexa::HEXA;
     if (args.present("c-style")) {

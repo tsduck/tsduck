@@ -49,6 +49,7 @@ namespace ts {
         uint32_t        raw_flags;       //!< Dump flags in raw mode.
         TLVSyntaxVector tlv_syntax;      //!< TLV syntax to apply to unknown sections.
         size_t          min_nested_tlv;  //!< Minimum size of a TLV record after which it is interpreted as a nested TLV (0=disabled).
+        PDS             default_pds;     //!< Default private data specifier when none is specified.
 
         //!
         //! Default constructor.
