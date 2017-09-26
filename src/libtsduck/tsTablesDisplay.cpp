@@ -68,6 +68,16 @@ ts::CASFamily ts::TablesDisplay::casFamily(CASFamily cas) const
 
 
 //----------------------------------------------------------------------------
+// The actual private data specifier to use.
+//----------------------------------------------------------------------------
+
+ts::PDS ts::TablesDisplay::actualPDS(PDS pds) const
+{
+    return pds == 0 ? _opt.default_pds : pds;
+}
+
+
+//----------------------------------------------------------------------------
 // Get the current output stream.
 //----------------------------------------------------------------------------
 
@@ -438,7 +448,7 @@ void ts::TablesDisplay::displayTLV(const uint8_t* data,
 std::ostream& ts::TablesDisplay::displayDescriptor(const Descriptor& desc, int indent, TID tid, PDS pds, CASFamily cas)
 {
     if (desc.isValid()) {
-        return displayDescriptorData(desc.tag(), desc.payload(), desc.payloadSize(), indent, tid, pds, cas);
+        return displayDescriptorData(desc.tag(), desc.payload(), desc.payloadSize(), indent, tid, actualPDS(pds), cas);
     }
     else {
         return out();
@@ -473,7 +483,7 @@ std::ostream& ts::TablesDisplay::displayDescriptorList(const void* data, size_t 
 
         // Display descriptor header
         strm << margin << "- Descriptor " << desc_index++
-             << ": " << names::DID(desc_tag, pds) << ", Tag " << int(desc_tag)
+             << ": " << names::DID(desc_tag, actualPDS(pds)) << ", Tag " << int(desc_tag)
              << Format(" (0x%02X), ", int(desc_tag)) << desc_length << " bytes" << std::endl;
 
         // If the descriptor contains a private_data_specifier, keep it
@@ -483,7 +493,7 @@ std::ostream& ts::TablesDisplay::displayDescriptorList(const void* data, size_t 
         }
 
         // Display descriptor.
-        displayDescriptorData(desc_tag, desc_start, desc_length, indent + 2, tid, pds, cas);
+        displayDescriptorData(desc_tag, desc_start, desc_length, indent + 2, tid, actualPDS(pds), cas);
 
         // Move to next descriptor for next iteration
         desc_start += desc_length;
@@ -510,9 +520,9 @@ std::ostream& ts::TablesDisplay::displayDescriptorList(const DescriptorList& lis
         if (!desc.isNull()) {
             pds = list.privateDataSpecifier(i);
             strm << margin << "- Descriptor " << i
-                 << ": " << names::DID(desc->tag(), pds) << ", Tag " << int(desc->tag())
+                 << ": " << names::DID(desc->tag(), actualPDS(pds)) << ", Tag " << int(desc->tag())
                  << Format(" (0x%02X), ", int(desc->tag())) << desc->size() << " bytes" << std::endl;
-            displayDescriptor(*desc, indent + 2, tid, pds, cas);
+            displayDescriptor(*desc, indent + 2, tid, actualPDS(pds), cas);
         }
     }
 
@@ -532,7 +542,7 @@ std::ostream& ts::TablesDisplay::displayDescriptorData(DID did, const uint8_t* p
     EDID edid;
     if (did >= 0x80) {
         // Private descriptor.
-        edid = EDID(did, pds);
+        edid = EDID(did, actualPDS(pds));
     }
     else if (did == DID_EXTENSION && size >= 1) {
         // Extension descriptor, the extension id is in the first byte of the payload.
@@ -552,10 +562,10 @@ std::ostream& ts::TablesDisplay::displayDescriptorData(DID did, const uint8_t* p
     TablesFactory::DisplayDescriptorFunction handler = TablesFactory::Instance()->getDescriptorDisplay(edid);
 
     if (handler != 0) {
-        handler(*this, did, payload, size, indent, tid, pds);
+        handler(*this, did, payload, size, indent, tid, actualPDS(pds));
     }
     else {
-        displayUnkownDescriptor(did, payload, size, indent, tid, pds);
+        displayUnkownDescriptor(did, payload, size, indent, tid, actualPDS(pds));
     }
 
     return strm;

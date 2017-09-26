@@ -274,12 +274,6 @@ std::string ts::names::DID (uint8_t did, uint32_t pds)
 
     switch (pds) {
         case PDS_CANALPLUS:
-        case 0:
-            // These descriptor tags are private. They should occur only after
-            // a "private data specifier". However, due to a bug in the DBC
-            // Supervisor, some tables (essentially PMT) do not have a Canal+
-            // PDS before private descriptors. To handle this, if a private
-            // descriptor is found without PDS (pds == 0), we assume the Canal+ PDS.
             switch (did) {
                 case 0x80: return "DTG Stream Indicator/PIO Offset Time (Canal+)";
                 case 0x81: return "Logical Channel/AC-3 Audio Stream (Canal+)";

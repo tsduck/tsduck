@@ -34,6 +34,7 @@
 
 #pragma once
 #include "tsPlatform.h"
+#include "tsEnumeration.h"
 
 namespace ts {
 
@@ -691,6 +692,12 @@ namespace ts {
         PDS_CANALPLUS = 0x000000C0, //!< Private data specifier for Canal+.
         PDS_EUTELSAT  = 0x0000055F, //!< Private data specifier for EutelSat.
     };
+
+    //!
+    //! Enumeration description of PDS values.
+    //! Typically used to implement PDS-related command line options.
+    //!
+    TSDUCKDLL extern const Enumeration PrivateDataSpecifierEnum;
 
     //---------------------------------------------------------------------
     //! Descriptor tag values (descriptor identification, DID)

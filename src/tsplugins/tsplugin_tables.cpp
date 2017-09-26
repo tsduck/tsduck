@@ -95,6 +95,7 @@ ts::TablesPlugin::TablesPlugin(TSP* tsp_) :
 bool ts::TablesPlugin::start()
 {
     _logger_options.load(*this);
+    _display_options.load(*this);
     _logger = new TablesLogger(_logger_options, _display, *tsp);
     return !_logger->hasErrors();
 }

@@ -243,6 +243,13 @@ namespace ts {
         virtual CASFamily casFamily(CASFamily cas) const;
 
         //!
+        //! The actual private data specifier to use.
+        //! @param [in] pds Current PDS, typically from a private_data_specifier_descriptor.
+        //! @return The actual PDS to use.
+        //!
+        virtual PDS actualPDS(PDS pds) const;
+
+        //!
         //! Display a memory area containing a list of TLV records.
         //!
         //! The displayed area extends from @a data to @a data + @a tlvStart + @a tlvSize.

@@ -45,6 +45,21 @@ const ts::PIDSet ts::AllPIDs (~NoPID);
 
 
 //----------------------------------------------------------------------------
+// Enumeration description of PDS values.
+//----------------------------------------------------------------------------
+
+const ts::Enumeration ts::PrivateDataSpecifierEnum
+    ("Nagra",     ts::PDS_NAGRA,
+     "TPS",       ts::PDS_TPS,
+     "EACEM",     ts::PDS_EACEM,
+     "EICTA",     ts::PDS_EICTA,
+     "Logiways",  ts::PDS_LOGIWAYS,
+     "CanalPlus", ts::PDS_CANALPLUS,
+     "Eutelsat",  ts::PDS_EUTELSAT,
+     TS_NULL);
+
+
+//----------------------------------------------------------------------------
 // Check if an ST value indicates a PES stream
 //----------------------------------------------------------------------------
 
