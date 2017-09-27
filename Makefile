@@ -47,8 +47,15 @@ COVERITY_SOURCES   = src
 default:
 	+@$(RECURSE)
 
+# Build and run unitary tests.
+.PHONY: test
+test:
+	@$(MAKE)
+	@$(MAKE) -C src/utest test
+
 # Download the Dektec DTAPI. Automatically done during a global "make" since
 # we recurse in "dektec" before "src".
+.PHONY: dtapi
 dtapi:
 	@$(MAKE) -C dektec
 

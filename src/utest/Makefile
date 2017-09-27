@@ -53,6 +53,10 @@ $(OBJDIR)/setenv.sh: Makefile
 	echo 'export LD_LIBRARY_PATH="$(realpath $(LIBTSDUCKDIR)/$(OBJDIR))"' >>$@
 	echo 'export TSPLUGINS_PATH="$(realpath $(TSPLUGINSDIR)/$(OBJDIR)):$(realpath $(LIBTSDUCKDIR))"' >>$@
 
+.PHONY: test
+test: $(OBJDIR)/utest
+	source $(OBJDIR)/setenv.sh && $(OBJDIR)/utest
+
 .PHONY: install install-devel
 install install-devel:
 	@true

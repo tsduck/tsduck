@@ -63,16 +63,6 @@ namespace ts {
     }
 
     //!
-    //! Check if a character is a lower case letter according to the current C locale.
-    //! @param [in] c A character.
-    //! @return True if @a c is a lower case letter.
-    //!
-    TSDUCKDLL inline bool IsLower(Char c)
-    {
-        return std::iswlower(wint_t(c)) != 0;
-    }
-
-    //!
     //! Check if a character is a decimal digit.
     //! @param [in] c A character.
     //! @return True if @a c is a decimal digit.
@@ -93,14 +83,18 @@ namespace ts {
     }
 
     //!
-    //! Check if a character is an upper case letter according to the current C locale.
+    //! Check if a character is a lower case letter.
+    //! @param [in] c A character.
+    //! @return True if @a c is a lower case letter.
+    //!
+    TSDUCKDLL bool IsLower(Char c);
+
+    //!
+    //! Check if a character is an upper case letter.
     //! @param [in] c A character.
     //! @return True if @a c is an upper case letter.
     //!
-    TSDUCKDLL inline bool IsUpper(Char c)
-    {
-        return std::iswupper(wint_t(c)) != 0;
-    }
+    TSDUCKDLL bool IsUpper(Char c);
 
     //!
     //! Convert a character to lowercase.
