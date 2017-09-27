@@ -50,14 +50,28 @@ public:
     StringTest();
     void setUp();
     void tearDown();
+    void testCharSelfTest();
     void testIsSpace();
     void testUTF();
     void testTrim();
+    void testLetterCase();
+    void testRemove();
+    void testSubstitute();
+    void testSplit();
+    void testJoin();
+    void testBreakLines();
 
     CPPUNIT_TEST_SUITE(StringTest);
+    CPPUNIT_TEST(testCharSelfTest);
     CPPUNIT_TEST(testIsSpace);
     CPPUNIT_TEST(testUTF);
     CPPUNIT_TEST(testTrim);
+    CPPUNIT_TEST(testLetterCase);
+    CPPUNIT_TEST(testRemove);
+    CPPUNIT_TEST(testSubstitute);
+    CPPUNIT_TEST(testSplit);
+    CPPUNIT_TEST(testJoin);
+    CPPUNIT_TEST(testBreakLines);
     CPPUNIT_TEST_SUITE_END();
 };
 
@@ -87,6 +101,11 @@ void StringTest::tearDown()
 //----------------------------------------------------------------------------
 // Test cases
 //----------------------------------------------------------------------------
+
+void StringTest::testCharSelfTest()
+{
+    CPPUNIT_ASSERT(ts::CharSelfTest());
+}
 
 void StringTest::testIsSpace()
 {
@@ -214,14 +233,227 @@ void StringTest::testTrim()
     CPPUNIT_ASSERT(s == "abc");
 
     s = "  abc  ";
-    CPPUNIT_ASSERT(s.trimmed() == "abc");
-    CPPUNIT_ASSERT(s.trimmed(true, false) == "abc  ");
-    CPPUNIT_ASSERT(s.trimmed(false, true) == "  abc");
-    CPPUNIT_ASSERT(s.trimmed(false, false) == "  abc  ");
+    CPPUNIT_ASSERT(s.toTrimmed() == "abc");
+    CPPUNIT_ASSERT(s.toTrimmed(true, false) == "abc  ");
+    CPPUNIT_ASSERT(s.toTrimmed(false, true) == "  abc");
+    CPPUNIT_ASSERT(s.toTrimmed(false, false) == "  abc  ");
 
     s = "abc";
-    CPPUNIT_ASSERT(s.trimmed() == "abc");
-    CPPUNIT_ASSERT(s.trimmed(true, false) == "abc");
-    CPPUNIT_ASSERT(s.trimmed(false, true) == "abc");
-    CPPUNIT_ASSERT(s.trimmed(false, false) == "abc");
+    CPPUNIT_ASSERT(s.toTrimmed() == "abc");
+    CPPUNIT_ASSERT(s.toTrimmed(true, false) == "abc");
+    CPPUNIT_ASSERT(s.toTrimmed(false, true) == "abc");
+    CPPUNIT_ASSERT(s.toTrimmed(false, false) == "abc");
+}
+
+void StringTest::testLetterCase()
+{
+    CPPUNIT_ASSERT(!ts::IsLower(ts::COMMA));
+    CPPUNIT_ASSERT(!ts::IsUpper(ts::COMMA));
+
+    CPPUNIT_ASSERT_EQUAL(ts::COMMA, ts::ToLower(ts::COMMA));
+    CPPUNIT_ASSERT_EQUAL(ts::COMMA, ts::ToUpper(ts::COMMA));
+
+    struct UpperLower {
+        ts::Char upper;
+        ts::Char lower;
+    };
+    static const UpperLower tab[] = {
+        {ts::LATIN_CAPITAL_LETTER_A, ts::LATIN_SMALL_LETTER_A},
+        {ts::LATIN_CAPITAL_LETTER_A_WITH_CIRCUMFLEX, ts::LATIN_SMALL_LETTER_A_WITH_CIRCUMFLEX},
+        {ts::LATIN_CAPITAL_LETTER_A_WITH_GRAVE, ts::LATIN_SMALL_LETTER_A_WITH_GRAVE},
+        {ts::LATIN_CAPITAL_LETTER_A_WITH_ACUTE, ts::LATIN_SMALL_LETTER_A_WITH_ACUTE},
+        {ts::LATIN_CAPITAL_LETTER_W_WITH_DIAERESIS, ts::LATIN_SMALL_LETTER_W_WITH_DIAERESIS},
+        {ts::LATIN_CAPITAL_LETTER_Y_WITH_GRAVE, ts::LATIN_SMALL_LETTER_Y_WITH_GRAVE},
+        {ts::LATIN_CAPITAL_LETTER_Y_WITH_DIAERESIS, ts::LATIN_SMALL_LETTER_Y_WITH_DIAERESIS},
+        {ts::GREEK_CAPITAL_LETTER_IOTA_WITH_DIALYTIKA, ts::GREEK_SMALL_LETTER_IOTA_WITH_DIALYTIKA},
+        {ts::GREEK_CAPITAL_LETTER_UPSILON_WITH_DIALYTIKA, ts::GREEK_SMALL_LETTER_UPSILON_WITH_DIALYTIKA},
+        {ts::GREEK_CAPITAL_LETTER_EPSILON, ts::GREEK_SMALL_LETTER_EPSILON},
+        {ts::GREEK_CAPITAL_LETTER_ALPHA, ts::GREEK_SMALL_LETTER_ALPHA},
+        {ts::GREEK_CAPITAL_LETTER_OMICRON_WITH_TONOS, ts::GREEK_SMALL_LETTER_OMICRON_WITH_TONOS},
+        {ts::GREEK_CAPITAL_LETTER_UPSILON_WITH_TONOS, ts::GREEK_SMALL_LETTER_UPSILON_WITH_TONOS},
+        {ts::GREEK_CAPITAL_LETTER_OMEGA_WITH_TONOS, ts::GREEK_SMALL_LETTER_OMEGA_WITH_TONOS},
+        {ts::GREEK_CAPITAL_LETTER_EPSILON_WITH_TONOS, ts::GREEK_SMALL_LETTER_EPSILON_WITH_TONOS},
+        {ts::CYRILLIC_CAPITAL_LETTER_BE, ts::CYRILLIC_SMALL_LETTER_BE},
+        {ts::CYRILLIC_CAPITAL_LETTER_HARD_SIGN, ts::CYRILLIC_SMALL_LETTER_HARD_SIGN},
+        {ts::CYRILLIC_CAPITAL_LETTER_SHORT_U, ts::CYRILLIC_SMALL_LETTER_SHORT_U},
+        {ts::CYRILLIC_CAPITAL_LETTER_DZHE, ts::CYRILLIC_SMALL_LETTER_DZHE},
+    };
+    static const size_t tabSize = sizeof(tab) / sizeof(tab[0]);
+
+    for (size_t i = 0; i < tabSize; ++i) {
+        CPPUNIT_ASSERT(ts::IsUpper(tab[i].upper));
+        CPPUNIT_ASSERT(!ts::IsLower(tab[i].upper));
+        CPPUNIT_ASSERT(ts::IsLower(tab[i].lower));
+        CPPUNIT_ASSERT(!ts::IsUpper(tab[i].lower));
+        CPPUNIT_ASSERT_EQUAL(tab[i].lower, ts::ToLower(tab[i].lower));
+        CPPUNIT_ASSERT_EQUAL(tab[i].lower, ts::ToLower(tab[i].upper));
+        CPPUNIT_ASSERT_EQUAL(tab[i].upper, ts::ToUpper(tab[i].lower));
+        CPPUNIT_ASSERT_EQUAL(tab[i].upper, ts::ToUpper(tab[i].upper));
+    }
+
+    ts::String s1("AbCdEf,%*=UiT");
+    CPPUNIT_ASSERT(s1.toLower() == "abcdef,%*=uit");
+    CPPUNIT_ASSERT(s1.toUpper() == "ABCDEF,%*=UIT");
+
+    s1 = "AbCdEf,%*=UiT";
+    CPPUNIT_ASSERT(s1 == "AbCdEf,%*=UiT");
+    s1.convertToLower();
+    CPPUNIT_ASSERT(s1 == "abcdef,%*=uit");
+
+    s1 = "AbCdEf,%*=UiT";
+    CPPUNIT_ASSERT(s1 == "AbCdEf,%*=UiT");
+    s1.convertToUpper();
+    CPPUNIT_ASSERT(s1 == "ABCDEF,%*=UIT");
+}
+
+void StringTest::testRemove()
+{
+    ts::String s;
+
+    s = "az zef cer ";
+    s.remove(" ");
+    CPPUNIT_ASSERT(s == "azzefcer");
+
+    s = "fooAZfoo==fooBARfoo";
+    s.remove("foo");
+    CPPUNIT_ASSERT(s == "AZ==BAR");
+
+    s = "fooAZfoo==fooBARfoo";
+    const ts::String foo1("foo");
+    s.remove(foo1);
+    CPPUNIT_ASSERT(s == "AZ==BAR");
+
+    s = "fooAZfoo==fooBARfoo";
+    s.remove("NOTTHERE");
+    CPPUNIT_ASSERT(s == "fooAZfoo==fooBARfoo");
+
+    s = "";
+    s.remove("foo");
+    CPPUNIT_ASSERT(s == "");
+
+    s = "fooAZfoo==fooBARfoo";
+    s.remove("");
+    CPPUNIT_ASSERT(s == "fooAZfoo==fooBARfoo");
+
+    s = "fooAZfoo==fooBARfoo";
+    s.remove("o");
+    CPPUNIT_ASSERT(s == "fAZf==fBARf");
+
+    s = "fooAZfoo==fooBARfoo";
+    s.remove("z");
+    CPPUNIT_ASSERT(s == "fooAZfoo==fooBARfoo");
+
+    s = "az zef cer ";
+    CPPUNIT_ASSERT(s.toRemoved(" ") == "azzefcer");
+
+    CPPUNIT_ASSERT(ts::String("fooAZfoo==fooBARfoo").toRemoved("foo") == "AZ==BAR");
+
+    s = "fooAZfoo==fooBARfoo";
+    const ts::String foo2("foo");
+    CPPUNIT_ASSERT(s.toRemoved(foo2) == "AZ==BAR");
+    CPPUNIT_ASSERT(s.toRemoved("NOTTHERE") == "fooAZfoo==fooBARfoo");
+
+    s = "";
+    CPPUNIT_ASSERT(s.toRemoved("foo") == "");
+
+    s = "fooAZfoo==fooBARfoo";
+    CPPUNIT_ASSERT(s.toRemoved("")  == "fooAZfoo==fooBARfoo");
+    CPPUNIT_ASSERT(s.toRemoved("o") == "fAZf==fBARf");
+    CPPUNIT_ASSERT(s.toRemoved("z") == "fooAZfoo==fooBARfoo");
+}
+
+void StringTest::testSubstitute()
+{
+    CPPUNIT_ASSERT(ts::String("").toSubstituted("", "") == "");
+    CPPUNIT_ASSERT(ts::String("abcdefabcdef").toSubstituted("ab", "xyz") == "xyzcdefxyzcdef");
+    CPPUNIT_ASSERT(ts::String("abcdefabcdef").toSubstituted("ef", "xyz") == "abcdxyzabcdxyz");
+    CPPUNIT_ASSERT(ts::String("abcdba").toSubstituted("b", "bb") == "abbcdbba");
+    CPPUNIT_ASSERT(ts::String("abcdefabcdef").toSubstituted("ef", "") == "abcdabcd");
+}
+
+void StringTest::testSplit()
+{
+    std::vector<ts::String> v1;
+    ts::String("az, ,  fr,  ze ,t").split(v1);
+    CPPUNIT_ASSERT(v1.size() == 5);
+    CPPUNIT_ASSERT(v1[0] == "az");
+    CPPUNIT_ASSERT(v1[1] == "");
+    CPPUNIT_ASSERT(v1[2] == "fr");
+    CPPUNIT_ASSERT(v1[3] == "ze");
+    CPPUNIT_ASSERT(v1[4] == "t");
+
+    std::vector<ts::String> v2;
+    const ts::String s2("az, ,  fr,  ze ,t");
+    s2.split(v2);
+    CPPUNIT_ASSERT(v2.size() == 5);
+    CPPUNIT_ASSERT(v2[0] == "az");
+    CPPUNIT_ASSERT(v2[1] == "");
+    CPPUNIT_ASSERT(v2[2] == "fr");
+    CPPUNIT_ASSERT(v2[3] == "ze");
+    CPPUNIT_ASSERT(v2[4] == "t");
+
+    std::vector<ts::String> v3;
+    ts::String("az, ,  fr,  ze ,t").split(v3, ts::COMMA, false);
+    CPPUNIT_ASSERT(v3.size() == 5);
+    CPPUNIT_ASSERT(v3[0] == "az");
+    CPPUNIT_ASSERT(v3[1] == " ");
+    CPPUNIT_ASSERT(v3[2] == "  fr");
+    CPPUNIT_ASSERT(v3[3] == "  ze ");
+    CPPUNIT_ASSERT(v3[4] == "t");
+
+    std::vector<ts::String> v4;
+    ts::String("az, ,  fr,  ze ,t").split(v4, ts::Char('z'), false);
+    CPPUNIT_ASSERT(v4.size() == 3);
+    CPPUNIT_ASSERT(v4[0] == "a");
+    CPPUNIT_ASSERT(v4[1] == ", ,  fr,  ");
+    CPPUNIT_ASSERT(v4[2] == "e ,t");
+}
+
+void StringTest::testJoin()
+{
+    std::vector<ts::String> v;
+    v.push_back("az");
+    v.push_back("sd");
+    v.push_back("tg");
+    CPPUNIT_ASSERT(ts::String::join(v) == "az, sd, tg");
+    CPPUNIT_ASSERT(ts::String::join(++v.begin(), v.end()) == "sd, tg");
+}
+
+void StringTest::testBreakLines()
+{
+    std::vector<ts::String> v1;
+    ts::String("aze arf erf r+oih zf").splitLines(v1, 8);
+    CPPUNIT_ASSERT(v1.size() == 3);
+    CPPUNIT_ASSERT(v1[0] == "aze arf");
+    CPPUNIT_ASSERT(v1[1] == "erf");
+    CPPUNIT_ASSERT(v1[2] == "r+oih zf");
+
+    std::vector<ts::String> v2;
+    ts::String("aze arf erf r+oih zf").splitLines(v2, 8, "+");
+    CPPUNIT_ASSERT(v2.size() == 3);
+    CPPUNIT_ASSERT(v2[0] == "aze arf");
+    CPPUNIT_ASSERT(v2[1] == "erf r+");
+    CPPUNIT_ASSERT(v2[2] == "oih zf");
+
+    std::vector<ts::String> v3;
+    ts::String("aze arf erf r+oih zf").splitLines(v3, 8, "", "==");
+    CPPUNIT_ASSERT(v3.size() == 4);
+    CPPUNIT_ASSERT(v3[0] == "aze arf");
+    CPPUNIT_ASSERT(v3[1] == "==erf");
+    CPPUNIT_ASSERT(v3[2] == "==r+oih");
+    CPPUNIT_ASSERT(v3[3] == "==zf");
+
+    std::vector<ts::String> v4;
+    ts::String("aze arf dkvyfngofnb ff").splitLines(v4, 8);
+    CPPUNIT_ASSERT(v4.size() == 3);
+    CPPUNIT_ASSERT(v4[0] == "aze arf");
+    CPPUNIT_ASSERT(v4[1] == "dkvyfngofnb");
+    CPPUNIT_ASSERT(v4[2] == "ff");
+
+    std::vector<ts::String> v5;
+    ts::String("aze arf dkvyfngofnb ff").splitLines(v5, 8, "", "", true);
+    CPPUNIT_ASSERT(v5.size() == 3);
+    CPPUNIT_ASSERT(v5[0] == "aze arf");
+    CPPUNIT_ASSERT(v5[1] == "dkvyfngo");
+    CPPUNIT_ASSERT(v5[2] == "fnb ff");
 }

@@ -63,24 +63,58 @@ namespace ts {
     }
 
     //!
+    //! Check if a character is a lower case letter according to the current C locale.
+    //! @param [in] c A character.
+    //! @return True if @a c is a lower case letter.
+    //!
+    TSDUCKDLL inline bool IsLower(Char c)
+    {
+        return std::iswlower(wint_t(c)) != 0;
+    }
+
+    //!
+    //! Check if a character is a decimal digit.
+    //! @param [in] c A character.
+    //! @return True if @a c is a decimal digit.
+    //!
+    TSDUCKDLL inline bool IsDigit(Char c)
+    {
+        return std::iswdigit(wint_t(c)) != 0;
+    }
+
+    //!
+    //! Check if a character is an hexadecimal digit.
+    //! @param [in] c A character.
+    //! @return True if @a c is an hexadecimal digit.
+    //!
+    TSDUCKDLL inline bool IsHexa(Char c)
+    {
+        return std::iswxdigit(wint_t(c)) != 0;
+    }
+
+    //!
+    //! Check if a character is an upper case letter according to the current C locale.
+    //! @param [in] c A character.
+    //! @return True if @a c is an upper case letter.
+    //!
+    TSDUCKDLL inline bool IsUpper(Char c)
+    {
+        return std::iswupper(wint_t(c)) != 0;
+    }
+
+    //!
     //! Convert a character to lowercase.
     //! @param [in] c A character to convert to lowercase.
     //! @return @a c converted to lowercase.
     //!
-    TSDUCKDLL inline Char ToLower(Char c)
-    {
-        return Char(std::towlower(wint_t(c)));
-    }
+    TSDUCKDLL Char ToLower(Char c);
 
     //!
     //! Convert a character to uppercase.
     //! @param [in] c A character to convert to uppercase.
     //! @return @a c converted to uppercase.
     //!
-    TSDUCKDLL inline Char ToUpper(Char c)
-    {
-        return Char(std::towupper(wint_t(c)));
-    }
+    TSDUCKDLL Char ToUpper(Char c);
 
     //
     // The following constants define all characters which can be represented
@@ -889,4 +923,10 @@ namespace ts {
     static const Char BLACK_CLUB_SUIT                             = Char(0x2663); //!< Non-ISO-8859 Unicode character.
     static const Char BLACK_HEART_SUIT                            = Char(0x2665); //!< Non-ISO-8859 Unicode character.
     static const Char BLACK_DIAMOND_SUIT                          = Char(0x2666); //!< Non-ISO-8859 Unicode character.
+
+    //!
+    //! Char internal self-test procedure.
+    //! @return True if the test passes, false if it fails.
+    //!
+    TSDUCKDLL bool CharSelfTest();
 }
