@@ -60,6 +60,18 @@ public:
     void testSplit();
     void testJoin();
     void testBreakLines();
+    void testRemovePrefix();
+    void testRemoveSuffix();
+    void testStart();
+    void testEnd();
+    void testJustifyLeft();
+    void testJustifyRight();
+    void testJustifyCentered();
+    void testJustify();
+    void testYesNo();
+    void testTrueFalse();
+    void testOnOff();
+    void testSimilarStrings();
 
     CPPUNIT_TEST_SUITE(StringTest);
     CPPUNIT_TEST(testCharSelfTest);
@@ -72,6 +84,18 @@ public:
     CPPUNIT_TEST(testSplit);
     CPPUNIT_TEST(testJoin);
     CPPUNIT_TEST(testBreakLines);
+    CPPUNIT_TEST(testRemovePrefix);
+    CPPUNIT_TEST(testRemoveSuffix);
+    CPPUNIT_TEST(testStart);
+    CPPUNIT_TEST(testEnd);
+    CPPUNIT_TEST(testJustifyLeft);
+    CPPUNIT_TEST(testJustifyRight);
+    CPPUNIT_TEST(testJustifyCentered);
+    CPPUNIT_TEST(testJustify);
+    CPPUNIT_TEST(testYesNo);
+    CPPUNIT_TEST(testTrueFalse);
+    CPPUNIT_TEST(testOnOff);
+    CPPUNIT_TEST(testSimilarStrings);
     CPPUNIT_TEST_SUITE_END();
 };
 
@@ -360,6 +384,10 @@ void StringTest::testRemove()
     CPPUNIT_ASSERT(s.toRemoved("")  == "fooAZfoo==fooBARfoo");
     CPPUNIT_ASSERT(s.toRemoved("o") == "fAZf==fBARf");
     CPPUNIT_ASSERT(s.toRemoved("z") == "fooAZfoo==fooBARfoo");
+    CPPUNIT_ASSERT(s.toRemoved('z') == "fooAZfoo==fooBARfoo");
+    CPPUNIT_ASSERT(s.toRemoved(ts::Char('z')) == "fooAZfoo==fooBARfoo");
+    CPPUNIT_ASSERT(s.toRemoved('o') == "fAZf==fBARf");
+    CPPUNIT_ASSERT(s.toRemoved(ts::Char('o')) == "fAZf==fBARf");
 }
 
 void StringTest::testSubstitute()
@@ -456,4 +484,171 @@ void StringTest::testBreakLines()
     CPPUNIT_ASSERT(v5[0] == "aze arf");
     CPPUNIT_ASSERT(v5[1] == "dkvyfngo");
     CPPUNIT_ASSERT(v5[2] == "fnb ff");
+}
+
+void StringTest::testRemovePrefix()
+{
+    ts::String s;
+
+    s = "abcdef";
+    s.removePrefix("ab");
+    CPPUNIT_ASSERT(s == "cdef");
+
+    s = "abcdef";
+    s.removePrefix("xy");
+    CPPUNIT_ASSERT(s == "abcdef");
+
+    s = "abcdef";
+    s.removePrefix("");
+    CPPUNIT_ASSERT(s == "abcdef");
+
+    s = "";
+    s.removePrefix("ab");
+    CPPUNIT_ASSERT(s == "");
+
+    CPPUNIT_ASSERT(ts::String("abcdef").toRemovedPrefix("ab") == "cdef");
+    CPPUNIT_ASSERT(ts::String("abcdef").toRemovedPrefix("xy") == "abcdef");
+    CPPUNIT_ASSERT(ts::String("abcdef").toRemovedPrefix("") == "abcdef");
+    CPPUNIT_ASSERT(ts::String("").toRemovedPrefix("ab") == "");
+
+    CPPUNIT_ASSERT(ts::String("abcdef").toRemovedPrefix("AB") == "abcdef");
+    CPPUNIT_ASSERT(ts::String("abcdef").toRemovedPrefix("AB", ts::CASE_SENSITIVE) == "abcdef");
+    CPPUNIT_ASSERT(ts::String("abcdef").toRemovedPrefix("AB", ts::CASE_INSENSITIVE) == "cdef");
+}
+
+void StringTest::testRemoveSuffix()
+{
+    ts::String s;
+
+    s = "abcdef";
+    s.removeSuffix("ef");
+    CPPUNIT_ASSERT(s == "abcd");
+
+    s = "abcdef";
+    s.removeSuffix("xy");
+    CPPUNIT_ASSERT(s == "abcdef");
+
+    s = "abcdef";
+    s.removeSuffix("");
+    CPPUNIT_ASSERT(s == "abcdef");
+
+    s = "";
+    s.removeSuffix("ef");
+    CPPUNIT_ASSERT(s == "");
+
+    CPPUNIT_ASSERT(ts::String("abcdef").toRemovedSuffix("ef") == "abcd");
+    CPPUNIT_ASSERT(ts::String("abcdef").toRemovedSuffix("xy") == "abcdef");
+    CPPUNIT_ASSERT(ts::String("abcdef").toRemovedSuffix("") == "abcdef");
+    CPPUNIT_ASSERT(ts::String("").toRemovedSuffix("ef") == "");
+
+    CPPUNIT_ASSERT(ts::String("abcdef").toRemovedSuffix("EF") == "abcdef");
+    CPPUNIT_ASSERT(ts::String("abcdef").toRemovedSuffix("EF", ts::CASE_SENSITIVE) == "abcdef");
+    CPPUNIT_ASSERT(ts::String("abcdef").toRemovedSuffix("EF", ts::CASE_INSENSITIVE) == "abcd");
+}
+
+void StringTest::testStart()
+{
+    CPPUNIT_ASSERT(ts::String("azertyuiop").startWith("azer"));
+    CPPUNIT_ASSERT(!ts::String("azertyuiop").startWith("aZer"));
+    CPPUNIT_ASSERT(!ts::String("azertyuiop").startWith("azeR"));
+
+    CPPUNIT_ASSERT(ts::String("azertyuiop").startWith("azer", ts::CASE_INSENSITIVE));
+    CPPUNIT_ASSERT(ts::String("azertyuiop").startWith("aZer", ts::CASE_INSENSITIVE));
+    CPPUNIT_ASSERT(ts::String("azertyuiop").startWith("azeR", ts::CASE_INSENSITIVE));
+    CPPUNIT_ASSERT(!ts::String("azertyuiop").startWith("azerq", ts::CASE_INSENSITIVE));
+
+    CPPUNIT_ASSERT(ts::String("azertyuiop").startWith(""));
+    CPPUNIT_ASSERT(!ts::String("azertyuiop").startWith("azertyuiopqsdf"));
+
+    CPPUNIT_ASSERT(ts::String("azertyuiop").startWith("", ts::CASE_INSENSITIVE));
+    CPPUNIT_ASSERT(!ts::String("azertyuiop").startWith("azertyuiopqsdf", ts::CASE_INSENSITIVE));
+
+    CPPUNIT_ASSERT(ts::String("").startWith(""));
+    CPPUNIT_ASSERT(!ts::String("").startWith("abcd"));
+
+    CPPUNIT_ASSERT(ts::String("").startWith("", ts::CASE_INSENSITIVE));
+    CPPUNIT_ASSERT(!ts::String("").startWith("abcd", ts::CASE_INSENSITIVE));
+}
+
+void StringTest::testEnd()
+{
+    CPPUNIT_ASSERT(ts::String("azertyuiop").endWith("uiop"));
+    CPPUNIT_ASSERT(!ts::String("azertyuiop").endWith("uiOp"));
+    CPPUNIT_ASSERT(!ts::String("azertyuiop").endWith("Uiop"));
+
+    CPPUNIT_ASSERT(ts::String("azertyuiop").endWith("uiop", ts::CASE_INSENSITIVE));
+    CPPUNIT_ASSERT(ts::String("azertyuiop").endWith("uiOp", ts::CASE_INSENSITIVE));
+    CPPUNIT_ASSERT(ts::String("azertyuiop").endWith("Uiop", ts::CASE_INSENSITIVE));
+    CPPUNIT_ASSERT(!ts::String("azertyuiop").endWith("wuiop", ts::CASE_INSENSITIVE));
+
+    CPPUNIT_ASSERT(ts::String("azertyuiop").endWith(""));
+    CPPUNIT_ASSERT(!ts::String("azertyuiop").endWith("qsazertyuiop"));
+
+    CPPUNIT_ASSERT(ts::String("azertyuiop").endWith("", ts::CASE_INSENSITIVE));
+    CPPUNIT_ASSERT(!ts::String("azertyuiop").endWith("qsazertyuiop", ts::CASE_INSENSITIVE));
+
+    CPPUNIT_ASSERT(ts::String("").endWith(""));
+    CPPUNIT_ASSERT(!ts::String("").endWith("abcd"));
+
+    CPPUNIT_ASSERT(ts::String("").endWith("", ts::CASE_INSENSITIVE));
+    CPPUNIT_ASSERT(!ts::String("").endWith("abcd", ts::CASE_INSENSITIVE));
+}
+
+void StringTest::testJustifyLeft()
+{
+    CPPUNIT_ASSERT(ts::String("abc").toJustifiedLeft(8) == "abc     ");
+    CPPUNIT_ASSERT(ts::String("abc").toJustifiedLeft(8, '.') == "abc.....");
+    CPPUNIT_ASSERT(ts::String("abcdefghij").toJustifiedLeft(8) == "abcdefghij");
+    CPPUNIT_ASSERT(ts::String("abcdefghij").toJustifiedLeft(8, ' ', true) == "abcdefgh");
+}
+
+void StringTest::testJustifyRight()
+{
+    CPPUNIT_ASSERT(ts::String("abc").toJustifiedRight(8) == "     abc");
+    CPPUNIT_ASSERT(ts::String("abc").toJustifiedRight(8, '.') == ".....abc");
+    CPPUNIT_ASSERT(ts::String("abcdefghij").toJustifiedRight(8) == "abcdefghij");
+    CPPUNIT_ASSERT(ts::String("abcdefghij").toJustifiedRight(8, ' ', true) == "cdefghij");
+}
+
+void StringTest::testJustifyCentered()
+{
+    CPPUNIT_ASSERT(ts::String("abc").toJustifiedCentered(8) == "  abc   ");
+    CPPUNIT_ASSERT(ts::String("abc").toJustifiedCentered(8, '.') == "..abc...");
+    CPPUNIT_ASSERT(ts::String("abcdefghij").toJustifiedCentered(8) == "abcdefghij");
+    CPPUNIT_ASSERT(ts::String("abcdefghij").toJustifiedCentered(8, ' ', true) == "abcdefgh");
+}
+
+void StringTest::testJustify()
+{
+    CPPUNIT_ASSERT(ts::String("abc").toJustified("def", 8) == "abc  def");
+    CPPUNIT_ASSERT(ts::String("abc").toJustified("def", 8, '.') == "abc..def");
+    CPPUNIT_ASSERT(ts::String("abcd").toJustified("efgh", 8) == "abcdefgh");
+    CPPUNIT_ASSERT(ts::String("abcde").toJustified("fghij", 8) == "abcdefghij");
+}
+
+void StringTest::testYesNo()
+{
+    CPPUNIT_ASSERT(ts::String::YesNo(true) == "yes");
+    CPPUNIT_ASSERT(ts::String::YesNo(false) == "no");
+}
+
+void StringTest::testTrueFalse()
+{
+    CPPUNIT_ASSERT(ts::String::TrueFalse(true) == "true");
+    CPPUNIT_ASSERT(ts::String::TrueFalse(false) == "false");
+}
+
+void StringTest::testOnOff()
+{
+    CPPUNIT_ASSERT(ts::String::OnOff(true) == "on");
+    CPPUNIT_ASSERT(ts::String::OnOff(false) == "off");
+}
+
+void StringTest::testSimilarStrings()
+{
+    CPPUNIT_ASSERT(ts::String("").similar(""));
+    CPPUNIT_ASSERT(ts::String("aZer tY").similar("  AZE R T Y    "));
+    CPPUNIT_ASSERT(ts::String("  AZE R T Y    ").similar("aZer tY"));
+    CPPUNIT_ASSERT(!ts::String("").similar("az"));
+    CPPUNIT_ASSERT(!ts::String("az").similar(""));
 }

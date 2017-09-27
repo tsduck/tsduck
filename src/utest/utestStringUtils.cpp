@@ -409,10 +409,10 @@ void StringUtilsTest::testRemovePrefix()
 
 void StringUtilsTest::testRemovePrefixCopy()
 {
-    CPPUNIT_ASSERT(ts::ReturnRemoveSubstring("abcdef", "ab") == "cdef");
-    CPPUNIT_ASSERT(ts::ReturnRemoveSubstring("abcdef", "xy") == "abcdef");
-    CPPUNIT_ASSERT(ts::ReturnRemoveSubstring("abcdef", "") == "abcdef");
-    CPPUNIT_ASSERT(ts::ReturnRemoveSubstring("", "ab") == "");
+    CPPUNIT_ASSERT(ts::ReturnRemovePrefix("abcdef", "ab") == "cdef");
+    CPPUNIT_ASSERT(ts::ReturnRemovePrefix("abcdef", "xy") == "abcdef");
+    CPPUNIT_ASSERT(ts::ReturnRemovePrefix("abcdef", "") == "abcdef");
+    CPPUNIT_ASSERT(ts::ReturnRemovePrefix("", "ab") == "");
 }
 
 void StringUtilsTest::testRemoveSuffix()

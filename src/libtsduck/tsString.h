@@ -340,11 +340,24 @@ namespace ts {
         void remove(const String& substr);
 
         //!
+        //! Remove all occurences of a character.
+        //! @param [in] c Character to remove.
+        //!
+        void remove(Char c);
+
+        //!
         //! Remove all occurences of a substring.
         //! @param [in] substr Substring to remove.
         //! @return This string with all occurences fo @a substr removed.
         //!
         String toRemoved(const String& substr) const;
+
+        //!
+        //! Remove all occurences of a character.
+        //! @param [in] c Character to remove.
+        //! @return This string with all occurences fo @a substr removed.
+        //!
+        String toRemoved(Char c) const;
 
         //!
         //! Substitute all occurences of a string with another one.
@@ -360,6 +373,52 @@ namespace ts {
         //! @return A copy to this string where all occurences of @a value have been replaced by @a replace.
         //!
         String toSubstituted(const String& value, const String& replacement) const;
+
+        //!
+        //! Remove a prefix in string.
+        //! @param [in] prefix A prefix to remove, if present at the beginning of the string.
+        //! @param [in] cs Indicate if the comparison is case-sensitive.
+        //!
+        void removePrefix(const String& prefix, CaseSensitivity cs = CASE_SENSITIVE);
+
+        //!
+        //! Remove a suffix in string.
+        //! @param [in] suffix A suffix to remove, if present at the end of the string.
+        //! @param [in] cs Indicate if the comparison is case-sensitive.
+        //!
+        void removeSuffix(const String& suffix, CaseSensitivity cs = CASE_SENSITIVE);
+
+        //!
+        //! Remove a prefix in string.
+        //! @param [in] prefix A prefix to remove, if present at the beginning of the string.
+        //! @param [in] cs Indicate if the comparison is case-sensitive.
+        //! @return A copy of this string with prefix removed.
+        //!
+        String toRemovedPrefix(const String& prefix, CaseSensitivity cs = CASE_SENSITIVE) const;
+
+        //!
+        //! Remove a suffix in string.
+        //! @param [in] suffix A suffix to remove, if present at the end of the string.
+        //! @param [in] cs Indicate if the comparison is case-sensitive.
+        //! @return A copy of this string with suffix removed.
+        //!
+        String toRemovedSuffix(const String& suffix, CaseSensitivity cs = CASE_SENSITIVE) const;
+
+        //!
+        //! Check if the string starts with a specified prefix.
+        //! @param [in] prefix A string prefix to check.
+        //! @param [in] cs Indicate if the comparison is case-sensitive.
+        //! @return True if this string starts with @a prefix, false otherwise.
+        //!
+        bool startWith(const String& prefix, CaseSensitivity cs = CASE_SENSITIVE) const;
+
+        //!
+        //! Check if a string ends with a specified suffix.
+        //! @param [in] suffix A string suffix to check.
+        //! @param [in] cs Indicate if the comparison is case-sensitive.
+        //! @return True if this string ends with @a suffix, false otherwise.
+        //!
+        bool endWith(const String& suffix, CaseSensitivity cs = CASE_SENSITIVE) const;
 
         //!
         //! Split the string into segments based on a separator character (comma by default).
@@ -400,7 +459,7 @@ namespace ts {
         //!
         template <class CONTAINER>
         void splitLines(CONTAINER& container,
-                        size_t maxWidth,
+                        size_type maxWidth,
                         const String& otherSeparators = String(),
                         const String& nextMargin = String(),
                         bool forceSplit = false) const;
@@ -431,6 +490,162 @@ namespace ts {
         {
             return join(container.begin(), container.end(), separator);
         }
+
+        //!
+        //! Left-justify (pad and optionally truncate) string.
+        //! If this string is shorter than the specified width, @a pad characters
+        //! are appended to the string up to the specified width.
+        //! @param [in] width The required width of the result string.
+        //! @param [in] pad The character to append to the string.
+        //! @param [in] truncate If true and this string is longer than @a width,
+        //! it is truncated to @a width character. If false, this string is
+        //! never truncated, possibly resulting in a string longer than @a width.
+        //!
+        void justifyLeft(size_type width, Char pad = SPACE, bool truncate = false);
+
+        //!
+        //! Return a left-justified (padded and optionally truncated) string.
+        //! If this string is shorter than the specified width, @a pad characters
+        //! are appended to the string up to the specified width.
+        //! @param [in] width The required width of the result string.
+        //! @param [in] pad The character to append to the string.
+        //! @param [in] truncate If true and this string is longer than @a width,
+        //! it is truncated to @a width character. If false, this string is
+        //! never truncated, possibly resulting in a string longer than @a width.
+        //! @return The justified string.
+        //!
+        String toJustifiedLeft(size_type width, Char pad = SPACE, bool truncate = false) const;
+
+        //!
+        //! Right-justified (pad and optionally truncate) string.
+        //! If this string is shorter than the specified width, @a pad characters
+        //! are prepended to the string up to the specified width.
+        //! @param [in] width The required width of the result string.
+        //! @param [in] pad The character to prepend to the string.
+        //! @param [in] truncate If true and this string is longer than @a width,
+        //! the beginning of @a str is truncated. If false, this string is
+        //! never truncated, possibly resulting in a string longer than @a width.
+        //!
+        void justifyRight(size_type width, Char pad = SPACE, bool truncate = false);
+
+        //!
+        //! Return a right-justified (padded and optionally truncated) string.
+        //! If this string is shorter than the specified width, @a pad characters
+        //! are prepended to the string up to the specified width.
+        //! @param [in] width The required width of the result string.
+        //! @param [in] pad The character to prepend to the string.
+        //! @param [in] truncate If true and this string is longer than @a width,
+        //! the beginning of @a str is truncated. If false, this string is
+        //! never truncated, possibly resulting in a string longer than @a width.
+        //! @return The justified string.
+        //!
+        String toJustifiedRight(size_type width, Char pad = SPACE, bool truncate = false) const;
+
+        //!
+        //! Centered-justified (pad and optionally truncate) string.
+        //! If this string is shorter than the specified width, @a pad characters
+        //! are prepended and appended to the string up to the specified width.
+        //! @param [in] width The required width of the result string.
+        //! @param [in] pad The pad character for the string.
+        //! @param [in] truncate If true and this string is longer than @a width,
+        //! this string is truncated to @a width character. If false, this string is
+        //! never truncated, possibly resulting in a string longer than @a width.
+        //!
+        void justifyCentered(size_type width, Char pad = SPACE, bool truncate = false);
+
+        //!
+        //! Return a centered-justified (padded and optionally truncated) string.
+        //! If this string is shorter than the specified width, @a pad characters
+        //! are prepended and appended to the string up to the specified width.
+        //! @param [in] width The required width of the result string.
+        //! @param [in] pad The pad character for the string.
+        //! @param [in] truncate If true and this string is longer than @a width,
+        //! this string is truncated to @a width character. If false, this string is
+        //! never truncated, possibly resulting in a string longer than @a width.
+        //! @return The justified string.
+        //!
+        String toJustifiedCentered(size_type width, Char pad = SPACE, bool truncate = false) const;
+
+        //!
+        //! Justify string, pad in the middle.
+        //! If the this string and @a right components are collectively shorter than
+        //! the specified width, @a pad characters are inserted between @a left
+        //! and @a right, up to the specified width.
+        //! @param [in] right The right part of the string to justify. This string is used as left part.
+        //! @param [in] width The required width of the result string.
+        //! @param [in] pad The character to insert between the two parts.
+        //!
+        void justify(const String& right, size_type width, Char pad = SPACE);
+
+        //!
+        //! Return a justified string, pad in the middle.
+        //! If the this string and @a right components are collectively shorter than
+        //! the specified width, @a pad characters are inserted between @a left
+        //! and @a right, up to the specified width.
+        //! @param [in] right The right part of the string to justify. This string is used as left part.
+        //! @param [in] width The required width of the result string.
+        //! @param [in] pad The character to insert between the two parts.
+        //! @return The justified string.
+        //!
+        String toJustified(const String& right, size_type width, Char pad = SPACE) const;
+
+        //!
+        //! Format a boolean value as "yes" or "no".
+        //! @param [in] b A boolean value.
+        //! @return "yes" is @a b is true, "no" otherwise.
+        //!
+        static String YesNo(bool b);
+
+        //!
+        //! Format a boolean value as "true" or "false".
+        //! @param [in] b A boolean value.
+        //! @return "true" is @a b is true, "false" otherwise.
+        //!
+        static String TrueFalse(bool b);
+
+        //!
+        //! Format a boolean value as "on" or "off".
+        //! @param [in] b A boolean value.
+        //! @return "on" is @a b is true, "off" otherwise.
+        //!
+        static String OnOff(bool b);
+
+        //!
+        //! Check if two strings are identical, case-insensitive and ignoring blanks
+        //! @param [in] other Other string to compare.
+        //! @return True if this string and @a other are "similar", ie. identical, case-insensitive and ignoring blanks.
+        //!
+        bool similar(const String& other) const;
+
+        //!
+        //! Check if two strings are identical, case-insensitive and ignoring blanks
+        //! @param [in] addr Address of second string in UTF-8 representation.
+        //! @param [in] size Size in bytes of second string.
+        //! @return True if the strings are "similar", ie. identical, case-insensitive and ignoring blanks
+        //!
+        bool similar(const void* addr, size_type size) const;
+
+        //!
+        //! Check if a container of strings contains something similar to this string.
+        //! @tparam CONTAINER A container class of ts::String as defined by the C++ Standard Template Library (STL).
+        //! @param [in] container A container of ts::String.
+        //! @return True if @a container contains a string similar to this string.
+        //! @see similar()
+        //!
+        template <class CONTAINER>
+        bool containSimilar(const CONTAINER& container) const;
+
+        //!
+        //! Locate into a map an element with a similar string.
+        //! @tparam CONTAINER A map container class using ts::String as key.
+        //! @param [in] container A map container with ts::String keys.
+        //! @return An iterator to the first element of @a container with a key value
+        //! which is similar to this string according to similar(). Return @a container.end()
+        //! if not found.
+        //! @see similar()
+        //!
+        template <class CONTAINER>
+        typename CONTAINER::const_iterator findSimilar(const CONTAINER& container);
 
         //
         // On Windows, all methods which take 'npos' as default argument need to be overwritten
