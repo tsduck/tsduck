@@ -325,6 +325,18 @@ bool ts::CharSelfTest()
 // Character case conversions.
 //----------------------------------------------------------------------------
 
+bool ts::IsLower(Char c)
+{
+    // If the standard function says not lower, check if it is a known lowercase for us.
+    return std::iswlower(wint_t(c)) != 0 || SearchUpperLower(c, &UpperLower::lower) != 0;
+}
+
+bool ts::IsUpper(Char c)
+{
+    // If the standard function says not upper, check if it is a known uppercase for us.
+    return std::iswupper(wint_t(c)) != 0 || SearchUpperLower(c, &UpperLower::upper) != 0;
+}
+
 ts::Char ts::ToLower(Char c)
 {
     const Char result = Char(std::towlower(wint_t(c)));
