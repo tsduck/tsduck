@@ -69,7 +69,7 @@ void ts::TablesDisplayArgs::addHelp(Args& args) const
         "      Default private data specifier. This option is meaningful only when the\n"
         "      signalization is incorrect, when private descriptors appear in tables\n"
         "      without a preceding private_data_specifier_descriptor. The specified\n"
-        "      value is used as private data specified to interpret private descriptors.\n"
+        "      value is used as private data specifier to interpret private descriptors.\n"
         "      The PDS value can be an integer or one of (not case-sensitive):\n"
         "      " + PrivateDataSpecifierEnum.nameList() + ".\n"
         "\n"
