@@ -144,15 +144,15 @@ bool ts::String::operator==(const char* other) const
 void ts::String::trim(bool leading, bool trailing)
 {
     if (trailing) {
-        size_t index = length();
+        size_type index = length();
         while (index > 0 && IsSpace((*this)[index-1])) {
             index--;
         }
         erase(index);
     }
     if (leading) {
-        size_t index = 0;
-        const size_t len = length();
+        size_type index = 0;
+        const size_type len = length();
         while (index < len && IsSpace((*this)[index])) {
             index++;
         }
@@ -174,16 +174,16 @@ ts::String ts::String::toTrimmed(bool leading, bool trailing) const
 
 void ts::String::convertToLower()
 {
-    const size_t len = size();
-    for (size_t i = 0; i < len; ++i) {
+    const size_type len = size();
+    for (size_type i = 0; i < len; ++i) {
         (*this)[i] = ToLower((*this)[i]);
     }
 }
 
 void ts::String::convertToUpper()
 {
-    const size_t len = size();
-    for (size_t i = 0; i < len; ++i) {
+    const size_type len = size();
+    for (size_type i = 0; i < len; ++i) {
         (*this)[i] = ToUpper((*this)[i]);
     }
 }
@@ -209,19 +209,31 @@ ts::String ts::String::toUpper() const
 
 void ts::String::remove(const String& substr)
 {
-    const size_t len = substr.size();
+    const size_type len = substr.size();
     if (len > 0) {
-        size_t index;
+        size_type index;
         while (!empty() && (index = find(substr)) != npos) {
             erase(index, len);
         }
     }
 }
 
+void ts::String::remove(Char c)
+{
+    erase(std::remove(begin(), end(), c), end());
+}
+
 ts::String ts::String::toRemoved(const String& substr) const
 {
     String result(*this);
     result.remove(substr);
+    return result;
+}
+
+ts::String ts::String::toRemoved(Char c) const
+{
+    String result(*this);
+    result.remove(c);
     return result;
 }
 
@@ -234,8 +246,8 @@ void ts::String::substitute(const String& value, const String& replacement)
 {
     // Filter out degenerated cases.
     if (!empty() && !value.empty()) {
-        size_t start = 0;
-        size_t index;
+        size_type start = 0;
+        size_type index;
         while ((index = find(value, start)) != npos) {
             replace(index, value.length(), replacement);
             start = index + replacement.length();
@@ -248,4 +260,245 @@ ts::String ts::String::toSubstituted(const String& value, const String& replacem
     String result(*this);
     result.substitute(value, replacement);
     return result;
+}
+
+
+//----------------------------------------------------------------------------
+// Prefix / suffix checking.
+//----------------------------------------------------------------------------
+
+void ts::String::removePrefix(const String& prefix, CaseSensitivity cs)
+{
+    if (startWith(prefix, cs)) {
+        erase(0, prefix.length());
+    }
+}
+
+void ts::String::removeSuffix(const String& suffix, CaseSensitivity cs)
+{
+    if (endWith(suffix, cs)) {
+        assert(length() >= suffix.length());
+        erase(length() - suffix.length());
+    }
+}
+
+ts::String ts::String::toRemovedPrefix(const String& prefix, CaseSensitivity cs) const
+{
+    String result(*this);
+    result.removePrefix(prefix, cs);
+    return result;
+}
+
+ts::String ts::String::toRemovedSuffix(const String& suffix, CaseSensitivity cs) const
+{
+    String result(*this);
+    result.removeSuffix(suffix, cs);
+    return result;
+}
+
+bool ts::String::startWith(const String& prefix, CaseSensitivity cs) const
+{
+    const size_type len = length();
+    const size_type sublen = prefix.length();
+
+    if (len < sublen) {
+        return false;
+    }
+
+    switch (cs) {
+        case CASE_SENSITIVE: {
+            return compare(0, sublen, prefix) == 0;
+        }
+        case CASE_INSENSITIVE: {
+            for (size_type i = 0; i < sublen; ++i) {
+                if (ToLower(at(i)) != ToLower(prefix.at(i))) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        default: {
+            assert(false);
+            return false;
+        }
+    }
+}
+
+bool ts::String::endWith(const String& suffix, CaseSensitivity cs) const
+{
+    size_type iString = length();
+    size_type iSuffix = suffix.length();
+
+    if (iString < iSuffix) {
+        return false;
+    }
+
+    switch (cs) {
+        case CASE_SENSITIVE: {
+            return compare(iString - iSuffix, iSuffix, suffix) == 0;
+        }
+        case CASE_INSENSITIVE: {
+            while (iSuffix > 0) {
+                --iSuffix;
+                --iString;
+                if (ToLower(at(iString)) != ToLower(suffix.at(iSuffix))) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        default: {
+            assert(false);
+            return false;
+        }
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Left-justify (pad and optionally truncate) string.
+//----------------------------------------------------------------------------
+
+void ts::String::justifyLeft(size_type width, Char pad, bool truncate)
+{
+    const size_type len = length();
+    if (truncate && len > width) {
+        erase(width);
+    }
+    else if (len < width) {
+        append(width - len, pad);
+    }
+}
+
+ts::String ts::String::toJustifiedLeft(size_type width, Char pad, bool truncate) const
+{
+    String result(*this);
+    result.justifyLeft(width, pad, truncate);
+    return result;
+}
+
+
+//----------------------------------------------------------------------------
+// Right-justified (pad and optionally truncate) string.
+//----------------------------------------------------------------------------
+
+void ts::String::justifyRight(size_type width, Char pad, bool truncate)
+{
+    const size_type len = length();
+    if (truncate && len > width) {
+        erase(0, len - width);
+    }
+    else if (len < width) {
+        insert(0, width - len, pad);
+    }
+}
+
+ts::String ts::String::toJustifiedRight(size_type width, Char pad, bool truncate) const
+{
+    String result(*this);
+    result.justifyRight(width, pad, truncate);
+    return result;
+}
+
+
+//----------------------------------------------------------------------------
+// Centered-justified (pad and optionally truncate) string.
+//----------------------------------------------------------------------------
+
+void ts::String::justifyCentered(size_type width, Char pad, bool truncate)
+{
+    const size_type len = length();
+    if (truncate && len > width) {
+        erase(width);
+    }
+    else if (len < width) {
+        const size_type leftSize = (width - len) / 2;
+        const size_type rightSize = width - len - leftSize;
+        insert(0, leftSize, pad);
+        append(rightSize, pad);
+    }
+}
+
+ts::String ts::String::toJustifiedCentered(size_type width, Char pad, bool truncate) const
+{
+    String result(*this);
+    result.justifyCentered(width, pad, truncate);
+    return result;
+}
+
+
+//----------------------------------------------------------------------------
+// Justify string, pad in the middle.
+//----------------------------------------------------------------------------
+
+void ts::String::justify(const String& right, size_type width, Char pad)
+{
+    const size_type len = length() + right.length();
+    if (len < width) {
+        append(width - len, pad);
+    }
+    append(right);
+}
+
+ts::String ts::String::toJustified(const String& right, size_type width, Char pad) const
+{
+    String result(*this);
+    result.justify(right, width, pad);
+    return result;
+}
+
+
+//----------------------------------------------------------------------------
+// Format a boolean value in various standard representation.
+//----------------------------------------------------------------------------
+
+ts::String ts::String::YesNo(bool b)
+{
+    return FromUTF8(b ? "yes" : "no");
+}
+
+ts::String ts::String::TrueFalse(bool b)
+{
+    return FromUTF8(b ? "true" : "false");
+}
+
+ts::String ts::String::OnOff(bool b)
+{
+    return FromUTF8(b ? "on" : "off");
+}
+
+
+//----------------------------------------------------------------------------
+// Check if two strings are identical, case-insensitive and ignoring blanks
+//----------------------------------------------------------------------------
+
+bool ts::String::similar(const String& other) const
+{
+    const size_type alen = length();
+    const size_type blen = other.length();
+    size_type ai = 0;
+    size_type bi = 0;
+
+    for (;;) {
+        // Skip spaces
+        while (ai < alen && IsSpace(at(ai))) {
+            ai++;
+        }
+        while (bi < blen && IsSpace(other.at(bi))) {
+            bi++;
+        }
+        if (ai >= alen && bi >= blen) {
+            return true;
+        }
+        if (ai >= alen || bi >= blen || ToLower(at(ai)) != ToLower(other.at(bi))) {
+            return false;
+        }
+        ai++;
+        bi++;
+    }
+}
+
+bool ts::String::similar(const void* addr, size_type size) const
+{
+    return addr != 0 && similar(FromUTF8(reinterpret_cast<const char*>(addr), size));
 }

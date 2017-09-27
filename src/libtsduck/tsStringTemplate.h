@@ -181,3 +181,34 @@ ts::String ts::String::join(ITERATOR begin, ITERATOR end, const String& separato
     }
     return res;
 }
+
+
+//----------------------------------------------------------------------------
+// Check if a container of strings contains something similar to this string.
+//----------------------------------------------------------------------------
+
+template <class CONTAINER>
+bool ts::String::containSimilar(const CONTAINER& container) const
+{
+    for (typename CONTAINER::const_iterator it = container.begin(); it != container.end(); ++it) {
+        if (similar(*it)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+
+//----------------------------------------------------------------------------
+// Locate into a map an element with a similar string.
+//----------------------------------------------------------------------------
+
+template <class CONTAINER>
+typename CONTAINER::const_iterator ts::String::findSimilar(const CONTAINER& container)
+{
+    typename CONTAINER::const_iterator it = container.begin();
+    while (it != container.end() && !similar(it->first)) {
+        ++it;
+    }
+    return it;
+}
