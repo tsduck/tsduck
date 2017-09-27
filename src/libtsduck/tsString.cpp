@@ -123,6 +123,21 @@ std::string ts::String::toUTF8() const
 
 
 //----------------------------------------------------------------------------
+// Comparison operator with UTF-8 strings.
+//----------------------------------------------------------------------------
+
+bool ts::String::operator==(const std::string& other) const
+{
+    return operator==(String(other));
+}
+
+bool ts::String::operator==(const char* other) const
+{
+    return other != 0 && operator==(String(other));
+}
+
+
+//----------------------------------------------------------------------------
 // Trim leading & trailing spaces in the string
 //----------------------------------------------------------------------------
 
@@ -145,7 +160,7 @@ void ts::String::trim(bool leading, bool trailing)
     }
 }
 
-ts::String ts::String::trimmed(bool leading, bool trailing) const
+ts::String ts::String::toTrimmed(bool leading, bool trailing) const
 {
     String result(*this);
     result.trim(leading, trailing);
@@ -154,15 +169,83 @@ ts::String ts::String::trimmed(bool leading, bool trailing) const
 
 
 //----------------------------------------------------------------------------
-// Comparison operator with UTF-8 strings.
+// Return a lower/upper-case version of the string.
 //----------------------------------------------------------------------------
 
-bool ts::String::operator==(const std::string& other) const
+void ts::String::convertToLower()
 {
-    return operator==(String(other));
+    const size_t len = size();
+    for (size_t i = 0; i < len; ++i) {
+        (*this)[i] = ToLower((*this)[i]);
+    }
 }
 
-bool ts::String::operator==(const char* other) const
+void ts::String::convertToUpper()
 {
-    return other != 0 && operator==(String(other));
+    const size_t len = size();
+    for (size_t i = 0; i < len; ++i) {
+        (*this)[i] = ToUpper((*this)[i]);
+    }
+}
+
+ts::String ts::String::toLower() const
+{
+    String result(*this);
+    result.convertToLower();
+    return result;
+}
+
+ts::String ts::String::toUpper() const
+{
+    String result(*this);
+    result.convertToUpper();
+    return result;
+}
+
+
+//----------------------------------------------------------------------------
+// Remove all occurences of a substring.
+//----------------------------------------------------------------------------
+
+void ts::String::remove(const String& substr)
+{
+    const size_t len = substr.size();
+    if (len > 0) {
+        size_t index;
+        while (!empty() && (index = find(substr)) != npos) {
+            erase(index, len);
+        }
+    }
+}
+
+ts::String ts::String::toRemoved(const String& substr) const
+{
+    String result(*this);
+    result.remove(substr);
+    return result;
+}
+
+
+//----------------------------------------------------------------------------
+// Substitute all occurences of a string with another one.
+//----------------------------------------------------------------------------
+
+void ts::String::substitute(const String& value, const String& replacement)
+{
+    // Filter out degenerated cases.
+    if (!empty() && !value.empty()) {
+        size_t start = 0;
+        size_t index;
+        while ((index = find(value, start)) != npos) {
+            replace(index, value.length(), replacement);
+            start = index + replacement.length();
+        }
+    }
+}
+
+ts::String ts::String::toSubstituted(const String& value, const String& replacement) const
+{
+    String result(*this);
+    result.substitute(value, replacement);
+    return result;
 }
