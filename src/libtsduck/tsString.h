@@ -96,14 +96,6 @@ namespace ts {
         //!
         String(const SuperClass& other) :
             SuperClass(other) {}
-            
-        //!
-        //! Copy constructor using an allocator.
-        //! @param [in] other Other instance to copy.
-        //! @param [in] alloc Allocator.
-        //!
-        String(const SuperClass& other, const allocator_type& alloc) :
-            SuperClass(other, alloc) {}
 
         //!
         //! Move constructor.
@@ -111,14 +103,6 @@ namespace ts {
         //!
         String(SuperClass&& other) noexcept :
             SuperClass(other) {}
-
-        //!
-        //! Move constructor using an allocator.
-        //! @param [in,out] other Other instance to move. Upon return, @a other is left in valid, but unspecified state.
-        //! @param [in] alloc Allocator.
-        //!
-        String(SuperClass&& other, const allocator_type& alloc) :
-            SuperClass(other, alloc) {}
 
         //!
         //! Constructor using a repetition of the same character.
