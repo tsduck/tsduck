@@ -128,16 +128,6 @@ namespace ts {
         //!
         String(size_type count, Char ch, const allocator_type& alloc = allocator_type()) :
             SuperClass(count, ch, alloc) {}
-        
-        //!
-        //! Constructor using a substring.
-        //! The object receives the substring @a other from @a pos to end of string.
-        //! @param [in] other Other instance to partially copy.
-        //! @param [in] pos Initial position to copy in @a other.
-        //! @param [in] alloc Allocator.
-        //!
-        String(const SuperClass& other, size_type pos, const allocator_type& alloc = allocator_type()) :
-            SuperClass(other, pos, alloc) {}
 
         //!
         //! Constructor using a substring.

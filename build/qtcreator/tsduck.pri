@@ -73,6 +73,7 @@ linux|mingw {
 linux {
     QMAKE_CXXFLAGS += -I$$SRCROOT/libtsduck/linux -I/usr/include/PCSC
     INCLUDEPATH += $$SRCROOT/libtsduck/linux
+    LIBS += -lrt -ldl
 }
 mac {
     QMAKE_CXXFLAGS_WARN_ON += -Wno-unused-command-line-argument
