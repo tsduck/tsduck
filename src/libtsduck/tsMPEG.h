@@ -134,6 +134,17 @@ namespace ts {
     }
 
     //!
+    //! Compute the bitrate from a number of packets transmitted during a given duration in milliseconds.
+    //! @param [in] packets Number of packets during @a duration milliseconds.
+    //! @param [in] duration Number of milliseconds.
+    //! @return TS bitrate in bits/second, based on 188-byte packets.
+    //!
+    TSDUCKDLL inline BitRate PacketBitRate(PacketCounter packets, MilliSecond duration)
+    {
+        return duration == 0 ? 0 : BitRate((packets * 8 * PKT_SIZE * MilliSecPerSec) / duration);
+    }
+
+    //!
     //! Compute the minimum number of TS packets required to transport a section.
     //! @param [in] section_size Total section size in bytes.
     //! @return Number of packets required for the section.

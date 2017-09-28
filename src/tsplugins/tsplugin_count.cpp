@@ -288,10 +288,10 @@ ts::ProcessorPlugin::Status ts::CountPlugin::processPacket(TSPacket& pkt, bool& 
             BitRate counted = 0;
             BitRate total = 0;
             if (duration > 0) {
-                counted = ((now.counted_packets - _last_report.counted_packets) * 8 * PKT_SIZE * MilliSecPerSec) / duration;
-                total = ((now.total_packets - _last_report.total_packets) * 8 * PKT_SIZE * MilliSecPerSec) / duration;
+                counted = PacketBitRate(now.counted_packets - _last_report.counted_packets, duration);
+                total = PacketBitRate(now.total_packets - _last_report.total_packets, duration);
             }
-            const std::string sTime(std::string(Time::CurrentLocalTime()));
+            const std::string sTime(Time::CurrentLocalTime());
             const std::string sCountedPackets(Decimal(now.counted_packets));
             const std::string sCountedBitrate(Decimal(counted));
             const std::string sTotalPackets(Decimal(now.total_packets));
