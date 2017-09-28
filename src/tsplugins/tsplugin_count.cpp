@@ -33,6 +33,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsPlugin.h"
+#include "tsTime.h"
 #include "tsDecimal.h"
 #include "tsMemoryUtils.h"
 TSDUCK_SOURCE;
@@ -47,25 +48,38 @@ namespace ts {
     {
     public:
         // Implementation of plugin API
-        CountPlugin (TSP*);
+        CountPlugin(TSP*);
         virtual bool start();
         virtual bool stop();
         virtual BitRate getBitrate() {return 0;}
-        virtual Status processPacket (TSPacket&, bool&, bool&);
+        virtual Status processPacket(TSPacket&, bool&, bool&);
 
     private:
-        std::ofstream _outfile;            // User-specified output file
-        bool          _negate;             // Negate filter (exclude selected packets)
-        PIDSet        _pids;               // PID values to filter
-        bool          _brief_report;       // Display biref report, values but not comments
-        bool          _report_all;         // Report packet index and PID of each packet
-        bool          _report_summary;     // Report summary
-        bool          _report_total;       // Report total of all PIDs
-        PacketCounter _current_pkt;        // Current TS packet number
-        PacketCounter _counters [PID_MAX]; // Packet counter per PID
+        // This structure is used at each --interval.
+        struct IntervalReport
+        {
+            Time          start;            // Interval start time in UTC.
+            PacketCounter counted_packets;  // Total counted packets.
+            PacketCounter total_packets;    // Total TS packets.
+
+            // Constructor.
+            IntervalReport() : start(), counted_packets(0), total_packets(0) {}
+        };
+
+        std::ofstream  _outfile;            // User-specified output file
+        bool           _negate;             // Negate filter (exclude selected packets)
+        PIDSet         _pids;               // PID values to filter
+        bool           _brief_report;       // Display biref report, values but not comments
+        bool           _report_all;         // Report packet index and PID of each packet
+        bool           _report_summary;     // Report summary
+        bool           _report_total;       // Report total of all PIDs
+        PacketCounter  _current_pkt;        // Current TS packet number
+        PacketCounter  _report_interval;    // If non-zero, report time-stamp at this packet interval
+        IntervalReport _last_report;        // Last report content
+        PacketCounter  _counters[PID_MAX];  // Packet counter per PID
 
         // Report a line
-        void report (const char*, ...) TS_PRINTF_FORMAT (2, 3);
+        void report(const char*, ...) TS_PRINTF_FORMAT(2, 3);
 
         // Inaccessible operations
         CountPlugin() = delete;
@@ -92,58 +106,66 @@ ts::CountPlugin::CountPlugin (TSP* tsp_) :
     _report_summary(false),
     _report_total(false),
     _current_pkt(0),
+    _report_interval(0),
+    _last_report(),
     _counters()
 {
-    option ("all",         'a');
-    option ("brief",       'b');
-    option ("negate",      'n');
-    option ("output-file", 'o', STRING);
-    option ("pid",         'p', PIDVAL, 0, UNLIMITED_COUNT);
-    option ("summary",     's');
-    option ("total",       't');
+    option("all",         'a');
+    option("brief",       'b');
+    option("interval",    'i', UINT32);
+    option("negate",      'n');
+    option("output-file", 'o', STRING);
+    option("pid",         'p', PIDVAL, 0, UNLIMITED_COUNT);
+    option("summary",     's');
+    option("total",       't');
 
-    setHelp ("Options:\n"
-             "\n"
-             "  -a\n"
-             "  --all\n"
-             "      Report packet index and PID for all packets from the selected PID's.\n"
-             "      By default, only a final summary is reported.\n"
-             "\n"
-             "  -b\n"
-             "  --brief\n"
-             "      Brief display. Report only the numerical values, not comment on their\n"
-             "      usage.\n"
-             "\n"
-             "  --help\n"
-             "      Display this help text.\n"
-             "\n"
-             "  -n\n"
-             "  --negate\n"
-             "      Negate the filter: specified PID's are excluded.\n"
-             "\n"
-             "  -o filename\n"
-             "  --output-file filename\n"
-             "      Specify the output file for reporting packet counters. By default, report\n"
-             "      on standard error using the tsp logging mechanism.\n"
-             "\n"
-             "  -p value\n"
-             "  --pid value\n"
-             "      PID filter: select packets with this PID value. Several -p or --pid\n"
-             "      options may be specified. By default, if --pid is not specified, all\n"
-             "      PID's are selected.\n"
-             "\n"
-             "  -s\n"
-             "  --summary\n"
-             "      Display a final summary of packet counts per PID. This is the default,\n"
-             "      unless --all or --total is specified, in which case the final summary is\n"
-             "      reported only if --summary is specified.\n"
-             "\n"
-             "  -t\n"
-             "  --total\n"
-             "      Display the total packet counts in all PID's.\n"
-             "\n"
-             "  --version\n"
-             "      Display the version number.\n");
+    setHelp("Options:\n"
+            "\n"
+            "  -a\n"
+            "  --all\n"
+            "      Report packet index and PID for all packets from the selected PID's.\n"
+            "      By default, only a final summary is reported.\n"
+            "\n"
+            "  -b\n"
+            "  --brief\n"
+            "      Brief display. Report only the numerical values, not comment on their\n"
+            "      usage.\n"
+            "\n"
+            "  --help\n"
+            "      Display this help text.\n"
+            "\n"
+            "  -i value\n"
+            "  --interval value\n"
+            "      Report a time-stamp and global packet count at regular intervals. The\n"
+            "      specified value is a number of packets.\n"
+            "\n"
+            "  -n\n"
+            "  --negate\n"
+            "      Negate the filter: specified PID's are excluded.\n"
+            "\n"
+            "  -o filename\n"
+            "  --output-file filename\n"
+            "      Specify the output file for reporting packet counters. By default, report\n"
+            "      on standard error using the tsp logging mechanism.\n"
+            "\n"
+            "  -p value\n"
+            "  --pid value\n"
+            "      PID filter: select packets with this PID value. Several -p or --pid\n"
+            "      options may be specified. By default, if --pid is not specified, all\n"
+            "      PID's are selected.\n"
+            "\n"
+            "  -s\n"
+            "  --summary\n"
+            "      Display a final summary of packet counts per PID. This is the default,\n"
+            "      unless --all or --total is specified, in which case the final summary is\n"
+            "      reported only if --summary is specified.\n"
+            "\n"
+            "  -t\n"
+            "  --total\n"
+            "      Display the total packet counts in all PID's.\n"
+            "\n"
+            "  --version\n"
+            "      Display the version number.\n");
 }
 
 
@@ -153,12 +175,13 @@ ts::CountPlugin::CountPlugin (TSP* tsp_) :
 
 bool ts::CountPlugin::start()
 {
-    _report_all = present ("all");
-    _report_total = present ("total");
-    _report_summary = (!_report_all && !_report_total) || present ("summary");
-    _brief_report = present ("brief");
-    _negate = present ("negate");
-    getPIDSet (_pids, "pid");
+    _report_all = present("all");
+    _report_total = present("total");
+    _report_summary = (!_report_all && !_report_total) || present("summary");
+    _brief_report = present("brief");
+    _negate = present("negate");
+    getIntValue(_report_interval, "interval");
+    getPIDSet(_pids, "pid");
 
     // By default, all PIDs are selected
     if (!present ("pid")) {
@@ -232,7 +255,7 @@ bool ts::CountPlugin::stop()
 // Packet processing method
 //----------------------------------------------------------------------------
 
-ts::ProcessorPlugin::Status ts::CountPlugin::processPacket (TSPacket& pkt, bool& flush, bool& bitrate_changed)
+ts::ProcessorPlugin::Status ts::CountPlugin::processPacket(TSPacket& pkt, bool& flush, bool& bitrate_changed)
 {
     // Check if the packet must be counted
     const PID pid = pkt.getPID();
@@ -241,15 +264,55 @@ ts::ProcessorPlugin::Status ts::CountPlugin::processPacket (TSPacket& pkt, bool&
         ok = !ok;
     }
 
+    // Process reporting intervals.
+    if (_report_interval > 0) {
+        if (_current_pkt == 0) {
+            // Set initial interval
+            _last_report.start = Time::CurrentUTC();
+            _last_report.counted_packets = 0;
+            _last_report.total_packets = 0;
+        }
+        else if (_current_pkt % _report_interval == 0) {
+            // It is time to produce a report.
+            // Get current state.
+            IntervalReport now;
+            now.start = Time::CurrentUTC();
+            now.total_packets = _current_pkt;
+            now.counted_packets = 0;
+            for (size_t p = 0; p < PID_MAX; p++) {
+                now.counted_packets += _counters[p];
+            }
+
+            // Compute bitrates.
+            const MilliSecond duration = now.start - _last_report.start;
+            BitRate counted = 0;
+            BitRate total = 0;
+            if (duration > 0) {
+                counted = ((now.counted_packets - _last_report.counted_packets) * 8 * PKT_SIZE * MilliSecPerSec) / duration;
+                total = ((now.total_packets - _last_report.total_packets) * 8 * PKT_SIZE * MilliSecPerSec) / duration;
+            }
+            const std::string sTime(std::string(Time::CurrentLocalTime()));
+            const std::string sCountedPackets(Decimal(now.counted_packets));
+            const std::string sCountedBitrate(Decimal(counted));
+            const std::string sTotalPackets(Decimal(now.total_packets));
+            const std::string sTotalBitrate(Decimal(total));
+            report("%s, counted: %s packets, %s b/s, total: %s packets, %s b/s",
+                   sTime.c_str(), sCountedPackets.c_str(), sCountedBitrate.c_str(), sTotalPackets.c_str(), sTotalBitrate.c_str());
+
+            // Save current report.
+            _last_report = now;
+        }
+    }
+
     // Report packets
     if (ok) {
         if (_report_all) {
             if (_brief_report) {
-                report ("%" FMT_INT64 "u %d", _current_pkt, int (pid));
+                report("%" FMT_INT64 "u %d", _current_pkt, int (pid));
             }
             else {
-                const std::string curpkt (Decimal (_current_pkt));
-                report ("Packet: %10s, PID: %4d (0x%04X)", curpkt.c_str(), int (pid), int (pid));
+                const std::string curpkt(Decimal(_current_pkt));
+                report("Packet: %10s, PID: %4d (0x%04X)", curpkt.c_str(), int (pid), int (pid));
             }
         }
         _counters[pid]++;

@@ -37,6 +37,9 @@
 #include "tsFormat.h"
 TSDUCK_SOURCE;
 
+// Linux: use the real-time clock.
+volatile bool ts::Monotonic::_useRealTimeClock = true;
+
 
 //----------------------------------------------------------------------------
 // Default constructor.
@@ -156,48 +159,56 @@ void ts::Monotonic::wait()
         throw MonotonicError(::GetLastError());
     }
 
-#elif defined(__mac)
+#elif defined(__unix)
 
-    // MacOS implementation.
-    // There is no clock_nanosleep on MacOS. We need to use a relative nanosleep which will be less precise.
+    // UNIX implementation. For Linux, we implement real-time and non-real-time clock.
+    // On other UNIX where there is no real-time clock (only tested on MacOS), we use
+    // a relative nanosleep which will be less precise.
 
-    for (;;) {
-        // Number of nanoseconds to wait for.
-        const NanoSecond nano = _value - Time::UnixRealTimeClockNanoSeconds();
+#if defined(__linux)
+    if (_useRealTimeClock) {
+        // Compute due time.
+        ::timespec due;
+        due.tv_sec = time_t(_value / NanoSecPerSec);
+        due.tv_nsec = long(_value % NanoSecPerSec);
 
-        // Exit when due time is over.
-        if (nano <= 0) {
-            break;
-        }
-
-        // Wait that number of nanoseconds.
-        ::timespec tspec;
-        tspec.tv_sec = time_t(nano / NanoSecPerSec);
-        tspec.tv_nsec = long(nano % NanoSecPerSec);
-        if (::nanosleep(&tspec, NULL) < 0 && errno != EINTR) {
-            // Actual error, not interrupted by a signal
-            throw MonotonicError("nanosleep error", errno);
+        // Loop on clock_nanosleep, ignoring signals
+        int status;
+        while ((status = ::clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &due, NULL)) != 0) {
+            if (status != EINTR) {
+                // Actual error, not interrupted by a signal
+                throw MonotonicError("clock_nanosleep error", errno);
+            }
         }
     }
+    else {
+#endif
+        // No real-time clock. Use a relative nanosleep which is precise.
+        // Used on MacOS all the time and on Linux after UseRealTimeClock(false).
+        for (;;) {
+            // Number of nanoseconds to wait for.
+            const NanoSecond nano = _value - Time::UnixRealTimeClockNanoSeconds();
+
+            // Exit when due time is over.
+            if (nano <= 0) {
+                break;
+            }
+
+            // Wait that number of nanoseconds.
+            ::timespec tspec;
+            tspec.tv_sec = time_t(nano / NanoSecPerSec);
+            tspec.tv_nsec = long(nano % NanoSecPerSec);
+            if (::nanosleep(&tspec, NULL) < 0 && errno != EINTR) {
+                // Actual error, not interrupted by a signal
+                throw MonotonicError("nanosleep error", errno);
+            }
+        }
+#if defined(__linux)
+    }
+#endif
 
 #else
-
-    // POSIX implementation
-
-    // Compute due time
-    ::timespec due;
-    due.tv_sec = time_t(_value / NanoSecPerSec);
-    due.tv_nsec = long(_value % NanoSecPerSec);
-
-    // Loop on clock_nanosleep, ignoring signals
-    int status;
-    while ((status = ::clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &due, NULL)) != 0) {
-        if (status != EINTR) {
-            // Actual error, not interrupted by a signal
-            throw MonotonicError("clock_nanosleep error", errno);
-        }
-    }
-
+    #error "Unimplemented operating system"
 #endif
 }
 

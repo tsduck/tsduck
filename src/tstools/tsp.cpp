@@ -38,6 +38,7 @@
 #include "tspProcessorExecutor.h"
 #include "tsAsyncReport.h"
 #include "tsSystemMonitor.h"
+#include "tsMonotonic.h"
 #include "tsResidentBuffer.h"
 #include "tsIPUtils.h"
 #include "tsDecimal.h"
@@ -110,6 +111,10 @@ int main (int argc, char *argv[])
     if (!ts::IPInitialize(CERR)) {
         return EXIT_FAILURE;
     }
+
+    // Disable real-time clock if requested.
+
+    ts::Monotonic::UseRealTimeClock(!opt.no_realtime);
 
     // Prevent from being killed when writing on broken pipes.
 

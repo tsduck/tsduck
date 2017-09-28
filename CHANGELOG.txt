@@ -7,6 +7,11 @@ Version (next)
 - Added option --default-pds to tspsi, tstables, tstabdump, plugin psi
   and plugin tabdump.
 
+- Added option --no-realtime-clock to tsp. To be used on virtual machines
+  running a Linux guest O/S when hangs occur, typically in plugin regulate.
+
+- Added option --interval to plugin count.
+
 - Removed command tsgentab and associated plugins. This command is now
   obsolete and has been superseded by the more general tstabcomp, the
   PSI/SI table compiler.

@@ -104,6 +104,7 @@ namespace ts {
             bool          list_proc;       //!< List processors.
             bool          monitor;         //!< Run a resource monitoring thread.
             bool          ignore_jt;       //!< Ignore "joint termination" options in plugins.
+            bool          no_realtime;     //!< Do not use the system real-time clock.
             size_t        bufsize;         //!< Buffer size.
             size_t        max_flush_pkt;   //!< Max processed packets before flush.
             size_t        max_input_pkt;   //!< Max packets per input operation.
