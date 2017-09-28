@@ -49,11 +49,11 @@ namespace ts {
     {
     public:
         // Implementation of plugin API
-        RegulatePlugin (TSP*);
+        RegulatePlugin(TSP*);
         virtual bool start();
         virtual bool stop() {return true;}
         virtual BitRate getBitrate() {return _cur_bitrate;}
-        virtual Status processPacket (TSPacket&, bool&, bool&);
+        virtual Status processPacket(TSPacket&, bool&, bool&);
 
     private:
         // Regulation state
@@ -75,7 +75,7 @@ namespace ts {
         void computeBurst();
 
         // Process one packet in a regulated burst. Wait at end of burst.
-        Status regulatePacket (bool& flush);
+        Status regulatePacket(bool& flush);
 
         // Inaccessible operations
         RegulatePlugin() = delete;
@@ -92,7 +92,7 @@ TSPLUGIN_DECLARE_PROCESSOR(ts::RegulatePlugin)
 // Constructor
 //----------------------------------------------------------------------------
 
-ts::RegulatePlugin::RegulatePlugin (TSP* tsp_) :
+ts::RegulatePlugin::RegulatePlugin(TSP* tsp_) :
     ProcessorPlugin(tsp_, "Regulate the TS packets flow to a specified bitrate.", "[options]"),
     _state(INITIAL),
     _opt_bitrate(0),
@@ -104,31 +104,31 @@ ts::RegulatePlugin::RegulatePlugin (TSP* tsp_) :
     _burst_duration(0),
     _burst_end()
 {
-    option ("bitrate",      'b', POSITIVE);
-    option ("packet-burst", 'p', POSITIVE);
+    option("bitrate",      'b', POSITIVE);
+    option("packet-burst", 'p', POSITIVE);
 
-    setHelp ("Regulate (slow down only) the TS packets flow according to a specified\n"
-             "bitrate. Useful to play a non-regulated input (such as a TS file) to a\n"
-             "non-regulated output device such as IP multicast.\n"
-             "\n"
-             "Options:\n"
-             "\n"
-             "  -b value\n"
-             "  --bitrate value\n"
-             "      Specify the bitrate in b/s. By default, use the \"input\" bitrate,\n"
-             "      typically resulting from the PCR analysis of the input file.\n"
-             "\n"
-             "  --help\n"
-             "      Display this help text.\n"
-             "\n"
-             "  -p value\n"
-             "  --packet-burst value\n"
-             "      Number of packets to burst at a time. Does not modify the average\n"
-             "      output bitrate but influence smoothing and CPU load. The default\n"
-             "      is " TS_STRINGIFY (DEF_PACKET_BURST) " packets.\n"
-             "\n"
-             "  --version\n"
-             "      Display the version number.\n");
+    setHelp("Regulate (slow down only) the TS packets flow according to a specified\n"
+            "bitrate. Useful to play a non-regulated input (such as a TS file) to a\n"
+            "non-regulated output device such as IP multicast.\n"
+            "\n"
+            "Options:\n"
+            "\n"
+            "  -b value\n"
+            "  --bitrate value\n"
+            "      Specify the bitrate in b/s. By default, use the \"input\" bitrate,\n"
+            "      typically resulting from the PCR analysis of the input file.\n"
+            "\n"
+            "  --help\n"
+            "      Display this help text.\n"
+            "\n"
+            "  -p value\n"
+            "  --packet-burst value\n"
+            "      Number of packets to burst at a time. Does not modify the average\n"
+            "      output bitrate but influence smoothing and CPU load. The default\n"
+            "      is " TS_STRINGIFY(DEF_PACKET_BURST) " packets.\n"
+            "\n"
+            "  --version\n"
+            "      Display the version number.\n");
 }
 
 
@@ -139,8 +139,8 @@ ts::RegulatePlugin::RegulatePlugin (TSP* tsp_) :
 bool ts::RegulatePlugin::start()
 {
     // Get command line arguments
-    _opt_bitrate = intValue<BitRate> ("bitrate", 0);
-    _opt_burst = intValue<PacketCounter> ("packet-burst", DEF_PACKET_BURST);
+    _opt_bitrate = intValue<BitRate>("bitrate", 0);
+    _opt_burst = intValue<PacketCounter>("packet-burst", DEF_PACKET_BURST);
 
     // Compute the minimum delay between two bursts, in nano-seconds.
     // This is a limitation of the operating system. If we try to use
@@ -149,9 +149,9 @@ bool ts::RegulatePlugin::start()
     // milliseconds as time precision and we keep what the operating
     // system gives.
 
-    _burst_min = Monotonic::SetPrecision (2000000); // 2 milliseconds in nanoseconds
+    _burst_min = Monotonic::SetPrecision(2000000); // 2 milliseconds in nanoseconds
 
-    tsp->log (Severity::Verbose, "minimum packet burst duration is " + Decimal (_burst_min) + " nano-seconds");
+    tsp->verbose("minimum packet burst duration is " + Decimal(_burst_min) + " nano-seconds");
 
     // Reset state
     _state = INITIAL;
@@ -175,7 +175,7 @@ void ts::RegulatePlugin::computeBurst()
     _burst_pkt_max = _opt_burst;
 
     // Compute corresponding duration (in nano-seconds) between two bursts.
-    assert (_cur_bitrate > 0);
+    assert(_cur_bitrate > 0);
     _burst_duration = (NanoSecPerSec * PKT_SIZE * 8 * _burst_pkt_max) / _cur_bitrate;
 
     // If the result is too small for the time precision of the operating
@@ -186,9 +186,7 @@ void ts::RegulatePlugin::computeBurst()
     }
 
     if (tsp->debug()) {
-        tsp->log (Severity::Debug, "new regulation, burst: " +
-                  Decimal (_burst_duration) + " nano-seconds, " +
-                  Decimal (_burst_pkt_max) + " packets");
+        tsp->debug("new regulation, burst: " + Decimal(_burst_duration) + " nano-seconds, " + Decimal(_burst_pkt_max) + " packets");
     }
 }
 
@@ -197,7 +195,7 @@ void ts::RegulatePlugin::computeBurst()
 // Process one packet in a regulated burst. Wait at end of burst.
 //----------------------------------------------------------------------------
 
-ts::ProcessorPlugin::Status ts::RegulatePlugin::regulatePacket (bool& flush)
+ts::ProcessorPlugin::Status ts::RegulatePlugin::regulatePacket(bool& flush)
 {
     if (_burst_pkt_cnt == 0 || --_burst_pkt_cnt == 0) {
         // End of current burst.
@@ -217,7 +215,7 @@ ts::ProcessorPlugin::Status ts::RegulatePlugin::regulatePacket (bool& flush)
 // Packet processing method
 //----------------------------------------------------------------------------
 
-ts::ProcessorPlugin::Status ts::RegulatePlugin::processPacket (TSPacket& pkt, bool& flush, bool& bitrate_changed)
+ts::ProcessorPlugin::Status ts::RegulatePlugin::processPacket(TSPacket& pkt, bool& flush, bool& bitrate_changed)
 {
     // Compute old and new bitrate (most often the same)
 
@@ -227,10 +225,10 @@ ts::ProcessorPlugin::Status ts::RegulatePlugin::processPacket (TSPacket& pkt, bo
     if (tsp->verbose() && (_cur_bitrate != old_bitrate || _state == INITIAL)) {
         // Initial state or new bitrate
         if (_cur_bitrate == 0) {
-            tsp->verbose ("unknown bitrate, cannot regulate.");
+            tsp->verbose("unknown bitrate, cannot regulate.");
         }
         else {
-            tsp->log (Severity::Verbose, "regulated at bitrate " + Decimal (_cur_bitrate) + " b/s");
+            tsp->verbose("regulated at bitrate " + Decimal(_cur_bitrate) + " b/s");
         }
     }
 
@@ -258,7 +256,7 @@ ts::ProcessorPlugin::Status ts::RegulatePlugin::processPacket (TSPacket& pkt, bo
                 _burst_pkt_cnt = _burst_pkt_max;
                 // Transmit first packet of burst
                 bitrate_changed = true;
-                return regulatePacket (flush);
+                return regulatePacket(flush);
             }
             break;
         }
@@ -290,7 +288,7 @@ ts::ProcessorPlugin::Status ts::RegulatePlugin::processPacket (TSPacket& pkt, bo
             }
             else if (_cur_bitrate == old_bitrate) {
                 // Still the same bitrate, continue to burst
-                return regulatePacket (flush);
+                return regulatePacket(flush);
             }
             else {
                 // Got a new non-zero bitrate. Compute new burst.
@@ -318,7 +316,7 @@ ts::ProcessorPlugin::Status ts::RegulatePlugin::processPacket (TSPacket& pkt, bo
                 }
                 // Report that the bitrate has changed
                 bitrate_changed = true;
-                return regulatePacket (flush);
+                return regulatePacket(flush);
             }
             break;
         }
@@ -329,7 +327,6 @@ ts::ProcessorPlugin::Status ts::RegulatePlugin::processPacket (TSPacket& pkt, bo
     }
 
     // Should never get there...
-
-    tsp->error ("internal error, invalid regulator state");
+    tsp->error("internal error, invalid regulator state");
     return TSP_END;
 }

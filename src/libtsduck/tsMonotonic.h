@@ -182,9 +182,40 @@ namespace ts {
         //!
         static NanoSecond SetPrecision(const NanoSecond& precision);
 
+        //!
+        //! This static method requests or disables the usage of the system real-time clock.
+        //!
+        //! This method is meaningful on Linux systems only. It is ignored on Windows and MacOS.
+        //!
+        //! On Linux systems, there are two kinds of clocks, normal ones and real-time ones.
+        //! By default, the real-time clock is used. However, it has been noted that on some
+        //! platforms (namely virtual machines), the real-time clock is broken. The symptom
+        //! is usually a hang on waiting for timers. To avoid this, disable the real-time clock;
+        //! the normal clock will be used.
+        //!
+        //! @param [in] use When false, the real-time clock is disabled.
+        //!
+        static void UseRealTimeClock(bool use)
+        {
+            _useRealTimeClock = use;
+        }
+
+        //!
+        //! This static method reports if the system real-time clock is used.
+        //! @return True if the system real-time clock is used.
+        //! @see UseRealTimeClock()
+        //!
+        static bool RealTimeClockInUse()
+        {
+            return _useRealTimeClock;
+        }
+
     private:
         // Monotonic clock value in system ticks
         int64_t _value;
+
+        // Linux: use the real-time clock.
+        static volatile bool _useRealTimeClock;
 
         // System-specific initialization
         void init();
