@@ -33,6 +33,7 @@
 
 #include "tsMonotonic.h"
 #include "tsSysUtils.h"
+#include "tsDecimal.h"
 #include "tsTime.h"
 #include "utestCppUnitTest.h"
 TSDUCK_SOURCE;
@@ -68,6 +69,11 @@ CPPUNIT_TEST_SUITE_REGISTRATION(MonotonicTest);
 // Test suite initialization method.
 void MonotonicTest::setUp()
 {
+    // Request 2 milliseconds as system time precision.
+    utest::Out() << "MonotonicTest: timer precision = "
+                 << ts::Decimal(ts::Monotonic::SetPrecision(2 * ts::NanoSecPerMilliSec))
+                 << " nano-sec."
+                 << std::endl;
 }
 
 // Test suite cleanup method.
@@ -91,12 +97,15 @@ void MonotonicTest::testArithmetic()
 
     m2 += 100; // nanoseconds
     CPPUNIT_ASSERT(m1 < m2);
+    CPPUNIT_ASSERT(m1 - m2 == -100);
 
     m2 -= 100; // nanoseconds
     CPPUNIT_ASSERT(m1 == m2);
+    CPPUNIT_ASSERT(m1 - m2 == 0);
 
     m2 -= 100; // nanoseconds
     CPPUNIT_ASSERT(m1 > m2);
+    CPPUNIT_ASSERT(m1 - m2 == 100);
 }
 
 void MonotonicTest::testSysWait()
@@ -129,6 +138,6 @@ void MonotonicTest::testWait()
 
     const ts::Time end(ts::Time::CurrentLocalTime());
 
-    CPPUNIT_ASSERT(end >= start + 100);
+    CPPUNIT_ASSERT(end >= start + 99); // system time is less precise than monotonic
     CPPUNIT_ASSERT(end < start + 130);
 }

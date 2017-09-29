@@ -40,7 +40,9 @@
 #include "tsGuardCondition.h"
 #include "tsGuard.h"
 #include "tsTime.h"
+#include "tsMonotonic.h"
 #include "tsSysUtils.h"
+#include "tsDecimal.h"
 #include "tsFormat.h"
 #include "utestCppUnitTest.h"
 TSDUCK_SOURCE;
@@ -82,6 +84,11 @@ CPPUNIT_TEST_SUITE_REGISTRATION(ThreadTest);
 // Test suite initialization method.
 void ThreadTest::setUp()
 {
+    // Request 2 milliseconds as system time precision.
+    utest::Out() << "MonotonicTest: timer precision = "
+                 << ts::Decimal(ts::Monotonic::SetPrecision(2 * ts::NanoSecPerMilliSec))
+                 << " nano-sec."
+                 << std::endl;
 }
 
 // Test suite cleanup method.
@@ -226,7 +233,7 @@ void ThreadTest::testDeleteWhenTerminated()
 }
 
 //
-// Test case: Check mutex recusion
+// Test case: Check mutex recursion
 //
 void ThreadTest::testMutexRecursion()
 {
@@ -247,7 +254,7 @@ void ThreadTest::testMutexRecursion()
 }
 
 //
-// Test case: Check mutex recusion
+// Test case: Check mutex timeout
 //
 namespace {
     class TestThreadMutexTimeout: public ts::Thread
@@ -302,8 +309,8 @@ void ThreadTest::testMutexTimeout()
     }
 
     // Now, the thread holds the mutex for 100 ms.
-    const ts::Time dueTime1(ts::Time::CurrentUTC() + 50);
-    const ts::Time dueTime2(ts::Time::CurrentUTC() + 100);
+    const ts::Time dueTime1(ts::Time::CurrentUTC() + 19); // include potential timer imprecision
+    const ts::Time dueTime2(ts::Time::CurrentUTC() + 99);
     CPPUNIT_ASSERT(!mutex.acquire(50));
     CPPUNIT_ASSERT(ts::Time::CurrentUTC() >= dueTime1);
     CPPUNIT_ASSERT(ts::Time::CurrentUTC() < dueTime2);
