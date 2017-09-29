@@ -69,13 +69,15 @@ namespace ts {
         NanoSecond    _burst_min;       // Minimum delay between two bursts (ns)
         NanoSecond    _burst_duration;  // Delay between two bursts (nano-seconds)
         Monotonic     _burst_end;       // End of current burst
+        Monotonic     _bitrate_start;   // Time of last bitrate change
+        PacketCounter _bitrate_pkt_cnt; // Passed packets since last bitrate change
 
         // Compute burst duration (_burst_duration and _burst_pkt_max), based on
         // required packets/burst (command line option) and current bitrate.
-        void computeBurst();
+        void handleNewBitrate();
 
         // Process one packet in a regulated burst. Wait at end of burst.
-        Status regulatePacket(bool& flush);
+        Status regulatePacket(bool& flush, bool smoothen);
 
         // Inaccessible operations
         RegulatePlugin() = delete;
@@ -102,7 +104,9 @@ ts::RegulatePlugin::RegulatePlugin(TSP* tsp_) :
     _burst_pkt_cnt(0),
     _burst_min(0),
     _burst_duration(0),
-    _burst_end()
+    _burst_end(),
+    _bitrate_start(),
+    _bitrate_pkt_cnt(0)
 {
     option("bitrate",      'b', POSITIVE);
     option("packet-burst", 'p', POSITIVE);
@@ -165,11 +169,10 @@ bool ts::RegulatePlugin::start()
 
 
 //----------------------------------------------------------------------------
-//  Compute burst duration (_burst_duration and _burst_pkt_max), based on
-//  required packets/burst (command line option) and current bitrate.
+// Handle bitrate change, compute burst duration.
 //----------------------------------------------------------------------------
 
-void ts::RegulatePlugin::computeBurst()
+void ts::RegulatePlugin::handleNewBitrate()
 {
     // Assume that the packets/burst is the one specified on the command line.
     _burst_pkt_max = _opt_burst;
@@ -188,6 +191,10 @@ void ts::RegulatePlugin::computeBurst()
     if (tsp->debug()) {
         tsp->debug("new regulation, burst: " + Decimal(_burst_duration) + " nano-seconds, " + Decimal(_burst_pkt_max) + " packets");
     }
+
+    // Register start of bitrate sequence.
+    _bitrate_pkt_cnt = 0;
+    _bitrate_start.getSystemTime();
 }
 
 
@@ -195,10 +202,25 @@ void ts::RegulatePlugin::computeBurst()
 // Process one packet in a regulated burst. Wait at end of burst.
 //----------------------------------------------------------------------------
 
-ts::ProcessorPlugin::Status ts::RegulatePlugin::regulatePacket(bool& flush)
+ts::ProcessorPlugin::Status ts::RegulatePlugin::regulatePacket(bool& flush, bool smoothen)
 {
-    if (_burst_pkt_cnt == 0 || --_burst_pkt_cnt == 0) {
-        // End of current burst.
+    // Check if end of current burst. Take care, _burst_pkt_cnt may be already zero.
+    if ((_burst_pkt_cnt == 0 || --_burst_pkt_cnt == 0) && smoothen && _bitrate_pkt_cnt > 0) {
+        // In the middle of a sequence with same bitrate, we try to smoothen the regulation.
+        // Because of rounding, we tend to pass slightly less packets than requested.
+        // See if we need to add some packets from time to time.
+        Monotonic now;
+        now.getSystemTime();
+        // Number of packets we should have passed since beginning of sequence of this bitrate:
+        const PacketCounter expected = PacketDistance(_cur_bitrate, (now - _bitrate_start) / NanoSecPerMilliSec);
+        if (expected > _bitrate_pkt_cnt) {
+            // We should have passed more than we did, increase this burst size.
+            _burst_pkt_cnt = expected - _bitrate_pkt_cnt;
+        }
+    }
+
+    // Recheck end of burst, just in case we added some more packets to smoothen.
+    if (_burst_pkt_cnt == 0) {
         // Wait until scheduled end of burst.
         _burst_end.wait();
         // Restart a new burst, use monotonic time
@@ -207,6 +229,10 @@ ts::ProcessorPlugin::Status ts::RegulatePlugin::regulatePacket(bool& flush)
         // Flush current burst
         flush = true;
     }
+
+    // One more regulated packet at this bitrate.
+    _bitrate_pkt_cnt++;
+
     return TSP_OK;
 }
 
@@ -247,7 +273,7 @@ ts::ProcessorPlugin::Status ts::RegulatePlugin::processPacket(TSPacket& pkt, boo
                 // Got a non-zero bitrate -> start regulation
                 _state = REGULATED;
                 // Compute initial burst duration: first, compute burst time
-                computeBurst();
+                handleNewBitrate();
                 // Get initial clock
                 _burst_end.getSystemTime();
                 // Compute end time of next burst
@@ -256,7 +282,7 @@ ts::ProcessorPlugin::Status ts::RegulatePlugin::processPacket(TSPacket& pkt, boo
                 _burst_pkt_cnt = _burst_pkt_max;
                 // Transmit first packet of burst
                 bitrate_changed = true;
-                return regulatePacket(flush);
+                return regulatePacket(flush, false);
             }
             break;
         }
@@ -288,7 +314,7 @@ ts::ProcessorPlugin::Status ts::RegulatePlugin::processPacket(TSPacket& pkt, boo
             }
             else if (_cur_bitrate == old_bitrate) {
                 // Still the same bitrate, continue to burst
-                return regulatePacket(flush);
+                return regulatePacket(flush, true);
             }
             else {
                 // Got a new non-zero bitrate. Compute new burst.
@@ -298,7 +324,7 @@ ts::ProcessorPlugin::Status ts::RegulatePlugin::processPacket(TSPacket& pkt, boo
                 // previous burst duration and proportion of passed packets.
                 const NanoSecond elapsed = _burst_duration - (_burst_duration * _burst_pkt_max) / _burst_pkt_cnt;
                 // Compute new burst duration, based on new bitrate
-                computeBurst();
+                handleNewBitrate();
                 // Adjust end time of current burst. We want to close the current burst
                 // as soon as possible to restart based on new bitrate.
                 if (elapsed >= _burst_min) {
@@ -309,13 +335,14 @@ ts::ProcessorPlugin::Status ts::RegulatePlugin::processPacket(TSPacket& pkt, boo
                 }
                 else {
                     // We have to wait a bit more to respect the minimum delay.
-                    // Compute how many packets we should pass for the remaining time, based on the new bitrate.
+                    // Compute haw many packets we should pass for the remaining time,
+                    // based on the new bitrate.
                     _burst_end += _burst_min;
                     _burst_pkt_cnt = ((_burst_min - elapsed) * _cur_bitrate) / (NanoSecPerSec * PKT_SIZE * 8);
                 }
                 // Report that the bitrate has changed
                 bitrate_changed = true;
-                return regulatePacket(flush);
+                return regulatePacket(flush, false);
             }
             break;
         }
