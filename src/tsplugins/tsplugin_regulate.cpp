@@ -309,8 +309,7 @@ ts::ProcessorPlugin::Status ts::RegulatePlugin::processPacket(TSPacket& pkt, boo
                 }
                 else {
                     // We have to wait a bit more to respect the minimum delay.
-                    // Compute haw many packets we should pass for the remaining time,
-                    // based on the new bitrate.
+                    // Compute how many packets we should pass for the remaining time, based on the new bitrate.
                     _burst_end += _burst_min;
                     _burst_pkt_cnt = ((_burst_min - elapsed) * _cur_bitrate) / (NanoSecPerSec * PKT_SIZE * 8);
                 }
