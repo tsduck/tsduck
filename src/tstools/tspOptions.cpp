@@ -53,7 +53,6 @@ ts::tsp::Options::Options(int argc, char *argv[]) :
     list_proc(false),
     monitor(false),
     ignore_jt(false),
-    no_realtime(false),
     bufsize(0),
     max_flush_pkt(0),
     max_input_pkt(0),
@@ -74,7 +73,7 @@ ts::tsp::Options::Options(int argc, char *argv[]) :
     option("list-processors",          'l');
     option("max-flushed-packets",       0,  Args::POSITIVE);
     option("max-input-packets",         0,  Args::POSITIVE);
-    option("no-realtime-clock",         0);
+    option("no-realtime-clock",         0); // was a temporary workaround, now ignored
     option("monitor",                  'm');
     option("timed-log",                't');
     option("verbose",                  'v');
@@ -172,17 +171,6 @@ ts::tsp::Options::Options(int argc, char *argv[]) :
             "      Continuously monitor the system resources which are used by tsp.\n"
             "      This includes CPU load, virtual memory usage. Useful to verify the\n"
             "      stability of the application.\n"
-#if defined(__linux)
-            "\n"
-            "  --no-realtime-clock\n"
-            "      The option disables the usage of the system real-time clock on Linux\n"
-            "      systems. By default, clock_nanosleep() is used with a monotonic real-time\n"
-            "      clock. This gives the best precision. However, it has been noted that\n"
-            "      this clock is broken on some virtual machines because of issues in the\n"
-            "      underlying hypervisor. If you experience hangs on a virtual machine, try\n"
-            "      this option to disable the real-time clock. The precision is inferior\n"
-            "      but this may solve hang issues.\n"
-#endif
             "\n"
             "  -t\n"
             "  --timed-log\n"
@@ -254,7 +242,6 @@ ts::tsp::Options::Options(int argc, char *argv[]) :
     max_flush_pkt = intValue<size_t>("max-flushed-packets", DEF_MAX_FLUSH_PKT);
     max_input_pkt = intValue<size_t>("max-input-packets", 0);
     ignore_jt = present("ignore-joint-termination");
-    no_realtime = present("no-realtime-clock");
 
     if (present("add-input-stuffing")) {
         std::string stuff(value("add-input-stuffing"));

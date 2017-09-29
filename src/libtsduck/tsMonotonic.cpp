@@ -37,20 +37,15 @@
 #include "tsFormat.h"
 TSDUCK_SOURCE;
 
-// Linux: use the real-time clock.
-volatile bool ts::Monotonic::_useRealTimeClock = true;
-
 
 //----------------------------------------------------------------------------
 // Default constructor.
 //----------------------------------------------------------------------------
 
 ts::Monotonic::Monotonic() :
-    _value(0),
+    _value(0)
 #if defined(__windows)
-    _handle(INVALID_HANDLE_VALUE)
-#else
-    _jps(0)
+    , _handle(INVALID_HANDLE_VALUE)
 #endif
 {
     init();
@@ -62,11 +57,9 @@ ts::Monotonic::Monotonic() :
 //----------------------------------------------------------------------------
 
 ts::Monotonic::Monotonic(const Monotonic& t) :
-    _value(t._value),
+    _value(t._value)
 #if defined(__windows)
-    _handle(INVALID_HANDLE_VALUE)
-#else
-    _jps(0)
+    , _handle(INVALID_HANDLE_VALUE)
 #endif
 {
     init();
@@ -79,23 +72,10 @@ ts::Monotonic::Monotonic(const Monotonic& t) :
 
 void ts::Monotonic::init()
 {
-#if defined (__windows)
-
-    // Windows implementation
-
+#if defined(__windows)
     if ((_handle = ::CreateWaitableTimer(NULL, FALSE, NULL)) == NULL) {
         throw MonotonicError(::GetLastError());
     }
-
-#else
-
-    // POSIX implementation
-
-    _jps = sysconf(_SC_CLK_TCK); // jiffies per second
-    if (_jps <= 0) {
-        throw MonotonicError("system error: cannot get clock tick");
-    }
-
 #endif
 }
 
@@ -120,8 +100,6 @@ void ts::Monotonic::getSystemTime()
 {
 #if defined(__windows)
 
-    // Windows implementation
-
     // On Win32, a the FILETIME structure is binary-compatible with a 64-bit integer.
     union {
         ::FILETIME ft;
@@ -130,12 +108,20 @@ void ts::Monotonic::getSystemTime()
     ::GetSystemTimeAsFileTime(&result.ft);
     _value = result.i;
 
+#elif defined(__mac)
+
+    // On MacOS, there is no clock_nanosleep. We use a relative nanosleep.
+    // And nanosleep is always based on CLOCK_REALTIME.
+    _value = Time::UnixClockNanoSeconds(CLOCK_REALTIME);
+
+#elif defined(__unix)
+
+    // Use clock_nanosleep. We can choose the clock.
+    // The most appropriate one here is CLOCK_MONOTONIC.
+    _value = Time::UnixClockNanoSeconds(CLOCK_MONOTONIC);
+
 #else
-
-    // POSIX implementation
-
-    _value = Time::UnixRealTimeClockNanoSeconds();
-
+    #error "Unimplemented operating system"
 #endif
 }
 
@@ -159,53 +145,47 @@ void ts::Monotonic::wait()
         throw MonotonicError(::GetLastError());
     }
 
+#elif defined(__mac)
+
+    // MacOS implementation.
+    // No support for clock_nanosleep. Use a relative nanosleep which is less precise.
+
+    for (;;) {
+        // Number of nanoseconds to wait for.
+        const NanoSecond nano = _value - Time::UnixClockNanoSeconds(CLOCK_REALTIME);
+
+        // Exit when due time is over.
+        if (nano <= 0) {
+            break;
+        }
+
+        // Wait that number of nanoseconds.
+        ::timespec tspec;
+        tspec.tv_sec = time_t(nano / NanoSecPerSec);
+        tspec.tv_nsec = long(nano % NanoSecPerSec);
+        if (::nanosleep(&tspec, NULL) < 0 && errno != EINTR) {
+            // Actual error, not interrupted by a signal
+            throw MonotonicError("nanosleep error", errno);
+        }
+    }
+
 #elif defined(__unix)
 
-    // UNIX implementation. For Linux, we implement real-time and non-real-time clock.
-    // On other UNIX where there is no real-time clock (only tested on MacOS), we use
-    // a relative nanosleep which will be less precise.
+    // UNIX implementation with clock_nanosleep support.
 
-#if defined(__linux)
-    if (_useRealTimeClock) {
-        // Compute due time.
-        ::timespec due;
-        due.tv_sec = time_t(_value / NanoSecPerSec);
-        due.tv_nsec = long(_value % NanoSecPerSec);
+    // Compute due time.
+    ::timespec due;
+    due.tv_sec = time_t(_value / NanoSecPerSec);
+    due.tv_nsec = long(_value % NanoSecPerSec);
 
-        // Loop on clock_nanosleep, ignoring signals
-        int status;
-        while ((status = ::clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &due, NULL)) != 0) {
-            if (status != EINTR) {
-                // Actual error, not interrupted by a signal
-                throw MonotonicError("clock_nanosleep error", errno);
-            }
+    // Loop on clock_nanosleep, ignoring signals
+    int status;
+    while ((status = ::clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &due, NULL)) != 0) {
+        if (status != EINTR) {
+            // Actual error, not interrupted by a signal
+            throw MonotonicError("clock_nanosleep error", errno);
         }
     }
-    else {
-#endif
-        // No real-time clock. Use a relative nanosleep which is precise.
-        // Used on MacOS all the time and on Linux after UseRealTimeClock(false).
-        for (;;) {
-            // Number of nanoseconds to wait for.
-            const NanoSecond nano = _value - Time::UnixRealTimeClockNanoSeconds();
-
-            // Exit when due time is over.
-            if (nano <= 0) {
-                break;
-            }
-
-            // Wait that number of nanoseconds.
-            ::timespec tspec;
-            tspec.tv_sec = time_t(nano / NanoSecPerSec);
-            tspec.tv_nsec = long(nano % NanoSecPerSec);
-            if (::nanosleep(&tspec, NULL) < 0 && errno != EINTR) {
-                // Actual error, not interrupted by a signal
-                throw MonotonicError("nanosleep error", errno);
-            }
-        }
-#if defined(__linux)
-    }
-#endif
 
 #else
     #error "Unimplemented operating system"
@@ -258,13 +238,18 @@ ts::NanoSecond ts::Monotonic::SetPrecision(const NanoSecond& requested)
     // Return last good value in nanoseconds
     return 1000000 * NanoSecond(good);
 
-#else
+#elif defined(__unix)
 
     // POSIX implementation
 
     // The timer precision cannot be changed. Simply get the smallest delay.
-    Monotonic m; // constructor initializes _jps
-    return std::max(requested, NanoSecond(NanoSecPerSec / m._jps));
+    unsigned long jps = sysconf(_SC_CLK_TCK); // jiffies per second
+    if (jps <= 0) {
+        throw MonotonicError("system error: cannot get clock tick");
+    }
+    return std::max(requested, NanoSecond(NanoSecPerSec / jps));
 
+#else
+    #error "Unimplemented operating system"
 #endif
 }

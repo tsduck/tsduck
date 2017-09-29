@@ -112,10 +112,6 @@ int main (int argc, char *argv[])
         return EXIT_FAILURE;
     }
 
-    // Disable real-time clock if requested.
-
-    ts::Monotonic::UseRealTimeClock(!opt.no_realtime);
-
     // Prevent from being killed when writing on broken pipes.
 
     ts::IgnorePipeSignal();

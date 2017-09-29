@@ -315,12 +315,12 @@ ts::Time ts::Time::UnixTimeToUTC(const uint32_t t)
 
 #if defined(__unix)
 
-ts::NanoSecond ts::Time::UnixRealTimeClockNanoSeconds(const MilliSecond& delay)
+ts::NanoSecond ts::Time::UnixClockNanoSeconds(clockid_t clock, const MilliSecond& delay)
 {
-    // Get current time using the real-time clock.
+    // Get current time using the specified clock.
     // Minimum resolution is a nanosecond, but much more in fact.
     ::timespec result;
-    if (::clock_gettime(CLOCK_REALTIME, &result) != 0) {
+    if (::clock_gettime(clock, &result) != 0) {
         throw TimeError("clock_gettime error", errno);
     }
 
@@ -334,9 +334,9 @@ ts::NanoSecond ts::Time::UnixRealTimeClockNanoSeconds(const MilliSecond& delay)
     return (nanoseconds < Infinite - nsDelay) ? nanoseconds + nsDelay : Infinite;
 }
 
-void ts::Time::UnixRealTimeClock(::timespec& result, const MilliSecond& delay)
+void ts::Time::GetUnixClock(::timespec& result, clockid_t clock, const MilliSecond& delay)
 {
-    const NanoSecond nanoseconds = UnixRealTimeClockNanoSeconds(delay);
+    const NanoSecond nanoseconds = UnixClockNanoSeconds(clock, delay);
     result.tv_nsec = long(nanoseconds % NanoSecPerSec);
     result.tv_sec = time_t(nanoseconds / NanoSecPerSec);
 }

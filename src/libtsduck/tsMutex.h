@@ -89,8 +89,7 @@ namespace ts {
         //! the mutex, this mutex is automatically released.
         //!
         //! @param [in] timeout Maximum number of milliseconds to wait for the mutex.
-        //! @return True on success and false on error. When the timeout expires,
-        //! this is not an error and true is returned.
+        //! @return True on success and false on error or when the timeout expires.
         //!
         virtual bool acquire(MilliSecond timeout = Infinite);
 

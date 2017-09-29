@@ -168,14 +168,14 @@ bool ts::Mutex::acquire(MilliSecond timeout)
         // Mac implementation of POSIX does not include pthread_mutex_timedlock.
         // We have to fall back to the infamous method of polling :((
         // Timeout in absolute time:
-        const NanoSecond due = Time::UnixRealTimeClockNanoSeconds(timeout);
+        const NanoSecond due = Time::UnixClockNanoSeconds(CLOCK_REALTIME, timeout);
         for (;;) {
             // Poll once, try to lock.
             if (tryLock()) {
                 return true; // locked
             }
             // How many nanoseconds until due time:
-            NanoSecond remain = due - Time::UnixRealTimeClockNanoSeconds();
+            NanoSecond remain = due - Time::UnixClockNanoSeconds(CLOCK_REALTIME);
             if (remain <= 0) {
                 return false; // could not lock before timeout
             }
@@ -193,7 +193,7 @@ bool ts::Mutex::acquire(MilliSecond timeout)
         // Standard real-time POSIX implementation using pthread_mutex_timedlock.
         // Timeout absolute time as a struct timespec:
         ::timespec time;
-        Time::UnixRealTimeClock(time, timeout);
+        Time::GetUnixClock(time, CLOCK_REALTIME, timeout);
         // Timed lock:
         if ((error = ::pthread_mutex_timedlock(&_mutex, &time)) == 0) {
             return true; // success
