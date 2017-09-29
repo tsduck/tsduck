@@ -165,17 +165,20 @@ bool ts::Condition::wait (Mutex& mutex, MilliSecond timeout, bool& signaled)
 
 #else
 
+    int error = 0;
+
     // Convert infinite timeout into non-timed call.
     if (timeout == Infinite) {
-        return ::pthread_cond_wait(&_cond, &mutex._mutex) == 0;
+        error = ::pthread_cond_wait(&_cond, &mutex._mutex);
+        // If there is no error, the condition was signaled.
+        return signaled = error == 0;
     }
 
     // Get current time + timeout using the real-time clock.
     ::timespec time;
-    Time::UnixRealTimeClock(time, timeout);
+    Time::GetUnixClock(time, CLOCK_REALTIME, timeout);
 
     // Timed wait:
-    int error;
     if ((error = ::pthread_cond_timedwait(&_cond, &mutex._mutex, &time)) == 0) {
         // Condition successfully signaled
         signaled = true;

@@ -31,6 +31,7 @@ SOURCES += \
     ../../../src/utest/utestGuard.cpp \
     ../../../src/utest/utestInterrupt.cpp \
     ../../../src/utest/utestMessageQueue.cpp \
+    ../../../src/utest/utestMonotonic.cpp \
     ../../../src/utest/utestMutex.cpp \
     ../../../src/utest/utestNetworking.cpp \
     ../../../src/utest/utestPacketizer.cpp \

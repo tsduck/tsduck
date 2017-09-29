@@ -626,28 +626,28 @@ namespace ts {
 
 #if defined(__unix) || defined(DOXYGEN)
         //!
-        //! This static routine gets the current real time clock and adds a delay in milliseconds (UNIX systems only).
+        //! This static routine gets a system clock and adds a delay in milliseconds (UNIX systems only).
         //!
         //! This function ensures that no overflow is possible.
-        //! This function is available on UNIX systems only
-        //! and should not be used on portable software.
+        //! This function is available on UNIX systems only and should not be used on portable software.
         //!
-        //! @param [in] delay Number of milliseconds to add to the current real time clock.
-        //! @return Absolute time in nanoseconds.
+        //! @param [in] clock Clock id, usually @c CLOCK_REALTIME or @c CLOCK_MONOTONIC.
+        //! @param [in] delay Number of milliseconds to add to the current clock.
+        //! @return Absolute time in nanoseconds according to @a clock.
         //!
-        static NanoSecond UnixRealTimeClockNanoSeconds(const MilliSecond& delay = 0);
+        static NanoSecond UnixClockNanoSeconds(clockid_t clock, const MilliSecond& delay = 0);
 
         //!
-        //! This static routine gets the current real time clock and adds a delay in milliseconds (UNIX systems only).
+        //! This static routine gets a system clock and adds a delay in milliseconds (UNIX systems only).
         //!
         //! This function ensures that no overflow is possible.
-        //! This function is available on UNIX systems only
-        //! and should not be used on portable software.
+        //! This function is available on UNIX systems only and should not be used on portable software.
         //!
         //! @param [out] result A returned UNIX @c timespec value.
+        //! @param [in] clock Clock id, usually @c CLOCK_REALTIME or @c CLOCK_MONOTONIC.
         //! @param [in] delay Number of milliseconds to add to the current real time clock.
         //!
-        static void UnixRealTimeClock(::timespec& result, const MilliSecond& delay = 0);
+        static void GetUnixClock(::timespec& result, clockid_t clock, const MilliSecond& delay = 0);
 #endif
 
     private:

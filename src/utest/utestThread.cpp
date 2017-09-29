@@ -58,17 +58,21 @@ public:
     void testAttributes();
     void testTermination();
     void testDeleteWhenTerminated();
+    void testMutexRecursion();
+    void testMutexTimeout();
     void testCondition();
 
-    CPPUNIT_TEST_SUITE (ThreadTest);
-    CPPUNIT_TEST (testAttributes);
-    CPPUNIT_TEST (testTermination);
-    CPPUNIT_TEST (testDeleteWhenTerminated);
-    CPPUNIT_TEST (testCondition);
-    CPPUNIT_TEST_SUITE_END ();
+    CPPUNIT_TEST_SUITE(ThreadTest);
+    CPPUNIT_TEST(testAttributes);
+    CPPUNIT_TEST(testTermination);
+    CPPUNIT_TEST(testDeleteWhenTerminated);
+    CPPUNIT_TEST(testMutexRecursion);
+    CPPUNIT_TEST(testMutexTimeout);
+    CPPUNIT_TEST(testCondition);
+    CPPUNIT_TEST_SUITE_END();
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION (ThreadTest);
+CPPUNIT_TEST_SUITE_REGISTRATION(ThreadTest);
 
 
 //----------------------------------------------------------------------------
@@ -111,14 +115,14 @@ namespace {
 void ThreadTest::testAttributes()
 {
     const int prio = ts::ThreadAttributes::GetMinimumPriority();
-    ThreadConstructor thread (ts::ThreadAttributes().setStackSize(123456).setPriority(prio));
+    ThreadConstructor thread(ts::ThreadAttributes().setStackSize(123456).setPriority(prio));
     ts::ThreadAttributes attr;
     thread.getAttributes (attr);
     CPPUNIT_ASSERT(attr.getPriority() == prio);
     CPPUNIT_ASSERT(attr.getStackSize() == 123456);
 
     ts::ThreadAttributes attr2;
-    CPPUNIT_ASSERT(thread.setAttributes (attr));
+    CPPUNIT_ASSERT(thread.setAttributes(attr2));
 }
 
 //
@@ -219,6 +223,92 @@ void ThreadTest::testDeleteWhenTerminated()
     else {
         CPPUNIT_FAIL(ts::Format("Thread with \"delete when terminated\" not deleted after %" FMT_INT64 "d milliseconds", after - before));
     }
+}
+
+//
+// Test case: Check mutex recusion
+//
+void ThreadTest::testMutexRecursion()
+{
+    ts::Mutex mutex;
+
+    CPPUNIT_ASSERT(!mutex.release());
+
+    CPPUNIT_ASSERT(mutex.acquire());
+    CPPUNIT_ASSERT(mutex.acquire());
+    CPPUNIT_ASSERT(mutex.acquire());
+
+    CPPUNIT_ASSERT(mutex.release());
+    CPPUNIT_ASSERT(mutex.release());
+    CPPUNIT_ASSERT(mutex.release());
+
+    CPPUNIT_ASSERT(!mutex.release());
+    CPPUNIT_ASSERT(!mutex.release());
+}
+
+//
+// Test case: Check mutex recusion
+//
+namespace {
+    class TestThreadMutexTimeout: public ts::Thread
+    {
+    private:
+        ts::Mutex& _mutex;
+        ts::Mutex& _mutexSig;
+        ts::Condition& _condSig;
+    public:
+        TestThreadMutexTimeout(ts::Mutex& mutex, ts::Mutex& mutexSig, ts::Condition& condSig) :
+            _mutex(mutex),
+            _mutexSig(mutexSig),
+            _condSig(condSig)
+        {
+        }
+        virtual ~TestThreadMutexTimeout()
+        {
+            waitForTermination();
+        }
+        // Main: decrement data and signal condition every 100 ms
+        virtual void main()
+        {
+            // Acquire the test mutex.
+            ts::Guard lock1(_mutex, 0);
+            CPPUNIT_ASSERT(lock1.isLocked());
+            // Signal that we have acquired it.
+            {
+                ts::GuardCondition lock2(_mutexSig, _condSig);
+                CPPUNIT_ASSERT(lock2.isLocked());
+                lock2.signal();
+            }
+            // And sleep 100 ms.
+            ts::SleepThread(100);
+            // The test mutex is implicitely released.
+        }
+    };
+}
+
+void ThreadTest::testMutexTimeout()
+{
+    ts::Mutex mutex;
+    ts::Mutex mutexSig;
+    ts::Condition condSig;
+    TestThreadMutexTimeout thread(mutex, mutexSig, condSig);
+
+    // Start thread and wait for it to acquire mutex.
+    {
+        ts::GuardCondition lock(mutexSig, condSig);
+        CPPUNIT_ASSERT(lock.isLocked());
+        CPPUNIT_ASSERT(thread.start());
+        CPPUNIT_ASSERT(lock.waitCondition());
+    }
+
+    // Now, the thread holds the mutex for 100 ms.
+    const ts::Time dueTime1(ts::Time::CurrentUTC() + 50);
+    const ts::Time dueTime2(ts::Time::CurrentUTC() + 100);
+    CPPUNIT_ASSERT(!mutex.acquire(50));
+    CPPUNIT_ASSERT(ts::Time::CurrentUTC() >= dueTime1);
+    CPPUNIT_ASSERT(ts::Time::CurrentUTC() < dueTime2);
+    CPPUNIT_ASSERT(mutex.acquire(1000));
+    CPPUNIT_ASSERT(ts::Time::CurrentUTC() >= dueTime2);
 }
 
 //
