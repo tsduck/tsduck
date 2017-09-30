@@ -42,10 +42,8 @@ getlink() {
 }
 WIN32=$(getlink '/TSDuck-Win32-.*\.exe$')
 WIN64=$(getlink '/TSDuck-Win64-.*\.exe$')
-EL64=$(getlink '/tsduck-[0-9].*\.el[0-9]*\.x86_64\.rpm$')
 FC64=$(getlink '/tsduck-[0-9].*\.fc[0-9]*\.x86_64\.rpm$')
 UB64=$(getlink '/tsduck_[0-9].*_amd64\.deb$')
-EL64DEV=$(getlink '/tsduck-devel-[0-9].*\.el[0-9]*\.x86_64\.rpm$')
 FC64DEV=$(getlink '/tsduck-devel-[0-9].*\.fc[0-9]*\.x86_64\.rpm$')
 UB64DEV=$(getlink '/tsduck-dev_[0-9].*_amd64\.deb$')
 
@@ -56,15 +54,15 @@ cat >$MDFILE <<EOF
 Binaries for command-line tools and plugins:
 * Windows 32 bits: $WIN32
 * Windows 64 bits: $WIN64
-* RedHat/CentOS 64 bits: $EL64
 * Fedora 64 bits: $FC64
 * Ubuntu 64 bits: $UB64
+* macOS: [use Homebrew](https://github.com/tsduck/homebrew-tsduck/blob/master/README.md)
 
 Binaries for development environment:
 * Windows: Included in installer (select option "Development")
-* RedHat/CentOS 64 bits: $EL64DEV
 * Fedora 64 bits: $FC64DEV
 * Ubuntu 64 bits: $UB64DEV
+* macOS: Included in Homebrew package
 
 **Warning:** On Windows 64 bits, if you use DVB tuners which come with 32-bit drivers and DirectShow filters, you must use the 32 bits version of TSDuck. The 64-bit version of TSDuck cannot work with 32-bit drivers and filters.
 EOF

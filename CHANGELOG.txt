@@ -2,7 +2,7 @@
 TSDuck Change Log and Release Notes
 ===================================
 
-Version (next)
+Version 3.3-20170930
 
 - Added option --default-pds to tspsi, tstables, tstabdump, plugin psi
   and plugin tabdump.
