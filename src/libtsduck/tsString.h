@@ -283,6 +283,17 @@ namespace ts {
         }
 
         //!
+        //! Extract a substring, returning same class.
+        //! @param [in] pos Starting position.
+        //! @param [in] count number of characters.
+        //! @return Substring.
+        //!
+        String substr(size_type pos = 0, size_type count = NPOS) const
+        {
+            return SuperClass::substr(pos, count);
+        }
+
+        //!
         //! Trim leading and / or trailing space characters.
         //! @param [in] leading If true (the default), remove all space characters at the beginning of the string.
         //! @param [in] trailing If true (the default), remove all space characters at the end of the string.
@@ -651,7 +662,6 @@ namespace ts {
         // using NPOS instead. Otherwise, an undefined symbol error will occur at link time.
         //
 #if defined(__windows) && !defined(DOXYGEN)
-        String substr(size_type pos = 0, size_type count = NPOS) const { return SuperClass::substr(pos, count); }
         String& erase(size_type index = 0, size_type count = NPOS) { SuperClass::erase(index, count); return *this; }
         iterator erase(const_iterator position) { return SuperClass::erase(position); }
         iterator erase(const_iterator first, const_iterator last) { return SuperClass::erase(first, last); }

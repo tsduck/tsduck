@@ -177,7 +177,7 @@ std::list<typename MAP::mapped_type> ts::MapValues(const MAP& container)
 {
     std::list<typename MAP::mapped_type> values;
     for (typename MAP::const_iterator it = container.begin(); it != container.end(); ++it) {
-        keys.push_back(it->second);
+        values.push_back(it->second);
     }
     return values;
 }
