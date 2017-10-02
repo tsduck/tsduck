@@ -449,6 +449,19 @@ ts::String ts::String::toJustified(const String& right, size_type width, Char pa
 
 
 //----------------------------------------------------------------------------
+// Convert into a suitable HTML representation.
+// For performance reasons convertToHTML() is implemented in tsChar.cpp.
+//----------------------------------------------------------------------------
+
+ts::String ts::String::ToHTML() const
+{
+    String result(*this);
+    result.convertToHTML();
+    return result;
+}
+
+
+//----------------------------------------------------------------------------
 // Format a boolean value in various standard representation.
 //----------------------------------------------------------------------------
 

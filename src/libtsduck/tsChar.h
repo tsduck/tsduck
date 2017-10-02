@@ -37,6 +37,8 @@
 #include <cwctype>
 
 namespace ts {
+    class String;
+
     //!
     //! UTF-16 character.
     //!
@@ -110,9 +112,31 @@ namespace ts {
     //!
     TSDUCKDLL Char ToUpper(Char c);
 
+    //!
+    //! Check if a character contains an accent.
+    //! @param [in] c A character.
+    //! @return True if @a c contains an accent.
+    //!
+    TSDUCKDLL bool IsAccented(Char c);
+
+    //!
+    //! Remove all forms of accent or composition from a character.
+    //! @param [in] c A character.
+    //! @return A string containing @a c without accent. This is a string and not a char
+    //! since composed characters can be translated as two characters.
+    //!
+    TSDUCKDLL String RemoveAccent(Char c);
+
+    //!
+    //! Convert a character into its corresponding HTML sequence.
+    //! @param [in] c A character.
+    //! @return A string containing the html sequence for @a c.
+    //!
+    TSDUCKDLL String ToHTML(Char c);
+
     //
-    // The following constants define all characters which can be represented
-    // in ISO 8859 character sets.
+    // The following constants define all characters which can be
+    // represented in ISO 8859 character sets.
     // See http://www.unicode.org/Public/MAPPINGS/ISO8859
     //
     static const Char CHAR_NULL                                   = Char(0x0000); //!< ISO-8859 Unicode character.
@@ -917,10 +941,4 @@ namespace ts {
     static const Char BLACK_CLUB_SUIT                             = Char(0x2663); //!< Non-ISO-8859 Unicode character.
     static const Char BLACK_HEART_SUIT                            = Char(0x2665); //!< Non-ISO-8859 Unicode character.
     static const Char BLACK_DIAMOND_SUIT                          = Char(0x2666); //!< Non-ISO-8859 Unicode character.
-
-    //!
-    //! Char internal self-test procedure.
-    //! @return True if the test passes, false if it fails.
-    //!
-    TSDUCKDLL bool CharSelfTest();
 }
