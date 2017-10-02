@@ -564,6 +564,19 @@ namespace ts {
         String toJustified(const String& right, size_type width, Char pad = SPACE) const;
 
         //!
+        //! Convert the string into a suitable HTML representation.
+        //! All special characters are converted to the corresponding HTML entities.
+        //!
+        void convertToHTML();
+
+        //!
+        //! Return the string in a suitable HTML representation.
+        //! All special characters are converted to the corresponding HTML entities.
+        //! @return The string in a suitable HTML representation.
+        //!
+        String ToHTML() const;
+
+        //!
         //! Format a boolean value as "yes" or "no".
         //! @param [in] b A boolean value.
         //! @return "yes" is @a b is true, "no" otherwise.

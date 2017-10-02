@@ -50,11 +50,12 @@ public:
     StringTest();
     void setUp();
     void tearDown();
-    void testCharSelfTest();
     void testIsSpace();
     void testUTF();
     void testTrim();
     void testLetterCase();
+    void testAccent();
+    void testHTML();
     void testRemove();
     void testSubstitute();
     void testSplit();
@@ -74,11 +75,12 @@ public:
     void testSimilarStrings();
 
     CPPUNIT_TEST_SUITE(StringTest);
-    CPPUNIT_TEST(testCharSelfTest);
     CPPUNIT_TEST(testIsSpace);
     CPPUNIT_TEST(testUTF);
     CPPUNIT_TEST(testTrim);
     CPPUNIT_TEST(testLetterCase);
+    CPPUNIT_TEST(testAccent);
+    CPPUNIT_TEST(testHTML);
     CPPUNIT_TEST(testRemove);
     CPPUNIT_TEST(testSubstitute);
     CPPUNIT_TEST(testSplit);
@@ -125,11 +127,6 @@ void StringTest::tearDown()
 //----------------------------------------------------------------------------
 // Test cases
 //----------------------------------------------------------------------------
-
-void StringTest::testCharSelfTest()
-{
-    CPPUNIT_ASSERT(ts::CharSelfTest());
-}
 
 void StringTest::testIsSpace()
 {
@@ -328,6 +325,47 @@ void StringTest::testLetterCase()
     CPPUNIT_ASSERT(s1 == "AbCdEf,%*=UiT");
     s1.convertToUpper();
     CPPUNIT_ASSERT(s1 == "ABCDEF,%*=UIT");
+}
+
+void StringTest::testAccent()
+{
+    CPPUNIT_ASSERT(!ts::IsAccented('A'));
+    CPPUNIT_ASSERT(!ts::IsAccented(':'));
+    CPPUNIT_ASSERT(ts::IsAccented(ts::LATIN_CAPITAL_LETTER_E_WITH_DIAERESIS));
+    CPPUNIT_ASSERT(ts::IsAccented(ts::LATIN_CAPITAL_LETTER_C_WITH_CIRCUMFLEX));
+    CPPUNIT_ASSERT(ts::IsAccented(ts::BLACKLETTER_CAPITAL_I));
+    CPPUNIT_ASSERT(ts::IsAccented(ts::SCRIPT_CAPITAL_P));
+    CPPUNIT_ASSERT(ts::IsAccented(ts::BLACKLETTER_CAPITAL_R));
+    CPPUNIT_ASSERT(ts::IsAccented(ts::LATIN_CAPITAL_LIGATURE_OE));
+
+    CPPUNIT_ASSERT("X" == ts::RemoveAccent('X'));
+    CPPUNIT_ASSERT("," == ts::RemoveAccent(','));
+    CPPUNIT_ASSERT("E" == ts::RemoveAccent(ts::LATIN_CAPITAL_LETTER_E_WITH_DIAERESIS));
+    CPPUNIT_ASSERT("c" == ts::RemoveAccent(ts::LATIN_SMALL_LETTER_C_WITH_ACUTE));
+    CPPUNIT_ASSERT("C" == ts::RemoveAccent(ts::LATIN_CAPITAL_LETTER_C_WITH_CIRCUMFLEX));
+    CPPUNIT_ASSERT("f" == ts::RemoveAccent(ts::LATIN_SMALL_F_WITH_HOOK));
+    CPPUNIT_ASSERT("I" == ts::RemoveAccent(ts::BLACKLETTER_CAPITAL_I));
+    CPPUNIT_ASSERT("P" == ts::RemoveAccent(ts::SCRIPT_CAPITAL_P));
+    CPPUNIT_ASSERT("R" == ts::RemoveAccent(ts::BLACKLETTER_CAPITAL_R));
+    CPPUNIT_ASSERT("OE" == ts::RemoveAccent(ts::LATIN_CAPITAL_LIGATURE_OE));
+    CPPUNIT_ASSERT("oe" == ts::RemoveAccent(ts::LATIN_SMALL_LIGATURE_OE));
+}
+
+void StringTest::testHTML()
+{
+    CPPUNIT_ASSERT(ts::ToHTML('A') == "A");
+    CPPUNIT_ASSERT(ts::ToHTML(':') == ":");
+    CPPUNIT_ASSERT(ts::ToHTML(ts::QUOTATION_MARK) == "&quot;");
+    CPPUNIT_ASSERT(ts::ToHTML(ts::AMPERSAND) == "&amp;");
+    CPPUNIT_ASSERT(ts::ToHTML(ts::LESS_THAN_SIGN) == "&lt;");
+    CPPUNIT_ASSERT(ts::ToHTML(ts::GREATER_THAN_SIGN) == "&gt;");
+    CPPUNIT_ASSERT(ts::ToHTML(ts::NO_BREAK_SPACE) == "&nbsp;");
+    CPPUNIT_ASSERT(ts::ToHTML(ts::LEFT_DOUBLE_QUOTATION_MARK) == "&ldquo;");
+    CPPUNIT_ASSERT(ts::ToHTML(ts::BLACK_DIAMOND_SUIT) == "&diams;");
+
+    CPPUNIT_ASSERT(ts::String("").ToHTML() == "");
+    CPPUNIT_ASSERT(ts::String("abcdefgh = xyz:").ToHTML() == "abcdefgh = xyz:");
+    CPPUNIT_ASSERT(ts::String("<abcd> = \"&").ToHTML() == "&lt;abcd&gt; = &quot;&amp;");
 }
 
 void StringTest::testRemove()
