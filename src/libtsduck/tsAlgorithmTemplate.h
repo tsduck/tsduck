@@ -156,3 +156,28 @@ size_t ts::LargestSize(const CONTAINER& container)
     }
     return largest;
 }
+
+
+//----------------------------------------------------------------------------
+// Get the list of all keys / values in a map.
+//----------------------------------------------------------------------------
+
+template <class MAP>
+std::list<typename MAP::key_type> ts::MapKeys(const MAP& container)
+{
+    std::list<typename MAP::key_type> keys;
+    for (typename MAP::const_iterator it = container.begin(); it != container.end(); ++it) {
+        keys.push_back(it->first);
+    }
+    return keys;
+}
+
+template <class MAP>
+std::list<typename MAP::mapped_type> ts::MapValues(const MAP& container)
+{
+    std::list<typename MAP::mapped_type> values;
+    for (typename MAP::const_iterator it = container.begin(); it != container.end(); ++it) {
+        keys.push_back(it->second);
+    }
+    return values;
+}

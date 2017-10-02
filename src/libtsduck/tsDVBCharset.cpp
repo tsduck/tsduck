@@ -1,0 +1,158 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2017, Thierry Lelegard
+// All rights reserved.
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
+//
+// 1. Redistributions of source code must retain the above copyright notice,
+//    this list of conditions and the following disclaimer.
+// 2. Redistributions in binary form must reproduce the above copyright
+//    notice, this list of conditions and the following disclaimer in the
+//    documentation and/or other materials provided with the distribution.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+// THE POSSIBILITY OF SUCH DAMAGE.
+//
+//----------------------------------------------------------------------------
+
+#include "tsDVBCharset.h"
+#include "tsAlgorithm.h"
+#include "tsSingletonManager.h"
+TSDUCK_SOURCE;
+
+
+//----------------------------------------------------------------------------
+// Get the character coding table at the beginning of a DVB string.
+//----------------------------------------------------------------------------
+
+bool ts::DVBCharset::GetCharCodeTable(uint32_t& code, size_t& codeSize, const uint8_t* dvb, size_t dvbSize)
+{
+    // Null or empty buffer is a valid empty string.
+    if (dvb == 0 || dvbSize == 0) {
+        code = 0;
+        codeSize = 0;
+        return true;
+    }
+    else if (*dvb >= 0x20) {
+        // Default character set.
+        code = 0;
+        codeSize = 0;
+        return true;
+    }
+    else if (*dvb == 0x1F) {
+        if (dvbSize >= 2) {
+            // Second byte is encoding_type_id.
+            // Currently unsupported.
+            code = 0xFFFFFFFF;
+            codeSize = 2;
+            return false;
+        }
+    }
+    else if (*dvb == 0x10) {
+        if (dvbSize >= 3) {
+            code = GetUInt24(dvb);
+            codeSize = 3;
+            return true;
+        }
+    }
+    else {
+        code = *dvb;
+        codeSize = 1;
+        return true;
+    }
+
+    // Invalid format
+    code = 0xFFFFFFFF;
+    codeSize = 0;
+    return false;
+}
+
+
+//----------------------------------------------------------------------------
+// Repository of character sets.
+//----------------------------------------------------------------------------
+
+namespace {
+    class CharSetRepo
+    {
+        tsDeclareSingleton(CharSetRepo);
+    public:
+        std::map<ts::String, ts::DVBCharset*> byName;
+        std::map<uint32_t,   ts::DVBCharset*> byCode;
+    };
+    tsDefineSingleton(CharSetRepo);
+    CharSetRepo::CharSetRepo() : byName(), byCode() {}
+}
+
+// Get a DVB character set by name.
+ts::DVBCharset* ts::DVBCharset::GetCharset(const String& name)
+{
+    const CharSetRepo* repo = CharSetRepo::Instance();
+    const std::map<String, DVBCharset*>::const_iterator it = repo->byName.find(name);
+    return it == repo->byName.end() ? 0 : it->second;
+}
+
+// Get a DVB character set by table code.
+ts::DVBCharset* ts::DVBCharset::GetCharset(uint32_t tableCode)
+{
+    const CharSetRepo* repo = CharSetRepo::Instance();
+    const std::map<uint32_t, DVBCharset*>::const_iterator it = repo->byCode.find(tableCode);
+    return it == repo->byCode.end() ? 0 : it->second;
+}
+
+// Find all registered character set names.
+ts::UStringList ts::DVBCharset::GetAllNames()
+{
+    return MapKeys(CharSetRepo::Instance()->byName);
+}
+
+// Remove the specified charset
+void ts::DVBCharset::Unregister(const DVBCharset* charset)
+{
+    if (charset != 0) {
+        CharSetRepo* repo = CharSetRepo::Instance();
+        repo->byName.erase(charset->name());
+        repo->byCode.erase(charset->tableCode());
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Constructor / destructor.
+//----------------------------------------------------------------------------
+
+ts::DVBCharset::DVBCharset(const String& name, uint32_t tableCode) :
+    _name(name),
+    _code(tableCode)
+{
+    // Register the character set.
+    CharSetRepo* repo = CharSetRepo::Instance();
+    const std::map<String, DVBCharset*>::const_iterator itName = repo->byName.find(_name);
+    const std::map<uint32_t, DVBCharset*>::const_iterator itCode = repo->byCode.find(_code);
+    if (itName == repo->byName.end() && itCode == repo->byCode.end()) {
+        // Charset not yet registered.
+        repo->byName.insert(std::make_pair(_name, this));
+        repo->byCode.insert(std::make_pair(_code, this));
+    }
+    else {
+        throw DuplicateDVBCharset(_name.toUTF8());
+    }
+}
+
+ts::DVBCharset::~DVBCharset()
+{
+    // Remove charset from repository.
+    Unregister(this);
+}

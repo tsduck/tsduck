@@ -37,6 +37,8 @@
 #include "tsChar.h"
 
 namespace ts {
+    class String;
+
     //!
     //! Case sensitivity used on string operations.
     //!
@@ -44,6 +46,16 @@ namespace ts {
         CASE_SENSITIVE,     //!< The operation is case-sensitive.
         CASE_INSENSITIVE    //!< The operation is not case-sensitive.
     };
+
+    //!
+    //! Vector of strings
+    //!
+    typedef std::vector<String> UStringVector;
+
+    //!
+    //! List of strings
+    //!
+    typedef std::list<String> UStringList;
 
     //!
     //! An implementation of UTF-16 strings.

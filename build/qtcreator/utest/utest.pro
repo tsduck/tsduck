@@ -26,6 +26,7 @@ SOURCES += \
     ../../../src/utest/utestDirectShow.cpp \
     ../../../src/utest/utestDoubleCheckLock.cpp \
     ../../../src/utest/utestDVB.cpp \
+    ../../../src/utest/utestDVBCharset.cpp \
     ../../../src/utest/utestEnumeration.cpp \
     ../../../src/utest/utestFatal.cpp \
     ../../../src/utest/utestGuard.cpp \

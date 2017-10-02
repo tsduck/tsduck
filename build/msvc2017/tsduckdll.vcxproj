@@ -92,6 +92,10 @@
     <ClInclude Include="..\..\src\libtsduck\tsDescriptorListTemplate.h" />
     <ClInclude Include="..\..\src\libtsduck\tsDoubleCheckLock.h" />
     <ClInclude Include="..\..\src\libtsduck\tsDTSDescriptor.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsDVBCharset.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsDVBCharsetSingleByte.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsDVBCharsetUTF16.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsDVBCharsetUTF8.h" />
     <ClInclude Include="..\..\src\libtsduck\tsDVS042.h" />
     <ClInclude Include="..\..\src\libtsduck\tsDVS042Template.h" />
     <ClInclude Include="..\..\src\libtsduck\tsEacemPreferredNameIdentifierDescriptor.h" />
@@ -358,6 +362,10 @@
     <ClCompile Include="..\..\src\libtsduck\tsDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsDescriptorList.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsDTSDescriptor.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsDVBCharset.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsDVBCharsetSingleByte.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsDVBCharsetUTF16.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsDVBCharsetUTF8.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsEacemPreferredNameIdentifierDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsEacemPreferredNameListDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsEacemStreamIdentifierDescriptor.cpp" />

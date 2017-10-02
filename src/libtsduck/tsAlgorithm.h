@@ -1,3 +1,4 @@
+
 //----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
@@ -129,6 +130,26 @@ namespace ts {
     //!
     template <class CONTAINER>
     size_t LargestSize(const CONTAINER& container);
+
+    //!
+    //! Get the list of all keys in a map.
+    //!
+    //! @tparam MAP A map container class as defined by the C++ Standard Template Library (STL).
+    //! @param [in] container A container of objects.
+    //! @return The list of all keys in @a container.
+    //!
+    template <class MAP>
+    std::list<typename MAP::key_type> MapKeys(const MAP& container);
+
+    //!
+    //! Get the list of all values in a map.
+    //!
+    //! @tparam MAP A map container class as defined by the C++ Standard Template Library (STL).
+    //! @param [in] container A container of objects.
+    //! @return The list of all values in @a container.
+    //!
+    template <class MAP>
+    std::list<typename MAP::mapped_type> MapValues(const MAP& container);
 }
 
 #include "tsAlgorithmTemplate.h"
