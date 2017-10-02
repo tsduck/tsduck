@@ -80,6 +80,10 @@ HEADERS += \
     ../../../src/libtsduck/tsCyclingPacketizer.h \
     ../../../src/libtsduck/tsDES.h \
     ../../../src/libtsduck/tsDTSDescriptor.h \
+    ../../../src/libtsduck/tsDVBCharset.h \
+    ../../../src/libtsduck/tsDVBCharsetSingleByte.h \
+    ../../../src/libtsduck/tsDVBCharsetUTF16.h \
+    ../../../src/libtsduck/tsDVBCharsetUTF8.h \
     ../../../src/libtsduck/tsDVS042.h \
     ../../../src/libtsduck/tsDVS042Template.h \
     ../../../src/libtsduck/tsDataBroadcastDescriptor.h \
@@ -339,6 +343,10 @@ SOURCES += \
     ../../../src/libtsduck/tsCyclingPacketizer.cpp \
     ../../../src/libtsduck/tsDES.cpp \
     ../../../src/libtsduck/tsDTSDescriptor.cpp \
+    ../../../src/libtsduck/tsDVBCharset.cpp \
+    ../../../src/libtsduck/tsDVBCharsetSingleByte.cpp \
+    ../../../src/libtsduck/tsDVBCharsetUTF16.cpp \
+    ../../../src/libtsduck/tsDVBCharsetUTF8.cpp \
     ../../../src/libtsduck/tsDataBroadcastDescriptor.cpp \
     ../../../src/libtsduck/tsDataBroadcastIdDescriptor.cpp \
     ../../../src/libtsduck/tsDektecControl.cpp \

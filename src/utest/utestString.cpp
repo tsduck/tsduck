@@ -47,7 +47,6 @@ TSDUCK_SOURCE;
 class StringTest: public CppUnit::TestFixture
 {
 public:
-    StringTest();
     void setUp();
     void tearDown();
     void testIsSpace();
@@ -107,11 +106,6 @@ CPPUNIT_TEST_SUITE_REGISTRATION(StringTest);
 //----------------------------------------------------------------------------
 // Initialization.
 //----------------------------------------------------------------------------
-
-// Constructor.
-StringTest::StringTest()
-{
-}
 
 // Test suite initialization method.
 void StringTest::setUp()
