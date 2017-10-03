@@ -45,38 +45,38 @@ TSDUCK_SOURCE;
 
 #if defined(_MSC_VER) && _MSC_VER >= 1900
 
-ts::String ts::String::FromUTF8(const std::string& utf8)
+ts::UString ts::UString::FromUTF8(const std::string& utf8)
 {
     std::wstring_convert<std::codecvt_utf8_utf16<int16_t>, int16_t> convert;
     const std::basic_string<int16_t> result(convert.from_bytes(utf8));
-    return String(reinterpret_cast<const char16_t*>(result.data()), result.size());
+    return UString(reinterpret_cast<const char16_t*>(result.data()), result.size());
 }
 
-ts::String ts::String::FromUTF8(const char* utf8)
+ts::UString ts::UString::FromUTF8(const char* utf8)
 {
     if (utf8 == 0) {
-        return String();
+        return UString();
     }
     else {
         std::wstring_convert<std::codecvt_utf8_utf16<int16_t>, int16_t> convert;
         const std::basic_string<int16_t> result(convert.from_bytes(utf8));
-        return String(reinterpret_cast<const char16_t*>(result.data()), result.size());
+        return UString(reinterpret_cast<const char16_t*>(result.data()), result.size());
     }
 }
 
-ts::String ts::String::FromUTF8(const char* utf8, size_type count)
+ts::UString ts::UString::FromUTF8(const char* utf8, size_type count)
 {
     if (utf8 == 0) {
-        return String();
+        return UString();
     }
     else {
         std::wstring_convert<std::codecvt_utf8_utf16<int16_t>, int16_t> convert;
         const std::basic_string<int16_t> result(convert.from_bytes(utf8, utf8 + count));
-        return String(reinterpret_cast<const char16_t*>(result.data()), result.size());
+        return UString(reinterpret_cast<const char16_t*>(result.data()), result.size());
     }
 }
 
-std::string ts::String::toUTF8() const
+std::string ts::UString::toUTF8() const
 {
     std::wstring_convert<std::codecvt_utf8_utf16<int16_t>, int16_t> convert;
     const int16_t* p = reinterpret_cast<const int16_t*>(data());
