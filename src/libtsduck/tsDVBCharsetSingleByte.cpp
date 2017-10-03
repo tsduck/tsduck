@@ -36,7 +36,7 @@ TSDUCK_SOURCE;
 // Protected constructor.
 //----------------------------------------------------------------------------
 
-ts::DVBCharsetSingleByte::DVBCharsetSingleByte(const String& name, uint32_t tableCode, std::initializer_list<uint16_t> init) :
+ts::DVBCharsetSingleByte::DVBCharsetSingleByte(const UString& name, uint32_t tableCode, std::initializer_list<uint16_t> init) :
     DVBCharset(name, tableCode),
     _upperCodePoints(init),
     _bytesMap()
@@ -49,7 +49,7 @@ ts::DVBCharsetSingleByte::DVBCharsetSingleByte(const String& name, uint32_t tabl
 
     // Code point to byte mapping for ASCII range
     for (size_t i = 0x20; i <= 0x7E; i++) {
-        _bytesMap.insert(std::make_pair(Char(i), uint8_t(i)));
+        _bytesMap.insert(std::make_pair(UChar(i), uint8_t(i)));
     }
 
     // Control codes
@@ -58,7 +58,7 @@ ts::DVBCharsetSingleByte::DVBCharsetSingleByte(const String& name, uint32_t tabl
     // Code point to byte mapping for 0xA0-0xFF range
     for (size_t i = 0; i < _upperCodePoints.size(); i++) {
         if (_upperCodePoints[i] != 0) {
-            _bytesMap.insert(std::make_pair(Char(_upperCodePoints[i]), uint8_t(0xA0 + i)));
+            _bytesMap.insert(std::make_pair(UChar(_upperCodePoints[i]), uint8_t(0xA0 + i)));
         }
     }
 }
@@ -68,7 +68,7 @@ ts::DVBCharsetSingleByte::DVBCharsetSingleByte(const String& name, uint32_t tabl
 // Decode a DVB string from the specified byte buffer.
 //----------------------------------------------------------------------------
 
-bool ts::DVBCharsetSingleByte::decode(String& str, const uint8_t* dvb, size_t dvbSize) const
+bool ts::DVBCharsetSingleByte::decode(UString& str, const uint8_t* dvb, size_t dvbSize) const
 {
     str.clear();
     str.reserve(dvbSize);
@@ -90,7 +90,7 @@ bool ts::DVBCharsetSingleByte::decode(String& str, const uint8_t* dvb, size_t dv
         }
         // Add in result if no error.
         if (cp != 0) {
-            str.push_back(Char(cp));
+            str.push_back(UChar(cp));
         }
         else {
             // Untranslatable character.
@@ -105,10 +105,10 @@ bool ts::DVBCharsetSingleByte::decode(String& str, const uint8_t* dvb, size_t dv
 // Check if a string can be encoded using the charset.
 //----------------------------------------------------------------------------
 
-bool ts::DVBCharsetSingleByte::canEncode(const String& str, size_t start, size_t count) const
+bool ts::DVBCharsetSingleByte::canEncode(const UString& str, size_t start, size_t count) const
 {
     for (size_t i = 0; i < str.length(); ++i) {
-        const Char cp = str[i];
+        const UChar cp = str[i];
         if (_bytesMap.find(cp) == _bytesMap.end() && cp != CARRIAGE_RETURN) {
             // Untranslatable character.
             return false;
@@ -122,13 +122,13 @@ bool ts::DVBCharsetSingleByte::canEncode(const String& str, size_t start, size_t
 // Encode a C++ Unicode string into a DVB string.
 //----------------------------------------------------------------------------
 
-size_t ts::DVBCharsetSingleByte::encode(uint8_t*& buffer, size_t& size, const String& str, size_t start, size_t count) const
+size_t ts::DVBCharsetSingleByte::encode(uint8_t*& buffer, size_t& size, const UString& str, size_t start, size_t count) const
 {
     size_t result = 0;
     // Serialize characters as long as there is free space.
     while (buffer != 0 && size > 0 && start < str.length() && count > 0) {
-        const Char cp = str[start];
-        const std::map<Char, uint8_t>::const_iterator it = _bytesMap.find(cp);
+        const UChar cp = str[start];
+        const std::map<UChar, uint8_t>::const_iterator it = _bytesMap.find(cp);
         if (cp != ts::CARRIAGE_RETURN && it != _bytesMap.end()) {
             // Encode character.
             *buffer++ = it->second;

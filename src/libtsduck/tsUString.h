@@ -34,10 +34,10 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsChar.h"
+#include "tsUChar.h"
 
 namespace ts {
-    class String;
+    class UString;
 
     //!
     //! Case sensitivity used on string operations.
@@ -50,12 +50,12 @@ namespace ts {
     //!
     //! Vector of strings
     //!
-    typedef std::vector<String> UStringVector;
+    typedef std::vector<UString> UStringVector;
 
     //!
     //! List of strings
     //!
-    typedef std::list<String> UStringList;
+    typedef std::list<UString> UStringList;
 
     //!
     //! An implementation of UTF-16 strings.
@@ -70,7 +70,7 @@ namespace ts {
     //! the ts::String class, make sure to avoid any issue with the absence of virtual destructor
     //! in the parent class.
     //!
-    class TSDUCKDLL String: public std::u16string
+    class TSDUCKDLL UString: public std::u16string
     {
     public:
         //!
@@ -92,28 +92,28 @@ namespace ts {
         //!
         //! Default constructor.
         //!
-        String() noexcept(noexcept(allocator_type())) :
-            String(allocator_type()) {}
+        UString() noexcept(noexcept(allocator_type())) :
+            UString(allocator_type()) {}
 
         //!
         //! Constructor using an allocator.
         //! @param [in] alloc Allocator.
         //!
-        explicit String(const allocator_type& alloc) noexcept :
+        explicit UString(const allocator_type& alloc) noexcept :
             SuperClass(alloc) {}
 
         //!
         //! Copy constructor.
         //! @param [in] other Other instance to copy.
         //!
-        String(const SuperClass& other) :
+        UString(const SuperClass& other) :
             SuperClass(other) {}
 
         //!
         //! Move constructor.
         //! @param [in,out] other Other instance to move. Upon return, @a other is left in valid, but unspecified state.
         //!
-        String(SuperClass&& other) noexcept :
+        UString(SuperClass&& other) noexcept :
             SuperClass(other) {}
 
         //!
@@ -122,7 +122,7 @@ namespace ts {
         //! @param [in] ch Character to repeat @a count times.
         //! @param [in] alloc Allocator.
         //!
-        String(size_type count, Char ch, const allocator_type& alloc = allocator_type()) :
+        UString(size_type count, UChar ch, const allocator_type& alloc = allocator_type()) :
             SuperClass(count, ch, alloc) {}
 
         //!
@@ -135,7 +135,7 @@ namespace ts {
         //! @param [in] count Number of character to copy.
         //! @param [in] alloc Allocator.
         //!
-        String(const SuperClass& other, size_type pos, size_type count, const allocator_type& alloc = allocator_type()) :
+        UString(const SuperClass& other, size_type pos, size_type count, const allocator_type& alloc = allocator_type()) :
             SuperClass(other, pos, count, alloc) {}
         
         //!
@@ -145,7 +145,7 @@ namespace ts {
         //! always copied, including null characters.
         //! @param [in] alloc Allocator.
         //!
-        String(const Char* s, size_type count, const allocator_type& alloc = allocator_type()) :
+        UString(const UChar* s, size_type count, const allocator_type& alloc = allocator_type()) :
             SuperClass(s == 0 && count == 0 ? &CHAR_NULL : s, count, alloc) {}
         
         //!
@@ -153,7 +153,7 @@ namespace ts {
         //! @param [in] s Address of a null-terminated string. Can be a null pointer, in which case the string is empty.
         //! @param [in] alloc Allocator.
         //!
-        String(const Char* s, const allocator_type& alloc = allocator_type()) :
+        UString(const UChar* s, const allocator_type& alloc = allocator_type()) :
             SuperClass(s == 0 ? &CHAR_NULL : s, alloc) {}
 
         //!
@@ -167,7 +167,7 @@ namespace ts {
         //! @param [in] alloc Allocator.
         //!
         template<class InputIt>
-        String(InputIt first, InputIt last, const allocator_type& alloc = allocator_type()) :
+        UString(InputIt first, InputIt last, const allocator_type& alloc = allocator_type()) :
             SuperClass(first, last, alloc) {}
 
         //!
@@ -175,44 +175,44 @@ namespace ts {
         //! @param [in] init Initializer list of @c Char.
         //! @param [in] alloc Allocator.
         //!
-        String(std::initializer_list<Char> init, const allocator_type& alloc = allocator_type()) :
+        UString(std::initializer_list<UChar> init, const allocator_type& alloc = allocator_type()) :
             SuperClass(init, alloc) {}
 
         //!
         //! Constructor from an UTF-8 string.
         //! @param [in] utf8 A string in UTF-8 representation.
         //!
-        String(const std::string& utf8) :
-            String(FromUTF8(utf8)) {}
+        UString(const std::string& utf8) :
+            UString(FromUTF8(utf8)) {}
 
         //!
         //! Constructor from an UTF-8 string.
         //! @param [in] utf8 Address of a nul-terminated string in UTF-8 representation.
         //!
-        String(const char* utf8) :
-            String(FromUTF8(utf8)) {}
+        UString(const char* utf8) :
+            UString(FromUTF8(utf8)) {}
 
         //!
         //! Constructor from an UTF-8 string.
         //! @param [in] utf8 Address of a string in UTF-8 representation.
         //! @param [in] count Size in bytes of the UTF-8 string (not necessarily a number of characters).
         //!
-        String(const char* utf8, size_type count) :
-            String(FromUTF8(utf8, count)) {}
+        UString(const char* utf8, size_type count) :
+            UString(FromUTF8(utf8, count)) {}
 
         //!
         //! Convert an UTF-8 string into UTF-16.
         //! @param [in] utf8 A string in UTF-8 representation.
         //! @return The equivalent UTF-16 string.
         //!
-        static String FromUTF8(const std::string& utf8);
+        static UString FromUTF8(const std::string& utf8);
 
         //!
         //! Convert an UTF-8 string into UTF-16.
         //! @param [in] utf8 Address of a nul-terminated string in UTF-8 representation.
         //! @return The equivalent UTF-16 string. Empty string if @a utf8 is a null pointer.
         //!
-        static String FromUTF8(const char* utf8);
+        static UString FromUTF8(const char* utf8);
 
         //!
         //! Convert an UTF-8 string into UTF-16.
@@ -220,7 +220,7 @@ namespace ts {
         //! @param [in] count Size in bytes of the UTF-8 string (not necessarily a number of characters).
         //! @return The equivalent UTF-16 string. Empty string if @a utf8 is a null pointer.
         //!
-        static String FromUTF8(const char* utf8, size_type count);
+        static UString FromUTF8(const char* utf8, size_type count);
 
         //!
         //! Convert this UTF-16 string into UTF-8.
@@ -276,7 +276,7 @@ namespace ts {
         //! @param [in] count number of characters.
         //! @return Substring.
         //!
-        String substr(size_type pos = 0, size_type count = NPOS) const
+        UString substr(size_type pos = 0, size_type count = NPOS) const
         {
             return SuperClass::substr(pos, count);
         }
@@ -294,7 +294,7 @@ namespace ts {
         //! @param [in] trailing If true (the default), remove all space characters at the end of the string.
         //! @return A copy of this object after trimming.
         //!
-        String toTrimmed(bool leading = true, bool trailing = true) const;
+        UString toTrimmed(bool leading = true, bool trailing = true) const;
 
         //!
         //! Convert the string to lower-case.
@@ -310,46 +310,46 @@ namespace ts {
         //! Return a lower-case version of the string.
         //! @return Lower-case version of the string.
         //!
-        String toLower() const;
+        UString toLower() const;
 
         //!
         //! Return an upper-case version of the string.
         //! @return Upper-case version of the string.
         //!
-        String toUpper() const;
+        UString toUpper() const;
 
         //!
         //! Remove all occurences of a substring.
         //! @param [in] substr Substring to remove.
         //!
-        void remove(const String& substr);
+        void remove(const UString& substr);
 
         //!
         //! Remove all occurences of a character.
         //! @param [in] c Character to remove.
         //!
-        void remove(Char c);
+        void remove(UChar c);
 
         //!
         //! Remove all occurences of a substring.
         //! @param [in] substr Substring to remove.
         //! @return This string with all occurences fo @a substr removed.
         //!
-        String toRemoved(const String& substr) const;
+        UString toRemoved(const UString& substr) const;
 
         //!
         //! Remove all occurences of a character.
         //! @param [in] c Character to remove.
         //! @return This string with all occurences fo @a substr removed.
         //!
-        String toRemoved(Char c) const;
+        UString toRemoved(UChar c) const;
 
         //!
         //! Substitute all occurences of a string with another one.
         //! @param [in] value Value to search.
         //! @param [in] replacement Replacement string for @a value.
         //!
-        void substitute(const String& value, const String& replacement);
+        void substitute(const UString& value, const UString& replacement);
 
         //!
         //! Return a copy of the string where all occurences of a string are substituted with another one.
@@ -357,21 +357,21 @@ namespace ts {
         //! @param [in] replacement Replacement string for @a value.
         //! @return A copy to this string where all occurences of @a value have been replaced by @a replace.
         //!
-        String toSubstituted(const String& value, const String& replacement) const;
+        UString toSubstituted(const UString& value, const UString& replacement) const;
 
         //!
         //! Remove a prefix in string.
         //! @param [in] prefix A prefix to remove, if present at the beginning of the string.
         //! @param [in] cs Indicate if the comparison is case-sensitive.
         //!
-        void removePrefix(const String& prefix, CaseSensitivity cs = CASE_SENSITIVE);
+        void removePrefix(const UString& prefix, CaseSensitivity cs = CASE_SENSITIVE);
 
         //!
         //! Remove a suffix in string.
         //! @param [in] suffix A suffix to remove, if present at the end of the string.
         //! @param [in] cs Indicate if the comparison is case-sensitive.
         //!
-        void removeSuffix(const String& suffix, CaseSensitivity cs = CASE_SENSITIVE);
+        void removeSuffix(const UString& suffix, CaseSensitivity cs = CASE_SENSITIVE);
 
         //!
         //! Remove a prefix in string.
@@ -379,7 +379,7 @@ namespace ts {
         //! @param [in] cs Indicate if the comparison is case-sensitive.
         //! @return A copy of this string with prefix removed.
         //!
-        String toRemovedPrefix(const String& prefix, CaseSensitivity cs = CASE_SENSITIVE) const;
+        UString toRemovedPrefix(const UString& prefix, CaseSensitivity cs = CASE_SENSITIVE) const;
 
         //!
         //! Remove a suffix in string.
@@ -387,7 +387,7 @@ namespace ts {
         //! @param [in] cs Indicate if the comparison is case-sensitive.
         //! @return A copy of this string with suffix removed.
         //!
-        String toRemovedSuffix(const String& suffix, CaseSensitivity cs = CASE_SENSITIVE) const;
+        UString toRemovedSuffix(const UString& suffix, CaseSensitivity cs = CASE_SENSITIVE) const;
 
         //!
         //! Check if the string starts with a specified prefix.
@@ -395,7 +395,7 @@ namespace ts {
         //! @param [in] cs Indicate if the comparison is case-sensitive.
         //! @return True if this string starts with @a prefix, false otherwise.
         //!
-        bool startWith(const String& prefix, CaseSensitivity cs = CASE_SENSITIVE) const;
+        bool startWith(const UString& prefix, CaseSensitivity cs = CASE_SENSITIVE) const;
 
         //!
         //! Check if a string ends with a specified suffix.
@@ -403,7 +403,7 @@ namespace ts {
         //! @param [in] cs Indicate if the comparison is case-sensitive.
         //! @return True if this string ends with @a suffix, false otherwise.
         //!
-        bool endWith(const String& suffix, CaseSensitivity cs = CASE_SENSITIVE) const;
+        bool endWith(const UString& suffix, CaseSensitivity cs = CASE_SENSITIVE) const;
 
         //!
         //! Split the string into segments based on a separator character (comma by default).
@@ -414,7 +414,7 @@ namespace ts {
         //! i.e. all leading and trailing space characters are removed.
         //!
         template <class CONTAINER>
-        void split(CONTAINER& container, Char separator = COMMA, bool trimSpaces = true) const;
+        void split(CONTAINER& container, UChar separator = COMMA, bool trimSpaces = true) const;
 
         //!
         //! Split a string into segments which are identified by their starting / ending characters (respectively "[" and "]" by default).
@@ -426,7 +426,7 @@ namespace ts {
         //! i.e. all leading and trailing space characters are removed.
         //!
         template <class CONTAINER>
-        void splitBlocks(CONTAINER& container, Char startWith = Char('['), Char endWith = Char(']'), bool trimSpaces = true) const;
+        void splitBlocks(CONTAINER& container, UChar startWith = UChar('['), UChar endWith = UChar(']'), bool trimSpaces = true) const;
 
         //!
         //! Split a string into multiple lines which are not longer than a specified maximum width.
@@ -445,8 +445,8 @@ namespace ts {
         template <class CONTAINER>
         void splitLines(CONTAINER& container,
                         size_type maxWidth,
-                        const String& otherSeparators = String(),
-                        const String& nextMargin = String(),
+                        const UString& otherSeparators = UString(),
+                        const UString& nextMargin = UString(),
                         bool forceSplit = false) const;
 
         //!
@@ -460,7 +460,7 @@ namespace ts {
         //! @return The big string containing all segments and separators.
         //!
         template <class ITERATOR>
-        static String join(ITERATOR begin, ITERATOR end, const String& separator = String(", "));
+        static UString join(ITERATOR begin, ITERATOR end, const UString& separator = UString(", "));
 
         //!
         //! Join a container of strings into one big string.
@@ -471,7 +471,7 @@ namespace ts {
         //! @return The big string containing all segments and separators.
         //!
         template <class CONTAINER>
-        static String join(const CONTAINER& container, const String& separator = String(", "))
+        static UString join(const CONTAINER& container, const UString& separator = UString(", "))
         {
             return join(container.begin(), container.end(), separator);
         }
@@ -486,7 +486,7 @@ namespace ts {
         //! it is truncated to @a width character. If false, this string is
         //! never truncated, possibly resulting in a string longer than @a width.
         //!
-        void justifyLeft(size_type width, Char pad = SPACE, bool truncate = false);
+        void justifyLeft(size_type width, UChar pad = SPACE, bool truncate = false);
 
         //!
         //! Return a left-justified (padded and optionally truncated) string.
@@ -499,7 +499,7 @@ namespace ts {
         //! never truncated, possibly resulting in a string longer than @a width.
         //! @return The justified string.
         //!
-        String toJustifiedLeft(size_type width, Char pad = SPACE, bool truncate = false) const;
+        UString toJustifiedLeft(size_type width, UChar pad = SPACE, bool truncate = false) const;
 
         //!
         //! Right-justified (pad and optionally truncate) string.
@@ -511,7 +511,7 @@ namespace ts {
         //! the beginning of @a str is truncated. If false, this string is
         //! never truncated, possibly resulting in a string longer than @a width.
         //!
-        void justifyRight(size_type width, Char pad = SPACE, bool truncate = false);
+        void justifyRight(size_type width, UChar pad = SPACE, bool truncate = false);
 
         //!
         //! Return a right-justified (padded and optionally truncated) string.
@@ -524,7 +524,7 @@ namespace ts {
         //! never truncated, possibly resulting in a string longer than @a width.
         //! @return The justified string.
         //!
-        String toJustifiedRight(size_type width, Char pad = SPACE, bool truncate = false) const;
+        UString toJustifiedRight(size_type width, UChar pad = SPACE, bool truncate = false) const;
 
         //!
         //! Centered-justified (pad and optionally truncate) string.
@@ -536,7 +536,7 @@ namespace ts {
         //! this string is truncated to @a width character. If false, this string is
         //! never truncated, possibly resulting in a string longer than @a width.
         //!
-        void justifyCentered(size_type width, Char pad = SPACE, bool truncate = false);
+        void justifyCentered(size_type width, UChar pad = SPACE, bool truncate = false);
 
         //!
         //! Return a centered-justified (padded and optionally truncated) string.
@@ -549,7 +549,7 @@ namespace ts {
         //! never truncated, possibly resulting in a string longer than @a width.
         //! @return The justified string.
         //!
-        String toJustifiedCentered(size_type width, Char pad = SPACE, bool truncate = false) const;
+        UString toJustifiedCentered(size_type width, UChar pad = SPACE, bool truncate = false) const;
 
         //!
         //! Justify string, pad in the middle.
@@ -560,7 +560,7 @@ namespace ts {
         //! @param [in] width The required width of the result string.
         //! @param [in] pad The character to insert between the two parts.
         //!
-        void justify(const String& right, size_type width, Char pad = SPACE);
+        void justify(const UString& right, size_type width, UChar pad = SPACE);
 
         //!
         //! Return a justified string, pad in the middle.
@@ -572,7 +572,7 @@ namespace ts {
         //! @param [in] pad The character to insert between the two parts.
         //! @return The justified string.
         //!
-        String toJustified(const String& right, size_type width, Char pad = SPACE) const;
+        UString toJustified(const UString& right, size_type width, UChar pad = SPACE) const;
 
         //!
         //! Convert the string into a suitable HTML representation.
@@ -585,35 +585,35 @@ namespace ts {
         //! All special characters are converted to the corresponding HTML entities.
         //! @return The string in a suitable HTML representation.
         //!
-        String ToHTML() const;
+        UString ToHTML() const;
 
         //!
         //! Format a boolean value as "yes" or "no".
         //! @param [in] b A boolean value.
         //! @return "yes" is @a b is true, "no" otherwise.
         //!
-        static String YesNo(bool b);
+        static UString YesNo(bool b);
 
         //!
         //! Format a boolean value as "true" or "false".
         //! @param [in] b A boolean value.
         //! @return "true" is @a b is true, "false" otherwise.
         //!
-        static String TrueFalse(bool b);
+        static UString TrueFalse(bool b);
 
         //!
         //! Format a boolean value as "on" or "off".
         //! @param [in] b A boolean value.
         //! @return "on" is @a b is true, "off" otherwise.
         //!
-        static String OnOff(bool b);
+        static UString OnOff(bool b);
 
         //!
         //! Check if two strings are identical, case-insensitive and ignoring blanks
         //! @param [in] other Other string to compare.
         //! @return True if this string and @a other are "similar", ie. identical, case-insensitive and ignoring blanks.
         //!
-        bool similar(const String& other) const;
+        bool similar(const UString& other) const;
 
         //!
         //! Check if two strings are identical, case-insensitive and ignoring blanks
@@ -717,7 +717,7 @@ namespace ts {
 //! @param [in] str A string.
 //! @return A reference to the @a strm object.
 //!
-TSDUCKDLL inline std::ostream& operator<<(std::ostream& strm, const ts::String& str)
+TSDUCKDLL inline std::ostream& operator<<(std::ostream& strm, const ts::UString& str)
 {
     return strm << str.toUTF8();
 }
@@ -728,7 +728,7 @@ TSDUCKDLL inline std::ostream& operator<<(std::ostream& strm, const ts::String& 
 //! @param [in] s2 An UTF-16 string.
 //! @return True if @a s1 and @a s2 are identical.
 //!
-TSDUCKDLL inline bool operator==(const std::string& s1, const ts::String& s2)
+TSDUCKDLL inline bool operator==(const std::string& s1, const ts::UString& s2)
 {
     return s2 == s1;
 }
@@ -739,7 +739,7 @@ TSDUCKDLL inline bool operator==(const std::string& s1, const ts::String& s2)
 //! @param [in] s2 An UTF-16 string.
 //! @return True if @a s1 and @a s2 are identical.
 //!
-TSDUCKDLL inline bool operator==(const char* s1, const ts::String& s2)
+TSDUCKDLL inline bool operator==(const char* s1, const ts::UString& s2)
 {
     return s2 == s1;
 }
@@ -750,7 +750,7 @@ TSDUCKDLL inline bool operator==(const char* s1, const ts::String& s2)
 //! @param [in] s2 An UTF-16 string.
 //! @return True if @a s1 and @a s2 are different.
 //!
-TSDUCKDLL inline bool operator!=(const std::string& s1, const ts::String& s2)
+TSDUCKDLL inline bool operator!=(const std::string& s1, const ts::UString& s2)
 {
     return s2 != s1;
 }
@@ -761,7 +761,7 @@ TSDUCKDLL inline bool operator!=(const std::string& s1, const ts::String& s2)
 //! @param [in] s2 An UTF-16 string.
 //! @return True if @a s1 and @a s2 are different.
 //!
-TSDUCKDLL inline bool operator!=(const char* s1, const ts::String& s2)
+TSDUCKDLL inline bool operator!=(const char* s1, const ts::UString& s2)
 {
     return s2 != s1;
 }
@@ -772,9 +772,9 @@ TSDUCKDLL inline bool operator!=(const char* s1, const ts::String& s2)
 //! @param [in] s2 An UTF-16 string.
 //! @return Concatenation @a s1 and @a s2.
 //!
-TSDUCKDLL inline ts::String operator+(const ts::String& s1, const ts::String& s2)
+TSDUCKDLL inline ts::UString operator+(const ts::UString& s1, const ts::UString& s2)
 {
-    return *static_cast<const ts::String::SuperClass*>(&s1) + *static_cast<const ts::String::SuperClass*>(&s2);
+    return *static_cast<const ts::UString::SuperClass*>(&s1) + *static_cast<const ts::UString::SuperClass*>(&s2);
 }
 
 //!
@@ -783,9 +783,9 @@ TSDUCKDLL inline ts::String operator+(const ts::String& s1, const ts::String& s2
 //! @param [in] s2 An UTF-16 character.
 //! @return Concatenation @a s1 and @a s2.
 //!
-TSDUCKDLL inline ts::String operator+(const ts::String& s1, ts::Char s2)
+TSDUCKDLL inline ts::UString operator+(const ts::UString& s1, ts::UChar s2)
 {
-    return *static_cast<const ts::String::SuperClass*>(&s1) + s2;
+    return *static_cast<const ts::UString::SuperClass*>(&s1) + s2;
 }
 
 //!
@@ -794,9 +794,9 @@ TSDUCKDLL inline ts::String operator+(const ts::String& s1, ts::Char s2)
 //! @param [in] s2 An UTF-16 string.
 //! @return Concatenation @a s1 and @a s2.
 //!
-TSDUCKDLL inline ts::String operator+(ts::Char s1, const ts::String& s2)
+TSDUCKDLL inline ts::UString operator+(ts::UChar s1, const ts::UString& s2)
 {
-    return s1 + *static_cast<const ts::String::SuperClass*>(&s2);
+    return s1 + *static_cast<const ts::UString::SuperClass*>(&s2);
 }
 
 //!
@@ -805,9 +805,9 @@ TSDUCKDLL inline ts::String operator+(ts::Char s1, const ts::String& s2)
 //! @param [in] s2 An UTF-8 string.
 //! @return Concatenation @a s1 and @a s2.
 //!
-TSDUCKDLL inline ts::String operator+(const ts::String& s1, const std::string& s2)
+TSDUCKDLL inline ts::UString operator+(const ts::UString& s1, const std::string& s2)
 {
-    return s1 + ts::String::FromUTF8(s2);
+    return s1 + ts::UString::FromUTF8(s2);
 }
 
 //!
@@ -816,9 +816,9 @@ TSDUCKDLL inline ts::String operator+(const ts::String& s1, const std::string& s
 //! @param [in] s2 An UTF-16 string.
 //! @return Concatenation @a s1 and @a s2.
 //!
-TSDUCKDLL inline ts::String operator+(const std::string& s1, const ts::String& s2)
+TSDUCKDLL inline ts::UString operator+(const std::string& s1, const ts::UString& s2)
 {
-    return ts::String::FromUTF8(s1) + s2;
+    return ts::UString::FromUTF8(s1) + s2;
 }
 
 //!
@@ -827,9 +827,9 @@ TSDUCKDLL inline ts::String operator+(const std::string& s1, const ts::String& s
 //! @param [in] s2 A nul-terminated UTF-8 string.
 //! @return Concatenation @a s1 and @a s2.
 //!
-TSDUCKDLL inline ts::String operator+(const ts::String& s1, const char* s2)
+TSDUCKDLL inline ts::UString operator+(const ts::UString& s1, const char* s2)
 {
-    return s1 + ts::String::FromUTF8(s2);
+    return s1 + ts::UString::FromUTF8(s2);
 }
 
 //!
@@ -838,9 +838,9 @@ TSDUCKDLL inline ts::String operator+(const ts::String& s1, const char* s2)
 //! @param [in] s2 An UTF-16 string.
 //! @return Concatenation @a s1 and @a s2.
 //!
-TSDUCKDLL inline ts::String operator+(const char* s1, const ts::String& s2)
+TSDUCKDLL inline ts::UString operator+(const char* s1, const ts::UString& s2)
 {
-    return ts::String::FromUTF8(s1) + s2;
+    return ts::UString::FromUTF8(s1) + s2;
 }
 
-#include "tsStringTemplate.h"
+#include "tsUStringTemplate.h"

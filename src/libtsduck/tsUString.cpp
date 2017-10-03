@@ -31,7 +31,7 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsString.h"
+#include "tsUString.h"
 #include <codecvt>
 TSDUCK_SOURCE;
 
@@ -85,16 +85,16 @@ std::string ts::String::toUTF8() const
 
 #else
 
-ts::String ts::String::FromUTF8(const std::string& utf8)
+ts::UString ts::UString::FromUTF8(const std::string& utf8)
 {
     std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> convert;
     return convert.from_bytes(utf8);
 }
 
-ts::String ts::String::FromUTF8(const char* utf8)
+ts::UString ts::UString::FromUTF8(const char* utf8)
 {
     if (utf8 == 0) {
-        return String();
+        return UString();
     }
     else {
         std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> convert;
@@ -102,10 +102,10 @@ ts::String ts::String::FromUTF8(const char* utf8)
     }
 }
 
-ts::String ts::String::FromUTF8(const char* utf8, size_type count)
+ts::UString ts::UString::FromUTF8(const char* utf8, size_type count)
 {
     if (utf8 == 0) {
-        return String();
+        return UString();
     }
     else {
         std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> convert;
@@ -113,7 +113,7 @@ ts::String ts::String::FromUTF8(const char* utf8, size_type count)
     }
 }
 
-std::string ts::String::toUTF8() const
+std::string ts::UString::toUTF8() const
 {
     std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> convert;
     return convert.to_bytes(*this);
@@ -126,14 +126,14 @@ std::string ts::String::toUTF8() const
 // Comparison operator with UTF-8 strings.
 //----------------------------------------------------------------------------
 
-bool ts::String::operator==(const std::string& other) const
+bool ts::UString::operator==(const std::string& other) const
 {
-    return operator==(String(other));
+    return operator==(UString(other));
 }
 
-bool ts::String::operator==(const char* other) const
+bool ts::UString::operator==(const char* other) const
 {
-    return other != 0 && operator==(String(other));
+    return other != 0 && operator==(UString(other));
 }
 
 
@@ -141,7 +141,7 @@ bool ts::String::operator==(const char* other) const
 // Trim leading & trailing spaces in the string
 //----------------------------------------------------------------------------
 
-void ts::String::trim(bool leading, bool trailing)
+void ts::UString::trim(bool leading, bool trailing)
 {
     if (trailing) {
         size_type index = length();
@@ -160,9 +160,9 @@ void ts::String::trim(bool leading, bool trailing)
     }
 }
 
-ts::String ts::String::toTrimmed(bool leading, bool trailing) const
+ts::UString ts::UString::toTrimmed(bool leading, bool trailing) const
 {
-    String result(*this);
+    UString result(*this);
     result.trim(leading, trailing);
     return result;
 }
@@ -172,7 +172,7 @@ ts::String ts::String::toTrimmed(bool leading, bool trailing) const
 // Return a lower/upper-case version of the string.
 //----------------------------------------------------------------------------
 
-void ts::String::convertToLower()
+void ts::UString::convertToLower()
 {
     const size_type len = size();
     for (size_type i = 0; i < len; ++i) {
@@ -180,7 +180,7 @@ void ts::String::convertToLower()
     }
 }
 
-void ts::String::convertToUpper()
+void ts::UString::convertToUpper()
 {
     const size_type len = size();
     for (size_type i = 0; i < len; ++i) {
@@ -188,16 +188,16 @@ void ts::String::convertToUpper()
     }
 }
 
-ts::String ts::String::toLower() const
+ts::UString ts::UString::toLower() const
 {
-    String result(*this);
+    UString result(*this);
     result.convertToLower();
     return result;
 }
 
-ts::String ts::String::toUpper() const
+ts::UString ts::UString::toUpper() const
 {
-    String result(*this);
+    UString result(*this);
     result.convertToUpper();
     return result;
 }
@@ -207,7 +207,7 @@ ts::String ts::String::toUpper() const
 // Remove all occurences of a substring.
 //----------------------------------------------------------------------------
 
-void ts::String::remove(const String& substr)
+void ts::UString::remove(const UString& substr)
 {
     const size_type len = substr.size();
     if (len > 0) {
@@ -218,21 +218,21 @@ void ts::String::remove(const String& substr)
     }
 }
 
-void ts::String::remove(Char c)
+void ts::UString::remove(UChar c)
 {
     erase(std::remove(begin(), end(), c), end());
 }
 
-ts::String ts::String::toRemoved(const String& substr) const
+ts::UString ts::UString::toRemoved(const UString& substr) const
 {
-    String result(*this);
+    UString result(*this);
     result.remove(substr);
     return result;
 }
 
-ts::String ts::String::toRemoved(Char c) const
+ts::UString ts::UString::toRemoved(UChar c) const
 {
-    String result(*this);
+    UString result(*this);
     result.remove(c);
     return result;
 }
@@ -242,7 +242,7 @@ ts::String ts::String::toRemoved(Char c) const
 // Substitute all occurences of a string with another one.
 //----------------------------------------------------------------------------
 
-void ts::String::substitute(const String& value, const String& replacement)
+void ts::UString::substitute(const UString& value, const UString& replacement)
 {
     // Filter out degenerated cases.
     if (!empty() && !value.empty()) {
@@ -255,9 +255,9 @@ void ts::String::substitute(const String& value, const String& replacement)
     }
 }
 
-ts::String ts::String::toSubstituted(const String& value, const String& replacement) const
+ts::UString ts::UString::toSubstituted(const UString& value, const UString& replacement) const
 {
-    String result(*this);
+    UString result(*this);
     result.substitute(value, replacement);
     return result;
 }
@@ -267,14 +267,14 @@ ts::String ts::String::toSubstituted(const String& value, const String& replacem
 // Prefix / suffix checking.
 //----------------------------------------------------------------------------
 
-void ts::String::removePrefix(const String& prefix, CaseSensitivity cs)
+void ts::UString::removePrefix(const UString& prefix, CaseSensitivity cs)
 {
     if (startWith(prefix, cs)) {
         erase(0, prefix.length());
     }
 }
 
-void ts::String::removeSuffix(const String& suffix, CaseSensitivity cs)
+void ts::UString::removeSuffix(const UString& suffix, CaseSensitivity cs)
 {
     if (endWith(suffix, cs)) {
         assert(length() >= suffix.length());
@@ -282,21 +282,21 @@ void ts::String::removeSuffix(const String& suffix, CaseSensitivity cs)
     }
 }
 
-ts::String ts::String::toRemovedPrefix(const String& prefix, CaseSensitivity cs) const
+ts::UString ts::UString::toRemovedPrefix(const UString& prefix, CaseSensitivity cs) const
 {
-    String result(*this);
+    UString result(*this);
     result.removePrefix(prefix, cs);
     return result;
 }
 
-ts::String ts::String::toRemovedSuffix(const String& suffix, CaseSensitivity cs) const
+ts::UString ts::UString::toRemovedSuffix(const UString& suffix, CaseSensitivity cs) const
 {
-    String result(*this);
+    UString result(*this);
     result.removeSuffix(suffix, cs);
     return result;
 }
 
-bool ts::String::startWith(const String& prefix, CaseSensitivity cs) const
+bool ts::UString::startWith(const UString& prefix, CaseSensitivity cs) const
 {
     const size_type len = length();
     const size_type sublen = prefix.length();
@@ -324,7 +324,7 @@ bool ts::String::startWith(const String& prefix, CaseSensitivity cs) const
     }
 }
 
-bool ts::String::endWith(const String& suffix, CaseSensitivity cs) const
+bool ts::UString::endWith(const UString& suffix, CaseSensitivity cs) const
 {
     size_type iString = length();
     size_type iSuffix = suffix.length();
@@ -359,7 +359,7 @@ bool ts::String::endWith(const String& suffix, CaseSensitivity cs) const
 // Left-justify (pad and optionally truncate) string.
 //----------------------------------------------------------------------------
 
-void ts::String::justifyLeft(size_type width, Char pad, bool truncate)
+void ts::UString::justifyLeft(size_type width, UChar pad, bool truncate)
 {
     const size_type len = length();
     if (truncate && len > width) {
@@ -370,9 +370,9 @@ void ts::String::justifyLeft(size_type width, Char pad, bool truncate)
     }
 }
 
-ts::String ts::String::toJustifiedLeft(size_type width, Char pad, bool truncate) const
+ts::UString ts::UString::toJustifiedLeft(size_type width, UChar pad, bool truncate) const
 {
-    String result(*this);
+    UString result(*this);
     result.justifyLeft(width, pad, truncate);
     return result;
 }
@@ -382,7 +382,7 @@ ts::String ts::String::toJustifiedLeft(size_type width, Char pad, bool truncate)
 // Right-justified (pad and optionally truncate) string.
 //----------------------------------------------------------------------------
 
-void ts::String::justifyRight(size_type width, Char pad, bool truncate)
+void ts::UString::justifyRight(size_type width, UChar pad, bool truncate)
 {
     const size_type len = length();
     if (truncate && len > width) {
@@ -393,9 +393,9 @@ void ts::String::justifyRight(size_type width, Char pad, bool truncate)
     }
 }
 
-ts::String ts::String::toJustifiedRight(size_type width, Char pad, bool truncate) const
+ts::UString ts::UString::toJustifiedRight(size_type width, UChar pad, bool truncate) const
 {
-    String result(*this);
+    UString result(*this);
     result.justifyRight(width, pad, truncate);
     return result;
 }
@@ -405,7 +405,7 @@ ts::String ts::String::toJustifiedRight(size_type width, Char pad, bool truncate
 // Centered-justified (pad and optionally truncate) string.
 //----------------------------------------------------------------------------
 
-void ts::String::justifyCentered(size_type width, Char pad, bool truncate)
+void ts::UString::justifyCentered(size_type width, UChar pad, bool truncate)
 {
     const size_type len = length();
     if (truncate && len > width) {
@@ -419,9 +419,9 @@ void ts::String::justifyCentered(size_type width, Char pad, bool truncate)
     }
 }
 
-ts::String ts::String::toJustifiedCentered(size_type width, Char pad, bool truncate) const
+ts::UString ts::UString::toJustifiedCentered(size_type width, UChar pad, bool truncate) const
 {
-    String result(*this);
+    UString result(*this);
     result.justifyCentered(width, pad, truncate);
     return result;
 }
@@ -431,7 +431,7 @@ ts::String ts::String::toJustifiedCentered(size_type width, Char pad, bool trunc
 // Justify string, pad in the middle.
 //----------------------------------------------------------------------------
 
-void ts::String::justify(const String& right, size_type width, Char pad)
+void ts::UString::justify(const UString& right, size_type width, UChar pad)
 {
     const size_type len = length() + right.length();
     if (len < width) {
@@ -440,9 +440,9 @@ void ts::String::justify(const String& right, size_type width, Char pad)
     append(right);
 }
 
-ts::String ts::String::toJustified(const String& right, size_type width, Char pad) const
+ts::UString ts::UString::toJustified(const UString& right, size_type width, UChar pad) const
 {
-    String result(*this);
+    UString result(*this);
     result.justify(right, width, pad);
     return result;
 }
@@ -450,12 +450,12 @@ ts::String ts::String::toJustified(const String& right, size_type width, Char pa
 
 //----------------------------------------------------------------------------
 // Convert into a suitable HTML representation.
-// For performance reasons convertToHTML() is implemented in tsChar.cpp.
+// For performance reasons convertToHTML() is implemented in tsUChar.cpp.
 //----------------------------------------------------------------------------
 
-ts::String ts::String::ToHTML() const
+ts::UString ts::UString::ToHTML() const
 {
-    String result(*this);
+    UString result(*this);
     result.convertToHTML();
     return result;
 }
@@ -465,17 +465,17 @@ ts::String ts::String::ToHTML() const
 // Format a boolean value in various standard representation.
 //----------------------------------------------------------------------------
 
-ts::String ts::String::YesNo(bool b)
+ts::UString ts::UString::YesNo(bool b)
 {
     return FromUTF8(b ? "yes" : "no");
 }
 
-ts::String ts::String::TrueFalse(bool b)
+ts::UString ts::UString::TrueFalse(bool b)
 {
     return FromUTF8(b ? "true" : "false");
 }
 
-ts::String ts::String::OnOff(bool b)
+ts::UString ts::UString::OnOff(bool b)
 {
     return FromUTF8(b ? "on" : "off");
 }
@@ -485,7 +485,7 @@ ts::String ts::String::OnOff(bool b)
 // Check if two strings are identical, case-insensitive and ignoring blanks
 //----------------------------------------------------------------------------
 
-bool ts::String::similar(const String& other) const
+bool ts::UString::similar(const UString& other) const
 {
     const size_type alen = length();
     const size_type blen = other.length();
@@ -511,7 +511,7 @@ bool ts::String::similar(const String& other) const
     }
 }
 
-bool ts::String::similar(const void* addr, size_type size) const
+bool ts::UString::similar(const void* addr, size_type size) const
 {
     return addr != 0 && similar(FromUTF8(reinterpret_cast<const char*>(addr), size));
 }

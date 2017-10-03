@@ -69,23 +69,24 @@ namespace ts {
         static const DVBCharsetSingleByte ISO_8859_15; //!< ISO 8859-15 character set.
 
         // Inherited methods.
-        virtual bool decode(String& str, const uint8_t* dvb, size_t dvbSize) const;
-        virtual bool canEncode(const String& str, size_t start = 0, size_t count = String::NPOS) const;
-        virtual size_t encode(uint8_t*& buffer, size_t& size, const String& str, size_t start = 0, size_t count = String::NPOS) const;
+        virtual bool decode(UString& str, const uint8_t* dvb, size_t dvbSize) const;
+        virtual bool canEncode(const UString& str, size_t start = 0, size_t count = UString::NPOS) const;
+        virtual size_t encode(uint8_t*& buffer, size_t& size, const UString& str, size_t start = 0, size_t count = UString::NPOS) const;
 
-    private:
-        //! List of code points for byte values 0xA0-0xFF. Always contain 96 values.
-        const std::vector<uint16_t> _upperCodePoints;
-        //! Reverse mapping for complete character set (key = code point, value = byte rep).
-        std::map<Char, uint8_t> _bytesMap;
-
+    protected:
         //!
         //! Protected constructor.
         //! @param [in] name charset name.
         //! @param [in] tableCode DVB table code.
         //! @param [in] init Initializer list. 96 code point values for 0xA0-0xFF range, zero means unused.
         //!
-        DVBCharsetSingleByte(const String& name, uint32_t tableCode, std::initializer_list<uint16_t> init);
+        DVBCharsetSingleByte(const UString& name, uint32_t tableCode, std::initializer_list<uint16_t> init);
+
+    private:
+        //! List of code points for byte values 0xA0-0xFF. Always contain 96 values.
+        const std::vector<uint16_t> _upperCodePoints;
+        //! Reverse mapping for complete character set (key = code point, value = byte rep).
+        std::map<UChar, uint8_t> _bytesMap;
 
         // Unaccessible operations.
         DVBCharsetSingleByte() = delete;

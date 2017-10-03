@@ -38,9 +38,9 @@ const ts::DVBCharsetUTF8 ts::DVBCharsetUTF8::UTF_8;
 // Decode a DVB string from the specified byte buffer.
 //----------------------------------------------------------------------------
 
-bool ts::DVBCharsetUTF8::decode(String& str, const uint8_t* dvb, size_t dvbSize) const
+bool ts::DVBCharsetUTF8::decode(UString& str, const uint8_t* dvb, size_t dvbSize) const
 {
-    str = String::FromUTF8(reinterpret_cast<const char*>(dvb), dvbSize);
+    str = UString::FromUTF8(reinterpret_cast<const char*>(dvb), dvbSize);
     return true;
 }
 
@@ -49,7 +49,7 @@ bool ts::DVBCharsetUTF8::decode(String& str, const uint8_t* dvb, size_t dvbSize)
 // Check if a string can be encoded using the charset.
 //----------------------------------------------------------------------------
 
-bool ts::DVBCharsetUTF8::canEncode(const String& str, size_t start, size_t count) const
+bool ts::DVBCharsetUTF8::canEncode(const UString& str, size_t start, size_t count) const
 {
     // All characters and can always be encoded in UTF-8.
     return true;
@@ -60,7 +60,7 @@ bool ts::DVBCharsetUTF8::canEncode(const String& str, size_t start, size_t count
 // Encode a C++ Unicode string into a DVB string.
 //----------------------------------------------------------------------------
 
-size_t ts::DVBCharsetUTF8::encode(uint8_t*& buffer, size_t& size, const String& str, size_t start, size_t count) const
+size_t ts::DVBCharsetUTF8::encode(uint8_t*& buffer, size_t& size, const UString& str, size_t start, size_t count) const
 {
     size_t result = 0;
 

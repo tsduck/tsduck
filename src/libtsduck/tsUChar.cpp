@@ -31,8 +31,8 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsChar.h"
-#include "tsString.h"
+#include "tsUChar.h"
+#include "tsUString.h"
 #include "tsSingletonManager.h"
 TSDUCK_SOURCE;
 
@@ -57,7 +57,7 @@ TSDUCK_SOURCE;
 //----------------------------------------------------------------------------
 
 namespace {
-    MAP_SINGLETON(UpperLower, ts::Char, ts::Char);
+    MAP_SINGLETON(UpperLower, ts::UChar, ts::UChar);
     UpperLower::UpperLower() : SuperClass({
         {ts::LATIN_CAPITAL_LETTER_A_WITH_GRAVE, ts::LATIN_SMALL_LETTER_A_WITH_GRAVE},
         {ts::LATIN_CAPITAL_LETTER_A_WITH_ACUTE, ts::LATIN_SMALL_LETTER_A_WITH_ACUTE},
@@ -242,13 +242,13 @@ namespace {
 //----------------------------------------------------------------------------
 
 namespace {
-    MAP_SINGLETON(LowerUpper, ts::Char, ts::Char);
+    MAP_SINGLETON(LowerUpper, ts::UChar, ts::UChar);
     LowerUpper::LowerUpper() : SuperClass()
     {
         // Build inversed table from UpperLower.
         const UpperLower* ul = UpperLower::Instance();
         for (UpperLower::const_iterator it = ul->begin(); it != ul->end(); ++it) {
-            insert(std::pair<ts::Char, ts::Char>(it->second, it->first));
+            insert(std::pair<ts::UChar, ts::UChar>(it->second, it->first));
         }
     }
 }
@@ -259,7 +259,7 @@ namespace {
 //----------------------------------------------------------------------------
 
 namespace {
-    MAP_SINGLETON(WithoutAccent, ts::Char, const char*);
+    MAP_SINGLETON(WithoutAccent, ts::UChar, const char*);
     WithoutAccent::WithoutAccent() : SuperClass({
         {ts::LATIN_CAPITAL_LETTER_A_WITH_GRAVE,        "A"},
         {ts::LATIN_CAPITAL_LETTER_A_WITH_ACUTE,        "A"},
@@ -474,7 +474,7 @@ namespace {
 //----------------------------------------------------------------------------
 
 namespace {
-    MAP_SINGLETON(HTMLEntities, ts::Char, const char*);
+    MAP_SINGLETON(HTMLEntities, ts::UChar, const char*);
     HTMLEntities::HTMLEntities() : SuperClass({
         {ts::QUOTATION_MARK, "quot"},
         {ts::AMPERSAND, "amp"},
@@ -736,7 +736,7 @@ namespace {
 // Character conversions.
 //----------------------------------------------------------------------------
 
-bool ts::IsLower(Char c)
+bool ts::IsLower(UChar c)
 {
     if (std::iswlower(wint_t(c)) != 0) {
         // The standard function says it is lower.
@@ -749,7 +749,7 @@ bool ts::IsLower(Char c)
     }
 }
 
-bool ts::IsUpper(Char c)
+bool ts::IsUpper(UChar c)
 {
     if (std::iswupper(wint_t(c)) != 0) {
         // The standard function says it is upper.
@@ -762,9 +762,9 @@ bool ts::IsUpper(Char c)
     }
 }
 
-ts::Char ts::ToLower(Char c)
+ts::UChar ts::ToLower(UChar c)
 {
-    const Char result = Char(std::towlower(wint_t(c)));
+    const UChar result = UChar(std::towlower(wint_t(c)));
     if (result != c) {
         // The standard function has found a translation.
         return result;
@@ -777,9 +777,9 @@ ts::Char ts::ToLower(Char c)
     }
 }
 
-ts::Char ts::ToUpper(Char c)
+ts::UChar ts::ToUpper(UChar c)
 {
-    const Char result = Char(std::towupper(wint_t(c)));
+    const UChar result = UChar(std::towupper(wint_t(c)));
     if (result != c) {
         // The standard function has found a translation.
         return result;
@@ -792,28 +792,28 @@ ts::Char ts::ToUpper(Char c)
     }
 }
 
-bool ts::IsAccented(Char c)
+bool ts::IsAccented(UChar c)
 {
     const WithoutAccent* wa = WithoutAccent::Instance();
     const WithoutAccent::const_iterator it(wa->find(c));
     return it != wa->end();
 }
 
-ts::String ts::RemoveAccent(Char c)
+ts::UString ts::RemoveAccent(UChar c)
 {
     const WithoutAccent* wa = WithoutAccent::Instance();
     const WithoutAccent::const_iterator it(wa->find(c));
-    return it == wa->end() ? ts::String(1, c) : ts::String::FromUTF8(it->second);
+    return it == wa->end() ? ts::UString(1, c) : ts::UString::FromUTF8(it->second);
 }
 
-ts::String ts::ToHTML(Char c)
+ts::UString ts::ToHTML(UChar c)
 {
     const HTMLEntities* he = HTMLEntities::Instance();
     const HTMLEntities::const_iterator it(he->find(c));
-    return it == he->end() ? ts::String(1, c) : (ts::Char('&') + ts::String::FromUTF8(it->second) + ts::Char(';'));
+    return it == he->end() ? ts::UString(1, c) : (ts::UChar('&') + ts::UString::FromUTF8(it->second) + ts::UChar(';'));
 }
 
-void ts::String::convertToHTML()
+void ts::UString::convertToHTML()
 {
     // Should not be there, but this is much faster to do it that way.
     const HTMLEntities* he = HTMLEntities::Instance();
@@ -823,7 +823,7 @@ void ts::String::convertToHTML()
             ++i;
         }
         else {
-            const String rep(it->second);
+            const UString rep(it->second);
             at(i) = ts::AMPERSAND;
             insert(i + 1, rep);
             insert(i + 1 + rep.length(), 1, ts::SEMICOLON);
