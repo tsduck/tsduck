@@ -80,6 +80,12 @@ namespace ts {
         ByteBlock(const char* str);
 
         //!
+        //! Constructor from an initializer list.
+        //! @param [in] init Initializer list.
+        //!
+        ByteBlock(std::initializer_list<uint8_t> init);
+
+        //!
         //! Replace the content of a byte block.
         //! @param [in] data Address of the new area to copy.
         //! @param [in] size Size of the area to copy.

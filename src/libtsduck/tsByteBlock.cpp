@@ -39,8 +39,8 @@ TSDUCK_SOURCE;
 // Default constructor
 //----------------------------------------------------------------------------
 
-ts::ByteBlock::ByteBlock (size_type size) :
-    ByteVector (size)
+ts::ByteBlock::ByteBlock(size_type size) :
+    ByteVector(size)
 {
 }
 
@@ -48,8 +48,8 @@ ts::ByteBlock::ByteBlock (size_type size) :
 // Constructor, initialized with size bytes of specified value
 //----------------------------------------------------------------------------
 
-ts::ByteBlock::ByteBlock (size_type size, uint8_t value) :
-    ByteVector (size, value)
+ts::ByteBlock::ByteBlock(size_type size, uint8_t value) :
+    ByteVector(size, value)
 {
 }
 
@@ -57,8 +57,8 @@ ts::ByteBlock::ByteBlock (size_type size, uint8_t value) :
 // Constructor from a data block
 //----------------------------------------------------------------------------
 
-ts::ByteBlock::ByteBlock (const void* data, size_type size) :
-    ByteVector (size)
+ts::ByteBlock::ByteBlock(const void* data, size_type size) :
+    ByteVector(size)
 {
     if (size > 0) {
         ::memcpy(&(*this)[0], data, size);  // Flawfinder: ignore: memcpy()
@@ -75,6 +75,15 @@ ts::ByteBlock::ByteBlock(const char* str) :
     if (size() > 0) {
         ::memcpy(data(), str, size());  // Flawfinder: ignore: memcpy()
     }
+}
+
+//----------------------------------------------------------------------------
+// Constructor from an initializer list.
+//----------------------------------------------------------------------------
+
+ts::ByteBlock::ByteBlock(std::initializer_list<uint8_t> init) :
+    ByteVector(init)
+{
 }
 
 //----------------------------------------------------------------------------

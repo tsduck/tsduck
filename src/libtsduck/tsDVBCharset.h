@@ -48,6 +48,10 @@ namespace ts {
         //! Exception thrown when registering duplicate charsets.
         //!
         tsDeclareException(DuplicateDVBCharset);
+        //!
+        //! Exception thrown when registering invalid charsets.
+        //!
+        tsDeclareException(InvalidDVBCharset);
 
         //!
         //! DVB-encoded CR/LF in single-byte character sets.

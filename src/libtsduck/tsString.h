@@ -233,20 +233,14 @@ namespace ts {
         //! @param [in] other An string to compare.
         //! @return True if this object is identical to @a other.
         //!
-        bool operator==(const SuperClass& other) const
-        {
-            return static_cast<SuperClass>(*this) == other;
-        }
+        bool operator==(const SuperClass& other) const { return static_cast<SuperClass>(*this) == other; }
 
         //!
         //! Comparison operator.
         //! @param [in] other An string to compare.
         //! @return True if this object is different from @a other.
         //!
-        bool operator!=(const SuperClass& other) const
-        {
-            return static_cast<SuperClass>(*this) != other;
-        }
+        bool operator!=(const SuperClass& other) const { return static_cast<SuperClass>(*this) != other; }
 
         //!
         //! Comparison operator with UTF-8 strings.
@@ -267,20 +261,14 @@ namespace ts {
         //! @param [in] other An UTF-8 string to compare.
         //! @return True if this object is different from @a other.
         //!
-        bool operator!=(const std::string& other) const
-        {
-            return !operator==(other);
-        }
+        bool operator!=(const std::string& other) const { return !operator==(other); }
 
         //!
         //! Comparison operator with UTF-8 strings.
         //! @param [in] other A nul-terminated UTF-8 string to compare.
         //! @return True if this object is different from @a other.
         //!
-        bool operator!=(const char* other) const
-        {
-            return !operator==(other);
-        }
+        bool operator!=(const char* other) const { return !operator==(other); }
 
         //!
         //! Extract a substring, returning same class.
@@ -776,6 +764,83 @@ TSDUCKDLL inline bool operator!=(const std::string& s1, const ts::String& s2)
 TSDUCKDLL inline bool operator!=(const char* s1, const ts::String& s2)
 {
     return s2 != s1;
+}
+
+//!
+//! Concatenation operator for Unicode strings.
+//! @param [in] s1 An UTF-16 string.
+//! @param [in] s2 An UTF-16 string.
+//! @return Concatenation @a s1 and @a s2.
+//!
+TSDUCKDLL inline ts::String operator+(const ts::String& s1, const ts::String& s2)
+{
+    return *static_cast<const ts::String::SuperClass*>(&s1) + *static_cast<const ts::String::SuperClass*>(&s2);
+}
+
+//!
+//! Concatenation operator for Unicode strings.
+//! @param [in] s1 An UTF-16 string.
+//! @param [in] s2 An UTF-16 character.
+//! @return Concatenation @a s1 and @a s2.
+//!
+TSDUCKDLL inline ts::String operator+(const ts::String& s1, ts::Char s2)
+{
+    return *static_cast<const ts::String::SuperClass*>(&s1) + s2;
+}
+
+//!
+//! Concatenation operator for Unicode strings.
+//! @param [in] s1 An UTF-16 character.
+//! @param [in] s2 An UTF-16 string.
+//! @return Concatenation @a s1 and @a s2.
+//!
+TSDUCKDLL inline ts::String operator+(ts::Char s1, const ts::String& s2)
+{
+    return s1 + *static_cast<const ts::String::SuperClass*>(&s2);
+}
+
+//!
+//! Concatenation operator for Unicode strings.
+//! @param [in] s1 An UTF-16 string.
+//! @param [in] s2 An UTF-8 string.
+//! @return Concatenation @a s1 and @a s2.
+//!
+TSDUCKDLL inline ts::String operator+(const ts::String& s1, const std::string& s2)
+{
+    return s1 + ts::String::FromUTF8(s2);
+}
+
+//!
+//! Concatenation operator for Unicode strings.
+//! @param [in] s1 An UTF-8 string.
+//! @param [in] s2 An UTF-16 string.
+//! @return Concatenation @a s1 and @a s2.
+//!
+TSDUCKDLL inline ts::String operator+(const std::string& s1, const ts::String& s2)
+{
+    return ts::String::FromUTF8(s1) + s2;
+}
+
+//!
+//! Concatenation operator for Unicode strings.
+//! @param [in] s1 An UTF-16 string.
+//! @param [in] s2 A nul-terminated UTF-8 string.
+//! @return Concatenation @a s1 and @a s2.
+//!
+TSDUCKDLL inline ts::String operator+(const ts::String& s1, const char* s2)
+{
+    return s1 + ts::String::FromUTF8(s2);
+}
+
+//!
+//! Concatenation operator for Unicode strings.
+//! @param [in] s1 A nul-terminated UTF-8 string.
+//! @param [in] s2 An UTF-16 string.
+//! @return Concatenation @a s1 and @a s2.
+//!
+TSDUCKDLL inline ts::String operator+(const char* s1, const ts::String& s2)
+{
+    return ts::String::FromUTF8(s1) + s2;
 }
 
 #include "tsStringTemplate.h"
