@@ -34,21 +34,59 @@
 
 #pragma once
 #include "tsDVBCharset.h"
+#include "tsByteBlock.h"
 
 namespace ts {
     //!
     //! Definition of a DVB character set using a single byte per character.
+    //!
+    //! All these character sets share the following properties:
+    //! - Codes 0x00-0x1F and 0x7F-9F are not assigned.
+    //! - Codes 0x20-0x7E are identical to ASCII.
+    //! - Only codes 0xA0-0xFF are specific, some of them being unused depending on the character set.
+    //! - The code 0x8A is interpreted as a new line.
+    //!
     //! @see ETSI EN 300 468, Annex A
     //!
     class TSDUCKDLL DVBCharsetSingleByte: public DVBCharset
     {
     public:
+        // Predefined character sets.
+        static const DVBCharsetSingleByte ISO_6937;    //!< Modified ISO 6937, DVB default charset.
+        static const DVBCharsetSingleByte ISO_8859_1;  //!< ISO 8859-1 character set.
+        static const DVBCharsetSingleByte ISO_8859_2;  //!< ISO 8859-2 character set.
+        static const DVBCharsetSingleByte ISO_8859_3;  //!< ISO 8859-3 character set.
+        static const DVBCharsetSingleByte ISO_8859_4;  //!< ISO 8859-4 character set.
+        static const DVBCharsetSingleByte ISO_8859_5;  //!< ISO 8859-5 character set.
+        static const DVBCharsetSingleByte ISO_8859_6;  //!< ISO 8859-6 character set.
+        static const DVBCharsetSingleByte ISO_8859_7;  //!< ISO 8859-7 character set.
+        static const DVBCharsetSingleByte ISO_8859_8;  //!< ISO 8859-8 character set.
+        static const DVBCharsetSingleByte ISO_8859_9;  //!< ISO 8859-9 character set.
+        static const DVBCharsetSingleByte ISO_8859_10; //!< ISO 8859-10 character set.
+        static const DVBCharsetSingleByte ISO_8859_11; //!< ISO 8859-11 character set.
+        static const DVBCharsetSingleByte ISO_8859_13; //!< ISO 8859-13 character set.
+        static const DVBCharsetSingleByte ISO_8859_14; //!< ISO 8859-14 character set.
+        static const DVBCharsetSingleByte ISO_8859_15; //!< ISO 8859-15 character set.
+
         // Inherited methods.
         virtual bool decode(String& str, const uint8_t* dvb, size_t dvbSize) const;
         virtual bool canEncode(const String& str, size_t start = 0, size_t count = String::NPOS) const;
         virtual size_t encode(uint8_t*& buffer, size_t& size, const String& str, size_t start = 0, size_t count = String::NPOS) const;
 
     private:
+        //! List of code points for byte values 0xA0-0xFF. Always contain 96 values.
+        const std::vector<uint16_t> _upperCodePoints;
+        //! Reverse mapping for complete character set (key = code point, value = byte rep).
+        std::map<Char, uint8_t> _bytesMap;
+
+        //!
+        //! Protected constructor.
+        //! @param [in] name charset name.
+        //! @param [in] tableCode DVB table code.
+        //! @param [in] init Initializer list. 96 code point values for 0xA0-0xFF range, zero means unused.
+        //!
+        DVBCharsetSingleByte(const String& name, uint32_t tableCode, std::initializer_list<uint16_t> init);
+
         // Unaccessible operations.
         DVBCharsetSingleByte() = delete;
         DVBCharsetSingleByte(const DVBCharsetSingleByte&) = delete;
