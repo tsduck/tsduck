@@ -650,69 +650,69 @@ namespace ts {
         // using NPOS instead. Otherwise, an undefined symbol error will occur at link time.
         //
 #if defined(__windows) && !defined(DOXYGEN)
-        String& erase(size_type index = 0, size_type count = NPOS) { SuperClass::erase(index, count); return *this; }
+        UString& erase(size_type index = 0, size_type count = NPOS) { SuperClass::erase(index, count); return *this; }
         iterator erase(const_iterator position) { return SuperClass::erase(position); }
         iterator erase(const_iterator first, const_iterator last) { return SuperClass::erase(first, last); }
-        String& assign(size_type count, Char ch) { SuperClass::assign(count, ch); return *this; }
-        String& assign(const SuperClass& str) { SuperClass::assign(str); return *this; }
-        String& assign(const SuperClass& str, size_type pos, size_type count = NPOS) { SuperClass::assign(str, pos, count); return *this; }
-        String& assign(SuperClass&& str) { SuperClass::assign(str); return *this; }
-        String& assign(const Char* s, size_type count) { SuperClass::assign(s, count); return *this; }
-        String& assign(const Char* s) { SuperClass::assign(s); return *this; }
-        String& assign(std::initializer_list<Char> ilist) { SuperClass::assign(ilist); return *this; }
-        template<class It> String& assign(It first, It last) { SuperClass::assign<It>(first, last); return *this; }
-        String& insert(size_type index, size_type count, Char ch) { SuperClass::insert(index, count, ch); return *this; }
-        String& insert(size_type index, const Char* s) { SuperClass::insert(index, s); return *this; }
-        String& insert(size_type index, const Char* s, size_type count) { SuperClass::insert(index, s, count); return *this; }
-        String& insert(size_type index, const SuperClass& str) { SuperClass::insert(index, str); return *this; }
-        String& insert(size_type index, const SuperClass& str, size_type index_str, size_type count = NPOS) { SuperClass::insert(index, str, index_str, count); return *this; }
-        iterator insert(iterator pos, Char ch) { return SuperClass::insert(pos, ch); }
-        iterator insert(const_iterator pos, Char ch) { return SuperClass::insert(pos, ch); }
-        iterator insert(const_iterator pos, size_type count, Char ch) { return SuperClass::insert(pos, count, ch); }
+        UString& assign(size_type count, UChar ch) { SuperClass::assign(count, ch); return *this; }
+        UString& assign(const SuperClass& str) { SuperClass::assign(str); return *this; }
+        UString& assign(const SuperClass& str, size_type pos, size_type count = NPOS) { SuperClass::assign(str, pos, count); return *this; }
+        UString& assign(SuperClass&& str) { SuperClass::assign(str); return *this; }
+        UString& assign(const UChar* s, size_type count) { SuperClass::assign(s, count); return *this; }
+        UString& assign(const UChar* s) { SuperClass::assign(s); return *this; }
+        UString& assign(std::initializer_list<UChar> ilist) { SuperClass::assign(ilist); return *this; }
+        template<class It> UString& assign(It first, It last) { SuperClass::assign<It>(first, last); return *this; }
+        UString& insert(size_type index, size_type count, UChar ch) { SuperClass::insert(index, count, ch); return *this; }
+        UString& insert(size_type index, const UChar* s) { SuperClass::insert(index, s); return *this; }
+        UString& insert(size_type index, const UChar* s, size_type count) { SuperClass::insert(index, s, count); return *this; }
+        UString& insert(size_type index, const SuperClass& str) { SuperClass::insert(index, str); return *this; }
+        UString& insert(size_type index, const SuperClass& str, size_type index_str, size_type count = NPOS) { SuperClass::insert(index, str, index_str, count); return *this; }
+        iterator insert(iterator pos, UChar ch) { return SuperClass::insert(pos, ch); }
+        iterator insert(const_iterator pos, UChar ch) { return SuperClass::insert(pos, ch); }
+        iterator insert(const_iterator pos, size_type count, UChar ch) { return SuperClass::insert(pos, count, ch); }
         template<class It> iterator insert(const_iterator pos, It first, It last) { return SuperClass::insert<It>(pos, first, last); }
-        iterator insert(const_iterator pos, std::initializer_list<Char> ilist) { return SuperClass::insert(pos, ilist); }
-        String& append(size_type count, Char ch) { SuperClass::append(count, ch); return *this; }
-        String& append(const SuperClass& str) { SuperClass::append(str); return *this; }
-        String& append(const SuperClass& str, size_type pos, size_type count = NPOS) { SuperClass::append(str, pos, count); return *this; }
-        String& append(const Char* s, size_type count) { SuperClass::append(s, count); return *this; }
-        String& append(const Char* s) { SuperClass::append(s); return *this; }
-        template<class It> String& append(It first, It last) { SuperClass::append<It>(first, last); return *this; }
-        String& append(std::initializer_list<Char> ilist) { SuperClass::append(ilist); return *this; }
+        iterator insert(const_iterator pos, std::initializer_list<UChar> ilist) { return SuperClass::insert(pos, ilist); }
+        UString& append(size_type count, UChar ch) { SuperClass::append(count, ch); return *this; }
+        UString& append(const SuperClass& str) { SuperClass::append(str); return *this; }
+        UString& append(const SuperClass& str, size_type pos, size_type count = NPOS) { SuperClass::append(str, pos, count); return *this; }
+        UString& append(const UChar* s, size_type count) { SuperClass::append(s, count); return *this; }
+        UString& append(const UChar* s) { SuperClass::append(s); return *this; }
+        template<class It> UString& append(It first, It last) { SuperClass::append<It>(first, last); return *this; }
+        UString& append(std::initializer_list<UChar> ilist) { SuperClass::append(ilist); return *this; }
         int compare(const SuperClass& str) const { return SuperClass::compare(str); }
         int compare(size_type pos1, size_type count1, const SuperClass& str) const { return SuperClass::compare(pos1, count1, str); }
         int compare(size_type pos1, size_type count1, const SuperClass& str, size_type pos2, size_type count2 = NPOS) const { return SuperClass::compare(pos1, count1, str, pos2, count2); }
-        int compare(const Char* s) const { return SuperClass::compare(s); }
-        int compare(size_type pos1, size_type count1, const Char* s) const { return SuperClass::compare(pos1, count1, s); }
-        int compare(size_type pos1, size_type count1, const Char* s, size_type count2) const { return SuperClass::compare(pos1, count1, s, count2); }
-        String& replace(size_type pos, size_type count, const SuperClass& str) { SuperClass::replace(pos, count, str); return *this; }
-        String& replace(const_iterator first, const_iterator last, const SuperClass& str) { SuperClass::replace(first, last, str); return *this; }
-        String& replace(size_type pos, size_type count, const SuperClass& str, size_type pos2, size_type count2 = NPOS) { SuperClass::replace(pos, count, str, pos2, count2); return *this; }
-        template<class It> String& replace(const_iterator first, const_iterator last, It first2, It last2) { SuperClass::replace<It>(first, last, first2, last2); return *this; }
-        String& replace(size_type pos, size_type count, const Char* cstr, size_type count2) { SuperClass::replace(pos, count, cstr, count2); return *this; }
-        String& replace(const_iterator first, const_iterator last, const Char* cstr, size_type count2) { SuperClass::replace(first, last, cstr, count2); return *this; }
-        String& replace(size_type pos, size_type count, const Char* cstr) { SuperClass::replace(pos, count, cstr); return *this; }
-        String& replace(const_iterator first, const_iterator last, const Char* cstr) { SuperClass::replace(first, last, cstr); return *this; }
-        String& replace(size_type pos, size_type count, size_type count2, Char ch) { SuperClass::replace(pos, count, count2, ch); return *this; }
-        String& replace(const_iterator first, const_iterator last, size_type count2, Char ch) { SuperClass::replace(first, last, count2, ch); return *this; }
-        String& replace(const_iterator first, const_iterator last, std::initializer_list<Char> ilist) { SuperClass::replace(first, last, ilist); return *this; }
+        int compare(const UChar* s) const { return SuperClass::compare(s); }
+        int compare(size_type pos1, size_type count1, const UChar* s) const { return SuperClass::compare(pos1, count1, s); }
+        int compare(size_type pos1, size_type count1, const UChar* s, size_type count2) const { return SuperClass::compare(pos1, count1, s, count2); }
+        UString& replace(size_type pos, size_type count, const SuperClass& str) { SuperClass::replace(pos, count, str); return *this; }
+        UString& replace(const_iterator first, const_iterator last, const SuperClass& str) { SuperClass::replace(first, last, str); return *this; }
+        UString& replace(size_type pos, size_type count, const SuperClass& str, size_type pos2, size_type count2 = NPOS) { SuperClass::replace(pos, count, str, pos2, count2); return *this; }
+        template<class It> UString& replace(const_iterator first, const_iterator last, It first2, It last2) { SuperClass::replace<It>(first, last, first2, last2); return *this; }
+        UString& replace(size_type pos, size_type count, const UChar* cstr, size_type count2) { SuperClass::replace(pos, count, cstr, count2); return *this; }
+        UString& replace(const_iterator first, const_iterator last, const UChar* cstr, size_type count2) { SuperClass::replace(first, last, cstr, count2); return *this; }
+        UString& replace(size_type pos, size_type count, const UChar* cstr) { SuperClass::replace(pos, count, cstr); return *this; }
+        UString& replace(const_iterator first, const_iterator last, const UChar* cstr) { SuperClass::replace(first, last, cstr); return *this; }
+        UString& replace(size_type pos, size_type count, size_type count2, UChar ch) { SuperClass::replace(pos, count, count2, ch); return *this; }
+        UString& replace(const_iterator first, const_iterator last, size_type count2, UChar ch) { SuperClass::replace(first, last, count2, ch); return *this; }
+        UString& replace(const_iterator first, const_iterator last, std::initializer_list<UChar> ilist) { SuperClass::replace(first, last, ilist); return *this; }
         size_type rfind(const SuperClass& str, size_type pos = NPOS) const { return SuperClass::rfind(str, pos); }
-        size_type rfind(const Char* s, size_type pos, size_type count) const { return SuperClass::rfind(s, pos, count); }
-        size_type rfind(const Char* s, size_type pos = NPOS) const { return SuperClass::rfind(s, pos); }
-        size_type rfind(Char ch, size_type pos = NPOS) const { return SuperClass::rfind(ch, pos); }
+        size_type rfind(const UChar* s, size_type pos, size_type count) const { return SuperClass::rfind(s, pos, count); }
+        size_type rfind(const UChar* s, size_type pos = NPOS) const { return SuperClass::rfind(s, pos); }
+        size_type rfind(UChar ch, size_type pos = NPOS) const { return SuperClass::rfind(ch, pos); }
         size_type find_last_of(const SuperClass& str, size_type pos = NPOS) const { return SuperClass::find_last_of(str, pos); }
-        size_type find_last_of(const Char* s, size_type pos, size_type count) const { return SuperClass::find_last_of(s, pos, count); }
-        size_type find_last_of(const Char* s, size_type pos = NPOS) const { return SuperClass::find_last_of(s, pos); }
-        size_type find_last_of(Char ch, size_type pos = NPOS) const { return SuperClass::find_last_of(ch, pos); }
+        size_type find_last_of(const UChar* s, size_type pos, size_type count) const { return SuperClass::find_last_of(s, pos, count); }
+        size_type find_last_of(const UChar* s, size_type pos = NPOS) const { return SuperClass::find_last_of(s, pos); }
+        size_type find_last_of(UChar ch, size_type pos = NPOS) const { return SuperClass::find_last_of(ch, pos); }
         size_type find_last_not_of(const SuperClass& str, size_type pos = NPOS) const { return SuperClass::find_last_not_of(str, pos); }
-        size_type find_last_not_of(const Char* s, size_type pos, size_type count) const { return SuperClass::find_last_not_of(s, pos, count); }
-        size_type find_last_not_of(const Char* s, size_type pos = NPOS) const { return SuperClass::find_last_not_of(s, pos); }
-        size_type find_last_not_of(Char ch, size_type pos = NPOS) const { return SuperClass::find_last_not_of(ch, pos); }
+        size_type find_last_not_of(const UChar* s, size_type pos, size_type count) const { return SuperClass::find_last_not_of(s, pos, count); }
+        size_type find_last_not_of(const UChar* s, size_type pos = NPOS) const { return SuperClass::find_last_not_of(s, pos); }
+        size_type find_last_not_of(UChar ch, size_type pos = NPOS) const { return SuperClass::find_last_not_of(ch, pos); }
 #endif // End of Windows hack
     };
 }
 
 //!
-//! Output operator for ts::String on standard text streams with UTF-8 conversion.
+//! Output operator for ts::UString on standard text streams with UTF-8 conversion.
 //! @param [in,out] strm A standard stream in output mode.
 //! @param [in] str A string.
 //! @return A reference to the @a strm object.
