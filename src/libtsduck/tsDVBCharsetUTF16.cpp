@@ -38,14 +38,14 @@ const ts::DVBCharsetUTF16 ts::DVBCharsetUTF16::UNICODE;
 // Decode a DVB string from the specified byte buffer.
 //----------------------------------------------------------------------------
 
-bool ts::DVBCharsetUTF16::decode(String& str, const uint8_t* dvb, size_t dvbSize) const
+bool ts::DVBCharsetUTF16::decode(UString& str, const uint8_t* dvb, size_t dvbSize) const
 {
     // We simply copy 2 bytes per character.
     str.clear();
     str.reserve(dvbSize / 2);
     for (size_t i = 0; dvb != 0 && i + 1 < dvbSize; i += 2) {
         const uint16_t cp = GetUInt16(dvb + i);
-        str.push_back(cp == DVB_CODEPOINT_CRLF ? ts::LINE_FEED : Char(cp));
+        str.push_back(cp == DVB_CODEPOINT_CRLF ? ts::LINE_FEED : UChar(cp));
     }
 
     // Truncated string if odd number of bytes.
@@ -57,7 +57,7 @@ bool ts::DVBCharsetUTF16::decode(String& str, const uint8_t* dvb, size_t dvbSize
 // Check if a string can be encoded using the charset.
 //----------------------------------------------------------------------------
 
-bool ts::DVBCharsetUTF16::canEncode(const String& str, size_t start, size_t count) const
+bool ts::DVBCharsetUTF16::canEncode(const UString& str, size_t start, size_t count) const
 {
     // All characters and can always be encoded in UTF-16.
     return true;
@@ -68,12 +68,12 @@ bool ts::DVBCharsetUTF16::canEncode(const String& str, size_t start, size_t coun
 // Encode a C++ Unicode string into a DVB string.
 //----------------------------------------------------------------------------
 
-size_t ts::DVBCharsetUTF16::encode(uint8_t*& buffer, size_t& size, const String& str, size_t start, size_t count) const
+size_t ts::DVBCharsetUTF16::encode(uint8_t*& buffer, size_t& size, const UString& str, size_t start, size_t count) const
 {
     size_t result = 0;
     // Serialize characters as long as there is free space.
     while (buffer != 0 && size > 1 && start < str.length() && count > 0) {
-        const Char cp = str[start];
+        const UChar cp = str[start];
         if (cp != ts::CARRIAGE_RETURN) {
             // Encode character.
             PutUInt16(buffer, cp == ts::LINE_FEED ? DVB_CODEPOINT_CRLF : uint16_t(cp));

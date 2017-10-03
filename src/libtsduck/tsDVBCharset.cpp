@@ -32,6 +32,11 @@
 #include "tsSingletonManager.h"
 TSDUCK_SOURCE;
 
+#if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
+const uint8_t  ts::DVBCharset::DVB_SINGLE_BYTE_CRLF;
+const uint16_t ts::DVBCharset::DVB_CODEPOINT_CRLF;
+#endif
+
 
 //----------------------------------------------------------------------------
 // Get the character coding table at the beginning of a DVB string.
@@ -89,7 +94,7 @@ namespace {
     {
         tsDeclareSingleton(CharSetRepo);
     public:
-        std::map<ts::String, ts::DVBCharset*> byName;
+        std::map<ts::UString, ts::DVBCharset*> byName;
         std::map<uint32_t,   ts::DVBCharset*> byCode;
     };
     tsDefineSingleton(CharSetRepo);
@@ -97,10 +102,10 @@ namespace {
 }
 
 // Get a DVB character set by name.
-ts::DVBCharset* ts::DVBCharset::GetCharset(const String& name)
+ts::DVBCharset* ts::DVBCharset::GetCharset(const UString& name)
 {
     const CharSetRepo* repo = CharSetRepo::Instance();
-    const std::map<String, DVBCharset*>::const_iterator it = repo->byName.find(name);
+    const std::map<UString, DVBCharset*>::const_iterator it = repo->byName.find(name);
     return it == repo->byName.end() ? 0 : it->second;
 }
 
@@ -133,13 +138,13 @@ void ts::DVBCharset::Unregister(const DVBCharset* charset)
 // Constructor / destructor.
 //----------------------------------------------------------------------------
 
-ts::DVBCharset::DVBCharset(const String& name, uint32_t tableCode) :
+ts::DVBCharset::DVBCharset(const UString& name, uint32_t tableCode) :
     _name(name),
     _code(tableCode)
 {
     // Register the character set.
     CharSetRepo* repo = CharSetRepo::Instance();
-    const std::map<String, DVBCharset*>::const_iterator itName = repo->byName.find(_name);
+    const std::map<UString, DVBCharset*>::const_iterator itName = repo->byName.find(_name);
     const std::map<uint32_t, DVBCharset*>::const_iterator itCode = repo->byCode.find(_code);
     if (itName == repo->byName.end() && itCode == repo->byCode.end()) {
         // Charset not yet registered.

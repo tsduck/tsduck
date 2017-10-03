@@ -884,10 +884,10 @@
     <ClInclude Include="..\..\src\libtsduck\tsS2SatelliteDeliverySystemDescriptor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\libtsduck\tsString.h">
+    <ClInclude Include="..\..\src\libtsduck\tsUString.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\libtsduck\tsChar.h">
+    <ClInclude Include="..\..\src\libtsduck\tsUChar.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\libtsduck\tsStringTemplate.h">
@@ -1540,10 +1540,10 @@
     <ClCompile Include="..\..\src\libtsduck\tsS2SatelliteDeliverySystemDescriptor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\libtsduck\tsString.cpp">
+    <ClCompile Include="..\..\src\libtsduck\tsUString.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\libtsduck\tsChar.cpp">
+    <ClCompile Include="..\..\src\libtsduck\tsUChar.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\libtsduck\tsDVBCharset.cpp">

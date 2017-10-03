@@ -49,17 +49,18 @@ namespace ts {
         static const DVBCharsetUTF16 UNICODE;
 
         // Inherited methods.
-        virtual bool decode(String& str, const uint8_t* dvb, size_t dvbSize) const;
-        virtual bool canEncode(const String& str, size_t start = 0, size_t count = String::NPOS) const;
-        virtual size_t encode(uint8_t*& buffer, size_t& size, const String& str, size_t start = 0, size_t count = String::NPOS) const;
+        virtual bool decode(UString& str, const uint8_t* dvb, size_t dvbSize) const;
+        virtual bool canEncode(const UString& str, size_t start = 0, size_t count = UString::NPOS) const;
+        virtual size_t encode(uint8_t*& buffer, size_t& size, const UString& str, size_t start = 0, size_t count = UString::NPOS) const;
 
-    private:
+    protected:
         //!
         //! Constructor.
         //! There is only one definition for such DVB character sets.
         //!
         DVBCharsetUTF16() : DVBCharset("UNICODE", 0x000011) {}
 
+    private:
         // Unaccessible operations.
         DVBCharsetUTF16(const DVBCharsetUTF16&) = delete;
         DVBCharsetUTF16& operator=(const DVBCharsetUTF16&) = delete;

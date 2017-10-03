@@ -33,7 +33,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsString.h"
+#include "tsUString.h"
 #include "tsException.h"
 
 namespace ts {
@@ -88,7 +88,7 @@ namespace ts {
         //! Get the character set name.
         //! @return The name.
         //!
-        String name() const {return _name;}
+        UString name() const {return _name;}
 
         //!
         //! Get the DVB table code for the character set.
@@ -101,7 +101,7 @@ namespace ts {
         //! @param [in] name Name of the requested character set.
         //! @return Address of the character or zero if not found.
         //!
-        static DVBCharset* GetCharset(const String& name);
+        static DVBCharset* GetCharset(const UString& name);
     
         //!
         //! Get a DVB character set by table code.
@@ -124,7 +124,7 @@ namespace ts {
         //! @param [in] dvbSize Size in bytes of the DVB string.
         //! @return True on success, false on error (truncated, unsupported format, etc.)
         //!
-        virtual bool decode(String& str, const uint8_t* dvb, size_t dvbSize) const = 0;
+        virtual bool decode(UString& str, const uint8_t* dvb, size_t dvbSize) const = 0;
 
         //!
         //! Check if a string can be encoded using the charset (ie all characters can be represented).
@@ -133,7 +133,7 @@ namespace ts {
         //! @param [in] count Maximum number of characters to encode.
         //! @return True if all characters can be encoded.
         //!
-        virtual bool canEncode(const String& str, size_t start = 0, size_t count = String::NPOS) const = 0;
+        virtual bool canEncode(const UString& str, size_t start = 0, size_t count = UString::NPOS) const = 0;
 
         //!
         //! Encode a C++ Unicode string into a DVB string.
@@ -152,9 +152,9 @@ namespace ts {
         //!
         virtual size_t encode(uint8_t*& buffer,
                               size_t& size,
-                              const String& str,
+                              const UString& str,
                               size_t start = 0,
-                              size_t count = String::NPOS) const = 0;
+                              size_t count = UString::NPOS) const = 0;
 
         //!
         //! Virtual destructor.
@@ -167,7 +167,7 @@ namespace ts {
         //! @param [in] name charset name
         //! @param [in] tableCode DVB table code
         //!
-        DVBCharset(const String& name, uint32_t tableCode);
+        DVBCharset(const UString& name, uint32_t tableCode);
 
         //!
         //! Remove the specified charset
@@ -176,7 +176,7 @@ namespace ts {
         static void Unregister(const DVBCharset* charset);
 
     private:
-        String   _name;  //!< Character set name.
+        UString   _name;  //!< Character set name.
         uint32_t _code;  //!< Table code.
 
         // Unaccessible operations.

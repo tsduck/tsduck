@@ -35,10 +35,10 @@
 //----------------------------------------------------------------------------
 
 template <class CONTAINER>
-void ts::String::split(CONTAINER& container, Char separator, bool trimSpaces) const
+void ts::UString::split(CONTAINER& container, UChar separator, bool trimSpaces) const
 {
-    const Char* sep = 0;
-    const Char* input = c_str();
+    const UChar* sep = 0;
+    const UChar* input = c_str();
     container.clear();
 
     do {
@@ -46,7 +46,7 @@ void ts::String::split(CONTAINER& container, Char separator, bool trimSpaces) co
         for (sep = input; *sep != separator && *sep != 0; ++sep) {
         }
         // Extract segment
-        String segment(input, sep - input);
+        UString segment(input, sep - input);
         if (trimSpaces) {
             segment.trim();
         }
@@ -62,10 +62,10 @@ void ts::String::split(CONTAINER& container, Char separator, bool trimSpaces) co
 //----------------------------------------------------------------------------
 
 template <class CONTAINER>
-void ts::String::splitBlocks(CONTAINER& container, Char startWith, Char endWith, bool trimSpaces) const
+void ts::UString::splitBlocks(CONTAINER& container, UChar startWith, UChar endWith, bool trimSpaces) const
 {
-    const Char *sep = 0;
-    const Char* input = c_str();
+    const UChar *sep = 0;
+    const UChar* input = c_str();
     container.clear();
 
     do {
@@ -91,7 +91,7 @@ void ts::String::splitBlocks(CONTAINER& container, Char startWith, Char endWith,
 
         }
         // Extract segment
-        String segment(input, sep - input + (*sep == 0 ? 0 : 1));
+        UString segment(input, sep - input + (*sep == 0 ? 0 : 1));
         // trim spaces if needed
         if (trimSpaces) {
             segment.trim();
@@ -108,7 +108,7 @@ void ts::String::splitBlocks(CONTAINER& container, Char startWith, Char endWith,
 //----------------------------------------------------------------------------
 
 template <class CONTAINER>
-void ts::String::splitLines(CONTAINER& lines, size_t maxWidth, const String& otherSeparators, const String& nextMargin, bool forceSplit) const
+void ts::UString::splitLines(CONTAINER& lines, size_t maxWidth, const UString& otherSeparators, const UString& nextMargin, bool forceSplit) const
 {
     // Cleanup container
     lines.clear();
@@ -143,7 +143,7 @@ void ts::String::splitLines(CONTAINER& lines, size_t maxWidth, const String& oth
             }
         }
         if (cut) {
-            lines.push_back((marginLength == 0 ? String() : nextMargin) + substr(start, eol - start));
+            lines.push_back((marginLength == 0 ? UString() : nextMargin) + substr(start, eol - start));
             marginLength = nextMargin.length();
             // Start new line, skip leading spaces
             start = eol;
@@ -169,9 +169,9 @@ void ts::String::splitLines(CONTAINER& lines, size_t maxWidth, const String& oth
 //----------------------------------------------------------------------------
 
 template <class ITERATOR>
-ts::String ts::String::join(ITERATOR begin, ITERATOR end, const String& separator)
+ts::UString ts::UString::join(ITERATOR begin, ITERATOR end, const UString& separator)
 {
-    String res;
+    UString res;
     while (begin != end) {
         if (!res.empty()) {
             res.append(separator);
@@ -188,7 +188,7 @@ ts::String ts::String::join(ITERATOR begin, ITERATOR end, const String& separato
 //----------------------------------------------------------------------------
 
 template <class CONTAINER>
-bool ts::String::containSimilar(const CONTAINER& container) const
+bool ts::UString::containSimilar(const CONTAINER& container) const
 {
     for (typename CONTAINER::const_iterator it = container.begin(); it != container.end(); ++it) {
         if (similar(*it)) {
@@ -204,7 +204,7 @@ bool ts::String::containSimilar(const CONTAINER& container) const
 //----------------------------------------------------------------------------
 
 template <class CONTAINER>
-typename CONTAINER::const_iterator ts::String::findSimilar(const CONTAINER& container)
+typename CONTAINER::const_iterator ts::UString::findSimilar(const CONTAINER& container)
 {
     typename CONTAINER::const_iterator it = container.begin();
     while (it != container.end() && !similar(it->first)) {
