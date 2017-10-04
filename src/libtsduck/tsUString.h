@@ -35,6 +35,7 @@
 
 #pragma once
 #include "tsUChar.h"
+#include "tsByteBlock.h"
 
 namespace ts {
     class UString;
@@ -227,6 +228,74 @@ namespace ts {
         //! @return The equivalent UTF-8 string.
         //!
         std::string toUTF8() const;
+
+        //!
+        //! Convert a DVB string into UTF-16.
+        //! @param [in] dvb A string in DVB representation.
+        //! The first bytes of the string indicate the DVB character set to use.
+        //! @return The equivalent UTF-16 string. Stop on untranslatable character, if any.
+        //! @see ETSI EN 300 468, Annex A.
+        //!
+        static UString FromDVB(const std::string& dvb)
+        {
+            return FromDVB(reinterpret_cast<const uint8_t*>(dvb.data()), dvb.size());
+        }
+
+        //!
+        //! Convert a DVB string into UTF-16.
+        //! @param [in] dvb Address of a string in DVB representation.
+        //! The first bytes of the string indicate the DVB character set to use.
+        //! @param [in] dvbSize Size in bytes of the DVB string.
+        //! @return The equivalent UTF-16 string. Stop on untranslatable character, if any.
+        //! @see ETSI EN 300 468, Annex A.
+        //!
+        static UString FromDVB(const uint8_t* dvb, size_t dvbSize);
+
+        //!
+        //! Convert a DVB string into UTF-16 (preceded by its one-byte length).
+        //! @param [in,out] buffer Address of a buffer containing a DVB string to read.
+        //! The first byte in the buffer is the length in bytes of the string.
+        //! Upon return, @a buffer is updated to point after the end of the string.
+        //! @param [in,out] size Size in bytes of the buffer, which may be larger than
+        //! the DVB string. Upon return, @a size is updated, decremented by the same amount
+        //! @a buffer was incremented.
+        //! @return The equivalent UTF-16 string. Stop on untranslatable character, if any.
+        //! @see ETSI EN 300 468, Annex A.
+        //!
+        static UString FromDVBWithByteLength(const uint8_t*& buffer, size_t& size);
+
+        //!
+        //! Encode this UTF-16 string into a DVB string.
+        //! Stop either when this string is serialized or when the buffer is full, whichever comes first.
+        //! @param [in,out] buffer Address of the buffer where the DVB string is written.
+        //! The address is updated to point after the encoded value.
+        //! @param [in,out] size Size of the buffer. Updated to remaining size.
+        //! @param [in] start Starting offset to convert in this UTF-16 string.
+        //! @param [in] count Maximum number of characters to convert.
+        //! @return The number of serialized characters (which is usually not the same as the number of written bytes).
+        //!
+        size_t toDVB(uint8_t*& buffer, size_t& size, size_t start = 0, size_t count = NPOS) const;
+
+        //!
+        //! Encode this UTF-16 string into a DVB string.
+        //! @param [in] start Starting offset to convert in this UTF-16 string.
+        //! @param [in] count Maximum number of characters to convert.
+        //! @return The number of serialized characters (which is usually not the same as the number of written bytes).
+        //!
+        ByteBlock toDVB(size_t start = 0, size_t count = NPOS) const;
+
+        //!
+        //! Encode this UTF-16 string into a DVB string (preceded by its one-byte length).
+        //! Stop either when this string is serialized or when the buffer is full, whichever comes first.
+        //! @param [in,out] buffer Address of the buffer where the DVB string is written.
+        //! The first byte will receive the size in bytes of the DVB string.
+        //! The address is updated to point after the encoded value.
+        //! @param [in,out] size Size of the buffer. Updated to remaining size.
+        //! @param [in] start Starting offset to convert in this UTF-16 string.
+        //! @param [in] count Maximum number of characters to convert.
+        //! @return The number of serialized characters (which is usually not the same as the number of written bytes).
+        //!
+        size_t toDVBWithByteLength(uint8_t*& buffer, size_t& size, size_t start = 0, size_t count = NPOS) const;
 
         //!
         //! Comparison operator.

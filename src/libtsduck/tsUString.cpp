@@ -32,6 +32,9 @@
 //----------------------------------------------------------------------------
 
 #include "tsUString.h"
+#include "tsDVBCharset.h"
+#include "tsDVBCharsetSingleByte.h"
+#include "tsDVBCharsetUTF8.h"
 #include <codecvt>
 TSDUCK_SOURCE;
 
@@ -514,4 +517,173 @@ bool ts::UString::similar(const UString& other) const
 bool ts::UString::similar(const void* addr, size_type size) const
 {
     return addr != 0 && similar(FromUTF8(reinterpret_cast<const char*>(addr), size));
+}
+
+
+//----------------------------------------------------------------------------
+// Convert a DVB string into UTF-16.
+//----------------------------------------------------------------------------
+
+ts::UString ts::UString::FromDVB(const uint8_t* dvb, size_t dvbSize)
+{
+    // Null or empty buffer is a valid empty string.
+    if (dvb == 0 || dvbSize == 0) {
+        return UString();
+    }
+
+    // Get the DVB character set code from the beginning of the string.
+    uint32_t code = 0;
+    size_t codeSize = 0;
+    if (!DVBCharset::GetCharCodeTable(code, codeSize, dvb, dvbSize)) {
+        return UString();
+    }
+
+    // Skip the character code.
+    assert(codeSize <= dvbSize);
+    dvb += codeSize;
+    dvbSize -= codeSize;
+
+    // Get the character set for this DVB string.
+    DVBCharset* charset = DVBCharset::GetCharset(code);
+    if (charset == 0) {
+        // Unsupported charset. Collect all ANSI characters, replace others by '.'.
+        UString str(dvbSize, FULL_STOP);
+        for (size_t i = 0; i < dvbSize; i++) {
+            if (dvb[i] >= 0x20 && dvb[i] <= 0x7E) {
+                str[i] = UChar(dvb[i]);
+            }
+        }
+        return str;
+    }
+    else {
+        // Convert the DVB string using the character set.
+        UString str;
+        charset->decode(str, dvb, dvbSize);
+        return str;
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Convert a DVB string (preceded by its one-byte length) into UTF-16.
+//----------------------------------------------------------------------------
+
+ts::UString ts::UString::FromDVBWithByteLength(const uint8_t*& buffer, size_t& size)
+{
+    // Null or empty buffer is a valid empty string.
+    if (buffer == 0 || size == 0) {
+        return UString();
+    }
+
+    // Address and size of the DVB string.
+    const uint8_t* const dvb = buffer + 1;
+    const size_t dvbSize = std::min<size_t>(buffer[0], size - 1);
+
+    // Update the user buffer to point after the DVB string.
+    buffer += dvbSize + 1;
+    size -= dvbSize + 1;
+
+    // Decode the DVB string.
+    return FromDVB(dvb, dvbSize);
+}
+
+
+//----------------------------------------------------------------------------
+// Convert a UTF-16 string into DVB representation.
+//----------------------------------------------------------------------------
+
+size_t ts::UString::toDVB(uint8_t*& buffer, size_t& size, size_t start, size_t count) const
+{
+    // Skip degenerated cases where there is nothing to do.
+    if (buffer == 0 || size == 0 || start >= length()) {
+        return 0;
+    }
+
+    // Try to encode using these charsets in order
+    static const DVBCharset* const dvbEncoders[] = {
+        &ts::DVBCharsetSingleByte::ISO_6937,     // default charset 
+        &ts::DVBCharsetSingleByte::ISO_8859_15,  // most european characters and Euro currency sign
+        &ts::DVBCharsetUTF8::UTF_8,              // last chance, used when no other match
+        0                                        // end of list
+    };
+
+    // Look for a character set which can encode the string.
+    const DVBCharset* charset = 0;
+    for (size_t i = 0; dvbEncoders[i] != 0; ++i) {
+        if (dvbEncoders[i]->canEncode(*this, start, count)) {
+            charset = dvbEncoders[i];
+            break;
+        }
+    }
+    if (charset == 0) {
+        // Should not happen since UTF-8 can encode everything.
+        return 0;
+    }
+
+    // Encode the string.
+    return charset->encode(buffer, size, *this, start, count);
+}
+
+
+//----------------------------------------------------------------------------
+// Convert a UTF-16 string into DVB representation in a byte block.
+//----------------------------------------------------------------------------
+
+ts::ByteBlock ts::UString::toDVB(size_t start, size_t count) const
+{
+    if (start >= length()) {
+        return ByteBlock();
+    }
+    else {
+        // The maximum number of DVB bytes per character is 3 (worst case in UTF-8).
+        ByteBlock bb(3 * std::min(length() - start, count));
+
+        // Convert the string.
+        uint8_t* buffer = bb.data();
+        size_t size = bb.size();
+        toDVB(buffer, size, start, count);
+
+        // Truncate unused bytes.
+        assert(size <= bb.size());
+        bb.resize(bb.size() - size);
+        return bb;
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Convert a UTF-16 string into DVB (preceded by its one-byte length).
+//----------------------------------------------------------------------------
+
+size_t ts::UString::toDVBWithByteLength(uint8_t*& buffer, size_t& size, size_t start, size_t count) const
+{
+    // Skip degenerated cases where there is nothing to do.
+    if (buffer == 0 || size == 0 || start >= length()) {
+        return 0;
+    }
+
+    // Write the DVB string at second byte, keep the first one for the length.
+    uint8_t* dvbBuffer = buffer + 1;
+
+    // We cannot write more that 255 bytes because the length must fit in one byte.
+    const size_t dvbMaxSize = std::min<size_t>(size - 1, 0xFF);
+    size_t dvbSize = dvbMaxSize;
+
+    // Convert the string.
+    const size_t result = toDVB(dvbBuffer, dvbSize, start, count);
+
+    // Compute the actual DVB size.
+    assert(dvbSize <= dvbMaxSize);
+    dvbSize = dvbMaxSize - dvbSize;
+
+    // Update size at the beginning of the string.
+    assert(dvbSize <= 0xFF);
+    buffer[0] = uint8_t(dvbSize);
+
+    // Update user's buffer characteristics.
+    assert(size >= dvbSize + 1);
+    buffer += dvbSize + 1;
+    size -= dvbSize + 1;
+
+    return result;
 }
