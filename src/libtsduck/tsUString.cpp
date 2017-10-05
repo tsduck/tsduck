@@ -32,7 +32,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsUString.h"
-#include "tsDVBCharset.h"
+#include "tsByteBlock.h"
 #include "tsDVBCharsetSingleByte.h"
 #include "tsDVBCharsetUTF8.h"
 #include <codecvt>
@@ -592,7 +592,7 @@ ts::UString ts::UString::FromDVBWithByteLength(const uint8_t*& buffer, size_t& s
 // Convert a UTF-16 string into DVB representation.
 //----------------------------------------------------------------------------
 
-size_t ts::UString::toDVB(uint8_t*& buffer, size_t& size, size_t start, size_t count) const
+size_t ts::UString::toDVB(uint8_t*& buffer, size_t& size, size_t start, size_t count, const DVBCharset* charset) const
 {
     // Skip degenerated cases where there is nothing to do.
     if (buffer == 0 || size == 0 || start >= length()) {
@@ -608,11 +608,11 @@ size_t ts::UString::toDVB(uint8_t*& buffer, size_t& size, size_t start, size_t c
     };
 
     // Look for a character set which can encode the string.
-    const DVBCharset* charset = 0;
-    for (size_t i = 0; dvbEncoders[i] != 0; ++i) {
-        if (dvbEncoders[i]->canEncode(*this, start, count)) {
-            charset = dvbEncoders[i];
-            break;
+    if (charset == 0 || !charset->canEncode(*this, start, count)) {
+        for (size_t i = 0; charset != 0 && dvbEncoders[i] != 0; ++i) {
+            if (dvbEncoders[i]->canEncode(*this, start, count)) {
+                charset = dvbEncoders[i];
+            }
         }
     }
     if (charset == 0) {
@@ -629,7 +629,7 @@ size_t ts::UString::toDVB(uint8_t*& buffer, size_t& size, size_t start, size_t c
 // Convert a UTF-16 string into DVB representation in a byte block.
 //----------------------------------------------------------------------------
 
-ts::ByteBlock ts::UString::toDVB(size_t start, size_t count) const
+ts::ByteBlock ts::UString::toDVB(size_t start, size_t count, const DVBCharset* charset) const
 {
     if (start >= length()) {
         return ByteBlock();
@@ -641,7 +641,7 @@ ts::ByteBlock ts::UString::toDVB(size_t start, size_t count) const
         // Convert the string.
         uint8_t* buffer = bb.data();
         size_t size = bb.size();
-        toDVB(buffer, size, start, count);
+        toDVB(buffer, size, start, count, charset);
 
         // Truncate unused bytes.
         assert(size <= bb.size());
@@ -655,7 +655,7 @@ ts::ByteBlock ts::UString::toDVB(size_t start, size_t count) const
 // Convert a UTF-16 string into DVB (preceded by its one-byte length).
 //----------------------------------------------------------------------------
 
-size_t ts::UString::toDVBWithByteLength(uint8_t*& buffer, size_t& size, size_t start, size_t count) const
+size_t ts::UString::toDVBWithByteLength(uint8_t*& buffer, size_t& size, size_t start, size_t count, const DVBCharset* charset) const
 {
     // Skip degenerated cases where there is nothing to do.
     if (buffer == 0 || size == 0 || start >= length()) {
@@ -670,7 +670,7 @@ size_t ts::UString::toDVBWithByteLength(uint8_t*& buffer, size_t& size, size_t s
     size_t dvbSize = dvbMaxSize;
 
     // Convert the string.
-    const size_t result = toDVB(dvbBuffer, dvbSize, start, count);
+    const size_t result = toDVB(dvbBuffer, dvbSize, start, count, charset);
 
     // Compute the actual DVB size.
     assert(dvbSize <= dvbMaxSize);

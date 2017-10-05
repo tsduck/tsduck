@@ -44,7 +44,7 @@ TSDUCK_SOURCE;
 // The test fixture
 //----------------------------------------------------------------------------
 
-class StringTest: public CppUnit::TestFixture
+class UStringTest: public CppUnit::TestFixture
 {
 public:
     void setUp();
@@ -73,7 +73,7 @@ public:
     void testOnOff();
     void testSimilarStrings();
 
-    CPPUNIT_TEST_SUITE(StringTest);
+    CPPUNIT_TEST_SUITE(UStringTest);
     CPPUNIT_TEST(testIsSpace);
     CPPUNIT_TEST(testUTF);
     CPPUNIT_TEST(testTrim);
@@ -100,7 +100,7 @@ public:
     CPPUNIT_TEST_SUITE_END();
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION(StringTest);
+CPPUNIT_TEST_SUITE_REGISTRATION(UStringTest);
 
 
 //----------------------------------------------------------------------------
@@ -108,12 +108,12 @@ CPPUNIT_TEST_SUITE_REGISTRATION(StringTest);
 //----------------------------------------------------------------------------
 
 // Test suite initialization method.
-void StringTest::setUp()
+void UStringTest::setUp()
 {
 }
 
 // Test suite cleanup method.
-void StringTest::tearDown()
+void UStringTest::tearDown()
 {
 }
 
@@ -122,7 +122,7 @@ void StringTest::tearDown()
 // Test cases
 //----------------------------------------------------------------------------
 
-void StringTest::testIsSpace()
+void UStringTest::testIsSpace()
 {
     CPPUNIT_ASSERT(ts::IsSpace(ts::SPACE));
     CPPUNIT_ASSERT(ts::IsSpace(ts::LINE_FEED));
@@ -135,7 +135,7 @@ void StringTest::testIsSpace()
     CPPUNIT_ASSERT(!ts::IsSpace(ts::CHAR_NULL));
 }
 
-void StringTest::testUTF()
+void UStringTest::testUTF()
 {
     // Reference UTF-8 text.
     // Was entered manually in Notepad++ and separately saved in UTF-8 and UTF-16.
@@ -194,7 +194,7 @@ void StringTest::testUTF()
     ts::UString s3(reinterpret_cast<const char*>(utf8_bytes));
     ts::UString s4(reinterpret_cast<const char*>(utf8_bytes), utf8_count);
 
-    utest::Out() << "StringTest::testUTF: utf16_count = " << utf16_count << ", s1.length() = " << s1.length() << std::endl;
+    utest::Out() << "UStringTest::testUTF: utf16_count = " << utf16_count << ", s1.length() = " << s1.length() << std::endl;
 
     CPPUNIT_ASSERT_EQUAL(s1.length(), s1.size());
     CPPUNIT_ASSERT_EQUAL(s2.length(), s2.size());
@@ -211,7 +211,7 @@ void StringTest::testUTF()
     CPPUNIT_ASSERT(s1 == s4);
 }
 
-void StringTest::testTrim()
+void UStringTest::testTrim()
 {
     ts::UString s;
 
@@ -260,7 +260,7 @@ void StringTest::testTrim()
     CPPUNIT_ASSERT(s.toTrimmed(false, false) == "abc");
 }
 
-void StringTest::testLetterCase()
+void UStringTest::testLetterCase()
 {
     CPPUNIT_ASSERT(!ts::IsLower(ts::COMMA));
     CPPUNIT_ASSERT(!ts::IsUpper(ts::COMMA));
@@ -321,7 +321,7 @@ void StringTest::testLetterCase()
     CPPUNIT_ASSERT(s1 == "ABCDEF,%*=UIT");
 }
 
-void StringTest::testAccent()
+void UStringTest::testAccent()
 {
     CPPUNIT_ASSERT(!ts::IsAccented('A'));
     CPPUNIT_ASSERT(!ts::IsAccented(':'));
@@ -345,7 +345,7 @@ void StringTest::testAccent()
     CPPUNIT_ASSERT("oe" == ts::RemoveAccent(ts::LATIN_SMALL_LIGATURE_OE));
 }
 
-void StringTest::testHTML()
+void UStringTest::testHTML()
 {
     CPPUNIT_ASSERT(ts::ToHTML('A') == "A");
     CPPUNIT_ASSERT(ts::ToHTML(':') == ":");
@@ -362,7 +362,7 @@ void StringTest::testHTML()
     CPPUNIT_ASSERT(ts::UString("<abcd> = \"&").ToHTML() == "&lt;abcd&gt; = &quot;&amp;");
 }
 
-void StringTest::testRemove()
+void UStringTest::testRemove()
 {
     ts::UString s;
 
@@ -422,7 +422,7 @@ void StringTest::testRemove()
     CPPUNIT_ASSERT(s.toRemoved(ts::UChar('o')) == "fAZf==fBARf");
 }
 
-void StringTest::testSubstitute()
+void UStringTest::testSubstitute()
 {
     CPPUNIT_ASSERT(ts::UString("").toSubstituted("", "") == "");
     CPPUNIT_ASSERT(ts::UString("abcdefabcdef").toSubstituted("ab", "xyz") == "xyzcdefxyzcdef");
@@ -431,7 +431,7 @@ void StringTest::testSubstitute()
     CPPUNIT_ASSERT(ts::UString("abcdefabcdef").toSubstituted("ef", "") == "abcdabcd");
 }
 
-void StringTest::testSplit()
+void UStringTest::testSplit()
 {
     std::vector<ts::UString> v1;
     ts::UString("az, ,  fr,  ze ,t").split(v1);
@@ -469,7 +469,7 @@ void StringTest::testSplit()
     CPPUNIT_ASSERT(v4[2] == "e ,t");
 }
 
-void StringTest::testJoin()
+void UStringTest::testJoin()
 {
     std::vector<ts::UString> v;
     v.push_back("az");
@@ -479,7 +479,7 @@ void StringTest::testJoin()
     CPPUNIT_ASSERT(ts::UString::join(++v.begin(), v.end()) == "sd, tg");
 }
 
-void StringTest::testBreakLines()
+void UStringTest::testBreakLines()
 {
     std::vector<ts::UString> v1;
     ts::UString("aze arf erf r+oih zf").splitLines(v1, 8);
@@ -518,7 +518,7 @@ void StringTest::testBreakLines()
     CPPUNIT_ASSERT(v5[2] == "fnb ff");
 }
 
-void StringTest::testRemovePrefix()
+void UStringTest::testRemovePrefix()
 {
     ts::UString s;
 
@@ -548,7 +548,7 @@ void StringTest::testRemovePrefix()
     CPPUNIT_ASSERT(ts::UString("abcdef").toRemovedPrefix("AB", ts::CASE_INSENSITIVE) == "cdef");
 }
 
-void StringTest::testRemoveSuffix()
+void UStringTest::testRemoveSuffix()
 {
     ts::UString s;
 
@@ -578,7 +578,7 @@ void StringTest::testRemoveSuffix()
     CPPUNIT_ASSERT(ts::UString("abcdef").toRemovedSuffix("EF", ts::CASE_INSENSITIVE) == "abcd");
 }
 
-void StringTest::testStart()
+void UStringTest::testStart()
 {
     CPPUNIT_ASSERT(ts::UString("azertyuiop").startWith("azer"));
     CPPUNIT_ASSERT(!ts::UString("azertyuiop").startWith("aZer"));
@@ -602,7 +602,7 @@ void StringTest::testStart()
     CPPUNIT_ASSERT(!ts::UString("").startWith("abcd", ts::CASE_INSENSITIVE));
 }
 
-void StringTest::testEnd()
+void UStringTest::testEnd()
 {
     CPPUNIT_ASSERT(ts::UString("azertyuiop").endWith("uiop"));
     CPPUNIT_ASSERT(!ts::UString("azertyuiop").endWith("uiOp"));
@@ -626,7 +626,7 @@ void StringTest::testEnd()
     CPPUNIT_ASSERT(!ts::UString("").endWith("abcd", ts::CASE_INSENSITIVE));
 }
 
-void StringTest::testJustifyLeft()
+void UStringTest::testJustifyLeft()
 {
     CPPUNIT_ASSERT(ts::UString("abc").toJustifiedLeft(8) == "abc     ");
     CPPUNIT_ASSERT(ts::UString("abc").toJustifiedLeft(8, '.') == "abc.....");
@@ -634,7 +634,7 @@ void StringTest::testJustifyLeft()
     CPPUNIT_ASSERT(ts::UString("abcdefghij").toJustifiedLeft(8, ' ', true) == "abcdefgh");
 }
 
-void StringTest::testJustifyRight()
+void UStringTest::testJustifyRight()
 {
     CPPUNIT_ASSERT(ts::UString("abc").toJustifiedRight(8) == "     abc");
     CPPUNIT_ASSERT(ts::UString("abc").toJustifiedRight(8, '.') == ".....abc");
@@ -642,7 +642,7 @@ void StringTest::testJustifyRight()
     CPPUNIT_ASSERT(ts::UString("abcdefghij").toJustifiedRight(8, ' ', true) == "cdefghij");
 }
 
-void StringTest::testJustifyCentered()
+void UStringTest::testJustifyCentered()
 {
     CPPUNIT_ASSERT(ts::UString("abc").toJustifiedCentered(8) == "  abc   ");
     CPPUNIT_ASSERT(ts::UString("abc").toJustifiedCentered(8, '.') == "..abc...");
@@ -650,7 +650,7 @@ void StringTest::testJustifyCentered()
     CPPUNIT_ASSERT(ts::UString("abcdefghij").toJustifiedCentered(8, ' ', true) == "abcdefgh");
 }
 
-void StringTest::testJustify()
+void UStringTest::testJustify()
 {
     CPPUNIT_ASSERT(ts::UString("abc").toJustified("def", 8) == "abc  def");
     CPPUNIT_ASSERT(ts::UString("abc").toJustified("def", 8, '.') == "abc..def");
@@ -658,25 +658,25 @@ void StringTest::testJustify()
     CPPUNIT_ASSERT(ts::UString("abcde").toJustified("fghij", 8) == "abcdefghij");
 }
 
-void StringTest::testYesNo()
+void UStringTest::testYesNo()
 {
     CPPUNIT_ASSERT(ts::UString::YesNo(true) == "yes");
     CPPUNIT_ASSERT(ts::UString::YesNo(false) == "no");
 }
 
-void StringTest::testTrueFalse()
+void UStringTest::testTrueFalse()
 {
     CPPUNIT_ASSERT(ts::UString::TrueFalse(true) == "true");
     CPPUNIT_ASSERT(ts::UString::TrueFalse(false) == "false");
 }
 
-void StringTest::testOnOff()
+void UStringTest::testOnOff()
 {
     CPPUNIT_ASSERT(ts::UString::OnOff(true) == "on");
     CPPUNIT_ASSERT(ts::UString::OnOff(false) == "off");
 }
 
-void StringTest::testSimilarStrings()
+void UStringTest::testSimilarStrings()
 {
     CPPUNIT_ASSERT(ts::UString("").similar(""));
     CPPUNIT_ASSERT(ts::UString("aZer tY").similar("  AZE R T Y    "));

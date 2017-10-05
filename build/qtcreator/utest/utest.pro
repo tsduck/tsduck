@@ -46,7 +46,6 @@ SOURCES += \
     ../../../src/utest/utestSection.cpp \
     ../../../src/utest/utestSingleton.cpp \
     ../../../src/utest/utestStaticInstance.cpp \
-    ../../../src/utest/utestString.cpp \
     ../../../src/utest/utestStringUtils.cpp \
     ../../../src/utest/utestSystemRandomGenerator.cpp \
     ../../../src/utest/utestSysUtils.cpp \
@@ -55,6 +54,7 @@ SOURCES += \
     ../../../src/utest/utestThreadAttributes.cpp \
     ../../../src/utest/utestTime.cpp \
     ../../../src/utest/utestTSPacket.cpp \
+    ../../../src/utest/utestUString.cpp \
     ../../../src/utest/utestVariable.cpp \
     ../../../src/utest/utestXML.cpp \
     ../../../src/utest/utestXMLTables.cpp
