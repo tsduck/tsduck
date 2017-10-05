@@ -212,6 +212,7 @@ HEADERS += \
     ../../../src/libtsduck/tsSocketAddress.h \
     ../../../src/libtsduck/tsStandaloneTableDemux.h \
     ../../../src/libtsduck/tsStaticInstance.h \
+    ../../../src/libtsduck/tsStaticReferencesDVB.h \
     ../../../src/libtsduck/tsStreamIdentifierDescriptor.h \
     ../../../src/libtsduck/tsUString.h \
     ../../../src/libtsduck/tsStringUtils.h \
@@ -440,6 +441,7 @@ SOURCES += \
     ../../../src/libtsduck/tsSingletonManager.cpp \
     ../../../src/libtsduck/tsSocketAddress.cpp \
     ../../../src/libtsduck/tsStandaloneTableDemux.cpp \
+    ../../../src/libtsduck/tsStaticReferencesDVB.cpp \
     ../../../src/libtsduck/tsStreamIdentifierDescriptor.cpp \
     ../../../src/libtsduck/tsUString.cpp \
     ../../../src/libtsduck/tsStringUtils.cpp \
