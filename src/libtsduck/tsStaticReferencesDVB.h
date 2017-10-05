@@ -65,6 +65,11 @@ namespace ts {
     class TSDUCKDLL StaticReferencesDVB
     {
     public:
+        //!
+        //! Default constructor.
+        //!
         StaticReferencesDVB();
+    private:
+        std::vector<const void*> _refs;
     };
 }

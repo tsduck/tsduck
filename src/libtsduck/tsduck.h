@@ -212,6 +212,7 @@
 #include "tsSocketAddress.h"
 #include "tsStandaloneTableDemux.h"
 #include "tsStaticInstance.h"
+#include "tsStaticReferencesDVB.h"
 #include "tsStreamIdentifierDescriptor.h"
 #include "tsStringUtils.h"
 #include "tsSubtitlingDescriptor.h"
