@@ -29,7 +29,6 @@
     <ClCompile Include="..\..\src\utest\utestNetworking.cpp" />
     <ClCompile Include="..\..\src\utest\utestPacketizer.cpp" />
     <ClCompile Include="..\..\src\utest\utestPlatform.cpp" />
-    <ClCompile Include="..\..\src\utest\utestPlugin.cpp" />
     <ClCompile Include="..\..\src\utest\utestReport.cpp" />
     <ClCompile Include="..\..\src\utest\utestResidentBuffer.cpp" />
     <ClCompile Include="..\..\src\utest\utestRing.cpp" />

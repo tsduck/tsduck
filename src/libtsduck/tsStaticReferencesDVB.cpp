@@ -27,7 +27,6 @@
 //
 //----------------------------------------------------------------------------
 
-#pragma once
 #include "tsStaticReferencesDVB.h"
 #include "tsTables.h"
 #include "tsDVBCharsetSingleByte.h"
@@ -36,96 +35,85 @@
 TSDUCK_SOURCE;
 
 //
-// A class which forces a reference to a data without being optimized away by the compiler.
-//
-namespace {
-    class RefClass
-    {
-    public:
-        const void* cs;
-        RefClass(const void* _cs) : cs(_cs) {}
-    };
-}
-
-//
-// Macros to generate a dummy reference to a type in ts namespace or a static instance of a type.
+// Macros to generate a dummy reference to a type.
 //
 #define REF_NAME1(a,b) a##b
 #define REF_NAME2(a,b) REF_NAME1(a,b)
 #define REF_NAME       REF_NAME2(REF,__LINE__)
-
-#define REF_TYPE(type) static const ts::type REF_NAME
-#define REF_DATA(data) static const RefClass REF_NAME(&ts::data)
+#define REF(type)      static TS_UNUSED const type REF_NAME
 
 //
 // Constructor of the dummy reference-maker.
 //
-ts::StaticReferencesDVB::StaticReferencesDVB()
+ts::StaticReferencesDVB::StaticReferencesDVB() :
+    _refs()
 {
-    // References to all DVB character sets.
+    _refs.reserve(20);
+    
+    // References to all object files containing DVB character sets.
 
-    REF_DATA(DVBCharsetSingleByte::ISO_6937);
-    REF_DATA(DVBCharsetUTF16::UNICODE);
-    REF_DATA(DVBCharsetUTF8::UTF_8);
+    _refs.push_back(&ts::DVBCharsetSingleByte::ISO_6937);
+    _refs.push_back(&ts::DVBCharsetUTF16::UNICODE);
+    _refs.push_back(&ts::DVBCharsetUTF8::UTF_8);
 
     // References to all DVB tables.
 
-    REF_TYPE(BAT);
-    REF_TYPE(CAT);
-    REF_TYPE(EIT);
-    REF_TYPE(NIT);
-    REF_TYPE(PAT);
-    REF_TYPE(PMT);
-    REF_TYPE(RST);
-    REF_TYPE(SDT);
-    REF_TYPE(TDT);
-    REF_TYPE(TOT);
-    REF_TYPE(TSDT);
+    REF(ts::BAT);
+    REF(ts::CAT);
+    REF(ts::EIT);
+    REF(ts::NIT);
+    REF(ts::PAT);
+    REF(ts::PMT);
+    REF(ts::RST);
+    REF(ts::SDT);
+    REF(ts::TDT);
+    REF(ts::TOT);
+    REF(ts::TSDT);
 
     // References to all DVB descriptors.
 
-    REF_TYPE(AACDescriptor);
-    REF_TYPE(AC3Descriptor);
-    REF_TYPE(ApplicationSignallingDescriptor);
-    REF_TYPE(AVCVideoDescriptor);
-    REF_TYPE(BouquetNameDescriptor);
-    REF_TYPE(CableDeliverySystemDescriptor);
-    REF_TYPE(CADescriptor);
-    REF_TYPE(CAIdentifierDescriptor);
-    REF_TYPE(ContentDescriptor);
-    REF_TYPE(ComponentDescriptor);
-    REF_TYPE(CountryAvailabilityDescriptor);
-    REF_TYPE(DataBroadcastDescriptor);
-    REF_TYPE(DataBroadcastIdDescriptor);
-    REF_TYPE(DTSDescriptor);
-    REF_TYPE(EacemPreferredNameIdentifierDescriptor);
-    REF_TYPE(EacemPreferredNameListDescriptor);
-    REF_TYPE(EacemStreamIdentifierDescriptor);
-    REF_TYPE(EnhancedAC3Descriptor);
-    REF_TYPE(EutelsatChannelNumberDescriptor);
-    REF_TYPE(ExtendedEventDescriptor);
-    REF_TYPE(HDSimulcastLogicalChannelDescriptor);
-    REF_TYPE(ISO639LanguageDescriptor);
-    REF_TYPE(LinkageDescriptor);
-    REF_TYPE(LocalTimeOffsetDescriptor);
-    REF_TYPE(LogicalChannelNumberDescriptor);
-    REF_TYPE(MessageDescriptor);
-    REF_TYPE(NetworkNameDescriptor);
-    REF_TYPE(ParentalRatingDescriptor);
-    REF_TYPE(PrivateDataSpecifierDescriptor);
-    REF_TYPE(S2SatelliteDeliverySystemDescriptor);
-    REF_TYPE(SatelliteDeliverySystemDescriptor);
-    REF_TYPE(ServiceDescriptor);
-    REF_TYPE(ServiceListDescriptor);
-    REF_TYPE(ShortEventDescriptor);
-    REF_TYPE(SSUDataBroadcastIdDescriptor);
-    REF_TYPE(SSULinkageDescriptor);
-    REF_TYPE(STDDescriptor);
-    REF_TYPE(StreamIdentifierDescriptor);
-    REF_TYPE(SubtitlingDescriptor);
-    REF_TYPE(SupplementaryAudioDescriptor);
-    REF_TYPE(TeletextDescriptor);
-    REF_TYPE(TerrestrialDeliverySystemDescriptor);
-    REF_TYPE(VBIDataDescriptor);
-    REF_TYPE(VBITeletextDescriptor);
+    REF(ts::AACDescriptor);
+    REF(ts::AC3Descriptor);
+    REF(ts::ApplicationSignallingDescriptor);
+    REF(ts::AVCVideoDescriptor);
+    REF(ts::BouquetNameDescriptor);
+    REF(ts::CableDeliverySystemDescriptor);
+    REF(ts::CADescriptor);
+    REF(ts::CAIdentifierDescriptor);
+    REF(ts::ContentDescriptor);
+    REF(ts::ComponentDescriptor);
+    REF(ts::CountryAvailabilityDescriptor);
+    REF(ts::DataBroadcastDescriptor);
+    REF(ts::DataBroadcastIdDescriptor);
+    REF(ts::DTSDescriptor);
+    REF(ts::EacemPreferredNameIdentifierDescriptor);
+    REF(ts::EacemPreferredNameListDescriptor);
+    REF(ts::EacemStreamIdentifierDescriptor);
+    REF(ts::EnhancedAC3Descriptor);
+    REF(ts::EutelsatChannelNumberDescriptor);
+    REF(ts::ExtendedEventDescriptor);
+    REF(ts::HDSimulcastLogicalChannelDescriptor);
+    REF(ts::ISO639LanguageDescriptor);
+    REF(ts::LinkageDescriptor);
+    REF(ts::LocalTimeOffsetDescriptor);
+    REF(ts::LogicalChannelNumberDescriptor);
+    REF(ts::MessageDescriptor);
+    REF(ts::NetworkNameDescriptor);
+    REF(ts::ParentalRatingDescriptor);
+    REF(ts::PrivateDataSpecifierDescriptor);
+    REF(ts::S2SatelliteDeliverySystemDescriptor);
+    REF(ts::SatelliteDeliverySystemDescriptor);
+    REF(ts::ServiceDescriptor);
+    REF(ts::ServiceListDescriptor);
+    REF(ts::ShortEventDescriptor);
+    REF(ts::SSUDataBroadcastIdDescriptor);
+    REF(ts::SSULinkageDescriptor);
+    REF(ts::STDDescriptor);
+    REF(ts::StreamIdentifierDescriptor);
+    REF(ts::SubtitlingDescriptor);
+    REF(ts::SupplementaryAudioDescriptor);
+    REF(ts::TeletextDescriptor);
+    REF(ts::TerrestrialDeliverySystemDescriptor);
+    REF(ts::VBIDataDescriptor);
+    REF(ts::VBITeletextDescriptor);
 }

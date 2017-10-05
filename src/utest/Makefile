@@ -43,19 +43,29 @@ default: $(TARGETS)
 	@true
 
 .PHONY: execs
-execs: $(OBJDIR)/utest
+execs: $(OBJDIR)/utest $(OBJDIR)/utest_static
 
-$(OBJDIR)/utest: $(subst $(OBJDIR)/dependenciesForStaticLib.o,,$(OBJS)) $(LIBTSDUCKDIR)/$(OBJDIR)/$(SHARED_LIBTSDUCK)
 LDLIBS := -lcppunit $(LDLIBS)
 
+# Build two versions of the test executable.
+# 1) Using shared object. Skip the module which create static references.
+$(OBJDIR)/utest: $(subst $(OBJDIR)/dependenciesForStaticLib.o,,$(OBJS)) $(LIBTSDUCKDIR)/$(OBJDIR)/$(SHARED_LIBTSDUCK)
+
+# 2) Using static library. Skipt plugin tests since they use the shared object.
+$(OBJDIR)/utest_static: $(subst $(OBJDIR)/utestPlugin.o,,$(OBJS)) $(LIBTSDUCKDIR)/$(OBJDIR)/$(STATIC_LIBTSDUCK)
+	@echo '  [LD] $@'; \
+	$(CC) $(LDFLAGS) $^ $(LDLIBS) -o $@
+
+# A script to create the appropriate execution environment.
 $(OBJDIR)/setenv.sh: Makefile
 	echo '[[ ":$$PATH:" != *:$(realpath $(OBJDIR)):* ]] && export PATH="$(realpath $(OBJDIR)):$$PATH"' >$@
 	echo 'export LD_LIBRARY_PATH="$(realpath $(LIBTSDUCKDIR)/$(OBJDIR))"' >>$@
 	echo 'export TSPLUGINS_PATH="$(realpath $(TSPLUGINSDIR)/$(OBJDIR)):$(realpath $(LIBTSDUCKDIR))"' >>$@
 
 .PHONY: test
-test: $(OBJDIR)/utest
+test: execs
 	source $(OBJDIR)/setenv.sh && $(OBJDIR)/utest
+	source $(OBJDIR)/setenv.sh && $(OBJDIR)/utest_static
 
 .PHONY: install install-devel
 install install-devel:

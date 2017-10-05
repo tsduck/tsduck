@@ -118,9 +118,6 @@
     <ClCompile Include="..\..\src\utest\utestResidentBuffer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\utest\utestPlugin.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\utest\utestTSPacket.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
