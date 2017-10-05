@@ -34,7 +34,6 @@
 
 #pragma once
 #include "tsDVBCharset.h"
-#include "tsByteBlock.h"
 
 namespace ts {
     //!

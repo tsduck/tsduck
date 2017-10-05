@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ImportGroup Label="PropertySheets">
     <Import Project="msvc-common-begin.props" />
@@ -38,7 +38,7 @@
     <ClCompile Include="..\..\src\utest\utestSection.cpp" />
     <ClCompile Include="..\..\src\utest\utestSingleton.cpp" />
     <ClCompile Include="..\..\src\utest\utestStaticInstance.cpp" />
-    <ClCompile Include="..\..\src\utest\utestString.cpp" />
+    <ClCompile Include="..\..\src\utest\utestUString.cpp" />
     <ClCompile Include="..\..\src\utest\utestStringUtils.cpp" />
     <ClCompile Include="..\..\src\utest\utestSystemRandomGenerator.cpp" />
     <ClCompile Include="..\..\src\utest\utestSysUtils.cpp" />

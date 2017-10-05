@@ -35,10 +35,12 @@
 
 #pragma once
 #include "tsUChar.h"
-#include "tsByteBlock.h"
 
 namespace ts {
+
+    class ByteBlock;
     class UString;
+    class DVBCharset;
 
     //!
     //! Case sensitivity used on string operations.
@@ -272,17 +274,21 @@ namespace ts {
         //! @param [in,out] size Size of the buffer. Updated to remaining size.
         //! @param [in] start Starting offset to convert in this UTF-16 string.
         //! @param [in] count Maximum number of characters to convert.
+        //! @param [in] charset Preferred character set for DVB encoding. If omitted or if the string cannot
+        //! be represented in the specified character set, an alternative one will be automatically selected.
         //! @return The number of serialized characters (which is usually not the same as the number of written bytes).
         //!
-        size_t toDVB(uint8_t*& buffer, size_t& size, size_t start = 0, size_t count = NPOS) const;
+        size_t toDVB(uint8_t*& buffer, size_t& size, size_t start = 0, size_t count = NPOS, const DVBCharset* charset = 0) const;
 
         //!
         //! Encode this UTF-16 string into a DVB string.
         //! @param [in] start Starting offset to convert in this UTF-16 string.
         //! @param [in] count Maximum number of characters to convert.
+        //! @param [in] charset Preferred character set for DVB encoding. If omitted or if the string cannot
+        //! be represented in the specified character set, an alternative one will be automatically selected.
         //! @return The number of serialized characters (which is usually not the same as the number of written bytes).
         //!
-        ByteBlock toDVB(size_t start = 0, size_t count = NPOS) const;
+        ByteBlock toDVB(size_t start = 0, size_t count = NPOS, const DVBCharset* charset = 0) const;
 
         //!
         //! Encode this UTF-16 string into a DVB string (preceded by its one-byte length).
@@ -293,9 +299,11 @@ namespace ts {
         //! @param [in,out] size Size of the buffer. Updated to remaining size.
         //! @param [in] start Starting offset to convert in this UTF-16 string.
         //! @param [in] count Maximum number of characters to convert.
+        //! @param [in] charset Preferred character set for DVB encoding. If omitted or if the string cannot
+        //! be represented in the specified character set, an alternative one will be automatically selected.
         //! @return The number of serialized characters (which is usually not the same as the number of written bytes).
         //!
-        size_t toDVBWithByteLength(uint8_t*& buffer, size_t& size, size_t start = 0, size_t count = NPOS) const;
+        size_t toDVBWithByteLength(uint8_t*& buffer, size_t& size, size_t start = 0, size_t count = NPOS, const DVBCharset* charset = 0) const;
 
         //!
         //! Comparison operator.

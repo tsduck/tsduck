@@ -33,8 +33,8 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsUString.h"
 #include "tsException.h"
+#include "tsUString.h"
 
 namespace ts {
     //!
@@ -176,7 +176,7 @@ namespace ts {
         static void Unregister(const DVBCharset* charset);
 
     private:
-        UString   _name;  //!< Character set name.
+        UString  _name;  //!< Character set name.
         uint32_t _code;  //!< Table code.
 
         // Unaccessible operations.

@@ -28,6 +28,8 @@
 //----------------------------------------------------------------------------
 
 #include "tsDVBCharsetSingleByte.h"
+#include "tsByteBlock.h"
+#include "tsUString.h"
 #include "tsDecimal.h"
 TSDUCK_SOURCE;
 

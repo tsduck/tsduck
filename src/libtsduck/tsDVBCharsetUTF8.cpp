@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsDVBCharsetUTF8.h"
+#include "tsUString.h"
 TSDUCK_SOURCE;
 
 // UTF-8 character set singleton 
