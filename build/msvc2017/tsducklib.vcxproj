@@ -55,6 +55,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsCBC.h" />
     <ClInclude Include="..\..\src\libtsduck\tsCBCTemplate.h" />
     <ClInclude Include="..\..\src\libtsduck\tsCerrReport.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsStaticReferencesDVB.h" />
     <ClInclude Include="..\..\src\libtsduck\tsUChar.h" />
     <ClInclude Include="..\..\src\libtsduck\tsCipherChaining.h" />
     <ClInclude Include="..\..\src\libtsduck\tsCOM.h" />
@@ -339,6 +340,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsCASSelectionArgs.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsCAT.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsCerrReport.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsStaticReferencesDVB.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsUChar.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsCipherChaining.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsCOM.cpp" />
