@@ -35,6 +35,7 @@
 #include "tsFormat.h"
 #include "tsHexa.h"
 #include "tsNames.h"
+#include "tsUString.h"
 #include "tsTablesFactory.h"
 TSDUCK_SOURCE;
 TS_XML_DESCRIPTOR_FACTORY(ts::ExtendedEventDescriptor, "extended_event_descriptor");
@@ -338,7 +339,7 @@ void ts::ExtendedEventDescriptor::DisplayDescriptor(TablesDisplay& display, DID 
             if (len > length) {
                 len = length;
             }
-            strm << margin << "\"" << Printable(data, len) << "\" : \"";
+            strm << margin << "\"" << UString::FromDVB(data, len) << "\" : \"";
             data += len; size -= len; length -= len;
             if (length == 0) {
                 len = 0;
@@ -350,7 +351,7 @@ void ts::ExtendedEventDescriptor::DisplayDescriptor(TablesDisplay& display, DID 
                     len = length;
                 }
             }
-            strm << Printable(data, len) << "\"" << std::endl;
+            strm << UString::FromDVB(data, len) << "\"" << std::endl;
             data += len; size -= len; length -= len;
         }
         if (size < 1) {
@@ -363,7 +364,7 @@ void ts::ExtendedEventDescriptor::DisplayDescriptor(TablesDisplay& display, DID 
                 length = size;
             }
         }
-        strm << margin << "Description: \"" << Printable(data, length) << "\"" << std::endl;
+        strm << margin << "Description: \"" << UString::FromDVB(data, length) << "\"" << std::endl;
         data += length; size -= length;
     }
 

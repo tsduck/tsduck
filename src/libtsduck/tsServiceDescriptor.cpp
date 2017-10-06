@@ -32,6 +32,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsServiceDescriptor.h"
+#include "tsUString.h"
 #include "tsFormat.h"
 #include "tsHexa.h"
 #include "tsNames.h"
@@ -140,42 +141,16 @@ void ts::ServiceDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, c
     std::ostream& strm(display.out());
     const std::string margin(indent, ' ');
 
-    if (size >= 2) {
-
-        // Service type
+    if (size >= 1) {
+        // Service type.
         uint8_t stype = *data;
         data += 1; size -= 1;
-        strm << margin << Format("Service type: 0x%02X, ", int(stype))
-             << names::ServiceType(stype) << std::endl;
+        strm << margin << Format("Service type: 0x%02X, ", int(stype)) << names::ServiceType(stype) << std::endl;
         
-        // Provider name
-        size_t plength = *data;
-        data += 1; size -= 1;
-        if (plength > size) {
-            plength = size;
-        }
-        const uint8_t* provider = data;
-        data += plength; size -= plength;
-        
-        // Service name
-        size_t slength;
-        if (size < 1) {
-            slength = 0;
-        }
-        else {
-            slength = *data;
-            data += 1; size -= 1;
-            if (slength > size) {
-                slength = size;
-            }
-        }
-        const uint8_t* service = data;
-        data += slength; size -= slength;
-        
-        // Display names
-        strm << margin << "Service: \"" << Printable(service, slength)
-             << "\", Provider: \"" << Printable(provider, plength) << "\""
-             << std::endl;
+        // Provider and service names (data and size are updated by FromDVBWithByteLength).
+        const UString provider(UString::FromDVBWithByteLength(data, size));
+        const UString service(UString::FromDVBWithByteLength(data, size));
+        strm << margin << "Service: \"" << service << "\", Provider: \"" << provider << "\"" << std::endl;
     }
 
     display.displayExtraData(data, size, indent);
