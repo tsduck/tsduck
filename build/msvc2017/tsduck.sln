@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26430.14
+VisualStudioVersion = 15.0.26403.7
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "utests-tsduckdll", "utests-tsduckdll.vcxproj", "{A5E2A70F-CA57-460C-9BE0-473BD61DF467}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -17,10 +17,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tsducklib", "tsducklib.vcxp
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "utests-tsducklib", "utests-tsducklib.vcxproj", "{2FFD7D6C-F3BF-4ED6-8593-20AC70A83AC1}"
 	ProjectSection(ProjectDependencies) = postProject
-		{07A33F04-0C13-4E10-B23F-29D177CFE3D2} = {07A33F04-0C13-4E10-B23F-29D177CFE3D2}
 		{25A6CE1B-83F7-4859-A1EA-B7A8EAFFD2C6} = {25A6CE1B-83F7-4859-A1EA-B7A8EAFFD2C6}
-		{D1930C2B-74F8-42BD-84F1-A2214BE89BDF} = {D1930C2B-74F8-42BD-84F1-A2214BE89BDF}
-		{0B3B03CA-DA29-4D9E-AD3B-086F8A5D2C13} = {0B3B03CA-DA29-4D9E-AD3B-086F8A5D2C13}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tsplugin_drop", "tsplugin_drop.vcxproj", "{0B3B03CA-DA29-4D9E-AD3B-086F8A5D2C13}"
