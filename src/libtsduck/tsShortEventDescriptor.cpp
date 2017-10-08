@@ -71,13 +71,13 @@ ts::ShortEventDescriptor::ShortEventDescriptor(const std::string& lang_, const s
 // Constructor from a binary descriptor
 //----------------------------------------------------------------------------
 
-ts::ShortEventDescriptor::ShortEventDescriptor(const Descriptor& desc) :
+ts::ShortEventDescriptor::ShortEventDescriptor(const Descriptor& desc, const DVBCharset* charset) :
     AbstractDescriptor(DID_SHORT_EVENT, "short_event_descriptor"),
     language_code(),
     event_name(),
     text()
 {
-    deserialize(desc);
+    deserialize(desc, charset);
 }
 
 
@@ -135,7 +135,7 @@ size_t ts::ShortEventDescriptor::splitAndAdd (DescriptorList& dlist) const
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::ShortEventDescriptor::serialize (Descriptor& desc) const
+void ts::ShortEventDescriptor::serialize (Descriptor& desc, const DVBCharset* charset) const
 {
     if (language_code.length() != 3 || event_name.length() + text.length() > 249) {
         desc.invalidate();
@@ -162,7 +162,7 @@ void ts::ShortEventDescriptor::serialize (Descriptor& desc) const
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::ShortEventDescriptor::deserialize (const Descriptor& desc)
+void ts::ShortEventDescriptor::deserialize (const Descriptor& desc, const DVBCharset* charset)
 {
     if (!(_is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() >= 4)) {
         return;

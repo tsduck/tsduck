@@ -57,11 +57,11 @@ ts::CAIdentifierDescriptor::CAIdentifierDescriptor() :
 // Constructor from a binary descriptor
 //----------------------------------------------------------------------------
 
-ts::CAIdentifierDescriptor::CAIdentifierDescriptor (const Descriptor& desc) :
-    AbstractDescriptor (DID_CA_ID, "CA_identifier_descriptor"),
-    casids ()
+ts::CAIdentifierDescriptor::CAIdentifierDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+    AbstractDescriptor(DID_CA_ID, "CA_identifier_descriptor"),
+    casids()
 {
-    deserialize (desc);
+    deserialize(desc, charset);
 }
 
 
@@ -93,7 +93,7 @@ ts::CAIdentifierDescriptor::CAIdentifierDescriptor (int casid, ...) :
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::CAIdentifierDescriptor::serialize (Descriptor& desc) const
+void ts::CAIdentifierDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
 {
     ByteBlockPtr bbp (new ByteBlock (2));
     CheckNonNull (bbp.pointer());
@@ -113,7 +113,7 @@ void ts::CAIdentifierDescriptor::serialize (Descriptor& desc) const
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::CAIdentifierDescriptor::deserialize (const Descriptor& desc)
+void ts::CAIdentifierDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
 {
     _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() % 2 == 0;
     casids.clear();

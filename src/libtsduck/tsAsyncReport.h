@@ -100,14 +100,14 @@ namespace ts {
 
     protected:
         // ReportInterface implementation.
-        virtual void writeLog(int severity, const std::string& msg);
+        virtual void writeLog(int severity, const std::string& msg) override;
 
     private:
         AsyncReport(const AsyncReport&) = delete;
         AsyncReport& operator=(const AsyncReport&) = delete;
 
         // This hook is invoked in the context of the logging thread.
-        virtual void main();
+        virtual void main() override;
 
         // The application threads send that type of message to the logging thread
         struct LogMessage

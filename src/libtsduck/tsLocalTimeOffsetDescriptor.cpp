@@ -69,11 +69,11 @@ ts::LocalTimeOffsetDescriptor::Region::Region() :
 // Constructor from a binary descriptor
 //----------------------------------------------------------------------------
 
-ts::LocalTimeOffsetDescriptor::LocalTimeOffsetDescriptor(const Descriptor& desc) :
+ts::LocalTimeOffsetDescriptor::LocalTimeOffsetDescriptor(const Descriptor& desc, const DVBCharset* charset) :
     AbstractDescriptor(DID_LOCAL_TIME_OFFSET, "local_time_offset_descriptor"),
     regions()
 {
-    deserialize(desc);
+    deserialize(desc, charset);
 }
 
 
@@ -81,7 +81,7 @@ ts::LocalTimeOffsetDescriptor::LocalTimeOffsetDescriptor(const Descriptor& desc)
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::LocalTimeOffsetDescriptor::serialize(Descriptor& desc) const
+void ts::LocalTimeOffsetDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
 {
     ByteBlockPtr bbp(new ByteBlock(2));
     CheckNonNull(bbp.pointer());
@@ -111,7 +111,7 @@ void ts::LocalTimeOffsetDescriptor::serialize(Descriptor& desc) const
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::LocalTimeOffsetDescriptor::deserialize(const Descriptor& desc)
+void ts::LocalTimeOffsetDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
 {
     _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() % 13 == 0;
     regions.clear();

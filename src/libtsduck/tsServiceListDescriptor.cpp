@@ -57,11 +57,11 @@ ts::ServiceListDescriptor::ServiceListDescriptor() :
 // Constructor from a binary descriptor
 //----------------------------------------------------------------------------
 
-ts::ServiceListDescriptor::ServiceListDescriptor(const Descriptor& desc) :
+ts::ServiceListDescriptor::ServiceListDescriptor(const Descriptor& desc, const DVBCharset* charset) :
     AbstractDescriptor(DID_SERVICE_LIST, "service_list_descriptor"),
     entries()
 {
-    deserialize(desc);
+    deserialize(desc, charset);
 }
 
 
@@ -92,7 +92,7 @@ ts::ServiceListDescriptor::ServiceListDescriptor (int service_id, int service_ty
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::ServiceListDescriptor::serialize (Descriptor& desc) const
+void ts::ServiceListDescriptor::serialize (Descriptor& desc, const DVBCharset* charset) const
 {
     ByteBlockPtr bbp (new ByteBlock (2));
     CheckNonNull (bbp.pointer());
@@ -113,7 +113,7 @@ void ts::ServiceListDescriptor::serialize (Descriptor& desc) const
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::ServiceListDescriptor::deserialize (const Descriptor& desc)
+void ts::ServiceListDescriptor::deserialize (const Descriptor& desc, const DVBCharset* charset)
 {
     _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() % 3 == 0;
     entries.clear();

@@ -68,12 +68,12 @@ ts::SSUDataBroadcastIdDescriptor::SSUDataBroadcastIdDescriptor (uint32_t oui, ui
 // Constructor from a binary descriptor
 //----------------------------------------------------------------------------
 
-ts::SSUDataBroadcastIdDescriptor::SSUDataBroadcastIdDescriptor(const Descriptor& desc) :
+ts::SSUDataBroadcastIdDescriptor::SSUDataBroadcastIdDescriptor(const Descriptor& desc, const DVBCharset* charset) :
     AbstractDescriptor(DID_DATA_BROADCAST_ID, ""),  // No XML conversion.
     entries(),
     private_data()
 {
-    deserialize(desc);
+    deserialize(desc, charset);
 }
 
 
@@ -81,7 +81,7 @@ ts::SSUDataBroadcastIdDescriptor::SSUDataBroadcastIdDescriptor(const Descriptor&
 // Constructor from a data_broadcast_id_descriptor.
 //----------------------------------------------------------------------------
 
-ts::SSUDataBroadcastIdDescriptor::SSUDataBroadcastIdDescriptor(const DataBroadcastIdDescriptor& desc) :
+ts::SSUDataBroadcastIdDescriptor::SSUDataBroadcastIdDescriptor(const DataBroadcastIdDescriptor& desc, const DVBCharset* charset) :
     AbstractDescriptor(DID_DATA_BROADCAST_ID, ""),  // No XML conversion.
     entries(),
     private_data()
@@ -90,8 +90,8 @@ ts::SSUDataBroadcastIdDescriptor::SSUDataBroadcastIdDescriptor(const DataBroadca
     if (_is_valid) {
         // Convert using serialization / deserialization.
         Descriptor bin;
-        desc.serialize(bin);
-        deserialize(bin);
+        desc.serialize(bin, charset);
+        deserialize(bin, charset);
     }
 }
 
@@ -100,13 +100,13 @@ ts::SSUDataBroadcastIdDescriptor::SSUDataBroadcastIdDescriptor(const DataBroadca
 // Convert to a data_broadcast_id_descriptor.
 //----------------------------------------------------------------------------
 
-void ts::SSUDataBroadcastIdDescriptor::toDataBroadcastIdDescriptor(DataBroadcastIdDescriptor& desc) const
+void ts::SSUDataBroadcastIdDescriptor::toDataBroadcastIdDescriptor(DataBroadcastIdDescriptor& desc, const DVBCharset* charset) const
 {
     if (_is_valid) {
         // Convert using serialization / deserialization.
         Descriptor bin;
-        serialize(bin);
-        desc.deserialize(bin);
+        serialize(bin, charset);
+        desc.deserialize(bin, charset);
     }
     else {
         desc.invalidate();
@@ -118,7 +118,7 @@ void ts::SSUDataBroadcastIdDescriptor::toDataBroadcastIdDescriptor(DataBroadcast
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::SSUDataBroadcastIdDescriptor::serialize (Descriptor& desc) const
+void ts::SSUDataBroadcastIdDescriptor::serialize (Descriptor& desc, const DVBCharset* charset) const
 {
     ByteBlockPtr bbp (new ByteBlock (2));
     CheckNonNull (bbp.pointer());
@@ -147,7 +147,7 @@ void ts::SSUDataBroadcastIdDescriptor::serialize (Descriptor& desc) const
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::SSUDataBroadcastIdDescriptor::deserialize (const Descriptor& desc)
+void ts::SSUDataBroadcastIdDescriptor::deserialize (const Descriptor& desc, const DVBCharset* charset)
 {
     _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() >= 3 && GetUInt16 (desc.payload()) == 0x000A;
     entries.clear();

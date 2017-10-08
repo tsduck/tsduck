@@ -55,11 +55,11 @@ ts::NetworkNameDescriptor::NetworkNameDescriptor(const std::string& name_) :
 // Constructor from a binary descriptor
 //----------------------------------------------------------------------------
 
-ts::NetworkNameDescriptor::NetworkNameDescriptor(const Descriptor& desc) :
+ts::NetworkNameDescriptor::NetworkNameDescriptor(const Descriptor& desc, const DVBCharset* charset) :
     AbstractDescriptor(DID_NETWORK_NAME, "network_name_descriptor"),
     name()
 {
-    deserialize(desc);
+    deserialize(desc, charset);
 }
 
 
@@ -67,7 +67,7 @@ ts::NetworkNameDescriptor::NetworkNameDescriptor(const Descriptor& desc) :
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::NetworkNameDescriptor::serialize(Descriptor& desc) const
+void ts::NetworkNameDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
 {
     if (name.length() > 255) {
         desc.invalidate();
@@ -90,7 +90,7 @@ void ts::NetworkNameDescriptor::serialize(Descriptor& desc) const
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::NetworkNameDescriptor::deserialize(const Descriptor& desc)
+void ts::NetworkNameDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
 {
     _is_valid = desc.isValid() && desc.tag() == _tag;
 

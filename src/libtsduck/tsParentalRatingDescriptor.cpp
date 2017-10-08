@@ -58,11 +58,11 @@ ts::ParentalRatingDescriptor::ParentalRatingDescriptor() :
 // Constructor from a binary descriptor
 //----------------------------------------------------------------------------
 
-ts::ParentalRatingDescriptor::ParentalRatingDescriptor(const Descriptor& desc) :
+ts::ParentalRatingDescriptor::ParentalRatingDescriptor(const Descriptor& desc, const DVBCharset* charset) :
     AbstractDescriptor(DID_PARENTAL_RATING, "parental_rating_descriptor"),
     entries()
 {
-    deserialize(desc);
+    deserialize(desc, charset);
 }
 
 
@@ -83,7 +83,7 @@ ts::ParentalRatingDescriptor::ParentalRatingDescriptor (const std::string& langu
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::ParentalRatingDescriptor::serialize (Descriptor& desc) const
+void ts::ParentalRatingDescriptor::serialize (Descriptor& desc, const DVBCharset* charset) const
 {
     ByteBlockPtr bbp (new ByteBlock (2));
     CheckNonNull (bbp.pointer());
@@ -108,7 +108,7 @@ void ts::ParentalRatingDescriptor::serialize (Descriptor& desc) const
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::ParentalRatingDescriptor::deserialize (const Descriptor& desc)
+void ts::ParentalRatingDescriptor::deserialize (const Descriptor& desc, const DVBCharset* charset)
 {
     if (!(_is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() % 4 == 0)) {
         return;

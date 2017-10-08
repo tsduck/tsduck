@@ -91,8 +91,9 @@ namespace ts {
         //!
         //! Constructor from a binary descriptor
         //! @param [in] bin A binary descriptor to deserialize.
+        //! @param [in] charset If not zero, character set to use without explicit table code.
         //!
-        LogicalChannelNumberDescriptor(const Descriptor& bin);
+        LogicalChannelNumberDescriptor(const Descriptor& bin, const DVBCharset* charset = 0);
 
         //!
         //! Constructor using a variable-length argument list.
@@ -118,9 +119,9 @@ namespace ts {
         static void DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* payload, size_t size, int indent, TID tid, PDS pds);
 
         // Inherited methods
-        virtual void serialize(Descriptor&) const;
-        virtual void deserialize(const Descriptor&);
-        virtual XML::Element* toXML(XML& xml, XML::Element* parent) const;
-        virtual void fromXML(XML& xml, const XML::Element* element);
+        virtual void serialize(Descriptor&, const DVBCharset* = 0) const override;
+        virtual void deserialize(const Descriptor&, const DVBCharset* = 0) override;
+        virtual XML::Element* toXML(XML&, XML::Element*) const override;
+        virtual void fromXML(XML&, const XML::Element*) override;
     };
 }

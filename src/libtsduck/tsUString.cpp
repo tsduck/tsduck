@@ -359,6 +359,18 @@ bool ts::UString::endWith(const UString& suffix, CaseSensitivity cs) const
 
 
 //----------------------------------------------------------------------------
+// Split a string into multiple lines which are not longer than a specified maximum width.
+//----------------------------------------------------------------------------
+
+ts::UString ts::UString::toSplitLines(size_type maxWidth, const ts::UString& otherSeparators, const ts::UString& nextMargin, bool forceSplit, const ts::UString lineSeparator) const
+{
+    UStringList lines;
+    splitLines(lines, maxWidth, otherSeparators, nextMargin, forceSplit);
+    return join(lines, lineSeparator);
+}
+
+
+//----------------------------------------------------------------------------
 // Left-justify (pad and optionally truncate) string.
 //----------------------------------------------------------------------------
 
@@ -524,7 +536,7 @@ bool ts::UString::similar(const void* addr, size_type size) const
 // Convert a DVB string into UTF-16.
 //----------------------------------------------------------------------------
 
-ts::UString ts::UString::FromDVB(const uint8_t* dvb, size_t dvbSize)
+ts::UString ts::UString::FromDVB(const uint8_t* dvb, size_t dvbSize, const DVBCharset* charset)
 {
     // Null or empty buffer is a valid empty string.
     if (dvb == 0 || dvbSize == 0) {
@@ -544,7 +556,9 @@ ts::UString ts::UString::FromDVB(const uint8_t* dvb, size_t dvbSize)
     dvbSize -= codeSize;
 
     // Get the character set for this DVB string.
-    DVBCharset* charset = DVBCharset::GetCharset(code);
+    if (code != 0 || charset != 0) {
+        charset = DVBCharset::GetCharset(code);
+    }
     if (charset == 0) {
         // Unsupported charset. Collect all ANSI characters, replace others by '.'.
         UString str(dvbSize, FULL_STOP);
@@ -568,7 +582,7 @@ ts::UString ts::UString::FromDVB(const uint8_t* dvb, size_t dvbSize)
 // Convert a DVB string (preceded by its one-byte length) into UTF-16.
 //----------------------------------------------------------------------------
 
-ts::UString ts::UString::FromDVBWithByteLength(const uint8_t*& buffer, size_t& size)
+ts::UString ts::UString::FromDVBWithByteLength(const uint8_t*& buffer, size_t& size, const DVBCharset* charset)
 {
     // Null or empty buffer is a valid empty string.
     if (buffer == 0 || size == 0) {
@@ -584,7 +598,7 @@ ts::UString ts::UString::FromDVBWithByteLength(const uint8_t*& buffer, size_t& s
     size -= dvbSize + 1;
 
     // Decode the DVB string.
-    return FromDVB(dvb, dvbSize);
+    return FromDVB(dvb, dvbSize, charset);
 }
 
 

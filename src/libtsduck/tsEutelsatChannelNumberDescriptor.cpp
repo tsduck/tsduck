@@ -57,11 +57,11 @@ ts::EutelsatChannelNumberDescriptor::EutelsatChannelNumberDescriptor() :
 // Constructor from a binary descriptor
 //----------------------------------------------------------------------------
 
-ts::EutelsatChannelNumberDescriptor::EutelsatChannelNumberDescriptor(const Descriptor& desc) :
+ts::EutelsatChannelNumberDescriptor::EutelsatChannelNumberDescriptor(const Descriptor& desc, const DVBCharset* charset) :
     AbstractDescriptor(DID_EUTELSAT_CHAN_NUM, "eutelsat_channel_number_descriptor", PDS_EUTELSAT),
     entries()
 {
-    deserialize(desc);
+    deserialize(desc, charset);
 }
 
 
@@ -69,7 +69,7 @@ ts::EutelsatChannelNumberDescriptor::EutelsatChannelNumberDescriptor(const Descr
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::EutelsatChannelNumberDescriptor::serialize(Descriptor& desc) const
+void ts::EutelsatChannelNumberDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
 {
     ByteBlockPtr bbp(new ByteBlock(2));
     CheckNonNull(bbp.pointer());
@@ -92,7 +92,7 @@ void ts::EutelsatChannelNumberDescriptor::serialize(Descriptor& desc) const
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::EutelsatChannelNumberDescriptor::deserialize (const Descriptor& desc)
+void ts::EutelsatChannelNumberDescriptor::deserialize (const Descriptor& desc, const DVBCharset* charset)
 {
     _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() % 8 == 0;
     entries.clear();

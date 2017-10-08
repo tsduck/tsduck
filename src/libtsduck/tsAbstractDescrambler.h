@@ -73,9 +73,9 @@ namespace ts {
 
         // Implementation of ProcessorPlugin interface.
         // If overridden by descrambler subclass, superclass must be explicitely invoked.
-        virtual bool stop();
-        virtual BitRate getBitrate() {return 0;}
-        virtual Status processPacket(TSPacket&, bool&, bool&);
+        virtual bool stop() override;
+        virtual BitRate getBitrate() override {return 0;}
+        virtual Status processPacket(TSPacket&, bool&, bool&) override;
 
     protected:
         //!
@@ -148,7 +148,7 @@ namespace ts {
     protected:
         // Implementation of TableHandlerInterface.
         // If overridden by a subclass, superclass must be explicitely invoked.
-        virtual void handleTable (SectionDemux&, const BinaryTable&);
+        virtual void handleTable (SectionDemux&, const BinaryTable&) override;
 
     private:
         struct ScrambledStream;
@@ -232,7 +232,7 @@ namespace ts {
         void analyzeCADescriptors (const DescriptorList& dlist, std::set<PID>& ecm_pids);
 
         // ECM deciphering thread
-        virtual void main();
+        virtual void main() override;
 
         // Process specific tables
         void processPAT (const PAT&);

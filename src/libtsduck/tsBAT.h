@@ -56,12 +56,13 @@ namespace ts {
         //!
         //! Constructor from a binary table.
         //! @param [in] table Binary table to deserialize.
+        //! @param [in] charset If not zero, character set to use without explicit table code.
         //!
-        BAT(const BinaryTable& table);
+        BAT(const BinaryTable& table, const DVBCharset* charset = 0);
 
         // Inherited methods
-        virtual XML::Element* toXML(XML& xml, XML::Element* parent) const;
-        virtual void fromXML(XML& xml, const XML::Element* element);
+        virtual XML::Element* toXML(XML& xml, XML::Element* parent) const override;
+        virtual void fromXML(XML& xml, const XML::Element* element) override;
 
         //!
         //! A static method to display a BAT section.

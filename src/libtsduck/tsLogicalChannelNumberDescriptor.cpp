@@ -61,11 +61,11 @@ ts::LogicalChannelNumberDescriptor::LogicalChannelNumberDescriptor() :
 // Constructor from a binary descriptor
 //----------------------------------------------------------------------------
 
-ts::LogicalChannelNumberDescriptor::LogicalChannelNumberDescriptor (const Descriptor& desc) :
+ts::LogicalChannelNumberDescriptor::LogicalChannelNumberDescriptor (const Descriptor& desc, const DVBCharset* charset) :
     AbstractDescriptor (DID_LOGICAL_CHANNEL_NUM, "logical_channel_number_descriptor", PDS_EACEM),
     entries ()
 {
-    deserialize (desc);
+    deserialize (desc, charset);
 }
 
 
@@ -98,7 +98,7 @@ ts::LogicalChannelNumberDescriptor::LogicalChannelNumberDescriptor (int service_
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::LogicalChannelNumberDescriptor::serialize (Descriptor& desc) const
+void ts::LogicalChannelNumberDescriptor::serialize (Descriptor& desc, const DVBCharset* charset) const
 {
     ByteBlockPtr bbp (new ByteBlock (2));
     CheckNonNull (bbp.pointer());
@@ -119,7 +119,7 @@ void ts::LogicalChannelNumberDescriptor::serialize (Descriptor& desc) const
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::LogicalChannelNumberDescriptor::deserialize (const Descriptor& desc)
+void ts::LogicalChannelNumberDescriptor::deserialize (const Descriptor& desc, const DVBCharset* charset)
 {
     _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() % 4 == 0;
     entries.clear();

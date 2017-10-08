@@ -57,11 +57,11 @@ ts::ContentDescriptor::ContentDescriptor() :
 // Constructor from a binary descriptor
 //----------------------------------------------------------------------------
 
-ts::ContentDescriptor::ContentDescriptor(const Descriptor& desc) :
+ts::ContentDescriptor::ContentDescriptor(const Descriptor& desc, const DVBCharset* charset) :
     AbstractDescriptor(DID_CONTENT, "content_descriptor"),
     entries()
 {
-    deserialize(desc);
+    deserialize(desc, charset);
 }
 
 
@@ -69,7 +69,7 @@ ts::ContentDescriptor::ContentDescriptor(const Descriptor& desc) :
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::ContentDescriptor::serialize(Descriptor& desc) const
+void ts::ContentDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
 {
     ByteBlockPtr bbp (new ByteBlock (2));
     CheckNonNull (bbp.pointer());
@@ -90,7 +90,7 @@ void ts::ContentDescriptor::serialize(Descriptor& desc) const
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::ContentDescriptor::deserialize (const Descriptor& desc)
+void ts::ContentDescriptor::deserialize (const Descriptor& desc, const DVBCharset* charset)
 {
     _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() % 2 == 0;
     entries.clear();

@@ -71,11 +71,11 @@ ts::RST::RST() :
 // Constructor from a binary table
 //----------------------------------------------------------------------------
 
-ts::RST::RST(const BinaryTable& table) :
+ts::RST::RST(const BinaryTable& table, const DVBCharset* charset) :
     AbstractTable(TID_RST, "RST"),
     events()
 {
-    deserialize(table);
+    deserialize(table, charset);
 }
 
 
@@ -83,7 +83,7 @@ ts::RST::RST(const BinaryTable& table) :
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::RST::deserialize(const BinaryTable& table)
+void ts::RST::deserialize(const BinaryTable& table, const DVBCharset* charset)
 {
     // Clear table content
     _is_valid = false;
@@ -121,7 +121,7 @@ void ts::RST::deserialize(const BinaryTable& table)
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::RST::serialize(BinaryTable& table) const
+void ts::RST::serialize(BinaryTable& table, const DVBCharset* charset) const
 {
     // Reinitialize table object
     table.clear();

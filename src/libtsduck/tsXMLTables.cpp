@@ -217,7 +217,7 @@ bool ts::XMLTables::generateDocument(XML& xml, XML::Printer& printer) const
 // This method converts a table to the appropriate XML tree.
 //----------------------------------------------------------------------------
 
-ts::XML::Element* ts::XMLTables::ToXML(XML& xml, XML::Element* parent, const BinaryTable& table)
+ts::XML::Element* ts::XMLTables::ToXML(XML& xml, XML::Element* parent, const BinaryTable& table, const DVBCharset* charset)
 {
     // Filter invalid tables.
     if (!table.isValid()) {
@@ -234,7 +234,7 @@ ts::XML::Element* ts::XMLTables::ToXML(XML& xml, XML::Element* parent, const Bin
         AbstractTablePtr tp = fac();
         if (!tp.isNull()) {
             // Deserialize from binary to object.
-            tp->deserialize(table);
+            tp->deserialize(table, charset);
             if (tp->isValid()) {
                 // Serialize from object to XML.
                 node = tp->toXML(xml, parent);
@@ -255,7 +255,7 @@ ts::XML::Element* ts::XMLTables::ToXML(XML& xml, XML::Element* parent, const Bin
 // This method converts a descriptor to the appropriate XML tree.
 //----------------------------------------------------------------------------
 
-ts::XML::Element* ts::XMLTables::ToXML(XML& xml, XML::Element* parent, const Descriptor& desc, PDS pds)
+ts::XML::Element* ts::XMLTables::ToXML(XML& xml, XML::Element* parent, const Descriptor& desc, PDS pds, const DVBCharset* charset)
 {
     // Filter invalid descriptors.
     if (!desc.isValid()) {
@@ -272,7 +272,7 @@ ts::XML::Element* ts::XMLTables::ToXML(XML& xml, XML::Element* parent, const Des
         AbstractDescriptorPtr dp = fac();
         if (!dp.isNull()) {
             // Deserialize from binary to object.
-            dp->deserialize(desc);
+            dp->deserialize(desc, charset);
             if (dp->isValid()) {
                 // Serialize from object to XML.
                 node = dp->toXML(xml, parent);
@@ -293,12 +293,12 @@ ts::XML::Element* ts::XMLTables::ToXML(XML& xml, XML::Element* parent, const Des
 // This method converts a list of descriptors to XML.
 //----------------------------------------------------------------------------
 
-bool ts::XMLTables::ToXML(XML& xml, XML::Element* parent, const DescriptorList& list)
+bool ts::XMLTables::ToXML(XML& xml, XML::Element* parent, const DescriptorList& list, const DVBCharset* charset)
 {
     bool success = true;
     for (size_t index = 0; index < list.count(); ++index) {
         const DescriptorPtr desc(list[index]);
-        if (desc.isNull() || ToXML(xml, parent, *desc, list.privateDataSpecifier(index)) == 0) {
+        if (desc.isNull() || ToXML(xml, parent, *desc, list.privateDataSpecifier(index), charset) == 0) {
             success = false;
         }
     }
@@ -374,7 +374,7 @@ ts::XML::Element* ts::XMLTables::ToGenericDescriptor(XML& xml, XML::Element* par
 // This method decodes an XML list of descriptors.
 //----------------------------------------------------------------------------
 
-bool ts::XMLTables::FromDescriptorListXML(DescriptorList& list, XML::ElementVector& others, XML& xml, const XML::Element* parent, const StringList& allowedOthers)
+bool ts::XMLTables::FromDescriptorListXML(DescriptorList& list, XML::ElementVector& others, XML& xml, const XML::Element* parent, const StringList& allowedOthers, const DVBCharset* charset)
 {
     bool success = true;
     list.clear();
@@ -399,7 +399,7 @@ bool ts::XMLTables::FromDescriptorListXML(DescriptorList& list, XML::ElementVect
             if (!desc.isNull() && desc->isValid()) {
                 // Serialize the descriptor.
                 bin = new Descriptor;
-                desc->serialize(*bin);
+                desc->serialize(*bin, charset);
             }
         }
         else if (SimilarStrings(name, XML_GENERIC_DESCRIPTOR)) {

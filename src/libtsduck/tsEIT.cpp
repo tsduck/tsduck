@@ -74,7 +74,7 @@ ts::EIT::EIT(bool is_actual_,
 // Constructor from a binary table
 //----------------------------------------------------------------------------
 
-ts::EIT::EIT(const BinaryTable& table) :
+ts::EIT::EIT(const BinaryTable& table, const DVBCharset* charset) :
     AbstractLongTable(TID_EIT_PF_ACT, "EIT"),  // TID will be updated by deserialize()
     service_id(0),
     ts_id(0),
@@ -83,7 +83,7 @@ ts::EIT::EIT(const BinaryTable& table) :
     last_table_id(0),
     events()
 {
-    deserialize(table);
+    deserialize(table, charset);
 }
 
 
@@ -137,7 +137,7 @@ void ts::EIT::setActual(bool is_actual)
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::EIT::deserialize(const BinaryTable& table)
+void ts::EIT::deserialize(const BinaryTable& table, const DVBCharset* charset)
 {
     // Clear table content
     _is_valid = false;
@@ -219,7 +219,7 @@ void ts::EIT::deserialize(const BinaryTable& table)
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::EIT::serialize(BinaryTable& table) const
+void ts::EIT::serialize(BinaryTable& table, const DVBCharset* charset) const
 {
     // Reinitialize table object
     table.clear();

@@ -61,14 +61,14 @@ ts::PMT::PMT(uint8_t version_, bool is_current_, uint16_t service_id_, PID pcr_p
 // Constructor from a binary table
 //----------------------------------------------------------------------------
 
-ts::PMT::PMT(const BinaryTable& table) :
+ts::PMT::PMT(const BinaryTable& table, const DVBCharset* charset) :
     AbstractLongTable(TID_PMT, "PMT"),
     service_id(0),
     pcr_pid(PID_NULL),
     descs(),
     streams()
 {
-    deserialize(table);
+    deserialize(table, charset);
 }
 
 
@@ -76,7 +76,7 @@ ts::PMT::PMT(const BinaryTable& table) :
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::PMT::deserialize(const BinaryTable& table)
+void ts::PMT::deserialize(const BinaryTable& table, const DVBCharset* charset)
 {
     // Clear table content
     _is_valid = false;
@@ -148,7 +148,7 @@ void ts::PMT::deserialize(const BinaryTable& table)
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::PMT::serialize(BinaryTable& table) const
+void ts::PMT::serialize(BinaryTable& table, const DVBCharset* charset) const
 {
     // Reinitialize table object
     table.clear();

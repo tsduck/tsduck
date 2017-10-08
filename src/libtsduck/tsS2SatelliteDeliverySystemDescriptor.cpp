@@ -62,7 +62,7 @@ ts::S2SatelliteDeliverySystemDescriptor::S2SatelliteDeliverySystemDescriptor() :
 // Constructor from a binary descriptor
 //----------------------------------------------------------------------------
 
-ts::S2SatelliteDeliverySystemDescriptor::S2SatelliteDeliverySystemDescriptor(const Descriptor& desc) :
+ts::S2SatelliteDeliverySystemDescriptor::S2SatelliteDeliverySystemDescriptor(const Descriptor& desc, const DVBCharset* charset) :
     AbstractDescriptor(DID_S2_SAT_DELIVERY, "S2_satellite_delivery_system_descriptor"),
     scrambling_sequence_selector(false),
     multiple_input_stream_flag(false),
@@ -70,7 +70,7 @@ ts::S2SatelliteDeliverySystemDescriptor::S2SatelliteDeliverySystemDescriptor(con
     scrambling_sequence_index(0),
     input_stream_identifier(0)
 {
-    deserialize(desc);
+    deserialize(desc, charset);
 }
 
 
@@ -78,7 +78,7 @@ ts::S2SatelliteDeliverySystemDescriptor::S2SatelliteDeliverySystemDescriptor(con
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::S2SatelliteDeliverySystemDescriptor::serialize (Descriptor& desc) const
+void ts::S2SatelliteDeliverySystemDescriptor::serialize (Descriptor& desc, const DVBCharset* charset) const
 {
     ByteBlockPtr bbp (new ByteBlock (2));
     CheckNonNull (bbp.pointer());
@@ -105,7 +105,7 @@ void ts::S2SatelliteDeliverySystemDescriptor::serialize (Descriptor& desc) const
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::S2SatelliteDeliverySystemDescriptor::deserialize (const Descriptor& desc)
+void ts::S2SatelliteDeliverySystemDescriptor::deserialize (const Descriptor& desc, const DVBCharset* charset)
 {
     if (!(_is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() >= 1)) {
         return;

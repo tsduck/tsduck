@@ -45,7 +45,8 @@ ts::TablesDisplayArgs::TablesDisplayArgs() :
     raw_flags(hexa::HEXA),
     tlv_syntax(),
     min_nested_tlv(0),
-    default_pds(0)
+    default_pds(0),
+    default_charset(0)
 {
 }
 
@@ -64,6 +65,15 @@ void ts::TablesDisplayArgs::addHelp(Args& args) const
         "  --c-style\n"
         "      Same as --raw-dump (no interpretation of section) but dump the\n"
         "      bytes in C-language style.\n"
+        "\n"
+        "  --default-charset name\n"
+        "      Default character set to use when interpreting DVB strings without\n"
+        "      explicit character table code. According to DVB standard ETSI EN 300 468,\n"
+        "      the default DVB character set is ISO-6937. However, some bogus\n"
+        "      signalization may assume that the default character set is different,\n"
+        "      typically the usual local character table for the region. This option\n"
+        "      forces a non-standard character table. The available table names are:\n"
+        "      " + UString::join(DVBCharset::GetAllNames()).toSplitLines(74, UString(), UString(6, SPACE)).toUTF8() + ".\n"
         "\n"
         "  --default-pds value\n"
         "      Default private data specifier. This option is meaningful only when the\n"
@@ -109,11 +119,12 @@ void ts::TablesDisplayArgs::addHelp(Args& args) const
 
 void ts::TablesDisplayArgs::defineOptions(Args& args) const
 {
-    args.option("c-style", 'c');
-    args.option("default-pds", 0, PrivateDataSpecifierEnum);
-    args.option("nested-tlv", 0, Args::POSITIVE, 0, 1, 0, 0, true);
-    args.option("raw-dump", 'r');
-    args.option("tlv", 0, Args::STRING, 0, Args::UNLIMITED_COUNT);
+    args.option("c-style",        'c');
+    args.option("default-charset", 0, Args::STRING);
+    args.option("default-pds",     0, PrivateDataSpecifierEnum);
+    args.option("nested-tlv",      0, Args::POSITIVE, 0, 1, 0, 0, true);
+    args.option("raw-dump",       'r');
+    args.option("tlv",             0, Args::STRING, 0, Args::UNLIMITED_COUNT);
 }
 
 
@@ -146,4 +157,10 @@ void ts::TablesDisplayArgs::load(Args& args)
         tlv_syntax.push_back(tlv);
     }
     std::sort(tlv_syntax.begin(), tlv_syntax.end());
+
+    // Get default character set.
+    const std::string csName(args.value("default-charset"));
+    if (!csName.empty() && (default_charset = DVBCharset::GetCharset(csName)) == 0) {
+        args.error("invalid character set name '%s", csName.c_str());
+    }
 }

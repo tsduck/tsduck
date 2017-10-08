@@ -67,14 +67,15 @@ namespace ts {
         //!
         //! Constructor from a binary table.
         //! @param [in] table Binary table to deserialize.
+        //! @param [in] charset If not zero, character set to use without explicit table code.
         //!
-        PAT(const BinaryTable& table);
+        PAT(const BinaryTable& table, const DVBCharset* charset = 0);
 
         // Inherited methods
-        virtual void serialize(BinaryTable& table) const;
-        virtual void deserialize(const BinaryTable& table);
-        virtual XML::Element* toXML(XML& xml, XML::Element* parent) const;
-        virtual void fromXML(XML& xml, const XML::Element* element);
+        virtual void serialize(BinaryTable&, const DVBCharset* = 0) const override;
+        virtual void deserialize(const BinaryTable&, const DVBCharset* = 0) override;
+        virtual XML::Element* toXML(XML&, XML::Element*) const override;
+        virtual void fromXML(XML&, const XML::Element*) override;
 
         //!
         //! A static method to display a section.

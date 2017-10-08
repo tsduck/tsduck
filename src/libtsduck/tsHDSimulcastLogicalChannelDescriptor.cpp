@@ -61,11 +61,11 @@ ts::HDSimulcastLogicalChannelDescriptor::HDSimulcastLogicalChannelDescriptor () 
 // Constructor from a binary descriptor
 //----------------------------------------------------------------------------
 
-ts::HDSimulcastLogicalChannelDescriptor::HDSimulcastLogicalChannelDescriptor (const Descriptor& desc) :
+ts::HDSimulcastLogicalChannelDescriptor::HDSimulcastLogicalChannelDescriptor (const Descriptor& desc, const DVBCharset* charset) :
     AbstractDescriptor (DID_HD_SIMULCAST_LCN, "HD_simulcast_logical_channel_descriptor", PDS_EACEM),
     entries ()
 {
-    deserialize (desc);
+    deserialize (desc, charset);
 }
 
 
@@ -98,7 +98,7 @@ ts::HDSimulcastLogicalChannelDescriptor::HDSimulcastLogicalChannelDescriptor (in
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::HDSimulcastLogicalChannelDescriptor::serialize (Descriptor& desc) const
+void ts::HDSimulcastLogicalChannelDescriptor::serialize (Descriptor& desc, const DVBCharset* charset) const
 {
     ByteBlockPtr bbp (new ByteBlock (2));
     CheckNonNull (bbp.pointer());
@@ -119,7 +119,7 @@ void ts::HDSimulcastLogicalChannelDescriptor::serialize (Descriptor& desc) const
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::HDSimulcastLogicalChannelDescriptor::deserialize (const Descriptor& desc)
+void ts::HDSimulcastLogicalChannelDescriptor::deserialize (const Descriptor& desc, const DVBCharset* charset)
 {
     _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() % 4 == 0;
     entries.clear();

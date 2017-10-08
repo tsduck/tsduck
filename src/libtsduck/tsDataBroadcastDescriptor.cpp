@@ -58,7 +58,7 @@ ts::DataBroadcastDescriptor::DataBroadcastDescriptor() :
     _is_valid = true;
 }
 
-ts::DataBroadcastDescriptor::DataBroadcastDescriptor(const Descriptor& desc) :
+ts::DataBroadcastDescriptor::DataBroadcastDescriptor(const Descriptor& desc, const DVBCharset* charset) :
     AbstractDescriptor(DID_DATA_BROADCAST, "data_broadcast_descriptor"),
     data_broadcast_id(0),
     component_tag(0),
@@ -66,7 +66,7 @@ ts::DataBroadcastDescriptor::DataBroadcastDescriptor(const Descriptor& desc) :
     language_code(),
     text()
 {
-    deserialize(desc);
+    deserialize(desc, charset);
 }
 
 
@@ -117,7 +117,7 @@ void ts::DataBroadcastDescriptor::DisplayDescriptor(TablesDisplay& display, DID 
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::DataBroadcastDescriptor::serialize (Descriptor& desc) const
+void ts::DataBroadcastDescriptor::serialize (Descriptor& desc, const DVBCharset* charset) const
 {
     if (language_code.length() != 3 || selector_bytes.size() + text.size() + 10 > MAX_DESCRIPTOR_SIZE) {
         desc.invalidate();
@@ -146,7 +146,7 @@ void ts::DataBroadcastDescriptor::serialize (Descriptor& desc) const
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::DataBroadcastDescriptor::deserialize (const Descriptor& desc)
+void ts::DataBroadcastDescriptor::deserialize (const Descriptor& desc, const DVBCharset* charset)
 {
     selector_bytes.clear();
     language_code.clear();

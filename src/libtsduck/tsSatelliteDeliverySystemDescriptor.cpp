@@ -66,7 +66,7 @@ ts::SatelliteDeliverySystemDescriptor::SatelliteDeliverySystemDescriptor() :
 // Constructor from a binary descriptor
 //----------------------------------------------------------------------------
 
-ts::SatelliteDeliverySystemDescriptor::SatelliteDeliverySystemDescriptor(const Descriptor& desc) :
+ts::SatelliteDeliverySystemDescriptor::SatelliteDeliverySystemDescriptor(const Descriptor& desc, const DVBCharset* charset) :
     AbstractDeliverySystemDescriptor(DID_SAT_DELIVERY, DS_DVB_S, "satellite_delivery_system_descriptor"),
     frequency(0),
     orbital_position(0),
@@ -78,7 +78,7 @@ ts::SatelliteDeliverySystemDescriptor::SatelliteDeliverySystemDescriptor(const D
     symbol_rate(0),
     FEC_inner(0)
 {
-    deserialize(desc);
+    deserialize(desc, charset);
 }
 
 
@@ -86,7 +86,7 @@ ts::SatelliteDeliverySystemDescriptor::SatelliteDeliverySystemDescriptor(const D
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::SatelliteDeliverySystemDescriptor::serialize (Descriptor& desc) const
+void ts::SatelliteDeliverySystemDescriptor::serialize (Descriptor& desc, const DVBCharset* charset) const
 {
     uint8_t data[13];
     data[0] = _tag;
@@ -110,7 +110,7 @@ void ts::SatelliteDeliverySystemDescriptor::serialize (Descriptor& desc) const
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::SatelliteDeliverySystemDescriptor::deserialize (const Descriptor& desc)
+void ts::SatelliteDeliverySystemDescriptor::deserialize (const Descriptor& desc, const DVBCharset* charset)
 {
     if (!(_is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() == 11)) {
         return;

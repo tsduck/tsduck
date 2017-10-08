@@ -139,7 +139,7 @@ ts::LinkageDescriptor::LinkageDescriptor(uint16_t ts, uint16_t onetw, uint16_t s
 // Constructor from a binary descriptor
 //----------------------------------------------------------------------------
 
-ts::LinkageDescriptor::LinkageDescriptor(const Descriptor& desc) :
+ts::LinkageDescriptor::LinkageDescriptor(const Descriptor& desc, const DVBCharset* charset) :
     AbstractDescriptor(DID_LINKAGE, "linkage_descriptor"),
     ts_id(0),
     onetw_id(0),
@@ -150,7 +150,7 @@ ts::LinkageDescriptor::LinkageDescriptor(const Descriptor& desc) :
     extended_event_linkage_info(),
     private_data()
 {
-    deserialize(desc);
+    deserialize(desc, charset);
 }
 
 
@@ -158,7 +158,7 @@ ts::LinkageDescriptor::LinkageDescriptor(const Descriptor& desc) :
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::LinkageDescriptor::serialize(Descriptor& desc) const
+void ts::LinkageDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
 {
     if (!_is_valid) {
         desc.invalidate();
@@ -238,7 +238,7 @@ void ts::LinkageDescriptor::serialize(Descriptor& desc) const
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::LinkageDescriptor::deserialize(const Descriptor& desc)
+void ts::LinkageDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
 {
     clear();
     _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() >= 7;

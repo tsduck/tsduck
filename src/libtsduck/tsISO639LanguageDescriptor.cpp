@@ -56,11 +56,11 @@ ts::ISO639LanguageDescriptor::ISO639LanguageDescriptor() :
 // Constructor from a binary descriptor
 //----------------------------------------------------------------------------
 
-ts::ISO639LanguageDescriptor::ISO639LanguageDescriptor(const Descriptor& desc) :
+ts::ISO639LanguageDescriptor::ISO639LanguageDescriptor(const Descriptor& desc, const DVBCharset* charset) :
     AbstractDescriptor(DID_LANGUAGE, "ISO_639_language_descriptor"),
     entries()
 {
-    deserialize(desc);
+    deserialize(desc, charset);
 }
 
 
@@ -81,7 +81,7 @@ ts::ISO639LanguageDescriptor::ISO639LanguageDescriptor (const std::string& code,
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::ISO639LanguageDescriptor::serialize (Descriptor& desc) const
+void ts::ISO639LanguageDescriptor::serialize (Descriptor& desc, const DVBCharset* charset) const
 {
     ByteBlockPtr bbp (new ByteBlock (2));
     CheckNonNull (bbp.pointer());
@@ -106,7 +106,7 @@ void ts::ISO639LanguageDescriptor::serialize (Descriptor& desc) const
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::ISO639LanguageDescriptor::deserialize (const Descriptor& desc)
+void ts::ISO639LanguageDescriptor::deserialize (const Descriptor& desc, const DVBCharset* charset)
 {
     _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() % 4 == 0;
     entries.clear();

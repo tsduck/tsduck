@@ -66,7 +66,7 @@ ts::EnhancedAC3Descriptor::EnhancedAC3Descriptor() :
 // Constructor from a binary descriptor
 //----------------------------------------------------------------------------
 
-ts::EnhancedAC3Descriptor::EnhancedAC3Descriptor (const Descriptor& desc) :
+ts::EnhancedAC3Descriptor::EnhancedAC3Descriptor (const Descriptor& desc, const DVBCharset* charset) :
     AbstractDescriptor(DID_ENHANCED_AC3, "enhanced_AC3_descriptor"),
     component_type(),
     bsid(),
@@ -78,7 +78,7 @@ ts::EnhancedAC3Descriptor::EnhancedAC3Descriptor (const Descriptor& desc) :
     substream3(),
     additional_info()
 {
-    deserialize (desc);
+    deserialize (desc, charset);
 }
 
 
@@ -120,7 +120,7 @@ void ts::EnhancedAC3Descriptor::merge (const EnhancedAC3Descriptor& other)
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::EnhancedAC3Descriptor::serialize (Descriptor& desc) const
+void ts::EnhancedAC3Descriptor::serialize (Descriptor& desc, const DVBCharset* charset) const
 {
     ByteBlockPtr bbp (new ByteBlock (2));
     CheckNonNull (bbp.pointer());
@@ -167,7 +167,7 @@ void ts::EnhancedAC3Descriptor::serialize (Descriptor& desc) const
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::EnhancedAC3Descriptor::deserialize (const Descriptor& desc)
+void ts::EnhancedAC3Descriptor::deserialize (const Descriptor& desc, const DVBCharset* charset)
 {
     _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() >= 1;
 

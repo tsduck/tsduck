@@ -68,7 +68,7 @@ ts::TerrestrialDeliverySystemDescriptor::TerrestrialDeliverySystemDescriptor() :
 // Constructor from a binary descriptor
 //----------------------------------------------------------------------------
 
-ts::TerrestrialDeliverySystemDescriptor::TerrestrialDeliverySystemDescriptor(const Descriptor& desc) :
+ts::TerrestrialDeliverySystemDescriptor::TerrestrialDeliverySystemDescriptor(const Descriptor& desc, const DVBCharset* charset) :
     AbstractDeliverySystemDescriptor(DID_TERREST_DELIVERY, DS_DVB_T, "terrestrial_delivery_system_descriptor"),
     centre_frequency(0),
     bandwidth(0),
@@ -83,7 +83,7 @@ ts::TerrestrialDeliverySystemDescriptor::TerrestrialDeliverySystemDescriptor(con
     transmission_mode(0),
     other_frequency(false)
 {
-    deserialize(desc);
+    deserialize(desc, charset);
 }
 
 
@@ -91,7 +91,7 @@ ts::TerrestrialDeliverySystemDescriptor::TerrestrialDeliverySystemDescriptor(con
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::TerrestrialDeliverySystemDescriptor::serialize(Descriptor& desc) const
+void ts::TerrestrialDeliverySystemDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
 {
     uint8_t data[13];
     data[0] = _tag;
@@ -120,7 +120,7 @@ void ts::TerrestrialDeliverySystemDescriptor::serialize(Descriptor& desc) const
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::TerrestrialDeliverySystemDescriptor::deserialize(const Descriptor& desc)
+void ts::TerrestrialDeliverySystemDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
 {
     _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() >= 7;
 

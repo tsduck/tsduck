@@ -60,8 +60,8 @@ namespace ts {
         AVCSequenceParameterSet(const void* data = 0, size_t size = 0);
 
         // Inherited methods
-        virtual void clear();
-        virtual std::ostream& display(std::ostream& strm = std::cout, const std::string& margin = "") const;
+        virtual void clear() override;
+        virtual std::ostream& display(std::ostream& strm = std::cout, const std::string& margin = "") const override;
 
         //!
         //! Get chroma_format_idc, applying default value (see H.264 7.4.2.1.1).
@@ -188,6 +188,6 @@ namespace ts {
         //! @param [in,out] parser The AVC parser.
         //! @return The "valid" flag.
         //!
-        virtual bool parseBody(AVCParser& parser);
+        virtual bool parseBody(AVCParser& parser) override;
     };
 }

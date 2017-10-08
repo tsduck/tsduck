@@ -235,12 +235,14 @@ namespace ts {
         //! Convert a DVB string into UTF-16.
         //! @param [in] dvb A string in DVB representation.
         //! The first bytes of the string indicate the DVB character set to use.
+        //! @param [in] charset If not zero, use this character set if no explicit table
+        //! code is present, instead of the standard default ISO-6937.
         //! @return The equivalent UTF-16 string. Stop on untranslatable character, if any.
         //! @see ETSI EN 300 468, Annex A.
         //!
-        static UString FromDVB(const std::string& dvb)
+        static UString FromDVB(const std::string& dvb, const DVBCharset* charset = 0)
         {
-            return FromDVB(reinterpret_cast<const uint8_t*>(dvb.data()), dvb.size());
+            return FromDVB(reinterpret_cast<const uint8_t*>(dvb.data()), dvb.size(), charset);
         }
 
         //!
@@ -248,10 +250,12 @@ namespace ts {
         //! @param [in] dvb Address of a string in DVB representation.
         //! The first bytes of the string indicate the DVB character set to use.
         //! @param [in] dvbSize Size in bytes of the DVB string.
+        //! @param [in] charset If not zero, use this character set if no explicit table
+        //! code is present, instead of the standard default ISO-6937.
         //! @return The equivalent UTF-16 string. Stop on untranslatable character, if any.
         //! @see ETSI EN 300 468, Annex A.
         //!
-        static UString FromDVB(const uint8_t* dvb, size_t dvbSize);
+        static UString FromDVB(const uint8_t* dvb, size_t dvbSize, const DVBCharset* charset = 0);
 
         //!
         //! Convert a DVB string into UTF-16 (preceded by its one-byte length).
@@ -261,10 +265,12 @@ namespace ts {
         //! @param [in,out] size Size in bytes of the buffer, which may be larger than
         //! the DVB string. Upon return, @a size is updated, decremented by the same amount
         //! @a buffer was incremented.
+        //! @param [in] charset If not zero, use this character set if no explicit table
+        //! code is present, instead of the standard default ISO-6937.
         //! @return The equivalent UTF-16 string. Stop on untranslatable character, if any.
         //! @see ETSI EN 300 468, Annex A.
         //!
-        static UString FromDVBWithByteLength(const uint8_t*& buffer, size_t& size);
+        static UString FromDVBWithByteLength(const uint8_t*& buffer, size_t& size, const DVBCharset* charset = 0);
 
         //!
         //! Encode this UTF-16 string into a DVB string.
@@ -525,6 +531,26 @@ namespace ts {
                         const UString& otherSeparators = UString(),
                         const UString& nextMargin = UString(),
                         bool forceSplit = false) const;
+
+        //!
+        //! Split a string into multiple lines which are not longer than a specified maximum width.
+        //! The splits occur on spaces or after any character in @a otherSeparators.
+        //! @param [in] maxWidth Maximum width of each resulting line.
+        //! @param [in] otherSeparators A string containing all characters which
+        //! are acceptable as line break points (in addition to space characters
+        //! which are always potential line break points).
+        //! @param [in] nextMargin A string which is prepended to all lines after the first one.
+        //! @param [in] forceSplit If true, longer lines without separators
+        //! are split at the maximum width (by default, longer lines without
+        //! separators are not split, resulting in lines longer than @a maxWidth).
+        //! @param [in] lineSeparator The sequence of characters for line feed.
+        //! @return The splitted string with embedded line separators.
+        //!
+        UString toSplitLines(size_type maxWidth,
+                             const UString& otherSeparators = UString(),
+                             const UString& nextMargin = UString(),
+                             bool forceSplit = false,
+                             const UString lineSeparator = UString(1, LINE_FEED)) const;
 
         //!
         //! Join a part of a container of strings into one big string.

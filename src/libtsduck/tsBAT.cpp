@@ -51,8 +51,8 @@ ts::BAT::BAT(uint8_t vers, bool cur, uint16_t id) :
 {
 }
 
-ts::BAT::BAT(const BinaryTable& table) :
-    AbstractTransportListTable(TID_BAT, "BAT", table),
+ts::BAT::BAT(const BinaryTable& table, const DVBCharset* charset) :
+    AbstractTransportListTable(TID_BAT, "BAT", table, charset),
     bouquet_id(_tid_ext)
 {
 }

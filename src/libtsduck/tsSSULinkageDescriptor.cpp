@@ -74,7 +74,7 @@ ts::SSULinkageDescriptor::SSULinkageDescriptor(uint16_t ts, uint16_t onetw, uint
 // Constructor from a binary descriptor
 //----------------------------------------------------------------------------
 
-ts::SSULinkageDescriptor::SSULinkageDescriptor(const Descriptor& desc) :
+ts::SSULinkageDescriptor::SSULinkageDescriptor(const Descriptor& desc, const DVBCharset* charset) :
     AbstractDescriptor(DID_LINKAGE, ""),  // No XML conversion.
     ts_id(0),
     onetw_id(0),
@@ -82,7 +82,7 @@ ts::SSULinkageDescriptor::SSULinkageDescriptor(const Descriptor& desc) :
     entries(),
     private_data()
 {
-    deserialize(desc);
+    deserialize(desc, charset);
 }
 
 
@@ -90,7 +90,7 @@ ts::SSULinkageDescriptor::SSULinkageDescriptor(const Descriptor& desc) :
 // Constructor from a linkage_descriptor.
 //----------------------------------------------------------------------------
 
-ts::SSULinkageDescriptor::SSULinkageDescriptor(const ts::LinkageDescriptor& desc) :
+ts::SSULinkageDescriptor::SSULinkageDescriptor(const ts::LinkageDescriptor& desc, const DVBCharset* charset) :
     AbstractDescriptor(DID_LINKAGE, ""),  // No XML conversion.
     ts_id(0),
     onetw_id(0),
@@ -102,8 +102,8 @@ ts::SSULinkageDescriptor::SSULinkageDescriptor(const ts::LinkageDescriptor& desc
     if (_is_valid) {
         // Convert using serialization / deserialization.
         Descriptor bin;
-        desc.serialize(bin);
-        deserialize(bin);
+        desc.serialize(bin, charset);
+        deserialize(bin, charset);
     }
 }
 
@@ -112,13 +112,13 @@ ts::SSULinkageDescriptor::SSULinkageDescriptor(const ts::LinkageDescriptor& desc
 // Convert to a linkage_descriptor.
 //----------------------------------------------------------------------------
 
-void ts::SSULinkageDescriptor::toLinkageDescriptor(ts::LinkageDescriptor& desc) const
+void ts::SSULinkageDescriptor::toLinkageDescriptor(ts::LinkageDescriptor& desc, const DVBCharset* charset) const
 {
     if (_is_valid) {
         // Convert using serialization / deserialization.
         Descriptor bin;
-        serialize(bin);
-        desc.deserialize(bin);
+        serialize(bin, charset);
+        desc.deserialize(bin, charset);
     }
     else {
         desc.invalidate();
@@ -130,7 +130,7 @@ void ts::SSULinkageDescriptor::toLinkageDescriptor(ts::LinkageDescriptor& desc) 
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::SSULinkageDescriptor::serialize(Descriptor& desc) const
+void ts::SSULinkageDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
 {
     ByteBlockPtr bbp (new ByteBlock (2));
     CheckNonNull (bbp.pointer());
@@ -160,7 +160,7 @@ void ts::SSULinkageDescriptor::serialize(Descriptor& desc) const
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::SSULinkageDescriptor::deserialize (const Descriptor& desc)
+void ts::SSULinkageDescriptor::deserialize (const Descriptor& desc, const DVBCharset* charset)
 {
     _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() >= 8;
 

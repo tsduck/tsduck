@@ -44,6 +44,7 @@ namespace ts {
     class Descriptor;
     class DescriptorList;
     class TablesDisplay;
+    class DVBCharset;
 
     //!
     //! Abstract base class for MPEG PSI/SI descriptors.
@@ -94,16 +95,18 @@ namespace ts {
         //! This abstract method serializes a descriptor.
         //! @param [out] bin A binary descriptor object.
         //! Its content is replaced with a binary representation of this object.
+        //! @param [in] charset If not zero, default character set to use.
         //!
-        virtual void serialize(Descriptor& bin) const = 0;
+        virtual void serialize(Descriptor& bin, const DVBCharset* charset = 0) const = 0;
 
         //!
         //! This abstract method deserializes a binary descriptor.
         //! In case of success, this object is replaced with the interpreted content of @a bin.
         //! In case of error, this object is invalidated.
         //! @param [in] bin A binary descriptor to interpret according to the descriptor subclass.
+        //! @param [in] charset If not zero, character set to use without explicit table code.
         //!
-        virtual void deserialize(const Descriptor& bin) = 0;
+        virtual void deserialize(const Descriptor& bin, const DVBCharset* charset = 0) = 0;
 
         //!
         //! Deserialize a descriptor from a descriptor list.
@@ -111,8 +114,9 @@ namespace ts {
         //! In case of error, this object is invalidated.
         //! @param [in] dlist A list of binary descriptors.
         //! @param [in] index Index of the descriptor to deserialize in @a dlist.
+        //! @param [in] charset If not zero, character set to use without explicit table code.
         //!
-        void deserialize(const DescriptorList& dlist, size_t index);
+        void deserialize(const DescriptorList& dlist, size_t index, const DVBCharset* charset = 0);
 
         //!
         //! This abstract method converts the descriptor to XML.

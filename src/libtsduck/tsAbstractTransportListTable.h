@@ -66,8 +66,8 @@ namespace ts {
         SectionHintsMap section_hints;  //!< Section serialization hints by TS.
 
         // Inherited methods
-        virtual void serialize (BinaryTable& table) const;
-        virtual void deserialize (const BinaryTable& table);
+        virtual void serialize(BinaryTable& table, const DVBCharset* = 0) const override;
+        virtual void deserialize(const BinaryTable& table, const DVBCharset* = 0) override;
 
     protected:
         //!
@@ -91,8 +91,9 @@ namespace ts {
         //! @param [in] tid Table id.
         //! @param [in] xml_name Table name, as used in XML structures.
         //! @param [in] table Binary table to deserialize.
+        //! @param [in] charset If not zero, character set to use without explicit table code.
         //!
-        AbstractTransportListTable(TID tid, const char* xml_name, const BinaryTable& table);
+        AbstractTransportListTable(TID tid, const char* xml_name, const BinaryTable& table, const DVBCharset* charset);
 
     private:
         typedef std::set <TransportStreamId> TransportStreamIdSet;

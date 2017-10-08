@@ -68,13 +68,13 @@ ts::SDT::SDT(bool is_actual_,
 // Constructor from a binary table
 //----------------------------------------------------------------------------
 
-ts::SDT::SDT(const BinaryTable& table) :
+ts::SDT::SDT(const BinaryTable& table, const DVBCharset* charset) :
     AbstractLongTable(TID_SDT_ACT, "SDT"),  // TID will be updated by deserialize()
     ts_id(0),
     onetw_id(0),
     services()
 {
-    deserialize(table);
+    deserialize(table, charset);
 }
 
 
@@ -119,7 +119,7 @@ bool ts::SDT::findService(ts::Service& service, bool exact_match) const
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::SDT::deserialize (const BinaryTable& table)
+void ts::SDT::deserialize (const BinaryTable& table, const DVBCharset* charset)
 {
     // Clear table content
     _is_valid = false;
@@ -220,7 +220,7 @@ void ts::SDT::addSection(BinaryTable& table,
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::SDT::serialize(BinaryTable& table) const
+void ts::SDT::serialize(BinaryTable& table, const DVBCharset* charset) const
 {
     // Reinitialize table object
     table.clear();

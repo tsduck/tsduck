@@ -202,6 +202,15 @@ namespace ts {
         std::ostream& out();
 
         //!
+        //! Get the default DVB character set for DVB strings without table code.
+        //! @return The default DVB character set.
+        //!
+        const DVBCharset* dvbCharset() const
+        {
+            return _opt.default_charset;
+        }
+
+        //!
         //! Get the current output report.
         //! @return A reference to the current output report.
         //!
