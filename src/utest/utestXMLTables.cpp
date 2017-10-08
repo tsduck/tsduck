@@ -110,7 +110,7 @@ void XMLTablesTest::testTable(const char* name, const char* ref_xml, const uint8
 
     // Convert XML reference content to binary tables.
     ts::XMLTables xml;
-    CPPUNIT_ASSERT(xml.parseXML(ref_xml, CERR));
+    CPPUNIT_ASSERT(xml.parseXML(std::string(ref_xml), CERR));
 
     // Serialize binary tables to section data.
     std::ostringstream strm;

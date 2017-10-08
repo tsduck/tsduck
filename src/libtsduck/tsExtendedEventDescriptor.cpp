@@ -323,8 +323,8 @@ void ts::ExtendedEventDescriptor::DisplayDescriptor(TablesDisplay& display, DID 
     const std::string margin(indent, ' ');
 
     if (size >= 5) {
-        uint8_t desc_num = data[0];
-        std::string lang(Printable(data + 1, 3));
+        const uint8_t desc_num = data[0];
+        const UString lang(UString::FromDVB(data + 1, 3, display.dvbCharset()));
         size_t length = data[4];
         data += 5; size -= 5;
         if (length > size) {
@@ -339,7 +339,7 @@ void ts::ExtendedEventDescriptor::DisplayDescriptor(TablesDisplay& display, DID 
             if (len > length) {
                 len = length;
             }
-            strm << margin << "\"" << UString::FromDVB(data, len) << "\" : \"";
+            const UString description(UString::FromDVB(data, len, display.dvbCharset()));
             data += len; size -= len; length -= len;
             if (length == 0) {
                 len = 0;
@@ -351,8 +351,9 @@ void ts::ExtendedEventDescriptor::DisplayDescriptor(TablesDisplay& display, DID 
                     len = length;
                 }
             }
-            strm << UString::FromDVB(data, len) << "\"" << std::endl;
+            const UString item(UString::FromDVB(data, len, display.dvbCharset()));
             data += len; size -= len; length -= len;
+            strm << margin << "\"" << description << "\" : \"" << item << "\"" << std::endl;
         }
         if (size < 1) {
             length = 0;
@@ -364,7 +365,8 @@ void ts::ExtendedEventDescriptor::DisplayDescriptor(TablesDisplay& display, DID 
                 length = size;
             }
         }
-        strm << margin << "Description: \"" << UString::FromDVB(data, length) << "\"" << std::endl;
+        const UString text(UString::FromDVB(data, length, display.dvbCharset()));
+        strm << margin << "Text: \"" << text << "\"" << std::endl;
         data += length; size -= length;
     }
 

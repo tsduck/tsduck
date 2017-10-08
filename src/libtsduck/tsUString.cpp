@@ -556,7 +556,7 @@ ts::UString ts::UString::FromDVB(const uint8_t* dvb, size_t dvbSize, const DVBCh
     dvbSize -= codeSize;
 
     // Get the character set for this DVB string.
-    if (code != 0 || charset != 0) {
+    if (code != 0 || charset == 0) {
         charset = DVBCharset::GetCharset(code);
     }
     if (charset == 0) {

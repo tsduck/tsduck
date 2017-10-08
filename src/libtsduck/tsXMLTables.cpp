@@ -59,11 +59,11 @@ ts::XMLTables::XMLTables() :
 // Add a table in the file.
 //----------------------------------------------------------------------------
 
-void ts::XMLTables::add(const AbstractTablePtr& table)
+void ts::XMLTables::add(const AbstractTablePtr& table, const DVBCharset* charset)
 {
     if (!table.isNull() && table->isValid()) {
         BinaryTablePtr bin(new BinaryTable);
-        table->serialize(*bin);
+        table->serialize(*bin, charset);
         if (bin->isValid()) {
             add(bin);
         }
@@ -75,23 +75,28 @@ void ts::XMLTables::add(const AbstractTablePtr& table)
 // Load / parse an XML file.
 //----------------------------------------------------------------------------
 
-bool ts::XMLTables::loadXML(const std::string& file_name, ReportInterface& report)
+bool ts::XMLTables::loadXML(const std::string& file_name, ReportInterface& report, const DVBCharset* charset)
 {
     clear();
     XML xml(report);
     XML::Document doc;
-    return xml.loadDocument(doc, file_name, false) && parseDocument(xml, doc);
+    return xml.loadDocument(doc, file_name, false) && parseDocument(xml, doc, charset);
 }
 
-bool ts::XMLTables::parseXML(const std::string& xml_content, ReportInterface& report)
+bool ts::XMLTables::parseXML(const std::string& xml_content, ReportInterface& report, const DVBCharset* charset)
 {
     clear();
     XML xml(report);
     XML::Document doc;
-    return xml.parseDocument(doc, xml_content) && parseDocument(xml, doc);
+    return xml.parseDocument(doc, xml_content) && parseDocument(xml, doc, charset);
 }
 
-bool ts::XMLTables::parseDocument(XML& xml, const XML::Document& doc)
+bool ts::XMLTables::parseXML(const UString& xml_content, ReportInterface& report, const DVBCharset* charset)
+{
+    return parseXML(xml_content.toUTF8(), report, charset);
+}
+
+bool ts::XMLTables::parseDocument(XML& xml, const XML::Document& doc, const DVBCharset* charset)
 {
     // Load the XML model for TSDuck files. Search it in TSDuck directory.
     XML::Document model;
@@ -126,7 +131,7 @@ bool ts::XMLTables::parseDocument(XML& xml, const XML::Document& doc)
             if (!table.isNull() && table->isValid()) {
                 // Serialize the table.
                 bin = new BinaryTable;
-                table->serialize(*bin);
+                table->serialize(*bin, charset);
             }
         }
         else {
@@ -151,7 +156,7 @@ bool ts::XMLTables::parseDocument(XML& xml, const XML::Document& doc)
 // Create XML file or text.
 //----------------------------------------------------------------------------
 
-bool ts::XMLTables::saveXML(const std::string& file_name, ReportInterface& report) const
+bool ts::XMLTables::saveXML(const std::string& file_name, ReportInterface& report, const DVBCharset* charset) const
 {
     // Create the file.
     ::FILE* fp = ::fopen(file_name.c_str(), "w");
@@ -163,19 +168,19 @@ bool ts::XMLTables::saveXML(const std::string& file_name, ReportInterface& repor
     // Generate the XML content.
     XML xml(report);
     XML::Printer printer(2, fp);
-    const bool success = generateDocument(xml, printer);
+    const bool success = generateDocument(xml, printer, charset);
 
     // Cleanup.
     ::fclose(fp);
     return success;
 }
 
-std::string ts::XMLTables::toText(ReportInterface& report) const
+std::string ts::XMLTables::toText(ReportInterface& report, const DVBCharset* charset) const
 {
     // Generate the XML content.
     XML xml(report);
     XML::Printer printer(2);
-    if (!generateDocument(xml, printer)) {
+    if (!generateDocument(xml, printer, charset)) {
         return std::string();
     }
 
@@ -190,7 +195,7 @@ std::string ts::XMLTables::toText(ReportInterface& report) const
 // Generate an XML document.
 //----------------------------------------------------------------------------
 
-bool ts::XMLTables::generateDocument(XML& xml, XML::Printer& printer) const
+bool ts::XMLTables::generateDocument(XML& xml, XML::Printer& printer, const DVBCharset* charset) const
 {
     // Initialize the document structure.
     XML::Document doc;
@@ -203,7 +208,7 @@ bool ts::XMLTables::generateDocument(XML& xml, XML::Printer& printer) const
     for (BinaryTablePtrVector::const_iterator it = _tables.begin(); it != _tables.end(); ++it) {
         const BinaryTablePtr& table(*it);
         if (!table.isNull()) {
-            ToXML(xml, root, *table);
+            ToXML(xml, root, *table, charset);
         }
     }
 

@@ -275,11 +275,9 @@ std::string& ts::AppendHexa(std::string& str,
         // ASCII dump
         if (flags & hexa::ASCII) {
             for (size_t byte = 0; byte < line_size; byte++) {
-                // Make sure european characters are detected as printable,
-                // even if isprint(3) does not.
+                // Display only ASCII characters. Other encodings don't make sense on one bytes.
                 uint8_t c = raw[line + byte];
-                bool printable = isprint (c) || c >= 0xA0;
-                str.push_back(printable ? c : '.');
+                str.push_back(c >= 0x20 && c <= 0x7E ? c : '.');
             }
         }
 

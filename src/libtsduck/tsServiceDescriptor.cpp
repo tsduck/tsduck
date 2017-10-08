@@ -148,8 +148,8 @@ void ts::ServiceDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, c
         strm << margin << Format("Service type: 0x%02X, ", int(stype)) << names::ServiceType(stype) << std::endl;
         
         // Provider and service names (data and size are updated by FromDVBWithByteLength).
-        const UString provider(UString::FromDVBWithByteLength(data, size));
-        const UString service(UString::FromDVBWithByteLength(data, size));
+        const UString provider(UString::FromDVBWithByteLength(data, size, display.dvbCharset()));
+        const UString service(UString::FromDVBWithByteLength(data, size, display.dvbCharset()));
         strm << margin << "Service: \"" << service << "\", Provider: \"" << provider << "\"" << std::endl;
     }
 

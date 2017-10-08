@@ -35,6 +35,7 @@
 #pragma once
 #include "tsXML.h"
 #include "tsMPEG.h"
+#include "tsUString.h"
 #include "tsDVBCharset.h"
 #include "tsTablesPtr.h"
 #include "tsStringUtils.h"
@@ -55,32 +56,45 @@ namespace ts {
         //! Load an XML file.
         //! @param [in] file_name XML file name.
         //! @param [in,out] report Where to report errors.
+        //! @param [in] charset If not zero, default character set to encode strings.
         //! @return True on success, false on error.
         //!
-        bool loadXML(const std::string& file_name, ReportInterface& report);
+        bool loadXML(const std::string& file_name, ReportInterface& report, const DVBCharset* charset = 0);
 
         //!
         //! Parse an XML content.
-        //! @param [in] xml_content XML file content.
+        //! @param [in] xml_content XML file content in UTF-8.
         //! @param [in,out] report Where to report errors.
+        //! @param [in] charset If not zero, default character set to encode strings.
         //! @return True on success, false on error.
         //!
-        bool parseXML(const std::string& xml_content, ReportInterface& report);
+        bool parseXML(const std::string& xml_content, ReportInterface& report, const DVBCharset* charset = 0);
+
+        //!
+        //! Parse an XML content.
+        //! @param [in] xml_content XML file content in UTF-8.
+        //! @param [in,out] report Where to report errors.
+        //! @param [in] charset If not zero, default character set to encode strings.
+        //! @return True on success, false on error.
+        //!
+        bool parseXML(const UString& xml_content, ReportInterface& report, const DVBCharset* charset = 0);
 
         //!
         //! Save an XML file.
         //! @param [in] file_name XML file name.
         //! @param [in,out] report Where to report errors.
+        //! @param [in] charset If not zero, character set to use without explicit table code.
         //! @return True on success, false on error.
         //!
-        bool saveXML(const std::string& file_name, ReportInterface& report) const;
+        bool saveXML(const std::string& file_name, ReportInterface& report, const DVBCharset* charset = 0) const;
 
         //!
         //! Serialize as XML text.
         //! @param [in,out] report Where to report errors.
+        //! @param [in] charset If not zero, character set to use without explicit table code.
         //! @return Complete XML document text, empty on error.
         //!
-        std::string toText(ReportInterface& report) const;
+        std::string toText(ReportInterface& report, const DVBCharset* charset = 0) const;
 
         //!
         //! Fast access to the list of loaded tables.
@@ -130,8 +144,9 @@ namespace ts {
         //! Add a table in the file.
         //! The table is serialized
         //! @param [in] table The table to add.
+        //! @param [in] charset If not zero, default character set to encode strings.
         //!
-        void add(const AbstractTablePtr& table);
+        void add(const AbstractTablePtr& table, const DVBCharset* charset = 0);
 
         //--------------------------------------------------------------------
         // PSI/SI to XML utilities.
@@ -257,16 +272,18 @@ namespace ts {
         //! Parse an XML document.
         //! @param [in,out] xml XML handling.
         //! @param [in] doc Document to load.
+        //! @param [in] charset If not zero, default character set to encode strings.
         //! @return True on success, false on error.
         //!
-        bool parseDocument(XML& xml, const XML::Document& doc);
+        bool parseDocument(XML& xml, const XML::Document& doc, const DVBCharset* charset);
 
         //!
         //! Generate an XML document.
         //! @param [in,out] xml XML handling.
         //! @param [in,out] printer XML printer.
+        //! @param [in] charset If not zero, character set to use without explicit table code.
         //! @return True on success, false on error.
         //!
-        bool generateDocument(XML& xml, XML::Printer& printer) const;
+        bool generateDocument(XML& xml, XML::Printer& printer, const DVBCharset* charset) const;
     };
 }

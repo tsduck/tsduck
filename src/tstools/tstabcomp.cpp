@@ -51,13 +51,13 @@ struct Options: public ts::Args
 {
     Options(int argc, char *argv[]);
 
-    ts::StringVector      infiles;   // Input file names.
-    std::string           outfile;   // Output file path.
-    bool                  outdir;    // Output name is a directory.
-    bool                  compile;   // Explicit compilation.
-    bool                  decompile; // Explicit decompilation.
-    bool                  xml_model; // Display XML model instead of compilation.
-    const ts::DVBCharset* default_charset;  //!< Default DVB character set to interpret strings.
+    ts::StringVector      infiles;         // Input file names.
+    std::string           outfile;         // Output file path.
+    bool                  outdir;          // Output name is a directory.
+    bool                  compile;         // Explicit compilation.
+    bool                  decompile;       // Explicit decompilation.
+    bool                  xmlModel;        // Display XML model instead of compilation.
+    const ts::DVBCharset* defaultCharset;  // Default DVB character set to interpret strings.
 };
 
 Options::Options(int argc, char *argv[]) :
@@ -67,8 +67,8 @@ Options::Options(int argc, char *argv[]) :
     outdir(false),
     compile(false),
     decompile(false),
-    xml_model(false),
-    default_charset(0)
+    xmlModel(false),
+    defaultCharset(0)
 {
     option("",                0,  ts::Args::STRING);
     option("compile",        'c');
@@ -142,14 +142,14 @@ Options::Options(int argc, char *argv[]) :
     getValue(outfile, "output");
     compile = present("compile");
     decompile = present("decompile");
-    xml_model = present("xml-model");
+    xmlModel = present("xml-model");
     outdir = !outfile.empty() && ts::IsDirectory(outfile);
 
     if (present("verbose")) {
         setDebugLevel(ts::Severity::Verbose);
     }
 
-    if (!infiles.empty() && xml_model) {
+    if (!infiles.empty() && xmlModel) {
         error("do not specify input files with --xml-model");
     }
     if (infiles.size() > 1 && !outfile.empty() && !outdir) {
@@ -161,7 +161,7 @@ Options::Options(int argc, char *argv[]) :
 
     // Get default character set.
     const std::string csName(value("default-charset"));
-    if (!csName.empty() && (default_charset = ts::DVBCharset::GetCharset(csName)) == 0) {
+    if (!csName.empty() && (defaultCharset = ts::DVBCharset::GetCharset(csName)) == 0) {
         error("invalid character set name '%s", csName.c_str());
     }
 
@@ -215,7 +215,7 @@ bool CompileXML(Options& opt, const std::string& infile, const std::string& outf
 
     // Load XML file, convert tables to binary and save binary file.
     ts::XMLTables xml;
-    return xml.loadXML(infile, report) && ts::BinaryTable::SaveFile(xml.tables(), outfile, report);
+    return xml.loadXML(infile, report, opt.defaultCharset) && ts::BinaryTable::SaveFile(xml.tables(), outfile, report);
 }
 
 
@@ -237,7 +237,7 @@ bool DecompileBinary(Options& opt, const std::string& infile, const std::string&
     // Convert tables to XML and save XML file.
     ts::XMLTables xml;
     xml.add(tables);
-    return xml.saveXML(outfile, report);
+    return xml.saveXML(outfile, report, opt.defaultCharset);
 }
 
 
@@ -293,7 +293,7 @@ int main(int argc, char *argv[])
 {
     Options opt(argc, argv);
     bool ok = true;
-    if (opt.xml_model) {
+    if (opt.xmlModel) {
         ok = DisplayModel(opt);
     }
     else {
