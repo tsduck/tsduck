@@ -59,14 +59,14 @@ ts::AbstractTransportListTable::AbstractTransportListTable(TID tid_,
 // Constructor from a binary table
 //----------------------------------------------------------------------------
 
-ts::AbstractTransportListTable::AbstractTransportListTable (TID tid, const char* xml_name, const BinaryTable& table) :
+ts::AbstractTransportListTable::AbstractTransportListTable (TID tid, const char* xml_name, const BinaryTable& table, const DVBCharset* charset) :
     AbstractLongTable(tid, xml_name),
     descs(),
     transports(),
     section_hints(),
     _tid_ext(0xFFFF)
 {
-    deserialize(table);
+    deserialize(table, charset);
 }
 
 
@@ -74,7 +74,7 @@ ts::AbstractTransportListTable::AbstractTransportListTable (TID tid, const char*
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::AbstractTransportListTable::deserialize(const BinaryTable& table)
+void ts::AbstractTransportListTable::deserialize(const BinaryTable& table, const DVBCharset* charset)
 {
     // Clear table content
     _is_valid = false;
@@ -254,7 +254,7 @@ bool ts::AbstractTransportListTable::getNextTransport(TransportStreamIdSet& ts_s
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::AbstractTransportListTable::serialize(BinaryTable& table) const
+void ts::AbstractTransportListTable::serialize(BinaryTable& table, const DVBCharset* charset) const
 {
     // Reinitialize table object
     table.clear ();

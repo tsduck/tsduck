@@ -57,11 +57,11 @@ ts::PrivateDataSpecifierDescriptor::PrivateDataSpecifierDescriptor(PDS pds_) :
 // Constructor from a binary descriptor
 //----------------------------------------------------------------------------
 
-ts::PrivateDataSpecifierDescriptor::PrivateDataSpecifierDescriptor(const Descriptor& desc) :
+ts::PrivateDataSpecifierDescriptor::PrivateDataSpecifierDescriptor(const Descriptor& desc, const DVBCharset* charset) :
     AbstractDescriptor(DID_PRIV_DATA_SPECIF, "private_data_specifier_descriptor"),
     pds(0)
 {
-    deserialize(desc);
+    deserialize(desc, charset);
 }
 
 
@@ -69,7 +69,7 @@ ts::PrivateDataSpecifierDescriptor::PrivateDataSpecifierDescriptor(const Descrip
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::PrivateDataSpecifierDescriptor::serialize (Descriptor& desc) const
+void ts::PrivateDataSpecifierDescriptor::serialize (Descriptor& desc, const DVBCharset* charset) const
 {
     uint8_t data[6];
     data[0] = _tag;
@@ -85,7 +85,7 @@ void ts::PrivateDataSpecifierDescriptor::serialize (Descriptor& desc) const
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::PrivateDataSpecifierDescriptor::deserialize (const Descriptor& desc)
+void ts::PrivateDataSpecifierDescriptor::deserialize (const Descriptor& desc, const DVBCharset* charset)
 {
     _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() == 4;
 

@@ -56,8 +56,8 @@ namespace ts {
         //!
         AbstractAVCStructure() : AbstractAVCData() {}
 
-        //! @copydoc AbstractAVCData::parse()
-        virtual bool parse(const void* addr, size_t size);
+        // Inherited
+        virtual bool parse(const void* addr, size_t size) override;
 
         //!
         //! Parse the structure.

@@ -53,12 +53,12 @@ ts::AbstractDescriptorsTable::AbstractDescriptorsTable(TID tid_, const char* xml
 // Constructor from a binary table
 //----------------------------------------------------------------------------
 
-ts::AbstractDescriptorsTable::AbstractDescriptorsTable(TID tid, const char* xml_name, const BinaryTable& table) :
+ts::AbstractDescriptorsTable::AbstractDescriptorsTable(TID tid, const char* xml_name, const BinaryTable& table, const DVBCharset* charset) :
     AbstractLongTable(tid, xml_name),
     descs(),
     _tid_ext(0xFFFF)
 {
-    deserialize(table);
+    deserialize(table, charset);
 }
 
 
@@ -66,11 +66,11 @@ ts::AbstractDescriptorsTable::AbstractDescriptorsTable(TID tid, const char* xml_
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::AbstractDescriptorsTable::deserialize (const BinaryTable& table)
+void ts::AbstractDescriptorsTable::deserialize(const BinaryTable& table, const DVBCharset* charset)
 {
     // Clear table content
     _is_valid = false;
-    descs.clear ();
+    descs.clear();
 
     if (!table.isValid() || table.tableId() != _table_id) {
         return;
@@ -80,7 +80,7 @@ void ts::AbstractDescriptorsTable::deserialize (const BinaryTable& table)
     for (size_t si = 0; si < table.sectionCount(); ++si) {
 
         // Reference to current section
-        const Section& sect (*table.sectionAt(si));
+        const Section& sect(*table.sectionAt(si));
 
         // Get common properties
         version = sect.version();
@@ -88,11 +88,11 @@ void ts::AbstractDescriptorsTable::deserialize (const BinaryTable& table)
         _tid_ext = sect.tableIdExtension();
 
         // Analyze the section payload:
-        const uint8_t* data (sect.payload());
-        size_t remain (sect.payloadSize());
+        const uint8_t* data = sect.payload();
+        size_t remain = sect.payloadSize();
 
         // Get descriptor list
-        descs.add (data, remain);
+        descs.add(data, remain);
     }
 
     _is_valid = true;
@@ -103,7 +103,7 @@ void ts::AbstractDescriptorsTable::deserialize (const BinaryTable& table)
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::AbstractDescriptorsTable::serialize (BinaryTable& table) const
+void ts::AbstractDescriptorsTable::serialize(BinaryTable& table, const DVBCharset* charset) const
 {
     // Reinitialize table object
     table.clear ();

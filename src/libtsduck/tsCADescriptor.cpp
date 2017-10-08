@@ -61,13 +61,13 @@ ts::CADescriptor::CADescriptor (uint16_t cas_id_, PID ca_pid_) :
 // Constructor from a binary descriptor
 //----------------------------------------------------------------------------
 
-ts::CADescriptor::CADescriptor (const Descriptor& desc) :
+ts::CADescriptor::CADescriptor (const Descriptor& desc, const DVBCharset* charset) :
     AbstractDescriptor (DID_CA, "CA_descriptor"),
     cas_id (0),
     ca_pid (PID_NULL),
     private_data ()
 {
-    deserialize (desc);
+    deserialize (desc, charset);
 }
 
 
@@ -75,7 +75,7 @@ ts::CADescriptor::CADescriptor (const Descriptor& desc) :
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::CADescriptor::serialize (Descriptor& desc) const
+void ts::CADescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
 {
     ByteBlockPtr bbp (new ByteBlock (2));
     CheckNonNull (bbp.pointer());
@@ -95,7 +95,7 @@ void ts::CADescriptor::serialize (Descriptor& desc) const
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::CADescriptor::deserialize (const Descriptor& desc)
+void ts::CADescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
 {
     _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() >= 4;
 

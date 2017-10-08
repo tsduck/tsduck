@@ -62,7 +62,7 @@ ts::AC3Descriptor::AC3Descriptor() :
 // Constructor from a binary descriptor
 //----------------------------------------------------------------------------
 
-ts::AC3Descriptor::AC3Descriptor(const Descriptor& desc) :
+ts::AC3Descriptor::AC3Descriptor(const Descriptor& desc, const DVBCharset* charset) :
     AbstractDescriptor(DID_AC3, "AC3_descriptor"),
     component_type(),
     bsid(),
@@ -70,7 +70,7 @@ ts::AC3Descriptor::AC3Descriptor(const Descriptor& desc) :
     asvc(),
     additional_info()
 {
-    deserialize(desc);
+    deserialize(desc, charset);
 }
 
 
@@ -102,7 +102,7 @@ void ts::AC3Descriptor::merge(const AC3Descriptor& other)
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::AC3Descriptor::serialize (Descriptor& desc) const
+void ts::AC3Descriptor::serialize (Descriptor& desc, const DVBCharset* charset) const
 {
     ByteBlockPtr bbp (new ByteBlock (2));
     CheckNonNull (bbp.pointer());
@@ -136,7 +136,7 @@ void ts::AC3Descriptor::serialize (Descriptor& desc) const
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::AC3Descriptor::deserialize (const Descriptor& desc)
+void ts::AC3Descriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
 {
     _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() >= 1;
 

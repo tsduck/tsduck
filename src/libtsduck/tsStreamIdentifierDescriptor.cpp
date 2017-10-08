@@ -56,11 +56,11 @@ ts::StreamIdentifierDescriptor::StreamIdentifierDescriptor(uint8_t ctag) :
 // Constructor from a binary descriptor
 //----------------------------------------------------------------------------
 
-ts::StreamIdentifierDescriptor::StreamIdentifierDescriptor(const Descriptor& desc) :
+ts::StreamIdentifierDescriptor::StreamIdentifierDescriptor(const Descriptor& desc, const DVBCharset* charset) :
     AbstractDescriptor(DID_STREAM_ID, "stream_identifier_descriptor"),
     component_tag(0)
 {
-    deserialize(desc);
+    deserialize(desc, charset);
 }
 
 
@@ -68,7 +68,7 @@ ts::StreamIdentifierDescriptor::StreamIdentifierDescriptor(const Descriptor& des
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::StreamIdentifierDescriptor::serialize (Descriptor& desc) const
+void ts::StreamIdentifierDescriptor::serialize (Descriptor& desc, const DVBCharset* charset) const
 {
     ByteBlockPtr bbp (new ByteBlock (3));
     CheckNonNull (bbp.pointer());
@@ -85,7 +85,7 @@ void ts::StreamIdentifierDescriptor::serialize (Descriptor& desc) const
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::StreamIdentifierDescriptor::deserialize (const Descriptor& desc)
+void ts::StreamIdentifierDescriptor::deserialize (const Descriptor& desc, const DVBCharset* charset)
 {
     _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() >= 1;
 

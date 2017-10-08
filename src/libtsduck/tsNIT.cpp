@@ -53,8 +53,8 @@ ts::NIT::NIT(bool is_actual, uint8_t vers, bool cur, uint16_t id) :
 {
 }
 
-ts::NIT::NIT(const BinaryTable& table) :
-    AbstractTransportListTable(TID_NIT_ACT, "NIT", table),  // TID updated by deserialize()
+ts::NIT::NIT(const BinaryTable& table, const DVBCharset* charset) :
+    AbstractTransportListTable(TID_NIT_ACT, "NIT", table, charset),  // TID updated by deserialize()
     network_id(_tid_ext)
 {
 }

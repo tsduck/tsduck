@@ -68,8 +68,9 @@ namespace ts {
         //!
         //! Constructor from a binary descriptor
         //! @param [in] bin A binary descriptor to deserialize.
+        //! @param [in] charset If not zero, character set to use without explicit table code.
         //!
-        ParentalRatingDescriptor(const Descriptor& bin);
+        ParentalRatingDescriptor(const Descriptor& bin, const DVBCharset* charset = 0);
 
         //!
         //! Constructor with one entry.
@@ -79,10 +80,10 @@ namespace ts {
         ParentalRatingDescriptor(const std::string& language, uint8_t rating);
 
         // Inherited methods
-        virtual void serialize(Descriptor&) const;
-        virtual void deserialize(const Descriptor&);
-        virtual XML::Element* toXML(XML& xml, XML::Element* parent) const;
-        virtual void fromXML(XML& xml, const XML::Element* element);
+        virtual void serialize(Descriptor&, const DVBCharset* = 0) const override;
+        virtual void deserialize(const Descriptor&, const DVBCharset* = 0) override;
+        virtual XML::Element* toXML(XML&, XML::Element*) const override;
+        virtual void fromXML(XML&, const XML::Element*) override;
 
         //!
         //! Item entry.

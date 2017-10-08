@@ -56,12 +56,12 @@ ts::CountryAvailabilityDescriptor::CountryAvailabilityDescriptor() :
 // Constructor from a binary descriptor
 //----------------------------------------------------------------------------
 
-ts::CountryAvailabilityDescriptor::CountryAvailabilityDescriptor(const Descriptor& desc) :
+ts::CountryAvailabilityDescriptor::CountryAvailabilityDescriptor(const Descriptor& desc, const DVBCharset* charset) :
     AbstractDescriptor(DID_COUNTRY_AVAIL, "country_availability_descriptor"),
     country_availability(true),
     country_codes()
 {
-    deserialize(desc);
+    deserialize(desc, charset);
 }
 
 
@@ -93,7 +93,7 @@ ts::CountryAvailabilityDescriptor::CountryAvailabilityDescriptor(bool availabili
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::CountryAvailabilityDescriptor::serialize (Descriptor& desc) const
+void ts::CountryAvailabilityDescriptor::serialize (Descriptor& desc, const DVBCharset* charset) const
 {
     ByteBlockPtr bbp (new ByteBlock (3));
     CheckNonNull (bbp.pointer());
@@ -118,7 +118,7 @@ void ts::CountryAvailabilityDescriptor::serialize (Descriptor& desc) const
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::CountryAvailabilityDescriptor::deserialize (const Descriptor& desc)
+void ts::CountryAvailabilityDescriptor::deserialize (const Descriptor& desc, const DVBCharset* charset)
 {
     _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() % 3 == 1;
     country_codes.clear();

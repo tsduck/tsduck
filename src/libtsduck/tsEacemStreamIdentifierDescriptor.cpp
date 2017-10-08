@@ -61,11 +61,11 @@ ts::EacemStreamIdentifierDescriptor::EacemStreamIdentifierDescriptor(uint8_t ver
 // Constructor from a binary descriptor
 //----------------------------------------------------------------------------
 
-ts::EacemStreamIdentifierDescriptor::EacemStreamIdentifierDescriptor(const Descriptor& desc) :
+ts::EacemStreamIdentifierDescriptor::EacemStreamIdentifierDescriptor(const Descriptor& desc, const DVBCharset* charset) :
     AbstractDescriptor(DID_EACEM_STREAM_ID, "eacem_stream_identifier_descriptor", PDS_EACEM),
     version(0)
 {
-    deserialize(desc);
+    deserialize(desc, charset);
 }
 
 
@@ -73,7 +73,7 @@ ts::EacemStreamIdentifierDescriptor::EacemStreamIdentifierDescriptor(const Descr
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::EacemStreamIdentifierDescriptor::serialize(Descriptor& desc) const
+void ts::EacemStreamIdentifierDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
 {
     ByteBlockPtr bbp(new ByteBlock(3));
     CheckNonNull (bbp.pointer());
@@ -89,7 +89,7 @@ void ts::EacemStreamIdentifierDescriptor::serialize(Descriptor& desc) const
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::EacemStreamIdentifierDescriptor::deserialize (const Descriptor& desc)
+void ts::EacemStreamIdentifierDescriptor::deserialize (const Descriptor& desc, const DVBCharset* charset)
 {
     _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() == 1;
 

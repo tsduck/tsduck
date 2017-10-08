@@ -48,7 +48,7 @@ ts::CAT::CAT(uint8_t vers, bool cur) :
 {
 }
 
-ts::CAT::CAT(const BinaryTable& table) :
-    AbstractDescriptorsTable(TID_CAT, "CAT", table)
+ts::CAT::CAT(const BinaryTable& table, const DVBCharset* charset) :
+    AbstractDescriptorsTable(TID_CAT, "CAT", table, charset)
 {
 }

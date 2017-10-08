@@ -60,12 +60,12 @@ ts::DataBroadcastIdDescriptor::DataBroadcastIdDescriptor(uint16_t id) :
 // Constructor from a binary descriptor
 //----------------------------------------------------------------------------
 
-ts::DataBroadcastIdDescriptor::DataBroadcastIdDescriptor(const Descriptor& desc) :
+ts::DataBroadcastIdDescriptor::DataBroadcastIdDescriptor(const Descriptor& desc, const DVBCharset* charset) :
     AbstractDescriptor(DID_DATA_BROADCAST_ID, "data_broadcast_id_descriptor"),
     data_broadcast_id(0),
     private_data()
 {
-    deserialize(desc);
+    deserialize(desc, charset);
 }
 
 
@@ -73,7 +73,7 @@ ts::DataBroadcastIdDescriptor::DataBroadcastIdDescriptor(const Descriptor& desc)
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::DataBroadcastIdDescriptor::serialize (Descriptor& desc) const
+void ts::DataBroadcastIdDescriptor::serialize (Descriptor& desc, const DVBCharset* charset) const
 {
     ByteBlockPtr bbp (new ByteBlock (2));
     CheckNonNull (bbp.pointer());
@@ -92,7 +92,7 @@ void ts::DataBroadcastIdDescriptor::serialize (Descriptor& desc) const
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::DataBroadcastIdDescriptor::deserialize (const Descriptor& desc)
+void ts::DataBroadcastIdDescriptor::deserialize (const Descriptor& desc, const DVBCharset* charset)
 {
     _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() >= 2;
 

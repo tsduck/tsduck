@@ -60,11 +60,11 @@ ts::TeletextDescriptor::TeletextDescriptor() :
     _is_valid = true;
 }
 
-ts::TeletextDescriptor::TeletextDescriptor(const Descriptor& desc) :
+ts::TeletextDescriptor::TeletextDescriptor(const Descriptor& desc, const DVBCharset* charset) :
     AbstractDescriptor(DID_TELETEXT, "teletext_descriptor"),
     entries()
 {
-    deserialize(desc);
+    deserialize(desc, charset);
 }
 
 
@@ -125,7 +125,7 @@ void ts::TeletextDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, 
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::TeletextDescriptor::serialize (Descriptor& desc) const
+void ts::TeletextDescriptor::serialize (Descriptor& desc, const DVBCharset* charset) const
 {
     if (entries.size() > MAX_ENTRIES) {
         desc.invalidate();
@@ -156,7 +156,7 @@ void ts::TeletextDescriptor::serialize (Descriptor& desc) const
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::TeletextDescriptor::deserialize (const Descriptor& desc)
+void ts::TeletextDescriptor::deserialize (const Descriptor& desc, const DVBCharset* charset)
 {
     entries.clear();
 

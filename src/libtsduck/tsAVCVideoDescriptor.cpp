@@ -64,7 +64,7 @@ ts::AVCVideoDescriptor::AVCVideoDescriptor() :
 // Constructor from a binary descriptor
 //----------------------------------------------------------------------------
 
-ts::AVCVideoDescriptor::AVCVideoDescriptor(const Descriptor& desc) :
+ts::AVCVideoDescriptor::AVCVideoDescriptor(const Descriptor& desc, const DVBCharset* charset) :
     AbstractDescriptor(DID_AVC_VIDEO, "AVC_video_descriptor"),
     profile_idc(0),
     constraint_set0(false),
@@ -75,7 +75,7 @@ ts::AVCVideoDescriptor::AVCVideoDescriptor(const Descriptor& desc) :
     AVC_still_present(false),
     AVC_24_hour_picture(false)
 {
-    deserialize(desc);
+    deserialize(desc, charset);
 }
 
 
@@ -83,7 +83,7 @@ ts::AVCVideoDescriptor::AVCVideoDescriptor(const Descriptor& desc) :
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::AVCVideoDescriptor::serialize (Descriptor& desc) const
+void ts::AVCVideoDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
 {
     uint8_t data[6];
     data[0] = _tag;
@@ -109,7 +109,7 @@ void ts::AVCVideoDescriptor::serialize (Descriptor& desc) const
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::AVCVideoDescriptor::deserialize (const Descriptor& desc)
+void ts::AVCVideoDescriptor::deserialize (const Descriptor& desc, const DVBCharset* charset)
 {
     _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() == 4;
 

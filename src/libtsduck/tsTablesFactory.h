@@ -43,6 +43,7 @@
 namespace ts {
 
     class TablesDisplay;
+    class DVBCharset;
 
     //!
     //! A factory class which creates tables and descriptors based on id or name.
@@ -62,7 +63,7 @@ namespace ts {
 
         //!
         //! Profile of a function which creates a descriptor.
-        //! @return A safe pointer to an instance of a concrete subclass of AbstractDescrîptor.
+        //! @return A safe pointer to an instance of a concrete subclass of AbstractDescriptor.
         //!
         typedef AbstractDescriptorPtr (*DescriptorFactory)();
 

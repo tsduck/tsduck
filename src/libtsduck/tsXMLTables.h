@@ -35,6 +35,7 @@
 #pragma once
 #include "tsXML.h"
 #include "tsMPEG.h"
+#include "tsDVBCharset.h"
 #include "tsTablesPtr.h"
 #include "tsStringUtils.h"
 
@@ -141,9 +142,10 @@ namespace ts {
         //! @param [in,out] xml XML utility for error reporting
         //! @param [in,out] parent The parent node for the new XML tree.
         //! @param [in] table The table to serialize.
+        //! @param [in] charset If not zero, character set to use without explicit table code.
         //! @return The new XML element or zero if @a table is invalid.
         //!
-        static XML::Element* ToXML(XML& xml, XML::Element* parent, const BinaryTable& table);
+        static XML::Element* ToXML(XML& xml, XML::Element* parent, const BinaryTable& table, const DVBCharset* charset = 0);
 
         //!
         //! This method converts a descriptor to the appropriate XML tree.
@@ -151,18 +153,20 @@ namespace ts {
         //! @param [in,out] parent The parent node for the new XML tree.
         //! @param [in] desc The descriptor to serialize.
         //! @param [in] pds Associated private data specifier.
+        //! @param [in] charset If not zero, character set to use without explicit table code.
         //! @return The new XML element or zero if @a table is invalid.
         //!
-        static XML::Element* ToXML(XML& xml, XML::Element* parent, const Descriptor& desc, PDS pds = 0);
+        static XML::Element* ToXML(XML& xml, XML::Element* parent, const Descriptor& desc, PDS pds = 0, const DVBCharset* charset = 0);
 
         //!
         //! This method converts a list of descriptors to XML.
         //! @param [in,out] xml XML utility for error reporting
         //! @param [in,out] parent The parent node for the all descriptors.
         //! @param [in] list The list of descriptors to serialize.
+        //! @param [in] charset If not zero, character set to use without explicit table code.
         //! @return True on success, false on error.
         //!
-        static bool ToXML(XML& xml, XML::Element* parent, const DescriptorList& list);
+        static bool ToXML(XML& xml, XML::Element* parent, const DescriptorList& list, const DVBCharset* charset = 0);
 
         //!
         //! This method converts a generic table to XML.
@@ -193,11 +197,11 @@ namespace ts {
         //! All these elements are not null and their names are in @a allowedOthers.
         //! @param [in,out] xml XML utility for error reporting
         //! @param [in] parent The XML element containing all descriptors.
-        //! @param [in] allowedOthers A list of allowed element names inside @a parent
-        //! which are not descriptors.
+        //! @param [in] allowedOthers A list of allowed element names inside @a parent which are not descriptors.
+        //! @param [in] charset If not zero, character set to use without explicit table code.
         //! @return True on success, false on error.
         //!
-        static bool FromDescriptorListXML(DescriptorList& list, XML::ElementVector& others, XML& xml, const XML::Element* parent, const StringList& allowedOthers);
+        static bool FromDescriptorListXML(DescriptorList& list, XML::ElementVector& others, XML& xml, const XML::Element* parent, const StringList& allowedOthers, const DVBCharset* charset = 0);
 
         //!
         //! This method decodes an XML list of descriptors.
@@ -206,14 +210,14 @@ namespace ts {
         //! All these elements are not null and their names are in @a allowedOthers.
         //! @param [in,out] xml XML utility for error reporting
         //! @param [in] parent The XML element containing all descriptors.
-        //! @param [in] allowedOthers A comma-separated list of allowed element names inside @a parent
-        //! which are not descriptors.
+        //! @param [in] allowedOthers A comma-separated list of allowed element names inside @a parent which are not descriptors.
+        //! @param [in] charset If not zero, character set to use without explicit table code.
         //! @return True on success, false on error.
         //!
-        static bool FromDescriptorListXML(DescriptorList& list, XML::ElementVector& others, XML& xml, const XML::Element* parent, const std::string& allowedOthers)
+        static bool FromDescriptorListXML(DescriptorList& list, XML::ElementVector& others, XML& xml, const XML::Element* parent, const std::string& allowedOthers, const DVBCharset* charset = 0)
         {
             StringList allowed;
-            return FromDescriptorListXML(list, others, xml, parent, SplitString(allowed, allowedOthers));
+            return FromDescriptorListXML(list, others, xml, parent, SplitString(allowed, allowedOthers), charset);
         }
 
         //!

@@ -61,11 +61,11 @@ ts::SubtitlingDescriptor::SubtitlingDescriptor() :
     _is_valid = true;
 }
 
-ts::SubtitlingDescriptor::SubtitlingDescriptor(const Descriptor& desc) :
+ts::SubtitlingDescriptor::SubtitlingDescriptor(const Descriptor& desc, const DVBCharset* charset) :
     AbstractDescriptor(DID_SUBTITLING, "subtitling_descriptor"),
     entries()
 {
-    deserialize(desc);
+    deserialize(desc, charset);
 }
 
 
@@ -101,7 +101,7 @@ void ts::SubtitlingDescriptor::DisplayDescriptor(TablesDisplay& display, DID did
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::SubtitlingDescriptor::serialize (Descriptor& desc) const
+void ts::SubtitlingDescriptor::serialize (Descriptor& desc, const DVBCharset* charset) const
 {
     if (entries.size() > MAX_ENTRIES) {
         desc.invalidate();
@@ -133,7 +133,7 @@ void ts::SubtitlingDescriptor::serialize (Descriptor& desc) const
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::SubtitlingDescriptor::deserialize (const Descriptor& desc)
+void ts::SubtitlingDescriptor::deserialize (const Descriptor& desc, const DVBCharset* charset)
 {
     entries.clear();
 

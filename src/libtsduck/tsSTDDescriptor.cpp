@@ -55,11 +55,11 @@ ts::STDDescriptor::STDDescriptor(bool leak_valid_) :
 // Constructor from a binary descriptor
 //----------------------------------------------------------------------------
 
-ts::STDDescriptor::STDDescriptor(const Descriptor& desc) :
+ts::STDDescriptor::STDDescriptor(const Descriptor& desc, const DVBCharset* charset) :
     AbstractDescriptor(DID_STD, "STD_descriptor"),
     leak_valid(false)
 {
-    deserialize(desc);
+    deserialize(desc, charset);
 }
 
 
@@ -67,7 +67,7 @@ ts::STDDescriptor::STDDescriptor(const Descriptor& desc) :
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::STDDescriptor::serialize(Descriptor& desc) const
+void ts::STDDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
 {
     uint8_t data[3];
     data[0] = _tag;
@@ -83,7 +83,7 @@ void ts::STDDescriptor::serialize(Descriptor& desc) const
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::STDDescriptor::deserialize (const Descriptor& desc)
+void ts::STDDescriptor::deserialize (const Descriptor& desc, const DVBCharset* charset)
 {
     _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() == 1;
 

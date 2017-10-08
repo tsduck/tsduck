@@ -46,10 +46,10 @@ namespace ts {
         DescriptorList descs; //!< List of descriptors.
 
         // Inherited methods
-        virtual void serialize(BinaryTable& table) const;
-        virtual void deserialize(const BinaryTable& table);
-        virtual XML::Element* toXML(XML& xml, XML::Element* parent) const;
-        virtual void fromXML(XML& xml, const XML::Element* element);
+        virtual void serialize(BinaryTable&, const DVBCharset* = 0) const override;
+        virtual void deserialize(const BinaryTable&, const DVBCharset* = 0) override;
+        virtual XML::Element* toXML(XML&, XML::Element*) const override;
+        virtual void fromXML(XML&, const XML::Element*) override;
 
         //!
         //! A static method to display a section.
@@ -81,8 +81,9 @@ namespace ts {
         //! @param [in] tid Table id.
         //! @param [in] xml_name Table name, as used in XML structures.
         //! @param [in] table Binary table to deserialize.
+        //! @param [in] charset If not zero, character set to use without explicit table code.
         //!
-        AbstractDescriptorsTable(TID tid, const char* xml_name, const BinaryTable& table);
+        AbstractDescriptorsTable(TID tid, const char* xml_name, const BinaryTable& table, const DVBCharset* charset = 0);
 
     private:
         AbstractDescriptorsTable() = delete;

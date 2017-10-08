@@ -62,13 +62,13 @@ ts::PAT::PAT(uint8_t  version_,
 // Constructor from a binary table
 //----------------------------------------------------------------------------
 
-ts::PAT::PAT(const BinaryTable& table) :
+ts::PAT::PAT(const BinaryTable& table, const DVBCharset* charset) :
     AbstractLongTable(TID_PAT, "PAT"),
     ts_id(0),
     nit_pid(PID_NULL),
     pmts()
 {
-    deserialize(table);
+    deserialize(table, charset);
 }
 
 
@@ -76,7 +76,7 @@ ts::PAT::PAT(const BinaryTable& table) :
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::PAT::deserialize (const BinaryTable& table)
+void ts::PAT::deserialize (const BinaryTable& table, const DVBCharset* charset)
 {
     // Clear table content
     _is_valid = false;
@@ -128,7 +128,7 @@ void ts::PAT::deserialize (const BinaryTable& table)
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::PAT::serialize (BinaryTable& table) const
+void ts::PAT::serialize (BinaryTable& table, const DVBCharset* charset) const
 {
     // Reinitialize table object
     table.clear();

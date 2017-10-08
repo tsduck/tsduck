@@ -56,11 +56,11 @@ ts::BouquetNameDescriptor::BouquetNameDescriptor(const std::string& name_) :
 // Constructor from a binary descriptor
 //----------------------------------------------------------------------------
 
-ts::BouquetNameDescriptor::BouquetNameDescriptor(const Descriptor& desc) :
+ts::BouquetNameDescriptor::BouquetNameDescriptor(const Descriptor& desc, const DVBCharset* charset) :
     AbstractDescriptor(DID_BOUQUET_NAME, "bouquet_name_descriptor"),
     name()
 {
-    deserialize(desc);
+    deserialize(desc, charset);
 }
 
 
@@ -68,7 +68,7 @@ ts::BouquetNameDescriptor::BouquetNameDescriptor(const Descriptor& desc) :
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::BouquetNameDescriptor::serialize(Descriptor& desc) const
+void ts::BouquetNameDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
 {
     if (name.length() > 255) {
         desc.invalidate();
@@ -91,7 +91,7 @@ void ts::BouquetNameDescriptor::serialize(Descriptor& desc) const
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::BouquetNameDescriptor::deserialize(const Descriptor& desc)
+void ts::BouquetNameDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
 {
     _is_valid = desc.isValid() && desc.tag() == _tag;
 

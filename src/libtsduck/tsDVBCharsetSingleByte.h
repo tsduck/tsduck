@@ -68,9 +68,9 @@ namespace ts {
         static const DVBCharsetSingleByte ISO_8859_15; //!< ISO 8859-15 character set.
 
         // Inherited methods.
-        virtual bool decode(UString& str, const uint8_t* dvb, size_t dvbSize) const;
-        virtual bool canEncode(const UString& str, size_t start = 0, size_t count = UString::NPOS) const;
-        virtual size_t encode(uint8_t*& buffer, size_t& size, const UString& str, size_t start = 0, size_t count = UString::NPOS) const;
+        virtual bool decode(UString& str, const uint8_t* dvb, size_t dvbSize) const override;
+        virtual bool canEncode(const UString& str, size_t start = 0, size_t count = UString::NPOS) const override;
+        virtual size_t encode(uint8_t*& buffer, size_t& size, const UString& str, size_t start = 0, size_t count = UString::NPOS) const override;
 
     protected:
         //!

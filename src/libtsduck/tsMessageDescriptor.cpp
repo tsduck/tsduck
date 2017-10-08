@@ -64,13 +64,13 @@ ts::MessageDescriptor::MessageDescriptor(uint8_t id, const std::string& lang, co
     _is_valid = true;
 }
 
-ts::MessageDescriptor::MessageDescriptor(const Descriptor& bin) :
+ts::MessageDescriptor::MessageDescriptor(const Descriptor& bin, const DVBCharset* charset) :
     AbstractDescriptor(DID_EXTENSION, "message_descriptor"),
     message_id(0),
     language_code(),
     message()
 {
-    deserialize(bin);
+    deserialize(bin, charset);
 }
 
 
@@ -78,7 +78,7 @@ ts::MessageDescriptor::MessageDescriptor(const Descriptor& bin) :
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::MessageDescriptor::serialize(Descriptor& desc) const
+void ts::MessageDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
 {
     if (!_is_valid || language_code.length() != 3 || 7 + message.length() > MAX_DESCRIPTOR_SIZE) {
         desc.invalidate();
@@ -104,7 +104,7 @@ void ts::MessageDescriptor::serialize(Descriptor& desc) const
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::MessageDescriptor::deserialize(const Descriptor& desc)
+void ts::MessageDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
 {
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();

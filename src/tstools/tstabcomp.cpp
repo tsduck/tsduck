@@ -36,6 +36,7 @@
 #include "tsStringUtils.h"
 #include "tsBinaryTable.h"
 #include "tsXMLTables.h"
+#include "tsDVBCharset.h"
 #include "tsReportWithPrefix.h"
 #include "tsInputRedirector.h"
 #include "tsOutputRedirector.h"
@@ -50,12 +51,13 @@ struct Options: public ts::Args
 {
     Options(int argc, char *argv[]);
 
-    ts::StringVector infiles;   // Input file names.
-    std::string      outfile;   // Output file path.
-    bool             outdir;    // Output name is a directory.
-    bool             compile;   // Explicit compilation.
-    bool             decompile; // Explicit decompilation.
-    bool             xml_model; // Display XML model instead of compilation.
+    ts::StringVector      infiles;   // Input file names.
+    std::string           outfile;   // Output file path.
+    bool                  outdir;    // Output name is a directory.
+    bool                  compile;   // Explicit compilation.
+    bool                  decompile; // Explicit decompilation.
+    bool                  xml_model; // Display XML model instead of compilation.
+    const ts::DVBCharset* default_charset;  //!< Default DVB character set to interpret strings.
 };
 
 Options::Options(int argc, char *argv[]) :
@@ -65,14 +67,16 @@ Options::Options(int argc, char *argv[]) :
     outdir(false),
     compile(false),
     decompile(false),
-    xml_model(false)
+    xml_model(false),
+    default_charset(0)
 {
-    option("",           0,  ts::Args::STRING);
-    option("compile",   'c');
-    option("decompile", 'd');
-    option("output",    'o', ts::Args::STRING);
-    option("verbose",   'v');
-    option("xml-model", 'x');
+    option("",                0,  ts::Args::STRING);
+    option("compile",        'c');
+    option("decompile",      'd');
+    option("default-charset", 0, Args::STRING);
+    option("output",         'o', ts::Args::STRING);
+    option("verbose",        'v');
+    option("xml-model",      'x');
 
     setHelp("Input files:\n"
             "\n"
@@ -91,6 +95,21 @@ Options::Options(int argc, char *argv[]) :
             "  --decompile\n"
             "      Decompile all files as binary files into XML files. This is the default\n"
             "      for .bin files.\n"
+            "\n"
+            "  --default-charset name\n"
+            "      Default DVB character set to use. The available table names are:\n"
+            "      " + ts::UString::join(ts::DVBCharset::GetAllNames()).toSplitLines(74, ts::UString(), ts::UString(6, ts::SPACE)).toUTF8() + ".\n"
+            "\n"
+            "      With --compile, this character set is used to encode strings. If a\n"
+            "      given string cannot be encoded with this character set or if this option\n"
+            "      is not specified, an appropriate character set is automatically selected.\n"
+            "\n"
+            "      With --decompile, this character set is used to interpret DVB strings\n"
+            "      without explicit character table code. According to DVB standard ETSI EN\n"
+            "      300 468, the default DVB character set is ISO-6937. However, some bogus\n"
+            "      signalization may assume that the default character set is different,\n"
+            "      typically the usual local character table for the region. This option\n"
+            "      forces a non-standard character table.\n"
             "\n"
             "  --help\n"
             "      Display this help text.\n"
@@ -139,6 +158,13 @@ Options::Options(int argc, char *argv[]) :
     if (compile && decompile) {
         error("specify either --compile or --decompile but not both");
     }
+
+    // Get default character set.
+    const std::string csName(value("default-charset"));
+    if (!csName.empty() && (default_charset = ts::DVBCharset::GetCharset(csName)) == 0) {
+        error("invalid character set name '%s", csName.c_str());
+    }
+
     exitOnError();
 }
 

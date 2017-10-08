@@ -56,14 +56,14 @@ ts::SupplementaryAudioDescriptor::SupplementaryAudioDescriptor() :
     _is_valid = true;
 }
 
-ts::SupplementaryAudioDescriptor::SupplementaryAudioDescriptor(const Descriptor& bin) :
+ts::SupplementaryAudioDescriptor::SupplementaryAudioDescriptor(const Descriptor& bin, const DVBCharset* charset) :
     AbstractDescriptor(DID_EXTENSION, "supplementary_audio_descriptor"),
     mix_type(0),
     editorial_classification(0),
     language_code(),
     private_data()
 {
-    deserialize(bin);
+    deserialize(bin, charset);
 }
 
 
@@ -71,7 +71,7 @@ ts::SupplementaryAudioDescriptor::SupplementaryAudioDescriptor(const Descriptor&
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::SupplementaryAudioDescriptor::serialize(Descriptor& desc) const
+void ts::SupplementaryAudioDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
 {
     if (!_is_valid || (!language_code.empty() && language_code.length() != 3) || 2 + language_code.length() + private_data.size() > MAX_DESCRIPTOR_SIZE) {
         desc.invalidate();
@@ -100,7 +100,7 @@ void ts::SupplementaryAudioDescriptor::serialize(Descriptor& desc) const
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::SupplementaryAudioDescriptor::deserialize(const Descriptor& desc)
+void ts::SupplementaryAudioDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
 {
     language_code.clear();
     private_data.clear();

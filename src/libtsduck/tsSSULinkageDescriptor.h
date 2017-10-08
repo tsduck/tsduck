@@ -96,26 +96,29 @@ namespace ts {
         //!
         //! Constructor from a binary descriptor
         //! @param [in] bin A binary descriptor to deserialize.
+        //! @param [in] charset If not zero, character set to use without explicit table code.
         //!
-        SSULinkageDescriptor(const Descriptor& bin);
+        SSULinkageDescriptor(const Descriptor& bin, const DVBCharset* charset = 0);
 
         //!
         //! Constructor from a linkage_descriptor.
         //! @param [in] desc A linkage_descriptor to convert.
         //! The data_broadcast_id must be 0x000A.
+        //! @param [in] charset If not zero, character set to use without explicit table code.
         //!
-        SSULinkageDescriptor(const LinkageDescriptor& desc);
+        SSULinkageDescriptor(const LinkageDescriptor& desc, const DVBCharset* charset = 0);
 
         //!
         //! Convert to a linkage_descriptor.
         //! @param [out] desc A linkage_descriptor to convert.
+        //! @param [in] charset If not zero, character set to use without explicit table code.
         //!
-        void toLinkageDescriptor(LinkageDescriptor& desc) const;
+        void toLinkageDescriptor(LinkageDescriptor& desc, const DVBCharset* charset = 0) const;
 
         // Inherited methods
-        virtual void serialize(Descriptor&) const;
-        virtual void deserialize(const Descriptor&);
-        virtual XML::Element* toXML(XML& xml, XML::Element* parent) const;
-        virtual void fromXML(XML& xml, const XML::Element* element);
+        virtual void serialize(Descriptor&, const DVBCharset* = 0) const override;
+        virtual void deserialize(const Descriptor&, const DVBCharset* = 0) override;
+        virtual XML::Element* toXML(XML&, XML::Element*) const override;
+        virtual void fromXML(XML&, const XML::Element*) override;
     };
 }

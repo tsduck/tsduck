@@ -56,11 +56,11 @@ ts::TDT::TDT(const Time& utc_time_) :
 // Constructor from a binary table
 //----------------------------------------------------------------------------
 
-ts::TDT::TDT(const BinaryTable& table) :
+ts::TDT::TDT(const BinaryTable& table, const DVBCharset* charset) :
     AbstractTable(TID_TDT, "TDT"),
     utc_time()
 {
-    deserialize(table);
+    deserialize(table, charset);
 }
 
 
@@ -68,7 +68,7 @@ ts::TDT::TDT(const BinaryTable& table) :
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::TDT::deserialize(const BinaryTable& table)
+void ts::TDT::deserialize(const BinaryTable& table, const DVBCharset* charset)
 {
     // Clear table content
     _is_valid = false;
@@ -98,7 +98,7 @@ void ts::TDT::deserialize(const BinaryTable& table)
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::TDT::serialize(BinaryTable& table) const
+void ts::TDT::serialize(BinaryTable& table, const DVBCharset* charset) const
 {
     // Reinitialize table object
     table.clear();

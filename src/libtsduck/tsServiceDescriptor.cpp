@@ -61,13 +61,13 @@ ts::ServiceDescriptor::ServiceDescriptor(uint8_t type, const std::string& provid
 // Constructor from a binary descriptor
 //----------------------------------------------------------------------------
 
-ts::ServiceDescriptor::ServiceDescriptor(const Descriptor& desc) :
+ts::ServiceDescriptor::ServiceDescriptor(const Descriptor& desc, const DVBCharset* charset) :
     AbstractDescriptor(DID_SERVICE, "service_descriptor"),
     service_type(0),
     provider_name(),
     service_name()
 {
-    deserialize(desc);
+    deserialize(desc, charset);
 }
 
 
@@ -75,7 +75,7 @@ ts::ServiceDescriptor::ServiceDescriptor(const Descriptor& desc) :
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::ServiceDescriptor::serialize(Descriptor& desc) const
+void ts::ServiceDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
 {
     if (provider_name.length() + service_name.length() > 252) {
         desc.invalidate();
@@ -102,7 +102,7 @@ void ts::ServiceDescriptor::serialize(Descriptor& desc) const
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::ServiceDescriptor::deserialize(const Descriptor& desc)
+void ts::ServiceDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
 {
     _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() >= 3;
 

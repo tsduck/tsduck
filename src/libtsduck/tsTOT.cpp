@@ -62,13 +62,13 @@ ts::TOT::TOT(const Time& utc_time_) :
 // Constructor from a binary table
 //----------------------------------------------------------------------------
 
-ts::TOT::TOT(const BinaryTable& table) :
+ts::TOT::TOT(const BinaryTable& table, const DVBCharset* charset) :
     AbstractTable(TID_TOT, "TOT"),
     utc_time(),
     regions(),
     descs()
 {
-    deserialize(table);
+    deserialize(table, charset);
 }
 
 
@@ -97,7 +97,7 @@ std::string ts::TOT::timeOffsetFormat (int minutes)
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::TOT::deserialize (const BinaryTable& table)
+void ts::TOT::deserialize (const BinaryTable& table, const DVBCharset* charset)
 {
     // Clear table content
     _is_valid = false;
@@ -186,7 +186,7 @@ void ts::TOT::deserialize (const BinaryTable& table)
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::TOT::serialize (BinaryTable& table) const
+void ts::TOT::serialize (BinaryTable& table, const DVBCharset* charset) const
 {
     // Reinitialize table object
     table.clear();

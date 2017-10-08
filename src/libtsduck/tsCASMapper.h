@@ -136,7 +136,7 @@ namespace ts {
         PIDDescriptionMap _pids;
 
         // Hooks
-        virtual void handleTable(SectionDemux&, const BinaryTable&);
+        virtual void handleTable(SectionDemux&, const BinaryTable&) override;
 
         // Inaccessible operations.
         CASMapper() = delete;

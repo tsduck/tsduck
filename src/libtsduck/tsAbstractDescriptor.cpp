@@ -79,13 +79,13 @@ ts::AbstractDescriptor& ts::AbstractDescriptor::operator=(const AbstractDescript
 // Deserialize from a descriptor list.
 //----------------------------------------------------------------------------
 
-void ts::AbstractDescriptor::deserialize(const DescriptorList& dlist, size_t index)
+void ts::AbstractDescriptor::deserialize(const DescriptorList& dlist, size_t index, const DVBCharset* charset)
 {
     if (index > dlist.count()) {
         invalidate();
     }
     else {
-        deserialize(*dlist[index]);
+        deserialize(*dlist[index], charset);
     }
 }
 

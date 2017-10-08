@@ -65,7 +65,7 @@ ts::ExtendedEventDescriptor::ExtendedEventDescriptor() :
 // Constructor from a binary descriptor
 //----------------------------------------------------------------------------
 
-ts::ExtendedEventDescriptor::ExtendedEventDescriptor(const Descriptor& desc) :
+ts::ExtendedEventDescriptor::ExtendedEventDescriptor(const Descriptor& desc, const DVBCharset* charset) :
     AbstractDescriptor(DID_EXTENDED_EVENT, "extended_event_descriptor"),
     descriptor_number(0),
     last_descriptor_number(0),
@@ -73,7 +73,7 @@ ts::ExtendedEventDescriptor::ExtendedEventDescriptor(const Descriptor& desc) :
     entries(),
     text()
 {
-    deserialize(desc);
+    deserialize(desc, charset);
 }
 
 
@@ -154,7 +154,7 @@ void ts::ExtendedEventDescriptor::splitAndAdd (DescriptorList& dlist) const
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::ExtendedEventDescriptor::serialize (Descriptor& desc) const
+void ts::ExtendedEventDescriptor::serialize (Descriptor& desc, const DVBCharset* charset) const
 {
     if (language_code.length() != 3) {
         desc.invalidate();
@@ -203,7 +203,7 @@ void ts::ExtendedEventDescriptor::serialize (Descriptor& desc) const
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::ExtendedEventDescriptor::deserialize (const Descriptor& desc)
+void ts::ExtendedEventDescriptor::deserialize (const Descriptor& desc, const DVBCharset* charset)
 {
     if (!(_is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() >= 5)) {
         return;

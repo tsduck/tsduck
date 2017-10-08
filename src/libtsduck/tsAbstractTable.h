@@ -73,16 +73,18 @@ namespace ts {
         //! This abstract method serializes a table.
         //! @param [out] bin A binary table object.
         //! Its content is replaced with a binary representation of this object.
+        //! @param [in] charset If not zero, default character set to use.
         //!
-        virtual void serialize(BinaryTable& bin) const = 0;
+        virtual void serialize(BinaryTable& bin, const DVBCharset* charset = 0) const = 0;
 
         //!
         //! This abstract method deserializes a binary table.
         //! In case of success, this object is replaced with the interpreted content of @a bin.
         //! In case of error, this object is invalidated.
         //! @param [in] bin A binary table to interpret according to the table subclass.
+        //! @param [in] charset If not zero, character set to use without explicit table code.
         //!
-        virtual void deserialize(const BinaryTable& bin) = 0;
+        virtual void deserialize(const BinaryTable& bin, const DVBCharset* charset = 0) = 0;
 
         //!
         //! This abstract method converts the table to XML.
