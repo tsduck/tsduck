@@ -198,14 +198,13 @@ void ts::ShortEventDescriptor::DisplayDescriptor(TablesDisplay& display, DID did
     const std::string margin(indent, ' ');
 
     if (size >= 4) {
-        const std::string lang(Printable(data, 3));
+        const UString lang(UString::FromDVB(data, 3, display.dvbCharset()));
         size_t length = data[3];
         data += 4; size -= 4;
         if (length > size) {
             length = size;
         }
-        strm << margin << "Language: " << lang << std::endl
-             << margin << "Event name: \"" << Printable(data, length) << "\"" << std::endl;
+        const UString name(UString::FromDVB(data, length, display.dvbCharset()));
         data += length; size -= length;
         if (size < 1) {
             length = 0;
@@ -217,8 +216,11 @@ void ts::ShortEventDescriptor::DisplayDescriptor(TablesDisplay& display, DID did
                 length = size;
             }
         }
-        strm << margin << "Description: \"" << Printable(data, length) << "\"" << std::endl;
+        const UString description(UString::FromDVB(data, length, display.dvbCharset()));
         data += length; size -= length;
+        strm << margin << "Language: " << lang << std::endl
+             << margin << "Event name: \"" << name << "\"" << std::endl
+             << margin << "Description: \"" << description << "\"" << std::endl;
     }
 
     display.displayExtraData(data, size, indent);
