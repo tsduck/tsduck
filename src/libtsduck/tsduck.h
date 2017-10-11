@@ -49,6 +49,7 @@
 #include "tsAbstractDescriptor.h"
 #include "tsAbstractDescriptorsTable.h"
 #include "tsAbstractLongTable.h"
+#include "tsAbstractSignalization.h"
 #include "tsAbstractTable.h"
 #include "tsAbstractTransportListTable.h"
 #include "tsAlgorithm.h"

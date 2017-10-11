@@ -77,16 +77,16 @@ namespace ts {
         virtual bool moreBinaryData(const void* addr, size_t size) = 0;
 
         //!
-        //! Conversion operator to a string.
+        //! Conversion to a string.
         //! @return A string representing the content of this object.
         //!
-        virtual operator std::string() const = 0;
+        virtual std::string toString() const = 0;
 
         //!
-        //! Conversion operator to a string.
+        //! Conversion to a string.
         //! @return A string representing the content of this object.
         //!
-        virtual operator UString() const { return UString::FromUTF8(std::string(*this)); }
+        virtual UString toUString() const { return UString::FromUTF8(toString()); }
 
     protected:
         //!
@@ -105,5 +105,5 @@ namespace ts {
 //!
 TSDUCKDLL inline std::ostream& operator<< (std::ostream& strm, const ts::AbstractAudioVideoAttributes& attr)
 {
-    return strm << std::string (attr);
+    return strm << attr.toString();
 }

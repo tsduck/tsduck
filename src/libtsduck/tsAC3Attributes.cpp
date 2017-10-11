@@ -271,7 +271,7 @@ int ts::AC3Attributes::extractEAC3bsmod (const uint8_t* data, size_t size)
 // Convert to a string object
 //----------------------------------------------------------------------------
 
-ts::AC3Attributes::operator std::string () const
+std::string ts::AC3Attributes::toString() const
 {
     if (!_is_valid) {
         return "";
