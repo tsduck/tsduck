@@ -32,6 +32,8 @@
 //----------------------------------------------------------------------------
 
 #include "tsTSDT.h"
+#include "tsBinaryTable.h"
+#include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 TSDUCK_SOURCE;
 TS_XML_TABLE_FACTORY(ts::TSDT, "TSDT");

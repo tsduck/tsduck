@@ -33,41 +33,26 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsBinaryTable.h"
+#include "tsAbstractSignalization.h"
 #include "tsTablesPtr.h"
-#include "tsTablesDisplay.h"
-#include "tsXML.h"
 
 namespace ts {
+
+    class tsBinaryTable;
+    class TablesDisplay;
+    class DVBCharset;
+
     //!
     //! Abstract base class for MPEG PSI/SI tables.
     //!
-    class TSDUCKDLL AbstractTable
+    class TSDUCKDLL AbstractTable: public AbstractSignalization
     {
     public:
-        //!
-        //! Check if the table is valid.
-        //! @return True if the table is valid.
-        //!
-        bool isValid() const {return _is_valid;}
-
-        //!
-        //! Invalidate the table.
-        //! This object must be rebuilt.
-        //!
-        void invalidate() {_is_valid = false;}
-
         //!
         //! Get the table_id.
         //! @return The table_id.
         //!
         TID tableId() const {return _table_id;}
-
-        //!
-        //! Get the XMl node name representing this table.
-        //! @return The XML node name.
-        //!
-        std::string xmlName() const;
 
         //!
         //! This abstract method serializes a table.
@@ -87,26 +72,9 @@ namespace ts {
         virtual void deserialize(const BinaryTable& bin, const DVBCharset* charset = 0) = 0;
 
         //!
-        //! This abstract method converts the table to XML.
-        //! @param [in,out] xml XML utility for error reporting
-        //! @param [in,out] parent The parent node for the new XML tree.
-        //! @return The new XML element.
-        //!
-        virtual XML::Element* toXML(XML& xml, XML::Element* parent) const = 0;
-
-        //!
-        //! This abstract converts an XML structure to a table.
-        //! In case of success, this object is replaced with the interpreted content of the XML structure.
-        //! In case of error, this object is invalidated.
-        //! @param [in,out] xml XML utility for error reporting
-        //! @param [in] element XML element to convert.
-        //!
-        virtual void fromXML(XML& xml, const XML::Element* element) = 0;
-
-        //!
         //! Virtual destructor
         //!
-        virtual ~AbstractTable () {}
+        virtual ~AbstractTable() {}
 
     protected:
         //!
@@ -115,39 +83,14 @@ namespace ts {
         TID _table_id;
 
         //!
-        //! XML table name.
-        //!
-        const char* const _xml_name;
-
-        //!
-        //! It is the responsibility of the subclasses to set the valid flag
-        //!
-        bool _is_valid;
-
-        //!
         //! Protected constructor for subclasses.
         //! @param [in] tid Table id.
         //! @param [in] xml_name Table name, as used in XML structures.
         //!
-        AbstractTable(TID tid, const char* xml_name) :
-            _table_id(tid),
-            _xml_name(xml_name),
-            _is_valid(false)
-        {
-        }
-
-        //!
-        //! Check that an XML element has the right name for this table.
-        //! @param [in,out] xml XML utility for error reporting
-        //! @param [in] element XML element to check.
-        //! @return True on success, false on error.
-        //!
-        bool checkXMLName(XML& xml, const XML::Element* element) const;
+        AbstractTable(TID tid, const char* xml_name);
 
     private:
         // Unreachable constructors and operators.
         AbstractTable() = delete;
-        AbstractTable(const AbstractTable&) = delete;
-        AbstractTable& operator=(const AbstractTable&) = delete;
     };
 }

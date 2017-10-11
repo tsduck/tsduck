@@ -75,6 +75,6 @@ void DVBCharsetTest::tearDown()
 
 void DVBCharsetTest::testRepository()
 {
-    utest::Out() << "DVBCharsetTest::testRepository: charsets: " << ts::UString::join(ts::DVBCharset::GetAllNames()) << std::endl;
+    utest::Out() << "DVBCharsetTest::testRepository: charsets: " << ts::UString::Join(ts::DVBCharset::GetAllNames()) << std::endl;
     CPPUNIT_ASSERT_EQUAL(size_t(17), ts::DVBCharset::GetAllNames().size());
 }

@@ -44,6 +44,7 @@
 #include "tsTDT.h"
 #include "tsTOT.h"
 #include "tsTime.h"
+#include "tsUString.h"
 #include "tsSafePtr.h"
 
 namespace ts {
@@ -168,8 +169,8 @@ namespace ts {
             const uint16_t service_id;         //!< Service id.
             uint16_t       orig_netw_id;       //!< Original network id.
             uint8_t        service_type;       //!< Service type.
-            std::string    name;               //!< Service name.
-            std::string    provider;           //!< Service provider name.
+            UString        name;               //!< Service name.
+            UString        provider;           //!< Service provider name.
             PID            pmt_pid;            //!< PID of PMT.
             PID            pcr_pid;            //!< PID of PCR's (if any).
             size_t         pid_cnt;            //!< Number of PID's.
@@ -193,13 +194,13 @@ namespace ts {
             //! Get a displayable service name.
             //! @return A displayable service name.
             //!
-            std::string getName() const;
+            UString getName() const;
 
             //!
             //! Get a displayable provider name.
             //! @return A displayable provider name.
             //!
-            std::string getProvider() const;
+            UString getProvider() const;
         };
 
         //!
@@ -279,41 +280,41 @@ namespace ts {
         {
         public:
             // Public members - Synthetic data (do not modify outside PIDContext methods)
-            const PID    pid;             //!< PID value.
-            std::string  description;     //!< Readable description string (ie "MPEG-2 Audio").
-            std::string  comment;         //!< Additional description (ie language).
-            StringVector attributes;      //!< Audio or video attributes (several lines if attributes changed).
-            ServiceIdSet services;        //!< List of service ids the PID belongs to.
-            bool         is_pmt_pid;      //!< Is the PMT PID for this service.
-            bool         is_pcr_pid;      //!< Is the PCR PID for this service.
-            bool         referenced;      //!< Is referenced (by service or global).
-            bool         optional;        //!< Optional PID, don't display report if no packet.
-            bool         carry_pes;       //!< This PID carries PES packets.
-            bool         carry_section;   //!< This PID carries sections.
-            bool         carry_ecm;       //!< This PID carries ECM's.
-            bool         carry_emm;       //!< This PID carries EMM's.
-            bool         carry_audio;     //!< This PID carries audio data.
-            bool         carry_video;     //!< This PID carries video data.
-            bool         scrambled;       //!< Contains some scrambled packets.
-            bool         same_stream_id;  //!< All PES packets have same stream_id.
-            uint8_t      pes_stream_id;   //!< Stream_id in PES packets on this PID.
-            uint64_t     ts_pkt_cnt;      //!< Number of TS packets.
-            uint64_t     ts_af_cnt;       //!< Number of TS packets with adaptation field.
-            uint64_t     unit_start_cnt;  //!< Number of unit_start in packets.
-            uint64_t     pl_start_cnt;    //!< Number of unit_start & has_payload in packets.
-            uint64_t     pmt_cnt;         //!< Number of PMT (for PMT PID's).
-            uint64_t     crypto_period;   //!< Average number of TS packets per crypto-period.
-            uint64_t     unexp_discont;   //!< Number of unexpected discontinuities.
-            uint64_t     exp_discont;     //!< Number of expected discontinuities.
-            uint64_t     duplicated;      //!< Number of duplicated packets.
-            uint64_t     ts_sc_cnt;       //!< Number of scrambled packets.
-            uint64_t     inv_ts_sc_cnt;   //!< Number of invalid scrambling control in TS headers.
-            uint64_t     inv_pes_start;   //!< Number of invalid PES start code.
-            uint64_t     pcr_cnt;         //!< Number of PCR's.
-            uint32_t     ts_pcr_bitrate;  //!< Average TS bitrate in b/s (eval from PCR).
-            uint32_t     bitrate;         //!< Average PID bitrate in b/s.
-            std::string  language;        //!< For audio or subtitles (3 chars).
-            uint16_t     cas_id;          //!< For EMM and ECM streams.
+            const PID     pid;             //!< PID value.
+            UString       description;     //!< Readable description string (ie "MPEG-2 Audio").
+            UString       comment;         //!< Additional description (ie language).
+            UStringVector attributes;      //!< Audio or video attributes (several lines if attributes changed).
+            ServiceIdSet  services;        //!< List of service ids the PID belongs to.
+            bool          is_pmt_pid;      //!< Is the PMT PID for this service.
+            bool          is_pcr_pid;      //!< Is the PCR PID for this service.
+            bool          referenced;      //!< Is referenced (by service or global).
+            bool          optional;        //!< Optional PID, don't display report if no packet.
+            bool          carry_pes;       //!< This PID carries PES packets.
+            bool          carry_section;   //!< This PID carries sections.
+            bool          carry_ecm;       //!< This PID carries ECM's.
+            bool          carry_emm;       //!< This PID carries EMM's.
+            bool          carry_audio;     //!< This PID carries audio data.
+            bool          carry_video;     //!< This PID carries video data.
+            bool          scrambled;       //!< Contains some scrambled packets.
+            bool          same_stream_id;  //!< All PES packets have same stream_id.
+            uint8_t       pes_stream_id;   //!< Stream_id in PES packets on this PID.
+            uint64_t      ts_pkt_cnt;      //!< Number of TS packets.
+            uint64_t      ts_af_cnt;       //!< Number of TS packets with adaptation field.
+            uint64_t      unit_start_cnt;  //!< Number of unit_start in packets.
+            uint64_t      pl_start_cnt;    //!< Number of unit_start & has_payload in packets.
+            uint64_t      pmt_cnt;         //!< Number of PMT (for PMT PID's).
+            uint64_t      crypto_period;   //!< Average number of TS packets per crypto-period.
+            uint64_t      unexp_discont;   //!< Number of unexpected discontinuities.
+            uint64_t      exp_discont;     //!< Number of expected discontinuities.
+            uint64_t      duplicated;      //!< Number of duplicated packets.
+            uint64_t      ts_sc_cnt;       //!< Number of scrambled packets.
+            uint64_t      inv_ts_sc_cnt;   //!< Number of invalid scrambling control in TS headers.
+            uint64_t      inv_pes_start;   //!< Number of invalid PES start code.
+            uint64_t      pcr_cnt;         //!< Number of PCR's.
+            uint32_t      ts_pcr_bitrate;  //!< Average TS bitrate in b/s (eval from PCR).
+            uint32_t      bitrate;         //!< Average PID bitrate in b/s.
+            UString       language;        //!< For audio or subtitles (3 chars).
+            uint16_t      cas_id;          //!< For EMM and ECM streams.
             std::set<uint32_t> cas_operators; //!< Operators for EMM and ECM streams, when applicable.
             ETIDContextMap     sections;      //!< List of sections in this PID.
             std::set<uint32_t> ssu_oui;       //!< Set of applicable OUI's for SSU.
@@ -336,7 +337,7 @@ namespace ts {
             //! @param [in] pid PID value.
             //! @param [in] description PID description.
             //!
-            PIDContext(PID pid, const std::string& description = "Unreferenced");
+            PIDContext(PID pid, const UString& description = UNREFERENCED);
 
             //!
             //! Destructor.
@@ -354,7 +355,7 @@ namespace ts {
             //! @param [in] include_attributes Include the PID attributes in the description.
             //! @return The PID description.
             //!
-            std::string fullDescription(bool include_attributes) const;
+            UString fullDescription(bool include_attributes) const;
 
         private:
             // Unreachable constructor:
@@ -415,18 +416,21 @@ namespace ts {
         Time        _last_tdt;           //!< Last TDT UTC time stamp.
         Time        _first_tot;          //!< First TOT local time stamp.
         Time        _last_tot;           //!< Last TOT local time stamp.
-        std::string _country_code;       //!< TOT country code.
+        UString     _country_code;       //!< TOT country code.
         uint16_t    _scrambled_services_cnt; //!< Number of scrambled services;.
         std::bitset <TID_MAX> _tid_present;  //!< Array of detected tables.
         PIDContextMap     _pids;        //!< Description of PIDs.
         ServiceContextMap _services;    //!< Description of services, map key: service id..
 
     private:
+        // Constant string "Unreferenced"
+        static const UString UNREFERENCED;
+
         // Check if a PID context exists.
         bool pidExists(PID pid) const {return _pids.find(pid) != _pids.end();}
 
         // Return a PID context. Allocate a new entry if PID not found.
-        PIDContextPtr getPID(PID pid, const std::string& description = "Unreferenced");
+        PIDContextPtr getPID(PID pid, const UString& description = UNREFERENCED);
 
         // Return an ETID context. Allocate a new entry if ETID not found.
         ETIDContextPtr getETID(const Section&);
@@ -454,16 +458,16 @@ namespace ts {
         void analyzeCADescriptor(const Descriptor& desc, ServiceContext* svp = 0, PIDContext* ps = 0);
 
         // Implementation of TableHandlerInterface
-        virtual void handleTable(SectionDemux&, const BinaryTable&);
+        virtual void handleTable(SectionDemux&, const BinaryTable&) override;
 
         // Implementation of SectionHandlerInterface
-        virtual void handleSection(SectionDemux&, const Section&);
+        virtual void handleSection(SectionDemux&, const Section&) override;
 
         // Implementation of PESHandlerInterface
-        virtual void handleNewAudioAttributes(PESDemux&, const PESPacket&, const AudioAttributes&);
-        virtual void handleNewVideoAttributes(PESDemux&, const PESPacket&, const VideoAttributes&);
-        virtual void handleNewAVCAttributes(PESDemux&, const PESPacket&, const AVCAttributes&);
-        virtual void handleNewAC3Attributes(PESDemux&, const PESPacket&, const AC3Attributes&);
+        virtual void handleNewAudioAttributes(PESDemux&, const PESPacket&, const AudioAttributes&) override;
+        virtual void handleNewVideoAttributes(PESDemux&, const PESPacket&, const VideoAttributes&) override;
+        virtual void handleNewAVCAttributes(PESDemux&, const PESPacket&, const AVCAttributes&) override;
+        virtual void handleNewAC3Attributes(PESDemux&, const PESPacket&, const AC3Attributes&) override;
 
         // TSAnalyzer private members (state data, used during analysis):
         bool         _modified;                  // Internal data modified, need recomputeStatistics

@@ -30,6 +30,7 @@ HEADERS += \
     ../../../src/libtsduck/tsAbstractDescriptor.h \
     ../../../src/libtsduck/tsAbstractDescriptorsTable.h \
     ../../../src/libtsduck/tsAbstractLongTable.h \
+    ../../../src/libtsduck/tsAbstractSignalization.h \
     ../../../src/libtsduck/tsAbstractTable.h \
     ../../../src/libtsduck/tsAbstractTransportListTable.h \
     ../../../src/libtsduck/tsAlgorithm.h \
@@ -310,6 +311,7 @@ SOURCES += \
     ../../../src/libtsduck/tsAbstractDescrambler.cpp \
     ../../../src/libtsduck/tsAbstractDescriptor.cpp \
     ../../../src/libtsduck/tsAbstractDescriptorsTable.cpp \
+    ../../../src/libtsduck/tsAbstractSignalization.cpp \
     ../../../src/libtsduck/tsAbstractTable.cpp \
     ../../../src/libtsduck/tsAbstractTransportListTable.cpp \
     ../../../src/libtsduck/tsApplicationSharedLibrary.cpp \

@@ -33,6 +33,7 @@
 
 #include "tsVBITeletextDescriptor.h"
 #include "tsTeletextDescriptor.h"
+#include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 TSDUCK_SOURCE;
 TS_ID_DESCRIPTOR_DISPLAY(ts::VBITeletextDescriptor::DisplayDescriptor, ts::EDID(ts::DID_VBI_TELETEXT));

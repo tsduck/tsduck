@@ -33,6 +33,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsSSULinkageDescriptor.h"
+#include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 TSDUCK_SOURCE;
 

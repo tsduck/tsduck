@@ -62,10 +62,10 @@ namespace ts {
         //! @param [in] service_id Service identifier.
         //! @param [in] pcr_pid PID of the PCR. Default: none.
         //!
-        PMT(uint8_t version = 0,
-            bool is_current = true,
+        PMT(uint8_t  version = 0,
+            bool     is_current = true,
             uint16_t service_id = 0,
-            PID pcr_pid = PID_NULL);
+            PID      pcr_pid = PID_NULL);
 
         //!
         //! Constructor from a binary table.

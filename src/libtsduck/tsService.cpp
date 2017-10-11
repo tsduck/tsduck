@@ -61,7 +61,7 @@ ts::Service::Service() :
 // Constructor using a string description.
 //----------------------------------------------------------------------------
 
-ts::Service::Service(const std::string& desc) :
+ts::Service::Service(const UString& desc) :
     _id(),
     _tsid(),
     _onid(),
@@ -85,12 +85,12 @@ ts::Service::Service(const std::string& desc) :
 // this is a service id, otherwise this is a service name.
 //----------------------------------------------------------------------------
 
-void ts::Service::set(const std::string& desc)
+void ts::Service::set(const UString& desc)
 {
     clear();
 
     uint16_t id;
-    if (ToInteger (id, desc)) {
+    if (ToInteger(id, desc.toUTF8())) {
         _id = id;
     }
     else if (!desc.empty()) {
@@ -175,56 +175,56 @@ uint32_t ts::Service::getFields() const
 // sort according to this field. If only one object has this field set,
 // it comes first. If none of the two objects have this field set, move
 // to next criterion.
-#define _SORT_(field)                                                   \
-    if (s1.field.set() && !s2.field.set()) {                            \
-        return true;                                                    \
-    }                                                                   \
-    if (!s1.field.set() && s2.field.set()) {                            \
-        return false;                                                   \
-    }                                                                   \
+#define _SORT_(field)                                                               \
+    if (s1.field.set() && !s2.field.set()) {                                        \
+        return true;                                                                \
+    }                                                                               \
+    if (!s1.field.set() && s2.field.set()) {                                        \
+        return false;                                                               \
+    }                                                                               \
     if (s1.field.set() && s2.field.set() && s1.field.value() != s2.field.value()) { \
-        return s1.field.value() < s2.field.value();                     \
+        return s1.field.value() < s2.field.value();                                 \
     }
 
 // Sort1: LCN, ONId, TSId, Id, name, provider, type, PMT PID
 bool ts::Service::Sort1 (const Service& s1, const Service& s2)
 {
-    _SORT_ (_lcn);
-    _SORT_ (_onid);
-    _SORT_ (_tsid);
-    _SORT_ (_id);
-    _SORT_ (_name);
-    _SORT_ (_provider);
-    _SORT_ (_type);
-    _SORT_ (_pmt_pid);
+    _SORT_(_lcn);
+    _SORT_(_onid);
+    _SORT_(_tsid);
+    _SORT_(_id);
+    _SORT_(_name);
+    _SORT_(_provider);
+    _SORT_(_type);
+    _SORT_(_pmt_pid);
     return true; // Default: remain stable
 }
 
 // Sort2: name, provider, LCN, ONId, TSId, Id, type, PMT PID
 bool ts::Service::Sort2 (const Service& s1, const Service& s2)
 {
-    _SORT_ (_name);
-    _SORT_ (_provider);
-    _SORT_ (_lcn);
-    _SORT_ (_onid);
-    _SORT_ (_tsid);
-    _SORT_ (_id);
-    _SORT_ (_type);
-    _SORT_ (_pmt_pid);
+    _SORT_(_name);
+    _SORT_(_provider);
+    _SORT_(_lcn);
+    _SORT_(_onid);
+    _SORT_(_tsid);
+    _SORT_(_id);
+    _SORT_(_type);
+    _SORT_(_pmt_pid);
     return true; // Default: remain stable
 }
 
 // Sort3: ONId, TSId, Id, type, name, provider, LCN, PMT PID
 bool ts::Service::Sort3 (const Service& s1, const Service& s2)
 {
-    _SORT_ (_onid);
-    _SORT_ (_tsid);
-    _SORT_ (_id);
-    _SORT_ (_type);
-    _SORT_ (_name);
-    _SORT_ (_provider);
-    _SORT_ (_lcn);
-    _SORT_ (_pmt_pid);
+    _SORT_(_onid);
+    _SORT_(_tsid);
+    _SORT_(_id);
+    _SORT_(_type);
+    _SORT_(_name);
+    _SORT_(_provider);
+    _SORT_(_lcn);
+    _SORT_(_pmt_pid);
     return true; // Default: remain stable
 }
 

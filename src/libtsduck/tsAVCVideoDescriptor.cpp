@@ -33,6 +33,7 @@
 
 #include "tsAVCVideoDescriptor.h"
 #include "tsStringUtils.h"
+#include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 #include "tsXMLTables.h"
 TSDUCK_SOURCE;

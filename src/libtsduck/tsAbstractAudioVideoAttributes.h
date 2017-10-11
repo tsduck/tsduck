@@ -34,6 +34,7 @@
 
 #pragma once
 #include "tsPlatform.h"
+#include "tsUString.h"
 
 namespace ts {
 
@@ -80,6 +81,12 @@ namespace ts {
         //! @return A string representing the content of this object.
         //!
         virtual operator std::string() const = 0;
+
+        //!
+        //! Conversion operator to a string.
+        //! @return A string representing the content of this object.
+        //!
+        virtual operator UString() const { return UString::FromUTF8(std::string(*this)); }
 
     protected:
         //!

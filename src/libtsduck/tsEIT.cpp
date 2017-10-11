@@ -38,6 +38,8 @@
 #include "tsBCD.h"
 #include "tsMJD.h"
 #include "tsStringUtils.h"
+#include "tsBinaryTable.h"
+#include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 #include "tsXMLTables.h"
 TSDUCK_SOURCE;

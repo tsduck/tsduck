@@ -93,6 +93,21 @@ namespace ts {
 #endif
 
         //!
+        //! The 3-byte so-called "UTF-8 Byte Order Mark".
+        //!
+        static const char* const UTF8_BOM;
+
+        //!
+        //! Size in bytes of the so-called "UTF-8 Byte Order Mark".
+        //!
+        static const size_t UTF8_BOM_SIZE = 3;
+
+        //!
+        //! Maximum size in bytes of an UTF-8 encoded character.
+        //!
+        static const size_t UTF8_CHAR_MAX_SIZE = 4;
+
+        //!
         //! Default constructor.
         //!
         UString() noexcept(noexcept(allocator_type())) :
@@ -292,13 +307,13 @@ namespace ts {
         //! @param [in] count Maximum number of characters to convert.
         //! @param [in] charset Preferred character set for DVB encoding. If omitted or if the string cannot
         //! be represented in the specified character set, an alternative one will be automatically selected.
-        //! @return The number of serialized characters (which is usually not the same as the number of written bytes).
+        //! @return The DVB string.
         //!
         ByteBlock toDVB(size_t start = 0, size_t count = NPOS, const DVBCharset* charset = 0) const;
 
         //!
         //! Encode this UTF-16 string into a DVB string (preceded by its one-byte length).
-        //! Stop either when this string is serialized or when the buffer is full, whichever comes first.
+        //! Stop either when this string is serialized or when the buffer is full or when 255 bytes are written, whichever comes first.
         //! @param [in,out] buffer Address of the buffer where the DVB string is written.
         //! The first byte will receive the size in bytes of the DVB string.
         //! The address is updated to point after the encoded value.
@@ -312,57 +327,14 @@ namespace ts {
         size_t toDVBWithByteLength(uint8_t*& buffer, size_t& size, size_t start = 0, size_t count = NPOS, const DVBCharset* charset = 0) const;
 
         //!
-        //! Comparison operator.
-        //! @param [in] other An string to compare.
-        //! @return True if this object is identical to @a other.
+        //! Encode this UTF-16 string into a DVB string (preceded by its one-byte length).
+        //! @param [in] start Starting offset to convert in this UTF-16 string.
+        //! @param [in] count Maximum number of characters to convert.
+        //! @param [in] charset Preferred character set for DVB encoding. If omitted or if the string cannot
+        //! be represented in the specified character set, an alternative one will be automatically selected.
+        //! @return The DVB string with the initial length byte.
         //!
-        bool operator==(const SuperClass& other) const { return static_cast<SuperClass>(*this) == other; }
-
-        //!
-        //! Comparison operator.
-        //! @param [in] other An string to compare.
-        //! @return True if this object is different from @a other.
-        //!
-        bool operator!=(const SuperClass& other) const { return static_cast<SuperClass>(*this) != other; }
-
-        //!
-        //! Comparison operator with UTF-8 strings.
-        //! @param [in] other An UTF-8 string to compare.
-        //! @return True if this object is identical to @a other.
-        //!
-        bool operator==(const std::string& other) const;
-
-        //!
-        //! Comparison operator with UTF-8 strings.
-        //! @param [in] other A nul-terminated UTF-8 string to compare.
-        //! @return True if this object is identical to @a other.
-        //!
-        bool operator==(const char* other) const;
-
-        //!
-        //! Comparison operator with UTF-8 strings.
-        //! @param [in] other An UTF-8 string to compare.
-        //! @return True if this object is different from @a other.
-        //!
-        bool operator!=(const std::string& other) const { return !operator==(other); }
-
-        //!
-        //! Comparison operator with UTF-8 strings.
-        //! @param [in] other A nul-terminated UTF-8 string to compare.
-        //! @return True if this object is different from @a other.
-        //!
-        bool operator!=(const char* other) const { return !operator==(other); }
-
-        //!
-        //! Extract a substring, returning same class.
-        //! @param [in] pos Starting position.
-        //! @param [in] count number of characters.
-        //! @return Substring.
-        //!
-        UString substr(size_type pos = 0, size_type count = NPOS) const
-        {
-            return SuperClass::substr(pos, count);
-        }
+        ByteBlock toDVBWithByteLength(size_t start = 0, size_t count = NPOS, const DVBCharset* charset = 0) const;
 
         //!
         //! Trim leading and / or trailing space characters.
@@ -563,7 +535,7 @@ namespace ts {
         //! @return The big string containing all segments and separators.
         //!
         template <class ITERATOR>
-        static UString join(ITERATOR begin, ITERATOR end, const UString& separator = UString(", "));
+        static UString Join(ITERATOR begin, ITERATOR end, const UString& separator = UString(", "));
 
         //!
         //! Join a container of strings into one big string.
@@ -574,9 +546,9 @@ namespace ts {
         //! @return The big string containing all segments and separators.
         //!
         template <class CONTAINER>
-        static UString join(const CONTAINER& container, const UString& separator = UString(", "))
+        static UString Join(const CONTAINER& container, const UString& separator = UString(", "))
         {
-            return join(container.begin(), container.end(), separator);
+            return Join(container.begin(), container.end(), separator);
         }
 
         //!
@@ -688,7 +660,7 @@ namespace ts {
         //! All special characters are converted to the corresponding HTML entities.
         //! @return The string in a suitable HTML representation.
         //!
-        UString ToHTML() const;
+        UString toHTML() const;
 
         //!
         //! Format a boolean value as "yes" or "no".
@@ -749,13 +721,58 @@ namespace ts {
         typename CONTAINER::const_iterator findSimilar(const CONTAINER& container);
 
         //
-        // On Windows, all methods which take 'npos' as default argument need to be overwritten
-        // using NPOS instead. Otherwise, an undefined symbol error will occur at link time.
+        // Override methods which return strings so that they return the new class.
+        // Define additional overloads which char and strings.
         //
-#if defined(__windows) && !defined(DOXYGEN)
+#if !defined(DOXYGEN)
+        bool operator==(const SuperClass& other) const { return static_cast<SuperClass>(*this) == other; }
+        bool operator==(const UChar* other) const { return static_cast<SuperClass>(*this) == other; }
+        bool operator==(const std::string& other) const { return operator==(FromUTF8(other)); }
+        bool operator==(const char* other) const { return other != 0 && operator==(FromUTF8(other)); }
+
+        bool operator!=(const SuperClass& other) const { return static_cast<SuperClass>(*this) != other; }
+        bool operator!=(const UChar* other) const { return static_cast<SuperClass>(*this) != other; }
+        bool operator!=(const std::string& other) const { return !operator==(other); }
+        bool operator!=(const char* other) const { return !operator==(other); }
+
         UString& erase(size_type index = 0, size_type count = NPOS) { SuperClass::erase(index, count); return *this; }
         iterator erase(const_iterator position) { return SuperClass::erase(position); }
         iterator erase(const_iterator first, const_iterator last) { return SuperClass::erase(first, last); }
+
+        UString substr(size_type pos = 0, size_type count = NPOS) const { return SuperClass::substr(pos, count); }
+
+        UString& append(size_type count, UChar ch) { SuperClass::append(count, ch); return *this; }
+        UString& append(size_type count, char ch) { return append(count, UChar(ch)); }
+        UString& append(const SuperClass& str) { SuperClass::append(str); return *this; }
+        UString& append(const std::string& str) { return append(FromUTF8(str)); }
+        UString& append(const SuperClass& str, size_type pos, size_type count = NPOS) { SuperClass::append(str, pos, count); return *this; }
+        UString& append(const std::string& str, size_type pos, size_type count = NPOS) { return append(FromUTF8(str.substr(pos, count))); }
+        UString& append(const UChar* s, size_type count) { SuperClass::append(s, count); return *this; }
+        UString& append(const char* s, size_type count) { return append(FromUTF8(s, count)); }
+        UString& append(const UChar* s) { SuperClass::append(s); return *this; }
+        UString& append(const char* s) { return append(FromUTF8(s)); }
+        UString& append(UChar c) { push_back(c); return *this; }
+        UString& append(char c) { push_back(UChar(c)); return *this; }
+        template<class It> UString& append(It first, It last) { SuperClass::append<It>(first, last); return *this; }
+        UString& append(std::initializer_list<UChar> ilist) { SuperClass::append(ilist); return *this; }
+
+        UString& operator+=(const SuperClass& s) { return append(s); }
+        UString& operator+=(const std::string& s) { return append(s); }
+        UString& operator+=(const UChar* s) { return append(s); }
+        UString& operator+=(const char* s) { return append(s); }
+        UString& operator+=(UChar c) { return append(c); }
+        UString& operator+=(char c) { return append(c); }
+        UString& operator+=(std::initializer_list<UChar> ilist) { return append(ilist); }
+
+        UString& operator=(const SuperClass& s) { SuperClass::assign(s); return *this; }
+        UString& operator=(SuperClass&& s) { SuperClass::assign(s); return *this; }
+        UString& operator=(const std::string& s) { SuperClass::assign(FromUTF8(s)); return *this; }
+        UString& operator=(const UChar* s) { SuperClass::assign(s); return *this; }
+        UString& operator=(const char* s) { SuperClass::assign(FromUTF8(s)); return *this; }
+        UString& operator=(UChar c) { SuperClass::assign(1, c); return *this; }
+        UString& operator=(char c) { SuperClass::assign(1, UChar(c)); return *this; }
+        UString& operator=(std::initializer_list<UChar> ilist) { SuperClass::assign(ilist); return *this; }
+
         UString& assign(size_type count, UChar ch) { SuperClass::assign(count, ch); return *this; }
         UString& assign(const SuperClass& str) { SuperClass::assign(str); return *this; }
         UString& assign(const SuperClass& str, size_type pos, size_type count = NPOS) { SuperClass::assign(str, pos, count); return *this; }
@@ -764,6 +781,7 @@ namespace ts {
         UString& assign(const UChar* s) { SuperClass::assign(s); return *this; }
         UString& assign(std::initializer_list<UChar> ilist) { SuperClass::assign(ilist); return *this; }
         template<class It> UString& assign(It first, It last) { SuperClass::assign<It>(first, last); return *this; }
+
         UString& insert(size_type index, size_type count, UChar ch) { SuperClass::insert(index, count, ch); return *this; }
         UString& insert(size_type index, const UChar* s) { SuperClass::insert(index, s); return *this; }
         UString& insert(size_type index, const UChar* s, size_type count) { SuperClass::insert(index, s, count); return *this; }
@@ -774,19 +792,7 @@ namespace ts {
         iterator insert(const_iterator pos, size_type count, UChar ch) { return SuperClass::insert(pos, count, ch); }
         template<class It> iterator insert(const_iterator pos, It first, It last) { return SuperClass::insert<It>(pos, first, last); }
         iterator insert(const_iterator pos, std::initializer_list<UChar> ilist) { return SuperClass::insert(pos, ilist); }
-        UString& append(size_type count, UChar ch) { SuperClass::append(count, ch); return *this; }
-        UString& append(const SuperClass& str) { SuperClass::append(str); return *this; }
-        UString& append(const SuperClass& str, size_type pos, size_type count = NPOS) { SuperClass::append(str, pos, count); return *this; }
-        UString& append(const UChar* s, size_type count) { SuperClass::append(s, count); return *this; }
-        UString& append(const UChar* s) { SuperClass::append(s); return *this; }
-        template<class It> UString& append(It first, It last) { SuperClass::append<It>(first, last); return *this; }
-        UString& append(std::initializer_list<UChar> ilist) { SuperClass::append(ilist); return *this; }
-        int compare(const SuperClass& str) const { return SuperClass::compare(str); }
-        int compare(size_type pos1, size_type count1, const SuperClass& str) const { return SuperClass::compare(pos1, count1, str); }
-        int compare(size_type pos1, size_type count1, const SuperClass& str, size_type pos2, size_type count2 = NPOS) const { return SuperClass::compare(pos1, count1, str, pos2, count2); }
-        int compare(const UChar* s) const { return SuperClass::compare(s); }
-        int compare(size_type pos1, size_type count1, const UChar* s) const { return SuperClass::compare(pos1, count1, s); }
-        int compare(size_type pos1, size_type count1, const UChar* s, size_type count2) const { return SuperClass::compare(pos1, count1, s, count2); }
+
         UString& replace(size_type pos, size_type count, const SuperClass& str) { SuperClass::replace(pos, count, str); return *this; }
         UString& replace(const_iterator first, const_iterator last, const SuperClass& str) { SuperClass::replace(first, last, str); return *this; }
         UString& replace(size_type pos, size_type count, const SuperClass& str, size_type pos2, size_type count2 = NPOS) { SuperClass::replace(pos, count, str, pos2, count2); return *this; }
@@ -798,6 +804,19 @@ namespace ts {
         UString& replace(size_type pos, size_type count, size_type count2, UChar ch) { SuperClass::replace(pos, count, count2, ch); return *this; }
         UString& replace(const_iterator first, const_iterator last, size_type count2, UChar ch) { SuperClass::replace(first, last, count2, ch); return *this; }
         UString& replace(const_iterator first, const_iterator last, std::initializer_list<UChar> ilist) { SuperClass::replace(first, last, ilist); return *this; }
+#endif
+
+        //
+        // On Windows, all methods which take 'npos' as default argument need to be overriden
+        // using NPOS instead. Otherwise, an undefined symbol error will occur at link time.
+        //
+#if defined(__windows) && !defined(DOXYGEN)
+        int compare(const SuperClass& str) const { return SuperClass::compare(str); }
+        int compare(size_type pos1, size_type count1, const SuperClass& str) const { return SuperClass::compare(pos1, count1, str); }
+        int compare(size_type pos1, size_type count1, const SuperClass& str, size_type pos2, size_type count2 = NPOS) const { return SuperClass::compare(pos1, count1, str, pos2, count2); }
+        int compare(const UChar* s) const { return SuperClass::compare(s); }
+        int compare(size_type pos1, size_type count1, const UChar* s) const { return SuperClass::compare(pos1, count1, s); }
+        int compare(size_type pos1, size_type count1, const UChar* s, size_type count2) const { return SuperClass::compare(pos1, count1, s, count2); }
         size_type rfind(const SuperClass& str, size_type pos = NPOS) const { return SuperClass::rfind(str, pos); }
         size_type rfind(const UChar* s, size_type pos, size_type count) const { return SuperClass::rfind(s, pos, count); }
         size_type rfind(const UChar* s, size_type pos = NPOS) const { return SuperClass::rfind(s, pos); }
@@ -810,7 +829,7 @@ namespace ts {
         size_type find_last_not_of(const UChar* s, size_type pos, size_type count) const { return SuperClass::find_last_not_of(s, pos, count); }
         size_type find_last_not_of(const UChar* s, size_type pos = NPOS) const { return SuperClass::find_last_not_of(s, pos); }
         size_type find_last_not_of(UChar ch, size_type pos = NPOS) const { return SuperClass::find_last_not_of(ch, pos); }
-#endif // End of Windows hack
+#endif
     };
 }
 
@@ -825,125 +844,53 @@ TSDUCKDLL inline std::ostream& operator<<(std::ostream& strm, const ts::UString&
     return strm << str.toUTF8();
 }
 
-//!
-//! Comparison operator for Unicode strings.
-//! @param [in] s1 An UTF-8 string.
-//! @param [in] s2 An UTF-16 string.
-//! @return True if @a s1 and @a s2 are identical.
-//!
-TSDUCKDLL inline bool operator==(const std::string& s1, const ts::UString& s2)
-{
-    return s2 == s1;
-}
+//
+// Override reversed binary operators.
+//
+#if !defined(DOXYGEN)
+TSDUCKDLL inline bool operator==(const std::string& s1, const ts::UString& s2) { return s2 == s1; }
+TSDUCKDLL inline bool operator==(const char* s1, const ts::UString& s2) { return s2 == s1; }
+TSDUCKDLL inline bool operator==(const ts::UChar* s1, const ts::UString& s2) { return s2 == s1; }
+TSDUCKDLL inline bool operator!=(const std::string& s1, const ts::UString& s2) { return s2 != s1; }
+TSDUCKDLL inline bool operator!=(const char* s1, const ts::UString& s2) { return s2 != s1; }
+TSDUCKDLL inline bool operator!=(const ts::UChar* s1, const ts::UString& s2) { return s2 != s1; }
 
-//!
-//! Comparison operator for Unicode strings.
-//! @param [in] s1 A nul-terminated UTF-8 string to compare.
-//! @param [in] s2 An UTF-16 string.
-//! @return True if @a s1 and @a s2 are identical.
-//!
-TSDUCKDLL inline bool operator==(const char* s1, const ts::UString& s2)
-{
-    return s2 == s1;
-}
-
-//!
-//! Comparison operator for Unicode strings.
-//! @param [in] s1 An UTF-8 string.
-//! @param [in] s2 An UTF-16 string.
-//! @return True if @a s1 and @a s2 are different.
-//!
-TSDUCKDLL inline bool operator!=(const std::string& s1, const ts::UString& s2)
-{
-    return s2 != s1;
-}
-
-//!
-//! Comparison operator for Unicode strings.
-//! @param [in] s1 A nul-terminated UTF-8 string to compare.
-//! @param [in] s2 An UTF-16 string.
-//! @return True if @a s1 and @a s2 are different.
-//!
-TSDUCKDLL inline bool operator!=(const char* s1, const ts::UString& s2)
-{
-    return s2 != s1;
-}
-
-//!
-//! Concatenation operator for Unicode strings.
-//! @param [in] s1 An UTF-16 string.
-//! @param [in] s2 An UTF-16 string.
-//! @return Concatenation @a s1 and @a s2.
-//!
 TSDUCKDLL inline ts::UString operator+(const ts::UString& s1, const ts::UString& s2)
 {
     return *static_cast<const ts::UString::SuperClass*>(&s1) + *static_cast<const ts::UString::SuperClass*>(&s2);
 }
-
-//!
-//! Concatenation operator for Unicode strings.
-//! @param [in] s1 An UTF-16 string.
-//! @param [in] s2 An UTF-16 character.
-//! @return Concatenation @a s1 and @a s2.
-//!
 TSDUCKDLL inline ts::UString operator+(const ts::UString& s1, ts::UChar s2)
 {
     return *static_cast<const ts::UString::SuperClass*>(&s1) + s2;
 }
-
-//!
-//! Concatenation operator for Unicode strings.
-//! @param [in] s1 An UTF-16 character.
-//! @param [in] s2 An UTF-16 string.
-//! @return Concatenation @a s1 and @a s2.
-//!
 TSDUCKDLL inline ts::UString operator+(ts::UChar s1, const ts::UString& s2)
 {
     return s1 + *static_cast<const ts::UString::SuperClass*>(&s2);
 }
-
-//!
-//! Concatenation operator for Unicode strings.
-//! @param [in] s1 An UTF-16 string.
-//! @param [in] s2 An UTF-8 string.
-//! @return Concatenation @a s1 and @a s2.
-//!
 TSDUCKDLL inline ts::UString operator+(const ts::UString& s1, const std::string& s2)
 {
     return s1 + ts::UString::FromUTF8(s2);
 }
-
-//!
-//! Concatenation operator for Unicode strings.
-//! @param [in] s1 An UTF-8 string.
-//! @param [in] s2 An UTF-16 string.
-//! @return Concatenation @a s1 and @a s2.
-//!
 TSDUCKDLL inline ts::UString operator+(const std::string& s1, const ts::UString& s2)
 {
     return ts::UString::FromUTF8(s1) + s2;
 }
-
-//!
-//! Concatenation operator for Unicode strings.
-//! @param [in] s1 An UTF-16 string.
-//! @param [in] s2 A nul-terminated UTF-8 string.
-//! @return Concatenation @a s1 and @a s2.
-//!
 TSDUCKDLL inline ts::UString operator+(const ts::UString& s1, const char* s2)
 {
     return s1 + ts::UString::FromUTF8(s2);
 }
-
-//!
-//! Concatenation operator for Unicode strings.
-//! @param [in] s1 A nul-terminated UTF-8 string.
-//! @param [in] s2 An UTF-16 string.
-//! @return Concatenation @a s1 and @a s2.
-//!
 TSDUCKDLL inline ts::UString operator+(const char* s1, const ts::UString& s2)
 {
     return ts::UString::FromUTF8(s1) + s2;
 }
+TSDUCKDLL inline ts::UString operator+(const ts::UString& s1, const ts::UChar* s2)
+{
+    return *static_cast<const ts::UString::SuperClass*>(&s1) + s2;
+}
+TSDUCKDLL inline ts::UString operator+(const ts::UChar* s1, const ts::UString& s2)
+{
+    return s1 + *static_cast<const ts::UString::SuperClass*>(&s2);
+}
+#endif
 
 #include "tsUStringTemplate.h"

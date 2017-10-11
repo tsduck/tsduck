@@ -35,6 +35,7 @@
 #include "tsAbstractTable.h"
 #include "tsAbstractDescriptor.h"
 #include "tsBinaryTable.h"
+#include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 #include "tsStringUtils.h"
 #include "tsFormat.h"
@@ -175,7 +176,7 @@ bool ts::XMLTables::saveXML(const std::string& file_name, ReportInterface& repor
     return success;
 }
 
-std::string ts::XMLTables::toText(ReportInterface& report, const DVBCharset* charset) const
+ts::UString ts::XMLTables::toText(ReportInterface& report, const DVBCharset* charset) const
 {
     // Generate the XML content.
     XML xml(report);
@@ -185,9 +186,7 @@ std::string ts::XMLTables::toText(ReportInterface& report, const DVBCharset* cha
     }
 
     // Get result and cleanup end of lines.
-    std::string text(printer.CStr());
-    SubstituteAll(text, "\r", "");
-    return text;
+    return UString::FromUTF8(printer.CStr()).toSubstituted(UString(1, CARRIAGE_RETURN), UString());
 }
 
 
@@ -404,6 +403,7 @@ bool ts::XMLTables::FromDescriptorListXML(DescriptorList& list, XML::ElementVect
             if (!desc.isNull() && desc->isValid()) {
                 // Serialize the descriptor.
                 bin = new Descriptor;
+                CheckNonNull(bin.pointer());
                 desc->serialize(*bin, charset);
             }
         }

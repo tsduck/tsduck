@@ -34,6 +34,7 @@
 
 #pragma once
 #include "tsAbstractLongTable.h"
+#include "tsMPEG.h"
 
 namespace ts {
     //!

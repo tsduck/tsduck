@@ -38,6 +38,8 @@
 
 namespace ts {
 
+    class UString;
+
     //!
     //! Definition of a generic block of bytes.
     //!
@@ -136,6 +138,18 @@ namespace ts {
         {
             append(s.c_str(), s.length());
         }
+
+        //!
+        //! Append a unicode string in UTF-8 representation to a byte block.
+        //! @param [in] s String to append.
+        //!
+        void appendUTF8(const UString& s);
+
+        //!
+        //! Append a unicode string in UTF-8 representation to a byte block with one-byte preceding length.
+        //! @param [in] s String to append. UTF-8 representation is trunctated to 255 if necessary so that the length fits in one byte.
+        //!
+        void appendUTF8WithByteLength(const UString& s);
 
         //!
         //! Append @a n bytes with value @a i.

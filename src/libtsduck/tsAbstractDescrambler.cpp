@@ -201,26 +201,26 @@ void ts::AbstractDescrambler::handleTable (SectionDemux& demux, const BinaryTabl
 //  all descriptors for the service).
 //----------------------------------------------------------------------------
 
-void ts::AbstractDescrambler::processSDT (const SDT& sdt)
+void ts::AbstractDescrambler::processSDT(const SDT& sdt)
 {
     // Look for the service by name
     uint16_t service_id;
-    assert (_service.hasName());
-    if (!sdt.findService (_service.getName(), service_id)) {
-        tsp->error ("service \"" + _service.getName() + "\" not found in SDT");
+    assert(_service.hasName());
+    if (!sdt.findService(_service.getName(), service_id)) {
+        tsp->error("service \"" + _service.getName() + "\" not found in SDT");
         _abort = true;
         return;
     }
 
     // Remember service id
-    _service.setId (service_id);
-    tsp->verbose ("found service \"" + _service.getName() + Format ("\", service id is 0x%04X", int (_service.getId())));
+    _service.setId(service_id);
+    tsp->verbose("found service \"" + _service.getName() + Format("\", service id is 0x%04X", int(_service.getId())));
 
     // No longer need to filter the SDT
-    _demux.removePID (PID_SDT);
+    _demux.removePID(PID_SDT);
 
     // Now filter the PAT to get the PMT PID
-    _demux.addPID (PID_PAT);
+    _demux.addPID(PID_PAT);
     _service.clearPMTPID();
 }
 

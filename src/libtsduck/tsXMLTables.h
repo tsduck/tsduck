@@ -94,7 +94,7 @@ namespace ts {
         //! @param [in] charset If not zero, character set to use without explicit table code.
         //! @return Complete XML document text, empty on error.
         //!
-        std::string toText(ReportInterface& report, const DVBCharset* charset = 0) const;
+        UString toText(ReportInterface& report, const DVBCharset* charset = 0) const;
 
         //!
         //! Fast access to the list of loaded tables.

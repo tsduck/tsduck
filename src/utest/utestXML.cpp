@@ -296,7 +296,7 @@ void XMLTest::testValidation()
     ts::XML::Document model;
     CPPUNIT_ASSERT(xml.loadDocument(model, "tsduck.xml"));
 
-    static const char* xmlContent =
+    const ts::UString xmlContent(
         "<?xml version='1.0' encoding='UTF-8'?>\n"
         "<tsduck>\n"
         "  <PAT version='2' transport_stream_id='27'>\n"
@@ -314,7 +314,7 @@ void XMLTest::testValidation()
         "      </ca_descriptor>\n"
         "    </component>\n"
         "  </PMT>\n"
-        "</tsduck>";
+        "</tsduck>");
 
     ts::XML::Document doc;
     CPPUNIT_ASSERT(xml.parseDocument(doc, xmlContent));
@@ -343,21 +343,21 @@ void XMLTest::testCreation()
     CPPUNIT_ASSERT((e2 = xml.addElement(root, "child2")) != 0);
     CPPUNIT_ASSERT(xml.addElement(e2, "fooBar") != 0);
 
-    std::string text(xml.toString(doc));
+    ts::UString text(xml.toString(doc));
     utest::Out() << "XMLTest::testCreation: " << text << std::endl;
 
-    CPPUNIT_ASSERT_STRINGS_EQUAL(
-                "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-                "<theRoot>\n"
-                "  <child1 str=\"a string\" int=\"-47\">\n"
-                "    <subChild1/>\n"
-                "    <subChild2 int64=\"9223372036854775807\"/>\n"
-                "  </child1>\n"
-                "  <child2>\n"
-                "    <fooBar/>\n"
-                "  </child2>\n"
-                "</theRoot>\n",
-                text);
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(
+        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+        "<theRoot>\n"
+        "  <child1 str=\"a string\" int=\"-47\">\n"
+        "    <subChild1/>\n"
+        "    <subChild2 int64=\"9223372036854775807\"/>\n"
+        "  </child1>\n"
+        "  <child2>\n"
+        "    <fooBar/>\n"
+        "  </child2>\n"
+        "</theRoot>\n",
+        text);
 
     Visitor visitor(
         "EnterDocument", "",

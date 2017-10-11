@@ -26,41 +26,17 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Abstract base class for MPEG PSI/SI tables
-//
-//----------------------------------------------------------------------------
 
 #include "tsAbstractTable.h"
-#include "tsTablesPtr.h"
-#include "tsTablesDisplay.h"
-#include "tsXML.h"
+TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------
-// Get the XMl node name representing this table.
+// Protected constructor for subclasses.
 //----------------------------------------------------------------------------
 
-std::string ts::AbstractTable::xmlName() const
+ts::AbstractTable::AbstractTable(TID tid, const char* xml_name) :
+    AbstractSignalization(xml_name),
+    _table_id(tid)
 {
-    return _xml_name == 0 ? std::string() : std::string(_xml_name);
-}
-
-
-//----------------------------------------------------------------------------
-// Check that an XML element has the right name for this table.
-//----------------------------------------------------------------------------
-
-bool ts::AbstractTable::checkXMLName(XML& xml, const XML::Element* element) const
-{
-    if (element == 0) {
-        return false;
-    }
-    else if (!UTF8Equal(_xml_name, element->Name(), false)) {
-        xml.reportError(Format("Incorrect <%s>, expected <%s>", XML::ElementName(element), _xml_name));
-        return false;
-    }
-    else {
-        return true;
-    }
 }

@@ -291,10 +291,10 @@ bool ts::EITPlugin::stop()
         const ServiceDesc& serv (it->second);
         const bool actual = _ts_id.set() && serv.hasTSId (_ts_id.value());
         out << Format ("%s  0x%04X  0x%04X  ", actual ? "Act" : "Oth", int (serv.getTSId()), int (serv.getId()))
-            << JustifyLeft (Printable (serv.getName()), name_width)
+            << serv.getName().toJustifiedLeft(name_width)
             << (serv.eitpf_count != 0 ? "  Yes     " : "  No      ")
             << (serv.eits_count != 0 ? "Yes   " : "No    ")
-            << Format ("%8d", Days (serv.max_time))
+            << Format("%8d", Days(serv.max_time))
             << std::endl;
     }
 
@@ -311,20 +311,20 @@ bool ts::EITPlugin::stop()
 // Invoked by the demux when a complete table is available.
 //----------------------------------------------------------------------------
 
-void ts::EITPlugin::handleTable (SectionDemux& demux, const BinaryTable& table)
+void ts::EITPlugin::handleTable(SectionDemux& demux, const BinaryTable& table)
 {
     switch (table.tableId()) {
 
         case TID_PAT: {
             if (table.sourcePID() == PID_PAT) {
-                PAT pat (table);
+                PAT pat(table);
                 if (pat.isValid()) {
                     _ts_id = pat.ts_id;
-                    tsp->verbose ("TS id is %d (0x%04X)", int (pat.ts_id), int (pat.ts_id));
+                    tsp->verbose("TS id is %d (0x%04X)", int(pat.ts_id), int(pat.ts_id));
                     // Register all services
                     for (PAT::ServiceMap::const_iterator it = pat.pmts.begin(); it != pat.pmts.end(); ++it) {
-                        ServiceDesc& serv (getServiceDesc (pat.ts_id, it->first));
-                        serv.setPMTPID (it->second);
+                        ServiceDesc& serv(getServiceDesc(pat.ts_id, it->first));
+                        serv.setPMTPID(it->second);
                     }
                 }
             }
@@ -334,18 +334,18 @@ void ts::EITPlugin::handleTable (SectionDemux& demux, const BinaryTable& table)
         case TID_SDT_ACT:
         case TID_SDT_OTH: {
             if (table.sourcePID() == PID_SDT) {
-                SDT sdt (table);
+                SDT sdt(table);
                 if (sdt.isValid()) {
                     // Register all services
                     for (SDT::ServiceMap::const_iterator it = sdt.services.begin(); it != sdt.services.end(); ++it) {
-                        ServiceDesc& serv (getServiceDesc (sdt.ts_id, it->first));
-                        serv.setONId (sdt.onetw_id);
-                        serv.setType (it->second.serviceType());
-                        serv.setName (it->second.serviceName());
-                        serv.setProvider (it->second.providerName());
-                        serv.setEITsPresent (it->second.EITs_present);
-                        serv.setEITpfPresent (it->second.EITpf_present);
-                        serv.setCAControlled (it->second.CA_controlled);
+                        ServiceDesc& serv(getServiceDesc(sdt.ts_id, it->first));
+                        serv.setONId(sdt.onetw_id);
+                        serv.setType(it->second.serviceType());
+                        serv.setName(it->second.serviceName());
+                        serv.setProvider(it->second.providerName());
+                        serv.setEITsPresent(it->second.EITs_present);
+                        serv.setEITpfPresent(it->second.EITpf_present);
+                        serv.setCAControlled(it->second.CA_controlled);
                     }
                 }
             }
@@ -354,7 +354,7 @@ void ts::EITPlugin::handleTable (SectionDemux& demux, const BinaryTable& table)
 
         case TID_TDT: {
             if (table.sourcePID() == PID_TDT) {
-                TDT tdt (table);
+                TDT tdt(table);
                 if (tdt.isValid()) {
                     _last_utc = tdt.utc_time;
                 }

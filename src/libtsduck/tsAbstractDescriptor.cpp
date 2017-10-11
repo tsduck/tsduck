@@ -41,37 +41,10 @@ TSDUCK_SOURCE;
 //----------------------------------------------------------------------------
 
 ts::AbstractDescriptor::AbstractDescriptor(DID tag, const char* xml_name, PDS pds) :
+    AbstractSignalization(xml_name),
     _tag(tag),
-    _xml_name(xml_name),
-    _is_valid(false),
     _required_pds(pds)
 {
-}
-
-
-//----------------------------------------------------------------------------
-// Copy constructor and assignment.
-// Not really needed but compilers may warn that pointer members require
-// explicit copy.
-//----------------------------------------------------------------------------
-
-ts::AbstractDescriptor::AbstractDescriptor(const AbstractDescriptor& other) :
-    _tag(other._tag),
-    _xml_name(other._xml_name), // static storage
-    _is_valid(other._is_valid),
-    _required_pds(other._required_pds)
-{
-}
-
-ts::AbstractDescriptor& ts::AbstractDescriptor::operator=(const AbstractDescriptor& other)
-{
-    if (&other != this) {
-        _tag = other._tag;
-        _xml_name = other._xml_name; // static storage
-        _is_valid = other._is_valid;
-        _required_pds = other._required_pds;
-    }
-    return *this;
 }
 
 
@@ -91,19 +64,28 @@ void ts::AbstractDescriptor::deserialize(const DescriptorList& dlist, size_t ind
 
 
 //----------------------------------------------------------------------------
-// Check that an XML element has the right name for this descriptor.
+// Tools for serialization
 //----------------------------------------------------------------------------
 
-bool ts::AbstractDescriptor::checkXMLName(XML& xml, const XML::Element* element) const
+ts::ByteBlockPtr ts::AbstractDescriptor::serializeStart() const
 {
-    if (element == 0) {
-        return false;
-    }
-    else if (!UTF8Equal(_xml_name, element->Name(), false)) {
-        xml.reportError(Format("Incorrect <%s>, expected <%s>", XML::ElementName(element), _xml_name));
+    ByteBlockPtr bbp(new ByteBlock(2));
+    CheckNonNull(bbp.pointer());
+    (*bbp)[0] = _tag;
+    (*bbp)[1] = 0;
+    return bbp;
+}
+
+bool ts::AbstractDescriptor::serializeEnd(Descriptor& desc, const ByteBlockPtr& bbp) const
+{
+    if (bbp->size() > MAX_DESCRIPTOR_SIZE) {
+        desc.invalidate();
         return false;
     }
     else {
+        (*bbp)[0] = _tag;
+        (*bbp)[1] = uint8_t(bbp->size() - 2);
+        desc = Descriptor(bbp, SHARE);
         return true;
     }
 }

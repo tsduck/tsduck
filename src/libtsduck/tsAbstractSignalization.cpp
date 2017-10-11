@@ -26,36 +26,51 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Representation of an eacem_preferred_name_identifier_descriptor.
-//  Private descriptor, must be preceeded by the EACEM/EICTA PDS.
-//
-//----------------------------------------------------------------------------
 
-#include "tsEacemPreferredNameIdentifierDescriptor.h"
-#include "tsTablesDisplay.h"
-#include "tsTablesFactory.h"
-TSDUCK_SOURCE;
-TS_ID_DESCRIPTOR_DISPLAY(ts::EacemPreferredNameIdentifierDescriptor::DisplayDescriptor, ts::EDID(ts::DID_PREF_NAME_ID, ts::PDS_EACEM));
-
-// Incorrect use of TPS private data, TPS broadcasters should use EACEM/EICTA PDS instead.
-TS_ID_DESCRIPTOR_DISPLAY(ts::EacemPreferredNameIdentifierDescriptor::DisplayDescriptor, ts::EDID(ts::DID_PREF_NAME_ID, ts::PDS_TPS));
+#include "tsAbstractSignalization.h"
 
 
 //----------------------------------------------------------------------------
-// Static method to display a descriptor.
+// Get the XMl node name representing this table.
 //----------------------------------------------------------------------------
 
-void ts::EacemPreferredNameIdentifierDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+std::string ts::AbstractSignalization::xmlName() const
 {
-    std::ostream& strm(display.out());
-    const std::string margin(indent, ' ');
+    return _xml_name == 0 ? std::string() : std::string(_xml_name);
+}
 
-    if (size >= 1) {
-        uint8_t id = data[0];
-        data += 1; size -= 1;
-        strm << margin << "Name identifier: " << int(id) << std::endl;
+
+//----------------------------------------------------------------------------
+// Check that an XML element has the right name for this table.
+//----------------------------------------------------------------------------
+
+bool ts::AbstractSignalization::checkXMLName(XML& xml, const XML::Element* element) const
+{
+    if (element == 0) {
+        return false;
     }
+    else if (!UTF8Equal(_xml_name, element->Name(), false)) {
+        xml.reportError(Format("Incorrect <%s>, expected <%s>", XML::ElementName(element), _xml_name));
+        return false;
+    }
+    else {
+        return true;
+    }
+}
 
-    display.displayExtraData(data, size, indent);
+
+//----------------------------------------------------------------------------
+// This static method serializes a DVB string with a required fixed size.
+//----------------------------------------------------------------------------
+
+bool ts::AbstractSignalization::SerializeFixedLength(ByteBlock& bb, const UString& str, const size_t size, const DVBCharset* charset)
+{
+    const ByteBlock dvb(str.toDVB(0, UString::NPOS, charset));
+    if (dvb.size() == size) {
+        bb.append(dvb);
+        return true;
+    }
+    else {
+        return false;
+    }
 }

@@ -39,6 +39,7 @@
 
 #pragma once
 #include "tsNullReport.h"
+#include "tsUString.h"
 #include "tsFormat.h"
 #include "tsDecimal.h"
 #include "tsToInteger.h"
@@ -112,10 +113,18 @@ namespace ts {
         //!
         //! Parse an XML document.
         //! @param [out] doc TinyXML document object to load.
-        //! @param [in] xmlContent Content of the XML document.
+        //! @param [in] xmlContent Content of the XML document in UTF-8 encoding.
         //! @return True on success, false on error.
         //!
         bool parseDocument(Document& doc, const std::string& xmlContent);
+
+        //!
+        //! Parse an XML document.
+        //! @param [out] doc TinyXML document object to load.
+        //! @param [in] xmlContent Content of the XML document.
+        //! @return True on success, false on error.
+        //!
+        bool parseDocument(Document& doc, const UString& xmlContent);
 
         //!
         //! Validate an XML document.
@@ -160,7 +169,7 @@ namespace ts {
         //! @param [in] indent Indentation width of each level.
         //! @return The content of the XML document.
         //!
-        std::string toString(const Document& doc, int indent = 2);
+        UString toString(const Document& doc, int indent = 2);
 
         //!
         //! Safely return a name of an XML element.
@@ -171,7 +180,7 @@ namespace ts {
         static const char* ElementName(const Element* e);
 
         //!
-        //! Safely return he depth of an XML element.
+        //! Safely return the depth of an XML element.
         //! @param [in] e An XML node.
         //! @return The depth of the element, ie. the number of ancestors.
         //!
@@ -183,10 +192,16 @@ namespace ts {
         //! @param [in] e2 An XML element.
         //! @return True is @a e1 and @a e2 are identical.
         //!
-        static bool HaveSameName(const Element* e1, const Element* e2)
-        {
-            return UTF8Equal(ElementName(e1), ElementName(e2), false);
-        }
+        static bool HaveSameName(const Element* e1, const Element* e2);
+
+        //!
+        //! Find an attribute, case-insensitive, in an XML element.
+        //! @param [in] elem An XML element.
+        //! @param [in] name Name of the attribute to search.
+        //! @param [in] silent If true, do not report error.
+        //! @return Attribute address or zero if not found.
+        //!
+        const Attribute* findAttribute(const Element* elem, const char* name, bool silent = false);
 
         //!
         //! Find an attribute, case-insensitive, in an XML element.
@@ -198,6 +213,24 @@ namespace ts {
         const Attribute* findAttribute(const Element* elem, const std::string& name, bool silent = false);
 
         //!
+        //! Find an attribute, case-insensitive, in an XML element.
+        //! @param [in] elem An XML element.
+        //! @param [in] name Name of the attribute to search.
+        //! @param [in] silent If true, do not report error.
+        //! @return Attribute address or zero if not found.
+        //!
+        const Attribute* findAttribute(const Element* elem, const UString& name, bool silent = false);
+
+        //!
+        //! Find the first child element in an XML element by name, case-insensitive.
+        //! @param [in] elem An XML element.
+        //! @param [in] name Name of the child element to search.
+        //! @param [in] silent If true, do not report error.
+        //! @return Child element address or zero if not found.
+        //!
+        const Element* findFirstChild(const Element* elem, const char* name, bool silent = false);
+
+        //!
         //! Find the first child element in an XML element by name, case-insensitive.
         //! @param [in] elem An XML element.
         //! @param [in] name Name of the child element to search.
@@ -205,6 +238,15 @@ namespace ts {
         //! @return Child element address or zero if not found.
         //!
         const Element* findFirstChild(const Element* elem, const std::string& name, bool silent = false);
+
+        //!
+        //! Find the first child element in an XML element by name, case-insensitive.
+        //! @param [in] elem An XML element.
+        //! @param [in] name Name of the child element to search.
+        //! @param [in] silent If true, do not report error.
+        //! @return Child element address or zero if not found.
+        //!
+        const Element* findFirstChild(const Element* elem, const UString& name, bool silent = false);
 
         //!
         //! Get a string attribute of an XML element.
@@ -219,9 +261,28 @@ namespace ts {
         //!
         bool getAttribute(std::string& value,
                           const Element* elem,
-                          const std::string& name, 
-                          bool required = false, 
+                          const std::string& name,
+                          bool required = false,
                           const std::string& defValue = std::string(),
+                          size_t minSize = 0,
+                          size_t maxSize = UNLIMITED);
+
+        //!
+        //! Get a string attribute of an XML element.
+        //! @param [out] value Returned value of the attribute.
+        //! @param [in] elem An XML element.
+        //! @param [in] name Name of the attribute.
+        //! @param [in] required If true, generate an error if the attribute is not found.
+        //! @param [in] defValue Default value to return if the attribute is not present.
+        //! @param [in] minSize Minimum allowed size for the value string.
+        //! @param [in] maxSize Maximum allowed size for the value string.
+        //! @return True on success, false on error.
+        //!
+        bool getAttribute(UString& value,
+                          const Element* elem,
+                          const UString& name, 
+                          bool required = false, 
+                          const UString& defValue = UString(),
                           size_t minSize = 0,
                           size_t maxSize = UNLIMITED);
 
@@ -404,6 +465,27 @@ namespace ts {
                           size_t maxSize = UNLIMITED);
 
         //!
+        //! Get text in a child of an element.
+        //! @param [out] data The content of the text in the child element.
+        //! @param [in] elem An XML element.
+        //! @param [in] name Name of the child element to search.
+        //! @param [in] trim If true, remove leading and trailing spaces.
+        //! @param [in] required If true, generate an error if the child element is not found.
+        //! @param [in] defValue Default value to return if the child element is not present.
+        //! @param [in] minSize Minimum allowed size for the value string.
+        //! @param [in] maxSize Maximum allowed size for the value string.
+        //! @return True on success, false on error.
+        //!
+        bool getTextChild(UString& data,
+                          const Element* elem,
+                          const UString& name,
+                          bool trim = true,
+                          bool required = false,
+                          const UString& defValue = std::string(),
+                          size_t minSize = 0,
+                          size_t maxSize = UNLIMITED);
+
+        //!
         //! Get text children of an element.
         //! @param [out] data The content of the text children.
         //! @param [in] elem An XML containing text.
@@ -413,6 +495,17 @@ namespace ts {
         //! @return True on success, false on error.
         //!
         bool getText(std::string& data, const Element* elem, bool trim = true, size_t minSize = 0, size_t maxSize = UNLIMITED);
+
+        //!
+        //! Get text children of an element.
+        //! @param [out] data The content of the text children.
+        //! @param [in] elem An XML containing text.
+        //! @param [in] trim If true, remove leading and trailing spaces.
+        //! @param [in] minSize Minimum allowed size for the value string.
+        //! @param [in] maxSize Maximum allowed size for the value string.
+        //! @return True on success, false on error.
+        //!
+        bool getText(UString& data, const Element* elem, bool trim = true, size_t minSize = 0, size_t maxSize = UNLIMITED);
 
         //!
         //! Get text in a child containing hexadecimal data.
@@ -466,7 +559,23 @@ namespace ts {
         //! @param [in] text Text string to add.
         //! @return New child element or null on error.
         //!
+        Text* addText(Element* parent, const char* text);
+
+        //!
+        //! Add a new text inside a node.
+        //! @param [in,out] parent Parent node.
+        //! @param [in] text Text string to add.
+        //! @return New child element or null on error.
+        //!
         Text* addText(Element* parent, const std::string& text);
+
+        //!
+        //! Add a new text inside a node.
+        //! @param [in,out] parent Parent node.
+        //! @param [in] text Text string to add.
+        //! @return New child element or null on error.
+        //!
+        Text* addText(Element* parent, const UString& text);
 
         //!
         //! Add a new text containing hexadecimal data inside a node.
@@ -494,7 +603,23 @@ namespace ts {
         //! @param [in] name Attribute name.
         //! @param [in] value Attribute value.
         //!
+        void setAttribute(Element* element, const char* name, const char* value);
+
+        //!
+        //! Set a string attribute to a node.
+        //! @param [in,out] element The element which receives the attribute.
+        //! @param [in] name Attribute name.
+        //! @param [in] value Attribute value.
+        //!
         void setAttribute(Element* element, const std::string& name, const std::string& value);
+
+        //!
+        //! Set a string attribute to a node.
+        //! @param [in,out] element The element which receives the attribute.
+        //! @param [in] name Attribute name.
+        //! @param [in] value Attribute value.
+        //!
+        void setAttribute(Element* element, const UString& name, const UString& value);
 
         //!
         //! Set a bool attribute to a node.

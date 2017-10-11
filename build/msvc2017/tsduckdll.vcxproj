@@ -17,6 +17,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsAbstractDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAbstractDescriptorsTable.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAbstractLongTable.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsAbstractSignalization.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAbstractTable.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAbstractTransportListTable.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAC3Attributes.h" />
@@ -310,6 +311,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsAbstractDescrambler.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAbstractDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAbstractDescriptorsTable.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsAbstractSignalization.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAbstractTable.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAbstractTransportListTable.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAC3Attributes.cpp" />

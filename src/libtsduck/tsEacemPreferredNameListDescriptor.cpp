@@ -34,6 +34,7 @@
 
 #include "tsEacemPreferredNameListDescriptor.h"
 #include "tsFormat.h"
+#include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 TSDUCK_SOURCE;
 TS_ID_DESCRIPTOR_DISPLAY(ts::EacemPreferredNameListDescriptor::DisplayDescriptor, ts::EDID(ts::DID_PREF_NAME_LIST, ts::PDS_EACEM));
