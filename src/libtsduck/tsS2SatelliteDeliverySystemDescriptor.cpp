@@ -34,6 +34,7 @@
 #include "tsS2SatelliteDeliverySystemDescriptor.h"
 #include "tsStringUtils.h"
 #include "tsVariable.h"
+#include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 #include "tsXMLTables.h"
 TSDUCK_SOURCE;

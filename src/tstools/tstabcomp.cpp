@@ -98,7 +98,7 @@ Options::Options(int argc, char *argv[]) :
             "\n"
             "  --default-charset name\n"
             "      Default DVB character set to use. The available table names are:\n"
-            "      " + ts::UString::join(ts::DVBCharset::GetAllNames()).toSplitLines(74, ts::UString(), ts::UString(6, ts::SPACE)).toUTF8() + ".\n"
+            "      " + ts::UString::Join(ts::DVBCharset::GetAllNames()).toSplitLines(74, ts::UString(), ts::UString(6, ts::SPACE)).toUTF8() + ".\n"
             "\n"
             "      With --compile, this character set is used to encode strings. If a\n"
             "      given string cannot be encoded with this character set or if this option\n"

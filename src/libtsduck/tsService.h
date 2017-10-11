@@ -34,6 +34,7 @@
 
 #pragma once
 #include "tsMPEG.h"
+#include "tsUString.h"
 #include "tsVariable.h"
 #include "tsStringUtils.h"
 
@@ -59,7 +60,7 @@ namespace ts {
         //! If the string evaluates to an integer (decimal or hexa),
         //! this is a service id, otherwise this is a service name.
         //!
-        Service(const std::string& desc);
+        Service(const UString& desc);
 
         //!
         //! Reset using a string description.
@@ -67,7 +68,7 @@ namespace ts {
         //! If the string evaluates to an integer (decimal or hexa),
         //! this is a service id, otherwise this is a service name.
         //!
-        void set(const std::string& desc);
+        void set(const UString& desc);
 
         //!
         //! Clear all fields.
@@ -122,15 +123,15 @@ namespace ts {
         //! @hideinitializer
         //!
 #define SERVICE_PROPERTY_STRING(suffix,field,fullname)                  \
-        SERVICE_PROPERTY(std::string, suffix, field, "", fullname)      \
+        SERVICE_PROPERTY(UString, suffix, field, "", fullname)          \
         /** Set the fullname.                                        */ \
         /** @param [in] value The fullname.                          */ \
-        void set##suffix(const std::string& value) {field = value;}     \
+        void set##suffix(const UString& value) {field = value;}         \
         /** Check if the fullname has a given value.                 */ \
         /** @param [in] value The fullname to check.                 */ \
         /** @return True if the fullname is similar to @a value,     */ \
         /** case insensitive and ignoring blanks.                    */ \
-        bool has##suffix(const std::string& value) const {return field.set() && SimilarStrings(value, field.value());}
+        bool has##suffix(const UString& value) const {return field.set() && value.similar(field.value());}
 
         SERVICE_PROPERTY_INT(uint16_t, Id,            _id,             0,        Service Id)
         SERVICE_PROPERTY_INT(uint16_t, TSId,          _tsid,           0,        Transport Stream Id)
@@ -251,18 +252,18 @@ namespace ts {
         }
 
     private:
-        Variable<uint16_t>    _id;
-        Variable<uint16_t>    _tsid;
-        Variable<uint16_t>    _onid;
-        Variable<PID>         _pmt_pid;
-        Variable<uint16_t>    _lcn;
-        Variable<uint8_t>     _type;
-        Variable<std::string> _name;
-        Variable<std::string> _provider;
-        Variable<bool>        _eits_present;
-        Variable<bool>        _eitpf_present;
-        Variable<bool>        _ca_controlled;
-        Variable<uint8_t>     _running_status;
+        Variable<uint16_t> _id;
+        Variable<uint16_t> _tsid;
+        Variable<uint16_t> _onid;
+        Variable<PID>      _pmt_pid;
+        Variable<uint16_t> _lcn;
+        Variable<uint8_t>  _type;
+        Variable<UString>  _name;
+        Variable<UString>  _provider;
+        Variable<bool>     _eits_present;
+        Variable<bool>     _eitpf_present;
+        Variable<bool>     _ca_controlled;
+        Variable<uint8_t>  _running_status;
     };
 
     // Containers

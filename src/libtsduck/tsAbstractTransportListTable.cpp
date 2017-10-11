@@ -33,6 +33,8 @@
 //----------------------------------------------------------------------------
 
 #include "tsAbstractTransportListTable.h"
+#include "tsBinaryTable.h"
+#include "tsTablesDisplay.h"
 TSDUCK_SOURCE;
 
 

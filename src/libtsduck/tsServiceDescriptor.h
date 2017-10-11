@@ -44,9 +44,9 @@ namespace ts {
     {
     public:
         // ServiceDescriptor public members:
-        uint8_t     service_type;   //!< Service type.
-        std::string provider_name;  //!< Provider name.
-        std::string service_name;   //!< Service name.
+        uint8_t service_type;   //!< Service type.
+        UString provider_name;  //!< Provider name.
+        UString service_name;   //!< Service name.
 
         //!
         //! Default constructor.
@@ -54,7 +54,7 @@ namespace ts {
         //! @param [in] provider Provider name.
         //! @param [in] name Service name.
         //!
-        ServiceDescriptor(uint8_t type = 0, const std::string& provider = "", const std::string& name = "");
+        ServiceDescriptor(uint8_t type = 0, const UString& provider = UString(), const UString& name = UString());
 
         //!
         //! Constructor from a binary descriptor

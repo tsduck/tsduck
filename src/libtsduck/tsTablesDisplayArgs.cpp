@@ -73,7 +73,7 @@ void ts::TablesDisplayArgs::addHelp(Args& args) const
         "      signalization may assume that the default character set is different,\n"
         "      typically the usual local character table for the region. This option\n"
         "      forces a non-standard character table. The available table names are:\n"
-        "      " + UString::join(DVBCharset::GetAllNames()).toSplitLines(74, UString(), UString(6, SPACE)).toUTF8() + ".\n"
+        "      " + UString::Join(DVBCharset::GetAllNames()).toSplitLines(74, UString(), UString(6, SPACE)).toUTF8() + ".\n"
         "\n"
         "  --default-pds value\n"
         "      Default private data specifier. This option is meaningful only when the\n"

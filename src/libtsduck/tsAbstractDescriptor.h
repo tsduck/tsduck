@@ -33,11 +33,9 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsDescriptor.h"
+#include "tsAbstractSignalization.h"
 #include "tsTablesPtr.h"
-#include "tsTablesDisplay.h"
 #include "tsMPEG.h"
-#include "tsXML.h"
 
 namespace ts {
 
@@ -49,21 +47,9 @@ namespace ts {
     //!
     //! Abstract base class for MPEG PSI/SI descriptors.
     //!
-    class TSDUCKDLL AbstractDescriptor
+    class TSDUCKDLL AbstractDescriptor: public AbstractSignalization
     {
     public:
-        //!
-        //! Check if the descriptor is valid.
-        //! @return True if the descriptor object is valid, false otherwise.
-        //!
-        bool isValid() const {return _is_valid;}
-
-        //!
-        //! Invalidate the descriptor.
-        //! The object must be rebuilt.
-        //!
-        void invalidate() {_is_valid = false;}
-
         //!
         //! Get the descriptor tag.
         //! @return The descriptor tag.
@@ -84,12 +70,6 @@ namespace ts {
         //! false if it is a DVB-defined or MPEG-defined descriptor.
         //!
         bool isPrivateDescriptor() const {return _required_pds != 0;}
-
-        //!
-        //! Get the XMl node name representing this descriptor.
-        //! @return The XML node name.
-        //!
-        std::string xmlName() const {return _xml_name == 0 ? std::string() : std::string(_xml_name);}
 
         //!
         //! This abstract method serializes a descriptor.
@@ -119,55 +99,15 @@ namespace ts {
         void deserialize(const DescriptorList& dlist, size_t index, const DVBCharset* charset = 0);
 
         //!
-        //! This abstract method converts the descriptor to XML.
-        //! @param [in,out] xml XML utility for error reporting
-        //! @param [in,out] parent The parent node for the new XML tree.
-        //! @return The new XML element.
-        //!
-        virtual XML::Element* toXML(XML& xml, XML::Element* parent) const = 0;
-
-        //!
-        //! This abstract converts an XML structure to a descriptor.
-        //! In case of success, this object is replaced with the interpreted content of the XML structure.
-        //! In case of error, this object is invalidated.
-        //! @param [in,out] xml XML utility for error reporting
-        //! @param [in] element XML element to convert.
-        //!
-        virtual void fromXML(XML& xml, const XML::Element* element) = 0;
-
-        //!
         //! Virtual destructor
         //!
-        virtual ~AbstractDescriptor () {}
-
-        //!
-        //! Copy constructor.
-        //! @param [in] other Other instance to copy.
-        //!
-        AbstractDescriptor(const AbstractDescriptor& other);
-
-        //!
-        //! Assignment operator.
-        //! @param [in] other Other instance to copy.
-        //! @return A reference to this object.
-        //!
-        AbstractDescriptor& operator=(const AbstractDescriptor& other);
+        virtual ~AbstractDescriptor() {}
 
     protected:
         //!
         //! The descriptor tag can be modified by subclasses only
         //!
         DID _tag;
-
-        //!
-        //! XML descriptor name.
-        //!
-        const char* _xml_name;
-
-        //!
-        //! It is the responsibility of the subclasses to set the valid flag
-        //!
-        bool _is_valid;
 
         //!
         //! Required private data specified.
@@ -183,12 +123,19 @@ namespace ts {
         AbstractDescriptor(DID tag, const char* xml_name, PDS pds = 0);
 
         //!
-        //! Check that an XML element has the right name for this descriptor.
-        //! @param [in,out] xml XML utility for error reporting
-        //! @param [in] element XML element to check.
-        //! @return True on success, false on error.
+        //! Tool for serialization: get a byte buffer for serialization.
+        //! @return A safe pointer to a two-byte byffer containing the descriptor tag and zero as length.
         //!
-        bool checkXMLName(XML& xml, const XML::Element* element) const;
+        ByteBlockPtr serializeStart() const;
+
+        //!
+        //! Tool for serialization: complete a serialization.
+        //! @param [out] bin A binary descriptor object which receives the serialized object.
+        //! @param [in] bbp Safe pointer containing the serialized data, typically returned by serializeStart().
+        //! The tag and length will be updated.
+        //! @return True if the serialized descriptor is valid.
+        //!
+        bool serializeEnd(Descriptor& bin, const ByteBlockPtr& bbp) const;
 
     private:
         // Unreachable constructors and operators.

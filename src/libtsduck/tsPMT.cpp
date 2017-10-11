@@ -34,6 +34,8 @@
 #include "tsPMT.h"
 #include "tsFormat.h"
 #include "tsNames.h"
+#include "tsBinaryTable.h"
+#include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 #include "tsXMLTables.h"
 TSDUCK_SOURCE;

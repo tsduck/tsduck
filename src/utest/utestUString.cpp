@@ -357,9 +357,9 @@ void UStringTest::testHTML()
     CPPUNIT_ASSERT(ts::ToHTML(ts::LEFT_DOUBLE_QUOTATION_MARK) == "&ldquo;");
     CPPUNIT_ASSERT(ts::ToHTML(ts::BLACK_DIAMOND_SUIT) == "&diams;");
 
-    CPPUNIT_ASSERT(ts::UString("").ToHTML() == "");
-    CPPUNIT_ASSERT(ts::UString("abcdefgh = xyz:").ToHTML() == "abcdefgh = xyz:");
-    CPPUNIT_ASSERT(ts::UString("<abcd> = \"&").ToHTML() == "&lt;abcd&gt; = &quot;&amp;");
+    CPPUNIT_ASSERT(ts::UString("").toHTML() == "");
+    CPPUNIT_ASSERT(ts::UString("abcdefgh = xyz:").toHTML() == "abcdefgh = xyz:");
+    CPPUNIT_ASSERT(ts::UString("<abcd> = \"&").toHTML() == "&lt;abcd&gt; = &quot;&amp;");
 }
 
 void UStringTest::testRemove()
@@ -475,8 +475,8 @@ void UStringTest::testJoin()
     v.push_back("az");
     v.push_back("sd");
     v.push_back("tg");
-    CPPUNIT_ASSERT(ts::UString::join(v) == "az, sd, tg");
-    CPPUNIT_ASSERT(ts::UString::join(++v.begin(), v.end()) == "sd, tg");
+    CPPUNIT_ASSERT(ts::UString::Join(v) == "az, sd, tg");
+    CPPUNIT_ASSERT(ts::UString::Join(++v.begin(), v.end()) == "sd, tg");
 }
 
 void UStringTest::testBreakLines()

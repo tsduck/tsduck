@@ -38,6 +38,9 @@
 #include "tsAlgorithm.h"
 TSDUCK_SOURCE;
 
+// Constant string "Unreferenced"
+const ts::UString ts::TSAnalyzer::UNREFERENCED(u"Unreferenced");
+
 
 //----------------------------------------------------------------------------
 // Constructor for the TS analyzer
@@ -171,7 +174,7 @@ void ts::TSAnalyzer::reset()
 // Constructor for the PID context
 //----------------------------------------------------------------------------
 
-ts::TSAnalyzer::PIDContext::PIDContext(PID pid_, const std::string& description_) :
+ts::TSAnalyzer::PIDContext::PIDContext(PID pid_, const UString& description_) :
     pid(pid_),
     description(description_),
     comment(),
@@ -360,8 +363,8 @@ ts::TSAnalyzer::ServiceContext::ServiceContext(uint16_t serv_id) :
     service_id(serv_id),
     orig_netw_id(0),
     service_type(0),
-    name(""),
-    provider(""),
+    name(),
+    provider(),
     pmt_pid(0),
     pcr_pid(0),
     pid_cnt(0),
@@ -386,15 +389,15 @@ ts::TSAnalyzer::ServiceContext::~ServiceContext()
 // Return a displayable service or provider name for ServiceContext
 //----------------------------------------------------------------------------
 
-std::string ts::TSAnalyzer::ServiceContext::getProvider() const
+ts::UString ts::TSAnalyzer::ServiceContext::getProvider() const
 {
-    return provider.empty() ? "(unknown)" : Printable(provider);
+    return provider.empty() ? "(unknown)" : provider;
 }
 
-std::string ts::TSAnalyzer::ServiceContext::getName() const
+ts::UString ts::TSAnalyzer::ServiceContext::getName() const
 {
     if (!name.empty()) {
-        return Printable(name);
+        return name;
     }
     else if (carry_ssu) {
         return "(System Software Update)";
@@ -432,7 +435,7 @@ ts::TSAnalyzer::ETIDContextPtr ts::TSAnalyzer::getETID(const Section& section)
 //  Return a PID context. Allocate a new entry if PID not found.
 //----------------------------------------------------------------------------
 
-ts::TSAnalyzer::PIDContextPtr ts::TSAnalyzer::getPID(PID pid, const std::string& description)
+ts::TSAnalyzer::PIDContextPtr ts::TSAnalyzer::getPID(PID pid, const UString& description)
 {
     PIDContextMap::const_iterator it(_pids.find(pid));
 
@@ -744,12 +747,12 @@ void ts::TSAnalyzer::analyzeTOT(const TOT& tot)
 // Return a full description, with comment and optionally attributes
 //----------------------------------------------------------------------------
 
-std::string ts::TSAnalyzer::PIDContext::fullDescription(bool include_attributes) const
+ts::UString ts::TSAnalyzer::PIDContext::fullDescription(bool include_attributes) const
 {
     // Additional description
-    std::string more(comment);
+    UString more(comment);
     if (include_attributes) {
-        for (StringVector::const_iterator it = attributes.begin(); it != attributes.end(); ++it) {
+        for (UStringVector::const_iterator it = attributes.begin(); it != attributes.end(); ++it) {
             if (!it->empty()) {
                 if (!more.empty()) {
                     more.append(", ");
@@ -793,14 +796,14 @@ void ts::TSAnalyzer::analyzeDescriptors(const DescriptorList& descs, ServiceCont
             case DID_LANGUAGE: {
                 if (size >= 4 && ps != 0) {
                     // First 3 bytes contains the audio language
-                    ps->language = std::string(reinterpret_cast<const char*>(data), 3);
+                    ps->language = UString::FromDVB(data, 3);
                     // Next byte contains audio type, 0 is the default
                     uint8_t audio_type(data[3]);
                     if (audio_type == 0) {
-                        ps->comment = Printable(ps->language);
+                        ps->comment = ps->language;
                     }
                     else {
-                        ps->comment = Printable(ps->language) + ", " + names::AudioType(audio_type);
+                        ps->comment = ps->language + u", " + names::AudioType(audio_type);
                     }
                 }
                 break;
@@ -808,7 +811,7 @@ void ts::TSAnalyzer::analyzeDescriptors(const DescriptorList& descs, ServiceCont
             case DID_AC3: {
                 if (ps != 0) {
                     // The presence of this descriptor indicates an AC-3 audio track.
-                    ps->description = "AC-3 Audio";
+                    ps->description = u"AC-3 Audio";
                     ps->carry_audio = true;
                 }
                 break;
@@ -816,7 +819,7 @@ void ts::TSAnalyzer::analyzeDescriptors(const DescriptorList& descs, ServiceCont
             case DID_ENHANCED_AC3: {
                 if (ps != 0) {
                     // The presence of this descriptor indicates an Enhanced AC-3 audio track.
-                    ps->description = "E-AC-3 Audio";
+                    ps->description = u"E-AC-3 Audio";
                     ps->carry_audio = true;
                 }
                 break;
@@ -824,7 +827,7 @@ void ts::TSAnalyzer::analyzeDescriptors(const DescriptorList& descs, ServiceCont
             case DID_AAC: {
                 if (ps != 0) {
                     // The presence of this descriptor indicates an HE-AAC audio track.
-                    ps->description = "HE-AAC Audio";
+                    ps->description = u"HE-AAC Audio";
                     ps->carry_audio = true;
                 }
                 break;
@@ -832,7 +835,7 @@ void ts::TSAnalyzer::analyzeDescriptors(const DescriptorList& descs, ServiceCont
             case DID_DTS: {
                 if (ps != 0) {
                     // The presence of this descriptor indicates a DTS audio track.
-                    ps->description = "DTS Audio";
+                    ps->description = u"DTS Audio";
                     ps->carry_audio = true;
                 }
                 break;
@@ -840,24 +843,24 @@ void ts::TSAnalyzer::analyzeDescriptors(const DescriptorList& descs, ServiceCont
             case DID_SUBTITLING: {
                 if (size >= 4 && ps != 0) {
                     // First 3 bytes contains the language
-                    ps->language = std::string(reinterpret_cast <const char*>(data), 3);
+                    ps->language = UString::FromDVB(data, 3);
                     // Next byte contains subtitling type
                     uint8_t type = data[3];
-                    ps->description = "Subtitles";
-                    ps->comment = Printable(ps->language);
-                    AppendUnique(ps->attributes, names::SubtitlingType(type));
+                    ps->description = u"Subtitles";
+                    ps->comment = ps->language;
+                    AppendUnique(ps->attributes, UString(names::SubtitlingType(type)));
                 }
                 break;
             }
             case DID_TELETEXT: {
                 if (size >= 4 && ps != 0) {
                     // First 3 bytes contains the language
-                    ps->language = std::string(reinterpret_cast <const char*>(data), 3);
+                    ps->language = UString::FromDVB(data, 3);
                     // Next byte contains teletext type
                     uint8_t type(data[3] >> 3);
-                    ps->description = "Teletext";
-                    ps->comment = Printable(ps->language);
-                    AppendUnique(ps->attributes, names::TeletextType(type));
+                    ps->description = u"Teletext";
+                    ps->comment = ps->language;
+                    AppendUnique(ps->attributes, UString(names::TeletextType(type)));
                 }
                 break;
             }
@@ -1087,7 +1090,7 @@ void ts::TSAnalyzer::analyzeCADescriptor(const Descriptor& desc, ServiceContext*
 
 void ts::TSAnalyzer::handleNewAudioAttributes(PESDemux&, const PESPacket& pkt, const AudioAttributes& attr)
 {
-    AppendUnique(getPID(pkt.getSourcePID())->attributes, std::string(attr));
+    AppendUnique(getPID(pkt.getSourcePID())->attributes, UString(attr));
 }
 
 
@@ -1098,7 +1101,7 @@ void ts::TSAnalyzer::handleNewAudioAttributes(PESDemux&, const PESPacket& pkt, c
 
 void ts::TSAnalyzer::handleNewAC3Attributes(PESDemux&, const PESPacket& pkt, const AC3Attributes& attr)
 {
-    AppendUnique(getPID(pkt.getSourcePID())->attributes, std::string(attr));
+    AppendUnique(getPID(pkt.getSourcePID())->attributes, UString(attr));
 }
 
 
@@ -1109,7 +1112,7 @@ void ts::TSAnalyzer::handleNewAC3Attributes(PESDemux&, const PESPacket& pkt, con
 
 void ts::TSAnalyzer::handleNewVideoAttributes(PESDemux&, const PESPacket& pkt, const VideoAttributes& attr)
 {
-    AppendUnique(getPID(pkt.getSourcePID())->attributes, std::string(attr));
+    AppendUnique(getPID(pkt.getSourcePID())->attributes, UString(attr));
 }
 
 
@@ -1120,7 +1123,7 @@ void ts::TSAnalyzer::handleNewVideoAttributes(PESDemux&, const PESPacket& pkt, c
 
 void ts::TSAnalyzer::handleNewAVCAttributes(PESDemux&, const PESPacket& pkt, const AVCAttributes& attr)
 {
-    AppendUnique(getPID(pkt.getSourcePID())->attributes, std::string(attr));
+    AppendUnique(getPID(pkt.getSourcePID())->attributes, UString(attr));
 }
 
 
@@ -1335,7 +1338,7 @@ void ts::TSAnalyzer::feedPacket(const TSPacket& pkt)
 // optional: if specified as zero, the analysis is based on the PCR values.
 //----------------------------------------------------------------------------
 
-void ts::TSAnalyzer::setBitrateHint(uint32_t bitrate)
+void ts::TSAnalyzer::setBitrateHint(BitRate bitrate)
 {
     _ts_user_bitrate = bitrate;
     _modified = true;

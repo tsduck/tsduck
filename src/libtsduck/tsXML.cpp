@@ -117,7 +117,7 @@ const char* ts::XML::ElementName(const Element* e)
 
 
 //----------------------------------------------------------------------------
-// Safely return he depth of an XML element.
+// Safely return the depth of an XML element.
 //----------------------------------------------------------------------------
 
 int ts::XML::NodeDepth(const Node* e)
@@ -132,8 +132,23 @@ int ts::XML::NodeDepth(const Node* e)
 
 
 //----------------------------------------------------------------------------
+// Check if two XML elements have the same name, case-insensitive.
+//----------------------------------------------------------------------------
+
+bool ts::XML::HaveSameName(const Element* e1, const Element* e2)
+{
+    return UString::FromUTF8(ElementName(e1)).similar(UString::FromUTF8(ElementName(e2)));
+}
+
+
+//----------------------------------------------------------------------------
 // Parse an XML document.
 //----------------------------------------------------------------------------
+
+bool ts::XML::parseDocument(Document& doc, const UString& xmlContent)
+{
+    return parseDocument(doc, xmlContent.toUTF8());
+}
 
 bool ts::XML::parseDocument(Document& doc, const std::string& xmlContent)
 {
@@ -220,17 +235,14 @@ bool ts::XML::loadDocument(Document& doc, const std::string& fileName, bool sear
 // Convert a document to an XML string.
 //----------------------------------------------------------------------------
 
-std::string ts::XML::toString(const Document& doc, int indent)
+ts::UString ts::XML::toString(const Document& doc, int indent)
 {
     // Use a printer with the requested indentation.
     Printer printer(indent);
     doc.Print(&printer);
 
     // Extract the resulting string and normalize end of lines.
-    std::string text(printer.CStr());
-    SubstituteAll(text, "\r", "");
-
-    return text;
+    return UString(printer.CStr()).toSubstituted(UString(1, CARRIAGE_RETURN), UString());
 }
 
 
@@ -238,7 +250,17 @@ std::string ts::XML::toString(const Document& doc, int indent)
 // Find an attribute, case-insensitive, in an XML element.
 //----------------------------------------------------------------------------
 
+const ts::XML::Attribute* ts::XML::findAttribute(const Element* elem, const char* name, bool silent)
+{
+    return findAttribute(elem, UString::FromUTF8(name), silent);
+}
+
 const ts::XML::Attribute* ts::XML::findAttribute(const Element* elem, const std::string& name, bool silent)
+{
+    return findAttribute(elem, UString::FromUTF8(name), silent);
+}
+
+const ts::XML::Attribute* ts::XML::findAttribute(const Element* elem, const UString& name, bool silent)
 {
     // Filter invalid parameters.
     if (elem == 0 || name.empty()) {
@@ -247,14 +269,15 @@ const ts::XML::Attribute* ts::XML::findAttribute(const Element* elem, const std:
 
     // Loop on all attributes.
     for (const Attribute* attr = elem->FirstAttribute(); attr != 0; attr = attr->Next()) {
-        if (UTF8Equal(attr->Name(), name, false)) {
+        if (name.similar(UString::FromUTF8(attr->Name()))) {
             return attr;
         }
     }
 
     // Attribute not found.
     if (!silent) {
-        reportError(Format("Attribute '%s' not found in <%s>, line %d", name.c_str(), ElementName(elem), elem->GetLineNum()));
+        const std::string utf8Name(name.toUTF8());
+        reportError(Format("Attribute '%s' not found in <%s>, line %d", utf8Name.c_str(), ElementName(elem), elem->GetLineNum()));
     }
     return 0;
 }
@@ -264,7 +287,17 @@ const ts::XML::Attribute* ts::XML::findAttribute(const Element* elem, const std:
 // Find the first child element in an XML element by name, case-insensitive.
 //----------------------------------------------------------------------------
 
+const ts::XML::Element* ts::XML::findFirstChild(const Element* elem, const char* name, bool silent)
+{
+    return findFirstChild(elem, UString::FromUTF8(name), silent);
+}
+
 const ts::XML::Element* ts::XML::findFirstChild(const Element* elem, const std::string& name, bool silent)
+{
+    return findFirstChild(elem, UString::FromUTF8(name), silent);
+}
+
+const ts::XML::Element* ts::XML::findFirstChild(const Element* elem, const UString& name, bool silent)
 {
     // Filter invalid parameters.
     if (elem == 0 || name.empty()) {
@@ -273,14 +306,15 @@ const ts::XML::Element* ts::XML::findFirstChild(const Element* elem, const std::
 
     // Loop on all children.
     for (const Element* child = elem->FirstChildElement(); child != 0; child = child->NextSiblingElement()) {
-        if (UTF8Equal(child->Name(), name.c_str(), false)) {
+        if (name.similar(UString::FromUTF8(child->Name()))) {
             return child;
         }
     }
 
     // Child node not found.
     if (!silent) {
-        reportError(Format("Child node <%s> not found in <%s>, line %d", name.c_str(), ElementName(elem), elem->GetLineNum()));
+        const std::string utf8Name(name.toUTF8());
+        reportError(Format("Child node <%s> not found in <%s>, line %d", utf8Name.c_str(), ElementName(elem), elem->GetLineNum()));
     }
     return 0;
 }
@@ -298,6 +332,20 @@ bool ts::XML::getAttribute(std::string& value,
                            size_t minSize,
                            size_t maxSize)
 {
+    UString val;
+    const bool result = getAttribute(val, elem, UString::FromUTF8(name), required, UString::FromUTF8(defValue), minSize, maxSize);
+    value.assign(val.toUTF8());
+    return result;
+}
+
+bool ts::XML::getAttribute(UString& value,
+                           const Element* elem,
+                           const UString& name,
+                           bool required,
+                           const UString& defValue,
+                           size_t minSize,
+                           size_t maxSize)
+{
     const Attribute* attr = findAttribute(elem, name, !required);
     if (attr == 0) {
         // Attribute not present.
@@ -306,25 +354,21 @@ bool ts::XML::getAttribute(std::string& value,
     }
     else {
         // Attribute found, get its value.
-        const char* val = attr->Value();
-        if (val == 0) {
-            val = "";
-        }
-
-        // Check value size.
-        const size_t len = ::strlen(val);
-        if (len >= minSize && len <= maxSize) {
-            value.assign(val);
+        value.assign(UString::FromUTF8(attr->Value()));
+        if (value.length() >= minSize && value.length() <= maxSize) {
             return true;
         }
-        else if (maxSize == UNLIMITED) {
+
+        // Incorrect value size.
+        const std::string utf8Name(name.toUTF8());
+        if (maxSize == UNLIMITED) {
             reportError(Format("Incorrect value for attribute '%s' in <%s>, line %d, contains %" FMT_SIZE_T "d characters, at least %" FMT_SIZE_T "d required",
-                               name.c_str(), ElementName(elem), elem->GetLineNum(), len, minSize));
+                               utf8Name.c_str(), ElementName(elem), elem->GetLineNum(), value.length(), minSize));
             return false;
         }
         else {
             reportError(Format("Incorrect value for attribute '%s' in <%s>, line %d, contains %" FMT_SIZE_T "d characters, allowed %" FMT_SIZE_T "d to %" FMT_SIZE_T "d",
-                               name.c_str(), ElementName(elem), elem->GetLineNum(), len, minSize, maxSize));
+                               utf8Name.c_str(), ElementName(elem), elem->GetLineNum(), value.length(), minSize, maxSize));
             return false;
         }
     }
@@ -463,6 +507,21 @@ bool ts::XML::getChildren(ElementVector& children, const Element* elem, const st
 // Get text in a child of an element.
 //----------------------------------------------------------------------------
 
+bool ts::XML::getTextChild(UString& data,
+                           const Element* elem,
+                           const UString& name,
+                           bool trim,
+                           bool required,
+                           const UString& defValue,
+                           size_t minSize,
+                           size_t maxSize)
+{
+    std::string utf8;
+    const bool result = getTextChild(utf8, elem, name.toUTF8(), trim, required, defValue.toUTF8(), minSize, maxSize);
+    data = utf8;
+    return result;
+}
+
 bool ts::XML::getTextChild(std::string& data,
                            const Element* elem,
                            const std::string& name,
@@ -493,6 +552,14 @@ bool ts::XML::getTextChild(std::string& data,
 //----------------------------------------------------------------------------
 // Get a text child of an element.
 //----------------------------------------------------------------------------
+
+bool ts::XML::getText(UString& data, const Element* elem, bool trim, size_t minSize, size_t maxSize)
+{
+    std::string utf8;
+    const bool result = getText(utf8, elem, trim, minSize, maxSize);
+    data = utf8;
+    return result;
+}
 
 bool ts::XML::getText(std::string& data, const Element* elem, bool trim, size_t minSize, size_t maxSize)
 {
@@ -675,10 +742,26 @@ ts::XML::Element* ts::XML::addElement(Element* parent, const std::string& childN
 // Set an attribute to a node.
 //----------------------------------------------------------------------------
 
+void ts::XML::setAttribute(Element* element, const char* name, const char* value)
+{
+    if (element != 0 && name != 0 && name[0] != '\0' && value != 0) {
+        element->SetAttribute(name, value);
+    }
+}
+
 void ts::XML::setAttribute(Element* element, const std::string& name, const std::string& value)
 {
     if (element != 0 && !name.empty()) {
         element->SetAttribute(name.c_str(), value.c_str());
+    }
+}
+
+void ts::XML::setAttribute(Element* element, const UString& name, const UString& value)
+{
+    if (element != 0 && !name.empty()) {
+        const std::string utf8Name(name.toUTF8());
+        const std::string utf8Value(value.toUTF8());
+        element->SetAttribute(utf8Name.c_str(), utf8Value.c_str());
     }
 }
 
@@ -808,7 +891,17 @@ void ts::XML::setTimeAttribute(Element* element, const std::string& name, Second
 // Add a new text inside a node.
 //----------------------------------------------------------------------------
 
+ts::XML::Text* ts::XML::addText(Element* parent, const UString& text)
+{
+    return addText(parent, text.toUTF8());
+}
+
 ts::XML::Text* ts::XML::addText(Element* parent, const std::string& text)
+{
+    return addText(parent, text.c_str());
+}
+
+ts::XML::Text* ts::XML::addText(Element* parent, const char* text)
 {
     // Filter incorrect parameters.
     if (parent == 0) {
@@ -822,7 +915,7 @@ ts::XML::Text* ts::XML::addText(Element* parent, const std::string& text)
     }
 
     // Add the text node.
-    Text* child = doc->NewText(text.c_str());
+    Text* child = doc->NewText(text == 0 ? "" : text);
     if (child != 0) {
         parent->InsertEndChild(child);
     }

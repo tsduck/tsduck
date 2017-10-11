@@ -34,6 +34,7 @@
 
 #pragma once
 #include "tsPlatform.h"
+#include "tsUString.h"
 
 namespace ts {
 
@@ -94,19 +95,19 @@ namespace ts {
         //! Get maximum debug level.
         //! @return Current maximum debug level.
         //!
-        virtual int debugLevel() const {return _max_severity;}
+        virtual int debugLevel() const { return _max_severity; }
 
         //!
         //! Check if debugging is active.
         //! @return True if current reporting level is Debug or higher.
         //!
-        virtual bool debug() const {return _max_severity >= Severity::Debug;}
+        virtual bool debug() const { return _max_severity >= Severity::Debug; }
 
         //!
         //! Check if verbose reporting is active.
         //! @return True if current reporting level is Verbose or higher.
         //!
-        virtual bool verbose() const {return _max_severity >= Severity::Verbose;}
+        virtual bool verbose() const { return _max_severity >= Severity::Verbose; }
 
         //!
         //! Report a message with an explicit severity.
@@ -116,67 +117,95 @@ namespace ts {
         virtual void log(int severity, const std::string& msg);
 
         //!
+        //! Report a message with an explicit severity.
+        //! @param [in] severity Message severity.
+        //! @param [in] msg Message text.
+        //!
+        virtual void log(int severity, const UString& msg) { log(severity, msg.toUTF8()); }
+
+        //!
         //! Report a fatal error message.
         //! @param [in] msg Message text.
         //!
-        virtual void fatal(const std::string& msg)
-        {
-            log(Severity::Fatal, msg);
-        }
+        virtual void fatal(const std::string& msg) { log(Severity::Fatal, msg); }
+
+        //!
+        //! Report a fatal error message.
+        //! @param [in] msg Message text.
+        //!
+        virtual void fatal(const UString& msg) { log(Severity::Fatal, msg); }
 
         //!
         //! Report a severe error message.
         //! @param [in] msg Message text.
         //!
-        virtual void severe(const std::string& msg)
-        {
-            log(Severity::Severe, msg);
-        }
+        virtual void severe(const std::string& msg) { log(Severity::Severe, msg); }
+
+        //!
+        //! Report a severe error message.
+        //! @param [in] msg Message text.
+        //!
+        virtual void severe(const UString& msg) { log(Severity::Severe, msg); }
 
         //!
         //! Report an error message.
         //! @param [in] msg Message text.
         //!
-        virtual void error(const std::string& msg)
-        {
-            log(Severity::Error, msg);
-        }
+        virtual void error(const std::string& msg) { log(Severity::Error, msg); }
+
+        //!
+        //! Report an error message.
+        //! @param [in] msg Message text.
+        //!
+        virtual void error(const UString& msg) { log(Severity::Error, msg); }
 
         //!
         //! Report a warning message.
         //! @param [in] msg Message text.
         //!
-        virtual void warning(const std::string& msg)
-        {
-            log(Severity::Warning, msg);
-        }
+        virtual void warning(const std::string& msg) { log(Severity::Warning, msg); }
+
+        //!
+        //! Report a warning message.
+        //! @param [in] msg Message text.
+        //!
+        virtual void warning(const UString& msg) { log(Severity::Warning, msg); }
 
         //!
         //! Report an informational message.
         //! @param [in] msg Message text.
         //!
-        virtual void info(const std::string& msg)
-        {
-            log(Severity::Info, msg);
-        }
+        virtual void info(const std::string& msg) { log(Severity::Info, msg); }
+
+        //!
+        //! Report an informational message.
+        //! @param [in] msg Message text.
+        //!
+        virtual void info(const UString& msg) { log(Severity::Info, msg); }
 
         //!
         //! Report a verbose message.
         //! @param [in] msg Message text.
         //!
-        virtual void verbose(const std::string& msg)
-        {
-            log(Severity::Verbose, msg);
-        }
+        virtual void verbose(const std::string& msg) { log(Severity::Verbose, msg); }
+
+        //!
+        //! Report a verbose message.
+        //! @param [in] msg Message text.
+        //!
+        virtual void verbose(const UString& msg) { log(Severity::Verbose, msg); }
 
         //!
         //! Report a debug message.
         //! @param [in] msg Message text.
         //!
-        virtual void debug(const std::string& msg)
-        {
-            log(Severity::Debug, msg);
-        }
+        virtual void debug(const std::string& msg) { log(Severity::Debug, msg); }
+
+        //!
+        //! Report a debug message.
+        //! @param [in] msg Message text.
+        //!
+        virtual void debug(const UString& msg) { log(Severity::Debug, msg); }
 
         //!
         //! Report a message with an explicit severity and a printf-like interface.
@@ -207,7 +236,7 @@ namespace ts {
         //! Report a warning message with a printf-like interface.
         //! @param [in] format Printf-like format string. Followed by variable-length list of arguments.
         //!
-        virtual void warning (const char* format, ...) TS_PRINTF_FORMAT(2, 3);
+        virtual void warning(const char* format, ...) TS_PRINTF_FORMAT(2, 3);
 
         //!
         //! Report an informational message with a printf-like interface.

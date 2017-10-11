@@ -34,6 +34,7 @@
 #include "tsSatelliteDeliverySystemDescriptor.h"
 #include "tsBCD.h"
 #include "tsToInteger.h"
+#include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 #include "tsXMLTables.h"
 TSDUCK_SOURCE;

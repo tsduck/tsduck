@@ -169,7 +169,7 @@ void ts::UString::splitLines(CONTAINER& lines, size_t maxWidth, const UString& o
 //----------------------------------------------------------------------------
 
 template <class ITERATOR>
-ts::UString ts::UString::join(ITERATOR begin, ITERATOR end, const UString& separator)
+ts::UString ts::UString::Join(ITERATOR begin, ITERATOR end, const UString& separator)
 {
     UString res;
     while (begin != end) {

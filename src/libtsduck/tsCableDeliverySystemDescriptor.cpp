@@ -33,6 +33,7 @@
 
 #include "tsCableDeliverySystemDescriptor.h"
 #include "tsBCD.h"
+#include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 TSDUCK_SOURCE;
 TS_ID_DESCRIPTOR_DISPLAY(ts::CableDeliverySystemDescriptor::DisplayDescriptor, ts::EDID(ts::DID_CABLE_DELIVERY));

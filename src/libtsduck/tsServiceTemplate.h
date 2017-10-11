@@ -37,15 +37,15 @@
 //----------------------------------------------------------------------------
 
 template <class ITERATOR>
-std::ostream& ts::Service::Display (std::ostream& strm,
-                                      const std::string& margin,
-                                      const ITERATOR& begin,
-                                      const ITERATOR& end,
-                                      bool header)
+std::ostream& ts::Service::Display(std::ostream& strm,
+                                   const std::string& margin,
+                                   const ITERATOR& begin,
+                                   const ITERATOR& end,
+                                   bool header)
 {
     // Some header
-    const std::string h_name = "Name";
-    const std::string h_provider = "Provider";
+    const UString h_name("Name");
+    const UString h_provider("Provider");
 
     // List fields which are present
     uint32_t fields = 0;
@@ -56,11 +56,11 @@ std::ostream& ts::Service::Display (std::ostream& strm,
         count++;
         fields |= it->getFields();
         if (it->_name.set()) {
-            name_width = std::max (name_width, it->_name.value().length());
+            name_width = std::max(name_width, it->_name.value().length());
             fields |= NAME;
         }
         if (it->_provider.set()) {
-            provider_width = std::max (provider_width, it->_provider.value().length());
+            provider_width = std::max(provider_width, it->_provider.value().length());
             fields |= PROVIDER;
         }
     }
@@ -77,10 +77,10 @@ std::ostream& ts::Service::Display (std::ostream& strm,
             strm << "LCN ";
         }
         if (fields & NAME) {
-            strm << JustifyLeft (h_name, name_width + 1);
+            strm << h_name.toJustifiedLeft(name_width + 1);
         }
         if (fields & PROVIDER) {
-            strm << JustifyLeft (h_provider, provider_width + 1);
+            strm << h_provider.toJustifiedLeft(provider_width + 1);
         }
         if (fields & ID) {
             strm << "ServId ";
@@ -102,10 +102,10 @@ std::ostream& ts::Service::Display (std::ostream& strm,
             strm << "--- ";
         }
         if (fields & NAME) {
-            strm << JustifyLeft ("", name_width, '-') << " ";
+            strm << UString().toJustifiedLeft(name_width, '-') << " ";
         }
         if (fields & PROVIDER) {
-            strm << JustifyLeft ("", provider_width, '-') << " ";
+            strm << UString().toJustifiedLeft(provider_width, '-') << " ";
         }
         if (fields & ID) {
             strm << "------ ";
@@ -137,14 +137,14 @@ std::ostream& ts::Service::Display (std::ostream& strm,
             }
         }
         if (fields & NAME) {
-            strm << JustifyLeft (Printable (it->getName()), name_width + 1);
+            strm << it->getName().toJustifiedLeft(name_width + 1);
         }
         if (fields & PROVIDER) {
-            strm << JustifyLeft (Printable (it->getProvider()), provider_width + 1);
+            strm << it->getProvider().toJustifiedLeft(provider_width + 1);
         }
         if (fields & ID) {
             if (it->_id.set()) {
-                strm << Format ("0x%04X ", it->_id.value());
+                strm << Format("0x%04X ", it->_id.value());
             }
             else {
                 strm << "       ";
@@ -152,7 +152,7 @@ std::ostream& ts::Service::Display (std::ostream& strm,
         }
         if (fields & TSID) {
             if (it->_tsid.set()) {
-                strm << Format ("0x%04X ", it->_tsid.value());
+                strm << Format("0x%04X ", it->_tsid.value());
             }
             else {
                 strm << "       ";
@@ -160,7 +160,7 @@ std::ostream& ts::Service::Display (std::ostream& strm,
         }
         if (fields & ONID) {
             if (it->_onid.set()) {
-                strm << Format ("0x%04X ", it->_onid.value());
+                strm << Format("0x%04X ", it->_onid.value());
             }
             else {
                 strm << "       ";
@@ -168,7 +168,7 @@ std::ostream& ts::Service::Display (std::ostream& strm,
         }
         if (fields & TYPE) {
             if (it->_type.set()) {
-                strm << Format ("0x%02X ", it->_type.value());
+                strm << Format("0x%02X ", it->_type.value());
             }
             else {
                 strm << "     ";
@@ -176,7 +176,7 @@ std::ostream& ts::Service::Display (std::ostream& strm,
         }
         if (fields & PMT_PID) {
             if (it->_pmt_pid.set()) {
-                strm << Format ("0x%04X ", it->_pmt_pid.value());
+                strm << Format("0x%04X ", it->_pmt_pid.value());
             }
             else {
                 strm << "      ";

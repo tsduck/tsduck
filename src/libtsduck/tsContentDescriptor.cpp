@@ -34,6 +34,7 @@
 #include "tsContentDescriptor.h"
 #include "tsFormat.h"
 #include "tsNames.h"
+#include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 TSDUCK_SOURCE;
 TS_XML_DESCRIPTOR_FACTORY(ts::ContentDescriptor, "content_descriptor");

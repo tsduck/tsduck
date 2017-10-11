@@ -34,6 +34,7 @@
 
 #include "tsEacemStreamIdentifierDescriptor.h"
 #include "tsFormat.h"
+#include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 TSDUCK_SOURCE;
 TS_XML_DESCRIPTOR_FACTORY(ts::EacemStreamIdentifierDescriptor, "eacem_stream_identifier_descriptor");

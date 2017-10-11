@@ -35,6 +35,7 @@
 #pragma once
 #include "tsAbstractLongTable.h"
 #include "tsDescriptorList.h"
+#include "tsServiceDescriptor.h"
 #include "tsService.h"
 
 namespace ts {
@@ -103,7 +104,7 @@ namespace ts {
         //! and blanks are ignored.
         //! @return True if the service is found, false if not found.
         //!
-        bool findService(const std::string& name, uint16_t& service_id, bool exact_match = false) const;
+        bool findService(const UString& name, uint16_t& service_id, bool exact_match = false) const;
 
         //!
         //! Search a service by name, using a ts::Service class.
@@ -149,17 +150,19 @@ namespace ts {
 
             //!
             //! Get the service name.
+            //! @param [in] charset If not zero, character set to use without explicit table code.
             //! @return The service name, as found from the first DVB
             //! "service descriptor", if there is one in the list.
             //!
-            std::string serviceName() const;
+            UString serviceName(const DVBCharset* charset = 0) const;
 
             //!
             //! Get the provider name.
+            //! @param [in] charset If not zero, character set to use without explicit table code.
             //! @return The provider name, as found from the first DVB
             //! "service descriptor", if there is one in the list.
             //!
-            std::string providerName() const;
+            UString providerName(const DVBCharset* charset = 0) const;
 
             //!
             //! Set the service name.
@@ -173,8 +176,13 @@ namespace ts {
             //! a new one is added with the specified @a service type.
             //! The default service_type is 1, ie. "digital television service".
             //! Ignored if a service_descriptor already exists.
+            //! @param [in] charset If not zero, character set to use for decoding without explicit table code
+            //! and preferred character set for DVB encoding.
             //!
-            void setName(const std::string& name, uint8_t service_type = 1);
+            void setName(const UString& name, uint8_t service_type = 1, const DVBCharset* charset = 0)
+            {
+                setString(&ServiceDescriptor::service_name, name, service_type, charset);
+            }
 
             //!
             //! Set the provider name.
@@ -188,8 +196,13 @@ namespace ts {
             //! a new one is added with the specified @a service type.
             //! The default service_type is 1, ie. "digital television service".
             //! Ignored if a service_descriptor already exists.
+            //! @param [in] charset If not zero, character set to use for decoding without explicit table code
+            //! and preferred character set for DVB encoding.
             //!
-            void setProvider(const std::string& provider, uint8_t service_type = 1);
+            void setProvider(const UString& provider, uint8_t service_type = 1, const DVBCharset* charset = 0)
+            {
+                setString(&ServiceDescriptor::provider_name, provider, service_type, charset);
+            }
 
             //!
             //! Set the service type.
@@ -201,6 +214,24 @@ namespace ts {
             //! @param [in] service_type New service type.
             //!
             void setType(uint8_t service_type);
+
+            //!
+            //! Locate and deserialize the first DVB service_descriptor inside the entry.
+            //! @param [out] desc Returned content of the service descriptor.
+            //! @param [in] charset If not zero, character set to use without explicit table code.
+            //! @return True if found and valid, false otherwise.
+            //!
+            bool locateServiceDescriptor(ServiceDescriptor& desc, const DVBCharset* charset = 0) const;
+
+        private:
+            //!
+            //! Set a string value (typically provider or service name).
+            //! @param [in] field Pointer to UString member in service descriptor.
+            //! @param [in] value New string value.
+            //! @param [in] service_type If there is no service_descriptor, a new one is added with the specified @a service type.
+            //! @param [in] charset If not zero, defautl DVB character set to use.
+            //!
+            void setString(UString ServiceDescriptor::* field, const UString& value, uint8_t service_type, const DVBCharset* charset);
         };
 
         //!

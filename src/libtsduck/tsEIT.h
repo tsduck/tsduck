@@ -78,11 +78,11 @@ namespace ts {
         //! @param [in] ts_id Transport stream identifier.
         //! @param [in] onetw_id Original network id.
         //!
-        EIT(bool is_actual = true,
-            bool is_pf = true,
-            uint8_t eits_index = 0,
-            uint8_t version = 0,
-            bool is_current = true,
+        EIT(bool     is_actual = true,
+            bool     is_pf = true,
+            uint8_t  eits_index = 0,
+            uint8_t  version = 0,
+            bool     is_current = true,
             uint16_t service_id = 0,
             uint16_t ts_id = 0,
             uint16_t onetw_id = 0);

@@ -38,6 +38,9 @@
 #include <codecvt>
 TSDUCK_SOURCE;
 
+// The UTF-8 Byte Order Mark
+const char* const ts::UString::UTF8_BOM = "\0xEF\0xBB\0xBF";
+
 
 //----------------------------------------------------------------------------
 // Convert between UTF-and UTF-16.
@@ -123,21 +126,6 @@ std::string ts::UString::toUTF8() const
 }
 
 #endif
-
-
-//----------------------------------------------------------------------------
-// Comparison operator with UTF-8 strings.
-//----------------------------------------------------------------------------
-
-bool ts::UString::operator==(const std::string& other) const
-{
-    return operator==(UString(other));
-}
-
-bool ts::UString::operator==(const char* other) const
-{
-    return other != 0 && operator==(UString(other));
-}
 
 
 //----------------------------------------------------------------------------
@@ -366,7 +354,7 @@ ts::UString ts::UString::toSplitLines(size_type maxWidth, const ts::UString& oth
 {
     UStringList lines;
     splitLines(lines, maxWidth, otherSeparators, nextMargin, forceSplit);
-    return join(lines, lineSeparator);
+    return Join(lines, lineSeparator);
 }
 
 
@@ -468,7 +456,7 @@ ts::UString ts::UString::toJustified(const UString& right, size_type width, UCha
 // For performance reasons convertToHTML() is implemented in tsUChar.cpp.
 //----------------------------------------------------------------------------
 
-ts::UString ts::UString::ToHTML() const
+ts::UString ts::UString::toHTML() const
 {
     UString result(*this);
     result.convertToHTML();
@@ -623,9 +611,10 @@ size_t ts::UString::toDVB(uint8_t*& buffer, size_t& size, size_t start, size_t c
 
     // Look for a character set which can encode the string.
     if (charset == 0 || !charset->canEncode(*this, start, count)) {
-        for (size_t i = 0; charset != 0 && dvbEncoders[i] != 0; ++i) {
+        for (size_t i = 0; dvbEncoders[i] != 0; ++i) {
             if (dvbEncoders[i]->canEncode(*this, start, count)) {
                 charset = dvbEncoders[i];
+                break;
             }
         }
     }
@@ -649,8 +638,8 @@ ts::ByteBlock ts::UString::toDVB(size_t start, size_t count, const DVBCharset* c
         return ByteBlock();
     }
     else {
-        // The maximum number of DVB bytes per character is 3 (worst case in UTF-8).
-        ByteBlock bb(3 * std::min(length() - start, count));
+        // The maximum number of DVB bytes per character is 4 (worst case in UTF-8).
+        ByteBlock bb(UTF8_CHAR_MAX_SIZE * std::min(length() - start, count));
 
         // Convert the string.
         uint8_t* buffer = bb.data();
@@ -700,4 +689,34 @@ size_t ts::UString::toDVBWithByteLength(uint8_t*& buffer, size_t& size, size_t s
     size -= dvbSize + 1;
 
     return result;
+}
+
+
+//----------------------------------------------------------------------------
+// Encode this UTF-16 string into a DVB string (preceded by its one-byte length).
+//----------------------------------------------------------------------------
+
+ts::ByteBlock ts::UString::toDVBWithByteLength(size_t start, size_t count, const DVBCharset* charset) const
+{
+    if (start >= length()) {
+        // Empty string, return one byte containing 0 (the length).
+        return ByteBlock(1, 0);
+    }
+    else {
+        // The maximum number of DVB bytes is 255 so that the size fits in one byte.
+        ByteBlock bb(256);
+
+        // Convert the string.
+        uint8_t* buffer = bb.data() + 1;
+        size_t size = bb.size() - 1;
+        toDVB(buffer, size, start, count, charset);
+
+        // Truncate unused bytes.
+        assert(size < bb.size());
+        bb.resize(bb.size() - size);
+
+        // Update length byte.
+        bb[0] = uint8_t(bb.size() - 1);
+        return bb;
+    }
 }

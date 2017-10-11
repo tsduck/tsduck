@@ -127,8 +127,8 @@ bool ts::TSScanner::getServices(ServiceList& services) const
             const SDT::ServiceMap::const_iterator sit = _sdt->services.find(srv.getId());
             if (sit != _sdt->services.end()) {
                 const uint8_t type = sit->second.serviceType();
-                const std::string name = sit->second.serviceName();
-                const std::string provider = sit->second.providerName();
+                const UString name(sit->second.serviceName());
+                const UString provider(sit->second.providerName());
                 if (type != 0) {
                     srv.setType(type);
                 }

@@ -32,6 +32,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsByteBlock.h"
+#include "tsUString.h"
 TSDUCK_SOURCE;
 
 
@@ -104,9 +105,35 @@ void ts::ByteBlock::copy(const void* data_, size_type size_)
 
 void* ts::ByteBlock::enlarge(size_type n)
 {
-    size_type oldsize = this->size();
+    const size_type oldsize = this->size();
     resize(oldsize + n);
     return &(*this)[oldsize];
+}
+
+//----------------------------------------------------------------------------
+// Append a unicode string in UTF-8 representation to a byte block.
+//----------------------------------------------------------------------------
+
+void ts::ByteBlock::appendUTF8(const UString& s)
+{
+    append(s.toUTF8());
+}
+
+void ts::ByteBlock::appendUTF8WithByteLength(const UString& s)
+{
+    const size_type oldSize = this->size();
+    push_back(0);  // Placeholder for length
+    appendUTF8(s);
+    const size_type strSize = this->size() - oldSize - 1;
+    if (strSize < 256) {
+        // Update length byte.
+        (*this)[oldSize] = uint8_t(strSize);
+    }
+    else {
+        // String too long, truncate.
+        resize(this->size() - strSize + 255);
+        (*this)[oldSize] = 255;
+    }
 }
 
 //----------------------------------------------------------------------------

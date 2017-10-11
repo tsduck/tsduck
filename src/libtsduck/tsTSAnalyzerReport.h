@@ -126,6 +126,6 @@ namespace ts {
         void reportServicesForPID(std::ostream&, const PIDContext&) const;
 
         // Display one normalized line of a time value
-        static void reportNormalizedTime(std::ostream&, const Time&, const char* type, const std::string& country = "");
+        static void reportNormalizedTime(std::ostream&, const Time&, const char* type, const UString& country = "");
     };
 }

@@ -36,6 +36,7 @@
 #include "tsFormat.h"
 #include "tsHexa.h"
 #include "tsNames.h"
+#include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 TSDUCK_SOURCE;
 TS_XML_DESCRIPTOR_FACTORY(ts::ServiceDescriptor, "service_descriptor");
@@ -47,7 +48,7 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::ServiceDescriptor::DisplayDescriptor, ts::EDID(ts::
 // Default constructor:
 //----------------------------------------------------------------------------
 
-ts::ServiceDescriptor::ServiceDescriptor(uint8_t type, const std::string& provider, const std::string& name) :
+ts::ServiceDescriptor::ServiceDescriptor(uint8_t type, const UString& provider, const UString& name) :
     AbstractDescriptor(DID_SERVICE, "service_descriptor"),
     service_type(type),
     provider_name(provider),
@@ -77,24 +78,11 @@ ts::ServiceDescriptor::ServiceDescriptor(const Descriptor& desc, const DVBCharse
 
 void ts::ServiceDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
 {
-    if (provider_name.length() + service_name.length() > 252) {
-        desc.invalidate();
-        return;
-    }
-
-    ByteBlockPtr bbp(new ByteBlock(2));
-    CheckNonNull(bbp.pointer());
-
+    ByteBlockPtr bbp(serializeStart());
     bbp->appendUInt8(service_type);
-    bbp->appendUInt8(uint8_t(provider_name.length()));
-    bbp->append(provider_name);
-    bbp->appendUInt8(uint8_t(service_name.length()));
-    bbp->append(service_name);
-
-    (*bbp)[0] = _tag;
-    (*bbp)[1] = uint8_t(bbp->size() - 2);
-    Descriptor d(bbp, SHARE);
-    desc = d;
+    bbp->append(provider_name.toDVBWithByteLength(0, UString::NPOS, charset));
+    bbp->append(service_name.toDVBWithByteLength(0, UString::NPOS, charset));
+    serializeEnd(desc, bbp);
 }
 
 
@@ -110,24 +98,10 @@ void ts::ServiceDescriptor::deserialize(const Descriptor& desc, const DVBCharset
         const uint8_t* data = desc.payload();
         size_t size = desc.payloadSize();
         service_type = data[0];
-        size_t len = data[1];
-        _is_valid = 2 + len < size;
-        if (_is_valid) {
-            provider_name.assign(reinterpret_cast<const char*>(data + 2), len);
-            data += 2 + len;
-            size -= 2 + len;
-            len = data[0];
-            _is_valid = 1 + len <= size;
-            if (_is_valid) {
-                service_name.assign(reinterpret_cast<const char*>(data + 1), len);
-            }
-        }
-    }
-
-    if (!_is_valid) {
-        service_type = 0;
-        provider_name.clear();
-        service_name.clear();
+        data++; size--;
+        provider_name.assign(UString::FromDVBWithByteLength(data, size, charset));
+        service_name.assign(UString::FromDVBWithByteLength(data, size, charset));
+        _is_valid = size == 0;
     }
 }
 

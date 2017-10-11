@@ -34,6 +34,7 @@
 #include "tsServiceListDescriptor.h"
 #include "tsFormat.h"
 #include "tsNames.h"
+#include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 TSDUCK_SOURCE;
 TS_XML_DESCRIPTOR_FACTORY(ts::ServiceListDescriptor, "service_list_descriptor");

@@ -49,6 +49,12 @@
 #define CPPUNIT_ASSERT_STRINGS_EQUAL(expected,actual) CPPUNIT_ASSERT_EQUAL(std::string(expected),std::string(actual))
 
 //!
+//! @hideinitializer
+//! Assert that two objects which can be converted to a unicode string are identical.
+//!
+#define CPPUNIT_ASSERT_USTRINGS_EQUAL(expected,actual) CPPUNIT_ASSERT_EQUAL(ts::UString(expected),ts::UString(actual))
+
+//!
 //! Unitary tests namespace
 //!
 namespace utest {

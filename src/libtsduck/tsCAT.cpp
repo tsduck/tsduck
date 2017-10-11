@@ -32,6 +32,8 @@
 //----------------------------------------------------------------------------
 
 #include "tsCAT.h"
+#include "tsBinaryTable.h"
+#include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 TSDUCK_SOURCE;
 TS_ID_TABLE_FACTORY(ts::CAT, ts::TID_CAT);

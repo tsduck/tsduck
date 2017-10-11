@@ -53,11 +53,11 @@ namespace ts {
         typedef std::list<Entry> EntryList;
 
         // Public members
-        uint8_t     descriptor_number;      //!< See ETSI 300 468, 6.2.15.
-        uint8_t     last_descriptor_number; //!< See ETSI 300 468, 6.2.15.
-        std::string language_code;          //!< ISO-639 language code, 3 characters.
-        EntryList   entries;                //!< The list of item entries.
-        std::string text;                   //!< See ETSI 300 468, 6.2.15.
+        uint8_t   descriptor_number;      //!< See ETSI 300 468, 6.2.15.
+        uint8_t   last_descriptor_number; //!< See ETSI 300 468, 6.2.15.
+        UString   language_code;          //!< ISO-639 language code, 3 characters.
+        EntryList entries;                //!< The list of item entries.
+        UString   text;                   //!< See ETSI 300 468, 6.2.15.
 
         //!
         //! Default constructor.
@@ -77,8 +77,18 @@ namespace ts {
         //! Split the content into several ExtendedEventDescriptor if the content
         //! is too long and add them in a descriptor list.
         //! @param [in,out] dlist List of descriptors.
+        //! @param [in] charset If not zero, default character set to use.
         //!
-        void splitAndAdd(DescriptorList& dlist) const;
+        void splitAndAdd(DescriptorList& dlist, const DVBCharset* charset = 0) const;
+
+        //!
+        //! Normalize all ExtendedEventDescriptor in a descriptor list.
+        //! Update all descriptor_number and last_descriptor_number per language.
+        //! @param [in,out] desc_list_addr Address of a serialized descriptor list.
+        //! @param [in] desc_list_size Descriptor list size in bytes.
+        //! @param [in] charset If not zero, character set to use without explicit table code.
+        //!
+        static void NormalizeNumbering(uint8_t* desc_list_addr, size_t desc_list_size, const DVBCharset* charset = 0);
 
         // Inherited methods
         virtual void serialize(Descriptor&, const DVBCharset* = 0) const override;
@@ -87,34 +97,20 @@ namespace ts {
         virtual void fromXML(XML&, const XML::Element*) override;
 
         //!
-        //! Normalize all ExtendedEventDescriptor in a descriptor list.
-        //! Update all descriptor_number and last_descriptor_number per language.
-        //! @param [in,out] desc_list_addr Address of a serialized descriptor list.
-        //! @param [in] desc_list_size Descriptor list size in bytes.
-        //!
-        static void NormalizeNumbering(uint8_t* desc_list_addr, size_t desc_list_size);
-
-        //!
         //! An item entry.
         //!
         struct TSDUCKDLL Entry
         {
             // Public members
-            std::string item_description;  //!< Item description or name.
-            std::string item;              //!< Item text content.
+            UString item_description;  //!< Item description or name.
+            UString item;              //!< Item text content.
 
             //!
             //! Constructor.
             //! @param [in] desc_ Item description or name.
             //! @param [in] item_ Item text content.
             //!
-            Entry(const std::string& desc_ = "", const std::string& item_ = "") : item_description(desc_), item(item_) {}
-
-            //!
-            //! Copy constructor.
-            //! @param [in] other Other instance to copy.
-            //!
-            Entry(const Entry& other) : item_description(other.item_description), item(other.item) {}
+            Entry(const UString& desc_ = UString(), const UString& item_ = UString()) : item_description(desc_), item(item_) {}
         };
 
         //!

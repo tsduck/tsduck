@@ -66,7 +66,6 @@ namespace ts {
         bool          _use_variable;    // Environment variable format
         bool          _terminate;       // Terminate after one NIT
         bool          _dvb_options;     // Output format: dvb plugin options
-        bool          _no_nit;          // Error, no NIT found
         bool          _all_nits;        // Also include all "NIT other"
         PID           _nit_pid;         // PID for the NIT (default: read PAT)
         size_t        _nit_count;       // Number of analyzed NIT's
@@ -105,9 +104,8 @@ ts::NITScanPlugin::NITScanPlugin(TSP* tsp_) :
     _use_variable(false),
     _terminate(false),
     _dvb_options(false),
-    _no_nit(false),
     _all_nits(false),
-    _nit_pid(PID_NIT),
+    _nit_pid(PID_NULL),
     _nit_count(0),
     _demux(this)
 {
@@ -194,7 +192,6 @@ bool ts::NITScanPlugin::start()
     _demux.addPID(_nit_pid != PID_NULL ? _nit_pid : PID(PID_PAT));
 
     // Initialize other states
-    _no_nit = false;
     _nit_count = 0;
 
     // Create the output file.
@@ -281,18 +278,16 @@ void ts::NITScanPlugin::handleTable(SectionDemux& demux, const BinaryTable& tabl
 void ts::NITScanPlugin::processPAT(const PAT& pat)
 {
     if (pat.nit_pid != PID_NULL) {
-        // Extract NIT PID from PAT
         _nit_pid = pat.nit_pid;
-        // Filter sections on this PID
-        _demux.addPID(_nit_pid);
-    }
-    if (_nit_pid == PID_NULL) {
-        tsp->error("NIT PID not found in PAT");
-        _no_nit = true;
-    }
-    else {
         tsp->verbose("NIT PID is %d (0x%04X) in PAT", int (_nit_pid), int (_nit_pid));
     }
+    else {
+        _nit_pid = PID_NIT;
+        tsp->verbose("NIT PID not found in PAT, using default %d (0x%04X)", int (_nit_pid), int (_nit_pid));
+    }
+
+    // Filter sections on the PID for NIT.
+    _demux.addPID(_nit_pid);
 }
 
 
@@ -352,5 +347,5 @@ ts::ProcessorPlugin::Status ts::NITScanPlugin::processPacket(TSPacket& pkt, bool
     _demux.feedPacket(pkt);
 
     // Exit after NIT analysis if required
-    return _terminate && (_nit_count > 0 || _no_nit) ? TSP_END : TSP_OK;
+    return _terminate && _nit_count > 0 ? TSP_END : TSP_OK;
 }

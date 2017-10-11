@@ -34,6 +34,7 @@
 #include "tsPrivateDataSpecifierDescriptor.h"
 #include "tsFormat.h"
 #include "tsNames.h"
+#include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 TSDUCK_SOURCE;
 TS_XML_DESCRIPTOR_FACTORY(ts::PrivateDataSpecifierDescriptor, "private_data_specifier_descriptor");

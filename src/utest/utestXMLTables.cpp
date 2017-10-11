@@ -122,7 +122,7 @@ void XMLTablesTest::testTable(const char* name, const char* ref_xml, const uint8
     CPPUNIT_ASSERT_EQUAL(0, ::memcmp(ref_sections, sections.data(), ref_sections_size));
 
     // Convert binary tables to XML.
-    CPPUNIT_ASSERT_STRINGS_EQUAL(ref_xml, xml.toText(CERR));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(ref_xml, xml.toText(CERR));
 }
 
 
@@ -149,9 +149,9 @@ void XMLTablesTest::testGenericDescriptor()
     CPPUNIT_ASSERT(root != 0);
     CPPUNIT_ASSERT(ts::XMLTables::ToGenericDescriptor(xml, root, desc) != 0);
 
-    std::string text(xml.toString(doc));
+    ts::UString text(xml.toString(doc));
     utest::Out() << "XMLTablesTest::testGenericDescriptor: " << text << std::endl;
-    CPPUNIT_ASSERT_STRINGS_EQUAL(
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(
         "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
         "<test>\n"
         "  <generic_descriptor tag=\"0x72\">\n"
@@ -202,9 +202,9 @@ void XMLTablesTest::testGenericShortTable()
     CPPUNIT_ASSERT(root != 0);
     CPPUNIT_ASSERT(ts::XMLTables::ToGenericTable(xml, root, refTable) != 0);
 
-    std::string text(xml.toString(doc));
+    ts::UString text(xml.toString(doc));
     utest::Out() << "XMLTablesTest::testGenericShortTable: " << text << std::endl;
-    CPPUNIT_ASSERT_STRINGS_EQUAL(
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(
         "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
         "<test>\n"
         "  <generic_short_table table_id=\"0xAB\" private=\"false\">\n"
@@ -261,9 +261,9 @@ void XMLTablesTest::testGenericLongTable()
     CPPUNIT_ASSERT(root != 0);
     CPPUNIT_ASSERT(ts::XMLTables::ToGenericTable(xml, root, refTable) != 0);
 
-    std::string text(xml.toString(doc));
+    ts::UString text(xml.toString(doc));
     utest::Out() << "XMLTablesTest::testGenericLongTable: " << text << std::endl;
-    CPPUNIT_ASSERT_STRINGS_EQUAL(
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(
         "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
         "<test>\n"
         "  <generic_long_table table_id=\"0xCD\" table_id_ext=\"0x1234\" version=\"7\" current=\"true\" private=\"true\">\n"

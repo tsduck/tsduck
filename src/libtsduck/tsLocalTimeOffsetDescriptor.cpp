@@ -37,6 +37,7 @@
 #include "tsNames.h"
 #include "tsBCD.h"
 #include "tsMJD.h"
+#include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 TSDUCK_SOURCE;
 TS_XML_DESCRIPTOR_FACTORY(ts::LocalTimeOffsetDescriptor, "local_time_offset_descriptor");
