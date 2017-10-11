@@ -1090,7 +1090,7 @@ void ts::TSAnalyzer::analyzeCADescriptor(const Descriptor& desc, ServiceContext*
 
 void ts::TSAnalyzer::handleNewAudioAttributes(PESDemux&, const PESPacket& pkt, const AudioAttributes& attr)
 {
-    AppendUnique(getPID(pkt.getSourcePID())->attributes, UString(attr));
+    AppendUnique(getPID(pkt.getSourcePID())->attributes, attr.toUString());
 }
 
 
@@ -1101,7 +1101,7 @@ void ts::TSAnalyzer::handleNewAudioAttributes(PESDemux&, const PESPacket& pkt, c
 
 void ts::TSAnalyzer::handleNewAC3Attributes(PESDemux&, const PESPacket& pkt, const AC3Attributes& attr)
 {
-    AppendUnique(getPID(pkt.getSourcePID())->attributes, UString(attr));
+    AppendUnique(getPID(pkt.getSourcePID())->attributes, attr.toUString());
 }
 
 
@@ -1112,7 +1112,7 @@ void ts::TSAnalyzer::handleNewAC3Attributes(PESDemux&, const PESPacket& pkt, con
 
 void ts::TSAnalyzer::handleNewVideoAttributes(PESDemux&, const PESPacket& pkt, const VideoAttributes& attr)
 {
-    AppendUnique(getPID(pkt.getSourcePID())->attributes, UString(attr));
+    AppendUnique(getPID(pkt.getSourcePID())->attributes, attr.toUString());
 }
 
 
@@ -1123,7 +1123,7 @@ void ts::TSAnalyzer::handleNewVideoAttributes(PESDemux&, const PESPacket& pkt, c
 
 void ts::TSAnalyzer::handleNewAVCAttributes(PESDemux&, const PESPacket& pkt, const AVCAttributes& attr)
 {
-    AppendUnique(getPID(pkt.getSourcePID())->attributes, UString(attr));
+    AppendUnique(getPID(pkt.getSourcePID())->attributes, attr.toUString());
 }
 
 

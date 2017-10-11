@@ -57,8 +57,8 @@ namespace ts {
 
         // Implementation of abstract methods.
         // The "binary data" is a video unit, starting with a 00 00 01 xx start code.
-        virtual bool moreBinaryData(const void*, size_t);
-        virtual operator std::string() const;
+        virtual bool moreBinaryData(const void*, size_t) override;
+        virtual std::string toString() const override;
 
         //!
         //! Get video horizontal size in pixels.

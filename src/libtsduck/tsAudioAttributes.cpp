@@ -233,7 +233,7 @@ bool ts::AudioAttributes::moreBinaryData (const void* data, size_t size)
 // Convert to a string object
 //----------------------------------------------------------------------------
 
-ts::AudioAttributes::operator std::string () const
+std::string ts::AudioAttributes::toString() const
 {
     if (!_is_valid) {
         return "";

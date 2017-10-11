@@ -67,7 +67,7 @@ ts::VideoAttributes::VideoAttributes() :
 // Convert to a string object
 //----------------------------------------------------------------------------
 
-ts::VideoAttributes::operator std::string () const
+std::string ts::VideoAttributes::toString() const
 {
     if (!_is_valid) {
         return "";

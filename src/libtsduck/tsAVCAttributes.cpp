@@ -54,7 +54,7 @@ ts::AVCAttributes::AVCAttributes() :
 // Convert to a string object
 //----------------------------------------------------------------------------
 
-ts::AVCAttributes::operator std::string() const
+std::string ts::AVCAttributes::toString() const
 {
     if (!_is_valid) {
         return "";

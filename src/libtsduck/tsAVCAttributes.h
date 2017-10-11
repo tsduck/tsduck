@@ -61,7 +61,7 @@ namespace ts {
         // Implementation of abstract methods.
         // The "binary data" is an AVC access unit.
         virtual bool moreBinaryData(const void*, size_t) override;
-        virtual operator std::string() const override;
+        virtual std::string toString() const override;
 
         //!
         //! Get video horizontal size in pixels.
