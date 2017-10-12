@@ -103,11 +103,20 @@ namespace ts {
         //! Protected constructor for subclasses.
         //! @param [in] xml_name Table or descriptor name, as used in XML structures.
         //!
-        AbstractSignalization(const char* xml_name) :
-            _xml_name(xml_name),
-            _is_valid(false)
-        {
-        }
+        AbstractSignalization(const char* xml_name);
+
+        //!
+        //! Copy constructor.
+        //! @param [in] other The other instance to copy.
+        //!
+        AbstractSignalization(const AbstractSignalization& other);
+
+        //!
+        //! Assignment operator.
+        //! @param [in] other The other instance to copy.
+        //! @return A reference to this object.
+        //!
+        AbstractSignalization& operator=(const AbstractSignalization& other);
 
         //!
         //! Check that an XML element has the right name for this table.

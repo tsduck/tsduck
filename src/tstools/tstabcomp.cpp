@@ -58,6 +58,11 @@ struct Options: public ts::Args
     bool                  decompile;       // Explicit decompilation.
     bool                  xmlModel;        // Display XML model instead of compilation.
     const ts::DVBCharset* defaultCharset;  // Default DVB character set to interpret strings.
+
+private:
+    // Inaccessible operations.
+    Options(const Options&) = delete;
+    Options& operator=(const Options&) = delete;
 };
 
 Options::Options(int argc, char *argv[]) :

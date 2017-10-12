@@ -31,6 +31,34 @@
 
 
 //----------------------------------------------------------------------------
+// Constructors.
+//----------------------------------------------------------------------------
+
+ts::AbstractSignalization::AbstractSignalization(const char* xml_name) :
+    _xml_name(xml_name),
+    _is_valid(false)
+{
+}
+
+ts::AbstractSignalization::AbstractSignalization(const AbstractSignalization& other) :
+    _xml_name(other._xml_name),  // Normally a pointer to constant static string.
+    _is_valid(other._is_valid)
+{
+}
+
+
+ts::AbstractSignalization& ts::AbstractSignalization::operator=(const AbstractSignalization& other)
+{
+    if (this != &other) {
+        assert((_xml_name == 0 && other._xml_name == 0) ||
+               (_xml_name != 0 && other._xml_name != 0 && ::strcmp(_xml_name, other._xml_name) == 0));
+        _is_valid = other._is_valid;
+    }
+    return *this;
+}
+
+
+//----------------------------------------------------------------------------
 // Get the XMl node name representing this table.
 //----------------------------------------------------------------------------
 

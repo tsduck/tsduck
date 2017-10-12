@@ -37,7 +37,7 @@ TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------
-// Default constructor.
+// Constructors.
 //----------------------------------------------------------------------------
 
 ts::TablesDisplayArgs::TablesDisplayArgs() :
@@ -48,6 +48,29 @@ ts::TablesDisplayArgs::TablesDisplayArgs() :
     default_pds(0),
     default_charset(0)
 {
+}
+
+ts::TablesDisplayArgs::TablesDisplayArgs(const TablesDisplayArgs& other) :
+    raw_dump(other.raw_dump),
+    raw_flags(other.raw_flags),
+    tlv_syntax(other.tlv_syntax),
+    min_nested_tlv(other.min_nested_tlv),
+    default_pds(other.default_pds),
+    default_charset(other.default_charset)  // point to same DVBCharset object
+{
+}
+
+ts::TablesDisplayArgs& ts::TablesDisplayArgs::operator=(const TablesDisplayArgs& other)
+{
+    if (this != &other) {
+        raw_dump = other.raw_dump;
+        raw_flags = other.raw_flags;
+        tlv_syntax = other.tlv_syntax;
+        min_nested_tlv = other.min_nested_tlv;
+        default_pds = other.default_pds;
+        default_charset = other.default_charset;
+    }
+    return *this;
 }
 
 
