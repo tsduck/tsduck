@@ -201,36 +201,45 @@ namespace ts {
         //! @param [in] utf8 A string in UTF-8 representation.
         //!
         UString(const std::string& utf8) :
-            UString(FromUTF8(utf8)) {}
+            UString(utf8.data(), utf8.size())
+        {
+        }
 
         //!
         //! Constructor from an UTF-8 string.
         //! @param [in] utf8 Address of a nul-terminated string in UTF-8 representation.
         //!
         UString(const char* utf8) :
-            UString(FromUTF8(utf8)) {}
+            UString(utf8, utf8 == 0 ? 0 : ::strlen(utf8))
+        {
+        }
 
         //!
         //! Constructor from an UTF-8 string.
         //! @param [in] utf8 Address of a string in UTF-8 representation.
         //! @param [in] count Size in bytes of the UTF-8 string (not necessarily a number of characters).
         //!
-        UString(const char* utf8, size_type count) :
-            UString(FromUTF8(utf8, count)) {}
+        UString(const char* utf8, size_type count);
 
         //!
         //! Convert an UTF-8 string into UTF-16.
         //! @param [in] utf8 A string in UTF-8 representation.
         //! @return The equivalent UTF-16 string.
         //!
-        static UString FromUTF8(const std::string& utf8);
+        static UString FromUTF8(const std::string& utf8)
+        {
+            return UString(utf8);
+        }
 
         //!
         //! Convert an UTF-8 string into UTF-16.
         //! @param [in] utf8 Address of a nul-terminated string in UTF-8 representation.
         //! @return The equivalent UTF-16 string. Empty string if @a utf8 is a null pointer.
         //!
-        static UString FromUTF8(const char* utf8);
+        static UString FromUTF8(const char* utf8)
+        {
+            return UString(utf8);
+        }
 
         //!
         //! Convert an UTF-8 string into UTF-16.
@@ -238,13 +247,42 @@ namespace ts {
         //! @param [in] count Size in bytes of the UTF-8 string (not necessarily a number of characters).
         //! @return The equivalent UTF-16 string. Empty string if @a utf8 is a null pointer.
         //!
-        static UString FromUTF8(const char* utf8, size_type count);
+        static UString FromUTF8(const char* utf8, size_type count)
+        {
+            return UString(utf8, count);
+        }
 
         //!
         //! Convert this UTF-16 string into UTF-8.
         //! @return The equivalent UTF-8 string.
         //!
         std::string toUTF8() const;
+
+        //!
+        //! General routine to convert from UTF-16 to UTF-8.
+        //! Stop when the input buffer is empty or the output buffer is full, whichever comes first.
+        //! Invalid input values are silently ignored and skipped.
+        //! @param [in,out] inStart Address of the input UTF-16 buffer to convert.
+        //! Updated upon return to point after the last converted character.
+        //! @param [in] inEnd Address after the end of the input UTF-16 buffer.
+        //! @param [in,out] outStart Address of the output UTF-8 buffer to fill.
+        //! Updated upon return to point after the last converted character.
+        //! @param [in] outEnd Address after the end of the output UTF-8 buffer to fill.
+        //!
+        static void ConvertUTF16ToUTF8(const UChar*& inStart, const UChar* inEnd, char*& outStart, char* outEnd);
+
+        //!
+        //! General routine to convert from UTF-8 to UTF-16.
+        //! Stop when the input buffer is empty or the output buffer is full, whichever comes first.
+        //! Invalid input values are silently ignored and skipped.
+        //! @param [in,out] inStart Address of the input UTF-8 buffer to convert.
+        //! Updated upon return to point after the last converted character.
+        //! @param [in] inEnd Address after the end of the input UTF-8 buffer.
+        //! @param [in,out] outStart Address of the output UTF-16 buffer to fill.
+        //! Updated upon return to point after the last converted character.
+        //! @param [in] outEnd Address after the end of the output UTF-16 buffer to fill.
+        //!
+        static void ConvertUTF8ToUTF16(const char*& inStart, const char* inEnd, UChar*& outStart, UChar* outEnd);
 
         //!
         //! Convert a DVB string into UTF-16.

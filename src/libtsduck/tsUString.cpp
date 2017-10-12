@@ -35,7 +35,6 @@
 #include "tsByteBlock.h"
 #include "tsDVBCharsetSingleByte.h"
 #include "tsDVBCharsetUTF8.h"
-#include <codecvt>
 TSDUCK_SOURCE;
 
 // The UTF-8 Byte Order Mark
@@ -43,89 +42,194 @@ const char* const ts::UString::UTF8_BOM = "\0xEF\0xBB\0xBF";
 
 
 //----------------------------------------------------------------------------
-// Convert between UTF-and UTF-16.
+// General routine to convert from UTF-16 to UTF-8.
 //----------------------------------------------------------------------------
 
-// Warning: There is a bug in MSVC 2015 and 2017 (don't know about future releases).
-// Need an ugly workaround.
-
-#if defined(_MSC_VER) && _MSC_VER >= 1900
-
-ts::UString ts::UString::FromUTF8(const std::string& utf8)
+void ts::UString::ConvertUTF16ToUTF8(const UChar*& inStart, const UChar* inEnd, char*& outStart, char* outEnd)
 {
-    std::wstring_convert<std::codecvt_utf8_utf16<int16_t>, int16_t> convert;
-    const std::basic_string<int16_t> result(convert.from_bytes(utf8));
-    return UString(reinterpret_cast<const char16_t*>(result.data()), result.size());
+    uint32_t code;
+    uint32_t high6;
+
+    while (inStart < inEnd && outStart < outEnd) {
+
+        // Get current code point at 16-bit value.
+        code = *inStart++;
+
+        // Get the higher 6 bits of the 16-bit value.
+        high6 = code & 0xFC00;
+        
+        // The possible ranges are:
+        // - 0x0000-0x0xD7FF : direct 16-bit code point.
+        // - 0xD800-0x0xDBFF : leading surrogate, first part of a surrogate pair.
+        // - 0xDC00-0x0xDFFF : trailing surrogate, second part of a surrogate pair, invalid and ignored if encountered as first value.
+        // - 0xE000-0x0xFFFF : direct 16-bit code point.
+
+        if (high6 == 0xD800) {
+            // This is a "leading surrogate", must be followed by a "trailing surrogate".
+            if (inStart >= inEnd) {
+                // Invalid truncated input string, stop here.
+                break;
+            }
+            // A surrogate pair always gives a code point value over 0x10000.
+            // This will be encoded in UTF-8 using 4 bytes, check that we have room for it.
+            if (outStart + 4 > outEnd) {
+                inStart--;  // Push back the leading surrogate into the input buffer.
+                break;
+            }
+            // Get the "trailing surrogate".
+            const uint32_t surr = *inStart++;
+            // Ignore the code point if the leading surrogate is not in the valid range.
+            if ((surr & 0xFC00) == 0xDC00) {
+                // Rebuild the 32-bit value of the code point.
+                code = 0x010000 + (((code - 0xD800) << 10) | (surr - 0xDC00));
+                // Encode it as 4 bytes in UTF-8.
+                outStart[3] = char(0x80 | (code & 0x3F));
+                code >>= 6;
+                outStart[2] = char(0x80 | (code & 0x3F));
+                code >>= 6;
+                outStart[1] = char(0x80 | (code & 0x3F));
+                code >>= 6;
+                outStart[0] = char(0xF0 | (code & 0x07));
+                outStart += 4;
+            }
+        }
+
+        else if (high6 != 0xDC00) {
+            // The 16-bit value is the code point.
+            if (code < 0x0080) {
+                // ASCII compatible value, one byte encoding.
+                *outStart++ = char(code);
+            }
+            else if (code < 0x800 && outStart + 1 < outEnd) {
+                // 2 bytes encoding.
+                outStart[1] = char(0x80 | (code & 0x3F));
+                code >>= 6;
+                outStart[0] = char(0xC0 | (code & 0x1F));
+                outStart += 2;
+            }
+            else if (code >= 0x800 && outStart + 2 < outEnd) {
+                // 3 bytes encoding.
+                outStart[2] = char(0x80 | (code & 0x3F));
+                code >>= 6;
+                outStart[1] = char(0x80 | (code & 0x3F));
+                code >>= 6;
+                outStart[0] = char(0xE0 | (code & 0x0F));
+                outStart += 3;
+            }
+            else {
+                // There not enough space in the output buffer.
+                inStart--;  // Push back the leading surrogate into the input buffer.
+                break;
+            }
+        }
+    }
 }
 
-ts::UString ts::UString::FromUTF8(const char* utf8)
+
+//----------------------------------------------------------------------------
+// General routine to convert from UTF-8 to UTF-16.
+//----------------------------------------------------------------------------
+
+void ts::UString::ConvertUTF8ToUTF16(const char*& inStart, const char* inEnd, UChar*& outStart, UChar* outEnd)
 {
-    if (utf8 == 0) {
-        return UString();
-    }
-    else {
-        std::wstring_convert<std::codecvt_utf8_utf16<int16_t>, int16_t> convert;
-        const std::basic_string<int16_t> result(convert.from_bytes(utf8));
-        return UString(reinterpret_cast<const char16_t*>(result.data()), result.size());
+    uint32_t code;
+
+    while (inStart < inEnd && outStart < outEnd) {
+
+        // Get current code point at 8-bit value.
+        code = *inStart++ & 0xFF;
+
+        // Process potential continuation bytes and rebuild the code point.
+        // Note: to speed up the processing, we do not check that continuation bytes, if nay, match the binary pattern 10xxxxxx.
+
+        if (code < 0x80) {
+            // ASCII compatible value, one byte encoding.
+            *outStart++ = uint16_t(code);
+        }
+        else if ((code & 0xE0) == 0xC0) {
+            // 2 byte encoding.
+            if (inStart >= inEnd) {
+                // Invalid truncated input string, stop here.
+                break;
+            }
+            else {
+                *outStart++ = uint16_t((code & 0x1F) << 6) | (*inStart++ & 0x3F);
+            }
+        }
+        else if ((code & 0xF0) == 0xE0) {
+            // 3 byte encoding.
+            if (inStart + 1 >= inEnd) {
+                // Invalid truncated input string, stop here.
+                break;
+            }
+            else {
+                *outStart++ = uint16_t((code & 0x0F) << 12) | ((uint16_t(inStart[0] & 0x3F)) << 6) | (inStart[1] & 0x3F);
+                inStart += 2;
+            }
+        }
+        else if ((code & 0xF8) == 0xF0) {
+            // 4 byte encoding.
+            if (inStart + 2 >= inEnd) {
+                // Invalid truncated input string, stop here.
+                break;
+            }
+            else if (outStart + 1 >= outEnd) {
+                // We need 2 16-bit values in UTF-16.
+                inStart--;  // Push back the leading byte into the input buffer.
+                break;
+            }
+            else {
+                code = ((code & 0x07) << 18) | ((uint32_t(inStart[0] & 0x3F)) << 12) | ((uint32_t(inStart[1] & 0x3F)) << 6) | (inStart[2] & 0x3F);
+                inStart += 3;
+                code -= 0x10000;
+                *outStart++ = uint16_t(0xD800 + (code >> 10));
+                *outStart++ = uint16_t(0xDC00 + (code & 0x03FF));
+            }
+        }
+        else {
+            // This is a continuation byte, invalid here, simply ignore it.
+            assert((code & 0xC0) == 0x80);
+        }
     }
 }
 
-ts::UString ts::UString::FromUTF8(const char* utf8, size_type count)
+
+//----------------------------------------------------------------------------
+// Constructors from an UTF-8 string.
+// Note: The number of UTF-16 codes is always less than the number of
+// UTF-8 bytes.
+//----------------------------------------------------------------------------
+
+ts::UString::UString(const char* utf8, size_type count) :
+    UString((utf8 == 0 ? 0 : count), CHAR_NULL)
 {
-    if (utf8 == 0) {
-        return UString();
-    }
-    else {
-        std::wstring_convert<std::codecvt_utf8_utf16<int16_t>, int16_t> convert;
-        const std::basic_string<int16_t> result(convert.from_bytes(utf8, utf8 + count));
-        return UString(reinterpret_cast<const char16_t*>(result.data()), result.size());
+    if (utf8 != 0) {
+        const char* inStart = utf8;
+        UChar* outStart = const_cast<UChar*>(data());
+        ConvertUTF8ToUTF16(inStart, inStart + count, outStart, outStart + size());
+        assert(inStart >= utf8);
+        assert(inStart == utf8 + count);
+        assert(outStart >= data());
+        assert(outStart <= data() + size());
+        resize(outStart - data());
     }
 }
+
+
+//----------------------------------------------------------------------------
+// Convert this UTF-16 string into UTF-8.
+//----------------------------------------------------------------------------
 
 std::string ts::UString::toUTF8() const
 {
-    std::wstring_convert<std::codecvt_utf8_utf16<int16_t>, int16_t> convert;
-    const int16_t* p = reinterpret_cast<const int16_t*>(data());
-    return convert.to_bytes(p, p + size());
+    // The maximum number of UTF-8 bytes is 1.5 times the number of UTF-16 codes.
+    std::string utf8(2 * size(), '\0');
+    const UChar* inStart = data();
+    char* outStart = const_cast<char*>(utf8.data());
+    ConvertUTF16ToUTF8(inStart, inStart + size(), outStart, outStart + utf8.size());
+    utf8.resize(outStart - utf8.data());
+    return utf8;
 }
-
-#else
-
-ts::UString ts::UString::FromUTF8(const std::string& utf8)
-{
-    std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> convert;
-    return convert.from_bytes(utf8);
-}
-
-ts::UString ts::UString::FromUTF8(const char* utf8)
-{
-    if (utf8 == 0) {
-        return UString();
-    }
-    else {
-        std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> convert;
-        return convert.from_bytes(utf8);
-    }
-}
-
-ts::UString ts::UString::FromUTF8(const char* utf8, size_type count)
-{
-    if (utf8 == 0) {
-        return UString();
-    }
-    else {
-        std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> convert;
-        return convert.from_bytes(utf8, utf8 + count);
-    }
-}
-
-std::string ts::UString::toUTF8() const
-{
-    std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> convert;
-    return convert.to_bytes(*this);
-}
-
-#endif
 
 
 //----------------------------------------------------------------------------
