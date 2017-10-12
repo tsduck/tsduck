@@ -59,6 +59,19 @@ namespace ts {
         TablesDisplayArgs();
 
         //!
+        //! Copy constructor.
+        //! @param [in] other The other instance to copy.
+        //!
+        TablesDisplayArgs(const TablesDisplayArgs& other);
+
+        //!
+        //! Assignment operator.
+        //! @param [in] other The other instance to copy.
+        //! @return A reference to this object.
+        //!
+        TablesDisplayArgs& operator=(const TablesDisplayArgs& other);
+
+        //!
         //! Virtual destructor.
         //!
         virtual ~TablesDisplayArgs() {}

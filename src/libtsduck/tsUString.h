@@ -829,7 +829,6 @@ namespace ts {
         iterator insert(const_iterator pos, UChar ch) { return SuperClass::insert(pos, ch); }
         iterator insert(const_iterator pos, size_type count, UChar ch) { return SuperClass::insert(pos, count, ch); }
         template<class It> iterator insert(const_iterator pos, It first, It last) { return SuperClass::insert<It>(pos, first, last); }
-        iterator insert(const_iterator pos, std::initializer_list<UChar> ilist) { return SuperClass::insert(pos, ilist); }
 
         UString& replace(size_type pos, size_type count, const SuperClass& str) { SuperClass::replace(pos, count, str); return *this; }
         UString& replace(const_iterator first, const_iterator last, const SuperClass& str) { SuperClass::replace(first, last, str); return *this; }
