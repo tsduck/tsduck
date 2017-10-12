@@ -52,7 +52,7 @@ void ts::UString::ConvertUTF16ToUTF8(const UChar*& inStart, const UChar* inEnd, 
 
     while (inStart < inEnd && outStart < outEnd) {
 
-        // Get current code point at 16-bit value.
+        // Get current code point as 16-bit value.
         code = *inStart++;
 
         // Get the higher 6 bits of the 16-bit value.
@@ -61,7 +61,8 @@ void ts::UString::ConvertUTF16ToUTF8(const UChar*& inStart, const UChar* inEnd, 
         // The possible ranges are:
         // - 0x0000-0x0xD7FF : direct 16-bit code point.
         // - 0xD800-0x0xDBFF : leading surrogate, first part of a surrogate pair.
-        // - 0xDC00-0x0xDFFF : trailing surrogate, second part of a surrogate pair, invalid and ignored if encountered as first value.
+        // - 0xDC00-0x0xDFFF : trailing surrogate, second part of a surrogate pair,
+        //                     invalid and ignored if encountered as first value.
         // - 0xE000-0x0xFFFF : direct 16-bit code point.
 
         if (high6 == 0xD800) {
@@ -140,7 +141,8 @@ void ts::UString::ConvertUTF8ToUTF16(const char*& inStart, const char* inEnd, UC
         code = *inStart++ & 0xFF;
 
         // Process potential continuation bytes and rebuild the code point.
-        // Note: to speed up the processing, we do not check that continuation bytes, if nay, match the binary pattern 10xxxxxx.
+        // Note: to speed up the processing, we do not check that continuation bytes,
+        // if any, match the binary pattern 10xxxxxx.
 
         if (code < 0x80) {
             // ASCII compatible value, one byte encoding.
@@ -306,8 +308,8 @@ void ts::UString::remove(const UString& substr)
 {
     const size_type len = substr.size();
     if (len > 0) {
-        size_type index;
-        while (!empty() && (index = find(substr)) != npos) {
+        size_type index = 0;
+        while (!empty() && (index = find(substr, index)) != NPOS) {
             erase(index, len);
         }
     }
@@ -315,7 +317,14 @@ void ts::UString::remove(const UString& substr)
 
 void ts::UString::remove(UChar c)
 {
+#if defined(__cxx11)
     erase(std::remove(begin(), end(), c), end());
+#else
+    size_type index = 0;
+    while (!empty() && (index = find(c, index)) != NPOS) {
+        erase(index, 1);
+    }
+#endif
 }
 
 ts::UString ts::UString::toRemoved(const UString& substr) const

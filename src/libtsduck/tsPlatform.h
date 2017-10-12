@@ -122,6 +122,31 @@
     #define TS_GCC_VERSION ((10000 * __GNUC__) + (100 * __GNUC_MINOR__) + (__GNUC_PATCHLEVEL__ % 100))
 #endif
 
+#if defined(DOXYGEN)
+    //!
+    //! Defined when the compiler is compliant with C++11.
+    //!
+    #define __cxx11
+    //!
+    //! Defined when the compiler is compliant with C++14.
+    //!
+    #define __cxx14
+    //!
+    //! Defined when the compiler is compliant with C++17.
+    //!
+    #define __cxx17
+#else
+    #if defined(__cpluplus) && __cpluplus >= 201103L && !defined(__cxx11)
+        #define __cxx11 1
+    #endif
+    #if defined(__cpluplus) && __cpluplus >= 201402L && !defined(__cxx14)
+        #define __cxx14 1
+    #endif
+    #if defined(__cpluplus) && __cpluplus >= 201703L && !defined(__cxx17)
+        #define __cxx17 1
+    #endif
+#endif
+
 
 //----------------------------------------------------------------------------
 // Unified O/S naming: __linux, __windows, etc
