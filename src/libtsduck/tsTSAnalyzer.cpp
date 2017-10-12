@@ -77,7 +77,7 @@ ts::TSAnalyzer::TSAnalyzer(BitRate bitrate_hint) :
     _last_tdt(Time::Epoch),
     _first_tot(Time::Epoch),
     _last_tot(Time::Epoch),
-    _country_code(""),
+    _country_code(),
     _scrambled_services_cnt(0),
     _tid_present(),
     _pids(),
@@ -150,7 +150,7 @@ void ts::TSAnalyzer::reset()
     _last_tdt = Time::Epoch;
     _first_tot = Time::Epoch;
     _last_tot = Time::Epoch;
-    _country_code = "";
+    _country_code.clear();
     _scrambled_services_cnt = 0;
     _tid_present.reset();
     _pids.clear();
@@ -208,7 +208,7 @@ ts::TSAnalyzer::PIDContext::PIDContext(PID pid_, const UString& description_) :
     pcr_cnt(0),
     ts_pcr_bitrate(0),
     bitrate(0),
-    language(""),
+    language(),
     cas_id(0),
     cas_operators(),
     sections(),
@@ -230,84 +230,84 @@ ts::TSAnalyzer::PIDContext::PIDContext(PID pid_, const UString& description_) :
 
     switch (pid) {
         case PID_NULL:
-            description = "Stuffing";
+            description = u"Stuffing";
             referenced = true;
             optional = true;
             break;
         case PID_PAT:
-            description = "PAT";
+            description = u"PAT";
             referenced = true;
             carry_section = true;
             break;
         case PID_CAT:
-            description = "CAT";
+            description = u"CAT";
             referenced = true;
             optional = true;
             carry_section = true;
             break;
         case PID_TSDT:
-            description = "TSDT";
+            description = u"TSDT";
             referenced = true;
             optional = true;
             carry_section = true;
             break;
         case PID_NIT:
-            description = "DVB-NIT";
+            description = u"DVB-NIT";
             referenced = true;
             optional = true;
             carry_section = true;
             break;
         case PID_SDT:
-            description = "SDT/BAT";
+            description = u"SDT/BAT";
             referenced = true;
             optional = true;
             carry_section = true;
             break;
         case PID_EIT:
-            description = "EIT";
+            description = u"EIT";
             referenced = true;
             optional = true;
             carry_section = true;
             break;
         case PID_RST:
-            description = "RST";
+            description = u"RST";
             referenced = true;
             optional = true;
             carry_section = true;
             break;
         case PID_TDT:
-            description = "TDT/TOT";
+            description = u"TDT/TOT";
             referenced = true;
             optional = true;
             carry_section = true;
             break;
         case PID_NETSYNC:
-            description = "Network Synchronization";
+            description = u"Network Synchronization";
             referenced = true;
             optional = true;
             break;
         case PID_RNT:
-            description = "RNT (TV-Anytime)";
+            description = u"RNT (TV-Anytime)";
             referenced = true;
             optional = true;
             break;
         case PID_INBSIGN:
-            description = "Inband Signalling";
+            description = u"Inband Signalling";
             referenced = true;
             optional = true;
             break;
         case PID_MEASURE:
-            description = "Measurement";
+            description = u"Measurement";
             referenced = true;
             optional = true;
             break;
         case PID_DIT:
-            description = "DIT";
+            description = u"DIT";
             referenced = true;
             optional = true;
             break;
         case PID_SIT:
-            description = "SIT";
+            description = u"SIT";
             referenced = true;
             optional = true;
             break;
@@ -391,7 +391,7 @@ ts::TSAnalyzer::ServiceContext::~ServiceContext()
 
 ts::UString ts::TSAnalyzer::ServiceContext::getProvider() const
 {
-    return provider.empty() ? "(unknown)" : provider;
+    return provider.empty() ? u"(unknown)" : provider;
 }
 
 ts::UString ts::TSAnalyzer::ServiceContext::getName() const
@@ -400,10 +400,10 @@ ts::UString ts::TSAnalyzer::ServiceContext::getName() const
         return name;
     }
     else if (carry_ssu) {
-        return "(System Software Update)";
+        return u"(System Software Update)";
     }
     else {
-        return "(unknown)";
+        return u"(unknown)";
     }
 }
 
@@ -617,7 +617,7 @@ void ts::TSAnalyzer::analyzePAT(const PAT& pat)
         PID pmt_pid(it->second);
         // Register the PMT PID
         PIDContextPtr ps(getPID(pmt_pid));
-        ps->description = "PMT";
+        ps->description = u"PMT";
         ps->addService(service_id);
         ps->is_pmt_pid = true;
         ps->carry_section = true;
@@ -659,7 +659,7 @@ void ts::TSAnalyzer::analyzePMT(PID pid, const PMT& pmt)
         // PAT/PMT inconsistency: Found a PMT on a PID which was not
         // referenced as a PMT PID in the PAT.
         ps->addService(pmt.service_id);
-        ps->description = "PMT";
+        ps->description = u"PMT";
     }
 
     // Locate PCR PID
@@ -668,7 +668,7 @@ void ts::TSAnalyzer::analyzePMT(PID pid, const PMT& pmt)
         // This PID is the PCR PID for this service. Initial description
         // will normally be replaced later by "Audio", "Video", etc.
         // Some encoders, however, generate a dedicated PID for PCR's.
-        ps = getPID(pmt.pcr_pid, "PCR (not otherwise referenced)");
+        ps = getPID(pmt.pcr_pid, u"PCR (not otherwise referenced)");
         ps->is_pcr_pid = true;
         ps->addService(pmt.service_id);
     }
@@ -755,7 +755,7 @@ ts::UString ts::TSAnalyzer::PIDContext::fullDescription(bool include_attributes)
         for (UStringVector::const_iterator it = attributes.begin(); it != attributes.end(); ++it) {
             if (!it->empty()) {
                 if (!more.empty()) {
-                    more.append(", ");
+                    more.append(u", ");
                 }
                 more.append(*it);
             }
@@ -770,7 +770,7 @@ ts::UString ts::TSAnalyzer::PIDContext::fullDescription(bool include_attributes)
         return description;
     }
     else {
-        return description + " (" + more + ")";
+        return description + u" (" + more + u")";
     }
 }
 
@@ -975,7 +975,7 @@ void ts::TSAnalyzer::analyzeCADescriptor(const Descriptor& desc, ServiceContext*
         eps->cas_id = ca_sysid;
         eps->carry_section = true;
         _demux.addPID(ca_pid);
-        eps->description = "MediaGuard Individual EMM";
+        eps->description = u"MediaGuard Individual EMM";
 
         while (nb_opi > 0 && size >= 4) {
             PID pid(GetUInt16(data) & 0x1FFF);
@@ -1002,7 +1002,7 @@ void ts::TSAnalyzer::analyzeCADescriptor(const Descriptor& desc, ServiceContext*
         eps->cas_id = ca_sysid;
         eps->carry_section = true;
         _demux.addPID(ca_pid);
-        eps->description = "SafeAccess EMM";
+        eps->description = u"SafeAccess EMM";
 
         while (size >= 2) {
             uint16_t ppid = GetUInt16(data);
@@ -1029,13 +1029,13 @@ void ts::TSAnalyzer::analyzeCADescriptor(const Descriptor& desc, ServiceContext*
         if (svp == 0) {
             // No service, this is an EMM PID
             eps->carry_emm = true;
-            eps->description = "Viaccess EMM";
+            eps->description = u"Viaccess EMM";
         }
         else {
             // Found an ECM PID for the service
             eps->carry_ecm = true;
             eps->addService(svp->service_id);
-            eps->description = "Viaccess ECM";
+            eps->description = u"Viaccess ECM";
         }
 
         while (size >= 2) {
@@ -1071,13 +1071,13 @@ void ts::TSAnalyzer::analyzeCADescriptor(const Descriptor& desc, ServiceContext*
         if (svp == 0) {
             // No service, this is an EMM PID
             eps->carry_emm = true;
-            eps->description = names::CASId(ca_sysid) + " EMM";
+            eps->description = UString::FromUTF8(names::CASId(ca_sysid)) + u" EMM";
         }
         else {
             // Found an ECM PID for the service
             eps->carry_ecm = true;
             eps->addService(svp->service_id);
-            eps->description = names::CASId(ca_sysid) + " ECM";
+            eps->description = UString::FromUTF8(names::CASId(ca_sysid)) + u" ECM";
         }
     }
 }

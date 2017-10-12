@@ -43,8 +43,10 @@ TSDUCK_SOURCE;
 // References in XML model files.
 // Example: <_any in="_descriptors"/>
 // means: accept all children of <_descriptors> in root of document.
-#define TSXML_REF_NODE "_any"
-#define TSXML_REF_ATTR "in"
+namespace {
+    const ts::UString TSXML_REF_NODE(u"_any");
+    const ts::UString TSXML_REF_ATTR(u"in");
+}
 
 
 //----------------------------------------------------------------------------
@@ -470,7 +472,17 @@ bool ts::XML::getTimeAttribute(Second& value, const Element* elem, const std::st
 // Find all children elements in an XML element by name, case-insensitive.
 //----------------------------------------------------------------------------
 
+bool ts::XML::getChildren(ElementVector& children, const Element* elem, const char* name, size_t minCount, size_t maxCount)
+{
+    return getChildren(children, elem, UString::FromUTF8(name), minCount, maxCount);
+}
+
 bool ts::XML::getChildren(ElementVector& children, const Element* elem, const std::string& name, size_t minCount, size_t maxCount)
+{
+    return getChildren(children, elem, UString::FromUTF8(name), minCount, maxCount);
+}
+
+bool ts::XML::getChildren(ElementVector& children, const Element* elem, const UString& name, size_t minCount, size_t maxCount)
 {
     children.clear();
 
@@ -481,7 +493,7 @@ bool ts::XML::getChildren(ElementVector& children, const Element* elem, const st
 
     // Loop on all children.
     for (const Element* child = elem->FirstChildElement(); child != 0; child = child->NextSiblingElement()) {
-        if (UTF8Equal(child->Name(), name.c_str(), false)) {
+        if (name.similar(UString::FromUTF8(child->Name()))) {
             children.push_back(child);
         }
     }
@@ -491,13 +503,15 @@ bool ts::XML::getChildren(ElementVector& children, const Element* elem, const st
         return true;
     }
     else if (maxCount == UNLIMITED) {
+        const std::string utf8Name(name.toUTF8());
         reportError(Format("<%s>, line %d, contains %" FMT_SIZE_T "d <%s>, at least %" FMT_SIZE_T "d required",
-                           ElementName(elem), elem->GetLineNum(), children.size(), name.c_str(), minCount));
+                           ElementName(elem), elem->GetLineNum(), children.size(), utf8Name.c_str(), minCount));
         return false;
     }
     else {
+        const std::string utf8Name(name.toUTF8());
         reportError(Format("<%s>, line %d, contains %" FMT_SIZE_T "d <%s>, allowed %" FMT_SIZE_T "d to %" FMT_SIZE_T "d",
-                           ElementName(elem), elem->GetLineNum(), children.size(), name.c_str(), minCount, maxCount));
+                           ElementName(elem), elem->GetLineNum(), children.size(), utf8Name.c_str(), minCount, maxCount));
         return false;
     }
 }
@@ -955,19 +969,21 @@ const ts::XML::Element* ts::XML::findModelElement(const Element* elem, const cha
     }
 
     // Loop on all children.
+    const UString uName(name);
     for (const Element* child = elem->FirstChildElement(); child != 0; child = child->NextSiblingElement()) {
-        if (UTF8Equal(child->Name(), name, false)) {
+        const UString childName(child->Name());
+        if (childName.similar(uName)) {
             // Found the child.
             return child;
         }
-        else if (UTF8Equal(child->Name(), TSXML_REF_NODE, false)) {
+        else if (childName.similar(TSXML_REF_NODE)) {
             // The model contains a reference to a child of the root of the document.
             // Example: <_any in="_descriptors"/> => child is the <_any> node.
             // Find the reference name, "_descriptors" in the example.
             const Attribute* attr = findAttribute(child, TSXML_REF_ATTR, true);
             const char* refName = attr == 0 ? 0 : attr->Value();
             if (refName == 0) {
-                reportError(Format("Invalid XML model, missing or empty attribute '%s' in <%s> line %d", TSXML_REF_ATTR, ElementName(child), child->GetLineNum()));
+                reportError(Format("Invalid XML model, missing or empty attribute 'in' for <%s> at line %d", ElementName(child), child->GetLineNum()));
             }
             else {
                 // Locate the referenced node inside the model root.

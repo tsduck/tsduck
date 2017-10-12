@@ -267,7 +267,6 @@
 #include "tsUDPSocket.h"
 #include "tsUID.h"
 #include "tsUString.h"
-#include "tsUnicodeUtils.h"
 #include "tsUserInterrupt.h"
 #include "tsVBIDataDescriptor.h"
 #include "tsVBITeletextDescriptor.h"

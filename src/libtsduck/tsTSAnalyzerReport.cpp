@@ -258,7 +258,7 @@ std::ostream& ts::TSAnalyzerReport::reportTS(std::ostream& stm, const std::strin
         << JustifyRight(_last_tot == Time::Epoch ? " Unknown" : " " + _last_tot.format(Time::DATE | Time::TIME), 46, '.')
         << "  |" << std::endl
         << "|  TOT country code: "
-        << (_country_code.empty() ? UString(" Unknown") : " " + _country_code).toJustifiedRight(55, '.')
+        << (_country_code.empty() ? UString(u" Unknown") : u" " + _country_code).toJustifiedRight(55, '.')
         << "  |" << std::endl;
 
     // Display list of services
@@ -269,7 +269,7 @@ std::ostream& ts::TSAnalyzerReport::reportTS(std::ostream& stm, const std::strin
     for (ServiceContextMap::const_iterator it = _services.begin(); it != _services.end(); ++it) {
         const ServiceContext& sv(*it->second);
         stm << Format("|  0x%04X  ", int(sv.service_id))
-            << (sv.getName() + " ").toJustifiedLeft(45, '.')
+            << (sv.getName() + u" ").toJustifiedLeft(45, '.')
             << "  " << (sv.scrambled_pid_cnt > 0 ? 'S' : 'C')
             << JustifyRight(sv.bitrate == 0 ? "Unknown" : Decimal(sv.bitrate) + " b/s", 17)
             << "  |" << std::endl;
@@ -319,14 +319,14 @@ void ts::TSAnalyzerReport::reportServicePID(std::ostream& stm, const PIDContext&
     if (!pc.ssu_oui.empty()) {
         bool first = true;
         for (std::set<uint32_t>::const_iterator it = pc.ssu_oui.begin(); it != pc.ssu_oui.end(); ++it) {
-            description += first ? " (SSU " : ", ";
+            description += first ? u" (SSU " : u", ";
             description += names::OUI(*it);
             first = false;
         }
         description += ")";
     }
     stm << Format ("|  0x%04X  ", int (pc.pid))
-        << (description + "  ").toJustifiedLeft(45, '.', true) << "  "
+        << (description + u"  ").toJustifiedLeft(45, '.', true) << "  "
         << (pc.scrambled ? 'S' : 'C') << (pc.services.size() > 1 ? '+' : ' ');
     if (_ts_bitrate == 0) {
         stm << "         Unknown";
@@ -363,8 +363,9 @@ std::ostream& ts::TSAnalyzerReport::reportServices(std::ostream& stm, const std:
 
     for (PIDContextMap::const_iterator it = _pids.begin(); it != _pids.end(); ++it) {
         const PIDContext& pc(*it->second);
-        if (pc.referenced && pc.services.empty() && (pc.ts_pkt_cnt != 0 || !pc.optional))
+        if (pc.referenced && pc.services.empty() && (pc.ts_pkt_cnt != 0 || !pc.optional)) {
             reportServicePID(stm, pc);
+        }
     }
 
     // Display unreferenced pids
@@ -382,8 +383,9 @@ std::ostream& ts::TSAnalyzerReport::reportServices(std::ostream& stm, const std:
 
         for (PIDContextMap::const_iterator it = _pids.begin(); it != _pids.end(); ++it) {
             const PIDContext& pc(*it->second);
-            if (!pc.referenced && (pc.ts_pkt_cnt != 0 || !pc.optional))
+            if (!pc.referenced && (pc.ts_pkt_cnt != 0 || !pc.optional)) {
                 reportServicePID(stm, pc);
+            }
         }
     }
 

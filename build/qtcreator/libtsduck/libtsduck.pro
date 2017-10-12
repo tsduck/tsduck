@@ -269,7 +269,6 @@ HEADERS += \
     ../../../src/libtsduck/tsTunerUtils.h \
     ../../../src/libtsduck/tsUDPSocket.h \
     ../../../src/libtsduck/tsUID.h \
-    ../../../src/libtsduck/tsUnicodeUtils.h \
     ../../../src/libtsduck/tsUserInterrupt.h \
     ../../../src/libtsduck/tsVBIDataDescriptor.h \
     ../../../src/libtsduck/tsVBITeletextDescriptor.h \
@@ -491,7 +490,6 @@ SOURCES += \
     ../../../src/libtsduck/tsTunerUtils.cpp \
     ../../../src/libtsduck/tsUDPSocket.cpp \
     ../../../src/libtsduck/tsUID.cpp \
-    ../../../src/libtsduck/tsUnicodeUtils.cpp \
     ../../../src/libtsduck/tsUserInterrupt.cpp \
     ../../../src/libtsduck/tsVBIDataDescriptor.cpp \
     ../../../src/libtsduck/tsVBITeletextDescriptor.cpp \

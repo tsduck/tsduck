@@ -76,7 +76,7 @@ namespace ts {
         //! @param [in] title Title string to display.
         //! @return A reference to @a strm.
         //!
-        std::ostream& reportTS(std::ostream& strm, const std::string& title = "");
+        std::ostream& reportTS(std::ostream& strm, const std::string& title = std::string());
 
         //!
         //! Report formatted analysis about services.
@@ -84,7 +84,7 @@ namespace ts {
         //! @param [in] title Title string to display.
         //! @return A reference to @a strm.
         //!
-        std::ostream& reportServices(std::ostream& strm, const std::string& title = "");
+        std::ostream& reportServices(std::ostream& strm, const std::string& title = std::string());
 
         //!
         //! Report formatted analysis about PID's.
@@ -92,7 +92,7 @@ namespace ts {
         //! @param [in] title Title string to display.
         //! @return A reference to @a strm.
         //!
-        std::ostream& reportPIDs(std::ostream& strm, const std::string& title = "");
+        std::ostream& reportPIDs(std::ostream& strm, const std::string& title = std::string());
 
         //!
         //! Report formatted analysis about tables.
@@ -100,7 +100,7 @@ namespace ts {
         //! @param [in] title Title string to display.
         //! @return A reference to @a strm.
         //!
-        std::ostream& reportTables(std::ostream& strm, const std::string& title = "");
+        std::ostream& reportTables(std::ostream& strm, const std::string& title = std::string());
 
         //!
         //! This methods displays an error report.
@@ -108,7 +108,7 @@ namespace ts {
         //! @param [in] title Title string to display.
         //! @return A reference to @a strm.
         //!
-        std::ostream& reportErrors(std::ostream& strm, const std::string& title = "");
+        std::ostream& reportErrors(std::ostream& strm, const std::string& title = std::string());
 
         //!
         //! This methods displays a normalized report.
@@ -116,7 +116,7 @@ namespace ts {
         //! @param [in] title Title string to display.
         //! @return A reference to @a strm.
         //!
-        std::ostream& reportNormalized(std::ostream& strm, const std::string& title = "");
+        std::ostream& reportNormalized(std::ostream& strm, const std::string& title = std::string());
 
     private:
         // Display one line of a service PID list
@@ -126,6 +126,6 @@ namespace ts {
         void reportServicesForPID(std::ostream&, const PIDContext&) const;
 
         // Display one normalized line of a time value
-        static void reportNormalizedTime(std::ostream&, const Time&, const char* type, const UString& country = "");
+        static void reportNormalizedTime(std::ostream&, const Time&, const char* type, const UString& country = UString());
     };
 }
