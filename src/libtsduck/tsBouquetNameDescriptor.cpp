@@ -45,7 +45,7 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::BouquetNameDescriptor::DisplayDescriptor, ts::EDID(
 // Default constructor:
 //----------------------------------------------------------------------------
 
-ts::BouquetNameDescriptor::BouquetNameDescriptor(const std::string& name_) :
+ts::BouquetNameDescriptor::BouquetNameDescriptor(const UString& name_) :
     AbstractDescriptor(DID_BOUQUET_NAME, "bouquet_name_descriptor"),
     name(name_)
 {
@@ -71,20 +71,9 @@ ts::BouquetNameDescriptor::BouquetNameDescriptor(const Descriptor& desc, const D
 
 void ts::BouquetNameDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
 {
-    if (name.length() > 255) {
-        desc.invalidate();
-        return;
-    }
-
-    ByteBlockPtr bbp(new ByteBlock(2));
-    CheckNonNull(bbp.pointer());
-
-    (*bbp)[0] = _tag;
-    (*bbp)[1] = uint8_t(name.length());
-    bbp->append (name);
-
-    Descriptor d(bbp, SHARE);
-    desc = d;
+    ByteBlockPtr bbp(serializeStart());
+    bbp->append(name.toDVB(0, UString::NPOS, charset));
+    serializeEnd(desc, bbp);
 }
 
 
@@ -97,7 +86,7 @@ void ts::BouquetNameDescriptor::deserialize(const Descriptor& desc, const DVBCha
     _is_valid = desc.isValid() && desc.tag() == _tag;
 
     if (_is_valid) {
-        name.assign(reinterpret_cast <const char*> (desc.payload()), desc.payloadSize());
+        name.assign(UString::FromDVB(desc.payload(), desc.payloadSize(), charset));
     }
     else {
         name.clear();
@@ -111,7 +100,10 @@ void ts::BouquetNameDescriptor::deserialize(const Descriptor& desc, const DVBCha
 
 void ts::BouquetNameDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* payload, size_t size, int indent, TID tid, PDS pds)
 {
-    display.out() << std::string(indent, ' ') << "Name: \"" << Printable(payload, size) << "\"" << std::endl;
+    display.out() << std::string(indent, ' ')
+                  << "Name: \""
+                  << UString::FromDVB(payload, size, display.dvbCharset())
+                  << "\"" << std::endl;
 }
 
 
