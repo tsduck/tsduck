@@ -34,6 +34,7 @@
 
 #pragma once
 #include "tsAbstractDescriptor.h"
+#include "tsUString.h"
 
 namespace ts {
     //!
@@ -44,13 +45,13 @@ namespace ts {
     {
     public:
         // BouquetNameDescriptor public members:
-        std::string name; //!< Bouquet name.
+        UString name; //!< Bouquet name.
 
         //!
         //! Default constructor.
         //! @param [in] name Bouquet name.
         //!
-        BouquetNameDescriptor(const std::string& name = "");
+        BouquetNameDescriptor(const UString& name = UString());
 
         //!
         //! Constructor from a binary descriptor

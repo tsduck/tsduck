@@ -34,6 +34,7 @@
 
 #pragma once
 #include "tsAbstractDescriptor.h"
+#include "tsUString.h"
 
 namespace ts {
     //!
@@ -44,13 +45,13 @@ namespace ts {
     {
     public:
         // NetworkNameDescriptor public members:
-        std::string name; //!< Network name.
+        UString name; //!< Network name.
 
         //!
         //! Default constructor.
         //! @param [in] name Network name.
         //!
-        NetworkNameDescriptor(const std::string& name = "");
+        NetworkNameDescriptor(const UString& name = UString());
 
         //!
         //! Constructor from a binary descriptor
