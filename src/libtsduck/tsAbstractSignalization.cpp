@@ -49,7 +49,7 @@ bool ts::AbstractSignalization::checkXMLName(XML& xml, const XML::Element* eleme
     if (element == 0) {
         return false;
     }
-    else if (!UTF8Equal(_xml_name, element->Name(), false)) {
+    else if (!UString::FromUTF8(_xml_name).similar(element->Name())) {
         xml.reportError(Format("Incorrect <%s>, expected <%s>", XML::ElementName(element), _xml_name));
         return false;
     }

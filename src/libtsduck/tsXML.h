@@ -45,7 +45,6 @@
 #include "tsToInteger.h"
 #include "tsByteBlock.h"
 #include "tsStringUtils.h"
-#include "tsUnicodeUtils.h"
 #include "tsEnumeration.h"
 #include "tsTime.h"
 #include "tsVariable.h"
@@ -441,7 +440,29 @@ namespace ts {
         //! @param [in] maxCount Maximum allowed number of elements of that name.
         //! @return True on success, false on error.
         //!
+        bool getChildren(ElementVector& children, const Element* elem, const UString& name, size_t minCount = 0, size_t maxCount = UNLIMITED);
+
+        //!
+        //! Find all children elements in an XML element by name, case-insensitive.
+        //! @param [out] children Returned vector of all children.
+        //! @param [in] elem An XML element.
+        //! @param [in] name Name of the child element to search.
+        //! @param [in] minCount Minimum required number of elements of that name.
+        //! @param [in] maxCount Maximum allowed number of elements of that name.
+        //! @return True on success, false on error.
+        //!
         bool getChildren(ElementVector& children, const Element* elem, const std::string& name, size_t minCount = 0, size_t maxCount = UNLIMITED);
+
+        //!
+        //! Find all children elements in an XML element by name, case-insensitive.
+        //! @param [out] children Returned vector of all children.
+        //! @param [in] elem An XML element.
+        //! @param [in] name Name of the child element to search.
+        //! @param [in] minCount Minimum required number of elements of that name.
+        //! @param [in] maxCount Maximum allowed number of elements of that name.
+        //! @return True on success, false on error.
+        //!
+        bool getChildren(ElementVector& children, const Element* elem, const char* name, size_t minCount = 0, size_t maxCount = UNLIMITED);
 
         //!
         //! Get text in a child of an element.

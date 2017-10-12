@@ -37,6 +37,7 @@
 #include <cwctype>
 
 namespace ts {
+
     class UString;
 
     //!
