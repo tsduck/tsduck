@@ -45,10 +45,10 @@ namespace ts {
     {
     public:
         // MessageDescriptor public members:
-        uint8_t     mix_type;                  //!< Complete or dependent stream, 1 bit.
-        uint8_t     editorial_classification;  //!< Editorial classification, 5 bits.
-        std::string language_code;             //!< ISO-639 language code, 3 characters or empty.
-        ByteBlock   private_data;              //!< Private data.
+        uint8_t   mix_type;                  //!< Complete or dependent stream, 1 bit.
+        uint8_t   editorial_classification;  //!< Editorial classification, 5 bits.
+        UString   language_code;             //!< ISO-639 language code, 3 characters or empty.
+        ByteBlock private_data;              //!< Private data.
 
         //!
         //! Default constructor.

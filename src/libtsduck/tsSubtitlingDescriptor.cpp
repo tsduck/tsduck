@@ -48,7 +48,7 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::SubtitlingDescriptor::DisplayDescriptor, ts::EDID(t
 //----------------------------------------------------------------------------
 
 ts::SubtitlingDescriptor::Entry::Entry(const char* code, uint8_t subt, uint16_t comp, uint16_t ancil) :
-    language_code(code != 0 ? code : ""),
+    language_code(code),
     subtitling_type(subt),
     composition_page_id(comp),
     ancillary_page_id(ancil)
@@ -83,7 +83,7 @@ void ts::SubtitlingDescriptor::DisplayDescriptor(TablesDisplay& display, DID did
         uint8_t type = data[3];
         uint16_t comp_page = GetUInt16(data + 4);
         uint16_t ancil_page = GetUInt16(data + 6);
-        strm << margin << "Language: " << Printable(data, 3)
+        strm << margin << "Language: " << UString::FromDVB(data, 3, display.dvbCharset())
              << ", Type: " << int(type)
              << Format(" (0x%02X)", int(type)) << std::endl
              << margin << "Type: " << names::SubtitlingType(type) << std::endl
@@ -102,31 +102,21 @@ void ts::SubtitlingDescriptor::DisplayDescriptor(TablesDisplay& display, DID did
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::SubtitlingDescriptor::serialize (Descriptor& desc, const DVBCharset* charset) const
+void ts::SubtitlingDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
 {
-    if (entries.size() > MAX_ENTRIES) {
-        desc.invalidate();
-        return;
-    }
-
-    ByteBlockPtr bbp(new ByteBlock(2));
-    CheckNonNull(bbp.pointer());
+    ByteBlockPtr bbp(serializeStart());
 
     for (EntryList::const_iterator it = entries.begin(); it != entries.end(); ++it) {
-        if (it->language_code.length() != 3) {
+        if (!SerializeLanguageCode(*bbp, it->language_code, charset)) {
             desc.invalidate();
             return;
         }
-        bbp->append(it->language_code);
         bbp->appendUInt8(it->subtitling_type);
         bbp->appendUInt16(it->composition_page_id);
         bbp->appendUInt16(it->ancillary_page_id);
     }
 
-    (*bbp)[0] = _tag;
-    (*bbp)[1] = uint8_t(bbp->size() - 2);
-    Descriptor d(bbp, SHARE);
-    desc = d;
+    serializeEnd(desc, bbp);
 }
 
 
@@ -147,7 +137,7 @@ void ts::SubtitlingDescriptor::deserialize (const Descriptor& desc, const DVBCha
 
     while (size >= 8) {
         Entry entry;
-        entry.language_code = std::string(reinterpret_cast<const char*>(data), 3);
+        entry.language_code = UString::FromDVB(data, 3, charset);
         entry.subtitling_type = data[3];
         entry.composition_page_id = GetUInt16(data + 4);
         entry.ancillary_page_id = GetUInt16(data + 6);

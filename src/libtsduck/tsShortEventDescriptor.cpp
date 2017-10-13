@@ -58,7 +58,7 @@ ts::ShortEventDescriptor::ShortEventDescriptor() :
 // Constructor with description
 //----------------------------------------------------------------------------
 
-ts::ShortEventDescriptor::ShortEventDescriptor(const std::string& lang_, const std::string& name_, const std::string& text_) :
+ts::ShortEventDescriptor::ShortEventDescriptor(const UString& lang_, const UString& name_, const UString& text_) :
     AbstractDescriptor(DID_SHORT_EVENT, "short_event_descriptor"),
     language_code(lang_),
     event_name(name_),
@@ -87,44 +87,48 @@ ts::ShortEventDescriptor::ShortEventDescriptor(const Descriptor& desc, const DVB
 // is too long and add them in a descriptor list.
 //----------------------------------------------------------------------------
 
-namespace {
-    void Insert (std::string& segment, const std::string& original, bool has_table, size_t& index, size_t max_size)
-    {
-        assert (index <= original.length());
-        if (!has_table || index == original.length()) {
-            const size_t length = std::min (max_size, original.length() - index);
-            segment = original.substr (index, length);
-            index += length;
-        }
-        else if (max_size > 1) {
-            const size_t length = std::min (max_size - 1, original.length() - index);
-            segment.resize (1);
-            segment[0] = original[0];
-            segment.append (original.substr (index, length));
-            index += length;
-        }
-        else {
-            segment.clear();
-        }
-    }
-}
-
-size_t ts::ShortEventDescriptor::splitAndAdd (DescriptorList& dlist) const
+size_t ts::ShortEventDescriptor::splitAndAdd(DescriptorList& dlist, const DVBCharset* charset) const
 {
+    // Common data in all descriptors.
     ShortEventDescriptor sed;
     sed.language_code = language_code;
-    sed.language_code.resize (3, ' ');
+    sed.language_code.resize(3, SPACE);
 
-    const bool name_has_table = !event_name.empty() && event_name[0] > 0 && event_name[0] < 0x20;
-    const bool text_has_table = !text.empty() && text[0] > 0 && text[0] < 0x20;
-    size_t name_index = name_has_table ? 1 : 0;
-    size_t text_index = text_has_table ? 1 : 0;
+    // We loop on new descriptor generation until the event name and text are
+    // fully serialized and at least one descriptor is generated.
+    size_t name_index = 0;  // current index in event_name
+    size_t text_index = 0;  // current index in text
     size_t desc_count = 0;
 
     while (desc_count == 0 || name_index < event_name.length() || text_index < text.length()) {
-        Insert (sed.event_name, event_name, name_has_table, name_index, 249);
-        Insert (sed.text, text, text_has_table, text_index, 249 - sed.event_name.length());
-        dlist.add (sed);
+
+        // Create a new descriptor, reset variable fields, keep common fields.
+        sed.event_name.clear();
+        sed.text.clear();
+
+        // We simulate the serialization.
+        uint8_t buffer[MAX_DESCRIPTOR_SIZE];
+
+        // Descriptor binary size so far, from descriptor_tag to language code, inclusive: 5 bytes.
+        // Required minimum remaining space for text: 1 byte.
+        size_t remain = MAX_DESCRIPTOR_SIZE - 6;
+
+        // Insert as much as possible of event name.
+        uint8_t* addr = buffer;
+        const size_t name_size = event_name.toDVBWithByteLength(addr, remain, name_index, UString::NPOS, charset);
+        sed.event_name = event_name.substr(name_index, name_size);
+        name_index += name_size;
+
+        // In fact, there is one more remaining bytes, the text length.
+        remain++;
+
+        // Insert as much as possible of event text.
+        const size_t text_size = text.toDVBWithByteLength(addr, remain, text_index, UString::NPOS, charset);
+        sed.text = text.substr(text_index, text_size);
+        text_index += text_size;
+
+        // Descriptor ready, add it in list
+        dlist.add(sed);
         desc_count++;
     }
 
@@ -138,24 +142,14 @@ size_t ts::ShortEventDescriptor::splitAndAdd (DescriptorList& dlist) const
 
 void ts::ShortEventDescriptor::serialize (Descriptor& desc, const DVBCharset* charset) const
 {
-    if (language_code.length() != 3 || event_name.length() + text.length() > 249) {
+    ByteBlockPtr bbp(serializeStart());
+    if (!SerializeLanguageCode(*bbp, language_code, charset)) {
         desc.invalidate();
         return;
     }
-
-    ByteBlockPtr bbp (new ByteBlock (2));
-    CheckNonNull (bbp.pointer());
-
-    bbp->append(language_code);
-    bbp->appendUInt8(uint8_t(event_name.length()));
-    bbp->append(event_name);
-    bbp->appendUInt8(uint8_t(text.length()));
-    bbp->append(text);
-
-    (*bbp)[0] = _tag;
-    (*bbp)[1] = uint8_t(bbp->size() - 2);
-    Descriptor d(bbp, SHARE);
-    desc = d;
+    bbp->append(event_name.toDVBWithByteLength(0, UString::NPOS, charset));
+    bbp->append(text.toDVBWithByteLength(0, UString::NPOS, charset));
+    serializeEnd(desc, bbp);
 }
 
 
@@ -168,24 +162,16 @@ void ts::ShortEventDescriptor::deserialize (const Descriptor& desc, const DVBCha
     if (!(_is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() >= 4)) {
         return;
     }
+
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
-    language_code = std::string (reinterpret_cast <const char*> (data), 3);
-    size_t name_length = data[3];
-    data += 4; size -= 4;
-    _is_valid = name_length < size;
-    if (!_is_valid) {
-        return;
-    }
-    event_name = std::string (reinterpret_cast <const char*> (data), name_length);
-    size_t text_length = data[name_length];
-    data += name_length + 1; size -= name_length + 1;
-    _is_valid = text_length <= size;
-    if (!_is_valid) {
-        return;
-    }
-    text = std::string (reinterpret_cast <const char*> (data), text_length);
-    data += text_length; size -= text_length;
+
+    language_code = UString::FromDVB(data, 3, charset);
+    data += 3; size -= 3;
+
+    event_name = UString::FromDVBWithByteLength(data, size, charset);
+    text = UString::FromDVBWithByteLength(data, size, charset);
+    _is_valid = size == 0;
 }
 
 
@@ -200,28 +186,12 @@ void ts::ShortEventDescriptor::DisplayDescriptor(TablesDisplay& display, DID did
 
     if (size >= 4) {
         const UString lang(UString::FromDVB(data, 3, display.dvbCharset()));
-        size_t length = data[3];
-        data += 4; size -= 4;
-        if (length > size) {
-            length = size;
-        }
-        const UString name(UString::FromDVB(data, length, display.dvbCharset()));
-        data += length; size -= length;
-        if (size < 1) {
-            length = 0;
-        }
-        else {
-            length = *data;
-            data += 1; size -= 1;
-            if (length > size) {
-                length = size;
-            }
-        }
-        const UString description(UString::FromDVB(data, length, display.dvbCharset()));
-        data += length; size -= length;
+        data += 3; size -= 3;
+        const UString name(UString::FromDVBWithByteLength(data, size, display.dvbCharset()));
+        const UString text(UString::FromDVBWithByteLength(data, size, display.dvbCharset()));
         strm << margin << "Language: " << lang << std::endl
              << margin << "Event name: \"" << name << "\"" << std::endl
-             << margin << "Description: \"" << description << "\"" << std::endl;
+             << margin << "Description: \"" << text << "\"" << std::endl;
     }
 
     display.displayExtraData(data, size, indent);

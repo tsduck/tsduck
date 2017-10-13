@@ -50,10 +50,10 @@ namespace ts {
         struct TSDUCKDLL Entry
         {
             // Public members
-            std::string language_code;         //!< ISO-639 language code, 3 characters.
-            uint8_t     subtitling_type;       //!< Subtitling type.
-            uint16_t    composition_page_id;   //!< Composition page identifier.
-            uint16_t    ancillary_page_id;     //!< Ancillary page identifier.
+            UString  language_code;         //!< ISO-639 language code, 3 characters.
+            uint8_t  subtitling_type;       //!< Subtitling type.
+            uint16_t composition_page_id;   //!< Composition page identifier.
+            uint16_t ancillary_page_id;     //!< Ancillary page identifier.
 
             //!
             //! Default constructor.

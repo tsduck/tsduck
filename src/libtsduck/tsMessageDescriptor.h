@@ -44,9 +44,9 @@ namespace ts {
     {
     public:
         // MessageDescriptor public members:
-        uint8_t     message_id;     //!< Message identifier.
-        std::string language_code;  //!< ISO-639 language code, 3 characters.
-        std::string message;        //!< Message content.
+        uint8_t message_id;     //!< Message identifier.
+        UString language_code;  //!< ISO-639 language code, 3 characters.
+        UString message;        //!< Message content.
 
         //!
         //! Default constructor.
@@ -59,7 +59,7 @@ namespace ts {
         //! @param [in] lang ISO-639 language code, 3 characters.
         //! @param [in] text Message content.
         //!
-        MessageDescriptor(uint8_t id, const std::string& lang, const std::string& text);
+        MessageDescriptor(uint8_t id, const UString& lang, const UString& text);
 
         //!
         //! Constructor from a binary descriptor.

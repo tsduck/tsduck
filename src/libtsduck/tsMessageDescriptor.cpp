@@ -56,7 +56,7 @@ ts::MessageDescriptor::MessageDescriptor() :
     _is_valid = true;
 }
 
-ts::MessageDescriptor::MessageDescriptor(uint8_t id, const std::string& lang, const std::string& text) :
+ts::MessageDescriptor::MessageDescriptor(uint8_t id, const UString& lang, const UString& text) :
     AbstractDescriptor(DID_EXTENSION, "message_descriptor"),
     message_id(id),
     language_code(lang),
@@ -81,23 +81,15 @@ ts::MessageDescriptor::MessageDescriptor(const Descriptor& bin, const DVBCharset
 
 void ts::MessageDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
 {
-    if (!_is_valid || language_code.length() != 3 || 7 + message.length() > MAX_DESCRIPTOR_SIZE) {
+    ByteBlockPtr bbp(serializeStart());
+    bbp->appendUInt8(EDID_MESSAGE);
+    bbp->appendUInt8(message_id);
+    if (!SerializeLanguageCode(*bbp, language_code, charset)) {
         desc.invalidate();
         return;
     }
-
-    ByteBlockPtr bbp(new ByteBlock(2));
-    CheckNonNull(bbp.pointer());
-
-    bbp->appendUInt8(EDID_MESSAGE);
-    bbp->appendUInt8(message_id);
-    bbp->append(language_code);
-    bbp->append(message);
-
-    (*bbp)[0] = _tag;
-    (*bbp)[1] = uint8_t(bbp->size() - 2);
-    Descriptor d(bbp, SHARE);
-    desc = d;
+    bbp->append(message.toDVB(0, UString::NPOS, charset));
+    serializeEnd(desc, bbp);
 }
 
 
@@ -115,8 +107,8 @@ void ts::MessageDescriptor::deserialize(const Descriptor& desc, const DVBCharset
     }
 
     message_id = data[1];
-    language_code = std::string(reinterpret_cast<const char*>(data + 2), 3);
-    message = std::string(reinterpret_cast<const char*>(data + 5), size - 5);
+    language_code = UString::FromDVB(data + 2, 3, charset);
+    message = UString::FromDVB(data + 5, size - 5, charset);
 }
 
 
@@ -154,18 +146,18 @@ void ts::MessageDescriptor::fromXML(XML& xml, const XML::Element* element)
 
 void ts::MessageDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    std::ostream& strm(display.out());
-    const std::string margin(indent, ' ');
+    // Important: With extension descriptors, the DisplayDescriptor() function is called
+    // with extension payload. Meaning that data points after descriptor_tag_extension.
+    // See ts::TablesDisplay::displayDescriptorData()
 
     if (size >= 4) {
-        const uint8_t message_id = data[0];
-        const std::string lang(Printable(data + 1, 3));
-        data += 4; size -= 4;
-        strm << margin << "Message id: " << int(message_id)
-             << ", language: " << lang << std::endl
-             << margin << "Message: \"" << Printable(data, size) << "\"" << std::endl;
-        data += size; size -= size;
+        std::ostream& strm(display.out());
+        const std::string margin(indent, ' ');
+        strm << margin << "Message id: " << int(data[0])
+             << ", language: " << UString::FromDVB(data + 1, 3, display.dvbCharset()) << std::endl
+             << margin << "Message: \"" << UString::FromDVB(data + 4, size - 4, display.dvbCharset()) << "\"" << std::endl;
     }
-
-    display.displayExtraData(data, size, indent);
+    else {
+        display.displayExtraData(data, size, indent);
+    }
 }

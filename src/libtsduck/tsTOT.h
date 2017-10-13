@@ -94,5 +94,12 @@ namespace ts {
         //! @param [in] indent Indentation width.
         //!
         static void DisplaySection(TablesDisplay& display, const Section& section, int indent);
+
+    private:
+        //!
+        //! Add descriptors, filling regions from local_time_offset_descriptor's.
+        //! @param [in] dlist Descriptor list to add.
+        //!
+        void addDescriptors(const DescriptorList& dlist);
     };
 }

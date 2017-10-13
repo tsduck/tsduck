@@ -84,15 +84,13 @@ ts::LocalTimeOffsetDescriptor::LocalTimeOffsetDescriptor(const Descriptor& desc,
 
 void ts::LocalTimeOffsetDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
 {
-    ByteBlockPtr bbp(new ByteBlock(2));
-    CheckNonNull(bbp.pointer());
+    ByteBlockPtr bbp(serializeStart());
 
     for (RegionVector::const_iterator it = regions.begin(); it != regions.end(); ++it) {
-        if (it->country.length() != 3) {
+        if (!SerializeLanguageCode(*bbp, it->country, charset)) {
             desc.invalidate();
             return;
         }
-        bbp->append(it->country);
         bbp->appendUInt8(uint8_t(it->region_id << 2) | 0x02 | (it->time_offset < 0 ? 0x01 : 0x00));
         bbp->appendUInt8(EncodeBCD(::abs(it->time_offset) / 60));
         bbp->appendUInt8(EncodeBCD(::abs(it->time_offset) % 60));
@@ -101,10 +99,7 @@ void ts::LocalTimeOffsetDescriptor::serialize(Descriptor& desc, const DVBCharset
         bbp->appendUInt8(EncodeBCD(::abs(it->next_time_offset) % 60));
     }
 
-    (*bbp)[0] = _tag;
-    (*bbp)[1] = uint8_t(bbp->size() - 2);
-    Descriptor d(bbp, SHARE);
-    desc = d;
+    serializeEnd(desc, bbp);
 }
 
 
@@ -122,8 +117,7 @@ void ts::LocalTimeOffsetDescriptor::deserialize(const Descriptor& desc, const DV
         size_t size = desc.payloadSize();
         while (size >= 13) {
             Region region;
-
-            region.country = std::string(reinterpret_cast<const char*>(data), 3);
+            region.country = UString::FromDVB(data, 3, charset);
             region.region_id = data[3] >> 2;
             const uint8_t polarity = data[3] & 0x01;
             int hours = DecodeBCD(data[4]);
@@ -154,7 +148,7 @@ void ts::LocalTimeOffsetDescriptor::DisplayDescriptor(TablesDisplay& display, DI
 
     while (size >= 3) {
         // Country code is a 3-byte string
-        strm << margin << "Country code: " << Printable(data, 3) << std::endl;
+        strm << margin << "Country code: " << UString::FromDVB(data, 3, display.dvbCharset()) << std::endl;
         data += 3; size -= 3;
         if (size >= 1) {
             uint8_t region_id = *data >> 2;

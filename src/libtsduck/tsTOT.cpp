@@ -96,10 +96,35 @@ std::string ts::TOT::timeOffsetFormat (int minutes)
 
 
 //----------------------------------------------------------------------------
+// Add descriptors, filling regions from local_time_offset_descriptor's.
+//----------------------------------------------------------------------------
+
+void ts::TOT::addDescriptors(const DescriptorList& dlist)
+{
+    // Loop on all descriptors.
+    for (size_t index = 0; index < dlist.count(); ++index) {
+        if (!dlist[index].isNull() && dlist[index]->isValid()) {
+            if (dlist[index]->tag() != DID_LOCAL_TIME_OFFSET) {
+                // Not a local_time_offset_descriptor, add to descriptor list.
+                descs.add(dlist[index]);
+            }
+            else {
+                // Decode local_time_offset_descriptor in the list of regions.
+                LocalTimeOffsetDescriptor lto(*dlist[index]);
+                if (lto.isValid()) {
+                    regions.insert(regions.end(), lto.regions.begin(), lto.regions.end());
+                }
+            }
+        }
+    }
+}
+
+
+//----------------------------------------------------------------------------
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::TOT::deserialize (const BinaryTable& table, const DVBCharset* charset)
+void ts::TOT::deserialize(const BinaryTable& table, const DVBCharset* charset)
 {
     // Clear table content
     _is_valid = false;
@@ -112,9 +137,9 @@ void ts::TOT::deserialize (const BinaryTable& table, const DVBCharset* charset)
     }
 
     // Reference to single section
-    const Section& sect (*table.sectionAt(0));
-    const uint8_t* data (sect.payload());
-    size_t remain (sect.payloadSize());
+    const Section& sect(*table.sectionAt(0));
+    const uint8_t* data(sect.payload());
+    size_t remain(sect.payloadSize());
 
     // Abort if not a TOT
     if (sect.tableId() != TID_TOT) {
@@ -131,7 +156,7 @@ void ts::TOT::deserialize (const BinaryTable& table, const DVBCharset* charset)
     remain -= 4;
     // Verify CRC32 in section
     size_t size = sect.size() - 4;
-    if (CRC32 (sect.content(), size) != GetUInt32 (sect.content() + size)) {
+    if (CRC32(sect.content(), size) != GetUInt32(sect.content() + size)) {
         return;
     }
 
@@ -141,44 +166,17 @@ void ts::TOT::deserialize (const BinaryTable& table, const DVBCharset* charset)
     if (remain < MJD_SIZE + 2) {
         return;
     }
-    DecodeMJD (data, MJD_SIZE, utc_time);
-    size_t length (GetUInt16 (data + MJD_SIZE) & 0x0FFF);
+    DecodeMJD(data, MJD_SIZE, utc_time);
+    size_t length = GetUInt16(data + MJD_SIZE) & 0x0FFF;
     data += MJD_SIZE + 2;
     remain -= MJD_SIZE + 2;
-    remain = std::min (length, remain);
+    remain = std::min(length, remain);
 
     // Get descriptor list.
-    // Analyze local_time_offset_descriptor, keep others as binary
-    while (remain >= 2) {
-        // Get descriptor tag and length
-        uint8_t tag (data[0]);
-        data += 2;
-        remain -= 2;
-        length = std::min (size_t (data[-1]), remain);
-        if (tag != DID_LOCAL_TIME_OFFSET) {
-            descs.add (data - 2, length + 2);
-        }
-        else {
-            while (length >= 13) {
-                // Decode one region
-                Region reg;
-                reg.country = std::string (reinterpret_cast <const char*> (data), 3);
-                reg.region_id = data[3] >> 2;
-                int sign = (data[3] & 0x01) ? -1 : 1;
-                reg.time_offset = sign * (DecodeBCD (data[4]) * 60 + DecodeBCD (data[5]));
-                DecodeMJD (data + 6, 5, reg.next_change);
-                reg.next_time_offset = sign * (DecodeBCD (data[11]) * 60 + DecodeBCD (data[12]));
-                regions.push_back (reg);
-                // Move to next region
-                data += 13;
-                length -= 13;
-                remain -= 13;
-            }
-        }
-        // Move to next descriptor
-        data += length;
-        remain -= length;
-    }
+    // Build a descriptor list.
+    DescriptorList dlist;
+    dlist.add(data, length);
+    addDescriptors(dlist);
 
     _is_valid = true;
 }
@@ -211,36 +209,17 @@ void ts::TOT::serialize (BinaryTable& table, const DVBCharset* charset) const
     // Build a descriptor list.
     DescriptorList dlist;
 
-    // Add all regions in one or more local_time_offset_descriptor
-    uint8_t descbuf [MAX_DESCRIPTOR_SIZE];
-    uint8_t* desc_data (descbuf + 2);
-    size_t desc_remain (sizeof(descbuf) - 2);
-
-    for (size_t i = 0; i < regions.size (); ++i) {
-        const Region& reg (regions[i]);
-
-        // Serialize one region in the descriptor
-        ::memcpy (desc_data, reg.country.c_str(), 3);  // Flawfinder: ignore: memcpy()
-        desc_data[3] = uint8_t(reg.region_id << 2) | (reg.time_offset < 0 ? 0x03 : 0x02);
-        desc_data[4] = EncodeBCD(::abs(reg.time_offset) / 60);
-        desc_data[5] = EncodeBCD(::abs(reg.time_offset) % 60);
-        EncodeMJD(reg.next_change, desc_data + 6, 5);
-        desc_data[11] = EncodeBCD(::abs(reg.next_time_offset) / 60);
-        desc_data[12] = EncodeBCD(::abs(reg.next_time_offset) % 60);
-        desc_data += 13;
-        desc_remain -= 13;
-
-        // Insert a descriptor in the list when there is no more space
-        // for a new region in the current descriptor or at end of list.
-        if (i == regions.size() - 1 || desc_remain < 13) {
-            // Create one descriptor
-            descbuf[0] = DID_LOCAL_TIME_OFFSET;
-            descbuf[1] = uint8_t(desc_data - (descbuf + 2));
-            dlist.add(descbuf);
-            // Reinitialize descriptor buffer
-            desc_data = descbuf + 2;
-            desc_remain = sizeof(descbuf) - 2;
+    // Add all regions in one or more local_time_offset_descriptor.
+    LocalTimeOffsetDescriptor lto;
+    for (RegionVector::const_iterator it = regions.begin(); it != regions.end(); ++it) {
+        lto.regions.push_back(*it);
+        if (lto.regions.size() >= LocalTimeOffsetDescriptor::MAX_REGION) {
+            dlist.add(lto);
+            lto.regions.clear();
         }
+    }
+    if (!lto.regions.empty()) {
+        dlist.add(lto);
     }
 
     // Append the "other" descriptors to the list
@@ -369,19 +348,5 @@ void ts::TOT::fromXML(XML& xml, const XML::Element* element)
         XMLTables::FromDescriptorListXML(orig, xml, element);
 
     // Then, split local_time_offset_descriptor and others.
-    for (size_t index = 0; _is_valid && index < orig.count(); ++index) {
-        if (!orig[index].isNull() && orig[index]->isValid()) {
-            if (orig[index]->tag() != DID_LOCAL_TIME_OFFSET) {
-                // Not a local_time_offset_descriptor, add to descriptor list.
-                descs.add(orig[index]);
-            }
-            else {
-                // Decode local_time_offset_descriptor in the list of regions.
-                LocalTimeOffsetDescriptor lto(*orig[index]);
-                if (lto.isValid()) {
-                    regions.insert(regions.end(), lto.regions.begin(), lto.regions.end());
-                }
-            }
-        }
-    }
+    addDescriptors(orig);
 }

@@ -74,26 +74,20 @@ ts::SupplementaryAudioDescriptor::SupplementaryAudioDescriptor(const Descriptor&
 
 void ts::SupplementaryAudioDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
 {
-    if (!_is_valid || (!language_code.empty() && language_code.length() != 3) || 2 + language_code.length() + private_data.size() > MAX_DESCRIPTOR_SIZE) {
-        desc.invalidate();
-        return;
-    }
-
-    ByteBlockPtr bbp(new ByteBlock(2));
-    CheckNonNull(bbp.pointer());
+    ByteBlockPtr bbp(serializeStart());
 
     bbp->appendUInt8(EDID_SUPPL_AUDIO);
     bbp->appendUInt8((mix_type << 7) |
                      ((editorial_classification & 0x1F) << 2) |
                      0x02 |
                      (language_code.empty() ? 0x00 : 0x01));
-    bbp->append(language_code);
+    if (!language_code.empty() && !SerializeLanguageCode(*bbp, language_code, charset)) {
+        desc.invalidate();
+        return;
+    }
     bbp->append(private_data);
 
-    (*bbp)[0] = _tag;
-    (*bbp)[1] = uint8_t(bbp->size() - 2);
-    Descriptor d(bbp, SHARE);
-    desc = d;
+    serializeEnd(desc, bbp);
 }
 
 
@@ -123,7 +117,7 @@ void ts::SupplementaryAudioDescriptor::deserialize(const Descriptor& desc, const
             _is_valid = false;
             return;
         }
-        language_code = std::string(reinterpret_cast<const char*>(data), 3);
+        language_code = UString::FromDVB(data, 3, charset);
         data += 3; size -= 3;
     }
 
@@ -171,6 +165,10 @@ void ts::SupplementaryAudioDescriptor::fromXML(XML& xml, const XML::Element* ele
 
 void ts::SupplementaryAudioDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
+    // Important: With extension descriptors, the DisplayDescriptor() function is called
+    // with extension payload. Meaning that data points after descriptor_tag_extension.
+    // See ts::TablesDisplay::displayDescriptorData()
+
     std::ostream& strm(display.out());
     const std::string margin(indent, ' ');
 
@@ -195,7 +193,7 @@ void ts::SupplementaryAudioDescriptor::DisplayDescriptor(TablesDisplay& display,
         }
         strm << std::endl;
         if (lang_present && size >= 3) {
-            strm << margin << "Language: " << Printable(data, 3) << std::endl;
+            strm << margin << "Language: " << UString::FromDVB(data, 3, display.dvbCharset()) << std::endl;
             data += 3; size -= 3;
         }
         if (size > 0) {

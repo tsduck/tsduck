@@ -43,22 +43,42 @@ namespace ts {
     class TSDUCKDLL ParentalRatingDescriptor : public AbstractDescriptor
     {
     public:
-        // Item entry
-        struct Entry;
+        //!
+        //! Item entry.
+        //!
+        struct TSDUCKDLL Entry
+        {
+            // Public members
+            UString country_code;  //!< ISO-3166 country code, 3 characters.
+            uint8_t rating;        //!< Parental rating.
+
+            //!
+            //! Constructor.
+            //! @param [in] code ISO-3166 country code, 3 characters, as a C-string. Can be null.
+            //! @param [in] rate Parental rating.
+            //!
+            Entry(const char* code = 0, uint8_t rate = 0);
+
+            //!
+            //! Constructor.
+            //! @param [in] code ISO-3166 country code, 3 characters.
+            //! @param [in] rate Parental rating.
+            //!
+            Entry(const UString& code, uint8_t rate);
+        };
 
         //!
         //! A list of item entries.
         //!
         typedef std::list<Entry> EntryList;
 
-        // Public members
-        EntryList entries;  //!< The list of item entries.
-
         //!
         //! Maximum number of services entries to fit in 255 bytes.
         //!
         static const size_t MAX_ENTRIES = 63;
 
+        // Public members
+        EntryList entries;  //!< The list of item entries.
 
         //!
         //! Default constructor.
@@ -74,37 +94,16 @@ namespace ts {
 
         //!
         //! Constructor with one entry.
-        //! @param [in] language ISO-639 language code, 3 characters.
-        //! @param [in] rating Parental rating.
+        //! @param [in] code ISO-3166 country code, 3 characters.
+        //! @param [in] rate Parental rating.
         //!
-        ParentalRatingDescriptor(const std::string& language, uint8_t rating);
+        ParentalRatingDescriptor(const UString& code, uint8_t rate);
 
         // Inherited methods
         virtual void serialize(Descriptor&, const DVBCharset* = 0) const override;
         virtual void deserialize(const Descriptor&, const DVBCharset* = 0) override;
         virtual XML::Element* toXML(XML&, XML::Element*) const override;
         virtual void fromXML(XML&, const XML::Element*) override;
-
-        //!
-        //! Item entry.
-        //!
-        struct TSDUCKDLL Entry
-        {
-            // Public members
-            std::string language_code;  //!< ISO-639 language code, 3 characters.
-            uint8_t     rating;         //!< Parental rating.
-
-            //!
-            //! Constructor.
-            //! @param [in] language_ ISO-639 language code, 3 characters.
-            //! @param [in] rating_ Parental rating.
-            //!
-            Entry(const std::string& language_ = "", uint8_t rating_ = 0) :
-                language_code(language_),
-                rating(rating_)
-            {
-            }
-        };
 
         //!
         //! Static method to display a descriptor.
