@@ -90,13 +90,13 @@ void ts::DescriptorList::add (const DescriptorPtr& desc)
 // Add one descriptor at end of list
 //----------------------------------------------------------------------------
 
-void ts::DescriptorList::add (const AbstractDescriptor& desc)
+void ts::DescriptorList::add(const AbstractDescriptor& desc)
 {
-    DescriptorPtr pd (new Descriptor);
-    CheckNonNull (pd.pointer());
-    desc.serialize (*pd);
+    DescriptorPtr pd(new Descriptor);
+    CheckNonNull(pd.pointer());
+    desc.serialize(*pd);
     if (pd->isValid()) {
-        add (pd);
+        add(pd);
     }
 }
 
@@ -105,13 +105,13 @@ void ts::DescriptorList::add (const AbstractDescriptor& desc)
 // Add descriptors from a memory area
 //----------------------------------------------------------------------------
 
-void ts::DescriptorList::add (const void* data, size_t size)
+void ts::DescriptorList::add(const void* data, size_t size)
 {
-    const uint8_t* desc (reinterpret_cast <const uint8_t*> (data));
+    const uint8_t* desc = reinterpret_cast<const uint8_t*>(data);
     size_t length;
 
-    while (size >= 2 && (length = size_t (desc[1]) + 2) <= size) {
-        add (DescriptorPtr (new Descriptor (desc, length)));
+    while (size >= 2 && (length = size_t(desc[1]) + 2) <= size) {
+        add(DescriptorPtr(new Descriptor(desc, length)));
         desc += length;
         size -= length;
     }

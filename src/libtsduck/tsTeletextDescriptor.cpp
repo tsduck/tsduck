@@ -50,7 +50,7 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::TeletextDescriptor::DisplayDescriptor, ts::EDID(ts:
 ts::TeletextDescriptor::Entry::Entry(uint8_t type, uint16_t page, const char* code) :
     teletext_type(type),
     page_number(page),
-    language_code(code == 0 ? "" : code)
+    language_code(code)
 {
 }
 
@@ -107,7 +107,7 @@ void ts::TeletextDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, 
         const uint8_t page = data[4];
         Entry e;
         e.setFullNumber(mag, page);
-        strm << margin << "Language: " << Printable(data, 3)
+        strm << margin << "Language: " << UString::FromDVB(data, 3, display.dvbCharset())
              << ", Type: " << int(type)
              << Format(" (0x%02X)", int(type)) << std::endl
              << margin << "Type: " << names::TeletextType(type) << std::endl
@@ -128,28 +128,18 @@ void ts::TeletextDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, 
 
 void ts::TeletextDescriptor::serialize (Descriptor& desc, const DVBCharset* charset) const
 {
-    if (entries.size() > MAX_ENTRIES) {
-        desc.invalidate();
-        return;
-    }
-
-    ByteBlockPtr bbp(new ByteBlock(2));
-    CheckNonNull(bbp.pointer());
+    ByteBlockPtr bbp(serializeStart());
 
     for (EntryList::const_iterator it = entries.begin(); it != entries.end(); ++it) {
-        if (it->language_code.length() != 3) {
+        if (!SerializeLanguageCode(*bbp, it->language_code, charset)) {
             desc.invalidate();
             return;
         }
-        bbp->append(it->language_code);
         bbp->appendUInt8((it->teletext_type << 3) | (it->magazineNumber() & 0x07));
         bbp->appendUInt8(it->pageNumber());
     }
 
-    (*bbp)[0] = _tag;
-    (*bbp)[1] = uint8_t(bbp->size() - 2);
-    Descriptor d(bbp, SHARE);
-    desc = d;
+    serializeEnd(desc, bbp);
 }
 
 
@@ -170,7 +160,7 @@ void ts::TeletextDescriptor::deserialize (const Descriptor& desc, const DVBChars
 
     while (size >= 5) {
         Entry entry;
-        entry.language_code = std::string(reinterpret_cast<const char*>(data), 3);
+        entry.language_code = UString::FromDVB(data, 3, charset);
         entry.teletext_type = data[3] >> 3;
         entry.setFullNumber(data[3] & 0x07, data[4]);
         entries.push_back(entry);

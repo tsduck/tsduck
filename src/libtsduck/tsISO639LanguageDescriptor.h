@@ -49,30 +49,22 @@ namespace ts {
         struct TSDUCKDLL Entry
         {
             // Public members
-            std::string language_code;  //!< ISO-639 language code, 3 characters.
-            uint8_t     audio_type;     //!< Audio type.
+            UString language_code;  //!< ISO-639 language code, 3 characters.
+            uint8_t audio_type;     //!< Audio type.
 
             //!
             //! Default constructor.
             //! @param [in] code ISO-639 language code, 3 characters, as a C-string. Can be null.
             //! @param [in] type Audio type.
             //!
-            Entry(const char* code = 0, uint8_t type = 0) :
-                language_code(code != 0 ? code : ""),
-                audio_type(type)
-            {
-            }
+            Entry(const char* code = 0, uint8_t type = 0);
 
             //!
             //! Constructor.
             //! @param [in] code ISO-639 language code, 3 characters, as a C++ string.
             //! @param [in] type Audio type.
             //!
-            Entry(const std::string& code, uint8_t type) :
-                language_code(code),
-                audio_type(type)
-            {
-            }
+            Entry(const UString& code, uint8_t type);
         };
 
         //!
@@ -98,7 +90,7 @@ namespace ts {
         //! @param [in] code ISO-639 language code, 3 characters.
         //! @param [in] type Audio type.
         //!
-        ISO639LanguageDescriptor(const std::string& code, uint8_t type);
+        ISO639LanguageDescriptor(const UString& code, uint8_t type);
 
         //!
         //! Constructor from a binary descriptor

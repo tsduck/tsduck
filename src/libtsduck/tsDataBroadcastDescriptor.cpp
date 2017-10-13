@@ -95,18 +95,9 @@ void ts::DataBroadcastDescriptor::DisplayDescriptor(TablesDisplay& display, DID 
         DataBroadcastIdDescriptor::DisplaySelectorBytes(display, data, slength, indent, dbid);
         data += slength; size -= slength;
         if (size >= 3) {
-            strm << margin << "Language: " << Printable(data, 3) << std::endl;
+            strm << margin << "Language: " << UString::FromDVB(data, 3, display.dvbCharset()) << std::endl;
             data += 3; size -= 3;
-            size_t length = 0;
-            if (size >= 1) {
-                length = data[0];
-                data += 1; size -= 1;
-                if (length > size) {
-                    length = size;
-                }
-            }
-            strm << margin << "Description: \"" << Printable(data, length) << "\"" << std::endl;
-            data += length; size -= length;
+            strm << margin << "Description: \"" << UString::FromDVBWithByteLength(data, size, display.dvbCharset()) << "\"" << std::endl;
         }
     }
 
@@ -120,26 +111,19 @@ void ts::DataBroadcastDescriptor::DisplayDescriptor(TablesDisplay& display, DID 
 
 void ts::DataBroadcastDescriptor::serialize (Descriptor& desc, const DVBCharset* charset) const
 {
-    if (language_code.length() != 3 || selector_bytes.size() + text.size() + 10 > MAX_DESCRIPTOR_SIZE) {
-        desc.invalidate();
-        return;
-    }
-
-    ByteBlockPtr bbp(new ByteBlock(2));
-    CheckNonNull(bbp.pointer());
+    ByteBlockPtr bbp(serializeStart());
 
     bbp->appendUInt16(data_broadcast_id);
     bbp->appendUInt8(component_tag);
     bbp->appendUInt8(int8_t(selector_bytes.size()));
     bbp->append(selector_bytes);
-    bbp->append(language_code);
-    bbp->appendUInt8(int8_t(text.size()));
-    bbp->append(text);
+    if (!SerializeLanguageCode(*bbp, language_code, charset)) {
+        desc.invalidate();
+        return;
+    }
+    bbp->append(text.toDVBWithByteLength(0, UString::NPOS, charset));
 
-    (*bbp)[0] = _tag;
-    (*bbp)[1] = uint8_t(bbp->size() - 2);
-    Descriptor d(bbp, SHARE);
-    desc = d;
+    serializeEnd(desc, bbp);
 }
 
 
@@ -172,14 +156,10 @@ void ts::DataBroadcastDescriptor::deserialize (const Descriptor& desc, const DVB
     selector_bytes.copy(data, length);
     data += length; size -= length;
 
-    language_code = std::string(reinterpret_cast<const char*>(data), 3);
-    length = GetUInt8(data + 3);
-    data += 4; size -= 4;
-
-    _is_valid = size == length;
-    if (_is_valid) {
-        text = std::string(reinterpret_cast<const char*>(data), length);
-    }
+    language_code = UString::FromDVB(data, 3, charset);
+    data += 3; size -= 3;
+    text = UString::FromDVBWithByteLength(data, size, charset);
+    _is_valid = size == 0;
 }
 
 

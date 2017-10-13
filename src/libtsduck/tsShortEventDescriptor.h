@@ -45,9 +45,9 @@ namespace ts {
     {
     public:
         // Public members
-        std::string language_code;  //!< ISO-639 language code, 3 characters.
-        std::string event_name;     //!< Event name.
-        std::string text;           //!< Short event description.
+        UString language_code;  //!< ISO-639 language code, 3 characters.
+        UString event_name;     //!< Event name.
+        UString text;           //!< Short event description.
 
         //!
         //! Default constructor.
@@ -60,7 +60,7 @@ namespace ts {
         //! @param [in] name Event name.
         //! @param [in] text Short event description.
         //!
-        ShortEventDescriptor(const std::string& lang, const std::string& name, const std::string& text);
+        ShortEventDescriptor(const UString& lang, const UString& name, const UString& text);
 
         //!
         //! Constructor from a binary descriptor.
@@ -73,9 +73,10 @@ namespace ts {
         //! Split the content into several ShortEventDescriptor.
         //! Split if the content is too long and add them in a descriptor list.
         //! @param [in,out] dlist Descriptor list.
+        //! @param [in] charset If not zero, default character set to use.
         //! @return The number of descriptors.
         //!
-        size_t splitAndAdd(DescriptorList& dlist) const;
+        size_t splitAndAdd(DescriptorList& dlist, const DVBCharset* charset = 0) const;
 
         // Inherited methods
         virtual void serialize(Descriptor&, const DVBCharset* = 0) const override;

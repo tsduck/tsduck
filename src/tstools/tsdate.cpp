@@ -183,7 +183,7 @@ void TableHandler::handleTable(ts::SectionDemux&, const ts::BinaryTable& table)
             }
             std::cout << "* TOT UTC time: " << tot.utc_time << std::endl;
             for (ts::TOT::RegionVector::const_iterator it = tot.regions.begin(); it != tot.regions.end(); ++it) {
-                std::cout << "  Country: " << ts::Printable(it->country)
+                std::cout << "  Country: " << it->country
                           << ", region: " << it->region_id
                           << std::endl
                           << "  Local time:   " << tot.localTime(*it)

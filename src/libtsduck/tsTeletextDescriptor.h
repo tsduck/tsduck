@@ -49,9 +49,9 @@ namespace ts {
         struct TSDUCKDLL Entry
         {
             // Public members
-            uint8_t     teletext_type;      //!< Teletext type, 5 bits.
-            uint16_t    page_number;        //!< Teletext page number, combination of page and magazine number.
-            std::string language_code;      //!< ISO-639 language code, 3 characters.
+            uint8_t  teletext_type;  //!< Teletext type, 5 bits.
+            uint16_t page_number;    //!< Teletext page number, combination of page and magazine number.
+            UString  language_code;  //!< ISO-639 language code, 3 characters.
 
             //!
             //! Default constructor.

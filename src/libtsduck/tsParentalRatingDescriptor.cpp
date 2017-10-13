@@ -45,8 +45,20 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::ParentalRatingDescriptor::DisplayDescriptor, ts::ED
 
 
 //----------------------------------------------------------------------------
-// Default constructor:
+// Constructors
 //----------------------------------------------------------------------------
+
+ts::ParentalRatingDescriptor::Entry::Entry(const char* code, uint8_t rate) :
+    country_code(code),
+    rating(rate)
+{
+}
+
+ts::ParentalRatingDescriptor::Entry::Entry(const UString& code, uint8_t rate) :
+    country_code(code),
+    rating(rate)
+{
+}
 
 ts::ParentalRatingDescriptor::ParentalRatingDescriptor() :
     AbstractDescriptor(DID_PARENTAL_RATING, "parental_rating_descriptor"),
@@ -55,11 +67,6 @@ ts::ParentalRatingDescriptor::ParentalRatingDescriptor() :
     _is_valid = true;
 }
 
-
-//----------------------------------------------------------------------------
-// Constructor from a binary descriptor
-//----------------------------------------------------------------------------
-
 ts::ParentalRatingDescriptor::ParentalRatingDescriptor(const Descriptor& desc, const DVBCharset* charset) :
     AbstractDescriptor(DID_PARENTAL_RATING, "parental_rating_descriptor"),
     entries()
@@ -67,17 +74,12 @@ ts::ParentalRatingDescriptor::ParentalRatingDescriptor(const Descriptor& desc, c
     deserialize(desc, charset);
 }
 
-
-//----------------------------------------------------------------------------
-// Constructor with one entry
-//----------------------------------------------------------------------------
-
-ts::ParentalRatingDescriptor::ParentalRatingDescriptor (const std::string& language_, uint8_t rating_) :
-    AbstractDescriptor (DID_PARENTAL_RATING, "parental_rating_descriptor"),
-    entries ()
+ts::ParentalRatingDescriptor::ParentalRatingDescriptor(const UString& code, uint8_t rate) :
+    AbstractDescriptor(DID_PARENTAL_RATING, "parental_rating_descriptor"),
+    entries()
 {
     _is_valid = true;
-    entries.push_back (Entry (language_, rating_));
+    entries.push_back(Entry(code, rate));
 }
 
 
@@ -87,22 +89,17 @@ ts::ParentalRatingDescriptor::ParentalRatingDescriptor (const std::string& langu
 
 void ts::ParentalRatingDescriptor::serialize (Descriptor& desc, const DVBCharset* charset) const
 {
-    ByteBlockPtr bbp (new ByteBlock (2));
-    CheckNonNull (bbp.pointer());
+    ByteBlockPtr bbp(serializeStart());
 
     for (EntryList::const_iterator it = entries.begin(); it != entries.end(); ++it) {
-        if (it->language_code.length() != 3 || bbp->size() > 251) {
+        if (!SerializeLanguageCode(*bbp, it->country_code, charset)) {
             desc.invalidate();
             return;
         }
-        bbp->append (it->language_code);
-        bbp->appendUInt8 (it->rating);
+        bbp->appendUInt8(it->rating);
     }
 
-    (*bbp)[0] = _tag;
-    (*bbp)[1] = uint8_t(bbp->size() - 2);
-    Descriptor d (bbp, SHARE);
-    desc = d;
+    serializeEnd(desc, bbp);
 }
 
 
@@ -112,17 +109,17 @@ void ts::ParentalRatingDescriptor::serialize (Descriptor& desc, const DVBCharset
 
 void ts::ParentalRatingDescriptor::deserialize (const Descriptor& desc, const DVBCharset* charset)
 {
-    if (!(_is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() % 4 == 0)) {
-        return;
-    }
-
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
+    _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() % 4 == 0;
     entries.clear();
 
-    while (size >= 4) {
-        entries.push_back (Entry (std::string (reinterpret_cast <const char*> (data), 3), data[3]));
-        data += 4; size -= 4;
+    if (_is_valid) {
+        const uint8_t* data = desc.payload();
+        size_t size = desc.payloadSize();
+        while (size >= 4) {
+            entries.push_back(Entry(UString::FromDVB(data, 3, charset), data[3]));
+            data += 4;
+            size -= 4;
+        }
     }
 }
 
@@ -137,8 +134,8 @@ void ts::ParentalRatingDescriptor::DisplayDescriptor(TablesDisplay& display, DID
     const std::string margin(indent, ' ');
 
     while (size >= 4) {
-        uint8_t rating = data[3];
-        strm << margin << "Country code: " << Printable(data, 3)
+        const uint8_t rating = data[3];
+        strm << margin << "Country code: " << UString::FromDVB(data, 3, display.dvbCharset())
              << Format(", rating: 0x%02X ", int(rating));
         if (rating == 0) {
             strm << "(undefined)";
@@ -166,7 +163,7 @@ ts::XML::Element* ts::ParentalRatingDescriptor::toXML(XML& xml, XML::Element* pa
     XML::Element* root = _is_valid ? xml.addElement(parent, _xml_name) : 0;
     for (EntryList::const_iterator it = entries.begin(); it != entries.end(); ++it) {
         XML::Element* e = xml.addElement(root, "country");
-        xml.setAttribute(e, "country_code", it->language_code);
+        xml.setAttribute(e, "country_code", it->country_code);
         xml.setIntAttribute(e, "rating", it->rating, true);
     }
     return root;
@@ -189,7 +186,7 @@ void ts::ParentalRatingDescriptor::fromXML(XML& xml, const XML::Element* element
     for (size_t i = 0; _is_valid && i < children.size(); ++i) {
         Entry entry;
         _is_valid =
-            xml.getAttribute(entry.language_code, children[i], "country_code", true, "", 3, 3) &&
+            xml.getAttribute(entry.country_code, children[i], "country_code", true, "", 3, 3) &&
             xml.getIntAttribute<uint8_t>(entry.rating, children[i], "rating", true, 0, 0x00, 0xFF);
         if (_is_valid) {
             entries.push_back(entry);

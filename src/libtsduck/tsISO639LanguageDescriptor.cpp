@@ -42,8 +42,20 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::ISO639LanguageDescriptor::DisplayDescriptor, ts::ED
 
 
 //----------------------------------------------------------------------------
-// Default constructor:
+// Constructors
 //----------------------------------------------------------------------------
+
+ts::ISO639LanguageDescriptor::Entry::Entry(const char* code, uint8_t type) :
+    language_code(code),
+    audio_type(type)
+{
+}
+
+ts::ISO639LanguageDescriptor::Entry::Entry(const UString& code, uint8_t type) :
+    language_code(code),
+    audio_type(type)
+{
+}
 
 ts::ISO639LanguageDescriptor::ISO639LanguageDescriptor() :
     AbstractDescriptor(DID_LANGUAGE, "ISO_639_language_descriptor"),
@@ -52,11 +64,6 @@ ts::ISO639LanguageDescriptor::ISO639LanguageDescriptor() :
     _is_valid = true;
 }
 
-
-//----------------------------------------------------------------------------
-// Constructor from a binary descriptor
-//----------------------------------------------------------------------------
-
 ts::ISO639LanguageDescriptor::ISO639LanguageDescriptor(const Descriptor& desc, const DVBCharset* charset) :
     AbstractDescriptor(DID_LANGUAGE, "ISO_639_language_descriptor"),
     entries()
@@ -64,17 +71,12 @@ ts::ISO639LanguageDescriptor::ISO639LanguageDescriptor(const Descriptor& desc, c
     deserialize(desc, charset);
 }
 
-
-//----------------------------------------------------------------------------
-// Constructor with one language code.
-//----------------------------------------------------------------------------
-
-ts::ISO639LanguageDescriptor::ISO639LanguageDescriptor (const std::string& code, uint8_t type) :
-    AbstractDescriptor (DID_LANGUAGE, "ISO_639_language_descriptor"),
-    entries ()
+ts::ISO639LanguageDescriptor::ISO639LanguageDescriptor(const UString& code, uint8_t type) :
+    AbstractDescriptor(DID_LANGUAGE, "ISO_639_language_descriptor"),
+    entries()
 {
     _is_valid = true;
-    entries.push_back (Entry (code.c_str(), type));
+    entries.push_back(Entry(code, type));
 }
 
 
@@ -84,22 +86,17 @@ ts::ISO639LanguageDescriptor::ISO639LanguageDescriptor (const std::string& code,
 
 void ts::ISO639LanguageDescriptor::serialize (Descriptor& desc, const DVBCharset* charset) const
 {
-    ByteBlockPtr bbp (new ByteBlock (2));
-    CheckNonNull (bbp.pointer());
+    ByteBlockPtr bbp(serializeStart());
 
     for (EntryList::const_iterator it = entries.begin(); it != entries.end(); ++it) {
-        if (it->language_code.length() != 3) {
+        if (!SerializeLanguageCode(*bbp, it->language_code, charset)) {
             desc.invalidate();
             return;
         }
-        bbp->append (it->language_code);
-        bbp->appendUInt8 (it->audio_type);
+        bbp->appendUInt8(it->audio_type);
     }
 
-    (*bbp)[0] = _tag;
-    (*bbp)[1] = uint8_t(bbp->size() - 2);
-    Descriptor d (bbp, SHARE);
-    desc = d;
+    serializeEnd(desc, bbp);
 }
 
 
@@ -116,7 +113,7 @@ void ts::ISO639LanguageDescriptor::deserialize (const Descriptor& desc, const DV
         const uint8_t* data = desc.payload();
         size_t size = desc.payloadSize();
         while (size >= 4) {
-            entries.push_back(Entry(std::string(reinterpret_cast<const char*>(data), 3), data[3]));
+            entries.push_back(Entry(UString::FromDVB(data, 3, charset), data[3]));
             data += 4;
             size -= 4;
         }
@@ -134,8 +131,8 @@ void ts::ISO639LanguageDescriptor::DisplayDescriptor(TablesDisplay& display, DID
     const std::string margin(indent, ' ');
 
     while (size >= 4) {
-        uint8_t type = data[3];
-        strm << margin << "Language: " << Printable(data, 3)
+        const uint8_t type = data[3];
+        strm << margin << "Language: " << UString::FromDVB(data, 3, display.dvbCharset())
              << ", Type: " << int(type)
              << " (" << names::AudioType(type) << ")" << std::endl;
         data += 4; size -= 4;

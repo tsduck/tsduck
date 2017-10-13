@@ -44,11 +44,11 @@ namespace ts {
     {
     public:
         // Public members
-        uint16_t    data_broadcast_id;  //!< Data broadcast id.
-        uint8_t     component_tag;      //!< Component tag.
-        ByteBlock   selector_bytes;     //!< Selector bytes.
-        std::string language_code;      //!< ISO-639 language code, 3 characters.
-        std::string text;               //!< Text description.
+        uint16_t  data_broadcast_id;  //!< Data broadcast id.
+        uint8_t   component_tag;      //!< Component tag.
+        ByteBlock selector_bytes;     //!< Selector bytes.
+        UString   language_code;      //!< ISO-639 language code, 3 characters.
+        UString   text;               //!< Text description.
 
         //!
         //! Default constructor.
