@@ -375,6 +375,13 @@ namespace ts {
         ByteBlock toDVBWithByteLength(size_t start = 0, size_t count = NPOS, const DVBCharset* charset = 0) const;
 
         //!
+        //! Get the display width in characters.
+        //! Any combining diacritical character is not counted in the width since it is combined with the preceding character.
+        //! @return The display width in characters.
+        //!
+        size_type width() const;
+
+        //!
         //! Trim leading and / or trailing space characters.
         //! @param [in] leading If true (the default), remove all space characters at the beginning of the string.
         //! @param [in] trailing If true (the default), remove all space characters at the end of the string.

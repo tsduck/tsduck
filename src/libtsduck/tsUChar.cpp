@@ -806,6 +806,16 @@ ts::UString ts::RemoveAccent(UChar c)
     return it == wa->end() ? ts::UString(1, c) : ts::UString::FromUTF8(it->second);
 }
 
+bool ts::IsCombiningDiacritical(UChar c)
+{
+    return  c == DIAERESIS ||  // 0x00A8
+            (c >= UChar(0x00B4) && c <= UChar(0x00B8)) ||  // latin diacritics
+            (c >= UChar(0x0300) && c <= UChar(0x036F)) ||  // latin diacritics
+            (c >= UChar(0x0384) && c <= UChar(0x0385)) ||  // greek diacritics
+            (c >= UChar(0x064B) && c <= UChar(0x0652)) ||  // arabic diacritics
+            (c >= UChar(0x200E) && c <= UChar(0x200F));    // reverse left/right orientation marks
+}
+
 ts::UString ts::ToHTML(UChar c)
 {
     const HTMLEntities* he = HTMLEntities::Instance();
