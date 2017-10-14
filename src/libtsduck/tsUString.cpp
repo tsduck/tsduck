@@ -235,6 +235,29 @@ std::string ts::UString::toUTF8() const
 
 
 //----------------------------------------------------------------------------
+// Get the display width in characters.
+//----------------------------------------------------------------------------
+
+ts::UString::size_type ts::UString::width() const
+{
+    if (empty()) {
+        return 0;
+    }
+    else {
+        // Ignore all diacritical characters after the first one.
+        // A diacritical character in first position does count since it cannot be combined with the previous one.
+        size_type wid = 1;
+        for (size_type i = 1; i < size(); ++i) {
+            if (!IsCombiningDiacritical((*this)[i])) {
+                ++wid;
+            }
+        }
+        return wid;
+    }
+}
+
+
+//----------------------------------------------------------------------------
 // Trim leading & trailing spaces in the string
 //----------------------------------------------------------------------------
 
@@ -477,7 +500,7 @@ ts::UString ts::UString::toSplitLines(size_type maxWidth, const ts::UString& oth
 
 void ts::UString::justifyLeft(size_type width, UChar pad, bool truncate)
 {
-    const size_type len = length();
+    const size_type len = this->width();
     if (truncate && len > width) {
         erase(width);
     }
@@ -500,7 +523,7 @@ ts::UString ts::UString::toJustifiedLeft(size_type width, UChar pad, bool trunca
 
 void ts::UString::justifyRight(size_type width, UChar pad, bool truncate)
 {
-    const size_type len = length();
+    const size_type len = this->width();
     if (truncate && len > width) {
         erase(0, len - width);
     }
@@ -523,7 +546,7 @@ ts::UString ts::UString::toJustifiedRight(size_type width, UChar pad, bool trunc
 
 void ts::UString::justifyCentered(size_type width, UChar pad, bool truncate)
 {
-    const size_type len = length();
+    const size_type len = this->width();
     if (truncate && len > width) {
         erase(width);
     }
@@ -549,7 +572,7 @@ ts::UString ts::UString::toJustifiedCentered(size_type width, UChar pad, bool tr
 
 void ts::UString::justify(const UString& right, size_type width, UChar pad)
 {
-    const size_type len = length() + right.length();
+    const size_type len = this->width() + right.width();
     if (len < width) {
         append(width - len, pad);
     }

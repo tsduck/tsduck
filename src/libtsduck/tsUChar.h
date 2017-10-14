@@ -129,6 +129,14 @@ namespace ts {
     TSDUCKDLL UString RemoveAccent(UChar c);
 
     //!
+    //! Check if a character is a combining diacritical character.
+    //! Such a character, when printed, is combined with the preceding character.
+    //! @param [in] c A character.
+    //! @return True if @a c is a combining diacritical character.
+    //!
+    TSDUCKDLL bool IsCombiningDiacritical(UChar c);
+
+    //!
     //! Convert a character into its corresponding HTML sequence.
     //! @param [in] c A character.
     //! @return A string containing the html sequence for @a c.
@@ -480,15 +488,130 @@ namespace ts {
     static const UChar LATIN_SMALL_LETTER_Z_WITH_DOT_ABOVE         = UChar(0x017C); //!< ISO-8859 Unicode character.
     static const UChar LATIN_CAPITAL_LETTER_Z_WITH_CARON           = UChar(0x017D); //!< ISO-8859 Unicode character.
     static const UChar LATIN_SMALL_LETTER_Z_WITH_CARON             = UChar(0x017E); //!< ISO-8859 Unicode character.
+    static const UChar LATIN_SMALL_F_WITH_HOOK                     = UChar(0x0192); //!< Non-ISO-8859 Unicode character.
     static const UChar LATIN_CAPITAL_LETTER_S_WITH_COMMA_BELOW     = UChar(0x0218); //!< ISO-8859 Unicode character.
     static const UChar LATIN_SMALL_LETTER_S_WITH_COMMA_BELOW       = UChar(0x0219); //!< ISO-8859 Unicode character.
     static const UChar LATIN_CAPITAL_LETTER_T_WITH_COMMA_BELOW     = UChar(0x021A); //!< ISO-8859 Unicode character.
     static const UChar LATIN_SMALL_LETTER_T_WITH_COMMA_BELOW       = UChar(0x021B); //!< ISO-8859 Unicode character.
+    static const UChar MODIFIER_LETTER_CIRCUMFLEX_ACCENT           = UChar(0x02C6); //!< Non-ISO-8859 Unicode character.
     static const UChar CARON                                       = UChar(0x02C7); //!< ISO-8859 Unicode character.
     static const UChar BREVE                                       = UChar(0x02D8); //!< ISO-8859 Unicode character.
     static const UChar DOT_ABOVE                                   = UChar(0x02D9); //!< ISO-8859 Unicode character.
     static const UChar OGONEK                                      = UChar(0x02DB); //!< ISO-8859 Unicode character.
+    static const UChar SMALL_TILDE                                 = UChar(0x02DC); //!< Non-ISO-8859 Unicode character.
     static const UChar DOUBLE_ACUTE_ACCENT                         = UChar(0x02DD); //!< ISO-8859 Unicode character.
+    static const UChar COMBINING_GRAVE_ACCENT                      = UChar(0x0300); //!< Combining diacritical character.
+    static const UChar COMBINING_ACUTE_ACCENT                      = UChar(0x0301); //!< Combining diacritical character.
+    static const UChar COMBINING_CIRCUMFLEX_ACCENT                 = UChar(0x0302); //!< Combining diacritical character.
+    static const UChar COMBINING_TILDE                             = UChar(0x0303); //!< Combining diacritical character.
+    static const UChar COMBINING_MACRON                            = UChar(0x0304); //!< Combining diacritical character.
+    static const UChar COMBINING_OVERLINE                          = UChar(0x0305); //!< Combining diacritical character.
+    static const UChar COMBINING_BREVE                             = UChar(0x0306); //!< Combining diacritical character.
+    static const UChar COMBINING_DOT_ABOVE                         = UChar(0x0307); //!< Combining diacritical character.
+    static const UChar COMBINING_DIAERESIS                         = UChar(0x0308); //!< Combining diacritical character.
+    static const UChar COMBINING_HOOK_ABOVE                        = UChar(0x0309); //!< Combining diacritical character.
+    static const UChar COMBINING_RING_ABOVE                        = UChar(0x030A); //!< Combining diacritical character.
+    static const UChar COMBINING_DOUBLE_ACUTE_ACCENT               = UChar(0x030B); //!< Combining diacritical character.
+    static const UChar COMBINING_CARON                             = UChar(0x030C); //!< Combining diacritical character.
+    static const UChar COMBINING_VERTICAL_LINE_ABOVE               = UChar(0x030D); //!< Combining diacritical character.
+    static const UChar COMBINING_DOUBLE_VERTICAL_LINE_ABOVE        = UChar(0x030E); //!< Combining diacritical character.
+    static const UChar COMBINING_DOUBLE_GRAVE_ACCENT               = UChar(0x030F); //!< Combining diacritical character.
+    static const UChar COMBINING_CANDRABINDU                       = UChar(0x0310); //!< Combining diacritical character.
+    static const UChar COMBINING_INVERTED_BREVE                    = UChar(0x0311); //!< Combining diacritical character.
+    static const UChar COMBINING_TURNED_COMMA_ABOVE                = UChar(0x0312); //!< Combining diacritical character.
+    static const UChar COMBINING_COMMA_ABOVE                       = UChar(0x0313); //!< Combining diacritical character.
+    static const UChar COMBINING_REVERSED_COMMA_ABOVE              = UChar(0x0314); //!< Combining diacritical character.
+    static const UChar COMBINING_COMMA_ABOVE_RIGHT                 = UChar(0x0315); //!< Combining diacritical character.
+    static const UChar COMBINING_GRAVE_ACCENT_BELOW                = UChar(0x0316); //!< Combining diacritical character.
+    static const UChar COMBINING_ACUTE_ACCENT_BELOW                = UChar(0x0317); //!< Combining diacritical character.
+    static const UChar COMBINING_LEFT_TACK_BELOW                   = UChar(0x0318); //!< Combining diacritical character.
+    static const UChar COMBINING_RIGHT_TACK_BELOW                  = UChar(0x0319); //!< Combining diacritical character.
+    static const UChar COMBINING_LEFT_ANGLE_ABOVE                  = UChar(0x031A); //!< Combining diacritical character.
+    static const UChar COMBINING_HORN                              = UChar(0x031B); //!< Combining diacritical character.
+    static const UChar COMBINING_LEFT_HALF_RING_BELOW              = UChar(0x031C); //!< Combining diacritical character.
+    static const UChar COMBINING_UP_TACK_BELOW                     = UChar(0x031D); //!< Combining diacritical character.
+    static const UChar COMBINING_DOWN_TACK_BELOW                   = UChar(0x031E); //!< Combining diacritical character.
+    static const UChar COMBINING_PLUS_SIGN_BELOW                   = UChar(0x031F); //!< Combining diacritical character.
+    static const UChar COMBINING_MINUS_SIGN_BELOW                  = UChar(0x0320); //!< Combining diacritical character.
+    static const UChar COMBINING_PALATALIZED_HOOK_BELOW            = UChar(0x0321); //!< Combining diacritical character.
+    static const UChar COMBINING_RETROFLEX_HOOK_BELOW              = UChar(0x0322); //!< Combining diacritical character.
+    static const UChar COMBINING_DOT_BELOW                         = UChar(0x0323); //!< Combining diacritical character.
+    static const UChar COMBINING_DIAERESIS_BELOW                   = UChar(0x0324); //!< Combining diacritical character.
+    static const UChar COMBINING_RING_BELOW                        = UChar(0x0325); //!< Combining diacritical character.
+    static const UChar COMBINING_COMMA_BELOW                       = UChar(0x0326); //!< Combining diacritical character.
+    static const UChar COMBINING_CEDILLA                           = UChar(0x0327); //!< Combining diacritical character.
+    static const UChar COMBINING_OGONEK                            = UChar(0x0328); //!< Combining diacritical character.
+    static const UChar COMBINING_VERTICAL_LINE_BELOW               = UChar(0x0329); //!< Combining diacritical character.
+    static const UChar COMBINING_BRIDGE_BELOW                      = UChar(0x032A); //!< Combining diacritical character.
+    static const UChar COMBINING_INVERTED_DOUBLE_ARCH_BELOW        = UChar(0x032B); //!< Combining diacritical character.
+    static const UChar COMBINING_CARON_BELOW                       = UChar(0x032C); //!< Combining diacritical character.
+    static const UChar COMBINING_CIRCUMFLEX_ACCENT_BELOW           = UChar(0x032D); //!< Combining diacritical character.
+    static const UChar COMBINING_BREVE_BELOW                       = UChar(0x032E); //!< Combining diacritical character.
+    static const UChar COMBINING_INVERTED_BREVE_BELOW              = UChar(0x032F); //!< Combining diacritical character.
+    static const UChar COMBINING_TILDE_BELOW                       = UChar(0x0330); //!< Combining diacritical character.
+    static const UChar COMBINING_MACRON_BELOW                      = UChar(0x0331); //!< Combining diacritical character.
+    static const UChar COMBINING_LOW_LINE                          = UChar(0x0332); //!< Combining diacritical character.
+    static const UChar COMBINING_DOUBLE_LOW_LINE                   = UChar(0x0333); //!< Combining diacritical character.
+    static const UChar COMBINING_TILDE_OVERLAY                     = UChar(0x0334); //!< Combining diacritical character.
+    static const UChar COMBINING_SHORT_STROKE_OVERLAY              = UChar(0x0335); //!< Combining diacritical character.
+    static const UChar COMBINING_LONG_STROKE_OVERLAY               = UChar(0x0336); //!< Combining diacritical character.
+    static const UChar COMBINING_SHORT_SOLIDUS_OVERLAY             = UChar(0x0337); //!< Combining diacritical character.
+    static const UChar COMBINING_LONG_SOLIDUS_OVERLAY              = UChar(0x0338); //!< Combining diacritical character.
+    static const UChar COMBINING_RIGHT_HALF_RING_BELOW             = UChar(0x0339); //!< Combining diacritical character.
+    static const UChar COMBINING_INVERTED_BRIDGE_BELOW             = UChar(0x033A); //!< Combining diacritical character.
+    static const UChar COMBINING_SQUARE_BELOW                      = UChar(0x033B); //!< Combining diacritical character.
+    static const UChar COMBINING_SEAGULL_BELOW                     = UChar(0x033C); //!< Combining diacritical character.
+    static const UChar COMBINING_X_ABOVE                           = UChar(0x033D); //!< Combining diacritical character.
+    static const UChar COMBINING_VERTICAL_TILDE                    = UChar(0x033E); //!< Combining diacritical character.
+    static const UChar COMBINING_DOUBLE_OVERLINE                   = UChar(0x033F); //!< Combining diacritical character.
+    static const UChar COMBINING_GRAVE_TONE_MARK                   = UChar(0x0340); //!< Combining diacritical character.
+    static const UChar COMBINING_ACUTE_TONE_MARK                   = UChar(0x0341); //!< Combining diacritical character.
+    static const UChar COMBINING_GREEK_PERISPOMENI                 = UChar(0x0342); //!< Combining diacritical character.
+    static const UChar COMBINING_GREEK_KORONIS                     = UChar(0x0343); //!< Combining diacritical character.
+    static const UChar COMBINING_GREEK_DIALYTIKA_TONOS             = UChar(0x0344); //!< Combining diacritical character.
+    static const UChar COMBINING_GREEK_YPOGEGRAMMENI               = UChar(0x0345); //!< Combining diacritical character.
+    static const UChar COMBINING_BRIDGE_ABOVE                      = UChar(0x0346); //!< Combining diacritical character.
+    static const UChar COMBINING_EQUALS_SIGN_BELOW                 = UChar(0x0347); //!< Combining diacritical character.
+    static const UChar COMBINING_DOUBLE_VERTICAL_LINE_BELOW        = UChar(0x0348); //!< Combining diacritical character.
+    static const UChar COMBINING_LEFT_ANGLE_BELOW                  = UChar(0x0349); //!< Combining diacritical character.
+    static const UChar COMBINING_NOT_TILDE_ABOVE                   = UChar(0x034A); //!< Combining diacritical character.
+    static const UChar COMBINING_HOMOTHETIC_ABOVE                  = UChar(0x034B); //!< Combining diacritical character.
+    static const UChar COMBINING_ALMOST_EQUAL_TO_ABOVE             = UChar(0x034C); //!< Combining diacritical character.
+    static const UChar COMBINING_LEFT_RIGHT_ARROW_BELOW            = UChar(0x034D); //!< Combining diacritical character.
+    static const UChar COMBINING_UPWARDS_ARROW_BELOW               = UChar(0x034E); //!< Combining diacritical character.
+    static const UChar COMBINING_GRAPHEME_JOINER                   = UChar(0x034F); //!< Combining diacritical character.
+    static const UChar COMBINING_RIGHT_ARROWHEAD_ABOVE             = UChar(0x0350); //!< Combining diacritical character.
+    static const UChar COMBINING_LEFT_HALF_RING_ABOVE              = UChar(0x0351); //!< Combining diacritical character.
+    static const UChar COMBINING_FERMATA                           = UChar(0x0352); //!< Combining diacritical character.
+    static const UChar COMBINING_X_BELOW                           = UChar(0x0353); //!< Combining diacritical character.
+    static const UChar COMBINING_LEFT_ARROWHEAD_BELOW              = UChar(0x0354); //!< Combining diacritical character.
+    static const UChar COMBINING_RIGHT_ARROWHEAD_BELOW             = UChar(0x0355); //!< Combining diacritical character.
+    static const UChar COMBINING_RIGHT_ARROWHEAD_AND_UP_ARROWHEAD_BELOW = UChar(0x0356); //!< Combining diacritical character.
+    static const UChar COMBINING_RIGHT_HALF_RING_ABOVE             = UChar(0x0357); //!< Combining diacritical character.
+    static const UChar COMBINING_DOT_ABOVE_RIGHT                   = UChar(0x0358); //!< Combining diacritical character.
+    static const UChar COMBINING_ASTERISK_BELOW                    = UChar(0x0359); //!< Combining diacritical character.
+    static const UChar COMBINING_DOUBLE_RING_BELOW                 = UChar(0x035A); //!< Combining diacritical character.
+    static const UChar COMBINING_ZIGZAG_ABOVE                      = UChar(0x035B); //!< Combining diacritical character.
+    static const UChar COMBINING_DOUBLE_BREVE_BELOW                = UChar(0x035C); //!< Combining diacritical character.
+    static const UChar COMBINING_DOUBLE_BREVE                      = UChar(0x035D); //!< Combining diacritical character.
+    static const UChar COMBINING_DOUBLE_MACRON                     = UChar(0x035E); //!< Combining diacritical character.
+    static const UChar COMBINING_DOUBLE_MACRON_BELOW               = UChar(0x035F); //!< Combining diacritical character.
+    static const UChar COMBINING_DOUBLE_TILDE                      = UChar(0x0360); //!< Combining diacritical character.
+    static const UChar COMBINING_DOUBLE_INVERTED_BREVE             = UChar(0x0361); //!< Combining diacritical character.
+    static const UChar COMBINING_DOUBLE_RIGHTWARDS_ARROW_BELOW     = UChar(0x0362); //!< Combining diacritical character.
+    static const UChar COMBINING_LATIN_SMALL_LETTER_A              = UChar(0x0363); //!< Combining diacritical character.
+    static const UChar COMBINING_LATIN_SMALL_LETTER_E              = UChar(0x0364); //!< Combining diacritical character.
+    static const UChar COMBINING_LATIN_SMALL_LETTER_I              = UChar(0x0365); //!< Combining diacritical character.
+    static const UChar COMBINING_LATIN_SMALL_LETTER_O              = UChar(0x0366); //!< Combining diacritical character.
+    static const UChar COMBINING_LATIN_SMALL_LETTER_U              = UChar(0x0367); //!< Combining diacritical character.
+    static const UChar COMBINING_LATIN_SMALL_LETTER_C              = UChar(0x0368); //!< Combining diacritical character.
+    static const UChar COMBINING_LATIN_SMALL_LETTER_D              = UChar(0x0369); //!< Combining diacritical character.
+    static const UChar COMBINING_LATIN_SMALL_LETTER_H              = UChar(0x036A); //!< Combining diacritical character.
+    static const UChar COMBINING_LATIN_SMALL_LETTER_M              = UChar(0x036B); //!< Combining diacritical character.
+    static const UChar COMBINING_LATIN_SMALL_LETTER_R              = UChar(0x036C); //!< Combining diacritical character.
+    static const UChar COMBINING_LATIN_SMALL_LETTER_T              = UChar(0x036D); //!< Combining diacritical character.
+    static const UChar COMBINING_LATIN_SMALL_LETTER_V              = UChar(0x036E); //!< Combining diacritical character.
+    static const UChar COMBINING_LATIN_SMALL_LETTER_X              = UChar(0x036F); //!< Combining diacritical character.
     static const UChar GREEK_YPOGEGRAMMENI                         = UChar(0x037A); //!< ISO-8859 Unicode character.
     static const UChar GREEK_TONOS                                 = UChar(0x0384); //!< ISO-8859 Unicode character.
     static const UChar GREEK_DIALYTIKA_TONOS                       = UChar(0x0385); //!< ISO-8859 Unicode character.
@@ -561,6 +684,9 @@ namespace ts {
     static const UChar GREEK_SMALL_LETTER_OMICRON_WITH_TONOS       = UChar(0x03CC); //!< ISO-8859 Unicode character.
     static const UChar GREEK_SMALL_LETTER_UPSILON_WITH_TONOS       = UChar(0x03CD); //!< ISO-8859 Unicode character.
     static const UChar GREEK_SMALL_LETTER_OMEGA_WITH_TONOS         = UChar(0x03CE); //!< ISO-8859 Unicode character.
+    static const UChar GREEK_SMALL_LETTER_THETA_SYMBOL             = UChar(0x03D1); //!< Non-ISO-8859 Unicode character.
+    static const UChar GREEK_UPSILON_WITH_HOOK_SYMBOL              = UChar(0x03D2); //!< Non-ISO-8859 Unicode character.
+    static const UChar GREEK_PI_SYMBOL                             = UChar(0x03D6); //!< Non-ISO-8859 Unicode character.
     static const UChar CYRILLIC_CAPITAL_LETTER_IO                  = UChar(0x0401); //!< ISO-8859 Unicode character.
     static const UChar CYRILLIC_CAPITAL_LETTER_DJE                 = UChar(0x0402); //!< ISO-8859 Unicode character.
     static const UChar CYRILLIC_CAPITAL_LETTER_GJE                 = UChar(0x0403); //!< ISO-8859 Unicode character.
@@ -849,15 +975,6 @@ namespace ts {
     static const UChar EURO_SIGN                                   = UChar(0x20AC); //!< ISO-8859 Unicode character.
     static const UChar DRACHMA_SIGN                                = UChar(0x20AF); //!< ISO-8859 Unicode character.
     static const UChar NUMERO_SIGN                                 = UChar(0x2116); //!< ISO-8859 Unicode character.
-    //
-    // Supplemental characters, not in ISO 8859 mapping files at unicode.org
-    //
-    static const UChar LATIN_SMALL_F_WITH_HOOK                     = UChar(0x0192); //!< Non-ISO-8859 Unicode character.
-    static const UChar MODIFIER_LETTER_CIRCUMFLEX_ACCENT           = UChar(0x02C6); //!< Non-ISO-8859 Unicode character.
-    static const UChar SMALL_TILDE                                 = UChar(0x02DC); //!< Non-ISO-8859 Unicode character.
-    static const UChar GREEK_SMALL_LETTER_THETA_SYMBOL             = UChar(0x03D1); //!< Non-ISO-8859 Unicode character.
-    static const UChar GREEK_UPSILON_WITH_HOOK_SYMBOL              = UChar(0x03D2); //!< Non-ISO-8859 Unicode character.
-    static const UChar GREEK_PI_SYMBOL                             = UChar(0x03D6); //!< Non-ISO-8859 Unicode character.
     static const UChar EN_SPACE                                    = UChar(0x2002); //!< Non-ISO-8859 Unicode character.
     static const UChar EM_SPACE                                    = UChar(0x2003); //!< Non-ISO-8859 Unicode character.
     static const UChar THIN_SPACE                                  = UChar(0x2009); //!< Non-ISO-8859 Unicode character.
