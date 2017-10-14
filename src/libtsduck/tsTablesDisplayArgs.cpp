@@ -32,6 +32,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsTablesDisplayArgs.h"
+#include "tsDVBCharsetSingleByte.h"
 #include "tsHexa.h"
 TSDUCK_SOURCE;
 
@@ -106,6 +107,16 @@ void ts::TablesDisplayArgs::addHelp(Args& args) const
         "      The PDS value can be an integer or one of (not case-sensitive):\n"
         "      " + PrivateDataSpecifierEnum.nameList() + ".\n"
         "\n"
+        "  --europe\n"
+        "      A synonym for '--default-charset ISO-8859-15'. This is a handy shortcut\n"
+        "      for commonly incorrect signalization on some European satellites. In that\n"
+        "      signalization, the character encoding is ISO-8859-15, the most common\n"
+        "      encoding for Latin & Western Europe languages. However, this is not the\n"
+        "      default DVB character set and it should be properly specified in all\n"
+        "      strings, which is not the case with some operators. Using this option,\n"
+        "      all DVB strings without explicit table code are assumed to use ISO-8859-15\n"
+        "      instead of the standard ISO-6937 encoding.\n"
+        "\n"
         "  --nested-tlv[=min-size]\n"
         "      With option --tlv, try to interpret the value field of each TLV record as\n"
         "      another TLV area. If the min-size value is specified, the nested TLV\n"
@@ -145,6 +156,7 @@ void ts::TablesDisplayArgs::defineOptions(Args& args) const
     args.option("c-style",        'c');
     args.option("default-charset", 0, Args::STRING);
     args.option("default-pds",     0, PrivateDataSpecifierEnum);
+    args.option("europe",          0);
     args.option("nested-tlv",      0, Args::POSITIVE, 0, 1, 0, 0, true);
     args.option("raw-dump",       'r');
     args.option("tlv",             0, Args::STRING, 0, Args::UNLIMITED_COUNT);
@@ -182,8 +194,13 @@ void ts::TablesDisplayArgs::load(Args& args)
     std::sort(tlv_syntax.begin(), tlv_syntax.end());
 
     // Get default character set.
-    const std::string csName(args.value("default-charset"));
-    if (!csName.empty() && (default_charset = DVBCharset::GetCharset(csName)) == 0) {
-        args.error("invalid character set name '%s", csName.c_str());
+    if (args.present("europe")) {
+        default_charset = &DVBCharsetSingleByte::ISO_8859_15;
+    }
+    else {
+        const std::string csName(args.value("default-charset"));
+        if (!csName.empty() && (default_charset = DVBCharset::GetCharset(csName)) == 0) {
+            args.error("invalid character set name '%s", csName.c_str());
+        }
     }
 }
