@@ -4,8 +4,12 @@ TSDuck Change Log and Release Notes
 
 Version
 
-- Added option --default-charset to tspsi, tstables, tstabdump, tstabcomp,
-  plugin psi and plugin tables.
+- TSDuck now fully handles DVB character sets in signalization. All textual
+  display (tsanalyze, tstables, etc.) are produced in UTF-8 format, with
+  characters properly translated from DVB character encoding.
+
+- Added options --default-charset and --europe to tspsi, tstables, tstabdump,
+  tstabcomp, plugin psi and plugin tables.
 
 Version 3.3-20170930
 
