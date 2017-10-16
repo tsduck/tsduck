@@ -538,5 +538,6 @@ win32|win64 {
 }
 
 DISTFILES += \
+    ../../../src/libtsduck/tsduck.names \
     ../../../src/libtsduck/tsduck.xml \
     ../../../src/libtsduck/tsduck.mk

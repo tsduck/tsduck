@@ -546,5 +546,6 @@
   </ImportGroup>
   <Target Name="AfterBuild">
     <Copy SourceFiles="..\..\src\libtsduck\tsduck.xml" DestinationFolder="$(OutDir)" />
+    <Copy SourceFiles="..\..\src\libtsduck\tsduck.names" DestinationFolder="$(OutDir)" />
   </Target>
 </Project>
