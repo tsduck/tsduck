@@ -135,7 +135,7 @@ tsduck.h: $(SRCROOT)/HEADER.txt $(call GEN_FILES,) $(call GEN_FILES,linux) $(cal
 .PHONY: install install-devel
 install: $(OBJDIR)/$(SHARED_LIBTSDUCK)
 	install -d -m 755 $(SYSROOT)$(SYSPREFIX)/bin
-	install -m 644 $(OBJDIR)/$(SHARED_LIBTSDUCK) tsduck.xml $(SYSROOT)$(SYSPREFIX)/bin
+	install -m 644 $(OBJDIR)/$(SHARED_LIBTSDUCK) tsduck.xml tsduck.names $(SYSROOT)$(SYSPREFIX)/bin
 install-devel: $(OBJDIR)/$(STATIC_LIBTSDUCK) tsduck.h
 	install -d -m 755 $(SYSROOT)$(USRLIBDIR)
 	install -m 644 $(OBJDIR)/$(STATIC_LIBTSDUCK) $(SYSROOT)$(USRLIBDIR)
