@@ -28,17 +28,101 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Names of various MPEG entities (namespace ts::names)
+//!  Names of various MPEG entities.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
 #include "tsPlatform.h"
+#include "tsUString.h"
 #include "tsCASFamily.h"
+#include "tsSingletonManager.h"
+#include "tsReportInterface.h"
 
 namespace ts {
     //!
+    //! A singleton being used as a repository of names for MPEG/DVB entities.
+    //!
+    //! All names are loaded from the configuration file @em tsduck.names.
+    //!
+    //! This class is a singleton. Use static Instance() method to access the single instance.
+    //!
+    class TSDUCKDLL Names
+    {
+        tsDeclareSingleton(Names);
+
+    public:
+        //!
+        //! Largest integer type we manage in the repository of names.
+        //!
+        typedef uint32_t Value;
+
+        //!
+        //! Get the complete path of the configuration file from which the names were loaded.
+        //! @return The complete path of the configuration file. Empty if does not exist.
+        //!
+        std::string configurationFile() const
+        {
+            return _configFile;
+        }
+
+        //!
+        //! Virtual destructor.
+        //!
+        virtual ~Names();
+
+    private:
+        // Description of a configuration entry.
+        // The first value of the range is the key in a map.
+        class ConfigEntry
+        {
+        public:
+            Value   last;   // Last value in the range.
+            UString name;   // Associated name.
+
+            ConfigEntry(Value l = 0, const UString& n = UString());
+        };
+
+        // Map of configuration entries, indexed by first value of the range.
+        typedef std::map<Value, ConfigEntry*> ConfigEntryMap;
+
+        // Description of a configuration section.
+        // The name of the section is the key in a map.
+        class ConfigSection
+        {
+        public:
+            size_t          bits;     // Number of significant bits in values of the type.
+            ConfigEntryMap  entries;  // All entries, indexed by names.
+
+            ConfigSection();
+            ~ConfigSection();
+
+            // Add a new entry.
+            void addEntry(Value first, Value last, const UString& name);
+
+            // Get a name from a value, empty if not found.
+            UString getName(Value val) const;
+        };
+
+        // Map of configuration sections, indexed by name.
+        typedef std::map<UString, ConfigSection*> ConfigSectionMap;
+
+        // Names private fields.
+        ReportInterface&  _log;         // Error logger.
+        const std::string _configFile;  // Configuration file path.
+        ConfigSectionMap  _sections;    // Configuration sections.
+    };
+
+
+
+
+
+
+
+    //!
     //! Namespace for functions returning MPEG/DVB names.
+    //!
+    //! These functions will be deprecated one by one. Use the Names singleton.
     //!
     namespace names {
         //!
