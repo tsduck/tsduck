@@ -212,3 +212,59 @@ typename CONTAINER::const_iterator ts::UString::findSimilar(const CONTAINER& con
     }
     return it;
 }
+
+
+//----------------------------------------------------------------------------
+// Save strings from a container into a file, one per line.
+//----------------------------------------------------------------------------
+
+template <class ITERATOR>
+bool ts::UString::Save(ITERATOR begin, ITERATOR end, const std::string& fileName, bool append)
+{
+    std::ofstream file(fileName.c_str(), append ? (std::ios::out | std::ios::app) : std::ios::out);
+    while (file && begin != end) {
+        file << *begin << std::endl;
+        ++begin;
+    }
+    file.close();
+    return !file.fail();
+}
+
+
+//----------------------------------------------------------------------------
+// Save strings from a container into a file, one per line.
+//----------------------------------------------------------------------------
+
+template <class CONTAINER>
+bool ts::UString::Save(const CONTAINER& container, const std::string& fileName, bool append)
+{
+    return Save(container.begin(), container.end(), fileName, append);
+}
+
+
+//----------------------------------------------------------------------------
+// Load strings from a file, one per line, and insert them in a container.
+//----------------------------------------------------------------------------
+
+template <class CONTAINER>
+bool ts::UString::LoadAppend(CONTAINER& container, const std::string& fileName)
+{
+    UString line;
+    std::ifstream file(fileName.c_str());
+    while (line.getLine(file)) {
+        container.push_back(line);
+    }
+    return file.eof();
+}
+
+
+//----------------------------------------------------------------------------
+// Load strings from a file, one per line, into a container.
+//----------------------------------------------------------------------------
+
+template <class CONTAINER>
+bool ts::UString::Load(CONTAINER& container, const std::string& fileName)
+{
+    container.clear();
+    return LoadAppend(container, fileName);
+}

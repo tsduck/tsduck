@@ -66,11 +66,11 @@ namespace ts {
     //! This class is an extension of @c std::u16string with additional services.
     //!
     //! Warning for maintainers: The standard classes @c std::u16string and @c std::basic_string
-    //! do not have virtual destructors. The means that if a ts::String is destroyed through, for
-    //! instance, a @c std::u16string*, the destructor for the class ts::String will not be
-    //! invoked. This is not a problem as long as the ts::String subclass does not have any
+    //! do not have virtual destructors. The means that if a UString is destroyed through, for
+    //! instance, a @c std::u16string*, the destructor for the class UString will not be
+    //! invoked. This is not a problem as long as the UString subclass does not have any
     //! field to destroy, which is the case for the current implementation. When modifying
-    //! the ts::String class, make sure to avoid any issue with the absence of virtual destructor
+    //! the UString class, make sure to avoid any issue with the absence of virtual destructor
     //! in the parent class.
     //!
     class TSDUCKDLL UString: public std::u16string
@@ -200,18 +200,18 @@ namespace ts {
         //! Constructor from an UTF-8 string.
         //! @param [in] utf8 A string in UTF-8 representation.
         //!
-        UString(const std::string& utf8) :
-            UString(utf8.data(), utf8.size())
+        UString(const std::string& utf8)
         {
+            assignFromUTF8(utf8);
         }
 
         //!
         //! Constructor from an UTF-8 string.
         //! @param [in] utf8 Address of a nul-terminated string in UTF-8 representation.
         //!
-        UString(const char* utf8) :
-            UString(utf8, utf8 == 0 ? 0 : ::strlen(utf8))
+        UString(const char* utf8)
         {
+            assignFromUTF8(utf8);
         }
 
         //!
@@ -219,7 +219,10 @@ namespace ts {
         //! @param [in] utf8 Address of a string in UTF-8 representation.
         //! @param [in] count Size in bytes of the UTF-8 string (not necessarily a number of characters).
         //!
-        UString(const char* utf8, size_type count);
+        UString(const char* utf8, size_type count)
+        {
+            assignFromUTF8(utf8, count);
+        }
 
         //!
         //! Convert an UTF-8 string into UTF-16.
@@ -251,6 +254,31 @@ namespace ts {
         {
             return UString(utf8, count);
         }
+
+        //!
+        //! Convert an UTF-8 string into this object.
+        //! @param [in] utf8 A string in UTF-8 representation.
+        //! @return A reference to this object.
+        //!
+        UString& assignFromUTF8(const std::string& utf8)
+        {
+            return assignFromUTF8(utf8.data(), utf8.size());
+        }
+
+        //!
+        //! Convert an UTF-8 string into this object.
+        //! @param [in] utf8 Address of a nul-terminated string in UTF-8 representation.
+        //! @return A reference to this object.
+        //!
+        UString& assignFromUTF8(const char* utf8);
+
+        //!
+        //! Convert an UTF-8 string into this object.
+        //! @param [in] utf8 Address of a string in UTF-8 representation. Can be null.
+        //! @param [in] count Size in bytes of the UTF-8 string (not necessarily a number of characters).
+        //! @return A reference to this object.
+        //!
+        UString& assignFromUTF8(const char* utf8, size_type count);
 
         //!
         //! Convert this UTF-16 string into UTF-8.
@@ -507,8 +535,8 @@ namespace ts {
 
         //!
         //! Split the string into segments based on a separator character (comma by default).
-        //! @tparam CONTAINER A container class of @c ts::String as defined by the C++ Standard Template Library (STL).
-        //! @param [out] container A container of @c ts::String which receives the segments of the splitted string.
+        //! @tparam CONTAINER A container class of @c UString as defined by the C++ Standard Template Library (STL).
+        //! @param [out] container A container of @c UString which receives the segments of the splitted string.
         //! @param [in] separator The character which is used to separate the segments.
         //! @param [in] trimSpaces If true (the default), each segment is trimmed,
         //! i.e. all leading and trailing space characters are removed.
@@ -518,8 +546,8 @@ namespace ts {
 
         //!
         //! Split a string into segments which are identified by their starting / ending characters (respectively "[" and "]" by default).
-        //! @tparam CONTAINER A container class of @c ts::String as defined by the C++ Standard Template Library (STL).
-        //! @param [out] container A container of @c ts::String which receives the segments of the splitted string.
+        //! @tparam CONTAINER A container class of @c UString as defined by the C++ Standard Template Library (STL).
+        //! @param [out] container A container of @c UString which receives the segments of the splitted string.
         //! @param [in] startWith The character which is used to identify the start of a segment of @a input.
         //! @param [in] endWith The character which is used to identify the end of a segment of @a input.
         //! @param [in] trimSpaces If true (the default), each segment is trimmed,
@@ -531,8 +559,8 @@ namespace ts {
         //!
         //! Split a string into multiple lines which are not longer than a specified maximum width.
         //! The splits occur on spaces or after any character in @a otherSeparators.
-        //! @tparam CONTAINER A container class of @c ts::String as defined by the C++ Standard Template Library (STL).
-        //! @param [out] container A container of @c ts::String which receives the lines of the splitted string.
+        //! @tparam CONTAINER A container class of @c UString as defined by the C++ Standard Template Library (STL).
+        //! @param [out] container A container of @c UString which receives the lines of the splitted string.
         //! @param [in] maxWidth Maximum width of each resulting line.
         //! @param [in] otherSeparators A string containing all characters which
         //! are acceptable as line break points (in addition to space characters
@@ -573,7 +601,7 @@ namespace ts {
         //! Join a part of a container of strings into one big string.
         //! The strings are accessed through iterators in the container.
         //! All strings are concatenated into one big string.
-        //! @tparam ITERATOR An iterator class over @c ts::String as defined by the C++ Standard Template Library (STL).
+        //! @tparam ITERATOR An iterator class over @c UString as defined by the C++ Standard Template Library (STL).
         //! @param [in] begin An iterator pointing to the first string.
         //! @param [in] end An iterator pointing @em after the last string.
         //! @param [in] separator A string to insert between all segments.
@@ -585,7 +613,7 @@ namespace ts {
         //!
         //! Join a container of strings into one big string.
         //! All strings from the container are concatenated into one big string.
-        //! @tparam CONTAINER A container class of @c ts::String as defined by the C++ Standard Template Library (STL).
+        //! @tparam CONTAINER A container class of @c UString as defined by the C++ Standard Template Library (STL).
         //! @param [in] container A container of @c std::string containing all strings to concatenate.
         //! @param [in] separator A string to insert between all segments.
         //! @return The big string containing all segments and separators.
@@ -745,8 +773,8 @@ namespace ts {
 
         //!
         //! Check if a container of strings contains something similar to this string.
-        //! @tparam CONTAINER A container class of ts::String as defined by the C++ Standard Template Library (STL).
-        //! @param [in] container A container of ts::String.
+        //! @tparam CONTAINER A container class of UString as defined by the C++ Standard Template Library (STL).
+        //! @param [in] container A container of UString.
         //! @return True if @a container contains a string similar to this string.
         //! @see similar()
         //!
@@ -755,8 +783,8 @@ namespace ts {
 
         //!
         //! Locate into a map an element with a similar string.
-        //! @tparam CONTAINER A map container class using ts::String as key.
-        //! @param [in] container A map container with ts::String keys.
+        //! @tparam CONTAINER A map container class using UString as key.
+        //! @param [in] container A map container with UString keys.
         //! @return An iterator to the first element of @a container with a key value
         //! which is similar to this string according to similar(). Return @a container.end()
         //! if not found.
@@ -764,6 +792,60 @@ namespace ts {
         //!
         template <class CONTAINER>
         typename CONTAINER::const_iterator findSimilar(const CONTAINER& container);
+
+        //!
+        //! Save strings from a container into a file, in UTF-8 format, one per line.
+        //! The strings must be located in a container and are accessed through iterators.
+        //! @tparam ITERATOR An iterator class over UString as defined by the C++ Standard Template Library (STL).
+        //! @param [in] begin An iterator pointing to the first string.
+        //! @param [in] end An iterator pointing @em after the last string.
+        //! @param [in] fileName The name of the text file where to save the strings.
+        //! @param [in] append If true, append the strings at the end of the file.
+        //! If false (the default), overwrite the file if it already existed.
+        //! @return True on success, false on error (mostly file errors).
+        //!
+        template <class ITERATOR>
+        static bool Save(ITERATOR begin, ITERATOR end, const std::string& fileName, bool append = false);
+
+        //!
+        //! Save strings from a container into a file, in UTF-8 format, one per line.
+        //! @tparam CONTAINER A container class of UString as defined by the C++ Standard Template Library (STL).
+        //! @param [in] container A container of UString containing all strings to save.
+        //! @param [in] fileName The name of the text file where to save the strings.
+        //! @param [in] append If true, append the strings at the end of the file.
+        //! If false (the default), overwrite the file if it already existed.
+        //! @return True on success, false on error (mostly file errors).
+        //!
+        template <class CONTAINER>
+        static bool Save(const CONTAINER& container, const std::string& fileName, bool append = false);
+
+        //!
+        //! Load all lines of a text file in UTF-8 format as UString's into a container.
+        //! @tparam CONTAINER A container class of UString as defined by the C++ Standard Template Library (STL).
+        //! @param [out] container A container of UString receiving all lines of the file. Each line of the text file is a separate string.
+        //! @param [in] fileName The name of the text file from where to load the strings.
+        //! @return True on success, false on error (mostly file errors).
+        //!
+        template <class CONTAINER>
+        static bool Load(CONTAINER& container, const std::string& fileName);
+
+        //!
+        //! Load all lines of a text file in UTF-8 format as UString's and append them in a container.
+        //! @tparam CONTAINER A container class of UString as defined by the C++ Standard Template Library (STL).
+        //! @param [in,out] container A container of UString receiving all lines of the file. Each line of the text file is a separate string.
+        //! @param [in] fileName The name of the text file from where to load the strings.
+        //! Each line of the text file is inserted as a separate string.
+        //! @return True on success, false on error (mostly file errors).
+        //!
+        template <class CONTAINER>
+        static bool LoadAppend(CONTAINER& container, const std::string& fileName);
+
+        //!
+        //! Read one UTF-8 line from a text file and load it into this object.
+        //! @param [in,out] strm A standard stream in input mode.
+        //! @return True on success, false on error (mostly file errors).
+        //!
+        bool getLine(std::istream& strm);
 
         //
         // Override methods which return strings so that they return the new class.

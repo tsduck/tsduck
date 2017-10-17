@@ -37,6 +37,7 @@
 #include "tsFormat.h"
 #include "tsToInteger.h"
 #include "tsByteBlock.h"
+#include "tsSysUtils.h"
 #include "utestCppUnitTest.h"
 TSDUCK_SOURCE;
 
@@ -47,6 +48,7 @@ TSDUCK_SOURCE;
 class UStringTest: public CppUnit::TestFixture
 {
 public:
+    UStringTest();
     void setUp();
     void tearDown();
     void testIsSpace();
@@ -72,6 +74,7 @@ public:
     void testTrueFalse();
     void testOnOff();
     void testSimilarStrings();
+    void testLoadSave();
 
     CPPUNIT_TEST_SUITE(UStringTest);
     CPPUNIT_TEST(testIsSpace);
@@ -97,7 +100,14 @@ public:
     CPPUNIT_TEST(testTrueFalse);
     CPPUNIT_TEST(testOnOff);
     CPPUNIT_TEST(testSimilarStrings);
+    CPPUNIT_TEST(testLoadSave);
     CPPUNIT_TEST_SUITE_END();
+
+private:
+    std::string _tempFilePrefix;
+    int _nextFileIndex;
+    std::string temporaryFileName(int) const;
+    std::string newTemporaryFileName();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(UStringTest);
@@ -107,14 +117,47 @@ CPPUNIT_TEST_SUITE_REGISTRATION(UStringTest);
 // Initialization.
 //----------------------------------------------------------------------------
 
+// Constructor.
+UStringTest::UStringTest() :
+    _tempFilePrefix(),
+    _nextFileIndex(0)
+{
+}
+
 // Test suite initialization method.
 void UStringTest::setUp()
 {
+    // Select the directory name and prefix for temporary files
+    _tempFilePrefix = ts::TempFile(".");
+
+    // Next file will use suffix "000"
+    _nextFileIndex = 0;
 }
 
 // Test suite cleanup method.
 void UStringTest::tearDown()
 {
+    // Delete all temporary files
+    std::vector<std::string> tempFiles;
+    ts::ExpandWildcard(tempFiles, _tempFilePrefix + "*");
+    for (std::vector<std::string>::const_iterator i = tempFiles.begin(); i != tempFiles.end(); ++i) {
+        utest::Out() << "UStringTest: deleting temporary file \"" << *i << "\"" << std::endl;
+        ts::DeleteFile(*i);
+    }
+    _nextFileIndex = 0;
+}
+
+// Get the name of a temporary file from an index
+std::string UStringTest::temporaryFileName (int index) const
+{
+    const std::string name(_tempFilePrefix + ts::Format("%03d", index));
+    return name;
+}
+
+// Get the name of the next temporary file
+std::string UStringTest::newTemporaryFileName()
+{
+    return temporaryFileName(_nextFileIndex++);
 }
 
 
@@ -683,4 +726,48 @@ void UStringTest::testSimilarStrings()
     CPPUNIT_ASSERT(ts::UString("  AZE R T Y    ").similar("aZer tY"));
     CPPUNIT_ASSERT(!ts::UString("").similar("az"));
     CPPUNIT_ASSERT(!ts::UString("az").similar(""));
+}
+
+void UStringTest::testLoadSave()
+{
+    std::list<ts::UString> ref;
+
+    ts::UChar c = ts::LATIN_CAPITAL_LETTER_A_WITH_MACRON;
+    for (int i = 1; i <= 20; ++i) {
+        ref.push_back(ts::UString(2, c++) + ts::Format(", line %d", i));
+    }
+    CPPUNIT_ASSERT(ref.size() == 20);
+
+    const std::string file1(newTemporaryFileName());
+    CPPUNIT_ASSERT(ts::UString::Save(ref, file1));
+
+    std::list<ts::UString> load1;
+    CPPUNIT_ASSERT(ts::UString::Load(load1, file1));
+    CPPUNIT_ASSERT(load1.size() == 20);
+    CPPUNIT_ASSERT(load1 == ref);
+
+    const std::list<ts::UString>::const_iterator refFirst = ++(ref.begin());
+    const std::list<ts::UString>::const_iterator refLast = --(ref.end());
+
+    const std::string file2(newTemporaryFileName());
+    CPPUNIT_ASSERT(ts::UString::Save(refFirst, refLast, file2));
+
+    std::list<ts::UString> ref2(refFirst, refLast);
+    CPPUNIT_ASSERT(ref2.size() == 18);
+
+    std::list<ts::UString> load2;
+    CPPUNIT_ASSERT(ts::UString::Load(load2, file2));
+    CPPUNIT_ASSERT(load2.size() == 18);
+    CPPUNIT_ASSERT(load2 == ref2);
+
+    std::list<ts::UString> ref3;
+    ref3.push_back("abcdef");
+    ref3.insert(ref3.end(), refFirst, refLast);
+    CPPUNIT_ASSERT(ref3.size() == 19);
+
+    std::list<ts::UString> load3;
+    load3.push_back("abcdef");
+    CPPUNIT_ASSERT(ts::UString::LoadAppend(load3, file2));
+    CPPUNIT_ASSERT(load3.size() == 19);
+    CPPUNIT_ASSERT(load3 == ref3);
 }
