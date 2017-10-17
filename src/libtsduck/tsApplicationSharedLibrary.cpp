@@ -35,9 +35,6 @@
 #include "tsSysUtils.h"
 TSDUCK_SOURCE;
 
-// Name of the environment variable which contains a list of paths for plugins.
-const char* const ts::ApplicationSharedLibrary::PluginsPathEnvironmentVariable = "TSPLUGINS_PATH";
-
 
 //----------------------------------------------------------------------------
 // Constructor.

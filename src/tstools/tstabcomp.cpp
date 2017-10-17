@@ -181,7 +181,7 @@ Options::Options(int argc, char *argv[]) :
 bool DisplayModel(Options& opt)
 {
     // Locate the model file.
-    const std::string inName(ts::XML::SearchFile("tsduck.xml"));
+    const std::string inName(ts::SearchConfigurationFile("tsduck.xml"));
     if (inName.empty()) {
         opt.error("XML model file not found");
         return false;

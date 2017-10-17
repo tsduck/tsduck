@@ -45,11 +45,6 @@ namespace ts {
     {
     public:
         //!
-        //! Name of the environment variable which contains a list of paths for plugins.
-        //!
-        static const char* const PluginsPathEnvironmentVariable;
-
-        //!
         //! Constructor.
         //! @param [in] filename Shared library file name. Directory and suffix are optional.
         //! If @a filename contains a directory, the specified file is used directly, with

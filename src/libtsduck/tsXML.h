@@ -150,19 +150,6 @@ namespace ts {
         void reportError(const std::string& message, tinyxml2::XMLError code = tinyxml2::XML_SUCCESS, Node* node = 0);
 
         //!
-        //! Search a file.
-        //! @param [in] fileName Name of the file to search.
-        //! If @a fileName is not found and does not contain any directory part, search this file
-        //! in the following places:
-        //! - Directory of the current executable.
-        //! - All directories in @c TSPLUGINS_PATH environment variable.
-        //! - All directories in @c LD_LIBRARY_PATH environment variable (UNIX only).
-        //! - All directories in @c PATH (UNIX) or @c Path (Windows) environment variable.
-        //! @return The path to an existing file or an empty string if not found.
-        //!
-        static std::string SearchFile(const std::string& fileName);
-
-        //!
         //! Convert a document to an XML string.
         //! @param [in] doc The document to format.
         //! @param [in] indent Indentation width of each level.

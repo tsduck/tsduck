@@ -73,9 +73,6 @@ HEADERS += \
     ../../../src/libtsduck/tsCipherChaining.h \
     ../../../src/libtsduck/tsComponentDescriptor.h \
     ../../../src/libtsduck/tsCondition.h \
-    ../../../src/libtsduck/tsConfigFile.h \
-    ../../../src/libtsduck/tsConfigSection.h \
-    ../../../src/libtsduck/tsConfigSectionTemplate.h \
     ../../../src/libtsduck/tsContentDescriptor.h \
     ../../../src/libtsduck/tsCountryAvailabilityDescriptor.h \
     ../../../src/libtsduck/tsCyclingPacketizer.h \
@@ -216,6 +213,7 @@ HEADERS += \
     ../../../src/libtsduck/tsStaticReferencesDVB.h \
     ../../../src/libtsduck/tsStreamIdentifierDescriptor.h \
     ../../../src/libtsduck/tsUString.h \
+    ../../../src/libtsduck/tsUStringTemplate.h \
     ../../../src/libtsduck/tsStringUtils.h \
     ../../../src/libtsduck/tsStringUtilsTemplate.h \
     ../../../src/libtsduck/tsSubtitlingDescriptor.h \
@@ -338,8 +336,6 @@ SOURCES += \
     ../../../src/libtsduck/tsCipherChaining.cpp \
     ../../../src/libtsduck/tsComponentDescriptor.cpp \
     ../../../src/libtsduck/tsCondition.cpp \
-    ../../../src/libtsduck/tsConfigFile.cpp \
-    ../../../src/libtsduck/tsConfigSection.cpp \
     ../../../src/libtsduck/tsContentDescriptor.cpp \
     ../../../src/libtsduck/tsCountryAvailabilityDescriptor.cpp \
     ../../../src/libtsduck/tsCyclingPacketizer.cpp \

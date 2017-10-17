@@ -84,8 +84,6 @@
 #include "tsCipherChaining.h"
 #include "tsComponentDescriptor.h"
 #include "tsCondition.h"
-#include "tsConfigFile.h"
-#include "tsConfigSection.h"
 #include "tsContentDescriptor.h"
 #include "tsCountryAvailabilityDescriptor.h"
 #include "tsCyclingPacketizer.h"

@@ -32,9 +32,9 @@
 //----------------------------------------------------------------------------
 
 #include "tspListProcessors.h"
+#include "tsPluginSharedLibrary.h"
 #include "tsSysUtils.h"
 #include "tsStringUtils.h"
-#include "tsPluginSharedLibrary.h"
 TSDUCK_SOURCE;
 
 
@@ -47,7 +47,7 @@ void ts::tsp::ListProcessors (ReportInterface& report)
     // Get list of shared library files
 
     StringVector files;
-    ApplicationSharedLibrary::GetPluginList(files, "tsplugin_", ts::ApplicationSharedLibrary::PluginsPathEnvironmentVariable);
+    ApplicationSharedLibrary::GetPluginList(files, "tsplugin_", TS_PLUGINS_PATH);
 
     // Build list of names and load shared libraries
 
