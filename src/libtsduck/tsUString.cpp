@@ -197,24 +197,38 @@ void ts::UString::ConvertUTF8ToUTF16(const char*& inStart, const char* inEnd, UC
 
 
 //----------------------------------------------------------------------------
-// Constructors from an UTF-8 string.
-// Note: The number of UTF-16 codes is always less than the number of
-// UTF-8 bytes.
+// Convert an UTF-8 string into this object.
 //----------------------------------------------------------------------------
 
-ts::UString::UString(const char* utf8, size_type count) :
-    UString((utf8 == 0 ? 0 : count), CHAR_NULL)
+ts::UString& ts::UString::assignFromUTF8(const char* utf8)
 {
-    if (utf8 != 0) {
+    return assignFromUTF8(utf8, utf8 == 0 ? 0 : ::strlen(utf8));
+}
+
+ts::UString& ts::UString::assignFromUTF8(const char* utf8, size_type count)
+{
+    if (utf8 == 0) {
+        clear();
+    }
+    else {
+        // Resize the string over the maximum size.
+        // The number of UTF-16 codes is always less than the number of UTF-8 bytes.
+        resize(count);
+
+        // Convert from UTF-8 directly into this object.
         const char* inStart = utf8;
         UChar* outStart = const_cast<UChar*>(data());
         ConvertUTF8ToUTF16(inStart, inStart + count, outStart, outStart + size());
+
         assert(inStart >= utf8);
         assert(inStart == utf8 + count);
         assert(outStart >= data());
         assert(outStart <= data() + size());
+
+        // Truncate to the exact number of characters.
         resize(outStart - data());
     }
+    return *this;
 }
 
 
@@ -653,6 +667,31 @@ bool ts::UString::similar(const UString& other) const
 bool ts::UString::similar(const void* addr, size_type size) const
 {
     return addr != 0 && similar(FromUTF8(reinterpret_cast<const char*>(addr), size));
+}
+
+
+//----------------------------------------------------------------------------
+// Read one UTF-8 line from a text file and load it into this object.
+//----------------------------------------------------------------------------
+
+bool ts::UString::getLine(std::istream& strm)
+{
+    std::string line;
+
+    if (!std::getline(strm, line)) {
+        // File read error.
+        clear();
+        return false;
+    }
+    else {
+        // Remove potential trailing mixed CR/LF characters
+        size_t len;
+        for (len = line.size(); len > 0 && (line[len - 1] == '\r' || line[len - 1] == '\n'); --len) {
+        }
+        line.resize(len);
+        assignFromUTF8(line);
+        return true;
+    }
 }
 
 
