@@ -24,6 +24,7 @@
     <ClCompile Include="..\..\src\utest\utestMessageQueue.cpp" />
     <ClCompile Include="..\..\src\utest\utestMonotonic.cpp" />
     <ClCompile Include="..\..\src\utest\utestMutex.cpp" />
+    <ClCompile Include="..\..\src\utest\utestNames.cpp" />
     <ClCompile Include="..\..\src\utest\utestNetworking.cpp" />
     <ClCompile Include="..\..\src\utest\utestPacketizer.cpp" />
     <ClCompile Include="..\..\src\utest\utestPlatform.cpp" />

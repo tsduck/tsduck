@@ -26,16 +26,114 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Names of various MPEG entities (namespace ts::names)
-//  (OUI names have moved to tsNamesOUI.cpp)
-//
-//----------------------------------------------------------------------------
 
 #include "tsNames.h"
 #include "tsMPEG.h"
 #include "tsFormat.h"
+#include "tsSysUtils.h"
+#include "tsFatal.h"
+#include "tsCerrReport.h"
 TSDUCK_SOURCE;
+
+// Define singleton instance
+tsDefineSingleton(ts::Names);
+
+
+//----------------------------------------------------------------------------
+// Constructor (load the configuration file).
+//----------------------------------------------------------------------------
+
+ts::Names::Names() :
+    _log(CERR),
+    _configFile(SearchConfigurationFile("tsduck.names"))
+{
+    // Locate the configuration file.
+    if (_configFile.empty()) {
+        // Cannot load configuration, names will not be available.
+        _log.error("configuration file 'tsduck.names' not found");
+        return;
+    }
+
+
+
+}
+
+//----------------------------------------------------------------------------
+// Destructor: free all resources.
+//----------------------------------------------------------------------------
+
+ts::Names::~Names()
+{
+    // Deallocate all configuration sections.
+    for (ConfigSectionMap::iterator it = _sections.begin(); it != _sections.end(); ++it) {
+        delete it->second;
+    }
+    _sections.clear();
+}
+
+
+//----------------------------------------------------------------------------
+// Configuration entry.
+//----------------------------------------------------------------------------
+
+ts::Names::ConfigEntry::ConfigEntry(Value l, const UString& n) :
+    last(l),
+    name(n)
+{
+}
+
+
+//----------------------------------------------------------------------------
+// Configuration section.
+//----------------------------------------------------------------------------
+
+ts::Names::ConfigSection::ConfigSection() :
+    bits(32),
+    entries()
+{
+}
+
+ts::Names::ConfigSection::~ConfigSection()
+{
+    // Deallocate all configuration entries.
+    for (ConfigEntryMap::iterator it = entries.begin(); it != entries.end(); ++it) {
+        delete it->second;
+    }
+    entries.clear();
+}
+
+
+//----------------------------------------------------------------------------
+// Add a new configuration entry.
+//----------------------------------------------------------------------------
+
+void ts::Names::ConfigSection::addEntry(Value first, Value last, const UString& name)
+{
+    ConfigEntryMap::iterator it(entries.find(first));
+    if (it != entries.end()) {
+        // Update an existing entry.
+        it->second->last = last;
+        it->second->name = name;
+    }
+    else {
+        // Create an new entry.
+        ConfigEntry* entry = new ConfigEntry(last, name);
+        CheckNonNull(entry);
+        entries.insert(std::make_pair(first, entry));
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Get a name from a value, empty if not found.
+//----------------------------------------------------------------------------
+
+ts::UString ts::Names::ConfigSection::getName(Value val) const
+{
+    return UString(); //@@@@
+}
+
+
 
 
 //----------------------------------------------------------------------------
