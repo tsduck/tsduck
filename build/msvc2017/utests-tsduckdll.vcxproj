@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ImportGroup Label="PropertySheets">
     <Import Project="msvc-common-begin.props" />
@@ -9,7 +9,6 @@
     <ClCompile Include="..\..\src\utest\utestArgs.cpp" />
     <ClCompile Include="..\..\src\utest\utestBitStream.cpp" />
     <ClCompile Include="..\..\src\utest\utestByteBlock.cpp" />
-    <ClCompile Include="..\..\src\utest\utestConfig.cpp" />
     <ClCompile Include="..\..\src\utest\utestCppUnitMain.cpp" />
     <ClCompile Include="..\..\src\utest\utestCppUnitTest.cpp" />
     <ClCompile Include="..\..\src\utest\utestCrypto.cpp" />

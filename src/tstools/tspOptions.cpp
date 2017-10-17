@@ -32,7 +32,7 @@
 //----------------------------------------------------------------------------
 
 #include "tspOptions.h"
-#include "tsApplicationSharedLibrary.h"
+#include "tsSysUtils.h"
 #include "tsDecimal.h"
 #include "tsFormat.h"
 TSDUCK_SOURCE;
@@ -209,7 +209,7 @@ ts::tsp::Options::Options(int argc, char *argv[]) :
             "  . If the name contains a " HELP_SEP ", it is only interpreted as a file path for\n"
             "    the " HELP_SHLIB ".\n"
             "  . If not found, the file is searched into the all directories in environment\n"
-            "    variable " + std::string(ApplicationSharedLibrary::PluginsPathEnvironmentVariable) + " and in the same directory as the tsp executable\n"
+            "    variable " TS_PLUGINS_PATH " and in the same directory as the tsp executable\n"
             "    file. In each directory, file named tsplugin_<name>" HELP_SHLIBEXT " is searched\n"
             "    first, then the file <name>, with or without " HELP_SHLIBEXT ".\n"
             "  . Finally, the standard system algorithm is applied to locate the " HELP_SHLIB "\n"

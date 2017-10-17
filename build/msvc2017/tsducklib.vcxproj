@@ -62,9 +62,6 @@
     <ClInclude Include="..\..\src\libtsduck\tsCOM.h" />
     <ClInclude Include="..\..\src\libtsduck\tsComponentDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsCondition.h" />
-    <ClInclude Include="..\..\src\libtsduck\tsConfigFile.h" />
-    <ClInclude Include="..\..\src\libtsduck\tsConfigSection.h" />
-    <ClInclude Include="..\..\src\libtsduck\tsConfigSectionTemplate.h" />
     <ClInclude Include="..\..\src\libtsduck\tsContentDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsCountryAvailabilityDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsCRC32.h" />
@@ -217,7 +214,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsSTDDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsStreamIdentifierDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsUString.h" />
-    <ClInclude Include="..\..\src\libtsduck\tsStringTemplate.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsUStringTemplate.h" />
     <ClInclude Include="..\..\src\libtsduck\tsStringUtils.h" />
     <ClInclude Include="..\..\src\libtsduck\tsStringUtilsTemplate.h" />
     <ClInclude Include="..\..\src\libtsduck\tsSubtitlingDescriptor.h" />
@@ -347,8 +344,6 @@
     <ClCompile Include="..\..\src\libtsduck\tsCOM.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsComponentDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsCondition.cpp" />
-    <ClCompile Include="..\..\src\libtsduck\tsConfigFile.cpp" />
-    <ClCompile Include="..\..\src\libtsduck\tsConfigSection.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsContentDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsCountryAvailabilityDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsCRC32.cpp" />
@@ -522,6 +517,9 @@
   </ItemGroup>
   <ItemGroup>
     <Xml Include="..\..\src\libtsduck\tsduck.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\src\libtsduck\tsduck.names" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{25A6CE1B-83F7-4859-A1EA-B7A8EAFFD2C6}</ProjectGuid>

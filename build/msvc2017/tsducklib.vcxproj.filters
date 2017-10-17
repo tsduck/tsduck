@@ -19,7 +19,7 @@
     </Filter>
     <Filter Include="Configuration">
       <UniqueIdentifier>{47521609-3D61-4644-9ECF-123456789ABC}</UniqueIdentifier>
-      <Extensions>xml;ini;conf</Extensions>
+      <Extensions>xml;ini;conf;names</Extensions>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -156,15 +156,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\libtsduck\tsCondition.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\libtsduck\tsConfigFile.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\libtsduck\tsConfigSection.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\libtsduck\tsConfigSectionTemplate.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\libtsduck\tsContentDescriptor.h">
@@ -887,7 +878,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsUChar.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\libtsduck\tsStringTemplate.h">
+    <ClInclude Include="..\..\src\libtsduck\tsUStringTemplate.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\libtsduck\tsDVBCharset.h">
@@ -998,12 +989,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\libtsduck\tsCondition.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\libtsduck\tsConfigFile.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\libtsduck\tsConfigSection.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\libtsduck\tsContentDescriptor.cpp">
@@ -1569,5 +1554,10 @@
     <Xml Include="..\..\src\libtsduck\tsduck.xml">
       <Filter>Configuration</Filter>
     </Xml>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\src\libtsduck\tsduck.names">
+      <Filter>Configuration</Filter>
+    </None>
   </ItemGroup>
 </Project>

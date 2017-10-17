@@ -19,7 +19,6 @@ SOURCES += \
     ../../../src/utest/utestArgs.cpp \
     ../../../src/utest/utestBitStream.cpp \
     ../../../src/utest/utestByteBlock.cpp \
-    ../../../src/utest/utestConfig.cpp \
     ../../../src/utest/utestCppUnitMain.cpp \
     ../../../src/utest/utestCppUnitTest.cpp \
     ../../../src/utest/utestCrypto.cpp \

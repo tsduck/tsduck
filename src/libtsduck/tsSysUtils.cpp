@@ -560,6 +560,52 @@ ts::ErrorCode ts::RenameFile(const std::string& old_path, const std::string& new
 
 
 //----------------------------------------------------------------------------
+// Search a configuration file.
+//----------------------------------------------------------------------------
+
+std::string ts::SearchConfigurationFile(const std::string& fileName)
+{
+    if (fileName.empty()) {
+        // No file specified, no file found...
+        return std::string();
+    }
+    if (FileExists(fileName)) {
+        // The file exists as is, no need to search.
+        return fileName;
+    }
+    if (fileName.find(PathSeparator) != std::string::npos) {
+        // There is a path separator, there is a directory specified and the file does not exist, don't search.
+        return std::string();
+    }
+
+    // At this point, the file name has no directory and is not found in the current directory.
+    // Build the list of directories to search.
+    StringList dirList;
+    StringList tmp;
+    dirList.push_back(DirectoryName(ExecutableFile()));
+    GetEnvironmentPath(tmp, TS_PLUGINS_PATH);
+    dirList.insert(dirList.end(), tmp.begin(), tmp.end());
+#if defined(__unix)
+    GetEnvironmentPath(tmp, "LD_LIBRARY_PATH");
+    dirList.insert(dirList.end(), tmp.begin(), tmp.end());
+#endif
+    GetEnvironmentPath(tmp, TS_COMMAND_PATH);
+    dirList.insert(dirList.end(), tmp.begin(), tmp.end());
+
+    // Search the file.
+    for (StringList::const_iterator it = dirList.begin(); it != dirList.end(); ++it) {
+        const std::string path(*it + PathSeparator + fileName);
+        if (FileExists(path)) {
+            return path;
+        }
+    }
+
+    // Not found.
+    return std::string();
+}
+
+
+//----------------------------------------------------------------------------
 // Format an error code into a string
 //----------------------------------------------------------------------------
 

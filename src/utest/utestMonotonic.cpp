@@ -46,6 +46,7 @@ TSDUCK_SOURCE;
 class MonotonicTest: public CppUnit::TestFixture
 {
 public:
+    MonotonicTest();
     void setUp();
     void tearDown();
     void testArithmetic();
@@ -57,6 +58,8 @@ public:
     CPPUNIT_TEST(testSysWait);
     CPPUNIT_TEST(testWait);
     CPPUNIT_TEST_SUITE_END();
+private:
+    ts::NanoSecond _precision;
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(MonotonicTest);
@@ -66,12 +69,20 @@ CPPUNIT_TEST_SUITE_REGISTRATION(MonotonicTest);
 // Initialization.
 //----------------------------------------------------------------------------
 
+// Constructor.
+MonotonicTest::MonotonicTest() :
+    _precision(0)
+{
+}
+
 // Test suite initialization method.
 void MonotonicTest::setUp()
 {
+    _precision = ts::Monotonic::SetPrecision(2 * ts::NanoSecPerMilliSec);
+
     // Request 2 milliseconds as system time precision.
     utest::Out() << "MonotonicTest: timer precision = "
-                 << ts::Decimal(ts::Monotonic::SetPrecision(2 * ts::NanoSecPerMilliSec))
+                 << ts::Decimal(_precision)
                  << " nano-sec."
                  << std::endl;
 }
@@ -120,7 +131,7 @@ void MonotonicTest::testSysWait()
     ts::Monotonic check1(start);
     ts::Monotonic check2(start);
 
-    check1 += 100000000;  // nanoseconds = 100 ms
+    check1 += 100000000 - _precision;  // nanoseconds = 100 ms
     check2 += 150000000;  // nanoseconds = 150 ms
 
     CPPUNIT_ASSERT(end >= check1);
