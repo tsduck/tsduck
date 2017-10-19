@@ -211,15 +211,15 @@ void ts::Packetizer::getNextPacket (TSPacket& pkt)
 // Display the internal state of the packetizer, mainly for debug
 //----------------------------------------------------------------------------
 
-std::ostream& ts::Packetizer::display (std::ostream& strm) const
+std::ostream& ts::Packetizer::display(std::ostream& strm) const
 {
     return strm
-        << Format ("  PID: %d (0x%02X)", int (_pid), int (_pid)) << std::endl
-        << "  Next CC: " << int (_continuity) << std::endl
+        << Format("  PID: %d (0x%02X)", int(_pid), int(_pid)) << std::endl
+        << "  Next CC: " << int(_continuity) << std::endl
         << "  Current section: "
-        << (_section.isNull() ? "none" : names::TID (_section->tableId()) + Format (", offset %d", int (_next_byte)))
+        << (_section.isNull() ? UString(u"none") : names::TID(_section->tableId()) + Format(", offset %d", int(_next_byte)))
         << std::endl
-        << "  Output packets: " << Decimal (_packet_count) << std::endl
-        << "  Output sections: " << Decimal (_section_out_count) << std::endl
-        << "  Provided sections: " << Decimal (_section_in_count) << std::endl;
+        << "  Output packets: " << Decimal(_packet_count) << std::endl
+        << "  Output sections: " << Decimal(_section_out_count) << std::endl
+        << "  Provided sections: " << Decimal(_section_in_count) << std::endl;
 }

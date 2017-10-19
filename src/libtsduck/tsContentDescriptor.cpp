@@ -120,8 +120,7 @@ void ts::ContentDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, c
         uint8_t content = data[0];
         uint8_t user = data[1];
         data += 2; size -= 2;
-        strm << margin << Format("Content: 0x%02X", int(content))
-             << ", " << names::Content(content)
+        strm << margin << "Content: " << names::Content(content, names::FIRST)
              << Format(" / User: 0x%02X", int(user)) << std::endl;
     }
 

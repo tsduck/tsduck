@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsSysUtils.h"
+#include "tsStaticInstance.h"
 #include "tsMemoryUtils.h"
 #include "tsUID.h"
 #include "tsTime.h"
@@ -50,13 +51,8 @@ TSDUCK_SOURCE;
 extern char **environ; // not defined in public headers
 #endif
 
-//
-// External calls to environment variables are not reentrant.
-// Use a global mutex.
-//
-namespace {
-    ts::Mutex _environmentMutex;
-}
+// External calls to environment variables are not reentrant. Use a global mutex.
+TS_STATIC_INSTANCE(ts::Mutex, (), EnvironmentMutex)
 
 
 //----------------------------------------------------------------------------
@@ -856,7 +852,7 @@ bool ts::SetBinaryModeStdout(ReportInterface& report)
 
 bool ts::EnvironmentExists(const std::string& name)
 {
-    Guard lock(_environmentMutex);
+    Guard lock(EnvironmentMutex::Instance());
 
 #if defined(__windows)
     char unused[2];
@@ -875,7 +871,7 @@ bool ts::EnvironmentExists(const std::string& name)
 
 std::string ts::GetEnvironment(const std::string& name, const std::string& def)
 {
-    Guard lock(_environmentMutex);
+    Guard lock(EnvironmentMutex::Instance());
 
 #if defined(__windows)
     std::vector<char> value;
@@ -900,7 +896,7 @@ std::string ts::GetEnvironment(const std::string& name, const std::string& def)
 
 bool ts::SetEnvironment(const std::string& name, const std::string& value)
 {
-    Guard lock(_environmentMutex);
+    Guard lock(EnvironmentMutex::Instance());
 
 #if defined(__windows)
     return ::SetEnvironmentVariable(name.c_str(), value.c_str()) != 0;
@@ -917,7 +913,7 @@ bool ts::SetEnvironment(const std::string& name, const std::string& value)
 
 bool ts::DeleteEnvironment(const std::string& name)
 {
-    Guard lock(_environmentMutex);
+    Guard lock(EnvironmentMutex::Instance());
 
 #if defined(__windows)
     return ::SetEnvironmentVariable(name.c_str(), NULL) != 0;
@@ -1015,7 +1011,7 @@ namespace {
 
 void ts::GetEnvironment(Environment& env)
 {
-    Guard lock(_environmentMutex);
+    Guard lock(EnvironmentMutex::Instance());
     env.clear();
 
 #if defined(__windows)

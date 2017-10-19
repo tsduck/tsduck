@@ -88,8 +88,7 @@ void ts::DataBroadcastDescriptor::DisplayDescriptor(TablesDisplay& display, DID 
         if (slength > size) {
             slength = size;
         }
-        strm << margin << Format("Data broadcast id: %d (0x%04X), ", int(dbid), int(dbid))
-             << names::DataBroadcastId(dbid) << std::endl
+        strm << margin << "Data broadcast id: " << names::DataBroadcastId(dbid, names::BOTH_FIRST) << std::endl
              << margin << Format("Component tag: %d (0x%02X), ", int(ctag), int(ctag))
              << std::endl;
         DataBroadcastIdDescriptor::DisplaySelectorBytes(display, data, slength, indent, dbid);

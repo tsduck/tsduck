@@ -417,7 +417,7 @@ void ts::LinkageDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, c
                     slength = dlength;
                 }
                 data += slength; size -= slength; dlength -= slength;
-                strm << margin << Format("OUI: 0x%06X (", int(oui)) << names::OUI(oui) << ")" << std::endl;
+                strm << margin << "OUI: " << names::OUI(oui, names::FIRST) << std::endl;
                 if (slength > 0) {
                     strm << margin << "Selector data:" << std::endl
                          << Hexa(sdata, slength, hexa::HEXA | hexa::ASCII, indent);

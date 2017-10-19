@@ -226,11 +226,11 @@ bool ts::SVRemovePlugin::start()
 void ts::SVRemovePlugin::handleTable (SectionDemux& demux, const BinaryTable& table)
 {
     if (tsp->debug()) {
-        std::string name (names::TID (table.tableId()));
-        tsp->debug ("Got %s v%d, PID %d (0x%04X), TIDext %d (0x%04X)",
-                    name.c_str(), int (table.version()),
-                    int (table.sourcePID()), int (table.sourcePID()),
-                    int (table.tableIdExtension()), int (table.tableIdExtension()));
+        std::string name(names::TID(table.tableId()).toUTF8());
+        tsp->debug("Got %s v%d, PID %d (0x%04X), TIDext %d (0x%04X)",
+                   name.c_str(), int(table.version()),
+                   int(table.sourcePID()), int(table.sourcePID()),
+                   int(table.tableIdExtension()), int(table.tableIdExtension()));
     }
 
     switch (table.tableId()) {

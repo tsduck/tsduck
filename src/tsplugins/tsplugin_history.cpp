@@ -352,8 +352,8 @@ void ts::HistoryPlugin::handleTable (SectionDemux& demux, const BinaryTable& tab
         case TID_NIT_ACT:
         case TID_NIT_OTH: {
             if (table.sourcePID() == PID_NIT) {
-                const std::string name (names::TID (table.tableId()));
-                report ("%s v%d, network 0x%04X", name.c_str(), int (table.version()), int (table.tableIdExtension()));
+                const std::string name(names::TID(table.tableId()).toUTF8());
+                report("%s v%d, network 0x%04X", name.c_str(), int(table.version()), int(table.tableIdExtension()));
             }
             break;
         }
@@ -361,15 +361,15 @@ void ts::HistoryPlugin::handleTable (SectionDemux& demux, const BinaryTable& tab
         case TID_SDT_ACT:
         case TID_SDT_OTH: {
             if (table.sourcePID() == PID_SDT) {
-                const std::string name (names::TID (table.tableId()));
-                report ("%s v%d, TS 0x%04X", name.c_str(), int (table.version()), int (table.tableIdExtension()));
+                const std::string name(names::TID(table.tableId()).toUTF8());
+                report("%s v%d, TS 0x%04X", name.c_str(), int(table.version()), int(table.tableIdExtension()));
             }
             break;
         }
 
         case TID_BAT: {
             if (table.sourcePID() == PID_BAT) {
-                report ("BAT v%d, bouquet 0x%04X", int (table.version()), int (table.tableIdExtension()));
+                report("BAT v%d, bouquet 0x%04X", int(table.version()), int(table.tableIdExtension()));
             }
             break;
         }
@@ -377,8 +377,8 @@ void ts::HistoryPlugin::handleTable (SectionDemux& demux, const BinaryTable& tab
         case TID_CAT:
         case TID_TSDT: {
             // Long sections without TID extension
-            const std::string name (names::TID (table.tableId()));
-            report ("%s v%d", name.c_str(), int (table.version()));
+            const std::string name(names::TID(table.tableId()).toUTF8());
+            report("%s v%d", name.c_str(), int(table.version()));
             break;
         }
 
@@ -387,23 +387,23 @@ void ts::HistoryPlugin::handleTable (SectionDemux& demux, const BinaryTable& tab
             // Got an ECM
             if (_report_cas && _cpids[pid].last_tid != table.tableId()) {
                 // Got a new ECM
-                report ("PID %d (0x%04X), service 0x%04X, new ECM 0x%02X",
-                        int (pid), int (pid),
-                        int (_cpids[pid].service_id), int (table.tableId()));
+                report("PID %d (0x%04X), service 0x%04X, new ECM 0x%02X",
+                       int(pid), int(pid),
+                       int(_cpids[pid].service_id), int(table.tableId()));
             }
             break;
         }
 
         default: {
-            const std::string name (names::TID (table.tableId()));
+            const std::string name(names::TID(table.tableId()).toUTF8());
             if (table.tableId() >= TID_EIT_MIN && table.tableId() <= TID_EIT_MAX) {
-                report ("%s v%d, service 0x%04X", name.c_str(), int (table.version()), int (table.tableIdExtension()));
+                report("%s v%d, service 0x%04X", name.c_str(), int(table.version()), int(table.tableIdExtension()));
             }
             else if (table.sectionCount() > 0 && table.sectionAt(0)->isLongSection()) {
-                report ("%s v%d, TIDext 0x%04X", name.c_str(), int (table.version()), int (table.tableIdExtension()));
+                report("%s v%d, TIDext 0x%04X", name.c_str(), int(table.version()), int(table.tableIdExtension()));
             }
             else {
-                report (name);
+                report(name);
             }
             break;
         }

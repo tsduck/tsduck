@@ -1071,13 +1071,13 @@ void ts::TSAnalyzer::analyzeCADescriptor(const Descriptor& desc, ServiceContext*
         if (svp == 0) {
             // No service, this is an EMM PID
             eps->carry_emm = true;
-            eps->description = UString::FromUTF8(names::CASId(ca_sysid)) + u" EMM";
+            eps->description = names::CASId(ca_sysid) + u" EMM";
         }
         else {
             // Found an ECM PID for the service
             eps->carry_ecm = true;
             eps->addService(svp->service_id);
-            eps->description = UString::FromUTF8(names::CASId(ca_sysid)) + u" ECM";
+            eps->description = names::CASId(ca_sysid) + u" ECM";
         }
     }
 }

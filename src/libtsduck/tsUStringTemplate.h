@@ -268,3 +268,144 @@ bool ts::UString::Load(CONTAINER& container, const std::string& fileName)
     container.clear();
     return LoadAppend(container, fileName);
 }
+
+
+//----------------------------------------------------------------------------
+// Convert a string into an integer.
+//----------------------------------------------------------------------------
+
+template <typename INT>
+bool ts::UString::toInteger(INT& value, const UString& thousandSeparators) const
+{
+    // In this function, we work on formal integer types INT. We use std::numeric_limits<INT> to test the
+    // capabilities of the type (is_signed, etc.) But, for each instantiation of INT, some expression
+    // may not make sense and the Microsoft compiler complains about that. Disable specific warnings
+#if defined(__msc)
+#pragma warning(push)
+#pragma warning(disable:4127)
+#pragma warning(disable:4146)
+#endif
+
+    typedef typename std::numeric_limits<INT> limits;
+
+    // Initial value, up to decode error
+    value = static_cast<INT>(0);
+
+    // Reject non-integer type (floating points, etc.) and invalid parameters
+    if (!limits::is_integer) {
+        return false;
+    }
+
+    // Locate actual begin and end of integer value
+    const UChar* start = data();
+    const UChar* end = start + length();
+    while (start < end && IsSpace(*start)) {
+        ++start;
+    }
+    while (start < end && IsSpace(*(end-1))) {
+        --end;
+    }
+
+    // Skip optional sign
+    bool negative = false;
+    if (start < end) {
+        if (*start == '+') {
+            ++start;
+        }
+        else if (*start == '-') {
+            if (!limits::is_signed) {
+                // INT type is unsigned, invalid signed value
+                return false;
+            }
+            ++start;
+            negative = true;
+        }
+    }
+
+    // Look for hexadecimal prefix
+    int base = 10;
+    if (start + 1 < end && start[0] == UChar('0') && (start[1] == UChar('x') || start[1] == UChar('X'))) {
+        start += 2;
+        base = 16;
+    }
+
+    // Filter empty string
+    if (start == end) {
+        return false;
+    }
+    assert(start < end);
+
+    // Decode the string
+    while (start < end) {
+        const int digit = ToDigit(*start, base);
+        if (digit >= 0) {
+            // Character is a valid digit
+            value = value * static_cast<INT>(base) + static_cast<INT>(digit);
+        }
+        else if (thousandSeparators.find(*start) == NPOS) {
+            // Character is not a possible thousands separator
+            break;
+        }
+        ++start;
+    }
+
+    // Apply sign
+    if (negative) {
+        value = -value;
+    }
+
+    // Success only if we went down to the end of string
+    return start == end;
+
+#if defined(__msc)
+#pragma warning(pop)
+#endif
+}
+
+
+//----------------------------------------------------------------------------
+// Convert a string containing a list of integers into a container of integers.
+//----------------------------------------------------------------------------
+
+template <class CONTAINER>
+bool ts::UString::toIntegers(CONTAINER& container, const UString& thousandSeparators, const UString& listSeparators) const
+{
+    // Let's name INT the integer type.
+    // In all STL standard containers, value_type is a typedef for the element type.
+    typedef typename CONTAINER::value_type INT;
+
+    // Reset the content of the container
+    container.clear();
+
+    // Locate segments in the string
+    size_type start = 0;
+    size_type farEnd = length();
+
+    // Loop on segments
+    while (start < farEnd) {
+        // Skip spaces and list separators
+        while (start < farEnd && (IsSpace((*this)[start]) || listSeparators.find((*this)[start]) != NPOS)) {
+            ++start;
+        }
+        // Locate end of segment
+        size_type end = start;
+        while (end < farEnd && listSeparators.find((*this)[end]) == NPOS) {
+            ++end;
+        }
+        // Exit at end of string
+        if (start >= farEnd) {
+            break;
+        }
+        // Decode segment
+        INT value = static_cast<INT>(0);
+        if (!substr(start, end - start).toInteger<INT>(value, thousandSeparators)) {
+            return false;
+        }
+        container.push_back(value);
+
+        // Move to next segment
+        start = end;
+    }
+
+    return true;
+}

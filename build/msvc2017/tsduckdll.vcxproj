@@ -402,7 +402,6 @@
     <ClCompile Include="..\..\src\libtsduck\tsMPEG.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsMutex.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsNames.cpp" />
-    <ClCompile Include="..\..\src\libtsduck\tsNamesOUI.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsNetworkNameDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsNIT.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsNullReport.cpp" />
@@ -519,7 +518,8 @@
     <Xml Include="..\..\src\libtsduck\tsduck.xml" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\src\libtsduck\tsduck.names" />
+    <None Include="..\..\src\libtsduck\tsduck.dvb.names" />
+    <None Include="..\..\src\libtsduck\tsduck.oui.names" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{1AD31049-26B0-4922-89CF-778040DFC51E}</ProjectGuid>
@@ -544,6 +544,7 @@
   </ImportGroup>
   <Target Name="AfterBuild">
     <Copy SourceFiles="..\..\src\libtsduck\tsduck.xml" DestinationFolder="$(OutDir)" />
-    <Copy SourceFiles="..\..\src\libtsduck\tsduck.names" DestinationFolder="$(OutDir)" />
+    <Copy SourceFiles="..\..\src\libtsduck\tsduck.dvb.names" DestinationFolder="$(OutDir)" />
+    <Copy SourceFiles="..\..\src\libtsduck\tsduck.oui.names" DestinationFolder="$(OutDir)" />
   </Target>
 </Project>

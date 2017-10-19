@@ -1111,9 +1111,6 @@
     <ClCompile Include="..\..\src\libtsduck\tsNames.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\libtsduck\tsNamesOUI.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\libtsduck\tsNetworkNameDescriptor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -1556,7 +1553,10 @@
     </Xml>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\src\libtsduck\tsduck.names">
+    <None Include="..\..\src\libtsduck\tsduck.dvb.names">
+      <Filter>Configuration</Filter>
+    </None>
+    <None Include="..\..\src\libtsduck\tsduck.oui.names">
       <Filter>Configuration</Filter>
     </None>
   </ItemGroup>

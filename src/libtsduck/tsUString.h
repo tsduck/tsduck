@@ -847,6 +847,51 @@ namespace ts {
         //!
         bool getLine(std::istream& strm);
 
+        //!
+        //! Convert a string into an integer.
+        //!
+        //! This string must contain the representation of an integer value in decimal or hexadecimal
+        //! (prefix @c 0x). Hexadecimal values are case-insensitive, including the @c 0x prefix.
+        //! Leading and trailing spaces are ignored. Optional thousands separators are ignored.
+        //!
+        //! @tparam INT An integer type, any size, signed or unsigned.
+        //! The toInteger function decodes integer values of this type.
+        //! @param [out] value The returned decoded value. On error (invalid string), @a value
+        //! contains what could be decoded up to the first invalid character.
+        //! @param [in] thousandSeparators A string of characters which are interpreted as thousands
+        //! separators and are ignored. <i>Any character</i> from the @a thousandSeparators string
+        //! is interpreted as a separator. Note that this implies that the optional thousands separators
+        //! may have one character only.
+        //! @return True on success, false on error (invalid string).
+        //!
+        template <typename INT>
+        bool toInteger(INT& value, const UString& thousandSeparators = UString()) const;
+
+        //!
+        //! Convert a string containing a list of integers into a container of integers.
+        //!
+        //! This string must contain the representation of integer values in decimal or hexadecimal
+        //! (prefix @c 0x). Hexadecimal values are case-insensitive, including the @c 0x prefix.
+        //! Leading and trailing spaces are ignored. Optional thousands separators are ignored.
+        //! The various integer values in the string are separated using list delimiters.
+        //!
+        //! @tparam CONTAINER A container class of any integer type as defined by the C++ Standard Template Library (STL).
+        //! @param [out] container The returned decoded values. The previous content of the container is discarded.
+        //! The integer values are added in the container in the order of the decoded string.
+        //! On error (invalid string), @a container contains what could be decoded up to the first invalid character.
+        //! @param [in] thousandSeparators A string of characters which are interpreted as thousands
+        //! separators and are ignored. <i>Any character</i> from the @a thousandSeparators string
+        //! is interpreted as a separator. Note that this implies that the optional thousands separators
+        //! may have one character only.
+        //! @param [in] listSeparators A string of characters which are interpreted as list separators.
+        //! Distinct integer values must be separated by one or more of these separators.
+        //! <i>Any character</i> from the @a listSeparators string is interpreted as a separator.
+        //! Note that this implies that the list separators may have one character only.
+        //! @return True on success, false on error (invalid string).
+        //!
+        template <class CONTAINER>
+        bool toIntegers(CONTAINER& container, const UString& thousandSeparators = UString(), const UString& listSeparators = UString(u",; ")) const;
+
         //
         // Override methods which return strings so that they return the new class.
         // Define additional overloads which char and strings.

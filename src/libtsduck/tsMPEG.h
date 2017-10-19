@@ -678,8 +678,8 @@ namespace ts {
 
         TID_MG_EMM_U      = 0x82, //!< Table id for MediaGuard EMM-U
         TID_MG_EMM_A      = 0x83, //!< Table id for MediaGuard EMM-A
-        TID_MG_EMM_I      = 0x85, //!< Table id for MediaGuard EMM-I
         TID_MG_EMM_G      = 0x84, //!< Table id for MediaGuard EMM-G
+        TID_MG_EMM_I      = 0x85, //!< Table id for MediaGuard EMM-I
         TID_MG_EMM_C      = 0x86, //!< Table id for MediaGuard EMM-C
         TID_MG_EMM_CG     = 0x89, //!< Table id for MediaGuard EMM-CG
     };

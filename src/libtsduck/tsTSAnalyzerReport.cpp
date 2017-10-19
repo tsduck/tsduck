@@ -508,7 +508,7 @@ std::ostream& ts::TSAnalyzerReport::reportPIDs(std::ostream& stm, const std::str
 
         // List of System Software Update OUI's on this PID
         for (std::set<uint32_t>::const_iterator it1 = pc.ssu_oui.begin(); it1 != pc.ssu_oui.end(); ++it1) {
-            stm << JustifyLeft(Format("|  SSU OUI: 0x%06X (", int(*it1)) + names::OUI(*it1) + ")", 78, ' ', true)
+            stm << (u"|  SSU OUI: " + names::OUI(*it1, names::FIRST)).toJustifiedLeft(78, SPACE, true)
                 << '|' << std::endl;
         }
         stm << '|' << std::string(77, '-') << '|' << std::endl;
@@ -675,11 +675,10 @@ std::ostream& ts::TSAnalyzerReport::reportTables(std::ostream& stm, const std::s
             const TID tid = etc.etid.tid();
 
             // Header line: TID
-            const std::string tid_name(names::TID(tid, CASFamilyOf(pc.cas_id)));
-            const std::string tid_ext(etc.etid.isShortSection() ? "" :
-                                      Format(", TID ext: %d (0x%04X)", int(etc.etid.tidExt()), int(etc.etid.tidExt())));
+            const UString tid_name(names::TID(tid, CASFamilyOf(pc.cas_id), names::BOTH_FIRST));
+            const UString tid_ext(etc.etid.isShortSection() ? "" : Format(", TID ext: %d (0x%04X)", int(etc.etid.tidExt()), int(etc.etid.tidExt())));
             stm << '|' << std::string(77, '-') << '|' << std::endl
-                << JustifyLeft(Format("|  TID: %d (0x%04X), %s%s", int(tid), int(tid), tid_name.c_str(), tid_ext.c_str()), 77)
+                << (u"|  TID: " + tid_name + u", " + tid_ext).toJustifiedLeft(77, SPACE, true)
                 << " |" << std::endl;
 
             // Repetition rates are displayed in ms if the TS bitrate is known, in packets otherwise.

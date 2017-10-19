@@ -371,7 +371,7 @@ void ts::EIT::DisplaySection(TablesDisplay& display, const ts::Section& section,
              << margin << Format("Original Network Id: %d (0x%04X)", int(onid), int(onid)) << std::endl
              << margin << Format("Segment last section: %d (0x%02X)", int(seg_last), int(seg_last)) << std::endl
              << margin << Format("Last Table Id: %d (0x%02X), ", int(last_tid), int(last_tid))
-             << names::TID(last_tid, CAS_OTHER) << std::endl;
+             << names::TID(last_tid) << std::endl;
     }
 
     while (size >= 12) {
