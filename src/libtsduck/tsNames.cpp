@@ -35,17 +35,81 @@
 #include "tsCerrReport.h"
 TSDUCK_SOURCE;
 
-// Define singleton instance
-tsDefineSingleton(ts::Names);
+
+//----------------------------------------------------------------------------
+// Configuration instances.
+//----------------------------------------------------------------------------
+
+TS_STATIC_INSTANCE_DEFINITION(ts::Names, ("tsduck.dvb.names"), ts::NamesDVB, NamesDVB);
+TS_STATIC_INSTANCE_DEFINITION(ts::Names, ("tsduck.oui.names"), ts::NamesOUI, NamesOUI);
+
+
+//----------------------------------------------------------------------------
+// Public functions returning names.
+//----------------------------------------------------------------------------
+
+ts::UString ts::names::TID(uint8_t tid, ts::CASFamily cas, Flags flags)
+{
+    // Use version with CAS first, then without CAS.
+    return NamesDVB::Instance().nameFromSectionWithFallback(u"TableId", (Names::Value(cas) << 8) | Names::Value(tid), Names::Value(tid), flags, 8);
+}
+
+ts::UString ts::names::Content(uint8_t x, Flags flags)
+{
+    return NamesDVB::Instance().nameFromSection(u"ContentId", Names::Value(x), flags, 8);
+}
+
+ts::UString ts::names::PrivateDataSpecifier(uint32_t pds, Flags flags)
+{
+    return NamesDVB::Instance().nameFromSection(u"PrivateDataSpecifier", Names::Value(pds), flags, 32);
+}
+
+ts::UString ts::names::CASFamily(ts::CASFamily cas)
+{
+    return NamesDVB::Instance().nameFromSection(u"CASFamily", Names::Value(cas), NAME | DECIMAL);
+}
+
+ts::UString ts::names::CASId(uint16_t id, Flags flags)
+{
+    return NamesDVB::Instance().nameFromSection(u"CASystemId", Names::Value(id), flags, 16);
+}
+
+ts::UString ts::names::BouquetId(uint16_t id, Flags flags)
+{
+    return NamesDVB::Instance().nameFromSection(u"BouquetId", Names::Value(id), flags, 16);
+}
+
+ts::UString ts::names::OriginalNetworkId(uint16_t id, Flags flags)
+{
+    return NamesDVB::Instance().nameFromSection(u"OriginalNetworkId", Names::Value(id), flags, 16);
+}
+
+ts::UString ts::names::NetworkId(uint16_t id, Flags flags)
+{
+    return NamesDVB::Instance().nameFromSection(u"NetworkId", Names::Value(id), flags, 16);
+}
+
+ts::UString ts::names::DataBroadcastId(uint16_t id, Flags flags)
+{
+    return NamesDVB::Instance().nameFromSection(u"DataBroadcastId", Names::Value(id), flags, 16);
+}
+
+ts::UString ts::names::OUI(uint32_t oui, Flags flags)
+{
+    return NamesOUI::Instance().nameFromSection(u"OUI", Names::Value(oui), flags, 24);
+}
 
 
 //----------------------------------------------------------------------------
 // Constructor (load the configuration file).
 //----------------------------------------------------------------------------
 
-ts::Names::Names() :
+ts::Names::Names(const std::string& fileName) :
     _log(CERR),
-    _configFile(SearchConfigurationFile("tsduck.names"))
+    _configFile(SearchConfigurationFile(fileName)),
+    _configLines(0),
+    _configErrors(0),
+    _sections()
 {
     // Locate the configuration file.
     if (_configFile.empty()) {
@@ -54,9 +118,101 @@ ts::Names::Names() :
         return;
     }
 
+    // Open configuration file.
+    std::ifstream strm(_configFile.c_str());
+    if (!strm) {
+        _log.error("error opening file " + _configFile);
+        return;
+    }
 
+    // Read configuration file line by line.
+    ConfigSection* section = 0;
+    UString line;
+    while (line.getLine(strm)) {
 
+        ++_configLines;
+        line.trim();
+
+        if (line.empty() || line[0] == UChar('#')) {
+            // Empty or comment line, ignore.
+        }
+        else if (line.front() == UChar('[') && line.back() == UChar(']')) {
+            // Handle beginning of section, get section name.
+            line.erase(0, 1);
+            line.pop_back();
+            line.convertToLower();
+
+            // Get or create associated section.
+            ConfigSectionMap::iterator it = _sections.find(line);
+            if (it != _sections.end()) {
+                section = it->second;
+            }
+            else {
+                // Create new section.
+                section = new ConfigSection;
+                CheckNonNull(section);
+                _sections.insert(std::make_pair(line, section));
+            }
+        }
+        else if (!decodeDefinition(line, section)) {
+            // Invalid line.
+            _log.error(_configFile + Format(": invalid line %d: ", _configLines) + line.toUTF8());
+            if (++_configErrors >= 20) {
+                // Give up after that number of errors
+                _log.error(_configFile + ": too many errors, giving up");
+                break;
+            }
+        }
+    }
+    strm.close();
 }
+
+
+//----------------------------------------------------------------------------
+// Decode a line as "first[-last] = name". Return true on success.
+//----------------------------------------------------------------------------
+
+bool ts::Names::decodeDefinition(const UString& line, ConfigSection* section)
+{
+    // Check the presence of the '=' and in a valid section.
+    const size_t equal = line.find(UChar('='));
+    if (equal == 0 || equal == UString::NPOS || section == 0) {
+        return false;
+    }
+
+    // Extract fields.
+    UString range(line, 0, equal);
+    range.trim();
+
+    UString value(line, equal + 1, line.length() - equal - 1);
+    value.trim();
+
+    // Special case: specification of size in bits of values in this section.
+    if (range.similar(u"bits")) {
+        return value.toInteger(section->bits);
+    }
+
+    // Decode "first[-last]"
+    Value first = 0;
+    Value last = 0;
+    const size_t dash = range.find(UChar('-'));
+    bool valid = false;
+
+    if (dash == UString::NPOS) {
+        valid = range.toInteger(first);
+        last = first;
+    }
+    else {
+        valid = range.substr(0, dash).toInteger(first) && range.substr(dash + 1).toInteger(last) && last >= first;
+    }
+
+    // Add the definition.
+    if (valid) {
+        section->addEntry(first, last, value);
+    }
+    return valid;
+}
+
 
 //----------------------------------------------------------------------------
 // Destructor: free all resources.
@@ -88,7 +244,7 @@ ts::Names::ConfigEntry::ConfigEntry(Value l, const UString& n) :
 //----------------------------------------------------------------------------
 
 ts::Names::ConfigSection::ConfigSection() :
-    bits(32),
+    bits(0),
     entries()
 {
 }
@@ -130,131 +286,143 @@ void ts::Names::ConfigSection::addEntry(Value first, Value last, const UString& 
 
 ts::UString ts::Names::ConfigSection::getName(Value val) const
 {
-    return UString(); //@@@@
+    // Eliminate trivial cases which would cause issues with code below.
+    if (entries.empty()) {
+        return UString();
+    }
+
+    // The key in the 'entries' map is the _first_ value of a range.
+    // Get an iterator pointing to the first element that is "not less" than 'val'.
+    ConfigEntryMap::const_iterator it = entries.lower_bound(val);
+    if (it == entries.end() || it->first != val) {
+        // There is no entry with a value range starting at 'val'.
+        // Maybe 'val' is in the range of the previous entry.
+        --it;
+    }
+
+    assert(it != entries.end());
+    assert(it->first <= val);
+    assert(it->second != 0);
+    return val >= it->first && val <= it->second->last ? it->second->name : UString();
 }
 
 
-
-
 //----------------------------------------------------------------------------
-// Table ID. Use CAS family for EMM/ECM table ids.
+// Format helper
 //----------------------------------------------------------------------------
 
-std::string ts::names::TID(uint8_t tid, ts::CASFamily cas)
+// Compute a number of hexa digits.
+int ts::Names::HexaDigits(size_t bits)
 {
-    std::string casName;
-    if (cas != CAS_OTHER) {
-        casName = names::CASFamily(cas) + " ";
-    }
+    return int((bits + 3) / 4);
+}
 
-    switch (cas) {
-        case CAS_MEDIAGUARD: {
-            switch (tid) {
-                case TID_MG_EMM_U:  return casName + "EMM-U";
-                case TID_MG_EMM_A:  return casName + "EMM-A";
-                case TID_MG_EMM_G:  return casName + "EMM-G";
-                case TID_MG_EMM_I:  return casName + "EMM-I";
-                case TID_MG_EMM_C:  return casName + "EMM-C";
-                case TID_MG_EMM_CG: return casName + "EMM-GC";
-                default: break;
-            }
-            break;
-        }
-        case CAS_VIACCESS:
-        {
-            switch (tid) {
-                case TID_VIA_EMM_U:    return casName + "EMM-U";
-                case TID_VIA_EMM_GA_E: return casName + "EMM-GA (even)";
-                case TID_VIA_EMM_GA_O: return casName + "EMM-GA (odd)";
-                case TID_VIA_EMM_GH_E: return casName + "EMM-GH (even)";
-                case TID_VIA_EMM_GH_O: return casName + "EMM-GH (odd)";
-                case TID_VIA_EMM_S:    return casName + "EMM-S";
-                default: break;
-            }
-            break;
-        }
-        case CAS_SAFEACCESS: {
-            switch (tid) {
-                case TID_SA_CECM_82:   return casName + "CECM (even)";
-                case TID_SA_CECM_83:   return casName + "CECM (odd)";
-                case TID_SA_EMM_STB_U: return casName + "EMM-STB-U";
-                case TID_SA_EMM_STB_G: return casName + "EMM-STB-G (all)";
-                case TID_SA_EMM_A:     return casName + "EMM-A";
-                case TID_SA_EMM_U:     return casName + "EMM-U";
-                case TID_SA_EMM_S:     return casName + "EMM-S";
-                case TID_SA_EMM_CAM_G: return casName + "EMM-CAM-G";
-                case TID_SA_RECM_8A:   return casName + "RECM (even)";
-                case TID_SA_RECM_8B:   return casName + "RECM (odd)";
-                case TID_SA_EMM_T:     return casName + "EMM-T";
-                case TID_LW_DMT:       return "LW/DMT";
-                case TID_LW_BDT:       return "LW/BDT";
-                case TID_LW_VIT:       return "LW/VIT";
-                case TID_LW_VCT:       return "LW/VCT";
-                default: break;
-            }
-            break;
-        }
-        default: {
-            break;
-        }
-    }
-
-    switch (tid) {
-        case 0x00: return "PAT";
-        case 0x01: return "CAT";
-        case 0x02: return "PMT";
-        case 0x03: return "TSDT";
-        case 0x04: return "Scene DT";
-        case 0x05: return "Object DT";
-        case 0x06: return "MetaData";
-        case 0x38: return "DSM-CC 0x38";
-        case 0x39: return "DSM-CC 0x39";
-        case 0x3A: return "DSM-CC MPE";
-        case 0x3B: return "DSM-CC UNM";
-        case 0x3C: return "DSM-CC DDM";
-        case 0x3D: return "DSM-CC SD";
-        case 0x3E: return "DSM-CC PD";
-        case 0x3F: return "DSM-CC 0x3F";
-        case 0x40: return "NIT Actual";
-        case 0x41: return "NIT Other";
-        case 0x42: return "SDT Actual";
-        case 0x46: return "SDT Other";
-        case 0x4A: return "BAT";
-        case 0x4E: return "EIT p/f Actual";
-        case 0x4F: return "EIT p/f Other";
-        case 0x70: return "TDT";
-        case 0x71: return "RST";
-        case 0x72: return "ST";
-        case 0x73: return "TOT";
-        case 0x74: return "Resolution Notification";
-        case 0x75: return "Container";
-        case 0x76: return "Related Content";
-        case 0x77: return "Content Identifier";
-        case 0x78: return "MPE-FEC";
-        case 0x7E: return "DIT";
-        case 0x7F: return "SIT";
-        case 0x80: return casName + "ECM (even)";
-        case 0x81: return casName + "ECM (odd)";
-        case 0xFF: return "Forbidden TID 0xFF";
-        default: break;
-    }
-
-    if (tid >= 0x50 && tid <= 0x5F) {
-        return Format("EIT schedule Actual (0x%02X)", int(tid));
-    }
-    else if (tid >= 0x60 && tid <= 0x6F) {
-        return Format("EIT schedule Other (0x%02X)", int(tid));
-    }
-    else if (tid >= 0x82 && tid <= 0x8F) {
-        return Format("%sEMM (0x%02X)", casName.c_str(), int(tid));
-    }
-    else if (tid < 0x40) {
-        return Format("MPEG-Reserved (0x%02X)", int(tid));
+// Compute the display mask
+ts::Names::Value ts::Names::DisplayMask(size_t bits)
+{
+    if (bits == 0 || bits >= 4 * sizeof(Value)) {
+        // Unspecified, keep all bits.
+        return ~Value(0);
     }
     else {
-        return Format("DVB-Reserved (0x%02X)", int(tid));
+        return ~Value(0) >> (8 * sizeof(Value) - bits);
     }
 }
+
+
+//----------------------------------------------------------------------------
+// Format a name.
+//----------------------------------------------------------------------------
+
+ts::UString ts::Names::formatted(Value value, const UString& name, names::Flags flags, size_t bits) const
+{
+    // If neither decimal nor hexa are specified, hexa is the default.
+    if ((flags & (names::DECIMAL | names::HEXA)) == 0) {
+        flags |= names::HEXA;
+    }
+
+    // Display meaningful bits only.
+    value &= DisplayMask(bits);
+
+    // Default name.
+    const UString defaultName(u"unknown");
+    const UString* displayName = &name;
+    if (name.empty()) {
+        // Name not found, force value display.
+        flags |= names::VALUE;
+        displayName = &defaultName;
+    }
+
+    if ((flags & (names::VALUE | names::FIRST)) == 0) {
+        // Name only.
+        return *displayName;
+    }
+
+    switch (flags & (names::FIRST | names::DECIMAL | names::HEXA)) {
+        case names::DECIMAL: return *displayName + Format(" (%" FMT_INT64 "d)", value);
+        case names::HEXA: return *displayName + Format(" (0x%0*" FMT_INT64 "X)", HexaDigits(bits), value);
+        case names::BOTH: return *displayName + Format(" (0x%0*" FMT_INT64 "X, %" FMT_INT64 "d)", HexaDigits(bits), value, value);
+        case names::DECIMAL_FIRST: return Format("%" FMT_INT64 "d (", value) + *displayName + UChar(')');
+        case names::HEXA_FIRST: return Format("0x%0*" FMT_INT64 "X (", HexaDigits(bits), value) + *displayName + UChar(')');
+        case names::BOTH_FIRST: return Format("0x%0*" FMT_INT64 "X (%" FMT_INT64 "d, ", HexaDigits(bits), value, value) + *displayName + UChar(')');
+        default: assert(false); return UString();
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Get a name from a specified section.
+//----------------------------------------------------------------------------
+
+ts::UString ts::Names::nameFromSection(const UString& sectionName, Value value, names::Flags flags, size_t bits) const
+{
+    // Get the section, normalize the section name.
+    ConfigSectionMap::const_iterator it = _sections.find(sectionName.toTrimmed().toLower());
+    const ConfigSection* section = it == _sections.end() ? 0 : it->second;
+
+    if (section == 0) {
+        // Non-existent section, no name.
+        return formatted(value, UString(), flags, bits);
+    }
+    else {
+        return formatted(value, section->getName(value), flags, bits != 0 ? bits : section->bits);
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Get a name from a specified section, with alternate fallback value.
+//----------------------------------------------------------------------------
+
+ts::UString ts::Names::nameFromSectionWithFallback(const UString& sectionName, Value value1, Value value2, names::Flags flags, size_t bits) const
+{
+    // Get the section, normalize the section name.
+    ConfigSectionMap::const_iterator it = _sections.find(sectionName.toTrimmed().toLower());
+    const ConfigSection* section = it == _sections.end() ? 0 : it->second;
+
+    if (section == 0) {
+        // Non-existent section, no name.
+        return formatted(value1, UString(), flags, bits);
+    }
+    else {
+        const UString name(section->getName(value1));
+        if (!name.empty()) {
+            // value1 has a name
+            return formatted(value1, name, flags, bits != 0 ? bits : section->bits);
+        }
+        else {
+            // value1 has no name, use value2.
+            return formatted(value2, section->getName(value2), flags, bits != 0 ? bits : section->bits);
+        }
+    }
+}
+
+
+
+
+
+
+
 
 //----------------------------------------------------------------------------
 // Descriptor ID. Use private data specified (pds) if did >= 0x80.
@@ -549,107 +717,6 @@ std::string ts::names::EDID(uint8_t edid, uint32_t pds)
             }
     }
 }
-
-//----------------------------------------------------------------------------
-// Private Data Specified
-//----------------------------------------------------------------------------
-
-std::string ts::names::PrivateDataSpecifier (uint32_t pds)
-{
-    switch (pds) {
-        case 0x00000000: return "Reserved";
-        case 0x00000001: return "SES";
-        case 0x00000002: return "BskyB 1";
-        case 0x00000003: return "BskyB 2";
-        case 0x00000004: return "BskyB 3";
-        case 0x00000005: return "ARD, ZDF, ORF";
-        case 0x00000006: return "Nokia";
-        case 0x00000007: return "AT Entertainment";
-        case 0x00000008: return "TV Cabo";
-        case 0x00000009: return "Nagravision 1";
-        case 0x0000000A: return "Nagravision 2";
-        case 0x0000000B: return "Nagravision 3";
-        case 0x0000000C: return "Nagravision 4";
-        case 0x0000000D: return "Nagravision 5";
-        case 0x0000000E: return "Valvision";
-        case 0x0000000F: return "Quiero Television";
-        case 0x00000010: return "TPS";
-        case 0x00000011: return "EchoStar";
-        case 0x00000012: return "Telia";
-        case 0x00000013: return "Viasat";
-        case 0x00000014: return "Senda (Swedish TTV)";
-        case 0x00000015: return "MediaKabel";
-        case 0x00000016: return "Casema";
-        case 0x00000017: return "Humax";
-        case 0x00000018: return "@Sky";
-        case 0x00000019: return "Singapore DTT";
-        case 0x00000020: return "Lyonnaise Cable 1";
-        case 0x00000021: return "Lyonnaise Cable 2";
-        case 0x00000022: return "Lyonnaise Cable 3";
-        case 0x00000023: return "Lyonnaise Cable 4";
-        case 0x00000025: return "MTV Europe";
-        case 0x00000026: return "Pansonic";
-        case 0x00000027: return "Mentor";
-        case 0x00000028: return "EACEM/EICTA";
-        case 0x00000029: return "NorDig";
-        case 0x0000002A: return "Intelsus";
-        case 0x00000030: return "Telenor";
-        case 0x00000031: return "TeleDenmark";
-        case 0x00000035: return "Europe Online Networks";
-        case 0x00000038: return "OTE";
-        case 0x00000039: return "Telewizja Polsat";
-        case 0x000000A0: return "Sentech";
-        case 0x000000A1: return "TechniSat";
-        case 0x000000A2: return "Logiways";
-        case 0x000000BE: return "BetaTechnik";
-        case 0x000000C0: return "Canal+";
-        case 0x000000D0: return "Dolby Laboratories";
-        case 0x000000E0: return "ExpressVu";
-        case 0x000000F0: return "France Telecom, CNES, DGA (STENTOR)";
-        case 0x00000100: return "OpenTV";
-        case 0x00000150: return "Loewe Opta";
-        case 0x0000055F: return "Eutelsat";
-        case 0x00000600: return "UPC 1";
-        case 0x00000601: return "UPC 2";
-        case 0x00001000: return "TPS";
-        case 0x000022D4: return "Spanish Broadcast Regulator";
-        case 0x000022F1: return "Swedish Broadcast Regulator";
-        case 0x0000233A: return "Independent television Commission";
-        case 0x00006000: return "News Datacom";
-        case 0x00006001: return "NDC 1";
-        case 0x00006002: return "NDC 2";
-        case 0x00006003: return "NDC 3";
-        case 0x00006004: return "NDC 4";
-        case 0x00006005: return "NDC 5";
-        case 0x00006006: return "NDC 6";
-        case 0x00362275: return "Irdeto";
-        case 0x004E544C: return "NTL";
-        case 0x00532D41: return "Scientific Atlanta";
-        case 0x5347444E: return "StarGuide Digial Networks";
-        case 0x00600000: return "Rhone Vision Cable";
-        case 0x44414E59: return "News Datacom (IL) 1";
-        case 0x46524549: return "News Datacom (IL) 1";
-        case 0x4A4F4A4F: return "MSG MediaServices";
-        case 0x53415053: return "Scientific Atlanta";
-        case 0xBBBBBBBB: return "Bertelsmann";
-        case 0xECCA0001: return "ECCA";
-        case 0xFCFCFCFC: return "France Telecom";
-        default:
-            if (pds >= 0x46545600 && pds <= 0x46545620) {
-                return Format ("FreeTV %d", int (pds - 0x46545600));
-            }
-            else if (pds >= 0x4F545600 && pds <= 0x4F5456FF) {
-                return Format ("OpenTV %d", int (pds - 0x4F545600));
-            }
-            else if (pds >= 0x50484900 && pds <= 0x504849FF) {
-                return Format ("Philips DVS %d", int (pds - 0x50484900));
-            }
-            else {
-                return Format ("Undefined 0x%08X", pds);
-            }
-    }
-}
-
 //----------------------------------------------------------------------------
 // Stream type (in PMT)
 //----------------------------------------------------------------------------
@@ -948,210 +1015,6 @@ std::string ts::names::TeletextType (uint8_t type)
     }
 }
 
-
-//----------------------------------------------------------------------------
-// Name of Conditional Access Families.
-//----------------------------------------------------------------------------
-
-std::string ts::names::CASFamily(ts::CASFamily cas)
-{
-    switch (cas) {
-        case CAS_OTHER:       return "Other";
-        case CAS_MEDIAGUARD:  return "MediaGuard";
-        case CAS_NAGRA:       return "Nagravision";
-        case CAS_VIACCESS:    return "Viaccess";
-        case CAS_THALESCRYPT: return "ThalesCrypt";
-        case CAS_SAFEACCESS:  return "SafeAccess";
-        default:              return Format("CAS Family %d", int(cas));
-    }
-}
-
-
-//----------------------------------------------------------------------------
-// Conditional Access System Id (in CA Descriptor)
-//----------------------------------------------------------------------------
-
-std::string ts::names::CASId(uint16_t ca_sysid)
-{
-    struct Name {
-        uint16_t first;
-        const char* name;
-    };
-
-    static const Name names [] = {
-        {0x0000, "Reserved"},
-        {0x0001, "IPDC SPP"},
-        {0x0002, "18Crypt"},
-        {0x0003, "Reserved"},
-        {0x0004, "OMA DRM"},
-        {0x0005, "OMA BCAST / 3GPP GBA_U"},
-        {0x0006, "OMA BCAST / 3GPP GBA_ME"},
-        {0x0007, "Open IPTV Forum"},
-        {0x0008, "Open Mobile Alliance"},
-        {0x0009, "Standardized systems"},
-        {0x0100, "MediaGuard"},
-        {0x0200, "CCETT"},
-        {0x0300, "MSG/Kabel Deutschland"},
-        {0x0400, "Eurodec"},
-        {0x0500, "Viaccess"},
-        {0x0600, "Irdeto"},
-        {0x0700, "Motorola"},
-        {0x0800, "Matra"},
-        {0x0900, "NDS"},
-        {0x0A00, "Nokia"},
-        {0x0B00, "Conax"},
-        {0x0C00, "NTL"},
-        {0x0D00, "CryptoWorks"},
-        {0x0E00, "Scientific Atlanta"},
-        {0x0F00, "Sony"},
-        {0x1000, "Tandberg"},
-        {0x1100, "Thomson"},
-        {0x1200, "TV/Com"},
-        {0x1300, "HPT"},
-        {0x1400, "HRT"},
-        {0x1500, "IBM"},
-        {0x1600, "Nera"},
-        {0x1700, "Verimatrix/BetaCrypt"},
-        {0x1800, "Nagravision"},
-        {0x1900, "Titan"},
-        {0x1A00, "Unknown"},
-        {0x1E00, "Alticast"},
-        {0x1E08, "Unknown"},
-        {0x1EA0, "Protac"},
-        {0x1EA1, "Unknown"},
-        {0x1EB0, "Telecast"},
-        {0x1EB1, "Unknown"},
-        {0x1EC0, "CryptoGuard"},
-        {0x1EC1, "Unknown"},
-        {0x1ED0, "MM Comunicaciones"},
-        {0x1ED2, "Unknown"},
-        {0x2000, "Telefonica"},
-        {0x2100, "Stentor"},
-        {0x2200, "Tadiran Scopus"},
-        {0x2300, "Barco"},
-        {0x2400, "StarGuide"},
-        {0x2500, "Mentor"},
-        {0x2600, "European Broadcasting Union"},
-        {0x2700, "PolyCipher"},
-        {0x2710, "Extended Secure Technologies"},
-        {0x2712, "Derincrypt"},
-        {0x2713, "Wuhan Tianyu"},
-        {0x2715, "Network Broadcast"},
-        {0x2716, "Bromteck"},
-        {0x2717, "Logiways"},
-        {0x2719, "S-Curious"},
-        {0x271A, "Unknown"},
-        {0x27A0, "By-Design India"},
-        {0x27A5, "Unknown"},
-        {0x2800, "LLC"},
-        {0x280A, "Unknown"},
-        {0x2810, "MultiKom DeltaSat"},
-        {0x2811, "Unknown"},
-        {0x4347, "Crypton"},
-        {0x4348, "Unknown"},
-        {0x4700, "General Instruments"},
-        {0x4800, "Telemann"},
-        {0x4900, "DTV Alliance China / Irdeto"},
-        {0x4A00, "Tsinghua TongFang"},
-        {0x4A10, "Easycas"},
-        {0x4A20, "AlphaCrypt"},
-        {0x4A30, "DVN"},
-        {0x4A40, "ADT"},
-        {0x4A50, "Shenzhen Kingsky"},
-        {0x4A60, "@Sky/Neotion"},
-        {0x4A70, "DreamCrypt"},
-        {0x4A80, "ThalesCrypt"},
-        {0x4A90, "Runcom"},
-        {0x4AA0, "SIDSA"},
-        {0x4AB0, "Compunicate"},
-        {0x4AC0, "Latens"},
-        {0x4AD0, "XCrypt"},
-        {0x4AD2, "Beijing Digital Video Technology"},
-        {0x4AD4, "Widevine"},
-        {0x4AD6, "SK Telecom"},
-        {0x4AD8, "Enigma Systems"},
-        {0x4ADA, "Wyplay"},
-        {0x4ADB, "Jinan Taixin"},
-        {0x4ADC, "SafeAccess"},
-        {0x4ADD, "ATSC (SRM)"},
-        {0x4ADE, "CerberCrypt"},
-        {0x4ADF, "Caston"},
-        {0x4AE0, "Cifra"},
-        {0x4AE2, "Microsoft"},
-        {0x4AE4, "Coretrust"},
-        {0x4AE5, "IK SATPROF"},
-        {0x4AE6, "SMI"},
-        {0x4AE7, "Guangzhou Ewider"},
-        {0x4AE8, "FG DIGITAL"},
-        {0x4AE9, "Dreamer-i"},
-        {0x4AEA, "Cryptoguard"},
-        {0x4AEB, "Abel DRM"},
-        {0x4AEC, "FTS DVL"},
-        {0x4AED, "Unitend"},
-        {0x4AEE, "Deltacom"},
-        {0x4AEF, "NetUP"},
-        {0x4AF0, "ABV"},
-        {0x4AF1, "China DTV #1"},
-        {0x4AF2, "China DTV #2"},
-        {0x4AF3, "Baustem"},
-        {0x4AF4, "Marlin"},
-        {0x4AF5, "SecureMedia"},
-        {0x4AF6, "Tongfang"},
-        {0x4AF7, "MSA"},
-        {0x4AF8, "Griffin"},
-        {0x4AF9, "Topreal"},
-        {0x4AFB, "NST"},
-        {0x4AFC, "Panaccess"},
-        {0x4AFD, "Comteza"},
-        {0x4B00, "Tongfang"},
-        {0x4B03, "DuoCrypt"},
-        {0x4B04, "Great Wall CAS"},
-        {0x4B05, "DIGICAP"},
-        {0x4B07, "Wuhan Reikost"},
-        {0x4B08, "Philips"},
-        {0x4B09, "Ambernetas"},
-        {0x4B0A, "Sumavision"},
-        {0x4B0C, "Sichuan changhong"},
-        {0x4B10, "Exterity"},
-        {0x4B11, "Advanced Digital Platform Technologies"},
-        {0x4B13, "Microsoft"},
-        {0x4B19, "RIDSYS"},
-        {0x4B20, "MultiKom DeltaSat"},
-        {0x4B23, "SkyNLand"},
-        {0x4B24, "Prowill"},
-        {0x4B25, "SureSoft"},
-        {0x4B26, "Unitend"},
-        {0x4B30, "VTC"},
-        {0x4B3A, "ipanel"},
-        {0x4B3B, "Jinggangshan"},
-        {0x4B40, "EXCAF TELECOM"},
-        {0x4B42, "CI+"},
-        {0x4B4A, "Topwell"},
-        {0x4B4B, "ABV"},
-        {0x4B50, "Safeview India"},
-        {0x4B54, "TELELYNX"},
-        {0x4B60, "KIWISAT"},
-        {0x5347, "GkWare"},
-        {0x5448, "GOSPELL"},
-        {0x5601, "Verimatrix"},
-        {0x5605, "Juizhou"},
-        {0x5607, "Viewscenes"},
-        {0x5609, "Power On"},
-        {0x56A0, "Laxmi"},
-        {0x7BE0, "OOO"},
-        {0xAA00, "BestCAS"},
-        {0xAA02, 0} // end of list
-    };
-
-    for (const Name* n = names; n->name != 0; n++) {
-        if (ca_sysid < n[1].first) {
-            return n->name;
-        }
-    }
-
-    return Format("Unknown CAS 0x%04X", int(ca_sysid));
-}
-
 //----------------------------------------------------------------------------
 // Running Status (in SDT)
 //----------------------------------------------------------------------------
@@ -1448,96 +1311,6 @@ std::string ts::names::DTSExtendedSurroundMode (uint8_t x)
 }
 
 //----------------------------------------------------------------------------
-// Content name (in Content Descriptor)
-//----------------------------------------------------------------------------
-
-std::string ts::names::Content (uint8_t x)
-{
-    switch (x) {
-        case 0x10: return "movie/drama (general)";
-        case 0x11: return "detective/thriller";
-        case 0x12: return "adventure/western/war";
-        case 0x13: return "science fiction/fantasy/horror";
-        case 0x14: return "comedy";
-        case 0x15: return "soap/melodrama/folkloric";
-        case 0x16: return "romance";
-        case 0x17: return "serious/classical/religious/historical movie/drama";
-        case 0x18: return "adult movie/drama";
-        case 0x20: return "news/current affairs (general)";
-        case 0x21: return "news/weather report";
-        case 0x22: return "news magazine";
-        case 0x23: return "documentary";
-        case 0x24: return "discussion/interview/debate";
-        case 0x30: return "show/game show (general)";
-        case 0x31: return "game show/quiz/contest";
-        case 0x32: return "variety show";
-        case 0x33: return "talk show";
-        case 0x40: return "sports (general)";
-        case 0x41: return "special events (Olympic Games, World Cup, etc.)";
-        case 0x42: return "sports magazines";
-        case 0x43: return "football/soccer";
-        case 0x44: return "tennis/squash";
-        case 0x45: return "team sports (excluding football)";
-        case 0x46: return "athletics";
-        case 0x47: return "motor sport";
-        case 0x48: return "water sport";
-        case 0x49: return "winter sports";
-        case 0x4A: return "equestrian";
-        case 0x4B: return "martial sports";
-        case 0x50: return "children's/youth programmes (general)";
-        case 0x51: return "pre-school children's programmes";
-        case 0x52: return "entertainment programmes for 6 to 14";
-        case 0x53: return "entertainment programmes for 10 to 16";
-        case 0x54: return "informational/educational/school programmes";
-        case 0x55: return "cartoons/puppets";
-        case 0x60: return "music/ballet/dance (general)";
-        case 0x61: return "rock/pop";
-        case 0x62: return "serious music/classical music";
-        case 0x63: return "folk/traditional music";
-        case 0x64: return "jazz";
-        case 0x65: return "musical/opera";
-        case 0x66: return "ballet";
-        case 0x70: return "arts/culture (without music, general)";
-        case 0x71: return "performing arts";
-        case 0x72: return "fine arts";
-        case 0x73: return "religion";
-        case 0x74: return "popular culture/traditional arts";
-        case 0x75: return "literature";
-        case 0x76: return "film/cinema";
-        case 0x77: return "experimental film/video";
-        case 0x78: return "broadcasting/press";
-        case 0x79: return "new media";
-        case 0x7A: return "arts/culture magazines";
-        case 0x7B: return "fashion";
-        case 0x80: return "social/political issues/economics (general)";
-        case 0x81: return "magazines/reports/documentary";
-        case 0x82: return "economics/social advisory";
-        case 0x83: return "remarkable people";
-        case 0x90: return "education/science/factual topics (general)";
-        case 0x91: return "nature/animals/environment";
-        case 0x92: return "technology/natural sciences";
-        case 0x93: return "medicine/physiology/psychology";
-        case 0x94: return "foreign countries/expeditions";
-        case 0x95: return "social/spiritual sciences";
-        case 0x96: return "further education";
-        case 0x97: return "languages";
-        case 0xA0: return "leisure hobbies (general)";
-        case 0xA1: return "tourism/travel";
-        case 0xA2: return "handicraft";
-        case 0xA3: return "motoring";
-        case 0xA4: return "fitness and health";
-        case 0xA5: return "cooking";
-        case 0xA6: return "advertisement/shopping";
-        case 0xA7: return "gardening";
-        case 0xB0: return "original language";
-        case 0xB1: return "black and white";
-        case 0xB2: return "unpublished";
-        case 0xB3: return "live broadcast";
-        default:   return Format ("(%s, 0x%02X)", (x & 0x0F) == 0x0F ? "user-defined" : "reserved", int (x));
-    }
-}
-
-//----------------------------------------------------------------------------
 // Scrambling control value in TS header
 //----------------------------------------------------------------------------
 
@@ -1549,107 +1322,5 @@ std::string ts::names::ScramblingControl (uint8_t scv)
         case  2: return "even";
         case  3: return "odd";
         default: return Format ("invalid (%d)", int (scv));
-    }
-}
-
-//----------------------------------------------------------------------------
-// Bouquet Id
-//----------------------------------------------------------------------------
-
-std::string ts::names::BouquetId (uint16_t id)
-{
-    switch (id) {
-        case 0x0086: return "Tv Numeric";
-        case 0xC002: return "Canal+";
-        case 0xC003: return "Canal+ TNT";
-        case 0xFF00: return "DVB System Software Update";
-        default: break;
-    }
-
-    if (id >= 0x1000 && id <= 0x101F) {
-        return Format ("BskyB %d", int (id - 0x1000 + 1));
-    }
-    if (id >= 0x1020 && id <= 0x103F) {
-        return Format ("Dish Network %d", int (id - 0x1020 + 1));
-    }
-    if (id >= 0x3000 && id <= 0x300F) {
-        return Format ("TPS %d", int (id - 0x3000 + 1));
-    }
-    if (id >= 0x4040 && id <= 0x407F) {
-        return Format ("OpenTV %d", int (id - 0x4040 + 1));
-    }
-    if (id >= 0xC000 && id <= 0xC01F) {
-        return Format ("Canal+ %d", int (id - 0xC000 + 1));
-    }
-    if (id >= 0xFC00 && id <= 0xFCFF) {
-        return Format ("France Telecom %d", int (id - 0xFC00 + 1));
-    }
-
-    return Format ("0x%04X", int (id));
-}
-
-//----------------------------------------------------------------------------
-// Data broadcast id (in Data Broadcast Id Descriptor)
-//----------------------------------------------------------------------------
-
-std::string ts::names::DataBroadcastId (uint16_t id)
-{
-    switch (id) {
-        case DBID_DATA_PIPE:            return "Data pipe";
-        case DBID_ASYNC_DATA_STREAM:    return "Asynchronous data stream";
-        case DBID_SYNC_DATA_STREAM:     return "Synchronous data stream";
-        case DBID_SYNCED_DATA_STREAM:   return "Synchronised data stream";
-        case DBID_MPE:                  return "Multi protocol encapsulation";
-        case DBID_DATA_CSL:             return "Data Carousel";
-        case DBID_OBJECT_CSL:           return "Object Carousel";
-        case DBID_ATM:                  return "DVB ATM streams";
-        case DBID_HP_ASYNC_DATA_STREAM: return "Higher Protocols based on asynchronous data streams";
-        case DBID_SSU:                  return "System Software Update service [TS 102 006]";
-        case DBID_IPMAC_NOTIFICATION:   return "IP/MAC Notification service [EN 301 192]";
-        case DBID_MHP_OBJECT_CSL:       return "MHP Object Carousel";
-        case DBID_MHP_MPE:              return "Reserved for MHP Multi Protocol Encapsulation";
-        case DBID_EUTELSAT_DATA_PIPE:   return "Eutelsat Data Piping";
-        case DBID_EUTELSAT_DATA_STREAM: return "Eutelsat Data Streaming";
-        case DBID_SAGEM_IP:             return "SAGEM IP encapsulation in MPEG-2 PES packets";
-        case DBID_BARCO_DATA_BRD:       return "BARCO Data Broadcasting";
-        case DBID_CIBERCITY_MPE:        return "CyberCity Multiprotocol Encapsulation";
-        case DBID_CYBERSAT_MPE:         return "CyberSat Multiprotocol Encapsulation";
-        case DBID_TDN:                  return "The Digital Network";
-        case DBID_OPENTV_DATA_CSL:      return "OpenTV Data Carousel";
-        case DBID_PANASONIC:            return "Panasonic";
-        case DBID_KABEL_DEUTSCHLAND:    return "Kabel Deutschland";
-        case DBID_TECHNOTREND:          return "TechnoTrend Gorler GmbH";
-        case DBID_MEDIAHIGHWAY_SSU:     return "NDS France Technologies system software download";
-        case DBID_GUIDE_PLUS:           return "GUIDE Plus+ Rovi Corporation";
-        case DBID_ACAP_OBJECT_CSL:      return "ACAP Object Carousel";
-        case DBID_MICRONAS:             return "Micronas Download Stream";
-        case DBID_POLSAT:               return "Televizja Polsat";
-        case DBID_DTG:                  return "UK DTG";
-        case DBID_SKYMEDIA:             return "SkyMedia";
-        case DBID_INTELLIBYTE:          return "Intellibyte DataBroadcasting";
-        case DBID_TELEWEB_DATA_CSL:     return "TeleWeb Data Carousel";
-        case DBID_TELEWEB_OBJECT_CSL:   return "TeleWeb Object Carousel";
-        case DBID_TELEWEB:              return "TeleWeb";
-        case DBID_BBC:                  return "BBC";
-        case DBID_ELECTRA:              return "Electra Entertainment Ltd";
-        case DBID_BBC_2_3:              return "BBC 2 - 3";
-        case DBID_TELETEXT:             return "Teletext";
-        case DBID_SKY_DOWNLOAD_1_5:     return "Sky Download Streams 1-5";
-        case DBID_ICO:                  return "ICO mim";
-        case DBID_CIPLUS_DATA_CSL:      return "CI+ Data Carousel";
-        case DBID_HBBTV:                return "HBBTV Carousel";
-        case DBID_ROVI_PREMIUM:         return "Premium Content from Rovi Corporation";
-        case DBID_MEDIA_GUIDE:          return "Media Guide from Rovi Corporation";
-        case DBID_INVIEW:               return "InView Technology Ltd";
-        case DBID_BOTECH:               return "Botech Elektronik SAN. ve TIC. LTD.STI.";
-        case DBID_SCILLA_PUSHVOD_CSL:   return "Scilla Push-VOD Carousel";
-        case DBID_CANAL_PLUS:           return "Canal+";
-        case DBID_OIPF_OBJECT_CSL:      return "OIPF Object Carousel - Open IPTV Forum";
-        case DBID_4TV:                  return "4TV Data Broadcast";
-        case DBID_NOKIA_IP_SSU:         return "Nokia IP based software delivery";
-        case DBID_BBG_DATA_CSL:         return "BBG Data Caroussel";
-        case DBID_BBG_OBJECT_CSL:       return "BBG Object Caroussel";
-        case DBID_BBG:                  return "Bertelsmann Broadband Group";
-        default:                        return Format ("0x%04X", int (id));
     }
 }

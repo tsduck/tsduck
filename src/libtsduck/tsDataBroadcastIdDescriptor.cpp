@@ -118,8 +118,7 @@ void ts::DataBroadcastIdDescriptor::DisplayDescriptor(TablesDisplay& display, DI
     if (size >= 2) {
         uint16_t id = GetUInt16(data);
         data += 2; size -= 2;
-        strm << margin << Format("Data broadcast id: %d (0x%04X), ", int(id), int(id))
-             << names::DataBroadcastId(id) << std::endl;
+        strm << margin << "Data broadcast id: " << names::DataBroadcastId(id, names::BOTH_FIRST) << std::endl;
         // The rest of the descriptor is the "id selector".
         DisplaySelectorBytes(display, data, size, indent, id);
         data += size; size = 0;
@@ -164,7 +163,7 @@ void ts::DataBroadcastIdDescriptor::DisplaySelectorBytes(TablesDisplay & display
             }
             data += slength; size -= slength; dlength -= slength;
             // Display
-            strm << margin << Format("OUI: 0x%06X (", int(oui)) << names::OUI(oui) << ")" << std::endl
+            strm << margin << "OUI: " << names::OUI(oui, names::FIRST) << std::endl
                  << margin << Format("  Update type: 0x%02X (", int(upd_type));
             switch (upd_type) {
                 case 0x00: strm << "proprietary update solution"; break;

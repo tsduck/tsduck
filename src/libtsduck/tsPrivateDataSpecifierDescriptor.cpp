@@ -108,8 +108,7 @@ void ts::PrivateDataSpecifierDescriptor::DisplayDescriptor(TablesDisplay& displa
     if (size >= 4) {
         uint32_t sp = GetUInt32(data);
         data += 4; size -= 4;
-        strm << margin << Format("Specifier: 0x%08X", sp)
-             << " (" << names::PrivateDataSpecifier(sp) << ")" << std::endl;
+        strm << margin << "Specifier: " << names::PrivateDataSpecifier(sp, names::FIRST) << std::endl;
     }
 
     display.displayExtraData(data, size, indent);

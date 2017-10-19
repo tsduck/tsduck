@@ -205,7 +205,7 @@ void TableHandler::handleTable(ts::SectionDemux&, const ts::BinaryTable& table)
                 std::cout << "* Got unexpected " << ts::names::TID(tid)
                           << ts::Format(", TID %d (0x%02X) on PID %d (0x%04X)", int(tid), int(tid), int(pid), int(pid))
                           << std::endl;
-                }
+            }
         }
     }
 }

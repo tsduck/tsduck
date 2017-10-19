@@ -113,7 +113,7 @@ void StaticInstanceTest::testInitializerTwoArgs()
 // Static instance with separate declaration and definition, initializer with one parameter
 namespace ts {
     namespace foo {
-        TS_STATIC_INSTANCE_DECLARATION(std::string, Foo3);
+        TS_STATIC_INSTANCE_DECLARATION(std::string, , Foo3);
     }
 }
 TS_STATIC_INSTANCE_DEFINITION(std::string, ("this is Foo3"), ts::foo::Foo3, Foo3);

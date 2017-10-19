@@ -392,7 +392,6 @@ SOURCES += \
     ../../../src/libtsduck/tsMutex.cpp \
     ../../../src/libtsduck/tsNIT.cpp \
     ../../../src/libtsduck/tsNames.cpp \
-    ../../../src/libtsduck/tsNamesOUI.cpp \
     ../../../src/libtsduck/tsNetworkNameDescriptor.cpp \
     ../../../src/libtsduck/tsNullReport.cpp \
     ../../../src/libtsduck/tsObject.cpp \
@@ -534,6 +533,7 @@ win32|win64 {
 }
 
 DISTFILES += \
-    ../../../src/libtsduck/tsduck.names \
+    ../../../src/libtsduck/tsduck.dvb.names \
+    ../../../src/libtsduck/tsduck.oui.names \
     ../../../src/libtsduck/tsduck.xml \
     ../../../src/libtsduck/tsduck.mk

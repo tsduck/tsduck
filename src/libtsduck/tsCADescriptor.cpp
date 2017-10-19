@@ -127,8 +127,7 @@ void ts::CADescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const 
         const char* const dtype = tid == TID_CAT ? "EMM" : (tid == TID_PMT ? "ECM" : "CA");
         data += 4; size -= 4;
 
-        strm << margin << "CA System Id: " << Format("0x%04X", int(sysid))
-             << " (" << names::CASId(sysid) << "), "
+        strm << margin << "CA System Id: " << names::CASId(sysid, names::FIRST) << ", "
              << dtype << " PID: " << pid
              << Format(" (0x%04X)", int(pid)) << std::endl;
 

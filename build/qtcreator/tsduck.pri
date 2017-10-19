@@ -92,5 +92,8 @@ libtsduck {
     LIBS += ../libtsduck/tsduck.so
     PRE_TARGETDEPS += ../libtsduck/tsduck.so
     DEPENDPATH += ../libtsduck
+    QMAKE_POST_LINK += cp $$SRCROOT/libtsduck/tsduck.xml . $$escape_expand(\\n\\t)
+    QMAKE_POST_LINK += cp $$SRCROOT/libtsduck/tsduck.dvb.names . $$escape_expand(\\n\\t)
+    QMAKE_POST_LINK += cp $$SRCROOT/libtsduck/tsduck.oui.names . $$escape_expand(\\n\\t)
 }
 LIBS += -lpcsclite

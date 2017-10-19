@@ -117,7 +117,7 @@ void ts::CASMapper::analyzeCADescriptors(const DescriptorList& descs, bool is_ec
         if (!desc.isNull() && desc->tag() == DID_CA) {
             const CADescriptorPtr cadesc(new CADescriptor(*desc));
             if (!cadesc.isNull() && cadesc->isValid()) {
-                const std::string cas_name(names::CASId(cadesc->cas_id));
+                const std::string cas_name(names::CASId(cadesc->cas_id).toUTF8());
                 _pids[cadesc->ca_pid] = PIDDescription(cadesc->cas_id, is_ecm, cadesc);
                 _report.verbose("Found %s PID %d (0x%04X) for CAS id 0x%04X (%s)",
                                 is_ecm ? "ECM" : "EMM",

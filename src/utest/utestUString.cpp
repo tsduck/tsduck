@@ -75,6 +75,8 @@ public:
     void testOnOff();
     void testSimilarStrings();
     void testLoadSave();
+    void testToDigit();
+    void testToInteger();
 
     CPPUNIT_TEST_SUITE(UStringTest);
     CPPUNIT_TEST(testIsSpace);
@@ -101,6 +103,7 @@ public:
     CPPUNIT_TEST(testOnOff);
     CPPUNIT_TEST(testSimilarStrings);
     CPPUNIT_TEST(testLoadSave);
+    CPPUNIT_TEST(testToInteger);
     CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -770,4 +773,95 @@ void UStringTest::testLoadSave()
     CPPUNIT_ASSERT(ts::UString::LoadAppend(load3, file2));
     CPPUNIT_ASSERT(load3.size() == 19);
     CPPUNIT_ASSERT(load3 == ref3);
+}
+
+void UStringTest::testToDigit()
+{
+    CPPUNIT_ASSERT_EQUAL(0,  ts::ToDigit(ts::UChar('0')));
+    CPPUNIT_ASSERT_EQUAL(9,  ts::ToDigit(ts::UChar('9')));
+    CPPUNIT_ASSERT_EQUAL(-1, ts::ToDigit(ts::UChar('a')));
+    CPPUNIT_ASSERT_EQUAL(-1, ts::ToDigit(ts::UChar('f')));
+    CPPUNIT_ASSERT_EQUAL(-1, ts::ToDigit(ts::UChar('z')));
+    CPPUNIT_ASSERT_EQUAL(10, ts::ToDigit(ts::UChar('a'), 16));
+    CPPUNIT_ASSERT_EQUAL(15, ts::ToDigit(ts::UChar('f'), 16));
+    CPPUNIT_ASSERT_EQUAL(-1, ts::ToDigit(ts::UChar('z'), 16));
+    CPPUNIT_ASSERT_EQUAL(10, ts::ToDigit(ts::UChar('a'), 36));
+    CPPUNIT_ASSERT_EQUAL(15, ts::ToDigit(ts::UChar('f'), 36));
+    CPPUNIT_ASSERT_EQUAL(35, ts::ToDigit(ts::UChar('z'), 36));
+    CPPUNIT_ASSERT_EQUAL(10, ts::ToDigit(ts::UChar('A'), 16));
+    CPPUNIT_ASSERT_EQUAL(15, ts::ToDigit(ts::UChar('F'), 16));
+    CPPUNIT_ASSERT_EQUAL(-1, ts::ToDigit(ts::UChar('Z'), 16));
+    CPPUNIT_ASSERT_EQUAL(10, ts::ToDigit(ts::UChar('A'), 36));
+    CPPUNIT_ASSERT_EQUAL(15, ts::ToDigit(ts::UChar('F'), 36));
+    CPPUNIT_ASSERT_EQUAL(35, ts::ToDigit(ts::UChar('Z'), 36));
+    CPPUNIT_ASSERT_EQUAL(-1, ts::ToDigit(ts::UChar('?')));
+    CPPUNIT_ASSERT_EQUAL(-2, ts::ToDigit(ts::UChar('?'), 10, -2));
+}
+
+void UStringTest::testToInteger()
+{
+    int      i;
+    uint32_t ui32;
+    uint64_t ui64;
+    int64_t  i64;
+
+    CPPUNIT_ASSERT(ts::UString(u"1").toInteger(i));
+    CPPUNIT_ASSERT_EQUAL(1, i);
+
+    CPPUNIT_ASSERT(ts::UString(u"-001").toInteger(i));
+    CPPUNIT_ASSERT_EQUAL(-1, i);
+
+    CPPUNIT_ASSERT(ts::UString(u"   -0xA0  ").toInteger(i));
+    CPPUNIT_ASSERT_EQUAL(-160, i);
+
+    CPPUNIT_ASSERT(!ts::UString(u"").toInteger(i));
+    CPPUNIT_ASSERT_EQUAL(0, i);
+
+    CPPUNIT_ASSERT(ts::UString(u"123").toInteger(ui32));
+    CPPUNIT_ASSERT_EQUAL(uint32_t(123), ui32);
+
+    CPPUNIT_ASSERT(!ts::UString(u"-123").toInteger(ui32));
+    CPPUNIT_ASSERT_EQUAL(uint32_t(0), ui32);
+
+    CPPUNIT_ASSERT(ts::UString(u"0").toInteger(ui64));
+    CPPUNIT_ASSERT_EQUAL(TS_UCONST64(0), ui64);
+
+    CPPUNIT_ASSERT(ts::UString(u"0xffffffffFFFFFFFF").toInteger(ui64));
+    CPPUNIT_ASSERT_EQUAL(TS_UCONST64(0XFFFFFFFFFFFFFFFF), ui64);
+
+    CPPUNIT_ASSERT(ts::UString(u"0x7fffffffFFFFFFFF").toInteger(ui64));
+    CPPUNIT_ASSERT_EQUAL(TS_UCONST64(0X7FFFFFFFFFFFFFFF), ui64);
+
+    CPPUNIT_ASSERT(ts::UString(u"0").toInteger(i64));
+    CPPUNIT_ASSERT_EQUAL(TS_CONST64(0), i64);
+
+    CPPUNIT_ASSERT(ts::UString(u"0x7fffffffFFFFFFFF").toInteger(i64));
+    CPPUNIT_ASSERT_EQUAL(TS_CONST64(0X7FFFFFFFFFFFFFFF), i64);
+
+    CPPUNIT_ASSERT(ts::UString(u" 12,345").toInteger(i, u",."));
+    CPPUNIT_ASSERT_EQUAL(12345, i);
+
+    CPPUNIT_ASSERT(ts::UString(u" -12.345").toInteger(i, u",."));
+    CPPUNIT_ASSERT_EQUAL(-12345, i);
+
+    CPPUNIT_ASSERT(!ts::UString(u" -12;345").toInteger(i, u",."));
+    CPPUNIT_ASSERT_EQUAL(-12, i);
+
+    std::list<int32_t> i32List;
+    std::list<int32_t> i32Ref;
+
+    i32Ref.clear();
+    i32Ref.push_back(-12345);
+    i32Ref.push_back(256);
+    i32Ref.push_back(0);
+    i32Ref.push_back(7);
+
+    CPPUNIT_ASSERT(ts::UString(u"-12345 0x100 0 7").toIntegers(i32List));
+    CPPUNIT_ASSERT(i32Ref == i32List);
+
+    CPPUNIT_ASSERT(ts::UString(u" , -12345    0x100 ,  0,  7  ").toIntegers(i32List));
+    CPPUNIT_ASSERT(i32Ref == i32List);
+
+    CPPUNIT_ASSERT(!ts::UString(u" , -12345    0x100 ,  0,  7  xxx 45").toIntegers(i32List));
+    CPPUNIT_ASSERT(i32Ref == i32List);
 }

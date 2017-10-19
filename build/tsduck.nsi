@@ -163,7 +163,7 @@ Section "Tools & Plugins" SectionTools
     File "${BinDir}\ts*.exe"
     File "${BinDir}\ts*.dll"
     File "${RootDir}\src\libtsduck\tsduck.xml"
-    File "${RootDir}\src\libtsduck\tsduck.names"
+    File "${RootDir}\src\libtsduck\tsduck.*.names"
 
     ; Delete obsolete files from previous versions.
     Delete "$INSTDIR\bin\tsgentab.exe"

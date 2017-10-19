@@ -86,6 +86,20 @@ namespace ts {
     }
 
     //!
+    //! Convert a character representing a multi-base integer digit into the corresponding integer value.
+    //!
+    //! Characters '0'..'9' are converted to 0..9.
+    //! Characters 'a'..'z' and 'A'..'Z' are converted to 10..35.
+    //! This function can be used to convert decimal digits, hexadecimal and any other base up to base 36.
+    //!
+    //! @param [in] c A character to convert.
+    //! @param [in] base The base of the integer representation, must be in the range 2 to 36.
+    //! @param [in] defaultValue The value to return on invalid character.
+    //! @return The corresponding integer value or the default value in case of error.
+    //!
+    TSDUCKDLL int ToDigit(UChar c, int base = 10, int defaultValue = -1);
+
+    //!
     //! Check if a character is a lower case letter.
     //! @param [in] c A character.
     //! @return True if @a c is a lower case letter.

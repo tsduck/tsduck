@@ -581,14 +581,13 @@ std::ostream& ts::Section::dump(std::ostream& strm, int indent, CASFamily cas, b
     // If PID is the null PID, this means "unknown PID"
     if (!no_header) {
         strm << margin << "* Section dump"
-             << Format(", PID %d (0x%04X)", int(_source_pid), int(_source_pid))
-             << Format(", TID %d (0x%02X)", tid, tid)
-             << " (" << names::TID(tid, cas) << ")" << std::endl
+             << Format(", PID 0x%04X (%d)", int(_source_pid), int(_source_pid))
+             << ", TID " << names::TID(tid, cas, names::BOTH_FIRST) << std::endl
              << margin << "  Section size: " << size()
              << " bytes, header: " << (isLongSection() ? "long" : "short") << std::endl;
         if (isLongSection()) {
             strm << margin
-                 << Format("  TIDext: %d (0x%04X)", int(tableIdExtension()), int(tableIdExtension()))
+                 << Format("  TIDext: 0x%04X (%d)", int(tableIdExtension()), int(tableIdExtension()))
                  << ", version: " << int(version())
                  << ", index: " << int(sectionNumber())
                  << ", last: " << int(lastSectionNumber())

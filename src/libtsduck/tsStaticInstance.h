@@ -60,7 +60,7 @@
 //! @code
 //! namespace ts {
 //!     namespace foo {
-//!         TS_STATIC_INSTANCE_DECLARATION(std::string, Bar);
+//!         TS_STATIC_INSTANCE_DECLARATION(std::string, TSDUCKDLL, Bar);
 //!     }
 //! }
 //! @endcode
@@ -77,43 +77,44 @@
 //!
 //! @param ObjectClass The name of the class of the static object.
 //! This must be an existing class.
+//! @param ClassAttributes Attributes of StaticInstanceClass, typically TSDUCKDLL or empty.
 //! @param StaticInstanceClass The name of the new class which encapsulates
 //! the static instance. This class is declared by the expansion of the macro.
 //!
 //! @see TS_STATIC_INSTANCE for more details on the usage of static instances.
 //! @see TS_STATIC_INSTANCE_DEFINITION for the @e definition part.
 //!
-#define TS_STATIC_INSTANCE_DECLARATION(ObjectClass, StaticInstanceClass) \
-    class StaticInstanceClass                                            \
-    {                                                                    \
-    public:                                                              \
-        /* Public static method to access the static instance. */        \
-        static ObjectClass& Instance();                                  \
-    private:                                                             \
-        /* The actual object */                                          \
-        ObjectClass _object;                                             \
-        /* The constructor of the static instance initializes */         \
-        /* the actual object. */                                         \
-        StaticInstanceClass();                                           \
-        /* Pointer to the actual static instance. */                     \
-        static StaticInstanceClass* volatile _instance;                  \
-        /* Inner private class responsible for creation and */           \
-        /* destruction of the static instance. */                        \
-        class Controller                                                 \
-        {                                                                \
-        public:                                                          \
-            /* The controller constructor forces the creation of */      \
-            /* the static instance if not already created by an */       \
-            /* earlier method invocation. */                             \
-            Controller();                                                \
-            /* The controller destructor forces the deletion of the */   \
-            /* static instance. */                                       \
-            ~Controller();                                               \
-        };                                                               \
-        /* Only one instance of the controller. */                       \
-        static Controller _controller;                                   \
-        /* Unaccessible operations. */                                   \
-        StaticInstanceClass(const StaticInstanceClass&) = delete;        \
+#define TS_STATIC_INSTANCE_DECLARATION(ObjectClass, ClassAttributes, StaticInstanceClass) \
+    class ClassAttributes StaticInstanceClass                                \
+    {                                                                        \
+    public:                                                                  \
+        /* Public static method to access the static instance. */            \
+        static ObjectClass& Instance();                                      \
+    private:                                                                 \
+        /* The actual object */                                              \
+        ObjectClass _object;                                                 \
+        /* The constructor of the static instance initializes */             \
+        /* the actual object. */                                             \
+        StaticInstanceClass();                                               \
+        /* Pointer to the actual static instance. */                         \
+        static StaticInstanceClass* volatile _instance;                      \
+        /* Inner private class responsible for creation and */               \
+        /* destruction of the static instance. */                            \
+        class Controller                                                     \
+        {                                                                    \
+        public:                                                              \
+            /* The controller constructor forces the creation of */          \
+            /* the static instance if not already created by an */           \
+            /* earlier method invocation. */                                 \
+            Controller();                                                    \
+            /* The controller destructor forces the deletion of the */       \
+            /* static instance. */                                           \
+            ~Controller();                                                   \
+        };                                                                   \
+        /* Only one instance of the controller. */                           \
+        static Controller _controller;                                       \
+        /* Unaccessible operations. */                                       \
+        StaticInstanceClass(const StaticInstanceClass&) = delete;            \
         StaticInstanceClass& operator=(const StaticInstanceClass&) = delete; \
     }
 
@@ -292,8 +293,8 @@
 //! @param StaticInstanceClass The name of the new class which encapsulates
 //! the static instance. This class is declared by the expansion of the macro.
 //!
-#define TS_STATIC_INSTANCE(ObjectClass, ObjectArgs, StaticInstanceClass)  \
-    namespace {                                                           \
-        TS_STATIC_INSTANCE_DECLARATION(ObjectClass, StaticInstanceClass); \
+#define TS_STATIC_INSTANCE(ObjectClass, ObjectArgs, StaticInstanceClass)    \
+    namespace {                                                             \
+        TS_STATIC_INSTANCE_DECLARATION(ObjectClass, , StaticInstanceClass); \
         TS_STATIC_INSTANCE_DEFINITION(ObjectClass, ObjectArgs, StaticInstanceClass, StaticInstanceClass); \
     }

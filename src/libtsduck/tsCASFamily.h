@@ -40,12 +40,12 @@ namespace ts {
     //! Known Conditional Access Systems families
     //!
     enum CASFamily {
-        CAS_OTHER = 0,    //!< Unknown CAS.
-        CAS_MEDIAGUARD,   //!< MediaGuard (Canal+ Technologies).
-        CAS_NAGRA,        //!< Nagravision.
-        CAS_VIACCESS,     //!< Viaccess.
-        CAS_THALESCRYPT,  //!< ThalesCrypt (for TPS).
-        CAS_SAFEACCESS    //!< SafeAccess (Logiways).
+        CAS_OTHER       = 0,  //!< Unknown CAS.
+        CAS_MEDIAGUARD  = 1,  //!< MediaGuard (Canal+ Technologies).
+        CAS_NAGRA       = 2,  //!< Nagravision.
+        CAS_VIACCESS    = 3,  //!< Viaccess.
+        CAS_THALESCRYPT = 4,  //!< ThalesCrypt (for TPS).
+        CAS_SAFEACCESS  = 5,  //!< SafeAccess (Logiways).
     };
 
     //!

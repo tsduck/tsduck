@@ -736,6 +736,21 @@ namespace {
 // Character conversions.
 //----------------------------------------------------------------------------
 
+int ts::ToDigit(UChar c, int base, int defaultValue)
+{
+    int digit = -1;
+    if (c >= UChar('0') && c <= UChar('9')) {
+        digit = c - UChar('0');
+    }
+    else if (c >= UChar('a') && c <= UChar('z')) {
+        digit = 10 + c - UChar('a');
+    }
+    else if (c >= UChar('A') && c <= UChar('Z')) {
+        digit = 10 + c - UChar('A');
+    }
+    return digit >= 0 && digit < base ? digit : defaultValue;
+}
+
 bool ts::IsLower(UChar c)
 {
     if (std::iswlower(wint_t(c)) != 0) {
