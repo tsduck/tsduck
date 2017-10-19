@@ -156,7 +156,7 @@ ts::Names::Names(const std::string& fileName) :
         }
         else if (!decodeDefinition(line, section)) {
             // Invalid line.
-            _log.error(_configFile + Format(": invalid line %d: ", _configLines) + line.toUTF8());
+            _log.error(_configFile + Format(": invalid line %" FMT_SIZE_T "d: ", _configLines) + line.toUTF8());
             if (++_configErrors >= 20) {
                 // Give up after that number of errors
                 _log.error(_configFile + ": too many errors, giving up");

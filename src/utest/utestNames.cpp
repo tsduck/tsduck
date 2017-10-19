@@ -182,7 +182,7 @@ void NamesTest::testOriginalNetworkId()
 
 void NamesTest::testNetworkId()
 {
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"Eutelsat satellite system at 4°East", ts::names::NetworkId(0x4C));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(ts::UString(u"Eutelsat satellite system at 4") + ts::DEGREE_SIGN + ts::UString(u"East"), ts::names::NetworkId(0x4C));
 }
 
 void NamesTest::testContent()
