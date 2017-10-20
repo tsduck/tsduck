@@ -381,6 +381,16 @@ namespace ts {
         //!
         UString nameFromSectionWithFallback(const UString& sectionName, Value value1, Value value2, names::Flags flags = names::NAME, size_t bits = 0) const;
 
+        //!
+        //! Format a name using flags.
+        //! @param [in] value Value for the name.
+        //! @param [in] name Name for the value.
+        //! @param [in] flags Presentation flags.
+        //! @param [in] bits Nominal size in bits of the data, optional.
+        //! @return The corresponding name.
+        //!
+        static UString Formatted(Value value, const UString& name, names::Flags flags, size_t bits);
+
     private:
         // Description of a configuration entry.
         // The first value of the range is the key in a map.
@@ -407,6 +417,9 @@ namespace ts {
             ConfigSection();
             ~ConfigSection();
 
+            // Check if a range is free, ie no value is defined in the range.
+            bool freeRange(Value first, Value last) const;
+
             // Add a new entry.
             void addEntry(Value first, Value last, const UString& name);
 
@@ -419,9 +432,6 @@ namespace ts {
 
         // Decode a line as "first[-last] = name". Return true on success, false on error.
         bool decodeDefinition(const UString& line, ConfigSection* section);
-
-        // Format a name.
-        UString formatted(Value value, const UString& name, names::Flags flags, size_t bits) const;
 
         // Compute a number of hexa digits.
         static int HexaDigits(size_t bits);
