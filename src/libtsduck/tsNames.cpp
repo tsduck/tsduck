@@ -209,10 +209,10 @@ ts::UString ts::names::ScramblingControl(uint8_t scv, Flags flags)
 ts::UString ts::names::ComponentType(uint16_t type, Flags flags)
 {
     if ((type & 0xFF00) == 0x0300) {
-        return SubtitlingType(type & 0x00FF);
+        return SubtitlingType(type & 0x00FF, flags);
     }
     else if ((type & 0xFF00) == 0x0400) {
-        return AC3ComponentType(type & 0x00FF);
+        return AC3ComponentType(type & 0x00FF, flags);
     }
     else {
         return NamesDVB::Instance().nameFromSection(u"ComponentType", Names::Value(type), flags, 16);
@@ -254,7 +254,7 @@ ts::UString ts::names::AC3ComponentType(uint8_t type, Flags flags)
         default: assert(false); // unreachable
     }
 
-    return s;
+    return Names::Formatted(type, s, flags, 8);
 }
 
 
@@ -366,7 +366,13 @@ bool ts::Names::decodeDefinition(const UString& line, ConfigSection* section)
 
     // Add the definition.
     if (valid) {
-        section->addEntry(first, last, value);
+        if (section->freeRange(first, last)) {
+            section->addEntry(first, last, value);
+        }
+        else {
+            _log.error("%s: range 0x%" FMT_INT64 "X-0x%" FMT_INT64 "X overlaps with an existing range", _configFile.c_str(), first, last);
+            valid = false;
+        }
     }
     return valid;
 }
@@ -418,23 +424,40 @@ ts::Names::ConfigSection::~ConfigSection()
 
 
 //----------------------------------------------------------------------------
+// Check if a range is free, ie no value is defined in the range.
+//----------------------------------------------------------------------------
+
+bool ts::Names::ConfigSection::freeRange(Value first, Value last) const
+{
+    // Get an iterator pointing to the first element that is "not less" than 'first'.
+    ConfigEntryMap::const_iterator it = entries.lower_bound(first);
+
+    if (it != entries.end() && it->first <= last) {
+        // This is an existing range which starts inside [first..last].
+        assert(it->first >= first);
+        return false;
+    }
+
+    if (it != entries.begin() && (--it)->second->last >= first) {
+        // The previous range ends inside [first..last].
+        assert(it->first < first);
+        return false;
+    }
+
+    // No overlap found.
+    return true;
+}
+
+
+//----------------------------------------------------------------------------
 // Add a new configuration entry.
 //----------------------------------------------------------------------------
 
 void ts::Names::ConfigSection::addEntry(Value first, Value last, const UString& name)
 {
-    ConfigEntryMap::iterator it(entries.find(first));
-    if (it != entries.end()) {
-        // Update an existing entry.
-        it->second->last = last;
-        it->second->name = name;
-    }
-    else {
-        // Create an new entry.
-        ConfigEntry* entry = new ConfigEntry(last, name);
-        CheckNonNull(entry);
-        entries.insert(std::make_pair(first, entry));
-    }
+    ConfigEntry* entry = new ConfigEntry(last, name);
+    CheckNonNull(entry);
+    entries.insert(std::make_pair(first, entry));
 }
 
 
@@ -492,7 +515,7 @@ ts::Names::Value ts::Names::DisplayMask(size_t bits)
 // Format a name.
 //----------------------------------------------------------------------------
 
-ts::UString ts::Names::formatted(Value value, const UString& name, names::Flags flags, size_t bits) const
+ts::UString ts::Names::Formatted(Value value, const UString& name, names::Flags flags, size_t bits)
 {
     // If neither decimal nor hexa are specified, hexa is the default.
     if ((flags & (names::DECIMAL | names::HEXA)) == 0) {
@@ -540,10 +563,10 @@ ts::UString ts::Names::nameFromSection(const UString& sectionName, Value value, 
 
     if (section == 0) {
         // Non-existent section, no name.
-        return formatted(value, UString(), flags, bits);
+        return Formatted(value, UString(), flags, bits);
     }
     else {
-        return formatted(value, section->getName(value), flags, bits != 0 ? bits : section->bits);
+        return Formatted(value, section->getName(value), flags, bits != 0 ? bits : section->bits);
     }
 }
 
@@ -560,17 +583,17 @@ ts::UString ts::Names::nameFromSectionWithFallback(const UString& sectionName, V
 
     if (section == 0) {
         // Non-existent section, no name.
-        return formatted(value1, UString(), flags, bits);
+        return Formatted(value1, UString(), flags, bits);
     }
     else {
         const UString name(section->getName(value1));
         if (!name.empty()) {
             // value1 has a name
-            return formatted(value1, name, flags, bits != 0 ? bits : section->bits);
+            return Formatted(value1, name, flags, bits != 0 ? bits : section->bits);
         }
         else {
             // value1 has no name, use value2.
-            return formatted(value2, section->getName(value2), flags, bits != 0 ? bits : section->bits);
+            return Formatted(value2, section->getName(value2), flags, bits != 0 ? bits : section->bits);
         }
     }
 }

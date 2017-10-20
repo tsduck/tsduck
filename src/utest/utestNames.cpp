@@ -323,6 +323,7 @@ void NamesTest::testDTSSampleRateCode()
 void NamesTest::testAC3ComponentType()
 {
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"Enhanced AC-3, combined, visually impaired, 2 channels", ts::names::AC3ComponentType(0x92));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"0x92 (Enhanced AC-3, combined, visually impaired, 2 channels)", ts::names::AC3ComponentType(0x92, ts::names::FIRST));
 }
 
 void NamesTest::testComponentType()

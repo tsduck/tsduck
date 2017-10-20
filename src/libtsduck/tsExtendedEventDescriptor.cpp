@@ -264,8 +264,9 @@ void ts::ExtendedEventDescriptor::deserialize(const Descriptor& desc, const DVBC
     language_code = UString::FromDVB(data + 1, 3, charset);
     size_t items_length = data[4];
     data += 5; size -= 5;
+    _is_valid = items_length < size;
 
-    if (!(_is_valid = items_length < size)) {
+    if (!_is_valid) {
         return;
     }
 
