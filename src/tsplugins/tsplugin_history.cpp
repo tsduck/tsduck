@@ -500,30 +500,30 @@ ts::ProcessorPlugin::Status ts::HistoryPlugin::processPacket (TSPacket& pkt, boo
     }
     else if (cpid->scrambling == 0 && scrambling != 0) {
         // Clear to scrambled transition
-        const std::string name (names::ScramblingControl (scrambling));
-        report ("PID %d (0x%04X), clear to scrambled transition, %s key, service 0x%04X",
-                int (pid), int (pid), name.c_str(), int (_cpids[pid].service_id));
+        const std::string name(names::ScramblingControl(scrambling).toUTF8());
+        report("PID %d (0x%04X), clear to scrambled transition, %s key, service 0x%04X",
+               int(pid), int(pid), name.c_str(), int(_cpids[pid].service_id));
     }
     else if (cpid->scrambling != 0 && scrambling == 0) {
         // Scrambled to clear transition
-        report ("PID %d (0x%04X), scrambled to clear transition, service 0x%04X",
-                int (pid), int (pid), int (_cpids[pid].service_id));
+        report("PID %d (0x%04X), scrambled to clear transition, service 0x%04X",
+               int(pid), int(pid), int(_cpids[pid].service_id));
     }
     else if (_report_cas && cpid->scrambling != scrambling) {
         // New crypto-period
-        const std::string name (names::ScramblingControl (scrambling));
-        report ("PID %d (0x%04X), new crypto-period, %s key, service 0x%04X",
-                int (pid), int (pid), name.c_str(), int (_cpids[pid].service_id));
+        const std::string name(names::ScramblingControl(scrambling).toUTF8());
+        report("PID %d (0x%04X), new crypto-period, %s key, service 0x%04X",
+               int(pid), int(pid), name.c_str(), int(_cpids[pid].service_id));
     }
     if (has_pes_start) {
-        const std::string name (names::StreamId (pes_stream_id));
+        const std::string name(names::StreamId(pes_stream_id, names::FIRST).toUTF8());
         if (!cpid->pes_strid.set()) {
             // Found PES stream id
-            report ("PID %d (0x%04X), PES stream_id is 0x%02X (%s)", int (pid), int (pid), int (pes_stream_id), name.c_str());
+            report("PID %d (0x%04X), PES stream_id is %s", int(pid), int(pid), name.c_str());
         }
         else if (cpid->pes_strid != pes_stream_id && !_ignore_stream_id) {
-            report ("PID %d (0x%04X), PES stream_id modified from 0x%02X to 0x%02X (%s)",
-                    int (pid), int (pid), int (cpid->pes_strid.value()), int (pes_stream_id), name.c_str());
+            report("PID %d (0x%04X), PES stream_id modified from 0x%02X to %s",
+                   int(pid), int(pid), int(cpid->pes_strid.value()), name.c_str());
         }
         cpid->pes_strid = pes_stream_id;
     }
@@ -532,7 +532,7 @@ ts::ProcessorPlugin::Status ts::HistoryPlugin::processPacket (TSPacket& pkt, boo
     cpid->pkt_count++;
 
     // Filter interesting sections
-    _demux.feedPacket (pkt);
+    _demux.feedPacket(pkt);
 
     // Count TS packets
     _current_pkt++;

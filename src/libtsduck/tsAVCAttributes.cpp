@@ -54,17 +54,17 @@ ts::AVCAttributes::AVCAttributes() :
 // Convert to a string object
 //----------------------------------------------------------------------------
 
-std::string ts::AVCAttributes::toString() const
+ts::UString ts::AVCAttributes::toString() const
 {
     if (!_is_valid) {
         return "";
     }
 
-    std::string desc (Format ("%" FMT_SIZE_T "dx%" FMT_SIZE_T "d, ", _hsize, _vsize));
+    UString desc(Format("%" FMT_SIZE_T "dx%" FMT_SIZE_T "d, ", _hsize, _vsize));
     desc += profileName();
-    desc += ", level ";
+    desc += u", level ";
     desc += levelName();
-    desc += ", ";
+    desc += u", ";
     desc += chromaFormatName();
 
     return desc;

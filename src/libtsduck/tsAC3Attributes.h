@@ -56,7 +56,7 @@ namespace ts {
         // Implementation of abstract methods.
         // The "binary data" is an audio frame or PES payload.
         virtual bool moreBinaryData(const void*, size_t) override;
-        virtual std::string toString() const override;
+        virtual UString toString() const override;
 
         //!
         //! Check if this is Enhanced-AC-3.
@@ -81,7 +81,7 @@ namespace ts {
         //! @return The string representation of bitstream mode.
         //! @see bitstreamMode()
         //!
-        std::string bitstreamModeDescription() const;
+        UString bitstreamModeDescription() const;
 
         //!
         //! Audio coding mode ("acmod").
@@ -94,7 +94,7 @@ namespace ts {
         //! @return The string representation of audio coding mode.
         //! @see audioCodingMode()
         //!
-        std::string audioCodingDescription() const;
+        UString audioCodingDescription() const;
 
         //!
         //! Sampling frequency in Hz.

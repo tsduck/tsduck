@@ -301,10 +301,8 @@ void ts::PMT::DisplaySection(TablesDisplay& display, const ts::Section& section,
             if (es_info_length > size) {
                 es_info_length = size;
             }
-            strm << margin << "Elementary stream: type "
-                 << Format("0x%02X", int(stream))
-                 << " (" << names::StreamType(stream)
-                 << "), PID: " << es_pid << Format(" (0x%04X)", int(es_pid)) << std::endl;
+            strm << margin << "Elementary stream: type " << names::StreamType(stream, names::FIRST)
+                 << ", PID: " << es_pid << Format(" (0x%04X)", int(es_pid)) << std::endl;
             display.displayDescriptorList(data, es_info_length, indent, section.tableId());
             data += es_info_length; size -= es_info_length;
         }

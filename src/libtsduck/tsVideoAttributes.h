@@ -58,7 +58,7 @@ namespace ts {
         // Implementation of abstract methods.
         // The "binary data" is a video unit, starting with a 00 00 01 xx start code.
         virtual bool moreBinaryData(const void*, size_t) override;
-        virtual std::string toString() const override;
+        virtual UString toString() const override;
 
         //!
         //! Get video horizontal size in pixels.
@@ -82,7 +82,7 @@ namespace ts {
         //! Get display aspect ratio name.
         //! @return Display aspect ratio as a string.
         //!
-        std::string aspectRatioName() const {return _is_valid ? names::AspectRatio(_ar_code) : "";}
+        UString aspectRatioName() const {return _is_valid ? names::AspectRatio(_ar_code) : UString();}
 
         //!
         //! Check if refresh mode is progressive.
@@ -102,7 +102,7 @@ namespace ts {
         //! Get the refresh mode name.
         //! @return The refresh mode as a string.
         //!
-        std::string refreshModeName() const;
+        UString refreshModeName() const;
 
         //!
         //! Get chroma format.
@@ -114,7 +114,7 @@ namespace ts {
         //! Get chroma format name.
         //! @return Chroma format as a string.
         //!
-        std::string chromaFormatName() const {return _is_valid ? names::ChromaFormat(_cf_code) : "";}
+        UString chromaFormatName() const {return _is_valid ? names::ChromaFormat(_cf_code) : UString();}
 
         //!
         //! Get frame rate: approximate value per second.
@@ -149,7 +149,7 @@ namespace ts {
         //! @return Frame rate as a string.
         //! Example: return "@29.97 Hz" for NTSC (actual NTSC rate is 30/1.001 = 29.97).
         //!
-        std::string frameRateName() const;
+        UString frameRateName() const;
 
         //!
         //! Maximum bitrate.

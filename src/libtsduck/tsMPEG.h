@@ -418,7 +418,7 @@ namespace ts {
     //---------------------------------------------------------------------
 
     enum : uint8_t {
-        PST_PICTURE         = 0x00,  //!< Piscture PES start code.
+        PST_PICTURE         = 0x00,  //!< Picture PES start code.
         PST_SLICE_MIN       = 0x01,  //!< First slice PES start code.
         PST_SLICE_MAX       = 0xAF,  //!< Last slice PES start code.
         PST_RESERVED_B0     = 0xB0,  //!< Reserved PES start code.

@@ -80,13 +80,7 @@ namespace ts {
         //! Conversion to a string.
         //! @return A string representing the content of this object.
         //!
-        virtual std::string toString() const = 0;
-
-        //!
-        //! Conversion to a string.
-        //! @return A string representing the content of this object.
-        //!
-        virtual UString toUString() const { return UString::FromUTF8(toString()); }
+        virtual UString toString() const = 0;
 
     protected:
         //!
@@ -103,7 +97,7 @@ namespace ts {
 //! @param [in] attr The instance of a subclass of ts::AbstractAudioVideoAttributes to display.
 //! @return A reference to @a strm.
 //!
-TSDUCKDLL inline std::ostream& operator<< (std::ostream& strm, const ts::AbstractAudioVideoAttributes& attr)
+TSDUCKDLL inline std::ostream& operator<<(std::ostream& strm, const ts::AbstractAudioVideoAttributes& attr)
 {
     return strm << attr.toString();
 }

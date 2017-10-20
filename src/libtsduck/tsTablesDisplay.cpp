@@ -482,9 +482,9 @@ std::ostream& ts::TablesDisplay::displayDescriptorList(const void* data, size_t 
         }
 
         // Display descriptor header
-        strm << margin << "- Descriptor " << desc_index++
-             << ": " << names::DID(desc_tag, actualPDS(pds)) << ", Tag " << int(desc_tag)
-             << Format(" (0x%02X), ", int(desc_tag)) << desc_length << " bytes" << std::endl;
+        strm << margin << "- Descriptor " << desc_index++ << ": "
+             << names::DID(desc_tag, actualPDS(pds), names::VALUE | names::BOTH) << ", "
+             << desc_length << " bytes" << std::endl;
 
         // If the descriptor contains a private_data_specifier, keep it
         // to establish a private context.
@@ -519,9 +519,9 @@ std::ostream& ts::TablesDisplay::displayDescriptorList(const DescriptorList& lis
         const DescriptorPtr& desc(list[i]);
         if (!desc.isNull()) {
             pds = list.privateDataSpecifier(i);
-            strm << margin << "- Descriptor " << i
-                 << ": " << names::DID(desc->tag(), actualPDS(pds)) << ", Tag " << int(desc->tag())
-                 << Format(" (0x%02X), ", int(desc->tag())) << desc->size() << " bytes" << std::endl;
+            strm << margin << "- Descriptor " << i << ": "
+                 << names::DID(desc->tag(), actualPDS(pds), names::VALUE | names::BOTH) << ", "
+                 << desc->size() << " bytes" << std::endl;
             displayDescriptor(*desc, indent + 2, tid, actualPDS(pds), cas);
         }
     }
@@ -550,8 +550,7 @@ std::ostream& ts::TablesDisplay::displayDescriptorData(DID did, const uint8_t* p
         edid = EDID(did, ext);
         size--;
         // Display extended descriptor header
-        strm << std::string(indent, ' ') << "Extended descriptor: " << names::EDID(ext, 0)
-             << Format(", Tag %d (0x%02X)", int(ext), int(ext)) << std::endl;
+        strm << std::string(indent, ' ') << "Extended descriptor: " << names::EDID(ext, names::VALUE | names::BOTH) << std::endl;
     }
     else {
         // Simple descriptor.

@@ -366,20 +366,19 @@ void ts::PESPlugin::handlePESPacket (PESDemux&, const PESPacket& pkt)
 
     // Report packet description
     if (_trace_packets) {
-        out << Format ("* PID 0x%04X, stream_id 0x%02X (", int (pkt.getSourcePID()), int (pkt.getStreamId()))
-            << names::StreamId (pkt.getStreamId())
-            << Format ("), size: %" FMT_SIZE_T "d bytes (header: %" FMT_SIZE_T "d, payload: %" FMT_SIZE_T "d)",
-                       pkt.size(), pkt.headerSize(), pkt.payloadSize())
+        out << Format("* PID 0x%04X, stream_id ", int(pkt.getSourcePID()))
+            << names::StreamId(pkt.getStreamId(), names::FIRST)
+            << Format(", size: %" FMT_SIZE_T "d bytes (header: %" FMT_SIZE_T "d, payload: %" FMT_SIZE_T "d)", pkt.size(), pkt.headerSize(), pkt.payloadSize())
             << std::endl;
-        if (lastDump (out)) {
+        if (lastDump(out)) {
             return;
         }
     }
 
     // Report TS packet index
     if (_trace_packet_index) {
-        out << "  First TS packet: " << Decimal (pkt.getFirstTSPacketIndex())
-            << ", last: " << Decimal (pkt.getLastTSPacketIndex())
+        out << "  First TS packet: " << Decimal(pkt.getFirstTSPacketIndex())
+            << ", last: " << Decimal(pkt.getLastTSPacketIndex())
             << std::endl;
     }
 
@@ -425,17 +424,17 @@ void ts::PESPlugin::handlePESPacket (PESDemux&, const PESPacket& pkt)
 // This hook is invoked when a PES start code is encountered.
 //----------------------------------------------------------------------------
 
-void ts::PESPlugin::handleVideoStartCode (PESDemux&, const PESPacket& pkt, uint8_t start_code, size_t offset, size_t size)
+void ts::PESPlugin::handleVideoStartCode(PESDemux&, const PESPacket& pkt, uint8_t start_code, size_t offset, size_t size)
 {
     if (!_dump_start_code) {
         return;
     }
 
-    std::ostream& out (_outfile.is_open() ? _outfile : std::cout);
+    std::ostream& out(_outfile.is_open() ? _outfile : std::cout);
 
-    out << Format ("* PID 0x%04X, start code 0x%02X (", int (pkt.getSourcePID()), int (start_code))
-        << names::PESStartCode (start_code)
-        << Format ("), offset in PES payload: %" FMT_SIZE_T "d, size: %" FMT_SIZE_T "d bytes", offset, size)
+    out << Format("* PID 0x%04X, start code ", int(pkt.getSourcePID()))
+        << names::PESStartCode(start_code, names::FIRST)
+        << Format(", offset in PES payload: %" FMT_SIZE_T "d, size: %" FMT_SIZE_T "d bytes", offset, size)
         << std::endl;
 
     size_t dsize = size;
@@ -444,9 +443,9 @@ void ts::PESPlugin::handleVideoStartCode (PESDemux&, const PESPacket& pkt, uint8
         dsize = _max_dump_size;
         out << " (truncated)";
     }
-    out << ":" << std::endl << Hexa (pkt.payload() + offset, dsize, _hexa_flags, 4, _hexa_bpl);
+    out << ":" << std::endl << Hexa(pkt.payload() + offset, dsize, _hexa_flags, 4, _hexa_bpl);
 
-    lastDump (out);
+    lastDump(out);
 }
 
 
@@ -454,21 +453,21 @@ void ts::PESPlugin::handleVideoStartCode (PESDemux&, const PESPacket& pkt, uint8
 // This hook is invoked when an AVC access unit is found
 //----------------------------------------------------------------------------
 
-void ts::PESPlugin::handleAVCAccessUnit (PESDemux&, const PESPacket& pkt, uint8_t nal_unit_type, size_t offset, size_t size)
+void ts::PESPlugin::handleAVCAccessUnit(PESDemux&, const PESPacket& pkt, uint8_t nal_unit_type, size_t offset, size_t size)
 {
-    assert (nal_unit_type < 32);
+    assert(nal_unit_type < 32);
 
-    if (!_dump_nal_units || !_nal_unit_filter.test (nal_unit_type)) {
+    if (!_dump_nal_units || !_nal_unit_filter.test(nal_unit_type)) {
         return;
     }
 
-    std::ostream& out (_outfile.is_open() ? _outfile : std::cout);
+    std::ostream& out(_outfile.is_open() ? _outfile : std::cout);
 
     // Hexadecimal dump
-    out << Format ("* PID 0x%04X, AVC access unit type 0x%02X (", int (pkt.getSourcePID()), int (nal_unit_type))
-        << names::AVCUnitType (nal_unit_type) << ")"
+    out << Format("* PID 0x%04X, AVC access unit type ", int(pkt.getSourcePID()))
+        << names::AVCUnitType(nal_unit_type, names::FIRST)
         << std::endl
-        << Format ("  Offset in PES payload: %" FMT_SIZE_T "d, size: %" FMT_SIZE_T "d bytes", offset, size)
+        << Format("  Offset in PES payload: %" FMT_SIZE_T "d, size: %" FMT_SIZE_T "d bytes", offset, size)
         << std::endl;
     size_t dsize = size;
     out << "  AVC access unit";
@@ -476,11 +475,12 @@ void ts::PESPlugin::handleAVCAccessUnit (PESDemux&, const PESPacket& pkt, uint8_
         dsize = _max_dump_size;
         out << " (truncated)";
     }
-    out << ":" << std::endl << Hexa (pkt.payload() + offset, dsize,_hexa_flags , 4, _hexa_bpl);
+    out << ":" << std::endl << Hexa(pkt.payload() + offset, dsize, _hexa_flags, 4, _hexa_bpl);
 
     // Structured formatting if possible
     switch (nal_unit_type) {
-        case AVC_AUT_SEQPARAMS: {
+        case AVC_AUT_SEQPARAMS:
+        {
             AVCSequenceParameterSet params (pkt.payload() + offset, size);
             params.display (out, "  ");
             break;
@@ -490,7 +490,7 @@ void ts::PESPlugin::handleAVCAccessUnit (PESDemux&, const PESPacket& pkt, uint8_
         }
     }
 
-    lastDump (out);
+    lastDump(out);
 }
 
 
@@ -498,19 +498,19 @@ void ts::PESPlugin::handleAVCAccessUnit (PESDemux&, const PESPacket& pkt, uint8_
 // This hook is invoked when new audio attributes are found in an audio PID
 //----------------------------------------------------------------------------
 
-void ts::PESPlugin::handleNewAudioAttributes (PESDemux&, const PESPacket& pkt, const AudioAttributes& aa)
+void ts::PESPlugin::handleNewAudioAttributes(PESDemux&, const PESPacket& pkt, const AudioAttributes& aa)
 {
     if (!_audio_attributes) {
         return;
     }
 
-    std::ostream& out (_outfile.is_open() ? _outfile : std::cout);
+    std::ostream& out(_outfile.is_open() ? _outfile : std::cout);
 
-    out << Format ("* PID 0x%04X, stream_id 0x%02X (", int (pkt.getSourcePID()), int (pkt.getStreamId()))
-        << names::StreamId (pkt.getStreamId()) << "), audio attributes:" << std::endl
+    out << Format("* PID 0x%04X, stream_id ", int(pkt.getSourcePID()))
+        << names::StreamId(pkt.getStreamId(), names::FIRST) << ", audio attributes:" << std::endl
         << "  " << aa << std::endl;
 
-    lastDump (out);
+    lastDump(out);
 }
 
 
@@ -518,19 +518,19 @@ void ts::PESPlugin::handleNewAudioAttributes (PESDemux&, const PESPacket& pkt, c
 // This hook is invoked when new AC-3 attributes are found in an audio PID
 //----------------------------------------------------------------------------
 
-void ts::PESPlugin::handleNewAC3Attributes (PESDemux&, const PESPacket& pkt, const AC3Attributes& aa)
+void ts::PESPlugin::handleNewAC3Attributes(PESDemux&, const PESPacket& pkt, const AC3Attributes& aa)
 {
     if (!_audio_attributes) {
         return;
     }
 
-    std::ostream& out (_outfile.is_open() ? _outfile : std::cout);
+    std::ostream& out(_outfile.is_open() ? _outfile : std::cout);
 
-    out << Format ("* PID 0x%04X, stream_id 0x%02X (", int (pkt.getSourcePID()), int (pkt.getStreamId()))
-        << names::StreamId (pkt.getStreamId()) << "), AC-3 audio attributes:" << std::endl
+    out << Format("* PID 0x%04X, stream_id ", int(pkt.getSourcePID()))
+        << names::StreamId(pkt.getStreamId(), names::FIRST) << ", AC-3 audio attributes:" << std::endl
         << "  " << aa << std::endl;
 
-    lastDump (out);
+    lastDump(out);
 }
 
 
@@ -538,21 +538,21 @@ void ts::PESPlugin::handleNewAC3Attributes (PESDemux&, const PESPacket& pkt, con
 // This hook is invoked when new video attributes are found in a video PID
 //----------------------------------------------------------------------------
 
-void ts::PESPlugin::handleNewVideoAttributes (PESDemux&, const PESPacket& pkt, const VideoAttributes& va)
+void ts::PESPlugin::handleNewVideoAttributes(PESDemux&, const PESPacket& pkt, const VideoAttributes& va)
 {
     if (!_video_attributes) {
         return;
     }
 
-    std::ostream& out (_outfile.is_open() ? _outfile : std::cout);
+    std::ostream& out(_outfile.is_open() ? _outfile : std::cout);
 
-    out << Format ("* PID 0x%04X, stream_id 0x%02X (", int (pkt.getSourcePID()), int (pkt.getStreamId()))
-        << names::StreamId (pkt.getStreamId()) << "), video attributes:" << std::endl
+    out << Format("* PID 0x%04X, stream_id ", int(pkt.getSourcePID()))
+        << names::StreamId(pkt.getStreamId(), names::FIRST) << ", video attributes:" << std::endl
         << "  " << va << std::endl
-        << "  Maximum bitrate: " << Decimal (va.maximumBitRate())
+        << "  Maximum bitrate: " << Decimal(va.maximumBitRate())
         << " b/s, VBV buffer size: " << Decimal (va.vbvSize()) << " bits" << std::endl;
 
-    lastDump (out);
+    lastDump(out);
 }
 
 
@@ -560,17 +560,17 @@ void ts::PESPlugin::handleNewVideoAttributes (PESDemux&, const PESPacket& pkt, c
 // This hook is invoked when new AVC attributes are found in a video PID
 //----------------------------------------------------------------------------
 
-void ts::PESPlugin::handleNewAVCAttributes (PESDemux&, const PESPacket& pkt, const AVCAttributes& va)
+void ts::PESPlugin::handleNewAVCAttributes(PESDemux&, const PESPacket& pkt, const AVCAttributes& va)
 {
     if (!_video_attributes) {
         return;
     }
 
-    std::ostream& out (_outfile.is_open() ? _outfile : std::cout);
+    std::ostream& out(_outfile.is_open() ? _outfile : std::cout);
 
-    out << Format ("* PID 0x%04X, stream_id 0x%02X (", int (pkt.getSourcePID()), int (pkt.getStreamId()))
-        << names::StreamId (pkt.getStreamId()) << "), AVC video attributes:" << std::endl
+    out << Format("* PID 0x%04X, stream_id ", int(pkt.getSourcePID()))
+        << names::StreamId(pkt.getStreamId(), names::FIRST) << ", AVC video attributes:" << std::endl
         << "  " << va << std::endl;
 
-    lastDump (out);
+    lastDump(out);
 }

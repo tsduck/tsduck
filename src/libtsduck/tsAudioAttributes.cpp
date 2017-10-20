@@ -233,30 +233,30 @@ bool ts::AudioAttributes::moreBinaryData (const void* data, size_t size)
 // Convert to a string object
 //----------------------------------------------------------------------------
 
-std::string ts::AudioAttributes::toString() const
+ts::UString ts::AudioAttributes::toString() const
 {
     if (!_is_valid) {
-        return "";
+        return UString();
     }
 
-    std::string desc ("Audio ");
+    UString desc(u"Audio ");
     desc += layerName();
 
     if (_bitrate != 0) {
-        desc += ", ";
-        desc += Decimal (_bitrate);
-        desc += " kb/s";
+        desc += u", ";
+        desc += Decimal(_bitrate);
+        desc += u" kb/s";
     }
 
     if (_sampling_freq != 0) {
-        desc += ", @";
-        desc += Decimal (_sampling_freq);
-        desc += " Hz";
+        desc += u", @";
+        desc += Decimal(_sampling_freq);
+        desc += u" Hz";
     }
 
-    std::string stereo (stereoDescription());
+    const UString stereo(stereoDescription());
     if (!stereo.empty()) {
-        desc += ", ";
+        desc += u", ";
         desc += stereo;
     }
 
@@ -268,16 +268,16 @@ std::string ts::AudioAttributes::toString() const
 // Layer name
 //----------------------------------------------------------------------------
 
-std::string ts::AudioAttributes::layerName() const
+ts::UString ts::AudioAttributes::layerName() const
 {
     if (!_is_valid) {
-        return "";
+        return UString();
     }
 
     switch (_layer) {
-        case 1:  return "layer I";
-        case 2:  return "layer II";
-        case 3:  return "layer III";
+        case 1:  return u"layer I";
+        case 2:  return u"layer II";
+        case 3:  return u"layer III";
         default: return Format("layer %d", _layer);
     }
 }
@@ -287,39 +287,39 @@ std::string ts::AudioAttributes::layerName() const
 // Mono/stereo modes
 //----------------------------------------------------------------------------
 
-std::string ts::AudioAttributes::stereoDescription() const
+ts::UString ts::AudioAttributes::stereoDescription() const
 {
     if (!_is_valid) {
-        return "";
+        return UString();
     }
 
     switch (_mode) {
         case 0:
-            return "stereo";
+            return u"stereo";
         case 1: // joint stereo
             if (_layer == 1 || _layer == 2) {
                 switch (_mode_extension) {
-                    case 0:  return "subbands 4-31 in intensity stereo";
-                    case 1:  return "subbands 8-31 in intensity stereo";
-                    case 2:  return "subbands 12-31 in intensity stereo";
-                    case 3:  return "subbands 16-31 in intensity stereo";
-                    default: return "";
+                    case 0:  return u"subbands 4-31 in intensity stereo";
+                    case 1:  return u"subbands 8-31 in intensity stereo";
+                    case 2:  return u"subbands 12-31 in intensity stereo";
+                    case 3:  return u"subbands 16-31 in intensity stereo";
+                    default: return UString();
                 }
             }
             else {
                 switch (_mode_extension) {
-                    case 0:  return "";
-                    case 1:  return "intensity stereo";
-                    case 2:  return "ms stereo";
-                    case 3:  return "intensity & ms stereo";
-                    default: return "";
+                    case 0:  return UString();
+                    case 1:  return u"intensity stereo";
+                    case 2:  return u"ms stereo";
+                    case 3:  return u"intensity & ms stereo";
+                    default: return UString();
                 }
             }
         case 2:
-            return "dual channel";
+            return u"dual channel";
         case 3:
-            return "single channel";
+            return u"single channel";
         default:
-            return "";
+            return UString();
     }
 }

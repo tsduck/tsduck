@@ -291,14 +291,14 @@ std::ostream& ts::TSAnalyzerReport::reportTS(std::ostream& stm, const std::strin
 
 namespace {
     void ReportServiceHeader(std::ostream& stm,
-                             const std::string& usage,
+                             const ts::UString& usage,
                              bool scrambled,
                              ts::BitRate bitrate,
                              ts::BitRate ts_bitrate)
     {
         stm << '|' << std::string(77, '-') << '|' << std::endl
             << "|     PID  Usage                                     Access          Bitrate  |" << std::endl
-            << "|   Total  " << ts::JustifyLeft(usage + "  ", 45, '.', true) << "  " << (scrambled ? 'S' : 'C') << ' ';
+            << "|   Total  " << (usage + u"  ").toJustifiedLeft(45, ts::UChar('.'), true) << "  " << (scrambled ? 'S' : 'C') << ' ';
         if (ts_bitrate == 0) {
             stm << "         Unknown";
         }
@@ -359,7 +359,7 @@ std::ostream& ts::TSAnalyzerReport::reportServices(std::ostream& stm, const std:
                        78)
         << '|' << std::endl;
 
-    ReportServiceHeader(stm, "Global PID's", _global_scr_pids > 0, _global_bitrate, _ts_bitrate);
+    ReportServiceHeader(stm, u"Global PID's", _global_scr_pids > 0, _global_bitrate, _ts_bitrate);
 
     for (PIDContextMap::const_iterator it = _pids.begin(); it != _pids.end(); ++it) {
         const PIDContext& pc(*it->second);
@@ -379,7 +379,7 @@ std::ostream& ts::TSAnalyzerReport::reportServices(std::ostream& stm, const std:
                            78)
             << '|' << std::endl;
 
-        ReportServiceHeader(stm, "Unreferenced PID's", _unref_scr_pids > 0, _unref_bitrate, _ts_bitrate);
+        ReportServiceHeader(stm, u"Unreferenced PID's", _unref_scr_pids > 0, _unref_bitrate, _ts_bitrate);
 
         for (PIDContextMap::const_iterator it = _pids.begin(); it != _pids.end(); ++it) {
             const PIDContext& pc(*it->second);
@@ -402,11 +402,9 @@ std::ostream& ts::TSAnalyzerReport::reportServices(std::ostream& stm, const std:
                                   int(sv.orig_netw_id), int(sv.orig_netw_id)),
                            78)
             << '|' << std::endl
-            << ("|  Service name: " + sv.getName() + ", provider: " + sv.getProvider()).toJustifiedLeft(78, ' ', true)
+            << (u"|  Service name: " + sv.getName() + u", provider: " + sv.getProvider()).toJustifiedLeft(78, SPACE, true)
             << '|' << std::endl
-            << JustifyLeft(Format("|  Service type: %d (0x%02X), ", int(sv.service_type), int(sv.service_type)) +
-                           names::ServiceType(sv.service_type),
-                           78, ' ', true)
+            << (u"|  Service type: " + names::ServiceType(sv.service_type, names::FIRST)).toJustifiedLeft(78, SPACE, true)
             << '|' << std::endl
             << JustifyLeft("|  TS packets: " + Decimal(sv.ts_pkt_cnt) +
                            Format(", PID's: %" FMT_SIZE_T "u (clear: %" FMT_SIZE_T "u, scrambled: %" FMT_SIZE_T "u)",
@@ -492,8 +490,7 @@ std::ostream& ts::TSAnalyzerReport::reportPIDs(std::ostream& stm, const std::str
 
         // Type of PES data, if available
         if (pc.same_stream_id) {
-            stm << JustifyLeft(Format("|  PES stream id: 0x%02X (", int(pc.pes_stream_id)) + names::StreamId(pc.pes_stream_id) + ")", 78, ' ', true)
-                << '|' << std::endl;
+            stm << (u"|  PES stream id: " + names::StreamId(pc.pes_stream_id, names::FIRST)).toJustifiedLeft(78, SPACE, true) << '|' << std::endl;
         }
 
         // Audio/video attributes
@@ -508,8 +505,7 @@ std::ostream& ts::TSAnalyzerReport::reportPIDs(std::ostream& stm, const std::str
 
         // List of System Software Update OUI's on this PID
         for (std::set<uint32_t>::const_iterator it1 = pc.ssu_oui.begin(); it1 != pc.ssu_oui.end(); ++it1) {
-            stm << (u"|  SSU OUI: " + names::OUI(*it1, names::FIRST)).toJustifiedLeft(78, SPACE, true)
-                << '|' << std::endl;
+            stm << (u"|  SSU OUI: " + names::OUI(*it1, names::FIRST)).toJustifiedLeft(78, SPACE, true) << '|' << std::endl;
         }
         stm << '|' << std::string(77, '-') << '|' << std::endl;
 

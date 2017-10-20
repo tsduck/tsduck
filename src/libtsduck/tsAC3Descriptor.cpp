@@ -188,8 +188,7 @@ void ts::AC3Descriptor::DisplayDescriptor(TablesDisplay& display, DID did, const
         if ((flags & 0x80) && size >= 1) { // component_type
             uint8_t type = data[0];
             data++; size--;
-            strm << margin << Format("Component type: 0x%02X", int(type))
-                 << " (" << names::AC3ComponentType(type) << ")" << std::endl;
+            strm << margin << "Component type: " << names::AC3ComponentType(type, names::FIRST) << std::endl;
         }
         if ((flags & 0x40) && size >= 1) { // bsid
             uint8_t bsid = data[0];

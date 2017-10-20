@@ -271,38 +271,38 @@ int ts::AC3Attributes::extractEAC3bsmod (const uint8_t* data, size_t size)
 // Convert to a string object
 //----------------------------------------------------------------------------
 
-std::string ts::AC3Attributes::toString() const
+ts::UString ts::AC3Attributes::toString() const
 {
     if (!_is_valid) {
         return "";
     }
 
-    std::string desc (_eac3 ? "E-" : "");
-    desc += "AC-3";
+    UString desc(_eac3 ? u"E-" : u"");
+    desc += u"AC-3";
 
-    std::string name (audioCodingDescription());
+    UString name(audioCodingDescription());
     if (!name.empty()) {
-        desc += ", ";
+        desc += u", ";
         desc += name;
     }
 
     if (_surround) {
-        desc += ", Dolby surround";
+        desc += u", Dolby surround";
     }
 
     if (_sampling_freq != 0) {
-        desc += ", @";
-        desc += Decimal (_sampling_freq);
-        desc += " Hz";
+        desc += u", @";
+        desc += Decimal(_sampling_freq);
+        desc += u" Hz";
     }
 
     name = bitstreamModeDescription();
     if (!name.empty()) {
-        desc += ", ";
+        desc += u", ";
         desc += name;
     }
 
-    desc += Format (", bsid %d", _bsid);
+    desc += Format(", bsid %d", _bsid);
     return desc;
 }
 
@@ -311,21 +311,21 @@ std::string ts::AC3Attributes::toString() const
 // Bitstream mode ("bsmod", metadata info), see ETSI TS 102 366
 //----------------------------------------------------------------------------
 
-std::string ts::AC3Attributes::bitstreamModeDescription() const
+ts::UString ts::AC3Attributes::bitstreamModeDescription() const
 {
     if (!_is_valid) {
-        return "";
+        return UString();
     }
     switch (_bsmod) {
-        case 0:  return "complete main";
-        case 1:  return "music and effects";
-        case 2:  return "visually impaired";
-        case 3:  return "hearing impaired";
-        case 4:  return "dialogue";
-        case 5:  return "commentary";
-        case 6:  return "emergency";
-        case 7:  return _acmod == 1 ? "voice over" : "karaoke";
-        default: return Format ("bsmod=%d", _bsmod);
+        case 0:  return u"complete main";
+        case 1:  return u"music and effects";
+        case 2:  return u"visually impaired";
+        case 3:  return u"hearing impaired";
+        case 4:  return u"dialogue";
+        case 5:  return u"commentary";
+        case 6:  return u"emergency";
+        case 7:  return _acmod == 1 ? u"voice over" : u"karaoke";
+        default: return Format("bsmod=%d", _bsmod);
     }
 }
 
@@ -334,21 +334,21 @@ std::string ts::AC3Attributes::bitstreamModeDescription() const
 // Audio coding mode ("acmod"), see ETSI TS 102 366
 //----------------------------------------------------------------------------
 
-std::string ts::AC3Attributes::audioCodingDescription() const
+ts::UString ts::AC3Attributes::audioCodingDescription() const
 {
     if (!_is_valid) {
-        return "";
+        return UString();
     }
     switch (_acmod) {
-        case 0:  return "1+1 (Ch1,Ch2)";
-        case 1:  return "mono";
-        case 2:  return "stereo (L,R)";
-        case 3:  return "3/0 (L,C,R)";
-        case 4:  return "2/1 (L,R,S)";
-        case 5:  return "3/1 (L,C,R,S)";
-        case 6:  return "2/2 (L,R,SL,SR)";
-        case 7:  return "3/2 (L,C,R,SL,SR)";
-        default: return Format ("acmod=%d", _acmod);
+        case 0:  return u"1+1 (Ch1,Ch2)";
+        case 1:  return u"mono";
+        case 2:  return u"stereo (L,R)";
+        case 3:  return u"3/0 (L,C,R)";
+        case 4:  return u"2/1 (L,R,S)";
+        case 5:  return u"3/1 (L,C,R,S)";
+        case 6:  return u"2/2 (L,R,SL,SR)";
+        case 7:  return u"3/2 (L,C,R,SL,SR)";
+        default: return Format("acmod=%d", _acmod);
     }
 }
 
