@@ -2571,6 +2571,9 @@ namespace ts {
 //!
 //! @param [in] type The name of an enumeration type.
 //!
+#if defined(DOXYGEN)
+#define TS_FLAGS_OPERATORS(type)
+#else
 #define TS_FLAGS_OPERATORS(type)                                                      \
     inline constexpr type operator|(type a, type b) { return type(int(a) | int(b)); } \
     inline constexpr type operator&(type a, type b) { return type(int(a) & int(b)); } \
@@ -2578,6 +2581,7 @@ namespace ts {
     inline type& operator|=(type& a, type b) { return a = a | b; }                    \
     inline type& operator&=(type& a, type b) { return a = a & b; }                    \
     inline type& operator^=(type& a, type b) { return a = a ^ b; }
+#endif
 
 
 //----------------------------------------------------------------------------

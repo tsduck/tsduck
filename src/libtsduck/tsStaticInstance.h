@@ -88,7 +88,8 @@
     class ClassAttributes StaticInstanceClass                                \
     {                                                                        \
     public:                                                                  \
-        /* Public static method to access the static instance. */            \
+        /** Public static method to access the static instance. */           \
+        /** @return A reference to the static instance. */                   \
         static ObjectClass& Instance();                                      \
     private:                                                                 \
         /* The actual object */                                              \
