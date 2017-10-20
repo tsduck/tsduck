@@ -70,7 +70,7 @@ void ts::DTSDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const
 
         if (size > 0) {
             strm << margin << "Additional information:" << std::endl
-                << Hexa(data, size, hexa::HEXA | hexa::ASCII | hexa::OFFSET, indent);
+                 << Hexa(data, size, hexa::HEXA | hexa::ASCII | hexa::OFFSET, indent);
             data += size; size = 0;
         }
     }

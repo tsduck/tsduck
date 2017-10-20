@@ -372,8 +372,7 @@ void ts::LinkageDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, c
         strm << margin << "Transport stream id: " << tsid << Format(" (0x%04X)", int(tsid)) << std::endl
              << margin << "Original network Id: " << onid << Format(" (0x%04X)", int(onid)) << std::endl
              << margin << "Service id: " << servid << Format(" (0x%04X)", int(servid)) << std::endl
-             << margin << "Linkage type: " << Format("0x%02X", int(ltype))
-             << ", " << names::LinkageType(ltype) << std::endl;
+             << margin << "Linkage type: " << names::LinkageType(ltype, names::FIRST) << std::endl;
 
         // Variable part
         if (ltype == 0x08 && size >= 1) {

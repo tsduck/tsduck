@@ -49,6 +49,11 @@ public:
     void tearDown();
     void testConfigFile();
     void testTID();
+    void testDID();
+    void testEDID();
+    void testStreamType();
+    void testStreamId();
+    void testPESStartCode();
     void testPrivateDataSpecifier();
     void testCASFamily();
     void testCASId();
@@ -58,10 +63,32 @@ public:
     void testDataBroadcastId();
     void testContent();
     void testOUI();
+    void testAspectRatio();
+    void testChromaFormat();
+    void testAVCUnitType();
+    void testAVCProfile();
+    void testServiceType();
+    void testScramblingControl();
+    void testDTSExtendedSurroundMode();
+    void testDTSSurroundMode();
+    void testDTSBitRateCode();
+    void testDTSSampleRateCode();
+    void testAC3ComponentType();
+    void testComponentType();
+    void testSubtitlingType();
+    void testLinkageType();
+    void testTeletextType();
+    void testRunningStatus();
+    void testAudioType();
 
     CPPUNIT_TEST_SUITE(NamesTest);
     CPPUNIT_TEST(testConfigFile);
     CPPUNIT_TEST(testTID);
+    CPPUNIT_TEST(testDID);
+    CPPUNIT_TEST(testEDID);
+    CPPUNIT_TEST(testStreamType);
+    CPPUNIT_TEST(testStreamId);
+    CPPUNIT_TEST(testPESStartCode);
     CPPUNIT_TEST(testPrivateDataSpecifier);
     CPPUNIT_TEST(testCASFamily);
     CPPUNIT_TEST(testCASId);
@@ -71,6 +98,23 @@ public:
     CPPUNIT_TEST(testDataBroadcastId);
     CPPUNIT_TEST(testContent);
     CPPUNIT_TEST(testOUI);
+    CPPUNIT_TEST(testAspectRatio);
+    CPPUNIT_TEST(testChromaFormat);
+    CPPUNIT_TEST(testAVCUnitType);
+    CPPUNIT_TEST(testAVCProfile);
+    CPPUNIT_TEST(testServiceType);
+    CPPUNIT_TEST(testScramblingControl);
+    CPPUNIT_TEST(testDTSExtendedSurroundMode);
+    CPPUNIT_TEST(testDTSSurroundMode);
+    CPPUNIT_TEST(testDTSBitRateCode);
+    CPPUNIT_TEST(testDTSSampleRateCode);
+    CPPUNIT_TEST(testAC3ComponentType);
+    CPPUNIT_TEST(testComponentType);
+    CPPUNIT_TEST(testSubtitlingType);
+    CPPUNIT_TEST(testLinkageType);
+    CPPUNIT_TEST(testTeletextType);
+    CPPUNIT_TEST(testRunningStatus);
+    CPPUNIT_TEST(testAudioType);
     CPPUNIT_TEST_SUITE_END();
 };
 
@@ -188,4 +232,127 @@ void NamesTest::testNetworkId()
 void NamesTest::testContent()
 {
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"game show/quiz/contest", ts::names::Content(0x31));
+}
+
+void NamesTest::testDID()
+{
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"CA", ts::names::DID(ts::DID_CA));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"ISO-639 Language", ts::names::DID(ts::DID_LANGUAGE));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"Data Broadcast Id", ts::names::DID(ts::DID_DATA_BROADCAST_ID));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"unknown (0x83)", ts::names::DID(ts::DID_LOGICAL_CHANNEL_NUM));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"Logical Channel Number", ts::names::DID(ts::DID_LOGICAL_CHANNEL_NUM, ts::PDS_EACEM));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"0x83 (Logical Channel Number)", ts::names::DID(ts::DID_LOGICAL_CHANNEL_NUM, ts::PDS_EACEM, ts::names::FIRST));
+}
+
+void NamesTest::testEDID()
+{
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"T2 Delivery System", ts::names::EDID(ts::EDID_T2_DELIVERY));
+}
+
+void NamesTest::testStreamType()
+{
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"MPEG-4 Video", ts::names::StreamType(ts::ST_MPEG4_VIDEO));
+}
+
+void NamesTest::testStreamId()
+{
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"ISO-13522 Hypermedia", ts::names::StreamId(ts::SID_ISO13522));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"Audio 24", ts::names::StreamId(0xD8));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"Video 12", ts::names::StreamId(0xEC));
+}
+
+void NamesTest::testPESStartCode()
+{
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"ISO-13522 Hypermedia", ts::names::PESStartCode(ts::SID_ISO13522));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"Audio 24", ts::names::PESStartCode(0xD8));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"Video 12", ts::names::PESStartCode(0xEC));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"Slice 117", ts::names::PESStartCode(0x75));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"Sequence header", ts::names::PESStartCode(0xB3));
+}
+
+void NamesTest::testAspectRatio()
+{
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"16:9", ts::names::AspectRatio(ts::AR_16_9));
+}
+
+void NamesTest::testChromaFormat()
+{
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"4:2:0", ts::names::ChromaFormat(ts::CHROMA_420));
+}
+
+void NamesTest::testAVCUnitType()
+{
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"Picture parameter set", ts::names::AVCUnitType(ts::AVC_AUT_PICPARAMS));
+}
+
+void NamesTest::testAVCProfile()
+{
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"extended profile", ts::names::AVCProfile(88));
+}
+
+void NamesTest::testServiceType()
+{
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"Data broadcast service", ts::names::ServiceType(0x0C));
+}
+
+void NamesTest::testScramblingControl()
+{
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"even", ts::names::ScramblingControl(2));
+}
+
+void NamesTest::testDTSExtendedSurroundMode()
+{
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"matrixed", ts::names::DTSExtendedSurroundMode(1));
+}
+
+void NamesTest::testDTSSurroundMode()
+{
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"3 / C+L+R", ts::names::DTSSurroundMode(5));
+}
+
+void NamesTest::testDTSBitRateCode()
+{
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"512 kb/s", ts::names::DTSBitRateCode(12));
+}
+
+void NamesTest::testDTSSampleRateCode()
+{
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"22.05 kHz", ts::names::DTSSampleRateCode(7));
+}
+
+void NamesTest::testAC3ComponentType()
+{
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"Enhanced AC-3, combined, visually impaired, 2 channels", ts::names::AC3ComponentType(0x92));
+}
+
+void NamesTest::testComponentType()
+{
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"MPEG-2 video, 4:3 aspect ratio, 30 Hz", ts::names::ComponentType(0x0105));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"DVB subtitles, no aspect ratio", ts::names::ComponentType(0x0310));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"Enhanced AC-3, combined, visually impaired, 2 channels", ts::names::ComponentType(0x0492));
+}
+
+void NamesTest::testSubtitlingType()
+{
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"DVB subtitles, high definition", ts::names::SubtitlingType(0x14));
+}
+
+void NamesTest::testLinkageType()
+{
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"data broadcast service", ts::names::LinkageType(0x06));
+}
+
+void NamesTest::testTeletextType()
+{
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"Teletext subtitles", ts::names::TeletextType(2));
+}
+
+void NamesTest::testRunningStatus()
+{
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"running", ts::names::RunningStatus(4));
+}
+
+void NamesTest::testAudioType()
+{
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"hearing impaired", ts::names::AudioType(2));
 }

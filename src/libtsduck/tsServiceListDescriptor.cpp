@@ -144,8 +144,8 @@ void ts::ServiceListDescriptor::DisplayDescriptor(TablesDisplay& display, DID di
         uint16_t sid = GetUInt16(data);
         uint8_t stype = data[2];
         data += 3; size -= 3;
-        strm << margin << Format("Service id: %d (0x%04X), Type: 0x%02X, ", int(sid), int(sid), int(stype))
-             << names::ServiceType(stype) << std::endl;
+        strm << margin << Format("Service id: %d (0x%04X), Type: ", int(sid), int(sid))
+             << names::ServiceType(stype, names::FIRST) << std::endl;
     }
 
     display.displayExtraData(data, size, indent);

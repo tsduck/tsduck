@@ -61,7 +61,7 @@ namespace ts {
         // Implementation of abstract methods.
         // The "binary data" is an AVC access unit.
         virtual bool moreBinaryData(const void*, size_t) override;
-        virtual std::string toString() const override;
+        virtual UString toString() const override;
 
         //!
         //! Get video horizontal size in pixels.
@@ -85,7 +85,7 @@ namespace ts {
         //! Get AVC profile name.
         //! @return AVC profile as a string.
         //!
-        std::string profileName() const {return _is_valid ? names::AVCProfile(_profile) : "";}
+        UString profileName() const {return _is_valid ? names::AVCProfile(_profile) : UString();}
 
         //!
         //! Get AVC level.
@@ -97,7 +97,7 @@ namespace ts {
         //! Get AVC level name.
         //! @return AVC level as a string.
         //!
-        std::string levelName() const {return _is_valid ? Format("%d.%d", _level / 10, _level % 10) : "";}
+        UString levelName() const {return _is_valid ? UString(Format("%d.%d", _level / 10, _level % 10)) : UString();}
 
         //!
         //! Get chroma format.
@@ -109,7 +109,7 @@ namespace ts {
         //! Get chroma format name.
         //! @return Chroma format as a string.
         //!
-        std::string chromaFormatName() const {return _is_valid ? names::ChromaFormat(_chroma) : "";}
+        UString chromaFormatName() const {return _is_valid ? names::ChromaFormat(_chroma) : UString();}
 
     private:
         size_t  _hsize;    // Horizontal size in pixel

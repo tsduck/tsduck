@@ -73,17 +73,18 @@ namespace ts {
         //! Name of Descriptor ID.
         //! @param [in] did Descriptor ID.
         //! @param [in] pds Private data specified if @a did >= 0x80.
+        //! @param [in] flags Presentation flags.
         //! @return The corresponding name.
         //!
-        TSDUCKDLL std::string DID(uint8_t did, uint32_t pds = 0);
+        TSDUCKDLL UString DID(uint8_t did, uint32_t pds = 0, Flags flags = NAME);
 
         //!
         //! Name of Extended descriptor ID.
         //! @param [in] edid Extended descriptor ID.
-        //! @param [in] pds Private data specified if @a edid >= 0x80.
+        //! @param [in] flags Presentation flags.
         //! @return The corresponding name.
         //!
-        TSDUCKDLL std::string EDID(uint8_t edid, uint32_t pds = 0);
+        TSDUCKDLL UString EDID(uint8_t edid, Flags flags = NAME);
 
         //!
         //! Name of Private Data Specifier.
@@ -96,79 +97,90 @@ namespace ts {
         //!
         //! Name of Stream type (in PMT).
         //! @param [in] st Stream type (in PMT).
+        //! @param [in] flags Presentation flags.
         //! @return The corresponding name.
         //!
-        TSDUCKDLL std::string StreamType(uint8_t st);
+        TSDUCKDLL UString StreamType(uint8_t st, Flags flags = NAME);
 
         //!
         //! Name of Stream ID (in PES header).
         //! @param [in] sid Stream ID (in PES header).
+        //! @param [in] flags Presentation flags.
         //! @return The corresponding name.
         //!
-        TSDUCKDLL std::string StreamId(uint8_t sid);
+        TSDUCKDLL UString StreamId(uint8_t sid, Flags flags = NAME);
 
         //!
         //! Name of PES start code value.
         //! @param [in] code PES start code value.
+        //! @param [in] flags Presentation flags.
         //! @return The corresponding name.
         //!
-        TSDUCKDLL std::string PESStartCode(uint8_t code);
+        TSDUCKDLL UString PESStartCode(uint8_t code, Flags flags = NAME);
 
         //!
         //! Name of aspect ratio values (in MPEG-1/2 video sequence header).
         //! @param [in] a Aspect ratio value (in MPEG-1/2 video sequence header).
+        //! @param [in] flags Presentation flags.
         //! @return The corresponding name.
         //!
-        TSDUCKDLL std::string AspectRatio(uint8_t a);
+        TSDUCKDLL UString AspectRatio(uint8_t a, Flags flags = NAME);
 
         //!
         //! Name of Chroma format values (in MPEG-1/2 video sequence header).
         //! @param [in] c Chroma format value (in MPEG-1/2 video sequence header).
+        //! @param [in] flags Presentation flags.
         //! @return The corresponding name.
         //!
-        TSDUCKDLL std::string ChromaFormat(uint8_t c);
+        TSDUCKDLL UString ChromaFormat(uint8_t c, Flags flags = NAME);
 
         //!
         //! Name of AVC (ISO 14496-10, ITU H.264) access unit (aka "NALunit") type.
         //! @param [in] ut AVC access unit type.
+        //! @param [in] flags Presentation flags.
         //! @return The corresponding name.
         //!
-        TSDUCKDLL std::string AVCUnitType(uint8_t ut);
+        TSDUCKDLL UString AVCUnitType(uint8_t ut, Flags flags = NAME);
 
         //!
         //! Name of AVC (ISO 14496-10, ITU H.264) profile.
         //! @param [in] p AVC profile.
+        //! @param [in] flags Presentation flags.
         //! @return The corresponding name.
         //!
-        TSDUCKDLL std::string AVCProfile(int p);
+        TSDUCKDLL UString AVCProfile(int p, Flags flags = NAME);
 
         //!
         //! Name of service type (in Service Descriptor).
         //! @param [in] st Service type (in Service Descriptor).
+        //! @param [in] flags Presentation flags.
         //! @return The corresponding name.
         //!
-        TSDUCKDLL std::string ServiceType(uint8_t st);
+        TSDUCKDLL UString ServiceType(uint8_t st, Flags flags = NAME);
 
         //!
         //! Name of linkage type (in Linkage Descriptor).
         //! @param [in] lt Linkage type (in Linkage Descriptor).
+        //! @param [in] flags Presentation flags.
         //! @return The corresponding name.
         //!
-        TSDUCKDLL std::string LinkageType(uint8_t lt);
+        TSDUCKDLL UString LinkageType(uint8_t lt, Flags flags = NAME);
 
         //!
         //! Name of subtitling type (in Subtitling Descriptor).
         //! @param [in] st Subtitling type (in Subtitling Descriptor).
+        //! @param [in] flags Presentation flags.
         //! @return The corresponding name.
         //!
-        TSDUCKDLL std::string SubtitlingType(uint8_t st);
+        TSDUCKDLL UString SubtitlingType(uint8_t st, Flags flags = NAME);
 
         //!
         //! Name of Teletext type (in Teletext Descriptor).
         //! @param [in] tt Teletext type (in Teletext Descriptor).
+        //! @param [in] flags Presentation flags.
         //! @return The corresponding name.
         //!
-        TSDUCKDLL std::string TeletextType(uint8_t tt);
+        TSDUCKDLL UString TeletextType(uint8_t tt, Flags flags = NAME);
 
         //!
         //! Name of Conditional Access System Id (in CA Descriptor).
@@ -188,59 +200,67 @@ namespace ts {
         //!
         //! Name of Running Status (in SDT).
         //! @param [in] rs Running Status (in SDT).
+        //! @param [in] flags Presentation flags.
         //! @return The corresponding name.
         //!
-        TSDUCKDLL std::string RunningStatus(uint8_t rs);
+        TSDUCKDLL UString RunningStatus(uint8_t rs, Flags flags = NAME);
 
         //!
         //! Name of audio type (in ISO639 Language Descriptor).
         //! @param [in] at Audio type (in ISO639 Language Descriptor).
+        //! @param [in] flags Presentation flags.
         //! @return The corresponding name.
         //!
-        TSDUCKDLL std::string AudioType(uint8_t at);
+        TSDUCKDLL UString AudioType(uint8_t at, Flags flags = NAME);
 
         //!
         //! Name of Component Type (in Component Descriptor).
         //! @param [in] ct Component Type (in Component Descriptor).
         //! Combination of stream_content (4 bits) and component_type (8 bits).
+        //! @param [in] flags Presentation flags.
         //! @return The corresponding name.
         //!
-        TSDUCKDLL std::string ComponentType(uint16_t ct);
+        TSDUCKDLL UString ComponentType(uint16_t ct, Flags flags = NAME);
 
         //!
         //! Name of AC-3 Component Type.
         //! @param [in] t AC-3 Component Type.
+        //! @param [in] flags Presentation flags.
         //! @return The corresponding name.
         //!
-        TSDUCKDLL std::string AC3ComponentType(uint8_t t);
+        TSDUCKDLL UString AC3ComponentType(uint8_t t, Flags flags = NAME);
 
         //!
         //! Name of DTS Audio Sample Rate code.
         //! @param [in] c DTS Audio Sample Rate code.
+        //! @param [in] flags Presentation flags.
         //! @return The corresponding name.
         //!
-        TSDUCKDLL std::string DTSSampleRateCode(uint8_t c);
+        TSDUCKDLL UString DTSSampleRateCode(uint8_t c, Flags flags = NAME);
 
         //!
         //! Name of DTS Audio Bit Rate Code.
         //! @param [in] c DTS Audio Bit Rate Code.
+        //! @param [in] flags Presentation flags.
         //! @return The corresponding name.
         //!
-        TSDUCKDLL std::string DTSBitRateCode(uint8_t c);
+        TSDUCKDLL UString DTSBitRateCode(uint8_t c, Flags flags = NAME);
 
         //!
         //! Name of DTS Audio Surround Mode.
         //! @param [in] mode DTS Audio Surround Mode.
+        //! @param [in] flags Presentation flags.
         //! @return The corresponding name.
         //!
-        TSDUCKDLL std::string DTSSurroundMode(uint8_t mode);
+        TSDUCKDLL UString DTSSurroundMode(uint8_t mode, Flags flags = NAME);
 
         //!
         //! Name of DTS Audio Extended Surround Mode.
         //! @param [in] mode DTS Audio Extended Surround Mode.
+        //! @param [in] flags Presentation flags.
         //! @return The corresponding name.
         //!
-        TSDUCKDLL std::string DTSExtendedSurroundMode(uint8_t mode);
+        TSDUCKDLL UString DTSExtendedSurroundMode(uint8_t mode, Flags flags = NAME);
 
         //!
         //! Name of content name (in Content Descriptor).
@@ -253,9 +273,10 @@ namespace ts {
         //!
         //! Name of scrambling control value in TS header
         //! @param [in] sc Scrambling control value in TS header
+        //! @param [in] flags Presentation flags.
         //! @return The corresponding name.
         //!
-        TSDUCKDLL std::string ScramblingControl(uint8_t sc);
+        TSDUCKDLL UString ScramblingControl(uint8_t sc, Flags flags = NAME);
 
         //!
         //! Name of Bouquet Id.
@@ -422,12 +443,13 @@ namespace ts {
     };
 
     //!
-    //! An instance of names repository containing all DVB-assigned identifiers.
+    //! An instance of names repository containing all MPEG and DVB identifiers.
     //!
     TS_STATIC_INSTANCE_DECLARATION(ts::Names, TSDUCKDLL, NamesDVB);
 
     //!
     //! An instance of names repository containing all IEEE-assigned Organizationally Unique Identifiers (OUI).
+    //! Since the number of OUI values is very large, they are placed in a separate configuration file.
     //!
     TS_STATIC_INSTANCE_DECLARATION(ts::Names, TSDUCKDLL, NamesOUI);
 }

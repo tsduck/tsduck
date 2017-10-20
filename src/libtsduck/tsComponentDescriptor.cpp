@@ -51,15 +51,14 @@ void ts::ComponentDescriptor::DisplayDescriptor(TablesDisplay& display, DID did,
     const std::string margin(indent, ' ');
 
     if (size >= 6) {
-        uint16_t type = GetUInt16(data) & 0x0FFF;
-        uint8_t tag = data[2];
-        strm << margin << Format("Content/type: 0x%04X", int(type))
-             << " (" << names::ComponentType(type) << ")" << std::endl
+        const uint16_t type = GetUInt16(data) & 0x0FFF;
+        const uint8_t tag = data[2];
+        strm << margin << "Content/type: " << names::ComponentType(type, names::FIRST) << std::endl
              << margin << Format("Component tag: %d (0x%02X)", int(tag), int(tag)) << std::endl
-             << margin << "Language: " << Printable(data + 3, 3) << std::endl;
+             << margin << "Language: " << UString::FromDVB(data + 3, 3, display.dvbCharset()) << std::endl;
         data += 6; size -= 6;
         if (size > 0) {
-            strm << margin << "Description: \"" << Printable(data, size) << "\"" << std::endl;
+            strm << margin << "Description: \"" << UString::FromDVB(data, size, display.dvbCharset()) << "\"" << std::endl;
         }
         data += size; size = 0;
     }

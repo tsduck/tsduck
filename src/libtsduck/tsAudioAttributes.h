@@ -54,7 +54,7 @@ namespace ts {
         // Implementation of abstract methods.
         // The "binary data" is an audio frame or PES payload.
         virtual bool moreBinaryData(const void*, size_t) override;
-        virtual std::string toString() const override;
+        virtual UString toString() const override;
 
         //!
         //! MPEG audio layer.
@@ -66,7 +66,7 @@ namespace ts {
         //! MPEG audio layer name.
         //! @return A string describing the MPEG audio layer.
         //!
-        std::string layerName() const;
+        UString layerName() const;
 
         //!
         //! Bitrate in bits/second.
@@ -96,7 +96,7 @@ namespace ts {
         //! Mono/stereo mode name.
         //! @return A string describing the mono/stereo mode .
         //!
-        std::string stereoDescription() const;
+        UString stereoDescription() const;
 
     private:
         uint32_t _header;          // Last audio frame header

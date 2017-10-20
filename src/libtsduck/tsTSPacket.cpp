@@ -422,14 +422,14 @@ std::ostream& ts::TSPacket::display (std::ostream& strm, uint32_t flags, int ind
     // Display PES header
 
     if (has_pes_header && (flags & DUMP_PES_HEADER)) {
-        uint8_t sid = b[header_size+3];
-        uint16_t length = GetUInt16 (b + header_size + 4);
-        strm << margin << "---- PES Header ----" << std::endl <<
-                margin << "Stream id: " << Format ("0x%02X", int (sid)) <<
-                          " (" << names::StreamId (sid) << ")" << std::endl <<
-                margin << "PES packet length: " << length;
-        if (length == 0)
+        uint8_t sid = b[header_size + 3];
+        uint16_t length = GetUInt16(b + header_size + 4);
+        strm << margin << "---- PES Header ----" << std::endl
+             << margin << "Stream id: " << names::StreamId(sid, names::FIRST) << std::endl
+             << margin << "PES packet length: " << length;
+        if (length == 0) {
             strm << " (unbounded)";
+        }
         strm << std::endl;
     }
 
@@ -451,7 +451,7 @@ std::ostream& ts::TSPacket::display (std::ostream& strm, uint32_t flags, int ind
             strm << margin << "---- TS Packet Payload (" << size << " bytes) ----" << std::endl;
         }
         // The 16 LSB contains flags for Hexa.
-        strm << Hexa (data, size, flags & 0x0000FFFF, indent);
+        strm << Hexa(data, size, flags & 0x0000FFFF, indent);
     }
 
     return strm;

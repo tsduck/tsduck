@@ -133,8 +133,7 @@ void ts::ISO639LanguageDescriptor::DisplayDescriptor(TablesDisplay& display, DID
     while (size >= 4) {
         const uint8_t type = data[3];
         strm << margin << "Language: " << UString::FromDVB(data, 3, display.dvbCharset())
-             << ", Type: " << int(type)
-             << " (" << names::AudioType(type) << ")" << std::endl;
+             << ", Type: " << names::AudioType(type, names::FIRST) << std::endl;
         data += 4; size -= 4;
     }
 

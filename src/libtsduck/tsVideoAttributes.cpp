@@ -67,24 +67,24 @@ ts::VideoAttributes::VideoAttributes() :
 // Convert to a string object
 //----------------------------------------------------------------------------
 
-std::string ts::VideoAttributes::toString() const
+ts::UString ts::VideoAttributes::toString() const
 {
     if (!_is_valid) {
         return "";
     }
 
-    std::string desc (Format ("%" FMT_SIZE_T "dx%" FMT_SIZE_T "d", _hsize, _vsize));
+    UString desc(Format("%" FMT_SIZE_T "dx%" FMT_SIZE_T "d", _hsize, _vsize));
     if (_progressive) {
-        desc += 'p';
+        desc += UChar('p');
     }
     if (_interlaced) {
-        desc += 'i';
+        desc += UChar('i');
     }
-    desc += ", ";
+    desc += u", ";
     desc += frameRateName();
-    desc += ", ";
+    desc += u", ";
     desc += aspectRatioName();
-    desc += ", ";
+    desc += u", ";
     desc += chromaFormatName();
 
     return desc;
@@ -95,7 +95,7 @@ std::string ts::VideoAttributes::toString() const
 // Get frame rate as a string
 //----------------------------------------------------------------------------
 
-std::string ts::VideoAttributes::frameRateName() const
+ts::UString ts::VideoAttributes::frameRateName() const
 {
     size_t fr100;
 
@@ -103,10 +103,10 @@ std::string ts::VideoAttributes::frameRateName() const
         return "";
     }
     else if ((fr100 = frameRate100()) % 100 == 0) {
-        return Format ("@%d Hz", int (fr100 / 100));
+        return Format("@%d Hz", int(fr100 / 100));
     }
     else {
-        return Format ("@%d.%02d Hz", int (fr100 / 100), int (fr100 % 100));
+        return Format("@%d.%02d Hz", int(fr100 / 100), int(fr100 % 100));
     }
 }
 
@@ -115,19 +115,19 @@ std::string ts::VideoAttributes::frameRateName() const
 // Refresh mode (both can be false if unspecifed)
 //----------------------------------------------------------------------------
 
-std::string ts::VideoAttributes::refreshModeName() const
+ts::UString ts::VideoAttributes::refreshModeName() const
 {
     if (!_is_valid) {
-        return "";
+        return UString();
     }
     else if (_progressive) {
-        return "progressive";
+        return u"progressive";
     }
     else if (_interlaced) {
-        return "interlaced";
+        return u"interlaced";
     }
     else {
-        return "";
+        return UString();
     }
 }
 

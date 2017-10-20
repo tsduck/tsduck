@@ -848,7 +848,7 @@ void ts::TSAnalyzer::analyzeDescriptors(const DescriptorList& descs, ServiceCont
                     uint8_t type = data[3];
                     ps->description = u"Subtitles";
                     ps->comment = ps->language;
-                    AppendUnique(ps->attributes, UString(names::SubtitlingType(type)));
+                    AppendUnique(ps->attributes, names::SubtitlingType(type));
                 }
                 break;
             }
@@ -860,7 +860,7 @@ void ts::TSAnalyzer::analyzeDescriptors(const DescriptorList& descs, ServiceCont
                     uint8_t type(data[3] >> 3);
                     ps->description = u"Teletext";
                     ps->comment = ps->language;
-                    AppendUnique(ps->attributes, UString(names::TeletextType(type)));
+                    AppendUnique(ps->attributes, names::TeletextType(type));
                 }
                 break;
             }
@@ -1090,7 +1090,7 @@ void ts::TSAnalyzer::analyzeCADescriptor(const Descriptor& desc, ServiceContext*
 
 void ts::TSAnalyzer::handleNewAudioAttributes(PESDemux&, const PESPacket& pkt, const AudioAttributes& attr)
 {
-    AppendUnique(getPID(pkt.getSourcePID())->attributes, attr.toUString());
+    AppendUnique(getPID(pkt.getSourcePID())->attributes, attr.toString());
 }
 
 
@@ -1101,7 +1101,7 @@ void ts::TSAnalyzer::handleNewAudioAttributes(PESDemux&, const PESPacket& pkt, c
 
 void ts::TSAnalyzer::handleNewAC3Attributes(PESDemux&, const PESPacket& pkt, const AC3Attributes& attr)
 {
-    AppendUnique(getPID(pkt.getSourcePID())->attributes, attr.toUString());
+    AppendUnique(getPID(pkt.getSourcePID())->attributes, attr.toString());
 }
 
 
@@ -1112,7 +1112,7 @@ void ts::TSAnalyzer::handleNewAC3Attributes(PESDemux&, const PESPacket& pkt, con
 
 void ts::TSAnalyzer::handleNewVideoAttributes(PESDemux&, const PESPacket& pkt, const VideoAttributes& attr)
 {
-    AppendUnique(getPID(pkt.getSourcePID())->attributes, attr.toUString());
+    AppendUnique(getPID(pkt.getSourcePID())->attributes, attr.toString());
 }
 
 
@@ -1123,7 +1123,7 @@ void ts::TSAnalyzer::handleNewVideoAttributes(PESDemux&, const PESPacket& pkt, c
 
 void ts::TSAnalyzer::handleNewAVCAttributes(PESDemux&, const PESPacket& pkt, const AVCAttributes& attr)
 {
-    AppendUnique(getPID(pkt.getSourcePID())->attributes, attr.toUString());
+    AppendUnique(getPID(pkt.getSourcePID())->attributes, attr.toString());
 }
 
 
