@@ -27,6 +27,11 @@
         <language code="fre" audio_type="0x45"/>
         <language code="deu" audio_type="0x78"/>
       </ISO_639_language_descriptor>
+      <T2MI_descriptor t2mi_stream_id="0x02" num_t2mi_streams_minus_one="4" pcr_iscr_common_clock_flag="true">
+        <reserved>
+          01 02 03
+        </reserved>
+      </T2MI_descriptor>
     </component>
   </PMT>
   <TSDT version="1" current="false">

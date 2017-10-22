@@ -33,6 +33,7 @@
 
 #include "tsXMLTables.h"
 #include "tsTables.h"
+#include "tsSysUtils.h"
 #include "tsBinaryTable.h"
 #include "tsStringUtils.h"
 #include "tsCerrReport.h"
@@ -54,6 +55,7 @@ class XMLTablesTest: public CppUnit::TestFixture
 public:
     void setUp();
     void tearDown();
+    void testConfigurationFile();
     void testGenericDescriptor();
     void testGenericShortTable();
     void testGenericLongTable();
@@ -61,6 +63,7 @@ public:
     void testAllTables();
 
     CPPUNIT_TEST_SUITE(XMLTablesTest);
+    CPPUNIT_TEST(testConfigurationFile);
     CPPUNIT_TEST(testGenericDescriptor);
     CPPUNIT_TEST(testGenericShortTable);
     CPPUNIT_TEST(testGenericLongTable);
@@ -129,6 +132,13 @@ void XMLTablesTest::testTable(const char* name, const char* ref_xml, const uint8
 //----------------------------------------------------------------------------
 // Other unitary tests.
 //----------------------------------------------------------------------------
+
+void XMLTablesTest::testConfigurationFile()
+{
+    const std::string conf(ts::SearchConfigurationFile("tsduck.xml"));
+    utest::Out() << "XMLTablesTest::testConfigurationFile: " << conf << std::endl;
+    CPPUNIT_ASSERT(ts::FileExists(conf));
+}
 
 void XMLTablesTest::testGenericDescriptor()
 {

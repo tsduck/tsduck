@@ -90,6 +90,7 @@
 #include "tsStreamIdentifierDescriptor.h"
 #include "tsSubtitlingDescriptor.h"
 #include "tsSupplementaryAudioDescriptor.h"
+#include "tsT2MIDescriptor.h"
 #include "tsTeletextDescriptor.h"
 #include "tsTerrestrialDeliverySystemDescriptor.h"
 #include "tsVBIDataDescriptor.h"
