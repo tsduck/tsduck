@@ -219,6 +219,7 @@
 #include "tsSysUtils.h"
 #include "tsSystemMonitor.h"
 #include "tsSystemRandomGenerator.h"
+#include "tsT2MIDescriptor.h"
 #include "tsTCPConnection.h"
 #include "tsTCPServer.h"
 #include "tsTCPSocket.h"

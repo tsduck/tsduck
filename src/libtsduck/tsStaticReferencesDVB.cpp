@@ -112,6 +112,7 @@ ts::StaticReferencesDVB::StaticReferencesDVB() :
     REF(ts::StreamIdentifierDescriptor);
     REF(ts::SubtitlingDescriptor);
     REF(ts::SupplementaryAudioDescriptor);
+    REF(ts::T2MIDescriptor);
     REF(ts::TeletextDescriptor);
     REF(ts::TerrestrialDeliverySystemDescriptor);
     REF(ts::VBIDataDescriptor);

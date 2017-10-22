@@ -794,6 +794,9 @@
     <ClInclude Include="..\..\src\libtsduck\tsSatelliteDeliverySystemDescriptor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\libtsduck\tsT2MIDescriptor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\src\libtsduck\tsMessageDescriptor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -1448,6 +1451,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\libtsduck\tsCableDeliverySystemDescriptor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\libtsduck\tsT2MIDescriptor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\libtsduck\tsMessageDescriptor.cpp">
