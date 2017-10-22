@@ -293,6 +293,7 @@ void NamesTest::testAVCProfile()
 void NamesTest::testServiceType()
 {
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"Data broadcast service", ts::names::ServiceType(0x0C));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"unknown (0x00)", ts::names::ServiceType(0));
 }
 
 void NamesTest::testScramblingControl()

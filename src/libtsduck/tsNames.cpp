@@ -475,15 +475,16 @@ ts::UString ts::Names::ConfigSection::getName(Value val) const
     // The key in the 'entries' map is the _first_ value of a range.
     // Get an iterator pointing to the first element that is "not less" than 'val'.
     ConfigEntryMap::const_iterator it = entries.lower_bound(val);
-    if (it == entries.end() || it->first != val) {
+
+    if (it == entries.end() || (it != entries.begin() && it->first != val)) {
         // There is no entry with a value range starting at 'val'.
         // Maybe 'val' is in the range of the previous entry.
         --it;
     }
 
     assert(it != entries.end());
-    assert(it->first <= val);
     assert(it->second != 0);
+
     return val >= it->first && val <= it->second->last ? it->second->name : UString();
 }
 
