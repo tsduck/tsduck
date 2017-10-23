@@ -82,6 +82,7 @@ SUBDIRS += \
     tsplugin_stuffanalyze \
     tsplugin_svremove \
     tsplugin_svrename \
+    tsplugin_t2mi \
     tsplugin_tables \
     tsplugin_time \
     tsplugin_timeref \
