@@ -1101,4 +1101,32 @@ namespace ts {
         OUI_SKARDIN  = 0x001222,  //!< OUI for Skardin (UK)
         OUI_LOGIWAYS = 0x002660,  //!< OUI for Logiways
     };
+
+    //---------------------------------------------------------------------
+    // T2-MI (DVB-T2 Modulator Interface)
+    //---------------------------------------------------------------------
+    
+    //!
+    //! Size in bytes of a T2-MI packet header.
+    //!
+    const size_t T2MI_HEADER_SIZE = 6;
+
+    //!
+    //! T2-MI packet types.
+    //! @see ETSI EN 102 773, section 5.1.
+    //!
+    enum : uint8_t {
+        T2MI_BASEBAND_FRAME        = 0x00, //!< Baseband Frame.
+        T2MI_AUX_IQ_DATA           = 0x01, //!< Auxiliary stream I/Q data.
+        T2MI_ARBITRARY_CELL        = 0x02, //!< Arbitrary cell insertion.
+        T2MI_L1_CURRENT            = 0x10, //!< L1-current.
+        T2MI_L1_FUTURE             = 0x11, //!< L1-future.
+        T2MI_P2_BIAS_BALANCING     = 0x12, //!< P2 bias balancing cells.
+        T2MI_DVBT2_TIMESTAMP       = 0x20, //!< DVB-T2 timestamp.
+        T2MI_INDIVIDUAL_ADDRESSING = 0x21, //!< Individual addressing.
+        T2MI_FEF_NULL              = 0x30, //!< FEF part: Null.
+        T2MI_FEF_IQ_DATA           = 0x31, //!< FEF part: I/Q data.
+        T2MI_FEF_COMPOSITE         = 0x32, //!< FEF part: composite.
+        T2MI_FEF_SUBPART           = 0x33, //!< FEF sub-part.
+    };
 }

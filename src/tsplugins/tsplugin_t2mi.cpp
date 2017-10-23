@@ -46,13 +46,13 @@ TSDUCK_SOURCE;
 //----------------------------------------------------------------------------
 
 namespace ts {
-    class M2TIPlugin:
+    class T2MIPlugin:
         public ProcessorPlugin,
         private TableHandlerInterface
     {
     public:
         // Implementation of plugin API
-        M2TIPlugin(TSP*);
+        T2MIPlugin(TSP*);
         virtual bool start();
         virtual bool stop() {return true;}
         virtual BitRate getBitrate() {return 0;}
@@ -66,9 +66,6 @@ namespace ts {
         ByteBlock    _t2mi;       // Buffer containing the T2-MI data.
         SectionDemux _psi_demux;  // Demux for PSI parsing.
 
-        // Size in bytes of a T2-MI header.
-        static const size_t T2MI_HEADER_SIZE = 6;
-
         // Process and remove complete T2-MI packets from the buffer.
         void processT2MI();
 
@@ -76,21 +73,21 @@ namespace ts {
         virtual void handleTable(SectionDemux&, const BinaryTable&);
 
         // Inaccessible operations
-        M2TIPlugin() = delete;
-        M2TIPlugin(const M2TIPlugin&) = delete;
-        M2TIPlugin& operator=(const M2TIPlugin&) = delete;
+        T2MIPlugin() = delete;
+        T2MIPlugin(const T2MIPlugin&) = delete;
+        T2MIPlugin& operator=(const T2MIPlugin&) = delete;
     };
 }
 
 TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_PROCESSOR(ts::M2TIPlugin)
+TSPLUGIN_DECLARE_PROCESSOR(ts::T2MIPlugin)
 
 
 //----------------------------------------------------------------------------
 // Constructor
 //----------------------------------------------------------------------------
 
-ts::M2TIPlugin::M2TIPlugin(TSP* tsp_) :
+ts::T2MIPlugin::T2MIPlugin(TSP* tsp_) :
     ProcessorPlugin(tsp_, "Extract T2-MI (DVB-T2 Modulator Interface) packets.", "[options]"),
     TableHandlerInterface(),
     _pid(PID_NULL),
@@ -120,7 +117,7 @@ ts::M2TIPlugin::M2TIPlugin(TSP* tsp_) :
 // Start method
 //----------------------------------------------------------------------------
 
-bool ts::M2TIPlugin::start()
+bool ts::T2MIPlugin::start()
 {
     // Get command line arguments
     getIntValue<PID>(_pid, "pid", PID_NULL);
@@ -147,7 +144,7 @@ bool ts::M2TIPlugin::start()
 // Invoked by the demux when a complete PSI table is available.
 //----------------------------------------------------------------------------
 
-void ts::M2TIPlugin::handleTable(SectionDemux& demux, const BinaryTable& table)
+void ts::T2MIPlugin::handleTable(SectionDemux& demux, const BinaryTable& table)
 {
     switch (table.tableId()) {
 
@@ -199,7 +196,7 @@ void ts::M2TIPlugin::handleTable(SectionDemux& demux, const BinaryTable& table)
 // Process and remove complete T2-MI packets from the buffer.
 //----------------------------------------------------------------------------
 
-void ts::M2TIPlugin::processT2MI()
+void ts::T2MIPlugin::processT2MI()
 {
     // Start index in buffer of T2-MI packet header.
     size_t start = 0;
@@ -258,26 +255,20 @@ void ts::M2TIPlugin::processT2MI()
 // Packet processing method
 //----------------------------------------------------------------------------
 
-ts::ProcessorPlugin::Status ts::M2TIPlugin::processPacket(TSPacket& pkt, bool& flush, bool& bitrate_changed)
+ts::ProcessorPlugin::Status ts::T2MIPlugin::processPacket(TSPacket& pkt, bool& flush, bool& bitrate_changed)
 {
+    // As long as T2-MI PID is unknown, process PSI, searching for T2-MI.
     if (_pid == PID_NULL) {
-        // T2-MI PID not yet known, process PSI, searching for T2-MI.
         _psi_demux.feedPacket(pkt);
         if (_pid == PID_NULL && _psi_demux.pidCount() == 0) {
             // T2-MI PID still not found and no more service to search.
             tsp->error("no T2-MI component found in any service, use option --pid to specify the PID carrying T2-MI");
             return TSP_END;
         }
-        return TSP_DROP;
     }
-    else if (pkt.getPID() != _pid) {
-        // Not a packet with T2-MI, drop it.
-        return TSP_DROP;
-    }
-    else {
-        // This is a packet with T2-MI encapsulation.
-        const uint8_t* data = pkt.getPayload();
-        size_t size = pkt.getPayloadSize();
+
+    // Process clear TS packets from the T2-MI PID.
+    if (_pid != PID_NULL && pkt.getPID() == _pid && pkt.isClear()) {
 
         // Check if we loose synchronization.
         if (_sync && (pkt.getDiscontinuityIndicator() || pkt.getCC() != ((_cc + 1) & CC_MASK))) {
@@ -289,10 +280,18 @@ ts::ProcessorPlugin::Status ts::M2TIPlugin::processPacket(TSPacket& pkt, bool& f
         // Keep track of continuity counters.
         _cc = pkt.getCC();
 
+        // Locate packet payload.
+        const uint8_t* data = pkt.getPayload();
+        size_t size = pkt.getPayloadSize();
+
         // Process packet with Payload Unit Start Indicator.
         if (pkt.getPUSI()) {
-            size_t pf = 0;
-            if (size == 0 || (pf = data[0]) >= size - 1) {
+
+            // The first byte in the TS payload is a pointer field to the start of a new T2-MI packet.
+            // Note: this is exactly the same mechanism as section packetization.
+            const size_t pf = size == 0 ? 0 : data[0];
+            if (1 + pf >= size) {
+                // There is no pointer field or it points outside the TS payload.
                 tsp->verbose("incorrect pointer field, loosing synchronization on T2-MI PID");
                 _t2mi.clear();
                 _sync = false;
@@ -303,7 +302,7 @@ ts::ProcessorPlugin::Status ts::M2TIPlugin::processPacket(TSPacket& pkt, bool& f
             data++;
             size--;
 
-            // If we were properly desynchronized, we are back on track.
+            // If we were previously desynchronized, we are back on track.
             if (!_sync) {
                 tsp->verbose("retrieving synchronization on T2-MI PID");
                 _sync = true;
@@ -318,7 +317,8 @@ ts::ProcessorPlugin::Status ts::M2TIPlugin::processPacket(TSPacket& pkt, bool& f
             _t2mi.append(data, size);
             processT2MI();
         }
-
-        return TSP_DROP;
     }
+
+    // Currently, we drop all packets.
+    return TSP_DROP;
 }

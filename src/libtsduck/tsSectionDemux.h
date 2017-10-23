@@ -109,8 +109,8 @@ namespace ts {
         void removePID(PID pid);
 
         //!
-        //! Get the current number of PID's being filtered..
-        //! @return The current number of PID's being filtered..
+        //! Get the current number of PID's being filtered.
+        //! @return The current number of PID's being filtered.
         //!
         size_t pidCount() const
         {
