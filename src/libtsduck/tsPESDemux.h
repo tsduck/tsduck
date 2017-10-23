@@ -96,6 +96,15 @@ namespace ts {
         void removePID(PID pid);
 
         //!
+        //! Get the current number of PID's being filtered..
+        //! @return The current number of PID's being filtered..
+        //!
+        size_t pidCount() const
+        {
+            return _pid_filter.count();
+        }
+
+        //!
         //! Replace the PES packet handler.
         //! @param [in] h The object to invoke when PES packets are analyzed.
         //!

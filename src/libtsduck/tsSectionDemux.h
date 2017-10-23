@@ -88,19 +88,34 @@ namespace ts {
         //! Add one PID to filter.
         //! @param [in] pid The new PID to filter.
         //!
-        void addPID(PID pid) {_pid_filter.set(pid);}
+        void addPID(PID pid)
+        {
+            _pid_filter.set(pid);
+        }
 
         //!
         //! Add several PID's to filter.
         //! @param [in] pids The list of new PID's to filter.
         //!
-        void addPIDs(const PIDSet& pids) { _pid_filter |= pids; }
+        void addPIDs(const PIDSet& pids)
+        {
+            _pid_filter |= pids;
+        }
 
         //!
         //! Remove one PID to filter.
         //! @param [in] pid The PID to no longer filter.
         //!
         void removePID(PID pid);
+
+        //!
+        //! Get the current number of PID's being filtered..
+        //! @return The current number of PID's being filtered..
+        //!
+        size_t pidCount() const
+        {
+            return _pid_filter.count();
+        }
 
         //!
         //! Replace the table handler.
