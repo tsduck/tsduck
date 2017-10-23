@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="Source Files">
@@ -794,9 +794,6 @@
     <ClInclude Include="..\..\src\libtsduck\tsSatelliteDeliverySystemDescriptor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\libtsduck\tsT2MIDescriptor.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\libtsduck\tsMessageDescriptor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -900,6 +897,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\libtsduck\tsAbstractSignalization.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\libtsduck\tsT2MIDescriptor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -1453,9 +1453,6 @@
     <ClCompile Include="..\..\src\libtsduck\tsCableDeliverySystemDescriptor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\libtsduck\tsT2MIDescriptor.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\libtsduck\tsMessageDescriptor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -1550,6 +1547,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\libtsduck\tsAbstractSignalization.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\libtsduck\tsT2MIDescriptor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

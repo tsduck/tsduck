@@ -57,6 +57,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsCBCTemplate.h" />
     <ClInclude Include="..\..\src\libtsduck\tsCerrReport.h" />
     <ClInclude Include="..\..\src\libtsduck\tsStaticReferencesDVB.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsT2MIDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsUChar.h" />
     <ClInclude Include="..\..\src\libtsduck\tsCipherChaining.h" />
     <ClInclude Include="..\..\src\libtsduck\tsCOM.h" />
@@ -137,7 +138,6 @@
     <ClInclude Include="..\..\src\libtsduck\tsMD5.h" />
     <ClInclude Include="..\..\src\libtsduck\tsMediaGuardDate.h" />
     <ClInclude Include="..\..\src\libtsduck\tsMemoryUtils.h" />
-    <ClInclude Include="..\..\src\libtsduck\tsT2MIDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsMessageDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsMessageQueue.h" />
     <ClInclude Include="..\..\src\libtsduck\tsMessageQueueTemplate.h" />
@@ -340,6 +340,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsCAT.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsCerrReport.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsStaticReferencesDVB.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsT2MIDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsUChar.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsCipherChaining.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsCOM.cpp" />
@@ -396,7 +397,6 @@
     <ClCompile Include="..\..\src\libtsduck\tsLogicalChannelNumberDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsMD5.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsMemoryUtils.cpp" />
-    <ClInclude Include="..\..\src\libtsduck\tsT2MIDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsMessageDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsMJD.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsModulation.cpp" />
@@ -540,4 +540,9 @@
   <ImportGroup Label="PropertySheets">
     <Import Project="msvc-common-end.props" />
   </ImportGroup>
+  <Target Name="AfterBuild">
+    <Copy SourceFiles="..\..\src\libtsduck\tsduck.xml" DestinationFolder="$(OutDir)" />
+    <Copy SourceFiles="..\..\src\libtsduck\tsduck.dvb.names" DestinationFolder="$(OutDir)" />
+    <Copy SourceFiles="..\..\src\libtsduck\tsduck.oui.names" DestinationFolder="$(OutDir)" />
+  </Target>
 </Project>
