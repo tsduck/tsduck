@@ -40,13 +40,13 @@ TSDUCK_SOURCE;
 // Demux status information - Default constructor
 //----------------------------------------------------------------------------
 
-ts::SectionDemux::Status::Status () :
-    invalid_ts (0),
-    discontinuities (0),
-    scrambled (0),
-    inv_sect_length (0),
-    inv_sect_index (0),
-    wrong_crc (0)
+ts::SectionDemux::Status::Status() :
+    invalid_ts(0),
+    discontinuities(0),
+    scrambled(0),
+    inv_sect_length(0),
+    inv_sect_index(0),
+    wrong_crc(0)
 {
 }
 
@@ -56,15 +56,15 @@ ts::SectionDemux::Status::Status () :
 // Constructor from the current status of SectionDemux
 //----------------------------------------------------------------------------
 
-ts::SectionDemux::Status::Status (const SectionDemux& demux) :
-    invalid_ts (0),
-    discontinuities (0),
-    scrambled (0),
-    inv_sect_length (0),
-    inv_sect_index (0),
-    wrong_crc (0)
+ts::SectionDemux::Status::Status(const SectionDemux& demux) :
+    invalid_ts(0),
+    discontinuities(0),
+    scrambled(0),
+    inv_sect_length(0),
+    inv_sect_index(0),
+    wrong_crc(0)
 {
-    demux.getStatus (*this);
+    demux.getStatus(*this);
 }
 
 
@@ -72,7 +72,7 @@ ts::SectionDemux::Status::Status (const SectionDemux& demux) :
 // Demux status information - Reset content
 //----------------------------------------------------------------------------
 
-void ts::SectionDemux::Status::reset ()
+void ts::SectionDemux::Status::reset()
 {
     invalid_ts = 0;
     discontinuities = 0;
@@ -87,7 +87,7 @@ void ts::SectionDemux::Status::reset ()
 // Demux status information - Check if any counter is non zero
 //----------------------------------------------------------------------------
 
-bool ts::SectionDemux::Status::hasErrors () const
+bool ts::SectionDemux::Status::hasErrors() const
 {
     return
         invalid_ts != 0 ||
@@ -105,27 +105,27 @@ bool ts::SectionDemux::Status::hasErrors () const
 // If errors_only is true, don't report zero counters.
 //----------------------------------------------------------------------------
 
-std::ostream& ts::SectionDemux::Status::display (std::ostream& strm, int indent, bool errors_only) const
+std::ostream& ts::SectionDemux::Status::display(std::ostream& strm, int indent, bool errors_only) const
 {
-    const std::string margin (indent, ' ');
+    const std::string margin(indent, ' ');
 
     if (!errors_only || invalid_ts != 0) {
-        strm << margin << "Invalid TS packets: " << Decimal (invalid_ts) << std::endl;
+        strm << margin << "Invalid TS packets: " << Decimal(invalid_ts) << std::endl;
     }
     if (!errors_only || discontinuities != 0) {
-        strm << margin << "TS packets discontinuities: " << Decimal (discontinuities) << std::endl;
+        strm << margin << "TS packets discontinuities: " << Decimal(discontinuities) << std::endl;
     }
     if (!errors_only || scrambled != 0) {
-        strm << margin << "Scrambled TS packets: " << Decimal (scrambled) << std::endl;
+        strm << margin << "Scrambled TS packets: " << Decimal(scrambled) << std::endl;
     }
     if (!errors_only || inv_sect_length != 0) {
-        strm << margin << "Invalid section lengths: " << Decimal (inv_sect_length) << std::endl;
+        strm << margin << "Invalid section lengths: " << Decimal(inv_sect_length) << std::endl;
     }
     if (!errors_only || inv_sect_index != 0) {
-        strm << margin << "Invalid section index: " << Decimal (inv_sect_index) << std::endl;
+        strm << margin << "Invalid section index: " << Decimal(inv_sect_index) << std::endl;
     }
     if (!errors_only || wrong_crc != 0) {
-        strm << margin << "Corrupted sections (bad CRC): " << Decimal (wrong_crc) << std::endl;
+        strm << margin << "Corrupted sections (bad CRC): " << Decimal(wrong_crc) << std::endl;
     }
 
     return strm;
@@ -136,19 +136,15 @@ std::ostream& ts::SectionDemux::Status::display (std::ostream& strm, int indent,
 // SectionDemux constructor.
 //----------------------------------------------------------------------------
 
-ts::SectionDemux::SectionDemux (TableHandlerInterface* table_handler,
-                                  SectionHandlerInterface* section_handler,
-                                  const PIDSet& pid_filter) :
-
-    _table_handler (table_handler),
-    _section_handler (section_handler),
-    _pid_filter (pid_filter),
+ts::SectionDemux::SectionDemux(TableHandlerInterface* table_handler,
+                               SectionHandlerInterface* section_handler,
+                               const PIDSet& pid_filter) :
+    SuperClass(pid_filter),
+    _table_handler(table_handler),
+    _section_handler(section_handler),
     _pids (),
     _status (),
-    _packet_count (0),
-    _in_handler (false),
-    _pid_in_handler (PID_NULL),
-    _reset_pending (false)
+    _packet_count (0)
 {
 }
 
@@ -163,88 +159,37 @@ ts::SectionDemux::~SectionDemux ()
 
 
 //----------------------------------------------------------------------------
-// Remove one PID from the filtering.
-//----------------------------------------------------------------------------
-
-void ts::SectionDemux::removePID (PID pid)
-{
-    // If the PID was actually filtered, we need to reset the context
-
-    if (_pid_filter [pid]) {
-        _pid_filter.reset (pid);
-        resetPID (pid);
-    }
-}
-
-
-//----------------------------------------------------------------------------
-// Set a completely new PID filter
-//----------------------------------------------------------------------------
-
-void ts::SectionDemux::setPIDFilter (const PIDSet& new_pid_filter)
-{
-    // Get list of removed PID's
-    const PIDSet removed_pids (_pid_filter & ~new_pid_filter);
-
-    // Set the new filter
-    _pid_filter = new_pid_filter;
-
-    // Reset context of all removed PID's
-    if (removed_pids.any ()) {
-        for (PID pid = 0; pid < PID_MAX; ++pid) {
-            if (removed_pids [pid]) {
-                resetPID (pid);
-            }
-        }
-    }
-}
-
-
-//----------------------------------------------------------------------------
 // Reset the analysis context (partially built sections and tables).
-// Useful when the transport stream changes.
-// The PID filter and the handlers are not modified.
 //----------------------------------------------------------------------------
 
-void ts::SectionDemux::reset ()
+void ts::SectionDemux::immediateReset()
 {
-    // In the context of a handler, delay the reset
-    if (_in_handler) {
-        _reset_pending = true;
-    }
-    else {
-        _pids.clear ();
-    }
+    _pids.clear();
+}
+
+void ts::SectionDemux::immediateResetPID(PID pid)
+{
+    _pids.erase(pid);
 }
 
 
 //----------------------------------------------------------------------------
-// Reset the analysis context for one single PID.
-// Forget all previously analyzed sections on this PID.
+// Feed the depacketizer with a TS packet.
 //----------------------------------------------------------------------------
 
-void ts::SectionDemux::resetPID (PID pid)
+void ts::SectionDemux::feedPacket(const TSPacket& pkt)
 {
-    // In the context of a handler for this PID, delay the reset
-    if (_in_handler && _pid_in_handler == pid) {
-        _pids[pid].reset_pending = true;
+    if (_pid_filter[pkt.getPID()]) {
+        processPacket(pkt);
     }
-    else {
-        _pids.erase (pid);
-    }
+    _packet_count++;
 }
 
-
-//----------------------------------------------------------------------------
-// Private method: Feed the depacketizer with a TS packet.
-// The PID has already been filtered in an inlined public method.
-//----------------------------------------------------------------------------
-
-void ts::SectionDemux::processPacket (const TSPacket& pkt)
+void ts::SectionDemux::processPacket(const TSPacket& pkt)
 {
     // Reject invalid packets
 
-    if (!pkt.hasValidSync ()) {
+    if (!pkt.hasValidSync()) {
         _status.invalid_ts++;
         return;
     }
@@ -252,8 +197,8 @@ void ts::SectionDemux::processPacket (const TSPacket& pkt)
     // Get PID and reference to the PID context.
     // The PID context is created if did not exist.
 
-    PID pid (pkt.getPID ());
-    PIDContext& pc (_pids [pid]);
+    PID pid = pkt.getPID();
+    PIDContext& pc(_pids[pid]);
 
     // If TS packet is scrambled, we cannot decode it and we loose
     // synchronization on this PID (usually, PID's carrying sections
@@ -270,7 +215,7 @@ void ts::SectionDemux::processPacket (const TSPacket& pkt)
 
     if (pc.sync) {
         // Ignore duplicate packets (same CC)
-        if (pkt.getCC () == pc.continuity) {
+        if (pkt.getCC() == pc.continuity) {
             return;
         }
         // Check if we are still synchronized
@@ -488,10 +433,7 @@ void ts::SectionDemux::processPacket (const TSPacket& pkt)
             // Mark that we are in the context of a table or section handler.
             // This is used to prevent the destruction of PID contexts during
             // the execution of a handler.
-
-            _in_handler = true;
-            _pid_in_handler = pid;
-
+            beforeCallingHandler(pid);
             try {
                 // If a handler is defined for sections, invoke it.
                 if (section_ok && _section_handler != 0) {
@@ -520,26 +462,11 @@ void ts::SectionDemux::processPacket (const TSPacket& pkt)
                 }
             }
             catch (...) {
-                _in_handler = false;
+                afterCallingHandler(false);
                 throw;
             }
-
-            // End of handler-calling sequence. Now process the delayed destructions.
-
-            _in_handler = false;
-
-            if (_reset_pending) {
-                // Full reset was requested by a handler.
-                _reset_pending = false;
-                reset();
-                return;
-            }
-
-            if (pc.reset_pending) {
-                // Reset of this PID was requested by a handler.
-                pc.reset_pending = false;
-                resetPID (pid);
-                return;
+            if (afterCallingHandler(true)) {
+                return;  // the PID of this packet or the complete demux was reset.
             }
         }
 
@@ -564,10 +491,10 @@ void ts::SectionDemux::processPacket (const TSPacket& pkt)
 
     if (ts_size <= 0) {
         // TS buffer becomes empty
-        pc.ts.clear ();
+        pc.ts.clear();
     }
-    else if (ts_start > pc.ts.data ()) {
+    else if (ts_start > pc.ts.data()) {
         // Remove start of TS buffer
-        pc.ts.erase (0, ts_start - pc.ts.data ());
+        pc.ts.erase(0, ts_start - pc.ts.data());
     }
 }

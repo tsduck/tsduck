@@ -33,8 +33,8 @@
 //----------------------------------------------------------------------------
 
 #pragma once
+#include "tsAbstractDemux.h"
 #include "tsETID.h"
-#include "tsTSPacket.h"
 #include "tsTableHandlerInterface.h"
 #include "tsSectionHandlerInterface.h"
 
@@ -46,9 +46,14 @@ namespace ts {
     //!
     //! Sections with the @e next indicator are ignored. Only sections with the @e current indicator are reported.
     //!
-    class TSDUCKDLL SectionDemux
+    class TSDUCKDLL SectionDemux: public AbstractDemux
     {
     public:
+        //!
+        //! Explicit reference to superclass.
+        //!
+        typedef AbstractDemux SuperClass;
+
         //!
         //! Constructor.
         //! @param [in] table_handler The object to invoke when a new complete table is extracted.
@@ -64,58 +69,8 @@ namespace ts {
         //!
         virtual ~SectionDemux();
 
-        //!
-        //! The following method feeds the demux with a TS packet.
-        //! @param [in] pkt A TS packet. If the PID of the packet is not in the
-        //! PID filter, it is ignored. Thus, a TS packet reader can simply pass
-        //! all TS packets to the demux.
-        //!
-        void feedPacket(const TSPacket& pkt)
-        {
-            if (_pid_filter[pkt.getPID()]) {
-                processPacket(pkt);
-            }
-            _packet_count++;
-        }
-
-        //!
-        //! Replace the list of PID's to filter.
-        //! @param [in] pid_filter The list of PID's to filter.
-        //!
-        void setPIDFilter(const PIDSet& pid_filter);
-
-        //!
-        //! Add one PID to filter.
-        //! @param [in] pid The new PID to filter.
-        //!
-        void addPID(PID pid)
-        {
-            _pid_filter.set(pid);
-        }
-
-        //!
-        //! Add several PID's to filter.
-        //! @param [in] pids The list of new PID's to filter.
-        //!
-        void addPIDs(const PIDSet& pids)
-        {
-            _pid_filter |= pids;
-        }
-
-        //!
-        //! Remove one PID to filter.
-        //! @param [in] pid The PID to no longer filter.
-        //!
-        void removePID(PID pid);
-
-        //!
-        //! Get the current number of PID's being filtered.
-        //! @return The current number of PID's being filtered.
-        //!
-        size_t pidCount() const
-        {
-            return _pid_filter.count();
-        }
+        // Inherited methods
+        virtual void feedPacket(const TSPacket& pkt) override;
 
         //!
         //! Replace the table handler.
@@ -134,21 +89,6 @@ namespace ts {
         {
             _section_handler = h;
         }
-
-        //!
-        //! Reset the analysis context.
-        //! Partially built sections and tables are dropped.
-        //! Useful when the transport stream changes.
-        //! The PID filter and the handlers are not modified.
-        //!
-        void reset();
-
-        //!
-        //! Reset the analysis context for one single PID.
-        //! Forget all previously analyzed sections on this PID.
-        //! @param [in] pid The PID to reset.
-        //!
-        void resetPID(PID pid);
 
         //!
         //! Demux status information.
@@ -214,6 +154,11 @@ namespace ts {
             return _status.hasErrors();
         }
 
+    protected:
+        // Inherited methods
+        virtual void immediateReset() override;
+        virtual void immediateResetPID(PID pid) override;
+
     private:
         // Feed the depacketizer with a TS packet (PID already filtered).
         void processPacket(const TSPacket&);
@@ -243,7 +188,6 @@ namespace ts {
             bool sync;                         // We are synchronous in this PID
             ByteBlock ts;                      // TS payload buffer
             std::map <ETID, ETIDContext> tids; // TID analysis contexts
-            bool reset_pending;                // Delayed reset on this PID
             PacketCounter pusi_pkt_index;      // Index of last PUSI packet in this PID
 
             // Default constructor:
@@ -252,7 +196,6 @@ namespace ts {
                 sync(false),
                 ts(),
                 tids(),
-                reset_pending(false),
                 pusi_pkt_index(0)
             {
             }
@@ -266,15 +209,11 @@ namespace ts {
         };
 
         // Private members:
-        TableHandlerInterface* _table_handler;
+        TableHandlerInterface*   _table_handler;
         SectionHandlerInterface* _section_handler;
-        PIDSet _pid_filter;
-        std::map <PID, PIDContext> _pids;
-        Status _status;
-        PacketCounter _packet_count;  // number of TS packets in demultiplexed stream
-        bool _in_handler;             // true when in the context of a table/section handler
-        PID _pid_in_handler;          // PID which is currently processed by handler
-        bool _reset_pending;          // delayed Reset()
+        std::map<PID,PIDContext> _pids;
+        Status                   _status;
+        PacketCounter            _packet_count;    // number of TS packets in demultiplexed stream
 
         // Inacessible operations
         SectionDemux(const SectionDemux&) = delete;
