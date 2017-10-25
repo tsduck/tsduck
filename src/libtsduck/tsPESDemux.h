@@ -33,7 +33,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsTSPacket.h"
+#include "tsAbstractDemux.h"
 #include "tsPESPacket.h"
 #include "tsPESHandlerInterface.h"
 #include "tsAudioAttributes.h"
@@ -45,9 +45,14 @@ namespace ts {
     //!
     //! This class extracts PES packets from TS packets.
     //!
-    class TSDUCKDLL PESDemux
+    class TSDUCKDLL PESDemux: public AbstractDemux
     {
     public:
+        //!
+        //! Explicit reference to superclass.
+        //!
+        typedef AbstractDemux SuperClass;
+
         //!
         //! Constructor.
         //! @param [in] handler The object to invoke when PES packets are analyzed.
@@ -60,49 +65,8 @@ namespace ts {
         //!
         ~PESDemux();
 
-        //!
-        //! The following method feeds the demux with a TS packet.
-        //! @param [in] pkt A TS packet. If the PID of the packet is not in the
-        //! PID filter, it is ignored. Thus, a TS packet reader can simply pass
-        //! all TS packets to the demux.
-        //!
-        void feedPacket(const TSPacket& pkt)
-        {
-            if (_pid_filter[pkt.getPID()]) {
-                processPacket(pkt);
-            }
-            _packet_count++;
-        }
-
-        //!
-        //! Replace the list of PID's to filter.
-        //! @param [in] pid_filter The list of PID's to filter.
-        //!
-        void setPIDFilter(const PIDSet& pid_filter);
-
-        //!
-        //! Add one PID to filter.
-        //! @param [in] pid The new PID to filter.
-        //!
-        void addPID(PID pid)
-        {
-            _pid_filter.set(pid);
-        }
-
-        //!
-        //! Remove one PID to filter.
-        //! @param [in] pid The PID to no longer filter.
-        //!
-        void removePID(PID pid);
-
-        //!
-        //! Get the current number of PID's being filtered.
-        //! @return The current number of PID's being filtered.
-        //!
-        size_t pidCount() const
-        {
-            return _pid_filter.count();
-        }
+        // Inherited methods
+        virtual void feedPacket(const TSPacket& pkt) override;
 
         //!
         //! Replace the PES packet handler.
@@ -112,21 +76,6 @@ namespace ts {
         {
             _pes_handler = h;
         }
-
-        //!
-        //! Reset the analysis context.
-        //! Partially built PES packets are dropped.
-        //! Useful when the transport stream changes.
-        //! The PID filter and the handlers are not modified.
-        //!
-        void reset();
-
-        //!
-        //! Reset the analysis context for one single PID.
-        //! Partially built PES packets are dropped.
-        //! @param [in] pid The PID to reset.
-        //!
-        void resetPID(PID pid);
 
         //!
         //! Get the current audio attributes on the specified PID.
@@ -171,11 +120,12 @@ namespace ts {
         //!
         bool allAC3(PID) const;
 
-    private:
-        // Inacessible operations
-        PESDemux(const PESDemux&) = delete;
-        PESDemux& operator=(const PESDemux&) = delete;
+    protected:
+        // Inherited methods
+        virtual void immediateReset() override;
+        virtual void immediateResetPID(PID pid) override;
 
+    private:
         // This internal structure contains the analysis context for one PID.
         struct PIDContext
         {
@@ -185,7 +135,6 @@ namespace ts {
             PacketCounter first_pkt; // Index of first TS packet for current PES packet
             PacketCounter last_pkt;  // Index of last TS packet for current PES packet
             ByteBlockPtr ts;         // TS payload buffer
-            bool reset_pending;      // Delayed reset on this PID
             AudioAttributes audio;   // Current audio attributes
             VideoAttributes video;   // Current video attributes (MPEG-1, MPEG-2)
             AVCAttributes avc;       // Current AVC attributes
@@ -209,11 +158,11 @@ namespace ts {
 
         // Private members:
         PESHandlerInterface* _pes_handler;
-        PIDSet _pid_filter;
-        PIDContextMap _pids;
-        PacketCounter _packet_count;  // number of TS packets in demultiplexed stream
-        bool _in_handler;             // true when in the context of a handler
-        PID _pid_in_handler;          // PID which is currently processed by handler
-        bool _reset_pending;          // delayed reset()
+        PIDContextMap        _pids;
+        PacketCounter        _packet_count;    // number of TS packets in demultiplexed stream
+
+        // Inacessible operations
+        PESDemux(const PESDemux&) = delete;
+        PESDemux& operator=(const PESDemux&) = delete;
     };
 }

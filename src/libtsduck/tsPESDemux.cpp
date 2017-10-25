@@ -54,14 +54,11 @@ namespace {
 // Constructor
 //----------------------------------------------------------------------------
 
-ts::PESDemux::PESDemux (PESHandlerInterface* pes_handler, const PIDSet& pid_filter) :
-    _pes_handler (pes_handler),
-    _pid_filter (pid_filter),
-    _pids (),
-    _packet_count (0),
-    _in_handler (false),
-    _pid_in_handler (PID_NULL),
-    _reset_pending (false)
+ts::PESDemux::PESDemux(PESHandlerInterface* pes_handler, const PIDSet& pid_filter) :
+    SuperClass(pid_filter),
+    _pes_handler(pes_handler),
+    _pids(),
+    _packet_count(0)
 {
 }
 
@@ -80,56 +77,18 @@ ts::PESDemux::~PESDemux()
 //----------------------------------------------------------------------------
 
 ts::PESDemux::PIDContext::PIDContext() :
-    pes_count (0),
-    continuity (0),
-    sync (false),
-    first_pkt (0),
-    last_pkt (0),
-    ts (new ByteBlock()),
-    reset_pending (false),
+    pes_count(0),
+    continuity(0),
+    sync(false),
+    first_pkt(0),
+    last_pkt(0),
+    ts(new ByteBlock()),
     audio(),
     video(),
     avc(),
     ac3(),
-    ac3_count (0)
+    ac3_count(0)
 {
-}
-
-
-//----------------------------------------------------------------------------
-// Remove one PID from the filtering.
-//----------------------------------------------------------------------------
-
-void ts::PESDemux::removePID (PID pid)
-{
-    // If the PID was actually filtered, we need to reset the context
-    if (_pid_filter [pid]) {
-        _pid_filter.reset (pid);
-        resetPID (pid);
-    }
-}
-
-
-//----------------------------------------------------------------------------
-// Set a completely new PID filter
-//----------------------------------------------------------------------------
-
-void ts::PESDemux::setPIDFilter (const PIDSet& new_pid_filter)
-{
-    // Get list of removed PID's
-    const PIDSet removed_pids (_pid_filter & ~new_pid_filter);
-
-    // Set the new filter
-    _pid_filter = new_pid_filter;
-
-    // Reset context of all removed PID's
-    if (removed_pids.any ()) {
-        for (PID pid = 0; pid < PID_MAX; ++pid) {
-            if (removed_pids [pid]) {
-                resetPID (pid);
-            }
-        }
-    }
 }
 
 
@@ -137,31 +96,14 @@ void ts::PESDemux::setPIDFilter (const PIDSet& new_pid_filter)
 // Reset the analysis context (partially built PES packets).
 //----------------------------------------------------------------------------
 
-void ts::PESDemux::reset()
+void ts::PESDemux::immediateReset()
 {
-    // In the context of a handler, delay the reset
-    if (_in_handler) {
-        _reset_pending = true;
-    }
-    else {
-        _pids.clear ();
-    }
+    _pids.clear();
 }
 
-
-//----------------------------------------------------------------------------
-// Reset the analysis context for one single PID.
-//----------------------------------------------------------------------------
-
-void ts::PESDemux::resetPID (PID pid)
+void ts::PESDemux::immediateResetPID(PID pid)
 {
-    // In the context of a handler for this PID, delay the reset
-    if (_in_handler && _pid_in_handler == pid) {
-        _pids[pid].reset_pending = true;
-    }
-    else {
-        _pids.erase (pid);
-    }
+    _pids.erase(pid);
 }
 
 
@@ -222,10 +164,18 @@ bool ts::PESDemux::allAC3 (PID pid) const
 
 
 //----------------------------------------------------------------------------
-// Feed the demux with a TS packet (PID already filtered).
+// Feed the demux with a TS packet.
 //----------------------------------------------------------------------------
 
-void ts::PESDemux::processPacket (const TSPacket& pkt)
+void ts::PESDemux::feedPacket(const TSPacket& pkt)
+{
+    if (_pid_filter[pkt.getPID()]) {
+        processPacket(pkt);
+    }
+    _packet_count++;
+}
+
+void ts::PESDemux::processPacket(const TSPacket& pkt)
 {
     // Reject invalid packets
     if (!pkt.hasValidSync ()) {
@@ -271,17 +221,16 @@ void ts::PESDemux::processPacket (const TSPacket& pkt)
         // (it is not possible to have 00 00 01 in a PUSI packet containing sections).
         if (pl_size >= 3 && pl[0] == 0 && pl[1] == 0 && pl[2] == 1) {
             // We are at the beginning of a PES packet. Create context if non existent.
-            PIDContext& pc (_pids[pid]);
+            PIDContext& pc(_pids[pid]);
             pc.continuity = pkt.getCC();
             pc.sync = true;
-            pc.ts->copy (pl, pl_size);
-            pc.reset_pending = false;
+            pc.ts->copy(pl, pl_size);
             pc.first_pkt = _packet_count;
             pc.last_pkt = _packet_count;
         }
         else if (pc_exists) {
             // This PID does not contain PES packet, reset context
-            _pids.erase (pid);
+            _pids.erase(pid);
         }
         // PUSI packet processing done.
         return;
@@ -315,16 +264,16 @@ void ts::PESDemux::processPacket (const TSPacket& pkt)
         // Note that 64 kB is OK for audio PIDs. Video PIDs are usually unbounded. The
         // maximum observed PES rate is 2 PES/s, meaning 512 kB / PES at 8 Mb/s.
         if (capacity < 64 * 1024) {
-            pc.ts->reserve (64 * 1024);
+            pc.ts->reserve(64 * 1024);
         }
         else if (capacity < 512 * 1024) {
-            pc.ts->reserve (512 * 1024);
+            pc.ts->reserve(512 * 1024);
         }
         else {
-            pc.ts->reserve (2 * capacity);
+            pc.ts->reserve(2 * capacity);
         }
     }
-    pc.ts->append (pl, pl_size);
+    pc.ts->append(pl, pl_size);
 
     // Last TS packet containing actual data for this PES packet
     pc.last_pkt = _packet_count;
@@ -335,7 +284,7 @@ void ts::PESDemux::processPacket (const TSPacket& pkt)
 // Process a complete PES packet
 //----------------------------------------------------------------------------
 
-void ts::PESDemux::processPESPacket (PID pid, PIDContext& pc)
+void ts::PESDemux::processPESPacket(PID pid, PIDContext& pc)
 {
     // Build a PES packet object around the TS buffer
     PESPacket pp (pc.ts, pid);
@@ -353,9 +302,7 @@ void ts::PESDemux::processPESPacket (PID pid, PIDContext& pc)
     // Mark that we are in the context of handlers.
     // This is used to prevent the destruction of PID contexts during
     // the execution of a handler.
-    _in_handler = true;
-    _pid_in_handler = pid;
-
+    beforeCallingHandler(pid);
     try {
         // Handle complete packet
         if (_pes_handler != 0) {
@@ -448,20 +395,8 @@ void ts::PESDemux::processPESPacket (PID pid, PIDContext& pc)
         }
     }
     catch (...) {
-        _in_handler = false;
+        afterCallingHandler(false);
         throw;
     }
-
-    // End of handler-calling sequence. Now process the delayed destructions.
-    _in_handler = false;
-    if (_reset_pending) {
-        // Full reset was requested by a handler.
-        _reset_pending = false;
-        reset();
-    }
-    else if (pc.reset_pending) {
-        // Reset of this PID was requested by a handler.
-        pc.reset_pending = false;
-        resetPID (pid);
-    }
+    afterCallingHandler(true);
 }
