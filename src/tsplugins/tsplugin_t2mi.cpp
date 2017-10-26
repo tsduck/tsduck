@@ -33,9 +33,9 @@
 //----------------------------------------------------------------------------
 
 #include "tsPlugin.h"
-#include "tsSectionDemux.h"
-#include "tsTables.h"
-#include "tsCRC32.h"
+#include "tsT2MIDemux.h"
+#include "tsT2MIDescriptor.h"
+#include "tsT2MIPacket.h"
 #include "tsFormat.h"
 #include "tsHexa.h"
 TSDUCK_SOURCE;
@@ -48,7 +48,7 @@ TSDUCK_SOURCE;
 namespace ts {
     class T2MIPlugin:
         public ProcessorPlugin,
-        private TableHandlerInterface
+        private T2MIHandlerInterface
     {
     public:
         // Implementation of plugin API
@@ -60,17 +60,17 @@ namespace ts {
 
     private:
         // Plugin private fields.
-        PID          _pid;        // PID carrying the T2-MI encapsulation.
-        uint8_t      _cc;         // Last continuity counter in PID.
-        bool         _sync;       // T2-MI extraction in progress, fully synchronized.
-        ByteBlock    _t2mi;       // Buffer containing the T2-MI data.
-        SectionDemux _psi_demux;  // Demux for PSI parsing.
+        PID       _pid;           // PID carrying the T2-MI encapsulation.
+        uint8_t   _plp;           // The PLP to extract in _pid.
+        bool      _plp_valid;     // False if PLP not yet known.
+        bool      _first_packet;  // First T2-MI packet not yet processed 
+        ByteBlock _ts;            // Buffer to accumulate extracted TS packets.
+        size_t    _ts_next;       // Next packet to output.
+        T2MIDemux _demux;         // Demux for PSI parsing.
 
-        // Process and remove complete T2-MI packets from the buffer.
-        void processT2MI();
-
-        // Invoked by the demux when a complete table is available.
-        virtual void handleTable(SectionDemux&, const BinaryTable&);
+        // Inherited methods.
+        virtual void handleT2MINewPID(T2MIDemux& demux, PID pid, const T2MIDescriptor& desc) override;
+        virtual void ts::T2MIPlugin::handleT2MIPacket(T2MIDemux& demux, const T2MIPacket& pkt) override;
 
         // Inaccessible operations
         T2MIPlugin() = delete;
@@ -89,14 +89,17 @@ TSPLUGIN_DECLARE_PROCESSOR(ts::T2MIPlugin)
 
 ts::T2MIPlugin::T2MIPlugin(TSP* tsp_) :
     ProcessorPlugin(tsp_, "Extract T2-MI (DVB-T2 Modulator Interface) packets.", "[options]"),
-    TableHandlerInterface(),
+    T2MIHandlerInterface(),
     _pid(PID_NULL),
-    _cc(0),
-    _sync(false),
-    _t2mi(),
-    _psi_demux(this)
+    _plp(0),
+    _plp_valid(false),
+    _first_packet(true),
+    _ts(),
+    _ts_next(0),
+    _demux(this)
 {
     option("pid", 'p', PIDVAL);
+    option("plp",  0,  UINT8);
 
     setHelp("Options:\n"
             "\n"
@@ -107,6 +110,10 @@ ts::T2MIPlugin::T2MIPlugin(TSP* tsp_) :
             "  --pid value\n"
             "      Specify the PID carrying the T2-MI encapsulation. By default, use the\n"
             "      first component with a T2MI_descriptor in a service.\n"
+            "\n"
+            "  --plp value\n"
+            "      Specify the PLP (Physical Layer Pipe) to extract from the T2-MI\n"
+            "      encapsulation. By default, use the first PLP which is found.\n"
             "\n"
             "  --version\n"
             "      Display the version number.\n");
@@ -121,133 +128,136 @@ bool ts::T2MIPlugin::start()
 {
     // Get command line arguments
     getIntValue<PID>(_pid, "pid", PID_NULL);
+    getIntValue<uint8_t>(_plp, "plp");
+    _plp_valid = present("plp");
 
-    // Initialize the PSI demux.
-    _psi_demux.reset();
-    if (_pid == PID_NULL) {
-        // T2-MI PID not specified on command line. We must find it.
-        // To get the first PID with T2-MI, we need to analyze the PMT's.
-        // To get the PMT PID's, we need to analyze the PAT.
-        _psi_demux.addPID(PID_PAT);
-    }
+    // Initialize the buffer of extracter packets.
+    _first_packet = true;
+    _ts_next = 0;
+    _ts.clear();
 
-    // Reset T2-MI extraction.
-    _sync = false;
-    _cc = 0;
-    _t2mi.clear();
-
+    // Initialize the demux.
+    _demux.reset();
     return true;
 }
 
 
 //----------------------------------------------------------------------------
-// Invoked by the demux when a complete PSI table is available.
+// Process new T2-MI PID.
 //----------------------------------------------------------------------------
 
-void ts::T2MIPlugin::handleTable(SectionDemux& demux, const BinaryTable& table)
+void ts::T2MIPlugin::handleT2MINewPID(T2MIDemux& demux, PID pid, const T2MIDescriptor& desc)
 {
-    switch (table.tableId()) {
-
-        case TID_PAT: {
-            // Add all PMT PID's to PSI demux.
-            PAT pat(table);
-            if (pat.isValid() && table.sourcePID() == PID_PAT) {
-                for (PAT::ServiceMap::const_iterator it = pat.pmts.begin(); it != pat.pmts.end(); ++it) {
-                    _psi_demux.addPID(it->second);
-                }
-                // No longer need to analyze the PAT.
-                _psi_demux.removePID(PID_PAT);
-            }
-            break;
-        }
-
-        case TID_PMT: {
-            // Look for an T2MI_descriptor in a component.
-            PMT pmt(table);
-            if (pmt.isValid()) {
-                // Loop on all components of the service, until the T2-MI PID is found.
-                for (PMT::StreamMap::const_iterator it = pmt.streams.begin(); _pid == PID_NULL && it != pmt.streams.end(); ++it) {
-                    // Search a T2MI_descriptor in this component.
-                    // Loop on all extension_descriptors.
-                    const DescriptorList& dlist(it->second.descs);
-                    for (size_t index = dlist.search(DID_EXTENSION); _pid == PID_NULL && index < dlist.count(); index = dlist.search(DID_EXTENSION, index + 1)) {
-                        const DescriptorPtr& dp(dlist[index]);
-                        if (!dp.isNull() && dp->isValid() && dp->payloadSize() > 0 && dp->payload()[0] == EDID_T2MI) {
-                            // Found a component with a T2-MI descriptor, use this PID to extract T2-MI packets.
-                            _pid = it->first;
-                            tsp->verbose("found T2-MI encapsulation in PID %d (0x%04X)", int(_pid), int(_pid));
-                        }
-                    }
-                }
-                // No longer need to analyze this PMT.
-                _psi_demux.removePID(table.sourcePID());
-            }
-            break;
-        }
-
-        default: {
-            break;
-        }
+    // Found a new PID carrying T2-MI. Use it by default.
+    if (_pid == PID_NULL && pid != PID_NULL) {
+        tsp->verbose("using PID 0x%04X (%d) to extract T2-MI stream", int(pid), int(pid));
+        _pid = pid;
+        _demux.addPID(pid);
     }
 }
 
 
 //----------------------------------------------------------------------------
-// Process and remove complete T2-MI packets from the buffer.
+// Process a T2-MI packet.
 //----------------------------------------------------------------------------
 
-void ts::T2MIPlugin::processT2MI()
+void ts::T2MIPlugin::handleT2MIPacket(T2MIDemux& demux, const T2MIPacket& pkt)
 {
-    // Start index in buffer of T2-MI packet header.
-    size_t start = 0;
+    // Keep only baseband frames.
+    const uint8_t* data = pkt.basebandFrame();
+    size_t size = pkt.basebandFrameSize();
 
-    // Loop on all complete T2-MI packets.
-    while (start + T2MI_HEADER_SIZE < _t2mi.size()) {
-
-        const uint8_t packet_type = _t2mi[start];
-        const uint8_t packet_count = _t2mi[start + 1];
-        const uint8_t sframe_idx = (_t2mi[start + 2] >> 4) & 0x0F;
-        const uint16_t payload_bits = GetUInt16(&_t2mi[start + 4]);
-        const uint16_t payload_bytes = (payload_bits + 7) / 8;
-
-        if (start + T2MI_HEADER_SIZE + payload_bytes + SECTION_CRC32_SIZE > _t2mi.size()) {
-            // Current T2-MI packet not completely present in buffer, stop here.
-            break;
-        }
-
-        // Process T2-MAI packet payload.
-        const uint8_t* payload = &_t2mi[start] + T2MI_HEADER_SIZE;
-
-        // Get CRC from packet and recompute CRC from header + payload.
-        const uint32_t pktCRC = GetUInt32(payload + payload_bytes);
-        const uint32_t compCRC = CRC32(&_t2mi[start], T2MI_HEADER_SIZE + payload_bytes);
-
-        // Currently, simply display T2-MI packet characteristics.
-        tsp->info("T2-MI packet type = 0x%02X, count = %d, sframe idx = %d, size = %d bytes, pad = %d bits",
-                  int(packet_type), int(packet_count), int(sframe_idx), int(payload_bytes), int(8 * payload_bytes - payload_bits));
-
-        if (pktCRC != compCRC) {
-            tsp->error("incorrect T2-MI packet CRC: got 0x%08X, computed 0x%08X", pktCRC, compCRC);
-        }
-        else if (payload_bytes <= 5 * 16) {
-            // 5 lines or less to display => display complete packets.
-            tsp->info("\n" + Hexa(payload, payload_bytes, hexa::OFFSET | hexa::HEXA | hexa::ASCII| hexa::BPL, 2, 16));
-        }
-        else {
-            // Packet too long, display begin and end only.
-            const size_t end_part = (payload_bytes - 32) & ~0x000F;
-            tsp->info("\n" + 
-                      Hexa(payload, 32, hexa::OFFSET | hexa::HEXA | hexa::ASCII| hexa::BPL, 2, 16) +
-                      "  .................\n" +
-                      Hexa(payload + end_part, payload_bytes - end_part, hexa::OFFSET | hexa::HEXA | hexa::ASCII| hexa::BPL, 2, 16, end_part));
-        }
-
-        // Point to next T2-MI packet.
-        start += T2MI_HEADER_SIZE + payload_bytes + SECTION_CRC32_SIZE;
+    if (data == 0 || size < T2_BBHEADER_SIZE) {
+        // Not a base band frame packet.
+        return;
     }
 
-    // Remove processed T2-MI packet.
-    _t2mi.erase(0, start);
+    // Check PLP.
+    if (!_plp_valid) {
+        // The PLP was not yet specified, use this one by default.
+        _plp = pkt.plp();
+        _plp_valid = true;
+        tsp->verbose("extracting PLP 0x%02X (%d)", int(_plp), int(_plp));
+    }
+    else if (pkt.plp() != _plp) {
+        // Not the filtered PLP, ignore this packet.
+        return;
+    }
+
+    // Structure of T2-MI packet: see ETSI TS 102 773, section 5.
+    // Structure of a T2 baseband frame: see ETSI EN 302 765, section 5.1.7.
+
+    // Extract the TS/GS field of the MATYPE in the BBHEADER.
+    // Values: 00 = GFPS, 01 = GCS, 10 = GSE, 11 = TS
+    // We only support TS encapsulation here.
+    const uint8_t tsgs = (data[0] >> 6) & 0x03;
+    if (tsgs != 3) {
+        // Not TS mode, cannot extract TS packets.
+        return;
+    }
+
+    // Null packet deletion (NPD) from MATYPE.
+    // WARNING: usage of NPD is probably wrong here, need to be checked on streams with NPD=1.
+    size_t npd = (data[0] & 0x04) ? 1 : 0;
+
+    // Data Field Length in bytes.
+    size_t dfl = (GetUInt16(data + 4) + 7) / 8;
+
+    // Synchronization distance in bits.
+    size_t syncd = GetUInt16(data + 7);
+
+    // Now skip baseband header.
+    data += T2_BBHEADER_SIZE;
+    size -= T2_BBHEADER_SIZE;
+
+    // Adjust invalid DFL (should not happen).
+    if (dfl > size) {
+        dfl = size;
+    }
+
+
+
+
+    //@@@@
+    //@@@@ tsp->verbose("T2-MI bbframe payload size = %d bytes, NPD = %d, DFL = %d, SYNCD = %d",
+    //@@@@              int(size), int(npd), int(dfl), int(syncd));
+    //@@@@ tsp->verbose("M2-TI payload:\n" + Hexa(pkt.payload(), pkt.payloadSize(), hexa::OFFSET | hexa::HEXA | hexa::ASCII | hexa::BPL, 2, 16));
+
+
+
+    if (syncd == 0xFFFF) {
+        // No user packet in data field
+        _ts.append(data, dfl);
+    }
+    else {
+        // Synchronization distance in bytes, bounded by packet size.
+        syncd = std::min(syncd / 8, size);
+
+        // Process end of previous packet.
+        if (!_first_packet && syncd > 0) {
+            if (_ts.size() % PKT_SIZE == 0) {
+                _ts.append(SYNC_BYTE);
+            }
+            _ts.append(data, syncd - npd);
+        }
+        _first_packet = false;
+        data += syncd;
+        size -= syncd;
+
+        // Process subsequent complete packets.
+        while (size >= PKT_SIZE - 1) {
+            _ts.append(SYNC_BYTE);
+            _ts.append(data, PKT_SIZE - 1);
+            data += PKT_SIZE - 1;
+            size -= PKT_SIZE - 1;
+        }
+
+        // Process optional trailing truncated packet.
+        if (size > 0) {
+            _ts.append(SYNC_BYTE);
+            _ts.append(data, size);
+        }
+    }
 }
 
 
@@ -257,68 +267,30 @@ void ts::T2MIPlugin::processT2MI()
 
 ts::ProcessorPlugin::Status ts::T2MIPlugin::processPacket(TSPacket& pkt, bool& flush, bool& bitrate_changed)
 {
-    // As long as T2-MI PID is unknown, process PSI, searching for T2-MI.
-    if (_pid == PID_NULL) {
-        _psi_demux.feedPacket(pkt);
-        if (_pid == PID_NULL && _psi_demux.pidCount() == 0) {
-            // T2-MI PID still not found and no more service to search.
-            tsp->error("no T2-MI component found in any service, use option --pid to specify the PID carrying T2-MI");
-            return TSP_END;
-        }
+    // Feed the T2-MI demux.
+    _demux.feedPacket(pkt);
+
+    // If there is not extracted packet to output, drop current packet.
+    if (_ts_next + PKT_SIZE > _ts.size()) {
+        return TSP_DROP;
     }
 
-    // Process clear TS packets from the T2-MI PID.
-    if (_pid != PID_NULL && pkt.getPID() == _pid && pkt.isClear()) {
+    // There is at least one TS packet to output. Replace current packet with this one.
+    ::memcpy(pkt.b, &_ts[_ts_next], PKT_SIZE);
+    _ts_next += PKT_SIZE;
 
-        // Check if we loose synchronization.
-        if (_sync && (pkt.getDiscontinuityIndicator() || pkt.getCC() != ((_cc + 1) & CC_MASK))) {
-            tsp->verbose("loosing synchronization on T2-MI PID");
-            _t2mi.clear();
-            _sync = false;
-        }
-
-        // Keep track of continuity counters.
-        _cc = pkt.getCC();
-
-        // Locate packet payload.
-        const uint8_t* data = pkt.getPayload();
-        size_t size = pkt.getPayloadSize();
-
-        // Process packet with Payload Unit Start Indicator.
-        if (pkt.getPUSI()) {
-
-            // The first byte in the TS payload is a pointer field to the start of a new T2-MI packet.
-            // Note: this is exactly the same mechanism as section packetization.
-            const size_t pf = size == 0 ? 0 : data[0];
-            if (1 + pf >= size) {
-                // There is no pointer field or it points outside the TS payload.
-                tsp->verbose("incorrect pointer field, loosing synchronization on T2-MI PID");
-                _t2mi.clear();
-                _sync = false;
-                return TSP_DROP;
-            }
-
-            // Remove pointer field from packet payload.
-            data++;
-            size--;
-
-            // If we were previously desynchronized, we are back on track.
-            if (!_sync) {
-                tsp->verbose("retrieving synchronization on T2-MI PID");
-                _sync = true;
-                // Skip end of previous packet, before retrieving synchronization.
-                data += pf;
-                size -= pf;
-            }
-        }
-
-        // Accumulate packet data and process T2-MI packets.
-        if (_sync) {
-            _t2mi.append(data, size);
-            processT2MI();
-        }
+    // Compress or cleanup the TS buffer.
+    if (_ts_next >= _ts.size()) {
+        // No more packet to output, cleanup.
+        _ts.clear();
+        _ts_next = 0;
+    }
+    else if (_ts_next >= 100 * PKT_SIZE) {
+        // TS buffer has many unused packets, compress it.
+        _ts.erase(0, _ts_next);
+        _ts_next = 0;
     }
 
-    // Currently, we drop all packets.
-    return TSP_DROP;
+    // Pass the extracted packet.
+    return TSP_OK;
 }

@@ -13,6 +13,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsAbstractAVCStructure.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAbstractCASDate.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAbstractDeliverySystemDescriptor.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsAbstractDemux.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAbstractDescrambler.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAbstractDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAbstractDescriptorsTable.h" />
@@ -57,7 +58,10 @@
     <ClInclude Include="..\..\src\libtsduck\tsCBCTemplate.h" />
     <ClInclude Include="..\..\src\libtsduck\tsCerrReport.h" />
     <ClInclude Include="..\..\src\libtsduck\tsStaticReferencesDVB.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsT2MIDemux.h" />
     <ClInclude Include="..\..\src\libtsduck\tsT2MIDescriptor.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsT2MIHandlerInterface.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsT2MIPacket.h" />
     <ClInclude Include="..\..\src\libtsduck\tsUChar.h" />
     <ClInclude Include="..\..\src\libtsduck\tsCipherChaining.h" />
     <ClInclude Include="..\..\src\libtsduck\tsCOM.h" />
@@ -305,6 +309,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsAbstractAVCStructure.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAbstractCASDate.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAbstractDeliverySystemDescriptor.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsAbstractDemux.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAbstractDescrambler.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAbstractDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAbstractDescriptorsTable.cpp" />
@@ -340,7 +345,9 @@
     <ClCompile Include="..\..\src\libtsduck\tsCAT.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsCerrReport.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsStaticReferencesDVB.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsT2MIDemux.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsT2MIDescriptor.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsT2MIPacket.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsUChar.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsCipherChaining.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsCOM.cpp" />
