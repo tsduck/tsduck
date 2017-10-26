@@ -1,5 +1,3 @@
-CONFIG += libtsduck
-include(../tsduck.pri)
-TEMPLATE = app
+CONFIG += tstool
 TARGET = tslsdvb
-SOURCES += ../../../src/tstools/tslsdvb.cpp
+include(../tsduck.pri)

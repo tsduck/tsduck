@@ -1,5 +1,3 @@
-CONFIG += libtsduck plugin
-include(../tsduck.pri)
-TEMPLATE = lib
+CONFIG += tsplugin
 TARGET = tsplugin_remap
-SOURCES += ../../../src/tsplugins/tsplugin_remap.cpp
+include(../tsduck.pri)

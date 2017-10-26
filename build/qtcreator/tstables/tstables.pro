@@ -1,5 +1,3 @@
-CONFIG += libtsduck
-include(../tsduck.pri)
-TEMPLATE = app
+CONFIG += tstool
 TARGET = tstables
-SOURCES += ../../../src/tstools/tstables.cpp
+include(../tsduck.pri)

@@ -86,6 +86,20 @@ win32|win64 {
     QMAKE_CXXFLAGS += -I$$SRCROOT/libtsduck/windows
     INCLUDEPATH += $$SRCROOT/libtsduck/windows
 }
+tstool {
+    # TSDuck tools shall use "CONFIG += tstool"
+    CONFIG += libtsduck
+    TEMPLATE = app
+    SOURCES += ../../../src/tstools/$${TARGET}.cpp
+}
+tsplugin {
+    # TSP plugins shall use "CONFIG += tsplugin"
+    CONFIG += libtsduck plugin
+    TEMPLATE = lib
+    SOURCES += ../../../src/tsplugins/$${TARGET}.cpp
+    QMAKE_POST_LINK += mkdir -p ../tsp $$escape_expand(\\n\\t)
+    QMAKE_POST_LINK += cp $${TARGET}.so ../tsp $$escape_expand(\\n\\t)
+}
 libtsduck {
     # Applications using libtsduck shall use "CONFIG += libtsduck".
     linux:QMAKE_LFLAGS += -Wl,--rpath=\'\$\$ORIGIN/../libtsduck\'

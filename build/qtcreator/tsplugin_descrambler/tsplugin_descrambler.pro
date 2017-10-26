@@ -1,5 +1,3 @@
-CONFIG += libtsduck plugin
-include(../tsduck.pri)
-TEMPLATE = lib
+CONFIG += tsplugin
 TARGET = tsplugin_descrambler
-SOURCES += ../../../src/tsplugins/tsplugin_descrambler.cpp
+include(../tsduck.pri)

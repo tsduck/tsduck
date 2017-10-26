@@ -1,5 +1,3 @@
-CONFIG += libtsduck plugin
-include(../tsduck.pri)
-TEMPLATE = lib
+CONFIG += tsplugin
 TARGET = tsplugin_cat
-SOURCES += ../../../src/tsplugins/tsplugin_cat.cpp
+include(../tsduck.pri)

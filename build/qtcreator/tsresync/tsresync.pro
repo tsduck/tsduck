@@ -1,5 +1,3 @@
-CONFIG += libtsduck
-include(../tsduck.pri)
-TEMPLATE = app
+CONFIG += tstool
 TARGET = tsresync
-SOURCES += ../../../src/tstools/tsresync.cpp
+include(../tsduck.pri)

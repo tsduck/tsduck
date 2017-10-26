@@ -1,5 +1,3 @@
-CONFIG += libtsduck plugin
-include(../tsduck.pri)
-TEMPLATE = lib
+CONFIG += tsplugin
 TARGET = tsplugin_nitscan
-SOURCES += ../../../src/tsplugins/tsplugin_nitscan.cpp
+include(../tsduck.pri)

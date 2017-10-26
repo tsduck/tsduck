@@ -1,5 +1,3 @@
-CONFIG += libtsduck plugin
-include(../tsduck.pri)
-TEMPLATE = lib
+CONFIG += tsplugin
 TARGET = tsplugin_stuffanalyze
-SOURCES += ../../../src/tsplugins/tsplugin_stuffanalyze.cpp
+include(../tsduck.pri)

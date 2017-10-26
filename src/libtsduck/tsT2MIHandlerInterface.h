@@ -67,6 +67,14 @@ namespace ts {
         virtual void handleT2MIPacket(T2MIDemux& demux, const T2MIPacket& pkt) = 0;
 
         //!
+        //! This hook is invoked when a new TS packet is extracted.
+        //! @param [in,out] demux A reference to the T2-MI demux.
+        //! @param [in] t2mi The T2-MI packet from which @a ts was extracted.
+        //! @param [in] ts The extracted TS packet.
+        //!
+        virtual void handleTSPacket(T2MIDemux& demux, const T2MIPacket& t2mi, const TSPacket& ts) = 0;
+
+        //!
         //! Virtual destructor.
         //!
         virtual ~T2MIHandlerInterface() {}

@@ -1,5 +1,3 @@
-CONFIG += libtsduck plugin
-include(../tsduck.pri)
-TEMPLATE = lib
+CONFIG += tsplugin
 TARGET = tsplugin_drop
-SOURCES += ../../../src/tsplugins/tsplugin_drop.cpp
+include(../tsduck.pri)

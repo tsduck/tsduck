@@ -1,5 +1,3 @@
-CONFIG += libtsduck
-include(../tsduck.pri)
-TEMPLATE = app
+CONFIG += tstool
 TARGET = tsdate
-SOURCES += ../../../src/tstools/tsdate.cpp
+include(../tsduck.pri)

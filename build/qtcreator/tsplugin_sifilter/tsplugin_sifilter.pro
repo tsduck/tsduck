@@ -1,5 +1,3 @@
-CONFIG += libtsduck plugin
-include(../tsduck.pri)
-TEMPLATE = lib
+CONFIG += tsplugin
 TARGET = tsplugin_sifilter
-SOURCES += ../../../src/tsplugins/tsplugin_sifilter.cpp
+include(../tsduck.pri)

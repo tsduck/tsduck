@@ -1,5 +1,3 @@
-CONFIG += libtsduck plugin
-include(../tsduck.pri)
-TEMPLATE = lib
+CONFIG += tsplugin
 TARGET = tsplugin_pcrextract
-SOURCES += ../../../src/tsplugins/tsplugin_pcrextract.cpp
+include(../tsduck.pri)

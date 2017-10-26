@@ -1,5 +1,3 @@
-CONFIG += libtsduck
-include(../tsduck.pri)
-TEMPLATE = app
+CONFIG += tstool
 TARGET = tssmartcard
-SOURCES += ../../../src/tstools/tssmartcard.cpp
+include(../tsduck.pri)
