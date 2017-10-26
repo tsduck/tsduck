@@ -1128,5 +1128,12 @@ namespace ts {
         T2MI_FEF_IQ_DATA           = 0x31, //!< FEF part: I/Q data.
         T2MI_FEF_COMPOSITE         = 0x32, //!< FEF part: composite.
         T2MI_FEF_SUBPART           = 0x33, //!< FEF sub-part.
+        T2MI_INVALID_TYPE          = 0xFF  //!< Invalid T2MI packet (non standard value).
     };
+
+    //!
+    //! Size in bytes of a DVB-T2 Base Band Header.
+    //! See ETSI EN 302 765, section 5.1.7.
+    //!
+    const size_t T2_BBHEADER_SIZE = 10;
 }

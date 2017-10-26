@@ -25,6 +25,7 @@ HEADERS += \
     ../../../src/libtsduck/tsAbstractAVCStructure.h \
     ../../../src/libtsduck/tsAbstractAudioVideoAttributes.h \
     ../../../src/libtsduck/tsAbstractCASDate.h \
+    ../../../src/libtsduck/tsAbstractDemux.h \
     ../../../src/libtsduck/tsAbstractDeliverySystemDescriptor.h \
     ../../../src/libtsduck/tsAbstractDescrambler.h \
     ../../../src/libtsduck/tsAbstractDescriptor.h \
@@ -222,6 +223,10 @@ HEADERS += \
     ../../../src/libtsduck/tsSysUtilsTemplate.h \
     ../../../src/libtsduck/tsSystemMonitor.h \
     ../../../src/libtsduck/tsSystemRandomGenerator.h \
+    ../../../src/libtsduck/tsT2MIDemux.h \
+    ../../../src/libtsduck/tsT2MIDescriptor.h \
+    ../../../src/libtsduck/tsT2MIHandlerInterface.h \
+    ../../../src/libtsduck/tsT2MIPacket.h \
     ../../../src/libtsduck/tsTCPConnection.h \
     ../../../src/libtsduck/tsTCPServer.h \
     ../../../src/libtsduck/tsTCPSocket.h \
@@ -288,8 +293,7 @@ HEADERS += \
     ../../../src/libtsduck/tstlvProtocol.h \
     ../../../src/libtsduck/tstlvSerializer.h \
     ../../../src/libtsduck/tstlvStreamMessage.h \
-    ../../../src/libtsduck/tinyxml/tinyxml2.h \
-    ../../../src/libtsduck/tsT2MIDescriptor.h
+    ../../../src/libtsduck/tinyxml/tinyxml2.h
 
 SOURCES += \
     ../../../src/libtsduck/tsAACDescriptor.cpp \
@@ -305,6 +309,7 @@ SOURCES += \
     ../../../src/libtsduck/tsAbstractAVCAccessUnit.cpp \
     ../../../src/libtsduck/tsAbstractAVCStructure.cpp \
     ../../../src/libtsduck/tsAbstractCASDate.cpp \
+    ../../../src/libtsduck/tsAbstractDemux.cpp \
     ../../../src/libtsduck/tsAbstractDeliverySystemDescriptor.cpp \
     ../../../src/libtsduck/tsAbstractDescrambler.cpp \
     ../../../src/libtsduck/tsAbstractDescriptor.cpp \
@@ -447,6 +452,9 @@ SOURCES += \
     ../../../src/libtsduck/tsSysUtils.cpp \
     ../../../src/libtsduck/tsSystemMonitor.cpp \
     ../../../src/libtsduck/tsSystemRandomGenerator.cpp \
+    ../../../src/libtsduck/tsT2MIDemux.cpp \
+    ../../../src/libtsduck/tsT2MIDescriptor.cpp \
+    ../../../src/libtsduck/tsT2MIPacket.h \
     ../../../src/libtsduck/tsTCPConnection.cpp \
     ../../../src/libtsduck/tsTCPServer.cpp \
     ../../../src/libtsduck/tsTCPSocket.cpp \
@@ -497,8 +505,7 @@ SOURCES += \
     ../../../src/libtsduck/tstlvMessage.cpp \
     ../../../src/libtsduck/tstlvMessageFactory.cpp \
     ../../../src/libtsduck/tstlvSerializer.cpp \
-    ../../../src/libtsduck/tinyxml/tinyxml2.cpp \
-    ../../../src/libtsduck/tsT2MIDescriptor.cpp
+    ../../../src/libtsduck/tinyxml/tinyxml2.cpp
     
 linux {
     HEADERS += \
