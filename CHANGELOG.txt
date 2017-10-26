@@ -6,7 +6,12 @@ Version
 
 - TSDuck now fully handles DVB character sets in signalization. All textual
   display (tsanalyze, tstables, etc.) are produced in UTF-8 format, with
-  characters properly translated from DVB character encoding.
+  characters properly translated from DVB character encoding. The table
+  compiler, tstabcomp, properly translates from UTF-8 XML files to DVB
+  character encoding and vice versa.
+
+- Added t2mi plugin to extract encapsulated TS packets from T2-MI streams
+  (DVB-T2 Modulator Interface).
 
 - Added options --default-charset and --europe to tspsi, tstables, tstabdump,
   tstabcomp, plugin psi and plugin tables.

@@ -1,5 +1,3 @@
-CONFIG += libtsduck plugin
-include(../tsduck.pri)
-TEMPLATE = lib
+CONFIG += tsplugin
 TARGET = tsplugin_history
-SOURCES += ../../../src/tsplugins/tsplugin_history.cpp
+include(../tsduck.pri)

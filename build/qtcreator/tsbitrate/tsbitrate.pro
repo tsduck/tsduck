@@ -1,5 +1,3 @@
-CONFIG += libtsduck
-include(../tsduck.pri)
-TEMPLATE = app
+CONFIG += tstool
 TARGET = tsbitrate
-SOURCES += ../../../src/tstools/tsbitrate.cpp
+include(../tsduck.pri)

@@ -1,5 +1,3 @@
-CONFIG += libtsduck plugin
-include(../tsduck.pri)
-TEMPLATE = lib
+CONFIG += tsplugin
 TARGET = tsplugin_dektec
-SOURCES += ../../../src/tsplugins/tsplugin_dektec.cpp
+include(../tsduck.pri)

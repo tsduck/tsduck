@@ -1,5 +1,3 @@
-CONFIG += libtsduck
-include(../tsduck.pri)
-TEMPLATE = app
+CONFIG += tstool
 TARGET = tsdektec
-SOURCES += ../../../src/tstools/tsdektec.cpp
+include(../tsduck.pri)

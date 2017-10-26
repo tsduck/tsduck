@@ -1,5 +1,3 @@
-CONFIG += libtsduck
-include(../tsduck.pri)
-TEMPLATE = app
+CONFIG += tstool
 TARGET = tstabcomp
-SOURCES += ../../../src/tstools/tstabcomp.cpp
+include(../tsduck.pri)

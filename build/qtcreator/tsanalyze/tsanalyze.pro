@@ -1,5 +1,3 @@
-CONFIG += libtsduck
-include(../tsduck.pri)
-TEMPLATE = app
+CONFIG += tstool
 TARGET = tsanalyze
-SOURCES += ../../../src/tstools/tsanalyze.cpp
+include(../tsduck.pri)

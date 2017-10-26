@@ -1,5 +1,3 @@
-CONFIG += libtsduck plugin
-include(../tsduck.pri)
-TEMPLATE = lib
+CONFIG += tsplugin
 TARGET = tsplugin_boostpid
-SOURCES += ../../../src/tsplugins/tsplugin_boostpid.cpp
+include(../tsduck.pri)

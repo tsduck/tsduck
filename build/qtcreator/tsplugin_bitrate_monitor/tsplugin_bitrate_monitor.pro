@@ -1,5 +1,3 @@
-CONFIG += libtsduck plugin
-include(../tsduck.pri)
-TEMPLATE = lib
+CONFIG += tsplugin
 TARGET = tsplugin_bitrate_monitor
-SOURCES += ../../../src/tsplugins/tsplugin_bitrate_monitor.cpp
+include(../tsduck.pri)

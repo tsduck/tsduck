@@ -1,5 +1,3 @@
-CONFIG += libtsduck
-include(../tsduck.pri)
-TEMPLATE = app
+CONFIG += tstool
 TARGET = tspacketize
-SOURCES += ../../../src/tstools/tspacketize.cpp
+include(../tsduck.pri)

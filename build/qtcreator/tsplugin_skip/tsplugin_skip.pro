@@ -1,5 +1,3 @@
-CONFIG += libtsduck plugin
-include(../tsduck.pri)
-TEMPLATE = lib
+CONFIG += tsplugin
 TARGET = tsplugin_skip
-SOURCES += ../../../src/tsplugins/tsplugin_skip.cpp
+include(../tsduck.pri)

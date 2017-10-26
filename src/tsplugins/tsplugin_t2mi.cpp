@@ -53,24 +53,27 @@ namespace ts {
     public:
         // Implementation of plugin API
         T2MIPlugin(TSP*);
-        virtual bool start();
-        virtual bool stop() {return true;}
-        virtual BitRate getBitrate() {return 0;}
-        virtual Status processPacket(TSPacket&, bool&, bool&);
+        virtual bool start() override;
+        virtual bool stop() override;
+        virtual BitRate getBitrate() override {return 0;}
+        virtual Status processPacket(TSPacket&, bool&, bool&) override;
 
     private:
         // Plugin private fields.
-        PID       _pid;           // PID carrying the T2-MI encapsulation.
-        uint8_t   _plp;           // The PLP to extract in _pid.
-        bool      _plp_valid;     // False if PLP not yet known.
-        bool      _first_packet;  // First T2-MI packet not yet processed 
-        ByteBlock _ts;            // Buffer to accumulate extracted TS packets.
-        size_t    _ts_next;       // Next packet to output.
-        T2MIDemux _demux;         // Demux for PSI parsing.
+        PID           _pid;           // PID carrying the T2-MI encapsulation.
+        uint8_t       _plp;           // The PLP to extract in _pid.
+        bool          _plp_valid;     // False if PLP not yet known.
+        bool          _first_packet;  // First T2-MI packet not yet processed
+        ByteBlock     _ts;            // Buffer to accumulate extracted TS packets.
+        size_t        _ts_next;       // Next packet to output.
+        PacketCounter _t2mi_count;    // Number of input T2-MI packets.
+        PacketCounter _ts_count;      // Number of extracted TS packets.
+        T2MIDemux     _demux;         // Demux for PSI parsing.
 
         // Inherited methods.
         virtual void handleT2MINewPID(T2MIDemux& demux, PID pid, const T2MIDescriptor& desc) override;
-        virtual void ts::T2MIPlugin::handleT2MIPacket(T2MIDemux& demux, const T2MIPacket& pkt) override;
+        virtual void handleT2MIPacket(T2MIDemux& demux, const T2MIPacket& pkt) override;
+        virtual void handleTSPacket(T2MIDemux& demux, const T2MIPacket& t2mi, const TSPacket& ts) override;
 
         // Inaccessible operations
         T2MIPlugin() = delete;
@@ -96,6 +99,8 @@ ts::T2MIPlugin::T2MIPlugin(TSP* tsp_) :
     _first_packet(true),
     _ts(),
     _ts_next(0),
+    _t2mi_count(0),
+    _ts_count(0),
     _demux(this)
 {
     option("pid", 'p', PIDVAL);
@@ -131,13 +136,29 @@ bool ts::T2MIPlugin::start()
     getIntValue<uint8_t>(_plp, "plp");
     _plp_valid = present("plp");
 
-    // Initialize the buffer of extracter packets.
+    // Initialize the buffer of extracted packets.
     _first_packet = true;
     _ts_next = 0;
     _ts.clear();
+    _t2mi_count = 0;
+    _ts_count = 0;
 
     // Initialize the demux.
     _demux.reset();
+    if (_pid != PID_NULL) {
+        _demux.addPID(_pid);
+    }
+    return true;
+}
+
+
+//----------------------------------------------------------------------------
+// Stop method
+//----------------------------------------------------------------------------
+
+bool ts::T2MIPlugin::stop()
+{
+    tsp->verbose("extracted " + Decimal(_ts_count) + " TS packets from " + Decimal(_t2mi_count) + " T2-MI packets");
     return true;
 }
 
@@ -152,7 +173,7 @@ void ts::T2MIPlugin::handleT2MINewPID(T2MIDemux& demux, PID pid, const T2MIDescr
     if (_pid == PID_NULL && pid != PID_NULL) {
         tsp->verbose("using PID 0x%04X (%d) to extract T2-MI stream", int(pid), int(pid));
         _pid = pid;
-        _demux.addPID(pid);
+        _demux.addPID(_pid);
     }
 }
 
@@ -181,11 +202,12 @@ void ts::T2MIPlugin::handleT2MIPacket(T2MIDemux& demux, const T2MIPacket& pkt)
     }
     else if (pkt.plp() != _plp) {
         // Not the filtered PLP, ignore this packet.
+        tsp->verbose("@@@ ignored PLP %d", int(pkt.plp()));
         return;
     }
 
     // Structure of T2-MI packet: see ETSI TS 102 773, section 5.
-    // Structure of a T2 baseband frame: see ETSI EN 302 765, section 5.1.7.
+    // Structure of a T2 baseband frame: see ETSI EN 302 755, section 5.1.7.
 
     // Extract the TS/GS field of the MATYPE in the BBHEADER.
     // Values: 00 = GFPS, 01 = GCS, 10 = GSE, 11 = TS
@@ -193,12 +215,17 @@ void ts::T2MIPlugin::handleT2MIPacket(T2MIDemux& demux, const T2MIPacket& pkt)
     const uint8_t tsgs = (data[0] >> 6) & 0x03;
     if (tsgs != 3) {
         // Not TS mode, cannot extract TS packets.
+        tsp->verbose("@@@ ignored TS/GS = %d", int(tsgs));
         return;
     }
+
+    // Count input T2-MI packets.
+    _t2mi_count++;
 
     // Null packet deletion (NPD) from MATYPE.
     // WARNING: usage of NPD is probably wrong here, need to be checked on streams with NPD=1.
     size_t npd = (data[0] & 0x04) ? 1 : 0;
+    if (npd) tsp->verbose("@@@ NPD = %d", int(npd));
 
     // Data Field Length in bytes.
     size_t dfl = (GetUInt16(data + 4) + 7) / 8;
@@ -217,7 +244,6 @@ void ts::T2MIPlugin::handleT2MIPacket(T2MIDemux& demux, const T2MIPacket& pkt)
 
 
 
-
     //@@@@
     //@@@@ tsp->verbose("T2-MI bbframe payload size = %d bytes, NPD = %d, DFL = %d, SYNCD = %d",
     //@@@@              int(size), int(npd), int(dfl), int(syncd));
@@ -227,14 +253,16 @@ void ts::T2MIPlugin::handleT2MIPacket(T2MIDemux& demux, const T2MIPacket& pkt)
 
     if (syncd == 0xFFFF) {
         // No user packet in data field
+        tsp->verbose("@@@ SYNCD");
         _ts.append(data, dfl);
     }
     else {
-        // Synchronization distance in bytes, bounded by packet size.
-        syncd = std::min(syncd / 8, size);
+        // Synchronization distance in bytes, bounded by data field size.
+        syncd = std::min(syncd / 8, dfl);
 
         // Process end of previous packet.
         if (!_first_packet && syncd > 0) {
+            tsp->verbose("@@@ previous: %d, syncd: %d, npd: %d, sum: %d", int(_ts.size() % PKT_SIZE), int(syncd), int(npd), int(_ts.size() % PKT_SIZE + syncd - npd));
             if (_ts.size() % PKT_SIZE == 0) {
                 _ts.append(SYNC_BYTE);
             }
@@ -242,22 +270,32 @@ void ts::T2MIPlugin::handleT2MIPacket(T2MIDemux& demux, const T2MIPacket& pkt)
         }
         _first_packet = false;
         data += syncd;
-        size -= syncd;
+        dfl -= syncd;
 
         // Process subsequent complete packets.
-        while (size >= PKT_SIZE - 1) {
+        while (dfl >= PKT_SIZE - 1) {
             _ts.append(SYNC_BYTE);
             _ts.append(data, PKT_SIZE - 1);
             data += PKT_SIZE - 1;
-            size -= PKT_SIZE - 1;
+            dfl -= PKT_SIZE - 1;
         }
 
         // Process optional trailing truncated packet.
-        if (size > 0) {
+        if (dfl > 0) {
             _ts.append(SYNC_BYTE);
-            _ts.append(data, size);
+            _ts.append(data, dfl);
         }
     }
+}
+
+
+//----------------------------------------------------------------------------
+// Process an extracted TS packet from the T2-MI stream.
+//----------------------------------------------------------------------------
+
+void ts::T2MIPlugin::handleTSPacket(T2MIDemux& demux, const T2MIPacket& t2mi, const TSPacket& ts)
+{
+    //@@@@
 }
 
 
@@ -292,5 +330,6 @@ ts::ProcessorPlugin::Status ts::T2MIPlugin::processPacket(TSPacket& pkt, bool& f
     }
 
     // Pass the extracted packet.
+    _ts_count++;
     return TSP_OK;
 }

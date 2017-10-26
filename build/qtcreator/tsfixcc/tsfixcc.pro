@@ -1,5 +1,3 @@
-CONFIG += libtsduck
-include(../tsduck.pri)
-TEMPLATE = app
+CONFIG += tstool
 TARGET = tsfixcc
-SOURCES += ../../../src/tstools/tsfixcc.cpp
+include(../tsduck.pri)

@@ -72,7 +72,7 @@ namespace ts {
         //!
         virtual ~T2MIDemux();
 
-        // Inherited methods
+        // Inherited methods from AbstractDemux.
         virtual void feedPacket(const TSPacket& pkt) override;
 
         //!
@@ -85,7 +85,7 @@ namespace ts {
         }
 
     protected:
-        // Inherited methods
+        // Inherited methods from AbstractDemux.
         virtual void immediateReset() override;
         virtual void immediateResetPID(PID pid) override;
 
@@ -99,7 +99,7 @@ namespace ts {
             ByteBlock t2mi;         // Buffer containing the T2-MI data.
         };
 
-        // Inherited methods
+        // Inherited methods from TableHandlerInterface.
         virtual void handleTable(SectionDemux&, const BinaryTable&) override;
 
         // Process and remove complete T2-MI packets from the buffer.

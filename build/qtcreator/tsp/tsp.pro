@@ -1,11 +1,8 @@
-CONFIG += libtsduck
-include(../tsduck.pri)
-TEMPLATE = app
+CONFIG += tstool
 TARGET = tsp
-QMAKE_POST_LINK += cp ../tsplugin_*/tsplugin_*.so . $$escape_expand(\\n\\t)
+include(../tsduck.pri)
 
 SOURCES += \
-    ../../../src/tstools/tsp.cpp \
     ../../../src/tstools/tspInputExecutor.cpp \
     ../../../src/tstools/tspJointTermination.cpp \
     ../../../src/tstools/tspListProcessors.cpp \

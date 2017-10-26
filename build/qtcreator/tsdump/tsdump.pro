@@ -1,5 +1,3 @@
-CONFIG += libtsduck
-include(../tsduck.pri)
-TEMPLATE = app
+CONFIG += tstool
 TARGET = tsdump
-SOURCES += ../../../src/tstools/tsdump.cpp
+include(../tsduck.pri)
