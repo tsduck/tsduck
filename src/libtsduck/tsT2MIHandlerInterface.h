@@ -41,6 +41,7 @@ namespace ts {
     class T2MIDemux;
     class T2MIDescriptor;
     class T2MIPacket;
+    class PMT;
 
     //!
     //! T2-MI demux handler interface.
@@ -54,10 +55,11 @@ namespace ts {
         //!
         //! This hook is invoked when a new PID carrying T2-MI is available.
         //! @param [in,out] demux A reference to the T2-MI demux.
+        //! @param [in] pmt The PMT of the service describing this PID.
         //! @param [in] pid The PID carrying T2-MI encapsulation.
         //! @param [in] desc The T2MI_descriptor for this PID.
         //!
-        virtual void handleT2MINewPID(T2MIDemux& demux, PID pid, const T2MIDescriptor& desc) = 0;
+        virtual void handleT2MINewPID(T2MIDemux& demux, const PMT& pmt, PID pid, const T2MIDescriptor& desc) = 0;
 
         //!
         //! This hook is invoked when a new T2-MI packet is available.

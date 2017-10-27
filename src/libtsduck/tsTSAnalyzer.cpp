@@ -32,6 +32,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsTSAnalyzer.h"
+#include "tsT2MIPacket.h"
 #include "tsNames.h"
 #include "tsStringUtils.h"
 #include "tsFormat.h"
@@ -90,7 +91,8 @@ ts::TSAnalyzer::TSAnalyzer(BitRate bitrate_hint) :
     _min_error_before_suspect(1),
     _max_consecutive_suspects(1),
     _demux(this, this),
-    _pes_demux(this)
+    _pes_demux(this),
+    _t2mi_demux(this)
 {
     // Specify the PID filters to collect PSI tables.
     _demux.addPID(PID_PAT);
@@ -205,6 +207,7 @@ ts::TSAnalyzer::PIDContext::PIDContext(PID pid_, const UString& description_) :
     ts_sc_cnt(0),
     inv_ts_sc_cnt(0),
     inv_pes_start(0),
+    t2mi_cnt(0),
     pcr_cnt(0),
     ts_pcr_bitrate(0),
     bitrate(0),
@@ -213,6 +216,7 @@ ts::TSAnalyzer::PIDContext::PIDContext(PID pid_, const UString& description_) :
     cas_operators(),
     sections(),
     ssu_oui(),
+    t2mi_plp_ts(),
     cur_continuity(0),
     cur_ts_sc(0),
     cur_ts_sc_pkt(0),
@@ -371,7 +375,8 @@ ts::TSAnalyzer::ServiceContext::ServiceContext(uint16_t serv_id) :
     scrambled_pid_cnt(0),
     ts_pkt_cnt(0),
     bitrate(0),
-    carry_ssu(false)
+    carry_ssu(false),
+    carry_t2mi(false)
 {
 }
 
@@ -437,16 +442,13 @@ ts::TSAnalyzer::ETIDContextPtr ts::TSAnalyzer::getETID(const Section& section)
 
 ts::TSAnalyzer::PIDContextPtr ts::TSAnalyzer::getPID(PID pid, const UString& description)
 {
-    PIDContextMap::const_iterator it(_pids.find(pid));
-
-    if (it != _pids.end()) {
-        // PID context found
-        return it->second;
+    const PIDContextPtr p(_pids[pid]);
+    if (p.isNull()) {
+        // The PID was not yet used, map entry just created.
+        return _pids[pid] = new PIDContext(pid, description);
     }
     else {
-        PIDContextPtr result(new PIDContext(pid, description));
-        _pids [pid] = result;
-        return result;
+        return p;
     }
 }
 
@@ -457,16 +459,13 @@ ts::TSAnalyzer::PIDContextPtr ts::TSAnalyzer::getPID(PID pid, const UString& des
 
 ts::TSAnalyzer::ServiceContextPtr ts::TSAnalyzer::getService(uint16_t service_id)
 {
-    ServiceContextMap::const_iterator it(_services.find(service_id));
-
-    if (it != _services.end()) {
-        // Service context found
-        return it->second;
+    ServiceContextPtr p(_services[service_id]);
+    if (p.isNull()) {
+        // The service was not yet used, map entry just created.
+        return _services[service_id] = new ServiceContext(service_id);
     }
     else {
-        ServiceContextPtr result(new ServiceContext(service_id));
-        _services [service_id] = result;
-        return result;
+        return p;
     }
 }
 
@@ -703,11 +702,20 @@ void ts::TSAnalyzer::analyzeSDT(const SDT& sdt)
 {
     // Register characteristics of all services
     for (SDT::ServiceMap::const_iterator it = sdt.services.begin(); it != sdt.services.end(); ++it) {
+
         ServiceContextPtr svp(getService(it->first)); // it->first = map key = service id
         svp->orig_netw_id = sdt.onetw_id;
         svp->service_type = it->second.serviceType();
-        svp->provider = it->second.providerName();
-        svp->name = it->second.serviceName();
+
+        // Replace names only if they are not empty.
+        const UString provider(it->second.providerName());
+        const UString name(it->second.serviceName());
+        if (!provider.empty()) {
+            svp->provider = provider;
+        }
+        if (!name.empty()) {
+            svp->name = name;
+        }
     }
 }
 
@@ -1128,6 +1136,62 @@ void ts::TSAnalyzer::handleNewAVCAttributes(PESDemux&, const PESPacket& pkt, con
 
 
 //----------------------------------------------------------------------------
+// This hook is invoked when a new PID carrying T2-MI is available.
+// (Implementation of T2MIHandlerInterface).
+//----------------------------------------------------------------------------
+
+void ts::TSAnalyzer::handleT2MINewPID(T2MIDemux& demux, const PMT& pmt, PID pid, const T2MIDescriptor& desc)
+{
+    // Identify this service as T2-MI, if not yet identified.
+    ServiceContextPtr svp(getService(pmt.service_id));
+    svp->carry_t2mi = true;
+    if (svp->name.empty()) {
+        svp->name = u"(T2-MI)";
+    }
+
+    // Identify this PID as T2-MI, if not yet identified.
+    PIDContextPtr pc(getPID(pid, u"T2-MI"));
+
+    // And demux all T2-MI packets.
+    _t2mi_demux.addPID(pid);
+}
+
+
+//----------------------------------------------------------------------------
+// This hook is invoked when a new T2-MI packet is available.
+// (Implementation of T2MIHandlerInterface).
+//----------------------------------------------------------------------------
+
+void ts::TSAnalyzer::handleT2MIPacket(T2MIDemux& demux, const T2MIPacket& pkt)
+{
+    PIDContextPtr pc(getPID(pkt.getSourcePID(), u"T2-MI"));
+
+    // Count T2-MI packets.
+    pc->t2mi_cnt++;
+
+    // Make sure the PLP is referenced, even if no TS packet is demux'ed.
+    pc->t2mi_plp_ts[pkt.plp()];
+
+    // Add the PLP as attributes of this PID.
+    AppendUnique(pc->attributes, UString::FromUTF8(Format("T2-MI PLP 0x%02X (%d)", int(pkt.plp()), int(pkt.plp()))));
+}
+
+
+//----------------------------------------------------------------------------
+// This hook is invoked when a new TS packet is extracted from T2-MI.
+// (Implementation of T2MIHandlerInterface).
+//----------------------------------------------------------------------------
+
+void ts::TSAnalyzer::handleTSPacket(T2MIDemux& demux, const T2MIPacket& t2mi, const TSPacket& ts)
+{
+    PIDContextPtr pc(getPID(t2mi.getSourcePID(), u"T2-MI"));
+
+    // Count demux'ed TS packets from this PLP.
+    pc->t2mi_plp_ts[t2mi.plp()]++;
+}
+
+
+//----------------------------------------------------------------------------
 // The following method feeds the analyzer with a TS packet.
 //----------------------------------------------------------------------------
 
@@ -1179,9 +1243,10 @@ void ts::TSAnalyzer::feedPacket(const TSPacket& pkt)
     _preceding_errors = 0;
     _preceding_suspects = 0;
 
-    // Feed packets into the two demux
+    // Feed packets into the various demux
     _demux.feedPacket(pkt);
     _pes_demux.feedPacket(pkt);
+    _t2mi_demux.feedPacket(pkt);
 
     // Get PID context
     PIDContextPtr ps(getPID(pkt.getPID()));

@@ -69,7 +69,7 @@ namespace ts {
         std::deque<TSPacket> _ts_queue; // Queue of demuxed TS packets.
 
         // Inherited methods.
-        virtual void handleT2MINewPID(T2MIDemux& demux, PID pid, const T2MIDescriptor& desc) override;
+        virtual void handleT2MINewPID(T2MIDemux& demux, const PMT& pmt, PID pid, const T2MIDescriptor& desc) override;
         virtual void handleT2MIPacket(T2MIDemux& demux, const T2MIPacket& pkt) override;
         virtual void handleTSPacket(T2MIDemux& demux, const T2MIPacket& t2mi, const TSPacket& ts) override;
 
@@ -161,7 +161,7 @@ bool ts::T2MIPlugin::stop()
 // Process new T2-MI PID.
 //----------------------------------------------------------------------------
 
-void ts::T2MIPlugin::handleT2MINewPID(T2MIDemux& demux, PID pid, const T2MIDescriptor& desc)
+void ts::T2MIPlugin::handleT2MINewPID(T2MIDemux& demux, const PMT& pmt, PID pid, const T2MIDescriptor& desc)
 {
     // Found a new PID carrying T2-MI. Use it by default.
     if (_pid == PID_NULL && pid != PID_NULL) {

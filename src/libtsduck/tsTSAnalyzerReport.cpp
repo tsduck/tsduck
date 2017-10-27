@@ -1035,6 +1035,9 @@ std::ostream& ts::TSAnalyzerReport::reportNormalized(std::ostream& stm, const st
         if (sv.carry_ssu) {
             stm << "ssu:";
         }
+        if (sv.carry_t2mi) {
+            stm << "t2mi:";
+        }
         if (sv.pmt_pid != 0) {
             stm << "pmtpid=" << sv.pmt_pid << ":";
         }
@@ -1115,6 +1118,14 @@ std::ostream& ts::TSAnalyzerReport::reportNormalized(std::ostream& stm, const st
         first = true;
         for (std::set<uint32_t>::const_iterator it1 = pc.ssu_oui.begin(); it1 != pc.ssu_oui.end(); ++it1) {
             stm << (first ? "ssuoui=" : ",") << *it1;
+            first = false;
+        }
+        if (!first) {
+            stm << ":";
+        }
+        first = true;
+        for (std::map<uint8_t,uint64_t>::const_iterator it1 = pc.t2mi_plp_ts.begin(); it1 != pc.t2mi_plp_ts.end(); ++it1) {
+            stm << (first ? "plp=" : ",") << int(it1->first);
             first = false;
         }
         if (!first) {
