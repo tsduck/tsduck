@@ -38,13 +38,18 @@ TSDUCK_SOURCE;
 // Constructors and destructors.
 //----------------------------------------------------------------------------
 
+ts::T2MIDemux::PLPContext::PLPContext() :
+    first_packet(true),
+    ts(),
+    ts_next(0)
+{
+}
+
 ts::T2MIDemux::PIDContext::PIDContext() :
     continuity(0),
     sync(false),
     t2mi(),
-    first_packet(true),
-    ts(),
-    ts_next(0)
+    plps()
 {
 }
 
@@ -101,16 +106,19 @@ void ts::T2MIDemux::feedPacket(const TSPacket& pkt)
     }
 
     // Get / create PID context.
-    PIDContext& pc(_pids[pid]);
+    PIDContextPtr& pc(_pids[pid]);
+    if (pc.isNull()) {
+        pc = new PIDContext;
+        CheckNonNull(pc.pointer());
+    }
 
     // Check if we loose synchronization.
-    if (pc.sync && (pkt.getDiscontinuityIndicator() || pkt.getCC() != ((pc.continuity + 1) & CC_MASK))) {
-        pc.t2mi.clear();
-        pc.sync = false;
+    if (pc->sync && (pkt.getDiscontinuityIndicator() || pkt.getCC() != ((pc->continuity + 1) & CC_MASK))) {
+        pc->lostSync();
     }
 
     // Keep track of continuity counters.
-    pc.continuity = pkt.getCC();
+    pc->continuity = pkt.getCC();
 
     // Locate packet payload.
     const uint8_t* data = pkt.getPayload();
@@ -124,8 +132,7 @@ void ts::T2MIDemux::feedPacket(const TSPacket& pkt)
         const size_t pf = size == 0 ? 0 : data[0];
         if (1 + pf >= size) {
             // There is no pointer field or it points outside the TS payload. Loosing sync.
-            pc.t2mi.clear();
-            pc.sync = false;
+            pc->lostSync();
             return;
         }
 
@@ -134,8 +141,8 @@ void ts::T2MIDemux::feedPacket(const TSPacket& pkt)
         size--;
 
         // If we were previously desynchronized, we are back on track.
-        if (!pc.sync) {
-            pc.sync = true;
+        if (!pc->sync) {
+            pc->sync = true;
             // Skip end of previous packet, before retrieving synchronization.
             data += pf;
             size -= pf;
@@ -143,10 +150,22 @@ void ts::T2MIDemux::feedPacket(const TSPacket& pkt)
     }
 
     // Accumulate packet data and process T2-MI packets.
-    if (pc.sync) {
-        pc.t2mi.append(data, size);
-        processT2MI(pid, pc);
+    if (pc->sync) {
+        pc->t2mi.append(data, size);
+        processT2MI(pid, *pc);
     }
+}
+
+
+//----------------------------------------------------------------------------
+// Reset PID context after lost of synchronization.
+//----------------------------------------------------------------------------
+
+void ts::T2MIDemux::PIDContext::lostSync()
+{
+    t2mi.clear();   // accumulated T2-MI packet buffer.
+    plps.clear();   // we also lose partially demuxed PLP's.
+    sync = false;
 }
 
 
@@ -250,47 +269,55 @@ void ts::T2MIDemux::demuxTS(PID pid, PIDContext& pc, const T2MIPacket& pkt)
         dfl = size;
     }
 
+    // Get / create PLP context.
+    const uint8_t plp = pkt.plp();
+    PLPContextPtr& plpp(pc.plps[plp]);
+    if (plpp.isNull()) {
+        plpp = new PLPContext;
+        CheckNonNull(plpp.pointer());
+    }
+
     if (syncd == 0xFFFF) {
         // No user packet in data field
-        pc.ts.append(data, dfl);
+        plpp->ts.append(data, dfl);
     }
     else {
         // Synchronization distance in bytes, bounded by data field size.
         syncd = std::min(syncd / 8, dfl);
 
         // Process end of previous packet.
-        if (!pc.first_packet && syncd > 0) {
-            if (pc.ts.size() % PKT_SIZE == 0) {
-                pc.ts.append(SYNC_BYTE);
+        if (!plpp->first_packet && syncd > 0) {
+            if (plpp->ts.size() % PKT_SIZE == 0) {
+                plpp->ts.append(SYNC_BYTE);
             }
-            pc.ts.append(data, syncd - npd);
+            plpp->ts.append(data, syncd - npd);
         }
-        pc.first_packet = false;
+        plpp->first_packet = false;
         data += syncd;
         dfl -= syncd;
 
         // Process subsequent complete packets.
         while (dfl >= PKT_SIZE - 1) {
-            pc.ts.append(SYNC_BYTE);
-            pc.ts.append(data, PKT_SIZE - 1);
+            plpp->ts.append(SYNC_BYTE);
+            plpp->ts.append(data, PKT_SIZE - 1);
             data += PKT_SIZE - 1;
             dfl -= PKT_SIZE - 1;
         }
 
         // Process optional trailing truncated packet.
         if (dfl > 0) {
-            pc.ts.append(SYNC_BYTE);
-            pc.ts.append(data, dfl);
+            plpp->ts.append(SYNC_BYTE);
+            plpp->ts.append(data, dfl);
         }
     }
 
     // Now process each complete TS packet.
-    while (pc.ts_next + PKT_SIZE <= pc.ts.size()) {
+    while (plpp->ts_next + PKT_SIZE <= plpp->ts.size()) {
 
         // Build the TS packet.
         TSPacket tsPkt;
-        ::memcpy(tsPkt.b, &pc.ts[pc.ts_next], PKT_SIZE);
-        pc.ts_next += PKT_SIZE;
+        ::memcpy(tsPkt.b, &plpp->ts[plpp->ts_next], PKT_SIZE);
+        plpp->ts_next += PKT_SIZE;
 
         // Notify the application. Note that we are already in a protected section.
         if (_handler != 0) {
@@ -299,15 +326,15 @@ void ts::T2MIDemux::demuxTS(PID pid, PIDContext& pc, const T2MIPacket& pkt)
     }
 
     // Compress or cleanup the TS buffer.
-    if (pc.ts_next >= pc.ts.size()) {
+    if (plpp->ts_next >= plpp->ts.size()) {
         // No more packet to output, cleanup.
-        pc.ts.clear();
-        pc.ts_next = 0;
+        plpp->ts.clear();
+        plpp->ts_next = 0;
     }
-    else if (pc.ts_next >= 100 * PKT_SIZE) {
+    else if (plpp->ts_next >= 100 * PKT_SIZE) {
         // TS buffer has many unused packets, compress it.
-        pc.ts.erase(0, pc.ts_next);
-        pc.ts_next = 0;
+        plpp->ts.erase(0, plpp->ts_next);
+        plpp->ts_next = 0;
     }
 }
 

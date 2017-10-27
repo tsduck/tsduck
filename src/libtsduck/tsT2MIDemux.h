@@ -90,17 +90,39 @@ namespace ts {
         virtual void immediateResetPID(PID pid) override;
 
     private:
-        // This internal structure contains the analysis context for one PID.
-        struct PIDContext
+        // Analysis context for one PLP inside one T2-MI stream.
+        struct PLPContext
         {
-            PIDContext();            // Default constructor
-            uint8_t   continuity;    // Last continuity counter
-            bool      sync;          // We are synchronous in this PID
-            ByteBlock t2mi;          // Buffer containing the T2-MI data.
             bool      first_packet;  // First T2-MI packet not yet processed
             ByteBlock ts;            // Buffer to accumulate extracted TS packets.
             size_t    ts_next;       // Next packet to output.
+
+            // Default constructor
+            PLPContext();
         };
+
+        // Map of safe pointers to PLPContext, indexed by PLP id.
+        typedef SafePtr<PLPContext, NullMutex> PLPContextPtr;
+        typedef std::map<uint8_t, PLPContextPtr> PLPContextMap;
+
+        // Analysis context for one PID.
+        struct PIDContext
+        {
+            uint8_t       continuity;  // Last continuity counter
+            bool          sync;        // We are synchronous in this PID
+            ByteBlock     t2mi;        // Buffer containing the T2-MI data.
+            PLPContextMap plps;        // Map of PLP context per PID.
+
+            // Default constructor
+            PIDContext();
+
+            // Reset after lost of synchronization.
+            void lostSync();
+        };
+
+        // Map of safe pointers to PIDContext, indexed by PID.
+        typedef SafePtr<PIDContext, NullMutex> PIDContextPtr;
+        typedef std::map<PID, PIDContextPtr> PIDContextMap;
 
         // Inherited methods from TableHandlerInterface.
         virtual void handleTable(SectionDemux&, const BinaryTable&) override;
@@ -115,9 +137,9 @@ namespace ts {
         void processPMT(const PMT& pmt);
 
         // Private members:
-        T2MIHandlerInterface*    _handler;    // Application-defined handler
-        std::map<PID,PIDContext> _pids;       // Map of PID contexts.
-        SectionDemux             _psi_demux;  // Demux for PSI parsing.
+        T2MIHandlerInterface* _handler;    // Application-defined handler
+        PIDContextMap         _pids;       // Map of PID contexts.
+        SectionDemux          _psi_demux;  // Demux for PSI parsing.
 
         // Inacessible operations
         T2MIDemux(const T2MIDemux&) = delete;
