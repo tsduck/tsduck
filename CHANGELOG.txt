@@ -10,11 +10,14 @@ Version
   compiler, tstabcomp, properly translates from UTF-8 XML files to DVB
   character encoding and vice versa.
 
+- Added options --default-charset and --europe to tspsi, tstables, tstabdump,
+  tstabcomp, plugin psi and plugin tables.
+
 - Added t2mi plugin to extract encapsulated TS packets from T2-MI streams
   (DVB-T2 Modulator Interface).
 
-- Added options --default-charset and --europe to tspsi, tstables, tstabdump,
-  tstabcomp, plugin psi and plugin tables.
+- T2-MI PID's and PLP's are now included in the report from tsanalyze and the
+  plugin analyze.
 
 Version 3.3-20170930
 

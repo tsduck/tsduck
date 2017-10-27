@@ -317,6 +317,14 @@ namespace ts {
         //! @return The corresponding name.
         //!
         TSDUCKDLL UString OUI(uint32_t oui, Flags flags = NAME);
+
+        //!
+        //! Name of T2-MI packet type.
+        //! @param [in] type T2-MI packet type.
+        //! @param [in] flags Presentation flags.
+        //! @return The corresponding name.
+        //!
+        TSDUCKDLL UString T2MIPacketType(uint8_t type, Flags flags = NAME);
     }
 
     //!

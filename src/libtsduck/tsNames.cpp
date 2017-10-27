@@ -200,6 +200,11 @@ ts::UString ts::names::ScramblingControl(uint8_t scv, Flags flags)
     return NamesDVB::Instance().nameFromSection(u"ScramblingControl", Names::Value(scv), flags, 8);
 }
 
+ts::UString ts::names::T2MIPacketType(uint8_t type, Flags flags)
+{
+    return NamesDVB::Instance().nameFromSection(u"T2MIPacketType", Names::Value(type), flags, 8);
+}
+
 
 //----------------------------------------------------------------------------
 // Component Type (in Component Descriptor)

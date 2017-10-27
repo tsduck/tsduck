@@ -291,13 +291,22 @@ namespace ts {
         }
 
         //!
+        //! Check if the packet has a valid PLP (Physical Layer Pipe) identifier.
+        //! @return True if the packet has a valid PLP.
+        //!
+        bool plpValid() const
+        {
+            return packetType() == T2MI_BASEBAND_FRAME && payloadSize() >= 2;
+        }
+
+        //!
         //! Get the PLP (Physical Layer Pipe) identifier.
         //! This is valid only for baseband frames (packet type T2MI_BASEBAND_FRAME).
         //! @return The PLP identifier.
         //!
         uint8_t plp() const
         {
-            return packetType() == T2MI_BASEBAND_FRAME && payloadSize() >= 2 ? (*_data)[T2MI_HEADER_SIZE + 1] : 0;
+            return plpValid() ? (*_data)[T2MI_HEADER_SIZE + 1] : 0;
         }
 
         //!

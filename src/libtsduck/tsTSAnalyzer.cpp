@@ -1169,11 +1169,14 @@ void ts::TSAnalyzer::handleT2MIPacket(T2MIDemux& demux, const T2MIPacket& pkt)
     // Count T2-MI packets.
     pc->t2mi_cnt++;
 
-    // Make sure the PLP is referenced, even if no TS packet is demux'ed.
-    pc->t2mi_plp_ts[pkt.plp()];
+    // Process PLP (only in baseband frame).
+    if (pkt.plpValid()) {
+        // Make sure the PLP is referenced, even if no TS packet is demux'ed.
+        pc->t2mi_plp_ts[pkt.plp()];
 
-    // Add the PLP as attributes of this PID.
-    AppendUnique(pc->attributes, UString::FromUTF8(Format("T2-MI PLP 0x%02X (%d)", int(pkt.plp()), int(pkt.plp()))));
+        // Add the PLP as attributes of this PID.
+        AppendUnique(pc->attributes, UString::FromUTF8(Format("T2-MI PLP 0x%02X (%d)", int(pkt.plp()), int(pkt.plp()))));
+    }
 }
 
 
