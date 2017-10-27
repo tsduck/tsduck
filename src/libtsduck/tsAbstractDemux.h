@@ -147,6 +147,9 @@ namespace ts {
         //! afterCallingHandler();
         //! @endcode
         //!
+        //! @param [in] pid The PID for which the handler will be called. All reset
+        //! operations on this PID will be delayed until afterCallingHandler().
+        //!
         void beforeCallingHandler(PID pid = PID_NULL);
 
         //!
