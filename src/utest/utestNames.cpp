@@ -80,6 +80,7 @@ public:
     void testTeletextType();
     void testRunningStatus();
     void testAudioType();
+    void testT2MIPacketType();
 
     CPPUNIT_TEST_SUITE(NamesTest);
     CPPUNIT_TEST(testConfigFile);
@@ -115,6 +116,7 @@ public:
     CPPUNIT_TEST(testTeletextType);
     CPPUNIT_TEST(testRunningStatus);
     CPPUNIT_TEST(testAudioType);
+    CPPUNIT_TEST(testT2MIPacketType);
     CPPUNIT_TEST_SUITE_END();
 };
 
@@ -357,4 +359,9 @@ void NamesTest::testRunningStatus()
 void NamesTest::testAudioType()
 {
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"hearing impaired", ts::names::AudioType(2));
+}
+
+void NamesTest::testT2MIPacketType()
+{
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"Individual addressing", ts::names::T2MIPacketType(0x21));
 }
