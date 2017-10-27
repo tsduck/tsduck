@@ -259,7 +259,7 @@ namespace ts {
         //!
         uint8_t packetType() const
         {
-            return _is_valid ? (*_data)[0] : T2MI_INVALID_TYPE;
+            return _is_valid ? (*_data)[0] : uint8_t(T2MI_INVALID_TYPE);
         }
 
         //!

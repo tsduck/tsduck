@@ -1178,7 +1178,7 @@ void ts::TSAnalyzer::handleT2MIPacket(T2MIDemux& demux, const T2MIPacket& pkt)
         pc->t2mi_plp_ts[pkt.plp()];
 
         // Add the PLP as attributes of this PID.
-        AppendUnique(pc->attributes, UString::FromUTF8(Format("PLP 0x%02X (%d)", int(pkt.plp()), int(pkt.plp()))));
+        AppendUnique(pc->attributes, UString::FromUTF8(Format("PLP: 0x%02X (%d)", int(pkt.plp()), int(pkt.plp()))));
     }
 }
 
