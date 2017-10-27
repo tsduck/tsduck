@@ -192,6 +192,7 @@ ts::TSAnalyzer::PIDContext::PIDContext(PID pid_, const UString& description_) :
     carry_emm(false),
     carry_audio(false),
     carry_video(false),
+    carry_t2mi(false),
     scrambled(false),
     same_stream_id(false),
     pes_stream_id(0),
@@ -1150,7 +1151,9 @@ void ts::TSAnalyzer::handleT2MINewPID(T2MIDemux& demux, const PMT& pmt, PID pid,
     }
 
     // Identify this PID as T2-MI, if not yet identified.
-    PIDContextPtr pc(getPID(pid, u"T2-MI"));
+    PIDContextPtr pc(getPID(pid));
+    pc->description = u"T2-MI";
+    pc->carry_t2mi = true;
 
     // And demux all T2-MI packets.
     _t2mi_demux.addPID(pid);
@@ -1175,7 +1178,7 @@ void ts::TSAnalyzer::handleT2MIPacket(T2MIDemux& demux, const T2MIPacket& pkt)
         pc->t2mi_plp_ts[pkt.plp()];
 
         // Add the PLP as attributes of this PID.
-        AppendUnique(pc->attributes, UString::FromUTF8(Format("T2-MI PLP 0x%02X (%d)", int(pkt.plp()), int(pkt.plp()))));
+        AppendUnique(pc->attributes, UString::FromUTF8(Format("PLP 0x%02X (%d)", int(pkt.plp()), int(pkt.plp()))));
     }
 }
 
