@@ -37,6 +37,7 @@
 #include "tsTSPacket.h"
 #include "tsSectionDemux.h"
 #include "tsPESDemux.h"
+#include "tsT2MIDemux.h"
 #include "tsPAT.h"
 #include "tsCAT.h"
 #include "tsPMT.h"
@@ -54,7 +55,8 @@ namespace ts {
     class TSDUCKDLL TSAnalyzer:
         private TableHandlerInterface,
         private SectionHandlerInterface,
-        private PESHandlerInterface
+        private PESHandlerInterface,
+        private T2MIHandlerInterface
     {
     public:
         //!
@@ -178,6 +180,7 @@ namespace ts {
             uint64_t       ts_pkt_cnt;         //!< Number of TS packets.
             uint32_t       bitrate;            //!< Average service bitrate in b/s.
             bool           carry_ssu;          //!< Carry System Software Update.
+            bool           carry_t2mi;         //!< Carry T2-MI encasulated data.
 
             //!
             //! Default constructor.
@@ -310,14 +313,16 @@ namespace ts {
             uint64_t      ts_sc_cnt;       //!< Number of scrambled packets.
             uint64_t      inv_ts_sc_cnt;   //!< Number of invalid scrambling control in TS headers.
             uint64_t      inv_pes_start;   //!< Number of invalid PES start code.
+            uint64_t      t2mi_cnt;        //!< Number of T2-MI packets.
             uint64_t      pcr_cnt;         //!< Number of PCR's.
             uint32_t      ts_pcr_bitrate;  //!< Average TS bitrate in b/s (eval from PCR).
             uint32_t      bitrate;         //!< Average PID bitrate in b/s.
             UString       language;        //!< For audio or subtitles (3 chars).
             uint16_t      cas_id;          //!< For EMM and ECM streams.
-            std::set<uint32_t> cas_operators; //!< Operators for EMM and ECM streams, when applicable.
-            ETIDContextMap     sections;      //!< List of sections in this PID.
-            std::set<uint32_t> ssu_oui;       //!< Set of applicable OUI's for SSU.
+            std::set<uint32_t>         cas_operators; //!< Operators for EMM and ECM streams, when applicable.
+            ETIDContextMap             sections;      //!< List of sections in this PID.
+            std::set<uint32_t>         ssu_oui;       //!< Set of applicable OUI's for SSU.
+            std::map<uint8_t,uint64_t> t2mi_plp_ts;   //!< For T2-MI streams, map key = PLP (Physical Layer Pipe) to value = number of embedded TS packets.
 
             // Public members - Analysis data:
             uint8_t        cur_continuity;  //!< Current continuity count.
@@ -469,6 +474,11 @@ namespace ts {
         virtual void handleNewAVCAttributes(PESDemux&, const PESPacket&, const AVCAttributes&) override;
         virtual void handleNewAC3Attributes(PESDemux&, const PESPacket&, const AC3Attributes&) override;
 
+        // Implementation of T2MIHandlerInterface
+        virtual void handleT2MINewPID(T2MIDemux& demux, const PMT& pmt, PID pid, const T2MIDescriptor& desc) override;
+        virtual void handleT2MIPacket(T2MIDemux& demux, const T2MIPacket& pkt) override;
+        virtual void handleTSPacket(T2MIDemux& demux, const T2MIPacket& t2mi, const TSPacket& ts) override;
+
         // TSAnalyzer private members (state data, used during analysis):
         bool         _modified;                  // Internal data modified, need recomputeStatistics
         uint64_t     _ts_bitrate_sum;            // Sum of all computed TS bitrates
@@ -479,5 +489,6 @@ namespace ts {
         uint64_t     _max_consecutive_suspects;  // Max number of consecutive suspect packets before clearing suspect
         SectionDemux _demux;                     // PSI tables analysis
         PESDemux     _pes_demux;                 // Audio/video analysis
+        T2MIDemux    _t2mi_demux;                // T2-MI analysis
     };
 }

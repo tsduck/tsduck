@@ -365,7 +365,7 @@ void ts::T2MIDemux::processPMT(const PMT& pmt)
                     // Invoke the user-defined handler to signal the new PID.
                     beforeCallingHandler(pid);
                     try {
-                        _handler->handleT2MINewPID(*this, pid, desc);
+                        _handler->handleT2MINewPID(*this, pmt, pid, desc);
                     }
                     catch (...) {
                         afterCallingHandler(false);
