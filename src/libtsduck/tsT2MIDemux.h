@@ -93,10 +93,13 @@ namespace ts {
         // This internal structure contains the analysis context for one PID.
         struct PIDContext
         {
-            PIDContext();           // Default constructor
-            uint8_t   continuity;   // Last continuity counter
-            bool      sync;         // We are synchronous in this PID
-            ByteBlock t2mi;         // Buffer containing the T2-MI data.
+            PIDContext();            // Default constructor
+            uint8_t   continuity;    // Last continuity counter
+            bool      sync;          // We are synchronous in this PID
+            ByteBlock t2mi;          // Buffer containing the T2-MI data.
+            bool      first_packet;  // First T2-MI packet not yet processed
+            ByteBlock ts;            // Buffer to accumulate extracted TS packets.
+            size_t    ts_next;       // Next packet to output.
         };
 
         // Inherited methods from TableHandlerInterface.
@@ -104,6 +107,9 @@ namespace ts {
 
         // Process and remove complete T2-MI packets from the buffer.
         void processT2MI(PID pid, PIDContext& pc);
+
+        // Demux all encapsulated TS packets from a T2-MI packet.
+        void demuxTS(PID pid, PIDContext& pc, const T2MIPacket& pkt);
 
         // Process a PMT.
         void processPMT(const PMT& pmt);
