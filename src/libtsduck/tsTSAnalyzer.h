@@ -298,6 +298,7 @@ namespace ts {
             bool          carry_emm;       //!< This PID carries EMM's.
             bool          carry_audio;     //!< This PID carries audio data.
             bool          carry_video;     //!< This PID carries video data.
+            bool          carry_t2mi;      //!< Carry T2-MI encasulated data.
             bool          scrambled;       //!< Contains some scrambled packets.
             bool          same_stream_id;  //!< All PES packets have same stream_id.
             uint8_t       pes_stream_id;   //!< Stream_id in PES packets on this PID.

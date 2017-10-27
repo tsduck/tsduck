@@ -1123,13 +1123,16 @@ std::ostream& ts::TSAnalyzerReport::reportNormalized(std::ostream& stm, const st
         if (!first) {
             stm << ":";
         }
-        first = true;
-        for (std::map<uint8_t,uint64_t>::const_iterator it1 = pc.t2mi_plp_ts.begin(); it1 != pc.t2mi_plp_ts.end(); ++it1) {
-            stm << (first ? "plp=" : ",") << int(it1->first);
-            first = false;
-        }
-        if (!first) {
-            stm << ":";
+        if (pc.carry_t2mi) {
+            stm << "t2mi:";
+            first = true;
+            for (std::map<uint8_t, uint64_t>::const_iterator it1 = pc.t2mi_plp_ts.begin(); it1 != pc.t2mi_plp_ts.end(); ++it1) {
+                stm << (first ? "plp=" : ",") << int(it1->first);
+                first = false;
+            }
+            if (!first) {
+                stm << ":";
+            }
         }
         stm << "bitrate=" << pc.bitrate << ":"
             << "bitrate204=" << ToBitrate204(pc.bitrate) << ":"
