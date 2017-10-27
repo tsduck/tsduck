@@ -60,15 +60,13 @@ namespace ts {
 
     private:
         // Plugin private fields.
-        PID           _pid;           // PID carrying the T2-MI encapsulation.
-        uint8_t       _plp;           // The PLP to extract in _pid.
-        bool          _plp_valid;     // False if PLP not yet known.
-        bool          _first_packet;  // First T2-MI packet not yet processed
-        ByteBlock     _ts;            // Buffer to accumulate extracted TS packets.
-        size_t        _ts_next;       // Next packet to output.
-        PacketCounter _t2mi_count;    // Number of input T2-MI packets.
-        PacketCounter _ts_count;      // Number of extracted TS packets.
-        T2MIDemux     _demux;         // Demux for PSI parsing.
+        PID           _pid;             // PID carrying the T2-MI encapsulation.
+        uint8_t       _plp;             // The PLP to extract in _pid.
+        bool          _plp_valid;       // False if PLP not yet known.
+        PacketCounter _t2mi_count;      // Number of input T2-MI packets.
+        PacketCounter _ts_count;        // Number of extracted TS packets.
+        T2MIDemux     _demux;           // Demux for PSI parsing.
+        std::deque<TSPacket> _ts_queue; // Queue of demuxed TS packets.
 
         // Inherited methods.
         virtual void handleT2MINewPID(T2MIDemux& demux, PID pid, const T2MIDescriptor& desc) override;
@@ -96,12 +94,10 @@ ts::T2MIPlugin::T2MIPlugin(TSP* tsp_) :
     _pid(PID_NULL),
     _plp(0),
     _plp_valid(false),
-    _first_packet(true),
-    _ts(),
-    _ts_next(0),
     _t2mi_count(0),
     _ts_count(0),
-    _demux(this)
+    _demux(this),
+    _ts_queue()
 {
     option("pid", 'p', PIDVAL);
     option("plp",  0,  UINT8);
@@ -136,18 +132,16 @@ bool ts::T2MIPlugin::start()
     getIntValue<uint8_t>(_plp, "plp");
     _plp_valid = present("plp");
 
-    // Initialize the buffer of extracted packets.
-    _first_packet = true;
-    _ts_next = 0;
-    _ts.clear();
-    _t2mi_count = 0;
-    _ts_count = 0;
-
     // Initialize the demux.
     _demux.reset();
     if (_pid != PID_NULL) {
         _demux.addPID(_pid);
     }
+
+    // Reset the packet output.
+    _ts_queue.clear();
+    _t2mi_count = 0;
+    _ts_count = 0;
     return true;
 }
 
@@ -184,107 +178,16 @@ void ts::T2MIPlugin::handleT2MINewPID(T2MIDemux& demux, PID pid, const T2MIDescr
 
 void ts::T2MIPlugin::handleT2MIPacket(T2MIDemux& demux, const T2MIPacket& pkt)
 {
-    // Keep only baseband frames.
-    const uint8_t* data = pkt.basebandFrame();
-    size_t size = pkt.basebandFrameSize();
-
-    if (data == 0 || size < T2_BBHEADER_SIZE) {
-        // Not a base band frame packet.
-        return;
-    }
-
-    // Check PLP.
     if (!_plp_valid) {
         // The PLP was not yet specified, use this one by default.
         _plp = pkt.plp();
         _plp_valid = true;
         tsp->verbose("extracting PLP 0x%02X (%d)", int(_plp), int(_plp));
     }
-    else if (pkt.plp() != _plp) {
-        // Not the filtered PLP, ignore this packet.
-        tsp->verbose("@@@ ignored PLP %d", int(pkt.plp()));
-        return;
-    }
 
-    // Structure of T2-MI packet: see ETSI TS 102 773, section 5.
-    // Structure of a T2 baseband frame: see ETSI EN 302 755, section 5.1.7.
-
-    // Extract the TS/GS field of the MATYPE in the BBHEADER.
-    // Values: 00 = GFPS, 01 = GCS, 10 = GSE, 11 = TS
-    // We only support TS encapsulation here.
-    const uint8_t tsgs = (data[0] >> 6) & 0x03;
-    if (tsgs != 3) {
-        // Not TS mode, cannot extract TS packets.
-        tsp->verbose("@@@ ignored TS/GS = %d", int(tsgs));
-        return;
-    }
-
-    // Count input T2-MI packets.
-    _t2mi_count++;
-
-    // Null packet deletion (NPD) from MATYPE.
-    // WARNING: usage of NPD is probably wrong here, need to be checked on streams with NPD=1.
-    size_t npd = (data[0] & 0x04) ? 1 : 0;
-    if (npd) tsp->verbose("@@@ NPD = %d", int(npd));
-
-    // Data Field Length in bytes.
-    size_t dfl = (GetUInt16(data + 4) + 7) / 8;
-
-    // Synchronization distance in bits.
-    size_t syncd = GetUInt16(data + 7);
-
-    // Now skip baseband header.
-    data += T2_BBHEADER_SIZE;
-    size -= T2_BBHEADER_SIZE;
-
-    // Adjust invalid DFL (should not happen).
-    if (dfl > size) {
-        dfl = size;
-    }
-
-
-
-    //@@@@
-    //@@@@ tsp->verbose("T2-MI bbframe payload size = %d bytes, NPD = %d, DFL = %d, SYNCD = %d",
-    //@@@@              int(size), int(npd), int(dfl), int(syncd));
-    //@@@@ tsp->verbose("M2-TI payload:\n" + Hexa(pkt.payload(), pkt.payloadSize(), hexa::OFFSET | hexa::HEXA | hexa::ASCII | hexa::BPL, 2, 16));
-
-
-
-    if (syncd == 0xFFFF) {
-        // No user packet in data field
-        tsp->verbose("@@@ SYNCD");
-        _ts.append(data, dfl);
-    }
-    else {
-        // Synchronization distance in bytes, bounded by data field size.
-        syncd = std::min(syncd / 8, dfl);
-
-        // Process end of previous packet.
-        if (!_first_packet && syncd > 0) {
-            tsp->verbose("@@@ previous: %d, syncd: %d, npd: %d, sum: %d", int(_ts.size() % PKT_SIZE), int(syncd), int(npd), int(_ts.size() % PKT_SIZE + syncd - npd));
-            if (_ts.size() % PKT_SIZE == 0) {
-                _ts.append(SYNC_BYTE);
-            }
-            _ts.append(data, syncd - npd);
-        }
-        _first_packet = false;
-        data += syncd;
-        dfl -= syncd;
-
-        // Process subsequent complete packets.
-        while (dfl >= PKT_SIZE - 1) {
-            _ts.append(SYNC_BYTE);
-            _ts.append(data, PKT_SIZE - 1);
-            data += PKT_SIZE - 1;
-            dfl -= PKT_SIZE - 1;
-        }
-
-        // Process optional trailing truncated packet.
-        if (dfl > 0) {
-            _ts.append(SYNC_BYTE);
-            _ts.append(data, dfl);
-        }
+    if (pkt.plp() == _plp) {
+        // Count input T2-MI packets.
+        _t2mi_count++;
     }
 }
 
@@ -295,7 +198,20 @@ void ts::T2MIPlugin::handleT2MIPacket(T2MIDemux& demux, const T2MIPacket& pkt)
 
 void ts::T2MIPlugin::handleTSPacket(T2MIDemux& demux, const T2MIPacket& t2mi, const TSPacket& ts)
 {
-    //@@@@
+    // PLP must be known since handleT2MIPacket() is always called before handleTSPacket().
+    assert(_plp_valid);
+
+    // Keep packet from the filtered PLP only.
+    if (t2mi.plp() == _plp) {
+
+        // Enqueue the TS packet.
+        _ts_queue.push_back(ts);
+
+        // We do not really care about queue size because an overflow is not possible.
+        // This plugin deletes all input packets and replacez them with demux'ed packets.
+        // And the number of input TS packets is always higher than the number of output
+        // packets because of T2-MI encapsulation and other PID's.
+    }
 }
 
 
@@ -308,28 +224,16 @@ ts::ProcessorPlugin::Status ts::T2MIPlugin::processPacket(TSPacket& pkt, bool& f
     // Feed the T2-MI demux.
     _demux.feedPacket(pkt);
 
-    // If there is not extracted packet to output, drop current packet.
-    if (_ts_next + PKT_SIZE > _ts.size()) {
+    // Process output demux'ed TS packet.
+    if (_ts_queue.empty()) {
+        // No extracted packet to output, drop current packet.
         return TSP_DROP;
     }
-
-    // There is at least one TS packet to output. Replace current packet with this one.
-    ::memcpy(pkt.b, &_ts[_ts_next], PKT_SIZE);
-    _ts_next += PKT_SIZE;
-
-    // Compress or cleanup the TS buffer.
-    if (_ts_next >= _ts.size()) {
-        // No more packet to output, cleanup.
-        _ts.clear();
-        _ts_next = 0;
+    else {
+        // Replace the current packet with the next demux'ed TS packet.
+        pkt = _ts_queue.front();
+        _ts_queue.pop_front();
+        _ts_count++;
+        return TSP_OK;
     }
-    else if (_ts_next >= 100 * PKT_SIZE) {
-        // TS buffer has many unused packets, compress it.
-        _ts.erase(0, _ts_next);
-        _ts_next = 0;
-    }
-
-    // Pass the extracted packet.
-    _ts_count++;
-    return TSP_OK;
 }

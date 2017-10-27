@@ -41,7 +41,10 @@ TSDUCK_SOURCE;
 ts::T2MIDemux::PIDContext::PIDContext() :
     continuity(0),
     sync(false),
-    t2mi()
+    t2mi(),
+    first_packet(true),
+    ts(),
+    ts_next(0)
 {
 }
 
@@ -156,41 +159,156 @@ void ts::T2MIDemux::processT2MI(PID pid, PIDContext& pc)
     // Start index in buffer of T2-MI packet header.
     size_t start = 0;
 
-    // Loop on all complete T2-MI packets.
-    while (start + T2MI_HEADER_SIZE < pc.t2mi.size()) {
+    // Protect sequence which may call application-defined handlers.
+    beforeCallingHandler(pid);
+    try {
+        
+        // Loop on all complete T2-MI packets.
+        while (start + T2MI_HEADER_SIZE < pc.t2mi.size()) {
 
-        // Extract T2-MI packet size in bytes.
-        const uint16_t payload_bits = GetUInt16(&pc.t2mi[start + 4]);
-        const uint16_t payload_bytes = (payload_bits + 7) / 8;
-        const size_t packet_size = T2MI_HEADER_SIZE + payload_bytes + SECTION_CRC32_SIZE;
+            // Extract T2-MI packet size in bytes.
+            const uint16_t payload_bits = GetUInt16(&pc.t2mi[start + 4]);
+            const uint16_t payload_bytes = (payload_bits + 7) / 8;
+            const size_t packet_size = T2MI_HEADER_SIZE + payload_bytes + SECTION_CRC32_SIZE;
 
-        if (start + packet_size > pc.t2mi.size()) {
-            // Current T2-MI packet not completely present in buffer, stop here.
-            break;
+            if (start + packet_size > pc.t2mi.size()) {
+                // Current T2-MI packet not completely present in buffer, stop here.
+                break;
+            }
+
+            // Build a T2-MI packet.
+            T2MIPacket pkt(pc.t2mi.data() + start, packet_size, pid);
+            if (pkt.isValid()) {
+
+                // Notify the application.
+                if (_handler != 0) {
+                    _handler->handleT2MIPacket(*this, pkt);
+                }
+
+                // Demux TS packets from the T2-MI packet.
+                demuxTS(pid, pc, pkt);
+            }
+
+            // Point to next T2-MI packet.
+            start += T2MI_HEADER_SIZE + payload_bytes + SECTION_CRC32_SIZE;
         }
 
-        // Build a T2-MI packet.
-        T2MIPacket pkt(pc.t2mi.data() + start, packet_size, pid);
+        // Remove processed T2-MI packets.
+        pc.t2mi.erase(0, start);
+    }
+    catch (...) {
+        afterCallingHandler(false);
+        throw;
+    }
+    afterCallingHandler(true);
+}
 
-        // Notify the application.
-        if (pkt.isValid() && _handler != 0) {
-            beforeCallingHandler(pid);
-            try {
-                _handler->handleT2MIPacket(*this, pkt);
-            }
-            catch (...) {
-                afterCallingHandler(false);
-                throw;
-            }
-            afterCallingHandler(true);
-        }
 
-        // Point to next T2-MI packet.
-        start += T2MI_HEADER_SIZE + payload_bytes + SECTION_CRC32_SIZE;
+//----------------------------------------------------------------------------
+// Demux all encapsulated TS packets from a T2-MI packet.
+//----------------------------------------------------------------------------
+
+void ts::T2MIDemux::demuxTS(PID pid, PIDContext& pc, const T2MIPacket& pkt)
+{
+    // Keep only baseband frames.
+    const uint8_t* data = pkt.basebandFrame();
+    size_t size = pkt.basebandFrameSize();
+
+    if (data == 0 || size < T2_BBHEADER_SIZE) {
+        // Not a base band frame packet.
+        return;
     }
 
-    // Remove processed T2-MI packets.
-    pc.t2mi.erase(0, start);
+    // Structure of T2-MI packet: see ETSI TS 102 773, section 5.
+    // Structure of a T2 baseband frame: see ETSI EN 302 755, section 5.1.7.
+
+    // Extract the TS/GS field of the MATYPE in the BBHEADER.
+    // Values: 00 = GFPS, 01 = GCS, 10 = GSE, 11 = TS
+    // We only support TS encapsulation here.
+    const uint8_t tsgs = (data[0] >> 6) & 0x03;
+    if (tsgs != 3) {
+        // Not TS mode, cannot extract TS packets.
+        return;
+    }
+
+    // Null packet deletion (NPD) from MATYPE.
+    // WARNING: usage of NPD is probably wrong here, need to be checked on streams with NPD=1.
+    size_t npd = (data[0] & 0x04) ? 1 : 0;
+
+    // Data Field Length in bytes.
+    size_t dfl = (GetUInt16(data + 4) + 7) / 8;
+
+    // Synchronization distance in bits.
+    size_t syncd = GetUInt16(data + 7);
+
+    // Now skip baseband header.
+    data += T2_BBHEADER_SIZE;
+    size -= T2_BBHEADER_SIZE;
+
+    // Adjust invalid DFL (should not happen).
+    if (dfl > size) {
+        dfl = size;
+    }
+
+    if (syncd == 0xFFFF) {
+        // No user packet in data field
+        pc.ts.append(data, dfl);
+    }
+    else {
+        // Synchronization distance in bytes, bounded by data field size.
+        syncd = std::min(syncd / 8, dfl);
+
+        // Process end of previous packet.
+        if (!pc.first_packet && syncd > 0) {
+            if (pc.ts.size() % PKT_SIZE == 0) {
+                pc.ts.append(SYNC_BYTE);
+            }
+            pc.ts.append(data, syncd - npd);
+        }
+        pc.first_packet = false;
+        data += syncd;
+        dfl -= syncd;
+
+        // Process subsequent complete packets.
+        while (dfl >= PKT_SIZE - 1) {
+            pc.ts.append(SYNC_BYTE);
+            pc.ts.append(data, PKT_SIZE - 1);
+            data += PKT_SIZE - 1;
+            dfl -= PKT_SIZE - 1;
+        }
+
+        // Process optional trailing truncated packet.
+        if (dfl > 0) {
+            pc.ts.append(SYNC_BYTE);
+            pc.ts.append(data, dfl);
+        }
+    }
+
+    // Now process each complete TS packet.
+    while (pc.ts_next + PKT_SIZE <= pc.ts.size()) {
+
+        // Build the TS packet.
+        TSPacket tsPkt;
+        ::memcpy(tsPkt.b, &pc.ts[pc.ts_next], PKT_SIZE);
+        pc.ts_next += PKT_SIZE;
+
+        // Notify the application. Note that we are already in a protected section.
+        if (_handler != 0) {
+            _handler->handleTSPacket(*this, pkt, tsPkt);
+        }
+    }
+
+    // Compress or cleanup the TS buffer.
+    if (pc.ts_next >= pc.ts.size()) {
+        // No more packet to output, cleanup.
+        pc.ts.clear();
+        pc.ts_next = 0;
+    }
+    else if (pc.ts_next >= 100 * PKT_SIZE) {
+        // TS buffer has many unused packets, compress it.
+        pc.ts.erase(0, pc.ts_next);
+        pc.ts_next = 0;
+    }
 }
 
 
