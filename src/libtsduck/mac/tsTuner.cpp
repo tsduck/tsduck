@@ -57,11 +57,11 @@ ts::Tuner::~Tuner()
 // Default constructor,
 //-----------------------------------------------------------------------------
 
-ts::Tuner::Tuner() :
+ts::Tuner::Tuner(const std::string& device_name) :
     _is_open(false),
     _info_only(true),
     _tuner_type(DVB_T),
-    _device_name(),
+    _device_name(device_name),
     _device_info(),
     _signal_timeout(DEFAULT_SIGNAL_TIMEOUT),
     _signal_timeout_silent(false),
@@ -76,15 +76,7 @@ ts::Tuner::Tuner() :
 //-----------------------------------------------------------------------------
 
 ts::Tuner::Tuner(const std::string& device_name, bool info_only, ReportInterface& report) :
-    _is_open(false),
-    _info_only(true),
-    _tuner_type(DVB_T),
-    _device_name(device_name),
-    _device_info(),
-    _signal_timeout(DEFAULT_SIGNAL_TIMEOUT),
-    _signal_timeout_silent(false),
-    _receive_timeout(0),
-    _delivery_systems()
+    Tuner(device_name)
 {
     report.error(NOT_IMPLEMENTED);
 }

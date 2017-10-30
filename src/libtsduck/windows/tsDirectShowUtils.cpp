@@ -440,10 +440,8 @@ namespace {
 namespace {
     void DisplayIKsPropertySet(std::ostream& strm, const std::string& margin, ::IUnknown* object, ts::ReportInterface& report)
     {
-        using namespace ts;
-
         // Check if the filter supports IKsPropertySet
-        ComPtr <::IKsPropertySet> propset;
+        ts::ComPtr<::IKsPropertySet> propset;
         propset.queryInterface(object, IID_IKsPropertySet, NULLREP);
         if (propset.isNull()) {
             return;
@@ -454,7 +452,7 @@ namespace {
         ::DWORD support;
 
 #define _P_(ps,id) \
-        if (SUCCEEDED(propset->QuerySupported(KSPROPSETID_Bda##ps, KSPROPERTY_BDA_##id, &support)) && support != 0) {           \
+        if (SUCCEEDED(propset->QuerySupported(KSPROPSETID_Bda##ps, KSPROPERTY_BDA_##id, &support)) && support != 0) { \
             strm << margin << "  " #id " (" #ps ") :";  \
             if (support & KSPROPERTY_SUPPORT_GET) {     \
                 strm << " get";                         \
@@ -482,7 +480,7 @@ namespace {
         _P_(FrequencyFilter, RF_TUNER_CAPS);
         _P_(FrequencyFilter, RF_TUNER_SCAN_STATUS);
         _P_(FrequencyFilter, RF_TUNER_STANDARD);
-        _P_(FrequencyFilter,    RF_TUNER_STANDARD_MODE);
+        _P_(FrequencyFilter, RF_TUNER_STANDARD_MODE);
 
         _P_(DigitalDemodulator, MODULATION_TYPE);
         _P_(DigitalDemodulator, INNER_FEC_TYPE);
@@ -511,10 +509,8 @@ namespace {
 namespace {
     void DisplayIKsControl(std::ostream& strm, const std::string& margin, ::IUnknown* object, ts::ReportInterface& report)
     {
-        using namespace ts;
-
         // Check if the filter supports IKsPropertySet
-        ComPtr<::IKsControl> control;
+        ts::ComPtr<::IKsControl> control;
         control.queryInterface(object, IID_IKsControl, NULLREP);
         if (control.isNull()) {
             return;
@@ -591,10 +587,8 @@ namespace {
 namespace {
     void DisplayIKsTopologyInfo(std::ostream& strm, const std::string& margin, ::IUnknown* object, ts::ReportInterface& report)
     {
-        using namespace ts;
-
         // Check if the filter supports IKsTopologyInfo
-        ComPtr <::IKsTopologyInfo> topinfo;
+        ts::ComPtr<::IKsTopologyInfo> topinfo;
         topinfo.queryInterface(object, IID_IKsTopologyInfo, NULLREP);
         if (topinfo.isNull()) {
             return;
@@ -604,7 +598,7 @@ namespace {
         // List categories
         ::DWORD cat_count;
         ::HRESULT hr = topinfo->get_NumCategories(&cat_count);
-        if (ComSuccess(hr, "IKsTopologyInfo::get_NumCategories", report)) {
+        if (ts::ComSuccess(hr, "IKsTopologyInfo::get_NumCategories", report)) {
             strm << margin << "  Categories:";
             if (cat_count <= 0) {
                 strm << " none";
@@ -613,7 +607,7 @@ namespace {
                 ::GUID category;
                 hr = topinfo->get_Category(cat, &category);
                 if (ComSuccess(hr, "IKsTopologyInfo::get_Category", report)) {
-                    strm << " " << NameGUID(category);
+                    strm << " " << ts::NameGUID(category);
                 }
             }
             strm << std::endl;
@@ -622,7 +616,7 @@ namespace {
         // List nodes
         ::DWORD node_count;
         hr = topinfo->get_NumNodes(&node_count);
-        if (ComSuccess(hr, "IKsTopologyInfo::get_NumNodes", report)) {
+        if (ts::ComSuccess(hr, "IKsTopologyInfo::get_NumNodes", report)) {
             if (node_count <= 0) {
                 strm << margin << "  No node found" << std::endl;
             }
@@ -630,15 +624,15 @@ namespace {
                 strm << margin << "  Node " << n;
                 ::GUID node_type;
                 hr = topinfo->get_NodeType(n, &node_type);
-                if (ComSuccess(hr, "IKsTopologyInfo::get_NodeType", report)) {
-                    strm << ", type " << NameGUID(node_type);
+                if (ts::ComSuccess(hr, "IKsTopologyInfo::get_NodeType", report)) {
+                    strm << ", type " << ts::NameGUID(node_type);
                 }
                 static const ::DWORD MAX_NODE_NAME = 256;
                 ::WCHAR name [MAX_NODE_NAME];
                 ::DWORD name_size;
                 hr = topinfo->get_NodeName(n, name, MAX_NODE_NAME, &name_size);
-                if (ComSuccess(hr, "IKsTopologyInfo::get_NodeName", NULLREP)) {
-                    strm << ", name \"" << ToString(name) << "\"";
+                if (ts::ComSuccess(hr, "IKsTopologyInfo::get_NodeName", NULLREP)) {
+                    strm << ", name \"" << ts::ToString(name) << "\"";
                 }
                 strm << std::endl;
             }
@@ -654,10 +648,8 @@ namespace {
 namespace {
     void DisplayBDATopology(std::ostream& strm, const std::string& margin, ::IUnknown* object, ts::ReportInterface& report)
     {
-        using namespace ts;
-
         // Check if the filter supports IBDA_Topology
-        ComPtr <::IBDA_Topology> topology;
+        ts::ComPtr<::IBDA_Topology> topology;
         topology.queryInterface(object, ::IID_IBDA_Topology, NULLREP);
         if (topology.isNull()) {
             return;
@@ -672,14 +664,14 @@ namespace {
         ::BDANODE_DESCRIPTOR desc [MAX_NODES];
         count = MAX_NODES;
         hr = topology->GetNodeDescriptors(&count, MAX_NODES, desc);
-        if (!ComSuccess(hr, "IBDA_Topology::GetNodeDescriptors", report)) {
+        if (!ts::ComSuccess(hr, "IBDA_Topology::GetNodeDescriptors", report)) {
             return;
         }
         strm << margin << "  Node descriptors:" << std::endl;
         for (::ULONG node = 0; node < count; node++) {
             strm << margin << "    type " << desc[node].ulBdaNodeType
-                << ": function " << NameGUID(desc[node].guidFunction)
-                << ", name " << NameGUID(desc[node].guidName)
+                << ": function " << ts::NameGUID(desc[node].guidFunction)
+                << ", name " << ts::NameGUID(desc[node].guidName)
                 << std::endl;
         }
 
@@ -697,16 +689,16 @@ namespace {
             ::GUID interfaces [MAX_NODES];
             ::ULONG interfaces_count = MAX_NODES;
             hr = topology->GetNodeInterfaces(types[node], &interfaces_count, MAX_NODES, interfaces);
-            if (ComSuccess(hr, "IBDA_Topology::GetNodeInterfaces", report)) {
+            if (ts::ComSuccess(hr, "IBDA_Topology::GetNodeInterfaces", report)) {
                 for (::ULONG n = 0; n < interfaces_count; n++) {
-                    strm << margin << "    interface " << NameGUID(interfaces[n]) << std::endl;
+                    strm << margin << "    interface " << ts::NameGUID(interfaces[n]) << std::endl;
                 }
             }
 
             // Get control node for this type
-            ComPtr <::IUnknown> cnode;
+            ts::ComPtr<::IUnknown> cnode;
             hr = topology->GetControlNode(0, 1, types[node], cnode.creator());
-            if (ComSuccess(hr, "IBDA_Topology::GetControlNode", report)) {
+            if (ts::ComSuccess(hr, "IBDA_Topology::GetControlNode", report)) {
                 DisplayObject(strm, margin + "    ", cnode, report);
             }
         }
@@ -714,7 +706,7 @@ namespace {
         // Get pin types
         count = MAX_NODES;
         hr = topology->GetPinTypes(&count, MAX_NODES, types);
-        if (!ComSuccess(hr, "IBDA_Topology::GetPinTypes", report)) {
+        if (!ts::ComSuccess(hr, "IBDA_Topology::GetPinTypes", report)) {
             return;
         }
         strm << margin << "  Pin types:";
@@ -732,7 +724,7 @@ namespace {
         ::BDA_TEMPLATE_CONNECTION conn [MAX_NODES];
         count = MAX_NODES;
         hr = topology->GetTemplateConnections(&count, MAX_NODES, conn);
-        if (!ComSuccess(hr, "IBDA_Topology::GetTemplateConnections", report)) {
+        if (!ts::ComSuccess(hr, "IBDA_Topology::GetTemplateConnections", report)) {
             return;
         }
 
@@ -743,6 +735,64 @@ namespace {
                 << " -> node type " << conn[n].ToNodeType
                 << " / pin type " << conn[n].ToNodePinType
                 << std::endl;
+        }
+    }
+}
+
+
+//-----------------------------------------------------------------------------
+// Show ITuner for a COM object
+//-----------------------------------------------------------------------------
+
+namespace {
+    void DisplayITuner(std::ostream& strm, const std::string& margin, ::IUnknown* object, ts::ReportInterface& report)
+    {
+        // Check if the filter supports ITuner.
+        ts::ComPtr<::ITuner> tuner;
+        tuner.queryInterface(object, IID_ITuner, NULLREP);
+        if (tuner.isNull()) {
+            return;
+        }
+        strm << margin << "ITuner:" << std::endl;
+
+        // List tuning spaces.
+        ts::ComPtr<::IEnumTuningSpaces> enum_tspace;
+        ::HRESULT hr = tuner->EnumTuningSpaces(enum_tspace.creator());
+        if (ts::ComSuccess(hr, "cannot enumerate tuning spaces", report)) {
+            if (hr != S_OK) {
+                strm << margin << "  No tuning space found" << std::endl;
+            }
+            else {
+                assert(enum_tspace.pointer() != 0);
+                ts::ComPtr<::ITuningSpace> tspace;
+                while (enum_tspace->Next(1, tspace.creator(), NULL) == S_OK) {
+                    // Get tuning space names.
+                    const std::string fname(GetTuningSpaceFriendlyName(tspace.pointer(), report));
+                    const std::string uname(GetTuningSpaceUniqueName(tspace.pointer(), report));
+                    strm << margin << "  Tuning space \"" << fname << "\" (" << uname << ")";
+
+                    // Check if this tuning space supports IDVBTuningSpace interface.
+                    ts::ComPtr<::IDVBTuningSpace> dvb_tspace;
+                    dvb_tspace.queryInterface(tspace.pointer(), ::IID_IDVBTuningSpace, NULLREP);
+                    if (!dvb_tspace.isNull()) {
+                        // This is a DVB tuning space. Get DVB system type.
+                        ::DVBSystemType systype;
+                        hr = dvb_tspace->get_SystemType(&systype);
+                        if (ts::ComSuccess(hr, "cannot get DVB system type from tuning space \"" + fname + "\"", report)) {
+                            strm << ", DVB system type: ";
+                            switch (systype) {
+                                case ::DVB_Cable:        strm << "DVB_Cable"; break;
+                                case ::DVB_Terrestrial:  strm << "DVB_Terrestrial"; break;
+                                case ::DVB_Satellite:    strm << "DVB_Satellite"; break;
+                                case ::ISDB_Terrestrial: strm << "ISDB_Terrestrial"; break;
+                                case ::ISDB_Satellite:   strm << "ISDB_Satellite"; break;
+                                default:                 strm << int(systype); break;
+                            }
+                        }
+                    }
+                    strm << std::endl;
+                }
+            }
         }
     }
 }
@@ -762,6 +812,7 @@ namespace {
         DisplayIKsControl(strm, margin, obj.pointer(), report);
         DisplayIKsTopologyInfo(strm, margin, obj.pointer(), report);
         DisplayBDATopology(strm, margin, obj.pointer(), report);
+        DisplayITuner(strm, margin, obj.pointer(), report);
     }
 }
 
