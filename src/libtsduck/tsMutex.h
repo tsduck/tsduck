@@ -110,7 +110,7 @@ namespace ts {
 
         // Private members
         bool _created;
-#if defined (__windows)
+#if defined (TS_WINDOWS)
         ::HANDLE _handle;
 #else
         ::pthread_mutex_t _mutex;

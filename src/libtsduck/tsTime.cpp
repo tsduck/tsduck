@@ -45,7 +45,7 @@ const ts::Time ts::Time::Apocalypse(TS_CONST64(0x7FFFFFFFFFFFFFFF));
 // The Julian epoch is 17 Nov 1858 00:00:00.
 // If negative, the Julian epoch cannot be represented as a Time.
 const ts::MilliSecond ts::Time::JulianEpochOffset =
-#if defined (__windows)
+#if defined (TS_WINDOWS)
     // Windows epoch is 1 Jan 1601 00:00:00, 94187 days before Julian epoch
     94187 * MilliSecPerDay;
 #elif defined (__vms)
@@ -171,7 +171,7 @@ std::string ts::Time::format(int fields) const
 
 ts::Time ts::Time::localToUTC() const
 {
-#if defined(__windows)
+#if defined(TS_WINDOWS)
 
     FileTime local, utc;
     local.i = _value;
@@ -208,7 +208,7 @@ ts::Time ts::Time::localToUTC() const
 
 ts::Time ts::Time::UTCToLocal() const
 {
-#if defined(__windows)
+#if defined(TS_WINDOWS)
 
     FileTime local, utc;
     utc.i = _value;
@@ -246,7 +246,7 @@ ts::Time ts::Time::UTCToLocal() const
 
 ts::Time ts::Time::CurrentUTC()
 {
-#if defined(__windows)
+#if defined(TS_WINDOWS)
 
     FileTime result;
     ::GetSystemTimeAsFileTime(&result.ft);
@@ -268,7 +268,7 @@ ts::Time ts::Time::CurrentUTC()
 // This static routine converts a Win32 FILETIME to MilliSecond
 //----------------------------------------------------------------------------
 
-#if defined(__windows)
+#if defined(TS_WINDOWS)
 ts::MilliSecond ts::Time::Win32FileTimeToMilliSecond(const ::FILETIME& ft)
 {
     FileTime ftime;
@@ -282,7 +282,7 @@ ts::MilliSecond ts::Time::Win32FileTimeToMilliSecond(const ::FILETIME& ft)
 // This static routine converts a Win32 FILETIME to a UTC time
 //----------------------------------------------------------------------------
 
-#if defined(__windows)
+#if defined(TS_WINDOWS)
 ts::Time ts::Time::Win32FileTimeToUTC(const ::FILETIME& ft)
 {
     FileTime ftime;
@@ -298,7 +298,7 @@ ts::Time ts::Time::Win32FileTimeToUTC(const ::FILETIME& ft)
 
 ts::Time ts::Time::UnixTimeToUTC(const uint32_t t)
 {
-#if defined(__unix)
+#if defined(TS_UNIX)
     // On UNIX, use native features
     return Time(int64_t(t) * 1000 * TICKS_PER_MS);
 #else
@@ -313,7 +313,7 @@ ts::Time ts::Time::UnixTimeToUTC(const uint32_t t)
 // These static routines get the current real time clock and add a delay.
 //----------------------------------------------------------------------------
 
-#if defined(__unix)
+#if defined(TS_UNIX)
 
 ts::NanoSecond ts::Time::UnixClockNanoSeconds(clockid_t clock, const MilliSecond& delay)
 {
@@ -350,7 +350,7 @@ void ts::Time::GetUnixClock(::timespec& result, clockid_t clock, const MilliSeco
 
 int64_t ts::Time::ToInt64(int year, int month, int day, int hour, int minute, int second, int millisecond)
 {
-#if defined(__windows)
+#if defined(TS_WINDOWS)
 
     ::SYSTEMTIME stime;
     FileTime ftime;
@@ -412,7 +412,7 @@ int64_t ts::Time::ToInt64(int year, int month, int day, int hour, int minute, in
 
 ts::Time::operator Fields() const
 {
-#if defined (__windows)
+#if defined (TS_WINDOWS)
 
     ::SYSTEMTIME st;
     FileTime ft;

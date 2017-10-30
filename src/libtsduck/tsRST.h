@@ -66,7 +66,7 @@ namespace ts {
             {
             }
         };
-        
+
         //!
         //! List of Events.
         //!

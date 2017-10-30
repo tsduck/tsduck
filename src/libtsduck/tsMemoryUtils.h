@@ -50,7 +50,7 @@ namespace ts {
     //! @param [in] size Size in bytes of the memory area.
     //!
     TSDUCKDLL inline void Zero(void* addr, size_t size) {
-#if defined (__windows)
+#if defined (TS_WINDOWS)
         ::SecureZeroMemory(addr, size);
 #else
         ::memset(addr, 0, size);

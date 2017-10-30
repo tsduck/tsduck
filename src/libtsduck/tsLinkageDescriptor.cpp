@@ -566,7 +566,7 @@ void ts::LinkageDescriptor::fromXML(XML& xml, const XML::Element* element)
             xml.getBoolAttribute(event_linkage_info.target_listed, eventElements[0], "target_listed", true) &&
             xml.getBoolAttribute(event_linkage_info.event_simulcast, eventElements[0], "event_simulcast", true);
     }
-    
+
     if (_is_valid && !extEventElements.empty()) {
         _is_valid = xml.getChildren(eventElements, extEventElements[0], "event");
         for (size_t i = 0; _is_valid && i < eventElements.size(); ++i) {

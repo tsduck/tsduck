@@ -135,7 +135,7 @@
 
   <!-- Event Information Table -->
   <!-- If type="pf", this is an EITp/f -->
-  <!-- If type="uint4", this is an EITs with TID 0x50+type (actual) or 0x60+type (other) -->  
+  <!-- If type="uint4", this is an EITs with TID 0x50+type (actual) or 0x60+type (other) -->
   <EIT type="pf|uint4, default=pf"
        version="uint5, default=0"
        current="bool, default=true"
@@ -303,7 +303,7 @@
         <name>String</name>
       </item>
     </extended_event_descriptor>
-    
+
     <HD_simulcast_logical_channel_descriptor>
       <!-- One per service -->
       <service service_id="uint16, required"

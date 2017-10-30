@@ -53,7 +53,7 @@ ts::ApplicationSharedLibrary::ApplicationSharedLibrary(const std::string& filena
     if (filename.empty()) {
         return;
     }
-    
+
     const std::string basename(BaseName(filename));
     const std::string suffix(PathSuffix(filename));
     const bool has_directory = basename != filename;
@@ -73,17 +73,17 @@ ts::ApplicationSharedLibrary::ApplicationSharedLibrary(const std::string& filena
         for (StringList::const_iterator it = dirs.begin(); !isLoaded() && it != dirs.end(); ++it) {
             // First, try name with prefix.
             load(AddPathSuffix(*it + PathSeparator + prefix + basename, SharedLibrary::Extension));
-            
+
             // And then try specified name without prefix.
             if (!isLoaded()) {
                 load(AddPathSuffix(*it + PathSeparator + basename, SharedLibrary::Extension));
             }
         }
     }
-    
+
     // With a directory in name or if still not loaded, try the standard system lookup rules.
     if (!isLoaded()) {
-        // Try plain 
+        // Try plain
         load(filename);
 
         // If not loaded, try with standard extension if filename had no extension.

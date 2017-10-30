@@ -602,7 +602,7 @@ bool ts::XML::getHexaText(ByteBlock& data, const Element* elem, size_t minSize, 
     if (elem == 0) {
         return false;
     }
-    
+
     // Get text children.
     std::string text;
     if (!getText(text, elem)) {
@@ -614,7 +614,7 @@ bool ts::XML::getHexaText(ByteBlock& data, const Element* elem, size_t minSize, 
         reportError(Format("Invalid hexadecimal content in <%s>, line %d", ElementName(elem), elem->GetLineNum()));
         return false;
     }
-    
+
     // Check value size.
     const size_t len = data.size();
     if (len >= minSize && len <= maxSize) {

@@ -27,7 +27,7 @@ TSDUCK_SOURCE;
 
 // Disable some aggressive warnings on MSVC.
 
-#if defined(__msc)
+#if defined(TS_MSC)
 #pragma warning(disable:4244) // '=': conversion from 'int' to 'uint8_t', possible loss of data
 #endif
 

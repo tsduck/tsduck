@@ -43,11 +43,11 @@
 #include "tsTunerParametersDVBT.h"
 #include "tsTunerParametersATSC.h"
 
-#if defined(__linux) || defined(DOXYGEN)
+#if defined(TS_LINUX) || defined(DOXYGEN)
 #include "tsDTVProperties.h"
 #endif
 
-#if defined(__windows) || defined(DOXYGEN)
+#if defined(TS_WINDOWS) || defined(DOXYGEN)
 #include "tsSinkFilter.h"
 #include "tsComPtr.h"
 #endif
@@ -315,7 +315,7 @@ namespace ts {
             return _receive_timeout;
         }
 
-#if defined(__linux) || defined(DOXYGEN) // Linux-specific operations
+#if defined(TS_LINUX) || defined(DOXYGEN) // Linux-specific operations
 
         //!
         //! Default poll interval for signal timeout (Linux-specific).
@@ -356,7 +356,7 @@ namespace ts {
         bool tune(DTVProperties& props, ReportInterface& report);
 #endif
 
-#if defined(__windows) || defined(DOXYGEN) // Windows-specific operations
+#if defined(TS_WINDOWS) || defined(DOXYGEN) // Windows-specific operations
 
         //!
         //! Default max number of queued media samples (Windows-specific).
@@ -407,7 +407,7 @@ namespace ts {
         MilliSecond       _receive_timeout;
         DeliverySystemSet _delivery_systems;
 
-#if defined(__linux) // Linux properties
+#if defined(TS_LINUX) // Linux properties
 
         std::string         _frontend_name;    // Frontend device name
         std::string         _demux_name;       // Demux device name
@@ -446,7 +446,7 @@ namespace ts {
 
 #endif // linux
 
-#if defined(__windows) // Windows properties
+#if defined(TS_WINDOWS) // Windows properties
 
         // A DirectShow graph for TS capture is usually made of the following filters:
         // - Network provider (typically "Microsoft DVBx Network Provider")

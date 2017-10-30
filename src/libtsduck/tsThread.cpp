@@ -44,7 +44,7 @@ ts::Thread::Thread() :
     _mutex(),
     _started(false),
     _waiting(false),
-#if defined(__windows)
+#if defined(TS_WINDOWS)
     _handle(INVALID_HANDLE_VALUE),
     _thread_id(0)
 #else
@@ -63,7 +63,7 @@ ts::Thread::Thread(const ThreadAttributes& attributes) :
     _mutex(),
     _started(false),
     _waiting(false),
-#if defined(__windows)
+#if defined(TS_WINDOWS)
     _handle(INVALID_HANDLE_VALUE),
     _thread_id(0)
 #else
@@ -133,7 +133,7 @@ bool ts::Thread::isCurrentThread() const
 
 bool ts::Thread::isCurrentThreadUnchecked() const
 {
-#if defined(__windows)
+#if defined(TS_WINDOWS)
     return ::GetCurrentThreadId() == _thread_id;
 #else
     return ::pthread_equal(::pthread_self(), _pthread) != 0;
@@ -155,7 +155,7 @@ bool ts::Thread::start()
         return false;
     }
 
-#if defined(__windows)
+#if defined(TS_WINDOWS)
 
     // Windows implementation.
     // Create the thread in suspended state.
@@ -270,7 +270,7 @@ bool ts::Thread::waitForTermination()
     }
 
     // Actually wait for the thread
-#if defined(__windows)
+#if defined(TS_WINDOWS)
     ::WaitForSingleObject(_handle, INFINITE);
     ::CloseHandle(_handle);
 #else
@@ -292,7 +292,7 @@ bool ts::Thread::waitForTermination()
 // Static method. Actual starting point of threads. Parameter is "this".
 //----------------------------------------------------------------------------
 
-#if defined(__windows)
+#if defined(TS_WINDOWS)
 
 ::DWORD WINAPI ts::Thread::ThreadProc(::LPVOID parameter)
 {

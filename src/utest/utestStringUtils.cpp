@@ -42,7 +42,7 @@
 #include "utestCppUnitTest.h"
 TSDUCK_SOURCE;
 
-#if defined(__unix)
+#if defined(TS_UNIX)
 #include <sys/types.h>
 #include <unistd.h>
 #endif

@@ -326,7 +326,7 @@ ts::XML::Element* ts::PMT::toXML(XML& xml, XML::Element* parent) const
         xml.setIntAttribute(root, "PCR_PID", pcr_pid, true);
     }
     XMLTables::ToXML(xml, root, descs);
-    
+
     for (StreamMap::const_iterator it = streams.begin(); it != streams.end(); ++it) {
         XML::Element* e = xml.addElement(root, "component");
         xml.setIntAttribute(e, "elementary_PID", it->first, true);

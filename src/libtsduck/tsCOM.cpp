@@ -28,7 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsCOM.h"
-#if defined (__windows)
+#if defined (TS_WINDOWS)
 #include "tsComUtils.h"
 #endif
 TSDUCK_SOURCE;
@@ -36,7 +36,7 @@ TSDUCK_SOURCE;
 ts::COM::COM(ReportInterface& report) :
     _is_init(false)
 {
-#if defined(__windows)
+#if defined(TS_WINDOWS)
     _is_init = ComSuccess(::CoInitializeEx(NULL, ::COINIT_MULTITHREADED), "COM initialization", report);
 #else
     _is_init = true;
@@ -50,7 +50,7 @@ ts::COM::~COM()
 
 void ts::COM::uninitialize()
 {
-#if defined(__windows)
+#if defined(TS_WINDOWS)
     if (_is_init) {
         ::CoUninitialize();
     }

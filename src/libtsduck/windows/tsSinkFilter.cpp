@@ -525,7 +525,7 @@ STDMETHODIMP ts::SinkPin::ReceiveConnection(::IPin* pConnector, const ::AM_MEDIA
     TRACE((1, "SinkPin::ReceiveConnection: connected"));
     _flushing = false;
     _input_overflow = false;
- 
+
     // Get transport packet format
     if (pmt->subtype == ::MEDIASUBTYPE_MPEG2_TRANSPORT_STRIDE && pmt->formattype == ::FORMAT_None && pmt->pbFormat != NULL) {
         assert (pmt->cbFormat >= sizeof (::MPEG2_TRANSPORT_STRIDE)); // already checked in QueryAccept

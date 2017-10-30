@@ -74,12 +74,12 @@ ts::Enumeration::Enumeration(const char* name, int value, ...) :
         bool isNull = n == 0;
         // In the following test, we know that the expression "sizeof(int) < sizeof(char*)" is constant.
         // warning C4127: conditional expression is constant
-        #if defined(__msc)
+        #if defined(TS_MSC)
             #pragma warning (push)
             #pragma warning (disable:4127)
         #endif
         if (!isNull && sizeof(int) < sizeof(char*)) {
-            #if defined(__msc)
+            #if defined(TS_MSC)
                 #pragma warning (pop)
             #endif
             // Try to detect buggy "0" literal. This is not bullet-proof and

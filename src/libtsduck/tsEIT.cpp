@@ -323,7 +323,7 @@ void ts::EIT::addSection(BinaryTable& table, int& section_number, uint8_t* paylo
                                  uint8_t(section_number), //last_section_number
                                  payload,
                                  data - payload)); // payload_size,
- 
+
     // Reinitialize pointers.
     // Restart after constant part of payload (6 bytes).
     remain += data - payload - 6;

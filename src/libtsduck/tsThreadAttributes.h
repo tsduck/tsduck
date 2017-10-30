@@ -275,11 +275,11 @@ namespace ts {
         friend class Thread;
         //! @endcond
 
-#if defined(__windows)
+#if defined(TS_WINDOWS)
         // This static method is used by the implementation of ts::Thread on Windows
         // to obtain the actual Win32 priority value.
         static int Win32Priority(int priority);
-#elif defined(__unix)
+#elif defined(TS_UNIX)
         // This static method is used by the implementation of ts::Thread on Unix
         // to obtain the scheduling policy to use for this process.
         static int PthreadSchedulingPolicy();

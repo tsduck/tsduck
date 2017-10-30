@@ -57,7 +57,7 @@ void ts::UString::ConvertUTF16ToUTF8(const UChar*& inStart, const UChar* inEnd, 
 
         // Get the higher 6 bits of the 16-bit value.
         high6 = code & 0xFC00;
-        
+
         // The possible ranges are:
         // - 0x0000-0x0xD7FF : direct 16-bit code point.
         // - 0xD800-0x0xDBFF : leading surrogate, first part of a surrogate pair.
@@ -354,7 +354,7 @@ void ts::UString::remove(const UString& substr)
 
 void ts::UString::remove(UChar c)
 {
-#if defined(__cxx11)
+#if defined(TS_CXX11)
     erase(std::remove(begin(), end(), c), end());
 #else
     size_type index = 0;
@@ -778,7 +778,7 @@ size_t ts::UString::toDVB(uint8_t*& buffer, size_t& size, size_t start, size_t c
 
     // Try to encode using these charsets in order
     static const DVBCharset* const dvbEncoders[] = {
-        &ts::DVBCharsetSingleByte::ISO_6937,     // default charset 
+        &ts::DVBCharsetSingleByte::ISO_6937,     // default charset
         &ts::DVBCharsetSingleByte::ISO_8859_15,  // most european characters and Euro currency sign
         &ts::DVBCharsetUTF8::UTF_8,              // last chance, used when no other match
         0                                        // end of list

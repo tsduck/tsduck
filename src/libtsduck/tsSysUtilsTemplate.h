@@ -29,7 +29,7 @@
 
 #pragma once
 
-#if defined (__unix)
+#if defined (TS_UNIX)
 #include <glob.h>
 #endif
 
@@ -42,7 +42,7 @@
 template <class CONTAINER>
 bool ts::ExpandWildcardAndAppend(CONTAINER& container, const std::string& pattern)
 {
-#if defined(__windows)
+#if defined(TS_WINDOWS)
 
     // On Win32, FindFirstFile / FindNextFile return the file name without directory.
     // We keep the directory part in the pattern to add it later to all file names.
@@ -73,7 +73,7 @@ bool ts::ExpandWildcardAndAppend(CONTAINER& container, const std::string& patter
     ::FindClose (handle);
     return status == SYS_SUCCESS || status == ERROR_NO_MORE_FILES; // normal end of search
 
-#elif defined(__unix)
+#elif defined(TS_UNIX)
 
     ::glob_t gl;
     ::memset (&gl, 0, sizeof (gl));

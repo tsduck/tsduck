@@ -44,7 +44,7 @@ namespace ts {
     {
     public:
         //!
-        //! UNICODE character set singleton 
+        //! UNICODE character set singleton
         //!
         static const DVBCharsetUTF16 UNICODE;
 

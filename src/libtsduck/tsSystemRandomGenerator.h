@@ -60,7 +60,7 @@ namespace ts {
         virtual ~SystemRandomGenerator();
 
     private:
-#if defined (__windows)
+#if defined (TS_WINDOWS)
         ::HCRYPTPROV _prov;
 #else
         int _fd;

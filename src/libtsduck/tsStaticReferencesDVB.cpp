@@ -49,7 +49,7 @@ ts::StaticReferencesDVB::StaticReferencesDVB() :
     _refs()
 {
     _refs.reserve(20);
-    
+
     // References to all object files containing DVB character sets.
 
     _refs.push_back(&ts::DVBCharsetSingleByte::ISO_6937);

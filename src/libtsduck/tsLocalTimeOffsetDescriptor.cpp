@@ -168,7 +168,7 @@ void ts::LocalTimeOffsetDescriptor::DisplayDescriptor(TablesDisplay& display, DI
                     data += 5; size -= 5;
                     strm << margin << "Next change: " << next_change.format(Time::DATE | Time::TIME) << std::endl;
                     if (size >= 2) {
-                        strm << margin << "Next time offset: " << (polarity ? "-" : "") 
+                        strm << margin << "Next time offset: " << (polarity ? "-" : "")
                              << Format("%02d:%02d", DecodeBCD(data[0]), DecodeBCD(data[1]))
                              << std::endl;
                         data += 2; size -= 2;

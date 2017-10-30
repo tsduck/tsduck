@@ -149,7 +149,7 @@ void ts::ExtendedEventDescriptor::splitAndAdd(DescriptorList& dlist, const DVBCh
     // - The event text is fully serialized.
     // We fill each descriptor with complete entries. If an entry does not fit, start a new descriptor.
     // If one entry is so large that it does not fit in a descriptor alone, it is truncated.
-    // The event text is potentially split into several descriptors.    
+    // The event text is potentially split into several descriptors.
 
     // Iterate over all entries.
     EntryList::const_iterator it = entries.begin();

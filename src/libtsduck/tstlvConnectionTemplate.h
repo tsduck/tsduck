@@ -57,7 +57,7 @@ ts::tlv::Connection<MUTEX>::Connection (const Protocol* protocol, bool auto_erro
 
 // With MSVC, we get a bogus warning:
 // warning C4505: 'ts::tlv::Connection<ts::Mutex>::handleConnected': unreferenced local function has been removed
-#ifdef __msc
+#ifdef TS_MSC
 #pragma warning(push)
 #pragma warning(disable:4505)
 #endif
@@ -69,7 +69,7 @@ void ts::tlv::Connection<MUTEX>::handleConnected(ReportInterface& report)
     _invalid_msg_count = 0;
 }
 
-#ifdef __msc
+#ifdef TS_MSC
 #pragma warning(pop)
 #endif
 

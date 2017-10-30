@@ -42,8 +42,8 @@ ts::UserInterrupt* volatile ts::UserInterrupt::_active_instance = 0;
 // On UNIX platforms, we use a semaphore (sem_t). On MacOS, the address of the
 // semaphore is returned by sep_open. On other UNIX, the semaphore instance is
 // initialized by sem_init.
-#if defined(__unix)
-    #if defined(__mac)
+#if defined(TS_UNIX)
+    #if defined(TS_MAC)
          #define SEM_PARAM(obj) ((obj)->_sem_address)
     #else
          #define SEM_PARAM(obj) (&((obj)->_sem_instance))
@@ -55,7 +55,7 @@ ts::UserInterrupt* volatile ts::UserInterrupt::_active_instance = 0;
 // Handler on UNIX platforms. Invoked in signal context.
 //----------------------------------------------------------------------------
 
-#if defined(__unix)
+#if defined(TS_UNIX)
 void ts::UserInterrupt::sysHandler(int sig)
 {
     // There should be one active instance but just check...
@@ -84,7 +84,7 @@ void ts::UserInterrupt::sysHandler(int sig)
 // application handler.
 //----------------------------------------------------------------------------
 
-#if defined(__unix)
+#if defined(TS_UNIX)
 void ts::UserInterrupt::main()
 {
     while (!_terminate) {
@@ -114,7 +114,7 @@ void ts::UserInterrupt::main()
 // Handler on Windows platforms. Invoked in the context of a system thread.
 //----------------------------------------------------------------------------
 
-#if defined(__windows)
+#if defined(TS_WINDOWS)
 ::BOOL WINAPI ts::UserInterrupt::sysHandler(__in ::DWORD dwCtrlType)
 {
     // Only handle Ctrl+C events
@@ -153,12 +153,12 @@ void ts::UserInterrupt::main()
 //----------------------------------------------------------------------------
 
 ts::UserInterrupt::UserInterrupt(InterruptHandler* handler, bool one_shot, bool auto_activate) :
-#if defined(__unix)
+#if defined(TS_UNIX)
     // stack size: 16 kB, maximum priority
     Thread(ThreadAttributes().setStackSize(16 * 1024).setPriority(ThreadAttributes::GetMaximumPriority())),
     _terminate(false),
     _got_sigint(0),
-#if defined(__mac)
+#if defined(TS_MAC)
     _sem_name(Format("tsduck-%d-%" FMT_INT64 "u", int(getpid()), uint64_t(this))),
     _sem_address(SEM_FAILED),
 #else
@@ -205,7 +205,7 @@ void ts::UserInterrupt::activate()
         return;
     }
 
-#if defined(__windows)
+#if defined(TS_WINDOWS)
 
     // Install the console interrupt handler
     if (SetConsoleCtrlHandler(sysHandler, TRUE) == 0) {
@@ -215,13 +215,13 @@ void ts::UserInterrupt::activate()
         return;
     }
 
-#elif defined(__unix)
+#elif defined(TS_UNIX)
 
     _terminate = false;
     _got_sigint = 0;
 
     // Initialize the semaphore.
-#if defined(__mac)
+#if defined(TS_MAC)
     // MacOS no longer supports unnamed semaphores, we need to use a named one.
     _sem_address = ::sem_open(_sem_name.c_str(), O_CREAT, 0700, 0);
     if (_sem_address == SEM_FAILED || _sem_address == 0) {
@@ -277,12 +277,12 @@ void ts::UserInterrupt::deactivate ()
     // coverity[ASSERT_SIDE_EFFECT]
     assert(_active_instance == this);
 
-#if defined(__windows)
+#if defined(TS_WINDOWS)
 
     // Remove the console interrupt handler
     SetConsoleCtrlHandler(sysHandler, FALSE);
 
-#elif defined(__unix)
+#elif defined(TS_UNIX)
 
     // Restore the signal handler to default behaviour
 
@@ -307,7 +307,7 @@ void ts::UserInterrupt::deactivate ()
     waitForTermination();
 
     // Free resources
-#if defined(__mac)
+#if defined(TS_MAC)
     if (::sem_close(_sem_address) < 0) {
         ::perror("sem_close error on SIGINT semaphore");
         ::exit(EXIT_FAILURE);

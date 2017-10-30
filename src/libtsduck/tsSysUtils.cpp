@@ -38,11 +38,11 @@
 #include "tsArgs.h"
 TSDUCK_SOURCE;
 
-#if defined(__windows)
+#if defined(TS_WINDOWS)
 #include "tsComUtils.h"
 #endif
 
-#if defined(__mac)
+#if defined(TS_MAC)
 #include <sys/resource.h>
 #include <mach/mach.h>
 #include <mach/message.h>
@@ -63,7 +63,7 @@ std::string ts::VernacularFilePath(const std::string& path)
 {
     std::string vern(path);
 
-#if defined(__windows)
+#if defined(TS_WINDOWS)
     // On Windows, transform "/c/" pattern into "C:\"
     if (vern.length() >= 3 && vern[0] == '/' && std::isalpha(vern[1]) && vern[2] == '/') {
         vern[0] = char(std::toupper(vern[1]));
@@ -111,7 +111,7 @@ std::string ts::BaseName(const std::string& path, const std::string& suffix)
     const std::string::size_type sep = path.rfind(PathSeparator);
     const std::string base(path.substr(sep == std::string::npos ? 0 : sep + 1));
     const bool suffixFound = !suffix.empty() &&
-#if defined(__windows)
+#if defined(TS_WINDOWS)
         EndWithInsensitive(base, suffix);
 #else
         EndWith(base, suffix);
@@ -187,7 +187,7 @@ std::string ts::PathPrefix(const std::string& path)
 
 std::string ts::UserHomeDirectory()
 {
-#if defined(__windows)
+#if defined(TS_WINDOWS)
 
     ::HANDLE process = 0;
     if (::OpenProcessToken(::GetCurrentProcess(), TOKEN_QUERY, &process) == 0) {
@@ -218,7 +218,7 @@ std::string ts::UserHomeDirectory()
 
 std::string ts::ExecutableFile()
 {
-#if defined(__windows)
+#if defined(TS_WINDOWS)
 
     // Window implementation.
     char name[1024];
@@ -226,7 +226,7 @@ std::string ts::ExecutableFile()
     assert(length >= 0 && length <= sizeof(name));
     return std::string(name, length);
 
-#elif defined(__linux)
+#elif defined(TS_LINUX)
 
     // Linux implementation.
     // /proc/self/exe is a symbolic link to the executable.
@@ -243,7 +243,7 @@ std::string ts::ExecutableFile()
         return std::string(name, length);
     }
 
-#elif defined(__mac)
+#elif defined(TS_MAC)
 
     // MacOS implementation.
     // The function proc_pidpath is documented as "private" and "subject to change".
@@ -271,7 +271,7 @@ std::string ts::ExecutableFile()
 
 std::string ts::HostName()
 {
-#if defined(__windows)
+#if defined(TS_WINDOWS)
 
     // Window implementation.
     char name[1024];
@@ -305,7 +305,7 @@ std::string ts::HostName()
 
 void ts::SleepThread(MilliSecond delay)
 {
-#if defined(__windows)
+#if defined(TS_WINDOWS)
 
     // Window implementation.
     ::Sleep(::DWORD(delay));
@@ -338,7 +338,7 @@ void ts::SleepThread(MilliSecond delay)
 
 size_t ts::MemoryPageSize()
 {
-#if defined(__windows)
+#if defined(TS_WINDOWS)
 
     ::SYSTEM_INFO sysinfo;
     ::GetSystemInfo(&sysinfo);
@@ -363,7 +363,7 @@ size_t ts::MemoryPageSize()
 
 ts::ProcessId ts::CurrentProcessId()
 {
-#if defined(__windows)
+#if defined(TS_WINDOWS)
     return ::GetCurrentProcessId();
 #else
     return ::getpid();
@@ -377,7 +377,7 @@ ts::ProcessId ts::CurrentProcessId()
 
 ts::ErrorCode ts::CreateDirectory(const std::string& path)
 {
-#if defined(__windows)
+#if defined(TS_WINDOWS)
     return ::CreateDirectory(path.c_str(), NULL) == 0 ? ::GetLastError() : SYS_SUCCESS;
 #else
     return ::mkdir(path.c_str(), 0777) < 0 ? errno : SYS_SUCCESS;
@@ -391,7 +391,7 @@ ts::ErrorCode ts::CreateDirectory(const std::string& path)
 
 std::string ts::TempDirectory()
 {
-#if defined(__windows)
+#if defined(TS_WINDOWS)
     char buf[2048];
     ::DWORD status = ::GetTempPath(::DWORD(sizeof(buf)), buf);
     if (status <= 0) {
@@ -425,7 +425,7 @@ std::string ts::TempFile(const std::string& suffix)
 
 int64_t ts::GetFileSize(const std::string& path)
 {
-#if defined(__windows)
+#if defined(TS_WINDOWS)
     ::WIN32_FILE_ATTRIBUTE_DATA info;
     return ::GetFileAttributesEx(path.c_str(), ::GetFileExInfoStandard, &info) == 0 ? -1 :
         (int64_t(info.nFileSizeHigh) << 32) | (int64_t(info.nFileSizeLow) & 0xFFFFFFFFL);
@@ -443,7 +443,7 @@ int64_t ts::GetFileSize(const std::string& path)
 
 ts::Time ts::GetFileModificationTimeUTC(const std::string& path)
 {
-#if defined(__windows)
+#if defined(TS_WINDOWS)
     ::WIN32_FILE_ATTRIBUTE_DATA info;
     return ::GetFileAttributesEx(path.c_str(), ::GetFileExInfoStandard, &info) == 0 ? Time::Epoch : Time::Win32FileTimeToUTC(info.ftLastWriteTime);
 #else
@@ -465,7 +465,7 @@ ts::Time ts::GetFileModificationTimeLocal(const std::string& path)
 
 bool ts::FileExists(const std::string& path)
 {
-#if defined(__windows)
+#if defined(TS_WINDOWS)
     return ::GetFileAttributes(path.c_str()) != INVALID_FILE_ATTRIBUTES;
 #else
     // Flawfinder: ignore
@@ -480,7 +480,7 @@ bool ts::FileExists(const std::string& path)
 
 bool ts::IsDirectory(const std::string& path)
 {
-#if defined(__windows)
+#if defined(TS_WINDOWS)
     const ::DWORD attr = ::GetFileAttributes(path.c_str());
     return attr != INVALID_FILE_ATTRIBUTES && (attr & FILE_ATTRIBUTE_DIRECTORY) != 0;
 #else
@@ -496,7 +496,7 @@ bool ts::IsDirectory(const std::string& path)
 
 ts::ErrorCode ts::DeleteFile(const std::string& path)
 {
-#if defined(__windows)
+#if defined(TS_WINDOWS)
     if (IsDirectory(path)) {
         return ::RemoveDirectory(path.c_str()) == 0 ? ::GetLastError() : SYS_SUCCESS;
     }
@@ -515,7 +515,7 @@ ts::ErrorCode ts::DeleteFile(const std::string& path)
 
 ts::ErrorCode ts::TruncateFile(const std::string& path, uint64_t size)
 {
-#if defined(__windows)
+#if defined(TS_WINDOWS)
 
     ::LONG size_high = ::LONG(size >> 32);
     ::DWORD status = ERROR_SUCCESS;
@@ -547,7 +547,7 @@ ts::ErrorCode ts::TruncateFile(const std::string& path, uint64_t size)
 
 ts::ErrorCode ts::RenameFile(const std::string& old_path, const std::string& new_path)
 {
-#if defined(__windows)
+#if defined(TS_WINDOWS)
     return ::MoveFile(old_path.c_str(), new_path.c_str()) == 0 ? ::GetLastError() : ERROR_SUCCESS;
 #else
     return ::rename(old_path.c_str(), new_path.c_str()) < 0 ? errno : 0;
@@ -581,7 +581,7 @@ std::string ts::SearchConfigurationFile(const std::string& fileName)
     dirList.push_back(DirectoryName(ExecutableFile()));
     GetEnvironmentPath(tmp, TS_PLUGINS_PATH);
     dirList.insert(dirList.end(), tmp.begin(), tmp.end());
-#if defined(__unix)
+#if defined(TS_UNIX)
     GetEnvironmentPath(tmp, "LD_LIBRARY_PATH");
     dirList.insert(dirList.end(), tmp.begin(), tmp.end());
 #endif
@@ -612,7 +612,7 @@ std::string ts::ErrorCodeMessage(ts::ErrorCode code)
     bool found;
 
     TS_ZERO(message);
-#if defined(__windows)
+#if defined(TS_WINDOWS)
     // Windows implementation
     ::DWORD length = ::FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM, NULL, code, 0, message, sizeof(message), NULL);
     found = length > 0;
@@ -650,7 +650,7 @@ void ts::GetProcessMetrics(ProcessMetrics& metrics)
     metrics.cpu_time = 0;
     metrics.vmem_size = 0;
 
-#if defined(__windows)
+#if defined(TS_WINDOWS)
 
     // Windows implementation
 
@@ -671,7 +671,7 @@ void ts::GetProcessMetrics(ProcessMetrics& metrics)
     }
     metrics.vmem_size = mem_counters.PrivateUsage;
 
-#elif defined(__linux)
+#elif defined(TS_LINUX)
 
     // Linux implementation.
 
@@ -754,7 +754,7 @@ void ts::GetProcessMetrics(ProcessMetrics& metrics)
     unsigned long jiffies = ps.utime + ps.stime; // CPU time in jiffies
     metrics.cpu_time = (MilliSecond(jiffies) * 1000) / jps;
 
-#elif defined(__mac)
+#elif defined(TS_MAC)
 
     // MacOS implementation.
     // First, get the virtual memory size using task_info (mach kernel).
@@ -796,7 +796,7 @@ void ts::GetProcessMetrics(ProcessMetrics& metrics)
 
 void ts::IgnorePipeSignal()
 {
-#if !defined(__windows)
+#if !defined(TS_WINDOWS)
     ::signal(SIGPIPE, SIG_IGN);
 #endif
 }
@@ -815,7 +815,7 @@ void ts::IgnorePipeSignal()
 
 bool ts::SetBinaryModeStdin(ReportInterface& report)
 {
-#if defined(__windows)
+#if defined(TS_WINDOWS)
     report.debug("setting standard input to binary mode");
     if (::_setmode(_fileno(stdin), _O_BINARY) < 0) {
         report.error("cannot set standard input to binary mode");
@@ -831,7 +831,7 @@ bool ts::SetBinaryModeStdin(ReportInterface& report)
 
 bool ts::SetBinaryModeStdout(ReportInterface& report)
 {
-#if defined(__windows)
+#if defined(TS_WINDOWS)
     report.debug("setting standard output to binary mode");
     if (::_setmode(_fileno(stdout), _O_BINARY) < 0) {
         report.error("cannot set standard output to binary mode");
@@ -854,7 +854,7 @@ bool ts::EnvironmentExists(const std::string& name)
 {
     Guard lock(EnvironmentMutex::Instance());
 
-#if defined(__windows)
+#if defined(TS_WINDOWS)
     char unused[2];
     return ::GetEnvironmentVariable(name.c_str(), unused, sizeof(unused)) != 0;
 #else
@@ -873,7 +873,7 @@ std::string ts::GetEnvironment(const std::string& name, const std::string& def)
 {
     Guard lock(EnvironmentMutex::Instance());
 
-#if defined(__windows)
+#if defined(TS_WINDOWS)
     std::vector<char> value;
     value.resize(512);
     ::DWORD size = ::GetEnvironmentVariable(name.c_str(), &value[0], ::DWORD(value.size()));
@@ -898,7 +898,7 @@ bool ts::SetEnvironment(const std::string& name, const std::string& value)
 {
     Guard lock(EnvironmentMutex::Instance());
 
-#if defined(__windows)
+#if defined(TS_WINDOWS)
     return ::SetEnvironmentVariable(name.c_str(), value.c_str()) != 0;
 #else
     // In case of error, setenv(3) is documented to return -1 but not setting errno.
@@ -915,7 +915,7 @@ bool ts::DeleteEnvironment(const std::string& name)
 {
     Guard lock(EnvironmentMutex::Instance());
 
-#if defined(__windows)
+#if defined(TS_WINDOWS)
     return ::SetEnvironmentVariable(name.c_str(), NULL) != 0;
 #else
     // In case of error, unsetenv(3) is documented to return -1 but and set errno.
@@ -1014,7 +1014,7 @@ void ts::GetEnvironment(Environment& env)
     Guard lock(EnvironmentMutex::Instance());
     env.clear();
 
-#if defined(__windows)
+#if defined(TS_WINDOWS)
 
     const ::LPTCH strings = ::GetEnvironmentStrings();
     if (strings != 0) {

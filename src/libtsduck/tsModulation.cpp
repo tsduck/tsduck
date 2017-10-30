@@ -50,9 +50,9 @@ bool ts::CheckModEnum (int value, const std::string& name, const Enumeration& co
     }
     else {
         report.error (name + " " + conv.name (value) + " is not supported"
-#if defined (__linux)
+#if defined (TS_LINUX)
                       " by Linux DVB"
-#elif defined (__windows)
+#elif defined (TS_WINDOWS)
                       " by Windows BDA/DirectShow"
 #endif
                       );

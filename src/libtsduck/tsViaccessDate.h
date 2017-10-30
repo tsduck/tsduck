@@ -84,7 +84,7 @@ namespace ts {
         //! Assignment operator.
         //! @param [in] date A data to assign.
         //! @return A reference to this object.
-        //!        
+        //!
         ViaccessDate& operator=(const AbstractCASDate& date)
         {
             AbstractCASDate::operator=(date);

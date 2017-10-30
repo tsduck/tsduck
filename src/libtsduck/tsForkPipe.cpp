@@ -46,7 +46,7 @@ ts::ForkPipe::ForkPipe() :
     _synchronous(false),
     _ignore_abort(false),
     _broken_pipe(false),
-#if defined(__windows)
+#if defined(TS_WINDOWS)
     _handle(INVALID_HANDLE_VALUE),
     _process(INVALID_HANDLE_VALUE)
 #else
@@ -84,7 +84,7 @@ bool ts::ForkPipe::open(const std::string& command, bool synchronous, size_t buf
 
     report.debug("creating process \"" + command + "\"");
 
-#if defined (__windows)
+#if defined (TS_WINDOWS)
 
     // Create a pipe
     ::HANDLE read_handle;
@@ -205,7 +205,7 @@ bool ts::ForkPipe::close (ReportInterface& report)
 
     bool result = true;
 
-#if defined (__windows)
+#if defined (TS_WINDOWS)
 
     // Close the pipe handle
     ::CloseHandle (_handle);
@@ -259,7 +259,7 @@ bool ts::ForkPipe::write (const void* addr, size_t size, ReportInterface& report
     bool error = false;
     ErrorCode error_code = SYS_SUCCESS;
 
-#if defined (__windows)
+#if defined (TS_WINDOWS)
 
     const char* data = reinterpret_cast <const char*> (addr);
     ::DWORD remain = ::DWORD (size);

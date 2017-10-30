@@ -94,7 +94,7 @@ namespace ts {
         bool valid;
 
     protected:
-        #if defined(__msc)
+        #if defined(TS_MSC)
             #pragma warning(push)
             #pragma warning(disable:4127) // conditional expression is constant
         #endif
@@ -145,7 +145,7 @@ namespace ts {
             }
         }
 
-        #if defined(__msc)
+        #if defined(TS_MSC)
             #pragma warning (pop)
         #endif
     };

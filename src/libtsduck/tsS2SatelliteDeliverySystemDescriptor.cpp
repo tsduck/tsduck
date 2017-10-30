@@ -168,7 +168,7 @@ void ts::S2SatelliteDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& d
             data += 1; size -= 1;
         }
     }
-    
+
     display.displayExtraData(data, size, indent);
 }
 

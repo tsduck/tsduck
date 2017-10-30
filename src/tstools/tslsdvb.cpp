@@ -61,7 +61,7 @@ Options::Options (int argc, char *argv[]) :
 {
     option("debug", 0, POSITIVE, 0, 1, 0, 0, true);
     option("verbose", 'v');
-#if defined(__windows)
+#if defined(TS_WINDOWS)
     option("enumerate-devices", 'e');
 #endif
 
@@ -69,7 +69,7 @@ Options::Options (int argc, char *argv[]) :
             "\n"
             "Options:\n"
             "\n"
-#if defined(__windows)
+#if defined(TS_WINDOWS)
             "  -e\n"
             "  --enumerate-devices\n"
             "      Enumerate all relevant DirectShow devices and filters.\n"
@@ -97,7 +97,7 @@ Options::Options (int argc, char *argv[]) :
     verbose = present("verbose");
     setDebugLevel(present("debug") ? intValue("debug", 1) : ts::Severity::Info);
 
-#if defined(__windows)
+#if defined(TS_WINDOWS)
     enum_devices = present("enumerate-devices");
 #endif
 
@@ -125,14 +125,14 @@ namespace {
 
         // Display name. On Windows, since names are weird, always display
         // the adapter number and use quotes around tuner name.
-#if defined(__windows)
+#if defined(TS_WINDOWS)
         if (tuner_index >= 0) {
             std::cout << tuner_index << ": ";
         }
         std::cout << '"';
 #endif
         std::cout << tuner.deviceName();
-#if defined(__windows)
+#if defined(TS_WINDOWS)
         std::cout << '"';
 #endif
 
@@ -196,7 +196,7 @@ namespace {
         }
 
         // Enumerate all DirectShow devices on Windows
-#if defined (__windows)
+#if defined (TS_WINDOWS)
         if (opt.enum_devices) {
             ts::Tuner::EnumerateDevices(std::cout, "", opt);
         }

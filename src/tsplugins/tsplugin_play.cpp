@@ -38,7 +38,7 @@
 #include "tsSysUtils.h"
 TSDUCK_SOURCE;
 
-#if defined(__windows)
+#if defined(TS_WINDOWS)
 #include "tsRegistryUtils.h"
 #endif
 
@@ -97,7 +97,7 @@ ts::PlayPlugin::PlayPlugin (TSP* tsp_) :
              "\n"
              "  --help\n"
              "      Display this help text.\n"
-#if !defined(__windows)
+#if !defined(TS_WINDOWS)
              "\n"
              "  -m\n"
              "  --mplayer\n"
@@ -107,7 +107,7 @@ ts::PlayPlugin::PlayPlugin (TSP* tsp_) :
              "\n"
              "  --version\n"
              "      Display the version number.\n"
-#if !defined(__windows)
+#if !defined(TS_WINDOWS)
              "\n"
              "  -x\n"
              "  --xine\n"
@@ -174,7 +174,7 @@ bool ts::PlayPlugin::start()
     // Command to execute will be built here
     std::string command;
 
-#if defined (__windows)
+#if defined (TS_WINDOWS)
 
     // On Windows, VLC is the only known media player that can read an MPEG
     // transport stream on its standard input. Try to locate vlc.exe using

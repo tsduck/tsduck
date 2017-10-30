@@ -180,7 +180,7 @@ namespace ts {
         int      _severity;      //!< Severity level for error reporting
         bool     _at_eof;        //!< End of file has been reached
         bool     _rewindable;    //!< Opened in rewindable mode
-#if defined(__windows)
+#if defined(TS_WINDOWS)
         ::HANDLE _handle;        //!< File handle
 #else
         int      _fd;            //!< File descriptor

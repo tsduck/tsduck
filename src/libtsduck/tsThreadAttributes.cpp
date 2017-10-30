@@ -49,7 +49,7 @@ int ts::ThreadAttributes::_maximumPriority = 0;
 
 void ts::ThreadAttributes::InitializePriorities()
 {
-#if defined(__windows)
+#if defined(TS_WINDOWS)
 
     // Windows priority mapping: see Win32Priority() below
     _minimumPriority = 0;  // THREAD_PRIORITY_IDLE
@@ -99,11 +99,11 @@ int ts::ThreadAttributes::GetPriority(const int& staticPriority)
 // to obtain the scheduling policy to use for this process.
 //----------------------------------------------------------------------------
 
-#if defined(__unix)
+#if defined(TS_UNIX)
 int ts::ThreadAttributes::PthreadSchedulingPolicy()
 {
     // Get the scheduling policy of the current process.
-#if defined(__mac)
+#if defined(TS_MAC)
     // On MacOS, there is no sched_getscheduler, use hard-coded SCHED_OTHER.
     // This is far from ideal, can we do better?
     return SCHED_OTHER;
@@ -119,7 +119,7 @@ int ts::ThreadAttributes::PthreadSchedulingPolicy()
 // to obtain the actual Win32 priority value.
 //----------------------------------------------------------------------------
 
-#if defined(__windows)
+#if defined(TS_WINDOWS)
 int ts::ThreadAttributes::Win32Priority(int priority)
 {
     switch (priority) {

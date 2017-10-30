@@ -56,7 +56,7 @@ void ts::ApplicationSignallingDescriptor::DisplayDescriptor(TablesDisplay& displ
         data += 3; size -= 3;
         strm << margin << "Application type: " << app_type
              << Format(" (0x%04X)", int(app_type))
-             << ", AIT Version: " << int(ait_version) 
+             << ", AIT Version: " << int(ait_version)
              << Format(" (0x%02X)", int(ait_version)) << std::endl;
     }
 

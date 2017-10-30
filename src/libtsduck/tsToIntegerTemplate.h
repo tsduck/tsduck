@@ -38,7 +38,7 @@
 //
 // warning C4127: conditional expression is constant
 //
-#if defined(__msc)
+#if defined(TS_MSC)
     #pragma warning(push)
     #pragma warning(disable:4127)
 #endif
@@ -120,12 +120,12 @@ bool ts::ToInteger(INT& value,
     if (negative) {
         // If the type is unsigned, "value = -value" will never be executed
         // but Visual C++ complains. Suppress the warning.
-        #if defined(__msc)
+        #if defined(TS_MSC)
             #pragma warning(push)
             #pragma warning(disable:4146)
         #endif
         value = -value;
-        #if defined(__msc)
+        #if defined(TS_MSC)
             #pragma warning (pop)
         #endif
     }
@@ -193,6 +193,6 @@ bool ts::ToIntegers(CONTAINER& container,
     return true;
 }
 
-#if defined(__msc)
+#if defined(TS_MSC)
     #pragma warning(pop)
 #endif

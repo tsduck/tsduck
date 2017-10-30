@@ -50,9 +50,9 @@ ts::TunerArgs::TunerArgs(bool info_only, bool allow_short_options) :
     device_name(),
     signal_timeout(Tuner::DEFAULT_SIGNAL_TIMEOUT),
     receive_timeout(0),
-#if defined(__linux)
+#if defined(TS_LINUX)
     demux_buffer_size(Tuner::DEFAULT_DEMUX_BUFFER_SIZE),
-#elif defined(__windows)
+#elif defined(TS_WINDOWS)
     demux_queue_size(Tuner::DEFAULT_SINK_QUEUE_SIZE),
 #endif
     zap_specification(),
@@ -90,9 +90,9 @@ void ts::TunerArgs::reset()
     device_name.clear();
     signal_timeout = Tuner::DEFAULT_SIGNAL_TIMEOUT;
     receive_timeout = 0;
-#if defined(__linux)
+#if defined(TS_LINUX)
     demux_buffer_size = Tuner::DEFAULT_DEMUX_BUFFER_SIZE;
-#elif defined(__windows)
+#elif defined(TS_WINDOWS)
     demux_queue_size = Tuner::DEFAULT_SINK_QUEUE_SIZE;
 #endif
     zap_specification.reset();
@@ -136,9 +136,9 @@ void ts::TunerArgs::load(Args& args)
     }
     else if (args.present("adapter")) {
         const int adapter = args.intValue("adapter", 0);
-#if defined(__linux)
+#if defined(TS_LINUX)
         device_name = Format("/dev/dvb/adapter%d", adapter);
-#elif defined(__windows)
+#elif defined(TS_WINDOWS)
         device_name = Format(":%d", adapter);
 #else
         // Does not mean anything, just for error messages.
@@ -153,9 +153,9 @@ void ts::TunerArgs::load(Args& args)
         // Reception parameters.
         signal_timeout = args.intValue<MilliSecond>("signal-timeout", Tuner::DEFAULT_SIGNAL_TIMEOUT / 1000) * 1000;
         receive_timeout = args.intValue<MilliSecond>("receive-timeout", 0);
-#if defined(__linux)
+#if defined(TS_LINUX)
         demux_buffer_size = args.intValue<size_t>("demux-buffer-size", Tuner::DEFAULT_DEMUX_BUFFER_SIZE);
-#elif defined(__windows)
+#elif defined(TS_WINDOWS)
         demux_queue_size = args.intValue<size_t>("demux-queue-size", Tuner::DEFAULT_SINK_QUEUE_SIZE);
 #endif
 
@@ -285,9 +285,9 @@ void ts::TunerArgs::defineOptions(Args& args) const
         // Reception parameters.
         args.option("receive-timeout", 0, Args::UNSIGNED);
         args.option("signal-timeout", 0, Args::UNSIGNED);
-#if defined(__linux)
+#if defined(TS_LINUX)
         args.option("demux-buffer-size", 0, Args::UNSIGNED);
-#elif defined(__windows)
+#elif defined(TS_WINDOWS)
         args.option("demux-queue-size", 0, Args::UNSIGNED);
 #endif
 
@@ -331,20 +331,20 @@ void ts::TunerArgs::addHelp(Args& args) const
         "\n" +
         std::string(_allow_short_options ? "  -a N\n" : "") +
         "  --adapter N\n"
-#if defined(__linux)
+#if defined(TS_LINUX)
         "      Specifies the Linux DVB adapter N (/dev/dvb/adapterN).\n"
-#elif defined(__windows)
+#elif defined(TS_WINDOWS)
         "      Specifies the Nth DVB adapter in the system.\n"
 #endif
         "      This option can be used instead of device name.\n"
         "\n" +
         std::string(_allow_short_options ? "  -d \"name\"\n" : "") +
         "  --device-name \"name\"\n"
-#if defined (__linux)
+#if defined (TS_LINUX)
         "      Specify the DVB receiver device name, /dev/dvb/adapterA[:F[:M[:V]]]\n"
         "      where A = adapter number, F = frontend number (default: 0), M = demux\n"
         "      number (default: 0), V = dvr number (default: 0).\n"
-#elif defined (__windows)
+#elif defined (TS_WINDOWS)
         "      Specify the DVB receiver device name. This is a DirectShow/BDA tuner\n"
         "      filter name (not case sensitive, blanks are ignored).\n"
 #endif
@@ -355,12 +355,12 @@ void ts::TunerArgs::addHelp(Args& args) const
         help +=
             "\n"
             "Tuner reception parameters:\n"
-#if defined (__linux)
+#if defined (TS_LINUX)
             "\n"
             "  --demux-buffer-size value\n"
             "      Default buffer size, in bytes, of the demux device.\n"
             "      The default is 1 MB.\n"
-#elif defined (__windows)
+#elif defined (TS_WINDOWS)
             "\n"
             "  --demux-queue-size value\n"
             "      Specify the maximum number of media samples in the queue between the\n"
@@ -584,10 +584,10 @@ bool ts::TunerArgs::configureTuner(Tuner& tuner, ReportInterface& report) const
         return false;
     }
 
-#if defined(__linux)
+#if defined(TS_LINUX)
     tuner.setSignalPoll(Tuner::DEFAULT_SIGNAL_POLL);
     tuner.setDemuxBufferSize(demux_buffer_size);
-#elif defined(__windows)
+#elif defined(TS_WINDOWS)
     tuner.setSinkQueueSize(demux_queue_size);
 #endif
 
@@ -632,7 +632,7 @@ std::string ts::TunerArgs::DefaultZapFile(TunerType tuner_type)
 {
     const char* file;
 
-#if defined(__windows)
+#if defined(TS_WINDOWS)
     const char* root_env = "APPDATA";
     switch (tuner_type) {
         case DVB_S: file = "\\tsduck\\szap\\channels.conf"; break;
