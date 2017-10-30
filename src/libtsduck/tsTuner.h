@@ -94,8 +94,9 @@ namespace ts {
 
         //!
         //! Default constructor.
+        //! @param [in] device_name Tuner device name.
         //!
-        Tuner();
+        Tuner(const std::string& device_name = std::string());
 
         //!
         //! Destructor.
