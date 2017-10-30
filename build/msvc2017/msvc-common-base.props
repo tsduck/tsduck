@@ -36,6 +36,7 @@
       <BufferSecurityCheck>true</BufferSecurityCheck>
       <WarningLevel>Level4</WarningLevel>
       <TreatWarningAsError>true</TreatWarningAsError>
+      <LanguageStandard>stdcpp14</LanguageStandard>
       <UseUnicodeForAssemblerListing>false</UseUnicodeForAssemblerListing>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <MinimalRebuild>false</MinimalRebuild>
