@@ -53,7 +53,7 @@ void ts::EacemPreferredNameListDescriptor::DisplayDescriptor(TablesDisplay& disp
     const std::string margin(indent, ' ');
 
     while (size >= 4) {
-        std::string lang(Printable(data, 3));
+        const UString lang(UString::FromDVB(data, 3, display.dvbCharset()));
         uint8_t count = data[3];
         data += 4; size -= 4;
 
@@ -65,7 +65,7 @@ void ts::EacemPreferredNameListDescriptor::DisplayDescriptor(TablesDisplay& disp
             if (length > size) {
                 length = size;
             }
-            strm << margin << "Id: " << int(id) << ", Name: \"" << Printable(data, length) << "\"" << std::endl;
+            strm << margin << "Id: " << int(id) << ", Name: \"" << UString::FromDVB(data, length, display.dvbCharset()) << "\"" << std::endl;
             data += length; size -= length;
         }
     }

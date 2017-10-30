@@ -141,40 +141,6 @@ std::string ts::ReturnSubstituteAll(const std::string& str, const std::string& v
 
 
 //----------------------------------------------------------------------------
-// Return a printable version of a string.
-//----------------------------------------------------------------------------
-
-std::string ts::Printable (const std::string& s, char replacement)
-{
-    std::string result (s);
-    for (size_t i = 0; i < result.size(); ++i) {
-        if (!IsPrintable (result[i] & 0xFF))
-            result[i] = replacement;
-    }
-    return result;
-}
-
-
-//----------------------------------------------------------------------------
-// Return a printable version of a string in a memory area.
-//----------------------------------------------------------------------------
-
-std::string ts::Printable (const void* data, size_t size, char replacement)
-{
-    const uint8_t* p (reinterpret_cast <const uint8_t*> (data));
-    std::string result;
-    result.reserve (size);
-
-    while (size-- > 0 && *p != 0) {
-        result.push_back (IsPrintable (*p & 0xFF) ? *p : replacement);
-        p++;
-    }
-
-    return result;
-}
-
-
-//----------------------------------------------------------------------------
 // Check if a string starts with a specified prefix.
 //----------------------------------------------------------------------------
 
@@ -439,16 +405,6 @@ bool ts::HexaDecodeAndAppend (std::vector<uint8_t>& result, const char* hexa_str
 bool ts::IsSpace(int c)
 {
     return c == ' ' || c == '\t' || c == '\n' || c == '\r' || c == '\f' || c == '\v';
-}
-
-
-//----------------------------------------------------------------------------
-// Make sure european characters are detected as printable, even if isprint(3) does not.
-//----------------------------------------------------------------------------
-
-bool ts::IsPrintable(int c)
-{
-    return (c >= 0 && c <= 256 && std::isprint(c)) || (c >= 0xA0 && c <= 0xFF);
 }
 
 

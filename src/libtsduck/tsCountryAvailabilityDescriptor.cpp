@@ -152,7 +152,7 @@ void ts::CountryAvailabilityDescriptor::DisplayDescriptor(TablesDisplay& display
         data += 1; size -= 1;
         strm << margin << "Available: " << YesNo(available) << std::endl;
         while (size >= 3) {
-            strm << margin << "Country code: \"" << Printable(data, 3) << "\"" << std::endl;
+            strm << margin << "Country code: \"" << UString::FromDVB(data, 3, display.dvbCharset()) << "\"" << std::endl;
             data += 3; size -= 3;
         }
     }
