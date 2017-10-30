@@ -277,30 +277,6 @@ namespace ts {
     TSDUCKDLL bool IsSpace(int c);
 
     //!
-    //! Make sure european characters are detected as printable, even if isprint(3) does not.
-    //! @param [in] c An integer containing a character.
-    //! @return True if @a c is a printable character, including extended european character.
-    //!
-    TSDUCKDLL bool IsPrintable(int c);
-
-    //!
-    //! Return a printable version of a string.
-    //! @param [in] s A string.
-    //! @param [in] replacement The character which replaces non-printable characters.
-    //! @return A copy of @a s where non-printable characters are replaced by @a replacement.
-    //!
-    TSDUCKDLL std::string Printable(const std::string& s, char replacement = '.');
-
-    //!
-    //! Return a printable version of a string.
-    //! @param [in] data Address of string data.
-    //! @param [in] size String length in bytes.
-    //! @param [in] replacement The character which replaces non-printable characters.
-    //! @return A copy of the string where non-printable characters are replaced by @a replacement.
-    //!
-    TSDUCKDLL std::string Printable(const void* data, size_t size, char replacement = '.');
-
-    //!
     //! Convert a character to lowercase.
     //! @param [in] c A character to convert to lowercase.
     //! @return @a c converted to lowercase.

@@ -59,8 +59,6 @@ public:
     void setUp();
     void tearDown();
     void testIsSpace();
-    void testIsPrint();
-    void testToPrintableCopy();
     void testToLowerString();
     void testToUpperString();
     void testToLowerCopy();
@@ -99,8 +97,6 @@ public:
 
     CPPUNIT_TEST_SUITE(StringUtilsTest);
     CPPUNIT_TEST(testIsSpace);
-    CPPUNIT_TEST(testIsPrint);
-    CPPUNIT_TEST(testToPrintableCopy);
     CPPUNIT_TEST(testToLowerString);
     CPPUNIT_TEST(testToUpperString);
     CPPUNIT_TEST(testToLowerCopy);
@@ -233,23 +229,6 @@ void StringUtilsTest::testIsSpace()
     CPPUNIT_ASSERT(!ts::IsSpace ('a'));
     CPPUNIT_ASSERT(!ts::IsSpace ('.'));
     CPPUNIT_ASSERT(!ts::IsSpace ('\0'));
-}
-
-void StringUtilsTest::testIsPrint()
-{
-    CPPUNIT_ASSERT(ts::IsPrintable('a'));
-    CPPUNIT_ASSERT(ts::IsPrintable('.'));
-    CPPUNIT_ASSERT(ts::IsPrintable('0'));
-    CPPUNIT_ASSERT(ts::IsPrintable(' '));
-    CPPUNIT_ASSERT(!ts::IsPrintable('\t'));
-    CPPUNIT_ASSERT(!ts::IsPrintable('\n'));
-    CPPUNIT_ASSERT(!ts::IsPrintable('\0'));
-    CPPUNIT_ASSERT(!ts::IsPrintable('\177'));
-}
-
-void StringUtilsTest::testToPrintableCopy()
-{
-    CPPUNIT_ASSERT(ts::Printable("a.\t0\n\177 ") == "a..0.. ");
 }
 
 void StringUtilsTest::testToLowerString()
