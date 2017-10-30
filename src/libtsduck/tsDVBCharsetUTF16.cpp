@@ -31,7 +31,7 @@
 #include "tsUString.h"
 TSDUCK_SOURCE;
 
-// UNICODE character set singleton 
+// UNICODE character set singleton
 const ts::DVBCharsetUTF16 ts::DVBCharsetUTF16::UNICODE;
 
 

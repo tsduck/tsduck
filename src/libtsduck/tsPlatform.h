@@ -50,10 +50,10 @@
 //!
 //!  The following environments are described:
 //!
-//!  @li Compiler: See @link __gcc @endlink, @link __msc @endlink, etc.
-//!  @li Operating system: See @link __linux @endlink, @link __windows @endlink, etc.
-//!  @li Byte ordering: See @link __little_endian @endlink and @link __big_endian @endlink.
-//!  @li Processor architecture: See @link __i386 @endlink, @link __x86_64 @endlink, etc.
+//!  @li Compiler: See @link TS_GCC @endlink, @link TS_MSC @endlink, etc.
+//!  @li Operating system: See @link TS_LINUX @endlink, @link TS_WINDOWS @endlink, etc.
+//!  @li Byte ordering: See @link TS_LITTLE_ENDIAN @endlink and @link TS_BIG_ENDIAN @endlink.
+//!  @li Processor architecture: See @link TS_I386 @endlink, @link TS_X86_64 @endlink, etc.
 //!
 //!  @section issues Solving various compilation issues
 //!
@@ -70,7 +70,7 @@
 
 
 //----------------------------------------------------------------------------
-// Unified compiler naming: __gcc, __msc (Microsoft C)
+// Unified compiler naming: TS_GCC, TS_MSC (Microsoft C)
 //----------------------------------------------------------------------------
 
 #if defined(DOXYGEN)
@@ -78,33 +78,33 @@
     //!
     //! Defined when the compiler is GCC, also known as "GNU C".
     //!
-    #define __gcc
+    #define TS_GCC
     //!
     //! Defined when the compiler is LLVM (clang).
-    //! In that case, __gcc is also defined since LLVM is reasonably compatible with GCC.
+    //! In that case, TS_GCC is also defined since LLVM is reasonably compatible with GCC.
     //!
-    #define __llvm
+    #define TS_LLVM
     //!
     //! Defined when the compiler is Microsoft C/C++, the default compiler
     //! in the Microsoft Visual Studio environment. Also used on command line
     //! and batch file as the @c cl command.
     //!
-    #define __msc
+    #define TS_MSC
 
 #elif defined(__llvm__) || defined(__clang__)
-    #if !defined(__llvm)
-        #define __llvm 1
+    #if !defined(TS_LLVM)
+        #define TS_LLVM 1
     #endif
-    #if !defined(__gcc)
-        #define __gcc 1
+    #if !defined(TS_GCC)
+        #define TS_GCC 1
     #endif
 #elif defined(__GNUC__)
-    #if !defined(__gcc)
-        #define __gcc 1
+    #if !defined(TS_GCC)
+        #define TS_GCC 1
     #endif
 #elif defined(_MSC_VER)
-    #if !defined(__msc)
-        #define __msc 1
+    #if !defined(TS_MSC)
+        #define TS_MSC 1
     #endif
 #else
     #error "New unknown compiler, please update tsPlatform.h"
@@ -126,27 +126,27 @@
     //!
     //! Defined when the compiler is compliant with C++11.
     //!
-    #define __cxx11
+    #define TS_CXX11
     //!
     //! Defined when the compiler is compliant with C++14.
     //!
-    #define __cxx14
+    #define TS_CXX14
     //!
     //! Defined when the compiler is compliant with C++17.
     //!
-    #define __cxx17
+    #define TS_CXX17
 #else
     //
     // Standard ways of signaling the language level.
     //
-    #if defined(__cplusplus) && __cplusplus >= 201103L && !defined(__cxx11)
-        #define __cxx11 1
+    #if defined(__cplusplus) && __cplusplus >= 201103L && !defined(TS_CXX11)
+        #define TS_CXX11 1
     #endif
-    #if defined(__cplusplus) && __cplusplus >= 201402L && !defined(__cxx14)
-        #define __cxx14 1
+    #if defined(__cplusplus) && __cplusplus >= 201402L && !defined(TS_CXX14)
+        #define TS_CXX14 1
     #endif
-    #if defined(__cplusplus) && __cplusplus >= 201703L && !defined(__cxx17)
-        #define __cxx17 1
+    #if defined(__cplusplus) && __cplusplus >= 201703L && !defined(TS_CXX17)
+        #define TS_CXX17 1
     #endif
     //
     // Microsoft-specific ways of signaling the language level.
@@ -156,20 +156,20 @@
     // all not super-completely implemented. The Microsoft-specific symbol _MSVC_LANG
     // is defined to describe a "good-enough" level of standard which is fine for us.
     //
-    #if defined(_MSVC_LANG) && _MSVC_LANG >= 201103L && !defined(__cxx11)
-        #define __cxx11 1
+    #if defined(_MSVC_LANG) && _MSVC_LANG >= 201103L && !defined(TS_CXX11)
+        #define TS_CXX11 1
     #endif
-    #if defined(_MSVC_LANG) && _MSVC_LANG >= 201402L && !defined(__cxx14)
-        #define __cxx14 1
+    #if defined(_MSVC_LANG) && _MSVC_LANG >= 201402L && !defined(TS_CXX14)
+        #define TS_CXX14 1
     #endif
-    #if defined(_MSVC_LANG) && _MSVC_LANG >= 201403L && !defined(__cxx17)
-        #define __cxx17 1
+    #if defined(_MSVC_LANG) && _MSVC_LANG >= 201403L && !defined(TS_CXX17)
+        #define TS_CXX17 1
     #endif
 #endif
 
 
 //----------------------------------------------------------------------------
-// Unified O/S naming: __linux, __windows, etc
+// Unified O/S naming: TS_LINUX, TS_WINDOWS, etc
 //----------------------------------------------------------------------------
 
 #if defined(DOXYGEN)
@@ -177,65 +177,65 @@
     //!
     //! Defined when compiled for a Microsoft Windows target platform.
     //!
-    #define __windows
+    #define TS_WINDOWS
     //!
     //! Defined when compiled for any flavor of UNIX target platforms.
     //!
     //! This symbol comes in addition to the specific symbol for the
-    //! target platform (@link __linux @endlink, etc.)
+    //! target platform (@link TS_LINUX @endlink, etc.)
     //!
-    #define __unix
+    #define TS_UNIX
     //!
     //! Defined when compiled for a Linux target platform.
     //!
-    #define __linux
+    #define TS_LINUX
     //!
     //! Defined when compiled for a MacOS target platform.
     //!
-    #define __mac
+    #define TS_MAC
      //!
     //! Defined when compiled for an IBM AIX target platform.
     //!
-    #define __aix
+    #define TS_AIX
     //!
     //! Defined when compiled for a Sun Solaris target platform.
     //!
-    #define __solaris
+    #define TS_SOLARIS
     //!
     //! Defined when compiled for a Cygwin target platform.
     //!
-    #define __cygwin
+    #define TS_CYGWIN
 
 #elif defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-    #if !defined(__windows)
-        #define __windows 1
+    #if !defined(TS_WINDOWS)
+        #define TS_WINDOWS 1
     #endif
-#elif defined(__gnu_linux__) || defined(__linux) || defined(__linux__) || defined(linux)
-    #if !defined(__linux)
-        #define __linux 1
+#elif defined(__gnu_linux__) || defined(TS_LINUX) || defined(__linux__) || defined(linux)
+    #if !defined(TS_LINUX)
+        #define TS_LINUX 1
     #endif
 #elif defined(__APPLE__)
-    #if !defined(__mac)
-        #define __mac 1
+    #if !defined(TS_MAC)
+        #define TS_MAC 1
     #endif
-#elif defined(_AIX) || defined(__aix)
-    #if !defined(__aix)
-        #define __aix 1
+#elif defined(_AIX) || defined(TS_AIX)
+    #if !defined(TS_AIX)
+        #define TS_AIX 1
     #endif
-#elif defined(__CYGWIN__) || defined(__cygwin)
-    #if !defined(__cygwin)
-        #define __cygwin 1
+#elif defined(__CYGWIN__) || defined(TS_CYGWIN)
+    #if !defined(TS_CYGWIN)
+        #define TS_CYGWIN 1
     #endif
-#elif defined(__sun) || defined(__solaris)
-    #if !defined(__solaris)
-        #define __solaris 1
+#elif defined(__sun) || defined(TS_SOLARIS)
+    #if !defined(TS_SOLARIS)
+        #define TS_SOLARIS 1
     #endif
 #else
     #error "New unknown operating system, please update tsPlatform.h"
 #endif
 
-#if !defined(__unix) && (defined(__linux) || defined(__mac) || defined(__aix) || defined(__cygwin) || defined(__solaris))
-    #define __unix 1
+#if !defined(TS_UNIX) && (defined(TS_LINUX) || defined(TS_MAC) || defined(TS_AIX) || defined(TS_CYGWIN) || defined(TS_SOLARIS))
+    #define TS_UNIX 1
 #endif
 
 
@@ -248,84 +248,84 @@
     //!
     //! Defined when compiled for a little-endian or LSB-first target platform.
     //!
-    #define __little_endian
+    #define TS_LITTLE_ENDIAN
     //!
     //! Defined when compiled for a big-endian or MSB-first target platform.
     //!
-    #define __big_endian
+    #define TS_BIG_ENDIAN
     //!
     //! Defined when the target processor architecture is Intel IA-32, also known as x86.
     //!
-    #define __i386
+    #define TS_I386
     //!
     //! Defined when the target processor architecture is the 64-bit extension of the
     //! IA-32 architecture, also known as AMD-64 or Intel x86-64.
     //!
-    #define __x86_64
+    #define TS_X86_64
     //!
     //! Defined when the target processor architecture is ARM.
     //!
-    #define __arm
+    #define TS_ARM
     //!
     //! Defined when the target processor architecture is STxP70.
     //!
-    #define __stxp70
+    #define TS_STXP70
     //!
     //! Defined when the target processor architecture is Intel IA-64 architecture, also known as Itanium.
     //!
-    #define __ia64
+    #define TS_IA64
     //!
     //! Defined when the target processor architecture is 32-bit Power PC.
     //!
-    #define __powerpc
+    #define TS_POWERPC
     //!
     //! Defined when the target processor architecture is 64-bit Power PC.
     //!
-    #define __powerpc64
+    #define TS_POWERPC64
     //!
     //! Defined when the target processor architecture is Digital Alpha architecture.
     //!
-    #define __alpha
+    #define TS_ALPHA
     //!
     //! Defined when the target processor architecture is Sun SPARC architecture.
     //!
-    #define __sparc
+    #define TS_SPARC
 
-#elif defined(__i386__) || defined(__i386) || defined(_M_IX86)
-    #if !defined(__i386)
-        #define __i386 1
+#elif defined(__i386__) || defined(TS_I386) || defined(_M_IX86)
+    #if !defined(TS_I386)
+        #define TS_I386 1
     #endif
-#elif defined(__amd64) || defined(__amd64__) || defined(__x86_64__) || defined(__x86_64) || defined(_M_X64)
-    #if !defined(__x86_64)
-        #define __x86_64 1
+#elif defined(__amd64) || defined(__amd64__) || defined(__x86_64__) || defined(TS_X86_64) || defined(_M_X64)
+    #if !defined(TS_X86_64)
+        #define TS_X86_64 1
     #endif
 #elif defined(__ia64__) || defined(_M_IA64)
-    #if !defined(__ia64)
-        #define __ia64 1
+    #if !defined(TS_IA64)
+        #define TS_IA64 1
     #endif
 #elif defined(__arm__)
-    #if !defined(__arm)
-        #define __arm 1
+    #if !defined(TS_ARM)
+        #define TS_ARM 1
     #endif
 #elif defined(__stxp70__) || defined(__STxP70__)
-    #if !defined(__stxp70)
-        #define __stxp70 1
+    #if !defined(TS_STXP70)
+        #define TS_STXP70 1
     #endif
 #elif defined(__alpha__)
-    #if !defined(__alpha)
-        #define __alpha 1
+    #if !defined(TS_ALPHA)
+        #define TS_ALPHA 1
     #endif
 #elif defined(__sparc__)
-    #if !defined(__sparc)
-        #define __sparc 1
+    #if !defined(TS_SPARC)
+        #define TS_SPARC 1
     #endif
 #elif defined(__powerpc__)
-    #if !defined(__powerpc)
-        #define __powerpc 1
+    #if !defined(TS_POWERPC)
+        #define TS_POWERPC 1
     #endif
 #elif defined(__powerpc64__)
-    #if !defined(__powerpc64)
-        #define __powerpc64 1
+    #if !defined(TS_POWERPC64)
+        #define TS_POWERPC64 1
     #endif
 #else
     #error "New unknown processor, please update tsPlatform.h"
@@ -335,33 +335,33 @@
 // Should really use "#warning" instead of "#error" but #warning is a
 // GCC extension while #error is standard.
 
-#if !defined(__linux) && !defined(__windows) && !defined(__mac)
+#if !defined(TS_LINUX) && !defined(TS_WINDOWS) && !defined(TS_MAC)
     #error "TSDuck has been tested on Linux, MacOS and Windows only, review this code"
 #endif
 
-#if !defined(__gcc) && !defined(__msc)
+#if !defined(TS_GCC) && !defined(TS_MSC)
     #error "TSDuck has been tested with GCC and MSVC compilers only, review this code"
 #endif
 
 // Byte order
 
-#if (defined(__i386) || defined(__x86_64) || defined(__ia64) || defined(__alpha)) && !defined(__little_endian)
-    #define __little_endian 1
-#elif (defined(__sparc) || defined(__powerpc) || defined(__powerpc64)) && !defined(__big_endian)
-    #define __big_endian 1
+#if (defined(TS_I386) || defined(TS_X86_64) || defined(TS_IA64) || defined(TS_ALPHA)) && !defined(TS_LITTLE_ENDIAN)
+    #define TS_LITTLE_ENDIAN 1
+#elif (defined(TS_SPARC) || defined(TS_POWERPC) || defined(TS_POWERPC64)) && !defined(TS_BIG_ENDIAN)
+    #define TS_BIG_ENDIAN 1
 #endif
 
-#if defined (__arm)
+#if defined (TS_ARM)
     #if defined(__BYTE_ORDER__) && __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
-        #define __little_endian 1
+        #define TS_LITTLE_ENDIAN 1
     #elif defined(__BYTE_ORDER__) && __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
-        #define __big_endian 1
+        #define TS_BIG_ENDIAN 1
     #else
         #error "ARM endianness not defined"
     #endif
 #endif
 
-#if !defined(__little_endian) && !defined(__big_endian)
+#if !defined(TS_LITTLE_ENDIAN) && !defined(TS_BIG_ENDIAN)
     #error "unknow endian, please update this header file"
 #endif
 
@@ -372,7 +372,7 @@
 
 // Windows specific settings
 
-#if defined(__windows) && !defined(DOXYGEN)
+#if defined(TS_WINDOWS) && !defined(DOXYGEN)
     #if !defined(WINVER)
         #define WINVER 0x0501            // Allow use of features specific to Windows XP or later.
     #endif
@@ -389,7 +389,7 @@
 
 // Large file system (LFS) support on Linux.
 
-#if defined(__linux) && !defined(DOXYGEN)
+#if defined(TS_LINUX) && !defined(DOXYGEN)
     #define _LARGEFILE_SOURCE    1
     #define _LARGEFILE64_SOURCE  1
     #define _FILE_OFFSET_BITS   64
@@ -403,7 +403,7 @@
 
 // Disable some Visual C++ warnings.
 
-#if defined(__msc)
+#if defined(TS_MSC)
 
 // Methods may have unused formal parameters.
 // warning C4100 : 'xxx' : unreferenced formal parameter
@@ -434,7 +434,7 @@
 
 // System headers
 
-#if defined(__windows)
+#if defined(TS_WINDOWS)
 
 #include <windows.h>
 #include <winsock2.h>
@@ -487,7 +487,7 @@
 
 #endif
 
-#if defined(__linux)
+#if defined(TS_LINUX)
 #include <limits.h>
 #include <sys/mman.h>
 #include <byteswap.h>
@@ -497,7 +497,7 @@
 #include <PCSC/reader.h>
 #endif
 
-#if defined(__mac)
+#if defined(TS_MAC)
 #include <sys/mman.h>
 #include <libproc.h>
 #endif
@@ -533,7 +533,7 @@
 
 // Required link libraries under Windows.
 
-#if defined(__windows) && defined(__msc)
+#if defined(TS_WINDOWS) && defined(TS_MSC)
 #pragma comment(lib, "userenv.lib")   // GetUserProfileDirectory
 #pragma comment(lib, "psapi.lib")     // GetProcessMemoryInfo
 #pragma comment(lib, "winmm.lib")     // timeBeginPeriod
@@ -581,7 +581,7 @@
 
 // Other Microsoft VC oddities....
 
-#if defined(__windows) && !defined(DOXYGEN)
+#if defined(TS_WINDOWS) && !defined(DOXYGEN)
     // Flawfinder: ignore
     #define snprintf _snprintf
     // Flawfinder: ignore
@@ -592,13 +592,13 @@
 
 // For platforms not supporting large files:
 
-#if !defined(__windows) && !defined(O_LARGEFILE) && !defined(DOXYGEN)
+#if !defined(TS_WINDOWS) && !defined(O_LARGEFILE) && !defined(DOXYGEN)
     #define O_LARGEFILE 0
 #endif
 
 // Identify Linux DVB API version in one value
 
-#if defined(__linux) || defined(DOXYGEN)
+#if defined(TS_LINUX) || defined(DOXYGEN)
     //!
     //! @hideinitializer
     //! On Linux systems, identify the Linux DVB API version in one value.
@@ -610,13 +610,13 @@
 // MacOS has a POSIX-compliant version of strerror_r, returning an int.
 // But fails to report this by defining HAVE_INT_STRERROR_R.
 
-#if defined(__mac) && !defined(HAVE_INT_STRERROR_R) && !defined(DOXYGEN)
+#if defined(TS_MAC) && !defined(HAVE_INT_STRERROR_R) && !defined(DOXYGEN)
 #define HAVE_INT_STRERROR_R 1
 #endif
 
 // On MacOS, sigaction(2) uses the flag named SA_RESETHAND instead of SA_ONESHOT.
 
-#if defined(__mac) && !defined(SA_ONESHOT) && !defined(DOXYGEN)
+#if defined(TS_MAC) && !defined(SA_ONESHOT) && !defined(DOXYGEN)
 #define SA_ONESHOT SA_RESETHAND
 #endif
 
@@ -679,9 +679,9 @@
 //!
 #if defined(DOXYGEN)
     #define TS_UNUSED platform_specific
-#elif defined(__gcc)
+#elif defined(TS_GCC)
     #define TS_UNUSED __attribute__ ((unused))
-#elif defined(__msc)
+#elif defined(TS_MSC)
     // With MS compiler, there is no such attribute. It is not possible to disable the
     // "unused" warning for a specific variable. The unused warnings must be disabled.
     // warning C4189: 'xxx' : local variable is initialized but not referenced
@@ -717,9 +717,9 @@
 //!
 #if defined(DOXYGEN)
     #define TS_FUNCTION
-#elif defined(__gcc) && __GNUC__ >= 3
+#elif defined(TS_GCC) && __GNUC__ >= 3
     #define TS_FUNCTION __PRETTY_FUNCTION__
-#elif defined(__msc)
+#elif defined(TS_MSC)
     #define TS_FUNCTION __FUNCDNAME__
 #else
     #define TS_FUNCTION __func__
@@ -735,7 +735,7 @@
 //! @hideinitializer
 //! On Windows, this attribute exports a symbol out of a DLL
 //!
-#if defined(__windows)
+#if defined(TS_WINDOWS)
     #define TS_DLL_EXPORT __declspec(dllexport)
 #else
     #define TS_DLL_EXPORT
@@ -751,9 +751,9 @@
 //! This prefix exports the API when building the DLL and imports the API
 //! when used in an application.
 //!
-#if defined(__windows) && defined(_TSDUCKDLL_IMPL)
+#if defined(TS_WINDOWS) && defined(_TSDUCKDLL_IMPL)
     #define TSDUCKDLL __declspec(dllexport)
-#elif defined(__windows) && defined(_TSDUCKDLL_USE)
+#elif defined(TS_WINDOWS) && defined(_TSDUCKDLL_USE)
     #define TSDUCKDLL __declspec(dllimport)
 #else
     #define TSDUCKDLL
@@ -808,7 +808,7 @@
 //! #endif
 //! @endcode
 //!
-#if defined(__gcc) || defined(DOXYGEN)
+#if defined(TS_GCC) || defined(DOXYGEN)
     #define TS_NEED_STATIC_CONST_DEFINITIONS 1
 #endif
 
@@ -856,7 +856,7 @@
     //!
     #define TS_UCONST64(n)
 
-#elif defined(__msc)
+#elif defined(TS_MSC)
     #define TS_CONST64(n)  n##i64
     #define TS_UCONST64(n) n##ui64
 #else
@@ -887,9 +887,9 @@ namespace ts {
     //!
     TSDUCKDLL inline uint16_t ByteSwap16(uint16_t x)
     {
-    #if defined(__linux)
+    #if defined(TS_LINUX)
         return bswap_16(x);
-    #elif defined(__msc)
+    #elif defined(TS_MSC)
         return _byteswap_ushort(x);
     #else
         return (x << 8) | (x >> 8);
@@ -921,9 +921,9 @@ namespace ts {
     //!
     TSDUCKDLL inline uint32_t ByteSwap32(uint32_t x)
     {
-    #if defined(__linux)
+    #if defined(TS_LINUX)
         return bswap_32(x);
-    #elif defined(__msc)
+    #elif defined(TS_MSC)
         return _byteswap_ulong(x);
     #else
         return (x << 24) | ((x << 8) & 0x00FF0000) | ((x >> 8) & 0x0000FF00) | (x >> 24);
@@ -941,9 +941,9 @@ namespace ts {
     //!
     TSDUCKDLL inline uint64_t ByteSwap64(uint64_t x)
     {
-    #if defined(__linux)
+    #if defined(TS_LINUX)
         return bswap_64(x);
-    #elif defined(__msc)
+    #elif defined(TS_MSC)
         return _byteswap_uint64(x);
     #else
         return
@@ -968,7 +968,7 @@ namespace ts {
     //!
     TSDUCKDLL inline uint16_t CondByteSwap16BE(uint16_t x)
     {
-    #if defined(__little_endian)
+    #if defined(TS_LITTLE_ENDIAN)
         return ByteSwap16(x);
     #else
         return x;
@@ -998,7 +998,7 @@ namespace ts {
     //!
     TSDUCKDLL inline uint32_t CondByteSwap24BE(uint32_t x)
     {
-    #if defined(__little_endian)
+    #if defined(TS_LITTLE_ENDIAN)
         return ByteSwap24(x);
     #else
         return x & 0x00FFFFFF;
@@ -1028,7 +1028,7 @@ namespace ts {
     //!
     TSDUCKDLL inline uint32_t CondByteSwap32BE(uint32_t x)
     {
-    #if defined(__little_endian)
+    #if defined(TS_LITTLE_ENDIAN)
         return ByteSwap32(x);
     #else
         return x;
@@ -1058,7 +1058,7 @@ namespace ts {
     //!
     TSDUCKDLL inline uint64_t CondByteSwap64BE(uint64_t x)
     {
-    #if defined(__little_endian)
+    #if defined(TS_LITTLE_ENDIAN)
         return ByteSwap64(x);
     #else
         return x;
@@ -1088,7 +1088,7 @@ namespace ts {
     //!
     TSDUCKDLL inline uint16_t CondByteSwap16LE (uint16_t x)
     {
-    #if defined(__little_endian)
+    #if defined(TS_LITTLE_ENDIAN)
         return x;
     #else
         return ByteSwap16(x);
@@ -1105,7 +1105,7 @@ namespace ts {
     //!
     TSDUCKDLL inline uint32_t CondByteSwap24LE(uint32_t x)
     {
-    #if defined(__little_endian)
+    #if defined(TS_LITTLE_ENDIAN)
         return x & 0x00FFFFFF;
     #else
         return ByteSwap24(x);
@@ -1122,7 +1122,7 @@ namespace ts {
     //!
     TSDUCKDLL inline uint32_t CondByteSwap32LE(uint32_t x)
     {
-    #if defined(__little_endian)
+    #if defined(TS_LITTLE_ENDIAN)
         return x;
     #else
         return ByteSwap32(x);
@@ -1139,7 +1139,7 @@ namespace ts {
     //!
     TSDUCKDLL inline uint64_t CondByteSwap64LE(uint64_t x)
     {
-    #if defined(__little_endian)
+    #if defined(TS_LITTLE_ENDIAN)
         return x;
     #else
         return ByteSwap64(x);
@@ -1855,7 +1855,7 @@ namespace ts {
     template <typename INT>
     TSDUCKDLL inline INT CondByteSwapBE(INT x)
     {
-#if defined(__big_endian)
+#if defined(TS_BIG_ENDIAN)
         return x;
 #else
         switch (sizeof(INT)) {
@@ -1880,7 +1880,7 @@ namespace ts {
     template <typename INT>
     TSDUCKDLL inline INT CondByteSwapLE(INT x)
     {
-#if defined(__big_endian)
+#if defined(TS_BIG_ENDIAN)
         switch (sizeof(INT)) {
             case 1: return x;
             case 2: return static_cast<INT>(CondByteSwap16BE(static_cast<uint16_t>(x)));
@@ -2108,7 +2108,7 @@ namespace ts {
     //!
     TSDUCKDLL inline uint32_t RORc (uint32_t word, const int i) {return XX;}
 
-#elif defined(__msc)
+#elif defined(TS_MSC)
 #pragma intrinsic(_lrotr,_lrotl)
 
     TSDUCKDLL inline uint32_t ROL (uint32_t word, int i) {return _lrotl (word, i);}
@@ -2117,7 +2117,7 @@ namespace ts {
     TSDUCKDLL inline uint32_t ROLc (uint32_t word, const int i) {return _lrotl (word, i);}
     TSDUCKDLL inline uint32_t RORc (uint32_t word, const int i) {return _lrotr (word, i);}
 
-#elif defined(__gcc) && (defined(__i386) || defined(__x86_64))
+#elif defined(TS_GCC) && (defined(TS_I386) || defined(TS_X86_64))
 
     TSDUCKDLL inline uint32_t ROL (uint32_t word, int i)
     {
@@ -2137,7 +2137,7 @@ namespace ts {
 
     TSDUCKDLL inline uint32_t ROLc (uint32_t word, const int i)
     {
-#if defined(DEBUG) || defined(__llvm)
+#if defined(DEBUG) || defined(TS_LLVM)
         return ROL (word, i);
 #else
         asm ("roll %2,%0"
@@ -2149,7 +2149,7 @@ namespace ts {
 
     TSDUCKDLL inline uint32_t RORc (uint32_t word, const int i)
     {
-#if defined(DEBUG) || defined(__llvm)
+#if defined(DEBUG) || defined(TS_LLVM)
         return ROR (word, i);
 #else
         asm ("rorl %2,%0"
@@ -2159,7 +2159,7 @@ namespace ts {
 #endif
     }
 
-#elif defined(__powerpc)
+#elif defined(TS_POWERPC)
 
     TSDUCKDLL inline uint32_t ROL (uint32_t word, int i)
     {
@@ -2284,7 +2284,7 @@ namespace ts {
     //!
     TSDUCKDLL inline uint64_t ROR64c (uint64_t word, const int i) {return XX;}
 
-#elif defined(__gcc) && defined(__x86_64)
+#elif defined(TS_GCC) && defined(TS_X86_64)
 
     TSDUCKDLL inline uint64_t ROL64 (uint64_t word, int i)
     {
@@ -2304,7 +2304,7 @@ namespace ts {
 
     TSDUCKDLL inline uint64_t ROL64c (uint64_t word, const int i)
     {
-#if defined(DEBUG) || defined(__llvm)
+#if defined(DEBUG) || defined(TS_LLVM)
         return ROL64 (word, i);
 #else
         asm ("rolq %2,%0"
@@ -2316,7 +2316,7 @@ namespace ts {
 
     TSDUCKDLL inline uint64_t ROR64c (uint64_t word, const int i)
     {
-#if defined(DEBUG) || defined(__llvm)
+#if defined(DEBUG) || defined(TS_LLVM)
         return ROR64 (word, i);
 #else
         asm ("rorq %2,%0"
@@ -2356,7 +2356,7 @@ namespace ts {
 // Cross-plaftorms portable definitions for memory barrier.
 //----------------------------------------------------------------------------
 
-#if defined(__msc)
+#if defined(TS_MSC)
     #pragma intrinsic(_ReadWriteBarrier)
 #endif
 
@@ -2387,18 +2387,18 @@ namespace ts {
 
         // Nothing to do
 
-#elif defined(__gcc) && (defined(__i386) || defined(__x86_64))
+#elif defined(TS_GCC) && (defined(TS_I386) || defined(TS_X86_64))
 
         // "mfence" is SSE2, not supported on all x86 cpus but supported on all x86_64 cpus.
         __asm__ __volatile__ ("mfence" : : : "memory");
 
-#elif defined(__gcc) && defined(__arm)
+#elif defined(TS_GCC) && defined(TS_ARM)
 
         // For later reference, not sure this is valid.
         unsigned dest = 0;
         __asm__ __volatile__ ("@MemoryBarrier\n mcr p15,0,%0,c7,c10,5\n" : "=&r"(dest) : :  "memory");
 
-#elif defined(__msc)
+#elif defined(TS_MSC)
 
         // Prevent the compiler from reordering memory access
         _ReadWriteBarrier();
@@ -2451,7 +2451,7 @@ namespace ts {
 //!
 #if defined(DOXYGEN)
     #define TS_PRINTF_FORMAT(formatIndex,argIndex)
-#elif defined(__gcc) && __GNUC__ >= 4
+#elif defined(TS_GCC) && __GNUC__ >= 4
     // Flawfinder: ignore
     #define TS_PRINTF_FORMAT(f,p) __attribute__((format(printf, f, p)))
 #else
@@ -2499,16 +2499,16 @@ namespace ts {
     //!
     #define FMT_INT64 "platform-specific"
 
-#elif defined(__msc)
+#elif defined(TS_MSC)
     #define FMT_SIZE_T "I"
     #define FMT_INT64  "I64"
-#elif defined(__mac)
+#elif defined(TS_MAC)
     #define FMT_SIZE_T "z"
     #define FMT_INT64  "ll"
-#elif defined(__gcc) && defined(__x86_64)
+#elif defined(TS_GCC) && defined(TS_X86_64)
     #define FMT_SIZE_T "z"
     #define FMT_INT64  "j"
-#elif defined(__gcc)
+#elif defined(TS_GCC)
     #define FMT_SIZE_T "z"
     #define FMT_INT64  "ll"
 #else
@@ -2615,7 +2615,7 @@ namespace ts {
     //!
 #if defined(DOXYGEN)
     typedef platform_specific ErrorCode;
-#elif defined(__windows)
+#elif defined(TS_WINDOWS)
     typedef ::DWORD ErrorCode;
 #else
     typedef int ErrorCode;
@@ -2630,9 +2630,9 @@ namespace ts {
     //!
 #if defined(DOXYGEN)
     const ErrorCode SYS_SUCCESS = platform_specific;
-#elif defined(__windows)
+#elif defined(TS_WINDOWS)
     const ErrorCode SYS_SUCCESS = ERROR_SUCCESS;
-#elif defined(__unix)
+#elif defined(TS_UNIX)
     const ErrorCode SYS_SUCCESS = 0;
 #else
     #error "Unsupported operating system"
@@ -2647,9 +2647,9 @@ namespace ts {
     //!
 #if defined(DOXYGEN)
     const ErrorCode SYS_DATA_ERROR = platform_specific;
-#elif defined(__windows)
+#elif defined(TS_WINDOWS)
     const ErrorCode SYS_DATA_ERROR = ERROR_INVALID_DATA;
-#elif defined(__unix)
+#elif defined(TS_UNIX)
     const ErrorCode SYS_DATA_ERROR = EINVAL;
 #else
     #error "Unsupported operating system"
@@ -2664,9 +2664,9 @@ namespace ts {
     //!
     TSDUCKDLL inline ErrorCode LastErrorCode()
     {
-#if defined(__windows)
+#if defined(TS_WINDOWS)
         return ::GetLastError();
-#elif defined(__unix)
+#elif defined(TS_UNIX)
         return errno;
 #else
         #error "Unsupported operating system"
@@ -2785,7 +2785,7 @@ namespace ts {
 // object file containin a string. The difficulty is to make sure that
 // the compiler will not optimize away this data (it is local and unused).
 //
-#if defined(__gcc)
+#if defined(TS_GCC)
 #define TS_SET_BUILD_MARK(s) static __attribute__ ((used)) const char* const _tsBuildMark = (s)
 #else
 #define TS_SET_BUILD_MARK(s)                              \

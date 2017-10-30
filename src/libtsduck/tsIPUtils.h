@@ -65,9 +65,9 @@ namespace ts {
     //!
     TSDUCKDLL inline SocketErrorCode LastSocketErrorCode()
     {
-#if defined(__windows)
+#if defined(TS_WINDOWS)
         return ::WSAGetLastError();
-#elif defined(__unix)
+#elif defined(TS_UNIX)
         return errno;
 #else
         #error "Unsupported operating system"
@@ -298,7 +298,7 @@ namespace ts {
     //!
     #define TS_SOCKET_ERR_NOTCONN platform_specific
 
-#elif defined (__windows)
+#elif defined (TS_WINDOWS)
 
     #define TS_SOCKET_T             ::SOCKET
     #define TS_SOCKET_T_INVALID     INVALID_SOCKET
@@ -319,7 +319,7 @@ namespace ts {
     #define TS_SOCKET_ERR_RESET     WSAECONNRESET
     #define TS_SOCKET_ERR_NOTCONN   WSAENOTCONN
 
-#elif defined(__unix)
+#elif defined(TS_UNIX)
 
     #define TS_SOCKET_T             int
     #define TS_SOCKET_T_INVALID     (-1)

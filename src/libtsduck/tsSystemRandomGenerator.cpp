@@ -41,13 +41,13 @@ TSDUCK_SOURCE;
 //----------------------------------------------------------------------------
 
 ts::SystemRandomGenerator::SystemRandomGenerator() :
-#if defined(__windows)
+#if defined(TS_WINDOWS)
     _prov(0)
 #else
     _fd(-1)
 #endif
 {
-#if defined(__windows)
+#if defined(TS_WINDOWS)
     if (!::CryptAcquireContext(&_prov, NULL, MS_DEF_PROV, PROV_RSA_FULL, CRYPT_VERIFYCONTEXT | CRYPT_MACHINE_KEYSET) &&
         !::CryptAcquireContext(&_prov, NULL, MS_DEF_PROV, PROV_RSA_FULL, CRYPT_VERIFYCONTEXT | CRYPT_MACHINE_KEYSET | CRYPT_NEWKEYSET)) {
         _prov = 0;
@@ -66,7 +66,7 @@ ts::SystemRandomGenerator::SystemRandomGenerator() :
 
 ts::SystemRandomGenerator::~SystemRandomGenerator()
 {
-#if defined(__windows)
+#if defined(TS_WINDOWS)
     if (_prov != 0) {
         ::CryptReleaseContext(_prov, 0);
         _prov = 0;
@@ -97,7 +97,7 @@ bool ts::SystemRandomGenerator::seed(const void* data, size_t size)
 
 bool ts::SystemRandomGenerator::ready() const
 {
-#if defined(__windows)
+#if defined(TS_WINDOWS)
     return _prov != 0;
 #else
     return _fd >= 0;
@@ -118,7 +118,7 @@ bool ts::SystemRandomGenerator::read(void* buffer, size_t size)
         return true;
     }
 
-#if defined(__windows)
+#if defined(TS_WINDOWS)
     return _prov != 0 && ::CryptGenRandom(_prov, ::DWORD(size), reinterpret_cast<::BYTE*>(buffer));
 #else
     bool ok = _fd >= 0;

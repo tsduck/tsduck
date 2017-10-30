@@ -269,7 +269,7 @@ void SysUtilsTest::testIgnoreBrokenPipes()
         // Recreate a "broken pipe" situation on UNIX systems
         // and checks that we don't die.
 
-#if defined(__unix)
+#if defined(TS_UNIX)
         // Create a pipe
         int fd[2];
         CPPUNIT_ASSERT(::pipe(fd) == 0);
@@ -292,9 +292,9 @@ void SysUtilsTest::testErrorCode()
     // Hard to make automated tests since we do not expect portable strings
 
     const ts::ErrorCode code =
-#if defined(__windows)
+#if defined(TS_WINDOWS)
         WAIT_TIMEOUT;
-#elif defined(__unix)
+#elif defined(TS_UNIX)
         ETIMEDOUT;
 #else
         0;
@@ -325,10 +325,10 @@ void SysUtilsTest::testUid()
 
 void SysUtilsTest::testVernacularFilePath()
 {
-#if defined(__windows)
+#if defined(TS_WINDOWS)
     CPPUNIT_ASSERT(ts::VernacularFilePath ("C:\\alpha/beta\\gamma") == "C:\\alpha\\beta\\gamma");
     CPPUNIT_ASSERT(ts::VernacularFilePath ("/d/alpha/beta/gamma") == "D:\\alpha\\beta\\gamma");
-#elif defined(__unix)
+#elif defined(TS_UNIX)
     CPPUNIT_ASSERT(ts::VernacularFilePath ("C:\\alpha/beta\\gamma") == "C:/alpha/beta/gamma");
     CPPUNIT_ASSERT(ts::VernacularFilePath ("/alpha-beta/gamma") == "/alpha-beta/gamma");
 #endif

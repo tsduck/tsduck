@@ -84,10 +84,10 @@ namespace ts {
         //! Assignment operator.
         //! @param [in] date A data to assign.
         //! @return A reference to this object.
-        //!        
+        //!
         SafeAccessDate& operator=(const AbstractCASDate& date)
         {
-            AbstractCASDate::operator=(date); 
+            AbstractCASDate::operator=(date);
             return *this;
         }
     };

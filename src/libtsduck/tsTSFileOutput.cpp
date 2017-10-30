@@ -47,7 +47,7 @@ ts::TSFileOutput::TSFileOutput() :
     _is_open(false),
     _severity(Severity::Error),
     _total_packets(0),
-#if defined(__windows)
+#if defined(TS_WINDOWS)
     _handle(INVALID_HANDLE_VALUE)
 #else
     _fd(-1)
@@ -71,7 +71,7 @@ bool ts::TSFileOutput::open (const std::string& filename, bool append, bool keep
     bool got_error = false;
     ErrorCode error_code = SYS_SUCCESS;
 
-#if defined (__windows)
+#if defined (TS_WINDOWS)
 
     // Windows implementation
     ::DWORD flags;
@@ -151,7 +151,7 @@ bool ts::TSFileOutput::close (ReportInterface& report)
     }
 
     if (!_filename.empty()) {
-#if defined (__windows)
+#if defined (TS_WINDOWS)
         ::CloseHandle (_handle);
 #else
         ::close (_fd);
@@ -193,7 +193,7 @@ bool ts::TSFileOutput::write (const TSPacket* buffer, size_t packet_count, Repor
     const char* const data_buffer = reinterpret_cast <const char*> (buffer);
     const char* data = data_buffer;
 
-#if defined (__windows)
+#if defined (TS_WINDOWS)
 
     // Windows implementation
 

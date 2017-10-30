@@ -119,7 +119,7 @@ bool ts::IPAddress::resolve (const std::string& name, ReportInterface& report)
     const int status = ::getaddrinfo(name.c_str(), (char*)0, &hints, &res);
 
     if (status != 0) {
-#if defined (__windows)
+#if defined (TS_WINDOWS)
         const SocketErrorCode code = LastSocketErrorCode();
         report.error(name + ": " + SocketErrorCodeMessage(code));
 #else

@@ -50,9 +50,9 @@
 #include "tsVariable.h"
 
 // Definitions which are used by TinyXML-2.
-#if defined(__windows) && defined(_TSDUCKDLL_IMPL) && !defined(TINYXML2_EXPORT)
+#if defined(TS_WINDOWS) && defined(_TSDUCKDLL_IMPL) && !defined(TINYXML2_EXPORT)
     #define TINYXML2_EXPORT 1
-#elif defined(__windows) && defined(_TSDUCKDLL_USE) && !defined(TINYXML2_IMPORT)
+#elif defined(TS_WINDOWS) && defined(_TSDUCKDLL_USE) && !defined(TINYXML2_IMPORT)
     #define TINYXML2_IMPORT 1
 #endif
 
@@ -266,8 +266,8 @@ namespace ts {
         //!
         bool getAttribute(UString& value,
                           const Element* elem,
-                          const UString& name, 
-                          bool required = false, 
+                          const UString& name,
+                          bool required = false,
                           const UString& defValue = UString(),
                           size_t minSize = 0,
                           size_t maxSize = UNLIMITED);

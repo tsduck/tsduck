@@ -73,7 +73,7 @@ namespace ts {
     //! DVB_S includes DVB-S and DVB-S2, DVB_T includes DVB-T and DVB-T2, etc.
     //!
     enum TunerType {
-#if defined(__linux) && !defined(DOXYGEN)
+#if defined(TS_LINUX) && !defined(DOXYGEN)
         DVB_S  = ::FE_QPSK,
         DVB_C  = ::FE_QAM,
         DVB_T  = ::FE_OFDM,
@@ -133,7 +133,7 @@ namespace ts {
     //! Support depends on tuner types.
     //!
     enum Modulation {
-#if defined(__linux) && !defined(DOXYGEN)
+#if defined(TS_LINUX) && !defined(DOXYGEN)
         QPSK     = ::QPSK,
         PSK_8    = ::PSK_8,
         QAM_AUTO = ::QAM_AUTO,
@@ -144,7 +144,7 @@ namespace ts {
         QAM_256  = ::QAM_256,
         VSB_8    = ::VSB_8,
         VSB_16   = ::VSB_16,
-#elif defined(__windows) && !defined(DOXYGEN)
+#elif defined(TS_WINDOWS) && !defined(DOXYGEN)
         QPSK     = ::BDA_MOD_QPSK,
         PSK_8    = ::BDA_MOD_8PSK,
         QAM_AUTO = ::BDA_MOD_NOT_DEFINED,
@@ -185,11 +185,11 @@ namespace ts {
     //! Spectral inversion.
     //!
     enum SpectralInversion {
-#if defined(__linux) && !defined(DOXYGEN)
+#if defined(TS_LINUX) && !defined(DOXYGEN)
         SPINV_OFF  = ::INVERSION_OFF,
         SPINV_ON   = ::INVERSION_ON,
         SPINV_AUTO = ::INVERSION_AUTO,
-#elif defined(__windows) && !defined(DOXYGEN)
+#elif defined(TS_WINDOWS) && !defined(DOXYGEN)
         SPINV_OFF  = ::BDA_SPECTRAL_INVERSION_NORMAL,
         SPINV_ON   = ::BDA_SPECTRAL_INVERSION_INVERTED,
         SPINV_AUTO = ::BDA_SPECTRAL_INVERSION_AUTOMATIC,
@@ -209,7 +209,7 @@ namespace ts {
     //! Inner Forward Error Correction
     //!
     enum InnerFEC {
-#if defined(__linux) && !defined(DOXYGEN)
+#if defined(TS_LINUX) && !defined(DOXYGEN)
         FEC_NONE = ::FEC_NONE,
         FEC_AUTO = ::FEC_AUTO,
         FEC_1_2  = ::FEC_1_2,
@@ -226,7 +226,7 @@ namespace ts {
         FEC_1_4  = -13,
         FEC_2_5  = -14,
         FEC_5_11 = -15,
-#elif defined(__windows) && !defined(DOXYGEN)
+#elif defined(TS_WINDOWS) && !defined(DOXYGEN)
         FEC_NONE = ::BDA_BCC_RATE_NOT_SET,
         FEC_AUTO = ::BDA_BCC_RATE_NOT_DEFINED,
         FEC_1_2  = ::BDA_BCC_RATE_1_2,
@@ -286,7 +286,7 @@ namespace ts {
     //! Polarization
     //!
     enum Polarization {
-#if defined(__windows) && !defined(DOXYGEN)
+#if defined(TS_WINDOWS) && !defined(DOXYGEN)
         POL_NONE       = ::BDA_POLARISATION_NOT_SET,
         POL_AUTO       = ::BDA_POLARISATION_NOT_DEFINED,
         POL_HORIZONTAL = ::BDA_POLARISATION_LINEAR_H,
@@ -312,11 +312,11 @@ namespace ts {
     //! Pilot (DVB-S2)
     //!
     enum Pilot {
-#if defined(__linux) && !defined(DOXYGEN)
+#if defined(TS_LINUX) && !defined(DOXYGEN)
         PILOT_AUTO = ::PILOT_AUTO,
         PILOT_ON   = ::PILOT_ON,
         PILOT_OFF  = ::PILOT_OFF,
-#elif defined(__windows) && !defined(DOXYGEN)
+#elif defined(TS_WINDOWS) && !defined(DOXYGEN)
         PILOT_AUTO = ::BDA_PILOT_NOT_DEFINED,
         PILOT_ON   = ::BDA_PILOT_ON,
         PILOT_OFF  = ::BDA_PILOT_OFF,
@@ -336,12 +336,12 @@ namespace ts {
     //! Roll-off (DVB-S2)
     //!
     enum RollOff {
-#if defined(__linux) && !defined(DOXYGEN)
+#if defined(TS_LINUX) && !defined(DOXYGEN)
         ROLLOFF_AUTO = ::ROLLOFF_AUTO,
         ROLLOFF_35   = ::ROLLOFF_35,
         ROLLOFF_25   = ::ROLLOFF_25,
         ROLLOFF_20   = ::ROLLOFF_20,
-#elif defined(__windows) && !defined(DOXYGEN)
+#elif defined(TS_WINDOWS) && !defined(DOXYGEN)
         ROLLOFF_AUTO = ::BDA_ROLL_OFF_NOT_DEFINED,
         ROLLOFF_35   = ::BDA_ROLL_OFF_35,
         ROLLOFF_25   = ::BDA_ROLL_OFF_25,
@@ -363,13 +363,13 @@ namespace ts {
     //! Bandwidth (OFDM)
     //!
     enum BandWidth {
-#if defined(__linux) && !defined(DOXYGEN)
+#if defined(TS_LINUX) && !defined(DOXYGEN)
         BW_AUTO  = ::BANDWIDTH_AUTO,
         BW_8_MHZ = ::BANDWIDTH_8_MHZ,
         BW_7_MHZ = ::BANDWIDTH_7_MHZ,
         BW_6_MHZ = ::BANDWIDTH_6_MHZ,
         BW_5_MHZ = -10,
-#elif defined(__windows) && !defined(DOXYGEN)
+#elif defined(TS_WINDOWS) && !defined(DOXYGEN)
         BW_AUTO  = -10,
         BW_8_MHZ = 8,  // values in MHz, not enum
         BW_7_MHZ = 7,
@@ -407,12 +407,12 @@ namespace ts {
     //! Transmission mode (OFDM)
     //!
     enum TransmissionMode {
-#if defined(__linux) && !defined(DOXYGEN)
+#if defined(TS_LINUX) && !defined(DOXYGEN)
         TM_AUTO = ::TRANSMISSION_MODE_AUTO,
         TM_2K   = ::TRANSMISSION_MODE_2K,
         TM_4K   = -10,
         TM_8K   = ::TRANSMISSION_MODE_8K,
-#elif defined(__windows) && !defined(DOXYGEN)
+#elif defined(TS_WINDOWS) && !defined(DOXYGEN)
         TM_AUTO = ::BDA_XMIT_MODE_NOT_DEFINED,
         TM_2K   = ::BDA_XMIT_MODE_2K,
         TM_4K   = ::BDA_XMIT_MODE_4K,
@@ -434,13 +434,13 @@ namespace ts {
     //! Guard interval (OFDM)
     //!
     enum GuardInterval {
-#if defined(__linux) && !defined(DOXYGEN)
+#if defined(TS_LINUX) && !defined(DOXYGEN)
         GUARD_AUTO = ::GUARD_INTERVAL_AUTO,
         GUARD_1_32 = ::GUARD_INTERVAL_1_32,
         GUARD_1_16 = ::GUARD_INTERVAL_1_16,
         GUARD_1_8  = ::GUARD_INTERVAL_1_8,
         GUARD_1_4  = ::GUARD_INTERVAL_1_4,
-#elif defined(__windows) && !defined(DOXYGEN)
+#elif defined(TS_WINDOWS) && !defined(DOXYGEN)
         GUARD_AUTO = ::BDA_GUARD_NOT_DEFINED,
         GUARD_1_32 = ::BDA_GUARD_1_32,
         GUARD_1_16 = ::BDA_GUARD_1_16,
@@ -478,13 +478,13 @@ namespace ts {
     //! Hierarchy (OFDM)
     //!
     enum Hierarchy {
-#if defined(__linux) && !defined(DOXYGEN)
+#if defined(TS_LINUX) && !defined(DOXYGEN)
         HIERARCHY_AUTO = ::HIERARCHY_AUTO,
         HIERARCHY_NONE = ::HIERARCHY_NONE,
         HIERARCHY_1    = ::HIERARCHY_1,
         HIERARCHY_2    = ::HIERARCHY_2,
         HIERARCHY_4    = ::HIERARCHY_4,
-#elif defined(__windows) && !defined(DOXYGEN)
+#elif defined(TS_WINDOWS) && !defined(DOXYGEN)
         HIERARCHY_AUTO = ::BDA_HALPHA_NOT_DEFINED,
         HIERARCHY_NONE = ::BDA_HALPHA_NOT_SET,
         HIERARCHY_1    = ::BDA_HALPHA_1,

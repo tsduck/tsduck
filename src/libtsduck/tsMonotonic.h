@@ -189,7 +189,7 @@ namespace ts {
         // System-specific initialization
         void init();
 
-#if defined(__windows)
+#if defined(TS_WINDOWS)
         // Timer handle
         ::HANDLE _handle;
 

@@ -126,7 +126,7 @@ namespace ts {
         bool          _is_open;       // Check if file is actually open
         int           _severity;      // Severity level for error reporting
         PacketCounter _total_packets; // Total written packets
-#if defined(__windows)
+#if defined(TS_WINDOWS)
         ::HANDLE      _handle;        // File handle
 #else
         int           _fd;            // File descriptor

@@ -43,7 +43,7 @@
 //!
 #if defined(DOXYGEN)
     #define TS_EXECUTABLE_SUFFIX "platform_specific" (".exe", ""); // for doc only
-#elif defined(__windows)
+#elif defined(TS_WINDOWS)
     #define TS_EXECUTABLE_SUFFIX ".exe"
 #else
     #define TS_EXECUTABLE_SUFFIX ""
@@ -54,9 +54,9 @@
 //!
 #if defined(DOXYGEN)
     #define TS_COMMAND_PATH "platform_specific" ("PATH", "Path"); // for doc only
-#elif defined(__windows)
+#elif defined(TS_WINDOWS)
     #define TS_COMMAND_PATH "Path"
-#elif defined(__unix)
+#elif defined(TS_UNIX)
     #define TS_COMMAND_PATH "PATH"
 #else
     #error "Unimplemented operating system"
@@ -74,9 +74,9 @@ namespace ts {
     //!
 #if defined(DOXYGEN)
     const char PathSeparator = platform_specific ('/', '\\'); // for doc only
-#elif defined(__windows)
+#elif defined(TS_WINDOWS)
     const char PathSeparator = '\\';
-#elif defined(__unix)
+#elif defined(TS_UNIX)
     const char PathSeparator = '/';
 #else
     #error "Unimplemented operating system"
@@ -87,9 +87,9 @@ namespace ts {
     //!
 #if defined(DOXYGEN)
     const char SearchPathSeparator = platform_specific (':', ';'); // for doc only
-#elif defined(__windows)
+#elif defined(TS_WINDOWS)
     const char SearchPathSeparator = ';';
-#elif defined(__unix)
+#elif defined(TS_UNIX)
     const char SearchPathSeparator = ':';
 #else
     #error "Unimplemented operating system"
@@ -188,9 +188,9 @@ namespace ts {
     //!
 #if defined (DOXYGEN)
     typedef platform_specific ProcessId;
-#elif defined(__windows)
+#elif defined(TS_WINDOWS)
     typedef ::DWORD ProcessId;
-#elif defined(__unix)
+#elif defined(TS_UNIX)
     typedef pid_t ProcessId;
 #else
     #error "Unimplemented operating system"

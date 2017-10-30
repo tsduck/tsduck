@@ -351,7 +351,7 @@ const char* ts::pcsc::StrError (::LONG status)
             return "RESET_CARD, The smart card has been reset, so any shared state information is invalid";
         case SCARD_W_REMOVED_CARD:
             return "REMOVED_CARD, The smart card has been removed, so that further communication is not possible";
-#if defined (__windows)
+#if defined (TS_WINDOWS)
         case SCARD_P_SHUTDOWN:
             return "SHUTDOWN, The operation has been aborted to allow the server application to exit";
         case SCARD_E_UNEXPECTED:
@@ -402,7 +402,7 @@ const char* ts::pcsc::StrError (::LONG status)
             return "CARD_NOT_AUTHENTICATED, No PIN was presented to the smart card";
 #endif
         default:
-#if defined (__linux)
+#if defined (TS_LINUX)
             // pcsc_stringify_error is specific to pcsc-lite on Linux
             return pcsc_stringify_error (long (status));
 #else

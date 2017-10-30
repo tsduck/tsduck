@@ -42,7 +42,7 @@ TSDUCK_SOURCE;
 
 bool ts::IPInitialize (ReportInterface& report)
 {
-#if defined (__windows)
+#if defined (TS_WINDOWS)
 
     // Request version 2.2 of Winsock
     ::WSADATA data;
@@ -86,7 +86,7 @@ bool ts::GetLocalIPAddresses (IPAddressVector& list, ReportInterface& report)
         return false;
     }
 
-#if defined (__windows)
+#if defined (TS_WINDOWS)
 
     // Windows implementation
 

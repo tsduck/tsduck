@@ -86,7 +86,7 @@ namespace ts {
         //! Required on Windows to avoid linking issue.
         //!
         static const size_type NPOS =
-#if defined(__windows)
+#if defined(TS_WINDOWS)
             size_type(-1);
 #else
             npos;
@@ -155,7 +155,7 @@ namespace ts {
         //!
         UString(const SuperClass& other, size_type pos, size_type count, const allocator_type& alloc = allocator_type()) :
             SuperClass(other, pos, count, alloc) {}
-        
+
         //!
         //! Constructor using a Unicode string.
         //! @param [in] s Address of a string. Can be a null pointer if @a count is zero, in which case the string is empty.
@@ -165,7 +165,7 @@ namespace ts {
         //!
         UString(const UChar* s, size_type count, const allocator_type& alloc = allocator_type()) :
             SuperClass(s == 0 && count == 0 ? &CHAR_NULL : s, count, alloc) {}
-        
+
         //!
         //! Constructor using a null-terminated Unicode string.
         //! @param [in] s Address of a null-terminated string. Can be a null pointer, in which case the string is empty.
@@ -910,7 +910,7 @@ namespace ts {
         UString substr(size_type pos = 0, size_type count = NPOS) const { return SuperClass::substr(pos, count); }
 
         UString& erase(size_type index = 0, size_type count = NPOS) { SuperClass::erase(index, count); return *this; }
-#if defined(__cxx11)
+#if defined(TS_CXX11)
         iterator erase(const_iterator position) { return SuperClass::erase(position); }
         iterator erase(const_iterator first, const_iterator last) { return SuperClass::erase(first, last); }
 #endif
@@ -961,7 +961,7 @@ namespace ts {
         UString& insert(size_type index, const UChar* s, size_type count) { SuperClass::insert(index, s, count); return *this; }
         UString& insert(size_type index, const SuperClass& str) { SuperClass::insert(index, str); return *this; }
         UString& insert(size_type index, const SuperClass& str, size_type index_str, size_type count = NPOS) { SuperClass::insert(index, str, index_str, count); return *this; }
-#if defined(__cxx11)
+#if defined(TS_CXX11)
         iterator insert(iterator pos, UChar ch) { return SuperClass::insert(pos, ch); }
         iterator insert(const_iterator pos, UChar ch) { return SuperClass::insert(pos, ch); }
         iterator insert(const_iterator pos, size_type count, UChar ch) { return SuperClass::insert(pos, count, ch); }
@@ -974,7 +974,7 @@ namespace ts {
         UString& replace(size_type pos, size_type count, const UChar* cstr, size_type count2) { SuperClass::replace(pos, count, cstr, count2); return *this; }
         UString& replace(size_type pos, size_type count, const UChar* cstr) { SuperClass::replace(pos, count, cstr); return *this; }
         UString& replace(size_type pos, size_type count, size_type count2, UChar ch) { SuperClass::replace(pos, count, count2, ch); return *this; }
-#if defined(__cxx11)
+#if defined(TS_CXX11)
         UString& replace(const_iterator first, const_iterator last, const SuperClass& str) { SuperClass::replace(first, last, str); return *this; }
         UString& replace(const_iterator first, const_iterator last, const UChar* cstr, size_type count2) { SuperClass::replace(first, last, cstr, count2); return *this; }
         UString& replace(const_iterator first, const_iterator last, const UChar* cstr) { SuperClass::replace(first, last, cstr); return *this; }
@@ -987,7 +987,7 @@ namespace ts {
         // On Windows, all methods which take 'npos' as default argument need to be overriden
         // using NPOS instead. Otherwise, an undefined symbol error will occur at link time.
         //
-#if defined(__windows) && !defined(DOXYGEN)
+#if defined(TS_WINDOWS) && !defined(DOXYGEN)
         int compare(const SuperClass& str) const { return SuperClass::compare(str); }
         int compare(size_type pos1, size_type count1, const SuperClass& str) const { return SuperClass::compare(pos1, count1, str); }
         int compare(size_type pos1, size_type count1, const SuperClass& str, size_type pos2, size_type count2 = NPOS) const { return SuperClass::compare(pos1, count1, str, pos2, count2); }

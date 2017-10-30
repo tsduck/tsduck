@@ -448,7 +448,7 @@ void PlatformTest::testByteSwap64()
 
 void PlatformTest::testCondByteSwap16BE()
 {
-#if defined(__little_endian)
+#if defined(TS_LITTLE_ENDIAN)
     CPPUNIT_ASSERT_EQUAL(uint16_t(0x3412), ts::CondByteSwap16BE(0x1234));
 #else
     CPPUNIT_ASSERT_EQUAL(uint16_t(0x1234), ts::CondByteSwap16BE(0x1234));
@@ -457,7 +457,7 @@ void PlatformTest::testCondByteSwap16BE()
 
 void PlatformTest::testCondByteSwap16LE()
 {
-#if defined(__little_endian)
+#if defined(TS_LITTLE_ENDIAN)
     CPPUNIT_ASSERT_EQUAL(uint16_t(0x1234), ts::CondByteSwap16LE(0x1234));
 #else
     CPPUNIT_ASSERT_EQUAL(uint16_t(0x3412), ts::CondByteSwap16LE(0x1234));
@@ -466,7 +466,7 @@ void PlatformTest::testCondByteSwap16LE()
 
 void PlatformTest::testCondByteSwap32BE()
 {
-#if defined(__little_endian)
+#if defined(TS_LITTLE_ENDIAN)
     CPPUNIT_ASSERT_EQUAL(uint32_t(0x78563412), ts::CondByteSwap32BE(0x12345678));
 #else
     CPPUNIT_ASSERT_EQUAL(uint32_t(0x12345678), ts::CondByteSwap32BE(0x12345678));
@@ -475,7 +475,7 @@ void PlatformTest::testCondByteSwap32BE()
 
 void PlatformTest::testCondByteSwap32LE()
 {
-#if defined(__little_endian)
+#if defined(TS_LITTLE_ENDIAN)
     CPPUNIT_ASSERT_EQUAL(uint32_t(0x12345678), ts::CondByteSwap32LE(0x12345678));
 #else
     CPPUNIT_ASSERT_EQUAL(uint32_t(0x78563412), ts::CondByteSwap32LE(0x12345678));
@@ -484,7 +484,7 @@ void PlatformTest::testCondByteSwap32LE()
 
 void PlatformTest::testCondByteSwap64BE()
 {
-#if defined(__little_endian)
+#if defined(TS_LITTLE_ENDIAN)
     CPPUNIT_ASSERT_EQUAL(TS_UCONST64(0xEFCDAB8967452301), ts::CondByteSwap64BE(TS_UCONST64(0x0123456789ABCDEF)));
 #else
     CPPUNIT_ASSERT_EQUAL(TS_UCONST64(0x0123456789ABCDEF), ts::CondByteSwap64BE(TS_UCONST64(0x0123456789ABCDEF)));
@@ -493,7 +493,7 @@ void PlatformTest::testCondByteSwap64BE()
 
 void PlatformTest::testCondByteSwap64LE()
 {
-#if defined(__little_endian)
+#if defined(TS_LITTLE_ENDIAN)
     CPPUNIT_ASSERT_EQUAL(TS_UCONST64(0x0123456789ABCDEF), ts::CondByteSwap64LE(TS_UCONST64(0x0123456789ABCDEF)));
 #else
     CPPUNIT_ASSERT_EQUAL(TS_UCONST64(0xEFCDAB8967452301), ts::CondByteSwap64LE(TS_UCONST64(0x0123456789ABCDEF)));

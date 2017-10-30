@@ -39,13 +39,13 @@ TSDUCK_SOURCE;
 
 ts::Condition::Condition() :
     _created(false),
-#if defined(__windows)
+#if defined(TS_WINDOWS)
     _handle(INVALID_HANDLE_VALUE)
 #else
     _cond(PTHREAD_COND_INITIALIZER)
 #endif
 {
-#if defined(__windows)
+#if defined(TS_WINDOWS)
 
     // Windows implementation.
     if ((_handle = ::CreateEvent(NULL, FALSE, FALSE, NULL)) == NULL) {
@@ -63,7 +63,7 @@ ts::Condition::Condition() :
         throw ConditionError("cond attr init", error);
         return;
     }
-#if !defined(__mac)
+#if !defined(TS_MAC)
     // The clock attribute is not implemented in MacOS, just keep the default clock.
     else if ((error = ::pthread_condattr_setclock(&attr, CLOCK_REALTIME)) != 0) {
         throw ConditionError("cond attr set clock", error);
@@ -92,7 +92,7 @@ ts::Condition::Condition() :
 ts::Condition::~Condition()
 {
     if (_created) {
-#if defined(__windows)
+#if defined(TS_WINDOWS)
         ::CloseHandle(_handle);
 #else
         ::pthread_cond_destroy(&_cond);
@@ -112,7 +112,7 @@ void ts::Condition::signal()
         return;
     }
 
-#if defined (__windows)
+#if defined (TS_WINDOWS)
     if (::SetEvent(_handle) == 0) {
         throw ConditionError (::GetLastError ());
     }
@@ -137,7 +137,7 @@ bool ts::Condition::wait (Mutex& mutex, MilliSecond timeout, bool& signaled)
         return false;
     }
 
-#if defined(__windows)
+#if defined(TS_WINDOWS)
 
     if (!mutex.release ()) {
         return false;

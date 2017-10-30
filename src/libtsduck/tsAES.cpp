@@ -1065,7 +1065,7 @@ bool ts::AES::setKey(const void* key_, size_t key_length, size_t rounds)
         rk[4] = GetUInt32 (key + 16);
         rk[5] = GetUInt32 (key + 20);
         for (;;) {
-#if defined (__msc)
+#if defined (TS_MSC)
             temp = _eK[rk - _eK + 5];
 #else
             temp = rk[5];
@@ -1089,7 +1089,7 @@ bool ts::AES::setKey(const void* key_, size_t key_length, size_t rounds)
         rk[6] = GetUInt32 (key + 24);
         rk[7] = GetUInt32 (key + 28);
         for (;;) {
-#if defined (__msc)
+#if defined (TS_MSC)
             temp = _eK[rk - _eK + 7];
 #else
             temp = rk[7];

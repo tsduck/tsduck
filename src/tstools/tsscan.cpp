@@ -402,7 +402,7 @@ bool OffsetScanner::tune(int offset)
     ts::TunerParametersDVBT tparams;
     tparams.frequency = ts::UHF::Frequency(_channel, offset);
     tparams.inversion = ts::SPINV_AUTO;
-#if defined(__windows)
+#if defined(TS_WINDOWS)
     tparams.bandwidth = ts::BW_8_MHZ; // BW_AUTO not supported
 #else
     tparams.bandwidth = ts::BW_AUTO;
@@ -435,7 +435,7 @@ bool OffsetScanner::tryOffset(int offset)
     // so since _tuner.start() has succeeded we can be sure that at least
     // one packet was successfully read and there is some signal.
     bool ok =
-#if defined(__linux)
+#if defined(TS_LINUX)
         _tuner.signalLocked(_opt);
 #else
         true;

@@ -106,7 +106,7 @@ namespace ts {
     //! Format a percentage string.
     //! @tparam INT An integer type.
     //! @param [in] value An integer value, a portion of @a total.
-    //! @param [in] total The total value. 
+    //! @param [in] total The total value.
     //! @return A string reprenting the percentage of @a value in @a total.
     //!
     template<typename INT>

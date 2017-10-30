@@ -57,7 +57,7 @@ namespace ts {
         //! DVB-encoded CR/LF in single-byte character sets.
         //!
         static const uint8_t DVB_SINGLE_BYTE_CRLF = 0x8A;
-        
+
         //!
         //! Code point for DVB-encoded CR/LF in two-byte character sets.
         //!
@@ -95,14 +95,14 @@ namespace ts {
         //! @return DVB table code.
         //!
         uint32_t tableCode() const {return _code;}
-    
+
         //!
         //! Get a DVB character set by name.
         //! @param [in] name Name of the requested character set.
         //! @return Address of the character or zero if not found.
         //!
         static DVBCharset* GetCharset(const UString& name);
-    
+
         //!
         //! Get a DVB character set by table code.
         //! @param [in] tableCode Table code of the requested character set.

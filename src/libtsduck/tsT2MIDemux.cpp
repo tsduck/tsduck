@@ -181,7 +181,7 @@ void ts::T2MIDemux::processT2MI(PID pid, PIDContext& pc)
     // Protect sequence which may call application-defined handlers.
     beforeCallingHandler(pid);
     try {
-        
+
         // Loop on all complete T2-MI packets.
         while (start + T2MI_HEADER_SIZE < pc.t2mi.size()) {
 

@@ -54,7 +54,7 @@ namespace ts {
             int          time_offset;        //!< Local time minus UTC, in minutes.
             Time         next_change;        //!< UTC of next time change.
             int          next_time_offset;   //!< Time @a time_offset after @a next_change.
-            
+
             //!
             //! Default constructor.
             //!

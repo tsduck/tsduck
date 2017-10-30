@@ -33,7 +33,7 @@ TSDUCK_SOURCE;
 
 // On MacOS, we must do polling on mutex "lock with timeout".
 // We use 10 ms, expressed in nanoseconds.
-#if defined(__mac)
+#if defined(TS_MAC)
     #define MUTEX_POLL_NANOSEC (10 * NanoSecPerMilliSec)
 #endif
 
@@ -44,13 +44,13 @@ TSDUCK_SOURCE;
 
 ts::Mutex::Mutex() :
     _created(false),
-#if defined(__windows)
+#if defined(TS_WINDOWS)
     _handle(INVALID_HANDLE_VALUE)
 #else
     _mutex(PTHREAD_MUTEX_INITIALIZER)
 #endif
 {
-#if defined(__windows)
+#if defined(TS_WINDOWS)
 
     // Windows implementation.
     if ((_handle = ::CreateMutex(NULL, FALSE, NULL)) == NULL) {
@@ -90,7 +90,7 @@ ts::Mutex::Mutex() :
 ts::Mutex::~Mutex ()
 {
     if (_created) {
-#if defined(__windows)
+#if defined(TS_WINDOWS)
         ::CloseHandle(_handle);
 #else
         ::pthread_mutex_destroy(&_mutex);
@@ -104,7 +104,7 @@ ts::Mutex::~Mutex ()
 // This method attempts an immediate pthread "try lock".
 //----------------------------------------------------------------------------
 
-#if defined(__unix)
+#if defined(TS_UNIX)
 bool ts::Mutex::tryLock()
 {
     const int error = ::pthread_mutex_trylock(&_mutex);
@@ -132,7 +132,7 @@ bool ts::Mutex::acquire(MilliSecond timeout)
         return false;
     }
 
-#if defined(__windows)
+#if defined(TS_WINDOWS)
 
     const ::DWORD wintimeout(timeout == Infinite ? INFINITE : ::DWORD(timeout));
     switch (::WaitForSingleObject(_handle, wintimeout)) {
@@ -164,7 +164,7 @@ bool ts::Mutex::acquire(MilliSecond timeout)
     }
     else {
         // Non-zero finite timeout.
-#if defined(__mac)
+#if defined(TS_MAC)
         // Mac implementation of POSIX does not include pthread_mutex_timedlock.
         // We have to fall back to the infamous method of polling :((
         // Timeout in absolute time:
@@ -224,7 +224,7 @@ bool ts::Mutex::release()
         return false;
     }
     else {
-#if defined(__windows)
+#if defined(TS_WINDOWS)
         return ::ReleaseMutex(_handle) != 0;
 #else
         return ::pthread_mutex_unlock(&_mutex) == 0;

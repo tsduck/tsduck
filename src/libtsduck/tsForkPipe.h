@@ -132,7 +132,7 @@ namespace ts {
         bool     _synchronous;   // Wait for child process termination in stop()
         bool     _ignore_abort;  // Ignore early termination of child process
         bool     _broken_pipe;   // Pipe is broken, do not attempt to write
-#if defined(__windows)
+#if defined(TS_WINDOWS)
         ::HANDLE _handle;        // Pipe output handle
         ::HANDLE _process;       // Handle to child process
 #else

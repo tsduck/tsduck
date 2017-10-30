@@ -127,7 +127,7 @@ bool ts::TCPConnection::send(const void* buffer, size_t size, ReportInterface& r
             data += gone;
             remain -= gone;
         }
-#if !defined(__windows)
+#if !defined(TS_WINDOWS)
         else if (errno == EINTR) {
             // Ignore signal, retry
             report.debug("send() interrupted by signal, retrying");
@@ -173,7 +173,7 @@ bool ts::TCPConnection::receive (void* data,             // Buffers address
             declareDisconnected(report);
             return false;
         }
-#if !defined(__windows)
+#if !defined(TS_WINDOWS)
         else if (err_code == EINTR) {
             // Ignore signal, retry
             report.debug ("recv() interrupted by signal, retrying");
@@ -232,7 +232,7 @@ bool ts::TCPConnection::connect (const SocketAddress& addr, ReportInterface& rep
             declareConnected (report);
             return true;
         }
-#if !defined (__windows)
+#if !defined (TS_WINDOWS)
         else if (errno == EINTR) {
             // Ignore signal, retry
             report.debug ("connect() interrupted by signal, retrying");

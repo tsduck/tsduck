@@ -203,7 +203,7 @@ namespace ts {
         // Internal version of isCurrentThread(), bypass checks
         bool isCurrentThreadUnchecked() const;
 
-#if defined(__windows)
+#if defined(TS_WINDOWS)
         ::HANDLE _handle;
         ::DWORD _thread_id;
         // Actual starting point of thread. Parameter is "this".

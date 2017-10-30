@@ -44,7 +44,7 @@ TSDUCK_SOURCE;
 
 ts::Monotonic::Monotonic() :
     _value(0)
-#if defined(__windows)
+#if defined(TS_WINDOWS)
     , _handle(INVALID_HANDLE_VALUE)
 #endif
 {
@@ -58,7 +58,7 @@ ts::Monotonic::Monotonic() :
 
 ts::Monotonic::Monotonic(const Monotonic& t) :
     _value(t._value)
-#if defined(__windows)
+#if defined(TS_WINDOWS)
     , _handle(INVALID_HANDLE_VALUE)
 #endif
 {
@@ -72,7 +72,7 @@ ts::Monotonic::Monotonic(const Monotonic& t) :
 
 void ts::Monotonic::init()
 {
-#if defined(__windows)
+#if defined(TS_WINDOWS)
     if ((_handle = ::CreateWaitableTimer(NULL, FALSE, NULL)) == NULL) {
         throw MonotonicError(::GetLastError());
     }
@@ -86,7 +86,7 @@ void ts::Monotonic::init()
 
 ts::Monotonic::~Monotonic()
 {
-#if defined(__windows)
+#if defined(TS_WINDOWS)
     ::CloseHandle(_handle);
 #endif
 }
@@ -98,7 +98,7 @@ ts::Monotonic::~Monotonic()
 
 void ts::Monotonic::getSystemTime()
 {
-#if defined(__windows)
+#if defined(TS_WINDOWS)
 
     // On Win32, a the FILETIME structure is binary-compatible with a 64-bit integer.
     union {
@@ -108,13 +108,13 @@ void ts::Monotonic::getSystemTime()
     ::GetSystemTimeAsFileTime(&result.ft);
     _value = result.i;
 
-#elif defined(__mac)
+#elif defined(TS_MAC)
 
     // On MacOS, there is no clock_nanosleep. We use a relative nanosleep.
     // And nanosleep is always based on CLOCK_REALTIME.
     _value = Time::UnixClockNanoSeconds(CLOCK_REALTIME);
 
-#elif defined(__unix)
+#elif defined(TS_UNIX)
 
     // Use clock_nanosleep. We can choose the clock.
     // The most appropriate one here is CLOCK_MONOTONIC.
@@ -132,7 +132,7 @@ void ts::Monotonic::getSystemTime()
 
 void ts::Monotonic::wait()
 {
-#if defined(__windows)
+#if defined(TS_WINDOWS)
 
     // Windows implementation
 
@@ -145,7 +145,7 @@ void ts::Monotonic::wait()
         throw MonotonicError(::GetLastError());
     }
 
-#elif defined(__mac)
+#elif defined(TS_MAC)
 
     // MacOS implementation.
     // No support for clock_nanosleep. Use a relative nanosleep which is less precise.
@@ -169,7 +169,7 @@ void ts::Monotonic::wait()
         }
     }
 
-#elif defined(__unix)
+#elif defined(TS_UNIX)
 
     // UNIX implementation with clock_nanosleep support.
 
@@ -201,7 +201,7 @@ void ts::Monotonic::wait()
 
 ts::NanoSecond ts::Monotonic::SetPrecision(const NanoSecond& requested)
 {
-#if defined(__windows)
+#if defined(TS_WINDOWS)
 
     // Windows implementation
 
@@ -238,7 +238,7 @@ ts::NanoSecond ts::Monotonic::SetPrecision(const NanoSecond& requested)
     // Return last good value in nanoseconds
     return 1000000 * NanoSecond(good);
 
-#elif defined(__unix)
+#elif defined(TS_UNIX)
 
     // POSIX implementation
 

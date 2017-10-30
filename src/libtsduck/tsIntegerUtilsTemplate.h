@@ -38,7 +38,7 @@
 //
 // warning C4127: conditional expression is constant
 //
-#if defined(__msc)
+#if defined(TS_MSC)
 #pragma warning(push)
 #pragma warning(disable:4127)
 #endif
@@ -136,6 +136,6 @@ std::string ts::PercentageString(INT value, INT total)
     }
 }
 
-#if defined(__msc)
+#if defined(TS_MSC)
 #pragma warning(pop)
 #endif

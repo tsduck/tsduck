@@ -592,7 +592,7 @@ namespace ts {
         //!
         static const MilliSecond JulianEpochOffset;
 
-#if defined(__windows) || defined(DOXYGEN)
+#if defined(TS_WINDOWS) || defined(DOXYGEN)
         //!
         //! This static routine converts a Win32 @c FILETIME to @c MilliSecond (Microsoft Windows only).
         //!
@@ -624,7 +624,7 @@ namespace ts {
         //!
         static Time UnixTimeToUTC(const uint32_t unixTime);
 
-#if defined(__unix) || defined(DOXYGEN)
+#if defined(TS_UNIX) || defined(DOXYGEN)
         //!
         //! This static routine gets a system clock and adds a delay in milliseconds (UNIX systems only).
         //!
@@ -662,7 +662,7 @@ namespace ts {
 
         // Number of clock ticks per millisecond:
         static const int64_t TICKS_PER_MS =
-#if defined(__windows)
+#if defined(TS_WINDOWS)
             // On Win32, a FILETIME is a 64-bit value representing the number
             // of 100-nanosecond intervals since January 1, 1601.
             // Number of FILETIME ticks per millisecond:
@@ -674,7 +674,7 @@ namespace ts {
 #endif
 
         // On Win32, a the FILETIME structure is binary-compatible with a 64-bit integer.
-#if defined(__windows)
+#if defined(TS_WINDOWS)
         union FileTime {
             ::FILETIME ft;
             int64_t i;

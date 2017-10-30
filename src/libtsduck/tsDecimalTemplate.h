@@ -51,14 +51,14 @@ std::string ts::Decimal(const INT& value,
     if (negative) {
         // If the type is unsigned, "ivalue = -value" will never be executed
         // but Visual C++ complains. Suppress the warning.
-        #ifdef __msc
+        #ifdef TS_MSC
         #pragma warning(push)
         #pragma warning(disable:4146)
         #endif
 
         ivalue = -value;
 
-        #ifdef __msc
+        #ifdef TS_MSC
         #pragma warning(pop)
         #endif
     }

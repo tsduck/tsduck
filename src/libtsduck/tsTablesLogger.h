@@ -45,7 +45,7 @@ namespace ts {
     //!
     //! This class logs sections and tables.
     //!
-    class TSDUCKDLL TablesLogger : 
+    class TSDUCKDLL TablesLogger :
         protected TableHandlerInterface,
         protected SectionHandlerInterface
     {

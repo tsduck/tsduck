@@ -78,7 +78,7 @@ ts::tsp::Options::Options(int argc, char *argv[]) :
     option("timed-log",                't');
     option("verbose",                  'v');
 
-#if defined(__windows)
+#if defined(TS_WINDOWS)
 #define HELP_SHLIB    "DLL"
 #define HELP_SHLIBS   "DLL's"
 #define HELP_SHLIBEXT ".dll"

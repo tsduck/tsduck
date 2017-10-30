@@ -41,7 +41,7 @@ TSDUCK_SOURCE;
 //----------------------------------------------------------------------------
 
 const char* const ts::SharedLibrary::Extension =
-#if defined(__windows)
+#if defined(TS_WINDOWS)
     ".dll";
 #else
     ".so";
@@ -58,7 +58,7 @@ ts::SharedLibrary::SharedLibrary(const std::string& filename, bool permanent, Re
     _error(),
     _is_loaded(false),
     _permanent(permanent),
-#if defined(__windows)
+#if defined(TS_WINDOWS)
     _module(0)
 #else
     _dl(0)
@@ -95,7 +95,7 @@ void ts::SharedLibrary::load(const std::string& filename)
     _filename = filename;
     _report.debug("trying to load " + _filename);
 
-#if defined(__windows)
+#if defined(TS_WINDOWS)
     // Flawfinder: ignore: LoadLibraryEx: Ensure that the full path to the library is specified
     _module = ::LoadLibraryEx(_filename.c_str(), NULL, 0);
     _is_loaded = _module != 0;
@@ -131,7 +131,7 @@ void ts::SharedLibrary::load(const std::string& filename)
 void ts::SharedLibrary::unload()
 {
     if (_is_loaded) {
-#if defined(__windows)
+#if defined(TS_WINDOWS)
         ::FreeLibrary(_module);
 #else
         ::dlclose(_dl);
@@ -152,7 +152,7 @@ void* ts::SharedLibrary::getSymbol(const std::string& name) const
     }
     else {
         void* result = 0;
-#if defined(__windows)
+#if defined(TS_WINDOWS)
         result = ::GetProcAddress(_module, name.c_str());
 #else
         result = ::dlsym(_dl, name.c_str());

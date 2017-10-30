@@ -132,7 +132,7 @@ namespace ts {
 
         // Private members
         bool _created;
-#if defined(__windows)
+#if defined(TS_WINDOWS)
         ::HANDLE _handle; // Event handle
 #else
         ::pthread_cond_t _cond;

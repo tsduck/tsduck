@@ -110,7 +110,7 @@ namespace ts {
         std::string _error;
         bool _is_loaded;
         bool _permanent;
-#if defined (__windows)
+#if defined (TS_WINDOWS)
         ::HMODULE _module;
 #else
         void* _dl; // dlopen/dlclose handle

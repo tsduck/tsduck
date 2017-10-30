@@ -53,7 +53,7 @@ namespace ts {
         //!
         //! Check if a date is valid.
         //! @return True if the date is valid.
-        //!        
+        //!
         bool isValid() const
         {
             return _value != InvalidDate;
@@ -62,7 +62,7 @@ namespace ts {
         //!
         //! Get the year number.
         //! @return The year number.
-        //!        
+        //!
         int year() const
         {
             return _year_base + int((_value >> 9) & 0x007F);
@@ -71,7 +71,7 @@ namespace ts {
         //!
         //! Get the month number.
         //! @return The month number.
-        //!                
+        //!
         int month() const
         {
             return int((_value >> 5) & 0x000F);
@@ -80,7 +80,7 @@ namespace ts {
         //!
         //! Get the day number.
         //! @return The day number.
-        //!        
+        //!
         int day() const
         {
             return int(_value & 0x001F);
@@ -89,7 +89,7 @@ namespace ts {
         //!
         //! Convert to a 16-bit value, for binary insertion.
         //! @return The 16-bit value, for binary insertion.
-        //!        
+        //!
         uint16_t value() const
         {
             return _value;
@@ -98,13 +98,13 @@ namespace ts {
         //!
         //! Convert to a Time object.
         //! @return The Time object.
-        //!        
+        //!
         operator Time() const;
 
         //!
         //! Convert to a string object.
         //! @return The string object.
-        //!        
+        //!
         operator std::string() const;
 
         //!
@@ -112,24 +112,24 @@ namespace ts {
         //! We can assign between different subclasses.
         //! @param [in] t A data to assign.
         //! @return A reference to this object.
-        //!        
+        //!
         AbstractCASDate& operator=(const AbstractCASDate& t);
 
         //!
         //! Comparison operator.
         //! @param [in] t A data to assign.
         //! @return True if this object == @a t.
-        //!        
+        //!
         bool operator==(const AbstractCASDate& t) const
         {
             return toUInt32() == t.toUInt32();
         }
-        
+
         //!
         //! Comparison operator.
         //! @param [in] t A data to assign.
         //! @return True if this object != @a t.
-        //!        
+        //!
         bool operator!=(const AbstractCASDate& t) const
         {
             return toUInt32() != t.toUInt32();
@@ -139,7 +139,7 @@ namespace ts {
         //! Comparison operator.
         //! @param [in] t A data to assign.
         //! @return True if this object < @a t.
-        //!        
+        //!
         bool operator<(const AbstractCASDate& t) const
         {
             return toUInt32() <  t.toUInt32();
@@ -149,7 +149,7 @@ namespace ts {
         //! Comparison operator.
         //! @param [in] t A data to assign.
         //! @return True if this object <= @a t.
-        //!        
+        //!
         bool operator<=(const AbstractCASDate& t) const
         {
             return toUInt32() <= t.toUInt32();
@@ -159,7 +159,7 @@ namespace ts {
         //! Comparison operator.
         //! @param [in] t A data to assign.
         //! @return True if this object > @a t.
-        //!        
+        //!
         bool operator>(const AbstractCASDate& t) const
         {
             return toUInt32() >  t.toUInt32();
@@ -169,7 +169,7 @@ namespace ts {
         //! Comparison operator.
         //! @param [in] t A data to assign.
         //! @return True if this object >= @a t.
-        //!        
+        //!
         bool operator>=(const AbstractCASDate& t) const
         {
             return toUInt32() >= t.toUInt32();
@@ -201,7 +201,7 @@ namespace ts {
         //! @param [in] value 16-bit binary representation of the date.
         //!
         AbstractCASDate(int year_base, uint16_t value) :
-            _year_base(year_base), 
+            _year_base(year_base),
             _value(value)
         {
         }
@@ -212,7 +212,7 @@ namespace ts {
         //! @param [in] date another date to assign.
         //!
         AbstractCASDate(int year_base, const AbstractCASDate& date) :
-            _year_base(year_base), 
+            _year_base(year_base),
             _value(date._value)
         {
         }
@@ -225,7 +225,7 @@ namespace ts {
         //! @param [in] day Day number.
         //!
         AbstractCASDate(int year_base, int year, int month, int day) :
-            _year_base(year_base), 
+            _year_base(year_base),
             _value(toUInt16(year, month, day))
         {
         }

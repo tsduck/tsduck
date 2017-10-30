@@ -102,7 +102,7 @@ namespace {
             const std::string& name(*it1);
 
             // Get all TSDuck executable file names.
-#if defined(__windows)
+#if defined(TS_WINDOWS)
             // Windows: all .exe files
             ts::ExpandWildcardAndAppend(files, dir + name + ".exe");
 #else
@@ -256,7 +256,7 @@ namespace {
         {
             return 0;
         }
-        
+
         const int month = MonthEnum.value(word.substr(0, 3), false);
         if (month == ts::Enumeration::UNKNOWN) {
             return 0;

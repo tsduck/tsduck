@@ -138,7 +138,7 @@ int main(int argc, char* argv[])
     // Decode command line.
     Options opt(argc, argv);
 
-#if defined(__windows)
+#if defined(TS_WINDOWS)
 
     // Access registry value.
     ::HKEY hkey;

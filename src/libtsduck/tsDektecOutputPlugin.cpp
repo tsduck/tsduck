@@ -542,7 +542,7 @@ ts::DektecOutputPlugin::DektecOutputPlugin(TSP* tsp_) :
             "  --input-modulation\n"
             "      All modulators devices: try to guess modulation parameters from input\n"
             "      stream. If the input plugin is \"dvb\", use its modulation parameters.\n"
-#if defined (__windows)
+#if defined (TS_WINDOWS)
             "      Warning: not always accurate on Windows systems.\n"
 #endif
             "      Otherwise, if the specified modulation is DVB-T, try to guess\n"

@@ -33,7 +33,7 @@
 
 #include "tsPlatform.h"
 TSDUCK_SOURCE;
-#if defined (__windows)
+#if defined (TS_WINDOWS)
 
 #include "tsTunerUtils.h"
 #include "tsDirectShowUtils.h"
@@ -99,4 +99,4 @@ void DirectShowTest::testDevices()
     ::CoUninitialize();
 }
 
-#endif // __windows
+#endif // TS_WINDOWS

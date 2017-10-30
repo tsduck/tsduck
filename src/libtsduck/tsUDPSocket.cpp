@@ -386,7 +386,7 @@ bool ts::UDPSocket::receive (void* data,
             // User-interrupt, end of processing but no error message
             return false;
         }
-#if !defined (__windows)
+#if !defined (TS_WINDOWS)
         else if (errno == EINTR) {
             // Got a signal, not a user interrupt, will ignore it
             report.debug ("signal, not user interrupt");

@@ -56,10 +56,10 @@ namespace ts {
         std::string                 device_name;        //!< Name of tuner device.
         MilliSecond                 signal_timeout;     //!< Signal locking timeout in milliseconds.
         MilliSecond                 receive_timeout;    //!< Packet received timeout in milliseconds.
-#if defined(__linux) || defined(DOXYGEN)
+#if defined(TS_LINUX) || defined(DOXYGEN)
         size_t                      demux_buffer_size;  //!< Demux buffer size in bytes (Linux-specific).
 #endif
-#if defined(__windows) || defined(DOXYGEN)
+#if defined(TS_WINDOWS) || defined(DOXYGEN)
         size_t                      demux_queue_size;   //!< Max number of queued media samples (Windows-specific).
 #endif
         Variable<std::string>       zap_specification;  //!< Linux DVB zap format.
