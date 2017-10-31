@@ -67,6 +67,13 @@ namespace ts {
     TSDUCKDLL bool GetPin(PinPtrVector& pins, ::IBaseFilter* filter, int flags, ReportInterface& report);
 
     //!
+    //! Get the name for a DirectShow pin direction value (Windows-specific).
+    //! @param [in] dir Pin direction.
+    //! @return Corresponding name.
+    //!
+    TSDUCKDLL std::string PinDirectionName(::PIN_DIRECTION dir);
+
+    //!
     //! Directly connect two DirectShow filters using whatever output and input pin (Windows-specific).
     //! @param [in,out] graph DirectShow graph builder.
     //! @param [in,out] filter1 DirectShow filter with output pins.
@@ -136,6 +143,15 @@ namespace ts {
                                             ReportInterface& report);
 
     //!
+    //! Display all DirectShow tuning spaces (Windows-specific).
+    //! @param [in,out] strm Output text stream.
+    //! @param [in] margin Left margin to display.
+    //! @param [in,out] report Where to report errors.
+    //! @return True on success, false on error.
+    //!
+    TSDUCKDLL bool DisplayTuningSpaces(std::ostream& strm, const std::string& margin, ReportInterface& report);
+
+    //!
     //! Translate a DirectShow network provider class id into a TSDuck tuner type (Windows-specific).
     //! @param [in] provider_clsid DirectShow network provider class.
     //! @param [out] tuner_type Returned TSDuck tuner type.
@@ -170,4 +186,11 @@ namespace ts {
     //! @return Tuning space name or an empty string on error.
     //!
     TSDUCKDLL std::string GetTuningSpaceUniqueName(::ITuningSpace* tuning, ReportInterface& report);
+
+    //!
+    //! Get the name for a DirectShow @c DVBSystemType value (Windows-specific).
+    //! @param [in] type DVB system type value.
+    //! @return Corresponding name.
+    //!
+    TSDUCKDLL std::string DVBSystemTypeName(::DVBSystemType type);
 }

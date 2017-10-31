@@ -199,7 +199,7 @@ namespace {
         _I_(IID_, IAMAudioRendererStats);
         _I_(IID_, IAMBufferNegotiation);
         _I_(IID_, IAMCameraControl);
-//      _I_(IID_, IAMCertifiedOutputProtection);
+        _I_(IID_, IAMCertifiedOutputProtection);
         _I_(IID_, IAMClockAdjust);
         _I_(IID_, IAMClockSlave);
         _I_(IID_, IAMCopyCaptureFileProgress);
@@ -262,20 +262,20 @@ namespace {
         _I_(IID_, IAMWMBufferPassCallback);
         _I_(IID_, IAMovieSetup);
         _I_(IID_, IAsyncReader);
-//      _I_(IID_, IAttributeGet);
-//      _I_(IID_, IAttributeSet);
-//      _I_(IID_, IBDAComparable);
+        _I_(IID_, IAttributeGet);
+        _I_(IID_, IAttributeSet);
+        _I_(IID_, IBDAComparable);
         _I_(IID_, IBDA_AutoDemodulate);
-//      _I_(IID_, IBDA_AutoDemodulateEx);
-//      _I_(IID_, IBDA_ConditionalAccess);
-//      _I_(IID_, IBDA_DRM);
+        _I_(IID_, IBDA_AutoDemodulateEx);
+        _I_(IID_, IBDA_ConditionalAccess);
+        _I_(IID_, IBDA_DRM);
         _I_(IID_, IBDA_DeviceControl);
-//      _I_(IID_, IBDA_DiagnosticProperties);
+        _I_(IID_, IBDA_DiagnosticProperties);
         _I_(IID_, IBDA_DigitalDemodulator);
         _I_(IID_, IBDA_DigitalDemodulator2);
         _I_(IID_, IBDA_DigitalDemodulator3);
         _I_(IID_, IBDA_DiseqCommand);
-//      _I_(IID_, IBDA_EasMessage);
+        _I_(IID_, IBDA_EasMessage);
         _I_(IID_, IBDA_EthernetFilter);
         _I_(IID_, IBDA_FrequencyFilter);
         _I_(IID_, IBDA_IPSinkControl);
@@ -290,7 +290,7 @@ namespace {
         _I_(IID_, IBDA_SignalStatistics);
         _I_(IID_, IBDA_TIF_REGISTRATION);
         _I_(IID_, IBDA_Topology);
-//      _I_(IID_, IBDA_TransportStreamInfo);
+        _I_(IID_, IBDA_TransportStreamInfo);
         _I_(IID_, IBDA_VoidTransform);
         _I_(IID_, IBPCSatelliteTuner);
         _I_(IID_, IBaseFilter);
@@ -343,7 +343,7 @@ namespace {
         _I_(IID_, IFilterChain);
         _I_(IID_, IFilterGraph);
         _I_(IID_, IFilterGraph2);
-//      _I_(IID_, IFilterGraph3);
+        _I_(IID_, IFilterGraph3);
         _I_(IID_, IFilterMapper);
         _I_(IID_, IFilterMapper2);
         _I_(IID_, IFilterMapper3);
@@ -373,7 +373,7 @@ namespace {
         _I_(IID_, IMediaPropertyBag);
         _I_(IID_, IMediaSample);
         _I_(IID_, IMediaSample2);
-//      _I_(IID_, IMediaSample2Config);
+        _I_(IID_, IMediaSample2Config);
         _I_(IID_, IMediaSeeking);
         _I_(IID_, IMemAllocator);
         _I_(IID_, IMemAllocatorCallbackTemp);
@@ -381,8 +381,8 @@ namespace {
         _I_(IID_, IMemInputPin);
         _I_(IID_, IMpeg2Data);
         _I_(IID_, IMpeg2Demultiplexer);
-//      _I_(IID_, IMpeg2Stream);
-//      _I_(IID_, IMpeg2TableFilter);
+        _I_(IID_, IMpeg2Stream);
+        _I_(IID_, IMpeg2TableFilter);
         _I_(IID_, IOverlay);
         _I_(IID_, IOverlayNotify);
         _I_(IID_, IOverlayNotify2);
@@ -393,20 +393,20 @@ namespace {
         _I_(IID_, IQualityControl);
         _I_(IID_, IReferenceClock);
         _I_(IID_, IReferenceClock2);
-//      _I_(IID_, IReferenceClockTimerControl);
+        _I_(IID_, IReferenceClockTimerControl);
         _I_(IID_, IRegisterServiceProvider);
-//      _I_(IID_, IRegisterTuner);
+        _I_(IID_, IRegisterTuner);
         _I_(IID_, IResourceConsumer);
         _I_(IID_, IResourceManager);
         _I_(IID_, IScanningTuner);
-//      _I_(IID_, IScanningTunerEx);
+        _I_(IID_, IScanningTunerEx);
         _I_(IID_, ISeekingPassThru);
         _I_(IID_, ISelector);
         _I_(IID_, IStreamBuilder);
         _I_(IID_, ITuneRequest);
         _I_(IID_, ITuneRequestInfo);
         _I_(IID_, ITuner);
-//      _I_(IID_, ITunerCap);
+        _I_(IID_, ITunerCap);
         _I_(IID_, ITuningSpace);
         _I_(IID_, ITuningSpaceContainer);
         _I_(IID_, ITuningSpaces);
@@ -745,6 +745,33 @@ namespace {
 //-----------------------------------------------------------------------------
 
 namespace {
+    void DisplayEnumerateTuningSpaces(std::ostream& strm, const std::string& margin, ts::ComPtr<::IEnumTuningSpaces>& enum_tspace, ts::ReportInterface& report)
+    {
+        ts::ComPtr<::ITuningSpace> tspace;
+
+        while (!enum_tspace.isNull() && enum_tspace->Next(1, tspace.creator(), NULL) == S_OK) {
+            // Get tuning space names.
+            const std::string fname(GetTuningSpaceFriendlyName(tspace.pointer(), report));
+            const std::string uname(GetTuningSpaceUniqueName(tspace.pointer(), report));
+            std::string tname;
+
+            // Check if this tuning space supports IDVBTuningSpace interface.
+            ts::ComPtr<::IDVBTuningSpace> dvb_tspace;
+            dvb_tspace.queryInterface(tspace.pointer(), ::IID_IDVBTuningSpace, NULLREP);
+            if (!dvb_tspace.isNull()) {
+                // This is a DVB tuning space. Get DVB system type.
+                ::DVBSystemType sys_type;
+                ::HRESULT hr = dvb_tspace->get_SystemType(&sys_type);
+                if (ts::ComSuccess(hr, "cannot get DVB system type from tuning space \"" + fname + "\"", report)) {
+                    tname = ", DVB system type: " + ts::DVBSystemTypeName(sys_type);
+                }
+            }
+
+            // Display tuning space on one line.
+            strm << margin << "Tuning space \"" << fname << "\" (" << uname << ")" << tname << std::endl;
+        }
+    }
+
     void DisplayITuner(std::ostream& strm, const std::string& margin, ::IUnknown* object, ts::ReportInterface& report)
     {
         // Check if the filter supports ITuner.
@@ -763,35 +790,7 @@ namespace {
                 strm << margin << "  No tuning space found" << std::endl;
             }
             else {
-                assert(enum_tspace.pointer() != 0);
-                ts::ComPtr<::ITuningSpace> tspace;
-                while (enum_tspace->Next(1, tspace.creator(), NULL) == S_OK) {
-                    // Get tuning space names.
-                    const std::string fname(GetTuningSpaceFriendlyName(tspace.pointer(), report));
-                    const std::string uname(GetTuningSpaceUniqueName(tspace.pointer(), report));
-                    strm << margin << "  Tuning space \"" << fname << "\" (" << uname << ")";
-
-                    // Check if this tuning space supports IDVBTuningSpace interface.
-                    ts::ComPtr<::IDVBTuningSpace> dvb_tspace;
-                    dvb_tspace.queryInterface(tspace.pointer(), ::IID_IDVBTuningSpace, NULLREP);
-                    if (!dvb_tspace.isNull()) {
-                        // This is a DVB tuning space. Get DVB system type.
-                        ::DVBSystemType systype;
-                        hr = dvb_tspace->get_SystemType(&systype);
-                        if (ts::ComSuccess(hr, "cannot get DVB system type from tuning space \"" + fname + "\"", report)) {
-                            strm << ", DVB system type: ";
-                            switch (systype) {
-                                case ::DVB_Cable:        strm << "DVB_Cable"; break;
-                                case ::DVB_Terrestrial:  strm << "DVB_Terrestrial"; break;
-                                case ::DVB_Satellite:    strm << "DVB_Satellite"; break;
-                                case ::ISDB_Terrestrial: strm << "ISDB_Terrestrial"; break;
-                                case ::ISDB_Satellite:   strm << "ISDB_Satellite"; break;
-                                default:                 strm << int(systype); break;
-                            }
-                        }
-                    }
-                    strm << std::endl;
-                }
+                DisplayEnumerateTuningSpaces(strm, margin + "  ", enum_tspace, report);
             }
         }
     }
@@ -814,6 +813,35 @@ namespace {
         DisplayBDATopology(strm, margin, obj.pointer(), report);
         DisplayITuner(strm, margin, obj.pointer(), report);
     }
+}
+
+
+//-----------------------------------------------------------------------------
+// Display all DirectShow tuning spaces (Windows-specific).
+//-----------------------------------------------------------------------------
+
+bool ts::DisplayTuningSpaces(std::ostream& strm, const std::string& margin, ReportInterface& report)
+{
+    ::HRESULT hr;
+
+    strm << std::endl << margin << "=== Tuning spaces" << std::endl << std::endl;
+
+    // Create a Tuning Space Container.
+    ComPtr<::ITuningSpaceContainer> container(::CLSID_SystemTuningSpaces, ::IID_ITuningSpaceContainer, report);
+    if (container.isNull()) {
+        return false;
+    }
+
+    // Enumerate all tuning spaces.
+    ComPtr<::IEnumTuningSpaces> enum_tuning;
+    hr = container->get_EnumTuningSpaces(enum_tuning.creator());
+    if (!ComSuccess(hr, "ITuningSpaceContainer::get_EnumTuningSpaces", report)) {
+        return false;
+    }
+    if (hr == S_OK) {
+        DisplayEnumerateTuningSpaces(strm, margin + "  ", enum_tuning, report);
+    }
+    return true;
 }
 
 
@@ -1085,12 +1113,6 @@ bool ts::DisplayDevicesByCategory(std::ostream& strm,
             if (!ComSuccess(hr, "IPin::QueryDirection", report)) {
                 return false;
             }
-            std::string direction;
-            switch (dir) {
-                case ::PINDIR_INPUT:  direction = "input"; break;
-                case ::PINDIR_OUTPUT: direction = "output"; break;
-                default:              direction = Decimal(int(dir));
-            }
 
             // Get pin info
             ::PIN_INFO pin_info;
@@ -1101,7 +1123,7 @@ bool ts::DisplayDevicesByCategory(std::ostream& strm,
             std::string pin_name(ToString(pin_info.achName));
             pin_info.pFilter->Release();
 
-            strm << std::endl << margin << "  - Pin \"" << pin_name << "\", direction: " << direction << std::endl;
+            strm << std::endl << margin << "  - Pin \"" << pin_name << "\", direction: " << PinDirectionName(dir) << std::endl;
             DisplayObject(strm, margin + "    ", pin, report);
         }
     }
@@ -1204,4 +1226,30 @@ std::string ts::GetTuningSpaceUniqueName(::ITuningSpace* tspace, ReportInterface
 {
     ::BSTR name = NULL;
     return ToStringAndFree(tspace->get_UniqueName(&name), name, "ITuningSpace::get_UniqueName", report);
+}
+
+
+//-----------------------------------------------------------------------------
+// Get the name for various enum values.
+//-----------------------------------------------------------------------------
+
+std::string ts::PinDirectionName(::PIN_DIRECTION dir)
+{
+    switch (dir) {
+        case ::PINDIR_INPUT:  return "input";
+        case ::PINDIR_OUTPUT: return "output";
+        default:              return Decimal(int(dir));
+    }
+}
+
+std::string ts::DVBSystemTypeName(::DVBSystemType type)
+{
+    switch (type) {
+        case ::DVB_Cable:        return "DVB_Cable";
+        case ::DVB_Terrestrial:  return "DVB_Terrestrial";
+        case ::DVB_Satellite:    return "DVB_Satellite";
+        case ::ISDB_Terrestrial: return "ISDB_Terrestrial";
+        case ::ISDB_Satellite:   return "ISDB_Satellite";
+        default:                 return Decimal(int(type));
+    }
 }
