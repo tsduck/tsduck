@@ -354,7 +354,7 @@ void ts::UString::remove(const UString& substr)
 
 void ts::UString::remove(UChar c)
 {
-#if defined(TS_CXX11)
+#if defined(TS_CXX11_STRING)
     erase(std::remove(begin(), end(), c), end());
 #else
     size_type index = 0;

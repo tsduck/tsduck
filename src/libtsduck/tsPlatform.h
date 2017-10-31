@@ -135,6 +135,15 @@
     //! Defined when the compiler is compliant with C++17.
     //!
     #define TS_CXX17
+    //!
+    //! Defined when the STL @c basic_string is compliant with C++11.
+    //!
+    //! The class @c basic_string from the C++ STL has more features starting
+    //! with C++11. However, GCC does not support them with old versions, even
+    //! if --std=c++11 or 14 is specified. The level of language is increased
+    //! but not the level of STL.
+    //!
+    #define TS_CXX11_STRING
 #else
     //
     // Standard ways of signaling the language level.
@@ -164,6 +173,12 @@
     #endif
     #if defined(_MSVC_LANG) && _MSVC_LANG >= 201403L && !defined(TS_CXX17)
         #define TS_CXX17 1
+    #endif
+    //
+    // Compliance of the STL.
+    //
+    #if defined(TS_CXX11) && (!defined(__GNUC__) || __GNUC__ >= 5) && !defined(TS_CXX11_STRING)
+        #define TS_CXX11_STRING 1
     #endif
 #endif
 
