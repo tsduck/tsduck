@@ -176,8 +176,11 @@
     #endif
     //
     // Compliance of the STL.
+    // To get C++11 strings, we need C++11. But, with GCC, we need at least GCC 5.x,
+    // even if it pretends to be C++11. Except when the actual compiler is LLVM which
+    // pretends to be compatible with GCC 4.x but supports C++11 string in fact...
     //
-    #if defined(TS_CXX11) && (!defined(__GNUC__) || __GNUC__ >= 5) && !defined(TS_CXX11_STRING)
+    #if defined(TS_CXX11) && (defined(TS_LLVM) || !defined(__GNUC__) || __GNUC__ >= 5) && !defined(TS_CXX11_STRING)
         #define TS_CXX11_STRING 1
     #endif
 #endif
