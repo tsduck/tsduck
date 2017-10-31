@@ -910,7 +910,7 @@ namespace ts {
         UString substr(size_type pos = 0, size_type count = NPOS) const { return SuperClass::substr(pos, count); }
 
         UString& erase(size_type index = 0, size_type count = NPOS) { SuperClass::erase(index, count); return *this; }
-#if defined(TS_CXX11)
+#if defined(TS_CXX11_STRING)
         iterator erase(const_iterator position) { return SuperClass::erase(position); }
         iterator erase(const_iterator first, const_iterator last) { return SuperClass::erase(first, last); }
 #endif
@@ -961,7 +961,7 @@ namespace ts {
         UString& insert(size_type index, const UChar* s, size_type count) { SuperClass::insert(index, s, count); return *this; }
         UString& insert(size_type index, const SuperClass& str) { SuperClass::insert(index, str); return *this; }
         UString& insert(size_type index, const SuperClass& str, size_type index_str, size_type count = NPOS) { SuperClass::insert(index, str, index_str, count); return *this; }
-#if defined(TS_CXX11)
+#if defined(TS_CXX11_STRING)
         iterator insert(iterator pos, UChar ch) { return SuperClass::insert(pos, ch); }
         iterator insert(const_iterator pos, UChar ch) { return SuperClass::insert(pos, ch); }
         iterator insert(const_iterator pos, size_type count, UChar ch) { return SuperClass::insert(pos, count, ch); }
@@ -974,7 +974,7 @@ namespace ts {
         UString& replace(size_type pos, size_type count, const UChar* cstr, size_type count2) { SuperClass::replace(pos, count, cstr, count2); return *this; }
         UString& replace(size_type pos, size_type count, const UChar* cstr) { SuperClass::replace(pos, count, cstr); return *this; }
         UString& replace(size_type pos, size_type count, size_type count2, UChar ch) { SuperClass::replace(pos, count, count2, ch); return *this; }
-#if defined(TS_CXX11)
+#if defined(TS_CXX11_STRING)
         UString& replace(const_iterator first, const_iterator last, const SuperClass& str) { SuperClass::replace(first, last, str); return *this; }
         UString& replace(const_iterator first, const_iterator last, const UChar* cstr, size_type count2) { SuperClass::replace(first, last, cstr, count2); return *this; }
         UString& replace(const_iterator first, const_iterator last, const UChar* cstr) { SuperClass::replace(first, last, cstr); return *this; }
