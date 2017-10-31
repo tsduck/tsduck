@@ -977,6 +977,8 @@ std::ostream& ts::Tuner::EnumerateDevices(std::ostream& strm, const std::string&
     _D_(KSCATEGORY_TVTUNER);
     _D_(KSCATEGORY_BDA_RECEIVER_COMPONENT);
     _D_(KSCATEGORY_BDA_NETWORK_TUNER);
+    DisplayTuningSpaces(strm, margin, report);
+    strm << std::endl;
     return strm;
 #undef _D_
 }
