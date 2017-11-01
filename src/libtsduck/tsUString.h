@@ -108,12 +108,12 @@ namespace ts {
         //!
         //! Size in bytes of the so-called "UTF-8 Byte Order Mark".
         //!
-        static const size_t UTF8_BOM_SIZE = 3;
+        static const size_type UTF8_BOM_SIZE = 3;
 
         //!
         //! Maximum size in bytes of an UTF-8 encoded character.
         //!
-        static const size_t UTF8_CHAR_MAX_SIZE = 4;
+        static const size_type UTF8_CHAR_MAX_SIZE = 4;
 
         //!
         //! Default separator string for groups of thousands, a comma.
@@ -370,7 +370,7 @@ namespace ts {
         //! @return The equivalent UTF-16 string. Stop on untranslatable character, if any.
         //! @see ETSI EN 300 468, Annex A.
         //!
-        static UString FromDVB(const uint8_t* dvb, size_t dvbSize, const DVBCharset* charset = 0);
+        static UString FromDVB(const uint8_t* dvb, size_type dvbSize, const DVBCharset* charset = 0);
 
         //!
         //! Convert a DVB string into UTF-16 (preceded by its one-byte length).
@@ -399,7 +399,7 @@ namespace ts {
         //! be represented in the specified character set, an alternative one will be automatically selected.
         //! @return The number of serialized characters (which is usually not the same as the number of written bytes).
         //!
-        size_t toDVB(uint8_t*& buffer, size_t& size, size_t start = 0, size_t count = NPOS, const DVBCharset* charset = 0) const;
+        size_type toDVB(uint8_t*& buffer, size_t& size, size_type start = 0, size_type count = NPOS, const DVBCharset* charset = 0) const;
 
         //!
         //! Encode this UTF-16 string into a DVB string.
@@ -409,7 +409,7 @@ namespace ts {
         //! be represented in the specified character set, an alternative one will be automatically selected.
         //! @return The DVB string.
         //!
-        ByteBlock toDVB(size_t start = 0, size_t count = NPOS, const DVBCharset* charset = 0) const;
+        ByteBlock toDVB(size_type start = 0, size_type count = NPOS, const DVBCharset* charset = 0) const;
 
         //!
         //! Encode this UTF-16 string into a DVB string (preceded by its one-byte length).
@@ -424,7 +424,7 @@ namespace ts {
         //! be represented in the specified character set, an alternative one will be automatically selected.
         //! @return The number of serialized characters (which is usually not the same as the number of written bytes).
         //!
-        size_t toDVBWithByteLength(uint8_t*& buffer, size_t& size, size_t start = 0, size_t count = NPOS, const DVBCharset* charset = 0) const;
+        size_type toDVBWithByteLength(uint8_t*& buffer, size_t& size, size_type start = 0, size_type count = NPOS, const DVBCharset* charset = 0) const;
 
         //!
         //! Encode this UTF-16 string into a DVB string (preceded by its one-byte length).
@@ -434,7 +434,7 @@ namespace ts {
         //! be represented in the specified character set, an alternative one will be automatically selected.
         //! @return The DVB string with the initial length byte.
         //!
-        ByteBlock toDVBWithByteLength(size_t start = 0, size_t count = NPOS, const DVBCharset* charset = 0) const;
+        ByteBlock toDVBWithByteLength(size_type start = 0, size_type count = NPOS, const DVBCharset* charset = 0) const;
 
         //!
         //! Get the display width in characters.
@@ -1010,6 +1010,92 @@ namespace ts {
                             const UString& separator = UString(),
                             bool use_prefix = true,
                             bool use_upper = true);
+
+        //!
+        //! Build a multi-line string containing the hexadecimal dump of a memory area.
+        //! @param [in] data Starting address of the memory area to dump.
+        //! @param [in] size Size in bytes of the memory area to dump.
+        //! @param [in] flags A combination of option flags indicating how to format the data.
+        //! This is typically the result of or'ed values from the enum type HexaFlags.
+        //! @param [in] indent Each line is indented by this number of characters.
+        //! @param [in] line_width Maximum number of characters per line.
+        //! If the flag BPL is specified, @a line_width is interpreted as the number of displayed byte values per line.
+        //! @param [in] init_offset If the flag OFFSET is specified, an offset in the memory area is displayed at the beginning of each line.
+        //! In this case, @a init_offset specified the offset value for the first byte.
+        //! @param [in] inner_indent Add this indentation before hexa/ascii dump, after offset.
+        //! @return A string containing the formatted hexadecimal dump. Lines are separated with embedded new-line characters.
+        //! @see HexaFlags
+        //!
+        static UString Dump(const void *data,
+                            size_type size,
+                            uint32_t flags = HEXA,
+                            size_type indent = 0,
+                            size_type line_width = DEFAULT_HEXA_LINE_WIDTH,
+                            size_type init_offset = 0,
+                            size_type inner_indent = 0);
+
+        //!
+        //! Build a multi-line string containing the hexadecimal dump of a memory area.
+        //! @param [in] bb Byte block to dump.
+        //! @param [in] flags A combination of option flags indicating how to format the data.
+        //! This is typically the result of or'ed values from the enum type HexaFlags.
+        //! @param [in] indent Each line is indented by this number of characters.
+        //! @param [in] line_width Maximum number of characters per line.
+        //! If the flag BPL is specified, @a line_width is interpreted as the number of displayed byte values per line.
+        //! @param [in] init_offset If the flag OFFSET is specified, an offset in the memory area is displayed at the beginning of each line.
+        //! In this case, @a init_offset specified the offset value for the first byte.
+        //! @param [in] inner_indent Add this indentation before hexa/ascii dump, after offset.
+        //! @return A string containing the formatted hexadecimal dump. Lines are separated with embedded new-line characters.
+        //! @see HexaFlags
+        //!
+        static UString Dump(const ByteBlock& bb,
+                            uint32_t flags = HEXA,
+                            size_type indent = 0,
+                            size_type line_width = DEFAULT_HEXA_LINE_WIDTH,
+                            size_type init_offset = 0,
+                            size_type inner_indent = 0);
+
+        //!
+        //! Append a multi-line string containing the hexadecimal dump of a memory area.
+        //! @param [in] data Starting address of the memory area to dump.
+        //! @param [in] size Size in bytes of the memory area to dump.
+        //! @param [in] flags A combination of option flags indicating how to format the data.
+        //! This is typically the result of or'ed values from the enum type HexaFlags.
+        //! @param [in] indent Each line is indented by this number of characters.
+        //! @param [in] line_width Maximum number of characters per line.
+        //! If the flag BPL is specified, @a line_width is interpreted as the number of displayed byte values per line.
+        //! @param [in] init_offset If the flag OFFSET is specified, an offset in the memory area is displayed at the beginning of each line.
+        //! In this case, @a init_offset specified the offset value for the first byte.
+        //! @param [in] inner_indent Add this indentation before hexa/ascii dump, after offset.
+        //! @see HexaFlags
+        //!
+        void appendDump(const void *data,
+                        size_type size,
+                        uint32_t flags = HEXA,
+                        size_type indent = 0,
+                        size_type line_width = DEFAULT_HEXA_LINE_WIDTH,
+                        size_type init_offset = 0,
+                        size_type inner_indent = 0);
+
+        //!
+        //! Append a multi-line string containing the hexadecimal dump of a memory area.
+        //! @param [in] bb Byte block to dump.
+        //! @param [in] flags A combination of option flags indicating how to format the data.
+        //! This is typically the result of or'ed values from the enum type HexaFlags.
+        //! @param [in] indent Each line is indented by this number of characters.
+        //! @param [in] line_width Maximum number of characters per line.
+        //! If the flag BPL is specified, @a line_width is interpreted as the number of displayed byte values per line.
+        //! @param [in] init_offset If the flag OFFSET is specified, an offset in the memory area is displayed at the beginning of each line.
+        //! In this case, @a init_offset specified the offset value for the first byte.
+        //! @param [in] inner_indent Add this indentation before hexa/ascii dump, after offset.
+        //! @see HexaFlags
+        //!
+        void appendDump(const ByteBlock& bb,
+                        uint32_t flags = HEXA,
+                        size_type indent = 0,
+                        size_type line_width = DEFAULT_HEXA_LINE_WIDTH,
+                        size_type init_offset = 0,
+                        size_type inner_indent = 0);
 
         //!
         //! Interpret this string as a sequence of hexadecimal digits (ignore blanks).
