@@ -424,3 +424,138 @@ CONTAINER& ts::UString::Append(CONTAINER& container, int argc, const char* const
     }
     return container;
 }
+
+
+//----------------------------------------------------------------------------
+// Format a string containing a decimal value.
+//----------------------------------------------------------------------------
+
+template <typename INT>
+ts::UString ts::UString::Decimal(INT value,
+                                 size_type min_width,
+                                 bool right_justified,
+                                 const UString& separator,
+                                 bool force_sign)
+{
+    // We build the result string in s IN REVERSE ORDER
+    UString s;
+    s.reserve(32); // avoid reallocating (most of the time)
+
+    // So, we need the separator in reverse order too.
+    UString sep(separator);
+    sep.reverse();
+
+    // If the value is negative, format the absolute value.
+    // The test "value != 0 && value < 1" means "value < 0"
+    // but avoid GCC warning when the type is unsigned.
+    const bool negative = value != 0 && value < 1;
+
+    INT ivalue;
+    if (negative) {
+        // If the type is unsigned, "ivalue = -value" will never be executed
+        // but Visual C++ complains. Suppress the warning.
+        #ifdef TS_MSC
+            #pragma warning(push)
+            #pragma warning(disable:4146)
+        #endif
+
+        ivalue = -value;
+
+        #ifdef TS_MSC
+            #pragma warning(pop)
+        #endif
+    }
+    else {
+        ivalue = value;
+    }
+
+    // Format the value
+    if (ivalue == 0) {
+        s.push_back(u'0');
+    }
+    else {
+        int count = 0;
+        while (ivalue != 0) {
+            s.push_back(u'0' + UChar(ivalue % 10));
+            ivalue /= 10;
+            if (++count % 3 == 0 && ivalue != 0) {
+                s += sep;
+            }
+        }
+    }
+    if (negative) {
+        s.push_back(u'-');
+    }
+    else if (force_sign) {
+        s.push_back(u'+');
+    }
+
+    // Reverse characters in string
+    s.reverse();
+
+    // Return the formatted result
+    if (s.size() >= min_width) {
+        return s;
+    }
+    else if (right_justified) {
+        return UString(min_width - s.size(), u' ') + s;
+    }
+    else {
+        return s + UString(min_width - s.size(), u' ');
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Format a string containing an hexadecimal value.
+//----------------------------------------------------------------------------
+
+template <typename INT>
+ts::UString ts::UString::Hexa(INT value,
+                              size_type width,
+                              const UString& separator,
+                              bool use_prefix,
+                              bool use_upper)
+{
+    // We build the result string in s IN REVERSE ORDER
+    UString s;
+    s.reserve(32); // avoid reallocating (most of the time)
+
+    // So, we need the separator in reverse order too.
+    UString sep(separator);
+    sep.reverse();
+
+    // Default to the natural size of the type.
+    if (width == 0) {
+        width = 2 * sizeof(INT);
+    }
+
+    // Format the value
+    int count = 0;
+    while (width != 0) {
+        const int nibble = int(value & 0xF);
+        value >>= 4;
+        --width;
+        if (nibble < 10) {
+            s.push_back(u'0' + UChar(nibble));
+        }
+        else if (use_upper) {
+            s.push_back(u'A' + UChar(nibble - 10));
+        }
+        else {
+            s.push_back(u'a' + UChar(nibble - 10));
+        }
+        if (++count % 4 == 0 && width > 0) {
+            s += sep;
+        }
+    }
+
+    // Add the optional prefix, still in reverse order.
+    if (use_prefix) {
+        s.push_back(u'x');
+        s.push_back(u'0');
+    }
+
+    // Reverse characters in string
+    return s.toReversed();
+}

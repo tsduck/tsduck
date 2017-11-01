@@ -40,6 +40,9 @@ TSDUCK_SOURCE;
 // The UTF-8 Byte Order Mark
 const char* const ts::UString::UTF8_BOM = "\0xEF\0xBB\0xBF";
 
+// Default separator string for groups of thousands, a comma.
+const ts::UString ts::UString::DEFAULT_THOUSANDS_SEPARATOR(u",");
+
 
 //----------------------------------------------------------------------------
 // General routine to convert from UTF-16 to UTF-8.
@@ -274,7 +277,7 @@ ts::UString::size_type ts::UString::width() const
         // A diacritical character in first position does count since it cannot be combined with the previous one.
         // We do not check that surrogate pairs are correctly formed, we just skip trailing ones.
         size_type wid = 1;
-        for (const UChar* p = data() + 1; p < end(); ++p) {
+        for (const UChar* p = data() + 1; p < last(); ++p) {
             if (!NoSpace(*p)) {
                 ++wid;
             }
@@ -328,6 +331,23 @@ ts::UString::size_type ts::UString::displayPosition(size_type count, size_type f
             return size();
         }
     }
+}
+
+
+//----------------------------------------------------------------------------
+// Reverse the order of characters in the string.
+//----------------------------------------------------------------------------
+
+void ts::UString::reverse()
+{
+    std::reverse(begin(), end());
+}
+
+ts::UString ts::UString::toReversed() const
+{
+    UString result(*this);
+    result.reverse();
+    return result;
 }
 
 
@@ -770,7 +790,7 @@ bool ts::UString::hexaDecodeAppend(ts::ByteBlock& result)
     uint8_t byte = 0;
     uint8_t nibble = 0;
 
-    for (const UChar* p = data(); p < end(); ++p) {
+    for (const UChar* p = data(); p < last(); ++p) {
         if (IsSpace(*p)) {
             // Ignore spaces.
             continue;
