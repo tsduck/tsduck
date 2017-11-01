@@ -937,6 +937,85 @@ namespace ts {
         template <class CONTAINER>
         bool toIntegers(CONTAINER& container, const UString& thousandSeparators = UString(), const UString& listSeparators = UString(u",; ")) const;
 
+        //!
+        //! Interpret this string as a sequence of hexadecimal digits (ignore blanks).
+        //! @param [out] result Decoded bytes.
+        //! @return True on success, false on error (invalid hexa format).
+        //! When returning false, the result contains everything that could be decoded before getting the error.
+        //!
+        bool hexaDecode(ByteBlock& result);
+
+        //!
+        //! Interpret this string as a sequence of hexadecimal digits (ignore blanks).
+        //! @param [in,out] result The decoded bytes are added at the end of the previous content.
+        //! @return True on success, false on error (invalid hexa format).
+        //! When returning false, the result contains everything that could be decoded before getting the error.
+        //!
+        bool hexaDecodeAppend(ByteBlock& result);
+
+        //!
+        //! Append an array of C-strings to a container of strings.
+        //! All C-strings from an array are appended at the end of a container.
+        //! The @a argc / @a argv pair is typically received by a main program from a command line.
+        //! @tparam CONTAINER A container class of UString as defined by the C++ Standard Template Library (STL).
+        //! @param [in,out] container A container of UString.
+        //! @param [in] argc The number of C-strings in @a argv.
+        //! @param [in] argv An array of C-strings.
+        //! @return A reference to @a container.
+        //!
+        template <class CONTAINER>
+        static CONTAINER& Append(CONTAINER& container, int argc, const char* const argv[]);
+
+        //!
+        //! Append an array of C-strings to a container of strings.
+        //! All C-strings from an array are appended at the end of a container.
+        //! The @a argc / @a argv pair is typically received by a main program from a command line.
+        //! @tparam CONTAINER A container class of UString as defined by the C++ Standard Template Library (STL).
+        //! @param [in,out] container A container of UString.
+        //! @param [in] argc The number of C-strings in @a argv.
+        //! @param [in] argv An array of C-strings.
+        //! @return A reference to @a container.
+        //!
+        template <class CONTAINER>
+        static CONTAINER& Append(CONTAINER& container, int argc, char* const argv[])
+        {
+            return Append(container, argc, const_cast<const char**>(argv));
+        }
+
+        //!
+        //! Assign an array of C-strings to a container of strings.
+        //! The container is assigned using all C-strings from an array.
+        //! The @a argc / @a argv pair is typically received by a main program from a command line.
+        //! @tparam CONTAINER A container class of UString as defined by the C++ Standard Template Library (STL).
+        //! @param [out] container A container of UString.
+        //! @param [in] argc The number of C-strings in @a argv.
+        //! @param [in] argv An array of C-strings.
+        //! @return A reference to @a container.
+        //!
+        template <class CONTAINER>
+        static CONTAINER& Assign(CONTAINER& container, int argc, const char* const argv[])
+        {
+            container.clear();
+            return Append(container, argc, argv);
+        }
+
+        //!
+        //! Assign an array of C-strings to a container of strings.
+        //! The container is assigned using all C-strings from an array.
+        //! The @a argc / @a argv pair is typically received by a main program from a command line.
+        //! @tparam CONTAINER A container class of UString as defined by the C++ Standard Template Library (STL).
+        //! @param [out] container A container of UString.
+        //! @param [in] argc The number of C-strings in @a argv.
+        //! @param [in] argv An array of C-strings.
+        //! @return A reference to @a container.
+        //!
+        template <class CONTAINER>
+        static CONTAINER& Assign(CONTAINER& container, int argc, char* const argv[])
+        {
+            container.clear();
+            return Append(container, argc, argv);
+        }
+
         //
         // Override methods which return strings so that they return the new class.
         // Define additional overloads which char and strings.

@@ -752,6 +752,47 @@ bool ts::UString::getLine(std::istream& strm)
 
 
 //----------------------------------------------------------------------------
+// Interpret this string as a sequence of hexadecimal digits (ignore blanks).
+//----------------------------------------------------------------------------
+
+bool ts::UString::hexaDecode(ts::ByteBlock& result)
+{
+    result.clear();
+    return hexaDecodeAppend(result);
+}
+
+bool ts::UString::hexaDecodeAppend(ts::ByteBlock& result)
+{
+    // Oversize the prereservation in output buffer.
+    result.reserve(result.size() + size() / 2);
+
+    bool got_first_nibble = false;
+    uint8_t byte = 0;
+    uint8_t nibble = 0;
+
+    for (const UChar* p = data(); p < end(); ++p) {
+        if (IsSpace(*p)) {
+            // Ignore spaces.
+            continue;
+        }
+        else if ((nibble = uint8_t(ToDigit(*p, 16, 0xFF))) == 0xFF) {
+            // Invalid hexa digit.
+            return false;
+        }
+        if (got_first_nibble) {
+            result.push_back(byte | nibble);
+        }
+        else {
+            byte = nibble << 4;
+        }
+        got_first_nibble = !got_first_nibble;
+    }
+
+    return !got_first_nibble;
+}
+
+
+//----------------------------------------------------------------------------
 // Convert a DVB string into UTF-16.
 //----------------------------------------------------------------------------
 

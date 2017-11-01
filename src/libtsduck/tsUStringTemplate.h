@@ -409,3 +409,18 @@ bool ts::UString::toIntegers(CONTAINER& container, const UString& thousandSepara
 
     return true;
 }
+
+
+//----------------------------------------------------------------------------
+// Append an array of C-strings to a container of strings.
+//----------------------------------------------------------------------------
+
+template <class CONTAINER>
+CONTAINER& ts::UString::Append(CONTAINER& container, int argc, const char* const argv[])
+{
+    const size_type size = argc < 0 ? 0 : size_type(argc);
+    for (size_type i = 0; i < size; ++i) {
+        container.push_back(UString(argv[i]));
+    }
+    return container;
+}
