@@ -151,6 +151,37 @@ namespace ts {
     TSDUCKDLL bool IsCombiningDiacritical(UChar c);
 
     //!
+    //! Check if a character is a "leading surrogate" value.
+    //!
+    //! In the most general form, a Unicode character needs 21 bits to be represented.
+    //! However, most characters can be represented using 16 bits and are implemented
+    //! as only one 16-bit value in UTF-16 or one single UChar. Any Unicode character
+    //! which cannot be represented within 16 bits needs two consecutive UChar values
+    //! in an UTF-16 string. These two values are called a "surrogate pair". The first
+    //! ("leading") and second ("trailing") value of a surrogate pair are specially
+    //! coded and can be identified as such.
+    //!
+    //! @param [in] c A character.
+    //! @return True if @a c is a "leading surrogate" value.
+    //! @see IsTrailingSurrogate()
+    //!
+    TSDUCKDLL inline bool IsLeadingSurrogate(UChar c)
+    {
+        return (int(c) & 0xFC00) == 0xD800;
+    }
+
+    //!
+    //! Check if a character is a "trailing surrogate" value.
+    //! @param [in] c A character.
+    //! @return True if @a c is a "trailing surrogate" value.
+    //! @see IsLeadingSurrogate()
+    //!
+    TSDUCKDLL inline bool IsTrailingSurrogate(UChar c)
+    {
+        return (int(c) & 0xFC00) == 0xDC00;
+    }
+
+    //!
     //! Convert a character into its corresponding HTML sequence.
     //! @param [in] c A character.
     //! @return A string containing the html sequence for @a c.

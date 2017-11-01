@@ -51,6 +51,14 @@ namespace ts {
     };
 
     //!
+    //! Direction used on string operations.
+    //!
+    enum StringDirection {
+        LEFT_TO_RIGHT,   //!< From beginning of string.
+        RIGHT_TO_LEFT    //!< From end of string.
+    };
+
+    //!
     //! Vector of strings
     //!
     typedef std::vector<UString> UStringVector;
@@ -404,10 +412,47 @@ namespace ts {
 
         //!
         //! Get the display width in characters.
-        //! Any combining diacritical character is not counted in the width since it is combined with the preceding character.
+        //! Any combining diacritical character is not counted in the width since it is combined with the preceding
+        //! character. Similarly, any surrogate pair is considered as one single character. As a general rule,
+        //! width() is always lower than or equal to length(), the number of characters in the string.
         //! @return The display width in characters.
         //!
         size_type width() const;
+
+        //!
+        //! Count displayed positions inside a string.
+        //! Any combining diacritical character is not counted in display position.
+        //! Similarly, any surrogate pair is considered as one single character.
+        //! @param [in] count Number of display positions to move.
+        //! @param [in] from Starting index in the string. This is an index, not a display position.
+        //! @param [in] direction Direction to move when counting display positions. When counting
+        //! RIGHT_TO_LEFT, @a from is the position after the right-most character.
+        //! @return The index in the string after moving. When the display position is outside the
+        //! string, return length() when moving LEFT_TO_RIGHT and return zero when moving RIGHT_TO_LEFT.
+        //! The returned index is never in the middle of a combining diacritical sequence or of a
+        //! surrogate pair, always at the start of this sequence.
+        //!
+        size_type displayPosition(size_type count, size_type from = 0, StringDirection direction = LEFT_TO_RIGHT) const;
+
+        //!
+        //! Get the address after the last character in the string.
+        //! @return The address after the last character in the string.
+        //!
+        const UChar* end() const
+        {
+            return data() + size();
+        }
+
+#if defined(TS_CXX17)
+        //!
+        //! Get the address after the last character in the string (C++17).
+        //! @return The address after the last character in the string.
+        //!
+        UChar* end()
+        {
+            return data() + size();
+        }
+#endif
 
         //!
         //! Trim leading and / or trailing space characters.

@@ -249,6 +249,18 @@ std::string ts::UString::toUTF8() const
 
 
 //----------------------------------------------------------------------------
+// Check if a character uses no space on display.
+//----------------------------------------------------------------------------
+
+namespace {
+    inline bool NoSpace(ts::UChar c)
+    {
+        return ts::IsCombiningDiacritical(c) || ts::IsTrailingSurrogate(c);
+    }
+}
+
+
+//----------------------------------------------------------------------------
 // Get the display width in characters.
 //----------------------------------------------------------------------------
 
@@ -258,15 +270,63 @@ ts::UString::size_type ts::UString::width() const
         return 0;
     }
     else {
-        // Ignore all diacritical characters after the first one.
+        // Ignore all combining diacritical and trailing surrogate characters and after the first one.
         // A diacritical character in first position does count since it cannot be combined with the previous one.
+        // We do not check that surrogate pairs are correctly formed, we just skip trailing ones.
         size_type wid = 1;
-        for (size_type i = 1; i < size(); ++i) {
-            if (!IsCombiningDiacritical((*this)[i])) {
+        for (const UChar* p = data() + 1; p < end(); ++p) {
+            if (!NoSpace(*p)) {
                 ++wid;
             }
         }
         return wid;
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Count displayed positions inside a string.
+//----------------------------------------------------------------------------
+
+ts::UString::size_type ts::UString::displayPosition(size_type count, size_type from, StringDirection direction) const
+{
+    const UChar* const base = data();
+    switch (direction) {
+        case LEFT_TO_RIGHT: {
+            // Move forward.
+            while (from < size() && count > 0) {
+                if (!NoSpace(base[from])) {
+                    --count;
+                }
+                ++from;
+            }
+            // Move after combining sequence.
+            while (from < size() && NoSpace(base[from])) {
+                ++from;
+            }
+            return std::min(from, size());
+        }
+        case RIGHT_TO_LEFT: {
+            // Start at end of string, at worst.
+            from = std::min(from, size());
+            // Move backward.
+            while (from > 0 && count > 0) {
+                --from;
+                if (!NoSpace(base[from])) {
+                    --count;
+                }
+            }
+            // Move at start of combining sequence.
+            while (from > 0 && NoSpace(base[from])) {
+                --from;
+            }
+            return from;
+        }
+        default: {
+            // Should not get there.
+            assert(false);
+            return size();
+        }
     }
 }
 
@@ -354,14 +414,10 @@ void ts::UString::remove(const UString& substr)
 
 void ts::UString::remove(UChar c)
 {
-#if defined(TS_CXX11_STRING)
-    erase(std::remove(begin(), end(), c), end());
-#else
     size_type index = 0;
     while (!empty() && (index = find(c, index)) != NPOS) {
         erase(index, 1);
     }
-#endif
 }
 
 ts::UString ts::UString::toRemoved(const UString& substr) const

@@ -53,6 +53,10 @@ public:
     void tearDown();
     void testIsSpace();
     void testUTF();
+    void testDiacritical();
+    void testSurrogate();
+    void testWidth();
+    void testDisplayPosition();
     void testTrim();
     void testLetterCase();
     void testAccent();
@@ -81,6 +85,10 @@ public:
     CPPUNIT_TEST_SUITE(UStringTest);
     CPPUNIT_TEST(testIsSpace);
     CPPUNIT_TEST(testUTF);
+    CPPUNIT_TEST(testDiacritical);
+    CPPUNIT_TEST(testSurrogate);
+    CPPUNIT_TEST(testWidth);
+    CPPUNIT_TEST(testDisplayPosition);
     CPPUNIT_TEST(testTrim);
     CPPUNIT_TEST(testLetterCase);
     CPPUNIT_TEST(testAccent);
@@ -111,6 +119,14 @@ private:
     int _nextFileIndex;
     std::string temporaryFileName(int) const;
     std::string newTemporaryFileName();
+
+    // Two sample Unicode characters from the supplementary planes:
+    //   U+1D538: MATHEMATICAL DOUBLE-STRUCK CAPITAL A
+    //   U+1D539: MATHEMATICAL DOUBLE-STRUCK CAPITAL B
+    static const ts::UChar MATH_A1 = ts::UChar(0xD800 | (0x1D538 >> 10));
+    static const ts::UChar MATH_A2 = ts::UChar(0xDC00 | (0x1D538 & 0x03FF));
+    static const ts::UChar MATH_B1 = ts::UChar(0xD800 | (0x1D539 >> 10));
+    static const ts::UChar MATH_B2 = ts::UChar(0xDC00 | (0x1D539 & 0x03FF));
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(UStringTest);
@@ -252,58 +268,123 @@ void UStringTest::testUTF()
     CPPUNIT_ASSERT_EQUAL(s3.length(), utf16_count);
     CPPUNIT_ASSERT_EQUAL(s4.length(), utf16_count);
 
-    CPPUNIT_ASSERT(s1 == s2);
-    CPPUNIT_ASSERT(s1 == s3);
-    CPPUNIT_ASSERT(s1 == s4);
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(s1, s2);
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(s1, s3);
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(s1, s4);
+}
+
+void UStringTest::testDiacritical()
+{
+    CPPUNIT_ASSERT(!ts::IsCombiningDiacritical(ts::UChar('a')));
+    CPPUNIT_ASSERT(ts::IsCombiningDiacritical(ts::ACUTE_ACCENT));
+    CPPUNIT_ASSERT(ts::IsCombiningDiacritical(ts::ARABIC_KASRA));
+    CPPUNIT_ASSERT(ts::IsCombiningDiacritical(ts::RIGHT_TO_LEFT_MARK));
+}
+
+void UStringTest::testSurrogate()
+{
+    const ts::UString ab({MATH_A1, MATH_A2, MATH_B1, MATH_B2});
+    // Displayed string may be screwed up, depending of the terminal...
+    utest::Out() << "UStringTest::testSurrogate: '" << ab << "'" << std::endl;
+
+    CPPUNIT_ASSERT(!ts::IsLeadingSurrogate(ts::UChar('A')));
+    CPPUNIT_ASSERT(!ts::IsTrailingSurrogate(ts::UChar('A')));
+
+    CPPUNIT_ASSERT(ts::IsLeadingSurrogate(MATH_A1));
+    CPPUNIT_ASSERT(!ts::IsTrailingSurrogate(MATH_A1));
+    CPPUNIT_ASSERT(!ts::IsLeadingSurrogate(MATH_A2));
+    CPPUNIT_ASSERT(ts::IsTrailingSurrogate(MATH_A2));
+    CPPUNIT_ASSERT(ts::IsLeadingSurrogate(MATH_B1));
+    CPPUNIT_ASSERT(!ts::IsTrailingSurrogate(MATH_B1));
+    CPPUNIT_ASSERT(!ts::IsLeadingSurrogate(MATH_B2));
+    CPPUNIT_ASSERT(ts::IsTrailingSurrogate(MATH_B2));
+}
+
+void UStringTest::testWidth()
+{
+    CPPUNIT_ASSERT_EQUAL(size_t(0), ts::UString().width());
+    CPPUNIT_ASSERT_EQUAL(size_t(3), ts::UString(u"ABC").width());
+    CPPUNIT_ASSERT_EQUAL(size_t(3), (u"A" + ts::UString({ts::ACUTE_ACCENT}) + u"BC").width());
+    CPPUNIT_ASSERT_EQUAL(size_t(2), ts::UString({MATH_A1, MATH_A2, MATH_B1, MATH_B2}).width());
+}
+
+void UStringTest::testDisplayPosition()
+{
+    CPPUNIT_ASSERT_EQUAL(size_t(0), ts::UString().displayPosition(0));
+    CPPUNIT_ASSERT_EQUAL(size_t(0), ts::UString().displayPosition(5));
+    CPPUNIT_ASSERT_EQUAL(size_t(0), ts::UString().displayPosition(6, 7, ts::RIGHT_TO_LEFT));
+    CPPUNIT_ASSERT_EQUAL(size_t(2), ts::UString(u"ABCDE").displayPosition(2));
+
+    const ts::UString s({u'A', ts::ACUTE_ACCENT, u'B', u'C', u'D', u'E'});
+    CPPUNIT_ASSERT_EQUAL(size_t(6), s.size());
+    CPPUNIT_ASSERT_EQUAL(size_t(6), s.length());
+    CPPUNIT_ASSERT_EQUAL(size_t(5), s.width());
+    CPPUNIT_ASSERT_EQUAL(size_t(3), s.displayPosition(2));
+    CPPUNIT_ASSERT_EQUAL(size_t(2), s.displayPosition(1));
+    CPPUNIT_ASSERT_EQUAL(size_t(0), s.displayPosition(0));
+    CPPUNIT_ASSERT_EQUAL(size_t(5), s.displayPosition(4));
+    CPPUNIT_ASSERT_EQUAL(size_t(6), s.displayPosition(5));
+    CPPUNIT_ASSERT_EQUAL(size_t(6), s.displayPosition(6));
+    CPPUNIT_ASSERT_EQUAL(size_t(6), s.displayPosition(7));
+    CPPUNIT_ASSERT_EQUAL(size_t(6), s.displayPosition(8));
+    CPPUNIT_ASSERT_EQUAL(size_t(6), s.displayPosition(0, s.length(), ts::RIGHT_TO_LEFT));
+    CPPUNIT_ASSERT_EQUAL(size_t(5), s.displayPosition(1, s.length(), ts::RIGHT_TO_LEFT));
+    CPPUNIT_ASSERT_EQUAL(size_t(4), s.displayPosition(2, s.length(), ts::RIGHT_TO_LEFT));
+    CPPUNIT_ASSERT_EQUAL(size_t(3), s.displayPosition(3, s.length(), ts::RIGHT_TO_LEFT));
+    CPPUNIT_ASSERT_EQUAL(size_t(2), s.displayPosition(4, s.length(), ts::RIGHT_TO_LEFT));
+    CPPUNIT_ASSERT_EQUAL(size_t(0), s.displayPosition(5, s.length(), ts::RIGHT_TO_LEFT));
+    CPPUNIT_ASSERT_EQUAL(size_t(0), s.displayPosition(6, s.length(), ts::RIGHT_TO_LEFT));
+    CPPUNIT_ASSERT_EQUAL(size_t(0), s.displayPosition(7, s.length(), ts::RIGHT_TO_LEFT));
+    CPPUNIT_ASSERT_EQUAL(size_t(0), s.displayPosition(8, s.length(), ts::RIGHT_TO_LEFT));
 }
 
 void UStringTest::testTrim()
 {
     ts::UString s;
 
-    s = "  abc  ";
+    s = u"  abc  ";
     s.trim();
-    CPPUNIT_ASSERT(s == "abc");
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"abc", s);
 
-    s = "  abc  ";
+    s = u"  abc  ";
     s.trim(true, false);
-    CPPUNIT_ASSERT(s == "abc  ");
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"abc  ", s);
 
-    s = "  abc  ";
+    s = u"  abc  ";
     s.trim(false, true);
-    CPPUNIT_ASSERT(s == "  abc");
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"  abc", s);
 
-    s = "  abc  ";
+    s = u"  abc  ";
     s.trim(false, false);
-    CPPUNIT_ASSERT(s == "  abc  ");
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"  abc  ", s);
 
-    s = "abc";
+    s = u"abc";
     s.trim();
-    CPPUNIT_ASSERT(s == "abc");
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"abc", s);
 
-    s = "abc";
+    s = u"abc";
     s.trim(true, false);
-    CPPUNIT_ASSERT(s == "abc");
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"abc", s);
 
-    s = "abc";
+    s = u"abc";
     s.trim(false, true);
-    CPPUNIT_ASSERT(s == "abc");
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"abc", s);
 
-    s = "abc";
+    s = u"abc";
     s.trim(false, false);
-    CPPUNIT_ASSERT(s == "abc");
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"abc", s);
 
-    s = "  abc  ";
-    CPPUNIT_ASSERT(s.toTrimmed() == "abc");
-    CPPUNIT_ASSERT(s.toTrimmed(true, false) == "abc  ");
-    CPPUNIT_ASSERT(s.toTrimmed(false, true) == "  abc");
-    CPPUNIT_ASSERT(s.toTrimmed(false, false) == "  abc  ");
+    s = u"  abc  ";
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"abc", s.toTrimmed());
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"abc  ", s.toTrimmed(true, false));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"  abc", s.toTrimmed(false, true));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"  abc  ", s.toTrimmed(false, false));
 
-    s = "abc";
-    CPPUNIT_ASSERT(s.toTrimmed() == "abc");
-    CPPUNIT_ASSERT(s.toTrimmed(true, false) == "abc");
-    CPPUNIT_ASSERT(s.toTrimmed(false, true) == "abc");
-    CPPUNIT_ASSERT(s.toTrimmed(false, false) == "abc");
+    s = u"abc";
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"abc", s.toTrimmed());
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"abc", s.toTrimmed(true, false));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"abc", s.toTrimmed(false, true));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"abc", s.toTrimmed(false, false));
 }
 
 void UStringTest::testLetterCase()
@@ -352,19 +433,19 @@ void UStringTest::testLetterCase()
         CPPUNIT_ASSERT_EQUAL(tab[i].upper, ts::ToUpper(tab[i].upper));
     }
 
-    ts::UString s1("AbCdEf,%*=UiT");
-    CPPUNIT_ASSERT(s1.toLower() == "abcdef,%*=uit");
-    CPPUNIT_ASSERT(s1.toUpper() == "ABCDEF,%*=UIT");
+    ts::UString s1(u"AbCdEf,%*=UiT");
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"abcdef,%*=uit", s1.toLower());
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"ABCDEF,%*=UIT", s1.toUpper());
 
-    s1 = "AbCdEf,%*=UiT";
-    CPPUNIT_ASSERT(s1 == "AbCdEf,%*=UiT");
+    s1 = u"AbCdEf,%*=UiT";
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"AbCdEf,%*=UiT", s1);
     s1.convertToLower();
-    CPPUNIT_ASSERT(s1 == "abcdef,%*=uit");
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"abcdef,%*=uit", s1);
 
-    s1 = "AbCdEf,%*=UiT";
-    CPPUNIT_ASSERT(s1 == "AbCdEf,%*=UiT");
+    s1 = u"AbCdEf,%*=UiT";
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"AbCdEf,%*=UiT", s1);
     s1.convertToUpper();
-    CPPUNIT_ASSERT(s1 == "ABCDEF,%*=UIT");
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"ABCDEF,%*=UIT", s1);
 }
 
 void UStringTest::testAccent()
@@ -378,357 +459,357 @@ void UStringTest::testAccent()
     CPPUNIT_ASSERT(ts::IsAccented(ts::BLACKLETTER_CAPITAL_R));
     CPPUNIT_ASSERT(ts::IsAccented(ts::LATIN_CAPITAL_LIGATURE_OE));
 
-    CPPUNIT_ASSERT("X" == ts::RemoveAccent('X'));
-    CPPUNIT_ASSERT("," == ts::RemoveAccent(','));
-    CPPUNIT_ASSERT("E" == ts::RemoveAccent(ts::LATIN_CAPITAL_LETTER_E_WITH_DIAERESIS));
-    CPPUNIT_ASSERT("c" == ts::RemoveAccent(ts::LATIN_SMALL_LETTER_C_WITH_ACUTE));
-    CPPUNIT_ASSERT("C" == ts::RemoveAccent(ts::LATIN_CAPITAL_LETTER_C_WITH_CIRCUMFLEX));
-    CPPUNIT_ASSERT("f" == ts::RemoveAccent(ts::LATIN_SMALL_F_WITH_HOOK));
-    CPPUNIT_ASSERT("I" == ts::RemoveAccent(ts::BLACKLETTER_CAPITAL_I));
-    CPPUNIT_ASSERT("P" == ts::RemoveAccent(ts::SCRIPT_CAPITAL_P));
-    CPPUNIT_ASSERT("R" == ts::RemoveAccent(ts::BLACKLETTER_CAPITAL_R));
-    CPPUNIT_ASSERT("OE" == ts::RemoveAccent(ts::LATIN_CAPITAL_LIGATURE_OE));
-    CPPUNIT_ASSERT("oe" == ts::RemoveAccent(ts::LATIN_SMALL_LIGATURE_OE));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"X", ts::RemoveAccent('X'));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u",", ts::RemoveAccent(','));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"E", ts::RemoveAccent(ts::LATIN_CAPITAL_LETTER_E_WITH_DIAERESIS));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"c", ts::RemoveAccent(ts::LATIN_SMALL_LETTER_C_WITH_ACUTE));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"C", ts::RemoveAccent(ts::LATIN_CAPITAL_LETTER_C_WITH_CIRCUMFLEX));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"f", ts::RemoveAccent(ts::LATIN_SMALL_F_WITH_HOOK));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"I", ts::RemoveAccent(ts::BLACKLETTER_CAPITAL_I));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"P", ts::RemoveAccent(ts::SCRIPT_CAPITAL_P));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"R", ts::RemoveAccent(ts::BLACKLETTER_CAPITAL_R));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"OE", ts::RemoveAccent(ts::LATIN_CAPITAL_LIGATURE_OE));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"oe", ts::RemoveAccent(ts::LATIN_SMALL_LIGATURE_OE));
 }
 
 void UStringTest::testHTML()
 {
-    CPPUNIT_ASSERT(ts::ToHTML('A') == "A");
-    CPPUNIT_ASSERT(ts::ToHTML(':') == ":");
-    CPPUNIT_ASSERT(ts::ToHTML(ts::QUOTATION_MARK) == "&quot;");
-    CPPUNIT_ASSERT(ts::ToHTML(ts::AMPERSAND) == "&amp;");
-    CPPUNIT_ASSERT(ts::ToHTML(ts::LESS_THAN_SIGN) == "&lt;");
-    CPPUNIT_ASSERT(ts::ToHTML(ts::GREATER_THAN_SIGN) == "&gt;");
-    CPPUNIT_ASSERT(ts::ToHTML(ts::NO_BREAK_SPACE) == "&nbsp;");
-    CPPUNIT_ASSERT(ts::ToHTML(ts::LEFT_DOUBLE_QUOTATION_MARK) == "&ldquo;");
-    CPPUNIT_ASSERT(ts::ToHTML(ts::BLACK_DIAMOND_SUIT) == "&diams;");
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"A", ts::ToHTML('A'));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u":", ts::ToHTML(':'));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"&quot;", ts::ToHTML(ts::QUOTATION_MARK));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"&amp;", ts::ToHTML(ts::AMPERSAND));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"&lt;", ts::ToHTML(ts::LESS_THAN_SIGN));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"&gt;", ts::ToHTML(ts::GREATER_THAN_SIGN));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"&nbsp;", ts::ToHTML(ts::NO_BREAK_SPACE));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"&ldquo;", ts::ToHTML(ts::LEFT_DOUBLE_QUOTATION_MARK));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"&diams;", ts::ToHTML(ts::BLACK_DIAMOND_SUIT));
 
-    CPPUNIT_ASSERT(ts::UString("").toHTML() == "");
-    CPPUNIT_ASSERT(ts::UString("abcdefgh = xyz:").toHTML() == "abcdefgh = xyz:");
-    CPPUNIT_ASSERT(ts::UString("<abcd> = \"&").toHTML() == "&lt;abcd&gt; = &quot;&amp;");
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"", ts::UString().toHTML());
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"abcdefgh = xyz:", ts::UString(u"abcdefgh = xyz:").toHTML());
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"&lt;abcd&gt; = &quot;&amp;", ts::UString(u"<abcd> = \"&").toHTML());
 }
 
 void UStringTest::testRemove()
 {
     ts::UString s;
 
-    s = "az zef cer ";
-    s.remove(" ");
-    CPPUNIT_ASSERT(s == "azzefcer");
+    s = u"az zef cer ";
+    s.remove(u" ");
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"azzefcer", s);
 
-    s = "fooAZfoo==fooBARfoo";
-    s.remove("foo");
-    CPPUNIT_ASSERT(s == "AZ==BAR");
+    s = u"fooAZfoo==fooBARfoo";
+    s.remove(u"foo");
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"AZ==BAR", s);
 
-    s = "fooAZfoo==fooBARfoo";
-    const ts::UString foo1("foo");
+    s = u"fooAZfoo==fooBARfoo";
+    const ts::UString foo1(u"foo");
     s.remove(foo1);
-    CPPUNIT_ASSERT(s == "AZ==BAR");
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"AZ==BAR", s);
 
-    s = "fooAZfoo==fooBARfoo";
-    s.remove("NOTTHERE");
-    CPPUNIT_ASSERT(s == "fooAZfoo==fooBARfoo");
+    s = u"fooAZfoo==fooBARfoo";
+    s.remove(u"NOTTHERE");
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"fooAZfoo==fooBARfoo", s);
 
-    s = "";
-    s.remove("foo");
-    CPPUNIT_ASSERT(s == "");
+    s = u"";
+    s.remove(u"foo");
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"", s);
 
-    s = "fooAZfoo==fooBARfoo";
-    s.remove("");
-    CPPUNIT_ASSERT(s == "fooAZfoo==fooBARfoo");
+    s = u"fooAZfoo==fooBARfoo";
+    s.remove(u"");
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"fooAZfoo==fooBARfoo", s);
 
-    s = "fooAZfoo==fooBARfoo";
-    s.remove("o");
-    CPPUNIT_ASSERT(s == "fAZf==fBARf");
+    s = u"fooAZfoo==fooBARfoo";
+    s.remove(u"o");
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"fAZf==fBARf", s);
 
-    s = "fooAZfoo==fooBARfoo";
-    s.remove("z");
-    CPPUNIT_ASSERT(s == "fooAZfoo==fooBARfoo");
+    s = u"fooAZfoo==fooBARfoo";
+    s.remove(u"z");
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"fooAZfoo==fooBARfoo", s);
 
-    s = "az zef cer ";
-    CPPUNIT_ASSERT(s.toRemoved(" ") == "azzefcer");
+    s = u"az zef cer ";
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"azzefcer", s.toRemoved(u" "));
 
-    CPPUNIT_ASSERT(ts::UString("fooAZfoo==fooBARfoo").toRemoved("foo") == "AZ==BAR");
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"AZ==BAR", ts::UString(u"fooAZfoo==fooBARfoo").toRemoved(u"foo"));
 
-    s = "fooAZfoo==fooBARfoo";
-    const ts::UString foo2("foo");
-    CPPUNIT_ASSERT(s.toRemoved(foo2) == "AZ==BAR");
-    CPPUNIT_ASSERT(s.toRemoved("NOTTHERE") == "fooAZfoo==fooBARfoo");
+    s = u"fooAZfoo==fooBARfoo";
+    const ts::UString foo2(u"foo");
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"AZ==BAR", s.toRemoved(foo2));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"fooAZfoo==fooBARfoo", s.toRemoved(u"NOTTHERE"));
 
-    s = "";
-    CPPUNIT_ASSERT(s.toRemoved("foo") == "");
+    s = u"";
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"", s.toRemoved(u"foo"));
 
-    s = "fooAZfoo==fooBARfoo";
-    CPPUNIT_ASSERT(s.toRemoved("")  == "fooAZfoo==fooBARfoo");
-    CPPUNIT_ASSERT(s.toRemoved("o") == "fAZf==fBARf");
-    CPPUNIT_ASSERT(s.toRemoved("z") == "fooAZfoo==fooBARfoo");
-    CPPUNIT_ASSERT(s.toRemoved('z') == "fooAZfoo==fooBARfoo");
-    CPPUNIT_ASSERT(s.toRemoved(ts::UChar('z')) == "fooAZfoo==fooBARfoo");
-    CPPUNIT_ASSERT(s.toRemoved('o') == "fAZf==fBARf");
-    CPPUNIT_ASSERT(s.toRemoved(ts::UChar('o')) == "fAZf==fBARf");
+    s = u"fooAZfoo==fooBARfoo";
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"fooAZfoo==fooBARfoo", s.toRemoved(u""));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"fAZf==fBARf", s.toRemoved(u"o"));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"fooAZfoo==fooBARfoo", s.toRemoved(u"z"));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"fooAZfoo==fooBARfoo", s.toRemoved('z'));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"fooAZfoo==fooBARfoo", s.toRemoved(ts::UChar('z')));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"fAZf==fBARf", s.toRemoved('o'));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"fAZf==fBARf", s.toRemoved(ts::UChar('o')));
 }
 
 void UStringTest::testSubstitute()
 {
-    CPPUNIT_ASSERT(ts::UString("").toSubstituted("", "") == "");
-    CPPUNIT_ASSERT(ts::UString("abcdefabcdef").toSubstituted("ab", "xyz") == "xyzcdefxyzcdef");
-    CPPUNIT_ASSERT(ts::UString("abcdefabcdef").toSubstituted("ef", "xyz") == "abcdxyzabcdxyz");
-    CPPUNIT_ASSERT(ts::UString("abcdba").toSubstituted("b", "bb") == "abbcdbba");
-    CPPUNIT_ASSERT(ts::UString("abcdefabcdef").toSubstituted("ef", "") == "abcdabcd");
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"", ts::UString(u"").toSubstituted(u"", u""));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"xyzcdefxyzcdef", ts::UString(u"abcdefabcdef").toSubstituted(u"ab", u"xyz"));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"abcdxyzabcdxyz", ts::UString(u"abcdefabcdef").toSubstituted(u"ef", u"xyz"));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"abbcdbba", ts::UString(u"abcdba").toSubstituted(u"b", u"bb"));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"abcdabcd", ts::UString(u"abcdefabcdef").toSubstituted(u"ef", u""));
 }
 
 void UStringTest::testSplit()
 {
     std::vector<ts::UString> v1;
-    ts::UString("az, ,  fr,  ze ,t").split(v1);
-    CPPUNIT_ASSERT(v1.size() == 5);
-    CPPUNIT_ASSERT(v1[0] == "az");
-    CPPUNIT_ASSERT(v1[1] == "");
-    CPPUNIT_ASSERT(v1[2] == "fr");
-    CPPUNIT_ASSERT(v1[3] == "ze");
-    CPPUNIT_ASSERT(v1[4] == "t");
+    ts::UString(u"az, ,  fr,  ze ,t").split(v1);
+    CPPUNIT_ASSERT_EQUAL(size_t(5), v1.size());
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"az", v1[0]);
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"", v1[1]);
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"fr", v1[2]);
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"ze", v1[3]);
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"t", v1[4]);
 
     std::vector<ts::UString> v2;
-    const ts::UString s2("az, ,  fr,  ze ,t");
+    const ts::UString s2(u"az, ,  fr,  ze ,t");
     s2.split(v2);
-    CPPUNIT_ASSERT(v2.size() == 5);
-    CPPUNIT_ASSERT(v2[0] == "az");
-    CPPUNIT_ASSERT(v2[1] == "");
-    CPPUNIT_ASSERT(v2[2] == "fr");
-    CPPUNIT_ASSERT(v2[3] == "ze");
-    CPPUNIT_ASSERT(v2[4] == "t");
+    CPPUNIT_ASSERT_EQUAL(size_t(5), v2.size());
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"az", v2[0]);
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"", v2[1]);
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"fr", v2[2]);
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"ze", v2[3]);
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"t", v2[4]);
 
     std::vector<ts::UString> v3;
-    ts::UString("az, ,  fr,  ze ,t").split(v3, ts::COMMA, false);
-    CPPUNIT_ASSERT(v3.size() == 5);
-    CPPUNIT_ASSERT(v3[0] == "az");
-    CPPUNIT_ASSERT(v3[1] == " ");
-    CPPUNIT_ASSERT(v3[2] == "  fr");
-    CPPUNIT_ASSERT(v3[3] == "  ze ");
-    CPPUNIT_ASSERT(v3[4] == "t");
+    ts::UString(u"az, ,  fr,  ze ,t").split(v3, ts::COMMA, false);
+    CPPUNIT_ASSERT_EQUAL(size_t(5), v3.size());
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"az", v3[0]);
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u" ", v3[1]);
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"  fr", v3[2]);
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"  ze ", v3[3]);
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"t", v3[4]);
 
     std::vector<ts::UString> v4;
-    ts::UString("az, ,  fr,  ze ,t").split(v4, ts::UChar('z'), false);
-    CPPUNIT_ASSERT(v4.size() == 3);
-    CPPUNIT_ASSERT(v4[0] == "a");
-    CPPUNIT_ASSERT(v4[1] == ", ,  fr,  ");
-    CPPUNIT_ASSERT(v4[2] == "e ,t");
+    ts::UString(u"az, ,  fr,  ze ,t").split(v4, ts::UChar('z'), false);
+    CPPUNIT_ASSERT_EQUAL(size_t(3), v4.size());
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"a", v4[0]);
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u", ,  fr,  ", v4[1]);
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"e ,t", v4[2]);
 }
 
 void UStringTest::testJoin()
 {
     std::vector<ts::UString> v;
-    v.push_back("az");
-    v.push_back("sd");
-    v.push_back("tg");
-    CPPUNIT_ASSERT(ts::UString::Join(v) == "az, sd, tg");
-    CPPUNIT_ASSERT(ts::UString::Join(++v.begin(), v.end()) == "sd, tg");
+    v.push_back(u"az");
+    v.push_back(u"sd");
+    v.push_back(u"tg");
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"az, sd, tg", ts::UString::Join(v));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"sd, tg", ts::UString::Join(++v.begin(), v.end()));
 }
 
 void UStringTest::testBreakLines()
 {
     std::vector<ts::UString> v1;
-    ts::UString("aze arf erf r+oih zf").splitLines(v1, 8);
+    ts::UString(u"aze arf erf r+oih zf").splitLines(v1, 8);
     CPPUNIT_ASSERT(v1.size() == 3);
-    CPPUNIT_ASSERT(v1[0] == "aze arf");
-    CPPUNIT_ASSERT(v1[1] == "erf");
-    CPPUNIT_ASSERT(v1[2] == "r+oih zf");
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"aze arf", v1[0]);
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"erf", v1[1]);
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"r+oih zf", v1[2]);
 
     std::vector<ts::UString> v2;
-    ts::UString("aze arf erf r+oih zf").splitLines(v2, 8, "+");
+    ts::UString(u"aze arf erf r+oih zf").splitLines(v2, 8, "+");
     CPPUNIT_ASSERT(v2.size() == 3);
-    CPPUNIT_ASSERT(v2[0] == "aze arf");
-    CPPUNIT_ASSERT(v2[1] == "erf r+");
-    CPPUNIT_ASSERT(v2[2] == "oih zf");
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"aze arf", v2[0]);
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"erf r+", v2[1]);
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"oih zf", v2[2]);
 
     std::vector<ts::UString> v3;
-    ts::UString("aze arf erf r+oih zf").splitLines(v3, 8, "", "==");
+    ts::UString(u"aze arf erf r+oih zf").splitLines(v3, 8, "", "==");
     CPPUNIT_ASSERT(v3.size() == 4);
-    CPPUNIT_ASSERT(v3[0] == "aze arf");
-    CPPUNIT_ASSERT(v3[1] == "==erf");
-    CPPUNIT_ASSERT(v3[2] == "==r+oih");
-    CPPUNIT_ASSERT(v3[3] == "==zf");
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"aze arf", v3[0]);
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"==erf", v3[1]);
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"==r+oih", v3[2]);
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"==zf", v3[3]);
 
     std::vector<ts::UString> v4;
-    ts::UString("aze arf dkvyfngofnb ff").splitLines(v4, 8);
+    ts::UString(u"aze arf dkvyfngofnb ff").splitLines(v4, 8);
     CPPUNIT_ASSERT(v4.size() == 3);
-    CPPUNIT_ASSERT(v4[0] == "aze arf");
-    CPPUNIT_ASSERT(v4[1] == "dkvyfngofnb");
-    CPPUNIT_ASSERT(v4[2] == "ff");
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"aze arf", v4[0]);
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"dkvyfngofnb", v4[1]);
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"ff", v4[2]);
 
     std::vector<ts::UString> v5;
-    ts::UString("aze arf dkvyfngofnb ff").splitLines(v5, 8, "", "", true);
+    ts::UString(u"aze arf dkvyfngofnb ff").splitLines(v5, 8, "", "", true);
     CPPUNIT_ASSERT(v5.size() == 3);
-    CPPUNIT_ASSERT(v5[0] == "aze arf");
-    CPPUNIT_ASSERT(v5[1] == "dkvyfngo");
-    CPPUNIT_ASSERT(v5[2] == "fnb ff");
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"aze arf", v5[0]);
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"dkvyfngo", v5[1]);
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"fnb ff", v5[2]);
 }
 
 void UStringTest::testRemovePrefix()
 {
     ts::UString s;
 
-    s = "abcdef";
-    s.removePrefix("ab");
-    CPPUNIT_ASSERT(s == "cdef");
+    s = u"abcdef";
+    s.removePrefix(u"ab");
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"cdef", s);
 
-    s = "abcdef";
-    s.removePrefix("xy");
-    CPPUNIT_ASSERT(s == "abcdef");
+    s = u"abcdef";
+    s.removePrefix(u"xy");
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"abcdef", s);
 
-    s = "abcdef";
-    s.removePrefix("");
-    CPPUNIT_ASSERT(s == "abcdef");
+    s = u"abcdef";
+    s.removePrefix(u"");
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"abcdef", s);
 
-    s = "";
-    s.removePrefix("ab");
-    CPPUNIT_ASSERT(s == "");
+    s = u"";
+    s.removePrefix(u"ab");
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"", s);
 
-    CPPUNIT_ASSERT(ts::UString("abcdef").toRemovedPrefix("ab") == "cdef");
-    CPPUNIT_ASSERT(ts::UString("abcdef").toRemovedPrefix("xy") == "abcdef");
-    CPPUNIT_ASSERT(ts::UString("abcdef").toRemovedPrefix("") == "abcdef");
-    CPPUNIT_ASSERT(ts::UString("").toRemovedPrefix("ab") == "");
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"cdef", ts::UString(u"abcdef").toRemovedPrefix(u"ab"));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"abcdef", ts::UString(u"abcdef").toRemovedPrefix(u"xy"));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"abcdef", ts::UString(u"abcdef").toRemovedPrefix(u""));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"", ts::UString(u"").toRemovedPrefix(u"ab"));
 
-    CPPUNIT_ASSERT(ts::UString("abcdef").toRemovedPrefix("AB") == "abcdef");
-    CPPUNIT_ASSERT(ts::UString("abcdef").toRemovedPrefix("AB", ts::CASE_SENSITIVE) == "abcdef");
-    CPPUNIT_ASSERT(ts::UString("abcdef").toRemovedPrefix("AB", ts::CASE_INSENSITIVE) == "cdef");
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"abcdef", ts::UString(u"abcdef").toRemovedPrefix(u"AB"));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"abcdef", ts::UString(u"abcdef").toRemovedPrefix(u"AB", ts::CASE_SENSITIVE));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"cdef", ts::UString(u"abcdef").toRemovedPrefix(u"AB", ts::CASE_INSENSITIVE));
 }
 
 void UStringTest::testRemoveSuffix()
 {
     ts::UString s;
 
-    s = "abcdef";
-    s.removeSuffix("ef");
-    CPPUNIT_ASSERT(s == "abcd");
+    s = u"abcdef";
+    s.removeSuffix(u"ef");
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"abcd", s);
 
-    s = "abcdef";
-    s.removeSuffix("xy");
-    CPPUNIT_ASSERT(s == "abcdef");
+    s = u"abcdef";
+    s.removeSuffix(u"xy");
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"abcdef", s);
 
-    s = "abcdef";
-    s.removeSuffix("");
-    CPPUNIT_ASSERT(s == "abcdef");
+    s = u"abcdef";
+    s.removeSuffix(u"");
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"abcdef", s);
 
-    s = "";
-    s.removeSuffix("ef");
-    CPPUNIT_ASSERT(s == "");
+    s = u"";
+    s.removeSuffix(u"ef");
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"", s);
 
-    CPPUNIT_ASSERT(ts::UString("abcdef").toRemovedSuffix("ef") == "abcd");
-    CPPUNIT_ASSERT(ts::UString("abcdef").toRemovedSuffix("xy") == "abcdef");
-    CPPUNIT_ASSERT(ts::UString("abcdef").toRemovedSuffix("") == "abcdef");
-    CPPUNIT_ASSERT(ts::UString("").toRemovedSuffix("ef") == "");
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"abcd", ts::UString(u"abcdef").toRemovedSuffix(u"ef"));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"abcdef", ts::UString(u"abcdef").toRemovedSuffix(u"xy"));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"abcdef", ts::UString(u"abcdef").toRemovedSuffix(u""));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"", ts::UString(u"").toRemovedSuffix(u"ef"));
 
-    CPPUNIT_ASSERT(ts::UString("abcdef").toRemovedSuffix("EF") == "abcdef");
-    CPPUNIT_ASSERT(ts::UString("abcdef").toRemovedSuffix("EF", ts::CASE_SENSITIVE) == "abcdef");
-    CPPUNIT_ASSERT(ts::UString("abcdef").toRemovedSuffix("EF", ts::CASE_INSENSITIVE) == "abcd");
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"abcdef", ts::UString(u"abcdef").toRemovedSuffix(u"EF"));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"abcdef", ts::UString(u"abcdef").toRemovedSuffix(u"EF", ts::CASE_SENSITIVE));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"abcd", ts::UString(u"abcdef").toRemovedSuffix(u"EF", ts::CASE_INSENSITIVE));
 }
 
 void UStringTest::testStart()
 {
-    CPPUNIT_ASSERT(ts::UString("azertyuiop").startWith("azer"));
-    CPPUNIT_ASSERT(!ts::UString("azertyuiop").startWith("aZer"));
-    CPPUNIT_ASSERT(!ts::UString("azertyuiop").startWith("azeR"));
+    CPPUNIT_ASSERT(ts::UString(u"azertyuiop").startWith(u"azer"));
+    CPPUNIT_ASSERT(!ts::UString(u"azertyuiop").startWith(u"aZer"));
+    CPPUNIT_ASSERT(!ts::UString(u"azertyuiop").startWith(u"azeR"));
 
-    CPPUNIT_ASSERT(ts::UString("azertyuiop").startWith("azer", ts::CASE_INSENSITIVE));
-    CPPUNIT_ASSERT(ts::UString("azertyuiop").startWith("aZer", ts::CASE_INSENSITIVE));
-    CPPUNIT_ASSERT(ts::UString("azertyuiop").startWith("azeR", ts::CASE_INSENSITIVE));
-    CPPUNIT_ASSERT(!ts::UString("azertyuiop").startWith("azerq", ts::CASE_INSENSITIVE));
+    CPPUNIT_ASSERT(ts::UString(u"azertyuiop").startWith(u"azer", ts::CASE_INSENSITIVE));
+    CPPUNIT_ASSERT(ts::UString(u"azertyuiop").startWith(u"aZer", ts::CASE_INSENSITIVE));
+    CPPUNIT_ASSERT(ts::UString(u"azertyuiop").startWith(u"azeR", ts::CASE_INSENSITIVE));
+    CPPUNIT_ASSERT(!ts::UString(u"azertyuiop").startWith(u"azerq", ts::CASE_INSENSITIVE));
 
-    CPPUNIT_ASSERT(ts::UString("azertyuiop").startWith(""));
-    CPPUNIT_ASSERT(!ts::UString("azertyuiop").startWith("azertyuiopqsdf"));
+    CPPUNIT_ASSERT(ts::UString(u"azertyuiop").startWith(u""));
+    CPPUNIT_ASSERT(!ts::UString(u"azertyuiop").startWith(u"azertyuiopqsdf"));
 
-    CPPUNIT_ASSERT(ts::UString("azertyuiop").startWith("", ts::CASE_INSENSITIVE));
-    CPPUNIT_ASSERT(!ts::UString("azertyuiop").startWith("azertyuiopqsdf", ts::CASE_INSENSITIVE));
+    CPPUNIT_ASSERT(ts::UString(u"azertyuiop").startWith(u"", ts::CASE_INSENSITIVE));
+    CPPUNIT_ASSERT(!ts::UString(u"azertyuiop").startWith(u"azertyuiopqsdf", ts::CASE_INSENSITIVE));
 
-    CPPUNIT_ASSERT(ts::UString("").startWith(""));
-    CPPUNIT_ASSERT(!ts::UString("").startWith("abcd"));
+    CPPUNIT_ASSERT(ts::UString(u"").startWith(u""));
+    CPPUNIT_ASSERT(!ts::UString(u"").startWith(u"abcd"));
 
-    CPPUNIT_ASSERT(ts::UString("").startWith("", ts::CASE_INSENSITIVE));
-    CPPUNIT_ASSERT(!ts::UString("").startWith("abcd", ts::CASE_INSENSITIVE));
+    CPPUNIT_ASSERT(ts::UString(u"").startWith(u"", ts::CASE_INSENSITIVE));
+    CPPUNIT_ASSERT(!ts::UString(u"").startWith(u"abcd", ts::CASE_INSENSITIVE));
 }
 
 void UStringTest::testEnd()
 {
-    CPPUNIT_ASSERT(ts::UString("azertyuiop").endWith("uiop"));
-    CPPUNIT_ASSERT(!ts::UString("azertyuiop").endWith("uiOp"));
-    CPPUNIT_ASSERT(!ts::UString("azertyuiop").endWith("Uiop"));
+    CPPUNIT_ASSERT(ts::UString(u"azertyuiop").endWith(u"uiop"));
+    CPPUNIT_ASSERT(!ts::UString(u"azertyuiop").endWith(u"uiOp"));
+    CPPUNIT_ASSERT(!ts::UString(u"azertyuiop").endWith(u"Uiop"));
 
-    CPPUNIT_ASSERT(ts::UString("azertyuiop").endWith("uiop", ts::CASE_INSENSITIVE));
-    CPPUNIT_ASSERT(ts::UString("azertyuiop").endWith("uiOp", ts::CASE_INSENSITIVE));
-    CPPUNIT_ASSERT(ts::UString("azertyuiop").endWith("Uiop", ts::CASE_INSENSITIVE));
-    CPPUNIT_ASSERT(!ts::UString("azertyuiop").endWith("wuiop", ts::CASE_INSENSITIVE));
+    CPPUNIT_ASSERT(ts::UString(u"azertyuiop").endWith(u"uiop", ts::CASE_INSENSITIVE));
+    CPPUNIT_ASSERT(ts::UString(u"azertyuiop").endWith(u"uiOp", ts::CASE_INSENSITIVE));
+    CPPUNIT_ASSERT(ts::UString(u"azertyuiop").endWith(u"Uiop", ts::CASE_INSENSITIVE));
+    CPPUNIT_ASSERT(!ts::UString(u"azertyuiop").endWith(u"wuiop", ts::CASE_INSENSITIVE));
 
-    CPPUNIT_ASSERT(ts::UString("azertyuiop").endWith(""));
-    CPPUNIT_ASSERT(!ts::UString("azertyuiop").endWith("qsazertyuiop"));
+    CPPUNIT_ASSERT(ts::UString(u"azertyuiop").endWith(u""));
+    CPPUNIT_ASSERT(!ts::UString(u"azertyuiop").endWith(u"qsazertyuiop"));
 
-    CPPUNIT_ASSERT(ts::UString("azertyuiop").endWith("", ts::CASE_INSENSITIVE));
-    CPPUNIT_ASSERT(!ts::UString("azertyuiop").endWith("qsazertyuiop", ts::CASE_INSENSITIVE));
+    CPPUNIT_ASSERT(ts::UString(u"azertyuiop").endWith(u"", ts::CASE_INSENSITIVE));
+    CPPUNIT_ASSERT(!ts::UString(u"azertyuiop").endWith(u"qsazertyuiop", ts::CASE_INSENSITIVE));
 
-    CPPUNIT_ASSERT(ts::UString("").endWith(""));
-    CPPUNIT_ASSERT(!ts::UString("").endWith("abcd"));
+    CPPUNIT_ASSERT(ts::UString(u"").endWith(u""));
+    CPPUNIT_ASSERT(!ts::UString(u"").endWith(u"abcd"));
 
-    CPPUNIT_ASSERT(ts::UString("").endWith("", ts::CASE_INSENSITIVE));
-    CPPUNIT_ASSERT(!ts::UString("").endWith("abcd", ts::CASE_INSENSITIVE));
+    CPPUNIT_ASSERT(ts::UString(u"").endWith(u"", ts::CASE_INSENSITIVE));
+    CPPUNIT_ASSERT(!ts::UString(u"").endWith(u"abcd", ts::CASE_INSENSITIVE));
 }
 
 void UStringTest::testJustifyLeft()
 {
-    CPPUNIT_ASSERT(ts::UString("abc").toJustifiedLeft(8) == "abc     ");
-    CPPUNIT_ASSERT(ts::UString("abc").toJustifiedLeft(8, '.') == "abc.....");
-    CPPUNIT_ASSERT(ts::UString("abcdefghij").toJustifiedLeft(8) == "abcdefghij");
-    CPPUNIT_ASSERT(ts::UString("abcdefghij").toJustifiedLeft(8, ' ', true) == "abcdefgh");
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"abc     ", ts::UString(u"abc").toJustifiedLeft(8));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"abc.....", ts::UString(u"abc").toJustifiedLeft(8, '.'));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"abcdefghij", ts::UString(u"abcdefghij").toJustifiedLeft(8));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"abcdefgh", ts::UString(u"abcdefghij").toJustifiedLeft(8, ' ', true));
 }
 
 void UStringTest::testJustifyRight()
 {
-    CPPUNIT_ASSERT(ts::UString("abc").toJustifiedRight(8) == "     abc");
-    CPPUNIT_ASSERT(ts::UString("abc").toJustifiedRight(8, '.') == ".....abc");
-    CPPUNIT_ASSERT(ts::UString("abcdefghij").toJustifiedRight(8) == "abcdefghij");
-    CPPUNIT_ASSERT(ts::UString("abcdefghij").toJustifiedRight(8, ' ', true) == "cdefghij");
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"     abc", ts::UString(u"abc").toJustifiedRight(8));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u".....abc", ts::UString(u"abc").toJustifiedRight(8, '.'));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"abcdefghij", ts::UString(u"abcdefghij").toJustifiedRight(8));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"cdefghij", ts::UString(u"abcdefghij").toJustifiedRight(8, ' ', true));
 }
 
 void UStringTest::testJustifyCentered()
 {
-    CPPUNIT_ASSERT(ts::UString("abc").toJustifiedCentered(8) == "  abc   ");
-    CPPUNIT_ASSERT(ts::UString("abc").toJustifiedCentered(8, '.') == "..abc...");
-    CPPUNIT_ASSERT(ts::UString("abcdefghij").toJustifiedCentered(8) == "abcdefghij");
-    CPPUNIT_ASSERT(ts::UString("abcdefghij").toJustifiedCentered(8, ' ', true) == "abcdefgh");
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"  abc   ", ts::UString(u"abc").toJustifiedCentered(8));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"..abc...", ts::UString(u"abc").toJustifiedCentered(8, '.'));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"abcdefghij", ts::UString(u"abcdefghij").toJustifiedCentered(8));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"abcdefgh", ts::UString(u"abcdefghij").toJustifiedCentered(8, ' ', true));
 }
 
 void UStringTest::testJustify()
 {
-    CPPUNIT_ASSERT(ts::UString("abc").toJustified("def", 8) == "abc  def");
-    CPPUNIT_ASSERT(ts::UString("abc").toJustified("def", 8, '.') == "abc..def");
-    CPPUNIT_ASSERT(ts::UString("abcd").toJustified("efgh", 8) == "abcdefgh");
-    CPPUNIT_ASSERT(ts::UString("abcde").toJustified("fghij", 8) == "abcdefghij");
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"abc  def", ts::UString(u"abc").toJustified(u"def", 8));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"abc..def", ts::UString(u"abc").toJustified(u"def", 8, '.'));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"abcdefgh", ts::UString(u"abcd").toJustified(u"efgh", 8));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"abcdefghij", ts::UString(u"abcde").toJustified(u"fghij", 8));
 }
 
 void UStringTest::testYesNo()
 {
-    CPPUNIT_ASSERT(ts::UString::YesNo(true) == "yes");
-    CPPUNIT_ASSERT(ts::UString::YesNo(false) == "no");
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"yes", ts::UString::YesNo(true));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"no", ts::UString::YesNo(false));
 }
 
 void UStringTest::testTrueFalse()
 {
-    CPPUNIT_ASSERT(ts::UString::TrueFalse(true) == "true");
-    CPPUNIT_ASSERT(ts::UString::TrueFalse(false) == "false");
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"true", ts::UString::TrueFalse(true));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"false", ts::UString::TrueFalse(false));
 }
 
 void UStringTest::testOnOff()
 {
-    CPPUNIT_ASSERT(ts::UString::OnOff(true) == "on");
-    CPPUNIT_ASSERT(ts::UString::OnOff(false) == "off");
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"on", ts::UString::OnOff(true));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"off", ts::UString::OnOff(false));
 }
 
 void UStringTest::testSimilarStrings()
 {
-    CPPUNIT_ASSERT(ts::UString("").similar(""));
-    CPPUNIT_ASSERT(ts::UString("aZer tY").similar("  AZE R T Y    "));
-    CPPUNIT_ASSERT(ts::UString("  AZE R T Y    ").similar("aZer tY"));
-    CPPUNIT_ASSERT(!ts::UString("").similar("az"));
-    CPPUNIT_ASSERT(!ts::UString("az").similar(""));
+    CPPUNIT_ASSERT(ts::UString(u"").similar(u""));
+    CPPUNIT_ASSERT(ts::UString(u"aZer tY").similar(u"  AZE R T Y    "));
+    CPPUNIT_ASSERT(ts::UString(u"  AZE R T Y    ").similar(u"aZer tY"));
+    CPPUNIT_ASSERT(!ts::UString(u"").similar(u"az"));
+    CPPUNIT_ASSERT(!ts::UString(u"az").similar(u""));
 }
 
 void UStringTest::testLoadSave()
@@ -764,12 +845,12 @@ void UStringTest::testLoadSave()
     CPPUNIT_ASSERT(load2 == ref2);
 
     std::list<ts::UString> ref3;
-    ref3.push_back("abcdef");
+    ref3.push_back(u"abcdef");
     ref3.insert(ref3.end(), refFirst, refLast);
     CPPUNIT_ASSERT(ref3.size() == 19);
 
     std::list<ts::UString> load3;
-    load3.push_back("abcdef");
+    load3.push_back(u"abcdef");
     CPPUNIT_ASSERT(ts::UString::LoadAppend(load3, file2));
     CPPUNIT_ASSERT(load3.size() == 19);
     CPPUNIT_ASSERT(load3 == ref3);
