@@ -81,6 +81,9 @@ public:
     void testLoadSave();
     void testToDigit();
     void testToInteger();
+    void testHexaDecode();
+    void testAppendContainer();
+    void testAssignContainer();
 
     CPPUNIT_TEST_SUITE(UStringTest);
     CPPUNIT_TEST(testIsSpace);
@@ -112,6 +115,9 @@ public:
     CPPUNIT_TEST(testSimilarStrings);
     CPPUNIT_TEST(testLoadSave);
     CPPUNIT_TEST(testToInteger);
+    CPPUNIT_TEST(testHexaDecode);
+    CPPUNIT_TEST(testAppendContainer);
+    CPPUNIT_TEST(testAssignContainer);
     CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -945,4 +951,66 @@ void UStringTest::testToInteger()
 
     CPPUNIT_ASSERT(!ts::UString(u" , -12345    0x100 ,  0,  7  xxx 45").toIntegers(i32List));
     CPPUNIT_ASSERT(i32Ref == i32List);
+}
+
+void UStringTest::testHexaDecode()
+{
+    ts::ByteBlock bytes;
+
+    CPPUNIT_ASSERT(ts::UString(u"0123456789ABCDEF").hexaDecode(bytes));
+    CPPUNIT_ASSERT(bytes == ts::ByteBlock({0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF}));
+
+    CPPUNIT_ASSERT(ts::UString(u" 0 1234 56 789 ABC DEF ").hexaDecode(bytes));
+    CPPUNIT_ASSERT(bytes == ts::ByteBlock({0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF}));
+
+    CPPUNIT_ASSERT(!ts::UString(u" 0 1234 56 - 789 ABC DEF ").hexaDecode(bytes));
+    CPPUNIT_ASSERT(bytes == ts::ByteBlock({0x01, 0x23, 0x45}));
+
+    CPPUNIT_ASSERT(!ts::UString(u"X 0 1234 56 - 789 ABC DEF ").hexaDecode(bytes));
+    CPPUNIT_ASSERT(bytes.empty());
+}
+
+void UStringTest::testAppendContainer()
+{
+    const char* arr1[] = {"ab", "cde", "", "fghi"};
+    ts::UStringList var;
+    ts::UStringList ref;
+
+    var.push_back(u"begin");
+
+    ref.push_back(u"begin");
+    ref.push_back(u"ab");
+    ref.push_back(u"cde");
+    ref.push_back(u"");
+    ref.push_back(u"fghi");
+
+    CPPUNIT_ASSERT(ts::UString::Append(var, 4, arr1) == ref);
+
+    char* arr2[] = {(char*)"ab", (char*)"cde", (char*)"", (char*)"fghi"};
+
+    var.clear();
+    var.push_back(u"begin");
+    CPPUNIT_ASSERT(ts::UString::Append(var, 4, arr2) == ref);
+}
+
+void UStringTest::testAssignContainer()
+{
+    const char* arr1[] = {"ab", "cde", "", "fghi"};
+    ts::UStringList var;
+    ts::UStringList ref;
+
+    var.push_back(u"previous");
+
+    ref.push_back(u"ab");
+    ref.push_back(u"cde");
+    ref.push_back(u"");
+    ref.push_back(u"fghi");
+
+    CPPUNIT_ASSERT(ts::UString::Assign(var, 4, arr1) == ref);
+
+    char* arr2[] = {(char*)"ab", (char*)"cde", (char*)"", (char*)"fghi"};
+
+    var.clear();
+    var.push_back(u"other");
+    CPPUNIT_ASSERT(ts::UString::Assign(var, 4, arr2) == ref);
 }
