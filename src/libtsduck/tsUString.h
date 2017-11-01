@@ -116,6 +116,32 @@ namespace ts {
         static const size_t UTF8_CHAR_MAX_SIZE = 4;
 
         //!
+        //! Default separator string for groups of thousands, a comma.
+        //!
+        static const UString DEFAULT_THOUSANDS_SEPARATOR;
+
+        //!
+        //! Default line width for the Hexa() family of methods.
+        //!
+        static const size_type DEFAULT_HEXA_LINE_WIDTH = 78;
+
+        //!
+        //! Flags for the Hexa() family of methods.
+        //!
+        enum HexaFlags {
+            HEXA        = 0x0001,  //!< Dump hexa values.
+            ASCII       = 0x0002,  //!< Dump ascii values.
+            OFFSET      = 0x0004,  //!< Display address offsets.
+            WIDE_OFFSET = 0x0008,  //!< Always wide offset.
+            SINGLE_LINE = 0x0010,  //!< Hexa on one single line, no line feed, ignore other flags.
+            BPL         = 0x0020,  //!< Interpret @a max_line_width as number of displayed Bytes Per Line (BPL).
+            C_STYLE     = 0x0040,  //!< C-style hexa value ("0xXX," instead of "XX").
+            BINARY      = 0x0080,  //!< Dump binary values ("XXXXXXXX" binary digits).
+            BIN_NIBBLE  = 0x0100,  //!< Binary values are grouped by nibble ("XXXX XXXX").
+            COMPACT     = 0x0200,  //!< Same as SINGLE_LINE but use a compact display without space.
+        };
+
+        //!
         //! Default constructor.
         //!
         UString() noexcept(noexcept(allocator_type())) :
@@ -438,7 +464,7 @@ namespace ts {
         //! Get the address after the last character in the string.
         //! @return The address after the last character in the string.
         //!
-        const UChar* end() const
+        const UChar* last() const
         {
             return data() + size();
         }
@@ -453,6 +479,16 @@ namespace ts {
             return data() + size();
         }
 #endif
+
+        //!
+        //! Reverse the order of characters in the string.
+        //!
+        void reverse();
+
+        //!
+        //! Return a copy of the string where characters are reversed.
+        //!
+        UString toReversed() const;
 
         //!
         //! Trim leading and / or trailing space characters.
@@ -936,6 +972,44 @@ namespace ts {
         //!
         template <class CONTAINER>
         bool toIntegers(CONTAINER& container, const UString& thousandSeparators = UString(), const UString& listSeparators = UString(u",; ")) const;
+
+        //!
+        //! Format a string containing a decimal value.
+        //! @tparam INT An integer type.
+        //! @param [in] value The integer value to format.
+        //! @param [in] min_width Minimum width of the returned string.
+        //! Padded with spaces if larger than the number of characters in the formatted number.
+        //! @param [in] right_justified If true (the default), return a right-justified string.
+        //! When false, return a left-justified string. Ignored if @a min_width is lower than
+        //! the number of characters in the formatted number.
+        //! @param [in] separator Separator string for groups of thousands, a comma by default.
+        //! @param [in] force_sign If true, force a '+' sign for positive values.
+        //! @return The formatted string.
+        //!
+        template <typename INT>
+        static UString Decimal(INT value,
+                               size_type min_width = 0,
+                               bool right_justified = true,
+                               const UString& separator = DEFAULT_THOUSANDS_SEPARATOR,
+                               bool force_sign = false);
+
+        //!
+        //! Format a string containing an hexadecimal value.
+        //! @tparam INT An integer type.
+        //! @param [in] value The integer value to format.
+        //! @param [in] width Width of the formatted number, not including the optional prefix and separator.
+        //! By default, use the "natural" size of @a INT (e.g. 8 for 32-bit integer).
+        //! @param [in] separator Separator string for groups of 4 digits, empty by default.
+        //! @param [in] use_prefix If true, prepend the standard hexa prefix "0x".
+        //! @param [in] use_upper If true, use upper-case hexadecimal digits.
+        //! @return The formatted string.
+        //!
+        template <typename INT>
+        static UString Hexa(INT value,
+                            size_type width = 0,
+                            const UString& separator = UString(),
+                            bool use_prefix = true,
+                            bool use_upper = true);
 
         //!
         //! Interpret this string as a sequence of hexadecimal digits (ignore blanks).

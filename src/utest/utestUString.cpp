@@ -84,6 +84,8 @@ public:
     void testHexaDecode();
     void testAppendContainer();
     void testAssignContainer();
+    void testDecimal();
+    void testHexa();
 
     CPPUNIT_TEST_SUITE(UStringTest);
     CPPUNIT_TEST(testIsSpace);
@@ -118,6 +120,8 @@ public:
     CPPUNIT_TEST(testHexaDecode);
     CPPUNIT_TEST(testAppendContainer);
     CPPUNIT_TEST(testAssignContainer);
+    CPPUNIT_TEST(testDecimal);
+    CPPUNIT_TEST(testHexa);
     CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -1013,4 +1017,35 @@ void UStringTest::testAssignContainer()
     var.clear();
     var.push_back(u"other");
     CPPUNIT_ASSERT(ts::UString::Assign(var, 4, arr2) == ref);
+}
+
+void UStringTest::testDecimal()
+{
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"0", ts::UString::Decimal(0));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"0", ts::UString::Decimal(0L));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"0", ts::UString::Decimal(-0));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"0", ts::UString::Decimal(TS_CONST64(0)));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"1,234", ts::UString::Decimal(1234));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"     1,234", ts::UString::Decimal(1234, 10));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"     1,234", ts::UString::Decimal(1234, 10, true));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"1,234     ", ts::UString::Decimal(1234, 10, false));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"      1234", ts::UString::Decimal(1234, 10, true, u""));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"  1()234()567()890", ts::UString::Decimal(1234567890, 18, true, u"()"));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"    +1,234", ts::UString::Decimal(1234, 10, true, ts::UString::DEFAULT_THOUSANDS_SEPARATOR, true));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"    -1,234", ts::UString::Decimal(-1234, 10, true, ts::UString::DEFAULT_THOUSANDS_SEPARATOR, true));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"    -1,234", ts::UString::Decimal(-1234, 10, true, ts::UString::DEFAULT_THOUSANDS_SEPARATOR, false));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"-1,234,567,890,123,456", ts::UString::Decimal(TS_CONST64(-1234567890123456)));
+}
+
+void UStringTest::testHexa()
+{
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"0x00", ts::UString::Hexa<uint8_t>(0));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"0x00000123", ts::UString::Hexa<uint32_t>(0x123));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"0x0000000000000123", ts::UString::Hexa(TS_UCONST64(0x123)));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"0xFFFFFFFFFFFFFFFD", ts::UString::Hexa(TS_CONST64(-3)));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"0xfffffffffffffffd", ts::UString::Hexa(TS_CONST64(-3), 0, ts::UString(), true, false));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"0x002", ts::UString::Hexa<uint16_t>(0x02, 3));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"0x000002", ts::UString::Hexa<uint16_t>(0x02, 6));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"0x0000<>0123", ts::UString::Hexa<uint32_t>(0x123, 0, u"<>"));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"0000,0123", ts::UString::Hexa<uint32_t>(0x123, 0, ts::UString::DEFAULT_THOUSANDS_SEPARATOR, false));
 }
