@@ -167,7 +167,7 @@ namespace ts {
     //! @param [in,out] report Where to report errors.
     //! @return True on success, false on error.
     //!
-   TSDUCKDLL bool EnumerateDevicesByClass(const ::CLSID& clsid,
+    TSDUCKDLL bool EnumerateDevicesByClass(const ::CLSID& clsid,
                                            std::vector<ComPtr<::IMoniker>>& monikers,
                                            ReportInterface& report);
 
