@@ -1012,7 +1012,7 @@ void ts::UString::appendDump(const void *data,
             for (size_type byte = 0; byte < line_size; byte++) {
                 int b = int(raw[line + byte]);
                 for (int i = 7; i >= 0; i--) {
-                    append(1, u'0' + UChar((b >> i) & 0x01));
+                    append(1, UChar(u'0' + ((b >> i) & 0x01)));
                     if (i == 4 && (flags & BIN_NIBBLE) != 0) {
                         append(1, u'.');
                     }
