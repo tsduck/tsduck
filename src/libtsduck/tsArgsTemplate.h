@@ -38,10 +38,11 @@
 template <typename INT>
 void ts::Args::getIntValue(INT& value, const char* name, const INT& def_value, size_t index) const
 {
-    const IOption& opt (getIOption(name));
+    const IOption& opt(getIOption(name));
     if (index >= opt.values.size() ||
         !opt.values[index].set() ||
-        !ToInteger(value, opt.values[index].value(), THOUSANDS_SEPARATORS)) {
+        !ToInteger(value, opt.values[index].value(), THOUSANDS_SEPARATORS))
+    {
         value = def_value;
     }
 }
@@ -50,7 +51,36 @@ template <typename INT>
 INT ts::Args::intValue(const char* name, const INT& def_value, size_t index) const
 {
     INT value = def_value;
-    getIntValue (value, name, def_value, index);
+    getIntValue(value, name, def_value, index);
+    return value;
+}
+
+
+//----------------------------------------------------------------------------
+// Get the enumeration value of an option.
+//----------------------------------------------------------------------------
+
+template <typename ENUM>
+void ts::Args::getEnumValue(ENUM& value, const char* name, ENUM def_value, size_t index) const
+{
+    const IOption& opt(getIOption(name));
+    int iValue = 0;
+    if (index >= opt.values.size() ||
+        !opt.values[index].set() ||
+        !ToInteger(iValue, opt.values[index].value(), THOUSANDS_SEPARATORS))
+    {
+        value = def_value;
+    }
+    else {
+        value = static_cast<ENUM>(iValue);
+    }
+}
+
+template <typename ENUM>
+ENUM ts::Args::enumValue(const char* name, ENUM def_value, size_t index) const
+{
+    ENUM value = def_value;
+    getEnumValue(value, name, def_value, index);
     return value;
 }
 

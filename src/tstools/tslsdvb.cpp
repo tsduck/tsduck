@@ -36,8 +36,13 @@
 #include "tsTuner.h"
 #include "tsTunerArgs.h"
 #include "tsFormat.h"
+#include "tsStringUtils.h"
 #include "tsSysUtils.h"
 TSDUCK_SOURCE;
+
+#if defined(TS_WINDOWS)
+    #include "tsDirectShowTest.h"
+#endif
 
 
 //----------------------------------------------------------------------------
@@ -48,37 +53,43 @@ struct Options: public ts::Args
 {
     Options(int argc, char *argv[]);
 
-    ts::TunerArgs tuner;        // Name of device to list (unspecified means all).
-    bool          verbose;      // Verbose output
-    bool          enum_devices; // Enumerate DirectShow devices (Windows only).
+    ts::TunerArgs                tuner;      // Name of device to list (unspecified means all).
+#if defined(TS_WINDOWS)
+    ts::DirectShowTest::TestType test_type;  // DirectShow test (Windows only).
+#endif
+    bool                         verbose;    // Verbose output
 };
 
 Options::Options (int argc, char *argv[]) :
     ts::Args("DVB Devices Listing Utility.", "[options]"),
     tuner(true, true),
-    verbose(false),
-    enum_devices(false)
+#if defined(TS_WINDOWS)
+    test_type(ts::DirectShowTest::NONE),
+#endif
+    verbose(false)
 {
     option("debug", 0, POSITIVE, 0, 1, 0, 0, true);
     option("verbose", 'v');
 #if defined(TS_WINDOWS)
-    option("enumerate-devices", 'e');
+    option("enumerate-devices", 'e');  // Legacy, not documented anymore
+    option("test", 't', ts::DirectShowTest::TestNames);
 #endif
 
     setHelp("By default, without device name or adapter, all DVB devices are listed.\n"
             "\n"
             "Options:\n"
             "\n"
-#if defined(TS_WINDOWS)
-            "  -e\n"
-            "  --enumerate-devices\n"
-            "      Enumerate all relevant DirectShow devices and filters.\n"
-            "      Very verbose output, for debug only.\n"
-            "\n"
-#endif
             "  --help\n"
             "      Display this help text.\n"
             "\n"
+#if defined(TS_WINDOWS)
+            "  -t name\n"
+            "  --test name\n"
+            "      Run a specific DirectShow test. Very verbose output, for debug only.\n"
+            "      The default is none. The names of the available tests are:\n"
+            "      " + ts::DirectShowTest::TestNames.nameList() + ".\n"
+            "\n"
+#endif
             "  -v\n"
             "  --verbose\n"
             "      Produce verbose output.\n"
@@ -98,7 +109,8 @@ Options::Options (int argc, char *argv[]) :
     setDebugLevel(present("debug") ? intValue("debug", 1) : ts::Severity::Info);
 
 #if defined(TS_WINDOWS)
-    enum_devices = present("enumerate-devices");
+    // Test options on Windows. The legacy option "--enumerate-devices" means "--test enumerate-devices".
+    test_type = enumValue("test", present("enumerate-devices") ? ts::DirectShowTest::ENUMERATE_DEVICES : ts::DirectShowTest::NONE);
 #endif
 
     exitOnError();
@@ -195,11 +207,10 @@ namespace {
             }
         }
 
-        // Enumerate all DirectShow devices on Windows
 #if defined (TS_WINDOWS)
-        if (opt.enum_devices) {
-            ts::Tuner::EnumerateDevices(std::cout, "", opt);
-        }
+        // Specific DirectShow tests on Windows.
+        ts::DirectShowTest ds(std::cout, opt);
+        ds.runTest(opt.test_type);
 #endif
     }
 }

@@ -678,6 +678,31 @@ namespace ts {
     bool SaveStrings(const CONTAINER& container, const std::string& fileName, bool append = false);
 
     //!
+    //! Save strings from a container into a stream, one per line.
+    //!
+    //! The strings must be located in a container and are accessed through iterators.
+    //!
+    //! @tparam ITERATOR An iterator class over @c std::string as defined by the C++ Standard Template Library (STL).
+    //! @param [in] begin An iterator pointing to the first string.
+    //! @param [in] end An iterator pointing @em after the last string.
+    //! @param [in] strm Output stream.
+    //! @return True on success, false on error (mostly file errors).
+    //!
+    template <class ITERATOR>
+    bool SaveStrings(ITERATOR begin, ITERATOR end, std::ostream& strm);
+
+    //!
+    //! Save strings from a container into a stream, one per line.
+    //!
+    //! @tparam CONTAINER A container class of @c std::string as defined by the C++ Standard Template Library (STL).
+    //! @param [in] container A container of @c std::string containing all strings to save.
+    //! @param [in] strm Output stream.
+    //! @return True on success, false on error (mostly file errors).
+    //!
+    template <class CONTAINER>
+    bool SaveStrings(const CONTAINER& container, std::ostream& strm);
+
+    //!
     //! Append an array of C-strings to a container of strings.
     //!
     //! All C-strings from an array are appended at the end of a container.

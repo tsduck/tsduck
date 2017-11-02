@@ -233,16 +233,16 @@ ts::Args& ts::Args::option(const char* name,
 // Add an option definition
 //----------------------------------------------------------------------------
 
-ts::Args& ts::Args::option (const char*        name,
-                                char               short_name,
-                                const Enumeration& enumeration,
-                                size_t             min_occur,
-                                size_t             max_occur,
-                                bool               optional)
+ts::Args& ts::Args::option(const char*        name,
+                           char               short_name,
+                           const Enumeration& enumeration,
+                           size_t             min_occur,
+                           size_t             max_occur,
+                           bool               optional)
 {
-    IOption opt (name, short_name, enumeration, min_occur, max_occur, optional);
-    _iopts.erase (opt.name);
-    _iopts.insert (std::make_pair (opt.name, opt));
+    IOption opt(name, short_name, enumeration, min_occur, max_occur, optional);
+    _iopts.erase(opt.name);
+    _iopts.insert(std::make_pair(opt.name, opt));
     return *this;
 }
 
@@ -252,12 +252,12 @@ ts::Args& ts::Args::option (const char*        name,
 // If override is true, override duplicated options.
 //----------------------------------------------------------------------------
 
-ts::Args& ts::Args::copyOptions (const Args& other, const bool override)
+ts::Args& ts::Args::copyOptions(const Args& other, const bool override)
 {
     for (IOptionMap::const_iterator it = other._iopts.begin(); it != other._iopts.end(); ++it) {
-        if (override || _iopts.find (it->second.name) == _iopts.end()) {
-            _iopts.erase (it->second.name);
-            _iopts.insert (std::make_pair (it->second.name, it->second));
+        if (override || _iopts.find(it->second.name) == _iopts.end()) {
+            _iopts.erase(it->second.name);
+            _iopts.insert(std::make_pair(it->second.name, it->second));
         }
     }
     return *this;
@@ -268,7 +268,7 @@ ts::Args& ts::Args::copyOptions (const Args& other, const bool override)
 // Redirect report logging. Redirection cancelled if zero.
 //----------------------------------------------------------------------------
 
-void ts::Args::redirectReport (ReportInterface* rep)
+void ts::Args::redirectReport(ReportInterface* rep)
 {
     _subreport = rep;
     if (rep != 0 && rep->debugLevel() > this->debugLevel()) {
@@ -677,7 +677,7 @@ bool ts::Args::analyze()
 
     // Process --version predefined option
     if (present("version") && search("version")->predefined) {
-        info(GetVersion(VersionFormat(intValue<int>("version", VERSION_LONG)), _app_name));
+        info(GetVersion(enumValue("version", VERSION_LONG), _app_name));
         if ((_flags & NO_EXIT_ON_VERSION) == 0) {
             ::exit(EXIT_SUCCESS);
         }

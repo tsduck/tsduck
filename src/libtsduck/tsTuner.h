@@ -374,15 +374,6 @@ namespace ts {
         {
             _sink_queue_size = s;
         }
-
-        //!
-        //! Enumerate all tuner-related DirectShow devices (Windows-specific).
-        //! @param [in,out] strm Output text stream.
-        //! @param [in] margin Left margin to display.
-        //! @param [in,out] report Where to report errors.
-        //! @return A reference to @a strm.
-        //!
-        static std::ostream& EnumerateDevices(std::ostream& strm, const std::string& margin, ReportInterface& report);
 #endif
 
         //!

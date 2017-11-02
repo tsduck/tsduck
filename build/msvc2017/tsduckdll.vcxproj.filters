@@ -914,6 +914,9 @@
     <ClInclude Include="..\..\src\libtsduck\tsT2MIPacket.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\libtsduck\windows\tsDirectShowTest.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\libtsduck\tsAbstractAVCAccessUnit.cpp">
@@ -1571,6 +1574,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\libtsduck\tsT2MIPacket.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\libtsduck\windows\tsDirectShowTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -183,55 +183,55 @@ void ts::TunerArgs::load(Args& args)
         }
         if (args.present("polarity")) {
             got_one = true;
-            polarity = Polarization(args.intValue<int>("polarity"));
+            polarity = args.enumValue<Polarization>("polarity");
         }
         if (args.present("spectral-inversion")) {
             got_one = true;
-            inversion = SpectralInversion(args.intValue<int>("spectral-inversion"));
+            inversion = args.enumValue<SpectralInversion>("spectral-inversion");
         }
         if (args.present("fec-inner")) {
             got_one = true;
-            inner_fec = InnerFEC(args.intValue<int>("fec-inner"));
+            inner_fec = args.enumValue<InnerFEC>("fec-inner");
         }
         if (args.present("modulation")) {
             got_one = true;
-            modulation = Modulation(args.intValue<int>("modulation"));
+            modulation = args.enumValue<Modulation>("modulation");
         }
         if (args.present("bandwidth")) {
             got_one = true;
-            bandwidth = BandWidth(args.intValue<int>("bandwidth"));
+            bandwidth = args.enumValue<BandWidth>("bandwidth");
         }
         if (args.present("high-priority-fec")) {
             got_one = true;
-            fec_hp = InnerFEC(args.intValue<int>("high-priority-fec"));
+            fec_hp = args.enumValue<InnerFEC>("high-priority-fec");
         }
         if (args.present("low-priority-fec")) {
             got_one = true;
-            fec_lp = InnerFEC(args.intValue<int>("low-priority-fec"));
+            fec_lp = args.enumValue<InnerFEC>("low-priority-fec");
         }
         if (args.present("transmission-mode")) {
             got_one = true;
-            transmission_mode = TransmissionMode(args.intValue<int>("transmission-mode"));
+            transmission_mode = args.enumValue<TransmissionMode>("transmission-mode");
         }
         if (args.present("guard-interval")) {
             got_one = true;
-            guard_interval = GuardInterval(args.intValue<int>("guard-interval"));
+            guard_interval = args.enumValue<GuardInterval>("guard-interval");
         }
         if (args.present("hierarchy")) {
             got_one = true;
-            hierarchy = Hierarchy(args.intValue<int>("hierarchy"));
+            hierarchy = args.enumValue<Hierarchy>("hierarchy");
         }
         if (args.present("delivery-system")) {
             got_one = true;
-            delivery_system = DeliverySystem(args.intValue<int>("delivery-system"));
+            delivery_system = args.enumValue<DeliverySystem>("delivery-system");
         }
         if (args.present("pilots")) {
             got_one = true;
-            pilots = Pilot(args.intValue<int>("pilots"));
+            pilots = args.enumValue<Pilot>("pilots");
         }
         if (args.present("roll-off")) {
             got_one = true;
-            roll_off = RollOff(args.intValue<int>("roll-off"));
+            roll_off = args.enumValue<RollOff>("roll-off");
         }
 
         // Local options (not related to transponder)

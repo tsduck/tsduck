@@ -89,7 +89,7 @@ namespace ts {
         //! ComPtr<::ICreateDevEnum> enum_devices(::CLSID_SystemDeviceEnum, ::IID_ICreateDevEnum, report);
         //! @endcode
         //!
-        ComPtr(const IID& class_id, const IID& interface_id, ReportInterface& report = CERR) :
+        ComPtr(const ::IID& class_id, const ::IID& interface_id, ReportInterface& report = CERR) :
             _ptr(0)
         {
             createInstance(class_id, interface_id, report);
@@ -191,7 +191,10 @@ namespace ts {
         //!
         ComPtr<COMCLASS>& operator=(const ComPtr<COMCLASS>& p)
         {
-            return assign(p);
+            if (&p != this) {
+                assign(p);
+            }
+            return *this;
         }
 
         //!
@@ -217,7 +220,7 @@ namespace ts {
         //! @param [in] report Where to report errors.
         //! @return A reference to this object.
         //!
-        ComPtr<COMCLASS>& createInstance(const IID& class_id, const IID& interface_id, ReportInterface& report = CERR)
+        ComPtr<COMCLASS>& createInstance(const ::IID& class_id, const ::IID& interface_id, ReportInterface& report = CERR)
         {
             release();
             ::HRESULT hr = ::CoCreateInstance(class_id,               // Class ID for object
@@ -281,16 +284,9 @@ namespace ts {
         //! @param [in] iid Id of the interface we request in the object.
         //! @return True if the object exposes the @a iid interface.
         //!
-        bool expose(const IID& iid) const
+        bool expose(const ::IID& iid) const
         {
-            ::IUnknown* iface;
-            if (_ptr != 0 && SUCCEEDED(_ptr->QueryInterface(iid, (void**)&iface))) {
-                iface->Release();
-                return true;
-            }
-            else {
-                return false;
-            }
+            return ComExpose(_ptr, iid);
         }
 
         //!

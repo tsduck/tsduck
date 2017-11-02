@@ -68,6 +68,14 @@ namespace ts {
     TSDUCKDLL bool ComSuccess(::HRESULT status, const std::string& message, ReportInterface& report);
 
     //!
+    //! Check if an object exposes an interface.
+    //! @param [in] object Object to query.
+    //! @param [in] iid Id of the interface we request in the object.
+    //! @return True if @a object exposes the @a iid interface.
+    //!
+    TSDUCKDLL bool ComExpose(::IUnknown* object, const ::IID& iid);
+
+    //!
     //! Convert a COM string to std::string (Windows-specific).
     //! @param [in] s The COM string.
     //! @return The equivalent C++ string or an empty string on error.
