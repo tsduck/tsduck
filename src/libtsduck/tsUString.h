@@ -487,6 +487,7 @@ namespace ts {
 
         //!
         //! Return a copy of the string where characters are reversed.
+        //! @return A copy of the string where characters are reversed.
         //!
         UString toReversed() const;
 
@@ -899,6 +900,28 @@ namespace ts {
         //!
         template <class CONTAINER>
         static bool Save(const CONTAINER& container, const std::string& fileName, bool append = false);
+
+        //!
+        //! Save strings from a container into a stream, in UTF-8 format, one per line.
+        //! The strings must be located in a container and are accessed through iterators.
+        //! @tparam ITERATOR An iterator class over UString as defined by the C++ Standard Template Library (STL).
+        //! @param [in] begin An iterator pointing to the first string.
+        //! @param [in] end An iterator pointing @em after the last string.
+        //! @param [in] strm Output stream.
+        //! @return True on success, false on error (mostly file errors).
+        //!
+        template <class ITERATOR>
+        static bool Save(ITERATOR begin, ITERATOR end, std::ostream& strm);
+
+        //!
+        //! Save strings from a container into a file, in UTF-8 format, one per line.
+        //! @tparam CONTAINER A container class of UString as defined by the C++ Standard Template Library (STL).
+        //! @param [in] container A container of UString containing all strings to save.
+        //! @param [in] strm Output stream.
+        //! @return True on success, false on error (mostly file errors).
+        //!
+        template <class CONTAINER>
+        static bool Save(const CONTAINER& container, std::ostream& strm);
 
         //!
         //! Load all lines of a text file in UTF-8 format as UString's into a container.

@@ -36,7 +36,7 @@ TSDUCK_SOURCE;
 #if defined (TS_WINDOWS)
 
 #include "tsTunerUtils.h"
-#include "tsDirectShowUtils.h"
+#include "tsDirectShowTest.h"
 #include "tsComUtils.h"
 #include "utestCppUnitTest.h"
 
@@ -67,11 +67,13 @@ CPPUNIT_TEST_SUITE_REGISTRATION(DirectShowTest);
 // Test suite initialization method.
 void DirectShowTest::setUp()
 {
+    CPPUNIT_ASSERT(ts::ComSuccess(::CoInitializeEx(NULL, ::COINIT_MULTITHREADED), "CoInitializeEx", CERR));
 }
 
 // Test suite cleanup method.
 void DirectShowTest::tearDown()
 {
+    ::CoUninitialize();
 }
 
 
@@ -81,22 +83,8 @@ void DirectShowTest::tearDown()
 
 void DirectShowTest::testDevices()
 {
-    CPPUNIT_ASSERT(ts::ComSuccess(::CoInitializeEx(NULL, ::COINIT_MULTITHREADED), "CoInitializeEx", CERR));
-
-    // List devices by category
-#define _C_(cat) ts::DisplayDevicesByCategory(utest::Out(), cat, "", #cat, CERR)
-
-    _C_(KSCATEGORY_BDA_NETWORK_PROVIDER);
-    _C_(KSCATEGORY_BDA_TRANSPORT_INFORMATION);
-    _C_(KSCATEGORY_CAPTURE);
-    _C_(KSCATEGORY_SPLITTER);
-    _C_(KSCATEGORY_TVTUNER);
-    _C_(KSCATEGORY_BDA_RECEIVER_COMPONENT);
-    _C_(KSCATEGORY_BDA_NETWORK_TUNER);
-
-#undef _C_
-
-    ::CoUninitialize();
+    ts::DirectShowTest test(utest::Out(), CERR);
+    test.runTest(ts::DirectShowTest::ENUMERATE_DEVICES);
 }
 
 #endif // TS_WINDOWS

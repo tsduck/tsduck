@@ -40,6 +40,7 @@
 #include "tsNullReport.h"
 #include "tsSysUtils.h"
 #include "tsDirectShowUtils.h"
+#include "tsDirectShowTest.h"
 #include "tsComUtils.h"
 #include "tsComPtr.h"
 #include "tsDecimal.h"
@@ -957,30 +958,10 @@ std::ostream& ts::Tuner::displayStatus(std::ostream& strm, const std::string& ma
          << std::endl
          << margin << "DirectShow graph:" << std::endl;
 
-    DisplayFilterGraph(strm, _graph, margin + "  ", true, report);
+    DirectShowTest ds(strm, report);
+    ds.displayFilterGraph(_graph, margin + "  ", true);
 
     return strm;
-}
-
-
-//-----------------------------------------------------------------------------
-// Enumerate all tuner-related DirectShow devices.
-//-----------------------------------------------------------------------------
-
-std::ostream& ts::Tuner::EnumerateDevices(std::ostream& strm, const std::string& margin, ReportInterface& report)
-{
-#define _D_(cat) DisplayDevicesByCategory(strm, cat, margin, #cat, report)
-    _D_(KSCATEGORY_BDA_NETWORK_PROVIDER);
-    _D_(KSCATEGORY_BDA_TRANSPORT_INFORMATION);
-    _D_(KSCATEGORY_CAPTURE);
-//  _D_(KSCATEGORY_SPLITTER);
-    _D_(KSCATEGORY_TVTUNER);
-    _D_(KSCATEGORY_BDA_RECEIVER_COMPONENT);
-    _D_(KSCATEGORY_BDA_NETWORK_TUNER);
-    DisplayTuningSpaces(strm, margin, report);
-    strm << std::endl;
-    return strm;
-#undef _D_
 }
 
 

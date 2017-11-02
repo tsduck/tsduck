@@ -222,18 +222,26 @@ template <class ITERATOR>
 bool ts::UString::Save(ITERATOR begin, ITERATOR end, const std::string& fileName, bool append)
 {
     std::ofstream file(fileName.c_str(), append ? (std::ios::out | std::ios::app) : std::ios::out);
-    while (file && begin != end) {
-        file << *begin << std::endl;
-        ++begin;
-    }
+    Save(begin, end, file);
     file.close();
     return !file.fail();
 }
 
+template <class ITERATOR>
+bool ts::UString::Save(ITERATOR begin, ITERATOR end, std::ostream& strm)
+{
+    while (strm && begin != end) {
+        strm << *begin << std::endl;
+        ++begin;
+    }
+    return !strm.fail();
+}
 
-//----------------------------------------------------------------------------
-// Save strings from a container into a file, one per line.
-//----------------------------------------------------------------------------
+template <class CONTAINER>
+bool ts::UString::Save(const CONTAINER& container, std::ostream& strm)
+{
+    return Save(container.begin(), container.end(), strm);
+}
 
 template <class CONTAINER>
 bool ts::UString::Save(const CONTAINER& container, const std::string& fileName, bool append)

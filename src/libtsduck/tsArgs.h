@@ -732,6 +732,47 @@ namespace ts {
         void getBitMaskValue(INT& value, const char* name = 0, const INT& def_value = static_cast<INT>(0)) const;
 
         //!
+        //! Get the value of an enum option in the last analyzed command line.
+        //! Typically used when the option was declared using an Enumeration object.
+        //!
+        //! @tparam ENUM An enumeration type for the result.
+        //! @param [out] value A variable receiving the enum value of the option or parameter.
+        //! @param [in] name The full name of the option. If the parameter is a null pointer or
+        //! an empty string, this specifies a parameter, not an option. If the specified option
+        //! was not declared in the syntax of the command or declared as a non-string type,
+        //! a fatal error is reported.
+        //! @param [in] def_value The value to return in @a value if the option or parameter
+        //! is not present in the command line or with fewer occurences than @a index.
+        //! @param [in] index The occurence of the option to return. Zero designates the
+        //! first occurence.
+        //!
+        template <typename ENUM>
+        void getEnumValue(ENUM& value,
+                          const char* name = 0,
+                          ENUM def_value = static_cast<ENUM>(0),
+                          size_t index = 0) const;
+
+        //!
+        //! Get the value of an enum option in the last analyzed command line.
+        //! Typically used when the option was declared using an Enumeration object.
+        //!
+        //! @tparam ENUM An enumeration type for the result.
+        //! @param [in] name The full name of the option. If the parameter is a null pointer or
+        //! an empty string, this specifies a parameter, not an option. If the specified option
+        //! was not declared in the syntax of the command or declared as a non-string type,
+        //! a fatal error is reported.
+        //! @param [in] def_value The value to return if the option or parameter
+        //! is not present in the command line or with fewer occurences than @a index.
+        //! @param [in] index The occurence of the option to return. Zero designates the
+        //! first occurence.
+        //! @return The enum value of the option or parameter.
+        //!
+        template <typename ENUM>
+        ENUM enumValue(const char* name = 0,
+                       ENUM def_value = static_cast<ENUM>(0),
+                       size_t index = 0) const;
+
+        //!
         //! Exit application when errors were reported in the last analyzed command line.
         //!
         //! @param [in] force If true, ignore flag @link NO_EXIT_ON_ERROR @endlink and

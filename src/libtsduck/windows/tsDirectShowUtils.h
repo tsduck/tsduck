@@ -40,7 +40,7 @@ namespace ts {
     //!
     //! Flags for DirectShow filter pin selections (Windows-specific).
     //! Bit masks allowed.
-    ///!
+    //!
     enum DirectShowPinFilter {
         xPIN_CONNECTED   = 0x01,   //!< Filter connected pins.
         xPIN_UNCONNECTED = 0x02,   //!< Filter unconnected pins.
@@ -54,7 +54,7 @@ namespace ts {
     //!
     //! Vector of COM pointers to IPin interfaces (Windows-specific).
     //!
-    typedef std::vector<ComPtr <::IPin>> PinPtrVector;
+    typedef std::vector<ComPtr<::IPin>> PinPtrVector;
 
     //!
     //! Get the list of pins on a DirectShow filter (Windows-specific).
@@ -97,61 +97,6 @@ namespace ts {
     TSDUCKDLL bool CleanupDownstream(::IGraphBuilder* graph, ::IBaseFilter* filter, ReportInterface& report);
 
     //!
-    //! Display the description of a DirectShow filter graph (Windows-specific).
-    //! @param [in,out] strm Output text stream.
-    //! @param [in] filter Start the graph description at this DirectShow filter.
-    //! @param [in] margin Left margin to display.
-    //! @param [in] verbose If true, display more verbose information.
-    //! @param [in,out] report Where to report errors.
-    //! @return True on success, false on error.
-    //!
-    TSDUCKDLL bool DisplayFilterGraph(std::ostream& strm,
-                                      const ComPtr<::IBaseFilter>& filter,
-                                      const std::string& margin,
-                                      bool verbose,
-                                      ReportInterface& report);
-
-    //!
-    //! Display the description of a DirectShow filter graph (Windows-specific).
-    //! @param [in,out] strm Output text stream.
-    //! @param [in] graph DirectShow graph builder. Start the graph description
-    //! at one arbitray input filter (one with no connected input pin) in the graph.
-    //! @param [in] margin Left margin to display.
-    //! @param [in] verbose If true, display more verbose information.
-    //! @param [in,out] report Where to report errors.
-    //! @return True on success, false on error.
-    //!
-    TSDUCKDLL bool DisplayFilterGraph(std::ostream& strm,
-                                      const ComPtr<::IGraphBuilder>& graph,
-                                      const std::string& margin,
-                                      bool verbose,
-                                      ReportInterface& report);
-
-    //!
-    //! Display all devices of the specified category (Windows-specific).
-    //! @param [in,out] strm Output text stream.
-    //! @param [in] category Category of the devices to display.
-    //! @param [in] margin Left margin to display.
-    //! @param [in] name Name of the category to display.
-    //! @param [in,out] report Where to report errors.
-    //! @return True on success, false on error.
-    //!
-    TSDUCKDLL bool DisplayDevicesByCategory(std::ostream& strm,
-                                            const ::GUID& category,
-                                            const std::string& margin,
-                                            const std::string& name,
-                                            ReportInterface& report);
-
-    //!
-    //! Display all DirectShow tuning spaces (Windows-specific).
-    //! @param [in,out] strm Output text stream.
-    //! @param [in] margin Left margin to display.
-    //! @param [in,out] report Where to report errors.
-    //! @return True on success, false on error.
-    //!
-    TSDUCKDLL bool DisplayTuningSpaces(std::ostream& strm, const std::string& margin, ReportInterface& report);
-
-    //!
     //! Translate a DirectShow network provider class id into a TSDuck tuner type (Windows-specific).
     //! @param [in] provider_clsid DirectShow network provider class.
     //! @param [out] tuner_type Returned TSDuck tuner type.
@@ -186,6 +131,14 @@ namespace ts {
     //! @return Tuning space name or an empty string on error.
     //!
     TSDUCKDLL std::string GetTuningSpaceUniqueName(::ITuningSpace* tuning, ReportInterface& report);
+
+    //!
+    //! Get full description of a DirectShow tuning space (Windows-specific).
+    //! @param [in] tuning Tuning space.
+    //! @param [in,out] report Where to report errors.
+    //! @return Tuning description or an empty string on error.
+    //!
+    TSDUCKDLL std::string GetTuningSpaceDescription(::ITuningSpace* tuning, ReportInterface& report);
 
     //!
     //! Get the name for a DirectShow @c DVBSystemType value (Windows-specific).

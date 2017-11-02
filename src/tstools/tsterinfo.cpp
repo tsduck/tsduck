@@ -193,14 +193,15 @@ Options::Options(int argc, char *argv[]) :
     hf_offset      = intValue<int>("offset-count", 0);
     bitrate        = intValue<ts::BitRate>("bitrate", 0);
     max_guess      = intValue<ts::BitRate>("max-guess", 1);
-    constellation  = ts::Modulation(intValue<int>("constellation", ts::QAM_64));
-    fec_hp         = ts::InnerFEC(intValue<int>("high-priority-fec", ts::FEC_AUTO));
-    guard_interval = ts::GuardInterval(intValue<int>("guard-interval", ts::GUARD_AUTO));
-    bandwidth      = ts::BandWidth(intValue<int>("bandwidth", ts::BW_8_MHZ));
+    constellation  = enumValue("constellation", ts::QAM_64);
+    fec_hp         = enumValue("high-priority-fec", ts::FEC_AUTO);
+    guard_interval = enumValue("guard-interval", ts::GUARD_AUTO);
+    bandwidth      = enumValue("bandwidth", ts::BW_8_MHZ);
     simple         = present("simple");
 
     if ((fec_hp == ts::FEC_AUTO && guard_interval != ts::GUARD_AUTO) ||
-        (fec_hp != ts::FEC_AUTO && guard_interval == ts::GUARD_AUTO)) {
+        (fec_hp != ts::FEC_AUTO && guard_interval == ts::GUARD_AUTO))
+    {
         error("specify either both --guard-interval and --high-priority-fec value or none");
     }
 
