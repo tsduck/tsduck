@@ -49,7 +49,7 @@ TSDUCK_SOURCE;
 bool ts::GetPin(PinPtrVector& result, ::IBaseFilter* filter, int flags, ReportInterface& report)
 {
     // Clear result vector (explicitely nullify previous values to release objects)
-    ComVectorClear(result);
+    result.clear();
 
     // If neither input nor output, neither connected nor unconnected, nothing to search.
     if ((flags & (xPIN_INPUT | xPIN_OUTPUT)) == 0 || (flags & (xPIN_CONNECTED | xPIN_UNCONNECTED)) == 0) {

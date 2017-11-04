@@ -172,10 +172,10 @@ bool ts::Tuner::close(ReportInterface& report)
     _tuning_space_fname.clear();
     _tuning_space_uname.clear();
     _tuner_filter.release();
-    ComVectorClear(_demods);
-    ComVectorClear(_demods2);
-    ComVectorClear(_sigstats);
-    ComVectorClear(_tunprops);
+    _demods.clear();
+    _demods2.clear();
+    _sigstats.clear();
+    _tunprops.clear();
     return true;
 }
 
@@ -1324,10 +1324,10 @@ bool ts::Tuner::buildGraph(::IMoniker* provider_moniker, ::IMoniker* tuner_monik
     }
 
     // Locate all instances of some interfaces in the tuner topology
-    ComVectorClear(_demods);
-    ComVectorClear(_demods2);
-    ComVectorClear(_sigstats);
-    ComVectorClear(_tunprops);
+    _demods.clear();
+    _demods2.clear();
+    _sigstats.clear();
+    _tunprops.clear();
 
     // Lookup all internal nodes in the BDA topology
     ComPtr<::IBDA_Topology> topology;
