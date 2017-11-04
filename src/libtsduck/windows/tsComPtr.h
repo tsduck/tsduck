@@ -33,21 +33,41 @@
 //-----------------------------------------------------------------------------
 
 #pragma once
-#include "tsComUtils.h"
 #include "tsCerrReport.h"
-#include "tsFormat.h"
+
+// #define TS_COMPTR_INSTRUMENTATION 1
+
+#if defined(TS_COMPTR_INSTRUMENTATION) && !defined(DEBUG)
+#undef TS_COMPTR_INSTRUMENTATION
+#endif
 
 namespace ts {
     //!
     //! Managed pointers for COM objects, auto-released (Windows-specific).
     //! @tparam COMCLASS A COM interface or object class.
     //!
+    //! If @c TS_COMPTR_INSTRUMENTATION is defined and the application is
+    //! compiled in debug mode, the ComPtr class produces abundant trace
+    //! messages on the standard error.
+    //!
+    //! Trace line format:
+    //! @code
+    //! [COMPTR] comaddr=refcount (@ptraddr): message
+    //! @endcode
+    //!
+    //! With:
+    //! - comaddr  : Address of the COM object.
+    //! - refcount : Current reference count on the COM object after the operation.
+    //! - ptraddr  : Address of the ComPtr object.
+    //!
     template <class COMCLASS>
     class ComPtr
     {
     private:
-        // Encapsulated pointer to COM object
-        COMCLASS* _ptr;
+#if defined(TS_COMPTR_INSTRUMENTATION)
+        mutable bool _traceCreator;  // A call to creator() has returned &_ptr and the resulting pointer was not yet traced.
+#endif
+        COMCLASS* _ptr;  // Encapsulated pointer to COM object.
 
     public:
         //!
@@ -57,23 +77,14 @@ namespace ts {
         //! @param [in] hr An @c HRESULT value, typically the returned status of the system
         //! call which created @a p.
         //!
-        ComPtr(COMCLASS* p = 0, ::HRESULT hr = S_OK) :
-            _ptr(SUCCEEDED(hr) ? p : 0)
-        {
-        }
+        ComPtr(COMCLASS* p = 0, ::HRESULT hr = S_OK);
 
         //!
         //! Copy constructor.
         //! The reference count of the COM object is incremented.
         //! @param [in] p Another ComPtr instance.
         //!
-        ComPtr(const ComPtr<COMCLASS>& p) :
-            _ptr(p.pointer())
-        {
-            if (_ptr != 0) {
-                _ptr->AddRef();
-            }
-        }
+        ComPtr(const ComPtr<COMCLASS>& p);
 
         //!
         //! Constructor using CoCreateInstance().
@@ -89,81 +100,61 @@ namespace ts {
         //! ComPtr<::ICreateDevEnum> enum_devices(::CLSID_SystemDeviceEnum, ::IID_ICreateDevEnum, report);
         //! @endcode
         //!
-        ComPtr(const ::IID& class_id, const ::IID& interface_id, ReportInterface& report = CERR) :
-            _ptr(0)
-        {
-            createInstance(class_id, interface_id, report);
-        }
+        ComPtr(const ::IID& class_id, const ::IID& interface_id, ReportInterface& report = CERR);
 
         //!
         //! Destructor.
         //! The COM object is released (its reference count is decremented).
         //!
-        ~ComPtr()
-        {
-            release();
-        }
+        ~ComPtr();
 
         //!
         //! Check if null pointer.
         //! @return True if this is a null pointer (no object).
         //!
-        bool isNull() const
-        {
-            return _ptr == 0;
-        }
+        bool isNull() const;
+
+        //!
+        //! To access a COM object pointer, without releasing it.
+        //! @return A pointer to the COM object.
+        //!
+        COMCLASS* pointer() const;
 
         //!
         //! Dereference operator.
         //! To access a COM object.
         //! @return A reference to the COM object.
         //!
-        COMCLASS& operator*() const
-        {
-            return *_ptr;
-        }
-
-        //!
-        //! To access a COM object pointer, without releasing it.
-        //! @return A pointer to the COM object.
-        //!
-        COMCLASS* pointer() const
-        {
-            return _ptr;
-        }
+        COMCLASS& operator*() const;
 
         //!
         //! Dereference operator.
         //! To access members of COM objects.
         //! @return A pointer to the COM object.
         //!
-        COMCLASS* operator->() const
-        {
-            return _ptr;
-        }
+        COMCLASS* operator->() const;
 
         //!
         //! Release previous pointer, return a receiver for new pointer.
         //! Typically used in CoCreateInstance() and COM methods returning a new COM interface.
         //! @return The address of the internal COM object pointer.
         //!
-        COMCLASS** creator()
-        {
-            release();
-            return &_ptr;
-        }
+        COMCLASS** creator();
 
         //!
         //! Release the COM object, its reference count is decremented.
         //! The pointer becomes null.
         //!
-        void release()
-        {
-            if (_ptr != 0) {
-                _ptr->Release();
-                _ptr = 0;
-            }
-        }
+        void release();
+
+        //!
+        //! Get the reference count to the object.
+        //! WARNING: This should be used for test or debug purpose only.
+        //! Since there is no direct way to get the reference count of a COM object,
+        //! we perform an AddRef / Release operation. The reference count is returned by Release().
+        //! @return The reference count for the object or zero if this is a null pointer.
+        //!
+        int refCount() const;
 
         //!
         //! Assignment from a ComPtr to a subclass.
@@ -173,15 +164,7 @@ namespace ts {
         //! @return A reference to this object.
         //!
         template <class COMSUBCLASS>
-        ComPtr<COMCLASS>& assign(const ComPtr<COMSUBCLASS>& p)
-        {
-            release();
-            _ptr = p.pointer();
-            if (_ptr != 0) {
-                _ptr->AddRef();
-            }
-            return *this;
-        }
+        ComPtr<COMCLASS>& assign(const ComPtr<COMSUBCLASS>& p);
 
         //!
         //! Assignment operator.
@@ -189,13 +172,7 @@ namespace ts {
         //! @param [in] p A ComPtr to a COM object.
         //! @return A reference to this object.
         //!
-        ComPtr<COMCLASS>& operator=(const ComPtr<COMCLASS>& p)
-        {
-            if (&p != this) {
-                assign(p);
-            }
-            return *this;
-        }
+        ComPtr<COMCLASS>& operator=(const ComPtr<COMCLASS>& p);
 
         //!
         //! Assignment operator from a COM object pointer.
@@ -203,12 +180,7 @@ namespace ts {
         //! @param [in] p Address of a COM object. Can be null.
         //! @return A reference to this object.
         //!
-        ComPtr<COMCLASS>& operator=(COMCLASS* p)
-        {
-            release();
-            _ptr = p;
-            return *this;
-        }
+        ComPtr<COMCLASS>& operator=(COMCLASS* p);
 
         //!
         //! Assign using CoCreateInstance().
@@ -220,19 +192,7 @@ namespace ts {
         //! @param [in] report Where to report errors.
         //! @return A reference to this object.
         //!
-        ComPtr<COMCLASS>& createInstance(const ::IID& class_id, const ::IID& interface_id, ReportInterface& report = CERR)
-        {
-            release();
-            ::HRESULT hr = ::CoCreateInstance(class_id,               // Class ID for object
-                                              NULL,                   // Not part of an aggregate
-                                              ::CLSCTX_INPROC_SERVER, // Object "runs" in same process
-                                              interface_id,           // ID of interface we request
-                                              (void**)&_ptr);         // Returned pointer to interface
-            if (!ComSuccess(hr, "CoCreateInstance", report)) {
-                _ptr = 0;
-            }
-            return *this;
-        }
+        ComPtr<COMCLASS>& createInstance(const ::IID& class_id, const ::IID& interface_id, ReportInterface& report = CERR);
 
         //!
         //! Assign using IUnknown::QueryInterface
@@ -244,16 +204,7 @@ namespace ts {
         //! @param [in] report Where to report errors.
         //! @return A reference to this object.
         //!
-        ComPtr<COMCLASS>& queryInterface(::IUnknown* obj, const IID& interface_id, ReportInterface& report = CERR)
-        {
-            release();
-            assert(obj != 0);
-            ::HRESULT hr = obj->QueryInterface(interface_id, (void**)&_ptr);
-            if (!ComSuccess(hr, "IUnknown::QueryInterface", report)) {
-                _ptr = 0;
-            }
-            return *this;
-        }
+        ComPtr<COMCLASS>& queryInterface(::IUnknown* obj, const IID& interface_id, ReportInterface& report = CERR);
 
         //!
         //! Assign using IMoniker::BindToObject
@@ -265,70 +216,22 @@ namespace ts {
         //! @param [in] report Where to report errors.
         //! @return A reference to this object.
         //!
-        ComPtr<COMCLASS>& bindToObject(::IMoniker* moniker, const IID& interface_id, ReportInterface& report = CERR)
-        {
-            release();
-            assert(moniker != 0);
-            ::HRESULT hr = moniker->BindToObject(0,               // No cached context
-                                                 0,               // Not part of a composite
-                                                 interface_id,    // ID of interface we request
-                                                 (void**)&_ptr);  // Returned pointer to interface
-            if (!ComSuccess(hr, "IMoniker::BindToObject", report)) {
-                _ptr = 0;
-            }
-            return *this;
-        }
+        ComPtr<COMCLASS>& bindToObject(::IMoniker* moniker, const IID& interface_id, ReportInterface& report = CERR);
 
         //!
         //! Check if the object exposes an interface.
         //! @param [in] iid Id of the interface we request in the object.
         //! @return True if the object exposes the @a iid interface.
         //!
-        bool expose(const ::IID& iid) const
-        {
-            return ComExpose(_ptr, iid);
-        }
+        bool expose(const ::IID& iid) const;
 
         //!
         //! Get the "class name" (formatted GUID) of this object.
         //! Warning: Very slow, eat CPU time, use with care.
         //! @return A formatted GUID or an empty string on error or if the object does not expose IPersist interface.
         //!
-        std::string className() const
-        {
-            ::GUID guid(GUID_NULL);
-            ::IPersist* persist;
-            if (_ptr != 0 && SUCCEEDED(_ptr->QueryInterface(::IID_IPersist, (void**)&persist))) {
-                persist->GetClassID(&guid);
-                persist->Release();
-            }
-            return guid == GUID_NULL ? "" : NameGUID(guid);
-        }
+        std::string className() const;
     };
-
-    //!
-    //! Release all COM objects in a vector (Windows-specific).
-    //! Keep vector size (all elements become null pointers).
-    //! @tparam COMCLASS A COM interface or object class.
-    //! @param [in,out] vec A vector of COM objects to release.
-    //!
-    template <class COMCLASS>
-    void ComVectorRelease(std::vector<ComPtr<COMCLASS>>& vec)
-    {
-        for (std::vector<ComPtr<COMCLASS>>::iterator it = vec.begin(); it != vec.end(); ++it) {
-            it->release();
-        }
-    }
-
-    //!
-    //! Release all COM objects in a vector and clear the vector (Windows-specific).
-    //! @tparam COMCLASS A COM interface or object class.
-    //! @param [in,out] vec A vector of COM objects to release.
-    //!
-    template <class COMCLASS>
-    void ComVectorClear(std::vector<ComPtr<COMCLASS>>& vec)
-    {
-        ComVectorRelease(vec);
-        vec.clear();
-    }
 }
+
+#include "tsComPtrTemplate.h"

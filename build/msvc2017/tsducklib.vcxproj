@@ -296,6 +296,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsXMLTables.h" />
     <ClInclude Include="..\..\src\libtsduck\windows\tsComIds.h" />
     <ClInclude Include="..\..\src\libtsduck\windows\tsComPtr.h" />
+    <ClInclude Include="..\..\src\libtsduck\windows\tsComPtrTemplate.h" />
     <ClInclude Include="..\..\src\libtsduck\windows\tsComUtils.h" />
     <ClInclude Include="..\..\src\libtsduck\windows\tsDirectShowTest.h" />
     <ClInclude Include="..\..\src\libtsduck\windows\tsDirectShowUtils.h" />
