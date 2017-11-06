@@ -920,6 +920,9 @@
     <ClInclude Include="..\..\src\libtsduck\windows\tsComPtrTemplate.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\libtsduck\windows\tsDirectShowFilterCategory.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\libtsduck\tsAbstractAVCAccessUnit.cpp">
@@ -1580,6 +1583,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\libtsduck\windows\tsDirectShowTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\libtsduck\windows\tsDirectShowFilterCategory.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

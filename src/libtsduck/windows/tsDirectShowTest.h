@@ -137,12 +137,6 @@ namespace ts {
         std::ostream&    _output;
         ReportInterface& _report;
 
-        // A map of instances of DirectShow filters, indexed by name.
-        typedef std::map<std::string, ComPtr<::IBaseFilter>> NameFilterMap;
-
-        // Build an instance of all filters of the specified category.
-        bool getAllFiltersInstance(const ::GUID& category, NameFilterMap& filters);
-
         // Get an enumerator for all tuning spaces.
         bool getAllTuningSpaces(ComPtr<::ITuningSpaceContainer>& tsContainer, ComPtr<::IEnumTuningSpaces>& tsEnum);
 
