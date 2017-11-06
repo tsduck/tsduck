@@ -29,6 +29,7 @@
 
 #include "tsDirectShowTest.h"
 #include "tsDirectShowUtils.h"
+#include "tsDirectShowFilterCategory.h"
 #include "tsMediaTypeUtils.h"
 #include "tsStringUtils.h"
 #include "tsNullReport.h"
@@ -83,22 +84,20 @@ void ts::DirectShowTest::runTest(TestType type)
 void ts::DirectShowTest::testTuningSpaces(const std::string& margin)
 {
     // Build an instance of all network providers.
-    NameFilterMap filters;
-    if (!getAllFiltersInstance(KSCATEGORY_BDA_NETWORK_PROVIDER, filters)) {
+    DirectShowFilterCategory filters(_report);
+    if (!filters.getAllFiltersInstance(KSCATEGORY_BDA_NETWORK_PROVIDER)) {
         return;
     }
 
     // Loop on all network providers.
-    for (NameFilterMap::iterator it = filters.begin(); it != filters.end(); ++it) {
+    for (size_t index = 0; index < filters.size(); ++index) {
 
         // Characteristics of this network provider.
-        const std::string& provider_name(it->first);
-        ComPtr<::IBaseFilter>& provider(it->second);
-        _output << std::endl << margin << "=== Testing \"" << provider_name << "\"" << std::endl << std::endl;
+        _output << std::endl << margin << "=== Testing \"" << filters.name(index) << "\"" << std::endl << std::endl;
 
         // Get tuner interface of this network provider.
         ComPtr<::ITuner> tuner;
-        tuner.queryInterface(provider.pointer(), ::IID_ITuner, _report);
+        tuner.queryInterface(filters.filter(index).pointer(), ::IID_ITuner, _report);
         if (tuner.isNull()) {
             // No tuner interface, skip this network provider.
             _output << margin << "  No ITuner interface" << std::endl;
@@ -160,62 +159,15 @@ void ts::DirectShowTest::testTuningSpaces(const std::string& margin)
 
 void ts::DirectShowTest::enumerateDevices(const std::string& margin)
 {
-#define _D_(cat) displayDevicesByCategory(cat, #cat, margin)
-    _D_(KSCATEGORY_BDA_NETWORK_PROVIDER);
-    _D_(KSCATEGORY_BDA_TRANSPORT_INFORMATION);
-    _D_(KSCATEGORY_CAPTURE);
-    //  _D_(KSCATEGORY_SPLITTER);
-    _D_(KSCATEGORY_TVTUNER);
-    _D_(KSCATEGORY_BDA_RECEIVER_COMPONENT);
-    _D_(KSCATEGORY_BDA_NETWORK_TUNER);
-#undef _D_
-
+    displayDevicesByCategory(KSCATEGORY_CAPTURE, "CAPTURE", margin);
+    displayDevicesByCategory(KSCATEGORY_SPLITTER, "SPLITTER", margin);
+    displayDevicesByCategory(KSCATEGORY_TVTUNER, "TVTUNER", margin);
+    displayDevicesByCategory(KSCATEGORY_BDA_NETWORK_PROVIDER, "BDA_NETWORK_PROVIDER", margin);
+    displayDevicesByCategory(KSCATEGORY_BDA_TRANSPORT_INFORMATION, "BDA_TRANSPORT_INFORMATION", margin);
+    displayDevicesByCategory(KSCATEGORY_BDA_RECEIVER_COMPONENT, "BDA_RECEIVER_COMPONENT", margin);
+    displayDevicesByCategory(KSCATEGORY_BDA_NETWORK_TUNER, "BDA_NETWORK_TUNER", margin);
     displayTuningSpaces(margin);
     _output << std::endl;
-}
-
-
-//-----------------------------------------------------------------------------
-// Build an instance of all filters of the specified category.
-//-----------------------------------------------------------------------------
-
-bool ts::DirectShowTest::getAllFiltersInstance(const ::GUID& category, NameFilterMap& filters)
-{
-    // Clear previous map content. All previous instances are released.
-    filters.clear();
-
-    // Create a DirectShow System Device Enumerator
-    ComPtr<::ICreateDevEnum> enum_devices(::CLSID_SystemDeviceEnum, ::IID_ICreateDevEnum, _report);
-    if (enum_devices.isNull()) {
-        return false;
-    }
-
-    // Enumerate all devices for this category
-    ComPtr<::IEnumMoniker> enum_moniker;
-    ::HRESULT hr = enum_devices->CreateClassEnumerator(category, enum_moniker.creator(), 0);
-    if (!ComSuccess(hr, "CreateClassEnumerator", _report)) {
-        return false;
-    }
-    if (hr != S_OK || enum_moniker.isNull()) {
-        // Empty category, not an error.
-        return true;
-    }
-
-    // Loop on all enumerated devices.
-    ComPtr<::IMoniker> device_moniker;
-    while (enum_moniker->Next(1, device_moniker.creator(), NULL) == S_OK) {
-
-        // Get friendly name of this filter.
-        const std::string name(GetStringPropertyBag(device_moniker.pointer(), L"FriendlyName", _report));
-
-        // Create an instance of this filter from moniker.
-        ComPtr<::IBaseFilter> filter;
-        filter.bindToObject(device_moniker.pointer(), ::IID_IBaseFilter, _report);
-        if (!filter.isNull()) {
-            filters.insert(std::make_pair(name, filter));
-        }
-    }
-    return true;
 }
 
 
@@ -228,25 +180,22 @@ bool ts::DirectShowTest::displayDevicesByCategory(const ::GUID& category, const 
     _output << std::endl << margin << "=== Device category " << name << std::endl;
 
     // Build an instance of all devices of this category.
-    NameFilterMap filters;
-    if (!getAllFiltersInstance(category, filters)) {
+    DirectShowFilterCategory filters(_report);
+    if (!filters.getAllFiltersInstance(category)) {
         return false;
     }
 
     // Loop on all enumerated devices.
-    for (NameFilterMap::iterator it = filters.begin(); it != filters.end(); ++it) {
+    for (size_t index = 0; index < filters.size(); ++index) {
 
         // Display characteristics of this device filter
-        const std::string& device_name(it->first);
-        ComPtr<::IBaseFilter>& filter(it->second);
-
-        _output << std::endl << margin << "device \"" << device_name << "\"" << std::endl;
-        displayObject(filter.pointer(), margin + "  ");
+        _output << std::endl << margin << "device \"" << filters.name(index) << "\"" << std::endl;
+        displayObject(filters.filter(index).pointer(), margin + "  ");
 
         // List all pins on the filter
         // Create a pin enumerator
         ComPtr<::IEnumPins> enum_pins;
-        ::HRESULT hr = filter->EnumPins(enum_pins.creator());
+        ::HRESULT hr = filters.filter(index)->EnumPins(enum_pins.creator());
         if (!ComSuccess(hr, "IBaseFilter::EnumPins", _report)) {
             return false;
         }
