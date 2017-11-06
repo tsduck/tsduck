@@ -148,11 +148,11 @@ void ts::UString::ConvertUTF8ToUTF16(const char*& inStart, const char* inEnd, UC
         // if any, match the binary pattern 10xxxxxx.
 
         if (code < 0x80) {
-            // ASCII compatible value, one byte encoding.
+            // 0xxx xxxx, ASCII compatible value, one byte encoding.
             *outStart++ = uint16_t(code);
         }
         else if ((code & 0xE0) == 0xC0) {
-            // 2 byte encoding.
+            // 110x xxx, 2 byte encoding.
             if (inStart >= inEnd) {
                 // Invalid truncated input string, stop here.
                 break;
@@ -162,9 +162,10 @@ void ts::UString::ConvertUTF8ToUTF16(const char*& inStart, const char* inEnd, UC
             }
         }
         else if ((code & 0xF0) == 0xE0) {
-            // 3 byte encoding.
+            // 1110 xxxx, 3 byte encoding.
             if (inStart + 1 >= inEnd) {
                 // Invalid truncated input string, stop here.
+                inStart = inEnd;
                 break;
             }
             else {
@@ -173,9 +174,10 @@ void ts::UString::ConvertUTF8ToUTF16(const char*& inStart, const char* inEnd, UC
             }
         }
         else if ((code & 0xF8) == 0xF0) {
-            // 4 byte encoding.
+            // 1111 0xxx, 4 byte encoding.
             if (inStart + 2 >= inEnd) {
                 // Invalid truncated input string, stop here.
+                inStart = inEnd;
                 break;
             }
             else if (outStart + 1 >= outEnd) {
@@ -192,8 +194,9 @@ void ts::UString::ConvertUTF8ToUTF16(const char*& inStart, const char* inEnd, UC
             }
         }
         else {
-            // This is a continuation byte, invalid here, simply ignore it.
-            assert((code & 0xC0) == 0x80);
+            // 10xx xxxx, continuation byte, invalid here, simply ignore it.
+            // 1111 1xxx, an invalid UTF-8 value, ignore as well.
+            assert((code & 0xC0) == 0x80 || (code & 0xF8) == 0xF8);
         }
     }
 }
