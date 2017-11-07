@@ -40,7 +40,6 @@
 #include "tsNullReport.h"
 #include "tsSysUtils.h"
 #include "tsDirectShowUtils.h"
-#include "tsDirectShowTest.h"
 #include "tsComUtils.h"
 #include "tsComPtr.h"
 #include "tsDecimal.h"
@@ -51,11 +50,6 @@ TSDUCK_SOURCE;
 const ts::MilliSecond ts::Tuner::DEFAULT_SIGNAL_TIMEOUT;
 const size_t ts::Tuner::DEFAULT_SINK_QUEUE_SIZE;
 #endif
-
-// Put the value of a property (named "type") into a COM object.
-// Report errors through a variable named report (must be accessible).
-// Return true on success, false on error.
-#define PUT(obj,type,value) ComSuccess ((obj)->put_##type (value), "error setting " #type, report)
 
 
 //-----------------------------------------------------------------------------
@@ -84,7 +78,6 @@ ts::Tuner::Tuner(const std::string& device_name) :
     _delivery_systems(),
     _sink_queue_size(DEFAULT_SINK_QUEUE_SIZE),
     _graph(),
-    _media_control(),
     _sink_filter(),
     _provider_filter(),
     _provider_name(),
@@ -161,8 +154,7 @@ bool ts::Tuner::close(ReportInterface& report)
     _is_open = false;
     _device_name.clear();
     _device_info.clear();
-    _graph.release();
-    _media_control.release();
+    _graph.clear(report);
     _sink_filter.release();
     _provider_filter.release();
     _provider_name.clear();
@@ -548,273 +540,14 @@ bool ts::Tuner::internalTune(const TunerParameters& params, ReportInterface& rep
 
     // Create a DirectShow tune request
     ComPtr<::ITuneRequest> tune_request;
-    assert(!_tuning_space.isNull());
-    ::HRESULT hr = _tuning_space->CreateTuneRequest(tune_request.creator());
-    if (!ComSuccess(hr, "cannot create DirectShow tune request", report)) {
+    if (!CreateTuneRequest(tune_request, _tuning_space.pointer(), params, report)) {
         return false;
     }
     assert(!tune_request.isNull());
 
-    // Extract DVB interface of tune request and set ids to wildcards
-    ComPtr<::IDVBTuneRequest> dvb_request;
-    dvb_request.queryInterface(tune_request.pointer(), ::IID_IDVBTuneRequest, report);
-    if (!dvb_request.isNull() &&
-        (!PUT(dvb_request, ONID, -1) ||
-         !PUT(dvb_request, TSID, -1) ||
-         !PUT(dvb_request, SID, -1))) {
-        return false;
-    }
-
-    // Create a locator (where to find the physical TS, ie. tuning params).
-    ComPtr<::IDigitalLocator> locator;
-    switch (_tuner_type) {
-
-        case DVB_S: {
-            const TunerParametersDVBS* tpp = dynamic_cast<const TunerParametersDVBS*>(&params);
-            assert(tpp != 0);
-            if (!createLocatorDVBS(locator, *tpp, report)) {
-                return false;
-            }
-            break;
-        }
-
-        case DVB_T: {
-            const TunerParametersDVBT* tpp = dynamic_cast<const TunerParametersDVBT*>(&params);
-            assert(tpp != 0);
-            if (!createLocatorDVBT(locator, *tpp, report)) {
-                return false;
-            }
-            break;
-        }
-
-        case DVB_C: {
-            const TunerParametersDVBC* tpp = dynamic_cast<const TunerParametersDVBC*>(&params);
-            assert(tpp != 0);
-            if (!createLocatorDVBC(locator, *tpp, report)) {
-                return false;
-            }
-            break;
-        }
-
-        default: {
-            report.error("cannot convert " + TunerTypeEnum.name(_tuner_type) + " parameters to DirectShow tuning parameters");
-            return false;
-        }
-    }
-
-    // Set the locator in the tune request
-    if (!locator.isNull()) {
-        hr = tune_request->put_Locator(locator.pointer());
-        if (!ComSuccess(hr, "ITuneRequest::put_Locator", report)) {
-            return false;
-        }
-    }
-
     // Tune to transponder
-    hr = _tuner->put_TuneRequest(tune_request.pointer());
+    ::HRESULT hr = _tuner->put_TuneRequest(tune_request.pointer());
     return ComSuccess(hr, "DirectShow tuning error", report);
-}
-
-
-//-----------------------------------------------------------------------------
-// Create an IDigitalLocator object for DVB-T parameters
-// Return true on success, false on errors
-//-----------------------------------------------------------------------------
-
-bool ts::Tuner::createLocatorDVBT(ComPtr<::IDigitalLocator>& locator,
-                                  const TunerParametersDVBT& params,
-                                  ReportInterface& report)
-{
-    ComPtr<::IDVBTLocator> loc(CLSID_DVBTLocator, ::IID_IDVBTLocator, report);
-
-    if (loc.isNull() ||
-        !CheckModEnum(params.inversion, "spectral inversion", SpectralInversionEnum, report) ||
-        !CheckModEnum(params.bandwidth, "bandwidth", BandWidthEnum, report) ||
-        !CheckModEnum(params.fec_hp, "FEC", InnerFECEnum, report) ||
-        !CheckModEnum(params.fec_lp, "FEC", InnerFECEnum, report) ||
-        !CheckModEnum(params.modulation, "constellation", ModulationEnum, report) ||
-        !CheckModEnum(params.transmission_mode, "transmission mode", TransmissionModeEnum, report) ||
-        !CheckModEnum(params.guard_interval, "guard interval", GuardIntervalEnum, report) ||
-        !CheckModEnum(params.hierarchy, "hierarchy", HierarchyEnum, report) ||
-        !PUT(loc, CarrierFrequency, long(params.frequency / 1000)) ||  // frequency in kHz
-        !PUT(loc, Modulation, ::ModulationType(params.modulation)) ||
-        !PUT(loc, Bandwidth, long(params.bandwidth)) ||
-        !PUT(loc, Guard, ::GuardInterval(params.guard_interval)) ||
-        !PUT(loc, LPInnerFEC, ::BDA_FEC_VITERBI) ||
-        !PUT(loc, LPInnerFECRate, ::BinaryConvolutionCodeRate(params.fec_lp)) ||
-        !PUT(loc, Mode, ::TransmissionMode(params.transmission_mode)) ||
-        !PUT(loc, HAlpha, ::HierarchyAlpha(params.hierarchy)))
-    {
-        return false;
-    }
-
-    // Pending questions:
-    // - Shall we call loc->put_OtherFrequencyInUse ? Documented as
-    //   "specifies whether the frequency is being used by another
-    //   DVB-T broadcaster". No idea what this means...
-    // - No way to set params.inversion and params.fec_hp in IDVBTLocator
-
-    locator.assign(loc);
-    return true;
-}
-
-
-//-----------------------------------------------------------------------------
-// Create an IDigitalLocator object for DVB-C parameters
-// Return true on success, false on errors
-//-----------------------------------------------------------------------------
-
-bool ts::Tuner::createLocatorDVBC(ComPtr<::IDigitalLocator>& locator,
-                                  const TunerParametersDVBC& params,
-                                  ReportInterface& report)
-{
-    ComPtr<::IDVBCLocator> loc(CLSID_DVBCLocator, ::IID_IDVBCLocator, report);
-
-    if (loc.isNull() ||
-        !CheckModEnum(params.inversion, "spectral inversion", SpectralInversionEnum, report) ||
-        !CheckModEnum(params.inner_fec, "FEC", InnerFECEnum, report) ||
-        !CheckModEnum(params.modulation, "modulation", ModulationEnum, report) ||
-        !PUT(loc, CarrierFrequency, long(params.frequency / 1000)) ||  // frequency in kHz
-        !PUT(loc, Modulation, ::ModulationType(params.modulation)) ||
-        !PUT(loc, InnerFEC, ::BDA_FEC_VITERBI) ||
-        !PUT(loc, InnerFECRate, ::BinaryConvolutionCodeRate(params.inner_fec)) ||
-        !PUT(loc, SymbolRate, long(params.symbol_rate)))
-    {
-        return false;
-    }
-
-    // Pending questions:
-    // - No way to set params.inversion in IDVBCLocator
-
-    locator.assign(loc);
-    return true;
-}
-
-
-//-----------------------------------------------------------------------------
-// Create an IDigitalLocator object for DVB-S/S2 parameters
-// Return true on success, false on errors
-//-----------------------------------------------------------------------------
-
-bool ts::Tuner::createLocatorDVBS(ComPtr<::IDigitalLocator>& locator,
-                                  const TunerParametersDVBS& params,
-                                  ReportInterface& report)
-{
-    // Microsoft oddity, part 1...
-    // The locator interface for DVB-S is IDVBSLocator. However, this interface did
-    // not implement LNB control and DVB-S2. Starting with Windows 7, a new interface
-    // IDVBSLocator2 is introduced to support LNB control and DVB-S2. However, unlike
-    // all other locator interfaces, CLSID_DVBSLocator2 is not defined anywhere, not
-    // in tuner.h and not even in the Windows 7 registry. So, since IDVBSLocator2 is
-    // a subinterface of IDVBSLocator, we create an object of class CLSID_DVBSLocator
-    // and we hope that on Windows 7 this object will also implement IDVBSLocator2.
-    // So, beware that loc may be valid while loc2 can be null (typically before Windows 7).
-
-    ComPtr<::IDVBSLocator> loc(CLSID_DVBSLocator, ::IID_IDVBSLocator, report);
-    if (loc.isNull()) {
-        return false;
-    }
-
-    ComPtr<::IDVBSLocator2> loc2;
-    loc2.queryInterface(loc.pointer(), ::IID_IDVBSLocator2, NULLREP);
-    report.debug("IDVBSLocator = %" FMT_INT64 "d, IDVBSLocator2 = %" FMT_INT64 "d", uint64_t(loc.pointer()), uint64_t(loc2.pointer()));
-
-    // Microsoft oddity, part 2...
-    // Unlike other modulations, with pre-Windows 7 systems, some of the DVB-S
-    // parameters must be set in the tuning space (IDVBSTuningSpace interface)
-    // and not in the locator (IDVBSLocator interface). However, Microsoft seemed
-    // to understand the mistake in Windows 7 and finally added these parameters
-    // in IDVBSLocator2.
-
-    if (loc2.isNull()) {
-
-        // No IDVBSLocator2 support, using tuning space for LNB control
-        ComPtr<::IDVBSTuningSpace> stspace;
-        stspace.queryInterface(_tuning_space.pointer(), ::IID_IDVBSTuningSpace, report);
-        if (stspace.isNull() ||
-            !CheckModEnum(params.inversion, "spectral inversion", SpectralInversionEnum, report) ||
-            !PUT(stspace, SpectralInversion, ::SpectralInversion(params.inversion)) ||
-            !PUT(stspace, LowOscillator, long(params.lnb.lowFrequency() / 1000)) ||    // frequency in kHz
-            !PUT(stspace, HighOscillator, long(params.lnb.highFrequency() / 1000)) ||  // frequency in kHz
-            !PUT(stspace, LNBSwitch, long(params.lnb.switchFrequency() / 1000)))       // frequency in kHz
-        {
-            return false;
-        }
-
-        // Without IDVBSLocator2, there is no standard way to specify the DiSEqC satellite
-        // number. Some BDA drivers use the generic InputRange property of the tuning space
-        // to get the satellite number, but it is not guaranteed to work. So, we try but
-        // it may not work with some devices.
-        char satnum_str[80];
-        ::snprintf(satnum_str, sizeof(satnum_str), "%" FMT_SIZE_T "d", params.satellite_number);
-        satnum_str[sizeof(satnum_str) - 1] = '\0';
-        report.debug("setting IDVBSTuningSpace.InputRange to %s", satnum_str);
-        ::BSTR satnum_bstr = _com_util::ConvertStringToBSTR(satnum_str);
-        const bool satnum_ok = PUT(stspace, InputRange, satnum_bstr);
-        ::SysFreeString(satnum_bstr);
-        if (!satnum_ok) {
-            return false;
-        }
-    }
-    else {
-
-        // IDVBSLocator2 is supported, use locator.
-        if (!PUT(loc2, LocalSpectralInversionOverride, ::SpectralInversion(params.inversion)) ||
-            !PUT(loc2, LocalOscillatorOverrideLow, long(params.lnb.lowFrequency() / 1000)) ||    // frequency in kHz
-            !PUT(loc2, LocalOscillatorOverrideHigh, long(params.lnb.highFrequency() / 1000)) ||  // frequency in kHz
-            !PUT(loc2, LocalLNBSwitchOverride, long(params.lnb.switchFrequency() / 1000)))       // frequency in kHz
-        {
-            return false;
-        }
-
-        // Specify DiSEqC satellite number.
-        // Note however that most drivers ignore it...
-        ::LNB_Source source (::BDA_LNB_SOURCE_NOT_SET);
-        switch (params.satellite_number) {
-            case 0: source = ::BDA_LNB_SOURCE_A; break;
-            case 1: source = ::BDA_LNB_SOURCE_B; break;
-            case 2: source = ::BDA_LNB_SOURCE_C; break;
-            case 3: source = ::BDA_LNB_SOURCE_D; break;
-        }
-        if (source != ::BDA_LNB_SOURCE_NOT_SET) {
-            report.debug("setting IDVBSLocator2.DiseqLNBSource to %d", int(source));
-            if (!PUT(loc2, DiseqLNBSource, source)) {
-                return false;
-            }
-        }
-    }
-
-    // Common modulation parameters
-    if (!CheckModEnum(params.modulation, "modulation", ModulationEnum, report) ||
-        !CheckModEnum(params.inner_fec, "FEC", InnerFECEnum, report) ||
-        !CheckModEnum(params.polarity, "polarity", PolarizationEnum, report) ||
-        !PUT(loc, CarrierFrequency, long(params.frequency / 1000)) ||              // frequency in kHz
-        !PUT(loc, Modulation, ::ModulationType(params.modulation)) ||
-        !PUT(loc, SignalPolarisation, ::Polarisation(params.polarity)) ||
-        !PUT(loc, InnerFEC, ::BDA_FEC_VITERBI) ||
-        !PUT(loc, InnerFECRate, ::BinaryConvolutionCodeRate(params.inner_fec)) ||
-        !PUT(loc, SymbolRate, long(params.symbol_rate)))
-    {
-        return false;
-    }
-
-    // DVB-S2 specific parameters
-    if (params.delivery_system == DS_DVB_S2) {
-        if (loc2.isNull()) {
-            report.error("DVB-S2 is not supported on this system, requires Windows 7 and a DVB-S2 tuner");
-            return false;
-        }
-        if (!CheckModEnum(params.pilots, "pilot", PilotEnum, report) ||
-            !CheckModEnum(params.roll_off, "roll-off factor", RollOffEnum, report) ||
-            !PUT(loc2, SignalPilot, ::Pilot(params.pilots)) ||
-            !PUT(loc2, SignalRollOff, ::RollOff(params.roll_off)))
-        {
-            return false;
-        }
-    }
-
-    locator.assign(loc); // loc and loc2 are two interfaces of the same object
-    return true;
 }
 
 
@@ -830,12 +563,11 @@ bool ts::Tuner::start(ReportInterface& report)
         return false;
     }
 
-    // Set media samples queue size
+    // Set media samples queue size.
     _sink_filter->SetMaxMessages(_sink_queue_size);
 
-    // Run the graph
-    ::HRESULT hr = _media_control->Run();
-    if (!ComSuccess(hr, "cannot start DirectShow graph", report)) {
+    // Run the graph.
+    if (!_graph.run(report)) {
         return false;
     }
 
@@ -868,24 +600,7 @@ bool ts::Tuner::start(ReportInterface& report)
 
 bool ts::Tuner::stop(ReportInterface& report)
 {
-    if (!_is_open) {
-        report.error("DVB tuner not open");
-        return false;
-    }
-
-    // Get graph state
-    ::OAFilterState state;
-    ::HRESULT hr = _media_control->GetState (1000, &state); // 1000 ms timeout
-    bool stopped = ComSuccess(hr, "IMediaControl::GetState", report) && state == ::State_Stopped;
-
-    // Stop the graph when necessary
-    if (stopped) {
-        return true;
-    }
-    else {
-        hr = _media_control->Stop();
-        return ComSuccess(hr, "IMediaControl::Stop", report);
-    }
+    return _is_open && _graph.stop(report);
 }
 
 
@@ -957,9 +672,7 @@ std::ostream& ts::Tuner::displayStatus(std::ostream& strm, const std::string& ma
     strm << margin << "Network provider: " << _provider_name << std::endl
          << std::endl
          << margin << "DirectShow graph:" << std::endl;
-
-    DirectShowTest ds(strm, report);
-    ds.displayFilterGraph(_graph, margin + "  ", true);
+    _graph.display(strm, report, margin + "  ", true);
 
     return strm;
 }
@@ -1201,30 +914,16 @@ bool ts::Tuner::buildGraph(::IMoniker* provider_moniker, ::IMoniker* tuner_monik
         return false;
     }
 
-    // Create the Filter Graph Manager
-    _graph.createInstance(::CLSID_FilterGraph, ::IID_IGraphBuilder, report);
-    if (_graph.isNull()) {
-        return false;
-    }
-
-    // Get required interfaces on the graph manager
-    _media_control.queryInterface(_graph.pointer(), ::IID_IMediaControl, report);
-    if (_media_control.isNull()) {
-        return false;
-    }
-
-    // Add the filters in the graph
-    hr = _graph->AddFilter(_provider_filter.pointer(), L"NetworkProvider");
-    if (!ComSuccess(hr, "IFilterGraph::AddFilter (NetworkProvider)", report)) {
-        return false;
-    }
-    hr = _graph->AddFilter(_tuner_filter.pointer(), L"Tuner");
-    if (!ComSuccess(hr, "IFilterGraph::AddFilter (Tuner)", report)) {
+    // Create the Filter Graph and add the filters.
+    if (!_graph.initialize(report) ||
+        !_graph.addFilter(_provider_filter.pointer(), L"NetworkProvider", report) ||
+        !_graph.addFilter(_tuner_filter.pointer(), L"Tuner", report))
+    {
         return false;
     }
 
     // Try to start a graph: network provider -> tuner
-    if (!ConnectFilters(_graph.pointer(), _provider_filter.pointer(), _tuner_filter.pointer(), debug_report)) {
+    if (!_graph.connectFilters(_provider_filter.pointer(), _tuner_filter.pointer(), debug_report)) {
         // Connection fails. However, this may not be significant with some
         // tuners (ie. Hauppauge WinTV Nova-HD-S2). These tuners require
         // that a tuning request shall be provided in order to allow the
@@ -1246,7 +945,7 @@ bool ts::Tuner::buildGraph(::IMoniker* provider_moniker, ::IMoniker* tuner_monik
         // Issue a tuning request, ignore errors
         internalTune(*params, debug_report);
         // Then retry to start the graph
-        if (!ConnectFilters(_graph.pointer(), _provider_filter.pointer(), _tuner_filter.pointer(), debug_report)) {
+        if (!_graph.connectFilters(_provider_filter.pointer(), _tuner_filter.pointer(), debug_report)) {
             // The tuner is not compatible with this network provider.
             // Silently give up this network provider.
             return false;
@@ -1300,15 +999,14 @@ bool ts::Tuner::buildGraph(::IMoniker* provider_moniker, ::IMoniker* tuner_monik
             }
 
             // Add the filter in the graph
-            hr = _graph->AddFilter(receiver_filter.pointer(), L"Receiver");
-            if (!ComSuccess(hr, "IFilterGraph::AddFilter (Receiver)", report)) {
+            if (!_graph.addFilter(receiver_filter.pointer(), L"Receiver", report)) {
                 continue; // give up this receiver filter
             }
 
             // Try to connect the tuner to the receiver
-            if (!ConnectFilters(_graph.pointer(), _tuner_filter.pointer(), receiver_filter.pointer(), debug_report)) {
+            if (!_graph.connectFilters(_tuner_filter.pointer(), receiver_filter.pointer(), debug_report)) {
                 // This receiver is not compatible, remove it from the graph
-                _graph->RemoveFilter(receiver_filter.pointer());
+                _graph.removeFilter(receiver_filter.pointer(), debug_report);
                 continue;
             }
 
@@ -1397,8 +1095,7 @@ bool ts::Tuner::buildCaptureGraph(const ComPtr<::IBaseFilter>& base_filter, Repo
     }
 
     // Add the tee filter to the graph
-    ::HRESULT hr = _graph->AddFilter(tee_filter.pointer(), L"Tee");
-    if (!ComSuccess(hr, "IFilterGraph::AddFilter (Tee)", report)) {
+    if (!_graph.addFilter(tee_filter.pointer(), L"Tee", report)) {
         return false;
     }
 
@@ -1406,32 +1103,28 @@ bool ts::Tuner::buildCaptureGraph(const ComPtr<::IBaseFilter>& base_filter, Repo
     // the graph needs some cleanup.
 
     // Try to connect the "base" filter (tuner or receiver) to the tee filter.
-    bool ok = ConnectFilters(_graph.pointer(), base_filter.pointer(), tee_filter.pointer(), debug_report);
+    bool ok = _graph.connectFilters(base_filter.pointer(), tee_filter.pointer(), debug_report);
 
     // Create branch A of graph: Create a sink filter, add it to the graph and connect it to the tee.
     ComPtr<SinkFilter> sink_filter(new SinkFilter(report));
-    if (ok) {
-        CheckNonNull(sink_filter.pointer());
-        hr = _graph->AddFilter(sink_filter.pointer(), L"Sink/Capture");
-        ok = ComSuccess(hr, "IFilterGraph::AddFilter (Sink)", report);
-    }
-    ok = ok && ConnectFilters(_graph.pointer(), tee_filter.pointer(), sink_filter.pointer(), debug_report);
+    CheckNonNull(sink_filter.pointer());
+    ok = ok && 
+        _graph.addFilter(sink_filter.pointer(), L"Sink/Capture", report) &&
+        _graph.connectFilters(tee_filter.pointer(), sink_filter.pointer(), debug_report);
 
     // Create branch B of graph: Create an MPEG-2 demultiplexer
     ComPtr<::IBaseFilter> demux_filter(::CLSID_MPEG2Demultiplexer, ::IID_IBaseFilter, report);
-    ok = ok && !demux_filter.isNull();
-    if (ok) {
-        hr = _graph->AddFilter(demux_filter.pointer(), L"Demux");
-        ok = ComSuccess(hr, "IFilterGraph::AddFilter (Demux)", report);
-    }
-    ok = ok && ConnectFilters(_graph.pointer(), tee_filter.pointer(), demux_filter.pointer(), debug_report);
+    ok = ok &&
+        !demux_filter.isNull() &&
+        _graph.addFilter(demux_filter.pointer(), L"Demux", report) &&
+        _graph.connectFilters(tee_filter.pointer(), demux_filter.pointer(), debug_report);
 
     // Now, we need to connect a Transport Information Filter (TIF).
     // There is no predefined CLSID for this one and we must loop on all
     // filters with category KSCATEGORY_BDA_TRANSPORT_INFORMATION
     ComPtr<::IEnumMoniker> enum_tif;
     if (ok) {
-        hr = enum_devices->CreateClassEnumerator(KSCATEGORY_BDA_TRANSPORT_INFORMATION, enum_tif.creator(), 0);
+        ::HRESULT hr = enum_devices->CreateClassEnumerator(KSCATEGORY_BDA_TRANSPORT_INFORMATION, enum_tif.creator(), 0);
         ok = ComSuccess(hr, "CreateClassEnumerator (for TIF)", report) && hr == S_OK;
     }
 
@@ -1452,19 +1145,18 @@ bool ts::Tuner::buildCaptureGraph(const ComPtr<::IBaseFilter>& base_filter, Repo
         }
 
         // Add the TIF in the graph
-        hr = _graph->AddFilter(tif_filter.pointer(), L"TIF");
-        if (!ComSuccess(hr, "IFilterGraph::AddFilter (TIF)", report)) {
+        if (!_graph.addFilter(tif_filter.pointer(), L"TIF", report)) {
             continue; // give up this TIF
         }
 
         // Try to connect demux filter to tif
-        if (ConnectFilters(_graph.pointer(), demux_filter.pointer(), tif_filter.pointer(), debug_report)) {
+        if (_graph.connectFilters(demux_filter.pointer(), tif_filter.pointer(), debug_report)) {
             tif_found = true;
             report.debug("using TIF \"" + tif_name + "\"");
         }
         else {
             // This tif is not compatible, remove it from the graph
-            _graph->RemoveFilter(tif_filter.pointer());
+            _graph.removeFilter(tif_filter.pointer(), report);
         }
     }
 
@@ -1478,19 +1170,19 @@ bool ts::Tuner::buildCaptureGraph(const ComPtr<::IBaseFilter>& base_filter, Repo
     // Cleanup the graph downstream the tuner filter.
     // This will also remove any optional receiver filter
     // between the tuner and the tee.
-    CleanupDownstream(_graph.pointer(), _tuner_filter.pointer(), debug_report);
+    _graph.cleanupDownstream(_tuner_filter.pointer(), debug_report);
 
     // Remove all created filters from the graph. Ignore errors.
     // This is necessary if a filter was created and added to the graph but
     // not connected (if connected, it was removed by CleanupDownstream).
     if (!tee_filter.isNull()) {
-        _graph->RemoveFilter(tee_filter.pointer());
+        _graph.removeFilter(tee_filter.pointer(), report);
     }
     if (!sink_filter.isNull()) {
-        _graph->RemoveFilter(sink_filter.pointer());
+        _graph.removeFilter(sink_filter.pointer(), report);
     }
     if (!demux_filter.isNull()) {
-        _graph->RemoveFilter(demux_filter.pointer());
+        _graph.removeFilter(demux_filter.pointer(), report);
     }
 
     return false;

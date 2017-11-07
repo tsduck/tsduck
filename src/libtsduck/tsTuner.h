@@ -48,6 +48,7 @@
 #endif
 
 #if defined(TS_WINDOWS) || defined(DOXYGEN)
+#include "tsDirectShowGraph.h"
 #include "tsSinkFilter.h"
 #include "tsComPtr.h"
 #endif
@@ -451,8 +452,7 @@ namespace ts {
         //   - TIF (Transport Information Filter)
 
         size_t                  _sink_queue_size;     // Media sample queue size
-        ComPtr<::IGraphBuilder> _graph;               // The graph (subclass of IFilterGraph)
-        ComPtr<::IMediaControl> _media_control;       // ... interface of graph
+        DirectShowGraph         _graph;               // The filter graph
         ComPtr<SinkFilter>      _sink_filter;         // Sink filter to TSDuck
         ComPtr<::IBaseFilter>   _provider_filter;     // Network provider filter
         std::string             _provider_name;       // ... filter friendly name
@@ -480,12 +480,6 @@ namespace ts {
         // Internal tune method, works also if the tuner is not in open state.
         // Return true on success, false on errors
         bool internalTune(const TunerParameters&, ReportInterface&);
-
-        // Create an IDigitalLocator object for various types of DVB parameters.
-        // Return true on success, false on error.
-        bool createLocatorDVBS(ComPtr<::IDigitalLocator>&, const TunerParametersDVBS&, ReportInterface&);
-        bool createLocatorDVBT(ComPtr<::IDigitalLocator>&, const TunerParametersDVBT&, ReportInterface&);
-        bool createLocatorDVBC(ComPtr<::IDigitalLocator>&, const TunerParametersDVBC&, ReportInterface&);
 
         // Get signal strength in mdB.
         // Return true if found, false if not found.

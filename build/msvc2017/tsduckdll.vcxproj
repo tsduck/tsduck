@@ -299,6 +299,7 @@
     <ClInclude Include="..\..\src\libtsduck\windows\tsComPtrTemplate.h" />
     <ClInclude Include="..\..\src\libtsduck\windows\tsComUtils.h" />
     <ClInclude Include="..\..\src\libtsduck\windows\tsDirectShowFilterCategory.h" />
+    <ClInclude Include="..\..\src\libtsduck\windows\tsDirectShowGraph.h" />
     <ClInclude Include="..\..\src\libtsduck\windows\tsDirectShowTest.h" />
     <ClInclude Include="..\..\src\libtsduck\windows\tsDirectShowUtils.h" />
     <ClInclude Include="..\..\src\libtsduck\windows\tsMediaTypeUtils.h" />
@@ -521,6 +522,7 @@
     <ClCompile Include="..\..\src\libtsduck\windows\tsComIds.cpp" />
     <ClCompile Include="..\..\src\libtsduck\windows\tsComUtils.cpp" />
     <ClCompile Include="..\..\src\libtsduck\windows\tsDirectShowFilterCategory.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\windows\tsDirectShowGraph.cpp" />
     <ClCompile Include="..\..\src\libtsduck\windows\tsDirectShowTest.cpp" />
     <ClCompile Include="..\..\src\libtsduck\windows\tsDirectShowUtils.cpp" />
     <ClCompile Include="..\..\src\libtsduck\windows\tsMediaTypeUtils.cpp" />

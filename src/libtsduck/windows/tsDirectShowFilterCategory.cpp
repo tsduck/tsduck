@@ -28,6 +28,7 @@
 //-----------------------------------------------------------------------------
 
 #include "tsDirectShowFilterCategory.h"
+TSDUCK_SOURCE;
 
 
 //-----------------------------------------------------------------------------
@@ -40,6 +41,17 @@ ts::DirectShowFilterCategory::DirectShowFilterCategory(ReportInterface& report) 
     _moniker(),
     _filters()
 {
+}
+
+
+//-----------------------------------------------------------------------------
+// Constructor from a device category.
+//-----------------------------------------------------------------------------
+
+ts::DirectShowFilterCategory::DirectShowFilterCategory(const ::GUID& category, ReportInterface& report) :
+    DirectShowFilterCategory(_report)
+{
+    getAllFiltersInstance(category);
 }
 
 

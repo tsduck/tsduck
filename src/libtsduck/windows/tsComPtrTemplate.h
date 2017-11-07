@@ -119,6 +119,22 @@ ts::ComPtr<COMCLASS>::ComPtr(const ::IID& class_id, const ::IID& interface_id, R
 
 
 //-----------------------------------------------------------------------------
+// Constructor using IUnknown::QueryInterface().
+//-----------------------------------------------------------------------------
+
+template <class COMCLASS>
+ts::ComPtr<COMCLASS>::ComPtr(::IUnknown* obj, const IID& interface_id, ReportInterface& report) :
+
+#if defined(TS_COMPTR_INSTRUMENTATION)
+    _traceCreator(false),
+#endif
+    _ptr(0)
+{
+    queryInterface(obj, interface_id, report);
+}
+
+
+//-----------------------------------------------------------------------------
 // Destructor.
 //-----------------------------------------------------------------------------
 
@@ -300,12 +316,13 @@ template <class COMCLASS>
 ts::ComPtr<COMCLASS>& ts::ComPtr<COMCLASS>::queryInterface(::IUnknown* obj, const IID& interface_id, ReportInterface& report)
 {
     release();
-    assert(obj != 0);
-    ::HRESULT hr = obj->QueryInterface(interface_id, (void**)&_ptr);
-    if (!ComSuccess(hr, "IUnknown::QueryInterface", report)) {
-        _ptr = 0;
+    if (obj != 0) {
+        ::HRESULT hr = obj->QueryInterface(interface_id, (void**)&_ptr);
+        if (!ComSuccess(hr, "IUnknown::QueryInterface", report)) {
+            _ptr = 0;
+        }
+        TRACE_QUERY();
     }
-    TRACE_QUERY();
     return *this;
 }
 
@@ -318,15 +335,16 @@ template <class COMCLASS>
 ts::ComPtr<COMCLASS>& ts::ComPtr<COMCLASS>::bindToObject(::IMoniker* moniker, const IID& interface_id, ReportInterface& report)
 {
     release();
-    assert(moniker != 0);
-    ::HRESULT hr = moniker->BindToObject(0,               // No cached context
-                                         0,               // Not part of a composite
-                                         interface_id,    // ID of interface we request
-                                         (void**)&_ptr);  // Returned pointer to interface
-    if (!ComSuccess(hr, "IMoniker::BindToObject", report)) {
-        _ptr = 0;
+    if (moniker != 0) {
+        ::HRESULT hr = moniker->BindToObject(0,               // No cached context
+                                             0,               // Not part of a composite
+                                             interface_id,    // ID of interface we request
+                                             (void**)&_ptr);  // Returned pointer to interface
+        if (!ComSuccess(hr, "IMoniker::BindToObject", report)) {
+            _ptr = 0;
+        }
+        TRACE_BIND();
     }
-    TRACE_BIND();
     return *this;
 }
 

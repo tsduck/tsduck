@@ -50,6 +50,13 @@ namespace ts {
         DirectShowFilterCategory(ReportInterface& report);
 
         //!
+        //! Constructor from a device category.
+        //! @param [in] category GUID of the device category.
+        //! @param [in,out] report Where to report errors.
+        //!
+        DirectShowFilterCategory(const ::GUID& category, ReportInterface& report);
+
+        //!
         //! Destructor.
         //!
         ~DirectShowFilterCategory();
@@ -62,7 +69,16 @@ namespace ts {
         bool getAllFiltersInstance(const ::GUID& category);
 
         //!
-        //! Get the number of instanciated devices.
+        //! Check if the set of filters is empty.
+        //! @return True if there is no filter in the category.
+        //!
+        bool empty() const
+        {
+            return _filters.empty();
+        }
+
+        //!
+        //! Get the number of instantiated devices.
         //! @return The number of instanciated devices.
         //!
         size_t size() const

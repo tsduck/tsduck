@@ -29,10 +29,11 @@
 
 #include "tsDirectShowTest.h"
 #include "tsDirectShowUtils.h"
+#include "tsDirectShowGraph.h"
 #include "tsDirectShowFilterCategory.h"
-#include "tsMediaTypeUtils.h"
 #include "tsStringUtils.h"
 #include "tsNullReport.h"
+TSDUCK_SOURCE;
 
 //
 // An enumeration of TestType names.
@@ -41,6 +42,7 @@ const ts::Enumeration ts::DirectShowTest::TestNames
     ("none", NONE,
      "enumerate-devices", ENUMERATE_DEVICES,
      "tuning-spaces", TUNING_SPACES,
+     "bda-tuners", BDA_TUNERS,
      TS_NULL);
 
 
@@ -70,9 +72,88 @@ void ts::DirectShowTest::runTest(TestType type)
         case TUNING_SPACES:
             testTuningSpaces();
             break;
+        case BDA_TUNERS:
+            testBDATuners();
+            break;
         default:
             _report.error("undefined DirectShow test %d", int(type));
             break;
+    }
+}
+
+
+//-----------------------------------------------------------------------------
+// Test BDA tuners, same as runTest(BDA_TUNERS).
+//-----------------------------------------------------------------------------
+
+void ts::DirectShowTest::testBDATuners(const std::string& margin)
+{
+    // Build an instance of all tuners.
+    DirectShowFilterCategory tuners(KSCATEGORY_BDA_NETWORK_TUNER, _report);
+    if (tuners.empty()) {
+        _report.error("no BDA tuner found");
+        return;
+    }
+
+    // Loop on all BDA tuners.
+    for (size_t tuner_index = 0; tuner_index < tuners.size(); ++tuner_index) {
+
+        // Name of this tuner.
+        _output << std::endl << margin << "=== Testing \"" << tuners.name(tuner_index) << "\"" << std::endl << std::endl;
+
+        // Build a DirectShow graph.
+        DirectShowGraph graph(_report);
+        if (!graph.isValid()) {
+            break; // fatal error
+        }
+
+        // Add the tuner in the graph.
+        if (!graph.addFilter(tuners.filter(tuner_index).pointer(), L"Tuner", _report)) {
+            // This tuner cannot be added to a graph. Move to next tuner.
+            continue;
+        }
+
+        // Get all network providers.
+        DirectShowFilterCategory providers(KSCATEGORY_BDA_NETWORK_PROVIDER, _report);
+
+        // Loop on all network providers.
+        for (size_t prov_index = 0; prov_index < providers.size(); ++prov_index) {
+
+            ComPtr<::IBaseFilter> provider(providers.filter(prov_index));
+            _output << margin << "- Trying \"" << providers.name(prov_index) << "\"" << std::endl;
+
+            // Get the tuner interface of the network provider.
+            ComPtr<::ITuner> iTuner;
+            iTuner.queryInterface(provider.pointer(), ::IID_ITuner, _report);
+            if (iTuner.isNull()) {
+                _output << margin << "  No ITuner interface on this network provider" << std::endl;
+                continue;
+            }
+
+            // Add the network provider in the graph.
+            if (!graph.addFilter(provider.pointer(), L"Net Provider", _report)) {
+                continue;
+            }
+
+            // Try to connect the network provider to the tuner.
+            if (graph.connectFilters(provider.pointer(), tuners.filter(tuner_index).pointer(), _report)) {
+                _output << margin << "  Successful connection" << std::endl;
+
+                // Now, try to associate each tuning space.
+                std::vector<ComPtr<::ITuningSpace>> spaces;
+                getAllTuningSpaces(spaces);
+                for (size_t i = 0; i < spaces.size(); ++i) {
+                    const std::string name(GetTuningSpaceFriendlyName(spaces[i].pointer(), _report));
+                    ::HRESULT hr = iTuner->put_TuningSpace(spaces[i].pointer());
+                    _output << margin << "  Tuning space \"" << name << "\": " 
+                            << (SUCCEEDED(hr) ? "accepted" : ComMessage(hr)) << std::endl;
+                }
+            }
+            
+            // Remove the network provider from the graph.
+            // Will be automatically disconnected if the connection succeeded.
+            graph.removeFilter(provider.pointer(), _report);
+        }
     }
 }
 
@@ -84,10 +165,7 @@ void ts::DirectShowTest::runTest(TestType type)
 void ts::DirectShowTest::testTuningSpaces(const std::string& margin)
 {
     // Build an instance of all network providers.
-    DirectShowFilterCategory filters(_report);
-    if (!filters.getAllFiltersInstance(KSCATEGORY_BDA_NETWORK_PROVIDER)) {
-        return;
-    }
+    DirectShowFilterCategory filters(KSCATEGORY_BDA_NETWORK_PROVIDER, _report);
 
     // Loop on all network providers.
     for (size_t index = 0; index < filters.size(); ++index) {
@@ -104,10 +182,9 @@ void ts::DirectShowTest::testTuningSpaces(const std::string& margin)
             continue;
         }
 
-        // Get an enumerator to all tuning spaces.
-        ComPtr<::ITuningSpaceContainer> tsContainer;
-        ComPtr<::IEnumTuningSpaces> tsEnum;
-        if (!getAllTuningSpaces(tsContainer, tsEnum)) {
+        // Get an all tuning spaces.
+        std::vector<ComPtr<::ITuningSpace>> spaces;
+        if (!getAllTuningSpaces(spaces)) {
             return;
         }
 
@@ -116,14 +193,15 @@ void ts::DirectShowTest::testTuningSpaces(const std::string& margin)
         StringList bad;
 
         // Loop on all tuning spaces.
-        ts::ComPtr<::ITuningSpace> tspace;
-        while (tsEnum->Next(1, tspace.creator(), NULL) == S_OK) {
+        for (size_t i = 0; i < spaces.size(); ++i) {
 
             // Try to apply this tuning space to the network provider.
-            ::HRESULT hr = tuner->put_TuningSpace(tspace.pointer());
+            ::HRESULT hr = tuner->put_TuningSpace(spaces[i].pointer());
 
             // Store either good or bad.
-            const std::string ts_name(GetTuningSpaceFriendlyName(tspace.pointer(), _report));
+            const std::string ts_name(GetTuningSpaceFriendlyName(spaces[i].pointer(), _report) + " (" +
+                                      GetTuningSpaceUniqueName(spaces[i].pointer(), _report) + ", " +
+                                      GetTuningSpaceNetworkType(spaces[i].pointer(), _report) + ")");
             if (SUCCEEDED(hr)) {
                 good.push_back("    " + ts_name);
             }
@@ -180,10 +258,7 @@ bool ts::DirectShowTest::displayDevicesByCategory(const ::GUID& category, const 
     _output << std::endl << margin << "=== Device category " << name << std::endl;
 
     // Build an instance of all devices of this category.
-    DirectShowFilterCategory filters(_report);
-    if (!filters.getAllFiltersInstance(category)) {
-        return false;
-    }
+    DirectShowFilterCategory filters(category, _report);
 
     // Loop on all enumerated devices.
     for (size_t index = 0; index < filters.size(); ++index) {
@@ -227,6 +302,30 @@ bool ts::DirectShowTest::displayDevicesByCategory(const ::GUID& category, const 
             _output << std::endl << margin << "  - Pin \"" << pin_name << "\", direction: " << PinDirectionName(dir) << std::endl;
             displayObject(pin.pointer(), margin + "    ");
         }
+    }
+    return true;
+}
+
+
+//-----------------------------------------------------------------------------
+// Get all tuning spaces.
+//-----------------------------------------------------------------------------
+
+bool ts::DirectShowTest::getAllTuningSpaces(std::vector<ComPtr<::ITuningSpace>>& spaces)
+{
+    spaces.clear();
+
+    // Get an enumerator to all tuning spaces.
+    ComPtr<::ITuningSpaceContainer> tsContainer;
+    ComPtr<::IEnumTuningSpaces> tsEnum;
+    if (!getAllTuningSpaces(tsContainer, tsEnum)) {
+        return false;
+    }
+
+    // Loop on all tuning spaces.
+    ts::ComPtr<::ITuningSpace> tspace;
+    while (tsEnum->Next(1, tspace.creator(), NULL) == S_OK) {
+        spaces.push_back(tspace);
     }
     return true;
 }
@@ -675,205 +774,6 @@ void ts::DirectShowTest::displayObject(::IUnknown* object, const std::string& ma
     displayIKsTopologyInfo(object, margin);
     displayBDATopology(object, margin);
     displayITuner(object, margin);
-}
-
-
-//-----------------------------------------------------------------------------
-// Display the description of a DirectShow filter graph.
-//-----------------------------------------------------------------------------
-
-bool ts::DirectShowTest::displayFilterGraph(const ComPtr<::IGraphBuilder>& graph, const std::string& margin, bool verbose)
-{
-    // Find the first filter in a graph: enumerate all filters
-    // and get the first one with no connected input pin.
-    ComPtr<::IEnumFilters> enum_filters;
-    ::HRESULT hr = graph->EnumFilters(enum_filters.creator());
-    if (!ComSuccess(hr, "IFilterGraph::EnumFilters", _report)) {
-        return false;
-    }
-    ComPtr<::IBaseFilter> filter;
-    PinPtrVector pins;
-    while (enum_filters->Next(1, filter.creator(), NULL) == S_OK) {
-        if (!GetPin(pins, filter.pointer(), xPIN_INPUT | xPIN_CONNECTED, _report)) {
-            return false;
-        }
-        if (pins.empty()) {
-            // Found one without connected input pin, this is a starting point of the graph
-            return displayFilterGraph(filter, margin, verbose);
-        }
-    }
-    // Found no starting point (empty graph?)
-    return true;
-}
-
-
-//-----------------------------------------------------------------------------
-// Display the description of a partial DirectShow filter graph.
-//-----------------------------------------------------------------------------
-
-bool ts::DirectShowTest::displayFilterGraph(const ComPtr<::IBaseFilter>& start_filter, const std::string& margin, bool verbose)
-{
-    ComPtr<::IBaseFilter> filter(start_filter);
-
-    // Loop on all filters in the graph
-    while (!filter.isNull()) {
-
-        // Get filter name
-        ::FILTER_INFO filter_info;
-        ::HRESULT hr = filter->QueryFilterInfo(&filter_info);
-        if (!ComSuccess(hr, "IBaseFilter::QueryFilterInfo", _report)) {
-            return false;
-        }
-        filter_info.pGraph->Release();
-        std::string filter_name(ToString(filter_info.achName));
-
-        // Get filter vendor info (may be unimplemented)
-        std::string filter_vendor;
-        ::WCHAR* wstring;
-        hr = filter->QueryVendorInfo(&wstring);
-        if (SUCCEEDED(hr)) {
-            filter_vendor = ToString(wstring);
-            ::CoTaskMemFree(wstring);
-        }
-
-        // Get filter class GUID if persistent
-        ::CLSID class_id(GUID_NULL);
-        ComPtr<::IPersist> persist;
-        persist.queryInterface(filter.pointer(), ::IID_IPersist, NULLREP);
-        if (!persist.isNull()) {
-            // Filter class implements IPersist
-            hr = persist->GetClassID(&class_id);
-            if (!ComSuccess(hr, "get filter class guid", _report)) {
-                return false;
-            }
-        }
-
-        // Get connected output pins
-        PinPtrVector pins;
-        if (!GetPin(pins, filter.pointer(), xPIN_OUTPUT | xPIN_CONNECTED, _report)) {
-            return false;
-        }
-
-        // Display the filter info
-        char bar = pins.size() > 1 ? '|' : ' ';
-        if (verbose) {
-            _output << margin << std::endl;
-        }
-        _output << margin << "- Filter \"" << filter_name << "\"" << std::endl;
-        if (verbose) {
-            if (!filter_vendor.empty()) {
-                _output << margin << bar << " vendor: \"" << filter_vendor << "\"" << std::endl;
-            }
-            _output << margin << bar << " class GUID: " << NameGUID(class_id) << std::endl;
-            displayObject(filter.pointer(), margin + bar + " ");
-        }
-
-        // Loop on all connected output pins
-        for (size_t pin_index = 0; pin_index < pins.size(); ++pin_index) {
-            const ComPtr <::IPin>& output(pins[pin_index]);
-
-            // If more than one output pin, we need to indent and recurse
-            bool last_pin = pin_index == pins.size() - 1;
-            std::string margin0(margin);
-            std::string margin1(margin);
-            std::string margin2(margin);
-            if (pins.size() > 1) {
-                margin0 += "|";
-                margin1 += "+--";
-                margin2 += last_pin ? "   " : "|  ";
-            }
-
-            // Get output pin info
-            ::PIN_INFO pin_info;
-            hr = output->QueryPinInfo(&pin_info);
-            if (!ComSuccess(hr, "IPin::QueryPinInfo", _report)) {
-                return false;
-            }
-            std::string pin_name(ToString(pin_info.achName));
-            pin_info.pFilter->Release();
-
-            // Get output pin id
-            ::WCHAR* wid;
-            hr = output->QueryId(&wid);
-            if (!ComSuccess(hr, "IPin::QueryPinId", _report)) {
-                return false;
-            }
-            std::string pin_id(ToString(wid));
-            ::CoTaskMemFree(wid);
-
-            // Display output pin info
-            if (verbose) {
-                _output << margin0 << std::endl;
-            }
-            _output << margin1 << "- Output pin \"" << pin_name << "\", id \"" << pin_id << "\"" << std::endl;
-            if (verbose) {
-                displayObject(output.pointer(), margin2 + "  ");
-            }
-
-            // Get connection media type
-            ::AM_MEDIA_TYPE media;
-            hr = output->ConnectionMediaType(&media);
-            if (!ComSuccess(hr, "IPin::ConnectionMediaType", _report)) {
-                return false;
-            }
-
-            // Display media type (and free its resources)
-            if (verbose) {
-                _output << margin2 << std::endl
-                        << margin2 << "- Media major type " << NameGUID(media.majortype) << std::endl
-                        << margin2 << "  subtype " << NameGUID(media.subtype) << std::endl
-                        << margin2 << "  format " << NameGUID(media.formattype) << std::endl;
-            }
-            else {
-                _output << margin2 << "- Media type "
-                        << NameGUID(media.majortype) << " / "
-                        << NameGUID(media.subtype) << std::endl;
-            }
-            FreeMediaType(media);
-
-            // Get connected pin (input pin of next filter)
-            ComPtr<::IPin> input;
-            hr = output->ConnectedTo(input.creator());
-            if (!ComSuccess(hr, "IPin::ConnectedTo", _report)) {
-                return false;
-            }
-
-            // Get next input pin info
-            hr = input->QueryPinInfo(&pin_info);
-            if (!ComSuccess(hr, "IPin::QueryPinInfo", _report)) {
-                return false;
-            }
-            pin_name = ToString(pin_info.achName);
-            filter = pin_info.pFilter; // next filter in the chain
-
-            // Get input pin id
-            hr = input->QueryId(&wid);
-            if (!ComSuccess(hr, "IPin::QueryPinId", _report)) {
-                return false;
-            }
-            pin_id = ToString(wid);
-            ::CoTaskMemFree(wid);
-
-            // Display input pin info
-            if (verbose) {
-                _output << margin2 << std::endl;
-            }
-            _output << margin2 << "- Input pin \"" << pin_name << "\", id \"" << pin_id << "\"" << std::endl;
-            if (verbose) {
-                displayObject(input.pointer(), margin2 + "  ");
-            }
-
-            // If more than one branch, recurse
-            if (pins.size() > 1 && !displayFilterGraph(filter, margin2, verbose)) {
-                return false;
-            }
-        }
-        if (pins.size() != 1) {
-            // no connected output pin, end of graph, or more than one and we recursed.
-            break;
-        }
-    }
-    return true;
 }
 
 
