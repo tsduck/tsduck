@@ -40,138 +40,10 @@
 #include "tsDecimal.h"
 TSDUCK_SOURCE;
 
-
-//-----------------------------------------------------------------------------
-// Get list of pins on a filter (use flags from enum above)
+// Put the value of a property (named "type") into a COM object.
+// Report errors through a variable named report (must be accessible).
 // Return true on success, false on error.
-//-----------------------------------------------------------------------------
-
-bool ts::GetPin(PinPtrVector& result, ::IBaseFilter* filter, int flags, ReportInterface& report)
-{
-    // Clear result vector (explicitely nullify previous values to release objects)
-    result.clear();
-
-    // If neither input nor output, neither connected nor unconnected, nothing to search.
-    if ((flags & (xPIN_INPUT | xPIN_OUTPUT)) == 0 || (flags & (xPIN_CONNECTED | xPIN_UNCONNECTED)) == 0) {
-        return true;
-    }
-
-    // Create a pin enumerator
-    ComPtr <::IEnumPins> enum_pins;
-    ::HRESULT hr = filter->EnumPins(enum_pins.creator());
-    if (!ComSuccess(hr, "IBaseFilter::EnumPins", report)) {
-        return false;
-    }
-
-    // Loop on all pins
-    ComPtr <::IPin> pin;
-    while (enum_pins->Next(1, pin.creator(), NULL) == S_OK) {
-        // Query direction of this pin
-        ::PIN_DIRECTION dir;
-        if (FAILED(pin->QueryDirection(&dir)) ||
-            ((dir != ::PINDIR_INPUT || (flags & xPIN_INPUT) == 0) &&
-             (dir != ::PINDIR_OUTPUT || (flags & xPIN_OUTPUT) == 0))) {
-            continue; // not the right direction, see next pin
-        }
-        // Query connected pin
-        ComPtr<::IPin> partner;
-        bool connected = SUCCEEDED(pin->ConnectedTo(partner.creator()));
-        if ((connected && (flags & xPIN_CONNECTED) != 0) || (!connected && (flags & xPIN_UNCONNECTED) != 0)) {
-            // Keep this pin
-            result.push_back(pin);
-        }
-    }
-    return true;
-}
-
-
-//-----------------------------------------------------------------------------
-// Directly connect two filters using whatever output and input pin.
-// Return true on success, false on error.
-//-----------------------------------------------------------------------------
-
-bool ts::ConnectFilters(::IGraphBuilder* graph,
-                        ::IBaseFilter* filter1,
-                        ::IBaseFilter* filter2,
-                        ReportInterface& report)
-{
-    // Get unconnected pins
-    PinPtrVector pins1;
-    PinPtrVector pins2;
-    if (!GetPin(pins1, filter1, xPIN_OUTPUT | xPIN_UNCONNECTED, report) ||
-        !GetPin(pins2, filter2, xPIN_INPUT | xPIN_UNCONNECTED, report)) {
-        return false;
-    }
-
-    // Try all combinations
-    for (size_t i1 = 0; i1 < pins1.size(); ++i1) {
-        for (size_t i2 = 0; i2 < pins2.size(); ++i2) {
-            ::HRESULT hr = graph->Connect(pins1[i1].pointer(), pins2[i2].pointer());
-            if (SUCCEEDED(hr)) {
-                return true;
-            }
-            report.debug(Format("failed to connect pins, status = 0x%08X, ", int(hr)) + ComMessage(hr));
-        }
-    }
-
-    // No connection made
-    return false;
-}
-
-
-//-----------------------------------------------------------------------------
-// In a DirectShow filter graph, cleanup everything downstream a filter.
-//-----------------------------------------------------------------------------
-
-bool ts::CleanupDownstream(::IGraphBuilder* graph, ::IBaseFilter* filter, ReportInterface& report)
-{
-    // Get connected output pins
-    PinPtrVector pins;
-    if (!GetPin(pins, filter, xPIN_OUTPUT | xPIN_CONNECTED, report)) {
-        return false;
-    }
-
-    // Final status
-    bool ok = true;
-
-    // Loop on all connected output pins
-    for (size_t pin_index = 0; pin_index < pins.size(); ++pin_index) {
-
-        const ComPtr<::IPin>& pin(pins[pin_index]);
-        ComPtr<::IPin> next_pin;
-        ComPtr<::IBaseFilter> next_filter;
-
-        // Get connected pin (input pin of next filter)
-        ::HRESULT hr = pin->ConnectedTo(next_pin.creator());
-        ok = ComSuccess(hr, "IPin::ConnectedTo", report) && ok;
-
-        // Get next filter
-        if (!next_pin.isNull()) {
-            ::PIN_INFO pin_info;
-            TS_ZERO(pin_info);
-            hr = next_pin->QueryPinInfo(&pin_info);
-            ok = ComSuccess(hr, "IPin::QueryPinInfo", report) && ok;
-            next_filter = pin_info.pFilter; // pointer becomes managed if not null
-        }
-
-        // Recurse to cleanup downstream next filter
-        if (!next_filter.isNull()) {
-            ok = CleanupDownstream(graph, next_filter.pointer(), report) && ok;
-        }
-
-        // Disconnect pin to next filter
-        hr = pin->Disconnect();
-        ok = ComSuccess(hr, "IPin::Disconnect", report) && ok;
-
-        // Remove next filter from the graph
-        if (!next_filter.isNull()) {
-            hr = graph->RemoveFilter(next_filter.pointer());
-            ok = ComSuccess(hr, "IFilterGraph::RemoveFilter", report) && ok;
-        }
-    }
-
-    return ok;
-}
+#define PUT(obj,type,value) ComSuccess((obj)->put_##type(value), "error setting " #type, report)
 
 
 //-----------------------------------------------------------------------------
@@ -324,6 +196,28 @@ std::string ts::GetTuningSpaceDescription(::ITuningSpace* tspace, ReportInterfac
     return tname;
 }
 
+std::string ts::GetTuningSpaceNetworkType(::ITuningSpace* tspace, ReportInterface& report)
+{
+    if (tspace == 0) {
+        return std::string();
+    }
+
+    // Get network type as a string.
+    ::BSTR name = NULL;
+    const std::string type(ToStringAndFree(tspace->get_NetworkType(&name), name, "ITuningSpace::get_NetworkType", report));
+    
+    // If the string looks like a GUID, try to find another way.
+    if (type.empty() || type.front() == '{') {
+        // Get the network type as a GUID.
+        ::GUID guid;
+        if (SUCCEEDED(tspace->get__NetworkType(&guid))) {
+            return NameGUID(guid);
+        }
+    }
+
+    return type;
+}
+
 
 //-----------------------------------------------------------------------------
 // Get the name for various enum values.
@@ -348,4 +242,225 @@ std::string ts::DVBSystemTypeName(::DVBSystemType type)
         case ::ISDB_Satellite:   return "ISDB_Satellite";
         default:                 return Decimal(int(type));
     }
+}
+
+
+//-----------------------------------------------------------------------------
+// Create a DirectShow tune request object from tuning parameters.
+//-----------------------------------------------------------------------------
+
+bool ts::CreateTuneRequest(ComPtr<::ITuneRequest>& request, ::ITuningSpace* tuning_space, const TunerParameters& params, ReportInterface& report)
+{
+    if (tuning_space == 0) {
+        return false;
+    }
+
+    // Create a DirectShow tune request
+    ComPtr<::ITuneRequest> tune_request;
+    ::HRESULT hr = tuning_space->CreateTuneRequest(tune_request.creator());
+    if (!ComSuccess(hr, "cannot create DirectShow tune request", report)) {
+        return false;
+    }
+    assert(!tune_request.isNull());
+
+    // If this is a DVB tuning space, get DVB interface of tune request and set ids to wildcards.
+    ComPtr<::IDVBTuneRequest> dvb_request;
+    dvb_request.queryInterface(tune_request.pointer(), ::IID_IDVBTuneRequest, report);
+    if (!dvb_request.isNull() &&
+        (!PUT(dvb_request, ONID, -1) ||
+         !PUT(dvb_request, TSID, -1) ||
+         !PUT(dvb_request, SID, -1))) {
+        return false;
+    }
+
+    // Create a locator (where to find the physical TS, ie. tuning params).
+    ComPtr<::IDigitalLocator> locator;
+    if (!CreateLocator(locator, params, report)) {
+        return false;
+    }
+    assert(!locator.isNull());
+
+    // Set the locator in the tune request
+    hr = tune_request->put_Locator(locator.pointer());
+    if (!ComSuccess(hr, "ITuneRequest::put_Locator", report)) {
+        return false;
+    }
+
+    // Tune request fully built.
+    request.assign(tune_request);
+    return true;
+}
+
+
+//-----------------------------------------------------------------------------
+// Create a Locator object for tuning parameters.
+//-----------------------------------------------------------------------------
+
+bool ts::CreateLocator(ComPtr<::IDigitalLocator>& locator, const TunerParameters& params, ReportInterface& report)
+{
+    // Try to convert the parameters to various known types.
+    const TunerParametersDVBS* dvb_s = dynamic_cast<const TunerParametersDVBS*>(&params);
+    const TunerParametersDVBT* dvb_t = dynamic_cast<const TunerParametersDVBT*>(&params);
+    const TunerParametersDVBC* dvb_c = dynamic_cast<const TunerParametersDVBC*>(&params);
+
+    // Create the locator depending on the type.
+    if (dvb_s != 0) {
+        return CreateLocatorDVBS(locator, *dvb_s, report);
+    }
+    else if (dvb_t != 0) {
+        return CreateLocatorDVBT(locator, *dvb_t, report);
+    }
+    else if (dvb_c != 0) {
+        return CreateLocatorDVBC(locator, *dvb_c, report);
+    }
+    else {
+        report.error("cannot convert " + TunerTypeEnum.name(params.tunerType()) + " parameters to DirectShow tuning parameters");
+        return false;
+    }
+}
+
+
+//-----------------------------------------------------------------------------
+// Create an IDigitalLocator object for DVB-T parameters
+// Return true on success, false on errors
+//-----------------------------------------------------------------------------
+
+bool ts::CreateLocatorDVBT(ComPtr<::IDigitalLocator>& locator, const TunerParametersDVBT& params, ReportInterface& report)
+{
+    ComPtr<::IDVBTLocator> loc(CLSID_DVBTLocator, ::IID_IDVBTLocator, report);
+
+    if (loc.isNull() ||
+        !CheckModEnum(params.inversion, "spectral inversion", SpectralInversionEnum, report) ||
+        !CheckModEnum(params.bandwidth, "bandwidth", BandWidthEnum, report) ||
+        !CheckModEnum(params.fec_hp, "FEC", InnerFECEnum, report) ||
+        !CheckModEnum(params.fec_lp, "FEC", InnerFECEnum, report) ||
+        !CheckModEnum(params.modulation, "constellation", ModulationEnum, report) ||
+        !CheckModEnum(params.transmission_mode, "transmission mode", TransmissionModeEnum, report) ||
+        !CheckModEnum(params.guard_interval, "guard interval", GuardIntervalEnum, report) ||
+        !CheckModEnum(params.hierarchy, "hierarchy", HierarchyEnum, report) ||
+        !PUT(loc, CarrierFrequency, long(params.frequency / 1000)) ||  // frequency in kHz
+        !PUT(loc, Modulation, ::ModulationType(params.modulation)) ||
+        !PUT(loc, Bandwidth, long(params.bandwidth)) ||
+        !PUT(loc, Guard, ::GuardInterval(params.guard_interval)) ||
+        !PUT(loc, LPInnerFEC, ::BDA_FEC_VITERBI) ||
+        !PUT(loc, LPInnerFECRate, ::BinaryConvolutionCodeRate(params.fec_lp)) ||
+        !PUT(loc, Mode, ::TransmissionMode(params.transmission_mode)) ||
+        !PUT(loc, HAlpha, ::HierarchyAlpha(params.hierarchy)))
+    {
+        return false;
+    }
+
+    // Pending questions:
+    // - Shall we call loc->put_OtherFrequencyInUse ? Documented as
+    //   "specifies whether the frequency is being used by another
+    //   DVB-T broadcaster". No idea what this means...
+    // - No way to set params.inversion and params.fec_hp in IDVBTLocator
+
+    locator.assign(loc);
+    return true;
+}
+
+
+//-----------------------------------------------------------------------------
+// Create an IDigitalLocator object for DVB-C parameters
+// Return true on success, false on errors
+//-----------------------------------------------------------------------------
+
+bool ts::CreateLocatorDVBC(ComPtr<::IDigitalLocator>& locator, const TunerParametersDVBC& params, ReportInterface& report)
+{
+    ComPtr<::IDVBCLocator> loc(CLSID_DVBCLocator, ::IID_IDVBCLocator, report);
+
+    if (loc.isNull() ||
+        !CheckModEnum(params.inversion, "spectral inversion", SpectralInversionEnum, report) ||
+        !CheckModEnum(params.inner_fec, "FEC", InnerFECEnum, report) ||
+        !CheckModEnum(params.modulation, "modulation", ModulationEnum, report) ||
+        !PUT(loc, CarrierFrequency, long(params.frequency / 1000)) ||  // frequency in kHz
+        !PUT(loc, Modulation, ::ModulationType(params.modulation)) ||
+        !PUT(loc, InnerFEC, ::BDA_FEC_VITERBI) ||
+        !PUT(loc, InnerFECRate, ::BinaryConvolutionCodeRate(params.inner_fec)) ||
+        !PUT(loc, SymbolRate, long(params.symbol_rate)))
+    {
+        return false;
+    }
+
+    // Pending questions:
+    // - No way to set params.inversion in IDVBCLocator
+
+    locator.assign(loc);
+    return true;
+}
+
+
+//-----------------------------------------------------------------------------
+// Create an IDigitalLocator object for DVB-S/S2 parameters
+// Return true on success, false on errors
+//-----------------------------------------------------------------------------
+
+bool ts::CreateLocatorDVBS(ComPtr<::IDigitalLocator>& locator, const TunerParametersDVBS& params, ReportInterface& report)
+{
+    // Specify DiSEqC satellite number.
+    // Note however that most drivers ignore it...
+    ::LNB_Source source = ::BDA_LNB_SOURCE_NOT_SET;
+    switch (params.satellite_number) {
+        case 0:  source = ::BDA_LNB_SOURCE_A; break;
+        case 1:  source = ::BDA_LNB_SOURCE_B; break;
+        case 2:  source = ::BDA_LNB_SOURCE_C; break;
+        case 3:  source = ::BDA_LNB_SOURCE_D; break;
+        default: source = ::BDA_LNB_SOURCE_NOT_DEFINED; break;
+    }
+
+    // Microsoft oddity, part 1...
+    //
+    // The locator interface for DVB-S is IDVBSLocator. However, this interface did
+    // not implement LNB control and DVB-S2. Starting with Windows 7, a new interface
+    // IDVBSLocator2 is introduced to support LNB control and DVB-S2. However, unlike
+    // all other locator interfaces, CLSID_DVBSLocator2 is not defined anywhere, not
+    // in tuner.h and not even in the Windows 7 registry. So, since IDVBSLocator2 is
+    // a subinterface of IDVBSLocator, we create an object of class CLSID_DVBSLocator
+    // and we hope that on Windows 7 this object will also implement IDVBSLocator2.
+    //
+    // Microsoft oddity, part 2...
+    //
+    // Unlike other modulations, with pre-Windows 7 systems, some of the DVB-S
+    // parameters must be set in the tuning space (IDVBSTuningSpace interface)
+    // and not in the locator (IDVBSLocator interface). However, Microsoft seemed
+    // to understand the mistake in Windows 7 and finally added these parameters
+    // in IDVBSLocator2.
+    //
+    // Starting with TSDuck 3.x, we decided to completely drop support for versions
+    // of Windows before Windows 7. We now require IDVBSLocator2.
+
+    ComPtr<::IDVBSLocator2> loc(CLSID_DVBSLocator, ::IID_IDVBSLocator2, report);
+
+    if (loc.isNull() ||
+        !CheckModEnum(params.modulation, "modulation", ModulationEnum, report) ||
+        !CheckModEnum(params.inner_fec, "FEC", InnerFECEnum, report) ||
+        !CheckModEnum(params.polarity, "polarity", PolarizationEnum, report) ||
+        !PUT(loc, CarrierFrequency, long(params.frequency / 1000)) ||  // frequency in kHz
+        !PUT(loc, Modulation, ::ModulationType(params.modulation)) ||
+        !PUT(loc, SignalPolarisation, ::Polarisation(params.polarity)) ||
+        !PUT(loc, InnerFEC, ::BDA_FEC_VITERBI) ||
+        !PUT(loc, InnerFECRate, ::BinaryConvolutionCodeRate(params.inner_fec)) ||
+        !PUT(loc, SymbolRate, long(params.symbol_rate)) ||
+        !PUT(loc, LocalSpectralInversionOverride, ::SpectralInversion(params.inversion)) ||
+        !PUT(loc, LocalOscillatorOverrideLow, long(params.lnb.lowFrequency() / 1000)) ||    // frequency in kHz
+        !PUT(loc, LocalOscillatorOverrideHigh, long(params.lnb.highFrequency() / 1000)) ||  // frequency in kHz
+        !PUT(loc, LocalLNBSwitchOverride, long(params.lnb.switchFrequency() / 1000)) ||     // frequency in kHz
+        !PUT(loc, DiseqLNBSource, source))
+    {
+        return false;
+    }
+
+    // DVB-S2 specific parameters
+    if (params.delivery_system == DS_DVB_S2 &&
+        (!CheckModEnum(params.pilots, "pilot", PilotEnum, report) ||
+         !CheckModEnum(params.roll_off, "roll-off factor", RollOffEnum, report) ||
+         !PUT(loc, SignalPilot, ::Pilot(params.pilots)) ||
+         !PUT(loc, SignalRollOff, ::RollOff(params.roll_off))))
+    {
+        return false;
+    }
+
+    locator.assign(loc); // loc and loc2 are two interfaces of the same object
+    return true;
 }

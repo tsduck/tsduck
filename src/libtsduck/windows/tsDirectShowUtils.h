@@ -33,69 +33,14 @@
 //-----------------------------------------------------------------------------
 
 #pragma once
+#include "tsTunerParametersDVBS.h"
+#include "tsTunerParametersDVBC.h"
+#include "tsTunerParametersDVBT.h"
+#include "tsTunerParametersATSC.h"
 #include "tsModulation.h"
 #include "tsComPtr.h"
 
 namespace ts {
-    //!
-    //! Flags for DirectShow filter pin selections (Windows-specific).
-    //! Bit masks allowed.
-    //!
-    enum DirectShowPinFilter {
-        xPIN_CONNECTED   = 0x01,   //!< Filter connected pins.
-        xPIN_UNCONNECTED = 0x02,   //!< Filter unconnected pins.
-        xPIN_INPUT       = 0x04,   //!< Filter input pins.
-        xPIN_OUTPUT      = 0x08,   //!< Filter output pins.
-        xPIN_ALL_INPUT   = xPIN_INPUT  | xPIN_CONNECTED | xPIN_UNCONNECTED,   //!< Filter all input pins.
-        xPIN_ALL_OUTPUT  = xPIN_OUTPUT | xPIN_CONNECTED | xPIN_UNCONNECTED,   //!< Filter all output pins.
-        xPIN_ALL         = xPIN_INPUT  | xPIN_OUTPUT    | xPIN_CONNECTED | xPIN_UNCONNECTED   //!< Filter all pins.
-    };
-
-    //!
-    //! Vector of COM pointers to IPin interfaces (Windows-specific).
-    //!
-    typedef std::vector<ComPtr<::IPin>> PinPtrVector;
-
-    //!
-    //! Get the list of pins on a DirectShow filter (Windows-specific).
-    //! @param [out] pins Returned list of pins.
-    //! @param [in,out] filter DirectShow filter.
-    //! @param [in] flags Bit mask of pin selections from DirectShowPinFilter.
-    //! @param [in,out] report Where to report errors.
-    //! @return True on success, false on error.
-    //!
-    TSDUCKDLL bool GetPin(PinPtrVector& pins, ::IBaseFilter* filter, int flags, ReportInterface& report);
-
-    //!
-    //! Get the name for a DirectShow pin direction value (Windows-specific).
-    //! @param [in] dir Pin direction.
-    //! @return Corresponding name.
-    //!
-    TSDUCKDLL std::string PinDirectionName(::PIN_DIRECTION dir);
-
-    //!
-    //! Directly connect two DirectShow filters using whatever output and input pin (Windows-specific).
-    //! @param [in,out] graph DirectShow graph builder.
-    //! @param [in,out] filter1 DirectShow filter with output pins.
-    //! @param [in,out] filter2 DirectShow filter with input pins.
-    //! @param [in,out] report Where to report errors.
-    //! @return True on success, false on error.
-    //!
-    TSDUCKDLL bool ConnectFilters(::IGraphBuilder* graph,
-                                  ::IBaseFilter* filter1,
-                                  ::IBaseFilter* filter2,
-                                  ReportInterface& report);
-
-    //!
-    //! In a DirectShow filter graph, cleanup everything downstream a specified filter (Windows-specific).
-    //! All downstream filters are disconnected and removed from the graph.
-    //! @param [in,out] graph DirectShow graph builder.
-    //! @param [in,out] filter DirectShow filter.
-    //! @param [in,out] report Where to report errors.
-    //! @return True on success, false on error.
-    //!
-    TSDUCKDLL bool CleanupDownstream(::IGraphBuilder* graph, ::IBaseFilter* filter, ReportInterface& report);
-
     //!
     //! Translate a DirectShow network provider class id into a TSDuck tuner type (Windows-specific).
     //! @param [in] provider_clsid DirectShow network provider class.
@@ -141,9 +86,71 @@ namespace ts {
     TSDUCKDLL std::string GetTuningSpaceDescription(::ITuningSpace* tuning, ReportInterface& report);
 
     //!
+    //! Get the network type of a DirectShow tuning space (Windows-specific).
+    //! @param [in] tuning Tuning space.
+    //! @param [in,out] report Where to report errors.
+    //! @return Network type or an empty string on error.
+    //!
+    TSDUCKDLL std::string GetTuningSpaceNetworkType(::ITuningSpace* tuning, ReportInterface& report);
+
+    //!
+    //! Get the name for a DirectShow pin direction value (Windows-specific).
+    //! @param [in] dir Pin direction.
+    //! @return Corresponding name.
+    //!
+    TSDUCKDLL std::string PinDirectionName(::PIN_DIRECTION dir);
+
+    //!
     //! Get the name for a DirectShow @c DVBSystemType value (Windows-specific).
     //! @param [in] type DVB system type value.
     //! @return Corresponding name.
     //!
     TSDUCKDLL std::string DVBSystemTypeName(::DVBSystemType type);
+
+    //!
+    //! Create a DirectShow tune request object from tuning parameters.
+    //! @param [out] request COM pointer to the ITuneRequest interface of the created object.
+    //! @param [in] tuning_space Associated tuning space.
+    //! @param [in] params Tuning parameters in portable format.
+    //! @param [in,out] report Where to report errors.
+    //! @return True on success, false on error.
+    //!
+    TSDUCKDLL bool CreateTuneRequest(ComPtr<::ITuneRequest>& request, ::ITuningSpace* tuning_space, const TunerParameters& params, ReportInterface& report);
+
+    //!
+    //! Create a Locator object for tuning parameters.
+    //! A locator object indicates where to find the physical TS, ie. tuning params.
+    //! @param [out] locator COM pointer to the IDigitalLocator interface of the created object.
+    //! @param [in] params Tuning parameters in portable format.
+    //! @param [in,out] report Where to report errors.
+    //! @return True on success, false on error.
+    //!
+    TSDUCKDLL bool CreateLocator(ComPtr<::IDigitalLocator>& locator, const TunerParameters& params, ReportInterface& report);
+
+    //!
+    //! Create an IDigitalLocator object for DVB-S parameters.
+    //! @param [out] locator COM pointer to the IDigitalLocator interface of the created object.
+    //! @param [in] params DVB-S parameters in portable format.
+    //! @param [in,out] report Where to report errors.
+    //! @return True on success, false on error.
+    //!
+    TSDUCKDLL bool CreateLocatorDVBS(ComPtr<::IDigitalLocator>& locator, const TunerParametersDVBS& params, ReportInterface& report);
+
+    //!
+    //! Create an IDigitalLocator object for DVB-T parameters.
+    //! @param [out] locator COM pointer to the IDigitalLocator interface of the created object.
+    //! @param [in] params DVB-T parameters in portable format.
+    //! @param [in,out] report Where to report errors.
+    //! @return True on success, false on error.
+    //!
+    TSDUCKDLL bool CreateLocatorDVBT(ComPtr<::IDigitalLocator>& locator, const TunerParametersDVBT& params, ReportInterface& report);
+
+    //!
+    //! Create an IDigitalLocator object for DVB-C parameters.
+    //! @param [out] locator COM pointer to the IDigitalLocator interface of the created object.
+    //! @param [in] params DVB-C parameters in portable format.
+    //! @param [in,out] report Where to report errors.
+    //! @return True on success, false on error.
+    //!
+    TSDUCKDLL bool CreateLocatorDVBC(ComPtr<::IDigitalLocator>& locator, const TunerParametersDVBC& params, ReportInterface& report);
 }

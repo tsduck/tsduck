@@ -58,6 +58,7 @@ namespace ts {
             NONE,                //!< No test, do nothing.
             ENUMERATE_DEVICES,   //!< Enumerate all tuner-related DirectShow devices.
             TUNING_SPACES,       //!< Test available tuning spaces.
+            BDA_TUNERS,          //!< Test available BDA tuners.
         };
 
         //!
@@ -84,6 +85,12 @@ namespace ts {
         void testTuningSpaces(const std::string& margin = std::string());
 
         //!
+        //! Test BDA tuners, same as runTest(BDA_TUNERS).
+        //! @param [in] margin Left margin to display.
+        //!
+        void testBDATuners(const std::string& margin = std::string());
+
+        //!
         //! Display all devices of the specified category.
         //! @param [in] category Category of the devices to display.
         //! @param [in] name Name of the category to display.
@@ -98,25 +105,6 @@ namespace ts {
         //! @return True on success, false on error.
         //!
         bool displayTuningSpaces(const std::string& margin = std::string());
-
-        //!
-        //! Display the description of a DirectShow filter graph.
-        //! @param [in] graph DirectShow graph builder. Start the graph description
-        //! at one arbitray input filter (one with no connected input pin) in the graph.
-        //! @param [in] margin Left margin to display.
-        //! @param [in] verbose True for verbose information.
-        //! @return True on success, false on error.
-        //!
-        bool displayFilterGraph(const ComPtr<::IGraphBuilder>& graph, const std::string& margin = std::string(), bool verbose = true);
-
-        //!
-        //! Display the description of a partial DirectShow filter graph.
-        //! @param [in] filter Start the graph description at this DirectShow filter.
-        //! @param [in] margin Left margin to display.
-        //! @param [in] verbose True for verbose information.
-        //! @return True on success, false on error.
-        //!
-        bool displayFilterGraph(const ComPtr<::IBaseFilter>& filter, const std::string& margin = std::string(), bool verbose = true);
 
         //!
         //! Show selected properties of a COM object.
@@ -139,6 +127,9 @@ namespace ts {
 
         // Get an enumerator for all tuning spaces.
         bool getAllTuningSpaces(ComPtr<::ITuningSpaceContainer>& tsContainer, ComPtr<::IEnumTuningSpaces>& tsEnum);
+
+        // Get all tuning spaces.
+        bool getAllTuningSpaces(std::vector<ComPtr<::ITuningSpace>>& spaces);
 
         // Display all tuning spaces from an enumerator.
         void displayEnumerateTuningSpaces(::IEnumTuningSpaces* enum_tspace, const std::string& margin = std::string());

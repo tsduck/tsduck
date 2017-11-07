@@ -103,6 +103,18 @@ namespace ts {
         ComPtr(const ::IID& class_id, const ::IID& interface_id, ReportInterface& report = CERR);
 
         //!
+        //! Constructor using IUnknown::QueryInterface().
+        //! If the COM interface is successfully retrieved, it becomes managed and
+        //! its reference count is unchanged (== 1).
+        //!
+        //! @param [in] obj A COM object.
+        //! @param [in] interface_id Id of the interface we request in the object.
+        //! @param [in] report Where to report errors.
+        //! @return A reference to this object.
+        //!
+        ComPtr(::IUnknown* obj, const IID& interface_id, ReportInterface& report = CERR);
+
+        //!
         //! Destructor.
         //! The COM object is released (its reference count is decremented).
         //!
