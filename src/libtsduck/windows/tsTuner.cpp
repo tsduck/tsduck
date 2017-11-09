@@ -80,7 +80,6 @@ ts::Tuner::Tuner(const std::string& device_name) :
     _graph(),
     _sink_filter(),
     _provider_filter(),
-    _provider_name(),
     _net_provider(),
     _tuner(),
     _tuning_space(),
@@ -157,7 +156,6 @@ bool ts::Tuner::close(ReportInterface& report)
     _graph.clear(report);
     _sink_filter.release();
     _provider_filter.release();
-    _provider_name.clear();
     _net_provider.release();
     _tuner.release();
     _tuning_space.release();
@@ -669,9 +667,7 @@ std::ostream& ts::Tuner::displayStatus(std::ostream& strm, const std::string& ma
     if (getSignalStrength_mdB(strength)) {
         strm << margin << "Signal strength:  " << Decimal(strength) << " milli dB" << std::endl;
     }
-    strm << margin << "Network provider: " << _provider_name << std::endl
-         << std::endl
-         << margin << "DirectShow graph:" << std::endl;
+    strm << std::endl << margin << "DirectShow graph:" << std::endl;
     _graph.display(strm, report, margin + "  ", true);
 
     return strm;
@@ -757,40 +753,27 @@ bool ts::Tuner::FindTuners(Tuner* tuner, TunerPtrVector* tuner_list, ReportInter
             tuner->_device_name = tuner_name;
         }
 
-        // Enumerate all filters with category KSCATEGORY_BDA_NETWORK_PROVIDER
-        // and try to build a graph with the tuner.
-        std::vector<ComPtr<::IMoniker>> provider_monikers;
-        if (!EnumerateDevicesByClass(KSCATEGORY_BDA_NETWORK_PROVIDER, provider_monikers, report)) {
-            return false;
-        }
+        // If we search one specific tuner (tuner != 0), use this one.
+        // If we are building a list of all tuners (tuner_list != 0), allocate a new tuner.
+        TunerPtr tptr(tuner == 0 ? new Tuner(tuner_name) : 0);
+        Tuner& tref(tuner == 0 ? *tptr : *tuner);
 
-        // Loop on all enumerated providers.
-        for (size_t provider_index = 0; provider_index < provider_monikers.size(); ++provider_index) {
+        // Try to build a graph from this network provider and tuner
+        if (tref.buildGraph(tuner_monikers[dvb_device_current].pointer(), report)) {
 
-            // Use specified Tuner or allocate one
-            TunerPtr tptr(tuner == 0 ? new Tuner(tuner_name) : 0);
-            Tuner& tref(tuner == 0 ? *tptr : *tuner);
-
-            // Try to build a graph from this network provider and tuner
-            if (!tref.buildGraph(provider_monikers[provider_index].pointer(), tuner_monikers[dvb_device_current].pointer(), report)) {
-                continue;
-            }
-
-            // Graph correctly built, we keep this one
+            // Graph correctly built, we can use this tuner.
             tref._is_open = true;
             tref._info_only = true;
             tref._device_name = tuner_name;
-            tref._device_info = "";  // none on Windows
+            tref._device_info.clear();  // none on Windows
 
             // Add tuner it to response set
             if (tuner_list != 0) {
                 // Add the tuner to the vector
                 tuner_list->push_back(tptr);
-                // Exit network provider loop but continue to search more tuners
-                break;
             }
             else {
-                // One tuner requested, one found, return
+                // One single tuner requested, one found, return
                 return true;
             }
         }
@@ -804,168 +787,126 @@ bool ts::Tuner::FindTuners(Tuner* tuner, TunerPtrVector* tuner_list, ReportInter
 // Return true on success, false on error
 //-----------------------------------------------------------------------------
 
-bool ts::Tuner::buildGraph(::IMoniker* provider_moniker, ::IMoniker* tuner_moniker, ReportInterface& report)
+bool ts::Tuner::buildGraph(::IMoniker* tuner_moniker, ReportInterface& report)
 {
     // ReportInterface to use when errors shall be reported in debug mode only
     ReportInterface& debug_report(report.debug() ? report : NULLREP);
 
-    // Get friendly name of this network provider
-    _provider_name = GetStringPropertyBag(provider_moniker, L"FriendlyName", report);
-    report.debug("trying provider filter \"" + _provider_name + "\"");
+    // Instantiate the "Microsoft Network Provider". In the past, we tried all specific providers
+    // like "Microsoft DVBT Network Provider". However, these are now deprecated and Microsoft
+    // advises to use the new generic one. This provider can work with all tuners. It will accept
+    // only the tuning spaces which are compatible with the connected tuner.
+    // Also get a few interfaces interfaces of the network provider filter
 
-    // Create an instance of network provider from moniker
-    _provider_filter.bindToObject(provider_moniker, ::IID_IBaseFilter, report);
-    if (_provider_filter.isNull()) {
-        report.debug("failed to create an instance of \"" + _provider_name + "\"");
-        return false;
-    }
-
-    // Get class id of the network provider and convert it to our tuner type
-    ::GUID provider_guid;
-    ::HRESULT hr = _provider_filter->GetClassID(&provider_guid);
-    if (!ComSuccess(hr, "cannot get class id of network provider \"" + _provider_name + "\"", report)) {
-        return false;
-    }
-    if (!NetworkProviderToTunerType(provider_guid, _tuner_type)) {
-        report.debug("Cannot map  \"" + _provider_name + "\" (class " + NameGUID(provider_guid) + ") to known tuner type");
-        return false;
-    }
-
-    // Get interfaces of the network provider filter
+    _provider_filter.createInstance(::CLSID_NetworkProvider, ::IID_IBaseFilter, report);
     _net_provider.queryInterface(_provider_filter.pointer(), ::IID_IBDA_NetworkProvider, report);
     _tuner.queryInterface(_provider_filter.pointer(), ::IID_ITuner, report);
-    if (_net_provider.isNull() || _tuner.isNull()) {
-        report.debug("Interface IID_IBDA_NetworkProvider of \"%s\": %sfound", _provider_name.c_str(), _net_provider.isNull() ? "NOT " : "");
-        report.debug("Interface IID_ITuner of \"%s\": %sfound", _provider_name.c_str(), _tuner.isNull() ? "NOT " : "");
+    if (_provider_filter.isNull() || _net_provider.isNull() || _tuner.isNull()) {
+        report.debug("failed to create an instance of network provider");
         return false;
-    }
-
-    // List all tuning spaces from ITuner interface of network provider.
-    // Try to find a default tuning space.
-    ComPtr<::IEnumTuningSpaces> enum_tspace;
-    hr = _tuner->EnumTuningSpaces(enum_tspace.creator());
-    if (ComSuccess(hr, "cannot enumerate tuning spaces from \"" + _provider_name + "\"", report)) {
-        if (hr != S_OK) {
-            report.debug("no tuning space found");
-        }
-        else {
-            assert(enum_tspace.pointer() != 0);
-            ComPtr<::ITuningSpace> tspace;
-            while (enum_tspace->Next(1, tspace.creator(), NULL) == S_OK) {
-                // Display tuning space in debug mode
-                const std::string fname(GetTuningSpaceFriendlyName(tspace.pointer(), report));
-                const std::string uname(GetTuningSpaceUniqueName(tspace.pointer(), report));
-                report.debug("found tuning space \"%s\" (%s) for provider \"%s\"", fname.c_str(), uname .c_str(), _provider_name.c_str());
-                // If a default tuning space is already found, nothing to do
-                if (!_tuning_space.isNull()) {
-                    continue;
-                }
-                // Check if this tuning space can be used as default. Get DVB system type:
-                // first get IDVBTuningSpace interface of tuning space (may not support it)
-                ComPtr<::IDVBTuningSpace> dvb_tspace;
-                dvb_tspace.queryInterface(tspace.pointer(), ::IID_IDVBTuningSpace, debug_report);
-                if (dvb_tspace.isNull()) {
-                    // Not a DVB tuning space, silently ignore it.
-                    report.debug("tuning space \"%s\" does not support IID_IDVBTuningSpace interface", fname.c_str());
-                    continue;
-                }
-                // Get DVB system type
-                ::DVBSystemType systype;
-                hr = dvb_tspace->get_SystemType(&systype);
-                if (!ComSuccess(hr, "cannot get DVB system type from tuning space \"" + fname + "\"", report)) {
-                    continue;
-                }
-                report.debug("DVB system type is %d for tuning space \"%s\"", int(systype), fname.c_str());
-                // Check if DVB system type matches our tuner type
-                if ((_tuner_type == ts::DVB_S && systype == ::DVB_Satellite) ||
-                    (_tuner_type == ts::DVB_T && systype == ::DVB_Terrestrial) ||
-                    (_tuner_type == ts::DVB_C && systype == ::DVB_Cable))
-                {
-                    // Use this tuning space
-                    hr = _tuner->put_TuningSpace(tspace.pointer());
-                    if (ComSuccess(hr, "fail to set default tuning space \"" + fname + "\" to provider \"" + _provider_name + "\"", debug_report)) {
-                        _tuning_space = tspace;
-                    }
-                }
-            }
-        }
-    }
-
-    // Add the delivery system
-    switch (_tuner_type) {
-        case ts::DVB_S:
-            _delivery_systems.set(DS_DVB_S);
-            // No way to check if DS_DVB_S2 is supported
-            break;
-        case ts::DVB_C:
-            _delivery_systems.set(DS_DVB_C);
-            break;
-        case ts::DVB_T:
-            _delivery_systems.set(DS_DVB_T);
-            break;
-        case ts::ATSC:
-            _delivery_systems.set(DS_ATSC);
-            break;
     }
 
     // Create an instance of tuner from moniker
     _tuner_filter.bindToObject(tuner_moniker, ::IID_IBaseFilter, report);
     if (_tuner_filter.isNull()) {
+        report.debug("failed to create an instance of BDA tuner");
         return false;
     }
 
-    // Create the Filter Graph and add the filters.
+    // Create the Filter Graph, add the filters and connect network provider to tuner.
     if (!_graph.initialize(report) ||
         !_graph.addFilter(_provider_filter.pointer(), L"NetworkProvider", report) ||
-        !_graph.addFilter(_tuner_filter.pointer(), L"Tuner", report))
+        !_graph.addFilter(_tuner_filter.pointer(), L"Tuner", report) ||
+        !_graph.connectFilters(_provider_filter.pointer(), _tuner_filter.pointer(), report))
     {
+        report.debug("failed to initiate the graph with network provider => tuner");
         return false;
     }
 
-    // Try to start a graph: network provider -> tuner
-    if (!_graph.connectFilters(_provider_filter.pointer(), _tuner_filter.pointer(), debug_report)) {
-        // Connection fails. However, this may not be significant with some
-        // tuners (ie. Hauppauge WinTV Nova-HD-S2). These tuners require
-        // that a tuning request shall be provided in order to allow the
-        // connection between the network provider and the tuner filters.
-        // Consequently, we try to issue a tuning request with the default
-        // parameters. However, before trying to tune, we must have
-        // successfully found a default tuning space.
-        if (_tuning_space.isNull()) {
-            // No way to setup a tune request, silently give up this network provider
-            return false;
-        }
-        TunerParameters* params = TunerParameters::Factory(_tuner_type);
-        if (params == 0) {
-            report.debug("cannot build tuner parameters for these network provider");
-            // The tuner is not compatible with this network provider.
-            // Silently give up this network provider.
-            return false;
-        }
-        // Issue a tuning request, ignore errors
-        internalTune(*params, debug_report);
-        // Then retry to start the graph
-        if (!_graph.connectFilters(_provider_filter.pointer(), _tuner_filter.pointer(), debug_report)) {
-            // The tuner is not compatible with this network provider.
-            // Silently give up this network provider.
-            return false;
-        }
-    }
+    // Now, the network provider is connected to the tuner. Now, we are going to try all
+    // tuning spaces. Normally, the network provider will reject the tuning spaces which
+    // are not compatible with the tuner.
 
-    // Get current (default?) tuning space of this network provider
-    hr = _tuner->get_TuningSpace(_tuning_space.creator());
-    if (!ComSuccess(hr, "ITuner::get_TuningSpace", report)) {
+    // Enumerate all tuning spaces in the system.
+    ComPtr<::ITuningSpaceContainer> tsContainer(::CLSID_SystemTuningSpaces, ::IID_ITuningSpaceContainer, report);
+    if (tsContainer.isNull()) {
+        return false;
+    }
+    ComPtr<::IEnumTuningSpaces> tsEnum;
+    ::HRESULT hr = tsContainer->get_EnumTuningSpaces(tsEnum.creator());
+    if (!ComSuccess(hr, "ITuningSpaceContainer::get_EnumTuningSpaces", report)) {
         return false;
     }
 
-    // Get tuning space names
+    // Loop on all tuning spaces.
+    bool tspace_found = false;
+    ts::ComPtr<::ITuningSpace> tspace;
+    while (!tspace_found && tsEnum->Next(1, tspace.creator(), NULL) == S_OK) {
+
+        // Display tuning space in debug mode
+        const std::string fname(GetTuningSpaceFriendlyName(tspace.pointer(), report));
+        const std::string uname(GetTuningSpaceUniqueName(tspace.pointer(), report));
+        report.debug("found tuning space \"%s\" (%s)", fname.c_str(), uname.c_str());
+
+        // Try to use this tuning space with our tuner.
+        hr = _tuner->put_TuningSpace(tspace.pointer());
+        if (ComSuccess(hr, "fail to set default tuning space \"" + fname + "\"", debug_report)) {
+
+            // This tuning space is compatible with our tuner.
+            // Check if this is a tuning space we can support by getting its DVB system type:
+            // first get IDVBTuningSpace interface of tuning space (may not support it)
+            ComPtr<::IDVBTuningSpace> dvb_tspace;
+            dvb_tspace.queryInterface(tspace.pointer(), ::IID_IDVBTuningSpace, debug_report);
+            if (dvb_tspace.isNull()) {
+                // Not a DVB tuning space, silently ignore it.
+                report.debug("tuning space \"%s\" does not support IID_IDVBTuningSpace interface", fname.c_str());
+                continue;
+            }
+
+            // Get DVB system type
+            ::DVBSystemType systype;
+            hr = dvb_tspace->get_SystemType(&systype);
+            if (!ComSuccess(hr, "cannot get DVB system type from tuning space \"" + fname + "\"", report)) {
+                continue;
+            }
+            report.debug("DVB system type is %d for tuning space \"%s\"", int(systype), fname.c_str());
+
+            // Check if DVB system type matches our tuner type.
+            switch (systype) {
+                case ::DVB_Satellite:
+                    tspace_found = true;
+                    _tuner_type = ts::DVB_S;
+                    _delivery_systems.set(DS_DVB_S);
+                    // No way to check if DS_DVB_S2 is supported
+                    break;
+                case ::DVB_Terrestrial:
+                    tspace_found = true;
+                    _tuner_type = ts::DVB_T;
+                    _delivery_systems.set(DS_DVB_T);
+                    break;
+                case ::DVB_Cable:
+                    tspace_found = true;
+                    _tuner_type = ts::DVB_C;
+                    _delivery_systems.set(DS_DVB_C);
+                    break;
+                default:
+                    // Not a king of tuning space we support.
+                    break;
+            }
+        }
+    }
+
+    // Give up the tuner if no tuning space was found.
+    if (!tspace_found) {
+        report.debug("no supported tuning space found for this tuner");
+        return false;
+    }
+
+    // Keep this tuning space.
+    _tuning_space = tspace;
     _tuning_space_fname = GetTuningSpaceFriendlyName(_tuning_space.pointer(), report);
     _tuning_space_uname = GetTuningSpaceUniqueName(_tuning_space.pointer(), report);
-
-    // Good start, we successfully connected an network provider to a tuner filter.
-    report.debug("using provider filter \"" + _provider_name +
-                 "\", tuning space \"" + _tuning_space_uname +
-                 "\" (\"" + _tuning_space_fname + "\")");
+    report.debug("using tuning space \"" + _tuning_space_uname + "\" (\"" + _tuning_space_fname + "\")");
 
     // Try to build the rest of the graph starting at tuner filter.
     // Usually work with Terratec driver for instance.

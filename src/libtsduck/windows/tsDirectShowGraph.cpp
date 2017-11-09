@@ -104,6 +104,7 @@ void ts::DirectShowGraph::clear(ReportInterface& report)
     // Remove all filters.
     ComPtr<::IBaseFilter> first(startingFilter(report));
     cleanupDownstream(first.pointer(), report);
+    removeFilter(first.pointer(), report);
 
     // Release the graph object.
     _media_control.release();

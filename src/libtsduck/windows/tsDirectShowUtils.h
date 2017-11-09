@@ -42,14 +42,6 @@
 
 namespace ts {
     //!
-    //! Translate a DirectShow network provider class id into a TSDuck tuner type (Windows-specific).
-    //! @param [in] provider_clsid DirectShow network provider class.
-    //! @param [out] tuner_type Returned TSDuck tuner type.
-    //! @return True on success, false if no match is found.
-    //!
-    TSDUCKDLL bool NetworkProviderToTunerType(const ::GUID provider_clsid, TunerType& tuner_type);
-
-    //!
     //! Enumerate all devices of the specified class.
     //! Fill a vector of monikers to these objects.
     //! @param [in] clsid Device class to enumerate.

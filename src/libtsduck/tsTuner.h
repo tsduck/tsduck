@@ -455,7 +455,6 @@ namespace ts {
         DirectShowGraph         _graph;               // The filter graph
         ComPtr<SinkFilter>      _sink_filter;         // Sink filter to TSDuck
         ComPtr<::IBaseFilter>   _provider_filter;     // Network provider filter
-        std::string             _provider_name;       // ... filter friendly name
         ComPtr<::IBDA_NetworkProvider> _net_provider; // ... interface of provider_filter
         ComPtr<::ITuner>        _tuner;               // ... interface of provider_filter
         ComPtr<::ITuningSpace>  _tuning_space;        // ... associated to provider_filter
@@ -469,7 +468,7 @@ namespace ts {
 
         // Try to build the graph.
         // Return true on success, false on error
-        bool buildGraph(::IMoniker* provider_moniker, ::IMoniker* tuner_moniker, ReportInterface&);
+        bool buildGraph(::IMoniker* tuner_moniker, ReportInterface&);
 
         // Try to build the part of the graph starting at the tee filter.
         // The specified base filter is either the tuner filter or some
