@@ -63,8 +63,6 @@ Binaries for development environment:
 * Fedora 64 bits: $FC64DEV
 * Ubuntu 64 bits: $UB64DEV
 * macOS: Included in Homebrew package
-
-**Warning:** On Windows 64 bits, if you use DVB tuners which come with 32-bit drivers and DirectShow filters, you must use the 32 bits version of TSDuck. The 64-bit version of TSDuck cannot work with 32-bit drivers and filters.
 EOF
 
 rm -f $HTMLFILE $LINKFILE
