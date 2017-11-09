@@ -49,18 +49,18 @@ std::ostream& ts::Service::Display(std::ostream& strm,
 
     // List fields which are present
     uint32_t fields = 0;
-    size_t name_width = h_name.length();
-    size_t provider_width = h_provider.length();
+    size_t name_width = h_name.width();
+    size_t provider_width = h_provider.width();
     size_t count = 0;
     for (ITERATOR it = begin; it != end; ++it) {
         count++;
         fields |= it->getFields();
         if (it->_name.set()) {
-            name_width = std::max(name_width, it->_name.value().length());
+            name_width = std::max(name_width, it->_name.value().width());
             fields |= NAME;
         }
         if (it->_provider.set()) {
-            provider_width = std::max(provider_width, it->_provider.value().length());
+            provider_width = std::max(provider_width, it->_provider.value().width());
             fields |= PROVIDER;
         }
     }
