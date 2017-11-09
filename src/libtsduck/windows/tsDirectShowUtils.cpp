@@ -47,35 +47,6 @@ TSDUCK_SOURCE;
 
 
 //-----------------------------------------------------------------------------
-// Map a DirectShow network provider class id to a tuner type.
-// Return false if no match found.
-//-----------------------------------------------------------------------------
-
-bool ts::NetworkProviderToTunerType(const ::GUID provider_clsid, TunerType& tuner_type)
-{
-    if (provider_clsid == ::CLSID_DVBTNetworkProvider) {
-        tuner_type = ts::DVB_T;
-        return true;
-    }
-    else if (provider_clsid == ::CLSID_DVBSNetworkProvider) {
-        tuner_type = ts::DVB_S;
-        return true;
-    }
-    else if (provider_clsid == ::CLSID_DVBCNetworkProvider) {
-        tuner_type = ts::DVB_C;
-        return true;
-    }
-    else if (provider_clsid == ::CLSID_ATSCNetworkProvider) {
-        tuner_type = ts::ATSC;
-        return true;
-    }
-    else {
-        return false;
-    }
-}
-
-
-//-----------------------------------------------------------------------------
 // Enumerate all devices of the specified class.
 // Fill a vector of monikers to these objects.
 // Return true on success, false on error.
