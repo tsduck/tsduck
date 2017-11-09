@@ -94,9 +94,12 @@ CFLAGS_INCLUDES += -I$(LIBTSDUCKDIR)/private
 OBJS += $(DTAPI_OBJECT)
 
 # Library containing all modules.
-# Both static and dynamic libraries are created but only use the dynamic one when building tools and plugins.
-# On MacOS, there is no "flock" command and it is not possible to serialize access to the .a file.
-# So, we create the library in one single big command.
+# - Both static and dynamic libraries are created but only use the dynamic one when building
+#   tools and plugins.
+# - On MacOS, there is no "flock" command and it is not possible to serialize access to the
+#   .a file. So, we create the library in one single big command.
+# - The module tsStaticReferencesDVB is used only in the static library. It is useless in
+#   the dynamic library. In fact, it would only slow down application startup.
 
 .PHONY: libs
 libs: $(OBJDIR)/$(STATIC_LIBTSDUCK) $(OBJDIR)/$(SHARED_LIBTSDUCK)
@@ -108,7 +111,7 @@ else
 $(OBJDIR)/$(STATIC_LIBTSDUCK): $(OBJDIR)/$(STATIC_LIBTSDUCK)($(OBJS))
 endif
 
-$(OBJDIR)/$(SHARED_LIBTSDUCK): $(OBJS)
+$(OBJDIR)/$(SHARED_LIBTSDUCK): $(filter-out $(OBJDIR)/tsStaticReferencesDVB.o,$(OBJS))
 	@echo '  [DTAPI] $(if $(DTAPI_OBJECT),using $(DTAPI_OBJECT),no DTAPI available)'; \
 	echo '  [CC] $@'; \
 	$(CC) $(CFLAGS) $(SOFLAGS) $^ $(LDLIBS) -shared -o $@

@@ -298,6 +298,8 @@
 #include "tsComIds.h"
 #include "tsComPtr.h"
 #include "tsComUtils.h"
+#include "tsDirectShowFilterCategory.h"
+#include "tsDirectShowGraph.h"
 #include "tsDirectShowTest.h"
 #include "tsDirectShowUtils.h"
 #include "tsMediaTypeUtils.h"
