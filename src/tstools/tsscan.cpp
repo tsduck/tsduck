@@ -50,7 +50,7 @@
 #include "tsNullReport.h"
 TSDUCK_SOURCE;
 
-#define DEFAULT_PSI_TIMEOUT   5000 // ms
+#define DEFAULT_PSI_TIMEOUT   10000 // ms
 #define DEFAULT_MIN_STRENGTH  10
 #define DEFAULT_MIN_QUALITY   10
 #define DEFAULT_FIRST_OFFSET  (-2)
