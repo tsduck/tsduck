@@ -2,7 +2,7 @@
 TSDuck Change Log and Release Notes
 ===================================
 
-Version
+Version 3.4-20171110
 
 - TSDuck now fully handles DVB character sets in signalization. All textual
   display (tsanalyze, tstables, etc.) are produced in UTF-8 format, with
