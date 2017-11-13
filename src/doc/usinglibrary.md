@@ -1,14 +1,6 @@
 # Using the TSDuck library   {#usinglibrary}
 [TOC]
 
-TSDuck can be used as a general purpose C++ library for third-party applications
-outside the TSDuck set of tools and plugins. The TSDuck library offers generic
-C++ classes for operating systems features as well as specialized classes for
-MPEG/DVB transport streams.
-
-All classes which are documented here are available from the TSDuck library
-and can be used by any application.
-
 # Pre-requisites {#libreq}
 
 To be able to build applications with the TSDuck library, you must install the
