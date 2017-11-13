@@ -1,0 +1,150 @@
+/** @page libtutorial TSDuck Library Tutorial
+
+@tableofcontents
+
+The TSDuck library contains general-purpose C++ classes and utilities to handle
+MPEG transport streams.
+
+Roughly, the TSDuck library provides two categories of features:
+
+- Operating system abstraction layer to make the application code fully portable
+  between heterogeneous platforms. This is similar to frameworks such as Qt,
+  but much more lightweight.
+- Handling of MPEG/DVB transport streams and signalization.
+
+All C++ declarations are located inside the namespace `ts`, either directly within
+`ts` or inside inner namespaces. All preprocessor's macros are named with prefix `TS_`.
+
+# C++ features {#cppfeatures}
+
+## Portability issues {#portability}
+
+The file tsPlatform.h contains some very low level definitions such as macros
+defining the environment (processor, compiler, operating system, endianness),
+byte and bit manipulation, etc.
+
+## C++ strings {#cppstrings}
+
+The file tsStringUtils.h declares utility functions to manipulate standard strings
+(`std::string`).
+
+Note that C++ strings are made of 8-bit characters which are notoriously unable
+to represent international character sets. The usage of `std::string` with the
+TSDuck library is now discouraged in @ref unicodestring "Unicode strings".
+The TSDuck library will progressively remove the usage of `std::string` and
+the file tsStringUtils.h may disappear in the future.
+
+## Unicode strings {#unicodestring}
+
+The class ts::UString implements Java-like Unicode strings. Each character
+uses 16 bits of storage. Formally, ts::UString uses UTF-16 representation.
+This means that all characters from all modern languages can be represented
+as one single character. Characters from archaic languages may need two
+UTF-16 values, called a "surrogate pair".
+
+Technically, ts::UString is a subclass of `std::u16string`. So any operation
+on standard C++ strings also avalaible to ts::UString. But many more operations
+have been added to manipulate unicode strings.
+
+For consistency, the type ts::UChar is a typedef for `char16_t`. The file
+tsUChar.h defines some utility functions on ts::UChar. It also defines
+constants for most Unicode characters like ts::COLON or ts::LATIN_CAPITAL_LETTER_A_WITH_ACUTE.
+
+## Memory management {#memmgmt}
+
+The memory management is entirely based on the _smart pointer design pattern_
+(template class ts::SafePtr, using internal reference counters).
+
+All dynamically allocated objected are managed using
+smart pointers. Thus, coding in C++ is as simple as in Java: simply allocate objects
+and forget about memory management. When an object is no longer referenced, it is
+automatically deallocated. Extensive testing using tools like valgrind have proven
+this to be true.
+
+Smart pointers can be made thread-safe through a @e mutex class as template parameter.
+
+The default mutex class is ts::NullMutex which does nothing. So, by default, smart
+pointers are not thread-safe. All usages of a given instantiation of ts::SafePtr
+shall take place in the same thread (or must be explicitly synchronized). So, using
+smart pointers is fast by default, without synchronization overhead.
+
+To make an instantiation of ts::SafePtr thread-safe, use the class ts::Mutex as
+template parameter. Smart pointers from this instantiation can be used from
+different threads. Note, however, that the protection does not extend to the
+@e pointed object which must be properly synchronized.
+
+A typical application of thread-safe smart pointers is inter-thread communication
+using message queues. If the messages are polymorph or too big to be copied in the
+message queue, use thread-safe smart pointers to these messages. The message queue
+copies smart pointers, not objects. To implement message queues, you may use the
+template class ts::MessageQueue.
+
+## Error reporting {#errreport}
+
+All TSDuck classes use a consistent error reporting mechanism through the
+ts::ReportInterface abstract class.
+
+This interface defines several levels of severity in the type ts::Severity,
+ranging from ts::Debug to ts::Fatal. Each instance of ts::ReportInterface
+defines which levels of message are reported to the user. This is usually
+triggered by command-line options such as `-\-verbose` or `-\-debug`.
+
+Most classes or methods from the TSDuck library use a reference to an
+instance of ts::ReportInterface to report messages and errors. The actual
+reporting object is often built at application level and then propagated
+to all layers of code.
+
+Some interesting subclasses of ts::ReportInterface are:
+- ts::CerrReport, a singleton which reports errors to `std::cerr`.
+  The macro CERR can be used as a shortcut to the instance of the singleton.
+- ts::NullReport, a singleton which drops all messages.
+  The macro NULLREP can be used as a shortcut to the instance of the singleton.
+- ts::Args (see @ref cmdargs "below") which defines the syntax and handling
+  of command line arguments. This is the typical instance of ts::ReportInterface
+  which is used at application-level.
+- ts::TSP, a class which is used by tsp plugins to communicate with the
+  top-level `tsp` application. Each tsp plugin execute in a separate thread.
+  This class is used to asynchronously log messages from plugins without slowing
+  down the plugin's thread.
+
+## Command-line arguments {#cmdargs}
+
+The class ts::Args implements a generic handling of command line arguments.
+
+Each application or plugin typically defines its own subclass of ts::Args.
+The subclass defines the command line syntax and the corresponding help text.
+The superclass ts::Args automatically parses the command line, reports errors
+and common options such as `-\-help`
+
+# Cryptography {#crypto}
+
+The class ts::BlockCipher is the root of a hierarchy of symmetric cryptography
+classes, including chaining modes.
+
+
+# Operating system features {#osfeatures}
+
+The file tsSysUtils.h declares utility functions on top of the
+operating system and file system.
+
+## Time {#time}
+
+The class ts::Time is a portable implementation of time (both local and UTC time).
+
+## Multithreading {#multithread}
+
+TSDuck is heavily multi-threaded. Threading and synchronization are implemented
+through classes such as ts::Thread, ts::Mutex, ts::Condition, etc.
+
+TSDuck relies on C++ mechanisms to track the usage of resources. The library provides
+mechanisms to ensure that no dangling lock is lost through the _guard design pattern_
+(classes ts::Guard and ts::GuardCondition).
+
+
+## Networking {#networking}
+
+# MPEG transport streams {#tsclasses}
+
+# MPEG/DVB signalization {#siclasses}
+
+*/

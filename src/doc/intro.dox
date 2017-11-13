@@ -1,51 +1,28 @@
 /** @mainpage TSDuck MPEG Transport Stream Library for C++
 
-@tableofcontents
+TSDuck is a toolkit which manipulates MPEG Transport Streams (TS).
+As a product, TSDuck provides many different command-line tools and plugins.
 
-# Overview {#overview}
+Internally, the architecture of TSDuck is made of a large shareable
+library (@c tsduck.dll on Windows, @c tsduck.so on Linux and macOS).
+Most of the valuable processing is performed by the various C++ classes
+from the TSDuck library. All command-line tools and plugins are usually
+small wrappers around this library.
 
-The TSDuck library contains general-purpose C++ classes and utilities to handle
-MPEG transport streams.
+The TSDuck library offers generic C++ classes for operating systems features
+as well as specialized classes for MPEG/DVB transport streams. This library
+can be used as a general-purpose C++ library for third-party applications,
+outside the TSDuck tools and plugins. 
 
-Most of the code in TSDuck is located inside this library which is named `tsduck.dll`
-on Windows and `tsduck.so` on Linux and MacOS systems. All TSDuck commands, executables
-and plugins, are just small wrappers around common code in the library.
+This set of documentation is a reference for the TSDuck library. It can be
+used either by TSDuck maintainers and developers of third-party applications.
 
-# Code structure {#codestruct}
+For developers of third-party applications:
+- @ref usinglibrary "Referencing the TSDuck library from your application"
+- @ref libtutorial "A tutorial on the TSDuck C++ classes"
 
-Roughly, the TSDuck library provides two categories of features:
-- Operating system abstraction layer to make the application code fully portable
-  between heterogeneous platforms. This is similar to frameworks such as Qt,
-  but much more lightweight.
-- MPEG Transport Stream manipulation.
-
-All C++ declarations are located inside the namespace `ts`, either directly within
-`ts` or inside inner namespaces. All preprocessor's macros are named with prefix `TS_`.
-
-The file tsPlatform.h contains some very low level definitions such as macros
-defining the environment (processor, compiler, operating system, endianness),
-byte and bit manipulation, etc.
-
-The file tsStringUtils.h declares utility functions to manipulate standard strings
-(`std::string`). The file tsSysUtils.h declares utility functions on top of the
-operating system and file system.
-
-The class ts::Time is a portable implementation of time (both local and UTC time).
-The class ts::Args implements a generic handling of command line arguments.
-
-The class ts::BlockCipher is the root of a hierarchy of symmetric cryptography
-classes, including chaining modes.
-
-TSDuck is heavily multi-threaded. Threading and synchronization are implemented
-through classes such as ts::Thread, ts::Mutex, ts::Condition, etc.
-
-TSDuck relies on C++ mechanisms to track the usage of resources. The library provides
-mechanisms to ensure that no dangling lock is lost through the _guard design pattern_
-(classes ts::Guard and ts::GuardCondition). The memory management is entirely based
-on the _smart pointer design pattern_ (class ts::SafePtr). All dynamically allocated
-objected are managed using smart pointers. Thus, coding in C++ is as simple as in
-Java: simply allocate objects and forget about memory management. When an object is
-no longer referenced, it is automatically deallocated. Extensive testing using tools
-like valgrind have proven this to be true.
+For TSDuck maintainers:
+- @ref building "Building TSDuck"
+- @ref devplugin "A tutorial on developing TSP Plugins"
 
 */
