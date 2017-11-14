@@ -43,7 +43,7 @@ namespace ts {
     class TSDUCKDLL SignalAllocator
     {
         // This class is a singleton. Use static Instance() method.
-        tsDeclareSingleton(SignalAllocator);
+        TS_DECLARE_SINGLETON(SignalAllocator);
 
     public:
         //!

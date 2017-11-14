@@ -44,7 +44,7 @@ namespace ts {
     //!
     class TSDUCKDLL CerrReport : public ReportInterface
     {
-        tsDeclareSingleton(CerrReport);
+        TS_DECLARE_SINGLETON(CerrReport);
 
     public:
         //!

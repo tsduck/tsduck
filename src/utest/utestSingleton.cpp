@@ -77,10 +77,10 @@ void SingletonTest::tearDown()
 namespace {
     class Singleton
     {
-        tsDeclareSingleton(Singleton);
+        TS_DECLARE_SINGLETON(Singleton);
     };
 
-    tsDefineSingleton(Singleton);
+    TS_DEFINE_SINGLETON(Singleton);
 
     Singleton::Singleton()
     {

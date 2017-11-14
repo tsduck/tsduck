@@ -92,12 +92,12 @@ bool ts::DVBCharset::GetCharCodeTable(uint32_t& code, size_t& codeSize, const ui
 namespace {
     class CharSetRepo
     {
-        tsDeclareSingleton(CharSetRepo);
+        TS_DECLARE_SINGLETON(CharSetRepo);
     public:
         std::map<ts::UString, ts::DVBCharset*> byName;
         std::map<uint32_t,   ts::DVBCharset*> byCode;
     };
-    tsDefineSingleton(CharSetRepo);
+    TS_DEFINE_SINGLETON(CharSetRepo);
     CharSetRepo::CharSetRepo() : byName(), byCode() {}
 }
 

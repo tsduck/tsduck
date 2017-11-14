@@ -59,7 +59,7 @@ namespace ts {
         //!
         //! Fatal low-level mutex error.
         //!
-        tsDeclareException(MutexError);
+        TS_DECLARE_EXCEPTION(MutexError);
 
         //!
         //! Default constructor.

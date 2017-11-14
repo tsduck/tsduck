@@ -37,7 +37,7 @@
 TSDUCK_SOURCE;
 
 // Define protocol singleton instance
-tsDefineSingleton (ts::emmgmux::Protocol);
+TS_DEFINE_SINGLETON (ts::emmgmux::Protocol);
 
 
 //----------------------------------------------------------------------------

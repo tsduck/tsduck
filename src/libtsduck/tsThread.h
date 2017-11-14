@@ -56,7 +56,7 @@ namespace ts {
         //!
         //! Fatal low-level threading error.
         //!
-        tsDeclareException(ThreadError);
+        TS_DECLARE_EXCEPTION(ThreadError);
 
         //!
         //! Default constructor (all attributes have their default values).

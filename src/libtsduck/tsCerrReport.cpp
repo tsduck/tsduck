@@ -36,7 +36,7 @@
 TSDUCK_SOURCE;
 
 // Define singleton instance
-tsDefineSingleton(ts::CerrReport);
+TS_DEFINE_SINGLETON(ts::CerrReport);
 
 // Constructor / destructor.
 ts::CerrReport::CerrReport() {}
