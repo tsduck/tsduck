@@ -42,7 +42,7 @@ namespace ts {
     //!
     class TSDUCKDLL NullReport : public ReportInterface
     {
-        tsDeclareSingleton(NullReport);
+        TS_DECLARE_SINGLETON(NullReport);
 
     public:
         //!

@@ -146,7 +146,7 @@ namespace ts {
         //!
         //! Exception thrown when assigning incompatible parameter types.
         //!
-        tsDeclareException(IncompatibleTunerParametersError);
+        TS_DECLARE_EXCEPTION(IncompatibleTunerParametersError);
 
         //!
         //! Virtual assignment.

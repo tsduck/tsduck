@@ -62,7 +62,7 @@ namespace ts {
         //!
         //! Fatal low-level time error.
         //!
-        tsDeclareException(TimeError);
+        TS_DECLARE_EXCEPTION(TimeError);
 
         //!
         //! Default constructor.

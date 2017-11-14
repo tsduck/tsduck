@@ -82,7 +82,7 @@ namespace ts {
         //!
         //! Fatal low-level condition guard error.
         //!
-        tsDeclareException(GuardConditionError);
+        TS_DECLARE_EXCEPTION(GuardConditionError);
 
         //!
         //! Constructor, automatically acquire the mutex with a timeout.

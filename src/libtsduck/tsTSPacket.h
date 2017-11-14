@@ -58,7 +58,7 @@ namespace ts {
         //!
         //! Internal error: access a non-existent adaptation field.
         //!
-        tsDeclareException(AdaptationFieldError);
+        TS_DECLARE_EXCEPTION(AdaptationFieldError);
 
         //!
         //! Assigment operator.

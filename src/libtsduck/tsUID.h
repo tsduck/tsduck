@@ -43,7 +43,7 @@ namespace ts {
     class TSDUCKDLL UID
     {
         // This class is a singleton. Use static Instance() method.
-        tsDeclareSingleton(UID);
+        TS_DECLARE_SINGLETON(UID);
 
     public:
         //!

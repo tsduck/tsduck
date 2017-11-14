@@ -36,7 +36,7 @@
 TSDUCK_SOURCE;
 
 // Define singleton instance
-tsDefineSingleton(ts::NullReport);
+TS_DEFINE_SINGLETON(ts::NullReport);
 
 // Constructor / destructor.
 ts::NullReport::NullReport() {}

@@ -46,7 +46,7 @@
 TSDUCK_SOURCE;
 
 // Define singleton instance
-tsDefineSingleton (ts::UID);
+TS_DEFINE_SINGLETON (ts::UID);
 
 
 //----------------------------------------------------------------------------

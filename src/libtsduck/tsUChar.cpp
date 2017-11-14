@@ -46,10 +46,10 @@ TSDUCK_SOURCE;
 #define MAP_SINGLETON(classname, key_type, value_type)      \
     class classname : public std::map<key_type, value_type> \
     {                                                       \
-        tsDeclareSingleton(classname);                      \
+        TS_DECLARE_SINGLETON(classname);                      \
         typedef std::map<key_type, value_type> SuperClass;  \
     };                                                      \
-    tsDefineSingleton(classname)
+    TS_DEFINE_SINGLETON(classname)
 
 
 //----------------------------------------------------------------------------

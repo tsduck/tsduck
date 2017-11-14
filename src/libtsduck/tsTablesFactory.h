@@ -52,7 +52,7 @@ namespace ts {
     //!
     class TSDUCKDLL TablesFactory
     {
-        tsDeclareSingleton(TablesFactory);
+        TS_DECLARE_SINGLETON(TablesFactory);
 
     public:
         //!

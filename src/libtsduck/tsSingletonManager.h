@@ -44,7 +44,7 @@ namespace ts {
     //! The class SingletonManager is a singleton itself.
     //! It helps the creation of all other singletons.
     //! Never use it directly.
-    //! Used only through the macros tsDeclareSingleton() and tsDefineSingleton().
+    //! Used only through the macros TS_DECLARE_SINGLETON() and TS_DEFINE_SINGLETON().
     //!
     class TSDUCKDLL SingletonManager
     {
@@ -67,7 +67,7 @@ namespace ts {
 //!
 //! Singleton class declaration.
 //!
-//! The macro tsDeclareSingleton must be used inside the singleton class declaration.
+//! The macro TS_DECLARE_SINGLETON must be used inside the singleton class declaration.
 //! @param classname Name of the singleton class, without namespace or outer class name.
 //!
 //! Example code:
@@ -75,16 +75,16 @@ namespace ts {
 //! // File: MySingle.h
 //! namespace foo {
 //!     class MySingle {
-//!        tsDeclareSingleton(MySingle);
+//!        TS_DECLARE_SINGLETON(MySingle);
 //!        ....
 //! @endcode
 //!
 //! The class becomes a singleton, under control of the SingletonManager.
 //! Use static Instance() method to get the instance of the singleton.
-//! @see tsDefineSingleton()
+//! @see TS_DEFINE_SINGLETON()
 //! @hideinitializer
 //!
-#define tsDeclareSingleton(classname)                               \
+#define TS_DECLARE_SINGLETON(classname)                             \
     public:                                                         \
         /** Get the instance of the singleton of this class. */     \
         /** @return The instance of the singleton of this class. */ \
@@ -100,7 +100,7 @@ namespace ts {
 //! @hideinitializer
 //! Singleton class definition.
 //!
-//! The macro tsDefineSingleton must be used in the implementation of a singleton class.
+//! The macro TS_DEFINE_SINGLETON must be used in the implementation of a singleton class.
 //! @param fullclassname Fully qualified name of the singleton class.
 //!
 //! Example code:
@@ -108,14 +108,14 @@ namespace ts {
 //! // File: MySingle.cpp
 //! #include "MySingle.h"
 //!
-//! tsDefineSingleton(foo::MySingle);
+//! TS_DEFINE_SINGLETON(foo::MySingle);
 //!
 //! foo::MySingle::MySingle() : ... { ... }
 //! ....
 //! @endcode
-//! @see tsDeclareSingleton()
+//! @see TS_DECLARE_SINGLETON()
 //!
-#define tsDefineSingleton(fullclassname)                             \
+#define TS_DEFINE_SINGLETON(fullclassname)                           \
     fullclassname* fullclassname::Instance()                         \
     {                                                                \
         if (_instance == 0) {                                        \

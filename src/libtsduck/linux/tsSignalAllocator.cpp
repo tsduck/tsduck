@@ -35,7 +35,7 @@
 TSDUCK_SOURCE;
 
 // Define singleton instance
-tsDefineSingleton (ts::SignalAllocator);
+TS_DEFINE_SINGLETON (ts::SignalAllocator);
 
 
 //-----------------------------------------------------------------------------

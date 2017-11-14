@@ -60,7 +60,7 @@ namespace ts {
         //!
         //! Fatal low-level condition/threading error.
         //!
-        tsDeclareException(ConditionError);
+        TS_DECLARE_EXCEPTION(ConditionError);
 
         //!
         //! Default constructor.

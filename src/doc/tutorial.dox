@@ -119,8 +119,8 @@ can be explicitly marked as uninitialized, set or cleared.
 
 The _singleton_ design pattern is simple in theory, but not so simple to
 implement correctly in practice. The TSDuck library encapsulates the
-implementation difficulties using the two macros tsDeclareSingleton()
-and tsDefineSingleton().
+implementation difficulties using the two macros TS_DECLARE_SINGLETON()
+and TS_DEFINE_SINGLETON().
 
 Similarly, using static data can be a nightmare because it is impossible
 to manage the initialization order of modules in C++. Again, the TSDuck
@@ -171,7 +171,7 @@ of this exception is able to embed an error message and an optional system
 error code (type ts::ErrorCode).
 
 Each specific exception should be a subclass of ts::Exception. Instead of
-rewriting the subclass code, applications should use the macro tsDeclareException().
+rewriting the subclass code, applications should use the macro TS_DECLARE_EXCEPTION().
 
 ## Pseudo-enumeration data {#enums}
 

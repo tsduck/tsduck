@@ -150,7 +150,7 @@ namespace ts {
         class TSDUCKDLL Protocol : public tlv::Protocol
         {
             // This class is a singleton. Use static Instance() method.
-            tsDeclareSingleton(Protocol);
+            TS_DECLARE_SINGLETON(Protocol);
 
         public:
             // Implementation of pure virtual methods

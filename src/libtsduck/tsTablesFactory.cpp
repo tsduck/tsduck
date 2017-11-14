@@ -35,7 +35,7 @@
 #include "tsStringUtils.h"
 TSDUCK_SOURCE;
 
-tsDefineSingleton(ts::TablesFactory);
+TS_DEFINE_SINGLETON(ts::TablesFactory);
 
 
 //----------------------------------------------------------------------------

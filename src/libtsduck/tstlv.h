@@ -79,7 +79,7 @@ namespace ts {
         //! - A message subclass tries to fetch parameters which are not
         //!   declared in the protocol (or declared with a different size).
         //!
-        tsDeclareException(DeserializationInternalError);
+        TS_DECLARE_EXCEPTION(DeserializationInternalError);
 
         //!
         //! TSDuck specific protocol version.

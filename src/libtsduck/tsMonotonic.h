@@ -46,7 +46,7 @@ namespace ts {
         //!
         //! Low-level monotonic clock error.
         //!
-        tsDeclareException(MonotonicError);
+        TS_DECLARE_EXCEPTION(MonotonicError);
 
         //!
         //! Default constructor.

@@ -284,7 +284,7 @@ namespace ts {
         //!
         //! Internal application error in command line argument handling.
         //!
-        tsDeclareException(ArgsError);
+        TS_DECLARE_EXCEPTION(ArgsError);
 
         //!
         //! Args object flags, used in an or'ed mask.

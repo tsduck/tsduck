@@ -47,11 +47,11 @@ namespace ts {
         //!
         //! Exception thrown when registering duplicate charsets.
         //!
-        tsDeclareException(DuplicateDVBCharset);
+        TS_DECLARE_EXCEPTION(DuplicateDVBCharset);
         //!
         //! Exception thrown when registering invalid charsets.
         //!
-        tsDeclareException(InvalidDVBCharset);
+        TS_DECLARE_EXCEPTION(InvalidDVBCharset);
 
         //!
         //! DVB-encoded CR/LF in single-byte character sets.

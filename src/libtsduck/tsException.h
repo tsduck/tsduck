@@ -75,7 +75,7 @@ namespace ts {
 //! This macro declares an exception as a subclass of ts::Exception.
 //! @param [in] name Name of the exception class.
 //!
-#define tsDeclareException(name)                                  \
+#define TS_DECLARE_EXCEPTION(name)                                \
     class name: public ts::Exception                              \
     {                                                             \
     public:                                                       \
@@ -112,17 +112,17 @@ namespace ts {
     //!
     //! Exception for generic invalid value error.
     //!
-    tsDeclareException(InvalidValue);
+    TS_DECLARE_EXCEPTION(InvalidValue);
     //!
     //! Uninitialized variable error.
     //!
-    tsDeclareException(UninitializedVariable);
+    TS_DECLARE_EXCEPTION(UninitializedVariable);
     //!
     //! Unimplemented method error.
     //!
-    tsDeclareException(UnimplementedMethod);
+    TS_DECLARE_EXCEPTION(UnimplementedMethod);
     //!
     //! Implementation error.
     //!
-    tsDeclareException(ImplementationError);
+    TS_DECLARE_EXCEPTION(ImplementationError);
 }
