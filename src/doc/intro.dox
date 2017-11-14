@@ -1,6 +1,7 @@
 /** @mainpage TSDuck MPEG Transport Stream Library for C++
 
 TSDuck is a toolkit which manipulates MPEG Transport Streams (TS).
+
 As a product, TSDuck provides many different command-line tools and plugins.
 
 Internally, the architecture of TSDuck is made of a large shareable
@@ -20,6 +21,8 @@ used either by TSDuck maintainers and developers of third-party applications.
 For developers of third-party applications:
 - @ref usinglibrary "Referencing the TSDuck library from your application"
 - @ref libtutorial "A tutorial on the TSDuck C++ classes"
+- <a href="classes.html">C++ classes</a>
+- <a href="files.html">Header files</a>
 
 For TSDuck maintainers:
 - @ref building "Building TSDuck"

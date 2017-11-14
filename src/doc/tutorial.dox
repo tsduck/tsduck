@@ -30,7 +30,7 @@ The file tsStringUtils.h declares utility functions to manipulate standard strin
 
 Note that C++ strings are made of 8-bit characters which are notoriously unable
 to represent international character sets. The usage of `std::string` with the
-TSDuck library is now discouraged in @ref unicodestring "Unicode strings".
+TSDuck library is now discouraged in favor of @ref unicodestring "Unicode strings".
 The TSDuck library will progressively remove the usage of `std::string` and
 the file tsStringUtils.h may disappear in the future.
 
@@ -49,6 +49,29 @@ have been added to manipulate unicode strings.
 For consistency, the type ts::UChar is a typedef for `char16_t`. The file
 tsUChar.h defines some utility functions on ts::UChar. It also defines
 constants for most Unicode characters like ts::COLON or ts::LATIN_CAPITAL_LETTER_A_WITH_ACUTE.
+
+Unicode strings can be converted to and from DVB strings. Most DVB-defined
+character sets are implemented (see the class ts::DVBCharset) and recognized
+when a string is read from a descriptor.
+When a string is serialized into a binary descriptor, the
+most appropriate DVB character set is used. In practice, a few known DVB
+character sets are used and when the string cannot be encoded in any of
+them UTF-8 is used (UTF-8 is a valid DVB character set).
+
+## Binary data {#bindata}
+
+The class ts::ByteBlock represents a raw block of bytes. It is a subclass
+of `std::vector<uint8_t>` and consequently benefits from all standard vector
+operations. It also add useful methods for data serialization or deserialization
+in any byte order.
+
+For data serialization or deserialization over arbitrary
+memory areas, the header file tsPlatform.h provides low-level function to
+access integer values of 8, 16, 24, 32 and 64 bits in any byte order.
+
+The class ts::BitStream provides an abstraction layer over a memory area
+to parse bitstreams. It gives access to data of any bit-size at any bit
+position, either as a continuous stream or seeking at random bit positions.
 
 ## Memory management {#memmgmt}
 
@@ -79,6 +102,22 @@ message queue, use thread-safe smart pointers to these messages. The message que
 copies smart pointers, not objects. To implement message queues, you may use the
 template class ts::MessageQueue.
 
+## Variables, singletons and static data {#singletons}
+
+The template class ts::Variable implements an uninitialized variable
+of a given type (the template parameter). An instance of this type
+can be explicitly marked as uninitialized, set or cleared.
+
+The _singleton_ design pattern is simple in theory, but not so simple to
+implement correctly in practice. The TSDuck library encapsulates the
+implementation difficulties using the two macros tsDeclareSingleton()
+and tsDefineSingleton().
+
+Similarly, using static data can be a nightmare because it is impossible
+to manage the initialization order of modules in C++. Again, the TSDuck
+library encapsulates these implementation difficulties using the macro
+TS_STATIC_INSTANCE().
+
 ## Error reporting {#errreport}
 
 All TSDuck classes use a consistent error reporting mechanism through the
@@ -99,6 +138,10 @@ Some interesting subclasses of ts::ReportInterface are:
   The macro CERR can be used as a shortcut to the instance of the singleton.
 - ts::NullReport, a singleton which drops all messages.
   The macro NULLREP can be used as a shortcut to the instance of the singleton.
+- ts::ReportFile which logs messages in a file. It can be made thread-safe
+  using a mutex class as template argument.
+- ts::ReportBuffer which logs messages in a memory buffer. It can be made thread-safe
+  using a mutex class as template argument.
 - ts::Args (see @ref cmdargs "below") which defines the syntax and handling
   of command line arguments. This is the typical instance of ts::ReportInterface
   which is used at application-level.
@@ -106,6 +149,31 @@ Some interesting subclasses of ts::ReportInterface are:
   top-level `tsp` application. Each tsp plugin execute in a separate thread.
   This class is used to asynchronously log messages from plugins without slowing
   down the plugin's thread.
+
+## Exceptions {#except}
+
+As a general rule, TSDuck prefers the usage of error reporting interface
+and error statuses over exception. However, for a limited number of
+unrecoverable conditions which should never occur in practice, exceptions
+are used.
+
+All TSDuck exception inherit from the superclass ts::Exception. An instance
+of this exception is able to embed an error message and an optional system
+error code (type ts::ErrorCode).
+
+Each specific exception should be a subclass of ts::Exception. Instead of
+rewriting the subclass code, applications should use the macro tsDeclareException().
+
+## Pseudo-enumeration data {#enums}
+
+An instance of the class ts::Enumeration associates a list of integer values
+(or @e enum values) with strings. I can be used to display meaningful strings
+instead of integer values. But it is even more useful to decode command line
+arguments. When an option accepts a predefined list of values, the input
+string can be either an integer value or a name. When it is a name,
+it can even be abbreviated as long as it is not ambiguous in the corresponding
+ts::Enumeration. This is transparent for the application which receives the
+corresponding integer value.
 
 ## Command-line arguments {#cmdargs}
 
@@ -116,35 +184,484 @@ The subclass defines the command line syntax and the corresponding help text.
 The superclass ts::Args automatically parses the command line, reports errors
 and common options such as `-\-help`
 
+The value of command line options can be free strings, integer values or
+enumeration values. Integer value are recognized in decimal or hexadecimal
+form (prefix `0x`) and thousands separator ('`,`') which are present for
+clarity are ignored. Enumeration values are handled through ts::Enumeration.
+
+## XML data {#tinyxml}
+
+The TSDuck library embeds <a href="http://www.grinninglizard.com/tinyxml2/">TinyXML-2</a>,
+a lightweight and efficient XML parser.
+
+TinyXML-2 can be used directly. But the class ts::XML provides some encapsulation
+and utility functions. Specifically, UTF-8 encoded strings and attributes from
+the XML file can be directly returned as ts::UString.
+
 # Cryptography {#crypto}
 
-The class ts::BlockCipher is the root of a hierarchy of symmetric cryptography
-classes, including chaining modes.
+The TSDuck library contains a few cryptographic classes. The TSDuck library
+is *not* a cryptographic library and will never be. Cryptography is a serious
+matter which should be left to cryptographers.
 
+Some transport stream processing operations require some cryptography, essentially
+block ciphers and hash functions. To do that, the TSDuck library includes a few
+cryptographic functions which were originally copied from the
+<a href="http://www.libtom.net/LibTomCrypt/">LibTomCrypt library</a>.
+
+This copy is allowed by the very liberal license of LibTomCrypt.
+Copying code from LibTomCrypt inside TSDuck instead of referencing it
+has the following advantages:
+
+- Encapsulate the C API of LibTomCrypt into higher-level C++ classes.
+- Automatically manage the resources using C++ constructors and destructors.
+- Allow a portable usage of the cryptographic functions without rebuilding LibTomCrypt.
+- Remove a dependency to an external library.
+
+The abstract class ts::BlockCipher is the root of a hierarchy of symmetric cryptography
+classes, including chaining modes. The main block cipher classes are ts::AES,
+ts::TDES and ts::DES.
+
+Chaining modes are template classes which inherit from the abstract class ts::CipherChaining.
+The template parameter is a block cipher class. The main chaining modes are
+ts::ECB, ts::CBC or more exotic modes from the DTV world such as ts::DVS042.
+
+But ts::CipherChaining is also a subclass of ts::BlockCipher because it
+remains a symmetric cipher. So, ciphers like ts::AES or ts::CBC<ts::AES>
+can be used though the same ts::BlockCipher interface.
+
+The class ts::Scrambling implements DVB-CSA-2, the Digital Video Broadcasting
+Common Scrambling Algorithm. This implementation is older than the open-source
+<a href="https://www.videolan.org/developers/libdvbcsa.html">libdvbcsa library</a>
+and is probably less efficient.
+
+The abstract class ts::Hash is the root of a hierarchy of hash functions classes.
+The main hash functions are ts::SHA1, ts::SHA256 or ts::SHA512.
+
+The abstract class ts::RandomGenerator if the root of pseudo-random generators.
+Currently, only one subclass exists: ts::SystemRandomGenerator which is a portable
+interface to the system-provided PRNG. Usually, this is not the best PRNG on earth,
+but it is fine for most usages in TSDuck applications. However, you should not use
+it for secure applications. If you need security, use a cryptographic library.
 
 # Operating system features {#osfeatures}
 
-The file tsSysUtils.h declares utility functions on top of the
-operating system and file system.
+## Miscelleaneous system utilities {#sysutils}
+
+The file tsSysUtils.h declares utility functions on top of the operating system.
+
+These functions manipulate:
+
+- File paths.
+- File attributes.
+- Create or delete files and directories.
+- Environment variables.
+- Process identifiers.
+- System error codes.
 
 ## Time {#time}
 
 The class ts::Time is a portable implementation of time (both local and UTC time).
+Many operations are provided, such as:
+- Getting system time in various forms.
+- Arithmetic operations on time.
+- Analysing and build time values.
+- Formatting time values as strings.
+
+The class ts::Monotonic implements a monotonic clock and high-precision timer
+(to the best of the capabilities of the operating system). It is typically used
+by the public `regulate` for precise timing operations.
 
 ## Multithreading {#multithread}
 
 TSDuck is heavily multi-threaded. Threading and synchronization are implemented
 through classes such as ts::Thread, ts::Mutex, ts::Condition, etc.
 
-TSDuck relies on C++ mechanisms to track the usage of resources. The library provides
-mechanisms to ensure that no dangling lock is lost through the _guard design pattern_
-(classes ts::Guard and ts::GuardCondition).
+The abstract class ts::Thread manages a thread. To define an actual thread, derive
+this class and implement the virtual method @e main().
 
+The class ts::ThreadAttributes contains all mandatory or optional attributes of
+a thead. An application typically build a ts::ThreadAttributes object and then
+creates threads using these attributes.
+
+The class ts::Mutex implements a recursive mutex to synchronize access to shared
+resources from concurrent threads.
+
+The class ts::Condition implements a POSIX-like condition variable, using @e signal()
+and @e wait() primitives.
+
+TSDuck relies on C++ mechanisms to track the usage of resources. The library provides
+mechanisms to ensure that no dangling lock is lost through the _guard design pattern_.
+It recommended to next explicitly use @e acquire() or @e release() primitives.
+Insteead, use classes ts::Guard for mutexes and ts::GuardCondition for condition
+variables.
+
+## Virtual memory {#virtmem}
+
+The class ts::ResidentBuffer implements a buffer which is locked in physical memory,
+preventing paging or swapping on this buffer. Ihis is useful for large data buffers with high
+performance constraints.
+
+This is a template class. The template parameter is the type of the elementary data
+in the buffer.
+
+The core data of the `tsp` processor is a ts::ResidentBuffer<ts::TSPacket>.
+The incoming packets are directly written into this buffer by the input plugin.
+Each packet processing plugin directly reads and writes the packets here.
+And the output plugin reads the packet there, at the very same place they
+were written by the input plugin.
+
+## Processes {#processes}
+
+The class ts::ProcessMetrics and the function ts::GetProcessMetrics are used to fetch
+CPU time and virtual memory usage of the current process. To track potential memory
+leaks and impact of the application on the system, the class ts::SystemMonitor
+creates a background thread which reports the process metrics of the application
+are regular intervals.
+
+The class ts::ForkPipe is a portable and convenient way to create a process
+running a specific command and create a outgoing pipe from the calling application
+to the standard input of the created process.
+
+The pipe is open in binary mode (when it makes sense for the operating system)
+and can be used to pass an entire transport stream when necessary.
 
 ## Networking {#networking}
 
-# MPEG transport streams {#tsclasses}
+The class ts::IPAddress and ts::SocketAddress defines an IPv4 address and
+a corresponding socket address (an IPv4 address and a port number). Host
+name resolution and multicast are supported.
 
-# MPEG/DVB signalization {#siclasses}
+The classes ts::TCPSocket and UDPSocket implement TCP/IP and UDP/IP endpoints.
+
+The class ts::UDPSocket can be used directly to send and receive datagrams.
+Multicast is supported.
+
+The class ts::TCPSocket can be used only through two subclasses.
+The subclass ts::TCPConnection is a TCP/IP communication endpoint, either
+on client or server side. It is used to send or receive data streams.
+The subclass ts::TCPServer is used to implement a server. It accepts
+incoming client connections and creates a ts::TCPConnection for each
+new connection. On the client side, the ts::TCPConnection is directly
+used to connect to the client.
+
+Subclasses of ts::TCPConnection are used to implement specific protocols
+on top of TCP/IP. Currently, the defined subclasses are ts::TelnetConnection
+and ts::tlv::Connection. The latter is used in @ref dvbprotocols
+"DVB SimulCrypt head-end protocols".
+
+## Shared libraries {#sharelibs}
+
+The TSDuck library contains classes to load shared libraries (@c .dll on Windows,
+@c .so on Linux) and lookup symbols inside them in a portable way.
+These classes are typically used to load TSP plugins but can be used in any application.
+
+The class ts::SharedLibrary manipulates any type of shared library.
+
+The subclass ts::ApplicationSharedLibrary searches a shared library using
+TSDuck rules: if the file is not found "as it is", an optional prefix and
+a list of directories are used. This is how, for instance, searching the
+shared library named "`ip`" will end up loading the file "`tsplugin_ip.dll`"
+in the same directory as the application executable file.
+
+Finally, the subclass ts::PluginSharedLibrary adds the resolution of the
+`tsp` plugin interface for input, output and packet processor plugins.
+This class is probably useless for third-party application, unless they
+want to use `tsp` plugins.
+
+## Smart-card interface {#pcscinterface}
+
+Applications which interacts with smart-cards shall use the PC/SC interface.
+PC/SC is a standard interface which was originally developped for Windows
+but which is also available on Linux and macOS.
+
+The TSDuck library does not embed or hide PC/SC but it provides a few utilities
+like transmitting an APDU and read the response in one single function or
+searching a smart-card with some characteristics in the ATR from all connected
+smart-cards.
+
+All these utilities are grouped in the namespace ts::pcsc.
+
+## Windows specificities {#wincom}
+
+The class ts::COM provides a portable and reliable way to make sure
+that the Common Object Model (COM) is properly initialized and
+terminated on Windows systems. This class is defined on all
+platforms but does nothing on non-Windows systems. It is consequently
+safe to use it everywhere without tedious conditional compilation
+directives.
+
+All the following classes manipulate Windows-specific objects and
+are not available on non-Windows systems.
+
+The template class ts::ComPtr is the equivalent of a smart pointer
+for COM object. The reference count of a COM object is properly
+incremented and decremented when the COM object is manipulated.
+The COM object is automatically released when no more reference
+exists.
+
+# MPEG/DVB features {#mpegfeatures}
+
+## Transport streams {#tsclasses}
+
+The class ts::TSPacket defines a transport stream packet.
+It is in fact a flat structure which occupies exactly 188 bytes
+in memory. It is safe to use arrays or vectors of ts::TSPacket.
+The packets are guaranteed to be contiguous in memory.
+
+But the class ts::TSPacket also adds many operations on TS packet
+to read or modify properties like the PID (type ts::PID), the
+continuity counters or deeper structures like PCR, DTS or PTS.
+
+The class ts::TransportStreamId contains the identification of an
+MPEG/DVB transport stream.
+
+The class ts::Service contains all possible properties of a DVB service.
+Not all properties need to be set at the same time. Each property can
+be individually set, cleared or queried.
+
+Transport stream files are implemented by classes ts::TSFileInput and
+ts::TSFileOutput. They respectively read and write transport stream
+files with specific features such as repeating the reading of a part
+of the file.
+
+The subclass ts::TSFileInputBuffered provides additional, but limited,
+capabilities to seek forward and backward on non-seekable files
+such as pipes.
+
+The subclass ts::TSFileOutputResync adds resynchronization capabilities
+on continuity counters and PID's.
+
+The class ts::TSAnalyzer consumes all TS packets from a transport
+stream and analyzes virtually everything from the stream. This is
+the class which is used by the command `tsanalyzer` to collect
+the vast amount of information it reports.
+
+The class PCRAnalyzer is a useful tool to evaluate the bitrate of a
+transport stream. It performs the analysis of Program Clock Reference
+(PCR) which are present in the transport stream in order to evaluate the
+bitrate of the stream. If PCR are not found, the class can also use
+Decoding Time Stamps (DTS) to evaluate the bitrate. This is less precise
+than PCR but can be used as a backup.
+
+## Audio, video and PES packets {#audiovideopes}
+
+The TSDuck library provides classes to manipulate PES packets and
+a few audio and video attributes. These features are limited to the
+analysis of a transport stream. There is no video or audio decoding
+features. Specialized libraries exist for this and are out of scope
+for TSDuck.
+
+The class ts::PESPacket implements a PES packet and can manipulate
+its attributes, header and payload.
+
+The class ts::PESDemux extracts PES packets from a transport stream.
+It can also notify the application of the change in audio or video
+attributes.
+
+The abstract class ts::AbstractAudioVideoAttributes is the root of a
+hierarchy of classes which contains attributes for audio or video
+streams. Currently, specialized classes exist for MPEG-2 video,
+AVC/H.264 video, MPEG-2 audio and AC-3 audio.
+
+The class ts::ACVParser performs the parsing of an AVC/H.264 bitstream.
+
+## Signalization {#siclasses}
+
+The MPEG/DVB is built from sections, tables and descriptors.
+All these concepts are implemented in the TSDuck library.
+
+### Binary, abstract and XML formats {#sigformats}
+
+Signalization objects, sections, tables and descriptors can
+be manipulated in several formats: binary objects, specialized
+classes and XML.
+
+The classes ts::Section, ts::BinaryTable and ts::Descriptor
+implement binary forms of the signalization objects.
+
+A binary table are made of a collection of sections. A binary
+table is valid when all binary sections are present. Each section
+contains its section number in the table and the total expected
+number of sections inside the table.
+
+All types of sections and descriptors can be represented by the
+classes ts::Section and ts::Descriptor. They simply contain the
+complete binary content of the object and can manipulate the
+various components. An instance of ts::Section stores the _table_id_
+and manipulate the various components of the section header.
+For long sections, the final CRC32 can be checked for consistency
+or recomputed after modification of the section content.
+
+Tables can be stored in binary files. The format of the files is quite
+simple. They just contain raw binary sections, without any encapsulation.
+The static methods ts::BinaryTable::SaveFile() and ts::BinaryTable::LoadFile()
+respectively stores and loads binary tables.
+
+Tables are descriptors can also be manipulated using specialized
+classes such as ts::PAT, ts::PMT for tables and ts::ContentDescriptor,
+ts::EventDescriptor for descriptors.
+
+All specialized classes inherit from a common abstract root named
+ts::AbstractSignalization. All descriptors inherit from ts::AbstractDescriptor.
+All tables inherit from ts::AbstractTable. Tables with long sections
+inherit from ts::AbstractLongTable.
+
+All MPEG-defined and DVB-defined tables are implemented. Most
+MPEG-defined and DVB-defined are implemented but not all of them.
+Unimplemented descriptor shall be manipulated in binary form
+(or be implemented...)
+
+Binary tables or descriptors are converted from or to specialized
+classes using @e serialize() and @e deserialize() methods.
+The validity of a binary or specialized object can be checked using
+the @e isValid() method.
+
+Sample deserialization:
+~~~~
+void someFunction(const ts::BinaryTable& table)
+{
+    ts::PMT pmt;
+    if (table.isValid() && table.tableId() == ts::TID_PMT) {
+        pmt.deserialize(table);
+        if (pmt.isValid()) {
+            processPMT(pmt);
+        }
+    }
+}
+~~~~
+
+The deserialization can also be done in the contructor.
+And the validity and _table_id_ checking is done anyway in the deserialization.
+So, the previous code can be simplified as:
+~~~~
+void someFunction(const ts::BinaryTable& table)
+{
+    ts::PMT pmt(table);
+    if (pmt.isValid()) {
+        processPMT(pmt);
+    }
+}
+~~~~
+
+Sample serialization:
+~~~~
+ts::PMT pmt;
+pmt.version = 12;
+pmt.service_id = 0x1234;
+// Deplace one component, PID 0x345, carrying H.264/AVC video.
+pmt.streams[0x345].stream_type = ts::ST_AVC_AUDIO;
+
+ts::BinaryTable table;
+pmt.serialize(table);
+~~~~
+
+Finally, specialized classes for tables and descriptors can be converted
+to and from XML using the methods @e toXML() and @e fromXML(). These
+methods are typically used by the class ts::XMLTables which represents
+a file containing tables in XML format. The class can be used to load
+a set of tables in XML format or to store table objects in XML format.
+
+The class ts::XMLTables is the core of the _tstabcomp_ utility, the
+tables compiler (or decompiler).
+
+### Demux and packetization {#demux}
+
+Signalization objects can be extracted from transport streams using
+the class ts::SectionDemux and inserted back into transport streams
+using the class ts::Packetizer. These two classes also have specialized
+subclasses.
+
+An instance of ts::SectionDemux can extract sections or complete tables
+in binary form. Tables with long sections are usually cycled. A given
+table with a given version number and a given "TID extension" is
+reported only once, after collecting all its sections. The same table
+will be reported again only when its version number changes.
+
+On the contrary, short tables are all reported since they do not implement
+versioning.
+
+It is also possible to use a ts::SectionDemux to be notified of all
+individual sections.
+
+## DVB SimulCrypt protocols {#dvbprotocols}
+
+The communications inside a DVB SimulCrypt head-end is defined by the
+standard ETSI TS 103 197, "Head-end implementation of DVB SimulCrypt".
+
+Most of these protocols use the same principles. They use binary TLV
+(Tag/Length/Value) messages, asynchronous communications, concepts
+of _channels_, _streams_, status and error messages.
+
+The generic handling of these messages is implemented by classes in the
+namespace ts::tlv. All TLV messages inherit from ts::tlv::Message.
+channel-level messages inherit from ts::tlv::ChannelMessage and
+stream-level messages inherit from ts::tlv::StreamMessage.
+
+The syntax of a given protocol is defined by subclassing ts::tlv::Protocol.
+
+Currently, the TSDuck library implements the following protocols:
+- ECMG <=> SCS in namespace ts::ecmgscs.
+- EMMG/PDG <=> MUX in namespace ts::emmgmux.
+
+## Conditional access systems {#cassupport}
+
+The class ts::CASMapper analyzes the signalization of a transport stream,
+locates ECM and EMM stream and associate each of them with a _CA_System_Id_.
+An instance of ts::CASMapper can be queried for ECM, EMM streams or CAS
+vendors.
+
+## Other forms of demux {#otherdemux}
+
+We have already mentioned the classes ts::SectionDemux and ts::PESDemux.
+Other specialized forms of demux can be implemented. The class ts::T2MIDemux
+demuxes T2-MI (DVB-T2 Modulator Interface) packets and extracts
+encapsulated transport streams.
+
+Since all forms of demux share a number of properties, they all
+inherit from a root abstract class named ts::AbstractDemux.
+
+## DVB tuners {#dvbtuners}
+
+The class ts::Tuner interfaces DVB tuner devices in a portable ways.
+This is quite a challenge since Linux and Windows use very different
+DVB frameworks. Some very-specific features are available either
+only on Linux or Windows.
+
+The abstract class ts::TunerParameters is the root of a hierarchy
+of classes containing tuning parameters. Subclasses exist for
+DVB-S, DVB-T, DVB-C and ATSC.
+
+The class ts::TSScanner reads a TS from a ts::Tuner until all scanning
+information is found, typically until the NIT and SDT are received.
+The is the basis for scanning a DVB network.
+
+## Interface to Dektec devices {#dektecops}
+
+TSDuck can manipulate ASI and modulator boards from Dektec. The TSDuck
+library includes the DTAPI library, a proprietary C++ interface which
+is provided by Dektec. The DTAPI is not available in source form and
+not part of the TSDuck source repository. However, when TSDuck is built,
+the DTAPI is downloaded in binary from Dektec and included in the TSDuck
+library. Such a packaging is authorized by the DTAPI license (see the
+file LICENSE.txt in the TSDuck source repository or installation tree.
+
+An application should not directly call the DTAPI. In practice,
+this works on Linux but not on Windows. So if you want portability, do
+not do this. The reason is that the structure of Windows DLL is such
+that exported code from a DLL must be compiled using specific attributes.
+But the DTAPI, as provided by Dektec, was not compiled with these
+attributes. So, when the DTAPI is included in `tsduck.dll`, the DTAPI
+can be called from inside `tsduck.dll` but is not accessible to the
+application.
+
+This is why accessing the DTAPI from the application must be done through
+some TSDuck proxy class. The classes ts::DektecControl, ts::DektecInputPlugin
+and ts::DektecOutputPlugin provide the features which are required by the
+utility `tsdektec` and the plugin `dektec` and can be used by third-party
+applications.
+
+Note that Dektec devices are supported on Linux and Windows only. On macOS,
+the above classes are defined but return "unimplemented" errors when used.
 
 */
