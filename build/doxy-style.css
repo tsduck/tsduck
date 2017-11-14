@@ -9,6 +9,9 @@ h2 {
 h3 {
     font-size: 1.0em;
 }
+a {
+    font-weight: bold;
+}
 #headertitle {
     font-size: 1.6em;
 }
