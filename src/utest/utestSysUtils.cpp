@@ -33,7 +33,9 @@
 
 #include "tsSysUtils.h"
 #include "tsStringUtils.h"
+#include "tsMonotonic.h"
 #include "tsFormat.h"
+#include "tsDecimal.h"
 #include "tsTime.h"
 #include "tsUID.h"
 #include "utestCppUnitTest.h"
@@ -47,6 +49,7 @@ TSDUCK_SOURCE;
 class SysUtilsTest: public CppUnit::TestFixture
 {
 public:
+    SysUtilsTest();
     void setUp();
     void tearDown();
     void testCurrentProcessId();
@@ -86,6 +89,9 @@ public:
     CPPUNIT_TEST(testProcessMetrics);
     CPPUNIT_TEST(testMemory);
     CPPUNIT_TEST_SUITE_END();
+private:
+    ts::NanoSecond  _nsPrecision;
+    ts::MilliSecond _msPrecision;
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(SysUtilsTest);
@@ -95,9 +101,21 @@ CPPUNIT_TEST_SUITE_REGISTRATION(SysUtilsTest);
 // Initialization.
 //----------------------------------------------------------------------------
 
+// Constructor.
+SysUtilsTest::SysUtilsTest() :
+    _nsPrecision(0),
+    _msPrecision(0)
+{
+}
+
 // Test suite initialization method.
 void SysUtilsTest::setUp()
 {
+    _nsPrecision = ts::Monotonic::SetPrecision(2 * ts::NanoSecPerMilliSec);
+    _msPrecision = (_nsPrecision + ts::NanoSecPerMilliSec - 1) / ts::NanoSecPerMilliSec;
+
+    // Request 2 milliseconds as system time precision.
+    utest::Out() << "SysUtilsTest: timer precision = " << ts::Decimal(_nsPrecision) << " ns, " << ts::Decimal(_msPrecision) << " ms" << std::endl;
 }
 
 // Test suite cleanup method.
@@ -119,10 +137,10 @@ namespace {
 // Create a file with the specified size using standard C++ I/O.
 // Return true on success, false on error.
 namespace {
-    bool _CreateFile (const std::string& name, size_t size)
+    bool _CreateFile(const std::string& name, size_t size)
     {
-        std::string data (size, '-');
-        std::ofstream file (name.c_str(), std::ios::binary);
+        std::string data(size, '-');
+        std::ofstream file(name.c_str(), std::ios::binary);
         if (file) {
             file << data;
             file.close();
@@ -149,7 +167,7 @@ void SysUtilsTest::testCurrentExecutableFile()
 {
     // Hard to make automated tests since we do not expect a predictible executable name.
 
-    std::string exe (ts::ExecutableFile());
+    std::string exe(ts::ExecutableFile());
     utest::Out() << "SysUtilsTest: ts::ExecutableFile() = \"" << exe << "\"" << std::endl;
     CPPUNIT_ASSERT(!exe.empty());
     CPPUNIT_ASSERT(ts::FileExists(exe));
@@ -162,7 +180,7 @@ void SysUtilsTest::testSleep()
     const ts::Time before(ts::Time::CurrentUTC());
     ts::SleepThread(400);
     const ts::Time after(ts::Time::CurrentUTC());
-    CPPUNIT_ASSERT(after >= before + 400);
+    CPPUNIT_ASSERT(after >= before + 400 - _msPrecision);
 
     utest::Out() << "SysUtilsTest: ts::SleepThread(400), measured " << (after - before) << " ms" << std::endl;
 }

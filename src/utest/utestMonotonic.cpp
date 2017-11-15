@@ -59,7 +59,8 @@ public:
     CPPUNIT_TEST(testWait);
     CPPUNIT_TEST_SUITE_END();
 private:
-    ts::NanoSecond _precision;
+    ts::NanoSecond  _nsPrecision;
+    ts::MilliSecond _msPrecision;
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(MonotonicTest);
@@ -71,20 +72,19 @@ CPPUNIT_TEST_SUITE_REGISTRATION(MonotonicTest);
 
 // Constructor.
 MonotonicTest::MonotonicTest() :
-    _precision(0)
+    _nsPrecision(0),
+    _msPrecision(0)
 {
 }
 
 // Test suite initialization method.
 void MonotonicTest::setUp()
 {
-    _precision = ts::Monotonic::SetPrecision(2 * ts::NanoSecPerMilliSec);
+    _nsPrecision = ts::Monotonic::SetPrecision(2 * ts::NanoSecPerMilliSec);
+    _msPrecision = (_nsPrecision + ts::NanoSecPerMilliSec - 1) / ts::NanoSecPerMilliSec;
 
     // Request 2 milliseconds as system time precision.
-    utest::Out() << "MonotonicTest: timer precision = "
-                 << ts::Decimal(_precision)
-                 << " nano-sec."
-                 << std::endl;
+    utest::Out() << "MonotonicTest: timer precision = " << ts::Decimal(_nsPrecision) << " ns, " << ts::Decimal(_msPrecision) << " ms" << std::endl;
 }
 
 // Test suite cleanup method.
@@ -131,8 +131,8 @@ void MonotonicTest::testSysWait()
     ts::Monotonic check1(start);
     ts::Monotonic check2(start);
 
-    check1 += 100000000 - _precision;  // nanoseconds = 100 ms
-    check2 += 150000000;  // nanoseconds = 150 ms
+    check1 += 100 * ts::NanoSecPerMilliSec - _nsPrecision;
+    check2 += 150 * ts::NanoSecPerMilliSec;
 
     CPPUNIT_ASSERT(end >= check1);
     CPPUNIT_ASSERT(end < check2);
@@ -144,11 +144,11 @@ void MonotonicTest::testWait()
 
     ts::Monotonic m;
     m.getSystemTime();
-    m += 100000000; // nanoseconds = 100 ms
+    m += 100 * ts::NanoSecPerMilliSec;
     m.wait();
 
     const ts::Time end(ts::Time::CurrentLocalTime());
 
-    CPPUNIT_ASSERT(end >= start + 99); // system time is less precise than monotonic
+    CPPUNIT_ASSERT(end >= start + 100 - _msPrecision);
     CPPUNIT_ASSERT(end < start + 130);
 }

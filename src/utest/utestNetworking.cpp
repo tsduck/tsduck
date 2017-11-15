@@ -39,7 +39,7 @@
 #include "tsThread.h"
 #include "tsSysUtils.h"
 #include "tsCerrReport.h"
-#include "utestCppUnitTest.h"
+#include "utestCppUnitThread.h"
 TSDUCK_SOURCE;
 
 
@@ -359,13 +359,14 @@ void NetworkingTest::testSocketAddress()
 // A thread class which implements a TCP/IP client.
 // It sends one message and wait from the same message to be replied.
 namespace {
-    class TCPClient: public ts::Thread
+    class TCPClient: public utest::CppUnitThread
     {
     private:
         uint16_t _portNumber;
     public:
         // Constructor
-        explicit TCPClient (uint16_t portNumber):
+        explicit TCPClient(uint16_t portNumber) :
+            utest::CppUnitThread(),
             _portNumber(portNumber)
         {
         }
@@ -378,7 +379,7 @@ namespace {
         }
 
         // Thread execution
-        virtual void main()
+        virtual void test()
         {
             CERR.debug("TCPSocketTest: client thread: started");
 
@@ -481,13 +482,14 @@ void NetworkingTest::testTCPSocket()
 
 // A thread class which sends one UDP message and wait from the same message to be replied.
 namespace {
-    class UDPClient: public ts::Thread
+    class UDPClient: public utest::CppUnitThread
     {
     private:
         uint16_t _portNumber;
     public:
         // Constructor
         explicit UDPClient(uint16_t portNumber) :
+            utest::CppUnitThread(),
             _portNumber(portNumber)
         {
         }
@@ -500,7 +502,7 @@ namespace {
         }
 
         // Thread execution
-        virtual void main()
+        virtual void test()
         {
             CERR.debug("UDPSocketTest: client thread started");
             // Create the client socket

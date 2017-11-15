@@ -154,6 +154,9 @@
     <ClCompile Include="..\..\src\utest\utestNames.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\utest\utestCppUnitThread.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\utest\utestCppUnitMain.h">
@@ -190,6 +193,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\utest\crypto\tv_tdes_cbc.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\utest\utestCppUnitThread.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
