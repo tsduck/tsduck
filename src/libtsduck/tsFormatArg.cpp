@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsFormatArg.h"
+#include "tsUString.h"
 TSDUCK_SOURCE;
 
 const std::string ts::FormatArg::empty;

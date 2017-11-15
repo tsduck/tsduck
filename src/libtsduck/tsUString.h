@@ -35,6 +35,7 @@
 
 #pragma once
 #include "tsUChar.h"
+#include "tsFormatArg.h"
 
 namespace ts {
 
@@ -480,7 +481,7 @@ namespace ts {
         //! Get the address after the last character in the string (C++17).
         //! @return The address after the last character in the string.
         //!
-        UChar* end()
+        UChar* last()
         {
             return data() + size();
         }
@@ -1039,6 +1040,59 @@ namespace ts {
                             const UString& separator = UString(),
                             bool use_prefix = true,
                             bool use_upper = true);
+
+        //!
+        //! Format a string using a template and arguments.
+        //!
+        //! This method is similar in principle to printf(). This string object is used as a
+        //! @e format or @e template where sequences starting with '%' are place-holders for
+        //! arguments. The main different with printf() is that the argument list is typed,
+        //! thanks to C++ features. Thus, the risk of mismatch or crash is eliminated. When
+        //! a '%' sequence is formatted, the presence and type of the corresponding argument
+        //! is known. For this reason, the syntax of the '%' is simplified.
+        //!
+        //! The available '%' sequences are:
+        //! - @c %s : String. Treated as @c %d if the argument is an integer.
+        //! - @c %d : Integer in decimal. Treated as @c %s if the argument is a string.
+        //! - @c %x : Integer in lowercase hexadecimal. Treated as @c %s if the argument is a string.
+        //! - @c %X : Integer in uppercase hexadecimal. Treated as @c %s if the argument is a string.
+        //! - @c %% : Insert a literal %.
+        //!
+        //! The allowed options, between the '%' and the letter are:
+        //! - @c 0 : Zero padding for integers. This is the default with @c %x and @c %X.
+        //! - @c - : Left-justified (right-justified by default).
+        //! - @e digits : Minimum field width. This is a display width, not a number of characters.
+        //! - @c . @e digits : Maximum field width.
+        //! - @c ' : For integer conversions, use a separator for groups of thousands.
+        //!
+        //! @param [in] args List of arguments to substitute in the format string.
+        //! @return The formatted string.
+        //!
+        UString format(const std::initializer_list<FormatArg>& args) const
+        {
+            return Format(c_str(), args);
+        }
+
+        //!
+        //! Format a string using a template and arguments.
+        //! @param [in] fmt Format string with embedded '%' sequences.
+        //! @param [in] args List of arguments to substitute in the format string.
+        //! @return The formatted string.
+        //! @see format()
+        //!
+        static UString Format(const UChar* fmt, const std::initializer_list<FormatArg>& args);
+
+        //!
+        //! Format a string using a template and arguments.
+        //! @param [in] fmt Format string with embedded '%' sequences.
+        //! @param [in] args List of arguments to substitute in the format string.
+        //! @return The formatted string.
+        //! @see format()
+        //!
+        static UString Format(const UString& fmt, const std::initializer_list<FormatArg>& args)
+        {
+            return Format(fmt.c_str(), args);
+        }
 
         //!
         //! Build a multi-line string containing the hexadecimal dump of a memory area.

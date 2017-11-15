@@ -33,9 +33,13 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsUString.h"
+#include "tsPlatform.h"
+#include "tsUChar.h"
 
 namespace ts {
+
+    class UString;
+
     //!
     //! Define an element of argument list for ts::UString::Format().
     //!

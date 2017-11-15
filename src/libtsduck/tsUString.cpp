@@ -1270,3 +1270,73 @@ ts::ByteBlock ts::UString::toDVBWithByteLength(size_type start, size_type count,
         return bb;
     }
 }
+
+
+//----------------------------------------------------------------------------
+// Format a string using a template and arguments.
+//----------------------------------------------------------------------------
+
+ts::UString ts::UString::Format(const UChar* fmt, const std::initializer_list<ts::FormatArg>& args)
+{
+    // Output string. Pre-reserve some space. We don't really know how much. Just address the most comman cases.
+    UString result;
+    result.reserve(256);
+
+    // Iterator inside the argument list.
+    std::initializer_list<ts::FormatArg>::const_iterator arg(args.begin());
+
+    // Loop into format, stop at each '%' sequence, exit when no more arguments are available.
+    // The variable 'fmt' is incremented all the way.
+    while (*fmt != CHAR_NULL && arg != args.end()) {
+
+        // Locate the next '%'.
+        const UChar* next = fmt;
+        while (*next != CHAR_NULL && *next != PERCENT_SIGN) {
+            ++next;
+        }
+
+        // Copy this sequence directly into the result.
+        result.append(fmt, next - fmt);
+
+        // Process either '%' sequence or end of string.
+        if (*next == CHAR_NULL) {
+            break;
+        }
+        assert(*next == PERCENT_SIGN);
+        fmt = next + 1;
+
+        // Process literal case.
+        if (*fmt == PERCENT_SIGN) {
+            result.push_back(PERCENT_SIGN);
+            ++fmt;
+            continue;
+        }
+
+
+
+        //@@@@@ TO BE COMPLETED
+
+
+        // The available '%' sequences are:
+        // - @c %s : String. Treated as @c %d if the argument is an integer.
+        // - @c %d : Integer in decimal. Treated as @c %s if the argument is a string.
+        // - @c %x : Integer in lowercase hexadecimal. Treated as @c %s if the argument is a string.
+        // - @c %X : Integer in uppercase hexadecimal. Treated as @c %s if the argument is a string.
+        // - @c %% : Insert a literal %.
+        //
+        // The allowed options, between the '%' and the letter are:
+        // - @c 0 : Zero padding for integers. This is the default with @c %x and @c %X.
+        // - @c - : Left-justified (right-justified by default).
+        // - @e digits : Minimum field width. This is a display width, not a number of characters.
+        // - @c . @e digits : Maximum field width.
+        // - @c ' : For integer conversions, use a separator for groups of thousands.
+
+    }
+
+    // Append the rest of the format into the result. There are maybe other '%s' sequences
+    // but we have no more argument to substitute.
+    result.append(fmt);
+
+    // Final formatted string.
+    return result;
+}
