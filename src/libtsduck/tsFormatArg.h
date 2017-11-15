@@ -244,10 +244,6 @@ namespace ts {
         // Used to return references to constant empty strings.
         static const std::string empty;
         static const ts::UString uempty;
-
-        // Unaccessible operations.
-        FormatArg(const FormatArg&) = delete;
-        FormatArg& operator=(const FormatArg&) = delete;
     };
 }
 
