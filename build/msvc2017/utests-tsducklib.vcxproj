@@ -12,6 +12,7 @@
     <ClCompile Include="..\..\src\utest\utestByteBlock.cpp" />
     <ClCompile Include="..\..\src\utest\utestCppUnitMain.cpp" />
     <ClCompile Include="..\..\src\utest\utestCppUnitTest.cpp" />
+    <ClCompile Include="..\..\src\utest\utestCppUnitThread.cpp" />
     <ClCompile Include="..\..\src\utest\utestCrypto.cpp" />
     <ClCompile Include="..\..\src\utest\utestDemux.cpp" />
     <ClCompile Include="..\..\src\utest\utestDirectShow.cpp" />
@@ -63,6 +64,7 @@
     <ClInclude Include="..\..\src\utest\crypto\tv_tdes_cbc.h" />
     <ClInclude Include="..\..\src\utest\utestCppUnitMain.h" />
     <ClInclude Include="..\..\src\utest\utestCppUnitTest.h" />
+    <ClInclude Include="..\..\src\utest\utestCppUnitThread.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{2FFD7D6C-F3BF-4ED6-8593-20AC70A83AC1}</ProjectGuid>

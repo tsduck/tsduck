@@ -35,6 +35,7 @@
 #include "tsThread.h"
 #include "tsSysUtils.h"
 #include "utestCppUnitTest.h"
+#include "utestCppUnitThread.h"
 TSDUCK_SOURCE;
 
 
@@ -50,10 +51,10 @@ public:
     void testConstructor();
     void testQueue();
 
-    CPPUNIT_TEST_SUITE (MessageQueueTest);
-    CPPUNIT_TEST (testConstructor);
-    CPPUNIT_TEST (testQueue);
-    CPPUNIT_TEST_SUITE_END ();
+    CPPUNIT_TEST_SUITE(MessageQueueTest);
+    CPPUNIT_TEST(testConstructor);
+    CPPUNIT_TEST(testQueue);
+    CPPUNIT_TEST_SUITE_END();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION (MessageQueueTest);
@@ -95,18 +96,18 @@ void MessageQueueTest::testConstructor()
 
 // Thread for testQueue()
 namespace {
-    class MessageQueueTestThread: public ts::Thread
+    class MessageQueueTestThread: public utest::CppUnitThread
     {
     private:
         TestQueue& _queue;
     public:
         explicit MessageQueueTestThread(TestQueue& queue) :
-            Thread(),
+            utest::CppUnitThread(),
             _queue(queue)
         {
         }
 
-        virtual void main()
+        virtual void test()
         {
             utest::Out() << "MessageQueueTest: starting thread" << std::endl;
 
