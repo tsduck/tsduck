@@ -443,7 +443,8 @@ ts::UString ts::UString::Decimal(INT value,
                                  size_type min_width,
                                  bool right_justified,
                                  const UString& separator,
-                                 bool force_sign)
+                                 bool force_sign,
+                                 UChar pad)
 {
     // We build the result string in s IN REVERSE ORDER
     UString s;
@@ -501,16 +502,18 @@ ts::UString ts::UString::Decimal(INT value,
     // Reverse characters in string
     s.reverse();
 
+    // Adjust string width.
+    if (s.size() < min_width) {
+        if (right_justified) {
+            s.insert(0, min_width - s.size(), pad);
+        }
+        else {
+            s.append(min_width - s.size(), pad);
+        }
+    }
+
     // Return the formatted result
-    if (s.size() >= min_width) {
-        return s;
-    }
-    else if (right_justified) {
-        return UString(min_width - s.size(), u' ') + s;
-    }
-    else {
-        return s + UString(min_width - s.size(), u' ');
-    }
+    return s;
 }
 
 

@@ -156,15 +156,20 @@ namespace ts {
         //!
         bool isUnsigned() const { return (_type & 0x05) == 0x01; }
         //!
+        //! Check if the argument value is a string of any type.
+        //! @return True if the argument value is a string (CHARPTR, UCHARPTR, STRING, USTRING).
+        //!
+        bool isString() const { return (_type & 0x04) == 0x04; }
+        //!
         //! Check if the argument value is a string of 8-bit characters.
         //! @return True if the argument value is a string of 8-bit characters (CHARPTR or STRING).
         //!
-        bool isString() const { return (_type & 0x05) == 0x04; }
+        bool isString8() const { return (_type & 0x05) == 0x04; }
         //!
         //! Check if the argument value is a string of 16-bit characters.
         //! @return True if the argument value is a string of 16-bit characters (UCHARPTR or USTRING).
         //!
-        bool isUString() const { return (_type & 0x05) == 0x05; }
+        bool isString16() const { return (_type & 0x05) == 0x05; }
         //!
         //! Get the original integer size in bytes of the argument data.
         //! @return The original integer size in bytes of the argument data or zero for a string.

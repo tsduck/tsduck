@@ -122,6 +122,11 @@ namespace ts {
         static const UString DEFAULT_THOUSANDS_SEPARATOR;
 
         //!
+        //! A reference empty string.
+        //!
+        static const UString EMPTY;
+
+        //!
         //! Default line width for the Hexa() family of methods.
         //!
         static const size_type DEFAULT_HEXA_LINE_WIDTH = 78;
@@ -466,6 +471,27 @@ namespace ts {
         //! surrogate pair, always at the start of this sequence.
         //!
         size_type displayPosition(size_type count, size_type from = 0, StringDirection direction = LEFT_TO_RIGHT) const;
+
+        //!
+        //! Truncate this string to a given display width.
+        //! Any combining diacritical character is not counted in display position.
+        //! Similarly, any surrogate pair is considered as one single character.
+        //! @param [in] maxWidth Maximum display width, after which the string is truncated.
+        //! @param [in] direction Direction to move when counting width. When RIGHT_TO_LEFT, the
+        //! width is counted from the end of the string and the beginning of the string is truncated.
+        //!
+        void truncateWidth(size_type maxWidth, StringDirection direction = LEFT_TO_RIGHT);
+
+        //!
+        //! Return a copy of this string, truncated to a given display width.
+        //! Any combining diacritical character is not counted in display position.
+        //! Similarly, any surrogate pair is considered as one single character.
+        //! @param [in] maxWidth Maximum display width, after which the string is truncated.
+        //! @param [in] direction Direction to move when counting width. When RIGHT_TO_LEFT, the
+        //! width is counted from the end of the string and the beginning of the string is truncated.
+        //! @return A copy of the string, truncated to the given display width.
+        //!
+        UString toTruncatedWidth(size_type maxWidth, StringDirection direction = LEFT_TO_RIGHT) const;
 
         //!
         //! Get the address after the last character in the string.
@@ -1014,6 +1040,7 @@ namespace ts {
         //! the number of characters in the formatted number.
         //! @param [in] separator Separator string for groups of thousands, a comma by default.
         //! @param [in] force_sign If true, force a '+' sign for positive values.
+        //! @param [in] pad The padding character to adjust the width.
         //! @return The formatted string.
         //!
         template <typename INT>
@@ -1021,7 +1048,8 @@ namespace ts {
                                size_type min_width = 0,
                                bool right_justified = true,
                                const UString& separator = DEFAULT_THOUSANDS_SEPARATOR,
-                               bool force_sign = false);
+                               bool force_sign = false,
+                               UChar pad = SPACE);
 
         //!
         //! Format a string containing an hexadecimal value.
@@ -1044,52 +1072,74 @@ namespace ts {
         //!
         //! Format a string using a template and arguments.
         //!
-        //! This method is similar in principle to printf(). This string object is used as a
-        //! @e format or @e template where sequences starting with '%' are place-holders for
-        //! arguments. The main different with printf() is that the argument list is typed,
+        //! This method is similar in principle to @c printf(). This string object is used as a
+        //! @e format or @e template where sequences starting with '\%' are place-holders for
+        //! arguments. The main different with @c printf() is that the argument list is typed,
         //! thanks to C++ features. Thus, the risk of mismatch or crash is eliminated. When
-        //! a '%' sequence is formatted, the presence and type of the corresponding argument
-        //! is known. For this reason, the syntax of the '%' is simplified.
+        //! a '\%' sequence is formatted, the presence and type of the corresponding argument
+        //! is known. For this reason, the syntax of the '\%' sequences is simplified.
         //!
-        //! The available '%' sequences are:
-        //! - @c %s : String. Treated as @c %d if the argument is an integer.
-        //! - @c %d : Integer in decimal. Treated as @c %s if the argument is a string.
-        //! - @c %x : Integer in lowercase hexadecimal. Treated as @c %s if the argument is a string.
-        //! - @c %X : Integer in uppercase hexadecimal. Treated as @c %s if the argument is a string.
-        //! - @c %% : Insert a literal %.
+        //! The available '\%' sequences are:
+        //! - @c \%s : String. Treated as @c \%d if the argument is an integer.
+        //! - @c \%c : Character. Use integer argument as Unicode code point. Treated as @c \%s if the argument is a string.
+        //! - @c \%d : Integer in decimal. Treated as @c \%s if the argument is a string.
+        //! - @c \%x : Integer in lowercase hexadecimal. Treated as @c \%s if the argument is a string.
+        //! - @c \%X : Integer in uppercase hexadecimal. Treated as @c \%s if the argument is a string.
+        //! - @c \%\% : Insert a literal \%.
         //!
-        //! The allowed options, between the '%' and the letter are:
-        //! - @c 0 : Zero padding for integers. This is the default with @c %x and @c %X.
+        //! The allowed options, between the '\%' and the letter are, in this order:
         //! - @c - : Left-justified (right-justified by default).
+        //! - @c + : Force a '+' sign with positive decimal integers (@c \%d only).
+        //! - @c 0 : Zero padding for integers. This is the default with @c \%x and @c \%X.
         //! - @e digits : Minimum field width. This is a display width, not a number of characters.
-        //! - @c . @e digits : Maximum field width.
+        //!   With @c \%x or @c \%X, the default width is the "natural" width of the parameter
+        //!   (e.g. 4 digits for a @c uint16_t value).
+        //! - @c . @e digits : Starting with a dot. Maximum field width for strings. Ignored for integers.
         //! - @c ' : For integer conversions, use a separator for groups of thousands.
+        //! - @c * : Can be used instead of @e digits. The integer value is taken from the argument list.
+        //!
+        //! This method uses this string object as format. But there are static variants of this method,
+        //! named Format(), which use an explicit format parameter.
+        //!
+        //! Since the argument list is typed, it is possible to mix integers and strings of various types
+        //! and sizes. Example:
+        //! @code
+        //! int i = -1234;
+        //! uint16_t u16 = 128;
+        //! ts::UString us(u"abc");
+        //! std::string s("def");
+        //! std::cout << ts::UString::Format(u"i = %'d, u16 = 0x%X, %d %s %s %s %s", {i, u16, 27, us, s, u"ghi", "jkl"});
+        //! @endcode
+        //! displays:
+        //! @code
+        //! i = -1,234, u16 = 0x0080, 27 abc def ghi jkl
+        //! @endcode
         //!
         //! @param [in] args List of arguments to substitute in the format string.
         //! @return The formatted string.
         //!
-        UString format(const std::initializer_list<FormatArg>& args) const
+        UString format(const std::initializer_list<FormatArg>& args = std::initializer_list<FormatArg>()) const
         {
             return Format(c_str(), args);
         }
 
         //!
         //! Format a string using a template and arguments.
-        //! @param [in] fmt Format string with embedded '%' sequences.
+        //! @param [in] fmt Format string with embedded '\%' sequences.
         //! @param [in] args List of arguments to substitute in the format string.
         //! @return The formatted string.
         //! @see format()
         //!
-        static UString Format(const UChar* fmt, const std::initializer_list<FormatArg>& args);
+        static UString Format(const UChar* fmt, const std::initializer_list<FormatArg>& args = std::initializer_list<FormatArg>());
 
         //!
         //! Format a string using a template and arguments.
-        //! @param [in] fmt Format string with embedded '%' sequences.
+        //! @param [in] fmt Format string with embedded '\%' sequences.
         //! @param [in] args List of arguments to substitute in the format string.
         //! @return The formatted string.
         //! @see format()
         //!
-        static UString Format(const UString& fmt, const std::initializer_list<FormatArg>& args)
+        static UString Format(const UString& fmt, const std::initializer_list<FormatArg>& args = std::initializer_list<FormatArg>())
         {
             return Format(fmt.c_str(), args);
         }
@@ -1294,6 +1344,7 @@ namespace ts {
         UString& append(const char* s) { return append(FromUTF8(s)); }
         UString& append(UChar c) { push_back(c); return *this; }
         UString& append(char c) { push_back(UChar(c)); return *this; }
+        UString& append(uint32_t c);
         template<class It> UString& append(It first, It last) { SuperClass::append<It>(first, last); return *this; }
         UString& append(std::initializer_list<UChar> ilist) { SuperClass::append(ilist); return *this; }
 
@@ -1374,6 +1425,33 @@ namespace ts {
         size_type find_last_not_of(const UChar* s, size_type pos = NPOS) const { return SuperClass::find_last_not_of(s, pos); }
         size_type find_last_not_of(UChar ch, size_type pos = NPOS) const { return SuperClass::find_last_not_of(ch, pos); }
 #endif
+
+    private:
+        //!
+        //! Internal function to process a Format() argument.
+        //! @param [in,out] result Output string being built.
+        //! @param [in,out] fmt Format string being decoded. Updated.
+        //! Input: point after the '\%'. Output: After the complete '\%' sequence.
+        //! @param [in,out] arg Current pointer into argument list. Updated.
+        //! @param [in] argsEnd End of argument list.
+        //!
+        static void ProcessFormatArgs(UString& result,
+                                      const UChar*& fmt,
+                                      std::initializer_list<ts::FormatArg>::const_iterator& arg,
+                                      const std::initializer_list<ts::FormatArg>::const_iterator& argsEnd);
+
+        //!
+        //! Internal function to process a size field inside a Format() argument.
+        //! @param [in,out] size Size value. Unmodified if no size is found in @fmt.
+        //! @param [in,out] fmt Format string being decoded. Input: point at an optional size field.
+        //! Output: After the size field, unmodified if there is no size field.
+        //! @param [in,out] arg Current pointer into argument list. Updated.
+        //! @param [in] argsEnd End of argument list.
+        //!
+        static void GetFormatSize(size_t& size,
+                                  const UChar*& fmt,
+                                  std::initializer_list<ts::FormatArg>::const_iterator& arg,
+                                  const std::initializer_list<ts::FormatArg>::const_iterator& argsEnd);
     };
 }
 
