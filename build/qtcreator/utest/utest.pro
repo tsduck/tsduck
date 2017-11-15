@@ -9,7 +9,8 @@ QMAKE_POST_LINK += cp ../tsplugin_skip/tsplugin_skip.so . $$escape_expand(\\n\\t
 
 HEADERS += \
     ../../../src/utest/utestCppUnitMain.h \
-    ../../../src/utest/utestCppUnitTest.h
+    ../../../src/utest/utestCppUnitTest.h \
+    ../../../src/utest/utestCppUnitThread.h
 
 SOURCES += \
     ../../../src/utest/utest.cpp \
@@ -56,7 +57,8 @@ SOURCES += \
     ../../../src/utest/utestUString.cpp \
     ../../../src/utest/utestVariable.cpp \
     ../../../src/utest/utestXML.cpp \
-    ../../../src/utest/utestXMLTables.cpp
+    ../../../src/utest/utestXMLTables.cpp \
+    ../../../src/utest/utestCppUnitThread.cpp
 
 DISTFILES += \
     ../../../src/utest/tables/ts2headers.sh \
