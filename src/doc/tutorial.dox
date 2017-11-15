@@ -50,6 +50,25 @@ For consistency, the type ts::UChar is a typedef for `char16_t`. The file
 tsUChar.h defines some utility functions on ts::UChar. It also defines
 constants for most Unicode characters like ts::COLON or ts::LATIN_CAPITAL_LETTER_A_WITH_ACUTE.
 
+Some interesting features in class ts::UString are:
+- Explicit and implicit conversions between UTF-8 and UTF-16.
+- Including automatic conversion to UTF-8 when writing to text streams.
+- Conversions with DVB character sets.
+- Conversions with HTML encoding.
+- Management of "display width", that is to say the amount of space which
+  is used when the string is displayed. This can be different from the
+  string length in the presence of combining diacritical characters or
+  surrogate pairs.
+- String padding, trimming, truncation, justification, case conversions.
+- Substring, prefix or suffix detection, removal or substitution.
+- Splitting and joining strings based on separators or line widths.
+- Reading or writing text lines from or to a text file.
+- Data formatting using
+  @ref ts::UString::format() "Format()",
+  @ref ts::UString::Decimal() "Decimal()",
+  @ref ts::UString::Hexa() "Hexa()" or
+  @ref ts::UString::Dump() "Dump()".
+
 Unicode strings can be converted to and from DVB strings. Most DVB-defined
 character sets are implemented (see the class ts::DVBCharset) and recognized
 when a string is read from a descriptor.

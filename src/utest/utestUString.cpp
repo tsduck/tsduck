@@ -88,6 +88,7 @@ public:
     void testHexa();
     void testHexaDump();
     void testFormatArg();
+    void testFormat();
 
     CPPUNIT_TEST_SUITE(UStringTest);
     CPPUNIT_TEST(testIsSpace);
@@ -126,6 +127,7 @@ public:
     CPPUNIT_TEST(testHexa);
     CPPUNIT_TEST(testHexaDump);
     CPPUNIT_TEST(testFormatArg);
+    CPPUNIT_TEST(testFormat);
     CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -1170,7 +1172,8 @@ void UStringTest::testFormatArgCalled2(const std::initializer_list<ts::FormatArg
     CPPUNIT_ASSERT(it->isSigned());
     CPPUNIT_ASSERT(!it->isUnsigned());
     CPPUNIT_ASSERT(!it->isString());
-    CPPUNIT_ASSERT(!it->isUString());
+    CPPUNIT_ASSERT(!it->isString8());
+    CPPUNIT_ASSERT(!it->isString16());
     CPPUNIT_ASSERT_EQUAL(size_t(4), it->size());
     CPPUNIT_ASSERT_EQUAL(int32_t(12), it->toInt32());
     CPPUNIT_ASSERT_EQUAL(uint32_t(12), it->toUInt32());
@@ -1188,7 +1191,8 @@ void UStringTest::testFormatArgCalled2(const std::initializer_list<ts::FormatArg
     CPPUNIT_ASSERT(!it->isSigned());
     CPPUNIT_ASSERT(it->isUnsigned());
     CPPUNIT_ASSERT(!it->isString());
-    CPPUNIT_ASSERT(!it->isUString());
+    CPPUNIT_ASSERT(!it->isString8());
+    CPPUNIT_ASSERT(!it->isString16());
     CPPUNIT_ASSERT_EQUAL(size_t(1), it->size());
     CPPUNIT_ASSERT_EQUAL(int32_t(23), it->toInt32());
     CPPUNIT_ASSERT_EQUAL(uint32_t(23), it->toUInt32());
@@ -1206,7 +1210,8 @@ void UStringTest::testFormatArgCalled2(const std::initializer_list<ts::FormatArg
     CPPUNIT_ASSERT(it->isSigned());
     CPPUNIT_ASSERT(!it->isUnsigned());
     CPPUNIT_ASSERT(!it->isString());
-    CPPUNIT_ASSERT(!it->isUString());
+    CPPUNIT_ASSERT(!it->isString8());
+    CPPUNIT_ASSERT(!it->isString16());
     CPPUNIT_ASSERT_EQUAL(size_t(2), it->size());
     CPPUNIT_ASSERT_EQUAL(int32_t(-432), it->toInt32());
     CPPUNIT_ASSERT_EQUAL(int64_t(-432), it->toInt64());
@@ -1222,7 +1227,8 @@ void UStringTest::testFormatArgCalled2(const std::initializer_list<ts::FormatArg
     CPPUNIT_ASSERT(it->isSigned());
     CPPUNIT_ASSERT(!it->isUnsigned());
     CPPUNIT_ASSERT(!it->isString());
-    CPPUNIT_ASSERT(!it->isUString());
+    CPPUNIT_ASSERT(!it->isString8());
+    CPPUNIT_ASSERT(!it->isString16());
     CPPUNIT_ASSERT_EQUAL(size_t(8), it->size());
     CPPUNIT_ASSERT_EQUAL(int32_t(-99), it->toInt32());
     CPPUNIT_ASSERT_EQUAL(int64_t(-99), it->toInt64());
@@ -1238,7 +1244,8 @@ void UStringTest::testFormatArgCalled2(const std::initializer_list<ts::FormatArg
     CPPUNIT_ASSERT(!it->isSigned());
     CPPUNIT_ASSERT(!it->isUnsigned());
     CPPUNIT_ASSERT(it->isString());
-    CPPUNIT_ASSERT(!it->isUString());
+    CPPUNIT_ASSERT(it->isString8());
+    CPPUNIT_ASSERT(!it->isString16());
     CPPUNIT_ASSERT_EQUAL(size_t(0), it->size());
     CPPUNIT_ASSERT_EQUAL(int32_t(0), it->toInt32());
     CPPUNIT_ASSERT_EQUAL(uint32_t(0), it->toUInt32());
@@ -1256,7 +1263,8 @@ void UStringTest::testFormatArgCalled2(const std::initializer_list<ts::FormatArg
     CPPUNIT_ASSERT(!it->isSigned());
     CPPUNIT_ASSERT(!it->isUnsigned());
     CPPUNIT_ASSERT(it->isString());
-    CPPUNIT_ASSERT(!it->isUString());
+    CPPUNIT_ASSERT(it->isString8());
+    CPPUNIT_ASSERT(!it->isString16());
     CPPUNIT_ASSERT_EQUAL(size_t(0), it->size());
     CPPUNIT_ASSERT_EQUAL(int32_t(0), it->toInt32());
     CPPUNIT_ASSERT_EQUAL(uint32_t(0), it->toUInt32());
@@ -1273,8 +1281,9 @@ void UStringTest::testFormatArgCalled2(const std::initializer_list<ts::FormatArg
     CPPUNIT_ASSERT(!it->isInt());
     CPPUNIT_ASSERT(!it->isSigned());
     CPPUNIT_ASSERT(!it->isUnsigned());
-    CPPUNIT_ASSERT(!it->isString());
-    CPPUNIT_ASSERT(it->isUString());
+    CPPUNIT_ASSERT(it->isString());
+    CPPUNIT_ASSERT(!it->isString8());
+    CPPUNIT_ASSERT(it->isString16());
     CPPUNIT_ASSERT_EQUAL(size_t(0), it->size());
     CPPUNIT_ASSERT_EQUAL(int32_t(0), it->toInt32());
     CPPUNIT_ASSERT_EQUAL(uint32_t(0), it->toUInt32());
@@ -1291,8 +1300,9 @@ void UStringTest::testFormatArgCalled2(const std::initializer_list<ts::FormatArg
     CPPUNIT_ASSERT(!it->isInt());
     CPPUNIT_ASSERT(!it->isSigned());
     CPPUNIT_ASSERT(!it->isUnsigned());
-    CPPUNIT_ASSERT(!it->isString());
-    CPPUNIT_ASSERT(it->isUString());
+    CPPUNIT_ASSERT(it->isString());
+    CPPUNIT_ASSERT(!it->isString8());
+    CPPUNIT_ASSERT(it->isString16());
     CPPUNIT_ASSERT_EQUAL(size_t(0), it->size());
     CPPUNIT_ASSERT_EQUAL(int32_t(0), it->toInt32());
     CPPUNIT_ASSERT_EQUAL(uint32_t(0), it->toUInt32());
@@ -1310,7 +1320,8 @@ void UStringTest::testFormatArgCalled2(const std::initializer_list<ts::FormatArg
     CPPUNIT_ASSERT(!it->isSigned());
     CPPUNIT_ASSERT(!it->isUnsigned());
     CPPUNIT_ASSERT(it->isString());
-    CPPUNIT_ASSERT(!it->isUString());
+    CPPUNIT_ASSERT(it->isString8());
+    CPPUNIT_ASSERT(!it->isString16());
     CPPUNIT_ASSERT_EQUAL(size_t(0), it->size());
     CPPUNIT_ASSERT_EQUAL(int32_t(0), it->toInt32());
     CPPUNIT_ASSERT_EQUAL(uint32_t(0), it->toUInt32());
@@ -1327,8 +1338,9 @@ void UStringTest::testFormatArgCalled2(const std::initializer_list<ts::FormatArg
     CPPUNIT_ASSERT(!it->isInt());
     CPPUNIT_ASSERT(!it->isSigned());
     CPPUNIT_ASSERT(!it->isUnsigned());
-    CPPUNIT_ASSERT(!it->isString());
-    CPPUNIT_ASSERT(it->isUString());
+    CPPUNIT_ASSERT(it->isString());
+    CPPUNIT_ASSERT(!it->isString8());
+    CPPUNIT_ASSERT(it->isString16());
     CPPUNIT_ASSERT_EQUAL(size_t(0), it->size());
     CPPUNIT_ASSERT_EQUAL(int32_t(0), it->toInt32());
     CPPUNIT_ASSERT_EQUAL(uint32_t(0), it->toUInt32());
@@ -1341,4 +1353,71 @@ void UStringTest::testFormatArgCalled2(const std::initializer_list<ts::FormatArg
     ++it;
 
     CPPUNIT_ASSERT(it == list.end());
+}
+
+void UStringTest::testFormat()
+{
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"", ts::UString::Format(u""));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"", ts::UString::Format(u"", {}));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"abc", ts::UString::Format(u"abc"));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"abc%sef", ts::UString::Format(u"abc%sef"));
+
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"abc1", ts::UString::Format(u"abc%d", {1}));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"abc1def", ts::UString::Format(u"abc%ddef", {1}));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"1 %d %d", ts::UString::Format(u"%d %d %d", {1}));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"1 % 2 3", ts::UString::Format(u"%d %% %d %d", {1, 2, 3, 4}));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"1 ", ts::UString::Format(u"%d %01", {1, 2, 3}));
+
+    int i = -1234;
+    uint16_t u16 = 128;
+    const ts::UString us(u"abc");
+    const std::string s("def");
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"i = -1,234, u16 = 0x0080, 27 abc def ghi jkl", ts::UString::Format(u"i = %'d, u16 = 0x%X, %d %s %s %s %s", {i, u16, 27, us, s, u"ghi", "jkl"}));
+
+    // Character.
+    const ts::UString ref1({u'A', ts::GREEK_CAPITAL_LETTER_ALPHA_WITH_TONOS, u'B'});
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(ref1, ts::UString::Format(u"A%cB", {int(ts::GREEK_CAPITAL_LETTER_ALPHA_WITH_TONOS)}));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(ref1, ts::UString::Format(u"A%cB", {ts::GREEK_CAPITAL_LETTER_ALPHA_WITH_TONOS}));
+
+    // Decimal integer.
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"1234567", ts::UString::Format(u"%d", {1234567}));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"+1234567", ts::UString::Format(u"%+d", {1234567}));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"1,234,567", ts::UString::Format(u"%'d", {1234567}));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"+1,234,567", ts::UString::Format(u"%+'d", {1234567}));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"1,234,567", ts::UString::Format(u"%-'d", {1234567}));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"1234567", ts::UString::Format(u"%0d", {1234567}));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"1234567", ts::UString::Format(u"%05d", {1234567}));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"0001234567", ts::UString::Format(u"%010d", {1234567}));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"   1234567", ts::UString::Format(u"%10d", {1234567}));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"1234567   ", ts::UString::Format(u"%-10d", {1234567}));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"     1234567", ts::UString::Format(u"%*d", {12, 1234567}));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"1234567     ", ts::UString::Format(u"%-*d", {12, 1234567}));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"1,234,567   ", ts::UString::Format(u"%-*'d", {12, 1234567}));
+
+    // Hexadecimal integer.
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"AB", ts::UString::Format(u"%X", {uint8_t(171)}));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"00AB", ts::UString::Format(u"%X", {int16_t(171)}));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"000000AB", ts::UString::Format(u"%X", {uint32_t(171)}));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"00000000000000AB", ts::UString::Format(u"%X", {TS_CONST64(171)}));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"000000000000000000AB", ts::UString::Format(u"%20X", {TS_CONST64(171)}));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"00AB", ts::UString::Format(u"%*X", {4, TS_CONST64(171)}));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"B", ts::UString::Format(u"%*X", {1, TS_CONST64(171)}));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"0123,4567", ts::UString::Format(u"%'X", {uint32_t(0x1234567)}));
+
+    // String.
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"|%s|", ts::UString::Format(u"|%s|", {}));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"|abc|", ts::UString::Format(u"|%s|", {"abc"}));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"|abc|", ts::UString::Format(u"|%s|", {u"abc"}));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"|abc|", ts::UString::Format(u"|%s|", {std::string("abc")}));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"|abc|", ts::UString::Format(u"|%s|", {ts::UString(u"abc")}));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"|abc|", ts::UString::Format(u"|%2s|", {u"abc"}));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"| abc|", ts::UString::Format(u"|%4s|", {u"abc"}));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"|abc |", ts::UString::Format(u"|%-4s|", {u"abc"}));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"|000abc|", ts::UString::Format(u"|%06s|", {u"abc"}));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"|abc000|", ts::UString::Format(u"|%-06s|", {u"abc"}));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"|abc     |", ts::UString::Format(u"|%-*s|", {8, u"abc"}));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"|abc     |", ts::UString::Format(u"|%-*.*s|", {8, 12, u"abc"}));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"|abcdefgh|", ts::UString::Format(u"|%-*.*s|", {8, 12, u"abcdefgh"}));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"|abcdefghijkl|", ts::UString::Format(u"|%-*.*s|", {8, 12, u"abcdefghijklmnop"}));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"|abcdefghijklmnop|", ts::UString::Format(u"|%-*s|", {8, u"abcdefghijklmnop"}));
 }

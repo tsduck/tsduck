@@ -41,7 +41,10 @@ TSDUCK_SOURCE;
 const char* const ts::UString::UTF8_BOM = "\0xEF\0xBB\0xBF";
 
 // Default separator string for groups of thousands, a comma.
-const ts::UString ts::UString::DEFAULT_THOUSANDS_SEPARATOR(u",");
+const ts::UString ts::UString::DEFAULT_THOUSANDS_SEPARATOR(1, u',');
+
+//! A reference empty string.
+const ts::UString ts::UString::EMPTY;
 
 
 //----------------------------------------------------------------------------
@@ -203,6 +206,26 @@ void ts::UString::ConvertUTF8ToUTF16(const char*& inStart, const char* inEnd, UC
 
 
 //----------------------------------------------------------------------------
+// Append a Unicode code point into the string.
+//----------------------------------------------------------------------------
+
+ts::UString& ts::UString::append(uint32_t code)
+{
+    if (code <= 0xD7FF || (code >= 0xE000 && code <= 0xFFFF)) {
+        // One single 16-bit value.
+        push_back(UChar(code));
+    }
+    else if (code >= 0x00010000 && code <= 0x0010FFFF) {
+        // A surrogate pair.
+        code -= 0x00010000;
+        push_back(UChar(0xD800 + (code >> 10)));
+        push_back(UChar(0xDC00 + (code & 0x03FF)));
+    }
+    return *this;
+}
+
+
+//----------------------------------------------------------------------------
 // Convert an UTF-8 string into this object.
 //----------------------------------------------------------------------------
 
@@ -354,6 +377,38 @@ ts::UString::size_type ts::UString::displayPosition(size_type count, size_type f
             return size();
         }
     }
+}
+
+
+//----------------------------------------------------------------------------
+// Truncate this string to a given display width.
+//----------------------------------------------------------------------------
+
+void ts::UString::truncateWidth(size_type maxWidth, StringDirection direction)
+{
+    switch (direction) {
+        case LEFT_TO_RIGHT: {
+            const size_t pos = displayPosition(maxWidth, 0, LEFT_TO_RIGHT);
+            resize(pos);
+            break;
+        }
+        case RIGHT_TO_LEFT: {
+            const size_t pos = displayPosition(maxWidth, length(), RIGHT_TO_LEFT);
+            erase(0, pos);
+            break;
+        }
+        default: {
+            // Should not get there.
+            assert(false);
+        }
+    }
+}
+
+ts::UString ts::UString::toTruncatedWidth(size_type maxWidth, StringDirection direction) const
+{
+    UString result(*this);
+    result.truncateWidth(maxWidth, direction);
+    return result;
 }
 
 
@@ -1284,53 +1339,26 @@ ts::UString ts::UString::Format(const UChar* fmt, const std::initializer_list<ts
 
     // Iterator inside the argument list.
     std::initializer_list<ts::FormatArg>::const_iterator arg(args.begin());
+    const std::initializer_list<ts::FormatArg>::const_iterator argsEnd(args.end());
 
     // Loop into format, stop at each '%' sequence, exit when no more arguments are available.
     // The variable 'fmt' is incremented all the way.
-    while (*fmt != CHAR_NULL && arg != args.end()) {
+    while (*fmt != CHAR_NULL && arg != argsEnd) {
 
-        // Locate the next '%'.
-        const UChar* next = fmt;
-        while (*next != CHAR_NULL && *next != PERCENT_SIGN) {
-            ++next;
-        }
-
-        // Copy this sequence directly into the result.
-        result.append(fmt, next - fmt);
-
-        // Process either '%' sequence or end of string.
-        if (*next == CHAR_NULL) {
-            break;
-        }
-        assert(*next == PERCENT_SIGN);
-        fmt = next + 1;
-
-        // Process literal case.
-        if (*fmt == PERCENT_SIGN) {
-            result.push_back(PERCENT_SIGN);
+        // Locate the next '%' or end of string.
+        const UChar* const start = fmt;
+        while (*fmt != CHAR_NULL && *fmt != u'%') {
             ++fmt;
-            continue;
         }
 
+        // Copy this literal sequence directly into the result.
+        result.append(start, fmt - start);
 
-
-        //@@@@@ TO BE COMPLETED
-
-
-        // The available '%' sequences are:
-        // - @c %s : String. Treated as @c %d if the argument is an integer.
-        // - @c %d : Integer in decimal. Treated as @c %s if the argument is a string.
-        // - @c %x : Integer in lowercase hexadecimal. Treated as @c %s if the argument is a string.
-        // - @c %X : Integer in uppercase hexadecimal. Treated as @c %s if the argument is a string.
-        // - @c %% : Insert a literal %.
-        //
-        // The allowed options, between the '%' and the letter are:
-        // - @c 0 : Zero padding for integers. This is the default with @c %x and @c %X.
-        // - @c - : Left-justified (right-justified by default).
-        // - @e digits : Minimum field width. This is a display width, not a number of characters.
-        // - @c . @e digits : Maximum field width.
-        // - @c ' : For integer conversions, use a separator for groups of thousands.
-
+        // Process '%' sequence.
+        if (*fmt == u'%') {
+            ++fmt;
+            ProcessFormatArgs(result, fmt, arg, argsEnd);
+        }
     }
 
     // Append the rest of the format into the result. There are maybe other '%s' sequences
@@ -1339,4 +1367,190 @@ ts::UString ts::UString::Format(const UChar* fmt, const std::initializer_list<ts
 
     // Final formatted string.
     return result;
+}
+
+
+// Anciliary function to process one '%' sequence.
+void ts::UString::ProcessFormatArgs(UString& result,
+                                    const UChar*& fmt,
+                                    std::initializer_list<ts::FormatArg>::const_iterator& arg,
+                                    const std::initializer_list<ts::FormatArg>::const_iterator& argsEnd)
+{
+    // Invalid '%' at end of string.
+    if (*fmt == CHAR_NULL) {
+        return;
+    }
+
+    // Process literal '%'.
+    if (*fmt == u'%') {
+        result.push_back(u'%');
+        ++fmt;
+        return;
+    }
+
+    // The allowed options, between the '%' and the letter are:
+    //       - : Left-justified (right-justified by default).
+    //       + : Force a '+' sign with decimal integers.
+    //       0 : Zero padding for integers.
+    //  digits : Minimum field width.
+    // .digits : Maximum field width.
+    //       ' : For integer conversions, use a separator for groups of thousands.
+    //       * : Can be used instead of @e digits. The integer value is taken from the argument list.
+
+    bool leftJustified = false;
+    bool forceSign = false;
+    bool useSeparator = false;
+    UChar pad = u' ';
+    size_t minWidth = 0;
+    size_t maxWidth = std::numeric_limits<size_t>::max();
+
+    if (*fmt == u'-') {
+        leftJustified = true;
+        fmt++;
+    }
+    if (*fmt == u'+') {
+        forceSign = true;
+        fmt++;
+    }
+    if (*fmt == u'0') {
+        pad = u'0';
+        fmt++;
+    }
+    GetFormatSize(minWidth, fmt, arg, argsEnd);
+    if (*fmt == u'.') {
+        ++fmt;
+        GetFormatSize(maxWidth, fmt, arg, argsEnd);
+        if (maxWidth < minWidth) {
+            maxWidth = minWidth;
+        }
+    }
+    if (*fmt == u'\'') {
+        useSeparator = true;
+        fmt++;
+    }
+
+    // The thousands separator to use.
+    const UString& separator(useSeparator ? DEFAULT_THOUSANDS_SEPARATOR : EMPTY);
+
+    // The available '%' sequences are:
+    // - %s : String.
+    // - %c : Character.
+    // - %d : Integer in decimal.
+    // - %x : Integer in lowercase hexadecimal.
+    // - %X : Integer in uppercase hexadecimal.
+    // - %% : Insert a literal % (already done).
+
+    // Extract the command and set fmt to its final value, after the '%' sequence.
+    const UChar cmd = *fmt;
+    if (cmd != CHAR_NULL) {
+        ++fmt;
+    }
+
+    // Process invalid '%' sequence or no more argument to insert.
+    if ((cmd != u's' && cmd != u'c' && cmd != u'd' && cmd != u'x' && cmd != u'X') || arg == argsEnd) {
+        return;
+    }
+
+    // Now, the command is valid, process it.
+    if (arg->isString()) {
+        // String arguments are always treated as %s, regardless of the % command.
+        // Get the string parameter.
+        UString value;
+        switch (arg->type()) {
+            case FormatArg::CHARPTR:
+                value.assignFromUTF8(arg->toCharPtr());
+                break;
+            case FormatArg::STRING:
+                value.assignFromUTF8(arg->toString());
+                break;
+            case FormatArg::UCHARPTR:
+                value.assign(arg->toUCharPtr());
+                break;
+            case FormatArg::USTRING:
+                value.assign(arg->toUString());
+                break;
+            default:
+                // Not a string, should not get there.
+                assert(false);
+                break;
+        }
+        // Truncate the string.
+        size_t wid = value.width();
+        if (maxWidth < wid) {
+            value.truncateWidth(maxWidth, leftJustified ? LEFT_TO_RIGHT : RIGHT_TO_LEFT);
+            wid = maxWidth;
+        }
+        // Insert the string with optional padding.
+        if (minWidth > wid && !leftJustified) {
+            result.append(minWidth - wid, pad);
+        }
+        result.append(value);
+        if (minWidth > wid && leftJustified) {
+            result.append(minWidth - wid, pad);
+        }
+    }
+    else if (cmd == u'c') {
+        // Use an integer value as an Unicode code point.
+        result.append(arg->toUInt32());
+    }
+    else if (cmd == u'x' || cmd == u'X') {
+        // Insert an integer in hexadecimal.
+        // If min width is not specified, use the "natural" width of the argument.
+        if (minWidth == 0) {
+            minWidth = 2 * arg->size(); // number of hexa digits
+        }
+        if (arg->size() <= 4) {
+            result.append(Hexa(arg->toUInt32(), minWidth, separator, false, cmd == u'X'));
+        }
+        else {
+            result.append(Hexa(arg->toUInt64(), minWidth, separator, false, cmd == u'X'));
+        }
+    }
+    else {
+        // Insert an integer in decimal.
+        switch (arg->type()) {
+            case FormatArg::INT32:
+                result.append(Decimal(arg->toInt32(), minWidth, !leftJustified, separator, forceSign, pad));
+                break;
+            case FormatArg::UINT32:
+                result.append(Decimal(arg->toUInt32(), minWidth, !leftJustified, separator, forceSign, pad));
+                break;
+            case FormatArg::INT64:
+                result.append(Decimal(arg->toInt64(), minWidth, !leftJustified, separator, forceSign, pad));
+                break;
+            case FormatArg::UINT64:
+                result.append(Decimal(arg->toUInt64(), minWidth, !leftJustified, separator, forceSign, pad));
+                break;
+            default:
+                // Not an integer, should not get there, should have been already processed as a string.
+                assert(false);
+                break;
+        }
+    }
+
+    // Finally, absorb the inserted argument.
+    ++arg;
+}
+
+// Anciliary function to extract a size field from a '%' sequence.
+void ts::UString::GetFormatSize(size_t& size,
+                                const UChar*& fmt,
+                                std::initializer_list<ts::FormatArg>::const_iterator& arg,
+                                const std::initializer_list<ts::FormatArg>::const_iterator& argsEnd)
+{
+    if (IsDigit(*fmt)) {
+        // An decimal integer literal is present, decode it.
+        size = 0;
+        while (IsDigit(*fmt)) {
+            size = 10 * size + *fmt++ - u'0';
+        }
+    }
+    else if (*fmt == u'*') {
+        // The size field is taken from the argument list.
+        ++fmt;
+        if (arg != argsEnd) {
+            size = arg->toInteger<size_t>();
+            ++arg;
+        }
+    }
 }
