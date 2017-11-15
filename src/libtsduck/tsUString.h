@@ -748,8 +748,9 @@ namespace ts {
         //! @param [in] truncate If true and this string is longer than @a width,
         //! it is truncated to @a width character. If false, this string is
         //! never truncated, possibly resulting in a string longer than @a width.
+        //! @param [in] spacesBeforePad Number of spaces before padding.
         //!
-        void justifyLeft(size_type width, UChar pad = SPACE, bool truncate = false);
+        void justifyLeft(size_type width, UChar pad = SPACE, bool truncate = false, size_t spacesBeforePad = 0);
 
         //!
         //! Return a left-justified (padded and optionally truncated) string.
@@ -760,9 +761,10 @@ namespace ts {
         //! @param [in] truncate If true and this string is longer than @a width,
         //! it is truncated to @a width character. If false, this string is
         //! never truncated, possibly resulting in a string longer than @a width.
+        //! @param [in] spacesBeforePad Number of spaces before padding.
         //! @return The justified string.
         //!
-        UString toJustifiedLeft(size_type width, UChar pad = SPACE, bool truncate = false) const;
+        UString toJustifiedLeft(size_type width, UChar pad = SPACE, bool truncate = false, size_t spacesBeforePad = 0) const;
 
         //!
         //! Right-justified (pad and optionally truncate) string.
@@ -773,8 +775,9 @@ namespace ts {
         //! @param [in] truncate If true and this string is longer than @a width,
         //! the beginning of @a str is truncated. If false, this string is
         //! never truncated, possibly resulting in a string longer than @a width.
+        //! @param [in] spacesAfterPad Number of spaces after padding.
         //!
-        void justifyRight(size_type width, UChar pad = SPACE, bool truncate = false);
+        void justifyRight(size_type width, UChar pad = SPACE, bool truncate = false, size_t spacesAfterPad = 0);
 
         //!
         //! Return a right-justified (padded and optionally truncated) string.
@@ -785,9 +788,10 @@ namespace ts {
         //! @param [in] truncate If true and this string is longer than @a width,
         //! the beginning of @a str is truncated. If false, this string is
         //! never truncated, possibly resulting in a string longer than @a width.
+        //! @param [in] spacesAfterPad Number of spaces after padding.
         //! @return The justified string.
         //!
-        UString toJustifiedRight(size_type width, UChar pad = SPACE, bool truncate = false) const;
+        UString toJustifiedRight(size_type width, UChar pad = SPACE, bool truncate = false, size_t spacesAfterPad = 0) const;
 
         //!
         //! Centered-justified (pad and optionally truncate) string.
@@ -798,8 +802,9 @@ namespace ts {
         //! @param [in] truncate If true and this string is longer than @a width,
         //! this string is truncated to @a width character. If false, this string is
         //! never truncated, possibly resulting in a string longer than @a width.
+        //! @param [in] spacesAroundPad Number of spaces around padding.
         //!
-        void justifyCentered(size_type width, UChar pad = SPACE, bool truncate = false);
+        void justifyCentered(size_type width, UChar pad = SPACE, bool truncate = false, size_t spacesAroundPad = 0);
 
         //!
         //! Return a centered-justified (padded and optionally truncated) string.
@@ -810,9 +815,10 @@ namespace ts {
         //! @param [in] truncate If true and this string is longer than @a width,
         //! this string is truncated to @a width character. If false, this string is
         //! never truncated, possibly resulting in a string longer than @a width.
+        //! @param [in] spacesAroundPad Number of spaces around padding.
         //! @return The justified string.
         //!
-        UString toJustifiedCentered(size_type width, UChar pad = SPACE, bool truncate = false) const;
+        UString toJustifiedCentered(size_type width, UChar pad = SPACE, bool truncate = false, size_t spacesAroundPad = 0) const;
 
         //!
         //! Justify string, pad in the middle.
@@ -822,8 +828,9 @@ namespace ts {
         //! @param [in] right The right part of the string to justify. This string is used as left part.
         //! @param [in] width The required width of the result string.
         //! @param [in] pad The character to insert between the two parts.
+        //! @param [in] spacesAroundPad Number of spaces around padding.
         //!
-        void justify(const UString& right, size_type width, UChar pad = SPACE);
+        void justify(const UString& right, size_type width, UChar pad = SPACE, size_t spacesAroundPad = 0);
 
         //!
         //! Return a justified string, pad in the middle.
@@ -833,9 +840,10 @@ namespace ts {
         //! @param [in] right The right part of the string to justify. This string is used as left part.
         //! @param [in] width The required width of the result string.
         //! @param [in] pad The character to insert between the two parts.
+        //! @param [in] spacesAroundPad Number of spaces around padding.
         //! @return The justified string.
         //!
-        UString toJustified(const UString& right, size_type width, UChar pad = SPACE) const;
+        UString toJustified(const UString& right, size_type width, UChar pad = SPACE, size_t spacesAroundPad = 0) const;
 
         //!
         //! Convert the string into a suitable HTML representation.
@@ -1462,6 +1470,14 @@ namespace ts {
 //! @return A reference to the @a strm object.
 //!
 TSDUCKDLL std::ostream& operator<<(std::ostream& strm, const ts::UString& str);
+
+//!
+//! Output operator for ts::UChar on standard text streams with UTF-8 conversion.
+//! @param [in,out] strm A standard stream in output mode.
+//! @param [in] c A character.
+//! @return A reference to the @a strm object.
+//!
+TSDUCKDLL std::ostream& operator<<(std::ostream& strm, const ts::UChar c);
 
 //
 // Override reversed binary operators.

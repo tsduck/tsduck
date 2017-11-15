@@ -59,6 +59,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsCerrReport.h" />
     <ClInclude Include="..\..\src\libtsduck\tsFormatArg.h" />
     <ClInclude Include="..\..\src\libtsduck\tsFormatArgTemplate.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsGrid.h" />
     <ClInclude Include="..\..\src\libtsduck\tsStaticReferencesDVB.h" />
     <ClInclude Include="..\..\src\libtsduck\tsT2MIDemux.h" />
     <ClInclude Include="..\..\src\libtsduck\tsT2MIDescriptor.h" />
@@ -351,6 +352,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsCAT.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsCerrReport.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsFormatArg.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsGrid.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsStaticReferencesDVB.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsT2MIDemux.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsT2MIDescriptor.cpp" />

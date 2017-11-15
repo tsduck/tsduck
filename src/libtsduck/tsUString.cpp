@@ -134,6 +134,32 @@ void ts::UString::ConvertUTF16ToUTF8(const UChar*& inStart, const UChar* inEnd, 
 
 
 //----------------------------------------------------------------------------
+// Output operator for ts::UChar on standard text streams with UTF-8 conv.
+//----------------------------------------------------------------------------
+
+std::ostream& operator<<(std::ostream& strm, const ts::UChar c)
+{
+    // See comments in ConvertUTF16ToUTF8().
+    if ((c & 0xF800) == 0xD800) {
+        // Part of a surrogate pair, cannot be displayed alone.
+        return strm;
+    }
+    else if (c < 0x0080) {
+        // ASCII compatible value, one byte encoding.
+        return strm << char(c);
+    }
+    else if (c < 0x0800) {
+        // 2 bytes encoding.
+        return strm << char(0x80 | (c & 0x3F)) << char(0xC0 | (c & 0x1F));
+    }
+    else {
+        // 3 bytes encoding.
+        return strm << char(0x80 | (c & 0x3F)) << char(0x80 | (c & 0x3F)) << char(0xE0 | (c & 0x0F));
+    }
+}
+
+
+//----------------------------------------------------------------------------
 // General routine to convert from UTF-8 to UTF-16.
 //----------------------------------------------------------------------------
 
@@ -666,21 +692,23 @@ ts::UString ts::UString::toSplitLines(size_type maxWidth, const ts::UString& oth
 // Left-justify (pad and optionally truncate) string.
 //----------------------------------------------------------------------------
 
-void ts::UString::justifyLeft(size_type width, UChar pad, bool truncate)
+void ts::UString::justifyLeft(size_type wid, UChar pad, bool truncate, size_t spacesBeforePad)
 {
-    const size_type len = this->width();
-    if (truncate && len > width) {
-        erase(width);
+    const size_type len = width();
+    if (truncate && len > wid) {
+        truncateWidth(wid);
     }
-    else if (len < width) {
-        append(width - len, pad);
+    else if (len < wid) {
+        spacesBeforePad = std::min(spacesBeforePad, wid - len);
+        append(spacesBeforePad, SPACE);
+        append(wid - len - spacesBeforePad, pad);
     }
 }
 
-ts::UString ts::UString::toJustifiedLeft(size_type width, UChar pad, bool truncate) const
+ts::UString ts::UString::toJustifiedLeft(size_type wid, UChar pad, bool truncate, size_t spacesBeforePad) const
 {
     UString result(*this);
-    result.justifyLeft(width, pad, truncate);
+    result.justifyLeft(wid, pad, truncate, spacesBeforePad);
     return result;
 }
 
@@ -689,21 +717,23 @@ ts::UString ts::UString::toJustifiedLeft(size_type width, UChar pad, bool trunca
 // Right-justified (pad and optionally truncate) string.
 //----------------------------------------------------------------------------
 
-void ts::UString::justifyRight(size_type width, UChar pad, bool truncate)
+void ts::UString::justifyRight(size_type wid, UChar pad, bool truncate, size_t spacesAfterPad)
 {
-    const size_type len = this->width();
-    if (truncate && len > width) {
-        erase(0, len - width);
+    const size_type len = width();
+    if (truncate && len > wid) {
+        truncateWidth(wid, RIGHT_TO_LEFT);
     }
-    else if (len < width) {
-        insert(0, width - len, pad);
+    else if (len < wid) {
+        spacesAfterPad = std::min(spacesAfterPad, wid - len);
+        insert(0, spacesAfterPad, SPACE);
+        insert(0, wid - len - spacesAfterPad, pad);
     }
 }
 
-ts::UString ts::UString::toJustifiedRight(size_type width, UChar pad, bool truncate) const
+ts::UString ts::UString::toJustifiedRight(size_type wid, UChar pad, bool truncate, size_t spacesAfterPad) const
 {
     UString result(*this);
-    result.justifyRight(width, pad, truncate);
+    result.justifyRight(wid, pad, truncate, spacesAfterPad);
     return result;
 }
 
@@ -712,24 +742,28 @@ ts::UString ts::UString::toJustifiedRight(size_type width, UChar pad, bool trunc
 // Centered-justified (pad and optionally truncate) string.
 //----------------------------------------------------------------------------
 
-void ts::UString::justifyCentered(size_type width, UChar pad, bool truncate)
+void ts::UString::justifyCentered(size_type wid, UChar pad, bool truncate, size_t spacesAroundPad)
 {
-    const size_type len = this->width();
-    if (truncate && len > width) {
-        erase(width);
+    const size_type len = width();
+    if (truncate && len > wid) {
+        truncateWidth(wid);
     }
-    else if (len < width) {
-        const size_type leftSize = (width - len) / 2;
-        const size_type rightSize = width - len - leftSize;
-        insert(0, leftSize, pad);
-        append(rightSize, pad);
+    else if (len < wid) {
+        const size_type leftSize = (wid - len) / 2;
+        const size_type leftSpaces = std::min(spacesAroundPad, leftSize);
+        const size_type rightSize = wid - len - leftSize;
+        const size_type rightSpaces = std::min(spacesAroundPad, rightSize);
+        insert(0, leftSpaces, SPACE);
+        insert(0, leftSize - leftSpaces, pad);
+        append(rightSpaces, SPACE);
+        append(rightSize - rightSpaces, pad);
     }
 }
 
-ts::UString ts::UString::toJustifiedCentered(size_type width, UChar pad, bool truncate) const
+ts::UString ts::UString::toJustifiedCentered(size_type wid, UChar pad, bool truncate, size_t spacesAroundPad) const
 {
     UString result(*this);
-    result.justifyCentered(width, pad, truncate);
+    result.justifyCentered(wid, pad, truncate, spacesAroundPad);
     return result;
 }
 
@@ -738,19 +772,24 @@ ts::UString ts::UString::toJustifiedCentered(size_type width, UChar pad, bool tr
 // Justify string, pad in the middle.
 //----------------------------------------------------------------------------
 
-void ts::UString::justify(const UString& right, size_type width, UChar pad)
+void ts::UString::justify(const UString& right, size_type wid, UChar pad, size_t spacesAroundPad)
 {
     const size_type len = this->width() + right.width();
-    if (len < width) {
-        append(width - len, pad);
+    if (len < wid) {
+        const size_t padWidth = wid - len;
+        const size_t leftSpaces = std::min(spacesAroundPad, padWidth);
+        const size_t rightSpaces = std::min(spacesAroundPad, padWidth - leftSpaces);
+        append(leftSpaces, SPACE);
+        append(padWidth - rightSpaces - leftSpaces, pad);
+        append(rightSpaces, SPACE);
     }
     append(right);
 }
 
-ts::UString ts::UString::toJustified(const UString& right, size_type width, UChar pad) const
+ts::UString ts::UString::toJustified(const UString& right, size_type wid, UChar pad, size_t spacesAroundPad) const
 {
     UString result(*this);
-    result.justify(right, width, pad);
+    result.justify(right, wid, pad, spacesAroundPad);
     return result;
 }
 
