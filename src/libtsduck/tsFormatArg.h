@@ -76,12 +76,12 @@ namespace ts {
 
         //!
         //! Constructor from a 8-bit character.
-        //! @param [in] i Integer value of the FormatArg. Internally stored as a 32-bit integer.
+        //! @param [in] c Character value of the FormatArg. Internally stored as a 32-bit integer.
         //!
         FormatArg(char c) : _type(INT32), _size(sizeof(c)), _value(int32_t(c)) {}
         //!
         //! Constructor from a 16-bit character.
-        //! @param [in] i Integer value of the FormatArg. Internally stored as a 32-bit integer.
+        //! @param [in] c Character value of the FormatArg. Internally stored as a 32-bit integer.
         //!
         FormatArg(char16_t c) : _type(INT32), _size(sizeof(c)), _value(int32_t(c)) {}
         //!
