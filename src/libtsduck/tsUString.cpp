@@ -242,15 +242,35 @@ ts::UString& ts::UString::assignFromUTF8(const char* utf8, size_type count)
 // Convert this UTF-16 string into UTF-8.
 //----------------------------------------------------------------------------
 
-std::string ts::UString::toUTF8() const
+void ts::UString::toUTF8(std::string& utf8) const
 {
     // The maximum number of UTF-8 bytes is 1.5 times the number of UTF-16 codes.
-    std::string utf8(2 * size(), '\0');
+    utf8.resize(2 * size());
+
     const UChar* inStart = data();
     char* outStart = const_cast<char*>(utf8.data());
     ConvertUTF16ToUTF8(inStart, inStart + size(), outStart, outStart + utf8.size());
+
     utf8.resize(outStart - utf8.data());
+}
+
+std::string ts::UString::toUTF8() const
+{
+    std::string utf8;
+    toUTF8(utf8);
     return utf8;
+}
+
+
+//----------------------------------------------------------------------------
+// Output operator for ts::UString on standard text streams with UTF-8 conv.
+//----------------------------------------------------------------------------
+
+std::ostream& operator<<(std::ostream& strm, const ts::UString& str)
+{
+    std::string utf8;
+    str.toUTF8(utf8);
+    return strm << utf8;
 }
 
 

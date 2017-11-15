@@ -321,6 +321,12 @@ namespace ts {
         std::string toUTF8() const;
 
         //!
+        //! Convert this UTF-16 string into UTF-8.
+        //! @param [out] utf8 The equivalent UTF-8 string.
+        //!
+        void toUTF8(std::string& utf8) const;
+
+        //!
         //! General routine to convert from UTF-16 to UTF-8.
         //! Stop when the input buffer is empty or the output buffer is full, whichever comes first.
         //! Invalid input values are silently ignored and skipped.
@@ -1323,10 +1329,7 @@ namespace ts {
 //! @param [in] str A string.
 //! @return A reference to the @a strm object.
 //!
-TSDUCKDLL inline std::ostream& operator<<(std::ostream& strm, const ts::UString& str)
-{
-    return strm << str.toUTF8();
-}
+TSDUCKDLL std::ostream& operator<<(std::ostream& strm, const ts::UString& str);
 
 //
 // Override reversed binary operators.
