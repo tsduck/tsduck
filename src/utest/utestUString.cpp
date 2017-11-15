@@ -32,7 +32,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsUString.h"
-#include "tsFormatArg.h"
 #include "tsHexa.h"
 #include "tsDecimal.h"
 #include "tsFormat.h"
