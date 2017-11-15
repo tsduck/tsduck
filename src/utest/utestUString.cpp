@@ -1378,6 +1378,7 @@ void UStringTest::testFormat()
     const ts::UString ref1({u'A', ts::GREEK_CAPITAL_LETTER_ALPHA_WITH_TONOS, u'B'});
     CPPUNIT_ASSERT_USTRINGS_EQUAL(ref1, ts::UString::Format(u"A%cB", {int(ts::GREEK_CAPITAL_LETTER_ALPHA_WITH_TONOS)}));
     CPPUNIT_ASSERT_USTRINGS_EQUAL(ref1, ts::UString::Format(u"A%cB", {ts::GREEK_CAPITAL_LETTER_ALPHA_WITH_TONOS}));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"AxyB", ts::UString::Format(u"A%c%cB", {'x', u'y'}));
 
     // Decimal integer.
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"1234567", ts::UString::Format(u"%d", {1234567}));
