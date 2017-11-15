@@ -117,6 +117,8 @@ HEADERS += \
     ../../../src/libtsduck/tsFileNameRate.h \
     ../../../src/libtsduck/tsForkPipe.h \
     ../../../src/libtsduck/tsFormat.h \
+    ../../../src/libtsduck/tsFormatArg.h \
+    ../../../src/libtsduck/tsFormatArgTemplate.h \
     ../../../src/libtsduck/tsGuard.h \
     ../../../src/libtsduck/tsGuardCondition.h \
     ../../../src/libtsduck/tsHDSimulcastLogicalChannelDescriptor.h \
@@ -375,6 +377,7 @@ SOURCES += \
     ../../../src/libtsduck/tsFileNameRate.cpp \
     ../../../src/libtsduck/tsForkPipe.cpp \
     ../../../src/libtsduck/tsFormat.cpp \
+    ../../../src/libtsduck/tsFormatArg.cpp \
     ../../../src/libtsduck/tsGuard.cpp \
     ../../../src/libtsduck/tsGuardCondition.cpp \
     ../../../src/libtsduck/tsHDSimulcastLogicalChannelDescriptor.cpp \
