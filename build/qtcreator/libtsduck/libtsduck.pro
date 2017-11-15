@@ -119,6 +119,7 @@ HEADERS += \
     ../../../src/libtsduck/tsFormat.h \
     ../../../src/libtsduck/tsFormatArg.h \
     ../../../src/libtsduck/tsFormatArgTemplate.h \
+    ../../../src/libtsduck/tsGrid.h \
     ../../../src/libtsduck/tsGuard.h \
     ../../../src/libtsduck/tsGuardCondition.h \
     ../../../src/libtsduck/tsHDSimulcastLogicalChannelDescriptor.h \
@@ -378,6 +379,7 @@ SOURCES += \
     ../../../src/libtsduck/tsForkPipe.cpp \
     ../../../src/libtsduck/tsFormat.cpp \
     ../../../src/libtsduck/tsFormatArg.cpp \
+    ../../../src/libtsduck/tsGrid.cpp \
     ../../../src/libtsduck/tsGuard.cpp \
     ../../../src/libtsduck/tsGuardCondition.cpp \
     ../../../src/libtsduck/tsHDSimulcastLogicalChannelDescriptor.cpp \
