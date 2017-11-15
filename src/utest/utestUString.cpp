@@ -32,6 +32,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsUString.h"
+#include "tsFormatArg.h"
 #include "tsHexa.h"
 #include "tsDecimal.h"
 #include "tsFormat.h"
@@ -87,6 +88,7 @@ public:
     void testDecimal();
     void testHexa();
     void testHexaDump();
+    void testFormatArg();
 
     CPPUNIT_TEST_SUITE(UStringTest);
     CPPUNIT_TEST(testIsSpace);
@@ -124,6 +126,7 @@ public:
     CPPUNIT_TEST(testDecimal);
     CPPUNIT_TEST(testHexa);
     CPPUNIT_TEST(testHexaDump);
+    CPPUNIT_TEST(testFormatArg);
     CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -131,6 +134,9 @@ private:
     int _nextFileIndex;
     std::string temporaryFileName(int) const;
     std::string newTemporaryFileName();
+
+    void testFormatArgCalled1(const std::initializer_list<ts::FormatArg>& list);
+    void testFormatArgCalled2(const std::initializer_list<ts::FormatArg>& list);
 
     // Two sample Unicode characters from the supplementary planes:
     //   U+1D538: MATHEMATICAL DOUBLE-STRUCK CAPITAL A
@@ -1134,4 +1140,206 @@ void UStringTest::testHexaDump()
         u"0010.0000 0010.0001 0010.0010 0010.0011 0010.0100 0010.0101   !\"#$%\n"
         u"0010.0110 0010.0111 0010.1000 0010.1001                      &'()\n";
     CPPUNIT_ASSERT_USTRINGS_EQUAL(ref8, hex8);
+}
+
+void UStringTest::testFormatArg()
+{
+    testFormatArgCalled1({});
+
+    const std::string ok("ok");
+    const ts::UString us(u"an UString");
+    const uint8_t u8 = 23;
+    const int16_t i16 = -432;
+
+    testFormatArgCalled2({12, u8, i16, TS_CONST64(-99), "foo", ok, u"bar", us, ok + " 2", us + u" 2"});
+}
+
+void UStringTest::testFormatArgCalled1(const std::initializer_list<ts::FormatArg>& list)
+{
+    CPPUNIT_ASSERT_EQUAL(size_t(0), list.size());
+}
+
+void UStringTest::testFormatArgCalled2(const std::initializer_list<ts::FormatArg>& list)
+{
+    CPPUNIT_ASSERT_EQUAL(size_t(10), list.size());
+
+    std::initializer_list<ts::FormatArg>::const_iterator it = list.begin();
+
+    // 12
+    CPPUNIT_ASSERT_EQUAL(ts::FormatArg::INT32, it->type());
+    CPPUNIT_ASSERT(it->isInt());
+    CPPUNIT_ASSERT(it->isSigned());
+    CPPUNIT_ASSERT(!it->isUnsigned());
+    CPPUNIT_ASSERT(!it->isString());
+    CPPUNIT_ASSERT(!it->isUString());
+    CPPUNIT_ASSERT_EQUAL(size_t(4), it->size());
+    CPPUNIT_ASSERT_EQUAL(int32_t(12), it->toInt32());
+    CPPUNIT_ASSERT_EQUAL(uint32_t(12), it->toUInt32());
+    CPPUNIT_ASSERT_EQUAL(int64_t(12), it->toInt64());
+    CPPUNIT_ASSERT_EQUAL(uint64_t(12), it->toUInt64());
+    CPPUNIT_ASSERT_STRINGS_EQUAL("", it->toCharPtr());
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"", it->toUCharPtr());
+    CPPUNIT_ASSERT_STRINGS_EQUAL("", it->toString());
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"", it->toUString());
+    ++it;
+
+    // u8 = 23
+    CPPUNIT_ASSERT_EQUAL(ts::FormatArg::UINT32, it->type());
+    CPPUNIT_ASSERT(it->isInt());
+    CPPUNIT_ASSERT(!it->isSigned());
+    CPPUNIT_ASSERT(it->isUnsigned());
+    CPPUNIT_ASSERT(!it->isString());
+    CPPUNIT_ASSERT(!it->isUString());
+    CPPUNIT_ASSERT_EQUAL(size_t(1), it->size());
+    CPPUNIT_ASSERT_EQUAL(int32_t(23), it->toInt32());
+    CPPUNIT_ASSERT_EQUAL(uint32_t(23), it->toUInt32());
+    CPPUNIT_ASSERT_EQUAL(int64_t(23), it->toInt64());
+    CPPUNIT_ASSERT_EQUAL(uint64_t(23), it->toUInt64());
+    CPPUNIT_ASSERT_STRINGS_EQUAL("", it->toCharPtr());
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"", it->toUCharPtr());
+    CPPUNIT_ASSERT_STRINGS_EQUAL("", it->toString());
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"", it->toUString());
+    ++it;
+
+    // i16 = -432
+    CPPUNIT_ASSERT_EQUAL(ts::FormatArg::INT32, it->type());
+    CPPUNIT_ASSERT(it->isInt());
+    CPPUNIT_ASSERT(it->isSigned());
+    CPPUNIT_ASSERT(!it->isUnsigned());
+    CPPUNIT_ASSERT(!it->isString());
+    CPPUNIT_ASSERT(!it->isUString());
+    CPPUNIT_ASSERT_EQUAL(size_t(2), it->size());
+    CPPUNIT_ASSERT_EQUAL(int32_t(-432), it->toInt32());
+    CPPUNIT_ASSERT_EQUAL(int64_t(-432), it->toInt64());
+    CPPUNIT_ASSERT_STRINGS_EQUAL("", it->toCharPtr());
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"", it->toUCharPtr());
+    CPPUNIT_ASSERT_STRINGS_EQUAL("", it->toString());
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"", it->toUString());
+    ++it;
+
+    // TS_CONST64(-99)
+    CPPUNIT_ASSERT_EQUAL(ts::FormatArg::INT64, it->type());
+    CPPUNIT_ASSERT(it->isInt());
+    CPPUNIT_ASSERT(it->isSigned());
+    CPPUNIT_ASSERT(!it->isUnsigned());
+    CPPUNIT_ASSERT(!it->isString());
+    CPPUNIT_ASSERT(!it->isUString());
+    CPPUNIT_ASSERT_EQUAL(size_t(8), it->size());
+    CPPUNIT_ASSERT_EQUAL(int32_t(-99), it->toInt32());
+    CPPUNIT_ASSERT_EQUAL(int64_t(-99), it->toInt64());
+    CPPUNIT_ASSERT_STRINGS_EQUAL("", it->toCharPtr());
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"", it->toUCharPtr());
+    CPPUNIT_ASSERT_STRINGS_EQUAL("", it->toString());
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"", it->toUString());
+    ++it;
+
+    // "foo"
+    CPPUNIT_ASSERT_EQUAL(ts::FormatArg::CHARPTR, it->type());
+    CPPUNIT_ASSERT(!it->isInt());
+    CPPUNIT_ASSERT(!it->isSigned());
+    CPPUNIT_ASSERT(!it->isUnsigned());
+    CPPUNIT_ASSERT(it->isString());
+    CPPUNIT_ASSERT(!it->isUString());
+    CPPUNIT_ASSERT_EQUAL(size_t(0), it->size());
+    CPPUNIT_ASSERT_EQUAL(int32_t(0), it->toInt32());
+    CPPUNIT_ASSERT_EQUAL(uint32_t(0), it->toUInt32());
+    CPPUNIT_ASSERT_EQUAL(int64_t(0), it->toInt64());
+    CPPUNIT_ASSERT_EQUAL(uint64_t(0), it->toUInt64());
+    CPPUNIT_ASSERT_STRINGS_EQUAL("foo", it->toCharPtr());
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"", it->toUCharPtr());
+    CPPUNIT_ASSERT_STRINGS_EQUAL("", it->toString());
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"", it->toUString());
+    ++it;
+
+    // ok = "ok"
+    CPPUNIT_ASSERT_EQUAL(ts::FormatArg::STRING, it->type());
+    CPPUNIT_ASSERT(!it->isInt());
+    CPPUNIT_ASSERT(!it->isSigned());
+    CPPUNIT_ASSERT(!it->isUnsigned());
+    CPPUNIT_ASSERT(it->isString());
+    CPPUNIT_ASSERT(!it->isUString());
+    CPPUNIT_ASSERT_EQUAL(size_t(0), it->size());
+    CPPUNIT_ASSERT_EQUAL(int32_t(0), it->toInt32());
+    CPPUNIT_ASSERT_EQUAL(uint32_t(0), it->toUInt32());
+    CPPUNIT_ASSERT_EQUAL(int64_t(0), it->toInt64());
+    CPPUNIT_ASSERT_EQUAL(uint64_t(0), it->toUInt64());
+    CPPUNIT_ASSERT_STRINGS_EQUAL("ok", it->toCharPtr());
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"", it->toUCharPtr());
+    CPPUNIT_ASSERT_STRINGS_EQUAL("ok", it->toString());
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"", it->toUString());
+    ++it;
+
+    // u"bar"
+    CPPUNIT_ASSERT_EQUAL(ts::FormatArg::UCHARPTR, it->type());
+    CPPUNIT_ASSERT(!it->isInt());
+    CPPUNIT_ASSERT(!it->isSigned());
+    CPPUNIT_ASSERT(!it->isUnsigned());
+    CPPUNIT_ASSERT(!it->isString());
+    CPPUNIT_ASSERT(it->isUString());
+    CPPUNIT_ASSERT_EQUAL(size_t(0), it->size());
+    CPPUNIT_ASSERT_EQUAL(int32_t(0), it->toInt32());
+    CPPUNIT_ASSERT_EQUAL(uint32_t(0), it->toUInt32());
+    CPPUNIT_ASSERT_EQUAL(int64_t(0), it->toInt64());
+    CPPUNIT_ASSERT_EQUAL(uint64_t(0), it->toUInt64());
+    CPPUNIT_ASSERT_STRINGS_EQUAL("", it->toCharPtr());
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"bar", it->toUCharPtr());
+    CPPUNIT_ASSERT_STRINGS_EQUAL("", it->toString());
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"", it->toUString());
+    ++it;
+
+    // us = u"an UString"
+    CPPUNIT_ASSERT_EQUAL(ts::FormatArg::USTRING, it->type());
+    CPPUNIT_ASSERT(!it->isInt());
+    CPPUNIT_ASSERT(!it->isSigned());
+    CPPUNIT_ASSERT(!it->isUnsigned());
+    CPPUNIT_ASSERT(!it->isString());
+    CPPUNIT_ASSERT(it->isUString());
+    CPPUNIT_ASSERT_EQUAL(size_t(0), it->size());
+    CPPUNIT_ASSERT_EQUAL(int32_t(0), it->toInt32());
+    CPPUNIT_ASSERT_EQUAL(uint32_t(0), it->toUInt32());
+    CPPUNIT_ASSERT_EQUAL(int64_t(0), it->toInt64());
+    CPPUNIT_ASSERT_EQUAL(uint64_t(0), it->toUInt64());
+    CPPUNIT_ASSERT_STRINGS_EQUAL("", it->toCharPtr());
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"an UString", it->toUCharPtr());
+    CPPUNIT_ASSERT_STRINGS_EQUAL("", it->toString());
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"an UString", it->toUString());
+    ++it;
+
+    // ok + " 2"
+    CPPUNIT_ASSERT_EQUAL(ts::FormatArg::STRING, it->type());
+    CPPUNIT_ASSERT(!it->isInt());
+    CPPUNIT_ASSERT(!it->isSigned());
+    CPPUNIT_ASSERT(!it->isUnsigned());
+    CPPUNIT_ASSERT(it->isString());
+    CPPUNIT_ASSERT(!it->isUString());
+    CPPUNIT_ASSERT_EQUAL(size_t(0), it->size());
+    CPPUNIT_ASSERT_EQUAL(int32_t(0), it->toInt32());
+    CPPUNIT_ASSERT_EQUAL(uint32_t(0), it->toUInt32());
+    CPPUNIT_ASSERT_EQUAL(int64_t(0), it->toInt64());
+    CPPUNIT_ASSERT_EQUAL(uint64_t(0), it->toUInt64());
+    CPPUNIT_ASSERT_STRINGS_EQUAL("ok 2", it->toCharPtr());
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"", it->toUCharPtr());
+    CPPUNIT_ASSERT_STRINGS_EQUAL("ok 2", it->toString());
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"", it->toUString());
+    ++it;
+
+    // us + u" 2"
+    CPPUNIT_ASSERT_EQUAL(ts::FormatArg::USTRING, it->type());
+    CPPUNIT_ASSERT(!it->isInt());
+    CPPUNIT_ASSERT(!it->isSigned());
+    CPPUNIT_ASSERT(!it->isUnsigned());
+    CPPUNIT_ASSERT(!it->isString());
+    CPPUNIT_ASSERT(it->isUString());
+    CPPUNIT_ASSERT_EQUAL(size_t(0), it->size());
+    CPPUNIT_ASSERT_EQUAL(int32_t(0), it->toInt32());
+    CPPUNIT_ASSERT_EQUAL(uint32_t(0), it->toUInt32());
+    CPPUNIT_ASSERT_EQUAL(int64_t(0), it->toInt64());
+    CPPUNIT_ASSERT_EQUAL(uint64_t(0), it->toUInt64());
+    CPPUNIT_ASSERT_STRINGS_EQUAL("", it->toCharPtr());
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"an UString 2", it->toUCharPtr());
+    CPPUNIT_ASSERT_STRINGS_EQUAL("", it->toString());
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"an UString 2", it->toUString());
+    ++it;
+
+    CPPUNIT_ASSERT(it == list.end());
 }

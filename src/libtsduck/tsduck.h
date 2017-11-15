@@ -125,6 +125,7 @@
 #include "tsFileNameRate.h"
 #include "tsForkPipe.h"
 #include "tsFormat.h"
+#include "tsFormatArg.h"
 #include "tsGuard.h"
 #include "tsGuardCondition.h"
 #include "tsHDSimulcastLogicalChannelDescriptor.h"
