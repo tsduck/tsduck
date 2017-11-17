@@ -208,6 +208,13 @@ ts::Grid::ColumnLayout::ColumnLayout(Justif justif, size_t width, UChar pad) :
 {
 }
 
+ts::Grid::ColumnText::ColumnText(const std::initializer_list<UString> texts) :
+    _texts(texts)
+{
+    // Make sure always two strings are present.
+    _texts.resize(2);
+}
+
 
 //----------------------------------------------------------------------------
 // Define the current column layout.
@@ -356,13 +363,16 @@ void ts::Grid::putLayout(const std::initializer_list<ColumnText> text)
 
     // Loop on all declare columns.
     for (LayoutVector::const_iterator iLayout = _layout.begin(); iLayout != _layout.end(); ++iLayout) {
+
         // Left margin between columns (except for first column).
         if (currentWidth > 0) {
             _out << margin;
             currentWidth += _marginWidth;
         }
         currentWidth += iLayout->_width;
+
         if (iLayout->isBorder()) {
+            // Simply display the border character.
             _out << iLayout->_pad;
         }
         else {
@@ -372,20 +382,26 @@ void ts::Grid::putLayout(const std::initializer_list<ColumnText> text)
                 txt = &*iText;
                 ++iText;
             }
-            if (txt->text1.empty() && (iLayout->_justif != ColumnLayout::BOTH || txt->text2.empty())) {
+
+            // There must be 2 strings in the text.
+            assert(txt->_texts.size() == 2);
+            const UString& text1(txt->_texts[0]);
+            const UString& text2(txt->_texts[1]);
+
+            if (text1.empty() && (iLayout->_justif != ColumnLayout::BOTH || text2.empty())) {
                 // Totally empty field, use spaces.
                 _out << std::string(iLayout->_width, ' ');
             }
             else if (iLayout->_justif == ColumnLayout::LEFT) {
-                _out << txt->text1.toJustifiedLeft(iLayout->_width, iLayout->_pad, true, 1);
+                _out << text1.toJustifiedLeft(iLayout->_width, iLayout->_pad, true, 1);
             }
             else if (iLayout->_justif == ColumnLayout::RIGHT) {
-                _out << txt->text1.toJustifiedRight(iLayout->_width, iLayout->_pad, true, 1);
+                _out << text1.toJustifiedRight(iLayout->_width, iLayout->_pad, true, 1);
             }
             else {
                 assert(iLayout->_justif == ColumnLayout::BOTH);
-                size_t leftWidth = txt->text1.width();
-                size_t rightWidth = txt->text2.width();
+                size_t leftWidth = text1.width();
+                size_t rightWidth = text2.width();
                 const bool fits = leftWidth + 2 + rightWidth <= iLayout->_width;
                 if (!fits) {
                     // Truncate and pack on one line.
@@ -404,11 +420,11 @@ void ts::Grid::putLayout(const std::initializer_list<ColumnText> text)
                     }
                 }
                 assert(leftWidth + 2 + rightWidth <= iLayout->_width);
-                _out << (fits ? txt->text1 : txt->text1.toTruncatedWidth(leftWidth, LEFT_TO_RIGHT))
-                     << (txt->text1.empty() ? iLayout->_pad : SPACE)
+                _out << (fits ? text1 : text1.toTruncatedWidth(leftWidth, LEFT_TO_RIGHT))
+                     << (text1.empty() ? iLayout->_pad : SPACE)
                      << UString(iLayout->_width - leftWidth - 2 - rightWidth, iLayout->_pad)
-                     << (txt->text2.empty() ? iLayout->_pad : SPACE)
-                     << (fits ? txt->text2 : txt->text2.toTruncatedWidth(leftWidth, RIGHT_TO_LEFT));
+                     << (text2.empty() ? iLayout->_pad : SPACE)
+                     << (fits ? text2 : text2.toTruncatedWidth(leftWidth, RIGHT_TO_LEFT));
             }
         }
     }
