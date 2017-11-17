@@ -126,6 +126,7 @@
 #include "tsForkPipe.h"
 #include "tsFormat.h"
 #include "tsFormatArg.h"
+#include "tsGrid.h"
 #include "tsGuard.h"
 #include "tsGuardCondition.h"
 #include "tsHDSimulcastLogicalChannelDescriptor.h"

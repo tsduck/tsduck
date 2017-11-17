@@ -145,8 +145,10 @@ namespace ts {
         class ColumnLayout
         {
         public:
+            //!
             //! Check if this layout is a border, a separator bar.
             //! @return True if this layout is a border.
+            //!
             bool isBorder() const { return _justif == BORDER; }
         private:
             friend class Grid;
@@ -201,12 +203,21 @@ namespace ts {
 
         //!
         //! The type is used to pass text to putLayout().
+        //! Each instance contains up to 2 strings.
         //!
         class ColumnText
         {
         public:
-            const UString text1;  //!< Left-side text for Both() layout, unique text otherwise.
-            const UString text2;  //!< Right-side text for Both() layout, ignored otherwise.
+            //!
+            //! Constructor
+            //! @param [in] tests An initializer list of up to 2 strings. Additional strings
+            //! are ignored. Missing strings default to the empty string. One string is
+            //! required for layouts left() and right(), two strings for both().
+            //!
+            ColumnText(const std::initializer_list<UString> texts = std::initializer_list<UString>());
+        private:
+            friend class Grid;
+            std::vector<UString> _texts;
         };
 
         //!
