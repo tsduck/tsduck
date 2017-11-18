@@ -1126,7 +1126,7 @@ namespace ts {
         //! @param [in] args List of arguments to substitute in the format string.
         //! @return The formatted string.
         //!
-        UString format(const std::initializer_list<FormatArg>& args = std::initializer_list<FormatArg>()) const
+        UString format(const std::initializer_list<FormatArg> args = std::initializer_list<FormatArg>()) const
         {
             return Format(c_str(), args);
         }
@@ -1138,7 +1138,7 @@ namespace ts {
         //! @return The formatted string.
         //! @see format()
         //!
-        static UString Format(const UChar* fmt, const std::initializer_list<FormatArg>& args = std::initializer_list<FormatArg>());
+        static UString Format(const UChar* fmt, const std::initializer_list<FormatArg> args = std::initializer_list<FormatArg>());
 
         //!
         //! Format a string using a template and arguments.
@@ -1147,7 +1147,7 @@ namespace ts {
         //! @return The formatted string.
         //! @see format()
         //!
-        static UString Format(const UString& fmt, const std::initializer_list<FormatArg>& args = std::initializer_list<FormatArg>())
+        static UString Format(const UString& fmt, const std::initializer_list<FormatArg> args = std::initializer_list<FormatArg>())
         {
             return Format(fmt.c_str(), args);
         }

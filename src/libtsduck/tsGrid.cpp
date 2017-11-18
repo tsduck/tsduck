@@ -208,6 +208,11 @@ ts::Grid::ColumnLayout::ColumnLayout(Justif justif, size_t width, UChar pad) :
 {
 }
 
+ts::Grid::ColumnText::ColumnText() :
+    _texts(2) // Make sure always two strings are present.
+{
+}
+
 ts::Grid::ColumnText::ColumnText(const std::initializer_list<UString> texts) :
     _texts(texts)
 {

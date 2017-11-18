@@ -136,8 +136,8 @@ private:
     std::string temporaryFileName(int) const;
     std::string newTemporaryFileName();
 
-    void testFormatArgCalled1(const std::initializer_list<ts::FormatArg>& list);
-    void testFormatArgCalled2(const std::initializer_list<ts::FormatArg>& list);
+    void testFormatArgCalled1(const std::initializer_list<ts::FormatArg> list);
+    void testFormatArgCalled2(const std::initializer_list<ts::FormatArg> list);
 
     // Two sample Unicode characters from the supplementary planes:
     //   U+1D538: MATHEMATICAL DOUBLE-STRUCK CAPITAL A
@@ -1155,12 +1155,12 @@ void UStringTest::testFormatArg()
     testFormatArgCalled2({12, u8, i16, TS_CONST64(-99), "foo", ok, u"bar", us, ok + " 2", us + u" 2"});
 }
 
-void UStringTest::testFormatArgCalled1(const std::initializer_list<ts::FormatArg>& list)
+void UStringTest::testFormatArgCalled1(const std::initializer_list<ts::FormatArg> list)
 {
     CPPUNIT_ASSERT_EQUAL(size_t(0), list.size());
 }
 
-void UStringTest::testFormatArgCalled2(const std::initializer_list<ts::FormatArg>& list)
+void UStringTest::testFormatArgCalled2(const std::initializer_list<ts::FormatArg> list)
 {
     CPPUNIT_ASSERT_EQUAL(size_t(10), list.size());
 

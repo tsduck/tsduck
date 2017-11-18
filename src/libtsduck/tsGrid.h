@@ -209,12 +209,16 @@ namespace ts {
         {
         public:
             //!
-            //! Constructor
+            //! Default constructor.
+            //!
+            ColumnText();
+            //!
+            //! Constructor.
             //! @param [in] tests An initializer list of up to 2 strings. Additional strings
             //! are ignored. Missing strings default to the empty string. One string is
             //! required for layouts left() and right(), two strings for both().
             //!
-            ColumnText(const std::initializer_list<UString> texts = std::initializer_list<UString>());
+            ColumnText(const std::initializer_list<UString> texts);
         private:
             friend class Grid;
             std::vector<UString> _texts;
