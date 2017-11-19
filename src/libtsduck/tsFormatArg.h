@@ -85,6 +85,16 @@ namespace ts {
         //!
         FormatArg(char16_t c) : _type(INT32), _size(sizeof(c)), _value(int32_t(c)) {}
         //!
+        //! Constructor from a @c long.
+        //! @param [in] i Integer value of the FormatArg. Internally stored as a 64-bit integer.
+        //!
+        FormatArg(long i) : _type(INT64), _size(sizeof(i)), _value(int64_t(i)) {}
+        //!
+        //! Constructor from an @c unsigned long.
+        //! @param [in] i Integer value of the FormatArg. Internally stored as a system-dependent integer.
+        //!
+        FormatArg(unsigned long i) : _type(UINT64), _size(sizeof(i)), _value(uint64_t(i)) {}
+        //!
         //! Constructor from a signed 8-bit integer.
         //! @param [in] i Integer value of the FormatArg. Internally stored as a 32-bit integer.
         //!

@@ -685,7 +685,7 @@ void ts::TSAnalyzer::analyzePMT(PID pid, const PMT& pmt)
         ps->carry_audio = ps->carry_audio || IsAudioST(stream.stream_type);
         ps->carry_video = ps->carry_video || IsVideoST(stream.stream_type);
         ps->carry_pes = ps->carry_pes || IsPES(stream.stream_type);
-        if (!ps->carry_section && IsSectionST(stream.stream_type)) {
+        if (!ps->carry_section && !ps->carry_t2mi && IsSectionST(stream.stream_type)) {
             ps->carry_section = true;
             _demux.addPID(es_pid);
         }
@@ -1154,6 +1154,7 @@ void ts::TSAnalyzer::handleT2MINewPID(T2MIDemux& demux, const PMT& pmt, PID pid,
     PIDContextPtr pc(getPID(pid));
     pc->description = u"T2-MI";
     pc->carry_t2mi = true;
+    pc->carry_section = false;
 
     // And demux all T2-MI packets.
     _t2mi_demux.addPID(pid);

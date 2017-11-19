@@ -35,6 +35,7 @@
 #pragma once
 #include "tsPlatform.h"
 #include "tsException.h"
+#include "tsUString.h"
 
 namespace ts {
     //!
@@ -321,15 +322,15 @@ namespace ts {
         //! @return A string containing the formatted date.
         //! @throw ts::Time::TimeError In case of operating system time error.
         //!
-        std::string format(int fields = ALL) const;
+        UString format(int fields = ALL) const;
 
         //!
-        //! Conversion operator from @c Time to @c std::string.
+        //! Conversion operator from @c Time to @c UString.
         //! Equivalent to <code>format (ALL)</code>.
         //! @return A string containing the formatted date.
         //! @throw ts::Time::TimeError In case of operating system time error.
         //!
-        operator std::string() const
+        operator UString() const
         {
             return format(ALL);
         }
@@ -692,5 +693,5 @@ namespace ts {
 //!
 TSDUCKDLL inline std::ostream& operator<<(std::ostream& strm, const ts::Time& time)
 {
-    return strm << std::string(time);
+    return strm << ts::UString(time);
 }

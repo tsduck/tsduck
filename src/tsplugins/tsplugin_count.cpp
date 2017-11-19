@@ -291,7 +291,8 @@ ts::ProcessorPlugin::Status ts::CountPlugin::processPacket(TSPacket& pkt, bool& 
                 counted = PacketBitRate(now.counted_packets - _last_report.counted_packets, duration);
                 total = PacketBitRate(now.total_packets - _last_report.total_packets, duration);
             }
-            const std::string sTime(Time::CurrentLocalTime());
+            const UString sTime1(Time::CurrentLocalTime());
+            const std::string sTime(sTime1.toUTF8()); //@@@@
             const std::string sCountedPackets(Decimal(now.counted_packets));
             const std::string sCountedBitrate(Decimal(counted));
             const std::string sTotalPackets(Decimal(now.total_packets));

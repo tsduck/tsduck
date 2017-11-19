@@ -116,50 +116,50 @@ bool ts::Time::Fields::operator!= (const Fields& f) const
 // Basic string representation
 //----------------------------------------------------------------------------
 
-std::string ts::Time::format(int fields) const
+ts::UString ts::Time::format(int fields) const
 {
-    std::string s;
+    UString s;
     s.reserve(25); // to avoid reallocs
     Fields f(*this);
 
     if ((fields & YEAR) != 0) {
-        s.append(Format("%4d", f.year));
+        s.append(UString::Format(u"%4d", {f.year}));
     }
     if ((fields & MONTH) != 0) {
         if ((fields & YEAR) != 0) {
-            s.push_back('/');
+            s.push_back(u'/');
         }
-        s.append(Format("%02d", f.month));
+        s.append(UString::Format(u"%02d", {f.month}));
     }
     if ((fields & DAY) != 0) {
         if ((fields & (YEAR | MONTH)) != 0) {
-            s.push_back('/');
+            s.push_back(u'/');
         }
-        s.append(Format("%02d", f.day));
+        s.append(UString::Format(u"%02d", {f.day}));
     }
     if ((fields & (YEAR | MONTH | DAY)) != 0 && (fields & (HOUR | MINUTE | SECOND | MILLISECOND)) != 0) {
-        s.push_back(' ');
+        s.push_back(u' ');
     }
     if ((fields & HOUR) != 0) {
-        s.append(Format("%02d", f.hour));
+        s.append(UString::Format(u"%02d", {f.hour}));
     }
     if ((fields & MINUTE) != 0) {
         if ((fields & HOUR) != 0) {
-            s.push_back(':');
+            s.push_back(u':');
         }
-        s.append(Format("%02d", f.minute));
+        s.append(UString::Format(u"%02d", {f.minute}));
     }
     if ((fields & SECOND) != 0) {
         if ((fields & (HOUR | MINUTE)) != 0) {
-            s.push_back(':');
+            s.push_back(u':');
         }
-        s.append(Format("%02d", f.second));
+        s.append(UString::Format(u"%02d", {f.second}));
     }
     if ((fields & MILLISECOND) != 0) {
         if ((fields & (HOUR | MINUTE | SECOND)) != 0) {
-            s.push_back('.');
+            s.push_back(u'.');
         }
-        s.append(Format("%03d", f.millisecond));
+        s.append(UString::Format(u"%03d", {f.millisecond}));
     }
     return s;
 }
