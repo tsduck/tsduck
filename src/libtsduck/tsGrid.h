@@ -244,7 +244,7 @@ namespace ts {
             ColumnText();
             //!
             //! Constructor.
-            //! @param [in] tests An initializer list of up to 2 strings. Additional strings
+            //! @param [in] texts An initializer list of up to 2 strings. Additional strings
             //! are ignored. Missing strings default to the empty string. One string is
             //! required for layouts left() and right(), two strings for both().
             //!
@@ -263,7 +263,7 @@ namespace ts {
 
         //!
         //! Write one line of text in the columns layout.
-        //! @param [in] test Content of the columns. There should be no element for
+        //! @param [in] text Content of the columns. There should be no element for
         //! Border() columns. For Left() and Right() column, only one text shall be
         //! set. For Both() layout, the two texts shall be set.
         //!
