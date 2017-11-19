@@ -191,9 +191,32 @@ void PlatformTest::tearDown()
 // Unitary tests.
 //----------------------------------------------------------------------------
 
+// These overload shall be accepted is size_t is not a predefined integer type.
+#if !defined(TS_SIZE_T_IS_STDINT)
+namespace {
+    void Overload32(uint32_t) {}
+    void Overload64(uint64_t) {}
+    void OverloadSizeT(size_t) {}
+}
+#endif
+
 // Test case: predefined integer types.
 void PlatformTest::testIntegerTypes()
 {
+    // To avoid compilation warnings when not referenced.
+#if !defined(TS_SIZE_T_IS_STDINT)
+    Overload32(0);
+    Overload64(0);
+    OverloadSizeT(0);
+#endif
+
+    utest::Out() << "PlatformTest: TS_ADDRESS_BITS = " << TS_ADDRESS_BITS << std::endl
+                 << "PlatformTest: TS_SIZE_T_IS_STDINT is"
+                 #if !defined(TS_SIZE_T_IS_STDINT)
+                 << " NOT"
+                 #endif
+                 << " defined" << std::endl;
+
     CPPUNIT_ASSERT_EQUAL(size_t(1), sizeof(int8_t));
     CPPUNIT_ASSERT_EQUAL(size_t(2), sizeof(int16_t));
     CPPUNIT_ASSERT_EQUAL(size_t(4), sizeof(int32_t));
@@ -203,6 +226,13 @@ void PlatformTest::testIntegerTypes()
     CPPUNIT_ASSERT_EQUAL(size_t(2), sizeof(uint16_t));
     CPPUNIT_ASSERT_EQUAL(size_t(4), sizeof(uint32_t));
     CPPUNIT_ASSERT_EQUAL(size_t(8), sizeof(uint64_t));
+
+    CPPUNIT_ASSERT_EQUAL(0, TS_ADDRESS_BITS % 8);
+    CPPUNIT_ASSERT_EQUAL(size_t(TS_ADDRESS_BITS / 8), sizeof(void*));
+    CPPUNIT_ASSERT_EQUAL(size_t(TS_ADDRESS_BITS / 8), sizeof(size_t));
+    CPPUNIT_ASSERT_EQUAL(size_t(TS_ADDRESS_BITS / 8), sizeof(ssize_t));
+    CPPUNIT_ASSERT_EQUAL(size_t(TS_ADDRESS_BITS / 8), sizeof(std::size_t));
+    CPPUNIT_ASSERT_EQUAL(size_t(TS_ADDRESS_BITS / 8), sizeof(std::ptrdiff_t));
 
     CPPUNIT_ASSERT(std::numeric_limits<int8_t>::is_signed);
     CPPUNIT_ASSERT(std::numeric_limits<int16_t>::is_signed);

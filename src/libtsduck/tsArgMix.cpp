@@ -27,19 +27,19 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsFormatArg.h"
+#include "tsArgMix.h"
 #include "tsUString.h"
 TSDUCK_SOURCE;
 
-const std::string ts::FormatArg::empty;
-const ts::UString ts::FormatArg::uempty;
+const std::string ts::ArgMix::empty;
+const ts::UString ts::ArgMix::uempty;
 
 
 //----------------------------------------------------------------------------
-// Return FormatArg value as an address of nul-terminated strings.
+// Return ArgMix value as an address of nul-terminated strings.
 //----------------------------------------------------------------------------
 
-const char* ts::FormatArg::toCharPtr() const
+const char* ts::ArgMix::toCharPtr() const
 {
     switch (_type) {
         case CHARPTR: return _value.charptr == 0 ? "" : _value.charptr;
@@ -48,7 +48,7 @@ const char* ts::FormatArg::toCharPtr() const
     }
 }
 
-const ts::UChar* ts::FormatArg::toUCharPtr() const
+const ts::UChar* ts::ArgMix::toUCharPtr() const
 {
     switch (_type) {
         case UCHARPTR: return _value.ucharptr == 0 ? u"" : _value.ucharptr;

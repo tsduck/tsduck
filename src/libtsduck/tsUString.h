@@ -35,7 +35,7 @@
 
 #pragma once
 #include "tsUChar.h"
-#include "tsFormatArg.h"
+#include "tsArgMix.h"
 
 namespace ts {
 
@@ -1126,7 +1126,7 @@ namespace ts {
         //! @param [in] args List of arguments to substitute in the format string.
         //! @return The formatted string.
         //!
-        UString format(const std::initializer_list<FormatArg> args = std::initializer_list<FormatArg>()) const
+        UString format(const std::initializer_list<ArgMix> args = std::initializer_list<ArgMix>()) const
         {
             return Format(c_str(), args);
         }
@@ -1138,7 +1138,7 @@ namespace ts {
         //! @return The formatted string.
         //! @see format()
         //!
-        static UString Format(const UChar* fmt, const std::initializer_list<FormatArg> args = std::initializer_list<FormatArg>());
+        static UString Format(const UChar* fmt, const std::initializer_list<ArgMix> args = std::initializer_list<ArgMix>());
 
         //!
         //! Format a string using a template and arguments.
@@ -1147,7 +1147,7 @@ namespace ts {
         //! @return The formatted string.
         //! @see format()
         //!
-        static UString Format(const UString& fmt, const std::initializer_list<FormatArg> args = std::initializer_list<FormatArg>())
+        static UString Format(const UString& fmt, const std::initializer_list<ArgMix> args = std::initializer_list<ArgMix>())
         {
             return Format(fmt.c_str(), args);
         }
@@ -1443,10 +1443,10 @@ namespace ts {
         //! @param [in,out] arg Current pointer into argument list. Updated.
         //! @param [in] argsEnd End of argument list.
         //!
-        static void ProcessFormatArgs(UString& result,
+        static void ProcessArgMixs(UString& result,
                                       const UChar*& fmt,
-                                      std::initializer_list<ts::FormatArg>::const_iterator& arg,
-                                      const std::initializer_list<ts::FormatArg>::const_iterator& argsEnd);
+                                      std::initializer_list<ts::ArgMix>::const_iterator& arg,
+                                      const std::initializer_list<ts::ArgMix>::const_iterator& argsEnd);
 
         //!
         //! Internal function to process a size field inside a Format() argument.
@@ -1458,8 +1458,8 @@ namespace ts {
         //!
         static void GetFormatSize(size_t& size,
                                   const UChar*& fmt,
-                                  std::initializer_list<ts::FormatArg>::const_iterator& arg,
-                                  const std::initializer_list<ts::FormatArg>::const_iterator& argsEnd);
+                                  std::initializer_list<ts::ArgMix>::const_iterator& arg,
+                                  const std::initializer_list<ts::ArgMix>::const_iterator& argsEnd);
     };
 }
 

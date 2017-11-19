@@ -926,10 +926,10 @@
     <ClInclude Include="..\..\src\libtsduck\windows\tsDirectShowGraph.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\libtsduck\tsFormatArgTemplate.h">
+    <ClInclude Include="..\..\src\libtsduck\tsArgMixTemplate.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\libtsduck\tsFormatArg.h">
+    <ClInclude Include="..\..\src\libtsduck\tsArgMix.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\libtsduck\tsGrid.h">
@@ -1603,7 +1603,7 @@
     <ClCompile Include="..\..\src\libtsduck\windows\tsDirectShowGraph.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\libtsduck\tsFormatArg.cpp">
+    <ClCompile Include="..\..\src\libtsduck\tsArgMix.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\libtsduck\tsGrid.cpp">

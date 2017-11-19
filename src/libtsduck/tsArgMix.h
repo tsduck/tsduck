@@ -28,7 +28,7 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Support class for ts::UString::Format()
+//!  Element of an argument list with mixed integer and string types.
 //!
 //----------------------------------------------------------------------------
 
@@ -41,17 +41,17 @@ namespace ts {
     class UString;
 
     //!
-    //! Define an element of argument list for ts::UString::Format().
+    //! Define an element of an argument list with mixed integer and string types.
     //!
-    //! This class is rarely explicitly by applications. It is used as element
-    //! in an std::initializer_list as parameter for ts::UString::Format().
+    //! This class is typically used as element in an std::initializer_list.
+    //! This mechanism is used by ts::UString::Format() for instance.
     //!
-    //! An instance of FormatArg may reference external data. The lifetime of the
-    //! pointed data must be longer than the FormatArg instance. This is the case
-    //! for a std::initializer_list<FormatArg> which is used as parameter to Format().
+    //! An instance of ArgMix may reference external data. The lifetime of the
+    //! pointed data must be longer than the ArgMix instance. This is the case
+    //! for a std::initializer_list<ArgMix> which is used as parameter to Format().
     //! But this is not guaranteed in other usages.
     //!
-    class TSDUCKDLL FormatArg
+    class TSDUCKDLL ArgMix
     {
     public:
         //!
@@ -76,84 +76,90 @@ namespace ts {
 
         //!
         //! Constructor from a 8-bit character.
-        //! @param [in] c Character value of the FormatArg. Internally stored as a 32-bit integer.
+        //! @param [in] c Character value of the ArgMix. Internally stored as a 32-bit integer.
         //!
-        FormatArg(char c) : _type(INT32), _size(sizeof(c)), _value(int32_t(c)) {}
+        ArgMix(char c) : _type(INT32), _size(sizeof(c)), _value(int32_t(c)) {}
         //!
         //! Constructor from a 16-bit character.
-        //! @param [in] c Character value of the FormatArg. Internally stored as a 32-bit integer.
+        //! @param [in] c Character value of the ArgMix. Internally stored as a 32-bit integer.
         //!
-        FormatArg(char16_t c) : _type(INT32), _size(sizeof(c)), _value(int32_t(c)) {}
-        //!
-        //! Constructor from a @c long.
-        //! @param [in] i Integer value of the FormatArg. Internally stored as a 64-bit integer.
-        //!
-        FormatArg(long i) : _type(INT64), _size(sizeof(i)), _value(int64_t(i)) {}
-        //!
-        //! Constructor from an @c unsigned long.
-        //! @param [in] i Integer value of the FormatArg. Internally stored as a system-dependent integer.
-        //!
-        FormatArg(unsigned long i) : _type(UINT64), _size(sizeof(i)), _value(uint64_t(i)) {}
+        ArgMix(char16_t c) : _type(INT32), _size(sizeof(c)), _value(int32_t(c)) {}
         //!
         //! Constructor from a signed 8-bit integer.
-        //! @param [in] i Integer value of the FormatArg. Internally stored as a 32-bit integer.
+        //! @param [in] i Integer value of the ArgMix. Internally stored as a 32-bit integer.
         //!
-        FormatArg(int8_t i) : _type(INT32), _size(sizeof(i)), _value(int32_t(i)) {}
+        ArgMix(int8_t i) : _type(INT32), _size(sizeof(i)), _value(int32_t(i)) {}
         //!
         //! Constructor from an unsigned 8-bit integer.
-        //! @param [in] i Integer value of the FormatArg. Internally stored as a 32-bit integer.
+        //! @param [in] i Integer value of the ArgMix. Internally stored as a 32-bit integer.
         //!
-        FormatArg(uint8_t i) : _type(UINT32), _size(sizeof(i)), _value(uint32_t(i)) {}
+        ArgMix(uint8_t i) : _type(UINT32), _size(sizeof(i)), _value(uint32_t(i)) {}
         //!
         //! Constructor from a signed 16-bit integer.
-        //! @param [in] i Integer value of the FormatArg. Internally stored as a 32-bit integer.
+        //! @param [in] i Integer value of the ArgMix. Internally stored as a 32-bit integer.
         //!
-        FormatArg(int16_t i) : _type(INT32), _size(sizeof(i)), _value(int32_t(i)) {}
+        ArgMix(int16_t i) : _type(INT32), _size(sizeof(i)), _value(int32_t(i)) {}
         //!
         //! Constructor from an unsigned 16-bit integer.
-        //! @param [in] i Integer value of the FormatArg. Internally stored as a 32-bit integer.
+        //! @param [in] i Integer value of the ArgMix. Internally stored as a 32-bit integer.
         //!
-        FormatArg(uint16_t i) : _type(UINT32), _size(sizeof(i)), _value(uint32_t(i)) {}
+        ArgMix(uint16_t i) : _type(UINT32), _size(sizeof(i)), _value(uint32_t(i)) {}
         //!
         //! Constructor from a signed 32-bit integer (also default constructor).
-        //! @param [in] i Integer value of the FormatArg.
+        //! @param [in] i Integer value of the ArgMix.
         //!
-        FormatArg(int32_t i = 0) : _type(INT32), _size(sizeof(i)), _value(i) {}
+        ArgMix(int32_t i = 0) : _type(INT32), _size(sizeof(i)), _value(i) {}
         //!
         //! Constructor from an unsigned 32-bit integer.
-        //! @param [in] i Integer value of the FormatArg.
+        //! @param [in] i Integer value of the ArgMix.
         //!
-        FormatArg(uint32_t i) : _type(UINT32), _size(sizeof(i)), _value(i) {}
+        ArgMix(uint32_t i) : _type(UINT32), _size(sizeof(i)), _value(i) {}
         //!
         //! Constructor from a signed 64-bit integer.
-        //! @param [in] i Integer value of the FormatArg.
+        //! @param [in] i Integer value of the ArgMix.
         //!
-        FormatArg(int64_t i) : _type(INT64), _size(sizeof(i)), _value(i) {}
+        ArgMix(int64_t i) : _type(INT64), _size(sizeof(i)), _value(i) {}
         //!
         //! Constructor from a unsigned 64-bit integer.
-        //! @param [in] i Integer value of the FormatArg.
+        //! @param [in] i Integer value of the ArgMix.
         //!
-        FormatArg(uint64_t i) : _type(UINT64), _size(sizeof(i)), _value(i) {}
+        ArgMix(uint64_t i) : _type(UINT64), _size(sizeof(i)), _value(i) {}
         //!
         //! Constructor from a nul-terminated string of 8-bit characters.
         //! @param [in] s Address of nul-terminated string.
         //!
-        FormatArg(const char* s) : _type(CHARPTR), _size(0), _value(s) {}
+        ArgMix(const char* s) : _type(CHARPTR), _size(0), _value(s) {}
         //!
         //! Constructor from a nul-terminated string of 16-bit characters.
         //! @param [in] s Address of nul-terminated string.
         //!
-        FormatArg(const UChar* s) : _type(UCHARPTR), _size(0), _value(s) {}
+        ArgMix(const UChar* s) : _type(UCHARPTR), _size(0), _value(s) {}
         //!
         //! Constructor from a C++ string of 8-bit characters.
         //! @param [in] s Reference to a C++ string.
         //!
-        FormatArg(const std::string& s) : _type(STRING), _size(0), _value(s) {}
+        ArgMix(const std::string& s) : _type(STRING), _size(0), _value(s) {}
         //!
         //! Constructor from a C++ string of 16-bit characters.
         //! @param [in] s Reference to a C++ string.
         //!
-        FormatArg(const UString& s) : _type(USTRING), _size(0), _value(s) {}
+        ArgMix(const UString& s) : _type(USTRING), _size(0), _value(s) {}
+
+        //!
+        //! Constructor from a @c size_t.
+        //! This overload may be separately defined or not, depending on the platform,
+        //! only if @c size_t is not identical to a predefined @c uintXX_t.
+        //! @param [in] i Integer value of the ArgMix. Internally stored as a 32 or 64-bit integer.
+        //!
+#if defined(DOXYGEN) || !defined(TS_SIZE_T_IS_STDINT)
+        ArgMix(size_t i) :
+            #if TS_ADDRESS_BITS <= 32
+                _type(INT32), _size(sizeof(i)), _value(int32_t(i))
+            #else
+                _type(INT64), _size(sizeof(i)), _value(int64_t(i))
+            #endif
+        {}
+#endif
 
         //!
         //! Get the argument data type.
@@ -276,4 +282,4 @@ namespace ts {
     };
 }
 
-#include "tsFormatArgTemplate.h"
+#include "tsArgMixTemplate.h"
