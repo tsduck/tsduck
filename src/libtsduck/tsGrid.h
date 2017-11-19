@@ -148,7 +148,7 @@ namespace ts {
         //! This class is never directly manipulated by applications.
         //! Instead, the class Grid provides factories named left(), right(), both() and border().
         //!
-        class ColumnLayout
+        class TSDUCKDLL ColumnLayout
         {
         public:
             //!
@@ -235,7 +235,7 @@ namespace ts {
         //! The type is used to pass text to putLayout().
         //! Each instance contains up to 2 strings.
         //!
-        class ColumnText
+        class TSDUCKDLL ColumnText
         {
         public:
             //!
