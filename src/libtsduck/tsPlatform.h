@@ -76,9 +76,13 @@
 #if defined(DOXYGEN)
 
     //!
-    //! Defined when the compiler is GCC, also known as "GNU C".
+    //! Defined when the compiler is GCC, also known as "GNU C", or a GCC-compatible compiler.
     //!
     #define TS_GCC
+    //!
+    //! Defined when the compiler is exactly GCC, also known as "GNU C", not a GCC-compatible compiler.
+    //!
+    #define TS_GCC_ONLY
     //!
     //! Defined when the compiler is LLVM (clang).
     //! In that case, TS_GCC is also defined since LLVM is reasonably compatible with GCC.
@@ -101,6 +105,9 @@
 #elif defined(__GNUC__)
     #if !defined(TS_GCC)
         #define TS_GCC 1
+    #endif
+    #if !defined(TS_GCC_ONLY)
+        #define TS_GCC_ONLY 1
     #endif
 #elif defined(_MSC_VER)
     #if !defined(TS_MSC)
@@ -883,7 +890,7 @@
 //!
 #if defined(DOXYGEN)
     #define TS_SIZE_T_IS_STDINT
-#elif defined(TS_GCC) && !defined(TS_LLVM) && (defined(TS_X86_64) || defined(TS_I386)) && !defined(TS_SIZE_T_IS_STDINT)
+#elif (defined(TS_GCC_ONLY) || defined(TS_MSC)) && !defined(TS_SIZE_T_IS_STDINT)
     #define TS_SIZE_T_IS_STDINT 1
 #endif
 
