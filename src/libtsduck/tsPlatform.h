@@ -272,6 +272,10 @@
     //!
     #define TS_BIG_ENDIAN
     //!
+    //! Number of bits in an address (or a pointer or a size_t).
+    //!
+    #define TS_ADDRESS_BITS 16, 32, 64, etc.
+    //!
     //! Defined when the target processor architecture is Intel IA-32, also known as x86.
     //!
     #define TS_I386
@@ -313,37 +317,66 @@
     #if !defined(TS_I386)
         #define TS_I386 1
     #endif
+    #if !defined(TS_ADDRESS_BITS)
+        #define TS_ADDRESS_BITS 32
+    #endif
 #elif defined(__amd64) || defined(__amd64__) || defined(__x86_64__) || defined(TS_X86_64) || defined(_M_X64)
     #if !defined(TS_X86_64)
         #define TS_X86_64 1
+    #endif
+    #if !defined(TS_ADDRESS_BITS)
+        #define TS_ADDRESS_BITS 64
     #endif
 #elif defined(__ia64__) || defined(_M_IA64)
     #if !defined(TS_IA64)
         #define TS_IA64 1
     #endif
+    #if !defined(TS_ADDRESS_BITS)
+        #define TS_ADDRESS_BITS 64
+    #endif
 #elif defined(__arm__)
     #if !defined(TS_ARM)
         #define TS_ARM 1
+    #endif
+    #if !defined(TS_ADDRESS_BITS)
+        // To be fixed for ARM 64
+        #define TS_ADDRESS_BITS 32
     #endif
 #elif defined(__stxp70__) || defined(__STxP70__)
     #if !defined(TS_STXP70)
         #define TS_STXP70 1
     #endif
+    #if !defined(TS_ADDRESS_BITS)
+        #define TS_ADDRESS_BITS 32
+    #endif
 #elif defined(__alpha__)
     #if !defined(TS_ALPHA)
         #define TS_ALPHA 1
+    #endif
+    #if !defined(TS_ADDRESS_BITS)
+        #define TS_ADDRESS_BITS 32
     #endif
 #elif defined(__sparc__)
     #if !defined(TS_SPARC)
         #define TS_SPARC 1
     #endif
-#elif defined(__powerpc__)
-    #if !defined(TS_POWERPC)
-        #define TS_POWERPC 1
+    #if !defined(TS_ADDRESS_BITS)
+        // To be fixed for SPARC 64
+        #define TS_ADDRESS_BITS 32
     #endif
 #elif defined(__powerpc64__)
     #if !defined(TS_POWERPC64)
         #define TS_POWERPC64 1
+    #endif
+    #if !defined(TS_ADDRESS_BITS)
+        #define TS_ADDRESS_BITS 64
+    #endif
+#elif defined(__powerpc__)
+    #if !defined(TS_POWERPC)
+        #define TS_POWERPC 1
+    #endif
+    #if !defined(TS_ADDRESS_BITS)
+        #define TS_ADDRESS_BITS 32
     #endif
 #else
     #error "New unknown processor, please update tsPlatform.h"
@@ -381,6 +414,10 @@
 
 #if !defined(TS_LITTLE_ENDIAN) && !defined(TS_BIG_ENDIAN)
     #error "unknow endian, please update this header file"
+#endif
+
+#if !defined(TS_ADDRESS_BITS)
+    #error "unknow address size, please update this header file"
 #endif
 
 
@@ -832,6 +869,22 @@
 //!
 #if defined(TS_GCC) || defined(DOXYGEN)
     #define TS_NEED_STATIC_CONST_DEFINITIONS 1
+#endif
+
+
+//----------------------------------------------------------------------------
+//  Properties of some integer types.
+//----------------------------------------------------------------------------
+
+//!
+//! Defined is @c size_t is an exact overload of some predefined @c uintXX_t.
+//! In that case, it is not possible to declare distinct overloads of a function
+//! with @c size_t and @c uint32_t or @c uint64_t for instance.
+//!
+#if defined(DOXYGEN)
+    #define TS_SIZE_T_IS_STDINT
+#elif defined(TS_GCC) && !defined(TS_LLVM) && (defined(TS_X86_64) || defined(TS_I386)) && !defined(TS_SIZE_T_IS_STDINT)
+    #define TS_SIZE_T_IS_STDINT 1
 #endif
 
 

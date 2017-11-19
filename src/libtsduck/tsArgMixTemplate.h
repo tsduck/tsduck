@@ -31,11 +31,11 @@
 
 
 //----------------------------------------------------------------------------
-// Return FormatArg value as an integer.
+// Return ArgMix value as an integer.
 //----------------------------------------------------------------------------
 
 template <typename INT>
-INT ts::FormatArg::toInteger() const
+INT ts::ArgMix::toInteger() const
 {
     switch (_type) {
         case INT32:  return static_cast<INT>(_value.int32);

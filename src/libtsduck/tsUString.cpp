@@ -1370,15 +1370,15 @@ ts::ByteBlock ts::UString::toDVBWithByteLength(size_type start, size_type count,
 // Format a string using a template and arguments.
 //----------------------------------------------------------------------------
 
-ts::UString ts::UString::Format(const UChar* fmt, const std::initializer_list<ts::FormatArg> args)
+ts::UString ts::UString::Format(const UChar* fmt, const std::initializer_list<ts::ArgMix> args)
 {
     // Output string. Pre-reserve some space. We don't really know how much. Just address the most comman cases.
     UString result;
     result.reserve(256);
 
     // Iterator inside the argument list.
-    std::initializer_list<ts::FormatArg>::const_iterator arg(args.begin());
-    const std::initializer_list<ts::FormatArg>::const_iterator argsEnd(args.end());
+    std::initializer_list<ts::ArgMix>::const_iterator arg(args.begin());
+    const std::initializer_list<ts::ArgMix>::const_iterator argsEnd(args.end());
 
     // Loop into format, stop at each '%' sequence, exit when no more arguments are available.
     // The variable 'fmt' is incremented all the way.
@@ -1396,7 +1396,7 @@ ts::UString ts::UString::Format(const UChar* fmt, const std::initializer_list<ts
         // Process '%' sequence.
         if (*fmt == u'%') {
             ++fmt;
-            ProcessFormatArgs(result, fmt, arg, argsEnd);
+            ProcessArgMixs(result, fmt, arg, argsEnd);
         }
     }
 
@@ -1410,10 +1410,10 @@ ts::UString ts::UString::Format(const UChar* fmt, const std::initializer_list<ts
 
 
 // Anciliary function to process one '%' sequence.
-void ts::UString::ProcessFormatArgs(UString& result,
+void ts::UString::ProcessArgMixs(UString& result,
                                     const UChar*& fmt,
-                                    std::initializer_list<ts::FormatArg>::const_iterator& arg,
-                                    const std::initializer_list<ts::FormatArg>::const_iterator& argsEnd)
+                                    std::initializer_list<ts::ArgMix>::const_iterator& arg,
+                                    const std::initializer_list<ts::ArgMix>::const_iterator& argsEnd)
 {
     // Invalid '%' at end of string.
     if (*fmt == CHAR_NULL) {
@@ -1496,16 +1496,16 @@ void ts::UString::ProcessFormatArgs(UString& result,
         // Get the string parameter.
         UString value;
         switch (arg->type()) {
-            case FormatArg::CHARPTR:
+            case ArgMix::CHARPTR:
                 value.assignFromUTF8(arg->toCharPtr());
                 break;
-            case FormatArg::STRING:
+            case ArgMix::STRING:
                 value.assignFromUTF8(arg->toString());
                 break;
-            case FormatArg::UCHARPTR:
+            case ArgMix::UCHARPTR:
                 value.assign(arg->toUCharPtr());
                 break;
-            case FormatArg::USTRING:
+            case ArgMix::USTRING:
                 value.assign(arg->toUString());
                 break;
             default:
@@ -1548,16 +1548,16 @@ void ts::UString::ProcessFormatArgs(UString& result,
     else {
         // Insert an integer in decimal.
         switch (arg->type()) {
-            case FormatArg::INT32:
+            case ArgMix::INT32:
                 result.append(Decimal(arg->toInt32(), minWidth, !leftJustified, separator, forceSign, pad));
                 break;
-            case FormatArg::UINT32:
+            case ArgMix::UINT32:
                 result.append(Decimal(arg->toUInt32(), minWidth, !leftJustified, separator, forceSign, pad));
                 break;
-            case FormatArg::INT64:
+            case ArgMix::INT64:
                 result.append(Decimal(arg->toInt64(), minWidth, !leftJustified, separator, forceSign, pad));
                 break;
-            case FormatArg::UINT64:
+            case ArgMix::UINT64:
                 result.append(Decimal(arg->toUInt64(), minWidth, !leftJustified, separator, forceSign, pad));
                 break;
             default:
@@ -1574,8 +1574,8 @@ void ts::UString::ProcessFormatArgs(UString& result,
 // Anciliary function to extract a size field from a '%' sequence.
 void ts::UString::GetFormatSize(size_t& size,
                                 const UChar*& fmt,
-                                std::initializer_list<ts::FormatArg>::const_iterator& arg,
-                                const std::initializer_list<ts::FormatArg>::const_iterator& argsEnd)
+                                std::initializer_list<ts::ArgMix>::const_iterator& arg,
+                                const std::initializer_list<ts::ArgMix>::const_iterator& argsEnd)
 {
     if (IsDigit(*fmt)) {
         // An decimal integer literal is present, decode it.
