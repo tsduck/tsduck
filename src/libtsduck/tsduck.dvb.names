@@ -760,23 +760,23 @@ Bits = 8
 # ATSC values
 0x81 = ATSC AC-3 Audio
 0x87 = ATSC Enhanced-AC-3 Audio
-# Canal+ values
-0xBF = C+ Dummy stream
-0xC0 = C+ Module
-0xC1 = C+ Data Appli
-0xC2 = C+ Table index
-0xC3 = C+ File
-0xC4 = C+ Diapos
-0xC5 = C+ Synchro
-0xC6 = C+ Boot table
-0xC7 = C+ Patch
-0xC8 = C+ Loader
-0xC9 = C+ CDNT / Update table
-0xCA = C+ Data system table
-0xCB = C+ ACT
-0xCE = C+ CMPS ECM
-0xCF = C+ CMPT (CMPS scenario)
-0xD0 = C+ Appli loader
+# Canal+ values (no longer displayed by default, need C+ context)
+# 0xBF = C+ Dummy stream
+# 0xC0 = C+ Module
+# 0xC1 = C+ Data Appli
+# 0xC2 = C+ Table index
+# 0xC3 = C+ File
+# 0xC4 = C+ Diapos
+# 0xC5 = C+ Synchro
+# 0xC6 = C+ Boot table
+# 0xC7 = C+ Patch
+# 0xC8 = C+ Loader
+# 0xC9 = C+ CDNT / Update table
+# 0xCA = C+ Data system table
+# 0xCB = C+ ACT
+# 0xCE = C+ CMPS ECM
+# 0xCF = C+ CMPT (CMPS scenario)
+# 0xD0 = C+ Appli loader
 
 [StreamId]
 # In PES header.

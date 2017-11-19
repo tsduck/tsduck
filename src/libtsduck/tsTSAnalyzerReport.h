@@ -113,16 +113,16 @@ namespace ts {
         void reportNormalized(std::ostream& strm, const UString& title = UString());
 
     private:
-        // Display header of a service PID list
+        // Display header of a service PID list.
         void reportServiceHeader(Grid& grid, const UString& usage, bool scrambled, BitRate bitrate, BitRate ts_bitrate) const;
 
-        // Display one line of a service PID list
+        // Display one line of a service PID list.
         void reportServicePID(Grid& grid, const PIDContext&) const;
 
-        // Display list of services a PID belongs to
-        void reportServicesForPID(std::ostream&, const PIDContext&) const;
+        // Display list of services a PID belongs to.
+        void reportServicesForPID(Grid& grid, const PIDContext&) const;
 
-        // Display one normalized line of a time value
+        // Display one normalized line of a time value.
         static void reportNormalizedTime(std::ostream&, const Time&, const char* type, const UString& country = UString());
     };
 }
