@@ -75,9 +75,10 @@ namespace {
 //----------------------------------------------------------------------------
 
 namespace {
-    std::string MonPrefix (const ts::Time& date)
+    std::string MonPrefix(const ts::Time& date)
     {
-        return "[MON] " + date.format (ts::Time::DATE | ts::Time::HOUR | ts::Time::MINUTE) + ", ";
+        //@@@
+        return "[MON] " + date.format(ts::Time::DATE | ts::Time::HOUR | ts::Time::MINUTE).toUTF8() + ", ";
     }
 }
 

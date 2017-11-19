@@ -361,7 +361,7 @@ void ts::TablesLogger::logSection(const Section& sect)
 
     // Display time stamp if required.
     if (_opt.time_stamp) {
-        header += std::string(Time::CurrentLocalTime());
+        header += UString(Time::CurrentLocalTime()).toUTF8(); //@@@
         header += ": ";
     }
 

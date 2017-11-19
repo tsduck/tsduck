@@ -93,18 +93,18 @@ void TimeTest::testTime()
 void TimeTest::testFormat()
 {
     ts::Time t1 (2006, 7, 24, 10, 25, 12, 20);
-    CPPUNIT_ASSERT_EQUAL(std::string("2006/07/24 10:25:12.020"), t1.format());
-    CPPUNIT_ASSERT_EQUAL(std::string("2006/07/24 10:25:12.020"), t1.format(ts::Time::ALL));
-    CPPUNIT_ASSERT_EQUAL(std::string("2006"), t1.format (ts::Time::YEAR));
-    CPPUNIT_ASSERT_EQUAL(std::string("07"), t1.format (ts::Time::MONTH));
-    CPPUNIT_ASSERT_EQUAL(std::string("24"), t1.format (ts::Time::DAY));
-    CPPUNIT_ASSERT_EQUAL(std::string("2006/07/24"), t1.format (ts::Time::DATE));
-    CPPUNIT_ASSERT_EQUAL(std::string("10"), t1.format (ts::Time::HOUR));
-    CPPUNIT_ASSERT_EQUAL(std::string("25"), t1.format (ts::Time::MINUTE));
-    CPPUNIT_ASSERT_EQUAL(std::string("12"), t1.format (ts::Time::SECOND));
-    CPPUNIT_ASSERT_EQUAL(std::string("10:25:12"), t1.format (ts::Time::TIME));
-    CPPUNIT_ASSERT_EQUAL(std::string("020"), t1.format (ts::Time::MILLISECOND));
-    CPPUNIT_ASSERT_EQUAL(std::string("24 10:25"), t1.format (ts::Time::DAY | ts::Time::HOUR | ts::Time::MINUTE));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2006/07/24 10:25:12.020", t1.format());
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2006/07/24 10:25:12.020", t1.format(ts::Time::ALL));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2006", t1.format(ts::Time::YEAR));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"07", t1.format(ts::Time::MONTH));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"24", t1.format(ts::Time::DAY));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"2006/07/24", t1.format(ts::Time::DATE));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"10", t1.format(ts::Time::HOUR));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"25", t1.format(ts::Time::MINUTE));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"12", t1.format(ts::Time::SECOND));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"10:25:12", t1.format(ts::Time::TIME));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"020", t1.format(ts::Time::MILLISECOND));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"24 10:25", t1.format(ts::Time::DAY | ts::Time::HOUR | ts::Time::MINUTE));
 }
 
 void TimeTest::testOperators()

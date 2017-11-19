@@ -113,6 +113,7 @@ void GridTest::testNarrow()
     gr.closeTable();
 
     static const char reference[] =
+        "\n"
         "============\n"
         "| FOO      |\n"
         "|==========|\n"
@@ -120,6 +121,7 @@ void GridTest::testNarrow()
         "|----------|\n"
         "| The end  |\n"
         "============\n"
+        "\n"
         "\n"
         "============\n"
         "| Last sec |\n"
@@ -129,7 +131,8 @@ void GridTest::testNarrow()
         "| opqsdfgh |\n"
         "| jklm     |\n"
         "| line     |\n"
-        "============\n";
+        "============\n"
+        "\n";
 
     std::string buffer(out.str());
     cleanupEndLines(buffer);
@@ -152,6 +155,7 @@ void GridTest::testDefault()
     gr.closeTable();
 
     static const char reference[] =
+        "\n"
         "================================================================================\n"
         "|  FOO                                                                         |\n"
         "|==============================================================================|\n"
@@ -159,7 +163,8 @@ void GridTest::testDefault()
         "|  abcdefghijklmnopqrstuvwxyzabcdefghij  QRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ  |\n"
         "|  abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz                        |\n"
         "|                        ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ  |\n"
-        "================================================================================\n";
+        "================================================================================\n"
+        "\n";
 
     std::string buffer(out.str());
     cleanupEndLines(buffer);
@@ -208,12 +213,14 @@ void GridTest::testLayout()
     gr.closeTable();
 
     static const char reference[] =
+        "\n"
         "==================================================\n"
         "|  ab ........ cd  ef *********  |  -------- ij  |\n"
         "|  ABCDEF  KLMNOP  abcdefghijkl  |   mnopqrstuv  |\n"
         "|  ab ...........  ef *********  |               |\n"
         "|  ab ...........  ef *********  |  -------- ij  |\n"
         "==================================================\n"
+        "\n"
         "\n"
         "==============================\n"
         "|  ab  cd  ef ***  |  -- ij  |\n"
@@ -222,6 +229,7 @@ void GridTest::testLayout()
         "|  ab ...  ef ***  |  -- ij  |\n"
         "==============================\n"
         "\n"
+        "\n"
         "====================\n"
         "|      ef   |  ij  |\n"
         "|      abc  |  uv  |\n"
@@ -229,12 +237,14 @@ void GridTest::testLayout()
         "|   .  ef   |  ij  |\n"
         "====================\n"
         "\n"
+        "\n"
         "==========\n"
         "|    ef  |\n"
         "|    abc |\n"
         "|  . ef  |\n"
         "|  . ef  |\n"
-        "==========\n";
+        "==========\n"
+        "\n";
 
     std::string buffer(out.str());
     cleanupEndLines(buffer);

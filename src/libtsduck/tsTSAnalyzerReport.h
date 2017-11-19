@@ -35,6 +35,7 @@
 #pragma once
 #include "tsTSAnalyzer.h"
 #include "tsTSAnalyzerOptions.h"
+#include "tsGrid.h"
 
 namespace ts {
     //!
@@ -66,61 +67,57 @@ namespace ts {
         //! General reporting method, using the specified options.
         //! @param [in,out] strm Output text stream.
         //! @param [in] opt Analysis options.
-        //! @return A reference to @a strm.
         //!
-        std::ostream& report(std::ostream& strm, const TSAnalyzerOptions& opt);
+        void report(std::ostream& strm, const TSAnalyzerOptions& opt);
 
         //!
         //! Report formatted analysis about the global transport stream.
-        //! @param [in,out] strm Output text stream.
+        //! @param [in,out] grid Output stream in a grid.
         //! @param [in] title Title string to display.
-        //! @return A reference to @a strm.
         //!
-        std::ostream& reportTS(std::ostream& strm, const std::string& title = std::string());
+        void reportTS(Grid& grid, const UString& title = UString());
 
         //!
         //! Report formatted analysis about services.
-        //! @param [in,out] strm Output text stream.
+        //! @param [in,out] grid Output stream in a grid.
         //! @param [in] title Title string to display.
-        //! @return A reference to @a strm.
         //!
-        std::ostream& reportServices(std::ostream& strm, const std::string& title = std::string());
+        void reportServices(Grid& grid, const UString& title = UString());
 
         //!
         //! Report formatted analysis about PID's.
-        //! @param [in,out] strm Output text stream.
+        //! @param [in,out] grid Output stream in a grid.
         //! @param [in] title Title string to display.
-        //! @return A reference to @a strm.
         //!
-        std::ostream& reportPIDs(std::ostream& strm, const std::string& title = std::string());
+        void reportPIDs(Grid& grid, const UString& title = UString());
 
         //!
         //! Report formatted analysis about tables.
-        //! @param [in,out] strm Output text stream.
+        //! @param [in,out] grid Output stream in a grid.
         //! @param [in] title Title string to display.
-        //! @return A reference to @a strm.
         //!
-        std::ostream& reportTables(std::ostream& strm, const std::string& title = std::string());
+        void reportTables(Grid& grid, const UString& title = UString());
 
         //!
         //! This methods displays an error report.
         //! @param [in,out] strm Output text stream.
         //! @param [in] title Title string to display.
-        //! @return A reference to @a strm.
         //!
-        std::ostream& reportErrors(std::ostream& strm, const std::string& title = std::string());
+        void reportErrors(std::ostream& strm, const UString& title = UString());
 
         //!
         //! This methods displays a normalized report.
         //! @param [in,out] strm Output text stream.
         //! @param [in] title Title string to display.
-        //! @return A reference to @a strm.
         //!
-        std::ostream& reportNormalized(std::ostream& strm, const std::string& title = std::string());
+        void reportNormalized(std::ostream& strm, const UString& title = UString());
 
     private:
+        // Display header of a service PID list
+        void reportServiceHeader(Grid& grid, const UString& usage, bool scrambled, BitRate bitrate, BitRate ts_bitrate) const;
+
         // Display one line of a service PID list
-        void reportServicePID(std::ostream&, const PIDContext&) const;
+        void reportServicePID(Grid& grid, const PIDContext&) const;
 
         // Display list of services a PID belongs to
         void reportServicesForPID(std::ostream&, const PIDContext&) const;

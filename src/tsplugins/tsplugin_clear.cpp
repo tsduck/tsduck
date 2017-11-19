@@ -375,10 +375,10 @@ ts::ProcessorPlugin::Status ts::ClearPlugin::processPacket (TSPacket& pkt, bool&
 
     if (_pass_packets != previous_pass && tsp->verbose()) {
         // State has changed
-        std::string state (_pass_packets ? "passing" : "dropping");
-        std::string curtime (_last_tot.isValid() && !_last_tot.regions.empty() ?
-                             _last_tot.localTime(_last_tot.regions[0]).format (Time::DATE | Time::TIME) :
-                             "unknown");
+        std::string state(_pass_packets ? "passing" : "dropping");
+        std::string curtime(_last_tot.isValid() && !_last_tot.regions.empty() ?
+                            _last_tot.localTime(_last_tot.regions[0]).format(Time::DATE | Time::TIME).toUTF8() : //@@@
+                            "unknown");
         tsp->log (Severity::Verbose,
                   "now " + state + " all packets, last TOT local time: " + curtime +
                   ", current packet: " + Decimal (_current_pkt));

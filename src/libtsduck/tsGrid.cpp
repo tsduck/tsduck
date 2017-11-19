@@ -99,13 +99,8 @@ void ts::Grid::setLineWidth(size_t lineWidth, size_t marginWidth)
 void ts::Grid::openTable()
 {
     if (!_tableOpen) {
-        if (_lineCount > 0) {
-            // Spacing line between tables.
-            _out << std::endl;
-            _lineCount++;
-        }
-        _out << _tableTop << std::endl;
-        _lineCount++;
+        _out << std::endl << _tableTop << std::endl;
+        _lineCount += 2;
         _tableOpen = true;
     }
 }
@@ -113,8 +108,8 @@ void ts::Grid::openTable()
 void ts::Grid::closeTable()
 {
     if (_tableOpen) {
-        _out << _tableBottom << std::endl;
-        _lineCount++;
+        _out << _tableBottom << std::endl << std::endl;
+        _lineCount += 2;
         _tableOpen = false;
     }
 
@@ -201,10 +196,11 @@ void ts::Grid::putLine(const UString& left, const UString& right, bool oneLine)
 // Column layout definition.
 //----------------------------------------------------------------------------
 
-ts::Grid::ColumnLayout::ColumnLayout(Justif justif, size_t width, UChar pad) :
+ts::Grid::ColumnLayout::ColumnLayout(Justif justif, size_t width, UChar pad, Justif truncation) :
     _justif(justif),
     _width(width),
-    _pad(pad)
+    _pad(pad),
+    _truncation(truncation)
 {
 }
 
@@ -398,38 +394,59 @@ void ts::Grid::putLayout(const std::initializer_list<ColumnText> text)
                 _out << std::string(iLayout->_width, ' ');
             }
             else if (iLayout->_justif == ColumnLayout::LEFT) {
+                // Only one text, left-justifed.
                 _out << text1.toJustifiedLeft(iLayout->_width, iLayout->_pad, true, 1);
             }
             else if (iLayout->_justif == ColumnLayout::RIGHT) {
+                // Only one text, right-justifed.
                 _out << text1.toJustifiedRight(iLayout->_width, iLayout->_pad, true, 1);
             }
             else {
+                // Two text, a left-justified one and a right-justified one.
+                // The layout is:  text1 one-space pad-characters one-space text2.
                 assert(iLayout->_justif == ColumnLayout::BOTH);
                 size_t leftWidth = text1.width();
                 size_t rightWidth = text2.width();
+                // Check if both texts fit in the line (the 2 spaces are never removed).
                 const bool fits = leftWidth + 2 + rightWidth <= iLayout->_width;
                 if (!fits) {
-                    // Truncate and pack on one line.
+                    // Strings are too large, truncate one of them or both.
                     const size_t excess = leftWidth + 2 + rightWidth - iLayout->_width;
-                    const size_t leftExcess = std::min(leftWidth, excess / 2);
-                    leftWidth -= leftExcess;
-                    const size_t rightExcess = excess - leftExcess;
-                    if (rightExcess <= rightWidth) {
+                    if (iLayout->_truncation == ColumnLayout::LEFT) {
+                        // Truncate left one first.
+                        const size_t leftExcess = std::min(leftWidth, excess);
+                        leftWidth -= leftExcess;
+                        rightWidth -= excess - leftExcess;
+                    }
+                    else if (iLayout->_truncation == ColumnLayout::RIGHT) {
+                        // Truncate right one first.
+                        const size_t rightExcess = std::min(rightWidth, excess);
                         rightWidth -= rightExcess;
+                        leftWidth -= excess - rightExcess;
                     }
                     else {
-                        // Must reduce left even more.
-                        assert(leftWidth >= rightExcess - rightWidth);
-                        leftWidth -= (rightExcess - rightWidth);
-                        rightWidth = 0;
+                        // Truncate both, try to balance the truncation.
+                        const size_t leftExcess = std::min(leftWidth, excess / 2);
+                        leftWidth -= leftExcess;
+                        const size_t rightExcess = excess - leftExcess;
+                        if (rightExcess <= rightWidth) {
+                            rightWidth -= rightExcess;
+                        }
+                        else {
+                            // Must reduce left even more.
+                            assert(leftWidth >= rightExcess - rightWidth);
+                            leftWidth -= (rightExcess - rightWidth);
+                            rightWidth = 0;
+                        }
                     }
                 }
+                // Now, we have adjusted leftWidth and rightWidth to make sure the 2 texts fit on the line.
                 assert(leftWidth + 2 + rightWidth <= iLayout->_width);
                 _out << (fits ? text1 : text1.toTruncatedWidth(leftWidth, LEFT_TO_RIGHT))
                      << (text1.empty() ? iLayout->_pad : SPACE)
                      << UString(iLayout->_width - leftWidth - 2 - rightWidth, iLayout->_pad)
                      << (text2.empty() ? iLayout->_pad : SPACE)
-                     << (fits ? text2 : text2.toTruncatedWidth(leftWidth, RIGHT_TO_LEFT));
+                     << (fits ? text2 : text2.toTruncatedWidth(rightWidth, RIGHT_TO_LEFT));
             }
         }
     }

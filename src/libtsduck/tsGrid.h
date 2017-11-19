@@ -64,6 +64,12 @@ namespace ts {
         ~Grid();
 
         //!
+        //! Get a reference to the output stream.
+        //! @return A reference to the output stream.
+        //!
+        std::ostream& stream() const { return _out; }
+
+        //!
         //! Set the report display line width.
         //! @param [in] lineWidth New line width.
         //! @param [in] marginWidth New margin width.
@@ -153,10 +159,11 @@ namespace ts {
         private:
             friend class Grid;
             enum Justif {LEFT, RIGHT, BOTH, BORDER};
-            ColumnLayout(Justif justif, size_t width, UChar pad);
+            ColumnLayout(Justif justif, size_t width, UChar pad, Justif truncation);
             Justif _justif;
             size_t _width;
             UChar  _pad;
+            Justif _truncation;
         };
 
         //!
@@ -167,7 +174,7 @@ namespace ts {
         //!
         ColumnLayout left(size_t width = 0, UChar pad = SPACE) const
         {
-            return ColumnLayout(ColumnLayout::LEFT, width, pad);
+            return ColumnLayout(ColumnLayout::LEFT, width, pad, ColumnLayout::LEFT);
         }
 
         //!
@@ -178,18 +185,41 @@ namespace ts {
         //!
         ColumnLayout right(size_t width = 0, UChar pad = SPACE) const
         {
-            return ColumnLayout(ColumnLayout::RIGHT, width, pad);
+            return ColumnLayout(ColumnLayout::RIGHT, width, pad, ColumnLayout::LEFT);
         }
 
         //!
         //! Build a ColumnLayout with two text field, left-justified and right-justified.
+        //! In case of overflow, both are truncated.
         //! @param [in] width Requested width in characters.
         //! @param [in] pad Padding character.
         //! @return The corresponding ColumnLayout.
         //!
         ColumnLayout both(size_t width = 0, UChar pad = SPACE) const
         {
-            return ColumnLayout(ColumnLayout::BOTH, width, pad);
+            return ColumnLayout(ColumnLayout::BOTH, width, pad, ColumnLayout::BOTH);
+        }
+
+        //!
+        //! Build a ColumnLayout with two text field, left-justified and right-justified, truncate left one on overflow.
+        //! @param [in] width Requested width in characters.
+        //! @param [in] pad Padding character.
+        //! @return The corresponding ColumnLayout.
+        //!
+        ColumnLayout bothTruncateLeft(size_t width = 0, UChar pad = SPACE) const
+        {
+            return ColumnLayout(ColumnLayout::BOTH, width, pad, ColumnLayout::LEFT);
+        }
+
+        //!
+        //! Build a ColumnLayout with two text field, left-justified and right-justified, truncate right one on overflow.
+        //! @param [in] width Requested width in characters.
+        //! @param [in] pad Padding character.
+        //! @return The corresponding ColumnLayout.
+        //!
+        ColumnLayout bothTruncateRight(size_t width = 0, UChar pad = SPACE) const
+        {
+            return ColumnLayout(ColumnLayout::BOTH, width, pad, ColumnLayout::RIGHT);
         }
 
         //!
@@ -198,7 +228,7 @@ namespace ts {
         //!
         ColumnLayout border() const
         {
-            return ColumnLayout(ColumnLayout::BORDER, 1, _border);
+            return ColumnLayout(ColumnLayout::BORDER, 1, _border, ColumnLayout::BORDER);
         }
 
         //!
