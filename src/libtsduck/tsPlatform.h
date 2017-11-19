@@ -597,6 +597,10 @@
 #undef ERROR
 #endif
 
+#if defined(Yield)
+#undef Yield
+#endif
+
 // Other Microsoft VC oddities....
 
 #if defined(TS_WINDOWS) && !defined(DOXYGEN)

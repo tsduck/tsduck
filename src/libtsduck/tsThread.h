@@ -189,6 +189,13 @@ namespace ts {
         //!
         virtual void main() = 0;
 
+        //!
+        //! Yield execution of the current thread.
+        //! Execution is passed to another thread, if any is waiting for execution.
+        //! This should not change the behaviour of correctly-written applications.
+        //!
+        static void Yield();
+
     private:
         // Forbidden operations
         Thread(const Thread&) = delete;
