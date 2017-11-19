@@ -33,7 +33,9 @@
 
 #include "tsMessageQueue.h"
 #include "tsThread.h"
+#include "tsMonotonic.h"
 #include "tsSysUtils.h"
+#include "tsDecimal.h"
 #include "utestCppUnitTest.h"
 #include "utestCppUnitThread.h"
 TSDUCK_SOURCE;
@@ -46,6 +48,7 @@ TSDUCK_SOURCE;
 class MessageQueueTest: public CppUnit::TestFixture
 {
 public:
+    MessageQueueTest();
     void setUp();
     void tearDown();
     void testConstructor();
@@ -55,6 +58,9 @@ public:
     CPPUNIT_TEST(testConstructor);
     CPPUNIT_TEST(testQueue);
     CPPUNIT_TEST_SUITE_END();
+private:
+    ts::NanoSecond  _nsPrecision;
+    ts::MilliSecond _msPrecision;
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION (MessageQueueTest);
@@ -64,9 +70,21 @@ CPPUNIT_TEST_SUITE_REGISTRATION (MessageQueueTest);
 // Initialization.
 //----------------------------------------------------------------------------
 
+// Constructor.
+MessageQueueTest::MessageQueueTest() :
+    _nsPrecision(0),
+    _msPrecision(0)
+{
+}
+
 // Test suite initialization method.
 void MessageQueueTest::setUp()
 {
+    _nsPrecision = ts::Monotonic::SetPrecision(2 * ts::NanoSecPerMilliSec);
+    _msPrecision = (_nsPrecision + ts::NanoSecPerMilliSec - 1) / ts::NanoSecPerMilliSec;
+
+    // Request 2 milliseconds as system time precision.
+    utest::Out() << "MonotonicTest: timer precision = " << ts::Decimal(_nsPrecision) << " ns, " << ts::Decimal(_msPrecision) << " ms" << std::endl;
 }
 
 // Test suite cleanup method.
@@ -109,7 +127,7 @@ namespace {
 
         virtual void test()
         {
-            utest::Out() << "MessageQueueTest: starting thread" << std::endl;
+            utest::Out() << "MessageQueueTest: test thread: started" << std::endl;
 
             // Initial suspend of 500 ms
             ts::SleepThread(500);
@@ -120,14 +138,16 @@ namespace {
             do {
                 CPPUNIT_ASSERT(_queue.dequeue(message, 10000));
                 CPPUNIT_ASSERT(!message.isNull());
-                utest::Out() << "MessageQueueTest: thread received " << *message << std::endl;
+                utest::Out() << "MessageQueueTest: test thread: received " << *message << std::endl;
                 if (*message >= 0) {
                     CPPUNIT_ASSERT(*message == expected);
                     expected++;
                 }
+                // Make sure the main thread has the opportunity to insert the 11th message.
+                ts::Thread::Yield();
             } while (*message >= 0);
 
-            utest::Out() << "MessageQueueTest: end of thread" << std::endl;
+            utest::Out() << "MessageQueueTest: test thread: end" << std::endl;
         }
     };
 }
@@ -138,12 +158,12 @@ void MessageQueueTest::testQueue()
     MessageQueueTestThread thread(queue);
     int message = 0;
 
-    utest::Out() << "MessageQueueTest: starting test" << std::endl;
+    utest::Out() << "MessageQueueTest: main thread: starting test" << std::endl;
 
     // Enqueue 10 message, should not fail.
     // First 2 messages are enqueued without timeout.
-    queue.enqueue(new int(message++));
-    queue.enqueue(new int(message++));
+    CPPUNIT_ASSERT(queue.enqueue(new int(message++)));
+    CPPUNIT_ASSERT(queue.enqueue(new int(message++)));
 
     // Next 8 messages are enqueued with 100 ms timeout.
     // No specific reason for this, simply test both versions of enqueue().
@@ -154,16 +174,20 @@ void MessageQueueTest::testQueue()
     // Start the thread
     const ts::Time start(ts::Time::CurrentUTC());
     CPPUNIT_ASSERT(thread.start());
+    utest::Out() << "MessageQueueTest: main thread: test thread started" << std::endl;
 
     // Enqueue 11th message with 50 ms timeout, should fail
+    utest::Out() << "MessageQueueTest: main thread: enqueueing " << message << " (should fail)" << std::endl;
     CPPUNIT_ASSERT(!queue.enqueue(new int(message), 50));
 
     // Enqueue message, should take at least 500 ms
+    utest::Out() << "MessageQueueTest: main thread: enqueueing " << message << std::endl;
     CPPUNIT_ASSERT(queue.enqueue(new int(message++), 10000));
-    CPPUNIT_ASSERT(ts::Time::CurrentUTC() - start >= 500);
+    CPPUNIT_ASSERT(ts::Time::CurrentUTC() - start >= 500 - _msPrecision);
 
     // Enqueue exit request
+    utest::Out() << "MessageQueueTest: main thread: force enqueueing -1" << std::endl;
     queue.forceEnqueue(new int(-1));
 
-    utest::Out() << "MessageQueueTest: end of test" << std::endl;
+    utest::Out() << "MessageQueueTest: main thread: end of test" << std::endl;
 }
