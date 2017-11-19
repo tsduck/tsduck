@@ -230,7 +230,6 @@ void PlatformTest::testIntegerTypes()
     CPPUNIT_ASSERT_EQUAL(0, TS_ADDRESS_BITS % 8);
     CPPUNIT_ASSERT_EQUAL(size_t(TS_ADDRESS_BITS / 8), sizeof(void*));
     CPPUNIT_ASSERT_EQUAL(size_t(TS_ADDRESS_BITS / 8), sizeof(size_t));
-    CPPUNIT_ASSERT_EQUAL(size_t(TS_ADDRESS_BITS / 8), sizeof(ssize_t));
     CPPUNIT_ASSERT_EQUAL(size_t(TS_ADDRESS_BITS / 8), sizeof(std::size_t));
     CPPUNIT_ASSERT_EQUAL(size_t(TS_ADDRESS_BITS / 8), sizeof(std::ptrdiff_t));
 

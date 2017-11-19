@@ -154,9 +154,9 @@ namespace ts {
 #if defined(DOXYGEN) || !defined(TS_SIZE_T_IS_STDINT)
         ArgMix(size_t i) :
             #if TS_ADDRESS_BITS <= 32
-                _type(INT32), _size(sizeof(i)), _value(int32_t(i))
+                _type(UINT32), _size(sizeof(i)), _value(uint32_t(i))
             #else
-                _type(INT64), _size(sizeof(i)), _value(int64_t(i))
+                _type(UINT64), _size(sizeof(i)), _value(uint64_t(i))
             #endif
         {}
 #endif
