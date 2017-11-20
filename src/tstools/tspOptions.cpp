@@ -64,19 +64,19 @@ ts::tsp::Options::Options(int argc, char *argv[]) :
     output(),
     plugins()
 {
-    option("add-input-stuffing",       'a', Args::STRING);
-    option("bitrate",                  'b', Args::POSITIVE);
-    option("bitrate-adjust-interval",   0,  Args::POSITIVE);
-    option("buffer-size-mb",            0,  Args::POSITIVE);
-    option("debug",                    'd', Args::POSITIVE, 0, 1, 0, 0, true);
-    option("ignore-joint-termination", 'i');
-    option("list-processors",          'l');
-    option("max-flushed-packets",       0,  Args::POSITIVE);
-    option("max-input-packets",         0,  Args::POSITIVE);
-    option("no-realtime-clock",         0); // was a temporary workaround, now ignored
-    option("monitor",                  'm');
-    option("timed-log",                't');
-    option("verbose",                  'v');
+    option(u"add-input-stuffing",       'a', Args::STRING);
+    option(u"bitrate",                  'b', Args::POSITIVE);
+    option(u"bitrate-adjust-interval",   0,  Args::POSITIVE);
+    option(u"buffer-size-mb",            0,  Args::POSITIVE);
+    option(u"debug",                    'd', Args::POSITIVE, 0, 1, 0, 0, true);
+    option(u"ignore-joint-termination", 'i');
+    option(u"list-processors",          'l');
+    option(u"max-flushed-packets",       0,  Args::POSITIVE);
+    option(u"max-input-packets",         0,  Args::POSITIVE);
+    option(u"no-realtime-clock",         0); // was a temporary workaround, now ignored
+    option(u"monitor",                  'm');
+    option(u"timed-log",                't');
+    option(u"verbose",                  'v');
 
 #if defined(TS_WINDOWS)
 #define HELP_SHLIB    "DLL"
@@ -93,131 +93,131 @@ ts::tsp::Options::Options(int argc, char *argv[]) :
 #endif
 
     setDescription("MPEG Transport Stream Processor: Receive a TS from a user-specified input\n"
-                  "plug-in, apply MPEG packet processing through several user-specified packet\n"
-                  "processor plug-in's and send the processed stream to a user-specified output\n"
-                  "plug-in. All input, processors and output plug-in's are " HELP_SHLIBS ".");
+                  u"plug-in, apply MPEG packet processing through several user-specified packet\n"
+                  u"processor plug-in's and send the processed stream to a user-specified output\n"
+                  u"plug-in. All input, processors and output plug-in's are " HELP_SHLIBS ".");
 
     setSyntax(" [tsp-options] \\\n"
-              "    [-I input-name [input-options]] \\\n"
-              "    [-P processor-name [processor-options]] ... \\\n"
-              "    [-O output-name [output-options]]");
+              u"    [-I input-name [input-options]] \\\n"
+              u"    [-P processor-name [processor-options]] ... \\\n"
+              u"    [-O output-name [output-options]]");
 
-    setHelp("All tsp-options must be placed on the command line before the input,\n"
-            "processors and output specifications. The tsp-options are:\n"
-            "\n"
-            "  -a nullpkt/inpkt\n"
-            "  --add-input-stuffing nullpkt/inpkt\n"
-            "      Specify that <nullpkt> null TS packets must be automatically inserted\n"
-            "      after every <inpkt> input TS packets. Both <nullpkt> and <inpkt> must\n"
-            "      be non-zero integer values. This option is useful to artificially\n"
-            "      increase the input bitrate by adding stuffing. Example: the option\n"
-            "      \"-a 14/24\" adds 14 null packets every 24 input packets, effectively\n"
-            "      turning a 24 Mb/s input stream (terrestrial) into a 38 Mb/s stream\n"
-            "      (satellite).\n"
-            "\n"
-            "  -b value\n"
-            "  --bitrate value\n"
-            "      Specify the input bitrate, in bits/seconds. By default, the input\n"
-            "      bitrate is provided by the input plugin or by analysis of the PCR.\n"
-            "\n"
-            "  --bitrate-adjust-interval value\n"
-            "      Specify the interval in seconds between bitrate adjustments,\n"
-            "      ie. when the output bitrate is adjusted to the input one.\n"
-            "      The default is " TS_STRINGIFY(DEF_BITRATE_INTERVAL) " seconds.\n"
-            "      Some output processors ignore this setting. Typically, ASI\n"
-            "      or modulator devices use it, while file devices ignore it.\n"
-            "      This option is ignored if --bitrate is specified.\n"
-            "\n"
-            "  --buffer-size-mb value\n"
-            "      Specify the buffer size in mega-bytes. This is the size of\n"
-            "      the buffer between the input and output devices. The default\n"
-            "      is " TS_STRINGIFY(DEF_BUFSIZE_MB) " MB.\n"
-            "\n"
-            "  -d[N]\n"
-            "  --debug[=N]\n"
-            "      Produce debug output. Specify an optional debug level N.\n"
-            "\n"
-            "  --help\n"
-            "      Display this help text.\n"
-            "\n"
-            "  -i\n"
-            "  --ignore-joint-termination\n"
-            "      Ignore all --joint-termination options in plugins.\n"
-            "      The idea behind \"joint termination\" is to terminate tsp when several\n"
-            "      plugins have jointly terminated their processing. Some plugins have\n"
-            "      a --joint-termination option. When set, the plugin executes until some\n"
-            "      plugin-specific condition. When all plugins with --joint-termination set\n"
-            "      have reached their termination condition, tsp terminates. The option\n"
-            "      --ignore-joint-termination disables the termination of tsp when all\n"
-            "      plugins have reached their joint termination condition.\n"
-            "\n"
-            "  -l\n"
-            "  --list-processors\n"
-            "      List all available processors.\n"
-            "\n"
-            "  --max-flushed-packets value\n"
-            "      Specify the maximum number of packets to be processed before flushing\n"
-            "      them to the next processor or the output. When the processing time\n"
-            "      is high and some packets are lost, try decreasing this value.\n"
-            "      The default is " TS_STRINGIFY(DEF_MAX_FLUSH_PKT) " packets.\n"
-            "\n"
-            "  --max-input-packets value\n"
-            "      Specify the maximum number of packets to be received at a time from\n"
-            "      the input plug-in. By default, tsp reads as many packets as it can,\n"
-            "      depending on the free space in the buffer.\n"
-            "\n"
-            "  -m\n"
-            "  --monitor\n"
-            "      Continuously monitor the system resources which are used by tsp.\n"
-            "      This includes CPU load, virtual memory usage. Useful to verify the\n"
-            "      stability of the application.\n"
-            "\n"
-            "  -t\n"
-            "  --timed-log\n"
-            "      Each logged message contains a time stamp.\n"
-            "\n"
-            "  -v\n"
-            "  --verbose\n"
-            "      Produce verbose output.\n"
-            "\n"
-            "  --version\n"
-            "      Display the version number.\n"
-            "\n"
-            "The following options activate the user-specified plug-in's.\n"
-            "\n"
-            "  -I name\n"
-            "  --input name\n"
-            "      Designate the " HELP_SHLIB " plug-in for packet input.\n"
-            "      By default, read packets from standard input.\n"
-            "\n"
-            "  -O name\n"
-            "  --output name\n"
-            "      Designate the " HELP_SHLIB " plug-in for packet output.\n"
-            "      By default, write packets to standard output.\n"
-            "\n"
-            "  -P name\n"
-            "  --processor name\n"
-            "      Designate a " HELP_SHLIB " plug-in for packet processing. Several\n"
-            "      packet processors are allowed. Each packet is successively processed\n"
-            "      by each processor, in the order of the command line. By default, there\n"
-            "      is no processor and the packets are directly passed from the input to\n"
-            "      the output.\n"
-            "\n"
-            "The specified <name> is used to locate a " HELP_SHLIB ". It can be designated\n"
-            "in a number of ways, in the following order:\n"
-            "\n"
-            "  . If the name contains a " HELP_SEP ", it is only interpreted as a file path for\n"
-            "    the " HELP_SHLIB ".\n"
-            "  . If not found, the file is searched into the all directories in environment\n"
-            "    variable " TS_PLUGINS_PATH " and in the same directory as the tsp executable\n"
-            "    file. In each directory, file named tsplugin_<name>" HELP_SHLIBEXT " is searched\n"
-            "    first, then the file <name>, with or without " HELP_SHLIBEXT ".\n"
-            "  . Finally, the standard system algorithm is applied to locate the " HELP_SHLIB "\n"
-            "    file." HELP_SEEMAN "\n"
-            "\n"
-            "Input-options, processor-options and output-options are specific to their\n"
-            "corresponding plug-in. Try \"tsp {-I|-O|-P} name --help\" to display the\n"
-            "help text for a specific plug-in.\n");
+    setHelp(u"All tsp-options must be placed on the command line before the input,\n"
+            u"processors and output specifications. The tsp-options are:\n"
+            u"\n"
+            u"  -a nullpkt/inpkt\n"
+            u"  --add-input-stuffing nullpkt/inpkt\n"
+            u"      Specify that <nullpkt> null TS packets must be automatically inserted\n"
+            u"      after every <inpkt> input TS packets. Both <nullpkt> and <inpkt> must\n"
+            u"      be non-zero integer values. This option is useful to artificially\n"
+            u"      increase the input bitrate by adding stuffing. Example: the option\n"
+            u"      \"-a 14/24\" adds 14 null packets every 24 input packets, effectively\n"
+            u"      turning a 24 Mb/s input stream (terrestrial) into a 38 Mb/s stream\n"
+            u"      (satellite).\n"
+            u"\n"
+            u"  -b value\n"
+            u"  --bitrate value\n"
+            u"      Specify the input bitrate, in bits/seconds. By default, the input\n"
+            u"      bitrate is provided by the input plugin or by analysis of the PCR.\n"
+            u"\n"
+            u"  --bitrate-adjust-interval value\n"
+            u"      Specify the interval in seconds between bitrate adjustments,\n"
+            u"      ie. when the output bitrate is adjusted to the input one.\n"
+            u"      The default is " TS_STRINGIFY(DEF_BITRATE_INTERVAL) " seconds.\n"
+            u"      Some output processors ignore this setting. Typically, ASI\n"
+            u"      or modulator devices use it, while file devices ignore it.\n"
+            u"      This option is ignored if --bitrate is specified.\n"
+            u"\n"
+            u"  --buffer-size-mb value\n"
+            u"      Specify the buffer size in mega-bytes. This is the size of\n"
+            u"      the buffer between the input and output devices. The default\n"
+            u"      is " TS_STRINGIFY(DEF_BUFSIZE_MB) " MB.\n"
+            u"\n"
+            u"  -d[N]\n"
+            u"  --debug[=N]\n"
+            u"      Produce debug output. Specify an optional debug level N.\n"
+            u"\n"
+            u"  --help\n"
+            u"      Display this help text.\n"
+            u"\n"
+            u"  -i\n"
+            u"  --ignore-joint-termination\n"
+            u"      Ignore all --joint-termination options in plugins.\n"
+            u"      The idea behind \"joint termination\" is to terminate tsp when several\n"
+            u"      plugins have jointly terminated their processing. Some plugins have\n"
+            u"      a --joint-termination option. When set, the plugin executes until some\n"
+            u"      plugin-specific condition. When all plugins with --joint-termination set\n"
+            u"      have reached their termination condition, tsp terminates. The option\n"
+            u"      --ignore-joint-termination disables the termination of tsp when all\n"
+            u"      plugins have reached their joint termination condition.\n"
+            u"\n"
+            u"  -l\n"
+            u"  --list-processors\n"
+            u"      List all available processors.\n"
+            u"\n"
+            u"  --max-flushed-packets value\n"
+            u"      Specify the maximum number of packets to be processed before flushing\n"
+            u"      them to the next processor or the output. When the processing time\n"
+            u"      is high and some packets are lost, try decreasing this value.\n"
+            u"      The default is " TS_STRINGIFY(DEF_MAX_FLUSH_PKT) " packets.\n"
+            u"\n"
+            u"  --max-input-packets value\n"
+            u"      Specify the maximum number of packets to be received at a time from\n"
+            u"      the input plug-in. By default, tsp reads as many packets as it can,\n"
+            u"      depending on the free space in the buffer.\n"
+            u"\n"
+            u"  -m\n"
+            u"  --monitor\n"
+            u"      Continuously monitor the system resources which are used by tsp.\n"
+            u"      This includes CPU load, virtual memory usage. Useful to verify the\n"
+            u"      stability of the application.\n"
+            u"\n"
+            u"  -t\n"
+            u"  --timed-log\n"
+            u"      Each logged message contains a time stamp.\n"
+            u"\n"
+            u"  -v\n"
+            u"  --verbose\n"
+            u"      Produce verbose output.\n"
+            u"\n"
+            u"  --version\n"
+            u"      Display the version number.\n"
+            u"\n"
+            u"The following options activate the user-specified plug-in's.\n"
+            u"\n"
+            u"  -I name\n"
+            u"  --input name\n"
+            u"      Designate the " HELP_SHLIB " plug-in for packet input.\n"
+            u"      By default, read packets from standard input.\n"
+            u"\n"
+            u"  -O name\n"
+            u"  --output name\n"
+            u"      Designate the " HELP_SHLIB " plug-in for packet output.\n"
+            u"      By default, write packets to standard output.\n"
+            u"\n"
+            u"  -P name\n"
+            u"  --processor name\n"
+            u"      Designate a " HELP_SHLIB " plug-in for packet processing. Several\n"
+            u"      packet processors are allowed. Each packet is successively processed\n"
+            u"      by each processor, in the order of the command line. By default, there\n"
+            u"      is no processor and the packets are directly passed from the input to\n"
+            u"      the output.\n"
+            u"\n"
+            u"The specified <name> is used to locate a " HELP_SHLIB ". It can be designated\n"
+            u"in a number of ways, in the following order:\n"
+            u"\n"
+            u"  . If the name contains a " HELP_SEP ", it is only interpreted as a file path for\n"
+            u"    the " HELP_SHLIB ".\n"
+            u"  . If not found, the file is searched into the all directories in environment\n"
+            u"    variable " TS_PLUGINS_PATH " and in the same directory as the tsp executable\n"
+            u"    file. In each directory, file named tsplugin_<name>" HELP_SHLIBEXT " is searched\n"
+            u"    first, then the file <name>, with or without " HELP_SHLIBEXT ".\n"
+            u"  . Finally, the standard system algorithm is applied to locate the " HELP_SHLIB "\n"
+            u"    file." HELP_SEEMAN "\n"
+            u"\n"
+            u"Input-options, processor-options and output-options are specific to their\n"
+            u"corresponding plug-in. Try \"tsp {-I|-O|-P} name --help\" to display the\n"
+            u"help text for a specific plug-in.\n");
 
     // Locate the first processor option. All preceeding options are tsp
     // options and must be analyzed.
@@ -229,22 +229,22 @@ ts::tsp::Options::Options(int argc, char *argv[]) :
 
     analyze(plugin_index, argv);
 
-    debug = present("debug") ? intValue("debug", 1) : 0;
-    verbose = debug > 0 || present("verbose");
+    debug = present(u"debug") ? intValue("debug", 1) : 0;
+    verbose = debug > 0 || present(u"verbose");
     setDebugLevel(debug > 0 ? debug : (verbose ? ts::Severity::Verbose : ts::Severity::Info));
 
-    timed_log = present("timed-log");
-    list_proc = present("list-processors");
-    monitor = present("monitor");
+    timed_log = present(u"timed-log");
+    list_proc = present(u"list-processors");
+    monitor = present(u"monitor");
     bufsize = 1024 * 1024 * intValue<size_t>("buffer-size-mb", DEF_BUFSIZE_MB);
     bitrate = intValue<BitRate>("bitrate", 0);
     bitrate_adj = MilliSecPerSec * intValue("bitrate-adjust-interval", DEF_BITRATE_INTERVAL);
     max_flush_pkt = intValue<size_t>("max-flushed-packets", DEF_MAX_FLUSH_PKT);
     max_input_pkt = intValue<size_t>("max-input-packets", 0);
-    ignore_jt = present("ignore-joint-termination");
+    ignore_jt = present(u"ignore-joint-termination");
 
-    if (present("add-input-stuffing")) {
-        std::string stuff(value("add-input-stuffing"));
+    if (present(u"add-input-stuffing")) {
+        std::string stuff(value(u"add-input-stuffing"));
         std::string::size_type slash = stuff.find("/");
         bool valid = slash != std::string::npos &&
             ToInteger(instuff_nullpkt, stuff.substr(0, slash)) &&

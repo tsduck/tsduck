@@ -184,7 +184,7 @@
 #include "tsReportBuffer.h"
 #include "tsReportFile.h"
 #include "tsReportHandler.h"
-#include "tsReportInterface.h"
+#include "tsReport.h"
 #include "tsReportWithPrefix.h"
 #include "tsResidentBuffer.h"
 #include "tsRingNode.h"

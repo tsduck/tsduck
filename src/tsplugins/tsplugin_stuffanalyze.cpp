@@ -123,31 +123,31 @@ ts::StuffAnalyzePlugin::StuffAnalyzePlugin(TSP* tsp_) :
     _total(),
     _pid_contexts()
 {
-    option("output-file", 'o', STRING);
-    option("pid",         'p', PIDVAL, 0, UNLIMITED_COUNT);
+    option(u"output-file", 'o', STRING);
+    option(u"pid",         'p', PIDVAL, 0, UNLIMITED_COUNT);
 
-    setHelp("Analyze the level of \"stuffing\" in sections in a list of selected PID's.\n"
-            "The PID's to analyze can be selected manually or using CAS criteria.\n"
-            "A section is considered as \"stuffing\" when its payload is filled with\n"
-            "the same byte value (all 0x00 or all 0xFF for instance).\n"
-            "\n"
-            "Options:\n"
-            "\n"
-            "  --help\n"
-            "      Display this help text.\n"
-            "\n"
-            "  -o filename\n"
-            "  --output-file filename\n"
-            "      Specify the output text file for the analysis result.\n"
-            "      By default, use the standard output.\n"
-            "\n"
-            "  -p value\n"
-            "  --pid value\n"
-            "      Analyze all tables from this PID. Several -p or --pid options may be\n"
-            "      specified.\n"
-            "\n"
-            "  --version\n"
-            "      Display the version number.\n");
+    setHelp(u"Analyze the level of \"stuffing\" in sections in a list of selected PID's.\n"
+            u"The PID's to analyze can be selected manually or using CAS criteria.\n"
+            u"A section is considered as \"stuffing\" when its payload is filled with\n"
+            u"the same byte value (all 0x00 or all 0xFF for instance).\n"
+            u"\n"
+            u"Options:\n"
+            u"\n"
+            u"  --help\n"
+            u"      Display this help text.\n"
+            u"\n"
+            u"  -o filename\n"
+            u"  --output-file filename\n"
+            u"      Specify the output text file for the analysis result.\n"
+            u"      By default, use the standard output.\n"
+            u"\n"
+            u"  -p value\n"
+            u"  --pid value\n"
+            u"      Analyze all tables from this PID. Several -p or --pid options may be\n"
+            u"      specified.\n"
+            u"\n"
+            u"  --version\n"
+            u"      Display the version number.\n");
 
     _cas_args.defineOptions(*this);
     _cas_args.addHelp(*this);
@@ -162,7 +162,7 @@ bool ts::StuffAnalyzePlugin::start()
 {
     // Get command line arguments
     _cas_args.load(*this);
-    _output_name = value("output-file");
+    _output_name = value(u"output-file");
     getPIDSet(_analyze_pids, "pid");
 
     // Initialize the PSI demux.

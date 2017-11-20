@@ -566,6 +566,7 @@
 
 #include <string>
 #include <vector>
+#include <array>
 #include <deque>
 #include <list>
 #include <map>

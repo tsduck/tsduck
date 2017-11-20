@@ -106,7 +106,7 @@ uint32_t ts::DTVProperties::getByCommand(uint32_t cmd) const
 // Report the content of the object (for debug purpose)
 //-----------------------------------------------------------------------------
 
-void ts::DTVProperties::report(ReportInterface& report, int severity) const
+void ts::DTVProperties::report(Report& report, int severity) const
 {
     if (report.debugLevel() < severity) {
         return;

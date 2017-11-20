@@ -66,7 +66,7 @@ namespace ts {
         Guts* _guts;
 
         // Output start error: log error, detach channel & device, return false.
-        bool startError(const std::string&, unsigned int); // Dtapi::DTAPI_RESULT
+        bool startError(const UString&, unsigned int); // Dtapi::DTAPI_RESULT
 
         // Update, when possible, the _opt_bitrate and _cur_bitrate fields based on a
         // user-specified symbol rate (and other modulation parameters). Return false

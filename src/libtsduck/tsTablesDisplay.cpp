@@ -46,7 +46,7 @@ TSDUCK_SOURCE;
 // Constructor.
 //----------------------------------------------------------------------------
 
-ts::TablesDisplay::TablesDisplay(const TablesDisplayArgs& options, ReportInterface& report) :
+ts::TablesDisplay::TablesDisplay(const TablesDisplayArgs& options, Report& report) :
     _opt(options),
     _report(report),
     _outfile(),

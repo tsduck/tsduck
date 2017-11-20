@@ -33,7 +33,7 @@
 #endif
 TSDUCK_SOURCE;
 
-ts::COM::COM(ReportInterface& report) :
+ts::COM::COM(Report& report) :
     _is_init(false)
 {
 #if defined(TS_WINDOWS)

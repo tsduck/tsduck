@@ -66,7 +66,7 @@ namespace ts {
         //! Get the language code.
         //! @return The language code, a 3-character string.
         //!
-        std::string getLanguageCode() const
+        UString getLanguageCode() const
         {
             return _language_code;
         }
@@ -75,19 +75,10 @@ namespace ts {
         //! Set the language code.
         //! @param [in] s The language code, must be a 3-character string.
         //!
-        void setLanguageCode(const char* s)
+        void setLanguageCode(const UString& s)
         {
             _language_code = s;
-            _language_code.resize(3, ' ');
-        }
-
-        //!
-        //! Set the language code.
-        //! @param [in] s The language code, must be a 3-character string.
-        //!
-        void setLanguageCode(const std::string& s)
-        {
-            setLanguageCode(s.c_str());
+            _language_code.resize(3, u' ');
         }
 
         //!
@@ -177,28 +168,28 @@ namespace ts {
         //! first occurence.
         //! @return True on success, false on error.
         //!
-        bool getFromArgs(Args& args, const char* option_name, size_t index = 0);
+        bool getFromArgs(Args& args, const UChar* option_name, size_t index = 0);
 
         //!
         //! Return a short parameter syntax.
         //! @return A short parameter syntax.
         //!
-        static std::string GetSyntaxString()
+        static UString GetSyntaxString()
         {
-            return "language-code[:audio-type[:location]]";
+            return u"language-code[:audio-type[:location]]";
         }
 
         //!
         //! Return a help string for the parameter syntax.
         //! @return A multi-line help string for the parameter syntax.
         //!
-        static std::string GetHelpString();
+        static UString GetHelpString();
 
     private:
-        std::string _language_code;       // always 3-chars
-        uint8_t     _audio_type;
-        uint8_t     _audio_stream_number; // if zero, use PID.
-        PID         _pid;
+        UString _language_code;       // always 3-chars
+        uint8_t _audio_type;
+        uint8_t _audio_stream_number; // if zero, use PID.
+        PID     _pid;
     };
 
     //!
@@ -230,7 +221,7 @@ namespace ts {
         //! a fatal error is reported. This object is populated with one element per occurrence of
         //! the option.
         //!
-        AudioLanguageOptionsVector(Args& args, const char* option_name) :
+        AudioLanguageOptionsVector(Args& args, const UChar* option_name) :
             SuperClass()
         {
             getFromArgs(args, option_name);
@@ -246,7 +237,7 @@ namespace ts {
         //! the option.
         //! @return True on success, false on error.
         //!
-        bool getFromArgs(Args& args, const char* option_name);
+        bool getFromArgs(Args& args, const UChar* option_name);
 
         //!
         //! Apply requested transformations on a PMT.
@@ -256,6 +247,6 @@ namespace ts {
         //! @param [in] severity Severity of errors (ts::Severity::Error by default).
         //! @return True on success, false on error.
         //!
-        bool apply(PMT& pmt, ReportInterface& report, int severity = Severity::Error) const;
+        bool apply(PMT& pmt, Report& report, int severity = Severity::Error) const;
     };
 }

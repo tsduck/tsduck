@@ -38,7 +38,6 @@
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 #include "tsStringUtils.h"
-#include "tsFormat.h"
 TSDUCK_SOURCE;
 
 #define XML_GENERIC_DESCRIPTOR   "generic_descriptor"
@@ -76,7 +75,7 @@ void ts::XMLTables::add(const AbstractTablePtr& table, const DVBCharset* charset
 // Load / parse an XML file.
 //----------------------------------------------------------------------------
 
-bool ts::XMLTables::loadXML(const std::string& file_name, ReportInterface& report, const DVBCharset* charset)
+bool ts::XMLTables::loadXML(const std::string& file_name, Report& report, const DVBCharset* charset)
 {
     clear();
     XML xml(report);
@@ -84,7 +83,7 @@ bool ts::XMLTables::loadXML(const std::string& file_name, ReportInterface& repor
     return xml.loadDocument(doc, file_name, false) && parseDocument(xml, doc, charset);
 }
 
-bool ts::XMLTables::parseXML(const std::string& xml_content, ReportInterface& report, const DVBCharset* charset)
+bool ts::XMLTables::parseXML(const std::string& xml_content, Report& report, const DVBCharset* charset)
 {
     clear();
     XML xml(report);
@@ -92,7 +91,7 @@ bool ts::XMLTables::parseXML(const std::string& xml_content, ReportInterface& re
     return xml.parseDocument(doc, xml_content) && parseDocument(xml, doc, charset);
 }
 
-bool ts::XMLTables::parseXML(const UString& xml_content, ReportInterface& report, const DVBCharset* charset)
+bool ts::XMLTables::parseXML(const UString& xml_content, Report& report, const DVBCharset* charset)
 {
     return parseXML(xml_content.toUTF8(), report, charset);
 }
@@ -157,7 +156,7 @@ bool ts::XMLTables::parseDocument(XML& xml, const XML::Document& doc, const DVBC
 // Create XML file or text.
 //----------------------------------------------------------------------------
 
-bool ts::XMLTables::saveXML(const std::string& file_name, ReportInterface& report, const DVBCharset* charset) const
+bool ts::XMLTables::saveXML(const std::string& file_name, Report& report, const DVBCharset* charset) const
 {
     // Create the file.
     ::FILE* fp = ::fopen(file_name.c_str(), "w");
@@ -176,7 +175,7 @@ bool ts::XMLTables::saveXML(const std::string& file_name, ReportInterface& repor
     return success;
 }
 
-ts::UString ts::XMLTables::toText(ReportInterface& report, const DVBCharset* charset) const
+ts::UString ts::XMLTables::toText(Report& report, const DVBCharset* charset) const
 {
     // Generate the XML content.
     XML xml(report);

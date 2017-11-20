@@ -31,7 +31,7 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsReportInterface.h"
+#include "tsReport.h"
 #include "tsFormat.h"
 TSDUCK_SOURCE;
 
@@ -47,14 +47,24 @@ const int ts::Severity::Debug;
 
 
 //----------------------------------------------------------------------------
+// Constructor.
+//----------------------------------------------------------------------------
+
+ts::Report::Report(bool verbose, int debug_level) :
+    _max_severity(debug_level > 0 ? debug_level : (verbose ? Severity::Verbose : Severity::Info))
+{
+}
+
+
+//----------------------------------------------------------------------------
 // Set maximum debug level.
 //----------------------------------------------------------------------------
 
-void ts::ReportInterface::setDebugLevel(int level)
+void ts::Report::setDebugLevel(int level)
 {
     _max_severity = level;
     if (level >= Severity::Debug) {
-        log(level, "debug level set to %d", level);
+        log(level, u"debug level set to %d", {level});
     }
 }
 
@@ -63,28 +73,29 @@ void ts::ReportInterface::setDebugLevel(int level)
 // Formatted line prefix header for a severity
 //----------------------------------------------------------------------------
 
-std::string ts::Severity::Header(int severity)
+ts::UString ts::Severity::Header(int severity)
 {
     if (severity < Fatal) {
-        return Format("[%d] ", severity);
+        // Invalid / undefined severity.
+        return UString::Format(u"[%d] ", {severity});
     }
     else if (severity > Debug) {
-        return Format("Debug[%d]: ", severity);
+        return UString::Format(u"Debug[%d]: ", {severity});
     }
     else {
         switch (severity) {
             case Fatal:
-                return "FATAL ERROR: ";
+                return u"FATAL ERROR: ";
             case Severe:
-                return "SEVERE ERROR: ";
+                return u"SEVERE ERROR: ";
             case Error:
-                return "Error: ";
+                return u"Error: ";
             case Warning:
-                return "Warning: ";
+                return u"Warning: ";
             case Debug:
-                return "Debug: ";
+                return u"Debug: ";
             default: // Including Info and Verbose
-                return "";
+                return UString();
         }
     }
 }
@@ -94,81 +105,23 @@ std::string ts::Severity::Header(int severity)
 // Message logging.
 //----------------------------------------------------------------------------
 
-void ts::ReportInterface::log(int severity, const std::string& msg)
+void ts::Report::log(int severity, const UString& msg)
 {
     if (severity <= _max_severity) {
         writeLog(severity, msg);
     }
 }
 
-void ts::ReportInterface::log(int severity, const char* format, ...)
+void ts::Report::log(int severity, const UChar* fmt, const std::initializer_list<ArgMix> args)
 {
     if (severity <= _max_severity) {
-        std::string result;
-        TS_FORMAT_STRING(result, format);
-        writeLog(severity, result);
+        log(severity, UString::Format(fmt, args));
     }
 }
 
-void ts::ReportInterface::fatal(const char* format, ...)
+void ts::Report::log(int severity, const UString& fmt, const std::initializer_list<ArgMix> args)
 {
-    if (_max_severity >= Severity::Fatal) {
-        std::string result;
-        TS_FORMAT_STRING(result, format);
-        writeLog(Severity::Fatal, result);
-    }
-}
-
-void ts::ReportInterface::severe(const char* format, ...)
-{
-    if (_max_severity >= Severity::Severe) {
-        std::string result;
-        TS_FORMAT_STRING(result, format);
-        writeLog(Severity::Severe, result);
-    }
-}
-
-void ts::ReportInterface::error(const char* format, ...)
-{
-    if (_max_severity >= Severity::Error) {
-        std::string result;
-        TS_FORMAT_STRING(result, format);
-        writeLog(Severity::Error, result);
-    }
-}
-
-void ts::ReportInterface::warning(const char* format, ...)
-{
-    if (_max_severity >= Severity::Warning) {
-        std::string result;
-        TS_FORMAT_STRING(result, format);
-        writeLog(Severity::Warning, result);
-    }
-}
-
-void ts::ReportInterface::info(const char* format, ...)
-{
-    if (_max_severity >= Severity::Info) {
-        std::string result;
-        TS_FORMAT_STRING(result, format);
-        writeLog(Severity::Info, result);
-    }
-}
-
-void ts::ReportInterface::verbose(const char* format, ...)
-{
-    if (_max_severity >= Severity::Verbose) {
-        std::string result;
-        TS_FORMAT_STRING(result, format);
-        writeLog(Severity::Verbose, result);
-    }
-}
-
-void ts::ReportInterface::debug(const char* format, ...)
-{
-    if (_max_severity >= Severity::Debug) {
-        std::string result;
-        TS_FORMAT_STRING(result, format);
-        writeLog(Severity::Debug, result);
+    if (severity <= _max_severity) {
+        log(severity, UString::Format(fmt, args));
     }
 }

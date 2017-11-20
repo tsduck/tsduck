@@ -33,7 +33,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsPlatform.h"
+#include "tsUString.h"
 
 namespace ts {
     //!
@@ -42,20 +42,21 @@ namespace ts {
     class TSDUCKDLL Exception : public std::exception
     {
     private:
-        std::string _what;
+        UString _what;
+        mutable std::string _utf8;
     public:
         //!
         //! Constructor.
         //! @param [in] message Error message for the exception.
         //!
-        explicit Exception(const std::string& message);
+        explicit Exception(const UString& message);
 
         //!
         //! Constructor.
         //! @param [in] message Error message for the exception.
         //! @param [in] error System error code causing the exception.
         //!
-        Exception(const std::string& message, ErrorCode error);
+        Exception(const UString& message, ErrorCode error);
 
         //!
         //! Destructor.
@@ -66,7 +67,7 @@ namespace ts {
         //! Get the error message as a C-string.
         //! @return The error message as a C-string (valid as long as this instance exists).
         //!
-        virtual const char* what() const throw();
+        virtual const char* what() const throw() override;
     };
 }
 
@@ -81,14 +82,14 @@ namespace ts {
     public:                                                       \
         /** Constructor.                                       */ \
         /** @param [in] w Error message for the exception.     */ \
-        explicit name(const std::string& w) :                     \
+        explicit name(const ts::UString& w) :                     \
             ts::Exception(#name ": " + w)                         \
         {                                                         \
         }                                                         \
         /** Constructor.                                       */ \
         /** @param [in] w Error message for the exception.     */ \
         /** @param [in] code System error code.                */ \
-        explicit name(const std::string& w, ts::ErrorCode code) : \
+        explicit name(const ts::UString& w, ts::ErrorCode code) : \
             ts::Exception(#name ": " + w, code)                   \
         {                                                         \
         }                                                         \

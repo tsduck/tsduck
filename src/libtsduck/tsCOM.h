@@ -56,7 +56,7 @@ namespace ts {
         //! It initializes COM. The equivalent uninitialize will be performed in the destructor.
         //! @param [in,out] report Where to report error messages. Use the standard error by default.
         //!
-        COM(ReportInterface& report = CERR);
+        COM(Report& report = CERR);
 
         //!
         //! Destructor.

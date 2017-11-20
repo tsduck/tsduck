@@ -117,8 +117,8 @@ TSPLUGIN_DECLARE_PROCESSOR(ts::EITPlugin)
 // Constructor
 //----------------------------------------------------------------------------
 
-ts::EITPlugin::EITPlugin (TSP* tsp_) :
-    ProcessorPlugin(tsp_, "Analyze EIT sections.", "[options]"),
+ts::EITPlugin::EITPlugin(TSP* tsp_) :
+    ProcessorPlugin(tsp_, u"Analyze EIT sections.", u"[options]"),
     _outfile(),
     _last_utc(),
     _eitpf_act_count(0),
@@ -129,19 +129,19 @@ ts::EITPlugin::EITPlugin (TSP* tsp_) :
     _services(),
     _ts_id()
 {
-    option ("output-file", 'o', STRING);
+    option(u"output-file", 'o', STRING);
 
-    setHelp ("Options:\n"
-             "\n"
-             "  --help\n"
-             "      Display this help text.\n"
-             "\n"
-             "  -o filename\n"
-             "  --output-file filename\n"
-             "      Specify the output file for the report (default: standard output).\n"
-             "\n"
-             "  --version\n"
-             "      Display the version number.\n");
+    setHelp(u"Options:\n"
+            u"\n"
+            u"  --help\n"
+            u"      Display this help text.\n"
+            u"\n"
+            u"  -o filename\n"
+            u"  --output-file filename\n"
+            u"      Specify the output file for the report (default: standard output).\n"
+            u"\n"
+            u"  --version\n"
+            u"      Display the version number.\n");
 }
 
 
@@ -189,8 +189,8 @@ ts::EITPlugin::ServiceDesc& ts::EITPlugin::getServiceDesc (uint16_t ts_id, uint1
 bool ts::EITPlugin::start()
 {
     // Create output file
-    if (present ("output-file")) {
-        const std::string name (value ("output-file"));
+    if (present(u"output-file")) {
+        const std::string name (value(u"output-file"));
         tsp->verbose ("creating " + name);
         _outfile.open (name.c_str(), std::ios::out);
         if (!_outfile) {

@@ -28,21 +28,21 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  A singleton implementing ReportInterface on std::cerr without synchronization
+//!  A singleton implementing Report on std::cerr without synchronization
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsReportInterface.h"
+#include "tsReport.h"
 #include "tsSingletonManager.h"
 
 namespace ts {
     //!
-    //! A singleton implementing ReportInterface on std::cerr without synchronization.
+    //! A singleton implementing Report on std::cerr without synchronization.
     //!
     //! This class is a singleton. Use static Instance() method to access the single instance.
     //!
-    class TSDUCKDLL CerrReport : public ReportInterface
+    class TSDUCKDLL CerrReport : public Report
     {
         TS_DECLARE_SINGLETON(CerrReport);
 
@@ -53,8 +53,8 @@ namespace ts {
         virtual ~CerrReport();
 
     protected:
-        // ReportInterface implementation
-        virtual void writeLog (int severity, const std::string& msg);
+        // Report implementation
+        virtual void writeLog(int severity, const UString& msg) override;
     };
 }
 

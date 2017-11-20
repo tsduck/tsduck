@@ -133,63 +133,63 @@ ts::ZapPlugin::ZapPlugin (TSP* tsp_) :
     _pzer_pat (PID_PAT, CyclingPacketizer::ALWAYS),
     _pzer_pmt (PID_NULL, CyclingPacketizer::ALWAYS)
 {
-    option ("",              0,  STRING, 1, 1);
-    option ("audio",        'a', STRING);
-    option ("cas",          'c');
-    option ("no-ecm",       'e');
-    option ("no-subtitles", 'n');
-    option ("pes-only",     'p');
-    option ("stuffing",     's');
-    option ("subtitles",    't', STRING);
+    option(u"",              0,  STRING, 1, 1);
+    option(u"audio",        'a', STRING);
+    option(u"cas",          'c');
+    option(u"no-ecm",       'e');
+    option(u"no-subtitles", 'n');
+    option(u"pes-only",     'p');
+    option(u"stuffing",     's');
+    option(u"subtitles",    't', STRING);
 
-    setHelp ("Service:\n"
-             "  Specifies the service to keep. If the argument is an integer value (either\n"
-             "  decimal or hexadecimal), it is interpreted as a service id. Otherwise, it\n"
-             "  is interpreted as a service name, as specified in the SDT. The name is not\n"
-             "  case sensitive and blanks are ignored. If the input TS does not contain an\n"
-             "  SDT, use a service id.\n"
-             "\n"
-             "Options:\n"
-             "\n"
-             "  -a name\n"
-             "  --audio name\n"
-             "      Remove all audio components except the specified one. The name is a\n"
-             "      three-letters language code. By default, keep all audio components.\n"
-             "\n"
-             "  -c\n"
-             "  --cas\n"
-             "      Keep Conditional Access System sections (CAT and EMM's).\n"
-             "      Remove them by default. Note that the ECM's for the specified\n"
-             "      service are always kept.\n"
-             "\n"
-             "  --help\n"
-             "      Display this help text.\n"
-             "\n"
-             "  -e\n"
-             "  --no-ecm\n"
-             "      Remove all ECM PID's. By default, keep all ECM PID's.\n"
-             "\n"
-             "  -n\n"
-             "  --no-subtitles\n"
-             "      Remove all subtitles. By default, keep all subtitles.\n"
-             "\n"
-             "  -p\n"
-             "  --pes-only\n"
-             "      Keep only the PES elementary streams (audio, video, subtitles).\n"
-             "      Remove all PSI/SI and CAS information.\n"
-             "\n"
-             "  -s\n"
-             "  --stuffing\n"
-             "      Replace excluded packets with stuffing (null packets) instead\n"
-             "      of removing them. Useful to preserve bitrate.\n"
-             "\n"
-             "  -t name\n"
-             "  --subtitles name\n"
-             "      Remove all subtitles except the specified one. The name is a\n"
-             "      three-letters language code. By default, keep all subtitles.\n"
-             "\n"
-             "  --version\n"
-             "      Display the version number.\n");
+    setHelp(u"Service:\n"
+             u"  Specifies the service to keep. If the argument is an integer value (either\n"
+             u"  decimal or hexadecimal), it is interpreted as a service id. Otherwise, it\n"
+             u"  is interpreted as a service name, as specified in the SDT. The name is not\n"
+             u"  case sensitive and blanks are ignored. If the input TS does not contain an\n"
+             u"  SDT, use a service id.\n"
+             u"\n"
+             u"Options:\n"
+             u"\n"
+             u"  -a name\n"
+             u"  --audio name\n"
+             u"      Remove all audio components except the specified one. The name is a\n"
+             u"      three-letters language code. By default, keep all audio components.\n"
+             u"\n"
+             u"  -c\n"
+             u"  --cas\n"
+             u"      Keep Conditional Access System sections (CAT and EMM's).\n"
+             u"      Remove them by default. Note that the ECM's for the specified\n"
+             u"      service are always kept.\n"
+             u"\n"
+             u"  --help\n"
+             u"      Display this help text.\n"
+             u"\n"
+             u"  -e\n"
+             u"  --no-ecm\n"
+             u"      Remove all ECM PID's. By default, keep all ECM PID's.\n"
+             u"\n"
+             u"  -n\n"
+             u"  --no-subtitles\n"
+             u"      Remove all subtitles. By default, keep all subtitles.\n"
+             u"\n"
+             u"  -p\n"
+             u"  --pes-only\n"
+             u"      Keep only the PES elementary streams (audio, video, subtitles).\n"
+             u"      Remove all PSI/SI and CAS information.\n"
+             u"\n"
+             u"  -s\n"
+             u"  --stuffing\n"
+             u"      Replace excluded packets with stuffing (null packets) instead\n"
+             u"      of removing them. Useful to preserve bitrate.\n"
+             u"\n"
+             u"  -t name\n"
+             u"  --subtitles name\n"
+             u"      Remove all subtitles except the specified one. The name is a\n"
+             u"      three-letters language code. By default, keep all subtitles.\n"
+             u"\n"
+             u"  --version\n"
+             u"      Display the version number.\n");
 }
 
 
@@ -200,14 +200,14 @@ ts::ZapPlugin::ZapPlugin (TSP* tsp_) :
 bool ts::ZapPlugin::start()
 {
     // Get option values
-    _service.set (value (""));
-    _audio = value ("audio");
-    _subtitles = value ("subtitles");
-    _no_subtitles = present ("no-subtitles");
-    _no_ecm = present ("no-ecm");
-    _include_cas = present ("cas");
-    _pes_only = present ("pes-only");
-    _drop_status = present ("stuffing") ? TSP_NULL : TSP_DROP;
+    _service.set (value(u""));
+    _audio = value(u"audio");
+    _subtitles = value(u"subtitles");
+    _no_subtitles = present(u"no-subtitles");
+    _no_ecm = present(u"no-ecm");
+    _include_cas = present(u"cas");
+    _pes_only = present(u"pes-only");
+    _drop_status = present(u"stuffing") ? TSP_NULL : TSP_DROP;
 
     // All PIDs are dropped by default.
     // Selected PIDs will be added when discovered.

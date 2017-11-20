@@ -105,7 +105,7 @@ namespace ts {
         //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
-        bool connect(const SocketAddress& addr, ReportInterface& report = CERR);
+        bool connect(const SocketAddress& addr, Report& report = CERR);
 
         //!
         //! Check if the socket is connected.
@@ -122,7 +122,7 @@ namespace ts {
         //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
-        bool getPeer(SocketAddress& addr, ReportInterface& report = CERR) const;
+        bool getPeer(SocketAddress& addr, Report& report = CERR) const;
 
         //!
         //! Get the connected remote peer as a string.
@@ -140,14 +140,14 @@ namespace ts {
         //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
-        bool closeWriter(ReportInterface& report = CERR);
+        bool closeWriter(Report& report = CERR);
 
         //!
         //! Disconnect from remote partner.
         //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
-        bool disconnect(ReportInterface& report = CERR);
+        bool disconnect(Report& report = CERR);
 
         //!
         //! Send data.
@@ -156,7 +156,7 @@ namespace ts {
         //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
-        bool send(const void* data, size_t size, ReportInterface& report = CERR);
+        bool send(const void* data, size_t size, Report& report = CERR);
 
         //!
         //! Receive data.
@@ -182,7 +182,7 @@ namespace ts {
                      size_t max_size,
                      size_t& ret_size,
                      const AbortInterface* abort = 0,
-                     ReportInterface& report = CERR);
+                     Report& report = CERR);
 
         //!
         //! Receive data until buffer is full.
@@ -204,7 +204,7 @@ namespace ts {
         bool receive(void* buffer,
                      size_t size,
                      const AbortInterface* abort = 0,
-                     ReportInterface& report = CERR);
+                     Report& report = CERR);
 
     protected:
         //!
@@ -212,28 +212,28 @@ namespace ts {
         //! All subclasses should explicitely invoke their superclass' handlers.
         //! @param [in,out] report Where to report error.
         //!
-        virtual void handleConnected(ReportInterface& report = CERR) {}
+        virtual void handleConnected(Report& report = CERR) {}
 
         //!
         //! This virtual method can be overriden by subclasses to be notified of disconnection.
         //! All subclasses should explicitely invoke their superclass' handlers.
         //! @param [in,out] report Where to report error.
         //!
-        virtual void handleDisconnected(ReportInterface& report = CERR) {}
+        virtual void handleDisconnected(Report& report = CERR) {}
 
         // Overriden methods
-        virtual void handleClosed(ReportInterface& report = CERR);
+        virtual void handleClosed(Report& report = CERR);
 
     private:
         bool _is_connected;
 
         // Declare that the socket has just become connected / disconnected.
-        void declareConnected(ReportInterface& report = CERR);
-        void declareDisconnected(ReportInterface& report = CERR);
+        void declareConnected(Report& report = CERR);
+        void declareDisconnected(Report& report = CERR);
         friend class TCPServer;
 
         // Shutdown the socket.
-        bool shutdownSocket(int how, ReportInterface& report = CERR);
+        bool shutdownSocket(int how, Report& report = CERR);
 
         // Unreachable operations
         TCPConnection(const TCPConnection&) = delete;

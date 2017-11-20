@@ -42,7 +42,7 @@ TSDUCK_SOURCE;
 // Constructor.
 //----------------------------------------------------------------------------
 
-ts::TSScanner::TSScanner(Tuner& tuner, MilliSecond timeout, bool pat_only, ReportInterface& report):
+ts::TSScanner::TSScanner(Tuner& tuner, MilliSecond timeout, bool pat_only, Report& report):
     _pat_only(pat_only),
     _completed(false),
     _report(report),

@@ -108,31 +108,31 @@ ts::RegulatePlugin::RegulatePlugin(TSP* tsp_) :
     _bitrate_start(),
     _bitrate_pkt_cnt(0)
 {
-    option("bitrate",      'b', POSITIVE);
-    option("packet-burst", 'p', POSITIVE);
+    option(u"bitrate",      'b', POSITIVE);
+    option(u"packet-burst", 'p', POSITIVE);
 
-    setHelp("Regulate (slow down only) the TS packets flow according to a specified\n"
-            "bitrate. Useful to play a non-regulated input (such as a TS file) to a\n"
-            "non-regulated output device such as IP multicast.\n"
-            "\n"
-            "Options:\n"
-            "\n"
-            "  -b value\n"
-            "  --bitrate value\n"
-            "      Specify the bitrate in b/s. By default, use the \"input\" bitrate,\n"
-            "      typically resulting from the PCR analysis of the input file.\n"
-            "\n"
-            "  --help\n"
-            "      Display this help text.\n"
-            "\n"
-            "  -p value\n"
-            "  --packet-burst value\n"
-            "      Number of packets to burst at a time. Does not modify the average\n"
-            "      output bitrate but influence smoothing and CPU load. The default\n"
-            "      is " TS_STRINGIFY(DEF_PACKET_BURST) " packets.\n"
-            "\n"
-            "  --version\n"
-            "      Display the version number.\n");
+    setHelp(u"Regulate (slow down only) the TS packets flow according to a specified\n"
+            u"bitrate. Useful to play a non-regulated input (such as a TS file) to a\n"
+            u"non-regulated output device such as IP multicast.\n"
+            u"\n"
+            u"Options:\n"
+            u"\n"
+            u"  -b value\n"
+            u"  --bitrate value\n"
+            u"      Specify the bitrate in b/s. By default, use the \"input\" bitrate,\n"
+            u"      typically resulting from the PCR analysis of the input file.\n"
+            u"\n"
+            u"  --help\n"
+            u"      Display this help text.\n"
+            u"\n"
+            u"  -p value\n"
+            u"  --packet-burst value\n"
+            u"      Number of packets to burst at a time. Does not modify the average\n"
+            u"      output bitrate but influence smoothing and CPU load. The default\n"
+            u"      is " TS_STRINGIFY(DEF_PACKET_BURST) " packets.\n"
+            u"\n"
+            u"  --version\n"
+            u"      Display the version number.\n");
 }
 
 

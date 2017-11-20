@@ -28,19 +28,19 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  A subclass of ts::ReportInterface which outputs messages in a text file.
+//!  A subclass of ts::Report which outputs messages in a text file.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsReportInterface.h"
+#include "tsReport.h"
 #include "tsNullMutex.h"
 #include <fstream>
 
 namespace ts {
 
     //!
-    //! A subclass of ts::ReportInterface which outputs messages in a text file.
+    //! A subclass of ts::Report which outputs messages in a text file.
     //!
     //! Reentrancy is supported though the template parameter @a MUTEX.
     //!
@@ -51,7 +51,7 @@ namespace ts {
     //! typically ts::Mutex.
     //!
     template <class MUTEX = NullMutex>
-    class ReportFile: public ReportInterface
+    class ReportFile: public Report
     {
     public:
         //!
@@ -68,7 +68,7 @@ namespace ts {
         //!
         //! @param [in] debug_level Maximum debug level to display. None by default.
         //!
-        ReportFile(const std::string& file_name, bool append = false, bool verbose = false, int debug_level = 0);
+        ReportFile(const UString& file_name, bool append = false, bool verbose = false, int debug_level = 0);
 
         //!
         //! Constructor using an open file stream.
@@ -92,10 +92,11 @@ namespace ts {
         virtual ~ReportFile();
 
     protected:
-        virtual void writeLog(int severity, const std::string& message);
+        virtual void writeLog(int severity, const UString& message) override;
 
     private:
         mutable MUTEX _mutex;       // Synchronization.
+        std::string   _file_name;   // File name in UTF-8.
         std::ofstream _named_file;  // Explicitly created file.
         std::ostream& _file;        // Reference to actual file stream.
     };

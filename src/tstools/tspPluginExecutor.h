@@ -168,7 +168,7 @@ namespace ts {
             //! Change the report method.
             //! @param [in] rep Address of new report instance.
             //!
-            void setReport(ReportInterface* rep)
+            void setReport(Report* rep)
             {
                 _report = rep;
             }
@@ -235,11 +235,11 @@ namespace ts {
                           bool& input_end,
                           bool& aborted);
 
-            // Inherited from ReportInterface (via TSP)
+            // Inherited from Report (via TSP)
             virtual void writeLog(int severity, const std::string& msg);
 
         private:
-            ReportInterface* _report;   // Common report interface for all plugins
+            Report* _report;   // Common report interface for all plugins
             Condition        _to_do;    // Notify processor to do something
 
             // The following private data must be accessed exclusively under the

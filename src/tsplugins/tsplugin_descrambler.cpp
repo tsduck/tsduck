@@ -79,8 +79,8 @@ TSPLUGIN_DECLARE_PROCESSOR(ts::DescramblerPlugin)
 // Constructor
 //----------------------------------------------------------------------------
 
-ts::DescramblerPlugin::DescramblerPlugin (TSP* tsp_) :
-    ProcessorPlugin (tsp_, "DVB descrambler using static control words.", "[options]"),
+ts::DescramblerPlugin::DescramblerPlugin(TSP* tsp_) :
+    ProcessorPlugin(tsp_, u"DVB descrambler using static control words.", u"[options]"),
     _cw_mode(Scrambling::REDUCE_ENTROPY),
     _cw_list(),
     _next_cw(),
@@ -88,39 +88,39 @@ ts::DescramblerPlugin::DescramblerPlugin (TSP* tsp_) :
     _last_scv(0),
     _pids()
 {
-    option ("cw",                   'c', STRING);
-    option ("cw-file",              'f', STRING);
-    option ("no-entropy-reduction", 'n');
-    option ("pid",                  'p', PIDVAL, 0, UNLIMITED_COUNT);
+    option(u"cw",                   'c', STRING);
+    option(u"cw-file",              'f', STRING);
+    option(u"no-entropy-reduction", 'n');
+    option(u"pid",                  'p', PIDVAL, 0, UNLIMITED_COUNT);
 
-    setHelp ("Options:\n"
-             "\n"
-             "  -c value\n"
-             "  --cw value\n"
-             "      Specifies a fixed and constant control word for all TS packets.\n"
-             "      The value must be a string of 16 hexadecimal digits.\n"
-             "\n"
-             "  -f name\n"
-             "  --cw-file name\n"
-             "      Specifies a text file containing the list of control words to apply.\n"
-             "      Each line of the file must contain exactly 16 hexadecimal digits.\n"
-             "      The next control word is used each time the \"scrambling_control\"\n"
-             "      changes in the TS packets header.\n"
-             "\n"
-             "  --help\n"
-             "      Display this help text.\n"
-             "\n"
-             "  -n\n"
-             "  --no-entropy-reduction\n"
-             "      Do not perform CW entropy reduction to 48 bits. Keep full 64-bits CW.\n"
-             "\n"
-             "  -p value\n"
-             "  --pid value\n"
-             "      Descramble packets with this PID value. Several -p or --pid options may be\n"
-             "      specified. By default, all PID's with scrambled packets are descrambled.\n"
-             "\n"
-             "  --version\n"
-             "      Display the version number.\n");
+    setHelp(u"Options:\n"
+            u"\n"
+            u"  -c value\n"
+            u"  --cw value\n"
+            u"      Specifies a fixed and constant control word for all TS packets.\n"
+            u"      The value must be a string of 16 hexadecimal digits.\n"
+            u"\n"
+            u"  -f name\n"
+            u"  --cw-file name\n"
+            u"      Specifies a text file containing the list of control words to apply.\n"
+            u"      Each line of the file must contain exactly 16 hexadecimal digits.\n"
+            u"      The next control word is used each time the \"scrambling_control\"\n"
+            u"      changes in the TS packets header.\n"
+            u"\n"
+            u"  --help\n"
+            u"      Display this help text.\n"
+            u"\n"
+            u"  -n\n"
+            u"  --no-entropy-reduction\n"
+            u"      Do not perform CW entropy reduction to 48 bits. Keep full 64-bits CW.\n"
+            u"\n"
+            u"  -p value\n"
+            u"  --pid value\n"
+            u"      Descramble packets with this PID value. Several -p or --pid options may be\n"
+            u"      specified. By default, all PID's with scrambled packets are descrambled.\n"
+            u"\n"
+            u"  --version\n"
+            u"      Display the version number.\n");
 }
 
 
@@ -130,24 +130,24 @@ ts::DescramblerPlugin::DescramblerPlugin (TSP* tsp_) :
 
 bool ts::DescramblerPlugin::start()
 {
-    _cw_mode = present("no-entropy-reduction") ? Scrambling::FULL_CW : Scrambling::REDUCE_ENTROPY;
+    _cw_mode = present(u"no-entropy-reduction") ? Scrambling::FULL_CW : Scrambling::REDUCE_ENTROPY;
     getPIDSet(_pids, "pid", true);
 
     // Get control words as list of strings
     std::list<std::string> lines;
-    if (present ("cw") + present ("cw-file") != 1) {
+    if (present(u"cw") + present(u"cw-file") != 1) {
         tsp->error ("specify exactly one of --cw or --cw-file");
         return false;
     }
-    else if (present ("cw-file")) {
-        std::string file (value ("cw-file"));
+    else if (present(u"cw-file")) {
+        std::string file (value(u"cw-file"));
         if (!LoadStrings (lines, file)) {
             tsp->error ("error loading file %s", file.c_str());
             return false;
         }
     }
     else {
-        lines.push_back (value ("cw"));
+        lines.push_back (value(u"cw"));
     }
 
     // Decode control words from hexa to binary

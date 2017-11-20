@@ -57,7 +57,7 @@ namespace ts {
     TSDUCKDLL bool GetTunerFromZapFile(const std::string& channel_name,
                                        const std::string& file_name,
                                        TunerParameters& parameters,
-                                       ReportInterface& report = CERR);
+                                       Report& report = CERR);
 
     //!
     //! Get DVB tuner parameters from a delivery system descriptor.

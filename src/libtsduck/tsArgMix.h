@@ -145,13 +145,13 @@ namespace ts {
         //!
         ArgMix(const UString& s) : _type(USTRING), _size(0), _value(s) {}
 
-        //!
-        //! Constructor from a @c size_t.
-        //! This overload may be separately defined or not, depending on the platform,
-        //! only if @c size_t is not identical to a predefined @c uintXX_t.
-        //! @param [in] i Integer value of the ArgMix. Internally stored as a 32 or 64-bit integer.
-        //!
-#if defined(DOXYGEN) || !defined(TS_SIZE_T_IS_STDINT)
+        //
+        // The following overloads may be separately defined or not, depending on
+        // the platform. Generally speaking, these overloads are defined for integer
+        // types which do not map to any of the [u]intXX_t.
+        //
+#if !defined(DOXYGEN)
+#if !defined(TS_SIZE_T_IS_STDINT)
         ArgMix(size_t i) :
             #if TS_ADDRESS_BITS <= 32
                 _type(UINT32), _size(sizeof(i)), _value(uint32_t(i))
@@ -160,6 +160,11 @@ namespace ts {
             #endif
         {}
 #endif
+#if defined(TS_MSC)
+        ArgMix(long i) : _type(INT32), _size(sizeof(i)), _value(int32_t(i)) {}
+        ArgMix(unsigned long i) : _type(UINT32), _size(sizeof(i)), _value(uint32_t(i)) {}
+#endif
+#endif // DOXYGEN
 
         //!
         //! Get the argument data type.

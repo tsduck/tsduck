@@ -85,8 +85,8 @@ TSPLUGIN_DECLARE_PROCESSOR(ts::MuxPlugin)
 // Constructor
 //----------------------------------------------------------------------------
 
-ts::MuxPlugin::MuxPlugin (TSP* tsp_) :
-    ProcessorPlugin(tsp_, "Insert TS packets in a TS.", "[options] input-file"),
+ts::MuxPlugin::MuxPlugin(TSP* tsp_) :
+    ProcessorPlugin(tsp_, u"Insert TS packets in a TS.", u"[options] input-file"),
     _file(),
     _terminate(false),
     _update_cc(false),
@@ -100,81 +100,81 @@ ts::MuxPlugin::MuxPlugin (TSP* tsp_) :
     _pid_next_pkt(0),
     _packet_count(0)
 {
-    option ("",                       0,  STRING, 1, 1);
-    option ("bitrate",               'b', UINT32);
-    option ("byte-offset",            0,  UNSIGNED);
-    option ("inter-packet",          'i', UINT32);
-    option ("joint-termination",     'j');
-    option ("no-continuity-update",   0);
-    option ("no-pid-conflict-check",  0);
-    option ("packet-offset",          0,  UNSIGNED);
-    option ("pid",                   'p', PIDVAL);
-    option ("repeat",                'r', POSITIVE);
-    option ("terminate",             't');
+    option(u"",                       0,  STRING, 1, 1);
+    option(u"bitrate",               'b', UINT32);
+    option(u"byte-offset",            0,  UNSIGNED);
+    option(u"inter-packet",          'i', UINT32);
+    option(u"joint-termination",     'j');
+    option(u"no-continuity-update",   0);
+    option(u"no-pid-conflict-check",  0);
+    option(u"packet-offset",          0,  UNSIGNED);
+    option(u"pid",                   'p', PIDVAL);
+    option(u"repeat",                'r', POSITIVE);
+    option(u"terminate",             't');
 
-    setHelp ("Input file:\n"
-             "\n"
-             "  Binary file containing 188-byte transport packets.\n"
-             "\n"
-             "Options:\n"
-             "\n"
-             "  -b value\n"
-             "  --bitrate value\n"
-             "      Specifies the bitrate for the inserted packets, in bits/second.\n"
-             "      By default, all stuffing packets are replaced which means that\n"
-             "      the bitrate is neither constant nor guaranteed.\n"
-             "\n"
-             "  --byte-offset value\n"
-             "      Start reading the file at the specified byte offset (default: 0).\n"
-             "      This option is allowed only if the input file is a regular file.\n"
-             "\n"
-             "  --help\n"
-             "      Display this help text.\n"
-             "\n"
-             "  -i value\n"
-             "  --inter-packet value\n"
-             "      Specifies the packet interval for the inserted packets, that is to say\n"
-             "      the number of TS packets in the transport between two new packets.\n"
-             "      Use instead of --bitrate if the global bitrate of the TS cannot be\n"
-             "      determined.\n"
-             "\n"
-             "  -j\n"
-             "  --joint-termination\n"
-             "      Perform a \"joint termination\" when file insersion is complete.\n"
-             "      See \"tsp --help\" for more details on \"joint termination\".\n"
-             "\n"
-             "  --no-continuity-update\n"
-             "      Do not update continuity counters in the inserted packets. By default,\n"
-             "      the continuity counters are updated in each inserted PID to preserve the\n"
-             "      continuity.\n"
-             "\n"
-             "  --no-pid-conflict-check\n"
-             "      Do not check PID conflicts between the TS and the new inserted packets.\n"
-             "      By default, the processing is aborted if packets from the same PID are\n"
-             "      found both in the TS and the inserted packets.\n"
-             "\n"
-             "  --packet-offset value\n"
-             "      Start reading the file at the specified TS packet (default: 0).\n"
-             "      This option is allowed only if the input file is a regular file.\n"
-             "\n"
-             "  -p value\n"
-             "  --pid value\n"
-             "      Force the PID value of all inserted packets.\n"
-             "\n"
-             "  -r count\n"
-             "  --repeat count\n"
-             "      Repeat the playout of the file the specified number of times. By default,\n"
-             "      the file is infinitely repeated. This option is allowed only if the\n"
-             "      input file is a regular file.\n"
-             "\n"
-             "  -t\n"
-             "  --terminate\n"
-             "      Terminate packet processing when file insersion is complete. By default,\n"
-             "      when packet insertion is complete, the transmission continues and the\n"
-             "      stuffing is no longer modified.\n"
-             "\n"
-             "  --version\n"
-             "      Display the version number.\n");
+    setHelp(u"Input file:\n"
+            u"\n"
+            u"  Binary file containing 188-byte transport packets.\n"
+            u"\n"
+            u"Options:\n"
+            u"\n"
+            u"  -b value\n"
+            u"  --bitrate value\n"
+            u"      Specifies the bitrate for the inserted packets, in bits/second.\n"
+            u"      By default, all stuffing packets are replaced which means that\n"
+            u"      the bitrate is neither constant nor guaranteed.\n"
+            u"\n"
+            u"  --byte-offset value\n"
+            u"      Start reading the file at the specified byte offset (default: 0).\n"
+            u"      This option is allowed only if the input file is a regular file.\n"
+            u"\n"
+            u"  --help\n"
+            u"      Display this help text.\n"
+            u"\n"
+            u"  -i value\n"
+            u"  --inter-packet value\n"
+            u"      Specifies the packet interval for the inserted packets, that is to say\n"
+            u"      the number of TS packets in the transport between two new packets.\n"
+            u"      Use instead of --bitrate if the global bitrate of the TS cannot be\n"
+            u"      determined.\n"
+            u"\n"
+            u"  -j\n"
+            u"  --joint-termination\n"
+            u"      Perform a \"joint termination\" when file insersion is complete.\n"
+            u"      See \"tsp --help\" for more details on \"joint termination\".\n"
+            u"\n"
+            u"  --no-continuity-update\n"
+            u"      Do not update continuity counters in the inserted packets. By default,\n"
+            u"      the continuity counters are updated in each inserted PID to preserve the\n"
+            u"      continuity.\n"
+            u"\n"
+            u"  --no-pid-conflict-check\n"
+            u"      Do not check PID conflicts between the TS and the new inserted packets.\n"
+            u"      By default, the processing is aborted if packets from the same PID are\n"
+            u"      found both in the TS and the inserted packets.\n"
+            u"\n"
+            u"  --packet-offset value\n"
+            u"      Start reading the file at the specified TS packet (default: 0).\n"
+            u"      This option is allowed only if the input file is a regular file.\n"
+            u"\n"
+            u"  -p value\n"
+            u"  --pid value\n"
+            u"      Force the PID value of all inserted packets.\n"
+            u"\n"
+            u"  -r count\n"
+            u"  --repeat count\n"
+            u"      Repeat the playout of the file the specified number of times. By default,\n"
+            u"      the file is infinitely repeated. This option is allowed only if the\n"
+            u"      input file is a regular file.\n"
+            u"\n"
+            u"  -t\n"
+            u"  --terminate\n"
+            u"      Terminate packet processing when file insersion is complete. By default,\n"
+            u"      when packet insertion is complete, the transmission continues and the\n"
+            u"      stuffing is no longer modified.\n"
+            u"\n"
+            u"  --version\n"
+            u"      Display the version number.\n");
 }
 
 
@@ -184,11 +184,11 @@ ts::MuxPlugin::MuxPlugin (TSP* tsp_) :
 
 bool ts::MuxPlugin::start()
 {
-    tsp->useJointTermination (present ("joint-termination"));
-    _terminate = present ("terminate");
-    _update_cc = !present ("no-continuity-update");
-    _check_pid_conflict = !present ("no-pid-conflict-check");
-    _force_pid = present ("pid");
+    tsp->useJointTermination (present(u"joint-termination"));
+    _terminate = present(u"terminate");
+    _update_cc = !present(u"no-continuity-update");
+    _check_pid_conflict = !present(u"no-pid-conflict-check");
+    _force_pid = present(u"pid");
     _force_pid_value = intValue<PID> ("pid");
     _bitrate = intValue<BitRate> ("bitrate", 0);
     _inter_pkt = intValue<PacketCounter> ("inter-packet", 0);
@@ -207,7 +207,7 @@ bool ts::MuxPlugin::start()
         return false;
     }
 
-    return _file.open (value (""),
+    return _file.open (value(u""),
                        intValue<size_t> ("repeat", 0),
                        intValue<uint64_t> ("byte-offset", intValue<uint64_t> ("packet-offset", 0) * PKT_SIZE),
                        *tsp);

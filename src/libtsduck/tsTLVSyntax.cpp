@@ -42,7 +42,7 @@ TSDUCK_SOURCE;
 // Default constructor.
 //----------------------------------------------------------------------------
 
-ts::TLVSyntax::TLVSyntax(int start, int size, size_t tagSize, size_t lengthSize, bool msb, ReportInterface& report) :
+ts::TLVSyntax::TLVSyntax(int start, int size, size_t tagSize, size_t lengthSize, bool msb, Report& report) :
     _start(0),
     _size(0),
     _tagSize(1),
@@ -57,7 +57,7 @@ ts::TLVSyntax::TLVSyntax(int start, int size, size_t tagSize, size_t lengthSize,
 // Set the values of a TLVSyntax object.
 //----------------------------------------------------------------------------
 
-bool ts::TLVSyntax::set(int start, int size, size_t tagSize, size_t lengthSize, bool msb, ReportInterface& report)
+bool ts::TLVSyntax::set(int start, int size, size_t tagSize, size_t lengthSize, bool msb, Report& report)
 {
     if (tagSize != 1 && tagSize != 2 && tagSize != 4) {
         report.error("invalid tag size %" FMT_SIZE_T "d", tagSize);
@@ -82,7 +82,7 @@ bool ts::TLVSyntax::set(int start, int size, size_t tagSize, size_t lengthSize, 
 // Set the values of a TLVSyntax object from a string representation.
 //----------------------------------------------------------------------------
 
-bool ts::TLVSyntax::fromString(const std::string& s, ReportInterface& report)
+bool ts::TLVSyntax::fromString(const std::string& s, Report& report)
 {
     // Reset default values in this object.
     set();

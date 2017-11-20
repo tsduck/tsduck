@@ -118,43 +118,43 @@ ts::SVRemovePlugin::SVRemovePlugin (TSP* tsp_) :
     _pzer_sdt_bat(PID_SDT, CyclingPacketizer::ALWAYS),
     _pzer_nit(PID_NIT, CyclingPacketizer::ALWAYS)
 {
-    option ("",               0,  STRING, 1, 1);
-    option ("ignore-absent", 'a');
-    option ("ignore-bat",    'b');
-    option ("ignore-nit",    'n');
-    option ("stuffing",      's');
+    option(u"",               0,  STRING, 1, 1);
+    option(u"ignore-absent", 'a');
+    option(u"ignore-bat",    'b');
+    option(u"ignore-nit",    'n');
+    option(u"stuffing",      's');
 
-    setHelp ("Service:\n"
-             "  Specifies the service to remove. If the argument is an integer value\n"
-             "  (either decimal or hexadecimal), it is interpreted as a service id.\n"
-             "  Otherwise, it is interpreted as a service name, as specified in the SDT.\n"
-             "  The name is not case sensitive and blanks are ignored.\n"
-             "\n"
-             "Options:\n"
-             "\n"
-             "  --help\n"
-             "      Display this help text.\n"
-             "\n"
-             "  -a\n"
-             "  --ignore-absent\n"
-             "      Ignore service if not present in the transport stream. By default, tsp\n"
-             "      fails if the service is not found.\n"
-             "\n"
-             "  -b\n"
-             "  --ignore-bat\n"
-             "      Do not modify the BAT.\n"
-             "\n"
-             "  -n\n"
-             "  --ignore-nit\n"
-             "      Do not modify the NIT.\n"
-             "\n"
-             "  -s\n"
-             "  --stuffing\n"
-             "      Replace excluded packets with stuffing (null packets) instead\n"
-             "      of removing them. Useful to preserve bitrate.\n"
-             "\n"
-             "  --version\n"
-             "      Display the version number.\n");
+    setHelp(u"Service:\n"
+             u"  Specifies the service to remove. If the argument is an integer value\n"
+             u"  (either decimal or hexadecimal), it is interpreted as a service id.\n"
+             u"  Otherwise, it is interpreted as a service name, as specified in the SDT.\n"
+             u"  The name is not case sensitive and blanks are ignored.\n"
+             u"\n"
+             u"Options:\n"
+             u"\n"
+             u"  --help\n"
+             u"      Display this help text.\n"
+             u"\n"
+             u"  -a\n"
+             u"  --ignore-absent\n"
+             u"      Ignore service if not present in the transport stream. By default, tsp\n"
+             u"      fails if the service is not found.\n"
+             u"\n"
+             u"  -b\n"
+             u"  --ignore-bat\n"
+             u"      Do not modify the BAT.\n"
+             u"\n"
+             u"  -n\n"
+             u"  --ignore-nit\n"
+             u"      Do not modify the NIT.\n"
+             u"\n"
+             u"  -s\n"
+             u"  --stuffing\n"
+             u"      Replace excluded packets with stuffing (null packets) instead\n"
+             u"      of removing them. Useful to preserve bitrate.\n"
+             u"\n"
+             u"  --version\n"
+             u"      Display the version number.\n");
 }
 
 
@@ -165,11 +165,11 @@ ts::SVRemovePlugin::SVRemovePlugin (TSP* tsp_) :
 bool ts::SVRemovePlugin::start()
 {
     // Get option values
-    _service.set (value (""));
-    _ignore_absent = present ("ignore-absent");
-    _ignore_bat = present ("ignore-bat");
-    _ignore_nit = present ("ignore-nit");
-    _drop_status = present ("stuffing") ? TSP_NULL : TSP_DROP;
+    _service.set (value(u""));
+    _ignore_absent = present(u"ignore-absent");
+    _ignore_bat = present(u"ignore-bat");
+    _ignore_nit = present(u"ignore-nit");
+    _drop_status = present(u"stuffing") ? TSP_NULL : TSP_DROP;
 
     // Initialize the demux
     _demux.reset();

@@ -66,6 +66,6 @@ namespace ts {
         virtual size_t zapFieldCount() const {return 0;} //TODO: unimplemented
         virtual void copy(const TunerParameters&);
     protected:
-        virtual bool fromArgs(const TunerArgs&, ReportInterface&);
+        virtual bool fromArgs(const TunerArgs&, Report&);
     };
 }

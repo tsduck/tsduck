@@ -73,13 +73,13 @@ std::string ts::ComMessage(::HRESULT hr)
 // Return true is status is success, false if error.
 //-----------------------------------------------------------------------------
 
-bool ts::ComSuccess(::HRESULT hr, const std::string& message, ReportInterface& report)
+bool ts::ComSuccess(::HRESULT hr, const std::string& message, Report& report)
 {
     return ComSuccess(hr, message.c_str(), report);
 }
 
 
-bool ts::ComSuccess(::HRESULT hr, const char* message, ReportInterface& report)
+bool ts::ComSuccess(::HRESULT hr, const char* message, Report& report)
 {
     if (SUCCEEDED(hr)) {
         return true;
@@ -156,7 +156,7 @@ std::string ts::ToString(const ::WCHAR* str)
 // (defined by an object moniker)
 //-----------------------------------------------------------------------------
 
-std::string ts::GetStringPropertyBag(::IMoniker* object_moniker, const ::OLECHAR* property_name, ReportInterface& report)
+std::string ts::GetStringPropertyBag(::IMoniker* object_moniker, const ::OLECHAR* property_name, Report& report)
 {
     // Bind to the object's storage, get the "property bag" interface
     ComPtr <::IPropertyBag> pbag;

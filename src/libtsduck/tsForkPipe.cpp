@@ -72,7 +72,7 @@ ts::ForkPipe::~ForkPipe()
 //----------------------------------------------------------------------------
 
 // Flawfinder: ignore: this is our open(), not ::open().
-bool ts::ForkPipe::open(const std::string& command, bool synchronous, size_t buffer_size, ReportInterface& report)
+bool ts::ForkPipe::open(const std::string& command, bool synchronous, size_t buffer_size, Report& report)
 {
     if (_is_open) {
         report.error("pipe is already open");
@@ -196,7 +196,7 @@ bool ts::ForkPipe::open(const std::string& command, bool synchronous, size_t buf
 // Return true on success, false on error.
 //----------------------------------------------------------------------------
 
-bool ts::ForkPipe::close (ReportInterface& report)
+bool ts::ForkPipe::close (Report& report)
 {
     // Silent error is already closed
     if (!_is_open) {
@@ -244,7 +244,7 @@ bool ts::ForkPipe::close (ReportInterface& report)
 // Return true on success, false on error.
 //----------------------------------------------------------------------------
 
-bool ts::ForkPipe::write (const void* addr, size_t size, ReportInterface& report)
+bool ts::ForkPipe::write (const void* addr, size_t size, Report& report)
 {
     if (!_is_open) {
         report.error ("pipe is not open");

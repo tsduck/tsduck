@@ -29,7 +29,6 @@
 
 #include "tsNames.h"
 #include "tsMPEG.h"
-#include "tsFormat.h"
 #include "tsSysUtils.h"
 #include "tsFatal.h"
 #include "tsCerrReport.h"
@@ -267,7 +266,7 @@ ts::UString ts::names::AC3ComponentType(uint8_t type, Flags flags)
 // Constructor (load the configuration file).
 //----------------------------------------------------------------------------
 
-ts::Names::Names(const std::string& fileName) :
+ts::Names::Names(const UString& fileName) :
     _log(CERR),
     _configFile(SearchConfigurationFile(fileName)),
     _configLines(0),
@@ -282,7 +281,8 @@ ts::Names::Names(const std::string& fileName) :
     }
 
     // Open configuration file.
-    std::ifstream strm(_configFile.c_str());
+    const std::string fileUTF8(_configFile.toUTF8());
+    std::ifstream strm(fileUTF8.c_str());
     if (!strm) {
         _log.error("error opening file " + _configFile);
         return;
@@ -319,10 +319,10 @@ ts::Names::Names(const std::string& fileName) :
         }
         else if (!decodeDefinition(line, section)) {
             // Invalid line.
-            _log.error(_configFile + Format(": invalid line %" FMT_SIZE_T "d: ", _configLines) + line.toUTF8());
+            _log.error(u"%s: invalid line %d: %s", {_configFile, _configLines, line});
             if (++_configErrors >= 20) {
                 // Give up after that number of errors
-                _log.error(_configFile + ": too many errors, giving up");
+                _log.error(u"%s: too many errors, giving up", {_configFile});
                 break;
             }
         }
@@ -375,7 +375,7 @@ bool ts::Names::decodeDefinition(const UString& line, ConfigSection* section)
             section->addEntry(first, last, value);
         }
         else {
-            _log.error("%s: range 0x%" FMT_INT64 "X-0x%" FMT_INT64 "X overlaps with an existing range", _configFile.c_str(), first, last);
+            _log.error(u"%s: range 0x%X-0x%X overlaps with an existing range", {_configFile, first, last});
             valid = false;
         }
     }
@@ -546,12 +546,12 @@ ts::UString ts::Names::Formatted(Value value, const UString& name, names::Flags 
     }
 
     switch (flags & (names::FIRST | names::DECIMAL | names::HEXA)) {
-        case names::DECIMAL: return *displayName + Format(" (%" FMT_INT64 "d)", value);
-        case names::HEXA: return *displayName + Format(" (0x%0*" FMT_INT64 "X)", HexaDigits(bits), value);
-        case names::BOTH: return *displayName + Format(" (0x%0*" FMT_INT64 "X, %" FMT_INT64 "d)", HexaDigits(bits), value, value);
-        case names::DECIMAL_FIRST: return Format("%" FMT_INT64 "d (", value) + *displayName + UChar(')');
-        case names::HEXA_FIRST: return Format("0x%0*" FMT_INT64 "X (", HexaDigits(bits), value) + *displayName + UChar(')');
-        case names::BOTH_FIRST: return Format("0x%0*" FMT_INT64 "X (%" FMT_INT64 "d, ", HexaDigits(bits), value, value) + *displayName + UChar(')');
+        case names::DECIMAL: return UString::Format(u"%s (%d)", {*displayName, value});
+        case names::HEXA: return UString::Format(u"%s (0x%0*X)", {*displayName, HexaDigits(bits), value});
+        case names::BOTH: return UString::Format(u"%s (0x%0*X, %d)", {*displayName, HexaDigits(bits), value, value});
+        case names::DECIMAL_FIRST: return UString::Format("%d (%s)", {value, *displayName});
+        case names::HEXA_FIRST: return UString::Format("0x%0*X (%s)", {HexaDigits(bits), value, *displayName});
+        case names::BOTH_FIRST: return UString::Format("0x%0*X (%d, %s)", {HexaDigits(bits), value, value, *displayName});
         default: assert(false); return UString();
     }
 }

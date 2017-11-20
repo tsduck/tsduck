@@ -123,85 +123,85 @@ ts::AESPlugin::AESPlugin(TSP* tsp_) :
     _dvs042(),
     _chain(0)
 {
-    option ("",            0,  STRING, 0, 1);
-    option ("cbc",         0);
-    option ("cts1",        0);
-    option ("cts2",        0);
-    option ("cts3",        0);
-    option ("cts4",        0);
-    option ("descramble", 'd');
-    option ("dvs042",      0);
-    option ("ecb",         0);
-    option ("iv",         'i', STRING);
-    option ("key",        'k', STRING, 1, 1);
-    option ("pid",        'p', PIDVAL, 0, UNLIMITED_COUNT);
+    option(u"",            0,  STRING, 0, 1);
+    option(u"cbc",         0);
+    option(u"cts1",        0);
+    option(u"cts2",        0);
+    option(u"cts3",        0);
+    option(u"cts4",        0);
+    option(u"descramble", 'd');
+    option(u"dvs042",      0);
+    option(u"ecb",         0);
+    option(u"iv",         'i', STRING);
+    option(u"key",        'k', STRING, 1, 1);
+    option(u"pid",        'p', PIDVAL, 0, UNLIMITED_COUNT);
 
-    setHelp ("Service:\n"
-             "  Specifies the service to scramble. If the argument is an integer value\n"
-             "  (either decimal or hexadecimal), it is interpreted as a service id.\n"
-             "  Otherwise, it is interpreted as a service name, as specified in the SDT.\n"
-             "  The name is not case sensitive and blanks are ignored. If the service is\n"
-             "  unspecified, individual PID's are scrambled (see option --pid).\n"
-             "\n"
-             "Options:\n"
-             "\n"
-             "  --cbc\n"
-             "      Use Cipher Block Chaining (CBC) mode without padding. The residue (last\n"
-             "      part of the packet payload, shorter than 16 bytes) is left clear.\n"
-             "\n"
-             "  --cts1\n"
-             "      Use Cipher Text Stealing (CTS) mode, as defined by Bruce Schneier in its\n"
-             "      \"Applied Cryptography\" and by RFC 2040 as RC5-CTS. TS packets with a\n"
-             "      payload shorter than 17 bytes are left clear.\n"
-             "\n"
-             "  --cts2\n"
-             "      Use Cipher Text Stealing (CTS) mode as defined in NIST's proposal. TS\n"
-             "      packets with a payload shorter than 16 bytes are left clear.\n"
-             "\n"
-             "  --cts3\n"
-             "      Use ECB Cipher Text Stealing (ECB-CTS) mode, as defined by Wikipedia.\n"
-             "      TS packets with a payload shorter than 17 bytes are left clear.\n"
-             "\n"
-             "  --cts4\n"
-             "      Use (weird) ECB Cipher Text Stealing (ECB-CTS) mode, as implemented in\n"
-             "      ST 71xx chips. TS packets with a payload shorter than 17 bytes are left\n"
-             "      clear.\n"
-             "\n"
-             "  -d\n"
-             "  --descramble\n"
-             "      Descramble instead of scramble.\n"
-             "\n"
-             "  --dvs042\n"
-             "      Use DVS 042 (now ANSI/SCTE 52 2003) cipher block chaining mode.\n"
-             "      TS packets with a payload shorter than 16 bytes are left clear.\n"
-             "\n"
-             "  --ecb\n"
-             "      Use Electronic Code Book (ECB) mode without padding. The residue (last\n"
-             "      part of the packet payload, shorter than 16 bytes) is left clear.\n"
-             "      This is the default mode.\n"
-             "\n"
-             "  --help\n"
-             "      Display this help text.\n"
-             "\n"
-             "  -i value\n"
-             "  --iv value\n"
-             "      Specifies the initialization vector. Must be a string of 32 hexadecimal\n"
-             "      digits. Must not be used in ECB mode. The default IV is all zeroes.\n"
-             "\n"
-             "  -k value\n"
-             "  --key value\n"
-             "      Specifies a fixed and constant AES key for all TS packets. The value\n"
-             "      must be a string of 32 or 64 hexadecimal digits. This is a mandatory\n"
-             "      parameter.\n"
-             "\n"
-             "  -p value\n"
-             "  --pid value\n"
-             "      Specifies a PID to scramble. Can be used instead of specifying a service.\n"
-             "      Several -p or --pid options may be specified.\n"
-             "\n"
-             "  --version\n"
-             "      Display the version number.\n");
-}
+    setHelp(u"Service:\n"
+            u"  Specifies the service to scramble. If the argument is an integer value\n"
+            u"  (either decimal or hexadecimal), it is interpreted as a service id.\n"
+            u"  Otherwise, it is interpreted as a service name, as specified in the SDT.\n"
+            u"  The name is not case sensitive and blanks are ignored. If the service is\n"
+            u"  unspecified, individual PID's are scrambled (see option --pid).\n"
+            u"\n"
+            u"Options:\n"
+            u"\n"
+            u"  --cbc\n"
+            u"      Use Cipher Block Chaining (CBC) mode without padding. The residue (last\n"
+            u"      part of the packet payload, shorter than 16 bytes) is left clear.\n"
+            u"\n"
+            u"  --cts1\n"
+            u"      Use Cipher Text Stealing (CTS) mode, as defined by Bruce Schneier in its\n"
+            u"      \"Applied Cryptography\" and by RFC 2040 as RC5-CTS. TS packets with a\n"
+            u"      payload shorter than 17 bytes are left clear.\n"
+            u"\n"
+            u"  --cts2\n"
+            u"      Use Cipher Text Stealing (CTS) mode as defined in NIST's proposal. TS\n"
+            u"      packets with a payload shorter than 16 bytes are left clear.\n"
+            u"\n"
+            u"  --cts3\n"
+            u"      Use ECB Cipher Text Stealing (ECB-CTS) mode, as defined by Wikipedia.\n"
+            u"      TS packets with a payload shorter than 17 bytes are left clear.\n"
+            u"\n"
+            u"  --cts4\n"
+            u"      Use (weird) ECB Cipher Text Stealing (ECB-CTS) mode, as implemented in\n"
+            u"      ST 71xx chips. TS packets with a payload shorter than 17 bytes are left\n"
+            u"      clear.\n"
+            u"\n"
+            u"  -d\n"
+            u"  --descramble\n"
+            u"      Descramble instead of scramble.\n"
+            u"\n"
+            u"  --dvs042\n"
+            u"      Use DVS 042 (now ANSI/SCTE 52 2003) cipher block chaining mode.\n"
+            u"      TS packets with a payload shorter than 16 bytes are left clear.\n"
+            u"\n"
+            u"  --ecb\n"
+            u"      Use Electronic Code Book (ECB) mode without padding. The residue (last\n"
+            u"      part of the packet payload, shorter than 16 bytes) is left clear.\n"
+            u"      This is the default mode.\n"
+            u"\n"
+            u"  --help\n"
+            u"      Display this help text.\n"
+            u"\n"
+            u"  -i value\n"
+            u"  --iv value\n"
+            u"      Specifies the initialization vector. Must be a string of 32 hexadecimal\n"
+            u"      digits. Must not be used in ECB mode. The default IV is all zeroes.\n"
+            u"\n"
+            u"  -k value\n"
+            u"  --key value\n"
+            u"      Specifies a fixed and constant AES key for all TS packets. The value\n"
+            u"      must be a string of 32 or 64 hexadecimal digits. This is a mandatory\n"
+            u"      parameter.\n"
+            u"\n"
+            u"  -p value\n"
+            u"  --pid value\n"
+            u"      Specifies a PID to scramble. Can be used instead of specifying a service.\n"
+            u"      Several -p or --pid options may be specified.\n"
+            u"\n"
+            u"  --version\n"
+            u"      Display the version number.\n");
+
 
 
 //----------------------------------------------------------------------------
@@ -211,33 +211,33 @@ ts::AESPlugin::AESPlugin(TSP* tsp_) :
 bool ts::AESPlugin::start()
 {
     // Get option values
-    _descramble = present ("descramble");
-    getPIDSet (_scrambled, "pid");
-    if (present ("")) {
-        _service.set (value (""));
+    _descramble = present(u"descramble");
+    getPIDSet(_scrambled, "pid");
+    if (present(u"")) {
+        _service.set(value(u""));
     }
 
     // Get chaining mode.
-    if (present ("ecb") + present ("cbc") + present ("cts1") + present ("cts2") + present ("cts3") + present ("cts4") + present ("dvs042") > 1) {
+    if (present(u"ecb") + present(u"cbc") + present(u"cts1") + present(u"cts2") + present(u"cts3") + present(u"cts4") + present(u"dvs042") > 1) {
         tsp->error ("options --cbc, --cts1, --cts2, --cts3, --cts4, --dvs042 and --ecb are mutually exclusive");
         return false;
     }
-    if (present ("cbc")) {
+    if (present(u"cbc")) {
         _chain = &_cbc;
     }
-    else if (present ("cts1")) {
+    else if (present(u"cts1")) {
         _chain = &_cts1;
     }
-    else if (present ("cts2")) {
+    else if (present(u"cts2")) {
         _chain = &_cts2;
     }
-    else if (present ("cts3")) {
+    else if (present(u"cts3")) {
         _chain = &_cts3;
     }
-    else if (present ("cts4")) {
+    else if (present(u"cts4")) {
         _chain = &_cts4;
     }
-    else if (present ("dvs042")) {
+    else if (present(u"dvs042")) {
         _chain = &_dvs042;
     }
     else {
@@ -246,7 +246,7 @@ bool ts::AESPlugin::start()
 
     // Get AES key
     ByteBlock key;
-    if (!HexaDecode (key, value ("key"))) {
+    if (!HexaDecode (key, value(u"key"))) {
         tsp->error ("invalid key, specify hexa digits");
         return false;
     }
@@ -262,7 +262,7 @@ bool ts::AESPlugin::start()
 
     // Get IV
     ByteBlock iv (_chain->minIVSize(), 0); // default IV is all zeroes
-    if (present ("iv") && !HexaDecode (iv, value ("iv"))) {
+    if (present(u"iv") && !HexaDecode (iv, value(u"iv"))) {
         tsp->error ("invalid initialization vector, specify hexa digits");
         return false;
     }

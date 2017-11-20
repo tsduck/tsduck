@@ -39,7 +39,7 @@ TSDUCK_SOURCE;
 // Constructor
 //----------------------------------------------------------------------------
 
-ts::UDPSocket::UDPSocket(bool auto_open, ReportInterface& report) :
+ts::UDPSocket::UDPSocket(bool auto_open, Report& report) :
     _sock(TS_SOCKET_T_INVALID),
     _default_destination(),
     _mcast()
@@ -67,7 +67,7 @@ ts::UDPSocket::~UDPSocket()
 // Return true on success, false on error.
 //----------------------------------------------------------------------------
 
-bool ts::UDPSocket::open (ReportInterface& report)
+bool ts::UDPSocket::open (Report& report)
 {
     if (_sock != TS_SOCKET_T_INVALID) {
         report.error ("socket already open");
@@ -107,7 +107,7 @@ void ts::UDPSocket::close()
 // Return true on success, false on error.
 //----------------------------------------------------------------------------
 
-bool ts::UDPSocket::setSendBufferSize (size_t buffer_size, ReportInterface& report)
+bool ts::UDPSocket::setSendBufferSize (size_t buffer_size, Report& report)
 {
     // Actual socket option is an int.
     int size = int (buffer_size);
@@ -125,7 +125,7 @@ bool ts::UDPSocket::setSendBufferSize (size_t buffer_size, ReportInterface& repo
 // Return true on success, false on error.
 //----------------------------------------------------------------------------
 
-bool ts::UDPSocket::setReceiveBufferSize (size_t buffer_size, ReportInterface& report)
+bool ts::UDPSocket::setReceiveBufferSize (size_t buffer_size, Report& report)
 {
     // Actual socket option is an int.
     int size = int (buffer_size);
@@ -143,7 +143,7 @@ bool ts::UDPSocket::setReceiveBufferSize (size_t buffer_size, ReportInterface& r
 // Return true on success, false on error.
 //----------------------------------------------------------------------------
 
-bool ts::UDPSocket::reusePort (bool reuse_port, ReportInterface& report)
+bool ts::UDPSocket::reusePort (bool reuse_port, Report& report)
 {
     // Actual socket option is an int.
     int reuse = int (reuse_port);
@@ -161,7 +161,7 @@ bool ts::UDPSocket::reusePort (bool reuse_port, ReportInterface& report)
 // Return true on success, false on error.
 //----------------------------------------------------------------------------
 
-bool ts::UDPSocket::bind (const SocketAddress& addr, ReportInterface& report)
+bool ts::UDPSocket::bind (const SocketAddress& addr, Report& report)
 {
     ::sockaddr sock_addr;
     addr.copy (sock_addr);
@@ -179,13 +179,13 @@ bool ts::UDPSocket::bind (const SocketAddress& addr, ReportInterface& report)
 // Return true on success, false on error.
 //----------------------------------------------------------------------------
 
-bool ts::UDPSocket::setOutgoingMulticast (const std::string& name, ReportInterface& report)
+bool ts::UDPSocket::setOutgoingMulticast (const std::string& name, Report& report)
 {
     IPAddress addr;
     return addr.resolve (name, report) && setOutgoingMulticast (addr, report);
 }
 
-bool ts::UDPSocket::setOutgoingMulticast (const IPAddress& addr, ReportInterface& report)
+bool ts::UDPSocket::setOutgoingMulticast (const IPAddress& addr, Report& report)
 {
     ::in_addr iaddr;
     addr.copy (iaddr);
@@ -204,13 +204,13 @@ bool ts::UDPSocket::setOutgoingMulticast (const IPAddress& addr, ReportInterface
 // Return true on success, false on error.
 //----------------------------------------------------------------------------
 
-bool ts::UDPSocket::setDefaultDestination (const std::string& name, ReportInterface& report)
+bool ts::UDPSocket::setDefaultDestination (const std::string& name, Report& report)
 {
     SocketAddress addr;
     return addr.resolve (name, report) && setDefaultDestination (addr, report);
 }
 
-bool ts::UDPSocket::setDefaultDestination (const SocketAddress& addr, ReportInterface& report)
+bool ts::UDPSocket::setDefaultDestination (const SocketAddress& addr, Report& report)
 {
     if (!addr.hasAddress()) {
         report.error ("missing IP address in UDP destination");
@@ -233,7 +233,7 @@ bool ts::UDPSocket::setDefaultDestination (const SocketAddress& addr, ReportInte
 // Return true on success, false on error.
 //----------------------------------------------------------------------------
 
-bool ts::UDPSocket::setTTL (int ttl, bool multicast, ReportInterface& report)
+bool ts::UDPSocket::setTTL (int ttl, bool multicast, Report& report)
 {
     if (multicast) {
         TS_SOCKET_MC_TTL_T mttl = (TS_SOCKET_MC_TTL_T) (ttl);
@@ -258,7 +258,7 @@ bool ts::UDPSocket::setTTL (int ttl, bool multicast, ReportInterface& report)
 // Return true on success, false on error.
 //----------------------------------------------------------------------------
 
-bool ts::UDPSocket::addMembership (const IPAddress& multicast, const IPAddress& local, ReportInterface& report)
+bool ts::UDPSocket::addMembership (const IPAddress& multicast, const IPAddress& local, Report& report)
 {
     if (!local.hasAddress()) {
         // No local address specified, use all of them
@@ -287,7 +287,7 @@ bool ts::UDPSocket::addMembership (const IPAddress& multicast, const IPAddress& 
 // Return true on success, false on error.
 //----------------------------------------------------------------------------
 
-bool ts::UDPSocket::addMembership (const IPAddress& multicast, ReportInterface& report)
+bool ts::UDPSocket::addMembership (const IPAddress& multicast, Report& report)
 {
     // There is no implicit way to listen on all interfaces.
     // If no local address is specified, we must get the list
@@ -316,7 +316,7 @@ bool ts::UDPSocket::addMembership (const IPAddress& multicast, ReportInterface& 
 // Return true on success, false on error.
 //----------------------------------------------------------------------------
 
-bool ts::UDPSocket::dropMembership (ReportInterface& report)
+bool ts::UDPSocket::dropMembership (Report& report)
 {
     bool ok = true;
     for (MReqSet::const_iterator it = _mcast.begin(); it != _mcast.end(); ++it) {
@@ -338,7 +338,7 @@ bool ts::UDPSocket::dropMembership (ReportInterface& report)
 // Return true on success, false on error.
 //----------------------------------------------------------------------------
 
-bool ts::UDPSocket::send (const void* data, size_t size, const SocketAddress& dest, ReportInterface& report)
+bool ts::UDPSocket::send (const void* data, size_t size, const SocketAddress& dest, Report& report)
 {
     ::sockaddr addr;
     dest.copy (addr);
@@ -363,7 +363,7 @@ bool ts::UDPSocket::receive (void* data,
                                size_t& ret_size,
                                SocketAddress& sender,
                                const AbortInterface* abort,
-                               ReportInterface& report)
+                               Report& report)
 {
     // Clear returned values
     ret_size = 0;

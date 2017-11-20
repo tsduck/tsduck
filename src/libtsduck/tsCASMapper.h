@@ -50,7 +50,7 @@ namespace ts {
         //! Constructor.
         //! @param [in,out] report Where to log errors.
         //!
-        CASMapper(ReportInterface& report);
+        CASMapper(Report& report);
 
         //!
         //! This method feeds the CAS mapper with a TS packet.
@@ -131,7 +131,7 @@ namespace ts {
         void analyzeCADescriptors(const DescriptorList& descs, bool is_ecm);
 
         // CAMapper private fields.
-        ReportInterface&  _report;
+        Report&  _report;
         SectionDemux      _demux;
         PIDDescriptionMap _pids;
 

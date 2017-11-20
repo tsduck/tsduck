@@ -61,59 +61,59 @@ Options::Options(int argc, char *argv[]) :
     timeout_ms(0),
     reset_action(0)
 {
-    option ("",            0, Args::STRING, 0, 1);
-    option ("cold-reset", 'c');
-    option ("eject",      'e');
-    option ("timeout",    't', Args::UNSIGNED);
-    option ("verbose",    'v');
-    option ("warm-reset", 'w');
+    option(u"",            0, Args::STRING, 0, 1);
+    option(u"cold-reset", 'c');
+    option(u"eject",      'e');
+    option(u"timeout",    't', Args::UNSIGNED);
+    option(u"verbose",    'v');
+    option(u"warm-reset", 'w');
 
-    setHelp ("Parameters:\n"
-             "  The optional reader-name parameter indicates the smartcard reader device\n"
-             "  name to list or reset. Without any option or parameter, the command lists\n"
-             "  all smartcard reader devices in the system.\n"
-             "\n"
-             "Options:\n"
-             "\n"
-             "  -c\n"
-             "  --cold-reset\n"
-             "      Perfom a cold reset on the smartcard.\n"
-             "\n"
-             "  -e\n"
-             "  --eject\n"
-             "      Eject the smartcard.\n"
-             "\n"
-             "  --help\n"
-             "      Display this help text.\n"
-             "\n"
-             "  -t value\n"
-             "  --timeout value\n"
-             "      Timeout in milliseconds. The default is 1000 ms.\n"
-             "\n"
-             "  -v\n"
-             "  --verbose\n"
-             "      Produce verbose output.\n"
-             "\n"
-             "  --version\n"
-             "      Display the version number.\n"
-             "\n"
-             "  -w\n"
-             "  --warm-reset\n"
-             "      Perfom a warm reset on the smartcard.\n");
+    setHelp(u"Parameters:\n"
+             u"  The optional reader-name parameter indicates the smartcard reader device\n"
+             u"  name to list or reset. Without any option or parameter, the command lists\n"
+             u"  all smartcard reader devices in the system.\n"
+             u"\n"
+             u"Options:\n"
+             u"\n"
+             u"  -c\n"
+             u"  --cold-reset\n"
+             u"      Perfom a cold reset on the smartcard.\n"
+             u"\n"
+             u"  -e\n"
+             u"  --eject\n"
+             u"      Eject the smartcard.\n"
+             u"\n"
+             u"  --help\n"
+             u"      Display this help text.\n"
+             u"\n"
+             u"  -t value\n"
+             u"  --timeout value\n"
+             u"      Timeout in milliseconds. The default is 1000 ms.\n"
+             u"\n"
+             u"  -v\n"
+             u"  --verbose\n"
+             u"      Produce verbose output.\n"
+             u"\n"
+             u"  --version\n"
+             u"      Display the version number.\n"
+             u"\n"
+             u"  -w\n"
+             u"  --warm-reset\n"
+             u"      Perfom a warm reset on the smartcard.\n");
 
     analyze (argc, argv);
 
-    reader = value ("");
-    verbose = present ("verbose");
+    reader = value(u"");
+    verbose = present(u"verbose");
     timeout_ms = intValue ("timeout", ::DWORD (1000));
 
-    if (present ("eject")) {
+    if (present(u"eject")) {
         reset_action = SCARD_EJECT_CARD;
     }
-    else if (present ("cold-reset")) {
+    else if (present(u"cold-reset")) {
         reset_action = SCARD_UNPOWER_CARD;
     }
-    else if (present ("warm-reset")) {
+    else if (present(u"warm-reset")) {
         reset_action = SCARD_RESET_CARD;
     }
     else {

@@ -71,62 +71,62 @@ Options::Options (int argc, char *argv[]) :
     value_only(false),
     infile()
 {
-    option ("",            0, Args::STRING, 0, 1);
-    option ("all",        'a');
-    option ("dts",        'd');
-    option ("full",       'f');
-    option ("min-pcr",     0, Args::POSITIVE);
-    option ("min-pid",     0, Args::INTEGER, 0, 1, 1, PID_MAX);
-    option ("value-only", 'v');
+    option(u"",            0, Args::STRING, 0, 1);
+    option(u"all",        'a');
+    option(u"dts",        'd');
+    option(u"full",       'f');
+    option(u"min-pcr",     0, Args::POSITIVE);
+    option(u"min-pid",     0, Args::INTEGER, 0, 1, 1, PID_MAX);
+    option(u"value-only", 'v');
 
-    setHelp ("Input file:\n"
-             "\n"
-             "  MPEG capture file (standard input if omitted).\n"
-             "\n"
-             "Options:\n"
-             "\n"
-             "  -a\n"
-             "  --all\n"
-             "      Analyze all packets in the input file. By default, stop analysis when\n"
-             "      enough PCR information has been collected.\n"
-             "\n"
-             "  -d\n"
-             "  --dts\n"
-             "      Use DTS (Decoding Time Stamps) from video PID's instead of PCR\n"
-             "      (Program Clock Reference) from the transport layer.\n"
-             "\n"
-             "  -f\n"
-             "  --full\n"
-             "      Full analysis. The file is entirely analyzed (as with --all) and the\n"
-             "      final report includes a complete per PID bitrate analysis.\n"
-             "\n"
-             "  --help\n"
-             "      Display this help text.\n"
-             "\n"
-             "  --min-pcr value\n"
-             "      Stop analysis when that number of PCR are read from the required\n"
-             "      minimum number of PID (default: 64).\n"
-             "\n"
-             "  --min-pid value\n"
-             "      Minimum number of PID to get PCR from (default: 1).\n"
-             "\n"
-             "  -v\n"
-             "  --value-only\n"
-             "      Display only the bitrate value, in bits/seconds, based on\n"
-             "      188-byte packets. Useful to reuse the value in command lines.\n"
-             "\n"
-             "  --version\n"
-             "      Display the version number.\n");
+    setHelp(u"Input file:\n"
+             u"\n"
+             u"  MPEG capture file (standard input if omitted).\n"
+             u"\n"
+             u"Options:\n"
+             u"\n"
+             u"  -a\n"
+             u"  --all\n"
+             u"      Analyze all packets in the input file. By default, stop analysis when\n"
+             u"      enough PCR information has been collected.\n"
+             u"\n"
+             u"  -d\n"
+             u"  --dts\n"
+             u"      Use DTS (Decoding Time Stamps) from video PID's instead of PCR\n"
+             u"      (Program Clock Reference) from the transport layer.\n"
+             u"\n"
+             u"  -f\n"
+             u"  --full\n"
+             u"      Full analysis. The file is entirely analyzed (as with --all) and the\n"
+             u"      final report includes a complete per PID bitrate analysis.\n"
+             u"\n"
+             u"  --help\n"
+             u"      Display this help text.\n"
+             u"\n"
+             u"  --min-pcr value\n"
+             u"      Stop analysis when that number of PCR are read from the required\n"
+             u"      minimum number of PID (default: 64).\n"
+             u"\n"
+             u"  --min-pid value\n"
+             u"      Minimum number of PID to get PCR from (default: 1).\n"
+             u"\n"
+             u"  -v\n"
+             u"  --value-only\n"
+             u"      Display only the bitrate value, in bits/seconds, based on\n"
+             u"      188-byte packets. Useful to reuse the value in command lines.\n"
+             u"\n"
+             u"  --version\n"
+             u"      Display the version number.\n");
 
     analyze (argc, argv);
 
-    infile = value ("");
-    full = present ("full");
-    all = full || present ("all");
-    value_only = present ("value-only");
+    infile = value(u"");
+    full = present(u"full");
+    all = full || present(u"all");
+    value_only = present(u"value-only");
     min_pcr = intValue<uint32_t> ("min-pcr", 64);
     min_pid = intValue<uint16_t> ("min-pid", 1);
-    use_dts = present ("dts");
+    use_dts = present(u"dts");
     pcr_name = use_dts ? "DTS" : "PCR";
 }
 

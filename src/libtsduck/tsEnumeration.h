@@ -33,7 +33,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsPlatform.h"
+#include "tsUString.h"
 
 namespace ts {
 
@@ -63,69 +63,30 @@ namespace ts {
         static const int UNKNOWN;
 
         //!
-        //! Default constructor
+        //! A structure used in the constructor of an Enumeration.
         //!
-        Enumeration() : _map() {}
+        struct NameValue
+        {
+            UString name;   //!< Name for the value.
+            int     value;  //!< Value for the name.
+        };
 
         //!
-        //! Copy constructor
+        //! Default constructor
         //!
-        //! @param [in] other Another instance from which to build this object.
-        //!
-        Enumeration(const Enumeration& other) : _map(other._map) {}
+        Enumeration();
 
         //!
         //! Constructor from a variable list of string/int pairs.
         //!
-        //! @param [in] name A string for a symbol.
-        //! @param [in] value The corresponding integer value.
-        //! The pair of arguments @a name, @a value may be repeated any number of times.
-        //! The parameter list @b must end with a @c TS_NULL symbol.
+        //! @param [in] values Variable list of name/value pairs.
         //!
-        Enumeration(const char* name, int value, ...);
+        Enumeration(const std::initializer_list<NameValue> values);
 
         //!
         //! Virtual destructor
         //!
         virtual ~Enumeration() {}
-
-        //!
-        //! Assignment operator
-        //!
-        //! @param [in] other Another instance from which to build this object.
-        //! @return A reference to this object.
-        //!
-        Enumeration& operator=(const Enumeration& other)
-        {
-            if (&other != this) {
-                _map = other._map;
-            }
-            return *this;
-        }
-
-        //!
-        //! Equality operator.
-        //!
-        //! @param [in] other Another instance to compare with.
-        //! @return True if this object has the same content as @a other,
-        //! false otherwise.
-        //!
-        bool operator==(const Enumeration& other) const
-        {
-            return _map == other._map;
-        }
-
-        //!
-        //! Unequality operator.
-        //!
-        //! @param [in] other Another instance to compare with.
-        //! @return True if this object does not have the same content as @a other,
-        //! false otherwise.
-        //!
-        bool operator!=(const Enumeration& other) const
-        {
-            return _map != other._map;
-        }
 
         //!
         //! Get the number of entries in the enumeration.
@@ -153,9 +114,9 @@ namespace ts {
         //! @param [in] name A string for a symbol.
         //! @param [in] value The corresponding integer value.
         //!
-        void add(const char* name, int value)
+        void add(const UString& name, int value)
         {
-            _map.insert(std::make_pair(value, std::string(name)));
+            _map.insert(std::make_pair(value, name));
         }
 
         //!
@@ -175,7 +136,7 @@ namespace ts {
         //! with the same name, one of them is returned but which one is
         //! returned is unspecified.
         //!
-        int value(const std::string& name, bool caseSensitive = true) const;
+        int value(const UString& name, bool caseSensitive = true) const;
 
         //!
         //! Get the name from a value.
@@ -189,21 +150,19 @@ namespace ts {
         //! If several names were registered with the same value, one of them is returned but which
         //! one is returned is unspecified.
         //!
-        std::string name(int value, bool hexa = false, size_t hexDigitCount = 0) const;
+        UString name(int value, bool hexa = false, size_t hexDigitCount = 0) const;
 
         //!
         //! Return a comma-separated list of all names for a list of integer values.
         //!
-        //! @tparam CONTAINER A container class of integer values as defined by the
-        //! C++ Standard Template Library (STL).
+        //! @tparam CONTAINER A container class of integer values as defined by the C++ Standard Template Library (STL).
         //! @param [in] container A container of integer values.
-        //! @param [in] separator The separator to be used between values,
-        //! a comma by default.
+        //! @param [in] separator The separator to be used between values, a comma by default.
         //! @return A comma-separated list of the names for the integer values in
         //! @a container. Each value is formatted according to name().
         //!
         template <class CONTAINER>
-        std::string names(const CONTAINER& container, const char* separator = ", ") const
+        UString names(const CONTAINER& container, const UString& separator = u", ") const
         {
             return names<typename CONTAINER::const_iterator>(container.begin(), container.end(), separator);
         }
@@ -212,8 +171,7 @@ namespace ts {
         //! Return a comma-separated list of all names for a list of integer values.
         //! The values are accessed through iterators in a container.
         //!
-        //! @tparam ITERATOR An iterator class over integer values as defined by the
-        //! C++ Standard Template Library (STL).
+        //! @tparam ITERATOR An iterator class over integer values as defined by the C++ Standard Template Library (STL).
         //! @param [in] begin An iterator pointing to the first value.
         //! @param [in] end An iterator pointing @em after the last value.
         //! @param [in] separator The separator to be used between values, a comma by default.
@@ -221,9 +179,9 @@ namespace ts {
         //! @a container. Each value is formatted according to name().
         //!
         template <class ITERATOR>
-        std::string names (ITERATOR begin, ITERATOR end, const char* separator = ", ") const
+        UString names(ITERATOR begin, ITERATOR end, const UString& separator = u", ") const
         {
-            std::string res;
+            UString res;
             while (begin != end) {
                 if (!res.empty()) {
                     res.append(separator);
@@ -237,18 +195,17 @@ namespace ts {
         //!
         //! Return a comma-separated list of all possible names.
         //!
-        //! @param [in] separator The separator to be used between values,
-        //! a comma by default.
+        //! @param [in] separator The separator to be used between values, a comma by default.
         //! @return A comma-separated list of all possible names.
         //!
-        std::string nameList(const char* separator = ", ") const;
+        UString nameList(const UString& separator = u", ") const;
 
         //!
         //! A constant iterator type for the content of the object.
         //!
         //! An iterator points to a pair of integer and string representing
         //! an element of the enumeration or more formally to a
-        //! <code>std::pair <int, std::string></code>.
+        //! <code>std::pair <int, UString></code>.
         //!
         //! Sample usage:
         //! @code
@@ -256,12 +213,12 @@ namespace ts {
         //!
         //! for (ts::Enumeration::const_iterator it = e.begin(); it != e.end(); ++it) {
         //!     const int value (it->first);           // the int value
-        //!     const std::string name (it->second);   // the corresponding name
+        //!     const UString name (it->second);   // the corresponding name
         //!     ....
         //! }
         //! @endcode
         //!
-        typedef std::multimap<int, std::string>::const_iterator const_iterator;
+        typedef std::multimap<int, UString>::const_iterator const_iterator;
 
         //!
         //! Return an iterator pointing to the first element of this object.
@@ -284,7 +241,7 @@ namespace ts {
         }
 
     private:
-        typedef std::multimap<int, std::string> EnumMap;
+        typedef std::multimap<int,UString> EnumMap;
         EnumMap _map;
     };
 }

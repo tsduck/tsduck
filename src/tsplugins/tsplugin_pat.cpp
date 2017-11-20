@@ -87,8 +87,8 @@ TSPLUGIN_DECLARE_PROCESSOR(ts::PATPlugin)
 // Constructor
 //----------------------------------------------------------------------------
 
-ts::PATPlugin::PATPlugin (TSP* tsp_) :
-    ProcessorPlugin(tsp_, "Perform various transformations on the PAT", "[options]"),
+ts::PATPlugin::PATPlugin(TSP* tsp_) :
+    ProcessorPlugin(tsp_, u"Perform various transformations on the PAT", u"[options]"),
     _abort(false),
     _remove_serv(),
     _add_serv(),
@@ -102,51 +102,51 @@ ts::PATPlugin::PATPlugin (TSP* tsp_) :
     _demux(this),
     _pzer()
 {
-    option ("add-service",       'a', STRING, 0, UNLIMITED_COUNT);
-    option ("increment-version", 'i');
-    option ("nit",               'n', PIDVAL);
-    option ("remove-service",    'r', UINT16, 0, UNLIMITED_COUNT);
-    option ("remove-nit",        'u');
-    option ("tsid",              't', UINT16);
-    option ("new-version",       'v', INTEGER, 0, 1, 0, 31);
+    option(u"add-service",       'a', STRING, 0, UNLIMITED_COUNT);
+    option(u"increment-version", 'i');
+    option(u"nit",               'n', PIDVAL);
+    option(u"remove-service",    'r', UINT16, 0, UNLIMITED_COUNT);
+    option(u"remove-nit",        'u');
+    option(u"tsid",              't', UINT16);
+    option(u"new-version",       'v', INTEGER, 0, 1, 0, 31);
 
-    setHelp ("Options:\n"
-             "\n"
-             "  -a sid/pid\n"
-             "  --add-service sid/pid\n"
-             "      Add the specified service_id / PMT-PID in the PAT. Several --add-service\n"
-             "      options may be specified to add several services.\n"
-             "\n"
-             "  --help\n"
-             "      Display this help text.\n"
-             "\n"
-             "  -i\n"
-             "  --increment-version\n"
-             "      Increment the version number of the PAT.\n"
-             "\n"
-             "  -n pid\n"
-             "  --nit pid\n"
-             "      Add or modify the NIT PID in the PAT.\n"
-             "\n"
-             "  -r sid\n"
-             "  --remove-service sid\n"
-             "      Remove the specified service_id from the PAT. Several --remove-service\n"
-             "      options may be specified to remove several services.\n"
-             "\n"
-             "  -u\n"
-             "  --remove-nit\n"
-             "      Remove the NIT PID from the PAT.\n"
-             "\n"
-             "  -t id\n"
-             "  --tsid id\n"
-             "      Specify a new value for the transport stream id in the PAT.\n"
-             "\n"
-             "  -v value\n"
-             "  --new-version value\n"
-             "      Specify a new value for the version of the PAT.\n"
-             "\n"
-             "  --version\n"
-             "      Display the version number.\n");
+    setHelp(u"Options:\n"
+            u"\n"
+            u"  -a sid/pid\n"
+            u"  --add-service sid/pid\n"
+            u"      Add the specified service_id / PMT-PID in the PAT. Several --add-service\n"
+            u"      options may be specified to add several services.\n"
+            u"\n"
+            u"  --help\n"
+            u"      Display this help text.\n"
+            u"\n"
+            u"  -i\n"
+            u"  --increment-version\n"
+            u"      Increment the version number of the PAT.\n"
+            u"\n"
+            u"  -n pid\n"
+            u"  --nit pid\n"
+            u"      Add or modify the NIT PID in the PAT.\n"
+            u"\n"
+            u"  -r sid\n"
+            u"  --remove-service sid\n"
+            u"      Remove the specified service_id from the PAT. Several --remove-service\n"
+            u"      options may be specified to remove several services.\n"
+            u"\n"
+            u"  -u\n"
+            u"  --remove-nit\n"
+            u"      Remove the NIT PID from the PAT.\n"
+            u"\n"
+            u"  -t id\n"
+            u"  --tsid id\n"
+            u"      Specify a new value for the transport stream id in the PAT.\n"
+            u"\n"
+            u"  -v value\n"
+            u"  --new-version value\n"
+            u"      Specify a new value for the version of the PAT.\n"
+            u"\n"
+            u"  --version\n"
+            u"      Display the version number.\n");
 }
 
 
@@ -158,11 +158,11 @@ bool ts::PATPlugin::start()
 {
     // Get option values
     _new_nit_pid = intValue<PID> ("nit", PID_NULL);
-    _remove_nit = present ("remove-nit");
-    _set_tsid = present ("tsid");
+    _remove_nit = present(u"remove-nit");
+    _set_tsid = present(u"tsid");
     _new_tsid = intValue<uint16_t> ("tsid", 0);
-    _incr_version = present ("increment-version");
-    _set_version = present ("new-version");
+    _incr_version = present(u"increment-version");
+    _set_version = present(u"new-version");
     _new_version = intValue<uint8_t> ("new-version", 0);
     getIntValues (_remove_serv, "remove-service");
 

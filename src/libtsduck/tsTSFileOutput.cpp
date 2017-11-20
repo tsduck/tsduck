@@ -60,7 +60,7 @@ ts::TSFileOutput::TSFileOutput() :
 // Open method
 //----------------------------------------------------------------------------
 
-bool ts::TSFileOutput::open (const std::string& filename, bool append, bool keep, ReportInterface& report)
+bool ts::TSFileOutput::open (const std::string& filename, bool append, bool keep, Report& report)
 {
     if (_is_open) {
         report.log (_severity, "already open");
@@ -143,7 +143,7 @@ bool ts::TSFileOutput::open (const std::string& filename, bool append, bool keep
 // Close method
 //----------------------------------------------------------------------------
 
-bool ts::TSFileOutput::close (ReportInterface& report)
+bool ts::TSFileOutput::close (Report& report)
 {
     if (!_is_open) {
         report.log (_severity, "not open");
@@ -179,7 +179,7 @@ ts::TSFileOutput::~TSFileOutput()
 // Write method
 //----------------------------------------------------------------------------
 
-bool ts::TSFileOutput::write (const TSPacket* buffer, size_t packet_count, ReportInterface& report)
+bool ts::TSFileOutput::write (const TSPacket* buffer, size_t packet_count, Report& report)
 {
     if (!_is_open) {
         report.log (_severity, "not open");

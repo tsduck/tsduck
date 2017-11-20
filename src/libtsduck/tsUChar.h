@@ -66,6 +66,16 @@ namespace ts {
     }
 
     //!
+    //! Check if a character is a letter.
+    //! @param [in] c A character.
+    //! @return True if @a c is a letter.
+    //!
+    TSDUCKDLL inline bool IsAlpha(UChar c)
+    {
+        return std::iswalpha(wint_t(c)) != 0;
+    }
+
+    //!
     //! Check if a character is a decimal digit.
     //! @param [in] c A character.
     //! @return True if @a c is a decimal digit.

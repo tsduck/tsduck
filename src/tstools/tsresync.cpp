@@ -82,81 +82,81 @@ Options::Options(int argc, char *argv[]) :
     infile(),
     outfile()
 {
-    option("",                0,  STRING, 0, 1);
-    option("continue",       'c');
-    option("header-size",    'h', UNSIGNED);
-    option("keep",           'k');
-    option("min-contiguous", 'm', INTEGER, 0, 1, MIN_CONTIG_SIZE, MAX_CONTIG_SIZE);
-    option("packet-size",    'p', INTEGER, 0, 1, ts::PKT_SIZE, 0x7FFFFFFFL);
-    option("output",         'o', STRING);
-    option("sync-size",      's', INTEGER, 0, 1, MIN_SYNC_SIZE, MAX_SYNC_SIZE);
-    option("verbose",        'v');
+    option(u"",                0,  STRING, 0, 1);
+    option(u"continue",       'c');
+    option(u"header-size",    'h', UNSIGNED);
+    option(u"keep",           'k');
+    option(u"min-contiguous", 'm', INTEGER, 0, 1, MIN_CONTIG_SIZE, MAX_CONTIG_SIZE);
+    option(u"packet-size",    'p', INTEGER, 0, 1, ts::PKT_SIZE, 0x7FFFFFFFL);
+    option(u"output",         'o', STRING);
+    option(u"sync-size",      's', INTEGER, 0, 1, MIN_SYNC_SIZE, MAX_SYNC_SIZE);
+    option(u"verbose",        'v');
 
-    setHelp("Input file:\n"
-            "\n"
-            "  MPEG transport stream file (standard input if omitted).\n"
-            "\n"
-            "Options:\n"
-            "\n"
-            "  -c\n"
-            "  --continue\n"
-            "      Continue re-resynchronizing after loss of synchronization.\n"
-            "      By default, stop after first packet not starting with 0x47.\n"
-            "\n"
-            "  -h value\n"
-            "  --header-size value\n"
-            "      When used with --packet-size, specifies the size of extra data preceeding\n"
-            "      each packet in the input file. The default is zero.\n"
-            "\n"
-            "  --help\n"
-            "      Display this help text.\n"
-            "\n"
-            "  -k\n"
-            "  --keep\n"
-            "      Keep TS packet size from input to output file. By default, strip extra\n"
-            "      data and reduce packets to 188 bytes. See option --packet-size for a\n"
-            "      description of supported input packet sizes.\n"
-            "\n"
-            "  -m value\n"
-            "  --min-contiguous value\n"
-            "      Minimum size containing contiguous valid packets to consider a slice of\n"
-            "      input file as containing actual packets (default: 512 kB).\n"
-            "\n"
-            "  -o filename\n"
-            "  --output filename\n"
-            "      Output file name (standard output by default).\n"
-            "\n"
-            "  -p value\n"
-            "  --packet-size value\n"
-            "      Expected TS packet size in bytes. By default, try 188-byte (standard),\n"
-            "      204-byte (trailing 16-byte Reed-Solomon outer FEC), 192-byte (leading\n"
-            "      4-byte timestamp in M2TS/Blu-ray disc files). If the input file contains\n"
-            "      any other type of packet encapsulation, use options --packet-size and\n"
-            "      --header-size.\n"
-            "\n"
-            "  -s value\n"
-            "  --sync-size value\n"
-            "      Number of initial bytes to analyze to find start of packet\n"
-            "      synchronization (default: 1 MB).\n"
-            "\n"
-            "  -v\n"
-            "  --verbose\n"
-            "      Display verbose information.\n"
-            "\n"
-            "  --version\n"
-            "      Display the version number.\n");
+    setHelp(u"Input file:\n"
+            u"\n"
+            u"  MPEG transport stream file (standard input if omitted).\n"
+            u"\n"
+            u"Options:\n"
+            u"\n"
+            u"  -c\n"
+            u"  --continue\n"
+            u"      Continue re-resynchronizing after loss of synchronization.\n"
+            u"      By default, stop after first packet not starting with 0x47.\n"
+            u"\n"
+            u"  -h value\n"
+            u"  --header-size value\n"
+            u"      When used with --packet-size, specifies the size of extra data preceeding\n"
+            u"      each packet in the input file. The default is zero.\n"
+            u"\n"
+            u"  --help\n"
+            u"      Display this help text.\n"
+            u"\n"
+            u"  -k\n"
+            u"  --keep\n"
+            u"      Keep TS packet size from input to output file. By default, strip extra\n"
+            u"      data and reduce packets to 188 bytes. See option --packet-size for a\n"
+            u"      description of supported input packet sizes.\n"
+            u"\n"
+            u"  -m value\n"
+            u"  --min-contiguous value\n"
+            u"      Minimum size containing contiguous valid packets to consider a slice of\n"
+            u"      input file as containing actual packets (default: 512 kB).\n"
+            u"\n"
+            u"  -o filename\n"
+            u"  --output filename\n"
+            u"      Output file name (standard output by default).\n"
+            u"\n"
+            u"  -p value\n"
+            u"  --packet-size value\n"
+            u"      Expected TS packet size in bytes. By default, try 188-byte (standard),\n"
+            u"      204-byte (trailing 16-byte Reed-Solomon outer FEC), 192-byte (leading\n"
+            u"      4-byte timestamp in M2TS/Blu-ray disc files). If the input file contains\n"
+            u"      any other type of packet encapsulation, use options --packet-size and\n"
+            u"      --header-size.\n"
+            u"\n"
+            u"  -s value\n"
+            u"  --sync-size value\n"
+            u"      Number of initial bytes to analyze to find start of packet\n"
+            u"      synchronization (default: 1 MB).\n"
+            u"\n"
+            u"  -v\n"
+            u"  --verbose\n"
+            u"      Display verbose information.\n"
+            u"\n"
+            u"  --version\n"
+            u"      Display the version number.\n");
 
     analyze(argc, argv);
 
-    infile = value("");
-    outfile = value("output");
+    infile = value(u"");
+    outfile = value(u"output");
     sync_size = intValue<size_t>("sync-size", DEFAULT_SYNC_SIZE);
     contig_size = intValue<size_t>("min-contiguous", DEFAULT_CONTIG_SIZE);
     header_size = intValue<size_t>("header-size", 0);
     packet_size = intValue<size_t>("packet-size", 0);
-    verbose = present("verbose");
-    keep = present("keep");
-    cont_sync = present("continue");
+    verbose = present(u"verbose");
+    keep = present(u"keep");
+    cont_sync = present(u"continue");
 
     if (packet_size > 0 && header_size + ts::PKT_SIZE > packet_size) {
         error("specified --header-size too large for specified --packet-size");

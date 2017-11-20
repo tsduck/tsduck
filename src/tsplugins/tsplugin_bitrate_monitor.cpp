@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
-// Copyright (c) 2005-2017, Thierry Lelegard
+// Copyright (c) 2005-2017, Jerome Leveque
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -27,8 +27,9 @@
 //
 //----------------------------------------------------------------------------
 //
+//  Transport stream processor shared library:
 //  Monitor PID bitrate
-//  Copyright 2005-2011, Jerome Leveque
+//
 //----------------------------------------------------------------------------
 
 #include "tsPlugin.h"
@@ -103,7 +104,7 @@ TSPLUGIN_DECLARE_PROCESSOR(ts::BitrateMonitorPlugin)
 //----------------------------------------------------------------------------
 
 ts::BitrateMonitorPlugin::BitrateMonitorPlugin (TSP* tsp_) :
-    ProcessorPlugin (tsp_, "Monitor bitrate for a given pid.", "[options] pid"),
+    ProcessorPlugin(tsp_, u"Monitor bitrate for a given pid.", u"[options] pid"),
     _pid(PID_NULL),
     _min_bitrate(0),
     _max_bitrate(0),
@@ -115,40 +116,40 @@ ts::BitrateMonitorPlugin::BitrateMonitorPlugin (TSP* tsp_) :
     _pkt_count_index(0),
     _startup(false)
 {
-    option(""             ,   0, PIDVAL, 1, 1);   // PID nb is a required parameter
-    option("alarm_command", 'a', STRING);
-    option("time_interval", 't', UINT16);
-    option("min"          ,   0, UINT32);
-    option("max"          ,   0, UINT32);
+    option(u""             ,   0, PIDVAL, 1, 1);   // PID nb is a required parameter
+    option(u"alarm_command", 'a', STRING);
+    option(u"time_interval", 't', UINT16);
+    option(u"min"          ,   0, UINT32);
+    option(u"max"          ,   0, UINT32);
 
-    setHelp("Pid:\n"
-            "      Specifies the PID to monitor.\n"
-            "\n"
-            "Options:\n"
-            "\n"
-            "  -a command\n"
-            "  --alarm_command command\n"
-            "      Command to be run when an alarm is detected\n"
-            "      (bitrate out of range).\n"
-            "\n"
-            "  --min value\n"
-            "      Set minimum allowed value for bitrate (bits/s).\n"
-            "      Default value = 10 bits/s.\n"
-            "\n"
-            "  --max value\n"
-            "      Set maximum allowed value for bitrate (bits/s).\n"
-            "      Default value = 2^32 bits/s.\n"
-            "\n"
-            "  -t value\n"
-            "  --time_interval value\n"
-            "      Time interval (in seconds) used to compute the bitrate.\n"
-            "      Default value = 5 seconds.\n"
-            "\n"
-            "  --help\n"
-            "      Display this help text.\n"
-            "\n"
-            "  --version\n"
-            "      Display the version number.\n");
+    setHelp(u"PID:\n"
+            u"      Specifies the PID to monitor.\n"
+            u"\n"
+            u"Options:\n"
+            u"\n"
+            u"  -a command\n"
+            u"  --alarm_command command\n"
+            u"      Command to be run when an alarm is detected\n"
+            u"      (bitrate out of range).\n"
+            u"\n"
+            u"  --min value\n"
+            u"      Set minimum allowed value for bitrate (bits/s).\n"
+            u"      Default value = 10 bits/s.\n"
+            u"\n"
+            u"  --max value\n"
+            u"      Set maximum allowed value for bitrate (bits/s).\n"
+            u"      Default value = 2^32 bits/s.\n"
+            u"\n"
+            u"  -t value\n"
+            u"  --time_interval value\n"
+            u"      Time interval (in seconds) used to compute the bitrate.\n"
+            u"      Default value = 5 seconds.\n"
+            u"\n"
+            u"  --help\n"
+            u"      Display this help text.\n"
+            u"\n"
+            u"  --version\n"
+            u"      Display the version number.\n");
 }
 
 
@@ -159,7 +160,7 @@ ts::BitrateMonitorPlugin::BitrateMonitorPlugin (TSP* tsp_) :
 bool ts::BitrateMonitorPlugin::start()
 {
     // Get command line arguments
-    _alarm_command = value("alarm_command");
+    _alarm_command = value(u"alarm_command");
 
     _pid = intValue<PID> ("", PID_NULL);
 

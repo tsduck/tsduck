@@ -103,38 +103,38 @@ ts::T2MIPlugin::T2MIPlugin(TSP* tsp_) :
     _demux(this),
     _ts_queue()
 {
-    option("extract", 'e');
-    option("log",     'l');
-    option("pid",     'p', PIDVAL);
-    option("plp",      0,  UINT8);
+    option(u"extract", 'e');
+    option(u"log",     'l');
+    option(u"pid",     'p', PIDVAL);
+    option(u"plp",      0,  UINT8);
 
-    setHelp("Options:\n"
-            "\n"
-            "  -e\n"
-            "  --extract\n"
-            "      Extract encapsulated TS packets from one PLP of a T2-MI stream.\n"
-            "      The transport stream is completely replaced by the extracted stream.\n"
-            "      This is the default if neither --extract nor --log is specified.\n"
-            "\n"
-            "  -l\n"
-            "  --log\n"
-            "      Log all T2-MI packets using one single summary line per packet.\n"
-            "\n"
-            "  --help\n"
-            "      Display this help text.\n"
-            "\n"
-            "  -p value\n"
-            "  --pid value\n"
-            "      Specify the PID carrying the T2-MI encapsulation. By default, use the\n"
-            "      first component with a T2MI_descriptor in a service.\n"
-            "\n"
-            "  --plp value\n"
-            "      Specify the PLP (Physical Layer Pipe) to extract from the T2-MI\n"
-            "      encapsulation. By default, use the first PLP which is found.\n"
-            "      Ignored if --extract is not used.\n"
-            "\n"
-            "  --version\n"
-            "      Display the version number.\n");
+    setHelp(u"Options:\n"
+            u"\n"
+            u"  -e\n"
+            u"  --extract\n"
+            u"      Extract encapsulated TS packets from one PLP of a T2-MI stream.\n"
+            u"      The transport stream is completely replaced by the extracted stream.\n"
+            u"      This is the default if neither --extract nor --log is specified.\n"
+            u"\n"
+            u"  -l\n"
+            u"  --log\n"
+            u"      Log all T2-MI packets using one single summary line per packet.\n"
+            u"\n"
+            u"  --help\n"
+            u"      Display this help text.\n"
+            u"\n"
+            u"  -p value\n"
+            u"  --pid value\n"
+            u"      Specify the PID carrying the T2-MI encapsulation. By default, use the\n"
+            u"      first component with a T2MI_descriptor in a service.\n"
+            u"\n"
+            u"  --plp value\n"
+            u"      Specify the PLP (Physical Layer Pipe) to extract from the T2-MI\n"
+            u"      encapsulation. By default, use the first PLP which is found.\n"
+            u"      Ignored if --extract is not used.\n"
+            u"\n"
+            u"  --version\n"
+            u"      Display the version number.\n");
 }
 
 
@@ -145,11 +145,11 @@ ts::T2MIPlugin::T2MIPlugin(TSP* tsp_) :
 bool ts::T2MIPlugin::start()
 {
     // Get command line arguments
-    _extract = present("extract");
-    _log = present("log");
+    _extract = present(u"extract");
+    _log = present(u"log");
     getIntValue<PID>(_pid, "pid", PID_NULL);
     getIntValue<uint8_t>(_plp, "plp");
-    _plp_valid = present("plp");
+    _plp_valid = present(u"plp");
 
     // Extract is the default operation.
     if (!_extract && !_log) {

@@ -40,19 +40,19 @@
 //----------------------------------------------------------------------------
 
 template <class CONTAINER>
-bool ts::ExpandWildcardAndAppend(CONTAINER& container, const std::string& pattern)
+bool ts::ExpandWildcardAndAppend(CONTAINER& container, const UString& pattern)
 {
 #if defined(TS_WINDOWS)
 
     // On Win32, FindFirstFile / FindNextFile return the file name without directory.
     // We keep the directory part in the pattern to add it later to all file names.
-    const size_t pos = pattern.rfind(PathSeparator);
-    const std::string dir(pos == std::string::npos ? "" : pattern.substr(0, pos + 1));
+    const UString::size_type pos = pattern.rfind(PathSeparator);
+    const UString dir(pos == UString::NPOS ? "" : pattern.substr(0, pos + 1));
 
-    ::WIN32_FIND_DATA fdata;
+    ::WIN32_FIND_DATAW fdata;
 
     // Initiate the search
-    ::HANDLE handle = ::FindFirstFile(pattern.c_str(), &fdata);
+    ::HANDLE handle = ::FindFirstFileW(pattern.wc_str(), &fdata);
     if (handle == INVALID_HANDLE_VALUE) {
         // No file matching the pattern is not an error
         const ErrorCode status = ::GetLastError();
@@ -61,29 +61,32 @@ bool ts::ExpandWildcardAndAppend(CONTAINER& container, const std::string& patter
 
     // Loop on all file matching the pattern
     do {
-        const std::string file(fdata.cFileName);
+        // Get next file name.
+        fdata.cFileName[sizeof(fdata.cFileName) / sizeof(fdata.cFileName[0]) - 1] = 0;
+        const UString file(reinterpret_cast<const UChar*>(fdata.cFileName));
+
         // Filter out . and ..
-        if (file != "." && file != "..") {
+        if (file != u"." && file != u"..") {
             container.push_back(dir + file);
         }
-    } while (::FindNextFile(handle, &fdata) != 0);
+    } while (::FindNextFileW(handle, &fdata) != 0);
     const ErrorCode status = ::GetLastError(); // FindNextFile status
 
     // Cleanup the search context
-    ::FindClose (handle);
+    ::FindClose(handle);
     return status == SYS_SUCCESS || status == ERROR_NO_MORE_FILES; // normal end of search
 
 #elif defined(TS_UNIX)
 
     ::glob_t gl;
-    ::memset (&gl, 0, sizeof (gl));
-    int status = ::glob (pattern.c_str(), 0, 0, &gl);
+    ::memset(&gl, 0, sizeof (gl));
+    int status = ::glob(pattern.c_str(), 0, 0, &gl);
     if (status == 0) {
         for (size_t n = 0; n < gl.gl_pathc; n++) {
-            const std::string file (gl.gl_pathv[n]);
+            const UString file(gl.gl_pathv[n]);
             // Filter out . and ..
             if (file != "." && file != "..") {
-                container.push_back (file);
+                container.push_back(file);
             }
         }
     }

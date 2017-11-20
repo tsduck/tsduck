@@ -59,7 +59,7 @@ namespace ts {
         //! @param [in] pat_only If true, only collect the PAT, do not wait for more information.
         //! @param [in,out] report Where to report errors.
         //!
-        TSScanner(Tuner& tuner, MilliSecond timeout = Infinite, bool pat_only = false, ReportInterface& report = CERR);
+        TSScanner(Tuner& tuner, MilliSecond timeout = Infinite, bool pat_only = false, Report& report = CERR);
 
         //!
         //! Get the list of services.
@@ -95,7 +95,7 @@ namespace ts {
     private:
         bool                   _pat_only;
         bool                   _completed;
-        ts::ReportInterface&   _report;
+        ts::Report&   _report;
         ts::SectionDemux       _demux;
         ts::TunerParametersPtr _tparams;
         ts::SafePtr<ts::PAT>   _pat;

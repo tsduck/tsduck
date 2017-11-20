@@ -34,6 +34,7 @@
 
 #pragma once
 #include "tsSection.h"
+#include "tsUString.h"
 #include "tsTablesPtr.h"
 #include "tsTLVSyntax.h"
 
@@ -253,7 +254,7 @@ namespace ts {
         //! @param [in,out] report Where to report errors.
         //! @return A reference to @a strm.
         //!
-        std::ostream& write(std::ostream& strm, ReportInterface& report = CERR) const;
+        std::ostream& write(std::ostream& strm, Report& report = CERR) const;
 
         //!
         //! Save the binary table in a file.
@@ -261,7 +262,7 @@ namespace ts {
         //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool save(const std::string& file_name, ReportInterface& report = CERR) const;
+        bool save(const UString& file_name, Report& report = CERR) const;
 
         //!
         //! This static method reads all tables from the specified file.
@@ -276,7 +277,7 @@ namespace ts {
         static bool LoadFile(BinaryTablePtrVector& tables,
                              std::istream& strm,
                              CRC32::Validation crc_op = CRC32::IGNORE,
-                             ReportInterface& report = CERR);
+                             Report& report = CERR);
 
         //!
         //! This static method reads all tables from the specified file.
@@ -289,9 +290,9 @@ namespace ts {
         //! @return True on success, false on error.
         //!
         static bool LoadFile(BinaryTablePtrVector& tables,
-                             const std::string& file_name,
+                             const UString& file_name,
                              CRC32::Validation crc_op = CRC32::IGNORE,
-                             ReportInterface& report = CERR);
+                             Report& report = CERR);
 
         //!
         //! This static method writes all tables to the specified file.
@@ -300,7 +301,7 @@ namespace ts {
         //! @param [in,out] report Where to report errors.
         //! @return A reference to @a strm.
         //!
-        static std::ostream& SaveFile(const BinaryTablePtrVector& tables, std::ostream& strm, ReportInterface& report = CERR);
+        static std::ostream& SaveFile(const BinaryTablePtrVector& tables, std::ostream& strm, Report& report = CERR);
 
         //!
         //! This static method writes all tables to the specified file.
@@ -309,7 +310,7 @@ namespace ts {
         //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        static bool SaveFile(const BinaryTablePtrVector& tables, const std::string& file_name, ReportInterface& report = CERR);
+        static bool SaveFile(const BinaryTablePtrVector& tables, const UString& file_name, Report& report = CERR);
 
     private:
         BinaryTable(const BinaryTable& table) = delete;

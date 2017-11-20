@@ -33,7 +33,7 @@
 //-----------------------------------------------------------------------------
 
 #pragma once
-#include "tsReportInterface.h"
+#include "tsReport.h"
 #include "tsComPtr.h"
 
 namespace ts {
@@ -47,14 +47,14 @@ namespace ts {
         //! Constructor.
         //! @param [in,out] report Where to report errors.
         //!
-        DirectShowFilterCategory(ReportInterface& report);
+        DirectShowFilterCategory(Report& report);
 
         //!
         //! Constructor from a device category.
         //! @param [in] category GUID of the device category.
         //! @param [in,out] report Where to report errors.
         //!
-        DirectShowFilterCategory(const ::GUID& category, ReportInterface& report);
+        DirectShowFilterCategory(const ::GUID& category, Report& report);
 
         //!
         //! Destructor.
@@ -124,7 +124,7 @@ namespace ts {
             ComPtr<::IBaseFilter> filter;   // Pointer to its IBaseFilter interface.
         };
 
-        ReportInterface&         _report;
+        Report&         _report;
         ComPtr<::ICreateDevEnum> _enum;
         ComPtr<::IEnumMoniker>   _moniker;
         std::vector<Filter>      _filters;

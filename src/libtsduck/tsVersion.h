@@ -76,7 +76,7 @@ namespace ts {
     //! Do not specify a directory, do not specify file extensions (no ".exe",
     //! no ".dll", no ".so").
     //!
-    TSDUCKDLL void AddRevisionFile(const std::string& wildcard);
+    TSDUCKDLL void AddRevisionFile(const UString& wildcard);
 
     //!
     //! Get the TSDuck formatted version number.
@@ -85,9 +85,9 @@ namespace ts {
     //! @param [in] revisionFile Extract the revision number from this file (use current executable if empty).
     //! @return The formatted version string.
     //!
-    TSDUCKDLL std::string GetVersion(VersionFormat format = VERSION_SHORT,
-                                     const std::string& applicationName = std::string(),
-                                     const std::string& revisionFile = std::string());
+    TSDUCKDLL UString GetVersion(VersionFormat format = VERSION_SHORT,
+                                 const UString& applicationName = UString(),
+                                 const UString& revisionFile = UString());
 
     //!
     //! Get the TSDuck revision number as integer from a binary file.
@@ -98,5 +98,5 @@ namespace ts {
     //! library in same directory as the specified file.
     //! @return The revision number or zero if not found.
     //!
-    TSDUCKDLL int GetRevision(const std::string& fileName = std::string(), bool includeLibrary = true);
+    TSDUCKDLL int GetRevision(const UString& fileName = UString(), bool includeLibrary = true);
 }

@@ -70,32 +70,32 @@ TSPLUGIN_DECLARE_INPUT(ts::NullInput)
 // Constructor
 //----------------------------------------------------------------------------
 
-ts::NullInput::NullInput (TSP* tsp_) :
-    InputPlugin(tsp_, "Generate null packets.", "[options] [count]"),
+ts::NullInput::NullInput(TSP* tsp_) :
+    InputPlugin(tsp_, u"Generate null packets.", u"[options] [count]"),
     _max_count(0),
     _count(0)
 {
-    option ("",                   0,  UNSIGNED, 0, 1);
-    option ("joint-termination", 'j');
+    option(u"",                   0,  UNSIGNED, 0, 1);
+    option(u"joint-termination", 'j');
 
-    setHelp ("Count:\n"
-             "  Specify the number of null packets to generate. After the last packet,\n"
-             "  an end-of-file condition is generated. By default, if count is not\n"
-             "  specified, null packets are generated endlessly.\n"
-             "\n"
-             "Options:\n"
-             "\n"
-             "  --help\n"
-             "      Display this help text.\n"
-             "\n"
-             "  -j\n"
-             "  --joint-termination\n"
-             "      When the number of null packets is specified, perform a \"joint\n"
-             "      termination\" when completed instead of unconditional termination.\n"
-             "      See \"tsp --help\" for more details on \"joint termination\".\n"
-             "\n"
-             "  --version\n"
-             "      Display the version number.\n");
+    setHelp(u"Count:\n"
+            u"  Specify the number of null packets to generate. After the last packet,\n"
+            u"  an end-of-file condition is generated. By default, if count is not\n"
+            u"  specified, null packets are generated endlessly.\n"
+            u"\n"
+            u"Options:\n"
+            u"\n"
+            u"  --help\n"
+            u"      Display this help text.\n"
+            u"\n"
+            u"  -j\n"
+            u"  --joint-termination\n"
+            u"      When the number of null packets is specified, perform a \"joint\n"
+            u"      termination\" when completed instead of unconditional termination.\n"
+            u"      See \"tsp --help\" for more details on \"joint termination\".\n"
+            u"\n"
+            u"  --version\n"
+            u"      Display the version number.\n");
 }
 
 
@@ -105,7 +105,7 @@ ts::NullInput::NullInput (TSP* tsp_) :
 
 bool ts::NullInput::start()
 {
-    tsp->useJointTermination (present ("joint-termination"));
+    tsp->useJointTermination (present(u"joint-termination"));
     _max_count = intValue<PacketCounter> ("", std::numeric_limits<PacketCounter>::max());
     _count = 0;
     return true;

@@ -154,7 +154,7 @@ void ts::tsp::PluginExecutor::initBuffer (PacketBuffer* buffer,
 
 //----------------------------------------------------------------------------
 // Invoked by shared library to log messages
-// Inherited from ReportInterface (via TSP)
+// Inherited from Report (via TSP)
 //----------------------------------------------------------------------------
 
 void ts::tsp::PluginExecutor::writeLog (int severity, const std::string& msg)

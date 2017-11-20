@@ -35,7 +35,7 @@
 #pragma once
 #include "tsPlatform.h"
 #include "tsEnumeration.h"
-#include "tsReportInterface.h"
+#include "tsReport.h"
 
 namespace ts {
     //!
@@ -64,7 +64,7 @@ namespace ts {
     //! the feature is not supported. In this case, an error message is reported
     //! to @a report.
     //!
-    TSDUCKDLL bool CheckModEnum(int value, const std::string& name, const Enumeration& conv, ReportInterface& report);
+    TSDUCKDLL bool CheckModEnum(int value, const UString& name, const Enumeration& conv, Report& report);
 
     //!
     //! Known tuner types.
@@ -568,7 +568,7 @@ namespace ts {
         //! @param [in] quality Signal quality in percent. Ignored if negative.
         //! @return Channel description.
         //!
-        TSDUCKDLL std::string Description(int channel, int offset, int strength = -1, int quality = -1);
+        TSDUCKDLL UString Description(int channel, int offset, int strength = -1, int quality = -1);
     }
 
     //!

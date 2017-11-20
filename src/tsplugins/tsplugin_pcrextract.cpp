@@ -132,57 +132,57 @@ ts::PCRExtractPlugin::PCRExtractPlugin (TSP* tsp_) :
     _packet_count(0),
     _stats()
 {
-    option ("dts",           'd');
-    option ("good-pts-only", 'g');
-    option ("noheader",      'n');
-    option ("opcr",           0);
-    option ("output-file",   'o', STRING);
-    option ("pcr",            0);
-    option ("pts",           'p');
-    option ("separator",     's', STRING);
+    option(u"dts",           'd');
+    option(u"good-pts-only", 'g');
+    option(u"noheader",      'n');
+    option(u"opcr",           0);
+    option(u"output-file",   'o', STRING);
+    option(u"pcr",            0);
+    option(u"pts",           'p');
+    option(u"separator",     's', STRING);
 
-    setHelp ("Options:\n"
-             "\n"
-             "  -d\n"
-             "  --dts\n"
-             "      Report Decoding Time Stamps (DTS). By default, if none of --pcr, --opcr,\n"
-             "      --pts, --dts is specified, report them all.\n"
-             "\n"
-             "  -g\n"
-             "  --good-pts-only\n"
-             "      Keep only \"good\" PTS, ie. PTS which have a higher value than the\n"
-             "      previous good PTS. This eliminates PTS from out-of-sequence B-frames.\n"
-             "\n"
-             "  --help\n"
-             "      Display this help text.\n"
-             "\n"
-             "  -n\n"
-             "  --noheader\n"
-             "      Do not output initial header line.\n"
-             "\n"
-             "  --opcr\n"
-             "      Report Original Program Clock References (OPCR). By default, if none of\n"
-             "      --pcr, --opcr, --pts, --dts is specified, report them all.\n"
-             "\n"
-             "  -o filename\n"
-             "  --output-file filename\n"
-             "      Output file name (standard error by default).\n"
-             "\n"
-             "  --pcr\n"
-             "      Report Program Clock References (PCR). By default, if none of --pcr,\n"
-             "      --opcr, --pts, --dts is specified, report them all.\n"
-             "\n"
-             "  -p\n"
-             "  --pts\n"
-             "      Report Presentation Time Stamps (PTS). By default, if none of --pcr,\n"
-             "      --opcr, --pts, --dts is specified, report them all.\n"
-             "\n"
-             "  -s string\n"
-             "  --separator string\n"
-             "      Field separator string in output (default: '" DEFAULT_SEPARATOR "').\n"
-             "\n"
-             "  --version\n"
-             "      Display the version number.\n");
+    setHelp(u"Options:\n"
+             u"\n"
+             u"  -d\n"
+             u"  --dts\n"
+             u"      Report Decoding Time Stamps (DTS). By default, if none of --pcr, --opcr,\n"
+             u"      --pts, --dts is specified, report them all.\n"
+             u"\n"
+             u"  -g\n"
+             u"  --good-pts-only\n"
+             u"      Keep only \"good\" PTS, ie. PTS which have a higher value than the\n"
+             u"      previous good PTS. This eliminates PTS from out-of-sequence B-frames.\n"
+             u"\n"
+             u"  --help\n"
+             u"      Display this help text.\n"
+             u"\n"
+             u"  -n\n"
+             u"  --noheader\n"
+             u"      Do not output initial header line.\n"
+             u"\n"
+             u"  --opcr\n"
+             u"      Report Original Program Clock References (OPCR). By default, if none of\n"
+             u"      --pcr, --opcr, --pts, --dts is specified, report them all.\n"
+             u"\n"
+             u"  -o filename\n"
+             u"  --output-file filename\n"
+             u"      Output file name (standard error by default).\n"
+             u"\n"
+             u"  --pcr\n"
+             u"      Report Program Clock References (PCR). By default, if none of --pcr,\n"
+             u"      --opcr, --pts, --dts is specified, report them all.\n"
+             u"\n"
+             u"  -p\n"
+             u"  --pts\n"
+             u"      Report Presentation Time Stamps (PTS). By default, if none of --pcr,\n"
+             u"      --opcr, --pts, --dts is specified, report them all.\n"
+             u"\n"
+             u"  -s string\n"
+             u"  --separator string\n"
+             u"      Field separator string in output (default: '" DEFAULT_SEPARATOR "').\n"
+             u"\n"
+             u"  --version\n"
+             u"      Display the version number.\n");
 }
 
 
@@ -192,14 +192,14 @@ ts::PCRExtractPlugin::PCRExtractPlugin (TSP* tsp_) :
 
 bool ts::PCRExtractPlugin::start()
 {
-    _separator = value ("separator", DEFAULT_SEPARATOR);
-    _noheader = present ("noheader");
-    _output_name = value ("output-file");
-    _good_pts_only = present ("good-pts-only");
-    _get_pts = present ("dts");
-    _get_dts = present ("pts");
-    _get_pcr = present ("pcr");
-    _get_opcr = present ("opcr");
+    _separator = value(u"separator", DEFAULT_SEPARATOR);
+    _noheader = present(u"noheader");
+    _output_name = value(u"output-file");
+    _good_pts_only = present(u"good-pts-only");
+    _get_pts = present(u"dts");
+    _get_dts = present(u"pts");
+    _get_pcr = present(u"pcr");
+    _get_opcr = present(u"opcr");
     if (!_get_pts && !_get_dts && !_get_pcr && !_get_opcr) {
         // Report them all by default
         _get_pts = _get_dts = _get_pcr = _get_opcr = true;

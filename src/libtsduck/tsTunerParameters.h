@@ -141,7 +141,7 @@ namespace ts {
         //! @return True on success, false on error (missing mandatory parameter,
         //! inconsistent values, etc.).
         //!
-        bool fromTunerArgs(const TunerArgs& args, ReportInterface& report);
+        bool fromTunerArgs(const TunerArgs& args, Report& report);
 
         //!
         //! Exception thrown when assigning incompatible parameter types.
@@ -191,7 +191,7 @@ namespace ts {
         //! @return True on success, false on error (missing mandatory parameter,
         //! inconsistent values, etc.).
         //!
-        virtual bool fromArgs(const TunerArgs& args, ReportInterface& report) = 0;
+        virtual bool fromArgs(const TunerArgs& args, Report& report) = 0;
 
         //!
         //! Theoretical useful bitrate for QPSK or QAM modulation.

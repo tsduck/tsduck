@@ -94,7 +94,7 @@ namespace ts {
         //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
-        bool listen(int backlog, ReportInterface& report = CERR);
+        bool listen(int backlog, Report& report = CERR);
 
         //!
         //! Wait for an incoming client connection.
@@ -110,10 +110,10 @@ namespace ts {
         //! @return True on success, false on error.
         //! @see listen()
         //!
-        bool accept(TCPConnection& client, SocketAddress& addr, ReportInterface& report = CERR);
+        bool accept(TCPConnection& client, SocketAddress& addr, Report& report = CERR);
 
         // Inherited and overridden
-        virtual bool close(ReportInterface& report = CERR);
+        virtual bool close(Report& report = CERR);
 
     private:
         // Unreachable operations

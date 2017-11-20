@@ -58,7 +58,7 @@ namespace ts {
             WIDE_OFFSET = 0x0008,  //!< Always wide offset.
             SINGLE_LINE = 0x0010,  //!< Hexa on one single line, no line feed, ignore other flags.
             BPL         = 0x0020,  //!< Interpret @a max_line_width as number of displayed Bytes Per Line (BPL).
-            C_STYLE     = 0x0040,  //!< C-style hexa value ("0xXX," instead of "XX").
+            C_STYLE     = 0x0040,  //!< C-style hexa value(u"0xXX," instead of "XX").
             BINARY      = 0x0080,  //!< Dump binary values ("XXXXXXXX" binary digits).
             BIN_NIBBLE  = 0x0100,  //!< Binary values are grouped by nibble ("XXXX XXXX").
             COMPACT     = 0x0200,  //!< Same as SINGLE_LINE but use a compact display without space.

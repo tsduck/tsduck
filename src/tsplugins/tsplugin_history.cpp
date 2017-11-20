@@ -112,8 +112,8 @@ TSPLUGIN_DECLARE_PROCESSOR(ts::HistoryPlugin)
 // Constructor
 //----------------------------------------------------------------------------
 
-ts::HistoryPlugin::HistoryPlugin (TSP* tsp_) :
-    ProcessorPlugin(tsp_, "Report a history of major events on the transport stream.", "[options]"),
+ts::HistoryPlugin::HistoryPlugin(TSP* tsp_) :
+    ProcessorPlugin(tsp_, u"Report a history of major events on the transport stream.", u"[options]"),
     _outfile(),
     _current_pkt(0),
     _report_eit(false),
@@ -127,60 +127,60 @@ ts::HistoryPlugin::HistoryPlugin (TSP* tsp_) :
     _demux(this),
     _cpids()
 {
-    option ("cas",                      'c');
-    option ("eit",                      'e');
-    option ("ignore-stream-id-change",  'i');
-    option ("output-file",              'o', STRING);
-    option ("suspend-packet-threshold", 's', POSITIVE);
-    option ("time-all",                 't');
+    option(u"cas",                      'c');
+    option(u"eit",                      'e');
+    option(u"ignore-stream-id-change",  'i');
+    option(u"output-file",              'o', STRING);
+    option(u"suspend-packet-threshold", 's', POSITIVE);
+    option(u"time-all",                 't');
 
-    setHelp ("Options:\n"
-             "\n"
-             "  -c\n"
-             "  --cas\n"
-             "      Report all CAS events (ECM, crypto-periods).\n"
-             "\n"
-             "  -e\n"
-             "  --eit\n"
-             "      Report all EIT. By default, EIT are not reported.\n"
-             "\n"
-             "  --help\n"
-             "      Display this help text.\n"
-             "\n"
-             "  -i\n"
-             "  --ignore-stream-id-change\n"
-             "      Do not report stream_id modifications in a stream. Some subtitle streams\n"
-             "      may constantly swap between \"private stream\" and \"padding stream\". This\n"
-             "      option suppresses these annoying messages.\n"
-             "\n"
-             "  -o filename\n"
-             "  --output-file filename\n"
-             "      Specify the output file for reporting history lines. By default, report\n"
-             "      history lines on standard error using the tsp logging mechanism.\n"
-             "\n"
-             "  -s value\n"
-             "  --suspend-packet-threshold value\n"
-             "      Number of packets in TS after which a PID is considered as suspended.\n"
-             "      By default, if no packet is found in a PID during 60 seconds, the PID\n"
-             "      is considered as suspended.\n"
-             "\n"
-             "  -t\n"
-             "  --time-all\n"
-             "      Report all TDT and TOT. By default, only report TDT preceeding\n"
-             "      another event.\n"
-             "\n"
-             "  --version\n"
-             "      Display the version number.\n"
-             "\n"
-             "Without option --output-file, output is formated as:\n"
-             "  * history: PKT#: MESSAGE\n"
-             "\n"
-             "Some messages may be out of sync. To sort messages according to their packet\n"
-             "numbers, use a command like:\n"
-             "  tsp -P history ...  2>&1 | grep '* history:' | sort -t : -k 2 -n\n"
-             "\n"
-             "When an output file is specified using --output-file, the sort command becomes:\n"
-             "  sort -n output-file-name\n");
+    setHelp(u"Options:\n"
+            u"\n"
+            u"  -c\n"
+            u"  --cas\n"
+            u"      Report all CAS events (ECM, crypto-periods).\n"
+            u"\n"
+            u"  -e\n"
+            u"  --eit\n"
+            u"      Report all EIT. By default, EIT are not reported.\n"
+            u"\n"
+            u"  --help\n"
+            u"      Display this help text.\n"
+            u"\n"
+            u"  -i\n"
+            u"  --ignore-stream-id-change\n"
+            u"      Do not report stream_id modifications in a stream. Some subtitle streams\n"
+            u"      may constantly swap between \"private stream\" and \"padding stream\". This\n"
+            u"      option suppresses these annoying messages.\n"
+            u"\n"
+            u"  -o filename\n"
+            u"  --output-file filename\n"
+            u"      Specify the output file for reporting history lines. By default, report\n"
+            u"      history lines on standard error using the tsp logging mechanism.\n"
+            u"\n"
+            u"  -s value\n"
+            u"  --suspend-packet-threshold value\n"
+            u"      Number of packets in TS after which a PID is considered as suspended.\n"
+            u"      By default, if no packet is found in a PID during 60 seconds, the PID\n"
+            u"      is considered as suspended.\n"
+            u"\n"
+            u"  -t\n"
+            u"  --time-all\n"
+            u"      Report all TDT and TOT. By default, only report TDT preceeding\n"
+            u"      another event.\n"
+            u"\n"
+            u"  --version\n"
+            u"      Display the version number.\n"
+            u"\n"
+            u"Without option --output-file, output is formated as:\n"
+            u"  * history: PKT#: MESSAGE\n"
+            u"\n"
+            u"Some messages may be out of sync. To sort messages according to their packet\n"
+            u"numbers, use a command like:\n"
+            u"  tsp -P history ...  2>&1 | grep '* history:' | sort -t : -k 2 -n\n"
+            u"\n"
+            u"When an output file is specified using --output-file, the sort command becomes:\n"
+            u"  sort -n output-file-name\n");
 }
 
 
@@ -207,15 +207,15 @@ ts::HistoryPlugin::PIDContext::PIDContext() :
 bool ts::HistoryPlugin::start()
 {
     // Get command line arguments
-    _report_cas = present ("cas");
-    _report_eit = present ("eit");
-    _time_all = present ("time-all");
-    _ignore_stream_id = present ("ignore-stream-id-change");
+    _report_cas = present(u"cas");
+    _report_eit = present(u"eit");
+    _time_all = present(u"time-all");
+    _ignore_stream_id = present(u"ignore-stream-id-change");
     _suspend_after = intValue<PacketCounter> ("suspend-packet-threshold");
 
     // Create output file
-    if (present ("output-file")) {
-        const std::string name (value ("output-file"));
+    if (present(u"output-file")) {
+        const std::string name (value(u"output-file"));
         tsp->verbose ("creating " + name);
         _outfile.open (name.c_str(), std::ios::out);
         if (!_outfile) {

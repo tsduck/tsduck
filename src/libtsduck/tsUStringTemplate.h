@@ -31,6 +31,114 @@
 
 
 //----------------------------------------------------------------------------
+// Assign from std::vector and std::array.
+//----------------------------------------------------------------------------
+
+// With Microsoft compiler:
+// warning C4127: conditional expression is constant
+// for expression: if (sizeof(CHARTYPE) == sizeof(UChar)) {
+#if defined(TS_MSC)
+    #pragma warning(push)
+    #pragma warning(disable:4127)
+#endif
+
+template <typename CHARTYPE, typename INT>
+ts::UString& ts::UString::assign(const std::vector<CHARTYPE>& vec, INT count)
+{
+    // The character type must be 16 bits.
+    assert(sizeof(CHARTYPE) == sizeof(UChar));
+    if (sizeof(CHARTYPE) == sizeof(UChar)) {
+
+        // Maximum number of characters to check.
+        // Take care, carefully crafted expression.
+        const size_t last = std::min<std::size_t>(vec.size(), static_cast<size_t>(std::max<INT>(0, count)));
+
+        // Compute actual string length.
+        size_type n = 0;
+        while (n < last && vec[n] != static_cast<CHARTYPE>(0)) {
+            ++n;
+        }
+
+        // Assign string.
+        assign(reinterpret_cast<const UChar*>(vec.data()), n);
+    }
+    return *this;
+}
+
+template <typename CHARTYPE, std::size_t SIZE, typename INT>
+ts::UString& ts::UString::assign(const std::array<CHARTYPE, SIZE>& arr, INT count)
+{
+    // The character type must be 16 bits.
+    assert(sizeof(CHARTYPE) == sizeof(UChar));
+    if (sizeof(CHARTYPE) == sizeof(UChar)) {
+
+        // Maximum number of characters to check.
+        // Take care, carefully crafted expression.
+        const std::size_t last = std::min<std::size_t>(arr.size(), static_cast<std::size_t>(std::max<INT>(0, count)));
+
+        // Compute actual string length.
+        size_type n = 0;
+        while (n < last && arr[n] != static_cast<CHARTYPE>(0)) {
+            ++n;
+        }
+
+        // Assign string.
+        assign(reinterpret_cast<const UChar*>(arr.data()), n);
+    }
+    return *this;
+}
+
+#if defined(TS_MSC)
+    #pragma warning(pop)
+#endif
+
+template <typename CHARTYPE>
+ts::UString& ts::UString::assign(const std::vector<CHARTYPE>& vec)
+{
+    return assign(vec, vec.size());
+}
+
+template <typename CHARTYPE, std::size_t SIZE>
+ts::UString& ts::UString::assign(const std::array<CHARTYPE, SIZE>& arr)
+{
+    return assign(arr, arr.size());
+}
+
+
+//----------------------------------------------------------------------------
+// Template constructors.
+//----------------------------------------------------------------------------
+
+template <typename CHARTYPE, typename INT>
+ts::UString::UString(const std::vector<CHARTYPE>& vec, INT count, const allocator_type& alloc) :
+    SuperClass(alloc)
+{
+    assign(vec, count);
+}
+
+template <typename CHARTYPE>
+ts::UString::UString(const std::vector<CHARTYPE>& vec, const allocator_type& alloc) :
+    SuperClass(alloc)
+{
+    assign(vec);
+}
+
+template <typename CHARTYPE, std::size_t SIZE, typename INT>
+ts::UString::UString(const std::array<CHARTYPE, SIZE>& arr, INT count, const allocator_type& alloc) :
+    SuperClass(alloc)
+{
+    assign(arr, count);
+}
+
+template <typename CHARTYPE, std::size_t SIZE>
+ts::UString::UString(const std::array<CHARTYPE, SIZE>& arr, const allocator_type& alloc) :
+    SuperClass(alloc)
+{
+    assign(arr);
+}
+
+
+//----------------------------------------------------------------------------
 // Split a string based on a separator character.
 //----------------------------------------------------------------------------
 
@@ -288,11 +396,11 @@ bool ts::UString::toInteger(INT& value, const UString& thousandSeparators) const
     // In this function, we work on formal integer types INT. We use std::numeric_limits<INT> to test the
     // capabilities of the type (is_signed, etc.) But, for each instantiation of INT, some expression
     // may not make sense and the Microsoft compiler complains about that. Disable specific warnings
-#if defined(TS_MSC)
-#pragma warning(push)
-#pragma warning(disable:4127)
-#pragma warning(disable:4146)
-#endif
+    #if defined(TS_MSC)
+        #pragma warning(push)
+        #pragma warning(disable:4127)
+        #pragma warning(disable:4146)
+    #endif
 
     typedef typename std::numeric_limits<INT> limits;
 
@@ -365,9 +473,9 @@ bool ts::UString::toInteger(INT& value, const UString& thousandSeparators) const
     // Success only if we went down to the end of string
     return start == end;
 
-#if defined(TS_MSC)
-#pragma warning(pop)
-#endif
+    #if defined(TS_MSC)
+        #pragma warning(pop)
+    #endif
 }
 
 
@@ -463,14 +571,14 @@ ts::UString ts::UString::Decimal(INT value,
     if (negative) {
         // If the type is unsigned, "ivalue = -value" will never be executed
         // but Visual C++ complains. Suppress the warning.
-        #ifdef TS_MSC
+        #if defined(TS_MSC)
             #pragma warning(push)
             #pragma warning(disable:4146)
         #endif
 
         ivalue = -value;
 
-        #ifdef TS_MSC
+        #if defined(TS_MSC)
             #pragma warning(pop)
         #endif
     }

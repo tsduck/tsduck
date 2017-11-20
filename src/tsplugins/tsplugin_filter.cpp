@@ -82,8 +82,8 @@ TSPLUGIN_DECLARE_PROCESSOR(ts::FilterPlugin)
 // Constructor
 //----------------------------------------------------------------------------
 
-ts::FilterPlugin::FilterPlugin (TSP* tsp_) :
-    ProcessorPlugin (tsp_, "Filter TS packets according to various conditions.", "[options]"),
+ts::FilterPlugin::FilterPlugin(TSP* tsp_) :
+    ProcessorPlugin(tsp_, u"Filter TS packets according to various conditions.", u"[options]"),
     scrambling_ctrl(0),
     with_payload(false),
     with_af(false),
@@ -99,88 +99,88 @@ ts::FilterPlugin::FilterPlugin (TSP* tsp_) :
     max_af(0),
     pid()
 {
-    option ("adaptation-field",          0);
-    option ("clear",                    'c');
-    option ("max-adaptation-field-size", 0,  INTEGER, 0, 1, 0, 184);
-    option ("max-payload-size",          0,  INTEGER, 0, 1, 0, 184);
-    option ("min-adaptation-field-size", 0,  INTEGER, 0, 1, 0, 184);
-    option ("min-payload-size",          0,  INTEGER, 0, 1, 0, 184);
-    option ("negate",                   'n');
-    option ("payload",                   0);
-    option ("pcr",                       0);
-    option ("pes",                       0);
-    option ("pid",                      'p', PIDVAL, 0, UNLIMITED_COUNT);
-    option ("scrambling-control",        0,  INTEGER, 0, 1, 0, 3);
-    option ("stuffing",                 's');
-    option ("unit-start",                0);
-    option ("valid",                    'v');
+    option(u"adaptation-field",          0);
+    option(u"clear",                    'c');
+    option(u"max-adaptation-field-size", 0,  INTEGER, 0, 1, 0, 184);
+    option(u"max-payload-size",          0,  INTEGER, 0, 1, 0, 184);
+    option(u"min-adaptation-field-size", 0,  INTEGER, 0, 1, 0, 184);
+    option(u"min-payload-size",          0,  INTEGER, 0, 1, 0, 184);
+    option(u"negate",                   'n');
+    option(u"payload",                   0);
+    option(u"pcr",                       0);
+    option(u"pes",                       0);
+    option(u"pid",                      'p', PIDVAL, 0, UNLIMITED_COUNT);
+    option(u"scrambling-control",        0,  INTEGER, 0, 1, 0, 3);
+    option(u"stuffing",                 's');
+    option(u"unit-start",                0);
+    option(u"valid",                    'v');
 
-    setHelp ("Options:\n"
-             "\n"
-             "  --adaptation-field\n"
-             "      Select packets with an adaptation field.\n"
-             "\n"
-             "  -c\n"
-             "  --clear\n"
-             "      Select clear (unscrambled) packets.\n"
-             "      Equivalent to --scrambling-control 0.\n"
-             "\n"
-             "  --help\n"
-             "      Display this help text.\n"
-             "\n"
-             "  --max-adaptation-field-size value\n"
-             "      Select packets with no adaptation field or with an adaptation field the\n"
-             "      size (in bytes) of which is not greater than the specified value.\n"
-             "\n"
-             "  --max-payload-size value\n"
-             "      Select packets with no payload or with a payload the size (in bytes) of\n"
-             "      which is not greater than the specified value.\n"
-             "\n"
-             "  --min-adaptation-field-size value\n"
-             "      Select packets with an adaptation field the size (in bytes) of which\n"
-             "      is equal to or greater than the specified value.\n"
-             "\n"
-             "  --min-payload-size value\n"
-             "      Select packets with a payload the size (in bytes) of which is equal\n"
-             "      to or greater than the specified value.\n"
-             "\n"
-             "  -n\n"
-             "  --negate\n"
-             "      Negate the filter: specified packets are excluded.\n"
-             "\n"
-             "  --payload\n"
-             "      Select packets with a payload.\n"
-             "\n"
-             "  --pcr\n"
-             "      Select packets with PCR or OPCR.\n"
-             "\n"
-             "  --pes\n"
-             "      Select packets with clear PES headers.\n"
-             "\n"
-             "  -p value\n"
-             "  --pid value\n"
-             "      PID filter: select packets with this PID value.\n"
-             "      Several -p or --pid options may be specified.\n"
-             "\n"
-             "  --scrambling-control value\n"
-             "      Select packets with the specified scrambling control value. Valid\n"
-             "      values are 0 (clear), 1 (reserved), 2 (even key), 3 (odd key).\n"
-             "\n"
-             "  -s\n"
-             "  --stuffing\n"
-             "      Replace excluded packets with stuffing (null packets) instead\n"
-             "      of removing them. Useful to preserve bitrate.\n"
-             "\n"
-             "  --unit-start\n"
-             "      Select packets with payload unit start indicator.\n"
-             "\n"
-             "  -v\n"
-             "  --valid\n"
-             "      Select valid packets. A valid packet starts with 0x47 and has\n"
-             "      its transport_error_indicator cleared.\n"
-             "\n"
-             "  --version\n"
-             "      Display the version number.\n");
+    setHelp(u"Options:\n"
+            u"\n"
+            u"  --adaptation-field\n"
+            u"      Select packets with an adaptation field.\n"
+            u"\n"
+            u"  -c\n"
+            u"  --clear\n"
+            u"      Select clear (unscrambled) packets.\n"
+            u"      Equivalent to --scrambling-control 0.\n"
+            u"\n"
+            u"  --help\n"
+            u"      Display this help text.\n"
+            u"\n"
+            u"  --max-adaptation-field-size value\n"
+            u"      Select packets with no adaptation field or with an adaptation field the\n"
+            u"      size (in bytes) of which is not greater than the specified value.\n"
+            u"\n"
+            u"  --max-payload-size value\n"
+            u"      Select packets with no payload or with a payload the size (in bytes) of\n"
+            u"      which is not greater than the specified value.\n"
+            u"\n"
+            u"  --min-adaptation-field-size value\n"
+            u"      Select packets with an adaptation field the size (in bytes) of which\n"
+            u"      is equal to or greater than the specified value.\n"
+            u"\n"
+            u"  --min-payload-size value\n"
+            u"      Select packets with a payload the size (in bytes) of which is equal\n"
+            u"      to or greater than the specified value.\n"
+            u"\n"
+            u"  -n\n"
+            u"  --negate\n"
+            u"      Negate the filter: specified packets are excluded.\n"
+            u"\n"
+            u"  --payload\n"
+            u"      Select packets with a payload.\n"
+            u"\n"
+            u"  --pcr\n"
+            u"      Select packets with PCR or OPCR.\n"
+            u"\n"
+            u"  --pes\n"
+            u"      Select packets with clear PES headers.\n"
+            u"\n"
+            u"  -p value\n"
+            u"  --pid value\n"
+            u"      PID filter: select packets with this PID value.\n"
+            u"      Several -p or --pid options may be specified.\n"
+            u"\n"
+            u"  --scrambling-control value\n"
+            u"      Select packets with the specified scrambling control value. Valid\n"
+            u"      values are 0 (clear), 1 (reserved), 2 (even key), 3 (odd key).\n"
+            u"\n"
+            u"  -s\n"
+            u"  --stuffing\n"
+            u"      Replace excluded packets with stuffing (null packets) instead\n"
+            u"      of removing them. Useful to preserve bitrate.\n"
+            u"\n"
+            u"  --unit-start\n"
+            u"      Select packets with payload unit start indicator.\n"
+            u"\n"
+            u"  -v\n"
+            u"  --valid\n"
+            u"      Select valid packets. A valid packet starts with 0x47 and has\n"
+            u"      its transport_error_indicator cleared.\n"
+            u"\n"
+            u"  --version\n"
+            u"      Display the version number.\n");
 }
 
 
@@ -190,15 +190,15 @@ ts::FilterPlugin::FilterPlugin (TSP* tsp_) :
 
 bool ts::FilterPlugin::start()
 {
-    scrambling_ctrl = present ("clear") ? 0 : intValue ("scrambling-control", -1);
-    with_payload = present ("payload");
-    with_af = present ("adaptation-field");
-    with_pes = present ("pes");
-    has_pcr = present ("pcr");
-    unit_start = present ("unit-start");
-    valid = present ("valid");
-    negate = present ("negate");
-    stuffing = present ("stuffing");
+    scrambling_ctrl = present(u"clear") ? 0 : intValue ("scrambling-control", -1);
+    with_payload = present(u"payload");
+    with_af = present(u"adaptation-field");
+    with_pes = present(u"pes");
+    has_pcr = present(u"pcr");
+    unit_start = present(u"unit-start");
+    valid = present(u"valid");
+    negate = present(u"negate");
+    stuffing = present(u"stuffing");
     min_payload = intValue<int> ("min-payload-size", -1);
     max_payload = intValue<int> ("max-payload-size", -1);
     min_af = intValue<int> ("min-adaptation-field-size", -1);

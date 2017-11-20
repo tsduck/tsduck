@@ -28,7 +28,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsDektecControl.h"
-#include "tsFormat.h"
 #include "tsSysUtils.h"
 #include "tsDektecUtils.h"
 #include "tsDektecDevice.h"
@@ -51,7 +50,7 @@ TSDUCK_SOURCE;
 //----------------------------------------------------------------------------
 
 ts::DektecControl::DektecControl(int argc, char *argv[]) :
-    Args("Control a Dektec Device.", "[options] [device]"),
+    Args(u"Control a Dektec Device.", u"[options] [device]"),
     _list_all(false),
     _normalized(false),
     _wait_sec(0),
@@ -63,87 +62,88 @@ ts::DektecControl::DektecControl(int argc, char *argv[]) :
     _set_output(0),
     _verbose(false)
 {
-    option("", 0, Args::UNSIGNED, 0, 1); // parameter is an optional integer
-    option("all", 'a');
-    option("input", 'i', Args::UNSIGNED);
-    option("normalized", 'n');
-    option("output", 'o', Args::UNSIGNED);
-    option("reset", 'r');
-    option("verbose", 'v');
-    option("wait", 'w', Args::UNSIGNED);
-    option("led", 'l', Enumeration("off", DTAPI_LED_OFF,
-                                   "green", DTAPI_LED_GREEN,
-                                   "red", DTAPI_LED_RED,
-                                   "yellow", DTAPI_LED_YELLOW,
-                                   "hardware", DTAPI_LED_HARDWARE,
-                                   TS_NULL));
+    option(u"", 0, Args::UNSIGNED, 0, 1); // parameter is an optional integer
+    option(u"all", 'a');
+    option(u"input", 'i', Args::UNSIGNED);
+    option(u"normalized", 'n');
+    option(u"output", 'o', Args::UNSIGNED);
+    option(u"reset", 'r');
+    option(u"verbose", 'v');
+    option(u"wait", 'w', Args::UNSIGNED);
+    option(u"led", 'l', Enumeration({
+        {u"off", DTAPI_LED_OFF},
+        {u"green", DTAPI_LED_GREEN},
+        {u"red", DTAPI_LED_RED},
+        {u"yellow", DTAPI_LED_YELLOW},
+        {u"hardware", DTAPI_LED_HARDWARE},
+    }));
 
-    setHelp("Device:\n"
-            "\n"
-            "  Device index, from 0 to N-1 (with N being the number of Dektec devices\n"
-            "  in the system). The default is 0. Use option --list-all to have a\n"
-            "  complete list of devices in the system.\n"
-            "\n"
-            "Options:\n"
-            "\n"
-            "  -a\n"
-            "  --all\n"
-            "      List all Dektec devices available on the system.\n"
-            "\n"
-            "  --help\n"
-            "      Display this help text.\n"
-            "\n"
-            "  -i port-number\n"
-            "  --input port-number\n"
-            "      Set the specified port in input mode. This applies to bidirectional\n"
-            "      ports which can be either set in input or output mode.\n"
-            "\n"
-            "  -l state\n"
-            "  --led state\n"
-            "      Set the state of the LED on the rear panel. Useful to identify a\n"
-            "      Dektec device when more than one is present. The state is one of\n"
-            "      \"off\", \"green\", \"red\", \"yellow\", \"hardware\". See also\n"
-            "      option --wait (the led state is automatically returned to\n"
-            "      \"hardware\" after exit).\n"
-            "\n"
-            "  -n\n"
-            "  --normalized\n"
-            "      With --all, list the Dektec devices in a normalized output format\n"
-            "      (useful for automatic analysis).\n"
-            "\n"
-            "  -o port-number\n"
-            "  --output port-number\n"
-            "      Set the specified port in output mode. This applies to bidirectional\n"
-            "      ports which can be either set in input or output mode.\n"
-            "\n"
-            "  -r\n"
-            "  --reset\n"
-            "      Reset the device.\n"
-            "\n"
-            "  -v\n"
-            "  --verbose\n"
-            "      Produce verbose output.\n"
-            "\n"
-            "  --version\n"
-            "      Display the version number.\n"
-            "\n"
-            "  -w seconds\n"
-            "  --wait seconds\n"
-            "      Wait the specified number of seconds before exiting. The default\n"
-            "      if 5 seconds if option --led is specified and 0 otherwise.\n");
+    setHelp(u"Device:\n"
+            u"\n"
+            u"  Device index, from 0 to N-1 (with N being the number of Dektec devices\n"
+            u"  in the system). The default is 0. Use option --list-all to have a\n"
+            u"  complete list of devices in the system.\n"
+            u"\n"
+            u"Options:\n"
+            u"\n"
+            u"  -a\n"
+            u"  --all\n"
+            u"      List all Dektec devices available on the system.\n"
+            u"\n"
+            u"  --help\n"
+            u"      Display this help text.\n"
+            u"\n"
+            u"  -i port-number\n"
+            u"  --input port-number\n"
+            u"      Set the specified port in input mode. This applies to bidirectional\n"
+            u"      ports which can be either set in input or output mode.\n"
+            u"\n"
+            u"  -l state\n"
+            u"  --led state\n"
+            u"      Set the state of the LED on the rear panel. Useful to identify a\n"
+            u"      Dektec device when more than one is present. The state is one of\n"
+            u"      \"off\", \"green\", \"red\", \"yellow\", \"hardware\". See also\n"
+            u"      option --wait (the led state is automatically returned to\n"
+            u"      \"hardware\" after exit).\n"
+            u"\n"
+            u"  -n\n"
+            u"  --normalized\n"
+            u"      With --all, list the Dektec devices in a normalized output format\n"
+            u"      (useful for automatic analysis).\n"
+            u"\n"
+            u"  -o port-number\n"
+            u"  --output port-number\n"
+            u"      Set the specified port in output mode. This applies to bidirectional\n"
+            u"      ports which can be either set in input or output mode.\n"
+            u"\n"
+            u"  -r\n"
+            u"  --reset\n"
+            u"      Reset the device.\n"
+            u"\n"
+            u"  -v\n"
+            u"  --verbose\n"
+            u"      Produce verbose output.\n"
+            u"\n"
+            u"  --version\n"
+            u"      Display the version number.\n"
+            u"\n"
+            u"  -w seconds\n"
+            u"  --wait seconds\n"
+            u"      Wait the specified number of seconds before exiting. The default\n"
+            u"      if 5 seconds if option --led is specified and 0 otherwise.\n");
 
     analyze(argc, argv);
 
-    _devindex   = intValue("", 0);
-    _list_all   = present("all");
-    _normalized = present("normalized");
-    _reset      = present("reset");
-    _set_led    = present("led");
-    _led_state  = intValue("led", DTAPI_LED_OFF);
-    _set_input  = intValue("input", -1);
-    _set_output = intValue("output", -1);
-    _wait_sec   = intValue("wait", _set_led ? 5 : 0);
-    _verbose    = present("verbose");
+    _devindex   = intValue(u"", 0);
+    _list_all   = present(u"all");
+    _normalized = present(u"normalized");
+    _reset      = present(u"reset");
+    _set_led    = present(u"led");
+    _led_state  = intValue(u"led", DTAPI_LED_OFF);
+    _set_input  = intValue(u"input", -1);
+    _set_output = intValue(u"output", -1);
+    _wait_sec   = intValue(u"wait", _set_led ? 5 : 0);
+    _verbose    = present(u"verbose");
 }
 
 
@@ -151,10 +151,10 @@ ts::DektecControl::DektecControl(int argc, char *argv[]) :
 //  Display a long line on multiple lines
 //----------------------------------------------------------------------------
 
-void ts::DektecControl::wideDisplay(const std::string& line)
+void ts::DektecControl::wideDisplay(const UString& line)
 {
-    StringVector lines;
-    SplitLines(lines, line, 80, ".,;:)", "      ");
+    UStringVector lines;
+    line.splitLines(lines, 80, u".,;:)", u"      ");
     for (size_t i = 0; i < lines.size(); ++i) {
         std::cout << lines[i] << std::endl;
     }
@@ -200,19 +200,19 @@ int ts::DektecControl::listDevices(const DektecDeviceVector& devices)
                       << "  Channels: input: " << device.input.size()
                       << ", output: " << device.output.size() << std::endl;
             for (size_t i = 0; i < device.input.size(); i++) {
-                wideDisplay(Format("  Input %" FMT_SIZE_T "d: ", i) + DektecDevice::GetPortDescription(device.input[i]));
+                wideDisplay(UString::Format(u"  Input %d: %s", {i, DektecDevice::GetPortDescription(device.input[i])}));;
             }
             for (size_t i = 0; i < device.output.size(); i++) {
-                wideDisplay(Format("  Output %" FMT_SIZE_T "d: ", i) + DektecDevice::GetPortDescription(device.output[i]));
+                wideDisplay(UString::Format(u"  Output %d: %s", {i, DektecDevice::GetPortDescription(device.output[i])}));;
             }
-            std::cout << Format("  Subsystem id: 0x%04X", device.desc.m_SubsystemId)
+            std::cout << UString::Format(u"  Subsystem id: 0x%04X", {device.desc.m_SubsystemId})
                       << " (" << device.model << ")" << std::endl
-                      << Format("  Subsystem vendor id: 0x%04X", device.desc.m_SubVendorId) << std::endl
-                      << Format("  Device id: 0x%04X", device.desc.m_DeviceId) << std::endl
-                      << Format("  Vendor id: 0x%04X", device.desc.m_VendorId) << std::endl
-                      << Format("  Serial number: %016" FMT_INT64 "X", uint64_t(device.desc.m_Serial)) << std::endl
-                      << Format("  Firmware version: %d (0x%08X)", device.desc.m_FirmwareVersion, device.desc.m_FirmwareVersion) << std::endl
-                      << Format("  Firmware variant: %d (0x%08X)", device.desc.m_FirmwareVariant, device.desc.m_FirmwareVariant) << std::endl;
+                      << UString::Format(u"  Subsystem vendor id: 0x%04X", {device.desc.m_SubVendorId}) << std::endl
+                      << UString::Format(u"  Device id: 0x%04X", {device.desc.m_DeviceId}) << std::endl
+                      << UString::Format(u"  Vendor id: 0x%04X", {device.desc.m_VendorId}) << std::endl
+                      << UString::Format(u"  Serial number: %016X", {device.desc.m_Serial}) << std::endl
+                      << UString::Format(u"  Firmware version: %d (0x%08X)", {device.desc.m_FirmwareVersion, device.desc.m_FirmwareVersion}) << std::endl
+                      << UString::Format(u"  Firmware variant: %d (0x%08X)", {device.desc.m_FirmwareVariant, device.desc.m_FirmwareVariant}) << std::endl;
 
             switch (device.desc.m_Category) {
                 case DTAPI_CAT_PCI:
@@ -324,12 +324,12 @@ void ts::DektecControl::listNormalizedCapabilities(size_t device_index, size_t c
         << ((hw.m_Flags & DTAPI_CAP_SPISER8B) != 0 ? "spi-serial-8-bit:" : "");
 
     if ((hw.m_Flags & DTAPI_CAP_IP) != 0) {
-        std::cout << Format("ip=%d.%d.%d.%d:mac=%02X-%02X-%02X-%02X-%02X-%02X:",
-                       int(hw.m_Ip[0]) & 0xFF, int(hw.m_Ip[1]) & 0xFF,
-                       int(hw.m_Ip[2]) & 0xFF, int(hw.m_Ip[3]) & 0xFF,
-                       int(hw.m_MacAddr[0]) & 0xFF, int(hw.m_MacAddr[1]) & 0xFF,
-                       int(hw.m_MacAddr[2]) & 0xFF, int(hw.m_MacAddr[3]) & 0xFF,
-                       int(hw.m_MacAddr[4]) & 0xFF, int(hw.m_MacAddr[5]) & 0xFF);
+        std::cout << UString::Format(u"ip=%d.%d.%d.%d:mac=%02X-%02X-%02X-%02X-%02X-%02X:",
+                                     {hw.m_Ip[0] & 0xFF, hw.m_Ip[1] & 0xFF,
+                                      hw.m_Ip[2] & 0xFF, hw.m_Ip[3] & 0xFF,
+                                      hw.m_MacAddr[0] & 0xFF, hw.m_MacAddr[1] & 0xFF,
+                                      hw.m_MacAddr[2] & 0xFF, hw.m_MacAddr[3] & 0xFF,
+                                      hw.m_MacAddr[4] & 0xFF, hw.m_MacAddr[5] & 0xFF});
     }
 
     std::cout << std::endl;
@@ -551,7 +551,7 @@ int ts::DektecControl::execute()
     }
     else if (_devindex >= devices.size()) {
         // Invalid device index specified
-        error(Format("invalid device index: %" FMT_SIZE_T "d", _devindex));
+        error(u"invalid device index: %d", {_devindex});
         return EXIT_FAILURE;
     }
     else {

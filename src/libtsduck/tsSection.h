@@ -566,7 +566,7 @@ namespace ts {
         //! @param [in,out] report Where to report errors.
         //! @return A reference to the @a strm object.
         //!
-        std::istream& read(std::istream& strm, CRC32::Validation crc_op = CRC32::IGNORE, ReportInterface& report = CERR);
+        std::istream& read(std::istream& strm, CRC32::Validation crc_op = CRC32::IGNORE, Report& report = CERR);
 
         //!
         //! Write a section to standard streams (binary mode).
@@ -574,7 +574,7 @@ namespace ts {
         //! @param [in,out] report Where to report errors.
         //! @return A reference to the @a strm object.
         //!
-        std::ostream& write(std::ostream& strm, ReportInterface& report = CERR) const;
+        std::ostream& write(std::ostream& strm, Report& report = CERR) const;
 
         //!
         //! Hexa dump the section on an output stream without interpretation of the payload.
@@ -597,7 +597,7 @@ namespace ts {
         static bool LoadFile(SectionPtrVector& sections,
                              std::istream& strm,
                              CRC32::Validation crc_op = CRC32::IGNORE,
-                             ReportInterface& report = CERR);
+                             Report& report = CERR);
 
         //!
         //! This static method reads all sections from the specified file.
@@ -610,7 +610,7 @@ namespace ts {
         static bool LoadFile(SectionPtrVector& sections,
                              const std::string& file_name,
                              CRC32::Validation crc_op = CRC32::IGNORE,
-                             ReportInterface& report = CERR);
+                             Report& report = CERR);
 
     private:
         // Private fields

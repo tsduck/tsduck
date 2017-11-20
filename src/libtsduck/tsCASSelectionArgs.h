@@ -108,7 +108,7 @@ namespace ts {
         //! @return The number of matching PID's. Note that some of them may have been
         //! already in @a pids, so this may not be the number of @e added PID's.
         //!
-        size_t addMatchingPIDs(PIDSet& pids, const DescriptorList& dlist, TID tid, ReportInterface& report = NULLREP) const;
+        size_t addMatchingPIDs(PIDSet& pids, const DescriptorList& dlist, TID tid, Report& report = NULLREP) const;
 
         //!
         //! Analyze all CA_descriptors in a CAT and locate all matching EMM PID's.
@@ -118,7 +118,7 @@ namespace ts {
         //! @return The number of matching PID's. Note that some of them may have been
         //! already in @a pids, so this may not be the number of @e added PID's.
         //!
-        size_t addMatchingPIDs(PIDSet& pids, const CAT& cat, ReportInterface& report = NULLREP) const;
+        size_t addMatchingPIDs(PIDSet& pids, const CAT& cat, Report& report = NULLREP) const;
 
         //!
         //! Analyze all CA_descriptors in a PMT and locate all matching ECM PID's.
@@ -128,6 +128,6 @@ namespace ts {
         //! @return The number of matching PID's. Note that some of them may have been
         //! already in @a pids, so this may not be the number of @e added PID's.
         //!
-        size_t addMatchingPIDs(PIDSet& pids, const PMT& pmt, ReportInterface& report = NULLREP) const;
+        size_t addMatchingPIDs(PIDSet& pids, const PMT& pmt, Report& report = NULLREP) const;
     };
 }

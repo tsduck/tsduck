@@ -69,7 +69,7 @@ namespace ts {
         //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool send(const std::string& str, ReportInterface& report);
+        bool send(const std::string& str, Report& report);
 
         //!
         //! Receive a line.
@@ -80,7 +80,7 @@ namespace ts {
         //! @return True on success, false on error.
         //! Return true until the last line of the replies has been received.
         //!
-        bool receive(std::string& line, const AbortInterface* abort, ReportInterface& report);
+        bool receive(std::string& line, const AbortInterface* abort, Report& report);
 
         //!
         //! Receive a prompt.
@@ -89,7 +89,7 @@ namespace ts {
         //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool waitForPrompt(const AbortInterface* abort, ReportInterface& report);
+        bool waitForPrompt(const AbortInterface* abort, Report& report);
 
     private:
         TelnetConnection(const TelnetConnection&) = delete;
@@ -101,6 +101,6 @@ namespace ts {
         std::string _prompt;
         Mutex       _mutex;
 
-        bool waitForChunk(const std::string, std::string&, const AbortInterface*, ReportInterface&);
+        bool waitForChunk(const std::string, std::string&, const AbortInterface*, Report&);
     };
 }

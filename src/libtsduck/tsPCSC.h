@@ -57,7 +57,7 @@ namespace ts {
         //! In case of error, report an error message.
         //! @return True if status is success, false if error.
         //!
-        TSDUCKDLL bool Success(::LONG status, ReportInterface& report = CERR);
+        TSDUCKDLL bool Success(::LONG status, Report& report = CERR);
 
         //!
         //! Check if an ATR matches an expected one.

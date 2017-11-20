@@ -99,80 +99,80 @@ ts::SDTPlugin::SDTPlugin (TSP* tsp_) :
     _demux(this),
     _pzer()
 {
-    option ("cleanup-private-descriptors", 0);
-    option ("eit-pf",                      0,  INTEGER, 0, 1, 0, 1);
-    option ("eit-schedule",                0,  INTEGER, 0, 1, 0, 1);
-    option ("free-ca-mode",               'f', INTEGER, 0, 1, 0, 1);
-    option ("increment-version",          'i');
-    option ("name",                       'n', STRING);
-    option ("new-version",                'v', INTEGER, 0, 1, 0, 31);
-    option ("provider",                   'p', STRING);
-    option ("remove-service",              0,  UINT16, 0, UNLIMITED_COUNT);
-    option ("running-status",             'r', INTEGER, 0, 1, 0, 7);
-    option ("service-id",                 's', UINT16);
-    option ("type",                       't', UINT8);
+    option(u"cleanup-private-descriptors", 0);
+    option(u"eit-pf",                      0,  INTEGER, 0, 1, 0, 1);
+    option(u"eit-schedule",                0,  INTEGER, 0, 1, 0, 1);
+    option(u"free-ca-mode",               'f', INTEGER, 0, 1, 0, 1);
+    option(u"increment-version",          'i');
+    option(u"name",                       'n', STRING);
+    option(u"new-version",                'v', INTEGER, 0, 1, 0, 31);
+    option(u"provider",                   'p', STRING);
+    option(u"remove-service",              0,  UINT16, 0, UNLIMITED_COUNT);
+    option(u"running-status",             'r', INTEGER, 0, 1, 0, 7);
+    option(u"service-id",                 's', UINT16);
+    option(u"type",                       't', UINT8);
 
-    setHelp ("Options:\n"
-             "\n"
-             "  --cleanup-private-descriptors\n"
-             "      Remove all private descriptors without preceding private_data_specifier\n"
-             "      descriptor.\n"
-             "\n"
-             "  --eit-pf value\n"
-             "      Specify a new EIT_present_following_flag value for the added or modified\n"
-             "      service. For new services, the default is 0.\n"
-             "\n"
-             "  --eit-schedule value\n"
-             "      Specify a new EIT_schedule_flag value for the added or modified\n"
-             "      service. For new services, the default is 0.\n"
-             "\n"
-             "  -f value\n"
-             "  --free-ca-mode value\n"
-             "      Specify a new free_CA_mode value for the added or modified service.\n"
-             "      For new services, the default is 0.\n"
-             "\n"
-             "  --help\n"
-             "      Display this help text.\n"
-             "\n"
-             "  -i\n"
-             "  --increment-version\n"
-             "      Increment the version number of the SDT.\n"
-             "\n"
-             "  -n value\n"
-             "  --name value\n"
-             "      Specify a new service name for the added or modified service.\n"
-             "      For new services, the default is an empty string.\n"
-             "\n"
-             "  -v value\n"
-             "  --new-version value\n"
-             "      Specify a new value for the version of the SDT.\n"
-             "\n"
-             "  -p value\n"
-             "  --provider value\n"
-             "      Specify a new provider name for the added or modified service.\n"
-             "      For new services, the default is an empty string.\n"
-             "\n"
-             "  --remove-service sid\n"
-             "      Remove the specified service_id from the SDT. Several --remove-service\n"
-             "      options may be specified to remove several services.\n"
-             "\n"
-             "  -r value\n"
-             "  --running-status value\n"
-             "      Specify a new running_status (0 to 7) for the added or modified service.\n"
-             "      For new services, the default is 4 (\"running\").\n"
-             "\n"
-             "  -s value\n"
-             "  --service-id value\n"
-             "      Add a new service or modify the existing service with the specified\n"
-             "      service-id.\n"
-             "\n"
-             "  -t value\n"
-             "  --type value\n"
-             "      Specify a new service type for the added or modified service. For new\n"
-             "      services, the default is 0x01 (\"digital television service\").\n"
-             "\n"
-             "  --version\n"
-             "      Display the version number.\n");
+    setHelp(u"Options:\n"
+             u"\n"
+             u"  --cleanup-private-descriptors\n"
+             u"      Remove all private descriptors without preceding private_data_specifier\n"
+             u"      descriptor.\n"
+             u"\n"
+             u"  --eit-pf value\n"
+             u"      Specify a new EIT_present_following_flag value for the added or modified\n"
+             u"      service. For new services, the default is 0.\n"
+             u"\n"
+             u"  --eit-schedule value\n"
+             u"      Specify a new EIT_schedule_flag value for the added or modified\n"
+             u"      service. For new services, the default is 0.\n"
+             u"\n"
+             u"  -f value\n"
+             u"  --free-ca-mode value\n"
+             u"      Specify a new free_CA_mode value for the added or modified service.\n"
+             u"      For new services, the default is 0.\n"
+             u"\n"
+             u"  --help\n"
+             u"      Display this help text.\n"
+             u"\n"
+             u"  -i\n"
+             u"  --increment-version\n"
+             u"      Increment the version number of the SDT.\n"
+             u"\n"
+             u"  -n value\n"
+             u"  --name value\n"
+             u"      Specify a new service name for the added or modified service.\n"
+             u"      For new services, the default is an empty string.\n"
+             u"\n"
+             u"  -v value\n"
+             u"  --new-version value\n"
+             u"      Specify a new value for the version of the SDT.\n"
+             u"\n"
+             u"  -p value\n"
+             u"  --provider value\n"
+             u"      Specify a new provider name for the added or modified service.\n"
+             u"      For new services, the default is an empty string.\n"
+             u"\n"
+             u"  --remove-service sid\n"
+             u"      Remove the specified service_id from the SDT. Several --remove-service\n"
+             u"      options may be specified to remove several services.\n"
+             u"\n"
+             u"  -r value\n"
+             u"  --running-status value\n"
+             u"      Specify a new running_status (0 to 7) for the added or modified service.\n"
+             u"      For new services, the default is 4 (\"running\").\n"
+             u"\n"
+             u"  -s value\n"
+             u"  --service-id value\n"
+             u"      Add a new service or modify the existing service with the specified\n"
+             u"      service-id.\n"
+             u"\n"
+             u"  -t value\n"
+             u"  --type value\n"
+             u"      Specify a new service type for the added or modified service. For new\n"
+             u"      services, the default is 0x01 (\"digital television service\").\n"
+             u"\n"
+             u"  --version\n"
+             u"      Display the version number.\n");
 }
 
 
@@ -183,34 +183,34 @@ ts::SDTPlugin::SDTPlugin (TSP* tsp_) :
 bool ts::SDTPlugin::start()
 {
     // Get option values
-    _incr_version = present ("increment-version");
-    _set_version = present ("new-version");
+    _incr_version = present(u"increment-version");
+    _set_version = present(u"new-version");
     _new_version = intValue<uint8_t> ("new-version", 0);
-    _cleanup_priv_desc = present ("cleanup-private-descriptors");
+    _cleanup_priv_desc = present(u"cleanup-private-descriptors");
     getIntValues (_remove_serv, "remove-service");
     _service.clear();
-    if (present ("eit-pf")) {
+    if (present(u"eit-pf")) {
         _service.setEITpfPresent (intValue<int> ("eit-pf") != 0);
     }
-    if (present ("eit-schedule")) {
+    if (present(u"eit-schedule")) {
         _service.setEITsPresent (intValue<int> ("eit-schedule") != 0);
     }
-    if (present ("free-ca-mode")) {
+    if (present(u"free-ca-mode")) {
         _service.setCAControlled (intValue<int> ("free-ca-mode") != 0);
     }
-    if (present ("name")) {
-        _service.setName (value ("name"));
+    if (present(u"name")) {
+        _service.setName (value(u"name"));
     }
-    if (present ("provider")) {
-        _service.setProvider (value ("provider"));
+    if (present(u"provider")) {
+        _service.setProvider (value(u"provider"));
     }
-    if (present ("running-status")) {
+    if (present(u"running-status")) {
         _service.setRunningStatus (intValue<uint8_t> ("running-status"));
     }
-    if (present ("service-id")) {
+    if (present(u"service-id")) {
         _service.setId (intValue<uint16_t> ("service-id"));
     }
-    if (present ("type")) {
+    if (present(u"type")) {
         _service.setType (intValue<uint8_t> ("type"));
     }
 

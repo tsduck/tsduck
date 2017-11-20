@@ -38,7 +38,7 @@
 #include "tsByteBlock.h"
 #include "tsMutex.h"
 #include "tsCondition.h"
-#include "tsReportInterface.h"
+#include "tsReport.h"
 
 namespace ts {
 
@@ -87,7 +87,7 @@ namespace ts {
         //! Constructor.
         //! @param [in,out] report Where to report errors.
         //!
-        SinkFilter(ReportInterface& report);
+        SinkFilter(Report& report);
 
         //!
         //! Destructor.
@@ -164,7 +164,7 @@ namespace ts {
         size_t           _max_messages;
         ByteBlock        _sample_buffer;     // Collected media samples
         size_t           _sample_offset;     // Next offset in _sample_buffer
-        ReportInterface& _report;
+        Report& _report;
         ::LONG volatile  _ref_count;
         ::FILTER_STATE   _state;
         ::IFilterGraph*  _graph;
@@ -190,7 +190,7 @@ namespace ts {
         //! @param [in,out] report Where to report errors.
         //! @param [in,out] filter The associated SinkFilter.
         //!
-        SinkPin(ReportInterface& report, SinkFilter* filter);
+        SinkPin(Report& report, SinkFilter* filter);
 
         //!
         //! Destructor.
@@ -239,7 +239,7 @@ namespace ts {
     private:
         bool             _flushing;
         bool             _input_overflow;
-        ReportInterface& _report;
+        Report& _report;
         ::LONG volatile  _ref_count;
         SinkFilter*      _filter;
         ::IPin*          _partner;
@@ -257,7 +257,7 @@ namespace ts {
         //! @param [in,out] report Where to report errors.
         //! @param [in] cloned Optional SinkEnumMediaTypes that we are cloning. Can be null.
         //!
-        SinkEnumMediaTypes(ReportInterface& report, const SinkEnumMediaTypes* cloned);
+        SinkEnumMediaTypes(Report& report, const SinkEnumMediaTypes* cloned);
 
         //!
         //! Destructor.
@@ -281,7 +281,7 @@ namespace ts {
         //! @endcond
 
     private:
-        ReportInterface& _report;
+        Report& _report;
         ::LONG volatile  _ref_count;
         int              _next; // Next media type to enumerate
     };
@@ -298,7 +298,7 @@ namespace ts {
         //! @param [in,out] filter The associated SinkFilter.
         //! @param [in] cloned Optional SinkEnumPins that we are cloning. Can be null.
         //!
-        SinkEnumPins(ReportInterface& report, SinkFilter* filter, const SinkEnumPins* cloned);
+        SinkEnumPins(Report& report, SinkFilter* filter, const SinkEnumPins* cloned);
 
         //!
         //! Destructor.
@@ -323,7 +323,7 @@ namespace ts {
 
     private:
         // There is only one pin to enumerate
-        ReportInterface& _report;
+        Report& _report;
         ::LONG volatile  _ref_count;
         SinkFilter*      _filter;
         bool             _done;

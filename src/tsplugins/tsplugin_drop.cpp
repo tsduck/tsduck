@@ -45,11 +45,11 @@ namespace ts {
     {
     public:
         // Implementation of plugin API
-        DropOutput (TSP*);
+        DropOutput(TSP*);
         virtual bool start() {return true;}
         virtual bool stop() {return true;}
         virtual BitRate getBitrate() {return 0;}
-        virtual bool send (const TSPacket*, size_t) {return true;}
+        virtual bool send(const TSPacket*, size_t) {return true;}
 
     private:
         // Inaccessible operations
@@ -67,14 +67,14 @@ TSPLUGIN_DECLARE_OUTPUT(ts::DropOutput)
 // Constructor
 //----------------------------------------------------------------------------
 
-ts::DropOutput::DropOutput (TSP* tsp_) :
-    OutputPlugin (tsp_, "Drop output packets.", "[options]")
+ts::DropOutput::DropOutput(TSP* tsp_) :
+    OutputPlugin(tsp_, u"Drop output packets.", u"[options]")
 {
-    setHelp ("Options:\n"
-             "\n"
-             "  --help\n"
-             "      Display this help text.\n"
-             "\n"
-             "  --version\n"
-             "      Display the version number.\n");
+    setHelp(u"Options:\n"
+            u"\n"
+            u"  --help\n"
+            u"      Display this help text.\n"
+            u"\n"
+            u"  --version\n"
+            u"      Display the version number.\n");
 }

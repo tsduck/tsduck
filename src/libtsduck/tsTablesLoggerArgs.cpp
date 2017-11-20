@@ -78,145 +78,145 @@ ts::TablesLoggerArgs::TablesLoggerArgs() :
 void ts::TablesLoggerArgs::addHelp(Args& args) const
 {
     std::string help =
-        "\n"
-        "Tables and sections logging options:\n"
-        "\n"
-        "  -a\n"
-        "  --all-sections\n"
-        "      Display/save all sections, as they appear in the stream.\n"
-        "      By default, collect complete tables, with all sections of\n"
-        "      the tables grouped and ordered and collect each version\n"
-        "      of a table only once.\n"
-        "\n"
-        "  -b filename\n"
-        "  --binary-output filename\n"
-        "      Binary output file name where the table sections are saved.\n"
-        "      By default, the tables are interpreted and formatted as text.\n"
-        "      See also option -m, --multiple-files.\n"
-        "\n"
-        "  -d\n"
-        "  --diversified-payload\n"
-        "      Select only sections with \"diversified\" payload. This means that\n"
-        "      section payloads containing the same byte value (all 0x00 or all 0xFF\n"
-        "      for instance) are ignored. Typically, such sections are stuffing and\n"
-        "      can be ignored that way.\n"
-        "\n"
-        "  -f\n"
-        "  --flush\n"
-        "      Flush output after each display.\n"
-        "\n"
-        "  --help\n"
-        "      Display this help text.\n"
-        "\n"
-        "  -i address:port\n"
-        "  --ip-udp address:port\n"
-        "      Send binary tables over UDP/IP to the specified destination.\n"
-        "      The 'address' specifies an IP address which can be either unicast\n"
-        "      or multicast. It can be also a host name that translates to an IP\n"
-        "      address. The 'port' specifies the destination UDP port.\n"
-        "\n"
-        "  --local-udp address\n"
-        "      With --ip-udp, when the destination is a multicast address, specify\n"
-        "      the IP address of the outgoing local interface. It can be also a host\n"
-        "      name that translates to a local address.\n"
-        "\n"
-        "  --log\n"
-        "      Short one-line log of each table instead of full table display.\n"
-        "\n"
-        "  --log-size value\n"
-        "      With option --log, specify how many bytes are displayed at the\n"
-        "      beginning of the table payload (the header is not displayed).\n"
-        "      The default is 8 bytes.\n"
-        "\n"
-        "  -x value\n"
-        "  --max-tables value\n"
-        "      Maximum number of tables to dump. Stop logging tables when this\n"
-        "      limit is reached.\n"
-        "\n"
-        "  -m\n"
-        "  --multiple-files\n"
-        "      Create multiple binary output files, one per section. A binary\n"
-        "      output file name must be specified (option -b or --binary-output).\n"
-        "      Assuming that the specified file name has the form 'base.ext',\n"
-        "      each file is created with the name 'base_pXXXX_tXX.ext' for\n"
-        "      short sections and 'base_pXXXX_tXX_eXXXX_vXX_sXX.ext' for long\n"
-        "      sections, where the XX specify the hexadecimal values of the\n"
-        "      PID, TID (table id), TIDext (table id extension), version and\n"
-        "      section index.\n"
-        "\n"
-        "  --negate-pid\n"
-        "      Negate the PID filter: specified PID's are excluded.\n"
-        "      Warning: this can be a dangerous option on complete transport\n"
-        "      streams since PID's not containing sections can be accidentally\n"
-        "      selected.\n"
-        "\n"
-        "  -n\n"
-        "  --negate-tid\n"
-        "      Negate the TID filter: specified TID's are excluded.\n"
-        "\n"
-        "  --negate-tid-ext\n"
-        "      Negate the TID extension filter: specified TID extensions are\n"
-        "      excluded.\n"
-        "\n"
-        "  --no-duplicate\n"
-        "      Do not report consecutive identical tables with a short section in the\n"
-        "      same PID. This can be useful for ECM's. This is the way to display new\n"
-        "      ECM's only. By default, tables with long sections are reported only when\n"
-        "      a new version is detected but tables with a short section are all reported.\n"
-        "\n"
-        "  --no-encapsulation\n"
-        "      With --ip-udp, send the tables as raw binary messages in UDP packets.\n"
-        "      By default, the tables are formatted into TLV messages.\n"
-        "\n"
-        "  -o filename\n"
-        "  --output-file filename\n"
-        "      File name for text output.\n"
-        "\n"
-        "  --packet-index\n"
-        "      Display the index of the first and last TS packet of each displayed\n"
-        "      section or table.\n"
-        "\n"
-        "  -p value\n"
-        "  --pid value\n"
-        "      PID filter: select packets with this PID value,\n"
-        "      Several -p or --pid options may be specified.\n"
-        "      Without -p or --pid option, all PID's are used (this can be a\n"
-        "      dangerous option on complete transport streams since PID's not\n"
-        "      containing sections can be accidentally selected).\n"
-        "\n"
-        "  --psi-si\n"
-        "      Add all PID's containing PSI/SI tables, ie. PAT, CAT, PMT, NIT, SDT\n"
-        "      and BAT. Note that EIT, TDT and TOT are not included. Use --pid 18\n"
-        "      to get EIT and --pid 20 to get TDT and TOT.\n"
-        "\n"
-        "  -t value\n"
-        "  --tid value\n"
-        "      TID filter: select sections with this TID (table id) value.\n"
-        "      Several -t or --tid options may be specified.\n"
-        "      Without -t or --tid option, all tables are saved.\n"
-        "\n"
-        "  -e value\n"
-        "  --tid-ext value\n"
-        "      TID extension filter: select sections with this table id\n"
-        "      extension value (apply to long sections only).\n"
-        "      Several -e or --tid-ext options may be specified.\n"
-        "      Without -e or --tid-ext option, all tables are saved.\n"
-        "\n"
-        "  --time-stamp\n"
-        "      Display a time stamp (current local time) with each table.\n"
-        "\n"
-        "  --ttl value\n"
-        "      With --ip-udp, specifies the TTL (Time-To-Live) socket option.\n"
-        "      The actual option is either \"Unicast TTL\" or \"Multicast TTL\",\n"
-        "      depending on the destination address. Remember that the default\n"
-        "      Multicast TTL is 1 on most systems.\n"
-        "\n"
-        "  -v\n"
-        "  --verbose\n"
-        "      Produce verbose output.\n"
-        "\n"
-        "  --version\n"
-        "      Display the version number.\n";
+        u"\n"
+        u"Tables and sections logging options:\n"
+        u"\n"
+        u"  -a\n"
+        u"  --all-sections\n"
+        u"      Display/save all sections, as they appear in the stream.\n"
+        u"      By default, collect complete tables, with all sections of\n"
+        u"      the tables grouped and ordered and collect each version\n"
+        u"      of a table only once.\n"
+        u"\n"
+        u"  -b filename\n"
+        u"  --binary-output filename\n"
+        u"      Binary output file name where the table sections are saved.\n"
+        u"      By default, the tables are interpreted and formatted as text.\n"
+        u"      See also option -m, --multiple-files.\n"
+        u"\n"
+        u"  -d\n"
+        u"  --diversified-payload\n"
+        u"      Select only sections with \"diversified\" payload. This means that\n"
+        u"      section payloads containing the same byte value (all 0x00 or all 0xFF\n"
+        u"      for instance) are ignored. Typically, such sections are stuffing and\n"
+        u"      can be ignored that way.\n"
+        u"\n"
+        u"  -f\n"
+        u"  --flush\n"
+        u"      Flush output after each display.\n"
+        u"\n"
+        u"  --help\n"
+        u"      Display this help text.\n"
+        u"\n"
+        u"  -i address:port\n"
+        u"  --ip-udp address:port\n"
+        u"      Send binary tables over UDP/IP to the specified destination.\n"
+        u"      The 'address' specifies an IP address which can be either unicast\n"
+        u"      or multicast. It can be also a host name that translates to an IP\n"
+        u"      address. The 'port' specifies the destination UDP port.\n"
+        u"\n"
+        u"  --local-udp address\n"
+        u"      With --ip-udp, when the destination is a multicast address, specify\n"
+        u"      the IP address of the outgoing local interface. It can be also a host\n"
+        u"      name that translates to a local address.\n"
+        u"\n"
+        u"  --log\n"
+        u"      Short one-line log of each table instead of full table display.\n"
+        u"\n"
+        u"  --log-size value\n"
+        u"      With option --log, specify how many bytes are displayed at the\n"
+        u"      beginning of the table payload (the header is not displayed).\n"
+        u"      The default is 8 bytes.\n"
+        u"\n"
+        u"  -x value\n"
+        u"  --max-tables value\n"
+        u"      Maximum number of tables to dump. Stop logging tables when this\n"
+        u"      limit is reached.\n"
+        u"\n"
+        u"  -m\n"
+        u"  --multiple-files\n"
+        u"      Create multiple binary output files, one per section. A binary\n"
+        u"      output file name must be specified (option -b or --binary-output).\n"
+        u"      Assuming that the specified file name has the form 'base.ext',\n"
+        u"      each file is created with the name 'base_pXXXX_tXX.ext' for\n"
+        u"      short sections and 'base_pXXXX_tXX_eXXXX_vXX_sXX.ext' for long\n"
+        u"      sections, where the XX specify the hexadecimal values of the\n"
+        u"      PID, TID (table id), TIDext (table id extension), version and\n"
+        u"      section index.\n"
+        u"\n"
+        u"  --negate-pid\n"
+        u"      Negate the PID filter: specified PID's are excluded.\n"
+        u"      Warning: this can be a dangerous option on complete transport\n"
+        u"      streams since PID's not containing sections can be accidentally\n"
+        u"      selected.\n"
+        u"\n"
+        u"  -n\n"
+        u"  --negate-tid\n"
+        u"      Negate the TID filter: specified TID's are excluded.\n"
+        u"\n"
+        u"  --negate-tid-ext\n"
+        u"      Negate the TID extension filter: specified TID extensions are\n"
+        u"      excluded.\n"
+        u"\n"
+        u"  --no-duplicate\n"
+        u"      Do not report consecutive identical tables with a short section in the\n"
+        u"      same PID. This can be useful for ECM's. This is the way to display new\n"
+        u"      ECM's only. By default, tables with long sections are reported only when\n"
+        u"      a new version is detected but tables with a short section are all reported.\n"
+        u"\n"
+        u"  --no-encapsulation\n"
+        u"      With --ip-udp, send the tables as raw binary messages in UDP packets.\n"
+        u"      By default, the tables are formatted into TLV messages.\n"
+        u"\n"
+        u"  -o filename\n"
+        u"  --output-file filename\n"
+        u"      File name for text output.\n"
+        u"\n"
+        u"  --packet-index\n"
+        u"      Display the index of the first and last TS packet of each displayed\n"
+        u"      section or table.\n"
+        u"\n"
+        u"  -p value\n"
+        u"  --pid value\n"
+        u"      PID filter: select packets with this PID value,\n"
+        u"      Several -p or --pid options may be specified.\n"
+        u"      Without -p or --pid option, all PID's are used (this can be a\n"
+        u"      dangerous option on complete transport streams since PID's not\n"
+        u"      containing sections can be accidentally selected).\n"
+        u"\n"
+        u"  --psi-si\n"
+        u"      Add all PID's containing PSI/SI tables, ie. PAT, CAT, PMT, NIT, SDT\n"
+        u"      and BAT. Note that EIT, TDT and TOT are not included. Use --pid 18\n"
+        u"      to get EIT and --pid 20 to get TDT and TOT.\n"
+        u"\n"
+        u"  -t value\n"
+        u"  --tid value\n"
+        u"      TID filter: select sections with this TID (table id) value.\n"
+        u"      Several -t or --tid options may be specified.\n"
+        u"      Without -t or --tid option, all tables are saved.\n"
+        u"\n"
+        u"  -e value\n"
+        u"  --tid-ext value\n"
+        u"      TID extension filter: select sections with this table id\n"
+        u"      extension value (apply to long sections only).\n"
+        u"      Several -e or --tid-ext options may be specified.\n"
+        u"      Without -e or --tid-ext option, all tables are saved.\n"
+        u"\n"
+        u"  --time-stamp\n"
+        u"      Display a time stamp (current local time) with each table.\n"
+        u"\n"
+        u"  --ttl value\n"
+        u"      With --ip-udp, specifies the TTL (Time-To-Live) socket option.\n"
+        u"      The actual option is either \"Unicast TTL\" or \"Multicast TTL\",\n"
+        u"      depending on the destination address. Remember that the default\n"
+        u"      Multicast TTL is 1 on most systems.\n"
+        u"\n"
+        u"  -v\n"
+        u"  --verbose\n"
+        u"      Produce verbose output.\n"
+        u"\n"
+        u"  --version\n"
+        u"      Display the version number.\n";
 
     args.setHelp(args.getHelp() + help);
 }
@@ -228,30 +228,30 @@ void ts::TablesLoggerArgs::addHelp(Args& args) const
 
 void ts::TablesLoggerArgs::defineOptions(Args& args) const
 {
-    args.option("all-sections",        'a');
-    args.option("binary-output",       'b', Args::STRING);
-    args.option("diversified-payload", 'd');
-    args.option("flush",               'f');
-    args.option("ip-udp",              'i', Args::STRING);
-    args.option("local-udp",            0,  Args::STRING);
-    args.option("log",                  0);
-    args.option("log-size",             0,  Args::UNSIGNED);
-    args.option("max-tables",          'x', Args::POSITIVE);
-    args.option("multiple-files",      'm');
-    args.option("negate-pid",           0);
-    args.option("negate-tid",          'n');
-    args.option("negate-tid-ext",       0);
-    args.option("no-duplicate",         0);
-    args.option("no-encapsulation",     0);
-    args.option("output-file",         'o', Args::STRING);
-    args.option("packet-index",         0);
-    args.option("pid",                 'p', Args::PIDVAL, 0, Args::UNLIMITED_COUNT);
-    args.option("psi-si",               0);
-    args.option("tid",                 't', Args::UINT8,  0, Args::UNLIMITED_COUNT);
-    args.option("tid-ext",             'e', Args::UINT16, 0, Args::UNLIMITED_COUNT);
-    args.option("time-stamp",           0);
-    args.option("ttl",                  0,  Args::POSITIVE);
-    args.option("verbose",             'v');
+    args.option(u"all-sections",        'a');
+    args.option(u"binary-output",       'b', Args::STRING);
+    args.option(u"diversified-payload", 'd');
+    args.option(u"flush",               'f');
+    args.option(u"ip-udp",              'i', Args::STRING);
+    args.option(u"local-udp",            0,  Args::STRING);
+    args.option(u"log",                  0);
+    args.option(u"log-size",             0,  Args::UNSIGNED);
+    args.option(u"max-tables",          'x', Args::POSITIVE);
+    args.option(u"multiple-files",      'm');
+    args.option(u"negate-pid",           0);
+    args.option(u"negate-tid",          'n');
+    args.option(u"negate-tid-ext",       0);
+    args.option(u"no-duplicate",         0);
+    args.option(u"no-encapsulation",     0);
+    args.option(u"output-file",         'o', Args::STRING);
+    args.option(u"packet-index",         0);
+    args.option(u"pid",                 'p', Args::PIDVAL, 0, Args::UNLIMITED_COUNT);
+    args.option(u"psi-si",               0);
+    args.option(u"tid",                 't', Args::UINT8,  0, Args::UNLIMITED_COUNT);
+    args.option(u"tid-ext",             'e', Args::UINT16, 0, Args::UNLIMITED_COUNT);
+    args.option(u"time-stamp",           0);
+    args.option(u"ttl",                  0,  Args::POSITIVE);
+    args.option(u"verbose",             'v');
 }
 
 
@@ -262,44 +262,44 @@ void ts::TablesLoggerArgs::defineOptions(Args& args) const
 
 void ts::TablesLoggerArgs::load(Args& args)
 {
-    multi_files = args.present("multiple-files");
-    flush = args.present("flush");
-    udp_local = args.value("local-udp");
+    multi_files = args.present(u"multiple-files");
+    flush = args.present(u"flush");
+    udp_local = args.value(u"local-udp");
     udp_ttl = args.intValue("ttl", 0);
-    all_sections = args.present("all-sections");
+    all_sections = args.present(u"all-sections");
     max_tables = args.intValue<uint32_t>("max-tables", 0);
-    time_stamp = args.present("time-stamp");
-    packet_index = args.present("packet-index");
-    diversified = args.present("diversified-payload");
-    logger = args.present("log");
+    time_stamp = args.present(u"time-stamp");
+    packet_index = args.present(u"packet-index");
+    diversified = args.present(u"diversified-payload");
+    logger = args.present(u"log");
     log_size = args.intValue<size_t>("log-size", DEFAULT_LOG_SIZE);
-    negate_tid = args.present("negate-tid");
-    negate_tidext = args.present("negate-tid-ext");
-    no_duplicate = args.present("no-duplicate");
+    negate_tid = args.present(u"negate-tid");
+    negate_tidext = args.present(u"negate-tid-ext");
+    no_duplicate = args.present(u"no-duplicate");
 
-    if (args.present("verbose")) {
+    if (args.present(u"verbose")) {
         args.setDebugLevel(Severity::Verbose);
     }
 
-    if (args.present("ip-udp")) {
+    if (args.present(u"ip-udp")) {
         mode = UDP;
-        destination = args.value("ip-udp");
-        udp_raw = args.present("no-encapsulation");
+        destination = args.value(u"ip-udp");
+        udp_raw = args.present(u"no-encapsulation");
     }
-    else if (args.present("binary-output")) {
+    else if (args.present(u"binary-output")) {
         mode = BINARY;
-        destination = args.value("binary-output");
+        destination = args.value(u"binary-output");
     }
     else {
         mode = TEXT;
-        destination = args.value("output-file");
+        destination = args.value(u"output-file");
     }
 
-    add_pmt_pids = args.present("psi-si");
+    add_pmt_pids = args.present(u"psi-si");
 
-    if (add_pmt_pids || args.present("pid")) {
+    if (add_pmt_pids || args.present(u"pid")) {
         args.getPIDSet(pid, "pid"); // specific pids
-        if (args.present("negate-pid")) {
+        if (args.present(u"negate-pid")) {
             pid.flip();
         }
         if (add_pmt_pids) { // --psi-si

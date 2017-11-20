@@ -65,7 +65,7 @@ ts::SocketAddress::SocketAddress (const ::sockaddr_in& s) :
 // Return true on success, false on error.
 //----------------------------------------------------------------------------
 
-bool ts::SocketAddress::resolve (const std::string& name, ReportInterface& report)
+bool ts::SocketAddress::resolve (const std::string& name, Report& report)
 {
     // Clear address & port
     clear();

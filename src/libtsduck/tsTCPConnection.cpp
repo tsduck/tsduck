@@ -42,7 +42,7 @@ TSDUCK_SOURCE;
 // has just become connected.
 //----------------------------------------------------------------------------
 
-void ts::TCPConnection::declareConnected (ReportInterface& report)
+void ts::TCPConnection::declareConnected (Report& report)
 {
     {
         Guard lock (_mutex);
@@ -61,7 +61,7 @@ void ts::TCPConnection::declareConnected (ReportInterface& report)
 // Declare that the socket has just become disconnected.
 //----------------------------------------------------------------------------
 
-void ts::TCPConnection::declareDisconnected (ReportInterface& report)
+void ts::TCPConnection::declareDisconnected (Report& report)
 {
     {
         Guard lock (_mutex);
@@ -80,7 +80,7 @@ void ts::TCPConnection::declareDisconnected (ReportInterface& report)
 // Invoked when socket is closed()
 //----------------------------------------------------------------------------
 
-void ts::TCPConnection::handleClosed (ReportInterface& report)
+void ts::TCPConnection::handleClosed (Report& report)
 {
     declareDisconnected (report);
     SuperClass::handleClosed (report);
@@ -91,7 +91,7 @@ void ts::TCPConnection::handleClosed (ReportInterface& report)
 // Get connected peer.
 //----------------------------------------------------------------------------
 
-bool ts::TCPConnection::getPeer (SocketAddress& peer, ReportInterface& report) const
+bool ts::TCPConnection::getPeer (SocketAddress& peer, Report& report) const
 {
     ::sockaddr sock_addr;
     TS_SOCKET_SOCKLEN_T len = sizeof(sock_addr);
@@ -115,7 +115,7 @@ std::string ts::TCPConnection::peerName() const
 // Send data.
 //----------------------------------------------------------------------------
 
-bool ts::TCPConnection::send(const void* buffer, size_t size, ReportInterface& report)
+bool ts::TCPConnection::send(const void* buffer, size_t size, Report& report)
 {
     const char* data = reinterpret_cast <const char*> (buffer);
     size_t remain = size;
@@ -153,7 +153,7 @@ bool ts::TCPConnection::receive (void* data,             // Buffers address
                                    size_t max_size,        // Buffer size
                                    size_t& ret_size,       // Received message size
                                    const AbortInterface* abort,
-                                   ReportInterface& report)
+                                   Report& report)
 {
     // Clear returned values
     ret_size = 0;
@@ -195,7 +195,7 @@ bool ts::TCPConnection::receive (void* data,             // Buffers address
 // Receive data until buffer is full.
 //----------------------------------------------------------------------------
 
-bool ts::TCPConnection::receive (void* buffer, size_t size, const AbortInterface* abort, ReportInterface& report)
+bool ts::TCPConnection::receive (void* buffer, size_t size, const AbortInterface* abort, Report& report)
 {
     char* data = reinterpret_cast <char*> (buffer);
     size_t remain = size;
@@ -221,7 +221,7 @@ bool ts::TCPConnection::receive (void* buffer, size_t size, const AbortInterface
 // to TCPServer::accept() which establishes the connection.
 //----------------------------------------------------------------------------
 
-bool ts::TCPConnection::connect (const SocketAddress& addr, ReportInterface& report)
+bool ts::TCPConnection::connect (const SocketAddress& addr, Report& report)
 {
     // Loop on unsollicited interrupts
     for (;;) {
@@ -250,7 +250,7 @@ bool ts::TCPConnection::connect (const SocketAddress& addr, ReportInterface& rep
 // Shutdown the socket.
 //----------------------------------------------------------------------------
 
-bool ts::TCPConnection::shutdownSocket(int how, ReportInterface& report)
+bool ts::TCPConnection::shutdownSocket(int how, Report& report)
 {
     if (::shutdown(getSocket(), how) != 0) {
         const SocketErrorCode err_code = LastSocketErrorCode();
@@ -269,7 +269,7 @@ bool ts::TCPConnection::shutdownSocket(int how, ReportInterface& report)
 // Close the write direction of the connection.
 //----------------------------------------------------------------------------
 
-bool ts::TCPConnection::closeWriter(ReportInterface& report)
+bool ts::TCPConnection::closeWriter(Report& report)
 {
     report.debug ("closing socket writer");
     return shutdownSocket(TS_SOCKET_SHUT_WR, report);
@@ -280,7 +280,7 @@ bool ts::TCPConnection::closeWriter(ReportInterface& report)
 // Disconnect from remote partner.
 //----------------------------------------------------------------------------
 
-bool ts::TCPConnection::disconnect(ReportInterface& report)
+bool ts::TCPConnection::disconnect(Report& report)
 {
     declareDisconnected(report);
     report.debug("disconnecting socket");

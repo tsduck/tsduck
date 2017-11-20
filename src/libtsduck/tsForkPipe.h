@@ -34,7 +34,7 @@
 
 #pragma once
 #include "tsSysUtils.h"
-#include "tsReportInterface.h"
+#include "tsReport.h"
 
 namespace ts {
     //!
@@ -62,7 +62,7 @@ namespace ts {
         //! @return True on success, false on error.
         //!
         // Flawfinder: ignore: this is our open(), not ::open().
-        bool open(const std::string& command, bool synchronous, size_t buffer_size, ReportInterface& report);
+        bool open(const std::string& command, bool synchronous, size_t buffer_size, Report& report);
 
         //!
         //! Close the pipe.
@@ -70,7 +70,7 @@ namespace ts {
         //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool close(ReportInterface& report);
+        bool close(Report& report);
 
         //!
         //! Check if the process is running and the pipe is open.
@@ -125,7 +125,7 @@ namespace ts {
         //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool write(const void* addr, size_t size, ReportInterface& report);
+        bool write(const void* addr, size_t size, Report& report);
 
     private:
         bool     _is_open;       // Open and running.

@@ -68,34 +68,34 @@ Options::Options (int argc, char *argv[]) :
 #endif
     verbose(false)
 {
-    option("debug", 0, POSITIVE, 0, 1, 0, 0, true);
-    option("verbose", 'v');
+    option(u"debug", 0, POSITIVE, 0, 1, 0, 0, true);
+    option(u"verbose", 'v');
 #if defined(TS_WINDOWS)
-    option("enumerate-devices", 'e');  // Legacy, not documented anymore
-    option("test", 't', ts::DirectShowTest::TestNames);
+    option(u"enumerate-devices", 'e');  // Legacy, not documented anymore
+    option(u"test", 't', ts::DirectShowTest::TestNames);
 #endif
 
-    setHelp("By default, without device name or adapter, all DVB devices are listed.\n"
-            "\n"
-            "Options:\n"
-            "\n"
-            "  --help\n"
-            "      Display this help text.\n"
-            "\n"
+    setHelp(u"By default, without device name or adapter, all DVB devices are listed.\n"
+            u"\n"
+            u"Options:\n"
+            u"\n"
+            u"  --help\n"
+            u"      Display this help text.\n"
+            u"\n"
 #if defined(TS_WINDOWS)
-            "  -t name\n"
-            "  --test name\n"
-            "      Run a specific DirectShow test. Very verbose output, for debug only.\n"
-            "      The default is none. The names of the available tests are:\n"
-            "      " + ts::DirectShowTest::TestNames.nameList() + ".\n"
-            "\n"
+            u"  -t name\n"
+            u"  --test name\n"
+            u"      Run a specific DirectShow test. Very verbose output, for debug only.\n"
+            u"      The default is none. The names of the available tests are:\n"
+            u"      " + ts::DirectShowTest::TestNames.nameList() + ".\n"
+            u"\n"
 #endif
-            "  -v\n"
-            "  --verbose\n"
-            "      Produce verbose output.\n"
-            "\n"
-            "  --version\n"
-            "      Display the version number.\n");
+            u"  -v\n"
+            u"  --verbose\n"
+            u"      Produce verbose output.\n"
+            u"\n"
+            u"  --version\n"
+            u"      Display the version number.\n");
 
     // Add common tuner options.
     tuner.defineOptions(*this);
@@ -105,12 +105,12 @@ Options::Options (int argc, char *argv[]) :
     analyze(argc, argv);
     tuner.load(*this);
 
-    verbose = present("verbose");
-    setDebugLevel(present("debug") ? intValue("debug", 1) : ts::Severity::Info);
+    verbose = present(u"verbose");
+    setDebugLevel(present(u"debug") ? intValue("debug", 1) : ts::Severity::Info);
 
 #if defined(TS_WINDOWS)
     // Test options on Windows. The legacy option "--enumerate-devices" means "--test enumerate-devices".
-    test_type = enumValue("test", present("enumerate-devices") ? ts::DirectShowTest::ENUMERATE_DEVICES : ts::DirectShowTest::NONE);
+    test_type = enumValue("test", present(u"enumerate-devices") ? ts::DirectShowTest::ENUMERATE_DEVICES : ts::DirectShowTest::NONE);
 #endif
 
     exitOnError();

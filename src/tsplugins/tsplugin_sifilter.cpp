@@ -93,65 +93,65 @@ ts::SIFilterPlugin::SIFilterPlugin (TSP* tsp_) :
     _pass_pids(),
     _demux(this)
 {
-    option("bat", 0);
-    option("cat", 0);
-    option("eit", 0);
-    option("nit", 0);
-    option("pat", 0);
-    option("pmt", 'p');
-    option("rst", 0);
-    option("sdt", 0);
-    option("stuffing", 's');
-    option("tdt", 0);
-    option("tot", 0);
-    option("tsdt", 0);
+    option(u"bat", 0);
+    option(u"cat", 0);
+    option(u"eit", 0);
+    option(u"nit", 0);
+    option(u"pat", 0);
+    option(u"pmt", 'p');
+    option(u"rst", 0);
+    option(u"sdt", 0);
+    option(u"stuffing", 's');
+    option(u"tdt", 0);
+    option(u"tot", 0);
+    option(u"tsdt", 0);
 
-    setHelp("Options:\n"
-            "\n"
-            "  --bat\n"
-            "      Extract PID 0x0011 (SDT/BAT).\n"
-            "\n"
-            "  --cat\n"
-            "      Extract PID 0x0001 (CAT).\n"
-            "\n"
-            "  --eit\n"
-            "      Extract PID 0x0012 (EIT).\n"
-            "\n"
-            "  --help\n"
-            "      Display this help text.\n"
-            "\n"
-            "  --nit\n"
-            "      Extract PID 0x0010 (NIT).\n"
-            "\n"
-            "  --pat\n"
-            "      Extract PID 0x0000 (PAT).\n"
-            "\n"
-            "  -p\n"
-            "  --pmt\n"
-            "      Extract all PMT PID's.\n"
-            "\n"
-            "  --rst\n"
-            "      Extract PID 0x0013 (RST).\n"
-            "\n"
-            "  --sdt\n"
-            "      Extract PID 0x0011 (SDT/BAT).\n"
-            "\n"
-            "  -s\n"
-            "  --stuffing\n"
-            "      Replace excluded packets with stuffing (null packets) instead\n"
-            "      of removing them. Useful to preserve bitrate.\n"
-            "\n"
-            "  --tdt\n"
-            "      Extract PID 0x0014 (TDT/TOT).\n"
-            "\n"
-            "  --tot\n"
-            "      Extract PID 0x0014 (TDT/TOT).\n"
-            "\n"
-            "  --tsdt\n"
-            "      Extract PID 0x0002 (TSDT).\n"
-            "\n"
-            "  --version\n"
-            "      Display the version number.\n");
+    setHelp(u"Options:\n"
+            u"\n"
+            u"  --bat\n"
+            u"      Extract PID 0x0011 (SDT/BAT).\n"
+            u"\n"
+            u"  --cat\n"
+            u"      Extract PID 0x0001 (CAT).\n"
+            u"\n"
+            u"  --eit\n"
+            u"      Extract PID 0x0012 (EIT).\n"
+            u"\n"
+            u"  --help\n"
+            u"      Display this help text.\n"
+            u"\n"
+            u"  --nit\n"
+            u"      Extract PID 0x0010 (NIT).\n"
+            u"\n"
+            u"  --pat\n"
+            u"      Extract PID 0x0000 (PAT).\n"
+            u"\n"
+            u"  -p\n"
+            u"  --pmt\n"
+            u"      Extract all PMT PID's.\n"
+            u"\n"
+            u"  --rst\n"
+            u"      Extract PID 0x0013 (RST).\n"
+            u"\n"
+            u"  --sdt\n"
+            u"      Extract PID 0x0011 (SDT/BAT).\n"
+            u"\n"
+            u"  -s\n"
+            u"  --stuffing\n"
+            u"      Replace excluded packets with stuffing (null packets) instead\n"
+            u"      of removing them. Useful to preserve bitrate.\n"
+            u"\n"
+            u"  --tdt\n"
+            u"      Extract PID 0x0014 (TDT/TOT).\n"
+            u"\n"
+            u"  --tot\n"
+            u"      Extract PID 0x0014 (TDT/TOT).\n"
+            u"\n"
+            u"  --tsdt\n"
+            u"      Extract PID 0x0002 (TSDT).\n"
+            u"\n"
+            u"  --version\n"
+            u"      Display the version number.\n");
 
     _cas_args.defineOptions(*this);
     _cas_args.addHelp(*this);
@@ -166,38 +166,38 @@ bool ts::SIFilterPlugin::start()
 {
     // Get command line arguments
     _cas_args.load(*this);
-    _pass_pmt = present("pmt");
-    _drop_status = present("stuffing") ? TSP_NULL : TSP_DROP;
+    _pass_pmt = present(u"pmt");
+    _drop_status = present(u"stuffing") ? TSP_NULL : TSP_DROP;
 
     _pass_pids.reset();
-    if (present("bat")) {
+    if (present(u"bat")) {
         _pass_pids.set(PID_BAT);
     }
-    if (present("cat")) {
+    if (present(u"cat")) {
         _pass_pids.set(PID_CAT);
     }
-    if (present("eit")) {
+    if (present(u"eit")) {
         _pass_pids.set(PID_EIT);
     }
-    if (present("nit")) {
+    if (present(u"nit")) {
         _pass_pids.set(PID_NIT);
     }
-    if (present("pat")) {
+    if (present(u"pat")) {
         _pass_pids.set(PID_PAT);
     }
-    if (present("rst")) {
+    if (present(u"rst")) {
         _pass_pids.set(PID_RST);
     }
-    if (present("sdt")) {
+    if (present(u"sdt")) {
         _pass_pids.set(PID_SDT);
     }
-    if (present("tdt")) {
+    if (present(u"tdt")) {
         _pass_pids.set(PID_TDT);
     }
-    if (present("tot")) {
+    if (present(u"tot")) {
         _pass_pids.set(PID_TOT);
     }
-    if (present("tsdt")) {
+    if (present(u"tsdt")) {
         _pass_pids.set(PID_TSDT);
     }
 

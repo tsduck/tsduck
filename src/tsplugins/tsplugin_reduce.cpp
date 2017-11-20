@@ -73,28 +73,28 @@ TSPLUGIN_DECLARE_PROCESSOR(ts::ReducePlugin)
 //----------------------------------------------------------------------------
 
 ts::ReducePlugin::ReducePlugin (TSP* tsp_) :
-    ProcessorPlugin(tsp_, "Reduce the TS bitrate by removing stuffing packets.", "[options] rempkt inpkt"),
+    ProcessorPlugin(tsp_, u"Reduce the TS bitrate by removing stuffing packets.", u"[options] rempkt inpkt"),
     _opt_rempkt(0),
     _opt_inpkt(0),
     _in_count(0),
     _rem_count(0)
 {
-    option ("", 0, POSITIVE, 2, 2);
+    option(u"", 0, POSITIVE, 2, 2);
 
-    setHelp ("Parameters:\n"
-             "\n"
-             "  The parameters specify that <rempkt> TS packets must be automatically\n"
-             "  removed after every <inpkt> input TS packets in the transport stream.\n"
-             "  Only stuffing packets can be removed.\n"
-             "  Both <rempkt> and <inpkt> must be non-zero integer values.\n"
-             "\n"
-             "Options:\n"
-             "\n"
-             "  --help\n"
-             "      Display this help text.\n"
-             "\n"
-             "  --version\n"
-             "      Display the version number.\n");
+    setHelp(u"Parameters:\n"
+            u"\n"
+            u"  The parameters specify that <rempkt> TS packets must be automatically\n"
+            u"  removed after every <inpkt> input TS packets in the transport stream.\n"
+            u"  Only stuffing packets can be removed.\n"
+            u"  Both <rempkt> and <inpkt> must be non-zero integer values.\n"
+            u"\n"
+            u"Options:\n"
+            u"\n"
+            u"  --help\n"
+            u"      Display this help text.\n"
+            u"\n"
+            u"  --version\n"
+            u"      Display the version number.\n");
 }
 
 

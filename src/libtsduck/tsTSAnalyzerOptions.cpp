@@ -45,97 +45,97 @@ TSDUCK_SOURCE;
 void ts::TSAnalyzerOptions::setHelp (const std::string& help)
 {
     Args::setHelp (help +
-        "\n"
-        "Controlling analysis:\n"
-        "\n"
-        "  --suspect-max-consecutive value\n"
-        "      Specifies the maximum number of consecutive \"suspect\" packets.\n"
-        "      The default value is 1. If set to zero, the suspect packet detection\n"
-        "      is disabled.\n"
-        "\n"
-        "      Suspect packets are TS packets which are technically correct but which\n"
-        "      may be suspected of being incorrect, resulting in analysis errors.\n"
-        "      Typically, in the middle of a suite of packets with uncorrectable\n"
-        "      binary errors, one packet may appear to have no such error while\n"
-        "      it has some errors in fact. To avoid adding this type of packets in the\n"
-        "      analysis, a packet is declared as \"suspect\" (and consequently ignored in\n"
-        "      the analysis) when:\n"
-        "      - its PID is unknown (no other packet was found in this PID)\n"
-        "      - it immediately follows a certain amount of packet containing errors\n"
-        "        (see option --suspect-min-error-count)\n"
-        "      - it immediately follows no more than the specified number consecutive\n"
-        "        suspect packets.\n"
-        "\n"
-        "  --suspect-min-error-count value\n"
-        "      Specifies the minimum number of consecutive packets with errors before\n"
-        "      starting \"suspect\" packet detection. See also option\n"
-        "      --suspect-max-consecutive. The default value is 1. If set to zero,\n"
-        "      the suspect packet detection is disabled.\n"
-        "\n"
-        "Controlling output:\n"
-        "\n"
-        "  The output can include full synthetic analysis (options *-analysis),\n"
-        "  fully normalized output (option --normalized) or a simple list of\n"
-        "  values on one line (options --*-list). The second and third type of\n"
-        "  options are useful to write automated scripts.\n"
-        "\n"
-        "  If output-control options are specified, only the selected outputs\n"
-        "  are produced. If no option is given, the default is:\n"
-        "  --ts-analysis --service-analysis --pid-analysis --table-analysis\n"
-        "\n"
-        "  --ts-analysis\n"
-        "      Report global transport stream analysis.\n"
-        "\n"
-        "  --service-analysis\n"
-        "      Report analysis for each service.\n"
-        "\n"
-        "  --pid-analysis\n"
-        "      Report analysis for each PID.\n"
-        "\n"
-        "  --table-analysis\n"
-        "      Report analysis for each table.\n"
-        "\n"
-        "  --error-analysis\n"
-        "      Report analysis about detected errors.\n"
-        "\n"
-        "  --normalized\n"
-        "      Complete report about the transport stream, the services and\n"
-        "      the PID's in a normalized output format (useful for automatic\n"
-        "      analysis).\n"
-        "\n"
-        "  --service-list\n"
-        "      Report the list of all service ids.\n"
-        "\n"
-        "  --pid-list\n"
-        "      Report the list of all PID's.\n"
-        "\n"
-        "  --global-pid-list\n"
-        "      Report the list of all global PID's, that is to say PID's\n"
-        "      which are not referenced by a specific service but are or\n"
-        "      are referenced by the standard DVB PSI/SI. This include, for\n"
-        "      instance, PID's of the PAT, EMM's, EIT's, stuffing, etc.\n"
-        "\n"
-        "  --unreferenced-pid-list\n"
-        "      Report the list of all unreferenced PID's, that is to say\n"
-        "      PID's which are neither referenced by a service nor known\n"
-        "      as or referenced by the standard DVB PSI/SI.\n"
-        "\n"
-        "  --service-pid-list value\n"
-        "      Report the list of all PID's which are referenced by the\n"
-        "      specified service id.\n"
-        "\n"
-        "  --pes-pid-list\n"
-        "      Report the list of all PID's which are declared as carrying\n"
-        "      PES packets (audio, video, subtitles, etc).\n"
-        "\n"
-        "  --title string\n"
-        "      Display the specified string as title header.\n"
-        "\n"
-        "  --prefix string\n"
-        "      For one-line displays (options --*-list), prepend the\n"
-        "      specified string to all values. For instance, options\n"
-        "      --global --prefix -p outputs something like '-p 0 -p 1 -p 16',\n"
-        "      which is an acceptable option list for the tsp filter plugin.\n");
+        u"\n"
+        u"Controlling analysis:\n"
+        u"\n"
+        u"  --suspect-max-consecutive value\n"
+        u"      Specifies the maximum number of consecutive \"suspect\" packets.\n"
+        u"      The default value is 1. If set to zero, the suspect packet detection\n"
+        u"      is disabled.\n"
+        u"\n"
+        u"      Suspect packets are TS packets which are technically correct but which\n"
+        u"      may be suspected of being incorrect, resulting in analysis errors.\n"
+        u"      Typically, in the middle of a suite of packets with uncorrectable\n"
+        u"      binary errors, one packet may appear to have no such error while\n"
+        u"      it has some errors in fact. To avoid adding this type of packets in the\n"
+        u"      analysis, a packet is declared as \"suspect\" (and consequently ignored in\n"
+        u"      the analysis) when:\n"
+        u"      - its PID is unknown (no other packet was found in this PID)\n"
+        u"      - it immediately follows a certain amount of packet containing errors\n"
+        u"        (see option --suspect-min-error-count)\n"
+        u"      - it immediately follows no more than the specified number consecutive\n"
+        u"        suspect packets.\n"
+        u"\n"
+        u"  --suspect-min-error-count value\n"
+        u"      Specifies the minimum number of consecutive packets with errors before\n"
+        u"      starting \"suspect\" packet detection. See also option\n"
+        u"      --suspect-max-consecutive. The default value is 1. If set to zero,\n"
+        u"      the suspect packet detection is disabled.\n"
+        u"\n"
+        u"Controlling output:\n"
+        u"\n"
+        u"  The output can include full synthetic analysis (options *-analysis),\n"
+        u"  fully normalized output (option --normalized) or a simple list of\n"
+        u"  values on one line (options --*-list). The second and third type of\n"
+        u"  options are useful to write automated scripts.\n"
+        u"\n"
+        u"  If output-control options are specified, only the selected outputs\n"
+        u"  are produced. If no option is given, the default is:\n"
+        u"  --ts-analysis --service-analysis --pid-analysis --table-analysis\n"
+        u"\n"
+        u"  --ts-analysis\n"
+        u"      Report global transport stream analysis.\n"
+        u"\n"
+        u"  --service-analysis\n"
+        u"      Report analysis for each service.\n"
+        u"\n"
+        u"  --pid-analysis\n"
+        u"      Report analysis for each PID.\n"
+        u"\n"
+        u"  --table-analysis\n"
+        u"      Report analysis for each table.\n"
+        u"\n"
+        u"  --error-analysis\n"
+        u"      Report analysis about detected errors.\n"
+        u"\n"
+        u"  --normalized\n"
+        u"      Complete report about the transport stream, the services and\n"
+        u"      the PID's in a normalized output format (useful for automatic\n"
+        u"      analysis).\n"
+        u"\n"
+        u"  --service-list\n"
+        u"      Report the list of all service ids.\n"
+        u"\n"
+        u"  --pid-list\n"
+        u"      Report the list of all PID's.\n"
+        u"\n"
+        u"  --global-pid-list\n"
+        u"      Report the list of all global PID's, that is to say PID's\n"
+        u"      which are not referenced by a specific service but are or\n"
+        u"      are referenced by the standard DVB PSI/SI. This include, for\n"
+        u"      instance, PID's of the PAT, EMM's, EIT's, stuffing, etc.\n"
+        u"\n"
+        u"  --unreferenced-pid-list\n"
+        u"      Report the list of all unreferenced PID's, that is to say\n"
+        u"      PID's which are neither referenced by a service nor known\n"
+        u"      as or referenced by the standard DVB PSI/SI.\n"
+        u"\n"
+        u"  --service-pid-list value\n"
+        u"      Report the list of all PID's which are referenced by the\n"
+        u"      specified service id.\n"
+        u"\n"
+        u"  --pes-pid-list\n"
+        u"      Report the list of all PID's which are declared as carrying\n"
+        u"      PES packets (audio, video, subtitles, etc).\n"
+        u"\n"
+        u"  --title string\n"
+        u"      Display the specified string as title header.\n"
+        u"\n"
+        u"  --prefix string\n"
+        u"      For one-line displays (options --*-list), prepend the\n"
+        u"      specified string to all values. For instance, options\n"
+        u"      --global --prefix -p outputs something like '-p 0 -p 1 -p 16',\n"
+        u"      which is an acceptable option list for the tsp filter plugin.\n");
 }
 
 
@@ -169,22 +169,22 @@ ts::TSAnalyzerOptions::TSAnalyzerOptions (const std::string& description,
 {
     setHelp (help);
 
-    option ("ts-analysis");
-    option ("service-analysis");
-    option ("pid-analysis");
-    option ("table-analysis");
-    option ("error-analysis");
-    option ("normalized");
-    option ("service-list");
-    option ("pid-list");
-    option ("global-pid-list");
-    option ("unreferenced-pid-list");
-    option ("pes-pid-list");
-    option ("service-pid-list", 0, UINT16);
-    option ("prefix", 0, STRING);
-    option ("title", 0, STRING);
-    option ("suspect-min-error-count", 0, UNSIGNED);
-    option ("suspect-max-consecutive", 0, UNSIGNED);
+    option(u"ts-analysis");
+    option(u"service-analysis");
+    option(u"pid-analysis");
+    option(u"table-analysis");
+    option(u"error-analysis");
+    option(u"normalized");
+    option(u"service-list");
+    option(u"pid-list");
+    option(u"global-pid-list");
+    option(u"unreferenced-pid-list");
+    option(u"pes-pid-list");
+    option(u"service-pid-list", 0, UINT16);
+    option(u"prefix", 0, STRING);
+    option(u"title", 0, STRING);
+    option(u"suspect-min-error-count", 0, UNSIGNED);
+    option(u"suspect-max-consecutive", 0, UNSIGNED);
 }
 
 
@@ -195,21 +195,21 @@ ts::TSAnalyzerOptions::TSAnalyzerOptions (const std::string& description,
 
 void ts::TSAnalyzerOptions::getOptions (const Args& args)
 {
-    ts_analysis = args.present ("ts-analysis");
-    service_analysis = args.present ("service-analysis");
-    pid_analysis = args.present ("pid-analysis");
-    table_analysis = args.present ("table-analysis");
-    error_analysis = args.present ("error-analysis");
-    normalized = args.present ("normalized");
-    service_list = args.present ("service-list");
-    pid_list = args.present ("pid-list");
-    global_pid_list = args.present ("global-pid-list");
-    unreferenced_pid_list = args.present ("unreferenced-pid-list");
-    pes_pid_list = args.present ("pes-pid-list");
-    service_pid_list = args.present ("service-pid-list");
+    ts_analysis = args.present(u"ts-analysis");
+    service_analysis = args.present(u"service-analysis");
+    pid_analysis = args.present(u"pid-analysis");
+    table_analysis = args.present(u"table-analysis");
+    error_analysis = args.present(u"error-analysis");
+    normalized = args.present(u"normalized");
+    service_list = args.present(u"service-list");
+    pid_list = args.present(u"pid-list");
+    global_pid_list = args.present(u"global-pid-list");
+    unreferenced_pid_list = args.present(u"unreferenced-pid-list");
+    pes_pid_list = args.present(u"pes-pid-list");
+    service_pid_list = args.present(u"service-pid-list");
     service_id = args.intValue<uint16_t> ("service-pid-list");
-    prefix = args.value ("prefix");
-    title = args.value ("title");
+    prefix = args.value(u"prefix");
+    title = args.value(u"title");
     suspect_min_error_count = args.intValue<uint64_t> ("suspect-min-error-count", 1);
     suspect_max_consecutive = args.intValue<uint64_t> ("suspect-max-consecutive", 1);
 

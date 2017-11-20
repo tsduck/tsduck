@@ -64,7 +64,7 @@ ts::TCPSocket::~TCPSocket()
 // Open the socket
 //----------------------------------------------------------------------------
 
-bool ts::TCPSocket::open(ReportInterface& report)
+bool ts::TCPSocket::open(Report& report)
 {
     {
         Guard lock (_mutex);
@@ -86,7 +86,7 @@ bool ts::TCPSocket::open(ReportInterface& report)
 // This method is used by a server to declare that the socket has just become opened.
 //----------------------------------------------------------------------------
 
-void ts::TCPSocket::declareOpened (TS_SOCKET_T sock, ReportInterface& report)
+void ts::TCPSocket::declareOpened (TS_SOCKET_T sock, Report& report)
 {
     {
         Guard lock (_mutex);
@@ -105,7 +105,7 @@ void ts::TCPSocket::declareOpened (TS_SOCKET_T sock, ReportInterface& report)
 // Close the socket
 //----------------------------------------------------------------------------
 
-bool ts::TCPSocket::close (ReportInterface& report)
+bool ts::TCPSocket::close (Report& report)
 {
     {
         Guard lock (_mutex);
@@ -126,7 +126,7 @@ bool ts::TCPSocket::close (ReportInterface& report)
 // Set various socket options
 //----------------------------------------------------------------------------
 
-bool ts::TCPSocket::setSendBufferSize (size_t bytes, ReportInterface& report)
+bool ts::TCPSocket::setSendBufferSize (size_t bytes, Report& report)
 {
     int size = int (bytes); // Actual socket option is an int.
     report.debug ("setting socket send buffer size to " + Decimal (bytes));
@@ -138,7 +138,7 @@ bool ts::TCPSocket::setSendBufferSize (size_t bytes, ReportInterface& report)
 }
 
 
-bool ts::TCPSocket::setReceiveBufferSize (size_t bytes, ReportInterface& report)
+bool ts::TCPSocket::setReceiveBufferSize (size_t bytes, Report& report)
 {
     int size = int (bytes); // Actual socket option is an int.
     report.debug ("setting socket receive buffer size to " + Decimal (bytes));
@@ -150,7 +150,7 @@ bool ts::TCPSocket::setReceiveBufferSize (size_t bytes, ReportInterface& report)
 }
 
 
-bool ts::TCPSocket::reusePort (bool active, ReportInterface& report)
+bool ts::TCPSocket::reusePort (bool active, Report& report)
 {
     int reuse = int (active); // Actual socket option is an int.
     report.debug ("setting socket reuse address to " + Decimal (reuse));
@@ -162,7 +162,7 @@ bool ts::TCPSocket::reusePort (bool active, ReportInterface& report)
 }
 
 
-bool ts::TCPSocket::setTTL (int ttl, ReportInterface& report)
+bool ts::TCPSocket::setTTL (int ttl, Report& report)
 {
     TS_SOCKET_TTL_T uttl = (TS_SOCKET_TTL_T) (ttl);
     report.debug ("setting socket TTL to " + Decimal (uttl));
@@ -174,7 +174,7 @@ bool ts::TCPSocket::setTTL (int ttl, ReportInterface& report)
 }
 
 
-bool ts::TCPSocket::setNoLinger (ReportInterface& report)
+bool ts::TCPSocket::setNoLinger (Report& report)
 {
     ::linger lin;
     lin.l_onoff = 0;
@@ -188,7 +188,7 @@ bool ts::TCPSocket::setNoLinger (ReportInterface& report)
 }
 
 
-bool ts::TCPSocket::setLingerTime (int seconds, ReportInterface& report)
+bool ts::TCPSocket::setLingerTime (int seconds, Report& report)
 {
     ::linger lin;
     lin.l_onoff = 1;
@@ -202,7 +202,7 @@ bool ts::TCPSocket::setLingerTime (int seconds, ReportInterface& report)
 }
 
 
-bool ts::TCPSocket::setKeepAlive (bool active, ReportInterface& report)
+bool ts::TCPSocket::setKeepAlive (bool active, Report& report)
 {
     int keepalive = int (active); // Actual socket option is an int.
     report.debug ("setting socket keep-alive to " + Decimal (keepalive));
@@ -214,7 +214,7 @@ bool ts::TCPSocket::setKeepAlive (bool active, ReportInterface& report)
 }
 
 
-bool ts::TCPSocket::setNoDelay (bool active, ReportInterface& report)
+bool ts::TCPSocket::setNoDelay (bool active, Report& report)
 {
     int nodelay = int (active); // Actual socket option is an int.
     report.debug ("setting socket no-delay to " + Decimal (nodelay));
@@ -230,7 +230,7 @@ bool ts::TCPSocket::setNoDelay (bool active, ReportInterface& report)
 // Bind to a local address and port.
 //----------------------------------------------------------------------------
 
-bool ts::TCPSocket::bind (const SocketAddress& addr, ReportInterface& report)
+bool ts::TCPSocket::bind (const SocketAddress& addr, Report& report)
 {
     ::sockaddr sock_addr;
     addr.copy (sock_addr);
@@ -248,7 +248,7 @@ bool ts::TCPSocket::bind (const SocketAddress& addr, ReportInterface& report)
 // Get local socket address
 //----------------------------------------------------------------------------
 
-bool ts::TCPSocket::getLocalAddress (SocketAddress& addr, ReportInterface& report)
+bool ts::TCPSocket::getLocalAddress (SocketAddress& addr, Report& report)
 {
     ::sockaddr sock_addr;
     TS_SOCKET_SOCKLEN_T len = sizeof(sock_addr);

@@ -127,28 +127,28 @@ ts::DektecInputPlugin::DektecInputPlugin(TSP* tsp_) :
 {
     CheckNonNull(_guts);
 
-    option("channel", 'c', UNSIGNED);
-    option("device", 'd', UNSIGNED);
+    option(u"channel", 'c', UNSIGNED);
+    option(u"device", 'd', UNSIGNED);
 
-    setHelp("Options:\n"
-            "\n"
-            "  -c value\n"
-            "  --channel value\n"
-            "      Channel index on the input Dektec device. By default, use the\n"
-            "      first input channel on the device.\n"
-            "\n"
-            "  -d value\n"
-            "  --device value\n"
-            "      Device index, from 0 to N-1 (with N being the number of Dektec devices\n"
-            "      in the system). Use the command \"tsdektec -a [-v]\" to have a\n"
-            "      complete list of devices in the system. By default, use the first\n"
-            "      input Dektec device.\n"
-            "\n"
-            "  --help\n"
-            "      Display this help text.\n"
-            "\n"
-            "  --version\n"
-            "      Display the version number.\n");
+    setHelp(u"Options:\n"
+            u"\n"
+            u"  -c value\n"
+            u"  --channel value\n"
+            u"      Channel index on the input Dektec device. By default, use the\n"
+            u"      first input channel on the device.\n"
+            u"\n"
+            u"  -d value\n"
+            u"  --device value\n"
+            u"      Device index, from 0 to N-1 (with N being the number of Dektec devices\n"
+            u"      in the system). Use the command \"tsdektec -a [-v]\" to have a\n"
+            u"      complete list of devices in the system. By default, use the first\n"
+            u"      input Dektec device.\n"
+            u"\n"
+            u"  --help\n"
+            u"      Display this help text.\n"
+            u"\n"
+            u"  --version\n"
+            u"      Display the version number.\n");
 }
 
 
@@ -163,9 +163,9 @@ bool ts::DektecInputPlugin::start()
         return false;
     }
 
-    // Get command line arguments
-    _guts->dev_index = intValue<int>("device", -1);
-    _guts->chan_index = intValue<int>("channel", -1);
+    // Get command line argumentsu
+    _guts->dev_index = intValue<int>(u"device", -1);
+    _guts->chan_index = intValue<int>(u"channel", -1);
 
     // Locate the device
     if (!_guts->device.getDevice(_guts->dev_index, _guts->chan_index, true, *tsp)) {

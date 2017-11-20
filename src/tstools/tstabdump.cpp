@@ -60,31 +60,31 @@ Options::Options(int argc, char *argv[]) :
 {
     // Warning, the following short options are already defined in TablesDisplayArgs:
     // 'c', 'r'
-    option("", 0, ts::Args::STRING);
-    option("verbose", 'v');
+    option(u"", 0, ts::Args::STRING);
+    option(u"verbose", 'v');
     display.defineOptions(*this);
 
-    setHelp("Input file:\n"
-            "\n"
-            "  MPEG capture file (standard input if omitted).\n"
-            "\n"
-            "Options:\n"
-            "\n"
-            "  --help\n"
-            "      Display this help text.\n"
-            "\n"
-            "  -v\n"
-            "  --verbose\n"
-            "      Produce verbose output.\n"
-            "\n"
-            "  --version\n"
-            "      Display the version number.\n");
+    setHelp(u"Input file:\n"
+            u"\n"
+            u"  MPEG capture file (standard input if omitted).\n"
+            u"\n"
+            u"Options:\n"
+            u"\n"
+            u"  --help\n"
+            u"      Display this help text.\n"
+            u"\n"
+            u"  -v\n"
+            u"  --verbose\n"
+            u"      Produce verbose output.\n"
+            u"\n"
+            u"  --version\n"
+            u"      Display the version number.\n");
     display.addHelp(*this);
 
     analyze(argc, argv);
 
     getValues(infiles, "");
-    verbose = present("verbose");
+    verbose = present(u"verbose");
     display.load(*this);
 
     exitOnError();

@@ -66,43 +66,43 @@ Options::Options(int argc, char *argv[]) :
     filename(),
     file()
 {
-    option("",          0,  Args::STRING, 1, 1);
-    option("circular", 'c');
-    option("noaction", 'n');
-    option("verbose",  'v');
+    option(u"",          0,  Args::STRING, 1, 1);
+    option(u"circular", 'c');
+    option(u"noaction", 'n');
+    option(u"verbose",  'v');
 
-    setHelp("File:\n"
-            "\n"
-            "  MPEG capture file to be modified.\n"
-            "\n"
-            "Options:\n"
-            "\n"
-            "  -c\n"
-            "  --circular\n"
-            "      Enforce continuity when the file is played repeatedly.\n"
-            "      Add empty packets, if necessary, on each PID so that the\n"
-            "      continuity is preserved between end and beginning of file.\n"
-            "\n"
-            "  --help\n"
-            "      Display this help text.\n"
-            "\n"
-            "  -n\n"
-            "  --noaction\n"
-            "      Display what should be performed but do not modify the file.\n"
-            "\n"
-            "  -v\n"
-            "  --verbose\n"
-            "      Produce verbose messages.\n"
-            "\n"
-            "  --version\n"
-            "      Display the version number.\n");
+    setHelp(u"File:\n"
+            u"\n"
+            u"  MPEG capture file to be modified.\n"
+            u"\n"
+            u"Options:\n"
+            u"\n"
+            u"  -c\n"
+            u"  --circular\n"
+            u"      Enforce continuity when the file is played repeatedly.\n"
+            u"      Add empty packets, if necessary, on each PID so that the\n"
+            u"      continuity is preserved between end and beginning of file.\n"
+            u"\n"
+            u"  --help\n"
+            u"      Display this help text.\n"
+            u"\n"
+            u"  -n\n"
+            u"  --noaction\n"
+            u"      Display what should be performed but do not modify the file.\n"
+            u"\n"
+            u"  -v\n"
+            u"  --verbose\n"
+            u"      Produce verbose messages.\n"
+            u"\n"
+            u"  --version\n"
+            u"      Display the version number.\n");
 
     analyze(argc, argv);
 
-    filename = value("");
-    circular = present("circular");
-    test = present("noaction");
-    verbose = test || present("verbose");
+    filename = value(u"");
+    circular = present(u"circular");
+    test = present(u"noaction");
+    verbose = test || present(u"verbose");
 }
 
 // Check error on file

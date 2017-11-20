@@ -41,9 +41,7 @@
 
 #include "tsArgs.h"
 #include "tsByteBlock.h"
-#include "tsFormat.h"
 #include "tsSysUtils.h"
-#include "tsStringUtils.h"
 TSDUCK_SOURCE;
 
 
@@ -56,58 +54,58 @@ struct Options: public ts::Args
     Options(int argc, char *argv[]);
 
     enum UpdateCommand {APPEND, PREPEND, REMOVE};
-    std::string   directory;
+    ts::UString   directory;
     std::string   registryKey;
     std::string   registryValue;
     UpdateCommand command;
 };
 
 Options::Options(int argc, char *argv[]) :
-    ts::Args("Add or remove a directory to the system Path.", "[options] directory"),
+    ts::Args(u"Add or remove a directory to the system Path.", u"[options] directory"),
     directory(),
     registryKey("SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment"),
     registryValue("Path"),
     command(APPEND)
 {
-    option("",         0,  Args::STRING, 1, 1);
-    option("append",  'a');
-    option("prepend", 'p');
-    option("remove",  'r');
+    option(u"",         0,  Args::STRING, 1, 1);
+    option(u"append",  'a');
+    option(u"prepend", 'p');
+    option(u"remove",  'r');
 
-    setHelp("Directory:\n"
-            "\n"
-            "  A directory to add or remove to the system Path.\n"
-            "\n"
-            "Options\n"
-            "\n"
-            "  -a\n"
-            "  --append\n"
-            "    Append the directory to the system path (the default).\n"
-            "\n"
-            "  --help\n"
-            "      Display this help text.\n"
-            "\n"
-            "  -p\n"
-            "  --prepend\n"
-            "    Prepend the directory to the system path.\n"
-            "\n"
-            "  -r\n"
-            "  --remove\n"
-            "    Remove the directory from the system path.\n"
-            "\n"
-            "  --version\n"
-            "      Display the version number.\n");
+    setHelp(u"Directory:\n"
+            u"\n"
+            u"  A directory to add or remove to the system Path.\n"
+            u"\n"
+            u"Options\n"
+            u"\n"
+            u"  -a\n"
+            u"  --append\n"
+            u"    Append the directory to the system path (the default).\n"
+            u"\n"
+            u"  --help\n"
+            u"      Display this help text.\n"
+            u"\n"
+            u"  -p\n"
+            u"  --prepend\n"
+            u"    Prepend the directory to the system path.\n"
+            u"\n"
+            u"  -r\n"
+            u"  --remove\n"
+            u"    Remove the directory from the system path.\n"
+            u"\n"
+            u"  --version\n"
+            u"      Display the version number.\n");
 
     analyze(argc, argv);
 
-    directory = value("");
-    if (present("append")) {
+    directory = value(u"");
+    if (present(u"append")) {
         command = APPEND;
     }
-    if (present("prepend")) {
+    if (present(u"prepend")) {
         command = PREPEND;
     }
-    if (present("remove")) {
+    if (present(u"remove")) {
         command = REMOVE;
     }
 }
@@ -118,9 +116,9 @@ Options::Options(int argc, char *argv[]) :
 //-----------------------------------------------------------------------------
 
 namespace {
-    std::string CleanupDirectory(const std::string& path)
+    ts::UString CleanupDirectory(const ts::UString& path)
     {
-        std::string directory(ts::VernacularFilePath(path));
+        ts::UString directory(ts::VernacularFilePath(path));
         while (!directory.empty() && directory[directory.size() - 1] == ts::PathSeparator) {
             directory.resize(directory.size() - 1);
         }
@@ -154,9 +152,9 @@ int main(int argc, char* argv[])
     if (status != ERROR_SUCCESS) {
         opt.error(ts::ErrorCodeMessage(status));
     }
-    opt.debug(ts::Format("Path size: %d bytes, type: %d", int(pathSize), int(type)));
+    opt.debug(u"Path size: %d bytes, type: %d", {pathSize, type});
     if (type != REG_SZ && type != REG_EXPAND_SZ) {
-        opt.error("invalid data type in " + opt.registryKey + "\\" + opt.registryValue);
+        opt.error(u"invalid data type in %s\\%s", {opt.registryKey, opt.registryValue});
     }
 
     // Get the Path value.
@@ -170,13 +168,13 @@ int main(int argc, char* argv[])
 
     // Turn the path value into a string.
     pathBuffer.push_back(0);
-    std::string pathValue(reinterpret_cast<char*>(&pathBuffer[0]));
-    opt.debug("Path value: " + pathValue);
+    ts::UString pathValue(reinterpret_cast<char*>(&pathBuffer[0]));
+    opt.debug(u"Path value: %s", {pathValue});
 
     // Split the Path into a list of clean directories.
-    ts::StringList dirs;
-    ts::SplitString(dirs, pathValue, ts::SearchPathSeparator, true);
-    for (ts::StringList::iterator it = dirs.begin(); it != dirs.end(); ++it) {
+    ts::UStringList dirs;
+    pathValue.split(dirs, ts::SearchPathSeparator, true);
+    for (ts::UStringList::iterator it = dirs.begin(); it != dirs.end(); ++it) {
         *it = CleanupDirectory(*it);
     }
 
@@ -197,13 +195,14 @@ int main(int argc, char* argv[])
     }
 
     // Rebuild the new Path.
-    pathValue = ts::JoinStrings(dirs, std::string(1, ts::SearchPathSeparator));
-    opt.debug("new Path value: " + pathValue);
+    pathValue = ts::UString::Join(dirs, std::string(1, ts::SearchPathSeparator));
+    opt.debug(u"new Path value: %s", {pathValue});
 
     // Update the Path in the registry.
     // Always set type as REG_EXPAND_SZ, in case there is a variable reference in the add path.
     // Make sure the trailing nul character is included in the data size.
-    status = ::RegSetValueEx(hkey, opt.registryValue.c_str(), 0, REG_EXPAND_SZ, reinterpret_cast<const ::BYTE*>(pathValue.c_str()), ::DWORD(pathValue.size()) + 1);
+    const std::string pathValueUTF8(pathValue.toUTF8());
+    status = ::RegSetValueEx(hkey, opt.registryValue.c_str(), 0, REG_EXPAND_SZ, reinterpret_cast<const ::BYTE*>(pathValueUTF8.c_str()), ::DWORD(pathValue.size()) + 1);
     if (status != ERROR_SUCCESS) {
         opt.error(ts::ErrorCodeMessage(status));
     }
@@ -212,7 +211,7 @@ int main(int argc, char* argv[])
     ::SendNotifyMessageW(HWND_BROADCAST, WM_WININICHANGE, 0, reinterpret_cast<LPARAM>(L"Environment"));
 
 #else
-    opt.error("no effect on non-Windows systems");
+    opt.error(u"no effect on non-Windows systems");
 #endif
 
     return EXIT_SUCCESS;

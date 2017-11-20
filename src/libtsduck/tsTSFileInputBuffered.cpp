@@ -66,7 +66,7 @@ ts::TSFileInputBuffered::~TSFileInputBuffered()
 // Set the buffer size. Can be done only when the file is closed.
 //----------------------------------------------------------------------------
 
-bool ts::TSFileInputBuffered::setBufferSize (size_t buffer_size, ReportInterface& report)
+bool ts::TSFileInputBuffered::setBufferSize (size_t buffer_size, Report& report)
 {
     if (isOpen()) {
         report.error ("file " + getFileName() + " is already open, cannot resize buffer");
@@ -83,7 +83,7 @@ bool ts::TSFileInputBuffered::setBufferSize (size_t buffer_size, ReportInterface
 // Open file. Override TSFileInput::open().
 //----------------------------------------------------------------------------
 
-bool ts::TSFileInputBuffered::open (const std::string& filename, size_t repeat_count, uint64_t start_offset, ReportInterface& report)
+bool ts::TSFileInputBuffered::open (const std::string& filename, size_t repeat_count, uint64_t start_offset, Report& report)
 {
     if (isOpen()) {
         report.error ("file " + getFileName() + " is already open");
@@ -126,7 +126,7 @@ bool ts::TSFileInputBuffered::canSeek (PacketCounter pos) const
 // Seek to the specified absolute position, if it is inside the buffer.
 //----------------------------------------------------------------------------
 
-bool ts::TSFileInputBuffered::seek (PacketCounter pos, ReportInterface& report)
+bool ts::TSFileInputBuffered::seek (PacketCounter pos, Report& report)
 {
     if (canSeek (pos)) {
         _current_offset = size_t (int64_t (_current_offset) + int64_t (pos) - int64_t (getPacketCount()));
@@ -143,7 +143,7 @@ bool ts::TSFileInputBuffered::seek (PacketCounter pos, ReportInterface& report)
 // Relative seek the file inside the buffer.
 //----------------------------------------------------------------------------
 
-bool ts::TSFileInputBuffered::seekBackward (size_t packet_count, ReportInterface& report)
+bool ts::TSFileInputBuffered::seekBackward (size_t packet_count, Report& report)
 {
     if (!isOpen()) {
         report.error ("file not open");
@@ -160,7 +160,7 @@ bool ts::TSFileInputBuffered::seekBackward (size_t packet_count, ReportInterface
 }
 
 
-bool ts::TSFileInputBuffered::seekForward (size_t packet_count, ReportInterface& report)
+bool ts::TSFileInputBuffered::seekForward (size_t packet_count, Report& report)
 {
     if (!isOpen()) {
         report.error ("file not open");
@@ -181,7 +181,7 @@ bool ts::TSFileInputBuffered::seekForward (size_t packet_count, ReportInterface&
 // Read TS packets. Override TSFileInput::read().
 //----------------------------------------------------------------------------
 
-size_t ts::TSFileInputBuffered::read (TSPacket* user_buffer, size_t max_packets, ReportInterface& report)
+size_t ts::TSFileInputBuffered::read (TSPacket* user_buffer, size_t max_packets, Report& report)
 {
     if (!isOpen()) {
         report.error ("file not open");

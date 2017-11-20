@@ -39,7 +39,7 @@ TSDUCK_SOURCE;
 // Constructor.
 //----------------------------------------------------------------------------
 
-ts::ReportWithPrefix::ReportWithPrefix(ts::ReportInterface& report, const std::string& prefix) :
+ts::ReportWithPrefix::ReportWithPrefix(ts::Report& report, const UString& prefix) :
     _report(report),
     _prefix(prefix)
 {
@@ -51,7 +51,7 @@ ts::ReportWithPrefix::ReportWithPrefix(ts::ReportInterface& report, const std::s
 // Rport interface.
 //----------------------------------------------------------------------------
 
-void ts::ReportWithPrefix::writeLog(int severity, const std::string& msg)
+void ts::ReportWithPrefix::writeLog(int severity, const UString& msg)
 {
     _report.log(severity, _prefix + msg);
 }

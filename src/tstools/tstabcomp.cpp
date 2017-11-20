@@ -75,82 +75,82 @@ Options::Options(int argc, char *argv[]) :
     xmlModel(false),
     defaultCharset(0)
 {
-    option("",                0,  ts::Args::STRING);
-    option("compile",        'c');
-    option("decompile",      'd');
-    option("default-charset", 0, Args::STRING);
-    option("output",         'o', ts::Args::STRING);
-    option("verbose",        'v');
-    option("xml-model",      'x');
+    option(u"",                0,  ts::Args::STRING);
+    option(u"compile",        'c');
+    option(u"decompile",      'd');
+    option(u"default-charset", 0, Args::STRING);
+    option(u"output",         'o', ts::Args::STRING);
+    option(u"verbose",        'v');
+    option(u"xml-model",      'x');
 
-    setHelp("Input files:\n"
-            "\n"
-            "  XML source files to compile or binary table files to decompile. By default,\n"
-            "  files ending in .xml are compiled and files ending in .bin are decompiled.\n"
-            "  For other files, explicitly specify --compile or --decompile.\n"
-            "\n"
-            "Options:\n"
-            "\n"
-            "  -c\n"
-            "  --compile\n"
-            "      Compile all files as XML source files into binary files. This is the\n"
-            "      default for .xml files.\n"
-            "\n"
-            "  -d\n"
-            "  --decompile\n"
-            "      Decompile all files as binary files into XML files. This is the default\n"
-            "      for .bin files.\n"
-            "\n"
-            "  --default-charset name\n"
-            "      Default DVB character set to use. The available table names are:\n"
-            "      " + ts::UString::Join(ts::DVBCharset::GetAllNames()).toSplitLines(74, ts::UString(), ts::UString(6, ts::SPACE)).toUTF8() + ".\n"
-            "\n"
-            "      With --compile, this character set is used to encode strings. If a\n"
-            "      given string cannot be encoded with this character set or if this option\n"
-            "      is not specified, an appropriate character set is automatically selected.\n"
-            "\n"
-            "      With --decompile, this character set is used to interpret DVB strings\n"
-            "      without explicit character table code. According to DVB standard ETSI EN\n"
-            "      300 468, the default DVB character set is ISO-6937. However, some bogus\n"
-            "      signalization may assume that the default character set is different,\n"
-            "      typically the usual local character table for the region. This option\n"
-            "      forces a non-standard character table.\n"
-            "\n"
-            "  --help\n"
-            "      Display this help text.\n"
-            "\n"
-            "  -o filepath\n"
-            "  --output filepath\n"
-            "      Specify the output file name. By default, the output file has the same\n"
-            "      name as the input and extension .bin (compile) or .xml (decompile). If\n"
-            "      the specified path is a directory, the output file is built from this\n"
-            "      directory and default file name. If more than one input file is specified,\n"
-            "      the output path, if present, must be a directory name.\n"
-            "\n"
-            "  -v\n"
-            "  --verbose\n"
-            "      Produce verbose output.\n"
-            "\n"
-            "  --version\n"
-            "      Display the version number.\n"
-            "\n"
-            "  -x\n"
-            "  --xml-model\n"
-            "      Display the XML model of the table files. This model is not a full\n"
-            "      XML-Schema, this is an informal template file which describes the\n"
-            "      expected syntax of TSDuck XML files. If --output is specified, save\n"
-            "      the model here. Do not specify input files.\n");
+    setHelp(u"Input files:\n"
+            u"\n"
+            u"  XML source files to compile or binary table files to decompile. By default,\n"
+            u"  files ending in .xml are compiled and files ending in .bin are decompiled.\n"
+            u"  For other files, explicitly specify --compile or --decompile.\n"
+            u"\n"
+            u"Options:\n"
+            u"\n"
+            u"  -c\n"
+            u"  --compile\n"
+            u"      Compile all files as XML source files into binary files. This is the\n"
+            u"      default for .xml files.\n"
+            u"\n"
+            u"  -d\n"
+            u"  --decompile\n"
+            u"      Decompile all files as binary files into XML files. This is the default\n"
+            u"      for .bin files.\n"
+            u"\n"
+            u"  --default-charset name\n"
+            u"      Default DVB character set to use. The available table names are:\n"
+            u"      " + ts::UString::Join(ts::DVBCharset::GetAllNames()).toSplitLines(74, ts::UString(), ts::UString(6, ts::SPACE)).toUTF8() + ".\n"
+            u"\n"
+            u"      With --compile, this character set is used to encode strings. If a\n"
+            u"      given string cannot be encoded with this character set or if this option\n"
+            u"      is not specified, an appropriate character set is automatically selected.\n"
+            u"\n"
+            u"      With --decompile, this character set is used to interpret DVB strings\n"
+            u"      without explicit character table code. According to DVB standard ETSI EN\n"
+            u"      300 468, the default DVB character set is ISO-6937. However, some bogus\n"
+            u"      signalization may assume that the default character set is different,\n"
+            u"      typically the usual local character table for the region. This option\n"
+            u"      forces a non-standard character table.\n"
+            u"\n"
+            u"  --help\n"
+            u"      Display this help text.\n"
+            u"\n"
+            u"  -o filepath\n"
+            u"  --output filepath\n"
+            u"      Specify the output file name. By default, the output file has the same\n"
+            u"      name as the input and extension .bin (compile) or .xml (decompile). If\n"
+            u"      the specified path is a directory, the output file is built from this\n"
+            u"      directory and default file name. If more than one input file is specified,\n"
+            u"      the output path, if present, must be a directory name.\n"
+            u"\n"
+            u"  -v\n"
+            u"  --verbose\n"
+            u"      Produce verbose output.\n"
+            u"\n"
+            u"  --version\n"
+            u"      Display the version number.\n"
+            u"\n"
+            u"  -x\n"
+            u"  --xml-model\n"
+            u"      Display the XML model of the table files. This model is not a full\n"
+            u"      XML-Schema, this is an informal template file which describes the\n"
+            u"      expected syntax of TSDuck XML files. If --output is specified, save\n"
+            u"      the model here. Do not specify input files.\n");
 
     analyze(argc, argv);
 
     getValues(infiles, "");
     getValue(outfile, "output");
-    compile = present("compile");
-    decompile = present("decompile");
-    xmlModel = present("xml-model");
+    compile = present(u"compile");
+    decompile = present(u"decompile");
+    xmlModel = present(u"xml-model");
     outdir = !outfile.empty() && ts::IsDirectory(outfile);
 
-    if (present("verbose")) {
+    if (present(u"verbose")) {
         setDebugLevel(ts::Severity::Verbose);
     }
 
@@ -165,7 +165,7 @@ Options::Options(int argc, char *argv[]) :
     }
 
     // Get default character set.
-    const std::string csName(value("default-charset"));
+    const std::string csName(value(u"default-charset"));
     if (!csName.empty() && (defaultCharset = ts::DVBCharset::GetCharset(csName)) == 0) {
         error("invalid character set name '%s", csName.c_str());
     }

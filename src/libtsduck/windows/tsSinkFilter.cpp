@@ -62,7 +62,7 @@ namespace {
 // SinkFilter, the DirectShow filter
 //-----------------------------------------------------------------------------
 
-ts::SinkFilter::SinkFilter(ReportInterface& report) :
+ts::SinkFilter::SinkFilter(Report& report) :
     _mutex(),
     _not_empty(),
     _queue(),
@@ -431,7 +431,7 @@ void ts::SinkFilter::FillBuffer(char*& buffer, size_t& buffer_size)
 // SinkPin, input pin for our SinkFilter
 //-----------------------------------------------------------------------------
 
-ts::SinkPin::SinkPin(ReportInterface& report, SinkFilter* filter) :
+ts::SinkPin::SinkPin(Report& report, SinkFilter* filter) :
     _flushing(false),
     _input_overflow(false),
     _report(report),
@@ -809,7 +809,7 @@ const ::GUID ts::SinkPin::MEDIA_SUBTYPES [MAX_MEDIA_SUBTYPES] = {
 // SinkEnumMediaTypes, enumerator returned by ::IPin::EnumMediaTypes
 //-----------------------------------------------------------------------------
 
-ts::SinkEnumMediaTypes::SinkEnumMediaTypes (ReportInterface& report, const SinkEnumMediaTypes* cloned) :
+ts::SinkEnumMediaTypes::SinkEnumMediaTypes (Report& report, const SinkEnumMediaTypes* cloned) :
     _report (report),
     _ref_count (1),
     _next (cloned == NULL ? 0 : cloned->_next)
@@ -915,7 +915,7 @@ STDMETHODIMP ts::SinkEnumMediaTypes::Clone (::IEnumMediaTypes** ppEnum)
 // SinkEnumPins, enumerator returned by ::IBaseFilter::EnumPins
 //-----------------------------------------------------------------------------
 
-ts::SinkEnumPins::SinkEnumPins (ReportInterface& report, SinkFilter* filter, const SinkEnumPins* cloned) :
+ts::SinkEnumPins::SinkEnumPins (Report& report, SinkFilter* filter, const SinkEnumPins* cloned) :
     _report (report),
     _ref_count (1),
     _filter (filter),

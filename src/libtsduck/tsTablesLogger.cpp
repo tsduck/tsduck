@@ -46,7 +46,7 @@ TSDUCK_SOURCE;
 // Constructor
 //----------------------------------------------------------------------------
 
-ts::TablesLogger::TablesLogger(const TablesLoggerArgs& opt, TablesDisplay& display, ReportInterface& report) :
+ts::TablesLogger::TablesLogger(const TablesLoggerArgs& opt, TablesDisplay& display, Report& report) :
     TableHandlerInterface(),
     SectionHandlerInterface(),
     _opt(opt),

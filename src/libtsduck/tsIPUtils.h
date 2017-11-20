@@ -33,7 +33,6 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsPlatform.h"
 #include "tsCerrReport.h"
 #include "tsSysUtils.h"
 
@@ -49,7 +48,7 @@ namespace ts {
     //!
     //! @return True on success, false on error.
     //!
-    TSDUCKDLL bool IPInitialize (ReportInterface& = CERR);
+    TSDUCKDLL bool IPInitialize (Report& = CERR);
 
     //!
     //! Type for socket error code.
@@ -81,7 +80,7 @@ namespace ts {
     //! Typically a result from LastSocketErrorCode().
     //! @return A string describing the error.
     //!
-    TSDUCKDLL inline std::string SocketErrorCodeMessage(SocketErrorCode code = LastSocketErrorCode())
+    TSDUCKDLL inline UString SocketErrorCodeMessage(SocketErrorCode code = LastSocketErrorCode())
     {
         // Note for windows: although error codes types are different for system and
         // winsock, it appears that the system error message also applies to winsock.
@@ -105,7 +104,7 @@ namespace ts {
     //! @param [in] report Where to report errors.
     //! @return True on success, false on error.
     //!
-    TSDUCKDLL bool GetLocalIPAddresses(IPAddressVector& addresses, ReportInterface& report = CERR);
+    TSDUCKDLL bool GetLocalIPAddresses(IPAddressVector& addresses, Report& report = CERR);
 
     //!
     //! Check if a local system interface has a specified IP address.

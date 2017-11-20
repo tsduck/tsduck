@@ -88,36 +88,36 @@ ts::TimeRefPlugin::TimeRefPlugin(TSP* tsp_) :
     _update_tdt(false),
     _update_tot(false)
 {
-    option("add",   'a', INTEGER, 0, 1, std::numeric_limits<int>::min(), std::numeric_limits<int>::max());
-    option("notdt",  0);
-    option("notot",  0);
-    option("start", 's', STRING);
+    option(u"add",   'a', INTEGER, 0, 1, std::numeric_limits<int>::min(), std::numeric_limits<int>::max());
+    option(u"notdt",  0);
+    option(u"notot",  0);
+    option(u"start", 's', STRING);
 
-    setHelp("Options:\n"
-            "\n"
-            "  -a seconds\n"
-            "  --add seconds\n"
-            "      Add the specified number of seconds to all UTC time. Specify a negative\n"
-            "      value to make the time reference go backward.\n"
-            "\n"
-            "  --help\n"
-            "      Display this help text.\n"
-            "\n"
-            "  --notdt\n"
-            "      Do not update TDT.\n"
-            "\n"
-            "  --notot\n"
-            "      Do not update TOT.\n"
-            "\n"
-            "  -s time\n"
-            "  --start time\n"
-            "      Specify a new UTC date & time reference for the first packet in the\n"
-            "      stream. Then, the time reference is updated according to the number\n"
-            "      of packets and the bitrate. A time value must be in the format\n"
-            "      \"year/month/day:hour:minute:second\".\n"
-            "\n"
-            "  --version\n"
-            "      Display the version number.\n");
+    setHelp(u"Options:\n"
+            u"\n"
+            u"  -a seconds\n"
+            u"  --add seconds\n"
+            u"      Add the specified number of seconds to all UTC time. Specify a negative\n"
+            u"      value to make the time reference go backward.\n"
+            u"\n"
+            u"  --help\n"
+            u"      Display this help text.\n"
+            u"\n"
+            u"  --notdt\n"
+            u"      Do not update TDT.\n"
+            u"\n"
+            u"  --notot\n"
+            u"      Do not update TOT.\n"
+            u"\n"
+            u"  -s time\n"
+            u"  --start time\n"
+            u"      Specify a new UTC date & time reference for the first packet in the\n"
+            u"      stream. Then, the time reference is updated according to the number\n"
+            u"      of packets and the bitrate. A time value must be in the format\n"
+            u"      \"year/month/day:hour:minute:second\".\n"
+            u"\n"
+            u"  --version\n"
+            u"      Display the version number.\n");
 }
 
 
@@ -127,15 +127,15 @@ ts::TimeRefPlugin::TimeRefPlugin(TSP* tsp_) :
 
 bool ts::TimeRefPlugin::start()
 {
-    _update_tdt = !present("notdt");
-    _update_tot = !present("notot");
+    _update_tdt = !present(u"notdt");
+    _update_tot = !present(u"notot");
     _add_milliseconds = MilliSecPerSec * intValue<int>("add", 0);
     _current_pkt = 0;
     _timeref_pkt = 1;
 
-    _use_timeref = present("start");
+    _use_timeref = present(u"start");
     if (_use_timeref) {
-        const std::string start(value("start"));
+        const std::string start(value(u"start"));
         try {
             // Decode an absolute time string
             int year, month, day, hour, minute, second;

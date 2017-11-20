@@ -138,110 +138,110 @@ ts::PMTPlugin::PMTPlugin (TSP* tsp_) :
     _demux(this),
     _pzer()
 {
-    option ("ac3-atsc2dvb",                0);
-    option ("add-pid",                    'a', STRING, 0, UNLIMITED_COUNT);
-    option ("add-stream-identifier",       0);
-    option ("audio-language",              0,  STRING, 0, UNLIMITED_COUNT);
-    option ("cleanup-private-descriptors", 0);
-    option ("eac3-atsc2dvb",               0);
-    option ("increment-version",           0);
-    option ("new-service-id",             'i', UINT16);
-    option ("move-pid",                   'm', STRING, 0, UNLIMITED_COUNT);
-    option ("pds",                         0,  UINT32);
-    option ("pmt-pid",                    'p', PIDVAL);
-    option ("pcr-pid",                     0,  PIDVAL);
-    option ("remove-descriptor",           0,  UINT8,  0, UNLIMITED_COUNT);
-    option ("remove-pid",                 'r', PIDVAL, 0, UNLIMITED_COUNT);
-    option ("service",                    's', STRING);
-    option ("new-version",                'v', INTEGER, 0, 1, 0, 31);
+    option(u"ac3-atsc2dvb",                0);
+    option(u"add-pid",                    'a', STRING, 0, UNLIMITED_COUNT);
+    option(u"add-stream-identifier",       0);
+    option(u"audio-language",              0,  STRING, 0, UNLIMITED_COUNT);
+    option(u"cleanup-private-descriptors", 0);
+    option(u"eac3-atsc2dvb",               0);
+    option(u"increment-version",           0);
+    option(u"new-service-id",             'i', UINT16);
+    option(u"move-pid",                   'm', STRING, 0, UNLIMITED_COUNT);
+    option(u"pds",                         0,  UINT32);
+    option(u"pmt-pid",                    'p', PIDVAL);
+    option(u"pcr-pid",                     0,  PIDVAL);
+    option(u"remove-descriptor",           0,  UINT8,  0, UNLIMITED_COUNT);
+    option(u"remove-pid",                 'r', PIDVAL, 0, UNLIMITED_COUNT);
+    option(u"service",                    's', STRING);
+    option(u"new-version",                'v', INTEGER, 0, 1, 0, 31);
 
-    setHelp ("Options:\n"
-             "\n"
-             "  --ac3-atsc2dvb\n"
-             "      Change the description of AC-3 audio streams from ATSC to DVB method.\n"
-             "      In details, this means that all components with stream_type 0x81 are\n"
-             "      modified with stream_type 0x06 (PES private data) and an AC-3_descriptor\n"
-             "      is added on this component (if none was already there).\n"
-             "\n"
-             "  -a pid/stream_type\n"
-             "  --add-pid pid/stream_type\n"
-             "      Add the specified PID / stream-type component in the PMT. Several\n"
-             "      --add-pid options may be specified to add several components.\n"
-             "\n"
-             "  --add-stream-identifier\n"
-             "      Add a stream_identifier_descriptor on all components. The component_tag\n"
-             "      are uniquely allocated inside the service. Existing stream_identifier\n"
-             "      descriptors are left unmodified.\n"
-             "\n"
-             "  --audio-language " + AudioLanguageOptions::GetSyntaxString() + "\n"
-             "      Specifies the language for an audio stream in the PMT. Several options\n"
-             "      can be specified to set the languages of several audio streams.\n" +
+    setHelp(u"Options:\n"
+             u"\n"
+             u"  --ac3-atsc2dvb\n"
+             u"      Change the description of AC-3 audio streams from ATSC to DVB method.\n"
+             u"      In details, this means that all components with stream_type 0x81 are\n"
+             u"      modified with stream_type 0x06 (PES private data) and an AC-3_descriptor\n"
+             u"      is added on this component (if none was already there).\n"
+             u"\n"
+             u"  -a pid/stream_type\n"
+             u"  --add-pid pid/stream_type\n"
+             u"      Add the specified PID / stream-type component in the PMT. Several\n"
+             u"      --add-pid options may be specified to add several components.\n"
+             u"\n"
+             u"  --add-stream-identifier\n"
+             u"      Add a stream_identifier_descriptor on all components. The component_tag\n"
+             u"      are uniquely allocated inside the service. Existing stream_identifier\n"
+             u"      descriptors are left unmodified.\n"
+             u"\n"
+             u"  --audio-language " + AudioLanguageOptions::GetSyntaxString() + "\n"
+             u"      Specifies the language for an audio stream in the PMT. Several options\n"
+             u"      can be specified to set the languages of several audio streams.\n" +
              AudioLanguageOptions::GetHelpString() +
-             "\n"
-             "  --cleanup-private-descriptors\n"
-             "      Remove all private descriptors without preceding private_data_specifier\n"
-             "      descriptor.\n"
-             "\n"
-             "  --eac3-atsc2dvb\n"
-             "      Change the description of Enhanced-AC-3 (aka AC-3+ or DD+) audio streams\n"
-             "      from ATSC to DVB method. In details, this means that all components with\n"
-             "      stream_type 0x87 are modified with stream_type 0x06 (PES private data)\n"
-             "      and an enhanced_AC-3_descriptor is added on this component (if none was\n"
-             "      already there).\n"
-             "\n"
-             "  --help\n"
-             "      Display this help text.\n"
-             "\n"
-             "  --increment-version\n"
-             "      Increment the version number of the PMT.\n"
-             "\n"
-             "  -i value\n"
-             "  --new-service-id value\n"
-             "      Change the service id in the PMT.\n"
-             "\n"
-             "  -m old-pid/new-pid\n"
-             "  --move-pid old-pid/new-pid\n"
-             "      Change the PID value of a component in the PMT. Several --move-pid\n"
-             "      options may be specified to move several components.\n"
-             "\n"
-             "  --pds value\n"
-             "      With option --remove-descriptor, specify the private data specifier\n"
-             "      which applies to the descriptor tag values above 0x80.\n"
-             "\n"
-             "  -p value\n"
-             "  --pmt-pid value\n"
-             "      Specify the PID carrying the PMT to modify. All PMT's in this PID will be\n"
-             "      modified. Options --pmt-pid and --service are mutually exclusive. If\n"
-             "      neither are specified, the first service in the PAT is used.\n"
-             "\n"
-             "  --pcr-pid value\n"
-             "      Change the PCR PID value in the PMT.\n"
-             "\n"
-             "  --remove-descriptor value\n"
-             "      Remove from the PMT all descriptors with the specified tag. Several\n"
-             "      --remove-descriptor options may be specified to remove several types of\n"
-             "      descriptors. See also option --pds.\n"
-             "\n"
-             "  -r value\n"
-             "  --remove-pid value\n"
-             "      Remove the component with the specified PID from the PMT. Several\n"
-             "      --remove-pid options may be specified to remove several components.\n"
-             "\n"
-             "  -s name-or-id\n"
-             "  --service name-or-id\n"
-             "      Specify the service the PMT of which must be modified. If the argument is\n"
-             "      an integer value (either decimal or hexadecimal), it is interpreted as a\n"
-             "      service id. Otherwise, it is interpreted as a service name, as specified\n"
-             "      in the SDT. The name is not case sensitive and blanks are ignored.\n"
-             "      Options --pmt-pid and --service are mutually exclusive. If neither are\n"
-             "      specified, the first service in the PAT is used.\n"
-             "\n"
-             "  -v value\n"
-             "  --new-version value\n"
-             "      Specify a new value for the version of the PMT.\n"
-             "\n"
-             "  --version\n"
-             "      Display the version number.\n");
+             u"\n"
+             u"  --cleanup-private-descriptors\n"
+             u"      Remove all private descriptors without preceding private_data_specifier\n"
+             u"      descriptor.\n"
+             u"\n"
+             u"  --eac3-atsc2dvb\n"
+             u"      Change the description of Enhanced-AC-3 (aka AC-3+ or DD+) audio streams\n"
+             u"      from ATSC to DVB method. In details, this means that all components with\n"
+             u"      stream_type 0x87 are modified with stream_type 0x06 (PES private data)\n"
+             u"      and an enhanced_AC-3_descriptor is added on this component (if none was\n"
+             u"      already there).\n"
+             u"\n"
+             u"  --help\n"
+             u"      Display this help text.\n"
+             u"\n"
+             u"  --increment-version\n"
+             u"      Increment the version number of the PMT.\n"
+             u"\n"
+             u"  -i value\n"
+             u"  --new-service-id value\n"
+             u"      Change the service id in the PMT.\n"
+             u"\n"
+             u"  -m old-pid/new-pid\n"
+             u"  --move-pid old-pid/new-pid\n"
+             u"      Change the PID value of a component in the PMT. Several --move-pid\n"
+             u"      options may be specified to move several components.\n"
+             u"\n"
+             u"  --pds value\n"
+             u"      With option --remove-descriptor, specify the private data specifier\n"
+             u"      which applies to the descriptor tag values above 0x80.\n"
+             u"\n"
+             u"  -p value\n"
+             u"  --pmt-pid value\n"
+             u"      Specify the PID carrying the PMT to modify. All PMT's in this PID will be\n"
+             u"      modified. Options --pmt-pid and --service are mutually exclusive. If\n"
+             u"      neither are specified, the first service in the PAT is used.\n"
+             u"\n"
+             u"  --pcr-pid value\n"
+             u"      Change the PCR PID value in the PMT.\n"
+             u"\n"
+             u"  --remove-descriptor value\n"
+             u"      Remove from the PMT all descriptors with the specified tag. Several\n"
+             u"      --remove-descriptor options may be specified to remove several types of\n"
+             u"      descriptors. See also option --pds.\n"
+             u"\n"
+             u"  -r value\n"
+             u"  --remove-pid value\n"
+             u"      Remove the component with the specified PID from the PMT. Several\n"
+             u"      --remove-pid options may be specified to remove several components.\n"
+             u"\n"
+             u"  -s name-or-id\n"
+             u"  --service name-or-id\n"
+             u"      Specify the service the PMT of which must be modified. If the argument is\n"
+             u"      an integer value (either decimal or hexadecimal), it is interpreted as a\n"
+             u"      service id. Otherwise, it is interpreted as a service name, as specified\n"
+             u"      in the SDT. The name is not case sensitive and blanks are ignored.\n"
+             u"      Options --pmt-pid and --service are mutually exclusive. If neither are\n"
+             u"      specified, the first service in the PAT is used.\n"
+             u"\n"
+             u"  -v value\n"
+             u"  --new-version value\n"
+             u"      Specify a new value for the version of the PMT.\n"
+             u"\n"
+             u"  --version\n"
+             u"      Display the version number.\n");
 }
 
 
@@ -260,25 +260,25 @@ bool ts::PMTPlugin::start()
     _pzer.reset();
 
     // Get option values
-    _set_servid = present ("new-service-id");
+    _set_servid = present(u"new-service-id");
     _new_servid = intValue<uint16_t> ("new-service-id");
-    _set_pcrpid = present ("pcr-pid");
+    _set_pcrpid = present(u"pcr-pid");
     _new_pcrpid = intValue<PID> ("pcr-pid");
-    _incr_version = present ("increment-version");
-    _set_version = present ("new-version");
+    _incr_version = present(u"increment-version");
+    _set_version = present(u"new-version");
     _new_version = intValue<uint8_t> ("new-version");
     _pds = intValue<PDS> ("pds");
-    _ac3_atsc2dvb = present ("ac3-atsc2dvb");
-    _eac3_atsc2dvb = present ("eac3-atsc2dvb");
-    _add_stream_id = present ("add-stream-identifier");
-    _cleanup_priv_desc = present ("cleanup-private-descriptors");
+    _ac3_atsc2dvb = present(u"ac3-atsc2dvb");
+    _eac3_atsc2dvb = present(u"eac3-atsc2dvb");
+    _add_stream_id = present(u"add-stream-identifier");
+    _cleanup_priv_desc = present(u"cleanup-private-descriptors");
     getIntValues (_removed_pid, "remove-pid");
     getIntValues (_removed_desc, "remove-descriptor");
 
     // Get list of components to add
     const size_t add_count = count ("add-pid");
     for (size_t n = 0; n < add_count; n++) {
-        const std::string s (value ("add-pid", "", n));
+        const std::string s (value(u"add-pid", "", n));
         int pid, stype;
         char unused;
         if (::sscanf(s.c_str(), "%i/%i%c", &pid, &stype, &unused) == 2 &&
@@ -294,7 +294,7 @@ bool ts::PMTPlugin::start()
     // Get list of components to move
     const size_t move_count = count ("move-pid");
     for (size_t n = 0; n < move_count; n++) {
-        std::string s (value ("move-pid", "", n));
+        std::string s (value(u"move-pid", "", n));
         int opid, npid;
         char unused;
         if (::sscanf (s.c_str(), "%i/%i%c", &opid, &npid, &unused) != 2 || opid < 0 || opid >= PID_MAX || npid < 0 || npid >= PID_MAX) {
@@ -310,16 +310,16 @@ bool ts::PMTPlugin::start()
     }
 
     // Get PMT PID or service description
-    if (present ("pmt-pid") && present ("service")) {
+    if (present(u"pmt-pid") && present(u"service")) {
         error ("options --pmt-pid and --service are mutually exclusive");
         return false;
     }
-    if (present ("pmt-pid")) {
+    if (present(u"pmt-pid")) {
         // A PMT PID is specified, we are now ready to modify all PMT's in this PID
         _service.setPMTPID (intValue<PID> ("pmt-pid"));
     }
-    else if (present ("service")) {
-        _service.set (value ("service"));
+    else if (present(u"service")) {
+        _service.set (value(u"service"));
     }
 
     // Determine which PID we need to process

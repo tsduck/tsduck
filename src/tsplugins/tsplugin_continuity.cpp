@@ -73,25 +73,25 @@ TSPLUGIN_DECLARE_PROCESSOR(ts::ContinuityPlugin)
 // Constructor
 //----------------------------------------------------------------------------
 
-ts::ContinuityPlugin::ContinuityPlugin (TSP* tsp_) :
-    ProcessorPlugin (tsp_, "Check continuity counters on TS packets.", "[options]"),
-    _tag (),
-    _packet_count (0)
+ts::ContinuityPlugin::ContinuityPlugin(TSP* tsp_) :
+    ProcessorPlugin(tsp_, u"Check continuity counters on TS packets.", u"[options]"),
+    _tag(),
+    _packet_count(0)
 {
-    option ("tag", 't', STRING);
+    option(u"tag", 't', STRING);
 
-    setHelp ("Options:\n"
-             "\n"
-             "  --help\n"
-             "      Display this help text.\n"
-             "\n"
-             "  -t 'string'\n"
-             "  --tag 'string'\n"
-             "      Message tag to be displayed when packets are missing. Useful when\n"
-             "      the plugin is used several times in the same process.\n"
-             "\n"
-             "  --version\n"
-             "      Display the version number.\n");
+    setHelp(u"Options:\n"
+            u"\n"
+            u"  --help\n"
+            u"      Display this help text.\n"
+            u"\n"
+            u"  -t 'string'\n"
+            u"  --tag 'string'\n"
+            u"      Message tag to be displayed when packets are missing. Useful when\n"
+            u"      the plugin is used several times in the same process.\n"
+            u"\n"
+            u"  --version\n"
+            u"      Display the version number.\n");
 }
 
 
@@ -102,7 +102,7 @@ ts::ContinuityPlugin::ContinuityPlugin (TSP* tsp_) :
 bool ts::ContinuityPlugin::start()
 {
     // Command line arguments
-    _tag = value ("tag");
+    _tag = value(u"tag");
     if (!_tag.empty()) {
         _tag += ": ";
     }

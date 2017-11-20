@@ -284,7 +284,7 @@ namespace {
 // failbit of the stream and return false.
 //----------------------------------------------------------------------------
 
-std::istream& ts::TSPacket::read (std::istream& strm, bool check_sync, ReportInterface& report)
+std::istream& ts::TSPacket::read (std::istream& strm, bool check_sync, Report& report)
 {
     if (!strm) {
         return strm;
@@ -323,7 +323,7 @@ std::istream& ts::TSPacket::read (std::istream& strm, bool check_sync, ReportInt
 // Return true on success, false on error.
 //----------------------------------------------------------------------------
 
-std::ostream& ts::TSPacket::write (std::ostream& strm, ReportInterface& report) const
+std::ostream& ts::TSPacket::write (std::ostream& strm, Report& report) const
 {
     if (strm) {
         strm.write (reinterpret_cast <const char*> (b), PKT_SIZE);

@@ -120,11 +120,10 @@ void ts::PrivateDataSpecifierDescriptor::DisplayDescriptor(TablesDisplay& displa
 //----------------------------------------------------------------------------
 
 namespace {
-    const ts::Enumeration KnownPDS(
-        "eacem",    ts::PDS_EACEM,
-        "eutelsat", ts::PDS_EUTELSAT,
-        TS_NULL
-    );
+    const ts::Enumeration KnownPDS({
+        {u"eacem",    ts::PDS_EACEM},
+        {u"eutelsat", ts::PDS_EUTELSAT},
+    });
 }
 
 

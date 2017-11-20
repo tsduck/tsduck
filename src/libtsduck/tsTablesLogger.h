@@ -56,7 +56,7 @@ namespace ts {
         //! @param [in,out] display Object to display tables and sections.
         //! @param [in,out] report Where to log errors.
         //!
-        TablesLogger(const TablesLoggerArgs& options, TablesDisplay& display, ReportInterface& report);
+        TablesLogger(const TablesLoggerArgs& options, TablesDisplay& display, Report& report);
 
         //!
         //! Destructor.
@@ -116,7 +116,7 @@ namespace ts {
     private:
         const TablesLoggerArgs& _opt;
         TablesDisplay&   _display;
-        ReportInterface& _report;
+        Report& _report;
         bool             _abort;
         bool             _exit;
         uint32_t         _table_count;

@@ -214,7 +214,7 @@ void ts::AbstractDescrambler::processSDT(const SDT& sdt)
 
     // Remember service id
     _service.setId(service_id);
-    tsp->verbose("found service \"" + _service.getName() + Format("\", service id is 0x%04X", int(_service.getId())));
+    tsp->verbose("found service \"%s\", service id is 0x%X", {_service.getName(), _service.getId()});
 
     // No longer need to filter the SDT
     _demux.removePID(PID_SDT);
@@ -229,36 +229,36 @@ void ts::AbstractDescrambler::processSDT(const SDT& sdt)
 //  This method processes a Program Association Table (PAT).
 //----------------------------------------------------------------------------
 
-void ts::AbstractDescrambler::processPAT (const PAT& pat)
+void ts::AbstractDescrambler::processPAT(const PAT& pat)
 {
     if (_service.hasId()) {
         // The service id is known, search it in the PAT
         PAT::ServiceMap::const_iterator it = pat.pmts.find (_service.getId());
         if (it == pat.pmts.end()) {
             // Service not found, error
-            tsp->error ("service id %d (0x%04X) not found in PAT", int (_service.getId()), int (_service.getId()));
+            tsp->error(u"service id %d (0x%X) not found in PAT", {_service.getId(), _service.getId()});
             _abort = true;
             return;
         }
         // If a previous PMT PID was known, no long filter it
         if (_service.hasPMTPID()) {
-            _demux.removePID (_service.getPMTPID());
+            _demux.removePID(_service.getPMTPID());
         }
         // Found PMT PID
-        _service.setPMTPID (it->second);
-        _demux.addPID (it->second);
+        _service.setPMTPID(it->second);
+        _demux.addPID(it->second);
     }
     else if (!pat.pmts.empty()) {
         // No service specified, use first one in PAT
         PAT::ServiceMap::const_iterator it = pat.pmts.begin();
-        _service.setId (it->first);
-        _service.setPMTPID (it->second);
+        _service.setId(it->first);
+        _service.setPMTPID(it->second);
         _demux.addPID (it->second);
-        tsp->verbose ("using service %d (0x%04X)", int (_service.getId()), int (_service.getId()));
+        tsp->verbose(u"using service %d (0x%X)", {_service.getId(), _service.getId()});
     }
     else {
         // No service specified, no service in PAT, error
-        tsp->error ("no service in PAT");
+        tsp->error(u"no service in PAT");
         _abort = true;
     }
 }
@@ -268,22 +268,22 @@ void ts::AbstractDescrambler::processPAT (const PAT& pat)
 //  This method processes a Program Map Table (PMT).
 //----------------------------------------------------------------------------
 
-void ts::AbstractDescrambler::processPMT (const PMT& pmt)
+void ts::AbstractDescrambler::processPMT(const PMT& pmt)
 {
-    tsp->debug ("PMT: service 0x%04X, %" FMT_SIZE_T "d elementary streams", int (pmt.service_id), pmt.streams.size());
+    tsp->debug(u"PMT: service 0x%X, %d elementary streams", {pmt.service_id, pmt.streams.size()});
 
     // Search ECM PID's at service level
     std::set<PID> service_ecm_pids;
-    analyzeCADescriptors (pmt.descs, service_ecm_pids);
+    analyzeCADescriptors(pmt.descs, service_ecm_pids);
 
     // Loop on all elementary streams in this service
     for (PMT::StreamMap::const_iterator it = pmt.streams.begin(); it != pmt.streams.end(); ++it) {
         const PID pid = it->first;
-        const PMT::Stream& stream (it->second);
+        const PMT::Stream& stream(it->second);
 
         // Search ECM PIDs at elementary stream level.
         std::set<PID> component_ecm_pids;
-        analyzeCADescriptors (stream.descs, component_ecm_pids);
+        analyzeCADescriptors(stream.descs, component_ecm_pids);
 
         // If none found as stream level, use the ones from service level.
         if (!component_ecm_pids.empty()) {
@@ -300,10 +300,10 @@ void ts::AbstractDescrambler::processPMT (const PMT& pmt)
 // Analyze a list of descriptors, looking for ECM PID's
 //----------------------------------------------------------------------------
 
-void ts::AbstractDescrambler::analyzeCADescriptors (const DescriptorList& dlist, std::set<PID>& ecm_pids)
+void ts::AbstractDescrambler::analyzeCADescriptors(const DescriptorList& dlist, std::set<PID>& ecm_pids)
 {
     // Loop on all CA descriptors
-    for (size_t index = dlist.search (DID_CA); index < dlist.count(); index = dlist.search (DID_CA, index + 1)) {
+    for (size_t index = dlist.search(DID_CA); index < dlist.count(); index = dlist.search(DID_CA, index + 1)) {
 
         // Descriptor payload
         const uint8_t* desc = dlist[index]->payload();
@@ -318,24 +318,24 @@ void ts::AbstractDescrambler::analyzeCADescriptors (const DescriptorList& dlist,
         desc += 4; size -= 4;
 
         // Ask subclass if this PID is OK
-        if (checkCADescriptor (sysid, desc, size)) {
+        if (checkCADescriptor(sysid, desc, size)) {
             ecm_pids.insert (pid);
-            getOrCreateECMStream (pid);
-            _demux.addPID (pid);
-            tsp->verbose ("using ECM PID %d (0x%04X)", int (pid), int (pid));
+            getOrCreateECMStream(pid);
+            _demux.addPID(pid);
+            tsp->verbose(u"using ECM PID %d (0x%X)", {pid, pid});
         }
 
         // Normally, no PID should be referenced in the private part of a CA
         // descriptor. However, this rule is not followed by MediaGuard.
-        if (CASFamilyOf (sysid) == CAS_MEDIAGUARD && size >= 13) {
+        if (CASFamilyOf(sysid) == CAS_MEDIAGUARD && size >= 13) {
             desc += 13; size -= 13;
             while (size >= 15) {
-                pid = GetUInt16 (desc) & 0x1FFF;
-                if (checkCADescriptor (sysid, desc + 2, 13)) {
-                    ecm_pids.insert (pid);
-                    getOrCreateECMStream (pid);
-                    _demux.addPID (pid);
-                    tsp->verbose ("using ECM PID %d (0x%04X)", int (pid), int (pid));
+                pid = GetUInt16(desc) & 0x1FFF;
+                if (checkCADescriptor(sysid, desc + 2, 13)) {
+                    ecm_pids.insert(pid);
+                    getOrCreateECMStream(pid);
+                    _demux.addPID(pid);
+                    tsp->verbose(u"using ECM PID %d (0x%X)", {pid, pid});
                 }
                 desc += 15; size -= 15;
             }
@@ -348,18 +348,18 @@ void ts::AbstractDescrambler::analyzeCADescriptors (const DescriptorList& dlist,
 // Process one CMT (CA Message Table) section containing an ECM
 //----------------------------------------------------------------------------
 
-void ts::AbstractDescrambler::processCMT (const Section& sect)
+void ts::AbstractDescrambler::processCMT(const Section& sect)
 {
     const PID ecm_pid = sect.sourcePID();
-    tsp->log (2, "got ECM (TID 0x%02X) on PID %d (0x%04X)", int (sect.tableId()), int (ecm_pid), int (ecm_pid));
+    tsp->log(2, u"got ECM (TID 0x%X) on PID %d (0x%X)", {sect.tableId(), ecm_pid, ecm_pid});
 
     // Get ECM stream context
-    ECMStreamMap::iterator ecm_it = _ecm_streams.find (ecm_pid);
+    ECMStreamMap::iterator ecm_it = _ecm_streams.find(ecm_pid);
     if (ecm_it == _ecm_streams.end()) {
-        tsp->warning ("got ECM on non-ECM PID %d (0x%04X)", int (ecm_pid), int (ecm_pid));
+        tsp->warning(u"got ECM on non-ECM PID %d (0x%X)", {ecm_pid, ecm_pid});
         return;
     }
-    ECMStreamPtr& estream (ecm_it->second);
+    ECMStreamPtr& estream(ecm_it->second);
 
     // If same TID as previous CMT on this PID, give up, this is the same ECM.
     if (sect.tableId() == estream->last_tid) {
@@ -370,18 +370,17 @@ void ts::AbstractDescrambler::processCMT (const Section& sect)
     estream->last_tid = sect.tableId();
 
     // Check if the ECM can be deciphered (ask subclass)
-    if (!checkECM (sect.payload(), sect.payloadSize())) {
-        tsp->log (2, "ECM not handled by subclass");
+    if (!checkECM(sect.payload(), sect.payloadSize())) {
+        tsp->log(2, u"ECM not handled by subclass");
         return;
     }
 
     if (sect.payloadSize() > sizeof(estream->ecm)) {
-        tsp->error ("ECM too long (%" FMT_SIZE_T "d bytes) on PID %d (0x%04X)",
-                    sect.payloadSize(), int (ecm_pid), int (ecm_pid));
+        tsp->error(u"ECM too long (%d bytes) on PID %d (0x%X)", {sect.payloadSize(), ecm_pid, ecm_pid});
         return;
     }
 
-    tsp->debug ("new ECM (TID 0x%02X) on PID %d (0x%04X)", int (sect.tableId()), int (ecm_pid), int (ecm_pid));
+    tsp->debug(u"new ECM (TID 0x%X) on PID %d (0x%X)", {sect.tableId(), ecm_pid, ecm_pid});
 
     // In asynchronous mode, the CW are accessed under mutex protection.
     if (!_synchronous) {
@@ -413,11 +412,11 @@ void ts::AbstractDescrambler::processCMT (const Section& sect)
 // Release the mutex while deciphering the ECM and relock it before exiting.
 //----------------------------------------------------------------------------
 
-void ts::AbstractDescrambler::processECM (ECMStream& estream)
+void ts::AbstractDescrambler::processECM(ECMStream& estream)
 {
     // Copy the ECM out of the protected area into local data
 
-    uint8_t ecm [MAX_PSI_SECTION_SIZE];
+    uint8_t ecm[MAX_PSI_SECTION_SIZE];
     size_t ecm_size = estream.ecm_size;
     assert(estream.ecm_size <= sizeof(ecm));
     ::memcpy(ecm, estream.ecm, estream.ecm_size);  // Flawfinder: ignore: memcpy()
@@ -431,24 +430,20 @@ void ts::AbstractDescrambler::processECM (ECMStream& estream)
 
     // Here, we have an ECM to decipher.
 
-    tsp->debug("packet %" FMT_INT64 "d, decipher ECM, %" FMT_SIZE_T "d bytes: %02X %02X %02X %02X %02X %02X %02X %02X ...",
-               _packet_count - 1, ecm_size,
-               int(ecm[0]), int(ecm[1]), int(ecm[2]), int(ecm[3]),
-               int(ecm[4]), int(ecm[5]), int(ecm[6]), int(ecm[7]));
+    tsp->debug(u"packet %d, decipher ECM, %d bytes: %X %X %X %X %X %X %X %X ...",
+               {_packet_count - 1, ecm_size, ecm[0], ecm[1], ecm[2], ecm[3], ecm[4], ecm[5], ecm[6], ecm[7]});
 
     // Submit the ECM to the CAS (subclass)
 
-    uint8_t cw_even [CW_BYTES];
-    uint8_t cw_odd [CW_BYTES];
+    uint8_t cw_even[CW_BYTES];
+    uint8_t cw_odd[CW_BYTES];
     bool ok = decipherECM(ecm, ecm_size, cw_even, cw_odd);
 
     if (ok) {
-        tsp->debug("even CW: %02X %02X %02X %02X %02X %02X %02X %02X",
-                   int(cw_even[0]), int(cw_even[1]), int(cw_even[2]), int(cw_even[3]),
-                   int(cw_even[4]), int(cw_even[5]), int(cw_even[6]), int(cw_even[7]));
-        tsp->debug("odd CW:  %02X %02X %02X %02X %02X %02X %02X %02X",
-                   int(cw_odd[0]), int(cw_odd[1]), int(cw_odd[2]), int(cw_odd[3]),
-                   int(cw_odd[4]), int(cw_odd[5]), int(cw_odd[6]), int(cw_odd[7]));
+        tsp->debug(u"even CW: %X %X %X %X %X %X %X %X",
+                   {cw_even[0], cw_even[1], cw_even[2], cw_even[3], cw_even[4], cw_even[5], cw_even[6], cw_even[7]});
+        tsp->debug(u"odd CW:  %X %X %X %X %X %X %X %X",
+                   {cw_odd[0], cw_odd[1], cw_odd[2], cw_odd[3], cw_odd[4], cw_odd[5], cw_odd[6], cw_odd[7]});
     }
 
     // In asynchronous mode, relock the mutex.
@@ -463,12 +458,12 @@ void ts::AbstractDescrambler::processECM (ECMStream& estream)
     // CW when it is actually unchanged.
 
     if (ok) {
-        if (!estream.cw_valid || ::memcmp (estream.cw_even, cw_even, CW_BYTES) != 0) {
+        if (!estream.cw_valid || ::memcmp(estream.cw_even, cw_even, CW_BYTES) != 0) {
             // Previous even CW was either invalid or different from new one
             estream.new_cw_even = true;
             ::memcpy(estream.cw_even, cw_even, CW_BYTES);  // Flawfinder: ignore: memcpy()
         }
-        if (!estream.cw_valid || ::memcmp (estream.cw_odd, cw_odd, CW_BYTES) != 0) {
+        if (!estream.cw_valid || ::memcmp(estream.cw_odd, cw_odd, CW_BYTES) != 0) {
             // Previous odd CW was either invalid or different from new one
             estream.new_cw_odd = true;
             ::memcpy(estream.cw_odd, cw_odd, CW_BYTES);  // Flawfinder: ignore: memcpy()
@@ -485,14 +480,14 @@ void ts::AbstractDescrambler::processECM (ECMStream& estream)
 
 void ts::AbstractDescrambler::main()
 {
-    tsp->debug ("ECM processing thread started");
+    tsp->debug(u"ECM processing thread started");
 
     // ECM processing loop.
     // The loop executes with the mutex held. The mutex is released
     // while deciphering an ECM and while waiting for the condition
     // variable 'ecm_to_do'.
 
-    GuardCondition lock (_mutex, _ecm_to_do);
+    GuardCondition lock(_mutex, _ecm_to_do);
 
     for (;;) {
 
@@ -510,13 +505,13 @@ void ts::AbstractDescrambler::main()
 
             // Decipher ECM's on all ECM PID's.
             for (ECMStreamMap::iterator it = _ecm_streams.begin(); !terminate && it != _ecm_streams.end(); ++it) {
-                ECMStreamPtr& estream (it->second);
+                ECMStreamPtr& estream(it->second);
                 if (estream->new_ecm) {
 
                     // Found an ECM, decipher it. Note that the mutex is
                     // released while deciphering the ECM.
                     got_ecm = true;
-                    processECM (*estream);
+                    processECM(*estream);
 
                     // Look for termination request while deciphering
                     terminate = _stop_thread;
@@ -537,7 +532,7 @@ void ts::AbstractDescrambler::main()
         lock.waitCondition();
     }
 
-    tsp->debug ("ECM processing thread terminated");
+    tsp->debug(u"ECM processing thread terminated");
 }
 
 
@@ -545,13 +540,13 @@ void ts::AbstractDescrambler::main()
 // Packet processing method
 //----------------------------------------------------------------------------
 
-ts::ProcessorPlugin::Status ts::AbstractDescrambler::processPacket (TSPacket& pkt, bool& flush, bool& bitrate_changed)
+ts::ProcessorPlugin::Status ts::AbstractDescrambler::processPacket(TSPacket& pkt, bool& flush, bool& bitrate_changed)
 {
     // Count packets
     _packet_count++;
 
     // Filter interesting sections
-    _demux.feedPacket (pkt);
+    _demux.feedPacket(pkt);
 
     // If a fatal error occured during section analysis, give up.
     if (_abort) {
@@ -574,16 +569,16 @@ ts::ProcessorPlugin::Status ts::AbstractDescrambler::processPacket (TSPacket& pk
     // Get PID context. If the PID is not known as a scrambled PID,
     // with a corresponding ECM stream, we cannot descramble it.
     const PID pid = pkt.getPID();
-    ScrambledStreamMap::iterator ssit = _scrambled_streams.find (pid);
+    ScrambledStreamMap::iterator ssit = _scrambled_streams.find(pid);
     if (ssit == _scrambled_streams.end()) {
         return TSP_OK;
     }
-    ScrambledStream& ss (ssit->second);
+    ScrambledStream& ss(ssit->second);
 
     // Locate an ECM stream with a currently valid pair of CW
     ECMStreamPtr pecm;
     for (std::set<PID>::const_iterator it = ss.ecm_pids.begin(); pecm.isNull() && it != ss.ecm_pids.end(); ++it) {
-        pecm = getOrCreateECMStream (*it);
+        pecm = getOrCreateECMStream(*it);
         if (!pecm->cw_valid) {
             pecm.clear();
         }
@@ -604,16 +599,16 @@ ts::ProcessorPlugin::Status ts::AbstractDescrambler::processPacket (TSPacket& pk
         }
 
         if (_aes128_dvs042) {
-            if (!pecm->dvs042.setIV (_iv.data(), _iv.size())) {
-                tsp->error ("error setting initialization vector in AES-128/DVS042 engine");
+            if (!pecm->dvs042.setIV(_iv.data(), _iv.size())) {
+                tsp->error(u"error setting initialization vector in AES-128/DVS042 engine");
                 _abort = true;
                 return TSP_END;
             }
             uint8_t key[2 * CW_BYTES];
             ::memcpy(key, pecm->cw_even, CW_BYTES);            // Flawfinder: ignore: memcpy()
             ::memcpy(key + CW_BYTES, pecm->cw_odd, CW_BYTES);  // Flawfinder: ignore: memcpy()
-            if (!pecm->dvs042.setKey (key, 2 * CW_BYTES)) {
-                tsp->error ("error setting descrambling key in AES-128/DVS042 engine");
+            if (!pecm->dvs042.setKey(key, 2 * CW_BYTES)) {
+                tsp->error(u"error setting descrambling key in AES-128/DVS042 engine");
                 _abort = true;
                 return TSP_END;
             }
@@ -639,33 +634,31 @@ ts::ProcessorPlugin::Status ts::AbstractDescrambler::processPacket (TSPacket& pk
     size_t const pl_size = pkt.getPayloadSize();
     if (_aes128_dvs042) {
         uint8_t tmp[PKT_SIZE];
-        assert (pl_size < sizeof(tmp));
-        if (!pecm->dvs042.decrypt (pl, pl_size, tmp, pl_size)) {
-            tsp->error ("AES decrypt error");
+        assert(pl_size < sizeof(tmp));
+        if (!pecm->dvs042.decrypt(pl, pl_size, tmp, pl_size)) {
+            tsp->error(u"AES decrypt error");
             return TSP_END;
         }
-        ::memcpy (pl, tmp, pl_size);  // Flawfinder: ignore: memcpy()
+        ::memcpy(pl, tmp, pl_size);  // Flawfinder: ignore: memcpy()
     }
     else {
-        Scrambling& scr (scv == SC_EVEN_KEY ? pecm->key_even : pecm->key_odd);
-        scr.decrypt (pl, pl_size);
+        Scrambling& scr(scv == SC_EVEN_KEY ? pecm->key_even : pecm->key_odd);
+        scr.decrypt(pl, pl_size);
 
         // Trace CW change in PIDs
         if (scv != ss.last_scv) {
             ss.last_scv = scv;
             uint8_t cw[CW_BYTES];
-            const bool get_cw_ok = scr.getCW (cw, sizeof(cw));
-            assert (get_cw_ok);
-            tsp->debug ("packet %" FMT_INT64 "d, PID %d (0x%04X), new CW (%s): %02X %02X %02X %02X %02X %02X %02X %02X",
-                        _packet_count - 1, int (pid), int (pid),
-                        scv == SC_EVEN_KEY ? "even" : "odd",
-                        int (cw[0]), int (cw[1]), int (cw[2]), int (cw[3]),
-                        int (cw[4]), int (cw[5]), int (cw[6]), int (cw[7]));
+            const bool get_cw_ok = scr.getCW(cw, sizeof(cw));
+            assert(get_cw_ok);
+            tsp->debug(u"packet %d, PID %d (0x%X), new CW (%s): %X %X %X %X %X %X %X %X",
+                       {_packet_count - 1, pid, pid, scv == SC_EVEN_KEY ? u"even" : u"odd",
+                       cw[0], cw[1], cw[2], cw[3], cw[4], cw[5], cw[6], cw[7]});
         }
     }
 
     // Reset scrambling_control_value to zero in TS header
-    pkt.setScrambling (SC_CLEAR);
+    pkt.setScrambling(SC_CLEAR);
 
     return TSP_OK;
 }

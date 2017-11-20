@@ -34,26 +34,28 @@
 #include "tsException.h"
 #include "tsCerrReport.h"
 #include "tsSysUtils.h"
-#include "tsFormat.h"
 TSDUCK_SOURCE;
 
-ts::Exception::Exception(const std::string& w) :
-    _what(w)
+ts::Exception::Exception(const UString& w) :
+    _what(w),
+    _utf8()
 {
-    CERR.log(Severity::Debug, "Exception: " + _what);
+    CERR.log(Severity::Debug, u"Exception: " + _what);
 }
 
-ts::Exception::Exception(const std::string& w, ErrorCode error) :
-    _what(w + Format(", system error %d (0x%08X), ", error, error) + ErrorCodeMessage(error))
-{
-    CERR.log(Severity::Debug, "Exception: " + _what);
-}
-
-ts::Exception::~Exception() throw ()
+ts::Exception::Exception(const UString& w, ErrorCode error) :
+    Exception(UString::Format(u"%s, system error %d (0x%X), %s", {w, error, error, ErrorCodeMessage(error)}))
 {
 }
 
-const char* ts::Exception::what() const throw ()
+ts::Exception::~Exception() throw()
 {
-    return _what.c_str();
+}
+
+const char* ts::Exception::what() const throw()
+{
+    if (_utf8.empty() && !_what.empty()) {
+        _utf8 = _what.toUTF8();
+    }
+    return _utf8.c_str();
 }

@@ -83,6 +83,6 @@ namespace ts {
         virtual void copy(const TunerParameters&);
         virtual bool convertToDektecModulation(int&, int&, int&, int&) const;
     protected:
-        virtual bool fromArgs(const TunerArgs&, ReportInterface&);
+        virtual bool fromArgs(const TunerArgs&, Report&);
     };
 }

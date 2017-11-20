@@ -52,7 +52,7 @@ ts::TelnetConnection::TelnetConnection(const std::string prompt) :
 }
 
 
-bool ts::TelnetConnection::send(const std::string& str, ReportInterface& report)
+bool ts::TelnetConnection::send(const std::string& str, Report& report)
 {
     return SuperClass::send(str.c_str(), str.size(), report);
 }
@@ -62,7 +62,7 @@ bool ts::TelnetConnection::send(const std::string& str, ReportInterface& report)
 // everything up to the delimitor.
 //----------------------------------------------------------------------------
 
-bool ts::TelnetConnection::waitForChunk(const std::string eol, std::string& found, const AbortInterface* abort, ReportInterface& report)
+bool ts::TelnetConnection::waitForChunk(const std::string eol, std::string& found, const AbortInterface* abort, Report& report)
 {
     size_t size = 0;
     size_t eol_size = eol.length();
@@ -102,14 +102,14 @@ bool ts::TelnetConnection::waitForChunk(const std::string eol, std::string& foun
     }
 }
 
-bool ts::TelnetConnection::waitForPrompt(const AbortInterface* abort, ReportInterface& report)
+bool ts::TelnetConnection::waitForPrompt(const AbortInterface* abort, Report& report)
 {
     std::string found = "";
     bool result = waitForChunk(_prompt, found, abort, report);
     return result;
 }
 
-bool ts::TelnetConnection::receive(std::string& found, const AbortInterface* abort, ReportInterface& report)
+bool ts::TelnetConnection::receive(std::string& found, const AbortInterface* abort, Report& report)
 {
     bool result = waitForChunk(_prompt, found, abort, report);
     return result;

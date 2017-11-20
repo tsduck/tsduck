@@ -43,9 +43,7 @@
 #include "tsTunerParametersBitrateDiffDVBT.h"
 #include "tsTunerParametersATSC.h"
 #include "tsModulation.h"
-#include "tsDecimal.h"
 #include "tsIntegerUtils.h"
-#include "tsFormat.h"
 TSDUCK_SOURCE;
 
 
@@ -56,9 +54,9 @@ TSDUCK_SOURCE;
 #if defined(TS_NO_DTAPI)
 
 ts::DektecOutputPlugin::DektecOutputPlugin(TSP* tsp_) :
-    OutputPlugin(tsp_, "Send packets to a Dektec DVB-ASI or modulator device.", "[options]")
+    OutputPlugin(tsp_, u"Send packets to a Dektec DVB-ASI or modulator device.", u"[options]")
 {
-    setHelp(TS_NO_DTAPI_MESSAGE "\n");
+    setHelp(TS_NO_DTAPI_MESSAGE u"\n");
 }
 
 ts::DektecOutputPlugin::~DektecOutputPlugin()
@@ -130,7 +128,7 @@ public:
 //----------------------------------------------------------------------------
 
 ts::DektecOutputPlugin::DektecOutputPlugin(TSP* tsp_) :
-    OutputPlugin(tsp_, "Send packets to a Dektec DVB-ASI or modulator device.", "[options]"),
+    OutputPlugin(tsp_, u"Send packets to a Dektec DVB-ASI or modulator device.", u"[options]"),
     _guts(new Guts)
 {
     CheckNonNull(_guts);
@@ -148,635 +146,635 @@ ts::DektecOutputPlugin::DektecOutputPlugin(TSP* tsp_) :
     assert(DTAPI_DVBT2_8MHZ == DTAPI_MOD_DTMB_8MHZ);
 
     // Declaration of command-line options
-    option("204");
-    option("bandwidth", 0, Enumeration (
-               "1.7", DTAPI_DVBT2_1_7MHZ,
-               "5",   DTAPI_DVBT2_5MHZ,
-               "6",   DTAPI_DVBT2_6MHZ,
-               "7",   DTAPI_DVBT2_7MHZ,
-               "8",   DTAPI_DVBT2_8MHZ,
-               "10",  DTAPI_DVBT2_10MHZ,
-               TS_NULL));
-    option("bandwidth-extension");
-    option("bitrate", 'b', POSITIVE);
-    option("cell-id", 0,  UINT16);
-    option("channel", 'c', UNSIGNED);
-    option("cmmb-bandwidth", 0, Enumeration (
-               "2", DTAPI_CMMB_BW_2MHZ,
-               "8", DTAPI_CMMB_BW_8MHZ,
-               TS_NULL));
-    option("cmmb-pid", 0, PIDVAL);
-    option("cmmb-area-id", 0, INTEGER, 0, 1, 0, 127);
-    option("cmmb-tx-id", 0, INTEGER, 0, 1, 0, 127);
-    option("constellation", 0, Enumeration (
-               "QPSK",   DTAPI_MOD_DVBT_QPSK,
-               "16-QAM", DTAPI_MOD_DVBT_QAM16,
-               "64-QAM", DTAPI_MOD_DVBT_QAM64,
-               TS_NULL));
-    option("convolutional-rate", 'r', Enumeration (
-               "1/2",  DTAPI_MOD_1_2,
-               "1/3",  DTAPI_MOD_1_3,  // DVB-S.2 only
-               "1/4",  DTAPI_MOD_1_4,  // DVB-S.2 only
-               "2/3",  DTAPI_MOD_2_3,
-               "2/5",  DTAPI_MOD_2_5,  // DVB-S.2 only
-               "3/4",  DTAPI_MOD_3_4,
-               "3/5",  DTAPI_MOD_3_5,  // DVB-S.2 only
-               "4/5",  DTAPI_MOD_4_5,
-               "5/6",  DTAPI_MOD_5_6,
-               "6/7",  DTAPI_MOD_6_7,
-               "7/8",  DTAPI_MOD_7_8,
-               "8/9",  DTAPI_MOD_8_9,  // DVB-S.2 only
-               "9/10", DTAPI_MOD_9_10, // DVB-S.2 only
-               TS_NULL));
-    option("device", 'd', UNSIGNED);
-    option("dmb-constellation", 0, Enumeration (
-               "4-QAM-NR", DTAPI_MOD_DTMB_QAM4NR,
-               "4-QAM",    DTAPI_MOD_DTMB_QAM4,
-               "16-QAM",   DTAPI_MOD_DTMB_QAM16,
-               "32-QAM",   DTAPI_MOD_DTMB_QAM32,
-               "64-QAM",   DTAPI_MOD_DTMB_QAM64,
-               TS_NULL));
-    option("dmb-fec", 0, Enumeration (
-               "0.4", DTAPI_MOD_DTMB_0_4,
-               "0.6", DTAPI_MOD_DTMB_0_6,
-               "0.8", DTAPI_MOD_DTMB_0_8,
-               TS_NULL));
-    option("dmb-frame-numbering");
-    option("dmb-header", 0, Enumeration (
-               "PN420", DTAPI_MOD_DTMB_PN420,
-               "PN595", DTAPI_MOD_DTMB_PN595,
-               "PN945", DTAPI_MOD_DTMB_PN945,
-               TS_NULL));
-    option("dmb-interleaver", 0, Enumeration (
-               "1", DTAPI_MOD_DTMB_IL_1,
-               "2", DTAPI_MOD_DTMB_IL_2,
-               TS_NULL));
-    option("fef");
-    option("fef-interval", 0, INTEGER, 0, 1, 1, 255);
-    option("fef-length", 0, INTEGER, 0, 1, 0, 0x003FFFFF);
-    option("fef-s1", 0, INTEGER, 0, 1, 2, 7);
-    option("fef-s2", 0, INTEGER, 0, 1, 1, 15);
-    option("fef-signal", 0, Enumeration (
-               "0",      DTAPI_DVBT2_FEF_ZERO,
-               "1K",     DTAPI_DVBT2_FEF_1K_OFDM,
-               "1K-384", DTAPI_DVBT2_FEF_1K_OFDM_384,
-               TS_NULL));
-    option("fef-type", 0, INTEGER, 0, 1, 0, 15);
-    option("fft-mode", 0, Enumeration (
-               "1K",  DTAPI_DVBT2_FFT_1K,
-               "2K",  DTAPI_DVBT2_FFT_2K,
-               "4K",  DTAPI_DVBT2_FFT_4K,
-               "8K",  DTAPI_DVBT2_FFT_8K,
-               "16K", DTAPI_DVBT2_FFT_16K,
-               "32K", DTAPI_DVBT2_FFT_32K,
-               TS_NULL));
-    option("frequency", 'f', POSITIVE);
-    option("guard-interval", 'g', Enumeration (
-               "1/32", DTAPI_MOD_DVBT_G_1_32,
-               "1/16", DTAPI_MOD_DVBT_G_1_16,
-               "1/8",  DTAPI_MOD_DVBT_G_1_8,
-               "1/4",  DTAPI_MOD_DVBT_G_1_4,
-               TS_NULL));
-    option("indepth-interleave");
-    option("input-modulation", 'i');
-    option("instant-detach");
-    option("inversion");
-    option("j83", 0, Enumeration (
-               "A", DTAPI_MOD_J83_A,
-               "B", DTAPI_MOD_J83_B,
-               "C", DTAPI_MOD_J83_C,
-               TS_NULL));
-    option("level", 'l', INTEGER, 0, 1, std::numeric_limits<int>::min(), std::numeric_limits<int>::max());
-    option("lnb", 0, Args::STRING);
-    option("miso", 0, Enumeration (
-               "OFF",  DTAPI_DVBT2_MISO_OFF,
-               "1",    DTAPI_DVBT2_MISO_TX1,
-               "2",    DTAPI_DVBT2_MISO_TX2,
-               "BOTH", DTAPI_DVBT2_MISO_TX1TX2,
-               TS_NULL));
-    option("modulation", 'm', Enumeration (
-               "DVB-S",         DTAPI_MOD_DVBS_QPSK,
-               "DVB-S-QPSK",    DTAPI_MOD_DVBS_QPSK,
-               "DVB-S-BPSK",    DTAPI_MOD_DVBS_BPSK,
-               "DVB-S2",        DTAPI_MOD_DVBS2_QPSK,
-               "DVB-S2-QPSK",   DTAPI_MOD_DVBS2_QPSK,
-               "DVB-S2-8PSK",   DTAPI_MOD_DVBS2_8PSK,
-               "DVB-S2-16APSK", DTAPI_MOD_DVBS2_16APSK,
-               "DVB-S2-32APSK", DTAPI_MOD_DVBS2_32APSK,
-               "DVB-T",         DTAPI_MOD_DVBT,
-               "DVB-T2",        DTAPI_MOD_DVBT2,
-               "ATSC-VSB",      DTAPI_MOD_ATSC,
-               "4-QAM",         DTAPI_MOD_QAM4,
-               "16-QAM",        DTAPI_MOD_QAM16,
-               "32-QAM",        DTAPI_MOD_QAM32,
-               "64-QAM",        DTAPI_MOD_QAM64,
-               "128-QAM",       DTAPI_MOD_QAM128,
-               "256-QAM",       DTAPI_MOD_QAM256,
-               "ISDB-T",        DTAPI_MOD_ISDBT,
-               "DMB-T",         DTAPI_MOD_DMBTH,
-               "ADTB-T",        DTAPI_MOD_ADTBT,
-               "CMMB",          DTAPI_MOD_CMMB,
-               TS_NULL));
-    option("mpe-fec");
-    option("offset-count", 'o', INTEGER, 0, 1, -3, 3);
-    option("papr", 0, Enumeration (
-               "NONE", DTAPI_DVBT2_PAPR_NONE,
-               "ACE",  DTAPI_DVBT2_PAPR_ACE,
-               "TR",   DTAPI_DVBT2_PAPR_TR,
-               "BOTH", DTAPI_DVBT2_PAPR_ACE_TR,
-               TS_NULL));
-    option("pilots", 0);
-    option("pilot-pattern", 'p', Enumeration (
-               "1", DTAPI_DVBT2_PP_1,
-               "2", DTAPI_DVBT2_PP_2,
-               "3", DTAPI_DVBT2_PP_3,
-               "4", DTAPI_DVBT2_PP_4,
-               "5", DTAPI_DVBT2_PP_5,
-               "6", DTAPI_DVBT2_PP_6,
-               "7", DTAPI_DVBT2_PP_7,
-               "8", DTAPI_DVBT2_PP_8,
-               TS_NULL));
-    option("plp0-code-rate", 0, Enumeration (
-               "1/2", DTAPI_DVBT2_COD_1_2,
-               "3/5", DTAPI_DVBT2_COD_3_5,
-               "2/3", DTAPI_DVBT2_COD_2_3,
-               "3/4", DTAPI_DVBT2_COD_3_4,
-                "4/5", DTAPI_DVBT2_COD_4_5,
-               "5/6", DTAPI_DVBT2_COD_5_6,
-               TS_NULL));
-    option("plp0-fec-type", 0, Enumeration (
-               "16K", DTAPI_DVBT2_LDPC_16K,
-               "64K", DTAPI_DVBT2_LDPC_64K,
-               TS_NULL));
-    option("plp0-group-id", 0, UINT8);
-    option("plp0-high-efficiency");
-    option("plp0-id", 0, UINT8);
-    option("plp0-il-length", 0, UINT8);
-    option("plp0-il-type", 0, Enumeration (
-               "ONE-TO-ONE", DTAPI_DVBT2_IL_ONETOONE,
-               "MULTI",      DTAPI_DVBT2_IL_MULTI,
-               TS_NULL));
-    option("plp0-in-band");
-    option("plp0-issy", 0, Enumeration (
-               "NONE",  DTAPI_DVBT2_ISSY_NONE,
-               "SHORT", DTAPI_DVBT2_ISSY_SHORT,
-               "LONG",  DTAPI_DVBT2_ISSY_LONG,
-               TS_NULL));
-    option("plp0-modulation", 0, Enumeration (
-               "BPSK",    DTAPI_DVBT2_BPSK,
-               "QPSK",    DTAPI_DVBT2_QPSK,
-               "16-QAM",  DTAPI_DVBT2_QAM16,
-               "64-QAM",  DTAPI_DVBT2_QAM64,
-               "256-QAM", DTAPI_DVBT2_QAM256,
-               TS_NULL));
-    option("plp0-null-packet-deletion");
-    option("plp0-rotation");
-    option("plp0-type", 0, Enumeration (
-               "COMMON", DTAPI_DVBT2_PLP_TYPE_COMM,
-               "1",      DTAPI_DVBT2_PLP_TYPE_1,
-               "2",      DTAPI_DVBT2_PLP_TYPE_2,
-               TS_NULL));
-    option("qam-b", 'q', Enumeration (
-               "I128-J1D", DTAPI_MOD_QAMB_I128_J1D,
-               "I64-J2",   DTAPI_MOD_QAMB_I64_J2,
-               "I32-J4",   DTAPI_MOD_QAMB_I32_J4,
-               "I16-J8",   DTAPI_MOD_QAMB_I16_J8,
-               "I8-J16",   DTAPI_MOD_QAMB_I8_J16,
-               "I128-J1",  DTAPI_MOD_QAMB_I128_J1,
-               "I128-J2",  DTAPI_MOD_QAMB_I128_J2,
-               "I128-J3",  DTAPI_MOD_QAMB_I128_J3,
-               "I128-J4",  DTAPI_MOD_QAMB_I128_J4,
-               "I128-J5",  DTAPI_MOD_QAMB_I128_J5,
-               "I128-J6",  DTAPI_MOD_QAMB_I128_J6,
-               "I128-J7",  DTAPI_MOD_QAMB_I128_J7,
-               "I128-J8",  DTAPI_MOD_QAMB_I128_J8,
-               TS_NULL));
-    option("s2-gold-code", 0, INTEGER, 0, 1, std::numeric_limits<int>::min(), std::numeric_limits<int>::max());
-    option("s2-short-fec-frame");
-    option("satellite-frequency", 0, POSITIVE);
-    option("stuffing", 's');
-    option("symbol-rate", 0, POSITIVE);
-    option("t2-fpsf", 0, INTEGER, 0, 1, 1, 255);
-    option("t2-guard-interval", 0, Enumeration (
-               "1/128", DTAPI_DVBT2_GI_1_128,
-               "1/32", DTAPI_DVBT2_GI_1_32,
-               "1/16", DTAPI_DVBT2_GI_1_16,
-               "19/256", DTAPI_DVBT2_GI_19_256,
-               "1/8", DTAPI_DVBT2_GI_1_8,
-               "19/128", DTAPI_DVBT2_GI_19_128,
-               "1/4", DTAPI_DVBT2_GI_1_4,
-               TS_NULL));
-    option("t2-l1-modulation", 0, Enumeration (
-               "BPSK",   DTAPI_DVBT2_BPSK,
-               "QPSK",   DTAPI_DVBT2_QPSK,
-               "16-QAM", DTAPI_DVBT2_QAM16,
-               "64-QAM", DTAPI_DVBT2_QAM64,
-               TS_NULL));
-    option("t2-network-id", 0, UINT32);
-    option("t2-system-id", 0, UINT32);
-    option("time-slice");
-    option("transmission-mode", 't', Enumeration (
-               "2K", DTAPI_MOD_DVBT_2K,
-               "4K", DTAPI_MOD_DVBT_4K,
-               "8K", DTAPI_MOD_DVBT_8K,
-               TS_NULL));
-    option("uhf-channel", 'u', INTEGER, 0, 1, UHF::FIRST_CHANNEL, UHF::LAST_CHANNEL);
-    option("vhf-channel", 'v', INTEGER, 0, 1, VHF::FIRST_CHANNEL, VHF::LAST_CHANNEL);
-    option("vsb", 0, Enumeration (
-               "8",  DTAPI_MOD_ATSC_VSB8,
-               "16", DTAPI_MOD_ATSC_VSB16,
-               TS_NULL));
-    option("vsb-taps", 0, INTEGER, 0, 1, 2, 256);
+    option(u"204");
+    option(u"bandwidth", 0, Enumeration({
+        {u"1.7", DTAPI_DVBT2_1_7MHZ},
+        {u"5",   DTAPI_DVBT2_5MHZ},
+        {u"6",   DTAPI_DVBT2_6MHZ},
+        {u"7",   DTAPI_DVBT2_7MHZ},
+        {u"8",   DTAPI_DVBT2_8MHZ},
+        {u"10",  DTAPI_DVBT2_10MHZ},
+    }));
+    option(u"bandwidth-extension");
+    option(u"bitrate", 'b', POSITIVE);
+    option(u"cell-id", 0,  UINT16);
+    option(u"channel", 'c', UNSIGNED);
+    option(u"cmmb-bandwidth", 0, Enumeration({
+        {u"2", DTAPI_CMMB_BW_2MHZ},
+        {u"8", DTAPI_CMMB_BW_8MHZ},
+    }));
+    option(u"cmmb-pid", 0, PIDVAL);
+    option(u"cmmb-area-id", 0, INTEGER, 0, 1, 0, 127);
+    option(u"cmmb-tx-id", 0, INTEGER, 0, 1, 0, 127);
+    option(u"constellation", 0, Enumeration({
+        {u"QPSK",   DTAPI_MOD_DVBT_QPSK},
+        {u"16-QAM", DTAPI_MOD_DVBT_QAM16},
+        {u"64-QAM", DTAPI_MOD_DVBT_QAM64},
+    }));
+    option(u"convolutional-rate", 'r', Enumeration({
+        {u"1/2",  DTAPI_MOD_1_2},
+        {u"1/3",  DTAPI_MOD_1_3},  // DVB-S.2 only
+        {u"1/4",  DTAPI_MOD_1_4},  // DVB-S.2 only
+        {u"2/3",  DTAPI_MOD_2_3},
+        {u"2/5",  DTAPI_MOD_2_5},  // DVB-S.2 only
+        {u"3/4",  DTAPI_MOD_3_4},
+        {u"3/5",  DTAPI_MOD_3_5},  // DVB-S.2 only
+        {u"4/5",  DTAPI_MOD_4_5},
+        {u"5/6",  DTAPI_MOD_5_6},
+        {u"6/7",  DTAPI_MOD_6_7},
+        {u"7/8",  DTAPI_MOD_7_8},
+        {u"8/9",  DTAPI_MOD_8_9},  // DVB-S.2 only
+        {u"9/10", DTAPI_MOD_9_10}, // DVB-S.2 only
+    }));
+    option(u"device", 'd', UNSIGNED);
+    option(u"dmb-constellation", 0, Enumeration({
+        {u"4-QAM-NR", DTAPI_MOD_DTMB_QAM4NR},
+        {u"4-QAM",    DTAPI_MOD_DTMB_QAM4},
+        {u"16-QAM",   DTAPI_MOD_DTMB_QAM16},
+        {u"32-QAM",   DTAPI_MOD_DTMB_QAM32},
+        {u"64-QAM",   DTAPI_MOD_DTMB_QAM64},
+    }));
+    option(u"dmb-fec", 0, Enumeration({
+        {u"0.4", DTAPI_MOD_DTMB_0_4},
+        {u"0.6", DTAPI_MOD_DTMB_0_6},
+        {u"0.8", DTAPI_MOD_DTMB_0_8},
+    }));
+    option(u"dmb-frame-numbering");
+    option(u"dmb-header", 0, Enumeration({
+        {u"PN420", DTAPI_MOD_DTMB_PN420},
+        {u"PN595", DTAPI_MOD_DTMB_PN595},
+        {u"PN945", DTAPI_MOD_DTMB_PN945},
+    }));
+    option(u"dmb-interleaver", 0, Enumeration({
+        {u"1", DTAPI_MOD_DTMB_IL_1},
+        {u"2", DTAPI_MOD_DTMB_IL_2},
+    }));
+    option(u"fef");
+    option(u"fef-interval", 0, INTEGER, 0, 1, 1, 255);
+    option(u"fef-length", 0, INTEGER, 0, 1, 0, 0x003FFFFF);
+    option(u"fef-s1", 0, INTEGER, 0, 1, 2, 7);
+    option(u"fef-s2", 0, INTEGER, 0, 1, 1, 15);
+    option(u"fef-signal", 0, Enumeration({
+        {u"0",      DTAPI_DVBT2_FEF_ZERO},
+        {u"1K",     DTAPI_DVBT2_FEF_1K_OFDM},
+        {u"1K-384", DTAPI_DVBT2_FEF_1K_OFDM_384},
+    }));
+    option(u"fef-type", 0, INTEGER, 0, 1, 0, 15);
+    option(u"fft-mode", 0, Enumeration({
+        {u"1K",  DTAPI_DVBT2_FFT_1K},
+        {u"2K",  DTAPI_DVBT2_FFT_2K},
+        {u"4K",  DTAPI_DVBT2_FFT_4K},
+        {u"8K",  DTAPI_DVBT2_FFT_8K},
+        {u"16K", DTAPI_DVBT2_FFT_16K},
+        {u"32K", DTAPI_DVBT2_FFT_32K},
+    }));
+    option(u"frequency", 'f', POSITIVE);
+    option(u"guard-interval", 'g', Enumeration({
+        {u"1/32", DTAPI_MOD_DVBT_G_1_32},
+        {u"1/16", DTAPI_MOD_DVBT_G_1_16},
+        {u"1/8",  DTAPI_MOD_DVBT_G_1_8},
+        {u"1/4",  DTAPI_MOD_DVBT_G_1_4},
+    }));
+    option(u"indepth-interleave");
+    option(u"input-modulation", 'i');
+    option(u"instant-detach");
+    option(u"inversion");
+    option(u"j83", 0, Enumeration({
+        {u"A", DTAPI_MOD_J83_A},
+        {u"B", DTAPI_MOD_J83_B},
+        {u"C", DTAPI_MOD_J83_C},
+    }));
+    option(u"level", 'l', INTEGER, 0, 1, std::numeric_limits<int>::min(), std::numeric_limits<int>::max());
+    option(u"lnb", 0, Args::STRING);
+    option(u"miso", 0, Enumeration({
+        {u"OFF",  DTAPI_DVBT2_MISO_OFF},
+        {u"1",    DTAPI_DVBT2_MISO_TX1},
+        {u"2",    DTAPI_DVBT2_MISO_TX2},
+        {u"BOTH", DTAPI_DVBT2_MISO_TX1TX2},
+    }));
+    option(u"modulation", 'm', Enumeration({
+        {u"DVB-S",         DTAPI_MOD_DVBS_QPSK},
+        {u"DVB-S-QPSK",    DTAPI_MOD_DVBS_QPSK},
+        {u"DVB-S-BPSK",    DTAPI_MOD_DVBS_BPSK},
+        {u"DVB-S2",        DTAPI_MOD_DVBS2_QPSK},
+        {u"DVB-S2-QPSK",   DTAPI_MOD_DVBS2_QPSK},
+        {u"DVB-S2-8PSK",   DTAPI_MOD_DVBS2_8PSK},
+        {u"DVB-S2-16APSK", DTAPI_MOD_DVBS2_16APSK},
+        {u"DVB-S2-32APSK", DTAPI_MOD_DVBS2_32APSK},
+        {u"DVB-T",         DTAPI_MOD_DVBT},
+        {u"DVB-T2",        DTAPI_MOD_DVBT2},
+        {u"ATSC-VSB",      DTAPI_MOD_ATSC},
+        {u"4-QAM",         DTAPI_MOD_QAM4},
+        {u"16-QAM",        DTAPI_MOD_QAM16},
+        {u"32-QAM",        DTAPI_MOD_QAM32},
+        {u"64-QAM",        DTAPI_MOD_QAM64},
+        {u"128-QAM",       DTAPI_MOD_QAM128},
+        {u"256-QAM",       DTAPI_MOD_QAM256},
+        {u"ISDB-T",        DTAPI_MOD_ISDBT},
+        {u"DMB-T",         DTAPI_MOD_DMBTH},
+        {u"ADTB-T",        DTAPI_MOD_ADTBT},
+        {u"CMMB",          DTAPI_MOD_CMMB},
+    }));
+    option(u"mpe-fec");
+    option(u"offset-count", 'o', INTEGER, 0, 1, -3, 3);
+    option(u"papr", 0, Enumeration({
+        {u"NONE", DTAPI_DVBT2_PAPR_NONE},
+        {u"ACE",  DTAPI_DVBT2_PAPR_ACE},
+        {u"TR",   DTAPI_DVBT2_PAPR_TR},
+        {u"BOTH", DTAPI_DVBT2_PAPR_ACE_TR},
+    }));
+    option(u"pilots", 0);
+    option(u"pilot-pattern", 'p', Enumeration({
+        {u"1", DTAPI_DVBT2_PP_1},
+        {u"2", DTAPI_DVBT2_PP_2},
+        {u"3", DTAPI_DVBT2_PP_3},
+        {u"4", DTAPI_DVBT2_PP_4},
+        {u"5", DTAPI_DVBT2_PP_5},
+        {u"6", DTAPI_DVBT2_PP_6},
+        {u"7", DTAPI_DVBT2_PP_7},
+        {u"8", DTAPI_DVBT2_PP_8},
+    }));
+    option(u"plp0-code-rate", 0, Enumeration({
+        {u"1/2", DTAPI_DVBT2_COD_1_2},
+        {u"3/5", DTAPI_DVBT2_COD_3_5},
+        {u"2/3", DTAPI_DVBT2_COD_2_3},
+        {u"3/4", DTAPI_DVBT2_COD_3_4},
+        {u"4/5", DTAPI_DVBT2_COD_4_5},
+        {u"5/6", DTAPI_DVBT2_COD_5_6},
+    }));
+    option(u"plp0-fec-type", 0, Enumeration({
+        {u"16K", DTAPI_DVBT2_LDPC_16K},
+        {u"64K", DTAPI_DVBT2_LDPC_64K},
+    }));
+    option(u"plp0-group-id", 0, UINT8);
+    option(u"plp0-high-efficiency");
+    option(u"plp0-id", 0, UINT8);
+    option(u"plp0-il-length", 0, UINT8);
+    option(u"plp0-il-type", 0, Enumeration({
+        {u"ONE-TO-ONE", DTAPI_DVBT2_IL_ONETOONE},
+        {u"MULTI",      DTAPI_DVBT2_IL_MULTI},
+    }));
+    option(u"plp0-in-band");
+    option(u"plp0-issy", 0, Enumeration({
+        {u"NONE",  DTAPI_DVBT2_ISSY_NONE},
+        {u"SHORT", DTAPI_DVBT2_ISSY_SHORT},
+        {u"LONG",  DTAPI_DVBT2_ISSY_LONG},
+    }));
+    option(u"plp0-modulation", 0, Enumeration({
+        {u"BPSK",    DTAPI_DVBT2_BPSK},
+        {u"QPSK",    DTAPI_DVBT2_QPSK},
+        {u"16-QAM",  DTAPI_DVBT2_QAM16},
+        {u"64-QAM",  DTAPI_DVBT2_QAM64},
+        {u"256-QAM", DTAPI_DVBT2_QAM256},
+    }));
+    option(u"plp0-null-packet-deletion");
+    option(u"plp0-rotation");
+    option(u"plp0-type", 0, Enumeration({
+        {u"COMMON", DTAPI_DVBT2_PLP_TYPE_COMM},
+        {u"1",      DTAPI_DVBT2_PLP_TYPE_1},
+        {u"2",      DTAPI_DVBT2_PLP_TYPE_2},
+    }));
+    option(u"qam-b", 'q', Enumeration({
+        {u"I128-J1D", DTAPI_MOD_QAMB_I128_J1D},
+        {u"I64-J2",   DTAPI_MOD_QAMB_I64_J2},
+        {u"I32-J4",   DTAPI_MOD_QAMB_I32_J4},
+        {u"I16-J8",   DTAPI_MOD_QAMB_I16_J8},
+        {u"I8-J16",   DTAPI_MOD_QAMB_I8_J16},
+        {u"I128-J1",  DTAPI_MOD_QAMB_I128_J1},
+        {u"I128-J2",  DTAPI_MOD_QAMB_I128_J2},
+        {u"I128-J3",  DTAPI_MOD_QAMB_I128_J3},
+        {u"I128-J4",  DTAPI_MOD_QAMB_I128_J4},
+        {u"I128-J5",  DTAPI_MOD_QAMB_I128_J5},
+        {u"I128-J6",  DTAPI_MOD_QAMB_I128_J6},
+        {u"I128-J7",  DTAPI_MOD_QAMB_I128_J7},
+        {u"I128-J8",  DTAPI_MOD_QAMB_I128_J8},
+    }));
+    option(u"s2-gold-code", 0, INTEGER, 0, 1, std::numeric_limits<int>::min(), std::numeric_limits<int>::max());
+    option(u"s2-short-fec-frame");
+    option(u"satellite-frequency", 0, POSITIVE);
+    option(u"stuffing", 's');
+    option(u"symbol-rate", 0, POSITIVE);
+    option(u"t2-fpsf", 0, INTEGER, 0, 1, 1, 255);
+    option(u"t2-guard-interval", 0, Enumeration({
+        {u"1/128", DTAPI_DVBT2_GI_1_128},
+        {u"1/32", DTAPI_DVBT2_GI_1_32},
+        {u"1/16", DTAPI_DVBT2_GI_1_16},
+        {u"19/256", DTAPI_DVBT2_GI_19_256},
+        {u"1/8", DTAPI_DVBT2_GI_1_8},
+        {u"19/128", DTAPI_DVBT2_GI_19_128},
+        {u"1/4", DTAPI_DVBT2_GI_1_4},
+    }));
+    option(u"t2-l1-modulation", 0, Enumeration({
+        {u"BPSK",   DTAPI_DVBT2_BPSK},
+        {u"QPSK",   DTAPI_DVBT2_QPSK},
+        {u"16-QAM", DTAPI_DVBT2_QAM16},
+        {u"64-QAM", DTAPI_DVBT2_QAM64},
+    }));
+    option(u"t2-network-id", 0, UINT32);
+    option(u"t2-system-id", 0, UINT32);
+    option(u"time-slice");
+    option(u"transmission-mode", 't', Enumeration({
+        {u"2K", DTAPI_MOD_DVBT_2K},
+        {u"4K", DTAPI_MOD_DVBT_4K},
+        {u"8K", DTAPI_MOD_DVBT_8K},
+    }));
+    option(u"uhf-channel", 'u', INTEGER, 0, 1, UHF::FIRST_CHANNEL, UHF::LAST_CHANNEL);
+    option(u"vhf-channel", 'v', INTEGER, 0, 1, VHF::FIRST_CHANNEL, VHF::LAST_CHANNEL);
+    option(u"vsb", 0, Enumeration({
+        {u"8",  DTAPI_MOD_ATSC_VSB8},
+        {u"16", DTAPI_MOD_ATSC_VSB16},
+    }));
+    option(u"vsb-taps", 0, INTEGER, 0, 1, 2, 256);
 
-    setHelp("Options:\n"
-            "\n"
-            "  --204\n"
-            "      ASI devices: Send 204-byte packets (188 meaningful bytes plus 16\n"
-            "      stuffing bytes for RS coding). By default, send 188-byte packets.\n"
-            "\n"
-            "  --bandwidth value\n"
-            "      DVB-T/H, DVB-T2, ADTB-T and DMB-T/H modulators: indicate bandwidth\n"
-            "      in MHz. Must be one of 1.7, 5, 6, 7, 8, 10. The default is 8 MHz.\n"
-            "      The bandwidth values 1.7 and 10 MHz are valid for DVB-T2 only.\n"
-            "\n"
-            "  --bandwidth-extension\n"
-            "      DVB-T2 modulators: indicate that the extended carrier mode is used.\n"
-            "      By default, use normal carrier mode.\n"
-            "\n"
-            "  -b value\n"
-            "  --bitrate value\n"
-            "      Specify output bitrate in bits/second. By default, use the input\n"
-            "      device bitrate or, if the input device cannot report bitrate, analyze\n"
-            "      some PCR's at the beginning of the input stream to evaluate the\n"
-            "      original bitrate of the transport stream.\n"
-            "\n"
-            "  --cell-id value\n"
-            "      DVB-T and DVB-T2 modulators: indicate the cell identifier to set in the\n"
-            "      transmition parameters signaling (TPS). Disabled by default with DVB-T.\n"
-            "      Default value is 0 with DVB-T2.\n"
-            "\n"
-            "  -c value\n"
-            "  --channel value\n"
-            "      Channel index on the output Dektec device. By default, use the\n"
-            "      first output channel on the device.\n"
-            "\n"
-            "  --cmmb-area-id value\n"
-            "      CMMB modulators: indicate the area id. The valid range is 0 to 127.\n"
-            "      The default is zero.\n"
-            "\n"
-            "  --cmmb-bandwidth value\n"
-            "      CMMB modulators: indicate bandwidth in MHz. Must be one of 2 or 8.\n"
-            "      The default is 8 MHz.\n"
-            "\n"
-            "  --cmmb-pid value\n"
-            "      CMMB modulators: indicate the PID of the CMMB stream in the transport\n"
-            "      stream. This is a required parameter for CMMB modulation.\n"
-            "\n"
-            "  --cmmb-transmitter-id value\n"
-            "      CMMB modulators: indicate the transmitter id. The valid range is 0 to\n"
-            "      127. The default is zero.\n"
-            "\n"
-            "  --constellation value\n"
-            "      DVB-T modulators: indicate the constellation type. Must be one of\n"
-            "      QPSK, 16-QAM, 64-QAM. The default is 64-QAM.\n"
-            "\n"
-            "  -r rate\n"
-            "  --convolutional-rate rate\n"
-            "      For modulators devices only: specify the convolutional rate.\n"
-            "      The specified value depends on the modulation type.\n"
-            "      DVB-S: 1/2, 2/3, 3/4, 4/5, 5/6, 6/7, 7/8.\n"
-            "      DVB-S2: 1/2, 1/3, 1/4, 2/3, 2/5, 3/4, 3/5, 4/5, 5/6, 6/7, 7/8, 8/9, 9/10.\n"
-            "      DVB-T: 1/2, 2/3, 3/4, 5/6, 7/8.\n"
-            "      The default is 3/4.\n"
-            "\n"
-            "  -d value\n"
-            "  --device value\n"
-            "      Device index, from 0 to N-1 (with N being the number of Dektec devices\n"
-            "      in the system). Use the command \"tsdektec -a [-v]\" to have a\n"
-            "      complete list of devices in the system. By default, use the first\n"
-            "      output Dektec device.\n"
-            "\n"
-            "  --dmb-constellation value\n"
-            "      DMB-T/H, ADTB-T modulators: indicate the constellation type. Must be one\n"
-            "      of: 4-QAM-NR, 4-QAM, 16-QAM, 32-QAM, 64-QAM. The default is 64-QAM.\n"
-            "      4-QAM-NR and 32-QAM can be used only with --dmb-fec 0.8.\n"
-            "\n"
-            "  --dmb-fec value\n"
-            "      DMB-T/H, ADTB-T modulators: indicate the FEC code rate. Must be one of\n"
-            "      0.4, 0.6, 0.8. The default is 0.8.\n"
-            "\n"
-            "  --dmb-frame-numbering\n"
-            "      DMB-T/H, ADTB-T modulators: indicate to use frame numbering. The default\n"
-            "      is to use no frame numbering.\n"
-            "\n"
-            "  --dmb-header value\n"
-            "      DMB-T/H, ADTB-T modulators: indicate the FEC frame header mode. Must be\n"
-            "      one of PN420, PN595 (ADTB-T only) or PN945. The default is PN945.\n"
-            "\n"
-            "  --dmb-interleaver value\n"
-            "      DMB-T/H, ADTB-T modulators: indicate the interleaver mode. Must be one\n"
-            "      1 (B=54, M=240) or 2 (B=54, M=720). The default is 1.\n"
-            "\n"
-            "  --fef\n"
-            "      DVB-T2 modulators: enable insertion of FEF's (Future Extension Frames).\n"
-            "      Not enabled by default.\n"
-            "\n"
-            "  --fef-interval value\n"
-            "      DVB-T2 modulators: indicate the number of T2 frames between two FEF\n"
-            "      parts. The valid range is 1 to 255 and --t2-fpsf shall be divisible by\n"
-            "      --fef-interval. The default is 1.\n"
-            "\n"
-            "  --fef-length value\n"
-            "      DVB-T2 modulators: indicate the length of a FEF-part in number of T-units\n"
-            "      (= samples). The valid range is 0 to 0x3FFFFF. The default is 1.\n"
-            "\n"
-            "  --fef-s1 value\n"
-            "      DVB-T2 modulators: indicate the S1-field value in the P1 signalling data.\n"
-            "      Valid values: 2, 3, 4, 5, 6 and 7. The default is 2.\n"
-            "\n"
-            "  --fef-s2 value\n"
-            "      DVB-T2 modulators: indicate the S2-field value in the P1 signalling data.\n"
-            "      Valid values: 1, 3, 5, 7, 9, 11, 13 and 15. The default is 1.\n"
-            "\n"
-            "  --fef-signal value\n"
-            "      DVB-T2 modulators: indicate the type of signal generated during the FEF\n"
-            "      period. Must be one of \"0\" (zero I/Q samples during FEF), \"1K\" (1K\n"
-            "      OFDM symbols with 852 active carriers containing BPSK symbols, same PRBS\n"
-            "      as the T2 dummy cells, not reset between symbols) or \"1K-384\" (1K OFDM\n"
-            "      symbols with 384 active carriers containing BPSK symbols).\n"
-            "      The default is 0.\n"
-            "\n"
-            "  --fef-type value\n"
-            "      DVB-T2 modulators: indicate the FEF type. The valid range is 0 ... 15.\n"
-            "      The default is 0.\n"
-            "\n"
-            "  --fft-mode value\n"
-            "      DVB-T2 modulators: indicate the FFT mode. Must be one of 1K, 2K, 4K, 8K,\n"
-            "      16K or 32K. The default is 32K.\n"
-            "\n"
-            "  -f value\n"
-            "  --frequency value\n"
-            "      All modulator devices: indicate the frequency, in Hz, of the output\n"
-            "      carrier. There is no default. For OFDM modulators, the options\n"
-            "      --uhf-channel or --vhf-channel and --offset-count may be used instead.\n"
-            "      For DVB-S/S2 modulators, the specified frequency is the \"intermediate\"\n"
-            "      frequency. For convenience, the option --satellite-frequency can be used\n"
-            "      instead of --frequency when the intermediate frequency is unknown.\n"
-            "      For DTA-107 modulators, the valid range is 950 MHz to 2150 MHz.\n"
-            "      For DTA-110 and 110T modulators, the valid range is 400 MHz to 862 MHz.\n"
-            "      For DTA-115 modulators, the valid range is 47 MHz to 862 MHz.\n"
-            "\n"
-            "  -g value\n"
-            "  --guard-interval value\n"
-            "      DVB-T modulators: indicate the guard interval. Must be one\n"
-            "      of: 1/32, 1/16, 1/8, 1/4. The default is 1/32.\n"
-            "\n"
-            "  --help\n"
-            "      Display this help text.\n"
-            "\n"
-            "  --indepth-interleave\n"
-            "      DVB-T modulators: indicate to use in-depth interleave.\n"
-            "      The default is native interleave.\n"
-            "\n"
-            "  -i\n"
-            "  --input-modulation\n"
-            "      All modulators devices: try to guess modulation parameters from input\n"
-            "      stream. If the input plugin is \"dvb\", use its modulation parameters.\n"
-#if defined (TS_WINDOWS)
-            "      Warning: not always accurate on Windows systems.\n"
+    setHelp(u"Options:\n"
+            u"\n"
+            u"  --204\n"
+            u"      ASI devices: Send 204-byte packets (188 meaningful bytes plus 16\n"
+            u"      stuffing bytes for RS coding). By default, send 188-byte packets.\n"
+            u"\n"
+            u"  --bandwidth value\n"
+            u"      DVB-T/H, DVB-T2, ADTB-T and DMB-T/H modulators: indicate bandwidth\n"
+            u"      in MHz. Must be one of 1.7, 5, 6, 7, 8, 10. The default is 8 MHz.\n"
+            u"      The bandwidth values 1.7 and 10 MHz are valid for DVB-T2 only.\n"
+            u"\n"
+            u"  --bandwidth-extension\n"
+            u"      DVB-T2 modulators: indicate that the extended carrier mode is used.\n"
+            u"      By default, use normal carrier mode.\n"
+            u"\n"
+            u"  -b value\n"
+            u"  --bitrate value\n"
+            u"      Specify output bitrate in bits/second. By default, use the input\n"
+            u"      device bitrate or, if the input device cannot report bitrate, analyze\n"
+            u"      some PCR's at the beginning of the input stream to evaluate the\n"
+            u"      original bitrate of the transport stream.\n"
+            u"\n"
+            u"  --cell-id value\n"
+            u"      DVB-T and DVB-T2 modulators: indicate the cell identifier to set in the\n"
+            u"      transmition parameters signaling (TPS). Disabled by default with DVB-T.\n"
+            u"      Default value is 0 with DVB-T2.\n"
+            u"\n"
+            u"  -c value\n"
+            u"  --channel value\n"
+            u"      Channel index on the output Dektec device. By default, use the\n"
+            u"      first output channel on the device.\n"
+            u"\n"
+            u"  --cmmb-area-id value\n"
+            u"      CMMB modulators: indicate the area id. The valid range is 0 to 127.\n"
+            u"      The default is zero.\n"
+            u"\n"
+            u"  --cmmb-bandwidth value\n"
+            u"      CMMB modulators: indicate bandwidth in MHz. Must be one of 2 or 8.\n"
+            u"      The default is 8 MHz.\n"
+            u"\n"
+            u"  --cmmb-pid value\n"
+            u"      CMMB modulators: indicate the PID of the CMMB stream in the transport\n"
+            u"      stream. This is a required parameter for CMMB modulation.\n"
+            u"\n"
+            u"  --cmmb-transmitter-id value\n"
+            u"      CMMB modulators: indicate the transmitter id. The valid range is 0 to\n"
+            u"      127. The default is zero.\n"
+            u"\n"
+            u"  --constellation value\n"
+            u"      DVB-T modulators: indicate the constellation type. Must be one of\n"
+            u"      QPSK, 16-QAM, 64-QAM. The default is 64-QAM.\n"
+            u"\n"
+            u"  -r rate\n"
+            u"  --convolutional-rate rate\n"
+            u"      For modulators devices only: specify the convolutional rate.\n"
+            u"      The specified value depends on the modulation type.\n"
+            u"      DVB-S: 1/2, 2/3, 3/4, 4/5, 5/6, 6/7, 7/8.\n"
+            u"      DVB-S2: 1/2, 1/3, 1/4, 2/3, 2/5, 3/4, 3/5, 4/5, 5/6, 6/7, 7/8, 8/9, 9/10.\n"
+            u"      DVB-T: 1/2, 2/3, 3/4, 5/6, 7/8.\n"
+            u"      The default is 3/4.\n"
+            u"\n"
+            u"  -d value\n"
+            u"  --device value\n"
+            u"      Device index, from 0 to N-1 (with N being the number of Dektec devices\n"
+            u"      in the system). Use the command \"tsdektec -a [-v]\" to have a\n"
+            u"      complete list of devices in the system. By default, use the first\n"
+            u"      output Dektec device.\n"
+            u"\n"
+            u"  --dmb-constellation value\n"
+            u"      DMB-T/H, ADTB-T modulators: indicate the constellation type. Must be one\n"
+            u"      of: 4-QAM-NR, 4-QAM, 16-QAM, 32-QAM, 64-QAM. The default is 64-QAM.\n"
+            u"      4-QAM-NR and 32-QAM can be used only with --dmb-fec 0.8.\n"
+            u"\n"
+            u"  --dmb-fec value\n"
+            u"      DMB-T/H, ADTB-T modulators: indicate the FEC code rate. Must be one of\n"
+            u"      0.4, 0.6, 0.8. The default is 0.8.\n"
+            u"\n"
+            u"  --dmb-frame-numbering\n"
+            u"      DMB-T/H, ADTB-T modulators: indicate to use frame numbering. The default\n"
+            u"      is to use no frame numbering.\n"
+            u"\n"
+            u"  --dmb-header value\n"
+            u"      DMB-T/H, ADTB-T modulators: indicate the FEC frame header mode. Must be\n"
+            u"      one of PN420, PN595 (ADTB-T only) or PN945. The default is PN945.\n"
+            u"\n"
+            u"  --dmb-interleaver value\n"
+            u"      DMB-T/H, ADTB-T modulators: indicate the interleaver mode. Must be one\n"
+            u"      1 (B=54, M=240) or 2 (B=54, M=720). The default is 1.\n"
+            u"\n"
+            u"  --fef\n"
+            u"      DVB-T2 modulators: enable insertion of FEF's (Future Extension Frames).\n"
+            u"      Not enabled by default.\n"
+            u"\n"
+            u"  --fef-interval value\n"
+            u"      DVB-T2 modulators: indicate the number of T2 frames between two FEF\n"
+            u"      parts. The valid range is 1 to 255 and --t2-fpsf shall be divisible by\n"
+            u"      --fef-interval. The default is 1.\n"
+            u"\n"
+            u"  --fef-length value\n"
+            u"      DVB-T2 modulators: indicate the length of a FEF-part in number of T-units\n"
+            u"      (= samples). The valid range is 0 to 0x3FFFFF. The default is 1.\n"
+            u"\n"
+            u"  --fef-s1 value\n"
+            u"      DVB-T2 modulators: indicate the S1-field value in the P1 signalling data.\n"
+            u"      Valid values: 2, 3, 4, 5, 6 and 7. The default is 2.\n"
+            u"\n"
+            u"  --fef-s2 value\n"
+            u"      DVB-T2 modulators: indicate the S2-field value in the P1 signalling data.\n"
+            u"      Valid values: 1, 3, 5, 7, 9, 11, 13 and 15. The default is 1.\n"
+            u"\n"
+            u"  --fef-signal value\n"
+            u"      DVB-T2 modulators: indicate the type of signal generated during the FEF\n"
+            u"      period. Must be one of \"0\" (zero I/Q samples during FEF), \"1K\" (1K\n"
+            u"      OFDM symbols with 852 active carriers containing BPSK symbols, same PRBS\n"
+            u"      as the T2 dummy cells, not reset between symbols) or \"1K-384\" (1K OFDM\n"
+            u"      symbols with 384 active carriers containing BPSK symbols).\n"
+            u"      The default is 0.\n"
+            u"\n"
+            u"  --fef-type value\n"
+            u"      DVB-T2 modulators: indicate the FEF type. The valid range is 0 ... 15.\n"
+            u"      The default is 0.\n"
+            u"\n"
+            u"  --fft-mode value\n"
+            u"      DVB-T2 modulators: indicate the FFT mode. Must be one of 1K, 2K, 4K, 8K,\n"
+            u"      16K or 32K. The default is 32K.\n"
+            u"\n"
+            u"  -f value\n"
+            u"  --frequency value\n"
+            u"      All modulator devices: indicate the frequency, in Hz, of the output\n"
+            u"      carrier. There is no default. For OFDM modulators, the options\n"
+            u"      --uhf-channel or --vhf-channel and --offset-count may be used instead.\n"
+            u"      For DVB-S/S2 modulators, the specified frequency is the \"intermediate\"\n"
+            u"      frequency. For convenience, the option --satellite-frequency can be used\n"
+            u"      instead of --frequency when the intermediate frequency is unknown.\n"
+            u"      For DTA-107 modulators, the valid range is 950 MHz to 2150 MHz.\n"
+            u"      For DTA-110 and 110T modulators, the valid range is 400 MHz to 862 MHz.\n"
+            u"      For DTA-115 modulators, the valid range is 47 MHz to 862 MHz.\n"
+            u"\n"
+            u"  -g value\n"
+            u"  --guard-interval value\n"
+            u"      DVB-T modulators: indicate the guard interval. Must be one\n"
+            u"      of: 1/32, 1/16, 1/8, 1/4. The default is 1/32.\n"
+            u"\n"
+            u"  --help\n"
+            u"      Display this help text.\n"
+            u"\n"
+            u"  --indepth-interleave\n"
+            u"      DVB-T modulators: indicate to use in-depth interleave.\n"
+            u"      The default is native interleave.\n"
+            u"\n"
+            u"  -i\n"
+            u"  --input-modulation\n"
+            u"      All modulators devices: try to guess modulation parameters from input\n"
+            u"      stream. If the input plugin is \"dvb\", use its modulation parameters.\n"
+#if defined(TS_WINDOWS)
+            u"      Warning: not always accurate on Windows systems.\n"
 #endif
-            "      Otherwise, if the specified modulation is DVB-T, try to guess\n"
-            "      some modulation parameters from the bitrate.\n"
-            "\n"
-            "  --instant-detach\n"
-            "      At end of stream, perform an \"instant detach\" of the output channel.\n"
-            "      The default is to wait until all bytes are sent. The default is fine\n"
-            "      for ASI devices. With modulators, the \"wait until sent\" mode may\n"
-            "      hang at end of stream and --instant-detach avoids this.\n"
-            "\n"
-            "  --inversion\n"
-            "      All modulators devices: enable spectral inversion.\n"
-            "\n"
-            "  --j83 annex\n"
-            "      QAM modulators: indicate the ITU-T J.83 annex to use. Must be one of\n"
-            "      \"A\" (DVB-C), \"B\" (American QAM) or \"C\" (Japanese QAM). The default is A.\n"
-            "\n"
-            "  -l value\n"
-            "  --level value\n"
-            "      Modulators: indicate the output level in units of 0.1 dBm (e.g.\n"
-            "      --level -30 means -3 dBm). Not supported by all devices.\n"
-            "      For DTA-107 modulators, the valid range is -47.0 to -27.0 dBm.\n"
-            "      For DTA-115, QAM, the valid range is -35.0 to 0.0 dBm.\n"
-            "      For DTA-115, OFDM, ISDB-T, the valid range is -38.0 to -3.0 dBm.\n"
-            "\n"
-            "  --lnb string\n"
-            "      DVB-S/S2 modulators: description of the LNB which is used to convert the\n"
-            "      --satellite-frequency into an intermediate frequency. This option is\n"
-            "      useless when --satellite-frequency is not specified. The format of the\n"
-            "      string is \"low_freq[,high_freq[,switch_freq]]\" where all frequencies\n"
-            "      are in MHz. The characteristics of the default universal LNB are\n"
-            "      low_freq = 9750 MHz, high_freq = 10600 MHz, switch_freq = 11700 MHz.\n"
-            "\n"
-            "  --miso value\n"
-            "      DVB-T2 modulators: indicate the MISO mode. Must be one of OFF, 1, 2 or\n"
-            "      BOTH. The default si OFF. This mode can be used to simulate antenna 1,\n"
-            "      antenna 2 or the average of antenna 1 and antenna 2 to simulate reception\n"
-            "      halfway between the antennas.\n"
-            "\n"
-            "  -m value\n"
-            "  --modulation value\n"
-            "      For modulators, indicate the modulation type. Must be one of: \n"
-            "      4-QAM, 16-QAM, 32-QAM, 64-QAM, 128-QAM, 256-QAM, ADTB-T, ATSC-VSB, CMMB,\n"
-            "      DMB-T, DVB-S, DVB-S-QPSK (same as DVB-S), DVB-S-BPSK, DVB-S2, DVB-S2-QPSK\n"
-            "      (same as DVB-S2), DVB-S2-8PSK, DVB-S2-16APSK, DVB-S2-32APSK, DVB-T, \n"
-            "      DVB-T2, ISDB-T. For DVB-H, specify DVB-T. For DMB-H, specify DMB-T.\n"
-            "      The supported modulation types depend on the device model.\n"
-            "      The default modulation type is:\n"
-            "        DTA-107:   DVB-S-QPSK\n"
-            "        DTA-107S2: DVB-S2-QPSK\n"
-            "        DTA-110:   64-QAM\n"
-            "        DTA-110T:  DVB-T\n"
-            "        DTA-115:   DVB-T\n"
-            "\n"
-            "  --mpe-fec\n"
-            "      DVB-T/H modulators: indicate that at least one elementary stream uses\n"
-            "      MPE-FEC (DVB-H signalling).\n"
-            "\n"
-            "  -o value\n"
-            "  --offset-count value\n"
-            "      UHF and VHF modulators: indicate the number of offsets from the UHF or\n"
-            "      VHF channel. The default is zero. See options --uhf-channel and\n"
-            "      --vhf-channel.\n"
-            "\n"
-            "  --papr value\n"
-            "      DVB-T2 modulators: indicate the Peak to Average Power Reduction method.\n"
-            "      Must be one of NONE, ACE (Active Constellation Extension), TR (power\n"
-            "      reduction with reserved carriers) or BOTH (both ACE and TS). The default\n"
-            "      is NONE.\n"
-            "\n"
-            "  --pilots\n"
-            "      DVB-S2 and ADTB-T modulators: enable pilots (default: no pilot).\n"
-            "\n"
-            "  -p value\n"
-            "  --pilot-pattern value\n"
-            "      DVB-T2 modulators: indicate the pilot pattern to use, a value in the\n"
-            "      range 1 to 8. The default is 7.\n"
-            "\n"
-            "  --plp0-code-rate value\n"
-            "      DVB-T2 modulators: indicate the convolutional coding rate used by the\n"
-            "      PLP #0. Must be one of 1/2, 3/5, 2/3, 3/4, 4/5, 5/6. The default is 2/3.\n"
-            "\n"
-            "  --plp0-fec-type value\n"
-            "      DVB-T2 modulators: indicate the FEC type used by the PLP #0. Must be one\n"
-            "      of 16K, 64K. The default is 64K LPDC.\n"
-            "\n"
-            "  --plp0-group-id value\n"
-            "      DVB-T2 modulators: indicate the PLP group with which the PLP #0 is\n"
-            "      associated. The valid range is 0 to 255. The default is 0.\n"
-            "\n"
-            "  --plp0-high-efficiency\n"
-            "      DVB-T2 modulators: indicate that the PLP #0 uses High Efficiency Mode\n"
-            "      (HEM). Otherwise Normal Mode (NM) is used.\n"
-            "\n"
-            "  --plp0-id value\n"
-            "      DVB-T2 modulators: indicate the unique identification of the PLP #0\n"
-            "      within the T2 system. The valid range is 0 to 255. The default is 0.\n"
-            "\n"
-            "  --plp0-il-length value\n"
-            "      DVB-T2 modulators: indicate the time interleaving length for PLP #0.\n"
-            "      If --plp0-il-type is set to \"ONE-TO-ONE\" (the default), this parameter\n"
-            "      specifies the number of TI-blocks per interleaving frame.\n"
-            "      If --plp0-il-type is set to \"MULTI\", this parameter specifies the\n"
-            "      number of T2 frames to which each interleaving frame is mapped.\n"
-            "      The valid range is 0 to 255. The default is 3.\n"
-            "\n"
-            "  --plp0-il-type value\n"
-            "      DVB-T2 modulators: indicate the type of interleaving used by the PLP #0.\n"
-            "      Must be one of \"ONE-TO-ONE\" (one interleaving frame corresponds to one\n"
-            "      T2 frame) or \"MULTI\" (one interleaving frame is carried in multiple T2\n"
-            "      frames). The default is ONE-TO-ONE.\n"
-            "\n"
-            "  --plp0-in-band\n"
-            "      DVB-T2 modulators: indicate that the in-band flag is set and in-band\n"
-            "      signalling information is inserted in PLP #0.\n"
-            "\n"
-            "  --plp0-issy value\n"
-            "      DVB-T2 modulators: type of ISSY field to compute and inserte in PLP #0.\n"
-            "      Must be one of \"NONE\", \"SHORT\", \"LONG\". The default is NONE.\n"
-            "\n"
-            "  --plp0-modulation value\n"
-            "      DVB-T2 modulators: indicate the modulation used by PLP #0. Must be one of\n"
-            "      BPSK, QPSK, 16-QAM, 64-QAM, 256-QAM. The default is 256-QAM.\n"
-            "\n"
-            "  --plp0-null-packet-deletion\n"
-            "      DVB-T2 modulators: indicate that null-packet deletion is active in\n"
-            "      PLP #0. Otherwise it is not active.\n"
-            "\n"
-            "  --plp0-rotation\n"
-            "      DVB-T2 modulators: indicate that constellation rotation is used for\n"
-            "      PLP #0. Otherwise not.\n"
-            "\n"
-            "  --plp0-type value\n"
-            "      DVB-T2 modulators: indicate the PLP type for PLP #0. Must be one of\n"
-            "      \"COMMON\", \"1\", \"2\". The default is COMMON.\n"
-            "\n"
-            "  -q value\n"
-            "  --qam-b value\n"
-            "      QAM modulators: with --j83 B, indicate the QAM-B interleaver mode.\n"
-            "      Must be one of: I128-J1D, I64-J2, I32-J4, I16-J8, I8-J16, I128-J1,\n"
-            "      I128-J2, I128-J3, I128-J4, I128-J5, I128-J6, I128-J7, I128-J8.\n"
-            "      The default is I128-J1D.\n"
-            "\n"
-            "  --s2-gold-code value\n"
-            "      DVB-S2 modulators: indicate the physical layer scrambling initialization\n"
-            "      sequence, aka \"gold code\".\n"
-            "\n"
-            "  --s2-short-fec-frame\n"
-            "      DVB-S2 modulators: use short FEC frames, 16 200 bits (default: long FEC\n"
-            "      frames, 64 800 bits).\n"
-            "\n"
-            "  --satellite-frequency value\n"
-            "      DVB-S/S2 modulators: indicate the target satellite frequency, in Hz, of\n"
-            "      the output carrier. The actual frequency at the output of the modulator\n"
-            "      is the \"intermediate\" frequency which is computed based on the\n"
-            "      characteristics of the LNB (see option --lnb). This option is useful\n"
-            "      when the satellite frequency is better known than the intermediate\n"
-            "      frequency. The options --frequency and --satellite-frequency are mutually\n"
-            "      exclusive.\n"
-            "\n"
-            "  -s\n"
-            "  --stuffing\n"
-            "      Automatically generate stuffing packets if we fail to provide\n"
-            "      packets fast enough.\n"
-            "\n"
-            "  --symbol-rate value\n"
-            "      DVB-C/S/S2 modulators: Specify the symbol rate in symbols/second.\n"
-            "      By default, the symbol rate is implicitely computed from the convolutional\n"
-            "      rate, the modulation type and the bitrate. But when --symbol-rate is\n"
-            "      specified, the input bitrate is ignored and the output bitrate is forced\n"
-            "      to the value resulting from the combination of the specified symbol rate,\n"
-            "      convolutional rate and modulation type.\n"
-            "      The options --symbol-rate and --bitrate are mutually exclusive.\n"
-            "\n"
-            "  --t2-fpsf value\n"
-            "      DVB-T2 modulators: indicate the number of T2 frames per super-frame.\n"
-            "      Must be in the range 1 to 255. The default is 2.\n"
-            "\n"
-            "  --t2-guard-interval value\n"
-            "      DVB-T2 modulators: indicates the guard interval. Must be one of:\n"
-            "      1/128, 1/32, 1/16, 19/256, 1/8, 19/128, 1/4. The default is 1/128.\n"
-            "\n"
-            "  --t2-l1-modulation value\n"
-            "      DVB-T2 modulators: indicate the modulation type used for the L1-post\n"
-            "      signalling block. Must be one of BPSK, QPSK, 16-QAM, 64-QAM. The default\n"
-            "      is 16-QAM.\n"
-            "\n"
-            "  --t2-network-id value\n"
-            "      DVB-T2 modulators: indicate the DVB-T2 network identification.\n"
-            "      The default is 0.\n"
-            "\n"
-            "  --t2-system-id value\n"
-            "      DVB-T2 modulators: indicate the DVB-T2 system identification.\n"
-            "      The default is 0.\n"
-            "\n"
-            "  --time-slice\n"
-            "      DVB-T/H modulators: indicate that at least one elementary stream uses\n"
-            "      time slicing (DVB-H signalling).\n"
-            "\n"
-            "  -t value\n"
-            "  --transmission-mode value\n"
-            "      DVB-T modulators: indicate the transmission mode. Must be one of\n"
-            "      2K, 4K or 8K. The default is 8K.\n"
-            "\n"
-            "  -u value\n"
-            "  --uhf-channel value\n"
-            "      UHF modulators: indicate the UHF channel number of the output carrier.\n"
-            "      Can be used in replacement to --frequency. Can be combined with an\n"
-            "      --offset-count option. The resulting frequency is\n"
-            "      306 MHz + (uhf-channel * 8 MHz) + (offset-count * 166.6 kHz).\n"
-            "\n"
-            "  --version\n"
-            "      Display the version number.\n"
-            "\n"
-            "  -v value\n"
-            "  --vhf-channel value\n"
-            "      VHF modulators: indicate the VHF channel number of the output carrier.\n"
-            "      Can be used in replacement to --frequency. Can be combined with an\n"
-            "      --offset-count option. The resulting frequency is\n"
-            "      142.5 MHz + (vhf-channel * 7 MHz) + (offset-count * 166.6 kHz).\n"
-            "\n"
-            "  --vsb value\n"
-            "      ATSC modulators: indicate the VSB constellation. Must be one of\n"
-            "      8 (19,392,658 Mb/s) or 16 (38,785,317 Mb/s). The default is 8.\n"
-            "\n"
-            "  --vsb-taps value\n"
-            "      ATSC modulators: indicate the number of taps of each phase of the\n"
-            "      root-raised cosine filter that is used to shape the spectrum of the\n"
-            "      output signal. The number of taps can have any value between 2 and 256\n"
-            "      (the implementation is optimized for powers of 2). Specifying more taps\n"
-            "      improves the spectrum, but increases processor overhead. The recommend\n"
-            "      (and default) number of taps is 64 taps. If insufficient CPU power is\n"
-            "      available, 32 taps produces acceptable results, too.\n");
+            u"      Otherwise, if the specified modulation is DVB-T, try to guess\n"
+            u"      some modulation parameters from the bitrate.\n"
+            u"\n"
+            u"  --instant-detach\n"
+            u"      At end of stream, perform an \"instant detach\" of the output channel.\n"
+            u"      The default is to wait until all bytes are sent. The default is fine\n"
+            u"      for ASI devices. With modulators, the \"wait until sent\" mode may\n"
+            u"      hang at end of stream and --instant-detach avoids this.\n"
+            u"\n"
+            u"  --inversion\n"
+            u"      All modulators devices: enable spectral inversion.\n"
+            u"\n"
+            u"  --j83 annex\n"
+            u"      QAM modulators: indicate the ITU-T J.83 annex to use. Must be one of\n"
+            u"      \"A\" (DVB-C), \"B\" (American QAM) or \"C\" (Japanese QAM). The default is A.\n"
+            u"\n"
+            u"  -l value\n"
+            u"  --level value\n"
+            u"      Modulators: indicate the output level in units of 0.1 dBm (e.g.\n"
+            u"      --level -30 means -3 dBm). Not supported by all devices.\n"
+            u"      For DTA-107 modulators, the valid range is -47.0 to -27.0 dBm.\n"
+            u"      For DTA-115, QAM, the valid range is -35.0 to 0.0 dBm.\n"
+            u"      For DTA-115, OFDM, ISDB-T, the valid range is -38.0 to -3.0 dBm.\n"
+            u"\n"
+            u"  --lnb string\n"
+            u"      DVB-S/S2 modulators: description of the LNB which is used to convert the\n"
+            u"      --satellite-frequency into an intermediate frequency. This option is\n"
+            u"      useless when --satellite-frequency is not specified. The format of the\n"
+            u"      string is \"low_freq[,high_freq[,switch_freq]]\" where all frequencies\n"
+            u"      are in MHz. The characteristics of the default universal LNB are\n"
+            u"      low_freq = 9750 MHz, high_freq = 10600 MHz, switch_freq = 11700 MHz.\n"
+            u"\n"
+            u"  --miso value\n"
+            u"      DVB-T2 modulators: indicate the MISO mode. Must be one of OFF, 1, 2 or\n"
+            u"      BOTH. The default si OFF. This mode can be used to simulate antenna 1,\n"
+            u"      antenna 2 or the average of antenna 1 and antenna 2 to simulate reception\n"
+            u"      halfway between the antennas.\n"
+            u"\n"
+            u"  -m value\n"
+            u"  --modulation value\n"
+            u"      For modulators, indicate the modulation type. Must be one of: \n"
+            u"      4-QAM, 16-QAM, 32-QAM, 64-QAM, 128-QAM, 256-QAM, ADTB-T, ATSC-VSB, CMMB,\n"
+            u"      DMB-T, DVB-S, DVB-S-QPSK (same as DVB-S), DVB-S-BPSK, DVB-S2, DVB-S2-QPSK\n"
+            u"      (same as DVB-S2), DVB-S2-8PSK, DVB-S2-16APSK, DVB-S2-32APSK, DVB-T, \n"
+            u"      DVB-T2, ISDB-T. For DVB-H, specify DVB-T. For DMB-H, specify DMB-T.\n"
+            u"      The supported modulation types depend on the device model.\n"
+            u"      The default modulation type is:\n"
+            u"        DTA-107:   DVB-S-QPSK\n"
+            u"        DTA-107S2: DVB-S2-QPSK\n"
+            u"        DTA-110:   64-QAM\n"
+            u"        DTA-110T:  DVB-T\n"
+            u"        DTA-115:   DVB-T\n"
+            u"\n"
+            u"  --mpe-fec\n"
+            u"      DVB-T/H modulators: indicate that at least one elementary stream uses\n"
+            u"      MPE-FEC (DVB-H signalling).\n"
+            u"\n"
+            u"  -o value\n"
+            u"  --offset-count value\n"
+            u"      UHF and VHF modulators: indicate the number of offsets from the UHF or\n"
+            u"      VHF channel. The default is zero. See options --uhf-channel and\n"
+            u"      --vhf-channel.\n"
+            u"\n"
+            u"  --papr value\n"
+            u"      DVB-T2 modulators: indicate the Peak to Average Power Reduction method.\n"
+            u"      Must be one of NONE, ACE (Active Constellation Extension), TR (power\n"
+            u"      reduction with reserved carriers) or BOTH (both ACE and TS). The default\n"
+            u"      is NONE.\n"
+            u"\n"
+            u"  --pilots\n"
+            u"      DVB-S2 and ADTB-T modulators: enable pilots (default: no pilot).\n"
+            u"\n"
+            u"  -p value\n"
+            u"  --pilot-pattern value\n"
+            u"      DVB-T2 modulators: indicate the pilot pattern to use, a value in the\n"
+            u"      range 1 to 8. The default is 7.\n"
+            u"\n"
+            u"  --plp0-code-rate value\n"
+            u"      DVB-T2 modulators: indicate the convolutional coding rate used by the\n"
+            u"      PLP #0. Must be one of 1/2, 3/5, 2/3, 3/4, 4/5, 5/6. The default is 2/3.\n"
+            u"\n"
+            u"  --plp0-fec-type value\n"
+            u"      DVB-T2 modulators: indicate the FEC type used by the PLP #0. Must be one\n"
+            u"      of 16K, 64K. The default is 64K LPDC.\n"
+            u"\n"
+            u"  --plp0-group-id value\n"
+            u"      DVB-T2 modulators: indicate the PLP group with which the PLP #0 is\n"
+            u"      associated. The valid range is 0 to 255. The default is 0.\n"
+            u"\n"
+            u"  --plp0-high-efficiency\n"
+            u"      DVB-T2 modulators: indicate that the PLP #0 uses High Efficiency Mode\n"
+            u"      (HEM). Otherwise Normal Mode (NM) is used.\n"
+            u"\n"
+            u"  --plp0-id value\n"
+            u"      DVB-T2 modulators: indicate the unique identification of the PLP #0\n"
+            u"      within the T2 system. The valid range is 0 to 255. The default is 0.\n"
+            u"\n"
+            u"  --plp0-il-length value\n"
+            u"      DVB-T2 modulators: indicate the time interleaving length for PLP #0.\n"
+            u"      If --plp0-il-type is set to \"ONE-TO-ONE\" (the default), this parameter\n"
+            u"      specifies the number of TI-blocks per interleaving frame.\n"
+            u"      If --plp0-il-type is set to \"MULTI\", this parameter specifies the\n"
+            u"      number of T2 frames to which each interleaving frame is mapped.\n"
+            u"      The valid range is 0 to 255. The default is 3.\n"
+            u"\n"
+            u"  --plp0-il-type value\n"
+            u"      DVB-T2 modulators: indicate the type of interleaving used by the PLP #0.\n"
+            u"      Must be one of \"ONE-TO-ONE\" (one interleaving frame corresponds to one\n"
+            u"      T2 frame) or \"MULTI\" (one interleaving frame is carried in multiple T2\n"
+            u"      frames). The default is ONE-TO-ONE.\n"
+            u"\n"
+            u"  --plp0-in-band\n"
+            u"      DVB-T2 modulators: indicate that the in-band flag is set and in-band\n"
+            u"      signalling information is inserted in PLP #0.\n"
+            u"\n"
+            u"  --plp0-issy value\n"
+            u"      DVB-T2 modulators: type of ISSY field to compute and inserte in PLP #0.\n"
+            u"      Must be one of \"NONE\", \"SHORT\", \"LONG\". The default is NONE.\n"
+            u"\n"
+            u"  --plp0-modulation value\n"
+            u"      DVB-T2 modulators: indicate the modulation used by PLP #0. Must be one of\n"
+            u"      BPSK, QPSK, 16-QAM, 64-QAM, 256-QAM. The default is 256-QAM.\n"
+            u"\n"
+            u"  --plp0-null-packet-deletion\n"
+            u"      DVB-T2 modulators: indicate that null-packet deletion is active in\n"
+            u"      PLP #0. Otherwise it is not active.\n"
+            u"\n"
+            u"  --plp0-rotation\n"
+            u"      DVB-T2 modulators: indicate that constellation rotation is used for\n"
+            u"      PLP #0. Otherwise not.\n"
+            u"\n"
+            u"  --plp0-type value\n"
+            u"      DVB-T2 modulators: indicate the PLP type for PLP #0. Must be one of\n"
+            u"      \"COMMON\", \"1\", \"2\". The default is COMMON.\n"
+            u"\n"
+            u"  -q value\n"
+            u"  --qam-b value\n"
+            u"      QAM modulators: with --j83 B, indicate the QAM-B interleaver mode.\n"
+            u"      Must be one of: I128-J1D, I64-J2, I32-J4, I16-J8, I8-J16, I128-J1,\n"
+            u"      I128-J2, I128-J3, I128-J4, I128-J5, I128-J6, I128-J7, I128-J8.\n"
+            u"      The default is I128-J1D.\n"
+            u"\n"
+            u"  --s2-gold-code value\n"
+            u"      DVB-S2 modulators: indicate the physical layer scrambling initialization\n"
+            u"      sequence, aka \"gold code\".\n"
+            u"\n"
+            u"  --s2-short-fec-frame\n"
+            u"      DVB-S2 modulators: use short FEC frames, 16 200 bits (default: long FEC\n"
+            u"      frames, 64 800 bits).\n"
+            u"\n"
+            u"  --satellite-frequency value\n"
+            u"      DVB-S/S2 modulators: indicate the target satellite frequency, in Hz, of\n"
+            u"      the output carrier. The actual frequency at the output of the modulator\n"
+            u"      is the \"intermediate\" frequency which is computed based on the\n"
+            u"      characteristics of the LNB (see option --lnb). This option is useful\n"
+            u"      when the satellite frequency is better known than the intermediate\n"
+            u"      frequency. The options --frequency and --satellite-frequency are mutually\n"
+            u"      exclusive.\n"
+            u"\n"
+            u"  -s\n"
+            u"  --stuffing\n"
+            u"      Automatically generate stuffing packets if we fail to provide\n"
+            u"      packets fast enough.\n"
+            u"\n"
+            u"  --symbol-rate value\n"
+            u"      DVB-C/S/S2 modulators: Specify the symbol rate in symbols/second.\n"
+            u"      By default, the symbol rate is implicitely computed from the convolutional\n"
+            u"      rate, the modulation type and the bitrate. But when --symbol-rate is\n"
+            u"      specified, the input bitrate is ignored and the output bitrate is forced\n"
+            u"      to the value resulting from the combination of the specified symbol rate,\n"
+            u"      convolutional rate and modulation type.\n"
+            u"      The options --symbol-rate and --bitrate are mutually exclusive.\n"
+            u"\n"
+            u"  --t2-fpsf value\n"
+            u"      DVB-T2 modulators: indicate the number of T2 frames per super-frame.\n"
+            u"      Must be in the range 1 to 255. The default is 2.\n"
+            u"\n"
+            u"  --t2-guard-interval value\n"
+            u"      DVB-T2 modulators: indicates the guard interval. Must be one of:\n"
+            u"      1/128, 1/32, 1/16, 19/256, 1/8, 19/128, 1/4. The default is 1/128.\n"
+            u"\n"
+            u"  --t2-l1-modulation value\n"
+            u"      DVB-T2 modulators: indicate the modulation type used for the L1-post\n"
+            u"      signalling block. Must be one of BPSK, QPSK, 16-QAM, 64-QAM. The default\n"
+            u"      is 16-QAM.\n"
+            u"\n"
+            u"  --t2-network-id value\n"
+            u"      DVB-T2 modulators: indicate the DVB-T2 network identification.\n"
+            u"      The default is 0.\n"
+            u"\n"
+            u"  --t2-system-id value\n"
+            u"      DVB-T2 modulators: indicate the DVB-T2 system identification.\n"
+            u"      The default is 0.\n"
+            u"\n"
+            u"  --time-slice\n"
+            u"      DVB-T/H modulators: indicate that at least one elementary stream uses\n"
+            u"      time slicing (DVB-H signalling).\n"
+            u"\n"
+            u"  -t value\n"
+            u"  --transmission-mode value\n"
+            u"      DVB-T modulators: indicate the transmission mode. Must be one of\n"
+            u"      2K, 4K or 8K. The default is 8K.\n"
+            u"\n"
+            u"  -u value\n"
+            u"  --uhf-channel value\n"
+            u"      UHF modulators: indicate the UHF channel number of the output carrier.\n"
+            u"      Can be used in replacement to --frequency. Can be combined with an\n"
+            u"      --offset-count option. The resulting frequency is\n"
+            u"      306 MHz + (uhf-channel * 8 MHz) + (offset-count * 166.6 kHz).\n"
+            u"\n"
+            u"  --version\n"
+            u"      Display the version number.\n"
+            u"\n"
+            u"  -v value\n"
+            u"  --vhf-channel value\n"
+            u"      VHF modulators: indicate the VHF channel number of the output carrier.\n"
+            u"      Can be used in replacement to --frequency. Can be combined with an\n"
+            u"      --offset-count option. The resulting frequency is\n"
+            u"      142.5 MHz + (vhf-channel * 7 MHz) + (offset-count * 166.6 kHz).\n"
+            u"\n"
+            u"  --vsb value\n"
+            u"      ATSC modulators: indicate the VSB constellation. Must be one of\n"
+            u"      8 (19,392,658 Mb/s) or 16 (38,785,317 Mb/s). The default is 8.\n"
+            u"\n"
+            u"  --vsb-taps value\n"
+            u"      ATSC modulators: indicate the number of taps of each phase of the\n"
+            u"      root-raised cosine filter that is used to shape the spectrum of the\n"
+            u"      output signal. The number of taps can have any value between 2 and 256\n"
+            u"      (the implementation is optimized for powers of 2). Specifying more taps\n"
+            u"      improves the spectrum, but increases processor overhead. The recommend\n"
+            u"      (and default) number of taps is 64 taps. If insufficient CPU power is\n"
+            u"      available, 32 taps produces acceptable results, too.\n");
 }
 
 
@@ -792,10 +790,10 @@ bool ts::DektecOutputPlugin::start()
     }
 
     // Get command line arguments
-    _guts->dev_index = intValue<int>("device", -1);
-    _guts->chan_index = intValue<int>("channel", -1);
-    _guts->opt_bitrate = intValue<BitRate>("bitrate", 0);
-    _guts->detach_mode = present("instant-detach") ? DTAPI_INSTANT_DETACH : DTAPI_WAIT_UNTIL_SENT;
+    _guts->dev_index = intValue<int>(u"device", -1);
+    _guts->chan_index = intValue<int>(u"channel", -1);
+    _guts->opt_bitrate = intValue<BitRate>(u"bitrate", 0);
+    _guts->detach_mode = present(u"instant-detach") ? DTAPI_INSTANT_DETACH : DTAPI_WAIT_UNTIL_SENT;
     _guts->mute_on_stop = false;
 
     // Get initial bitrate
@@ -877,7 +875,7 @@ bool ts::DektecOutputPlugin::start()
     // Reset output channel
     status = _guts->chan.Reset(DTAPI_FULL_RESET);
     if (status != DTAPI_OK) {
-        return startError("output device reset error", status);
+        return startError(u"output device reset error", status);
     }
 
     // Get current FIFO size, for information only, ignore errors
@@ -888,13 +886,13 @@ bool ts::DektecOutputPlugin::start()
         status = _guts->chan.GetMaxFifoSize(max_fifo_size);
     }
     if (status == DTAPI_OK) {
-        tsp->verbose("output fifo size: " + Decimal(fifo_size) + " bytes, max: " + Decimal(max_fifo_size) + " bytes");
+        tsp->verbose(u"output fifo size: %'d bytes, max: %'d bytes", {fifo_size, max_fifo_size});
     }
 
     // Set 188/204-byte output packet format and stuffing
-    status = _guts->chan.SetTxMode(present("204") ? DTAPI_TXMODE_ADD16 : DTAPI_TXMODE_188, present("stuffing") ? 1 : 0);
+    status = _guts->chan.SetTxMode(present(u"204") ? DTAPI_TXMODE_ADD16 : DTAPI_TXMODE_188, present(u"stuffing") ? 1 : 0);
     if (status != DTAPI_OK) {
-        return startError("output device SetTxMode error", status);
+        return startError(u"output device SetTxMode error", status);
     }
 
     // Set modulation parameters for modulators
@@ -903,8 +901,8 @@ bool ts::DektecOutputPlugin::start()
     }
 
     // Set output level.
-    if (present("level")) {
-        status = _guts->chan.SetOutputLevel(intValue<int>("level"));
+    if (present(u"level")) {
+        status = _guts->chan.SetOutputLevel(intValue<int>(u"level"));
         if (status != DTAPI_OK) {
             // In case of error, report it but do not fail.
             // This feature is not supported on all modulators and
@@ -916,7 +914,7 @@ bool ts::DektecOutputPlugin::start()
     // Set output bitrate
     status = _guts->chan.SetTsRateBps(int(_guts->cur_bitrate));
     if (status != DTAPI_OK) {
-        return startError("output device set bitrate error", status);
+        return startError(u"output device set bitrate error", status);
     }
 
     // Start the transmission on the output device.
@@ -925,10 +923,10 @@ bool ts::DektecOutputPlugin::start()
     _guts->starting = is_modulator;
     status = _guts->chan.SetTxControl(_guts->starting ? DTAPI_TXCTRL_HOLD : DTAPI_TXCTRL_SEND);
     if (status != DTAPI_OK) {
-        return startError("output device start send error", status);
+        return startError(u"output device start send error", status);
     }
 
-    tsp->verbose("initial output bitrate: " + Decimal(_guts->cur_bitrate) + " b/s");
+    tsp->verbose(u"initial output bitrate: %'d b/s", {_guts->cur_bitrate});
     _guts->is_started = true;
     return true;
 }
@@ -938,7 +936,7 @@ bool ts::DektecOutputPlugin::start()
 // Output start error method
 //----------------------------------------------------------------------------
 
-bool ts::DektecOutputPlugin::startError(const std::string& message, unsigned int status)
+bool ts::DektecOutputPlugin::startError(const UString& message, unsigned int status)
 {
     if (status == DTAPI_OK) {
         tsp->error(message);
@@ -964,7 +962,7 @@ bool ts::DektecOutputPlugin::setBitrate(int symbol_rate, int dt_modulation, int 
     int bitrate = -1;
     Dtapi::DTAPI_RESULT status = Dtapi::DtapiModPars2TsRate(bitrate, dt_modulation, param0, param1, param2, symbol_rate);
     if (status != DTAPI_OK) {
-        return startError("Error computing bitrate from symbol rate", status);
+        return startError(u"Error computing bitrate from symbol rate", status);
     }
     else {
         _guts->opt_bitrate = _guts->cur_bitrate = BitRate(bitrate);
@@ -981,7 +979,7 @@ bool ts::DektecOutputPlugin::setBitrate(int symbol_rate, int dt_modulation, int 
 bool ts::DektecOutputPlugin::setModulation (int& modulation_type)
 {
     // Get input plugin modulation parameters if required
-    const bool use_input_modulation = present("input-modulation");
+    const bool use_input_modulation = present(u"input-modulation");
     const ObjectPtr input_params(use_input_modulation ? Object::RetrieveFromRepository("tsp.dvb.params") : 0);
 
     // Various views of the input modulation parameters (at most one is non-zero)
@@ -1024,24 +1022,24 @@ bool ts::DektecOutputPlugin::setModulation (int& modulation_type)
     }
 
     // Get user-specified modulation
-    modulation_type = intValue<int>("modulation", modulation_type);
+    modulation_type = intValue<int>(u"modulation", modulation_type);
     if (modulation_type < 0) {
         return startError("unspecified modulation type for " + _guts->device.model, DTAPI_OK);
     }
 
     // Get user-specified symbol rate, used only with DVB-S/S2/C.
-    int symbol_rate = intValue<int>("symbol-rate", -1);
-    if (present("bitrate") && present("symbol-rate")) {
+    int symbol_rate = intValue<int>(u"symbol-rate", -1);
+    if (present(u"bitrate") && present(u"symbol-rate")) {
         return startError("options --symbol-rate and --bitrate are mutually exclusive", DTAPI_OK);
     }
 
     // Get LNB description, in case --satellite-frequency is used
     LNB lnb; // Universal LNB by default
-    if (present("lnb")) {
-        const std::string s(value("lnb"));
+    if (present(u"lnb")) {
+        const UString s(value(u"lnb"));
         LNB l(s);
         if (!l.isValid()) {
-            return startError("invalid LNB description " + s, DTAPI_OK);
+            return startError(u"invalid LNB description " + s, DTAPI_OK);
         }
         else {
             lnb = l;
@@ -1050,23 +1048,23 @@ bool ts::DektecOutputPlugin::setModulation (int& modulation_type)
 
     // Compute carrier frequency
     uint64_t frequency = 0;
-    if (present("frequency") + present("satellite-frequency") + present("uhf-channel") + present("vhf-channel") > 1) {
+    if (present(u"frequency") + present(u"satellite-frequency") + present(u"uhf-channel") + present(u"vhf-channel") > 1) {
         return startError("options --frequency, --satellite-frequency, --uhf-channel, --vhf-channel are mutually exclusive", DTAPI_OK);
     }
-    if (present("uhf-channel")) {
-        frequency = UHF::Frequency(intValue<int>("uhf-channel", 0), intValue<int>("offset-count", 0));
+    if (present(u"uhf-channel")) {
+        frequency = UHF::Frequency(intValue<int>(u"uhf-channel", 0), intValue<int>(u"offset-count", 0));
     }
-    else if (present("vhf-channel")) {
-        frequency = VHF::Frequency(intValue<int>("vhf-channel", 0), intValue<int>("offset-count", 0));
+    else if (present(u"vhf-channel")) {
+        frequency = VHF::Frequency(intValue<int>(u"vhf-channel", 0), intValue<int>(u"offset-count", 0));
     }
-    else if (present("satellite-frequency")) {
-        uint64_t sat_frequency = intValue<uint64_t> ("satellite-frequency", 0);
+    else if (present(u"satellite-frequency")) {
+        uint64_t sat_frequency = intValue<uint64_t>(u"satellite-frequency", 0);
         if (sat_frequency > 0) {
             frequency = lnb.intermediateFrequency(sat_frequency);
         }
     }
-    else if (present ("frequency")) {
-        frequency = intValue<uint64_t>("frequency", 0);
+    else if (present(u"frequency")) {
+        frequency = intValue<uint64_t>(u"frequency", 0);
     }
     else if (input_dvbs != 0) {
         frequency = input_dvbs->frequency;
@@ -1105,7 +1103,7 @@ bool ts::DektecOutputPlugin::setModulation (int& modulation_type)
                     default: break;
                 }
             }
-            fec = intValue<int> ("convolutional-rate", fec);
+            fec = intValue<int>(u"convolutional-rate", fec);
             tsp->verbose ("using DVB-S FEC " + DektecFEC.name (fec));
             // Compute expected bitrate if symbol rate is known
             if (symbol_rate > 0 && !setBitrate (symbol_rate, modulation_type, fec, 0, 0)) {
@@ -1121,7 +1119,7 @@ bool ts::DektecOutputPlugin::setModulation (int& modulation_type)
         case DTAPI_MOD_DVBS2_32APSK: {
             // Various types of DVB-S2
             int fec = DTAPI_MOD_3_4;
-            int pilots = present("pilots") ? DTAPI_MOD_S2_PILOTS : DTAPI_MOD_S2_NOPILOTS;
+            int pilots = present(u"pilots") ? DTAPI_MOD_S2_PILOTS : DTAPI_MOD_S2_NOPILOTS;
             if (input_dvbs != 0) {
                 symbol_rate = input_dvbs->symbol_rate;
                 switch (input_dvbs->pilots) {
@@ -1147,9 +1145,9 @@ bool ts::DektecOutputPlugin::setModulation (int& modulation_type)
                     default: break;
                 }
             }
-            fec = intValue<int>("convolutional-rate", fec);
-            const int fec_frame = present("s2-short-fec-frame") ? DTAPI_MOD_S2_SHORTFRM : DTAPI_MOD_S2_LONGFRM;
-            const int gold_code = intValue<int>("s2-gold-code", 0);
+            fec = intValue<int>(u"convolutional-rate", fec);
+            const int fec_frame = present(u"s2-short-fec-frame") ? DTAPI_MOD_S2_SHORTFRM : DTAPI_MOD_S2_LONGFRM;
+            const int gold_code = intValue<int>(u"s2-gold-code", 0);
             // Compute expected bitrate if symbol rate is known
             if (symbol_rate > 0 && !setBitrate(symbol_rate, modulation_type, fec, pilots | fec_frame, gold_code)) {
                 return false;
@@ -1165,8 +1163,8 @@ bool ts::DektecOutputPlugin::setModulation (int& modulation_type)
         case DTAPI_MOD_QAM128:
         case DTAPI_MOD_QAM256: {
             // Various types of DVB-C
-            const int j83 = intValue<int> ("j83", DTAPI_MOD_J83_A);
-            const int qam_b = j83 != DTAPI_MOD_J83_B ? 0 : intValue<int> ("qam-b", DTAPI_MOD_QAMB_I128_J1D);
+            const int j83 = intValue<int>(u"j83", DTAPI_MOD_J83_A);
+            const int qam_b = j83 != DTAPI_MOD_J83_B ? 0 : intValue<int>(u"qam-b", DTAPI_MOD_QAMB_I128_J1D);
             // Compute expected bitrate if symbol rate is known
             if (symbol_rate > 0 && !setBitrate(symbol_rate, modulation_type, j83, qam_b, 0)) {
                 return false;
@@ -1229,18 +1227,18 @@ bool ts::DektecOutputPlugin::setModulation (int& modulation_type)
                     default: break;
                 }
             }
-            fec = intValue<int>("convolutional-rate", fec);
-            bw = intValue<int>("bandwidth", bw);
-            constel = intValue<int>("constellation", constel);
-            guard = intValue<int>("guard-interval", guard);
-            tr_mode = intValue<int>("transmission-mode", tr_mode);
-            const int interleave = present("indepth-interleave") ? DTAPI_MOD_DVBT_INDEPTH : DTAPI_MOD_DVBT_NATIVE;
-            const bool time_slice = present("time-slice");
-            const bool mpe_fec = present("mpe-fec");
+            fec = intValue<int>(u"convolutional-rate", fec);
+            bw = intValue<int>(u"bandwidth", bw);
+            constel = intValue<int>(u"constellation", constel);
+            guard = intValue<int>(u"guard-interval", guard);
+            tr_mode = intValue<int>(u"transmission-mode", tr_mode);
+            const int interleave = present(u"indepth-interleave") ? DTAPI_MOD_DVBT_INDEPTH : DTAPI_MOD_DVBT_NATIVE;
+            const bool time_slice = present(u"time-slice");
+            const bool mpe_fec = present(u"mpe-fec");
             const int dvb_h = time_slice || mpe_fec ? DTAPI_MOD_DVBT_ENA4849 : DTAPI_MOD_DVBT_DIS4849;
             const int s48 = time_slice ? DTAPI_MOD_DVBT_S48 : DTAPI_MOD_DVBT_S48_OFF;
             const int s49 = mpe_fec ? DTAPI_MOD_DVBT_S49 : DTAPI_MOD_DVBT_S49_OFF;
-            const int cell_id = intValue<int>("cell-id", -1);
+            const int cell_id = intValue<int>(u"cell-id", -1);
             tsp->verbose("using DVB-T FEC " + DektecFEC.name(fec) +
                          ", bandwidth " + DektecDVBTProperty.name(bw) +
                          ", constellation " + DektecDVBTProperty.name(constel) +
@@ -1259,42 +1257,42 @@ bool ts::DektecOutputPlugin::setModulation (int& modulation_type)
         case DTAPI_MOD_DVBT2: {
             Dtapi::DtDvbT2Pars pars;
             pars.Init(); // default values
-            pars.m_Bandwidth = intValue<int>("bandwidth", DTAPI_DVBT2_8MHZ);
-            pars.m_FftMode = intValue<int>("fft-mode", DTAPI_DVBT2_FFT_32K);
-            pars.m_Miso = intValue<int>("miso", DTAPI_DVBT2_MISO_OFF);
-            pars.m_GuardInterval = intValue<int>("t2-guard-interval", DTAPI_DVBT2_GI_1_128);
-            pars.m_Papr = intValue<int>("papr", DTAPI_DVBT2_PAPR_NONE);
-            pars.m_BwtExt = present("bandwidth-extension") ? DTAPI_DVBT2_BWTEXT_ON : DTAPI_DVBT2_BWTEXT_OFF;
-            pars.m_PilotPattern = intValue<int>("pilot-pattern", DTAPI_DVBT2_PP_7);
-            pars.m_NumT2Frames = intValue<int>("t2-fpsf", 2);
-            pars.m_L1Modulation = intValue<int>("t2-l1-modulation", DTAPI_DVBT2_QAM16);
-            pars.m_FefEnable = present("fef");
-            pars.m_FefType = intValue<int>("fef-type", 0);
-            pars.m_FefLength = intValue<int>("fef-length", 1);
-            pars.m_FefS1 = intValue<int>("fef-s1", 2);
-            pars.m_FefS2 = intValue<int>("fef-s2", 1);
-            pars.m_FefInterval = intValue<int>("fef-interval", 1);
-            pars.m_FefSignal = intValue<int>("fef-signal", DTAPI_DVBT2_FEF_ZERO);
-            pars.m_CellId = intValue<int>("cell-id", 0);
-            pars.m_NetworkId = intValue<int>("t2-network-id", 0);
-            pars.m_T2SystemId = intValue<int>("t2-system-id", 0);
+            pars.m_Bandwidth = intValue<int>(u"bandwidth", DTAPI_DVBT2_8MHZ);
+            pars.m_FftMode = intValue<int>(u"fft-mode", DTAPI_DVBT2_FFT_32K);
+            pars.m_Miso = intValue<int>(u"miso", DTAPI_DVBT2_MISO_OFF);
+            pars.m_GuardInterval = intValue<int>(u"t2-guard-interval", DTAPI_DVBT2_GI_1_128);
+            pars.m_Papr = intValue<int>(u"papr", DTAPI_DVBT2_PAPR_NONE);
+            pars.m_BwtExt = present(u"bandwidth-extension") ? DTAPI_DVBT2_BWTEXT_ON : DTAPI_DVBT2_BWTEXT_OFF;
+            pars.m_PilotPattern = intValue<int>(u"pilot-pattern", DTAPI_DVBT2_PP_7);
+            pars.m_NumT2Frames = intValue<int>(u"t2-fpsf", 2);
+            pars.m_L1Modulation = intValue<int>(u"t2-l1-modulation", DTAPI_DVBT2_QAM16);
+            pars.m_FefEnable = present(u"fef");
+            pars.m_FefType = intValue<int>(u"fef-type", 0);
+            pars.m_FefLength = intValue<int>(u"fef-length", 1);
+            pars.m_FefS1 = intValue<int>(u"fef-s1", 2);
+            pars.m_FefS2 = intValue<int>(u"fef-s2", 1);
+            pars.m_FefInterval = intValue<int>(u"fef-interval", 1);
+            pars.m_FefSignal = intValue<int>(u"fef-signal", DTAPI_DVBT2_FEF_ZERO);
+            pars.m_CellId = intValue<int>(u"cell-id", 0);
+            pars.m_NetworkId = intValue<int>(u"t2-network-id", 0);
+            pars.m_T2SystemId = intValue<int>(u"t2-system-id", 0);
             // Obsolete field in DTAPI 4.10.0.145:
             // pars.m_Frequency = int (frequency);
             pars.m_NumPlps = 1; // This version supports single-PLP only
             pars.m_Plps[0].Init(); // default values
-            pars.m_Plps[0].m_Hem = present("plp0-high-efficiency");
-            pars.m_Plps[0].m_Npd = present("plp0-null-packet-deletion");
-            pars.m_Plps[0].m_Issy = intValue<int>("plp0-issy", DTAPI_DVBT2_ISSY_NONE);
-            pars.m_Plps[0].m_Id = intValue<int>("plp0-id", 0);
-            pars.m_Plps[0].m_GroupId = intValue<int>("plp0-group-id", 0);
-            pars.m_Plps[0].m_Type = intValue<int>("plp0-type", DTAPI_DVBT2_PLP_TYPE_COMM);
-            pars.m_Plps[0].m_CodeRate = intValue<int>("plp0-code-rate", DTAPI_DVBT2_COD_2_3);
-            pars.m_Plps[0].m_Modulation = intValue<int>("plp0-modulation", DTAPI_DVBT2_QAM256);
-            pars.m_Plps[0].m_Rotation = present("plp0-rotation");
-            pars.m_Plps[0].m_FecType = intValue<int>("plp0-fec-type", DTAPI_DVBT2_LDPC_64K);
-            pars.m_Plps[0].m_TimeIlLength = intValue<int>("plp0-il-length", 3);
-            pars.m_Plps[0].m_TimeIlType = intValue<int>("plp0-il-type", DTAPI_DVBT2_IL_ONETOONE);
-            pars.m_Plps[0].m_InBandAFlag = present("plp0-in-band");
+            pars.m_Plps[0].m_Hem = present(u"plp0-high-efficiency");
+            pars.m_Plps[0].m_Npd = present(u"plp0-null-packet-deletion");
+            pars.m_Plps[0].m_Issy = intValue<int>(u"plp0-issy", DTAPI_DVBT2_ISSY_NONE);
+            pars.m_Plps[0].m_Id = intValue<int>(u"plp0-id", 0);
+            pars.m_Plps[0].m_GroupId = intValue<int>(u"plp0-group-id", 0);
+            pars.m_Plps[0].m_Type = intValue<int>(u"plp0-type", DTAPI_DVBT2_PLP_TYPE_COMM);
+            pars.m_Plps[0].m_CodeRate = intValue<int>(u"plp0-code-rate", DTAPI_DVBT2_COD_2_3);
+            pars.m_Plps[0].m_Modulation = intValue<int>(u"plp0-modulation", DTAPI_DVBT2_QAM256);
+            pars.m_Plps[0].m_Rotation = present(u"plp0-rotation");
+            pars.m_Plps[0].m_FecType = intValue<int>(u"plp0-fec-type", DTAPI_DVBT2_LDPC_64K);
+            pars.m_Plps[0].m_TimeIlLength = intValue<int>(u"plp0-il-length", 3);
+            pars.m_Plps[0].m_TimeIlType = intValue<int>(u"plp0-il-type", DTAPI_DVBT2_IL_ONETOONE);
+            pars.m_Plps[0].m_InBandAFlag = present(u"plp0-in-band");
             // Compute other fields
             Dtapi::DtDvbT2ParamInfo info;
             status = pars.OptimisePlpNumBlocks(info, pars.m_Plps[0].m_NumBlocks, pars.m_NumDataSyms);
@@ -1303,10 +1301,10 @@ bool ts::DektecOutputPlugin::setModulation (int& modulation_type)
             }
             // Report actual parameters in debug mode
             tsp->debug("DVB-T2: DtDvbT2Pars = {");
-            DektecDevice::Report(pars, *tsp, Severity::Debug, "  ");
+            DektecDevice::ReportDvbT2Pars(pars, *tsp, Severity::Debug, "  ");
             tsp->debug("}");
             tsp->debug("DVB-T2: DtDvbT2ParamInfo = {");
-            DektecDevice::Report(info, *tsp, Severity::Debug, "  ");
+            DektecDevice::ReportDvbT2ParamInfo(info, *tsp, Severity::Debug, "  ");
             tsp->debug("}");
             // Check validity of T2 parameters
             status = pars.CheckValidity();
@@ -1327,8 +1325,8 @@ bool ts::DektecOutputPlugin::setModulation (int& modulation_type)
                     default: break;
                 }
             }
-            constel = intValue<int>("vsb", constel);
-            const int taps = intValue<int>("vsb-taps", 64);
+            constel = intValue<int>(u"vsb", constel);
+            const int taps = intValue<int>(u"vsb-taps", 64);
             tsp->verbose("using ATSC " + DektecVSB.name(constel));
             status = _guts->chan.SetModControl(modulation_type, constel, taps, 0);
             break;
@@ -1336,13 +1334,13 @@ bool ts::DektecOutputPlugin::setModulation (int& modulation_type)
 
         case DTAPI_MOD_ADTBT:
         case DTAPI_MOD_DMBTH: {
-            const int bw = intValue<int>("bandwidth", DTAPI_MOD_DTMB_8MHZ);
-            const int constel = intValue<int>("dmb-constellation", DTAPI_MOD_DTMB_QAM64);
-            const int fec = intValue<int>("dmb-fec", DTAPI_MOD_DTMB_0_8);
-            const int header = intValue<int>("dmb-header", DTAPI_MOD_DTMB_PN945);
-            const int interleaver = intValue<int>("dmb-interleaver", DTAPI_MOD_DTMB_IL_1);
-            const int pilots = present("pilots") ? DTAPI_MOD_DTMB_PILOTS : DTAPI_MOD_DTMB_NO_PILOTS;
-            const int frame_num = present("dmb-frame-numbering") ? DTAPI_MOD_DTMB_USE_FRM_NO : DTAPI_MOD_DTMB_NO_FRM_NO;
+            const int bw = intValue<int>(u"bandwidth", DTAPI_MOD_DTMB_8MHZ);
+            const int constel = intValue<int>(u"dmb-constellation", DTAPI_MOD_DTMB_QAM64);
+            const int fec = intValue<int>(u"dmb-fec", DTAPI_MOD_DTMB_0_8);
+            const int header = intValue<int>(u"dmb-header", DTAPI_MOD_DTMB_PN945);
+            const int interleaver = intValue<int>(u"dmb-interleaver", DTAPI_MOD_DTMB_IL_1);
+            const int pilots = present(u"pilots") ? DTAPI_MOD_DTMB_PILOTS : DTAPI_MOD_DTMB_NO_PILOTS;
+            const int frame_num = present(u"dmb-frame-numbering") ? DTAPI_MOD_DTMB_USE_FRM_NO : DTAPI_MOD_DTMB_NO_FRM_NO;
             status = _guts->chan.SetModControl(modulation_type, bw | constel | fec | header | interleaver | pilots | frame_num, 0, 0);
             break;
         }
@@ -1351,15 +1349,15 @@ bool ts::DektecOutputPlugin::setModulation (int& modulation_type)
             if (_guts->cur_bitrate <= 0) {
                 return startError("unknown bitrate, required with CMMB modulation, use --bitrate option", DTAPI_OK);
             }
-            if (!present("cmmb-pid")) {
+            if (!present(u"cmmb-pid")) {
                 return startError("option --cmmb-pid is required with CMMB modulation", DTAPI_OK);
             }
             Dtapi::DtCmmbPars pars;
-            pars.m_Bandwidth = intValue<int>("cmmb-bandwidth", DTAPI_CMMB_BW_8MHZ);
+            pars.m_Bandwidth = intValue<int>(u"cmmb-bandwidth", DTAPI_CMMB_BW_8MHZ);
             pars.m_TsRate = int(_guts->cur_bitrate);
-            pars.m_TsPid = intValue<int>("cmmb-pid", 0);
-            pars.m_AreaId = intValue<int>("cmmb-area-id", 0);
-            pars.m_TxId = intValue<int>("cmmb-transmitter-id", 0);
+            pars.m_TsPid = intValue<int>(u"cmmb-pid", 0);
+            pars.m_AreaId = intValue<int>(u"cmmb-area-id", 0);
+            pars.m_TxId = intValue<int>(u"cmmb-transmitter-id", 0);
             status = _guts->chan.SetModControl(pars);
             break;
         }
@@ -1387,14 +1385,14 @@ bool ts::DektecOutputPlugin::setModulation (int& modulation_type)
     // Set carrier frequency.
     // Make sure to use "__int64" and not "int64_t" in SetRfControl to avoid
     // ambiguous overloading.
-    tsp->verbose("setting output carrier frequency to " + Decimal(frequency) + " Hz");
+    tsp->verbose(u"setting output carrier frequency to %'d Hz", {frequency});
     status = _guts->chan.SetRfControl(__int64(frequency));
     if (status != DTAPI_OK) {
-        return startError("set modulator frequency error", status);
+        return startError(u"set modulator frequency error", status);
     }
-    status = _guts->chan.SetRfMode(DTAPI_UPCONV_NORMAL | (present("inversion") ? DTAPI_UPCONV_SPECINV : 0));
+    status = _guts->chan.SetRfMode(DTAPI_UPCONV_NORMAL | (present(u"inversion") ? DTAPI_UPCONV_SPECINV : 0));
     if (status != DTAPI_OK) {
-        return startError("set modulator RF mode", status);
+        return startError(u"set modulator RF mode", status);
     }
 
     // Finally ok
@@ -1409,13 +1407,13 @@ bool ts::DektecOutputPlugin::setModulation (int& modulation_type)
 bool ts::DektecOutputPlugin::stop()
 {
     if (_guts->is_started) {
-        tsp->verbose("terminating " + _guts->device.model + " output");
+        tsp->verbose(u"terminating " + _guts->device.model + " output");
 
         // Mute output signal for modulators which support this
         if (_guts->mute_on_stop) {
             Dtapi::DTAPI_RESULT status = _guts->chan.SetRfMode(DTAPI_UPCONV_MUTE);
             if (status != DTAPI_OK) {
-                tsp->error("error muting modulator output: " + DektecStrError(status));
+                tsp->error(u"error muting modulator output: " + DektecStrError(status));
             }
         }
 
@@ -1424,7 +1422,7 @@ bool ts::DektecOutputPlugin::stop()
         _guts->dtdev.Detach();
 
         _guts->is_started = false;
-        tsp->verbose(_guts->device.model + " output terminated");
+        tsp->verbose(_guts->device.model + u" output terminated");
     }
     return true;
 }
@@ -1454,7 +1452,7 @@ ts::BitRate ts::DektecOutputPlugin::getBitrate()
     if (_guts->is_started) {
         Dtapi::DTAPI_RESULT status = _guts->chan.GetTsRateBps(bitrate);
         if (status != DTAPI_OK) {
-            tsp->error("error getting Dektec device output bitrate: " + DektecStrError(status));
+            tsp->error(u"error getting Dektec device output bitrate: " + DektecStrError(status));
             bitrate = 0;
         }
     }
@@ -1482,11 +1480,11 @@ bool ts::DektecOutputPlugin::send(const TSPacket* buffer, size_t packet_count)
     if (_guts->opt_bitrate == 0 && _guts->cur_bitrate != (new_bitrate = tsp->bitrate())) {
         status = _guts->chan.SetTsRateBps(int(new_bitrate));
         if (status != DTAPI_OK) {
-            tsp->error("error setting output bitrate on Dektec device: " + DektecStrError(status));
+            tsp->error(u"error setting output bitrate on Dektec device: " + DektecStrError(status));
         }
         else {
             _guts->cur_bitrate = new_bitrate;
-            tsp->log(Severity::Verbose, "new output bitrate: " + Decimal(_guts->cur_bitrate) + " b/s");
+            tsp->verbose(u"new output bitrate: %'d b/s", {_guts->cur_bitrate});
         }
     }
 
@@ -1503,7 +1501,7 @@ bool ts::DektecOutputPlugin::send(const TSPacket* buffer, size_t packet_count)
             int fifo_load;
             status = _guts->chan.GetFifoLoad(fifo_load);
             if (status != DTAPI_OK) {
-                tsp->error("error getting output fifo load: " + DektecStrError(status));
+                tsp->error(u"error getting output fifo load: " + DektecStrError(status));
                 return false;
             }
 
@@ -1515,10 +1513,10 @@ bool ts::DektecOutputPlugin::send(const TSPacket* buffer, size_t packet_count)
             }
             else {
                 // FIFO now full enough to start transmitting
-                tsp->verbose(_guts->device.model + " output FIFO load is " + Decimal(fifo_load) + " bytes, starting transmission");
+                tsp->verbose("%s output FIFO load is %'d bytes, starting transmission", {_guts->device.model, fifo_load});
                 status = _guts->chan.SetTxControl(DTAPI_TXCTRL_SEND);
                 if (status != DTAPI_OK) {
-                    tsp->error ("output device start send error: " + DektecStrError (status));
+                    tsp->error(u"output device start send error: " + DektecStrError (status));
                     return false;
                 }
                 // Now fully started
@@ -1531,7 +1529,7 @@ bool ts::DektecOutputPlugin::send(const TSPacket* buffer, size_t packet_count)
 
         status = _guts->chan.Write(data, cursize);
         if (status != DTAPI_OK) {
-            tsp->error("transmission error on Dektec device: " + DektecStrError(status));
+            tsp->error(u"transmission error on Dektec device: " + DektecStrError(status));
             return false;
         }
 

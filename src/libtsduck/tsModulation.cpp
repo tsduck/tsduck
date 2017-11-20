@@ -43,17 +43,17 @@ TSDUCK_SOURCE;
 // and return false.
 //----------------------------------------------------------------------------
 
-bool ts::CheckModEnum (int value, const std::string& name, const Enumeration& conv, ReportInterface& report)
+bool ts::CheckModEnum(int value, const UString& name, const Enumeration& conv, Report& report)
 {
     if (value > -10) {
         return true;
     }
     else {
-        report.error (name + " " + conv.name (value) + " is not supported"
+        report.error(name + u" " + conv.name(value) + u" is not supported"
 #if defined (TS_LINUX)
-                      " by Linux DVB"
+                      u" by Linux DVB"
 #elif defined (TS_WINDOWS)
-                      " by Windows BDA/DirectShow"
+                      u" by Windows BDA/DirectShow"
 #endif
                       );
         return false;
@@ -65,125 +65,125 @@ bool ts::CheckModEnum (int value, const std::string& name, const Enumeration& co
 // Enumerations, names for values
 //----------------------------------------------------------------------------
 
-const ts::Enumeration ts::TunerTypeEnum
-    ("DVB-S",  ts::DVB_S,
-     "DVB-C",  ts::DVB_C,
-     "DVB-T",  ts::DVB_T,
-     "ATSC",   ts::ATSC,
-     TS_NULL);
+const ts::Enumeration ts::TunerTypeEnum({
+    {u"DVB-S",  ts::DVB_S},
+    {u"DVB-C",  ts::DVB_C},
+    {u"DVB-T",  ts::DVB_T},
+    {u"ATSC",   ts::ATSC},
+});
 
-const ts::Enumeration ts::DeliverySystemEnum
-    ("undefined", ts::DS_UNDEFINED,
-     "DVB-S",     ts::DS_DVB_S,
-     "DVB-S2",    ts::DS_DVB_S2,
-     "DVB-T",     ts::DS_DVB_T,
-     "DVB-T2",    ts::DS_DVB_T2,
-     "DVB-C",     ts::DS_DVB_C,
-     "DVB-C/AC",  ts::DS_DVB_C_ANNEX_AC,
-     "DVB-C/B",   ts::DS_DVB_C_ANNEX_B,
-     "DVB-C2",    ts::DS_DVB_C2,
-     "DVB-H",     ts::DS_DVB_H,
-     "ISDB-S",    ts::DS_ISDB_S,
-     "ISDB-T",    ts::DS_ISDB_T,
-     "ISDB-C",    ts::DS_ISDB_C,
-     "ATSC",      ts::DS_ATSC,
-     "ATSC-MH",   ts::DS_ATSC_MH,
-     "DMB-TH",    ts::DS_DMB_TH,
-     "CMMB",      ts::DS_CMMB,
-     "DAB",       ts::DS_DAB,
-     "DSS",       ts::DS_DSS,
-     TS_NULL);
+const ts::Enumeration ts::DeliverySystemEnum({
+    {u"undefined", ts::DS_UNDEFINED},
+    {u"DVB-S",     ts::DS_DVB_S},
+    {u"DVB-S2",    ts::DS_DVB_S2},
+    {u"DVB-T",     ts::DS_DVB_T},
+    {u"DVB-T2",    ts::DS_DVB_T2},
+    {u"DVB-C",     ts::DS_DVB_C},
+    {u"DVB-C/AC",  ts::DS_DVB_C_ANNEX_AC},
+    {u"DVB-C/B",   ts::DS_DVB_C_ANNEX_B},
+    {u"DVB-C2",    ts::DS_DVB_C2},
+    {u"DVB-H",     ts::DS_DVB_H},
+    {u"ISDB-S",    ts::DS_ISDB_S},
+    {u"ISDB-T",    ts::DS_ISDB_T},
+    {u"ISDB-C",    ts::DS_ISDB_C},
+    {u"ATSC",      ts::DS_ATSC},
+    {u"ATSC-MH",   ts::DS_ATSC_MH},
+    {u"DMB-TH",    ts::DS_DMB_TH},
+    {u"CMMB",      ts::DS_CMMB},
+    {u"DAB",       ts::DS_DAB},
+    {u"DSS",       ts::DS_DSS},
+});
 
-const ts::Enumeration ts::ModulationEnum
-    ("QPSK",    ts::QPSK,
-     "8-PSK",   ts::PSK_8,
-     "QAM",     ts::QAM_AUTO,
-     "16-QAM",  ts::QAM_16,
-     "32-QAM",  ts::QAM_32,
-     "64-QAM",  ts::QAM_64,
-     "128-QAM", ts::QAM_128,
-     "256-QAM", ts::QAM_256,
-     "8-VSB",   ts::VSB_8,
-     "16-VSB",  ts::VSB_16,
-     TS_NULL);
+const ts::Enumeration ts::ModulationEnum({
+    {u"QPSK",    ts::QPSK},
+    {u"8-PSK",   ts::PSK_8},
+    {u"QAM",     ts::QAM_AUTO},
+    {u"16-QAM",  ts::QAM_16},
+    {u"32-QAM",  ts::QAM_32},
+    {u"64-QAM",  ts::QAM_64},
+    {u"128-QAM", ts::QAM_128},
+    {u"256-QAM", ts::QAM_256},
+    {u"8-VSB",   ts::VSB_8},
+    {u"16-VSB",  ts::VSB_16},
+});
 
-const ts::Enumeration ts::InnerFECEnum
-    ("none", ts::FEC_NONE,
-     "auto", ts::FEC_AUTO,
-     "1/2",  ts::FEC_1_2,
-     "2/3",  ts::FEC_2_3,
-     "3/4",  ts::FEC_3_4,
-     "4/5",  ts::FEC_4_5,
-     "5/6",  ts::FEC_5_6,
-     "6/7",  ts::FEC_6_7,
-     "7/8",  ts::FEC_7_8,
-     "8/9",  ts::FEC_8_9,
-     "9/10", ts::FEC_9_10,
-     "3/5",  ts::FEC_3_5,
-     "1/3",  ts::FEC_1_3,
-     "1/4",  ts::FEC_1_4,
-     "2/5",  ts::FEC_2_5,
-     "5/11", ts::FEC_5_11,
-     TS_NULL);
+const ts::Enumeration ts::InnerFECEnum({
+    {u"none", ts::FEC_NONE},
+    {u"auto", ts::FEC_AUTO},
+    {u"1/2",  ts::FEC_1_2},
+    {u"2/3",  ts::FEC_2_3},
+    {u"3/4",  ts::FEC_3_4},
+    {u"4/5",  ts::FEC_4_5},
+    {u"5/6",  ts::FEC_5_6},
+    {u"6/7",  ts::FEC_6_7},
+    {u"7/8",  ts::FEC_7_8},
+    {u"8/9",  ts::FEC_8_9},
+    {u"9/10", ts::FEC_9_10},
+    {u"3/5",  ts::FEC_3_5},
+    {u"1/3",  ts::FEC_1_3},
+    {u"1/4",  ts::FEC_1_4},
+    {u"2/5",  ts::FEC_2_5},
+    {u"5/11", ts::FEC_5_11},
+});
 
-const ts::Enumeration ts::PolarizationEnum
-    ("none",       ts::POL_NONE,
-     "auto",       ts::POL_AUTO,
-     "horizontal", ts::POL_HORIZONTAL,
-     "vertical",   ts::POL_VERTICAL,
-     "left",       ts::POL_LEFT,
-     "right",      ts::POL_RIGHT,
-     TS_NULL);
+const ts::Enumeration ts::PolarizationEnum({
+    {u"none",       ts::POL_NONE},
+    {u"auto",       ts::POL_AUTO},
+    {u"horizontal", ts::POL_HORIZONTAL},
+    {u"vertical",   ts::POL_VERTICAL},
+    {u"left",       ts::POL_LEFT},
+    {u"right",      ts::POL_RIGHT},
+});
 
-const ts::Enumeration ts::PilotEnum
-    ("auto",       ts::PILOT_AUTO,
-     "on",         ts::PILOT_ON,
-     "off",        ts::PILOT_OFF,
-     TS_NULL);
+const ts::Enumeration ts::PilotEnum({
+    {u"auto",       ts::PILOT_AUTO},
+    {u"on",         ts::PILOT_ON},
+    {u"off",        ts::PILOT_OFF},
+});
 
-const ts::Enumeration ts::RollOffEnum
-    ("auto",       ts::ROLLOFF_AUTO,
-     "0.35",       ts::ROLLOFF_35,
-     "0.25",       ts::ROLLOFF_25,
-     "0.20",       ts::ROLLOFF_20,
-     TS_NULL);
+const ts::Enumeration ts::RollOffEnum({
+    {u"auto",       ts::ROLLOFF_AUTO},
+    {u"0.35",       ts::ROLLOFF_35},
+    {u"0.25",       ts::ROLLOFF_25},
+    {u"0.20",       ts::ROLLOFF_20},
+});
 
-const ts::Enumeration ts::BandWidthEnum
-    ("auto",  ts::BW_AUTO,
-     "8-MHz", ts::BW_8_MHZ,
-     "7-MHz", ts::BW_7_MHZ,
-     "6-MHz", ts::BW_6_MHZ,
-     "5-MHz", ts::BW_5_MHZ,
-     TS_NULL);
+const ts::Enumeration ts::BandWidthEnum({
+    {u"auto",  ts::BW_AUTO},
+    {u"8-MHz", ts::BW_8_MHZ},
+    {u"7-MHz", ts::BW_7_MHZ},
+    {u"6-MHz", ts::BW_6_MHZ},
+    {u"5-MHz", ts::BW_5_MHZ},
+});
 
-const ts::Enumeration ts::TransmissionModeEnum
-    ("auto", ts::TM_AUTO,
-     "2K",   ts::TM_2K,
-     "4K",   ts::TM_4K,
-     "8K",   ts::TM_8K,
-     TS_NULL);
+const ts::Enumeration ts::TransmissionModeEnum({
+    {u"auto", ts::TM_AUTO},
+    {u"2K",   ts::TM_2K},
+    {u"4K",   ts::TM_4K},
+    {u"8K",   ts::TM_8K},
+});
 
-const ts::Enumeration ts::GuardIntervalEnum
-    ("auto", ts::GUARD_AUTO,
-     "1/32", ts::GUARD_1_32,
-     "1/16", ts::GUARD_1_16,
-     "1/8",  ts::GUARD_1_8,
-     "1/4",  ts::GUARD_1_4,
-     TS_NULL);
+const ts::Enumeration ts::GuardIntervalEnum({
+    {u"auto", ts::GUARD_AUTO},
+    {u"1/32", ts::GUARD_1_32},
+    {u"1/16", ts::GUARD_1_16},
+    {u"1/8",  ts::GUARD_1_8},
+    {u"1/4",  ts::GUARD_1_4},
+});
 
-const ts::Enumeration ts::HierarchyEnum
-    ("auto", ts::HIERARCHY_AUTO,
-     "none", ts::HIERARCHY_NONE,
-     "1",    ts::HIERARCHY_1,
-     "2",    ts::HIERARCHY_2,
-     "4",    ts::HIERARCHY_4,
-     TS_NULL);
+const ts::Enumeration ts::HierarchyEnum({
+    {u"auto", ts::HIERARCHY_AUTO},
+    {u"none", ts::HIERARCHY_NONE},
+    {u"1",    ts::HIERARCHY_1},
+    {u"2",    ts::HIERARCHY_2},
+    {u"4",    ts::HIERARCHY_4},
+});
 
-const ts::Enumeration ts::SpectralInversionEnum
-    ("off",  ts::SPINV_OFF,
-     "on",   ts::SPINV_ON,
-     "auto", ts::SPINV_AUTO,
-     TS_NULL);
+const ts::Enumeration ts::SpectralInversionEnum({
+    {u"off",  ts::SPINV_OFF},
+    {u"on",   ts::SPINV_ON},
+    {u"auto", ts::SPINV_AUTO},
+});
 
 
 //----------------------------------------------------------------------------
@@ -191,7 +191,7 @@ const ts::Enumeration ts::SpectralInversionEnum
 // Return zero if unknown
 //----------------------------------------------------------------------------
 
-uint32_t ts::BitsPerSymbol (Modulation modulation)
+uint32_t ts::BitsPerSymbol(Modulation modulation)
 {
     switch (modulation) {
         case QPSK:    return 2;  // Q (in QPSK) = quad = 4 states = 2 bits
@@ -211,7 +211,7 @@ uint32_t ts::BitsPerSymbol (Modulation modulation)
 // Return zero if unknown
 //----------------------------------------------------------------------------
 
-uint32_t ts::FECMultiplier (InnerFEC fec)
+uint32_t ts::FECMultiplier(InnerFEC fec)
 {
     switch (fec) {
         case FEC_NONE: return 1; // none means 1/1
@@ -233,7 +233,7 @@ uint32_t ts::FECMultiplier (InnerFEC fec)
     }
 }
 
-uint32_t ts::FECDivider (InnerFEC fec)
+uint32_t ts::FECDivider(InnerFEC fec)
 {
     switch (fec) {
         case FEC_NONE: return 1; // none means 1/1
@@ -261,7 +261,7 @@ uint32_t ts::FECDivider (InnerFEC fec)
 // Return zero if unknown
 //----------------------------------------------------------------------------
 
-uint32_t ts::GuardIntervalMultiplier (GuardInterval guard)
+uint32_t ts::GuardIntervalMultiplier(GuardInterval guard)
 {
     switch (guard) {
         case GUARD_1_4:  return 1;
@@ -273,7 +273,7 @@ uint32_t ts::GuardIntervalMultiplier (GuardInterval guard)
 }
 
 
-uint32_t ts::GuardIntervalDivider (GuardInterval guard)
+uint32_t ts::GuardIntervalDivider(GuardInterval guard)
 {
     switch (guard) {
         case GUARD_1_4:  return 4;
@@ -290,7 +290,7 @@ uint32_t ts::GuardIntervalDivider (GuardInterval guard)
 // Return zero if unknown.
 //----------------------------------------------------------------------------
 
-uint32_t ts::BandWidthValueHz (BandWidth bandwidth)
+uint32_t ts::BandWidthValueHz(BandWidth bandwidth)
 {
     switch (bandwidth) {
         case BW_8_MHZ: return 8000000;
@@ -307,7 +307,7 @@ uint32_t ts::BandWidthValueHz (BandWidth bandwidth)
 // Return BW_AUTO if undefined.
 //----------------------------------------------------------------------------
 
-ts::BandWidth ts::BandWidthCodeFromHz (uint32_t hz)
+ts::BandWidth ts::BandWidthCodeFromHz(uint32_t hz)
 {
     switch (hz) {
         case 8000000: return BW_8_MHZ;
@@ -323,7 +323,7 @@ ts::BandWidth ts::BandWidthCodeFromHz (uint32_t hz)
 // Compute UHF frequencies, channels and offsets
 //----------------------------------------------------------------------------
 
-int ts::UHF::OffsetCount (uint64_t frequency)
+int ts::UHF::OffsetCount(uint64_t frequency)
 {
     int off = int (int64_t (frequency) - int64_t (CHANNEL_BASE) - int64_t (Channel (frequency) * CHANNEL_WIDTH));
     int count = (std::abs (off) + int (CHANNEL_OFFSET / 2)) / int (CHANNEL_OFFSET);
@@ -335,7 +335,7 @@ int ts::UHF::OffsetCount (uint64_t frequency)
 // Compute VHF frequencies, channels and offsets
 //----------------------------------------------------------------------------
 
-int ts::VHF::OffsetCount (uint64_t frequency)
+int ts::VHF::OffsetCount(uint64_t frequency)
 {
     int off = int (int64_t (frequency) - int64_t (CHANNEL_BASE) - int64_t (Channel (frequency) * CHANNEL_WIDTH));
     int count = (std::abs (off) + int (CHANNEL_OFFSET / 2)) / int (CHANNEL_OFFSET);
@@ -347,28 +347,28 @@ int ts::VHF::OffsetCount (uint64_t frequency)
 // Return a human-readable description of a UHF channel.
 //----------------------------------------------------------------------------
 
-std::string ts::UHF::Description(int channel, int offset, int strength, int quality)
+ts::UString ts::UHF::Description(int channel, int offset, int strength, int quality)
 {
     const uint64_t freq = UHF::Frequency(channel, offset);
     const int mhz = int(freq / 1000000);
     const int khz = int((freq % 1000000) / 1000);
-    std::string desc("channel ");
-    desc += Decimal(channel);
+    UString desc(u"channel ");
+    desc += UString::Decimal(channel);
     if (offset != 0) {
-        desc += ", offset ";
-        desc += Decimal(offset, 0, true, ",", true);
+        desc += u", offset ";
+        desc += UString::Decimal(offset, 0, true, u",", true);
     }
-    desc += " (";
-    desc += Decimal(mhz);
+    desc += u" (";
+    desc += UString::Decimal(mhz);
     if (khz > 0) {
-        desc += Format(".%03d", khz);
+        desc += UString::Format(u".%03d", {khz});
     }
-    desc += " MHz)";
+    desc += u" MHz)";
     if (strength >= 0) {
-        desc += Format(", strength: %d%%", strength);
+        desc += UString::Format(u", strength: %d%%", {strength});
     }
     if (quality >= 0) {
-        desc += Format(", quality: %d%%", quality);
+        desc += UString::Format(u", quality: %d%%", {quality});
     }
     return desc;
 }

@@ -57,7 +57,7 @@ namespace ts {
         virtual ~TSFileOutputResync() {}
 
         // Overrides TSFileOutput methods
-        virtual bool open(const std::string& filename, bool append, bool keep, ReportInterface& report);
+        virtual bool open(const std::string& filename, bool append, bool keep, Report& report);
 
         //!
         //! Write TS packets to the file.
@@ -67,7 +67,7 @@ namespace ts {
         //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool write(TSPacket* buffer, size_t packet_count, ReportInterface& report);
+        bool write(TSPacket* buffer, size_t packet_count, Report& report);
 
         //!
         //! Write TS packets to the file.
@@ -78,7 +78,7 @@ namespace ts {
         //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool write(TSPacket* buffer, size_t packet_count, PID pid, ReportInterface& report);
+        bool write(TSPacket* buffer, size_t packet_count, PID pid, Report& report);
 
     private:
         // Private members

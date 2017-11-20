@@ -420,7 +420,7 @@ void ts::Section::setLastSectionNumber (uint8_t num, bool recompute_crc)
 // Write section on standard streams.
 //----------------------------------------------------------------------------
 
-std::ostream& ts::Section::write (std::ostream& strm, ReportInterface& report) const
+std::ostream& ts::Section::write (std::ostream& strm, Report& report) const
 {
     if (_is_valid && strm) {
         strm.write (reinterpret_cast <const char*> (_data->data()), std::streamsize (_data->size()));
@@ -455,7 +455,7 @@ namespace {
 // section, wrong crc), the failbit of the stream is set.
 //----------------------------------------------------------------------------
 
-std::istream& ts::Section::read(std::istream& strm, CRC32::Validation crc_op, ReportInterface& report)
+std::istream& ts::Section::read(std::istream& strm, CRC32::Validation crc_op, Report& report)
 {
     // Invalidate current content
     clear();
@@ -516,7 +516,7 @@ std::istream& ts::Section::read(std::istream& strm, CRC32::Validation crc_op, Re
 bool ts::Section::LoadFile(SectionPtrVector& sections,
                            std::istream& strm,
                            CRC32::Validation crc_op,
-                           ReportInterface& report)
+                           Report& report)
 {
     sections.clear();
 
@@ -543,7 +543,7 @@ bool ts::Section::LoadFile(SectionPtrVector& sections,
 bool ts::Section::LoadFile(SectionPtrVector& sections,
                            const std::string& file_name,
                            CRC32::Validation crc_op,
-                           ReportInterface& report)
+                           Report& report)
 {
     sections.clear();
 

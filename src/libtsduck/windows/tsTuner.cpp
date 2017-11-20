@@ -98,7 +98,7 @@ ts::Tuner::Tuner(const std::string& device_name) :
 // Constructor from one device name.
 //-----------------------------------------------------------------------------
 
-ts::Tuner::Tuner(const std::string& device_name, bool info_only, ReportInterface& report) :
+ts::Tuner::Tuner(const std::string& device_name, bool info_only, Report& report) :
     Tuner(device_name)
 {
     this->open(device_name, info_only, report);
@@ -109,7 +109,7 @@ ts::Tuner::Tuner(const std::string& device_name, bool info_only, ReportInterface
 // Get the list of all existing DVB tuners.
 //-----------------------------------------------------------------------------
 
-bool ts::Tuner::GetAllTuners(TunerPtrVector& tuners, ReportInterface& report)
+bool ts::Tuner::GetAllTuners(TunerPtrVector& tuners, Report& report)
 {
     return FindTuners(0, &tuners, report);
 }
@@ -119,7 +119,7 @@ bool ts::Tuner::GetAllTuners(TunerPtrVector& tuners, ReportInterface& report)
 // Open the tuner.
 //-----------------------------------------------------------------------------
 
-bool ts::Tuner::open(const std::string& device_name, bool info_only, ReportInterface& report)
+bool ts::Tuner::open(const std::string& device_name, bool info_only, Report& report)
 {
     if (_is_open) {
         report.error("DVB tuner already open");
@@ -148,7 +148,7 @@ bool ts::Tuner::open(const std::string& device_name, bool info_only, ReportInter
 // Close tuner.
 //-----------------------------------------------------------------------------
 
-bool ts::Tuner::close(ReportInterface& report)
+bool ts::Tuner::close(Report& report)
 {
     _is_open = false;
     _device_name.clear();
@@ -245,7 +245,7 @@ bool ts::Tuner::searchTunerProperty(const ::GUID& propset, ::DWORD propid, T& va
 // Check if a signal is present and locked
 //-----------------------------------------------------------------------------
 
-bool ts::Tuner::signalLocked(ReportInterface& report)
+bool ts::Tuner::signalLocked(Report& report)
 {
     if (!_is_open) {
         report.error("DVB tuner not open");
@@ -286,7 +286,7 @@ bool ts::Tuner::getSignalStrength_mdB(::LONG& strength)
 // Return a negative value on error.
 //-----------------------------------------------------------------------------
 
-int ts::Tuner::signalStrength(ReportInterface& report)
+int ts::Tuner::signalStrength(Report& report)
 {
     if (!_is_open) {
         report.error("DVB tuner not open");
@@ -305,7 +305,7 @@ int ts::Tuner::signalStrength(ReportInterface& report)
 // Return a negative value on error.
 //-----------------------------------------------------------------------------
 
-int ts::Tuner::signalQuality(ReportInterface& report)
+int ts::Tuner::signalQuality(Report& report)
 {
     if (!_is_open) {
         report.error("DVB tuner not open");
@@ -326,7 +326,7 @@ int ts::Tuner::signalQuality(ReportInterface& report)
 // Get the current tuning parameters
 //-----------------------------------------------------------------------------
 
-bool ts::Tuner::getCurrentTuning(TunerParameters& params, bool reset_unknown, ReportInterface& report)
+bool ts::Tuner::getCurrentTuning(TunerParameters& params, bool reset_unknown, Report& report)
 {
     if (!_is_open) {
         report.error("DVB tuner not open");
@@ -511,7 +511,7 @@ bool ts::Tuner::getCurrentTuning(TunerParameters& params, bool reset_unknown, Re
 // Return true on success, false on errors
 //-----------------------------------------------------------------------------
 
-bool ts::Tuner::tune(const TunerParameters& params, ReportInterface& report)
+bool ts::Tuner::tune(const TunerParameters& params, Report& report)
 {
     if (!_is_open) {
         report.error("DVB tuner not open");
@@ -528,7 +528,7 @@ bool ts::Tuner::tune(const TunerParameters& params, ReportInterface& report)
 // Return true on success, false on errors
 //-----------------------------------------------------------------------------
 
-bool ts::Tuner::internalTune(const TunerParameters& params, ReportInterface& report)
+bool ts::Tuner::internalTune(const TunerParameters& params, Report& report)
 {
     // Check subclass of TunerParameters
     if (params.tunerType() != _tuner_type) {
@@ -554,7 +554,7 @@ bool ts::Tuner::internalTune(const TunerParameters& params, ReportInterface& rep
 // Return true on success, false on errors
 //-----------------------------------------------------------------------------
 
-bool ts::Tuner::start(ReportInterface& report)
+bool ts::Tuner::start(Report& report)
 {
     if (!_is_open) {
         report.error("DVB tuner not open");
@@ -596,7 +596,7 @@ bool ts::Tuner::start(ReportInterface& report)
 // Return true on success, false on errors
 //-----------------------------------------------------------------------------
 
-bool ts::Tuner::stop(ReportInterface& report)
+bool ts::Tuner::stop(Report& report)
 {
     return _is_open && _graph.stop(report);
 }
@@ -608,7 +608,7 @@ bool ts::Tuner::stop(ReportInterface& report)
 // Return true on success, false on errors.
 //-----------------------------------------------------------------------------
 
-bool ts::Tuner::setReceiveTimeout(MilliSecond timeout, ReportInterface&)
+bool ts::Tuner::setReceiveTimeout(MilliSecond timeout, Report&)
 {
     _receive_timeout = timeout;
     return true;
@@ -621,7 +621,7 @@ bool ts::Tuner::setReceiveTimeout(MilliSecond timeout, ReportInterface&)
 // Returning zero means error or end of input.
 //-----------------------------------------------------------------------------
 
-size_t ts::Tuner::receive(TSPacket* buffer, size_t max_packets, const AbortInterface* abort, ReportInterface& report)
+size_t ts::Tuner::receive(TSPacket* buffer, size_t max_packets, const AbortInterface* abort, Report& report)
 {
     if (!_is_open) {
         report.error("DVB tuner not open");
@@ -651,7 +651,7 @@ size_t ts::Tuner::receive(TSPacket* buffer, size_t max_packets, const AbortInter
 // Display the characteristics and status of the tuner.
 //-----------------------------------------------------------------------------
 
-std::ostream& ts::Tuner::displayStatus(std::ostream& strm, const std::string& margin, ReportInterface& report)
+std::ostream& ts::Tuner::displayStatus(std::ostream& strm, const std::string& margin, Report& report)
 {
     if (!_is_open) {
         report.error("DVB tuner not open");
@@ -703,10 +703,10 @@ void ts::Tuner::findTunerSubinterfaces(ComPtr<COMCLASS>& obj)
 // Private static method: Find one or more tuners.
 //-----------------------------------------------------------------------------
 
-bool ts::Tuner::FindTuners(Tuner* tuner, TunerPtrVector* tuner_list, ReportInterface& report)
+bool ts::Tuner::FindTuners(Tuner* tuner, TunerPtrVector* tuner_list, Report& report)
 {
-    // ReportInterface to use when errors shall be reported in debug mode only
-    ReportInterface& debug_report(report.debug() ? report : NULLREP);
+    // Report to use when errors shall be reported in debug mode only
+    Report& debug_report(report.debug() ? report : NULLREP);
 
     // Exactly one of Tuner* or TunerPtrVector* must be non-zero.
     assert(tuner == 0 || tuner_list == 0);
@@ -787,10 +787,10 @@ bool ts::Tuner::FindTuners(Tuner* tuner, TunerPtrVector* tuner_list, ReportInter
 // Return true on success, false on error
 //-----------------------------------------------------------------------------
 
-bool ts::Tuner::buildGraph(::IMoniker* tuner_moniker, ReportInterface& report)
+bool ts::Tuner::buildGraph(::IMoniker* tuner_moniker, Report& report)
 {
-    // ReportInterface to use when errors shall be reported in debug mode only
-    ReportInterface& debug_report(report.debug() ? report : NULLREP);
+    // Report to use when errors shall be reported in debug mode only
+    Report& debug_report(report.debug() ? report : NULLREP);
 
     // Instantiate the "Microsoft Network Provider". In the past, we tried all specific providers
     // like "Microsoft DVBT Network Provider". However, these are now deprecated and Microsoft
@@ -1018,10 +1018,10 @@ bool ts::Tuner::buildGraph(::IMoniker* tuner_moniker, ReportInterface& report)
 // Return true on success, false on error.
 //-----------------------------------------------------------------------------
 
-bool ts::Tuner::buildCaptureGraph(const ComPtr<::IBaseFilter>& base_filter, ReportInterface& report)
+bool ts::Tuner::buildCaptureGraph(const ComPtr<::IBaseFilter>& base_filter, Report& report)
 {
-    // ReportInterface to use when errors shall be reported in debug mode only
-    ReportInterface& debug_report(report.debug() ? report : NULLREP);
+    // Report to use when errors shall be reported in debug mode only
+    Report& debug_report(report.debug() ? report : NULLREP);
 
     // Create a DirectShow System Device Enumerator
     ComPtr<::ICreateDevEnum> enum_devices(::CLSID_SystemDeviceEnum, ::IID_ICreateDevEnum, report);

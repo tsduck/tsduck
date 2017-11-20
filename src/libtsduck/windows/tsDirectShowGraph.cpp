@@ -47,7 +47,7 @@ ts::DirectShowGraph::DirectShowGraph() :
 {
 }
 
-ts::DirectShowGraph::DirectShowGraph(ReportInterface& report) :
+ts::DirectShowGraph::DirectShowGraph(Report& report) :
     DirectShowGraph()
 {
     initialize(report);
@@ -73,7 +73,7 @@ bool ts::DirectShowGraph::isValid() const
 // Initialize the graph.
 //-----------------------------------------------------------------------------
 
-bool ts::DirectShowGraph::initialize(ReportInterface& report)
+bool ts::DirectShowGraph::initialize(Report& report)
 {
     // Clear previous graph.
     clear(report);
@@ -96,7 +96,7 @@ bool ts::DirectShowGraph::initialize(ReportInterface& report)
 // Clear the graph back to uninitialized state.
 //-----------------------------------------------------------------------------
 
-void ts::DirectShowGraph::clear(ReportInterface& report)
+void ts::DirectShowGraph::clear(Report& report)
 {
     // Stop the graph if it is running.
     stop(report);
@@ -116,7 +116,7 @@ void ts::DirectShowGraph::clear(ReportInterface& report)
 // Add /remove filter in the graph.
 //-----------------------------------------------------------------------------
 
-bool ts::DirectShowGraph::addFilter(::IBaseFilter* filter, const wchar_t* name, ReportInterface& report)
+bool ts::DirectShowGraph::addFilter(::IBaseFilter* filter, const wchar_t* name, Report& report)
 {
     if (isValid() && filter != 0) {
         const ::HRESULT hr = _graph_builder->AddFilter(filter, name != 0 ? name : L"");
@@ -127,7 +127,7 @@ bool ts::DirectShowGraph::addFilter(::IBaseFilter* filter, const wchar_t* name, 
     }
 }
 
-bool ts::DirectShowGraph::removeFilter(::IBaseFilter* filter, ReportInterface& report)
+bool ts::DirectShowGraph::removeFilter(::IBaseFilter* filter, Report& report)
 {
     if (isValid() && filter != 0) {
         const ::HRESULT hr = _graph_builder->RemoveFilter(filter);
@@ -143,7 +143,7 @@ bool ts::DirectShowGraph::removeFilter(::IBaseFilter* filter, ReportInterface& r
 // Run the graph.
 //-----------------------------------------------------------------------------
 
-bool ts::DirectShowGraph::run(ReportInterface& report)
+bool ts::DirectShowGraph::run(Report& report)
 {
     if (isValid()) {
         const ::HRESULT hr = _media_control->Run();
@@ -159,7 +159,7 @@ bool ts::DirectShowGraph::run(ReportInterface& report)
 // Stop the graph.
 //-----------------------------------------------------------------------------
 
-bool ts::DirectShowGraph::stop(ReportInterface& report)
+bool ts::DirectShowGraph::stop(Report& report)
 {
     if (!isValid()) {
         return false;
@@ -185,7 +185,7 @@ bool ts::DirectShowGraph::stop(ReportInterface& report)
 // Directly connect two filters using whatever output and input pin.
 //-----------------------------------------------------------------------------
 
-bool ts::DirectShowGraph::connectFilters(::IBaseFilter* filter1, ::IBaseFilter* filter2, ReportInterface& report)
+bool ts::DirectShowGraph::connectFilters(::IBaseFilter* filter1, ::IBaseFilter* filter2, Report& report)
 {
     if (isValid() && filter1 != 0 && filter2 != 0) {
         // Get unconnected pins
@@ -213,7 +213,7 @@ bool ts::DirectShowGraph::connectFilters(::IBaseFilter* filter1, ::IBaseFilter* 
 // In the graph, cleanup everything downstream a specified filter.
 //-----------------------------------------------------------------------------
 
-bool ts::DirectShowGraph::cleanupDownstream(::IBaseFilter* filter, ReportInterface& report)
+bool ts::DirectShowGraph::cleanupDownstream(::IBaseFilter* filter, Report& report)
 {
     // Eliminate invalid parameters.
     if (!isValid() || filter == 0) {
@@ -276,7 +276,7 @@ bool ts::DirectShowGraph::cleanupDownstream(::IBaseFilter* filter, ReportInterfa
 // Get the list of pins on a filter.
 //-----------------------------------------------------------------------------
 
-bool ts::DirectShowGraph::getPin(PinPtrVector& pins, ::IBaseFilter* filter, int flags, ReportInterface& report)
+bool ts::DirectShowGraph::getPin(PinPtrVector& pins, ::IBaseFilter* filter, int flags, Report& report)
 {
     // Clear result vector (explicitely nullify previous values to release objects)
     pins.clear();
@@ -320,7 +320,7 @@ bool ts::DirectShowGraph::getPin(PinPtrVector& pins, ::IBaseFilter* filter, int 
 // Get the starting filter of the graph.
 //-----------------------------------------------------------------------------
 
-ts::ComPtr<::IBaseFilter> ts::DirectShowGraph::startingFilter(ReportInterface& report)
+ts::ComPtr<::IBaseFilter> ts::DirectShowGraph::startingFilter(Report& report)
 {
     if (isValid()) {
         // Enumerate all filters in the graph.
@@ -351,7 +351,7 @@ ts::ComPtr<::IBaseFilter> ts::DirectShowGraph::startingFilter(ReportInterface& r
 // Display the description of a DirectShow filter graph.
 //-----------------------------------------------------------------------------
 
-void ts::DirectShowGraph::display(std::ostream& output, ReportInterface& report, const std::string& margin, bool verbose)
+void ts::DirectShowGraph::display(std::ostream& output, Report& report, const std::string& margin, bool verbose)
 {
     display(output, report, startingFilter(report), margin, verbose);
 }
@@ -361,7 +361,7 @@ void ts::DirectShowGraph::display(std::ostream& output, ReportInterface& report,
 // Display the description of a partial DirectShow filter graph.
 //-----------------------------------------------------------------------------
 
-void ts::DirectShowGraph::display(std::ostream& output, ReportInterface& report, const ComPtr<::IBaseFilter>& start_filter, const std::string& margin, bool verbose)
+void ts::DirectShowGraph::display(std::ostream& output, Report& report, const ComPtr<::IBaseFilter>& start_filter, const std::string& margin, bool verbose)
 {
     DirectShowTest test(output, report);
     ComPtr<::IBaseFilter> filter(start_filter);

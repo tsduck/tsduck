@@ -136,50 +136,49 @@ void ts::SatelliteDeliverySystemDescriptor::deserialize (const Descriptor& desc,
 //----------------------------------------------------------------------------
 
 namespace {
-    const ts::Enumeration DirectionNames(
-        "west", 0,
-        "east", 1,
-        TS_NULL);
+    const ts::Enumeration DirectionNames({
+        {u"west", 0}},
+        {u"east", 1}},
+    });
 
-    const ts::Enumeration PolarizationNames(
-        "horizontal", 0,
-        "vertical", 1,
-        "left", 2,
-        "right", 3,
-        TS_NULL);
+    const ts::Enumeration PolarizationNames({
+        {u"horizontal", 0},
+        {u"vertical", 1},
+        {u"left", 2},
+        {u"right", 3},
+    });
 
-    const ts::Enumeration RollOffNames(
-        "0.35", 0,
-        "0.25", 1,
-        "0.20", 2,
-        "reserved", 3,
-        TS_NULL);
+    const ts::Enumeration RollOffNames({
+        {u"0.35", 0},
+        {u"0.25", 1},
+        {u"0.20", 2},
+        {u"reserved", 3},
+    });
 
-    const ts::Enumeration SystemNames(
-        "DVB-S", 0,
-        "DVB-S2", 1,
-        TS_NULL);
+    const ts::Enumeration SystemNames({
+        {u"DVB-S", 0},
+        {u"DVB-S2", 1},
+    });
 
-    const ts::Enumeration ModulationNames(
-        "auto", 0,
-        "QPSK", 1,
-        "8PSK", 2,
-        "16-QAM", 3,
-        TS_NULL);
+    const ts::Enumeration ModulationNames({
+        {u"auto", 0},
+        {u"QPSK", 1},
+        {u"8PSK", 2},
+        {u"16-QAM", 3},
+    });
 
-    const ts::Enumeration CodeRateNames(
-        "undefined", 0,
-        "1/2", 1,
-        "2/3", 2,
-        "3/4", 3,
-        "5/6", 4,
-        "7/8", 5,
-        "8/9", 6,
-        "3/5", 7,
-        "4/5", 8,
-        "9/10", 9,
-        TS_NULL
-    );
+    const ts::Enumeration CodeRateNames({
+        {u"undefined", 0},
+        {u"1/2", 1},
+        {u"2/3", 2},
+        {u"3/4", 3},
+        {u"5/6", 4},
+        {u"7/8", 5},
+        {u"8/9", 6},
+        {u"3/5", 7},
+        {u"4/5", 8},
+        {u"9/10", 9},
+    });
 }
 
 
@@ -211,7 +210,7 @@ void ts::SatelliteDeliverySystemDescriptor::fromXML(XML& xml, const XML::Element
 {
     uint64_t freq = 0;
     uint64_t symrate = 0;
-    std::string orbit;
+    UString orbit;
 
     _is_valid =
         checkXMLName(xml, element) &&
@@ -230,11 +229,11 @@ void ts::SatelliteDeliverySystemDescriptor::fromXML(XML& xml, const XML::Element
         symbol_rate = uint32_t(symrate / 100);
 
         // Expected orbital position is "XX.X" as in "19.2".
-        StringVector fields;
+        UStringVector fields;
         uint16_t p1 = 0;
         uint16_t p2 = 0;
-        SplitString(fields, orbit, '.');
-        _is_valid = fields.size() == 2 && ToInteger(p1, fields[0]) && ToInteger(p2, fields[1]) && p2 < 10;
+        orbit.split(fields, u'.');
+        _is_valid = fields.size() == 2 && fields[0].toInteger(p1) && fields[1].toInteger(p2) && p2 < 10;
         if (_is_valid) {
             orbital_position = (p1 * 10) + p2;
         }

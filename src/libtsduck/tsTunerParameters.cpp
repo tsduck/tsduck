@@ -62,7 +62,7 @@ ts::TunerParameters* ts::TunerParameters::Factory(TunerType tuner_type)
 // Extract options from a TunerArgs, applying defaults when necessary.
 //----------------------------------------------------------------------------
 
-bool ts::TunerParameters::fromTunerArgs (const TunerArgs& tuner, ReportInterface& report)
+bool ts::TunerParameters::fromTunerArgs (const TunerArgs& tuner, Report& report)
 {
     if (tuner.channel_name.set()) {
         // Use --channel-transponder option

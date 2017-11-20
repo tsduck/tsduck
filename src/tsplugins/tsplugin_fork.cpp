@@ -74,43 +74,43 @@ TSPLUGIN_DECLARE_PROCESSOR(ts::ForkPlugin)
 // Constructor
 //----------------------------------------------------------------------------
 
-ts::ForkPlugin::ForkPlugin (TSP* tsp_) :
-    ProcessorPlugin(tsp_, "Fork a process and send TS packets to its standard input.", "[options] 'command'"),
+ts::ForkPlugin::ForkPlugin(TSP* tsp_) :
+    ProcessorPlugin(tsp_, u"Fork a process and send TS packets to its standard input.", u"[options] 'command'"),
     _pipe(),
     _buffer_size(0),
     _buffer_count(0),
     _buffer(0)
 {
-    option ("",                  0,  STRING, 1, 1);
-    option ("buffered-packets", 'b', POSITIVE);
-    option ("ignore-abort",     'i');
-    option ("nowait",           'n');
+    option(u"",                  0,  STRING, 1, 1);
+    option(u"buffered-packets", 'b', POSITIVE);
+    option(u"ignore-abort",     'i');
+    option(u"nowait",           'n');
 
-    setHelp ("Command:\n"
-             "  Specifies the command line to execute in the created process.\n"
-             "\n"
-             "Options:\n"
-             "\n"
-             "  -b value\n"
-             "  --buffered-packets value\n"
-             "      Specifies the number of TS packets to buffer before sending them\n"
-             "      through the pipe to the forked process. By default, the packets are\n"
-             "      not buffered and sent one by one.\n"
-             "\n"
-             "  --help\n"
-             "      Display this help text.\n"
-             "\n"
-             "  -i\n"
-             "  --ignore-abort\n"
-             "      Ignore early termination of child process. By default, if the child\n"
-             "      process aborts and no longer reads the packets, tsp also aborts.\n"
-             "\n"
-             "  -n\n"
-             "  --nowait\n"
-             "      Do not wait for child process termination at end of input.\n"
-             "\n"
-             "  --version\n"
-             "      Display the version number.\n");
+    setHelp(u"Command:\n"
+            u"  Specifies the command line to execute in the created process.\n"
+            u"\n"
+            u"Options:\n"
+            u"\n"
+            u"  -b value\n"
+            u"  --buffered-packets value\n"
+            u"      Specifies the number of TS packets to buffer before sending them\n"
+            u"      through the pipe to the forked process. By default, the packets are\n"
+            u"      not buffered and sent one by one.\n"
+            u"\n"
+            u"  --help\n"
+            u"      Display this help text.\n"
+            u"\n"
+            u"  -i\n"
+            u"  --ignore-abort\n"
+            u"      Ignore early termination of child process. By default, if the child\n"
+            u"      process aborts and no longer reads the packets, tsp also aborts.\n"
+            u"\n"
+            u"  -n\n"
+            u"  --nowait\n"
+            u"      Do not wait for child process termination at end of input.\n"
+            u"\n"
+            u"  --version\n"
+            u"      Display the version number.\n");
 }
 
 
@@ -135,9 +135,9 @@ bool ts::ForkPlugin::start()
 {
     // Get command line arguments
     std::string command (value());
-    bool synchronous = !present ("nowait");
+    bool synchronous = !present(u"nowait");
     _buffer_size = intValue<size_t> ("buffered-packets", 0);
-    _pipe.setIgnoreAbort (present ("ignore-abort"));
+    _pipe.setIgnoreAbort (present(u"ignore-abort"));
 
     // If packet buffering is requested, allocate the buffer
     _buffer = 0;

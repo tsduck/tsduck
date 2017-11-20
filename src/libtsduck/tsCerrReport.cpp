@@ -27,7 +27,7 @@
 //
 //----------------------------------------------------------------------------
 //
-//  This class is a singleton implementing ReportInterface on std::cerr
+//  This class is a singleton implementing Report on std::cerr
 //  without synchronization
 //
 //----------------------------------------------------------------------------
@@ -43,10 +43,8 @@ ts::CerrReport::CerrReport() {}
 ts::CerrReport::~CerrReport() {}
 
 // Message logging method.
-void ts::CerrReport::writeLog (int severity, const std::string &msg)
+void ts::CerrReport::writeLog(int severity, const UString &msg)
 {
-    if (severity <= _max_severity) {
-        std::cerr << "* " << Severity::Header (severity) << msg << std::endl;
-        std::cerr.flush();
-    }
+    std::cerr << "* " << Severity::Header(severity) << msg << std::endl;
+    std::cerr.flush();
 }

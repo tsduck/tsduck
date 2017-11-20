@@ -135,7 +135,7 @@ namespace ts {
         //! representation of the address "a.b.c.d".
         //! @param [in] report Where to report errors.
         //!
-        IPAddress(const std::string& name, ReportInterface& report = CERR) :
+        IPAddress(const std::string& name, Report& report = CERR) :
             _addr (0)
         {
             resolve(name, report);
@@ -209,7 +209,7 @@ namespace ts {
         //! In the later case, the integer value of the address is
         //! set to @link AnyAddress @endlink.
         //!
-        bool resolve(const std::string& name, ReportInterface& report = CERR);
+        bool resolve(const std::string& name, Report& report = CERR);
 
         //!
         //! Convert to a string object in numeric format "a.b.c.d".

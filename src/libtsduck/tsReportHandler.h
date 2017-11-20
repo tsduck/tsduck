@@ -51,7 +51,7 @@ namespace ts {
         //! @param [in] severity Message severity value from ts::Severity.
         //! @param [in] msg Message text.
         //!
-        virtual void handleMessage(int severity, const std::string& msg) = 0;
+        virtual void handleMessage(int severity, const UString& msg) = 0;
 
         //!
         //! Virtual destructor.

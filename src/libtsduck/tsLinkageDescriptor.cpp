@@ -453,10 +453,7 @@ void ts::LinkageDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, c
 //----------------------------------------------------------------------------
 
 namespace {
-    const ts::Enumeration OriginTypeNames(
-        "NIT", 0,
-        "SDT", 1,
-        TS_NULL);
+    const ts::Enumeration OriginTypeNames({{u"NIT", 0}, {u"SDT", 1}});
 }
 
 

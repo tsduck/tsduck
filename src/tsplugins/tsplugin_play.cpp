@@ -90,29 +90,29 @@ ts::PlayPlugin::PlayPlugin (TSP* tsp_) :
     _use_xine(false),
     _pipe()
 {
-    option ("mplayer", 'm');
-    option ("xine",    'x');
+    option(u"mplayer", 'm');
+    option(u"xine",    'x');
 
-    setHelp ("Options:\n"
-             "\n"
-             "  --help\n"
-             "      Display this help text.\n"
+    setHelp(u"Options:\n"
+             u"\n"
+             u"  --help\n"
+             u"      Display this help text.\n"
 #if !defined(TS_WINDOWS)
-             "\n"
-             "  -m\n"
-             "  --mplayer\n"
-             "      Use mplayer for rendering. The default is to look for vlc, mplayer and\n"
-             "      xine, in this order, and use the first available one.\n"
+             u"\n"
+             u"  -m\n"
+             u"  --mplayer\n"
+             u"      Use mplayer for rendering. The default is to look for vlc, mplayer and\n"
+             u"      xine, in this order, and use the first available one.\n"
 #endif
-             "\n"
-             "  --version\n"
-             "      Display the version number.\n"
+             u"\n"
+             u"  --version\n"
+             u"      Display the version number.\n"
 #if !defined(TS_WINDOWS)
-             "\n"
-             "  -x\n"
-             "  --xine\n"
-             "      Use xine for rendering. The default is to look for vlc, mplayer and\n"
-             "      xine, in this order, and use the first available one.\n"
+             u"\n"
+             u"  -x\n"
+             u"  --xine\n"
+             u"      Use xine for rendering. The default is to look for vlc, mplayer and\n"
+             u"      xine, in this order, and use the first available one.\n"
 #endif
              );
 }
@@ -164,8 +164,8 @@ bool ts::PlayPlugin::searchInPath (std::string& result, const StringVector& path
 bool ts::PlayPlugin::start()
 {
     // Get option values
-    _use_mplayer = present ("mplayer");
-    _use_xine = present ("xine");
+    _use_mplayer = present(u"mplayer");
+    _use_xine = present(u"xine");
     if (_use_mplayer && _use_xine) {
         tsp->error ("--mplayer (-m) and --xine (-x) are mutually exclusive");
         return false;

@@ -180,7 +180,7 @@ HEADERS += \
     ../../../src/libtsduck/tsReportFile.h \
     ../../../src/libtsduck/tsReportFileTemplate.h \
     ../../../src/libtsduck/tsReportHandler.h \
-    ../../../src/libtsduck/tsReportInterface.h \
+    ../../../src/libtsduck/tsReport.h \
     ../../../src/libtsduck/tsReportWithPrefix.h \
     ../../../src/libtsduck/tsResidentBuffer.h \
     ../../../src/libtsduck/tsResidentBufferTemplate.h \
@@ -283,6 +283,7 @@ HEADERS += \
     ../../../src/libtsduck/tsViaccessDate.h \
     ../../../src/libtsduck/tsVideoAttributes.h \
     ../../../src/libtsduck/tsXML.h \
+    ../../../src/libtsduck/tsXMLTemplate.h \
     ../../../src/libtsduck/tsXMLTables.h \
     ../../../src/libtsduck/tsduck.h \
     ../../../src/libtsduck/tstlv.h \
@@ -420,10 +421,11 @@ SOURCES += \
     ../../../src/libtsduck/tsPSILoggerArgs.cpp \
     ../../../src/libtsduck/tsPacketizer.cpp \
     ../../../src/libtsduck/tsParentalRatingDescriptor.cpp \
+    ../../../src/libtsduck/tsPlugin.cpp \
     ../../../src/libtsduck/tsPluginSharedLibrary.cpp \
     ../../../src/libtsduck/tsPollFiles.cpp \
     ../../../src/libtsduck/tsPrivateDataSpecifierDescriptor.cpp \
-    ../../../src/libtsduck/tsReportInterface.cpp \
+    ../../../src/libtsduck/tsReport.cpp \
     ../../../src/libtsduck/tsReportWithPrefix.cpp \
     ../../../src/libtsduck/tsRingNode.cpp \
     ../../../src/libtsduck/tsRST.cpp \

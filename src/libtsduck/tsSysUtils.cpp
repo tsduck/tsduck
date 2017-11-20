@@ -32,7 +32,6 @@
 #include "tsMemoryUtils.h"
 #include "tsUID.h"
 #include "tsTime.h"
-#include "tsFormat.h"
 #include "tsMutex.h"
 #include "tsGuard.h"
 #include "tsArgs.h"
@@ -59,21 +58,22 @@ TS_STATIC_INSTANCE(ts::Mutex, (), EnvironmentMutex)
 // Return a "vernacular" version of a file path.
 //----------------------------------------------------------------------------
 
-std::string ts::VernacularFilePath(const std::string& path)
+ts::UString ts::VernacularFilePath(const UString& path)
 {
-    std::string vern(path);
+    UString vern(path);
 
 #if defined(TS_WINDOWS)
     // On Windows, transform "/c/" pattern into "C:\"
-    if (vern.length() >= 3 && vern[0] == '/' && std::isalpha(vern[1]) && vern[2] == '/') {
-        vern[0] = char(std::toupper(vern[1]));
-        vern[1] = ':';
-        vern[2] = '\\';
+    if (vern.length() >= 3 && vern[0] == u'/' && IsAlpha(vern[1]) && vern[2] == u'/') {
+        vern[0] = ToUpper(vern[1]);
+        vern[1] = u':';
+        vern[2] = u'\\';
     }
 #endif
 
+    // Normalize path separators.
     for (size_t i = 0; i < vern.length(); ++i) {
-        if (vern[i] == '/' || vern[i] == '\\') {
+        if (vern[i] == u'/' || vern[i] == u'\\') {
             vern[i] = PathSeparator;
         }
     }
@@ -86,12 +86,12 @@ std::string ts::VernacularFilePath(const std::string& path)
 // Return the directory name of a file path.
 //----------------------------------------------------------------------------
 
-std::string ts::DirectoryName(const std::string& path)
+ts::UString ts::DirectoryName(const UString& path)
 {
-    std::string::size_type sep = path.rfind(PathSeparator);
+    UString::size_type sep = path.rfind(PathSeparator);
 
-    if (sep == std::string::npos) {
-        return ".";                 // No '/' in path => current directory
+    if (sep == UString::NPOS) {
+        return u".";                 // No '/' in path => current directory
     }
     else if (sep == 0) {
         return path.substr(0, 1);  // '/' at beginning => root
@@ -106,16 +106,11 @@ std::string ts::DirectoryName(const std::string& path)
 // Return the base name of a file path.
 //----------------------------------------------------------------------------
 
-std::string ts::BaseName(const std::string& path, const std::string& suffix)
+ts::UString ts::BaseName(const UString& path, const UString& suffix)
 {
-    const std::string::size_type sep = path.rfind(PathSeparator);
-    const std::string base(path.substr(sep == std::string::npos ? 0 : sep + 1));
-    const bool suffixFound = !suffix.empty() &&
-#if defined(TS_WINDOWS)
-        EndWithInsensitive(base, suffix);
-#else
-        EndWith(base, suffix);
-#endif
+    const UString::size_type sep = path.rfind(PathSeparator);
+    const UString base(path.substr(sep == UString::NPOS ? 0 : sep + 1));
+    const bool suffixFound = !suffix.empty() && base.endWith(suffix, FileSystemCaseSensitivity);
     return suffixFound ? base.substr(0, base.size() - suffix.size()) : base;
 }
 
@@ -124,16 +119,16 @@ std::string ts::BaseName(const std::string& path, const std::string& suffix)
 // Return the suffix of a file path (eg. "dir/foo.bar" => ".bar")
 //----------------------------------------------------------------------------
 
-std::string ts::PathSuffix(const std::string& path)
+ts::UString ts::PathSuffix(const UString& path)
 {
-    std::string::size_type sep = path.rfind(PathSeparator);
-    std::string::size_type dot = path.rfind('.');
+    UString::size_type sep = path.rfind(PathSeparator);
+    UString::size_type dot = path.rfind(u'.');
 
-    if (dot == std::string::npos) {
-        return "";  // no dot in path
+    if (dot == UString::NPOS) {
+        return ts::UString();  // no dot in path
     }
-    else if (sep != std::string::npos && dot < sep) {
-        return "";  // dot in directory part, not in base name
+    else if (sep != UString::NPOS && dot < sep) {
+        return ts::UString();  // dot in directory part, not in base name
     }
     else {
         return path.substr(dot); // dot in base name
@@ -146,12 +141,12 @@ std::string ts::PathSuffix(const std::string& path)
 // Otherwise, return the name unchanged.
 //----------------------------------------------------------------------------
 
-std::string ts::AddPathSuffix(const std::string& path, const std::string& suffix)
+ts::UString ts::AddPathSuffix(const UString& path, const UString& suffix)
 {
-    std::string::size_type sep = path.rfind(PathSeparator);
-    std::string::size_type dot = path.rfind('.');
+    UString::size_type sep = path.rfind(PathSeparator);
+    UString::size_type dot = path.rfind(u'.');
 
-    if (dot == std::string::npos || (sep != std::string::npos && dot < sep)) {
+    if (dot == UString::NPOS || (sep != UString::NPOS && dot < sep)) {
         return path + suffix;
     }
     else {
@@ -164,15 +159,15 @@ std::string ts::AddPathSuffix(const std::string& path, const std::string& suffix
 // Return the prefix of a file path (eg. "dir/foo.bar" => "dir/foo")
 //----------------------------------------------------------------------------
 
-std::string ts::PathPrefix(const std::string& path)
+ts::UString ts::PathPrefix(const UString& path)
 {
-    std::string::size_type sep = path.rfind(PathSeparator);
-    std::string::size_type dot = path.rfind('.');
+    UString::size_type sep = path.rfind(PathSeparator);
+    UString::size_type dot = path.rfind(u'.');
 
-    if (dot == std::string::npos) {
+    if (dot == UString::NPOS) {
         return path;  // no dot in path
     }
-    else if (sep != std::string::npos && dot < sep) {
+    else if (sep != UString::NPOS && dot < sep) {
         return path;  // dot in directory part, not in base name
     }
     else {
@@ -185,24 +180,23 @@ std::string ts::PathPrefix(const std::string& path)
 // Get the current user's home directory.
 //----------------------------------------------------------------------------
 
-std::string ts::UserHomeDirectory()
+ts::UString ts::UserHomeDirectory()
 {
 #if defined(TS_WINDOWS)
 
     ::HANDLE process = 0;
     if (::OpenProcessToken(::GetCurrentProcess(), TOKEN_QUERY, &process) == 0) {
-        throw ts::Exception("cannot open current process", ::GetLastError());
+        throw ts::Exception(u"cannot open current process", ::GetLastError());
     }
-    char name[2048];
-    ::DWORD length = sizeof(name);
-    const ::BOOL status = ::GetUserProfileDirectory(process, name, &length);
+    std::array<::WCHAR, 2048> name;
+    ::DWORD length = ::DWORD(name.size());
+    const ::BOOL status = ::GetUserProfileDirectoryW(process, name.data(), &length);
     const ::DWORD error = ::GetLastError();
     ::CloseHandle(process);
     if (status == 0) {
         throw ts::Exception("error getting user profile directory", ::GetLastError());
     }
-    name[std::max<::DWORD>(0, std::min<::DWORD>(length, sizeof(name) - 1))] = '\0';
-    return std::string(name);
+    return UString(name, length);
 
 #else
 
@@ -216,15 +210,14 @@ std::string ts::UserHomeDirectory()
 // Return the name of the current application executable file.
 //----------------------------------------------------------------------------
 
-std::string ts::ExecutableFile()
+ts::UString ts::ExecutableFile()
 {
 #if defined(TS_WINDOWS)
 
     // Window implementation.
-    char name[1024];
-    ::DWORD length = ::GetModuleFileName(NULL, name, sizeof(name));
-    assert(length >= 0 && length <= sizeof(name));
-    return std::string(name, length);
+    std::array<::WCHAR, 2048> name;
+    ::DWORD length = ::GetModuleFileNameW(NULL, name.data(), ::DWORD(name.size()));
+    return UString(name, length);
 
 #elif defined(TS_LINUX)
 
@@ -240,7 +233,7 @@ std::string ts::ExecutableFile()
     else {
         assert(length <= int(sizeof(name)));
         // We handle here the fact that readlink does not terminate with ASCII NUL.
-        return std::string(name, length);
+        return UString(name, length);
     }
 
 #elif defined(TS_MAC)
@@ -255,7 +248,7 @@ std::string ts::ExecutableFile()
     }
     else {
         assert(length <= int(sizeof(name)));
-        return std::string(name, length);
+        return UString(name, length);
     }
 
 
@@ -269,20 +262,17 @@ std::string ts::ExecutableFile()
 // Return the current hostname
 //----------------------------------------------------------------------------
 
-std::string ts::HostName()
+ts::UString ts::HostName()
 {
 #if defined(TS_WINDOWS)
 
     // Window implementation.
-    char name[1024];
-    ::DWORD length(sizeof(name));
-    if (::GetComputerName(name, &length) == 0) {
-        throw ts::Exception("GetComputerName error", ::GetLastError());
+    std::array<::WCHAR, 1024> name;
+    ::DWORD length = ::DWORD(name.size());
+    if (::GetComputerNameW(name.data(), &length) == 0) {
+        throw ts::Exception(u"GetComputerName error", ::GetLastError());
     }
-    else {
-        assert(length >= 0 && length <= sizeof(name));
-        return std::string(name, length);
-    }
+    return UString(name, length);
 
 #else
 
@@ -375,10 +365,10 @@ ts::ProcessId ts::CurrentProcessId()
 // Create a directory
 //----------------------------------------------------------------------------
 
-ts::ErrorCode ts::CreateDirectory(const std::string& path)
+ts::ErrorCode ts::CreateDirectory(const UString& path)
 {
 #if defined(TS_WINDOWS)
-    return ::CreateDirectory(path.c_str(), NULL) == 0 ? ::GetLastError() : SYS_SUCCESS;
+    return ::CreateDirectoryW(path.wc_str(), NULL) == 0 ? ::GetLastError() : SYS_SUCCESS;
 #else
     return ::mkdir(path.c_str(), 0777) < 0 ? errno : SYS_SUCCESS;
 #endif
@@ -389,18 +379,12 @@ ts::ErrorCode ts::CreateDirectory(const std::string& path)
 // Return the name of a directory for temporary files.
 //----------------------------------------------------------------------------
 
-std::string ts::TempDirectory()
+ts::UString ts::TempDirectory()
 {
 #if defined(TS_WINDOWS)
-    char buf[2048];
-    ::DWORD status = ::GetTempPath(::DWORD(sizeof(buf)), buf);
-    if (status <= 0) {
-        return "C:"; // Fallback name
-    }
-    else {
-        buf[sizeof(buf) - 1];
-        return buf;
-    }
+    std::array<::WCHAR, 2048> buf;
+    ::DWORD status = ::GetTempPathW(::DWORD(buf.size()), buf.data());
+    return status <= 0 ? u"C:\\" : UString(buf);
 #else
     return "/tmp";
 #endif
@@ -411,11 +395,9 @@ std::string ts::TempDirectory()
 // Return the name of a unique temporary file name.
 //----------------------------------------------------------------------------
 
-std::string ts::TempFile(const std::string& suffix)
+ts::UString ts::TempFile(const UString& suffix)
 {
-    return TempDirectory() + PathSeparator +
-        Format("tsduck-tmp-%016" FMT_INT64 "X", UID::Instance()->newUID()) +
-        suffix;
+    return TempDirectory() + PathSeparator + UString::Format(u"tstmp-%X", {UID::Instance()->newUID()}) + suffix;
 }
 
 
@@ -423,11 +405,11 @@ std::string ts::TempFile(const std::string& suffix)
 // Get the size in byte of a file. Return -1 in case of error.
 //----------------------------------------------------------------------------
 
-int64_t ts::GetFileSize(const std::string& path)
+int64_t ts::GetFileSize(const UString& path)
 {
 #if defined(TS_WINDOWS)
     ::WIN32_FILE_ATTRIBUTE_DATA info;
-    return ::GetFileAttributesEx(path.c_str(), ::GetFileExInfoStandard, &info) == 0 ? -1 :
+    return ::GetFileAttributesExW(path.wc_str(), ::GetFileExInfoStandard, &info) == 0 ? -1 :
         (int64_t(info.nFileSizeHigh) << 32) | (int64_t(info.nFileSizeLow) & 0xFFFFFFFFL);
 #else
     struct stat st;
@@ -441,18 +423,18 @@ int64_t ts::GetFileSize(const std::string& path)
 // Return Time::Epoch in case of error.
 //----------------------------------------------------------------------------
 
-ts::Time ts::GetFileModificationTimeUTC(const std::string& path)
+ts::Time ts::GetFileModificationTimeUTC(const UString& path)
 {
 #if defined(TS_WINDOWS)
     ::WIN32_FILE_ATTRIBUTE_DATA info;
-    return ::GetFileAttributesEx(path.c_str(), ::GetFileExInfoStandard, &info) == 0 ? Time::Epoch : Time::Win32FileTimeToUTC(info.ftLastWriteTime);
+    return ::GetFileAttributesExW(path.wc_str(), ::GetFileExInfoStandard, &info) == 0 ? Time::Epoch : Time::Win32FileTimeToUTC(info.ftLastWriteTime);
 #else
     struct stat st;
     return ::stat(path.c_str(), &st) < 0 ? Time::Epoch : Time::UnixTimeToUTC(st.st_mtime);
 #endif
 }
 
-ts::Time ts::GetFileModificationTimeLocal(const std::string& path)
+ts::Time ts::GetFileModificationTimeLocal(const UString& path)
 {
     const Time time(GetFileModificationTimeUTC(path));
     return time == Time::Epoch ? time : time.UTCToLocal();
@@ -463,10 +445,10 @@ ts::Time ts::GetFileModificationTimeLocal(const std::string& path)
 // Check if a file or directory exists
 //----------------------------------------------------------------------------
 
-bool ts::FileExists(const std::string& path)
+bool ts::FileExists(const UString& path)
 {
 #if defined(TS_WINDOWS)
-    return ::GetFileAttributes(path.c_str()) != INVALID_FILE_ATTRIBUTES;
+    return ::GetFileAttributesW(path.wc_str()) != INVALID_FILE_ATTRIBUTES;
 #else
     // Flawfinder: ignore
     return ::access(path.c_str(), F_OK) == 0;
@@ -478,10 +460,10 @@ bool ts::FileExists(const std::string& path)
 // Check if a path exists and is a directory
 //----------------------------------------------------------------------------
 
-bool ts::IsDirectory(const std::string& path)
+bool ts::IsDirectory(const UString& path)
 {
 #if defined(TS_WINDOWS)
-    const ::DWORD attr = ::GetFileAttributes(path.c_str());
+    const ::DWORD attr = ::GetFileAttributesW(path.wc_str());
     return attr != INVALID_FILE_ATTRIBUTES && (attr & FILE_ATTRIBUTE_DIRECTORY) != 0;
 #else
     struct stat st;
@@ -494,14 +476,14 @@ bool ts::IsDirectory(const std::string& path)
 // Delete a file. Return an error code.
 //----------------------------------------------------------------------------
 
-ts::ErrorCode ts::DeleteFile(const std::string& path)
+ts::ErrorCode ts::DeleteFile(const UString& path)
 {
 #if defined(TS_WINDOWS)
     if (IsDirectory(path)) {
-        return ::RemoveDirectory(path.c_str()) == 0 ? ::GetLastError() : SYS_SUCCESS;
+        return ::RemoveDirectoryW(path.wc_str()) == 0 ? ::GetLastError() : SYS_SUCCESS;
     }
     else {
-        return ::DeleteFile(path.c_str()) == 0 ? ::GetLastError() : SYS_SUCCESS;
+        return ::DeleteFileW(path.wc_str()) == 0 ? ::GetLastError() : SYS_SUCCESS;
     }
 #else
     return ::remove(path.c_str()) < 0 ? errno : SYS_SUCCESS;
@@ -513,13 +495,13 @@ ts::ErrorCode ts::DeleteFile(const std::string& path)
 // Truncate a file to the specified size. Return an error code.
 //----------------------------------------------------------------------------
 
-ts::ErrorCode ts::TruncateFile(const std::string& path, uint64_t size)
+ts::ErrorCode ts::TruncateFile(const UString& path, uint64_t size)
 {
 #if defined(TS_WINDOWS)
 
     ::LONG size_high = ::LONG(size >> 32);
     ::DWORD status = ERROR_SUCCESS;
-    ::HANDLE h = ::CreateFile(path.c_str(), GENERIC_WRITE, 0, 0, OPEN_EXISTING, 0, 0);
+    ::HANDLE h = ::CreateFileW(path.wc_str(), GENERIC_WRITE, 0, 0, OPEN_EXISTING, 0, 0);
     if (h == INVALID_HANDLE_VALUE) {
         return ::GetLastError();
     }
@@ -545,10 +527,10 @@ ts::ErrorCode ts::TruncateFile(const std::string& path, uint64_t size)
 // Not guaranteed to work across volumes or file systems.
 //----------------------------------------------------------------------------
 
-ts::ErrorCode ts::RenameFile(const std::string& old_path, const std::string& new_path)
+ts::ErrorCode ts::RenameFile(const UString& old_path, const UString& new_path)
 {
 #if defined(TS_WINDOWS)
-    return ::MoveFile(old_path.c_str(), new_path.c_str()) == 0 ? ::GetLastError() : ERROR_SUCCESS;
+    return ::MoveFileW(old_path.wc_str(), new_path.wc_str()) == 0 ? ::GetLastError() : ERROR_SUCCESS;
 #else
     return ::rename(old_path.c_str(), new_path.c_str()) < 0 ? errno : 0;
 #endif
@@ -559,25 +541,25 @@ ts::ErrorCode ts::RenameFile(const std::string& old_path, const std::string& new
 // Search a configuration file.
 //----------------------------------------------------------------------------
 
-std::string ts::SearchConfigurationFile(const std::string& fileName)
+ts::UString ts::SearchConfigurationFile(const UString& fileName)
 {
     if (fileName.empty()) {
         // No file specified, no file found...
-        return std::string();
+        return UString();
     }
     if (FileExists(fileName)) {
         // The file exists as is, no need to search.
         return fileName;
     }
-    if (fileName.find(PathSeparator) != std::string::npos) {
+    if (fileName.find(PathSeparator) != UString::NPOS) {
         // There is a path separator, there is a directory specified and the file does not exist, don't search.
-        return std::string();
+        return UString();
     }
 
     // At this point, the file name has no directory and is not found in the current directory.
     // Build the list of directories to search.
-    StringList dirList;
-    StringList tmp;
+    UStringList dirList;
+    UStringList tmp;
     dirList.push_back(DirectoryName(ExecutableFile()));
     GetEnvironmentPath(tmp, TS_PLUGINS_PATH);
     dirList.insert(dirList.end(), tmp.begin(), tmp.end());
@@ -589,15 +571,15 @@ std::string ts::SearchConfigurationFile(const std::string& fileName)
     dirList.insert(dirList.end(), tmp.begin(), tmp.end());
 
     // Search the file.
-    for (StringList::const_iterator it = dirList.begin(); it != dirList.end(); ++it) {
-        const std::string path(*it + PathSeparator + fileName);
+    for (UStringList::const_iterator it = dirList.begin(); it != dirList.end(); ++it) {
+        const UString path(*it + PathSeparator + fileName);
         if (FileExists(path)) {
             return path;
         }
     }
 
     // Not found.
-    return std::string();
+    return UString();
 }
 
 
@@ -605,39 +587,45 @@ std::string ts::SearchConfigurationFile(const std::string& fileName)
 // Format an error code into a string
 //----------------------------------------------------------------------------
 
-std::string ts::ErrorCodeMessage(ts::ErrorCode code)
+ts::UString ts::ErrorCodeMessage(ts::ErrorCode code)
 {
-    char message[1024];
-    char* result;
-    bool found;
-
-    TS_ZERO(message);
 #if defined(TS_WINDOWS)
+
     // Windows implementation
-    ::DWORD length = ::FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM, NULL, code, 0, message, sizeof(message), NULL);
-    found = length > 0;
-    result = message;
-#elif defined(HAVE_INT_STRERROR_R)
+    std::array <::WCHAR, 1024> message;
+    ::DWORD length = ::FormatMessageW(FORMAT_MESSAGE_FROM_SYSTEM, NULL, code, 0, message.data(), ::DWORD(message.size()), NULL);
+    if (length > 0) {
+        return UString(message, length);
+    }
+
+#else
+
+    char* result;
+    char message[1024];
+    TS_ZERO(message);
+
+#if defined(HAVE_INT_STRERROR_R)
     // POSIX version, strerror_r returns int
-    found = 0 == strerror_r(code, message, sizeof(message));
+    const bool found = 0 == strerror_r(code, message, sizeof(message));
     result = message;
 #else
     // GNU version, strerror_r returns char*, not necessarilly in buffer
     result = strerror_r(code, message, sizeof(message));
-    found = result != NULL;
+    const bool found = result != NULL;
 #endif
 
-    if (!found) {
-        return Format("System error %d (0x%08X)", code, code);
-    }
-    else {
+    if (found) {
         // Make sure message is nul-terminated.
         message[sizeof(message) - 1] = 0;
         // Remove trailing newlines (if any)
-        // Flawfinder: ignore: strlen()
-        for (size_t i = ::strlen(result); i > 0 && (result[i-1] == '\n' || result[i-1] == '\r'); result[--i] = 0) {}
+        for (size_t i = ::strlen(result); i > 0 && (result[i - 1] == '\n' || result[i - 1] == '\r'); result[--i] = 0) {}
         return result;
     }
+
+#endif
+
+    // At this point, the message is not found.
+    return UString::Format(u"System error %d (0x%X)", {code, code});
 }
 
 
@@ -813,12 +801,12 @@ void ts::IgnorePipeSignal()
 // If report is a subclass or ts::Args, also terminate application.
 //----------------------------------------------------------------------------
 
-bool ts::SetBinaryModeStdin(ReportInterface& report)
+bool ts::SetBinaryModeStdin(Report& report)
 {
 #if defined(TS_WINDOWS)
-    report.debug("setting standard input to binary mode");
+    report.debug(u"setting standard input to binary mode");
     if (::_setmode(_fileno(stdin), _O_BINARY) < 0) {
-        report.error("cannot set standard input to binary mode");
+        report.error(u"cannot set standard input to binary mode");
         Args* args = dynamic_cast<Args*>(&report);
         if (args != 0) {
             args->exitOnError();
@@ -829,12 +817,12 @@ bool ts::SetBinaryModeStdin(ReportInterface& report)
     return true;
 }
 
-bool ts::SetBinaryModeStdout(ReportInterface& report)
+bool ts::SetBinaryModeStdout(Report& report)
 {
 #if defined(TS_WINDOWS)
-    report.debug("setting standard output to binary mode");
+    report.debug(u"setting standard output to binary mode");
     if (::_setmode(_fileno(stdout), _O_BINARY) < 0) {
-        report.error("cannot set standard output to binary mode");
+        report.error(u"cannot set standard output to binary mode");
         Args* args = dynamic_cast<Args*>(&report);
         if (args != 0) {
             args->exitOnError();
@@ -850,13 +838,13 @@ bool ts::SetBinaryModeStdout(ReportInterface& report)
 // Check if an environment variable exists
 //----------------------------------------------------------------------------
 
-bool ts::EnvironmentExists(const std::string& name)
+bool ts::EnvironmentExists(const UString& name)
 {
     Guard lock(EnvironmentMutex::Instance());
 
 #if defined(TS_WINDOWS)
-    char unused[2];
-    return ::GetEnvironmentVariable(name.c_str(), unused, sizeof(unused)) != 0;
+    std::array <::WCHAR, 2> unused;
+    return ::GetEnvironmentVariableW(name.wc_str(), unused.data(), ::DWORD(unused.size())) != 0;
 #else
     // Flawfinder: ignore: Environment variables are untrustable input.
     return ::getenv(name.c_str()) != 0;
@@ -869,19 +857,19 @@ bool ts::EnvironmentExists(const std::string& name)
 // Return default value if does not exist.
 //----------------------------------------------------------------------------
 
-std::string ts::GetEnvironment(const std::string& name, const std::string& def)
+ts::UString ts::GetEnvironment(const UString& name, const UString& def)
 {
     Guard lock(EnvironmentMutex::Instance());
 
 #if defined(TS_WINDOWS)
-    std::vector<char> value;
+    std::vector<::WCHAR> value;
     value.resize(512);
-    ::DWORD size = ::GetEnvironmentVariable(name.c_str(), &value[0], ::DWORD(value.size()));
+    ::DWORD size = ::GetEnvironmentVariableW(name.wc_str(), value.data(), ::DWORD(value.size()));
     if (size >= ::DWORD(value.size())) {
         value.resize(size_t(size + 1));
-        size = ::GetEnvironmentVariable(name.c_str(), &value[0], ::DWORD(value.size()));
+        size = ::GetEnvironmentVariableW(name.wc_str(), value.data(), ::DWORD(value.size()));
     }
-    return size <= 0 ? def : std::string(&value[0], std::min<size_t>(size, value.size()));
+    return size <= 0 ? def : UString(value, size);
 #else
     // Flawfinder: ignore: Environment variables are untrustable input.
     const char* value = ::getenv(name.c_str());
@@ -894,12 +882,12 @@ std::string ts::GetEnvironment(const std::string& name, const std::string& def)
 // Set the value of an environment variable.
 //----------------------------------------------------------------------------
 
-bool ts::SetEnvironment(const std::string& name, const std::string& value)
+bool ts::SetEnvironment(const UString& name, const UString& value)
 {
     Guard lock(EnvironmentMutex::Instance());
 
 #if defined(TS_WINDOWS)
-    return ::SetEnvironmentVariable(name.c_str(), value.c_str()) != 0;
+    return ::SetEnvironmentVariableW(name.wc_str(), value.wc_str()) != 0;
 #else
     // In case of error, setenv(3) is documented to return -1 but not setting errno.
     return ::setenv(name.c_str(), value.c_str(), 1) == 0;
@@ -911,12 +899,12 @@ bool ts::SetEnvironment(const std::string& name, const std::string& value)
 // Delete an environment variable.
 //----------------------------------------------------------------------------
 
-bool ts::DeleteEnvironment(const std::string& name)
+bool ts::DeleteEnvironment(const UString& name)
 {
     Guard lock(EnvironmentMutex::Instance());
 
 #if defined(TS_WINDOWS)
-    return ::SetEnvironmentVariable(name.c_str(), NULL) != 0;
+    return ::SetEnvironmentVariableW(name.wc_str(), NULL) != 0;
 #else
     // In case of error, unsetenv(3) is documented to return -1 but and set errno.
     // It is also documented to silently ignore non-existing variables.
@@ -932,10 +920,10 @@ bool ts::DeleteEnvironment(const std::string& name)
 // A combination \$ is interpreted as a literal $, not an environment variable reference.
 //----------------------------------------------------------------------------
 
-std::string ts::ExpandEnvironment(const std::string& path)
+ts::UString ts::ExpandEnvironment(const UString& path)
 {
     const size_t len = path.length();
-    std::string expanded;
+    UString expanded;
     expanded.reserve(2 * len);
     size_t index = 0;
     while (index < len) {
@@ -951,12 +939,12 @@ std::string ts::ExpandEnvironment(const std::string& path)
         else {
             // Environment variable reference.
             // First, locate variable name and move index in path.
-            std::string varname;
+            UString varname;
             if (++index < len) {
                 if (path[index] == '{') {
                     // '${name}' format
                     const size_t last = path.find('}', index);
-                    if (last == std::string::npos) {
+                    if (last == UString::NPOS) {
                         varname = path.substr(index + 1);
                         index = len;
                     }
@@ -967,8 +955,8 @@ std::string ts::ExpandEnvironment(const std::string& path)
                 }
                 else {
                     // '$name' format
-                    const size_t last = path.find_first_not_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_", index);
-                    if (last == std::string::npos) {
+                    const size_t last = path.find_first_not_of(u"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_", index);
+                    if (last == UString::NPOS) {
                         varname = path.substr(index);
                         index = len;
                     }
@@ -991,12 +979,12 @@ std::string ts::ExpandEnvironment(const std::string& path)
 //----------------------------------------------------------------------------
 
 namespace {
-    void AddNameValue(ts::Environment& env, const std::string& s)
+    void AddNameValue(ts::Environment& env, const ts::UString& s)
     {
-        const size_t pos = s.find("=");
-        if (pos == std::string::npos) {
+        const size_t pos = s.find(u"=");
+        if (pos == ts::UString::NPOS) {
             // No "=", empty value
-            env.insert(std::make_pair(s, ""));
+            env.insert(std::make_pair(s, ts::UString()));
         }
         else {
             env.insert(std::make_pair(s.substr(0, pos), s.substr(pos + 1)));
@@ -1016,13 +1004,14 @@ void ts::GetEnvironment(Environment& env)
 
 #if defined(TS_WINDOWS)
 
-    const ::LPTCH strings = ::GetEnvironmentStrings();
+    const ::LPWCH strings = ::GetEnvironmentStringsW();
     if (strings != 0) {
         size_t len;
-        for (char* p = strings; (len = ::strlen(p)) != 0; p += len + 1) {  // Flawfinder: ignore: strlen()
-            AddNameValue(env, std::string(p, len));
+        for (const ::WCHAR* p = strings; (len = ::wcslen(p)) != 0; p += len + 1) {
+            assert(sizeof(::WCHAR) == sizeof(UChar));
+            AddNameValue(env, UString(reinterpret_cast<const UChar*>(p), len));
         }
-        ::FreeEnvironmentStrings(strings);
+        ::FreeEnvironmentStringsW(strings);
     }
 
 #else

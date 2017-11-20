@@ -35,7 +35,7 @@
 #pragma once
 #include "tsArgs.h"
 #include "tsAbortInterface.h"
-#include "tsReportInterface.h"
+#include "tsReport.h"
 #include "tsTSPacket.h"
 
 namespace ts {
@@ -73,7 +73,7 @@ namespace ts {
     //! When the plugin has completed its work, it reports this using
     //! jointTerminate().
     //!
-    class TSDUCKDLL TSP: public ReportInterface, public AbortInterface
+    class TSDUCKDLL TSP: public Report, public AbortInterface
     {
     public:
         //!
@@ -141,12 +141,7 @@ namespace ts {
         //! @param [in] verbose If true, set initial report level to Verbose.
         //! @param [in] debug_level If greater than zero, set initial report to that level and ignore @a verbose.
         //!
-        TSP(bool verbose, int debug_level) :
-            ReportInterface(verbose, debug_level),
-            _tsp_bitrate(0),
-            _tsp_aborting(false)
-        {
-        }
+        TSP(bool verbose, int debug_level);
 
     private:
         // Inaccessible operations
@@ -229,10 +224,9 @@ namespace ts {
         //! @param [in] help A multi-line string describing the usage of options and parameters.
         //!
         Plugin(TSP* to_tsp,
-               const std::string& description = "",
-               const std::string& syntax = "",
-               const std::string& help = "") :
-            Args(description, syntax, help), tsp(to_tsp) {}
+               const UString& description = UString(),
+               const UString& syntax = UString(),
+               const UString& help = UString());
 
         //!
         //! Virtual destructor.
@@ -242,12 +236,8 @@ namespace ts {
     protected:
         TSP* tsp; //!< The TSP callback structure can be directly accessed by subclasses.
 
-        // ReportInterface implementation.
-        virtual void writeLog(int severity, const std::string& message)
-        {
-            // Force message to go through tsp
-            tsp->log(severity, message);
-        }
+        // Report implementation.
+        virtual void writeLog(int severity, const UString& message) override;
 
     private:
         // Inaccessible operations
@@ -290,10 +280,9 @@ namespace ts {
         //! @param [in] help A multi-line string describing the usage of options and parameters.
         //!
         InputPlugin(TSP* tsp_,
-                    const std::string& description = "",
-                    const std::string& syntax = "",
-                    const std::string& help = "") :
-            Plugin(tsp_, description, syntax, help) {}
+                    const UString& description = UString(),
+                    const UString& syntax = UString(),
+                    const UString& help = UString());
 
         //!
         //! Virtual destructor.
@@ -350,10 +339,9 @@ namespace ts {
         //! @param [in] help A multi-line string describing the usage of options and parameters.
         //!
         OutputPlugin(TSP* tsp_,
-                     const std::string& description = "",
-                     const std::string& syntax = "",
-                     const std::string& help = "") :
-            Plugin(tsp_, description, syntax, help) {}
+                     const UString& description = UString(),
+                     const UString& syntax = UString(),
+                     const UString& help = UString());
 
         //!
         //! Virtual destructor.
@@ -433,10 +421,9 @@ namespace ts {
         //! @param [in] help A multi-line string describing the usage of options and parameters.
         //!
         ProcessorPlugin(TSP* tsp_,
-                        const std::string& description = "",
-                        const std::string& syntax = "",
-                        const std::string& help = "") :
-            Plugin(tsp_, description, syntax, help) {}
+                        const UString& description = UString(),
+                        const UString& syntax = UString(),
+                        const UString& help = UString());
 
         //!
         //! Virtual destructor.

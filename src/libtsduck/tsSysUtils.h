@@ -33,8 +33,8 @@
 //----------------------------------------------------------------------------
 
 #pragma once
+#include "tsUString.h"
 #include "tsTime.h"
-#include "tsStringUtils.h"
 #include "tsException.h"
 #include "tsCerrReport.h"
 
@@ -42,22 +42,33 @@
 //! Executable file suffix.
 //!
 #if defined(DOXYGEN)
-    #define TS_EXECUTABLE_SUFFIX "platform_specific" (".exe", ""); // for doc only
+    #define TS_EXECUTABLE_SUFFIX platform-specific (".exe", "") // for doc only
 #elif defined(TS_WINDOWS)
-    #define TS_EXECUTABLE_SUFFIX ".exe"
+    #define TS_EXECUTABLE_SUFFIX u".exe"
 #else
-    #define TS_EXECUTABLE_SUFFIX ""
+    #define TS_EXECUTABLE_SUFFIX u""
+#endif
+
+//!
+//! File name extension of shared library file names (".so" on UNIX, ".dll" on Windows).
+//!
+#if defined(DOXYGEN)
+    #define TS_SHARED_LIB_SUFFIX platform-specific (".dll", ".so") // for doc only
+#elif defined(TS_WINDOWS)
+    #define TS_SHARED_LIB_SUFFIX u".dll"
+#else
+    #define TS_SHARED_LIB_SUFFIX u".so"
 #endif
 
 //!
 //! Environment variable containing the command search path.
 //!
 #if defined(DOXYGEN)
-    #define TS_COMMAND_PATH "platform_specific" ("PATH", "Path"); // for doc only
+    #define TS_COMMAND_PATH platform-specific ("PATH", "Path") // for doc only
 #elif defined(TS_WINDOWS)
-    #define TS_COMMAND_PATH "Path"
+    #define TS_COMMAND_PATH u"Path"
 #elif defined(TS_UNIX)
-    #define TS_COMMAND_PATH "PATH"
+    #define TS_COMMAND_PATH u"PATH"
 #else
     #error "Unimplemented operating system"
 #endif
@@ -65,7 +76,7 @@
 //!
 //! Name of the environment variable which contains a list of paths for plugins.
 //!
-#define TS_PLUGINS_PATH "TSPLUGINS_PATH"
+#define TS_PLUGINS_PATH u"TSPLUGINS_PATH"
 
 namespace ts {
 
@@ -73,11 +84,11 @@ namespace ts {
     //! Directory separator character in file paths.
     //!
 #if defined(DOXYGEN)
-    const char PathSeparator = platform_specific ('/', '\\'); // for doc only
+    const UChar PathSeparator = platform-specific ('/', '\\'); // for doc only
 #elif defined(TS_WINDOWS)
-    const char PathSeparator = '\\';
+    const UChar PathSeparator = u'\\';
 #elif defined(TS_UNIX)
-    const char PathSeparator = '/';
+    const UChar PathSeparator = u'/';
 #else
     #error "Unimplemented operating system"
 #endif
@@ -86,13 +97,26 @@ namespace ts {
     //! Separator character in search paths.
     //!
 #if defined(DOXYGEN)
-    const char SearchPathSeparator = platform_specific (':', ';'); // for doc only
+    const char SearchPathSeparator = platform-specific (':', ';'); // for doc only
 #elif defined(TS_WINDOWS)
-    const char SearchPathSeparator = ';';
+    const UChar SearchPathSeparator = u';';
 #elif defined(TS_UNIX)
-    const char SearchPathSeparator = ':';
+    const UChar SearchPathSeparator = u':';
 #else
     #error "Unimplemented operating system"
+#endif
+
+    //!
+    //! Case-sensitivity of the names in the file system.
+    //!
+#if defined(DOXYGEN)
+    const CaseSensitivity FileSystemCaseSensitivity = platform-specific;
+#elif defined(TS_WINDOWS)
+    const CaseSensitivity FileSystemCaseSensitivity = CASE_INSENSITIVE;
+#elif defined(TS_UNIX)
+    const CaseSensitivity FileSystemCaseSensitivity = CASE_SENSITIVE;
+#else
+#error "Unimplemented operating system"
 #endif
 
     //!
@@ -102,7 +126,7 @@ namespace ts {
     //! @return A copy of @a path where all '/' and '\' have been
     //! translated into the local directory separator.
     //!
-    TSDUCKDLL std::string VernacularFilePath(const std::string& path);
+    TSDUCKDLL UString VernacularFilePath(const UString& path);
 
     //!
     //! Return the directory name of a file path ("dir/foo.bar" => "dir").
@@ -110,7 +134,7 @@ namespace ts {
     //! @param [in] path A file path.
     //! @return The directory name of @a path ("dir/foo.bar" => "dir").
     //!
-    TSDUCKDLL std::string DirectoryName(const std::string& path);
+    TSDUCKDLL UString DirectoryName(const UString& path);
 
     //!
     //! Return the base file name of a file path ("dir/foo.bar" => "foo.bar").
@@ -120,7 +144,7 @@ namespace ts {
     //! If @a path ends in @a suffix, the suffix is removed.
     //! @return The base file name of @a path ("dir/foo.bar" => "foo.bar").
     //!
-    TSDUCKDLL std::string BaseName(const std::string& path, const std::string& suffix = std::string());
+    TSDUCKDLL UString BaseName(const UString& path, const UString& suffix = UString());
 
     //!
     //! Return the suffix of a file path ("dir/foo.bar" => ".bar").
@@ -128,7 +152,7 @@ namespace ts {
     //! @param [in] path A file path.
     //! @return The suffix of @a path ("dir/foo.bar" => ".bar").
     //!
-    TSDUCKDLL std::string PathSuffix(const std::string& path);
+    TSDUCKDLL UString PathSuffix(const UString& path);
 
     //!
     //! Conditionally add a suffix to a file path.
@@ -141,7 +165,7 @@ namespace ts {
     //! @return The @a path with a suffix (for conditional suffix ".bar",
     //! "dir/foo" => "dir/foo.bar" and "dir/foo.too" => "dir/foo.too").
     //!
-    TSDUCKDLL std::string AddPathSuffix(const std::string& path, const std::string& suffix);
+    TSDUCKDLL UString AddPathSuffix(const UString& path, const UString& suffix);
 
     //!
     //! Return the prefix of a file path ("dir/foo.bar" => "dir/foo").
@@ -149,7 +173,7 @@ namespace ts {
     //! @param [in] path A file path.
     //! @return The prefix of @a path ("dir/foo.bar" => "dir/foo").
     //!
-    TSDUCKDLL std::string PathPrefix(const std::string& path);
+    TSDUCKDLL UString PathPrefix(const UString& path);
 
     //!
     //! Get the current user's home directory.
@@ -157,19 +181,19 @@ namespace ts {
     //! @return The full path of the current user's home directory.
     //! @throw ts::Exception In case of operating system error.
     //!
-    TSDUCKDLL std::string UserHomeDirectory();
+    TSDUCKDLL UString UserHomeDirectory();
 
     //!
     //! Get the name of the current application executable file.
     //! @return The full path of the executable file which is run in the current process.
     //!
-    TSDUCKDLL std::string ExecutableFile();
+    TSDUCKDLL UString ExecutableFile();
 
     //!
     //! Get the name of the system host.
     //! @return The name of the system host.
     //!
-    TSDUCKDLL std::string HostName();
+    TSDUCKDLL UString HostName();
 
     //!
     //! Suspend the current thread for the specified period.
@@ -207,20 +231,20 @@ namespace ts {
     //! @param [in] path A directory path.
     //! @return A system-specific error code (SYS_SUCCESS on success).
     //!
-    TSDUCKDLL ErrorCode CreateDirectory(const std::string& path);
+    TSDUCKDLL ErrorCode CreateDirectory(const UString& path);
 
     //!
     //! Return the name of a directory for temporary files.
     //! @return A system-dependent location where temporary files can be created.
     //!
-    TSDUCKDLL std::string TempDirectory();
+    TSDUCKDLL UString TempDirectory();
 
     //!
     //! Return the name of a unique temporary file.
     //! @param [in] suffix An optional suffix to add to the file name.
     //! @return A unique temporary file name.
     //!
-    TSDUCKDLL std::string TempFile(const std::string& suffix = ".tmp");
+    TSDUCKDLL UString TempFile(const UString& suffix = ".tmp");
 
     //!
     //! Get the size in bytes of a file.
@@ -228,7 +252,7 @@ namespace ts {
     //! @param [in] path A file path.
     //! @return Size in bytes of the file or -1 in case of error.
     //!
-    TSDUCKDLL int64_t GetFileSize(const std::string& path);
+    TSDUCKDLL int64_t GetFileSize(const UString& path);
 
     //!
     //! Get the local time of the last modification of a file.
@@ -236,28 +260,28 @@ namespace ts {
     //! @param [in] path A file path.
     //! @return Last modification time or Time::Epoch in case of error.
     //!
-    TSDUCKDLL Time GetFileModificationTimeLocal(const std::string& path);
+    TSDUCKDLL Time GetFileModificationTimeLocal(const UString& path);
 
     //!
     //! Get the UTC time of the last modification of a file.
     //! @param [in] path A file path.
     //! @return Last modification time or Time::Epoch in case of error.
     //!
-    TSDUCKDLL Time GetFileModificationTimeUTC(const std::string& path);
+    TSDUCKDLL Time GetFileModificationTimeUTC(const UString& path);
 
     //!
     //! Check if a file or directory exists
     //! @param [in] path A file path.
     //! @return True if a file or directory exists with that name, false otherwise.
     //!
-    TSDUCKDLL bool FileExists(const std::string& path);
+    TSDUCKDLL bool FileExists(const UString& path);
 
     //!
     //! Check if a path exists and is a directory.
     //! @param [in] path A directory path.
     //! @return True if a directory exists with that name, false otherwise.
     //!
-    TSDUCKDLL bool IsDirectory(const std::string& path);
+    TSDUCKDLL bool IsDirectory(const UString& path);
 
     //!
     //! Delete a file or directory.
@@ -268,7 +292,7 @@ namespace ts {
     //! @param [in] path A file or directory path.
     //! @return A system-specific error code (SYS_SUCCESS on success).
     //!
-    TSDUCKDLL ErrorCode DeleteFile(const std::string& path);
+    TSDUCKDLL ErrorCode DeleteFile(const UString& path);
 
     //!
     //! Truncate a file to the specified size.
@@ -277,7 +301,7 @@ namespace ts {
     //! @param [in] size Size in bytes after which the file shall be truncated.
     //! @return A system-specific error code (SYS_SUCCESS on success).
     //!
-    TSDUCKDLL ErrorCode TruncateFile(const std::string& path, uint64_t size);
+    TSDUCKDLL ErrorCode TruncateFile(const UString& path, uint64_t size);
 
     //!
     //! Rename / move a file or directory.
@@ -292,14 +316,14 @@ namespace ts {
     //! @param [in] new_path The new name for the file or directory.
     //! @return A system-specific error code (SYS_SUCCESS on success).
     //!
-    TSDUCKDLL ErrorCode RenameFile(const std::string& old_path, const std::string& new_path);
+    TSDUCKDLL ErrorCode RenameFile(const UString& old_path, const UString& new_path);
 
     //!
     //! Get all files matching a specified wildcard pattern and append them into a container.
     //!
-    //! @tparam CONTAINER A container class of @c std::string as defined by the
+    //! @tparam CONTAINER A container class of @c UString as defined by the
     //! C++ Standard Template Library (STL).
-    //! @param [in,out] container A container of @c std::string receiving the
+    //! @param [in,out] container A container of @c UString receiving the
     //! the names of all files matching the wildcard. The names are appended
     //! at the end of the existing content of the container.
     //! @param [in] pattern A file path pattern with wildcards. The syntax of
@@ -308,14 +332,14 @@ namespace ts {
     //! the pattern is not an error, it simply return no file name.
     //!
     template <class CONTAINER>
-    bool ExpandWildcardAndAppend(CONTAINER& container, const std::string& pattern);
+    bool ExpandWildcardAndAppend(CONTAINER& container, const UString& pattern);
 
     //!
     //! Get all files matching a specified wildcard pattern.
     //!
-    //! @tparam CONTAINER A container class of @c std::string as defined by the
+    //! @tparam CONTAINER A container class of @c UString as defined by the
     //! C++ Standard Template Library (STL).
-    //! @param [out] container A container of @c std::string receiving the
+    //! @param [out] container A container of @c UString receiving the
     //! the names of all files matching the wildcard.
     //! @param [in] pattern A file path pattern with wildcards. The syntax of
     //! the wildcards is system-dependent.
@@ -323,7 +347,7 @@ namespace ts {
     //! the pattern is not an error, it simply return no file name.
     //!
     template <class CONTAINER>
-    bool ExpandWildcard(CONTAINER& container, const std::string& pattern)
+    bool ExpandWildcard(CONTAINER& container, const UString& pattern)
     {
         container.clear();
         return ExpandWildcardAndAppend(container, pattern);
@@ -340,14 +364,14 @@ namespace ts {
     //! - All directories in @c PATH (UNIX) or @c Path (Windows) environment variable.
     //! @return The path to an existing file or an empty string if not found.
     //!
-    TSDUCKDLL std::string SearchConfigurationFile(const std::string& fileName);
+    TSDUCKDLL UString SearchConfigurationFile(const UString& fileName);
 
     //!
     //! Check if an environment variable exists.
     //! @param [in] varname Environment variable name.
     //! @return True if the specified environment variable exists, false otherwise.
     //!
-    TSDUCKDLL bool EnvironmentExists(const std::string& varname);
+    TSDUCKDLL bool EnvironmentExists(const UString& varname);
 
     //!
     //! Get the value of an environment variable.
@@ -355,24 +379,24 @@ namespace ts {
     //! @param [in] defvalue Default value if the specified environment variable does not exist.
     //! @return The value of the specified environment variable it it exists, @a defvalue otherwise.
     //!
-    TSDUCKDLL std::string GetEnvironment(const std::string& varname, const std::string& defvalue = std::string());
+    TSDUCKDLL UString GetEnvironment(const UString& varname, const UString& defvalue = UString());
 
     //!
     //! Get the value of an environment variable containing a search path.
     //!
     //! The search path is analyzed and split into individual directory names.
     //!
-    //! @tparam CONTAINER A container class of @c std::string as defined by the
+    //! @tparam CONTAINER A container class of @c UString as defined by the
     //! C++ Standard Template Library (STL).
-    //! @param [out] container A container of @c std::string receiving the
+    //! @param [out] container A container of @c UString receiving the
     //! directory names.
     //! @param [in] name Environment variable name.
     //! @param [in] def Default value if the specified environment variable does not exist.
     //!
     template <class CONTAINER>
-    void GetEnvironmentPath(CONTAINER& container, const std::string& name, const std::string& def = std::string())
+    void GetEnvironmentPath(CONTAINER& container, const UString& name, const UString& def = UString())
     {
-        SplitString(container, GetEnvironment(name, def), SearchPathSeparator, true);
+        GetEnvironment(name, def).split(container, SearchPathSeparator, true);
         if (container.size() == 1 && container.front().empty()) {
             // Path was actually empty
             container.clear();
@@ -389,7 +413,7 @@ namespace ts {
     //! @param [in] value Environment variable value.
     //! @return True on success, false on error.
     //!
-    TSDUCKDLL bool SetEnvironment(const std::string& name, const std::string& value);
+    TSDUCKDLL bool SetEnvironment(const UString& name, const UString& value);
 
     //!
     //! Delete an environment variable.
@@ -399,7 +423,7 @@ namespace ts {
     //! @param [in] name Environment variable name.
     //! @return True on success, false on error.
     //!
-    TSDUCKDLL bool DeleteEnvironment(const std::string& name);
+    TSDUCKDLL bool DeleteEnvironment(const UString& name);
 
     //!
     //! Expand environment variables inside a file path (or any string).
@@ -412,7 +436,7 @@ namespace ts {
     //! @param [in] path A path string containing references to environment variables.
     //! @return The expanded string.
     //!
-    TSDUCKDLL std::string ExpandEnvironment(const std::string& path);
+    TSDUCKDLL UString ExpandEnvironment(const UString& path);
 
     //!
     //! Define a container type holding all environment variables.
@@ -421,7 +445,7 @@ namespace ts {
     //! environment variable and the @e value is the corresponding value
     //! of this environment variable.
     //!
-    typedef std::map<std::string, std::string> Environment;
+    typedef std::map<UString, UString> Environment;
 
     //!
     //! Get the content of the entire environment (all environment variables).
@@ -439,7 +463,7 @@ namespace ts {
     //! Typically a result from LastErrorCode().
     //! @return A string describing the error.
     //!
-    TSDUCKDLL std::string ErrorCodeMessage(ErrorCode code = LastErrorCode());
+    TSDUCKDLL UString ErrorCodeMessage(ErrorCode code = LastErrorCode());
 
     //!
     //! This structure contains metrics about a process
@@ -492,7 +516,7 @@ namespace ts {
     //! @return True on success, false on error.
     //! @see SetBinaryModeStdout()
     //!
-    TSDUCKDLL bool SetBinaryModeStdin(ReportInterface& report = CERR);
+    TSDUCKDLL bool SetBinaryModeStdin(Report& report = CERR);
 
     //!
     //! Put the standard output stream in binary mode.
@@ -508,7 +532,7 @@ namespace ts {
     //! @return True on success, false on error.
     //! @see SetBinaryModeStdout()
     //!
-    TSDUCKDLL bool SetBinaryModeStdout(ReportInterface& report = CERR);
+    TSDUCKDLL bool SetBinaryModeStdout(Report& report = CERR);
 }
 
 #include "tsSysUtilsTemplate.h"

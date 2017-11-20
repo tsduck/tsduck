@@ -74,54 +74,54 @@ TSPLUGIN_DECLARE_PROCESSOR(ts::PatternPlugin)
 // Constructor
 //----------------------------------------------------------------------------
 
-ts::PatternPlugin::PatternPlugin (TSP* tsp_) :
-    ProcessorPlugin(tsp_, "Replace packet payload with a binary pattern on selected PID's.", "[options] pattern"),
+ts::PatternPlugin::PatternPlugin(TSP* tsp_) :
+    ProcessorPlugin(tsp_, u"Replace packet payload with a binary pattern on selected PID's.", u"[options] pattern"),
     _offset_pusi(0),
     _offset_non_pusi(0),
     _pattern(),
     _pid_list()
 {
-    option ("",                 0, STRING, 1, 1);
-    option ("negate",          'n');
-    option ("offset-non-pusi", 'o', INTEGER, 0, 1, 0, PKT_SIZE - 4);
-    option ("offset-pusi",     'u', INTEGER, 0, 1, 0, PKT_SIZE - 4);
-    option ("pid",             'p', PIDVAL,  0, UNLIMITED_COUNT);
+    option(u"",                 0, STRING, 1, 1);
+    option(u"negate",          'n');
+    option(u"offset-non-pusi", 'o', INTEGER, 0, 1, 0, PKT_SIZE - 4);
+    option(u"offset-pusi",     'u', INTEGER, 0, 1, 0, PKT_SIZE - 4);
+    option(u"pid",             'p', PIDVAL,  0, UNLIMITED_COUNT);
 
-    setHelp ("Pattern:\n"
-             "  Specifies the binary pattern to apply on TS packets payload.\n"
-             "  The value must be a string of hexadecimal digits specifying any\n"
-             "  number of bytes.\n"
-             "\n"
-             "Options:\n"
-             "\n"
-             "  --help\n"
-             "      Display this help text.\n"
-             "\n"
-             "  -n\n"
-             "  --negate\n"
-             "      Negate the PID filter: modify packets on all PID's, expect the\n"
-             "      specified ones.\n"
-             "\n"
-             "  -o value\n"
-             "  --offset-non-pusi value\n"
-             "      Specify starting offset in payload of packets with the PUSI (payload.\n"
-             "      unit start indicator) not set. By default, the pattern replacement\n"
-             "      starts at the beginning of the packet payload (offset 0).\n"
-             "\n"
-             "  -u value\n"
-             "  --offset-pusi value\n"
-             "      Specify starting offset in payload of packets with the PUSI (payload.\n"
-             "      unit start indicator) set. By default, the pattern replacement\n"
-             "      starts at the beginning of the packet payload (offset 0).\n"
-             "\n"
-             "  -p value\n"
-             "  --pid value\n"
-             "      Select packets with this PID value. Several -p or --pid options\n"
-             "      may be specified to select multiple PID's. If no such option is\n"
-             "      specified, packets from all PID's are modified.\n"
-             "\n"
-             "  --version\n"
-             "      Display the version number.\n");
+    setHelp(u"Pattern:\n"
+             u"  Specifies the binary pattern to apply on TS packets payload.\n"
+             u"  The value must be a string of hexadecimal digits specifying any\n"
+             u"  number of bytes.\n"
+             u"\n"
+             u"Options:\n"
+             u"\n"
+             u"  --help\n"
+             u"      Display this help text.\n"
+             u"\n"
+             u"  -n\n"
+             u"  --negate\n"
+             u"      Negate the PID filter: modify packets on all PID's, expect the\n"
+             u"      specified ones.\n"
+             u"\n"
+             u"  -o value\n"
+             u"  --offset-non-pusi value\n"
+             u"      Specify starting offset in payload of packets with the PUSI (payload.\n"
+             u"      unit start indicator) not set. By default, the pattern replacement\n"
+             u"      starts at the beginning of the packet payload (offset 0).\n"
+             u"\n"
+             u"  -u value\n"
+             u"  --offset-pusi value\n"
+             u"      Specify starting offset in payload of packets with the PUSI (payload.\n"
+             u"      unit start indicator) set. By default, the pattern replacement\n"
+             u"      starts at the beginning of the packet payload (offset 0).\n"
+             u"\n"
+             u"  -p value\n"
+             u"  --pid value\n"
+             u"      Select packets with this PID value. Several -p or --pid options\n"
+             u"      may be specified to select multiple PID's. If no such option is\n"
+             u"      specified, packets from all PID's are modified.\n"
+             u"\n"
+             u"  --version\n"
+             u"      Display the version number.\n");
 }
 
 
@@ -135,7 +135,7 @@ bool ts::PatternPlugin::start()
     _offset_non_pusi = intValue<uint8_t> ("offset-non-pusi", 0);
 
     getPIDSet (_pid_list, "pid", true);
-    if (present ("negate")) {
+    if (present(u"negate")) {
         _pid_list.flip();
     }
 

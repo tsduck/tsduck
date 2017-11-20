@@ -112,47 +112,47 @@ TSPLUGIN_DECLARE_PROCESSOR(ts::FileProcessor)
 // Input constructor
 //----------------------------------------------------------------------------
 
-ts::FileInput::FileInput (TSP* tsp_) :
-    InputPlugin(tsp_, "Read packets from a file.", "[options] [file-name]"),
+ts::FileInput::FileInput(TSP* tsp_) :
+    InputPlugin(tsp_, u"Read packets from a file.", u"[options] [file-name]"),
     _file()
 {
-    option ("",               0,  STRING, 0, 1);
-    option ("byte-offset",   'b', UNSIGNED);
-    option ("infinite",      'i');
-    option ("packet-offset", 'p', UNSIGNED);
-    option ("repeat",        'r', POSITIVE);
+    option(u"",               0,  STRING, 0, 1);
+    option(u"byte-offset",   'b', UNSIGNED);
+    option(u"infinite",      'i');
+    option(u"packet-offset", 'p', UNSIGNED);
+    option(u"repeat",        'r', POSITIVE);
 
-    setHelp ("File-name:\n"
-             "  Name of the input file. Use standard input by default.\n"
-             "\n"
-             "Options:\n"
-             "\n"
-             "  -b value\n"
-             "  --byte-offset value\n"
-             "      Start reading the file at the specified byte offset (default: 0).\n"
-             "      This option is allowed only if the input file is a regular file.\n"
-             "\n"
-             "  --help\n"
-             "      Display this help text.\n"
-             "\n"
-             "  -i\n"
-             "  --infinite\n"
-             "      Repeat the playout of the file infinitely (default: only once).\n"
-             "      This option is allowed only if the input file is a regular file.\n"
-             "\n"
-             "  -p value\n"
-             "  --packet-offset value\n"
-             "      Start reading the file at the specified TS packet (default: 0).\n"
-             "      This option is allowed only if the input file is a regular file.\n"
-             "\n"
-             "  -r count\n"
-             "  --repeat count\n"
-             "      Repeat the playout of the file the specified number of times\n"
-             "      (default: only once). This option is allowed only if the\n"
-             "      input file is a regular file.\n"
-             "\n"
-             "  --version\n"
-             "      Display the version number.\n");
+    setHelp(u"File-name:\n"
+            u"  Name of the input file. Use standard input by default.\n"
+            u"\n"
+            u"Options:\n"
+            u"\n"
+            u"  -b value\n"
+            u"  --byte-offset value\n"
+            u"      Start reading the file at the specified byte offset (default: 0).\n"
+            u"      This option is allowed only if the input file is a regular file.\n"
+            u"\n"
+            u"  --help\n"
+            u"      Display this help text.\n"
+            u"\n"
+            u"  -i\n"
+            u"  --infinite\n"
+            u"      Repeat the playout of the file infinitely (default: only once).\n"
+            u"      This option is allowed only if the input file is a regular file.\n"
+            u"\n"
+            u"  -p value\n"
+            u"  --packet-offset value\n"
+            u"      Start reading the file at the specified TS packet (default: 0).\n"
+            u"      This option is allowed only if the input file is a regular file.\n"
+            u"\n"
+            u"  -r count\n"
+            u"  --repeat count\n"
+            u"      Repeat the playout of the file the specified number of times\n"
+            u"      (default: only once). This option is allowed only if the\n"
+            u"      input file is a regular file.\n"
+            u"\n"
+            u"  --version\n"
+            u"      Display the version number.\n");
 }
 
 
@@ -160,34 +160,34 @@ ts::FileInput::FileInput (TSP* tsp_) :
 // Output constructor
 //----------------------------------------------------------------------------
 
-ts::FileOutput::FileOutput (TSP* tsp_) :
-    OutputPlugin(tsp_, "Write packets to a file.", "[options] [file-name]"),
+ts::FileOutput::FileOutput(TSP* tsp_) :
+    OutputPlugin(tsp_, u"Write packets to a file.", u"[options] [file-name]"),
     _file()
 {
-    option ("",        0,  STRING, 0, 1);
-    option ("append", 'a');
-    option ("keep",   'k');
+    option(u"",        0,  STRING, 0, 1);
+    option(u"append", 'a');
+    option(u"keep",   'k');
 
-    setHelp ("File-name:\n"
-             "  Name of the created output file. Use standard output by default.\n"
-             "\n"
-             "Options:\n"
-             "\n"
-             "  -a\n"
-             "  --append\n"
-             "      If the file already exists, append to the end of the file.\n"
-             "      By default, existing files are overwritten.\n"
-             "\n"
-             "  --help\n"
-             "      Display this help text.\n"
-             "\n"
-             "  -k\n"
-             "  --keep\n"
-             "      Keep existing file (abort if the specified file already exists).\n"
-             "      By default, existing files are overwritten.\n"
-             "\n"
-             "  --version\n"
-             "      Display the version number.\n");
+    setHelp(u"File-name:\n"
+            u"  Name of the created output file. Use standard output by default.\n"
+            u"\n"
+            u"Options:\n"
+            u"\n"
+            u"  -a\n"
+            u"  --append\n"
+            u"      If the file already exists, append to the end of the file.\n"
+            u"      By default, existing files are overwritten.\n"
+            u"\n"
+            u"  --help\n"
+            u"      Display this help text.\n"
+            u"\n"
+            u"  -k\n"
+            u"  --keep\n"
+            u"      Keep existing file (abort if the specified file already exists).\n"
+            u"      By default, existing files are overwritten.\n"
+            u"\n"
+            u"  --version\n"
+            u"      Display the version number.\n");
 }
 
 
@@ -195,34 +195,34 @@ ts::FileOutput::FileOutput (TSP* tsp_) :
 // Packet processor constructor
 //----------------------------------------------------------------------------
 
-ts::FileProcessor::FileProcessor (TSP* tsp_) :
-    ProcessorPlugin(tsp_, "Write packets to a file and pass them to next plugin.", "[options] file-name"),
+ts::FileProcessor::FileProcessor(TSP* tsp_) :
+    ProcessorPlugin(tsp_, u"Write packets to a file and pass them to next plugin.", u"[options] file-name"),
     _file()
 {
-    option ("",        0,  STRING, 1, 1);
-    option ("append", 'a');
-    option ("keep",   'k');
+    option(u"",        0,  STRING, 1, 1);
+    option(u"append", 'a');
+    option(u"keep",   'k');
 
-    setHelp ("File-name:\n"
-             "  Name of the created output file.\n"
-             "\n"
-             "Options:\n"
-             "\n"
-             "  -a\n"
-             "  --append\n"
-             "      If the file already exists, append to the end of the file.\n"
-             "      By default, existing files are overwritten.\n"
-             "\n"
-             "  --help\n"
-             "      Display this help text.\n"
-             "\n"
-             "  -k\n"
-             "  --keep\n"
-             "      Keep existing file (abort if the specified file already exists).\n"
-             "      By default, existing files are overwritten.\n"
-             "\n"
-             "  --version\n"
-             "      Display the version number.\n");
+    setHelp(u"File-name:\n"
+            u"  Name of the created output file.\n"
+            u"\n"
+            u"Options:\n"
+            u"\n"
+            u"  -a\n"
+            u"  --append\n"
+            u"      If the file already exists, append to the end of the file.\n"
+            u"      By default, existing files are overwritten.\n"
+            u"\n"
+            u"  --help\n"
+            u"      Display this help text.\n"
+            u"\n"
+            u"  -k\n"
+            u"  --keep\n"
+            u"      Keep existing file (abort if the specified file already exists).\n"
+            u"      By default, existing files are overwritten.\n"
+            u"\n"
+            u"  --version\n"
+            u"      Display the version number.\n");
 }
 
 
@@ -232,8 +232,8 @@ ts::FileProcessor::FileProcessor (TSP* tsp_) :
 
 bool ts::FileInput::start()
 {
-    return _file.open (value (""),
-                       present ("infinite") ? 0 : intValue<size_t> ("repeat", 1),
+    return _file.open (value(u""),
+                       present(u"infinite") ? 0 : intValue<size_t> ("repeat", 1),
                        intValue<uint64_t> ("byte-offset", intValue<uint64_t> ("packet-offset", 0) * PKT_SIZE),
                        *tsp);
 }
@@ -255,7 +255,7 @@ size_t ts::FileInput::receive (TSPacket* buffer, size_t max_packets)
 
 bool ts::FileOutput::start()
 {
-    return _file.open (value (""), present ("append"), present ("keep"), *tsp);
+    return _file.open (value(u""), present(u"append"), present(u"keep"), *tsp);
 }
 
 bool ts::FileOutput::stop()
@@ -275,7 +275,7 @@ bool ts::FileOutput::send (const TSPacket* buffer, size_t packet_count)
 
 bool ts::FileProcessor::start()
 {
-    return _file.open (value (""), present ("append"), present ("keep"), *tsp);
+    return _file.open (value(u""), present(u"append"), present(u"keep"), *tsp);
 }
 
 bool ts::FileProcessor::stop()

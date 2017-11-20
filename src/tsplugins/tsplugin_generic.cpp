@@ -68,15 +68,15 @@ TSPLUGIN_DECLARE_PROCESSOR(ts::GenericPlugin)
 //----------------------------------------------------------------------------
 
 ts::GenericPlugin::GenericPlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, "Generic packet processor.", "[options]")
+    ProcessorPlugin(tsp_, u"Generic packet processor.", u"[options]")
 {
-    setHelp("Options:\n"
-            "\n"
-            "  --help\n"
-            "      Display this help text.\n"
-            "\n"
-            "  --version\n"
-            "      Display the version number.\n");
+    setHelp(u"Options:\n"
+            u"\n"
+            u"  --help\n"
+            u"      Display this help text.\n"
+            u"\n"
+            u"  --version\n"
+            u"      Display the version number.\n");
 }
 
 

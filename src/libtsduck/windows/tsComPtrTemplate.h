@@ -107,7 +107,7 @@ ts::ComPtr<COMCLASS>::ComPtr(const ComPtr<COMCLASS>& p) :
 //-----------------------------------------------------------------------------
 
 template <class COMCLASS>
-ts::ComPtr<COMCLASS>::ComPtr(const ::IID& class_id, const ::IID& interface_id, ReportInterface& report) :
+ts::ComPtr<COMCLASS>::ComPtr(const ::IID& class_id, const ::IID& interface_id, Report& report) :
 
 #if defined(TS_COMPTR_INSTRUMENTATION)
     _traceCreator(false),
@@ -123,7 +123,7 @@ ts::ComPtr<COMCLASS>::ComPtr(const ::IID& class_id, const ::IID& interface_id, R
 //-----------------------------------------------------------------------------
 
 template <class COMCLASS>
-ts::ComPtr<COMCLASS>::ComPtr(::IUnknown* obj, const IID& interface_id, ReportInterface& report) :
+ts::ComPtr<COMCLASS>::ComPtr(::IUnknown* obj, const IID& interface_id, Report& report) :
 
 #if defined(TS_COMPTR_INSTRUMENTATION)
     _traceCreator(false),
@@ -292,7 +292,7 @@ ts::ComPtr<COMCLASS>& ts::ComPtr<COMCLASS>::operator=(COMCLASS* p)
 //-----------------------------------------------------------------------------
 
 template <class COMCLASS>
-ts::ComPtr<COMCLASS>& ts::ComPtr<COMCLASS>::createInstance(const ::IID& class_id, const ::IID& interface_id, ReportInterface& report)
+ts::ComPtr<COMCLASS>& ts::ComPtr<COMCLASS>::createInstance(const ::IID& class_id, const ::IID& interface_id, Report& report)
 {
     release();
     ::HRESULT hr = ::CoCreateInstance(class_id,               // Class ID for object
@@ -313,7 +313,7 @@ ts::ComPtr<COMCLASS>& ts::ComPtr<COMCLASS>::createInstance(const ::IID& class_id
 //-----------------------------------------------------------------------------
 
 template <class COMCLASS>
-ts::ComPtr<COMCLASS>& ts::ComPtr<COMCLASS>::queryInterface(::IUnknown* obj, const IID& interface_id, ReportInterface& report)
+ts::ComPtr<COMCLASS>& ts::ComPtr<COMCLASS>::queryInterface(::IUnknown* obj, const IID& interface_id, Report& report)
 {
     release();
     if (obj != 0) {
@@ -332,7 +332,7 @@ ts::ComPtr<COMCLASS>& ts::ComPtr<COMCLASS>::queryInterface(::IUnknown* obj, cons
 //-----------------------------------------------------------------------------
 
 template <class COMCLASS>
-ts::ComPtr<COMCLASS>& ts::ComPtr<COMCLASS>::bindToObject(::IMoniker* moniker, const IID& interface_id, ReportInterface& report)
+ts::ComPtr<COMCLASS>& ts::ComPtr<COMCLASS>::bindToObject(::IMoniker* moniker, const IID& interface_id, Report& report)
 {
     release();
     if (moniker != 0) {

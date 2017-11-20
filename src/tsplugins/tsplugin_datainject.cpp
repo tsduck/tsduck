@@ -113,11 +113,11 @@ TSPLUGIN_DECLARE_PROCESSOR(ts::DataInjectPlugin)
 //----------------------------------------------------------------------------
 
 ts::DataInjectPlugin::DataInjectPlugin (TSP* tsp_) :
-    ProcessorPlugin (tsp_, "DVB SimulCrypt data injector using EMMG/PDG <=> MUX protocol.", "[options]"),
+    ProcessorPlugin(tsp_, u"DVB SimulCrypt data injector using EMMG/PDG <=> MUX protocol.", u"[options]"),
     Thread(ThreadAttributes().setStackSize(SERVER_THREAD_STACK_SIZE)),
     _pkt_current(0),
     _pkt_next_data(0),
-   _data_pid(PID_NULL),
+    _data_pid(PID_NULL),
     _data_cc(0),
     _max_bitrate(0),
     _req_bitrate(0),
@@ -128,54 +128,54 @@ ts::DataInjectPlugin::DataInjectPlugin (TSP* tsp_) :
     _server(),
     _client(emmgmux::Protocol::Instance(), true, 3)
 {
-    option ("bitrate-max",      'b', POSITIVE);
-    option ("emmg-mux-version", 'v', INTEGER, 0, 1, 2, 3);
-    option ("pid",              'p', PIDVAL, 1, 1);
-    option ("queue-size",       'q', UINT32);
-    option ("reuse-port",       'r');
-    option ("server",           's', STRING, 1, 1);
+    option(u"bitrate-max",      'b', POSITIVE);
+    option(u"emmg-mux-version", 'v', INTEGER, 0, 1, 2, 3);
+    option(u"pid",              'p', PIDVAL, 1, 1);
+    option(u"queue-size",       'q', UINT32);
+    option(u"reuse-port",       'r');
+    option(u"server",           's', STRING, 1, 1);
 
-    setHelp ("Options:\n"
-             "\n"
-             "  -b value\n"
-             "  --bitrate-max value\n"
-             "      Specifies the maximum bitrate for the data PID in bits / second.\n"
-             "      By default, the data PID bitrate is limited by the stuffing bitrate\n"
-             "      (data insertion is performed by replacing stuffing packets).\n"
-             "\n"
-             "  -v value\n"
-             "  --emmg-mux-version value\n"
-             "      Specifies the version of the EMMG/PDG <=> MUX DVB SimulCrypt protocol.\n"
-             "      Valid values are 2 and 3. The default is 2.\n"
-             "\n"
-             "  --help\n"
-             "      Display this help text.\n"
-             "\n"
-             "  -p value\n"
-             "  --pid value\n"
-             "      Specifies the PID for the data insertion. This option is mandatory.\n"
-             "\n"
-             "  -q value\n"
-             "  --queue-size value\n"
-             "      Specifies the maximum number of data TS packets in the internal queue,\n"
-             "      ie. packets which are received from the EMMG/PDG client but not yet\n"
-             "      inserted into the TS. The default is " + Decimal (DEFAULT_PACKET_QUEUE_SIZE) + ".\n"
-             "\n"
-             "  -r\n"
-             "  --reuse-port\n"
-             "      Set the \"reuse port\" (or \"reuse address\") TCP option on the server.\n"
-             "\n"
-             "  -s [address:]port\n"
-             "  --server [address:]port\n"
-             "      Specifies the local TCP port on which the plugin listens for an incoming\n"
-             "      EMMG/PDG connection. This option is mandatory.\n"
-             "      When present, the optional address shall specify a local IP address or\n"
-             "      host name (by default, the plugin accepts connections on any local IP\n"
-             "      interface). This plugin behaves as a MUX, ie. a TCP server, and accepts\n"
-             "      only one EMMG/PDG connection at a time.\n"
-             "\n"
-             "  --version\n"
-             "      Display the version number.\n");
+    setHelp(u"Options:\n"
+            u"\n"
+            u"  -b value\n"
+            u"  --bitrate-max value\n"
+            u"      Specifies the maximum bitrate for the data PID in bits / second.\n"
+            u"      By default, the data PID bitrate is limited by the stuffing bitrate\n"
+            u"      (data insertion is performed by replacing stuffing packets).\n"
+            u"\n"
+            u"  -v value\n"
+            u"  --emmg-mux-version value\n"
+            u"      Specifies the version of the EMMG/PDG <=> MUX DVB SimulCrypt protocol.\n"
+            u"      Valid values are 2 and 3. The default is 2.\n"
+            u"\n"
+            u"  --help\n"
+            u"      Display this help text.\n"
+            u"\n"
+            u"  -p value\n"
+            u"  --pid value\n"
+            u"      Specifies the PID for the data insertion. This option is mandatory.\n"
+            u"\n"
+            u"  -q value\n"
+            u"  --queue-size value\n"
+            u"      Specifies the maximum number of data TS packets in the internal queue,\n"
+            u"      ie. packets which are received from the EMMG/PDG client but not yet\n"
+            u"      inserted into the TS. The default is " + Decimal (DEFAULT_PACKET_QUEUE_SIZE) + ".\n"
+            u"\n"
+            u"  -r\n"
+            u"  --reuse-port\n"
+            u"      Set the \"reuse port\" (or \"reuse address\") TCP option on the server.\n"
+            u"\n"
+            u"  -s [address:]port\n"
+            u"  --server [address:]port\n"
+            u"      Specifies the local TCP port on which the plugin listens for an incoming\n"
+            u"      EMMG/PDG connection. This option is mandatory.\n"
+            u"      When present, the optional address shall specify a local IP address or\n"
+            u"      host name (by default, the plugin accepts connections on any local IP\n"
+            u"      interface). This plugin behaves as a MUX, ie. a TCP server, and accepts\n"
+            u"      only one EMMG/PDG connection at a time.\n"
+            u"\n"
+            u"  --version\n"
+            u"      Display the version number.\n");
 }
 
 
@@ -195,13 +195,13 @@ bool ts::DataInjectPlugin::start()
 
     // Initialize the TCP server
     SocketAddress server_address;
-    if (!server_address.resolve (value ("server"), *tsp)) {
+    if (!server_address.resolve (value(u"server"), *tsp)) {
         return false;
     }
     if (!_server.open (*tsp)) {
         return false;
     }
-    if (!_server.reusePort (present ("reuse-port"), *tsp) || !_server.bind (server_address, *tsp) || !_server.listen (SERVER_BACKLOG, *tsp)) {
+    if (!_server.reusePort (present(u"reuse-port"), *tsp) || !_server.bind (server_address, *tsp) || !_server.listen (SERVER_BACKLOG, *tsp)) {
         _server.close (*tsp);
         return false;
     }

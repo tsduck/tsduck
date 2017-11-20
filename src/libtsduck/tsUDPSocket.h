@@ -35,7 +35,7 @@
 #pragma once
 #include "tsSocketAddress.h"
 #include "tsAbortInterface.h"
-#include "tsReportInterface.h"
+#include "tsReport.h"
 #include "tsMemoryUtils.h"
 
 namespace ts {
@@ -50,7 +50,7 @@ namespace ts {
         //! @param [in] auto_open If true, call open() immediately.
         //! @param [in,out] report Where to report error.
         //!
-        UDPSocket(bool auto_open = false, ReportInterface& report = CERR);
+        UDPSocket(bool auto_open = false, Report& report = CERR);
 
         //!
         //! Destructor.
@@ -62,7 +62,7 @@ namespace ts {
         //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
-        bool open(ReportInterface& report = CERR);
+        bool open(Report& report = CERR);
 
         //!
         //! Close the socket.
@@ -81,7 +81,7 @@ namespace ts {
         //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
-        bool setSendBufferSize(size_t size, ReportInterface& report = CERR);
+        bool setSendBufferSize(size_t size, Report& report = CERR);
 
         //!
         //! Set the receive buffer size.
@@ -89,7 +89,7 @@ namespace ts {
         //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
-        bool setReceiveBufferSize(size_t size, ReportInterface& report = CERR);
+        bool setReceiveBufferSize(size_t size, Report& report = CERR);
 
         //!
         //! Set the "reuse port" option.
@@ -98,7 +98,7 @@ namespace ts {
         //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
-        bool reusePort(bool reuse_port, ReportInterface& report = CERR);
+        bool reusePort(bool reuse_port, Report& report = CERR);
 
         //!
         //! Bind to a local address and port.
@@ -124,7 +124,7 @@ namespace ts {
         //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
-        bool bind(const SocketAddress& addr, ReportInterface& report = CERR);
+        bool bind(const SocketAddress& addr, Report& report = CERR);
 
         //!
         //! Set a default destination address and port for outgoing messages.
@@ -141,7 +141,7 @@ namespace ts {
         //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
-        bool setDefaultDestination(const SocketAddress& addr, ReportInterface& report = CERR);
+        bool setDefaultDestination(const SocketAddress& addr, Report& report = CERR);
 
         //!
         //! Set a default destination address and port for outgoing messages.
@@ -156,7 +156,7 @@ namespace ts {
         //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
-        bool setDefaultDestination(const std::string& name, ReportInterface& report = CERR);
+        bool setDefaultDestination(const std::string& name, Report& report = CERR);
 
         //!
         //! Get the default destination address and port for outgoing messages.
@@ -171,7 +171,7 @@ namespace ts {
         //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
-        bool setOutgoingMulticast(const IPAddress& addr, ReportInterface& report = CERR);
+        bool setOutgoingMulticast(const IPAddress& addr, Report& report = CERR);
 
         //!
         //! Set the outgoing local interface for multicast messages.
@@ -181,7 +181,7 @@ namespace ts {
         //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
-        bool setOutgoingMulticast(const std::string& name, ReportInterface& report = CERR);
+        bool setOutgoingMulticast(const std::string& name, Report& report = CERR);
 
         //!
         //! Set the Time To Live (TTL) option.
@@ -193,7 +193,7 @@ namespace ts {
         //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
-        bool setTTL(int ttl, bool multicast, ReportInterface& report = CERR);
+        bool setTTL(int ttl, bool multicast, Report& report = CERR);
 
         //!
         //! Set the Time To Live (TTL) option.
@@ -206,7 +206,7 @@ namespace ts {
         //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
-        bool setTTL(int ttl, ReportInterface& report = CERR)
+        bool setTTL(int ttl, Report& report = CERR)
         {
             return setTTL(ttl, _default_destination.isMulticast(), report);
         }
@@ -224,7 +224,7 @@ namespace ts {
         //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
-        bool addMembership(const IPAddress& multicast, const IPAddress& local, ReportInterface& report = CERR);
+        bool addMembership(const IPAddress& multicast, const IPAddress& local, Report& report = CERR);
 
         //!
         //! Join a multicast group.
@@ -239,14 +239,14 @@ namespace ts {
         //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
-        bool addMembership(const IPAddress& multicast, ReportInterface& report = CERR);
+        bool addMembership(const IPAddress& multicast, Report& report = CERR);
 
         //!
         //! Drop all multicast membership requests.
         //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
-        bool dropMembership(ReportInterface& report = CERR);
+        bool dropMembership(Report& report = CERR);
 
         //!
         //! Send a message to a destination address and port.
@@ -260,7 +260,7 @@ namespace ts {
         //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
-        bool send(const void* data, size_t size, const SocketAddress& destination, ReportInterface& report = CERR);
+        bool send(const void* data, size_t size, const SocketAddress& destination, Report& report = CERR);
 
         //!
         //! Send a message to the default destination address and port.
@@ -270,7 +270,7 @@ namespace ts {
         //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
-        bool send(const void* data, size_t size, ReportInterface& report = CERR)
+        bool send(const void* data, size_t size, Report& report = CERR)
         {
             return send(data, size, _default_destination, report);
         }
@@ -293,7 +293,7 @@ namespace ts {
                      size_t& ret_size,
                      SocketAddress& sender,
                      const AbortInterface* abort = 0,
-                     ReportInterface& report = CERR);
+                     Report& report = CERR);
 
         //!
         //! Get the underlying socket device handle (use with care).

@@ -33,7 +33,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsPlatform.h"
+#include "tsUString.h"
 #include "tsNullReport.h"
 
 namespace ts {
@@ -44,18 +44,13 @@ namespace ts {
     {
     public:
         //!
-        //! File name extension of shared library file names (".so" on UNIX, ".dll" on Windows).
-        //!
-        static const char* const Extension;
-
-        //!
         //! Constructor: Load a shared library
         //! @param [in] filename Shared library file name.
         //! @param [in] permanent If false (the default), the shared library is unloaded from the current process
         //! when this object is destroyed. If true, the shared library remains active.
         //! @param [in,out] report Where to report errors.
         //!
-        explicit SharedLibrary(const std::string& filename, bool permanent = false, ReportInterface& report = NULLREP);
+        explicit SharedLibrary(const UString& filename, bool permanent = false, Report& report = NULLREP);
 
         //!
         //! Destructor.
@@ -74,17 +69,17 @@ namespace ts {
         //! Useful when isLoaded() == false.
         //! @return An error message.
         //!
-        const std::string& errorMessage() const {return _error;}
+        const UString& errorMessage() const {return _error;}
 
         //!
         //! Return actual file name of shared library.
         //! @return The actual file name of shared library.
         //!
-        const std::string& fileName() const {return _filename;}
+        const UString& fileName() const {return _filename;}
 
         //!
         //! Get the value of an exported symbol inside the shared library.
-        //! @param [in] name Symbol name.
+        //! @param [in] name Symbol name, using 8-bit characters, not Unicode.
         //! @return The symbol value or 0 on error. When the symbol is an
         //! address, the returned value is a virtual memory address inside
         //! the current process.
@@ -96,7 +91,7 @@ namespace ts {
         //! Try to load an alternate file if the shared library is not yet loaded.
         //! @param [in] filename Shared library file name.
         //!
-        void load(const std::string& filename);
+        void load(const UString& filename);
 
         //!
         //! Force unload, even if permanent
@@ -105,11 +100,12 @@ namespace ts {
 
     private:
         // Private members
-        ReportInterface& _report;
-        std::string _filename;
-        std::string _error;
-        bool _is_loaded;
-        bool _permanent;
+        Report& _report;
+        UString _filename;
+        UString _error;
+        bool    _is_loaded;
+        bool    _permanent;
+
 #if defined (TS_WINDOWS)
         ::HMODULE _module;
 #else

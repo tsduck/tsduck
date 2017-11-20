@@ -34,10 +34,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsEnumeration.h"
-#include "tsToInteger.h"
-#include "tsStringUtils.h"
-#include "tsDecimal.h"
-#include "tsFormat.h"
 TSDUCK_SOURCE;
 
 //
@@ -47,56 +43,20 @@ const int ts::Enumeration::UNKNOWN = std::numeric_limits<int>::max();
 
 
 //----------------------------------------------------------------------------
-// Constructor from a variable list of string/int pairs.
+// Constructors.
 //----------------------------------------------------------------------------
 
-ts::Enumeration::Enumeration(const char* name, int value, ...) :
+ts::Enumeration::Enumeration() :
     _map()
 {
-    // Do not do anything if the null pointer is at the beginning
-    if (name == 0) {
-        return;
-    }
+}
 
-    // Insert first element
-    _map.insert(std::make_pair(value, std::string(name)));
-
-    // Loop on variable argument list
-    va_list ap;
-    va_start(ap, value);
-    for (;;) {
-        const char* n = va_arg(ap, const char*);
-        // There is a trick here. Normally, we documented that the last argument
-        // must be a TS_NULL pointer, ie. the symbol "TS_NULL", not the literal "0".
-        // This is important because a variable argument list is untyped and "0"
-        // is interpreted as "int literal zero". On some platforms, int and char*
-        // may have different sizes.
-        bool isNull = n == 0;
-        // In the following test, we know that the expression "sizeof(int) < sizeof(char*)" is constant.
-        // warning C4127: conditional expression is constant
-        #if defined(TS_MSC)
-            #pragma warning (push)
-            #pragma warning (disable:4127)
-        #endif
-        if (!isNull && sizeof(int) < sizeof(char*)) {
-            #if defined(TS_MSC)
-                #pragma warning (pop)
-            #endif
-            // Try to detect buggy "0" literal. This is not bullet-proof and
-            // may even lead to false positive in rare occasion (valid pointer
-            // appearing as a zero). But this prevent a crash in most buggy
-            // applications.
-            const uintptr_t ns = reinterpret_cast<uintptr_t>(n);
-            const uintptr_t intMask = uintptr_t((unsigned int)(~0));
-            isNull = (ns & intMask) == 0;
-        }
-        if (isNull) {
-            break;
-        }
-        int v = va_arg(ap, int);
-        _map.insert(std::make_pair(v, std::string(n)));
+ts::Enumeration::Enumeration(const std::initializer_list<NameValue> values) :
+    _map()
+{
+    for (std::initializer_list<NameValue>::const_iterator it = values.begin(); it != values.end(); ++it) {
+        _map.insert(std::make_pair(it->value, it->name));
     }
-    va_end(ap);
 }
 
 
@@ -104,18 +64,18 @@ ts::Enumeration::Enumeration(const char* name, int value, ...) :
 // Get the value from a name, abbreviation allowed.
 //----------------------------------------------------------------------------
 
-int ts::Enumeration::value(const std::string& name, bool caseSensitive) const
+int ts::Enumeration::value(const UString& name, bool caseSensitive) const
 {
-    const std::string lcName(LowerCaseValue(name));
+    const UString lcName(name.toLower());
     size_t previousCount = 0;
     int previous = UNKNOWN;
 
     for (EnumMap::const_iterator it = _map.begin(); it != _map.end(); ++it) {
-        if ((caseSensitive && it->second == name) || (!caseSensitive && LowerCaseValue(it->second) == lcName)) {
+        if ((caseSensitive && it->second == name) || (!caseSensitive && it->second.toLower() == lcName)) {
             // Found an exact match
             return it->first;
         }
-        else if ((caseSensitive && it->second.find(name) == 0) || (!caseSensitive && LowerCaseValue(it->second).find(lcName) == 0)) {
+        else if (it->second.startWith(name, caseSensitive ? CASE_SENSITIVE : CASE_INSENSITIVE)) {
             // Found an abbreviated version
             if (++previousCount == 1) {
                 // First abbreviation, remember it and continue searching
@@ -132,7 +92,7 @@ int ts::Enumeration::value(const std::string& name, bool caseSensitive) const
         // Only one solution for abbreviation
         return previous;
     }
-    else if (ToInteger(previous, name)) {
+    else if (name.toInteger(previous, u",")) {
         // Name evaluates to an integer
         return previous;
     }
@@ -147,17 +107,17 @@ int ts::Enumeration::value(const std::string& name, bool caseSensitive) const
 // Get the name from a value.
 //----------------------------------------------------------------------------
 
-std::string ts::Enumeration::name(int value, bool hexa, size_t hexDigitCount) const
+ts::UString ts::Enumeration::name(int value, bool hexa, size_t hexDigitCount) const
 {
     const EnumMap::const_iterator it = _map.find(value);
     if (it != _map.end()) {
         return it->second;
     }
     else if (hexa) {
-        return Format("0x%0*X", int(hexDigitCount), value);
+        return UString::Format(u"0x%0*X", {hexDigitCount, value});
     }
     else {
-        return Decimal(value, 0, true, "");
+        return UString::Decimal(value, 0, true, UString());
     }
 }
 
@@ -166,15 +126,14 @@ std::string ts::Enumeration::name(int value, bool hexa, size_t hexDigitCount) co
 // Return a comma-separated list of all possible names.
 //----------------------------------------------------------------------------
 
-std::string ts::Enumeration::nameList(const char* separator) const
+ts::UString ts::Enumeration::nameList(const UString& separator) const
 {
-    std::string list;
+    UString list;
     for (EnumMap::const_iterator it = _map.begin(); it != _map.end(); ++it) {
         if (!list.empty()) {
             list += separator;
         }
         list += it->second;
     }
-
     return list;
 }

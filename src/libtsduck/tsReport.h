@@ -1,0 +1,313 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2017, Thierry Lelegard
+// All rights reserved.
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
+//
+// 1. Redistributions of source code must retain the above copyright notice,
+//    this list of conditions and the following disclaimer.
+// 2. Redistributions in binary form must reproduce the above copyright
+//    notice, this list of conditions and the following disclaimer in the
+//    documentation and/or other materials provided with the distribution.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+// THE POSSIBILITY OF SUCH DAMAGE.
+//
+//----------------------------------------------------------------------------
+//!
+//!  @file
+//!  Abstract interface for event reporting and monitoring
+//!
+//----------------------------------------------------------------------------
+
+#pragma once
+#include "tsUString.h"
+
+namespace ts {
+
+    //!
+    //! Message severity.
+    //! Positive values are debug levels. The typical default reporting level is @c Info.
+    //! All messages with a higher level (@c Verbose and all debug levels) are not reported by default.
+    //! The @c struct is here just to add a naming level
+    //!
+    struct TSDUCKDLL Severity {
+
+        static const int None    = -6;  //!< No message is reported at this level or below.
+        static const int Fatal   = -5;  //!< Fatal error, typically aborts the application.
+        static const int Severe  = -4;  //!< Severe errror.
+        static const int Error   = -3;  //!< Regular error.
+        static const int Warning = -2;  //!< Warning message.
+        static const int Info    = -1;  //!< Information message.
+        static const int Verbose = 0;   //!< Verbose information.
+        static const int Debug   = 1;   //!< First debug level.
+
+        //!
+        //! Formatted line prefix header for a severity
+        //! @param [in] severity Severity value.
+        //! @return A string to prepend to messages. Empty for Info and Verbose levels.
+        //!
+        static UString Header(int severity);
+    };
+
+    //!
+    //! Abstract interface for event reporting and monitoring.
+    //!
+    class TSDUCKDLL Report
+    {
+    public:
+        //!
+        //! Constructor.
+        //! The default initial report level is Info.
+        //! @param [in] verbose If true, set initial report level to Verbose.
+        //! @param [in] debug_level If greater than zero, set initial report to that level and ignore @a verbose.
+        //!
+        Report(bool verbose = false, int debug_level = 0);
+
+        //!
+        //! Destructor.
+        //!
+        virtual ~Report() {}
+
+        //!
+        //! Set maximum debug level.
+        //! @param [in] level Set report to that level.
+        //!
+        virtual void setDebugLevel(int level);
+
+        //!
+        //! Get maximum debug level.
+        //! @return Current maximum debug level.
+        //!
+        int debugLevel() const { return _max_severity; }
+
+        //!
+        //! Check if debugging is active.
+        //! @return True if current reporting level is Debug or higher.
+        //!
+        bool debug() const { return _max_severity >= Severity::Debug; }
+
+        //!
+        //! Check if verbose reporting is active.
+        //! @return True if current reporting level is Verbose or higher.
+        //!
+        bool verbose() const { return _max_severity >= Severity::Verbose; }
+
+        //!
+        //! Report a message with an explicit severity.
+        //!
+        //! This method is the central reporting point. If filters the severity
+        //! and drops the message if @a severity is higher than debugLevel().
+        //!
+        //! Subclasses should override writeLog() to implement a specific reporting
+        //! device. It is not necessary to override log() unless the subclass needs
+        //! to implement a different severity filtering policy.
+        //!
+        //! @param [in] severity Message severity.
+        //! @param [in] msg Message text.
+        //!
+        virtual void log(int severity, const UString& msg);
+
+        //!
+        //! Report a message with an explicit severity and a printf-like interface.
+        //! @param [in] severity Message severity.
+        //! @param [in] fmt Format string with embedded '\%' sequences.
+        //! @param [in] args List of arguments to substitute in the format string.
+        //! @see UString::format()
+        //!
+        virtual void log(int severity, const UChar* fmt, const std::initializer_list<ArgMix> args);
+
+        //!
+        //! Report a message with an explicit severity and a printf-like interface.
+        //! @param [in] severity Message severity.
+        //! @param [in] fmt Format string with embedded '\%' sequences.
+        //! @param [in] args List of arguments to substitute in the format string.
+        //! @see UString::format()
+        //!
+        virtual void log(int severity, const UString& fmt, const std::initializer_list<ArgMix> args);
+
+        //!
+        //! Report a fatal error message.
+        //! @param [in] msg Message text.
+        //!
+        void fatal(const UString& msg) { log(Severity::Fatal, msg); }
+
+        //!
+        //! Report a fatal error message with a printf-like interface.
+        //! @param [in] fmt Format string with embedded '\%' sequences.
+        //! @param [in] args List of arguments to substitute in the format string.
+        //! @see UString::format()
+        //!
+        void fatal(const UChar* fmt, const std::initializer_list<ArgMix> args) { log(Severity::Fatal, fmt, args); }
+
+        //!
+        //! Report a fatal error message with a printf-like interface.
+        //! @param [in] fmt Format string with embedded '\%' sequences.
+        //! @param [in] args List of arguments to substitute in the format string.
+        //! @see UString::format()
+        //!
+        void fatal(const UString& fmt, const std::initializer_list<ArgMix> args) { log(Severity::Fatal, fmt, args); }
+
+        //!
+        //! Report a severe error message.
+        //! @param [in] msg Message text.
+        //!
+        void severe(const UString& msg) { log(Severity::Severe, msg); }
+
+        //!
+        //! Report a severe error message with a printf-like interface.
+        //! @param [in] fmt Format string with embedded '\%' sequences.
+        //! @param [in] args List of arguments to substitute in the format string.
+        //! @see UString::format()
+        //!
+        void severe(const UChar* fmt, const std::initializer_list<ArgMix> args) { log(Severity::Severe, fmt, args); }
+
+        //!
+        //! Report a severe error message with a printf-like interface.
+        //! @param [in] fmt Format string with embedded '\%' sequences.
+        //! @param [in] args List of arguments to substitute in the format string.
+        //! @see UString::format()
+        //!
+        void severe(const UString& fmt, const std::initializer_list<ArgMix> args) { log(Severity::Severe, fmt, args); }
+
+        //!
+        //! Report an error message.
+        //! @param [in] msg Message text.
+        //!
+        void error(const UString& msg) { log(Severity::Error, msg); }
+
+        //!
+        //! Report an error message with a printf-like interface.
+        //! @param [in] fmt Format string with embedded '\%' sequences.
+        //! @param [in] args List of arguments to substitute in the format string.
+        //! @see UString::format()
+        //!
+        void error(const UChar* fmt, const std::initializer_list<ArgMix> args) { log(Severity::Error, fmt, args); }
+
+        //!
+        //! Report an error message with a printf-like interface.
+        //! @param [in] fmt Format string with embedded '\%' sequences.
+        //! @param [in] args List of arguments to substitute in the format string.
+        //! @see UString::format()
+        //!
+        void error(const UString& fmt, const std::initializer_list<ArgMix> args) { log(Severity::Error, fmt, args); }
+
+        //!
+        //! Report a warning message.
+        //! @param [in] msg Message text.
+        //!
+        void warning(const UString& msg) { log(Severity::Warning, msg); }
+
+        //!
+        //! Report a warning message with a printf-like interface.
+        //! @param [in] fmt Format string with embedded '\%' sequences.
+        //! @param [in] args List of arguments to substitute in the format string.
+        //! @see UString::format()
+        //!
+        void warning(const UChar* fmt, const std::initializer_list<ArgMix> args) { log(Severity::Warning, fmt, args); }
+
+        //!
+        //! Report a warning message with a printf-like interface.
+        //! @param [in] fmt Format string with embedded '\%' sequences.
+        //! @param [in] args List of arguments to substitute in the format string.
+        //! @see UString::format()
+        //!
+        void warning(const UString& fmt, const std::initializer_list<ArgMix> args) { log(Severity::Warning, fmt, args); }
+
+        //!
+        //! Report an informational message.
+        //! @param [in] msg Message text.
+        //!
+        void info(const UString& msg) { log(Severity::Info, msg); }
+
+        //!
+        //! Report an informational message with a printf-like interface.
+        //! @param [in] fmt Format string with embedded '\%' sequences.
+        //! @param [in] args List of arguments to substitute in the format string.
+        //! @see UString::format()
+        //!
+        void info(const UChar* fmt, const std::initializer_list<ArgMix> args) { log(Severity::Info, fmt, args); }
+
+        //!
+        //! Report an informational message with a printf-like interface.
+        //! @param [in] fmt Format string with embedded '\%' sequences.
+        //! @param [in] args List of arguments to substitute in the format string.
+        //! @see UString::format()
+        //!
+        void info(const UString& fmt, const std::initializer_list<ArgMix> args) { log(Severity::Info, fmt, args); }
+
+        //!
+        //! Report a verbose message.
+        //! @param [in] msg Message text.
+        //!
+        void verbose(const UString& msg) { log(Severity::Verbose, msg); }
+
+        //!
+        //! Report a verbose message with a printf-like interface.
+        //! @param [in] fmt Format string with embedded '\%' sequences.
+        //! @param [in] args List of arguments to substitute in the format string.
+        //! @see UString::format()
+        //!
+        void verbose(const UChar* fmt, const std::initializer_list<ArgMix> args) { log(Severity::Verbose, fmt, args); }
+
+        //!
+        //! Report a verbose message with a printf-like interface.
+        //! @param [in] fmt Format string with embedded '\%' sequences.
+        //! @param [in] args List of arguments to substitute in the format string.
+        //! @see UString::format()
+        //!
+        void verbose(const UString& fmt, const std::initializer_list<ArgMix> args) { log(Severity::Verbose, fmt, args); }
+
+        //!
+        //! Report a debug message.
+        //! @param [in] msg Message text.
+        //!
+        void debug(const UString& msg) { log(Severity::Debug, msg); }
+
+        //!
+        //! Report a debug message with a printf-like interface.
+        //! @param [in] fmt Format string with embedded '\%' sequences.
+        //! @param [in] args List of arguments to substitute in the format string.
+        //! @see UString::format()
+        //!
+        void debug(const UChar* fmt, const std::initializer_list<ArgMix> args) { log(Severity::Debug, fmt, args); }
+
+        //!
+        //! Report a debug message with a printf-like interface.
+        //! @param [in] fmt Format string with embedded '\%' sequences.
+        //! @param [in] args List of arguments to substitute in the format string.
+        //! @see UString::format()
+        //!
+        void debug(const UString& fmt, const std::initializer_list<ArgMix> args) { log(Severity::Debug, fmt, args); }
+
+    protected:
+        //!
+        //! Debug level is accessible to subclasses
+        //!
+        volatile int _max_severity;
+
+        //!
+        //! Actual message reporting method.
+        //!
+        //! Must be implemented in actual classes.
+        //! The method is called only when a message passed the severity filter.
+        //! It is not necessary to recheck @a severity inside the method.
+        //!
+        //! @param [in] severity Message severity.
+        //! @param [in] msg Message text.
+        //!
+        virtual void writeLog(int severity, const UString& msg) = 0;
+    };
+}

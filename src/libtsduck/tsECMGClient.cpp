@@ -120,7 +120,7 @@ bool ts::ECMGClient::connect(const SocketAddress& ecmg_address,
                              ecmgscs::ChannelStatus& channel_status,
                              ecmgscs::StreamStatus& stream_status,
                              const AbortInterface* abort,
-                             ReportInterface* report)
+                             Report* report)
 {
     // Initial state check
     {
@@ -371,7 +371,7 @@ void ts::ECMGClient::main()
     for (;;) {
 
         TS_UNUSED const AbortInterface* abort = 0;
-        ReportInterface* report = 0;
+        Report* report = 0;
 
         // Wait for a connection to be managed
         {

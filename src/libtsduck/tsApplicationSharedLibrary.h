@@ -60,23 +60,23 @@ namespace ts {
         //! when this object is destroyed. If true, the shared library remains active.
         //! @param [in,out] report Where to report errors.
         //!
-        explicit ApplicationSharedLibrary(const std::string& filename,
-                                          const std::string& prefix = std::string(),
-                                          const std::string& library_path = std::string(),
+        explicit ApplicationSharedLibrary(const UString& filename,
+                                          const UString& prefix = UString(),
+                                          const UString& library_path = UString(),
                                           bool permanent = false,
-                                          ReportInterface& report = NULLREP);
+                                          Report& report = NULLREP);
 
         //!
         //! The module name is derived from the file name without the prefix.
         //! @return The module name.
         //!
-        std::string moduleName() const;
+        UString moduleName() const;
 
         //!
         //! Get the prefix.
         //! @return The file name prefix.
         //!
-        std::string prefix() const {return _prefix;}
+        UString prefix() const {return _prefix;}
 
         //!
         //! Get a list of plugins.
@@ -84,10 +84,10 @@ namespace ts {
         //! @param [in] prefix Prefix for plugin names.
         //! @param [in] library_path Name of an environment variable, an optional list of directories to search, similar to @c LD_LIBARY_PATH.
         //!
-        static void GetPluginList(StringVector& files, const std::string& prefix, const std::string& library_path = std::string());
+        static void GetPluginList(UStringVector& files, const UString& prefix, const UString& library_path = UString());
 
     private:
-        std::string _prefix;
+        UString _prefix;
 
         // Unreachable operations.
         ApplicationSharedLibrary() = delete;

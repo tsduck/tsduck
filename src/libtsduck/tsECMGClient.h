@@ -92,7 +92,7 @@ namespace ts {
                      ecmgscs::ChannelStatus& channel_status,
                      ecmgscs::StreamStatus& stream_status,
                      const AbortInterface* abort,
-                     ReportInterface* report);
+                     Report* report);
 
         //!
         //! Synchronously generate an ECM.
@@ -175,7 +175,7 @@ namespace ts {
         // Private members
         State                   _state;
         const AbortInterface*   _abort;
-        ReportInterface*        _report;
+        Report*        _report;
         tlv::Connection <Mutex> _connection;     // connection with ECMG server
         ecmgscs::ChannelStatus  _channel_status; // initial response to channel_setup
         ecmgscs::StreamStatus   _stream_status;  // initial response to stream_setup

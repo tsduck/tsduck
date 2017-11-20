@@ -34,7 +34,7 @@
 
 #pragma once
 #include "tsEnumeration.h"
-#include "tsReportInterface.h"
+#include "tsReport.h"
 #include "tsComPtr.h"
 
 namespace ts {
@@ -49,7 +49,7 @@ namespace ts {
         //! @param [in,out] output Where to display test results.
         //! @param [in,out] report Where to report errors.
         //!
-        DirectShowTest(std::ostream& output, ReportInterface& report);
+        DirectShowTest(std::ostream& output, Report& report);
 
         //!
         //! List of DirectShow tests.
@@ -123,7 +123,7 @@ namespace ts {
 
     private:
         std::ostream&    _output;
-        ReportInterface& _report;
+        Report& _report;
 
         // Get an enumerator for all tuning spaces.
         bool getAllTuningSpaces(ComPtr<::ITuningSpaceContainer>& tsContainer, ComPtr<::IEnumTuningSpaces>& tsEnum);

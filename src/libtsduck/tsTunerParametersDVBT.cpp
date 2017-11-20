@@ -330,7 +330,7 @@ void ts::TunerParametersDVBT::displayParameters(std::ostream& strm, const std::s
 // Extract options from a TunerArgs, applying defaults when necessary.
 //----------------------------------------------------------------------------
 
-bool ts::TunerParametersDVBT::fromArgs (const TunerArgs& tuner, ReportInterface& report)
+bool ts::TunerParametersDVBT::fromArgs (const TunerArgs& tuner, Report& report)
 {
     if (!tuner.frequency.set()) {
         report.error ("no frequency specified, use option --frequency");

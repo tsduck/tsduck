@@ -69,7 +69,7 @@ namespace ts {
         //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool setBufferSize(size_t buffer_size, ReportInterface& report);
+        bool setBufferSize(size_t buffer_size, Report& report);
 
         //!
         //! Get the buffer size.
@@ -111,7 +111,7 @@ namespace ts {
         //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool open(const std::string& filename, size_t repeat_count, uint64_t start_offset, ReportInterface& report);
+        bool open(const std::string& filename, size_t repeat_count, uint64_t start_offset, Report& report);
 
         //!
         //! Read TS packets.
@@ -123,7 +123,7 @@ namespace ts {
         //! @return The actual number of read packets. Returning zero means
         //! error or end of file repetition.
         //!
-        size_t read(TSPacket* buffer, size_t max_packets, ReportInterface& report);
+        size_t read(TSPacket* buffer, size_t max_packets, Report& report);
 
         //!
         //! Get the backward seekable distance inside the buffer.
@@ -153,7 +153,7 @@ namespace ts {
         //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool seekBackward(size_t packet_count, ReportInterface& report);
+        bool seekBackward(size_t packet_count, Report& report);
 
         //!
         //! Seek the file forward the specified number of packets.
@@ -162,7 +162,7 @@ namespace ts {
         //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool seekForward(size_t packet_count, ReportInterface& report);
+        bool seekForward(size_t packet_count, Report& report);
 
         //!
         //! Get the number of read packets.
@@ -183,7 +183,7 @@ namespace ts {
         //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool seek(PacketCounter position, ReportInterface& report);
+        bool seek(PacketCounter position, Report& report);
 
     private:
         TSPacketVector _buffer;         //!< Seekable packet circular buffer.
@@ -195,6 +195,6 @@ namespace ts {
         TSFileInputBuffered() = delete;
         TSFileInputBuffered(const TSFileInputBuffered&) = delete;
         TSFileInputBuffered& operator=(const TSFileInputBuffered&) = delete;
-        bool rewind(ReportInterface&);
+        bool rewind(Report&);
     };
 }

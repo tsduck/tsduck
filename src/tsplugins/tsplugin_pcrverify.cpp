@@ -120,46 +120,46 @@ ts::PCRVerifyPlugin::PCRVerifyPlugin (TSP* tsp_) :
     _nb_pcr_unchecked(0),
     _stats()
 {
-    option ("absolute",   'a');
-    option ("bitrate",    'b', POSITIVE);
-    option ("jitter-max", 'j', UNSIGNED);
-    option ("pid",        'p', PIDVAL, 0, UNLIMITED_COUNT);
-    option ("time-stamp", 't');
+    option(u"absolute",   'a');
+    option(u"bitrate",    'b', POSITIVE);
+    option(u"jitter-max", 'j', UNSIGNED);
+    option(u"pid",        'p', PIDVAL, 0, UNLIMITED_COUNT);
+    option(u"time-stamp", 't');
 
-    setHelp ("Options:\n"
-             "\n"
-             "  -a\n"
-             "  --absolute\n"
-             "      Use absolute values in PCR unit. By default, use micro-second equivalent\n"
-             "      values (one micro-second = 27 PCR units).\n"
-             "\n"
-             "  -b value\n"
-             "  --bitrate value\n"
-             "      Verify the PCR's according to this transport bitrate. By default,\n"
-             "      use the input bitrate as reported by the input device.\n"
-             "\n"
-             "  --help\n"
-             "      Display this help text.\n"
-             "\n"
-             "  -j value\n"
-             "  --jitter-max value\n"
-             "      Maximum allowed jitter. PCR's with a higher jitter are reported, others\n"
-             "      are ignored. If --absolute, the specified value is in PCR units,\n"
-             "      otherwise it is in micro-seconds. The default is " + Decimal (DEFAULT_JITTER_MAX) + " PCR units\n"
-             "      or " + Decimal (DEFAULT_JITTER_MAX_US) + " micro-seconds.\n"
-             "\n"
-             "  -p value\n"
-             "  --pid value\n"
-             "      PID filter: select packets with this PID value.\n"
-             "      Several -p or --pid options may be specified.\n"
-             "      Without -p or --pid option, PCR's from all PID's are used.\n"
-             "\n"
-             "  -t\n"
-             "  --time-stamp\n"
-             "      Display time of each event.\n"
-             "\n"
-             "  --version\n"
-             "      Display the version number.\n");
+    setHelp(u"Options:\n"
+             u"\n"
+             u"  -a\n"
+             u"  --absolute\n"
+             u"      Use absolute values in PCR unit. By default, use micro-second equivalent\n"
+             u"      values (one micro-second = 27 PCR units).\n"
+             u"\n"
+             u"  -b value\n"
+             u"  --bitrate value\n"
+             u"      Verify the PCR's according to this transport bitrate. By default,\n"
+             u"      use the input bitrate as reported by the input device.\n"
+             u"\n"
+             u"  --help\n"
+             u"      Display this help text.\n"
+             u"\n"
+             u"  -j value\n"
+             u"  --jitter-max value\n"
+             u"      Maximum allowed jitter. PCR's with a higher jitter are reported, others\n"
+             u"      are ignored. If --absolute, the specified value is in PCR units,\n"
+             u"      otherwise it is in micro-seconds. The default is " + Decimal (DEFAULT_JITTER_MAX) + " PCR units\n"
+             u"      or " + Decimal (DEFAULT_JITTER_MAX_US) + " micro-seconds.\n"
+             u"\n"
+             u"  -p value\n"
+             u"  --pid value\n"
+             u"      PID filter: select packets with this PID value.\n"
+             u"      Several -p or --pid options may be specified.\n"
+             u"      Without -p or --pid option, PCR's from all PID's are used.\n"
+             u"\n"
+             u"  -t\n"
+             u"  --time-stamp\n"
+             u"      Display time of each event.\n"
+             u"\n"
+             u"  --version\n"
+             u"      Display the version number.\n");
 }
 
 
@@ -169,10 +169,10 @@ ts::PCRVerifyPlugin::PCRVerifyPlugin (TSP* tsp_) :
 
 bool ts::PCRVerifyPlugin::start()
 {
-    _absolute = present ("absolute");
+    _absolute = present(u"absolute");
     _jitter_max = intValue<int64_t> ("jitter-max", _absolute ? DEFAULT_JITTER_MAX : DEFAULT_JITTER_MAX_US);
     _bitrate = intValue<BitRate> ("bitrate", 0);
-    _time_stamp = present ("time-stamp");
+    _time_stamp = present(u"time-stamp");
     getPIDSet (_pid_list, "pid", true);
 
     if (!_absolute) {
@@ -206,7 +206,7 @@ bool ts::PCRVerifyPlugin::stop()
               Decimal (_nb_pcr_ok) + " PCR OK, " +
               Decimal (_nb_pcr_nok) + " with jitter > " +
               Decimal (_jitter_max) +
-              " (" + Decimal (_jitter_max / PCR_PER_MICRO_SEC) + " micro-seconds), " +
+              u" (" + Decimal (_jitter_max / PCR_PER_MICRO_SEC) + " micro-seconds), " +
               Decimal (_nb_pcr_unchecked) + " unchecked");
 
     return true;

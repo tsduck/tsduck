@@ -42,7 +42,7 @@ TSDUCK_SOURCE;
 // Start the server
 //----------------------------------------------------------------------------
 
-bool ts::TCPServer::listen (int backlog, ReportInterface& report)
+bool ts::TCPServer::listen (int backlog, Report& report)
 {
     report.debug ("server listen, backlog is " + Decimal (backlog));
     if (::listen (getSocket(), backlog) != 0) {
@@ -57,7 +57,7 @@ bool ts::TCPServer::listen (int backlog, ReportInterface& report)
 // Wait for a client
 //----------------------------------------------------------------------------
 
-bool ts::TCPServer::accept (TCPConnection& client, SocketAddress& client_address, ReportInterface& report)
+bool ts::TCPServer::accept (TCPConnection& client, SocketAddress& client_address, Report& report)
 {
     if (client.isConnected()) {
         report.error ("invalid client in accept(): already connected");
@@ -96,7 +96,7 @@ bool ts::TCPServer::accept (TCPConnection& client, SocketAddress& client_address
 // Inherited and overridden
 //----------------------------------------------------------------------------
 
-bool ts::TCPServer::close (ReportInterface& report)
+bool ts::TCPServer::close (Report& report)
 {
     // Shutdown server socket.
     // Do not report "not connected" errors since they are normal when the client disconnects first.

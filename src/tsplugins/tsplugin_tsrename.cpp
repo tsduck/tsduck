@@ -120,47 +120,47 @@ ts::TSRenamePlugin::TSRenamePlugin (TSP* tsp_) :
     _pzer_sdt_bat(PID_SDT, CyclingPacketizer::ALWAYS),
     _pzer_nit(PID_NIT, CyclingPacketizer::ALWAYS)
 {
-    option ("add",                 'a');
-    option ("add-bat",              0);
-    option ("add-nit",              0);
-    option ("ignore-bat",           0);
-    option ("ignore-nit",           0);
-    option ("original-network-id", 'o',  UINT16);
-    option ("ts-id",               't',  UINT16);
+    option(u"add",                 'a');
+    option(u"add-bat",              0);
+    option(u"add-nit",              0);
+    option(u"ignore-bat",           0);
+    option(u"ignore-nit",           0);
+    option(u"original-network-id", 'o',  UINT16);
+    option(u"ts-id",               't',  UINT16);
 
-    setHelp ("Options:\n"
-             "\n"
-             "  -a\n"
-             "  --add\n"
-             "      Equivalent to --add-bat --add-nit.\n"
-             "\n"
-             "  --add-bat\n"
-             "      Add a new entry for the renamed TS in the BAT and keep the previous\n"
-             "      entry. By default, the TS entry is renamed.\n"
-             "\n"
-             "  --add-nit\n"
-             "      Add a new entry for the renamed TS in the NIT and keep the previous\n"
-             "      entry. By default, the TS entry is renamed.\n"
-             "\n"
-             "  --help\n"
-             "      Display this help text.\n"
-             "\n"
-             "  --ignore-bat\n"
-             "      Do not modify the BAT.\n"
-             "\n"
-             "  --ignore-nit\n"
-             "      Do not modify the NIT.\n"
-             "\n"
-             "  -o value\n"
-             "  --original-network-id value\n"
-             "      Modify the original network id. By default, it is unchanged.\n"
-             "\n"
-             "  -t value\n"
-             "  --ts-id value\n"
-             "      Modify the transport stream id. By default, it is unchanged.\n"
-             "\n"
-             "  --version\n"
-             "      Display the version number.\n");
+    setHelp(u"Options:\n"
+             u"\n"
+             u"  -a\n"
+             u"  --add\n"
+             u"      Equivalent to --add-bat --add-nit.\n"
+             u"\n"
+             u"  --add-bat\n"
+             u"      Add a new entry for the renamed TS in the BAT and keep the previous\n"
+             u"      entry. By default, the TS entry is renamed.\n"
+             u"\n"
+             u"  --add-nit\n"
+             u"      Add a new entry for the renamed TS in the NIT and keep the previous\n"
+             u"      entry. By default, the TS entry is renamed.\n"
+             u"\n"
+             u"  --help\n"
+             u"      Display this help text.\n"
+             u"\n"
+             u"  --ignore-bat\n"
+             u"      Do not modify the BAT.\n"
+             u"\n"
+             u"  --ignore-nit\n"
+             u"      Do not modify the NIT.\n"
+             u"\n"
+             u"  -o value\n"
+             u"  --original-network-id value\n"
+             u"      Modify the original network id. By default, it is unchanged.\n"
+             u"\n"
+             u"  -t value\n"
+             u"  --ts-id value\n"
+             u"      Modify the transport stream id. By default, it is unchanged.\n"
+             u"\n"
+             u"  --version\n"
+             u"      Display the version number.\n");
 }
 
 
@@ -171,13 +171,13 @@ ts::TSRenamePlugin::TSRenamePlugin (TSP* tsp_) :
 bool ts::TSRenamePlugin::start()
 {
     // Get option values
-    _add_bat = present ("add") || present ("add-bat");
-    _add_nit = present ("add") || present ("add-nit");
-    _ignore_bat = present ("ignore-bat");
-    _ignore_nit = present ("ignore-nit");
-    _set_onet_id = present ("original-network-id");
+    _add_bat = present(u"add") || present(u"add-bat");
+    _add_nit = present(u"add") || present(u"add-nit");
+    _ignore_bat = present(u"ignore-bat");
+    _ignore_nit = present(u"ignore-nit");
+    _set_onet_id = present(u"original-network-id");
     _new_onet_id = intValue<uint16_t> ("original-network-id", 0);
-    _set_ts_id = present ("ts-id");
+    _set_ts_id = present(u"ts-id");
     _new_ts_id = intValue<uint16_t> ("ts-id", 0);
 
     // Initialize the demux

@@ -693,15 +693,15 @@ void StringUtilsTest::testHexa()
 {
     const std::string hex1 (ts::Hexa (_bytes, 40));
     const char* ref1 =
-        "00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F 10 11 12 13 14 15 16 17 18 19\n"
-        "1A 1B 1C 1D 1E 1F 20 21 22 23 24 25 26 27\n";
+        u"00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F 10 11 12 13 14 15 16 17 18 19\n"
+        u"1A 1B 1C 1D 1E 1F 20 21 22 23 24 25 26 27\n";
     CPPUNIT_ASSERT(hex1 == ref1);
 
     const std::string hex2 (ts::Hexa (_bytes, 40, ts::hexa::HEXA | ts::hexa::ASCII));
     const char* ref2 =
-        "00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F 10 11  ..................\n"
-        "12 13 14 15 16 17 18 19 1A 1B 1C 1D 1E 1F 20 21 22 23  .............. !\"#\n"
-        "24 25 26 27                                            $%&'\n";
+        u"00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F 10 11  ..................\n"
+        u"12 13 14 15 16 17 18 19 1A 1B 1C 1D 1E 1F 20 21 22 23  .............. !\"#\n"
+        u"24 25 26 27                                            $%&'\n";
     CPPUNIT_ASSERT(hex2 == ref2);
 
     const std::string hex3 (ts::Hexa (_bytes + 32,
@@ -711,11 +711,11 @@ void StringUtilsTest::testHexa()
                                           50,    // lineWidth
                                           32));  // initOffset
     const char* ref3 =
-        "    0020:  20 21 22 23 24 25 26 27   !\"#$%&'\n"
-        "    0028:  28 29 2A 2B 2C 2D 2E 2F  ()*+,-./\n"
-        "    0030:  30 31 32 33 34 35 36 37  01234567\n"
-        "    0038:  38 39 3A 3B 3C 3D 3E 3F  89:;<=>?\n"
-        "    0040:  40 41 42 43 44 45 46 47  @ABCDEFG\n";
+        u"    0020:  20 21 22 23 24 25 26 27   !\"#$%&'\n"
+        u"    0028:  28 29 2A 2B 2C 2D 2E 2F  ()*+,-./\n"
+        u"    0030:  30 31 32 33 34 35 36 37  01234567\n"
+        u"    0038:  38 39 3A 3B 3C 3D 3E 3F  89:;<=>?\n"
+        u"    0040:  40 41 42 43 44 45 46 47  @ABCDEFG\n";
     CPPUNIT_ASSERT(hex3 == ref3);
 
     const std::string hex4 (ts::Hexa (_bytes + 32,
@@ -725,9 +725,9 @@ void StringUtilsTest::testHexa()
                                           10,    // lineWidth (in bytes)
                                           32));  // initOffset
     const char* ref4 =
-        "    0020:  20 21 22 23 24 25 26 27 28 29   !\"#$%&'()\n"
-        "    002A:  2A 2B 2C 2D 2E 2F 30 31 32 33  *+,-./0123\n"
-        "    0034:  34 35                          45\n";
+        u"    0020:  20 21 22 23 24 25 26 27 28 29   !\"#$%&'()\n"
+        u"    002A:  2A 2B 2C 2D 2E 2F 30 31 32 33  *+,-./0123\n"
+        u"    0034:  34 35                          45\n";
     CPPUNIT_ASSERT(hex4 == ref4);
 
     const std::string hex5 (ts::Hexa (_bytes + 32, 12, ts::hexa::SINGLE_LINE));
@@ -736,20 +736,20 @@ void StringUtilsTest::testHexa()
 
     const std::string hex6 (ts::Hexa (_bytes + 32, 20, ts::hexa::HEXA | ts::hexa::C_STYLE));
     const char* ref6 =
-        "0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 0x28, 0x29, 0x2A, 0x2B,\n"
-        "0x2C, 0x2D, 0x2E, 0x2F, 0x30, 0x31, 0x32, 0x33,\n";
+        u"0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 0x28, 0x29, 0x2A, 0x2B,\n"
+        u"0x2C, 0x2D, 0x2E, 0x2F, 0x30, 0x31, 0x32, 0x33,\n";
     CPPUNIT_ASSERT(hex6 == ref6);
 
     const std::string hex7 (ts::Hexa (_bytes + 32, 10, ts::hexa::BINARY | ts::hexa::ASCII));
     const char* ref7 =
-        "00100000 00100001 00100010 00100011 00100100 00100101   !\"#$%\n"
-        "00100110 00100111 00101000 00101001                    &'()\n";
+        u"00100000 00100001 00100010 00100011 00100100 00100101   !\"#$%\n"
+        u"00100110 00100111 00101000 00101001                    &'()\n";
     CPPUNIT_ASSERT(hex7 == ref7);
 
     const std::string hex8 (ts::Hexa (_bytes + 32, 10, ts::hexa::BIN_NIBBLE | ts::hexa::ASCII));
     const char* ref8 =
-        "0010.0000 0010.0001 0010.0010 0010.0011 0010.0100 0010.0101   !\"#$%\n"
-        "0010.0110 0010.0111 0010.1000 0010.1001                      &'()\n";
+        u"0010.0000 0010.0001 0010.0010 0010.0011 0010.0100 0010.0101   !\"#$%\n"
+        u"0010.0110 0010.0111 0010.1000 0010.1001                      &'()\n";
     CPPUNIT_ASSERT(hex8 == ref8);
 }
 

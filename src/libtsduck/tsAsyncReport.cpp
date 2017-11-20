@@ -26,13 +26,8 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Event reporting and monitoring
-//
-//----------------------------------------------------------------------------
 
 #include "tsAsyncReport.h"
-#include "tsFormat.h"
 TSDUCK_SOURCE;
 
 
@@ -40,8 +35,8 @@ TSDUCK_SOURCE;
 // Default constructor
 //----------------------------------------------------------------------------
 
-ts::AsyncReport::AsyncReport (bool verbose, int debug_level, bool time_stamp) :
-    ReportInterface(verbose, debug_level),
+ts::AsyncReport::AsyncReport(bool verbose, int debug_level, bool time_stamp) :
+    Report(verbose, debug_level),
     Thread(ThreadAttributes().setPriority(ThreadAttributes::GetMinimumPriority())),
     _log_queue(MAX_LOG_MESSAGES),
     _default_handler(*this),
@@ -58,7 +53,7 @@ ts::AsyncReport::AsyncReport (bool verbose, int debug_level, bool time_stamp) :
 // Destructor
 //----------------------------------------------------------------------------
 
-ts::AsyncReport::~AsyncReport ()
+ts::AsyncReport::~AsyncReport()
 {
     terminate();
 }
@@ -73,7 +68,7 @@ void ts::AsyncReport::terminate()
     if (!_terminated) {
         // Insert an "end of report" message in the queue.
         // This message will tell the logging thread to terminate.
-        _log_queue.forceEnqueue(new LogMessage(true, 0, ""));
+        _log_queue.forceEnqueue(new LogMessage(true, 0, UString()));
 
         // Wait for termination of the logging thread
         waitForTermination();
@@ -86,9 +81,9 @@ void ts::AsyncReport::terminate()
 // Message logging method.
 //----------------------------------------------------------------------------
 
-void ts::AsyncReport::writeLog (int severity, const std::string &msg)
+void ts::AsyncReport::writeLog(int severity, const UString &msg)
 {
-    if (!_terminated && severity <= _max_severity) {
+    if (!_terminated) {
         // Enqueue the message immediately (timeout = 0), drop message on overflow.
         _log_queue.enqueue(new LogMessage(false, severity, msg), 0);
     }
@@ -99,7 +94,7 @@ void ts::AsyncReport::writeLog (int severity, const std::string &msg)
 // This hook is invoked in the context of the logging thread.
 //----------------------------------------------------------------------------
 
-void ts::AsyncReport::main ()
+void ts::AsyncReport::main()
 {
     LogMessagePtr msg;
 
@@ -110,7 +105,7 @@ void ts::AsyncReport::main ()
 
         // Abort application on fatal error
         if (msg->severity == Severity::Fatal) {
-            ::exit (EXIT_FAILURE);
+            ::exit(EXIT_FAILURE);
         }
     }
 
@@ -124,7 +119,7 @@ void ts::AsyncReport::main ()
 // Set a new ReportHandler
 //----------------------------------------------------------------------------
 
-void ts::AsyncReport::setMessageHandler (ReportHandler* h)
+void ts::AsyncReport::setMessageHandler(ReportHandler* h)
 {
     _handler = h != 0 ? h : &_default_handler;
 }
@@ -134,7 +129,7 @@ void ts::AsyncReport::setMessageHandler (ReportHandler* h)
 // Default report handler
 //----------------------------------------------------------------------------
 
-void ts::AsyncReport::DefaultHandler::handleMessage(int severity, const std::string& msg)
+void ts::AsyncReport::DefaultHandler::handleMessage(int severity, const UString& msg)
 {
     std::cerr << "* ";
     if (_report._time_stamp) {
