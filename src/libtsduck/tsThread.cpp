@@ -91,6 +91,8 @@ void ts::Thread::Yield()
 {
 #if defined(TS_WINDOWS)
     ::SwitchToThread();
+#elif defined(TS_MAC)
+    ::sched_yield();
 #else
     ::pthread_yield();
 #endif
