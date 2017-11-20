@@ -53,7 +53,7 @@ namespace ts {
     {
     public:
         // Public fields
-        std::string                 device_name;        //!< Name of tuner device.
+        UString                     device_name;        //!< Name of tuner device.
         MilliSecond                 signal_timeout;     //!< Signal locking timeout in milliseconds.
         MilliSecond                 receive_timeout;    //!< Packet received timeout in milliseconds.
 #if defined(TS_LINUX) || defined(DOXYGEN)
@@ -145,7 +145,7 @@ namespace ts {
         //! @param [in] type Tuner type.
         //! @return The default zap file or an empty string if there is no default.
         //!
-        static std::string DefaultZapFile(TunerType type);
+        static UString DefaultZapFile(TunerType type);
 
     private:
         const bool _info_only;

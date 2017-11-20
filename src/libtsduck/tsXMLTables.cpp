@@ -37,12 +37,11 @@
 #include "tsBinaryTable.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
-#include "tsStringUtils.h"
 TSDUCK_SOURCE;
 
-#define XML_GENERIC_DESCRIPTOR   "generic_descriptor"
-#define XML_GENERIC_SHORT_TABLE  "generic_short_table"
-#define XML_GENERIC_LONG_TABLE   "generic_long_table"
+#define XML_GENERIC_DESCRIPTOR   u"generic_descriptor"
+#define XML_GENERIC_SHORT_TABLE  u"generic_short_table"
+#define XML_GENERIC_LONG_TABLE   u"generic_long_table"
 
 
 //----------------------------------------------------------------------------
@@ -75,7 +74,7 @@ void ts::XMLTables::add(const AbstractTablePtr& table, const DVBCharset* charset
 // Load / parse an XML file.
 //----------------------------------------------------------------------------
 
-bool ts::XMLTables::loadXML(const std::string& file_name, Report& report, const DVBCharset* charset)
+bool ts::XMLTables::loadXML(const UString& file_name, Report& report, const DVBCharset* charset)
 {
     clear();
     XML xml(report);
@@ -83,7 +82,7 @@ bool ts::XMLTables::loadXML(const std::string& file_name, Report& report, const 
     return xml.loadDocument(doc, file_name, false) && parseDocument(xml, doc, charset);
 }
 
-bool ts::XMLTables::parseXML(const std::string& xml_content, Report& report, const DVBCharset* charset)
+bool ts::XMLTables::parseXML(const UString& xml_content, Report& report, const DVBCharset* charset)
 {
     clear();
     XML xml(report);
@@ -91,17 +90,12 @@ bool ts::XMLTables::parseXML(const std::string& xml_content, Report& report, con
     return xml.parseDocument(doc, xml_content) && parseDocument(xml, doc, charset);
 }
 
-bool ts::XMLTables::parseXML(const UString& xml_content, Report& report, const DVBCharset* charset)
-{
-    return parseXML(xml_content.toUTF8(), report, charset);
-}
-
 bool ts::XMLTables::parseDocument(XML& xml, const XML::Document& doc, const DVBCharset* charset)
 {
     // Load the XML model for TSDuck files. Search it in TSDuck directory.
     XML::Document model;
-    if (!xml.loadDocument(model, "tsduck.xml", true)) {
-        xml.reportError("Model for TSDuck XML files not found");
+    if (!xml.loadDocument(model, u"tsduck.xml", true)) {
+        xml.reportError(u"Model for TSDuck XML files not found");
         return false;
     }
 
@@ -118,7 +112,7 @@ bool ts::XMLTables::parseDocument(XML& xml, const XML::Document& doc, const DVBC
     for (const XML::Element* node = root == 0 ? 0 : root->FirstChildElement(); node != 0; node = node->NextSiblingElement()) {
 
         BinaryTablePtr bin;
-        const std::string name(XML::ElementName(node));
+        const UString name(XML::ElementName(node));
 
         // Get the table factory for that kind of XML tag.
         const TablesFactory::TableFactory fac = TablesFactory::Instance()->getTableFactory(name);
@@ -144,7 +138,7 @@ bool ts::XMLTables::parseDocument(XML& xml, const XML::Document& doc, const DVBC
             _tables.push_back(bin);
         }
         else {
-            xml.reportError(Format("Error in table <%s> at line %d", name.c_str(), node->GetLineNum()));
+            xml.reportError(u"Error in table <%s> at line %d", {name, node->GetLineNum()});
             success = false;
         }
     }
@@ -156,12 +150,13 @@ bool ts::XMLTables::parseDocument(XML& xml, const XML::Document& doc, const DVBC
 // Create XML file or text.
 //----------------------------------------------------------------------------
 
-bool ts::XMLTables::saveXML(const std::string& file_name, Report& report, const DVBCharset* charset) const
+bool ts::XMLTables::saveXML(const UString& file_name, Report& report, const DVBCharset* charset) const
 {
     // Create the file.
-    ::FILE* fp = ::fopen(file_name.c_str(), "w");
+    const std::string nameUTF8(file_name.toUTF8());
+    ::FILE* fp = ::fopen(nameUTF8.c_str(), "w");
     if (fp == 0) {
-        report.error("cannot create file " + file_name);
+        report.error(u"cannot create file " + file_name);
         return false;
     }
 
@@ -181,7 +176,7 @@ ts::UString ts::XMLTables::toText(Report& report, const DVBCharset* charset) con
     XML xml(report);
     XML::Printer printer(2);
     if (!generateDocument(xml, printer, charset)) {
-        return std::string();
+        return UString();
     }
 
     // Get result and cleanup end of lines.
@@ -197,7 +192,7 @@ bool ts::XMLTables::generateDocument(XML& xml, XML::Printer& printer, const DVBC
 {
     // Initialize the document structure.
     XML::Document doc;
-    XML::Element* root = xml.initializeDocument(&doc, "tsduck");
+    XML::Element* root = xml.initializeDocument(&doc, u"tsduck");
     if (root == 0) {
         return false;
     }
@@ -326,26 +321,26 @@ ts::XML::Element* ts::XMLTables::ToGenericTable(XML& xml, XML::Element* parent, 
 
     if (table.isShortSection()) {
         // Create a short section node.
-        XML::Element* root = xml.addElement(parent, "generic_short_table");
-        xml.setIntAttribute(root, "table_id", section->tableId(), true);
-        xml.setBoolAttribute(root, "private", section->isPrivateSection());
+        XML::Element* root = xml.addElement(parent, u"generic_short_table");
+        xml.setIntAttribute(root, u"table_id", section->tableId(), true);
+        xml.setBoolAttribute(root, u"private", section->isPrivateSection());
         xml.addHexaText(root, section->payload(), section->payloadSize());
         return root;
     }
     else {
         // Create a table with long sections.
-        XML::Element* root = xml.addElement(parent, "generic_long_table");
-        xml.setIntAttribute(root, "table_id", table.tableId(), true);
-        xml.setIntAttribute(root, "table_id_ext", table.tableIdExtension(), true);
-        xml.setIntAttribute(root, "version", table.version());
-        xml.setBoolAttribute(root, "current", section->isCurrent());
-        xml.setBoolAttribute(root, "private", section->isPrivateSection());
+        XML::Element* root = xml.addElement(parent, u"generic_long_table");
+        xml.setIntAttribute(root, u"table_id", table.tableId(), true);
+        xml.setIntAttribute(root, u"table_id_ext", table.tableIdExtension(), true);
+        xml.setIntAttribute(root, u"version", table.version());
+        xml.setBoolAttribute(root, u"current", section->isCurrent());
+        xml.setBoolAttribute(root, u"private", section->isPrivateSection());
 
         // Add each section in binary format.
         for (size_t index = 0; index < table.sectionCount(); ++index) {
             section = table.sectionAt(index);
             if (!section.isNull() && section->isValid()) {
-                XML::Element* child = xml.addElement(root, "section");
+                XML::Element* child = xml.addElement(root, u"section");
                 xml.addHexaText(child, section->payload(), section->payloadSize());
             }
         }
@@ -367,7 +362,7 @@ ts::XML::Element* ts::XMLTables::ToGenericDescriptor(XML& xml, XML::Element* par
 
     // Create the XML node.
     XML::Element* root = xml.addElement(parent, XML_GENERIC_DESCRIPTOR);
-    xml.setIntAttribute(root, "tag", desc.tag(), true);
+    xml.setIntAttribute(root, u"tag", desc.tag(), true);
     xml.addHexaText(root, desc.payload(), desc.payloadSize());
     return root;
 }
@@ -377,7 +372,20 @@ ts::XML::Element* ts::XMLTables::ToGenericDescriptor(XML& xml, XML::Element* par
 // This method decodes an XML list of descriptors.
 //----------------------------------------------------------------------------
 
-bool ts::XMLTables::FromDescriptorListXML(DescriptorList& list, XML::ElementVector& others, XML& xml, const XML::Element* parent, const StringList& allowedOthers, const DVBCharset* charset)
+bool ts::XMLTables::FromDescriptorListXML(DescriptorList& list, XML::ElementVector& others, XML& xml, const XML::Element* parent, const UString& allowedOthers, const DVBCharset* charset)
+{
+    UStringList allowed;
+    allowedOthers.split(allowed);
+    return FromDescriptorListXML(list, others, xml, parent, allowed, charset);
+}
+
+bool ts::XMLTables::FromDescriptorListXML(DescriptorList& list, XML& xml, const XML::Element* parent)
+{
+    XML::ElementVector others;
+    return FromDescriptorListXML(list, others, xml, parent, UStringList());
+}
+
+bool ts::XMLTables::FromDescriptorListXML(DescriptorList& list, XML::ElementVector& others, XML& xml, const XML::Element* parent, const UStringList& allowedOthers, const DVBCharset* charset)
 {
     bool success = true;
     list.clear();
@@ -387,7 +395,7 @@ bool ts::XMLTables::FromDescriptorListXML(DescriptorList& list, XML::ElementVect
     for (const XML::Element* node = parent == 0 ? 0 : parent->FirstChildElement(); node != 0; node = node->NextSiblingElement()) {
 
         DescriptorPtr bin;
-        const std::string name(XML::ElementName(node));
+        const UString name(XML::ElementName(node));
         bool isDescriptor = false;
 
         // Get the descriptor factory for that kind of XML tag.
@@ -406,7 +414,7 @@ bool ts::XMLTables::FromDescriptorListXML(DescriptorList& list, XML::ElementVect
                 desc->serialize(*bin, charset);
             }
         }
-        else if (SimilarStrings(name, XML_GENERIC_DESCRIPTOR)) {
+        else if (name.similar(XML_GENERIC_DESCRIPTOR)) {
             isDescriptor = true;
             // Add a generic descriptor.
             bin = FromGenericDescriptorXML(xml, node);
@@ -418,17 +426,17 @@ bool ts::XMLTables::FromDescriptorListXML(DescriptorList& list, XML::ElementVect
                 list.add(bin);
             }
             else {
-                xml.reportError(Format("Error in descriptor <%s> at line %d", name.c_str(), node->GetLineNum()));
+                xml.reportError(u"Error in descriptor <%s> at line %d", {name, node->GetLineNum()});
                 success = false;
             }
         }
         else {
             // The tag is not a descriptor name, check if this is one of the allowed node.
-            if (ContainSimilarString(allowedOthers, name)) {
+            if (name.containSimilar(allowedOthers)) {
                 others.push_back(node);
             }
             else {
-                xml.reportError(Format("Illegal <%s> at line %d", name.c_str(), node->GetLineNum()));
+                xml.reportError(u"Illegal <%s> at line %d", {name, node->GetLineNum()});
                 success = false;
             }
         }
@@ -449,15 +457,15 @@ ts::BinaryTablePtr ts::XMLTables::FromGenericTableXML(XML& xml, const XML::Eleme
     }
 
     // There are two possible forms of generic tables.
-    const char* const name = XML::ElementName(elem);
-    if (SimilarStrings(name, XML_GENERIC_SHORT_TABLE)) {
+    const UString name(XML::ElementName(elem));
+    if (name.similar(XML_GENERIC_SHORT_TABLE)) {
 
         TID tid = 0xFF;
         bool priv = true;
         ByteBlock payload;
         bool ok =
-            xml.getIntAttribute<TID>(tid, elem, "table_id", true, 0xFF, 0x00, 0xFF) &&
-            xml.getBoolAttribute(priv, elem, "private", false, true) &&
+            xml.getIntAttribute<TID>(tid, elem, u"table_id", true, 0xFF, 0x00, 0xFF) &&
+            xml.getBoolAttribute(priv, elem, u"private", false, true) &&
             xml.getHexaText(payload, elem, 0, MAX_PSI_SHORT_SECTION_PAYLOAD_SIZE);
 
         if (ok) {
@@ -468,7 +476,7 @@ ts::BinaryTablePtr ts::XMLTables::FromGenericTableXML(XML& xml, const XML::Eleme
             }
         }
     }
-    else if (SimilarStrings(name, XML_GENERIC_LONG_TABLE)) {
+    else if (name.similar(XML_GENERIC_LONG_TABLE)) {
 
         TID tid = 0xFF;
         uint16_t tidExt = 0xFFFF;
@@ -477,12 +485,12 @@ ts::BinaryTablePtr ts::XMLTables::FromGenericTableXML(XML& xml, const XML::Eleme
         bool current = true;
         XML::ElementVector sectionNodes;
         bool ok =
-            xml.getIntAttribute<TID>(tid, elem, "table_id", true, 0xFF, 0x00, 0xFF) &&
-            xml.getIntAttribute<uint16_t>(tidExt, elem, "table_id_ext", false, 0xFFFF, 0x0000, 0xFFFF) &&
-            xml.getIntAttribute<uint8_t>(version, elem, "version", false, 0, 0, 31) &&
-            xml.getBoolAttribute(current, elem, "current", false, true) &&
-            xml.getBoolAttribute(priv, elem, "private", false, true) &&
-            xml.getChildren(sectionNodes, elem, "section", 1, 256);
+            xml.getIntAttribute<TID>(tid, elem, u"table_id", true, 0xFF, 0x00, 0xFF) &&
+            xml.getIntAttribute<uint16_t>(tidExt, elem, u"table_id_ext", false, 0xFFFF, 0x0000, 0xFFFF) &&
+            xml.getIntAttribute<uint8_t>(version, elem, u"version", false, 0, 0, 31) &&
+            xml.getBoolAttribute(current, elem, u"current", false, true) &&
+            xml.getBoolAttribute(priv, elem, u"private", false, true) &&
+            xml.getChildren(sectionNodes, elem, u"section", 1, 256);
 
         if (ok) {
             BinaryTablePtr table(new BinaryTable);
@@ -501,7 +509,7 @@ ts::BinaryTablePtr ts::XMLTables::FromGenericTableXML(XML& xml, const XML::Eleme
     }
 
     // At this point, the table is invalid.
-    xml.reportError(Format("<%s>, line %d, is not a valid table", name, elem->GetLineNum()));
+    xml.reportError(u"<%s>, line %d, is not a valid table", {name, elem->GetLineNum()});
     return BinaryTablePtr();
 }
 
@@ -520,9 +528,10 @@ ts::DescriptorPtr ts::XMLTables::FromGenericDescriptorXML(XML& xml, const XML::E
     // Decode XML.
     DID tag = 0xFF;
     ByteBlock payload;
+    const UString name(XML::ElementName(elem));
     const bool ok =
-        SimilarStrings(XML::ElementName(elem), XML_GENERIC_DESCRIPTOR) &&
-        xml.getIntAttribute<DID>(tag, elem, "tag", true, 0xFF, 0x00, 0xFF) &&
+        name.similar(XML_GENERIC_DESCRIPTOR) &&
+        xml.getIntAttribute<DID>(tag, elem, u"tag", true, 0xFF, 0x00, 0xFF) &&
         xml.getHexaText(payload, elem, 0, 255);
 
     // Build descriptor.
@@ -530,7 +539,7 @@ ts::DescriptorPtr ts::XMLTables::FromGenericDescriptorXML(XML& xml, const XML::E
         return DescriptorPtr(new Descriptor(tag, payload));
     }
     else {
-        xml.reportError(Format("<%s>, line %d, is not a valid descriptor", XML::ElementName(elem), elem->GetLineNum()));
+        xml.reportError(u"<%s>, line %d, is not a valid descriptor", {name, elem->GetLineNum()});
         return DescriptorPtr();
     }
 }

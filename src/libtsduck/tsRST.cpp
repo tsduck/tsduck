@@ -47,14 +47,14 @@ TS_ID_SECTION_DISPLAY(ts::RST::DisplaySection, ts::TID_RST);
 // Definition of names for running status values.
 //----------------------------------------------------------------------------
 
-const ts::Enumeration ts::RST::RunningStatusNames(
-    "undefined", 0,
-    "not-running", 1,
-    "starting", 2,
-    "pausing", 3,
-    "running", 4,
-    "off-air", 5,
-    TS_NULL);
+const ts::Enumeration ts::RST::RunningStatusNames({
+    {u"undefined", 0},
+    {u"not-running", 1},
+    {u"starting", 2},
+    {u"pausing", 3},
+    {u"running", 4},
+    {u"off-air", 5},
+});
 
 
 //----------------------------------------------------------------------------

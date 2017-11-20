@@ -72,21 +72,12 @@ ts::CountryAvailabilityDescriptor::CountryAvailabilityDescriptor(const Descripto
 // The end of the argument list must be marked by TS_NULL.
 //----------------------------------------------------------------------------
 
-ts::CountryAvailabilityDescriptor::CountryAvailabilityDescriptor(bool availability, const char* country, ...) :
+ts::CountryAvailabilityDescriptor::CountryAvailabilityDescriptor(bool availability, const std::initializer_list<UString> countries) :
     AbstractDescriptor(DID_COUNTRY_AVAIL, "country_availability_descriptor"),
     country_availability(availability),
-    country_codes()
+    country_codes(countries)
 {
     _is_valid = true;
-    if (country != TS_NULL) {
-        country_codes.push_back(country);
-        va_list ap;
-        va_start(ap, country);
-        while ((country = va_arg(ap, const char*)) != TS_NULL) {
-            country_codes.push_back(country);
-        }
-        va_end(ap);
-    }
 }
 
 
@@ -94,24 +85,17 @@ ts::CountryAvailabilityDescriptor::CountryAvailabilityDescriptor(bool availabili
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::CountryAvailabilityDescriptor::serialize (Descriptor& desc, const DVBCharset* charset) const
+void ts::CountryAvailabilityDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
 {
-    ByteBlockPtr bbp (new ByteBlock (3));
-    CheckNonNull (bbp.pointer());
-
+    ByteBlockPtr bbp(serializeStart());
+    bbp->appendUInt8(country_availability ? 0xFF : 0x7F);
     for (size_t n = 0; n < country_codes.size(); ++n) {
-        if (country_codes[n].size() != 3) {
+        if (!SerializeLanguageCode(*bbp, country_codes[n], charset)) {
             desc.invalidate();
             return;
         }
-        bbp->append (country_codes[n]);
     }
-
-    (*bbp)[0] = _tag;
-    (*bbp)[1] = uint8_t(bbp->size() - 2);
-    (*bbp)[2] = country_availability ? 0xFF : 0x7F;
-    Descriptor d (bbp, SHARE);
-    desc = d;
+    serializeEnd(desc, bbp);
 }
 
 
@@ -119,7 +103,7 @@ void ts::CountryAvailabilityDescriptor::serialize (Descriptor& desc, const DVBCh
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::CountryAvailabilityDescriptor::deserialize (const Descriptor& desc, const DVBCharset* charset)
+void ts::CountryAvailabilityDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
 {
     _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() % 3 == 1;
     country_codes.clear();
@@ -130,7 +114,7 @@ void ts::CountryAvailabilityDescriptor::deserialize (const Descriptor& desc, con
         country_availability = (data[0] & 0x80) != 0;
         data++; size--;
         while (size >= 3) {
-            country_codes.push_back (std::string (reinterpret_cast <const char*> (data), 3));
+            country_codes.push_back(UString::FromDVB(data, 3, charset));
             data += 3;
             size -= 3;
         }
@@ -150,7 +134,7 @@ void ts::CountryAvailabilityDescriptor::DisplayDescriptor(TablesDisplay& display
     if (size >= 1) {
         bool available = (data[0] & 0x80) != 0;
         data += 1; size -= 1;
-        strm << margin << "Available: " << YesNo(available) << std::endl;
+        strm << margin << "Available: " << UString::YesNo(available) << std::endl;
         while (size >= 3) {
             strm << margin << "Country code: \"" << UString::FromDVB(data, 3, display.dvbCharset()) << "\"" << std::endl;
             data += 3; size -= 3;
@@ -168,10 +152,10 @@ void ts::CountryAvailabilityDescriptor::DisplayDescriptor(TablesDisplay& display
 ts::XML::Element* ts::CountryAvailabilityDescriptor::toXML(XML& xml, XML::Element* parent) const
 {
     XML::Element* root = _is_valid ? xml.addElement(parent, _xml_name) : 0;
-    xml.setBoolAttribute(root, "country_availability", country_availability);
-    for (StringVector::const_iterator it = country_codes.begin(); it != country_codes.end(); ++it) {
-        XML::Element* e = xml.addElement(root, "country");
-        xml.setAttribute(e, "country_code", *it);
+    xml.setBoolAttribute(root, u"country_availability", country_availability);
+    for (UStringVector::const_iterator it = country_codes.begin(); it != country_codes.end(); ++it) {
+        XML::Element* e = xml.addElement(root, u"country");
+        xml.setAttribute(e, u"country_code", *it);
     }
     return root;
 }
@@ -188,12 +172,12 @@ void ts::CountryAvailabilityDescriptor::fromXML(XML& xml, const XML::Element* el
     XML::ElementVector children;
     _is_valid =
         checkXMLName(xml, element) &&
-        xml.getBoolAttribute(country_availability, element, "country_availability", true) &&
-        xml.getChildren(children, element, "country", 0, MAX_ENTRIES);
+        xml.getBoolAttribute(country_availability, element, u"country_availability", true) &&
+        xml.getChildren(children, element, u"country", 0, MAX_ENTRIES);
 
     for (size_t i = 0; _is_valid && i < children.size(); ++i) {
-        std::string name;
-        _is_valid = xml.getAttribute(name, children[i], "country_code", true, "", 3, 3);
+        UString name;
+        _is_valid = xml.getAttribute(name, children[i], u"country_code", true, UString(), 3, 3);
         if (_is_valid) {
             country_codes.push_back(name);
         }

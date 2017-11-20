@@ -120,14 +120,14 @@ namespace ts {
         //! @param [in] node_name Name of XML node.
         //! @return Corresponding factory or zero if there is none.
         //!
-        TableFactory getTableFactory(const std::string& node_name) const;
+        TableFactory getTableFactory(const UString& node_name) const;
 
         //!
         //! Get the descriptor factory for a given XML node name.
         //! @param [in] node_name Name of XML node.
         //! @return Corresponding factory or zero if there is none.
         //!
-        DescriptorFactory getDescriptorFactory(const std::string& node_name) const;
+        DescriptorFactory getDescriptorFactory(const UString& node_name) const;
 
         //!
         //! Get the display function for a given table id.
@@ -207,7 +207,7 @@ namespace ts {
             //! @param [in] factory Function which creates a table of the appropriate type.
             //! @see TS_XML_TABLE_FACTORY
             //!
-            Register(const std::string& node_name, TableFactory factory);
+            Register(const UString& node_name, TableFactory factory);
 
             //!
             //! The constructor registers a descriptor factory for a given XML node name.
@@ -215,7 +215,7 @@ namespace ts {
             //! @param [in] factory Function which creates a descriptor of the appropriate type.
             //! @see TS_XML_DESCRIPTOR_FACTORY
             //!
-            Register(const std::string& node_name, DescriptorFactory factory);
+            Register(const UString& node_name, DescriptorFactory factory);
 
             //!
             //! The constructor registers a section display function for a given table id.
@@ -252,8 +252,8 @@ namespace ts {
     private:
         std::map<TID, TableFactory>               _tableIds;
         std::map<EDID, DescriptorFactory>         _descriptorIds;
-        std::map<std::string, TableFactory>       _tableNames;
-        std::map<std::string, DescriptorFactory>  _descriptorNames;
+        std::map<UString, TableFactory>           _tableNames;
+        std::map<UString, DescriptorFactory>      _descriptorNames;
         std::map<TID, DisplaySectionFunction>     _sectionDisplays;
         std::map<EDID, DisplayDescriptorFunction> _descriptorDisplays;
     };

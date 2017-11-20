@@ -32,12 +32,10 @@
 //----------------------------------------------------------------------------
 
 #include "tsEIT.h"
-#include "tsFormat.h"
 #include "tsNames.h"
 #include "tsRST.h"
 #include "tsBCD.h"
 #include "tsMJD.h"
-#include "tsStringUtils.h"
 #include "tsBinaryTable.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
@@ -358,7 +356,7 @@ void ts::EIT::DisplaySection(TablesDisplay& display, const ts::Section& section,
     size_t size = section.payloadSize();
     const uint16_t sid = section.tableIdExtension();
 
-    strm << margin << Format("Service Id: %d (0x%04X)", int(sid), int(sid)) << std::endl;
+    strm << margin << UString::Format(u"Service Id: %d (0x%X)", {sid, sid}) << std::endl;
 
     if (size >= 6) {
         uint16_t tsid = GetUInt16(data);
@@ -367,10 +365,10 @@ void ts::EIT::DisplaySection(TablesDisplay& display, const ts::Section& section,
         uint8_t last_tid = data[5];
         data += 6; size -= 6;
 
-        strm << margin << Format("TS Id: %d (0x%04X)", int(tsid), int(tsid)) << std::endl
-             << margin << Format("Original Network Id: %d (0x%04X)", int(onid), int(onid)) << std::endl
-             << margin << Format("Segment last section: %d (0x%02X)", int(seg_last), int(seg_last)) << std::endl
-             << margin << Format("Last Table Id: %d (0x%02X), ", int(last_tid), int(last_tid))
+        strm << margin << UString::Format(u"TS Id: %d (0x%X)", {tsid, tsid}) << std::endl
+             << margin << UString::Format(u"Original Network Id: %d (0x%X)", {onid, onid}) << std::endl
+             << margin << UString::Format(u"Segment last section: %d (0x%X)", {seg_last, seg_last}) << std::endl
+             << margin << UString::Format(u"Last Table Id: %d (0x%X), ", {last_tid, last_tid})
              << names::TID(last_tid) << std::endl;
     }
 
@@ -388,9 +386,9 @@ void ts::EIT::DisplaySection(TablesDisplay& display, const ts::Section& section,
         if (loop_length > size) {
             loop_length = size;
         }
-        strm << margin << Format("Event Id: %d (0x%04X)", int(evid), int(evid)) << std::endl
+        strm << margin << UString::Format(u"Event Id: %d (0x%X)", {evid, evid}) << std::endl
              << margin << "Start UTC: " << start.format(Time::DATE | Time::TIME) << std::endl
-             << margin << Format("Duration: %02d:%02d:%02d", hour, min, sec) << std::endl
+             << margin << UString::Format(u"Duration: %02d:%02d:%02d", {hour, min, sec}) << std::endl
              << margin << "Running status: " << names::RunningStatus(run) << std::endl
              << margin << "CA mode: " << (ca_mode ? "controlled" : "free") << std::endl;
         display.displayDescriptorList(data, loop_length, indent, section.tableId());
@@ -409,27 +407,27 @@ ts::XML::Element* ts::EIT::toXML(XML& xml, XML::Element* parent) const
 {
     XML::Element* root = _is_valid ? xml.addElement(parent, _xml_name) : 0;
     if (isPresentFollowing()) {
-        xml.setAttribute(root, "type", "pf");
+        xml.setAttribute(root, u"type", u"pf");
     }
     else {
-        xml.setIntAttribute(root, "type", _table_id - (isActual() ? TID_EIT_S_ACT_MIN : TID_EIT_S_OTH_MIN));
+        xml.setIntAttribute(root, u"type", _table_id - (isActual() ? TID_EIT_S_ACT_MIN : TID_EIT_S_OTH_MIN));
     }
-    xml.setIntAttribute(root, "version", version);
-    xml.setBoolAttribute(root, "current", is_current);
-    xml.setBoolAttribute(root, "actual", isActual());
-    xml.setIntAttribute(root, "service_id", service_id, true);
-    xml.setIntAttribute(root, "transport_stream_id", ts_id, true);
-    xml.setIntAttribute(root, "original_network_id", onetw_id, true);
-    xml.setIntAttribute(root, "segment_last_section_number", segment_last, true);
-    xml.setIntAttribute(root, "last_table_id", last_table_id, true);
+    xml.setIntAttribute(root, u"version", version);
+    xml.setBoolAttribute(root, u"current", is_current);
+    xml.setBoolAttribute(root, u"actual", isActual());
+    xml.setIntAttribute(root, u"service_id", service_id, true);
+    xml.setIntAttribute(root, u"transport_stream_id", ts_id, true);
+    xml.setIntAttribute(root, u"original_network_id", onetw_id, true);
+    xml.setIntAttribute(root, u"segment_last_section_number", segment_last, true);
+    xml.setIntAttribute(root, u"last_table_id", last_table_id, true);
 
     for (EventMap::const_iterator it = events.begin(); it != events.end(); ++it) {
-        XML::Element* e = xml.addElement(root, "event");
-        xml.setIntAttribute(e, "event_id", it->first, true);
-        xml.setDateTimeAttribute(e, "start_time", it->second.start_time);
-        xml.setTimeAttribute(e, "duration", it->second.duration);
-        xml.setEnumAttribute(RST::RunningStatusNames, e, "running_status", it->second.running_status);
-        xml.setBoolAttribute(e, "CA_mode", it->second.CA_controlled);
+        XML::Element* e = xml.addElement(root, u"event");
+        xml.setIntAttribute(e, u"event_id", it->first, true);
+        xml.setDateTimeAttribute(e, u"start_time", it->second.start_time);
+        xml.setTimeAttribute(e, u"duration", it->second.duration);
+        xml.setEnumAttribute(RST::RunningStatusNames, e, u"running_status", it->second.running_status);
+        xml.setBoolAttribute(e, u"CA_mode", it->second.CA_controlled);
         XMLTables::ToXML(xml, e, it->second.descs);
     }
     return root;
@@ -443,36 +441,35 @@ ts::XML::Element* ts::EIT::toXML(XML& xml, XML::Element* parent) const
 void ts::EIT::fromXML(XML& xml, const XML::Element* element)
 {
     events.clear();
-    std::string type;
+    UString type;
     bool actual = 0;
 
     XML::ElementVector children;
     _is_valid =
         checkXMLName(xml, element) &&
-        xml.getAttribute(type, element, "type", false, "pf") &&
-        xml.getIntAttribute<uint8_t>(version, element, "version", false, 0, 0, 31) &&
-        xml.getBoolAttribute(is_current, element, "current", false, true) &&
-        xml.getBoolAttribute(actual, element, "actual", false, true) &&
-        xml.getIntAttribute<uint16_t>(service_id, element, "service_id", true, 0, 0x0000, 0xFFFF) &&
-        xml.getIntAttribute<uint16_t>(ts_id, element, "transport_stream_id", true, 0, 0x0000, 0xFFFF) &&
-        xml.getIntAttribute<uint16_t>(onetw_id, element, "original_network_id", true, 0, 0x00, 0xFFFF) &&
-        xml.getIntAttribute<uint8_t>(segment_last, element, "segment_last_section_number", true, 0, 0x00, 0xFF) &&
-        xml.getIntAttribute<TID>(last_table_id, element, "last_table_id", true, 0, 0x00, 0xFF) &&
-        xml.getChildren(children, element, "event");
+        xml.getAttribute(type, element, u"type", false, u"pf") &&
+        xml.getIntAttribute<uint8_t>(version, element, u"version", false, 0, 0, 31) &&
+        xml.getBoolAttribute(is_current, element, u"current", false, true) &&
+        xml.getBoolAttribute(actual, element, u"actual", false, true) &&
+        xml.getIntAttribute<uint16_t>(service_id, element, u"service_id", true, 0, 0x0000, 0xFFFF) &&
+        xml.getIntAttribute<uint16_t>(ts_id, element, u"transport_stream_id", true, 0, 0x0000, 0xFFFF) &&
+        xml.getIntAttribute<uint16_t>(onetw_id, element, u"original_network_id", true, 0, 0x00, 0xFFFF) &&
+        xml.getIntAttribute<uint8_t>(segment_last, element, u"segment_last_section_number", true, 0, 0x00, 0xFF) &&
+        xml.getIntAttribute<TID>(last_table_id, element, u"last_table_id", true, 0, 0x00, 0xFF) &&
+        xml.getChildren(children, element, u"event");
 
     // Update table id.
     if (_is_valid) {
-        if (SimilarStrings(type, "pf")) {
+        if (type.similar(u"pf")) {
             // This is an EIT p/f
             _table_id = actual ? TID_EIT_PF_ACT : TID_EIT_PF_OTH;
         }
-        else if (ToInteger(_table_id, type)) {
+        else if (type.toInteger(_table_id)) {
             // This is an EIT schedule
             _table_id += actual ? TID_EIT_S_ACT_MIN : TID_EIT_S_OTH_MIN;
         }
         else {
-            xml.reportError(Format("'%s' is not a valid value for attribute 'type' in <%s>, line %d",
-                                   type.c_str(), XML::ElementName(element), element->GetLineNum()));
+            xml.reportError(u"'%s' is not a valid value for attribute 'type' in <%s>, line %d", {type, XML::ElementName(element), element->GetLineNum()});
             _is_valid = false;
         }
     }
@@ -482,11 +479,11 @@ void ts::EIT::fromXML(XML& xml, const XML::Element* element)
         Event event;
         uint16_t event_id = 0;
         _is_valid =
-            xml.getIntAttribute<uint16_t>(event_id, children[i], "event_id", true, 0, 0x0000, 0xFFFF) &&
-            xml.getDateTimeAttribute(event.start_time, children[i], "start_time", true) &&
-            xml.getTimeAttribute(event.duration, children[i], "duration", true) &&
-            xml.getIntEnumAttribute<uint8_t>(event.running_status, RST::RunningStatusNames, children[i], "running_status", false, 0) &&
-            xml.getBoolAttribute(event.CA_controlled, children[i], "CA_mode", false, false) &&
+            xml.getIntAttribute<uint16_t>(event_id, children[i], u"event_id", true, 0, 0x0000, 0xFFFF) &&
+            xml.getDateTimeAttribute(event.start_time, children[i], u"start_time", true) &&
+            xml.getTimeAttribute(event.duration, children[i], u"duration", true) &&
+            xml.getIntEnumAttribute<uint8_t>(event.running_status, RST::RunningStatusNames, children[i], u"running_status", false, 0) &&
+            xml.getBoolAttribute(event.CA_controlled, children[i], u"CA_mode", false, false) &&
             XMLTables::FromDescriptorListXML(event.descs, xml, children[i]);
         if (_is_valid) {
             events[event_id] = event;

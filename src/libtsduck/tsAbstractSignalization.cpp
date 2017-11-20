@@ -77,12 +77,14 @@ bool ts::AbstractSignalization::checkXMLName(XML& xml, const XML::Element* eleme
     if (element == 0) {
         return false;
     }
-    else if (!UString::FromUTF8(_xml_name).similar(element->Name())) {
-        xml.reportError(Format("Incorrect <%s>, expected <%s>", XML::ElementName(element), _xml_name));
-        return false;
+    const UString myName(_xml_name);
+    const UString elemName(element->Name());
+    if (myName.similar(elemName)) {
+        return true;
     }
     else {
-        return true;
+        xml.reportError(u"Incorrect <%s>, expected <%s>", {elemName, myName});
+        return false;
     }
 }
 

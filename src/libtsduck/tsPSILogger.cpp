@@ -209,7 +209,7 @@ void ts::PSILogger::handleTable(SectionDemux&, const BinaryTable& table)
         case TID_SDT_ACT: {
             if (pid != PID_SDT) {
                 // An SDT is only expected on PID 0x0011
-                strm << Format("* Got unexpected SDT on PID %d (0x%04X)", pid, pid) << std::endl;
+                strm << UString::Format(u"* Got unexpected SDT on PID %d (0x%X)", {pid, pid}) << std::endl;
                 _display.displayTable(table);
             }
             else if (_opt.all_versions || !_sdt_ok) {
@@ -247,7 +247,7 @@ void ts::PSILogger::handleTable(SectionDemux&, const BinaryTable& table)
 
         default: {
             if (_report.verbose()) {
-                strm << UString::Format(u"* Got unexpected TID %d (0x%X) on PID %d (0x%X)", {tid, tid, pid, pid]) << std::endl;
+                strm << UString::Format(u"* Got unexpected TID %d (0x%X) on PID %d (0x%X)", {tid, tid, pid, pid}) << std::endl;
             }
         }
     }
