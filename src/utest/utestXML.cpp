@@ -87,13 +87,13 @@ void XMLTest::tearDown()
 void XMLTest::testDocument()
 {
     static const char* const document =
-        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-        "<root attr1=\"val1\">\n"
-        "  <node1 a1=\"v1\" a2=\"v2\">Text in node1</node1>\n"
-        "  <node2 b1=\"x1\">Text in node2</node2>\n"
-        "  <node3 foo=\"bar\"/>\n"
-        "  <node4/>\n"
-        "</root>\n";
+        u"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+        u"<root attr1=\"val1\">\n"
+        u"  <node1 a1=\"v1\" a2=\"v2\">Text in node1</node1>\n"
+        u"  <node2 b1=\"x1\">Text in node2</node2>\n"
+        u"  <node3 foo=\"bar\"/>\n"
+        u"  <node4/>\n"
+        u"</root>\n";
 
     ts::XML::Document doc;
     CPPUNIT_ASSERT_EQUAL(tinyxml2::XML_SUCCESS, doc.Parse(document));
@@ -245,26 +245,26 @@ namespace {
 void XMLTest::testVisitor()
 {
     static const char* const document =
-        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-        "<root attr1=\"val1\">\n"
-        "  <node1 a1=\"v1\" a2=\"v2\">Text in node1</node1>\n"
-        "  <node2 foo=\"bar\"/>\n"
-        "  <node3/>\n"
-        "</root>\n";
+        u"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+        u"<root attr1=\"val1\">\n"
+        u"  <node1 a1=\"v1\" a2=\"v2\">Text in node1</node1>\n"
+        u"  <node2 foo=\"bar\"/>\n"
+        u"  <node3/>\n"
+        u"</root>\n";
 
     Visitor visitor(
-        "EnterDocument", "",
-        "Declaration", "xml version=\"1.0\" encoding=\"UTF-8\"",
-        "EnterElement", "root",
-        "EnterElement", "node1",
-        "Text", "Text in node1",
-        "ExitElement", "node1",
-        "EnterElement", "node2",
-        "ExitElement", "node2",
-        "EnterElement", "node3",
-        "ExitElement", "node3",
-        "ExitElement", "root",
-        "ExitDocument", "",
+        u"EnterDocument", "",
+        u"Declaration", "xml version=\"1.0\" encoding=\"UTF-8\"",
+        u"EnterElement", "root",
+        u"EnterElement", "node1",
+        u"Text", "Text in node1",
+        u"ExitElement", "node1",
+        u"EnterElement", "node2",
+        u"ExitElement", "node2",
+        u"EnterElement", "node3",
+        u"ExitElement", "node3",
+        u"ExitElement", "root",
+        u"ExitDocument", "",
         TS_NULL
     );
 
@@ -279,9 +279,9 @@ void XMLTest::testInvalid()
 {
     // Incorrect XML document
     static const char* xmlContent =
-        "<?xml version='1.0' encoding='UTF-8'?>\n"
-        "<foo>\n"
-        "</bar>";
+        u"<?xml version='1.0' encoding='UTF-8'?>\n"
+        u"<foo>\n"
+        u"</bar>";
 
     ts::XML::Document doc;
     CPPUNIT_ASSERT_EQUAL(tinyxml2::XML_ERROR_MISMATCHED_ELEMENT, doc.Parse(xmlContent));
@@ -297,24 +297,24 @@ void XMLTest::testValidation()
     CPPUNIT_ASSERT(xml.loadDocument(model, "tsduck.xml"));
 
     const ts::UString xmlContent(
-        "<?xml version='1.0' encoding='UTF-8'?>\n"
-        "<tsduck>\n"
-        "  <PAT version='2' transport_stream_id='27'>\n"
-        "    <service service_id='1' program_map_PID='1000'/>\n"
-        "    <service service_id='2' program_map_PID='2000'/>\n"
-        "    <service service_id='3' program_map_PID='3000'/>\n"
-        "  </PAT>\n"
-        "  <PMT version='3' service_id='789' PCR_PID='3004'>\n"
-        "    <CA_descriptor CA_system_id='500' CA_PID='3005'>\n"
-        "      <private_data>00 01 02 03 04</private_data>\n"
-        "    </CA_descriptor>\n"
-        "    <component stream_type='0x04' elementary_PID='3006'>\n"
-        "      <ca_descriptor ca_system_id='500' ca_PID='3007'>\n"
-        "        <private_data>10 11 12 13 14 15</private_data>\n"
-        "      </ca_descriptor>\n"
-        "    </component>\n"
-        "  </PMT>\n"
-        "</tsduck>");
+        u"<?xml version='1.0' encoding='UTF-8'?>\n"
+        u"<tsduck>\n"
+        u"  <PAT version='2' transport_stream_id='27'>\n"
+        u"    <service service_id='1' program_map_PID='1000'/>\n"
+        u"    <service service_id='2' program_map_PID='2000'/>\n"
+        u"    <service service_id='3' program_map_PID='3000'/>\n"
+        u"  </PAT>\n"
+        u"  <PMT version='3' service_id='789' PCR_PID='3004'>\n"
+        u"    <CA_descriptor CA_system_id='500' CA_PID='3005'>\n"
+        u"      <private_data>00 01 02 03 04</private_data>\n"
+        u"    </CA_descriptor>\n"
+        u"    <component stream_type='0x04' elementary_PID='3006'>\n"
+        u"      <ca_descriptor ca_system_id='500' ca_PID='3007'>\n"
+        u"        <private_data>10 11 12 13 14 15</private_data>\n"
+        u"      </ca_descriptor>\n"
+        u"    </component>\n"
+        u"  </PMT>\n"
+        u"</tsduck>");
 
     ts::XML::Document doc;
     CPPUNIT_ASSERT(xml.parseDocument(doc, xmlContent));
@@ -347,34 +347,34 @@ void XMLTest::testCreation()
     utest::Out() << "XMLTest::testCreation: " << text << std::endl;
 
     CPPUNIT_ASSERT_USTRINGS_EQUAL(
-        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-        "<theRoot>\n"
-        "  <child1 str=\"a string\" int=\"-47\">\n"
-        "    <subChild1/>\n"
-        "    <subChild2 int64=\"9223372036854775807\"/>\n"
-        "  </child1>\n"
-        "  <child2>\n"
-        "    <fooBar/>\n"
-        "  </child2>\n"
-        "</theRoot>\n",
+        u"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+        u"<theRoot>\n"
+        u"  <child1 str=\"a string\" int=\"-47\">\n"
+        u"    <subChild1/>\n"
+        u"    <subChild2 int64=\"9223372036854775807\"/>\n"
+        u"  </child1>\n"
+        u"  <child2>\n"
+        u"    <fooBar/>\n"
+        u"  </child2>\n"
+        u"</theRoot>\n",
         text);
 
     Visitor visitor(
-        "EnterDocument", "",
-        "Declaration", "xml version=\"1.0\" encoding=\"UTF-8\"",
-        "EnterElement", "theRoot",
-        "EnterElement", "child1",
-        "EnterElement", "subChild1",
-        "ExitElement", "subChild1",
-        "EnterElement", "subChild2",
-        "ExitElement", "subChild2",
-        "ExitElement", "child1",
-        "EnterElement", "child2",
-        "EnterElement", "fooBar",
-        "ExitElement", "fooBar",
-        "ExitElement", "child2",
-        "ExitElement", "theRoot",
-        "ExitDocument", "",
+        u"EnterDocument", "",
+        u"Declaration", "xml version=\"1.0\" encoding=\"UTF-8\"",
+        u"EnterElement", "theRoot",
+        u"EnterElement", "child1",
+        u"EnterElement", "subChild1",
+        u"ExitElement", "subChild1",
+        u"EnterElement", "subChild2",
+        u"ExitElement", "subChild2",
+        u"ExitElement", "child1",
+        u"EnterElement", "child2",
+        u"EnterElement", "fooBar",
+        u"ExitElement", "fooBar",
+        u"ExitElement", "child2",
+        u"ExitElement", "theRoot",
+        u"ExitDocument", "",
         TS_NULL
     );
 

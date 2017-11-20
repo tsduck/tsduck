@@ -111,59 +111,59 @@ ts::SlicePlugin::SlicePlugin (TSP* tsp_) :
     _events(),
     _next_index(0)
 {
-    option ("drop",          'd', UNSIGNED, 0, UNLIMITED_COUNT);
-    option ("ignore-pcr",    'i');
-    option ("milli-seconds", 'm');
-    option ("null",          'n', UNSIGNED, 0, UNLIMITED_COUNT);
-    option ("pass",          'p', UNSIGNED, 0, UNLIMITED_COUNT);
-    option ("seconds",        0);
-    option ("stop",          's', UNSIGNED);
+    option(u"drop",          'd', UNSIGNED, 0, UNLIMITED_COUNT);
+    option(u"ignore-pcr",    'i');
+    option(u"milli-seconds", 'm');
+    option(u"null",          'n', UNSIGNED, 0, UNLIMITED_COUNT);
+    option(u"pass",          'p', UNSIGNED, 0, UNLIMITED_COUNT);
+    option(u"seconds",        0);
+    option(u"stop",          's', UNSIGNED);
 
-    setHelp ("Options:\n"
-             "\n"
-             "  -d value\n"
-             "  --drop value\n"
-             "      All packets are dropped after the specified packet number.\n"
-             "      Several --drop options may be specified.\n"
-             "\n"
-             "  --help\n"
-             "      Display this help text.\n"
-             "\n"
-             "  -i\n"
-             "  --ignore-pcr\n"
-             "      When --seconds or --milli-seconds is used, do not use PCR's to\n"
-             "      compute time values. Only rely on bitrate as determined by previous\n"
-             "      plugins in the chain.\n"
-             "\n"
-             "  -m\n"
-             "  --milli-seconds\n"
-             "      With options --drop, --null, --pass and --stop, interpret the integer\n"
-             "      values as milli-seconds from the beginning, not as packet numbers.\n"
-             "      Time is measured based on bitrate and packet count, not on real time.\n"
-             "\n"
-             "  -n value\n"
-             "  --null value\n"
-             "      All packets are replaced by null packets after the specified packet\n"
-             "      number. Several --null options may be specified.\n"
-             "\n"
-             "  -p value\n"
-             "  --pass value\n"
-             "      All packets are passed unmodified after the specified packet number.\n"
-             "      Several --pass options may be specified. This is the default for the\n"
-             "      initial packets.\n"
-             "\n"
-             "  --seconds\n"
-             "      With options --drop, --null, --pass and --stop, interpret the integer\n"
-             "      values as seconds from the beginning, not as packet numbers.\n"
-             "      Time is measured based on bitrate and packet count, not on real time.\n"
-             "\n"
-             "  -s value\n"
-             "  --stop value\n"
-             "      Packet transmission stops after the specified packet number and tsp\n"
-             "      terminates.\n"
-             "\n"
-             "  --version\n"
-             "      Display the version number.\n");
+    setHelp(u"Options:\n"
+             u"\n"
+             u"  -d value\n"
+             u"  --drop value\n"
+             u"      All packets are dropped after the specified packet number.\n"
+             u"      Several --drop options may be specified.\n"
+             u"\n"
+             u"  --help\n"
+             u"      Display this help text.\n"
+             u"\n"
+             u"  -i\n"
+             u"  --ignore-pcr\n"
+             u"      When --seconds or --milli-seconds is used, do not use PCR's to\n"
+             u"      compute time values. Only rely on bitrate as determined by previous\n"
+             u"      plugins in the chain.\n"
+             u"\n"
+             u"  -m\n"
+             u"  --milli-seconds\n"
+             u"      With options --drop, --null, --pass and --stop, interpret the integer\n"
+             u"      values as milli-seconds from the beginning, not as packet numbers.\n"
+             u"      Time is measured based on bitrate and packet count, not on real time.\n"
+             u"\n"
+             u"  -n value\n"
+             u"  --null value\n"
+             u"      All packets are replaced by null packets after the specified packet\n"
+             u"      number. Several --null options may be specified.\n"
+             u"\n"
+             u"  -p value\n"
+             u"  --pass value\n"
+             u"      All packets are passed unmodified after the specified packet number.\n"
+             u"      Several --pass options may be specified. This is the default for the\n"
+             u"      initial packets.\n"
+             u"\n"
+             u"  --seconds\n"
+             u"      With options --drop, --null, --pass and --stop, interpret the integer\n"
+             u"      values as seconds from the beginning, not as packet numbers.\n"
+             u"      Time is measured based on bitrate and packet count, not on real time.\n"
+             u"\n"
+             u"  -s value\n"
+             u"  --stop value\n"
+             u"      Packet transmission stops after the specified packet number and tsp\n"
+             u"      terminates.\n"
+             u"\n"
+             u"  --version\n"
+             u"      Display the version number.\n");
 }
 
 
@@ -176,9 +176,9 @@ bool ts::SlicePlugin::start()
     // Get command line options
     _status = TSP_OK;
     _packet_cnt = 0;
-    _use_time = present ("milli-seconds") || present ("seconds");
-    _time_factor = present ("seconds") ? 1000 : 1;
-    _ignore_pcr = present ("ignore-pcr");
+    _use_time = present(u"milli-seconds") || present(u"seconds");
+    _time_factor = present(u"seconds") ? 1000 : 1;
+    _ignore_pcr = present(u"ignore-pcr");
     _pcr_analyzer.reset();
 
     // Get list of time events
@@ -196,7 +196,7 @@ bool ts::SlicePlugin::start()
         tsp->log (Severity::Verbose, "initial packet processing: " + _status_names.name (_status));
         for (SliceEventVector::iterator it = _events.begin(); it != _events.end(); ++it) {
             tsp->log (Severity::Verbose, "packet " + _status_names.name (it->status) +
-                      " after " + Decimal (it->value) + (_use_time ? " ms" : " packets"));
+                      u" after " + Decimal (it->value) + (_use_time ? " ms" : " packets"));
         }
     }
 

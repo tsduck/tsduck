@@ -61,65 +61,65 @@ Options::Options (int argc, char *argv[]) :
     raw_file(false),
     infile()
 {
-    option ("",              0,  Args::STRING, 0, 1);
-    option ("ascii",        'a');
-    option ("binary",       'b');
-    option ("c-style",      'c');
-    option ("headers-only", 'h');
-    option ("nibble",       'n');
-    option ("offset",       'o');
-    option ("payload",      'p');
-    option ("raw-file",     'r');
+    option(u"",              0,  Args::STRING, 0, 1);
+    option(u"ascii",        'a');
+    option(u"binary",       'b');
+    option(u"c-style",      'c');
+    option(u"headers-only", 'h');
+    option(u"nibble",       'n');
+    option(u"offset",       'o');
+    option(u"payload",      'p');
+    option(u"raw-file",     'r');
 
-    setHelp ("Input file:\n"
-             "\n"
-             "  MPEG capture file (standard input if omitted).\n"
-             "\n"
-             "Options:\n"
-             "\n"
-             "  -a\n"
-             "  --ascii\n"
-             "      Include ASCII dump in addition to hexadecimal.\n"
-             "\n"
-             "  -b\n"
-             "  --binary\n"
-             "      Include binary dump in addition to hexadecimal.\n"
-             "\n"
-             "  -c\n"
-             "  --c-style\n"
-             "      Same as --raw-dump (no interpretation of packet) but dump the\n"
-             "      bytes in C-language style.\n"
-             "\n"
-             "  -h\n"
-             "  --headers-only\n"
-             "      Dump packet headers only, not payload.\n"
-             "\n"
-             "  --help\n"
-             "      Display this help text.\n"
-             "\n"
-             "  -n\n"
-             "  --nibble\n"
-             "      Same as --binary but add separator between 4-bit nibbles.\n"
-             "\n"
-             "  -o\n"
-             "  --offset\n"
-             "      Include offset from start of packet with hexadecimal dump.\n"
-             "\n"
-             "  -p\n"
-             "  --payload\n"
-             "      Hexadecimal dump of TS payload only, skip TS header.\n"
-             "\n"
-             "  -r\n"
-             "  --raw-file\n"
-             "      Raw dump of file, do not interpret as TS packets.\n"
-             "\n"
-             "  --version\n"
-             "      Display the version number.\n");
+    setHelp(u"Input file:\n"
+             u"\n"
+             u"  MPEG capture file (standard input if omitted).\n"
+             u"\n"
+             u"Options:\n"
+             u"\n"
+             u"  -a\n"
+             u"  --ascii\n"
+             u"      Include ASCII dump in addition to hexadecimal.\n"
+             u"\n"
+             u"  -b\n"
+             u"  --binary\n"
+             u"      Include binary dump in addition to hexadecimal.\n"
+             u"\n"
+             u"  -c\n"
+             u"  --c-style\n"
+             u"      Same as --raw-dump (no interpretation of packet) but dump the\n"
+             u"      bytes in C-language style.\n"
+             u"\n"
+             u"  -h\n"
+             u"  --headers-only\n"
+             u"      Dump packet headers only, not payload.\n"
+             u"\n"
+             u"  --help\n"
+             u"      Display this help text.\n"
+             u"\n"
+             u"  -n\n"
+             u"  --nibble\n"
+             u"      Same as --binary but add separator between 4-bit nibbles.\n"
+             u"\n"
+             u"  -o\n"
+             u"  --offset\n"
+             u"      Include offset from start of packet with hexadecimal dump.\n"
+             u"\n"
+             u"  -p\n"
+             u"  --payload\n"
+             u"      Hexadecimal dump of TS payload only, skip TS header.\n"
+             u"\n"
+             u"  -r\n"
+             u"  --raw-file\n"
+             u"      Raw dump of file, do not interpret as TS packets.\n"
+             u"\n"
+             u"  --version\n"
+             u"      Display the version number.\n");
 
     analyze (argc, argv);
 
-    infile = value ("");
-    raw_file = present ("raw-file");
+    infile = value(u"");
+    raw_file = present(u"raw-file");
 
     dump_flags =
         TSPacket::DUMP_TS_HEADER |    // Format TS headers
@@ -127,26 +127,26 @@ Options::Options (int argc, char *argv[]) :
         TSPacket::DUMP_RAW |          // Full dump of packet
         hexa::HEXA;                   // Hexadecimal dump (for TSPacket::DUMP_RAW)
 
-    if (present("ascii")) {
+    if (present(u"ascii")) {
         dump_flags |= hexa::ASCII;
     }
-    if (present("binary")) {
+    if (present(u"binary")) {
         dump_flags |= hexa::BINARY;
     }
-    if (present("c-style")) {
+    if (present(u"c-style")) {
         dump_flags |= hexa::C_STYLE;
         raw_file = true;
     }
-    if (present("headers-only")) {
+    if (present(u"headers-only")) {
         dump_flags &= ~TSPacket::DUMP_RAW;
     }
-    if (present("nibble")) {
+    if (present(u"nibble")) {
         dump_flags |= hexa::BIN_NIBBLE | hexa::BINARY;
     }
-    if (present("offset")) {
+    if (present(u"offset")) {
         dump_flags |= hexa::OFFSET;
     }
-    if (present("payload")) {
+    if (present(u"payload")) {
         dump_flags &= ~TSPacket::DUMP_RAW;
         dump_flags |= ~TSPacket::DUMP_PAYLOAD;
     }

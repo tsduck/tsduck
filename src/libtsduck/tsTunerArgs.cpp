@@ -128,13 +128,13 @@ void ts::TunerArgs::load(Args& args)
     reset();
 
     // Tuner identification.
-    if (args.present("adapter") && args.present("device-name")) {
+    if (args.present(u"adapter") && args.present(u"device-name")) {
         args.error("choose either --adapter or --device-name but not both");
     }
-    if (args.present("device-name")) {
-        device_name = args.value("device-name");
+    if (args.present(u"device-name")) {
+        device_name = args.value(u"device-name");
     }
-    else if (args.present("adapter")) {
+    else if (args.present(u"adapter")) {
         const int adapter = args.intValue("adapter", 0);
 #if defined(TS_LINUX)
         device_name = Format("/dev/dvb/adapter%d", adapter);
@@ -160,83 +160,83 @@ void ts::TunerArgs::load(Args& args)
 #endif
 
         // Carrier frequency
-        if (args.present("frequency") + args.present("uhf-channel") + args.present("vhf-channel") > 1) {
+        if (args.present(u"frequency") + args.present(u"uhf-channel") + args.present(u"vhf-channel") > 1) {
             args.error("options --frequency, --uhf-channel and --vhf-channel are mutually exclusive");
         }
-        else if (args.present("frequency")) {
+        else if (args.present(u"frequency")) {
             got_one = true;
             frequency = args.intValue<uint64_t>("frequency");
         }
-        else if (args.present("uhf-channel")) {
+        else if (args.present(u"uhf-channel")) {
             got_one = true;
             frequency = UHF::Frequency(args.intValue<int>("uhf-channel", 0), args.intValue<int>("offset-count", 0));
         }
-        else if (args.present("vhf-channel")) {
+        else if (args.present(u"vhf-channel")) {
             got_one = true;
             frequency = VHF::Frequency(args.intValue<int>("vhf-channel", 0), args.intValue<int>("offset-count", 0));
         }
 
         // Other individual tuning options
-        if (args.present("symbol-rate")) {
+        if (args.present(u"symbol-rate")) {
             got_one = true;
             symbol_rate = args.intValue<uint32_t>("symbol-rate");
         }
-        if (args.present("polarity")) {
+        if (args.present(u"polarity")) {
             got_one = true;
             polarity = args.enumValue<Polarization>("polarity");
         }
-        if (args.present("spectral-inversion")) {
+        if (args.present(u"spectral-inversion")) {
             got_one = true;
             inversion = args.enumValue<SpectralInversion>("spectral-inversion");
         }
-        if (args.present("fec-inner")) {
+        if (args.present(u"fec-inner")) {
             got_one = true;
             inner_fec = args.enumValue<InnerFEC>("fec-inner");
         }
-        if (args.present("modulation")) {
+        if (args.present(u"modulation")) {
             got_one = true;
             modulation = args.enumValue<Modulation>("modulation");
         }
-        if (args.present("bandwidth")) {
+        if (args.present(u"bandwidth")) {
             got_one = true;
             bandwidth = args.enumValue<BandWidth>("bandwidth");
         }
-        if (args.present("high-priority-fec")) {
+        if (args.present(u"high-priority-fec")) {
             got_one = true;
             fec_hp = args.enumValue<InnerFEC>("high-priority-fec");
         }
-        if (args.present("low-priority-fec")) {
+        if (args.present(u"low-priority-fec")) {
             got_one = true;
             fec_lp = args.enumValue<InnerFEC>("low-priority-fec");
         }
-        if (args.present("transmission-mode")) {
+        if (args.present(u"transmission-mode")) {
             got_one = true;
             transmission_mode = args.enumValue<TransmissionMode>("transmission-mode");
         }
-        if (args.present("guard-interval")) {
+        if (args.present(u"guard-interval")) {
             got_one = true;
             guard_interval = args.enumValue<GuardInterval>("guard-interval");
         }
-        if (args.present("hierarchy")) {
+        if (args.present(u"hierarchy")) {
             got_one = true;
             hierarchy = args.enumValue<Hierarchy>("hierarchy");
         }
-        if (args.present("delivery-system")) {
+        if (args.present(u"delivery-system")) {
             got_one = true;
             delivery_system = args.enumValue<DeliverySystem>("delivery-system");
         }
-        if (args.present("pilots")) {
+        if (args.present(u"pilots")) {
             got_one = true;
             pilots = args.enumValue<Pilot>("pilots");
         }
-        if (args.present("roll-off")) {
+        if (args.present(u"roll-off")) {
             got_one = true;
             roll_off = args.enumValue<RollOff>("roll-off");
         }
 
         // Local options (not related to transponder)
-        if (args.present("lnb")) {
-            std::string s(args.value("lnb"));
+        if (args.present(u"lnb")) {
+            std::string s(args.value(u"lnb"));
             LNB l(s);
             if (!l.isValid()) {
                 args.error("invalid LNB description " + s);
@@ -245,21 +245,21 @@ void ts::TunerArgs::load(Args& args)
                 lnb = l;
             }
         }
-        if (args.present("satellite-number")) {
+        if (args.present(u"satellite-number")) {
             satellite_number = args.intValue<size_t>("satellite-number");
         }
 
         // Locating the transponder by channel
-        if (args.present("channel-transponder")) {
-            channel_name = args.value("channel-transponder");
+        if (args.present(u"channel-transponder")) {
+            channel_name = args.value(u"channel-transponder");
         }
-        if (args.present("zap-config-file")) {
-            zap_file_name = args.value("zap-config-file");
+        if (args.present(u"zap-config-file")) {
+            zap_file_name = args.value(u"zap-config-file");
         }
 
         // Zap format tune specification
-        if (args.present("tune")) {
-            zap_specification = args.value("tune");
+        if (args.present(u"tune")) {
+            zap_specification = args.value(u"tune");
         }
 
         // Mutually exclusive methods of locating the channels
@@ -277,44 +277,44 @@ void ts::TunerArgs::load(Args& args)
 void ts::TunerArgs::defineOptions(Args& args) const
 {
     // Tuner identification.
-    args.option("adapter", _allow_short_options ? 'a' : 0, Args::UNSIGNED);
-    args.option("device-name", _allow_short_options ? 'd' : 0, Args::STRING);
+    args.option(u"adapter", _allow_short_options ? 'a' : 0, Args::UNSIGNED);
+    args.option(u"device-name", _allow_short_options ? 'd' : 0, Args::STRING);
 
     if (!_info_only) {
 
         // Reception parameters.
-        args.option("receive-timeout", 0, Args::UNSIGNED);
-        args.option("signal-timeout", 0, Args::UNSIGNED);
+        args.option(u"receive-timeout", 0, Args::UNSIGNED);
+        args.option(u"signal-timeout", 0, Args::UNSIGNED);
 #if defined(TS_LINUX)
-        args.option("demux-buffer-size", 0, Args::UNSIGNED);
+        args.option(u"demux-buffer-size", 0, Args::UNSIGNED);
 #elif defined(TS_WINDOWS)
-        args.option("demux-queue-size", 0, Args::UNSIGNED);
+        args.option(u"demux-queue-size", 0, Args::UNSIGNED);
 #endif
 
         // Tuning options.
-        args.option("bandwidth", 0, BandWidthEnum);
-        args.option("channel-transponder", _allow_short_options ? 'c' : 0, Args::STRING);
-        args.option("delivery-system", 0, DeliverySystemEnum);
-        args.option("fec-inner", 0, InnerFECEnum);
-        args.option("frequency", _allow_short_options ? 'f' : 0, Args::UNSIGNED);
-        args.option("guard-interval", 0, GuardIntervalEnum);
-        args.option("hierarchy", 0, HierarchyEnum);
-        args.option("high-priority-fec", 0, InnerFECEnum);
-        args.option("lnb", 0, Args::STRING);
-        args.option("low-priority-fec", 0, InnerFECEnum);
-        args.option("modulation", _allow_short_options ? 'm' : 0, ModulationEnum);
-        args.option("offset-count", 0, Args::INTEGER, 0, 1, -3, 3);
-        args.option("pilots", 0, PilotEnum);
-        args.option("polarity", 0, PolarizationEnum);
-        args.option("roll-off", 0, RollOffEnum);
-        args.option("satellite-number", 0, Args::INTEGER, 0, 1, 0, 3);
-        args.option("spectral-inversion", 0, SpectralInversionEnum);
-        args.option("symbol-rate", _allow_short_options ? 's' : 0, Args::UNSIGNED);
-        args.option("transmission-mode", 0, TransmissionModeEnum);
-        args.option("tune", 0, Args::STRING);
-        args.option("uhf-channel", 0, Args::INTEGER, 0, 1, UHF::FIRST_CHANNEL, UHF::LAST_CHANNEL);
-        args.option("vhf-channel", 0, Args::INTEGER, 0, 1, VHF::FIRST_CHANNEL, VHF::LAST_CHANNEL);
-        args.option("zap-config-file", _allow_short_options ? 'z' : 0, Args::STRING);
+        args.option(u"bandwidth", 0, BandWidthEnum);
+        args.option(u"channel-transponder", _allow_short_options ? 'c' : 0, Args::STRING);
+        args.option(u"delivery-system", 0, DeliverySystemEnum);
+        args.option(u"fec-inner", 0, InnerFECEnum);
+        args.option(u"frequency", _allow_short_options ? 'f' : 0, Args::UNSIGNED);
+        args.option(u"guard-interval", 0, GuardIntervalEnum);
+        args.option(u"hierarchy", 0, HierarchyEnum);
+        args.option(u"high-priority-fec", 0, InnerFECEnum);
+        args.option(u"lnb", 0, Args::STRING);
+        args.option(u"low-priority-fec", 0, InnerFECEnum);
+        args.option(u"modulation", _allow_short_options ? 'm' : 0, ModulationEnum);
+        args.option(u"offset-count", 0, Args::INTEGER, 0, 1, -3, 3);
+        args.option(u"pilots", 0, PilotEnum);
+        args.option(u"polarity", 0, PolarizationEnum);
+        args.option(u"roll-off", 0, RollOffEnum);
+        args.option(u"satellite-number", 0, Args::INTEGER, 0, 1, 0, 3);
+        args.option(u"spectral-inversion", 0, SpectralInversionEnum);
+        args.option(u"symbol-rate", _allow_short_options ? 's' : 0, Args::UNSIGNED);
+        args.option(u"transmission-mode", 0, TransmissionModeEnum);
+        args.option(u"tune", 0, Args::STRING);
+        args.option(u"uhf-channel", 0, Args::INTEGER, 0, 1, UHF::FIRST_CHANNEL, UHF::LAST_CHANNEL);
+        args.option(u"vhf-channel", 0, Args::INTEGER, 0, 1, VHF::FIRST_CHANNEL, VHF::LAST_CHANNEL);
+        args.option(u"zap-config-file", _allow_short_options ? 'z' : 0, Args::STRING);
     }
 }
 
@@ -326,235 +326,235 @@ void ts::TunerArgs::defineOptions(Args& args) const
 void ts::TunerArgs::addHelp(Args& args) const
 {
     std::string help =
-        "\n"
-        "Tuner identification:\n"
-        "\n" +
+        u"\n"
+        u"Tuner identification:\n"
+        u"\n" +
         std::string(_allow_short_options ? "  -a N\n" : "") +
-        "  --adapter N\n"
+        u"  --adapter N\n"
 #if defined(TS_LINUX)
-        "      Specifies the Linux DVB adapter N (/dev/dvb/adapterN).\n"
+        u"      Specifies the Linux DVB adapter N (/dev/dvb/adapterN).\n"
 #elif defined(TS_WINDOWS)
-        "      Specifies the Nth DVB adapter in the system.\n"
+        u"      Specifies the Nth DVB adapter in the system.\n"
 #endif
-        "      This option can be used instead of device name.\n"
-        "\n" +
+        u"      This option can be used instead of device name.\n"
+        u"\n" +
         std::string(_allow_short_options ? "  -d \"name\"\n" : "") +
-        "  --device-name \"name\"\n"
+        u"  --device-name \"name\"\n"
 #if defined (TS_LINUX)
-        "      Specify the DVB receiver device name, /dev/dvb/adapterA[:F[:M[:V]]]\n"
-        "      where A = adapter number, F = frontend number (default: 0), M = demux\n"
-        "      number (default: 0), V = dvr number (default: 0).\n"
+        u"      Specify the DVB receiver device name, /dev/dvb/adapterA[:F[:M[:V]]]\n"
+        u"      where A = adapter number, F = frontend number (default: 0), M = demux\n"
+        u"      number (default: 0), V = dvr number (default: 0).\n"
 #elif defined (TS_WINDOWS)
-        "      Specify the DVB receiver device name. This is a DirectShow/BDA tuner\n"
-        "      filter name (not case sensitive, blanks are ignored).\n"
+        u"      Specify the DVB receiver device name. This is a DirectShow/BDA tuner\n"
+        u"      filter name (not case sensitive, blanks are ignored).\n"
 #endif
-        "      By default, the first DVB receiver device is used.\n"
-        "      Use the tslsdvb utility to list all DVB devices.\n";
+        u"      By default, the first DVB receiver device is used.\n"
+        u"      Use the tslsdvb utility to list all DVB devices.\n";
 
     if (!_info_only) {
         help +=
-            "\n"
-            "Tuner reception parameters:\n"
+            u"\n"
+            u"Tuner reception parameters:\n"
 #if defined (TS_LINUX)
-            "\n"
-            "  --demux-buffer-size value\n"
-            "      Default buffer size, in bytes, of the demux device.\n"
-            "      The default is 1 MB.\n"
+            u"\n"
+            u"  --demux-buffer-size value\n"
+            u"      Default buffer size, in bytes, of the demux device.\n"
+            u"      The default is 1 MB.\n"
 #elif defined (TS_WINDOWS)
-            "\n"
-            "  --demux-queue-size value\n"
-            "      Specify the maximum number of media samples in the queue between the\n"
-            "      DirectShow capture thread and the input plugin thread. The default is\n"
-            "      " + Decimal(Tuner::DEFAULT_SINK_QUEUE_SIZE) + " media samples.\n"
+            u"\n"
+            u"  --demux-queue-size value\n"
+            u"      Specify the maximum number of media samples in the queue between the\n"
+            u"      DirectShow capture thread and the input plugin thread. The default is\n"
+            u"      " + Decimal(Tuner::DEFAULT_SINK_QUEUE_SIZE) + " media samples.\n"
 #endif
-            "\n"
-            "  --receive-timeout milliseconds\n"
-            "      Specifies the timeout, in milliseconds, for each receive operation.\n"
-            "      To disable the timeout and wait indefinitely for packets, specify zero.\n"
-            "      This is the default.\n"
-            "\n"
-            "  --signal-timeout seconds\n"
-            "      Specifies the timeout, in seconds, for DVB signal locking. If no signal\n"
-            "      is detected after this timeout, the command aborts. To disable the\n"
-            "      timeout and wait indefinitely for the signal, specify zero. The default\n"
-            "      is " + Decimal(Tuner::DEFAULT_SIGNAL_TIMEOUT / 1000) + " seconds.\n"
-            "\n"
-            "Tuning:\n"
-            "\n"
-            "  By default, no tuning is performed on the DVB frontend. The transponder\n"
-            "  on which the frontend is currently tuned is used. There are three ways to\n"
-            "  specify a new transponder: specifying individual tuning options, a global\n"
-            "  tuning information string using the Linux DVB \"zap\" format, the name of\n"
-            "  a channel contained in the transponder (with appropriate channel\n"
-            "  configuration files).\n"
-            "\n"
-            "Individual tuning options:\n"
-            "\n"
-            "  --bandwidth value\n"
-            "      Used for DVB-T tuners only.\n"
-            "      Must be one of \"auto\", \"8-MHz\", \"7-MHz\", \"6-MHz\", \"5-MHz\".\n"
-            "      The default is \"8-MHz\".\n"
-            "\n"
-            "  --delivery-system value\n"
-            "      Used for DVB-S and DVB-S2 tuners only.\n"
-            "      Which delivery system to use. Must be one of \"DVB-S\", \"DVB-S2\".\n"
-            "      The default is \"DVB-S\".\n"
-            "\n"
-            "  --fec-inner value\n"
-            "      Used for DVB-S, DVB-S2 and DVB-C tuners only.\n"
-            "      Inner Forward Error Correction. Must be one of \"none\", \"auto\", \"1/2\",\n"
-            "      \"1/3\", \"1/4\", \"2/3\", \"2/5\", \"3/4\", \"3/5\", \"4/5\", \"5/6\", \"5/11\",\n"
-            "      \"6/7\", \"7/8\", \"8/9\", \"9/10\". The default is \"auto\".\n"
-            "\n" +
+            u"\n"
+            u"  --receive-timeout milliseconds\n"
+            u"      Specifies the timeout, in milliseconds, for each receive operation.\n"
+            u"      To disable the timeout and wait indefinitely for packets, specify zero.\n"
+            u"      This is the default.\n"
+            u"\n"
+            u"  --signal-timeout seconds\n"
+            u"      Specifies the timeout, in seconds, for DVB signal locking. If no signal\n"
+            u"      is detected after this timeout, the command aborts. To disable the\n"
+            u"      timeout and wait indefinitely for the signal, specify zero. The default\n"
+            u"      is " + Decimal(Tuner::DEFAULT_SIGNAL_TIMEOUT / 1000) + " seconds.\n"
+            u"\n"
+            u"Tuning:\n"
+            u"\n"
+            u"  By default, no tuning is performed on the DVB frontend. The transponder\n"
+            u"  on which the frontend is currently tuned is used. There are three ways to\n"
+            u"  specify a new transponder: specifying individual tuning options, a global\n"
+            u"  tuning information string using the Linux DVB \"zap\" format, the name of\n"
+            u"  a channel contained in the transponder (with appropriate channel\n"
+            u"  configuration files).\n"
+            u"\n"
+            u"Individual tuning options:\n"
+            u"\n"
+            u"  --bandwidth value\n"
+            u"      Used for DVB-T tuners only.\n"
+            u"      Must be one of \"auto\", \"8-MHz\", \"7-MHz\", \"6-MHz\", \"5-MHz\".\n"
+            u"      The default is \"8-MHz\".\n"
+            u"\n"
+            u"  --delivery-system value\n"
+            u"      Used for DVB-S and DVB-S2 tuners only.\n"
+            u"      Which delivery system to use. Must be one of \"DVB-S\", \"DVB-S2\".\n"
+            u"      The default is \"DVB-S\".\n"
+            u"\n"
+            u"  --fec-inner value\n"
+            u"      Used for DVB-S, DVB-S2 and DVB-C tuners only.\n"
+            u"      Inner Forward Error Correction. Must be one of \"none\", \"auto\", \"1/2\",\n"
+            u"      \"1/3\", \"1/4\", \"2/3\", \"2/5\", \"3/4\", \"3/5\", \"4/5\", \"5/6\", \"5/11\",\n"
+            u"      \"6/7\", \"7/8\", \"8/9\", \"9/10\". The default is \"auto\".\n"
+            u"\n" +
             std::string(_allow_short_options ? "  -f value\n" : "") +
-            "  --frequency value\n"
-            "      Carrier frequency in Hz (all tuners).\n"
-            "\n"
-            "  --guard-interval value\n"
-            "      Used for DVB-T tuners only.\n"
-            "      Must be one of \"auto\", \"1/32\", \"1/16\", \"1/8\", \"1/4\".\n"
-            "      The default is \"1/32\".\n"
-            "\n"
-            "  --hierarchy value\n"
-            "      Used for DVB-T tuners only.\n"
-            "      Must be one of \"auto\", \"none\", \"1\", \"2\", \"4\".\n"
-            "      The default is \"none\".\n"
-            "\n"
-            "  --high-priority-fec value\n"
-            "      Used for DVB-T tuners only.\n"
-            "      Error correction for high priority streams.  See option --fec-inner\n"
-            "      for the list of possible values. The default is \"auto\".\n"
-            "\n"
-            "  --lnb string\n"
-            "      Used for DVB-S and DVB-S2 tuners only.\n"
-            "      Description of the LNB, if not a universal LNB. The format of the\n"
-            "      string is \"low_freq[,high_freq[,switch_freq]]\" where all frequencies\n"
-            "      are in MHz. The characteristics of the default universal LNB are\n"
-            "      low_freq = 9750 MHz, high_freq = 10600 MHz, switch_freq = 11700 MHz.\n"
-            "\n"
-            "  --low-priority-fec value\n"
-            "      Used for DVB-T tuners only.\n"
-            "      Error correction for low priority streams. See option --fec-inner\n"
-            "      for the list of possible values. The default is \"auto\".\n"
-            "\n" +
+            u"  --frequency value\n"
+            u"      Carrier frequency in Hz (all tuners).\n"
+            u"\n"
+            u"  --guard-interval value\n"
+            u"      Used for DVB-T tuners only.\n"
+            u"      Must be one of \"auto\", \"1/32\", \"1/16\", \"1/8\", \"1/4\".\n"
+            u"      The default is \"1/32\".\n"
+            u"\n"
+            u"  --hierarchy value\n"
+            u"      Used for DVB-T tuners only.\n"
+            u"      Must be one of \"auto\", \"none\", \"1\", \"2\", \"4\".\n"
+            u"      The default is \"none\".\n"
+            u"\n"
+            u"  --high-priority-fec value\n"
+            u"      Used for DVB-T tuners only.\n"
+            u"      Error correction for high priority streams.  See option --fec-inner\n"
+            u"      for the list of possible values. The default is \"auto\".\n"
+            u"\n"
+            u"  --lnb string\n"
+            u"      Used for DVB-S and DVB-S2 tuners only.\n"
+            u"      Description of the LNB, if not a universal LNB. The format of the\n"
+            u"      string is \"low_freq[,high_freq[,switch_freq]]\" where all frequencies\n"
+            u"      are in MHz. The characteristics of the default universal LNB are\n"
+            u"      low_freq = 9750 MHz, high_freq = 10600 MHz, switch_freq = 11700 MHz.\n"
+            u"\n"
+            u"  --low-priority-fec value\n"
+            u"      Used for DVB-T tuners only.\n"
+            u"      Error correction for low priority streams. See option --fec-inner\n"
+            u"      for the list of possible values. The default is \"auto\".\n"
+            u"\n" +
             std::string(_allow_short_options ? "  -m value\n" : "") +
-            "  --modulation value\n"
-            "      Used for DVB-C, DVB-T, DVB-S2 and ATSC tuners.\n"
-            "      Modulation type. Must be one of \"QPSK\", \"8-PSK\", \"QAM\" (auto QAM),\n"
-            "      \"16-QAM\", \"32-QAM\", \"64-QAM\", \"128-QAM\", \"256-QAM\", \"8-VSB\", \"16-VSB\".\n"
-            "      The default is \"64-QAM\" for DVB-T and DVB-C, \"QPSK\" for DVB-S2,\n"
-            "      \"8-VSB\" for ATSC.\n"
-            "\n"
-            "  --offset-count value\n"
-            "      Used for DVB-T tuners only.\n"
-            "      Specify the number of offsets from the UHF or VHF channel. The default\n"
-            "      is zero. See options --uhf-channel or --vhf-channel.\n"
-            "\n"
-            "  --pilots value\n"
-            "      Used for DVB-S2 tuners only.\n"
-            "      Presence of pilots frames. Must be one of \"auto\", \"on\" or \"off\".\n"
-            "      The default is \"off\".\n"
-            "\n"
-            "  --polarity value\n"
-            "      Used for DVB-S and DVB-S2 tuners only.\n"
-            "      Polarity. Must be one of \"horizontal\", \"vertical\", \"left\" or \"right\".\n"
-            "      For satellite reception use only \"horizontal\" or \"vertical\" (the default\n"
-            "      is \"vertical\").\n"
-            "\n"
-            "  --roll-off value\n"
-            "      Used for DVB-S2 tuners only.\n"
-            "      Roll-off factor. Must be one of \"auto\", \"0.35\", \"0.25\", \"0.20\".\n"
-            "      The default is \"0.35\" (implied for DVB-S, default for DVB-S2).\n"
-            "\n"
-            "  --satellite-number value\n"
-            "      Used for DVB-S and DVB-S2 tuners only.\n"
-            "      Satellite/dish number. Must be 0 to 3 with DiSEqC switches and 0 to 1 for\n"
-            "      non-DiSEqC switches. The default is 0.\n"
-            "\n"
-            "  --spectral-inversion value\n"
-            "      Spectral inversion. Must be one of \"on\", \"off\" or \"auto\". The default\n"
-            "      is \"auto\".\n"
-            "\n" +
+            u"  --modulation value\n"
+            u"      Used for DVB-C, DVB-T, DVB-S2 and ATSC tuners.\n"
+            u"      Modulation type. Must be one of \"QPSK\", \"8-PSK\", \"QAM\" (auto QAM),\n"
+            u"      \"16-QAM\", \"32-QAM\", \"64-QAM\", \"128-QAM\", \"256-QAM\", \"8-VSB\", \"16-VSB\".\n"
+            u"      The default is \"64-QAM\" for DVB-T and DVB-C, \"QPSK\" for DVB-S2,\n"
+            u"      \"8-VSB\" for ATSC.\n"
+            u"\n"
+            u"  --offset-count value\n"
+            u"      Used for DVB-T tuners only.\n"
+            u"      Specify the number of offsets from the UHF or VHF channel. The default\n"
+            u"      is zero. See options --uhf-channel or --vhf-channel.\n"
+            u"\n"
+            u"  --pilots value\n"
+            u"      Used for DVB-S2 tuners only.\n"
+            u"      Presence of pilots frames. Must be one of \"auto\", \"on\" or \"off\".\n"
+            u"      The default is \"off\".\n"
+            u"\n"
+            u"  --polarity value\n"
+            u"      Used for DVB-S and DVB-S2 tuners only.\n"
+            u"      Polarity. Must be one of \"horizontal\", \"vertical\", \"left\" or \"right\".\n"
+            u"      For satellite reception use only \"horizontal\" or \"vertical\" (the default\n"
+            u"      is \"vertical\").\n"
+            u"\n"
+            u"  --roll-off value\n"
+            u"      Used for DVB-S2 tuners only.\n"
+            u"      Roll-off factor. Must be one of \"auto\", \"0.35\", \"0.25\", \"0.20\".\n"
+            u"      The default is \"0.35\" (implied for DVB-S, default for DVB-S2).\n"
+            u"\n"
+            u"  --satellite-number value\n"
+            u"      Used for DVB-S and DVB-S2 tuners only.\n"
+            u"      Satellite/dish number. Must be 0 to 3 with DiSEqC switches and 0 to 1 for\n"
+            u"      non-DiSEqC switches. The default is 0.\n"
+            u"\n"
+            u"  --spectral-inversion value\n"
+            u"      Spectral inversion. Must be one of \"on\", \"off\" or \"auto\". The default\n"
+            u"      is \"auto\".\n"
+            u"\n" +
             std::string(_allow_short_options ? "  -s value\n" : "") +
-            "  --symbol-rate value\n"
-            "      Used for DVB-S, DVB-S2 and DVB-C tuners only.\n"
-            "      Symbol rate in symbols/second. The default is\n"
-            "      " + Decimal(TunerParametersDVBS::DEFAULT_SYMBOL_RATE) + " sym/s for satellite and " +
+            u"  --symbol-rate value\n"
+            u"      Used for DVB-S, DVB-S2 and DVB-C tuners only.\n"
+            u"      Symbol rate in symbols/second. The default is\n"
+            u"      " + Decimal(TunerParametersDVBS::DEFAULT_SYMBOL_RATE) + " sym/s for satellite and " +
             Decimal(TunerParametersDVBC::DEFAULT_SYMBOL_RATE) + " sym/s for cable.\n"
-            "\n"
-            "  --transmission-mode value\n"
-            "      Used for DVB-T tuners only.\n"
-            "      Must be one of \"auto\", \"2K\", \"4K\", \"8K\". The default is \"8K\".\n"
-            "\n"
-            "  --uhf-channel value\n"
-            "      Used for DVB-T tuners only.\n"
-            "      Specify the UHF channel number of the carrier. Can be used in\n"
-            "      replacement to --frequency. Can be combined with an --offset-count\n"
-            "      option. The resulting frequency is\n"
-            "      306 MHz + (uhf-channel * 8 MHz) + (offset-count * 166.6 kHz).\n"
-            "\n"
-            "  --vhf-channel value\n"
-            "      Used for DVB-T tuners only.\n"
-            "      Specify the VHF channel number of the carrier. Can be used in\n"
-            "      replacement to --frequency. Can be combined with an --offset-count\n"
-            "      option. The resulting frequency is\n"
-            "      142.5 MHz + (vhf-channel * 7 MHz) + (offset-count * 166.6 kHz).\n"
-            "\n"
-            "Tuning options using Linux DVB \"zap\" format:\n"
-            "\n"
-            "  --tune string\n"
-            "      Specifies all tuning information for the transponder in one string.\n"
-            "      As such, this option is incompatible with the individual tuning options,\n"
-            "      except \"local\" (non-transponder) options --lnb and --satellite-number.\n"
-            "      The format of the parameter string depends on the DVB frontend type.\n"
-            "      It is the same format as used in the Linux DVB szap/czap/tzap\n"
-            "      configuration files:\n"
-            "\n"
-            "      Satellite (QPSK): \"freq:pol:satnum:symrate\"\n"
-            "        With freq = frequency in MHz, pol = polarity (either v or h), satnum =\n"
-            "        satellite number, symrate = symbol rate in ksym/s.\n"
-            "\n"
-            "      Cable (QAM): \"freq:inv:symrate:conv:mod\"\n"
-            "        With freq = frequency in Hz, inv = inversion (one of INVERSION_OFF,\n"
-            "        INVERSION_ON, INVERSION_AUTO), symrate = symbol rate in sym/s, conv =\n"
-            "        convolutional rate (one of FEC_NONE, FEC_1_2, FEC_2_3, FEC_3_4,\n"
-            "        FEC_4_5, FEC_5_6, FEC_6_7, FEC_7_8, FEC_8_9, FEC_AUTO),\n"
-            "        mod = modulation (one of QPSK, QAM_16, QAM_32, QAM_64, QAM_128,\n"
-            "        QAM_256, QAM_AUTO).\n"
-            "\n"
-            "      Terrestrial (OFDM): \"freq:inv:bw:convhp:convlp:modu:mode:guard:hier\"\n"
-            "        With freq = frequency in Hz, inv = inversion (one of INVERSION_OFF,\n"
-            "        INVERSION_ON, INVERSION_AUTO), bw = bandwidth (one of BANDWIDTH_8_MHZ,\n"
-            "        BANDWIDTH_7_MHZ, BANDWIDTH_6_MHZ, BANDWIDTH_AUTO), convhp and convlp =\n"
-            "        convolutional rate for high and low priority (see values in cable),\n"
-            "        modu = modulation (see values in cable), mode = transmission mode\n"
-            "        (one of TRANSMISSION_MODE_2K, TRANSMISSION_MODE_8K, \n"
-            "        TRANSMISSION_MODE_AUTO), guard = guard interval (one of\n"
-            "        GUARD_INTERVAL_1_32, GUARD_INTERVAL_1_16, GUARD_INTERVAL_1_8,\n"
-            "        GUARD_INTERVAL_1_4, GUARD_INTERVAL_AUTO), hier = hierarchy (one of\n"
-            "        HIERARCHY_NONE, HIERARCHY_1, HIERARCHY_2, HIERARCHY_4, HIERARCHY_AUTO).\n"
-            "\n"
-            "Locating the transponder by channel name:\n"
-            "\n" +
+            u"\n"
+            u"  --transmission-mode value\n"
+            u"      Used for DVB-T tuners only.\n"
+            u"      Must be one of \"auto\", \"2K\", \"4K\", \"8K\". The default is \"8K\".\n"
+            u"\n"
+            u"  --uhf-channel value\n"
+            u"      Used for DVB-T tuners only.\n"
+            u"      Specify the UHF channel number of the carrier. Can be used in\n"
+            u"      replacement to --frequency. Can be combined with an --offset-count\n"
+            u"      option. The resulting frequency is\n"
+            u"      306 MHz + (uhf-channel * 8 MHz) + (offset-count * 166.6 kHz).\n"
+            u"\n"
+            u"  --vhf-channel value\n"
+            u"      Used for DVB-T tuners only.\n"
+            u"      Specify the VHF channel number of the carrier. Can be used in\n"
+            u"      replacement to --frequency. Can be combined with an --offset-count\n"
+            u"      option. The resulting frequency is\n"
+            u"      142.5 MHz + (vhf-channel * 7 MHz) + (offset-count * 166.6 kHz).\n"
+            u"\n"
+            u"Tuning options using Linux DVB \"zap\" format:\n"
+            u"\n"
+            u"  --tune string\n"
+            u"      Specifies all tuning information for the transponder in one string.\n"
+            u"      As such, this option is incompatible with the individual tuning options,\n"
+            u"      except \"local\" (non-transponder) options --lnb and --satellite-number.\n"
+            u"      The format of the parameter string depends on the DVB frontend type.\n"
+            u"      It is the same format as used in the Linux DVB szap/czap/tzap\n"
+            u"      configuration files:\n"
+            u"\n"
+            u"      Satellite (QPSK): \"freq:pol:satnum:symrate\"\n"
+            u"        With freq = frequency in MHz, pol = polarity (either v or h), satnum =\n"
+            u"        satellite number, symrate = symbol rate in ksym/s.\n"
+            u"\n"
+            u"      Cable (QAM): \"freq:inv:symrate:conv:mod\"\n"
+            u"        With freq = frequency in Hz, inv = inversion (one of INVERSION_OFF,\n"
+            u"        INVERSION_ON, INVERSION_AUTO), symrate = symbol rate in sym/s, conv =\n"
+            u"        convolutional rate (one of FEC_NONE, FEC_1_2, FEC_2_3, FEC_3_4,\n"
+            u"        FEC_4_5, FEC_5_6, FEC_6_7, FEC_7_8, FEC_8_9, FEC_AUTO),\n"
+            u"        mod = modulation (one of QPSK, QAM_16, QAM_32, QAM_64, QAM_128,\n"
+            u"        QAM_256, QAM_AUTO).\n"
+            u"\n"
+            u"      Terrestrial (OFDM): \"freq:inv:bw:convhp:convlp:modu:mode:guard:hier\"\n"
+            u"        With freq = frequency in Hz, inv = inversion (one of INVERSION_OFF,\n"
+            u"        INVERSION_ON, INVERSION_AUTO), bw = bandwidth (one of BANDWIDTH_8_MHZ,\n"
+            u"        BANDWIDTH_7_MHZ, BANDWIDTH_6_MHZ, BANDWIDTH_AUTO), convhp and convlp =\n"
+            u"        convolutional rate for high and low priority (see values in cable),\n"
+            u"        modu = modulation (see values in cable), mode = transmission mode\n"
+            u"        (one of TRANSMISSION_MODE_2K, TRANSMISSION_MODE_8K, \n"
+            u"        TRANSMISSION_MODE_AUTO), guard = guard interval (one of\n"
+            u"        GUARD_INTERVAL_1_32, GUARD_INTERVAL_1_16, GUARD_INTERVAL_1_8,\n"
+            u"        GUARD_INTERVAL_1_4, GUARD_INTERVAL_AUTO), hier = hierarchy (one of\n"
+            u"        HIERARCHY_NONE, HIERARCHY_1, HIERARCHY_2, HIERARCHY_4, HIERARCHY_AUTO).\n"
+            u"\n"
+            u"Locating the transponder by channel name:\n"
+            u"\n" +
             std::string(_allow_short_options ? "  -c name\n" : "") +
-            "  --channel-transponder name\n"
-            "      Tune to the transponder containing the specified channel. The channel\n"
-            "      name is not case-sensitive and blanks are ignored. The channel is searched\n"
-            "      in a \"zap configuration file\" and the corresponding tuning information\n"
-            "      in this file is used.\n"
-            "\n" +
+            u"  --channel-transponder name\n"
+            u"      Tune to the transponder containing the specified channel. The channel\n"
+            u"      name is not case-sensitive and blanks are ignored. The channel is searched\n"
+            u"      in a \"zap configuration file\" and the corresponding tuning information\n"
+            u"      in this file is used.\n"
+            u"\n" +
             std::string(_allow_short_options ? "  -z path\n" : "") +
-            "  --zap-config-file path\n"
-            "      Zap configuration file to use for option -c or --channel-transponder.\n"
-            "      The format of these text files is specified by the Linux DVB szap, czap\n"
-            "      and tzap utilities. Zap config files can be created using the scandvb\n"
-            "      tool (szap, czap, tzap and scandvb are part of the dvb-apps package).\n"
-            "      The location of the default zap configuration file depends on the system.\n"
-            "      - On Linux, the default file is $HOME/.Xzap/channels.conf, where X is\n"
-            "        either 's' (satellite), 'c' (cable) or 't' (terrestrial), depending\n"
-            "        on the frontend type.\n"
-            "      - On Windows, the default file is %APPDATA%\\tsduck\\Xzap\\channels.conf,\n"
-            "        where X is either 's', 'c' or 't'.\n";
+            u"  --zap-config-file path\n"
+            u"      Zap configuration file to use for option -c or --channel-transponder.\n"
+            u"      The format of these text files is specified by the Linux DVB szap, czap\n"
+            u"      and tzap utilities. Zap config files can be created using the scandvb\n"
+            u"      tool (szap, czap, tzap and scandvb are part of the dvb-apps package).\n"
+            u"      The location of the default zap configuration file depends on the system.\n"
+            u"      - On Linux, the default file is $HOME/.Xzap/channels.conf, where X is\n"
+            u"        either 's' (satellite), 'c' (cable) or 't' (terrestrial), depending\n"
+            u"        on the frontend type.\n"
+            u"      - On Windows, the default file is %APPDATA%\\tsduck\\Xzap\\channels.conf,\n"
+            u"        where X is either 's', 'c' or 't'.\n";
     }
 
     args.setHelp(args.getHelp() + help);
@@ -565,7 +565,7 @@ void ts::TunerArgs::addHelp(Args& args) const
 // Open a tuner and configure it according to the parameters in this object.
 //----------------------------------------------------------------------------
 
-bool ts::TunerArgs::configureTuner(Tuner& tuner, ReportInterface& report) const
+bool ts::TunerArgs::configureTuner(Tuner& tuner, Report& report) const
 {
     if (tuner.isOpen()) {
         report.error("DVB tuner is already open");
@@ -599,7 +599,7 @@ bool ts::TunerArgs::configureTuner(Tuner& tuner, ReportInterface& report) const
 // Tune to the specified parameters.
 //----------------------------------------------------------------------------
 
-bool ts::TunerArgs::tune(Tuner& tuner, TunerParametersPtr& params, ReportInterface& report) const
+bool ts::TunerArgs::tune(Tuner& tuner, TunerParametersPtr& params, Report& report) const
 {
     // Allocate tuning parameters of the appropriate type
     params = TunerParameters::Factory(tuner.tunerType());

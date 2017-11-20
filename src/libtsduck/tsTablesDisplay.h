@@ -53,7 +53,7 @@ namespace ts {
         //! @param [in] options Table logging options.
         //! @param [in,out] report Where to log errors.
         //!
-        TablesDisplay(const TablesDisplayArgs& options, ReportInterface& report);
+        TablesDisplay(const TablesDisplayArgs& options, Report& report);
 
         //!
         //! Virtual destructor.
@@ -100,7 +100,7 @@ namespace ts {
         //! @return A reference to the output stream.
         //!
         virtual std::ostream& logSectionData(const Section& section,
-                                             const std::string& header = std::string(),
+                                             const UString& header = UString(),
                                              size_t max_bytes = 0,
                                              CASFamily cas = CAS_OTHER);
 
@@ -193,7 +193,7 @@ namespace ts {
         //! @param [in] file_name The file name to create. If empty, reset to @c std::cout.
         //! @return True on success, false on error.
         //!
-        virtual bool redirect(const std::string& file_name = std::string());
+        virtual bool redirect(const UString& file_name = UString());
 
         //!
         //! Get the current output stream.
@@ -214,7 +214,7 @@ namespace ts {
         //! Get the current output report.
         //! @return A reference to the current output report.
         //!
-        ReportInterface& report()
+        Report& report()
         {
             return _report;
         }
@@ -283,7 +283,7 @@ namespace ts {
 
     private:
         const TablesDisplayArgs& _opt;
-        ReportInterface&         _report;
+        Report&                  _report;
         std::ofstream            _outfile;
         bool                     _use_outfile;
 

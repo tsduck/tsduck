@@ -33,7 +33,7 @@
 //-----------------------------------------------------------------------------
 
 #pragma once
-#include "tsReportInterface.h"
+#include "tsReport.h"
 #include "tsComPtr.h"
 
 namespace ts {
@@ -52,7 +52,7 @@ namespace ts {
         //! Constructor and initializes the graph.
         //! @param [in,out] report Where to report errors.
         //!
-        DirectShowGraph(ReportInterface& report);
+        DirectShowGraph(Report& report);
 
         //!
         //! Destructor.
@@ -64,13 +64,13 @@ namespace ts {
         //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool initialize(ReportInterface& report);
+        bool initialize(Report& report);
 
         //!
         //! Clear the graph back to uninitialized state.
         //! @param [in,out] report Where to report errors.
         //!
-        void clear(ReportInterface& report);
+        void clear(Report& report);
 
         //!
         //! Check if the graph was correctly initialized.
@@ -85,7 +85,7 @@ namespace ts {
         //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool addFilter(::IBaseFilter* filter, const wchar_t* name, ReportInterface& report);
+        bool addFilter(::IBaseFilter* filter, const wchar_t* name, Report& report);
 
         //!
         //! Remove a filter from the graph.
@@ -93,7 +93,7 @@ namespace ts {
         //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool removeFilter(::IBaseFilter* filter, ReportInterface& report);
+        bool removeFilter(::IBaseFilter* filter, Report& report);
 
         //!
         //! Directly connect two filters using whatever output and input pin.
@@ -102,7 +102,7 @@ namespace ts {
         //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool connectFilters(::IBaseFilter* filter1, ::IBaseFilter* filter2, ReportInterface& report);
+        bool connectFilters(::IBaseFilter* filter1, ::IBaseFilter* filter2, Report& report);
 
         //!
         //! In the graph, cleanup everything downstream a specified filter.
@@ -111,28 +111,28 @@ namespace ts {
         //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool cleanupDownstream(::IBaseFilter* filter, ReportInterface& report);
+        bool cleanupDownstream(::IBaseFilter* filter, Report& report);
 
         //!
         //! Get the starting filter of the graph.
         //! @param [in,out] report Where to report errors.
         //! @return A pointer to the first filter with no connected input pin or a null pointer if not found.
         //!
-        ComPtr<::IBaseFilter> startingFilter(ReportInterface& report);
+        ComPtr<::IBaseFilter> startingFilter(Report& report);
 
         //!
         //! Run the graph.
         //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool run(ReportInterface& report);
+        bool run(Report& report);
 
         //!
         //! Stop the graph.
         //! @param [in,out] report Where to report errors.
         //! @return True on success or already stopped, false on error.
         //!
-        bool stop(ReportInterface& report);
+        bool stop(Report& report);
 
         //!
         //! Display the description of the graph.
@@ -141,7 +141,7 @@ namespace ts {
         //! @param [in] margin Left margin to display.
         //! @param [in] verbose True for verbose information.
         //!
-        void display(std::ostream& output, ReportInterface& report, const std::string& margin = std::string(), bool verbose = true);
+        void display(std::ostream& output, Report& report, const std::string& margin = std::string(), bool verbose = true);
 
     private:
         ComPtr<::IGraphBuilder> _graph_builder;
@@ -173,7 +173,7 @@ namespace ts {
         //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool getPin(PinPtrVector& pins, ::IBaseFilter* filter, int flags, ReportInterface& report);
+        bool getPin(PinPtrVector& pins, ::IBaseFilter* filter, int flags, Report& report);
 
         //!
         //! Display the description of a partial graph.
@@ -183,7 +183,7 @@ namespace ts {
         //! @param [in] margin Left margin to display.
         //! @param [in] verbose True for verbose information.
         //!
-        void display(std::ostream& output, ReportInterface& report, const ComPtr<::IBaseFilter>& filter, const std::string& margin, bool verbose);
+        void display(std::ostream& output, Report& report, const ComPtr<::IBaseFilter>& filter, const std::string& margin, bool verbose);
 
         // Inaccessible operations.
         DirectShowGraph(const DirectShowGraph&) = delete;

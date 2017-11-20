@@ -107,7 +107,7 @@ namespace {
 // Constructor
 //----------------------------------------------------------------------------
 
-ts::SystemMonitor::SystemMonitor (ReportInterface* report) :
+ts::SystemMonitor::SystemMonitor (Report* report) :
     Thread (ThreadAttributes().setPriority(ThreadAttributes::GetMinimumPriority()).setStackSize(MONITOR_STACK_SIZE)),
     _report (report),
     _mutex (),

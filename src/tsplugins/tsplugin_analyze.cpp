@@ -98,39 +98,39 @@ ts::AnalyzePlugin::AnalyzePlugin(TSP* tsp_) :
     _analyzer(),
     _analyzer_options()
 {
-    option ("interval",       'i', POSITIVE);
-    option ("multiple-files", 'm');
-    option ("output-file",    'o', STRING);
-    copyOptions (_analyzer_options);
+    option(u"interval",       'i', POSITIVE);
+    option(u"multiple-files", 'm');
+    option(u"output-file",    'o', STRING);
+    copyOptions(_analyzer_options);
 
-    _analyzer_options.setHelp (
-        "Options:\n"
-        "\n"
-        "  --help\n"
-        "      Display this help text.\n"
-        "\n"
-        "  -i seconds\n"
-        "  --interval seconds\n"
-        "      Produce a new output file at regular intervals. After outputing a file,\n"
-        "      the analysis context is reset, ie. each output file contains a fully\n"
-        "      independent analysis.\n"
-        "\n"
-        "  -m\n"
-        "  --multiple-files\n"
-        "      When used with --interval and --output-file, create a new file for each\n"
-        "      analysis instead of rewriting the previous file. Assuming that the\n"
-        "      specified output file name has the form 'base.ext', each file is created\n"
-        "      with a time stamp in its name as 'base_YYYYMMDD_hhmmss.ext'.\n"
-        "\n"
-        "  -o filename\n"
-        "  --output-file filename\n"
-        "      Specify the output text file for the analysis result.\n"
-        "      By default, use the standard output.\n"
-        "\n"
-        "  --version\n"
-        "      Display the version number.\n");
+    _analyzer_options.setHelp(
+        u"Options:\n"
+        u"\n"
+        u"  --help\n"
+        u"      Display this help text.\n"
+        u"\n"
+        u"  -i seconds\n"
+        u"  --interval seconds\n"
+        u"      Produce a new output file at regular intervals. After outputing a file,\n"
+        u"      the analysis context is reset, ie. each output file contains a fully\n"
+        u"      independent analysis.\n"
+        u"\n"
+        u"  -m\n"
+        u"  --multiple-files\n"
+        u"      When used with --interval and --output-file, create a new file for each\n"
+        u"      analysis instead of rewriting the previous file. Assuming that the\n"
+        u"      specified output file name has the form 'base.ext', each file is created\n"
+        u"      with a time stamp in its name as 'base_YYYYMMDD_hhmmss.ext'.\n"
+        u"\n"
+        u"  -o filename\n"
+        u"  --output-file filename\n"
+        u"      Specify the output text file for the analysis result.\n"
+        u"      By default, use the standard output.\n"
+        u"\n"
+        u"  --version\n"
+        u"      Display the version number.\n");
 
-    setHelp (_analyzer_options.getHelp());
+    setHelp(_analyzer_options.getHelp());
 }
 
 
@@ -140,9 +140,9 @@ ts::AnalyzePlugin::AnalyzePlugin(TSP* tsp_) :
 
 bool ts::AnalyzePlugin::start()
 {
-    _output_name = value ("output-file");
+    _output_name = value(u"output-file");
     _output_interval = MilliSecPerSec * intValue<MilliSecond> ("interval", 0);
-    _multiple_output = present ("multiple-files");
+    _multiple_output = present(u"multiple-files");
     _output = _output_name.empty() ? &std::cout : &_output_stream;
     _analyzer_options.getOptions (*this);
     _analyzer.setAnalysisOptions (_analyzer_options);

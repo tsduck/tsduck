@@ -33,7 +33,7 @@
 //-----------------------------------------------------------------------------
 
 #pragma once
-#include "tsReportInterface.h"
+#include "tsReport.h"
 #include "tsComIds.h"
 
 namespace ts {
@@ -54,7 +54,7 @@ namespace ts {
     //! @param [in,out] report Where to report errors.
     //! @return True if status is success, false if error.
     //!
-    TSDUCKDLL bool ComSuccess(::HRESULT status, const char* message, ReportInterface& report);
+    TSDUCKDLL bool ComSuccess(::HRESULT status, const char* message, Report& report);
 
     //!
     //! Check a COM status (Windows-specific).
@@ -65,7 +65,7 @@ namespace ts {
     //! @param [in,out] report Where to report errors.
     //! @return True if status is success, false if error.
     //!
-    TSDUCKDLL bool ComSuccess(::HRESULT status, const std::string& message, ReportInterface& report);
+    TSDUCKDLL bool ComSuccess(::HRESULT status, const std::string& message, Report& report);
 
     //!
     //! Check if an object exposes an interface.
@@ -119,5 +119,5 @@ namespace ts {
     //! @param [in,out] report Where to report errors.
     //! @return The property value.
     //!
-    TSDUCKDLL std::string GetStringPropertyBag(::IMoniker* moniker, const ::OLECHAR* property_name, ReportInterface& report);
+    TSDUCKDLL std::string GetStringPropertyBag(::IMoniker* moniker, const ::OLECHAR* property_name, Report& report);
 }

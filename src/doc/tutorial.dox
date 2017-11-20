@@ -149,19 +149,19 @@ TS_STATIC_INSTANCE().
 ## Error reporting {#errreport}
 
 All TSDuck classes use a consistent error reporting mechanism through the
-ts::ReportInterface abstract class.
+ts::Report abstract class.
 
 This interface defines several levels of severity in the type ts::Severity,
 ranging from ts::Severity::Debug to ts::Severity::Fatal.
-Each instance of ts::ReportInterface defines which levels of message are reported to the user.
+Each instance of ts::Report defines which levels of message are reported to the user.
 This is usually triggered by command-line options such as `--verbose` or `--debug`.
 
 Most classes or methods from the TSDuck library use a reference to an
-instance of ts::ReportInterface to report messages and errors. The actual
+instance of ts::Report to report messages and errors. The actual
 reporting object is often built at application level and then propagated
 to all layers of code.
 
-Some interesting subclasses of ts::ReportInterface are:
+Some interesting subclasses of ts::Report are:
 - ts::CerrReport, a singleton which reports errors to `std::cerr`.
   The macro @link CERR @endlink can be used as a shortcut to the instance of the singleton.
 - ts::NullReport, a singleton which drops all messages.
@@ -171,7 +171,7 @@ Some interesting subclasses of ts::ReportInterface are:
 - ts::ReportBuffer which logs messages in a memory buffer. It can be made thread-safe
   using a mutex class as template argument.
 - ts::Args (see @ref cmdargs "below") which defines the syntax and handling
-  of command line arguments. This is the typical instance of ts::ReportInterface
+  of command line arguments. This is the typical instance of ts::Report
   which is used at application-level.
 - ts::TSP, a class which is used by tsp plugins to communicate with the
   top-level @e tsp application. Each tsp plugin executes in a separate thread.

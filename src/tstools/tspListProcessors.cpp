@@ -42,7 +42,7 @@ TSDUCK_SOURCE;
 // List all processors
 //----------------------------------------------------------------------------
 
-void ts::tsp::ListProcessors (ReportInterface& report)
+void ts::tsp::ListProcessors (Report& report)
 {
     // Get list of shared library files
 

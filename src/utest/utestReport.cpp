@@ -27,7 +27,7 @@
 //
 //----------------------------------------------------------------------------
 //
-//  CppUnit test suite for subclasses of ts::ReportInterface
+//  CppUnit test suite for subclasses of ts::Report
 //
 //----------------------------------------------------------------------------
 
@@ -158,44 +158,44 @@ void ReportTest::testString()
     _testStringSequence(log, ts::Severity::Debug);
     CPPUNIT_ASSERT(!log.emptyMessages());
     CPPUNIT_ASSERT_EQUAL(std::string("1\n"
-                                     "Debug: 2\n"
-                                     "Debug: 3\n"
-                                     "Warning: 4\n"
-                                     "5\n"
-                                     "FATAL ERROR: 6\n"
-                                     "FATAL ERROR: 7\n"
-                                     "Error: 8"),
+                                     u"Debug: 2\n"
+                                     u"Debug: 3\n"
+                                     u"Warning: 4\n"
+                                     u"5\n"
+                                     u"FATAL ERROR: 6\n"
+                                     u"FATAL ERROR: 7\n"
+                                     u"Error: 8"),
                          log.getMessages());
 
     _testStringSequence (log, ts::Severity::Info);
     CPPUNIT_ASSERT(!log.emptyMessages());
     CPPUNIT_ASSERT_EQUAL(std::string("1\n"
-                                     "Warning: 4\n"
-                                     "5\n"
-                                     "FATAL ERROR: 6\n"
-                                     "FATAL ERROR: 7\n"
-                                     "Error: 8"),
+                                     u"Warning: 4\n"
+                                     u"5\n"
+                                     u"FATAL ERROR: 6\n"
+                                     u"FATAL ERROR: 7\n"
+                                     u"Error: 8"),
                          log.getMessages());
 
     _testStringSequence (log, ts::Severity::Warning);
     CPPUNIT_ASSERT(!log.emptyMessages());
     CPPUNIT_ASSERT_EQUAL(std::string("Warning: 4\n"
-                                     "FATAL ERROR: 6\n"
-                                     "FATAL ERROR: 7\n"
-                                     "Error: 8"),
+                                     u"FATAL ERROR: 6\n"
+                                     u"FATAL ERROR: 7\n"
+                                     u"Error: 8"),
                          log.getMessages());
 
     _testStringSequence (log, ts::Severity::Error);
     CPPUNIT_ASSERT(!log.emptyMessages());
     CPPUNIT_ASSERT_EQUAL(std::string("FATAL ERROR: 6\n"
-                                     "FATAL ERROR: 7\n"
-                                     "Error: 8"),
+                                     u"FATAL ERROR: 7\n"
+                                     u"Error: 8"),
                          log.getMessages());
 
     _testStringSequence (log, ts::Severity::Fatal);
     CPPUNIT_ASSERT(!log.emptyMessages());
     CPPUNIT_ASSERT_EQUAL(std::string("FATAL ERROR: 6\n"
-                                     "FATAL ERROR: 7"),
+                                     u"FATAL ERROR: 7"),
                          log.getMessages());
 
     _testStringSequence (log, ts::Severity::None);
@@ -228,40 +228,40 @@ void ReportTest::testPrintf()
 
     _testPrintfSequence(log, ts::Severity::Debug);
     CPPUNIT_ASSERT_EQUAL(std::string("1\n"
-                                     "Debug: 2\n"
-                                     "Debug: 3\n"
-                                     "Warning: 4\n"
-                                     "5\n"
-                                     "FATAL ERROR: 6\n"
-                                     "FATAL ERROR: 7\n"
-                                     "Error: 8"),
+                                     u"Debug: 2\n"
+                                     u"Debug: 3\n"
+                                     u"Warning: 4\n"
+                                     u"5\n"
+                                     u"FATAL ERROR: 6\n"
+                                     u"FATAL ERROR: 7\n"
+                                     u"Error: 8"),
                          log.getMessages());
 
     _testPrintfSequence(log, ts::Severity::Info);
     CPPUNIT_ASSERT_EQUAL(std::string("1\n"
-                                     "Warning: 4\n"
-                                     "5\n"
-                                     "FATAL ERROR: 6\n"
-                                     "FATAL ERROR: 7\n"
-                                     "Error: 8"),
+                                     u"Warning: 4\n"
+                                     u"5\n"
+                                     u"FATAL ERROR: 6\n"
+                                     u"FATAL ERROR: 7\n"
+                                     u"Error: 8"),
                          log.getMessages());
 
     _testPrintfSequence(log, ts::Severity::Warning);
     CPPUNIT_ASSERT_EQUAL(std::string("Warning: 4\n"
-                                     "FATAL ERROR: 6\n"
-                                     "FATAL ERROR: 7\n"
-                                     "Error: 8"),
+                                     u"FATAL ERROR: 6\n"
+                                     u"FATAL ERROR: 7\n"
+                                     u"Error: 8"),
                          log.getMessages());
 
     _testPrintfSequence(log, ts::Severity::Error);
     CPPUNIT_ASSERT_EQUAL(std::string("FATAL ERROR: 6\n"
-                                     "FATAL ERROR: 7\n"
-                                     "Error: 8"),
+                                     u"FATAL ERROR: 7\n"
+                                     u"Error: 8"),
                          log.getMessages());
 
     _testPrintfSequence(log, ts::Severity::Fatal);
     CPPUNIT_ASSERT_EQUAL(std::string("FATAL ERROR: 6\n"
-                                     "FATAL ERROR: 7"),
+                                     u"FATAL ERROR: 7"),
                          log.getMessages());
 
     _testPrintfSequence(log, ts::Severity::None);

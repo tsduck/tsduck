@@ -93,99 +93,99 @@ Options::Options (int argc, char *argv[]) :
     cc_ignore(false),
     continue_all(false)
 {
-    option ("",                 0,  Args::STRING, 2, 2);
-    option ("buffered-packets", 0,  UNSIGNED);
-    option ("byte-offset",     'b', UNSIGNED);
-    option ("cc-ignore",        0);
-    option ("continue",        'c');
-    option ("dump",            'd');
-    option ("normalized",      'n');
-    option ("packet-offset",   'p', UNSIGNED);
-    option ("payload-only",     0);
-    option ("pcr-ignore",       0);
-    option ("pid-ignore",       0);
-    option ("subset",          's');
-    option ("threshold-diff",  't', INTEGER, 0, 1, 0, PKT_SIZE);
-    option ("quiet",           'q');
-    option ("verbose",         'v');
+    option(u"",                 0,  Args::STRING, 2, 2);
+    option(u"buffered-packets", 0,  UNSIGNED);
+    option(u"byte-offset",     'b', UNSIGNED);
+    option(u"cc-ignore",        0);
+    option(u"continue",        'c');
+    option(u"dump",            'd');
+    option(u"normalized",      'n');
+    option(u"packet-offset",   'p', UNSIGNED);
+    option(u"payload-only",     0);
+    option(u"pcr-ignore",       0);
+    option(u"pid-ignore",       0);
+    option(u"subset",          's');
+    option(u"threshold-diff",  't', INTEGER, 0, 1, 0, PKT_SIZE);
+    option(u"quiet",           'q');
+    option(u"verbose",         'v');
 
-    setHelp ("Files:\n"
-             "\n"
-             "  MPEG capture files to be compared.\n"
-             "\n"
-             "Options:\n"
-             "\n"
-             "  --buffered-packets value\n"
-             "      Specifies the files input buffer size in TS packets.\n"
-             "      The default is " + Decimal (DEFAULT_BUFFERED_PACKETS) + " TS packets.\n"
-             "\n"
-             "  -b value\n"
-             "  --byte-offset value\n"
-             "      Start reading the files at the specified byte offset (default: 0).\n"
-             "\n"
-             "  --cc-ignore\n"
-             "      Ignore continuity counters when comparing packets. Useful if one file\n"
-             "      has been resynchronized.\n"
-             "\n"
-             "  -c\n"
-             "  --continue\n"
-             "      Continue the comparison up to the end of files. By default, stop after\n"
-             "      the first differing packet.\n"
-             "\n"
-             "  -d\n"
-             "  --dump\n"
-             "      Dump the content of all differing packets.\n"
-             "\n"
-             "  --help\n"
-             "      Display this help text.\n"
-             "\n"
-             "  -n\n"
-             "  --normalized\n"
-             "      Report in a normalized output format (useful for automatic analysis).\n"
-             "\n"
-             "  -p value\n"
-             "  --packet-offset value\n"
-             "      Start reading the files at the specified TS packet (default: 0).\n"
-             "\n"
-             "  --payload-only\n"
-             "      Compare only the payload of the packets, ignore header and adaptation\n"
-             "      field.\n"
-             "\n"
-             "  --pcr-ignore\n"
-             "      Ignore PCR and OPCR when comparing packets. Useful if one file has been\n"
-             "      resynchronized.\n"
-             "\n"
-             "  --pid-ignore\n"
-             "      Ignore PID value when comparing packets. Useful if one file has gone\n"
-             "      through a remapping process.\n"
-             "\n"
-             "  -q\n"
-             "  --quiet\n"
-             "      Do not output any message. The process simply terminates with a success\n"
-             "      status if the files are identical and a failure status if they differ.\n"
-             "\n"
-             "  -s\n"
-             "  --subset\n"
-             "      Specifies that the second file is a subset of the first one. This means\n"
-             "      that the second file is expected to be identical to the first one, except\n"
-             "      that some packets may be missing. When a difference is found, the first\n"
-             "      file is read ahead until a matching packet is found.\n"
-             "      See also --threshold-diff.\n"
-             "\n"
-             "  -t value\n"
-             "  --threshold-diff value\n"
-             "      When used with --subset, this value specifies the maximum number of\n"
-             "      differing bytes in packets to declare them equal. When two packets have\n"
-             "      more differing bytes than this threshold, the packets are reported as\n"
-             "      different and the first file is read ahead. The default is zero, which\n"
-             "      means that two packets must be strictly identical to declare them equal.\n"
-             "\n"
-             "  -v\n"
-             "  --verbose\n"
-             "      Produce verbose messages.\n"
-             "\n"
-             "  --version\n"
-             "      Display the version number.\n");
+    setHelp(u"Files:\n"
+             u"\n"
+             u"  MPEG capture files to be compared.\n"
+             u"\n"
+             u"Options:\n"
+             u"\n"
+             u"  --buffered-packets value\n"
+             u"      Specifies the files input buffer size in TS packets.\n"
+             u"      The default is " + Decimal (DEFAULT_BUFFERED_PACKETS) + " TS packets.\n"
+             u"\n"
+             u"  -b value\n"
+             u"  --byte-offset value\n"
+             u"      Start reading the files at the specified byte offset (default: 0).\n"
+             u"\n"
+             u"  --cc-ignore\n"
+             u"      Ignore continuity counters when comparing packets. Useful if one file\n"
+             u"      has been resynchronized.\n"
+             u"\n"
+             u"  -c\n"
+             u"  --continue\n"
+             u"      Continue the comparison up to the end of files. By default, stop after\n"
+             u"      the first differing packet.\n"
+             u"\n"
+             u"  -d\n"
+             u"  --dump\n"
+             u"      Dump the content of all differing packets.\n"
+             u"\n"
+             u"  --help\n"
+             u"      Display this help text.\n"
+             u"\n"
+             u"  -n\n"
+             u"  --normalized\n"
+             u"      Report in a normalized output format (useful for automatic analysis).\n"
+             u"\n"
+             u"  -p value\n"
+             u"  --packet-offset value\n"
+             u"      Start reading the files at the specified TS packet (default: 0).\n"
+             u"\n"
+             u"  --payload-only\n"
+             u"      Compare only the payload of the packets, ignore header and adaptation\n"
+             u"      field.\n"
+             u"\n"
+             u"  --pcr-ignore\n"
+             u"      Ignore PCR and OPCR when comparing packets. Useful if one file has been\n"
+             u"      resynchronized.\n"
+             u"\n"
+             u"  --pid-ignore\n"
+             u"      Ignore PID value when comparing packets. Useful if one file has gone\n"
+             u"      through a remapping process.\n"
+             u"\n"
+             u"  -q\n"
+             u"  --quiet\n"
+             u"      Do not output any message. The process simply terminates with a success\n"
+             u"      status if the files are identical and a failure status if they differ.\n"
+             u"\n"
+             u"  -s\n"
+             u"  --subset\n"
+             u"      Specifies that the second file is a subset of the first one. This means\n"
+             u"      that the second file is expected to be identical to the first one, except\n"
+             u"      that some packets may be missing. When a difference is found, the first\n"
+             u"      file is read ahead until a matching packet is found.\n"
+             u"      See also --threshold-diff.\n"
+             u"\n"
+             u"  -t value\n"
+             u"  --threshold-diff value\n"
+             u"      When used with --subset, this value specifies the maximum number of\n"
+             u"      differing bytes in packets to declare them equal. When two packets have\n"
+             u"      more differing bytes than this threshold, the packets are reported as\n"
+             u"      different and the first file is read ahead. The default is zero, which\n"
+             u"      means that two packets must be strictly identical to declare them equal.\n"
+             u"\n"
+             u"  -v\n"
+             u"  --verbose\n"
+             u"      Produce verbose messages.\n"
+             u"\n"
+             u"  --version\n"
+             u"      Display the version number.\n");
 
     analyze (argc, argv);
 
@@ -195,16 +195,16 @@ Options::Options (int argc, char *argv[]) :
     buffered_packets = intValue<size_t> ("buffered-packets", DEFAULT_BUFFERED_PACKETS);
     byte_offset = intValue<uint64_t> ("byte-offset", intValue<uint64_t> ("packet-offset", 0) * PKT_SIZE);
     threshold_diff = intValue<size_t> ("threshold-diff", 0);
-    subset = present ("subset");
-    payload_only = present ("payload-only");
-    pcr_ignore = present ("pcr-ignore");
-    pid_ignore = present ("pid-ignore");
-    cc_ignore = present ("cc-ignore");
-    continue_all = present ("continue");
-    quiet = present ("quiet");
-    normalized = !quiet && present ("normalized");
-    verbose = !quiet && present ("verbose");
-    dump = !quiet && present ("dump");
+    subset = present(u"subset");
+    payload_only = present(u"payload-only");
+    pcr_ignore = present(u"pcr-ignore");
+    pid_ignore = present(u"pid-ignore");
+    cc_ignore = present(u"cc-ignore");
+    continue_all = present(u"continue");
+    quiet = present(u"quiet");
+    normalized = !quiet && present(u"normalized");
+    verbose = !quiet && present(u"verbose");
+    dump = !quiet && present(u"dump");
 
     dump_flags =
         TSPacket::DUMP_TS_HEADER |    // Format TS headers

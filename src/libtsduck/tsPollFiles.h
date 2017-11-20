@@ -63,7 +63,7 @@ namespace ts {
         //! Get the file name.
         //! @return The file name.
         //!
-        const std::string& getFileName() const
+        const UString& getFileName() const
         {
             return _name;
         }
@@ -80,15 +80,15 @@ namespace ts {
     private:
         friend class PollFiles;
 
-        const std::string _name; // File name
-        Status  _status;         // Status since last report
-        int64_t _file_size;      // File size in bytes
-        Time    _file_date;      // Last file modification date (UTC)
-        bool    _pending;        // Not yet notified, waiting for stable state
-        Time    _found_date;     // First time (UTC) this size/date state was reported
+        const UString _name;           // File name
+        Status        _status;         // Status since last report
+        int64_t       _file_size;      // File size in bytes
+        Time          _file_date;      // Last file modification date (UTC)
+        bool          _pending;        // Not yet notified, waiting for stable state
+        Time          _found_date;     // First time (UTC) this size/date state was reported
 
         // Constructor
-        PolledFile(const std::string& name, const int64_t& size, const Time& date, const Time& now);
+        PolledFile(const UString& name, const int64_t& size, const Time& date, const Time& now);
 
         // Check if file has changed size or date. If yes, return to pending state.
         void trackChange(const int64_t& size, const Time& date, const Time& now);
@@ -128,7 +128,7 @@ namespace ts {
         //! poll notifications when a file is being written and his size modified at each poll.
         //! @return True to continue polling, false to exit PollFiles().
         //!
-        virtual bool updatePollFiles(std::string& wildcard, MilliSecond& poll_interval, MilliSecond& min_stable_delay)
+        virtual bool updatePollFiles(UString& wildcard, MilliSecond& poll_interval, MilliSecond& min_stable_delay)
         {
             return true;
         }
@@ -162,15 +162,15 @@ namespace ts {
         //! @param [in,out] listener Invoked on file modification.
         //! @param [in,out] report For debug messages only.
         //!
-        PollFiles(const std::string& wildcard,
+        PollFiles(const UString& wildcard,
                   MilliSecond poll_interval,
                   MilliSecond min_stable_delay,
                   PollFilesListener& listener,
-                  ReportInterface& report = CERR);
+                  Report& report = CERR);
 
     private:
-        std::string        _files_wildcard;
-        ReportInterface&   _report;
+        UString            _files_wildcard;
+        Report&            _report;
         PollFilesListener& _listener;
         PolledFileList     _polled_files;   // Updated at each poll, sorted by file name
         PolledFileList     _notified_files; // Modifications to notify

@@ -439,7 +439,7 @@ namespace ts {
         //! @param [in,out] report Where to report errors.
         //! @return A reference to the @a strm object.
         //!
-        std::istream& read(std::istream& strm, bool check_sync = true, ReportInterface& report = CERR);
+        std::istream& read(std::istream& strm, bool check_sync = true, Report& report = CERR);
 
         //!
         //! Write a packet to standard streams (binary mode).
@@ -447,7 +447,7 @@ namespace ts {
         //! @param [in,out] report Where to report errors.
         //! @return A reference to the @a strm object.
         //!
-        std::ostream& write(std::ostream& strm, ReportInterface& report = CERR) const;
+        std::ostream& write(std::ostream& strm, Report& report = CERR) const;
 
         //!
         //! Options for packet display.

@@ -33,10 +33,9 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsPlatform.h"
 #include "tsUString.h"
 #include "tsCASFamily.h"
-#include "tsReportInterface.h"
+#include "tsReport.h"
 #include "tsStaticInstance.h"
 
 namespace ts {
@@ -338,7 +337,7 @@ namespace ts {
         //! Constructor.
         //! @param [in] fileName Configuration file name. Typically without directory name.
         //!
-        Names(const std::string& fileName);
+        Names(const UString& fileName);
 
         //!
         //! Virtual destructor.
@@ -354,7 +353,7 @@ namespace ts {
         //! Get the complete path of the configuration file from which the names were loaded.
         //! @return The complete path of the configuration file. Empty if does not exist.
         //!
-        std::string configurationFile() const
+        UString configurationFile() const
         {
             return _configFile;
         }
@@ -448,11 +447,11 @@ namespace ts {
         static Value DisplayMask(size_t bits);
 
         // Names private fields.
-        ReportInterface&  _log;           // Error logger.
-        const std::string _configFile;    // Configuration file path.
-        size_t            _configLines;   // Number of lines in configuration file.
-        size_t            _configErrors;  // Number of errors in configuration file.
-        ConfigSectionMap  _sections;      // Configuration sections.
+        Report&          _log;           // Error logger.
+        const UString    _configFile;    // Configuration file path.
+        size_t           _configLines;   // Number of lines in configuration file.
+        size_t           _configErrors;  // Number of errors in configuration file.
+        ConfigSectionMap _sections;      // Configuration sections.
 
         // Inaccessible operations.
         Names() = delete;

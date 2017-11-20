@@ -37,10 +37,11 @@
 //----------------------------------------------------------------------------
 
 template <class MUTEX>
-ts::ReportFile<MUTEX>::ReportFile(const std::string& file_name, bool append, bool verbose, int debug_level) :
-    ReportInterface(verbose, debug_level),
+ts::ReportFile<MUTEX>::ReportFile(const UString& file_name, bool append, bool verbose, int debug_level) :
+    Report(verbose, debug_level),
     _mutex(),
-    _named_file(file_name.c_str(), append ? (std::ios::out | std::ios::app) : std::ios::out),
+    _file_name(file_name.toUTF8()),
+    _named_file(_file_name.c_str(), append ? (std::ios::out | std::ios::app) : std::ios::out),
     _file(_named_file)
 {
     // Process error when creating the file
@@ -56,8 +57,9 @@ ts::ReportFile<MUTEX>::ReportFile(const std::string& file_name, bool append, boo
 
 template <class MUTEX>
 ts::ReportFile<MUTEX>::ReportFile(std::ostream& stream, bool append, bool verbose, int debug_level) :
-    ReportInterface(verbose, debug_level),
+    Report(verbose, debug_level),
     _mutex(),
+    _file_name(),
     _named_file(),
     _file(stream)
 {
@@ -85,7 +87,7 @@ ts::ReportFile<MUTEX>::~ReportFile()
 //----------------------------------------------------------------------------
 
 template <class MUTEX>
-void ts::ReportFile<MUTEX>::writeLog (int severity, const std::string& message)
+void ts::ReportFile<MUTEX>::writeLog(int severity, const UString& message)
 {
     Guard lock(_mutex);
     _file << Severity::Header(severity) << message << std::endl;

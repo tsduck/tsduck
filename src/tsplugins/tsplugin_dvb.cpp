@@ -85,20 +85,20 @@ TSPLUGIN_DECLARE_INPUT(ts::DVBInput)
 //----------------------------------------------------------------------------
 
 ts::DVBInput::DVBInput(TSP* tsp_) :
-    InputPlugin(tsp_, "DVB receiver device input.", "[options]"),
+    InputPlugin(tsp_, u"DVB receiver device input.", u"[options]"),
     _com(*tsp_),
     _tuner(),
     _tuner_args(false, true),
     _tuner_params(),
     _previous_bitrate(0)
 {
-    setHelp("Options:\n"
-            "\n"
-            "  --help\n"
-            "      Display this help text.\n"
-            "\n"
-            "  --version\n"
-            "      Display the version number.\n");
+    setHelp(u"Options:\n"
+            u"\n"
+            u"  --help\n"
+            u"      Display this help text.\n"
+            u"\n"
+            u"  --version\n"
+            u"      Display the version number.\n");
 
     // Define common tuning options
     _tuner_args.defineOptions(*this);

@@ -98,6 +98,6 @@ namespace ts {
         void listNormalizedCapabilities(size_t device_index, size_t channel_index, const char* type, const Dtapi::DtHwFuncDesc& hw);
 
         // Display a long line on multiple lines
-        void wideDisplay(const std::string& line);
+        void wideDisplay(const UString& line);
     };
 }

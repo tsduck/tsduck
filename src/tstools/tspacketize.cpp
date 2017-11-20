@@ -72,72 +72,72 @@ Options::Options(int argc, char *argv[]) :
     verbose(false),
     debug(false)
 {
-    option("",            0,  Args::STRING);
-    option("bitrate",    'b', Args::UNSIGNED);
-    option("continuous", 'c');
-    option("debug",      'd');
-    option("force-crc",  'f');
-    option("output",     'o', Args::STRING);
-    option("pid",        'p', Args::PIDVAL, 1, 1);
-    option("stuffing",   's');
-    option("verbose",    'v');
+    option(u"",            0,  Args::STRING);
+    option(u"bitrate",    'b', Args::UNSIGNED);
+    option(u"continuous", 'c');
+    option(u"debug",      'd');
+    option(u"force-crc",  'f');
+    option(u"output",     'o', Args::STRING);
+    option(u"pid",        'p', Args::PIDVAL, 1, 1);
+    option(u"stuffing",   's');
+    option(u"verbose",    'v');
 
-    setHelp("Input files:\n"
-            "\n"
-            "  Binary files containing sections (standard input if omitted).\n"
-            "  If different repetition rates are required for different files,\n"
-            "  a parameter can be \"filename=value\" where value is the\n"
-            "  repetition rate in milliseconds for all sections in that file.\n"
-            "  For repetition rates to be effective, the bitrate of the target\n"
-            "  PID must be specified, see option -b or --bitrate.\n"
-            "\n"
-            "Options:\n"
-            "\n"
-            "  -b value\n"
-            "  --bitrate value\n"
-            "      Specifies the bitrate (in bits/second) of the target PID. This\n"
-            "      information is used to schedule sections in the output list of\n"
-            "      packets when specific bitrates are specified for sections.\n"
-            "\n"
-            "  -c\n"
-            "  --continuous\n"
-            "      Continuous packetization. By default, generate one cycle of sections.\n"
-            "\n"
-            "  -f\n"
-            "  --force-crc\n"
-            "      Force recomputation of CRC32 in long sections. Ignore the CRC32\n"
-            "      values in the input files.\n"
-            "\n"
-            "  --help\n"
-            "      Display this help text.\n"
-            "\n"
-            "  -o file-name\n"
-            "  --output file-name\n"
-            "      Output file name for TS packets. By default, use standard output.\n"
-            "\n"
-            "  -p value\n"
-            "  --pid value\n"
-            "      PID of the output TS packets. This is a required parameter, there is\n"
-            "      no default value.\n"
-            "\n"
-            "  -s\n"
-            "  --stuffing\n"
-            "      Insert stuffing at end of each section, up to the next TS packet\n"
-            "      boundary. By default, sections are packed and start in the middle\n"
-            "      of a TS packet, after the previous section. Note, however, that\n"
-            "      section headers are never scattered over a packet boundary.\n"
-            "\n"
-            "  -v\n"
-            "  --verbose\n"
-            "      Display verbose information.\n"
-            "\n"
-            "  --version\n"
-            "      Display the version number.\n");
+    setHelp(u"Input files:\n"
+            u"\n"
+            u"  Binary files containing sections (standard input if omitted).\n"
+            u"  If different repetition rates are required for different files,\n"
+            u"  a parameter can be \"filename=value\" where value is the\n"
+            u"  repetition rate in milliseconds for all sections in that file.\n"
+            u"  For repetition rates to be effective, the bitrate of the target\n"
+            u"  PID must be specified, see option -b or --bitrate.\n"
+            u"\n"
+            u"Options:\n"
+            u"\n"
+            u"  -b value\n"
+            u"  --bitrate value\n"
+            u"      Specifies the bitrate (in bits/second) of the target PID. This\n"
+            u"      information is used to schedule sections in the output list of\n"
+            u"      packets when specific bitrates are specified for sections.\n"
+            u"\n"
+            u"  -c\n"
+            u"  --continuous\n"
+            u"      Continuous packetization. By default, generate one cycle of sections.\n"
+            u"\n"
+            u"  -f\n"
+            u"  --force-crc\n"
+            u"      Force recomputation of CRC32 in long sections. Ignore the CRC32\n"
+            u"      values in the input files.\n"
+            u"\n"
+            u"  --help\n"
+            u"      Display this help text.\n"
+            u"\n"
+            u"  -o file-name\n"
+            u"  --output file-name\n"
+            u"      Output file name for TS packets. By default, use standard output.\n"
+            u"\n"
+            u"  -p value\n"
+            u"  --pid value\n"
+            u"      PID of the output TS packets. This is a required parameter, there is\n"
+            u"      no default value.\n"
+            u"\n"
+            u"  -s\n"
+            u"  --stuffing\n"
+            u"      Insert stuffing at end of each section, up to the next TS packet\n"
+            u"      boundary. By default, sections are packed and start in the middle\n"
+            u"      of a TS packet, after the previous section. Note, however, that\n"
+            u"      section headers are never scattered over a packet boundary.\n"
+            u"\n"
+            u"  -v\n"
+            u"  --verbose\n"
+            u"      Display verbose information.\n"
+            u"\n"
+            u"  --version\n"
+            u"      Display the version number.\n");
 
     analyze(argc, argv);
 
-    continuous = present("continuous");
-    if (present("stuffing")) {
+    continuous = present(u"continuous");
+    if (present(u"stuffing")) {
         stuffing_policy = ts::CyclingPacketizer::ALWAYS;
     }
     else if (continuous) {
@@ -146,13 +146,13 @@ Options::Options(int argc, char *argv[]) :
     else {
         stuffing_policy = ts::CyclingPacketizer::AT_END;
     }
-    crc_op = present("force-crc") ? ts::CRC32::COMPUTE : ts::CRC32::CHECK;
+    crc_op = present(u"force-crc") ? ts::CRC32::COMPUTE : ts::CRC32::CHECK;
     pid = intValue<ts::PID>("pid", ts::PID_NULL);
     bitrate = intValue<ts::BitRate>("bitrate");
-    outfile = value("output");
+    outfile = value(u"output");
     infiles.getArgs(*this);
-    debug = present("debug");
-    verbose = debug || present("verbose");
+    debug = present(u"debug");
+    verbose = debug || present(u"verbose");
 
     // If any non-zero repetition rate is specified, make sure that a bitrate
     // is specified.

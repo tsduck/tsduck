@@ -33,10 +33,8 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsPlatform.h"
-#include "tsReportInterface.h"
+#include "tsReport.h"
 #include "tsException.h"
-#include "tsStringUtils.h"
 #include "tsEnumeration.h"
 #include "tsVariable.h"
 #include "tsMPEG.h"
@@ -138,7 +136,7 @@ namespace ts {
     //! Instead, the analyze() method returns @c false.
     //!
     //! By default, error messages on the standard error device and terminates the application
-    //! on fatal errors. Any user-defined subclass of ts::ReportInterface can be used to report
+    //! on fatal errors. Any user-defined subclass of ts::Report can be used to report
     //! errors. See the method redirectReport(). To drop all messages, simply use an instance
     //! of ts::NullReport, typically @link NULLREP @endlink.
     //!
@@ -158,50 +156,50 @@ namespace ts {
     //! public:
     //!     CommandArgs(int argc, char *argv[]);
     //!
-    //!     std::string inFile1;
-    //!     std::string inFile2;
-    //!     std::string outFile;
+    //!     ts::UString inFile1;
+    //!     ts::UString inFile2;
+    //!     ts::UString outFile;
     //!     bool        verbose;
     //!     size_t      bufferSize;
     //! };
     //!
     //! // Constructor: define the command syntax and analyze the command line.
     //! CommandArgs::CommandArgs(int argc, char *argv[]) :
-    //!     ts::Args("Super file merger", "[options] file-1 [file-2]")
+    //!     ts::Args(u"Super file merger", u"[options] file-1 [file-2]")
     //! {
     //!     // Define the syntax of the command
-    //!     option("", 0, STRING, 1, 2);
-    //!     option("buffer-size", 'b', INTEGER, 0, 1, 256, 4096);
-    //!     option("output", 'o', STRING);
-    //!     option("verbose", 'v');
-    //!     setHelp("Parameters:\n"
-    //!             "\n"
-    //!             "  file-1 : Base file to merge.\n"
-    //!             "  file-2 : Optional secondary file to merge.\n"
-    //!             "\n"
-    //!             "Options:\n"
-    //!             "\n"
-    //!             "  -b value\n"
-    //!             "  --buffer-size value\n"
-    //!             "      Buffer size in bytes, from 256 to 4096 bytes (default: 1024).\n"
-    //!             "\n"
-    //!             "  -o filename\n"
-    //!             "  --output filename\n"
-    //!             "      Specify the output file (default: standard output).\n"
-    //!             "\n"
-    //!             "  -v\n"
-    //!             "  --verbose\n"
-    //!             "      Display verbose messages.");
+    //!     option(u"", 0, STRING, 1, 2);
+    //!     option(u"buffer-size", u'b', INTEGER, 0, 1, 256, 4096);
+    //!     option(u"output", u'o', STRING);
+    //!     option(u"verbose", u'v');
+    //!     setHelp(u"Parameters:\n"
+    //!             u"\n"
+    //!             u"  file-1 : Base file to merge.\n"
+    //!             u"  file-2 : Optional secondary file to merge.\n"
+    //!             u"\n"
+    //!             u"Options:\n"
+    //!             u"\n"
+    //!             u"  -b value\n"
+    //!             u"  --buffer-size value\n"
+    //!             u"      Buffer size in bytes, from 256 to 4096 bytes (default: 1024).\n"
+    //!             u"\n"
+    //!             u"  -o filename\n"
+    //!             u"  --output filename\n"
+    //!             u"      Specify the output file (default: standard output).\n"
+    //!             u"\n"
+    //!             u"  -v\n"
+    //!             u"  --verbose\n"
+    //!             u"      Display verbose messages.");
     //!
     //!     // Analyze the command
     //!     analyze(argc, argv);
     //!
     //!     // Get the command line arguments
-    //!     getValue(inFile1, "", "", 0);
-    //!     getValue(inFile2, "", "", 1);
-    //!     getValue(outFile, "output");
-    //!     verbose = present("verbose");
-    //!     bufferSize = intValue<size_t>("buffer-size", 1024);
+    //!     getValue(inFile1, u"", u"", 0);
+    //!     getValue(inFile2, u"", u"", 1);
+    //!     getValue(outFile, u"output");
+    //!     verbose = present(u"verbose");
+    //!     bufferSize = intValue<size_t>(u"buffer-size", 1024);
     //! }
     //!
     //! // Main program
@@ -214,7 +212,7 @@ namespace ts {
     //!         << "inFile1 = \"" << args.inFile1 << "\", "
     //!         << "inFile2 = \"" << args.inFile2 << "\", "
     //!         << "outFile = \"" << args.outFile << "\", "
-    //!         << "verbose = " << ts::TrueFalse(args.verbose) << ", "
+    //!         << "verbose = " << ts::UString::TrueFalse(args.verbose) << ", "
     //!         << "bufferSize = " << args.bufferSize << std::endl;
     //!
     //!     return EXIT_SUCCESS;
@@ -278,7 +276,7 @@ namespace ts {
     //! $
     //! @endcode
     //!
-    class TSDUCKDLL Args: public ReportInterface
+    class TSDUCKDLL Args: public Report
     {
     public:
         //!
@@ -323,9 +321,9 @@ namespace ts {
         //! @param [in] help A multi-line string describing the usage of options and parameters.
         //! @param [in] flags An or'ed mask of Flags values.
         //!
-        Args(const std::string& description = "",
-             const std::string& syntax = "",
-             const std::string& help = "",
+        Args(const UString& description = "",
+             const UString& syntax = "",
+             const UString& help = "",
              int flags = 0);
 
         //!
@@ -342,14 +340,14 @@ namespace ts {
         //! @param [in] optional  When true, the option's value is optional.
         //! @return A reference to this instance.
         //!
-        Args& option(const char* name = 0,
-                     char        short_name = 0,
-                     ArgType     type = NONE,
-                     size_t      min_occur = 0,
-                     size_t      max_occur = 0,
-                     int64_t     min_value = 0,
-                     int64_t     max_value = 0,
-                     bool        optional = false);
+        Args& option(const UChar* name = 0,
+                     UChar        short_name = 0,
+                     ArgType      type = NONE,
+                     size_t       min_occur = 0,
+                     size_t       max_occur = 0,
+                     int64_t      min_value = 0,
+                     int64_t      max_value = 0,
+                     bool         optional = false);
 
         //!
         //! Add the definition of an option, the value being from an enumeration type.
@@ -365,12 +363,12 @@ namespace ts {
         //! @param [in] optional  When true, the option's value is optional.
         //! @return A reference to this instance.
         //!
-        Args& option(const char*        name,
-                     char               short_name,
-                     const Enumeration& enumeration,
-                     size_t             min_occur = 0,
-                     size_t             max_occur = 0,
-                     bool               optional = false);
+        Args& option(const UChar*        name,
+                     UChar               short_name,
+                     const Enumeration&  enumeration,
+                     size_t              min_occur = 0,
+                     size_t              max_occur = 0,
+                     bool                optional = false);
 
         //!
         //! Copy all option definitions from another Args object into this one.
@@ -410,21 +408,21 @@ namespace ts {
         //!
         //! @param [in] description A short one-line description, e.g. "Wonderful File Copier".
         //!
-        virtual void setDescription(const std::string& description) {_description = description;}
+        virtual void setDescription(const UString& description) {_description = description;}
 
         //!
         //! Set the syntax of the command.
         //!
         //! @param [in] syntax A short one-line syntax summary, e.g. "[options] filename ...".
         //!
-        virtual void setSyntax(const std::string& syntax) {_syntax = syntax;}
+        virtual void setSyntax(const UString& syntax) {_syntax = syntax;}
 
         //!
         //! Set the help description of the command.
         //!
         //! @param [in] help A multi-line string describing the usage of options and parameters.
         //!
-        virtual void setHelp(const std::string& help) {_help = help;}
+        virtual void setHelp(const UString& help) {_help = help;}
 
         //!
         //! Set the option flags of the command.
@@ -438,21 +436,21 @@ namespace ts {
         //!
         //! @return A short one-line description of the command.
         //!
-        const std::string& getDescription() const {return _description;}
+        const UString& getDescription() const {return _description;}
 
         //!
         //! Get the syntax of the command.
         //!
         //! @return A short one-line syntax summary of the command.
         //!
-        const std::string& getSyntax() const {return _syntax;}
+        const UString& getSyntax() const {return _syntax;}
 
         //!
         //! Get the help description of the command.
         //!
         //! @return A multi-line string describing the usage of options and parameters.
         //!
-        const std::string& getHelp() const {return _help;}
+        const UString& getHelp() const {return _help;}
 
         //!
         //! Get the option flags of the command.
@@ -470,7 +468,7 @@ namespace ts {
         //!
         //! @param [in] shell Shell name string.
         //!
-        void setShell (const std::string& shell) {_shell = shell;}
+        void setShell (const UString& shell) {_shell = shell;}
 
         //!
         //! Get the "shell" string.
@@ -478,7 +476,7 @@ namespace ts {
         //! @return The shell name string.
         //! @see setShell()
         //!
-        const std::string& getShell() const {return _shell;}
+        const UString& getShell() const {return _shell;}
 
         //!
         //! Load command arguments and analyze them.
@@ -514,26 +512,7 @@ namespace ts {
         //! of the application, return @c true if the command is correct, @c false
         //! if the command is incorrect or @c -\-help or @c -\-version is specified.
         //!
-        virtual bool analyze(const std::string& app_name, const StringVector& arguments);
-
-        //!
-        //! Load command arguments from a variable parameter list and analyze them.
-        //!
-        //! Normally, in case of error or if @c -\-help or @c -\-version is specified, the
-        //! application is automatically terminated. If some flags prevent the termination
-        //! of the application, return @c true if the command is correct, @c false
-        //! if the command is incorrect or @c -\-help or @c -\-version is specified.
-        //!
-        //! @param [in] app_name Application name.
-        //! @param [in] arg1 First argument from command line. Followed by other
-        //! arguments. In order to identify the end of list, the last argument must
-        //! @b must be followed by a @c TS_NULL symbol.
-        //! @return By default, always return true or the application is automatically
-        //! terminated in case of error. If some flags prevent the termination
-        //! of the application, return @c true if the command is correct, @c false
-        //! if the command is incorrect or @c -\-help or @c -\-version is specified.
-        //!
-        virtual bool analyze(const char* app_name, const char* arg1, ...);
+        virtual bool analyze(const UString& app_name, const UStringVector& arguments);
 
         //!
         //! Check if options were correct during the last command line analysis.
@@ -552,7 +531,7 @@ namespace ts {
         //!
         //! @return The application name from the last command line analysis.
         //!
-        std::string appName() const {return _app_name;}
+        UString appName() const {return _app_name;}
 
         //!
         //! Check if an option is present in the last analyzed command line.
@@ -563,7 +542,7 @@ namespace ts {
         //! @return True if the corresponding option or parameter is present on the command line,
         //! false otherwise.
         //!
-        bool present(const char* name = 0) const;
+        bool present(const UChar* name = 0) const;
 
         //!
         //! Check the number of occurences of an option in the last analyzed command line.
@@ -574,7 +553,7 @@ namespace ts {
         //! @return The number of occurences of the corresponding option or parameter in the
         //! command line.
         //!
-        size_t count(const char* name = 0) const;
+        size_t count(const UChar* name = 0) const;
 
         //!
         //! Get the value of an option in the last analyzed command line.
@@ -588,7 +567,7 @@ namespace ts {
         //! @param [in] index The occurence of the option to return. Zero designates the
         //! first occurence.
         //!
-        void getValue(std::string& value, const char* name = 0, const char* def_value = "", size_t index = 0) const;
+        void getValue(UString& value, const UChar* name = 0, const UChar* def_value = u"", size_t index = 0) const;
 
         //!
         //! Get the value of an option in the last analyzed command line.
@@ -602,7 +581,7 @@ namespace ts {
         //! first occurence.
         //! @return The value of the option or parameter.
         //!
-        std::string value(const char* name = 0, const char* def_value = "", size_t index = 0) const;
+        UString value(const UChar* name = 0, const UChar* def_value = u"", size_t index = 0) const;
 
         //!
         //! Get all occurences of an option in a container of strings.
@@ -612,7 +591,7 @@ namespace ts {
         //! an empty string, this specifies a parameter, not an option. If the specified option
         //! was not declared in the syntax of the command, a fatal error is reported.
         //!
-        void getValues(StringVector& values, const char* name = 0) const;
+        void getValues(UStringVector& values, const UChar* name = 0) const;
 
         //!
         //! Get all occurences of an option and interpret them as PID values.
@@ -624,7 +603,7 @@ namespace ts {
         //! @param [in] def_value The boolean to set in all PID values if the option or parameter
         //! is not present in the command line.
         //!
-        void getPIDSet(PIDSet& values, const char* name = 0, bool def_value = false) const;
+        void getPIDSet(PIDSet& values, const UChar* name = 0, bool def_value = false) const;
 
         //!
         //! Get the value of an integer option in the last analyzed command line.
@@ -646,7 +625,7 @@ namespace ts {
         //!
         template <typename INT>
         void getIntValue(INT& value,
-                         const char* name = 0,
+                         const UChar* name = 0,
                          const INT& def_value = static_cast<INT>(0),
                          size_t index = 0) const;
 
@@ -665,7 +644,7 @@ namespace ts {
         //! @return The integer value of the option or parameter.
         //!
         template <typename INT>
-        INT intValue(const char* name = 0,
+        INT intValue(const UChar* name = 0,
                      const INT& def_value = static_cast<INT>(0),
                      size_t index = 0) const;
 
@@ -679,7 +658,7 @@ namespace ts {
         //! a fatal error is reported.
         //!
         template <typename INT>
-        void getIntValues(std::vector<INT>& values, const char* name = 0) const;
+        void getIntValues(std::vector<INT>& values, const UChar* name = 0) const;
 
         //!
         //! Get all occurences of an integer option in a set of integers.
@@ -691,7 +670,7 @@ namespace ts {
         //! a fatal error is reported.
         //!
         template <typename INT>
-        void getIntValues(std::set<INT>& values, const char* name = 0) const;
+        void getIntValues(std::set<INT>& values, const UChar* name = 0) const;
 
         //!
         //! Get an OR'ed of all values of an integer option in the last analyzed command line.
@@ -710,7 +689,7 @@ namespace ts {
         //! @return The OR'ed values of the integer option.
         //!
         template <typename INT>
-        INT bitMaskValue(const char* name = 0, const INT& def_value = static_cast<INT>(0)) const;
+        INT bitMaskValue(const UChar* name = 0, const INT& def_value = static_cast<INT>(0)) const;
 
         //!
         //! Get an OR'ed of all values of an integer option in the last analyzed command line.
@@ -729,7 +708,7 @@ namespace ts {
         //! is not present in the command line.
         //!
         template <typename INT>
-        void getBitMaskValue(INT& value, const char* name = 0, const INT& def_value = static_cast<INT>(0)) const;
+        void getBitMaskValue(INT& value, const UChar* name = 0, const INT& def_value = static_cast<INT>(0)) const;
 
         //!
         //! Get the value of an enum option in the last analyzed command line.
@@ -748,7 +727,7 @@ namespace ts {
         //!
         template <typename ENUM>
         void getEnumValue(ENUM& value,
-                          const char* name = 0,
+                          const UChar* name = 0,
                           ENUM def_value = static_cast<ENUM>(0),
                           size_t index = 0) const;
 
@@ -768,7 +747,7 @@ namespace ts {
         //! @return The enum value of the option or parameter.
         //!
         template <typename ENUM>
-        ENUM enumValue(const char* name = 0,
+        ENUM enumValue(const UChar* name = 0,
                        ENUM def_value = static_cast<ENUM>(0),
                        size_t index = 0) const;
 
@@ -785,28 +764,28 @@ namespace ts {
         //!
         //! @param [in] report Where to report errors. The redirection is cancelled if zero.
         //!
-        void redirectReport(ReportInterface* report);
+        void redirectReport(Report* report);
 
     protected:
         // Display an error message, as if it was produced during command line analysis.
         // Mark this instance as error if severity <= Severity::Error.
         // Immediately abort application is severity == Severity::Fatal.
-        // Inherited from ReportInterface.
-        virtual void writeLog(int severity, const std::string& message);
+        // Inherited from Report.
+        virtual void writeLog(int severity, const UString& message) override;
 
     private:
         Args(const Args&) = delete;
         Args& operator=(const Args&) = delete;
 
         // List of values
-        typedef Variable<std::string> ArgValue;
+        typedef Variable<UString> ArgValue;
         typedef std::vector<ArgValue> ArgValueVector;
 
         // Internal representation of Option
         struct IOption
         {
-            std::string    name;        // Long name ("verbose" for --verbose)
-            char           short_name;  // Short option name ('v' for -v), 0 if unused
+            UString        name;        // Long name (u"verbose" for --verbose)
+            UChar          short_name;  // Short option name (u'v' for -v), 0 if unused
             ArgType        type;        // Argument type
             size_t         min_occur;   // Minimum occurence
             size_t         max_occur;   // Maximum occurence
@@ -818,42 +797,42 @@ namespace ts {
             ArgValueVector values;      // Set of values after analysis
 
             // Constructor:
-            IOption (const char* name,
-                     char        short_name,
-                     ArgType     type,
-                     size_t      min_occur,
-                     size_t      max_occur,
-                     int64_t     min_value,
-                     int64_t     max_value,
-                     bool        optional);
+            IOption (const UChar* name,
+                     UChar        short_name,
+                     ArgType      type,
+                     size_t       min_occur,
+                     size_t       max_occur,
+                     int64_t      min_value,
+                     int64_t      max_value,
+                     bool         optional);
 
             // Constructor:
-            IOption (const char*        name,
-                     char               short_name,
+            IOption (const UChar*       name,
+                     UChar              short_name,
                      const Enumeration& enumeration,
                      size_t             min_occur,
                      size_t             max_occur,
                      bool               optional);
 
             // Displayable name
-            std::string display() const;
+            UString display() const;
         };
-        typedef std::map <std::string, IOption> IOptionMap;
+        typedef std::map <UString, IOption> IOptionMap;
 
         // Private fields
-        ReportInterface* _subreport;
-        IOptionMap       _iopts;
-        std::string      _description;
-        std::string      _shell;
-        std::string      _syntax;
-        std::string      _help;
-        std::string      _app_name;
-        StringVector     _args;
-        bool             _is_valid;
-        int              _flags;
+        Report*       _subreport;
+        IOptionMap    _iopts;
+        UString       _description;
+        UString       _shell;
+        UString       _syntax;
+        UString       _help;
+        UString       _app_name;
+        UStringVector _args;
+        bool          _is_valid;
+        int           _flags;
 
         // List of characters which are allowed thousands separators in integer values
-        static const char* const THOUSANDS_SEPARATORS;
+        static const UChar* const THOUSANDS_SEPARATORS;
 
         // Common code: analyze the command line.
         bool analyze();
@@ -861,13 +840,13 @@ namespace ts {
         // Locate an option description.
         // Return 0 if not found.
         // Used during command line parsing.
-        IOption* search(char c);
-        IOption* search(const std::string& name);
+        IOption* search(UChar c);
+        IOption* search(const UString& name);
 
         // Locate an option description.
         // Throw exception if not found.
         // Used by application to get values.
-        const IOption& getIOption(const char* name) const;
+        const IOption& getIOption(const UChar* name) const;
     };
 }
 

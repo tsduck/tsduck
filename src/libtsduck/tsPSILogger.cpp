@@ -34,7 +34,6 @@
 #include "tsPSILogger.h"
 #include "tsStringUtils.h"
 #include "tsNames.h"
-#include "tsFormat.h"
 #include "tsPAT.h"
 TSDUCK_SOURCE;
 
@@ -45,7 +44,7 @@ TSDUCK_SOURCE;
 // Constructor
 //----------------------------------------------------------------------------
 
-ts::PSILogger::PSILogger (PSILoggerArgs& opt, TablesDisplay& display, ReportInterface& report) :
+ts::PSILogger::PSILogger(PSILoggerArgs& opt, TablesDisplay& display, Report& report) :
     TableHandlerInterface(),
     SectionHandlerInterface(),
     _opt(opt),
@@ -135,7 +134,7 @@ void ts::PSILogger::handleTable(SectionDemux&, const BinaryTable& table)
             PAT pat(table);
             if (pid != PID_PAT) {
                 // A PAT is only expected on PID 0
-                strm << Format("* Got unexpected PAT on PID %d (0x%04X)", pid, pid) << std::endl;
+                strm << UString::Format(u"* Got unexpected PAT on PID %d (0x%X)", {pid, pid}) << std::endl;
             }
             else if (pat.isValid()) {
                 // Got the PAT.
@@ -161,7 +160,7 @@ void ts::PSILogger::handleTable(SectionDemux&, const BinaryTable& table)
         case TID_CAT: {
             if (pid != PID_CAT) {
                 // A CAT is only expected on PID 1
-                strm << Format("* Got unexpected CAT on PID %d (0x%04X)", pid, pid) << std::endl;
+                strm << UString::Format(u"* Got unexpected CAT on PID %d (0x%X)", {pid, pid}) << std::endl;
             }
             else {
                 // Got the CAT.
@@ -198,7 +197,7 @@ void ts::PSILogger::handleTable(SectionDemux&, const BinaryTable& table)
         case TID_TSDT: {
             if (pid != PID_TSDT) {
                 // A TSDT is only expected on PID 0x0002
-                strm << Format("* Got unexpected TSDT on PID %d (0x%04X)", pid, pid) << std::endl;
+                strm << UString::Format(u"* Got unexpected TSDT on PID %d (0x%X)", {pid, pid}) << std::endl;
             }
             else if (!_opt.all_versions) {
                 _demux.removePID(pid);
@@ -233,7 +232,7 @@ void ts::PSILogger::handleTable(SectionDemux&, const BinaryTable& table)
         case TID_BAT: {
             if (pid != PID_BAT) {
                 // An SDT is only expected on PID 0x0011
-                strm << Format("* Got unexpected BAT on PID %d (0x%04X)", pid, pid) << std::endl;
+                strm << UString::Format(u"* Got unexpected BAT on PID %d (0x%X)", {pid, pid}) << std::endl;
                 _display.displayTable(table);
             }
             else if (_opt.all_versions || !_bat_ok) {
@@ -248,7 +247,7 @@ void ts::PSILogger::handleTable(SectionDemux&, const BinaryTable& table)
 
         default: {
             if (_report.verbose()) {
-                strm << Format("* Got unexpected TID %d (0x%02X) on PID %d (0x%04X)", tid, tid, pid, pid) << std::endl;
+                strm << UString::Format(u"* Got unexpected TID %d (0x%X) on PID %d (0x%X)", {tid, tid, pid, pid]) << std::endl;
             }
         }
     }

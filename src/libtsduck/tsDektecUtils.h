@@ -85,5 +85,5 @@ namespace ts {
     //! Get the versions of Dektec API and drivers.
     //! @return A string describing the Dektec versions (or the lack of Dektec support).
     //!
-    TSDUCKDLL std::string GetDektecVersions();
+    TSDUCKDLL UString GetDektecVersions();
 }

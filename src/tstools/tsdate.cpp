@@ -67,46 +67,46 @@ Options::Options(int argc, char *argv[]) :
     verbose(false),
     infile()
 {
-    option("",         0, Args::STRING, 0, 1);
-    option("all",     'a');
-    option("notdt",    0);
-    option("notot",    0);
-    option("verbose", 'v');
+    option(u"",         0, Args::STRING, 0, 1);
+    option(u"all",     'a');
+    option(u"notdt",    0);
+    option(u"notot",    0);
+    option(u"verbose", 'v');
 
-    setHelp("Input file:\n"
-            "\n"
-            "  MPEG capture file (standard input if omitted).\n"
-            "\n"
-            "Options:\n"
-            "\n"
-            "  -a\n"
-            "  --all\n"
-            "      Report all TDT/TOT tables (default: report only the first table\n"
-            "      of each type).\n"
-            "\n"
-            "  --help\n"
-            "      Display this help text.\n"
-            "\n"
-            "  --notdt\n"
-            "      Ignore Time & Date Table (TDT).\n"
-            "\n"
-            "  --notot\n"
-            "      Ignore Time Offset Table (TOT).\n"
-            "\n"
-            "  -v\n"
-            "  --verbose\n"
-            "      Produce verbose output.\n"
-            "\n"
-            "  --version\n"
-            "      Display the version number.\n");
+    setHelp(u"Input file:\n"
+            u"\n"
+            u"  MPEG capture file (standard input if omitted).\n"
+            u"\n"
+            u"Options:\n"
+            u"\n"
+            u"  -a\n"
+            u"  --all\n"
+            u"      Report all TDT/TOT tables (default: report only the first table\n"
+            u"      of each type).\n"
+            u"\n"
+            u"  --help\n"
+            u"      Display this help text.\n"
+            u"\n"
+            u"  --notdt\n"
+            u"      Ignore Time & Date Table (TDT).\n"
+            u"\n"
+            u"  --notot\n"
+            u"      Ignore Time Offset Table (TOT).\n"
+            u"\n"
+            u"  -v\n"
+            u"  --verbose\n"
+            u"      Produce verbose output.\n"
+            u"\n"
+            u"  --version\n"
+            u"      Display the version number.\n");
 
     analyze(argc, argv);
 
-    infile = value("");
-    all = present("all");
-    verbose = present("verbose");
-    no_tdt = present("notdt");
-    no_tot = present("notot");
+    infile = value(u"");
+    all = present(u"all");
+    verbose = present(u"verbose");
+    no_tdt = present(u"notdt");
+    no_tot = present(u"notot");
 }
 
 

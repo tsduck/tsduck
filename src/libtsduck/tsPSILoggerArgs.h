@@ -53,11 +53,11 @@ namespace ts {
         virtual ~PSILoggerArgs() {}
 
         // Public fields, by options.
-        bool        all_versions;   //!< Display all versions of PSI tables.
-        bool        clear;          //!< Clear stream, do not wait for a CAT.
-        bool        cat_only;       //!< Only CAT, ignore other PSI.
-        bool        dump;           //!< Dump all sections.
-        std::string output;         //!< Destination name file.
+        bool    all_versions;   //!< Display all versions of PSI tables.
+        bool    clear;          //!< Clear stream, do not wait for a CAT.
+        bool    cat_only;       //!< Only CAT, ignore other PSI.
+        bool    dump;           //!< Dump all sections.
+        UString output;         //!< Destination name file.
 
         //!
         //! Define command line options in an Args.

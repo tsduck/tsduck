@@ -446,7 +446,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsReportHandler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\libtsduck\tsReportInterface.h">
+    <ClInclude Include="..\..\src\libtsduck\tsReport.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\libtsduck\tsResidentBuffer.h">
@@ -935,6 +935,9 @@
     <ClInclude Include="..\..\src\libtsduck\tsGrid.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\libtsduck\tsXMLTemplate.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\libtsduck\tsAbstractAVCAccessUnit.cpp">
@@ -1207,7 +1210,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsPSILoggerArgs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\libtsduck\tsReportInterface.cpp">
+    <ClCompile Include="..\..\src\libtsduck\tsReport.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\libtsduck\tsRingNode.cpp">
@@ -1607,6 +1610,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\libtsduck\tsGrid.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\libtsduck\tsPlugin.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

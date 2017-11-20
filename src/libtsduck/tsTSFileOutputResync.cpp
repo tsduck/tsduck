@@ -41,7 +41,7 @@ TSDUCK_SOURCE;
 // Open method
 //----------------------------------------------------------------------------
 
-bool ts::TSFileOutputResync::open (const std::string& filename, bool append, bool keep, ReportInterface& report)
+bool ts::TSFileOutputResync::open (const std::string& filename, bool append, bool keep, Report& report)
 {
     // Invoke superclass for actual file opening
     const bool ok = TSFileOutput::open (filename, append, keep, report);
@@ -59,7 +59,7 @@ bool ts::TSFileOutputResync::open (const std::string& filename, bool append, boo
 // Write packets, update their continuity counters (packets are modified)
 //----------------------------------------------------------------------------
 
-bool ts::TSFileOutputResync::write (TSPacket* buffer, size_t packet_count, ReportInterface& report)
+bool ts::TSFileOutputResync::write (TSPacket* buffer, size_t packet_count, Report& report)
 {
     // Update continuity counters
     for (size_t n = 0; n < packet_count; ++n) {
@@ -80,7 +80,7 @@ bool ts::TSFileOutputResync::write (TSPacket* buffer, size_t packet_count, Repor
 // Write packets, force PID value
 //----------------------------------------------------------------------------
 
-bool ts::TSFileOutputResync::write (TSPacket* buffer, size_t packet_count, PID pid, ReportInterface& report)
+bool ts::TSFileOutputResync::write (TSPacket* buffer, size_t packet_count, PID pid, Report& report)
 {
     for (size_t n = 0; n < packet_count; ++n) {
         buffer[n].setPID (pid);

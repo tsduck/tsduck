@@ -92,74 +92,74 @@ TSPLUGIN_DECLARE_PROCESSOR(ts::BATPlugin)
 //----------------------------------------------------------------------------
 
 ts::BATPlugin::BATPlugin (TSP* tsp_) :
-    ProcessorPlugin (tsp_, "Perform various transformations on the BAT.", "[options]"),
-    _abort(false),
-    _single_bat(false),
-    _bouquet_id(0),
-    _incr_version(false),
-    _set_version(false),
-    _new_version(0),
-    _remove_serv(),
-    _remove_ts(),
-    _removed_desc(),
-    _pds(0),
-    _cleanup_priv_desc(false),
-    _demux(this),
-    _pzer()
+   ProcessorPlugin(tsp_, u"Perform various transformations on the BAT.", u"[options]"),
+   _abort(false),
+   _single_bat(false),
+   _bouquet_id(0),
+   _incr_version(false),
+   _set_version(false),
+   _new_version(0),
+   _remove_serv(),
+   _remove_ts(),
+   _removed_desc(),
+   _pds(0),
+   _cleanup_priv_desc(false),
+   _demux(this),
+   _pzer()
 {
-    option ("bouquet-id",                 'b', UINT16);
-    option ("cleanup-private-descriptors", 0);
-    option ("increment-version",          'i');
-    option ("new-version",                'v', INTEGER, 0, 1, 0, 31);
-    option ("pds",                         0,  UINT32);
-    option ("remove-descriptor",           0,  UINT8,  0, UNLIMITED_COUNT);
-    option ("remove-service",             'r', UINT16, 0, UNLIMITED_COUNT);
-    option ("remove-ts",                   0,  UINT16, 0, UNLIMITED_COUNT);
+    option(u"bouquet-id",                 'b', UINT16);
+    option(u"cleanup-private-descriptors", 0);
+    option(u"increment-version",          'i');
+    option(u"new-version",                'v', INTEGER, 0, 1, 0, 31);
+    option(u"pds",                         0,  UINT32);
+    option(u"remove-descriptor",           0,  UINT8,  0, UNLIMITED_COUNT);
+    option(u"remove-service",             'r', UINT16, 0, UNLIMITED_COUNT);
+    option(u"remove-ts",                   0,  UINT16, 0, UNLIMITED_COUNT);
 
-    setHelp ("Options:\n"
-             "\n"
-             "  -b value\n"
-             "  --bouquet-id value\n"
-             "      Specify the bouquet id of the BAT to modify and leave other BAT's\n"
-             "      unmodified. By default, all BAT's are modified.\n"
-             "\n"
-             "  --cleanup-private-descriptors\n"
-             "      Remove all private descriptors without preceding private_data_specifier\n"
-             "      descriptor.\n"
-             "\n"
-             "  --help\n"
-             "      Display this help text.\n"
-             "\n"
-             "  -i\n"
-             "  --increment-version\n"
-             "      Increment the version number of the BAT.\n"
-             "\n"
-             "  -v value\n"
-             "  --new-version value\n"
-             "      Specify a new value for the version of the BAT.\n"
-             "\n"
-             "  --pds value\n"
-             "      With option --remove-descriptor, specify the private data specifier\n"
-             "      which applies to the descriptor tag values above 0x80.\n"
-             "\n"
-             "  --remove-descriptor value\n"
-             "      Remove from the BAT all descriptors with the specified tag. Several\n"
-             "      --remove-descriptor options may be specified to remove several types of\n"
-             "      descriptors. See also option --pds.\n"
-             "\n"
-             "  -r value\n"
-             "  --remove-service value\n"
-             "      Remove the specified service_id from the following descriptors:\n"
-             "      service_list_descriptor, logical_channel_number_descriptor.\n"
-             "      Several --remove-service options may be specified to remove several\n"
-             "      services.\n"
-             "\n"
-             "  --remove-ts value\n"
-             "      Remove the specified ts_id from the BAT. Several --remove-ts options\n"
-             "      may be specified to remove several TS.\n"
-             "\n"
-             "  --version\n"
-             "      Display the version number.\n");
+    setHelp (u"Options:\n"
+             u"\n"
+             u"  -b value\n"
+             u"  --bouquet-id value\n"
+             u"      Specify the bouquet id of the BAT to modify and leave other BAT's\n"
+             u"      unmodified. By default, all BAT's are modified.\n"
+             u"\n"
+             u"  --cleanup-private-descriptors\n"
+             u"      Remove all private descriptors without preceding private_data_specifier\n"
+             u"      descriptor.\n"
+             u"\n"
+             u"  --help\n"
+             u"      Display this help text.\n"
+             u"\n"
+             u"  -i\n"
+             u"  --increment-version\n"
+             u"      Increment the version number of the BAT.\n"
+             u"\n"
+             u"  -v value\n"
+             u"  --new-version value\n"
+             u"      Specify a new value for the version of the BAT.\n"
+             u"\n"
+             u"  --pds value\n"
+             u"      With option --remove-descriptor, specify the private data specifier\n"
+             u"      which applies to the descriptor tag values above 0x80.\n"
+             u"\n"
+             u"  --remove-descriptor value\n"
+             u"      Remove from the BAT all descriptors with the specified tag. Several\n"
+             u"      --remove-descriptor options may be specified to remove several types of\n"
+             u"      descriptors. See also option --pds.\n"
+             u"\n"
+             u"  -r value\n"
+             u"  --remove-service value\n"
+             u"      Remove the specified service_id from the following descriptors:\n"
+             u"      service_list_descriptor, logical_channel_number_descriptor.\n"
+             u"      Several --remove-service options may be specified to remove several\n"
+             u"      services.\n"
+             u"\n"
+             u"  --remove-ts value\n"
+             u"      Remove the specified ts_id from the BAT. Several --remove-ts options\n"
+             u"      may be specified to remove several TS.\n"
+             u"\n"
+             u"  --version\n"
+             u"      Display the version number.\n");
 }
 
 
@@ -170,12 +170,12 @@ ts::BATPlugin::BATPlugin (TSP* tsp_) :
 bool ts::BATPlugin::start()
 {
     // Get option values
-    _single_bat = present ("bouquet-id");
+    _single_bat = present(u"bouquet-id");
     _bouquet_id = intValue<uint16_t> ("bouquet-id", 0);
     _pds = intValue<PDS> ("pds", 0);
-    _cleanup_priv_desc = present ("cleanup-private-descriptors");
-    _incr_version = present ("increment-version");
-    _set_version = present ("new-version");
+    _cleanup_priv_desc = present(u"cleanup-private-descriptors");
+    _incr_version = present(u"increment-version");
+    _set_version = present(u"new-version");
     _new_version = intValue<uint8_t> ("new-version", 0);
     getIntValues (_remove_serv, "remove-service");
     getIntValues (_remove_ts, "remove-ts");

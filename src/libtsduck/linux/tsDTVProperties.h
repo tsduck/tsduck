@@ -33,7 +33,7 @@
 //-----------------------------------------------------------------------------
 
 #pragma once
-#include "tsReportInterface.h"
+#include "tsReport.h"
 
 namespace ts {
 
@@ -122,7 +122,7 @@ namespace ts {
         //! @param [in,out] report Where to display the content.
         //! @param [in] severity Severity level of messages (typically a debug level).
         //!
-        void report(ReportInterface& report, int severity) const;
+        void report(Report& report, int severity) const;
 
         //!
         //! Return the name of a command.

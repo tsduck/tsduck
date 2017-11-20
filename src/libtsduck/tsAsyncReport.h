@@ -33,7 +33,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsReportInterface.h"
+#include "tsReport.h"
 #include "tsReportHandler.h"
 #include "tsMessageQueue.h"
 #include "tsNullMutex.h"
@@ -56,7 +56,7 @@ namespace ts {
     //!
     //! Messages are displayed on the standard error device by default.
     //!
-    class TSDUCKDLL AsyncReport : public ReportInterface, private Thread
+    class TSDUCKDLL AsyncReport : public Report, private Thread
     {
     public:
         //!
@@ -99,13 +99,10 @@ namespace ts {
         void terminate();
 
     protected:
-        // ReportInterface implementation.
-        virtual void writeLog(int severity, const std::string& msg) override;
+        // Report implementation.
+        virtual void writeLog(int severity, const UString& msg) override;
 
     private:
-        AsyncReport(const AsyncReport&) = delete;
-        AsyncReport& operator=(const AsyncReport&) = delete;
-
         // This hook is invoked in the context of the logging thread.
         virtual void main() override;
 
@@ -113,12 +110,12 @@ namespace ts {
         struct LogMessage
         {
             // Members
-            bool terminate;  // ask the logging thread to terminate
-            int severity;
-            std::string message;
+            bool    terminate;  // ask the logging thread to terminate
+            int     severity;
+            UString message;
 
             // Constructor:
-            LogMessage (bool t, int s, const std::string& m) : terminate (t), severity (s), message (m) {}
+            LogMessage(bool t, int s, const UString& m) : terminate(t), severity(s), message(m) {}
         };
         typedef SafePtr <LogMessage, NullMutex> LogMessagePtr;
         typedef MessageQueue <LogMessage, NullMutex> LogMessageQueue;
@@ -135,14 +132,18 @@ namespace ts {
             const AsyncReport& _report;
         public:
             DefaultHandler(const AsyncReport& report) : _report(report) {}
-            virtual void handleMessage(int, const std::string&);
+            virtual void handleMessage(int, const UString&) override;
         };
 
         // Private members:
-        LogMessageQueue _log_queue;
-        DefaultHandler _default_handler;
+        LogMessageQueue         _log_queue;
+        DefaultHandler          _default_handler;
         ReportHandler* volatile _handler;
-        volatile bool _time_stamp;
-        volatile bool _terminated;
+        volatile bool           _time_stamp;
+        volatile bool           _terminated;
+
+        // Inaccessible operations.
+        AsyncReport(const AsyncReport&) = delete;
+        AsyncReport& operator=(const AsyncReport&) = delete;
     };
 }

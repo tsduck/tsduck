@@ -76,7 +76,7 @@ namespace ts {
             //! @param [in,out] report Where to report errors.
             //! @return True on success, false on error.
             //!
-            bool send(const Message& msg, ReportInterface& report);
+            bool send(const Message& msg, Report& report);
 
             //!
             //! Receive a TLV message.
@@ -88,7 +88,7 @@ namespace ts {
             //! @param [in,out] report Where to report errors.
             //! @return True on success, false on error.
             //!
-            bool receive(MessagePtr& msg, const AbortInterface* abort, ReportInterface& report);
+            bool receive(MessagePtr& msg, const AbortInterface* abort, Report& report);
 
             //!
             //! Get invalid incoming messages processing.
@@ -123,7 +123,7 @@ namespace ts {
 
         protected:
             // Inherited from TCPConnection
-            virtual void handleConnected(ReportInterface&);
+            virtual void handleConnected(Report&);
 
         private:
             const Protocol* _protocol;

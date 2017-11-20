@@ -40,13 +40,13 @@ TSDUCK_SOURCE;
 // Constructor.
 //----------------------------------------------------------------------------
 
-ts::ApplicationSharedLibrary::ApplicationSharedLibrary(const std::string& filename,
-                                                       const std::string& prefix,
-                                                       const std::string& library_path,
+ts::ApplicationSharedLibrary::ApplicationSharedLibrary(const UString& filename,
+                                                       const UString& prefix,
+                                                       const UString& library_path,
                                                        bool permanent,
-                                                       ReportInterface& report) :
+                                                       Report& report) :
     // Do not load in superclass since plain filename is not the first choice.
-    SharedLibrary("", permanent, report),
+    SharedLibrary(UString(), permanent, report),
     _prefix(prefix)
 {
     // Without file name, nothing to do.
@@ -54,14 +54,14 @@ ts::ApplicationSharedLibrary::ApplicationSharedLibrary(const std::string& filena
         return;
     }
 
-    const std::string basename(BaseName(filename));
-    const std::string suffix(PathSuffix(filename));
+    const UString basename(BaseName(filename));
+    const UString suffix(PathSuffix(filename));
     const bool has_directory = basename != filename;
 
     if (!has_directory) {
         // There is no directory in file name, use search rules.
         // Get a list of directories from environment variable.
-        StringList dirs;
+        UStringList dirs;
         if (!library_path.empty()) {
             GetEnvironmentPath(dirs, library_path);
         }
@@ -70,13 +70,13 @@ ts::ApplicationSharedLibrary::ApplicationSharedLibrary(const std::string& filena
         dirs.push_back(DirectoryName(ExecutableFile()));
 
         // Try in each directory.
-        for (StringList::const_iterator it = dirs.begin(); !isLoaded() && it != dirs.end(); ++it) {
+        for (UStringList::const_iterator it = dirs.begin(); !isLoaded() && it != dirs.end(); ++it) {
             // First, try name with prefix.
-            load(AddPathSuffix(*it + PathSeparator + prefix + basename, SharedLibrary::Extension));
+            load(AddPathSuffix(*it + PathSeparator + prefix + basename, TS_SHARED_LIB_SUFFIX));
 
             // And then try specified name without prefix.
             if (!isLoaded()) {
-                load(AddPathSuffix(*it + PathSeparator + basename, SharedLibrary::Extension));
+                load(AddPathSuffix(*it + PathSeparator + basename, TS_SHARED_LIB_SUFFIX));
             }
         }
     }
@@ -88,7 +88,7 @@ ts::ApplicationSharedLibrary::ApplicationSharedLibrary(const std::string& filena
 
         // If not loaded, try with standard extension if filename had no extension.
         if (!isLoaded() && suffix.empty()) {
-            load(filename + SharedLibrary::Extension);
+            load(filename + TS_SHARED_LIB_SUFFIX);
         }
     }
 }
@@ -98,9 +98,9 @@ ts::ApplicationSharedLibrary::ApplicationSharedLibrary(const std::string& filena
 // The module name is derived from the file name
 //----------------------------------------------------------------------------
 
-std::string ts::ApplicationSharedLibrary::moduleName() const
+ts::UString ts::ApplicationSharedLibrary::moduleName() const
 {
-    const std::string name(PathPrefix(BaseName(fileName())));
+    const UString name(PathPrefix(BaseName(fileName())));
     return !_prefix.empty() && name.find(_prefix) == 0 ? name.substr(_prefix.size()) : name;
 }
 
@@ -109,21 +109,21 @@ std::string ts::ApplicationSharedLibrary::moduleName() const
 // Get a list of plugins.
 //----------------------------------------------------------------------------
 
-void ts::ApplicationSharedLibrary::GetPluginList(StringVector& files, const std::string& prefix, const std::string& library_path)
+void ts::ApplicationSharedLibrary::GetPluginList(UStringVector& files, const UString& prefix, const UString& library_path)
 {
     // Reset output arguments.
     files.clear();
 
     // Get list of directories: search path, then same directory as executable.
-    StringList dirs;
+    UStringList dirs;
     if (!library_path.empty()) {
         GetEnvironmentPath(dirs, library_path);
     }
     dirs.push_back(DirectoryName(ExecutableFile()));
 
     // Try in each directory.
-    for (StringList::const_iterator it = dirs.begin(); it != dirs.end(); ++it) {
+    for (UStringList::const_iterator it = dirs.begin(); it != dirs.end(); ++it) {
         // Get list of shared library files matching the requested pattern in this directory.
-        ExpandWildcardAndAppend(files, *it + PathSeparator + prefix + "*" + SharedLibrary::Extension);
+        ExpandWildcardAndAppend(files, *it + PathSeparator + prefix + "*" + TS_SHARED_LIB_SUFFIX);
     }
 }

@@ -75,7 +75,7 @@ TSPLUGIN_DECLARE_PROCESSOR(ts::BoostPIDPlugin)
 //----------------------------------------------------------------------------
 
 ts::BoostPIDPlugin::BoostPIDPlugin (TSP* tsp_) :
-    ProcessorPlugin (tsp_, "Boost the bitrate of a PID, stealing stuffing packets.", "[options] pid addpkt inpkt"),
+    ProcessorPlugin (tsp_, u"Boost the bitrate of a PID, stealing stuffing packets.", u"[options] pid addpkt inpkt"),
     _pid(PID_NULL),
     _opt_addpkt(0),
     _opt_inpkt(0),
@@ -83,22 +83,22 @@ ts::BoostPIDPlugin::BoostPIDPlugin (TSP* tsp_) :
     _in_count(0),
     _add_count(0)
 {
-    option ("", 0, UNSIGNED, 3, 3);
+    option(u"", 0, UNSIGNED, 3, 3);
 
-    setHelp ("Parameters:\n"
-             "\n"
-             "  The first parameter specifies the PID to boost.\n"
-             "  The second and third parameters specify that <addpkt> TS packets\n"
-             "  must be automatically added after every <inpkt> input TS packets\n"
-             "  in the PID. Both <addpkt> and <inpkt> must be non-zero integer values.\n"
-             "\n"
-             "Options:\n"
-             "\n"
-             "  --help\n"
-             "      Display this help text.\n"
-             "\n"
-             "  --version\n"
-             "      Display the version number.\n");
+    setHelp (u"Parameters:\n"
+             u"\n"
+             u"  The first parameter specifies the PID to boost.\n"
+             u"  The second and third parameters specify that <addpkt> TS packets\n"
+             u"  must be automatically added after every <inpkt> input TS packets\n"
+             u"  in the PID. Both <addpkt> and <inpkt> must be non-zero integer values.\n"
+             u"\n"
+             u"Options:\n"
+             u"\n"
+             u"  --help\n"
+             u"      Display this help text.\n"
+             u"\n"
+             u"  --version\n"
+             u"      Display the version number.\n");
 }
 
 

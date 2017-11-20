@@ -55,7 +55,7 @@ namespace ts {
         //! @param [in] filename Share library file name. Directory, "tsplugin_" prefix and suffix are optional.
         //! @param [in,out] report Where to report errors.
         //!
-        explicit PluginSharedLibrary(const std::string& filename, ReportInterface& report = CERR);
+        explicit PluginSharedLibrary(const UString& filename, Report& report = CERR);
 
         //!
         //! Input plugin allocation function.

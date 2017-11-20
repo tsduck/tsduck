@@ -63,7 +63,7 @@ ts::tlv::Connection<MUTEX>::Connection (const Protocol* protocol, bool auto_erro
 #endif
 
 template <class MUTEX>
-void ts::tlv::Connection<MUTEX>::handleConnected(ReportInterface& report)
+void ts::tlv::Connection<MUTEX>::handleConnected(Report& report)
 {
     SuperClass::handleConnected(report);
     _invalid_msg_count = 0;
@@ -79,7 +79,7 @@ void ts::tlv::Connection<MUTEX>::handleConnected(ReportInterface& report)
 //----------------------------------------------------------------------------
 
 template <class MUTEX>
-bool ts::tlv::Connection<MUTEX>::send (const Message& msg, ReportInterface& report)
+bool ts::tlv::Connection<MUTEX>::send (const Message& msg, Report& report)
 {
     if (report.debug()) {
         report.debug ("sending message to " + peerName() + "\n" + msg.dump (4));
@@ -99,7 +99,7 @@ bool ts::tlv::Connection<MUTEX>::send (const Message& msg, ReportInterface& repo
 //----------------------------------------------------------------------------
 
 template <class MUTEX>
-bool ts::tlv::Connection<MUTEX>::receive (MessagePtr& msg, const AbortInterface* abort, ReportInterface& report)
+bool ts::tlv::Connection<MUTEX>::receive (MessagePtr& msg, const AbortInterface* abort, Report& report)
 {
     const bool has_version (_protocol->hasVersion());
     const size_t header_size (has_version ? 5 : 4);

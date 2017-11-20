@@ -43,7 +43,7 @@ TSDUCK_SOURCE;
 // Constructor
 //----------------------------------------------------------------------------
 
-ts::CASMapper::CASMapper(ReportInterface& report) :
+ts::CASMapper::CASMapper(Report& report) :
     TableHandlerInterface(),
     _report(report),
     _demux(this),
@@ -100,7 +100,7 @@ void ts::CASMapper::handleTable(SectionDemux&, const BinaryTable& table)
 
         default: {
             if (_report.verbose()) {
-                _report.verbose("Got unexpected TID %d (0x%02X) on PID %d (0x%04X)", int(table.tableId()), int(table.tableId()), int(table.sourcePID()), int(table.sourcePID()));
+                _report.verbose(u"Got unexpected TID %d (0x%X) on PID %d (0x%X)", {table.tableId(), table.tableId(), table.sourcePID(), table.sourcePID()});
             }
         }
     }
@@ -119,10 +119,8 @@ void ts::CASMapper::analyzeCADescriptors(const DescriptorList& descs, bool is_ec
             if (!cadesc.isNull() && cadesc->isValid()) {
                 const std::string cas_name(names::CASId(cadesc->cas_id).toUTF8());
                 _pids[cadesc->ca_pid] = PIDDescription(cadesc->cas_id, is_ecm, cadesc);
-                _report.verbose("Found %s PID %d (0x%04X) for CAS id 0x%04X (%s)",
-                                is_ecm ? "ECM" : "EMM",
-                                int(cadesc->ca_pid), int(cadesc->ca_pid),
-                                int(cadesc->cas_id), cas_name.c_str());
+                _report.verbose(u"Found %s PID %d (0x%X) for CAS id 0x%X (%s)",
+                                {is_ecm ? u"ECM" : u"EMM", cadesc->ca_pid, cadesc->ca_pid, cadesc->cas_id, cas_name});
             }
         }
     }

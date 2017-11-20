@@ -27,7 +27,7 @@
 //
 //----------------------------------------------------------------------------
 //
-//  This class is a singleton implementing ReportInterface which drops
+//  This class is a singleton implementing Report which drops
 //  all messages.
 //
 //----------------------------------------------------------------------------
@@ -38,9 +38,7 @@ TSDUCK_SOURCE;
 // Define singleton instance
 TS_DEFINE_SINGLETON(ts::NullReport);
 
-// Constructor / destructor.
+// Does nothing, really nothing at all.
 ts::NullReport::NullReport() {}
 ts::NullReport::~NullReport() {}
-
-// Message logging method.
-void ts::NullReport::writeLog (int severity, const std::string &msg) {}
+void ts::NullReport::writeLog(int severity, const UString &msg) {}

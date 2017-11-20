@@ -376,7 +376,7 @@ bool ts::BinaryTable::isShortSection() const
 // Write the binary table on standard streams.
 //----------------------------------------------------------------------------
 
-std::ostream& ts::BinaryTable::write(std::ostream& strm, ReportInterface& report) const
+std::ostream& ts::BinaryTable::write(std::ostream& strm, Report& report) const
 {
     if (!_is_valid) {
         report.error("invalid table, cannot write it to file");
@@ -396,15 +396,16 @@ std::ostream& ts::BinaryTable::write(std::ostream& strm, ReportInterface& report
 // Save the binary table in a file. Return true on success, false on error.
 //----------------------------------------------------------------------------
 
-bool ts::BinaryTable::save(const std::string& file_name, ReportInterface& report) const
+bool ts::BinaryTable::save(const UString& file_name, Report& report) const
 {
-    std::ofstream outfile(file_name.c_str(), std::ios::out | std::ios::binary);
+    const std::string file_name_utf8(file_name.toUTF8());
+    std::ofstream outfile(file_name_utf8.c_str(), std::ios::out | std::ios::binary);
     if (!outfile) {
-        report.error ("error creating %s", file_name.c_str());
+        report.error(u"error creating " + file_name);
         return false;
     }
     else {
-        ReportWithPrefix report_internal(report, file_name + ": ");
+        ReportWithPrefix report_internal(report, file_name + u": ");
         write(outfile, report_internal);
         const bool ok = outfile.good();
         outfile.close();
@@ -419,14 +420,14 @@ bool ts::BinaryTable::save(const std::string& file_name, ReportInterface& report
 //----------------------------------------------------------------------------
 
 namespace {
-    std::string AfterBytes(const std::streampos& position)
+    ts::UString AfterBytes(const std::streampos& position)
     {
-        const int64_t bytes = int64_t (position);
+        const int64_t bytes = int64_t(position);
         if (bytes > 0) {
-            return " after " + ts::Decimal (bytes) + " bytes";
+            return u" after " + ts::UString::Decimal(bytes) + u" bytes";
         }
         else {
-            return "";
+            return ts::UString();
         }
     }
 }
@@ -435,7 +436,7 @@ namespace {
 // This static method reads all tables from the specified file.
 //----------------------------------------------------------------------------
 
-bool ts::BinaryTable::LoadFile(BinaryTablePtrVector& tables, std::istream& strm, CRC32::Validation crc_op, ReportInterface& report)
+bool ts::BinaryTable::LoadFile(BinaryTablePtrVector& tables, std::istream& strm, CRC32::Validation crc_op, Report& report)
 {
     tables.clear();
 
@@ -452,7 +453,7 @@ bool ts::BinaryTable::LoadFile(BinaryTablePtrVector& tables, std::istream& strm,
 
         // Check the sequence of section numbers.
         if (sp->sectionNumber() != next_section) {
-            report.error(Format("invalid section number, got %d, expected %d", int(sp->sectionNumber()), int(next_section)) + AfterBytes(position));
+            report.error(u"invalid section number, got %d, expected %d%s", {sp->sectionNumber(), next_section, AfterBytes(position)});
             return false;
         }
 
@@ -462,7 +463,7 @@ bool ts::BinaryTable::LoadFile(BinaryTablePtrVector& tables, std::istream& strm,
             tp = new BinaryTable;
         }
         if (!tp->addSection(sp, false, false)) {
-            report.error("invalid section" + AfterBytes(position));
+            report.error(u"invalid section" + AfterBytes(position));
             return false;
         }
 
@@ -479,7 +480,7 @@ bool ts::BinaryTable::LoadFile(BinaryTablePtrVector& tables, std::istream& strm,
 
     // Check that the last table is complete.
     if (!tp.isNull()) {
-        report.error("truncated table at end of file");
+        report.error(u"truncated table at end of file");
         return false;
     }
 
@@ -492,14 +493,15 @@ bool ts::BinaryTable::LoadFile(BinaryTablePtrVector& tables, std::istream& strm,
 // This static method reads all tables from the specified file.
 //----------------------------------------------------------------------------
 
-bool ts::BinaryTable::LoadFile(BinaryTablePtrVector& tables, const std::string& file_name, CRC32::Validation crc_op, ReportInterface& report)
+bool ts::BinaryTable::LoadFile(BinaryTablePtrVector& tables, const UString& file_name, CRC32::Validation crc_op, Report& report)
 {
     tables.clear();
 
     // Open the input file.
-    std::ifstream strm(file_name.c_str(), std::ios::in | std::ios::binary);
+    const std::string file_name_utf8(file_name.toUTF8());
+    std::ifstream strm(file_name_utf8.c_str(), std::ios::in | std::ios::binary);
     if (!strm.is_open()) {
-        report.error("cannot open " + file_name);
+        report.error(u"cannot open " + file_name);
         return false;
     }
 
@@ -515,7 +517,7 @@ bool ts::BinaryTable::LoadFile(BinaryTablePtrVector& tables, const std::string& 
 // This static method writes all tables to the specified file.
 //----------------------------------------------------------------------------
 
-std::ostream& ts::BinaryTable::SaveFile(const BinaryTablePtrVector& tables, std::ostream& strm, ReportInterface& report)
+std::ostream& ts::BinaryTable::SaveFile(const BinaryTablePtrVector& tables, std::ostream& strm, Report& report)
 {
     for (size_t i = 0; i < tables.size() && strm.good(); ++i) {
         if (!tables[i].isNull()) {
@@ -530,15 +532,16 @@ std::ostream& ts::BinaryTable::SaveFile(const BinaryTablePtrVector& tables, std:
 // This static method writes all tables to the specified file.
 //----------------------------------------------------------------------------
 
-bool ts::BinaryTable::SaveFile(const BinaryTablePtrVector& tables, const std::string& file_name, ReportInterface& report)
+bool ts::BinaryTable::SaveFile(const BinaryTablePtrVector& tables, const UString& file_name, Report& report)
 {
-    std::ofstream outfile(file_name.c_str(), std::ios::out | std::ios::binary);
+    const std::string file_name_utf8(file_name.toUTF8());
+    std::ofstream outfile(file_name_utf8.c_str(), std::ios::out | std::ios::binary);
     if (!outfile) {
-        report.error("error creating %s", file_name.c_str());
+        report.error(u"error creating " + file_name);
         return false;
     }
     else {
-        ReportWithPrefix report_internal(report, file_name + ": ");
+        ReportWithPrefix report_internal(report, file_name + u": ");
         SaveFile(tables, outfile, report_internal);
         const bool ok = outfile.good();
         outfile.close();

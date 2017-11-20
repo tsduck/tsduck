@@ -33,7 +33,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsPlatform.h"
+#include "tsUString.h"
 
 namespace ts {
     //!
@@ -98,22 +98,7 @@ namespace ts {
         //! - "freq" if the LNB has no high band.
         //! - "low,high,switch" if the LNB has a high band.
         //!
-        LNB(const char* s) :
-            _low_frequency(0),
-            _high_frequency(0),
-            _switch_frequency(0)
-        {
-            set(s);
-        }
-
-        //!
-        //! Constructor from a normalized string representation of an LNB.
-        //! @param [in] s Normalized string representation of the LNB.
-        //! In strings, all values are in MHz. All frequencies are set to zero in case of error.
-        //! - "freq" if the LNB has no high band.
-        //! - "low,high,switch" if the LNB has a high band.
-        //!
-        LNB(const std::string& s)  :
+        LNB(const UString& s)  :
             _low_frequency(0),
             _high_frequency(0),
             _switch_frequency(0)
@@ -195,7 +180,7 @@ namespace ts {
         //! - "freq" if the LNB has no high band.
         //! - "low,high,switch" if the LNB has a high band.
         //!
-        operator std::string() const;
+        operator UString() const;
 
         //!
         //! Interpret a string as an LNB value.
@@ -205,17 +190,7 @@ namespace ts {
         //! - "low,high,switch" if the LNB has a high band.
         //! @return True on success, false on error.
         //!
-        bool set(const char* s);
-
-        //!
-        //! Interpret a string as an LNB value.
-        //! @param [in] s Normalized string representation of the LNB.
-        //! In strings, all values are in MHz. All frequencies are set to zero in case of error.
-        //! - "freq" if the LNB has no high band.
-        //! - "low,high,switch" if the LNB has a high band.
-        //! @return True on success, false on error.
-        //!
-        bool set(const std::string& s) {return set(s.c_str());}
+        bool set(const UString& s);
 
         //!
         //! Set values of an LNB without high band.
@@ -267,5 +242,5 @@ namespace ts {
 //!
 TSDUCKDLL inline std::ostream& operator<<(std::ostream& strm, const ts::LNB& lnb)
 {
-    return strm << std::string(lnb);
+    return strm << ts::UString(lnb);
 }

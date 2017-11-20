@@ -173,32 +173,32 @@ void EnumerationTest::testValue()
                          "AddedElement", 458,
                          NULL);
 
-    CPPUNIT_ASSERT(e1.value ("FirstElement") == -1);
-    CPPUNIT_ASSERT(e1.value ("SecondElement") == 7);
-    CPPUNIT_ASSERT(e1.value ("FirstRepetition") == 47);
-    CPPUNIT_ASSERT(e1.value ("OtherValue") == -123);
-    CPPUNIT_ASSERT(e1.value ("AddedElement") == 458);
+    CPPUNIT_ASSERT(e1.value(u"FirstElement") == -1);
+    CPPUNIT_ASSERT(e1.value(u"SecondElement") == 7);
+    CPPUNIT_ASSERT(e1.value(u"FirstRepetition") == 47);
+    CPPUNIT_ASSERT(e1.value(u"OtherValue") == -123);
+    CPPUNIT_ASSERT(e1.value(u"AddedElement") == 458);
 
-    CPPUNIT_ASSERT(e1.value ("FirstElement", true) == -1);
-    CPPUNIT_ASSERT(e1.value ("FirstElement", false) == -1);
-    CPPUNIT_ASSERT(e1.value ("firste") == ts::Enumeration::UNKNOWN);
-    CPPUNIT_ASSERT(e1.value ("firste", true) == ts::Enumeration::UNKNOWN);
-    CPPUNIT_ASSERT(e1.value ("firste", false) == -1);
+    CPPUNIT_ASSERT(e1.value(u"FirstElement", true) == -1);
+    CPPUNIT_ASSERT(e1.value(u"FirstElement", false) == -1);
+    CPPUNIT_ASSERT(e1.value(u"firste") == ts::Enumeration::UNKNOWN);
+    CPPUNIT_ASSERT(e1.value(u"firste", true) == ts::Enumeration::UNKNOWN);
+    CPPUNIT_ASSERT(e1.value(u"firste", false) == -1);
 
-    CPPUNIT_ASSERT(e1.value ("FirstElem") == -1);
-    CPPUNIT_ASSERT(e1.value ("FirstE") == -1);
-    CPPUNIT_ASSERT(e1.value ("First") == ts::Enumeration::UNKNOWN);
+    CPPUNIT_ASSERT(e1.value(u"FirstElem") == -1);
+    CPPUNIT_ASSERT(e1.value(u"FirstE") == -1);
+    CPPUNIT_ASSERT(e1.value(u"First") == ts::Enumeration::UNKNOWN);
 
     CPPUNIT_ASSERT(e1.size() == 5);
     e1.add ("FirstRepetition", 48);
     CPPUNIT_ASSERT(e1.size() == 6);
 
-    const int vFirstRepetition = e1.value ("FirstRepetition");
+    const int vFirstRepetition = e1.value(u"FirstRepetition");
     CPPUNIT_ASSERT(vFirstRepetition == 47 || vFirstRepetition == 48);
 
-    CPPUNIT_ASSERT(e1.value ("1") == 1);
-    CPPUNIT_ASSERT(e1.value ("0x10") == 16);
-    CPPUNIT_ASSERT(e1.value ("x10") == ts::Enumeration::UNKNOWN);
+    CPPUNIT_ASSERT(e1.value(u"1") == 1);
+    CPPUNIT_ASSERT(e1.value(u"0x10") == 16);
+    CPPUNIT_ASSERT(e1.value(u"x10") == ts::Enumeration::UNKNOWN);
 }
 
 void EnumerationTest::testNameList()

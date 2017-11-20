@@ -77,7 +77,7 @@ ts::TSFileInput::~TSFileInput()
 // Open file in a rewindable mode (must be a rewindable file, eg. not a pipe).
 //----------------------------------------------------------------------------
 
-bool ts::TSFileInput::open(const std::string& filename, uint64_t start_offset, ReportInterface& report)
+bool ts::TSFileInput::open(const std::string& filename, uint64_t start_offset, Report& report)
 {
     if (_is_open) {
         report.log (_severity, "already open");
@@ -101,7 +101,7 @@ bool ts::TSFileInput::open(const std::string& filename, uint64_t start_offset, R
 // until all repeat are done. If repeat_count == 0, infinite repeat.
 //----------------------------------------------------------------------------
 
-bool ts::TSFileInput::open (const std::string& filename, size_t repeat_count, uint64_t start_offset, ReportInterface& report)
+bool ts::TSFileInput::open (const std::string& filename, size_t repeat_count, uint64_t start_offset, Report& report)
 {
     if (_is_open) {
         report.log (_severity, "already open");
@@ -123,7 +123,7 @@ bool ts::TSFileInput::open (const std::string& filename, size_t repeat_count, ui
 // Internal open
 //----------------------------------------------------------------------------
 
-bool ts::TSFileInput::openInternal (ReportInterface& report)
+bool ts::TSFileInput::openInternal (Report& report)
 {
 #if defined (TS_WINDOWS)
 
@@ -224,7 +224,7 @@ bool ts::TSFileInput::openInternal (ReportInterface& report)
 // Internal seek. Rewind to specified start offset plus specified index.
 //----------------------------------------------------------------------------
 
-bool ts::TSFileInput::seekInternal (uint64_t index, ReportInterface& report)
+bool ts::TSFileInput::seekInternal (uint64_t index, Report& report)
 {
 #if defined (TS_WINDOWS)
     // In Win32, LARGE_INTEGER is a 64-bit structure, not an integer type
@@ -250,7 +250,7 @@ bool ts::TSFileInput::seekInternal (uint64_t index, ReportInterface& report)
 // The file must have been open in rewindable mode.
 //----------------------------------------------------------------------------
 
-bool ts::TSFileInput::seek (PacketCounter packet_index, ReportInterface& report)
+bool ts::TSFileInput::seek (PacketCounter packet_index, Report& report)
 {
     if (!_is_open) {
         report.log (_severity, "not open");
@@ -270,7 +270,7 @@ bool ts::TSFileInput::seek (PacketCounter packet_index, ReportInterface& report)
 // Close file.
 //----------------------------------------------------------------------------
 
-bool ts::TSFileInput::close (ReportInterface& report)
+bool ts::TSFileInput::close (Report& report)
 {
     if (!_is_open) {
         report.log (_severity, "not open");
@@ -298,7 +298,7 @@ bool ts::TSFileInput::close (ReportInterface& report)
 // Returning zero means error or end of file repetition.
 //----------------------------------------------------------------------------
 
-size_t ts::TSFileInput::read (TSPacket* buffer, size_t max_packets, ReportInterface& report)
+size_t ts::TSFileInput::read (TSPacket* buffer, size_t max_packets, Report& report)
 {
     if (!_is_open) {
         report.log (_severity, "not open");

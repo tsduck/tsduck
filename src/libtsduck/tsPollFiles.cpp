@@ -41,18 +41,18 @@ TSDUCK_SOURCE;
 // Enumerations, names for values
 //----------------------------------------------------------------------------
 
-const ts::Enumeration ts::PolledFile::StatusEnumeration
-    ("modified", ts::PolledFile::MODIFIED,
-     "added",    ts::PolledFile::ADDED,
-     "deleted",  ts::PolledFile::DELETED,
-     TS_NULL);
+const ts::Enumeration ts::PolledFile::StatusEnumeration({
+    {u"modified", ts::PolledFile::MODIFIED},
+    {u"added",    ts::PolledFile::ADDED},
+    {u"deleted",  ts::PolledFile::DELETED},
+});
 
 
 //----------------------------------------------------------------------------
 // Description of a polled file - Constructor
 //----------------------------------------------------------------------------
 
-ts::PolledFile::PolledFile(const std::string& name, const int64_t& size, const Time& date, const Time& now) :
+ts::PolledFile::PolledFile(const UString& name, const int64_t& size, const Time& date, const Time& now) :
     _name(name),
     _status(ADDED),
     _file_size(size),
@@ -83,11 +83,11 @@ void ts::PolledFile::trackChange(const int64_t& size, const Time& date, const Ti
 // This method polls files for modification.
 //----------------------------------------------------------------------------
 
-ts::PollFiles::PollFiles(const std::string& wildcard,
+ts::PollFiles::PollFiles(const UString& wildcard,
                          MilliSecond poll_interval,
                          MilliSecond min_stable_delay,
                          PollFilesListener& listener,
-                         ReportInterface& report) :
+                         Report& report) :
     _files_wildcard(wildcard),
     _report(report),
     _listener(listener),
@@ -95,10 +95,9 @@ ts::PollFiles::PollFiles(const std::string& wildcard,
     _notified_files()
 
 {
-    _report.debug("Starting PollFiles on %s, poll interval = %" FMT_INT64 "d ms, min stable delay = %" FMT_INT64 "d ms",
-                  _files_wildcard.c_str(), poll_interval, min_stable_delay);
+    _report.debug(u"Starting PollFiles on %s, poll interval = %d ms, min stable delay = %d ms", {_files_wildcard, poll_interval, min_stable_delay});
 
-    StringVector found_files;  // Files that are found at each poll
+    UStringVector found_files;  // Files that are found at each poll
 
     // Loop on poll
     while (listener.updatePollFiles(_files_wildcard, poll_interval, min_stable_delay)) {
@@ -110,10 +109,10 @@ ts::PollFiles::PollFiles(const std::string& wildcard,
 
         // Compare currently found files with last polled state.
         PolledFileList::iterator polled = _polled_files.begin();
-        for (StringVector::const_iterator found = found_files.begin(); found != found_files.end(); ++found) {
+        for (UStringVector::const_iterator found = found_files.begin(); found != found_files.end(); ++found) {
 
             // Get characteristics of next found file
-            const std::string& name(*found);
+            const UString& name(*found);
             const int64_t size(GetFileSize(name));
             const Time date(GetFileModificationTimeUTC(name));
 
@@ -139,7 +138,7 @@ ts::PollFiles::PollFiles(const std::string& wildcard,
             if (pf->_pending && now >= pf->_found_date + min_stable_delay) {
                 pf->_pending = false;
                 _notified_files.push_back(pf);
-                _report.debug("PolledFiles: " + PolledFile::StatusEnumeration.name(pf->_status) + " " + name);
+                _report.debug(u"PolledFiles: %s %s", {PolledFile::StatusEnumeration.name(pf->_status), name});
             }
 
             // Next polled file
@@ -171,7 +170,7 @@ ts::PollFiles::PollFiles(const std::string& wildcard,
 
 void ts::PollFiles::deleteFile(PolledFileList::iterator& polled)
 {
-    _report.debug("PolledFiles: deleted " + (*polled)->_name);
+    _report.debug(u"PolledFiles: deleted %s", {(*polled)->_name});
     (*polled)->_status = PolledFile::DELETED;
     _notified_files.push_back(*polled);
     polled = _polled_files.erase(polled);
@@ -189,7 +188,7 @@ bool ts::PollFiles::notifyListener()
     }
     catch (const std::exception& e) {
         const char* msg = e.what();
-        _report.error("Exception in PollFiles listener: %s", msg == 0 ? "unknown" : msg);
+        _report.error(u"Exception in PollFiles listener: %s", {msg == 0 ? "unknown" : msg});
         return true;
     }
 }

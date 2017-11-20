@@ -36,7 +36,7 @@
 #include "tsThread.h"
 #include "tsMutex.h"
 #include "tsCondition.h"
-#include "tsReportInterface.h"
+#include "tsReport.h"
 
 namespace ts {
     //!
@@ -64,7 +64,7 @@ namespace ts {
         //! Constructor.
         //! @param [in] report Where to report log data.
         //!
-        SystemMonitor(ReportInterface* report);
+        SystemMonitor(Report* report);
 
         //!
         //! Destructor.
@@ -73,7 +73,7 @@ namespace ts {
 
     private:
         // Private members
-        ReportInterface* _report;
+        Report* _report;
         Mutex            _mutex;
         Condition        _wake_up;    // accessed under mutex
         bool             _terminate;  // accessed under mutex

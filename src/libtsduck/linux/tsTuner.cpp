@@ -147,7 +147,7 @@ ts::Tuner::Tuner(const std::string& device_name) :
 // Constructor from one device name.
 //-----------------------------------------------------------------------------
 
-ts::Tuner::Tuner(const std::string& device_name, bool info_only, ReportInterface& report) :
+ts::Tuner::Tuner(const std::string& device_name, bool info_only, Report& report) :
     Tuner(device_name)
 {
     // Flawfinder: ignore: this is our open(), not ::open().
@@ -159,7 +159,7 @@ ts::Tuner::Tuner(const std::string& device_name, bool info_only, ReportInterface
 // Get the list of all existing DVB tuners.
 //-----------------------------------------------------------------------------
 
-bool ts::Tuner::GetAllTuners(TunerPtrVector& tuners, ReportInterface& report)
+bool ts::Tuner::GetAllTuners(TunerPtrVector& tuners, Report& report)
 {
     // Reset returned vector
     tuners.clear();
@@ -191,7 +191,7 @@ bool ts::Tuner::GetAllTuners(TunerPtrVector& tuners, ReportInterface& report)
 //-----------------------------------------------------------------------------
 
 // Flawfinder: ignore: this is our open(), not ::open().
-bool ts::Tuner::open(const std::string& device_name, bool info_only, ReportInterface& report)
+bool ts::Tuner::open(const std::string& device_name, bool info_only, Report& report)
 {
     if (_is_open) {
         report.error ("DVB tuner already open");
@@ -319,7 +319,7 @@ bool ts::Tuner::open(const std::string& device_name, bool info_only, ReportInter
 // Close tuner.
 //-----------------------------------------------------------------------------
 
-bool ts::Tuner::close (ReportInterface& report)
+bool ts::Tuner::close (Report& report)
 {
     // Stop the demux
     if (_demux_fd >= 0 && ::ioctl (_demux_fd, DMX_STOP) < 0) {
@@ -355,7 +355,7 @@ bool ts::Tuner::close (ReportInterface& report)
 // Check if a signal is present and locked
 //-----------------------------------------------------------------------------
 
-bool ts::Tuner::signalLocked (ReportInterface& report)
+bool ts::Tuner::signalLocked (Report& report)
 {
     if (!_is_open) {
         report.error ("DVB tuner not open");
@@ -377,7 +377,7 @@ bool ts::Tuner::signalLocked (ReportInterface& report)
 // Return a negative value on error.
 //-----------------------------------------------------------------------------
 
-int ts::Tuner::signalStrength (ReportInterface& report)
+int ts::Tuner::signalStrength (Report& report)
 {
     if (!_is_open) {
         report.error ("DVB tuner not open");
@@ -400,7 +400,7 @@ int ts::Tuner::signalStrength (ReportInterface& report)
 // Return a negative value on error.
 //-----------------------------------------------------------------------------
 
-int ts::Tuner::signalQuality (ReportInterface& report)
+int ts::Tuner::signalQuality (Report& report)
 {
     // No known signal quality on Linux. BER (bit error rate) is supported
     // by the API but the unit is not clearly defined, the returned value
@@ -533,7 +533,7 @@ ts::ErrorCode ts::Tuner::getCurrentTuningATSC (TunerParametersATSC& params)
 // Get the current tuning parameters
 //-----------------------------------------------------------------------------
 
-bool ts::Tuner::getCurrentTuning (TunerParameters& params, bool reset_unknown, ReportInterface& report)
+bool ts::Tuner::getCurrentTuning (TunerParameters& params, bool reset_unknown, Report& report)
 {
     if (!_is_open) {
         report.error ("DVB tuner not open");
@@ -601,7 +601,7 @@ bool ts::Tuner::getCurrentTuning (TunerParameters& params, bool reset_unknown, R
 // Discard all pending frontend events
 //-----------------------------------------------------------------------------
 
-void ts::Tuner::discardFrontendEvents (ReportInterface& report)
+void ts::Tuner::discardFrontendEvents (Report& report)
 {
     ::dvb_frontend_event event;
     report.debug("starting discarding frontend events");
@@ -616,7 +616,7 @@ void ts::Tuner::discardFrontendEvents (ReportInterface& report)
 // Tune operation, return true on success, false on error
 //-----------------------------------------------------------------------------
 
-bool ts::Tuner::tune(DTVProperties& props, ReportInterface& report)
+bool ts::Tuner::tune(DTVProperties& props, Report& report)
 {
     report.debug ("tuning on " + _frontend_name);
     props.report (report, Severity::Debug);
@@ -632,7 +632,7 @@ bool ts::Tuner::tune(DTVProperties& props, ReportInterface& report)
 // Clear tuner, return true on success, false on error
 //-----------------------------------------------------------------------------
 
-bool ts::Tuner::dtvClear (ReportInterface& report)
+bool ts::Tuner::dtvClear (Report& report)
 {
     DTVProperties props;
     props.add (DTV_CLEAR);
@@ -644,7 +644,7 @@ bool ts::Tuner::dtvClear (ReportInterface& report)
 // Tune for DVB-S tuners, return true on success, false on error
 //-----------------------------------------------------------------------------
 
-bool ts::Tuner::tuneDVBS (const TunerParametersDVBS& params, ReportInterface& report)
+bool ts::Tuner::tuneDVBS (const TunerParametersDVBS& params, Report& report)
 {
     // Clear tuner state.
     if (!dtvClear(report)) {
@@ -774,7 +774,7 @@ bool ts::Tuner::tuneDVBS (const TunerParametersDVBS& params, ReportInterface& re
 // Tune for DVB-C tuners, return true on success, false on error
 //-----------------------------------------------------------------------------
 
-bool ts::Tuner::tuneDVBC (const TunerParametersDVBC& params, ReportInterface& report)
+bool ts::Tuner::tuneDVBC (const TunerParametersDVBC& params, Report& report)
 {
     if (!CheckModEnum (params.inversion, "spectral inversion", SpectralInversionEnum, report) ||
         !CheckModEnum (params.inner_fec, "FEC", InnerFECEnum, report) ||
@@ -803,7 +803,7 @@ bool ts::Tuner::tuneDVBC (const TunerParametersDVBC& params, ReportInterface& re
 // Tune for DVB-T tuners, return true on success, false on error
 //-----------------------------------------------------------------------------
 
-bool ts::Tuner::tuneDVBT (const TunerParametersDVBT& params, ReportInterface& report)
+bool ts::Tuner::tuneDVBT (const TunerParametersDVBT& params, Report& report)
 {
     if (!CheckModEnum (params.inversion, "spectral inversion", SpectralInversionEnum, report) ||
         !CheckModEnum (params.bandwidth, "bandwidth", BandWidthEnum, report) ||
@@ -844,7 +844,7 @@ bool ts::Tuner::tuneDVBT (const TunerParametersDVBT& params, ReportInterface& re
 // Tune for ATSC tuners, return true on success, false on error
 //-----------------------------------------------------------------------------
 
-bool ts::Tuner::tuneATSC (const TunerParametersATSC& params, ReportInterface& report)
+bool ts::Tuner::tuneATSC (const TunerParametersATSC& params, Report& report)
 {
     if (!CheckModEnum (params.inversion, "spectral inversion", SpectralInversionEnum, report) ||
         !CheckModEnum (params.modulation, "modulation", ModulationEnum, report)) {
@@ -872,7 +872,7 @@ bool ts::Tuner::tuneATSC (const TunerParametersATSC& params, ReportInterface& re
 // Return true on success, false on errors
 //-----------------------------------------------------------------------------
 
-bool ts::Tuner::tune (const TunerParameters& params, ReportInterface& report)
+bool ts::Tuner::tune (const TunerParameters& params, Report& report)
 {
     if (!_is_open) {
         report.error ("DVB tuner not open");
@@ -922,7 +922,7 @@ bool ts::Tuner::tune (const TunerParameters& params, ReportInterface& report)
 // Return true on success, false on errors
 //-----------------------------------------------------------------------------
 
-bool ts::Tuner::start (ReportInterface& report)
+bool ts::Tuner::start (Report& report)
 {
     if (!_is_open) {
         report.error ("DVB tuner not open");
@@ -1001,7 +1001,7 @@ bool ts::Tuner::start (ReportInterface& report)
 // Return true on success, false on errors
 //-----------------------------------------------------------------------------
 
-bool ts::Tuner::stop (ReportInterface& report)
+bool ts::Tuner::stop (Report& report)
 {
     if (!_is_open) {
         report.error ("DVB tuner not open");
@@ -1035,7 +1035,7 @@ namespace {
 // Return true on success, false on errors.
 //-----------------------------------------------------------------------------
 
-bool ts::Tuner::setReceiveTimeout (MilliSecond timeout, ReportInterface& report)
+bool ts::Tuner::setReceiveTimeout (MilliSecond timeout, Report& report)
 {
     if (timeout > 0) {
         // Set an actual receive timer.
@@ -1117,7 +1117,7 @@ bool ts::Tuner::setReceiveTimeout (MilliSecond timeout, ReportInterface& report)
 // Returning zero means error or end of input.
 //-----------------------------------------------------------------------------
 
-size_t ts::Tuner::receive (TSPacket* buffer, size_t max_packets, const AbortInterface* abort, ReportInterface& report)
+size_t ts::Tuner::receive (TSPacket* buffer, size_t max_packets, const AbortInterface* abort, Report& report)
 {
     if (!_is_open) {
         report.error ("DVB tuner not open");
@@ -1341,7 +1341,7 @@ namespace {
 // Display the characteristics and status of the tuner.
 //-----------------------------------------------------------------------------
 
-std::ostream& ts::Tuner::displayStatus (std::ostream& strm, const std::string& margin, ReportInterface& report)
+std::ostream& ts::Tuner::displayStatus (std::ostream& strm, const std::string& margin, Report& report)
 {
     if (!_is_open) {
         report.error ("DVB tuner not open");

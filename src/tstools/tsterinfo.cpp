@@ -46,30 +46,30 @@ namespace {
 
     const ts::Enumeration DVBTModulationEnum
         ("QPSK",   ts::QPSK,
-         "16-QAM", ts::QAM_16,
-         "64-QAM", ts::QAM_64,
+         u"16-QAM", ts::QAM_16,
+         u"64-QAM", ts::QAM_64,
          TS_NULL);
 
     const ts::Enumeration DVBTHPFECEnum
         ("1/2",  ts::FEC_1_2,
-         "2/3",  ts::FEC_2_3,
-         "3/4",  ts::FEC_3_4,
-         "5/6",  ts::FEC_5_6,
-         "7/8",  ts::FEC_7_8,
+         u"2/3",  ts::FEC_2_3,
+         u"3/4",  ts::FEC_3_4,
+         u"5/6",  ts::FEC_5_6,
+         u"7/8",  ts::FEC_7_8,
          TS_NULL);
 
     const ts::Enumeration DVBTBandWidthEnum
         ("8-MHz", ts::BW_8_MHZ,
-         "7-MHz", ts::BW_7_MHZ,
-         "6-MHz", ts::BW_6_MHZ,
-         "5-MHz", ts::BW_5_MHZ,
+         u"7-MHz", ts::BW_7_MHZ,
+         u"6-MHz", ts::BW_6_MHZ,
+         u"5-MHz", ts::BW_5_MHZ,
          TS_NULL);
 
     const ts::Enumeration DVBTGuardIntervalEnum
         ("1/32", ts::GUARD_1_32,
-         "1/16", ts::GUARD_1_16,
-         "1/8",  ts::GUARD_1_8,
-         "1/4",  ts::GUARD_1_4,
+         u"1/16", ts::GUARD_1_16,
+         u"1/8",  ts::GUARD_1_8,
+         u"1/4",  ts::GUARD_1_4,
          TS_NULL);
 }
 
@@ -109,81 +109,81 @@ Options::Options(int argc, char *argv[]) :
     bandwidth(ts::BW_AUTO),
     simple(false)
 {
-    option("bandwidth",         'w', DVBTBandWidthEnum);
-    option("bitrate",           'b', Args::UINT32);
-    option("constellation",     'c', DVBTModulationEnum);
-    option("frequency",         'f', Args::UNSIGNED);
-    option("guard-interval",    'g', DVBTGuardIntervalEnum);
-    option("high-priority-fec", 'h', DVBTHPFECEnum);
-    option("max-guess",         'm', Args::POSITIVE);
-    option("offset-count",      'o', Args::INTEGER, 0, 1, -3, 3);
-    option("simple",            's');
-    option("uhf-channel",       'u', Args::INTEGER, 0, 1, ts::UHF::FIRST_CHANNEL, ts::UHF::LAST_CHANNEL);
-    option("vhf-channel",       'v', Args::INTEGER, 0, 1, ts::VHF::FIRST_CHANNEL, ts::VHF::LAST_CHANNEL);
+    option(u"bandwidth",         'w', DVBTBandWidthEnum);
+    option(u"bitrate",           'b', Args::UINT32);
+    option(u"constellation",     'c', DVBTModulationEnum);
+    option(u"frequency",         'f', Args::UNSIGNED);
+    option(u"guard-interval",    'g', DVBTGuardIntervalEnum);
+    option(u"high-priority-fec", 'h', DVBTHPFECEnum);
+    option(u"max-guess",         'm', Args::POSITIVE);
+    option(u"offset-count",      'o', Args::INTEGER, 0, 1, -3, 3);
+    option(u"simple",            's');
+    option(u"uhf-channel",       'u', Args::INTEGER, 0, 1, ts::UHF::FIRST_CHANNEL, ts::UHF::LAST_CHANNEL);
+    option(u"vhf-channel",       'v', Args::INTEGER, 0, 1, ts::VHF::FIRST_CHANNEL, ts::VHF::LAST_CHANNEL);
 
-    setHelp("Options:\n"
-            "\n"
-            "  -w value\n"
-            "  --bandwidth value\n"
-            "      Specify the OFMD bandwith, used to compute the resulting bitrate.\n"
-            "      Must be one of \"8-MHz\", \"7-MHz\", \"6-MHz\", \"5-MHz\" (default: 8-MHz).\n"
-            "\n"
-            "  -b value\n"
-            "  --bitrate value\n"
-            "      Transport stream bitrate in b/s, based on 188-byte packets. Given this\n"
-            "      bitrate, tsterinfo will try to guess the OFDM modulation parameters.\n"
-            "\n"
-            "  -c value\n"
-            "  --constellation value\n"
-            "      Specify the OFMD constellation, used to compute the resulting bitrate.\n"
-            "      Must be one of \"QPSK\", \"16-QAM\", \"64-QAM\" (default: 64-QAM).\n"
-            "\n"
-            "  -f value\n"
-            "  --frequency value\n"
-            "      Carrier frequency in Hz. UHF or VHF channel and offset will be displayed.\n"
-            "\n"
-            "  -g value\n"
-            "  --guard-interval value\n"
-            "      Specify the OFMD guard interval, used to compute the resulting bitrate.\n"
-            "      Must be one of \"1/32\", \"1/16\", \"1/8\", \"1/4\" (no default).\n"
-            "\n"
-            "  --help\n"
-            "      Display this help text.\n"
-            "\n"
-            "  -h value\n"
-            "  --high-priority-fec value\n"
-            "      Specify the OFMD error correction for high priority streams, used to\n"
-            "      compute the resulting bitrate. Must be one of \"1/2\", \"2/3\", \"3/4\",\n"
-            "      \"5/6\", \"7/8\" (no default).\n"
-            "\n"
-            "  -m value\n"
-            "  --max-guess value\n"
-            "      When used with --bitrate, specify the maximum number of modulation\n"
-            "      parameters sets to display. By default, display one set of parameters,\n"
-            "      the one giving the closest bitrate.\n"
-            "\n"
-            "  -o value\n"
-            "  --offset-count value\n"
-            "      Specify the number of offsets from the UHF or VHF channel. The default\n"
-            "      is zero. See options --uhf-channel and --vhf-channel.\n"
-            "\n"
-            "  -s\n"
-            "  --simple\n"
-            "      Produce simple output: only numbers, no comment, typically useful\n"
-            "      to write scripts.\n"
-            "\n"
-            "  -u value\n"
-            "  --uhf-channel value\n"
-            "      Specify the UHF channel number of the carrier. Can be combined with an\n"
-            "      --offset-count option. The resulting frequency will be displayed.\n"
-            "\n"
-            "  --version\n"
-            "      Display the version number.\n"
-            "\n"
-            "  -v value\n"
-            "  --vhf-channel value\n"
-            "      Specify the VHF channel number of the carrier. Can be combined with an\n"
-            "      --offset-count option. The resulting frequency will be displayed.\n");
+    setHelp(u"Options:\n"
+            u"\n"
+            u"  -w value\n"
+            u"  --bandwidth value\n"
+            u"      Specify the OFMD bandwith, used to compute the resulting bitrate.\n"
+            u"      Must be one of \"8-MHz\", \"7-MHz\", \"6-MHz\", \"5-MHz\" (default: 8-MHz).\n"
+            u"\n"
+            u"  -b value\n"
+            u"  --bitrate value\n"
+            u"      Transport stream bitrate in b/s, based on 188-byte packets. Given this\n"
+            u"      bitrate, tsterinfo will try to guess the OFDM modulation parameters.\n"
+            u"\n"
+            u"  -c value\n"
+            u"  --constellation value\n"
+            u"      Specify the OFMD constellation, used to compute the resulting bitrate.\n"
+            u"      Must be one of \"QPSK\", \"16-QAM\", \"64-QAM\" (default: 64-QAM).\n"
+            u"\n"
+            u"  -f value\n"
+            u"  --frequency value\n"
+            u"      Carrier frequency in Hz. UHF or VHF channel and offset will be displayed.\n"
+            u"\n"
+            u"  -g value\n"
+            u"  --guard-interval value\n"
+            u"      Specify the OFMD guard interval, used to compute the resulting bitrate.\n"
+            u"      Must be one of \"1/32\", \"1/16\", \"1/8\", \"1/4\" (no default).\n"
+            u"\n"
+            u"  --help\n"
+            u"      Display this help text.\n"
+            u"\n"
+            u"  -h value\n"
+            u"  --high-priority-fec value\n"
+            u"      Specify the OFMD error correction for high priority streams, used to\n"
+            u"      compute the resulting bitrate. Must be one of \"1/2\", \"2/3\", \"3/4\",\n"
+            u"      \"5/6\", \"7/8\" (no default).\n"
+            u"\n"
+            u"  -m value\n"
+            u"  --max-guess value\n"
+            u"      When used with --bitrate, specify the maximum number of modulation\n"
+            u"      parameters sets to display. By default, display one set of parameters,\n"
+            u"      the one giving the closest bitrate.\n"
+            u"\n"
+            u"  -o value\n"
+            u"  --offset-count value\n"
+            u"      Specify the number of offsets from the UHF or VHF channel. The default\n"
+            u"      is zero. See options --uhf-channel and --vhf-channel.\n"
+            u"\n"
+            u"  -s\n"
+            u"  --simple\n"
+            u"      Produce simple output: only numbers, no comment, typically useful\n"
+            u"      to write scripts.\n"
+            u"\n"
+            u"  -u value\n"
+            u"  --uhf-channel value\n"
+            u"      Specify the UHF channel number of the carrier. Can be combined with an\n"
+            u"      --offset-count option. The resulting frequency will be displayed.\n"
+            u"\n"
+            u"  --version\n"
+            u"      Display the version number.\n"
+            u"\n"
+            u"  -v value\n"
+            u"  --vhf-channel value\n"
+            u"      Specify the VHF channel number of the carrier. Can be combined with an\n"
+            u"      --offset-count option. The resulting frequency will be displayed.\n");
 
     analyze(argc, argv);
 
@@ -197,7 +197,7 @@ Options::Options(int argc, char *argv[]) :
     fec_hp         = enumValue("high-priority-fec", ts::FEC_AUTO);
     guard_interval = enumValue("guard-interval", ts::GUARD_AUTO);
     bandwidth      = enumValue("bandwidth", ts::BW_8_MHZ);
-    simple         = present("simple");
+    simple         = present(u"simple");
 
     if ((fec_hp == ts::FEC_AUTO && guard_interval != ts::GUARD_AUTO) ||
         (fec_hp != ts::FEC_AUTO && guard_interval == ts::GUARD_AUTO))

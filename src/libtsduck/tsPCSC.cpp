@@ -42,13 +42,13 @@ TSDUCK_SOURCE;
 // Return true is status is success, false if error.
 //----------------------------------------------------------------------------
 
-bool ts::pcsc::Success (::LONG status, ReportInterface& report)
+bool ts::pcsc::Success (::LONG status, Report& report)
 {
     if (status == SCARD_S_SUCCESS) {
         return true;
     }
     else {
-        report.error ("PC/SC error 0x%08X: %s", int (status), pcsc::StrError (status));
+        report.error(u"PC/SC error 0x%X: %s", {status, pcsc::StrError(status)});
         return false;
     }
 }

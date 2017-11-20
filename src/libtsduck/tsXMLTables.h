@@ -59,7 +59,7 @@ namespace ts {
         //! @param [in] charset If not zero, default character set to encode strings.
         //! @return True on success, false on error.
         //!
-        bool loadXML(const std::string& file_name, ReportInterface& report, const DVBCharset* charset = 0);
+        bool loadXML(const std::string& file_name, Report& report, const DVBCharset* charset = 0);
 
         //!
         //! Parse an XML content.
@@ -68,7 +68,7 @@ namespace ts {
         //! @param [in] charset If not zero, default character set to encode strings.
         //! @return True on success, false on error.
         //!
-        bool parseXML(const std::string& xml_content, ReportInterface& report, const DVBCharset* charset = 0);
+        bool parseXML(const std::string& xml_content, Report& report, const DVBCharset* charset = 0);
 
         //!
         //! Parse an XML content.
@@ -77,7 +77,7 @@ namespace ts {
         //! @param [in] charset If not zero, default character set to encode strings.
         //! @return True on success, false on error.
         //!
-        bool parseXML(const UString& xml_content, ReportInterface& report, const DVBCharset* charset = 0);
+        bool parseXML(const UString& xml_content, Report& report, const DVBCharset* charset = 0);
 
         //!
         //! Save an XML file.
@@ -86,7 +86,7 @@ namespace ts {
         //! @param [in] charset If not zero, character set to use without explicit table code.
         //! @return True on success, false on error.
         //!
-        bool saveXML(const std::string& file_name, ReportInterface& report, const DVBCharset* charset = 0) const;
+        bool saveXML(const std::string& file_name, Report& report, const DVBCharset* charset = 0) const;
 
         //!
         //! Serialize as XML text.
@@ -94,7 +94,7 @@ namespace ts {
         //! @param [in] charset If not zero, character set to use without explicit table code.
         //! @return Complete XML document text, empty on error.
         //!
-        UString toText(ReportInterface& report, const DVBCharset* charset = 0) const;
+        UString toText(Report& report, const DVBCharset* charset = 0) const;
 
         //!
         //! Fast access to the list of loaded tables.

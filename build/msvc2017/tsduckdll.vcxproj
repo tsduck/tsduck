@@ -185,7 +185,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsReportFile.h" />
     <ClInclude Include="..\..\src\libtsduck\tsReportFileTemplate.h" />
     <ClInclude Include="..\..\src\libtsduck\tsReportHandler.h" />
-    <ClInclude Include="..\..\src\libtsduck\tsReportInterface.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsReport.h" />
     <ClInclude Include="..\..\src\libtsduck\tsReportWithPrefix.h" />
     <ClInclude Include="..\..\src\libtsduck\tsResidentBuffer.h" />
     <ClInclude Include="..\..\src\libtsduck\tsResidentBufferTemplate.h" />
@@ -296,6 +296,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsVideoAttributes.h" />
     <ClInclude Include="..\..\src\libtsduck\tsXML.h" />
     <ClInclude Include="..\..\src\libtsduck\tsXMLTables.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsXMLTemplate.h" />
     <ClInclude Include="..\..\src\libtsduck\windows\tsComIds.h" />
     <ClInclude Include="..\..\src\libtsduck\windows\tsComPtr.h" />
     <ClInclude Include="..\..\src\libtsduck\windows\tsComPtrTemplate.h" />
@@ -352,6 +353,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsCerrReport.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsArgMix.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsGrid.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsPlugin.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsT2MIDemux.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsT2MIDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsT2MIPacket.cpp" />
@@ -439,7 +441,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsPrivateDataSpecifierDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsPSILogger.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsPSILoggerArgs.cpp" />
-    <ClCompile Include="..\..\src\libtsduck\tsReportInterface.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsReport.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsReportWithPrefix.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsRingNode.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsRST.cpp" />

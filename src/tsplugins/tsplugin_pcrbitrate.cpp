@@ -92,29 +92,29 @@ ts::PCRBitratePlugin::PCRBitratePlugin (TSP* tsp_) :
     _bitrate(0),
     _pcr_name()
 {
-    option ("dts",     'd');
-    option ("min-pcr",  0, POSITIVE);
-    option ("min-pid",  0, POSITIVE);
+    option(u"dts",     'd');
+    option(u"min-pcr",  0, POSITIVE);
+    option(u"min-pid",  0, POSITIVE);
 
-    setHelp ("Options:\n"
-             "\n"
-             "  -d\n"
-             "  --dts\n"
-             "      Use DTS (Decoding Time Stamps) from video PID's instead of PCR\n"
-             "      (Program Clock Reference) from the transport layer.\n"
-             "\n"
-             "  --help\n"
-             "      Display this help text.\n"
-             "\n"
-             "  --min-pcr value\n"
-             "      Stop analysis when that number of PCR are read from the required\n"
-             "      minimum number of PID (default: " TS_STRINGIFY (DEF_MIN_PCR_CNT) ").\n"
-             "\n"
-             "  --min-pid value\n"
-             "      Minimum number of PID to get PCR from (default: " TS_STRINGIFY (DEF_MIN_PID) ").\n"
-             "\n"
-             "  --version\n"
-             "      Display the version number.\n");
+    setHelp(u"Options:\n"
+             u"\n"
+             u"  -d\n"
+             u"  --dts\n"
+             u"      Use DTS (Decoding Time Stamps) from video PID's instead of PCR\n"
+             u"      (Program Clock Reference) from the transport layer.\n"
+             u"\n"
+             u"  --help\n"
+             u"      Display this help text.\n"
+             u"\n"
+             u"  --min-pcr value\n"
+             u"      Stop analysis when that number of PCR are read from the required\n"
+             u"      minimum number of PID (default: " TS_STRINGIFY (DEF_MIN_PCR_CNT) ").\n"
+             u"\n"
+             u"  --min-pid value\n"
+             u"      Minimum number of PID to get PCR from (default: " TS_STRINGIFY (DEF_MIN_PID) ").\n"
+             u"\n"
+             u"  --version\n"
+             u"      Display the version number.\n");
 }
 
 
@@ -126,7 +126,7 @@ bool ts::PCRBitratePlugin::start()
 {
     const size_t min_pcr = intValue<size_t> ("min-pcr", DEF_MIN_PCR_CNT);
     const size_t min_pid = intValue<size_t> ("min-pid", DEF_MIN_PID);
-    if (present ("dts")) {
+    if (present(u"dts")) {
         _pcr_analyzer.resetAndUseDTS (min_pid, min_pcr);
         _pcr_name = "DTS";
     }

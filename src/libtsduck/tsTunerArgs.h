@@ -129,7 +129,7 @@ namespace ts {
         //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool configureTuner(Tuner& tuner, ReportInterface& report) const;
+        bool configureTuner(Tuner& tuner, Report& report) const;
 
         //!
         //! Tune to the specified parameters.
@@ -138,7 +138,7 @@ namespace ts {
         //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool tune(Tuner& tuner, TunerParametersPtr& params, ReportInterface& report) const;
+        bool tune(Tuner& tuner, TunerParametersPtr& params, Report& report) const;
 
         //!
         //! Default zap file name for a given tuner type.

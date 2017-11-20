@@ -37,22 +37,10 @@ TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------
-// Extension of shared library file names
-//----------------------------------------------------------------------------
-
-const char* const ts::SharedLibrary::Extension =
-#if defined(TS_WINDOWS)
-    ".dll";
-#else
-    ".so";
-#endif
-
-
-//----------------------------------------------------------------------------
 // Constructor: Load a shared library
 //----------------------------------------------------------------------------
 
-ts::SharedLibrary::SharedLibrary(const std::string& filename, bool permanent, ReportInterface& report) :
+ts::SharedLibrary::SharedLibrary(const UString& filename, bool permanent, Report& report) :
     _report(report),
     _filename(),
     _error(),
@@ -86,18 +74,18 @@ ts::SharedLibrary::~SharedLibrary()
 // Try to load an alternate file if the shared library is not yet loaded.
 //----------------------------------------------------------------------------
 
-void ts::SharedLibrary::load(const std::string& filename)
+void ts::SharedLibrary::load(const UString& filename)
 {
     if (_is_loaded) {
         return; // already loaded
     }
 
     _filename = filename;
-    _report.debug("trying to load " + _filename);
+    _report.debug(u"trying to load " + _filename);
 
 #if defined(TS_WINDOWS)
     // Flawfinder: ignore: LoadLibraryEx: Ensure that the full path to the library is specified
-    _module = ::LoadLibraryEx(_filename.c_str(), NULL, 0);
+    _module = ::LoadLibraryExW(_filename.wc_str(), NULL, 0);
     _is_loaded = _module != 0;
     if (!_is_loaded) {
         _error = ErrorCodeMessage();
@@ -107,17 +95,17 @@ void ts::SharedLibrary::load(const std::string& filename)
     _is_loaded = _dl != 0;
     if (!_is_loaded) {
         const char* err(dlerror());
-        _error = err == 0 ? "" : std::string(err);
+        _error = err == 0 ? "" : UString(err);
     }
 #endif
 
     // Normalize error messages
     if (!_is_loaded) {
         if (_error.empty()) {
-            _error = "error loading " + filename;
+            _error = u"error loading " + filename;
         }
-        else if (_error.find(filename) == std::string::npos) {
-            _error = filename + ": " + _error;
+        else if (_error.find(filename) == UString::NPOS) {
+            _error = filename + u": " + _error;
         }
         _report.debug(_error);
     }

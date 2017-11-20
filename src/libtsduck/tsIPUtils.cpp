@@ -40,7 +40,7 @@ TSDUCK_SOURCE;
 // Initialize IP usage. Shall be called once at least.
 //----------------------------------------------------------------------------
 
-bool ts::IPInitialize (ReportInterface& report)
+bool ts::IPInitialize (Report& report)
 {
 #if defined (TS_WINDOWS)
 
@@ -48,7 +48,7 @@ bool ts::IPInitialize (ReportInterface& report)
     ::WSADATA data;
     int err = ::WSAStartup (MAKEWORD (2, 2), &data);
     if (err != 0) {
-        report.error ("WSAStartup failed, WinSock error %08X", err);
+        report.error(u"WSAStartup failed, WinSock error %X", {err});
         return false;
     }
 
@@ -74,7 +74,7 @@ bool ts::IsLocalIPAddress(const IPAddress& address)
 // This method returns the list of all local IPv4 addresses in the system
 //----------------------------------------------------------------------------
 
-bool ts::GetLocalIPAddresses (IPAddressVector& list, ReportInterface& report)
+bool ts::GetLocalIPAddresses (IPAddressVector& list, Report& report)
 {
     bool status = true;
     list.clear();

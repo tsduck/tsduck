@@ -162,12 +162,12 @@ void XMLTablesTest::testGenericDescriptor()
     ts::UString text(xml.toString(doc));
     utest::Out() << "XMLTablesTest::testGenericDescriptor: " << text << std::endl;
     CPPUNIT_ASSERT_USTRINGS_EQUAL(
-        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-        "<test>\n"
-        "  <generic_descriptor tag=\"0x72\">\n"
-        "    01 02 03 04 05 06 07\n"
-        "  </generic_descriptor>\n"
-        "</test>\n",
+        u"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+        u"<test>\n"
+        u"  <generic_descriptor tag=\"0x72\">\n"
+        u"    01 02 03 04 05 06 07\n"
+        u"  </generic_descriptor>\n"
+        u"</test>\n",
         text);
 
     ts::XML::Document doc2;
@@ -215,12 +215,12 @@ void XMLTablesTest::testGenericShortTable()
     ts::UString text(xml.toString(doc));
     utest::Out() << "XMLTablesTest::testGenericShortTable: " << text << std::endl;
     CPPUNIT_ASSERT_USTRINGS_EQUAL(
-        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-        "<test>\n"
-        "  <generic_short_table table_id=\"0xAB\" private=\"false\">\n"
-        "    01 02 03 04 05 06\n"
-        "  </generic_short_table>\n"
-        "</test>\n",
+        u"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+        u"<test>\n"
+        u"  <generic_short_table table_id=\"0xAB\" private=\"false\">\n"
+        u"    01 02 03 04 05 06\n"
+        u"  </generic_short_table>\n"
+        u"</test>\n",
         text);
 
     ts::XML::Document doc2;
@@ -274,17 +274,17 @@ void XMLTablesTest::testGenericLongTable()
     ts::UString text(xml.toString(doc));
     utest::Out() << "XMLTablesTest::testGenericLongTable: " << text << std::endl;
     CPPUNIT_ASSERT_USTRINGS_EQUAL(
-        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-        "<test>\n"
-        "  <generic_long_table table_id=\"0xCD\" table_id_ext=\"0x1234\" version=\"7\" current=\"true\" private=\"true\">\n"
-        "    <section>\n"
-        "      01 02 03 04 05\n"
-        "    </section>\n"
-        "    <section>\n"
-        "      11 12 13 14\n"
-        "    </section>\n"
-        "  </generic_long_table>\n"
-        "</test>\n",
+        u"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+        u"<test>\n"
+        u"  <generic_long_table table_id=\"0xCD\" table_id_ext=\"0x1234\" version=\"7\" current=\"true\" private=\"true\">\n"
+        u"    <section>\n"
+        u"      01 02 03 04 05\n"
+        u"    </section>\n"
+        u"    <section>\n"
+        u"      11 12 13 14\n"
+        u"    </section>\n"
+        u"  </generic_long_table>\n"
+        u"</test>\n",
         text);
 
     ts::XML::Document doc2;

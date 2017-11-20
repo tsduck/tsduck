@@ -29,7 +29,6 @@
 
 #include "tsDektecUtils.h"
 #include "tsDektec.h"
-#include "tsFormat.h"
 TSDUCK_SOURCE;
 
 
@@ -37,97 +36,97 @@ TSDUCK_SOURCE;
 // Enumeration for various Dektec constants, names for values
 //-----------------------------------------------------------------------------
 
-const ts::Enumeration ts::DektecModulationTypes(
+const ts::Enumeration ts::DektecModulationTypes({
 #if !defined(TS_NO_DTAPI)
-    "DVBS-QPSK", DTAPI_MOD_DVBS_QPSK,
-    "DVBS-BPSK", DTAPI_MOD_DVBS_BPSK,
-    "4-QAM", DTAPI_MOD_QAM4,
-    "16-QAM", DTAPI_MOD_QAM16,
-    "32-QAM", DTAPI_MOD_QAM32,
-    "64-QAM", DTAPI_MOD_QAM64,
-    "128-QAM", DTAPI_MOD_QAM128,
-    "256-QAM", DTAPI_MOD_QAM256,
-    "DVBT", DTAPI_MOD_DVBT,
-    "ATSC", DTAPI_MOD_ATSC,
-    "DVB-T2", DTAPI_MOD_DVBT2,
-    "ISDB-T", DTAPI_MOD_ISDBT,
-    "IQDIRECT", DTAPI_MOD_IQDIRECT,
-    "DVBS2-QPSK", DTAPI_MOD_DVBS2_QPSK,
-    "DVBS2-8PSK", DTAPI_MOD_DVBS2_8PSK,
-    "DVBS2-16APSK", DTAPI_MOD_DVBS2_16APSK,
-    "DVBS2-32APSK", DTAPI_MOD_DVBS2_32APSK,
-    "DMB-TH", DTAPI_MOD_DMBTH,
-    "ADTB-T", DTAPI_MOD_ADTBT,
-    "CMMB", DTAPI_MOD_CMMB,
-    "T2MI", DTAPI_MOD_T2MI,
-    "DVBC2", DTAPI_MOD_DVBC2,
+    {u"DVBS-QPSK", DTAPI_MOD_DVBS_QPSK},
+    {u"DVBS-BPSK", DTAPI_MOD_DVBS_BPSK},
+    {u"4-QAM", DTAPI_MOD_QAM4},
+    {u"16-QAM", DTAPI_MOD_QAM16},
+    {u"32-QAM", DTAPI_MOD_QAM32},
+    {u"64-QAM", DTAPI_MOD_QAM64},
+    {u"128-QAM", DTAPI_MOD_QAM128},
+    {u"256-QAM", DTAPI_MOD_QAM256},
+    {u"DVBT", DTAPI_MOD_DVBT},
+    {u"ATSC", DTAPI_MOD_ATSC},
+    {u"DVB-T2", DTAPI_MOD_DVBT2},
+    {u"ISDB-T", DTAPI_MOD_ISDBT},
+    {u"IQDIRECT", DTAPI_MOD_IQDIRECT},
+    {u"DVBS2-QPSK", DTAPI_MOD_DVBS2_QPSK},
+    {u"DVBS2-8PSK", DTAPI_MOD_DVBS2_8PSK},
+    {u"DVBS2-16APSK", DTAPI_MOD_DVBS2_16APSK},
+    {u"DVBS2-32APSK", DTAPI_MOD_DVBS2_32APSK},
+    {u"DMB-TH", DTAPI_MOD_DMBTH},
+    {u"ADTB-T", DTAPI_MOD_ADTBT},
+    {u"CMMB", DTAPI_MOD_CMMB},
+    {u"T2MI", DTAPI_MOD_T2MI},
+    {u"DVBC2", DTAPI_MOD_DVBC2},
 #endif
-    TS_NULL_CHAR_PTR, 0);
+});
 
-const ts::Enumeration ts::DektecVSB(
+const ts::Enumeration ts::DektecVSB({
 #if !defined(TS_NO_DTAPI)
-    "8-VSB", DTAPI_MOD_ATSC_VSB8,
-    "16-VSB", DTAPI_MOD_ATSC_VSB16,
+    {u"8-VSB", DTAPI_MOD_ATSC_VSB8},
+    {u"16-VSB", DTAPI_MOD_ATSC_VSB16},
 #endif
-    TS_NULL_CHAR_PTR, 0);
+});
 
-const ts::Enumeration ts::DektecFEC(
+const ts::Enumeration ts::DektecFEC({
 #if !defined(TS_NO_DTAPI)
-    "1/2", DTAPI_MOD_1_2,
-    "2/3", DTAPI_MOD_2_3,
-    "3/4", DTAPI_MOD_3_4,
-    "4/5", DTAPI_MOD_4_5,
-    "5/6", DTAPI_MOD_5_6,
-    "6/7", DTAPI_MOD_6_7,
-    "7/8", DTAPI_MOD_7_8,
-    "1/4", DTAPI_MOD_1_4,
-    "1/3", DTAPI_MOD_1_3,
-    "2/5", DTAPI_MOD_2_5,
-    "3/5", DTAPI_MOD_3_5,
-    "8/9", DTAPI_MOD_8_9,
-    "9/10", DTAPI_MOD_9_10,
-    "unknown-FEC", DTAPI_MOD_CR_UNK,
+    {u"1/2", DTAPI_MOD_1_2},
+    {u"2/3", DTAPI_MOD_2_3},
+    {u"3/4", DTAPI_MOD_3_4},
+    {u"4/5", DTAPI_MOD_4_5},
+    {u"5/6", DTAPI_MOD_5_6},
+    {u"6/7", DTAPI_MOD_6_7},
+    {u"7/8", DTAPI_MOD_7_8},
+    {u"1/4", DTAPI_MOD_1_4},
+    {u"1/3", DTAPI_MOD_1_3},
+    {u"2/5", DTAPI_MOD_2_5},
+    {u"3/5", DTAPI_MOD_3_5},
+    {u"8/9", DTAPI_MOD_8_9},
+    {u"9/10", DTAPI_MOD_9_10},
+    {u"unknown-FEC", DTAPI_MOD_CR_UNK},
 #endif
-    TS_NULL_CHAR_PTR, 0);
+});
 
-const ts::Enumeration ts::DektecInversion(
+const ts::Enumeration ts::DektecInversion({
 #if !defined(TS_NO_DTAPI)
-    "non-inverted", DTAPI_MOD_S_S2_SPECNONINV,
-    "inverted", DTAPI_MOD_S_S2_SPECINV,
+    {u"non-inverted", DTAPI_MOD_S_S2_SPECNONINV},
+    {u"inverted", DTAPI_MOD_S_S2_SPECINV},
 #endif
-    TS_NULL_CHAR_PTR, 0);
+});
 
-const ts::Enumeration ts::DektecDVBTProperty(
+const ts::Enumeration ts::DektecDVBTProperty({
 #if !defined(TS_NO_DTAPI)
-    "5-MHz", DTAPI_MOD_DVBT_5MHZ,
-    "6-MHz", DTAPI_MOD_DVBT_6MHZ,
-    "7-MHz", DTAPI_MOD_DVBT_7MHZ,
-    "8-MHz", DTAPI_MOD_DVBT_8MHZ,
-    "unknown-bandwidth", DTAPI_MOD_DVBT_BW_UNK,
-    "QPSK", DTAPI_MOD_DVBT_QPSK,
-    "16-QAM", DTAPI_MOD_DVBT_QAM16,
-    "64-QAM", DTAPI_MOD_DVBT_QAM64,
-    "unknown-constellation", DTAPI_MOD_DVBT_CO_UNK,
-    "1/32", DTAPI_MOD_DVBT_G_1_32,
-    "1/16", DTAPI_MOD_DVBT_G_1_16,
-    "1/8", DTAPI_MOD_DVBT_G_1_8,
-    "1/4", DTAPI_MOD_DVBT_G_1_4,
-    "unknown-guard-interval", DTAPI_MOD_DVBT_GU_UNK,
-    "indepth-interleave", DTAPI_MOD_DVBT_INDEPTH,
-    "native-interleave", DTAPI_MOD_DVBT_NATIVE,
-    "2K", DTAPI_MOD_DVBT_2K,
-    "4K", DTAPI_MOD_DVBT_4K,
-    "8K", DTAPI_MOD_DVBT_8K,
-    "unknown-transmission-mode", DTAPI_MOD_DVBT_MD_UNK,
+    {u"5-MHz", DTAPI_MOD_DVBT_5MHZ},
+    {u"6-MHz", DTAPI_MOD_DVBT_6MHZ},
+    {u"7-MHz", DTAPI_MOD_DVBT_7MHZ},
+    {u"8-MHz", DTAPI_MOD_DVBT_8MHZ},
+    {u"unknown-bandwidth", DTAPI_MOD_DVBT_BW_UNK},
+    {u"QPSK", DTAPI_MOD_DVBT_QPSK},
+    {u"16-QAM", DTAPI_MOD_DVBT_QAM16},
+    {u"64-QAM", DTAPI_MOD_DVBT_QAM64},
+    {u"unknown-constellation", DTAPI_MOD_DVBT_CO_UNK},
+    {u"1/32", DTAPI_MOD_DVBT_G_1_32},
+    {u"1/16", DTAPI_MOD_DVBT_G_1_16},
+    {u"1/8", DTAPI_MOD_DVBT_G_1_8},
+    {u"1/4", DTAPI_MOD_DVBT_G_1_4},
+    {u"unknown-guard-interval", DTAPI_MOD_DVBT_GU_UNK},
+    {u"indepth-interleave", DTAPI_MOD_DVBT_INDEPTH},
+    {u"native-interleave", DTAPI_MOD_DVBT_NATIVE},
+    {u"2K", DTAPI_MOD_DVBT_2K},
+    {u"4K", DTAPI_MOD_DVBT_4K},
+    {u"8K", DTAPI_MOD_DVBT_8K},
+    {u"unknown-transmission-mode", DTAPI_MOD_DVBT_MD_UNK},
 #endif
-    TS_NULL_CHAR_PTR, 0);
+});
 
 
 //-----------------------------------------------------------------------------
 // Get the versions of Dektec API and drivers.
 //-----------------------------------------------------------------------------
 
-std::string ts::GetDektecVersions()
+ts::UString ts::GetDektecVersions()
 {
 #if defined(TS_NO_DTAPI)
     return TS_NO_DTAPI_MESSAGE;
@@ -138,28 +137,28 @@ std::string ts::GetDektecVersions()
     int bugfix = 0;
     int build = 0;
     Dtapi::DtapiGetVersion(major, minor, bugfix, build);
-    std::string result(Format("DTAPI: %d.%d.%d.%d", major, minor, bugfix, build));
+    UString result(UString::Format(u"DTAPI: %d.%d.%d.%d", {major, minor, bugfix, build}));
 
     // Services and drivers are optional.
     major = minor = bugfix = build = 0;
     if (Dtapi::DtapiGetDtapiServiceVersion(major, minor, bugfix, build) == DTAPI_OK) {
-        result.append(Format(", Service: %d.%d.%d.%d", major, minor, bugfix, build));
+        result.append(UString::Format(u", Service: %d.%d.%d.%d", {major, minor, bugfix, build}));
     }
     major = minor = bugfix = build = 0;
     if (Dtapi::DtapiGetDeviceDriverVersion(DTAPI_CAT_PCI, major, minor, bugfix, build) == DTAPI_OK) {
-        result.append(Format(", Dta: %d.%d.%d.%d", major, minor, bugfix, build));
+        result.append(UString::Format(u", Dta: %d.%d.%d.%d", {major, minor, bugfix, build}));
     }
     major = minor = bugfix = build = 0;
     if (Dtapi::DtapiGetDeviceDriverVersion(DTAPI_CAT_USB, major, minor, bugfix, build) == DTAPI_OK) {
-        result.append(Format(", Dtu: %d.%d.%d.%d", major, minor, bugfix, build));
+        result.append(UString::Format(u", Dtu: %d.%d.%d.%d", {major, minor, bugfix, build}));
     }
     major = minor = bugfix = build = 0;
     if (Dtapi::DtapiGetDeviceDriverVersion(DTAPI_CAT_NW, major, minor, bugfix, build) == DTAPI_OK) {
-        result.append(Format(", DtaNw: %d.%d.%d.%d", major, minor, bugfix, build));
+        result.append(UString::Format(u", DtaNw: %d.%d.%d.%d", {major, minor, bugfix, build}));
     }
     major = minor = bugfix = build = 0;
     if (Dtapi::DtapiGetDeviceDriverVersion(DTAPI_CAT_NWAP, major, minor, bugfix, build) == DTAPI_OK) {
-        result.append(Format(", DtaNwAp: %d.%d.%d.%d", major, minor, bugfix, build));
+        result.append(UString::Format(u", DtaNwAp: %d.%d.%d.%d", {major, minor, bugfix, build}));
     }
 
     return result;

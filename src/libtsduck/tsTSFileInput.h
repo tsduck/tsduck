@@ -34,7 +34,7 @@
 
 #pragma once
 #include "tsTSPacket.h"
-#include "tsReportInterface.h"
+#include "tsReport.h"
 
 namespace ts {
     //!
@@ -65,7 +65,7 @@ namespace ts {
         //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool open(const std::string& filename, size_t repeat_count, uint64_t start_offset, ReportInterface& report);
+        bool open(const std::string& filename, size_t repeat_count, uint64_t start_offset, Report& report);
 
         //!
         //! Open the file in rewindable mode.
@@ -79,7 +79,7 @@ namespace ts {
         //! @see rewind()
         //! @see seek()
         //!
-        bool open(const std::string& filename, uint64_t start_offset, ReportInterface& report);
+        bool open(const std::string& filename, uint64_t start_offset, Report& report);
 
         //!
         //! Check if the file is open.
@@ -122,7 +122,7 @@ namespace ts {
         //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool close(ReportInterface& report);
+        bool close(Report& report);
 
         //!
         //! Read TS packets.
@@ -134,7 +134,7 @@ namespace ts {
         //! @return The actual number of read packets. Returning zero means
         //! error or end of file repetition.
         //!
-        size_t read(TSPacket* buffer, size_t max_packets, ReportInterface& report);
+        size_t read(TSPacket* buffer, size_t max_packets, Report& report);
 
         //!
         //! Rewind the file.
@@ -144,7 +144,7 @@ namespace ts {
         //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool rewind(ReportInterface& report)
+        bool rewind(Report& report)
         {
             return seek(0, report);
         }
@@ -157,7 +157,7 @@ namespace ts {
         //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool seek(PacketCounter packet_index, ReportInterface& report);
+        bool seek(PacketCounter packet_index, Report& report);
 
         //!
         //! Get the number of read packets.
@@ -191,7 +191,7 @@ namespace ts {
         TSFileInput& operator=(const TSFileInput&) = delete;
 
         // Internal methods
-        bool openInternal(ReportInterface& report);
-        bool seekInternal(uint64_t, ReportInterface& report);
+        bool openInternal(Report& report);
+        bool seekInternal(uint64_t, Report& report);
     };
 }

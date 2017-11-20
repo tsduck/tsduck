@@ -52,7 +52,7 @@ TSDUCK_SOURCE;
 // Return true on success, false on error.
 //-----------------------------------------------------------------------------
 
-bool ts::EnumerateDevicesByClass(const ::CLSID& clsid, std::vector <ComPtr <::IMoniker>>& monikers, ReportInterface& report)
+bool ts::EnumerateDevicesByClass(const ::CLSID& clsid, std::vector <ComPtr <::IMoniker>>& monikers, Report& report)
 {
     // Reset content of vector
     monikers.clear();
@@ -88,7 +88,7 @@ bool ts::EnumerateDevicesByClass(const ::CLSID& clsid, std::vector <ComPtr <::IM
 //-----------------------------------------------------------------------------
 
 namespace {
-    std::string ToStringAndFree(::HRESULT hr, ::BSTR& name, const char* message, ts::ReportInterface& report)
+    std::string ToStringAndFree(::HRESULT hr, ::BSTR& name, const char* message, ts::Report& report)
     {
         std::string cname;
         if (ts::ComSuccess(hr, message, report)) {
@@ -102,7 +102,7 @@ namespace {
     }
 }
 
-std::string ts::GetTuningSpaceFriendlyName(::ITuningSpace* tspace, ReportInterface& report)
+std::string ts::GetTuningSpaceFriendlyName(::ITuningSpace* tspace, Report& report)
 {
     if (tspace == 0) {
         return std::string();
@@ -113,7 +113,7 @@ std::string ts::GetTuningSpaceFriendlyName(::ITuningSpace* tspace, ReportInterfa
     }
 }
 
-std::string ts::GetTuningSpaceUniqueName(::ITuningSpace* tspace, ReportInterface& report)
+std::string ts::GetTuningSpaceUniqueName(::ITuningSpace* tspace, Report& report)
 {
     if (tspace == 0) {
         return std::string();
@@ -124,7 +124,7 @@ std::string ts::GetTuningSpaceUniqueName(::ITuningSpace* tspace, ReportInterface
     }
 }
 
-std::string ts::GetTuningSpaceDescription(::ITuningSpace* tspace, ReportInterface& report)
+std::string ts::GetTuningSpaceDescription(::ITuningSpace* tspace, Report& report)
 {
     if (tspace == 0) {
         return std::string();
@@ -167,7 +167,7 @@ std::string ts::GetTuningSpaceDescription(::ITuningSpace* tspace, ReportInterfac
     return tname;
 }
 
-std::string ts::GetTuningSpaceNetworkType(::ITuningSpace* tspace, ReportInterface& report)
+std::string ts::GetTuningSpaceNetworkType(::ITuningSpace* tspace, Report& report)
 {
     if (tspace == 0) {
         return std::string();
@@ -220,7 +220,7 @@ std::string ts::DVBSystemTypeName(::DVBSystemType type)
 // Create a DirectShow tune request object from tuning parameters.
 //-----------------------------------------------------------------------------
 
-bool ts::CreateTuneRequest(ComPtr<::ITuneRequest>& request, ::ITuningSpace* tuning_space, const TunerParameters& params, ReportInterface& report)
+bool ts::CreateTuneRequest(ComPtr<::ITuneRequest>& request, ::ITuningSpace* tuning_space, const TunerParameters& params, Report& report)
 {
     if (tuning_space == 0) {
         return false;
@@ -267,7 +267,7 @@ bool ts::CreateTuneRequest(ComPtr<::ITuneRequest>& request, ::ITuningSpace* tuni
 // Create a Locator object for tuning parameters.
 //-----------------------------------------------------------------------------
 
-bool ts::CreateLocator(ComPtr<::IDigitalLocator>& locator, const TunerParameters& params, ReportInterface& report)
+bool ts::CreateLocator(ComPtr<::IDigitalLocator>& locator, const TunerParameters& params, Report& report)
 {
     // Try to convert the parameters to various known types.
     const TunerParametersDVBS* dvb_s = dynamic_cast<const TunerParametersDVBS*>(&params);
@@ -296,7 +296,7 @@ bool ts::CreateLocator(ComPtr<::IDigitalLocator>& locator, const TunerParameters
 // Return true on success, false on errors
 //-----------------------------------------------------------------------------
 
-bool ts::CreateLocatorDVBT(ComPtr<::IDigitalLocator>& locator, const TunerParametersDVBT& params, ReportInterface& report)
+bool ts::CreateLocatorDVBT(ComPtr<::IDigitalLocator>& locator, const TunerParametersDVBT& params, Report& report)
 {
     ComPtr<::IDVBTLocator> loc(CLSID_DVBTLocator, ::IID_IDVBTLocator, report);
 
@@ -337,7 +337,7 @@ bool ts::CreateLocatorDVBT(ComPtr<::IDigitalLocator>& locator, const TunerParame
 // Return true on success, false on errors
 //-----------------------------------------------------------------------------
 
-bool ts::CreateLocatorDVBC(ComPtr<::IDigitalLocator>& locator, const TunerParametersDVBC& params, ReportInterface& report)
+bool ts::CreateLocatorDVBC(ComPtr<::IDigitalLocator>& locator, const TunerParametersDVBC& params, Report& report)
 {
     ComPtr<::IDVBCLocator> loc(CLSID_DVBCLocator, ::IID_IDVBCLocator, report);
 
@@ -367,7 +367,7 @@ bool ts::CreateLocatorDVBC(ComPtr<::IDigitalLocator>& locator, const TunerParame
 // Return true on success, false on errors
 //-----------------------------------------------------------------------------
 
-bool ts::CreateLocatorDVBS(ComPtr<::IDigitalLocator>& locator, const TunerParametersDVBS& params, ReportInterface& report)
+bool ts::CreateLocatorDVBS(ComPtr<::IDigitalLocator>& locator, const TunerParametersDVBS& params, Report& report)
 {
     // Specify DiSEqC satellite number.
     // Note however that most drivers ignore it...

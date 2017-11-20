@@ -33,7 +33,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsReportInterface.h"
+#include "tsReport.h"
 
 namespace ts {
     namespace tsp {
@@ -45,6 +45,6 @@ namespace ts {
         //!
         //! @param [in,out] report Where to report errors.
         //!
-        void ListProcessors(ReportInterface& report);
+        void ListProcessors(Report& report);
     }
 }

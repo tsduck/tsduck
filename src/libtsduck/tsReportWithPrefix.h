@@ -28,21 +28,21 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  An encapsulation of ReportInterface with a message prefix.
+//!  An encapsulation of Report with a message prefix.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsReportInterface.h"
+#include "tsReport.h"
 
 namespace ts {
     //!
-    //! An encapsulation of ReportInterface with a message prefix.
+    //! An encapsulation of Report with a message prefix.
     //!
-    //! This class encapsulates another instance of ReportInterface and
+    //! This class encapsulates another instance of Report and
     //! prepend all messages with a prefix.
     //!
-    class TSDUCKDLL ReportWithPrefix : public ReportInterface
+    class TSDUCKDLL ReportWithPrefix : public Report
     {
     public:
         //!
@@ -50,13 +50,13 @@ namespace ts {
         //! @param [in] report The actual object which is used to report.
         //! @param [in] prefix The prefix to prepend to all messages.
         //!
-        explicit ReportWithPrefix(ReportInterface& report, const std::string& prefix = std::string());
+        explicit ReportWithPrefix(Report& report, const UString& prefix = UString());
 
         //!
         //! Get the current prefix to display.
         //! @return The current prefix to display.
         //!
-        std::string prefix() const
+        UString prefix() const
         {
             return _prefix;
         }
@@ -65,18 +65,18 @@ namespace ts {
         //! Set the prefix to display.
         //! @param [in] prefix The prefix to prepend to all messages.
         //!
-        void setPrefix(const std::string& prefix)
+        void setPrefix(const UString& prefix)
         {
             _prefix = prefix;
         }
 
     protected:
         // Inherited methods.
-        virtual void writeLog(int severity, const std::string& msg);
+        virtual void writeLog(int severity, const UString& msg) override;
 
     private:
-        ReportInterface& _report;  //!< The actual object which is used to report
-        std::string      _prefix;  //!< The prefix to prepend to all messages
+        Report& _report;  //!< The actual object which is used to report
+        UString _prefix;  //!< The prefix to prepend to all messages
 
         // Inaccessible methods.
         ReportWithPrefix() = delete;

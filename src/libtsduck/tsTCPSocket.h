@@ -35,7 +35,7 @@
 #pragma once
 #include "tsSocketAddress.h"
 #include "tsAbortInterface.h"
-#include "tsReportInterface.h"
+#include "tsReport.h"
 #include "tsNullReport.h"
 #include "tsSafePtr.h"
 #include "tsNullMutex.h"
@@ -73,14 +73,14 @@ namespace ts {
         //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
-        virtual bool open(ReportInterface& report = CERR);
+        virtual bool open(Report& report = CERR);
 
         //!
         //! Close the socket.
         //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
-        virtual bool close(ReportInterface& report = CERR);
+        virtual bool close(Report& report = CERR);
 
         //!
         //! Check if socket is open.
@@ -94,7 +94,7 @@ namespace ts {
         //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
-        bool setSendBufferSize(size_t size, ReportInterface& report = CERR);
+        bool setSendBufferSize(size_t size, Report& report = CERR);
 
         //!
         //! Set the "receive buffer size".
@@ -102,7 +102,7 @@ namespace ts {
         //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
-        bool setReceiveBufferSize(size_t size, ReportInterface& report = CERR);
+        bool setReceiveBufferSize(size_t size, Report& report = CERR);
 
         //!
         //! Set the "reuse port" option.
@@ -111,7 +111,7 @@ namespace ts {
         //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
-        bool reusePort(bool active, ReportInterface& report = CERR);
+        bool reusePort(bool active, Report& report = CERR);
 
         //!
         //! Set the Time To Live (TTL) option.
@@ -120,14 +120,14 @@ namespace ts {
         //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
-        bool setTTL(int ttl, ReportInterface& report = CERR);
+        bool setTTL(int ttl, Report& report = CERR);
 
         //!
         //! Remove the linger time option.
         //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
-        bool setNoLinger(ReportInterface& report = CERR);
+        bool setNoLinger(Report& report = CERR);
 
         //!
         //! Set the linger time option.
@@ -135,7 +135,7 @@ namespace ts {
         //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
-        bool setLingerTime(int seconds, ReportInterface& report = CERR);
+        bool setLingerTime(int seconds, Report& report = CERR);
 
         //!
         //! Set the "keep alive" option.
@@ -144,7 +144,7 @@ namespace ts {
         //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
-        bool setKeepAlive(bool active, ReportInterface& report = CERR);
+        bool setKeepAlive(bool active, Report& report = CERR);
 
         //!
         //! Set the "no delay" option.
@@ -155,7 +155,7 @@ namespace ts {
         //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
-        bool setNoDelay(bool active, ReportInterface& report = CERR);
+        bool setNoDelay(bool active, Report& report = CERR);
 
         //!
         //! Bind to a local address and port.
@@ -181,7 +181,7 @@ namespace ts {
         //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
-        bool bind(const SocketAddress& addr, ReportInterface& report = CERR);
+        bool bind(const SocketAddress& addr, Report& report = CERR);
 
         //!
         //! Get local socket address
@@ -189,7 +189,7 @@ namespace ts {
         //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
-        bool getLocalAddress(SocketAddress& addr, ReportInterface& report = CERR);
+        bool getLocalAddress(SocketAddress& addr, Report& report = CERR);
 
         //!
         //! Get the underlying socket device handle (use with care).
@@ -213,20 +213,20 @@ namespace ts {
         //! All subclasses should explicitely invoke their superclass' handlers.
         //! @param [in,out] report Where to report error.
         //!
-        virtual void handleOpened(ReportInterface& report = CERR) {}
+        virtual void handleOpened(Report& report = CERR) {}
 
         //!
         //! This virtual method can be overriden by subclasses to be notified of close.
         //! All subclasses should explicitely invoke their superclass' handlers.
         //! @param [in,out] report Where to report error.
         //!
-        virtual void handleClosed(ReportInterface& report = CERR) {}
+        virtual void handleClosed(Report& report = CERR) {}
 
     private:
         TS_SOCKET_T _sock;
 
         // This method is used by a server to declare that the socket has just become opened.
-        void declareOpened(TS_SOCKET_T, ReportInterface& report = CERR);
+        void declareOpened(TS_SOCKET_T, Report& report = CERR);
         friend class TCPServer;
 
         // Unreachable operations

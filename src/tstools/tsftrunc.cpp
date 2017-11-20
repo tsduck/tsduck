@@ -61,43 +61,43 @@ Options::Options (int argc, char *argv[]) :
     trunc_pkt(0),
     files()
 {
-    option ("",          0,  Args::STRING, 1, Args::UNLIMITED_COUNT);
-    option ("packet",   'p', Args::UNSIGNED);
-    option ("noaction", 'n');
-    option ("verbose",  'v');
+    option(u"",          0,  Args::STRING, 1, Args::UNLIMITED_COUNT);
+    option(u"packet",   'p', Args::UNSIGNED);
+    option(u"noaction", 'n');
+    option(u"verbose",  'v');
 
-    setHelp ("Files:\n"
-             "\n"
-             "  MPEG capture files to be truncated.\n"
-             "\n"
-             "Options:\n"
-             "\n"
-             "  --help\n"
-             "      Display this help text.\n"
-             "\n"
-             "  -n\n"
-             "  --noaction\n"
-             "      Do not perform truncation, check mode only.\n"
-             "\n"
-             "  -p value\n"
-             "  --packet value\n"
-             "      Index of first packet to truncate. If unspecified, all complete\n"
-             "      packets are kept in the file. Extraneous bytes at end of file\n"
-             "      (after last multiple of 188 bytes) are truncated.\n"
-             "\n"
-             "  -v\n"
-             "  --verbose\n"
-             "      Produce verbose messages.\n"
-             "\n"
-             "  --version\n"
-             "      Display the version number.\n");
+    setHelp(u"Files:\n"
+             u"\n"
+             u"  MPEG capture files to be truncated.\n"
+             u"\n"
+             u"Options:\n"
+             u"\n"
+             u"  --help\n"
+             u"      Display this help text.\n"
+             u"\n"
+             u"  -n\n"
+             u"  --noaction\n"
+             u"      Do not perform truncation, check mode only.\n"
+             u"\n"
+             u"  -p value\n"
+             u"  --packet value\n"
+             u"      Index of first packet to truncate. If unspecified, all complete\n"
+             u"      packets are kept in the file. Extraneous bytes at end of file\n"
+             u"      (after last multiple of 188 bytes) are truncated.\n"
+             u"\n"
+             u"  -v\n"
+             u"  --verbose\n"
+             u"      Produce verbose messages.\n"
+             u"\n"
+             u"  --version\n"
+             u"      Display the version number.\n");
 
     analyze (argc, argv);
 
     getValues (files);
     trunc_pkt = intValue<PacketCounter> ("packet");
-    check_only = present ("noaction");
-    verbose = check_only || present ("verbose");
+    check_only = present(u"noaction");
+    verbose = check_only || present(u"verbose");
 }
 
 

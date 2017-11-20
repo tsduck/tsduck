@@ -28,8 +28,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsArgs.h"
-#include "tsDecimal.h"
-#include "tsFormat.h"
 #include "tsSysUtils.h"
 #include "tsVersion.h"
 TSDUCK_SOURCE;
@@ -41,23 +39,23 @@ const size_t ts::Args::UNLIMITED_COUNT = std::numeric_limits<size_t>::max();
 const int64_t ts::Args::UNLIMITED_VALUE = std::numeric_limits<int64_t>::max();
 
 // List of characters which are allowed thousands separators in integer values
-const char* const ts::Args::THOUSANDS_SEPARATORS = ",. ";
+const ts::UChar* const ts::Args::THOUSANDS_SEPARATORS = u",. ";
 
 
 //----------------------------------------------------------------------------
 // Constructor for IOption
 //----------------------------------------------------------------------------
 
-ts::Args::IOption::IOption(const char* name_,
-                           char        short_name_,
-                           ArgType     type_,
-                           size_t      min_occur_,
-                           size_t      max_occur_,
-                           int64_t     min_value_,
-                           int64_t     max_value_,
-                           bool        optional_) :
+ts::Args::IOption::IOption(const UChar* name_,
+                           UChar        short_name_,
+                           ArgType      type_,
+                           size_t       min_occur_,
+                           size_t       max_occur_,
+                           int64_t      min_value_,
+                           int64_t      max_value_,
+                           bool         optional_) :
 
-    name        (name_ == 0 ? "" : name_),
+    name        (name_ == 0 ? UString() : name_),
     short_name  (short_name_),
     type        (type_),
     min_occur   (min_occur_),
@@ -75,7 +73,7 @@ ts::Args::IOption::IOption(const char* name_,
     }
     // Handle invalid values
     if (max_occur < min_occur) {
-        throw ArgsError ("invalid occurences for " + display());
+        throw ArgsError(u"invalid occurences for " + display());
     }
     // Parameters are values by definition
     if (name.empty() && type == NONE) {
@@ -90,7 +88,7 @@ ts::Args::IOption::IOption(const char* name_,
             break;
         case INTEGER:
             if (max_value < min_value) {
-                throw ArgsError ("invalid value range for " + display());
+                throw ArgsError(u"invalid value range for " + display());
             }
             break;
         case UNSIGNED:
@@ -124,7 +122,7 @@ ts::Args::IOption::IOption(const char* name_,
             type = INTEGER;
             break;
         default:
-            throw ArgsError(Format("invalid option type %d",int(type)));
+            throw ArgsError(UString::Format(u"invalid option type %d", {type}));
     }
 }
 
@@ -133,14 +131,14 @@ ts::Args::IOption::IOption(const char* name_,
 // Constructor for IOption
 //----------------------------------------------------------------------------
 
-ts::Args::IOption::IOption (const char*        name_,
-                              char               short_name_,
-                              const Enumeration& enumeration_,
-                              size_t             min_occur_,
-                              size_t             max_occur_,
-                              bool               optional_) :
+ts::Args::IOption::IOption(const UChar*       name_,
+                           UChar              short_name_,
+                           const Enumeration& enumeration_,
+                           size_t             min_occur_,
+                           size_t             max_occur_,
+                           bool               optional_) :
 
-    name        (name_ == 0 ? "" : name_),
+    name        (name_ == 0 ? UString() : name_),
     short_name  (short_name_),
     type        (INTEGER),
     min_occur   (min_occur_),
@@ -158,7 +156,7 @@ ts::Args::IOption::IOption (const char*        name_,
     }
     // Handle invalid values
     if (max_occur < min_occur) {
-        throw ArgsError ("invalid occurences for " + display());
+        throw ArgsError("invalid occurences for " + display());
     }
 }
 
@@ -167,20 +165,20 @@ ts::Args::IOption::IOption (const char*        name_,
 // Displayable name for IOption
 //----------------------------------------------------------------------------
 
-std::string ts::Args::IOption::display() const
+ts::UString ts::Args::IOption::display() const
 {
-    std::string plural (min_occur > 1 ? "s" : "");
+    UString plural(min_occur > 1 ? "s" : "");
     if (name.empty()) {
-        return "parameter" + plural;
+        return u"parameter" + plural;
     }
     else {
-        std::string n;
+        UString n;
         if (short_name != 0) {
-            n = " (-";
+            n = u" (-";
             n += short_name;
-            n += ')';
+            n += u')';
         }
-        return "option" + plural + " --" + name + n;
+        return u"option" + plural + u" --" + name + n;
     }
 }
 
@@ -189,7 +187,7 @@ std::string ts::Args::IOption::display() const
 // Constructor for Args
 //----------------------------------------------------------------------------
 
-ts::Args::Args(const std::string& description, const std::string& syntax, const std::string& help, int flags) :
+ts::Args::Args(const UString& description, const UString& syntax, const UString& help, int flags) :
     _subreport(0),
     _iopts(),
     _description(description),
@@ -202,10 +200,10 @@ ts::Args::Args(const std::string& description, const std::string& syntax, const 
     _flags(flags)
 {
     // Add predefined option
-    option("help");
-    option("version", 0, VersionFormatEnum, 0, 1, true);
-    search("help")->predefined = true;
-    search("version")->predefined = true;
+    option(u"help");
+    option(u"version", 0, VersionFormatEnum, 0, 1, true);
+    search(u"help")->predefined = true;
+    search(u"version")->predefined = true;
 }
 
 
@@ -213,14 +211,14 @@ ts::Args::Args(const std::string& description, const std::string& syntax, const 
 // Add an option definition
 //----------------------------------------------------------------------------
 
-ts::Args& ts::Args::option(const char* name,
-                           char        short_name,
-                           ArgType     type,
-                           size_t      min_occur,
-                           size_t      max_occur,
-                           int64_t     min_value,
-                           int64_t     max_value,
-                           bool        optional)
+ts::Args& ts::Args::option(const UChar* name,
+                           UChar        short_name,
+                           ArgType      type,
+                           size_t       min_occur,
+                           size_t       max_occur,
+                           int64_t      min_value,
+                           int64_t      max_value,
+                           bool         optional)
 {
     IOption opt(name, short_name, type, min_occur, max_occur, min_value, max_value, optional);
     _iopts.erase(opt.name);
@@ -233,8 +231,8 @@ ts::Args& ts::Args::option(const char* name,
 // Add an option definition
 //----------------------------------------------------------------------------
 
-ts::Args& ts::Args::option(const char*        name,
-                           char               short_name,
+ts::Args& ts::Args::option(const UChar*       name,
+                           UChar              short_name,
                            const Enumeration& enumeration,
                            size_t             min_occur,
                            size_t             max_occur,
@@ -268,7 +266,7 @@ ts::Args& ts::Args::copyOptions(const Args& other, const bool override)
 // Redirect report logging. Redirection cancelled if zero.
 //----------------------------------------------------------------------------
 
-void ts::Args::redirectReport(ReportInterface* rep)
+void ts::Args::redirectReport(Report* rep)
 {
     _subreport = rep;
     if (rep != 0 && rep->debugLevel() > this->debugLevel()) {
@@ -281,16 +279,16 @@ void ts::Args::redirectReport(ReportInterface* rep)
 // Display an error message, as if it was produced during command line analysis.
 // Mark this instance as error if severity <= Severity::Error.
 // Immediately abort application is severity == Severity::Fatal.
-// Inherited from ReportInterface.
+// Inherited from Report.
 //----------------------------------------------------------------------------
 
-void ts::Args::writeLog(int severity, const std::string& message)
+void ts::Args::writeLog(int severity, const UString& message)
 {
     if ((_flags & NO_ERROR_DISPLAY) == 0) {
         if (_subreport != 0) {
             _subreport->log(severity, message);
         }
-        else if (severity <= _max_severity) {
+        else {
             if (severity < Severity::Info) {
                 std::cerr << _app_name << ": ";
             }
@@ -308,10 +306,10 @@ void ts::Args::writeLog(int severity, const std::string& message)
 // Exit application when errors were reported.
 //----------------------------------------------------------------------------
 
-void ts::Args::exitOnError (bool force)
+void ts::Args::exitOnError(bool force)
 {
     if (!_is_valid && (force || (_flags & NO_EXIT_ON_ERROR) == 0)) {
-        ::exit (EXIT_FAILURE);
+        ::exit(EXIT_FAILURE);
     }
 }
 
@@ -320,14 +318,14 @@ void ts::Args::exitOnError (bool force)
 // Locate an option description. Return 0 if not found
 //----------------------------------------------------------------------------
 
-ts::Args::IOption* ts::Args::search (char c)
+ts::Args::IOption* ts::Args::search(UChar c)
 {
     for (IOptionMap::iterator it = _iopts.begin(); it != _iopts.end(); ++it) {
         if (it->second.short_name == c) {
             return &it->second;
         }
     }
-    error (Format ("unknown option -%c", c));
+    error(UString::Format(u"unknown option -%c", {c}));
     return 0;
 }
 
@@ -336,7 +334,7 @@ ts::Args::IOption* ts::Args::search (char c)
 // Locate an option description. Return 0 if not found
 //----------------------------------------------------------------------------
 
-ts::Args::IOption* ts::Args::search (const std::string& name)
+ts::Args::IOption* ts::Args::search(const UString& name)
 {
     IOption* previous = 0;
 
@@ -345,7 +343,7 @@ ts::Args::IOption* ts::Args::search (const std::string& name)
             // found an exact match
             return &it->second;
         }
-        else if (!name.empty() && it->second.name.find (name) == 0) {
+        else if (!name.empty() && it->second.name.find(name) == 0) {
             // found an abbreviated version
             if (previous == 0) {
                 // remember this one and continue searching
@@ -353,7 +351,7 @@ ts::Args::IOption* ts::Args::search (const std::string& name)
             }
             else {
                 // another one already found, ambiguous option
-                error ("ambiguous option --" + name + " (--" + previous->name + ", --" + it->second.name + ")");
+                error(u"ambiguous option --" + name + u" (--" + previous->name + u", --" + it->second.name + u")");
                 return 0;
             }
         }
@@ -364,11 +362,11 @@ ts::Args::IOption* ts::Args::search (const std::string& name)
         return previous;
     }
     else if (name.empty()) {
-        error ("no parameter allowed, use options only");
+        error(u"no parameter allowed, use options only");
         return 0;
     }
     else {
-        error ("unknown option --" + name);
+        error(u"unknown option --" + name);
         return 0;
     }
 }
@@ -379,15 +377,15 @@ ts::Args::IOption* ts::Args::search (const std::string& name)
 // Throw ArgsError if option does not exist (application internal error)
 //----------------------------------------------------------------------------
 
-const ts::Args::IOption& ts::Args::getIOption(const char* name) const
+const ts::Args::IOption& ts::Args::getIOption(const UChar* name) const
 {
-    const std::string name1(name == 0 ? "" : name);
+    const UString name1(name == 0 ? u"" : name);
     IOptionMap::const_iterator it = _iopts.find(name1);
     if (it != _iopts.end()) {
         return it->second;
     }
     else {
-        throw ArgsError(_app_name + ": application internal error, option " + name1 + " undefined");
+        throw ArgsError(_app_name + u": application internal error, option " + name1 + u" undefined");
     }
 }
 
@@ -396,7 +394,7 @@ const ts::Args::IOption& ts::Args::getIOption(const char* name) const
 // Check if option is present
 //----------------------------------------------------------------------------
 
-bool ts::Args::present (const char* name) const
+bool ts::Args::present(const UChar* name) const
 {
     return !getIOption(name).values.empty();
 }
@@ -406,7 +404,7 @@ bool ts::Args::present (const char* name) const
 // Check the number of occurences of the option.
 //----------------------------------------------------------------------------
 
-size_t ts::Args::count (const char* name) const
+size_t ts::Args::count(const UChar* name) const
 {
     return getIOption(name).values.size();
 }
@@ -418,15 +416,15 @@ size_t ts::Args::count (const char* name) const
 // occurence, defValue is returned.
 //----------------------------------------------------------------------------
 
-std::string ts::Args::value (const char* name, const char* defValue, size_t index) const
+ts::UString ts::Args::value(const UChar* name, const UChar* defValue, size_t index) const
 {
-    const IOption& opt (getIOption (name));
+    const IOption& opt(getIOption(name));
     return index >= opt.values.size() || !opt.values[index].set() ? defValue : opt.values[index].value();
 }
 
-void ts::Args::getValue (std::string& value_, const char* name, const char* defValue, size_t index) const
+void ts::Args::getValue(UString& value_, const UChar* name, const UChar* defValue, size_t index) const
 {
-    value_ = value (name, defValue, index);
+    value_ = value(name, defValue, index);
 }
 
 
@@ -434,16 +432,16 @@ void ts::Args::getValue (std::string& value_, const char* name, const char* defV
 // Return all occurences of this option in a vector
 //----------------------------------------------------------------------------
 
-void ts::Args::getValues (StringVector& values, const char* name) const
+void ts::Args::getValues(UStringVector& values, const UChar* name) const
 {
-    const IOption& opt (getIOption(name));
+    const IOption& opt(getIOption(name));
 
     values.clear();
-    values.reserve (opt.values.size());
+    values.reserve(opt.values.size());
 
     for (ArgValueVector::const_iterator it = opt.values.begin(); it != opt.values.end(); ++it) {
         if (it->set()) {
-            values.push_back (it->value());
+            values.push_back(it->value());
         }
     }
 }
@@ -453,15 +451,15 @@ void ts::Args::getValues (StringVector& values, const char* name) const
 // Get all occurences of this option and interpret them as PID values
 //----------------------------------------------------------------------------
 
-void ts::Args::getPIDSet (PIDSet& values, const char* name, bool defValue) const
+void ts::Args::getPIDSet(PIDSet& values, const UChar* name, bool defValue) const
 {
-    PID pid;
+    PID pid = PID_NULL;
     const IOption& opt(getIOption(name));
 
     if (!opt.values.empty()) {
         values.reset();
         for (ArgValueVector::const_iterator it = opt.values.begin(); it != opt.values.end(); ++it) {
-            if (it->set() && ToInteger(pid, it->value(), THOUSANDS_SEPARATORS)) {
+            if (it->set() && it->value().toInteger(pid, THOUSANDS_SEPARATORS)) {
                 values.set(pid);
             }
         }
@@ -479,7 +477,7 @@ void ts::Args::getPIDSet (PIDSet& values, const char* name, bool defValue) const
 // Load arguments and analyze them.
 //----------------------------------------------------------------------------
 
-bool ts::Args::analyze(const std::string& app_name, const StringVector& arguments)
+bool ts::Args::analyze(const UString& app_name, const UStringVector& arguments)
 {
     _app_name = app_name;
     _args = arguments;
@@ -488,29 +486,12 @@ bool ts::Args::analyze(const std::string& app_name, const StringVector& argument
 
 bool ts::Args::analyze(int argc, char* argv[])
 {
-    _app_name = argc > 0 ? BaseName(argv[0], TS_EXECUTABLE_SUFFIX) : "";
+    _app_name = argc > 0 ? BaseName(argv[0], TS_EXECUTABLE_SUFFIX) : UString();
     if (argc < 2) {
         _args.clear();
     }
     else {
-        AssignContainer(_args, argc - 1, argv + 1);
-    }
-    return analyze();
-}
-
-bool ts::Args::analyze(const char* app_name, const char* arg1, ...)
-{
-    _app_name = app_name;
-    _args.clear();
-    if (arg1 != 0) {
-        _args.push_back (arg1);
-        va_list ap;
-        va_start(ap, arg1);
-        const char* argn;
-        while ((argn = va_arg(ap, const char*)) != 0) {
-            _args.push_back(argn);
-        }
-        va_end(ap);
+        UString::Assign(_args, argc - 1, argv + 1);
     }
     return analyze();
 }
@@ -531,31 +512,30 @@ bool ts::Args::analyze()
     _is_valid = true;
 
     // Process argument list
-    const size_t NPOS = std::string::npos;
-    size_t next_arg = 0;            // Index of next arg to process
-    size_t short_opt_arg = NPOS;    // Index of arg containing short options
-    size_t short_opt_index = NPOS;  // Short option index in _args[short_opt_arg]
-    bool force_parameters = false;  // Force all items to be parameters
+    size_t next_arg = 0;                     // Index of next arg to process
+    size_t short_opt_arg = UString::NPOS;    // Index of arg containing short options
+    size_t short_opt_index = UString::NPOS;  // Short option index in _args[short_opt_arg]
+    bool force_parameters = false;           // Force all items to be parameters
 
-    while (short_opt_arg != NPOS || next_arg < _args.size()) {
+    while (short_opt_arg != UString::NPOS || next_arg < _args.size()) {
 
         IOption* opt = 0;
         ArgValue val;
 
         // Locate option name and value
 
-        if (short_opt_arg != NPOS) {
+        if (short_opt_arg != UString::NPOS) {
             // Analysing several short options in a string
-            opt = search (_args[short_opt_arg][short_opt_index++]);
+            opt = search(_args[short_opt_arg][short_opt_index++]);
             if (short_opt_index >= _args[short_opt_arg].length()) {
                 // Reached end of short option string
-                short_opt_arg = NPOS;
-                short_opt_index = NPOS;
+                short_opt_arg = UString::NPOS;
+                short_opt_index = UString::NPOS;
             }
         }
-        else if (force_parameters ||_args[next_arg].empty() || _args[next_arg][0] != '-') {
+        else if (force_parameters || _args[next_arg].empty() || _args[next_arg][0] != '-') {
             // Arg is a parameter
-            if ((opt = search ("")) == 0) {
+            if ((opt = search("")) == 0) {
                 ++next_arg;
             }
             force_parameters = (_flags & GATHER_PARAMETERS) != 0;
@@ -563,27 +543,27 @@ bool ts::Args::analyze()
         else if (_args[next_arg].length() == 1) {
             // Arg is '-', next arg is a parameter, even if it starts with '-'
             ++next_arg;
-            if ((opt = search ("")) == 0) {
+            if ((opt = search("")) == 0) {
                 ++next_arg;
             }
         }
         else if (_args[next_arg][1] == '-') {
             // Arg starts with '--', this is a long option
-            size_t equal = _args[next_arg].find ('=');
-            if (equal != NPOS) {
+            size_t equal = _args[next_arg].find('=');
+            if (equal != UString::NPOS) {
                 // Value is in the same arg: --option=value
-                opt = search (_args[next_arg].substr (2, equal - 2));
-                val = _args[next_arg].substr (equal + 1);
+                opt = search(_args[next_arg].substr(2, equal - 2));
+                val = _args[next_arg].substr(equal + 1);
             }
             else {
                 // Simple form: --option
-                opt = search (_args[next_arg].substr (2));
+                opt = search(_args[next_arg].substr(2));
             }
             ++next_arg;
         }
         else {
             // Arg starts with one single '-'
-            opt = search (_args[next_arg][1]);
+            opt = search(_args[next_arg][1]);
             if (_args[next_arg].length() > 2) {
                 // More short options or value in arg
                 short_opt_arg = next_arg;
@@ -601,25 +581,25 @@ bool ts::Args::analyze()
         if (opt->type == NONE) {
             if (val.set()) {
                 // In the case --option=value
-                error ("no value allowed for "+ opt->display());
+                error(u"no value allowed for " + opt->display());
             }
-            opt->values.push_back (val);
+            opt->values.push_back(val);
             continue;
         }
 
         // Get the value string from short option, if present
-        if (short_opt_arg != NPOS) {
-            assert (!val.set());
+        if (short_opt_arg != UString::NPOS) {
+            assert(!val.set());
             // Get the value from the rest of the short option string
-            val = _args[short_opt_arg].substr (short_opt_index);
-            short_opt_arg = NPOS;
-            short_opt_index = NPOS;
+            val = _args[short_opt_arg].substr(short_opt_index);
+            short_opt_arg = UString::NPOS;
+            short_opt_index = UString::NPOS;
         }
 
         // Check presence of mandatory values in next arg if not already found
         if (!val.set() && !opt->optional) {
             if (next_arg >= _args.size()) {
-                error ("missing value for " + opt->display());
+                error(u"missing value for " + opt->display());
                 continue;
             }
             else {
@@ -632,42 +612,42 @@ bool ts::Args::analyze()
             int64_t ival = 0;
             if (!opt->enumeration.empty()) {
                 // Enumeration value expected, get corresponding integer value (not case sensitive)
-                int i = opt->enumeration.value (val.value(), false);
+                int i = opt->enumeration.value(val.value(), false);
                 if (i != Enumeration::UNKNOWN) {
                     // Replace with actual integer value
-                    val = Format ("%d", i);
+                    val = UString::Decimal(i, 0, true, UString());
                 }
                 else {
-                    error("invalid value " + val.value() + " for " + opt->display() +
-                          ", use one of " + opt->enumeration.nameList());
+                    error(u"invalid value " + val.value() + u" for " + opt->display() +
+                          u", use one of " + opt->enumeration.nameList());
                     continue;
                 }
             }
-            else if (!ToInteger(ival, val.value(), THOUSANDS_SEPARATORS)) {
-                error("invalid integer value " + val.value() + " for " + opt->display());
+            else if (!val.value().toInteger(ival, THOUSANDS_SEPARATORS)) {
+                error(u"invalid integer value " + val.value() + u" for " + opt->display());
                 continue;
             }
             else if (ival < opt->min_value) {
-                error("value for " + opt->display() + " must be >= " + Decimal(opt->min_value));
+                error(u"value for " + opt->display() + u" must be >= " + UString::Decimal(opt->min_value));
                 continue;
             }
             else if (ival > opt->max_value) {
-                error("value for " + opt->display() + " must be <= " + Decimal(opt->max_value));
+                error(u"value for " + opt->display() + u" must be <= " + UString::Decimal(opt->max_value));
                 continue;
             }
         }
 
         // Push value. For optional parameters without value, an unset variable is pushed.
-        opt->values.push_back (val);
+        opt->values.push_back(val);
     }
 
     // Process --help predefined option
-    if (present("help") && search("help")->predefined) {
-        std::string text("\n" + _description + "\n\n" + "Usage: ");
+    if (present(u"help") && search(u"help")->predefined) {
+        UString text(u"\n" + _description + u"\n\n" + u"Usage: ");
         if (!_shell.empty()) {
-            text += _shell + " ";
+            text += _shell + u" ";
         }
-        text += _app_name + " " + _syntax + "\n\n" + _help;
+        text += _app_name + u" " + _syntax + u"\n\n" + _help;
         info(text);
         if ((_flags & NO_EXIT_ON_HELP) == 0) {
             ::exit(EXIT_SUCCESS);
@@ -676,8 +656,8 @@ bool ts::Args::analyze()
     }
 
     // Process --version predefined option
-    if (present("version") && search("version")->predefined) {
-        info(GetVersion(enumValue("version", VERSION_LONG), _app_name));
+    if (present(u"version") && search(u"version")->predefined) {
+        info(GetVersion(enumValue(u"version", VERSION_LONG), _app_name));
         if ((_flags & NO_EXIT_ON_VERSION) == 0) {
             ::exit(EXIT_SUCCESS);
         }
@@ -688,12 +668,12 @@ bool ts::Args::analyze()
     // Don't do that if command already proven wrong
     if (_is_valid) {
         for (IOptionMap::iterator it = _iopts.begin(); it != _iopts.end(); ++it) {
-            const IOption& op (it->second);
+            const IOption& op(it->second);
             if (op.values.size() < op.min_occur) {
-                error ("missing " + op.display() + (op.min_occur < 2 ? "" : Format (", %" FMT_SIZE_T "u required", op.min_occur)));
+                error(u"missing " + op.display() + (op.min_occur < 2 ? u"" : UString::Format(u", %d required", {op.min_occur})));
             }
             else if (op.values.size() > op.max_occur) {
-                error ("too many " + op.display() + (op.max_occur < 2 ? "" : Format (", %" FMT_SIZE_T "u maximum", op.max_occur)));
+                error(u"too many " + op.display() + (op.max_occur < 2 ? u"" : UString::Format(u", %d maximum", {op.max_occur})));
             }
         }
     }

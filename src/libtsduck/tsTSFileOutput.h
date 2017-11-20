@@ -34,7 +34,7 @@
 
 #pragma once
 #include "tsTSPacket.h"
-#include "tsReportInterface.h"
+#include "tsReport.h"
 
 namespace ts {
     //!
@@ -61,14 +61,14 @@ namespace ts {
         //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        virtual bool open(const std::string& filename, bool append, bool keep, ReportInterface& report);
+        virtual bool open(const std::string& filename, bool append, bool keep, Report& report);
 
         //!
         //! Close the file.
         //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool close(ReportInterface& report);
+        bool close(Report& report);
 
         //!
         //! Write TS packets to the file.
@@ -77,7 +77,7 @@ namespace ts {
         //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool write(const TSPacket* buffer, size_t packet_count, ReportInterface& report);
+        bool write(const TSPacket* buffer, size_t packet_count, Report& report);
 
         //!
         //! Check if the file is open.

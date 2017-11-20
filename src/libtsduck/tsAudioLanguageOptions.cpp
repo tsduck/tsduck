@@ -40,15 +40,15 @@ TSDUCK_SOURCE;
 // Return a help string for the parameter syntax (static method)
 //----------------------------------------------------------------------------
 
-std::string ts::AudioLanguageOptions::GetHelpString()
+ts::UString ts::AudioLanguageOptions::GetHelpString()
 {
     return
-        "      The \"language-code\" is a 3-character string. The audio-type is optional,\n"
-        "      its default value is zero. The \"location\" indicates how to locate the\n"
-        "      audio stream. Its format is either \"Pn\" or \"An\". In the first case,\n"
-        "      \"n\" designates a PID value and in the second case the audio stream number\n"
-        "      inside the PMT, starting with 1. The default location is \"A1\", ie. the\n"
-        "      first audio stream inside the PMT.\n";
+        u"      The \"language-code\" is a 3-character string. The audio-type is optional,\n"
+        u"      its default value is zero. The \"location\" indicates how to locate the\n"
+        u"      audio stream. Its format is either \"Pn\" or \"An\". In the first case,\n"
+        u"      \"n\" designates a PID value and in the second case the audio stream number\n"
+        u"      inside the PMT, starting with 1. The default location is \"A1\", ie. the\n"
+        u"      first audio stream inside the PMT.\n";
 }
 
 
@@ -57,10 +57,10 @@ std::string ts::AudioLanguageOptions::GetHelpString()
 //----------------------------------------------------------------------------
 
 ts::AudioLanguageOptions::AudioLanguageOptions() :
-    _language_code (3, ' '),  // always 3-chars
-    _audio_type (0),
-    _audio_stream_number (1), // use first audio stream by default
-    _pid (PID_NULL)
+    _language_code(3, u' '),  // always 3-chars
+    _audio_type(0),
+    _audio_stream_number(1),  // use first audio stream by default
+    _pid(PID_NULL)
 {
 }
 
@@ -69,10 +69,10 @@ ts::AudioLanguageOptions::AudioLanguageOptions() :
 // Assign from a command-line option.
 //----------------------------------------------------------------------------
 
-bool ts::AudioLanguageOptions::getFromArgs (Args& args, const char* option_name, size_t index)
+bool ts::AudioLanguageOptions::getFromArgs(Args& args, const UChar* option_name, size_t index)
 {
     // Get parameter value
-    const std::string val (args.value (option_name, "", index));
+    const UString val(args.value(option_name, u"", index));
     const size_t len = val.length();
 
     // Must be at least 3-chars long
@@ -81,7 +81,7 @@ bool ts::AudioLanguageOptions::getFromArgs (Args& args, const char* option_name,
     }
 
     // Get default values
-    _language_code = val.substr (0, 3);
+    _language_code = val.substr(0, 3);
     _audio_type = 0;
     _audio_stream_number = 1;
     _pid = PID_NULL;
@@ -89,11 +89,11 @@ bool ts::AudioLanguageOptions::getFromArgs (Args& args, const char* option_name,
     // Get additional info
     if (len > 3) {
         // Get ":audio_type"
-        if (val[3] != ':') {
+        if (val[3] != u':') {
             goto error;
         }
-        size_t col = val.find (":", 4);
-        if (col == std::string::npos) {
+        size_t col = val.find(u":", 4);
+        if (col == UString::NPOS) {
             col = len;
         }
         else {
@@ -102,24 +102,24 @@ bool ts::AudioLanguageOptions::getFromArgs (Args& args, const char* option_name,
                 goto error;
             }
             uint16_t x = 0;
-            const char type = val[col + 1];
-            if ((type != 'P' && type != 'p' && type != 'A' && type != 'a') || !ToInteger (x, val.substr (col + 2, len - col - 2))) {
+            const UChar type = val[col + 1];
+            if ((type != u'P' && type != u'p' && type != u'A' && type != u'a') || !val.substr(col + 2, len - col - 2).toInteger(x)) {
                 goto error;
             }
-            if ((type == 'P' || type == 'p') && x < PID_MAX) {
-                _pid = PID (x);
+            if ((type == u'P' || type == u'p') && x < PID_MAX) {
+                _pid = PID(x);
                 _audio_stream_number = 0;
             }
-            else if ((type == 'A' || type == 'a') && x > 0 && x <= 0xFF) {
+            else if ((type == u'A' || type == u'a') && x > 0 && x <= 0xFF) {
                 _pid = PID_NULL;
-                _audio_stream_number = uint8_t (x);
+                _audio_stream_number = uint8_t(x);
             }
             else {
                 goto error;
             }
         }
         // Decode audio_type
-        if (!ToInteger (_audio_type, val.substr (4, col - 4))) {
+        if (!val.substr(4, col - 4).toInteger(_audio_type)) {
             goto error;
         }
     }
@@ -127,8 +127,7 @@ bool ts::AudioLanguageOptions::getFromArgs (Args& args, const char* option_name,
     return true;
 
  error:
-    const std::string syntax (GetSyntaxString());
-    args.error ("invalid value \"%s\" for option --%s, use %s", val.c_str(), option_name, syntax.c_str());
+    args.error(u"invalid value \"%s\" for option --%s, use %s", {val, option_name, GetSyntaxString()});
     return false;
 }
 
@@ -137,15 +136,15 @@ bool ts::AudioLanguageOptions::getFromArgs (Args& args, const char* option_name,
 // Assign from a list of command-line options.
 //----------------------------------------------------------------------------
 
-bool ts::AudioLanguageOptionsVector::getFromArgs (Args& args, const char* option_name)
+bool ts::AudioLanguageOptionsVector::getFromArgs (Args& args, const UChar* option_name)
 {
     clear();
     AudioLanguageOptions opt;
-    for (size_t n = 0; n < args.count (option_name); n++) {
-        if (!opt.getFromArgs (args, option_name, n)) {
+    for (size_t n = 0; n < args.count(option_name); n++) {
+        if (!opt.getFromArgs(args, option_name, n)) {
             return false;
         }
-        push_back (opt);
+        push_back(opt);
     }
     return true;
 }
@@ -155,7 +154,7 @@ bool ts::AudioLanguageOptionsVector::getFromArgs (Args& args, const char* option
 // Apply requested transformations on a PMT.
 //----------------------------------------------------------------------------
 
-bool ts::AudioLanguageOptionsVector::apply (PMT& pmt, ReportInterface& report, int severity) const
+bool ts::AudioLanguageOptionsVector::apply(PMT& pmt, Report& report, int severity) const
 {
     bool ok = true;
     // Loop on all options
@@ -164,15 +163,15 @@ bool ts::AudioLanguageOptionsVector::apply (PMT& pmt, ReportInterface& report, i
         // Find audio stream in PMT
         if (it->locateByPID()) {
             // Find the audio stream by PID in the PMT
-            smi = pmt.streams.find (it->getPID());
+            smi = pmt.streams.find(it->getPID());
             if (smi == pmt.streams.end()) {
-                report.log (severity, "audio PID %d (0x%04X) not found in PMT", int (it->getPID()), int (it->getPID()));
+                report.log(severity, u"audio PID %d (0x%X) not found in PMT", {it->getPID(), it->getPID()});
                 ok = false;
             }
         }
         else {
             // Find audio stream number in PMT
-            assert (it->getAudioStreamNumber() != 0);
+            assert(it->getAudioStreamNumber() != 0);
             size_t audio_count = 0;
             smi = pmt.streams.begin();
             while (smi != pmt.streams.end()) {
@@ -182,16 +181,16 @@ bool ts::AudioLanguageOptionsVector::apply (PMT& pmt, ReportInterface& report, i
                 ++smi;
             }
             if (smi == pmt.streams.end()) {
-                report.log (severity, "audio stream %d not found in PMT", int (it->getAudioStreamNumber()));
+                report.log(severity, u"audio stream %d not found in PMT", {it->getAudioStreamNumber()});
                 ok = false;
             }
         }
         // Update audio stream in PMT
         if (smi != pmt.streams.end()) {
             // Remove any previous language descriptor
-            smi->second.descs.removeByTag (DID_LANGUAGE);
+            smi->second.descs.removeByTag(DID_LANGUAGE);
             // Add a new one
-            smi->second.descs.add (ISO639LanguageDescriptor (*it));
+            smi->second.descs.add(ISO639LanguageDescriptor(*it));
         }
     }
     return ok;

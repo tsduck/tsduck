@@ -73,16 +73,13 @@ uint64_t ts::LNB::intermediateFrequency (uint64_t satellite_frequency) const
 // In strings, all values are in MHz.
 //----------------------------------------------------------------------------
 
-ts::LNB::operator std::string() const
+ts::LNB::operator ts::UString() const
 {
     if (hasHighBand()) {
-        return Format ("%" FMT_INT64 "u,%" FMT_INT64 "u,%" FMT_INT64 "u",
-                       uint64_t (_low_frequency / TS_UCONST64 (1000000)),
-                       uint64_t (_high_frequency / TS_UCONST64 (1000000)),
-                       uint64_t (_switch_frequency / TS_UCONST64 (1000000)));
+        return UString::Format(u"%d,%d,%d", {_low_frequency / 1000000, _high_frequency / 1000000, _switch_frequency / 1000000});
     }
     else {
-        return Format ("%" FMT_INT64 "u", uint64_t (_low_frequency / TS_UCONST64 (1000000)));
+        return UString::Format("%d", {_low_frequency / 1000000});
     }
 }
 
@@ -92,30 +89,28 @@ ts::LNB::operator std::string() const
 // Return true on success, false on error.
 //----------------------------------------------------------------------------
 
-bool ts::LNB::set (const char* s)
+bool ts::LNB::set(const UString& s)
 {
     // Split a comma-separated string
-    std::vector<std::string> values;
-    SplitString (values, s);
+    UStringVector values;
+    s.split(values);
 
     // Interpret values
     bool ok = false;
     if (values.size() == 1) {
         // no high band
-        ok = ToInteger (_low_frequency, values[0]);
+        ok = values[0].toInteger(_low_frequency);
         _high_frequency = _switch_frequency = 0;
     }
     else if (values.size() == 3) {
-        ok = ToInteger (_low_frequency, values[0]) &&
-            ToInteger (_high_frequency, values[1]) &&
-            ToInteger (_switch_frequency, values[2]);
+        ok = values[0].toInteger(_low_frequency) && values[1].toInteger(_high_frequency) && values[2].toInteger(_switch_frequency);
     }
 
     if (ok) {
         // Convert values from MHz to Hz
-        _low_frequency *= TS_UCONST64 (1000000);
-        _high_frequency *= TS_UCONST64 (1000000);
-        _switch_frequency *= TS_UCONST64 (1000000);
+        _low_frequency *= 1000000;
+        _high_frequency *= 1000000;
+        _switch_frequency *= 1000000;
     }
     else {
         // In case of errors, all values are zero

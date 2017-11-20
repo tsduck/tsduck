@@ -141,7 +141,7 @@ namespace ts {
             WIDE_OFFSET = 0x0008,  //!< Always wide offset.
             SINGLE_LINE = 0x0010,  //!< Hexa on one single line, no line feed, ignore other flags.
             BPL         = 0x0020,  //!< Interpret @a max_line_width as number of displayed Bytes Per Line (BPL).
-            C_STYLE     = 0x0040,  //!< C-style hexa value ("0xXX," instead of "XX").
+            C_STYLE     = 0x0040,  //!< C-style hexa value(u"0xXX," instead of "XX").
             BINARY      = 0x0080,  //!< Dump binary values ("XXXXXXXX" binary digits).
             BIN_NIBBLE  = 0x0100,  //!< Binary values are grouped by nibble ("XXXX XXXX").
             COMPACT     = 0x0200,  //!< Same as SINGLE_LINE but use a compact display without space.
@@ -213,6 +213,52 @@ namespace ts {
         //!
         UString(const UChar* s, const allocator_type& alloc = allocator_type()) :
             SuperClass(s == 0 ? &CHAR_NULL : s, alloc) {}
+
+        //!
+        //! Constructor using a @c std::vector of 16-bit characters of any type.
+        //! @tparam CHARTYPE A 16-bit character or integer type.
+        //! @tparam INT An integer type.
+        //! @param [in] vec The vector of characters.
+        //! @param [in] count Maximum number of characters to include in the string.
+        //! Stop before the first nul character before @a max.
+        //! Can be of any integer type, including a signed type.
+        //! @param [in] alloc Allocator.
+        //!
+        template <typename CHARTYPE, typename INT>
+        UString(const std::vector<CHARTYPE>& vec, INT count, const allocator_type& alloc = allocator_type());
+
+        //!
+        //! Constructor using a @c std::vector of 16-bit characters of any type.
+        //! @tparam CHARTYPE A 16-bit character or integer type.
+        //! @param [in] vec The vector of characters. Nul-terminated string.
+        //! @param [in] alloc Allocator.
+        //!
+        template <typename CHARTYPE>
+        UString(const std::vector<CHARTYPE>& vec, const allocator_type& alloc = allocator_type());
+
+        //!
+        //! Constructor using a @c std::array of 16-bit characters of any type.
+        //! @tparam CHARTYPE A 16-bit character or integer type.
+        //! @tparam SIZE The size of the array.
+        //! @tparam INT An integer type.
+        //! @param [in] arr The array of characters.
+        //! @param [in] count Maximum number of characters to include in the string.
+        //! Stop before the first nul character before @a max.
+        //! Can be of any integer type, including a signed type.
+        //! @param [in] alloc Allocator.
+        //!
+        template <typename CHARTYPE, std::size_t SIZE, typename INT>
+        UString(const std::array<CHARTYPE, SIZE>& arr, INT count, const allocator_type& alloc = allocator_type());
+
+        //!
+        //! Constructor using a @c std::array of 16-bit characters of any type.
+        //! @tparam CHARTYPE A 16-bit character or integer type.
+        //! @tparam SIZE The size of the array.
+        //! @param [in] arr The array of characters. Nul-terminated string.
+        //! @param [in] alloc Allocator.
+        //!
+        template <typename CHARTYPE, std::size_t SIZE>
+        UString(const std::array<CHARTYPE, SIZE>& arr, const allocator_type& alloc = allocator_type());
 
         //!
         //! Constructor from iterators.
@@ -449,6 +495,52 @@ namespace ts {
         ByteBlock toDVBWithByteLength(size_type start = 0, size_type count = NPOS, const DVBCharset* charset = 0) const;
 
         //!
+        //! Assign from a @c std::vector of 16-bit characters of any type.
+        //! @tparam CHARTYPE A 16-bit character or integer type.
+        //! @tparam INT An integer type.
+        //! @param [in] vec The vector of characters.
+        //! @param [in] count Maximum number of characters to include in the string.
+        //! Stop before the first nul character before @a max.
+        //! Can be of any integer type, including a signed type.
+        //! @return A reference to this object.
+        //!
+        template <typename CHARTYPE, typename INT>
+        UString& assign(const std::vector<CHARTYPE>& vec, INT count);
+
+        //!
+        //! Assign from a @c std::vector of 16-bit characters of any type.
+        //! @tparam CHARTYPE A 16-bit character or integer type.
+        //! @param [in] vec The vector of characters. Nul-terminated string.
+        //! @return A reference to this object.
+        //!
+        template <typename CHARTYPE>
+        UString& assign(const std::vector<CHARTYPE>& vec);
+
+        //!
+        //! Assign from a @c std::array of 16-bit characters of any type.
+        //! @tparam CHARTYPE A 16-bit character or integer type.
+        //! @tparam SIZE The size of the array.
+        //! @tparam INT An integer type.
+        //! @param [in] arr The array of characters.
+        //! @param [in] count Maximum number of characters to include in the string.
+        //! Stop before the first nul character before @a max.
+        //! Can be of any integer type, including a signed type.
+        //! @return A reference to this object.
+        //!
+        template <typename CHARTYPE, std::size_t SIZE, typename INT>
+        UString& assign(const std::array<CHARTYPE, SIZE>& arr, INT count);
+
+        //!
+        //! Assign from a @c std::array of 16-bit characters of any type.
+        //! @tparam CHARTYPE A 16-bit character or integer type.
+        //! @tparam SIZE The size of the array.
+        //! @param [in] arr The array of characters. Nul-terminated string.
+        //! @return A reference to this object.
+        //!
+        template <typename CHARTYPE, std::size_t SIZE>
+        UString& assign(const std::array<CHARTYPE, SIZE>& arr);
+
+        //!
         //! Get the display width in characters.
         //! Any combining diacritical character is not counted in the width since it is combined with the preceding
         //! character. Similarly, any surrogate pair is considered as one single character. As a general rule,
@@ -492,6 +584,18 @@ namespace ts {
         //! @return A copy of the string, truncated to the given display width.
         //!
         UString toTruncatedWidth(size_type maxWidth, StringDirection direction = LEFT_TO_RIGHT) const;
+
+        //!
+        //! Get the address of the underlying null-terminated Unicode string (Windows-specific).
+        //! @return The address of the underlying null-terminated Unicode string .
+        //!
+#if defined(TS_WINDOWS) || defined(DOXYGEN)
+        const ::WCHAR* wc_str() const
+        {
+            assert(sizeof(::WCHAR) == sizeof(UChar));
+            return reinterpret_cast<const ::WCHAR*>(data());
+        }
+#endif
 
         //!
         //! Get the address after the last character in the string.

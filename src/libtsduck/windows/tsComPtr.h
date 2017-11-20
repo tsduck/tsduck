@@ -100,7 +100,7 @@ namespace ts {
         //! ComPtr<::ICreateDevEnum> enum_devices(::CLSID_SystemDeviceEnum, ::IID_ICreateDevEnum, report);
         //! @endcode
         //!
-        ComPtr(const ::IID& class_id, const ::IID& interface_id, ReportInterface& report = CERR);
+        ComPtr(const ::IID& class_id, const ::IID& interface_id, Report& report = CERR);
 
         //!
         //! Constructor using IUnknown::QueryInterface().
@@ -112,7 +112,7 @@ namespace ts {
         //! @param [in] report Where to report errors.
         //! @return A reference to this object.
         //!
-        ComPtr(::IUnknown* obj, const IID& interface_id, ReportInterface& report = CERR);
+        ComPtr(::IUnknown* obj, const IID& interface_id, Report& report = CERR);
 
         //!
         //! Destructor.
@@ -204,7 +204,7 @@ namespace ts {
         //! @param [in] report Where to report errors.
         //! @return A reference to this object.
         //!
-        ComPtr<COMCLASS>& createInstance(const ::IID& class_id, const ::IID& interface_id, ReportInterface& report = CERR);
+        ComPtr<COMCLASS>& createInstance(const ::IID& class_id, const ::IID& interface_id, Report& report = CERR);
 
         //!
         //! Assign using IUnknown::QueryInterface
@@ -216,7 +216,7 @@ namespace ts {
         //! @param [in] report Where to report errors.
         //! @return A reference to this object.
         //!
-        ComPtr<COMCLASS>& queryInterface(::IUnknown* obj, const IID& interface_id, ReportInterface& report = CERR);
+        ComPtr<COMCLASS>& queryInterface(::IUnknown* obj, const IID& interface_id, Report& report = CERR);
 
         //!
         //! Assign using IMoniker::BindToObject
@@ -228,7 +228,7 @@ namespace ts {
         //! @param [in] report Where to report errors.
         //! @return A reference to this object.
         //!
-        ComPtr<COMCLASS>& bindToObject(::IMoniker* moniker, const IID& interface_id, ReportInterface& report = CERR);
+        ComPtr<COMCLASS>& bindToObject(::IMoniker* moniker, const IID& interface_id, Report& report = CERR);
 
         //!
         //! Check if the object exposes an interface.

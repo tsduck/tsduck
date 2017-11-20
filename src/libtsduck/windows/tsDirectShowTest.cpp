@@ -50,7 +50,7 @@ const ts::Enumeration ts::DirectShowTest::TestNames
 // Constructor.
 //-----------------------------------------------------------------------------
 
-ts::DirectShowTest::DirectShowTest(std::ostream& output, ReportInterface& report) :
+ts::DirectShowTest::DirectShowTest(std::ostream& output, Report& report) :
     _output(output),
     _report(report)
 {

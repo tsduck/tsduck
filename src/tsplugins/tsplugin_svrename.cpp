@@ -115,59 +115,59 @@ ts::SVRenamePlugin::SVRenamePlugin (TSP* tsp_) :
     _pzer_sdt_bat(PID_SDT, CyclingPacketizer::ALWAYS),
     _pzer_nit(PID_NIT, CyclingPacketizer::ALWAYS)
 {
-    option ("",                0,  STRING, 1, 1);
-    option ("free-ca-mode",   'f', INTEGER, 0, 1, 0, 1);
-    option ("id",             'i', UINT16);
-    option ("ignore-bat",      0);
-    option ("ignore-nit",      0);
-    option ("lcn",            'l', UINT16);
-    option ("name",           'n', STRING);
-    option ("running-status", 'r', INTEGER, 0, 1, 0, 7);
-    option ("type",           't', UINT8);
+    option(u"",                0,  STRING, 1, 1);
+    option(u"free-ca-mode",   'f', INTEGER, 0, 1, 0, 1);
+    option(u"id",             'i', UINT16);
+    option(u"ignore-bat",      0);
+    option(u"ignore-nit",      0);
+    option(u"lcn",            'l', UINT16);
+    option(u"name",           'n', STRING);
+    option(u"running-status", 'r', INTEGER, 0, 1, 0, 7);
+    option(u"type",           't', UINT8);
 
-    setHelp ("Service:\n"
-             "  Specifies the service to rename. If the argument is an integer value\n"
-             "  (either decimal or hexadecimal), it is interpreted as a service id.\n"
-             "  Otherwise, it is interpreted as a service name, as specified in the SDT.\n"
-             "  The name is not case sensitive and blanks are ignored.\n"
-             "\n"
-             "Options:\n"
-             "\n"
-             "  -f value\n"
-             "  --free-ca-mode value\n"
-             "      Specify a new free_CA_mode to set in the SDT (0 or 1).\n"
-             "\n"
-             "  --help\n"
-             "      Display this help text.\n"
-             "\n"
-             "  -i value\n"
-             "  --id value\n"
-             "      Specify a new service id value.\n"
-             "\n"
-             "  --ignore-bat\n"
-             "      Do not modify the BAT.\n"
-             "\n"
-             "  --ignore-nit\n"
-             "      Do not modify the NIT.\n"
-             "\n"
-             "  -l value\n"
-             "  --lcn value\n"
-             "      Specify a new logical channel number (LCN).\n"
-             "\n"
-             "  -n value\n"
-             "  --name value\n"
-             "      Specify a new service name.\n"
-             "\n"
-             "  -r value\n"
-             "  --running-status value\n"
-             "      Specify a new running_status to set in the SDT (0 to 7).\n"
-             "\n"
-             "  -t value\n"
-             "  --type value\n"
-             "      Specify a new service type.\n"
-             "\n"
-             "  --version\n"
-             "      Display the version number.\n");
+    setHelp(u"Service:\n"
+             u"  Specifies the service to rename. If the argument is an integer value\n"
+             u"  (either decimal or hexadecimal), it is interpreted as a service id.\n"
+             u"  Otherwise, it is interpreted as a service name, as specified in the SDT.\n"
+             u"  The name is not case sensitive and blanks are ignored.\n"
+             u"\n"
+             u"Options:\n"
+             u"\n"
+             u"  -f value\n"
+             u"  --free-ca-mode value\n"
+             u"      Specify a new free_CA_mode to set in the SDT (0 or 1).\n"
+             u"\n"
+             u"  --help\n"
+             u"      Display this help text.\n"
+             u"\n"
+             u"  -i value\n"
+             u"  --id value\n"
+             u"      Specify a new service id value.\n"
+             u"\n"
+             u"  --ignore-bat\n"
+             u"      Do not modify the BAT.\n"
+             u"\n"
+             u"  --ignore-nit\n"
+             u"      Do not modify the NIT.\n"
+             u"\n"
+             u"  -l value\n"
+             u"  --lcn value\n"
+             u"      Specify a new logical channel number (LCN).\n"
+             u"\n"
+             u"  -n value\n"
+             u"  --name value\n"
+             u"      Specify a new service name.\n"
+             u"\n"
+             u"  -r value\n"
+             u"  --running-status value\n"
+             u"      Specify a new running_status to set in the SDT (0 to 7).\n"
+             u"\n"
+             u"  -t value\n"
+             u"  --type value\n"
+             u"      Specify a new service type.\n"
+             u"\n"
+             u"  --version\n"
+             u"      Display the version number.\n");
 }
 
 
@@ -178,26 +178,26 @@ ts::SVRenamePlugin::SVRenamePlugin (TSP* tsp_) :
 bool ts::SVRenamePlugin::start()
 {
     // Get option values
-    _old_service.set (value (""));
-    _ignore_bat = present ("ignore-bat");
-    _ignore_nit = present ("ignore-nit");
+    _old_service.set (value(u""));
+    _ignore_bat = present(u"ignore-bat");
+    _ignore_nit = present(u"ignore-nit");
     _new_service.clear();
-    if (present ("name")) {
-        _new_service.setName (value ("name"));
+    if (present(u"name")) {
+        _new_service.setName (value(u"name"));
     }
-    if (present ("id")) {
+    if (present(u"id")) {
         _new_service.setId (intValue<uint16_t> ("id"));
     }
-    if (present ("lcn")) {
+    if (present(u"lcn")) {
         _new_service.setLCN (intValue<uint16_t> ("lcn"));
     }
-    if (present ("type")) {
+    if (present(u"type")) {
         _new_service.setType (intValue<uint8_t> ("type"));
     }
-    if (present ("free-ca-mode")) {
+    if (present(u"free-ca-mode")) {
         _new_service.setCAControlled (intValue<int> ("free-ca-mode") != 0);
     }
-    if (present ("running-status")) {
+    if (present(u"running-status")) {
         _new_service.setRunningStatus (intValue<uint8_t> ("running-status"));
     }
 

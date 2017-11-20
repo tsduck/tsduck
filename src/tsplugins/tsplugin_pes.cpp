@@ -126,110 +126,110 @@ ts::PESPlugin::PESPlugin (TSP* tsp_) :
     _max_payload(0),
     _demux(this)
 {
-    option ("audio-attributes",    'a');
-    option ("avc-access-unit",      0);
-    option ("binary",              'b');
-    option ("header",              'h');
-    option ("max-dump-count",      'x', UNSIGNED);
-    option ("max-dump-size",       'm', UNSIGNED);
-    option ("max-payload-size",     0,  UNSIGNED);
-    option ("min-payload-size",     0,  UNSIGNED);
-    option ("nal-unit-type",        0,  INTEGER, 0, UNLIMITED_COUNT, 0, 31);
-    option ("negate-nal-unit-type", 0);
-    option ("negate-pid",          'n');
-    option ("nibble",               0);
-    option ("output-file",         'o', STRING);
-    option ("packet-index",         0);
-    option ("payload",              0);
-    option ("pid",                 'p', PIDVAL, 0, UNLIMITED_COUNT);
-    option ("start-code",          's');
-    option ("trace-packets",       't');
-    option ("video-attributes",    'v');
+    option(u"audio-attributes",    'a');
+    option(u"avc-access-unit",      0);
+    option(u"binary",              'b');
+    option(u"header",              'h');
+    option(u"max-dump-count",      'x', UNSIGNED);
+    option(u"max-dump-size",       'm', UNSIGNED);
+    option(u"max-payload-size",     0,  UNSIGNED);
+    option(u"min-payload-size",     0,  UNSIGNED);
+    option(u"nal-unit-type",        0,  INTEGER, 0, UNLIMITED_COUNT, 0, 31);
+    option(u"negate-nal-unit-type", 0);
+    option(u"negate-pid",          'n');
+    option(u"nibble",               0);
+    option(u"output-file",         'o', STRING);
+    option(u"packet-index",         0);
+    option(u"payload",              0);
+    option(u"pid",                 'p', PIDVAL, 0, UNLIMITED_COUNT);
+    option(u"start-code",          's');
+    option(u"trace-packets",       't');
+    option(u"video-attributes",    'v');
 
-    setHelp ("Options:\n"
-             "\n"
-             "  -a\n"
-             "  --audio-attributes\n"
-             "      Display audio attributes.\n"
-             "\n"
-             "  --avc-access-unit\n"
-             "      Dump all AVC (ISO 14496-10, ITU H.264) access units (aka \"NALunits\").\n"
-             "\n"
-             "  -b\n"
-             "  --binary\n"
-             "      Include binary dump in addition to hexadecimal.\n"
-             "\n"
-             "  -h\n"
-             "  --header\n"
-             "      Dump PES packet header.\n"
-             "\n"
-             "  --help\n"
-             "      Display this help text.\n"
-             "\n"
-             "  -x value\n"
-             "  --max-dump-count value\n"
-             "      Specify the maximum number of times data dump occurs with options\n"
-             "      --trace-packets, --header, --payload, --start-code, --avc-access-unit.\n"
-             "      Default: unlimited.\n"
-             "\n"
-             "  -m value\n"
-             "  --max-dump-size value\n"
-             "      Specify the maximum dump size for options --header, --payload,\n"
-             "      --start-code, --avc-access-unit.\n"
-             "\n"
-             "  --max-payload-size value\n"
-             "      Display PES packets with no payload or with a payload the size (in bytes)\n"
-             "      of which is not greater than the specified value.\n"
-             "\n"
-             "  --min-payload-size value\n"
-             "      Display PES packets with a payload the size (in bytes) of which is equal\n"
-             "      to or greater than the specified value.\n"
-             "\n"
-             "  --nal-unit-type value\n"
-             "      AVC NALunit filter: with --avc-access-unit, select access units with\n"
-             "      this type (default: all access units). Several --nal-unit-type options\n"
-             "      may be specified.\n"
-             "\n"
-             "  --negate-nal-unit-type\n"
-             "      Negate the AVC NALunit filter: specified access units are excluded.\n"
-             "\n"
-             "  -n\n"
-             "  --negate-pid\n"
-             "      Negate the PID filter: specified PID's are excluded.\n"
-             "\n"
-             "  --nibble\n"
-             "      Same as --binary but add separator between 4-bit nibbles.\n"
-             "\n"
-             "  -o filename\n"
-             "  --output-file filename\n"
-             "      Specify the output file for the report (default: standard output).\n"
-             "\n"
-             "  --packet-index\n"
-             "      Display the index of the first and last TS packet of each displayed\n"
-             "      PES packet.\n"
-             "\n"
-             "  -p value\n"
-             "  --pid value\n"
-             "      PID filter: select packets with this PID value (default: all PID's\n"
-             "      containing PES packets). Several -p or --pid options may be specified.\n"
-             "\n"
-             "  --payload\n"
-             "      Dump PES packet payload.\n"
-             "\n"
-             "  -s\n"
-             "  --start-code\n"
-             "      Dump all start codes in PES packet payload.\n"
-             "\n"
-             "  -t\n"
-             "  --trace-packets\n"
-             "      Trace all PES packets.\n"
-             "\n"
-             "  --version\n"
-             "      Display the version number.\n"
-             "\n"
-             "  -v\n"
-             "  --video-attributes\n"
-             "      Display video attributes.\n");
+    setHelp(u"Options:\n"
+             u"\n"
+             u"  -a\n"
+             u"  --audio-attributes\n"
+             u"      Display audio attributes.\n"
+             u"\n"
+             u"  --avc-access-unit\n"
+             u"      Dump all AVC (ISO 14496-10, ITU H.264) access units (aka \"NALunits\").\n"
+             u"\n"
+             u"  -b\n"
+             u"  --binary\n"
+             u"      Include binary dump in addition to hexadecimal.\n"
+             u"\n"
+             u"  -h\n"
+             u"  --header\n"
+             u"      Dump PES packet header.\n"
+             u"\n"
+             u"  --help\n"
+             u"      Display this help text.\n"
+             u"\n"
+             u"  -x value\n"
+             u"  --max-dump-count value\n"
+             u"      Specify the maximum number of times data dump occurs with options\n"
+             u"      --trace-packets, --header, --payload, --start-code, --avc-access-unit.\n"
+             u"      Default: unlimited.\n"
+             u"\n"
+             u"  -m value\n"
+             u"  --max-dump-size value\n"
+             u"      Specify the maximum dump size for options --header, --payload,\n"
+             u"      --start-code, --avc-access-unit.\n"
+             u"\n"
+             u"  --max-payload-size value\n"
+             u"      Display PES packets with no payload or with a payload the size (in bytes)\n"
+             u"      of which is not greater than the specified value.\n"
+             u"\n"
+             u"  --min-payload-size value\n"
+             u"      Display PES packets with a payload the size (in bytes) of which is equal\n"
+             u"      to or greater than the specified value.\n"
+             u"\n"
+             u"  --nal-unit-type value\n"
+             u"      AVC NALunit filter: with --avc-access-unit, select access units with\n"
+             u"      this type (default: all access units). Several --nal-unit-type options\n"
+             u"      may be specified.\n"
+             u"\n"
+             u"  --negate-nal-unit-type\n"
+             u"      Negate the AVC NALunit filter: specified access units are excluded.\n"
+             u"\n"
+             u"  -n\n"
+             u"  --negate-pid\n"
+             u"      Negate the PID filter: specified PID's are excluded.\n"
+             u"\n"
+             u"  --nibble\n"
+             u"      Same as --binary but add separator between 4-bit nibbles.\n"
+             u"\n"
+             u"  -o filename\n"
+             u"  --output-file filename\n"
+             u"      Specify the output file for the report (default: standard output).\n"
+             u"\n"
+             u"  --packet-index\n"
+             u"      Display the index of the first and last TS packet of each displayed\n"
+             u"      PES packet.\n"
+             u"\n"
+             u"  -p value\n"
+             u"  --pid value\n"
+             u"      PID filter: select packets with this PID value (default: all PID's\n"
+             u"      containing PES packets). Several -p or --pid options may be specified.\n"
+             u"\n"
+             u"  --payload\n"
+             u"      Dump PES packet payload.\n"
+             u"\n"
+             u"  -s\n"
+             u"  --start-code\n"
+             u"      Dump all start codes in PES packet payload.\n"
+             u"\n"
+             u"  -t\n"
+             u"  --trace-packets\n"
+             u"      Trace all PES packets.\n"
+             u"\n"
+             u"  --version\n"
+             u"      Display the version number.\n"
+             u"\n"
+             u"  -v\n"
+             u"  --video-attributes\n"
+             u"      Display video attributes.\n");
 }
 
 
@@ -240,14 +240,14 @@ ts::PESPlugin::PESPlugin (TSP* tsp_) :
 bool ts::PESPlugin::start()
 {
     // Options
-    _dump_pes_header = present ("header");
-    _dump_pes_payload = present ("payload");
-    _trace_packets = present ("trace-packets") || _dump_pes_header || _dump_pes_payload;
-    _trace_packet_index = present ("packet-index");
-    _dump_start_code = present ("start-code");
-    _dump_nal_units = present ("avc-access-unit");
-    _video_attributes = present ("video-attributes");
-    _audio_attributes = present ("audio-attributes");
+    _dump_pes_header = present(u"header");
+    _dump_pes_payload = present(u"payload");
+    _trace_packets = present(u"trace-packets") || _dump_pes_header || _dump_pes_payload;
+    _trace_packet_index = present(u"packet-index");
+    _dump_start_code = present(u"start-code");
+    _dump_nal_units = present(u"avc-access-unit");
+    _video_attributes = present(u"video-attributes");
+    _audio_attributes = present(u"audio-attributes");
     _max_dump_size = intValue<size_t> ("max-dump-size", 0);
     _max_dump_count = intValue<size_t> ("max-dump-count", 0);
     _min_payload = intValue<int> ("min-payload-size", -1);
@@ -256,20 +256,20 @@ bool ts::PESPlugin::start()
     // Hexa dump flags and bytes-per-line
     _hexa_flags = hexa::HEXA | hexa::OFFSET | hexa::BPL;
     _hexa_bpl = 16;
-    if (present ("binary")) {
+    if (present(u"binary")) {
         _hexa_flags |= hexa::BINARY;
         _hexa_bpl = 8;
     }
-    if (present ("nibble")) {
+    if (present(u"nibble")) {
         _hexa_flags |= hexa::BIN_NIBBLE;
         _hexa_bpl = 8;
     }
 
     // PID values to filter
-    if (present ("pid")) {
+    if (present(u"pid")) {
         PIDSet pids;
         getPIDSet (pids, "pid");
-        if (present ("negate-pid")) {
+        if (present(u"negate-pid")) {
             pids.flip();
         }
         _demux.setPIDFilter (pids);
@@ -289,14 +289,14 @@ bool ts::PESPlugin::start()
         for (size_t n = 0; n < nal_count; n++) {
             _nal_unit_filter.set (intValue<size_t> ("nal-unit-type", 0, n));
         }
-        if (present ("negate-nal-unit-type")) {
+        if (present(u"negate-nal-unit-type")) {
             _nal_unit_filter.flip();
         }
     }
 
     // Create output file
-    if (present ("output-file")) {
-        const std::string name (value ("output-file"));
+    if (present(u"output-file")) {
+        const std::string name (value(u"output-file"));
         tsp->verbose ("creating " + name);
         _outfile.open (name.c_str(), std::ios::out);
         if (!_outfile) {

@@ -28,19 +28,19 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  A singleton implementing ReportInterface which drops all messages.
+//!  A singleton implementing Report which drops all messages.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsReportInterface.h"
+#include "tsReport.h"
 #include "tsSingletonManager.h"
 
 namespace ts {
     //!
-    //! A singleton implementing ReportInterface which drops all messages.
+    //! A singleton implementing Report which drops all messages.
     //!
-    class TSDUCKDLL NullReport : public ReportInterface
+    class TSDUCKDLL NullReport : public Report
     {
         TS_DECLARE_SINGLETON(NullReport);
 
@@ -52,7 +52,7 @@ namespace ts {
 
     protected:
         // String interface implementation
-        virtual void writeLog (int severity, const std::string& msg);
+        virtual void writeLog(int severity, const UString& msg) override;
     };
 }
 

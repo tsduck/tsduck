@@ -28,18 +28,18 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  A subclass of ts::ReportInterface which logs messages in an internal buffer.
+//!  A subclass of ts::Report which logs messages in an internal buffer.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsReportInterface.h"
+#include "tsReport.h"
 #include "tsNullMutex.h"
 
 namespace ts {
 
     //!
-    //! A subclass of ts::ReportInterface which logs all messages in an internal buffer.
+    //! A subclass of ts::Report which logs all messages in an internal buffer.
     //!
     //! Reentrancy is supported though the template parameter @a MUTEX.
     //!
@@ -50,7 +50,7 @@ namespace ts {
     //! typically ts::Mutex.
     //!
     template <class MUTEX = NullMutex>
-    class ReportBuffer: public ReportInterface
+    class ReportBuffer: public Report
     {
     public:
 
@@ -75,7 +75,7 @@ namespace ts {
         //! are separated by a newline character ('\n') but there is no
         //! newline after the last line.
         //!
-        std::string getMessages() const;
+        UString getMessages() const;
 
         //!
         //! Check if the content of the internal buffer is empty.
@@ -85,11 +85,11 @@ namespace ts {
         bool emptyMessages() const;
 
     protected:
-        virtual void writeLog(int severity, const std::string& message);
+        virtual void writeLog(int severity, const UString& message) override;
 
     private:
         mutable MUTEX _mutex;
-        std::string _buffer;
+        UString       _buffer;
     };
 }
 

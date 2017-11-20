@@ -28,7 +28,6 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsToInteger.h"
 
 
 //----------------------------------------------------------------------------
@@ -36,19 +35,19 @@
 //----------------------------------------------------------------------------
 
 template <typename INT>
-void ts::Args::getIntValue(INT& value, const char* name, const INT& def_value, size_t index) const
+void ts::Args::getIntValue(INT& value, const UChar* name, const INT& def_value, size_t index) const
 {
     const IOption& opt(getIOption(name));
     if (index >= opt.values.size() ||
         !opt.values[index].set() ||
-        !ToInteger(value, opt.values[index].value(), THOUSANDS_SEPARATORS))
+        !opt.values[index].value().toInteger(value, THOUSANDS_SEPARATORS))
     {
         value = def_value;
     }
 }
 
 template <typename INT>
-INT ts::Args::intValue(const char* name, const INT& def_value, size_t index) const
+INT ts::Args::intValue(const UChar* name, const INT& def_value, size_t index) const
 {
     INT value = def_value;
     getIntValue(value, name, def_value, index);
@@ -61,13 +60,13 @@ INT ts::Args::intValue(const char* name, const INT& def_value, size_t index) con
 //----------------------------------------------------------------------------
 
 template <typename ENUM>
-void ts::Args::getEnumValue(ENUM& value, const char* name, ENUM def_value, size_t index) const
+void ts::Args::getEnumValue(ENUM& value, const UChar* name, ENUM def_value, size_t index) const
 {
     const IOption& opt(getIOption(name));
     int iValue = 0;
     if (index >= opt.values.size() ||
         !opt.values[index].set() ||
-        !ToInteger(iValue, opt.values[index].value(), THOUSANDS_SEPARATORS))
+        !opt.values[index].value().toInteger(iValue, THOUSANDS_SEPARATORS))
     {
         value = def_value;
     }
@@ -77,7 +76,7 @@ void ts::Args::getEnumValue(ENUM& value, const char* name, ENUM def_value, size_
 }
 
 template <typename ENUM>
-ENUM ts::Args::enumValue(const char* name, ENUM def_value, size_t index) const
+ENUM ts::Args::enumValue(const UChar* name, ENUM def_value, size_t index) const
 {
     ENUM value = def_value;
     getEnumValue(value, name, def_value, index);
@@ -90,17 +89,17 @@ ENUM ts::Args::enumValue(const char* name, ENUM def_value, size_t index) const
 //----------------------------------------------------------------------------
 
 template <typename INT>
-void ts::Args::getIntValues(std::vector<INT>& values, const char* name) const
+void ts::Args::getIntValues(std::vector<INT>& values, const UChar* name) const
 {
     INT value;
-    const IOption& opt (getIOption(name));
+    const IOption& opt(getIOption(name));
 
     values.clear();
-    values.reserve (opt.values.size());
+    values.reserve(opt.values.size());
 
     for (ArgValueVector::const_iterator it = opt.values.begin(); it != opt.values.end(); ++it) {
-        if (it->set() && ToInteger<INT>(value, it->value(), THOUSANDS_SEPARATORS)) {
-            values.push_back (value);
+        if (it->set() && it->value().toInteger<INT>(value, THOUSANDS_SEPARATORS)) {
+            values.push_back(value);
         }
     }
 }
@@ -111,7 +110,7 @@ void ts::Args::getIntValues(std::vector<INT>& values, const char* name) const
 //----------------------------------------------------------------------------
 
 template <typename INT>
-void ts::Args::getIntValues(std::set<INT>& values, const char* name) const
+void ts::Args::getIntValues(std::set<INT>& values, const UChar* name) const
 {
     INT value;
     const IOption& opt(getIOption(name));
@@ -119,8 +118,8 @@ void ts::Args::getIntValues(std::set<INT>& values, const char* name) const
     values.clear();
 
     for (ArgValueVector::const_iterator it = opt.values.begin(); it != opt.values.end(); ++it) {
-        if (it->set() && ToInteger<INT>(value, it->value(), THOUSANDS_SEPARATORS)) {
-            values.insert (value);
+        if (it->set() && it->value().toInteger<INT>(value, THOUSANDS_SEPARATORS)) {
+            values.insert(value);
         }
     }
 }
@@ -131,7 +130,7 @@ void ts::Args::getIntValues(std::set<INT>& values, const char* name) const
 //----------------------------------------------------------------------------
 
 template <typename INT>
-void ts::Args::getBitMaskValue(INT& value, const char* name, const INT& def_value) const
+void ts::Args::getBitMaskValue(INT& value, const UChar* name, const INT& def_value) const
 {
     const IOption& opt(getIOption(name));
     if (opt.values.empty()) {
@@ -141,7 +140,7 @@ void ts::Args::getBitMaskValue(INT& value, const char* name, const INT& def_valu
         value = static_cast<INT>(0);
         for (ArgValueVector::const_iterator it = opt.values.begin(); it != opt.values.end(); ++it) {
             INT mask = static_cast<INT>(0);
-            if (!it->set() || !ToInteger(mask, it->value(), THOUSANDS_SEPARATORS)) {
+            if (!it->set() || !it->value().toInteger(mask, THOUSANDS_SEPARATORS)) {
                 value = def_value;
                 return;
             }
@@ -151,7 +150,7 @@ void ts::Args::getBitMaskValue(INT& value, const char* name, const INT& def_valu
 }
 
 template <typename INT>
-INT ts::Args::bitMaskValue(const char* name, const INT& def_value) const
+INT ts::Args::bitMaskValue(const UChar* name, const INT& def_value) const
 {
     INT value(def_value);
     getBitMaskValue(value, name, def_value);

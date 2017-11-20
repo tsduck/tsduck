@@ -109,63 +109,63 @@ ts::NITScanPlugin::NITScanPlugin(TSP* tsp_) :
     _nit_count(0),
     _demux(this)
 {
-    option("all-nits",    'a');
-    option("comment",     'c', STRING, 0, 1, 0, 0, true);
-    option("dvb-options", 'd');
-    option("output-file", 'o', STRING);
-    option("pid",         'p', PIDVAL);
-    option("terminate",   't');
-    option("variable",    'v', STRING, 0, 1, 0, 0, true);
+    option(u"all-nits",    'a');
+    option(u"comment",     'c', STRING, 0, 1, 0, 0, true);
+    option(u"dvb-options", 'd');
+    option(u"output-file", 'o', STRING);
+    option(u"pid",         'p', PIDVAL);
+    option(u"terminate",   't');
+    option(u"variable",    'v', STRING, 0, 1, 0, 0, true);
 
-    setHelp("Options:\n"
-            "\n"
-            "  -a\n"
-            "  --all-nits\n"
-            "      Analyze all NIT's (NIT actual and NIT other). By default, only the\n"
-            "      NIT actual is analyzed.\n"
-            "\n"
-            "  -c[prefix]\n"
-            "  --comment[=prefix]\n"
-            "      Add a comment line before each tuning information. The optional prefix\n"
-            "      designates the comment prefix. If the option --comment is present but the\n"
-            "      prefix is omitted, the default prefix is \"# \".\n"
-            "\n"
-            "  -d\n"
-            "  --dvb-options\n"
-            "      The characteristics of each transponder are formatted as a list of\n"
-            "      command-line options for the tsp plugin \"dvb\" such as --frequency,\n"
-            "      --symbol-rate, etc. By default, the tuning information are formatted\n"
-            "      as Linux DVB \"zap\" configuration files as used by the standard\n"
-            "      utilities \"szap\", \"czap\" and \"tzap\".\n"
-            "\n"
-            "  --help\n"
-            "      Display this help text.\n"
-            "\n"
-            "  -o filename\n"
-            "  --output-file filename\n"
-            "      Specify the output text file for the analysis result.\n"
-            "      By default, use the standard output.\n"
-            "\n"
-            "  -p value\n"
-            "  --pid value\n"
-            "      Specify the PID on which the NIT is expected. By default, the PAT\n"
-            "      is analyzed to get the PID of the NIT. DVB-compliant networks should\n"
-            "      use PID 16 (0x0010) for the NIT and signal it in the PAT.\n"
-            "\n"
-            "  -t\n"
-            "  --terminate\n"
-            "      Stop the packet transmission after the first NIT is analyzed.\n"
-            "      Should be specified when tsp is used only to scan the NIT.\n"
-            "\n"
-            "  -v[prefix]\n"
-            "  --variable[=prefix]\n"
-            "      Each tuning information line is output as a shell environment variable\n"
-            "      definition. The name of each variable is built from a prefix and the TS\n"
-            "      id. The default prefix is \"TS\" and can be changed through the optional\n"
-            "      value of the option --variable.\n"
-            "\n"
-            "  --version\n"
-            "      Display the version number.\n");
+    setHelp(u"Options:\n"
+            u"\n"
+            u"  -a\n"
+            u"  --all-nits\n"
+            u"      Analyze all NIT's (NIT actual and NIT other). By default, only the\n"
+            u"      NIT actual is analyzed.\n"
+            u"\n"
+            u"  -c[prefix]\n"
+            u"  --comment[=prefix]\n"
+            u"      Add a comment line before each tuning information. The optional prefix\n"
+            u"      designates the comment prefix. If the option --comment is present but the\n"
+            u"      prefix is omitted, the default prefix is \"# \".\n"
+            u"\n"
+            u"  -d\n"
+            u"  --dvb-options\n"
+            u"      The characteristics of each transponder are formatted as a list of\n"
+            u"      command-line options for the tsp plugin \"dvb\" such as --frequency,\n"
+            u"      --symbol-rate, etc. By default, the tuning information are formatted\n"
+            u"      as Linux DVB \"zap\" configuration files as used by the standard\n"
+            u"      utilities \"szap\", \"czap\" and \"tzap\".\n"
+            u"\n"
+            u"  --help\n"
+            u"      Display this help text.\n"
+            u"\n"
+            u"  -o filename\n"
+            u"  --output-file filename\n"
+            u"      Specify the output text file for the analysis result.\n"
+            u"      By default, use the standard output.\n"
+            u"\n"
+            u"  -p value\n"
+            u"  --pid value\n"
+            u"      Specify the PID on which the NIT is expected. By default, the PAT\n"
+            u"      is analyzed to get the PID of the NIT. DVB-compliant networks should\n"
+            u"      use PID 16 (0x0010) for the NIT and signal it in the PAT.\n"
+            u"\n"
+            u"  -t\n"
+            u"  --terminate\n"
+            u"      Stop the packet transmission after the first NIT is analyzed.\n"
+            u"      Should be specified when tsp is used only to scan the NIT.\n"
+            u"\n"
+            u"  -v[prefix]\n"
+            u"  --variable[=prefix]\n"
+            u"      Each tuning information line is output as a shell environment variable\n"
+            u"      definition. The name of each variable is built from a prefix and the TS\n"
+            u"      id. The default prefix is \"TS\" and can be changed through the optional\n"
+            u"      value of the option --variable.\n"
+            u"\n"
+            u"  --version\n"
+            u"      Display the version number.\n");
 }
 
 
@@ -176,15 +176,15 @@ ts::NITScanPlugin::NITScanPlugin(TSP* tsp_) :
 bool ts::NITScanPlugin::start()
 {
     // Get option values
-    _output_name = value("output-file");
-    _all_nits = present("all-nits");
-    _terminate = present("terminate");
-    _dvb_options = present("dvb-options");
+    _output_name = value(u"output-file");
+    _all_nits = present(u"all-nits");
+    _terminate = present(u"terminate");
+    _dvb_options = present(u"dvb-options");
     _nit_pid = intValue<PID>("pid", PID_NULL);
-    _use_comment = present("comment");
-    _comment_prefix = value("comment", "# ");
-    _use_variable = present("variable");
-    _variable_prefix = value("variable", "TS");
+    _use_comment = present(u"comment");
+    _comment_prefix = value(u"comment", "# ");
+    _use_variable = present(u"variable");
+    _variable_prefix = value(u"variable", "TS");
 
     // Initialize the demux. When the NIT PID is specified, filter this one,
     // otherwise the PAT is filtered to get the NIT PID.

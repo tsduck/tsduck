@@ -71,7 +71,7 @@ namespace ts {
         //! @param [in] msb If true, the @e tag and @e length fields are represented in MSB-first.
         //! @param [in,out] report Where to report errors.
         //!
-        TLVSyntax(int start = -1, int size = -1, size_t tagSize = 1, size_t lengthSize = 1, bool msb = true, ReportInterface& report = CERR);
+        TLVSyntax(int start = -1, int size = -1, size_t tagSize = 1, size_t lengthSize = 1, bool msb = true, Report& report = CERR);
 
         //!
         //! Set the values of a TLVSyntax object.
@@ -83,7 +83,7 @@ namespace ts {
         //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error (invalid sizes).
         //!
-        bool set(int start = -1, int size = -1, size_t tagSize = 1, size_t lengthSize = 1, bool msb = true, ReportInterface& report = CERR);
+        bool set(int start = -1, int size = -1, size_t tagSize = 1, size_t lengthSize = 1, bool msb = true, Report& report = CERR);
 
         //!
         //! Update the TLV syntax to automatically locate the TLV area.
@@ -121,7 +121,7 @@ namespace ts {
         //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool fromString(const std::string& s, ReportInterface& report = CERR);
+        bool fromString(const std::string& s, Report& report = CERR);
 
         //!
         //! Extract a tag and length value from a data area.

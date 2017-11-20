@@ -48,15 +48,15 @@ const ts::PIDSet ts::AllPIDs (~NoPID);
 // Enumeration description of PDS values.
 //----------------------------------------------------------------------------
 
-const ts::Enumeration ts::PrivateDataSpecifierEnum
-    ("Nagra",     ts::PDS_NAGRA,
-     "TPS",       ts::PDS_TPS,
-     "EACEM",     ts::PDS_EACEM,
-     "EICTA",     ts::PDS_EICTA,
-     "Logiways",  ts::PDS_LOGIWAYS,
-     "CanalPlus", ts::PDS_CANALPLUS,
-     "Eutelsat",  ts::PDS_EUTELSAT,
-     TS_NULL);
+const ts::Enumeration ts::PrivateDataSpecifierEnum({
+    {u"Nagra",     ts::PDS_NAGRA},
+    {u"TPS",       ts::PDS_TPS},
+    {u"EACEM",     ts::PDS_EACEM},
+    {u"EICTA",     ts::PDS_EICTA},  // same value as EACEM
+    {u"Logiways",  ts::PDS_LOGIWAYS},
+    {u"CanalPlus", ts::PDS_CANALPLUS},
+    {u"Eutelsat",  ts::PDS_EUTELSAT},
+});
 
 
 //----------------------------------------------------------------------------

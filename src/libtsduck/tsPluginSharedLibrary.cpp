@@ -47,7 +47,7 @@ TSDUCK_SOURCE;
 // When the load is successful, locate tsp plugin API and check the API version.
 //----------------------------------------------------------------------------
 
-ts::PluginSharedLibrary::PluginSharedLibrary(const std::string& filename, ReportInterface& report) :
+ts::PluginSharedLibrary::PluginSharedLibrary(const UString& filename, Report& report) :
     ApplicationSharedLibrary(filename, "tsplugin_", TS_PLUGINS_PATH, true, report),
     new_input(0),
     new_output(0),
@@ -60,17 +60,17 @@ ts::PluginSharedLibrary::PluginSharedLibrary(const std::string& filename, Report
     }
 
     // Locate and check the API version
-    const std::string path(fileName());
+    const UString path(fileName());
     const int* version = reinterpret_cast<const int*>(getSymbol("tspInterfaceVersion"));
 
     if (version == 0) {
-        report.error("no symbol tspInterfaceVersion in " + path);
+        report.error(u"no symbol tspInterfaceVersion in " + path);
         unload();
         return;
     }
 
     if (*version != TSP::API_VERSION) {
-        report.error("incompatible API version %d in %s, expected %d", *version, path.c_str(), TSP::API_VERSION);
+        report.error(u"incompatible API version %d in %s, expected %d", {*version, path, TSP::API_VERSION});
         unload();
         return;
     }

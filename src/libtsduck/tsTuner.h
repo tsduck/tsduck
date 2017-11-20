@@ -36,7 +36,7 @@
 #include "tsTSPacket.h"
 #include "tsModulation.h"
 #include "tsAbortInterface.h"
-#include "tsReportInterface.h"
+#include "tsReport.h"
 #include "tsTunerParameters.h"
 #include "tsTunerParametersDVBS.h"
 #include "tsTunerParametersDVBC.h"
@@ -91,7 +91,7 @@ namespace ts {
         //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        static bool GetAllTuners(TunerPtrVector& tuners, ReportInterface& report);
+        static bool GetAllTuners(TunerPtrVector& tuners, Report& report);
 
         //!
         //! Default constructor.
@@ -113,7 +113,7 @@ namespace ts {
         //! to open tuners which are already used to actually receive a stream.
         //! @param [in,out] report Where to report errors.
         //!
-        Tuner(const std::string& device_name, bool info_only, ReportInterface& report);
+        Tuner(const std::string& device_name, bool info_only, Report& report);
 
         //!
         //! Open the tuner.
@@ -125,14 +125,14 @@ namespace ts {
         //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool open(const std::string& device_name, bool info_only, ReportInterface& report);
+        bool open(const std::string& device_name, bool info_only, Report& report);
 
         //!
         //! Close the tuner.
         //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool close(ReportInterface& report);
+        bool close(Report& report);
 
         //!
         //! Check if the tuner is open.
@@ -204,7 +204,7 @@ namespace ts {
         //! @param [in,out] report Where to report errors.
         //! @return True if a signal is present and locked.
         //!
-        bool signalLocked(ReportInterface& report);
+        bool signalLocked(Report& report);
 
         //!
         //! Get the signal strength.
@@ -212,7 +212,7 @@ namespace ts {
         //! @return The signal strength in percent (0=bad, 100=good).
         //! Return a negative value on error.
         //!
-        int signalStrength(ReportInterface& report);
+        int signalStrength(Report& report);
 
         //!
         //! Get the signal quality.
@@ -220,7 +220,7 @@ namespace ts {
         //! @return The signal quality in percent (0=bad, 100=good).
         //! Return a negative value on error.
         //!
-        int signalQuality(ReportInterface& report);
+        int signalQuality(Report& report);
 
         //!
         //! Tune to the specified parameters.
@@ -228,21 +228,21 @@ namespace ts {
         //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool tune(const TunerParameters& params, ReportInterface& report);
+        bool tune(const TunerParameters& params, Report& report);
 
         //!
         //! Start receiving packets.
         //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool start(ReportInterface& report);
+        bool start(Report& report);
 
         //!
         //! Stop receiving packets.
         //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool stop(ReportInterface& report);
+        bool stop(Report& report);
 
         //!
         //! Receive packets.
@@ -255,7 +255,7 @@ namespace ts {
         //! @return The number of actually received packets (in the range 1 to @a max_packets).
         //! Returning zero means error or end of input.
         //!
-        size_t receive(TSPacket* buffer, size_t max_packets, const AbortInterface* abort, ReportInterface& report);
+        size_t receive(TSPacket* buffer, size_t max_packets, const AbortInterface* abort, Report& report);
 
         //!
         //! Get the current tuning parameters.
@@ -267,7 +267,7 @@ namespace ts {
         //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool getCurrentTuning(TunerParameters& params, bool reset_unknown, ReportInterface& report);
+        bool getCurrentTuning(TunerParameters& params, bool reset_unknown, Report& report);
 
         //!
         //! Default timeout before getting a signal on start.
@@ -304,7 +304,7 @@ namespace ts {
         //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool setReceiveTimeout(MilliSecond t, ReportInterface& report);
+        bool setReceiveTimeout(MilliSecond t, Report& report);
 
         //!
         //! Get the timeout for receive operation.
@@ -354,7 +354,7 @@ namespace ts {
         //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool tune(DTVProperties& props, ReportInterface& report);
+        bool tune(DTVProperties& props, Report& report);
 #endif
 
 #if defined(TS_WINDOWS) || defined(DOXYGEN) // Windows-specific operations
@@ -384,7 +384,7 @@ namespace ts {
         //! @param [in,out] report Where to report errors.
         //! @return A reference to @a strm.
         //!
-        std::ostream& displayStatus(std::ostream& strm, const std::string& margin, ReportInterface& report);
+        std::ostream& displayStatus(std::ostream& strm, const std::string& margin, Report& report);
 
     private:
 
@@ -421,16 +421,16 @@ namespace ts {
         ErrorCode getCurrentTuningATSC(TunerParametersATSC&);
 
         // Clear tuner, return true on success, false on error
-        bool dtvClear(ReportInterface&);
+        bool dtvClear(Report&);
 
         // Discard all pending frontend events
-        void discardFrontendEvents(ReportInterface&);
+        void discardFrontendEvents(Report&);
 
         // Tune for specific tuners, return true on success, false on error
-        bool tuneDVBS(const TunerParametersDVBS&, ReportInterface&);
-        bool tuneDVBC(const TunerParametersDVBC&, ReportInterface&);
-        bool tuneDVBT(const TunerParametersDVBT&, ReportInterface&);
-        bool tuneATSC(const TunerParametersATSC&, ReportInterface&);
+        bool tuneDVBS(const TunerParametersDVBS&, Report&);
+        bool tuneDVBC(const TunerParametersDVBC&, Report&);
+        bool tuneDVBT(const TunerParametersDVBT&, Report&);
+        bool tuneATSC(const TunerParametersATSC&, Report&);
 
         // Convert between TSDuck and Linux delivery systems.
         DeliverySystem fromLinuxDeliverySystem(::fe_delivery_system);
@@ -468,17 +468,17 @@ namespace ts {
 
         // Try to build the graph.
         // Return true on success, false on error
-        bool buildGraph(::IMoniker* tuner_moniker, ReportInterface&);
+        bool buildGraph(::IMoniker* tuner_moniker, Report&);
 
         // Try to build the part of the graph starting at the tee filter.
         // The specified base filter is either the tuner filter or some
         // other intermediate receiver filter downstream the tuner.
         // Return true on success, false on error.
-        bool buildCaptureGraph(const ComPtr <::IBaseFilter>&, ReportInterface&);
+        bool buildCaptureGraph(const ComPtr <::IBaseFilter>&, Report&);
 
         // Internal tune method, works also if the tuner is not in open state.
         // Return true on success, false on errors
-        bool internalTune(const TunerParameters&, ReportInterface&);
+        bool internalTune(const TunerParameters&, Report&);
 
         // Get signal strength in mdB.
         // Return true if found, false if not found.
@@ -503,7 +503,7 @@ namespace ts {
         // If _device_name is ":integer", use integer as device index in list of DVB devices.
         // If TunerPtrVector* is non- zero, find all tuners in the system.
         // Return true on success, false on error.
-        static bool FindTuners(Tuner*, TunerPtrVector*, ReportInterface&);
+        static bool FindTuners(Tuner*, TunerPtrVector*, Report&);
 
 #endif // windows
 

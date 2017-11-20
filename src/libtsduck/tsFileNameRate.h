@@ -44,7 +44,7 @@ namespace ts {
     //!
     struct TSDUCKDLL FileNameRate
     {
-        std::string file_name;    //!< File name.
+        UString     file_name;    //!< File name.
         ts::Time    file_date;    //!< Last modification date of file.
         MilliSecond repetition;   //!< Repetition rate in milliseconds.
         size_t      retry_count;  //!< Number of allowed retry in case of error when using the file.
@@ -54,7 +54,7 @@ namespace ts {
         //! @param [in] name File name.
         //! @param [in] rep  Repetition rate in milliseconds.
         //!
-        explicit FileNameRate(const std::string& name = std::string(), MilliSecond rep = 0);
+        explicit FileNameRate(const UString& name = UString(), MilliSecond rep = 0);
 
         //!
         //! Comparison operator.
@@ -89,7 +89,7 @@ namespace ts {
         //! @return True if the file has changed or is scanned for the first time
         //! or has been deleted.
         //!
-        bool scanFile(size_t retry = 1, ReportInterface& report = NULLREP);
+        bool scanFile(size_t retry = 1, Report& report = NULLREP);
     };
 
     //!
@@ -131,7 +131,7 @@ namespace ts {
         //! @param [in] default_rate Default repetition rate for files without repetition rate.
         //! @return True on success. On error, set error state in @a args and return false.
         //!
-        bool getArgs(Args& args, const char* option_name = 0, MilliSecond default_rate = 0);
+        bool getArgs(Args& args, const UChar* option_name = 0, MilliSecond default_rate = 0);
 
         //!
         //! Scan the files for update.
@@ -140,6 +140,6 @@ namespace ts {
         //! @param [in] report Where to report a verbose message when a file changed.
         //! @return Number of files which changed.
         //!
-        size_t scanFiles(size_t retry = 1, ReportInterface& report = NULLREP);
+        size_t scanFiles(size_t retry = 1, Report& report = NULLREP);
     };
 }

@@ -40,7 +40,7 @@
     #define TS_NO_DTAPI
 #elif defined(TS_NO_DTAPI)
     // An error message to display.
-    #define TS_NO_DTAPI_MESSAGE "This version of TSDuck was compiled without Dektec support"
+    #define TS_NO_DTAPI_MESSAGE u"This version of TSDuck was compiled without Dektec support"
     #define DTAPI_VERSION_MAJOR 0
     #define DTAPI_VERSION_MINOR 0
 #else

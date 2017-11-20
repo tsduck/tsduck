@@ -125,7 +125,7 @@ namespace ts {
         //! set to @link AnyAddress @endlink and port to @link AnyPort @endlink.
         //! @param [in] report Where to report errors.
         //!
-        SocketAddress(const std::string& name, ReportInterface& report = CERR) :
+        SocketAddress(const std::string& name, Report& report = CERR) :
             IPAddress(),
             _port(0)
         {
@@ -250,7 +250,7 @@ namespace ts {
         //! In the later case, the integer value of the address is
         //! set to @link AnyAddress @endlink and port to @link AnyPort @endlink.
         //!
-        bool resolve(const std::string& name, ReportInterface& report = CERR);
+        bool resolve(const std::string& name, Report& report = CERR);
 
         //!
         //! Convert to a string object in numeric format "a.b.c.d[:port]".

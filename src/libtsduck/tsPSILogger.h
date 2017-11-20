@@ -52,7 +52,7 @@ namespace ts {
         //! @param [in,out] display Object to display tables and sections.
         //! @param [in,out] report Where to log errors.
         //!
-        PSILogger(PSILoggerArgs& options, TablesDisplay& display, ReportInterface& report);
+        PSILogger(PSILoggerArgs& options, TablesDisplay& display, Report& report);
 
         //!
         //! Destructor.
@@ -91,7 +91,7 @@ namespace ts {
     private:
         const PSILoggerArgs& _opt;
         TablesDisplay&   _display;
-        ReportInterface& _report;
+        Report& _report;
         bool             _abort;
         bool             _pat_ok;        // Got a PAT
         bool             _cat_ok;        // Got a CAT or not interested in CAT

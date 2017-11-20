@@ -89,20 +89,20 @@ ts::RMOrphanPlugin::RMOrphanPlugin (TSP* tsp_) :
     _pass_pids(),
     _demux(this)
 {
-    option ("stuffing", 's');
+    option(u"stuffing", 's');
 
-    setHelp ("Options:\n"
-             "\n"
-             "  --help\n"
-             "      Display this help text.\n"
-             "\n"
-             "  -s\n"
-             "  --stuffing\n"
-             "      Replace excluded packets with stuffing (null packets) instead\n"
-             "      of removing them. Useful to preserve bitrate.\n"
-             "\n"
-             "  --version\n"
-             "      Display the version number.\n");
+    setHelp(u"Options:\n"
+             u"\n"
+             u"  --help\n"
+             u"      Display this help text.\n"
+             u"\n"
+             u"  -s\n"
+             u"  --stuffing\n"
+             u"      Replace excluded packets with stuffing (null packets) instead\n"
+             u"      of removing them. Useful to preserve bitrate.\n"
+             u"\n"
+             u"  --version\n"
+             u"      Display the version number.\n");
 }
 
 
@@ -113,7 +113,7 @@ ts::RMOrphanPlugin::RMOrphanPlugin (TSP* tsp_) :
 bool ts::RMOrphanPlugin::start()
 {
     // Get command line arguments
-    _drop_status = present ("stuffing") ? TSP_NULL : TSP_DROP;
+    _drop_status = present(u"stuffing") ? TSP_NULL : TSP_DROP;
 
     // List of referenced PID's, ie. PID's which must be passed.
     // Initially contains all predefined PID's

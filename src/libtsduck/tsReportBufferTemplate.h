@@ -37,7 +37,7 @@
 
 template <class MUTEX>
 ts::ReportBuffer<MUTEX>::ReportBuffer(bool verbose, int debug_level) :
-    ReportInterface(verbose, debug_level),
+    Report(verbose, debug_level),
     _mutex(),
     _buffer()
 {
@@ -73,7 +73,7 @@ bool ts::ReportBuffer<MUTEX>::emptyMessages() const
 //----------------------------------------------------------------------------
 
 template <class MUTEX>
-std::string ts::ReportBuffer<MUTEX>::getMessages() const
+ts::UString ts::ReportBuffer<MUTEX>::getMessages() const
 {
     Guard lock(_mutex);
     return _buffer;
@@ -85,12 +85,12 @@ std::string ts::ReportBuffer<MUTEX>::getMessages() const
 //----------------------------------------------------------------------------
 
 template <class MUTEX>
-void ts::ReportBuffer<MUTEX>::writeLog(int severity, const std::string& message)
+void ts::ReportBuffer<MUTEX>::writeLog(int severity, const UString& message)
 {
     Guard lock(_mutex);
     if (!_buffer.empty()) {
-        _buffer += '\n';
+        _buffer.append(u'\n');
     }
-    _buffer += Severity::Header(severity);
-    _buffer += message;
+    _buffer.append(Severity::Header(severity));
+    _buffer.append(message);
 }

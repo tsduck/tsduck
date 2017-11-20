@@ -33,7 +33,6 @@
 
 #include "tsCASSelectionArgs.h"
 #include "tsPIDOperator.h"
-#include "tsFormat.h"
 TSDUCK_SOURCE;
 
 
@@ -58,42 +57,42 @@ ts::CASSelectionArgs::CASSelectionArgs() :
 
 void ts::CASSelectionArgs::addHelp(Args& args) const
 {
-    std::string help =
-        "\n"
-        "CAS selection options:\n"
-        "\n"
-        "  --cas value\n"
-        "      With options --ecm or --emm, select only ECM or EMM for the specified\n"
-        "      CA system id value. Equivalent to --min-cas value --max-cas value.\n"
-        "\n"
-        "  --ecm\n"
-        "      Extract PID's containing ECM.\n"
-        "\n"
-        "  --emm\n"
-        "      Extract PID's containing EMM.\n"
-        "\n"
-        "  --max-cas value\n"
-        "      With options --ecm or --emm, select only ECM or EMM for the CA system id\n"
-        "      values in the range --min-cas to --max-cas.\n"
-        "\n"
-        "  --mediaguard\n"
-        "      Equivalent to " + Format("--min-cas 0x%04X --max-cas 0x%04X", int(CASID_MEDIAGUARD_MIN), int(CASID_MEDIAGUARD_MAX)) + ".\n"
-        "\n"
-        "  --min-cas value\n"
-        "      With options --ecm or --emm, select only ECM or EMM for the CA system id\n"
-        "      values in the range --min-cas to --max-cas.\n"
-        "\n"
-        "  --nagravision\n"
-        "      Equivalent to " + Format("--min-cas 0x%04X --max-cas 0x%04X", int(CASID_NAGRA_MIN), int(CASID_NAGRA_MAX)) + ".\n"
-        "\n"
-        "  --operator value\n"
-        "      Restrict to the specified CAS operator (depends on the CAS).\n"
-        "\n"
-        "  --safeaccess\n"
-        "      Equivalent to " + Format("--cas 0x%04X", int(CASID_SAFEACCESS)) + ".\n"
-        "\n"
-        "  --viaccess\n"
-        "      Equivalent to " + Format("--min-cas 0x%04X --max-cas 0x%04X", int(CASID_VIACCESS_MIN), int(CASID_VIACCESS_MAX)) + ".\n";
+    const UString help =
+        u"\n"
+        u"CAS selection options:\n"
+        u"\n"
+        u"  --cas value\n"
+        u"      With options --ecm or --emm, select only ECM or EMM for the specified\n"
+        u"      CA system id value. Equivalent to --min-cas value --max-cas value.\n"
+        u"\n"
+        u"  --ecm\n"
+        u"      Extract PID's containing ECM.\n"
+        u"\n"
+        u"  --emm\n"
+        u"      Extract PID's containing EMM.\n"
+        u"\n"
+        u"  --max-cas value\n"
+        u"      With options --ecm or --emm, select only ECM or EMM for the CA system id\n"
+        u"      values in the range --min-cas to --max-cas.\n"
+        u"\n"
+        u"  --mediaguard\n"
+        u"      Equivalent to " + UString::Format(u"--min-cas 0x%04X --max-cas 0x%04X", {CASID_MEDIAGUARD_MIN, CASID_MEDIAGUARD_MAX}) + ".\n"
+        u"\n"
+        u"  --min-cas value\n"
+        u"      With options --ecm or --emm, select only ECM or EMM for the CA system id\n"
+        u"      values in the range --min-cas to --max-cas.\n"
+        u"\n"
+        u"  --nagravision\n"
+        u"      Equivalent to " + UString::Format(u"--min-cas 0x%04X --max-cas 0x%04X", {CASID_NAGRA_MIN, CASID_NAGRA_MAX}) + ".\n"
+        u"\n"
+        u"  --operator value\n"
+        u"      Restrict to the specified CAS operator (depends on the CAS).\n"
+        u"\n"
+        u"  --safeaccess\n"
+        u"      Equivalent to " + UString::Format(u"--cas 0x%04X", {CASID_SAFEACCESS}) + ".\n"
+        u"\n"
+        u"  --viaccess\n"
+        u"      Equivalent to " + UString::Format(u"--min-cas 0x%04X --max-cas 0x%04X", {CASID_VIACCESS_MIN, CASID_VIACCESS_MAX}) + ".\n";
 
     args.setHelp(args.getHelp() + help);
 }
@@ -105,16 +104,16 @@ void ts::CASSelectionArgs::addHelp(Args& args) const
 
 void ts::CASSelectionArgs::defineOptions(Args& args) const
 {
-    args.option("cas",         0, Args::UINT16);
-    args.option("ecm",         0);
-    args.option("emm",         0);
-    args.option("max-cas",     0, Args::UINT16);
-    args.option("mediaguard",  0);
-    args.option("min-cas",     0, Args::UINT16);
-    args.option("nagravision", 0);
-    args.option("operator",    0, Args::UINT32);
-    args.option("safeaccess",  0);
-    args.option("viaccess",    0);
+    args.option(u"cas",         0, Args::UINT16);
+    args.option(u"ecm",         0);
+    args.option(u"emm",         0);
+    args.option(u"max-cas",     0, Args::UINT16);
+    args.option(u"mediaguard",  0);
+    args.option(u"min-cas",     0, Args::UINT16);
+    args.option(u"nagravision", 0);
+    args.option(u"operator",    0, Args::UINT32);
+    args.option(u"safeaccess",  0);
+    args.option(u"viaccess",    0);
 }
 
 
@@ -125,32 +124,32 @@ void ts::CASSelectionArgs::defineOptions(Args& args) const
 
 void ts::CASSelectionArgs::load(Args& args)
 {
-    pass_ecm = args.present("ecm");
-    pass_emm = args.present("emm");
-    if (args.present("safeaccess")) {
+    pass_ecm = args.present(u"ecm");
+    pass_emm = args.present(u"emm");
+    if (args.present(u"safeaccess")) {
         min_cas_id = max_cas_id = CASID_SAFEACCESS;
     }
-    else if (args.present("mediaguard")) {
+    else if (args.present(u"mediaguard")) {
         min_cas_id = CASID_MEDIAGUARD_MIN;
         max_cas_id = CASID_MEDIAGUARD_MAX;
     }
-    else if (args.present("viaccess")) {
+    else if (args.present(u"viaccess")) {
         min_cas_id = CASID_VIACCESS_MIN;
         max_cas_id = CASID_VIACCESS_MAX;
     }
-    else if (args.present("nagravision")) {
+    else if (args.present(u"nagravision")) {
         min_cas_id = CASID_NAGRA_MIN;
         max_cas_id = CASID_NAGRA_MAX;
     }
-    else if (args.present("cas")) {
-        min_cas_id = max_cas_id = args.intValue<uint16_t>("cas");
+    else if (args.present(u"cas")) {
+        min_cas_id = max_cas_id = args.intValue<uint16_t>(u"cas");
     }
     else {
-        min_cas_id = args.intValue<uint16_t>("min-cas");
-        max_cas_id = args.intValue<uint16_t>("max-cas");
+        min_cas_id = args.intValue<uint16_t>(u"min-cas");
+        max_cas_id = args.intValue<uint16_t>(u"max-cas");
     }
     cas_family = CASFamilyOf(min_cas_id);
-    cas_oper = args.intValue<uint32_t>("operator");
+    cas_oper = args.intValue<uint32_t>(u"operator");
 }
 
 
@@ -175,12 +174,12 @@ bool ts::CASSelectionArgs::operatorMatch(uint32_t oper) const
 // Analyze all CA_descriptors in a CAT or PMT and locate all matching PID's.
 //----------------------------------------------------------------------------
 
-size_t ts::CASSelectionArgs::addMatchingPIDs(PIDSet& pids, const CAT& cat, ReportInterface& report) const
+size_t ts::CASSelectionArgs::addMatchingPIDs(PIDSet& pids, const CAT& cat, Report& report) const
 {
     return addMatchingPIDs(pids, cat.descs, cat.tableId(), report);
 }
 
-size_t ts::CASSelectionArgs::addMatchingPIDs(PIDSet& pids, const PMT& pmt, ReportInterface& report) const
+size_t ts::CASSelectionArgs::addMatchingPIDs(PIDSet& pids, const PMT& pmt, Report& report) const
 {
     size_t pid_count = addMatchingPIDs(pids, pmt.descs, pmt.tableId(), report);
     for (PMT::StreamMap::const_iterator it = pmt.streams.begin(); it != pmt.streams.end(); ++it) {
@@ -194,7 +193,7 @@ size_t ts::CASSelectionArgs::addMatchingPIDs(PIDSet& pids, const PMT& pmt, Repor
 // Analyze all CA_descriptors and locate all matching PID's.
 //----------------------------------------------------------------------------
 
-size_t ts::CASSelectionArgs::addMatchingPIDs(PIDSet& pids, const DescriptorList& dlist, TID tid, ReportInterface& report) const
+size_t ts::CASSelectionArgs::addMatchingPIDs(PIDSet& pids, const DescriptorList& dlist, TID tid, Report& report) const
 {
     // Filter out useless cases.
     if ((tid == TID_CAT && !pass_emm) || (tid == TID_PMT && !pass_ecm) || (tid != TID_CAT && tid != TID_PMT)) {
@@ -214,7 +213,7 @@ size_t ts::CASSelectionArgs::addMatchingPIDs(PIDSet& pids, const DescriptorList&
             if (operatorMatch(it->oper) && casMatch(it->cas_id)) {
                 pids.set(it->pid);
                 pid_count++;
-                report.verbose("Filtering %s PID %d (0x%04X)", tid == TID_CAT ? "EMM" : "ECM", int(it->pid), int(it->pid));
+                report.verbose(u"Filtering %s PID %d (0x%X)", {tid == TID_CAT ? u"EMM" : u"ECM", it->pid, it->pid});
             }
         }
     }
@@ -231,7 +230,7 @@ size_t ts::CASSelectionArgs::addMatchingPIDs(PIDSet& pids, const DescriptorList&
                 if (casMatch(sysid)) {
                     pids.set(pid);
                     pid_count++;
-                    report.verbose("Filtering %s PID %d (0x%04X)", tid == TID_CAT ? "EMM" : "ECM", int(pid), int(pid));
+                    report.verbose(u"Filtering %s PID %d (0x%X)", {tid == TID_CAT ? u"EMM" : u"ECM", pid, pid});
                 }
             }
         }

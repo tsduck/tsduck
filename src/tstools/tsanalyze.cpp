@@ -54,30 +54,30 @@ Options::Options(int argc, char *argv[]) :
     bitrate(0),
     infile()
 {
-    option("",         0,  Args::STRING, 0, 1);
-    option("bitrate", 'b', Args::UNSIGNED);
+    option(u"",         0,  Args::STRING, 0, 1);
+    option(u"bitrate", 'b', Args::UNSIGNED);
 
-    setHelp("Input file:\n"
-            "\n"
-            "  MPEG capture file (standard input if omitted).\n"
-            "\n"
-            "Options:\n"
-            "\n"
-            "  -b value\n"
-            "  --bitrate value\n"
-            "      Specifies the bitrate of the transport stream in bits/second\n"
-            "      (based on 188-byte packets). By default, the bitrate is\n"
-            "      evaluated using the PCR in the transport stream.\n"
-            "\n"
-            "  --help\n"
-            "      Display this help text.\n"
-            "\n"
-            "  --version\n"
-            "      Display the version number.\n");
+    setHelp(u"Input file:\n"
+            u"\n"
+            u"  MPEG capture file (standard input if omitted).\n"
+            u"\n"
+            u"Options:\n"
+            u"\n"
+            u"  -b value\n"
+            u"  --bitrate value\n"
+            u"      Specifies the bitrate of the transport stream in bits/second\n"
+            u"      (based on 188-byte packets). By default, the bitrate is\n"
+            u"      evaluated using the PCR in the transport stream.\n"
+            u"\n"
+            u"  --help\n"
+            u"      Display this help text.\n"
+            u"\n"
+            u"  --version\n"
+            u"      Display the version number.\n");
 
     analyze(argc, argv);
 
-    infile = value("");
+    infile = value(u"");
     bitrate = intValue<ts::BitRate>("bitrate");
 }
 

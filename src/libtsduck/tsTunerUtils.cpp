@@ -49,7 +49,7 @@ TSDUCK_SOURCE;
 bool ts::GetTunerFromZapFile (const std::string& channel_name,
                                 const std::string& file_name,
                                 TunerParameters& parameters,
-                                ReportInterface& report)
+                                Report& report)
 {
     // Open the zap configuration file
 

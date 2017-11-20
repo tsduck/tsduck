@@ -75,7 +75,7 @@ ts::Tuner::Tuner(const std::string& device_name) :
 // Constructor from one device name.
 //-----------------------------------------------------------------------------
 
-ts::Tuner::Tuner(const std::string& device_name, bool info_only, ReportInterface& report) :
+ts::Tuner::Tuner(const std::string& device_name, bool info_only, Report& report) :
     Tuner(device_name)
 {
     report.error(NOT_IMPLEMENTED);
@@ -86,7 +86,7 @@ ts::Tuner::Tuner(const std::string& device_name, bool info_only, ReportInterface
 // Get the list of all existing DVB tuners.
 //-----------------------------------------------------------------------------
 
-bool ts::Tuner::GetAllTuners(TunerPtrVector& tuners, ReportInterface& report)
+bool ts::Tuner::GetAllTuners(TunerPtrVector& tuners, Report& report)
 {
     report.error(NOT_IMPLEMENTED);
     return false;
@@ -98,7 +98,7 @@ bool ts::Tuner::GetAllTuners(TunerPtrVector& tuners, ReportInterface& report)
 //-----------------------------------------------------------------------------
 
 // Flawfinder: ignore: this is our open(), not ::open().
-bool ts::Tuner::open(const std::string& device_name, bool info_only, ReportInterface& report)
+bool ts::Tuner::open(const std::string& device_name, bool info_only, Report& report)
 {
     report.error(NOT_IMPLEMENTED);
     return false;
@@ -109,7 +109,7 @@ bool ts::Tuner::open(const std::string& device_name, bool info_only, ReportInter
 // Close tuner.
 //-----------------------------------------------------------------------------
 
-bool ts::Tuner::close(ReportInterface& report)
+bool ts::Tuner::close(Report& report)
 {
     report.error(NOT_IMPLEMENTED);
     return false;
@@ -120,7 +120,7 @@ bool ts::Tuner::close(ReportInterface& report)
 // Check if a signal is present and locked
 //-----------------------------------------------------------------------------
 
-bool ts::Tuner::signalLocked(ReportInterface& report)
+bool ts::Tuner::signalLocked(Report& report)
 {
     report.error(NOT_IMPLEMENTED);
     return false;
@@ -132,7 +132,7 @@ bool ts::Tuner::signalLocked(ReportInterface& report)
 // Return a negative value on error.
 //-----------------------------------------------------------------------------
 
-int ts::Tuner::signalStrength(ReportInterface& report)
+int ts::Tuner::signalStrength(Report& report)
 {
     report.error(NOT_IMPLEMENTED);
     return -1;
@@ -144,7 +144,7 @@ int ts::Tuner::signalStrength(ReportInterface& report)
 // Return a negative value on error.
 //-----------------------------------------------------------------------------
 
-int ts::Tuner::signalQuality(ReportInterface& report)
+int ts::Tuner::signalQuality(Report& report)
 {
     report.error(NOT_IMPLEMENTED);
     return -1;
@@ -155,7 +155,7 @@ int ts::Tuner::signalQuality(ReportInterface& report)
 // Get the current tuning parameters
 //-----------------------------------------------------------------------------
 
-bool ts::Tuner::getCurrentTuning(TunerParameters& params, bool reset_unknown, ReportInterface& report)
+bool ts::Tuner::getCurrentTuning(TunerParameters& params, bool reset_unknown, Report& report)
 {
     report.error(NOT_IMPLEMENTED);
     return false;
@@ -167,7 +167,7 @@ bool ts::Tuner::getCurrentTuning(TunerParameters& params, bool reset_unknown, Re
 // Return true on success, false on errors
 //-----------------------------------------------------------------------------
 
-bool ts::Tuner::tune(const TunerParameters& params, ReportInterface& report)
+bool ts::Tuner::tune(const TunerParameters& params, Report& report)
 {
     report.error(NOT_IMPLEMENTED);
     return false;
@@ -179,7 +179,7 @@ bool ts::Tuner::tune(const TunerParameters& params, ReportInterface& report)
 // Return true on success, false on errors
 //-----------------------------------------------------------------------------
 
-bool ts::Tuner::start(ReportInterface& report)
+bool ts::Tuner::start(Report& report)
 {
     report.error(NOT_IMPLEMENTED);
     return false;
@@ -191,7 +191,7 @@ bool ts::Tuner::start(ReportInterface& report)
 // Return true on success, false on errors
 //-----------------------------------------------------------------------------
 
-bool ts::Tuner::stop(ReportInterface& report)
+bool ts::Tuner::stop(Report& report)
 {
     report.error(NOT_IMPLEMENTED);
     return false;
@@ -204,7 +204,7 @@ bool ts::Tuner::stop(ReportInterface& report)
 // Return true on success, false on errors.
 //-----------------------------------------------------------------------------
 
-bool ts::Tuner::setReceiveTimeout(MilliSecond timeout, ReportInterface& report)
+bool ts::Tuner::setReceiveTimeout(MilliSecond timeout, Report& report)
 {
     report.error(NOT_IMPLEMENTED);
     return false;
@@ -217,7 +217,7 @@ bool ts::Tuner::setReceiveTimeout(MilliSecond timeout, ReportInterface& report)
 // Returning zero means error or end of input.
 //-----------------------------------------------------------------------------
 
-size_t ts::Tuner::receive(TSPacket* buffer, size_t max_packets, const AbortInterface* abort, ReportInterface& report)
+size_t ts::Tuner::receive(TSPacket* buffer, size_t max_packets, const AbortInterface* abort, Report& report)
 {
     report.error(NOT_IMPLEMENTED);
     return false;
@@ -228,7 +228,7 @@ size_t ts::Tuner::receive(TSPacket* buffer, size_t max_packets, const AbortInter
 // Display the characteristics and status of the tuner.
 //-----------------------------------------------------------------------------
 
-std::ostream& ts::Tuner::displayStatus(std::ostream& strm, const std::string& margin, ReportInterface& report)
+std::ostream& ts::Tuner::displayStatus(std::ostream& strm, const std::string& margin, Report& report)
 {
     report.error(NOT_IMPLEMENTED);
     return strm;

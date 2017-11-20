@@ -96,8 +96,8 @@ TSPLUGIN_DECLARE_PROCESSOR(ts::CountPlugin)
 // Constructor
 //----------------------------------------------------------------------------
 
-ts::CountPlugin::CountPlugin (TSP* tsp_) :
-    ProcessorPlugin(tsp_, "Count TS packets per PID.", "[options]"),
+ts::CountPlugin::CountPlugin(TSP* tsp_) :
+    ProcessorPlugin(tsp_, u"Count TS packets per PID.", u"[options]"),
     _outfile(),
     _negate(false),
     _pids(),
@@ -110,62 +110,62 @@ ts::CountPlugin::CountPlugin (TSP* tsp_) :
     _last_report(),
     _counters()
 {
-    option("all",         'a');
-    option("brief",       'b');
-    option("interval",    'i', UINT32);
-    option("negate",      'n');
-    option("output-file", 'o', STRING);
-    option("pid",         'p', PIDVAL, 0, UNLIMITED_COUNT);
-    option("summary",     's');
-    option("total",       't');
+    option(u"all",         'a');
+    option(u"brief",       'b');
+    option(u"interval",    'i', UINT32);
+    option(u"negate",      'n');
+    option(u"output-file", 'o', STRING);
+    option(u"pid",         'p', PIDVAL, 0, UNLIMITED_COUNT);
+    option(u"summary",     's');
+    option(u"total",       't');
 
-    setHelp("Options:\n"
-            "\n"
-            "  -a\n"
-            "  --all\n"
-            "      Report packet index and PID for all packets from the selected PID's.\n"
-            "      By default, only a final summary is reported.\n"
-            "\n"
-            "  -b\n"
-            "  --brief\n"
-            "      Brief display. Report only the numerical values, not comment on their\n"
-            "      usage.\n"
-            "\n"
-            "  --help\n"
-            "      Display this help text.\n"
-            "\n"
-            "  -i value\n"
-            "  --interval value\n"
-            "      Report a time-stamp and global packet count at regular intervals. The\n"
-            "      specified value is a number of packets.\n"
-            "\n"
-            "  -n\n"
-            "  --negate\n"
-            "      Negate the filter: specified PID's are excluded.\n"
-            "\n"
-            "  -o filename\n"
-            "  --output-file filename\n"
-            "      Specify the output file for reporting packet counters. By default, report\n"
-            "      on standard error using the tsp logging mechanism.\n"
-            "\n"
-            "  -p value\n"
-            "  --pid value\n"
-            "      PID filter: select packets with this PID value. Several -p or --pid\n"
-            "      options may be specified. By default, if --pid is not specified, all\n"
-            "      PID's are selected.\n"
-            "\n"
-            "  -s\n"
-            "  --summary\n"
-            "      Display a final summary of packet counts per PID. This is the default,\n"
-            "      unless --all or --total is specified, in which case the final summary is\n"
-            "      reported only if --summary is specified.\n"
-            "\n"
-            "  -t\n"
-            "  --total\n"
-            "      Display the total packet counts in all PID's.\n"
-            "\n"
-            "  --version\n"
-            "      Display the version number.\n");
+    setHelp(u"Options:\n"
+            u"\n"
+            u"  -a\n"
+            u"  --all\n"
+            u"      Report packet index and PID for all packets from the selected PID's.\n"
+            u"      By default, only a final summary is reported.\n"
+            u"\n"
+            u"  -b\n"
+            u"  --brief\n"
+            u"      Brief display. Report only the numerical values, not comment on their\n"
+            u"      usage.\n"
+            u"\n"
+            u"  --help\n"
+            u"      Display this help text.\n"
+            u"\n"
+            u"  -i value\n"
+            u"  --interval value\n"
+            u"      Report a time-stamp and global packet count at regular intervals. The\n"
+            u"      specified value is a number of packets.\n"
+            u"\n"
+            u"  -n\n"
+            u"  --negate\n"
+            u"      Negate the filter: specified PID's are excluded.\n"
+            u"\n"
+            u"  -o filename\n"
+            u"  --output-file filename\n"
+            u"      Specify the output file for reporting packet counters. By default, report\n"
+            u"      on standard error using the tsp logging mechanism.\n"
+            u"\n"
+            u"  -p value\n"
+            u"  --pid value\n"
+            u"      PID filter: select packets with this PID value. Several -p or --pid\n"
+            u"      options may be specified. By default, if --pid is not specified, all\n"
+            u"      PID's are selected.\n"
+            u"\n"
+            u"  -s\n"
+            u"  --summary\n"
+            u"      Display a final summary of packet counts per PID. This is the default,\n"
+            u"      unless --all or --total is specified, in which case the final summary is\n"
+            u"      reported only if --summary is specified.\n"
+            u"\n"
+            u"  -t\n"
+            u"  --total\n"
+            u"      Display the total packet counts in all PID's.\n"
+            u"\n"
+            u"  --version\n"
+            u"      Display the version number.\n");
 }
 
 
@@ -175,22 +175,22 @@ ts::CountPlugin::CountPlugin (TSP* tsp_) :
 
 bool ts::CountPlugin::start()
 {
-    _report_all = present("all");
-    _report_total = present("total");
-    _report_summary = (!_report_all && !_report_total) || present("summary");
-    _brief_report = present("brief");
-    _negate = present("negate");
+    _report_all = present(u"all");
+    _report_total = present(u"total");
+    _report_summary = (!_report_all && !_report_total) || present(u"summary");
+    _brief_report = present(u"brief");
+    _negate = present(u"negate");
     getIntValue(_report_interval, "interval");
     getPIDSet(_pids, "pid");
 
     // By default, all PIDs are selected
-    if (!present ("pid")) {
+    if (!present(u"pid")) {
         _pids.set();
     }
 
     // Create output file
-    if (present ("output-file")) {
-        const std::string name (value ("output-file"));
+    if (present(u"output-file")) {
+        const std::string name (value(u"output-file"));
         tsp->verbose ("creating " + name);
         _outfile.open (name.c_str(), std::ios::out);
         if (!_outfile) {

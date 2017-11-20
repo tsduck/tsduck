@@ -51,7 +51,7 @@ namespace ts {
     //!
     TSDUCKDLL bool EnumerateDevicesByClass(const ::CLSID& clsid,
                                            std::vector<ComPtr<::IMoniker>>& monikers,
-                                           ReportInterface& report);
+                                           Report& report);
 
     //!
     //! Get the user-friendly name of a DirectShow tuning space (Windows-specific).
@@ -59,7 +59,7 @@ namespace ts {
     //! @param [in,out] report Where to report errors.
     //! @return Tuning space name or an empty string on error.
     //!
-    TSDUCKDLL std::string GetTuningSpaceFriendlyName(::ITuningSpace* tuning, ReportInterface& report);
+    TSDUCKDLL std::string GetTuningSpaceFriendlyName(::ITuningSpace* tuning, Report& report);
 
     //!
     //! Get the unique name of a DirectShow tuning space (Windows-specific).
@@ -67,7 +67,7 @@ namespace ts {
     //! @param [in,out] report Where to report errors.
     //! @return Tuning space name or an empty string on error.
     //!
-    TSDUCKDLL std::string GetTuningSpaceUniqueName(::ITuningSpace* tuning, ReportInterface& report);
+    TSDUCKDLL std::string GetTuningSpaceUniqueName(::ITuningSpace* tuning, Report& report);
 
     //!
     //! Get full description of a DirectShow tuning space (Windows-specific).
@@ -75,7 +75,7 @@ namespace ts {
     //! @param [in,out] report Where to report errors.
     //! @return Tuning description or an empty string on error.
     //!
-    TSDUCKDLL std::string GetTuningSpaceDescription(::ITuningSpace* tuning, ReportInterface& report);
+    TSDUCKDLL std::string GetTuningSpaceDescription(::ITuningSpace* tuning, Report& report);
 
     //!
     //! Get the network type of a DirectShow tuning space (Windows-specific).
@@ -83,7 +83,7 @@ namespace ts {
     //! @param [in,out] report Where to report errors.
     //! @return Network type or an empty string on error.
     //!
-    TSDUCKDLL std::string GetTuningSpaceNetworkType(::ITuningSpace* tuning, ReportInterface& report);
+    TSDUCKDLL std::string GetTuningSpaceNetworkType(::ITuningSpace* tuning, Report& report);
 
     //!
     //! Get the name for a DirectShow pin direction value (Windows-specific).
@@ -107,7 +107,7 @@ namespace ts {
     //! @param [in,out] report Where to report errors.
     //! @return True on success, false on error.
     //!
-    TSDUCKDLL bool CreateTuneRequest(ComPtr<::ITuneRequest>& request, ::ITuningSpace* tuning_space, const TunerParameters& params, ReportInterface& report);
+    TSDUCKDLL bool CreateTuneRequest(ComPtr<::ITuneRequest>& request, ::ITuningSpace* tuning_space, const TunerParameters& params, Report& report);
 
     //!
     //! Create a Locator object for tuning parameters.
@@ -117,7 +117,7 @@ namespace ts {
     //! @param [in,out] report Where to report errors.
     //! @return True on success, false on error.
     //!
-    TSDUCKDLL bool CreateLocator(ComPtr<::IDigitalLocator>& locator, const TunerParameters& params, ReportInterface& report);
+    TSDUCKDLL bool CreateLocator(ComPtr<::IDigitalLocator>& locator, const TunerParameters& params, Report& report);
 
     //!
     //! Create an IDigitalLocator object for DVB-S parameters.
@@ -126,7 +126,7 @@ namespace ts {
     //! @param [in,out] report Where to report errors.
     //! @return True on success, false on error.
     //!
-    TSDUCKDLL bool CreateLocatorDVBS(ComPtr<::IDigitalLocator>& locator, const TunerParametersDVBS& params, ReportInterface& report);
+    TSDUCKDLL bool CreateLocatorDVBS(ComPtr<::IDigitalLocator>& locator, const TunerParametersDVBS& params, Report& report);
 
     //!
     //! Create an IDigitalLocator object for DVB-T parameters.
@@ -135,7 +135,7 @@ namespace ts {
     //! @param [in,out] report Where to report errors.
     //! @return True on success, false on error.
     //!
-    TSDUCKDLL bool CreateLocatorDVBT(ComPtr<::IDigitalLocator>& locator, const TunerParametersDVBT& params, ReportInterface& report);
+    TSDUCKDLL bool CreateLocatorDVBT(ComPtr<::IDigitalLocator>& locator, const TunerParametersDVBT& params, Report& report);
 
     //!
     //! Create an IDigitalLocator object for DVB-C parameters.
@@ -144,5 +144,5 @@ namespace ts {
     //! @param [in,out] report Where to report errors.
     //! @return True on success, false on error.
     //!
-    TSDUCKDLL bool CreateLocatorDVBC(ComPtr<::IDigitalLocator>& locator, const TunerParametersDVBC& params, ReportInterface& report);
+    TSDUCKDLL bool CreateLocatorDVBC(ComPtr<::IDigitalLocator>& locator, const TunerParametersDVBC& params, Report& report);
 }
