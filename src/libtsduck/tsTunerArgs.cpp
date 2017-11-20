@@ -135,11 +135,11 @@ void ts::TunerArgs::load(Args& args)
         device_name = args.value(u"device-name");
     }
     else if (args.present(u"adapter")) {
-        const int adapter = args.intValue("adapter", 0);
+        const int adapter = args.intValue(u"adapter", 0);
 #if defined(TS_LINUX)
-        device_name = Format("/dev/dvb/adapter%d", adapter);
+        device_name = UString::Format(u"/dev/dvb/adapter%d", {adapter});
 #elif defined(TS_WINDOWS)
-        device_name = Format(":%d", adapter);
+        device_name = UString::Format(u":%d", {adapter});
 #else
         // Does not mean anything, just for error messages.
         device_name = Format("DVB adapter %d", adapter);
@@ -325,11 +325,11 @@ void ts::TunerArgs::defineOptions(Args& args) const
 
 void ts::TunerArgs::addHelp(Args& args) const
 {
-    std::string help =
+    UString help =
         u"\n"
         u"Tuner identification:\n"
         u"\n" +
-        std::string(_allow_short_options ? "  -a N\n" : "") +
+        UString(_allow_short_options ? u"  -a N\n" : u"") +
         u"  --adapter N\n"
 #if defined(TS_LINUX)
         u"      Specifies the Linux DVB adapter N (/dev/dvb/adapterN).\n"
@@ -338,7 +338,7 @@ void ts::TunerArgs::addHelp(Args& args) const
 #endif
         u"      This option can be used instead of device name.\n"
         u"\n" +
-        std::string(_allow_short_options ? "  -d \"name\"\n" : "") +
+        UString(_allow_short_options ? u"  -d \"name\"\n" : u"") +
         u"  --device-name \"name\"\n"
 #if defined (TS_LINUX)
         u"      Specify the DVB receiver device name, /dev/dvb/adapterA[:F[:M[:V]]]\n"
@@ -365,7 +365,7 @@ void ts::TunerArgs::addHelp(Args& args) const
             u"  --demux-queue-size value\n"
             u"      Specify the maximum number of media samples in the queue between the\n"
             u"      DirectShow capture thread and the input plugin thread. The default is\n"
-            u"      " + Decimal(Tuner::DEFAULT_SINK_QUEUE_SIZE) + " media samples.\n"
+            u"      " + UString::Decimal(Tuner::DEFAULT_SINK_QUEUE_SIZE) + " media samples.\n"
 #endif
             u"\n"
             u"  --receive-timeout milliseconds\n"
@@ -377,7 +377,7 @@ void ts::TunerArgs::addHelp(Args& args) const
             u"      Specifies the timeout, in seconds, for DVB signal locking. If no signal\n"
             u"      is detected after this timeout, the command aborts. To disable the\n"
             u"      timeout and wait indefinitely for the signal, specify zero. The default\n"
-            u"      is " + Decimal(Tuner::DEFAULT_SIGNAL_TIMEOUT / 1000) + " seconds.\n"
+            u"      is " + UString::Decimal(Tuner::DEFAULT_SIGNAL_TIMEOUT / 1000) + " seconds.\n"
             u"\n"
             u"Tuning:\n"
             u"\n"
@@ -406,7 +406,7 @@ void ts::TunerArgs::addHelp(Args& args) const
             u"      \"1/3\", \"1/4\", \"2/3\", \"2/5\", \"3/4\", \"3/5\", \"4/5\", \"5/6\", \"5/11\",\n"
             u"      \"6/7\", \"7/8\", \"8/9\", \"9/10\". The default is \"auto\".\n"
             u"\n" +
-            std::string(_allow_short_options ? "  -f value\n" : "") +
+            UString(_allow_short_options ? u"  -f value\n" : u"") +
             u"  --frequency value\n"
             u"      Carrier frequency in Hz (all tuners).\n"
             u"\n"
@@ -437,7 +437,7 @@ void ts::TunerArgs::addHelp(Args& args) const
             u"      Error correction for low priority streams. See option --fec-inner\n"
             u"      for the list of possible values. The default is \"auto\".\n"
             u"\n" +
-            std::string(_allow_short_options ? "  -m value\n" : "") +
+            UString(_allow_short_options ? u"  -m value\n" : u"") +
             u"  --modulation value\n"
             u"      Used for DVB-C, DVB-T, DVB-S2 and ATSC tuners.\n"
             u"      Modulation type. Must be one of \"QPSK\", \"8-PSK\", \"QAM\" (auto QAM),\n"
@@ -475,12 +475,12 @@ void ts::TunerArgs::addHelp(Args& args) const
             u"      Spectral inversion. Must be one of \"on\", \"off\" or \"auto\". The default\n"
             u"      is \"auto\".\n"
             u"\n" +
-            std::string(_allow_short_options ? "  -s value\n" : "") +
+            UString(_allow_short_options ? u"  -s value\n" : u"") +
             u"  --symbol-rate value\n"
             u"      Used for DVB-S, DVB-S2 and DVB-C tuners only.\n"
             u"      Symbol rate in symbols/second. The default is\n"
-            u"      " + Decimal(TunerParametersDVBS::DEFAULT_SYMBOL_RATE) + " sym/s for satellite and " +
-            Decimal(TunerParametersDVBC::DEFAULT_SYMBOL_RATE) + " sym/s for cable.\n"
+            u"      " + UString::Decimal(TunerParametersDVBS::DEFAULT_SYMBOL_RATE) + " sym/s for satellite and " +
+            UString::Decimal(TunerParametersDVBC::DEFAULT_SYMBOL_RATE) + " sym/s for cable.\n"
             u"\n"
             u"  --transmission-mode value\n"
             u"      Used for DVB-T tuners only.\n"
@@ -536,14 +536,14 @@ void ts::TunerArgs::addHelp(Args& args) const
             u"\n"
             u"Locating the transponder by channel name:\n"
             u"\n" +
-            std::string(_allow_short_options ? "  -c name\n" : "") +
+            UString(_allow_short_options ? u"  -c name\n" : u"") +
             u"  --channel-transponder name\n"
             u"      Tune to the transponder containing the specified channel. The channel\n"
             u"      name is not case-sensitive and blanks are ignored. The channel is searched\n"
             u"      in a \"zap configuration file\" and the corresponding tuning information\n"
             u"      in this file is used.\n"
             u"\n" +
-            std::string(_allow_short_options ? "  -z path\n" : "") +
+            UString(_allow_short_options ? u"  -z path\n" : u"") +
             u"  --zap-config-file path\n"
             u"      Zap configuration file to use for option -c or --channel-transponder.\n"
             u"      The format of these text files is specified by the Linux DVB szap, czap\n"
@@ -568,7 +568,7 @@ void ts::TunerArgs::addHelp(Args& args) const
 bool ts::TunerArgs::configureTuner(Tuner& tuner, Report& report) const
 {
     if (tuner.isOpen()) {
-        report.error("DVB tuner is already open");
+        report.error(u"DVB tuner is already open");
         return false;
     }
 
@@ -628,28 +628,28 @@ bool ts::TunerArgs::tune(Tuner& tuner, TunerParametersPtr& params, Report& repor
 // Default zap file name for a given tuner type
 //----------------------------------------------------------------------------
 
-std::string ts::TunerArgs::DefaultZapFile(TunerType tuner_type)
+ts::UString ts::TunerArgs::DefaultZapFile(TunerType tuner_type)
 {
-    const char* file;
+    const UChar* file = 0;
 
 #if defined(TS_WINDOWS)
-    const char* root_env = "APPDATA";
+    const UChar* root_env = u"APPDATA";
     switch (tuner_type) {
-        case DVB_S: file = "\\tsduck\\szap\\channels.conf"; break;
-        case DVB_C: file = "\\tsduck\\czap\\channels.conf"; break;
-        case DVB_T: file = "\\tsduck\\tzap\\channels.conf"; break;
-        default: return "";
+        case DVB_S: file = u"\\tsduck\\szap\\channels.conf"; break;
+        case DVB_C: file = u"\\tsduck\\czap\\channels.conf"; break;
+        case DVB_T: file = u"\\tsduck\\tzap\\channels.conf"; break;
+        default: return UString();
     }
 #else
-    const char* root_env = "HOME";
+    const UChar* root_env = u"HOME";
     switch (tuner_type) {
-        case DVB_S: file = "/.szap/channels.conf"; break;
-        case DVB_C: file = "/.czap/channels.conf"; break;
-        case DVB_T: file = "/.tzap/channels.conf"; break;
-        default: return "";
+        case DVB_S: file = u"/.szap/channels.conf"; break;
+        case DVB_C: file = u"/.czap/channels.conf"; break;
+        case DVB_T: file = u"/.tzap/channels.conf"; break;
+        default: return UString();
     }
 #endif
 
-    std::string root_path(GetEnvironment(root_env));
-    return root_path.empty() ? "" : root_path + file;
+    const UString root_path(GetEnvironment(root_env));
+    return root_path.empty() ? UString() : UString(root_path) + UString(file);
 }

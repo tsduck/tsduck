@@ -481,10 +481,7 @@ namespace ts {
         //! @param [in] hexa If true, use an hexadecimal representation (0x...).
         //!
         template <typename INT>
-        void setIntAttribute(Element* element, const UString& name, INT value, bool hexa = false)
-        {
-            setAttribute(element, name, hexa ? Format("0x%0*" FMT_INT64 "X", int(2 * sizeof(INT)), int64_t(value)) : Decimal(value));
-        }
+        void setIntAttribute(Element* element, const UString& name, INT value, bool hexa = false);
 
         //!
         //! Set an optional attribute with an integer value to a node.
@@ -495,12 +492,7 @@ namespace ts {
         //! @param [in] hexa If true, use an hexadecimal representation (0x...).
         //!
         template <typename INT>
-        void setOptionalIntAttribute(Element* element, const UString& name, const Variable<INT>& value, bool hexa = false)
-        {
-            if (value.set()) {
-                setIntAttribute<INT>(element, name, value.value(), hexa);
-            }
-        }
+        void setOptionalIntAttribute(Element* element, const UString& name, const Variable<INT>& value, bool hexa = false);
 
         //!
         //! Set an enumeration attribute of a node.

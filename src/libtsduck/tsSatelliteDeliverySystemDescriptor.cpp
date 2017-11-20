@@ -137,8 +137,8 @@ void ts::SatelliteDeliverySystemDescriptor::deserialize (const Descriptor& desc,
 
 namespace {
     const ts::Enumeration DirectionNames({
-        {u"west", 0}},
-        {u"east", 1}},
+        {u"west", 0},
+        {u"east", 1},
     });
 
     const ts::Enumeration PolarizationNames({
@@ -189,15 +189,15 @@ namespace {
 ts::XML::Element* ts::SatelliteDeliverySystemDescriptor::toXML(XML& xml, XML::Element* parent) const
 {
     XML::Element* root = _is_valid ? xml.addElement(parent, _xml_name) : 0;
-    xml.setIntAttribute(root, "frequency", 10000 * uint64_t(frequency), false);
-    xml.setAttribute(root, "orbital_position", Format("%d.%d", int(orbital_position / 10), int(orbital_position % 10)));
-    xml.setIntEnumAttribute(DirectionNames, root, "west_east_flag", eastNotWest);
-    xml.setIntEnumAttribute(PolarizationNames, root, "polarization", polarization);
-    xml.setIntEnumAttribute(RollOffNames, root, "roll_off", roll_off);
-    xml.setIntEnumAttribute(SystemNames, root, "modulation_system", dvbS2);
-    xml.setIntEnumAttribute(ModulationNames, root, "modulation_type", modulation_type);
-    xml.setIntAttribute(root, "symbol_rate", 100 * uint64_t(symbol_rate), false);
-    xml.setIntEnumAttribute(CodeRateNames, root, "FEC_inner", FEC_inner);
+    xml.setIntAttribute(root, u"frequency", 10000 * uint64_t(frequency), false);
+    xml.setAttribute(root, u"orbital_position", UString::Format(u"%d.%d", {orbital_position / 10, nt(orbital_position % 10)));
+    xml.setIntEnumAttribute(DirectionNames, root, u"west_east_flag", eastNotWest);
+    xml.setIntEnumAttribute(PolarizationNames, root, u"polarization", polarization);
+    xml.setIntEnumAttribute(RollOffNames, root, u"roll_off", roll_off);
+    xml.setIntEnumAttribute(SystemNames, root, u"modulation_system", dvbS2);
+    xml.setIntEnumAttribute(ModulationNames, root, u"modulation_type", modulation_type);
+    xml.setIntAttribute(root, u"symbol_rate", 100 * uint64_t(symbol_rate), false);
+    xml.setIntEnumAttribute(CodeRateNames, root, u"FEC_inner", FEC_inner);
     return root;
 }
 
@@ -214,15 +214,15 @@ void ts::SatelliteDeliverySystemDescriptor::fromXML(XML& xml, const XML::Element
 
     _is_valid =
         checkXMLName(xml, element) &&
-        xml.getIntAttribute<uint64_t>(freq, element, "frequency", true) &&
-        xml.getAttribute(orbit, element, "orbital_position", true) &&
-        xml.getIntEnumAttribute(eastNotWest, DirectionNames, element, "west_east_flag", true) &&
-        xml.getIntEnumAttribute(polarization, PolarizationNames, element, "polarization", true) &&
-        xml.getIntEnumAttribute<uint8_t>(roll_off, RollOffNames, element, "roll_off", false, 0) &&
-        xml.getIntEnumAttribute(dvbS2, SystemNames, element, "modulation_system", false, false) &&
-        xml.getIntEnumAttribute<uint8_t>(modulation_type, ModulationNames, element, "modulation_type", false, 1) &&
-        xml.getIntAttribute<uint64_t>(symrate, element, "symbol_rate", true) &&
-        xml.getIntEnumAttribute(FEC_inner, CodeRateNames, element, "FEC_inner", true);
+        xml.getIntAttribute<uint64_t>(freq, element, u"frequency", true) &&
+        xml.getAttribute(orbit, element, u"orbital_position", true) &&
+        xml.getIntEnumAttribute(eastNotWest, DirectionNames, element, u"west_east_flag", true) &&
+        xml.getIntEnumAttribute(polarization, PolarizationNames, element, u"polarization", true) &&
+        xml.getIntEnumAttribute<uint8_t>(roll_off, RollOffNames, element, u"roll_off", false, 0) &&
+        xml.getIntEnumAttribute(dvbS2, SystemNames, element, u"modulation_system", false, false) &&
+        xml.getIntEnumAttribute<uint8_t>(modulation_type, ModulationNames, element, u"modulation_type", false, 1) &&
+        xml.getIntAttribute<uint64_t>(symrate, element, u"symbol_rate", true) &&
+        xml.getIntEnumAttribute(FEC_inner, CodeRateNames, element, u"FEC_inner", true);
 
     if (_is_valid) {
         frequency = uint32_t(freq / 10000);

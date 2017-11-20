@@ -38,7 +38,6 @@
 #include "tsUString.h"
 #include "tsDVBCharset.h"
 #include "tsTablesPtr.h"
-#include "tsStringUtils.h"
 
 namespace ts {
     //!
@@ -59,16 +58,7 @@ namespace ts {
         //! @param [in] charset If not zero, default character set to encode strings.
         //! @return True on success, false on error.
         //!
-        bool loadXML(const std::string& file_name, Report& report, const DVBCharset* charset = 0);
-
-        //!
-        //! Parse an XML content.
-        //! @param [in] xml_content XML file content in UTF-8.
-        //! @param [in,out] report Where to report errors.
-        //! @param [in] charset If not zero, default character set to encode strings.
-        //! @return True on success, false on error.
-        //!
-        bool parseXML(const std::string& xml_content, Report& report, const DVBCharset* charset = 0);
+        bool loadXML(const UString& file_name, Report& report, const DVBCharset* charset = 0);
 
         //!
         //! Parse an XML content.
@@ -86,7 +76,7 @@ namespace ts {
         //! @param [in] charset If not zero, character set to use without explicit table code.
         //! @return True on success, false on error.
         //!
-        bool saveXML(const std::string& file_name, Report& report, const DVBCharset* charset = 0) const;
+        bool saveXML(const UString& file_name, Report& report, const DVBCharset* charset = 0) const;
 
         //!
         //! Serialize as XML text.
@@ -216,7 +206,7 @@ namespace ts {
         //! @param [in] charset If not zero, character set to use without explicit table code.
         //! @return True on success, false on error.
         //!
-        static bool FromDescriptorListXML(DescriptorList& list, XML::ElementVector& others, XML& xml, const XML::Element* parent, const StringList& allowedOthers, const DVBCharset* charset = 0);
+        static bool FromDescriptorListXML(DescriptorList& list, XML::ElementVector& others, XML& xml, const XML::Element* parent, const UStringList& allowedOthers, const DVBCharset* charset = 0);
 
         //!
         //! This method decodes an XML list of descriptors.
@@ -229,11 +219,7 @@ namespace ts {
         //! @param [in] charset If not zero, character set to use without explicit table code.
         //! @return True on success, false on error.
         //!
-        static bool FromDescriptorListXML(DescriptorList& list, XML::ElementVector& others, XML& xml, const XML::Element* parent, const std::string& allowedOthers, const DVBCharset* charset = 0)
-        {
-            StringList allowed;
-            return FromDescriptorListXML(list, others, xml, parent, SplitString(allowed, allowedOthers), charset);
-        }
+        static bool FromDescriptorListXML(DescriptorList& list, XML::ElementVector& others, XML& xml, const XML::Element* parent, const UString& allowedOthers, const DVBCharset* charset = 0);
 
         //!
         //! This method decodes an XML list of descriptors.
@@ -243,11 +229,7 @@ namespace ts {
         //! All children must be valid descriptors.
         //! @return True on success, false on error.
         //!
-        static bool FromDescriptorListXML(DescriptorList& list, XML& xml, const XML::Element* parent)
-        {
-            XML::ElementVector others;
-            return FromDescriptorListXML(list, others, xml, parent, StringList());
-        }
+        static bool FromDescriptorListXML(DescriptorList& list, XML& xml, const XML::Element* parent);
 
         //!
         //! This method decodes a \<generic_short_table> or \<generic_long_table>.

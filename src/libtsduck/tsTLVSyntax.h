@@ -121,7 +121,7 @@ namespace ts {
         //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool fromString(const std::string& s, Report& report = CERR);
+        bool fromString(const UString& s, Report& report = CERR);
 
         //!
         //! Extract a tag and length value from a data area.

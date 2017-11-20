@@ -32,8 +32,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsTLVSyntax.h"
-#include "tsStringUtils.h"
-#include "tsToInteger.h"
 #include "tsIntegerUtils.h"
 TSDUCK_SOURCE;
 
@@ -60,11 +58,11 @@ ts::TLVSyntax::TLVSyntax(int start, int size, size_t tagSize, size_t lengthSize,
 bool ts::TLVSyntax::set(int start, int size, size_t tagSize, size_t lengthSize, bool msb, Report& report)
 {
     if (tagSize != 1 && tagSize != 2 && tagSize != 4) {
-        report.error("invalid tag size %" FMT_SIZE_T "d", tagSize);
+        report.error(u"invalid tag size %d", {tagSize});
         return false;
     }
     else if (lengthSize != 1 && lengthSize != 2 && lengthSize != 4) {
-        report.error("invalid length size %" FMT_SIZE_T "d", lengthSize);
+        report.error(u"invalid length size %d", {lengthSize});
         return false;
     }
     else {
@@ -82,37 +80,37 @@ bool ts::TLVSyntax::set(int start, int size, size_t tagSize, size_t lengthSize, 
 // Set the values of a TLVSyntax object from a string representation.
 //----------------------------------------------------------------------------
 
-bool ts::TLVSyntax::fromString(const std::string& s, Report& report)
+bool ts::TLVSyntax::fromString(const UString& s, Report& report)
 {
     // Reset default values in this object.
     set();
 
     // List of string fields.
-    StringVector fields;
-    SplitString(fields, s, ',', true);
+    UStringVector fields;
+    s.split(fields, u',', true);
     bool ok = fields.size() <= 5;
 
     // Decode each field. Empty or "auto" values means default value.
-    if (ok && fields.size() > 0 && !fields[0].empty() && !SimilarStrings(fields[0], "auto")) {
-        ok = ToInteger(_start, fields[0], ",");
+    if (ok && fields.size() > 0 && !fields[0].empty() && !fields[0].similar(u"auto")) {
+        ok = fields[0].toInteger(_start, u",");
     }
-    if (ok && fields.size() > 1 && !fields[1].empty() && !SimilarStrings(fields[1], "auto")) {
-        ok = ToInteger(_size, fields[1], ",");
+    if (ok && fields.size() > 1 && !fields[1].empty() && !fields[1].similar(u"auto")) {
+        ok = fields[1].toInteger(_size, u",");
     }
     if (ok && fields.size() > 2 && !fields[2].empty()) {
-        ok = ToInteger(_tagSize, fields[2]) && (_tagSize == 1 || _tagSize == 2 || _tagSize == 4);
+        ok = fields[2].toInteger(_tagSize) && (_tagSize == 1 || _tagSize == 2 || _tagSize == 4);
     }
     if (ok && fields.size() > 3 && !fields[3].empty()) {
-        ok = ToInteger(_lengthSize, fields[3]) && (_lengthSize == 1 || _lengthSize == 2 || _lengthSize == 4);
+        ok = fields[3].toInteger(_lengthSize) && (_lengthSize == 1 || _lengthSize == 2 || _lengthSize == 4);
     }
     if (ok && fields.size() > 4 && !fields[4].empty()) {
-        _msb = SimilarStrings(fields[4], "msb");
-        ok = _msb || SimilarStrings(fields[4], "lsb");
+        _msb = fields[4].similar(u"msb");
+        ok = _msb || fields[4].similar(u"lsb");
     }
 
     // Handle errors.
     if (!ok) {
-        report.error("invalid TLV syntax specification \"%s\", use \"start,size,tagSize,lengthSize,msb|lsb\"", s.c_str());
+        report.error(u"invalid TLV syntax specification \"%s\", use \"start,size,tagSize,lengthSize,msb|lsb\"", {s});
     }
     return ok;
 }

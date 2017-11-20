@@ -32,7 +32,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsAVCVideoDescriptor.h"
-#include "tsStringUtils.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 #include "tsXMLTables.h"
@@ -151,13 +150,13 @@ void ts::AVCVideoDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, 
         strm << margin << "Profile IDC: " << int(profile_idc)
              << ", level IDC: " << int(level_idc)
              << std::endl
-             << margin << "Constraint set0: " << TrueFalse(constraint_set0)
-             << ", set1: " << TrueFalse(constraint_set1)
-             << ", set2: " << TrueFalse(constraint_set2)
-             << ", AVC compatible flags: " << Format("0x%02X", int(AVC_compatible_flags))
+             << margin << "Constraint set0: " << UString::TrueFalse(constraint_set0)
+             << ", set1: " << UString::TrueFalse(constraint_set1)
+             << ", set2: " << UString::TrueFalse(constraint_set2)
+             << ", AVC compatible flags: " << UString::Hexa(AVC_compatible_flags)
              << std::endl
-             << margin << "Still pictures: " << TrueFalse(AVC_still_present)
-             << ", 24-hour pictures: " << TrueFalse(AVC_24_hour_picture)
+             << margin << "Still pictures: " << UString::TrueFalse(AVC_still_present)
+             << ", 24-hour pictures: " << UString::TrueFalse(AVC_24_hour_picture)
              << std::endl;
     }
 

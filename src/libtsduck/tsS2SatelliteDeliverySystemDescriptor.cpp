@@ -32,7 +32,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsS2SatelliteDeliverySystemDescriptor.h"
-#include "tsStringUtils.h"
 #include "tsVariable.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
@@ -160,11 +159,11 @@ void ts::S2SatelliteDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& d
              << std::endl;
 
         if (scrambling_sequence_selector && size >= 3) {
-            strm << margin << Format("Scrambling sequence index: 0x%05X", int(GetUInt24(data) & 0x0003FFFF)) << std::endl;
+            strm << margin << UString::Format(u"Scrambling sequence index: 0x%05X", {GetUInt24(data) & 0x0003FFFF}) << std::endl;
             data += 3; size -= 3;
         }
         if (multiple_input_stream_flag && size >= 1) {
-            strm << margin << Format("Input stream identifier: 0x%02X", int(data[0])) << std::endl;
+            strm << margin << UString::Format(u"Input stream identifier: 0x%X", {data[0]}) << std::endl;
             data += 1; size -= 1;
         }
     }
@@ -180,12 +179,12 @@ void ts::S2SatelliteDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& d
 ts::XML::Element* ts::S2SatelliteDeliverySystemDescriptor::toXML(XML& xml, XML::Element* parent) const
 {
     XML::Element* root = _is_valid ? xml.addElement(parent, _xml_name) : 0;
-    xml.setBoolAttribute(root, "backwards_compatibility", backwards_compatibility_indicator);
+    xml.setBoolAttribute(root, u"backwards_compatibility", backwards_compatibility_indicator);
     if (scrambling_sequence_selector) {
-        xml.setIntAttribute(root, "scrambling_sequence_index", scrambling_sequence_index, true);
+        xml.setIntAttribute(root, u"scrambling_sequence_index", scrambling_sequence_index, true);
     }
     if (multiple_input_stream_flag) {
-        xml.setIntAttribute(root, "input_stream_identifier", input_stream_identifier, true);
+        xml.setIntAttribute(root, u"input_stream_identifier", input_stream_identifier, true);
     }
     return root;
 }
@@ -202,9 +201,9 @@ void ts::S2SatelliteDeliverySystemDescriptor::fromXML(XML& xml, const XML::Eleme
 
     _is_valid =
         checkXMLName(xml, element) &&
-        xml.getBoolAttribute(backwards_compatibility_indicator, element, "backwards_compatibility", true) &&
-        xml.getOptionalIntAttribute<uint32_t>(scrambling, element, "scrambling_sequence_index", 0x00000000, 0x0003FFFF) &&
-        xml.getOptionalIntAttribute<uint8_t>(stream, element, "input_stream_identifier");
+        xml.getBoolAttribute(backwards_compatibility_indicator, element, u"backwards_compatibility", true) &&
+        xml.getOptionalIntAttribute<uint32_t>(scrambling, element, u"scrambling_sequence_index", 0x00000000, 0x0003FFFF) &&
+        xml.getOptionalIntAttribute<uint8_t>(stream, element, u"input_stream_identifier");
 
     if (scrambling.set()) {
         scrambling_sequence_selector = true;

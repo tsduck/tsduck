@@ -45,7 +45,7 @@ bool ts::XML::getIntAttribute(INT& value,
 {
     INT val;
     UString str;
-    if (!getAttribute(str, elem, name, required, Decimal(defValue))) {
+    if (!getAttribute(str, elem, name, required, UString::Decimal(defValue))) {
         return false;
     }
     else if (!str.toInteger(val, ",")) {
@@ -106,4 +106,28 @@ bool ts::XML::getIntEnumAttribute(INT& value, const Enumeration& definition, con
     const bool ok = getEnumAttribute(v, definition, elem, name, required, int(defValue));
     value = ok ? INT(v) : defValue;
     return ok;
+}
+
+
+//----------------------------------------------------------------------------
+// Set an attribute with an integer value to a node.
+//----------------------------------------------------------------------------
+
+template <typename INT>
+void ts::XML::setIntAttribute(Element* element, const UString& name, INT value, bool hexa)
+{
+    setAttribute(element, name, hexa ? UString::Hexa(value) : UString::Decimal(value));
+}
+
+
+//----------------------------------------------------------------------------
+// Set an optional attribute with an integer value to a node.
+//----------------------------------------------------------------------------
+
+template <typename INT>
+void ts::XML::setOptionalIntAttribute(Element* element, const UString& name, const Variable<INT>& value, bool hexa)
+{
+    if (value.set()) {
+        setIntAttribute<INT>(element, name, value.value(), hexa);
+    }
 }

@@ -33,11 +33,7 @@
 
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
-#include "tsFormat.h"
-#include "tsDecimal.h"
-#include "tsHexa.h"
 #include "tsNames.h"
-#include "tsStringUtils.h"
 #include "tsIntegerUtils.h"
 TSDUCK_SOURCE;
 
@@ -110,7 +106,7 @@ void ts::TablesDisplay::flush()
 // Redirect the output stream to a file.
 //----------------------------------------------------------------------------
 
-bool ts::TablesDisplay::redirect(const std::string& file_name)
+bool ts::TablesDisplay::redirect(const UString& file_name)
 {
     // Close previous file, if any.
     if (_use_outfile) {
@@ -120,10 +116,11 @@ bool ts::TablesDisplay::redirect(const std::string& file_name)
 
     // Open new file if any.
     if (!file_name.empty()) {
-        _report.verbose("creating " + file_name);
-        _outfile.open(file_name.c_str(), std::ios::out);
+        _report.verbose(u"creating " + file_name);
+        const std::string nameUTF8(file_name.toUTF8());
+        _outfile.open(nameUTF8.c_str(), std::ios::out);
         if (!_outfile) {
-            _report.error("cannot create " + file_name);
+            _report.error(u"cannot create " + file_name);
             return false;
         }
         _use_outfile = true;
@@ -142,7 +139,7 @@ std::ostream& ts::TablesDisplay::displayExtraData(const void* data, size_t size,
     std::ostream& strm(out());
     if (size > 0) {
         strm << std::string(indent, ' ') << "Extraneous " << size << " bytes:" << std::endl
-             << Hexa(data, size, hexa::HEXA | hexa::ASCII | hexa::OFFSET, indent);
+             << UString::Dump(data, size, UString::HEXA | UString::ASCII | UString::OFFSET, indent);
     }
     return strm;
 }
@@ -165,7 +162,7 @@ std::ostream& ts::TablesDisplay::displayTable(const BinaryTable& table, int inde
     if (_opt.raw_dump) {
         for (size_t i = 0; i < table.sectionCount(); ++i) {
             const Section& section(*table.sectionAt(i));
-            strm << Hexa(section.content(), section.size(), _opt.raw_flags | hexa::BPL, indent, 16) << std::endl;
+            strm << UString::Dump(section.content(), section.size(), _opt.raw_flags | UString::BPL, indent, 16) << std::endl;
         }
         return strm;
     }
@@ -181,12 +178,10 @@ std::ostream& ts::TablesDisplay::displayTable(const BinaryTable& table, int inde
     }
 
     // Display common header lines.
-    strm << margin << "* " << names::TID(tid, cas)
-         << ", TID " << int(table.tableId())
-         << Format(" (0x%02X)", int(table.tableId()));
+    strm << margin << UString::Format(u"* %s, TID %d (0x%X)", {names::TID(tid, cas), table.tableId(), table.tableId()});
     if (table.sourcePID() != PID_NULL) {
         // If PID is the null PID, this means "unknown PID"
-        strm << ", PID " << table.sourcePID() << Format(" (0x%04X)", int(table.sourcePID()));
+        strm << UString::Format(u", PID %d (0x%X)", {table.sourcePID(), table.sourcePID()});
     }
     strm << std::endl;
     if (table.sectionCount() == 1 && table.sectionAt(0)->isShortSection()) {
@@ -222,7 +217,7 @@ std::ostream& ts::TablesDisplay::displaySection(const Section& section, int inde
 
     // Display hexa dump of the section
     if (_opt.raw_dump) {
-        strm << Hexa(section.content(), section.size(), _opt.raw_flags | hexa::BPL, indent, 16) << std::endl;
+        strm << UString::Dump(section.content(), section.size(), _opt.raw_flags | UString::BPL, indent, 16) << std::endl;
         return strm;
     }
 
@@ -232,10 +227,10 @@ std::ostream& ts::TablesDisplay::displaySection(const Section& section, int inde
 
     // Display common header lines.
     if (!no_header) {
-        strm << margin << "* " << names::TID(tid, cas) << ", TID " << int(tid) << ts::Format(" (0x%02X)", tid);
+        strm << margin << UString::Format(u"* %s, TID %d (0x%X)", {names::TID(tid, cas), tid, tid});
         if (section.sourcePID() != PID_NULL) {
             // If PID is the null PID, this means "unknown PID"
-            strm << ", PID " << int(section.sourcePID()) << ts::Format(" (0x%04X)", int(section.sourcePID()));
+            strm << UString::Format(u", PID %d (0x%X)", {section.sourcePID(), section.sourcePID()});
         }
         strm << std::endl;
         if (section.isShortSection()) {
@@ -277,7 +272,7 @@ std::ostream& ts::TablesDisplay::displaySectionData(const Section& section, int 
 // Display the payload of a section on the output stream as a one-line "log" message.
 //----------------------------------------------------------------------------
 
-std::ostream& ts::TablesDisplay::logSectionData(const Section& section, const std::string& header, size_t max_bytes, CASFamily cas)
+std::ostream& ts::TablesDisplay::logSectionData(const Section& section, const UString& header, size_t max_bytes, CASFamily cas)
 {
     std::ostream& strm(out());
 
@@ -288,7 +283,7 @@ std::ostream& ts::TablesDisplay::logSectionData(const Section& section, const st
     }
 
     // Output exactly one line.
-    strm << header << Hexa(section.payload(), log_size, hexa::SINGLE_LINE);
+    strm << header << UString::Dump(section.payload(), log_size, UString::SINGLE_LINE);
     if (section.payloadSize() > log_size) {
         strm << " ...";
     }
@@ -304,7 +299,7 @@ std::ostream& ts::TablesDisplay::logSectionData(const Section& section, const st
 
 void ts::TablesDisplay::displayUnkownDescriptor(DID did, const uint8_t * payload, size_t size, int indent, TID tid, PDS pds)
 {
-    out() << Hexa(payload, size, hexa::HEXA | hexa::ASCII | hexa::OFFSET, indent);
+    out() << UString::Dump(payload, size, UString::HEXA | UString::ASCII | UString::OFFSET, indent);
 }
 
 
@@ -319,10 +314,7 @@ void ts::TablesDisplay::displayUnkownSectionData(const ts::Section& section, int
 
     // The table id extension was not yet displayed since it depends on the table id.
     if (section.isLongSection()) {
-        strm << margin
-             << "TIDext: " << int(section.tableIdExtension())
-             << Format(" (0x%04X)", int(section.tableIdExtension()))
-             << std::endl;
+        strm << margin << UString::Format(u"TIDext: %d (0x%X)", {section.tableIdExtension(), section.tableIdExtension()}) << std::endl;
     }
 
     // Section payload.
@@ -353,13 +345,13 @@ void ts::TablesDisplay::displayUnkownSectionData(const ts::Section& section, int
 
             // Display a separator after TLV area.
             if (index < payloadSize) {
-                strm << Format("%*s%04X:  End of TLV area", indent, "", int(index)) << std::endl;
+                strm << UString::Format(u"%*s%04X:  End of TLV area", {indent, "", index}) << std::endl;
             }
         }
     }
 
     // Display remaining binary data.
-    strm << Hexa(payload + index, payloadSize - index, hexa::HEXA | hexa::ASCII | hexa::OFFSET, indent, hexa::DEFAULT_LINE_WIDTH, index);
+    strm << UString::Dump(payload + index, payloadSize - index, UString::HEXA | UString::ASCII | UString::OFFSET, indent, UString::DEFAULT_HEXA_LINE_WIDTH, index);
 }
 
 
@@ -382,7 +374,7 @@ void ts::TablesDisplay::displayTLV(const uint8_t* data,
     tlvInner.setAutoLocation();
 
     // Display binary data preceding TLV, from data to data + tlvStart.
-    strm << Hexa(data, tlvStart, hexa::HEXA | hexa::ASCII | hexa::OFFSET, indent, hexa::DEFAULT_LINE_WIDTH, dataOffset, innerIndent);
+    strm << UString::Dump(data, tlvStart, UString::HEXA | UString::ASCII | UString::OFFSET, indent, UString::DEFAULT_HEXA_LINE_WIDTH, dataOffset, innerIndent);
 
     // Display TLV fields, from data + tlvStart to data + tlvStart + tlvSize.
     size_t index = tlvStart;
@@ -402,13 +394,13 @@ void ts::TablesDisplay::displayTLV(const uint8_t* data,
         const size_t valueOffset = dataOffset + index + headerSize;
 
         // Description of the TLV record.
-        strm << Format("%*s%04X:  %*sTag: %*u (0x%0*X), length: %*u bytes, value: ",
-                       indent, "",
-                       int(dataOffset + index),
-                       innerIndent, "",
-                       int(MaxDecimalWidth(tlv.getTagSize())), int(tag),
-                       int(MaxHexaWidth(tlv.getTagSize())), int(tag),
-                       int(MaxDecimalWidth(tlv.getLengthSize())), int(valueSize));
+        strm << UString::Format(u"%*s%04X:  %*sTag: %*u (0x%0*X), length: %*u bytes, value: ",
+                                {indent, "",
+                                 dataOffset + index,
+                                 innerIndent, "",
+                                 MaxDecimalWidth(tlv.getTagSize()), tag,
+                                 MaxHexaWidth(tlv.getTagSize()), tag,
+                                 MaxDecimalWidth(tlv.getLengthSize()), valueSize});
 
         // Display the value field.
         size_t tlvInnerStart = 0;
@@ -420,11 +412,11 @@ void ts::TablesDisplay::displayTLV(const uint8_t* data,
         }
         else if (valueSize <= 8) {
             // If value is short, display it on the same line.
-            strm << Hexa(value, valueSize, hexa::HEXA | hexa::SINGLE_LINE) << std::endl;
+            strm << UString::Dump(value, valueSize, UString::HEXA | UString::SINGLE_LINE) << std::endl;
         }
         else {
             strm << std::endl
-                 << Hexa(value, valueSize, hexa::HEXA | hexa::ASCII | hexa::OFFSET, indent, hexa::DEFAULT_LINE_WIDTH, valueOffset, innerIndent + 2);
+                 << UString::Dump(value, valueSize, UString::HEXA | UString::ASCII | UString::OFFSET, indent, UString::DEFAULT_HEXA_LINE_WIDTH, valueOffset, innerIndent + 2);
         }
 
         // Point after current TLV record.
@@ -437,7 +429,7 @@ void ts::TablesDisplay::displayTLV(const uint8_t* data,
     }
 
     // Display remaining binary data.
-    strm << Hexa(data + index, endIndex - index, hexa::HEXA | hexa::ASCII | hexa::OFFSET, indent, hexa::DEFAULT_LINE_WIDTH, dataOffset + index, innerIndent);
+    strm << UString::Dump(data + index, endIndex - index, UString::HEXA | UString::ASCII | UString::OFFSET, indent, UString::DEFAULT_HEXA_LINE_WIDTH, dataOffset + index, innerIndent);
 }
 
 

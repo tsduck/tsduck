@@ -45,8 +45,8 @@ namespace ts {
     {
     public:
         // Public members:
-        bool         country_availability; //!< See ETSI 300 468, 6.2.10.
-        StringVector country_codes;        //!< See ETSI 300 468, 6.2.10.
+        bool          country_availability; //!< See ETSI 300 468, 6.2.10.
+        UStringVector country_codes;        //!< See ETSI 300 468, 6.2.10.
 
         //!
         //! Maximum number of entries to fit in 255 bytes.
@@ -61,10 +61,9 @@ namespace ts {
         //!
         //! Constructor using a variable-length argument list.
         //! @param [in] availability If true, the service is available in the specified countries.
-        //! @param [in] country Variable-length list of country codes.
-        //! The end of the argument list must be marked by TS_NULL.
+        //! @param [in] countries Variable-length list of country codes.
         //!
-        CountryAvailabilityDescriptor(bool availability, const char* country, ...);
+        CountryAvailabilityDescriptor(bool availability, const std::initializer_list<UString> countries);
 
         //!
         //! Constructor from a binary descriptor
