@@ -46,48 +46,50 @@ TSDUCK_SOURCE;
 // channel's transponder.
 //----------------------------------------------------------------------------
 
-bool ts::GetTunerFromZapFile (const std::string& channel_name,
-                                const std::string& file_name,
-                                TunerParameters& parameters,
-                                Report& report)
+bool ts::GetTunerFromZapFile(const UString& channel_name,
+                             const UString& file_name,
+                             TunerParameters& parameters,
+                             Report& report)
 {
     // Open the zap configuration file
 
-    std::ifstream file (file_name.c_str());
+    std::ifstream file(file_name.toUTF8().c_str());
     if (!file) {
-        report.error ("cannot open " + file_name);
+        report.error(u"cannot open " + file_name);
         return false;
     }
 
     // Loop through file, looking for the channel name
 
-    std::string line;
-    while (std::getline (file, line)) {
+    std::string lineUTF8;
+    while (std::getline(file, lineUTF8)) {
+        const UString line(lineUTF8);
+
         // Locate channel name: before first ':'
-        size_t first_colon = line.find (':');
-        if (first_colon == std::string::npos || !SimilarStrings (channel_name, line.c_str(), first_colon)) {
+        const size_t first_colon = line.find(u':');
+        if (first_colon == UString::NPOS || !channel_name.similar(line.substr(0, first_colon))) {
             // No channel name or not the expected one, read more
             continue;
         }
         // Channel found, locate the complete zap specification of the TS
         size_t last_colon = first_colon;
-        for (size_t n = parameters.zapFieldCount(); n != 0 && last_colon != std::string::npos; --n) {
-            last_colon = line.find (':', last_colon + 1);
+        for (size_t n = parameters.zapFieldCount(); n != 0 && last_colon != UString::NPOS; --n) {
+            last_colon = line.find(u':', last_colon + 1);
         }
-        if (last_colon == std::string::npos) {
+        if (last_colon == UString::npos) {
             last_colon = line.length();
         }
-        const std::string zap (line.substr (first_colon + 1, last_colon - first_colon - 1));
-        bool ok = parameters.fromZapFormat (zap);
+        const UString zap (line.substr(first_colon + 1, last_colon - first_colon - 1));
+        bool ok = parameters.fromZapFormat(zap);
         if (!ok) {
-            report.error ("invalid tuning specification \"" + zap + "\"");
+            report.error(u"invalid tuning specification \"%s\"", {zap});
         }
         return ok;
     }
 
     // Channel not found
 
-    report.error ("channel " + channel_name + " not found in " + file_name);
+    report.error(u"channel %s not found in %s", {channel_name, file_name});
     return false;
 }
 

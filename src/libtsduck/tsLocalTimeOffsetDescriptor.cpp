@@ -40,9 +40,13 @@
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 TSDUCK_SOURCE;
-TS_XML_DESCRIPTOR_FACTORY(ts::LocalTimeOffsetDescriptor, "local_time_offset_descriptor");
-TS_ID_DESCRIPTOR_FACTORY(ts::LocalTimeOffsetDescriptor, ts::EDID(ts::DID_LOCAL_TIME_OFFSET));
-TS_ID_DESCRIPTOR_DISPLAY(ts::LocalTimeOffsetDescriptor::DisplayDescriptor, ts::EDID(ts::DID_LOCAL_TIME_OFFSET));
+
+#define MY_XML_NAME u"local_time_offset_descriptor"
+#define MY_DID ts::DID_LOCAL_TIME_OFFSET
+
+TS_XML_DESCRIPTOR_FACTORY(ts::LocalTimeOffsetDescriptor, MY_XML_NAME);
+TS_ID_DESCRIPTOR_FACTORY(ts::LocalTimeOffsetDescriptor, ts::EDID(MY_DID));
+TS_ID_DESCRIPTOR_DISPLAY(ts::LocalTimeOffsetDescriptor::DisplayDescriptor, ts::EDID(MY_DID));
 
 
 //----------------------------------------------------------------------------
@@ -50,7 +54,7 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::LocalTimeOffsetDescriptor::DisplayDescriptor, ts::E
 //----------------------------------------------------------------------------
 
 ts::LocalTimeOffsetDescriptor::LocalTimeOffsetDescriptor() :
-    AbstractDescriptor(DID_LOCAL_TIME_OFFSET, "local_time_offset_descriptor"),
+    AbstractDescriptor(MY_DID, MY_XML_NAME),
     regions()
 {
     _is_valid = true;
@@ -71,7 +75,7 @@ ts::LocalTimeOffsetDescriptor::Region::Region() :
 //----------------------------------------------------------------------------
 
 ts::LocalTimeOffsetDescriptor::LocalTimeOffsetDescriptor(const Descriptor& desc, const DVBCharset* charset) :
-    AbstractDescriptor(DID_LOCAL_TIME_OFFSET, "local_time_offset_descriptor"),
+    AbstractDescriptor(MY_DID, MY_XML_NAME),
     regions()
 {
     deserialize(desc, charset);

@@ -39,9 +39,13 @@
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 TSDUCK_SOURCE;
-TS_XML_DESCRIPTOR_FACTORY(ts::DataBroadcastDescriptor, "data_broadcast_descriptor");
-TS_ID_DESCRIPTOR_FACTORY(ts::DataBroadcastDescriptor, ts::EDID(ts::DID_DATA_BROADCAST));
-TS_ID_DESCRIPTOR_DISPLAY(ts::DataBroadcastDescriptor::DisplayDescriptor, ts::EDID(ts::DID_DATA_BROADCAST));
+
+#define MY_XML_NAME u"data_broadcast_descriptor"
+#define MY_DID ts::DID_DATA_BROADCAST
+
+TS_XML_DESCRIPTOR_FACTORY(ts::DataBroadcastDescriptor, MY_XML_NAME);
+TS_ID_DESCRIPTOR_FACTORY(ts::DataBroadcastDescriptor, ts::EDID(MY_DID));
+TS_ID_DESCRIPTOR_DISPLAY(ts::DataBroadcastDescriptor::DisplayDescriptor, ts::EDID(MY_DID));
 
 
 //----------------------------------------------------------------------------
@@ -49,7 +53,7 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::DataBroadcastDescriptor::DisplayDescriptor, ts::EDI
 //----------------------------------------------------------------------------
 
 ts::DataBroadcastDescriptor::DataBroadcastDescriptor() :
-    AbstractDescriptor(DID_DATA_BROADCAST, "data_broadcast_descriptor"),
+    AbstractDescriptor(MY_DID, MY_XML_NAME),
     data_broadcast_id(0),
     component_tag(0),
     selector_bytes(),
@@ -60,7 +64,7 @@ ts::DataBroadcastDescriptor::DataBroadcastDescriptor() :
 }
 
 ts::DataBroadcastDescriptor::DataBroadcastDescriptor(const Descriptor& desc, const DVBCharset* charset) :
-    AbstractDescriptor(DID_DATA_BROADCAST, "data_broadcast_descriptor"),
+    AbstractDescriptor(MY_DID, MY_XML_NAME),
     data_broadcast_id(0),
     component_tag(0),
     selector_bytes(),

@@ -38,9 +38,13 @@
 #include "tsTablesFactory.h"
 #include "tsXMLTables.h"
 TSDUCK_SOURCE;
-TS_ID_TABLE_FACTORY(ts::BAT, ts::TID_BAT);
-TS_XML_TABLE_FACTORY(ts::BAT, "BAT");
-TS_ID_SECTION_DISPLAY(ts::BAT::DisplaySection, ts::TID_BAT);
+
+#define MY_XML_NAME u"BAT"
+#define MY_TID ts::TID_BAT
+
+TS_XML_TABLE_FACTORY(ts::BAT, MY_XML_NAME);
+TS_ID_TABLE_FACTORY(ts::BAT, MY_TID);
+TS_ID_SECTION_DISPLAY(ts::BAT::DisplaySection, MY_TID);
 
 
 //----------------------------------------------------------------------------
@@ -48,13 +52,13 @@ TS_ID_SECTION_DISPLAY(ts::BAT::DisplaySection, ts::TID_BAT);
 //----------------------------------------------------------------------------
 
 ts::BAT::BAT(uint8_t vers, bool cur, uint16_t id) :
-    AbstractTransportListTable(TID_BAT, "BAT", id, vers, cur),
+    AbstractTransportListTable(MY_TID, MY_XML_NAME, id, vers, cur),
     bouquet_id(_tid_ext)
 {
 }
 
 ts::BAT::BAT(const BinaryTable& table, const DVBCharset* charset) :
-    AbstractTransportListTable(TID_BAT, "BAT", table, charset),
+    AbstractTransportListTable(MY_TID, MY_XML_NAME, table, charset),
     bouquet_id(_tid_ext)
 {
 }

@@ -36,9 +36,13 @@
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 TSDUCK_SOURCE;
-TS_ID_TABLE_FACTORY(ts::CAT, ts::TID_CAT);
-TS_XML_TABLE_FACTORY(ts::CAT, "CAT");
-TS_ID_SECTION_DISPLAY(ts::CAT::DisplaySection, ts::TID_CAT);
+
+#define MY_XML_NAME u"CAT"
+#define MY_TID ts::TID_CAT
+
+TS_XML_TABLE_FACTORY(ts::CAT, MY_XML_NAME);
+TS_ID_TABLE_FACTORY(ts::CAT, MY_TID);
+TS_ID_SECTION_DISPLAY(ts::CAT::DisplaySection, MY_TID);
 
 
 //----------------------------------------------------------------------------
@@ -46,11 +50,11 @@ TS_ID_SECTION_DISPLAY(ts::CAT::DisplaySection, ts::TID_CAT);
 //----------------------------------------------------------------------------
 
 ts::CAT::CAT(uint8_t vers, bool cur) :
-    AbstractDescriptorsTable(TID_CAT, "CAT", 0xFFFF, vers, cur)
+    AbstractDescriptorsTable(MY_TID, MY_XML_NAME, 0xFFFF, vers, cur)
 {
 }
 
 ts::CAT::CAT(const BinaryTable& table, const DVBCharset* charset) :
-    AbstractDescriptorsTable(TID_CAT, "CAT", table, charset)
+    AbstractDescriptorsTable(MY_TID, MY_XML_NAME, table, charset)
 {
 }

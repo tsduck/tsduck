@@ -125,7 +125,7 @@ namespace ts {
         //! set to @link AnyAddress @endlink and port to @link AnyPort @endlink.
         //! @param [in] report Where to report errors.
         //!
-        SocketAddress(const std::string& name, Report& report = CERR) :
+        SocketAddress(const UString& name, Report& report = CERR) :
             IPAddress(),
             _port(0)
         {
@@ -250,12 +250,12 @@ namespace ts {
         //! In the later case, the integer value of the address is
         //! set to @link AnyAddress @endlink and port to @link AnyPort @endlink.
         //!
-        bool resolve(const std::string& name, Report& report = CERR);
+        bool resolve(const UString& name, Report& report = CERR);
 
         //!
         //! Convert to a string object in numeric format "a.b.c.d[:port]".
         //!
-        operator std::string() const;
+        operator ts::UString() const;
 
     private:
         uint16_t _port;  // Port in host byte order
@@ -270,5 +270,5 @@ namespace ts {
 //!
 TSDUCKDLL inline std::ostream& operator<<(std::ostream& strm, const ts::SocketAddress& sa)
 {
-    return strm << std::string(sa);
+    return strm << ts::UString(sa);
 }

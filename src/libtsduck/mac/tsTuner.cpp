@@ -37,7 +37,7 @@
 #include "tsTuner.h"
 TSDUCK_SOURCE;
 
-#define NOT_IMPLEMENTED "DVB tuners are not implemented on macOS"
+#define NOT_IMPLEMENTED u"DVB tuners are not implemented on macOS"
 
 #if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
 const ts::MilliSecond ts::Tuner::DEFAULT_SIGNAL_TIMEOUT;
@@ -57,7 +57,7 @@ ts::Tuner::~Tuner()
 // Default constructor,
 //-----------------------------------------------------------------------------
 
-ts::Tuner::Tuner(const std::string& device_name) :
+ts::Tuner::Tuner(const UString& device_name) :
     _is_open(false),
     _info_only(true),
     _tuner_type(DVB_T),
@@ -75,7 +75,7 @@ ts::Tuner::Tuner(const std::string& device_name) :
 // Constructor from one device name.
 //-----------------------------------------------------------------------------
 
-ts::Tuner::Tuner(const std::string& device_name, bool info_only, Report& report) :
+ts::Tuner::Tuner(const UString& device_name, bool info_only, Report& report) :
     Tuner(device_name)
 {
     report.error(NOT_IMPLEMENTED);
@@ -98,7 +98,7 @@ bool ts::Tuner::GetAllTuners(TunerPtrVector& tuners, Report& report)
 //-----------------------------------------------------------------------------
 
 // Flawfinder: ignore: this is our open(), not ::open().
-bool ts::Tuner::open(const std::string& device_name, bool info_only, Report& report)
+bool ts::Tuner::open(const UString& device_name, bool info_only, Report& report)
 {
     report.error(NOT_IMPLEMENTED);
     return false;
@@ -228,7 +228,7 @@ size_t ts::Tuner::receive(TSPacket* buffer, size_t max_packets, const AbortInter
 // Display the characteristics and status of the tuner.
 //-----------------------------------------------------------------------------
 
-std::ostream& ts::Tuner::displayStatus(std::ostream& strm, const std::string& margin, Report& report)
+std::ostream& ts::Tuner::displayStatus(std::ostream& strm, const UString& margin, Report& report)
 {
     report.error(NOT_IMPLEMENTED);
     return strm;

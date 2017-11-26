@@ -32,7 +32,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsTablesFactory.h"
-#include "tsStringUtils.h"
 TSDUCK_SOURCE;
 
 TS_DEFINE_SINGLETON(ts::TablesFactory);
@@ -74,14 +73,14 @@ ts::TablesFactory::Register::Register(const EDID& id, DescriptorFactory factory)
     TablesFactory::Instance()->_descriptorIds.insert(std::pair<EDID,DescriptorFactory>(id, factory));
 }
 
-ts::TablesFactory::Register::Register(const std::string& node_name, TableFactory factory)
+ts::TablesFactory::Register::Register(const UString& node_name, TableFactory factory)
 {
-    TablesFactory::Instance()->_tableNames.insert(std::pair<std::string,TableFactory>(node_name, factory));
+    TablesFactory::Instance()->_tableNames.insert(std::pair<UString,TableFactory>(node_name, factory));
 }
 
-ts::TablesFactory::Register::Register(const std::string& node_name, DescriptorFactory factory)
+ts::TablesFactory::Register::Register(const UString& node_name, DescriptorFactory factory)
 {
-    TablesFactory::Instance()->_descriptorNames.insert(std::pair<std::string,DescriptorFactory>(node_name, factory));
+    TablesFactory::Instance()->_descriptorNames.insert(std::pair<UString,DescriptorFactory>(node_name, factory));
 }
 
 ts::TablesFactory::Register::Register(TID id, DisplaySectionFunction func)
@@ -118,15 +117,15 @@ ts::TablesFactory::DescriptorFactory ts::TablesFactory::getDescriptorFactory(con
     return it != _descriptorIds.end() ? it->second : 0;
 }
 
-ts::TablesFactory::TableFactory ts::TablesFactory::getTableFactory(const std::string& node_name) const
+ts::TablesFactory::TableFactory ts::TablesFactory::getTableFactory(const UString& node_name) const
 {
-    std::map<std::string,TableFactory>::const_iterator it = FindSimilar(_tableNames, node_name);
+    std::map<UString,TableFactory>::const_iterator it = node_name.findSimilar(_tableNames);
     return it != _tableNames.end() ? it->second : 0;
 }
 
-ts::TablesFactory::DescriptorFactory ts::TablesFactory::getDescriptorFactory(const std::string& node_name) const
+ts::TablesFactory::DescriptorFactory ts::TablesFactory::getDescriptorFactory(const UString& node_name) const
 {
-    std::map<std::string,DescriptorFactory>::const_iterator it = FindSimilar(_descriptorNames, node_name);
+    std::map<UString,DescriptorFactory>::const_iterator it = node_name.findSimilar(_descriptorNames);
     return it != _descriptorNames.end() ? it->second : 0;
 }
 
@@ -158,18 +157,18 @@ void ts::TablesFactory::getRegisteredDescriptorIds(std::vector<EDID>& ids) const
     }
 }
 
-void ts::TablesFactory::getRegisteredTableNames(StringList& names) const
+void ts::TablesFactory::getRegisteredTableNames(UStringList& names) const
 {
     names.clear();
-    for (std::map<std::string,TableFactory>::const_iterator it = _tableNames.begin(); it != _tableNames.end(); ++it) {
+    for (std::map<UString,TableFactory>::const_iterator it = _tableNames.begin(); it != _tableNames.end(); ++it) {
         names.push_back(it->first);
     }
 }
 
-void ts::TablesFactory::getRegisteredDescriptorNames(StringList& names) const
+void ts::TablesFactory::getRegisteredDescriptorNames(UStringList& names) const
 {
     names.clear();
-    for (std::map<std::string,DescriptorFactory>::const_iterator it = _descriptorNames.begin(); it != _descriptorNames.end(); ++it) {
+    for (std::map<UString,DescriptorFactory>::const_iterator it = _descriptorNames.begin(); it != _descriptorNames.end(); ++it) {
         names.push_back(it->first);
     }
 }

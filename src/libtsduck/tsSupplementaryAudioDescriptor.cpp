@@ -38,9 +38,14 @@
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 TSDUCK_SOURCE;
-TS_XML_DESCRIPTOR_FACTORY(ts::SupplementaryAudioDescriptor, "supplementary_audio_descriptor");
-TS_ID_DESCRIPTOR_FACTORY(ts::SupplementaryAudioDescriptor, ts::EDID(ts::DID_EXTENSION, ts::EDID_SUPPL_AUDIO));
-TS_ID_DESCRIPTOR_DISPLAY(ts::SupplementaryAudioDescriptor::DisplayDescriptor, ts::EDID(ts::DID_EXTENSION, ts::EDID_SUPPL_AUDIO));
+
+#define MY_XML_NAME u"supplementary_audio_descriptor"
+#define MY_DID ts::DID_EXTENSION
+#define MY_EDID ts::EDID_SUPPL_AUDIO
+
+TS_XML_DESCRIPTOR_FACTORY(ts::SupplementaryAudioDescriptor, MY_XML_NAME);
+TS_ID_DESCRIPTOR_FACTORY(ts::SupplementaryAudioDescriptor, ts::EDID(MY_DID, MY_EDID));
+TS_ID_DESCRIPTOR_DISPLAY(ts::SupplementaryAudioDescriptor::DisplayDescriptor, ts::EDID(MY_DID, MY_EDID));
 
 
 //----------------------------------------------------------------------------
@@ -48,7 +53,7 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::SupplementaryAudioDescriptor::DisplayDescriptor, ts
 //----------------------------------------------------------------------------
 
 ts::SupplementaryAudioDescriptor::SupplementaryAudioDescriptor() :
-    AbstractDescriptor(DID_EXTENSION, "supplementary_audio_descriptor"),
+    AbstractDescriptor(MY_DID, MY_XML_NAME),
     mix_type(0),
     editorial_classification(0),
     language_code(),
@@ -58,7 +63,7 @@ ts::SupplementaryAudioDescriptor::SupplementaryAudioDescriptor() :
 }
 
 ts::SupplementaryAudioDescriptor::SupplementaryAudioDescriptor(const Descriptor& bin, const DVBCharset* charset) :
-    AbstractDescriptor(DID_EXTENSION, "supplementary_audio_descriptor"),
+    AbstractDescriptor(MY_DID, MY_XML_NAME),
     mix_type(0),
     editorial_classification(0),
     language_code(),
@@ -76,7 +81,7 @@ void ts::SupplementaryAudioDescriptor::serialize(Descriptor& desc, const DVBChar
 {
     ByteBlockPtr bbp(serializeStart());
 
-    bbp->appendUInt8(EDID_SUPPL_AUDIO);
+    bbp->appendUInt8(MY_EDID);
     bbp->appendUInt8((mix_type << 7) |
                      ((editorial_classification & 0x1F) << 2) |
                      0x02 |
@@ -103,7 +108,7 @@ void ts::SupplementaryAudioDescriptor::deserialize(const Descriptor& desc, const
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
 
-    if (!(_is_valid = desc.isValid() && desc.tag() == _tag && size >= 2 && data[0] == EDID_SUPPL_AUDIO)) {
+    if (!(_is_valid = desc.isValid() && desc.tag() == _tag && size >= 2 && data[0] == MY_EDID)) {
         return;
     }
 

@@ -91,7 +91,7 @@ void ts::SharedLibrary::load(const UString& filename)
         _error = ErrorCodeMessage();
     }
 #else
-    _dl = ::dlopen(_filename.c_str(), RTLD_NOW | RTLD_GLOBAL);
+    _dl = ::dlopen(_filename.toUTF8().c_str(), RTLD_NOW | RTLD_GLOBAL);
     _is_loaded = _dl != 0;
     if (!_is_loaded) {
         const char* err(dlerror());

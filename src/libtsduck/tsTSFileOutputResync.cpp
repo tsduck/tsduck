@@ -41,14 +41,14 @@ TSDUCK_SOURCE;
 // Open method
 //----------------------------------------------------------------------------
 
-bool ts::TSFileOutputResync::open (const std::string& filename, bool append, bool keep, Report& report)
+bool ts::TSFileOutputResync::open(const UString& filename, bool append, bool keep, Report& report)
 {
     // Invoke superclass for actual file opening
-    const bool ok = TSFileOutput::open (filename, append, keep, report);
+    const bool ok = TSFileOutput::open(filename, append, keep, report);
 
     // Reset all continuity counters to a known state
     if (ok) {
-        TS_ZERO (_cc);
+        TS_ZERO(_cc);
     }
 
     return ok;
@@ -59,7 +59,7 @@ bool ts::TSFileOutputResync::open (const std::string& filename, bool append, boo
 // Write packets, update their continuity counters (packets are modified)
 //----------------------------------------------------------------------------
 
-bool ts::TSFileOutputResync::write (TSPacket* buffer, size_t packet_count, Report& report)
+bool ts::TSFileOutputResync::write(TSPacket* buffer, size_t packet_count, Report& report)
 {
     // Update continuity counters
     for (size_t n = 0; n < packet_count; ++n) {
@@ -68,11 +68,11 @@ bool ts::TSFileOutputResync::write (TSPacket* buffer, size_t packet_count, Repor
             // ISO 13818-1 says "do not increment CC when no payload is present"
             _cc[pid] = (_cc[pid] + 1) & CC_MASK;
         }
-        buffer[n].setCC (_cc[pid]);
+        buffer[n].setCC(_cc[pid]);
     }
 
     // Invoke superclass
-    return TSFileOutput::write (buffer, packet_count, report);
+    return TSFileOutput::write(buffer, packet_count, report);
 }
 
 
@@ -83,7 +83,7 @@ bool ts::TSFileOutputResync::write (TSPacket* buffer, size_t packet_count, Repor
 bool ts::TSFileOutputResync::write (TSPacket* buffer, size_t packet_count, PID pid, Report& report)
 {
     for (size_t n = 0; n < packet_count; ++n) {
-        buffer[n].setPID (pid);
+        buffer[n].setPID(pid);
     }
-    return write (buffer, packet_count, report);
+    return write(buffer, packet_count, report);
 }

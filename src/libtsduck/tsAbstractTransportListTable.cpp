@@ -43,7 +43,7 @@ TSDUCK_SOURCE;
 //----------------------------------------------------------------------------
 
 ts::AbstractTransportListTable::AbstractTransportListTable(TID tid_,
-                                                           const char* xml_name,
+                                                           const UChar* xml_name,
                                                            uint16_t tid_ext_,
                                                            uint8_t version_,
                                                            bool is_current_) :
@@ -61,7 +61,7 @@ ts::AbstractTransportListTable::AbstractTransportListTable(TID tid_,
 // Constructor from a binary table
 //----------------------------------------------------------------------------
 
-ts::AbstractTransportListTable::AbstractTransportListTable (TID tid, const char* xml_name, const BinaryTable& table, const DVBCharset* charset) :
+ts::AbstractTransportListTable::AbstractTransportListTable (TID tid, const UChar* xml_name, const BinaryTable& table, const DVBCharset* charset) :
     AbstractLongTable(tid, xml_name),
     descs(),
     transports(),

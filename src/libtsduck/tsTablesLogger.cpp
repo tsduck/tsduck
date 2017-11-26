@@ -85,7 +85,7 @@ ts::TablesLogger::TablesLogger(const TablesLoggerArgs& opt, TablesDisplay& displ
             if (!_opt.multi_files) {
                 // Create one single binary file as output
                 _report.verbose("Creating " + _opt.destination);
-                _outfile.open(_opt.destination.c_str(), std::ios::out | std::ios::binary);
+                _outfile.open(_opt.destination.toUTF8().c_str(), std::ios::out | std::ios::binary);
                 if (!_outfile) {
                     _report.error("cannot create " + _opt.destination);
                     _abort = true;
@@ -323,17 +323,17 @@ void ts::TablesLogger::saveSection(const Section& sect)
     // Create individual file for this section if required.
     if (_opt.multi_files) {
         // Build a unique file name for this section
-        std::string outname(PathPrefix(_opt.destination));
-        outname += Format("_p%04X_t%02X", int(sect.sourcePID()), int(sect.tableId()));
+        UString outname(PathPrefix(_opt.destination));
+        outname += UString::Format(u"_p%04X_t%02X", {sect.sourcePID(), sect.tableId()});
         if (sect.isLongSection()) {
-            outname += Format("_e%04X_v%02X_s%02X", int(sect.tableIdExtension()), int(sect.version()), int(sect.sectionNumber()));
+            outname += UString::Format(u"_e%04X_v%02X_s%02X", {sect.tableIdExtension(), sect.version(), sect.sectionNumber()});
         }
         outname += PathSuffix(_opt.destination);
         // Create the output file
-        _report.verbose("creating " + outname);
-        _outfile.open(outname.c_str(), std::ios::out | std::ios::binary);
+        _report.verbose(u"creating " + outname);
+        _outfile.open(outname.toUTF8().c_str(), std::ios::out | std::ios::binary);
         if (!_outfile) {
-            _report.error("error creating " + outname);
+            _report.error(u"error creating " + outname);
             _abort = true;
             return;
         }

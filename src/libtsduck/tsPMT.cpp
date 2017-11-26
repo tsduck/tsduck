@@ -32,16 +32,19 @@
 //----------------------------------------------------------------------------
 
 #include "tsPMT.h"
-#include "tsFormat.h"
 #include "tsNames.h"
 #include "tsBinaryTable.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 #include "tsXMLTables.h"
 TSDUCK_SOURCE;
-TS_XML_TABLE_FACTORY(ts::PMT, "PMT");
-TS_ID_TABLE_FACTORY(ts::PMT, ts::TID_PMT);
-TS_ID_SECTION_DISPLAY(ts::PMT::DisplaySection, ts::TID_PMT);
+
+#define MY_XML_NAME u"PMT"
+#define MY_TID ts::TID_PMT
+
+TS_XML_TABLE_FACTORY(ts::PMT, MY_XML_NAME);
+TS_ID_TABLE_FACTORY(ts::PMT, MY_TID);
+TS_ID_SECTION_DISPLAY(ts::PMT::DisplaySection, MY_TID);
 
 
 //----------------------------------------------------------------------------
@@ -49,7 +52,7 @@ TS_ID_SECTION_DISPLAY(ts::PMT::DisplaySection, ts::TID_PMT);
 //----------------------------------------------------------------------------
 
 ts::PMT::PMT(uint8_t version_, bool is_current_, uint16_t service_id_, PID pcr_pid_) :
-    AbstractLongTable(TID_PMT, "PMT", version_, is_current_),
+    AbstractLongTable(MY_TID, MY_XML_NAME, version_, is_current_),
     service_id(service_id_),
     pcr_pid(pcr_pid_),
     descs(),
@@ -64,7 +67,7 @@ ts::PMT::PMT(uint8_t version_, bool is_current_, uint16_t service_id_, PID pcr_p
 //----------------------------------------------------------------------------
 
 ts::PMT::PMT(const BinaryTable& table, const DVBCharset* charset) :
-    AbstractLongTable(TID_PMT, "PMT"),
+    AbstractLongTable(MY_TID, MY_XML_NAME),
     service_id(0),
     pcr_pid(PID_NULL),
     descs(),
@@ -194,7 +197,7 @@ void ts::PMT::serialize(BinaryTable& table, const DVBCharset* charset) const
     }
 
     // Add one single section in the table
-    table.addSection(new Section(TID_PMT,          // tid
+    table.addSection(new Section(MY_TID,          // tid
                                  false,            // is_private_section
                                  service_id,       // tid_ext
                                  version,
@@ -274,14 +277,13 @@ void ts::PMT::DisplaySection(TablesDisplay& display, const ts::Section& section,
         if (info_length > size) {
             info_length = size;
         }
-        strm << margin << "Program: " << section.tableIdExtension()
-             << Format(" (0x%04X)", int(section.tableIdExtension()))
+        strm << margin << UString::Format(u"Program: %d (0x%X)", {section.tableIdExtension(), section.tableIdExtension()})
              << ", PCR PID: ";
         if (pid == PID_NULL) {
             strm << "none";
         }
         else {
-            strm << pid << Format(" (0x%04X)", int(pid));
+            strm << pid << UString::Format(u" (0x%X)", {pid});
         }
         strm << std::endl;
 
@@ -302,7 +304,7 @@ void ts::PMT::DisplaySection(TablesDisplay& display, const ts::Section& section,
                 es_info_length = size;
             }
             strm << margin << "Elementary stream: type " << names::StreamType(stream, names::FIRST)
-                 << ", PID: " << es_pid << Format(" (0x%04X)", int(es_pid)) << std::endl;
+                 << ", PID: " << es_pid << UString::Format(u" (0x%X)", {es_pid}) << std::endl;
             display.displayDescriptorList(data, es_info_length, indent, section.tableId());
             data += es_info_length; size -= es_info_length;
         }

@@ -37,10 +37,15 @@
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 TSDUCK_SOURCE;
-TS_ID_DESCRIPTOR_DISPLAY(ts::EacemPreferredNameListDescriptor::DisplayDescriptor, ts::EDID(ts::DID_PREF_NAME_LIST, ts::PDS_EACEM));
+
+#define MY_XML_NAME u"eacem_preferred_name_list_descriptor"
+#define MY_DID ts::DID_PREF_NAME_LIST
+#define MY_PDS ts::PDS_EACEM
+
+TS_ID_DESCRIPTOR_DISPLAY(ts::EacemPreferredNameListDescriptor::DisplayDescriptor, ts::EDID(MY_DID, MY_PDS));
 
 // Incorrect use of TPS private data, TPS broadcasters should use EACEM/EICTA PDS instead.
-TS_ID_DESCRIPTOR_DISPLAY(ts::EacemPreferredNameListDescriptor::DisplayDescriptor, ts::EDID(ts::DID_PREF_NAME_LIST, ts::PDS_TPS));
+TS_ID_DESCRIPTOR_DISPLAY(ts::EacemPreferredNameListDescriptor::DisplayDescriptor, ts::EDID(MY_DID, ts::PDS_TPS));
 
 
 //----------------------------------------------------------------------------

@@ -81,7 +81,7 @@ ts::TablesDisplayArgs& ts::TablesDisplayArgs::operator=(const TablesDisplayArgs&
 
 void ts::TablesDisplayArgs::addHelp(Args& args) const
 {
-    std::string help =
+    UString help =
         u"\n"
         u"Tables and sections formatting options:\n"
         u"\n"
@@ -97,7 +97,7 @@ void ts::TablesDisplayArgs::addHelp(Args& args) const
         u"      signalization may assume that the default character set is different,\n"
         u"      typically the usual local character table for the region. This option\n"
         u"      forces a non-standard character table. The available table names are:\n"
-        u"      " + UString::Join(DVBCharset::GetAllNames()).toSplitLines(74, UString(), UString(6, SPACE)).toUTF8() + ".\n"
+        u"      " + UString::Join(DVBCharset::GetAllNames()).toSplitLines(74, UString(), UString(6, SPACE)) + u".\n"
         u"\n"
         u"  --default-pds value\n"
         u"      Default private data specifier. This option is meaningful only when the\n"
@@ -105,7 +105,7 @@ void ts::TablesDisplayArgs::addHelp(Args& args) const
         u"      without a preceding private_data_specifier_descriptor. The specified\n"
         u"      value is used as private data specifier to interpret private descriptors.\n"
         u"      The PDS value can be an integer or one of (not case-sensitive):\n"
-        u"      " + PrivateDataSpecifierEnum.nameList() + ".\n"
+        u"      " + PrivateDataSpecifierEnum.nameList() + u".\n"
         u"\n"
         u"  --europe\n"
         u"      A synonym for '--default-charset ISO-8859-15'. This is a handy shortcut\n"
@@ -170,7 +170,7 @@ void ts::TablesDisplayArgs::defineOptions(Args& args) const
 
 void ts::TablesDisplayArgs::load(Args& args)
 {
-    args.getIntValue(default_pds, "default-pds");
+    args.getIntValue(default_pds, u"default-pds");
     raw_dump = args.present(u"raw-dump");
     raw_flags = hexa::HEXA;
     if (args.present(u"c-style")) {
@@ -181,14 +181,14 @@ void ts::TablesDisplayArgs::load(Args& args)
     // The --nested-tlv has an optional value.
     // If present without value, use 1, meaning all non-empty TLV records.
     // If not present, we use 0, which means no nested TLV.
-    min_nested_tlv = args.present(u"nested-tlv") ? args.intValue<size_t>("nested-tlv", 1) : 0;
+    min_nested_tlv = args.present(u"nested-tlv") ? args.intValue<size_t>(u"nested-tlv", 1) : 0;
 
     // Get all TLV syntax specifications.
     tlv_syntax.clear();
-    const size_t count = args.count("tlv");
+    const size_t count = args.count(u"tlv");
     for (size_t i = 0; i < count; ++i) {
         TLVSyntax tlv;
-        tlv.fromString(args.value(u"tlv", "", i), args);
+        tlv.fromString(args.value(u"tlv", u"", i), args);
         tlv_syntax.push_back(tlv);
     }
     std::sort(tlv_syntax.begin(), tlv_syntax.end());
@@ -198,9 +198,9 @@ void ts::TablesDisplayArgs::load(Args& args)
         default_charset = &DVBCharsetSingleByte::ISO_8859_15;
     }
     else {
-        const std::string csName(args.value(u"default-charset"));
+        const UString csName(args.value(u"default-charset"));
         if (!csName.empty() && (default_charset = DVBCharset::GetCharset(csName)) == 0) {
-            args.error("invalid character set name '%s", csName.c_str());
+            args.error(u"invalid character set name '%s", {csName});
         }
     }
 }

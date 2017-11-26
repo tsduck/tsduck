@@ -37,9 +37,13 @@
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 TSDUCK_SOURCE;
-TS_XML_DESCRIPTOR_FACTORY(ts::ServiceListDescriptor, "service_list_descriptor");
-TS_ID_DESCRIPTOR_FACTORY(ts::ServiceListDescriptor, ts::EDID(ts::DID_SERVICE_LIST));
-TS_ID_DESCRIPTOR_DISPLAY(ts::ServiceListDescriptor::DisplayDescriptor, ts::EDID(ts::DID_SERVICE_LIST));
+
+#define MY_XML_NAME u"service_list_descriptor"
+#define MY_DID ts::DID_SERVICE_LIST
+
+TS_XML_DESCRIPTOR_FACTORY(ts::ServiceListDescriptor, MY_XML_NAME);
+TS_ID_DESCRIPTOR_FACTORY(ts::ServiceListDescriptor, ts::EDID(MY_DID));
+TS_ID_DESCRIPTOR_DISPLAY(ts::ServiceListDescriptor::DisplayDescriptor, ts::EDID(MY_DID));
 
 
 //----------------------------------------------------------------------------
@@ -47,7 +51,7 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::ServiceListDescriptor::DisplayDescriptor, ts::EDID(
 //----------------------------------------------------------------------------
 
 ts::ServiceListDescriptor::ServiceListDescriptor() :
-    AbstractDescriptor(DID_SERVICE_LIST, "service_list_descriptor"),
+    AbstractDescriptor(MY_DID, MY_XML_NAME),
     entries()
 {
     _is_valid = true;
@@ -59,7 +63,7 @@ ts::ServiceListDescriptor::ServiceListDescriptor() :
 //----------------------------------------------------------------------------
 
 ts::ServiceListDescriptor::ServiceListDescriptor(const Descriptor& desc, const DVBCharset* charset) :
-    AbstractDescriptor(DID_SERVICE_LIST, "service_list_descriptor"),
+    AbstractDescriptor(MY_DID, MY_XML_NAME),
     entries()
 {
     deserialize(desc, charset);
@@ -73,7 +77,7 @@ ts::ServiceListDescriptor::ServiceListDescriptor(const Descriptor& desc, const D
 //----------------------------------------------------------------------------
 
 ts::ServiceListDescriptor::ServiceListDescriptor (int service_id, int service_type, ...) :
-    AbstractDescriptor (DID_SERVICE_LIST, "service_list_descriptor"),
+    AbstractDescriptor (MY_DID, MY_XML_NAME),
     entries ()
 {
     _is_valid = true;

@@ -32,15 +32,18 @@
 //----------------------------------------------------------------------------
 
 #include "tsRST.h"
-#include "tsFormat.h"
 #include "tsBinaryTable.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 #include "tsXMLTables.h"
 TSDUCK_SOURCE;
-TS_XML_TABLE_FACTORY(ts::RST, "RST");
-TS_ID_TABLE_FACTORY(ts::RST, ts::TID_RST);
-TS_ID_SECTION_DISPLAY(ts::RST::DisplaySection, ts::TID_RST);
+
+#define MY_XML_NAME u"RST"
+#define MY_TID ts::TID_RST
+
+TS_XML_TABLE_FACTORY(ts::RST, MY_XML_NAME);
+TS_ID_TABLE_FACTORY(ts::RST, MY_TID);
+TS_ID_SECTION_DISPLAY(ts::RST::DisplaySection, MY_TID);
 
 
 //----------------------------------------------------------------------------
@@ -62,7 +65,7 @@ const ts::Enumeration ts::RST::RunningStatusNames({
 //----------------------------------------------------------------------------
 
 ts::RST::RST() :
-    AbstractTable(TID_RST, "RST"),
+    AbstractTable(MY_TID, MY_XML_NAME),
     events()
 {
     _is_valid = true;
@@ -74,7 +77,7 @@ ts::RST::RST() :
 //----------------------------------------------------------------------------
 
 ts::RST::RST(const BinaryTable& table, const DVBCharset* charset) :
-    AbstractTable(TID_RST, "RST"),
+    AbstractTable(MY_TID, MY_XML_NAME),
     events()
 {
     deserialize(table, charset);
@@ -149,7 +152,7 @@ void ts::RST::serialize(BinaryTable& table, const DVBCharset* charset) const
     }
 
     // Add the section in the table.
-    table.addSection(new Section(TID_RST,
+    table.addSection(new Section(MY_TID,
                                  true,   // is_private_section
                                  payload,
                                  data - payload));
@@ -177,12 +180,12 @@ void ts::RST::DisplaySection(TablesDisplay& display, const ts::Section& section,
         size -= 9;
 
         strm << margin
-             << Format("TS: %d (0x%04X), Orig. Netw.: %d (0x%04X), Service: %d (0x%04X), Event: %d (0x%04X), Status: ",
-                       int(transport_stream_id), int(transport_stream_id),
-                       int(original_network_id), int(original_network_id),
-                       int(service_id), int(service_id),
-                       int(event_id), int(event_id))
-             << RunningStatusNames.name(running_status)
+             << UString::Format(u"TS: %d (0x%X), Orig. Netw.: %d (0x%X), Service: %d (0x%X), Event: %d (0x%X), Status: %s",
+                       {transport_stream_id, transport_stream_id,
+                        original_network_id, original_network_id,
+                        service_id, service_id,
+                        event_id, event_id,
+                        RunningStatusNames.name(running_status)})
              << std::endl;
     }
 

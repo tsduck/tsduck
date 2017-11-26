@@ -67,22 +67,22 @@ bool ts::TunerParameters::fromTunerArgs (const TunerArgs& tuner, Report& report)
     if (tuner.channel_name.set()) {
         // Use --channel-transponder option
         // Get szap/czap/tzap configuration file name.
-        std::string file;
+        UString file;
         if (tuner.zap_file_name.set()) {
             file = tuner.zap_file_name.value();
         }
-        else if ((file = TunerArgs::DefaultZapFile (_tuner_type)).empty()) {
-            report.error ("--channel-transponder unsupported for frontend type " + TunerTypeEnum.name (_tuner_type));
+        else if ((file = TunerArgs::DefaultZapFile(_tuner_type)).empty()) {
+            report.error(u"--channel-transponder unsupported for frontend type " + TunerTypeEnum.name(_tuner_type));
             return false;
         }
         // Read tuning info from zap file
-        return GetTunerFromZapFile (tuner.channel_name.value(), file, *this, report);
+        return GetTunerFromZapFile(tuner.channel_name.value(), file, *this, report);
     }
     else if (!tuner.zap_specification.set()) {
         // No --tune specified, invoke subclass for individual tuning options
-        return fromArgs (tuner, report);
+        return fromArgs(tuner, report);
     }
-    else if (fromZapFormat (tuner.zap_specification.value())) {
+    else if (fromZapFormat(tuner.zap_specification.value())) {
         return true;
     }
     else {
@@ -97,15 +97,15 @@ bool ts::TunerParameters::fromTunerArgs (const TunerArgs& tuner, Report& report)
 // transponder, based on 188-bytes packets, for QPSK or QAM modulation.
 //----------------------------------------------------------------------------
 
-ts::BitRate ts::TunerParameters::TheoreticalBitrateForModulation (Modulation modulation, InnerFEC fec, uint32_t symbol_rate)
+ts::BitRate ts::TunerParameters::TheoreticalBitrateForModulation(Modulation modulation, InnerFEC fec, uint32_t symbol_rate)
 {
-    const uint64_t bitpersym = BitsPerSymbol (modulation);
-    const uint64_t fec_mul = FECMultiplier (fec);
-    const uint64_t fec_div = FECDivider (fec);
+    const uint64_t bitpersym = BitsPerSymbol(modulation);
+    const uint64_t fec_mul = FECMultiplier(fec);
+    const uint64_t fec_div = FECDivider(fec);
 
     // Compute bitrate. The estimated bitrate is based on 204-bit packets
     // (include 16-bit Reed-Solomon code). We return a bitrate based on
     // 188-bit packets.
 
-    return fec_div == 0 ? 0 : BitRate ((uint64_t (symbol_rate) * bitpersym * fec_mul * 188) / (fec_div * 204));
+    return fec_div == 0 ? 0 : BitRate((uint64_t(symbol_rate) * bitpersym * fec_mul * 188) / (fec_div * 204));
 }

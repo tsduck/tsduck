@@ -38,7 +38,11 @@
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 TSDUCK_SOURCE;
-TS_ID_DESCRIPTOR_DISPLAY(ts::ApplicationSignallingDescriptor::DisplayDescriptor, ts::EDID(ts::DID_APPLI_SIGNALLING));
+
+#define MY_XML_NAME u"application_signalling_descriptor"
+#define MY_DID ts::DID_APPLI_SIGNALLING
+
+TS_ID_DESCRIPTOR_DISPLAY(ts::ApplicationSignallingDescriptor::DisplayDescriptor, ts::EDID(MY_DID));
 
 
 //----------------------------------------------------------------------------

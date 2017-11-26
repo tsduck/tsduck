@@ -37,9 +37,13 @@
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 TSDUCK_SOURCE;
-TS_XML_DESCRIPTOR_FACTORY(ts::ContentDescriptor, "content_descriptor");
-TS_ID_DESCRIPTOR_FACTORY(ts::ContentDescriptor, ts::EDID(ts::DID_CONTENT));
-TS_ID_DESCRIPTOR_DISPLAY(ts::ContentDescriptor::DisplayDescriptor, ts::EDID(ts::DID_CONTENT));
+
+#define MY_XML_NAME u"content_descriptor"
+#define MY_DID ts::DID_CONTENT
+
+TS_XML_DESCRIPTOR_FACTORY(ts::ContentDescriptor, MY_XML_NAME);
+TS_ID_DESCRIPTOR_FACTORY(ts::ContentDescriptor, ts::EDID(MY_DID));
+TS_ID_DESCRIPTOR_DISPLAY(ts::ContentDescriptor::DisplayDescriptor, ts::EDID(MY_DID));
 
 
 //----------------------------------------------------------------------------
@@ -47,7 +51,7 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::ContentDescriptor::DisplayDescriptor, ts::EDID(ts::
 //----------------------------------------------------------------------------
 
 ts::ContentDescriptor::ContentDescriptor() :
-    AbstractDescriptor(DID_CONTENT, "content_descriptor"),
+    AbstractDescriptor(MY_DID, MY_XML_NAME),
     entries()
 {
     _is_valid = true;
@@ -59,7 +63,7 @@ ts::ContentDescriptor::ContentDescriptor() :
 //----------------------------------------------------------------------------
 
 ts::ContentDescriptor::ContentDescriptor(const Descriptor& desc, const DVBCharset* charset) :
-    AbstractDescriptor(DID_CONTENT, "content_descriptor"),
+    AbstractDescriptor(MY_DID, MY_XML_NAME),
     entries()
 {
     deserialize(desc, charset);

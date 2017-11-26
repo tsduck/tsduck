@@ -120,7 +120,7 @@ namespace ts {
         //! @param [in] xml_name Descriptor name, as used in XML structures.
         //! @param [in] pds Required private data specifier if this is a private descriptor.
         //!
-        AbstractDescriptor(DID tag, const char* xml_name, PDS pds = 0);
+        AbstractDescriptor(DID tag, const UChar* xml_name, PDS pds = 0);
 
         //!
         //! Tool for serialization: get a byte buffer for serialization.

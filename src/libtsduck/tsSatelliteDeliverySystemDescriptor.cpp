@@ -33,14 +33,17 @@
 
 #include "tsSatelliteDeliverySystemDescriptor.h"
 #include "tsBCD.h"
-#include "tsToInteger.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 #include "tsXMLTables.h"
 TSDUCK_SOURCE;
-TS_XML_DESCRIPTOR_FACTORY(ts::SatelliteDeliverySystemDescriptor, "satellite_delivery_system_descriptor");
-TS_ID_DESCRIPTOR_FACTORY(ts::SatelliteDeliverySystemDescriptor, ts::EDID(ts::DID_SAT_DELIVERY));
-TS_ID_DESCRIPTOR_DISPLAY(ts::SatelliteDeliverySystemDescriptor::DisplayDescriptor, ts::EDID(ts::DID_SAT_DELIVERY));
+
+#define MY_XML_NAME u"satellite_delivery_system_descriptor"
+#define MY_DID ts::DID_SAT_DELIVERY
+
+TS_XML_DESCRIPTOR_FACTORY(ts::SatelliteDeliverySystemDescriptor, MY_XML_NAME);
+TS_ID_DESCRIPTOR_FACTORY(ts::SatelliteDeliverySystemDescriptor, ts::EDID(MY_DID));
+TS_ID_DESCRIPTOR_DISPLAY(ts::SatelliteDeliverySystemDescriptor::DisplayDescriptor, ts::EDID(MY_DID));
 
 
 //----------------------------------------------------------------------------
@@ -48,7 +51,7 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::SatelliteDeliverySystemDescriptor::DisplayDescripto
 //----------------------------------------------------------------------------
 
 ts::SatelliteDeliverySystemDescriptor::SatelliteDeliverySystemDescriptor() :
-    AbstractDeliverySystemDescriptor(DID_SAT_DELIVERY, DS_DVB_S, "satellite_delivery_system_descriptor"),
+    AbstractDeliverySystemDescriptor(MY_DID, DS_DVB_S, MY_XML_NAME),
     frequency(0),
     orbital_position(0),
     eastNotWest(false),
@@ -68,7 +71,7 @@ ts::SatelliteDeliverySystemDescriptor::SatelliteDeliverySystemDescriptor() :
 //----------------------------------------------------------------------------
 
 ts::SatelliteDeliverySystemDescriptor::SatelliteDeliverySystemDescriptor(const Descriptor& desc, const DVBCharset* charset) :
-    AbstractDeliverySystemDescriptor(DID_SAT_DELIVERY, DS_DVB_S, "satellite_delivery_system_descriptor"),
+    AbstractDeliverySystemDescriptor(MY_DID, DS_DVB_S, MY_XML_NAME),
     frequency(0),
     orbital_position(0),
     eastNotWest(false),
@@ -190,7 +193,7 @@ ts::XML::Element* ts::SatelliteDeliverySystemDescriptor::toXML(XML& xml, XML::El
 {
     XML::Element* root = _is_valid ? xml.addElement(parent, _xml_name) : 0;
     xml.setIntAttribute(root, u"frequency", 10000 * uint64_t(frequency), false);
-    xml.setAttribute(root, u"orbital_position", UString::Format(u"%d.%d", {orbital_position / 10, nt(orbital_position % 10)));
+    xml.setAttribute(root, u"orbital_position", UString::Format(u"%d.%d", {orbital_position / 10, orbital_position % 10}));
     xml.setIntEnumAttribute(DirectionNames, root, u"west_east_flag", eastNotWest);
     xml.setIntEnumAttribute(PolarizationNames, root, u"polarization", polarization);
     xml.setIntEnumAttribute(RollOffNames, root, u"roll_off", roll_off);
@@ -238,8 +241,8 @@ void ts::SatelliteDeliverySystemDescriptor::fromXML(XML& xml, const XML::Element
             orbital_position = (p1 * 10) + p2;
         }
         else {
-            xml.reportError(Format("Invalid value '%s' for attribute 'orbital_position' in <%s> at line %d, use 'nn.n'",
-                                   orbit.c_str(), XML::ElementName(element), element->GetLineNum()));
+            xml.reportError(u"Invalid value '%s' for attribute 'orbital_position' in <%s> at line %d, use 'nn.n'",
+                            {orbit, XML::ElementName(element), element->GetLineNum()});
         }
     }
 }

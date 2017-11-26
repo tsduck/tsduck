@@ -79,7 +79,7 @@ ts::TSScanner::TSScanner(Tuner& tuner, MilliSecond timeout, bool pat_only, Repor
     // Read packets and analyze tables until completed
     while (!_completed && Time::CurrentUTC() < deadline) {
         const size_t pcount = tuner.receive(buffer.data(), buffer.size(), 0, _report);
-        _report.debug("got %" FMT_SIZE_T "u packets", pcount);
+        _report.debug(u"got %d packets", {pcount});
         if (pcount == 0) { // error
             break;
         }
@@ -181,7 +181,7 @@ bool ts::TSScanner::getServices(ServiceList& services) const
 
 void ts::TSScanner::handleTable(SectionDemux&, const BinaryTable& table)
 {
-    _report.debug("got table id 0x%02X on PID 0x%04X", int(table.tableId()), int(table.sourcePID()));
+    _report.debug(u"got table id 0x%X on PID 0x%X", {table.tableId(), table.sourcePID()});
 
     // Store known tables
     switch (table.tableId()) {

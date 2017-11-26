@@ -38,7 +38,11 @@
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 TSDUCK_SOURCE;
-TS_ID_DESCRIPTOR_DISPLAY(ts::DTSDescriptor::DisplayDescriptor, ts::EDID(ts::DID_DTS));
+
+#define MY_XML_NAME u"DTS_descriptor"
+#define MY_DID ts::DID_DTS
+
+TS_ID_DESCRIPTOR_DISPLAY(ts::DTSDescriptor::DisplayDescriptor, ts::EDID(MY_DID));
 
 
 //----------------------------------------------------------------------------
@@ -65,7 +69,7 @@ void ts::DTSDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const
              << margin << "NBLKS: " << int(nblks) << std::endl
              << margin << "FSIZE: " << int(fsize) << std::endl
              << margin << "Surround mode: " << names::DTSSurroundMode(surround_mode) << std::endl
-             << margin << "LFE (Low Frequency Effect) audio channel: " << OnOff(lfe_flag) << std::endl
+             << margin << "LFE (Low Frequency Effect) audio channel: " << UString::OnOff(lfe_flag) << std::endl
              << margin << "Extended surround flag: " << names::DTSExtendedSurroundMode(extended_surround_flag) << std::endl;
 
         if (size > 0) {

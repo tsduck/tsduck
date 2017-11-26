@@ -34,7 +34,6 @@
 #include "tsTSFileOutput.h"
 #include "tsNullReport.h"
 #include "tsSysUtils.h"
-#include "tsFormat.h"
 TSDUCK_SOURCE;
 
 
@@ -60,10 +59,10 @@ ts::TSFileOutput::TSFileOutput() :
 // Open method
 //----------------------------------------------------------------------------
 
-bool ts::TSFileOutput::open (const std::string& filename, bool append, bool keep, Report& report)
+bool ts::TSFileOutput::open(const UString& filename, bool append, bool keep, Report& report)
 {
     if (_is_open) {
-        report.log (_severity, "already open");
+        report.log(_severity, u"already open");
         return false;
     }
 
@@ -86,19 +85,19 @@ bool ts::TSFileOutput::open (const std::string& filename, bool append, bool keep
     }
 
     if (_filename.empty()) {
-        _handle = ::GetStdHandle (STD_OUTPUT_HANDLE);
+        _handle = ::GetStdHandle(STD_OUTPUT_HANDLE);
     }
     else {
         // Create file
-        _handle = ::CreateFile (_filename.c_str(), GENERIC_WRITE, 0, NULL, flags, FILE_ATTRIBUTE_NORMAL, NULL);
+        _handle = ::CreateFile(_filename.c_str(), GENERIC_WRITE, 0, NULL, flags, FILE_ATTRIBUTE_NORMAL, NULL);
         got_error = _handle == INVALID_HANDLE_VALUE;
-        error_code = LastErrorCode ();
+        error_code = LastErrorCode();
         // Move to end of file if --append
-        if (!got_error && append && ::SetFilePointer (_handle, 0, NULL, FILE_END) == INVALID_SET_FILE_POINTER) {
+        if (!got_error && append && ::SetFilePointer(_handle, 0, NULL, FILE_END) == INVALID_SET_FILE_POINTER) {
             // SetFilePointer error
             got_error = true;
-            error_code = LastErrorCode ();
-            ::CloseHandle (_handle);
+            error_code = LastErrorCode();
+            ::CloseHandle(_handle);
         }
     }
 
@@ -122,16 +121,16 @@ bool ts::TSFileOutput::open (const std::string& filename, bool append, bool keep
         _fd = STDOUT_FILENO;
     }
     else {
-        _fd = ::open (_filename.c_str(), flags, mode);
+        _fd = ::open(_filename.toUTF8().c_str(), flags, mode);
         got_error = _fd < 0;
-        error_code = LastErrorCode ();
-        report.debug ("creating file %s, fd=%d, error_code=%d", filename.c_str(), int (_fd), int (error_code));
+        error_code = LastErrorCode();
+        report.debug(u"creating file %s, fd=%d, error_code=%d", {filename, _fd, error_code});
     }
 
 #endif
 
     if (got_error) {
-        report.log (_severity, "cannot create output file " + _filename + ": " + ErrorCodeMessage (error_code));
+        report.log(_severity, u"cannot create output file %s: %s", {_filename, ErrorCodeMessage(error_code)});
     }
 
     _total_packets = 0;
@@ -143,18 +142,18 @@ bool ts::TSFileOutput::open (const std::string& filename, bool append, bool keep
 // Close method
 //----------------------------------------------------------------------------
 
-bool ts::TSFileOutput::close (Report& report)
+bool ts::TSFileOutput::close(Report& report)
 {
     if (!_is_open) {
-        report.log (_severity, "not open");
+        report.log(_severity, u"not open");
         return false;
     }
 
     if (!_filename.empty()) {
 #if defined (TS_WINDOWS)
-        ::CloseHandle (_handle);
+        ::CloseHandle(_handle);
 #else
-        ::close (_fd);
+        ::close(_fd);
 #endif
     }
 
@@ -170,7 +169,7 @@ bool ts::TSFileOutput::close (Report& report)
 ts::TSFileOutput::~TSFileOutput()
 {
     if (_is_open) {
-        close (NULLREP);
+        close(NULLREP);
     }
 }
 
@@ -179,10 +178,10 @@ ts::TSFileOutput::~TSFileOutput()
 // Write method
 //----------------------------------------------------------------------------
 
-bool ts::TSFileOutput::write (const TSPacket* buffer, size_t packet_count, Report& report)
+bool ts::TSFileOutput::write(const TSPacket* buffer, size_t packet_count, Report& report)
 {
     if (!_is_open) {
-        report.log (_severity, "not open");
+        report.log(_severity, u"not open");
         return false;
     }
 
@@ -238,7 +237,7 @@ bool ts::TSFileOutput::write (const TSPacket* buffer, size_t packet_count, Repor
         }
         else if ((error_code = LastErrorCode()) != EINTR) {
             // Actual error (not an interrupt)
-            report.debug ("write error on %s, fd=%d, error_code=%d", _filename.c_str(), int (_fd), int (error_code));
+            report.debug(u"write error on %s, fd=%d, error_code=%d", {_filename, _fd, error_code});
             got_error = true;
             if (error_code == EPIPE) {
                 // Broken pipe: keep the error state but don't report error.
@@ -250,7 +249,7 @@ bool ts::TSFileOutput::write (const TSPacket* buffer, size_t packet_count, Repor
 #endif
 
     if (got_error && error_code != SYS_SUCCESS) {
-        report.log (_severity, "error writing output file " + _filename + ": " + ErrorCodeMessage (error_code) + Format (" (%d)", int (error_code)));
+        report.log(_severity, u"error writing output file %s: %s (%d)", {_filename, ErrorCodeMessage(error_code), error_code});
     }
 
     _total_packets += (data - data_buffer) / PKT_SIZE;

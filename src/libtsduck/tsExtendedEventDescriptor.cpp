@@ -32,16 +32,17 @@
 //----------------------------------------------------------------------------
 
 #include "tsExtendedEventDescriptor.h"
-#include "tsFormat.h"
-#include "tsHexa.h"
 #include "tsNames.h"
-#include "tsUString.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 TSDUCK_SOURCE;
-TS_XML_DESCRIPTOR_FACTORY(ts::ExtendedEventDescriptor, "extended_event_descriptor");
-TS_ID_DESCRIPTOR_FACTORY(ts::ExtendedEventDescriptor, ts::EDID(ts::DID_EXTENDED_EVENT));
-TS_ID_DESCRIPTOR_DISPLAY(ts::ExtendedEventDescriptor::DisplayDescriptor, ts::EDID(ts::DID_EXTENDED_EVENT));
+
+#define MY_XML_NAME u"extended_event_descriptor"
+#define MY_DID ts::DID_EXTENDED_EVENT
+
+TS_XML_DESCRIPTOR_FACTORY(ts::ExtendedEventDescriptor, MY_XML_NAME);
+TS_ID_DESCRIPTOR_FACTORY(ts::ExtendedEventDescriptor, ts::EDID(MY_DID));
+TS_ID_DESCRIPTOR_DISPLAY(ts::ExtendedEventDescriptor::DisplayDescriptor, ts::EDID(MY_DID));
 
 
 //----------------------------------------------------------------------------
@@ -49,7 +50,7 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::ExtendedEventDescriptor::DisplayDescriptor, ts::EDI
 //----------------------------------------------------------------------------
 
 ts::ExtendedEventDescriptor::ExtendedEventDescriptor() :
-    AbstractDescriptor(DID_EXTENDED_EVENT, "extended_event_descriptor"),
+    AbstractDescriptor(MY_DID, MY_XML_NAME),
     descriptor_number(0),
     last_descriptor_number(0),
     language_code(),
@@ -65,7 +66,7 @@ ts::ExtendedEventDescriptor::ExtendedEventDescriptor() :
 //----------------------------------------------------------------------------
 
 ts::ExtendedEventDescriptor::ExtendedEventDescriptor(const Descriptor& desc, const DVBCharset* charset) :
-    AbstractDescriptor(DID_EXTENDED_EVENT, "extended_event_descriptor"),
+    AbstractDescriptor(MY_DID, MY_XML_NAME),
     descriptor_number(0),
     last_descriptor_number(0),
     language_code(),
@@ -97,7 +98,7 @@ void ts::ExtendedEventDescriptor::NormalizeNumbering(uint8_t* desc_base, size_t 
         if (len > size) {
             len = uint8_t(size);
         }
-        if (tag == DID_EXTENDED_EVENT && len >= 4) {
+        if (tag == MY_DID && len >= 4) {
             const UString lang(UString::FromDVB(data + 1, 3, charset));
             SizeMap::iterator it(desc_last.find(lang));
             if (it == desc_last.end()) {
@@ -121,7 +122,7 @@ void ts::ExtendedEventDescriptor::NormalizeNumbering(uint8_t* desc_base, size_t 
         if (len > size) {
             len = uint8_t(size);
         }
-        if (tag == DID_EXTENDED_EVENT && len >= 4) {
+        if (tag == MY_DID && len >= 4) {
             const UString lang(UString::FromDVB(data + 1, 3, charset));
             data[0] = ((desc_index[lang] & 0x0F) << 4) | (desc_last[lang] & 0x0F);
             desc_index[lang]++;

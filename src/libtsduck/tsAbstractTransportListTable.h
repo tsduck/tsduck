@@ -84,7 +84,7 @@ namespace ts {
         //! @param [in] version Table version number.
         //! @param [in] is_current True if table is current, false if table is next.
         //!
-        AbstractTransportListTable(TID tid, const char* xml_name, uint16_t tid_ext, uint8_t version, bool is_current);
+        AbstractTransportListTable(TID tid, const UChar* xml_name, uint16_t tid_ext, uint8_t version, bool is_current);
 
         //!
         //! Constructor from a binary table.
@@ -93,7 +93,7 @@ namespace ts {
         //! @param [in] table Binary table to deserialize.
         //! @param [in] charset If not zero, character set to use without explicit table code.
         //!
-        AbstractTransportListTable(TID tid, const char* xml_name, const BinaryTable& table, const DVBCharset* charset);
+        AbstractTransportListTable(TID tid, const UChar* xml_name, const BinaryTable& table, const DVBCharset* charset);
 
     private:
         typedef std::set <TransportStreamId> TransportStreamIdSet;

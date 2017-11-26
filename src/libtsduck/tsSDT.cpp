@@ -33,15 +33,16 @@
 
 #include "tsSDT.h"
 #include "tsRST.h"
-#include "tsStringUtils.h"
-#include "tsFormat.h"
 #include "tsNames.h"
 #include "tsBinaryTable.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 #include "tsXMLTables.h"
 TSDUCK_SOURCE;
-TS_XML_TABLE_FACTORY(ts::SDT, "SDT");
+
+#define MY_XML_NAME u"SDT"
+
+TS_XML_TABLE_FACTORY(ts::SDT, MY_XML_NAME);
 TS_ID_TABLE_FACTORY(ts::SDT, ts::TID_SDT_ACT);
 TS_ID_TABLE_FACTORY(ts::SDT, ts::TID_SDT_OTH);
 TS_ID_SECTION_DISPLAY(ts::SDT::DisplaySection, ts::TID_SDT_ACT);
@@ -57,7 +58,7 @@ ts::SDT::SDT(bool is_actual_,
              bool is_current_,
              uint16_t ts_id_,
              uint16_t onetw_id_) :
-    AbstractLongTable(TID(is_actual_ ? TID_SDT_ACT : TID_SDT_OTH), "SDT", version_, is_current_),
+    AbstractLongTable(TID(is_actual_ ? TID_SDT_ACT : TID_SDT_OTH), MY_XML_NAME, version_, is_current_),
     ts_id(ts_id_),
     onetw_id(onetw_id_),
     services()
@@ -71,7 +72,7 @@ ts::SDT::SDT(bool is_actual_,
 //----------------------------------------------------------------------------
 
 ts::SDT::SDT(const BinaryTable& table, const DVBCharset* charset) :
-    AbstractLongTable(TID_SDT_ACT, "SDT"),  // TID will be updated by deserialize()
+    AbstractLongTable(TID_SDT_ACT, MY_XML_NAME),  // TID will be updated by deserialize()
     ts_id(0),
     onetw_id(0),
     services()

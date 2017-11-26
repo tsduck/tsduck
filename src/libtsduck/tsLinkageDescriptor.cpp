@@ -39,9 +39,13 @@
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 TSDUCK_SOURCE;
-TS_XML_DESCRIPTOR_FACTORY(ts::LinkageDescriptor, "linkage_descriptor");
-TS_ID_DESCRIPTOR_FACTORY(ts::LinkageDescriptor, ts::EDID(ts::DID_LINKAGE));
-TS_ID_DESCRIPTOR_DISPLAY(ts::LinkageDescriptor::DisplayDescriptor, ts::EDID(ts::DID_LINKAGE));
+
+#define MY_XML_NAME u"linkage_descriptor"
+#define MY_DID ts::DID_LINKAGE
+
+TS_XML_DESCRIPTOR_FACTORY(ts::LinkageDescriptor, MY_XML_NAME);
+TS_ID_DESCRIPTOR_FACTORY(ts::LinkageDescriptor, ts::EDID(MY_DID));
+TS_ID_DESCRIPTOR_DISPLAY(ts::LinkageDescriptor::DisplayDescriptor, ts::EDID(MY_DID));
 
 
 //----------------------------------------------------------------------------
@@ -122,7 +126,7 @@ void ts::LinkageDescriptor::clear()
 //----------------------------------------------------------------------------
 
 ts::LinkageDescriptor::LinkageDescriptor(uint16_t ts, uint16_t onetw, uint16_t service, uint8_t ltype) :
-    AbstractDescriptor(DID_LINKAGE, "linkage_descriptor"),
+    AbstractDescriptor(MY_DID, MY_XML_NAME),
     ts_id(ts),
     onetw_id(onetw),
     service_id(service),
@@ -141,7 +145,7 @@ ts::LinkageDescriptor::LinkageDescriptor(uint16_t ts, uint16_t onetw, uint16_t s
 //----------------------------------------------------------------------------
 
 ts::LinkageDescriptor::LinkageDescriptor(const Descriptor& desc, const DVBCharset* charset) :
-    AbstractDescriptor(DID_LINKAGE, "linkage_descriptor"),
+    AbstractDescriptor(MY_DID, MY_XML_NAME),
     ts_id(0),
     onetw_id(0),
     service_id(0),

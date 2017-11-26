@@ -38,9 +38,13 @@
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 TSDUCK_SOURCE;
-TS_XML_DESCRIPTOR_FACTORY(ts::TeletextDescriptor, "teletext_descriptor");
-TS_ID_DESCRIPTOR_FACTORY(ts::TeletextDescriptor, ts::EDID(ts::DID_TELETEXT));
-TS_ID_DESCRIPTOR_DISPLAY(ts::TeletextDescriptor::DisplayDescriptor, ts::EDID(ts::DID_TELETEXT));
+
+#define MY_XML_NAME u"teletext_descriptor"
+#define MY_DID ts::DID_TELETEXT
+
+TS_XML_DESCRIPTOR_FACTORY(ts::TeletextDescriptor, MY_XML_NAME);
+TS_ID_DESCRIPTOR_FACTORY(ts::TeletextDescriptor, ts::EDID(MY_DID));
+TS_ID_DESCRIPTOR_DISPLAY(ts::TeletextDescriptor::DisplayDescriptor, ts::EDID(MY_DID));
 
 
 //----------------------------------------------------------------------------
@@ -55,14 +59,14 @@ ts::TeletextDescriptor::Entry::Entry(uint8_t type, uint16_t page, const char* co
 }
 
 ts::TeletextDescriptor::TeletextDescriptor() :
-    AbstractDescriptor(DID_TELETEXT, "teletext_descriptor"),
+    AbstractDescriptor(MY_DID, MY_XML_NAME),
     entries()
 {
     _is_valid = true;
 }
 
 ts::TeletextDescriptor::TeletextDescriptor(const Descriptor& desc, const DVBCharset* charset) :
-    AbstractDescriptor(DID_TELETEXT, "teletext_descriptor"),
+    AbstractDescriptor(MY_DID, MY_XML_NAME),
     entries()
 {
     deserialize(desc, charset);

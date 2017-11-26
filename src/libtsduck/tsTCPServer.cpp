@@ -84,7 +84,7 @@ bool ts::TCPServer::accept (TCPConnection& client, SocketAddress& client_address
     }
 
     client_address = SocketAddress (sock_addr);
-    report.debug ("received connection from " + std::string (client_address));
+    report.debug(u"received connection from " + UString(client_address));
 
     client.declareOpened (client_sock, report);
     client.declareConnected (report);

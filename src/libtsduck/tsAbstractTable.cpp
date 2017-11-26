@@ -35,7 +35,7 @@ TSDUCK_SOURCE;
 // Protected constructor for subclasses.
 //----------------------------------------------------------------------------
 
-ts::AbstractTable::AbstractTable(TID tid, const char* xml_name) :
+ts::AbstractTable::AbstractTable(TID tid, const UChar* xml_name) :
     AbstractSignalization(xml_name),
     _table_id(tid)
 {

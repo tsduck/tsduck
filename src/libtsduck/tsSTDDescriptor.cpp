@@ -35,9 +35,13 @@
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 TSDUCK_SOURCE;
-TS_XML_DESCRIPTOR_FACTORY(ts::STDDescriptor, "STD_descriptor");
-TS_ID_DESCRIPTOR_FACTORY(ts::STDDescriptor, ts::EDID(ts::DID_STD));
-TS_ID_DESCRIPTOR_DISPLAY(ts::STDDescriptor::DisplayDescriptor, ts::EDID(ts::DID_STD));
+
+#define MY_XML_NAME u"STD_descriptor"
+#define MY_DID ts::DID_STD
+
+TS_XML_DESCRIPTOR_FACTORY(ts::STDDescriptor, MY_XML_NAME);
+TS_ID_DESCRIPTOR_FACTORY(ts::STDDescriptor, ts::EDID(MY_DID));
+TS_ID_DESCRIPTOR_DISPLAY(ts::STDDescriptor::DisplayDescriptor, ts::EDID(MY_DID));
 
 
 //----------------------------------------------------------------------------
@@ -45,7 +49,7 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::STDDescriptor::DisplayDescriptor, ts::EDID(ts::DID_
 //----------------------------------------------------------------------------
 
 ts::STDDescriptor::STDDescriptor(bool leak_valid_) :
-    AbstractDescriptor(DID_STD, "STD_descriptor"),
+    AbstractDescriptor(MY_DID, MY_XML_NAME),
     leak_valid(leak_valid_)
 {
     _is_valid = true;
@@ -57,7 +61,7 @@ ts::STDDescriptor::STDDescriptor(bool leak_valid_) :
 //----------------------------------------------------------------------------
 
 ts::STDDescriptor::STDDescriptor(const Descriptor& desc, const DVBCharset* charset) :
-    AbstractDescriptor(DID_STD, "STD_descriptor"),
+    AbstractDescriptor(MY_DID, MY_XML_NAME),
     leak_valid(false)
 {
     deserialize(desc, charset);

@@ -135,7 +135,7 @@ namespace ts {
         //! representation of the address "a.b.c.d".
         //! @param [in] report Where to report errors.
         //!
-        IPAddress(const std::string& name, Report& report = CERR) :
+        IPAddress(const UString& name, Report& report = CERR) :
             _addr (0)
         {
             resolve(name, report);
@@ -209,12 +209,12 @@ namespace ts {
         //! In the later case, the integer value of the address is
         //! set to @link AnyAddress @endlink.
         //!
-        bool resolve(const std::string& name, Report& report = CERR);
+        bool resolve(const UString& name, Report& report = CERR);
 
         //!
         //! Convert to a string object in numeric format "a.b.c.d".
         //!
-        operator std::string() const;
+        operator ts::UString() const;
 
     private:
         uint32_t _addr;  // An IPv4 address is a 32-bit word in host byte order
@@ -229,5 +229,5 @@ namespace ts {
 //!
 inline std::ostream& operator<< (std::ostream& strm, const ts::IPAddress& addr)
 {
-    return strm << std::string(addr);
+    return strm << ts::UString(addr);
 }
