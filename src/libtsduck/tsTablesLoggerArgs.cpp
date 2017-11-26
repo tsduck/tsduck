@@ -77,7 +77,7 @@ ts::TablesLoggerArgs::TablesLoggerArgs() :
 
 void ts::TablesLoggerArgs::addHelp(Args& args) const
 {
-    std::string help =
+    UString help =
         u"\n"
         u"Tables and sections logging options:\n"
         u"\n"
@@ -265,14 +265,14 @@ void ts::TablesLoggerArgs::load(Args& args)
     multi_files = args.present(u"multiple-files");
     flush = args.present(u"flush");
     udp_local = args.value(u"local-udp");
-    udp_ttl = args.intValue("ttl", 0);
+    udp_ttl = args.intValue(u"ttl", 0);
     all_sections = args.present(u"all-sections");
-    max_tables = args.intValue<uint32_t>("max-tables", 0);
+    max_tables = args.intValue<uint32_t>(u"max-tables", 0);
     time_stamp = args.present(u"time-stamp");
     packet_index = args.present(u"packet-index");
     diversified = args.present(u"diversified-payload");
     logger = args.present(u"log");
-    log_size = args.intValue<size_t>("log-size", DEFAULT_LOG_SIZE);
+    log_size = args.intValue<size_t>(u"log-size", DEFAULT_LOG_SIZE);
     negate_tid = args.present(u"negate-tid");
     negate_tidext = args.present(u"negate-tid-ext");
     no_duplicate = args.present(u"no-duplicate");
@@ -298,7 +298,7 @@ void ts::TablesLoggerArgs::load(Args& args)
     add_pmt_pids = args.present(u"psi-si");
 
     if (add_pmt_pids || args.present(u"pid")) {
-        args.getPIDSet(pid, "pid"); // specific pids
+        args.getPIDSet(pid, u"pid"); // specific pids
         if (args.present(u"negate-pid")) {
             pid.flip();
         }
@@ -313,6 +313,6 @@ void ts::TablesLoggerArgs::load(Args& args)
         pid.set(); // all PIDs
     }
 
-    args.getIntValues(tid, "tid");
-    args.getIntValues(tidext, "tid-ext");
+    args.getIntValues(tid, u"tid");
+    args.getIntValues(tidext, u"tid-ext");
 }

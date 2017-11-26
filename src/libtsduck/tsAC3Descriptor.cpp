@@ -38,9 +38,13 @@
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 TSDUCK_SOURCE;
-TS_ID_DESCRIPTOR_FACTORY(ts::AC3Descriptor, ts::EDID(ts::DID_AC3));
-TS_XML_DESCRIPTOR_FACTORY(ts::AC3Descriptor, "AC3_descriptor");
-TS_ID_DESCRIPTOR_DISPLAY(ts::AC3Descriptor::DisplayDescriptor, ts::EDID(ts::DID_AC3));
+
+#define MY_XML_NAME u"AC3_descriptor"
+#define MY_DID ts::DID_AC3
+
+TS_ID_DESCRIPTOR_FACTORY(ts::AC3Descriptor, ts::EDID(MY_DID));
+TS_XML_DESCRIPTOR_FACTORY(ts::AC3Descriptor, MY_XML_NAME);
+TS_ID_DESCRIPTOR_DISPLAY(ts::AC3Descriptor::DisplayDescriptor, ts::EDID(MY_DID));
 
 
 //----------------------------------------------------------------------------
@@ -48,7 +52,7 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::AC3Descriptor::DisplayDescriptor, ts::EDID(ts::DID_
 //----------------------------------------------------------------------------
 
 ts::AC3Descriptor::AC3Descriptor() :
-    AbstractDescriptor(DID_AC3, "AC3_descriptor"),
+    AbstractDescriptor(MY_DID, MY_XML_NAME),
     component_type(),
     bsid(),
     mainid(),
@@ -64,7 +68,7 @@ ts::AC3Descriptor::AC3Descriptor() :
 //----------------------------------------------------------------------------
 
 ts::AC3Descriptor::AC3Descriptor(const Descriptor& desc, const DVBCharset* charset) :
-    AbstractDescriptor(DID_AC3, "AC3_descriptor"),
+    AbstractDescriptor(MY_DID, MY_XML_NAME),
     component_type(),
     bsid(),
     mainid(),

@@ -32,13 +32,15 @@
 //----------------------------------------------------------------------------
 
 #include "tsNIT.h"
-#include "tsFormat.h"
 #include "tsBinaryTable.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 #include "tsXMLTables.h"
 TSDUCK_SOURCE;
-TS_XML_TABLE_FACTORY(ts::NIT, "NIT");
+
+#define MY_XML_NAME u"NIT"
+
+TS_XML_TABLE_FACTORY(ts::NIT, MY_XML_NAME);
 TS_ID_TABLE_FACTORY(ts::NIT, ts::TID_NIT_ACT);
 TS_ID_TABLE_FACTORY(ts::NIT, ts::TID_NIT_OTH);
 TS_ID_SECTION_DISPLAY(ts::NIT::DisplaySection, ts::TID_NIT_ACT);
@@ -50,13 +52,13 @@ TS_ID_SECTION_DISPLAY(ts::NIT::DisplaySection, ts::TID_NIT_OTH);
 //----------------------------------------------------------------------------
 
 ts::NIT::NIT(bool is_actual, uint8_t vers, bool cur, uint16_t id) :
-    AbstractTransportListTable(uint8_t(is_actual ? TID_NIT_ACT : TID_NIT_OTH), "NIT", id, vers, cur),
+    AbstractTransportListTable(uint8_t(is_actual ? TID_NIT_ACT : TID_NIT_OTH), MY_XML_NAME, id, vers, cur),
     network_id(_tid_ext)
 {
 }
 
 ts::NIT::NIT(const BinaryTable& table, const DVBCharset* charset) :
-    AbstractTransportListTable(TID_NIT_ACT, "NIT", table, charset),  // TID updated by deserialize()
+    AbstractTransportListTable(TID_NIT_ACT, MY_XML_NAME, table, charset),  // TID updated by deserialize()
     network_id(_tid_ext)
 {
 }
@@ -73,9 +75,7 @@ void ts::NIT::DisplaySection(TablesDisplay& display, const ts::Section& section,
     const uint8_t* data = section.payload();
     size_t size = section.payloadSize();
 
-    strm << margin << "Network Id: " << section.tableIdExtension()
-         << Format(" (0x%04X)", int(section.tableIdExtension()))
-         << std::endl;
+    strm << margin << UString::Format(u"Network Id: %d (0x%X)", {section.tableIdExtension(), section.tableIdExtension()}) << std::endl;
 
     if (size >= 2) {
         // Display network information
@@ -107,10 +107,7 @@ void ts::NIT::DisplaySection(TablesDisplay& display, const ts::Section& section,
                 if (length > loop_length) {
                     length = loop_length;
                 }
-                strm << margin << "Transport Stream Id: " << tsid
-                     << Format(" (0x%04X)", int(tsid))
-                     << ", Original Network Id: " << nwid
-                     << Format(" (0x%04X)", int(nwid)) << std::endl;
+                strm << margin << UString::Format(u"Transport Stream Id: %d (0x%X), Original Network Id: %d (0x%X)", {tsid, tsid, nwid, nwid}) << std::endl;
                 display.displayDescriptorList(data, length, indent, section.tableId());
                 data += length; size -= length; loop_length -= length;
             }

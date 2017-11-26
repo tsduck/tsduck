@@ -96,18 +96,18 @@ bool ts::TCPConnection::getPeer (SocketAddress& peer, Report& report) const
     ::sockaddr sock_addr;
     TS_SOCKET_SOCKLEN_T len = sizeof(sock_addr);
     TS_ZERO (sock_addr);
-    if (::getpeername (getSocket(), &sock_addr, &len) != 0) {
-        report.error ("error getting socket peer: " + SocketErrorCodeMessage ());
+    if (::getpeername(getSocket(), &sock_addr, &len) != 0) {
+        report.error(u"error getting socket peer: " + SocketErrorCodeMessage());
         return false;
     }
-    peer = SocketAddress (sock_addr);
+    peer = SocketAddress(sock_addr);
     return true;
 }
 
-std::string ts::TCPConnection::peerName() const
+ts::UString ts::TCPConnection::peerName() const
 {
     SocketAddress peer;
-    return getPeer (peer, NULLREP) ? std::string (peer) : "";
+    return getPeer(peer, NULLREP) ? UString(peer) : u"";
 }
 
 
@@ -227,7 +227,7 @@ bool ts::TCPConnection::connect (const SocketAddress& addr, Report& report)
     for (;;) {
         ::sockaddr sock_addr;
         addr.copy (sock_addr);
-        report.debug ("connecting to " + std::string (addr));
+        report.debug ("connecting to " + UString(addr));
         if (::connect (getSocket(), &sock_addr, sizeof(sock_addr)) == 0) {
             declareConnected (report);
             return true;

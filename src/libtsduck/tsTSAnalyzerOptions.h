@@ -52,9 +52,9 @@ namespace ts {
         //! @param [in] help A multi-line string describing the usage of options and parameters.
         //! @param [in] flags An or'ed mask of ts::Args::Flags values.
         //!
-        TSAnalyzerOptions(const std::string& description = "",
-                          const std::string& syntax = "",
-                          const std::string& help = "",
+        TSAnalyzerOptions(const UString& description = "",
+                          const UString& syntax = "",
+                          const UString& help = "",
                           int flags = 0);
 
         // Full analysis options:
@@ -75,28 +75,24 @@ namespace ts {
         bool pes_pid_list;           //!< Option -\-pes-pid-list
         bool service_pid_list;       //!< Option -\-service-pid-list service-id
         uint16_t service_id;         //!< Service id for -\-service-pid-list
-        std::string prefix;          //!< Option -\-prefix "string"
+        UString prefix;              //!< Option -\-prefix "string"
 
         // Additional options
-        std::string title;           //!< Option -\-title "string"
+        UString title;               //!< Option -\-title "string"
 
         // Suspect packets detection
         uint64_t suspect_min_error_count;  //!< Option -\-suspect-min-error-count
         uint64_t suspect_max_consecutive;  //!< Option -\-suspect-max-consecutive
 
         // Overriden methods.
-        virtual void setHelp(const std::string& help);
-        virtual bool analyze(int argc, char* argv[]);
-        virtual bool analyze(const std::string& app_name, const StringVector& arguments);
+        virtual void setHelp(const UString& help) override;
+        virtual bool analyze(int argc, char* argv[]) override;
+        virtual bool analyze(const UString& app_name, const UStringVector& arguments) override;
 
         //!
         //! Get option values (the public fields) after analysis of another ts::Args object defining the same options.
         //! @param [in] args Another ts::Args object defining the same TSAnalyzer options.
         //!
         void getOptions(const Args& args);
-
-    private:
-        // Inaccessible operations
-        virtual bool analyze(const char* app_name, const char* arg1, ...);
     };
 }

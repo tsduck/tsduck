@@ -43,7 +43,7 @@ TSDUCK_SOURCE;
 //----------------------------------------------------------------------------
 
 ts::SSULinkageDescriptor::SSULinkageDescriptor(uint16_t ts, uint16_t onetw, uint16_t service) :
-    AbstractDescriptor(DID_LINKAGE, ""),  // No XML conversion.
+    AbstractDescriptor(DID_LINKAGE, u""),  // No XML conversion.
     ts_id(ts),
     onetw_id(onetw),
     service_id(service),
@@ -59,7 +59,7 @@ ts::SSULinkageDescriptor::SSULinkageDescriptor(uint16_t ts, uint16_t onetw, uint
 //----------------------------------------------------------------------------
 
 ts::SSULinkageDescriptor::SSULinkageDescriptor(uint16_t ts, uint16_t onetw, uint16_t service, uint32_t oui) :
-    AbstractDescriptor(DID_LINKAGE, ""),  // No XML conversion.
+    AbstractDescriptor(DID_LINKAGE, u""),  // No XML conversion.
     ts_id(ts),
     onetw_id(onetw),
     service_id(service),
@@ -76,7 +76,7 @@ ts::SSULinkageDescriptor::SSULinkageDescriptor(uint16_t ts, uint16_t onetw, uint
 //----------------------------------------------------------------------------
 
 ts::SSULinkageDescriptor::SSULinkageDescriptor(const Descriptor& desc, const DVBCharset* charset) :
-    AbstractDescriptor(DID_LINKAGE, ""),  // No XML conversion.
+    AbstractDescriptor(DID_LINKAGE, u""),  // No XML conversion.
     ts_id(0),
     onetw_id(0),
     service_id(0),
@@ -92,7 +92,7 @@ ts::SSULinkageDescriptor::SSULinkageDescriptor(const Descriptor& desc, const DVB
 //----------------------------------------------------------------------------
 
 ts::SSULinkageDescriptor::SSULinkageDescriptor(const ts::LinkageDescriptor& desc, const DVBCharset* charset) :
-    AbstractDescriptor(DID_LINKAGE, ""),  // No XML conversion.
+    AbstractDescriptor(DID_LINKAGE, u""),  // No XML conversion.
     ts_id(0),
     onetw_id(0),
     service_id(0),

@@ -151,12 +151,12 @@ void ts::TunerArgs::load(Args& args)
         bool got_one = false;
 
         // Reception parameters.
-        signal_timeout = args.intValue<MilliSecond>("signal-timeout", Tuner::DEFAULT_SIGNAL_TIMEOUT / 1000) * 1000;
-        receive_timeout = args.intValue<MilliSecond>("receive-timeout", 0);
+        signal_timeout = args.intValue<MilliSecond>(u"signal-timeout", Tuner::DEFAULT_SIGNAL_TIMEOUT / 1000) * 1000;
+        receive_timeout = args.intValue<MilliSecond>(u"receive-timeout", 0);
 #if defined(TS_LINUX)
-        demux_buffer_size = args.intValue<size_t>("demux-buffer-size", Tuner::DEFAULT_DEMUX_BUFFER_SIZE);
+        demux_buffer_size = args.intValue<size_t>(u"demux-buffer-size", Tuner::DEFAULT_DEMUX_BUFFER_SIZE);
 #elif defined(TS_WINDOWS)
-        demux_queue_size = args.intValue<size_t>("demux-queue-size", Tuner::DEFAULT_SINK_QUEUE_SIZE);
+        demux_queue_size = args.intValue<size_t>(u"demux-queue-size", Tuner::DEFAULT_SINK_QUEUE_SIZE);
 #endif
 
         // Carrier frequency
@@ -165,88 +165,88 @@ void ts::TunerArgs::load(Args& args)
         }
         else if (args.present(u"frequency")) {
             got_one = true;
-            frequency = args.intValue<uint64_t>("frequency");
+            frequency = args.intValue<uint64_t>(u"frequency");
         }
         else if (args.present(u"uhf-channel")) {
             got_one = true;
-            frequency = UHF::Frequency(args.intValue<int>("uhf-channel", 0), args.intValue<int>("offset-count", 0));
+            frequency = UHF::Frequency(args.intValue<int>(u"uhf-channel", 0), args.intValue<int>(u"offset-count", 0));
         }
         else if (args.present(u"vhf-channel")) {
             got_one = true;
-            frequency = VHF::Frequency(args.intValue<int>("vhf-channel", 0), args.intValue<int>("offset-count", 0));
+            frequency = VHF::Frequency(args.intValue<int>(u"vhf-channel", 0), args.intValue<int>(u"offset-count", 0));
         }
 
         // Other individual tuning options
         if (args.present(u"symbol-rate")) {
             got_one = true;
-            symbol_rate = args.intValue<uint32_t>("symbol-rate");
+            symbol_rate = args.intValue<uint32_t>(u"symbol-rate");
         }
         if (args.present(u"polarity")) {
             got_one = true;
-            polarity = args.enumValue<Polarization>("polarity");
+            polarity = args.enumValue<Polarization>(u"polarity");
         }
         if (args.present(u"spectral-inversion")) {
             got_one = true;
-            inversion = args.enumValue<SpectralInversion>("spectral-inversion");
+            inversion = args.enumValue<SpectralInversion>(u"spectral-inversion");
         }
         if (args.present(u"fec-inner")) {
             got_one = true;
-            inner_fec = args.enumValue<InnerFEC>("fec-inner");
+            inner_fec = args.enumValue<InnerFEC>(u"fec-inner");
         }
         if (args.present(u"modulation")) {
             got_one = true;
-            modulation = args.enumValue<Modulation>("modulation");
+            modulation = args.enumValue<Modulation>(u"modulation");
         }
         if (args.present(u"bandwidth")) {
             got_one = true;
-            bandwidth = args.enumValue<BandWidth>("bandwidth");
+            bandwidth = args.enumValue<BandWidth>(u"bandwidth");
         }
         if (args.present(u"high-priority-fec")) {
             got_one = true;
-            fec_hp = args.enumValue<InnerFEC>("high-priority-fec");
+            fec_hp = args.enumValue<InnerFEC>(u"high-priority-fec");
         }
         if (args.present(u"low-priority-fec")) {
             got_one = true;
-            fec_lp = args.enumValue<InnerFEC>("low-priority-fec");
+            fec_lp = args.enumValue<InnerFEC>(u"low-priority-fec");
         }
         if (args.present(u"transmission-mode")) {
             got_one = true;
-            transmission_mode = args.enumValue<TransmissionMode>("transmission-mode");
+            transmission_mode = args.enumValue<TransmissionMode>(u"transmission-mode");
         }
         if (args.present(u"guard-interval")) {
             got_one = true;
-            guard_interval = args.enumValue<GuardInterval>("guard-interval");
+            guard_interval = args.enumValue<GuardInterval>(u"guard-interval");
         }
         if (args.present(u"hierarchy")) {
             got_one = true;
-            hierarchy = args.enumValue<Hierarchy>("hierarchy");
+            hierarchy = args.enumValue<Hierarchy>(u"hierarchy");
         }
         if (args.present(u"delivery-system")) {
             got_one = true;
-            delivery_system = args.enumValue<DeliverySystem>("delivery-system");
+            delivery_system = args.enumValue<DeliverySystem>(u"delivery-system");
         }
         if (args.present(u"pilots")) {
             got_one = true;
-            pilots = args.enumValue<Pilot>("pilots");
+            pilots = args.enumValue<Pilot>(u"pilots");
         }
         if (args.present(u"roll-off")) {
             got_one = true;
-            roll_off = args.enumValue<RollOff>("roll-off");
+            roll_off = args.enumValue<RollOff>(u"roll-off");
         }
 
         // Local options (not related to transponder)
         if (args.present(u"lnb")) {
-            std::string s(args.value(u"lnb"));
+            UString s(args.value(u"lnb"));
             LNB l(s);
             if (!l.isValid()) {
-                args.error("invalid LNB description " + s);
+                args.error(u"invalid LNB description " + s);
             }
             else {
                 lnb = l;
             }
         }
         if (args.present(u"satellite-number")) {
-            satellite_number = args.intValue<size_t>("satellite-number");
+            satellite_number = args.intValue<size_t>(u"satellite-number");
         }
 
         // Locating the transponder by channel
@@ -264,7 +264,7 @@ void ts::TunerArgs::load(Args& args)
 
         // Mutually exclusive methods of locating the channels
         if (got_one + channel_name.set() + zap_specification.set() > 1) {
-            args.error("--tune, --channel-transponder and individual tuning options are incompatible");
+            args.error(u"--tune, --channel-transponder and individual tuning options are incompatible");
         }
     }
 }
@@ -277,8 +277,8 @@ void ts::TunerArgs::load(Args& args)
 void ts::TunerArgs::defineOptions(Args& args) const
 {
     // Tuner identification.
-    args.option(u"adapter", _allow_short_options ? 'a' : 0, Args::UNSIGNED);
-    args.option(u"device-name", _allow_short_options ? 'd' : 0, Args::STRING);
+    args.option(u"adapter", _allow_short_options ? u'a' : 0, Args::UNSIGNED);
+    args.option(u"device-name", _allow_short_options ? u'd' : 0, Args::STRING);
 
     if (!_info_only) {
 
@@ -365,7 +365,7 @@ void ts::TunerArgs::addHelp(Args& args) const
             u"  --demux-queue-size value\n"
             u"      Specify the maximum number of media samples in the queue between the\n"
             u"      DirectShow capture thread and the input plugin thread. The default is\n"
-            u"      " + UString::Decimal(Tuner::DEFAULT_SINK_QUEUE_SIZE) + " media samples.\n"
+            u"      " + UString::Decimal(Tuner::DEFAULT_SINK_QUEUE_SIZE) + u" media samples.\n"
 #endif
             u"\n"
             u"  --receive-timeout milliseconds\n"
@@ -377,7 +377,7 @@ void ts::TunerArgs::addHelp(Args& args) const
             u"      Specifies the timeout, in seconds, for DVB signal locking. If no signal\n"
             u"      is detected after this timeout, the command aborts. To disable the\n"
             u"      timeout and wait indefinitely for the signal, specify zero. The default\n"
-            u"      is " + UString::Decimal(Tuner::DEFAULT_SIGNAL_TIMEOUT / 1000) + " seconds.\n"
+            u"      is " + UString::Decimal(Tuner::DEFAULT_SIGNAL_TIMEOUT / 1000) + u" seconds.\n"
             u"\n"
             u"Tuning:\n"
             u"\n"
@@ -479,8 +479,8 @@ void ts::TunerArgs::addHelp(Args& args) const
             u"  --symbol-rate value\n"
             u"      Used for DVB-S, DVB-S2 and DVB-C tuners only.\n"
             u"      Symbol rate in symbols/second. The default is\n"
-            u"      " + UString::Decimal(TunerParametersDVBS::DEFAULT_SYMBOL_RATE) + " sym/s for satellite and " +
-            UString::Decimal(TunerParametersDVBC::DEFAULT_SYMBOL_RATE) + " sym/s for cable.\n"
+            u"      " + UString::Decimal(TunerParametersDVBS::DEFAULT_SYMBOL_RATE) + u" sym/s for satellite and " +
+            UString::Decimal(TunerParametersDVBC::DEFAULT_SYMBOL_RATE) + u" sym/s for cable.\n"
             u"\n"
             u"  --transmission-mode value\n"
             u"      Used for DVB-T tuners only.\n"

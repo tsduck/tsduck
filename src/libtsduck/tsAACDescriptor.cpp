@@ -38,7 +38,11 @@
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 TSDUCK_SOURCE;
-TS_ID_DESCRIPTOR_DISPLAY(ts::AACDescriptor::DisplayDescriptor, ts::EDID(ts::DID_AAC));
+
+#define MY_XML_NAME u"AAC_descriptor"
+#define MY_DID ts::DID_AAC
+
+TS_ID_DESCRIPTOR_DISPLAY(ts::AACDescriptor::DisplayDescriptor, ts::EDID(MY_DID));
 
 
 //----------------------------------------------------------------------------

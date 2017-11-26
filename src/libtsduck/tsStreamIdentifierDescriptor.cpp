@@ -36,9 +36,13 @@
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 TSDUCK_SOURCE;
-TS_XML_DESCRIPTOR_FACTORY(ts::StreamIdentifierDescriptor, "stream_identifier_descriptor");
-TS_ID_DESCRIPTOR_FACTORY(ts::StreamIdentifierDescriptor, ts::EDID(ts::DID_STREAM_ID));
-TS_ID_DESCRIPTOR_DISPLAY(ts::StreamIdentifierDescriptor::DisplayDescriptor, ts::EDID(ts::DID_STREAM_ID));
+
+#define MY_XML_NAME u"stream_identifier_descriptor"
+#define MY_DID ts::DID_STREAM_ID
+
+TS_XML_DESCRIPTOR_FACTORY(ts::StreamIdentifierDescriptor, MY_XML_NAME);
+TS_ID_DESCRIPTOR_FACTORY(ts::StreamIdentifierDescriptor, ts::EDID(MY_DID));
+TS_ID_DESCRIPTOR_DISPLAY(ts::StreamIdentifierDescriptor::DisplayDescriptor, ts::EDID(MY_DID));
 
 
 //----------------------------------------------------------------------------
@@ -46,7 +50,7 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::StreamIdentifierDescriptor::DisplayDescriptor, ts::
 //----------------------------------------------------------------------------
 
 ts::StreamIdentifierDescriptor::StreamIdentifierDescriptor(uint8_t ctag) :
-    AbstractDescriptor(DID_STREAM_ID, "stream_identifier_descriptor"),
+    AbstractDescriptor(MY_DID, MY_XML_NAME),
     component_tag(ctag)
 {
     _is_valid = true;
@@ -58,7 +62,7 @@ ts::StreamIdentifierDescriptor::StreamIdentifierDescriptor(uint8_t ctag) :
 //----------------------------------------------------------------------------
 
 ts::StreamIdentifierDescriptor::StreamIdentifierDescriptor(const Descriptor& desc, const DVBCharset* charset) :
-    AbstractDescriptor(DID_STREAM_ID, "stream_identifier_descriptor"),
+    AbstractDescriptor(MY_DID, MY_XML_NAME),
     component_tag(0)
 {
     deserialize(desc, charset);

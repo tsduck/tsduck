@@ -41,9 +41,13 @@
 #include "tsTablesFactory.h"
 #include "tsXMLTables.h"
 TSDUCK_SOURCE;
-TS_XML_TABLE_FACTORY(ts::TOT, "TOT");
-TS_ID_TABLE_FACTORY(ts::TOT, ts::TID_TOT);
-TS_ID_SECTION_DISPLAY(ts::TOT::DisplaySection, ts::TID_TOT);
+
+#define MY_XML_NAME u"TOT"
+#define MY_TID ts::TID_TOT
+
+TS_XML_TABLE_FACTORY(ts::TOT, MY_XML_NAME);
+TS_ID_TABLE_FACTORY(ts::TOT, MY_TID);
+TS_ID_SECTION_DISPLAY(ts::TOT::DisplaySection, MY_TID);
 
 
 //----------------------------------------------------------------------------
@@ -51,7 +55,7 @@ TS_ID_SECTION_DISPLAY(ts::TOT::DisplaySection, ts::TID_TOT);
 //----------------------------------------------------------------------------
 
 ts::TOT::TOT(const Time& utc_time_) :
-    AbstractTable(TID_TOT, "TOT"),
+    AbstractTable(MY_TID, MY_XML_NAME),
     utc_time(utc_time_),
     regions(),
     descs()
@@ -65,7 +69,7 @@ ts::TOT::TOT(const Time& utc_time_) :
 //----------------------------------------------------------------------------
 
 ts::TOT::TOT(const BinaryTable& table, const DVBCharset* charset) :
-    AbstractTable(TID_TOT, "TOT"),
+    AbstractTable(MY_TID, MY_XML_NAME),
     utc_time(),
     regions(),
     descs()
@@ -142,7 +146,7 @@ void ts::TOT::deserialize(const BinaryTable& table, const DVBCharset* charset)
     size_t remain(sect.payloadSize());
 
     // Abort if not a TOT
-    if (sect.tableId() != TID_TOT) {
+    if (sect.tableId() != MY_TID) {
         return;
     }
 
@@ -236,7 +240,7 @@ void ts::TOT::serialize (BinaryTable& table, const DVBCharset* charset) const
     }
 
     // Add the section in the table (include CRC)
-    table.addSection(new Section(TID_TOT,
+    table.addSection(new Section(MY_TID,
                                  true,   // is_private_section
                                  payload,
                                  data + 4 - payload));

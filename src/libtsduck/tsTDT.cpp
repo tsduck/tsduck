@@ -37,9 +37,13 @@
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 TSDUCK_SOURCE;
-TS_XML_TABLE_FACTORY(ts::TDT, "TDT");
-TS_ID_TABLE_FACTORY(ts::TDT, ts::TID_TDT);
-TS_ID_SECTION_DISPLAY(ts::TDT::DisplaySection, ts::TID_TDT);
+
+#define MY_XML_NAME u"TDT"
+#define MY_TID ts::TID_TDT
+
+TS_XML_TABLE_FACTORY(ts::TDT, MY_XML_NAME);
+TS_ID_TABLE_FACTORY(ts::TDT, MY_TID);
+TS_ID_SECTION_DISPLAY(ts::TDT::DisplaySection, MY_TID);
 
 
 //----------------------------------------------------------------------------
@@ -47,7 +51,7 @@ TS_ID_SECTION_DISPLAY(ts::TDT::DisplaySection, ts::TID_TDT);
 //----------------------------------------------------------------------------
 
 ts::TDT::TDT(const Time& utc_time_) :
-    AbstractTable(TID_TDT, "TDT"),
+    AbstractTable(MY_TID, MY_XML_NAME),
     utc_time(utc_time_)
 {
     _is_valid = true;
@@ -59,7 +63,7 @@ ts::TDT::TDT(const Time& utc_time_) :
 //----------------------------------------------------------------------------
 
 ts::TDT::TDT(const BinaryTable& table, const DVBCharset* charset) :
-    AbstractTable(TID_TDT, "TDT"),
+    AbstractTable(MY_TID, MY_XML_NAME),
     utc_time()
 {
     deserialize(table, charset);
@@ -86,7 +90,7 @@ void ts::TDT::deserialize(const BinaryTable& table, const DVBCharset* charset)
     size_t remain(sect.payloadSize());
 
     // Abort if not a TDT
-    if (sect.tableId() != TID_TDT || remain < MJD_SIZE) {
+    if (sect.tableId() != MY_TID || remain < MJD_SIZE) {
         return;
     }
 
@@ -115,7 +119,7 @@ void ts::TDT::serialize(BinaryTable& table, const DVBCharset* charset) const
     EncodeMJD(utc_time, payload, MJD_SIZE);
 
     // Add the section in the table
-    table.addSection(new Section(TID_TDT, // tid
+    table.addSection(new Section(MY_TID, // tid
                                  true,    // is_private_section
                                  payload,
                                  MJD_SIZE));

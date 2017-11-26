@@ -32,14 +32,17 @@
 //----------------------------------------------------------------------------
 
 #include "tsPAT.h"
-#include "tsFormat.h"
 #include "tsBinaryTable.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 TSDUCK_SOURCE;
-TS_XML_TABLE_FACTORY(ts::PAT, "PAT");
-TS_ID_TABLE_FACTORY(ts::PAT, ts::TID_PAT);
-TS_ID_SECTION_DISPLAY(ts::PAT::DisplaySection, ts::TID_PAT);
+
+#define MY_XML_NAME u"PAT"
+#define MY_TID ts::TID_PAT
+
+TS_XML_TABLE_FACTORY(ts::PAT, MY_XML_NAME);
+TS_ID_TABLE_FACTORY(ts::PAT, MY_TID);
+TS_ID_SECTION_DISPLAY(ts::PAT::DisplaySection, MY_TID);
 
 
 //----------------------------------------------------------------------------
@@ -51,7 +54,7 @@ ts::PAT::PAT(uint8_t  version_,
              uint16_t ts_id_,
              PID    nit_pid_) :
 
-    AbstractLongTable(TID_PAT, "PAT", version_, is_current_),
+    AbstractLongTable(MY_TID, MY_XML_NAME, version_, is_current_),
     ts_id(ts_id_),
     nit_pid(nit_pid_),
     pmts()
@@ -65,7 +68,7 @@ ts::PAT::PAT(uint8_t  version_,
 //----------------------------------------------------------------------------
 
 ts::PAT::PAT(const BinaryTable& table, const DVBCharset* charset) :
-    AbstractLongTable(TID_PAT, "PAT"),
+    AbstractLongTable(MY_TID, MY_XML_NAME),
     ts_id(0),
     nit_pid(PID_NULL),
     pmts()
@@ -210,7 +213,7 @@ void ts::PAT::DisplaySection(TablesDisplay& display, const ts::Section& section,
     size_t size = section.payloadSize();
     uint16_t tsid = section.tableIdExtension();
 
-    strm << margin << ts::Format("TS id:   %5d (0x%04X)", int(tsid), int(tsid)) << std::endl;
+    strm << margin << UString::Format(u"TS id:   %5d (0x%04X)", {tsid, tsid}) << std::endl;
 
     // Loop through all program / pid pairs
     while (size >= 4) {
@@ -218,11 +221,8 @@ void ts::PAT::DisplaySection(TablesDisplay& display, const ts::Section& section,
         uint16_t pid = GetUInt16(data + 2) & 0x1FFF;
         data += 4; size -= 4;
         strm << margin
-             << Format("%s %5d (0x%04X)  PID: %4d (0x%04X)",
-                       program == 0 ? "NIT:    " : "Program:",
-                       int(program), int(program),
-                       int(pid), int(pid))
-            << std::endl;
+             << UString::Format("%s %5d (0x%04X)  PID: %4d (0x%04X)", {program == 0 ? u"NIT:    " : u"Program:", program, program, pid, pid})
+             << std::endl;
     }
 
     display.displayExtraData(data, size, indent);

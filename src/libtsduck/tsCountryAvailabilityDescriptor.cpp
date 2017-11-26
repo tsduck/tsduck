@@ -35,9 +35,13 @@
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 TSDUCK_SOURCE;
-TS_XML_DESCRIPTOR_FACTORY(ts::CountryAvailabilityDescriptor, "country_availability_descriptor");
-TS_ID_DESCRIPTOR_FACTORY(ts::CountryAvailabilityDescriptor, ts::EDID(ts::DID_COUNTRY_AVAIL));
-TS_ID_DESCRIPTOR_DISPLAY(ts::CountryAvailabilityDescriptor::DisplayDescriptor, ts::EDID(ts::DID_COUNTRY_AVAIL));
+
+#define MY_XML_NAME u"country_availability_descriptor"
+#define MY_DID ts::DID_COUNTRY_AVAIL
+
+TS_XML_DESCRIPTOR_FACTORY(ts::CountryAvailabilityDescriptor, MY_XML_NAME);
+TS_ID_DESCRIPTOR_FACTORY(ts::CountryAvailabilityDescriptor, ts::EDID(MY_DID));
+TS_ID_DESCRIPTOR_DISPLAY(ts::CountryAvailabilityDescriptor::DisplayDescriptor, ts::EDID(MY_DID));
 
 
 //----------------------------------------------------------------------------
@@ -45,7 +49,7 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::CountryAvailabilityDescriptor::DisplayDescriptor, t
 //----------------------------------------------------------------------------
 
 ts::CountryAvailabilityDescriptor::CountryAvailabilityDescriptor() :
-    AbstractDescriptor(DID_COUNTRY_AVAIL, "country_availability_descriptor"),
+    AbstractDescriptor(MY_DID, MY_XML_NAME),
     country_availability(true),
     country_codes()
 {
@@ -58,7 +62,7 @@ ts::CountryAvailabilityDescriptor::CountryAvailabilityDescriptor() :
 //----------------------------------------------------------------------------
 
 ts::CountryAvailabilityDescriptor::CountryAvailabilityDescriptor(const Descriptor& desc, const DVBCharset* charset) :
-    AbstractDescriptor(DID_COUNTRY_AVAIL, "country_availability_descriptor"),
+    AbstractDescriptor(MY_DID, MY_XML_NAME),
     country_availability(true),
     country_codes()
 {
@@ -73,7 +77,7 @@ ts::CountryAvailabilityDescriptor::CountryAvailabilityDescriptor(const Descripto
 //----------------------------------------------------------------------------
 
 ts::CountryAvailabilityDescriptor::CountryAvailabilityDescriptor(bool availability, const std::initializer_list<UString> countries) :
-    AbstractDescriptor(DID_COUNTRY_AVAIL, "country_availability_descriptor"),
+    AbstractDescriptor(MY_DID, MY_XML_NAME),
     country_availability(availability),
     country_codes(countries)
 {

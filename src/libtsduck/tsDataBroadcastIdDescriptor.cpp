@@ -39,9 +39,13 @@
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 TSDUCK_SOURCE;
-TS_XML_DESCRIPTOR_FACTORY(ts::DataBroadcastIdDescriptor, "data_broadcast_id_descriptor");
-TS_ID_DESCRIPTOR_FACTORY(ts::DataBroadcastIdDescriptor, ts::EDID(ts::DID_DATA_BROADCAST_ID));
-TS_ID_DESCRIPTOR_DISPLAY(ts::DataBroadcastIdDescriptor::DisplayDescriptor, ts::EDID(ts::DID_DATA_BROADCAST_ID));
+
+#define MY_XML_NAME u"data_broadcast_id_descriptor"
+#define MY_DID ts::DID_DATA_BROADCAST_ID
+
+TS_XML_DESCRIPTOR_FACTORY(ts::DataBroadcastIdDescriptor, MY_XML_NAME);
+TS_ID_DESCRIPTOR_FACTORY(ts::DataBroadcastIdDescriptor, ts::EDID(MY_DID));
+TS_ID_DESCRIPTOR_DISPLAY(ts::DataBroadcastIdDescriptor::DisplayDescriptor, ts::EDID(MY_DID));
 
 
 //----------------------------------------------------------------------------
@@ -49,7 +53,7 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::DataBroadcastIdDescriptor::DisplayDescriptor, ts::E
 //----------------------------------------------------------------------------
 
 ts::DataBroadcastIdDescriptor::DataBroadcastIdDescriptor(uint16_t id) :
-    AbstractDescriptor(DID_DATA_BROADCAST_ID, "data_broadcast_id_descriptor"),
+    AbstractDescriptor(MY_DID, MY_XML_NAME),
     data_broadcast_id(id),
     private_data()
 {
@@ -62,7 +66,7 @@ ts::DataBroadcastIdDescriptor::DataBroadcastIdDescriptor(uint16_t id) :
 //----------------------------------------------------------------------------
 
 ts::DataBroadcastIdDescriptor::DataBroadcastIdDescriptor(const Descriptor& desc, const DVBCharset* charset) :
-    AbstractDescriptor(DID_DATA_BROADCAST_ID, "data_broadcast_id_descriptor"),
+    AbstractDescriptor(MY_DID, MY_XML_NAME),
     data_broadcast_id(0),
     private_data()
 {

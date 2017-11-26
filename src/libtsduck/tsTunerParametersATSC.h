@@ -57,15 +57,15 @@ namespace ts {
         TunerParametersATSC();
 
         // Implementation of TunerParameters API
-        virtual BitRate theoreticalBitrate() const {return 0;} // unknown for ATSC/VSB
-        virtual std::string shortDescription(int strength = -1, int quality = -1) const;
-        virtual std::string toZapFormat() const {return "";} //TODO: unimplemented
-        virtual std::string toPluginOptions(bool no_local = false) const;
-        virtual void displayParameters(std::ostream& strm, const std::string& margin = std::string(), bool verbose = false) const;
-        virtual bool fromZapFormat(const std::string& zap) {return false;} //TODO: unimplemented
-        virtual size_t zapFieldCount() const {return 0;} //TODO: unimplemented
-        virtual void copy(const TunerParameters&);
+        virtual BitRate theoreticalBitrate() const override {return 0;} // unknown for ATSC/VSB
+        virtual UString shortDescription(int strength = -1, int quality = -1) const override;
+        virtual UString toZapFormat() const override {return UString();} //TODO: unimplemented
+        virtual UString toPluginOptions(bool no_local = false) const override;
+        virtual void displayParameters(std::ostream& strm, const UString& margin = UString(), bool verbose = false) const override;
+        virtual bool fromZapFormat(const UString& zap) override {return false;} //TODO: unimplemented
+        virtual size_t zapFieldCount() const override {return 0;} //TODO: unimplemented
+        virtual void copy(const TunerParameters&) override;
     protected:
-        virtual bool fromArgs(const TunerArgs&, Report&);
+        virtual bool fromArgs(const TunerArgs&, Report&) override;
     };
 }

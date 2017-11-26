@@ -36,9 +36,13 @@
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 TSDUCK_SOURCE;
-TS_XML_DESCRIPTOR_FACTORY(ts::ISO639LanguageDescriptor, "ISO_639_language_descriptor");
-TS_ID_DESCRIPTOR_FACTORY(ts::ISO639LanguageDescriptor, ts::EDID(ts::DID_LANGUAGE));
-TS_ID_DESCRIPTOR_DISPLAY(ts::ISO639LanguageDescriptor::DisplayDescriptor, ts::EDID(ts::DID_LANGUAGE));
+
+#define MY_XML_NAME u"ISO_639_language_descriptor"
+#define MY_DID ts::DID_LANGUAGE
+
+TS_XML_DESCRIPTOR_FACTORY(ts::ISO639LanguageDescriptor, MY_XML_NAME);
+TS_ID_DESCRIPTOR_FACTORY(ts::ISO639LanguageDescriptor, ts::EDID(MY_DID));
+TS_ID_DESCRIPTOR_DISPLAY(ts::ISO639LanguageDescriptor::DisplayDescriptor, ts::EDID(MY_DID));
 
 
 //----------------------------------------------------------------------------
@@ -58,21 +62,21 @@ ts::ISO639LanguageDescriptor::Entry::Entry(const UString& code, uint8_t type) :
 }
 
 ts::ISO639LanguageDescriptor::ISO639LanguageDescriptor() :
-    AbstractDescriptor(DID_LANGUAGE, "ISO_639_language_descriptor"),
+    AbstractDescriptor(MY_DID, MY_XML_NAME),
     entries()
 {
     _is_valid = true;
 }
 
 ts::ISO639LanguageDescriptor::ISO639LanguageDescriptor(const Descriptor& desc, const DVBCharset* charset) :
-    AbstractDescriptor(DID_LANGUAGE, "ISO_639_language_descriptor"),
+    AbstractDescriptor(MY_DID, MY_XML_NAME),
     entries()
 {
     deserialize(desc, charset);
 }
 
 ts::ISO639LanguageDescriptor::ISO639LanguageDescriptor(const UString& code, uint8_t type) :
-    AbstractDescriptor(DID_LANGUAGE, "ISO_639_language_descriptor"),
+    AbstractDescriptor(MY_DID, MY_XML_NAME),
     entries()
 {
     _is_valid = true;

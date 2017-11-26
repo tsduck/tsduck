@@ -37,9 +37,13 @@
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 TSDUCK_SOURCE;
-TS_XML_DESCRIPTOR_FACTORY(ts::CAIdentifierDescriptor, "CA_identifier_descriptor");
-TS_ID_DESCRIPTOR_FACTORY(ts::CAIdentifierDescriptor, ts::EDID(ts::DID_CA_ID));
-TS_ID_DESCRIPTOR_DISPLAY(ts::CAIdentifierDescriptor::DisplayDescriptor, ts::EDID(ts::DID_CA_ID));
+
+#define MY_XML_NAME u"CA_identifier_descriptor"
+#define MY_DID ts::DID_CA_ID
+
+TS_XML_DESCRIPTOR_FACTORY(ts::CAIdentifierDescriptor, MY_XML_NAME);
+TS_ID_DESCRIPTOR_FACTORY(ts::CAIdentifierDescriptor, ts::EDID(MY_DID));
+TS_ID_DESCRIPTOR_DISPLAY(ts::CAIdentifierDescriptor::DisplayDescriptor, ts::EDID(MY_DID));
 
 
 //----------------------------------------------------------------------------
@@ -47,7 +51,7 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::CAIdentifierDescriptor::DisplayDescriptor, ts::EDID
 //----------------------------------------------------------------------------
 
 ts::CAIdentifierDescriptor::CAIdentifierDescriptor() :
-    AbstractDescriptor (DID_CA_ID, "CA_identifier_descriptor"),
+    AbstractDescriptor (MY_DID, MY_XML_NAME),
     casids ()
 {
     _is_valid = true;
@@ -59,7 +63,7 @@ ts::CAIdentifierDescriptor::CAIdentifierDescriptor() :
 //----------------------------------------------------------------------------
 
 ts::CAIdentifierDescriptor::CAIdentifierDescriptor(const Descriptor& desc, const DVBCharset* charset) :
-    AbstractDescriptor(DID_CA_ID, "CA_identifier_descriptor"),
+    AbstractDescriptor(MY_DID, MY_XML_NAME),
     casids()
 {
     deserialize(desc, charset);
@@ -74,7 +78,7 @@ ts::CAIdentifierDescriptor::CAIdentifierDescriptor(const Descriptor& desc, const
 //----------------------------------------------------------------------------
 
 ts::CAIdentifierDescriptor::CAIdentifierDescriptor (int casid, ...) :
-    AbstractDescriptor (DID_CA_ID, "CA_identifier_descriptor"),
+    AbstractDescriptor (MY_DID, MY_XML_NAME),
     casids ()
 {
     _is_valid = true;

@@ -54,8 +54,8 @@ namespace ts {
     //! @param [in,out] report Where to report errors.
     //! @return True on success, false on error.
     //!
-    TSDUCKDLL bool GetTunerFromZapFile(const std::string& channel_name,
-                                       const std::string& file_name,
+    TSDUCKDLL bool GetTunerFromZapFile(const UString& channel_name,
+                                       const UString& file_name,
                                        TunerParameters& parameters,
                                        Report& report = CERR);
 

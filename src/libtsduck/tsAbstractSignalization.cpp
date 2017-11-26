@@ -34,7 +34,7 @@
 // Constructors.
 //----------------------------------------------------------------------------
 
-ts::AbstractSignalization::AbstractSignalization(const char* xml_name) :
+ts::AbstractSignalization::AbstractSignalization(const UChar* xml_name) :
     _xml_name(xml_name),
     _is_valid(false)
 {
@@ -50,8 +50,7 @@ ts::AbstractSignalization::AbstractSignalization(const AbstractSignalization& ot
 ts::AbstractSignalization& ts::AbstractSignalization::operator=(const AbstractSignalization& other)
 {
     if (this != &other) {
-        assert((_xml_name == 0 && other._xml_name == 0) ||
-               (_xml_name != 0 && other._xml_name != 0 && ::strcmp(_xml_name, other._xml_name) == 0));
+        assert((_xml_name == 0 && other._xml_name == 0) || (_xml_name != 0 && other._xml_name != 0 && UString(_xml_name) == UString(other._xml_name)));
         _is_valid = other._is_valid;
     }
     return *this;
@@ -62,9 +61,9 @@ ts::AbstractSignalization& ts::AbstractSignalization::operator=(const AbstractSi
 // Get the XMl node name representing this table.
 //----------------------------------------------------------------------------
 
-std::string ts::AbstractSignalization::xmlName() const
+ts::UString ts::AbstractSignalization::xmlName() const
 {
-    return _xml_name == 0 ? std::string() : std::string(_xml_name);
+    return UString(_xml_name);
 }
 
 

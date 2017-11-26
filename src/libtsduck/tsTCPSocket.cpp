@@ -235,9 +235,9 @@ bool ts::TCPSocket::bind (const SocketAddress& addr, Report& report)
     ::sockaddr sock_addr;
     addr.copy (sock_addr);
 
-    report.debug ("binding socket to " + std::string (addr));
-    if (::bind (_sock, &sock_addr, sizeof(sock_addr)) != 0) {
-        report.error ("error binding socket to local address: " + SocketErrorCodeMessage ());
+    report.debug(u"binding socket to " + UString(addr));
+    if (::bind(_sock, &sock_addr, sizeof(sock_addr)) != 0) {
+        report.error(u"error binding socket to local address: " + SocketErrorCodeMessage());
         return false;
     }
     return true;
@@ -253,10 +253,10 @@ bool ts::TCPSocket::getLocalAddress (SocketAddress& addr, Report& report)
     ::sockaddr sock_addr;
     TS_SOCKET_SOCKLEN_T len = sizeof(sock_addr);
     TS_ZERO (sock_addr);
-    if (::getsockname (_sock, &sock_addr, &len) != 0) {
-        report.error ("error getting socket name: " + SocketErrorCodeMessage ());
+    if (::getsockname(_sock, &sock_addr, &len) != 0) {
+        report.error(u"error getting socket name: " + SocketErrorCodeMessage());
         return false;
     }
-    addr = SocketAddress (sock_addr);
+    addr = SocketAddress(sock_addr);
     return true;
 }

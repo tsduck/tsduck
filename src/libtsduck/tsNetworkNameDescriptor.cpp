@@ -35,9 +35,13 @@
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 TSDUCK_SOURCE;
-TS_XML_DESCRIPTOR_FACTORY(ts::NetworkNameDescriptor, "network_name_descriptor");
-TS_ID_DESCRIPTOR_FACTORY(ts::NetworkNameDescriptor, ts::EDID(ts::DID_NETWORK_NAME));
-TS_ID_DESCRIPTOR_DISPLAY(ts::NetworkNameDescriptor::DisplayDescriptor, ts::EDID(ts::DID_NETWORK_NAME));
+
+#define MY_XML_NAME u"network_name_descriptor"
+#define MY_DID ts::DID_NETWORK_NAME
+
+TS_XML_DESCRIPTOR_FACTORY(ts::NetworkNameDescriptor, MY_XML_NAME);
+TS_ID_DESCRIPTOR_FACTORY(ts::NetworkNameDescriptor, ts::EDID(MY_DID));
+TS_ID_DESCRIPTOR_DISPLAY(ts::NetworkNameDescriptor::DisplayDescriptor, ts::EDID(MY_DID));
 
 
 //----------------------------------------------------------------------------
@@ -45,7 +49,7 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::NetworkNameDescriptor::DisplayDescriptor, ts::EDID(
 //----------------------------------------------------------------------------
 
 ts::NetworkNameDescriptor::NetworkNameDescriptor(const UString& name_) :
-    AbstractDescriptor(DID_NETWORK_NAME, "network_name_descriptor"),
+    AbstractDescriptor(MY_DID, MY_XML_NAME),
     name(name_)
 {
     _is_valid = true;
@@ -57,7 +61,7 @@ ts::NetworkNameDescriptor::NetworkNameDescriptor(const UString& name_) :
 //----------------------------------------------------------------------------
 
 ts::NetworkNameDescriptor::NetworkNameDescriptor(const Descriptor& desc, const DVBCharset* charset) :
-    AbstractDescriptor(DID_NETWORK_NAME, "network_name_descriptor"),
+    AbstractDescriptor(MY_DID, MY_XML_NAME),
     name()
 {
     deserialize(desc, charset);

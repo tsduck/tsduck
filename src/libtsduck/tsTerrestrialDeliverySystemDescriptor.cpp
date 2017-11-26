@@ -37,9 +37,13 @@
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 TSDUCK_SOURCE;
-TS_XML_DESCRIPTOR_FACTORY(ts::TerrestrialDeliverySystemDescriptor, "terrestrial_delivery_system_descriptor");
-TS_ID_DESCRIPTOR_FACTORY(ts::TerrestrialDeliverySystemDescriptor, ts::EDID(ts::DID_TERREST_DELIVERY));
-TS_ID_DESCRIPTOR_DISPLAY(ts::TerrestrialDeliverySystemDescriptor::DisplayDescriptor, ts::EDID(ts::DID_TERREST_DELIVERY));
+
+#define MY_XML_NAME u"terrestrial_delivery_system_descriptor"
+#define MY_DID ts::DID_TERREST_DELIVERY
+
+TS_XML_DESCRIPTOR_FACTORY(ts::TerrestrialDeliverySystemDescriptor, MY_XML_NAME);
+TS_ID_DESCRIPTOR_FACTORY(ts::TerrestrialDeliverySystemDescriptor, ts::EDID(MY_DID));
+TS_ID_DESCRIPTOR_DISPLAY(ts::TerrestrialDeliverySystemDescriptor::DisplayDescriptor, ts::EDID(MY_DID));
 
 
 //----------------------------------------------------------------------------
@@ -47,7 +51,7 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::TerrestrialDeliverySystemDescriptor::DisplayDescrip
 //----------------------------------------------------------------------------
 
 ts::TerrestrialDeliverySystemDescriptor::TerrestrialDeliverySystemDescriptor() :
-    AbstractDeliverySystemDescriptor(DID_TERREST_DELIVERY, DS_DVB_T, "terrestrial_delivery_system_descriptor"),
+    AbstractDeliverySystemDescriptor(MY_DID, DS_DVB_T, MY_XML_NAME),
     centre_frequency(0),
     bandwidth(0),
     high_priority(true),
@@ -70,7 +74,7 @@ ts::TerrestrialDeliverySystemDescriptor::TerrestrialDeliverySystemDescriptor() :
 //----------------------------------------------------------------------------
 
 ts::TerrestrialDeliverySystemDescriptor::TerrestrialDeliverySystemDescriptor(const Descriptor& desc, const DVBCharset* charset) :
-    AbstractDeliverySystemDescriptor(DID_TERREST_DELIVERY, DS_DVB_T, "terrestrial_delivery_system_descriptor"),
+    AbstractDeliverySystemDescriptor(MY_DID, DS_DVB_T, MY_XML_NAME),
     centre_frequency(0),
     bandwidth(0),
     high_priority(true),

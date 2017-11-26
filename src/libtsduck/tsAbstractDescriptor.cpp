@@ -40,7 +40,7 @@ TSDUCK_SOURCE;
 // Protected constructor for subclasses.
 //----------------------------------------------------------------------------
 
-ts::AbstractDescriptor::AbstractDescriptor(DID tag, const char* xml_name, PDS pds) :
+ts::AbstractDescriptor::AbstractDescriptor(DID tag, const UChar* xml_name, PDS pds) :
     AbstractSignalization(xml_name),
     _tag(tag),
     _required_pds(pds)

@@ -38,7 +38,11 @@
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 TSDUCK_SOURCE;
-TS_ID_DESCRIPTOR_DISPLAY(ts::VBIDataDescriptor::DisplayDescriptor, ts::EDID(ts::DID_VBI_DATA));
+
+#define MY_XML_NAME u"VBI_data_descriptor"
+#define MY_DID ts::DID_VBI_DATA
+
+TS_ID_DESCRIPTOR_DISPLAY(ts::VBIDataDescriptor::DisplayDescriptor, ts::EDID(MY_DID));
 
 
 //----------------------------------------------------------------------------

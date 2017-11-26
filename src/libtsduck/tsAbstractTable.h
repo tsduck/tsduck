@@ -88,7 +88,7 @@ namespace ts {
         //! @param [in] tid Table id.
         //! @param [in] xml_name Table name, as used in XML structures.
         //!
-        AbstractTable(TID tid, const char* xml_name);
+        AbstractTable(TID tid, const UChar* xml_name);
 
     private:
         // Unreachable constructors and operators.

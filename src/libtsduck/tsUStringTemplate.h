@@ -312,7 +312,7 @@ bool ts::UString::containSimilar(const CONTAINER& container) const
 //----------------------------------------------------------------------------
 
 template <class CONTAINER>
-typename CONTAINER::const_iterator ts::UString::findSimilar(const CONTAINER& container)
+typename CONTAINER::const_iterator ts::UString::findSimilar(const CONTAINER& container) const
 {
     typename CONTAINER::const_iterator it = container.begin();
     while (it != container.end() && !similar(it->first)) {

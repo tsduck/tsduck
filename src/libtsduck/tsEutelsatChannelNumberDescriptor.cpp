@@ -33,13 +33,17 @@
 //----------------------------------------------------------------------------
 
 #include "tsEutelsatChannelNumberDescriptor.h"
-#include "tsFormat.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 TSDUCK_SOURCE;
-TS_XML_DESCRIPTOR_FACTORY(ts::EutelsatChannelNumberDescriptor, "eutelsat_channel_number_descriptor");
-TS_ID_DESCRIPTOR_FACTORY(ts::EutelsatChannelNumberDescriptor, ts::EDID(ts::DID_EUTELSAT_CHAN_NUM, ts::PDS_EUTELSAT));
-TS_ID_DESCRIPTOR_DISPLAY(ts::EutelsatChannelNumberDescriptor::DisplayDescriptor, ts::EDID(ts::DID_EUTELSAT_CHAN_NUM, ts::PDS_EUTELSAT));
+
+#define MY_XML_NAME u"eutelsat_channel_number_descriptor"
+#define MY_DID ts::DID_EUTELSAT_CHAN_NUM
+#define MY_PDS ts::PDS_EUTELSAT
+
+TS_XML_DESCRIPTOR_FACTORY(ts::EutelsatChannelNumberDescriptor, MY_XML_NAME);
+TS_ID_DESCRIPTOR_FACTORY(ts::EutelsatChannelNumberDescriptor, ts::EDID(MY_DID, MY_PDS));
+TS_ID_DESCRIPTOR_DISPLAY(ts::EutelsatChannelNumberDescriptor::DisplayDescriptor, ts::EDID(MY_DID, MY_PDS));
 
 
 //----------------------------------------------------------------------------
@@ -47,7 +51,7 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::EutelsatChannelNumberDescriptor::DisplayDescriptor,
 //----------------------------------------------------------------------------
 
 ts::EutelsatChannelNumberDescriptor::EutelsatChannelNumberDescriptor() :
-    AbstractDescriptor(DID_EUTELSAT_CHAN_NUM, "eutelsat_channel_number_descriptor", PDS_EUTELSAT),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_PDS),
     entries()
 {
     _is_valid = true;
@@ -59,7 +63,7 @@ ts::EutelsatChannelNumberDescriptor::EutelsatChannelNumberDescriptor() :
 //----------------------------------------------------------------------------
 
 ts::EutelsatChannelNumberDescriptor::EutelsatChannelNumberDescriptor(const Descriptor& desc, const DVBCharset* charset) :
-    AbstractDescriptor(DID_EUTELSAT_CHAN_NUM, "eutelsat_channel_number_descriptor", PDS_EUTELSAT),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_PDS),
     entries()
 {
     deserialize(desc, charset);
@@ -126,10 +130,9 @@ void ts::EutelsatChannelNumberDescriptor::DisplayDescriptor(TablesDisplay& displ
         const uint16_t channel = GetUInt16(data + 6) & 0x0FFF;
         data += 8; size -= 8;
         strm << margin
-            << Format("Service Id: %5d (0x%04X), Channel number: %3d, TS Id: %5d (0x%04X), Net Id: %5d (0x%04X)",
-                      int(service_id), int(service_id), int(channel),
-                      int(ts_id), int(ts_id), int(onetw_id), int(onetw_id))
-            << std::endl;
+             << UString::Format(u"Service Id: %5d (0x%04X), Channel number: %3d, TS Id: %5d (0x%04X), Net Id: %5d (0x%04X)",
+                                {service_id, service_id, channel, ts_id, ts_id, onetw_id, onetw_id})
+             << std::endl;
     }
 
     display.displayExtraData(data, size, indent);

@@ -62,9 +62,9 @@ namespace ts {
 #if defined(TS_WINDOWS) || defined(DOXYGEN)
         size_t                      demux_queue_size;   //!< Max number of queued media samples (Windows-specific).
 #endif
-        Variable<std::string>       zap_specification;  //!< Linux DVB zap format.
-        Variable<std::string>       channel_name;       //!< Use transponder containing this channel.
-        Variable<std::string>       zap_file_name;      //!< Where channel_name is located.
+        Variable<UString>           zap_specification;  //!< Linux DVB zap format.
+        Variable<UString>           channel_name;       //!< Use transponder containing this channel.
+        Variable<UString>           zap_file_name;      //!< Where channel_name is located.
         Variable<uint64_t>          frequency;          //!< Frequency in Hz.
         Variable<Polarization>      polarity;           //!< Polarity.
         Variable<LNB>               lnb;                //!< Local dish LNB for frequency adjustment.

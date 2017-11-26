@@ -128,7 +128,7 @@ namespace ts {
         //! Get the connected remote peer as a string.
         //! @return A string representation of the IP address and port of the remote socket.
         //!
-        std::string peerName() const;
+        UString peerName() const;
 
         //!
         //! Close the write direction of the connection.

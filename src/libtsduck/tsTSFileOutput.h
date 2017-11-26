@@ -61,7 +61,7 @@ namespace ts {
         //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        virtual bool open(const std::string& filename, bool append, bool keep, Report& report);
+        virtual bool open(const UString& filename, bool append, bool keep, Report& report);
 
         //!
         //! Close the file.
@@ -107,7 +107,7 @@ namespace ts {
         //! Get the file name.
         //! @return The file name.
         //!
-        std::string getFileName() const
+        UString getFileName() const
         {
             return _filename;
         }
@@ -122,7 +122,7 @@ namespace ts {
         }
 
     private:
-        std::string   _filename;      // Output file name
+        UString       _filename;      // Output file name
         bool          _is_open;       // Check if file is actually open
         int           _severity;      // Severity level for error reporting
         PacketCounter _total_packets; // Total written packets

@@ -41,7 +41,7 @@ TSDUCK_SOURCE;
 // Constructors
 //----------------------------------------------------------------------------
 
-ts::SocketAddress::SocketAddress (const ::sockaddr& s) :
+ts::SocketAddress::SocketAddress(const ::sockaddr& s) :
     IPAddress (s),
     _port (AnyPort)
 {
@@ -52,9 +52,9 @@ ts::SocketAddress::SocketAddress (const ::sockaddr& s) :
     }
 }
 
-ts::SocketAddress::SocketAddress (const ::sockaddr_in& s) :
+ts::SocketAddress::SocketAddress(const ::sockaddr_in& s) :
     IPAddress (s),
-    _port (s.sin_family == AF_INET ? ntohs (s.sin_port) : AnyPort)
+    _port (s.sin_family == AF_INET ? ntohs(s.sin_port) : AnyPort)
 {
 }
 
@@ -65,36 +65,36 @@ ts::SocketAddress::SocketAddress (const ::sockaddr_in& s) :
 // Return true on success, false on error.
 //----------------------------------------------------------------------------
 
-bool ts::SocketAddress::resolve (const std::string& name, Report& report)
+bool ts::SocketAddress::resolve (const UString& name, Report& report)
 {
     // Clear address & port
     clear();
 
     // Locate last colon in string
-    std::string::size_type colon = name.rfind (":");
+    UString::size_type colon = name.rfind(u":");
 
-    if (colon == std::string::npos) {
+    if (colon == UString::NPOS) {
         // No colon in string, can be an address alone or a port alone.
-        if (ToInteger (_port, name)) {
+        if (name.toInteger(_port)) {
             // This is an integer, this is a port alone.
             return true;
         }
         else {
             // Not a valid integer, this is an address alone
             _port = AnyPort;
-            return IPAddress::resolve (name, report);
+            return IPAddress::resolve(name, report);
         }
     }
 
     // If there is something after the colon, this must be a port number
-    if (colon < name.length() - 1 && !ToInteger (_port, name.substr (colon + 1))) {
-        report.error ("invalid port value in \"" + name + "\"");
+    if (colon < name.length() - 1 && !name.substr(colon + 1).toInteger(_port)) {
+        report.error(u"invalid port value in \"%s\"", {name});
         return false;
     }
 
     // If there is something before the colon, this must be an address.
     // Try to decode name as IP address or resolve it as DNS host name.
-    return colon == 0 || IPAddress::resolve (name.substr (0, colon), report);
+    return colon == 0 || IPAddress::resolve(name.substr(0, colon), report);
 }
 
 
@@ -102,8 +102,7 @@ bool ts::SocketAddress::resolve (const std::string& name, Report& report)
 // Convert to a string object
 //----------------------------------------------------------------------------
 
-ts::SocketAddress::operator std::string () const
+ts::SocketAddress::operator ts::UString() const
 {
-    return std::string (*static_cast<const IPAddress*> (this)) +
-           (_port == AnyPort ? "" : Format (":%d", int (_port)));
+    return UString(*static_cast<const IPAddress*>(this)) + (_port == AnyPort ? u"" : UString::Format(u":%d", {_port}));
 }

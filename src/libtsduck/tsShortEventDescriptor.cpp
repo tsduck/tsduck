@@ -35,9 +35,13 @@
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 TSDUCK_SOURCE;
-TS_XML_DESCRIPTOR_FACTORY(ts::ShortEventDescriptor, "short_event_descriptor");
-TS_ID_DESCRIPTOR_FACTORY(ts::ShortEventDescriptor, ts::EDID(ts::DID_SHORT_EVENT));
-TS_ID_DESCRIPTOR_DISPLAY(ts::ShortEventDescriptor::DisplayDescriptor, ts::EDID(ts::DID_SHORT_EVENT));
+
+#define MY_XML_NAME u"short_event_descriptor"
+#define MY_DID ts::DID_SHORT_EVENT
+
+TS_XML_DESCRIPTOR_FACTORY(ts::ShortEventDescriptor, MY_XML_NAME);
+TS_ID_DESCRIPTOR_FACTORY(ts::ShortEventDescriptor, ts::EDID(MY_DID));
+TS_ID_DESCRIPTOR_DISPLAY(ts::ShortEventDescriptor::DisplayDescriptor, ts::EDID(MY_DID));
 
 
 //----------------------------------------------------------------------------
@@ -45,7 +49,7 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::ShortEventDescriptor::DisplayDescriptor, ts::EDID(t
 //----------------------------------------------------------------------------
 
 ts::ShortEventDescriptor::ShortEventDescriptor() :
-    AbstractDescriptor(DID_SHORT_EVENT, "short_event_descriptor"),
+    AbstractDescriptor(MY_DID, MY_XML_NAME),
     language_code(),
     event_name(),
     text()
@@ -59,7 +63,7 @@ ts::ShortEventDescriptor::ShortEventDescriptor() :
 //----------------------------------------------------------------------------
 
 ts::ShortEventDescriptor::ShortEventDescriptor(const UString& lang_, const UString& name_, const UString& text_) :
-    AbstractDescriptor(DID_SHORT_EVENT, "short_event_descriptor"),
+    AbstractDescriptor(MY_DID, MY_XML_NAME),
     language_code(lang_),
     event_name(name_),
     text(text_)
@@ -73,7 +77,7 @@ ts::ShortEventDescriptor::ShortEventDescriptor(const UString& lang_, const UStri
 //----------------------------------------------------------------------------
 
 ts::ShortEventDescriptor::ShortEventDescriptor(const Descriptor& desc, const DVBCharset* charset) :
-    AbstractDescriptor(DID_SHORT_EVENT, "short_event_descriptor"),
+    AbstractDescriptor(MY_DID, MY_XML_NAME),
     language_code(),
     event_name(),
     text()

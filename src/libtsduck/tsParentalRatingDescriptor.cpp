@@ -32,16 +32,18 @@
 //----------------------------------------------------------------------------
 
 #include "tsParentalRatingDescriptor.h"
-#include "tsFormat.h"
-#include "tsHexa.h"
 #include "tsNames.h"
 #include "tsBinaryTable.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 TSDUCK_SOURCE;
-TS_XML_DESCRIPTOR_FACTORY(ts::ParentalRatingDescriptor, "parental_rating_descriptor");
-TS_ID_DESCRIPTOR_FACTORY(ts::ParentalRatingDescriptor, ts::EDID(ts::DID_PARENTAL_RATING));
-TS_ID_DESCRIPTOR_DISPLAY(ts::ParentalRatingDescriptor::DisplayDescriptor, ts::EDID(ts::DID_PARENTAL_RATING));
+
+#define MY_XML_NAME u"parental_rating_descriptor"
+#define MY_DID ts::DID_PARENTAL_RATING
+
+TS_XML_DESCRIPTOR_FACTORY(ts::ParentalRatingDescriptor, MY_XML_NAME);
+TS_ID_DESCRIPTOR_FACTORY(ts::ParentalRatingDescriptor, ts::EDID(MY_DID));
+TS_ID_DESCRIPTOR_DISPLAY(ts::ParentalRatingDescriptor::DisplayDescriptor, ts::EDID(MY_DID));
 
 
 //----------------------------------------------------------------------------
@@ -61,21 +63,21 @@ ts::ParentalRatingDescriptor::Entry::Entry(const UString& code, uint8_t rate) :
 }
 
 ts::ParentalRatingDescriptor::ParentalRatingDescriptor() :
-    AbstractDescriptor(DID_PARENTAL_RATING, "parental_rating_descriptor"),
+    AbstractDescriptor(MY_DID, MY_XML_NAME),
     entries()
 {
     _is_valid = true;
 }
 
 ts::ParentalRatingDescriptor::ParentalRatingDescriptor(const Descriptor& desc, const DVBCharset* charset) :
-    AbstractDescriptor(DID_PARENTAL_RATING, "parental_rating_descriptor"),
+    AbstractDescriptor(MY_DID, MY_XML_NAME),
     entries()
 {
     deserialize(desc, charset);
 }
 
 ts::ParentalRatingDescriptor::ParentalRatingDescriptor(const UString& code, uint8_t rate) :
-    AbstractDescriptor(DID_PARENTAL_RATING, "parental_rating_descriptor"),
+    AbstractDescriptor(MY_DID, MY_XML_NAME),
     entries()
 {
     _is_valid = true;
@@ -136,7 +138,7 @@ void ts::ParentalRatingDescriptor::DisplayDescriptor(TablesDisplay& display, DID
     while (size >= 4) {
         const uint8_t rating = data[3];
         strm << margin << "Country code: " << UString::FromDVB(data, 3, display.dvbCharset())
-             << Format(", rating: 0x%02X ", int(rating));
+             << UString::Format(u", rating: 0x%X ", {rating});
         if (rating == 0) {
             strm << "(undefined)";
         }

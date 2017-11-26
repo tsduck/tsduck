@@ -36,9 +36,13 @@
 #include "tsTablesFactory.h"
 #include "tsXMLTables.h"
 TSDUCK_SOURCE;
-TS_XML_DESCRIPTOR_FACTORY(ts::AVCVideoDescriptor, "AVC_video_descriptor");
-TS_ID_DESCRIPTOR_FACTORY(ts::AVCVideoDescriptor, ts::EDID(ts::DID_AVC_VIDEO));
-TS_ID_DESCRIPTOR_DISPLAY(ts::AVCVideoDescriptor::DisplayDescriptor, ts::EDID(ts::DID_AVC_VIDEO));
+
+#define MY_XML_NAME u"AVC_video_descriptor"
+#define MY_DID ts::DID_AVC_VIDEO
+
+TS_XML_DESCRIPTOR_FACTORY(ts::AVCVideoDescriptor, MY_XML_NAME);
+TS_ID_DESCRIPTOR_FACTORY(ts::AVCVideoDescriptor, ts::EDID(MY_DID));
+TS_ID_DESCRIPTOR_DISPLAY(ts::AVCVideoDescriptor::DisplayDescriptor, ts::EDID(MY_DID));
 
 
 //----------------------------------------------------------------------------
@@ -46,7 +50,7 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::AVCVideoDescriptor::DisplayDescriptor, ts::EDID(ts:
 //----------------------------------------------------------------------------
 
 ts::AVCVideoDescriptor::AVCVideoDescriptor() :
-    AbstractDescriptor(DID_AVC_VIDEO, "AVC_video_descriptor"),
+    AbstractDescriptor(MY_DID, MY_XML_NAME),
     profile_idc(0),
     constraint_set0(false),
     constraint_set1(false),
@@ -65,7 +69,7 @@ ts::AVCVideoDescriptor::AVCVideoDescriptor() :
 //----------------------------------------------------------------------------
 
 ts::AVCVideoDescriptor::AVCVideoDescriptor(const Descriptor& desc, const DVBCharset* charset) :
-    AbstractDescriptor(DID_AVC_VIDEO, "AVC_video_descriptor"),
+    AbstractDescriptor(MY_DID, MY_XML_NAME),
     profile_idc(0),
     constraint_set0(false),
     constraint_set1(false),

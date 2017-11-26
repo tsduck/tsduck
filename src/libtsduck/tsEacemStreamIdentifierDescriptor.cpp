@@ -37,13 +37,18 @@
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 TSDUCK_SOURCE;
-TS_XML_DESCRIPTOR_FACTORY(ts::EacemStreamIdentifierDescriptor, "eacem_stream_identifier_descriptor");
-TS_ID_DESCRIPTOR_FACTORY(ts::EacemStreamIdentifierDescriptor, ts::EDID(ts::DID_EACEM_STREAM_ID, ts::PDS_EACEM));
-TS_ID_DESCRIPTOR_DISPLAY(ts::EacemStreamIdentifierDescriptor::DisplayDescriptor, ts::EDID(ts::DID_EACEM_STREAM_ID, ts::PDS_EACEM));
+
+#define MY_XML_NAME u"eacem_stream_identifier_descriptor"
+#define MY_DID ts::DID_EACEM_STREAM_ID
+#define MY_PDS ts::PDS_EACEM
+
+TS_XML_DESCRIPTOR_FACTORY(ts::EacemStreamIdentifierDescriptor, MY_XML_NAME);
+TS_ID_DESCRIPTOR_FACTORY(ts::EacemStreamIdentifierDescriptor, ts::EDID(MY_DID, MY_PDS));
+TS_ID_DESCRIPTOR_DISPLAY(ts::EacemStreamIdentifierDescriptor::DisplayDescriptor, ts::EDID(MY_DID, MY_PDS));
 
 // Incorrect use of TPS private data, TPS broadcasters should use EACEM/EICTA PDS instead.
-TS_ID_DESCRIPTOR_FACTORY(ts::EacemStreamIdentifierDescriptor, ts::EDID(ts::DID_EACEM_STREAM_ID, ts::PDS_TPS));
-TS_ID_DESCRIPTOR_DISPLAY(ts::EacemStreamIdentifierDescriptor::DisplayDescriptor, ts::EDID(ts::DID_EACEM_STREAM_ID, ts::PDS_TPS));
+TS_ID_DESCRIPTOR_FACTORY(ts::EacemStreamIdentifierDescriptor, ts::EDID(MY_DID, ts::PDS_TPS));
+TS_ID_DESCRIPTOR_DISPLAY(ts::EacemStreamIdentifierDescriptor::DisplayDescriptor, ts::EDID(MY_DID, ts::PDS_TPS));
 
 
 //----------------------------------------------------------------------------
@@ -51,7 +56,7 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::EacemStreamIdentifierDescriptor::DisplayDescriptor,
 //----------------------------------------------------------------------------
 
 ts::EacemStreamIdentifierDescriptor::EacemStreamIdentifierDescriptor(uint8_t version_) :
-    AbstractDescriptor(DID_EACEM_STREAM_ID, "eacem_stream_identifier_descriptor", PDS_EACEM),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_PDS),
     version(version_)
 {
     _is_valid = true;
@@ -63,7 +68,7 @@ ts::EacemStreamIdentifierDescriptor::EacemStreamIdentifierDescriptor(uint8_t ver
 //----------------------------------------------------------------------------
 
 ts::EacemStreamIdentifierDescriptor::EacemStreamIdentifierDescriptor(const Descriptor& desc, const DVBCharset* charset) :
-    AbstractDescriptor(DID_EACEM_STREAM_ID, "eacem_stream_identifier_descriptor", PDS_EACEM),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_PDS),
     version(0)
 {
     deserialize(desc, charset);

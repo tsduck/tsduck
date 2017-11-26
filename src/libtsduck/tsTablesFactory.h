@@ -37,7 +37,6 @@
 #include "tsEDID.h"
 #include "tsSection.h"
 #include "tsTablesPtr.h"
-#include "tsStringUtils.h"
 #include "tsSingletonManager.h"
 
 namespace ts {
@@ -159,13 +158,13 @@ namespace ts {
         //! Get the list of all registered XML names for tables.
         //! @param [out] names List of all registered XML names for tables.
         //!
-        void getRegisteredTableNames(StringList& names) const;
+        void getRegisteredTableNames(UStringList& names) const;
 
         //!
         //! Get the list of all registered XML names for descriptors.
         //! @param [out] names List of all registered XML names for descriptors.
         //!
-        void getRegisteredDescriptorNames(StringList& names) const;
+        void getRegisteredDescriptorNames(UStringList& names) const;
 
         //!
         //! A class to register factories and display functions.

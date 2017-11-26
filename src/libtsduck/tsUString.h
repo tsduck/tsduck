@@ -1018,7 +1018,7 @@ namespace ts {
         //! @see similar()
         //!
         template <class CONTAINER>
-        typename CONTAINER::const_iterator findSimilar(const CONTAINER& container);
+        typename CONTAINER::const_iterator findSimilar(const CONTAINER& container) const;
 
         //!
         //! Save strings from a container into a file, in UTF-8 format, one per line.

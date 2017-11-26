@@ -93,13 +93,13 @@ namespace ts {
         //! @param [in] quality Signal quality in percent. Ignored if negative.
         //! @return A description string.
         //!
-        virtual std::string shortDescription(int strength = -1, int quality = -1) const = 0;
+        virtual UString shortDescription(int strength = -1, int quality = -1) const = 0;
 
         //!
         //! Format the tuner parameters according to the Linux DVB "zap" format.
         //! @return A string in Linux DVB "zap" format.
         //!
-        virtual std::string toZapFormat() const = 0;
+        virtual UString toZapFormat() const = 0;
 
         //!
         //! Format the tuner parameters as a list of options for the "dvb" tsp plugin.
@@ -108,7 +108,7 @@ namespace ts {
         //! and may vary from one system to another for the same transponder.
         //! @return A string containing a command line options for the "dvb" tsp plugin.
         //!
-        virtual std::string toPluginOptions(bool no_local = false) const = 0;
+        virtual UString toPluginOptions(bool no_local = false) const = 0;
 
         //!
         //! Display a description of the modulation paramters on a stream, line by line.
@@ -117,7 +117,7 @@ namespace ts {
         //! @param [in] verbose When false, display only essentials parameters.
         //! When true, display all parameters.
         //!
-        virtual void displayParameters(std::ostream& strm, const std::string& margin = std::string(), bool verbose = false) const = 0;
+        virtual void displayParameters(std::ostream& strm, const UString& margin = UString(), bool verbose = false) const = 0;
 
         //!
         //! Decode a Linux DVB "zap" specification.
@@ -125,7 +125,7 @@ namespace ts {
         //! @param [in] zap A line of a Linux DVB "zap" file.
         //! @return True on success, false on unsupported format.
         //!
-        virtual bool fromZapFormat(const std::string& zap) = 0;
+        virtual bool fromZapFormat(const UString& zap) = 0;
 
         //!
         //! Expected number of fields (separated by ':') in a Linux DVB "zap" specification.

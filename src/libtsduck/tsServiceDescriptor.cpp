@@ -39,9 +39,13 @@
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 TSDUCK_SOURCE;
-TS_XML_DESCRIPTOR_FACTORY(ts::ServiceDescriptor, "service_descriptor");
-TS_ID_DESCRIPTOR_FACTORY(ts::ServiceDescriptor, ts::EDID(ts::DID_SERVICE));
-TS_ID_DESCRIPTOR_DISPLAY(ts::ServiceDescriptor::DisplayDescriptor, ts::EDID(ts::DID_SERVICE));
+
+#define MY_XML_NAME u"service_descriptor"
+#define MY_DID ts::DID_SERVICE
+
+TS_XML_DESCRIPTOR_FACTORY(ts::ServiceDescriptor, MY_XML_NAME);
+TS_ID_DESCRIPTOR_FACTORY(ts::ServiceDescriptor, ts::EDID(MY_DID));
+TS_ID_DESCRIPTOR_DISPLAY(ts::ServiceDescriptor::DisplayDescriptor, ts::EDID(MY_DID));
 
 
 //----------------------------------------------------------------------------
@@ -49,7 +53,7 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::ServiceDescriptor::DisplayDescriptor, ts::EDID(ts::
 //----------------------------------------------------------------------------
 
 ts::ServiceDescriptor::ServiceDescriptor(uint8_t type, const UString& provider, const UString& name) :
-    AbstractDescriptor(DID_SERVICE, "service_descriptor"),
+    AbstractDescriptor(MY_DID, MY_XML_NAME),
     service_type(type),
     provider_name(provider),
     service_name(name)
@@ -63,7 +67,7 @@ ts::ServiceDescriptor::ServiceDescriptor(uint8_t type, const UString& provider, 
 //----------------------------------------------------------------------------
 
 ts::ServiceDescriptor::ServiceDescriptor(const Descriptor& desc, const DVBCharset* charset) :
-    AbstractDescriptor(DID_SERVICE, "service_descriptor"),
+    AbstractDescriptor(MY_DID, MY_XML_NAME),
     service_type(0),
     provider_name(),
     service_name()

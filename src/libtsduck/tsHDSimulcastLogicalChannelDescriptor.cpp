@@ -37,13 +37,18 @@
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 TSDUCK_SOURCE;
-TS_XML_DESCRIPTOR_FACTORY(ts::HDSimulcastLogicalChannelDescriptor, "HD_simulcast_logical_channel_descriptor");
-TS_ID_DESCRIPTOR_FACTORY(ts::HDSimulcastLogicalChannelDescriptor, ts::EDID(ts::DID_HD_SIMULCAST_LCN, ts::PDS_EACEM));
-TS_ID_DESCRIPTOR_DISPLAY(ts::HDSimulcastLogicalChannelDescriptor::DisplayDescriptor, ts::EDID(ts::DID_HD_SIMULCAST_LCN, ts::PDS_EACEM));
+
+#define MY_XML_NAME u"HD_simulcast_logical_channel_descriptor"
+#define MY_DID ts::DID_HD_SIMULCAST_LCN
+#define MY_PDS ts::PDS_EACEM
+
+TS_XML_DESCRIPTOR_FACTORY(ts::HDSimulcastLogicalChannelDescriptor, MY_XML_NAME);
+TS_ID_DESCRIPTOR_FACTORY(ts::HDSimulcastLogicalChannelDescriptor, ts::EDID(MY_DID, MY_PDS));
+TS_ID_DESCRIPTOR_DISPLAY(ts::HDSimulcastLogicalChannelDescriptor::DisplayDescriptor, ts::EDID(MY_DID, MY_PDS));
 
 // Incorrect use of TPS private data, TPS broadcasters should use EACEM/EICTA PDS instead.
-TS_ID_DESCRIPTOR_FACTORY(ts::HDSimulcastLogicalChannelDescriptor, ts::EDID(ts::DID_HD_SIMULCAST_LCN, ts::PDS_TPS));
-TS_ID_DESCRIPTOR_DISPLAY(ts::HDSimulcastLogicalChannelDescriptor::DisplayDescriptor, ts::EDID(ts::DID_HD_SIMULCAST_LCN, ts::PDS_TPS));
+TS_ID_DESCRIPTOR_FACTORY(ts::HDSimulcastLogicalChannelDescriptor, ts::EDID(MY_DID, ts::PDS_TPS));
+TS_ID_DESCRIPTOR_DISPLAY(ts::HDSimulcastLogicalChannelDescriptor::DisplayDescriptor, ts::EDID(MY_DID, ts::PDS_TPS));
 
 
 //----------------------------------------------------------------------------
@@ -51,7 +56,7 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::HDSimulcastLogicalChannelDescriptor::DisplayDescrip
 //----------------------------------------------------------------------------
 
 ts::HDSimulcastLogicalChannelDescriptor::HDSimulcastLogicalChannelDescriptor () :
-    AbstractDescriptor (DID_HD_SIMULCAST_LCN, "HD_simulcast_logical_channel_descriptor", PDS_EACEM),
+    AbstractDescriptor (MY_DID, MY_XML_NAME, MY_PDS),
     entries ()
 {
     _is_valid = true;
@@ -63,7 +68,7 @@ ts::HDSimulcastLogicalChannelDescriptor::HDSimulcastLogicalChannelDescriptor () 
 //----------------------------------------------------------------------------
 
 ts::HDSimulcastLogicalChannelDescriptor::HDSimulcastLogicalChannelDescriptor (const Descriptor& desc, const DVBCharset* charset) :
-    AbstractDescriptor (DID_HD_SIMULCAST_LCN, "HD_simulcast_logical_channel_descriptor", PDS_EACEM),
+    AbstractDescriptor (MY_DID, MY_XML_NAME, MY_PDS),
     entries ()
 {
     deserialize (desc, charset);
@@ -79,7 +84,7 @@ ts::HDSimulcastLogicalChannelDescriptor::HDSimulcastLogicalChannelDescriptor (co
 //----------------------------------------------------------------------------
 
 ts::HDSimulcastLogicalChannelDescriptor::HDSimulcastLogicalChannelDescriptor (int service_id, int lcn, ...) :
-    AbstractDescriptor (DID_HD_SIMULCAST_LCN, "HD_simulcast_logical_channel_descriptor", PDS_EACEM),
+    AbstractDescriptor (MY_DID, MY_XML_NAME, MY_PDS),
     entries ()
 {
     _is_valid = true;

@@ -37,9 +37,13 @@
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 TSDUCK_SOURCE;
-TS_XML_DESCRIPTOR_FACTORY(ts::PrivateDataSpecifierDescriptor, "private_data_specifier_descriptor");
-TS_ID_DESCRIPTOR_FACTORY(ts::PrivateDataSpecifierDescriptor, ts::EDID(ts::DID_PRIV_DATA_SPECIF));
-TS_ID_DESCRIPTOR_DISPLAY(ts::PrivateDataSpecifierDescriptor::DisplayDescriptor, ts::EDID(ts::DID_PRIV_DATA_SPECIF));
+
+#define MY_XML_NAME u"private_data_specifier_descriptor"
+#define MY_DID ts::DID_PRIV_DATA_SPECIF
+
+TS_XML_DESCRIPTOR_FACTORY(ts::PrivateDataSpecifierDescriptor, MY_XML_NAME);
+TS_ID_DESCRIPTOR_FACTORY(ts::PrivateDataSpecifierDescriptor, ts::EDID(MY_DID));
+TS_ID_DESCRIPTOR_DISPLAY(ts::PrivateDataSpecifierDescriptor::DisplayDescriptor, ts::EDID(MY_DID));
 
 
 //----------------------------------------------------------------------------
@@ -47,7 +51,7 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::PrivateDataSpecifierDescriptor::DisplayDescriptor, 
 //----------------------------------------------------------------------------
 
 ts::PrivateDataSpecifierDescriptor::PrivateDataSpecifierDescriptor(PDS pds_) :
-    AbstractDescriptor(DID_PRIV_DATA_SPECIF, "private_data_specifier_descriptor"),
+    AbstractDescriptor(MY_DID, MY_XML_NAME),
     pds(pds_)
 {
     _is_valid = true;
@@ -59,7 +63,7 @@ ts::PrivateDataSpecifierDescriptor::PrivateDataSpecifierDescriptor(PDS pds_) :
 //----------------------------------------------------------------------------
 
 ts::PrivateDataSpecifierDescriptor::PrivateDataSpecifierDescriptor(const Descriptor& desc, const DVBCharset* charset) :
-    AbstractDescriptor(DID_PRIV_DATA_SPECIF, "private_data_specifier_descriptor"),
+    AbstractDescriptor(MY_DID, MY_XML_NAME),
     pds(0)
 {
     deserialize(desc, charset);

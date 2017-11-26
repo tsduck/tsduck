@@ -64,7 +64,7 @@ namespace ts {
         //! Get the XMl node name representing this table or descriptor.
         //! @return The XML node name.
         //!
-        std::string xmlName() const;
+        UString xmlName() const;
 
         //!
         //! This abstract method converts this object to XML.
@@ -90,9 +90,9 @@ namespace ts {
 
     protected:
         //!
-        //! XML table or descriptor name in UTF-8 representation.
+        //! XML table or descriptor name.
         //!
-        const char* const _xml_name;
+        const UChar* const _xml_name;
 
         //!
         //! It is the responsibility of the subclasses to set the valid flag
@@ -103,7 +103,7 @@ namespace ts {
         //! Protected constructor for subclasses.
         //! @param [in] xml_name Table or descriptor name, as used in XML structures.
         //!
-        AbstractSignalization(const char* xml_name);
+        AbstractSignalization(const UChar* xml_name);
 
         //!
         //! Copy constructor.

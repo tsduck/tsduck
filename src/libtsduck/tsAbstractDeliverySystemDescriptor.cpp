@@ -39,7 +39,7 @@ TSDUCK_SOURCE;
 // Protected constructor for subclasses.
 //----------------------------------------------------------------------------
 
-ts::AbstractDeliverySystemDescriptor::AbstractDeliverySystemDescriptor(DID tag, DeliverySystem sys, const char* xml_name, PDS pds) :
+ts::AbstractDeliverySystemDescriptor::AbstractDeliverySystemDescriptor(DID tag, DeliverySystem sys, const UChar* xml_name, PDS pds) :
     AbstractDescriptor(tag, xml_name, pds),
     _system(sys)
 {

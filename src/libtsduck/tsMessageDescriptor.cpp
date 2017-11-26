@@ -38,9 +38,14 @@
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 TSDUCK_SOURCE;
-TS_XML_DESCRIPTOR_FACTORY(ts::MessageDescriptor, "message_descriptor");
-TS_ID_DESCRIPTOR_FACTORY(ts::MessageDescriptor, ts::EDID(ts::DID_EXTENSION, ts::EDID_MESSAGE));
-TS_ID_DESCRIPTOR_DISPLAY(ts::MessageDescriptor::DisplayDescriptor, ts::EDID(ts::DID_EXTENSION, ts::EDID_MESSAGE));
+
+#define MY_XML_NAME u"message_descriptor"
+#define MY_DID ts::DID_EXTENSION
+#define MY_EDID ts::EDID_MESSAGE
+
+TS_XML_DESCRIPTOR_FACTORY(ts::MessageDescriptor, MY_XML_NAME);
+TS_ID_DESCRIPTOR_FACTORY(ts::MessageDescriptor, ts::EDID(MY_DID, MY_EDID));
+TS_ID_DESCRIPTOR_DISPLAY(ts::MessageDescriptor::DisplayDescriptor, ts::EDID(MY_DID, MY_EDID));
 
 
 //----------------------------------------------------------------------------
@@ -48,7 +53,7 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::MessageDescriptor::DisplayDescriptor, ts::EDID(ts::
 //----------------------------------------------------------------------------
 
 ts::MessageDescriptor::MessageDescriptor() :
-    AbstractDescriptor(DID_EXTENSION, "message_descriptor"),
+    AbstractDescriptor(MY_DID, MY_XML_NAME),
     message_id(0),
     language_code(),
     message()
@@ -57,7 +62,7 @@ ts::MessageDescriptor::MessageDescriptor() :
 }
 
 ts::MessageDescriptor::MessageDescriptor(uint8_t id, const UString& lang, const UString& text) :
-    AbstractDescriptor(DID_EXTENSION, "message_descriptor"),
+    AbstractDescriptor(MY_DID, MY_XML_NAME),
     message_id(id),
     language_code(lang),
     message(text)
@@ -66,7 +71,7 @@ ts::MessageDescriptor::MessageDescriptor(uint8_t id, const UString& lang, const 
 }
 
 ts::MessageDescriptor::MessageDescriptor(const Descriptor& bin, const DVBCharset* charset) :
-    AbstractDescriptor(DID_EXTENSION, "message_descriptor"),
+    AbstractDescriptor(MY_DID, MY_XML_NAME),
     message_id(0),
     language_code(),
     message()
@@ -82,7 +87,7 @@ ts::MessageDescriptor::MessageDescriptor(const Descriptor& bin, const DVBCharset
 void ts::MessageDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
 {
     ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt8(EDID_MESSAGE);
+    bbp->appendUInt8(MY_EDID);
     bbp->appendUInt8(message_id);
     if (!SerializeLanguageCode(*bbp, language_code, charset)) {
         desc.invalidate();
@@ -102,7 +107,7 @@ void ts::MessageDescriptor::deserialize(const Descriptor& desc, const DVBCharset
     const uint8_t* data = desc.payload();
     size_t size = desc.payloadSize();
 
-    if (!(_is_valid = desc.isValid() && desc.tag() == _tag && size >= 5 && data[0] == EDID_MESSAGE)) {
+    if (!(_is_valid = desc.isValid() && desc.tag() == _tag && size >= 5 && data[0] == MY_EDID)) {
         return;
     }
 

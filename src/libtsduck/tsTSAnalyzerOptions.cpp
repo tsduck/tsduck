@@ -32,9 +32,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsTSAnalyzerOptions.h"
-#include "tsStringUtils.h"
 #include "tsException.h"
-#include "tsFormat.h"
 TSDUCK_SOURCE;
 
 
@@ -42,7 +40,7 @@ TSDUCK_SOURCE;
 // Set help: application specific help + generic help
 //----------------------------------------------------------------------------
 
-void ts::TSAnalyzerOptions::setHelp (const std::string& help)
+void ts::TSAnalyzerOptions::setHelp(const UString& help)
 {
     Args::setHelp (help +
         u"\n"
@@ -143,12 +141,8 @@ void ts::TSAnalyzerOptions::setHelp (const std::string& help)
 // Constructor.
 //----------------------------------------------------------------------------
 
-ts::TSAnalyzerOptions::TSAnalyzerOptions (const std::string& description,
-                                            const std::string& syntax,
-                                            const std::string& help,
-                                            int flags) :
-
-    Args (description, syntax, "", flags),
+ts::TSAnalyzerOptions::TSAnalyzerOptions(const UString& description, const UString& syntax, const UString& help, int flags) :
+    Args(description, syntax, u"", flags),
     ts_analysis (false),
     service_analysis (false),
     pid_analysis (false),
@@ -207,11 +201,11 @@ void ts::TSAnalyzerOptions::getOptions (const Args& args)
     unreferenced_pid_list = args.present(u"unreferenced-pid-list");
     pes_pid_list = args.present(u"pes-pid-list");
     service_pid_list = args.present(u"service-pid-list");
-    service_id = args.intValue<uint16_t> ("service-pid-list");
+    service_id = args.intValue<uint16_t>(u"service-pid-list");
     prefix = args.value(u"prefix");
     title = args.value(u"title");
-    suspect_min_error_count = args.intValue<uint64_t> ("suspect-min-error-count", 1);
-    suspect_max_consecutive = args.intValue<uint64_t> ("suspect-max-consecutive", 1);
+    suspect_min_error_count = args.intValue<uint64_t>(u"suspect-min-error-count", 1);
+    suspect_max_consecutive = args.intValue<uint64_t>(u"suspect-max-consecutive", 1);
 
     // Default: --ts-analysis --service-analysis --pid-analysis
     if (!ts_analysis &&
@@ -225,8 +219,8 @@ void ts::TSAnalyzerOptions::getOptions (const Args& args)
         !global_pid_list &&
         !unreferenced_pid_list &&
         !pes_pid_list &&
-        !service_pid_list) {
-
+        !service_pid_list)
+    {
         ts_analysis = service_analysis = pid_analysis = table_analysis = true;
     }
 }
@@ -236,30 +230,20 @@ void ts::TSAnalyzerOptions::getOptions (const Args& args)
 // Overriden analysis methods.
 //----------------------------------------------------------------------------
 
-bool ts::TSAnalyzerOptions::analyze (int argc, char* argv[])
+bool ts::TSAnalyzerOptions::analyze(int argc, char* argv[])
 {
-    bool ok = Args::analyze (argc, argv);
+    const bool ok = Args::analyze(argc, argv);
     if (ok) {
-        getOptions (*this);
+        getOptions(*this);
     }
     return ok;
 }
 
-bool ts::TSAnalyzerOptions::analyze (const std::string& app_name, const StringVector& arguments)
+bool ts::TSAnalyzerOptions::analyze(const UString& app_name, const UStringVector& arguments)
 {
-    bool ok = Args::analyze (app_name, arguments);
+    const bool ok = Args::analyze(app_name, arguments);
     if (ok) {
-        getOptions (*this);
+        getOptions(*this);
     }
     return ok;
-}
-
-
-//----------------------------------------------------------------------------
-// Inaccessible operation. Throw exception when invoked through virtual table.
-//----------------------------------------------------------------------------
-
-bool ts::TSAnalyzerOptions::analyze (const char* app_name, const char* arg1, ...)
-{
-    throw UnimplementedMethod ("analyze with variable args not implemented for ts::TSAnalyzerOptions");
 }

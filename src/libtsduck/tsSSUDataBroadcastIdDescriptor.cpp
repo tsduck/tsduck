@@ -43,7 +43,7 @@ TSDUCK_SOURCE;
 //----------------------------------------------------------------------------
 
 ts::SSUDataBroadcastIdDescriptor::SSUDataBroadcastIdDescriptor() :
-    AbstractDescriptor(DID_DATA_BROADCAST_ID, ""),  // No XML conversion.
+    AbstractDescriptor(DID_DATA_BROADCAST_ID, u""),  // No XML conversion.
     entries(),
     private_data()
 {
@@ -56,7 +56,7 @@ ts::SSUDataBroadcastIdDescriptor::SSUDataBroadcastIdDescriptor() :
 //----------------------------------------------------------------------------
 
 ts::SSUDataBroadcastIdDescriptor::SSUDataBroadcastIdDescriptor (uint32_t oui, uint8_t update_type) :
-    AbstractDescriptor(DID_DATA_BROADCAST_ID, ""),  // No XML conversion.
+    AbstractDescriptor(DID_DATA_BROADCAST_ID, u""),  // No XML conversion.
     entries(),
     private_data()
 {
@@ -70,7 +70,7 @@ ts::SSUDataBroadcastIdDescriptor::SSUDataBroadcastIdDescriptor (uint32_t oui, ui
 //----------------------------------------------------------------------------
 
 ts::SSUDataBroadcastIdDescriptor::SSUDataBroadcastIdDescriptor(const Descriptor& desc, const DVBCharset* charset) :
-    AbstractDescriptor(DID_DATA_BROADCAST_ID, ""),  // No XML conversion.
+    AbstractDescriptor(DID_DATA_BROADCAST_ID, u""),  // No XML conversion.
     entries(),
     private_data()
 {
@@ -83,7 +83,7 @@ ts::SSUDataBroadcastIdDescriptor::SSUDataBroadcastIdDescriptor(const Descriptor&
 //----------------------------------------------------------------------------
 
 ts::SSUDataBroadcastIdDescriptor::SSUDataBroadcastIdDescriptor(const DataBroadcastIdDescriptor& desc, const DVBCharset* charset) :
-    AbstractDescriptor(DID_DATA_BROADCAST_ID, ""),  // No XML conversion.
+    AbstractDescriptor(DID_DATA_BROADCAST_ID, u""),  // No XML conversion.
     entries(),
     private_data()
 {

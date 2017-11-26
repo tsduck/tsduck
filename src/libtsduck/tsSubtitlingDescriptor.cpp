@@ -38,9 +38,13 @@
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 TSDUCK_SOURCE;
-TS_XML_DESCRIPTOR_FACTORY(ts::SubtitlingDescriptor, "subtitling_descriptor");
-TS_ID_DESCRIPTOR_FACTORY(ts::SubtitlingDescriptor, ts::EDID(ts::DID_SUBTITLING));
-TS_ID_DESCRIPTOR_DISPLAY(ts::SubtitlingDescriptor::DisplayDescriptor, ts::EDID(ts::DID_SUBTITLING));
+
+#define MY_XML_NAME u"subtitling_descriptor"
+#define MY_DID ts::DID_SUBTITLING
+
+TS_XML_DESCRIPTOR_FACTORY(ts::SubtitlingDescriptor, MY_XML_NAME);
+TS_ID_DESCRIPTOR_FACTORY(ts::SubtitlingDescriptor, ts::EDID(MY_DID));
+TS_ID_DESCRIPTOR_DISPLAY(ts::SubtitlingDescriptor::DisplayDescriptor, ts::EDID(MY_DID));
 
 
 //----------------------------------------------------------------------------
@@ -56,14 +60,14 @@ ts::SubtitlingDescriptor::Entry::Entry(const char* code, uint8_t subt, uint16_t 
 }
 
 ts::SubtitlingDescriptor::SubtitlingDescriptor() :
-    AbstractDescriptor(DID_SUBTITLING, "subtitling_descriptor"),
+    AbstractDescriptor(MY_DID, MY_XML_NAME),
     entries()
 {
     _is_valid = true;
 }
 
 ts::SubtitlingDescriptor::SubtitlingDescriptor(const Descriptor& desc, const DVBCharset* charset) :
-    AbstractDescriptor(DID_SUBTITLING, "subtitling_descriptor"),
+    AbstractDescriptor(MY_DID, MY_XML_NAME),
     entries()
 {
     deserialize(desc, charset);

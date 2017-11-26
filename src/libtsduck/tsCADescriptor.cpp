@@ -39,20 +39,24 @@
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 TSDUCK_SOURCE;
-TS_XML_DESCRIPTOR_FACTORY(ts::CADescriptor, "CA_descriptor");
-TS_ID_DESCRIPTOR_FACTORY(ts::CADescriptor, ts::EDID(ts::DID_CA));
-TS_ID_DESCRIPTOR_DISPLAY(ts::CADescriptor::DisplayDescriptor, ts::EDID(ts::DID_CA));
+
+#define MY_XML_NAME u"CA_descriptor"
+#define MY_DID ts::DID_CA
+
+TS_XML_DESCRIPTOR_FACTORY(ts::CADescriptor, MY_XML_NAME);
+TS_ID_DESCRIPTOR_FACTORY(ts::CADescriptor, ts::EDID(MY_DID));
+TS_ID_DESCRIPTOR_DISPLAY(ts::CADescriptor::DisplayDescriptor, ts::EDID(MY_DID));
 
 
 //----------------------------------------------------------------------------
 // Default constructor:
 //----------------------------------------------------------------------------
 
-ts::CADescriptor::CADescriptor (uint16_t cas_id_, PID ca_pid_) :
-    AbstractDescriptor (DID_CA, "CA_descriptor"),
-    cas_id (cas_id_),
-    ca_pid (ca_pid_),
-    private_data ()
+ts::CADescriptor::CADescriptor(uint16_t cas_id_, PID ca_pid_) :
+    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    cas_id(cas_id_),
+    ca_pid(ca_pid_),
+    private_data()
 {
     _is_valid = true;
 }
@@ -62,13 +66,13 @@ ts::CADescriptor::CADescriptor (uint16_t cas_id_, PID ca_pid_) :
 // Constructor from a binary descriptor
 //----------------------------------------------------------------------------
 
-ts::CADescriptor::CADescriptor (const Descriptor& desc, const DVBCharset* charset) :
-    AbstractDescriptor (DID_CA, "CA_descriptor"),
-    cas_id (0),
-    ca_pid (PID_NULL),
-    private_data ()
+ts::CADescriptor::CADescriptor(const Descriptor& desc, const DVBCharset* charset) :
+    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    cas_id(0),
+    ca_pid(PID_NULL),
+    private_data()
 {
-    deserialize (desc, charset);
+    deserialize(desc, charset);
 }
 
 

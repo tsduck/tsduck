@@ -97,7 +97,7 @@ namespace ts {
         //! Default constructor.
         //! @param [in] device_name Tuner device name.
         //!
-        Tuner(const std::string& device_name = std::string());
+        Tuner(const UString& device_name = UString());
 
         //!
         //! Destructor.
@@ -113,7 +113,7 @@ namespace ts {
         //! to open tuners which are already used to actually receive a stream.
         //! @param [in,out] report Where to report errors.
         //!
-        Tuner(const std::string& device_name, bool info_only, Report& report);
+        Tuner(const UString& device_name, bool info_only, Report& report);
 
         //!
         //! Open the tuner.
@@ -125,7 +125,7 @@ namespace ts {
         //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool open(const std::string& device_name, bool info_only, Report& report);
+        bool open(const UString& device_name, bool info_only, Report& report);
 
         //!
         //! Close the tuner.
@@ -185,7 +185,7 @@ namespace ts {
         //! Get the device name of the tuner.
         //! @return The device name of the tuner.
         //!
-        std::string deviceName() const
+        UString deviceName() const
         {
             return _device_name;
         }
@@ -194,7 +194,7 @@ namespace ts {
         //! Device-specific information.
         //! @return A string with device-specific information. Can be empty.
         //!
-        std::string deviceInfo() const
+        UString deviceInfo() const
         {
             return _device_info;
         }
@@ -384,7 +384,7 @@ namespace ts {
         //! @param [in,out] report Where to report errors.
         //! @return A reference to @a strm.
         //!
-        std::ostream& displayStatus(std::ostream& strm, const std::string& margin, Report& report);
+        std::ostream& displayStatus(std::ostream& strm, const UString& margin, Report& report);
 
     private:
 
@@ -392,8 +392,8 @@ namespace ts {
         bool              _is_open;
         bool              _info_only;
         TunerType         _tuner_type;
-        std::string       _device_name;    // Used to open the tuner
-        std::string       _device_info;    // Device-specific, can be empty
+        UString           _device_name;    // Used to open the tuner
+        UString           _device_info;    // Device-specific, can be empty
         MilliSecond       _signal_timeout;
         bool              _signal_timeout_silent;
         MilliSecond       _receive_timeout;
