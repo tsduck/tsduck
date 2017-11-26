@@ -105,8 +105,8 @@ ts::NullInput::NullInput(TSP* tsp_) :
 
 bool ts::NullInput::start()
 {
-    tsp->useJointTermination (present(u"joint-termination"));
-    _max_count = intValue<PacketCounter> ("", std::numeric_limits<PacketCounter>::max());
+    tsp->useJointTermination(present(u"joint-termination"));
+    _max_count = intValue<PacketCounter>(u"", std::numeric_limits<PacketCounter>::max());
     _count = 0;
     return true;
 }

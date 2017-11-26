@@ -89,6 +89,30 @@ namespace ts {
         virtual ~Enumeration() {}
 
         //!
+        //! Equality operator.
+        //!
+        //! @param [in] other Another instance to compare with.
+        //! @return True if this object has the same content as @a other,
+        //! false otherwise.
+        //!
+        bool operator==(const Enumeration& other) const
+        {
+            return _map == other._map;
+        }
+
+        //!
+        //! Unequality operator.
+        //!
+        //! @param [in] other Another instance to compare with.
+        //! @return True if this object does not have the same content as @a other,
+        //! false otherwise.
+        //!
+        bool operator!=(const Enumeration& other) const
+        {
+            return _map != other._map;
+        }
+
+        //!
         //! Get the number of entries in the enumeration.
         //!
         //! @return The number of entries in the enumeration.

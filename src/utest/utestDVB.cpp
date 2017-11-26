@@ -37,7 +37,6 @@
 #include "tsTunerParametersDVBT.h"
 #include "tsTunerUtils.h"
 #include "tsTunerArgs.h"
-#include "tsDecimal.h"
 #include "utestCppUnitTest.h"
 TSDUCK_SOURCE;
 
@@ -66,7 +65,7 @@ public:
     CPPUNIT_TEST_SUITE_END();
 
 private:
-    static void displayLNB(const ts::LNB& lnb, const std::string& name);
+    static void displayLNB(const ts::LNB& lnb, const ts::UString& name);
     static void testParameters(const ts::TunerParameters& params);
 };
 
@@ -115,10 +114,10 @@ void DVBTest::testParameters(const ts::TunerParameters& params)
     ts::TunerParametersPtr ptr(ts::TunerParameters::Factory(params.tunerType()));
     CPPUNIT_ASSERT(ptr->tunerType() == params.tunerType());
 
-    const std::string zap(params.toZapFormat());
+    const ts::UString zap(params.toZapFormat());
     utest::Out() << "DVBTest: Zap format: \"" << zap << "\"" << std::endl;
 
-    const std::string opts(params.toPluginOptions());
+    const ts::UString opts(params.toPluginOptions());
     utest::Out() << "DVBTest: Options: \"" << opts << "\"" << std::endl;
 
     CPPUNIT_ASSERT(ptr->fromZapFormat(zap));
@@ -128,8 +127,8 @@ void DVBTest::testParameters(const ts::TunerParameters& params)
     ts::Args args;
     ts::TunerArgs tuner_args;
     tuner_args.defineOptions(args);
-    ts::StringVector args_vec;
-    ts::SplitString(args_vec, opts, ' ');
+    ts::UStringVector args_vec;
+    opts.split(args_vec, u' ');
     CPPUNIT_ASSERT(args.analyze("", args_vec));
 
     ts::TunerArgs tuner;
@@ -148,7 +147,7 @@ void DVBTest::testTunerParams()
     testParameters(ts::TunerParametersDVBT());
 }
 
-void DVBTest::displayLNB(const ts::LNB& lnb, const std::string& name)
+void DVBTest::displayLNB(const ts::LNB& lnb, const ts::UString& name)
 {
     utest::Out() << "DVBTest: Test LNB: " << name << std::endl
                  << "  convert to string: " << lnb << std::endl

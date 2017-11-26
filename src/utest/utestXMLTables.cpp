@@ -73,7 +73,7 @@ public:
 
 private:
     // Unitary test for one table.
-    void testTable(const char* name, const char* ref_xml, const uint8_t* ref_sections, size_t ref_sections_size);
+    void testTable(const char* name, const ts::UChar* ref_xml, const uint8_t* ref_sections, size_t ref_sections_size);
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(XMLTablesTest);
@@ -107,13 +107,13 @@ void XMLTablesTest::tearDown()
 TESTTABLE(PAT1, pat1)
 TESTTABLE(AllTables, all)
 
-void XMLTablesTest::testTable(const char* name, const char* ref_xml, const uint8_t* ref_sections, size_t ref_sections_size)
+void XMLTablesTest::testTable(const char* name, const ts::UChar* ref_xml, const uint8_t* ref_sections, size_t ref_sections_size)
 {
     utest::Out() << "XMLTablesTest: Testing " << name << std::endl;
 
     // Convert XML reference content to binary tables.
     ts::XMLTables xml;
-    CPPUNIT_ASSERT(xml.parseXML(std::string(ref_xml), CERR));
+    CPPUNIT_ASSERT(xml.parseXML(ref_xml, CERR));
 
     // Serialize binary tables to section data.
     std::ostringstream strm;
@@ -135,7 +135,7 @@ void XMLTablesTest::testTable(const char* name, const char* ref_xml, const uint8
 
 void XMLTablesTest::testConfigurationFile()
 {
-    const std::string conf(ts::SearchConfigurationFile("tsduck.xml"));
+    const ts::UString conf(ts::SearchConfigurationFile(u"tsduck.xml"));
     utest::Out() << "XMLTablesTest::testConfigurationFile: " << conf << std::endl;
     CPPUNIT_ASSERT(ts::FileExists(conf));
 }

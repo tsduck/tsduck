@@ -42,8 +42,6 @@
 #include "tsDirectShowUtils.h"
 #include "tsComUtils.h"
 #include "tsComPtr.h"
-#include "tsDecimal.h"
-#include "tsToInteger.h"
 TSDUCK_SOURCE;
 
 #if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
@@ -66,7 +64,7 @@ ts::Tuner::~Tuner()
 // Default constructor,
 //-----------------------------------------------------------------------------
 
-ts::Tuner::Tuner(const std::string& device_name) :
+ts::Tuner::Tuner(const UString& device_name) :
     _is_open(false),
     _info_only(true),
     _tuner_type(DVB_T),
@@ -98,7 +96,7 @@ ts::Tuner::Tuner(const std::string& device_name) :
 // Constructor from one device name.
 //-----------------------------------------------------------------------------
 
-ts::Tuner::Tuner(const std::string& device_name, bool info_only, Report& report) :
+ts::Tuner::Tuner(const UString& device_name, bool info_only, Report& report) :
     Tuner(device_name)
 {
     this->open(device_name, info_only, report);
@@ -119,10 +117,10 @@ bool ts::Tuner::GetAllTuners(TunerPtrVector& tuners, Report& report)
 // Open the tuner.
 //-----------------------------------------------------------------------------
 
-bool ts::Tuner::open(const std::string& device_name, bool info_only, Report& report)
+bool ts::Tuner::open(const UString& device_name, bool info_only, Report& report)
 {
     if (_is_open) {
-        report.error("DVB tuner already open");
+        report.error(u"DVB tuner already open");
         return false;
     }
     _device_name = device_name;
@@ -134,11 +132,11 @@ bool ts::Tuner::open(const std::string& device_name, bool info_only, Report& rep
         return true;
     }
     else if (device_name.empty()) {
-        report.error("No DVB tuner device");
+        report.error(u"No DVB tuner device");
         return false;
     }
     else {
-        report.error("DVB device \"" + device_name + "\" not found");
+        report.error(u"DVB device \"%s\" not found", {device_name});
         return false;
     }
 }
@@ -248,7 +246,7 @@ bool ts::Tuner::searchTunerProperty(const ::GUID& propset, ::DWORD propid, T& va
 bool ts::Tuner::signalLocked(Report& report)
 {
     if (!_is_open) {
-        report.error("DVB tuner not open");
+        report.error(u"DVB tuner not open");
         return false;
     }
 
@@ -289,7 +287,7 @@ bool ts::Tuner::getSignalStrength_mdB(::LONG& strength)
 int ts::Tuner::signalStrength(Report& report)
 {
     if (!_is_open) {
-        report.error("DVB tuner not open");
+        report.error(u"DVB tuner not open");
         return false;
     }
 
@@ -308,7 +306,7 @@ int ts::Tuner::signalStrength(Report& report)
 int ts::Tuner::signalQuality(Report& report)
 {
     if (!_is_open) {
-        report.error("DVB tuner not open");
+        report.error(u"DVB tuner not open");
         return false;
     }
 
@@ -329,13 +327,13 @@ int ts::Tuner::signalQuality(Report& report)
 bool ts::Tuner::getCurrentTuning(TunerParameters& params, bool reset_unknown, Report& report)
 {
     if (!_is_open) {
-        report.error("DVB tuner not open");
+        report.error(u"DVB tuner not open");
         return false;
     }
 
     // Check subclass of TunerParameters
     if (params.tunerType() != _tuner_type) {
-        report.error("inconsistent tuner parameter type");
+        report.error(u"inconsistent tuner parameter type");
         return false;
     }
 
@@ -581,7 +579,7 @@ bool ts::Tuner::start(Report& report)
         TSPacket pack;
         if (_sink_filter->Read(&pack, sizeof(pack), _signal_timeout) == 0) {
             if (!_signal_timeout_silent) {
-                report.error("no input DVB signal after %" FMT_INT64 "d milliseconds", _signal_timeout);
+                report.error(u"no input DVB signal after %'d milliseconds", {_signal_timeout});
             }
             return false;
         }
@@ -651,21 +649,21 @@ size_t ts::Tuner::receive(TSPacket* buffer, size_t max_packets, const AbortInter
 // Display the characteristics and status of the tuner.
 //-----------------------------------------------------------------------------
 
-std::ostream& ts::Tuner::displayStatus(std::ostream& strm, const std::string& margin, Report& report)
+std::ostream& ts::Tuner::displayStatus(std::ostream& strm, const UString& margin, Report& report)
 {
     if (!_is_open) {
-        report.error("DVB tuner not open");
+        report.error(u"DVB tuner not open");
         return strm;
     }
 
-    strm << margin << "Signal locked:    " << YesNo(signalLocked(report)) << std::endl;
+    strm << margin << "Signal locked:    " << UString::YesNo(signalLocked(report)) << std::endl;
     int quality = signalQuality(report);
     if (quality >= 0) {
         strm << margin << "Signal quality:   " << quality << " %" << std::endl;
     }
     ::LONG strength;
     if (getSignalStrength_mdB(strength)) {
-        strm << margin << "Signal strength:  " << Decimal(strength) << " milli dB" << std::endl;
+        strm << margin << "Signal strength:  " << UString::Decimal(strength) << " milli dB" << std::endl;
     }
     strm << std::endl << margin << "DirectShow graph:" << std::endl;
     _graph.display(strm, report, margin + "  ", true);
@@ -720,7 +718,7 @@ bool ts::Tuner::FindTuners(Tuner* tuner, TunerPtrVector* tuner_list, Report& rep
     // Check if tuner device name is ":integer"
     int dvb_device_index = -1;
     if (tuner != 0 && !tuner->_device_name.empty() && tuner->_device_name[0] == ':') {
-        ToInteger(dvb_device_index, tuner->_device_name.substr(1));
+        tuner->_device_name.substr(1).toInteger(dvb_device_index);
     }
 
     // Enumerate all filters with category KSCATEGORY_BDA_NETWORK_TUNER.
@@ -735,7 +733,7 @@ bool ts::Tuner::FindTuners(Tuner* tuner, TunerPtrVector* tuner_list, Report& rep
     for (size_t dvb_device_current = 0; dvb_device_current < tuner_monikers.size(); ++dvb_device_current) {
 
         // Get friendly name of this tuner filter
-        const std::string tuner_name(GetStringPropertyBag(tuner_monikers[dvb_device_current].pointer(), L"FriendlyName", debug_report));
+        const UString tuner_name(GetStringPropertyBag(tuner_monikers[dvb_device_current].pointer(), L"FriendlyName", debug_report));
         report.debug("found tuner filter \"" + tuner_name + "\"");
 
         // If a device name was specified, filter this name.
@@ -744,9 +742,9 @@ bool ts::Tuner::FindTuners(Tuner* tuner, TunerPtrVector* tuner_list, Report& rep
                 // Device specified by index, but not this one, try next tuner
                 continue;
             }
-            else if (dvb_device_index < 0 && !SimilarStrings(tuner->_device_name, tuner_name)) {
+            else if (dvb_device_index < 0 && !tuner_name.similar(tuner->_device_name)) {
                 // Device specified by name, but not this one, try next tuner
-                // Since the filter names are long and complicated, ignore case and blanks (use SimilarStrings).
+                // Since the filter names are long and complicated, ignore case and blanks, use UString::similar().
                 continue;
             }
             // Device found, update device name
@@ -844,13 +842,13 @@ bool ts::Tuner::buildGraph(::IMoniker* tuner_moniker, Report& report)
     while (!tspace_found && tsEnum->Next(1, tspace.creator(), NULL) == S_OK) {
 
         // Display tuning space in debug mode
-        const std::string fname(GetTuningSpaceFriendlyName(tspace.pointer(), report));
-        const std::string uname(GetTuningSpaceUniqueName(tspace.pointer(), report));
-        report.debug("found tuning space \"%s\" (%s)", fname.c_str(), uname.c_str());
+        const UString fname(GetTuningSpaceFriendlyName(tspace.pointer(), report));
+        const UString uname(GetTuningSpaceUniqueName(tspace.pointer(), report));
+        report.debug(u"found tuning space \"%s\" (%s)", {fname, uname});
 
         // Try to use this tuning space with our tuner.
         hr = _tuner->put_TuningSpace(tspace.pointer());
-        if (ComSuccess(hr, "fail to set default tuning space \"" + fname + "\"", debug_report)) {
+        if (ComSuccess(hr, u"fail to set default tuning space \"" + fname + u"\"", debug_report)) {
 
             // This tuning space is compatible with our tuner.
             // Check if this is a tuning space we can support by getting its DVB system type:
@@ -859,17 +857,17 @@ bool ts::Tuner::buildGraph(::IMoniker* tuner_moniker, Report& report)
             dvb_tspace.queryInterface(tspace.pointer(), ::IID_IDVBTuningSpace, debug_report);
             if (dvb_tspace.isNull()) {
                 // Not a DVB tuning space, silently ignore it.
-                report.debug("tuning space \"%s\" does not support IID_IDVBTuningSpace interface", fname.c_str());
+                report.debug(u"tuning space \"%s\" does not support IID_IDVBTuningSpace interface", {fname});
                 continue;
             }
 
             // Get DVB system type
             ::DVBSystemType systype;
             hr = dvb_tspace->get_SystemType(&systype);
-            if (!ComSuccess(hr, "cannot get DVB system type from tuning space \"" + fname + "\"", report)) {
+            if (!ComSuccess(hr, u"cannot get DVB system type from tuning space \"" + fname + u"\"", report)) {
                 continue;
             }
-            report.debug("DVB system type is %d for tuning space \"%s\"", int(systype), fname.c_str());
+            report.debug(u"DVB system type is %d for tuning space \"%s\"", {systype, fname});
 
             // Check if DVB system type matches our tuner type.
             switch (systype) {
@@ -906,11 +904,11 @@ bool ts::Tuner::buildGraph(::IMoniker* tuner_moniker, Report& report)
     _tuning_space = tspace;
     _tuning_space_fname = GetTuningSpaceFriendlyName(_tuning_space.pointer(), report);
     _tuning_space_uname = GetTuningSpaceUniqueName(_tuning_space.pointer(), report);
-    report.debug("using tuning space \"" + _tuning_space_uname + "\" (\"" + _tuning_space_fname + "\")");
+    report.debug(u"using tuning space \"%s\" (\"%s\")", {_tuning_space_uname, _tuning_space_fname});
 
     // Try to build the rest of the graph starting at tuner filter.
     // Usually work with Terratec driver for instance.
-    report.debug("trying direct connection from tuner (no receiver)");
+    report.debug(u"trying direct connection from tuner (no receiver)");
     bool graph_done = buildCaptureGraph(_tuner_filter, report);
 
     // If the tuner cannot be directly connected to the rest of the
@@ -929,8 +927,8 @@ bool ts::Tuner::buildGraph(::IMoniker* tuner_moniker, Report& report)
         for (size_t receiver_index = 0; !graph_done && receiver_index < receiver_monikers.size(); ++receiver_index) {
 
             // Get friendly name of this network provider
-            std::string receiver_name(GetStringPropertyBag(receiver_monikers[receiver_index].pointer(), L"FriendlyName", debug_report));
-            report.debug("trying receiver filter \"" + receiver_name + "\"");
+            UString receiver_name(GetStringPropertyBag(receiver_monikers[receiver_index].pointer(), L"FriendlyName", debug_report));
+            report.debug(u"trying receiver filter \"%s\"", {receiver_name});
 
             // Create an instance of this receiver filter from moniker
             ComPtr<::IBaseFilter> receiver_filter;
@@ -954,7 +952,7 @@ bool ts::Tuner::buildGraph(::IMoniker* tuner_moniker, Report& report)
             // Try to build the rest of the graph
             if (buildCaptureGraph(receiver_filter, report)) {
                 graph_done = true;
-                report.debug("using receiver filter \"" + receiver_name + "\"");
+                report.debug(u"using receiver filter \"%s\"", {receiver_name});
             }
         }
     }
@@ -1002,10 +1000,10 @@ bool ts::Tuner::buildGraph(::IMoniker* tuner_moniker, Report& report)
         }
     }
 
-    report.debug("IBDA_DigitalDemodulator in tuner: %" FMT_SIZE_T "u", _demods.size());
-    report.debug("IBDA_DigitalDemodulator2 in tuner: %" FMT_SIZE_T "u", _demods2.size());
-    report.debug("IBDA_SignalStatistics in tuner: %" FMT_SIZE_T "u", _sigstats.size());
-    report.debug("IKsPropertySet in tuner: %" FMT_SIZE_T "u", _tunprops.size());
+    report.debug(u"IBDA_DigitalDemodulator in tuner: %d", {_demods.size()});
+    report.debug(u"IBDA_DigitalDemodulator2 in tuner: %d", {_demods2.size()});
+    report.debug(u"IBDA_SignalStatistics in tuner: %d", {_sigstats.size()});
+    report.debug(u"IKsPropertySet in tuner: %d", {_tunprops.size()});
 
     return true;
 }
@@ -1075,8 +1073,8 @@ bool ts::Tuner::buildCaptureGraph(const ComPtr<::IBaseFilter>& base_filter, Repo
     while (ok && !tif_found && enum_tif->Next(1, tif_moniker.creator(), NULL) == S_OK) {
 
         // Get friendly name of this TIF
-        std::string tif_name(GetStringPropertyBag(tif_moniker.pointer(), L"FriendlyName", report));
-        report.debug("trying TIF \"" + tif_name + "\"");
+        UString tif_name(GetStringPropertyBag(tif_moniker.pointer(), L"FriendlyName", report));
+        report.debug(u"trying TIF \"%s\"", {tif_name});
 
         // Create an instance of this TIF from moniker
         ComPtr<::IBaseFilter> tif_filter;
@@ -1093,7 +1091,7 @@ bool ts::Tuner::buildCaptureGraph(const ComPtr<::IBaseFilter>& base_filter, Repo
         // Try to connect demux filter to tif
         if (_graph.connectFilters(demux_filter.pointer(), tif_filter.pointer(), debug_report)) {
             tif_found = true;
-            report.debug("using TIF \"" + tif_name + "\"");
+            report.debug("using TIF \"%s\"", {tif_name});
         }
         else {
             // This tif is not compatible, remove it from the graph

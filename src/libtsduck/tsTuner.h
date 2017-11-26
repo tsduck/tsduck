@@ -458,8 +458,8 @@ namespace ts {
         ComPtr<::IBDA_NetworkProvider> _net_provider; // ... interface of provider_filter
         ComPtr<::ITuner>        _tuner;               // ... interface of provider_filter
         ComPtr<::ITuningSpace>  _tuning_space;        // ... associated to provider_filter
-        std::string             _tuning_space_fname;  // ... friendly name
-        std::string             _tuning_space_uname;  // ... unique name
+        UString                 _tuning_space_fname;  // ... friendly name
+        UString                 _tuning_space_uname;  // ... unique name
         ComPtr<::IBaseFilter>   _tuner_filter;        // Tuner filter
         std::vector<ComPtr<::IBDA_DigitalDemodulator>>  _demods;   // ... all its demod interfaces
         std::vector<ComPtr<::IBDA_DigitalDemodulator2>> _demods2;  // ... all its demod (2nd gen) interfaces

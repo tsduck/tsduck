@@ -35,8 +35,6 @@
 #include "tsTunerArgs.h"
 #include "tsDektec.h"
 #include "tsEnumeration.h"
-#include "tsDecimal.h"
-#include "tsFormat.h"
 TSDUCK_SOURCE;
 
 #if defined (TS_NEED_STATIC_CONST_DEFINITIONS)
@@ -104,12 +102,12 @@ void ts::TunerParametersDVBS::copy (const TunerParameters& obj)
 //----------------------------------------------------------------------------
 
 namespace {
-    const ts::Enumeration ZapPolarizationEnum
-        ("h", ts::POL_HORIZONTAL,
-         "v", ts::POL_VERTICAL,
-         "l", ts::POL_LEFT,
-         "r", ts::POL_RIGHT,
-         TS_NULL);
+    const ts::Enumeration ZapPolarizationEnum({
+        {u"h", ts::POL_HORIZONTAL},
+        {u"v", ts::POL_VERTICAL},
+        {u"l", ts::POL_LEFT},
+        {u"r", ts::POL_RIGHT},
+    });
 }
 
 
@@ -120,14 +118,13 @@ namespace {
 //    satellite number, symrate = symbol rate in ksym/s.
 //----------------------------------------------------------------------------
 
-std::string ts::TunerParametersDVBS::toZapFormat() const
+ts::UString ts::TunerParametersDVBS::toZapFormat() const
 {
-    const std::string pol (ZapPolarizationEnum.name (polarity));
-    return Format ("%" FMT_INT64 "u:%s:%" FMT_SIZE_T "u:%d",
-                   frequency / 1000000,
-                   pol.c_str(),
-                   satellite_number,
-                   int (symbol_rate / 1000));
+    return UString::Format(u"%d:%s:%d:%d",
+                           {frequency / 1000000,
+                            ZapPolarizationEnum.name(polarity),
+                            satellite_number,
+                            symbol_rate / 1000});
 }
 
 
@@ -135,26 +132,27 @@ std::string ts::TunerParametersDVBS::toZapFormat() const
 // Decode a Linux DVB "zap" specification and set the corresponding values
 //----------------------------------------------------------------------------
 
-bool ts::TunerParametersDVBS::fromZapFormat (const std::string& zap)
+bool ts::TunerParametersDVBS::fromZapFormat(const UString& zap)
 {
-    StringVector values;
-    SplitString (values, zap, ':', true);
+    UStringVector values;
+    zap.split(values, u':', true);
 
-    uint64_t freq;
-    int pol;
-    size_t sat;
-    uint32_t symrate;
+    uint64_t freq = 0;
+    int pol = 0;
+    size_t sat = 0;
+    uint32_t symrate = 0;
 
     if (values.size() != 4 ||
-        !ToInteger (freq, values[0]) ||
-        ((pol = ZapPolarizationEnum.value (values[1])) != POL_HORIZONTAL && pol != POL_VERTICAL) ||
-        !ToInteger (sat, values[2]) ||
-        !ToInteger (symrate, values[3])) {
+        !values[0].toInteger(freq) ||
+        ((pol = ZapPolarizationEnum.value(values[1])) != POL_HORIZONTAL && pol != POL_VERTICAL) ||
+        !values[2].toInteger(sat) ||
+        !values[3].toInteger(symrate))
+    {
         return false;
     }
 
     frequency = freq * 1000000;
-    polarity = Polarization (pol);
+    polarity = Polarization(pol);
     satellite_number = sat;
     symbol_rate = symrate * 1000;
     lnb = LNB::Universal;
@@ -176,21 +174,21 @@ bool ts::TunerParametersDVBS::fromZapFormat (const std::string& zap)
 // Format the tuner parameters as a list of options for the dvb tsp plugin.
 //----------------------------------------------------------------------------
 
-std::string ts::TunerParametersDVBS::toPluginOptions(bool no_local) const
+ts::UString ts::TunerParametersDVBS::toPluginOptions(bool no_local) const
 {
-    std::string local_options;
+    UString local_options;
     if (!no_local) {
-        local_options = " --lnb " + std::string(lnb) + Format(" --satellite-number %" FMT_SIZE_T "d", satellite_number);
+        local_options = UString::Format(u" --lnb %s --satellite-number %d", {UString(lnb), satellite_number});
     }
 
-    return Format("--frequency %" FMT_INT64 "u --symbol-rate %d", frequency, int(symbol_rate)) +
-        " --fec-inner " + InnerFECEnum.name(inner_fec) +
-        " --spectral-inversion " + SpectralInversionEnum.name(inversion) +
-        " --polarity " + PolarizationEnum.name(polarity) +
-        " --delivery-system " + DeliverySystemEnum.name(delivery_system) +
-        " --modulation " + ModulationEnum.name(modulation) +
-        " --pilots " + PilotEnum.name(pilots) +
-        " --roll-off " + RollOffEnum.name(roll_off) +
+    return UString::Format(u"--frequency %d --symbol-rate %d", {frequency, symbol_rate}) +
+        u" --fec-inner " + InnerFECEnum.name(inner_fec) +
+        u" --spectral-inversion " + SpectralInversionEnum.name(inversion) +
+        u" --polarity " + PolarizationEnum.name(polarity) +
+        u" --delivery-system " + DeliverySystemEnum.name(delivery_system) +
+        u" --modulation " + ModulationEnum.name(modulation) +
+        u" --pilots " + PilotEnum.name(pilots) +
+        u" --roll-off " + RollOffEnum.name(roll_off) +
         local_options;
 }
 
@@ -199,37 +197,37 @@ std::string ts::TunerParametersDVBS::toPluginOptions(bool no_local) const
 // Format a short description (frequency and essential parameters).
 //----------------------------------------------------------------------------
 
-std::string ts::TunerParametersDVBS::shortDescription(int strength, int quality) const
+ts::UString ts::TunerParametersDVBS::shortDescription(int strength, int quality) const
 {
-    std::string desc = Decimal(frequency) + " Hz";
+    UString desc = UString::Decimal(frequency) + u" Hz";
     switch (polarity) {
         case POL_HORIZONTAL:
-            desc += " H";
+            desc += u" H";
             break;
         case POL_VERTICAL:
-            desc += " V";
+            desc += u" V";
             break;
         case POL_LEFT:
-            desc += " L";
+            desc += u" L";
             break;
         case POL_RIGHT:
-            desc += " R";
+            desc += u" R";
             break;
         default:
             break;
     }
     if (delivery_system != DS_DVB_S) {
-        desc += " (" + DeliverySystemEnum.name(delivery_system);
+        desc += u" (" + DeliverySystemEnum.name(delivery_system);
         if (modulation != QAM_AUTO) {
-            desc += ", " + ModulationEnum.name(modulation);
+            desc += u", " + ModulationEnum.name(modulation);
         }
-        desc += ")";
+        desc += u")";
     }
     if (strength >= 0) {
-        desc += Format(", strength: %d%%", strength);
+        desc += UString::Format(u", strength: %d%%", {strength});
     }
     if (quality >= 0) {
-        desc += Format(", quality: %d%%", quality);
+        desc += UString::Format(u", quality: %d%%", {quality});
     }
     return desc;
 }
@@ -239,13 +237,13 @@ std::string ts::TunerParametersDVBS::shortDescription(int strength, int quality)
 // Display a description of the modulation paramters on a stream, line by line.
 //----------------------------------------------------------------------------
 
-void ts::TunerParametersDVBS::displayParameters(std::ostream& strm, const std::string& margin, bool verbose) const
+void ts::TunerParametersDVBS::displayParameters(std::ostream& strm, const UString& margin, bool verbose) const
 {
     if (verbose || delivery_system != DS_DVB_S) {
         strm << margin << "Delivery system: " << DeliverySystemEnum.name(delivery_system) << std::endl;
     }
     if (frequency != 0) {
-        strm << margin << "Carrier frequency: " << Decimal(frequency) << " Hz" << std::endl;
+        strm << margin << "Carrier frequency: " << UString::Decimal(frequency) << " Hz" << std::endl;
     }
     if (polarity != POL_AUTO) {
         strm << margin << "Polarity: " << PolarizationEnum.name(polarity) << std::endl;
@@ -254,7 +252,7 @@ void ts::TunerParametersDVBS::displayParameters(std::ostream& strm, const std::s
         strm << margin << "Spectral inversion: " << SpectralInversionEnum.name(inversion) << std::endl;
     }
     if (symbol_rate != 0) {
-        strm << margin << "Symbol rate: " << Decimal(symbol_rate) << " symb/s" << std::endl;
+        strm << margin << "Symbol rate: " << UString::Decimal(symbol_rate) << " symb/s" << std::endl;
     }
     if ((verbose || delivery_system != DS_DVB_S) && modulation != QAM_AUTO) {
         strm << margin << "Modulation: " << ModulationEnum.name(modulation) << std::endl;
@@ -269,7 +267,7 @@ void ts::TunerParametersDVBS::displayParameters(std::ostream& strm, const std::s
         strm << margin << "Roll-off: " << RollOffEnum.name(roll_off) << std::endl;
     }
     if (verbose) {
-        strm << margin << "LNB: " << std::string(lnb) << std::endl;
+        strm << margin << "LNB: " << UString(lnb) << std::endl;
     }
     if (verbose) {
         strm << margin << "Satellite number: " << satellite_number << std::endl;

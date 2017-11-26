@@ -37,9 +37,6 @@
     <ClCompile Include="..\..\src\utest\utestArgs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\utest\utestStringUtils.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\utest\utestByteBlock.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

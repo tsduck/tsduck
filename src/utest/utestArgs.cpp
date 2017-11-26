@@ -66,29 +66,29 @@ public:
     void testBitMask();
     void testGatherParameters();
 
-    CPPUNIT_TEST_SUITE (ArgsTest);
-    CPPUNIT_TEST (testAccessors);
-    CPPUNIT_TEST (testHelp);
-    CPPUNIT_TEST (testCopyOptions);
-    CPPUNIT_TEST (testValidCommandVariableArgs);
-    CPPUNIT_TEST (testValidCommandArgcArgv);
-    CPPUNIT_TEST (testValidCommandContainer);
-    CPPUNIT_TEST (testOptionalValue);
-    CPPUNIT_TEST (testThousandsSeparator);
-    CPPUNIT_TEST (testMissingParameter);
-    CPPUNIT_TEST (testTooManyParameters);
-    CPPUNIT_TEST (testAmbiguousOption);
-    CPPUNIT_TEST (testInvalidIntegerOption);
-    CPPUNIT_TEST (testIntegerTooLow);
-    CPPUNIT_TEST (testIntegerTooHigh);
-    CPPUNIT_TEST (testInvalidEnum);
-    CPPUNIT_TEST (testValidEnum);
-    CPPUNIT_TEST (testBitMask);
-    CPPUNIT_TEST (testGatherParameters);
-    CPPUNIT_TEST_SUITE_END ();
+    CPPUNIT_TEST_SUITE(ArgsTest);
+    CPPUNIT_TEST(testAccessors);
+    CPPUNIT_TEST(testHelp);
+    CPPUNIT_TEST(testCopyOptions);
+    CPPUNIT_TEST(testValidCommandVariableArgs);
+    CPPUNIT_TEST(testValidCommandArgcArgv);
+    CPPUNIT_TEST(testValidCommandContainer);
+    CPPUNIT_TEST(testOptionalValue);
+    CPPUNIT_TEST(testThousandsSeparator);
+    CPPUNIT_TEST(testMissingParameter);
+    CPPUNIT_TEST(testTooManyParameters);
+    CPPUNIT_TEST(testAmbiguousOption);
+    CPPUNIT_TEST(testInvalidIntegerOption);
+    CPPUNIT_TEST(testIntegerTooLow);
+    CPPUNIT_TEST(testIntegerTooHigh);
+    CPPUNIT_TEST(testInvalidEnum);
+    CPPUNIT_TEST(testValidEnum);
+    CPPUNIT_TEST(testBitMask);
+    CPPUNIT_TEST(testGatherParameters);
+    CPPUNIT_TEST_SUITE_END();
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION (ArgsTest);
+CPPUNIT_TEST_SUITE_REGISTRATION(ArgsTest);
 
 
 //----------------------------------------------------------------------------
@@ -113,26 +113,26 @@ void ArgsTest::tearDown()
 // Test case: basic accessors
 void ArgsTest::testAccessors()
 {
-    ts::Args args ("description", "syntax", "help", ts::Args::NO_EXIT_ON_ERROR | ts::Args::GATHER_PARAMETERS);
+    ts::Args args(u"description", u"syntax", u"help", ts::Args::NO_EXIT_ON_ERROR | ts::Args::GATHER_PARAMETERS);
 
-    CPPUNIT_ASSERT(args.getDescription() == "description");
-    CPPUNIT_ASSERT(args.getSyntax() == "syntax");
-    CPPUNIT_ASSERT(args.getHelp() == "help");
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"description", args.getDescription());
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"syntax", args.getSyntax());
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"help", args.getHelp());
     CPPUNIT_ASSERT(args.getFlags() == (ts::Args::NO_EXIT_ON_ERROR | ts::Args::GATHER_PARAMETERS));
 
-    args.setDescription ("description-1");
-    CPPUNIT_ASSERT(args.getDescription() == "description-1");
+    args.setDescription(u"description-1");
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"description-1", args.getDescription());
 
-    args.setSyntax ("syntax-1");
-    CPPUNIT_ASSERT(args.getSyntax() == "syntax-1");
+    args.setSyntax(u"syntax-1");
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"syntax-1", args.getSyntax());
 
     args.setHelp(u"help-1");
-    CPPUNIT_ASSERT(args.getHelp() == "help-1");
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"help-1", args.getHelp());
 
-    args.setShell ("shell-1");
-    CPPUNIT_ASSERT(args.getShell() == "shell-1");
+    args.setShell(u"shell-1");
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"shell-1", args.getShell());
 
-    args.setFlags (ts::Args::NO_EXIT_ON_ERROR);
+    args.setFlags(ts::Args::NO_EXIT_ON_ERROR);
     CPPUNIT_ASSERT(args.getFlags() == ts::Args::NO_EXIT_ON_ERROR);
 }
 
@@ -140,55 +140,55 @@ void ArgsTest::testAccessors()
 void ArgsTest::testHelp()
 {
     ts::ReportBuffer<> log;
-    ts::Args args("{description}", "{syntax}", "{help}", ts::Args::NO_EXIT_ON_ERROR | ts::Args::NO_EXIT_ON_HELP | ts::Args::NO_EXIT_ON_VERSION);
+    ts::Args args(u"{description}", u"{syntax}", u"{help}", ts::Args::NO_EXIT_ON_ERROR | ts::Args::NO_EXIT_ON_HELP | ts::Args::NO_EXIT_ON_VERSION);
     args.redirectReport(&log);
 
-    CPPUNIT_ASSERT(!args.analyze("test", "--help", TS_NULL));
-    CPPUNIT_ASSERT_EQUAL(std::string("\n"
-                                     u"{description}\n"
-                                     u"\n"
-                                     u"Usage: test {syntax}\n"
-                                     u"\n"
-                                     u"{help}"),
-                         log.getMessages());
+    CPPUNIT_ASSERT(!args.analyze(u"test", {u"--help"}));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"\n"
+                                  u"{description}\n"
+                                  u"\n"
+                                  u"Usage: test {syntax}\n"
+                                  u"\n"
+                                  u"{help}",
+                                  log.getMessages());
 
-    args.setShell("{shell}");
+    args.setShell(u"{shell}");
     log.resetMessages();
-    CPPUNIT_ASSERT(!args.analyze("test", "--help", TS_NULL));
-    CPPUNIT_ASSERT_EQUAL(std::string("\n"
-                                     u"{description}\n"
-                                     u"\n"
-                                     u"Usage: {shell} test {syntax}\n"
-                                     u"\n"
-                                     u"{help}"),
-                         log.getMessages());
+    CPPUNIT_ASSERT(!args.analyze(u"test", {u"--help"}));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"\n"
+                                  u"{description}\n"
+                                  u"\n"
+                                  u"Usage: {shell} test {syntax}\n"
+                                  u"\n"
+                                  u"{help}",
+                                  log.getMessages());
 
     log.resetMessages();
-    CPPUNIT_ASSERT(!args.analyze("test", "--version=short", TS_NULL));
-    const std::string version(log.getMessages());
-    const size_t dash = version.find('-');
-    CPPUNIT_ASSERT(dash != std::string::npos);
-    CPPUNIT_ASSERT_EQUAL(std::string(TS_STRINGIFY(TS_VERSION_MAJOR) "." TS_STRINGIFY(TS_VERSION_MINOR)), version.substr(0, dash));
+    CPPUNIT_ASSERT(!args.analyze(u"test", {u"--version=short"}));
+    const ts::UString version(log.getMessages());
+    const size_t dash = version.find(u'-');
+    CPPUNIT_ASSERT(dash != ts::UString::npos);
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(TS_STRINGIFY(TS_VERSION_MAJOR) "." TS_STRINGIFY(TS_VERSION_MINOR), version.substr(0, dash));
 }
 
 // Test case: copy options
 void ArgsTest::testCopyOptions()
 {
     ts::ReportBuffer<> log;
-    ts::Args args1("{description1}", "{syntax1}", "{help1}", ts::Args::NO_EXIT_ON_ERROR);
-    ts::Args args2("{description2}", "{syntax2}", "{help2}", ts::Args::NO_EXIT_ON_ERROR);
+    ts::Args args1(u"{description1}", u"{syntax1}", u"{help1}", ts::Args::NO_EXIT_ON_ERROR);
+    ts::Args args2(u"{description2}", u"{syntax2}", u"{help2}", ts::Args::NO_EXIT_ON_ERROR);
 
     args1.redirectReport(&log);
     args2.redirectReport(&log);
 
     args1.option(u"opt1");
-    args1.option(u"opt2", 'o', ts::Args::UNSIGNED);
+    args1.option(u"opt2", u'o', ts::Args::UNSIGNED);
 
-    CPPUNIT_ASSERT(args1.analyze("test", "--opt1", "--opt2", "1", TS_NULL));
-    CPPUNIT_ASSERT(!args2.analyze("test", "--opt1", "--opt2", "1", TS_NULL));
+    CPPUNIT_ASSERT(args1.analyze(u"test", {u"--opt1", u"--opt2", u"1"}));
+    CPPUNIT_ASSERT(!args2.analyze(u"test", {u"--opt1", u"--opt2", u"1"}));
 
     args2.copyOptions(args1, false);
-    CPPUNIT_ASSERT(args2.analyze("test", "--opt1", "--opt2", "1", TS_NULL));
+    CPPUNIT_ASSERT(args2.analyze(u"test", {u"--opt1", u"--opt2", u"1"}));
 }
 
 // An Args class with a defined syntax
@@ -197,7 +197,7 @@ namespace {
     {
     public:
         explicit TestArgs(ts::Report* log) :
-            ts::Args("{description}", "{syntax}", "{help}", ts::Args::NO_EXIT_ON_ERROR)
+            ts::Args("{description}", u"{syntax}", u"{help}", ts::Args::NO_EXIT_ON_ERROR)
         {
             redirectReport(log);
             option(u"",      0,  ts::Args::STRING, 1, 2);
@@ -209,8 +209,8 @@ namespace {
             option(u"opt6", 'b', ts::Args::UINT8);
             option(u"opt7",  0,  ts::Args::UINT16);
             option(u"opt8",  0,  ts::Args::UINT32, 0, 0, 0, 0, true);
-            option(u"opt9", 'c', ts::Enumeration("val1", 11, "val2", 12, "val3", 13, TS_NULL));
-            option(u"mask",  0,  ts::Enumeration("bit1", 0x01, "bit2", 0x02, "bit3", 0x04, TS_NULL), 0, ts::Args::UNLIMITED_COUNT);
+            option(u"opt9", 'c', ts::Enumeration({{"val1", 11}, {u"val2", 12}, {u"val3", 13}}));
+            option(u"mask",  0,  ts::Enumeration({{"bit1", 0x01}, {u"bit2", 0x02}, {u"bit3", 0x04}}), 0, ts::Args::UNLIMITED_COUNT);
         }
     };
 }
@@ -219,68 +219,68 @@ namespace {
 void ArgsTest::testValidCommandVariableArgs()
 {
     ts::ReportBuffer<> log;
-    TestArgs args (&log);
+    TestArgs args(&log);
 
-    CPPUNIT_ASSERT(args.analyze ("test", "--opt3", "6", "a", "--opt1", "b", "--opt9", "val2", "--opt3", "0", "--opt3", "6", TS_NULL));
+    CPPUNIT_ASSERT(args.analyze(u"test", {u"--opt3", u"6", u"a", u"--opt1", u"b", u"--opt9", u"val2", u"--opt3", u"0", u"--opt3", u"6"}));
 
-    CPPUNIT_ASSERT(args.appName() == "test");
-    CPPUNIT_ASSERT(args.count ("") == 2);
-    CPPUNIT_ASSERT(args.value(u"", "", 0) == "a");
-    CPPUNIT_ASSERT(args.value(u"", "", 1) == "b");
-    CPPUNIT_ASSERT(args.count ("opt1") == 1);
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"test", args.appName());
+    CPPUNIT_ASSERT(args.count(u"") == 2);
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"a", args.value(u"", u"", 0));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"b", args.value(u"", u"", 1));
+    CPPUNIT_ASSERT(args.count(u"opt1") == 1);
     CPPUNIT_ASSERT(args.present(u"opt1"));
-    CPPUNIT_ASSERT(args.count ("opt2") == 0);
+    CPPUNIT_ASSERT(args.count(u"opt2") == 0);
     CPPUNIT_ASSERT(!args.present(u"opt2"));
-    CPPUNIT_ASSERT(args.count ("opt3") == 3);
+    CPPUNIT_ASSERT(args.count(u"opt3") == 3);
     CPPUNIT_ASSERT(args.present(u"opt3"));
-    CPPUNIT_ASSERT(args.intValue<int> ("opt3", -1, 0) == 6);
-    CPPUNIT_ASSERT(args.intValue<int> ("opt3", -1, 1) == 0);
-    CPPUNIT_ASSERT(args.intValue<int> ("opt3", -1, 2) == 6);
-    CPPUNIT_ASSERT(args.intValue<int> ("opt3", -1, 3) == -1);
-    CPPUNIT_ASSERT(args.count ("opt4") == 0);
-    CPPUNIT_ASSERT(args.count ("opt5") == 0);
-    CPPUNIT_ASSERT(args.count ("opt6") == 0);
-    CPPUNIT_ASSERT(args.count ("opt7") == 0);
-    CPPUNIT_ASSERT(args.count ("opt8") == 0);
-    CPPUNIT_ASSERT(args.count ("opt9") == 1);
+    CPPUNIT_ASSERT(args.intValue<int>(u"opt3", -1, 0) == 6);
+    CPPUNIT_ASSERT(args.intValue<int>(u"opt3", -1, 1) == 0);
+    CPPUNIT_ASSERT(args.intValue<int>(u"opt3", -1, 2) == 6);
+    CPPUNIT_ASSERT(args.intValue<int>(u"opt3", -1, 3) == -1);
+    CPPUNIT_ASSERT(args.count(u"opt4") == 0);
+    CPPUNIT_ASSERT(args.count(u"opt5") == 0);
+    CPPUNIT_ASSERT(args.count(u"opt6") == 0);
+    CPPUNIT_ASSERT(args.count(u"opt7") == 0);
+    CPPUNIT_ASSERT(args.count(u"opt8") == 0);
+    CPPUNIT_ASSERT(args.count(u"opt9") == 1);
     CPPUNIT_ASSERT(args.present(u"opt9"));
-    CPPUNIT_ASSERT(args.intValue<int> ("opt9") == 12);
+    CPPUNIT_ASSERT(args.intValue<int>(u"opt9") == 12);
 
-    std::string s;
-    args.getValue (s, "", "x", 0);
-    CPPUNIT_ASSERT(s == "a");
-    args.getValue (s, "", "x", 1);
-    CPPUNIT_ASSERT(s == "b");
-    args.getValue (s, "", "x", 2);
-    CPPUNIT_ASSERT(s == "x");
+    ts::UString s;
+    args.getValue(s, u"", u"x", 0);
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"a", s);
+    args.getValue(s, u"", u"x", 1);
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"b", s);
+    args.getValue(s, u"", u"x", 2);
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"x", s);
 
-    std::vector<std::string> vs;
-    args.getValues (vs, "");
-    std::vector<std::string> ref;
-    ref.push_back ("a");
-    ref.push_back ("b");
+    ts::UStringVector vs;
+    args.getValues(vs, u"");
+    ts::UStringVector ref;
+    ref.push_back("a");
+    ref.push_back("b");
     CPPUNIT_ASSERT(vs == ref);
 
     int i;
-    args.getIntValue (i, "opt3", -1, 0);
+    args.getIntValue(i, u"opt3", -1, 0);
     CPPUNIT_ASSERT(i == 6);
-    args.getIntValue (i, "opt3", -1, 1);
+    args.getIntValue(i, u"opt3", -1, 1);
     CPPUNIT_ASSERT(i == 0);
-    args.getIntValue (i, "opt3", -1, 2);
+    args.getIntValue(i, u"opt3", -1, 2);
     CPPUNIT_ASSERT(i == 6);
-    args.getIntValue (i, "opt3", -1, 3);
+    args.getIntValue(i, u"opt3", -1, 3);
     CPPUNIT_ASSERT(i == -1);
 
     std::vector<int> vi;
-    args.getIntValues(vi, "opt3");
+    args.getIntValues(vi, u"opt3");
     std::vector<int> iref;
-    iref.push_back (6);
-    iref.push_back (0);
-    iref.push_back (6);
+    iref.push_back(6);
+    iref.push_back(0);
+    iref.push_back(6);
     CPPUNIT_ASSERT(vi == iref);
 
     std::set<int> vis;
-    args.getIntValues(vis, "opt3");
+    args.getIntValues(vis, u"opt3");
     std::set<int> isref;
     isref.insert(0);
     isref.insert(6);
@@ -291,73 +291,73 @@ void ArgsTest::testValidCommandVariableArgs()
 void ArgsTest::testValidCommandArgcArgv()
 {
     ts::ReportBuffer<> log;
-    TestArgs args (&log);
+    TestArgs args(&log);
 
     char* argv[] = {
-        const_cast<char*> ("test"),
-        const_cast<char*> ("--opt3"),
-        const_cast<char*> ("6"),
-        const_cast<char*> ("a"),
-        const_cast<char*> ("--opt1"),
-        const_cast<char*> ("b"),
-        const_cast<char*> ("--opt9"),
-        const_cast<char*> ("val2"),
-        const_cast<char*> ("--opt3"),
-        const_cast<char*> ("0")};
+        const_cast<char*>("test"),
+        const_cast<char*>("--opt3"),
+        const_cast<char*>("6"),
+        const_cast<char*>("a"),
+        const_cast<char*>("--opt1"),
+        const_cast<char*>("b"),
+        const_cast<char*>("--opt9"),
+        const_cast<char*>("val2"),
+        const_cast<char*>("--opt3"),
+        const_cast<char*>("0")};
     const int argc = 10;
 
-    CPPUNIT_ASSERT(args.analyze (argc, argv));
+    CPPUNIT_ASSERT(args.analyze(argc, argv));
 
-    CPPUNIT_ASSERT(args.appName() == "test");
-    CPPUNIT_ASSERT(args.count ("") == 2);
-    CPPUNIT_ASSERT(args.value(u"", "", 0) == "a");
-    CPPUNIT_ASSERT(args.value(u"", "", 1) == "b");
-    CPPUNIT_ASSERT(args.count ("opt1") == 1);
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"test", args.appName());
+    CPPUNIT_ASSERT(args.count(u"") == 2);
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"a", args.value(u"", u"", 0));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"b", args.value(u"", u"", 1));
+    CPPUNIT_ASSERT(args.count(u"opt1") == 1);
     CPPUNIT_ASSERT(args.present(u"opt1"));
-    CPPUNIT_ASSERT(args.count ("opt2") == 0);
+    CPPUNIT_ASSERT(args.count(u"opt2") == 0);
     CPPUNIT_ASSERT(!args.present(u"opt2"));
-    CPPUNIT_ASSERT(args.count ("opt3") == 2);
+    CPPUNIT_ASSERT(args.count(u"opt3") == 2);
     CPPUNIT_ASSERT(args.present(u"opt3"));
-    CPPUNIT_ASSERT(args.intValue<int> ("opt3", -1, 0) == 6);
-    CPPUNIT_ASSERT(args.intValue<int> ("opt3", -1, 1) == 0);
-    CPPUNIT_ASSERT(args.intValue<int> ("opt3", -1, 2) == -1);
-    CPPUNIT_ASSERT(args.count ("opt4") == 0);
-    CPPUNIT_ASSERT(args.count ("opt5") == 0);
-    CPPUNIT_ASSERT(args.count ("opt6") == 0);
-    CPPUNIT_ASSERT(args.count ("opt7") == 0);
-    CPPUNIT_ASSERT(args.count ("opt8") == 0);
-    CPPUNIT_ASSERT(args.count ("opt9") == 1);
+    CPPUNIT_ASSERT(args.intValue<int>(u"opt3", -1, 0) == 6);
+    CPPUNIT_ASSERT(args.intValue<int>(u"opt3", -1, 1) == 0);
+    CPPUNIT_ASSERT(args.intValue<int>(u"opt3", -1, 2) == -1);
+    CPPUNIT_ASSERT(args.count(u"opt4") == 0);
+    CPPUNIT_ASSERT(args.count(u"opt5") == 0);
+    CPPUNIT_ASSERT(args.count(u"opt6") == 0);
+    CPPUNIT_ASSERT(args.count(u"opt7") == 0);
+    CPPUNIT_ASSERT(args.count(u"opt8") == 0);
+    CPPUNIT_ASSERT(args.count(u"opt9") == 1);
     CPPUNIT_ASSERT(args.present(u"opt9"));
-    CPPUNIT_ASSERT(args.intValue<int> ("opt9") == 12);
+    CPPUNIT_ASSERT(args.intValue<int>(u"opt9") == 12);
 
-    std::string s;
-    args.getValue (s, "", "x", 0);
-    CPPUNIT_ASSERT(s == "a");
-    args.getValue (s, "", "x", 1);
-    CPPUNIT_ASSERT(s == "b");
-    args.getValue (s, "", "x", 2);
-    CPPUNIT_ASSERT(s == "x");
+    ts::UString s;
+    args.getValue(s, u"", u"x", 0);
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"a", s);
+    args.getValue(s, u"", u"x", 1);
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"b", s);
+    args.getValue(s, u"", u"x", 2);
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"x", s);
 
-    std::vector<std::string> vs;
-    args.getValues (vs, "");
-    std::vector<std::string> ref;
-    ref.push_back ("a");
-    ref.push_back ("b");
+    ts::UStringVector vs;
+    args.getValues(vs, u"");
+    ts::UStringVector ref;
+    ref.push_back("a");
+    ref.push_back("b");
     CPPUNIT_ASSERT(vs == ref);
 
     int i;
-    args.getIntValue (i, "opt3", -1, 0);
+    args.getIntValue(i, u"opt3", -1, 0);
     CPPUNIT_ASSERT(i == 6);
-    args.getIntValue (i, "opt3", -1, 1);
+    args.getIntValue(i, u"opt3", -1, 1);
     CPPUNIT_ASSERT(i == 0);
-    args.getIntValue (i, "opt3", -1, 2);
+    args.getIntValue(i, u"opt3", -1, 2);
     CPPUNIT_ASSERT(i == -1);
 
     std::vector<int> vi;
-    args.getIntValues (vi, "opt3");
+    args.getIntValues(vi, u"opt3");
     std::vector<int> iref;
-    iref.push_back (6);
-    iref.push_back (0);
+    iref.push_back(6);
+    iref.push_back(0);
     CPPUNIT_ASSERT(vi == iref);
 }
 
@@ -365,71 +365,71 @@ void ArgsTest::testValidCommandArgcArgv()
 void ArgsTest::testValidCommandContainer()
 {
     ts::ReportBuffer<> log;
-    TestArgs args (&log);
+    TestArgs args(&log);
 
-    std::vector<std::string> arguments;
-    arguments.push_back ("--opt3");
-    arguments.push_back ("6");
-    arguments.push_back ("a");
-    arguments.push_back ("--opt1");
-    arguments.push_back ("b");
-    arguments.push_back ("--opt9");
-    arguments.push_back ("val2");
-    arguments.push_back ("--opt3");
-    arguments.push_back ("0");
+    ts::UStringVector arguments;
+    arguments.push_back(u"--opt3");
+    arguments.push_back(u"6");
+    arguments.push_back(u"a");
+    arguments.push_back(u"--opt1");
+    arguments.push_back(u"b");
+    arguments.push_back(u"--opt9");
+    arguments.push_back(u"val2");
+    arguments.push_back(u"--opt3");
+    arguments.push_back(u"0");
 
-    CPPUNIT_ASSERT(args.analyze ("test", arguments));
+    CPPUNIT_ASSERT(args.analyze(u"test", {arguments}));
 
-    CPPUNIT_ASSERT(args.appName() == "test");
-    CPPUNIT_ASSERT(args.count ("") == 2);
-    CPPUNIT_ASSERT(args.value(u"", "", 0) == "a");
-    CPPUNIT_ASSERT(args.value(u"", "", 1) == "b");
-    CPPUNIT_ASSERT(args.count ("opt1") == 1);
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"test", args.appName());
+    CPPUNIT_ASSERT(args.count(u"") == 2);
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"a", args.value(u"", u"", 0));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"b", args.value(u"", u"", 1));
+    CPPUNIT_ASSERT(args.count(u"opt1") == 1);
     CPPUNIT_ASSERT(args.present(u"opt1"));
-    CPPUNIT_ASSERT(args.count ("opt2") == 0);
+    CPPUNIT_ASSERT(args.count(u"opt2") == 0);
     CPPUNIT_ASSERT(!args.present(u"opt2"));
-    CPPUNIT_ASSERT(args.count ("opt3") == 2);
+    CPPUNIT_ASSERT(args.count(u"opt3") == 2);
     CPPUNIT_ASSERT(args.present(u"opt3"));
-    CPPUNIT_ASSERT(args.intValue<int> ("opt3", -1, 0) == 6);
-    CPPUNIT_ASSERT(args.intValue<int> ("opt3", -1, 1) == 0);
-    CPPUNIT_ASSERT(args.intValue<int> ("opt3", -1, 2) == -1);
-    CPPUNIT_ASSERT(args.count ("opt4") == 0);
-    CPPUNIT_ASSERT(args.count ("opt5") == 0);
-    CPPUNIT_ASSERT(args.count ("opt6") == 0);
-    CPPUNIT_ASSERT(args.count ("opt7") == 0);
-    CPPUNIT_ASSERT(args.count ("opt8") == 0);
-    CPPUNIT_ASSERT(args.count ("opt9") == 1);
+    CPPUNIT_ASSERT(args.intValue<int>(u"opt3", -1, 0) == 6);
+    CPPUNIT_ASSERT(args.intValue<int>(u"opt3", -1, 1) == 0);
+    CPPUNIT_ASSERT(args.intValue<int>(u"opt3", -1, 2) == -1);
+    CPPUNIT_ASSERT(args.count(u"opt4") == 0);
+    CPPUNIT_ASSERT(args.count(u"opt5") == 0);
+    CPPUNIT_ASSERT(args.count(u"opt6") == 0);
+    CPPUNIT_ASSERT(args.count(u"opt7") == 0);
+    CPPUNIT_ASSERT(args.count(u"opt8") == 0);
+    CPPUNIT_ASSERT(args.count(u"opt9") == 1);
     CPPUNIT_ASSERT(args.present(u"opt9"));
-    CPPUNIT_ASSERT(args.intValue<int> ("opt9") == 12);
+    CPPUNIT_ASSERT(args.intValue<int>(u"opt9") == 12);
 
-    std::string s;
-    args.getValue (s, "", "x", 0);
-    CPPUNIT_ASSERT(s == "a");
-    args.getValue (s, "", "x", 1);
-    CPPUNIT_ASSERT(s == "b");
-    args.getValue (s, "", "x", 2);
-    CPPUNIT_ASSERT(s == "x");
+    ts::UString s;
+    args.getValue(s, u"", u"x", 0);
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"a", s);
+    args.getValue(s, u"", u"x", 1);
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"b", s);
+    args.getValue(s, u"", u"x", 2);
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"x", s);
 
-    std::vector<std::string> vs;
-    args.getValues (vs, "");
-    std::vector<std::string> ref;
-    ref.push_back ("a");
-    ref.push_back ("b");
+    ts::UStringVector vs;
+    args.getValues(vs, u"");
+    ts::UStringVector ref;
+    ref.push_back("a");
+    ref.push_back("b");
     CPPUNIT_ASSERT(vs == ref);
 
     int i;
-    args.getIntValue (i, "opt3", -1, 0);
+    args.getIntValue(i, u"opt3", -1, 0);
     CPPUNIT_ASSERT(i == 6);
-    args.getIntValue (i, "opt3", -1, 1);
+    args.getIntValue(i, u"opt3", -1, 1);
     CPPUNIT_ASSERT(i == 0);
-    args.getIntValue (i, "opt3", -1, 2);
+    args.getIntValue(i, u"opt3", -1, 2);
     CPPUNIT_ASSERT(i == -1);
 
     std::vector<int> vi;
-    args.getIntValues (vi, "opt3");
+    args.getIntValues(vi, u"opt3");
     std::vector<int> iref;
-    iref.push_back (6);
-    iref.push_back (0);
+    iref.push_back(6);
+    iref.push_back(0);
     CPPUNIT_ASSERT(vi == iref);
 }
 
@@ -439,13 +439,13 @@ void ArgsTest::testThousandsSeparator()
     ts::ReportBuffer<> log;
     TestArgs args(&log);
 
-    CPPUNIT_ASSERT(args.analyze("test", "a", "-5", "2000", "--opt5=3,000", "-50x4.000", "-5", "80 000", "-5", "2.000 000", TS_NULL));
-    CPPUNIT_ASSERT_EQUAL(size_t(5), args.count("opt5"));
-    CPPUNIT_ASSERT_EQUAL(2000, args.intValue<int>("opt5", 0, 0));
-    CPPUNIT_ASSERT_EQUAL(3000, args.intValue<int>("opt5", 0, 1));
-    CPPUNIT_ASSERT_EQUAL(0x4000, args.intValue<int>("opt5", 0, 2));
-    CPPUNIT_ASSERT_EQUAL(80000, args.intValue<int>("opt5", 0, 3));
-    CPPUNIT_ASSERT_EQUAL(2000000, args.intValue<int>("opt5", 0, 4));
+    CPPUNIT_ASSERT(args.analyze(u"test", {u"a", u"-5", u"2000", u"--opt5=3,000", u"-50x4.000", u"-5", u"80 000", u"-5", u"2.000 000"}));
+    CPPUNIT_ASSERT_EQUAL(size_t(5), args.count(u"opt5"));
+    CPPUNIT_ASSERT_EQUAL(2000, args.intValue<int>(u"opt5", 0, 0));
+    CPPUNIT_ASSERT_EQUAL(3000, args.intValue<int>(u"opt5", 0, 1));
+    CPPUNIT_ASSERT_EQUAL(0x4000, args.intValue<int>(u"opt5", 0, 2));
+    CPPUNIT_ASSERT_EQUAL(80000, args.intValue<int>(u"opt5", 0, 3));
+    CPPUNIT_ASSERT_EQUAL(2000000, args.intValue<int>(u"opt5", 0, 4));
 }
 
 
@@ -453,72 +453,72 @@ void ArgsTest::testThousandsSeparator()
 void ArgsTest::testOptionalValue()
 {
     ts::ReportBuffer<> log;
-    TestArgs args (&log);
+    TestArgs args(&log);
 
-    CPPUNIT_ASSERT(args.analyze ("test", "a", "--opt8", "2", TS_NULL));
-    CPPUNIT_ASSERT(args.count ("") == 2);
+    CPPUNIT_ASSERT(args.analyze(u"test", {u"a", u"--opt8", u"2"}));
+    CPPUNIT_ASSERT(args.count(u"") == 2);
     CPPUNIT_ASSERT(args.present(u"opt8"));
-    CPPUNIT_ASSERT(args.intValue<uint32_t> ("opt8") == 0);
+    CPPUNIT_ASSERT(args.intValue<uint32_t>(u"opt8") == 0);
 
-    CPPUNIT_ASSERT(args.analyze ("test", "a", "--opt8=2", TS_NULL));
-    CPPUNIT_ASSERT(args.count ("") == 1);
+    CPPUNIT_ASSERT(args.analyze(u"test", {u"a", u"--opt8=2"}));
+    CPPUNIT_ASSERT(args.count(u"") == 1);
     CPPUNIT_ASSERT(args.present(u"opt8"));
-    CPPUNIT_ASSERT(args.intValue<uint32_t> ("opt8") == 2);
+    CPPUNIT_ASSERT(args.intValue<uint32_t>(u"opt8") == 2);
 }
 
 // Test case:
 void ArgsTest::testMissingParameter()
 {
     ts::ReportBuffer<> log;
-    TestArgs args (&log);
+    TestArgs args(&log);
 
-    CPPUNIT_ASSERT(!args.analyze ("test", "--opt1", TS_NULL));
+    CPPUNIT_ASSERT(!args.analyze(u"test", {u"--opt1"}));
     utest::Out() << "ArgsTest: testMissingParameter: \"" << log << "\"" << std::endl;
-    CPPUNIT_ASSERT(log.getMessages() == "Error: missing parameter");
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"Error: missing parameter", log.getMessages());
 }
 
 // Test case:
 void ArgsTest::testTooManyParameters()
 {
     ts::ReportBuffer<> log;
-    TestArgs args (&log);
+    TestArgs args(&log);
 
-    CPPUNIT_ASSERT(!args.analyze ("test", "a", "b", "c", TS_NULL));
+    CPPUNIT_ASSERT(!args.analyze(u"test", {u"a", u"b", u"c"}));
     utest::Out() << "ArgsTest: testTooManyParameters: \"" << log << "\"" << std::endl;
-    CPPUNIT_ASSERT(log.getMessages() == "Error: too many parameter, 2 maximum");
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"Error: too many parameter, 2 maximum", log.getMessages());
 }
 
 // Test case:
 void ArgsTest::testAmbiguousOption()
 {
     ts::ReportBuffer<> log;
-    TestArgs args (&log);
+    TestArgs args(&log);
 
-    CPPUNIT_ASSERT(!args.analyze ("test", "--opt", "a", "b", TS_NULL));
+    CPPUNIT_ASSERT(!args.analyze(u"test", {u"--opt", u"a", u"b"}));
     utest::Out() << "ArgsTest: testAmbiguousOption: \"" << log << "\"" << std::endl;
-    CPPUNIT_ASSERT(log.getMessages() == "Error: ambiguous option --opt (--opt1, --opt2)");
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"Error: ambiguous option --opt (--opt1, --opt2)", log.getMessages());
 }
 
 // Test case:
 void ArgsTest::testInvalidIntegerOption()
 {
     ts::ReportBuffer<> log;
-    TestArgs args (&log);
+    TestArgs args(&log);
 
-    CPPUNIT_ASSERT(!args.analyze ("test", "--opt3", "x", "a", "b", TS_NULL));
+    CPPUNIT_ASSERT(!args.analyze(u"test", {u"--opt3", u"x", u"a", u"b"}));
     utest::Out() << "ArgsTest: testInvalidIntegerOption: \"" << log << "\"" << std::endl;
-    CPPUNIT_ASSERT(log.getMessages() == "Error: invalid integer value x for option --opt3");
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"Error: invalid integer value x for option --opt3", log.getMessages());
 }
 
 // Test case:
 void ArgsTest::testIntegerTooLow()
 {
     ts::ReportBuffer<> log;
-    TestArgs args (&log);
+    TestArgs args(&log);
 
-    CPPUNIT_ASSERT(!args.analyze ("test", "--opt3", "-10", "a", "b", TS_NULL));
+    CPPUNIT_ASSERT(!args.analyze(u"test", {u"--opt3", u"-10", u"a", u"b"}));
     utest::Out() << "ArgsTest: testIntegerTooLow: \"" << log << "\"" << std::endl;
-    CPPUNIT_ASSERT(log.getMessages() == "Error: value for option --opt3 must be >= -4");
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"Error: value for option --opt3 must be >= -4", log.getMessages());
 }
 
 // Test case:
@@ -527,9 +527,9 @@ void ArgsTest::testIntegerTooHigh()
     ts::ReportBuffer<> log;
     TestArgs args(&log);
 
-    CPPUNIT_ASSERT(!args.analyze ("test", "--opt3", "10", "a", "b", TS_NULL));
+    CPPUNIT_ASSERT(!args.analyze(u"test", {u"--opt3", u"10", u"a", u"b"}));
     utest::Out() << "ArgsTest: testIntegerTooHigh: \"" << log << "\"" << std::endl;
-    CPPUNIT_ASSERT(log.getMessages() == "Error: value for option --opt3 must be <= 7");
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"Error: value for option --opt3 must be <= 7", log.getMessages());
 }
 
 // Test case:
@@ -538,57 +538,57 @@ void ArgsTest::testInvalidEnum()
     ts::ReportBuffer<> log;
     TestArgs args(&log);
 
-    CPPUNIT_ASSERT(!args.analyze ("test", "--opt9", "x", "a", "b", TS_NULL));
+    CPPUNIT_ASSERT(!args.analyze(u"test", {u"--opt9", u"x", u"a", u"b"}));
     utest::Out() << "ArgsTest: testInvalidEnum: \"" << log << "\"" << std::endl;
-    CPPUNIT_ASSERT_EQUAL(std::string("Error: invalid value x for option --opt9 (-c), use one of val1, val2, val3"), log.getMessages());
+    CPPUNIT_ASSERT_EQUAL(ts::UString("Error: invalid value x for option --opt9 (-c), use one of val1, val2, val3"), log.getMessages());
 }
 
 // Test case:
 void ArgsTest::testValidEnum()
 {
     ts::ReportBuffer<> log;
-    TestArgs args (&log);
+    TestArgs args(&log);
 
-    CPPUNIT_ASSERT(args.analyze("test", "--opt9", "0x20", "a", "b", TS_NULL));
-    CPPUNIT_ASSERT_EQUAL(32, args.intValue<int>("opt9"));
+    CPPUNIT_ASSERT(args.analyze(u"test", {u"--opt9", u"0x20", u"a", u"b"}));
+    CPPUNIT_ASSERT_EQUAL(32, args.intValue<int>(u"opt9"));
 }
 
 // Test case:
 void ArgsTest::testBitMask()
 {
     ts::ReportBuffer<> log;
-    TestArgs args (&log);
+    TestArgs args(&log);
 
-    CPPUNIT_ASSERT(args.analyze ("test", "a", TS_NULL));
-    CPPUNIT_ASSERT(args.bitMaskValue<int> ("mask", 0x10) == 0x10);
+    CPPUNIT_ASSERT(args.analyze(u"test", {u"a"}));
+    CPPUNIT_ASSERT(args.bitMaskValue<int>(u"mask", 0x10) == 0x10);
 
-    CPPUNIT_ASSERT(args.analyze ("test", "--mask", "bit1", "a", TS_NULL));
-    CPPUNIT_ASSERT(args.bitMaskValue<int> ("mask", 0x10) == 0x01);
+    CPPUNIT_ASSERT(args.analyze(u"test", {u"--mask", u"bit1", u"a"}));
+    CPPUNIT_ASSERT(args.bitMaskValue<int>(u"mask", 0x10) == 0x01);
 
-    CPPUNIT_ASSERT(args.analyze ("test", "--mask", "bit2", "--mask", "bit3", "a", TS_NULL));
-    CPPUNIT_ASSERT(args.bitMaskValue<int> ("mask", 0x10) == 0x06);
+    CPPUNIT_ASSERT(args.analyze(u"test", {u"--mask", u"bit2", u"--mask", u"bit3", u"a"}));
+    CPPUNIT_ASSERT(args.bitMaskValue<int>(u"mask", 0x10) == 0x06);
 }
 
 // Test case: "gather parameters" option
 void ArgsTest::testGatherParameters()
 {
     ts::ReportBuffer<> log;
-    ts::Args args ("description", "syntax", "help", ts::Args::NO_EXIT_ON_ERROR | ts::Args::GATHER_PARAMETERS);
+    ts::Args args("description", u"syntax", u"help", ts::Args::NO_EXIT_ON_ERROR | ts::Args::GATHER_PARAMETERS);
     args.redirectReport(&log);
 
     args.option(u"");
     args.option(u"opt1");
     args.option(u"opt2", 'o', ts::Args::UNSIGNED);
 
-    CPPUNIT_ASSERT(args.analyze ("test", "--opt1", "--opt2", "11", "12", "--opt2", "13", TS_NULL));
+    CPPUNIT_ASSERT(args.analyze(u"test", {u"--opt1", u"--opt2", u"11", u"12", u"--opt2", u"13"}));
     CPPUNIT_ASSERT(args.valid());
-    CPPUNIT_ASSERT(args.count ("opt1") == 1);
-    CPPUNIT_ASSERT(args.count ("opt2") == 1);
-    CPPUNIT_ASSERT(args.count ("") == 3);
-    CPPUNIT_ASSERT(args.intValue<int> ("opt2") == 11);
-    CPPUNIT_ASSERT(args.value(u"", "", 0) == "12");
-    CPPUNIT_ASSERT(args.value(u"", "", 1) == "--opt2");
-    CPPUNIT_ASSERT(args.value(u"", "", 2) == "13");
+    CPPUNIT_ASSERT(args.count(u"opt1") == 1);
+    CPPUNIT_ASSERT(args.count(u"opt2") == 1);
+    CPPUNIT_ASSERT(args.count(u"") == 3);
+    CPPUNIT_ASSERT(args.intValue<int>(u"opt2") == 11);
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"12", args.value(u"", u"", 0));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"--opt2", args.value(u"", u"", 1));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"13", args.value(u"", u"", 2));
 
     CPPUNIT_ASSERT(args.valid());
     args.invalidate();

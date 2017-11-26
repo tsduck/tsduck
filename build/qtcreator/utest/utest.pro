@@ -47,7 +47,6 @@ SOURCES += \
     ../../../src/utest/utestSection.cpp \
     ../../../src/utest/utestSingleton.cpp \
     ../../../src/utest/utestStaticInstance.cpp \
-    ../../../src/utest/utestStringUtils.cpp \
     ../../../src/utest/utestSystemRandomGenerator.cpp \
     ../../../src/utest/utestSysUtils.cpp \
     ../../../src/utest/utestTablesFactory.cpp \

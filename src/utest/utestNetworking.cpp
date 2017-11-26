@@ -179,10 +179,10 @@ void NetworkingTest::testIPAddress()
     CPPUNIT_ASSERT(!a1.hasAddress());
     CPPUNIT_ASSERT(a1.address() == ts::IPAddress::AnyAddress);
 
-    a1.setAddress (1, 2, 3, 4);
+    a1.setAddress(1, 2, 3, 4);
     ::in_addr ia;
-    a1.copy (ia);
-    CPPUNIT_ASSERT(ia.s_addr == htonl (0x01020304));
+    a1.copy(ia);
+    CPPUNIT_ASSERT(ia.s_addr == htonl(0x01020304));
 
     ::sockaddr sa;
     a1.copy (sa, 80);
@@ -204,9 +204,9 @@ void NetworkingTest::testIPAddress()
     CPPUNIT_ASSERT(a1.address() == 0x7F000001); // 127.0.0.1
     CPPUNIT_ASSERT(a1 == ts::IPAddress::LocalHost);
 
-    a1.setAddress (2, 3, 4, 5);
-    const std::string s1 (a1);
-    CPPUNIT_ASSERT(s1 == "2.3.4.5");
+    a1.setAddress(2, 3, 4, 5);
+    const ts::UString s1(a1);
+    CPPUNIT_ASSERT(s1 == u"2.3.4.5");
 
     utest::Out() << "NetworkingTest: localhost = " << ts::IPAddress("localhost") << std::endl;
 
@@ -329,30 +329,30 @@ void NetworkingTest::testSocketAddress()
     CPPUNIT_ASSERT(a2.address() == ts::IPAddress::AnyAddress);
     CPPUNIT_ASSERT(a2.port() == ts::SocketAddress::AnyPort);
 
-    a1.set (1, 2, 3, 4, 80);
+    a1.set(1, 2, 3, 4, 80);
     ::in_addr ia;
-    a1.copy (ia);
-    CPPUNIT_ASSERT(ia.s_addr == htonl (0x01020304));
+    a1.copy(ia);
+    CPPUNIT_ASSERT(ia.s_addr == htonl(0x01020304));
 
     ::sockaddr sa;
-    a1.copy (sa);
+    a1.copy(sa);
     const ::sockaddr_in* saip = reinterpret_cast<const ::sockaddr_in*> (&sa);
     CPPUNIT_ASSERT(saip->sin_family == AF_INET);
-    CPPUNIT_ASSERT(saip->sin_addr.s_addr == htonl (0x01020304));
-    CPPUNIT_ASSERT(saip->sin_port == htons (80));
+    CPPUNIT_ASSERT(saip->sin_addr.s_addr == htonl(0x01020304));
+    CPPUNIT_ASSERT(saip->sin_port == htons(80));
 
     ::sockaddr_in sai;
-    a1.copy (sai);
+    a1.copy(sai);
     CPPUNIT_ASSERT(sai.sin_family == AF_INET);
-    CPPUNIT_ASSERT(sai.sin_addr.s_addr == htonl (0x01020304));
-    CPPUNIT_ASSERT(sai.sin_port == htons (80));
+    CPPUNIT_ASSERT(sai.sin_addr.s_addr == htonl(0x01020304));
+    CPPUNIT_ASSERT(sai.sin_port == htons(80));
 
-    a1.set (2, 3, 4, 5, 80);
-    const std::string s1 (a1);
+    a1.set(2, 3, 4, 5, 80);
+    const ts::UString s1(a1);
     CPPUNIT_ASSERT(s1 == "2.3.4.5:80");
 
     a1.clearPort();
-    const std::string s2 (a1);
+    const ts::UString s2(a1);
     CPPUNIT_ASSERT(s2 == "2.3.4.5");
 }
 
@@ -375,13 +375,13 @@ namespace {
         ~TCPClient()
         {
             waitForTermination();
-            CERR.debug("TCPSocketTest: client thread: destroyed");
+            CERR.debug(u"TCPSocketTest: client thread: destroyed");
         }
 
         // Thread execution
         virtual void test()
         {
-            CERR.debug("TCPSocketTest: client thread: started");
+            CERR.debug(u"TCPSocketTest: client thread: started");
 
             // Connect to the server.
             const ts::SocketAddress serverAddress(ts::IPAddress::LocalHost, _portNumber);
@@ -405,9 +405,9 @@ namespace {
 
             // Send a message
             const char message[] = "Hello";
-            CERR.debug("TCPSocketTest: client thread: sending \"%s\", %d bytes", message, int(sizeof(message)));
+            CERR.debug(u"TCPSocketTest: client thread: sending \"%s\", %d bytes", {message, sizeof(message)});
             CPPUNIT_ASSERT(session.send(message, sizeof(message), CERR));
-            CERR.debug("TCPSocketTest: client thread: data sent");
+            CERR.debug(u"TCPSocketTest: client thread: data sent");
 
             // Say we won't send no more
             CPPUNIT_ASSERT(session.closeWriter(CERR));
@@ -417,17 +417,17 @@ namespace {
             char buffer [1024];
             size_t size = 0;
             while (totalSize < sizeof(buffer) && session.receive(buffer + totalSize, sizeof(buffer) - totalSize, size, 0, CERR)) {
-                CERR.debug("TCPSocketTest: client thread: data received, %d bytes", int(size));
+                CERR.debug(u"TCPSocketTest: client thread: data received, %d bytes", {size});
                 totalSize += size;
             }
-            CERR.debug("TCPSocketTest: client thread: end of data stream");
+            CERR.debug(u"TCPSocketTest: client thread: end of data stream");
             CPPUNIT_ASSERT(totalSize == sizeof(message));
             CPPUNIT_ASSERT(::memcmp(message, buffer, totalSize) == 0);
 
             // Fully disconnect the session
             session.disconnect(CERR);
             session.close(CERR);
-            CERR.debug("TCPSocketTest: client thread: terminated");
+            CERR.debug(u"TCPSocketTest: client thread: terminated");
         }
     };
 }
@@ -438,7 +438,7 @@ void NetworkingTest::testTCPSocket()
     const uint16_t portNumber = 12345;
 
     // Create server socket
-    CERR.debug("TCPSocketTest: main thread: create server");
+    CERR.debug(u"TCPSocketTest: main thread: create server");
     const ts::SocketAddress serverAddress(ts::IPAddress::LocalHost, portNumber);
     ts::TCPServer server;
     CPPUNIT_ASSERT(!server.isOpen());
@@ -451,33 +451,33 @@ void NetworkingTest::testTCPSocket()
     CPPUNIT_ASSERT(server.bind (serverAddress, CERR));
     CPPUNIT_ASSERT(server.listen(5, CERR));
 
-    CERR.debug("TCPSocketTest: main thread: starting client thread");
+    CERR.debug(u"TCPSocketTest: main thread: starting client thread");
     TCPClient client(portNumber);
     client.start();
 
-    CERR.debug("TCPSocketTest: main thread: waiting for a client");
+    CERR.debug(u"TCPSocketTest: main thread: waiting for a client");
     ts::TCPConnection session;
     ts::SocketAddress clientAddress;
     CPPUNIT_ASSERT(server.accept(session, clientAddress, CERR));
-    CERR.debug("TCPSocketTest: main thread: got a client");
+    CERR.debug(u"TCPSocketTest: main thread: got a client");
     CPPUNIT_ASSERT(ts::IPAddress(clientAddress) == ts::IPAddress::LocalHost);
 
-    CERR.debug("TCPSocketTest: main thread: waiting for data");
+    CERR.debug(u"TCPSocketTest: main thread: waiting for data");
     ts::SocketAddress sender;
     char buffer [1024];
     size_t size = 0;
     while (session.receive(buffer, sizeof(buffer), size, 0, CERR)) {
-        CERR.debug("TCPSocketTest: main thread: data received, %d bytes", int(size));
+        CERR.debug(u"TCPSocketTest: main thread: data received, %d bytes", {size});
         CPPUNIT_ASSERT(session.send(buffer, size, CERR));
-        CERR.debug("TCPSocketTest: main thread: data sent back");
+        CERR.debug(u"TCPSocketTest: main thread: data sent back");
     }
 
-    CERR.debug("TCPSocketTest: main thread: end of client session");
+    CERR.debug(u"TCPSocketTest: main thread: end of client session");
     session.disconnect(CERR);
     session.close(CERR);
     CPPUNIT_ASSERT(server.close(CERR));
 
-    CERR.debug("TCPSocketTest: main thread: terminated");
+    CERR.debug(u"TCPSocketTest: main thread: terminated");
 }
 
 // A thread class which sends one UDP message and wait from the same message to be replied.
@@ -498,7 +498,7 @@ namespace {
         ~UDPClient()
         {
             waitForTermination();
-            CERR.debug("UDPSocketTest: client thread destroyed");
+            CERR.debug(u"UDPSocketTest: client thread destroyed");
         }
 
         // Thread execution
@@ -517,22 +517,22 @@ namespace {
 
             // Send a message
             const char message[] = "Hello";
-            CERR.debug("UDPSocketTest: client thread: sending \"%s\", %d bytes", message, int(sizeof(message)));
+            CERR.debug(u"UDPSocketTest: client thread: sending \"%s\", %d bytes", {message, sizeof(message)});
             CPPUNIT_ASSERT(sock.send(message, sizeof(message), CERR));
-            CERR.debug("UDPSocketTest: client thread: request sent");
+            CERR.debug(u"UDPSocketTest: client thread: request sent");
 
             // Wait for a reply
             ts::SocketAddress sender;
             char buffer [1024];
             size_t size;
             CPPUNIT_ASSERT(sock.receive(buffer, sizeof(buffer), size, sender, 0, CERR));
-            CERR.debug ("UDPSocketTest: client thread: reply received, %d bytes", int (size));
+            CERR.debug("UDPSocketTest: client thread: reply received, %d bytes", {size});
             CPPUNIT_ASSERT(size == sizeof(message));
             CPPUNIT_ASSERT(::memcmp(message, buffer, size) == 0);
             CPPUNIT_ASSERT(ts::IPAddress(sender) == ts::IPAddress::LocalHost);
             CPPUNIT_ASSERT(sender.port() == _portNumber);
 
-            CERR.debug("UDPSocketTest: client thread terminated");
+            CERR.debug(u"UDPSocketTest: client thread terminated");
         }
     };
 }
@@ -553,18 +553,18 @@ void NetworkingTest::testUDPSocket()
     CPPUNIT_ASSERT(sock.setTTL(1, false, CERR));
     CPPUNIT_ASSERT(sock.bind(ts::SocketAddress(ts::IPAddress::LocalHost, portNumber), CERR));
 
-    CERR.debug("UDPSocketTest: main thread: starting client thread");
+    CERR.debug(u"UDPSocketTest: main thread: starting client thread");
     UDPClient client(portNumber);
     client.start();
 
-    CERR.debug("UDPSocketTest: main thread: waiting for message");
+    CERR.debug(u"UDPSocketTest: main thread: waiting for message");
     ts::SocketAddress sender;
     char buffer [1024];
     size_t size;
     CPPUNIT_ASSERT(sock.receive(buffer, sizeof(buffer), size, sender, 0, CERR));
-    CERR.debug("UDPSocketTest: main thread: request received, %d bytes", int(size));
+    CERR.debug(u"UDPSocketTest: main thread: request received, %d bytes", {size});
     CPPUNIT_ASSERT(ts::IPAddress(sender) == ts::IPAddress::LocalHost);
 
     CPPUNIT_ASSERT(sock.send(buffer, size, sender, CERR));
-    CERR.debug("UDPSocketTest: main thread: reply sent");
+    CERR.debug(u"UDPSocketTest: main thread: reply sent");
 }

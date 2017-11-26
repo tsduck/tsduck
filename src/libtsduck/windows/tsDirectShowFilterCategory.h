@@ -91,9 +91,9 @@ namespace ts {
         //! @param [in] index Index of the device, from 0 to size()-1.
         //! @return The name of the device or an empty string if @a index is out of range.
         //!
-        std::string name(size_t index) const
+        UString name(size_t index) const
         {
-            return index < _filters.size() ? _filters[index].name : std::string();
+            return index < _filters.size() ? _filters[index].name : UString();
         }
 
         //!
@@ -119,7 +119,7 @@ namespace ts {
             ~Filter();      // Destructor.
             void clear();   // Properly clear all fields.
 
-            std::string           name;     // Device name.
+            UString               name;     // Device name.
             ComPtr<::IMoniker>    moniker;  // Moniker to the device object instance.
             ComPtr<::IBaseFilter> filter;   // Pointer to its IBaseFilter interface.
         };
