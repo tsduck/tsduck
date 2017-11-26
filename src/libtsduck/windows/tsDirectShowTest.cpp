@@ -38,12 +38,12 @@ TSDUCK_SOURCE;
 //
 // An enumeration of TestType names.
 //
-const ts::Enumeration ts::DirectShowTest::TestNames
-    ("none", NONE,
-     "enumerate-devices", ENUMERATE_DEVICES,
-     "tuning-spaces", TUNING_SPACES,
-     "bda-tuners", BDA_TUNERS,
-     TS_NULL);
+const ts::Enumeration ts::DirectShowTest::TestNames({
+    {u"none", NONE},
+    {u"enumerate-devices", ENUMERATE_DEVICES},
+    {u"tuning-spaces", TUNING_SPACES},
+    {u"bda-tuners", BDA_TUNERS},
+});
 
 
 //-----------------------------------------------------------------------------
@@ -76,7 +76,7 @@ void ts::DirectShowTest::runTest(TestType type)
             testBDATuners();
             break;
         default:
-            _report.error("undefined DirectShow test %d", int(type));
+            _report.error(u"undefined DirectShow test %d", {type});
             break;
     }
 }
@@ -86,7 +86,7 @@ void ts::DirectShowTest::runTest(TestType type)
 // Test BDA tuners, same as runTest(BDA_TUNERS).
 //-----------------------------------------------------------------------------
 
-void ts::DirectShowTest::testBDATuners(const std::string& margin)
+void ts::DirectShowTest::testBDATuners(const UString& margin)
 {
     // Build an instance of all tuners.
     DirectShowFilterCategory tuners(KSCATEGORY_BDA_NETWORK_TUNER, _report);
@@ -143,10 +143,10 @@ void ts::DirectShowTest::testBDATuners(const std::string& margin)
                 std::vector<ComPtr<::ITuningSpace>> spaces;
                 getAllTuningSpaces(spaces);
                 for (size_t i = 0; i < spaces.size(); ++i) {
-                    const std::string name(GetTuningSpaceFriendlyName(spaces[i].pointer(), _report));
+                    const UString name(GetTuningSpaceFriendlyName(spaces[i].pointer(), _report));
                     ::HRESULT hr = iTuner->put_TuningSpace(spaces[i].pointer());
                     _output << margin << "  Tuning space \"" << name << "\": " 
-                            << (SUCCEEDED(hr) ? "accepted" : ComMessage(hr)) << std::endl;
+                            << (SUCCEEDED(hr) ? u"accepted" : ComMessage(hr)) << std::endl;
                 }
             }
             
@@ -162,7 +162,7 @@ void ts::DirectShowTest::testBDATuners(const std::string& margin)
 // Test tuning spaces, same as runTest(TUNING_SPACES).
 //-----------------------------------------------------------------------------
 
-void ts::DirectShowTest::testTuningSpaces(const std::string& margin)
+void ts::DirectShowTest::testTuningSpaces(const UString& margin)
 {
     // Build an instance of all network providers.
     DirectShowFilterCategory filters(KSCATEGORY_BDA_NETWORK_PROVIDER, _report);
@@ -189,8 +189,8 @@ void ts::DirectShowTest::testTuningSpaces(const std::string& margin)
         }
 
         // Build a list of compatible and incompatible tuning spaces.
-        StringList good;
-        StringList bad;
+        UStringList good;
+        UStringList bad;
 
         // Loop on all tuning spaces.
         for (size_t i = 0; i < spaces.size(); ++i) {
@@ -199,14 +199,14 @@ void ts::DirectShowTest::testTuningSpaces(const std::string& margin)
             ::HRESULT hr = tuner->put_TuningSpace(spaces[i].pointer());
 
             // Store either good or bad.
-            const std::string ts_name(GetTuningSpaceFriendlyName(spaces[i].pointer(), _report) + " (" +
-                                      GetTuningSpaceUniqueName(spaces[i].pointer(), _report) + ", " +
-                                      GetTuningSpaceNetworkType(spaces[i].pointer(), _report) + ")");
+            const UString ts_name(GetTuningSpaceFriendlyName(spaces[i].pointer(), _report) + u" (" +
+                                  GetTuningSpaceUniqueName(spaces[i].pointer(), _report) + u", " +
+                                  GetTuningSpaceNetworkType(spaces[i].pointer(), _report) + u")");
             if (SUCCEEDED(hr)) {
-                good.push_back("    " + ts_name);
+                good.push_back(u"    " + ts_name);
             }
             else {
-                bad.push_back("    " + ts_name + ": " + ComMessage(hr));
+                bad.push_back(u"    " + ts_name + u": " + ComMessage(hr));
             }
         }
 
@@ -235,15 +235,15 @@ void ts::DirectShowTest::testTuningSpaces(const std::string& margin)
 // Enumerate DirectShow devices.
 //-----------------------------------------------------------------------------
 
-void ts::DirectShowTest::enumerateDevices(const std::string& margin)
+void ts::DirectShowTest::enumerateDevices(const UString& margin)
 {
-    displayDevicesByCategory(KSCATEGORY_CAPTURE, "CAPTURE", margin);
-    displayDevicesByCategory(KSCATEGORY_SPLITTER, "SPLITTER", margin);
-    displayDevicesByCategory(KSCATEGORY_TVTUNER, "TVTUNER", margin);
-    displayDevicesByCategory(KSCATEGORY_BDA_NETWORK_PROVIDER, "BDA_NETWORK_PROVIDER", margin);
-    displayDevicesByCategory(KSCATEGORY_BDA_TRANSPORT_INFORMATION, "BDA_TRANSPORT_INFORMATION", margin);
-    displayDevicesByCategory(KSCATEGORY_BDA_RECEIVER_COMPONENT, "BDA_RECEIVER_COMPONENT", margin);
-    displayDevicesByCategory(KSCATEGORY_BDA_NETWORK_TUNER, "BDA_NETWORK_TUNER", margin);
+    displayDevicesByCategory(KSCATEGORY_CAPTURE, u"CAPTURE", margin);
+    displayDevicesByCategory(KSCATEGORY_SPLITTER, u"SPLITTER", margin);
+    displayDevicesByCategory(KSCATEGORY_TVTUNER, u"TVTUNER", margin);
+    displayDevicesByCategory(KSCATEGORY_BDA_NETWORK_PROVIDER, u"BDA_NETWORK_PROVIDER", margin);
+    displayDevicesByCategory(KSCATEGORY_BDA_TRANSPORT_INFORMATION, u"BDA_TRANSPORT_INFORMATION", margin);
+    displayDevicesByCategory(KSCATEGORY_BDA_RECEIVER_COMPONENT, u"BDA_RECEIVER_COMPONENT", margin);
+    displayDevicesByCategory(KSCATEGORY_BDA_NETWORK_TUNER, u"BDA_NETWORK_TUNER", margin);
     displayTuningSpaces(margin);
     _output << std::endl;
 }
@@ -253,7 +253,7 @@ void ts::DirectShowTest::enumerateDevices(const std::string& margin)
 // Display all devices of the specified category
 //-----------------------------------------------------------------------------
 
-bool ts::DirectShowTest::displayDevicesByCategory(const ::GUID& category, const std::string& name, const std::string& margin)
+bool ts::DirectShowTest::displayDevicesByCategory(const ::GUID& category, const UString& name, const UString& margin)
 {
     _output << std::endl << margin << "=== Device category " << name << std::endl;
 
@@ -271,7 +271,7 @@ bool ts::DirectShowTest::displayDevicesByCategory(const ::GUID& category, const 
         // Create a pin enumerator
         ComPtr<::IEnumPins> enum_pins;
         ::HRESULT hr = filters.filter(index)->EnumPins(enum_pins.creator());
-        if (!ComSuccess(hr, "IBaseFilter::EnumPins", _report)) {
+        if (!ComSuccess(hr, u"IBaseFilter::EnumPins", _report)) {
             return false;
         }
         if (enum_pins.isNull()) {
@@ -286,17 +286,17 @@ bool ts::DirectShowTest::displayDevicesByCategory(const ::GUID& category, const 
             // Query direction of this pin
             ::PIN_DIRECTION dir;
             hr = pin->QueryDirection(&dir);
-            if (!ComSuccess(hr, "IPin::QueryDirection", _report)) {
+            if (!ComSuccess(hr, u"IPin::QueryDirection", _report)) {
                 return false;
             }
 
             // Get pin info
             ::PIN_INFO pin_info;
             hr = pin->QueryPinInfo(&pin_info);
-            if (!ComSuccess(hr, "IPin::QueryPinInfo", _report)) {
+            if (!ComSuccess(hr, u"IPin::QueryPinInfo", _report)) {
                 return false;
             }
-            std::string pin_name(ToString(pin_info.achName));
+            UString pin_name(ToString(pin_info.achName));
             pin_info.pFilter->Release();
 
             _output << std::endl << margin << "  - Pin \"" << pin_name << "\", direction: " << PinDirectionName(dir) << std::endl;
@@ -345,7 +345,7 @@ bool ts::DirectShowTest::getAllTuningSpaces(ComPtr<::ITuningSpaceContainer>& tsC
 
     // Enumerate all tuning spaces.
     ::HRESULT hr = tsContainer->get_EnumTuningSpaces(tsEnum.creator());
-    return ComSuccess(hr, "ITuningSpaceContainer::get_EnumTuningSpaces", _report);
+    return ComSuccess(hr, u"ITuningSpaceContainer::get_EnumTuningSpaces", _report);
 }
 
 
@@ -353,7 +353,7 @@ bool ts::DirectShowTest::getAllTuningSpaces(ComPtr<::ITuningSpaceContainer>& tsC
 // Display all DirectShow tuning spaces.
 //-----------------------------------------------------------------------------
 
-bool ts::DirectShowTest::displayTuningSpaces(const std::string& margin)
+bool ts::DirectShowTest::displayTuningSpaces(const UString& margin)
 {
     ComPtr<::ITuningSpaceContainer> tsContainer;
     ComPtr<::IEnumTuningSpaces> tsEnum;
@@ -372,7 +372,7 @@ bool ts::DirectShowTest::displayTuningSpaces(const std::string& margin)
 // Show one property support through IKsPropertySet for a COM object.
 //-----------------------------------------------------------------------------
 
-void ts::DirectShowTest::displayOneIKsPropertySet(::IKsPropertySet* ps, const ::GUID& psGuid, const char* psName, ::DWORD propId, const char* propName, const std::string& margin)
+void ts::DirectShowTest::displayOneIKsPropertySet(::IKsPropertySet* ps, const ::GUID& psGuid, const char* psName, ::DWORD propId, const char* propName, const UString& margin)
 {
     if (ps == 0) {
         return;
@@ -397,7 +397,7 @@ void ts::DirectShowTest::displayOneIKsPropertySet(::IKsPropertySet* ps, const ::
 // Show properties support through IKsPropertySet for a COM object
 //-----------------------------------------------------------------------------
 
-void ts::DirectShowTest::displayIKsPropertySet(::IUnknown* object, const std::string& margin)
+void ts::DirectShowTest::displayIKsPropertySet(::IUnknown* object, const UString& margin)
 {
     if (object == 0) {
         return;
@@ -409,10 +409,10 @@ void ts::DirectShowTest::displayIKsPropertySet(::IUnknown* object, const std::st
     if (propset.isNull()) {
         return;
     }
-    _output << margin << "IKsPropertySet properties support:" << std::endl;
+    _output << margin << u"IKsPropertySet properties support:" << std::endl;
 
     // Check some supported properties
-#define _P_(ps,id) displayOneIKsPropertySet(propset.pointer(), KSPROPSETID_Bda##ps, #ps, KSPROPERTY_BDA_##id, #id, margin + "  ")
+#define _P_(ps,id) displayOneIKsPropertySet(propset.pointer(), KSPROPSETID_Bda##ps, #ps, KSPROPERTY_BDA_##id, #id, margin + u"  ")
 
     _P_(SignalStats, SIGNAL_STRENGTH);
     _P_(SignalStats, SIGNAL_QUALITY);
@@ -457,7 +457,7 @@ void ts::DirectShowTest::displayIKsPropertySet(::IUnknown* object, const std::st
 // Show one properties support through IKsControl for a COM object.
 //-----------------------------------------------------------------------------
 
-void ts::DirectShowTest::displayOneIKsControl(::IKsControl* iks, const ::GUID& propSetGuid, const char* propSetName, ::ULONG propId, const char* propName, const std::string& margin)
+void ts::DirectShowTest::displayOneIKsControl(::IKsControl* iks, const ::GUID& propSetGuid, const char* propSetName, ::ULONG propId, const char* propName, const UString& margin)
 {
     if (iks == 0) {
         return;
@@ -489,7 +489,7 @@ void ts::DirectShowTest::displayOneIKsControl(::IKsControl* iks, const ::GUID& p
 // Show properties support through IKsControl for a COM object
 //-----------------------------------------------------------------------------
 
-void ts::DirectShowTest::displayIKsControl(::IUnknown* object, const std::string& margin)
+void ts::DirectShowTest::displayIKsControl(::IUnknown* object, const UString& margin)
 {
     if (object == 0) {
         return;
@@ -549,7 +549,7 @@ void ts::DirectShowTest::displayIKsControl(::IUnknown* object, const std::string
 // Show IKsTopologyInfo for a COM object
 //-----------------------------------------------------------------------------
 
-void ts::DirectShowTest::displayIKsTopologyInfo(::IUnknown* object, const std::string& margin)
+void ts::DirectShowTest::displayIKsTopologyInfo(::IUnknown* object, const UString& margin)
 {
     if (object == 0) {
         return;
@@ -612,7 +612,7 @@ void ts::DirectShowTest::displayIKsTopologyInfo(::IUnknown* object, const std::s
 // Show IBDA_Topology for a COM object
 //-----------------------------------------------------------------------------
 
-void ts::DirectShowTest::displayBDATopology(::IUnknown* object, const std::string& margin)
+void ts::DirectShowTest::displayBDATopology(::IUnknown* object, const UString& margin)
 {
     if (object == 0) {
         return;
@@ -713,7 +713,7 @@ void ts::DirectShowTest::displayBDATopology(::IUnknown* object, const std::strin
 // Display all tuning spaces from an enumerator.
 //-----------------------------------------------------------------------------
 
-void ts::DirectShowTest::displayEnumerateTuningSpaces(::IEnumTuningSpaces* enum_tspace, const std::string& margin)
+void ts::DirectShowTest::displayEnumerateTuningSpaces(::IEnumTuningSpaces* enum_tspace, const UString& margin)
 {
     if (enum_tspace == 0) {
         return;
@@ -721,7 +721,7 @@ void ts::DirectShowTest::displayEnumerateTuningSpaces(::IEnumTuningSpaces* enum_
 
     ts::ComPtr<::ITuningSpace> tspace;
     while (enum_tspace->Next(1, tspace.creator(), NULL) == S_OK) {
-        const std::string name(GetTuningSpaceDescription(tspace.pointer(), _report));
+        const UString name(GetTuningSpaceDescription(tspace.pointer(), _report));
         if (!name.empty()) {
             _output << margin << "Tuning space " << name << std::endl;
         }
@@ -733,7 +733,7 @@ void ts::DirectShowTest::displayEnumerateTuningSpaces(::IEnumTuningSpaces* enum_
 // Show ITuner for a COM object
 //-----------------------------------------------------------------------------
 
-void ts::DirectShowTest::displayITuner(::IUnknown* object, const std::string& margin)
+void ts::DirectShowTest::displayITuner(::IUnknown* object, const UString& margin)
 {
     if (object == 0) {
         return;
@@ -765,7 +765,7 @@ void ts::DirectShowTest::displayITuner(::IUnknown* object, const std::string& ma
 // Show selected properties of a COM object
 //-----------------------------------------------------------------------------
 
-void ts::DirectShowTest::displayObject(::IUnknown* object, const std::string& margin)
+void ts::DirectShowTest::displayObject(::IUnknown* object, const UString& margin)
 {
     _output << margin << "Some supported interfaces:" << std::endl;
     displayInterfaces(object, margin + "  ");
@@ -781,7 +781,7 @@ void ts::DirectShowTest::displayObject(::IUnknown* object, const std::string& ma
 // List some known interfaces that an object may expose
 //-----------------------------------------------------------------------------
 
-void ts::DirectShowTest::displayInterfaces(::IUnknown* object, const std::string& margin)
+void ts::DirectShowTest::displayInterfaces(::IUnknown* object, const UString& margin)
 {
     struct Interface {
         const ::IID* iid;

@@ -34,8 +34,6 @@
 #include "tsTunerParametersDVBT.h"
 #include "tsTunerArgs.h"
 #include "tsEnumeration.h"
-#include "tsDecimal.h"
-#include "tsFormat.h"
 TSDUCK_SOURCE;
 
 #if defined (TS_NEED_STATIC_CONST_DEFINITIONS)
@@ -99,63 +97,63 @@ void ts::TunerParametersDVBT::copy (const TunerParameters& obj)
 
 namespace {
 
-    const ts::Enumeration ZapModulationEnum
-        ("QPSK",     ts::QPSK,
-         "QAM_AUTO", ts::QAM_AUTO,
-         "QAM_16",   ts::QAM_16,
-         "QAM_32",   ts::QAM_32,
-         "QAM_64",   ts::QAM_64,
-         "QAM_128",  ts::QAM_128,
-         "QAM_256",  ts::QAM_256,
-         TS_NULL);
+    const ts::Enumeration ZapModulationEnum({
+         {u"QPSK",     ts::QPSK},
+         {u"QAM_AUTO", ts::QAM_AUTO},
+         {u"QAM_16",   ts::QAM_16},
+         {u"QAM_32",   ts::QAM_32},
+         {u"QAM_64",   ts::QAM_64},
+         {u"QAM_128",  ts::QAM_128},
+         {u"QAM_256",  ts::QAM_256},
+    });
 
-    const ts::Enumeration ZapSpectralInversionEnum
-        ("INVERSION_OFF",  ts::SPINV_OFF,
-         "INVERSION_ON",   ts::SPINV_ON,
-         "INVERSION_AUTO", ts::SPINV_AUTO,
-         TS_NULL);
+    const ts::Enumeration ZapSpectralInversionEnum({
+         {u"INVERSION_OFF",  ts::SPINV_OFF},
+         {u"INVERSION_ON",   ts::SPINV_ON},
+         {u"INVERSION_AUTO", ts::SPINV_AUTO},
+    });
 
-    const ts::Enumeration ZapInnerFECEnum
-        ("FEC_NONE", ts::FEC_NONE,
-         "FEC_AUTO", ts::FEC_AUTO,
-         "FEC_1_2",  ts::FEC_1_2,
-         "FEC_2_3",  ts::FEC_2_3,
-         "FEC_3_4",  ts::FEC_3_4,
-         "FEC_4_5",  ts::FEC_4_5,
-         "FEC_5_6",  ts::FEC_5_6,
-         "FEC_6_7",  ts::FEC_6_7,
-         "FEC_7_8",  ts::FEC_7_8,
-         "FEC_8_9",  ts::FEC_8_9,
-         TS_NULL);
+    const ts::Enumeration ZapInnerFECEnum({
+         {u"FEC_NONE", ts::FEC_NONE},
+         {u"FEC_AUTO", ts::FEC_AUTO},
+         {u"FEC_1_2",  ts::FEC_1_2},
+         {u"FEC_2_3",  ts::FEC_2_3},
+         {u"FEC_3_4",  ts::FEC_3_4},
+         {u"FEC_4_5",  ts::FEC_4_5},
+         {u"FEC_5_6",  ts::FEC_5_6},
+         {u"FEC_6_7",  ts::FEC_6_7},
+         {u"FEC_7_8",  ts::FEC_7_8},
+         {u"FEC_8_9",  ts::FEC_8_9},
+    });
 
-    const ts::Enumeration ZapBandWidthEnum
-        ("BANDWIDTH_AUTO",  ts::BW_AUTO,
-         "BANDWIDTH_8_MHZ", ts::BW_8_MHZ,
-         "BANDWIDTH_7_MHZ", ts::BW_7_MHZ,
-         "BANDWIDTH_6_MHZ", ts::BW_6_MHZ,
-         TS_NULL);
+    const ts::Enumeration ZapBandWidthEnum({
+         {u"BANDWIDTH_AUTO",  ts::BW_AUTO},
+         {u"BANDWIDTH_8_MHZ", ts::BW_8_MHZ},
+         {u"BANDWIDTH_7_MHZ", ts::BW_7_MHZ},
+         {u"BANDWIDTH_6_MHZ", ts::BW_6_MHZ},
+    });
 
-    const ts::Enumeration ZapTransmissionModeEnum
-        ("TRANSMISSION_MODE_AUTO", ts::TM_AUTO,
-         "TRANSMISSION_MODE_2K",   ts::TM_2K,
-         "TRANSMISSION_MODE_8K",   ts::TM_8K,
-         TS_NULL);
+    const ts::Enumeration ZapTransmissionModeEnum({
+         {u"TRANSMISSION_MODE_AUTO", ts::TM_AUTO},
+         {u"TRANSMISSION_MODE_2K",   ts::TM_2K},
+         {u"TRANSMISSION_MODE_8K",   ts::TM_8K},
+    });
 
-    const ts::Enumeration ZapGuardIntervalEnum
-        ("GUARD_INTERVAL_AUTO", ts::GUARD_AUTO,
-         "GUARD_INTERVAL_1_32", ts::GUARD_1_32,
-         "GUARD_INTERVAL_1_16", ts::GUARD_1_16,
-         "GUARD_INTERVAL_1_8",  ts::GUARD_1_8,
-         "GUARD_INTERVAL_1_4",  ts::GUARD_1_4,
-         TS_NULL);
+    const ts::Enumeration ZapGuardIntervalEnum({
+         {u"GUARD_INTERVAL_AUTO", ts::GUARD_AUTO},
+         {u"GUARD_INTERVAL_1_32", ts::GUARD_1_32},
+         {u"GUARD_INTERVAL_1_16", ts::GUARD_1_16},
+         {u"GUARD_INTERVAL_1_8",  ts::GUARD_1_8},
+         {u"GUARD_INTERVAL_1_4",  ts::GUARD_1_4},
+    });
 
-    const ts::Enumeration ZapHierarchyEnum
-        ("HIERARCHY_AUTO", ts::HIERARCHY_AUTO,
-         "HIERARCHY_NONE", ts::HIERARCHY_NONE,
-         "HIERARCHY_1",    ts::HIERARCHY_1,
-         "HIERARCHY_2",    ts::HIERARCHY_2,
-         "HIERARCHY_4",    ts::HIERARCHY_4,
-         TS_NULL);
+    const ts::Enumeration ZapHierarchyEnum({
+         {u"HIERARCHY_AUTO", ts::HIERARCHY_AUTO},
+         {u"HIERARCHY_NONE", ts::HIERARCHY_NONE},
+         {u"HIERARCHY_1",    ts::HIERARCHY_1},
+         {u"HIERARCHY_2",    ts::HIERARCHY_2},
+         {u"HIERARCHY_4",    ts::HIERARCHY_4},
+    });
 }
 
 
@@ -174,17 +172,17 @@ namespace {
 //    HIERARCHY_NONE, HIERARCHY_1, HIERARCHY_2, HIERARCHY_4, HIERARCHY_AUTO).
 //----------------------------------------------------------------------------
 
-std::string ts::TunerParametersDVBT::toZapFormat() const
+ts::UString ts::TunerParametersDVBT::toZapFormat() const
 {
-    return Format ("%" FMT_INT64 "u:", frequency) +
-        ZapSpectralInversionEnum.name (inversion) + ":" +
-        ZapBandWidthEnum.name (bandwidth) + ":" +
-        ZapInnerFECEnum.name (fec_hp) + ":" +
-        ZapInnerFECEnum.name (fec_lp) + ":" +
-        ZapModulationEnum.name (modulation) + ":" +
-        ZapTransmissionModeEnum.name (transmission_mode) + ":" +
-        ZapGuardIntervalEnum.name (guard_interval) + ":" +
-        ZapHierarchyEnum.name (hierarchy);
+    return UString::Decimal(frequency) + u":" +
+        ZapSpectralInversionEnum.name(inversion) + u":" +
+        ZapBandWidthEnum.name(bandwidth) + u":" +
+        ZapInnerFECEnum.name(fec_hp) + u":" +
+        ZapInnerFECEnum.name(fec_lp) + u":" +
+        ZapModulationEnum.name(modulation) + u":" +
+        ZapTransmissionModeEnum.name(transmission_mode) + u":" +
+        ZapGuardIntervalEnum.name(guard_interval) + u":" +
+        ZapHierarchyEnum.name(hierarchy);
 }
 
 
@@ -192,36 +190,37 @@ std::string ts::TunerParametersDVBT::toZapFormat() const
 // Decode a Linux DVB "zap" specification and set the corresponding values
 //----------------------------------------------------------------------------
 
-bool ts::TunerParametersDVBT::fromZapFormat (const std::string& zap)
+bool ts::TunerParametersDVBT::fromZapFormat(const UString& zap)
 {
-    StringVector values;
-    SplitString (values, zap, ':', true);
+    UStringVector values;
+    zap.split(values, u':', true);
 
-    uint64_t freq;
-    int inv, bw, hp, lp, mod, trans, guard, hier;
+    uint64_t freq = 0;
+    int inv = 0, bw = 0, hp = 0, lp = 0, mod = 0, trans = 0, guard = 0, hier = 0;
 
     if (values.size() != 9 ||
-        !ToInteger (freq, values[0]) ||
-        (inv = ZapSpectralInversionEnum.value (values[1])) == Enumeration::UNKNOWN ||
-        (bw = ZapBandWidthEnum.value (values[2])) == Enumeration::UNKNOWN ||
-        (hp = ZapInnerFECEnum.value (values[3])) == Enumeration::UNKNOWN ||
-        (lp = ZapInnerFECEnum.value (values[4])) == Enumeration::UNKNOWN ||
-        (mod = ZapModulationEnum.value (values[5])) == Enumeration::UNKNOWN ||
-        (trans = ZapTransmissionModeEnum.value (values[6])) == Enumeration::UNKNOWN ||
-        (guard = ZapGuardIntervalEnum.value (values[7])) == Enumeration::UNKNOWN ||
-        (hier = ZapHierarchyEnum.value (values[8])) == Enumeration::UNKNOWN) {
+        !values[0].toInteger(freq) ||
+        (inv = ZapSpectralInversionEnum.value(values[1])) == Enumeration::UNKNOWN ||
+        (bw = ZapBandWidthEnum.value(values[2])) == Enumeration::UNKNOWN ||
+        (hp = ZapInnerFECEnum.value(values[3])) == Enumeration::UNKNOWN ||
+        (lp = ZapInnerFECEnum.value(values[4])) == Enumeration::UNKNOWN ||
+        (mod = ZapModulationEnum.value(values[5])) == Enumeration::UNKNOWN ||
+        (trans = ZapTransmissionModeEnum.value(values[6])) == Enumeration::UNKNOWN ||
+        (guard = ZapGuardIntervalEnum.value(values[7])) == Enumeration::UNKNOWN ||
+        (hier = ZapHierarchyEnum.value(values[8])) == Enumeration::UNKNOWN)
+    {
         return false;
     }
 
     frequency = freq;
-    inversion = SpectralInversion (inv);
-    bandwidth = BandWidth (bw);
-    fec_hp = InnerFEC (hp);
-    fec_lp = InnerFEC (lp);
-    modulation = Modulation (mod);
-    transmission_mode = TransmissionMode (trans);
-    guard_interval = GuardInterval (guard);
-    hierarchy = Hierarchy (hier);
+    inversion = SpectralInversion(inv);
+    bandwidth = BandWidth(bw);
+    fec_hp = InnerFEC(hp);
+    fec_lp = InnerFEC(lp);
+    modulation = Modulation(mod);
+    transmission_mode = TransmissionMode(trans);
+    guard_interval = GuardInterval(guard);
+    hierarchy = Hierarchy(hier);
 
     return true;
 }
@@ -231,17 +230,17 @@ bool ts::TunerParametersDVBT::fromZapFormat (const std::string& zap)
 // Format the tuner parameters as a list of options for the dvb tsp plugin.
 //----------------------------------------------------------------------------
 
-std::string ts::TunerParametersDVBT::toPluginOptions (bool no_local) const
+ts::UString ts::TunerParametersDVBT::toPluginOptions(bool no_local) const
 {
-    return Format ("--frequency %" FMT_INT64 "u", frequency) +
-        " --spectral-inversion " + SpectralInversionEnum.name (inversion) +
-        " --modulation " + ModulationEnum.name (modulation) +
-        " --high-priority-fec " + InnerFECEnum.name (fec_hp) +
-        " --low-priority-fec " + InnerFECEnum.name (fec_lp) +
-        " --bandwidth " + BandWidthEnum.name (bandwidth) +
-        " --transmission-mode " + TransmissionModeEnum.name (transmission_mode) +
-        " --guard-interval " + GuardIntervalEnum.name (guard_interval) +
-        " --hierarchy " + HierarchyEnum.name (hierarchy);
+    return UString::Format(u"--frequency %d", {frequency}) +
+        u" --spectral-inversion " + SpectralInversionEnum.name (inversion) +
+        u" --modulation " + ModulationEnum.name (modulation) +
+        u" --high-priority-fec " + InnerFECEnum.name (fec_hp) +
+        u" --low-priority-fec " + InnerFECEnum.name (fec_lp) +
+        u" --bandwidth " + BandWidthEnum.name (bandwidth) +
+        u" --transmission-mode " + TransmissionModeEnum.name (transmission_mode) +
+        u" --guard-interval " + GuardIntervalEnum.name (guard_interval) +
+        u" --hierarchy " + HierarchyEnum.name (hierarchy);
 }
 
 
@@ -249,41 +248,41 @@ std::string ts::TunerParametersDVBT::toPluginOptions (bool no_local) const
 // Format a short description (frequency and essential parameters).
 //----------------------------------------------------------------------------
 
-std::string ts::TunerParametersDVBT::shortDescription(int strength, int quality) const
+ts::UString ts::TunerParametersDVBT::shortDescription(int strength, int quality) const
 {
-    std::string desc;
-    const char* band = 0;
+    UString desc;
+    const UChar* band = 0;
     int channel = 0;
     int offset = 0;
 
     if (UHF::InBand(frequency)) {
-        band = "UHF";
+        band = u"UHF";
         channel = UHF::Channel(frequency);
         offset = UHF::OffsetCount(frequency);
     }
     else if (VHF::InBand(frequency)) {
-        band = "VHF";
+        band = u"VHF";
         channel = VHF::Channel(frequency);
         offset = VHF::OffsetCount(frequency);
     }
 
     if (band != 0) {
-        desc += Format("%s channel %d", band, channel);
+        desc += UString::Format(u"%s channel %d", {band, channel});
         if (offset != 0) {
-            desc += Format(", offset %+d", offset);
+            desc += UString::Format(u", offset %+d", {offset});
         }
-        desc += " (";
+        desc += u" (";
     }
-    desc += Decimal(frequency) + " Hz";
+    desc += UString::Decimal(frequency) + " Hz";
     if (band != 0) {
-        desc += ")";
+        desc += u")";
     }
 
     if (strength >= 0) {
-        desc += Format(", strength: %d%%", strength);
+        desc += UString::Format(u", strength: %d%%", {strength});
     }
     if (quality >= 0) {
-        desc += Format(", quality: %d%%", quality);
+        desc += UString::Format(u", quality: %d%%", {quality});
     }
 
     return desc;
@@ -294,10 +293,10 @@ std::string ts::TunerParametersDVBT::shortDescription(int strength, int quality)
 // Display a description of the modulation paramters on a stream, line by line.
 //----------------------------------------------------------------------------
 
-void ts::TunerParametersDVBT::displayParameters(std::ostream& strm, const std::string& margin, bool verbose) const
+void ts::TunerParametersDVBT::displayParameters(std::ostream& strm, const UString& margin, bool verbose) const
 {
     if (frequency != 0) {
-        strm << margin << "Carrier frequency: " << Decimal(frequency) << " Hz" << std::endl;
+        strm << margin << "Carrier frequency: " << UString::Decimal(frequency) << " Hz" << std::endl;
     }
     if (inversion != SPINV_AUTO) {
         strm << margin << "Spectral inversion: " << SpectralInversionEnum.name(inversion) << std::endl;
@@ -330,10 +329,10 @@ void ts::TunerParametersDVBT::displayParameters(std::ostream& strm, const std::s
 // Extract options from a TunerArgs, applying defaults when necessary.
 //----------------------------------------------------------------------------
 
-bool ts::TunerParametersDVBT::fromArgs (const TunerArgs& tuner, Report& report)
+bool ts::TunerParametersDVBT::fromArgs(const TunerArgs& tuner, Report& report)
 {
     if (!tuner.frequency.set()) {
-        report.error ("no frequency specified, use option --frequency");
+        report.error(u"no frequency specified, use option --frequency");
         return false;
     }
 
@@ -360,12 +359,12 @@ bool ts::TunerParametersDVBT::fromArgs (const TunerArgs& tuner, Report& report)
 
 ts::BitRate ts::TunerParametersDVBT::theoreticalBitrate() const
 {
-    const uint64_t bitpersym = BitsPerSymbol (modulation);
-    const uint64_t fec_mul = FECMultiplier (fec_hp);
-    const uint64_t fec_div = FECDivider (fec_hp);
-    const uint64_t guard_mul = GuardIntervalMultiplier (guard_interval);
-    const uint64_t guard_div = GuardIntervalDivider (guard_interval);
-    const uint64_t bw = BandWidthValueHz (bandwidth);
+    const uint64_t bitpersym = BitsPerSymbol(modulation);
+    const uint64_t fec_mul = FECMultiplier(fec_hp);
+    const uint64_t fec_div = FECDivider(fec_hp);
+    const uint64_t guard_mul = GuardIntervalMultiplier(guard_interval);
+    const uint64_t guard_div = GuardIntervalDivider(guard_interval);
+    const uint64_t bw = BandWidthValueHz(bandwidth);
 
     if (hierarchy != HIERARCHY_NONE || fec_div == 0 || guard_div == 0) {
         return 0; // unknown bitrate
@@ -408,5 +407,5 @@ ts::BitRate ts::TunerParametersDVBT::theoreticalBitrate() const
     //    = (6048 * GID * BW * BPS * FECM * 188) / (7168 * (GID + GIM) * FECD * 204)
     //    = (1137024 * GID * BW * BPS * FECM) / (1462272 * (GID + GIM) * FECD)
 
-    return BitRate ((1137024 * guard_div * bw * bitpersym * fec_mul) / (1462272 * (guard_div + guard_mul) * fec_div));
+    return BitRate((1137024 * guard_div * bw * bitpersym * fec_mul) / (1462272 * (guard_div + guard_mul) * fec_div));
 }

@@ -59,7 +59,7 @@ namespace ts {
     //! @param [in,out] report Where to report errors.
     //! @return Tuning space name or an empty string on error.
     //!
-    TSDUCKDLL std::string GetTuningSpaceFriendlyName(::ITuningSpace* tuning, Report& report);
+    TSDUCKDLL UString GetTuningSpaceFriendlyName(::ITuningSpace* tuning, Report& report);
 
     //!
     //! Get the unique name of a DirectShow tuning space (Windows-specific).
@@ -67,7 +67,7 @@ namespace ts {
     //! @param [in,out] report Where to report errors.
     //! @return Tuning space name or an empty string on error.
     //!
-    TSDUCKDLL std::string GetTuningSpaceUniqueName(::ITuningSpace* tuning, Report& report);
+    TSDUCKDLL UString GetTuningSpaceUniqueName(::ITuningSpace* tuning, Report& report);
 
     //!
     //! Get full description of a DirectShow tuning space (Windows-specific).
@@ -75,7 +75,7 @@ namespace ts {
     //! @param [in,out] report Where to report errors.
     //! @return Tuning description or an empty string on error.
     //!
-    TSDUCKDLL std::string GetTuningSpaceDescription(::ITuningSpace* tuning, Report& report);
+    TSDUCKDLL UString GetTuningSpaceDescription(::ITuningSpace* tuning, Report& report);
 
     //!
     //! Get the network type of a DirectShow tuning space (Windows-specific).
@@ -83,21 +83,21 @@ namespace ts {
     //! @param [in,out] report Where to report errors.
     //! @return Network type or an empty string on error.
     //!
-    TSDUCKDLL std::string GetTuningSpaceNetworkType(::ITuningSpace* tuning, Report& report);
+    TSDUCKDLL UString GetTuningSpaceNetworkType(::ITuningSpace* tuning, Report& report);
 
     //!
     //! Get the name for a DirectShow pin direction value (Windows-specific).
     //! @param [in] dir Pin direction.
     //! @return Corresponding name.
     //!
-    TSDUCKDLL std::string PinDirectionName(::PIN_DIRECTION dir);
+    TSDUCKDLL UString PinDirectionName(::PIN_DIRECTION dir);
 
     //!
     //! Get the name for a DirectShow @c DVBSystemType value (Windows-specific).
     //! @param [in] type DVB system type value.
     //! @return Corresponding name.
     //!
-    TSDUCKDLL std::string DVBSystemTypeName(::DVBSystemType type);
+    TSDUCKDLL UString DVBSystemTypeName(::DVBSystemType type);
 
     //!
     //! Create a DirectShow tune request object from tuning parameters.

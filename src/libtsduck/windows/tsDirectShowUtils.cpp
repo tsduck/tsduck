@@ -88,9 +88,9 @@ bool ts::EnumerateDevicesByClass(const ::CLSID& clsid, std::vector <ComPtr <::IM
 //-----------------------------------------------------------------------------
 
 namespace {
-    std::string ToStringAndFree(::HRESULT hr, ::BSTR& name, const char* message, ts::Report& report)
+    ts::UString ToStringAndFree(::HRESULT hr, ::BSTR& name, const ts::UChar* message, ts::Report& report)
     {
-        std::string cname;
+        ts::UString cname;
         if (ts::ComSuccess(hr, message, report)) {
             cname = ts::ToString(name);
         }
@@ -102,50 +102,50 @@ namespace {
     }
 }
 
-std::string ts::GetTuningSpaceFriendlyName(::ITuningSpace* tspace, Report& report)
+ts::UString ts::GetTuningSpaceFriendlyName(::ITuningSpace* tspace, Report& report)
 {
     if (tspace == 0) {
-        return std::string();
+        return UString();
     }
     else {
         ::BSTR name = NULL;
-        return ToStringAndFree(tspace->get_FriendlyName(&name), name, "ITuningSpace::get_FriendlyName", report);
+        return ToStringAndFree(tspace->get_FriendlyName(&name), name, u"ITuningSpace::get_FriendlyName", report);
     }
 }
 
-std::string ts::GetTuningSpaceUniqueName(::ITuningSpace* tspace, Report& report)
+ts::UString ts::GetTuningSpaceUniqueName(::ITuningSpace* tspace, Report& report)
 {
     if (tspace == 0) {
-        return std::string();
+        return UString();
     }
     else {
         ::BSTR name = NULL;
-        return ToStringAndFree(tspace->get_UniqueName(&name), name, "ITuningSpace::get_UniqueName", report);
+        return ToStringAndFree(tspace->get_UniqueName(&name), name, u"ITuningSpace::get_UniqueName", report);
     }
 }
 
-std::string ts::GetTuningSpaceDescription(::ITuningSpace* tspace, Report& report)
+ts::UString ts::GetTuningSpaceDescription(::ITuningSpace* tspace, Report& report)
 {
     if (tspace == 0) {
-        return std::string();
+        return UString();
     }
 
     // Get tuning space names.
-    const std::string fname(GetTuningSpaceFriendlyName(tspace, report));
-    const std::string uname(GetTuningSpaceUniqueName(tspace, report));
-    std::string tname;
+    const UString fname(GetTuningSpaceFriendlyName(tspace, report));
+    const UString uname(GetTuningSpaceUniqueName(tspace, report));
+    UString tname;
 
     // Build description.
     if (!fname.empty()) {
-        tname = "\"" + fname + "\"";
+        tname = u"\"" + fname + u"\"";
     }
     if (!uname.empty()) {
         if (!fname.empty()) {
-            tname += " (";
+            tname += u" (";
         }
         tname += uname;
         if (!fname.empty()) {
-            tname += ")";
+            tname += u")";
         }
     }
 
@@ -156,9 +156,9 @@ std::string ts::GetTuningSpaceDescription(::ITuningSpace* tspace, Report& report
         // This is a DVB tuning space. Get DVB system type.
         ::DVBSystemType sys_type = ::DVB_Cable;
         ::HRESULT hr = dvb_tspace->get_SystemType(&sys_type);
-        if (ComSuccess(hr, "cannot get DVB system type from tuning space \"" + fname + "\"", report)) {
+        if (ComSuccess(hr, u"cannot get DVB system type from tuning space \"" + fname + u"\"", report)) {
             if (!tname.empty()) {
-                tname += ", DVB type: ";
+                tname += u", DVB type: ";
             }
             tname += DVBSystemTypeName(sys_type);
         }
@@ -167,18 +167,18 @@ std::string ts::GetTuningSpaceDescription(::ITuningSpace* tspace, Report& report
     return tname;
 }
 
-std::string ts::GetTuningSpaceNetworkType(::ITuningSpace* tspace, Report& report)
+ts::UString ts::GetTuningSpaceNetworkType(::ITuningSpace* tspace, Report& report)
 {
     if (tspace == 0) {
-        return std::string();
+        return UString();
     }
 
     // Get network type as a string.
     ::BSTR name = NULL;
-    const std::string type(ToStringAndFree(tspace->get_NetworkType(&name), name, "ITuningSpace::get_NetworkType", report));
+    const UString type(ToStringAndFree(tspace->get_NetworkType(&name), name, u"ITuningSpace::get_NetworkType", report));
     
     // If the string looks like a GUID, try to find another way.
-    if (type.empty() || type.front() == '{') {
+    if (type.empty() || type.front() == u'{') {
         // Get the network type as a GUID.
         ::GUID guid;
         if (SUCCEEDED(tspace->get__NetworkType(&guid))) {
@@ -194,24 +194,24 @@ std::string ts::GetTuningSpaceNetworkType(::ITuningSpace* tspace, Report& report
 // Get the name for various enum values.
 //-----------------------------------------------------------------------------
 
-std::string ts::PinDirectionName(::PIN_DIRECTION dir)
+ts::UString ts::PinDirectionName(::PIN_DIRECTION dir)
 {
     switch (dir) {
-        case ::PINDIR_INPUT:  return "input";
-        case ::PINDIR_OUTPUT: return "output";
-        default:              return Decimal(int(dir));
+        case ::PINDIR_INPUT:  return u"input";
+        case ::PINDIR_OUTPUT: return u"output";
+        default:              return UString::Decimal(int(dir));
     }
 }
 
-std::string ts::DVBSystemTypeName(::DVBSystemType type)
+ts::UString ts::DVBSystemTypeName(::DVBSystemType type)
 {
     switch (type) {
-        case ::DVB_Cable:        return "DVB_Cable";
-        case ::DVB_Terrestrial:  return "DVB_Terrestrial";
-        case ::DVB_Satellite:    return "DVB_Satellite";
-        case ::ISDB_Terrestrial: return "ISDB_Terrestrial";
-        case ::ISDB_Satellite:   return "ISDB_Satellite";
-        default:                 return Decimal(int(type));
+        case ::DVB_Cable:        return u"DVB_Cable";
+        case ::DVB_Terrestrial:  return u"DVB_Terrestrial";
+        case ::DVB_Satellite:    return u"DVB_Satellite";
+        case ::ISDB_Terrestrial: return u"ISDB_Terrestrial";
+        case ::ISDB_Satellite:   return u"ISDB_Satellite";
+        default:                 return UString::Decimal(int(type));
     }
 }
 

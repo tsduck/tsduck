@@ -141,7 +141,7 @@ namespace ts {
         //! @param [in] margin Left margin to display.
         //! @param [in] verbose True for verbose information.
         //!
-        void display(std::ostream& output, Report& report, const std::string& margin = std::string(), bool verbose = true);
+        void display(std::ostream& output, Report& report, const UString& margin = UString(), bool verbose = true);
 
     private:
         ComPtr<::IGraphBuilder> _graph_builder;
@@ -183,7 +183,7 @@ namespace ts {
         //! @param [in] margin Left margin to display.
         //! @param [in] verbose True for verbose information.
         //!
-        void display(std::ostream& output, Report& report, const ComPtr<::IBaseFilter>& filter, const std::string& margin, bool verbose);
+        void display(std::ostream& output, Report& report, const ComPtr<::IBaseFilter>& filter, const UString& margin, bool verbose);
 
         // Inaccessible operations.
         DirectShowGraph(const DirectShowGraph&) = delete;

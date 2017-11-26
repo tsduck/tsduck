@@ -76,19 +76,19 @@ namespace ts {
         //! Enumerate DirectShow devices, same as runTest(ENUMERATE_DEVICES).
         //! @param [in] margin Left margin to display.
         //!
-        void enumerateDevices(const std::string& margin = std::string());
+        void enumerateDevices(const UString& margin = UString());
 
         //!
         //! Test tuning spaces, same as runTest(TUNING_SPACES).
         //! @param [in] margin Left margin to display.
         //!
-        void testTuningSpaces(const std::string& margin = std::string());
+        void testTuningSpaces(const UString& margin = UString());
 
         //!
         //! Test BDA tuners, same as runTest(BDA_TUNERS).
         //! @param [in] margin Left margin to display.
         //!
-        void testBDATuners(const std::string& margin = std::string());
+        void testBDATuners(const UString& margin = UString());
 
         //!
         //! Display all devices of the specified category.
@@ -97,21 +97,21 @@ namespace ts {
         //! @param [in] margin Left margin to display.
         //! @return True on success, false on error.
         //!
-        bool displayDevicesByCategory(const ::GUID& category, const std::string& name, const std::string& margin = std::string());
+        bool displayDevicesByCategory(const ::GUID& category, const UString& name, const UString& margin = UString());
 
         //!
         //! Display all DirectShow tuning spaces.
         //! @param [in] margin Left margin to display.
         //! @return True on success, false on error.
         //!
-        bool displayTuningSpaces(const std::string& margin = std::string());
+        bool displayTuningSpaces(const UString& margin = UString());
 
         //!
         //! Show selected properties of a COM object.
         //! @param [in] object Object to query.
         //! @param [in] margin Left margin to display.
         //!
-        void displayObject(::IUnknown* object, const std::string& margin = std::string());
+        void displayObject(::IUnknown* object, const UString& margin = UString());
 
         //!
         //! List some known interfaces that an object may expose.
@@ -119,7 +119,7 @@ namespace ts {
         //! @param [in] object Object to query.
         //! @param [in] margin Left margin to display.
         //!
-        void displayInterfaces(::IUnknown* object, const std::string& margin = std::string());
+        void displayInterfaces(::IUnknown* object, const UString& margin = UString());
 
     private:
         std::ostream&    _output;
@@ -132,28 +132,28 @@ namespace ts {
         bool getAllTuningSpaces(std::vector<ComPtr<::ITuningSpace>>& spaces);
 
         // Display all tuning spaces from an enumerator.
-        void displayEnumerateTuningSpaces(::IEnumTuningSpaces* enum_tspace, const std::string& margin = std::string());
+        void displayEnumerateTuningSpaces(::IEnumTuningSpaces* enum_tspace, const UString& margin = UString());
 
         // Show ITuner for a COM object
-        void displayITuner(::IUnknown* object, const std::string& margin = std::string());
+        void displayITuner(::IUnknown* object, const UString& margin = UString());
 
         // Show IKsTopologyInfo for a COM object
-        void displayIKsTopologyInfo(::IUnknown* object, const std::string& margin = std::string());
+        void displayIKsTopologyInfo(::IUnknown* object, const UString& margin = UString());
 
         // Show IBDA_Topology for a COM object
-        void displayBDATopology(::IUnknown* object, const std::string& margin = std::string());
+        void displayBDATopology(::IUnknown* object, const UString& margin = UString());
 
         // Show properties support through IKsPropertySet for a COM object.
-        void displayIKsPropertySet(::IUnknown* object, const std::string& margin = std::string());
+        void displayIKsPropertySet(::IUnknown* object, const UString& margin = UString());
 
         // Show one property support through IKsPropertySet for a COM object.
-        void displayOneIKsPropertySet(::IKsPropertySet* ps, const ::GUID& psGuid, const char* psName, ::DWORD propId, const char* propName, const std::string& margin = std::string());
+        void displayOneIKsPropertySet(::IKsPropertySet* ps, const ::GUID& psGuid, const char* psName, ::DWORD propId, const char* propName, const UString& margin = UString());
 
         // Show properties support through IKsControl for a COM object.
-        void displayIKsControl(::IUnknown* object, const std::string& margin = std::string());
+        void displayIKsControl(::IUnknown* object, const UString& margin = UString());
 
         // Show one properties support through IKsControl for a COM object.
-        void displayOneIKsControl(::IKsControl* iks, const ::GUID& propSetGuid, const char* propSetName, ::ULONG propId, const char* propName, const std::string& margin = std::string());
+        void displayOneIKsControl(::IKsControl* iks, const ::GUID& propSetGuid, const char* propSetName, ::ULONG propId, const char* propName, const UString& margin = UString());
 
         // Inaccessible operations.
         DirectShowTest() = delete;

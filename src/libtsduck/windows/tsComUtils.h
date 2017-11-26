@@ -43,7 +43,7 @@ namespace ts {
     //! @param [in] status A COM status.
     //! @return The corresponding message string.
     //!
-    TSDUCKDLL std::string ComMessage(::HRESULT status);
+    TSDUCKDLL UString ComMessage(::HRESULT status);
 
     //!
     //! Check a COM status (Windows-specific).
@@ -54,7 +54,7 @@ namespace ts {
     //! @param [in,out] report Where to report errors.
     //! @return True if status is success, false if error.
     //!
-    TSDUCKDLL bool ComSuccess(::HRESULT status, const char* message, Report& report);
+    TSDUCKDLL bool ComSuccess(::HRESULT status, const UChar* message, Report& report);
 
     //!
     //! Check a COM status (Windows-specific).
@@ -65,7 +65,7 @@ namespace ts {
     //! @param [in,out] report Where to report errors.
     //! @return True if status is success, false if error.
     //!
-    TSDUCKDLL bool ComSuccess(::HRESULT status, const std::string& message, Report& report);
+    TSDUCKDLL bool ComSuccess(::HRESULT status, const UString& message, Report& report);
 
     //!
     //! Check if an object exposes an interface.
@@ -76,25 +76,25 @@ namespace ts {
     TSDUCKDLL bool ComExpose(::IUnknown* object, const ::IID& iid);
 
     //!
-    //! Convert a COM string to std::string (Windows-specific).
+    //! Convert a COM string to Unicode string (Windows-specific).
     //! @param [in] s The COM string.
     //! @return The equivalent C++ string or an empty string on error.
     //!
-    TSDUCKDLL std::string ToString(const ::VARIANT& s);
+    TSDUCKDLL UString ToString(const ::VARIANT& s);
 
     //!
-    //! Convert a COM string to std::string (Windows-specific).
+    //! Convert a COM string to Unicode string (Windows-specific).
     //! @param [in] s The COM string.
     //! @return The equivalent C++ string or an empty string on error.
     //!
-    TSDUCKDLL std::string ToString(const ::BSTR s);
+    TSDUCKDLL UString ToString(const ::BSTR s);
 
     //!
-    //! Convert a Unicode string to std::string (Windows-specific).
+    //! Convert a Windows string to a string (Windows-specific).
     //! @param [in] s The Unicode string.
     //! @return The equivalent C++ string or an empty string on error.
     //!
-    TSDUCKDLL std::string ToString(const ::WCHAR* s);
+    TSDUCKDLL UString ToString(const ::WCHAR* s);
 
     //!
     //! Format a GUID as string (Windows-specific).
@@ -102,7 +102,7 @@ namespace ts {
     //! @param [in] with_braces If true, add the surrounding braces "{...}".
     //! @return The equivalent string or an empty string on error.
     //!
-    TSDUCKDLL std::string FormatGUID(const ::GUID& guid, bool with_braces = true);
+    TSDUCKDLL UString FormatGUID(const ::GUID& guid, bool with_braces = true);
 
     //!
     //! Format a GUID as string and resolve a few known names (Windows-specific).
@@ -110,7 +110,7 @@ namespace ts {
     //! @param [in] guid A GUID.
     //! @return The equivalent string or an empty string on error.
     //!
-    TSDUCKDLL std::string NameGUID(const ::GUID& guid);
+    TSDUCKDLL UString NameGUID(const ::GUID& guid);
 
     //!
     //! Get a string property from the "property bag" of an object (Windows-specific).
@@ -119,5 +119,5 @@ namespace ts {
     //! @param [in,out] report Where to report errors.
     //! @return The property value.
     //!
-    TSDUCKDLL std::string GetStringPropertyBag(::IMoniker* moniker, const ::OLECHAR* property_name, Report& report);
+    TSDUCKDLL UString GetStringPropertyBag(::IMoniker* moniker, const ::OLECHAR* property_name, Report& report);
 }

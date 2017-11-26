@@ -201,15 +201,6 @@ namespace ts {
         //! @param [in] silent If true, do not report error.
         //! @return Attribute address or zero if not found.
         //!
-        const Attribute* findAttribute(const Element* elem, const char* name, bool silent = false);
-
-        //!
-        //! Find an attribute, case-insensitive, in an XML element.
-        //! @param [in] elem An XML element.
-        //! @param [in] name Name of the attribute to search.
-        //! @param [in] silent If true, do not report error.
-        //! @return Attribute address or zero if not found.
-        //!
         const Attribute* findAttribute(const Element* elem, const UString& name, bool silent = false);
 
         //!

@@ -33,63 +33,68 @@
 
 #include "tsRegistryUtils.h"
 #include "tsSysUtils.h"
-#include "tsStringUtils.h"
-#include "tsFormat.h"
 #include "tsFatal.h"
 TSDUCK_SOURCE;
 
 
 //-----------------------------------------------------------------------------
-// Internal functions: return the root key of a registry path.
+// Return the root key of a registry path.
 //-----------------------------------------------------------------------------
 
-namespace {
-    bool SplitKey(const std::string& key, ::HKEY& root_key, std::string& subkey)
-    {
-        using ts::SimilarStrings;
+bool ts::SplitRegistryKey(const UString& key, ::HKEY& root_key, UString& subkey)
+{
+    // Get end if root key name.
+    const size_t sep = key.find(u'\\');
 
-        size_t sep = key.find('\\');
-        std::string root(key.substr(0, sep == std::string::npos ? key.length() : sep));
-        subkey = sep == std::string::npos ? "" : key.substr(sep + 1);
-
-        if (SimilarStrings(root, "HKEY_CLASSES_ROOT") || SimilarStrings(root, "HKCR")) {
-            root_key = HKEY_CLASSES_ROOT;
-        }
-        else if (SimilarStrings(root, "HKEY_CURRENT_USER") || SimilarStrings(root, "HKCU")) {
-            root_key = HKEY_CURRENT_USER;
-        }
-        else if (SimilarStrings(root, "HKEY_LOCAL_MACHINE") || SimilarStrings(root, "HKLM")) {
-            root_key = HKEY_LOCAL_MACHINE;
-        }
-        else if (SimilarStrings(root, "HKEY_USERS") || SimilarStrings(root, "HKU")) {
-            root_key = HKEY_USERS;
-        }
-        else if (SimilarStrings(root, "HKEY_CURRENT_CONFIG") || SimilarStrings(root, "HKCC")) {
-            root_key = HKEY_CURRENT_CONFIG;
-        }
-        else if (SimilarStrings(root, "HKEY_PERFORMANCE_DATA") || SimilarStrings(root, "HKPD")) {
-            root_key = HKEY_PERFORMANCE_DATA;
-        }
-        else {
-            root_key = NULL;
-            return false;
-        }
-        return true;
+    // Root key name and subkey name.
+    UString root;
+    if (sep == UString::NPOS) {
+        root = key;
+        subkey.clear();
+    }
+    else {
+        root = key.substr(0, sep);
+        subkey = key.substr(sep + 1);
     }
 
-    bool SplitKey(const std::string& key, ::HKEY& root_key, std::string& midkey, std::string& final_key)
-    {
-        midkey.clear();
-        bool ok = SplitKey(key, root_key, final_key);
-        if (ok) {
-            size_t sep = final_key.rfind('\\');
-            if (sep != std::string::npos) {
-                midkey = final_key.substr(0, sep);
-                final_key.erase(0, sep + 1);
-            }
-        }
-        return ok;
+    // Resolve root key handle.
+    if (root.similar(u"HKEY_CLASSES_ROOT") || root.similar(u"HKCR")) {
+        root_key = HKEY_CLASSES_ROOT;
     }
+    else if (root.similar(u"HKEY_CURRENT_USER") || root.similar(u"HKCU")) {
+        root_key = HKEY_CURRENT_USER;
+    }
+    else if (root.similar(u"HKEY_LOCAL_MACHINE") || root.similar(u"HKLM")) {
+        root_key = HKEY_LOCAL_MACHINE;
+    }
+    else if (root.similar(u"HKEY_USERS") || root.similar(u"HKU")) {
+        root_key = HKEY_USERS;
+    }
+    else if (root.similar(u"HKEY_CURRENT_CONFIG") || root.similar(u"HKCC")) {
+        root_key = HKEY_CURRENT_CONFIG;
+    }
+    else if (root.similar(u"HKEY_PERFORMANCE_DATA") || root.similar(u"HKPD")) {
+        root_key = HKEY_PERFORMANCE_DATA;
+    }
+    else {
+        root_key = NULL;
+        return false;
+    }
+    return true;
+}
+
+bool ts::SplitRegistryKey(const UString& key, ::HKEY& root_key, UString& midkey, UString& final_key)
+{
+    midkey.clear();
+    const bool ok = SplitRegistryKey(key, root_key, final_key);
+    if (ok) {
+        const size_t sep = final_key.rfind(u'\\');
+        if (sep != UString::NPOS) {
+            midkey = final_key.substr(0, sep);
+            final_key.erase(0, sep + 1);
+        }
+    }
+    return ok;
 }
 
 
@@ -97,18 +102,18 @@ namespace {
 // Get a value in a registry key as a string.
 //-----------------------------------------------------------------------------
 
-std::string ts::GetRegistryValue(const std::string& key, const std::string& value_name)
+ts::UString ts::GetRegistryValue(const UString& key, const UString& value_name)
 {
     // Split name
     ::HKEY root;
-    std::string subkey;
-    if (!SplitKey(key, root, subkey)) {
+    UString subkey;
+    if (!SplitRegistryKey(key, root, subkey)) {
         return "";
     }
 
     // Open registry key
     ::HKEY hkey;
-    ::LONG hr = ::RegOpenKeyEx(root, subkey.c_str(), 0, KEY_READ, &hkey);
+    ::LONG hr = ::RegOpenKeyExW(root, subkey.wc_str(), 0, KEY_READ, &hkey);
     if (hr != ERROR_SUCCESS) {
         return "";
     }
@@ -117,7 +122,7 @@ std::string ts::GetRegistryValue(const std::string& key, const std::string& valu
     // to lpData, RegQueryValueEx simply returns the size of the value.
     ::DWORD type;
     ::DWORD size = 0;
-    hr = ::RegQueryValueEx(hkey, value_name.c_str(), NULL, &type, NULL, &size);
+    hr = ::RegQueryValueExW(hkey, value_name.wc_str(), NULL, &type, NULL, &size);
     if ((hr != ERROR_SUCCESS && hr != ERROR_MORE_DATA) || size <= 0) {
         ::RegCloseKey(hkey);
         return "";
@@ -127,7 +132,7 @@ std::string ts::GetRegistryValue(const std::string& key, const std::string& valu
     ::DWORD bufsize = (size < 0 ? 0 : size) + 10;
     ::BYTE* buf = new ::BYTE[size = bufsize];
     CheckNonNull(buf);
-    hr = ::RegQueryValueEx(hkey, value_name.c_str(), NULL, &type, buf, &size);
+    hr = ::RegQueryValueExW(hkey, value_name.wc_str(), NULL, &type, buf, &size);
     ::RegCloseKey(hkey);
     if (hr != ERROR_SUCCESS) {
         size = 0;
@@ -137,20 +142,20 @@ std::string ts::GetRegistryValue(const std::string& key, const std::string& valu
     buf[size] = 0; // if improperly terminated string
 
     // Convert value to a string
-    std::string value;
+    UString value;
     switch (type) {
         case REG_SZ:
         case REG_MULTI_SZ:
         case REG_EXPAND_SZ:
             // There is at least one nul-terminated string in. If the type is REG_MULTI_SZ,
             // there are several nul-terminated strings, ending with two nuls, but we keep only the first string.
-            value = reinterpret_cast<char*>(buf);
+            value = reinterpret_cast<UChar*>(buf);
             break;
         case REG_DWORD:
-            value = Format("%ld", long(*reinterpret_cast<::DWORD*>(buf)));
+            value = UString::Format(u"%d", {*reinterpret_cast<const ::DWORD*>(buf)});
             break;
         case REG_DWORD_BIG_ENDIAN:
-            value = Format("%ld", long(GetUInt32(buf)));
+            value = UString::Format(u"%d", {GetUInt32(buf)});
             break;
     }
 
@@ -164,29 +169,29 @@ std::string ts::GetRegistryValue(const std::string& key, const std::string& valu
 // Set value of a registry key.
 //-----------------------------------------------------------------------------
 
-bool ts::SetRegistryValue(const std::string& key, const std::string& value_name, const std::string& value, bool expandable)
+bool ts::SetRegistryValue(const UString& key, const UString& value_name, const UString& value, bool expandable)
 {
     // Split name
     ::HKEY root;
-    std::string subkey;
-    if (!SplitKey(key, root, subkey)) {
+    UString subkey;
+    if (!SplitRegistryKey(key, root, subkey)) {
         return false;
     }
 
     // Open registry key
     ::HKEY hkey;
-    ::LONG hr = ::RegOpenKeyEx(root, subkey.c_str(), 0, KEY_WRITE, &hkey);
+    ::LONG hr = ::RegOpenKeyExW(root, subkey.wc_str(), 0, KEY_WRITE, &hkey);
     if (hr != ERROR_SUCCESS) {
         return false;
     }
 
     // Set the value
-    hr = ::RegSetValueEx(hkey,
-                         value_name.c_str(),
-                         0, // reserved
-                         expandable ? REG_EXPAND_SZ : REG_SZ,
-                         reinterpret_cast<const ::BYTE*> (value.c_str()),
-                         ::DWORD(value.length() + 1)); // include terminating nul
+    hr = ::RegSetValueExW(hkey,
+                          value_name.wc_str(),
+                          0, // reserved
+                          expandable ? REG_EXPAND_SZ : REG_SZ,
+                          reinterpret_cast<const ::BYTE*>(value.wc_str()),
+                          ::DWORD(sizeof(UChar) * (value.length() + 1))); // include terminating nul
 
     bool success = hr == ERROR_SUCCESS;
     ::RegCloseKey(hkey);
@@ -198,29 +203,29 @@ bool ts::SetRegistryValue(const std::string& key, const std::string& value_name,
 // Set value of a registry key.
 //-----------------------------------------------------------------------------
 
-bool ts::SetRegistryValue(const std::string& key, const std::string& value_name, ::DWORD value)
+bool ts::SetRegistryValue(const UString& key, const UString& value_name, ::DWORD value)
 {
     // Split name
     ::HKEY root;
-    std::string subkey;
-    if (!SplitKey(key, root, subkey)) {
+    UString subkey;
+    if (!SplitRegistryKey(key, root, subkey)) {
         return false;
     }
 
     // Open registry key
     ::HKEY hkey;
-    ::LONG hr = ::RegOpenKeyEx(root, subkey.c_str(), 0, KEY_WRITE, &hkey);
+    ::LONG hr = ::RegOpenKeyExW(root, subkey.wc_str(), 0, KEY_WRITE, &hkey);
     if (hr != ERROR_SUCCESS) {
         return false;
     }
 
     // Set the value
-    hr = ::RegSetValueEx(hkey,
-                         value_name.c_str(),
-                         0, // reserved
-                         REG_DWORD,
-                         reinterpret_cast<const ::BYTE*> (&value),
-                         sizeof(value));
+    hr = ::RegSetValueExW(hkey,
+                          value_name.wc_str(),
+                          0, // reserved
+                          REG_DWORD,
+                          reinterpret_cast<const ::BYTE*> (&value),
+                          sizeof(value));
 
     bool success = hr == ERROR_SUCCESS;
     ::RegCloseKey(hkey);
@@ -232,24 +237,24 @@ bool ts::SetRegistryValue(const std::string& key, const std::string& value_name,
 // Delete a value of a registry key.
 //-----------------------------------------------------------------------------
 
-bool ts::DeleteRegistryValue(const std::string& key, const std::string& value_name)
+bool ts::DeleteRegistryValue(const UString& key, const UString& value_name)
 {
     // Split name
     ::HKEY root;
-    std::string subkey;
-    if (!SplitKey(key, root, subkey)) {
+    UString subkey;
+    if (!SplitRegistryKey(key, root, subkey)) {
         return false;
     }
 
     // Open registry key
     ::HKEY hkey;
-    ::LONG hr = ::RegOpenKeyEx(root, subkey.c_str(), 0, KEY_SET_VALUE, &hkey);
+    ::LONG hr = ::RegOpenKeyExW(root, subkey.wc_str(), 0, KEY_SET_VALUE, &hkey);
     if (hr != ERROR_SUCCESS) {
         return false;
     }
 
     // Delete the value
-    hr = ::RegDeleteValue(hkey, value_name.c_str());
+    hr = ::RegDeleteValueW(hkey, value_name.wc_str());
     bool success = hr == ERROR_SUCCESS;
     ::RegCloseKey(hkey);
     return success;
@@ -260,33 +265,33 @@ bool ts::DeleteRegistryValue(const std::string& key, const std::string& value_na
 // Create a registry key.
 //-----------------------------------------------------------------------------
 
-bool ts::CreateRegistryKey(const std::string& key, bool is_volatile)
+bool ts::CreateRegistryKey(const UString& key, bool is_volatile)
 {
     // Split name
     ::HKEY root;
-    std::string midkey, newkey;
-    if (!SplitKey(key, root, midkey, newkey)) {
+    UString midkey, newkey;
+    if (!SplitRegistryKey(key, root, midkey, newkey)) {
         return false;
     }
 
     // Open registry key
     ::HKEY hkey;
-    ::LONG hr = ::RegOpenKeyEx(root, midkey.c_str(), 0, KEY_CREATE_SUB_KEY | KEY_READ, &hkey);
+    ::LONG hr = ::RegOpenKeyExW(root, midkey.wc_str(), 0, KEY_CREATE_SUB_KEY | KEY_READ, &hkey);
     if (hr != ERROR_SUCCESS) {
         return false;
     }
 
     // Create the key
     ::HKEY hnewkey;
-    hr = ::RegCreateKeyEx(hkey,
-                          newkey.c_str(),
-                          0,  // reserved
-                          NULL, // class
-                          is_volatile ? REG_OPTION_VOLATILE : REG_OPTION_NON_VOLATILE,
-                          0, // security: no further access
-                          NULL, // security attributes
-                          &hnewkey,
-                          NULL); // disposition
+    hr = ::RegCreateKeyExW(hkey,
+                           newkey.wc_str(),
+                           0,  // reserved
+                           NULL, // class
+                           is_volatile ? REG_OPTION_VOLATILE : REG_OPTION_NON_VOLATILE,
+                           0, // security: no further access
+                           NULL, // security attributes
+                           &hnewkey,
+                           NULL); // disposition
 
     bool success = hr == ERROR_SUCCESS;
     if (success) {
@@ -301,24 +306,24 @@ bool ts::CreateRegistryKey(const std::string& key, bool is_volatile)
 // Delete a registry key.
 //-----------------------------------------------------------------------------
 
-bool ts::DeleteRegistryKey(const std::string& key)
+bool ts::DeleteRegistryKey(const UString& key)
 {
     // Split name
     ::HKEY root;
-    std::string midkey, newkey;
-    if (!SplitKey(key, root, midkey, newkey)) {
+    UString midkey, newkey;
+    if (!SplitRegistryKey(key, root, midkey, newkey)) {
         return false;
     }
 
     // Open registry key
     ::HKEY hkey;
-    ::LONG hr = ::RegOpenKeyEx(root, midkey.c_str(), 0, KEY_WRITE, &hkey);
+    ::LONG hr = ::RegOpenKeyExW(root, midkey.wc_str(), 0, KEY_WRITE, &hkey);
     if (hr != ERROR_SUCCESS) {
         return false;
     }
 
     // Delete the key
-    hr = ::RegDeleteKey(hkey, newkey.c_str());
+    hr = ::RegDeleteKeyW(hkey, newkey.wc_str());
     bool success = hr == ERROR_SUCCESS;
     ::RegCloseKey(hkey);
     return success;

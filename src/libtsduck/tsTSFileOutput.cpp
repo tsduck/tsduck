@@ -89,7 +89,7 @@ bool ts::TSFileOutput::open(const UString& filename, bool append, bool keep, Rep
     }
     else {
         // Create file
-        _handle = ::CreateFile(_filename.c_str(), GENERIC_WRITE, 0, NULL, flags, FILE_ATTRIBUTE_NORMAL, NULL);
+        _handle = ::CreateFile(_filename.toUTF8().c_str(), GENERIC_WRITE, 0, NULL, flags, FILE_ATTRIBUTE_NORMAL, NULL);
         got_error = _handle == INVALID_HANDLE_VALUE;
         error_code = LastErrorCode();
         // Move to end of file if --append

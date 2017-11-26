@@ -78,11 +78,9 @@ void ts::TunerParametersATSC::copy (const TunerParameters& obj)
 // Format the tuner parameters as a list of options for the dvb tsp plugin.
 //----------------------------------------------------------------------------
 
-std::string ts::TunerParametersATSC::toPluginOptions(bool no_local) const
+ts::UString ts::TunerParametersATSC::toPluginOptions(bool no_local) const
 {
-    return Format("--frequency %" FMT_INT64 "u", frequency) +
-        " --modulation " + ModulationEnum.name(modulation) +
-        " --spectral-inversion " + SpectralInversionEnum.name(inversion);
+    return UString::Format(u"--frequency %d --modulation %s --spectral-inversion %s", {frequency, ModulationEnum.name(modulation), SpectralInversionEnum.name(inversion)});
 }
 
 
@@ -90,14 +88,14 @@ std::string ts::TunerParametersATSC::toPluginOptions(bool no_local) const
 // Format a short description (frequency and essential parameters).
 //----------------------------------------------------------------------------
 
-std::string ts::TunerParametersATSC::shortDescription(int strength, int quality) const
+ts::UString ts::TunerParametersATSC::shortDescription(int strength, int quality) const
 {
-    std::string desc(Decimal(frequency) + " Hz, " + ModulationEnum.name(modulation));
+    UString desc(UString::Format(u"%'d Hz, %s", {frequency, ModulationEnum.name(modulation)}));
     if (strength >= 0) {
-        desc += Format(", strength: %d%%", strength);
+        desc += UString::Format(u", strength: %d%%", {strength});
     }
     if (quality >= 0) {
-        desc += Format(", quality: %d%%", quality);
+        desc += UString::Format(u", quality: %d%%", {quality});
     }
     return desc;
 }
@@ -107,10 +105,10 @@ std::string ts::TunerParametersATSC::shortDescription(int strength, int quality)
 // Display a description of the modulation paramters on a stream, line by line.
 //----------------------------------------------------------------------------
 
-void ts::TunerParametersATSC::displayParameters(std::ostream& strm, const std::string& margin, bool verbose) const
+void ts::TunerParametersATSC::displayParameters(std::ostream& strm, const UString& margin, bool verbose) const
 {
     if (frequency != 0) {
-        strm << margin << "Carrier frequency: " << Decimal(frequency) << " Hz" << std::endl;
+        strm << margin << "Carrier frequency: " << UString::Decimal(frequency) << " Hz" << std::endl;
     }
     if (inversion != SPINV_AUTO) {
         strm << margin << "Spectral inversion: " << SpectralInversionEnum.name(inversion) << std::endl;
@@ -128,7 +126,7 @@ void ts::TunerParametersATSC::displayParameters(std::ostream& strm, const std::s
 bool ts::TunerParametersATSC::fromArgs(const TunerArgs& tuner, Report& report)
 {
     if (!tuner.frequency.set()) {
-        report.error ("no frequency specified, use option --frequency");
+        report.error(u"no frequency specified, use option --frequency");
         return false;
     }
 

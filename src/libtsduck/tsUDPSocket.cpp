@@ -258,24 +258,22 @@ bool ts::UDPSocket::setTTL (int ttl, bool multicast, Report& report)
 // Return true on success, false on error.
 //----------------------------------------------------------------------------
 
-bool ts::UDPSocket::addMembership (const IPAddress& multicast, const IPAddress& local, Report& report)
+bool ts::UDPSocket::addMembership(const IPAddress& multicast, const IPAddress& local, Report& report)
 {
     if (!local.hasAddress()) {
         // No local address specified, use all of them
-        return addMembership (multicast, report);
+        return addMembership(multicast, report);
     }
     else {
         // Add one membership
-        report.verbose ("joining multicast group " + std::string (multicast) + " from local address " + std::string (local));
-        MReq req (multicast, local);
-        if (::setsockopt (_sock, IPPROTO_IP, IP_ADD_MEMBERSHIP, TS_SOCKOPT_T (&req.req), sizeof(req.req)) != 0) {
-            report.error ("error adding multicast membership to " + std::string (multicast) +
-                          " from local address " + std::string (local) +
-                          SocketErrorCodeMessage ());
+        report.verbose(u"joining multicast group %s from local address %s", {UString(multicast), UString(local)});
+        MReq req(multicast, local);
+        if (::setsockopt(_sock, IPPROTO_IP, IP_ADD_MEMBERSHIP, TS_SOCKOPT_T(&req.req), sizeof(req.req)) != 0) {
+            report.error(u"error adding multicast membership to %s from local address %s: %s", {UString(multicast), UString(local), SocketErrorCodeMessage()});
             return false;
         }
         else {
-            _mcast.insert (req);
+            _mcast.insert(req);
             return true;
         }
     }
@@ -287,7 +285,7 @@ bool ts::UDPSocket::addMembership (const IPAddress& multicast, const IPAddress& 
 // Return true on success, false on error.
 //----------------------------------------------------------------------------
 
-bool ts::UDPSocket::addMembership (const IPAddress& multicast, Report& report)
+bool ts::UDPSocket::addMembership(const IPAddress& multicast, Report& report)
 {
     // There is no implicit way to listen on all interfaces.
     // If no local address is specified, we must get the list
@@ -320,10 +318,9 @@ bool ts::UDPSocket::dropMembership (Report& report)
 {
     bool ok = true;
     for (MReqSet::const_iterator it = _mcast.begin(); it != _mcast.end(); ++it) {
-        report.verbose ("leaving multicast group " + std::string (IPAddress (it->req.imr_multiaddr)) +
-                        " from local address " + std::string (IPAddress (it->req.imr_interface)));
-        if (::setsockopt (_sock, IPPROTO_IP, IP_DROP_MEMBERSHIP, TS_SOCKOPT_T (&it->req), sizeof(it->req)) != 0) {
-            report.error ("error dropping multicast membership: " + SocketErrorCodeMessage ());
+        report.verbose("leaving multicast group %s from local address %s", {UString(IPAddress(it->req.imr_multiaddr)), UString(IPAddress(it->req.imr_interface))});
+        if (::setsockopt(_sock, IPPROTO_IP, IP_DROP_MEMBERSHIP, TS_SOCKOPT_T(&it->req), sizeof(it->req)) != 0) {
+            report.error(u"error dropping multicast membership: " + SocketErrorCodeMessage());
             ok = false;
         }
     }
@@ -338,13 +335,13 @@ bool ts::UDPSocket::dropMembership (Report& report)
 // Return true on success, false on error.
 //----------------------------------------------------------------------------
 
-bool ts::UDPSocket::send (const void* data, size_t size, const SocketAddress& dest, Report& report)
+bool ts::UDPSocket::send(const void* data, size_t size, const SocketAddress& dest, Report& report)
 {
     ::sockaddr addr;
-    dest.copy (addr);
+    dest.copy(addr);
 
-    if (::sendto (_sock, TS_SENDBUF_T (data), TS_SOCKET_SSIZE_T (size), 0, &addr, sizeof(addr)) < 0) {
-        report.error ("error sending UDP message: " + SocketErrorCodeMessage ());
+    if (::sendto(_sock, TS_SENDBUF_T(data), TS_SOCKET_SSIZE_T(size), 0, &addr, sizeof(addr)) < 0) {
+        report.error(u"error sending UDP message: " + SocketErrorCodeMessage());
         return false;
     }
     return true;
@@ -358,12 +355,12 @@ bool ts::UDPSocket::send (const void* data, size_t size, const SocketAddress& de
 // Return true on success, false on error.
 //----------------------------------------------------------------------------
 
-bool ts::UDPSocket::receive (void* data,
-                               size_t max_size,
-                               size_t& ret_size,
-                               SocketAddress& sender,
-                               const AbortInterface* abort,
-                               Report& report)
+bool ts::UDPSocket::receive(void* data,
+                            size_t max_size,
+                            size_t& ret_size,
+                            SocketAddress& sender,
+                            const AbortInterface* abort,
+                            Report& report)
 {
     // Clear returned values
     ret_size = 0;
@@ -389,12 +386,12 @@ bool ts::UDPSocket::receive (void* data,
 #if !defined (TS_WINDOWS)
         else if (errno == EINTR) {
             // Got a signal, not a user interrupt, will ignore it
-            report.debug ("signal, not user interrupt");
+            report.debug(u"signal, not user interrupt");
         }
 #endif
         else {
             // Abort on non-interrupt errors.
-            report.error ("error receiving from UDP socket: " + SocketErrorCodeMessage());
+            report.error(u"error receiving from UDP socket: " + SocketErrorCodeMessage());
             return false;
         }
     }

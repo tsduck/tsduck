@@ -351,7 +351,7 @@ ts::ComPtr<::IBaseFilter> ts::DirectShowGraph::startingFilter(Report& report)
 // Display the description of a DirectShow filter graph.
 //-----------------------------------------------------------------------------
 
-void ts::DirectShowGraph::display(std::ostream& output, Report& report, const std::string& margin, bool verbose)
+void ts::DirectShowGraph::display(std::ostream& output, Report& report, const UString& margin, bool verbose)
 {
     display(output, report, startingFilter(report), margin, verbose);
 }
@@ -361,7 +361,7 @@ void ts::DirectShowGraph::display(std::ostream& output, Report& report, const st
 // Display the description of a partial DirectShow filter graph.
 //-----------------------------------------------------------------------------
 
-void ts::DirectShowGraph::display(std::ostream& output, Report& report, const ComPtr<::IBaseFilter>& start_filter, const std::string& margin, bool verbose)
+void ts::DirectShowGraph::display(std::ostream& output, Report& report, const ComPtr<::IBaseFilter>& start_filter, const UString& margin, bool verbose)
 {
     DirectShowTest test(output, report);
     ComPtr<::IBaseFilter> filter(start_filter);
@@ -372,14 +372,14 @@ void ts::DirectShowGraph::display(std::ostream& output, Report& report, const Co
         // Get filter name
         ::FILTER_INFO filter_info;
         ::HRESULT hr = filter->QueryFilterInfo(&filter_info);
-        if (!ComSuccess(hr, "IBaseFilter::QueryFilterInfo", report)) {
+        if (!ComSuccess(hr, u"IBaseFilter::QueryFilterInfo", report)) {
             return;
         }
         filter_info.pGraph->Release();
-        std::string filter_name(ToString(filter_info.achName));
+        UString filter_name(ToString(filter_info.achName));
 
         // Get filter vendor info (may be unimplemented)
-        std::string filter_vendor;
+        UString filter_vendor;
         ::WCHAR* wstring;
         hr = filter->QueryVendorInfo(&wstring);
         if (SUCCEEDED(hr)) {
@@ -394,7 +394,7 @@ void ts::DirectShowGraph::display(std::ostream& output, Report& report, const Co
         if (!persist.isNull()) {
             // Filter class implements IPersist
             hr = persist->GetClassID(&class_id);
-            if (!ComSuccess(hr, "get filter class guid", report)) {
+            if (!ComSuccess(hr, u"get filter class guid", report)) {
                 return;
             }
         }
@@ -425,31 +425,31 @@ void ts::DirectShowGraph::display(std::ostream& output, Report& report, const Co
 
             // If more than one output pin, we need to indent and recurse
             bool last_pin = pin_index == pins.size() - 1;
-            std::string margin0(margin);
-            std::string margin1(margin);
-            std::string margin2(margin);
+            UString margin0(margin);
+            UString margin1(margin);
+            UString margin2(margin);
             if (pins.size() > 1) {
-                margin0 += "|";
-                margin1 += "+--";
-                margin2 += last_pin ? "   " : "|  ";
+                margin0 += u"|";
+                margin1 += u"+--";
+                margin2 += last_pin ? u"   " : u"|  ";
             }
 
             // Get output pin info
             ::PIN_INFO pin_info;
             hr = out_pin->QueryPinInfo(&pin_info);
-            if (!ComSuccess(hr, "IPin::QueryPinInfo", report)) {
+            if (!ComSuccess(hr, u"IPin::QueryPinInfo", report)) {
                 return;
             }
-            std::string pin_name(ToString(pin_info.achName));
+            UString pin_name(ToString(pin_info.achName));
             pin_info.pFilter->Release();
 
             // Get output pin id
             ::WCHAR* wid;
             hr = out_pin->QueryId(&wid);
-            if (!ComSuccess(hr, "IPin::QueryPinId", report)) {
+            if (!ComSuccess(hr, u"IPin::QueryPinId", report)) {
                 return;
             }
-            std::string pin_id(ToString(wid));
+            UString pin_id(ToString(wid));
             ::CoTaskMemFree(wid);
 
             // Display output pin info

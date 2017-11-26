@@ -45,22 +45,22 @@ TSDUCK_SOURCE;
 // Format the message for a COM status
 //-----------------------------------------------------------------------------
 
-std::string ts::ComMessage(::HRESULT hr)
+ts::UString ts::ComMessage(::HRESULT hr)
 {
     // Get DirectShow error message
-    char buf[MAX_ERROR_TEXT_LEN];
-    ::DWORD size = ::AMGetErrorText(hr, buf, sizeof(buf));
-    size = std::max(::DWORD(0), std::min(size, ::DWORD(sizeof(buf) - 1)));
+    std::array<::WCHAR, MAX_ERROR_TEXT_LEN> buf;
+    ::DWORD size = ::AMGetErrorTextW(hr, buf.data(), ::DWORD(buf.size()));
+    size = std::max(::DWORD(0), std::min(size, ::DWORD(buf.size() - 1)));
     buf[size] = 0;
 
     // Remove trailing newlines (if any)
-    while (size > 0 && (buf[size-1] == '\n' || buf[size-1] == '\r')) {
+    while (size > 0 && (buf[size-1] == u'\n' || buf[size-1] == u'\r')) {
         buf[--size] = 0;
     }
 
     // If DirectShow message is empty, use Win32 error message
     if (size > 0) {
-        return buf;
+        return UString(buf, size);
     }
     else {
         return ErrorCodeMessage(hr);
@@ -73,13 +73,13 @@ std::string ts::ComMessage(::HRESULT hr)
 // Return true is status is success, false if error.
 //-----------------------------------------------------------------------------
 
-bool ts::ComSuccess(::HRESULT hr, const std::string& message, Report& report)
+bool ts::ComSuccess(::HRESULT hr, const UString& message, Report& report)
 {
     return ComSuccess(hr, message.c_str(), report);
 }
 
 
-bool ts::ComSuccess(::HRESULT hr, const char* message, Report& report)
+bool ts::ComSuccess(::HRESULT hr, const UChar* message, Report& report)
 {
     if (SUCCEEDED(hr)) {
         return true;
@@ -87,10 +87,10 @@ bool ts::ComSuccess(::HRESULT hr, const char* message, Report& report)
 
     // Report error message
     if (message != 0) {
-        report.error(message + (": " + ComMessage(hr)));
+        report.error(UString(message) + u": " + ComMessage(hr));
     }
     else {
-        report.error("COM error: " + ComMessage(hr));
+        report.error(u"COM error: " + ComMessage(hr));
     }
 
     return false;
@@ -115,39 +115,24 @@ bool ts::ComExpose(::IUnknown* object, const ::IID& iid)
 
 
 //-----------------------------------------------------------------------------
-// Convert COM strings to std::string (empty on error)
+// Convert COM strings to UString (empty on error)
 //-----------------------------------------------------------------------------
 
-std::string ts::ToString(const ::VARIANT& var)
+ts::UString ts::ToString(const ::VARIANT& var)
 {
-    return var.vt == ::VT_BSTR ? ToString(var.bstrVal) : "";
+    return var.vt == ::VT_BSTR ? ToString(var.bstrVal) : UString();
 }
 
-std::string ts::ToString(const ::BSTR bstr)
+ts::UString ts::ToString(const ::BSTR bstr)
 {
-    char* cp = _com_util::ConvertBSTRToString(bstr);
-    std::string str;
-    if (cp != 0) {
-        str = cp;
-        delete[] cp;
-    }
-    return str;
+    assert(sizeof(*bstr) == sizeof(ts::UChar));
+    return UString(reinterpret_cast<const UChar*>(bstr));
 }
 
-std::string ts::ToString(const ::WCHAR* str)
+ts::UString ts::ToString(const ::WCHAR* str)
 {
-    // No output buffer => return expected size
-    int size = ::WideCharToMultiByte(CP_ACP, 0, str, -1, NULL, 0, ".", NULL);
-    if (size <= 0) {
-        return "";
-    }
-    // Now perform actual conversion
-    char* buf = new char [size+1];
-    int size2 = ::WideCharToMultiByte(CP_ACP, 0, str, -1, buf, size, ".", NULL);
-    buf [std::min(size, std::max(0, size2))] = 0;
-    std::string result(buf);
-    delete[] buf;
-    return result;
+    assert(sizeof(*str) == sizeof(ts::UChar));
+    return UString(reinterpret_cast<const UChar*>(str));
 }
 
 
@@ -156,7 +141,7 @@ std::string ts::ToString(const ::WCHAR* str)
 // (defined by an object moniker)
 //-----------------------------------------------------------------------------
 
-std::string ts::GetStringPropertyBag(::IMoniker* object_moniker, const ::OLECHAR* property_name, Report& report)
+ts::UString ts::GetStringPropertyBag(::IMoniker* object_moniker, const ::OLECHAR* property_name, Report& report)
 {
     // Bind to the object's storage, get the "property bag" interface
     ComPtr <::IPropertyBag> pbag;
@@ -164,17 +149,17 @@ std::string ts::GetStringPropertyBag(::IMoniker* object_moniker, const ::OLECHAR
                                                  0,                       // Not part of a composite
                                                  ::IID_IPropertyBag,      // ID of requested interface
                                                  (void**)pbag.creator()); // Returned interface
-    if (!ComSuccess(hr, "IMoniker::BindToStorage", report)) {
+    if (!ComSuccess(hr, u"IMoniker::BindToStorage", report)) {
         return "";
     }
 
     // Get property from property bag
 
-    std::string value;
+    UString value;
     ::VARIANT var;
     ::VariantInit(&var);
     hr = pbag->Read(property_name, &var, 0);
-    if (ComSuccess(hr, "IPropertyBag::Read", report)) {
+    if (ComSuccess(hr, u"IPropertyBag::Read", report)) {
         value = ToString(var);
     }
     ::VariantClear(&var);
@@ -187,12 +172,13 @@ std::string ts::GetStringPropertyBag(::IMoniker* object_moniker, const ::OLECHAR
 // Format a GUID as string (Windows-specific).
 //-----------------------------------------------------------------------------
 
-std::string ts::FormatGUID(const ::GUID& guid, bool with_braces)
+ts::UString ts::FormatGUID(const ::GUID& guid, bool with_braces)
 {
-    std::string s(Format("%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X",
-                         guid.Data1, guid.Data2, guid.Data3, guid.Data4[0], guid.Data4[1],
-                         guid.Data4[2], guid.Data4[3], guid.Data4[4], guid.Data4[5], guid.Data4[6], guid.Data4[7]));
-    return with_braces ? "{" + s + "}" : s;
+    const UString s(UString::Format(u"%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X",
+                                    {guid.Data1, guid.Data2, guid.Data3,
+                                     guid.Data4[0], guid.Data4[1], guid.Data4[2], guid.Data4[3],
+                                     guid.Data4[4], guid.Data4[5], guid.Data4[6], guid.Data4[7]}));
+    return with_braces ? u"{" + s + u"}" : s;
 }
 
 
@@ -200,41 +186,41 @@ std::string ts::FormatGUID(const ::GUID& guid, bool with_braces)
 // Format the name of a GUID. Resolve a few known names
 //-----------------------------------------------------------------------------
 
-std::string ts::NameGUID(const ::GUID& guid)
+ts::UString ts::NameGUID(const ::GUID& guid)
 {
     // Build default formattings as found in the registry.
-    const std::string fmt0(FormatGUID(guid, false));
-    const std::string fmt("{" + fmt0 + "}");
-    const std::string fmt1(LowerCaseValue(fmt0));
-    const std::string fmt2(LowerCaseValue(fmt));
+    const UString fmt0(FormatGUID(guid, false));
+    const UString fmt(u"{" + fmt0 + u"}");
+    const UString fmt1(fmt0.toLower());
+    const UString fmt2(fmt.toLower());
 
     // Storage of GUID's in the registry.
     struct RegistryLocation {
-        const char* key;
-        const char* prefix;
+        const UChar* key;
+        const UChar* prefix;
     };
     static const RegistryLocation registryLocations[] = {
         // Windows XP style
-        {"HKEY_CLASSES_ROOT\\CLSID\\", "CLSID_"},
-        {"HKEY_CLASSES_ROOT\\Interface\\", "IID_"},
-        {"HKEY_CLASSES_ROOT\\DirectShow\\MediaObjects\\", "DirectShow.MediaObject:"},
-        {"HKEY_CLASSES_ROOT\\DirectShow\\MediaObjects\\Categories\\", "DirectShow.MediaObject.Category:"},
-        {"HKEY_CLASSES_ROOT\\Filter\\", "Filter:"},
-        {"HKEY_CLASSES_ROOT\\CLSID\\{DA4E3DA0-D07D-11d0-BD50-00A0C911CE86}\\Instance\\", "ActiveMovie.FilterCategories:"},
+        {u"HKEY_CLASSES_ROOT\\CLSID\\", u"CLSID_"},
+        {u"HKEY_CLASSES_ROOT\\Interface\\", u"IID_"},
+        {u"HKEY_CLASSES_ROOT\\DirectShow\\MediaObjects\\", u"DirectShow.MediaObject:"},
+        {u"HKEY_CLASSES_ROOT\\DirectShow\\MediaObjects\\Categories\\", u"DirectShow.MediaObject.Category:"},
+        {u"HKEY_CLASSES_ROOT\\Filter\\", u"Filter:"},
+        {u"HKEY_CLASSES_ROOT\\CLSID\\{DA4E3DA0-D07D-11d0-BD50-00A0C911CE86}\\Instance\\", u"ActiveMovie.FilterCategories:"},
         // Windows 7 and 10 style
-        {"HKEY_LOCAL_MACHINE\\SOFTWARE\\Classes\\CLSID\\", "CLSID_"},
-        {"HKEY_LOCAL_MACHINE\\SOFTWARE\\Classes\\Interface\\", "IID_"},
-        {"HKEY_LOCAL_MACHINE\\SOFTWARE\\Classes\\DirectShow\\MediaObjects\\", "DirectShow.MediaObject:"},
-        {"HKEY_LOCAL_MACHINE\\SOFTWARE\\Classes\\DirectShow\\MediaObjects\\Categories\\", "DirectShow.MediaObject.Category:"},
-        {"HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\Class\\", "System.Class:"},
-        {"HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\MediaCategories\\", "System.MediaCategory:"},
-        {"HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\MediaInterfaces\\", "System.MediaInterfaces:"},
+        {u"HKEY_LOCAL_MACHINE\\SOFTWARE\\Classes\\CLSID\\", u"CLSID_"},
+        {u"HKEY_LOCAL_MACHINE\\SOFTWARE\\Classes\\Interface\\", u"IID_"},
+        {u"HKEY_LOCAL_MACHINE\\SOFTWARE\\Classes\\DirectShow\\MediaObjects\\", u"DirectShow.MediaObject:"},
+        {u"HKEY_LOCAL_MACHINE\\SOFTWARE\\Classes\\DirectShow\\MediaObjects\\Categories\\", u"DirectShow.MediaObject.Category:"},
+        {u"HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\Class\\", u"System.Class:"},
+        {u"HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\MediaCategories\\", u"System.MediaCategory:"},
+        {u"HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\MediaInterfaces\\", u"System.MediaInterfaces:"},
         {0, 0}
     };
 
     // Check if the GUID is stored in the registry.
     for (const RegistryLocation* p = registryLocations; p->key != 0; ++p) {
-        std::string name;
+        UString name;
         if (!(name = GetRegistryValue(p->key + fmt)).empty() ||
             !(name = GetRegistryValue(p->key + fmt0)).empty() ||
             !(name = GetRegistryValue(p->key + fmt1)).empty() ||
@@ -247,10 +233,10 @@ std::string ts::NameGUID(const ::GUID& guid)
     // Check some predefined GUID values
     struct KnownValue {
         const ::GUID* id;
-        const char*   name;
+        const UChar*   name;
     };
     static const KnownValue knownValues[] = {
-#define _N_(g) {&g, #g},
+#define _N_(g) {&g, u#g},
         _N_(AM_INTERFACESETID_Standard)
         _N_(AM_KSCATEGORY_AUDIO)
         _N_(AM_KSCATEGORY_CAPTURE)

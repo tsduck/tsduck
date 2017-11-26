@@ -38,7 +38,7 @@
 //-----------------------------------------------------------------------------
 
 #pragma once
-#include "tsReport.h"
+#include "tsUString.h"
 
 namespace ts {
     //!
@@ -47,7 +47,7 @@ namespace ts {
     //! @param [in] value_name Name of the value in @a key.
     //! @return An empty string if non-existent or error.
     //!
-    TSDUCKDLL std::string GetRegistryValue(const std::string& key, const std::string& value_name = "");
+    TSDUCKDLL UString GetRegistryValue(const UString& key, const UString& value_name = UString());
 
     //!
     //! Set the value of a registry key (Windows-specific).
@@ -58,9 +58,9 @@ namespace ts {
     //! Otherwise, set type to REG_SZ.
     //! @return True on success, false on error.
     //!
-    TSDUCKDLL bool SetRegistryValue(const std::string& key,
-                                    const std::string& value_name,
-                                    const std::string& value,
+    TSDUCKDLL bool SetRegistryValue(const UString& key,
+                                    const UString& value_name,
+                                    const UString& value,
                                     bool expandable = false);
 
     //!
@@ -72,7 +72,7 @@ namespace ts {
     //! Set the data type as REG_DWORD.
     //! @return True on success, false on error.
     //!
-    TSDUCKDLL bool SetRegistryValue(const std::string& key, const std::string& value_name, ::DWORD value);
+    TSDUCKDLL bool SetRegistryValue(const UString& key, const UString& value_name, ::DWORD value);
 
     //!
     //! Delete a value of a registry key (Windows-specific).
@@ -80,7 +80,7 @@ namespace ts {
     //! @param [in] value_name Name of the value in @a key.
     //! @return True on success, false on error.
     //!
-    TSDUCKDLL bool DeleteRegistryValue(const std::string& key, const std::string& value_name);
+    TSDUCKDLL bool DeleteRegistryValue(const UString& key, const UString& value_name);
 
     //!
     //! Create a registry key (Windows-specific).
@@ -88,14 +88,33 @@ namespace ts {
     //! @param [in] is_volatile If true, create a "volatile" registry key.
     //! @return True on success, false on error.
     //!
-    TSDUCKDLL bool CreateRegistryKey(const std::string& key, bool is_volatile = false);
+    TSDUCKDLL bool CreateRegistryKey(const UString& key, bool is_volatile = false);
 
     //!
     //! Delete a registry key (Windows-specific).
     //! @param [in] key Registry key to delete.
     //! @return True on success, false on error.
     //!
-    TSDUCKDLL bool DeleteRegistryKey(const std::string& key);
+    TSDUCKDLL bool DeleteRegistryKey(const UString& key);
+
+    //!
+    //! Get the root key of a registry path.
+    //! @param [in] key Registry key to split.
+    //! @param [out] root_key Handle to the root key.
+    //! @param [out] subkey Subkey name.
+    //! @return True on success, false on error.
+    //!
+    TSDUCKDLL bool SplitRegistryKey(const UString& key, ::HKEY& root_key, UString& subkey);
+
+    //!
+    //! Get the root key of a registry path.
+    //! @param [in] key Registry key to split.
+    //! @param [out] root_key Handle to the root key.
+    //! @param [out] midkey Middle key name (without root key and final component).
+    //! @param [out] final_key Final component of the key.
+    //! @return True on success, false on error.
+    //!
+    TSDUCKDLL bool SplitRegistryKey(const UString& key, ::HKEY& root_key, UString& midkey, UString& final_key);
 
     //!
     //! Notify all applications of a setting change (Windows-specific).

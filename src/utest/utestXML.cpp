@@ -87,13 +87,13 @@ void XMLTest::tearDown()
 void XMLTest::testDocument()
 {
     static const char* const document =
-        u"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-        u"<root attr1=\"val1\">\n"
-        u"  <node1 a1=\"v1\" a2=\"v2\">Text in node1</node1>\n"
-        u"  <node2 b1=\"x1\">Text in node2</node2>\n"
-        u"  <node3 foo=\"bar\"/>\n"
-        u"  <node4/>\n"
-        u"</root>\n";
+        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+        "<root attr1=\"val1\">\n"
+        "  <node1 a1=\"v1\" a2=\"v2\">Text in node1</node1>\n"
+        "  <node2 b1=\"x1\">Text in node2</node2>\n"
+        "  <node3 foo=\"bar\"/>\n"
+        "  <node4/>\n"
+        "</root>\n";
 
     ts::XML::Document doc;
     CPPUNIT_ASSERT_EQUAL(tinyxml2::XML_SUCCESS, doc.Parse(document));

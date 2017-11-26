@@ -34,8 +34,6 @@
 #include "tsSysUtils.h"
 #include "tsStringUtils.h"
 #include "tsMonotonic.h"
-#include "tsFormat.h"
-#include "tsDecimal.h"
 #include "tsTime.h"
 #include "tsUID.h"
 #include "utestCppUnitTest.h"
@@ -115,7 +113,8 @@ void SysUtilsTest::setUp()
     _msPrecision = (_nsPrecision + ts::NanoSecPerMilliSec - 1) / ts::NanoSecPerMilliSec;
 
     // Request 2 milliseconds as system time precision.
-    utest::Out() << "SysUtilsTest: timer precision = " << ts::Decimal(_nsPrecision) << " ns, " << ts::Decimal(_msPrecision) << " ms" << std::endl;
+    utest::Out() << "SysUtilsTest: timer precision = " << ts::UString::Decimal(_nsPrecision) << " ns, "
+                 << ts::UString::Decimal(_msPrecision) << " ms" << std::endl;
 }
 
 // Test suite cleanup method.
@@ -125,10 +124,10 @@ void SysUtilsTest::tearDown()
 
 // Vectors of strings
 namespace {
-    void Display(const std::string& title, const std::string& prefix, const ts::StringVector& strings)
+    void Display(const ts::UString& title, const ts::UString& prefix, const ts::UStringVector& strings)
     {
         utest::Out() << "SysUtilsTest: " << title << std::endl;
-        for (ts::StringVector::const_iterator it = strings.begin(); it != strings.end(); ++it) {
+        for (ts::UStringVector::const_iterator it = strings.begin(); it != strings.end(); ++it) {
             utest::Out() << "SysUtilsTest: " << prefix << "\"" << *it << "\"" << std::endl;
         }
     }
@@ -137,10 +136,10 @@ namespace {
 // Create a file with the specified size using standard C++ I/O.
 // Return true on success, false on error.
 namespace {
-    bool _CreateFile(const std::string& name, size_t size)
+    bool _CreateFile(const ts::UString& name, size_t size)
     {
-        std::string data(size, '-');
-        std::ofstream file(name.c_str(), std::ios::binary);
+        ts::UString data(size, '-');
+        std::ofstream file(name.toUTF8().c_str(), std::ios::binary);
         if (file) {
             file << data;
             file.close();
@@ -158,16 +157,15 @@ void SysUtilsTest::testCurrentProcessId()
 {
     // Hard to make automated tests since we do not expect predictible values
 
-    utest::Out()
-        << "SysUtilsTest: sizeof(ts::ProcessId) = " << sizeof(ts::ProcessId) << std::endl
-        << "SysUtilsTest: ts::CurrentProcessId() = " << ts::CurrentProcessId() << std::endl;
+    utest::Out() << "SysUtilsTest: sizeof(ts::ProcessId) = " << sizeof(ts::ProcessId) << std::endl
+                 << "SysUtilsTest: ts::CurrentProcessId() = " << ts::CurrentProcessId() << std::endl;
 }
 
 void SysUtilsTest::testCurrentExecutableFile()
 {
     // Hard to make automated tests since we do not expect a predictible executable name.
 
-    std::string exe(ts::ExecutableFile());
+    ts::UString exe(ts::ExecutableFile());
     utest::Out() << "SysUtilsTest: ts::ExecutableFile() = \"" << exe << "\"" << std::endl;
     CPPUNIT_ASSERT(!exe.empty());
     CPPUNIT_ASSERT(ts::FileExists(exe));
@@ -206,7 +204,7 @@ void SysUtilsTest::testEnvironment()
     CPPUNIT_ASSERT(ts::GetEnvironment("UTEST_A", "bar") == "bar");
 
     // Very large value
-    const std::string large (2000, 'x');
+    const ts::UString large (2000, 'x');
     ts::SetEnvironment("UTEST_A", large);
     CPPUNIT_ASSERT(ts::EnvironmentExists("UTEST_A"));
     CPPUNIT_ASSERT(ts::GetEnvironment("UTEST_A") == large);
@@ -233,19 +231,19 @@ void SysUtilsTest::testEnvironment()
     CPPUNIT_ASSERT(env["UTEST_C"] == "nopqrstuvwxyz");
 
     // Search path
-    ts::StringVector ref;
-    ref.push_back ("azert/aze");
-    ref.push_back ("qsdsd f\\qdfqsd f");
-    ref.push_back ("fsdvsdf");
-    ref.push_back ("qs5veazr5--verv");
+    ts::UStringVector ref;
+    ref.push_back(u"azert/aze");
+    ref.push_back(u"qsdsd f\\qdfqsd f");
+    ref.push_back(u"fsdvsdf");
+    ref.push_back(u"qs5veazr5--verv");
 
-    std::string value (ref[0]);
+    ts::UString value (ref[0]);
     for (size_t i = 1; i < ref.size(); ++i) {
         value += ts::SearchPathSeparator + ref[i];
     }
     ts::SetEnvironment("UTEST_A", value);
 
-    ts::StringVector path;
+    ts::UStringVector path;
     ts::GetEnvironmentPath (path, "UTEST_A");
     CPPUNIT_ASSERT(path == ref);
 
@@ -318,8 +316,8 @@ void SysUtilsTest::testErrorCode()
         0;
 #endif
 
-    const std::string codeMessage(ts::ErrorCodeMessage(code));
-    const std::string successMessage(ts::ErrorCodeMessage(ts::SYS_SUCCESS));
+    const ts::UString codeMessage(ts::ErrorCodeMessage(code));
+    const ts::UString successMessage(ts::ErrorCodeMessage(ts::SYS_SUCCESS));
 
     utest::Out()
         << "SysUtilsTest: sizeof(ts::ErrorCode) = " << sizeof(ts::ErrorCode) << std::endl
@@ -334,7 +332,7 @@ void SysUtilsTest::testErrorCode()
 
 void SysUtilsTest::testUid()
 {
-    utest::Out() << "SysUtilsTest: newUid() = 0x" << ts::Format("%016" FMT_INT64 "X", ts::UID::Instance()->newUID()) << std::endl;
+    utest::Out() << "SysUtilsTest: newUid() = 0x" << ts::UString::Hexa(ts::UID::Instance()->newUID()) << std::endl;
 
     CPPUNIT_ASSERT(ts::UID::Instance()->newUID() != ts::UID::Instance()->newUID());
     CPPUNIT_ASSERT(ts::UID::Instance()->newUID() != ts::UID::Instance()->newUID());
@@ -354,9 +352,9 @@ void SysUtilsTest::testVernacularFilePath()
 
 void SysUtilsTest::testFilePaths()
 {
-    const std::string dir(ts::VernacularFilePath("/dir/for/this.test"));
-    const std::string sep(1, ts::PathSeparator);
-    const std::string dirSep(dir + ts::PathSeparator);
+    const ts::UString dir(ts::VernacularFilePath("/dir/for/this.test"));
+    const ts::UString sep(1, ts::PathSeparator);
+    const ts::UString dirSep(dir + ts::PathSeparator);
 
     CPPUNIT_ASSERT(ts::DirectoryName(dirSep + "foo.bar") == dir);
     CPPUNIT_ASSERT(ts::DirectoryName("foo.bar") == ".");
@@ -388,7 +386,7 @@ void SysUtilsTest::testTempFiles()
     CPPUNIT_ASSERT(ts::IsDirectory (ts::TempDirectory()));
 
     // Check that temporary files are in this directory
-    const std::string tmpName (ts::TempFile());
+    const ts::UString tmpName (ts::TempFile());
     CPPUNIT_ASSERT(ts::DirectoryName (tmpName) == ts::TempDirectory());
 
     // Check that we are allowed to create temporary files.
@@ -402,7 +400,7 @@ void SysUtilsTest::testTempFiles()
 
 void SysUtilsTest::testFileSize()
 {
-    const std::string tmpName (ts::TempFile());
+    const ts::UString tmpName (ts::TempFile());
     CPPUNIT_ASSERT(!ts::FileExists (tmpName));
 
     // Create a file
@@ -413,7 +411,7 @@ void SysUtilsTest::testFileSize()
     CPPUNIT_ASSERT(ts::TruncateFile (tmpName, 567) == ts::SYS_SUCCESS);
     CPPUNIT_ASSERT(ts::GetFileSize(tmpName) == 567);
 
-    const std::string tmpName2 (ts::TempFile());
+    const ts::UString tmpName2 (ts::TempFile());
     CPPUNIT_ASSERT(!ts::FileExists (tmpName2));
     CPPUNIT_ASSERT(ts::RenameFile (tmpName, tmpName2) == ts::SYS_SUCCESS);
     CPPUNIT_ASSERT(ts::FileExists (tmpName2));
@@ -426,7 +424,7 @@ void SysUtilsTest::testFileSize()
 
 void SysUtilsTest::testFileTime()
 {
-    const std::string tmpName (ts::TempFile());
+    const ts::UString tmpName (ts::TempFile());
 
     const ts::Time before (ts::Time::CurrentUTC());
     CPPUNIT_ASSERT(_CreateFile (tmpName, 0));
@@ -465,9 +463,9 @@ void SysUtilsTest::testFileTime()
 
 void SysUtilsTest::testDirectory()
 {
-    const std::string dirName(ts::TempFile(""));
-    const std::string sep(1, ts::PathSeparator);
-    const std::string fileName(sep + "foo.bar");
+    const ts::UString dirName(ts::TempFile(""));
+    const ts::UString sep(1, ts::PathSeparator);
+    const ts::UString fileName(sep + "foo.bar");
 
     CPPUNIT_ASSERT(!ts::FileExists (dirName));
     CPPUNIT_ASSERT(ts::CreateDirectory (dirName) == ts::SYS_SUCCESS);
@@ -478,7 +476,7 @@ void SysUtilsTest::testDirectory()
     CPPUNIT_ASSERT(ts::FileExists (dirName + fileName));
     CPPUNIT_ASSERT(!ts::IsDirectory (dirName + fileName));
 
-    const std::string dirName2 (ts::TempFile(""));
+    const ts::UString dirName2 (ts::TempFile(""));
     CPPUNIT_ASSERT(!ts::FileExists (dirName2));
     CPPUNIT_ASSERT(ts::RenameFile (dirName, dirName2) == ts::SYS_SUCCESS);
     CPPUNIT_ASSERT(ts::FileExists (dirName2));
@@ -499,8 +497,8 @@ void SysUtilsTest::testDirectory()
 
 void SysUtilsTest::testWildcard()
 {
-    const std::string dirName (ts::TempFile(""));
-    const std::string filePrefix (dirName + ts::PathSeparator + "foo.");
+    const ts::UString dirName (ts::TempFile(""));
+    const ts::UString filePrefix (dirName + ts::PathSeparator + "foo.");
     const size_t count = 10;
 
     // Create temporary directory
@@ -508,30 +506,30 @@ void SysUtilsTest::testWildcard()
     CPPUNIT_ASSERT(ts::IsDirectory (dirName));
 
     // Create one file with unique pattern
-    const std::string spuriousFileName (dirName + ts::PathSeparator + "tagada");
+    const ts::UString spuriousFileName (dirName + ts::PathSeparator + "tagada");
     CPPUNIT_ASSERT(_CreateFile (spuriousFileName, 0));
     CPPUNIT_ASSERT(ts::FileExists (spuriousFileName));
 
     // Create many files
-    ts::StringVector fileNames;
-    fileNames.reserve (count);
+    ts::UStringVector fileNames;
+    fileNames.reserve(count);
     for (size_t i = 0; i < count; ++i) {
-        const std::string fileName (filePrefix + ts::Format ("%03" FMT_SIZE_T "d", i));
-        CPPUNIT_ASSERT(_CreateFile (fileName, 0));
-        CPPUNIT_ASSERT(ts::FileExists (fileName));
-        fileNames.push_back (fileName);
+        const ts::UString fileName(filePrefix + ts::UString::Format(u"%03d", {i}));
+        CPPUNIT_ASSERT(_CreateFile(fileName, 0));
+        CPPUNIT_ASSERT(ts::FileExists(fileName));
+        fileNames.push_back(fileName);
     }
-    Display ("created files:", "file: ", fileNames);
+    Display("created files:", "file: ", fileNames);
 
     // Get wildcard
-    ts::StringVector expanded;
+    ts::UStringVector expanded;
     CPPUNIT_ASSERT(ts::ExpandWildcard(expanded, filePrefix + "*"));
     std::sort(expanded.begin(), expanded.end());
     Display("expanded wildcard:", "expanded: ", expanded);
     CPPUNIT_ASSERT(expanded == fileNames);
 
     // Final cleanup
-    for (ts::StringVector::const_iterator it = fileNames.begin(); it != fileNames.end(); ++it) {
+    for (ts::UStringVector::const_iterator it = fileNames.begin(); it != fileNames.end(); ++it) {
         CPPUNIT_ASSERT(ts::DeleteFile(*it) == ts::SYS_SUCCESS);
         CPPUNIT_ASSERT(!ts::FileExists(*it));
     }
@@ -543,7 +541,7 @@ void SysUtilsTest::testWildcard()
 
 void SysUtilsTest::testHomeDirectory()
 {
-    const std::string dir(ts::UserHomeDirectory());
+    const ts::UString dir(ts::UserHomeDirectory());
     utest::Out() << "SysUtilsTest: UserHomeDirectory() = \"" << dir << "\"" << std::endl;
 
     CPPUNIT_ASSERT(!dir.empty());

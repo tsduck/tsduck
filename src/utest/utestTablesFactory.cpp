@@ -32,7 +32,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsTablesFactory.h"
-#include "tsStringUtils.h"
 #include "utestCppUnitTest.h"
 TSDUCK_SOURCE;
 
@@ -77,18 +76,18 @@ void TablesFactoryTest::tearDown()
 
 void TablesFactoryTest::testRegistrations()
 {
-    ts::StringList names;
+    ts::UStringList names;
 
     ts::TablesFactory::Instance()->getRegisteredTableNames(names);
-    utest::Out() << "TablesFactoryTest::testRegistrations: table names: " << ts::JoinStrings(names) << std::endl;
+    utest::Out() << "TablesFactoryTest::testRegistrations: table names: " << ts::UString::Join(names) << std::endl;
 
     CPPUNIT_ASSERT(!names.empty());
-    CPPUNIT_ASSERT(ts::ContainSimilarString(names, "PAT"));
-    CPPUNIT_ASSERT(ts::ContainSimilarString(names, "PMT"));
+    CPPUNIT_ASSERT(ts::UString("PAT").containSimilar(names));
+    CPPUNIT_ASSERT(ts::UString("PMT").containSimilar(names));
 
     ts::TablesFactory::Instance()->getRegisteredDescriptorNames(names);
-    utest::Out() << "TablesFactoryTest::testRegistrations: descriptor names: " << ts::JoinStrings(names) << std::endl;
+    utest::Out() << "TablesFactoryTest::testRegistrations: descriptor names: " << ts::UString::Join(names) << std::endl;
 
     CPPUNIT_ASSERT(!names.empty());
-    CPPUNIT_ASSERT(ts::ContainSimilarString(names, "ca_descriptor"));
+    CPPUNIT_ASSERT(ts::UString("ca_descriptor").containSimilar(names));
 }

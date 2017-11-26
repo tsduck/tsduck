@@ -1,4 +1,4 @@
-static const char psi_pat1_xml[] =
+static const ts::UChar psi_pat1_xml[] =
     u"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
     u"<tsduck>\n"
     u"  <PAT version=\"3\" current=\"true\" transport_stream_id=\"0x4567\" network_PID=\"0x0010\">\n"
