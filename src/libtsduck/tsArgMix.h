@@ -75,55 +75,9 @@ namespace ts {
         };
 
         //!
-        //! Constructor from a 8-bit character.
-        //! @param [in] c Character value of the ArgMix. Internally stored as a 32-bit integer.
+        //! Default constructor.
         //!
-        ArgMix(char c) : _type(INT32), _size(sizeof(c)), _value(int32_t(c)) {}
-        //!
-        //! Constructor from a 16-bit character.
-        //! @param [in] c Character value of the ArgMix. Internally stored as a 32-bit integer.
-        //!
-        ArgMix(char16_t c) : _type(INT32), _size(sizeof(c)), _value(int32_t(c)) {}
-        //!
-        //! Constructor from a signed 8-bit integer.
-        //! @param [in] i Integer value of the ArgMix. Internally stored as a 32-bit integer.
-        //!
-        ArgMix(int8_t i) : _type(INT32), _size(sizeof(i)), _value(int32_t(i)) {}
-        //!
-        //! Constructor from an unsigned 8-bit integer.
-        //! @param [in] i Integer value of the ArgMix. Internally stored as a 32-bit integer.
-        //!
-        ArgMix(uint8_t i) : _type(UINT32), _size(sizeof(i)), _value(uint32_t(i)) {}
-        //!
-        //! Constructor from a signed 16-bit integer.
-        //! @param [in] i Integer value of the ArgMix. Internally stored as a 32-bit integer.
-        //!
-        ArgMix(int16_t i) : _type(INT32), _size(sizeof(i)), _value(int32_t(i)) {}
-        //!
-        //! Constructor from an unsigned 16-bit integer.
-        //! @param [in] i Integer value of the ArgMix. Internally stored as a 32-bit integer.
-        //!
-        ArgMix(uint16_t i) : _type(UINT32), _size(sizeof(i)), _value(uint32_t(i)) {}
-        //!
-        //! Constructor from a signed 32-bit integer (also default constructor).
-        //! @param [in] i Integer value of the ArgMix.
-        //!
-        ArgMix(int32_t i = 0) : _type(INT32), _size(sizeof(i)), _value(i) {}
-        //!
-        //! Constructor from an unsigned 32-bit integer.
-        //! @param [in] i Integer value of the ArgMix.
-        //!
-        ArgMix(uint32_t i) : _type(UINT32), _size(sizeof(i)), _value(i) {}
-        //!
-        //! Constructor from a signed 64-bit integer.
-        //! @param [in] i Integer value of the ArgMix.
-        //!
-        ArgMix(int64_t i) : _type(INT64), _size(sizeof(i)), _value(i) {}
-        //!
-        //! Constructor from a unsigned 64-bit integer.
-        //! @param [in] i Integer value of the ArgMix.
-        //!
-        ArgMix(uint64_t i) : _type(UINT64), _size(sizeof(i)), _value(i) {}
+        ArgMix() : _type(INT32), _size(0), _value(int32_t(0)) {}
         //!
         //! Constructor from a nul-terminated string of 8-bit characters.
         //! @param [in] s Address of nul-terminated string.
@@ -144,27 +98,12 @@ namespace ts {
         //! @param [in] s Reference to a C++ string.
         //!
         ArgMix(const UString& s) : _type(USTRING), _size(0), _value(s) {}
-
-        //
-        // The following overloads may be separately defined or not, depending on
-        // the platform. Generally speaking, these overloads are defined for integer
-        // types which do not map to any of the [u]intXX_t.
-        //
-#if !defined(DOXYGEN)
-#if !defined(TS_SIZE_T_IS_STDINT)
-        ArgMix(size_t i) :
-            #if TS_ADDRESS_BITS <= 32
-                _type(UINT32), _size(sizeof(i)), _value(uint32_t(i))
-            #else
-                _type(UINT64), _size(sizeof(i)), _value(uint64_t(i))
-            #endif
-        {}
-#endif
-#if defined(TS_MSC)
-        ArgMix(long i) : _type(INT32), _size(sizeof(i)), _value(int32_t(i)) {}
-        ArgMix(unsigned long i) : _type(UINT32), _size(sizeof(i)), _value(uint32_t(i)) {}
-#endif
-#endif // DOXYGEN
+        //!
+        //! Constructor from an integer or enum type.
+        //! @param [in] i Integer value of the ArgMix. Internally stored as a 32-bit or 64-bit integer.
+        //!
+        template<typename T, typename std::enable_if<std::is_integral<T>::value || std::is_enum<T>::value>::type* = nullptr>
+        ArgMix(T i) : _type(storage_type<T>::value), _size(sizeof(i)), _value((typename storage_type<T>::type)(i)) {}
 
         //!
         //! Get the argument data type.
@@ -284,6 +223,55 @@ namespace ts {
         // Used to return references to constant empty strings.
         static const std::string empty;
         static const ts::UString uempty;
+
+        // Warning: The rest of this class is carefully crafted template meta-programming (aka. Black Magic).
+        // It is correct, it works, but it is not immediately easy to understand. So, do not modify it if you
+        // are not 100% sure to have understood it and you know what you are doing. You have been warned...
+
+        // The meta-type "underlying_type_impl" is the basis for underlying_type.
+        // The default definition, when ISENUM is false is T and applies to integer types.
+        template<bool ISENUM, typename T>
+        struct underlying_type_impl {
+            typedef T type;
+        };
+
+        // The following specialized definition applies to enum types.
+        template<typename T>
+        struct underlying_type_impl<true,T> {
+            typedef typename std::underlying_type<T>::type type;
+        };
+
+        // The meta-type "underlying_type" is a generalization of std::underlying_type
+        // which works on integer types as well. The underlying type of an integer
+        // type is the type itself.
+        template<typename T>
+        struct underlying_type {
+            typedef typename underlying_type_impl<std::is_enum<T>::value, T>::type type;
+        };
+
+        // The meta-type "storage_type" defines the characteristics of the type which is
+        // used to store an integer or enum types in an ArgMix.
+        template <typename T>
+        struct storage_type {
+
+            // The meta-type "type" is the storage type, namely one of int32_t, uint32_t, int64_t, uint64_t.
+            typedef typename std::conditional<
+                std::is_signed<typename underlying_type<T>::type>::value,
+                typename std::conditional<(sizeof(T) > 4), int64_t, int32_t>::type,
+                typename std::conditional<(sizeof(T) > 4), uint64_t, uint32_t>::type
+            >::type type;
+
+            // The meta-type "type_constant" defines the ArgMix::Type value for the type T.
+            typedef typename std::conditional<
+                std::is_signed<typename underlying_type<T>::type>::value,
+                typename std::conditional<(sizeof(T) > 4), std::integral_constant<Type,INT64>, std::integral_constant<Type,INT32>>::type,
+                typename std::conditional<(sizeof(T) > 4), std::integral_constant<Type,UINT64>, std::integral_constant<Type,UINT32>>::type
+            >::type type_constant;
+
+            // The "value" is the ArgMix::Type value for the type T.
+            static constexpr Type value = type_constant::value;
+        };
+
     };
 }
 

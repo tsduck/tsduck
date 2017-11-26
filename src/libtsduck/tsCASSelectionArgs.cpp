@@ -76,23 +76,23 @@ void ts::CASSelectionArgs::addHelp(Args& args) const
         u"      values in the range --min-cas to --max-cas.\n"
         u"\n"
         u"  --mediaguard\n"
-        u"      Equivalent to " + UString::Format(u"--min-cas 0x%04X --max-cas 0x%04X", {CASID_MEDIAGUARD_MIN, CASID_MEDIAGUARD_MAX}) + ".\n"
+        u"      Equivalent to " + UString::Format(u"--min-cas 0x%04X --max-cas 0x%04X", {CASID_MEDIAGUARD_MIN, CASID_MEDIAGUARD_MAX}) + u".\n"
         u"\n"
         u"  --min-cas value\n"
         u"      With options --ecm or --emm, select only ECM or EMM for the CA system id\n"
         u"      values in the range --min-cas to --max-cas.\n"
         u"\n"
         u"  --nagravision\n"
-        u"      Equivalent to " + UString::Format(u"--min-cas 0x%04X --max-cas 0x%04X", {CASID_NAGRA_MIN, CASID_NAGRA_MAX}) + ".\n"
+        u"      Equivalent to " + UString::Format(u"--min-cas 0x%04X --max-cas 0x%04X", {CASID_NAGRA_MIN, CASID_NAGRA_MAX}) + u".\n"
         u"\n"
         u"  --operator value\n"
         u"      Restrict to the specified CAS operator (depends on the CAS).\n"
         u"\n"
         u"  --safeaccess\n"
-        u"      Equivalent to " + UString::Format(u"--cas 0x%04X", {CASID_SAFEACCESS}) + ".\n"
+        u"      Equivalent to " + UString::Format(u"--cas 0x%04X", {CASID_SAFEACCESS}) + u".\n"
         u"\n"
         u"  --viaccess\n"
-        u"      Equivalent to " + UString::Format(u"--min-cas 0x%04X --max-cas 0x%04X", {CASID_VIACCESS_MIN, CASID_VIACCESS_MAX}) + ".\n";
+        u"      Equivalent to " + UString::Format(u"--min-cas 0x%04X --max-cas 0x%04X", {CASID_VIACCESS_MIN, CASID_VIACCESS_MAX}) + u".\n";
 
     args.setHelp(args.getHelp() + help);
 }

@@ -32,10 +32,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsUString.h"
-#include "tsHexa.h"
-#include "tsDecimal.h"
-#include "tsFormat.h"
-#include "tsToInteger.h"
 #include "tsByteBlock.h"
 #include "tsSysUtils.h"
 #include "utestCppUnitTest.h"
@@ -131,10 +127,10 @@ public:
     CPPUNIT_TEST_SUITE_END();
 
 private:
-    std::string _tempFilePrefix;
+    ts::UString _tempFilePrefix;
     int _nextFileIndex;
-    std::string temporaryFileName(int) const;
-    std::string newTemporaryFileName();
+    ts::UString temporaryFileName(int) const;
+    ts::UString newTemporaryFileName();
 
     void testArgMixCalled1(const std::initializer_list<ts::ArgMix> list);
     void testArgMixCalled2(const std::initializer_list<ts::ArgMix> list);
@@ -176,9 +172,9 @@ void UStringTest::setUp()
 void UStringTest::tearDown()
 {
     // Delete all temporary files
-    std::vector<std::string> tempFiles;
-    ts::ExpandWildcard(tempFiles, _tempFilePrefix + "*");
-    for (std::vector<std::string>::const_iterator i = tempFiles.begin(); i != tempFiles.end(); ++i) {
+    ts::UStringVector tempFiles;
+    ts::ExpandWildcard(tempFiles, _tempFilePrefix + u"*");
+    for (ts::UStringVector::const_iterator i = tempFiles.begin(); i != tempFiles.end(); ++i) {
         utest::Out() << "UStringTest: deleting temporary file \"" << *i << "\"" << std::endl;
         ts::DeleteFile(*i);
     }
@@ -186,14 +182,13 @@ void UStringTest::tearDown()
 }
 
 // Get the name of a temporary file from an index
-std::string UStringTest::temporaryFileName (int index) const
+ts::UString UStringTest::temporaryFileName (int index) const
 {
-    const std::string name(_tempFilePrefix + ts::Format("%03d", index));
-    return name;
+    return _tempFilePrefix + ts::UString::Format(u"%03d", {index});
 }
 
 // Get the name of the next temporary file
-std::string UStringTest::newTemporaryFileName()
+ts::UString UStringTest::newTemporaryFileName()
 {
     return temporaryFileName(_nextFileIndex++);
 }
@@ -833,42 +828,42 @@ void UStringTest::testSimilarStrings()
 
 void UStringTest::testLoadSave()
 {
-    std::list<ts::UString> ref;
+    ts::UStringList ref;
 
     ts::UChar c = ts::LATIN_CAPITAL_LETTER_A_WITH_MACRON;
     for (int i = 1; i <= 20; ++i) {
-        ref.push_back(ts::UString(2, c++) + ts::Format(", line %d", i));
+        ref.push_back(ts::UString::Format(u"%s, line %d", {ts::UString(2, c++), i}));
     }
     CPPUNIT_ASSERT(ref.size() == 20);
 
-    const std::string file1(newTemporaryFileName());
+    const ts::UString file1(newTemporaryFileName());
     CPPUNIT_ASSERT(ts::UString::Save(ref, file1));
 
-    std::list<ts::UString> load1;
+    ts::UStringList load1;
     CPPUNIT_ASSERT(ts::UString::Load(load1, file1));
     CPPUNIT_ASSERT(load1.size() == 20);
     CPPUNIT_ASSERT(load1 == ref);
 
-    const std::list<ts::UString>::const_iterator refFirst = ++(ref.begin());
-    const std::list<ts::UString>::const_iterator refLast = --(ref.end());
+    const ts::UStringList::const_iterator refFirst = ++(ref.begin());
+    const ts::UStringList::const_iterator refLast = --(ref.end());
 
-    const std::string file2(newTemporaryFileName());
+    const ts::UString file2(newTemporaryFileName());
     CPPUNIT_ASSERT(ts::UString::Save(refFirst, refLast, file2));
 
-    std::list<ts::UString> ref2(refFirst, refLast);
+    ts::UStringList ref2(refFirst, refLast);
     CPPUNIT_ASSERT(ref2.size() == 18);
 
-    std::list<ts::UString> load2;
+    ts::UStringList load2;
     CPPUNIT_ASSERT(ts::UString::Load(load2, file2));
     CPPUNIT_ASSERT(load2.size() == 18);
     CPPUNIT_ASSERT(load2 == ref2);
 
-    std::list<ts::UString> ref3;
+    ts::UStringList ref3;
     ref3.push_back(u"abcdef");
     ref3.insert(ref3.end(), refFirst, refLast);
     CPPUNIT_ASSERT(ref3.size() == 19);
 
-    std::list<ts::UString> load3;
+    ts::UStringList load3;
     load3.push_back(u"abcdef");
     CPPUNIT_ASSERT(ts::UString::LoadAppend(load3, file2));
     CPPUNIT_ASSERT(load3.size() == 19);
@@ -1153,7 +1148,10 @@ void UStringTest::testArgMix()
     const int16_t i16 = -432;
     const size_t sz = 8;
 
-    testArgMixCalled2({12, u8, i16, TS_CONST64(-99), "foo", ok, u"bar", us, ok + " 2", us + u" 2", sz});
+    enum : uint16_t {EA = 7, EB = 48};
+    enum : int8_t {EC = 4, ED = 8};
+
+    testArgMixCalled2({12, u8, i16, TS_CONST64(-99), "foo", ok, u"bar", us, ok + " 2", us + u" 2", sz, EB, EC});
 }
 
 void UStringTest::testArgMixCalled1(const std::initializer_list<ts::ArgMix> list)
@@ -1163,7 +1161,7 @@ void UStringTest::testArgMixCalled1(const std::initializer_list<ts::ArgMix> list
 
 void UStringTest::testArgMixCalled2(const std::initializer_list<ts::ArgMix> list)
 {
-    CPPUNIT_ASSERT_EQUAL(size_t(11), list.size());
+    CPPUNIT_ASSERT_EQUAL(size_t(13), list.size());
 
     std::initializer_list<ts::ArgMix>::const_iterator it = list.begin();
 
@@ -1376,6 +1374,44 @@ void UStringTest::testArgMixCalled2(const std::initializer_list<ts::ArgMix> list
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"", it->toUString());
     ++it;
 
+    // EB (48, uint16_t)
+    CPPUNIT_ASSERT_EQUAL(ts::ArgMix::UINT32, it->type());
+    CPPUNIT_ASSERT(it->isInt());
+    CPPUNIT_ASSERT(!it->isSigned());
+    CPPUNIT_ASSERT(it->isUnsigned());
+    CPPUNIT_ASSERT(!it->isString());
+    CPPUNIT_ASSERT(!it->isString8());
+    CPPUNIT_ASSERT(!it->isString16());
+    CPPUNIT_ASSERT_EQUAL(size_t(2), it->size());
+    CPPUNIT_ASSERT_EQUAL(int32_t(48), it->toInt32());
+    CPPUNIT_ASSERT_EQUAL(uint32_t(48), it->toUInt32());
+    CPPUNIT_ASSERT_EQUAL(int64_t(48), it->toInt64());
+    CPPUNIT_ASSERT_EQUAL(uint64_t(48), it->toUInt64());
+    CPPUNIT_ASSERT_STRINGS_EQUAL("", it->toCharPtr());
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"", it->toUCharPtr());
+    CPPUNIT_ASSERT_STRINGS_EQUAL("", it->toString());
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"", it->toUString());
+    ++it;
+
+    // EC (4, int8_t)
+    CPPUNIT_ASSERT_EQUAL(ts::ArgMix::INT32, it->type());
+    CPPUNIT_ASSERT(it->isInt());
+    CPPUNIT_ASSERT(it->isSigned());
+    CPPUNIT_ASSERT(!it->isUnsigned());
+    CPPUNIT_ASSERT(!it->isString());
+    CPPUNIT_ASSERT(!it->isString8());
+    CPPUNIT_ASSERT(!it->isString16());
+    CPPUNIT_ASSERT_EQUAL(size_t(TS_ADDRESS_BITS / 8), it->size());
+    CPPUNIT_ASSERT_EQUAL(int32_t(4), it->toInt32());
+    CPPUNIT_ASSERT_EQUAL(uint32_t(4), it->toUInt32());
+    CPPUNIT_ASSERT_EQUAL(int64_t(4), it->toInt64());
+    CPPUNIT_ASSERT_EQUAL(uint64_t(4), it->toUInt64());
+    CPPUNIT_ASSERT_STRINGS_EQUAL("", it->toCharPtr());
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"", it->toUCharPtr());
+    CPPUNIT_ASSERT_STRINGS_EQUAL("", it->toString());
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"", it->toUString());
+    ++it;
+
     CPPUNIT_ASSERT(it == list.end());
 }
 
@@ -1428,6 +1464,15 @@ void UStringTest::testFormat()
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"00AB", ts::UString::Format(u"%*X", {4, TS_CONST64(171)}));
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"B", ts::UString::Format(u"%*X", {1, TS_CONST64(171)}));
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"0123,4567", ts::UString::Format(u"%'X", {uint32_t(0x1234567)}));
+
+    // Enumerations
+    enum E1 : uint8_t {E10 = 10, E11 = 11};
+    enum E2 : int16_t {E20 = 20, E21 = 21};
+    E1 e1 = E11;
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"11 10", ts::UString::Format(u"%d %d", {e1, E10}));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"0B", ts::UString::Format(u"%X", {e1}));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"0B", ts::UString::Format(u"%X", {E11}));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"0014", ts::UString::Format(u"%X", {E20}));
 
     // String.
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"|%s|", ts::UString::Format(u"|%s|", {}));
