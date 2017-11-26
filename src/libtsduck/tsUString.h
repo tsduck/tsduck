@@ -833,7 +833,7 @@ namespace ts {
         //! Join a container of strings into one big string.
         //! All strings from the container are concatenated into one big string.
         //! @tparam CONTAINER A container class of @c UString as defined by the C++ Standard Template Library (STL).
-        //! @param [in] container A container of @c std::string containing all strings to concatenate.
+        //! @param [in] container A container of @c UString containing all strings to concatenate.
         //! @param [in] separator A string to insert between all segments.
         //! @return The big string containing all segments and separators.
         //!
@@ -1032,7 +1032,7 @@ namespace ts {
         //! @return True on success, false on error (mostly file errors).
         //!
         template <class ITERATOR>
-        static bool Save(ITERATOR begin, ITERATOR end, const std::string& fileName, bool append = false);
+        static bool Save(ITERATOR begin, ITERATOR end, const UString& fileName, bool append = false);
 
         //!
         //! Save strings from a container into a file, in UTF-8 format, one per line.
@@ -1044,7 +1044,7 @@ namespace ts {
         //! @return True on success, false on error (mostly file errors).
         //!
         template <class CONTAINER>
-        static bool Save(const CONTAINER& container, const std::string& fileName, bool append = false);
+        static bool Save(const CONTAINER& container, const UString& fileName, bool append = false);
 
         //!
         //! Save strings from a container into a stream, in UTF-8 format, one per line.
@@ -1076,7 +1076,7 @@ namespace ts {
         //! @return True on success, false on error (mostly file errors).
         //!
         template <class CONTAINER>
-        static bool Load(CONTAINER& container, const std::string& fileName);
+        static bool Load(CONTAINER& container, const UString& fileName);
 
         //!
         //! Load all lines of a text file in UTF-8 format as UString's and append them in a container.
@@ -1087,7 +1087,7 @@ namespace ts {
         //! @return True on success, false on error (mostly file errors).
         //!
         template <class CONTAINER>
-        static bool LoadAppend(CONTAINER& container, const std::string& fileName);
+        static bool LoadAppend(CONTAINER& container, const UString& fileName);
 
         //!
         //! Read one UTF-8 line from a text file and load it into this object.

@@ -370,7 +370,7 @@ ts::ErrorCode ts::CreateDirectory(const UString& path)
 #if defined(TS_WINDOWS)
     return ::CreateDirectoryW(path.wc_str(), NULL) == 0 ? ::GetLastError() : SYS_SUCCESS;
 #else
-    return ::mkdir(path.c_str(), 0777) < 0 ? errno : SYS_SUCCESS;
+    return ::mkdir(path.toUTF8().c_str(), 0777) < 0 ? errno : SYS_SUCCESS;
 #endif
 }
 
@@ -413,7 +413,7 @@ int64_t ts::GetFileSize(const UString& path)
         (int64_t(info.nFileSizeHigh) << 32) | (int64_t(info.nFileSizeLow) & 0xFFFFFFFFL);
 #else
     struct stat st;
-    return ::stat(path.c_str(), &st) < 0 ? -1 : int64_t(st.st_size);
+    return ::stat(path.toUTF8().c_str(), &st) < 0 ? -1 : int64_t(st.st_size);
 #endif
 }
 
@@ -430,7 +430,7 @@ ts::Time ts::GetFileModificationTimeUTC(const UString& path)
     return ::GetFileAttributesExW(path.wc_str(), ::GetFileExInfoStandard, &info) == 0 ? Time::Epoch : Time::Win32FileTimeToUTC(info.ftLastWriteTime);
 #else
     struct stat st;
-    return ::stat(path.c_str(), &st) < 0 ? Time::Epoch : Time::UnixTimeToUTC(st.st_mtime);
+    return ::stat(path.toUTF8().c_str(), &st) < 0 ? Time::Epoch : Time::UnixTimeToUTC(st.st_mtime);
 #endif
 }
 
@@ -451,7 +451,7 @@ bool ts::FileExists(const UString& path)
     return ::GetFileAttributesW(path.wc_str()) != INVALID_FILE_ATTRIBUTES;
 #else
     // Flawfinder: ignore
-    return ::access(path.c_str(), F_OK) == 0;
+    return ::access(path.toUTF8().c_str(), F_OK) == 0;
 #endif
 }
 
@@ -467,7 +467,7 @@ bool ts::IsDirectory(const UString& path)
     return attr != INVALID_FILE_ATTRIBUTES && (attr & FILE_ATTRIBUTE_DIRECTORY) != 0;
 #else
     struct stat st;
-    return ::stat(path.c_str(), &st) == 0 && S_ISDIR(st.st_mode);
+    return ::stat(path.toUTF8().c_str(), &st) == 0 && S_ISDIR(st.st_mode);
 #endif
 }
 
@@ -486,7 +486,7 @@ ts::ErrorCode ts::DeleteFile(const UString& path)
         return ::DeleteFileW(path.wc_str()) == 0 ? ::GetLastError() : SYS_SUCCESS;
     }
 #else
-    return ::remove(path.c_str()) < 0 ? errno : SYS_SUCCESS;
+    return ::remove(path.toUTF8().c_str()) < 0 ? errno : SYS_SUCCESS;
 #endif
 }
 
@@ -516,7 +516,7 @@ ts::ErrorCode ts::TruncateFile(const UString& path, uint64_t size)
 
 #else
 
-    return ::truncate(path.c_str(), off_t(size)) < 0 ? errno : 0;
+    return ::truncate(path.toUTF8().c_str(), off_t(size)) < 0 ? errno : 0;
 
 #endif
 }
@@ -532,7 +532,7 @@ ts::ErrorCode ts::RenameFile(const UString& old_path, const UString& new_path)
 #if defined(TS_WINDOWS)
     return ::MoveFileW(old_path.wc_str(), new_path.wc_str()) == 0 ? ::GetLastError() : ERROR_SUCCESS;
 #else
-    return ::rename(old_path.c_str(), new_path.c_str()) < 0 ? errno : 0;
+    return ::rename(old_path.toUTF8().c_str(), new_path.toUTF8().c_str()) < 0 ? errno : 0;
 #endif
 }
 
@@ -847,7 +847,7 @@ bool ts::EnvironmentExists(const UString& name)
     return ::GetEnvironmentVariableW(name.wc_str(), unused.data(), ::DWORD(unused.size())) != 0;
 #else
     // Flawfinder: ignore: Environment variables are untrustable input.
-    return ::getenv(name.c_str()) != 0;
+    return ::getenv(name.toUTF8().c_str()) != 0;
 #endif
 }
 
@@ -872,7 +872,7 @@ ts::UString ts::GetEnvironment(const UString& name, const UString& def)
     return size <= 0 ? def : UString(value, size);
 #else
     // Flawfinder: ignore: Environment variables are untrustable input.
-    const char* value = ::getenv(name.c_str());
+    const char* value = ::getenv(name.toUTF8().c_str());
     return value != 0 ? value : def;
 #endif
 }
@@ -890,7 +890,7 @@ bool ts::SetEnvironment(const UString& name, const UString& value)
     return ::SetEnvironmentVariableW(name.wc_str(), value.wc_str()) != 0;
 #else
     // In case of error, setenv(3) is documented to return -1 but not setting errno.
-    return ::setenv(name.c_str(), value.c_str(), 1) == 0;
+    return ::setenv(name.toUTF8().c_str(), value.toUTF8().c_str(), 1) == 0;
 #endif
 }
 
@@ -908,7 +908,7 @@ bool ts::DeleteEnvironment(const UString& name)
 #else
     // In case of error, unsetenv(3) is documented to return -1 but and set errno.
     // It is also documented to silently ignore non-existing variables.
-    return ::unsetenv(name.c_str()) == 0;
+    return ::unsetenv(name.toUTF8().c_str()) == 0;
 #endif
 }
 
