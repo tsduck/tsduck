@@ -401,9 +401,9 @@ namespace ts {
 
 #if defined(TS_LINUX) // Linux properties
 
-        std::string         _frontend_name;    // Frontend device name
-        std::string         _demux_name;       // Demux device name
-        std::string         _dvr_name;         // DVR device name
+        UString             _frontend_name;    // Frontend device name
+        UString             _demux_name;       // Demux device name
+        UString             _dvr_name;         // DVR device name
         int                 _frontend_fd;      // Frontend device file descriptor
         int                 _demux_fd;         // Demux device file descriptor
         int                 _dvr_fd;           // DVR device file descriptor
