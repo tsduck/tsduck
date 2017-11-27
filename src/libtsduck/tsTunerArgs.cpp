@@ -36,8 +36,6 @@
 #include "tsTunerParametersDVBS.h"
 #include "tsTunerParametersDVBC.h"
 #include "tsSysUtils.h"
-#include "tsDecimal.h"
-#include "tsFormat.h"
 #include "tsNullReport.h"
 TSDUCK_SOURCE;
 

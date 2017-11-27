@@ -33,7 +33,6 @@
 
 #include "tstlvMessageFactory.h"
 #include "tstlvAnalyzer.h"
-#include "tsFormat.h"
 TSDUCK_SOURCE;
 
 
@@ -231,11 +230,11 @@ void ts::tlv::MessageFactory::analyzeMessage()
 // Get location of the first occurence of a parameter:
 //----------------------------------------------------------------------------
 
-void ts::tlv::MessageFactory::get (TAG tag, Parameter& param) const
+void ts::tlv::MessageFactory::get(TAG tag, Parameter& param) const
 {
-    ParameterMultimap::const_iterator it = _params.find (tag);
-    if (it == _params.end ()) {
-        throw DeserializationInternalError (Format ("No parameter 0x%04X in message", tag));
+    ParameterMultimap::const_iterator it = _params.find(tag);
+    if (it == _params.end()) {
+        throw DeserializationInternalError(UString::Format(u"No parameter 0x%X in message", {tag}));
     }
     else {
         param = it->second;
@@ -247,16 +246,16 @@ void ts::tlv::MessageFactory::get (TAG tag, Parameter& param) const
 // Get all occurences of a parameter.
 //----------------------------------------------------------------------------
 
-void ts::tlv::MessageFactory::get (TAG tag, std::vector<Parameter>& param) const
+void ts::tlv::MessageFactory::get(TAG tag, std::vector<Parameter>& param) const
 {
     // Reinitialize result vector
-    param.clear ();
+    param.clear();
     param.reserve (_params.count (tag));
     // Fill vector with parameter values
-    ParameterMultimap::const_iterator it = _params.lower_bound (tag);
+    ParameterMultimap::const_iterator it = _params.lower_bound(tag);
     ParameterMultimap::const_iterator last = _params.upper_bound (tag);
     for (; it != last; ++it) {
-        param.push_back (it->second);
+        param.push_back(it->second);
     }
 }
 
@@ -265,17 +264,17 @@ void ts::tlv::MessageFactory::get (TAG tag, std::vector<Parameter>& param) const
 // Get all occurences of a parameter.
 //----------------------------------------------------------------------------
 
-void ts::tlv::MessageFactory::get (TAG tag, std::vector<bool>& param) const
+void ts::tlv::MessageFactory::get(TAG tag, std::vector<bool>& param) const
 {
     // Reinitialize result vector
     param.clear ();
-    param.reserve (_params.count (tag));
+    param.reserve(_params.count(tag));
     // Fill vector with parameter values
-    ParameterMultimap::const_iterator it = _params.lower_bound (tag);
-    ParameterMultimap::const_iterator last = _params.upper_bound (tag);
+    ParameterMultimap::const_iterator it = _params.lower_bound(tag);
+    ParameterMultimap::const_iterator last = _params.upper_bound(tag);
     for (; it != last; ++it) {
         checkParamSize<uint8_t> (tag, it);
-        param.push_back (GetUInt8 (it->second.addr) != 0);
+        param.push_back(GetUInt8(it->second.addr) != 0);
     }
 }
 
@@ -284,16 +283,16 @@ void ts::tlv::MessageFactory::get (TAG tag, std::vector<bool>& param) const
 // Get all occurences of a parameter.
 //----------------------------------------------------------------------------
 
-void ts::tlv::MessageFactory::get (TAG tag, std::vector<std::string>& param) const
+void ts::tlv::MessageFactory::get(TAG tag, std::vector<std::string>& param) const
 {
     // Reinitialize result vector
     param.clear ();
-    param.resize (_params.count (tag));
+    param.resize(_params.count(tag));
     // Fill vector with parameter values
-    ParameterMultimap::const_iterator it = _params.lower_bound (tag);
-    ParameterMultimap::const_iterator last = _params.upper_bound (tag);
+    ParameterMultimap::const_iterator it = _params.lower_bound(tag);
+    ParameterMultimap::const_iterator last = _params.upper_bound(tag);
     for (int i = 0; it != last; ++it, ++i) {
-        param[i].assign (static_cast<const char*> (it->second.addr), it->second.length);
+        param[i].assign(static_cast<const char*> (it->second.addr), it->second.length);
     }
 }
 
@@ -302,17 +301,17 @@ void ts::tlv::MessageFactory::get (TAG tag, std::vector<std::string>& param) con
 // Get first occurence of a parameter as a compound TLV parameter.
 //----------------------------------------------------------------------------
 
-void ts::tlv::MessageFactory::getCompound (TAG tag, MessagePtr& param) const
+void ts::tlv::MessageFactory::getCompound(TAG tag, MessagePtr& param) const
 {
-    ParameterMultimap::const_iterator it = _params.find (tag);
-    if (it == _params.end ()) {
-        throw DeserializationInternalError (Format ("No parameter 0x%04X in message", tag));
+    ParameterMultimap::const_iterator it = _params.find(tag);
+    if (it == _params.end()) {
+        throw DeserializationInternalError(UString::Format(u"No parameter 0x%X in message", {tag}));
     }
-    else if (it->second.compound.isNull ()) {
-        throw DeserializationInternalError (Format ("Parameter 0x%04X is not a compound TLV", tag));
+    else if (it->second.compound.isNull()) {
+        throw DeserializationInternalError(UString::Format(u"Parameter 0x%X is not a compound TLV", {tag}));
     }
     else {
-        it->second.compound->factory (param);
+        it->second.compound->factory(param);
     }
 }
 
@@ -321,20 +320,20 @@ void ts::tlv::MessageFactory::getCompound (TAG tag, MessagePtr& param) const
 // Get all occurences of a parameter as compound TLV parameters.
 //----------------------------------------------------------------------------
 
-void ts::tlv::MessageFactory::getCompound (TAG tag, std::vector<MessagePtr>& param) const
+void ts::tlv::MessageFactory::getCompound(TAG tag, std::vector<MessagePtr>& param) const
 {
     // Reinitialize result vector
     param.clear ();
-    param.resize (_params.count (tag));
+    param.resize(_params.count(tag));
     // Fill vector with parameter values
-    ParameterMultimap::const_iterator it = _params.lower_bound (tag);
-    ParameterMultimap::const_iterator last = _params.upper_bound (tag);
+    ParameterMultimap::const_iterator it = _params.lower_bound(tag);
+    ParameterMultimap::const_iterator last = _params.upper_bound(tag);
     for (int i = 0; it != last; ++it, ++i) {
-        if (it->second.compound.isNull ()) {
-            throw DeserializationInternalError (Format ("Occurence %d of parameter 0x%04X not a compound TLV", i, tag));
+        if (it->second.compound.isNull()) {
+            throw DeserializationInternalError(UString::Format(u"Occurence %d of parameter 0x%X not a compound TLV", {i, tag}));
         }
         else {
-            it->second.compound->factory (param[i]);
+            it->second.compound->factory(param[i]);
         }
     }
 }

@@ -60,7 +60,7 @@ ts::UString ts::AVCAttributes::toString() const
         return "";
     }
 
-    UString desc(Format("%" FMT_SIZE_T "dx%" FMT_SIZE_T "d, ", _hsize, _vsize));
+    UString desc(UString::Format(u"%dx%d, ", {_hsize, _vsize}));
     desc += profileName();
     desc += u", level ";
     desc += levelName();
@@ -68,6 +68,16 @@ ts::UString ts::AVCAttributes::toString() const
     desc += chromaFormatName();
 
     return desc;
+}
+
+
+//----------------------------------------------------------------------------
+// Get AVC level name.
+//----------------------------------------------------------------------------
+
+ts::UString ts::AVCAttributes::levelName() const
+{
+    return _is_valid ? UString::Format(u"%d.%d", {_level / 10, _level % 10}) : UString();
 }
 
 

@@ -210,7 +210,7 @@ namespace ts {
         //! @param [in] start_index Start searching at this index.
         //! @return The index of the descriptor in the list or count() if no such descriptor is found.
         //!
-        size_t searchLanguage(const std::string& language, size_t start_index = 0) const;
+        size_t searchLanguage(const UString& language, size_t start_index = 0) const;
 
         //!
         //! Search any kind of subtitle descriptor.
@@ -222,7 +222,7 @@ namespace ts {
         //! @param [in] start_index Start searching at this index.
         //! @return The index of the descriptor in the list or count() if no such descriptor is found.
         //!
-        size_t searchSubtitle(const std::string& language = "", size_t start_index = 0) const;
+        size_t searchSubtitle(const UString& language = "", size_t start_index = 0) const;
 
         //!
         //! Search a descriptor with the specified tag.

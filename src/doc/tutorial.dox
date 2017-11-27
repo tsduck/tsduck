@@ -25,14 +25,9 @@ byte and bit manipulation, etc.
 
 ## C++ strings {#cppstrings}
 
-The file tsStringUtils.h declares utility functions to manipulate standard strings
-(`std::string`).
-
-Note that C++ strings are made of 8-bit characters which are notoriously unable
+C and C++ strings are made of 8-bit characters which are notoriously unable
 to represent international character sets. The usage of `std::string` with the
 TSDuck library is now discouraged in favor of @ref unicodestring "Unicode strings".
-The TSDuck library will progressively remove the usage of `std::string` and
-the file tsStringUtils.h may disappear in the future.
 
 ## Unicode strings {#unicodestring}
 

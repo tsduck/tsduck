@@ -32,7 +32,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsPluginSharedLibrary.h"
-#include "tsStringUtils.h"
 #include "utestCppUnitTest.h"
 TSDUCK_SOURCE;
 
@@ -86,9 +85,9 @@ void PluginTest::display(const ts::PluginSharedLibrary& lib)
 {
     utest::Out() << "* File: " << lib.fileName() << std::endl
                  << "  isLoaded: " << lib.isLoaded() << std::endl
-                 << "  input: " << ts::YesNo(lib.new_input != 0) << std::endl
-                 << "  output: " << ts::YesNo(lib.new_output != 0) << std::endl
-                 << "  processor: " << ts::YesNo(lib.new_processor != 0) << std::endl;
+                 << "  input: " << ts::UString::YesNo(lib.new_input != 0) << std::endl
+                 << "  output: " << ts::UString::YesNo(lib.new_output != 0) << std::endl
+                 << "  processor: " << ts::UString::YesNo(lib.new_processor != 0) << std::endl;
 }
 
 void PluginTest::testInput()

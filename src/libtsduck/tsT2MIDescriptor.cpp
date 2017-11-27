@@ -28,8 +28,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsT2MIDescriptor.h"
-#include "tsFormat.h"
-#include "tsHexa.h"
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"

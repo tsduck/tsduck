@@ -79,7 +79,7 @@ namespace ts {
         //! @param minutes A time offset in minutes.
         //! @return A string like "+hh:mm" or "-hh:mm".
         //!
-        static std::string timeOffsetFormat(int minutes);
+        static UString timeOffsetFormat(int minutes);
 
         // Inherited methods
         virtual void serialize(BinaryTable& table, const DVBCharset* = 0) const override;

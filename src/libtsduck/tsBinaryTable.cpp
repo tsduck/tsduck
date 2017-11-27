@@ -33,8 +33,6 @@
 
 #include "tsBinaryTable.h"
 #include "tsReportWithPrefix.h"
-#include "tsDecimal.h"
-#include "tsFormat.h"
 TSDUCK_SOURCE;
 
 
@@ -42,14 +40,14 @@ TSDUCK_SOURCE;
 // Constructor
 //----------------------------------------------------------------------------
 
-ts::BinaryTable::BinaryTable () :
-    _is_valid (false),
-    _tid (0xFF),
-    _tid_ext (0),
+ts::BinaryTable::BinaryTable() :
+    _is_valid(false),
+    _tid(0xFF),
+    _tid_ext(0),
     _version (0),
-    _source_pid (PID_NULL),
-    _missing_count (0),
-    _sections ()
+    _source_pid(PID_NULL),
+    _missing_count(0),
+    _sections()
 {
 }
 
@@ -59,14 +57,14 @@ ts::BinaryTable::BinaryTable () :
 // two tables or duplicated.
 //----------------------------------------------------------------------------
 
-ts::BinaryTable::BinaryTable (const BinaryTable& table, CopyShare mode) :
-    _is_valid (table._is_valid),
-    _tid (table._tid),
-    _tid_ext (table._tid_ext),
-    _version (table._version),
-    _source_pid (table._source_pid),
-    _missing_count (table._missing_count),
-    _sections ()
+ts::BinaryTable::BinaryTable(const BinaryTable& table, CopyShare mode) :
+    _is_valid(table._is_valid),
+    _tid(table._tid),
+    _tid_ext(table._tid_ext),
+    _version(table._version),
+    _source_pid(table._source_pid),
+    _missing_count(table._missing_count),
+    _sections()
 {
     switch (mode) {
         case SHARE:
@@ -80,13 +78,13 @@ ts::BinaryTable::BinaryTable (const BinaryTable& table, CopyShare mode) :
                     _sections[i].clear();
                 }
                 else {
-                    _sections[i] = new Section (*table._sections[i], COPY);
+                    _sections[i] = new Section(*table._sections[i], COPY);
                 }
             }
             break;
         default:
             // should not get there
-            assert (false);
+            assert(false);
     }
 }
 
@@ -95,14 +93,14 @@ ts::BinaryTable::BinaryTable (const BinaryTable& table, CopyShare mode) :
 // Constructor from an array of sections.
 //----------------------------------------------------------------------------
 
-ts::BinaryTable::BinaryTable (const SectionPtrVector& sections, bool replace, bool grow) :
-    _is_valid (false),
-    _tid (0xFF),
-    _tid_ext (0),
-    _version (0),
-    _source_pid (PID_NULL),
-    _missing_count (0),
-    _sections ()
+ts::BinaryTable::BinaryTable(const SectionPtrVector& sections, bool replace, bool grow) :
+    _is_valid(false),
+    _tid(0xFF),
+    _tid_ext(0),
+    _version(0),
+    _source_pid(PID_NULL),
+    _missing_count(0),
+    _sections()
 {
     if (!addSections (sections, replace, grow)) {
         clear();
@@ -117,13 +115,15 @@ ts::BinaryTable::BinaryTable (const SectionPtrVector& sections, bool replace, bo
 
 ts::BinaryTable& ts::BinaryTable::operator= (const BinaryTable& table)
 {
-    _is_valid = table._is_valid;
-    _tid = table._tid;
-    _tid_ext = table._tid_ext;
-    _version = table._version;
-    _source_pid = table._source_pid;
-    _missing_count = table._missing_count;
-    _sections = table._sections;
+    if (&table != this) {
+        _is_valid = table._is_valid;
+        _tid = table._tid;
+        _tid_ext = table._tid_ext;
+        _version = table._version;
+        _source_pid = table._source_pid;
+        _missing_count = table._missing_count;
+        _sections = table._sections;
+    }
     return *this;
 }
 
@@ -132,7 +132,7 @@ ts::BinaryTable& ts::BinaryTable::operator= (const BinaryTable& table)
 // Duplication. Similar to assignment but the sections are duplicated.
 //----------------------------------------------------------------------------
 
-ts::BinaryTable& ts::BinaryTable::copy (const BinaryTable& table)
+ts::BinaryTable& ts::BinaryTable::copy(const BinaryTable& table)
 {
     _is_valid = table._is_valid;
     _tid = table._tid;
@@ -146,7 +146,7 @@ ts::BinaryTable& ts::BinaryTable::copy (const BinaryTable& table)
             _sections[i].clear();
         }
         else {
-            _sections[i] = new Section (*table._sections[i], COPY);
+            _sections[i] = new Section(*table._sections[i], COPY);
         }
     }
     return *this;
@@ -179,27 +179,27 @@ bool ts::BinaryTable::operator== (const BinaryTable& table) const
 // Modifiable properties.
 //----------------------------------------------------------------------------
 
-void ts::BinaryTable::setTableIdExtension (uint16_t tid_ext, bool recompute_crc)
+void ts::BinaryTable::setTableIdExtension(uint16_t tid_ext, bool recompute_crc)
 {
     _tid_ext = tid_ext;
     for (SectionPtrVector::iterator it = _sections.begin(); it != _sections.end(); ++it) {
-        (*it)->setTableIdExtension (tid_ext, recompute_crc);
+        (*it)->setTableIdExtension(tid_ext, recompute_crc);
     }
 }
 
-void ts::BinaryTable::setVersion (uint8_t version, bool recompute_crc)
+void ts::BinaryTable::setVersion(uint8_t version, bool recompute_crc)
 {
     _version = version;
     for (SectionPtrVector::iterator it = _sections.begin(); it != _sections.end(); ++it) {
-        (*it)->setVersion (version, recompute_crc);
+        (*it)->setVersion(version, recompute_crc);
     }
 }
 
-void ts::BinaryTable::setSourcePID (PID pid)
+void ts::BinaryTable::setSourcePID(PID pid)
 {
     _source_pid = pid;
     for (SectionPtrVector::iterator it = _sections.begin(); it != _sections.end(); ++it) {
-        (*it)->setSourcePID (pid);
+        (*it)->setSourcePID(pid);
     }
 }
 
@@ -415,24 +415,6 @@ bool ts::BinaryTable::save(const UString& file_name, Report& report) const
 
 
 //----------------------------------------------------------------------------
-// Error message fragment indicating the number of bytes previously
-// read in a binary file
-//----------------------------------------------------------------------------
-
-namespace {
-    ts::UString AfterBytes(const std::streampos& position)
-    {
-        const int64_t bytes = int64_t(position);
-        if (bytes > 0) {
-            return u" after " + ts::UString::Decimal(bytes) + u" bytes";
-        }
-        else {
-            return ts::UString();
-        }
-    }
-}
-
-//----------------------------------------------------------------------------
 // This static method reads all tables from the specified file.
 //----------------------------------------------------------------------------
 
@@ -453,7 +435,7 @@ bool ts::BinaryTable::LoadFile(BinaryTablePtrVector& tables, std::istream& strm,
 
         // Check the sequence of section numbers.
         if (sp->sectionNumber() != next_section) {
-            report.error(u"invalid section number, got %d, expected %d%s", {sp->sectionNumber(), next_section, AfterBytes(position)});
+            report.error(u"invalid section number, got %d, expected %d%s", {sp->sectionNumber(), next_section, UString::AfterBytes(position)});
             return false;
         }
 
@@ -463,7 +445,7 @@ bool ts::BinaryTable::LoadFile(BinaryTablePtrVector& tables, std::istream& strm,
             tp = new BinaryTable;
         }
         if (!tp->addSection(sp, false, false)) {
-            report.error(u"invalid section" + AfterBytes(position));
+            report.error(u"invalid section%s", {UString::AfterBytes(position)});
             return false;
         }
 

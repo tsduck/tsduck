@@ -36,8 +36,6 @@
 #include "tsCASSelectionArgs.h"
 #include "tsSectionDemux.h"
 #include "tsTables.h"
-#include "tsFormat.h"
-#include "tsIntegerUtils.h"
 TSDUCK_SOURCE;
 
 
@@ -73,14 +71,14 @@ namespace ts {
             PIDContext();
 
             // Format as a string.
-            operator std::string() const;
+            UString toString() const;
         };
 
         typedef SafePtr<PIDContext, NullMutex> PIDContextPtr;
         typedef std::map<PID, PIDContextPtr> PIDContextMap;
 
         // Plugin private fields.
-        std::string      _output_name;    // Output file name
+        UString          _output_name;    // Output file name
         std::ofstream    _output_stream;  // Output file stream
         std::ostream*    _output;         // Actual output stream
         CASSelectionArgs _cas_args;       // CAS selection
@@ -163,7 +161,7 @@ bool ts::StuffAnalyzePlugin::start()
     // Get command line arguments
     _cas_args.load(*this);
     _output_name = value(u"output-file");
-    getPIDSet(_analyze_pids, "pid");
+    getPIDSet(_analyze_pids, u"pid");
 
     // Initialize the PSI demux.
     _psi_demux.reset();
@@ -186,9 +184,9 @@ bool ts::StuffAnalyzePlugin::start()
     }
     else {
         _output = &_output_stream;
-        _output_stream.open(_output_name.c_str());
+        _output_stream.open(_output_name.toUTF8().c_str());
         if (!_output_stream) {
-            tsp->error("cannot create file %s", _output_name.c_str());
+            tsp->error(u"cannot create file %s", {_output_name});
             return false;
         }
     }
@@ -214,15 +212,11 @@ ts::StuffAnalyzePlugin::PIDContext::PIDContext() :
 // Format a PID context as a string.
 //----------------------------------------------------------------------------
 
-ts::StuffAnalyzePlugin::PIDContext::operator std::string() const
+ts::UString ts::StuffAnalyzePlugin::PIDContext::toString() const
 {
-    const std::string percent(PercentageString(stuffing_bytes, total_bytes));
-    return Format("%10" FMT_INT64 "d %10" FMT_INT64 "d %10" FMT_INT64 "d %10" FMT_INT64 "d %9s",
-                  total_sections,
-                  stuffing_sections,
-                  total_bytes,
-                  stuffing_bytes,
-                  percent.c_str());
+    return UString::Format("%10d %10d %10d %10d %9s",
+                           {total_sections, stuffing_sections, total_bytes, stuffing_bytes,
+                            UString::Percentage(stuffing_bytes, total_bytes)});
 }
 
 
@@ -243,10 +237,10 @@ bool ts::StuffAnalyzePlugin::stop()
         const PID pid = it->first;
         const PIDContextPtr& ctx(it->second);
         if (!ctx.isNull()) {
-            (*_output) << Format("%4d (0x%04X) ", int(pid), int(pid)) << std::string(*ctx) << std::endl;
+            (*_output) << UString::Format(u"%4d (0x%04X) ", {pid, pid}) << ctx->toString() << std::endl;
         }
     }
-    (*_output) << "Total         " << std::string(_total) << std::endl;
+    (*_output) << "Total         " << _total.toString() << std::endl;
 
     // Close output file
     if (!_output_name.empty()) {

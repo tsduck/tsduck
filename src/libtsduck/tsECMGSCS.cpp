@@ -162,7 +162,7 @@ void ts::ecmgscs::Protocol::factory (const tlv::MessageFactory& fact, tlv::Messa
             msg = new ECMResponse (fact);
             break;
         default:
-            throw tlv::DeserializationInternalError (Format ("ECMG<=>SCS Message 0x%04X unimplemented", fact.commandTag ()));
+            throw tlv::DeserializationInternalError(UString::Format(u"ECMG<=>SCS Message 0x%X unimplemented", {fact.commandTag()}));
     }
 }
 
@@ -171,7 +171,7 @@ void ts::ecmgscs::Protocol::factory (const tlv::MessageFactory& fact, tlv::Messa
 // Create an error response message for a faulty incoming message.
 //----------------------------------------------------------------------------
 
-void ts::ecmgscs::Protocol::buildErrorResponse (const tlv::MessageFactory& fact, tlv::MessagePtr& msg) const
+void ts::ecmgscs::Protocol::buildErrorResponse(const tlv::MessageFactory& fact, tlv::MessagePtr& msg) const
 {
     // Create a channel_error message
     SafePtr<ChannelError> errmsg (new ChannelError);
@@ -245,9 +245,9 @@ void ts::ecmgscs::ChannelSetup::serializeParameters (tlv::Serializer& fact) cons
     fact.put (Tags::Super_CAS_id,   Super_CAS_id);
 }
 
-std::string ts::ecmgscs::ChannelSetup::dump (size_t indent) const
+ts::UString ts::ecmgscs::ChannelSetup::dump (size_t indent) const
 {
-    return Format ("%*schannel_setup (ECMG<=>SCS)\n", int (indent), "") +
+    return UString::Format(u"%*schannel_setup (ECMG<=>SCS)\n", {indent, u""}) +
         tlv::Message::dump (indent) +
         dumpHexa (indent, "ECM_channel_id", channel_id) +
         dumpHexa (indent, "Super_CAS_id", Super_CAS_id);
@@ -275,9 +275,9 @@ void ts::ecmgscs::ChannelTest::serializeParameters (tlv::Serializer& fact) const
     fact.put (Tags::ECM_channel_id, channel_id);
 }
 
-std::string ts::ecmgscs::ChannelTest::dump (size_t indent) const
+ts::UString ts::ecmgscs::ChannelTest::dump (size_t indent) const
 {
-    return Format ("%*schannel_test (ECMG<=>SCS)\n", int (indent), "") +
+    return UString::Format(u"%*schannel_test (ECMG<=>SCS)\n", {indent, u""}) +
         tlv::Message::dump (indent) +
         dumpHexa (indent, "ECM_channel_id", channel_id);
 }
@@ -359,9 +359,9 @@ void ts::ecmgscs::ChannelStatus::serializeParameters (tlv::Serializer& fact) con
     fact.put (Tags::max_comp_time, max_comp_time);
 }
 
-std::string ts::ecmgscs::ChannelStatus::dump (size_t indent) const
+ts::UString ts::ecmgscs::ChannelStatus::dump (size_t indent) const
 {
-    return Format ("%*schannel_status (ECMG<=>SCS)\n", int (indent), "") +
+    return UString::Format(u"%*schannel_status (ECMG<=>SCS)\n", {indent, u""}) +
         tlv::Message::dump (indent) +
         dumpHexa (indent, "ECM_channel_id", channel_id) +
         dumpDecimal (indent, "section_TSpkt_flag", section_TSpkt_flag ? 1 : 0) +
@@ -401,9 +401,9 @@ void ts::ecmgscs::ChannelClose::serializeParameters (tlv::Serializer& fact) cons
     fact.put (Tags::ECM_channel_id, channel_id);
 }
 
-std::string ts::ecmgscs::ChannelClose::dump (size_t indent) const
+ts::UString ts::ecmgscs::ChannelClose::dump (size_t indent) const
 {
-    return Format ("%*schannel_close (ECMG<=>SCS)\n", int (indent), "") +
+    return UString::Format(u"%*schannel_close (ECMG<=>SCS)\n", {indent, u""}) +
         tlv::Message::dump (indent) +
         dumpHexa (indent, "ECM_channel_id", channel_id);
 }
@@ -438,9 +438,9 @@ void ts::ecmgscs::ChannelError::serializeParameters (tlv::Serializer& fact) cons
     fact.put (Tags::error_information, error_information);
 }
 
-std::string ts::ecmgscs::ChannelError::dump (size_t indent) const
+ts::UString ts::ecmgscs::ChannelError::dump (size_t indent) const
 {
-    return Format ("%*schannel_error (ECMG<=>SCS)\n", int (indent), "") +
+    return UString::Format(u"%*schannel_error (ECMG<=>SCS)\n", {indent, u""}) +
         tlv::Message::dump (indent) +
         dumpHexa (indent, "ECM_channel_id", channel_id) +
         dumpVector (indent, "error_status", error_status) +
@@ -477,9 +477,9 @@ void ts::ecmgscs::StreamSetup::serializeParameters (tlv::Serializer& fact) const
     fact.put (Tags::nominal_CP_duration, nominal_CP_duration);
 }
 
-std::string ts::ecmgscs::StreamSetup::dump (size_t indent) const
+ts::UString ts::ecmgscs::StreamSetup::dump (size_t indent) const
 {
-    return Format ("%*sstream_setup (ECMG<=>SCS)\n", int (indent), "") +
+    return UString::Format(u"%*sstream_setup (ECMG<=>SCS)\n", {indent, u""}) +
         tlv::Message::dump (indent) +
         dumpHexa (indent, "ECM_channel_id", channel_id) +
         dumpHexa (indent, "ECM_stream_id", stream_id) +
@@ -511,9 +511,9 @@ void ts::ecmgscs::StreamTest::serializeParameters (tlv::Serializer& fact) const
     fact.put (Tags::ECM_stream_id,  stream_id);
 }
 
-std::string ts::ecmgscs::StreamTest::dump (size_t indent) const
+ts::UString ts::ecmgscs::StreamTest::dump (size_t indent) const
 {
-    return Format ("%*sstream_test (ECMG<=>SCS)\n", int (indent), "") +
+    return UString::Format(u"%*sstream_test (ECMG<=>SCS)\n", {indent, u""}) +
         tlv::Message::dump (indent) +
         dumpHexa (indent, "ECM_channel_id", channel_id) +
         dumpHexa (indent, "ECM_stream_id", stream_id);
@@ -549,9 +549,9 @@ void ts::ecmgscs::StreamStatus::serializeParameters (tlv::Serializer& fact) cons
     fact.put (Tags::access_criteria_transfer_mode, access_criteria_transfer_mode);
 }
 
-std::string ts::ecmgscs::StreamStatus::dump (size_t indent) const
+ts::UString ts::ecmgscs::StreamStatus::dump (size_t indent) const
 {
-    return Format ("%*sstream_status (ECMG<=>SCS)\n", int (indent), "") +
+    return UString::Format(u"%*sstream_status (ECMG<=>SCS)\n", {indent, u""}) +
         tlv::Message::dump (indent) +
         dumpHexa (indent, "ECM_channel_id", channel_id) +
         dumpHexa (indent, "ECM_stream_id", stream_id) +
@@ -583,9 +583,9 @@ void ts::ecmgscs::StreamCloseRequest::serializeParameters (tlv::Serializer& fact
     fact.put (Tags::ECM_stream_id,  stream_id);
 }
 
-std::string ts::ecmgscs::StreamCloseRequest::dump (size_t indent) const
+ts::UString ts::ecmgscs::StreamCloseRequest::dump (size_t indent) const
 {
-    return Format ("%*sstream_close_request (ECMG<=>SCS)\n", int (indent), "") +
+    return UString::Format(u"%*sstream_close_request (ECMG<=>SCS)\n", {indent, u""}) +
         tlv::Message::dump (indent) +
         dumpHexa (indent, "ECM_channel_id", channel_id) +
         dumpHexa (indent, "ECM_stream_id", stream_id);
@@ -615,9 +615,9 @@ void ts::ecmgscs::StreamCloseResponse::serializeParameters (tlv::Serializer& fac
     fact.put (Tags::ECM_stream_id,  stream_id);
 }
 
-std::string ts::ecmgscs::StreamCloseResponse::dump (size_t indent) const
+ts::UString ts::ecmgscs::StreamCloseResponse::dump (size_t indent) const
 {
-    return Format ("%*sstream_close_response (ECMG<=>SCS)\n", int (indent), "") +
+    return UString::Format(u"%*sstream_close_response (ECMG<=>SCS)\n", {indent, u""}) +
         tlv::Message::dump (indent) +
         dumpHexa (indent, "ECM_channel_id", channel_id) +
         dumpHexa (indent, "ECM_stream_id", stream_id);
@@ -655,9 +655,9 @@ void ts::ecmgscs::StreamError::serializeParameters (tlv::Serializer& fact) const
     fact.put (Tags::error_information, error_information);
 }
 
-std::string ts::ecmgscs::StreamError::dump (size_t indent) const
+ts::UString ts::ecmgscs::StreamError::dump (size_t indent) const
 {
-    return Format ("%*sstream_error (ECMG<=>SCS)\n", int (indent), "") +
+    return UString::Format(u"%*sstream_error (ECMG<=>SCS)\n", {indent, u""}) +
         tlv::Message::dump (indent) +
         dumpHexa (indent, "ECM_channel_id", channel_id) +
         dumpHexa (indent, "ECM_stream_id", stream_id) +
@@ -737,21 +737,21 @@ void ts::ecmgscs::CWProvision::serializeParameters (tlv::Serializer& fact) const
     }
 }
 
-std::string ts::ecmgscs::CWProvision::dump (size_t indent) const
+ts::UString ts::ecmgscs::CWProvision::dump (size_t indent) const
 {
-    std::string dump =
-        Format ("%*sCW_provision (ECMG<=>SCS)\n", int (indent), "") +
+    UString dump =
+        UString::Format(u"%*sCW_provision (ECMG<=>SCS)\n", {indent, u""}) +
         tlv::Message::dump (indent) +
         dumpHexa (indent, "ECM_channel_id", channel_id) +
         dumpHexa (indent, "ECM_stream_id", stream_id) +
         dumpDecimal (indent, "CP_number", CP_number) +
-        dumpOptional (indent, "CW_encryption", has_CW_encryption, CW_encryption, hexa::HEXA) +
+        dumpOptional (indent, "CW_encryption", has_CW_encryption, CW_encryption, UString::HEXA) +
         dumpOptionalDecimal (indent, "CP_duration", has_CP_duration, CP_duration) +
-        dumpOptional (indent, "access_criteria", has_access_criteria, access_criteria, hexa::HEXA);
+        dumpOptional (indent, "access_criteria", has_access_criteria, access_criteria, UString::HEXA);
 
     for (std::vector<CPCWCombination>::const_iterator it = CP_CW_combination.begin(); it != CP_CW_combination.end(); ++it) {
         dump += dumpDecimal (indent, "CP", it->CP);
-        dump += dumpOptional (indent, "CW", true, it->CW, hexa::SINGLE_LINE);
+        dump += dumpOptional (indent, "CW", true, it->CW, UString::SINGLE_LINE);
     }
 
     return dump;
@@ -788,12 +788,12 @@ void ts::ecmgscs::ECMResponse::serializeParameters (tlv::Serializer& fact) const
     fact.put (Tags::ECM_datagram,   ECM_datagram);
 }
 
-std::string ts::ecmgscs::ECMResponse::dump (size_t indent) const
+ts::UString ts::ecmgscs::ECMResponse::dump (size_t indent) const
 {
-    return Format ("%*sECM_response (ECMG<=>SCS)\n", int (indent), "") +
-        tlv::Message::dump (indent) +
-        dumpHexa (indent, "ECM_channel_id", channel_id) +
-        dumpHexa (indent, "ECM_stream_id", stream_id) +
-        dumpDecimal (indent, "CP_number", CP_number) +
-        dumpOptional (indent, "ECM_datagram", true, ECM_datagram, hexa::HEXA);
+    return UString::Format(u"%*sECM_response (ECMG<=>SCS)\n", {indent, u"   "}) +
+        tlv::Message::dump(indent) +
+        dumpHexa (indent, "ECM_chann    el_id", channel_id) +
+        dumpHexa (indent, "ECM_stream_id    ", stream_id) +
+        dumpDecimal(indent, "CP_number", CP_number) +
+        dumpOptional(indent, "ECM_datagram", true, ECM_datagram, UString::HEXA);
 }

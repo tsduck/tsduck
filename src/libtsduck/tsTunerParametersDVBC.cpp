@@ -34,8 +34,6 @@
 #include "tsTunerParametersDVBC.h"
 #include "tsTunerArgs.h"
 #include "tsEnumeration.h"
-#include "tsDecimal.h"
-#include "tsFormat.h"
 TSDUCK_SOURCE;
 
 #if defined (TS_NEED_STATIC_CONST_DEFINITIONS)
@@ -219,10 +217,10 @@ void ts::TunerParametersDVBC::displayParameters(std::ostream& strm, const UStrin
         strm << margin << "Spectral inversion: " << SpectralInversionEnum.name(inversion) << std::endl;
     }
     if (symbol_rate != 0) {
-        strm << margin << "Symbol rate: " << ts::Decimal(symbol_rate) << " symb/s" << std::endl;
+        strm << margin << "Symbol rate: " << UString::Decimal(symbol_rate) << " symb/s" << std::endl;
     }
     if (inner_fec != FEC_AUTO) {
-        strm << margin << "FEC inner: " << ts::InnerFECEnum.name(inner_fec) << std::endl;
+        strm << margin << "FEC inner: " << InnerFECEnum.name(inner_fec) << std::endl;
     }
     if (modulation != QAM_AUTO) {
         strm << margin << "Modulation: " << ModulationEnum.name(modulation) << std::endl;

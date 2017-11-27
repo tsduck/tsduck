@@ -34,7 +34,6 @@
 #include "tsUserInterrupt.h"
 #include "tsSingletonManager.h"
 #include "tsSysUtils.h"
-#include "tsFormat.h"
 TSDUCK_SOURCE;
 
 ts::UserInterrupt* volatile ts::UserInterrupt::_active_instance = 0;

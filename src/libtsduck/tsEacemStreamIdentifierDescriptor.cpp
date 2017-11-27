@@ -33,7 +33,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsEacemStreamIdentifierDescriptor.h"
-#include "tsFormat.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 TSDUCK_SOURCE;

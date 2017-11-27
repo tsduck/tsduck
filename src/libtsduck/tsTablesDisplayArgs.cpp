@@ -33,7 +33,6 @@
 
 #include "tsTablesDisplayArgs.h"
 #include "tsDVBCharsetSingleByte.h"
-#include "tsHexa.h"
 TSDUCK_SOURCE;
 
 
@@ -43,7 +42,7 @@ TSDUCK_SOURCE;
 
 ts::TablesDisplayArgs::TablesDisplayArgs() :
     raw_dump(false),
-    raw_flags(hexa::HEXA),
+    raw_flags(UString::HEXA),
     tlv_syntax(),
     min_nested_tlv(0),
     default_pds(0),
@@ -172,10 +171,10 @@ void ts::TablesDisplayArgs::load(Args& args)
 {
     args.getIntValue(default_pds, u"default-pds");
     raw_dump = args.present(u"raw-dump");
-    raw_flags = hexa::HEXA;
+    raw_flags = UString::HEXA;
     if (args.present(u"c-style")) {
         raw_dump = true;
-        raw_flags |= hexa::C_STYLE;
+        raw_flags |= UString::C_STYLE;
     }
 
     // The --nested-tlv has an optional value.

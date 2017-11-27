@@ -34,7 +34,6 @@
 #include "tsTSFileInput.h"
 #include "tsNullReport.h"
 #include "tsSysUtils.h"
-#include "tsFormat.h"
 TSDUCK_SOURCE;
 
 
@@ -363,7 +362,7 @@ size_t ts::TSFileInput::read (TSPacket* buffer, size_t max_packets, Report& repo
     }
 
     if (got_error) {
-        report.log (_severity, "error reading file " + _filename + ": " + ErrorCodeMessage (error_code) + Format (" (%d)", int (error_code)));
+        report.log(_severity, u"error reading file %s: %s (%d)", {_filename, ErrorCodeMessage(error_code), error_code});
         return 0;
     }
 

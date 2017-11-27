@@ -32,7 +32,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsXML.h"
-#include "tsStringUtils.h"
 #include "tsCerrReport.h"
 #include "utestCppUnitTest.h"
 TSDUCK_SOURCE;
@@ -151,11 +150,12 @@ void XMLTest::testDocument()
 }
 
 namespace {
+
     class Visitor : public ts::XML::Visitor
     {
     private:
-        ts::StringList _ref;
-        ts::StringList::const_iterator _iter;
+        std::list<std::string> _ref;
+        std::list<std::string>::const_iterator _iter;
 
         void AssertNext(const char* name, const char* value)
         {

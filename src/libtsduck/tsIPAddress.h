@@ -213,8 +213,9 @@ namespace ts {
 
         //!
         //! Convert to a string object in numeric format "a.b.c.d".
+        //! @return This object, converted as a string.
         //!
-        operator ts::UString() const;
+        virtual UString toString() const;
 
     private:
         uint32_t _addr;  // An IPv4 address is a 32-bit word in host byte order
@@ -229,5 +230,5 @@ namespace ts {
 //!
 inline std::ostream& operator<< (std::ostream& strm, const ts::IPAddress& addr)
 {
-    return strm << ts::UString(addr);
+    return strm << addr.toString();
 }

@@ -32,8 +32,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsTeletextDescriptor.h"
-#include "tsFormat.h"
-#include "tsHexa.h"
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
@@ -111,14 +109,9 @@ void ts::TeletextDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, 
         const uint8_t page = data[4];
         Entry e;
         e.setFullNumber(mag, page);
-        strm << margin << "Language: " << UString::FromDVB(data, 3, display.dvbCharset())
-             << ", Type: " << int(type)
-             << Format(" (0x%02X)", int(type)) << std::endl
+        strm << margin << UString::Format(u"Language: %s, Type: %d (0x%X)", {UString::FromDVB(data, 3, display.dvbCharset()), type, type}) << std::endl
              << margin << "Type: " << names::TeletextType(type) << std::endl
-             << margin << "Magazine: " << int(mag)
-             << ", page: " << int(page)
-             << ", full page: " << e.page_number
-             << std::endl;
+             << margin << "Magazine: " << int(mag) << ", page: " << int(page) << ", full page: " << e.page_number << std::endl;
         data += 5; size -= 5;
     }
 

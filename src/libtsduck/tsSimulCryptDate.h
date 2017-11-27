@@ -343,7 +343,7 @@ namespace ts {
         //! Convert to a string object
         //! @return The equivalent string.
         //!
-        operator std::string() const;
+        operator UString() const;
 
     private:
         // Private members
@@ -359,5 +359,5 @@ namespace ts {
 //!
 TSDUCKDLL inline std::ostream& operator<<(std::ostream& strm, const ts::SimulCryptDate& date)
 {
-    return strm << std::string(date);
+    return strm << ts::UString(date);
 }

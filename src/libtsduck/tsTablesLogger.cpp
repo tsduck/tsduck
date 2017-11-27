@@ -36,9 +36,6 @@
 #include "tstlv.h"
 #include "tsTime.h"
 #include "tsSimulCryptDate.h"
-#include "tsFormat.h"
-#include "tsDecimal.h"
-#include "tsHexa.h"
 TSDUCK_SOURCE;
 
 
@@ -87,7 +84,7 @@ ts::TablesLogger::TablesLogger(const TablesLoggerArgs& opt, TablesDisplay& displ
                 _report.verbose("Creating " + _opt.destination);
                 _outfile.open(_opt.destination.toUTF8().c_str(), std::ios::out | std::ios::binary);
                 if (!_outfile) {
-                    _report.error("cannot create " + _opt.destination);
+                    _report.error(u"cannot create " + _opt.destination);
                     _abort = true;
                     return;
                 }
@@ -357,29 +354,25 @@ void ts::TablesLogger::saveSection(const Section& sect)
 
 void ts::TablesLogger::logSection(const Section& sect)
 {
-    std::string header;
+    UString header;
 
     // Display time stamp if required.
     if (_opt.time_stamp) {
-        header += UString(Time::CurrentLocalTime()).toUTF8(); //@@@
+        header += UString(Time::CurrentLocalTime());
         header += ": ";
     }
 
     // Display packet index if required.
     if (_opt.packet_index) {
-        header += "Packet ";
-        header += Decimal(sect.getFirstTSPacketIndex());
-        header += " to ";
-        header += Decimal(sect.getLastTSPacketIndex());
-        header += ", ";
+        header += UString::Format(u"Packet %'d to %'d, ", {sect.getFirstTSPacketIndex(), sect.getLastTSPacketIndex()});
     }
 
     // Table identification.
-    header += Format("PID 0x%04X, TID 0x%02X", int(sect.sourcePID()), int(sect.tableId()));
+    header += UString::Format(u"PID 0x%X, TID 0x%X", {sect.sourcePID(), sect.tableId()});
     if (sect.isLongSection()) {
-        header += Format(", TIDext 0x%04X, V%d", int(sect.tableIdExtension()), int(sect.version()));
+        header += UString::Format(u", TIDext 0x%X, V%d", {sect.tableIdExtension(), sect.version()});
     }
-    header += ": ";
+    header += u": ";
 
     // Output the line through the display object.
     _display.logSectionData(sect, header, _opt.log_size, _cas_mapper.casFamily(sect.sourcePID()));
@@ -428,7 +421,7 @@ void ts::TablesLogger::preDisplay(PacketCounter first, PacketCounter last)
             strm << ", ";
         }
         if (_opt.packet_index) {
-            strm << "First TS packet: " << Decimal(first) << ", last: " << Decimal(last);
+            strm << UString::Format(u"First TS packet: %'d, last: %'d", {first, last});
         }
         strm << std::endl;
     }

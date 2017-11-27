@@ -32,8 +32,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsDTSDescriptor.h"
-#include "tsFormat.h"
-#include "tsHexa.h"
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
@@ -74,7 +72,7 @@ void ts::DTSDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const
 
         if (size > 0) {
             strm << margin << "Additional information:" << std::endl
-                 << Hexa(data, size, hexa::HEXA | hexa::ASCII | hexa::OFFSET, indent);
+                 << UString::Dump(data, size, UString::HEXA | UString::ASCII | UString::OFFSET, indent);
             data += size; size = 0;
         }
     }

@@ -36,6 +36,7 @@
 #include "tsThread.h"
 #include "tsMutex.h"
 #include "tsCondition.h"
+#include "tsTime.h"
 #include "tsReport.h"
 
 namespace ts {
@@ -73,13 +74,16 @@ namespace ts {
 
     private:
         // Private members
-        Report* _report;
-        Mutex            _mutex;
-        Condition        _wake_up;    // accessed under mutex
-        bool             _terminate;  // accessed under mutex
+        Report*   _report;
+        Mutex     _mutex;
+        Condition _wake_up;    // accessed under mutex
+        bool      _terminate;  // accessed under mutex
 
         // Inherited from Thread
         virtual void main();
+
+        // Prefix strings for all monitor messages
+        static UString MonPrefix(const ts::Time& date);
 
         // Inaccessible operations.
         SystemMonitor() = delete;

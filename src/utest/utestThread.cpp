@@ -42,8 +42,6 @@
 #include "tsTime.h"
 #include "tsMonotonic.h"
 #include "tsSysUtils.h"
-#include "tsDecimal.h"
-#include "tsFormat.h"
 #include "utestCppUnitThread.h"
 TSDUCK_SOURCE;
 
@@ -99,7 +97,7 @@ void ThreadTest::setUp()
     _msPrecision = (_nsPrecision + ts::NanoSecPerMilliSec - 1) / ts::NanoSecPerMilliSec;
 
     // Request 2 milliseconds as system time precision.
-    utest::Out() << "ThreadTest: timer precision = " << ts::Decimal(_nsPrecision) << " ns, " << ts::Decimal(_msPrecision) << " ms" << std::endl;
+    utest::Out() << "ThreadTest: timer precision = " << ts::UString::Decimal(_nsPrecision) << " ns, " << ts::UString::Decimal(_msPrecision) << " ms" << std::endl;
 }
 
 // Test suite cleanup method.
@@ -243,7 +241,7 @@ void ThreadTest::testDeleteWhenTerminated()
         utest::Out() << "ThreadTest: ThreadDeleteWhenTerminated deleted after " << (after - before) << " milliseconds" << std::endl;
     }
     else {
-        CPPUNIT_FAIL(ts::Format("Thread with \"delete when terminated\" not deleted after %" FMT_INT64 "d milliseconds", after - before));
+        CPPUNIT_FAIL(ts::UString::Format(u"Thread with \"delete when terminated\" not deleted after %d milliseconds", {after - before}).toUTF8());
     }
 }
 

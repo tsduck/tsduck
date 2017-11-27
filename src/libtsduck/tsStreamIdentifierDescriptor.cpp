@@ -32,7 +32,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsStreamIdentifierDescriptor.h"
-#include "tsFormat.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 TSDUCK_SOURCE;
@@ -111,7 +110,7 @@ void ts::StreamIdentifierDescriptor::DisplayDescriptor(TablesDisplay& display, D
     if (size >= 1) {
         uint8_t id = data[0];
         data += 1; size -= 1;
-        strm << Format("%*sComponent tag: %d (0x%02X)", indent, "", int(id), int(id)) << std::endl;
+        strm << UString::Format(u"%*sComponent tag: %d (0x%X)", {indent, u"", id, id}) << std::endl;
     }
 
     display.displayExtraData(data, size, indent);

@@ -32,8 +32,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsCyclingPacketizer.h"
-#include "tsDecimal.h"
-#include "tsFormat.h"
 #include "tsNames.h"
 TSDUCK_SOURCE;
 
@@ -399,10 +397,10 @@ std::ostream& ts::CyclingPacketizer::display(std::ostream& strm) const
 {
     Packetizer::display(strm)
         << "  Stuffing policy: " << int(_stuffing) << std::endl
-        << "  Bitrate: " << Decimal(_bitrate) << " b/s" << std::endl
+        << "  Bitrate: " << UString::Decimal(_bitrate) << " b/s" << std::endl
         << "  Current cycle: " << _current_cycle << std::endl
         << "  Remaining sections in cycle: " << _remain_in_cycle << std::endl
-        << "  Section cycle end: " << (_cycle_end == UNDEFINED ? "undefined" : Decimal(_cycle_end)) << std::endl
+        << "  Section cycle end: " << (_cycle_end == UNDEFINED ? "undefined" : UString::Decimal(_cycle_end)) << std::endl
         << "  Stored sections: " << _section_count << std::endl
         << "  Scheduled sections: " << _sched_sections.size() << std::endl
         << "  Scheduled packets max: " << _sched_packets << std::endl;

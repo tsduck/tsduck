@@ -33,7 +33,6 @@
 
 #include "tsTerrestrialDeliverySystemDescriptor.h"
 #include "tsTunerParametersDVBT.h"
-#include "tsDecimal.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 TSDUCK_SOURCE;
@@ -171,7 +170,7 @@ void ts::TerrestrialDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& d
         bool other_freq = (data[6] & 0x01) != 0;
         data += 11; size -= 11;
 
-        strm << margin << "Centre frequency: " << Decimal(10 * uint64_t(cfreq)) << " Hz, Bandwidth: ";
+        strm << margin << "Centre frequency: " << UString::Decimal(10 * uint64_t(cfreq)) << " Hz, Bandwidth: ";
         switch (bwidth) {
             case 0:  strm << "8 MHz"; break;
             case 1:  strm << "7 MHz"; break;

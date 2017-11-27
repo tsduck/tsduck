@@ -33,7 +33,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsPlatform.h"
+#include "tsUString.h"
 
 namespace ts {
     //!
@@ -101,16 +101,6 @@ namespace ts {
     //! @return The maximum width in characters.
     //!
     size_t MaxHexaWidth(size_t typeSize, size_t digitSeparatorSize = 0);
-
-    //!
-    //! Format a percentage string.
-    //! @tparam INT An integer type.
-    //! @param [in] value An integer value, a portion of @a total.
-    //! @param [in] total The total value.
-    //! @return A string reprenting the percentage of @a value in @a total.
-    //!
-    template<typename INT>
-    std::string PercentageString(INT value, INT total);
 }
 
 #include "tsIntegerUtilsTemplate.h"

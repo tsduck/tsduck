@@ -984,6 +984,32 @@ namespace ts {
         static UString OnOff(bool b);
 
         //!
+        //! Build an error message fragment indicating the number of bytes previously read in a binary file.
+        //! @param [in] position A stream position.
+        //! @return A string like " after XX bytes" if @a position is greater than zero, an empty string otherwise.
+        //!
+        static UString AfterBytes(const std::streampos& position);
+
+        //!
+        //! Format a human-readable size using MB, kB or B as appropriate.
+        //! @param [in] value A size value in basic units. This is a signed value.
+        //! @param [in] units A string for the units. The default is "B" (for bytes).
+        //! @param [in] forceSign If true, use a '+' sign for positive value.
+        //! @return A human-readable representation of the size value.
+        //!
+        static UString HumanSize(int64_t value, const UString& units = u"B", bool forceSign = false);
+
+        //!
+        //! Format a percentage string.
+        //! @tparam INT An integer type.
+        //! @param [in] value An integer value, a portion of @a total.
+        //! @param [in] total The total value.
+        //! @return A string reprenting the percentage of @a value in @a total.
+        //!
+        template<typename INT>
+        static UString Percentage(INT value, INT total);
+
+        //!
         //! Check if two strings are identical, case-insensitive and ignoring blanks
         //! @param [in] other Other string to compare.
         //! @return True if this string and @a other are "similar", ie. identical, case-insensitive and ignoring blanks.

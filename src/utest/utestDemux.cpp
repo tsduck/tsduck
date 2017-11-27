@@ -43,8 +43,6 @@
 #include "tsTOT.h"
 #include "tsTDT.h"
 #include "tsNames.h"
-#include "tsFormat.h"
-#include "tsHexa.h"
 #include "utestCppUnitTest.h"
 TSDUCK_SOURCE;
 
@@ -150,11 +148,11 @@ bool DemuxTest::checkSections(const char* test_name, const char* table_name, con
                      << total_size << " bytes, expected " << ref_sections_size << " bytes"
                      << std::endl
                      << "DemuxTest: Reference sections:" << std::endl
-                     << ts::Hexa(ref_sections, ref_sections_size, ts::hexa::HEXA | ts::hexa::OFFSET | ts::hexa::ASCII, 2)
+                     << ts::UString::Dump(ref_sections, ref_sections_size, ts::UString::HEXA | ts::UString::OFFSET | ts::UString::ASCII, 2)
                      << "DemuxTest: " << table_name << std::endl;
         for (size_t si = 0; si < table.sectionCount(); ++si) {
             const ts::Section& sect(*table.sectionAt(si));
-            utest::Out() << "DemuxTest: " << ts::Hexa(sect.content(), sect.size(), ts::hexa::HEXA | ts::hexa::OFFSET | ts::hexa::ASCII, 2);
+            utest::Out() << "DemuxTest: " << ts::UString::Dump(sect.content(), sect.size(), ts::UString::HEXA | ts::UString::OFFSET | ts::UString::ASCII, 2);
         }
         return false;
     }
@@ -173,9 +171,9 @@ bool DemuxTest::checkSections(const char* test_name, const char* table_name, con
                              << ": difference at offset " << i << " in section " << si
                              << std::endl
                              << "DemuxTest: Reference section:" << std::endl
-                             << ts::Hexa(ref, size, ts::hexa::HEXA | ts::hexa::OFFSET | ts::hexa::ASCII, 2)
+                             << ts::UString::Dump(ref, size, ts::UString::HEXA | ts::UString::OFFSET | ts::UString::ASCII, 2)
                              << "DemuxTest: " << table_name << std::endl
-                             << ts::Hexa(sec, size, ts::hexa::HEXA | ts::hexa::OFFSET | ts::hexa::ASCII, 2);
+                             << ts::UString::Dump(sec, size, ts::UString::HEXA | ts::UString::OFFSET | ts::UString::ASCII, 2);
                 return false;
             }
         }
@@ -192,9 +190,9 @@ bool DemuxTest::checkPackets(const char* test_name, const char* table_name, cons
                      << ": rebuilt " << packets.size() << " packets, expected " << (ref_packets_size / ts::PKT_SIZE)
                      << std::endl
                      << "DemuxTest: Reference packets:" << std::endl
-                     << ts::Hexa(ref_packets, ref_packets_size, ts::hexa::HEXA | ts::hexa::OFFSET | ts::hexa::ASCII, 2)
+                     << ts::UString::Dump(ref_packets, ref_packets_size, ts::UString::HEXA | ts::UString::OFFSET | ts::UString::ASCII, 2)
                      << "* " << table_name << ":" << std::endl
-                     << ts::Hexa(packets[0].b, packets.size() * ts::PKT_SIZE, ts::hexa::HEXA | ts::hexa::OFFSET | ts::hexa::ASCII, 2);
+                     << ts::UString::Dump(packets[0].b, packets.size() * ts::PKT_SIZE, ts::UString::HEXA | ts::UString::OFFSET | ts::UString::ASCII, 2);
         return false;
     }
 
@@ -208,9 +206,9 @@ bool DemuxTest::checkPackets(const char* test_name, const char* table_name, cons
                              << ": difference at offset " << i << " in packet " << pi
                              << std::endl
                              << "DemuxTest: Reference packet:" << std::endl
-                             << ts::Hexa(ref, ts::PKT_SIZE, ts::hexa::HEXA | ts::hexa::OFFSET | ts::hexa::ASCII, 2)
+                             << ts::UString::Dump(ref, ts::PKT_SIZE, ts::UString::HEXA | ts::UString::OFFSET | ts::UString::ASCII, 2)
                              << "DemuxTest: " << table_name << ":" << std::endl
-                             << ts::Hexa(pkt, ts::PKT_SIZE, ts::hexa::HEXA | ts::hexa::OFFSET | ts::hexa::ASCII, 2);
+                             << ts::UString::Dump(pkt, ts::PKT_SIZE, ts::UString::HEXA | ts::UString::OFFSET | ts::UString::ASCII, 2);
                 return false;
             }
         }
@@ -237,7 +235,7 @@ void DemuxTest::testTable(const char* name, const uint8_t* ref_packets, size_t r
     // Compare contents of reference sections and demuxed sections.
 
     const ts::BinaryTable& table1(*demux.tableAt(0));
-    utest::Out() << "DemuxTest: " << ts::Format("  PID %d (0x%02X)", int(table1.sourcePID()), int(table1.sourcePID())) << std::endl;
+    utest::Out() << "DemuxTest: " << ts::UString::Format(u"  PID %d (0x%X)", {table1.sourcePID(), table1.sourcePID()}) << std::endl;
     CPPUNIT_ASSERT(checkSections(name, "demuxed table", table1, ref_sections, ref_sections_size));
 
     // Table-specific tests.

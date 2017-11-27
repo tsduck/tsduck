@@ -85,9 +85,9 @@ ts::AbstractCASDate& ts::AbstractCASDate::operator=(const AbstractCASDate& date)
 // Convert to a string object.
 //-----------------------------------------------------------------------------
 
-ts::AbstractCASDate::operator std::string() const
+ts::AbstractCASDate::operator ts::UString() const
 {
-    return isValid() ? Format("%04d-%02d-%02d", year(), month(), day()) : "?";
+    return isValid() ? UString::Format(u"%04d-%02d-%02d", {year(), month(), day()}) : u"?";
 }
 
 

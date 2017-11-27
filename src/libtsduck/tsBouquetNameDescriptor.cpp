@@ -32,7 +32,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsBouquetNameDescriptor.h"
-#include "tsStringUtils.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 TSDUCK_SOURCE;

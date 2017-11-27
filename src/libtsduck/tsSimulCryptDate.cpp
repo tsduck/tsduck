@@ -32,7 +32,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsSimulCryptDate.h"
-#include "tsFormat.h"
 TSDUCK_SOURCE;
 
 #if defined (TS_NEED_STATIC_CONST_DEFINITIONS)
@@ -80,8 +79,8 @@ void ts::SimulCryptDate::get (const tlv::MessageFactory& mf, tlv::TAG tag)
 
     // Check parameter size. Raise exception on error.
     if (p.length != sizeof(_data)) {
-        throw tlv::DeserializationInternalError (Format ("Invalid DVB time size in parameter 0x%04X, expected %" FMT_SIZE_T "d bytes, got %d",
-                                                         int (tag), sizeof(_data), int (p.length)));
+        throw tlv::DeserializationInternalError(
+            UString::Format(u"Invalid DVB time size in parameter 0x%X, expected %d bytes, got %d", {tag, sizeof(_data), p.length}));
     }
 
     // Now get binary content
@@ -103,7 +102,7 @@ ts::SimulCryptDate::operator ts::Time() const
 // Convert to a string object
 //----------------------------------------------------------------------------
 
-ts::SimulCryptDate::operator std::string() const
+ts::SimulCryptDate::operator ts::UString() const
 {
-    return Format("%04d/%02d/%02d-%02d:%02d:%02d.%02d", year(), month(), day(), hour(), minute(), second(), hundredth());
+    return UString::Format(u"%04d/%02d/%02d-%02d:%02d:%02d.%02d", {year(), month(), day(), hour(), minute(), second(), hundredth()});
 }

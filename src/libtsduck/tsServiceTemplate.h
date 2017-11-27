@@ -28,8 +28,6 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsStringUtils.h"
-#include "tsFormat.h"
 
 
 //----------------------------------------------------------------------------
@@ -38,14 +36,14 @@
 
 template <class ITERATOR>
 std::ostream& ts::Service::Display(std::ostream& strm,
-                                   const std::string& margin,
+                                   const UString& margin,
                                    const ITERATOR& begin,
                                    const ITERATOR& end,
                                    bool header)
 {
     // Some header
-    const UString h_name("Name");
-    const UString h_provider("Provider");
+    const UString h_name(u"Name");
+    const UString h_provider(u"Provider");
 
     // List fields which are present
     uint32_t fields = 0;
@@ -130,7 +128,7 @@ std::ostream& ts::Service::Display(std::ostream& strm,
         strm << margin;
         if (fields & LCN) {
             if (it->_lcn.set()) {
-                strm << Format ("%3d ", it->_lcn.value());
+                strm << UString::Format(u"%3d ", {it->_lcn.value()});
             }
             else {
                 strm << "    ";
@@ -144,7 +142,7 @@ std::ostream& ts::Service::Display(std::ostream& strm,
         }
         if (fields & ID) {
             if (it->_id.set()) {
-                strm << Format("0x%04X ", it->_id.value());
+                strm << UString::Format(u"0x%04X ", {it->_id.value()});
             }
             else {
                 strm << "       ";
@@ -152,7 +150,7 @@ std::ostream& ts::Service::Display(std::ostream& strm,
         }
         if (fields & TSID) {
             if (it->_tsid.set()) {
-                strm << Format("0x%04X ", it->_tsid.value());
+                strm << UString::Format(u"0x%04X ", {it->_tsid.value()});
             }
             else {
                 strm << "       ";
@@ -160,7 +158,7 @@ std::ostream& ts::Service::Display(std::ostream& strm,
         }
         if (fields & ONID) {
             if (it->_onid.set()) {
-                strm << Format("0x%04X ", it->_onid.value());
+                strm << UString::Format(u"0x%04X ", {it->_onid.value()});
             }
             else {
                 strm << "       ";
@@ -168,7 +166,7 @@ std::ostream& ts::Service::Display(std::ostream& strm,
         }
         if (fields & TYPE) {
             if (it->_type.set()) {
-                strm << Format("0x%02X ", it->_type.value());
+                strm << UString::Format(u"0x%02X ", {it->_type.value()});
             }
             else {
                 strm << "     ";
@@ -176,7 +174,7 @@ std::ostream& ts::Service::Display(std::ostream& strm,
         }
         if (fields & PMT_PID) {
             if (it->_pmt_pid.set()) {
-                strm << Format("0x%04X ", it->_pmt_pid.value());
+                strm << UString::Format(u"0x%04X ", {it->_pmt_pid.value()});
             }
             else {
                 strm << "      ";

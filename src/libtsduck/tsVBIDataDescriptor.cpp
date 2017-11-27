@@ -32,8 +32,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsVBIDataDescriptor.h"
-#include "tsFormat.h"
-#include "tsHexa.h"
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
@@ -61,7 +59,7 @@ void ts::VBIDataDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, c
         if (length > size) {
             length = size;
         }
-        strm << margin << Format("Data service id: %d (0x%02X)", int(data_id), int(data_id));
+        strm << margin << UString::Format(u"Data service id: %d (0x%X)", {data_id, data_id});
         switch (data_id) {
             case 1:  strm << ", EBU teletext"; break;
             case 2:  strm << ", Inverted teletext"; break;
@@ -82,7 +80,7 @@ void ts::VBIDataDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, c
         }
         else if (length > 0) {
             strm << margin << "Associated data:" << std::endl
-                 << Hexa(data, length, hexa::HEXA | hexa::ASCII, indent);
+                << UString::Dump(data, length, UString::HEXA | UString::ASCII, indent);
             data += length; size -= length;
         }
     }

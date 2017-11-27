@@ -33,7 +33,6 @@
 
 #include "tsTablesLoggerArgs.h"
 #include "tsException.h"
-#include "tsHexa.h"
 TSDUCK_SOURCE;
 
 #if defined(TS_NEED_STATIC_CONST_DEFINITIONS)

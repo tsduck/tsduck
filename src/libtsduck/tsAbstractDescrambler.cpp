@@ -33,9 +33,6 @@
 
 #include "tsAbstractDescrambler.h"
 #include "tsGuardCondition.h"
-#include "tsDecimal.h"
-#include "tsHexa.h"
-#include "tsFormat.h"
 TSDUCK_SOURCE;
 
 #define ECM_THREAD_STACK_OVERHEAD (16  * 1024)  // Stack usage in this module
@@ -46,25 +43,25 @@ TSDUCK_SOURCE;
 // Constructor
 //----------------------------------------------------------------------------
 
-ts::AbstractDescrambler::AbstractDescrambler (TSP* tsp_,
-                                                const std::string& description_,
-                                                const std::string& syntax_,
-                                                const std::string& help_) :
-    ProcessorPlugin (tsp_, description_, syntax_, help_),
-    _cw_mode (Scrambling::REDUCE_ENTROPY),
-    _packet_count (0),
-    _abort (false),
-    _synchronous (false),
-    _aes128_dvs042 (false),
-    _iv (),
-    _service (),
-    _stack_usage (ECM_THREAD_STACK_USAGE),
-    _demux (this),
-    _ecm_streams (),
-    _scrambled_streams (),
-    _mutex (),
-    _ecm_to_do (),
-    _stop_thread (false)
+ts::AbstractDescrambler::AbstractDescrambler(TSP* tsp_,
+                                             const UString& description_,
+                                             const UString& syntax_,
+                                             const UString& help_) :
+    ProcessorPlugin(tsp_, description_, syntax_, help_),
+    _cw_mode(Scrambling::REDUCE_ENTROPY),
+    _packet_count(0),
+    _abort(false),
+    _synchronous(false),
+    _aes128_dvs042(false),
+    _iv(),
+    _service(),
+    _stack_usage(ECM_THREAD_STACK_USAGE),
+    _demux(this),
+    _ecm_streams(),
+    _scrambled_streams(),
+    _mutex(),
+    _ecm_to_do(),
+    _stop_thread(false)
 {
 }
 
@@ -73,15 +70,15 @@ ts::AbstractDescrambler::AbstractDescrambler (TSP* tsp_,
 // Get the ECM stream for a PID, create it if non existent
 //----------------------------------------------------------------------------
 
-ts::AbstractDescrambler::ECMStreamPtr ts::AbstractDescrambler::getOrCreateECMStream (PID ecm_pid)
+ts::AbstractDescrambler::ECMStreamPtr ts::AbstractDescrambler::getOrCreateECMStream(PID ecm_pid)
 {
-    ECMStreamMap::iterator ecm_it = _ecm_streams.find (ecm_pid);
+    ECMStreamMap::iterator ecm_it = _ecm_streams.find(ecm_pid);
     if (ecm_it != _ecm_streams.end()) {
         return ecm_it->second;
     }
     else {
         ECMStreamPtr p (new ECMStream());
-        _ecm_streams.insert (std::make_pair (ecm_pid, p));
+        _ecm_streams.insert(std::make_pair(ecm_pid, p));
         return p;
     }
 }
@@ -91,10 +88,10 @@ ts::AbstractDescrambler::ECMStreamPtr ts::AbstractDescrambler::getOrCreateECMStr
 // Start abstract descrambler.
 //----------------------------------------------------------------------------
 
-bool ts::AbstractDescrambler::startDescrambler (bool           synchronous,
-                                                  bool           reduce_entropy,
-                                                  const Service& service,
-                                                  size_t         stack_usage)
+bool ts::AbstractDescrambler::startDescrambler(bool           synchronous,
+                                               bool           reduce_entropy,
+                                               const Service& service,
+                                               size_t         stack_usage)
 {
     // Get descrambler parameters
     _cw_mode = reduce_entropy ? Scrambling::REDUCE_ENTROPY : Scrambling::FULL_CW;
@@ -136,7 +133,7 @@ bool ts::AbstractDescrambler::stop()
     // and wait for its actual termination.
     if (!_synchronous) {
         {
-            GuardCondition lock (_mutex, _ecm_to_do);
+            GuardCondition lock(_mutex, _ecm_to_do);
             _stop_thread = true;
             lock.signal();
         }
@@ -151,30 +148,30 @@ bool ts::AbstractDescrambler::stop()
 // Invoked by the demux when a complete table is available.
 //----------------------------------------------------------------------------
 
-void ts::AbstractDescrambler::handleTable (SectionDemux& demux, const BinaryTable& table)
+void ts::AbstractDescrambler::handleTable(SectionDemux& demux, const BinaryTable& table)
 {
     switch (table.tableId()) {
 
         case TID_PAT: {
-            PAT pat (table);
+            PAT pat(table);
             if (pat.isValid()) {
-                processPAT (pat);
+                processPAT(pat);
             }
             break;
         }
 
         case TID_SDT_ACT: {
-            SDT sdt (table);
+            SDT sdt(table);
             if (sdt.isValid()) {
-                processSDT (sdt);
+                processSDT(sdt);
             }
             break;
         }
 
         case TID_PMT: {
-            PMT pmt (table);
-            if (pmt.isValid() && _service.hasId (pmt.service_id)) {
-                processPMT (pmt);
+            PMT pmt(table);
+            if (pmt.isValid() && _service.hasId(pmt.service_id)) {
+                processPMT(pmt);
             }
             break;
         }
@@ -182,7 +179,7 @@ void ts::AbstractDescrambler::handleTable (SectionDemux& demux, const BinaryTabl
         case TID_ECM_80:
         case TID_ECM_81: {
             if (table.sectionCount() == 1) {
-                processCMT (*table.sectionAt(0));
+                processCMT(*table.sectionAt(0));
             }
             break;
         }
@@ -207,14 +204,14 @@ void ts::AbstractDescrambler::processSDT(const SDT& sdt)
     uint16_t service_id;
     assert(_service.hasName());
     if (!sdt.findService(_service.getName(), service_id)) {
-        tsp->error("service \"" + _service.getName() + "\" not found in SDT");
+        tsp->error(u"service \"%s\" not found in SDT", {_service.getName()});
         _abort = true;
         return;
     }
 
     // Remember service id
     _service.setId(service_id);
-    tsp->verbose("found service \"%s\", service id is 0x%X", {_service.getName(), _service.getId()});
+    tsp->verbose(u"found service \"%s\", service id is 0x%X", {_service.getName(), _service.getId()});
 
     // No longer need to filter the SDT
     _demux.removePID(PID_SDT);

@@ -678,3 +678,26 @@ ts::UString ts::UString::Hexa(INT value,
     // Reverse characters in string
     return s.toReversed();
 }
+
+
+//----------------------------------------------------------------------------
+// Format a percentage string.
+//----------------------------------------------------------------------------
+
+template<typename INT>
+ts::UString ts::UString::Percentage(INT value, INT total)
+{
+    if (total < 0) {
+        return u"?";
+    }
+    if (total == 0) {
+        return u"0.00%";
+    }
+    else {
+        // Integral percentage
+        const int p1 = int((100 * uint64_t(value)) / uint64_t(total));
+        // Percentage first 2 decimals
+        const int p2 = int(((10000 * uint64_t(value)) / uint64_t(total)) % 100);
+        return Format(u"%d.%02d%%", {p1, p2});
+    }
+}

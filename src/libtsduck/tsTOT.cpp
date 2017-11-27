@@ -35,7 +35,6 @@
 #include "tsMJD.h"
 #include "tsBCD.h"
 #include "tsCRC32.h"
-#include "tsFormat.h"
 #include "tsBinaryTable.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
@@ -82,10 +81,10 @@ ts::TOT::TOT(const BinaryTable& table, const DVBCharset* charset) :
 // Return the local time according to a region description
 //----------------------------------------------------------------------------
 
-ts::Time ts::TOT::localTime (const Region& reg) const
+ts::Time ts::TOT::localTime(const Region& reg) const
 {
     // Add local time offset in milliseconds
-    return utc_time + MilliSecond (reg.time_offset) * 60 * MilliSecPerSec;
+    return utc_time + MilliSecond(reg.time_offset) * 60 * MilliSecPerSec;
 }
 
 
@@ -93,9 +92,9 @@ ts::Time ts::TOT::localTime (const Region& reg) const
 // Format a time offset in minutes
 //----------------------------------------------------------------------------
 
-std::string ts::TOT::timeOffsetFormat (int minutes)
+ts::UString ts::TOT::timeOffsetFormat(int minutes)
 {
-    return Format ("%s%02d:%02d", minutes < 0 ? "-" : "", ::abs (minutes) / 60, ::abs (minutes) % 60);
+    return UString::Format(u"%s%02d:%02d", {minutes < 0 ? u"-" : u"", ::abs(minutes) / 60, ::abs(minutes) % 60});
 }
 
 
@@ -288,12 +287,12 @@ void ts::TOT::DisplaySection(TablesDisplay& display, const ts::Section& section,
             CRC32 comp_crc32(section.content(), data - section.content());
             uint32_t sect_crc32 = GetUInt32(data);
             data += 4; size -= 4;
-            strm << margin << Format("CRC32: 0x%08X ", sect_crc32);
+            strm << margin << UString::Format(u"CRC32: 0x%X ", {sect_crc32});
             if (sect_crc32 == comp_crc32) {
                 strm << "(OK)";
             }
             else {
-                strm << Format("(WRONG, expected 0x%08X)", comp_crc32.value());
+                strm << UString::Format(u"(WRONG, expected 0x%X)", {comp_crc32.value()});
             }
             strm << std::endl;
         }

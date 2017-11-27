@@ -32,7 +32,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsPollFiles.h"
-#include "tsStringUtils.h"
 #include "tsSysUtils.h"
 TSDUCK_SOURCE;
 

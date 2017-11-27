@@ -33,7 +33,6 @@
 
 #include "tsDescriptorList.h"
 #include "tsAbstractDescriptor.h"
-#include "tsStringUtils.h"
 #include "tsPrivateDataSpecifierDescriptor.h"
 TSDUCK_SOURCE;
 
@@ -320,7 +319,7 @@ size_t ts::DescriptorList::search (DID tag, size_t start_index, PDS pds) const
 // or count() if no such descriptor is found.
 //----------------------------------------------------------------------------
 
-size_t ts::DescriptorList::searchLanguage (const std::string& language, size_t start_index) const
+size_t ts::DescriptorList::searchLanguage(const UString& language, size_t start_index) const
 {
     for (size_t index = start_index; index < _list.size(); index++) {
         if (_list[index].desc->tag() == DID_LANGUAGE) {
@@ -328,7 +327,7 @@ size_t ts::DescriptorList::searchLanguage (const std::string& language, size_t s
             const uint8_t* desc = _list[index].desc->payload();
             size_t size = _list[index].desc->payloadSize();
             // The language code uses 3 bytes after the size
-            if (size >= 3 && SimilarStrings (language, desc, 3)) {
+            if (size >= 3 && language.similar(desc, 3)) {
                 return index;
             }
         }
@@ -349,7 +348,7 @@ size_t ts::DescriptorList::searchLanguage (const std::string& language, size_t s
 // language, return count()+1.
 //----------------------------------------------------------------------------
 
-size_t ts::DescriptorList::searchSubtitle (const std::string& language, size_t start_index) const
+size_t ts::DescriptorList::searchSubtitle(const UString& language, size_t start_index) const
 {
     // Value to return if not found
     size_t not_found = count();
@@ -368,7 +367,7 @@ size_t ts::DescriptorList::searchSubtitle (const std::string& language, size_t s
             else {
                 not_found = count() + 1;
                 while (size >= 8) {
-                    if (SimilarStrings (language, desc, 3)) {
+                    if (language.similar(desc, 3)) {
                         return index;
                     }
                     desc += 8;
@@ -390,7 +389,7 @@ size_t ts::DescriptorList::searchSubtitle (const std::string& language, size_t s
                     }
                     else {
                         not_found = count() + 1;
-                        if (SimilarStrings (language, desc, 3)) {
+                        if (language.similar(desc, 3)) {
                             return index;
                         }
                     }

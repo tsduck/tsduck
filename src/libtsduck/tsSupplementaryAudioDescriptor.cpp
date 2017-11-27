@@ -32,8 +32,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsSupplementaryAudioDescriptor.h"
-#include "tsFormat.h"
-#include "tsHexa.h"
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
@@ -194,7 +192,7 @@ void ts::SupplementaryAudioDescriptor::DisplayDescriptor(TablesDisplay& display,
             case 0x01: strm << "audio description for the visually impaired"; break;
             case 0x02: strm << "clean audio for the hearing impaired"; break;
             case 0x03: strm << "spoken subtitles for the visually impaired"; break;
-            default:   strm << Format("reserved value 0x%02X", editorial); break;
+            default:   strm << UString::Format(u"reserved value 0x%X", {editorial}); break;
         }
         strm << std::endl;
         if (lang_present && size >= 3) {
@@ -203,7 +201,7 @@ void ts::SupplementaryAudioDescriptor::DisplayDescriptor(TablesDisplay& display,
         }
         if (size > 0) {
             strm << margin << "Private data:" << std::endl
-                 << Hexa(data, size, hexa::HEXA | hexa::ASCII | hexa::OFFSET, indent);
+                 << UString::Dump(data, size, UString::HEXA | UString::ASCII | UString::OFFSET, indent);
             data += size; size = 0;
         }
     }

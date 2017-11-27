@@ -205,7 +205,7 @@ void NetworkingTest::testIPAddress()
     CPPUNIT_ASSERT(a1 == ts::IPAddress::LocalHost);
 
     a1.setAddress(2, 3, 4, 5);
-    const ts::UString s1(a1);
+    const ts::UString s1(a1.toString());
     CPPUNIT_ASSERT(s1 == u"2.3.4.5");
 
     utest::Out() << "NetworkingTest: localhost = " << ts::IPAddress("localhost") << std::endl;
@@ -348,11 +348,11 @@ void NetworkingTest::testSocketAddress()
     CPPUNIT_ASSERT(sai.sin_port == htons(80));
 
     a1.set(2, 3, 4, 5, 80);
-    const ts::UString s1(a1);
+    const ts::UString s1(a1.toString());
     CPPUNIT_ASSERT(s1 == "2.3.4.5:80");
 
     a1.clearPort();
-    const ts::UString s2(a1);
+    const ts::UString s2(a1.toString());
     CPPUNIT_ASSERT(s2 == "2.3.4.5");
 }
 

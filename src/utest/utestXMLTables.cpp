@@ -35,7 +35,6 @@
 #include "tsTables.h"
 #include "tsSysUtils.h"
 #include "tsBinaryTable.h"
-#include "tsStringUtils.h"
 #include "tsCerrReport.h"
 #include "utestCppUnitTest.h"
 TSDUCK_SOURCE;

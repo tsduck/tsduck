@@ -33,8 +33,6 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsPlatform.h"
-#include "tsFormat.h"
 #include "tsTime.h"
 
 namespace ts {
@@ -99,13 +97,13 @@ namespace ts {
         //! Convert to a Time object.
         //! @return The Time object.
         //!
-        operator Time() const;
+        operator ts::Time() const;
 
         //!
         //! Convert to a string object.
         //! @return The string object.
         //!
-        operator std::string() const;
+        operator ts::UString() const;
 
         //!
         //! Assignment operator.
@@ -247,5 +245,5 @@ namespace ts {
 //!
 TSDUCKDLL inline std::ostream& operator<<(std::ostream& strm, const ts::AbstractCASDate& date)
 {
-    return strm << std::string(date);
+    return strm << ts::UString(date);
 }

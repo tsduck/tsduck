@@ -33,8 +33,6 @@
 
 #include "tsDataBroadcastDescriptor.h"
 #include "tsDataBroadcastIdDescriptor.h"
-#include "tsFormat.h"
-#include "tsHexa.h"
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
@@ -93,7 +91,7 @@ void ts::DataBroadcastDescriptor::DisplayDescriptor(TablesDisplay& display, DID 
             slength = size;
         }
         strm << margin << "Data broadcast id: " << names::DataBroadcastId(dbid, names::BOTH_FIRST) << std::endl
-             << margin << Format("Component tag: %d (0x%02X), ", int(ctag), int(ctag))
+             << margin << UString::Format(u"Component tag: %d (0x%X), ", {ctag, ctag})
              << std::endl;
         DataBroadcastIdDescriptor::DisplaySelectorBytes(display, data, slength, indent, dbid);
         data += slength; size -= slength;

@@ -808,7 +808,7 @@ ts::UString ts::UString::toHTML() const
 
 
 //----------------------------------------------------------------------------
-// Format a boolean value in various standard representation.
+// Various specialized messages.
 //----------------------------------------------------------------------------
 
 ts::UString ts::UString::YesNo(bool b)
@@ -824,6 +824,30 @@ ts::UString ts::UString::TrueFalse(bool b)
 ts::UString ts::UString::OnOff(bool b)
 {
     return FromUTF8(b ? "on" : "off");
+}
+
+ts::UString ts::UString::AfterBytes(const std::streampos& position)
+{
+    const int64_t bytes = int64_t(position);
+    return bytes <= 0 ? UString() : Format(u" after %'d bytes", {bytes});
+}
+
+ts::UString ts::UString::HumanSize(int64_t value, const UString& units, bool forceSign)
+{
+    const int64_t k = TS_CONST64(1024);
+
+    if (value < 8 * k) { // less than 8 kB => use bytes
+        return Decimal(value, 0, true, ",", forceSign) + u" " + units;
+    }
+    else if (value < 8 * k * k) { // between 8 kB and 8 MB => use kB
+        return Decimal(value / k, 0, true, ",", forceSign) + u" k" + units;
+    }
+    else if (value < 8 * k * k * k) { // between 8 MB and 8 GB => use MB
+        return Decimal(value / (k * k), 0, true, ",", forceSign) + u" M" + units;
+    }
+    else { // more than 8 GB => use GB
+        return Decimal(value / (k * k * k), 0, true, ",", forceSign) + u" G" + units;
+    }
 }
 
 

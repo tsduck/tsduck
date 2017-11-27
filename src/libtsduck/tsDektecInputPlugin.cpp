@@ -37,8 +37,6 @@
 #include "tsDektecUtils.h"
 #include "tsDektecDevice.h"
 #include "tsDektecVPD.h"
-#include "tsFormat.h"
-#include "tsDecimal.h"
 #include "tsIntegerUtils.h"
 #include "tsFatal.h"
 TSDUCK_SOURCE;
@@ -175,14 +173,14 @@ bool ts::DektecInputPlugin::start()
     // Open the device
     Dtapi::DTAPI_RESULT status = _guts->dtdev.AttachToSerial(_guts->device.desc.m_Serial);
     if (status != DTAPI_OK) {
-        tsp->error(Format("error attaching input Dektec device %d: ", _guts->dev_index) + DektecStrError(status));
+        tsp->error(u"error attaching input Dektec device %d: %s", {_guts->dev_index, DektecStrError(status)});
         return false;
     }
 
     // Open the input channel
     status = _guts->chan.AttachToPort(&_guts->dtdev, _guts->device.input[_guts->chan_index].m_Port);
     if (status != DTAPI_OK) {
-        tsp->error(Format("error attaching input channel %d of Dektec device %d: ", _guts->chan_index, _guts->dev_index) + DektecStrError(status));
+        tsp->error(u"error attaching input channel %d of Dektec device %d: %s", {_guts->chan_index, _guts->dev_index, DektecStrError(status)});
         _guts->dtdev.Detach();
         return false;
     }
@@ -190,7 +188,7 @@ bool ts::DektecInputPlugin::start()
     // Reset input channel
     status = _guts->chan.Reset(DTAPI_FULL_RESET);
     if (status != DTAPI_OK) {
-        tsp->error("input device reset error: " + DektecStrError(status));
+        tsp->error(u"input device reset error: %s", {DektecStrError(status)});
         _guts->chan.Detach(0);
         _guts->dtdev.Detach();
         return false;
@@ -201,7 +199,7 @@ bool ts::DektecInputPlugin::start()
     // bytes if the transmitted packets are 204-byte).
     status = _guts->chan.SetRxMode(DTAPI_RXMODE_ST188);
     if (status != DTAPI_OK) {
-        tsp->error("device SetRxMode error: " + DektecStrError(status));
+        tsp->error(u"device SetRxMode error: %s", {DektecStrError(status)});
         _guts->chan.Detach(0);
         _guts->dtdev.Detach();
         return false;
@@ -210,7 +208,7 @@ bool ts::DektecInputPlugin::start()
     // Start the capture on the input device (set receive control to "receive")
     status = _guts->chan.SetRxControl(DTAPI_RXCTRL_RCV);
     if (status != DTAPI_OK) {
-        tsp->error("device SetRxControl error: " + DektecStrError(status));
+        tsp->error(u"device SetRxControl error: %s", {DektecStrError(status)});
         _guts->chan.Detach(0);
         _guts->dtdev.Detach();
         return false;
@@ -272,7 +270,7 @@ ts::BitRate ts::DektecInputPlugin::getBitrate()
         return 0;
     }
     if (_guts->got_bitrate && bitrate != int(_guts->cur_bitrate)) {
-        tsp->verbose("new input bitrate: " + Decimal(bitrate) + " b/s");
+        tsp->verbose(u"new input bitrate: %'d b/s", {bitrate});
     }
 
     _guts->got_bitrate = true;
@@ -301,7 +299,7 @@ size_t ts::DektecInputPlugin::receive(TSPacket* buffer, size_t max_packets)
         int fifo_load;
         status = _guts->chan.GetFifoLoad(fifo_load);
         if (status != DTAPI_OK) {
-            tsp->error("error getting input fifo load: " + DektecStrError(status));
+            tsp->error(u"error getting input fifo load: %s", {DektecStrError(status)});
         }
         if (fifo_load >= int(DTA_FIFO_SIZE)) {
             // Input overflow.
@@ -318,7 +316,7 @@ size_t ts::DektecInputPlugin::receive(TSPacket* buffer, size_t max_packets)
         return size / PKT_SIZE;
     }
     else {
-        tsp->error(Format("capture error on Dektec device %d: ", _guts->dev_index) + DektecStrError(status));
+        tsp->error(u"capture error on Dektec device %d: %s", {_guts->dev_index, DektecStrError(status)});
         return 0;
     }
 }

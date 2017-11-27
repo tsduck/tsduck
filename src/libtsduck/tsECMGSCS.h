@@ -184,11 +184,11 @@ namespace ts {
             ChannelSetup(const tlv::MessageFactory& fact);
 
             // Implementation of Message.
-            virtual std::string dump(size_t indent = 0) const;
+            virtual UString dump(size_t indent = 0) const override;
 
         protected:
             // Implementation of Message.
-            virtual void serializeParameters(tlv::Serializer& fact) const;
+            virtual void serializeParameters(tlv::Serializer& fact) const override;
         };
 
         //!
@@ -211,11 +211,11 @@ namespace ts {
             ChannelTest(const tlv::MessageFactory& fact);
 
             // Implementation of Message.
-            virtual std::string dump(size_t indent = 0) const;
+            virtual UString dump(size_t indent = 0) const override;
 
         protected:
             // Implementation of Message.
-            virtual void serializeParameters(tlv::Serializer& fact) const;
+            virtual void serializeParameters(tlv::Serializer& fact) const override;
         };
 
         //!
@@ -255,11 +255,11 @@ namespace ts {
             ChannelStatus(const tlv::MessageFactory& fact);
 
             // Implementation of Message.
-            virtual std::string dump(size_t indent = 0) const;
+            virtual UString dump(size_t indent = 0) const override;
 
         protected:
             // Implementation of Message.
-            virtual void serializeParameters(tlv::Serializer& fact) const;
+            virtual void serializeParameters(tlv::Serializer& fact) const override;
         };
 
         //!
@@ -282,11 +282,11 @@ namespace ts {
             ChannelClose(const tlv::MessageFactory& fact);
 
             // Implementation of Message.
-            virtual std::string dump(size_t indent = 0) const;
+            virtual UString dump(size_t indent = 0) const override;
 
         protected:
             // Implementation of Message.
-            virtual void serializeParameters(tlv::Serializer& fact) const;
+            virtual void serializeParameters(tlv::Serializer& fact) const override;
         };
 
         //!
@@ -311,11 +311,11 @@ namespace ts {
             ChannelError(const tlv::MessageFactory& fact);
 
             // Implementation of Message.
-            virtual std::string dump(size_t indent = 0) const;
+            virtual UString dump(size_t indent = 0) const override;
 
         protected:
             // Implementation of Message.
-            virtual void serializeParameters(tlv::Serializer& fact) const;
+            virtual void serializeParameters(tlv::Serializer& fact) const override;
         };
 
         //!
@@ -341,11 +341,11 @@ namespace ts {
             StreamSetup(const tlv::MessageFactory& fact);
 
             // Implementation of Message.
-            virtual std::string dump(size_t indent = 0) const;
+            virtual UString dump(size_t indent = 0) const override;
 
         protected:
             // Implementation of Message.
-            virtual void serializeParameters(tlv::Serializer& fact) const;
+            virtual void serializeParameters(tlv::Serializer& fact) const override;
         };
 
         //!
@@ -369,11 +369,11 @@ namespace ts {
             StreamTest(const tlv::MessageFactory& fact);
 
             // Implementation of Message.
-            virtual std::string dump(size_t indent = 0) const;
+            virtual UString dump(size_t indent = 0) const override;
 
         protected:
             // Implementation of Message.
-            virtual void serializeParameters(tlv::Serializer& fact) const;
+            virtual void serializeParameters(tlv::Serializer& fact) const override;
         };
 
         //!
@@ -399,11 +399,11 @@ namespace ts {
             StreamStatus(const tlv::MessageFactory& fact);
 
             // Implementation of Message.
-            virtual std::string dump(size_t indent = 0) const;
+            virtual UString dump(size_t indent = 0) const override;
 
         protected:
             // Implementation of Message.
-            virtual void serializeParameters(tlv::Serializer& fact) const;
+            virtual void serializeParameters(tlv::Serializer& fact) const override;
         };
 
         //!
@@ -427,11 +427,11 @@ namespace ts {
             StreamCloseRequest(const tlv::MessageFactory& fact);
 
             // Implementation of Message.
-            virtual std::string dump(size_t indent = 0) const;
+            virtual UString dump(size_t indent = 0) const override;
 
         protected:
             // Implementation of Message.
-            virtual void serializeParameters(tlv::Serializer& fact) const;
+            virtual void serializeParameters(tlv::Serializer& fact) const override;
         };
 
         //!
@@ -455,11 +455,11 @@ namespace ts {
             StreamCloseResponse(const tlv::MessageFactory& fact);
 
             // Implementation of Message.
-            virtual std::string dump(size_t indent = 0) const;
+            virtual UString dump(size_t indent = 0) const override;
 
         protected:
             // Implementation of Message.
-            virtual void serializeParameters(tlv::Serializer& fact) const;
+            virtual void serializeParameters(tlv::Serializer& fact) const override;
         };
 
         //!
@@ -485,11 +485,11 @@ namespace ts {
             StreamError(const tlv::MessageFactory& fact);
 
             // Implementation of Message.
-            virtual std::string dump(size_t indent = 0) const;
+            virtual UString dump(size_t indent = 0) const override;
 
         protected:
             // Implementation of Message.
-            virtual void serializeParameters(tlv::Serializer& fact) const;
+            virtual void serializeParameters(tlv::Serializer& fact) const override;
         };
 
         //!
@@ -553,11 +553,11 @@ namespace ts {
             CWProvision(const tlv::MessageFactory& fact);
 
             // Implementation of Message.
-            virtual std::string dump(size_t indent = 0) const;
+            virtual UString dump(size_t indent = 0) const override;
 
         protected:
             // Implementation of Message.
-            virtual void serializeParameters(tlv::Serializer& fact) const;
+            virtual void serializeParameters(tlv::Serializer& fact) const override;
         };
 
         //!
@@ -583,11 +583,11 @@ namespace ts {
             ECMResponse(const tlv::MessageFactory& fact);
 
             // Implementation of Message.
-            virtual std::string dump(size_t indent = 0) const;
+            virtual UString dump(size_t indent = 0) const override;
 
         protected:
             // Implementation of Message.
-            virtual void serializeParameters(tlv::Serializer& fact) const;
+            virtual void serializeParameters(tlv::Serializer& fact) const override;
         };
 
 

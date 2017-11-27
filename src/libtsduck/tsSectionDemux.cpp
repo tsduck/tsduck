@@ -32,7 +32,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsSectionDemux.h"
-#include "tsDecimal.h"
 TSDUCK_SOURCE;
 
 
@@ -110,22 +109,22 @@ std::ostream& ts::SectionDemux::Status::display(std::ostream& strm, int indent, 
     const std::string margin(indent, ' ');
 
     if (!errors_only || invalid_ts != 0) {
-        strm << margin << "Invalid TS packets: " << Decimal(invalid_ts) << std::endl;
+        strm << margin << "Invalid TS packets: " << UString::Decimal(invalid_ts) << std::endl;
     }
     if (!errors_only || discontinuities != 0) {
-        strm << margin << "TS packets discontinuities: " << Decimal(discontinuities) << std::endl;
+        strm << margin << "TS packets discontinuities: " << UString::Decimal(discontinuities) << std::endl;
     }
     if (!errors_only || scrambled != 0) {
-        strm << margin << "Scrambled TS packets: " << Decimal(scrambled) << std::endl;
+        strm << margin << "Scrambled TS packets: " << UString::Decimal(scrambled) << std::endl;
     }
     if (!errors_only || inv_sect_length != 0) {
-        strm << margin << "Invalid section lengths: " << Decimal(inv_sect_length) << std::endl;
+        strm << margin << "Invalid section lengths: " << UString::Decimal(inv_sect_length) << std::endl;
     }
     if (!errors_only || inv_sect_index != 0) {
-        strm << margin << "Invalid section index: " << Decimal(inv_sect_index) << std::endl;
+        strm << margin << "Invalid section index: " << UString::Decimal(inv_sect_index) << std::endl;
     }
     if (!errors_only || wrong_crc != 0) {
-        strm << margin << "Corrupted sections (bad CRC): " << Decimal(wrong_crc) << std::endl;
+        strm << margin << "Corrupted sections (bad CRC): " << UString::Decimal(wrong_crc) << std::endl;
     }
 
     return strm;

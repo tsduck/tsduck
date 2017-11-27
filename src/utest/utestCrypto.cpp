@@ -46,8 +46,6 @@
 #include "tsCTS4.h"
 #include "tsDVS042.h"
 #include "tsSystemRandomGenerator.h"
-#include "tsDecimal.h"
-#include "tsHexa.h"
 #include "utestCppUnitTest.h"
 TSDUCK_SOURCE;
 
@@ -173,7 +171,7 @@ void CryptoTest::testCipher(ts::BlockCipher& algo,
                             const void* cipher,
                             size_t cipher_size)
 {
-    const std::string name(algo.name() + " test vector " + ts::Decimal(tv_index + 1) + "/" + ts::Decimal(tv_count));
+    const ts::UString name(algo.name() + " test vector " + ts::UString::Decimal(tv_index + 1) + "/" + ts::UString::Decimal(tv_count));
     std::vector<uint8_t> tmp(std::max(plain_size, cipher_size));
     size_t retsize;
 
@@ -185,9 +183,9 @@ void CryptoTest::testCipher(ts::BlockCipher& algo,
     if (::memcmp(cipher, &tmp[0], cipher_size) != 0) {
         utest::Out()
             << "CryptoTest: " << name << ": encryption failed" << std::endl
-            << "  Expected cipher: " << ts::Hexa(cipher, cipher_size, ts::hexa::SINGLE_LINE) << std::endl
-            << "  Returned cipher: " << ts::Hexa(&tmp[0], retsize, ts::hexa::SINGLE_LINE) << std::endl;
-        CPPUNIT_FAIL("CryptoTest: " + name + ": encryption failed");
+            << "  Expected cipher: " << ts::UString::Dump(cipher, cipher_size, ts::UString::SINGLE_LINE) << std::endl
+            << "  Returned cipher: " << ts::UString::Dump(&tmp[0], retsize, ts::UString::SINGLE_LINE) << std::endl;
+        CPPUNIT_FAIL("CryptoTest: " + name.toUTF8() + ": encryption failed");
     }
 
     CPPUNIT_ASSERT(algo.decrypt(cipher, cipher_size, &tmp[0], tmp.size(), &retsize));
@@ -196,9 +194,9 @@ void CryptoTest::testCipher(ts::BlockCipher& algo,
     if (::memcmp(plain, &tmp[0], plain_size) != 0) {
         utest::Out()
             << "CryptoTest: " << name << ": decryption failed" << std::endl
-            << "  Expected plain: " << ts::Hexa(plain, plain_size, ts::hexa::SINGLE_LINE) << std::endl
-            << "  Returned plain: " << ts::Hexa(&tmp[0], retsize, ts::hexa::SINGLE_LINE) << std::endl;
-        CPPUNIT_FAIL("CryptoTest: " + name + ": decryption failed");
+            << "  Expected plain: " << ts::UString::Dump(plain, plain_size, ts::UString::SINGLE_LINE) << std::endl
+            << "  Returned plain: " << ts::UString::Dump(&tmp[0], retsize, ts::UString::SINGLE_LINE) << std::endl;
+        CPPUNIT_FAIL("CryptoTest: " + name.toUTF8() + ": decryption failed");
     }
 }
 
@@ -229,7 +227,7 @@ void CryptoTest::testChainingSizes(ts::CipherChaining& algo, int sizes, ...)
     va_start(ap, sizes);
     while (size > 0) {
 
-        const std::string name(algo.name() + " on " + ts::Decimal(size) + " bytes");
+        const ts::UString name(algo.name() + " on " + ts::UString::Decimal(size) + " bytes");
 
         size_t retsize = 0;
         ts::ByteBlock plain(size);
@@ -251,9 +249,9 @@ void CryptoTest::testChainingSizes(ts::CipherChaining& algo, int sizes, ...)
         if (::memcmp(&plain[0], &decipher[0], size) != 0) {
             utest::Out()
                 << "CryptoTest: " << name << " failed" << std::endl
-                << "  Initial plain: " << ts::Hexa(&plain[0], size, ts::hexa::SINGLE_LINE) << std::endl
-                << "  Returned plain: " << ts::Hexa(&decipher[0], size, ts::hexa::SINGLE_LINE) << std::endl;
-            CPPUNIT_FAIL("CryptoTest: " + name + " failed");
+                << "  Initial plain: " << ts::UString::Dump(&plain[0], size, ts::UString::SINGLE_LINE) << std::endl
+                << "  Returned plain: " << ts::UString::Dump(&decipher[0], size, ts::UString::SINGLE_LINE) << std::endl;
+            CPPUNIT_FAIL("CryptoTest: " + name.toUTF8() + " failed");
         }
 
         size = va_arg(ap, int);
@@ -268,7 +266,7 @@ void CryptoTest::testHash(ts::Hash& algo,
                           const void* hash,
                           size_t hash_size)
 {
-    const std::string name(algo.name() + " test vector " + ts::Decimal(tv_index + 1) + "/" + ts::Decimal(tv_count));
+    const ts::UString name(algo.name() + " test vector " + ts::UString::Decimal(tv_index + 1) + "/" + ts::UString::Decimal(tv_count));
     std::vector<uint8_t> tmp(2 * hash_size);
     size_t retsize;
 
@@ -280,9 +278,9 @@ void CryptoTest::testHash(ts::Hash& algo,
     if (::memcmp(hash, &tmp[0], hash_size) != 0) {
         utest::Out()
             << "CryptoTest: " << name << " failed" << std::endl
-            << "  Expected hash: " << ts::Hexa(hash, hash_size, ts::hexa::SINGLE_LINE) << std::endl
-            << "  Returned hash: " << ts::Hexa(&tmp[0], retsize, ts::hexa::SINGLE_LINE) << std::endl;
-        CPPUNIT_FAIL("CryptoTest: " + name + " failed");
+            << "  Expected hash: " << ts::UString::Dump(hash, hash_size, ts::UString::SINGLE_LINE) << std::endl
+            << "  Returned hash: " << ts::UString::Dump(&tmp[0], retsize, ts::UString::SINGLE_LINE) << std::endl;
+        CPPUNIT_FAIL("CryptoTest: " + name.toUTF8() + " failed");
     }
 }
 

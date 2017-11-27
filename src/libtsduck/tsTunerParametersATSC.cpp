@@ -33,8 +33,6 @@
 
 #include "tsTunerParametersATSC.h"
 #include "tsTunerArgs.h"
-#include "tsDecimal.h"
-#include "tsFormat.h"
 TSDUCK_SOURCE;
 
 #if defined (TS_NEED_STATIC_CONST_DEFINITIONS)

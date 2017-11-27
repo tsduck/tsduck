@@ -42,7 +42,7 @@ TSDUCK_SOURCE;
 // Return true is status is success, false if error.
 //----------------------------------------------------------------------------
 
-bool ts::pcsc::Success (::LONG status, Report& report)
+bool ts::pcsc::Success(::LONG status, Report& report)
 {
     if (status == SCARD_S_SUCCESS) {
         return true;
@@ -59,7 +59,7 @@ bool ts::pcsc::Success (::LONG status, Report& report)
 // Return a PC/SC status.
 //----------------------------------------------------------------------------
 
-::LONG ts::pcsc::ListReaders (::SCARDCONTEXT context, StringVector& readers)
+::LONG ts::pcsc::ListReaders(::SCARDCONTEXT context, UStringVector& readers)
 {
     // Clear result
 
@@ -68,17 +68,17 @@ bool ts::pcsc::Success (::LONG status, Report& report)
     // Get the required size of the name buffer
 
     ::DWORD names_size = 0;
-    ::LONG status = ::SCardListReaders (context, 0, 0, &names_size);
+    ::LONG status = ::SCardListReaders(context, 0, 0, &names_size);
 
-    if (status != SCARD_S_SUCCESS && status != ::LONG (SCARD_E_INSUFFICIENT_BUFFER)) {
+    if (status != SCARD_S_SUCCESS && status != ::LONG(SCARD_E_INSUFFICIENT_BUFFER)) {
         return status;
     }
 
     // Get the list of smartcard readers
 
-    char* names = new char [names_size];
+    char* names = new char[names_size];
     CheckNonNull (names);
-    status = ::SCardListReaders (context, 0, names, &names_size);
+    status = ::SCardListReaders(context, 0, names, &names_size);
 
     // Build the string vector
 
@@ -99,20 +99,21 @@ bool ts::pcsc::Success (::LONG status, Report& report)
 // Return a PC/SC status.
 //----------------------------------------------------------------------------
 
-::LONG ts::pcsc::GetStatesChange (::SCARDCONTEXT context,
-                                    ReaderStateVector& states,       // in/out
-                                    ::DWORD timeout_ms)
+::LONG ts::pcsc::GetStatesChange(::SCARDCONTEXT context, ReaderStateVector& states, ::DWORD timeout_ms)
 {
     // Allocate and initializes a structure array
 
-    ::SCARD_READERSTATE* c_states = new ::SCARD_READERSTATE [states.size()];
-    CheckNonNull (c_states);
+    ::SCARD_READERSTATE* c_states = new ::SCARD_READERSTATE[states.size()];
+    CheckNonNull(c_states);
+
+    std::vector<std::string> utf8Names(states.size());
 
     for (size_t i = 0; i < states.size(); ++i) {
-        TS_ZERO (c_states[i]);
-        c_states[i].szReader = states[i].reader.c_str();
+        TS_ZERO(c_states[i]);
+        utf8Names[i] = states[i].reader.toUTF8();
+        c_states[i].szReader = utf8Names[i].c_str();
         c_states[i].dwCurrentState = states[i].current_state;
-        c_states[i].cbAtr = ::DWORD (std::min (sizeof(c_states[i].rgbAtr), states[i].atr.size()));
+        c_states[i].cbAtr = ::DWORD(std::min(sizeof(c_states[i].rgbAtr), states[i].atr.size()));
         // Flawfinder: ignore: memcpy()
         ::memcpy(c_states[i].rgbAtr, states[i].atr.data(), c_states[i].cbAtr);
     }
@@ -124,13 +125,12 @@ bool ts::pcsc::Success (::LONG status, Report& report)
     if (status == SCARD_S_SUCCESS) {
         for (size_t i = 0; i < states.size(); ++i) {
             states[i].event_state = c_states[i].dwEventState;
-            states[i].atr.copy(c_states[i].rgbAtr, std::min (::DWORD(sizeof(c_states[i].rgbAtr)), c_states[i].cbAtr));
+            states[i].atr.copy(c_states[i].rgbAtr, std::min(::DWORD(sizeof(c_states[i].rgbAtr)), c_states[i].cbAtr));
         }
     }
 
     delete[] c_states;
     return status;
-
 }
 
 
@@ -139,24 +139,22 @@ bool ts::pcsc::Success (::LONG status, Report& report)
 // Return a PC/SC status.
 //----------------------------------------------------------------------------
 
-::LONG ts::pcsc::GetStates (::SCARDCONTEXT context,
-                              ReaderStateVector& states,       // out
-                              ::DWORD timeout_ms)
+::LONG ts::pcsc::GetStates(::SCARDCONTEXT context, ReaderStateVector& states, ::DWORD timeout_ms)
 {
     states.clear();
 
-    StringVector readers;
-    ::LONG status = ListReaders (context, readers);
+    UStringVector readers;
+    ::LONG status = ListReaders(context, readers);
 
     if (status != SCARD_S_SUCCESS || readers.size() == 0) {
         return status;
     }
 
     for (size_t i = 0; i < readers.size(); ++i) {
-        states.push_back (ReaderState (readers[i]));
+        states.push_back(ReaderState(readers[i]));
     }
 
-    return GetStatesChange (context, states, timeout_ms);
+    return GetStatesChange(context, states, timeout_ms);
 }
 
 
@@ -164,12 +162,12 @@ bool ts::pcsc::Success (::LONG status, Report& report)
 // Check if an ATR matches an expected one.
 //----------------------------------------------------------------------------
 
-bool ts::pcsc::MatchATR (const uint8_t* atr1,
-                           size_t       atr1_size,
-                           const uint8_t* atr2,
-                           size_t       atr2_size,
-                           const uint8_t* mask,
-                           size_t       mask_size)
+bool ts::pcsc::MatchATR(const uint8_t* atr1,
+                        size_t       atr1_size,
+                        const uint8_t* atr2,
+                        size_t       atr2_size,
+                        const uint8_t* mask,
+                        size_t       mask_size)
 {
     bool match = atr1_size == atr2_size;
 
@@ -187,19 +185,19 @@ bool ts::pcsc::MatchATR (const uint8_t* atr1,
 // Return a PC/SC status.
 //----------------------------------------------------------------------------
 
-::LONG ts::pcsc::SearchSmartCard (::SCARDCONTEXT  context,
-                                  std::string&    reader_name, // out
-                                  const uint8_t*  atr,
-                                  size_t          atr_size,
-                                  const uint8_t*  atr_mask,
-                                  size_t          atr_mask_size,
-                                  const uint8_t*  pwr,
-                                  size_t          pwr_size,
-                                  const uint8_t*  pwr_mask,
-                                  size_t          pwr_mask_size,
-                                  ::DWORD         timeout_ms)
+::LONG ts::pcsc::SearchSmartCard(::SCARDCONTEXT  context,
+                                 UString&        reader_name, // out
+                                 const uint8_t*  atr,
+                                 size_t          atr_size,
+                                 const uint8_t*  atr_mask,
+                                 size_t          atr_mask_size,
+                                 const uint8_t*  pwr,
+                                 size_t          pwr_size,
+                                 const uint8_t*  pwr_mask,
+                                 size_t          pwr_mask_size,
+                                 ::DWORD         timeout_ms)
 {
-    reader_name = "";
+    reader_name.clear();
 
     // Get the list of all smartcard readers
 
@@ -232,14 +230,14 @@ bool ts::pcsc::MatchATR (const uint8_t* atr1,
 // Return a PC/SC status.
 //----------------------------------------------------------------------------
 
-::LONG ts::pcsc::Transmit (::SCARDHANDLE handle,       // in
-                             ::DWORD       protocol,     // in
-                             const void*   send,         // in
-                             size_t        send_size,    // in
-                             void*         resp,         // out (SW stripped)
-                             size_t        resp_size,    // in
-                             uint16_t&       sw,           // out
-                             size_t&       resp_length)  // out
+::LONG ts::pcsc::Transmit(::SCARDHANDLE handle,       // in
+                          ::DWORD       protocol,     // in
+                          const void*   send,         // in
+                          size_t        send_size,    // in
+                          void*         resp,         // out (SW stripped)
+                          size_t        resp_size,    // in
+                          uint16_t&     sw,           // out
+                          size_t&       resp_length)  // out
 {
     ::SCARD_IO_REQUEST send_request;
     send_request.dwProtocol = protocol;
@@ -249,11 +247,11 @@ bool ts::pcsc::MatchATR (const uint8_t* atr1,
     recv_request.dwProtocol = protocol;
     recv_request.cbPciLength = sizeof(recv_request);
 
-    ::DWORD ret_size = ::DWORD (resp_size);
+    ::DWORD ret_size = ::DWORD(resp_size);
 
-    ::LONG status = ::SCardTransmit (handle,
-                                     &send_request, ::LPCBYTE (send), ::DWORD (send_size),
-                                     &recv_request, ::LPBYTE (resp), &ret_size);
+    ::LONG status = ::SCardTransmit(handle,
+                                    &send_request, ::LPCBYTE(send), ::DWORD(send_size),
+                                    &recv_request, ::LPBYTE(resp), &ret_size);
 
     if (status != SCARD_S_SUCCESS || ret_size < 2) {
         resp_length = 0;
@@ -261,7 +259,7 @@ bool ts::pcsc::MatchATR (const uint8_t* atr1,
     }
     else {
         resp_length = ret_size - 2;
-        sw = GetUInt16 ((uint8_t*)resp + ret_size - 2);
+        sw = GetUInt16((uint8_t*)resp + ret_size - 2);
     }
 
     return status;
@@ -272,7 +270,7 @@ bool ts::pcsc::MatchATR (const uint8_t* atr1,
 // Return an error message for a PC/SC error.
 //----------------------------------------------------------------------------
 
-const char* ts::pcsc::StrError (::LONG status)
+const char* ts::pcsc::StrError(::LONG status)
 {
     switch (status) {
         case SCARD_S_SUCCESS:

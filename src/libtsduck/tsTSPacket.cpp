@@ -33,11 +33,7 @@
 
 #include "tsTSPacket.h"
 #include "tsPCR.h"
-#include "tsFormat.h"
-#include "tsDecimal.h"
-#include "tsHexa.h"
 #include "tsNames.h"
-#include "tsStringUtils.h"
 TSDUCK_SOURCE;
 
 
@@ -174,25 +170,25 @@ uint64_t ts::TSPacket::getOPCR () const
 // Throw exception PCRError if not present.
 //----------------------------------------------------------------------------
 
-void ts::TSPacket::setPCR (const uint64_t& pcr)
+void ts::TSPacket::setPCR(const uint64_t& pcr)
 {
-    size_t offset (PCROffset ());
+    size_t offset(PCROffset());
     if (offset == 0) {
-        throw AdaptationFieldError ("No PCR in packet, cannot replace");
+        throw AdaptationFieldError("No PCR in packet, cannot replace");
     }
     else {
-        PutPCR (b + offset, pcr);
+        PutPCR(b + offset, pcr);
     }
 }
 
-void ts::TSPacket::setOPCR (const uint64_t& opcr)
+void ts::TSPacket::setOPCR(const uint64_t& opcr)
 {
-    size_t offset (OPCROffset ());
+    size_t offset(OPCROffset());
     if (offset == 0) {
-        throw AdaptationFieldError ("No OPCR in packet, cannot replace");
+        throw AdaptationFieldError("No OPCR in packet, cannot replace");
     }
     else {
-        PutPCR (b + offset, opcr);
+        PutPCR(b + offset, opcr);
     }
 }
 
@@ -201,14 +197,14 @@ void ts::TSPacket::setOPCR (const uint64_t& opcr)
 // Return 0 if there is none.
 //----------------------------------------------------------------------------
 
-size_t ts::TSPacket::PTSOffset () const
+size_t ts::TSPacket::PTSOffset() const
 {
     if (!startPES()) {
         return 0;
     }
     const size_t pl_size = getPayloadSize();
     const uint8_t* const pl = getPayload();
-    if (pl_size < 14 || !IsLongHeaderSID (pl[3])) {
+    if (pl_size < 14 || !IsLongHeaderSID(pl[3])) {
         return 0;
     }
     const uint8_t pts_dts_flags = pl[7] >> 6;
@@ -264,14 +260,14 @@ uint64_t ts::TSPacket::getPDTS (size_t offset) const
 //----------------------------------------------------------------------------
 
 namespace {
-    std::string AfterPackets (const std::streampos& position)
+    ts::UString AfterPackets(const std::streampos& position)
     {
-        const int64_t packets = int64_t (std::streamoff (position)) / ts::PKT_SIZE;
+        const int64_t packets = int64_t(std::streamoff(position)) / ts::PKT_SIZE;
         if (packets > 0) {
-            return " after " + ts::Decimal (packets) + " TS packets";
+            return ts::UString::Format(u" after %'d TS packets", {packets});
         }
         else {
-            return "";
+            return ts::UString();
         }
     }
 }
@@ -284,15 +280,15 @@ namespace {
 // failbit of the stream and return false.
 //----------------------------------------------------------------------------
 
-std::istream& ts::TSPacket::read (std::istream& strm, bool check_sync, Report& report)
+std::istream& ts::TSPacket::read(std::istream& strm, bool check_sync, Report& report)
 {
     if (!strm) {
         return strm;
     }
 
     std::streampos position (strm.tellg());
-    strm.read (reinterpret_cast <char*> (b), PKT_SIZE);
-    size_t insize = size_t (strm.gcount());
+    strm.read(reinterpret_cast <char*> (b), PKT_SIZE);
+    size_t insize = size_t(strm.gcount());
 
     if (insize == PKT_SIZE) {
         // Got a complete TS packet
@@ -300,8 +296,7 @@ std::istream& ts::TSPacket::read (std::istream& strm, bool check_sync, Report& r
             // Complete packet read but wrong sync byte.
             // Flawfinder: ignore: completely fooled here, std::ostream::setstate has nothing to do with PRNG.
             strm.setstate(std::ios::failbit);
-            report.error("synchronization lost" + AfterPackets (position) +
-                         Format(", got 0x%02X instead of 0x%02X at start of TS packet", int(b[0]), int(SYNC_BYTE)));
+            report.error(u"synchronization lost%s, got 0x%X instead of 0x%X at start of TS packet", {AfterPackets(position), b[0], SYNC_BYTE});
         }
     }
     else if (!strm.eof()) {
@@ -312,7 +307,7 @@ std::istream& ts::TSPacket::read (std::istream& strm, bool check_sync, Report& r
         // EOF, got partial packet.
         // Flawfinder: ignore: completely fooled here, std::ostream::setstate has nothing to do with PRNG.
         strm.setstate(std::ios::failbit);
-        report.error("truncated TS packet (" + Decimal (insize) + " bytes)" + AfterPackets (position));
+        report.error(u"truncated TS packet (%d bytes)%s", {insize, AfterPackets(position)});
     }
 
     return strm;
@@ -323,12 +318,12 @@ std::istream& ts::TSPacket::read (std::istream& strm, bool check_sync, Report& r
 // Return true on success, false on error.
 //----------------------------------------------------------------------------
 
-std::ostream& ts::TSPacket::write (std::ostream& strm, Report& report) const
+std::ostream& ts::TSPacket::write(std::ostream& strm, Report& report) const
 {
     if (strm) {
-        strm.write (reinterpret_cast <const char*> (b), PKT_SIZE);
+        strm.write(reinterpret_cast <const char*> (b), PKT_SIZE);
         if (!strm) {
-            report.error ("error writing TS packet into binary stream");
+            report.error(u"error writing TS packet into binary stream");
         }
     }
     return strm;
@@ -341,9 +336,9 @@ std::ostream& ts::TSPacket::write (std::ostream& strm, Report& report) const
 // may also be used. Indent indicates the base indentation of lines.
 //----------------------------------------------------------------------------
 
-std::ostream& ts::TSPacket::display (std::ostream& strm, uint32_t flags, int indent) const
+std::ostream& ts::TSPacket::display(std::ostream& strm, uint32_t flags, int indent) const
 {
-    const std::string margin (indent, ' ');
+    const std::string margin(indent, ' ');
 
     // The 16 MSB contains flags specific to ts_dump_packet.
     // The 16 LSB contains flags for ts_hexa_dump.
@@ -372,48 +367,40 @@ std::ostream& ts::TSPacket::display (std::ostream& strm, uint32_t flags, int ind
     //  0x00 : table id -> a PAT
     //  0x01 : section_syntax_indicator field is 0, impossible for a PAT
 
-    size_t header_size (getHeaderSize());
-    size_t payload_size (getPayloadSize());
+    size_t header_size = getHeaderSize();
+    size_t payload_size = getPayloadSize();
 
-    bool has_pes_header (hasValidSync () &&
-                         getPUSI () &&
-                         payload_size >= 3 &&
-                         b[header_size] == 0x00 &&
-                         b[header_size+1] == 0x00 &&
-                         b[header_size+2] == 0x01);
+    bool has_pes_header = hasValidSync() &&
+                          getPUSI() &&
+                          payload_size >= 3 &&
+                          b[header_size] == 0x00 &&
+                          b[header_size + 1] == 0x00 &&
+                          b[header_size + 2] == 0x01;
 
     // Display TS header
 
     if (flags & DUMP_TS_HEADER) {
-        strm <<
-        margin << "---- TS Header ----" << std::endl <<
-        margin << "PID: " << getPID() << Format (" (0x%04X)", getPID()) <<
-                  ", header size: " << header_size <<
-                  ", sync: " << Format ("0x%02X", int (b[0])) << std::endl <<
-        margin << "Error: " << getTEI() <<
-                  ", unit start: " << getPUSI() <<
-                  ", priority: " << getPriority() << std::endl <<
-        margin << "Scrambling: " << int (getScrambling()) <<
-                  ", continuity counter: " << int (getCC()) << std::endl <<
-        margin << "Adaptation field: " << YesNo (hasAF()) <<
-                  " (" << getAFSize () << " bytes)" <<
-                  ", payload: " << YesNo (hasPayload()) <<
-                  " (" << getPayloadSize() << " bytes)" << std::endl;
+        strm << margin << "---- TS Header ----" << std::endl
+             << margin << UString::Format(u"PID: %d (0x%X), header size: %d, sync: 0x%X", {getPID(), getPID(), header_size, b[0]}) << std::endl
+             << margin << "Error: " << getTEI() << ", unit start: " << getPUSI() << ", priority: " << getPriority() << std::endl
+             << margin << "Scrambling: " << int (getScrambling()) << ", continuity counter: " << int (getCC()) << std::endl
+             << margin << "Adaptation field: " << UString::YesNo (hasAF()) << " (" << getAFSize () << " bytes)"
+             << ", payload: " << UString::YesNo (hasPayload()) << " (" << getPayloadSize() << " bytes)" << std::endl;
         if (hasAF()) {
-            strm << margin <<
-                "Discontinuity: " << getDiscontinuityIndicator () <<
-                ", random access: " << getRandomAccessIndicator() <<
-                ", ES priority: " << getESPI() << std::endl;
+            strm << margin << "Discontinuity: " << getDiscontinuityIndicator()
+                 << ", random access: " << getRandomAccessIndicator()
+                 << ", ES priority: " << getESPI() << std::endl;
         }
         if (hasPCR() || hasOPCR()) {
             strm << margin;
             if (hasPCR()) {
-                strm << Format ("PCR: 0x%011" FMT_INT64 "X", getPCR());
-                if (hasOPCR())
+                strm << UString::Format(u"PCR: 0x%011X", {getPCR()});
+                if (hasOPCR()) {
                     strm << ", ";
+                }
             }
             if (hasOPCR()) {
-                strm << Format ("OPCR: 0x%011" FMT_INT64 "X", getOPCR());
+                strm << UString::Format(u"OPCR: 0x%011X", {getOPCR()});
             }
             strm << std::endl;
         }
@@ -451,7 +438,7 @@ std::ostream& ts::TSPacket::display (std::ostream& strm, uint32_t flags, int ind
             strm << margin << "---- TS Packet Payload (" << size << " bytes) ----" << std::endl;
         }
         // The 16 LSB contains flags for Hexa.
-        strm << Hexa(data, size, flags & 0x0000FFFF, indent);
+        strm << UString::Dump(data, size, flags & 0x0000FFFF, indent);
     }
 
     return strm;

@@ -32,8 +32,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsSocketAddress.h"
-#include "tsToInteger.h"
-#include "tsFormat.h"
 TSDUCK_SOURCE;
 
 
@@ -102,7 +100,7 @@ bool ts::SocketAddress::resolve (const UString& name, Report& report)
 // Convert to a string object
 //----------------------------------------------------------------------------
 
-ts::SocketAddress::operator ts::UString() const
+ts::UString ts::SocketAddress::toString() const
 {
-    return UString(*static_cast<const IPAddress*>(this)) + (_port == AnyPort ? u"" : UString::Format(u":%d", {_port}));
+    return IPAddress::toString() + (_port == AnyPort ? u"" : UString::Format(u":%d", {_port}));
 }
