@@ -112,13 +112,13 @@ void ts::DTVProperties::report(Report& report, int severity) const
         return;
     }
 
-    report.log(severity, "%d DTVProperties:", int(_prop_head.num));
+    report.log(severity, u"%d DTVProperties:", {_prop_head.num});
     for (size_t i = 0; i < _prop_head.num; ++i) {
         const ::dtv_property& prop(_prop_head.props[i]);
         const char* name = CommandName(prop.cmd);
-        report.log(severity, Format("[%d] cmd = %d (%s), data = %d (0x%08X)",
-                                    int(i), int(prop.cmd), name == 0 ? "?" : name,
-                                    int(prop.u.data), int(prop.u.data)));
+        report.log(severity,
+                   u"[%d] cmd = %d (%s), data = %d (0x%08X)",
+                   {i, prop.cmd, name == 0 ? "?" : name, prop.u.data, prop.u.data});
     }
 }
 

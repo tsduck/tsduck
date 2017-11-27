@@ -708,7 +708,7 @@ void ts::GetProcessMetrics(ProcessMetrics& metrics)
     static const char filename[] = "/proc/self/stat";
     FILE* fp = fopen(filename, "r");
     if (fp == 0) {
-        throw ts::Exception(Format("error opening %s", filename), errno);
+        throw ts::Exception(UString::Format(u"error opening %s", {filename}), errno);
         return;
     }
 
@@ -730,7 +730,7 @@ void ts::GetProcessMetrics(ProcessMetrics& metrics)
     fclose(fp);
 
     if (count != expected) {
-        throw ts::Exception(Format("error reading %s, got %d values, expected %d", filename, count, expected));
+        throw ts::Exception(UString::Format(u"error reading %s, got %d values, expected %d", {filename, count, expected}));
         return;
     }
 
