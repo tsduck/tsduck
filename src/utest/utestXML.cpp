@@ -166,15 +166,12 @@ namespace {
         }
 
     public:
-        Visitor(const char* str, ...) :
+        Visitor(const std::initializer_list<const char*> str) :
             _ref(),
             _iter()
         {
-            va_list ap;
-            va_start(ap, str);
-            while (str != 0) {
-                _ref.push_back(str);
-                str = va_arg(ap, const char*);
+            for (std::initializer_list<const char*>::const_iterator it = str.begin(); it != str.end(); ++it) {
+                _ref.push_back(*it);
             }
             _iter = _ref.begin();
         }
@@ -245,28 +242,27 @@ namespace {
 void XMLTest::testVisitor()
 {
     static const char* const document =
-        u"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-        u"<root attr1=\"val1\">\n"
-        u"  <node1 a1=\"v1\" a2=\"v2\">Text in node1</node1>\n"
-        u"  <node2 foo=\"bar\"/>\n"
-        u"  <node3/>\n"
-        u"</root>\n";
+        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+        "<root attr1=\"val1\">\n"
+        "  <node1 a1=\"v1\" a2=\"v2\">Text in node1</node1>\n"
+        "  <node2 foo=\"bar\"/>\n"
+        "  <node3/>\n"
+        "</root>\n";
 
-    Visitor visitor(
-        u"EnterDocument", "",
-        u"Declaration", "xml version=\"1.0\" encoding=\"UTF-8\"",
-        u"EnterElement", "root",
-        u"EnterElement", "node1",
-        u"Text", "Text in node1",
-        u"ExitElement", "node1",
-        u"EnterElement", "node2",
-        u"ExitElement", "node2",
-        u"EnterElement", "node3",
-        u"ExitElement", "node3",
-        u"ExitElement", "root",
-        u"ExitDocument", "",
-        TS_NULL
-    );
+    Visitor visitor({
+        "EnterDocument", "",
+        "Declaration", "xml version=\"1.0\" encoding=\"UTF-8\"",
+        "EnterElement", "root",
+        "EnterElement", "node1",
+        "Text", "Text in node1",
+        "ExitElement", "node1",
+        "EnterElement", "node2",
+        "ExitElement", "node2",
+        "EnterElement", "node3",
+        "ExitElement", "node3",
+        "ExitElement", "root",
+        "ExitDocument", "",
+    });
 
     ts::XML::Document doc;
     CPPUNIT_ASSERT_EQUAL(tinyxml2::XML_SUCCESS, doc.Parse(document));
@@ -279,9 +275,9 @@ void XMLTest::testInvalid()
 {
     // Incorrect XML document
     static const char* xmlContent =
-        u"<?xml version='1.0' encoding='UTF-8'?>\n"
-        u"<foo>\n"
-        u"</bar>";
+        "<?xml version='1.0' encoding='UTF-8'?>\n"
+        "<foo>\n"
+        "</bar>";
 
     ts::XML::Document doc;
     CPPUNIT_ASSERT_EQUAL(tinyxml2::XML_ERROR_MISMATCHED_ELEMENT, doc.Parse(xmlContent));
@@ -359,24 +355,23 @@ void XMLTest::testCreation()
         u"</theRoot>\n",
         text);
 
-    Visitor visitor(
-        u"EnterDocument", "",
-        u"Declaration", "xml version=\"1.0\" encoding=\"UTF-8\"",
-        u"EnterElement", "theRoot",
-        u"EnterElement", "child1",
-        u"EnterElement", "subChild1",
-        u"ExitElement", "subChild1",
-        u"EnterElement", "subChild2",
-        u"ExitElement", "subChild2",
-        u"ExitElement", "child1",
-        u"EnterElement", "child2",
-        u"EnterElement", "fooBar",
-        u"ExitElement", "fooBar",
-        u"ExitElement", "child2",
-        u"ExitElement", "theRoot",
-        u"ExitDocument", "",
-        TS_NULL
-    );
+    Visitor visitor({
+        "EnterDocument", "",
+        "Declaration", "xml version=\"1.0\" encoding=\"UTF-8\"",
+        "EnterElement", "theRoot",
+        "EnterElement", "child1",
+        "EnterElement", "subChild1",
+        "ExitElement", "subChild1",
+        "EnterElement", "subChild2",
+        "ExitElement", "subChild2",
+        "ExitElement", "child1",
+        "EnterElement", "child2",
+        "EnterElement", "fooBar",
+        "ExitElement", "fooBar",
+        "ExitElement", "child2",
+        "ExitElement", "theRoot",
+        "ExitDocument", "",
+    });
 
     CPPUNIT_ASSERT(doc.Accept(&visitor));
     CPPUNIT_ASSERT(visitor.AtEnd());

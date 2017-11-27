@@ -130,7 +130,7 @@ namespace {
 
 ts::UString ts::TunerParametersDVBC::toZapFormat() const
 {
-    return UString::Format(u"%d:%s:%d::%s:%s",
+    return UString::Format(u"%d:%s:%d:%s:%s",
                            {frequency,
                             ZapSpectralInversionEnum.name(inversion),
                             symbol_rate,
