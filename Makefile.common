@@ -133,6 +133,10 @@
 #    Contains specific optimization for the gcc compiler. Defaults to -O2.
 #    Ignored if DEBUG is defined.
 #
+#  CFLAGS_STANDARD
+#    C language standard level. Default to -std=c11.
+#    This variable can be defined after inclusion of this makefile.
+#
 #  COVERITY
 #    Contains the absolute path of the Coverity static code analyzer.
 #    If empty, cov-build (Coverity analyzer) is searched in $PATH.
@@ -167,6 +171,10 @@
 #
 #  CXXFLAGS_INCLUDES
 #    Contains additional specific include options for C++ only.
+#
+#  CXXFLAGS_STANDARD
+#    C++ language standard level. Default to -std=c++11.
+#    This variable can be defined after inclusion of this makefile.
 #
 #  CXXVPATH
 #    Contains directories where *.h and *.cpp files are searched. "vpath"
@@ -688,6 +696,10 @@ else
     CXXFLAGS_WARNINGS += -Wcast-align -Wstrict-null-sentinel
 endif
 
+# Language levels.
+CFLAGS_STANDARD ?= -std=c11
+CXXFLAGS_STANDARD ?= -std=c++11
+
 # Compilation flags for security.
 COMMON_SECURITY   = -fstack-protector-all
 CFLAGS_SECURITY   = $(COMMON_SECURITY)
@@ -717,9 +729,9 @@ LDLIBS += $(if $(LDCXX),-lstdc++,) -lpthread $(if $(MACOS),,-lrt) -lm
 # Global compilation flags.
 # Additional flags can be passed on the "make" command line using FLAGS_EXTRA.
 CFLAGS   = $(CFLAGS_DEBUG) $(CFLAGS_M32) $(CFLAGS_GCOV) $(CFLAGS_WARNINGS) $(CFLAGS_SECURITY) $(CFLAGS_INCLUDES) \
-           $(TARGET_ARCH) $(CFLAGS_FPIC) -std=c99 $(CFLAGS_EXTRA)
+           $(TARGET_ARCH) $(CFLAGS_FPIC) $(CFLAGS_STANDARD) $(CFLAGS_EXTRA)
 CXXFLAGS = $(CFLAGS_DEBUG) $(CFLAGS_M32) $(CFLAGS_GCOV) $(CXXFLAGS_WARNINGS) $(CXXFLAGS_SECURITY) $(CXXFLAGS_INCLUDES) \
-           $(TARGET_ARCH) $(CFLAGS_FPIC) $(CXXFLAGS_EXTRA)
+           $(TARGET_ARCH) $(CFLAGS_FPIC) $(CXXFLAGS_STANDARD) $(CXXFLAGS_EXTRA)
 LDFLAGS  = $(LDFLAGS_DEBUG) $(LDFLAGS_M32) $(LDFLAGS_GCOV) $(TARGET_ARCH) $(LDFLAGS_EXTRA)
 ARFLAGS  = rc$(if $(MACOS),,U) $(ARFLAGS_EXTRA)
 
@@ -797,13 +809,13 @@ $(OBJDIR)/%.so: $(OBJDIR)/%.o
 $(OBJDIR)/%.dep: %.c
 	@echo '  [DEP] $<'; \
 	mkdir -p $(OBJDIR); \
-	$(CC) -MM $(CPPFLAGS) $(CFLAGS_INCLUDES) $(CFLAGS_NO_WARNINGS) $< >$@ && \
+	$(CC) -MM $(CPPFLAGS) $(CFLAGS_INCLUDES) $(CFLAGS_STANDARD) $(CFLAGS_NO_WARNINGS) $< >$@ && \
 	$(SED) -i 's,\($*\)\.o[ :]*,$(OBJDIR)/\1.o $@ : ,g' $@ || \
 	rm -f $@
 $(OBJDIR)/%.dep: %.cpp
 	@echo '  [DEP] $<'; \
 	mkdir -p $(OBJDIR); \
-	$(CC) -MM $(CPPFLAGS) $(CXXFLAGS_INCLUDES) $(CXXFLAGS_NO_WARNINGS) $< >$@ && \
+	$(CC) -MM $(CPPFLAGS) $(CXXFLAGS_INCLUDES) $(CXXFLAGS_STANDARD) $(CXXFLAGS_NO_WARNINGS) $< >$@ && \
 	$(SED) -i 's,\($*\)\.o[ :]*,$(OBJDIR)/\1.o $@ : ,g' $@ || \
 	rm -f $@
 
