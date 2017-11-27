@@ -33,8 +33,6 @@
 
 #include "tsServiceDescriptor.h"
 #include "tsUString.h"
-#include "tsFormat.h"
-#include "tsHexa.h"
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"

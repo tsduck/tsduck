@@ -32,7 +32,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsCAIdentifierDescriptor.h"
-#include "tsFormat.h"
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"

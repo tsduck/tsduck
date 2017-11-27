@@ -33,7 +33,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsLogicalChannelNumberDescriptor.h"
-#include "tsFormat.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 TSDUCK_SOURCE;
@@ -125,7 +124,7 @@ void ts::LogicalChannelNumberDescriptor::serialize (Descriptor& desc, const DVBC
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::LogicalChannelNumberDescriptor::deserialize (const Descriptor& desc, const DVBCharset* charset)
+void ts::LogicalChannelNumberDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
 {
     _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() % 4 == 0;
     entries.clear();
@@ -134,7 +133,7 @@ void ts::LogicalChannelNumberDescriptor::deserialize (const Descriptor& desc, co
         const uint8_t* data = desc.payload();
         size_t size = desc.payloadSize();
         while (size >= 4) {
-            entries.push_back (Entry (GetUInt16 (data), (data[2] & 0x80) != 0, GetUInt16 (data + 2) & 0x03FF));
+            entries.push_back(Entry(GetUInt16(data), (data[2] & 0x80) != 0, GetUInt16(data + 2) & 0x03FF));
             data += 4;
             size -= 4;
         }
@@ -157,9 +156,8 @@ void ts::LogicalChannelNumberDescriptor::DisplayDescriptor(TablesDisplay& displa
         const uint16_t channel = GetUInt16(data + 2) & 0x03FF;
         data += 4; size -= 4;
         strm << margin
-            << Format("Service Id: %5d (0x%04X), Visible: %1d, Channel number: %3d",
-                      int(service), int(service), int(visible), int(channel))
-            << std::endl;
+             << UString::Format(u"Service Id: %5d (0x%04X), Visible: %1d, Channel number: %3d", {service, service, visible, channel})
+             << std::endl;
     }
 
     display.displayExtraData(data, size, indent);

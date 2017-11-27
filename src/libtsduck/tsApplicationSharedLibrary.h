@@ -35,7 +35,6 @@
 #pragma once
 #include "tsSharedLibrary.h"
 #include "tsNullReport.h"
-#include "tsStringUtils.h"
 
 namespace ts {
     //!

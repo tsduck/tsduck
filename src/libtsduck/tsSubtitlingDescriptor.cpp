@@ -32,8 +32,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsSubtitlingDescriptor.h"
-#include "tsFormat.h"
-#include "tsHexa.h"
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
@@ -87,14 +85,9 @@ void ts::SubtitlingDescriptor::DisplayDescriptor(TablesDisplay& display, DID did
         uint8_t type = data[3];
         uint16_t comp_page = GetUInt16(data + 4);
         uint16_t ancil_page = GetUInt16(data + 6);
-        strm << margin << "Language: " << UString::FromDVB(data, 3, display.dvbCharset())
-             << ", Type: " << int(type)
-             << Format(" (0x%02X)", int(type)) << std::endl
+        strm << margin << UString::Format(u"Language: %s, Type: %d (0x%X)", {UString::FromDVB(data, 3, display.dvbCharset()), type, type}) << std::endl
              << margin << "Type: " << names::SubtitlingType(type) << std::endl
-             << margin << "Composition page: " << comp_page
-             << Format(" (0x%04X)", int(comp_page))
-             << ", Ancillary page: " << ancil_page
-             << Format(" (0x%04X)", int(ancil_page)) << std::endl;
+             << margin << UString::Format(u"Composition page: %d (0x%X), Ancillary page: %d (0x%X)", {comp_page, comp_page, ancil_page, ancil_page}) << std::endl;
         data += 8; size -= 8;
     }
 

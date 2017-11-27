@@ -35,8 +35,6 @@
 #include "tsGuardCondition.h"
 #include "tsIntegerUtils.h"
 #include "tsSysUtils.h"
-#include "tsDecimal.h"
-#include "tsFormat.h"
 #include "tsTime.h"
 TSDUCK_SOURCE;
 
@@ -48,8 +46,6 @@ TSDUCK_SOURCE;
 // Monitoring time profile: fast at the beginning, then slower and slower
 //----------------------------------------------------------------------------
 
-#define MN (60 * ts::MilliSecPerSec) // 1 minute in milli-seconds
-
 namespace {
 
     struct TimeProfile
@@ -58,6 +54,8 @@ namespace {
         ts::MilliSecond interval;   // ... log every interval
     };
 
+    #define MN (60 * ts::MilliSecPerSec) // 1 minute in milli-seconds
+
     const TimeProfile monitor_time_profile[] = {
         { 2 * MN,  MN / 6},  // up to start + 2 mn, log every 10 seconds
         {10 * MN,  1 * MN},  // up to start + 10 mn, log every minute
@@ -65,41 +63,19 @@ namespace {
         {60 * MN,  5 * MN},  // up to start + 1 hour, log every 5 minutes
         {      0, 30 * MN},  // after start + 1 hour, log every 30 minutes
     };
+
+    #undef MN
 }
 
-#undef MN
 
 
 //----------------------------------------------------------------------------
 // Prefix strings for all monitor messages (for filtering purpose)
 //----------------------------------------------------------------------------
 
-namespace {
-    std::string MonPrefix(const ts::Time& date)
-    {
-        //@@@
-        return "[MON] " + date.format(ts::Time::DATE | ts::Time::HOUR | ts::Time::MINUTE).toUTF8() + ", ";
-    }
-}
-
-
-//----------------------------------------------------------------------------
-//  Format a size using MB, kB or B as appropriate.
-//----------------------------------------------------------------------------
-
-namespace {
-    std::string SizeString (ptrdiff_t value, bool force_sign)
-    {
-        if (value < 8 * 1024) { // less than 8 kB => use bytes
-            return ts::Decimal (value, 0, true, ",", force_sign) + " B";
-        }
-        else if (value < 8 * 1024 * 1024) { // between 8 kB and 8 MB => use kB
-            return ts::Decimal (value / 1024, 0, true, ",", force_sign) + " kB";
-        }
-        else { // more than 8 MB => use MB
-            return ts::Decimal (value / (1024 * 1024), 0, true, ",", force_sign) + " MB";
-        }
-    }
+ts::UString ts::SystemMonitor::MonPrefix(const ts::Time& date)
+{
+    return "[MON] " + date.format(ts::Time::DATE | ts::Time::HOUR | ts::Time::MINUTE).toUTF8() + ", ";
 }
 
 
@@ -141,15 +117,15 @@ ts::SystemMonitor::~SystemMonitor ()
 void ts::SystemMonitor::main()
 {
     const TimeProfile* time_profile = monitor_time_profile;
-    const Time start_time (Time::CurrentLocalTime());
+    const Time start_time(Time::CurrentLocalTime());
     ProcessMetrics start_metrics;                // Initial system metrics
-    GetProcessMetrics (start_metrics);           // Get initial system metrics
-    ProcessMetrics last_metrics (start_metrics); // Last system metrics
-    Time last_time (start_time);                 // Last report time
-    Time vsize_uptime (start_time);              // Time of last vsize increase
-    size_t vsize_max (start_metrics.vmem_size);  // Maximum vsize
+    GetProcessMetrics(start_metrics);           // Get initial system metrics
+    ProcessMetrics last_metrics(start_metrics); // Last system metrics
+    Time last_time(start_time);                 // Last report time
+    Time vsize_uptime(start_time);              // Time of last vsize increase
+    size_t vsize_max(start_metrics.vmem_size);  // Maximum vsize
 
-    _report->log (Severity::Info, MonPrefix (last_time) + "resource monitoring started");
+    _report->info(MonPrefix(last_time) + "resource monitoring started");
 
     // Loop on monitoring intervals
 
@@ -181,11 +157,11 @@ void ts::SystemMonitor::main()
 
         // Format virtual memory size status
 
-        std::string message (MonPrefix (current_time) + "VM:" + SizeString (metrics.vmem_size, false));
+        UString message(MonPrefix(current_time) + u"VM:" + UString::HumanSize(metrics.vmem_size));
 
         if (metrics.vmem_size != last_metrics.vmem_size) {
             // Virtual memory has changed
-            message += " (" + SizeString (ptrdiff_t (metrics.vmem_size) - ptrdiff_t (last_metrics.vmem_size), true) + ")";
+            message += " (" + UString::HumanSize(ptrdiff_t(metrics.vmem_size) - ptrdiff_t(last_metrics.vmem_size), u"B", true) + ")";
         }
         else {
             // VM stable since last time. Check if temporarily stable or
@@ -202,19 +178,19 @@ void ts::SystemMonitor::main()
 
         // Format CPU load.
 
-        message += ", CPU:";
-        message += PercentageString(metrics.cpu_time - last_metrics.cpu_time, current_time - last_time);
-        message += " (average:";
-        message += PercentageString(metrics.cpu_time - start_metrics.cpu_time, current_time - start_time);
-        message += ")";
+        message += u", CPU:";
+        message += UString::Percentage(metrics.cpu_time - last_metrics.cpu_time, current_time - last_time);
+        message += u" (average:";
+        message += UString::Percentage(metrics.cpu_time - start_metrics.cpu_time, current_time - start_time);
+        message += u")";
 
         // Display monitoring status
 
-        _report->log (Severity::Info, message);
+        _report->info(message);
 
         last_time = current_time;
         last_metrics = metrics;
     }
 
-    _report->log (Severity::Info, MonPrefix (Time::CurrentLocalTime()) + "resource monitoring terminated");
+    _report->info(MonPrefix(Time::CurrentLocalTime()) + "resource monitoring terminated");
 }

@@ -37,7 +37,6 @@
 #include "tsAbstractAudioVideoAttributes.h"
 #include "tsMPEG.h"
 #include "tsNames.h"
-#include "tsFormat.h"
 
 namespace ts {
     //!
@@ -97,7 +96,7 @@ namespace ts {
         //! Get AVC level name.
         //! @return AVC level as a string.
         //!
-        UString levelName() const {return _is_valid ? UString(Format("%d.%d", _level / 10, _level % 10)) : UString();}
+        UString levelName() const;
 
         //!
         //! Get chroma format.

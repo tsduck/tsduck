@@ -254,21 +254,11 @@ namespace ts {
 
         //!
         //! Convert to a string object in numeric format "a.b.c.d[:port]".
+        //! @return This object, converted as a string.
         //!
-        operator ts::UString() const;
+        virtual UString toString() const override;
 
     private:
         uint16_t _port;  // Port in host byte order
     };
-}
-
-//!
-//! Output operator for the class @link ts::SocketAddress @endlink on standard text streams.
-//! @param [in,out] strm An standard stream in output mode.
-//! @param [in] sa The socket address object.
-//! @return A reference to the @a strm object.
-//!
-TSDUCKDLL inline std::ostream& operator<<(std::ostream& strm, const ts::SocketAddress& sa)
-{
-    return strm << ts::UString(sa);
 }

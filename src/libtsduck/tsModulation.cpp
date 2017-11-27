@@ -32,8 +32,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsModulation.h"
-#include "tsDecimal.h"
-#include "tsFormat.h"
 TSDUCK_SOURCE;
 
 
@@ -49,13 +47,13 @@ bool ts::CheckModEnum(int value, const UString& name, const Enumeration& conv, R
         return true;
     }
     else {
-        report.error(name + u" " + conv.name(value) + u" is not supported"
-#if defined (TS_LINUX)
-                      u" by Linux DVB"
-#elif defined (TS_WINDOWS)
-                      u" by Windows BDA/DirectShow"
+        report.error(u"%s %s is not supported"
+#if defined(TS_LINUX)
+                     u" by Linux DVB"
+#elif defined(TS_WINDOWS)
+                     u" by Windows BDA/DirectShow"
 #endif
-                      );
+                     , {name, conv.name(value)});
         return false;
     }
 }

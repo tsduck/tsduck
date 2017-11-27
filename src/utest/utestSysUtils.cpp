@@ -32,7 +32,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsSysUtils.h"
-#include "tsStringUtils.h"
 #include "tsMonotonic.h"
 #include "tsTime.h"
 #include "tsUID.h"

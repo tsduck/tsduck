@@ -33,8 +33,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsLinkageDescriptor.h"
-#include "tsFormat.h"
-#include "tsHexa.h"
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
@@ -373,10 +371,10 @@ void ts::LinkageDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, c
         uint16_t servid = GetUInt16(data + 4);
         uint8_t ltype = data[6];
         data += 7; size -= 7;
-        strm << margin << "Transport stream id: " << tsid << Format(" (0x%04X)", int(tsid)) << std::endl
-             << margin << "Original network Id: " << onid << Format(" (0x%04X)", int(onid)) << std::endl
-             << margin << "Service id: " << servid << Format(" (0x%04X)", int(servid)) << std::endl
-             << margin << "Linkage type: " << names::LinkageType(ltype, names::FIRST) << std::endl;
+        strm << margin << UString::Format(u"Transport stream id: %d (0x%X)", {tsid, tsid}) << std::endl
+             << margin << UString::Format(u"Original network Id: %d (0x%X)", {onid, onid}) << std::endl
+             << margin << UString::Format(u"Service id: %d (0x%X)", {servid, servid}) << std::endl
+             << margin << UString::Format(u"Linkage type: %s", {names::LinkageType(ltype, names::FIRST)}) << std::endl;
 
         // Variable part
         if (ltype == 0x08 && size >= 1) {
@@ -391,17 +389,16 @@ void ts::LinkageDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, c
                 case 0x03: name = "associated service"; break;
                 default:   name = "unknown"; break;
             }
-            strm << margin << "Hand-over type: " << Format("0x%02X", int(hand_over))
-                 << ", " << name << ", Origin: " << (origin ? "SDT" : "NIT") << std::endl;
+            strm << margin << UString::Format(u"Hand-over type: 0x%X, %s, Origin: %s", {hand_over, name, origin ? u"SDT" : u"NIT"}) << std::endl;
             if ((hand_over == 0x01 || hand_over == 0x02 || hand_over == 0x03) && size >= 2) {
                 uint16_t nwid = GetUInt16(data);
                 data += 2; size -= 2;
-                strm << margin << "Network id: " << nwid << Format(" (0x%04X)", int(nwid)) << std::endl;
+                strm << margin << UString::Format(u"Network id: %d (0x%X)", {nwid, nwid}) << std::endl;
             }
             if (origin == 0x00 && size >= 2) {
                 uint16_t org_servid = GetUInt16(data);
                 data += 2; size -= 2;
-                strm << margin << "Original service id: " << org_servid << Format(" (0x%04X)", int(org_servid)) << std::endl;
+                strm << margin << UString::Format(u"Original service id: %d (0x%X)", {org_servid, org_servid}) << std::endl;
             }
         }
         else if (ltype == 0x09 && size >= 1) {
@@ -423,7 +420,7 @@ void ts::LinkageDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, c
                 strm << margin << "OUI: " << names::OUI(oui, names::FIRST) << std::endl;
                 if (slength > 0) {
                     strm << margin << "Selector data:" << std::endl
-                         << Hexa(sdata, slength, hexa::HEXA | hexa::ASCII, indent);
+                         << UString::Dump(sdata, slength, UString::HEXA | UString::ASCII, indent);
                 }
             }
         }
@@ -435,7 +432,7 @@ void ts::LinkageDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, c
             switch (ttype) {
                 case 0x01: strm << "NIT"; break;
                 case 0x02: strm << "BAT"; break;
-                default:   strm << Format("0x%02x", int(ttype)); break;
+                default:   strm << UString::Hexa(ttype); break;
             }
             strm << std::endl;
         }
@@ -443,7 +440,7 @@ void ts::LinkageDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, c
         // Remaining private data
         if (size > 0) {
             strm << margin << "Private data:" << std::endl
-                 << Hexa(data, size, hexa::HEXA | hexa::ASCII | hexa::OFFSET, indent);
+                 << UString::Dump(data, size, UString::HEXA | UString::ASCII | UString::OFFSET, indent);
             data += size; size = 0;
         }
     }

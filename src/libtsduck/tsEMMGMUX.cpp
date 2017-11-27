@@ -45,7 +45,7 @@ TS_DEFINE_SINGLETON (ts::emmgmux::Protocol);
 //----------------------------------------------------------------------------
 
 ts::emmgmux::Protocol::Protocol() :
-    tlv::Protocol (ts::emmgmux::CURRENT_VERSION)
+    tlv::Protocol(ts::emmgmux::CURRENT_VERSION)
 {
     // Define the syntax of all commands:
     // add (cmd_tag, param_tag, min_size, max_size, min_count, max_count)
@@ -167,7 +167,7 @@ void ts::emmgmux::Protocol::factory (const tlv::MessageFactory& fact, tlv::Messa
             msg = new DataProvision (fact);
             break;
         default:
-            throw tlv::DeserializationInternalError (Format ("EMMG/PDG<=>MUX Message 0x%04X unimplemented", fact.commandTag ()));
+            throw tlv::DeserializationInternalError(UString::Format(u"EMMG/PDG<=>MUX Message 0x%X unimplemented", {fact.commandTag()}));
     }
 }
 
@@ -253,9 +253,9 @@ void ts::emmgmux::ChannelSetup::serializeParameters (tlv::Serializer& fact) cons
     fact.put (Tags::section_TSpkt_flag, section_TSpkt_flag);
 }
 
-std::string ts::emmgmux::ChannelSetup::dump (size_t indent) const
+ts::UString ts::emmgmux::ChannelSetup::dump (size_t indent) const
 {
-    return Format ("%*schannel_setup (EMMG/PDG<=>MUX)\n", int (indent), "") +
+    return UString::Format(u"%*schannel_setup (EMMG/PDG<=>MUX)\n", {indent, u""}) +
         tlv::Message::dump (indent) +
         dumpHexa (indent, "client_id", client_id) +
         dumpHexa (indent, "data_channel_id", channel_id) +
@@ -287,9 +287,9 @@ void ts::emmgmux::ChannelTest::serializeParameters (tlv::Serializer& fact) const
     fact.put (Tags::client_id,       client_id);
 }
 
-std::string ts::emmgmux::ChannelTest::dump (size_t indent) const
+ts::UString ts::emmgmux::ChannelTest::dump (size_t indent) const
 {
-    return Format ("%*schannel_test (EMMG/PDG<=>MUX)\n", int (indent), "") +
+    return UString::Format(u"%*schannel_test (EMMG/PDG<=>MUX)\n", {indent, u""}) +
         tlv::Message::dump (indent) +
         dumpHexa (indent, "client_id", client_id) +
         dumpHexa (indent, "data_channel_id", channel_id);
@@ -323,9 +323,9 @@ void ts::emmgmux::ChannelStatus::serializeParameters (tlv::Serializer& fact) con
     fact.put (Tags::section_TSpkt_flag, section_TSpkt_flag);
 }
 
-std::string ts::emmgmux::ChannelStatus::dump (size_t indent) const
+ts::UString ts::emmgmux::ChannelStatus::dump (size_t indent) const
 {
-    return Format ("%*schannel_status (EMMG/PDG<=>MUX)\n", int (indent), "") +
+    return UString::Format(u"%*schannel_status (EMMG/PDG<=>MUX)\n", {indent, u""}) +
         tlv::Message::dump (indent) +
         dumpHexa (indent, "client_id", client_id) +
         dumpHexa (indent, "data_channel_id", channel_id) +
@@ -357,9 +357,9 @@ void ts::emmgmux::ChannelClose::serializeParameters (tlv::Serializer& fact) cons
     fact.put (Tags::client_id,       client_id);
 }
 
-std::string ts::emmgmux::ChannelClose::dump (size_t indent) const
+ts::UString ts::emmgmux::ChannelClose::dump (size_t indent) const
 {
-    return Format ("%*schannel_close (EMMG/PDG<=>MUX)\n", int (indent), "") +
+    return UString::Format(u"%*schannel_close (EMMG/PDG<=>MUX)\n", {indent, u""}) +
         tlv::Message::dump (indent) +
         dumpHexa (indent, "client_id", client_id) +
         dumpHexa (indent, "data_channel_id", channel_id);
@@ -398,9 +398,9 @@ void ts::emmgmux::ChannelError::serializeParameters (tlv::Serializer& fact) cons
     fact.put (Tags::error_information, error_information);
 }
 
-std::string ts::emmgmux::ChannelError::dump (size_t indent) const
+ts::UString ts::emmgmux::ChannelError::dump (size_t indent) const
 {
-    return Format ("%*schannel_error (EMMG/PDG<=>MUX)\n", int (indent), "") +
+    return UString::Format(u"%*schannel_error (EMMG/PDG<=>MUX)\n", {indent, u""}) +
         tlv::Message::dump (indent) +
         dumpHexa (indent, "client_id", client_id) +
         dumpHexa (indent, "data_channel_id", channel_id) +
@@ -441,9 +441,9 @@ void ts::emmgmux::StreamSetup::serializeParameters (tlv::Serializer& fact) const
     fact.put (Tags::data_type,       data_type);
 }
 
-std::string ts::emmgmux::StreamSetup::dump (size_t indent) const
+ts::UString ts::emmgmux::StreamSetup::dump (size_t indent) const
 {
-    return Format ("%*sstream_setup (EMMG/PDG<=>MUX)\n", int (indent), "") +
+    return UString::Format(u"%*sstream_setup (EMMG/PDG<=>MUX)\n", {indent, u""}) +
         tlv::Message::dump (indent) +
         dumpHexa (indent, "client_id", client_id) +
         dumpHexa (indent, "data_channel_id", channel_id) +
@@ -479,9 +479,9 @@ void ts::emmgmux::StreamTest::serializeParameters (tlv::Serializer& fact) const
     fact.put (Tags::client_id,       client_id);
 }
 
-std::string ts::emmgmux::StreamTest::dump (size_t indent) const
+ts::UString ts::emmgmux::StreamTest::dump (size_t indent) const
 {
-    return Format ("%*sstream_test (EMMG/PDG<=>MUX)\n", int (indent), "") +
+    return UString::Format(u"%*sstream_test (EMMG/PDG<=>MUX)\n", {indent, u""}) +
         tlv::Message::dump (indent) +
         dumpHexa (indent, "client_id", client_id) +
         dumpHexa (indent, "data_channel_id", channel_id) +
@@ -521,9 +521,9 @@ void ts::emmgmux::StreamStatus::serializeParameters (tlv::Serializer& fact) cons
     fact.put (Tags::data_type,       data_type);
 }
 
-std::string ts::emmgmux::StreamStatus::dump (size_t indent) const
+ts::UString ts::emmgmux::StreamStatus::dump (size_t indent) const
 {
-    return Format ("%*sstream_status (EMMG/PDG<=>MUX)\n", int (indent), "") +
+    return UString::Format(u"%*sstream_status (EMMG/PDG<=>MUX)\n", {indent, u""}) +
         tlv::Message::dump (indent) +
         dumpHexa (indent, "client_id", client_id) +
         dumpHexa (indent, "data_channel_id", channel_id) +
@@ -559,9 +559,9 @@ void ts::emmgmux::StreamCloseRequest::serializeParameters (tlv::Serializer& fact
     fact.put (Tags::client_id,       client_id);
 }
 
-std::string ts::emmgmux::StreamCloseRequest::dump (size_t indent) const
+ts::UString ts::emmgmux::StreamCloseRequest::dump (size_t indent) const
 {
-    return Format ("%*sstream_close_request (EMMG/PDG<=>MUX)\n", int (indent), "") +
+    return UString::Format(u"%*sstream_close_request (EMMG/PDG<=>MUX)\n", {indent, u""}) +
         tlv::Message::dump (indent) +
         dumpHexa (indent, "client_id", client_id) +
         dumpHexa (indent, "data_channel_id", channel_id) +
@@ -595,9 +595,9 @@ void ts::emmgmux::StreamCloseResponse::serializeParameters (tlv::Serializer& fac
     fact.put (Tags::client_id,       client_id);
 }
 
-std::string ts::emmgmux::StreamCloseResponse::dump (size_t indent) const
+ts::UString ts::emmgmux::StreamCloseResponse::dump (size_t indent) const
 {
-    return Format ("%*sstream_close_response (EMMG/PDG<=>MUX)\n", int (indent), "") +
+    return UString::Format(u"%*sstream_close_response (EMMG/PDG<=>MUX)\n", {indent, u""}) +
         tlv::Message::dump (indent) +
         dumpHexa (indent, "client_id", client_id) +
         dumpHexa (indent, "data_channel_id", channel_id) +
@@ -639,9 +639,9 @@ void ts::emmgmux::StreamError::serializeParameters (tlv::Serializer& fact) const
     fact.put (Tags::error_information, error_information);
 }
 
-std::string ts::emmgmux::StreamError::dump (size_t indent) const
+ts::UString ts::emmgmux::StreamError::dump (size_t indent) const
 {
-    return Format ("%*sstream_error (EMMG/PDG<=>MUX)\n", int (indent), "") +
+    return UString::Format(u"%*sstream_error (EMMG/PDG<=>MUX)\n", {indent, u""}) +
         tlv::Message::dump (indent) +
         dumpHexa (indent, "client_id", client_id) +
         dumpHexa (indent, "data_channel_id", channel_id) +
@@ -684,9 +684,9 @@ void ts::emmgmux::StreamBWRequest::serializeParameters (tlv::Serializer& fact) c
     }
 }
 
-std::string ts::emmgmux::StreamBWRequest::dump (size_t indent) const
+ts::UString ts::emmgmux::StreamBWRequest::dump (size_t indent) const
 {
-    return Format ("%*sstream_BW_request (EMMG/PDG<=>MUX)\n", int (indent), "") +
+    return UString::Format(u"%*sstream_BW_request (EMMG/PDG<=>MUX)\n", {indent, u""}) +
         tlv::Message::dump (indent) +
         dumpHexa (indent, "client_id", client_id) +
         dumpHexa (indent, "data_channel_id", channel_id) +
@@ -728,9 +728,9 @@ void ts::emmgmux::StreamBWAllocation::serializeParameters (tlv::Serializer& fact
     }
 }
 
-std::string ts::emmgmux::StreamBWAllocation::dump (size_t indent) const
+ts::UString ts::emmgmux::StreamBWAllocation::dump (size_t indent) const
 {
-    return Format ("%*sstream_BW_allocation (EMMG/PDG<=>MUX)\n", int (indent), "") +
+    return UString::Format(u"%*sstream_BW_allocation (EMMG/PDG<=>MUX)\n", {indent, u""}) +
         tlv::Message::dump (indent) +
         dumpHexa (indent, "client_id", client_id) +
         dumpHexa (indent, "data_channel_id", channel_id) +
@@ -779,16 +779,16 @@ void ts::emmgmux::DataProvision::serializeParameters (tlv::Serializer& fact) con
     }
 }
 
-std::string ts::emmgmux::DataProvision::dump (size_t indent) const
+ts::UString ts::emmgmux::DataProvision::dump(size_t indent) const
 {
-    std::string value (Format ("%*sdata_provision (EMMG/PDG<=>MUX)\n", int (indent), ""));
-    value += tlv::Message::dump (indent);
-    value += dumpHexa (indent, "client_id", client_id);
-    value += dumpHexa (indent, "data_channel_id", channel_id);
-    value += dumpHexa (indent, "data_stream_id", stream_id);
-    value += dumpHexa (indent, "data_id", data_id);
+    UString value(UString::Format(u"%*sdata_provision (EMMG/PDG<=>MUX)\n", {indent, u""}));
+    value += tlv::Message::dump(indent);
+    value += dumpHexa(indent, "client_id", client_id);
+    value += dumpHexa(indent, "data_channel_id", channel_id);
+    value += dumpHexa(indent, "data_stream_id", stream_id);
+    value += dumpHexa(indent, "data_id", data_id);
     for (size_t i = 0; i < datagram.size(); ++i) {
-        value += dumpOptional (indent, "datagram", true, *(datagram[i]), hexa::HEXA);
+        value += dumpOptional(indent, "datagram", true, *(datagram[i]), UString::HEXA);
     }
     return value;
 }

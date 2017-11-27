@@ -33,8 +33,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsDataBroadcastIdDescriptor.h"
-#include "tsFormat.h"
-#include "tsHexa.h"
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
@@ -168,7 +166,7 @@ void ts::DataBroadcastIdDescriptor::DisplaySelectorBytes(TablesDisplay & display
             data += slength; size -= slength; dlength -= slength;
             // Display
             strm << margin << "OUI: " << names::OUI(oui, names::FIRST) << std::endl
-                 << margin << Format("  Update type: 0x%02X (", int(upd_type));
+                 << margin << UString::Format(u"  Update type: 0x%X (", {upd_type});
             switch (upd_type) {
                 case 0x00: strm << "proprietary update solution"; break;
                 case 0x01: strm << "standard update carousel (no notification) via broadcast"; break;
@@ -181,31 +179,31 @@ void ts::DataBroadcastIdDescriptor::DisplaySelectorBytes(TablesDisplay & display
                 strm << "none";
             }
             else {
-                strm << Format("%d (0x%02X)", int(upd_version), int(upd_version));
+                strm << UString::Format(u"%d (0x%02X)", {upd_version, upd_version});
             }
             strm << std::endl;
             if (slength > 0) {
                 strm << margin << "  Selector data:" << std::endl
-                     << Hexa(sdata, slength, hexa::HEXA | hexa::ASCII, indent + 2);
+                     << UString::Dump(sdata, slength, UString::HEXA | UString::ASCII, indent + 2);
             }
         }
         // Extraneous data in OUI_loop:
         if (dlength > 0) {
             strm << margin << "Extraneous data in OUI loop:" << std::endl
-                 << Hexa(data, dlength, hexa::HEXA | hexa::ASCII, indent);
+                 << UString::Dump(data, dlength, UString::HEXA | UString::ASCII, indent);
             data += dlength; size -= dlength;
         }
         // Private data
         if (size > 0) {
             strm << margin << "Private data:" << std::endl
-                 << Hexa(data, size, hexa::HEXA | hexa::ASCII, indent);
+                 << UString::Dump(data, size, UString::HEXA | UString::ASCII, indent);
             data += size; size = 0;
         }
     }
     else if (size > 0) {
         // Generic "id selector".
         strm << margin << "Data Broadcast Id selector:" << std::endl
-             << Hexa(data, size, hexa::HEXA | hexa::ASCII, indent);
+             << UString::Dump(data, size, UString::HEXA | UString::ASCII, indent);
         data += size; size = 0;
     }
 }

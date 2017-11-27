@@ -32,8 +32,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsComponentDescriptor.h"
-#include "tsFormat.h"
-#include "tsHexa.h"
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
@@ -58,7 +56,7 @@ void ts::ComponentDescriptor::DisplayDescriptor(TablesDisplay& display, DID did,
         const uint16_t type = GetUInt16(data) & 0x0FFF;
         const uint8_t tag = data[2];
         strm << margin << "Content/type: " << names::ComponentType(type, names::FIRST) << std::endl
-             << margin << Format("Component tag: %d (0x%02X)", int(tag), int(tag)) << std::endl
+             << margin << UString::Format(u"Component tag: %d (0x%X)", {tag, tag}) << std::endl
              << margin << "Language: " << UString::FromDVB(data + 3, 3, display.dvbCharset()) << std::endl;
         data += 6; size -= 6;
         if (size > 0) {

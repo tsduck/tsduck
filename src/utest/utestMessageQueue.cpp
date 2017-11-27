@@ -32,10 +32,8 @@
 //----------------------------------------------------------------------------
 
 #include "tsMessageQueue.h"
-#include "tsThread.h"
 #include "tsMonotonic.h"
 #include "tsSysUtils.h"
-#include "tsDecimal.h"
 #include "utestCppUnitTest.h"
 #include "utestCppUnitThread.h"
 TSDUCK_SOURCE;
@@ -84,7 +82,7 @@ void MessageQueueTest::setUp()
     _msPrecision = (_nsPrecision + ts::NanoSecPerMilliSec - 1) / ts::NanoSecPerMilliSec;
 
     // Request 2 milliseconds as system time precision.
-    utest::Out() << "MonotonicTest: timer precision = " << ts::Decimal(_nsPrecision) << " ns, " << ts::Decimal(_msPrecision) << " ms" << std::endl;
+    utest::Out() << "MonotonicTest: timer precision = " << ts::UString::Decimal(_nsPrecision) << " ns, " << ts::UString::Decimal(_msPrecision) << " ms" << std::endl;
 }
 
 // Test suite cleanup method.

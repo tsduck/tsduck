@@ -91,7 +91,7 @@ ts::ECMGClient::~ECMGClient()
 // Report specified error message if not empty, abort connection and return false
 //----------------------------------------------------------------------------
 
-bool ts::ECMGClient::abortConnection(const std::string& message)
+bool ts::ECMGClient::abortConnection(const UString& message)
 {
     if (!message.empty()) {
         _report->error(message);
@@ -171,7 +171,7 @@ bool ts::ECMGClient::connect(const SocketAddress& ecmg_address,
         return abortConnection("ECMG channel_setup response timeout");
     }
     if (msg->tag() != ecmgscs::Tags::channel_status) {
-        return abortConnection("unexpected response from ECMG (expected channel_status):\n" + msg->dump(4));
+        return abortConnection(u"unexpected response from ECMG (expected channel_status):\n" + msg->dump(4));
     }
     ecmgscs::ChannelStatus* const csp = dynamic_cast<ecmgscs::ChannelStatus*>(msg.pointer());
     assert(csp != 0);

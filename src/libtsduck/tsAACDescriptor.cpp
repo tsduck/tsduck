@@ -32,11 +32,9 @@
 //----------------------------------------------------------------------------
 
 #include "tsAACDescriptor.h"
-#include "tsFormat.h"
-#include "tsHexa.h"
-#include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
+#include "tsNames.h"
 TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"AAC_descriptor"
@@ -57,18 +55,18 @@ void ts::AACDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const
     if (size >= 1) {
         uint8_t prof_lev = data[0];
         data++; size--;
-        strm << margin << Format("Profile and level: 0x%02X", int(prof_lev)) << std::endl;
+        strm << margin << UString::Format(u"Profile and level: 0x%X", {prof_lev}) << std::endl;
         if (size >= 1) {
             uint8_t flags = data[0];
             data++; size--;
             if ((flags & 0x80) && size >= 1) { // AAC_type
                 uint8_t type = data[0];
                 data++; size--;
-                strm << margin << Format("AAC type: 0x%02X", int(type)) << std::endl;
+                strm << margin << UString::Format(u"AAC type: 0x%X", {type}) << std::endl;
             }
             if (size > 0) {
                 strm << margin << "Additional information:" << std::endl
-                     << Hexa(data, size, hexa::HEXA | hexa::ASCII | hexa::OFFSET, indent);
+                     << UString::Dump(data, size, UString::HEXA | UString::ASCII | UString::OFFSET, indent);
                 data += size; size = 0;
             }
         }

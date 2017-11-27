@@ -266,10 +266,10 @@ bool ts::UDPSocket::addMembership(const IPAddress& multicast, const IPAddress& l
     }
     else {
         // Add one membership
-        report.verbose(u"joining multicast group %s from local address %s", {UString(multicast), UString(local)});
+        report.verbose(u"joining multicast group %s from local address %s", {multicast.toString(), local.toString()});
         MReq req(multicast, local);
         if (::setsockopt(_sock, IPPROTO_IP, IP_ADD_MEMBERSHIP, TS_SOCKOPT_T(&req.req), sizeof(req.req)) != 0) {
-            report.error(u"error adding multicast membership to %s from local address %s: %s", {UString(multicast), UString(local), SocketErrorCodeMessage()});
+            report.error(u"error adding multicast membership to %s from local address %s: %s", {multicast.toString(), local.toString(), SocketErrorCodeMessage()});
             return false;
         }
         else {
@@ -318,7 +318,7 @@ bool ts::UDPSocket::dropMembership (Report& report)
 {
     bool ok = true;
     for (MReqSet::const_iterator it = _mcast.begin(); it != _mcast.end(); ++it) {
-        report.verbose("leaving multicast group %s from local address %s", {UString(IPAddress(it->req.imr_multiaddr)), UString(IPAddress(it->req.imr_interface))});
+        report.verbose("leaving multicast group %s from local address %s", {IPAddress(it->req.imr_multiaddr).toString(), IPAddress(it->req.imr_interface).toString()});
         if (::setsockopt(_sock, IPPROTO_IP, IP_DROP_MEMBERSHIP, TS_SOCKOPT_T(&it->req), sizeof(it->req)) != 0) {
             report.error(u"error dropping multicast membership: " + SocketErrorCodeMessage());
             ok = false;

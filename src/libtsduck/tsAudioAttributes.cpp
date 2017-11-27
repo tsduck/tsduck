@@ -32,8 +32,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsAudioAttributes.h"
-#include "tsDecimal.h"
-#include "tsFormat.h"
 TSDUCK_SOURCE;
 
 
@@ -244,13 +242,13 @@ ts::UString ts::AudioAttributes::toString() const
 
     if (_bitrate != 0) {
         desc += u", ";
-        desc += Decimal(_bitrate);
+        desc += UString::Decimal(_bitrate);
         desc += u" kb/s";
     }
 
     if (_sampling_freq != 0) {
         desc += u", @";
-        desc += Decimal(_sampling_freq);
+        desc += UString::Decimal(_sampling_freq);
         desc += u" Hz";
     }
 
@@ -278,7 +276,7 @@ ts::UString ts::AudioAttributes::layerName() const
         case 1:  return u"layer I";
         case 2:  return u"layer II";
         case 3:  return u"layer III";
-        default: return Format("layer %d", _layer);
+        default: return UString::Format(u"layer %d", {_layer});
     }
 }
 

@@ -32,8 +32,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsAC3Descriptor.h"
-#include "tsFormat.h"
-#include "tsHexa.h"
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
@@ -197,21 +195,21 @@ void ts::AC3Descriptor::DisplayDescriptor(TablesDisplay& display, DID did, const
         if ((flags & 0x40) && size >= 1) { // bsid
             uint8_t bsid = data[0];
             data++; size--;
-            strm << margin << Format("AC-3 coding version: %d (0x%02X)", int(bsid), int(bsid)) << std::endl;
+            strm << margin << UString::Format(u"AC-3 coding version: %d (0x%X)", {bsid, bsid}) << std::endl;
         }
         if ((flags & 0x20) && size >= 1) { // mainid
             uint8_t mainid = data[0];
             data++; size--;
-            strm << margin << Format("Main audio service id: %d (0x%02X)", int(mainid), int(mainid)) << std::endl;
+            strm << margin << UString::Format("Main audio service id: %d (0x%X)", {mainid, mainid}) << std::endl;
         }
         if ((flags & 0x10) && size >= 1) { // asvc
             uint8_t asvc = data[0];
             data++; size--;
-            strm << margin << Format("Associated to: 0x%02X", int(asvc)) << std::endl;
+            strm << margin << UString::Format(u"Associated to: 0x%X", {asvc}) << std::endl;
         }
         if (size > 0) {
             strm << margin << "Additional information:" << std::endl
-                 << Hexa(data, size, hexa::HEXA | hexa::ASCII | hexa::OFFSET, indent);
+                 << UString::Dump(data, size, UString::HEXA | UString::ASCII | UString::OFFSET, indent);
             data += size; size = 0;
         }
     }

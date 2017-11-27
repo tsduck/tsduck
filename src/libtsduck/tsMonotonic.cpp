@@ -33,8 +33,6 @@
 
 #include "tsMonotonic.h"
 #include "tsSysUtils.h"
-#include "tsDecimal.h"
-#include "tsFormat.h"
 TSDUCK_SOURCE;
 
 

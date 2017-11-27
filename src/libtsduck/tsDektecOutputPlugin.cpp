@@ -807,14 +807,14 @@ bool ts::DektecOutputPlugin::start()
     // Open the device
     Dtapi::DTAPI_RESULT status = _guts->dtdev.AttachToSerial(_guts->device.desc.m_Serial);
     if (status != DTAPI_OK) {
-        tsp->error(Format("error attaching output Dektec device %d (%s): ", _guts->dev_index, _guts->device.model.c_str()) + DektecStrError(status));
+        tsp->error(u"error attaching output Dektec device %d (%s): %s", {_guts->dev_index, _guts->device.model, DektecStrError(status)});
         return false;
     }
 
     // Open the channel
     status = _guts->chan.AttachToPort(&_guts->dtdev, _guts->device.output[_guts->chan_index].m_Port);
     if (status != DTAPI_OK) {
-        tsp->error(Format("error attaching output channel %d of Dektec device %d (%s): ", _guts->chan_index, _guts->dev_index, _guts->device.model.c_str()) + DektecStrError(status));
+        tsp->error(u"error attaching output channel %d of Dektec device %d (%s): %s", {_guts->chan_index, _guts->dev_index, _guts->device.model, DektecStrError(status)});
         _guts->dtdev.Detach();
         return false;
     }

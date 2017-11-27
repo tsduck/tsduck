@@ -34,8 +34,7 @@
 
 #pragma once
 #include "tstlvSerializer.h"
-#include "tsHexa.h"
-#include "tsFormat.h"
+#include "tsUString.h"
 #include "tsSafePtr.h"
 
 namespace ts {
@@ -118,7 +117,7 @@ namespace ts {
             //! @param [in] indent Left indentation size.
             //! @return A string representing the message.
             //!
-            virtual std::string dump(size_t indent = 0) const;
+            virtual UString dump(size_t indent = 0) const;
 
         protected:
             //!
@@ -139,8 +138,8 @@ namespace ts {
             //!
             Message(VERSION protocol_version, TAG tag) :
                 _has_version(true),
-                _version    (protocol_version),
-                _tag        (tag)
+                _version(protocol_version),
+                _tag(tag)
             {
             }
 
@@ -159,7 +158,7 @@ namespace ts {
             //! @param [in] value Vector of strings.
             //! @return The formatted string with embedded new-lines.
             //!
-            static std::string dumpVector(size_t indent, const char* name, const std::vector<std::string>& value);
+            static UString dumpVector(size_t indent, const UString& name, const UStringVector& value);
 
             //!
             //! Dump an optional byte block (helper routine for subclasses).
@@ -170,11 +169,11 @@ namespace ts {
             //! @param [in] flags Hexa dump flags for ts::Hexa().
             //! @return The formatted string with embedded new-lines.
             //!
-            static std::string dumpOptional(size_t indent,
-                                            const char* name,
-                                            bool has_value,
-                                            const ByteBlock& value,
-                                            uint32_t flags = hexa::HEXA | hexa::ASCII);
+            static UString dumpOptional(size_t indent,
+                                        const UString& name,
+                                        bool has_value,
+                                        const ByteBlock& value,
+                                        uint32_t flags = UString::HEXA | UString::ASCII);
 
             //!
             //! Dump an integer value in decimal (helper routine for subclasses).
@@ -185,9 +184,9 @@ namespace ts {
             //! @return The formatted string with embedded new-lines.
             //!
             template <typename INT>
-            static std::string dumpDecimal(size_t indent, const char* name, const INT& value)
+            static UString dumpDecimal(size_t indent, const UString& name, const INT& value)
             {
-                return Format("%*s%s = %" FMT_INT64 "d\n", int(indent), "", name, int64_t(value));
+                return UString::Format(u"%*s%s = %d\n", {indent, u"", name, value});
             }
 
             //!
@@ -199,10 +198,9 @@ namespace ts {
             //! @return The formatted string with embedded new-lines.
             //!
             template <typename INT>
-            static std::string dumpHexa(size_t indent, const char* name, const INT& value)
+            static UString dumpHexa(size_t indent, const UString& name, const INT& value)
             {
-                return Format("%*s%s = 0x%0*" FMT_INT64 "X\n", int(indent), "", name, int(2 * sizeof(INT)),
-                               uint64_t(uint64_t(value) & (TS_UCONST64(0xFFFFFFFFFFFFFFFF) >> (64 - 8 * sizeof(INT)))));
+                return UString::Format(u"%*s%s = 0x%X\n", {indent, u"", name, value});
             }
 
             //!
@@ -215,7 +213,7 @@ namespace ts {
             //! @return The formatted string with embedded new-lines.
             //!
             template <typename INT>
-            static std::string dumpInteger(size_t indent, const char* name, const INT& value)
+            static UString dumpInteger(size_t indent, const UString& name, const INT& value)
             {
                 return std::numeric_limits<INT>::is_signed ? dumpDecimal(indent, name, value) : dumpHexa(indent, name, value);
             }
@@ -230,9 +228,9 @@ namespace ts {
             //! @return The formatted string with embedded new-lines.
             //!
             template <typename INT>
-            static std::string dumpOptionalDecimal(size_t indent, const char* name, bool has_value, const INT& value)
+            static UString dumpOptionalDecimal(size_t indent, const UString& name, bool has_value, const INT& value)
             {
-                return has_value ? dumpDecimal(indent, name, value) : "";
+                return has_value ? dumpDecimal(indent, name, value) : u"";
             }
 
             //!
@@ -245,9 +243,9 @@ namespace ts {
             //! @return The formatted string with embedded new-lines.
             //!
             template <typename INT>
-            static std::string dumpOptionalHexa(size_t indent, const char* name, bool has_value, const INT& value)
+            static UString dumpOptionalHexa(size_t indent, const UString& name, bool has_value, const INT& value)
             {
-                return has_value ? dumpHexa(indent, name, value) : "";
+                return has_value ? dumpHexa(indent, name, value) : u"";
             }
 
             //!
@@ -261,9 +259,9 @@ namespace ts {
             //! @return The formatted string with embedded new-lines.
             //!
             template <typename INT>
-            static std::string dumpOptionalInteger(size_t indent, const char* name, bool has_value, const INT& value)
+            static UString dumpOptionalInteger(size_t indent, const UString& name, bool has_value, const INT& value)
             {
-                return has_value ? dumpInteger(indent, name, value) : "";
+                return has_value ? dumpInteger(indent, name, value) : u"";
             }
 
             //!
@@ -276,9 +274,9 @@ namespace ts {
             //! @return The formatted string with embedded new-lines.
             //!
             template <typename INT>
-            static std::string dumpVector(size_t indent, const char* name, const std::vector<INT>& val)
+            static UString dumpVector(size_t indent, const UString& name, const std::vector<INT>& val)
             {
-                std::string s;
+                UString s;
                 for (typename std::vector<INT>::const_iterator it = val.begin(); it != val.end(); ++it) {
                     s += dumpInteger(indent, name, *it);
                 }
@@ -298,11 +296,11 @@ namespace ts {
         //!
         //! Safe pointer for TLV messages (not thread-safe).
         //!
-        typedef SafePtr <Message, NullMutex> MessagePtr;
+        typedef SafePtr<Message, NullMutex> MessagePtr;
 
         //!
         //! Safe pointer for TLV messages (thread-safe).
         //!
-        typedef SafePtr <Message, Mutex> MessagePtrMT;
+        typedef SafePtr<Message, Mutex> MessagePtrMT;
     }
 }

@@ -32,8 +32,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsLocalTimeOffsetDescriptor.h"
-#include "tsFormat.h"
-#include "tsHexa.h"
 #include "tsNames.h"
 #include "tsBCD.h"
 #include "tsMJD.h"
@@ -158,13 +156,13 @@ void ts::LocalTimeOffsetDescriptor::DisplayDescriptor(TablesDisplay& display, DI
             uint8_t region_id = *data >> 2;
             uint8_t polarity = *data & 0x01;
             data += 1; size -= 1;
-            strm << margin << "Region id: " << int(region_id)
-                 << Format(" (0x%02X)", int(region_id))
+            strm << margin << "" << int(region_id)
+                 << UString::Format("Region id: %d (0x%X)", {region_id, region_id})
                  << ", polarity: " << (polarity ? "west" : "east")
                  << " of Greenwich" << std::endl;
             if (size >= 2) {
                 strm << margin << "Local time offset: " << (polarity ? "-" : "")
-                     << Format("%02d:%02d", DecodeBCD(data[0]), DecodeBCD(data[1])) << std::endl;
+                     << UString::Format(u"%02d:%02d", {DecodeBCD(data[0]), DecodeBCD(data[1])}) << std::endl;
                 data += 2; size -= 2;
                 if (size >= 5) {
                     Time next_change;
@@ -173,7 +171,7 @@ void ts::LocalTimeOffsetDescriptor::DisplayDescriptor(TablesDisplay& display, DI
                     strm << margin << "Next change: " << next_change.format(Time::DATE | Time::TIME) << std::endl;
                     if (size >= 2) {
                         strm << margin << "Next time offset: " << (polarity ? "-" : "")
-                             << Format("%02d:%02d", DecodeBCD(data[0]), DecodeBCD(data[1]))
+                             << UString::Format(u"%02d:%02d", {DecodeBCD(data[0]), DecodeBCD(data[1])})
                              << std::endl;
                         data += 2; size -= 2;
                     }

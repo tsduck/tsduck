@@ -107,7 +107,7 @@ bool ts::TCPConnection::getPeer (SocketAddress& peer, Report& report) const
 ts::UString ts::TCPConnection::peerName() const
 {
     SocketAddress peer;
-    return getPeer(peer, NULLREP) ? UString(peer) : u"";
+    return getPeer(peer, NULLREP) ? peer.toString() : u"";
 }
 
 
@@ -221,25 +221,25 @@ bool ts::TCPConnection::receive (void* buffer, size_t size, const AbortInterface
 // to TCPServer::accept() which establishes the connection.
 //----------------------------------------------------------------------------
 
-bool ts::TCPConnection::connect (const SocketAddress& addr, Report& report)
+bool ts::TCPConnection::connect(const SocketAddress& addr, Report& report)
 {
     // Loop on unsollicited interrupts
     for (;;) {
         ::sockaddr sock_addr;
-        addr.copy (sock_addr);
-        report.debug ("connecting to " + UString(addr));
-        if (::connect (getSocket(), &sock_addr, sizeof(sock_addr)) == 0) {
-            declareConnected (report);
+        addr.copy(sock_addr);
+        report.debug(u"connecting to %s", {addr.toString()});
+        if (::connect(getSocket(), &sock_addr, sizeof(sock_addr)) == 0) {
+            declareConnected(report);
             return true;
         }
 #if !defined (TS_WINDOWS)
         else if (errno == EINTR) {
             // Ignore signal, retry
-            report.debug ("connect() interrupted by signal, retrying");
+            report.debug(u"connect() interrupted by signal, retrying");
         }
 #endif
         else {
-            report.error ("error connecting socket: " + SocketErrorCodeMessage ());
+            report.error(u"error connecting socket: %s", {SocketErrorCodeMessage()});
             return false;
         }
     }
@@ -257,7 +257,7 @@ bool ts::TCPConnection::shutdownSocket(int how, Report& report)
         Guard lock(_mutex);
         // Do not report "not connected" errors since they are normal when the peer disconnects first.
         if (isOpen() && err_code != TS_SOCKET_ERR_NOTCONN) {
-            report.error("error shutting down socket: " + SocketErrorCodeMessage(err_code));
+            report.error(u"error shutting down socket: %s", {SocketErrorCodeMessage(err_code)});
             return false;
         }
     }
@@ -271,7 +271,7 @@ bool ts::TCPConnection::shutdownSocket(int how, Report& report)
 
 bool ts::TCPConnection::closeWriter(Report& report)
 {
-    report.debug ("closing socket writer");
+    report.debug(u"closing socket writer");
     return shutdownSocket(TS_SOCKET_SHUT_WR, report);
 }
 
@@ -283,6 +283,6 @@ bool ts::TCPConnection::closeWriter(Report& report)
 bool ts::TCPConnection::disconnect(Report& report)
 {
     declareDisconnected(report);
-    report.debug("disconnecting socket");
+    report.debug(u"disconnecting socket");
     return shutdownSocket(TS_SOCKET_SHUT_RDWR, report);
 }

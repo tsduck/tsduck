@@ -32,12 +32,8 @@
 //----------------------------------------------------------------------------
 
 #include "tsSection.h"
-#include "tsDecimal.h"
 #include "tsCRC32.h"
-#include "tsFormat.h"
-#include "tsDecimal.h"
 #include "tsNames.h"
-#include "tsHexa.h"
 #include "tsMemoryUtils.h"
 #include "tsReportWithPrefix.h"
 TSDUCK_SOURCE;
@@ -420,35 +416,17 @@ void ts::Section::setLastSectionNumber (uint8_t num, bool recompute_crc)
 // Write section on standard streams.
 //----------------------------------------------------------------------------
 
-std::ostream& ts::Section::write (std::ostream& strm, Report& report) const
+std::ostream& ts::Section::write(std::ostream& strm, Report& report) const
 {
     if (_is_valid && strm) {
-        strm.write (reinterpret_cast <const char*> (_data->data()), std::streamsize (_data->size()));
+        strm.write(reinterpret_cast <const char*> (_data->data()), std::streamsize(_data->size()));
         if (!strm) {
-            report.error ("error writing section into binary stream");
+            report.error(u"error writing section into binary stream");
         }
     }
     return strm;
 }
 
-
-//----------------------------------------------------------------------------
-// Error message fragment indicating the number of bytes previously
-// read in a binary file
-//----------------------------------------------------------------------------
-
-namespace {
-    std::string AfterBytes (const std::streampos& position)
-    {
-        const int64_t bytes = int64_t (position);
-        if (bytes > 0) {
-            return " after " + ts::Decimal (bytes) + " bytes";
-        }
-        else {
-            return "";
-        }
-    }
-}
 
 //----------------------------------------------------------------------------
 // Read section from a stream. If a section is invalid (eof before end of
@@ -490,9 +468,7 @@ std::istream& ts::Section::read(std::istream& strm, CRC32::Validation crc_op, Re
         if (insize > 0) {
             // Flawfinder: ignore: completely fooled here, std::ostream::setstate has nothing to do with PRNG.
             strm.setstate(std::ios::failbit);
-            report.error("truncated section" + AfterBytes(position) +
-                         ", got " + Decimal(insize) +
-                         " bytes, expected " + Decimal(secsize));
+            report.error(u"truncated section%s, got %d bytes, expected %d", {UString::AfterBytes(position), insize, secsize});
         }
     }
     else {
@@ -500,7 +476,7 @@ std::istream& ts::Section::read(std::istream& strm, CRC32::Validation crc_op, Re
         reload(secdata, PID_NULL, crc_op);
         if (!_is_valid) {
             strm.setstate(std::ios::failbit);
-            report.error("invalid section" + AfterBytes(position));
+            report.error(u"invalid section%s", {UString::AfterBytes(position)});
         }
     }
 
@@ -513,10 +489,7 @@ std::istream& ts::Section::read(std::istream& strm, CRC32::Validation crc_op, Re
 // Return true on success, false on error.
 //----------------------------------------------------------------------------
 
-bool ts::Section::LoadFile(SectionPtrVector& sections,
-                           std::istream& strm,
-                           CRC32::Validation crc_op,
-                           Report& report)
+bool ts::Section::LoadFile(SectionPtrVector& sections, std::istream& strm, CRC32::Validation crc_op, Report& report)
 {
     sections.clear();
 
@@ -580,22 +553,22 @@ std::ostream& ts::Section::dump(std::ostream& strm, int indent, CASFamily cas, b
     // Display common header lines.
     // If PID is the null PID, this means "unknown PID"
     if (!no_header) {
-        strm << margin << "* Section dump"
-             << Format(", PID 0x%04X (%d)", int(_source_pid), int(_source_pid))
-             << ", TID " << names::TID(tid, cas, names::BOTH_FIRST) << std::endl
-             << margin << "  Section size: " << size()
-             << " bytes, header: " << (isLongSection() ? "long" : "short") << std::endl;
+        strm << margin << ""
+             << UString::Format(u"* Section dump, PID 0x%X (%d), TID %d", {_source_pid, _source_pid, names::TID(tid, cas, names::BOTH_FIRST)})
+             << std::endl
+             << margin << "  Section size: " << size() << " bytes, header: " << (isLongSection() ? "long" : "short")
+             << std::endl;
         if (isLongSection()) {
             strm << margin
-                 << Format("  TIDext: 0x%04X (%d)", int(tableIdExtension()), int(tableIdExtension()))
-                 << ", version: " << int(version())
-                 << ", index: " << int(sectionNumber())
-                 << ", last: " << int(lastSectionNumber())
-                 << ", " << (isNext() ? "next" : "current") << std::endl;
+                 << UString::Format(u"  TIDext: 0x%X (%d), version: %d, index: %d, last: %d, %s",
+                                    {tableIdExtension(), tableIdExtension(),
+                                     version(), sectionNumber(), lastSectionNumber(),
+                                     (isNext() ? u"next" : u"current")})
+                 << std::endl;
         }
     }
 
     // Display section body
-    strm << Hexa(content(), size(), hexa::HEXA | hexa::ASCII | hexa::OFFSET, indent + 2);
+    strm << UString::Dump(content(), size(), UString::HEXA | UString::ASCII | UString::OFFSET, indent + 2);
     return strm;
 }

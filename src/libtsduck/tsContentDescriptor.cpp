@@ -32,7 +32,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsContentDescriptor.h"
-#include "tsFormat.h"
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
@@ -124,8 +123,7 @@ void ts::ContentDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, c
         uint8_t content = data[0];
         uint8_t user = data[1];
         data += 2; size -= 2;
-        strm << margin << "Content: " << names::Content(content, names::FIRST)
-             << Format(" / User: 0x%02X", int(user)) << std::endl;
+        strm << margin << UString::Format(u"Content: %s / User: 0x%X", {names::Content(content, names::FIRST), user}) << std::endl;
     }
 
     display.displayExtraData(data, size, indent);

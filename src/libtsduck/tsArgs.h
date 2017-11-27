@@ -147,7 +147,6 @@ namespace ts {
     //!
     //! @code
     //! #include "tsArgs.h"
-    //! #include "tsStringUtils.h"
     //! #include <iostream>
     //!
     //! // Define a class which encapsulates the command line arguments.

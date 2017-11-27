@@ -32,8 +32,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsApplicationSignallingDescriptor.h"
-#include "tsFormat.h"
-#include "tsHexa.h"
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
@@ -58,10 +56,7 @@ void ts::ApplicationSignallingDescriptor::DisplayDescriptor(TablesDisplay& displ
         uint16_t app_type = GetUInt16(data);
         uint8_t ait_version = data[2];
         data += 3; size -= 3;
-        strm << margin << "Application type: " << app_type
-             << Format(" (0x%04X)", int(app_type))
-             << ", AIT Version: " << int(ait_version)
-             << Format(" (0x%02X)", int(ait_version)) << std::endl;
+        strm << margin << UString::Format(u"Application type: %d (0x%X), AIT Version: %d (0x%X)", {app_type, app_type, ait_version, ait_version}) << std::endl;
     }
 
     display.displayExtraData(data, size, indent);

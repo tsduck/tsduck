@@ -32,7 +32,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsPSILogger.h"
-#include "tsStringUtils.h"
 #include "tsNames.h"
 #include "tsPAT.h"
 TSDUCK_SOURCE;

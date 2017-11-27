@@ -188,7 +188,7 @@ namespace ts {
         virtual void main();
 
         // Report specified error message if not empty, abort connection and return false
-        bool abortConnection(const std::string&);
+        bool abortConnection(const UString&);
 
         // Unreachable operations
         ECMGClient(const ECMGClient&) = delete;

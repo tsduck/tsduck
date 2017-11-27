@@ -28,7 +28,6 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsFormat.h"
 
 //
 // In this module, we work on formal integer types INT. We use std::numeric_limits<INT> to test the
@@ -110,29 +109,6 @@ INT ts::BoundedSub(INT a, INT b)
         else {
             return a - b;
         }
-    }
-}
-
-
-//----------------------------------------------------------------------------
-// Format a percentage string.
-//----------------------------------------------------------------------------
-
-template<typename INT>
-std::string ts::PercentageString(INT value, INT total)
-{
-    if (total < 0) {
-        return "?";
-    }
-    if (total == 0) {
-        return "0.00%";
-    }
-    else {
-        // Integral percentage
-        const int p1 = int((100 * uint64_t(value)) / uint64_t(total));
-        // Percentage first 2 decimals
-        const int p2 = int(((10000 * uint64_t(value)) / uint64_t(total)) % 100);
-        return ts::Format("%d.%02d%%", p1, p2);
     }
 }
 

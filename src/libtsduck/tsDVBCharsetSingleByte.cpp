@@ -30,7 +30,6 @@
 #include "tsDVBCharsetSingleByte.h"
 #include "tsByteBlock.h"
 #include "tsUString.h"
-#include "tsDecimal.h"
 TSDUCK_SOURCE;
 
 
@@ -46,7 +45,7 @@ ts::DVBCharsetSingleByte::DVBCharsetSingleByte(const UString& name, uint32_t tab
     // Check the size of the upper code point table.
     if (_upperCodePoints.size() != (0x100 - 0xA0)) {
         Unregister(this);
-        throw InvalidDVBCharset((name + " (" + Decimal(_upperCodePoints.size()) + " entries)").toUTF8());
+        throw InvalidDVBCharset(UString::Format(u"%s (%d entries)", {name, _upperCodePoints.size()}));
     }
 
     // Code point to byte mapping for ASCII range

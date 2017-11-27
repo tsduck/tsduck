@@ -32,8 +32,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsIPAddress.h"
-#include "tsToInteger.h"
-#include "tsFormat.h"
 #include "tsMemoryUtils.h"
 TSDUCK_SOURCE;
 
@@ -160,7 +158,7 @@ bool ts::IPAddress::resolve(const UString& name, Report& report)
 // Convert to a string object
 //----------------------------------------------------------------------------
 
-ts::IPAddress::operator ts::UString() const
+ts::UString ts::IPAddress::toString() const
 {
     return UString::Format(u"%d.%d.%d.%d", {(_addr >> 24) & 0xFF, (_addr >> 16) & 0xFF, (_addr >> 8) & 0xFF, _addr & 0xFF});
 }

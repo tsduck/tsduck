@@ -32,9 +32,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsTSAnalyzerReport.h"
-#include "tsStringUtils.h"
-#include "tsDecimal.h"
-#include "tsFormat.h"
 #include "tsNames.h"
 TSDUCK_SOURCE;
 

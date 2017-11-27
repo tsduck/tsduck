@@ -32,7 +32,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsVideoAttributes.h"
-#include "tsFormat.h"
 TSDUCK_SOURCE;
 
 
@@ -73,12 +72,12 @@ ts::UString ts::VideoAttributes::toString() const
         return "";
     }
 
-    UString desc(Format("%" FMT_SIZE_T "dx%" FMT_SIZE_T "d", _hsize, _vsize));
+    UString desc(UString::Format(u"%dx%d", {_hsize, _vsize}));
     if (_progressive) {
-        desc += UChar('p');
+        desc += u'p';
     }
     if (_interlaced) {
-        desc += UChar('i');
+        desc += u'i';
     }
     desc += u", ";
     desc += frameRateName();
@@ -103,10 +102,10 @@ ts::UString ts::VideoAttributes::frameRateName() const
         return "";
     }
     else if ((fr100 = frameRate100()) % 100 == 0) {
-        return Format("@%d Hz", int(fr100 / 100));
+        return UString::Format(u"@%d Hz", {fr100 / 100});
     }
     else {
-        return Format("@%d.%02d Hz", int(fr100 / 100), int(fr100 % 100));
+        return UString::Format(u"@%d.%02d Hz", {fr100 / 100, fr100 % 100});
     }
 }
 

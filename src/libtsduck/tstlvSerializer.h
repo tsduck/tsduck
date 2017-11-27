@@ -395,7 +395,7 @@ namespace ts {
             //! Convert to a string (for debug purpose).
             //! @return A string representing the internal state of the Serializer.
             //!
-            operator std::string() const;
+            UString toString() const;
         };
 
         // Template specializations for performance.
@@ -415,5 +415,5 @@ namespace ts {
 //!
 TSDUCKDLL inline std::ostream& operator<<(std::ostream& strm, const ts::tlv::Serializer& ser)
 {
-    return strm << std::string (ser);
+    return strm << ser.toString();
 }

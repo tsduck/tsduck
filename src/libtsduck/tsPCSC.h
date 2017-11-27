@@ -33,8 +33,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsPlatform.h"
-#include "tsStringUtils.h"
+#include "tsUString.h"
 #include "tsByteBlock.h"
 #include "tsCerrReport.h"
 
@@ -89,7 +88,7 @@ namespace ts {
         //! @param [out] readers The list of all smartcard readers.
         //! @return A PC/SC status.
         //!
-        TSDUCKDLL ::LONG ListReaders(::SCARDCONTEXT context, StringVector& readers);
+        TSDUCKDLL ::LONG ListReaders(::SCARDCONTEXT context, UStringVector& readers);
 
         //!
         //! State of a smartcard reader.
@@ -97,17 +96,17 @@ namespace ts {
         //!
         struct TSDUCKDLL ReaderState
         {
-            std::string reader;         //!< Smartcard reader name.
-            ByteBlock   atr;            //!< Last ATR value.
-            ::DWORD     current_state;  //!< Current reader state.
-            ::DWORD     event_state;    //!< Current event state.
+            UString   reader;         //!< Smartcard reader name.
+            ByteBlock atr;            //!< Last ATR value.
+            ::DWORD   current_state;  //!< Current reader state.
+            ::DWORD   event_state;    //!< Current event state.
 
             //!
             //! Constructor.
             //! @param [in] reader_ Smartcard reader name.
             //! @param [in] current_state_ Current reader state.
             //!
-            ReaderState(const std::string& reader_ = "", ::DWORD current_state_ = SCARD_STATE_UNAWARE) :
+            ReaderState(const UString& reader_ = "", ::DWORD current_state_ = SCARD_STATE_UNAWARE) :
                 reader(reader_),
                 atr(),
                 current_state(current_state_),
@@ -168,7 +167,7 @@ namespace ts {
         //! @return A PC/SC status.
         //!
         TSDUCKDLL ::LONG SearchSmartCard(::SCARDCONTEXT  context,
-                                         std::string&    reader_name,
+                                         UString&        reader_name,
                                          const uint8_t*  atr = 0,
                                          size_t          atr_size = 0,
                                          const uint8_t*  atr_mask = 0,

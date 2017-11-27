@@ -29,7 +29,6 @@
 
 #include "tsCondition.h"
 #include "tsTime.h"
-#include "tsFormat.h"
 TSDUCK_SOURCE;
 
 

@@ -32,7 +32,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsService.h"
-#include "tsToInteger.h"
 TSDUCK_SOURCE;
 
 
@@ -89,8 +88,8 @@ void ts::Service::set(const UString& desc)
 {
     clear();
 
-    uint16_t id;
-    if (ToInteger(id, desc.toUTF8())) {
+    uint16_t id = 0;
+    if (desc.toInteger(id)) {
         _id = id;
     }
     else if (!desc.empty()) {
@@ -227,5 +226,3 @@ bool ts::Service::Sort3 (const Service& s1, const Service& s2)
     _SORT_(_pmt_pid);
     return true; // Default: remain stable
 }
-
-#undef _SORT_

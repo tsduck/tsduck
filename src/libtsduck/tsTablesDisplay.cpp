@@ -425,7 +425,7 @@ void ts::TablesDisplay::displayTLV(const uint8_t* data,
 
     // Display a separator after TLV area.
     if (index > tlvStart && index < endIndex) {
-        strm << Format("%*s%04X:  %*sEnd of TLV area", indent, "", int(index), innerIndent, "") << std::endl;
+        strm << UString::Format(u"%*s%04X:  %*sEnd of TLV area", {indent, u"", index, innerIndent, u""}) << std::endl;
     }
 
     // Display remaining binary data.

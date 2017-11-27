@@ -36,7 +36,6 @@
 #include "tsMPEG.h"
 #include "tsUString.h"
 #include "tsVariable.h"
-#include "tsStringUtils.h"
 
 namespace ts {
     //!
@@ -231,7 +230,7 @@ namespace ts {
         //!
         template<class ITERATOR>
         static std::ostream& Display(std::ostream& strm,
-                                     const std::string& margin,
+                                     const UString& margin,
                                      const ITERATOR& begin,
                                      const ITERATOR& end,
                                      bool header = true);
@@ -246,7 +245,7 @@ namespace ts {
         //! @return A reference to @a strm.
         //!
         template<class CONTAINER>
-        static std::ostream& Display(std::ostream& strm, const std::string& margin, const CONTAINER& container, bool header = true)
+        static std::ostream& Display(std::ostream& strm, const UString& margin, const CONTAINER& container, bool header = true)
         {
             return Display(strm, margin, container.begin(), container.end(), header);
         }

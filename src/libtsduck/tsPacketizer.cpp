@@ -32,8 +32,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsPacketizer.h"
-#include "tsFormat.h"
-#include "tsDecimal.h"
 #include "tsNames.h"
 TSDUCK_SOURCE;
 
@@ -214,12 +212,12 @@ void ts::Packetizer::getNextPacket (TSPacket& pkt)
 std::ostream& ts::Packetizer::display(std::ostream& strm) const
 {
     return strm
-        << Format("  PID: %d (0x%02X)", int(_pid), int(_pid)) << std::endl
+        << UString::Format(u"  PID: %d (0x%X)", {_pid, _pid}) << std::endl
         << "  Next CC: " << int(_continuity) << std::endl
         << "  Current section: "
-        << (_section.isNull() ? UString(u"none") : names::TID(_section->tableId()) + Format(", offset %d", int(_next_byte)))
+        << (_section.isNull() ? UString(u"none") : UString::Format("%s, offset %d", {names::TID(_section->tableId()), _next_byte}))
         << std::endl
-        << "  Output packets: " << Decimal(_packet_count) << std::endl
-        << "  Output sections: " << Decimal(_section_out_count) << std::endl
-        << "  Provided sections: " << Decimal(_section_in_count) << std::endl;
+        << UString::Format(u"  Output packets: %'d", {_packet_count}) << std::endl
+        << UString::Format(u"  Output sections: %'d", {_section_out_count}) << std::endl
+        << UString::Format(u"  Provided sections: %'d", {_section_in_count}) << std::endl;
 }

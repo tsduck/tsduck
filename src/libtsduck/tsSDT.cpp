@@ -432,15 +432,11 @@ void ts::SDT::DisplaySection(TablesDisplay& display, const ts::Section& section,
     const uint8_t* data = section.payload();
     size_t size = section.payloadSize();
 
-    strm << margin << "Transport Stream Id: " << section.tableIdExtension()
-         << Format(" (0x%04X)", int(section.tableIdExtension()))
-         << std::endl;
+    strm << margin << UString::Format(u"Transport Stream Id: %d (0x%X)", {section.tableIdExtension(), section.tableIdExtension()}) << std::endl;
 
     if (size >= 2) {
         uint16_t nwid = GetUInt16(data);
-        strm << margin << "Original Network Id: " << nwid
-             << Format(" (0x%04X)", int(nwid))
-             << std::endl;
+        strm << margin << UString::Format(u"Original Network Id: %d (0x%04X)", {nwid, nwid}) << std::endl;
         data += 2; size -= 2;
         if (size >= 1) {
             data += 1; size -= 1; // unused byte
@@ -459,10 +455,9 @@ void ts::SDT::DisplaySection(TablesDisplay& display, const ts::Section& section,
             if (length > size) {
                 length = size;
             }
-            strm << margin << "Service Id: " << servid
-                 << Format(" (0x%04X)", int(servid))
-                 << ", EITs: " << YesNo(eits)
-                 << ", EITp/f: " << YesNo(eitpf)
+            strm << margin << UString::Format(u"Service Id: %d (0x%04X)", {servid, servid})
+                 << ", EITs: " << UString::YesNo(eits)
+                 << ", EITp/f: " << UString::YesNo(eitpf)
                  << ", CA mode: " << (ca_mode ? "controlled" : "free")
                  << std::endl << margin
                  << "Running status: " << names::RunningStatus(running_status)

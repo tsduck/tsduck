@@ -33,7 +33,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsHDSimulcastLogicalChannelDescriptor.h"
-#include "tsFormat.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 TSDUCK_SOURCE;
@@ -157,9 +156,8 @@ void ts::HDSimulcastLogicalChannelDescriptor::DisplayDescriptor(TablesDisplay& d
         const uint16_t channel = GetUInt16(data + 2) & 0x03FF;
         data += 4; size -= 4;
         strm << margin
-            << Format("Service Id: %5d (0x%04X), Visible: %1d, Channel number: %3d",
-                      int(service), int(service), int(visible), int(channel))
-            << std::endl;
+             << UString::Format(u"Service Id: %5d (0x%04X), Visible: %1d, Channel number: %3d", {service, service, visible, channel})
+             << std::endl;
     }
 
     display.displayExtraData(data, size, indent);

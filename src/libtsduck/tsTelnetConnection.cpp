@@ -28,7 +28,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsTelnetConnection.h"
-#include "tsHexa.h"
 TSDUCK_SOURCE;
 
 

@@ -28,7 +28,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsTime.h"
-#include "tsFormat.h"
 #include "tsMemoryUtils.h"
 TSDUCK_SOURCE;
 

@@ -32,7 +32,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsBAT.h"
-#include "tsFormat.h"
 #include "tsBinaryTable.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
@@ -75,8 +74,7 @@ void ts::BAT::DisplaySection(TablesDisplay& display, const ts::Section& section,
     const uint8_t* data = section.payload();
     size_t size = section.payloadSize();
 
-    strm << margin << "Bouquet Id: " << section.tableIdExtension()
-         << Format(" (0x%04X)", int(section.tableIdExtension())) << std::endl;
+    strm << margin << UString::Format(u"Bouquet Id: %d (0x%04X)", {section.tableIdExtension(), section.tableIdExtension()}) << std::endl;
 
     if (size >= 2) {
         // Display bouquet information
@@ -107,10 +105,7 @@ void ts::BAT::DisplaySection(TablesDisplay& display, const ts::Section& section,
                 if (length > loop_length) {
                     length = loop_length;
                 }
-                strm << margin << "Transport Stream Id: " << tsid
-                     << Format(" (0x%04X)", int(tsid))
-                     << ", Original Network Id: " << nwid
-                     << Format(" (0x%04X)", int(nwid)) << std::endl;
+                strm << margin << UString::Format("Transport Stream Id: %d (0x%X), Original Network Id: %d (0x%X)", {tsid, tsid, nwid, nwid}) << std::endl;
                 display.displayDescriptorList(data, length, indent, section.tableId());
                 data += length; size -= length; loop_length -= length;
             }

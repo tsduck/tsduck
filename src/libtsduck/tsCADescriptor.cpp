@@ -33,8 +33,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsCADescriptor.h"
-#include "tsFormat.h"
-#include "tsHexa.h"
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
@@ -131,14 +129,12 @@ void ts::CADescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const 
         const char* const dtype = tid == TID_CAT ? "EMM" : (tid == TID_PMT ? "ECM" : "CA");
         data += 4; size -= 4;
 
-        strm << margin << "CA System Id: " << names::CASId(sysid, names::FIRST) << ", "
-             << dtype << " PID: " << pid
-             << Format(" (0x%04X)", int(pid)) << std::endl;
+        strm << margin << UString::Format(u"CA System Id: %s, %s PID: %d (0x%X)", {names::CASId(sysid, names::FIRST), dtype, pid, pid}) << std::endl;
 
         // CA private part.
         if (size > 0) {
             strm << margin << "Private CA data:" << std::endl
-                 << Hexa(data, size, hexa::HEXA | hexa::ASCII | hexa::OFFSET, indent);
+                 << UString::Dump(data, size, UString::HEXA | UString::ASCII | UString::OFFSET, indent);
             data += size; size = 0;
         }
     }
