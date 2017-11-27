@@ -181,9 +181,12 @@ void MessageQueueTest::testQueue()
     CPPUNIT_ASSERT(!queue.enqueue(new int(message), 50));
 
     // Enqueue message, should take at least 500 ms
-    utest::Out() << "MessageQueueTest: main thread: enqueueing " << message << std::endl;
-    CPPUNIT_ASSERT(queue.enqueue(new int(message++), 10000));
-    CPPUNIT_ASSERT(ts::Time::CurrentUTC() - start >= 500 - _msPrecision);
+    utest::Out() << "MessageQueueTest: main thread: enqueueing " << message << " (10 s. timeout)" << std::endl;
+    const bool enqueued = queue.enqueue(new int(message++), 10000);
+    const ts::MilliSecond duration = ts::Time::CurrentUTC() - start;
+    utest::Out() << "MessageQueueTest: main thread: enqueue = " << ts::UString::TrueFalse(enqueued) << ", duration = " << ts::UString::Decimal(duration) << " ms" << std::endl;
+    CPPUNIT_ASSERT(enqueued);
+    CPPUNIT_ASSERT(duration >= 500 - 20 * _msPrecision); // imprecisions accumulate on Windows
 
     // Enqueue exit request
     utest::Out() << "MessageQueueTest: main thread: force enqueueing -1" << std::endl;

@@ -68,4 +68,11 @@ void utest::CppUnitThread::main()
         // Exit application.
         ::exit(EXIT_FAILURE);
     }
+    catch (std::exception& e) {
+        std::cerr << std::endl
+                  << "*** Terminating Exception in a thread, aborting" << std::endl
+                  << "    " << e.what() << std::endl << std::flush;
+        // Exit application.
+        ::exit(EXIT_FAILURE);
+    }
 }

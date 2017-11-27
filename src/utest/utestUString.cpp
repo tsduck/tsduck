@@ -1401,7 +1401,7 @@ void UStringTest::testArgMixCalled2(const std::initializer_list<ts::ArgMix> list
     CPPUNIT_ASSERT(!it->isString());
     CPPUNIT_ASSERT(!it->isString8());
     CPPUNIT_ASSERT(!it->isString16());
-    CPPUNIT_ASSERT_EQUAL(size_t(TS_ADDRESS_BITS / 8), it->size());
+    CPPUNIT_ASSERT_EQUAL(size_t(1), it->size());
     CPPUNIT_ASSERT_EQUAL(int32_t(4), it->toInt32());
     CPPUNIT_ASSERT_EQUAL(uint32_t(4), it->toUInt32());
     CPPUNIT_ASSERT_EQUAL(int64_t(4), it->toInt64());
