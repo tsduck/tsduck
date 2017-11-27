@@ -231,16 +231,16 @@ ts::InjectPlugin::InjectPlugin (TSP* tsp_) :
 bool ts::InjectPlugin::start()
 {
     // Get command line arguments
-    _inject_pid = intValue<PID>("pid", PID_NULL);
-    _repeat_count = intValue<size_t>("repeat", 0);
+    _inject_pid = intValue<PID>(u"pid", PID_NULL);
+    _repeat_count = intValue<size_t>(u"repeat", 0);
     _terminate = present(u"terminate");
     tsp->useJointTermination(present(u"joint-termination"));
     _replace = present(u"replace");
     _poll_files = present(u"poll-files");
     _crc_op = present(u"force-crc") ? CRC32::COMPUTE : CRC32::CHECK;
-    _pid_bitrate = intValue<BitRate>("bitrate", 0);
-    _pid_inter_pkt = intValue<PacketCounter>("inter-packet", 0);
-    _eval_interval = intValue<PacketCounter>("evaluate-interval", DEF_EVALUATE_INTERVAL);
+    _pid_bitrate = intValue<BitRate>(u"bitrate", 0);
+    _pid_inter_pkt = intValue<PacketCounter>(u"inter-packet", 0);
+    _eval_interval = intValue<PacketCounter>(u"evaluate-interval", DEF_EVALUATE_INTERVAL);
 
     if (present(u"stuffing")) {
         _stuffing_policy = CyclingPacketizer::ALWAYS;

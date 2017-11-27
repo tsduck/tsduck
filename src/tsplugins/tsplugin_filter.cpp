@@ -199,10 +199,10 @@ bool ts::FilterPlugin::start()
     valid = present(u"valid");
     negate = present(u"negate");
     stuffing = present(u"stuffing");
-    min_payload = intValue<int> ("min-payload-size", -1);
-    max_payload = intValue<int> ("max-payload-size", -1);
-    min_af = intValue<int> ("min-adaptation-field-size", -1);
-    max_af = intValue<int> ("max-adaptation-field-size", -1);
+    min_payload = intValue<int>(u"min-payload-size", -1);
+    max_payload = intValue<int>(u"max-payload-size", -1);
+    min_af = intValue<int>(u"min-adaptation-field-size", -1);
+    max_af = intValue<int>(u"max-adaptation-field-size", -1);
     getPIDSet (pid, "pid");
 
     return true;

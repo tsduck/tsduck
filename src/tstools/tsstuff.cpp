@@ -175,16 +175,16 @@ namespace {
         getValue (input_file, "");
         getValue (output_file, "output-file");
 
-        target_bitrate = intValue<BitRate> ("bitrate", 0);
+        target_bitrate = intValue<BitRate>(u"bitrate", 0);
         assert (target_bitrate != 0);
 
-        buffer_size = intValue<size_t> ("buffer-size", DEFAULT_TS_BUFFER_SIZE);
+        buffer_size = intValue<size_t>(u"buffer-size", DEFAULT_TS_BUFFER_SIZE);
         dts_based = present(u"dts-based");
-        reference_pid = intValue<ts::PID> ("reference-pid", PID_NULL);
-        final_inter_packet = intValue<PacketCounter> ("final-inter-packet", 0);
-        initial_inter_packet = intValue<PacketCounter> ("initial-inter-packet", 0);
-        leading_packets = intValue<PacketCounter> ("leading-packets", 0);
-        trailing_packets = intValue<PacketCounter> ("trailing-packets", 0);
+        reference_pid = intValue<ts::PID>(u"reference-pid", PID_NULL);
+        final_inter_packet = intValue<PacketCounter>(u"final-inter-packet", 0);
+        initial_inter_packet = intValue<PacketCounter>(u"initial-inter-packet", 0);
+        leading_packets = intValue<PacketCounter>(u"leading-packets", 0);
+        trailing_packets = intValue<PacketCounter>(u"trailing-packets", 0);
         dyn_final_inter_packet = !present(u"final-inter-packet");
         dyn_initial_inter_packet = !present(u"initial-inter-packet");
 

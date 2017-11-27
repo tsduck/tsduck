@@ -141,7 +141,7 @@ ts::AnalyzePlugin::AnalyzePlugin(TSP* tsp_) :
 bool ts::AnalyzePlugin::start()
 {
     _output_name = value(u"output-file");
-    _output_interval = MilliSecPerSec * intValue<MilliSecond> ("interval", 0);
+    _output_interval = MilliSecPerSec * intValue<MilliSecond>(u"interval", 0);
     _multiple_output = present(u"multiple-files");
     _output = _output_name.empty() ? &std::cout : &_output_stream;
     _analyzer_options.getOptions (*this);

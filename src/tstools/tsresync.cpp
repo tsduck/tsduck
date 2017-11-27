@@ -150,10 +150,10 @@ Options::Options(int argc, char *argv[]) :
 
     infile = value(u"");
     outfile = value(u"output");
-    sync_size = intValue<size_t>("sync-size", DEFAULT_SYNC_SIZE);
-    contig_size = intValue<size_t>("min-contiguous", DEFAULT_CONTIG_SIZE);
-    header_size = intValue<size_t>("header-size", 0);
-    packet_size = intValue<size_t>("packet-size", 0);
+    sync_size = intValue<size_t>(u"sync-size", DEFAULT_SYNC_SIZE);
+    contig_size = intValue<size_t>(u"min-contiguous", DEFAULT_CONTIG_SIZE);
+    header_size = intValue<size_t>(u"header-size", 0);
+    packet_size = intValue<size_t>(u"packet-size", 0);
     verbose = present(u"verbose");
     keep = present(u"keep");
     cont_sync = present(u"continue");

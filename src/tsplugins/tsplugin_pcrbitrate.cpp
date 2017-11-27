@@ -124,8 +124,8 @@ ts::PCRBitratePlugin::PCRBitratePlugin (TSP* tsp_) :
 
 bool ts::PCRBitratePlugin::start()
 {
-    const size_t min_pcr = intValue<size_t> ("min-pcr", DEF_MIN_PCR_CNT);
-    const size_t min_pid = intValue<size_t> ("min-pid", DEF_MIN_PID);
+    const size_t min_pcr = intValue<size_t>(u"min-pcr", DEF_MIN_PCR_CNT);
+    const size_t min_pid = intValue<size_t>(u"min-pid", DEF_MIN_PID);
     if (present(u"dts")) {
         _pcr_analyzer.resetAndUseDTS (min_pid, min_pcr);
         _pcr_name = "DTS";

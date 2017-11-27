@@ -124,8 +124,8 @@ Options::Options (int argc, char *argv[]) :
     full = present(u"full");
     all = full || present(u"all");
     value_only = present(u"value-only");
-    min_pcr = intValue<uint32_t> ("min-pcr", 64);
-    min_pid = intValue<uint16_t> ("min-pid", 1);
+    min_pcr = intValue<uint32_t>(u"min-pcr", 64);
+    min_pid = intValue<uint16_t>(u"min-pid", 1);
     use_dts = present(u"dts");
     pcr_name = use_dts ? "DTS" : "PCR";
 }

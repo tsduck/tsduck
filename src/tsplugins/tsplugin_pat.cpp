@@ -157,13 +157,13 @@ ts::PATPlugin::PATPlugin(TSP* tsp_) :
 bool ts::PATPlugin::start()
 {
     // Get option values
-    _new_nit_pid = intValue<PID> ("nit", PID_NULL);
+    _new_nit_pid = intValue<PID>(u"nit", PID_NULL);
     _remove_nit = present(u"remove-nit");
     _set_tsid = present(u"tsid");
-    _new_tsid = intValue<uint16_t> ("tsid", 0);
+    _new_tsid = intValue<uint16_t>(u"tsid", 0);
     _incr_version = present(u"increment-version");
     _set_version = present(u"new-version");
-    _new_version = intValue<uint8_t> ("new-version", 0);
+    _new_version = intValue<uint8_t>(u"new-version", 0);
     getIntValues (_remove_serv, "remove-service");
 
     // Get list of services to add

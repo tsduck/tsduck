@@ -211,7 +211,7 @@ bool ts::HistoryPlugin::start()
     _report_eit = present(u"eit");
     _time_all = present(u"time-all");
     _ignore_stream_id = present(u"ignore-stream-id-change");
-    _suspend_after = intValue<PacketCounter> ("suspend-packet-threshold");
+    _suspend_after = intValue<PacketCounter>(u"suspend-packet-threshold");
 
     // Create output file
     if (present(u"output-file")) {

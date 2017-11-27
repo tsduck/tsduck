@@ -171,12 +171,12 @@ bool ts::BATPlugin::start()
 {
     // Get option values
     _single_bat = present(u"bouquet-id");
-    _bouquet_id = intValue<uint16_t> ("bouquet-id", 0);
-    _pds = intValue<PDS> ("pds", 0);
+    _bouquet_id = intValue<uint16_t>(u"bouquet-id", 0);
+    _pds = intValue<PDS>(u"pds", 0);
     _cleanup_priv_desc = present(u"cleanup-private-descriptors");
     _incr_version = present(u"increment-version");
     _set_version = present(u"new-version");
-    _new_version = intValue<uint8_t> ("new-version", 0);
+    _new_version = intValue<uint8_t>(u"new-version", 0);
     getIntValues (_remove_serv, "remove-service");
     getIntValues (_remove_ts, "remove-ts");
     getIntValues (_removed_desc, "remove-descriptor");

@@ -109,7 +109,7 @@ ts::BoostPIDPlugin::BoostPIDPlugin (TSP* tsp_) :
 bool ts::BoostPIDPlugin::start()
 {
     // Get and verify command line arguments
-    if ((_pid = intValue<uint16_t> ("", 0xFFFF, 0)) >= PID_MAX) {
+    if ((_pid = intValue<uint16_t>(u"", 0xFFFF, 0)) >= PID_MAX) {
         tsp->error ("invalid 'pid' parameter");
         return false;
     }

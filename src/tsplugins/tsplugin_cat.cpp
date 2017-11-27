@@ -194,12 +194,12 @@ bool ts::CATPlugin::start()
 {
     // Get option values
     _incr_version = present(u"increment-version");
-    _create_after_ms = present(u"create") ? 1000 : intValue<MilliSecond> ("create-after", 0);
-    _cat_bitrate = intValue<BitRate> ("bitrate", DEFAULT_CAT_BITRATE);
-    _cat_inter_pkt = intValue<PacketCounter> ("inter-packet", 0);
+    _create_after_ms = present(u"create") ? 1000 : intValue<MilliSecond>(u"create-after", 0);
+    _cat_bitrate = intValue<BitRate>(u"bitrate", DEFAULT_CAT_BITRATE);
+    _cat_inter_pkt = intValue<PacketCounter>(u"inter-packet", 0);
     _cleanup_priv_desc = present(u"cleanup-private-descriptors");
     _set_version = present(u"new-version");
-    _new_version = intValue<uint8_t> ("new-version", 0);
+    _new_version = intValue<uint8_t>(u"new-version", 0);
     getIntValues (_remove_casid, "remove-casid");
     getIntValues (_remove_pid, "remove-pid");
 

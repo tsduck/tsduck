@@ -78,7 +78,7 @@ Options::Options(int argc, char *argv[]) :
     analyze(argc, argv);
 
     infile = value(u"");
-    bitrate = intValue<ts::BitRate>("bitrate");
+    bitrate = intValue<ts::BitRate>(u"bitrate");
 }
 
 

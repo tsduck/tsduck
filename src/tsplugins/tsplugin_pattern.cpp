@@ -131,8 +131,8 @@ ts::PatternPlugin::PatternPlugin(TSP* tsp_) :
 
 bool ts::PatternPlugin::start()
 {
-    _offset_pusi = intValue<uint8_t> ("offset-pusi", 0);
-    _offset_non_pusi = intValue<uint8_t> ("offset-non-pusi", 0);
+    _offset_pusi = intValue<uint8_t>(u"offset-pusi", 0);
+    _offset_non_pusi = intValue<uint8_t>(u"offset-non-pusi", 0);
 
     getPIDSet (_pid_list, "pid", true);
     if (present(u"negate")) {

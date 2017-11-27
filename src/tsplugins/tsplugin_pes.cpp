@@ -248,10 +248,10 @@ bool ts::PESPlugin::start()
     _dump_nal_units = present(u"avc-access-unit");
     _video_attributes = present(u"video-attributes");
     _audio_attributes = present(u"audio-attributes");
-    _max_dump_size = intValue<size_t> ("max-dump-size", 0);
-    _max_dump_count = intValue<size_t> ("max-dump-count", 0);
-    _min_payload = intValue<int> ("min-payload-size", -1);
-    _max_payload = intValue<int> ("max-payload-size", -1);
+    _max_dump_size = intValue<size_t>(u"max-dump-size", 0);
+    _max_dump_count = intValue<size_t>(u"max-dump-count", 0);
+    _min_payload = intValue<int>(u"min-payload-size", -1);
+    _max_payload = intValue<int>(u"max-payload-size", -1);
 
     // Hexa dump flags and bytes-per-line
     _hexa_flags = hexa::HEXA | hexa::OFFSET | hexa::BPL;
@@ -287,7 +287,7 @@ bool ts::PESPlugin::start()
     else {
         _nal_unit_filter.reset();
         for (size_t n = 0; n < nal_count; n++) {
-            _nal_unit_filter.set (intValue<size_t> ("nal-unit-type", 0, n));
+            _nal_unit_filter.set (intValue<size_t>(u"nal-unit-type", 0, n));
         }
         if (present(u"negate-nal-unit-type")) {
             _nal_unit_filter.flip();

@@ -186,19 +186,19 @@ bool ts::SVRenamePlugin::start()
         _new_service.setName (value(u"name"));
     }
     if (present(u"id")) {
-        _new_service.setId (intValue<uint16_t> ("id"));
+        _new_service.setId (intValue<uint16_t>(u"id"));
     }
     if (present(u"lcn")) {
-        _new_service.setLCN (intValue<uint16_t> ("lcn"));
+        _new_service.setLCN (intValue<uint16_t>(u"lcn"));
     }
     if (present(u"type")) {
-        _new_service.setType (intValue<uint8_t> ("type"));
+        _new_service.setType (intValue<uint8_t>(u"type"));
     }
     if (present(u"free-ca-mode")) {
-        _new_service.setCAControlled (intValue<int> ("free-ca-mode") != 0);
+        _new_service.setCAControlled (intValue<int>(u"free-ca-mode") != 0);
     }
     if (present(u"running-status")) {
-        _new_service.setRunningStatus (intValue<uint8_t> ("running-status"));
+        _new_service.setRunningStatus (intValue<uint8_t>(u"running-status"));
     }
 
     // Initialize the demux

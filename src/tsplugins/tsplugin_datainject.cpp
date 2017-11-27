@@ -186,12 +186,12 @@ ts::DataInjectPlugin::DataInjectPlugin (TSP* tsp_) :
 bool ts::DataInjectPlugin::start()
 {
     // Command line options
-    _max_bitrate = intValue<BitRate> ("bitrate-max", 0);
-    _data_pid = intValue<PID> ("pid");
-    _queue.setMaxMessages (intValue<size_t> ("queue-size", DEFAULT_PACKET_QUEUE_SIZE));
+    _max_bitrate = intValue<BitRate>(u"bitrate-max", 0);
+    _data_pid = intValue<PID>(u"pid");
+    _queue.setMaxMessages (intValue<size_t>(u"queue-size", DEFAULT_PACKET_QUEUE_SIZE));
 
     // Specify which EMMG/PDG <=> MUX version to use.
-    emmgmux::Protocol::Instance()->setVersion (intValue<tlv::VERSION> ("emmg-mux-version", 2));
+    emmgmux::Protocol::Instance()->setVersion (intValue<tlv::VERSION>(u"emmg-mux-version", 2));
 
     // Initialize the TCP server
     SocketAddress server_address;

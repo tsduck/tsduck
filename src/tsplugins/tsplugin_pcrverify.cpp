@@ -170,8 +170,8 @@ ts::PCRVerifyPlugin::PCRVerifyPlugin (TSP* tsp_) :
 bool ts::PCRVerifyPlugin::start()
 {
     _absolute = present(u"absolute");
-    _jitter_max = intValue<int64_t> ("jitter-max", _absolute ? DEFAULT_JITTER_MAX : DEFAULT_JITTER_MAX_US);
-    _bitrate = intValue<BitRate> ("bitrate", 0);
+    _jitter_max = intValue<int64_t>(u"jitter-max", _absolute ? DEFAULT_JITTER_MAX : DEFAULT_JITTER_MAX_US);
+    _bitrate = intValue<BitRate>(u"bitrate", 0);
     _time_stamp = present(u"time-stamp");
     getPIDSet (_pid_list, "pid", true);
 

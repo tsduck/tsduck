@@ -147,8 +147,8 @@ Options::Options(int argc, char *argv[]) :
         stuffing_policy = ts::CyclingPacketizer::AT_END;
     }
     crc_op = present(u"force-crc") ? ts::CRC32::COMPUTE : ts::CRC32::CHECK;
-    pid = intValue<ts::PID>("pid", ts::PID_NULL);
-    bitrate = intValue<ts::BitRate>("bitrate");
+    pid = intValue<ts::PID>(u"pid", ts::PID_NULL);
+    bitrate = intValue<ts::BitRate>(u"bitrate");
     outfile = value(u"output");
     infiles.getArgs(*this);
     debug = present(u"debug");

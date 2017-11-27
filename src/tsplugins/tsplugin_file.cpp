@@ -233,8 +233,8 @@ ts::FileProcessor::FileProcessor(TSP* tsp_) :
 bool ts::FileInput::start()
 {
     return _file.open (value(u""),
-                       present(u"infinite") ? 0 : intValue<size_t> ("repeat", 1),
-                       intValue<uint64_t> ("byte-offset", intValue<uint64_t> ("packet-offset", 0) * PKT_SIZE),
+                       present(u"infinite") ? 0 : intValue<size_t>(u"repeat", 1),
+                       intValue<uint64_t>(u"byte-offset", intValue<uint64_t>(u"packet-offset", 0) * PKT_SIZE),
                        *tsp);
 }
 

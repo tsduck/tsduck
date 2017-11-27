@@ -143,8 +143,8 @@ ts::RegulatePlugin::RegulatePlugin(TSP* tsp_) :
 bool ts::RegulatePlugin::start()
 {
     // Get command line arguments
-    _opt_bitrate = intValue<BitRate>("bitrate", 0);
-    _opt_burst = intValue<PacketCounter>("packet-burst", DEF_PACKET_BURST);
+    _opt_bitrate = intValue<BitRate>(u"bitrate", 0);
+    _opt_burst = intValue<PacketCounter>(u"packet-burst", DEF_PACKET_BURST);
 
     // Compute the minimum delay between two bursts, in nano-seconds.
     // This is a limitation of the operating system. If we try to use

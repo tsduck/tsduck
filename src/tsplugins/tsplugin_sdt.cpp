@@ -185,18 +185,18 @@ bool ts::SDTPlugin::start()
     // Get option values
     _incr_version = present(u"increment-version");
     _set_version = present(u"new-version");
-    _new_version = intValue<uint8_t> ("new-version", 0);
+    _new_version = intValue<uint8_t>(u"new-version", 0);
     _cleanup_priv_desc = present(u"cleanup-private-descriptors");
     getIntValues (_remove_serv, "remove-service");
     _service.clear();
     if (present(u"eit-pf")) {
-        _service.setEITpfPresent (intValue<int> ("eit-pf") != 0);
+        _service.setEITpfPresent (intValue<int>(u"eit-pf") != 0);
     }
     if (present(u"eit-schedule")) {
-        _service.setEITsPresent (intValue<int> ("eit-schedule") != 0);
+        _service.setEITsPresent (intValue<int>(u"eit-schedule") != 0);
     }
     if (present(u"free-ca-mode")) {
-        _service.setCAControlled (intValue<int> ("free-ca-mode") != 0);
+        _service.setCAControlled (intValue<int>(u"free-ca-mode") != 0);
     }
     if (present(u"name")) {
         _service.setName (value(u"name"));
@@ -205,13 +205,13 @@ bool ts::SDTPlugin::start()
         _service.setProvider (value(u"provider"));
     }
     if (present(u"running-status")) {
-        _service.setRunningStatus (intValue<uint8_t> ("running-status"));
+        _service.setRunningStatus (intValue<uint8_t>(u"running-status"));
     }
     if (present(u"service-id")) {
-        _service.setId (intValue<uint16_t> ("service-id"));
+        _service.setId (intValue<uint16_t>(u"service-id"));
     }
     if (present(u"type")) {
-        _service.setType (intValue<uint8_t> ("type"));
+        _service.setType (intValue<uint8_t>(u"type"));
     }
 
     // Initialize the demux and packetizer

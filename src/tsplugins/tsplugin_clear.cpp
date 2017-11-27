@@ -171,7 +171,7 @@ bool ts::ClearPlugin::start()
     _video_only = present(u"video");
     _audio_only = present(u"audio");
     _drop_status = present(u"stuffing") ? TSP_NULL : TSP_DROP;
-    _drop_after = intValue<PacketCounter> ("drop-after-packets", 0);
+    _drop_after = intValue<PacketCounter>(u"drop-after-packets", 0);
 
     // Initialize the demux. Filter the TOT to get timestamps.
     // If the service is known by name, filter the SDT, otherwise filter the PAT.
