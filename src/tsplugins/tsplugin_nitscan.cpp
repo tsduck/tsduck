@@ -37,7 +37,6 @@
 #include "tsTunerUtils.h"
 #include "tsPAT.h"
 #include "tsNIT.h"
-#include "tsFormat.h"
 TSDUCK_SOURCE;
 
 
@@ -57,11 +56,11 @@ namespace ts {
         virtual Status processPacket(TSPacket&, bool&, bool&);
 
     private:
-        std::string   _output_name;     // Output file name
+        UString       _output_name;     // Output file name
         std::ofstream _output_stream;   // Output file stream
         std::ostream* _output;          // Actual output stream
-        std::string   _comment_prefix;  // Prefix for comment lines
-        std::string   _variable_prefix; // Prefix for environment variable names
+        UString       _comment_prefix;  // Prefix for comment lines
+        UString       _variable_prefix; // Prefix for environment variable names
         bool          _use_comment;     // Add comment line
         bool          _use_variable;    // Environment variable format
         bool          _terminate;       // Terminate after one NIT
@@ -94,7 +93,7 @@ TSPLUGIN_DECLARE_PROCESSOR(ts::NITScanPlugin)
 //----------------------------------------------------------------------------
 
 ts::NITScanPlugin::NITScanPlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, "Analyze the NIT and output a list of tuning information.", "[options]"),
+    ProcessorPlugin(tsp_, u"Analyze the NIT and output a list of tuning information.", u"[options]"),
     _output_name(),
     _output_stream(),
     _output(0),
@@ -180,11 +179,11 @@ bool ts::NITScanPlugin::start()
     _all_nits = present(u"all-nits");
     _terminate = present(u"terminate");
     _dvb_options = present(u"dvb-options");
-    _nit_pid = intValue<PID>("pid", PID_NULL);
+    _nit_pid = intValue<PID>(u"pid", PID_NULL);
     _use_comment = present(u"comment");
-    _comment_prefix = value(u"comment", "# ");
+    _comment_prefix = value(u"comment", u"# ");
     _use_variable = present(u"variable");
-    _variable_prefix = value(u"variable", "TS");
+    _variable_prefix = value(u"variable", u"TS");
 
     // Initialize the demux. When the NIT PID is specified, filter this one,
     // otherwise the PAT is filtered to get the NIT PID.
@@ -200,9 +199,9 @@ bool ts::NITScanPlugin::start()
     }
     else {
         _output = &_output_stream;
-        _output_stream.open(_output_name.c_str());
+        _output_stream.open(_output_name.toUTF8().c_str());
         if (!_output_stream) {
-            tsp->error("cannot create file %s", _output_name.c_str());
+            tsp->error(u"cannot create file %s", {_output_name});
             return false;
         }
     }
@@ -279,11 +278,11 @@ void ts::NITScanPlugin::processPAT(const PAT& pat)
 {
     if (pat.nit_pid != PID_NULL) {
         _nit_pid = pat.nit_pid;
-        tsp->verbose("NIT PID is %d (0x%04X) in PAT", int (_nit_pid), int (_nit_pid));
+        tsp->verbose(u"NIT PID is %d (0x%X) in PAT", {_nit_pid, _nit_pid});
     }
     else {
         _nit_pid = PID_NIT;
-        tsp->verbose("NIT PID not found in PAT, using default %d (0x%04X)", int (_nit_pid), int (_nit_pid));
+        tsp->verbose(u"NIT PID not found in PAT, using default %d (0x%X)", {_nit_pid, _nit_pid});
     }
 
     // Filter sections on the PID for NIT.
@@ -297,7 +296,7 @@ void ts::NITScanPlugin::processPAT(const PAT& pat)
 
 void ts::NITScanPlugin::processNIT(const NIT& nit)
 {
-    tsp->debug("got a NIT, version %d, network Id: %d (0x%04X)", int(nit.version), int(nit.network_id), int(nit.network_id));
+    tsp->debug(u"got a NIT, version %d, network Id: %d (0x%X)", {nit.version, nit.network_id, nit.network_id});
 
     // Count the number of NIT's
     _nit_count++;
@@ -315,11 +314,11 @@ void ts::NITScanPlugin::processNIT(const NIT& nit)
                 // Optional comment
                 if (_use_comment) {
                     *_output << _comment_prefix
-                             << Format("TS id: %d (0x%04X), original network id: %d (0x%04X), from NIT v%d on network id: %d (0x%04X)",
-                                       int(tsid.transport_stream_id), int(tsid.transport_stream_id),
-                                       int(tsid.original_network_id), int(tsid.original_network_id),
-                                       int(nit.version),
-                                       int(nit.network_id), int(nit.network_id))
+                             << UString::Format(u"TS id: %d (0x%X), original network id: %d (0x%X), from NIT v%d on network id: %d (0x%X)",
+                                                {tsid.transport_stream_id, tsid.transport_stream_id,
+                                                 tsid.original_network_id, tsid.original_network_id,
+                                                 nit.version,
+                                                 nit.network_id, nit.network_id})
                              << std::endl;
                 }
                 // Output the tuning information, optionally in a variable definition.

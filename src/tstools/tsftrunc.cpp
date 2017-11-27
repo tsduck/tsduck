@@ -95,7 +95,7 @@ Options::Options (int argc, char *argv[]) :
     analyze (argc, argv);
 
     getValues (files);
-    trunc_pkt = intValue<PacketCounter> ("packet");
+    trunc_pkt = intValue<PacketCounter>(u"packet");
     check_only = present(u"noaction");
     verbose = check_only || present(u"verbose");
 }

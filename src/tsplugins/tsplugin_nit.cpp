@@ -215,21 +215,21 @@ ts::NITPlugin::NITPlugin(TSP* tsp_) :
 bool ts::NITPlugin::start()
 {
     // Get option values
-    _nit_pid = intValue<PID> ("pid", PID_NULL);
-    _lcn_oper = intValue<int> ("lcn", LCN_NONE);
-    _sld_oper = intValue<int> ("sld", LCN_NONE);
+    _nit_pid = intValue<PID>(u"pid", PID_NULL);
+    _lcn_oper = intValue<int>(u"lcn", LCN_NONE);
+    _sld_oper = intValue<int>(u"sld", LCN_NONE);
     getIntValues (_remove_serv, "remove-service");
     getIntValues (_remove_ts, "remove-ts");
     getIntValues (_removed_desc, "remove-descriptor");
-    _pds = intValue<PDS> ("pds");
+    _pds = intValue<PDS>(u"pds");
     _cleanup_priv_desc = present(u"cleanup-private-descriptors");
     _update_mpe_fec = present(u"mpe-fec");
-    _mpe_fec = intValue<uint8_t> ("mpe-fec") & 0x01;
+    _mpe_fec = intValue<uint8_t>(u"mpe-fec") & 0x01;
     _update_time_slicing = present(u"time-slicing");
-    _time_slicing = intValue<uint8_t> ("time-slicing") & 0x01;
+    _time_slicing = intValue<uint8_t>(u"time-slicing") & 0x01;
     _incr_version = present(u"increment-version");
     _set_version = present(u"new-version");
-    _new_version = intValue<uint8_t> ("new-version", 0);
+    _new_version = intValue<uint8_t>(u"new-version", 0);
 
     if (_lcn_oper != LCN_NONE && !_remove_serv.empty()) {
         tsp->error ("--lcn and --remove-service are mutually exclusive");

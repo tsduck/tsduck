@@ -241,11 +241,11 @@ ts::IPOutput::IPOutput (TSP* tsp_) :
 bool ts::IPInput::start()
 {
     // Get command line arguments
-    _eval_time = MilliSecPerSec * intValue<MilliSecond> ("evaluation-interval", 0);
-    _display_time = MilliSecPerSec * intValue<MilliSecond> ("display-interval", 0);
+    _eval_time = MilliSecPerSec * intValue<MilliSecond>(u"evaluation-interval", 0);
+    _display_time = MilliSecPerSec * intValue<MilliSecond>(u"display-interval", 0);
     std::string destination (value(u""));
     std::string local (value(u"local-address"));
-    size_t recv_bufsize = intValue<size_t> ("buffer-size", 0);
+    size_t recv_bufsize = intValue<size_t>(u"buffer-size", 0);
     bool reuse_port = present(u"reuse-port");
 
     // Resolve specified destination address:port

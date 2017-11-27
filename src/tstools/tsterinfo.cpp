@@ -187,12 +187,12 @@ Options::Options(int argc, char *argv[]) :
 
     analyze(argc, argv);
 
-    frequency      = intValue<uint64_t>("frequency", 0);
-    uhf_channel    = intValue<int>("uhf-channel", 0);
-    vhf_channel    = intValue<int>("vhf-channel", 0);
-    hf_offset      = intValue<int>("offset-count", 0);
-    bitrate        = intValue<ts::BitRate>("bitrate", 0);
-    max_guess      = intValue<ts::BitRate>("max-guess", 1);
+    frequency      = intValue<uint64_t>(u"frequency", 0);
+    uhf_channel    = intValue<int>(u"uhf-channel", 0);
+    vhf_channel    = intValue<int>(u"vhf-channel", 0);
+    hf_offset      = intValue<int>(u"offset-count", 0);
+    bitrate        = intValue<ts::BitRate>(u"bitrate", 0);
+    max_guess      = intValue<ts::BitRate>(u"max-guess", 1);
     constellation  = enumValue("constellation", ts::QAM_64);
     fec_hp         = enumValue("high-priority-fec", ts::FEC_AUTO);
     guard_interval = enumValue("guard-interval", ts::GUARD_AUTO);

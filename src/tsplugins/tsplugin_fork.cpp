@@ -136,7 +136,7 @@ bool ts::ForkPlugin::start()
     // Get command line arguments
     std::string command (value());
     bool synchronous = !present(u"nowait");
-    _buffer_size = intValue<size_t> ("buffered-packets", 0);
+    _buffer_size = intValue<size_t>(u"buffered-packets", 0);
     _pipe.setIgnoreAbort (present(u"ignore-abort"));
 
     // If packet buffering is requested, allocate the buffer

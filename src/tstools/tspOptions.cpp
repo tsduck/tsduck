@@ -236,11 +236,11 @@ ts::tsp::Options::Options(int argc, char *argv[]) :
     timed_log = present(u"timed-log");
     list_proc = present(u"list-processors");
     monitor = present(u"monitor");
-    bufsize = 1024 * 1024 * intValue<size_t>("buffer-size-mb", DEF_BUFSIZE_MB);
-    bitrate = intValue<BitRate>("bitrate", 0);
+    bufsize = 1024 * 1024 * intValue<size_t>(u"buffer-size-mb", DEF_BUFSIZE_MB);
+    bitrate = intValue<BitRate>(u"bitrate", 0);
     bitrate_adj = MilliSecPerSec * intValue("bitrate-adjust-interval", DEF_BITRATE_INTERVAL);
-    max_flush_pkt = intValue<size_t>("max-flushed-packets", DEF_MAX_FLUSH_PKT);
-    max_input_pkt = intValue<size_t>("max-input-packets", 0);
+    max_flush_pkt = intValue<size_t>(u"max-flushed-packets", DEF_MAX_FLUSH_PKT);
+    max_input_pkt = intValue<size_t>(u"max-input-packets", 0);
     ignore_jt = present(u"ignore-joint-termination");
 
     if (present(u"add-input-stuffing")) {

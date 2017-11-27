@@ -161,10 +161,10 @@ ts::UntilPlugin::UntilPlugin (TSP* tsp_) :
 bool ts::UntilPlugin::start()
 {
     _exclude_last = present(u"exclude-last");
-    _pack_max = intValue<PacketCounter> ("packets", (intValue<PacketCounter> ("bytes") + PKT_SIZE - 1) / PKT_SIZE);
-    _unit_start_max = intValue<PacketCounter> ("unit-start-count");
-    _null_seq_max = intValue<PacketCounter> ("null-sequence-count");
-    _msec_max = intValue<MilliSecond> ("milli-seconds", intValue<MilliSecond> ("seconds") * MilliSecPerSec);
+    _pack_max = intValue<PacketCounter>(u"packets", (intValue<PacketCounter>(u"bytes") + PKT_SIZE - 1) / PKT_SIZE);
+    _unit_start_max = intValue<PacketCounter>(u"unit-start-count");
+    _null_seq_max = intValue<PacketCounter>(u"null-sequence-count");
+    _msec_max = intValue<MilliSecond>(u"milli-seconds", intValue<MilliSecond>(u"seconds") * MilliSecPerSec);
     tsp->useJointTermination (present(u"joint-termination"));
 
     _pack_cnt = 0;

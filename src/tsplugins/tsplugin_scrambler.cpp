@@ -453,16 +453,16 @@ bool ts::ScramblerPlugin::start()
     _scramble_audio = !present(u"no-audio");
     _scramble_video = !present(u"no-video");
     _scramble_subtitles = present(u"subtitles");
-    _partial_scrambling = intValue<PacketCounter> ("partial-scrambling", 1);
+    _partial_scrambling = intValue<PacketCounter>(u"partial-scrambling", 1);
     _ignore_scrambled = present(u"ignore-scrambled");
-    _ecm_pid = intValue<PID> ("pid-ecm", PID_NULL);
-    _ecm_bitrate = intValue<BitRate> ("bitrate-ecm", DEFAULT_ECM_BITRATE);
-    _cp_duration = 1000 * intValue<MilliSecond> ("cp-duration", 10);
+    _ecm_pid = intValue<PID>(u"pid-ecm", PID_NULL);
+    _ecm_bitrate = intValue<BitRate>(u"bitrate-ecm", DEFAULT_ECM_BITRATE);
+    _cp_duration = 1000 * intValue<MilliSecond>(u"cp-duration", 10);
     _delay_start = 0;
-    _super_cas_id = intValue<uint32_t> ("super-cas-id");
-    const uint16_t ecm_channel_id = intValue<uint16_t> ("channel-id", 1);
-    const uint16_t ecm_stream_id = intValue<uint16_t> ("stream-id", 1);
-    const uint16_t ecm_id = intValue<uint16_t> ("ecm-id", 1);
+    _super_cas_id = intValue<uint32_t>(u"super-cas-id");
+    const uint16_t ecm_channel_id = intValue<uint16_t>(u"channel-id", 1);
+    const uint16_t ecm_stream_id = intValue<uint16_t>(u"stream-id", 1);
+    const uint16_t ecm_id = intValue<uint16_t>(u"ecm-id", 1);
 
     if (!HexaDecode (_access_criteria, value(u"access-criteria"))) {
         tsp->error ("invalid access criteria, specify an even number of hexa digits");
@@ -475,7 +475,7 @@ bool ts::ScramblerPlugin::start()
     }
 
     // Specify which ECMG <=> SCS version to use.
-    ecmgscs::Protocol::Instance()->setVersion (intValue<tlv::VERSION> ("ecmg-scs-version", 2));
+    ecmgscs::Protocol::Instance()->setVersion (intValue<tlv::VERSION>(u"ecmg-scs-version", 2));
 
     // Get control word generation mechanism
     if (_use_fixed_key) {

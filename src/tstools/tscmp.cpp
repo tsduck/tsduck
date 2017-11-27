@@ -192,9 +192,9 @@ Options::Options (int argc, char *argv[]) :
     getValue (filename1, "", "", 0);
     getValue (filename2, "", "", 1);
 
-    buffered_packets = intValue<size_t> ("buffered-packets", DEFAULT_BUFFERED_PACKETS);
-    byte_offset = intValue<uint64_t> ("byte-offset", intValue<uint64_t> ("packet-offset", 0) * PKT_SIZE);
-    threshold_diff = intValue<size_t> ("threshold-diff", 0);
+    buffered_packets = intValue<size_t>(u"buffered-packets", DEFAULT_BUFFERED_PACKETS);
+    byte_offset = intValue<uint64_t>(u"byte-offset", intValue<uint64_t>(u"packet-offset", 0) * PKT_SIZE);
+    threshold_diff = intValue<size_t>(u"threshold-diff", 0);
     subset = present(u"subset");
     payload_only = present(u"payload-only");
     pcr_ignore = present(u"pcr-ignore");

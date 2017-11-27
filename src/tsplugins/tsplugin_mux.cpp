@@ -189,9 +189,9 @@ bool ts::MuxPlugin::start()
     _update_cc = !present(u"no-continuity-update");
     _check_pid_conflict = !present(u"no-pid-conflict-check");
     _force_pid = present(u"pid");
-    _force_pid_value = intValue<PID> ("pid");
-    _bitrate = intValue<BitRate> ("bitrate", 0);
-    _inter_pkt = intValue<PacketCounter> ("inter-packet", 0);
+    _force_pid_value = intValue<PID>(u"pid");
+    _bitrate = intValue<BitRate>(u"bitrate", 0);
+    _inter_pkt = intValue<PacketCounter>(u"inter-packet", 0);
     _packet_count = 0;
     _pid_next_pkt = 0;
     _ts_pids.reset();
@@ -208,8 +208,8 @@ bool ts::MuxPlugin::start()
     }
 
     return _file.open (value(u""),
-                       intValue<size_t> ("repeat", 0),
-                       intValue<uint64_t> ("byte-offset", intValue<uint64_t> ("packet-offset", 0) * PKT_SIZE),
+                       intValue<size_t>(u"repeat", 0),
+                       intValue<uint64_t>(u"byte-offset", intValue<uint64_t>(u"packet-offset", 0) * PKT_SIZE),
                        *tsp);
 }
 

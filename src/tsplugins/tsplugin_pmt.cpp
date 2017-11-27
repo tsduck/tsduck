@@ -261,13 +261,13 @@ bool ts::PMTPlugin::start()
 
     // Get option values
     _set_servid = present(u"new-service-id");
-    _new_servid = intValue<uint16_t> ("new-service-id");
+    _new_servid = intValue<uint16_t>(u"new-service-id");
     _set_pcrpid = present(u"pcr-pid");
-    _new_pcrpid = intValue<PID> ("pcr-pid");
+    _new_pcrpid = intValue<PID>(u"pcr-pid");
     _incr_version = present(u"increment-version");
     _set_version = present(u"new-version");
-    _new_version = intValue<uint8_t> ("new-version");
-    _pds = intValue<PDS> ("pds");
+    _new_version = intValue<uint8_t>(u"new-version");
+    _pds = intValue<PDS>(u"pds");
     _ac3_atsc2dvb = present(u"ac3-atsc2dvb");
     _eac3_atsc2dvb = present(u"eac3-atsc2dvb");
     _add_stream_id = present(u"add-stream-identifier");
@@ -316,7 +316,7 @@ bool ts::PMTPlugin::start()
     }
     if (present(u"pmt-pid")) {
         // A PMT PID is specified, we are now ready to modify all PMT's in this PID
-        _service.setPMTPID (intValue<PID> ("pmt-pid"));
+        _service.setPMTPID (intValue<PID>(u"pmt-pid"));
     }
     else if (present(u"service")) {
         _service.set (value(u"service"));

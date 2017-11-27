@@ -129,7 +129,7 @@ bool ts::TimeRefPlugin::start()
 {
     _update_tdt = !present(u"notdt");
     _update_tot = !present(u"notot");
-    _add_milliseconds = MilliSecPerSec * intValue<int>("add", 0);
+    _add_milliseconds = MilliSecPerSec * intValue<int>(u"add", 0);
     _current_pkt = 0;
     _timeref_pkt = 1;
 

@@ -223,7 +223,7 @@ Options::Options(int argc, char *argv[]) :
     min_strength      = intValue("min-strength", DEFAULT_MIN_STRENGTH);
     list_services     = present(u"service-list");
     global_services   = present(u"global-service-list");
-    psi_timeout       = intValue<ts::MilliSecond>("psi-timeout", DEFAULT_PSI_TIMEOUT);
+    psi_timeout       = intValue<ts::MilliSecond>(u"psi-timeout", DEFAULT_PSI_TIMEOUT);
 
     if (nit_scan && uhf_scan) {
         error("do not specify tuning parameters with --uhf-band");

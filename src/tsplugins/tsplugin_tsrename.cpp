@@ -176,9 +176,9 @@ bool ts::TSRenamePlugin::start()
     _ignore_bat = present(u"ignore-bat");
     _ignore_nit = present(u"ignore-nit");
     _set_onet_id = present(u"original-network-id");
-    _new_onet_id = intValue<uint16_t> ("original-network-id", 0);
+    _new_onet_id = intValue<uint16_t>(u"original-network-id", 0);
     _set_ts_id = present(u"ts-id");
-    _new_ts_id = intValue<uint16_t> ("ts-id", 0);
+    _new_ts_id = intValue<uint16_t>(u"ts-id", 0);
 
     // Initialize the demux
     _demux.reset();
