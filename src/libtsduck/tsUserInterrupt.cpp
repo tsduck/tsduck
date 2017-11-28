@@ -158,7 +158,7 @@ ts::UserInterrupt::UserInterrupt(InterruptHandler* handler, bool one_shot, bool 
     _terminate(false),
     _got_sigint(0),
 #if defined(TS_MAC)
-    _sem_name(Format("tsduck-%d-%" FMT_INT64 "u", int(getpid()), uint64_t(this))),
+    _sem_name(UString::Format(u"tsduck-%d-%d", {getpid(), ptrdiff_t(this)}).toUTF8()),
     _sem_address(SEM_FAILED),
 #else
     _sem_instance(),
