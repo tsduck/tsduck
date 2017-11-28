@@ -379,7 +379,7 @@ bool ts::BinaryTable::isShortSection() const
 std::ostream& ts::BinaryTable::write(std::ostream& strm, Report& report) const
 {
     if (!_is_valid) {
-        report.error("invalid table, cannot write it to file");
+        report.error(u"invalid table, cannot write it to file");
         // Flawfinder: ignore: completely fooled here, std::ostream::setstate has nothing to do with PRNG.
         strm.setstate(std::ios::failbit);
     }

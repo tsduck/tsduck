@@ -47,11 +47,10 @@ namespace ts {
     {
     public:
         // Implementation of plugin API
-        PCRExtractPlugin (TSP*);
-        virtual bool start();
-        virtual bool stop();
-        virtual BitRate getBitrate() {return 0;}
-        virtual Status processPacket (TSPacket&, bool&, bool&);
+        PCRExtractPlugin(TSP*);
+        virtual bool start() override;
+        virtual bool stop() override;
+        virtual Status processPacket(TSPacket&, bool&, bool&) override;
 
     private:
         // Description of one PID
@@ -213,7 +212,7 @@ bool ts::PCRExtractPlugin::start()
         _output = &_output_stream;
         _output_stream.open (_output_name.c_str());
         if (!_output_stream) {
-            tsp->error ("cannot create file %s", _output_name.c_str());
+            tsp->error(u"cannot create file %s", _output_name.c_str());
             return false;
         }
     }

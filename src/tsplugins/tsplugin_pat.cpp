@@ -49,11 +49,9 @@ namespace ts {
     {
     public:
         // Implementation of plugin API
-        PATPlugin (TSP*);
-        virtual bool start();
-        virtual bool stop() {return true;}
-        virtual BitRate getBitrate() {return 0;}
-        virtual Status processPacket (TSPacket&, bool&, bool&);
+        PATPlugin(TSP*);
+        virtual bool start() override;
+        virtual Status processPacket(TSPacket&, bool&, bool&) override;
 
     private:
         bool                  _abort;        // Error (service not found, etc)
@@ -70,7 +68,7 @@ namespace ts {
         CyclingPacketizer     _pzer;         // Packetizer for modified PAT
 
         // Invoked by the demux when a complete table is available.
-        virtual void handleTable (SectionDemux&, const BinaryTable&);
+        virtual void handleTable (SectionDemux&, const BinaryTable&) override;
 
         // Inaccessible operations
         PATPlugin() = delete;
@@ -176,7 +174,7 @@ bool ts::PATPlugin::start()
         int sid, pid;
         char unused;
         if (::sscanf (sidpid.c_str(), "%i/%i%c", &sid, &pid, &unused) != 2 || sid < 0 || sid > 0xFFFF || pid < 0 || pid >= PID_MAX) {
-            Args::error ("invalid \"service_id/PID\" value \"" + sidpid + "\"");
+            Args::error(u"invalid \"service_id/PID\" value \"" + sidpid + "\"");
             return false;
         }
         Service serv;
@@ -237,7 +235,7 @@ void ts::PATPlugin::handleTable (SectionDemux& demux, const BinaryTable& table)
     }
 
     // Place modified PAT in the packetizer
-    tsp->verbose ("PAT version %d modified", int (pat.version));
+    tsp->verbose(u"PAT version %d modified", int (pat.version));
     _pzer.removeSections (TID_PAT);
     _pzer.addTable (pat);
 }

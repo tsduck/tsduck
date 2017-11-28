@@ -35,7 +35,6 @@
 #include "tsPlugin.h"
 #include "tsCyclingPacketizer.h"
 #include "tsFileNameRate.h"
-#include "tsDecimal.h"
 #include "tsSysUtils.h"
 TSDUCK_SOURCE;
 
@@ -54,10 +53,8 @@ namespace ts {
     public:
         // Implementation of plugin API
         InjectPlugin(TSP*);
-        virtual bool start();
-        virtual bool stop() {return true;}
-        virtual BitRate getBitrate() {return 0;}
-        virtual Status processPacket (TSPacket&, bool&, bool&);
+        virtual bool start() override;
+        virtual Status processPacket(TSPacket&, bool&, bool&) override;
 
     private:
         FileNameRateList   _infiles;           // Input file names and repetition rates
@@ -261,13 +258,13 @@ bool ts::InjectPlugin::start()
     }
 
     if (_terminate && tsp->useJointTermination()) {
-        tsp->error("--terminate and --joint-termination are mutually exclusive");
+        tsp->error(u"--terminate and --joint-termination are mutually exclusive");
         return false;
     }
 
     // Exactly one option --replace, --bitrate, --inter-packet must be specified.
     if (_replace + (_pid_bitrate != 0) + (_pid_inter_pkt != 0) != 1) {
-        tsp->error("specify exactly one of --replace, --bitrate, --inter-packet");
+        tsp->error(u"specify exactly one of --replace, --bitrate, --inter-packet");
     }
 
     // Load sections from input files.
@@ -322,8 +319,8 @@ bool ts::InjectPlugin::reloadFiles()
             it->retry_count = 0;  // no longer needed to retry
             _pzer.addSections(sections, it->repetition);
             _specific_rates = _specific_rates || it->repetition != 0;
-            std::string srate(it->repetition > 0 ? Decimal(it->repetition) + " ms" : "unspecified");
-            tsp->verbose("loaded %" FMT_SIZE_T "d sections from %s repetition rate: %s", sections.size(), it->file_name.c_str(), srate.c_str());
+            tsp->verbose(u"loaded %d sections from %s, repetition rate: %s",
+                         {sections.size(), it->file_name, it->repetition > 0 ? UString::Decimal(it->repetition) + u" ms" : u"unspecified"});
         }
     }
 
@@ -367,18 +364,18 @@ ts::ProcessorPlugin::Status ts::InjectPlugin::processPacket(TSPacket& pkt, bool&
             // Case (1): compute the inter-packet interval based on the TS bitrate
             BitRate ts_bitrate = tsp->bitrate();
             if (ts_bitrate < _pid_bitrate) {
-                tsp->error("input bitrate unknown or too low, specify --inter-packet instead of --bitrate");
+                tsp->error(u"input bitrate unknown or too low, specify --inter-packet instead of --bitrate");
                 return TSP_END;
             }
             _pid_inter_pkt = ts_bitrate / _pid_bitrate;
-            tsp->verbose("transport bitrate: " + Decimal(ts_bitrate) + " b/s, packet interval: " + Decimal(_pid_inter_pkt));
+            tsp->verbose(u"transport bitrate: " + Decimal(ts_bitrate) + " b/s, packet interval: " + Decimal(_pid_inter_pkt));
         }
         else if (_specific_rates && _pid_inter_pkt != 0) {
             // Case (2): Evaluate PID bitrate
             BitRate ts_bitrate = tsp->bitrate();
             _pid_bitrate = BitRate(PacketCounter(ts_bitrate) / _pid_inter_pkt);
             if (_pid_bitrate == 0) {
-                tsp->warning("input bitrate unknown or too low, section-specific repetition rates will be ignored");
+                tsp->warning(u"input bitrate unknown or too low, section-specific repetition rates will be ignored");
             }
             else {
                 _pzer.setBitRate(_pid_bitrate);
@@ -397,7 +394,7 @@ ts::ProcessorPlugin::Status ts::InjectPlugin::processPacket(TSPacket& pkt, bool&
         const BitRate ts_bitrate = tsp->bitrate();
         _pid_bitrate = BitRate((PacketCounter(ts_bitrate) * _pid_packet_count) / _packet_count);
         if (_pid_bitrate == 0) {
-            tsp->warning("input bitrate unknown or too low, section-specific repetition rates will be ignored");
+            tsp->warning(u"input bitrate unknown or too low, section-specific repetition rates will be ignored");
         }
         else {
             _pzer.setBitRate(_pid_bitrate);
@@ -451,7 +448,7 @@ ts::ProcessorPlugin::Status ts::InjectPlugin::processPacket(TSPacket& pkt, bool&
         }
         else {
             // Don't replace. Target PID should not be present on input.
-            tsp->error("PID %d (0x%04X) already exists, specify --replace or use another PID, aborting", int(_inject_pid), int(_inject_pid));
+            tsp->error(u"PID %d (0x%04X) already exists, specify --replace or use another PID, aborting", int(_inject_pid), int(_inject_pid));
             return TSP_END;
         }
     }

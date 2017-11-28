@@ -35,7 +35,6 @@
 #include "tsPlugin.h"
 #include "tsSectionDemux.h"
 #include "tsEnumeration.h"
-#include "tsToInteger.h"
 #include "tsTime.h"
 #include "tsTDT.h"
 TSDUCK_SOURCE;
@@ -50,11 +49,9 @@ namespace ts {
     {
     public:
         // Implementation of plugin API
-        TimePlugin (TSP*);
-        virtual bool start();
-        virtual bool stop() {return true;}
-        virtual BitRate getBitrate() {return 0;}
-        virtual Status processPacket (TSPacket&, bool&, bool&);
+        TimePlugin(TSP*);
+        virtual bool start() override;
+        virtual Status processPacket(TSPacket&, bool&, bool&) override;
 
     private:
         // Time event description
@@ -84,10 +81,10 @@ namespace ts {
         size_t            _next_index;   // Index of next TimeEvent to apply
 
         // Invoked by the demux when a complete table is available.
-        virtual void handleTable (SectionDemux&, const BinaryTable&);
+        virtual void handleTable(SectionDemux&, const BinaryTable&) override;
 
         // Add time events in the list fro one option. Return false if a time string is invalid
-        bool addEvents (const char* option, Status status);
+        bool addEvents(const UChar* option, Status status);
 
         // Inaccessible operations
         TimePlugin() = delete;
@@ -111,7 +108,7 @@ ts::TimePlugin::TimePlugin (TSP* tsp_) :
     _use_utc(false),
     _use_tdt(false),
     _last_time(Time::Epoch),
-    _status_names("pass", TSP_OK, "stop", TSP_END, "drop", TSP_DROP, "null", TSP_NULL, TS_NULL),
+    _status_names({{u"pass", TSP_OK}, {u"stop", TSP_END}, {u"drop", TSP_DROP}, {u"null", TSP_NULL}}),
     _demux(this),
     _events(),
     _next_index(0)
@@ -125,56 +122,56 @@ ts::TimePlugin::TimePlugin (TSP* tsp_) :
     option(u"utc",      'u');
 
     setHelp(u"Options:\n"
-             u"\n"
-             u"  -d time\n"
-             u"  --drop time\n"
-             u"      All packets are dropped after the specified time.\n"
-             u"      Several --drop options may be specified\n"
-             u"\n"
-             u"  --help\n"
-             u"      Display this help text.\n"
-             u"\n"
-             u"  -n time\n"
-             u"  --null time\n"
-             u"      All packets are replaced by null packets after the specified time.\n"
-             u"      Several --null options may be specified\n"
-             u"\n"
-             u"  -p time\n"
-             u"  --pass time\n"
-             u"      All packets are passed unmodified after the specified time.\n"
-             u"      Several --pass options may be specified\n"
-             u"\n"
-             u"  -s time\n"
-             u"  --stop time\n"
-             u"      Packet transmission stops after the specified time and tsp terminates.\n"
-             u"\n"
-             u"  -r\n"
-             u"  --relative\n"
-             u"      All time values are interpreted as a number of seconds relative to the\n"
-             u"      tsp start time. By default, all time values are interpreted as an\n"
-             u"      absolute time in the format \"year/month/day:hour:minute:second\".\n"
-             u"      Option --relative is incompatible with --tdt or --utc.\n"
-             u"\n"
-             u"  -t\n"
-             u"  --tdt\n"
-             u"      Use the Time & Date Table (TDT) from the transport stream as time\n"
-             u"      reference instead of the system clock. Since the TDT contains UTC\n"
-             u"      time, all time values in the command line must be UTC also.\n"
-             u"\n"
-             u"  -u\n"
-             u"  --utc\n"
-             u"      Specifies that all time values in the command line are in UTC.\n"
-             u"      By default, the time values are interpreted as system local time.\n"
-             u"\n"
-             u"  --version\n"
-             u"      Display the version number.\n"
-             u"\n"
-             u"Specifying time values:\n"
-             u"\n"
-             u"  A time value must be in the format \"year/month/day:hour:minute:second\"\n"
-             u"  (unless --relative is specified, in which case it is a number of seconds).\n"
-             u"  An empty value (\"\") means \"from the beginning\", that is to say when\n"
-             u"  tsp starts. By default, packets are passed when tsp starts.\n");
+            u"\n"
+            u"  -d time\n"
+            u"  --drop time\n"
+            u"      All packets are dropped after the specified time.\n"
+            u"      Several --drop options may be specified\n"
+            u"\n"
+            u"  --help\n"
+            u"      Display this help text.\n"
+            u"\n"
+            u"  -n time\n"
+            u"  --null time\n"
+            u"      All packets are replaced by null packets after the specified time.\n"
+            u"      Several --null options may be specified\n"
+            u"\n"
+            u"  -p time\n"
+            u"  --pass time\n"
+            u"      All packets are passed unmodified after the specified time.\n"
+            u"      Several --pass options may be specified\n"
+            u"\n"
+            u"  -s time\n"
+            u"  --stop time\n"
+            u"      Packet transmission stops after the specified time and tsp terminates.\n"
+            u"\n"
+            u"  -r\n"
+            u"  --relative\n"
+            u"      All time values are interpreted as a number of seconds relative to the\n"
+            u"      tsp start time. By default, all time values are interpreted as an\n"
+            u"      absolute time in the format \"year/month/day:hour:minute:second\".\n"
+            u"      Option --relative is incompatible with --tdt or --utc.\n"
+            u"\n"
+            u"  -t\n"
+            u"  --tdt\n"
+            u"      Use the Time & Date Table (TDT) from the transport stream as time\n"
+            u"      reference instead of the system clock. Since the TDT contains UTC\n"
+            u"      time, all time values in the command line must be UTC also.\n"
+            u"\n"
+            u"  -u\n"
+            u"  --utc\n"
+            u"      Specifies that all time values in the command line are in UTC.\n"
+            u"      By default, the time values are interpreted as system local time.\n"
+            u"\n"
+            u"  --version\n"
+            u"      Display the version number.\n"
+            u"\n"
+            u"Specifying time values:\n"
+            u"\n"
+            u"  A time value must be in the format \"year/month/day:hour:minute:second\"\n"
+            u"  (unless --relative is specified, in which case it is a number of seconds).\n"
+            u"  An empty value (\"\") means \"from the beginning\", that is to say when\n"
+            u"  tsp starts. By default, packets are passed when tsp starts.\n");
 }
 
 
@@ -191,34 +188,34 @@ bool ts::TimePlugin::start()
     _use_utc = present(u"utc");
 
     if (_relative + _use_tdt + _use_utc > 1) {
-        tsp->error ("options --relative, --tdt and --utc are mutually exclusive");
+        tsp->error(u"options --relative, --tdt and --utc are mutually exclusive");
         return false;
     }
 
     // Get list of time events
     _events.clear();
-    if (!addEvents ("drop", TSP_DROP) ||
-        !addEvents ("null", TSP_NULL) ||
-        !addEvents ("pass", TSP_OK) ||
-        !addEvents ("stop", TSP_END)) {
+    if (!addEvents(u"drop", TSP_DROP) ||
+        !addEvents(u"null", TSP_NULL) ||
+        !addEvents(u"pass", TSP_OK) ||
+        !addEvents(u"stop", TSP_END))
+    {
         return false;
     }
 
     // Sort events by time
-    std::sort (_events.begin(), _events.end());
+    std::sort(_events.begin(), _events.end());
 
     if (tsp->verbose()) {
-        tsp->log (Severity::Verbose, "initial packet processing: " + _status_names.name (_status));
+        tsp->verbose(u"initial packet processing: %s", {_status_names.name(_status)});
         for (TimeEventVector::iterator it = _events.begin(); it != _events.end(); ++it) {
-            tsp->log (Severity::Verbose, "packet " + _status_names.name (it->status) +
-                      u" after " + it->time.format (Time::DATE | Time::TIME));
+            tsp->verbose(u"packet %s after %s", {_status_names.name(it->status), it->time.format(Time::DATE | Time::TIME)});
         }
     }
 
     // Reinitialize the demux
     _demux.reset();
     if (_use_tdt) {
-        _demux.addPID (PID_TDT);
+        _demux.addPID(PID_TDT);
     }
 
     _last_time = Time::Epoch;
@@ -233,12 +230,12 @@ bool ts::TimePlugin::start()
 // Return false if a time string is invalid
 //----------------------------------------------------------------------------
 
-bool ts::TimePlugin::addEvents (const char* option, Status status)
+bool ts::TimePlugin::addEvents(const UChar* option, Status status)
 {
-    const Time start_time (Time::CurrentLocalTime());
+    const Time start_time(Time::CurrentLocalTime());
 
-    for (size_t index = 0; index < count (option); ++index) {
-        const std::string time (value (option, "", index));
+    for (size_t index = 0; index < count(option); ++index) {
+        const UString time(value(option, u"", index));
         try {
             if (time.empty()) {
                 // If the time string is empty, this is the initial action
@@ -246,26 +243,26 @@ bool ts::TimePlugin::addEvents (const char* option, Status status)
             }
             else if (_relative) {
                 // Decode relative time string (a number of seconds)
-                MilliSecond second;
-                if (!ToInteger (second, time)) {
-                    tsp->error ("invalid relative number of seconds: %s", time.c_str());
+                MilliSecond second = 0;
+                if (!time.toInteger(second)) {
+                    tsp->error(u"invalid relative number of seconds: %s", {time});
                     return false;
                 }
-                _events.push_back (TimeEvent (status, start_time + second * MilliSecPerSec));
+                _events.push_back(TimeEvent(status, start_time + second * MilliSecPerSec));
             }
             else {
                 // Decode an absolute time string
-                int year, month, day, hour, minute, second;
-                char unused;
-                if (::sscanf (time.c_str(), "%d/%d/%d:%d:%d:%d%c", &year, &month, &day, &hour, &minute, &second, &unused) != 6) {
-                    tsp->error ("invalid time value \"%s\" (use \"year/month/day:hour:minute:second\")", time.c_str());
+                int year = 0, month = 0, day = 0, hour = 0, minute = 0, second = 0;
+                char unused = 0;
+                if (::sscanf(time.toUTF8().c_str(), "%d/%d/%d:%d:%d:%d%c", &year, &month, &day, &hour, &minute, &second, &unused) != 6) {
+                    tsp->error(u"invalid time value \"%s\" (use \"year/month/day:hour:minute:second\")", {time});
                     return false;
                 }
-                _events.push_back (TimeEvent (status, Time (year, month, day, hour, minute, second)));
+                _events.push_back(TimeEvent(status, Time(year, month, day, hour, minute, second)));
             }
         }
         catch (Time::TimeError) {
-            tsp->error ("at least one invalid value in \"%s\"", time.c_str());
+            tsp->error(u"at least one invalid value in \"%s\"", {time});
             return false;
         }
     }
@@ -278,12 +275,12 @@ bool ts::TimePlugin::addEvents (const char* option, Status status)
 // Invoked by the demux when a complete table is available.
 //----------------------------------------------------------------------------
 
-void ts::TimePlugin::handleTable (SectionDemux& demux, const BinaryTable& table)
+void ts::TimePlugin::handleTable(SectionDemux& demux, const BinaryTable& table)
 {
     if (table.tableId() == TID_TDT) {
         if (table.sourcePID() == PID_TDT) {
             // Use TDT as clock reference
-            TDT tdt (table);
+            TDT tdt(table);
             if (tdt.isValid()) {
                 _last_time = tdt.utc_time;
             }
@@ -296,10 +293,10 @@ void ts::TimePlugin::handleTable (SectionDemux& demux, const BinaryTable& table)
 // Packet processing method
 //----------------------------------------------------------------------------
 
-ts::ProcessorPlugin::Status ts::TimePlugin::processPacket (TSPacket& pkt, bool& flush, bool& bitrate_changed)
+ts::ProcessorPlugin::Status ts::TimePlugin::processPacket(TSPacket& pkt, bool& flush, bool& bitrate_changed)
 {
     // Filter sections
-    _demux.feedPacket (pkt);
+    _demux.feedPacket(pkt);
 
     // Get current system time (unless TDT is used as reference)
     if (!_use_tdt) {
@@ -314,8 +311,7 @@ ts::ProcessorPlugin::Status ts::TimePlugin::processPacket (TSPacket& pkt, bool& 
         _next_index++;
 
         if (tsp->verbose()) {
-            tsp->log (Severity::Verbose, _last_time.format (Time::DATE | Time::TIME) +
-                      u": new packet processing: " + _status_names.name (_status));
+            tsp->verbose(u"%s: new packet processing: %s", {_last_time.format(Time::DATE | Time::TIME), _status_names.name(_status)});
         }
     }
 

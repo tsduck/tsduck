@@ -82,7 +82,7 @@ bool ts::GetLocalIPAddresses (IPAddressVector& list, Report& report)
     // Create a socket to query the system
     TS_SOCKET_T sock = ::socket (PF_INET, SOCK_DGRAM, IPPROTO_UDP);
     if (sock == TS_SOCKET_T_INVALID) {
-        report.error ("error creating socket: " + SocketErrorCodeMessage());
+        report.error(u"error creating socket: " + SocketErrorCodeMessage());
         return false;
     }
 
@@ -93,7 +93,7 @@ bool ts::GetLocalIPAddresses (IPAddressVector& list, Report& report)
     ::INTERFACE_INFO info[32];  // max 32 local interface (arbitrary)
     ::DWORD retsize;
     if (::WSAIoctl (sock, SIO_GET_INTERFACE_LIST, 0, 0, info, ::DWORD (sizeof(info)), &retsize, 0, 0) != 0) {
-        report.error ("error getting local addresses: " + SocketErrorCodeMessage());
+        report.error(u"error getting local addresses: " + SocketErrorCodeMessage());
         status = false;
     }
     else {
@@ -118,7 +118,7 @@ bool ts::GetLocalIPAddresses (IPAddressVector& list, Report& report)
     ifc.ifc_len = sizeof(info);
 
     if (::ioctl (sock, SIOCGIFCONF, &ifc) != 0) {
-        report.error ("error getting local addresses: " + SocketErrorCodeMessage());
+        report.error(u"error getting local addresses: " + SocketErrorCodeMessage());
         status = false;
     }
     else {

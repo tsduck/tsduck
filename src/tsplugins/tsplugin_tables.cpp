@@ -47,10 +47,9 @@ namespace ts {
     public:
         // Implementation of plugin API
         TablesPlugin(TSP*);
-        virtual bool start();
-        virtual bool stop();
-        virtual BitRate getBitrate() { return 0; }
-        virtual Status processPacket(TSPacket&, bool&, bool&);
+        virtual bool start() override;
+        virtual bool stop() override;
+        virtual Status processPacket(TSPacket&, bool&, bool&) override;
 
     private:
         TablesDisplayArgs _display_options;

@@ -36,7 +36,6 @@
 #include "tsSectionDemux.h"
 #include "tsCyclingPacketizer.h"
 #include "tsCADescriptor.h"
-#include "tsDecimal.h"
 #include "tsCAT.h"
 TSDUCK_SOURCE;
 
@@ -52,11 +51,9 @@ namespace ts {
     {
     public:
         // Implementation of plugin API
-        CATPlugin (TSP*);
-        virtual bool start();
-        virtual bool stop() {return true;}
-        virtual BitRate getBitrate() {return 0;}
-        virtual Status processPacket (TSPacket&, bool&, bool&);
+        CATPlugin(TSP*);
+        virtual bool start() override;
+        virtual Status processPacket(TSPacket&, bool&, bool&) override;
 
     private:
         bool                  _cat_found;         // Found a CAT
@@ -77,8 +74,8 @@ namespace ts {
         CyclingPacketizer     _pzer;              // Packetizer for modified CAT
 
         // Invoked by the demux when a complete table is available.
-        virtual void handleTable (SectionDemux&, const BinaryTable&);
-        void handleCAT (CAT&);
+        virtual void handleTable(SectionDemux&, const BinaryTable&) override;
+        void handleCAT(CAT&);
 
         // Inaccessible operations
         CATPlugin() = delete;
@@ -212,7 +209,7 @@ bool ts::CATPlugin::start()
         char slash;
         const int count = ::sscanf (val.c_str(), "%i/%i%c", &casid, &pid, &slash);
         if ((count != 2 && (count != 3 || slash != '/')) || casid < 0 || casid > 0xFFFF || pid < 0 || pid >= PID_MAX) {
-            tsp->error ("invalid \"cas-id/PID[/private-data]\" value \"" + val + "\"");
+            tsp->error(u"invalid \"cas-id/PID[/private-data]\" value \"" + val + "\"");
             return false;
         }
         CADescriptor desc;
@@ -228,7 +225,7 @@ bool ts::CATPlugin::start()
             assert (pos != std::string::npos);
             const std::string hexa (val.substr (pos + 1));
             if (!HexaDecode (desc.private_data, hexa)) {
-                tsp->error ("invalid private data \"" + hexa + "\" for CA_descriptor, specify an even number of hexa digits");
+                tsp->error(u"invalid private data \"" + hexa + "\" for CA_descriptor, specify an even number of hexa digits");
                 return false;
             }
         }
@@ -315,7 +312,7 @@ void ts::CATPlugin::handleCAT (CAT& cat)
     cat.descs.add (_add_descs);
 
     // Place modified CAT in the packetizer
-    tsp->verbose ("CAT version %d modified", int (cat.version));
+    tsp->verbose(u"CAT version %d modified", int (cat.version));
     _pzer.removeSections (TID_CAT);
     _pzer.addTable (cat);
 }
@@ -362,7 +359,7 @@ ts::ProcessorPlugin::Status ts::CATPlugin::processPacket (TSPacket& pkt, bool& f
             // Compute CAT packet interval from bitrates
             const BitRate ts_bitrate = tsp->bitrate();
             if (ts_bitrate < _cat_bitrate) {
-                tsp->error ("input bitrate unknown or too low, specify --inter-packet instead of --bitrate");
+                tsp->error(u"input bitrate unknown or too low, specify --inter-packet instead of --bitrate");
                 return TSP_END;
             }
             _pkt_insert_cat += ts_bitrate / _cat_bitrate;

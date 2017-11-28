@@ -33,8 +33,6 @@
 
 #include "tspJointTermination.h"
 #include "tsGuard.h"
-#include "tsDecimal.h"
-#include "tsFormat.h"
 TSDUCK_SOURCE;
 
 
@@ -75,7 +73,7 @@ void ts::tsp::JointTermination::useJointTermination(bool on)
         Guard lock (_global_mutex);
         _jt_users++;
         _jt_remaining++;
-        debug ("using \"joint termination\", now %d plugins use it", _jt_users);
+        debug(u"using \"joint termination\", now %d plugins use it", {_jt_users});
     }
     else if (!on && _use_jt) {
         _use_jt = false;
@@ -84,7 +82,7 @@ void ts::tsp::JointTermination::useJointTermination(bool on)
         _jt_remaining--;
         assert (_jt_users >= 0);
         assert (_jt_remaining >= 0);
-        debug ("no longer using \"joint termination\", now %d plugins use it", _jt_users);
+        debug(u"no longer using \"joint termination\", now %d plugins use it", {_jt_users});
     }
 }
 
@@ -99,13 +97,13 @@ void ts::tsp::JointTermination::jointTerminate()
 {
     if (_use_jt && !_jt_completed) {
         _jt_completed = true;
-        Guard lock (_global_mutex);
+        Guard lock(_global_mutex);
         _jt_remaining--;
-        assert (_jt_remaining >= 0);
+        assert(_jt_remaining >= 0);
         if (_total_packets > _jt_hightest_pkt) {
             _jt_hightest_pkt = _total_packets;
         }
-        debug(Format("completed for \"joint termination\", %d plugins remaining, current pkt limit: ", _jt_remaining) + Decimal(_jt_hightest_pkt));
+        debug(u"completed for \"joint termination\", %d plugins remaining, current pkt limit: %'d", {_jt_remaining, _jt_hightest_pkt});
     }
 }
 

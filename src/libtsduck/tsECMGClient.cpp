@@ -132,7 +132,7 @@ bool ts::ECMGClient::connect(const SocketAddress& ecmg_address,
         }
         if (_state != DISCONNECTED) {
             if (report != 0) {
-                report->error("ECMG client already connected");
+                report->error(u"ECMG client already connected");
             }
             return false;
         }
@@ -299,7 +299,7 @@ bool ts::ECMGClient::generateECM(uint16_t cp_number,
         Time now = Time::CurrentLocalTime();
         tlv::MessagePtr resp;
         if (now >= deadline || !_response_queue.dequeue(resp, deadline - now)) {
-            _report->error("ECM generation timeout");
+            _report->error(u"ECM generation timeout");
             return false;
         }
         if (resp->tag() == ecmgscs::Tags::ECM_response) {

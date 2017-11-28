@@ -157,7 +157,7 @@ void ts::TSAnalyzerReport::reportTS(Grid& grid, const UString& title)
     grid.section();
 
     grid.setLayout({grid.bothTruncateLeft(42, u'.'), grid.border(), grid.bothTruncateLeft(26, u'.')});
-    grid.putLayout({{u"Transport Stream Id:", _ts_id_valid ? UString::Format("%d (0x%X)", {_ts_id, _ts_id}) : u"Unknown"},
+    grid.putLayout({{u"Transport Stream Id:", _ts_id_valid ? UString::Format(u"%d (0x%X)", {_ts_id, _ts_id}) : u"Unknown"},
                     {u"Services:", UString::Decimal(_services.size())}});
     grid.putLayout({{u"Bytes:", UString::Decimal(PKT_SIZE * _ts_pkt_cnt)},
                     {u"PID's: Total:", UString::Decimal(_pid_cnt)}});

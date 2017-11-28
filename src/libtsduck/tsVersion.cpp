@@ -130,7 +130,7 @@ ts::UString ts::GetVersion(VersionFormat format, const UString& applicationName,
         }
         case VERSION_DATE: {
             // The build date.
-            return UString::Format("%s - %s", {__DATE__, __TIME__});
+            return UString::Format(u"%s - %s", {__DATE__, __TIME__});
         }
         case VERSION_NSIS: {
             // A definition directive for NSIS.
@@ -142,14 +142,14 @@ ts::UString ts::GetVersion(VersionFormat format, const UString& applicationName,
         }
         case VERSION_TINYXML: {
             // The version of TinyXML-2.
-            return UString::Format("TinyXML-2 %d.%d.%d", {TIXML2_MAJOR_VERSION, TIXML2_MINOR_VERSION, TIXML2_PATCH_VERSION});
+            return UString::Format(u"TinyXML-2 %d.%d.%d", {TIXML2_MAJOR_VERSION, TIXML2_MINOR_VERSION, TIXML2_PATCH_VERSION});
         }
         case VERSION_SHORT: {
             // The simple version with the revision from the current executable and the TSDuck library.
             const int revision = GetRevision(revisionFile, true);
             return revision == 0 ?
-                UString::Format("%d.%d", {TS_VERSION_MAJOR, TS_VERSION_MINOR}) :
-                UString::Format("%d.%d-%d", {TS_VERSION_MAJOR, TS_VERSION_MINOR, revision});
+                UString::Format(u"%d.%d", {TS_VERSION_MAJOR, TS_VERSION_MINOR}) :
+                UString::Format(u"%d.%d-%d", {TS_VERSION_MAJOR, TS_VERSION_MINOR, revision});
         }
         case VERSION_GLOBAL: {
             // Same as short but use the highest revision of all TSDuck files.
@@ -160,8 +160,8 @@ ts::UString ts::GetVersion(VersionFormat format, const UString& applicationName,
                 revision = std::max(revision, GetRevision(*it, false));
             }
             return revision == 0 ?
-                UString::Format("%d.%d", {TS_VERSION_MAJOR, TS_VERSION_MINOR}) :
-                UString::Format("%d.%d-%d", {TS_VERSION_MAJOR, TS_VERSION_MINOR, revision});
+                UString::Format(u"%d.%d", {TS_VERSION_MAJOR, TS_VERSION_MINOR}) :
+                UString::Format(u"%d.%d-%d", {TS_VERSION_MAJOR, TS_VERSION_MINOR, revision});
         }
         case VERSION_FILES: {
             // A list of revisions for all files.
@@ -172,7 +172,7 @@ ts::UString ts::GetVersion(VersionFormat format, const UString& applicationName,
             for (UStringVector::const_iterator it = files.begin(); it != files.end(); ++it) {
                 const int rev = GetRevision(*it, false);
                 if (rev != 0) {
-                    list.append(UString::Format("\n%8d  %s", {rev, *it}));
+                    list.append(UString::Format(u"\n%8d  %s", {rev, *it}));
                 }
             }
             return list;

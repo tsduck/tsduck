@@ -33,9 +33,6 @@
 
 #include "tspInputExecutor.h"
 #include "tsPCRAnalyzer.h"
-#include "tsDecimal.h"
-#include "tsHexa.h"
-#include "tsFormat.h"
 #include "tsTime.h"
 TSDUCK_SOURCE;
 
@@ -83,7 +80,7 @@ bool ts::tsp::InputExecutor::initAllBuffers(PacketBuffer* buffer)
         return false; // receive error
     }
 
-    debug("initial buffer load: " + Decimal(pkt_read) + " packets, " + Decimal(pkt_read * PKT_SIZE) + " bytes");
+    debug(u"initial buffer load: %'d packets, %'d bytes", {pkt_read, pkt_read * PKT_SIZE});
 
     // Try to evaluate the initial input bitrate.
     // First, ask the plugin to evaluate its bitrate.
@@ -112,10 +109,10 @@ bool ts::tsp::InputExecutor::initAllBuffers(PacketBuffer* buffer)
         }
     }
     if (init_bitrate == 0) {
-        verbose("unknown input bitrate");
+        verbose(u"unknown input bitrate");
     }
     else {
-        verbose("input bitrate is " + Decimal(init_bitrate) + " b/s");
+        verbose(u"input bitrate is " + Decimal(init_bitrate) + " b/s");
     }
 
     // Indicate that the loaded packets are now available to the next packet processor.
@@ -179,19 +176,17 @@ size_t ts::tsp::InputExecutor::receiveAndValidate(TSPacket* buffer, size_t max_p
         }
         else {
             // Report error
-            error("synchronization lost after " + Decimal(_total_in_packets) +
-                  Format(" packets, got 0x%02X instead of 0x%02X", int(buffer[n].b[0]), int(SYNC_BYTE)));
+            error(u"synchronization lost after %'d packets, got 0x%X instead of 0x%X", {_total_in_packets, buffer[n].b[0], SYNC_BYTE});
             // In debug mode, partial dump of input
             // (one packet before lost of sync and 3 packets starting at lost of sync).
             if (debugLevel() >= 1) {
                 if (n > 0) {
-                    debug("content of packet before lost of synchronization:\n" +
-                          Hexa(buffer[n-1].b, PKT_SIZE, hexa::HEXA | hexa::OFFSET | hexa::BPL, 4, 16));
+                    debug(u"content of packet before lost of synchronization:\n" +
+                          UString::Dump(buffer[n-1].b, PKT_SIZE, UString::HEXA | UString::OFFSET | UString::BPL, 4, 16));
                 }
                 size_t dump_count = std::min<size_t>(3, count - n);
-                // Coverity false positive: The dumped area is within bounds.
-                // coverity[OVERRUN]
-                debug("data at lost of synchronization:\n" + Hexa(buffer[n].b, dump_count * PKT_SIZE, hexa::HEXA | hexa::OFFSET | hexa::BPL, 4, 16));
+                debug(u"data at lost of synchronization:\n" +
+                      UString::Dump(buffer[n].b, dump_count * PKT_SIZE, UString::HEXA | UString::OFFSET | UString::BPL, 4, 16));
             }
             // Ignore subsequent packets
             count = n;
@@ -279,7 +274,7 @@ size_t ts::tsp::InputExecutor::receiveAndStuff(TSPacket* buffer, size_t max_pack
 
 void ts::tsp::InputExecutor::main()
 {
-    debug("input thread started");
+    debug(u"input thread started");
 
     Time current_time(Time::CurrentUTC());
     Time bitrate_due_time(current_time + _bitrate_adj);
@@ -315,7 +310,6 @@ void ts::tsp::InputExecutor::main()
         }
 
         // Process periodic bitrate adjustment: get current input bitrate.
-
         if (_input_bitrate == 0 && (current_time = Time::CurrentUTC()) > bitrate_due_time) {
             // Compute time for next bitrate adjustment. Note that we do not
             // use a monotonic time (we use current time and not due time as
@@ -326,21 +320,18 @@ void ts::tsp::InputExecutor::main()
                 // Keep this bitrate
                 _tsp_bitrate = bitrate;
                 if (debug()) {
-                    debug("input: got bitrate " + Decimal(bitrate) + " b/s, next try in " + Decimal(_bitrate_adj) + " ms");
+                    debug(u"input: got bitrate %'d b/s, next try in %'d ms", {bitrate, _bitrate_adj});
                 }
             }
         }
 
         // Pass received packets to next processor
-
         passPackets(pkt_read, _tsp_bitrate, input_end, false);
 
     } while (!input_end);
 
     // Close the input processor
-
     _input->stop();
 
-    std::string status(aborted ? "aborted" : "terminated");
-    debug("input thread " + status + " after " + Decimal(totalPackets()) + " packets");
+    debug(u"input thread %s after %'d packets", {aborted ? u"aborted" : u"terminated", totalPackets()});
 }

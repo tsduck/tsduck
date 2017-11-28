@@ -36,8 +36,6 @@
 #include "tsComUtils.h"
 #include "tsMemoryUtils.h"
 #include "tsNullReport.h"
-#include "tsFormat.h"
-#include "tsDecimal.h"
 TSDUCK_SOURCE;
 
 // Put the value of a property (named "type") into a COM object.
@@ -285,7 +283,7 @@ bool ts::CreateLocator(ComPtr<::IDigitalLocator>& locator, const TunerParameters
         return CreateLocatorDVBC(locator, *dvb_c, report);
     }
     else {
-        report.error("cannot convert " + TunerTypeEnum.name(params.tunerType()) + " parameters to DirectShow tuning parameters");
+        report.error(u"cannot convert " + TunerTypeEnum.name(params.tunerType()) + " parameters to DirectShow tuning parameters");
         return false;
     }
 }

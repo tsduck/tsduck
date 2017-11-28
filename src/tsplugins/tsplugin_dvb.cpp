@@ -38,8 +38,6 @@
 #include "tsTunerArgs.h"
 #include "tsTunerParameters.h"
 #include "tsSysUtils.h"
-#include "tsFormat.h"
-#include "tsDecimal.h"
 #include "tsCOM.h"
 TSDUCK_SOURCE;
 
@@ -54,13 +52,13 @@ namespace ts {
     public:
         // Implementation of plugin API
         DVBInput(TSP*);
-        virtual bool start();
-        virtual bool stop();
-        virtual BitRate getBitrate();
-        virtual size_t receive(TSPacket*, size_t);
+        virtual bool start() override;
+        virtual bool stop() override;
+        virtual BitRate getBitrate() override;
+        virtual size_t receive(TSPacket*, size_t) override;
 
         // Larger stack size than default
-        virtual size_t stackUsage() const {return 512 * 1024;} // 512 kB
+        virtual size_t stackUsage() const override {return 512 * 1024;} // 512 kB
 
     private:
         COM                _com;              // COM initialization helper
@@ -114,7 +112,7 @@ bool ts::DVBInput::start()
 {
     // Check that COM was correctly initialized
     if (!_com.isInitialized()) {
-        tsp->error ("COM initialization failure");
+        tsp->error(u"COM initialization failure");
         return false;
     }
 
@@ -136,22 +134,22 @@ bool ts::DVBInput::start()
     if (!_tuner_args.configureTuner(_tuner, *tsp)) {
         return false;
     }
-    tsp->verbose("using " + _tuner.deviceName() + " (" + TunerTypeEnum.name(_tuner.tunerType()) + ")");
+    tsp->verbose(u"using " + _tuner.deviceName() + " (" + TunerTypeEnum.name(_tuner.tunerType()) + ")");
 
     // Tune to the specified frequency.
     if (!_tuner_args.tune(_tuner, _tuner_params, *tsp)) {
         stop();
         return false;
     }
-    tsp->verbose("tuned to transponder " + _tuner_params->toPluginOptions());
+    tsp->verbose(u"tuned to transponder " + _tuner_params->toPluginOptions());
 
     // Start receiving packets
-    tsp->debug("starting tuner reception");
+    tsp->debug(u"starting tuner reception");
     if (!_tuner.start(*tsp)) {
         stop();
         return false;
     }
-    tsp->debug("tuner reception started");
+    tsp->debug(u"tuner reception started");
 
     return true;
 }
@@ -194,7 +192,7 @@ ts::BitRate ts::DVBInput::getBitrate()
         new_params->copy (*_tuner_params);
         Object::StoreInRepository ("tsp.dvb.params", ObjectPtr (new_params));
         // Display new tuning info
-        tsp->verbose ("actual tuning options: " + new_params->toPluginOptions());
+        tsp->verbose(u"actual tuning options: " + new_params->toPluginOptions());
     }
 
     return _previous_bitrate = bitrate;

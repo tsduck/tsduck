@@ -45,11 +45,9 @@ namespace ts {
     {
     public:
         // Implementation of plugin API
-        ReducePlugin (TSP*);
-        virtual bool start();
-        virtual bool stop() {return true;}
-        virtual BitRate getBitrate() {return 0;}
-        virtual Status processPacket (TSPacket&, bool&, bool&);
+        ReducePlugin(TSP*);
+        virtual bool start() override;
+        virtual Status processPacket(TSPacket&, bool&, bool&) override;
 
     private:
         int _opt_rempkt;  // rempkt parameter
@@ -72,7 +70,7 @@ TSPLUGIN_DECLARE_PROCESSOR(ts::ReducePlugin)
 // Constructor
 //----------------------------------------------------------------------------
 
-ts::ReducePlugin::ReducePlugin (TSP* tsp_) :
+ts::ReducePlugin::ReducePlugin(TSP* tsp_) :
     ProcessorPlugin(tsp_, u"Reduce the TS bitrate by removing stuffing packets.", u"[options] rempkt inpkt"),
     _opt_rempkt(0),
     _opt_inpkt(0),
@@ -108,7 +106,7 @@ bool ts::ReducePlugin::start()
     _opt_inpkt = intValue ("", 0, 1);
     _in_count = 0;
     _rem_count = 0;
-    tsp->debug ("rempkt = %d, inpkt = %d", _opt_rempkt, _opt_inpkt);
+    tsp->debug(u"rempkt = %d, inpkt = %d", _opt_rempkt, _opt_inpkt);
     return true;
 }
 
@@ -127,7 +125,7 @@ ts::ProcessorPlugin::Status ts::ReducePlugin::processPacket (TSPacket& pkt, bool
         // It is time to remove packets
         if (_rem_count > 2 * _opt_rempkt) {
             // Overflow, we did not find enough stuffing packets to remove
-            tsp->verbose ("overflow: failed to remove %d packets", _rem_count);
+            tsp->verbose(u"overflow: failed to remove %d packets", _rem_count);
         }
         _rem_count += _opt_rempkt;
         _in_count = 0;

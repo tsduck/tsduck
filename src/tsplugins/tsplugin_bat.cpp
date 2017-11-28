@@ -50,11 +50,9 @@ namespace ts {
     {
     public:
         // Implementation of plugin API
-        BATPlugin (TSP*);
-        virtual bool start();
-        virtual bool stop() {return true;}
-        virtual BitRate getBitrate() {return 0;}
-        virtual Status processPacket (TSPacket&, bool&, bool&);
+        BATPlugin(TSP*);
+        virtual bool start() override;
+        virtual Status processPacket(TSPacket&, bool&, bool&) override;
 
     private:
         bool               _abort;             // Error (service not found, etc)
@@ -177,9 +175,9 @@ bool ts::BATPlugin::start()
     _incr_version = present(u"increment-version");
     _set_version = present(u"new-version");
     _new_version = intValue<uint8_t>(u"new-version", 0);
-    getIntValues (_remove_serv, "remove-service");
-    getIntValues (_remove_ts, "remove-ts");
-    getIntValues (_removed_desc, "remove-descriptor");
+    getIntValues(_remove_serv, u"remove-service");
+    getIntValues(_remove_ts, u"remove-ts");
+    getIntValues(_removed_desc, u"remove-descriptor");
 
     // Initialize the demux and packetizer
     _demux.reset();
@@ -236,7 +234,7 @@ void ts::BATPlugin::handleTable (SectionDemux& demux, const BinaryTable& table)
 
 void ts::BATPlugin::processBAT (BAT& bat)
 {
-    tsp->debug ("got a BAT, version %d, bouquet id: %d (0x%04X)", int (bat.version), int (bat.bouquet_id), int (bat.bouquet_id));
+    tsp->debug(u"got a BAT, version %d, bouquet id: %d (0x%X)", {bat.version, bat.bouquet_id, bat.bouquet_id});
 
     // Update BAT version
     if (_incr_version) {

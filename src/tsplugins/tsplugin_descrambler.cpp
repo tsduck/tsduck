@@ -35,9 +35,6 @@
 #include "tsPlugin.h"
 #include "tsScrambling.h"
 #include "tsByteBlock.h"
-#include "tsStringUtils.h"
-#include "tsByteBlock.h"
-#include "tsHexa.h"
 TSDUCK_SOURCE;
 
 
@@ -51,10 +48,8 @@ namespace ts {
     public:
         // Implementation of plugin API
         DescramblerPlugin (TSP*);
-        virtual bool start();
-        virtual bool stop() {return true;}
-        virtual BitRate getBitrate() {return 0;}
-        virtual Status processPacket (TSPacket&, bool&, bool&);
+        virtual bool start() override;
+        virtual Status processPacket (TSPacket&, bool&, bool&) override;
 
     private:
         Scrambling::EntropyMode        _cw_mode;  // CW entropy mode
@@ -131,43 +126,43 @@ ts::DescramblerPlugin::DescramblerPlugin(TSP* tsp_) :
 bool ts::DescramblerPlugin::start()
 {
     _cw_mode = present(u"no-entropy-reduction") ? Scrambling::FULL_CW : Scrambling::REDUCE_ENTROPY;
-    getPIDSet(_pids, "pid", true);
+    getPIDSet(_pids, u"pid", true);
 
     // Get control words as list of strings
-    std::list<std::string> lines;
+    UStringList lines;
     if (present(u"cw") + present(u"cw-file") != 1) {
-        tsp->error ("specify exactly one of --cw or --cw-file");
+        tsp->error(u"specify exactly one of --cw or --cw-file");
         return false;
     }
     else if (present(u"cw-file")) {
-        std::string file (value(u"cw-file"));
-        if (!LoadStrings (lines, file)) {
-            tsp->error ("error loading file %s", file.c_str());
+        const UString file(value(u"cw-file"));
+        if (!UString::Load(lines, file)) {
+            tsp->error(u"error loading file %s", {file});
             return false;
         }
     }
     else {
-        lines.push_back (value(u"cw"));
+        lines.push_back(value(u"cw"));
     }
 
     // Decode control words from hexa to binary
     _cw_list.clear();
     ByteBlock cw;
-    for (std::list<std::string>::iterator it = lines.begin(); it != lines.end(); ++it) {
-        Trim (*it);
+    for (UStringList::iterator it = lines.begin(); it != lines.end(); ++it) {
+        it->trim();
         if (!it->empty()) {
-            if (!HexaDecode (cw, *it) || cw.size() != CW_BYTES) {
-                tsp->error ("invalid control word \"%s\" , specify 16 hexa digits", it->c_str());
+            if (!it->hexaDecode(cw) || cw.size() != CW_BYTES) {
+                tsp->error(u"invalid control word \"%s\" , specify 16 hexa digits", {*it});
                 return false;
             }
             _cw_list.push_back (cw);
         }
     }
     if (_cw_list.empty()) {
-        tsp->error ("no control word specified");
+        tsp->error(u"no control word specified");
         return false;
     }
-    tsp->verbose ("loaded %" FMT_SIZE_T "d control words", _cw_list.size());
+    tsp->verbose(u"loaded %d control words", {_cw_list.size()});
 
     // Reset other states
     _last_scv = SC_CLEAR;
@@ -181,7 +176,7 @@ bool ts::DescramblerPlugin::start()
 // Packet processing method
 //----------------------------------------------------------------------------
 
-ts::ProcessorPlugin::Status ts::DescramblerPlugin::processPacket (TSPacket& pkt, bool& flush, bool& bitrate_changed)
+ts::ProcessorPlugin::Status ts::DescramblerPlugin::processPacket(TSPacket& pkt, bool& flush, bool& bitrate_changed)
 {
     // If the packet has no payload, there is nothing to descramble.
     // Also filter out PID's which are not descrambled.
@@ -195,7 +190,7 @@ ts::ProcessorPlugin::Status ts::DescramblerPlugin::processPacket (TSPacket& pkt,
     // Do not modify packet if not scrambled
     if (scv != SC_EVEN_KEY && scv != SC_ODD_KEY) {
         if (scv != SC_CLEAR) {
-            tsp->debug ("invalid scrambling_control_value %d in PID 0x%04X", int (scv), int (pkt.getPID()));
+            tsp->debug(u"invalid scrambling_control_value %d in PID 0x%X", {scv, pkt.getPID()});
         }
         return TSP_OK;
     }
@@ -207,8 +202,8 @@ ts::ProcessorPlugin::Status ts::DescramblerPlugin::processPacket (TSPacket& pkt,
             _next_cw = _cw_list.begin();
         }
         // Set key for DVB-CSA
-        _key.init (_next_cw->data(), _cw_mode);
-        tsp->log (Severity::Verbose, "using control word: " + Hexa (*_next_cw, hexa::SINGLE_LINE));
+        _key.init(_next_cw->data(), _cw_mode);
+        tsp->verbose(u"using control word: " + UString::Dump(*_next_cw, UString::SINGLE_LINE));
         // Point to next CW
         ++_next_cw;
         // Keep track of last scrambling_control_value
@@ -219,7 +214,7 @@ ts::ProcessorPlugin::Status ts::DescramblerPlugin::processPacket (TSPacket& pkt,
     _key.decrypt (pkt.getPayload(), pkt.getPayloadSize());
 
     // Reset scrambling_control_value to zero in TS header
-    pkt.setScrambling (SC_CLEAR);
+    pkt.setScrambling(SC_CLEAR);
 
     return TSP_OK;
 }

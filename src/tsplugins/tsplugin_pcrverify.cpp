@@ -33,8 +33,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsPlugin.h"
-#include "tsDecimal.h"
-#include "tsFormat.h"
 #include "tsTime.h"
 TSDUCK_SOURCE;
 
@@ -48,11 +46,10 @@ namespace ts {
     {
     public:
         // Implementation of plugin API
-        PCRVerifyPlugin (TSP*);
-        virtual bool start();
-        virtual bool stop();
-        virtual BitRate getBitrate() {return 0;}
-        virtual Status processPacket (TSPacket&, bool&, bool&);
+        PCRVerifyPlugin(TSP*);
+        virtual bool start() override;
+        virtual bool stop() override;
+        virtual Status processPacket(TSPacket&, bool&, bool&) override;
 
     private:
         // Description of one PID
@@ -107,8 +104,8 @@ const int64_t ts::PCRVerifyPlugin::DEFAULT_JITTER_MAX;
 // Constructor
 //----------------------------------------------------------------------------
 
-ts::PCRVerifyPlugin::PCRVerifyPlugin (TSP* tsp_) :
-    ProcessorPlugin(tsp_, "Verify PCR's from TS packets.", "[options]"),
+ts::PCRVerifyPlugin::PCRVerifyPlugin(TSP* tsp_) :
+    ProcessorPlugin(tsp_, u"Verify PCR's from TS packets.", u"[options]"),
     _absolute(false),
     _bitrate(0),
     _jitter_max(0),
@@ -127,39 +124,39 @@ ts::PCRVerifyPlugin::PCRVerifyPlugin (TSP* tsp_) :
     option(u"time-stamp", 't');
 
     setHelp(u"Options:\n"
-             u"\n"
-             u"  -a\n"
-             u"  --absolute\n"
-             u"      Use absolute values in PCR unit. By default, use micro-second equivalent\n"
-             u"      values (one micro-second = 27 PCR units).\n"
-             u"\n"
-             u"  -b value\n"
-             u"  --bitrate value\n"
-             u"      Verify the PCR's according to this transport bitrate. By default,\n"
-             u"      use the input bitrate as reported by the input device.\n"
-             u"\n"
-             u"  --help\n"
-             u"      Display this help text.\n"
-             u"\n"
-             u"  -j value\n"
-             u"  --jitter-max value\n"
-             u"      Maximum allowed jitter. PCR's with a higher jitter are reported, others\n"
-             u"      are ignored. If --absolute, the specified value is in PCR units,\n"
-             u"      otherwise it is in micro-seconds. The default is " + Decimal (DEFAULT_JITTER_MAX) + " PCR units\n"
-             u"      or " + Decimal (DEFAULT_JITTER_MAX_US) + " micro-seconds.\n"
-             u"\n"
-             u"  -p value\n"
-             u"  --pid value\n"
-             u"      PID filter: select packets with this PID value.\n"
-             u"      Several -p or --pid options may be specified.\n"
-             u"      Without -p or --pid option, PCR's from all PID's are used.\n"
-             u"\n"
-             u"  -t\n"
-             u"  --time-stamp\n"
-             u"      Display time of each event.\n"
-             u"\n"
-             u"  --version\n"
-             u"      Display the version number.\n");
+            u"\n"
+            u"  -a\n"
+            u"  --absolute\n"
+            u"      Use absolute values in PCR unit. By default, use micro-second equivalent\n"
+            u"      values (one micro-second = 27 PCR units).\n"
+            u"\n"
+            u"  -b value\n"
+            u"  --bitrate value\n"
+            u"      Verify the PCR's according to this transport bitrate. By default,\n"
+            u"      use the input bitrate as reported by the input device.\n"
+            u"\n"
+            u"  --help\n"
+            u"      Display this help text.\n"
+            u"\n"
+            u"  -j value\n"
+            u"  --jitter-max value\n"
+            u"      Maximum allowed jitter. PCR's with a higher jitter are reported, others\n"
+            u"      are ignored. If --absolute, the specified value is in PCR units,\n"
+            u"      otherwise it is in micro-seconds. The default is " + UString::Decimal(DEFAULT_JITTER_MAX) + u" PCR units\n"
+            u"      or " + UString::Decimal(DEFAULT_JITTER_MAX_US) + u" micro-seconds.\n"
+            u"\n"
+            u"  -p value\n"
+            u"  --pid value\n"
+            u"      PID filter: select packets with this PID value.\n"
+            u"      Several -p or --pid options may be specified.\n"
+            u"      Without -p or --pid option, PCR's from all PID's are used.\n"
+            u"\n"
+            u"  -t\n"
+            u"  --time-stamp\n"
+            u"      Display time of each event.\n"
+            u"\n"
+            u"  --version\n"
+            u"      Display the version number.\n");
 }
 
 
@@ -173,7 +170,7 @@ bool ts::PCRVerifyPlugin::start()
     _jitter_max = intValue<int64_t>(u"jitter-max", _absolute ? DEFAULT_JITTER_MAX : DEFAULT_JITTER_MAX_US);
     _bitrate = intValue<BitRate>(u"bitrate", 0);
     _time_stamp = present(u"time-stamp");
-    getPIDSet (_pid_list, "pid", true);
+    getPIDSet(_pid_list, u"pid", true);
 
     if (!_absolute) {
         // Convert _jitter_max from micro-second to PCR units
@@ -202,12 +199,8 @@ bool ts::PCRVerifyPlugin::start()
 bool ts::PCRVerifyPlugin::stop()
 {
     // Display PCR summary
-    tsp->log (Severity::Info,
-              Decimal (_nb_pcr_ok) + " PCR OK, " +
-              Decimal (_nb_pcr_nok) + " with jitter > " +
-              Decimal (_jitter_max) +
-              u" (" + Decimal (_jitter_max / PCR_PER_MICRO_SEC) + " micro-seconds), " +
-              Decimal (_nb_pcr_unchecked) + " unchecked");
+    tsp->info(u"%'d PCR OK, %'d with jitter > %'d (%'d micro-seconds), %'d unchecked",
+              {_nb_pcr_ok, _nb_pcr_nok, _jitter_max,  _jitter_max / PCR_PER_MICRO_SEC, _nb_pcr_unchecked});
 
     return true;
 }
@@ -220,14 +213,11 @@ bool ts::PCRVerifyPlugin::stop()
 //----------------------------------------------------------------------------
 
 namespace {
-
-    using namespace ts;
-
-    int64_t jitter (int64_t pcr1,     // first PCR value
-                  int64_t pkt1,     // packet index of PCR1 in TS
-                  int64_t pcr2,     // seconde PCR value
-                  int64_t pkt2,     // packet index of PCR2 in TS
-                  int64_t bitrate)  // TS bitrate in bits/sec
+    int64_t jitter(int64_t pcr1,     // first PCR value
+                   int64_t pkt1,     // packet index of PCR1 in TS
+                   int64_t pcr2,     // seconde PCR value
+                   int64_t pkt2,     // packet index of PCR2 in TS
+                   int64_t bitrate)  // TS bitrate in bits/sec
     {
         // Cannot compute jitter if bitrate is unknown
         if (bitrate == 0) {
@@ -248,7 +238,7 @@ namespace {
         //       = pcr2 - pcr1 - ((pkt2 - pkt1) * PKT_SIZE * 8 * SysClock / bitrate)
         //       = (bitate * (pcr2 - pcr1) - (pkt2 - pkt1) * PKT_SIZE * 8 * SysClock) / bitrate
 
-        return (bitrate * (pcr2 - pcr1) - (pkt2 - pkt1) * PKT_SIZE * 8 * SYSTEM_CLOCK_FREQ) / bitrate;
+        return (bitrate * (pcr2 - pcr1) - (pkt2 - pkt1) * ts::PKT_SIZE * 8 * ts::SYSTEM_CLOCK_FREQ) / bitrate;
     }
 }
 
@@ -257,7 +247,7 @@ namespace {
 // Packet processing method
 //----------------------------------------------------------------------------
 
-ts::ProcessorPlugin::Status ts::PCRVerifyPlugin::processPacket (TSPacket& pkt, bool& flush, bool& bitrate_changed)
+ts::ProcessorPlugin::Status ts::PCRVerifyPlugin::processPacket(TSPacket& pkt, bool& flush, bool& bitrate_changed)
 {
     const size_t pid = pkt.getPID();
 
@@ -265,7 +255,7 @@ ts::ProcessorPlugin::Status ts::PCRVerifyPlugin::processPacket (TSPacket& pkt, b
     if (_pid_list[pid] && pkt.hasPCR()) {
 
         const uint64_t pcr = pkt.getPCR();
-        PIDContext& pc (_stats[pid]);
+        PIDContext& pc(_stats[pid]);
 
         // Compare PCR with previous one (if there is one)
         if (pc.last_pcr_value == 0) {
@@ -273,13 +263,13 @@ ts::ProcessorPlugin::Status ts::PCRVerifyPlugin::processPacket (TSPacket& pkt, b
         }
         else {
             // Current bitrate:
-            int64_t bitrate = int64_t (_bitrate != 0 ? _bitrate : tsp->bitrate());
+            int64_t bitrate = int64_t(_bitrate != 0 ? _bitrate : tsp->bitrate());
             // PCR jitter:
-            int64_t jit = jitter (int64_t (pc.last_pcr_value),
-                                int64_t (pc.last_pcr_packet),
-                                int64_t (pcr),
-                                int64_t (_packet_count),
-                                bitrate);
+            int64_t jit = jitter(int64_t(pc.last_pcr_value),
+                                 int64_t(pc.last_pcr_packet),
+                                 int64_t(pcr),
+                                 int64_t(_packet_count),
+                                 bitrate);
             // Absolute value of PCR jitter:
             int64_t ajit = jit >= 0 ? jit : -jit;
             if (ajit <= _jitter_max) {
@@ -289,13 +279,9 @@ ts::ProcessorPlugin::Status ts::PCRVerifyPlugin::processPacket (TSPacket& pkt, b
                 _nb_pcr_nok++;
                 // Jitter in bits at current bitrate
                 int64_t bit_jit = (ajit * bitrate) / SYSTEM_CLOCK_FREQ;
-                tsp->info ((_time_stamp ? (Time::CurrentLocalTime().format (Time::DATE | Time::TIME) + ", ") : "") +
-                           Format ("PID %d (0x%04X), PCR jitter: ", int (pid), int (pid)) +
-                           Decimal (jit) + " = " +
-                           Decimal (ajit / PCR_PER_MICRO_SEC) + " micro-seconds = " +
-                           Decimal (bit_jit / (PKT_SIZE * 8)) + " packets + " +
-                           Decimal ((bit_jit / 8) % PKT_SIZE) + " bytes + " +
-                           Decimal (bit_jit % 8) + " bits");
+                tsp->info(u"%sPID %d (0x%X), PCR jitter: %'d = %'d micro-seconds = %'d packets + %'d bytes + %'d bits",
+                          {_time_stamp ? (Time::CurrentLocalTime().format(Time::DATE | Time::TIME) + u", ") : u"",
+                           pid, pid, jit, ajit / PCR_PER_MICRO_SEC, bit_jit / (PKT_SIZE * 8), (bit_jit / 8) % PKT_SIZE, bit_jit % 8});
             }
         }
 

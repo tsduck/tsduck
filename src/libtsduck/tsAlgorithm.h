@@ -89,10 +89,10 @@ namespace ts {
     //! interrupted because @a predicate returned false at some point.
     //!
     template <typename T, class UnaryPredicate>
-    bool EnumerateCombinations (const std::set<T>& values,
-                                const std::set<T>& fixed,
-                                size_t size,
-                                UnaryPredicate predicate);
+    bool EnumerateCombinations(const std::set<T>& values,
+                               const std::set<T>& fixed,
+                               size_t size,
+                               UnaryPredicate predicate);
 
     //!
     //! Append an element into a container if not already present in the container.

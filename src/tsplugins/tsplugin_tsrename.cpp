@@ -54,11 +54,9 @@ namespace ts {
     {
     public:
         // Implementation of plugin API
-        TSRenamePlugin (TSP*);
-        virtual bool start();
-        virtual bool stop() {return true;}
-        virtual BitRate getBitrate() {return 0;}
-        virtual Status processPacket (TSPacket&, bool&, bool&);
+        TSRenamePlugin(TSP*);
+        virtual bool start() override;
+        virtual Status processPacket(TSPacket&, bool&, bool&) override;
 
     private:
         bool              _abort;          // Error (service not found, etc)
@@ -79,12 +77,12 @@ namespace ts {
         CyclingPacketizer _pzer_nit;       // Packetizer for modified NIT
 
         // Invoked by the demux when a complete table is available.
-        virtual void handleTable (SectionDemux&, const BinaryTable&);
+        virtual void handleTable(SectionDemux&, const BinaryTable&) override;
 
-        // Process specific tables and descriptors
-        void processPAT (PAT&);
-        void processSDT (SDT&);
-        void processNITBAT (AbstractTransportListTable&, bool);
+        // Process specific tables and descriptors  
+        void processPAT(PAT&);
+        void processSDT(SDT&);
+        void processNITBAT(AbstractTransportListTable&, bool);
 
         // Inaccessible operations
         TSRenamePlugin() = delete;
@@ -101,8 +99,8 @@ TSPLUGIN_DECLARE_PROCESSOR(ts::TSRenamePlugin)
 // Constructor
 //----------------------------------------------------------------------------
 
-ts::TSRenamePlugin::TSRenamePlugin (TSP* tsp_) :
-    ProcessorPlugin(tsp_, "Rename a transport stream.", "[options]"),
+ts::TSRenamePlugin::TSRenamePlugin(TSP* tsp_) :
+    ProcessorPlugin(tsp_, u"Rename a transport stream.", u"[options]"),
     _abort(false),
     _ready(false),
     _nit_pid(PID_NIT),
@@ -129,38 +127,38 @@ ts::TSRenamePlugin::TSRenamePlugin (TSP* tsp_) :
     option(u"ts-id",               't',  UINT16);
 
     setHelp(u"Options:\n"
-             u"\n"
-             u"  -a\n"
-             u"  --add\n"
-             u"      Equivalent to --add-bat --add-nit.\n"
-             u"\n"
-             u"  --add-bat\n"
-             u"      Add a new entry for the renamed TS in the BAT and keep the previous\n"
-             u"      entry. By default, the TS entry is renamed.\n"
-             u"\n"
-             u"  --add-nit\n"
-             u"      Add a new entry for the renamed TS in the NIT and keep the previous\n"
-             u"      entry. By default, the TS entry is renamed.\n"
-             u"\n"
-             u"  --help\n"
-             u"      Display this help text.\n"
-             u"\n"
-             u"  --ignore-bat\n"
-             u"      Do not modify the BAT.\n"
-             u"\n"
-             u"  --ignore-nit\n"
-             u"      Do not modify the NIT.\n"
-             u"\n"
-             u"  -o value\n"
-             u"  --original-network-id value\n"
-             u"      Modify the original network id. By default, it is unchanged.\n"
-             u"\n"
-             u"  -t value\n"
-             u"  --ts-id value\n"
-             u"      Modify the transport stream id. By default, it is unchanged.\n"
-             u"\n"
-             u"  --version\n"
-             u"      Display the version number.\n");
+            u"\n"
+            u"  -a\n"
+            u"  --add\n"
+            u"      Equivalent to --add-bat --add-nit.\n"
+            u"\n"
+            u"  --add-bat\n"
+            u"      Add a new entry for the renamed TS in the BAT and keep the previous\n"
+            u"      entry. By default, the TS entry is renamed.\n"
+            u"\n"
+            u"  --add-nit\n"
+            u"      Add a new entry for the renamed TS in the NIT and keep the previous\n"
+            u"      entry. By default, the TS entry is renamed.\n"
+            u"\n"
+            u"  --help\n"
+            u"      Display this help text.\n"
+            u"\n"
+            u"  --ignore-bat\n"
+            u"      Do not modify the BAT.\n"
+            u"\n"
+            u"  --ignore-nit\n"
+            u"      Do not modify the NIT.\n"
+            u"\n"
+            u"  -o value\n"
+            u"  --original-network-id value\n"
+            u"      Modify the original network id. By default, it is unchanged.\n"
+            u"\n"
+            u"  -t value\n"
+            u"  --ts-id value\n"
+            u"      Modify the transport stream id. By default, it is unchanged.\n"
+            u"\n"
+            u"  --version\n"
+            u"      Display the version number.\n");
 }
 
 
@@ -182,7 +180,7 @@ bool ts::TSRenamePlugin::start()
 
     // Initialize the demux
     _demux.reset();
-    _demux.addPID (PID_PAT);
+    _demux.addPID(PID_PAT);
 
     // Reset other states
     _abort = false;
@@ -200,23 +198,20 @@ bool ts::TSRenamePlugin::start()
 // Invoked by the demux when a complete table is available.
 //----------------------------------------------------------------------------
 
-void ts::TSRenamePlugin::handleTable (SectionDemux& demux, const BinaryTable& table)
+void ts::TSRenamePlugin::handleTable(SectionDemux& demux, const BinaryTable& table)
 {
-    if (tsp->debug()) {
-        std::string name(names::TID(table.tableId()).toUTF8());
-        tsp->debug("Got %s v%d, PID %d (0x%04X), TIDext %d (0x%04X)",
-                   name.c_str(), int(table.version()),
-                   int(table.sourcePID()), int(table.sourcePID()),
-                   int(table.tableIdExtension()), int(table.tableIdExtension()));
-    }
-
+    tsp->debug(u"Got %s v%d, PID %d (0x%X), TIDext %d (0x%X)",
+               {names::TID(table.tableId()), table.version(),
+                table.sourcePID(), table.sourcePID(),
+                table.tableIdExtension(), table.tableIdExtension()});
+ 
     switch (table.tableId()) {
 
         case TID_PAT: {
             if (table.sourcePID() == PID_PAT) {
-                PAT pat (table);
+                PAT pat(table);
                 if (pat.isValid()) {
-                    processPAT (pat);
+                    processPAT(pat);
                 }
             }
             break;
@@ -224,9 +219,9 @@ void ts::TSRenamePlugin::handleTable (SectionDemux& demux, const BinaryTable& ta
 
         case TID_SDT_ACT: {
             if (table.sourcePID() == PID_SDT) {
-                SDT sdt (table);
+                SDT sdt(table);
                 if (sdt.isValid()) {
-                    processSDT (sdt);
+                    processSDT(sdt);
                 }
             }
             break;
@@ -235,8 +230,8 @@ void ts::TSRenamePlugin::handleTable (SectionDemux& demux, const BinaryTable& ta
         case TID_SDT_OTH: {
             if (table.sourcePID() == PID_SDT) {
                 // SDT Other are passed unmodified
-                _pzer_sdt_bat.removeSections (TID_SDT_OTH, table.tableIdExtension());
-                _pzer_sdt_bat.addTable (table);
+                _pzer_sdt_bat.removeSections(TID_SDT_OTH, table.tableIdExtension());
+                _pzer_sdt_bat.addTable(table);
             }
             break;
         }
@@ -245,16 +240,16 @@ void ts::TSRenamePlugin::handleTable (SectionDemux& demux, const BinaryTable& ta
             if (table.sourcePID() == PID_BAT) {
                 if (_ignore_bat) {
                     // Do not modify BAT
-                    _pzer_sdt_bat.removeSections (TID_BAT, table.tableIdExtension());
-                    _pzer_sdt_bat.addTable (table);
+                    _pzer_sdt_bat.removeSections(TID_BAT, table.tableIdExtension());
+                    _pzer_sdt_bat.addTable(table);
                 }
                 else {
                     // Modify BAT
-                    BAT bat (table);
+                    BAT bat(table);
                     if (bat.isValid()) {
-                        processNITBAT (bat, _add_bat);
-                        _pzer_sdt_bat.removeSections (TID_BAT, bat.bouquet_id);
-                        _pzer_sdt_bat.addTable (bat);
+                        processNITBAT(bat, _add_bat);
+                        _pzer_sdt_bat.removeSections(TID_BAT, bat.bouquet_id);
+                        _pzer_sdt_bat.addTable(bat);
                     }
                 }
             }
@@ -264,11 +259,11 @@ void ts::TSRenamePlugin::handleTable (SectionDemux& demux, const BinaryTable& ta
         case TID_NIT_ACT: {
             if (!_ignore_nit) {
                 // Modify NIT Actual
-                NIT nit (table);
+                NIT nit(table);
                 if (nit.isValid()) {
-                    processNITBAT (nit, _add_nit);
-                    _pzer_nit.removeSections (TID_NIT_ACT, nit.network_id);
-                    _pzer_nit.addTable (nit);
+                    processNITBAT(nit, _add_nit);
+                    _pzer_nit.removeSections(TID_NIT_ACT, nit.network_id);
+                    _pzer_nit.addTable(nit);
                 }
             }
             break;
@@ -277,8 +272,8 @@ void ts::TSRenamePlugin::handleTable (SectionDemux& demux, const BinaryTable& ta
         case TID_NIT_OTH: {
             if (!_ignore_nit) {
                 // NIT Other are passed unmodified
-                _pzer_nit.removeSections (TID_NIT_OTH, table.tableIdExtension());
-                _pzer_nit.addTable (table);
+                _pzer_nit.removeSections(TID_NIT_OTH, table.tableIdExtension());
+                _pzer_nit.addTable(table);
             }
             break;
         }
@@ -298,7 +293,7 @@ void ts::TSRenamePlugin::processPAT (PAT& pat)
 {
     // Save the NIT PID
     _nit_pid = pat.nit_pid != PID_NULL ? pat.nit_pid : uint16_t (PID_NIT);
-    _pzer_nit.setPID (_nit_pid);
+    _pzer_nit.setPID(_nit_pid);
 
     // Rename the TS
     _old_ts_id = pat.ts_id;
@@ -307,13 +302,13 @@ void ts::TSRenamePlugin::processPAT (PAT& pat)
     }
 
     // Replace the PAT.in the PID
-    _pzer_pat.removeSections (TID_PAT);
-    _pzer_pat.addTable (pat);
+    _pzer_pat.removeSections(TID_PAT);
+    _pzer_pat.addTable(pat);
 
     // We are now ready to process the TS
-    _demux.addPID (PID_SDT);
+    _demux.addPID(PID_SDT);
     if (!_ignore_nit) {
-        _demux.addPID (_nit_pid);
+        _demux.addPID(_nit_pid);
     }
     _ready = true;
 }
@@ -323,7 +318,7 @@ void ts::TSRenamePlugin::processPAT (PAT& pat)
 //  This method processes a Service Description Table (SDT).
 //----------------------------------------------------------------------------
 
-void ts::TSRenamePlugin::processSDT (SDT& sdt)
+void ts::TSRenamePlugin::processSDT(SDT& sdt)
 {
     // Rename the TS
     if (_set_ts_id) {
@@ -349,14 +344,14 @@ void ts::TSRenamePlugin::processNITBAT (AbstractTransportListTable& table, bool 
     for (AbstractTransportListTable::TransportMap::iterator it = table.transports.begin(); it != table.transports.end(); ++it) {
         if (it->first.transport_stream_id == _old_ts_id) {
 
-            const TransportStreamId new_tsid (_set_ts_id ? _new_ts_id : it->first.transport_stream_id,
-                                              _set_onet_id ? _new_onet_id : it->first.original_network_id);
+            const TransportStreamId new_tsid(_set_ts_id ? _new_ts_id : it->first.transport_stream_id,
+                                             _set_onet_id ? _new_onet_id : it->first.original_network_id);
 
             if (new_tsid != it->first) {
-                // Add a new TS entry
-                table.transports [new_tsid] = it->second;
+                // Add a new TS entry   
+                table.transports[new_tsid] = it->second;
                 if (!add_entry) {
-                    table.transports.erase (it->first);
+                    table.transports.erase(it->first);
                 }
             }
 
@@ -375,7 +370,7 @@ ts::ProcessorPlugin::Status ts::TSRenamePlugin::processPacket (TSPacket& pkt, bo
     const PID pid = pkt.getPID();
 
     // Filter interesting sections
-    _demux.feedPacket (pkt);
+    _demux.feedPacket(pkt);
 
     // If a fatal error occured during section analysis, give up.
     if (_abort) {
@@ -389,13 +384,13 @@ ts::ProcessorPlugin::Status ts::TSRenamePlugin::processPacket (TSPacket& pkt, bo
 
     // Replace packets using packetizers
     if (pid == PID_PAT) {
-        _pzer_pat.getNextPacket (pkt);
+        _pzer_pat.getNextPacket(pkt);
     }
     else if (pid == PID_SDT) {
         _pzer_sdt_bat.getNextPacket (pkt);
     }
     else if (!_ignore_nit && pid == _nit_pid) {
-        _pzer_nit.getNextPacket (pkt);
+        _pzer_nit.getNextPacket(pkt);
     }
 
     return TSP_OK;

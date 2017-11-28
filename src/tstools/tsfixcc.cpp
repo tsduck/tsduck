@@ -33,8 +33,6 @@
 
 #include "tsArgs.h"
 #include "tsTSPacket.h"
-#include "tsFormat.h"
-#include "tsDecimal.h"
 TSDUCK_SOURCE;
 
 
@@ -47,20 +45,18 @@ class Options: public ts::Args
 public:
     Options(int argc, char *argv[]);
 
-    bool         verbose;   // Verbose mode
     bool         test;      // Test mode
     bool         circular;  // Add empty packets to enforce circular continuity
-    std::string  filename;  // File name
+    ts::UString  filename;  // File name
     std::fstream file;      // File buffer
 
     // Check if there was an I/O error on the file.
     // Print an error message if this is the case.
-    bool fileError(const char* message);
+    bool fileError(const ts::UChar* message);
 };
 
 Options::Options(int argc, char *argv[]) :
-    Args("MPEG Transport Stream Fix Continuity Counters Utility.", "[options] filename"),
-    verbose(false),
+    Args(u"MPEG Transport Stream Fix Continuity Counters Utility.", u"[options] filename"),
     test(false),
     circular(false),
     filename(),
@@ -102,17 +98,17 @@ Options::Options(int argc, char *argv[]) :
     filename = value(u"");
     circular = present(u"circular");
     test = present(u"noaction");
-    verbose = test || present(u"verbose");
+    setDebugLevel(test || present(u"verbose") ? ts::Severity::Verbose : ts::Severity::Info);
 }
 
 // Check error on file
-bool Options::fileError(const char* message)
+bool Options::fileError(const ts::UChar* message)
 {
     if (file) {
         return false;
     }
     else {
-        error((filename + ": ") + message);
+        error("%s: %s", {filename, message});
         return true;
     }
 }
@@ -137,7 +133,7 @@ class PIDState
 public:
     uint8_t first_cc;
     uint8_t last_cc;
-    bool  sync;
+    bool    sync;
 
     // Constructor
     PIDState() :
@@ -164,10 +160,10 @@ int main(int argc, char *argv[])
         mode |= std::ios::out;
     }
 
-    opt.file.open(opt.filename.c_str(), mode);
+    opt.file.open(opt.filename.toUTF8().c_str(), mode);
 
     if (!opt.file) {
-        opt.error("cannot open file " + opt.filename);
+        opt.error(u"cannot open file %s", {opt.filename});
         return EXIT_FAILURE;
     }
 
@@ -184,7 +180,7 @@ int main(int argc, char *argv[])
         // Save position of current packet
 
         const std::ios::pos_type pos = opt.file.tellg();
-        if (opt.fileError("error getting file position")) {
+        if (opt.fileError(u"error getting file position")) {
             break;
         }
 
@@ -213,11 +209,7 @@ int main(int argc, char *argv[])
                 // We now loose the synchronization on this PID.
                 pids[pid].sync = false;
                 error_count++;
-                if (opt.verbose) {
-                    std::cerr << "TS packet: " << ts::Decimal(packet_count)
-                              << ts::Format(", PID: 0x%04X, missing: %2d packets", pid, MissingPackets(pids[pid].last_cc, cc))
-                              << std::endl;
-                }
+                opt.verbose(u"TS packet: %'d, PID: 0x%04X, missing: %2d packets", {packet_count, pid, MissingPackets(pids[pid].last_cc, cc)});
             }
         }
 
@@ -228,17 +220,17 @@ int main(int argc, char *argv[])
             pkt.setCC(good_cc);
             // Rewind to beginning of current packet
             opt.file.seekp(pos);
-            if (opt.fileError("error setting file position")) {
+            if (opt.fileError(u"error setting file position")) {
                 break;
             }
             // Rewrite the packet
             pkt.write(opt.file, opt);
-            if (opt.fileError("error rewriting packet")) {
+            if (opt.fileError(u"error rewriting packet")) {
                 break;
             }
             // Make sure the get position is ok
             opt.file.seekg(opt.file.tellp());
-            if (opt.fileError("error setting file position")) {
+            if (opt.fileError(u"error setting file position")) {
                 break;
             }
             rewrite_count++;
@@ -248,26 +240,18 @@ int main(int argc, char *argv[])
         packet_count++;
     }
 
-    if (opt.verbose) {
-        std::cerr << ts::Decimal(packet_count) << " packets read, "
-                  << ts::Decimal(error_count) << " discontinuities, "
-                  << ts::Decimal(rewrite_count) << " packets updated"
-                  << std::endl;
-    }
+    opt.verbose(u"%'d packets read, %'d discontinuities, %'d packets updated", {packet_count, error_count, rewrite_count});
 
     // Append empty packet to ensure circular continuity
-
     if (opt.circular && opt.valid()) {
 
         // Create an empty packet (no payload, 184-byte adaptation field)
-
         pkt = ts::NullPacket;
         pkt.b[3] = 0x20;    // adaptation field, no payload
         pkt.b[4] = 183;     // adaptation field length
         pkt.b[5] = 0x00;    // nothing in adaptation field
 
         // Ensure write position is at end of file
-
         if (!opt.test) {
             // First, need to clear the eof bit
             opt.file.clear();
@@ -275,19 +259,14 @@ int main(int argc, char *argv[])
             opt.file.seekp(0, std::ios::end);
             // Returned value ignored on purpose, just report error when needed.
             // coverity[CHECKED_RETURN]
-            opt.fileError("error setting file position");
+            opt.fileError(u"error setting file position");
         }
 
         // Loop through all PIDs, adding packets where some are missing
-
         for (size_t pid = 0; opt.valid() && pid < ts::PID_MAX; pid++) {
             if (pids[pid].first_cc <= 0x0F && pids[pid].first_cc != ((pids[pid].last_cc + 1) & 0x0F)) {
                 // We must add some packets on this PID
-                if (opt.verbose) {
-                    std::cerr << ts::Format("PID: 0x%04" FMT_SIZE_T "X, adding %2d empty packets",
-                                            pid, MissingPackets(pids[pid].last_cc, pids[pid].first_cc))
-                              << std::endl;
-                }
+                opt.verbose(u"PID: 0x%04X, adding %2d empty packets", {pid, MissingPackets(pids[pid].last_cc, pids[pid].first_cc)});
                 if (!opt.test) {
                     for (;;) {
                         pids[pid].last_cc = (pids[pid].last_cc + 1) & 0x0F;
@@ -299,7 +278,7 @@ int main(int argc, char *argv[])
                         pkt.setCC(pids[pid].last_cc);
                         // Write the new packet
                         pkt.write(opt.file, opt);
-                        if (opt.fileError("error writing extra packet")) {
+                        if (opt.fileError(u"error writing extra packet")) {
                             break;
                         }
                     }

@@ -47,8 +47,6 @@ namespace ts {
         // Implementation of plugin API
         BitrateMonitorPlugin(TSP*);
         virtual bool start() override;
-        virtual bool stop() override { return true; }
-        virtual BitRate getBitrate() override { return 0; }
         virtual Status processPacket(TSPacket&, bool&, bool&) override;
 
     private:

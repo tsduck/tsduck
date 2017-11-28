@@ -37,11 +37,7 @@
 
 #if defined(TS_COMPTR_INSTRUMENTATION)
 
-#include "tsFormat.h"
-#define TRACE_HEADER(adj) std::cerr << ts::Format("[COMPTR] %0*" FMT_SIZE_T "X=%-3d(@%0*" FMT_SIZE_T "X): ", \
-                                                  2 * int(sizeof(_ptr)), size_t(_ptr),                       \
-                                                  refCount() + (adj),                                        \
-                                                  2 * int(sizeof(this)), size_t(this))
+#define TRACE_HEADER(adj) std::cerr << ts::UString::Format(u"[COMPTR] %X=%-3d(@%X): ", size_t(_ptr), refCount() + (adj), size_t(this))
 #define TRACE_TRAILER()   std::endl << std::flush
 
 #define TRACE_CONSTRUCT() (_ptr != 0 ? (TRACE_HEADER(0) << "constructor" << TRACE_TRAILER()) : std::cerr)

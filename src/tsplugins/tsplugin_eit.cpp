@@ -36,11 +36,8 @@
 #include "tsSectionDemux.h"
 #include "tsService.h"
 #include "tsTables.h"
-#include "tsStringUtils.h"
-#include "tsDecimal.h"
 #include "tsTime.h"
 #include "tsMJD.h"
-#include "tsFormat.h"
 TSDUCK_SOURCE;
 
 
@@ -53,11 +50,10 @@ namespace ts {
     {
     public:
         // Implementation of plugin API
-        EITPlugin (TSP*);
-        virtual bool start();
-        virtual bool stop();
-        virtual BitRate getBitrate() {return 0;}
-        virtual Status processPacket (TSPacket&, bool&, bool&);
+        EITPlugin(TSP*);
+        virtual bool start() override;
+        virtual bool stop() override;
+        virtual Status processPacket(TSPacket&, bool&, bool&) override;
 
     private:
         // Description of one service
@@ -74,9 +70,9 @@ namespace ts {
         };
 
         // Combination of TS id / service id into one 32-bit index
-        static uint32_t MakeIndex (uint16_t ts_id, uint16_t service_id) {return (uint32_t (ts_id) << 16) | service_id;}
-        static uint16_t GetTSId (uint32_t index) {return (index >> 16) & 0xFFFF;}
-        static uint16_t GetServiceId (uint32_t index) {return index & 0xFFFF;}
+        static uint32_t MakeIndex(uint16_t ts_id, uint16_t service_id) { return (uint32_t(ts_id) << 16) | service_id; }
+        static uint16_t GetTSId(uint32_t index) { return (index >> 16) & 0xFFFF; }
+        static uint16_t GetServiceId(uint32_t index) { return index & 0xFFFF; }
 
         // Map of services, indexed by combination of TS id / service id
         typedef std::map <uint32_t, ServiceDesc> ServiceMap;
@@ -93,14 +89,14 @@ namespace ts {
         Variable<uint16_t> _ts_id;            // Current TS id
 
         // Return a reference to a service description
-        ServiceDesc& getServiceDesc (uint16_t ts_id, uint16_t service_id);
+        ServiceDesc& getServiceDesc(uint16_t ts_id, uint16_t service_id);
 
         // Hooks
-        virtual void handleTable (SectionDemux&, const BinaryTable&);
-        virtual void handleSection (SectionDemux&, const Section&);
+        virtual void handleTable(SectionDemux&, const BinaryTable&) override;
+        virtual void handleSection(SectionDemux&, const Section&) override;
 
         // Number of days in a duration, used for EPG depth
-        static int Days (const MilliSecond& ms) {return int ((ms + MilliSecPerDay - 1) / MilliSecPerDay);}
+        static int Days(const MilliSecond& ms) { return int((ms + MilliSecPerDay - 1) / MilliSecPerDay); }
 
         // Inaccessible operations
         EITPlugin() = delete;
@@ -149,11 +145,11 @@ ts::EITPlugin::EITPlugin(TSP* tsp_) :
 // Service description constructor
 //----------------------------------------------------------------------------
 
-ts::EITPlugin::ServiceDesc::ServiceDesc():
+ts::EITPlugin::ServiceDesc::ServiceDesc() :
     Service(),
-    eitpf_count (0),
-    eits_count (0),
-    max_time (0)
+    eitpf_count(0),
+    eits_count(0),
+    max_time(0)
 {
 }
 
@@ -162,21 +158,21 @@ ts::EITPlugin::ServiceDesc::ServiceDesc():
 // Return a reference to a service description
 //----------------------------------------------------------------------------
 
-ts::EITPlugin::ServiceDesc& ts::EITPlugin::getServiceDesc (uint16_t ts_id, uint16_t service_id)
+ts::EITPlugin::ServiceDesc& ts::EITPlugin::getServiceDesc(uint16_t ts_id, uint16_t service_id)
 {
-    uint32_t index = MakeIndex (ts_id, service_id);
+    uint32_t index = MakeIndex(ts_id, service_id);
 
-    if (_services.find (index) == _services.end()) {
-        tsp->verbose ("new service %d (0x%04X), TS id %d (0x%04X)", int (service_id), int (service_id), int (ts_id), int (ts_id));
-        ServiceDesc& serv (_services [index]);
-        serv.setId (service_id);
-        serv.setTSId (ts_id);
+    if (_services.find(index) == _services.end()) {
+        tsp->verbose(u"new service %d (0x%X), TS id %d (0x%X)", {service_id, service_id, ts_id, ts_id});
+        ServiceDesc& serv(_services[index]);
+        serv.setId(service_id);
+        serv.setTSId(ts_id);
         return serv;
     }
     else {
-        ServiceDesc& serv (_services [index]);
-        assert (serv.hasId (service_id));
-        assert (serv.hasTSId (ts_id));
+        ServiceDesc& serv(_services[index]);
+        assert(serv.hasId(service_id));
+        assert(serv.hasTSId(ts_id));
         return serv;
     }
 }
@@ -190,11 +186,11 @@ bool ts::EITPlugin::start()
 {
     // Create output file
     if (present(u"output-file")) {
-        const std::string name (value(u"output-file"));
-        tsp->verbose ("creating " + name);
-        _outfile.open (name.c_str(), std::ios::out);
+        const UString name(value(u"output-file"));
+        tsp->verbose(u"creating %s", {name});
+        _outfile.open (name.toUTF8().c_str(), std::ios::out);
         if (!_outfile) {
-            tsp->error ("cannot create " + name);
+            tsp->error(u"cannot create %s", {name});
             return false;
         }
     }
@@ -208,10 +204,10 @@ bool ts::EITPlugin::start()
     _services.clear();
     _ts_id.reset();
     _demux.reset();
-    _demux.addPID (PID_PAT);
-    _demux.addPID (PID_SDT);
-    _demux.addPID (PID_EIT);
-    _demux.addPID (PID_TDT);
+    _demux.addPID(PID_PAT);
+    _demux.addPID(PID_SDT);
+    _demux.addPID(PID_EIT);
+    _demux.addPID(PID_TDT);
 
     return true;
 }
@@ -229,15 +225,15 @@ bool ts::EITPlugin::stop()
     out << "Summary" << std::endl
         << "-------" << std::endl;
     if (_ts_id.set()) {
-        out << Format ("TS id:         %d (0x%04X)", int (_ts_id.value()), int (_ts_id.value())) << std::endl;
+        out << UString::Format(u"TS id:         %d (0x%04X)", {_ts_id.value(), _ts_id.value()}) << std::endl;
     }
     if (_last_utc != Time::Epoch) {
-        out << "Last UTC:      " << _last_utc.format (Time::DATE | Time::TIME) << std::endl;
+        out << "Last UTC:      " << _last_utc.format(Time::DATE | Time::TIME) << std::endl;
     }
-    out << "EITp/f actual: " << Decimal (_eitpf_act_count) << std::endl
-        << "EITp/f other:  " << Decimal (_eitpf_oth_count) << std::endl
-        << "EITs actual:   " << Decimal (_eits_act_count) << std::endl
-        << "EITs other:    " << Decimal (_eits_oth_count) << std::endl
+    out << "EITp/f actual: " << UString::Decimal(_eitpf_act_count) << std::endl
+        << "EITp/f other:  " << UString::Decimal(_eitpf_oth_count) << std::endl
+        << "EITs actual:   " << UString::Decimal(_eits_act_count) << std::endl
+        << "EITs other:    " << UString::Decimal(_eits_oth_count) << std::endl
         << std::endl;
 
     // Summary by TS actual/other
@@ -251,8 +247,8 @@ bool ts::EITPlugin::stop()
     MilliSecond max_time_oth = 0;
     size_t name_width = 0;
     for (ServiceMap::const_iterator it = _services.begin(); it != _services.end(); ++it) {
-        const ServiceDesc& serv (it->second);
-        name_width = std::max (name_width, serv.getName().length());
+        const ServiceDesc& serv(it->second);
+        name_width = std::max(name_width, serv.getName().width());
         if (_ts_id.set() && serv.hasTSId (_ts_id.value())) {
             // Actual TS
             scount_act++;
@@ -262,7 +258,7 @@ bool ts::EITPlugin::stop()
             if (serv.eits_count != 0) {
                 scount_eits_act++;
             }
-            max_time_act = std::max (max_time_act, serv.max_time);
+            max_time_act = std::max(max_time_act, serv.max_time);
         }
         else {
             // Other TS
@@ -273,28 +269,30 @@ bool ts::EITPlugin::stop()
             if (serv.eits_count != 0) {
                 scount_eits_oth++;
             }
-            max_time_oth = std::max (max_time_oth, serv.max_time);
+            max_time_oth = std::max(max_time_oth, serv.max_time);
         }
     }
     out << "TS      Services  With EITp/f  With EITs  EPG days" << std::endl
         << "------  --------  -----------  ---------  --------" << std::endl
-        << Format ("Actual  %8d  %11d  %9d  %8d", scount_act, scount_eitpf_act, scount_eits_act, Days (max_time_act)) << std::endl
-        << Format ("Other   %8d  %11d  %9d  %8d", scount_oth, scount_eitpf_oth, scount_eits_oth, Days (max_time_oth)) << std::endl
+        << UString::Format(u"Actual  %8d  %11d  %9d  %8d", {scount_act, scount_eitpf_act, scount_eits_act, Days(max_time_act)}) << std::endl
+        << UString::Format(u"Other   %8d  %11d  %9d  %8d", {scount_oth, scount_eitpf_oth, scount_eits_oth, Days(max_time_oth)}) << std::endl
         << std::endl;
 
     // Summary by service
-    const std::string h_name ("Name");
-    name_width = std::max (name_width, h_name.length());
-    out << "A/O  TS Id   Srv Id  " << JustifyLeft (h_name, name_width) << "  EITp/f  EITs  EPG days" << std::endl
-        << "---  ------  ------  " << JustifyLeft ("", name_width, '-') << "  ------  ----  --------" << std::endl;
+    const UString h_name("Name");
+    name_width = std::max(name_width, h_name.length());
+    out << UString::Format(u"A/O  TS Id   Srv Id  %-*s  EITp/f  EITs  EPG days", {name_width, u"Name"}) << std::endl
+        << UString::Format(u"---  ------  ------  %s  ------  ----  --------", {UString(name_width, u'-')}) << std::endl;
     for (ServiceMap::const_iterator it = _services.begin(); it != _services.end(); ++it) {
-        const ServiceDesc& serv (it->second);
-        const bool actual = _ts_id.set() && serv.hasTSId (_ts_id.value());
-        out << Format ("%s  0x%04X  0x%04X  ", actual ? "Act" : "Oth", int (serv.getTSId()), int (serv.getId()))
-            << serv.getName().toJustifiedLeft(name_width)
-            << (serv.eitpf_count != 0 ? "  Yes     " : "  No      ")
-            << (serv.eits_count != 0 ? "Yes   " : "No    ")
-            << Format("%8d", Days(serv.max_time))
+        const ServiceDesc& serv(it->second);
+        const bool actual = _ts_id.set() && serv.hasTSId(_ts_id.value());
+        out << UString::Format(u"%s  0x%04X  0x%04X  %-*s  %-6s  %-4s  %8d",
+                               {actual ? u"Act" : u"Oth",
+                                serv.getTSId(), serv.getId(),
+                                name_width, serv.getName(),
+                                UString::YesNo(serv.eitpf_count != 0),
+                                UString::YesNo(serv.eits_count != 0),
+                                Days(serv.max_time)})
             << std::endl;
     }
 
@@ -320,7 +318,7 @@ void ts::EITPlugin::handleTable(SectionDemux& demux, const BinaryTable& table)
                 PAT pat(table);
                 if (pat.isValid()) {
                     _ts_id = pat.ts_id;
-                    tsp->verbose("TS id is %d (0x%04X)", int(pat.ts_id), int(pat.ts_id));
+                    tsp->verbose(u"TS id is %d (0x%X)", {pat.ts_id, pat.ts_id});
                     // Register all services
                     for (PAT::ServiceMap::const_iterator it = pat.pmts.begin(); it != pat.pmts.end(); ++it) {
                         ServiceDesc& serv(getServiceDesc(pat.ts_id, it->first));
@@ -403,18 +401,17 @@ void ts::EITPlugin::handleSection (SectionDemux& demux, const Section& sect)
     // Check other/actual TS
     if (_ts_id.set()) {
         if (actual && !serv.hasTSId (_ts_id.value())) {
-            tsp->verbose ("EIT-Actual has wrong TS id %d (0x%04X)", int (serv.getTSId()), int (serv.getTSId()));
+            tsp->verbose(u"EIT-Actual has wrong TS id %d (0x%X)", {serv.getTSId(), serv.getTSId()});
         }
         else if (!actual && serv.hasId (_ts_id.value())) {
-            tsp->verbose ("EIT-Other has same TS id as current TS");
+            tsp->verbose(u"EIT-Other has same TS id as current TS");
         }
     }
 
     // Count EIT
     if (pf) {
         if (serv.eitpf_count++ == 0) {
-            tsp->verbose ("service %d (0x%04X), TS id %d (0x%04X), has EITp/f",
-                          int (serv.getId()), int (serv.getId()), int (serv.getTSId()), int (serv.getTSId()));
+            tsp->verbose(u"service %d (0x%X), TS id %d (0x%X), has EITp/f", {serv.getId(), serv.getId(), serv.getTSId(), serv.getTSId()});
         }
         if (actual) {
             _eitpf_act_count++;
@@ -425,8 +422,7 @@ void ts::EITPlugin::handleSection (SectionDemux& demux, const Section& sect)
     }
     else {
         if (serv.eits_count++ == 0) {
-            tsp->verbose ("service %d (0x%04X), TS id %d (0x%04X), has EITs",
-                          int (serv.getId()), int (serv.getId()), int (serv.getTSId()), int (serv.getTSId()));
+            tsp->verbose(u"service %d (0x%X), TS id %d (0x%X), has EITs", {serv.getId(), serv.getId(), serv.getTSId(), serv.getTSId()});
         }
         if (actual) {
             _eits_act_count++;
@@ -440,11 +436,11 @@ void ts::EITPlugin::handleSection (SectionDemux& demux, const Section& sect)
     if (!pf && _last_utc != Time::Epoch) {
         while (size >= 12) {
             Time start_time;
-            DecodeMJD (data + 2, 5, start_time);
-            serv.max_time = std::max (serv.max_time, start_time - _last_utc);
-            size_t loop_length = GetUInt16 (data + 10) & 0x0FFF;
+            DecodeMJD(data + 2, 5, start_time);
+            serv.max_time = std::max(serv.max_time, start_time - _last_utc);
+            size_t loop_length = GetUInt16(data + 10) & 0x0FFF;
             data += 12; size -= 12;
-            loop_length = std::min (loop_length, size);
+            loop_length = std::min(loop_length, size);
             data += loop_length; size -= loop_length;
         }
     }
@@ -457,6 +453,6 @@ void ts::EITPlugin::handleSection (SectionDemux& demux, const Section& sect)
 
 ts::ProcessorPlugin::Status ts::EITPlugin::processPacket (TSPacket& pkt, bool& flush, bool& bitrate_changed)
 {
-    _demux.feedPacket (pkt);
+    _demux.feedPacket(pkt);
     return TSP_OK;
 }

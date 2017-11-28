@@ -35,9 +35,6 @@
 #include "tsPlugin.h"
 #include "tsScrambling.h"
 #include "tsByteBlock.h"
-#include "tsStringUtils.h"
-#include "tsHexa.h"
-#include "tsDecimal.h"
 #include "tsService.h"
 #include "tsSectionDemux.h"
 #include "tsCyclingPacketizer.h"
@@ -101,11 +98,10 @@ namespace ts {
     {
     public:
         // Implementation of plugin API
-        ScramblerPlugin (TSP*);
-        virtual bool start();
-        virtual bool stop();
-        virtual BitRate getBitrate() {return 0;}
-        virtual Status processPacket (TSPacket&, bool&, bool&);
+        ScramblerPlugin(TSP*);
+        virtual bool start() override;
+        virtual bool stop() override;
+        virtual Status processPacket(TSPacket&, bool&, bool&) override;
 
     private:
         // Description of a crypto-period.
@@ -121,23 +117,23 @@ namespace ts {
             // Initialize first crypto period.
             // Generate two randow CW and corresponding ECM.
             // ECM generation may complete asynchronously.
-            void initCycle (ScramblerPlugin*, uint16_t cp_number);
+            void initCycle(ScramblerPlugin*, uint16_t cp_number);
 
             // Initialize crypto period following specified one.
             // ECM generation may complete asynchronously.
-            void initNext (const CryptoPeriod&);
+            void initNext(const CryptoPeriod&);
 
             // Check if ECM generation is complete (useful in asynchronous mode)
-            bool ecmReady() const {return _ecm_ok;}
+            bool ecmReady() const { return _ecm_ok; }
 
             // Get next ECM packet in ECM cycle (or null packet if ECM not ready).
-            void getNextECMPacket (TSPacket&);
+            void getNextECMPacket(TSPacket&);
 
             // Initialize the scrambler with the current control word.
             void initScramblerKey() const;
 
             // Get scrambling control value for scrambled TS packets
-            uint8_t getScramblingControlValue() const {return uint8_t((_cp_number & 0x01) ? SC_ODD_KEY : SC_EVEN_KEY);}
+            uint8_t getScramblingControlValue() const { return uint8_t((_cp_number & 0x01) ? SC_ODD_KEY : SC_EVEN_KEY); }
 
         private:
             ScramblerPlugin* _scrambler;      // Reference to scrambler plugin
@@ -224,12 +220,12 @@ namespace ts {
         void tryExitDegradedMode();
 
         // Invoked by the demux when a complete table is available.
-        virtual void handleTable (SectionDemux&, const BinaryTable&);
+        virtual void handleTable(SectionDemux&, const BinaryTable&) override;
 
         // Process specific tables
-        void processPAT (PAT&);
-        void processPMT (PMT&);
-        void processSDT (SDT&);
+        void processPAT(PAT&);
+        void processPMT(PMT&);
+        void processSDT(SDT&);
 
         // Inaccessible operations
         ScramblerPlugin() = delete;
@@ -246,8 +242,8 @@ TSPLUGIN_DECLARE_PROCESSOR(ts::ScramblerPlugin)
 // Constructor
 //----------------------------------------------------------------------------
 
-ts::ScramblerPlugin::ScramblerPlugin (TSP* tsp_) :
-    ProcessorPlugin(tsp_, "DVB scrambler.", "[options] service"),
+ts::ScramblerPlugin::ScramblerPlugin(TSP* tsp_) :
+    ProcessorPlugin(tsp_, u"DVB scrambler.", u"[options] service"),
     _service(),
     _component_level(false),
     _use_fixed_key(false),
@@ -314,112 +310,112 @@ ts::ScramblerPlugin::ScramblerPlugin (TSP* tsp_) :
     option(u"synchronous",           0);
 
     setHelp(u"Service:\n"
-             u"  Specifies the service to scramble.\n"
-             u"  If the argument is an integer value (either decimal or hexadecimal), it is\n"
-             u"  interpreted as a service id. Otherwise, it is interpreted as a service name,\n"
-             u"  as specified in the SDT. The name is not case sensitive and blanks are\n"
-             u"  ignored. If the input TS does not contain an SDT, use service ids only.\n"
-             u"\n"
-             u"Options:\n"
-             u"\n"
-             u"  -a value\n"
-             u"  --access-criteria value\n"
-             u"      Specifies the access criteria for the service as sent to the ECMG.\n"
-             u"      The value must be a suite of hexadecimal digits.\n"
-             u"\n"
-             u"  -b value\n"
-             u"  --bitrate-ecm value\n"
-             u"      Specifies the bitrate for ECM PID's in bits / second. The default is\n"
-             u"      " + Decimal (DEFAULT_ECM_BITRATE) + " b/s.\n"
-             u"\n"
-             u"  --channel-id value\n"
-             u"      Specifies the DVB SimulCrypt ECM_channel_id for the ECMG (default: 1).\n"
-             u"\n"
-             u"  -d seconds\n"
-             u"  --cp-duration seconds\n"
-             u"      Specifies the crypto-period duration in seconds (default: 10).\n"
-             u"\n"
-             u"  --component-level\n"
-             u"      Add CA_descriptors at component level in the PMT. By default, the\n"
-             u"      CA_descriptor is added at program level.\n"
-             u"\n"
-             u"  -c value\n"
-             u"  --control-word value\n"
-             u"      Specifies a fixed and constant control word for all TS packets.\n"
-             u"      The value must be a string of 16 hexadecimal digits. When using\n"
-             u"      this option, no ECMG is required.\n"
-             u"\n"
-             u"  -i value\n"
-             u"  --ecm-id value\n"
-             u"      Specifies the DVB SimulCrypt ECM_id for the ECMG (default: 1).\n"
-             u"\n"
-             u"  -e host:port\n"
-             u"  --ecmg host:port\n"
-             u"      Specify an ECM Generator. Without ECMG, a fixed control word must be\n"
-             u"      specified using --control-word.\n"
-             u"\n"
-             u"  -v value\n"
-             u"  --ecmg-scs-version value\n"
-             u"      Specifies the version of the ECMG <=> SCS DVB SimulCrypt protocol.\n"
-             u"      Valid values are 2 and 3. The default is 2.\n"
-             u"\n"
-             u"  --help\n"
-             u"      Display this help text.\n"
-             u"\n"
-             u"  --ignore-scrambled\n"
-             u"      Ignore packets which are already scrambled. Since these packets\n"
-             u"      are likely scrambled with a different control word, descrambling\n"
-             u"      will not be possible the usual way.\n"
-             u"\n"
-             u"  --no-audio\n"
-             u"      Do not scramble audio components in the selected service. By default,\n"
-             u"      all audio components are scrambled.\n"
-             u"\n"
-             u"  -n\n"
-             u"  --no-entropy-reduction\n"
-             u"      Do not perform CW entropy reduction to 48 bits. Keep full 64-bits CW.\n"
-             u"\n"
-             u"  --no-video\n"
-             u"      Do not scramble video components in the selected service. By default,\n"
-             u"      all video components are scrambled.\n"
-             u"\n"
-             u"  --partial-scrambling count\n"
-             u"      Do not scramble all packets, only one packet every \"count\" packets.\n"
-             u"      The default value is 1, meaning that all packets are scrambled.\n"
-             u"      Specifying higher values is a way to reduce the scrambling CPU load\n"
-             u"      while keeping the service mostly scrambled.\n"
-             u"\n"
-             u"  --pid-ecm value\n"
-             u"      Specifies the new ECM PID for the service. By defaut, use the first\n"
-             u"      unused PID immediately following the PMT PID. Using the default, there\n"
-             u"      is a risk to later discover that this PID is already used. In that case,\n"
-             u"      specify --pid-ecm with a notoriously unused PID value.\n"
-             u"\n"
-             u"  -p value\n"
-             u"  --private-data value\n"
-             u"      Specifies the private data to insert in the CA_descriptor in the PMT.\n"
-             u"      The value must be a suite of hexadecimal digits.\n"
-             u"\n"
-             u"  --stream-id value\n"
-             u"      Specifies the DVB SimulCrypt ECM_stream_id for the ECMG (default: 1).\n"
-             u"\n"
-             u"  --subtitles\n"
-             u"      Scramble subtitles components in the selected service. By default, the\n"
-             u"      subtitles components are not scrambled.\n"
-             u"\n"
-             u"  -s value\n"
-             u"  --super-cas-id value\n"
-             u"      Specify the DVB SimulCrypt Super_CAS_Id. This is required when --ecmg\n"
-             u"      is specified.\n"
-             u"\n"
-             u"  --synchronous\n"
-             u"      Specify to synchronously generate the ECM's. By default, continue\n"
-             u"      processing packets while generating ECM's. Use this option with\n"
-             u"      offline packet processing. Use the default (asynchronous) with live\n"
-             u"      packet processing.\n"
-             u"\n"
-             u"  --version\n"
-             u"      Display the version number.\n");
+            u"  Specifies the service to scramble.\n"
+            u"  If the argument is an integer value (either decimal or hexadecimal), it is\n"
+            u"  interpreted as a service id. Otherwise, it is interpreted as a service name,\n"
+            u"  as specified in the SDT. The name is not case sensitive and blanks are\n"
+            u"  ignored. If the input TS does not contain an SDT, use service ids only.\n"
+            u"\n"
+            u"Options:\n"
+            u"\n"
+            u"  -a value\n"
+            u"  --access-criteria value\n"
+            u"      Specifies the access criteria for the service as sent to the ECMG.\n"
+            u"      The value must be a suite of hexadecimal digits.\n"
+            u"\n"
+            u"  -b value\n"
+            u"  --bitrate-ecm value\n"
+            u"      Specifies the bitrate for ECM PID's in bits / second. The default is\n"
+            u"      " + UString::Decimal(DEFAULT_ECM_BITRATE) + u" b/s.\n"
+            u"\n"
+            u"  --channel-id value\n"
+            u"      Specifies the DVB SimulCrypt ECM_channel_id for the ECMG (default: 1).\n"
+            u"\n"
+            u"  -d seconds\n"
+            u"  --cp-duration seconds\n"
+            u"      Specifies the crypto-period duration in seconds (default: 10).\n"
+            u"\n"
+            u"  --component-level\n"
+            u"      Add CA_descriptors at component level in the PMT. By default, the\n"
+            u"      CA_descriptor is added at program level.\n"
+            u"\n"
+            u"  -c value\n"
+            u"  --control-word value\n"
+            u"      Specifies a fixed and constant control word for all TS packets.\n"
+            u"      The value must be a string of 16 hexadecimal digits. When using\n"
+            u"      this option, no ECMG is required.\n"
+            u"\n"
+            u"  -i value\n"
+            u"  --ecm-id value\n"
+            u"      Specifies the DVB SimulCrypt ECM_id for the ECMG (default: 1).\n"
+            u"\n"
+            u"  -e host:port\n"
+            u"  --ecmg host:port\n"
+            u"      Specify an ECM Generator. Without ECMG, a fixed control word must be\n"
+            u"      specified using --control-word.\n"
+            u"\n"
+            u"  -v value\n"
+            u"  --ecmg-scs-version value\n"
+            u"      Specifies the version of the ECMG <=> SCS DVB SimulCrypt protocol.\n"
+            u"      Valid values are 2 and 3. The default is 2.\n"
+            u"\n"
+            u"  --help\n"
+            u"      Display this help text.\n"
+            u"\n"
+            u"  --ignore-scrambled\n"
+            u"      Ignore packets which are already scrambled. Since these packets\n"
+            u"      are likely scrambled with a different control word, descrambling\n"
+            u"      will not be possible the usual way.\n"
+            u"\n"
+            u"  --no-audio\n"
+            u"      Do not scramble audio components in the selected service. By default,\n"
+            u"      all audio components are scrambled.\n"
+            u"\n"
+            u"  -n\n"
+            u"  --no-entropy-reduction\n"
+            u"      Do not perform CW entropy reduction to 48 bits. Keep full 64-bits CW.\n"
+            u"\n"
+            u"  --no-video\n"
+            u"      Do not scramble video components in the selected service. By default,\n"
+            u"      all video components are scrambled.\n"
+            u"\n"
+            u"  --partial-scrambling count\n"
+            u"      Do not scramble all packets, only one packet every \"count\" packets.\n"
+            u"      The default value is 1, meaning that all packets are scrambled.\n"
+            u"      Specifying higher values is a way to reduce the scrambling CPU load\n"
+            u"      while keeping the service mostly scrambled.\n"
+            u"\n"
+            u"  --pid-ecm value\n"
+            u"      Specifies the new ECM PID for the service. By defaut, use the first\n"
+            u"      unused PID immediately following the PMT PID. Using the default, there\n"
+            u"      is a risk to later discover that this PID is already used. In that case,\n"
+            u"      specify --pid-ecm with a notoriously unused PID value.\n"
+            u"\n"
+            u"  -p value\n"
+            u"  --private-data value\n"
+            u"      Specifies the private data to insert in the CA_descriptor in the PMT.\n"
+            u"      The value must be a suite of hexadecimal digits.\n"
+            u"\n"
+            u"  --stream-id value\n"
+            u"      Specifies the DVB SimulCrypt ECM_stream_id for the ECMG (default: 1).\n"
+            u"\n"
+            u"  --subtitles\n"
+            u"      Scramble subtitles components in the selected service. By default, the\n"
+            u"      subtitles components are not scrambled.\n"
+            u"\n"
+            u"  -s value\n"
+            u"  --super-cas-id value\n"
+            u"      Specify the DVB SimulCrypt Super_CAS_Id. This is required when --ecmg\n"
+            u"      is specified.\n"
+            u"\n"
+            u"  --synchronous\n"
+            u"      Specify to synchronously generate the ECM's. By default, continue\n"
+            u"      processing packets while generating ECM's. Use this option with\n"
+            u"      offline packet processing. Use the default (asynchronous) with live\n"
+            u"      packet processing.\n"
+            u"\n"
+            u"  --version\n"
+            u"      Display the version number.\n");
 }
 
 
@@ -464,73 +460,74 @@ bool ts::ScramblerPlugin::start()
     const uint16_t ecm_stream_id = intValue<uint16_t>(u"stream-id", 1);
     const uint16_t ecm_id = intValue<uint16_t>(u"ecm-id", 1);
 
-    if (!HexaDecode (_access_criteria, value(u"access-criteria"))) {
-        tsp->error ("invalid access criteria, specify an even number of hexa digits");
+    if (!value(u"access-criteria").hexaDecode(_access_criteria)) {
+        tsp->error(u"invalid access criteria, specify an even number of hexa digits");
         return false;
     }
 
-    if (!HexaDecode (_ca_desc_private, value(u"private-data"))) {
-        tsp->error ("invalid private data for CA_descriptor, specify an even number of hexa digits");
+    if (!value(u"private-data").hexaDecode(_ca_desc_private)) {
+        tsp->error(u"invalid private data for CA_descriptor, specify an even number of hexa digits");
         return false;
     }
 
     // Specify which ECMG <=> SCS version to use.
-    ecmgscs::Protocol::Instance()->setVersion (intValue<tlv::VERSION>(u"ecmg-scs-version", 2));
+    ecmgscs::Protocol::Instance()->setVersion(intValue<tlv::VERSION>(u"ecmg-scs-version", 2));
 
     // Get control word generation mechanism
     if (_use_fixed_key) {
 
         // Use a fixed control word
         ByteBlock cw;
-        if (!HexaDecode (cw, value(u"control-word")) || cw.size() != CW_BYTES) {
-            tsp->error ("invalid control word, specify 16 hexa digits");
+        if (!value(u"control-word").hexaDecode(cw) || cw.size() != CW_BYTES) {
+            tsp->error(u"invalid control word, specify 16 hexa digits");
             return false;
         }
 
         // Initialize current scrambling key
-        _current_key.init (cw.data(), _cw_mode);
-        tsp->verbose ("using fixed control word: " + Hexa (cw, hexa::SINGLE_LINE));
+        _current_key.init(cw.data(), _cw_mode);
+        tsp->verbose(u"using fixed control word: " + UString::Dump(cw, UString::SINGLE_LINE));
     }
     else if (!present(u"ecmg")) {
         // No --cw, no --ecmg, how do we do?
-        tsp->error ("specify either --control-word or --ecmg");
+        tsp->error(u"specify either --control-word or --ecmg");
         return false;
     }
-    else if (!_ecmg_addr.resolve (value(u"ecmg"), *tsp)) {
+    else if (!_ecmg_addr.resolve(value(u"ecmg"), *tsp)) {
         // Invalid host:port, error message already reported
         return false;
     }
     else if (!present(u"super-cas-id")) {
-        tsp->error ("--super-cas-id is required with --ecmg");
+        tsp->error(u"--super-cas-id is required with --ecmg");
         return false;
     }
-    else if (!_ecmg.connect (_ecmg_addr, _super_cas_id, ecm_channel_id, ecm_stream_id, ecm_id,
-                             uint16_t (_cp_duration / 100), _channel_status, _stream_status, tsp, tsp)) {
+    else if (!_ecmg.connect(_ecmg_addr, _super_cas_id, ecm_channel_id, ecm_stream_id, ecm_id,
+                            uint16_t(_cp_duration / 100), _channel_status, _stream_status, tsp, tsp))
+    {
         // Error connecting to ECMG, error message already reported
         return false;
     }
     else {
         // Now correctly connected to ECMG.
         // Validate delay start.
-        _delay_start = MilliSecond (_channel_status.delay_start);
+        _delay_start = MilliSecond(_channel_status.delay_start);
         if (_delay_start > _cp_duration / 2) {
             _delay_start = _cp_duration / 2;
         }
         else if (_delay_start < -_cp_duration / 2) {
             _delay_start = -_cp_duration / 2;
         }
-        tsp->debug ("crypto-period duration: %" FMT_INT64 "d ms, delay start: %" FMT_INT64 "d ms", _cp_duration, _delay_start);
+        tsp->debug(u"crypto-period duration: %'d ms, delay start: %'d ms", {_cp_duration, _delay_start});
 
         // The PMT will be modified, initialize the PMT packetizer
         _pzer_pmt.reset();
-        _pzer_pmt.setStuffingPolicy (CyclingPacketizer::ALWAYS);
+        _pzer_pmt.setStuffingPolicy(CyclingPacketizer::ALWAYS);
 
         // Create first and second crypto-periods
         _current_cw = 0;
         _current_ecm = 0;
-        _cp[0].initCycle (this, 0);
+        _cp[0].initCycle(this, 0);
         _cp[0].initScramblerKey();
-        _cp[1].initNext (_cp[0]);
+        _cp[1].initNext(_cp[0]);
     }
 
     // Initialize the demux.
@@ -560,7 +557,7 @@ bool ts::ScramblerPlugin::stop()
         _ecmg.disconnect();
     }
 
-    tsp->debug ("scrambled " + Decimal (_scrambled_count) + " packets in " + Decimal (_scrambled_pids.count()) + " PID's");
+    tsp->debug(u"scrambled %'d packets in %'d PID's", {_scrambled_count, _scrambled_pids.count()});
     return true;
 }
 
@@ -569,15 +566,15 @@ bool ts::ScramblerPlugin::stop()
 // Invoked by the demux when a complete table is available.
 //----------------------------------------------------------------------------
 
-void ts::ScramblerPlugin::handleTable (SectionDemux& demux, const BinaryTable& table)
+void ts::ScramblerPlugin::handleTable(SectionDemux& demux, const BinaryTable& table)
 {
     switch (table.tableId()) {
 
         case TID_PAT: {
             if (table.sourcePID() == PID_PAT) {
-                PAT pat (table);
+                PAT pat(table);
                 if (pat.isValid()) {
-                    processPAT (pat);
+                    processPAT(pat);
                 }
             }
             break;
@@ -585,9 +582,9 @@ void ts::ScramblerPlugin::handleTable (SectionDemux& demux, const BinaryTable& t
 
         case TID_SDT_ACT: {
             if (table.sourcePID() == PID_SDT) {
-                SDT sdt (table);
+                SDT sdt(table);
                 if (sdt.isValid()) {
-                    processSDT (sdt);
+                    processSDT(sdt);
                 }
             }
             break;
@@ -595,7 +592,7 @@ void ts::ScramblerPlugin::handleTable (SectionDemux& demux, const BinaryTable& t
 
         case TID_PMT: {
             PMT pmt (table);
-            if (pmt.isValid() && _service.hasId (pmt.service_id)) {
+            if (pmt.isValid() && _service.hasId(pmt.service_id)) {
                 processPMT (pmt);
             }
             break;
@@ -612,26 +609,26 @@ void ts::ScramblerPlugin::handleTable (SectionDemux& demux, const BinaryTable& t
 //  This method processes a Service Description Table (SDT).
 //----------------------------------------------------------------------------
 
-void ts::ScramblerPlugin::processSDT (SDT& sdt)
+void ts::ScramblerPlugin::processSDT(SDT& sdt)
 {
     // Look for the service by name
     uint16_t service_id;
-    assert (_service.hasName());
-    if (!sdt.findService (_service.getName(), service_id)) {
-        tsp->error ("service \"" + _service.getName() + "\" not found in SDT");
+    assert(_service.hasName());
+    if (!sdt.findService(_service.getName(), service_id)) {
+        tsp->error(u"service \"%s\" not found in SDT", {_service.getName()});
         _abort = true;
         return;
     }
 
     // Remember service id
     _service.setId (service_id);
-    tsp->verbose ("service id is 0x%04X", int (service_id));
+    tsp->verbose(u"service id is 0x%X", {service_id});
 
     // No longer need to filter the SDT
-    _demux.removePID (PID_SDT);
+    _demux.removePID(PID_SDT);
 
     // Now filter the PAT to get the PMT PID's
-    _demux.addPID (PID_PAT);
+    _demux.addPID(PID_PAT);
 }
 
 
@@ -643,7 +640,7 @@ void ts::ScramblerPlugin::processPAT (PAT& pat)
 {
     // Register all PMT PID's as used.
     for (PAT::ServiceMap::const_iterator it = pat.pmts.begin(); it != pat.pmts.end(); ++it) {
-        _input_pids.set (it->second);
+        _input_pids.set(it->second);
     }
 
     // Search service in the PAT
@@ -651,22 +648,22 @@ void ts::ScramblerPlugin::processPAT (PAT& pat)
     PAT::ServiceMap::const_iterator patit = pat.pmts.find (_service.getId());
     if (patit == pat.pmts.end()) {
         // Service not found, error
-        tsp->error ("service id %d (0x%04X) not found in PAT", int (_service.getId()), int (_service.getId()));
+        tsp->error(u"service id %d (0x%X) not found in PAT", {_service.getId(), _service.getId()});
         _abort = true;
         return;
     }
 
     // If a previous PMT PID was known, no long filter it
     if (_service.hasPMTPID()) {
-        _demux.removePID (_service.getPMTPID());
+        _demux.removePID(_service.getPMTPID());
     }
 
     // Filter PMT PID
-    _service.setPMTPID (patit->second);
-    _demux.addPID (patit->second);
+    _service.setPMTPID(patit->second);
+    _demux.addPID(patit->second);
 
     // Set PID to PMT packetizer
-    _pzer_pmt.setPID (patit->second);
+    _pzer_pmt.setPID(patit->second);
 }
 
 
@@ -674,21 +671,21 @@ void ts::ScramblerPlugin::processPAT (PAT& pat)
 //  This method processes a Program Map Table (PMT).
 //----------------------------------------------------------------------------
 
-void ts::ScramblerPlugin::processPMT (PMT& pmt)
+void ts::ScramblerPlugin::processPMT(PMT& pmt)
 {
     // Make sure this is the right service
-    if (!_service.hasId (pmt.service_id)) {
+    if (!_service.hasId(pmt.service_id)) {
         return;
     }
 
     // Collect all PIDS to scramble
     for (PMT::StreamMap::const_iterator it = pmt.streams.begin(); it != pmt.streams.end(); ++it) {
         const PID pid = it->first;
-        const PMT::Stream& stream (it->second);
-        _input_pids.set (pid);
+        const PMT::Stream& stream(it->second);
+        _input_pids.set(pid);
         if ((_scramble_audio && stream.isAudio()) || (_scramble_video && stream.isVideo()) || (_scramble_subtitles && stream.isSubtitles())) {
-            _scrambled_pids.set (pid);
-            tsp->verbose ("starting scrambling PID 0x%04X", int (pid));
+            _scrambled_pids.set(pid);
+            tsp->verbose(u"starting scrambling PID 0x%X", {pid});
         }
     }
 
@@ -697,11 +694,11 @@ void ts::ScramblerPlugin::processPMT (PMT& pmt)
         // Start at service PMT PID, then look for an unused one.
         for (_ecm_pid = _service.getPMTPID() + 1; _ecm_pid < PID_NULL && _input_pids.test (_ecm_pid); _ecm_pid++) {}
         if (_ecm_pid >= PID_NULL) {
-            tsp->error ("cannot find an unused PID for ECM, try --pid-ecm");
+            tsp->error(u"cannot find an unused PID for ECM, try --pid-ecm");
             _abort = true;
         }
         else {
-            tsp->verbose ("using PID %d (0x%04X) for ECM", int (_ecm_pid), int (_ecm_pid));
+            tsp->verbose(u"using PID %d (0x%X) for ECM", {_ecm_pid, _ecm_pid});
         }
     }
 
@@ -716,19 +713,19 @@ void ts::ScramblerPlugin::processPMT (PMT& pmt)
         if (_component_level) {
             // Add a CA_descriptor in each scrambled component
             for (PMT::StreamMap::iterator it = pmt.streams.begin(); it != pmt.streams.end(); ++it) {
-                if (_scrambled_pids.test (it->first)) {
-                    it->second.descs.add (ca_desc);
+                if (_scrambled_pids.test(it->first)) {
+                    it->second.descs.add(ca_desc);
                 }
             }
         }
         else {
             // Add one single CA_descriptor at program level
-            pmt.descs.add (ca_desc);
+            pmt.descs.add(ca_desc);
         }
 
         // Packetize the modified PMT
-        _pzer_pmt.removeSections (TID_PMT, pmt.service_id);
-        _pzer_pmt.addTable (pmt);
+        _pzer_pmt.removeSections(TID_PMT, pmt.service_id);
+        _pzer_pmt.addTable(pmt);
     }
 
     // We are now ready to scramble packets
@@ -739,7 +736,7 @@ void ts::ScramblerPlugin::processPMT (PMT& pmt)
 
         // We need to know the bitrate in order to schedule crypto-periods
         if (_ts_bitrate == 0) {
-            tsp->error ("unknown bitrate, cannot schedule crypto-periods");
+            tsp->error(u"unknown bitrate, cannot schedule crypto-periods");
             _abort = true;
             return;
         }
@@ -774,7 +771,7 @@ bool ts::ScramblerPlugin::inDegradedMode()
     }
     else {
         // Entering degraded mode
-        tsp->warning ("Next ECM not ready, entering degraded mode");
+        tsp->warning(u"Next ECM not ready, entering degraded mode");
         return _degraded_mode = true;
     }
 }
@@ -797,7 +794,7 @@ void ts::ScramblerPlugin::tryExitDegradedMode()
     }
 
     // Next ECM is ready, at last. Exit degraded mode.
-    tsp->info ("Next ECM ready, exiting from degraded mode");
+    tsp->info(u"Next ECM ready, exiting from degraded mode");
     _degraded_mode = false;
 
     // Compute next CW and ECM change.
@@ -811,7 +808,7 @@ void ts::ScramblerPlugin::tryExitDegradedMode()
         // Change CW now.
         changeCW();
         // Start broadcasting ECM after beginning of crypto-period
-        _pkt_change_ecm = _packet_count + PacketDistance (_ts_bitrate, _delay_start);
+        _pkt_change_ecm = _packet_count + PacketDistance(_ts_bitrate, _delay_start);
     }
 }
 
@@ -864,7 +861,7 @@ ts::ProcessorPlugin::Status ts::ScramblerPlugin::processPacket (TSPacket& pkt, b
 
     // Track all input PIDs
     const PID pid = pkt.getPID();
-    _input_pids.set (pid);
+    _input_pids.set(pid);
 
     // Maintain bitrate, keep previous one if unknown
     {
@@ -875,7 +872,7 @@ ts::ProcessorPlugin::Status ts::ScramblerPlugin::processPacket (TSPacket& pkt, b
     }
 
     // Filter interesting sections
-    _demux.feedPacket (pkt);
+    _demux.feedPacket(pkt);
 
     // If a fatal error occured during section analysis, give up.
     if (_abort) {
@@ -884,7 +881,7 @@ ts::ProcessorPlugin::Status ts::ScramblerPlugin::processPacket (TSPacket& pkt, b
 
     // Abort if allocated PID for ECM is already present in TS
     if (_ecm_pid != PID_NULL && pid == _ecm_pid) {
-        tsp->error ("ECM PID allocation conflict, used 0x%04X, now found as input PID, try another --pid-ecm", int (pid));
+        tsp->error(u"ECM PID allocation conflict, used 0x%X, now found as input PID, try another --pid-ecm", {pid});
         return TSP_END;
     }
 
@@ -898,7 +895,7 @@ ts::ProcessorPlugin::Status ts::ScramblerPlugin::processPacket (TSPacket& pkt, b
 
         // Packetize modified PMT when ECM generation is used
         if (pid == _pzer_pmt.getPID()) {
-            _pzer_pmt.getNextPacket (pkt);
+            _pzer_pmt.getNextPacket(pkt);
             return TSP_OK;
         }
 
@@ -916,8 +913,8 @@ ts::ProcessorPlugin::Status ts::ScramblerPlugin::processPacket (TSPacket& pkt, b
         if (pid == PID_NULL && _packet_count >= _pkt_insert_ecm) {
 
             // Compute next insertion point (approximate)
-            assert (_ecm_bitrate != 0);
-            _pkt_insert_ecm += BitRate (_ts_bitrate / _ecm_bitrate);
+            assert(_ecm_bitrate != 0);
+            _pkt_insert_ecm += BitRate(_ts_bitrate / _ecm_bitrate);
 
             // Exit degraded mode ?
             tryExitDegradedMode();
@@ -937,13 +934,13 @@ ts::ProcessorPlugin::Status ts::ScramblerPlugin::processPacket (TSPacket& pkt, b
     if (pkt.isScrambled()) {
         if (_ignore_scrambled) {
             if (!_conflict_pids.test (pid)) {
-                tsp->verbose ("found input scrambled packets in PID %d (0x%04X), ignored", int (pid), int (pid));
+                tsp->verbose(u"found input scrambled packets in PID %d (0x%X), ignored", {pid, pid});
                 _conflict_pids.set (pid);
             }
             return TSP_OK;
         }
         else {
-            tsp->error ("packet already scrambled in PID %d (0x%04X)", int (pid), int (pid));
+            tsp->error(u"packet already scrambled in PID %d (0x%X)", {pid, pid});
             return TSP_END;
         }
     }
@@ -960,16 +957,16 @@ ts::ProcessorPlugin::Status ts::ScramblerPlugin::processPacket (TSPacket& pkt, b
     }
 
     // Scramble the packet payload.
-    _current_key.encrypt (pkt.getPayload(), pkt.getPayloadSize());
+    _current_key.encrypt(pkt.getPayload(), pkt.getPayloadSize());
     _scrambled_count++;
 
     // Set scrambling_control_value in TS header.
     if (_use_fixed_key) {
         // With fixed key, use "even key" (there is only one key but we must set something).
-        pkt.setScrambling (SC_EVEN_KEY);
+        pkt.setScrambling(SC_EVEN_KEY);
     }
     else {
-        pkt.setScrambling (currentCW().getScramblingControlValue());
+        pkt.setScrambling(currentCW().getScramblingControlValue());
     }
 
     return TSP_OK;
@@ -1000,8 +997,8 @@ void ts::ScramblerPlugin::CryptoPeriod::initCycle (ScramblerPlugin* scrambler, u
 {
     _scrambler = scrambler;
     _cp_number = cp_number;
-    _scrambler->_cw_gen.read (_cw_current, sizeof(_cw_current));
-    _scrambler->_cw_gen.read (_cw_next, sizeof(_cw_next));
+    _scrambler->_cw_gen.read(_cw_current, sizeof(_cw_current));
+    _scrambler->_cw_gen.read(_cw_next, sizeof(_cw_next));
     generateECM();
 }
 
@@ -1031,29 +1028,29 @@ void ts::ScramblerPlugin::CryptoPeriod::generateECM()
     if (_scrambler->_synchronous_ecmg) {
         // Synchronous ECM generation
         ecmgscs::ECMResponse response;
-        if (!_scrambler->_ecmg.generateECM (_cp_number,
-                                            _cw_current,
-                                            _cw_next,
-                                            _scrambler->_access_criteria.data(),
-                                            _scrambler->_access_criteria.size(),
-                                            uint16_t (_scrambler->_cp_duration / 100),
-                                            response)) {
+        if (!_scrambler->_ecmg.generateECM(_cp_number,
+                                           _cw_current,
+                                           _cw_next,
+                                           _scrambler->_access_criteria.data(),
+                                           _scrambler->_access_criteria.size(),
+                                           uint16_t(_scrambler->_cp_duration / 100),
+                                           response)) {
             // Error, message already reported
             _scrambler->_abort = true;
         }
         else {
-            handleECM (response);
+            handleECM(response);
         }
     }
     else {
         // Asynchronous ECM generation
-        if (!_scrambler->_ecmg.submitECM (_cp_number,
-                                          _cw_current,
-                                          _cw_next,
-                                          _scrambler->_access_criteria.data(),
-                                          _scrambler->_access_criteria.size(),
-                                          uint16_t (_scrambler->_cp_duration / 100),
-                                          this)) {
+        if (!_scrambler->_ecmg.submitECM(_cp_number,
+                                         _cw_current,
+                                         _cw_next,
+                                         _scrambler->_access_criteria.data(),
+                                         _scrambler->_access_criteria.size(),
+                                         uint16_t(_scrambler->_cp_duration / 100),
+                                         this)) {
             // Error, message already reported
             _scrambler->_abort = true;
         }
@@ -1069,21 +1066,21 @@ void ts::ScramblerPlugin::CryptoPeriod::handleECM(const ecmgscs::ECMResponse& re
 {
     if (_scrambler->_channel_status.section_TSpkt_flag == 0) {
         // ECMG returns ECM in section format
-        SectionPtr sp (new Section (response.ECM_datagram));
+        SectionPtr sp(new Section(response.ECM_datagram));
         if (!sp->isValid()) {
-            _scrambler->tsp->error ("ECMG returned an invalid ECM section (%" FMT_SIZE_T "d bytes)", response.ECM_datagram.size());
+            _scrambler->tsp->error(u"ECMG returned an invalid ECM section (%d bytes)", {response.ECM_datagram.size()});
             _scrambler->_abort = true;
             return;
         }
         // Packetize the section
-        OneShotPacketizer pzer (_scrambler->_ecm_pid, true);
-        pzer.addSection (sp);
-        pzer.getPackets (_ecm);
+        OneShotPacketizer pzer(_scrambler->_ecm_pid, true);
+        pzer.addSection(sp);
+        pzer.getPackets(_ecm);
 
     }
     else if (response.ECM_datagram.size() % PKT_SIZE != 0) {
         // ECMG returns ECM in packet format, but not an integral number of packets
-        _scrambler->tsp->error ("invalid ECM size (%" FMT_SIZE_T "d bytes), not a multiple of %" FMT_SIZE_T "d", response.ECM_datagram.size(), PKT_SIZE);
+        _scrambler->tsp->error(u"invalid ECM size (%d bytes), not a multiple of %d", {response.ECM_datagram.size(), PKT_SIZE});
         _scrambler->_abort = true;
         return;
     }
@@ -1093,7 +1090,7 @@ void ts::ScramblerPlugin::CryptoPeriod::handleECM(const ecmgscs::ECMResponse& re
         ::memcpy(&_ecm[0].b, response.ECM_datagram.data(), response.ECM_datagram.size());  // Flawfinder: ignore: memcpy()
     }
 
-    _scrambler->tsp->debug ("got ECM for crypto-period %d, %" FMT_SIZE_T "d packets", int (_cp_number), _ecm.size());
+    _scrambler->tsp->debug(u"got ECM for crypto-period %d, %d packets", {_cp_number, _ecm.size()});
 
     _ecm_pkt_index = 0;
 
@@ -1114,15 +1111,15 @@ void ts::ScramblerPlugin::CryptoPeriod::getNextECMPacket (TSPacket& pkt)
     }
     else {
         // Copy ECM packet
-        assert (_ecm_pkt_index < _ecm.size());
-        pkt = _ecm [_ecm_pkt_index];
+        assert(_ecm_pkt_index < _ecm.size());
+        pkt = _ecm[_ecm_pkt_index];
         // Move to next ECM packet
         if (++_ecm_pkt_index >= _ecm.size()) {
             _ecm_pkt_index = 0;
         }
         // Adjust PID and continuity counter in TS packet
-        pkt.setPID (_scrambler->_ecm_pid);
-        pkt.setCC (_scrambler->_ecm_cc);
+        pkt.setPID(_scrambler->_ecm_pid);
+        pkt.setCC(_scrambler->_ecm_cc);
         _scrambler->_ecm_cc = (_scrambler->_ecm_cc + 1) & 0x0F;
     }
 }
@@ -1134,6 +1131,6 @@ void ts::ScramblerPlugin::CryptoPeriod::getNextECMPacket (TSPacket& pkt)
 
 void ts::ScramblerPlugin::CryptoPeriod::initScramblerKey() const
 {
-    _scrambler->tsp->debug ("using new control word: " + Hexa (_cw_current, sizeof(_cw_current), hexa::SINGLE_LINE));
-    _scrambler->_current_key.init (_cw_current, _scrambler->_cw_mode);
+    _scrambler->tsp->debug(u"using new control word: " + UString::Dump(_cw_current, sizeof(_cw_current), UString::SINGLE_LINE));
+    _scrambler->_current_key.init(_cw_current, _scrambler->_cw_mode);
 }

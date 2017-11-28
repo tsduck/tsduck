@@ -46,11 +46,9 @@ namespace ts {
     {
     public:
         // Implementation of plugin API
-        UntilPlugin (TSP*);
-        virtual bool start();
-        virtual bool stop() {return true;}
-        virtual BitRate getBitrate() {return 0;}
-        virtual Status processPacket (TSPacket&, bool&, bool&);
+        UntilPlugin(TSP*);
+        virtual bool start() override;
+        virtual Status processPacket(TSPacket&, bool&, bool&) override;
 
     private:
         bool           _exclude_last;     // Exclude packet which triggers the condition
@@ -83,7 +81,7 @@ TSPLUGIN_DECLARE_PROCESSOR(ts::UntilPlugin)
 //----------------------------------------------------------------------------
 
 ts::UntilPlugin::UntilPlugin (TSP* tsp_) :
-    ProcessorPlugin(tsp_, "Copy packets until one of the specified conditions is met.", "[options]"),
+    ProcessorPlugin(tsp_, u"Copy packets until one of the specified conditions is met.", u"[options]"),
     _exclude_last(false),
     _pack_max(0),
     _pack_cnt(0),
@@ -108,49 +106,49 @@ ts::UntilPlugin::UntilPlugin (TSP* tsp_) :
     option(u"unit-start-count",    'u', UNSIGNED);
 
     setHelp(u"Options:\n"
-             u"\n"
-             u"  -b value\n"
-             u"  --bytes value\n"
-             u"      Stop after processing the specified number of bytes.\n"
-             u"\n"
-             u"  -e\n"
-             u"  --exclude-last\n"
-             u"      Exclude the last packet (the one which triggers the final condition).\n"
-             u"\n"
-             u"  --help\n"
-             u"      Display this help text.\n"
-             u"\n"
-             u"  -j\n"
-             u"  --joint-termination\n"
-             u"      When the final condition is triggered, perform a \"joint termination\"\n"
-             u"      instead of unconditional termination.\n"
-             u"      See \"tsp --help\" for more details on \"joint termination\".\n"
-             u"\n"
-             u"  -m value\n"
-             u"  --milli-seconds value\n"
-             u"      Stop the specified number of milli-seconds after receiving the\n"
-             u"      first packet.\n"
-             u"\n"
-             u"  -n value\n"
-             u"  --null-sequence-count value\n"
-             u"      Stop when the specified number of sequences of consecutive null\n"
-             u"      packets is encountered.\n"
-             u"\n"
-             u"  -p value\n"
-             u"  --packets value\n"
-             u"      Stop after the specified number of packets.\n"
-             u"\n"
-             u"  -s value\n"
-             u"  --seconds value\n"
-             u"      Stop the specified number of seconds after receiving the first packet.\n"
-             u"\n"
-             u"  -u value\n"
-             u"  --unit-start-count value\n"
-             u"      Stop when the specified number of packets containing a payload\n"
-             u"      unit start indicator is encountered.\n"
-             u"\n"
-             u"  --version\n"
-             u"      Display the version number.\n");
+            u"\n"
+            u"  -b value\n"
+            u"  --bytes value\n"
+            u"      Stop after processing the specified number of bytes.\n"
+            u"\n"
+            u"  -e\n"
+            u"  --exclude-last\n"
+            u"      Exclude the last packet (the one which triggers the final condition).\n"
+            u"\n"
+            u"  --help\n"
+            u"      Display this help text.\n"
+            u"\n"
+            u"  -j\n"
+            u"  --joint-termination\n"
+            u"      When the final condition is triggered, perform a \"joint termination\"\n"
+            u"      instead of unconditional termination.\n"
+            u"      See \"tsp --help\" for more details on \"joint termination\".\n"
+            u"\n"
+            u"  -m value\n"
+            u"  --milli-seconds value\n"
+            u"      Stop the specified number of milli-seconds after receiving the\n"
+            u"      first packet.\n"
+            u"\n"
+            u"  -n value\n"
+            u"  --null-sequence-count value\n"
+            u"      Stop when the specified number of sequences of consecutive null\n"
+            u"      packets is encountered.\n"
+            u"\n"
+            u"  -p value\n"
+            u"  --packets value\n"
+            u"      Stop after the specified number of packets.\n"
+            u"\n"
+            u"  -s value\n"
+            u"  --seconds value\n"
+            u"      Stop the specified number of seconds after receiving the first packet.\n"
+            u"\n"
+            u"  -u value\n"
+            u"  --unit-start-count value\n"
+            u"      Stop when the specified number of packets containing a payload\n"
+            u"      unit start indicator is encountered.\n"
+            u"\n"
+            u"  --version\n"
+            u"      Display the version number.\n");
 }
 
 

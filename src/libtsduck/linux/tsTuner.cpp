@@ -600,11 +600,11 @@ bool ts::Tuner::getCurrentTuning(TunerParameters& params, bool reset_unknown, Re
 void ts::Tuner::discardFrontendEvents(Report& report)
 {
     ::dvb_frontend_event event;
-    report.debug("starting discarding frontend events");
+    report.debug(u"starting discarding frontend events");
     while (::ioctl(_frontend_fd, FE_GET_EVENT, &event) >= 0) {
-        report.debug("one frontend event discarded");
+        report.debug(u"one frontend event discarded");
     }
-    report.debug("finished discarding frontend events");
+    report.debug(u"finished discarding frontend events");
 }
 
 
@@ -614,7 +614,7 @@ void ts::Tuner::discardFrontendEvents(Report& report)
 
 bool ts::Tuner::tune(DTVProperties& props, Report& report)
 {
-    report.debug("tuning on " + _frontend_name);
+    report.debug(u"tuning on " + _frontend_name);
     props.report(report, Severity::Debug);
     if (::ioctl(_frontend_fd, FE_SET_PROPERTY, props.getIoctlParam()) < 0) {
         report.error(u"tuning error on %s: %s", {_frontend_name, ErrorCodeMessage()});

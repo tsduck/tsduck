@@ -34,7 +34,6 @@
 
 #include "tsPlugin.h"
 #include "tsMonotonic.h"
-#include "tsDecimal.h"
 TSDUCK_SOURCE;
 
 #define DEF_PACKET_BURST 16
@@ -50,10 +49,8 @@ namespace ts {
     public:
         // Implementation of plugin API
         RegulatePlugin(TSP*);
-        virtual bool start();
-        virtual bool stop() {return true;}
-        virtual BitRate getBitrate() {return _cur_bitrate;}
-        virtual Status processPacket(TSPacket&, bool&, bool&);
+        virtual bool start() override;
+        virtual Status processPacket(TSPacket&, bool&, bool&) override;
 
     private:
         // Regulation state
@@ -95,7 +92,7 @@ TSPLUGIN_DECLARE_PROCESSOR(ts::RegulatePlugin)
 //----------------------------------------------------------------------------
 
 ts::RegulatePlugin::RegulatePlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, "Regulate the TS packets flow to a specified bitrate.", "[options]"),
+    ProcessorPlugin(tsp_, u"Regulate the TS packets flow to a specified bitrate.", u"[options]"),
     _state(INITIAL),
     _opt_bitrate(0),
     _cur_bitrate(0),
@@ -155,7 +152,7 @@ bool ts::RegulatePlugin::start()
 
     _burst_min = Monotonic::SetPrecision(2000000); // 2 milliseconds in nanoseconds
 
-    tsp->verbose("minimum packet burst duration is " + Decimal(_burst_min) + " nano-seconds");
+    tsp->verbose(u"minimum packet burst duration is %'d nano-seconds", {_burst_min});
 
     // Reset state
     _state = INITIAL;
@@ -188,10 +185,8 @@ void ts::RegulatePlugin::handleNewBitrate()
         _burst_pkt_max = (_burst_duration * _cur_bitrate) / (NanoSecPerSec * PKT_SIZE * 8);
     }
 
-    if (tsp->debug()) {
-        tsp->debug("new regulation, burst: " + Decimal(_burst_duration) + " nano-seconds, " + Decimal(_burst_pkt_max) + " packets");
-    }
-
+    tsp->debug(u"new regulation, burst: %'d nano-seconds, %'d packets", {_burst_duration, _burst_pkt_max});
+    
     // Register start of bitrate sequence.
     _bitrate_pkt_cnt = 0;
     _bitrate_start.getSystemTime();
@@ -244,22 +239,20 @@ ts::ProcessorPlugin::Status ts::RegulatePlugin::regulatePacket(bool& flush, bool
 ts::ProcessorPlugin::Status ts::RegulatePlugin::processPacket(TSPacket& pkt, bool& flush, bool& bitrate_changed)
 {
     // Compute old and new bitrate (most often the same)
-
     BitRate old_bitrate = _cur_bitrate;
     _cur_bitrate = _opt_bitrate != 0 ? _opt_bitrate : tsp->bitrate();
 
     if (tsp->verbose() && (_cur_bitrate != old_bitrate || _state == INITIAL)) {
         // Initial state or new bitrate
         if (_cur_bitrate == 0) {
-            tsp->verbose("unknown bitrate, cannot regulate.");
+            tsp->verbose(u"unknown bitrate, cannot regulate.");
         }
         else {
-            tsp->verbose("regulated at bitrate " + Decimal(_cur_bitrate) + " b/s");
+            tsp->verbose(u"regulated at bitrate %'d b/s", {_cur_bitrate});
         }
     }
 
     // Process with state machine
-
     switch (_state) {
 
         case INITIAL: {
@@ -353,6 +346,6 @@ ts::ProcessorPlugin::Status ts::RegulatePlugin::processPacket(TSPacket& pkt, boo
     }
 
     // Should never get there...
-    tsp->error("internal error, invalid regulator state");
+    tsp->error(u"internal error, invalid regulator state");
     return TSP_END;
 }

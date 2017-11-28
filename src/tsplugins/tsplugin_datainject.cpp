@@ -37,7 +37,6 @@
 #include "tsEMMGMUX.h"
 #include "tstlvConnection.h"
 #include "tsTCPServer.h"
-#include "tsDecimal.h"
 #include "tsMessageQueue.h"
 #include "tsDoubleCheckLock.h"
 #include "tsThread.h"
@@ -58,10 +57,9 @@ namespace ts {
     public:
         // Implementation of plugin API
         DataInjectPlugin(TSP*);
-        virtual bool start();
-        virtual bool stop();
-        virtual BitRate getBitrate() {return 0;}
-        virtual Status processPacket(TSPacket&, bool&, bool&);
+        virtual bool start() override;
+        virtual bool stop() override;
+        virtual Status processPacket(TSPacket&, bool&, bool&) override;
 
     private:
         typedef MessageQueue<TSPacket, Mutex> TSPacketQueue;
@@ -159,7 +157,7 @@ ts::DataInjectPlugin::DataInjectPlugin (TSP* tsp_) :
             u"  --queue-size value\n"
             u"      Specifies the maximum number of data TS packets in the internal queue,\n"
             u"      ie. packets which are received from the EMMG/PDG client but not yet\n"
-            u"      inserted into the TS. The default is " + Decimal (DEFAULT_PACKET_QUEUE_SIZE) + ".\n"
+            u"      inserted into the TS. The default is " TS_USTRINGIFY(DEFAULT_PACKET_QUEUE_SIZE) u".\n"
             u"\n"
             u"  -r\n"
             u"  --reuse-port\n"
@@ -188,28 +186,28 @@ bool ts::DataInjectPlugin::start()
     // Command line options
     _max_bitrate = intValue<BitRate>(u"bitrate-max", 0);
     _data_pid = intValue<PID>(u"pid");
-    _queue.setMaxMessages (intValue<size_t>(u"queue-size", DEFAULT_PACKET_QUEUE_SIZE));
+    _queue.setMaxMessages(intValue<size_t>(u"queue-size", DEFAULT_PACKET_QUEUE_SIZE));
 
     // Specify which EMMG/PDG <=> MUX version to use.
-    emmgmux::Protocol::Instance()->setVersion (intValue<tlv::VERSION>(u"emmg-mux-version", 2));
+    emmgmux::Protocol::Instance()->setVersion(intValue<tlv::VERSION>(u"emmg-mux-version", 2));
 
     // Initialize the TCP server
     SocketAddress server_address;
-    if (!server_address.resolve (value(u"server"), *tsp)) {
+    if (!server_address.resolve(value(u"server"), *tsp)) {
         return false;
     }
-    if (!_server.open (*tsp)) {
+    if (!_server.open(*tsp)) {
         return false;
     }
-    if (!_server.reusePort (present(u"reuse-port"), *tsp) || !_server.bind (server_address, *tsp) || !_server.listen (SERVER_BACKLOG, *tsp)) {
-        _server.close (*tsp);
+    if (!_server.reusePort(present(u"reuse-port"), *tsp) || !_server.bind(server_address, *tsp) || !_server.listen(SERVER_BACKLOG, *tsp)) {
+        _server.close(*tsp);
         return false;
     }
 
     // Initial bandwidth allocation (zero means unlimited)
     _req_bitrate = _max_bitrate;
     _req_bitrate_prot = _max_bitrate;
-    tsp->verbose ("initial bandwidth allocation is " + (_req_bitrate == 0 ? "unlimited" : Decimal (_req_bitrate) + " b/s"));
+    tsp->verbose(u"initial bandwidth allocation is %s", {_req_bitrate == 0 ? u"unlimited" : UString::Decimal(_req_bitrate) + u" b/s"});
 
     // TS processing state
     _data_cc = 0;
@@ -256,7 +254,7 @@ ts::ProcessorPlugin::Status ts::DataInjectPlugin::processPacket (TSPacket& pkt, 
     // Abort if data PID is already present in TS
     const PID pid = pkt.getPID();
     if (pid == _data_pid) {
-        tsp->error ("data PID conflict, specified %d (0x%04X), now found as input PID, try another one", int (pid), int (pid));
+        tsp->error(u"data PID conflict, specified %d (0x%X), now found as input PID, try another one", {pid, pid});
         return TSP_END;
     }
 
@@ -267,7 +265,7 @@ ts::ProcessorPlugin::Status ts::DataInjectPlugin::processPacket (TSPacket& pkt, 
 
     // Update data PID bitrate
     if (_req_bitrate_lock.changed()) {
-        DoubleCheckLock::Reader guard (_req_bitrate_lock);
+        DoubleCheckLock::Reader guard(_req_bitrate_lock);
         _req_bitrate = _req_bitrate_prot;
         // Reinitialize insertion point when bitrate changes
         _pkt_next_data = _pkt_current;
@@ -302,7 +300,7 @@ ts::ProcessorPlugin::Status ts::DataInjectPlugin::processPacket (TSPacket& pkt, 
 
 void ts::DataInjectPlugin::main()
 {
-    tsp->debug ("server thread started");
+    tsp->debug(u"server thread started");
 
     SocketAddress client_address;
     emmgmux::ChannelStatus channel_status;
@@ -311,7 +309,7 @@ void ts::DataInjectPlugin::main()
     // Loop on client acceptance
     while (_server.accept (_client, client_address, *tsp)) {
 
-        tsp->verbose ("incoming connection from " + std::string (client_address));
+        tsp->verbose(u"incoming connection from %s", {client_address.toString()});
 
         // Connection state
         bool ok = true;
@@ -320,7 +318,7 @@ void ts::DataInjectPlugin::main()
         tlv::MessagePtr msg;
 
         // Loop on message reception from the client
-        while (ok && _client.receive (msg, tsp, *tsp)) {
+        while (ok && _client.receive(msg, tsp, *tsp)) {
 
             // Message handling.
             // We do not send errors back to client, we just disconnect
@@ -329,7 +327,7 @@ void ts::DataInjectPlugin::main()
 
                 case emmgmux::Tags::channel_setup: {
                     if (channel_ok) {
-                        tsp->error ("received channel_setup when channel is already setup");
+                        tsp->error(u"received channel_setup when channel is already setup");
                         ok = false;
                     }
                     else {
@@ -351,7 +349,7 @@ void ts::DataInjectPlugin::main()
                         ok = _client.send (channel_status, *tsp);
                     }
                     else {
-                        tsp->error ("unexpected channel_test, channel not setup");
+                        tsp->error(u"unexpected channel_test, channel not setup");
                         ok = false;
                     }
                     break;
@@ -365,11 +363,11 @@ void ts::DataInjectPlugin::main()
 
                 case emmgmux::Tags::stream_setup: {
                     if (!channel_ok) {
-                        tsp->error ("unexpected stream_setup, channel not setup");
+                        tsp->error(u"unexpected stream_setup, channel not setup");
                         ok = false;
                     }
                     else if (stream_ok) {
-                        tsp->error ("received stream_setup when stream is already setup");
+                        tsp->error(u"received stream_setup when stream is already setup");
                         ok = false;
                     }
                     else {
@@ -390,10 +388,10 @@ void ts::DataInjectPlugin::main()
                 case emmgmux::Tags::stream_test: {
                     if (stream_ok) {
                         // Automatic reply to stream_test
-                        ok = _client.send (stream_status, *tsp);
+                        ok = _client.send(stream_status, *tsp);
                     }
                     else {
-                        tsp->error ("unexpected stream_test, stream not setup");
+                        tsp->error(u"unexpected stream_test, stream not setup");
                         ok = false;
                     }
                     break;
@@ -401,7 +399,7 @@ void ts::DataInjectPlugin::main()
 
                 case emmgmux::Tags::stream_close_request: {
                     if (!stream_ok) {
-                        tsp->error ("unexpected stream_close_request, stream not setup");
+                        tsp->error(u"unexpected stream_close_request, stream not setup");
                         ok = false;
                     }
                     else {
@@ -420,7 +418,7 @@ void ts::DataInjectPlugin::main()
 
                 case emmgmux::Tags::stream_BW_request: {
                     if (!stream_ok) {
-                        tsp->error ("unexpected stream_BW_request, stream not setup");
+                        tsp->error(u"unexpected stream_BW_request, stream not setup");
                         ok = false;
                     }
                     else {
@@ -433,13 +431,13 @@ void ts::DataInjectPlugin::main()
 
                 case emmgmux::Tags::data_provision: {
                     if (!stream_ok) {
-                        tsp->error ("unexpected data_provision, stream not setup");
+                        tsp->error(u"unexpected data_provision, stream not setup");
                         ok = false;
                     }
                     else {
                         emmgmux::DataProvision* m = dynamic_cast <emmgmux::DataProvision*> (msg.pointer());
-                        assert (m != 0);
-                        ok = processDataProvision (*m, channel_status.section_TSpkt_flag == 0);
+                        assert(m != 0);
+                        ok = processDataProvision(*m, channel_status.section_TSpkt_flag == 0);
                     }
                     break;
                 }
@@ -451,11 +449,11 @@ void ts::DataInjectPlugin::main()
         }
 
         // Error while receiving messages during a client session, most likely a disconnection
-        _client.disconnect (NULLREP);
-        _client.close (NULLREP);
+        _client.disconnect(NULLREP);
+        _client.close(NULLREP);
     }
 
-    tsp->debug ("server thread completed");
+    tsp->debug(u"server thread completed");
 }
 
 
@@ -463,16 +461,16 @@ void ts::DataInjectPlugin::main()
 // Process bandwidth request. Invoked in the server thread
 //----------------------------------------------------------------------------
 
-bool ts::DataInjectPlugin::processBandwidthRequest (const emmgmux::StreamBWRequest& request)
+bool ts::DataInjectPlugin::processBandwidthRequest(const emmgmux::StreamBWRequest& request)
 {
     // Compute new bandwidth
     if (request.has_bandwidth) {
         BitRate requested = 1000 * BitRate (request.bandwidth); // protocol unit is kb/s
         {
-            DoubleCheckLock::Writer guard (_req_bitrate_lock);
-            _req_bitrate_prot = _max_bitrate == 0 ? requested : std::min (requested, _max_bitrate);
+            DoubleCheckLock::Writer guard(_req_bitrate_lock);
+            _req_bitrate_prot = _max_bitrate == 0 ? requested : std::min(requested, _max_bitrate);
         }
-        tsp->verbose ("requested bandwidth " + Decimal (requested) + " b/s, allocated " + Decimal (_req_bitrate_prot) + " b/s");
+        tsp->verbose(u"requested bandwidth %'d b/s, allocated %'d b/s", {requested, _req_bitrate_prot});
     }
 
     // Send the response
@@ -504,7 +502,7 @@ bool ts::DataInjectPlugin::processDataProvision (const emmgmux::DataProvision& m
                 pzer.addSection (sp);
             }
             else {
-                tsp->error ("received an invalid section (%" FMT_SIZE_T "d bytes)", msg.datagram[i]->size());
+                tsp->error(u"received an invalid section (%d bytes)", {msg.datagram[i]->size()});
             }
         }
         // Extract all packets and enqueue them
@@ -521,7 +519,7 @@ bool ts::DataInjectPlugin::processDataProvision (const emmgmux::DataProvision& m
             size_t size = msg.datagram[i]->size();
             while (size >= PKT_SIZE) {
                 if (*data != SYNC_BYTE) {
-                    tsp->error ("invalid TS packet");
+                    tsp->error(u"invalid TS packet");
                 }
                 else {
                     TSPacketPtr p (new TSPacket());
@@ -532,7 +530,7 @@ bool ts::DataInjectPlugin::processDataProvision (const emmgmux::DataProvision& m
                 }
             }
             if (size != 0) {
-                tsp->error ("extraneous %" FMT_SIZE_T "d bytes in datagram", size);
+                tsp->error(u"extraneous %d bytes in datagram", {size});
             }
         }
     }
@@ -552,10 +550,10 @@ bool ts::DataInjectPlugin::enqueuePacket (const TSPacketPtr& pkt)
     const bool ok = _queue.enqueue(pkt, 0);
 
     if (!ok && _lost_packets++ == 0) {
-        tsp->warning ("internal queue overflow, losing packets, consider using --queue-size");
+        tsp->warning(u"internal queue overflow, losing packets, consider using --queue-size");
     }
     else if (ok && _lost_packets != 0) {
-        tsp->info ("retransmitting after " + Decimal (_lost_packets) + " lost packets");
+        tsp->info(u"retransmitting after %'d lost packets", {_lost_packets});
         _lost_packets = 0;
     }
 

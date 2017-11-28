@@ -76,10 +76,10 @@ ts::TSFileInput::~TSFileInput()
 // Open file in a rewindable mode (must be a rewindable file, eg. not a pipe).
 //----------------------------------------------------------------------------
 
-bool ts::TSFileInput::open(const std::string& filename, uint64_t start_offset, Report& report)
+bool ts::TSFileInput::open(const UString& filename, uint64_t start_offset, Report& report)
 {
     if (_is_open) {
-        report.log (_severity, "already open");
+        report.log(_severity, u"already open");
         return false;
     }
 
@@ -90,7 +90,7 @@ bool ts::TSFileInput::open(const std::string& filename, uint64_t start_offset, R
     _at_eof = false;
     _rewindable = true;
 
-    return openInternal (report);
+    return openInternal(report);
 }
 
 
@@ -100,10 +100,10 @@ bool ts::TSFileInput::open(const std::string& filename, uint64_t start_offset, R
 // until all repeat are done. If repeat_count == 0, infinite repeat.
 //----------------------------------------------------------------------------
 
-bool ts::TSFileInput::open (const std::string& filename, size_t repeat_count, uint64_t start_offset, Report& report)
+bool ts::TSFileInput::open(const UString& filename, size_t repeat_count, uint64_t start_offset, Report& report)
 {
     if (_is_open) {
-        report.log (_severity, "already open");
+        report.log(_severity, u"already open");
         return false;
     }
 
@@ -114,7 +114,7 @@ bool ts::TSFileInput::open (const std::string& filename, size_t repeat_count, ui
     _at_eof = false;
     _rewindable = false;
 
-    return openInternal (report);
+    return openInternal(report);
 }
 
 
@@ -132,10 +132,10 @@ bool ts::TSFileInput::openInternal (Report& report)
         _handle = ::GetStdHandle (STD_INPUT_HANDLE);
     }
     else {
-        _handle = ::CreateFile (_filename.c_str(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+        _handle = ::CreateFile(_filename.toUTF8().c_str(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
         if (_handle == INVALID_HANDLE_VALUE) {
             ErrorCode error_code = LastErrorCode ();
-            report.log (_severity, "cannot open file " + _filename + ": " + ErrorCodeMessage (error_code));
+            report.log(_severity, "cannot open file " + _filename + ": " + ErrorCodeMessage(error_code));
             return false;
         }
     }
@@ -143,9 +143,9 @@ bool ts::TSFileInput::openInternal (Report& report)
     // If a repeat count or initial offset is specified, the input file must be a regular file
 
     if ((_repeat != 1 || _start_offset != 0) && ::GetFileType (_handle) != FILE_TYPE_DISK) {
-        report.log (_severity, ("input file " + _filename + " is not a regular file, cannot ") + (_repeat != 1 ? "repeat" : "specify start offset"));
+        report.log(_severity, ("input file " + _filename + " is not a regular file, cannot ") + (_repeat != 1 ? "repeat" : "specify start offset"));
         if (!_filename.empty()) {
-            ::CloseHandle (_handle);
+            ::CloseHandle(_handle);
         }
         return false;
     }
@@ -154,12 +154,12 @@ bool ts::TSFileInput::openInternal (Report& report)
 
     if (_start_offset != 0) {
         // In Win32, LARGE_INTEGER is a 64-bit structure, not an integer type
-        ::LARGE_INTEGER offset (*(::LARGE_INTEGER*)(&_start_offset));
-        if (::SetFilePointerEx (_handle, offset, NULL, FILE_BEGIN) == 0) {
-            ErrorCode error_code = LastErrorCode ();
-            report.log (_severity, "error seeking input file " + _filename + ": " + ErrorCodeMessage (error_code));
+        ::LARGE_INTEGER offset(*(::LARGE_INTEGER*)(&_start_offset));
+        if (::SetFilePointerEx(_handle, offset, NULL, FILE_BEGIN) == 0) {
+            ErrorCode error_code = LastErrorCode();
+            report.log(_severity, "error seeking input file " + _filename + ": " + ErrorCodeMessage(error_code));
             if (!_filename.empty()) {
-                ::CloseHandle (_handle);
+                ::CloseHandle(_handle);
             }
             return false;
         }
@@ -172,9 +172,9 @@ bool ts::TSFileInput::openInternal (Report& report)
     if (_filename.empty()) {
         _fd = STDIN_FILENO;
     }
-    else if ((_fd = ::open (_filename.c_str(), O_RDONLY | O_LARGEFILE)) < 0) {
-        ErrorCode error_code = LastErrorCode ();
-        report.log (_severity, "cannot open file " + _filename + ": " + ErrorCodeMessage (error_code));
+    else if ((_fd = ::open(_filename.toUTF8().c_str(), O_RDONLY | O_LARGEFILE)) < 0) {
+        ErrorCode error_code = LastErrorCode();
+        report.log(_severity, "cannot open file " + _filename + ": " + ErrorCodeMessage(error_code));
         return false;
     }
 
@@ -183,18 +183,18 @@ bool ts::TSFileInput::openInternal (Report& report)
 
     if (_repeat != 1 || _start_offset != 0) {
         struct stat st;
-        if (::fstat (_fd, &st) < 0) {
+        if (::fstat(_fd, &st) < 0) {
             ErrorCode error_code = LastErrorCode ();
-            report.log (_severity, "cannot stat input file " + _filename + ": " + ErrorCodeMessage (error_code));
+            report.log(_severity, "cannot stat input file " + _filename + ": " + ErrorCodeMessage(error_code));
             if (!_filename.empty()) {
                 ::close (_fd);
             }
             return false;
         }
-        if (!S_ISREG (st.st_mode)) {
-            report.log (_severity, ("input file " + _filename + " is not a regular file, cannot ") + (_repeat != 1 ? "repeat" : "specify start offset"));
+        if (!S_ISREG(st.st_mode)) {
+            report.log(_severity, ("input file " + _filename + " is not a regular file, cannot ") + (_repeat != 1 ? "repeat" : "specify start offset"));
             if (!_filename.empty()) {
-                ::close (_fd);
+                ::close(_fd);
             }
             return false;
         }
@@ -223,18 +223,18 @@ bool ts::TSFileInput::openInternal (Report& report)
 // Internal seek. Rewind to specified start offset plus specified index.
 //----------------------------------------------------------------------------
 
-bool ts::TSFileInput::seekInternal (uint64_t index, Report& report)
+bool ts::TSFileInput::seekInternal(uint64_t index, Report& report)
 {
 #if defined (TS_WINDOWS)
     // In Win32, LARGE_INTEGER is a 64-bit structure, not an integer type
     uint64_t where = _start_offset + index;
-    ::LARGE_INTEGER offset (*(::LARGE_INTEGER*)(&where));
-    if (::SetFilePointerEx (_handle, offset, NULL, FILE_BEGIN) == 0) {
+    ::LARGE_INTEGER offset(*(::LARGE_INTEGER*)(&where));
+    if (::SetFilePointerEx(_handle, offset, NULL, FILE_BEGIN) == 0) {
 #else
-    if (::lseek (_fd, off_t (_start_offset + index), SEEK_SET) == off_t (-1)) {
+    if (::lseek(_fd, off_t(_start_offset + index), SEEK_SET) == off_t(-1)) {
 #endif
-        ErrorCode error_code = LastErrorCode ();
-        report.log (_severity, "error seeking input file " + _filename + ": " + ErrorCodeMessage (error_code));
+        ErrorCode error_code = LastErrorCode();
+        report.log(_severity, "error seeking input file " + _filename + ": " + ErrorCodeMessage(error_code));
         return false;
     }
     else {

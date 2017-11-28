@@ -46,11 +46,10 @@ namespace ts {
     {
     public:
         // Implementation of plugin API
-        PSIPlugin (TSP*);
-        virtual bool start();
-        virtual bool stop();
-        virtual BitRate getBitrate() {return 0;}
-        virtual Status processPacket (TSPacket&, bool&, bool&);
+        PSIPlugin(TSP*);
+        virtual bool start() override;
+        virtual bool stop() override;
+        virtual Status processPacket(TSPacket&, bool&, bool&) override;
 
     private:
         TablesDisplayArgs _display_options;
@@ -74,7 +73,7 @@ TSPLUGIN_DECLARE_PROCESSOR(ts::PSIPlugin)
 //----------------------------------------------------------------------------
 
 ts::PSIPlugin::PSIPlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, "Extract PSI Information.", "[options]"),
+    ProcessorPlugin(tsp_, u"Extract PSI Information.", u"[options]"),
     _display_options(),
     _logger_options(),
     _display(_display_options, *tsp),

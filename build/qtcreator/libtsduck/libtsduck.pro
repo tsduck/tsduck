@@ -87,8 +87,6 @@ HEADERS += \
     ../../../src/libtsduck/tsDVS042Template.h \
     ../../../src/libtsduck/tsDataBroadcastDescriptor.h \
     ../../../src/libtsduck/tsDataBroadcastIdDescriptor.h \
-    ../../../src/libtsduck/tsDecimal.h \
-    ../../../src/libtsduck/tsDecimalTemplate.h \
     ../../../src/libtsduck/tsDektecControl.h \
     ../../../src/libtsduck/tsDektecInputPlugin.h \
     ../../../src/libtsduck/tsDektecOutputPlugin.h \
@@ -116,7 +114,6 @@ HEADERS += \
     ../../../src/libtsduck/tsFatal.h \
     ../../../src/libtsduck/tsFileNameRate.h \
     ../../../src/libtsduck/tsForkPipe.h \
-    ../../../src/libtsduck/tsFormat.h \
     ../../../src/libtsduck/tsArgMix.h \
     ../../../src/libtsduck/tsArgMixTemplate.h \
     ../../../src/libtsduck/tsGrid.h \
@@ -124,7 +121,6 @@ HEADERS += \
     ../../../src/libtsduck/tsGuardCondition.h \
     ../../../src/libtsduck/tsHDSimulcastLogicalChannelDescriptor.h \
     ../../../src/libtsduck/tsHash.h \
-    ../../../src/libtsduck/tsHexa.h \
     ../../../src/libtsduck/tsIPAddress.h \
     ../../../src/libtsduck/tsIPUtils.h \
     ../../../src/libtsduck/tsISO639LanguageDescriptor.h \
@@ -218,8 +214,6 @@ HEADERS += \
     ../../../src/libtsduck/tsStreamIdentifierDescriptor.h \
     ../../../src/libtsduck/tsUString.h \
     ../../../src/libtsduck/tsUStringTemplate.h \
-    ../../../src/libtsduck/tsStringUtils.h \
-    ../../../src/libtsduck/tsStringUtilsTemplate.h \
     ../../../src/libtsduck/tsSubtitlingDescriptor.h \
     ../../../src/libtsduck/tsSupplementaryAudioDescriptor.h \
     ../../../src/libtsduck/tsSysUtils.h \
@@ -261,8 +255,6 @@ HEADERS += \
     ../../../src/libtsduck/tsThread.h \
     ../../../src/libtsduck/tsThreadAttributes.h \
     ../../../src/libtsduck/tsTime.h \
-    ../../../src/libtsduck/tsToInteger.h \
-    ../../../src/libtsduck/tsToIntegerTemplate.h \
     ../../../src/libtsduck/tsTransportStreamId.h \
     ../../../src/libtsduck/tsTuner.h \
     ../../../src/libtsduck/tsTunerArgs.h \
@@ -378,13 +370,11 @@ SOURCES += \
     ../../../src/libtsduck/tsFatal.cpp \
     ../../../src/libtsduck/tsFileNameRate.cpp \
     ../../../src/libtsduck/tsForkPipe.cpp \
-    ../../../src/libtsduck/tsFormat.cpp \
     ../../../src/libtsduck/tsArgMix.cpp \
     ../../../src/libtsduck/tsGrid.cpp \
     ../../../src/libtsduck/tsGuard.cpp \
     ../../../src/libtsduck/tsGuardCondition.cpp \
     ../../../src/libtsduck/tsHDSimulcastLogicalChannelDescriptor.cpp \
-    ../../../src/libtsduck/tsHexa.cpp \
     ../../../src/libtsduck/tsIPAddress.cpp \
     ../../../src/libtsduck/tsIPUtils.cpp \
     ../../../src/libtsduck/tsISO639LanguageDescriptor.cpp \
@@ -453,7 +443,6 @@ SOURCES += \
     ../../../src/libtsduck/tsStaticReferencesDVB.cpp \
     ../../../src/libtsduck/tsStreamIdentifierDescriptor.cpp \
     ../../../src/libtsduck/tsUString.cpp \
-    ../../../src/libtsduck/tsStringUtils.cpp \
     ../../../src/libtsduck/tsSubtitlingDescriptor.cpp \
     ../../../src/libtsduck/tsSupplementaryAudioDescriptor.cpp \
     ../../../src/libtsduck/tsSysUtils.cpp \
@@ -490,7 +479,6 @@ SOURCES += \
     ../../../src/libtsduck/tsThread.cpp \
     ../../../src/libtsduck/tsThreadAttributes.cpp \
     ../../../src/libtsduck/tsTime.cpp \
-    ../../../src/libtsduck/tsToInteger.cpp \
     ../../../src/libtsduck/tsTunerArgs.cpp \
     ../../../src/libtsduck/tsTunerParameters.cpp \
     ../../../src/libtsduck/tsTunerParametersATSC.cpp \

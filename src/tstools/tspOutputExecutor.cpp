@@ -32,7 +32,6 @@
 //----------------------------------------------------------------------------
 
 #include "tspOutputExecutor.h"
-#include "tsDecimal.h"
 TSDUCK_SOURCE;
 
 
@@ -41,9 +40,9 @@ TSDUCK_SOURCE;
 //----------------------------------------------------------------------------
 
 ts::tsp::OutputExecutor::OutputExecutor(Options* options,
-                                          const Options::PluginOptions* pl_options,
-                                          const ThreadAttributes& attributes,
-                                          Mutex& global_mutex) :
+                                        const Options::PluginOptions* pl_options,
+                                        const ThreadAttributes& attributes,
+                                        Mutex& global_mutex) :
 
     PluginExecutor(options, pl_options, attributes, global_mutex),
     _output(dynamic_cast<OutputPlugin*> (_shlib))
@@ -58,7 +57,7 @@ ts::tsp::OutputExecutor::OutputExecutor(Options* options,
 
 void ts::tsp::OutputExecutor::main()
 {
-    debug ("output thread started");
+    debug(u"output thread started");
 
     PacketCounter output_packets = 0;
     bool aborted;
@@ -121,15 +120,12 @@ void ts::tsp::OutputExecutor::main()
 
         // Pass free buffers to input processor.
         // Do not transmit bitrate to next (since next is input processor).
-
         passPackets (pkt_cnt, 0, false, aborted);
 
     } while (!aborted);
 
     // Close the output processor
-
     _output->stop();
 
-    std::string status (aborted ? "aborted" : "terminated");
-    this->debug ("output thread " + status + " after " + Decimal (totalPackets()) + " packets (" + Decimal (output_packets) + " output)");
+    debug(u"output thread %s after %'d packets (%'d output)", {aborted ? u"aborted" : u"terminated", totalPackets(), output_packets});
 }

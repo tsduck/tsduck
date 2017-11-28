@@ -33,13 +33,18 @@
 
 #include "tspOptions.h"
 #include "tsSysUtils.h"
-#include "tsDecimal.h"
-#include "tsFormat.h"
 TSDUCK_SOURCE;
 
 #define DEF_BUFSIZE_MB           16  // mega-bytes
 #define DEF_BITRATE_INTERVAL      5  // seconds
 #define DEF_MAX_FLUSH_PKT     10000  // packets
+
+// Displayable names of plugin types.
+const ts::Enumeration ts::tsp::Options::PluginTypeNames({
+    {u"input", ts::tsp::Options::INPUT},
+    {u"output", ts::tsp::Options::OUTPUT},
+    {u"packet processor", ts::tsp::Options::PROCESSOR},
+});
 
 
 //----------------------------------------------------------------------------
@@ -79,25 +84,25 @@ ts::tsp::Options::Options(int argc, char *argv[]) :
     option(u"verbose",                  'v');
 
 #if defined(TS_WINDOWS)
-#define HELP_SHLIB    "DLL"
-#define HELP_SHLIBS   "DLL's"
-#define HELP_SHLIBEXT ".dll"
-#define HELP_SEP      "'\\'"
-#define HELP_SEEMAN   ""
+#define HELP_SHLIB    u"DLL"
+#define HELP_SHLIBS   u"DLL's"
+#define HELP_SHLIBEXT u".dll"
+#define HELP_SEP      u"'\\'"
+#define HELP_SEEMAN   u""
 #else
-#define HELP_SHLIB    "shared library"
-#define HELP_SHLIBS   "shared libraries"
-#define HELP_SHLIBEXT ".so"
-#define HELP_SEP      "'/'"
-#define HELP_SEEMAN   " See the man page of dlopen(3) for more details."
+#define HELP_SHLIB    u"shared library"
+#define HELP_SHLIBS   u"shared libraries"
+#define HELP_SHLIBEXT u".so"
+#define HELP_SEP      u"'/'"
+#define HELP_SEEMAN   u" See the man page of dlopen(3) for more details."
 #endif
 
-    setDescription("MPEG Transport Stream Processor: Receive a TS from a user-specified input\n"
-                  u"plug-in, apply MPEG packet processing through several user-specified packet\n"
-                  u"processor plug-in's and send the processed stream to a user-specified output\n"
-                  u"plug-in. All input, processors and output plug-in's are " HELP_SHLIBS ".");
+    setDescription(u"MPEG Transport Stream Processor: Receive a TS from a user-specified input\n"
+                   u"plug-in, apply MPEG packet processing through several user-specified packet\n"
+                   u"processor plug-in's and send the processed stream to a user-specified output\n"
+                   u"plug-in. All input, processors and output plug-in's are " HELP_SHLIBS ".");
 
-    setSyntax(" [tsp-options] \\\n"
+    setSyntax(u" [tsp-options] \\\n"
               u"    [-I input-name [input-options]] \\\n"
               u"    [-P processor-name [processor-options]] ... \\\n"
               u"    [-O output-name [output-options]]");
@@ -123,7 +128,7 @@ ts::tsp::Options::Options(int argc, char *argv[]) :
             u"  --bitrate-adjust-interval value\n"
             u"      Specify the interval in seconds between bitrate adjustments,\n"
             u"      ie. when the output bitrate is adjusted to the input one.\n"
-            u"      The default is " TS_STRINGIFY(DEF_BITRATE_INTERVAL) " seconds.\n"
+            u"      The default is " TS_USTRINGIFY(DEF_BITRATE_INTERVAL) " seconds.\n"
             u"      Some output processors ignore this setting. Typically, ASI\n"
             u"      or modulator devices use it, while file devices ignore it.\n"
             u"      This option is ignored if --bitrate is specified.\n"
@@ -131,7 +136,7 @@ ts::tsp::Options::Options(int argc, char *argv[]) :
             u"  --buffer-size-mb value\n"
             u"      Specify the buffer size in mega-bytes. This is the size of\n"
             u"      the buffer between the input and output devices. The default\n"
-            u"      is " TS_STRINGIFY(DEF_BUFSIZE_MB) " MB.\n"
+            u"      is " TS_USTRINGIFY(DEF_BUFSIZE_MB) " MB.\n"
             u"\n"
             u"  -d[N]\n"
             u"  --debug[=N]\n"
@@ -159,7 +164,7 @@ ts::tsp::Options::Options(int argc, char *argv[]) :
             u"      Specify the maximum number of packets to be processed before flushing\n"
             u"      them to the next processor or the output. When the processing time\n"
             u"      is high and some packets are lost, try decreasing this value.\n"
-            u"      The default is " TS_STRINGIFY(DEF_MAX_FLUSH_PKT) " packets.\n"
+            u"      The default is " TS_USTRINGIFY(DEF_MAX_FLUSH_PKT) " packets.\n"
             u"\n"
             u"  --max-input-packets value\n"
             u"      Specify the maximum number of packets to be received at a time from\n"
@@ -219,17 +224,14 @@ ts::tsp::Options::Options(int argc, char *argv[]) :
             u"corresponding plug-in. Try \"tsp {-I|-O|-P} name --help\" to display the\n"
             u"help text for a specific plug-in.\n");
 
-    // Locate the first processor option. All preceeding options are tsp
-    // options and must be analyzed.
-
+    // Locate the first processor option. All preceeding options are tsp options and must be analyzed.
     PluginType plugin_type;
     int plugin_index = nextProcOpt(argc, argv, 0, plugin_type);
 
     // Analyze the tsp command, not including the plugin options
-
     analyze(plugin_index, argv);
 
-    debug = present(u"debug") ? intValue("debug", 1) : 0;
+    debug = present(u"debug") ? intValue(u"debug", 1) : 0;
     verbose = debug > 0 || present(u"verbose");
     setDebugLevel(debug > 0 ? debug : (verbose ? ts::Severity::Verbose : ts::Severity::Info));
 
@@ -238,19 +240,19 @@ ts::tsp::Options::Options(int argc, char *argv[]) :
     monitor = present(u"monitor");
     bufsize = 1024 * 1024 * intValue<size_t>(u"buffer-size-mb", DEF_BUFSIZE_MB);
     bitrate = intValue<BitRate>(u"bitrate", 0);
-    bitrate_adj = MilliSecPerSec * intValue("bitrate-adjust-interval", DEF_BITRATE_INTERVAL);
+    bitrate_adj = MilliSecPerSec * intValue(u"bitrate-adjust-interval", DEF_BITRATE_INTERVAL);
     max_flush_pkt = intValue<size_t>(u"max-flushed-packets", DEF_MAX_FLUSH_PKT);
     max_input_pkt = intValue<size_t>(u"max-input-packets", 0);
     ignore_jt = present(u"ignore-joint-termination");
 
     if (present(u"add-input-stuffing")) {
-        std::string stuff(value(u"add-input-stuffing"));
-        std::string::size_type slash = stuff.find("/");
-        bool valid = slash != std::string::npos &&
-            ToInteger(instuff_nullpkt, stuff.substr(0, slash)) &&
-            ToInteger(instuff_inpkt, stuff.substr(slash + 1));
+        UString stuff(value(u"add-input-stuffing"));
+        UString::size_type slash = stuff.find(u"/");
+        bool valid = slash != UString::NPOS &&
+            stuff.substr(0, slash).toInteger(instuff_nullpkt) &&
+            stuff.substr(slash + 1).toInteger(instuff_inpkt);
         if (!valid) {
-            error("invalid value for --add-input-stuffing, use \"nullpkt/inpkt\" format");
+            error(u"invalid value for --add-input-stuffing, use \"nullpkt/inpkt\" format");
         }
     }
 
@@ -258,13 +260,13 @@ ts::tsp::Options::Options(int argc, char *argv[]) :
     // The default input is the standard input file.
 
     input.type = INPUT;
-    input.name = "file";
+    input.name = u"file";
     input.args.clear();
 
     // The default output is the standard output file.
 
     output.type = OUTPUT;
-    output.name = "file";
+    output.name = u"file";
     output.args.clear();
 
     // Locate all plugins
@@ -283,7 +285,7 @@ ts::tsp::Options::Options(int argc, char *argv[]) :
         PluginOptions* opt = 0;
 
         if (start >= argc - 1) {
-            error(Format("missing plugin name for option %s", argv[start]));
+            error(u"missing plugin name for option %s", {argv[start]});
             break;
         }
 
@@ -294,14 +296,14 @@ ts::tsp::Options::Options(int argc, char *argv[]) :
                 break;
             case INPUT:
                 if (got_input) {
-                    error("do not specify more than one input plugin");
+                    error(u"do not specify more than one input plugin");
                 }
                 got_input = true;
                 opt = &input;
                 break;
             case OUTPUT:
                 if (got_output) {
-                    error("do not specify more than one output plugin");
+                    error(u"do not specify more than one output plugin");
                 }
                 got_output = true;
                 opt = &output;
@@ -313,17 +315,15 @@ ts::tsp::Options::Options(int argc, char *argv[]) :
 
         opt->type = type;
         opt->name = argv[start+1];
-        AssignContainer(opt->args, plugin_index - start - 2, argv + start + 2);
+        UString::Assign(opt->args, plugin_index - start - 2, argv + start + 2);
     }
 
     // Debug display
-
     if (debug >= 2) {
         display(std::cerr);
     }
 
     // Final checking
-
     exitOnError();
 }
 
@@ -360,17 +360,16 @@ int ts::tsp::Options::nextProcOpt(int argc, char *argv[], int index, PluginType&
 std::ostream& ts::tsp::Options::display(std::ostream& strm, int indent) const
 {
     const std::string margin(indent, ' ');
-
     strm << margin << "* tsp options:" << std::endl
-         << margin << "  --add-input-stuffing: " << Decimal(instuff_nullpkt)
-         << "/" << Decimal(instuff_inpkt) << std::endl
-         << margin << "  --bitrate: " << Decimal(bitrate) << " b/s" << std::endl
-         << margin << "  --bitrate-adjust-interval: " << Decimal(bitrate_adj) << " milliseconds" << std::endl
-         << margin << "  --buffer-size-mb: " << Decimal(bufsize) << " bytes" << std::endl
+         << margin << "  --add-input-stuffing: " << UString::Decimal(instuff_nullpkt)
+         << "/" << UString::Decimal(instuff_inpkt) << std::endl
+         << margin << "  --bitrate: " << UString::Decimal(bitrate) << " b/s" << std::endl
+         << margin << "  --bitrate-adjust-interval: " << UString::Decimal(bitrate_adj) << " milliseconds" << std::endl
+         << margin << "  --buffer-size-mb: " << UString::Decimal(bufsize) << " bytes" << std::endl
          << margin << "  --debug: " << debug << std::endl
          << margin << "  --list-processors: " << list_proc << std::endl
-         << margin << "  --max-flushed-packets: " << Decimal(max_flush_pkt) << std::endl
-         << margin << "  --max-input-packets: " << Decimal(max_input_pkt) << std::endl
+         << margin << "  --max-flushed-packets: " << UString::Decimal(max_flush_pkt) << std::endl
+         << margin << "  --max-input-packets: " << UString::Decimal(max_input_pkt) << std::endl
          << margin << "  --monitor: " << monitor << std::endl
          << margin << "  --verbose: " << verbose << std::endl
          << margin << "  Number of packet processors: " << plugins.size() << std::endl
@@ -382,7 +381,6 @@ std::ostream& ts::tsp::Options::display(std::ostream& strm, int indent) const
     }
     strm << margin << "  Output plugin:" << std::endl;
     output.display(strm, indent + 4);
-
     return strm;
 }
 
@@ -406,27 +404,10 @@ ts::tsp::Options::PluginOptions::PluginOptions() :
 std::ostream& ts::tsp::Options::PluginOptions::display(std::ostream& strm, int indent) const
 {
     const std::string margin(indent, ' ');
-
     strm << margin << "Name: " << name << std::endl
-         << margin << "Type: " << PluginTypeName(type) << std::endl;
+         << margin << "Type: " << PluginTypeNames.name(type) << std::endl;
     for (size_t i = 0; i < args.size(); ++i) {
         strm << margin << "Arg[" << i << "]: \"" << args[i] << "\"" << std::endl;
     }
-
     return strm;
-}
-
-
-//----------------------------------------------------------------------------
-// Displayable name of plugin type
-//----------------------------------------------------------------------------
-
-std::string ts::tsp::Options::PluginTypeName(PluginType type)
-{
-    switch (type) {
-        case INPUT:     return "input";
-        case OUTPUT:    return "output";
-        case PROCESSOR: return "packet processor";
-        default:        return Format("%d (invalid)", int(type));
-    }
 }

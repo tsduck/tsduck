@@ -46,10 +46,7 @@ namespace ts {
     public:
         // Implementation of plugin API
         DropOutput(TSP*);
-        virtual bool start() {return true;}
-        virtual bool stop() {return true;}
-        virtual BitRate getBitrate() {return 0;}
-        virtual bool send(const TSPacket*, size_t) {return true;}
+        virtual bool send(const TSPacket*, size_t) override {return true;}
 
     private:
         // Inaccessible operations

@@ -65,7 +65,7 @@ namespace ts {
         //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool open(const std::string& filename, size_t repeat_count, uint64_t start_offset, Report& report);
+        bool open(const UString& filename, size_t repeat_count, uint64_t start_offset, Report& report);
 
         //!
         //! Open the file in rewindable mode.
@@ -79,7 +79,7 @@ namespace ts {
         //! @see rewind()
         //! @see seek()
         //!
-        bool open(const std::string& filename, uint64_t start_offset, Report& report);
+        bool open(const UString& filename, uint64_t start_offset, Report& report);
 
         //!
         //! Check if the file is open.
@@ -112,7 +112,7 @@ namespace ts {
         //! Get the file name.
         //! @return The file name.
         //!
-        std::string getFileName() const
+        UString getFileName() const
         {
             return _filename;
         }
@@ -169,7 +169,7 @@ namespace ts {
         }
 
     protected:
-        std::string   _filename;      //!< Input file name.
+        UString       _filename;      //!< Input file name.
         PacketCounter _total_packets; //!< Total read packets.
 
     private:

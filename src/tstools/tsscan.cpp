@@ -45,8 +45,6 @@
 #include "tsTransportStreamId.h"
 #include "tsDescriptorList.h"
 #include "tsTime.h"
-#include "tsFormat.h"
-#include "tsDecimal.h"
 #include "tsNullReport.h"
 TSDUCK_SOURCE;
 
@@ -85,7 +83,7 @@ struct Options: public ts::Args
 };
 
 Options::Options(int argc, char *argv[]) :
-    ts::Args("DVB network scanning utility.", "[options]"),
+    ts::Args(u"DVB network scanning utility.", u"[options]"),
     tuner(false, true),
     uhf_scan(false),
     nit_scan(false),
@@ -143,11 +141,11 @@ Options::Options(int argc, char *argv[]) :
             u"\n"
             u"  --first-uhf-channel value\n"
             u"      For UHF-band scanning, specify the first channel to scan (default: " +
-            ts::Decimal(ts::UHF::FIRST_CHANNEL) + ").\n"
+            ts::UString::Decimal(ts::UHF::FIRST_CHANNEL) + u").\n"
             u"\n"
             u"  --first-offset value\n"
             u"      For UHF-band scanning, specify the first offset to scan (default: " +
-            ts::Decimal(DEFAULT_FIRST_OFFSET, 0, true, ",", true) + ")\n"
+            ts::UString::Decimal(DEFAULT_FIRST_OFFSET, 0, true, ",", true) + u")\n"
             u"      on each channel.\n"
             u"\n"
             u"  -g\n"
@@ -160,20 +158,20 @@ Options::Options(int argc, char *argv[]) :
             u"\n"
             u"  --last-uhf-channel value\n"
             u"      For UHF-band scanning, specify the last channel to scan (default: " +
-            ts::Decimal(ts::UHF::LAST_CHANNEL) + ").\n"
+            ts::UString::Decimal(ts::UHF::LAST_CHANNEL) + u").\n"
             u"\n"
             u"  --last-offset value\n"
             u"      For UHF-band scanning, specify the last offset to scan (default: " +
-            ts::Decimal(DEFAULT_LAST_OFFSET, 0, true, ",", true) + ")\n"
+            ts::UString::Decimal(DEFAULT_LAST_OFFSET, 0, true, ",", true) + u")\n"
             u"      on each channel.\n"
             u"\n"
             u"  --min-quality value\n"
             u"      Minimum signal quality percentage. Frequencies with lower signal\n"
-            u"      quality are ignored (default: " + ts::Decimal(DEFAULT_MIN_QUALITY) + "%).\n"
+            u"      quality are ignored (default: " + ts::UString::Decimal(DEFAULT_MIN_QUALITY) + u"%).\n"
             u"\n"
             u"  --min-strength value\n"
             u"      Minimum signal strength percentage. Frequencies with lower signal\n"
-            u"      strength are ignored (default: " + ts::Decimal(DEFAULT_MIN_STRENGTH) + "%).\n"
+            u"      strength are ignored (default: " + ts::UString::Decimal(DEFAULT_MIN_STRENGTH) + u"%).\n"
             u"\n"
             u"  -n\n"
             u"  --no-offset\n"
@@ -183,7 +181,7 @@ Options::Options(int argc, char *argv[]) :
             u"  --psi-timeout milliseconds\n"
             u"      Specifies the timeout, in milli-seconds, for PSI/SI table collection.\n"
             u"      Useful only with --service-list. The default is " +
-            ts::Decimal(DEFAULT_PSI_TIMEOUT) + " milli-seconds.\n"
+            ts::UString::Decimal(DEFAULT_PSI_TIMEOUT) + u" milli-seconds.\n"
             u"\n"
             u"  -l\n"
             u"  --service-list\n"
@@ -207,26 +205,26 @@ Options::Options(int argc, char *argv[]) :
     analyze(argc, argv);
     tuner.load(*this);
 
-    setDebugLevel(present(u"debug") ? intValue("debug", ts::Severity::Debug) : present(u"verbose") ? ts::Severity::Verbose : ts::Severity::Info);
+    setDebugLevel(present(u"debug") ? intValue(u"debug", ts::Severity::Debug) : (present(u"verbose") ? ts::Severity::Verbose : ts::Severity::Info));
 
     uhf_scan          = present(u"uhf-band");
     nit_scan          = tuner.hasTuningInfo();
     use_best_quality  = present(u"best-quality");
     use_best_strength = present(u"best-strength");
-    first_uhf_channel = intValue("first-uhf-channel", ts::UHF::FIRST_CHANNEL);
-    last_uhf_channel  = intValue("last-uhf-channel", ts::UHF::LAST_CHANNEL);
+    first_uhf_channel = intValue(u"first-uhf-channel", ts::UHF::FIRST_CHANNEL);
+    last_uhf_channel  = intValue(u"last-uhf-channel", ts::UHF::LAST_CHANNEL);
     show_modulation   = present(u"show-modulation");
     no_offset         = present(u"no-offset");
-    first_uhf_offset  = no_offset ? 0 : intValue("first-offset", DEFAULT_FIRST_OFFSET);
-    last_uhf_offset   = no_offset ? 0 : intValue("last-offset", DEFAULT_LAST_OFFSET);
-    min_quality       = intValue("min-quality", DEFAULT_MIN_QUALITY);
-    min_strength      = intValue("min-strength", DEFAULT_MIN_STRENGTH);
+    first_uhf_offset  = no_offset ? 0 : intValue(u"first-offset", DEFAULT_FIRST_OFFSET);
+    last_uhf_offset   = no_offset ? 0 : intValue(u"last-offset", DEFAULT_LAST_OFFSET);
+    min_quality       = intValue(u"min-quality", DEFAULT_MIN_QUALITY);
+    min_strength      = intValue(u"min-strength", DEFAULT_MIN_STRENGTH);
     list_services     = present(u"service-list");
     global_services   = present(u"global-service-list");
     psi_timeout       = intValue<ts::MilliSecond>(u"psi-timeout", DEFAULT_PSI_TIMEOUT);
 
     if (nit_scan && uhf_scan) {
-        error("do not specify tuning parameters with --uhf-band");
+        error(u"do not specify tuning parameters with --uhf-band");
     }
     if (!uhf_scan && !nit_scan) {
         // Default is UHF scan.
@@ -259,7 +257,7 @@ namespace {
         info.getPAT(pat);
         if (!pat.isNull()) {
             strm << margin
-                 << ts::Format("Transport stream id: %d, 0x%04X", int(pat->ts_id), int(pat->ts_id))
+                 << ts::UString::Format(u"Transport stream id: %d, 0x%X", {pat->ts_id, pat->ts_id})
                  << std::endl;
         }
 
@@ -346,7 +344,7 @@ OffsetScanner::OffsetScanner(Options& opt, ts::Tuner& tuner, int channel) :
     _best_strength(0),
     _best_strength_offset(0)
 {
-    _opt.verbose("scanning channel " + ts::Decimal(_channel) + ", " + ts::Decimal(ts::UHF::Frequency(_channel)) + " Hz");
+    _opt.verbose(u"scanning channel %'d, %'d Hz", {_channel, ts::UHF::Frequency(_channel)});
 
     if (_opt.no_offset) {
         // Only try the central frequency
@@ -420,7 +418,7 @@ bool OffsetScanner::tune(int offset)
 // Test the signal at one specific offset
 bool OffsetScanner::tryOffset(int offset)
 {
-    _opt.debug("trying offset %d", offset);
+    _opt.debug(u"trying offset %d", {offset});
 
     // Tune to transponder and start signal acquisition.
     // Signal locking timeout is applied in start().
@@ -498,7 +496,7 @@ namespace {
     {
         // UHF means DVB-T
         if (tuner.tunerType() != ts::DVB_T) {
-            opt.error("UHF scanning needs DVB-T, tuner " + tuner.deviceName() + " is " + ts::TunerTypeEnum.name(tuner.tunerType()));
+            opt.error(u"UHF scanning needs DVB-T, tuner " + tuner.deviceName() + " is " + ts::TunerTypeEnum.name(tuner.tunerType()));
             return;
         }
 
@@ -542,7 +540,7 @@ namespace {
         ts::SafePtr<ts::NIT> nit;
         info.getNIT(nit);
         if (nit.isNull()) {
-            opt.error("cannot scan network, no NIT found on specified transponder");
+            opt.error(u"cannot scan network, no NIT found on specified transponder");
             return;
         }
 
@@ -557,7 +555,7 @@ namespace {
                 if (!tp.isNull()) {
                     // Got a delivery descriptor, this is the description of one transponder.
                     // Tune to this transponder.
-                    opt.debug("* tuning to " + tp->toPluginOptions(true));
+                    opt.debug(u"* tuning to " + tp->toPluginOptions(true));
                     if (tuner.tune(*tp, opt)) {
 
                         // Report channel characteristics

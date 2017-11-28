@@ -35,8 +35,6 @@
 #include "tsInputRedirector.h"
 #include "tsOutputRedirector.h"
 #include "tsByteBlock.h"
-#include "tsDecimal.h"
-#include "tsFormat.h"
 #include "tsFatal.h"
 #include "tsMPEG.h"
 TSDUCK_SOURCE;
@@ -57,7 +55,7 @@ TSDUCK_SOURCE;
 class Options: public ts::Args
 {
 public:
-    Options (int argc, char *argv[]);
+    Options(int argc, char *argv[]);
 
     size_t      sync_size;   // number of initial bytes to analyze for resync
     size_t      contig_size; // required size of contiguous packets to accept a stream slice
@@ -66,12 +64,12 @@ public:
     bool        verbose;     // verbose mode
     bool        cont_sync;   // continuous synchronization (default: stop on error)
     bool        keep;        // keep packet size (default: reduce to 188 bytes)
-    std::string infile;      // Input file name
-    std::string outfile;     // Output file name
+    ts::UString infile;      // Input file name
+    ts::UString outfile;     // Output file name
 };
 
 Options::Options(int argc, char *argv[]) :
-    ts::Args("MPEG Transport Stream Resynchronizer.", "[options] [filename]"),
+    ts::Args(u"MPEG Transport Stream Resynchronizer.", u"[options] [filename]"),
     sync_size(0),
     contig_size(0),
     packet_size(0),
@@ -159,7 +157,7 @@ Options::Options(int argc, char *argv[]) :
     cont_sync = present(u"continue");
 
     if (packet_size > 0 && header_size + ts::PKT_SIZE > packet_size) {
-        error("specified --header-size too large for specified --packet-size");
+        error(u"specified --header-size too large for specified --packet-size");
     }
 
     exitOnError();
@@ -333,7 +331,7 @@ int main(int argc, char *argv[])
         uint8_t* const sync_end = sync_buf + sync_size;
 
         if (opt.verbose) {
-            std::cerr << "* Analyzing " << prefix_fn << " " << ts::Decimal(sync_size) << " bytes" << std::endl;
+            std::cerr << "* Analyzing " << prefix_fn << " " << ts::UString::Decimal(sync_size) << " bytes" << std::endl;
             prefix_fn = "next";
         }
 
@@ -366,12 +364,12 @@ int main(int argc, char *argv[])
             }
         }
         if (resync.inputPacketSize() == 0) {
-            std::cerr << "* Cannot find MPEG TS packets after " << ts::Decimal(search_size) << " bytes" << std::endl;
+            std::cerr << "* Cannot find MPEG TS packets after " << ts::UString::Decimal(search_size) << " bytes" << std::endl;
             resync.setStatus (RS_ERROR);
             break;
         }
         if (opt.verbose) {
-            std::cerr << "* Found synchronization after " << ts::Decimal(start - sync_buf) << " bytes" << std::endl
+            std::cerr << "* Found synchronization after " << ts::UString::Decimal(start - sync_buf) << " bytes" << std::endl
                       << "* Packet size is " << resync.inputPacketSize() << " bytes";
             if (resync.inputHeaderSize() > 0) {
                 std::cerr << " (" << resync.inputHeaderSize() << "-byte header)";
@@ -413,10 +411,8 @@ int main(int argc, char *argv[])
                 resync.setStatus(RS_EOF);
             }
             else if (sync_buf[resync.inputHeaderSize()] != ts::SYNC_BYTE) {
-                std::cerr << "*** Synchronization lost after "
-                          << ts::Decimal(resync.outputFilePackets()) << " TS packets" << std::endl
-                          << ts::Format("*** Got 0x%02X instead of 0x%02X at start of TS packet", int(sync_buf[resync.inputHeaderSize()]), ts::SYNC_BYTE)
-                          << std::endl;
+                std::cerr << ts::UString::Format(u"*** Synchronization lost after %'d TS packets", {resync.outputFilePackets()}) << std::endl
+                          << ts::UString::Format(u"*** Got 0x%X instead of 0x%X at start of TS packet", {sync_buf[resync.inputHeaderSize()], ts::SYNC_BYTE}) << std::endl;
                 resync.setStatus(RS_SYNC_LOST);
                 // Will resynchronize with sync buffer pre-loaded
                 sync_pre_size = resync.inputPacketSize();
@@ -430,8 +426,8 @@ int main(int argc, char *argv[])
     } while (resync.status() == RS_OK || (resync.status() == RS_SYNC_LOST && opt.cont_sync));
 
     if (opt.verbose) {
-        std::cerr << "* Output " << ts::Decimal(resync.outputFileBytes()) << " bytes, "
-                  << ts::Decimal(resync.outputFilePackets()) << " " << resync.outputPacketSize() << "-byte packets" << std::endl;
+        std::cerr << ts::UString::Format(u"* Output %'d bytes, %'d %d-byte packets", {resync.outputFileBytes(), resync.outputFilePackets(), resync.outputPacketSize()})
+                  << std::endl;
     }
 
     return resync.status() == RS_EOF ? EXIT_SUCCESS : EXIT_FAILURE;

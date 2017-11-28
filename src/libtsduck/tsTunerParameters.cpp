@@ -86,7 +86,7 @@ bool ts::TunerParameters::fromTunerArgs (const TunerArgs& tuner, Report& report)
         return true;
     }
     else {
-        report.error ("invalid --tune specification");
+        report.error(u"invalid --tune specification");
         return false;
     }
 }

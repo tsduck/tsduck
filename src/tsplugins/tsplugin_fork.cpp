@@ -48,10 +48,9 @@ namespace ts {
         // Implementation of plugin API
         ForkPlugin (TSP*);
         ~ForkPlugin();
-        virtual bool start();
-        virtual bool stop();
-        virtual BitRate getBitrate() {return 0;}
-        virtual Status processPacket (TSPacket&, bool&, bool&);
+        virtual bool start() override;
+        virtual bool stop() override;
+        virtual Status processPacket(TSPacket&, bool&, bool&) override;
 
     private:
         ForkPipe  _pipe;
@@ -143,7 +142,7 @@ bool ts::ForkPlugin::start()
     _buffer = 0;
     _buffer_count = 0;
     if (_buffer_size > 0 && (_buffer = new TSPacket [_buffer_size]) == 0) {
-        tsp->error ("cannot allocate packet buffer, reduce --buffered-packets value");
+        tsp->error(u"cannot allocate packet buffer, reduce --buffered-packets value");
         return false;
     }
 

@@ -157,7 +157,7 @@ void ts::LocalTimeOffsetDescriptor::DisplayDescriptor(TablesDisplay& display, DI
             uint8_t polarity = *data & 0x01;
             data += 1; size -= 1;
             strm << margin << "" << int(region_id)
-                 << UString::Format("Region id: %d (0x%X)", {region_id, region_id})
+                 << UString::Format(u"Region id: %d (0x%X)", {region_id, region_id})
                  << ", polarity: " << (polarity ? "west" : "east")
                  << " of Greenwich" << std::endl;
             if (size >= 2) {

@@ -54,10 +54,10 @@ namespace ts {
         virtual ~DektecOutputPlugin();
 
         // Implementation of plugin API
-        virtual bool start();
-        virtual bool stop();
-        virtual bool send(const TSPacket*, size_t);
-        virtual BitRate getBitrate();
+        virtual bool start() override;
+        virtual bool stop() override;
+        virtual bool send(const TSPacket*, size_t) override;
+        virtual BitRate getBitrate() override;
 
     private:
 

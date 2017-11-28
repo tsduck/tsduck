@@ -33,14 +33,12 @@
 //----------------------------------------------------------------------------
 
 #include "tsPlugin.h"
-#include "tsDecimal.h"
 #include "tsService.h"
 #include "tsSectionDemux.h"
 #include "tsPAT.h"
 #include "tsPMT.h"
 #include "tsSDT.h"
 #include "tsTOT.h"
-#include "tsFormat.h"
 TSDUCK_SOURCE;
 
 
@@ -53,11 +51,9 @@ namespace ts {
     {
     public:
         // Implementation of plugin API
-        ClearPlugin (TSP*);
-        virtual bool start();
-        virtual bool stop() {return true;}
-        virtual BitRate getBitrate() {return 0;}
-        virtual Status processPacket (TSPacket&, bool&, bool&);
+        ClearPlugin(TSP*);
+        virtual bool start() override;
+        virtual Status processPacket(TSPacket&, bool&, bool&) override;
 
     private:
         bool          _abort;           // Error (service not found, etc)
@@ -252,20 +248,20 @@ void ts::ClearPlugin::processSDT (SDT& sdt)
     uint16_t service_id;
     assert (_service.hasName());
     if (!sdt.findService (_service.getName(), service_id)) {
-        tsp->error ("service \"" + _service.getName() + "\" not found in SDT");
+        tsp->error(u"service \"%s\" not found in SDT", {_service.getName()});
         _abort = true;
         return;
     }
 
     // Remember service id
     _service.setId (service_id);
-    tsp->verbose ("found service \"" + _service.getName() + Format ("\", service id is 0x%04X", int (_service.getId())));
+    tsp->verbose(u"found service \"%s\", service id is 0x%X", {_service.getName(), _service.getId()});
 
     // No longer need to filter the SDT
-    _demux.removePID (PID_SDT);
+    _demux.removePID(PID_SDT);
 
     // Now filter the PAT to get the PMT PID
-    _demux.addPID (PID_PAT);
+    _demux.addPID(PID_PAT);
     _service.clearPMTPID();
 }
 
@@ -281,7 +277,7 @@ void ts::ClearPlugin::processPAT (PAT& pat)
         PAT::ServiceMap::const_iterator it = pat.pmts.find (_service.getId());
         if (it == pat.pmts.end()) {
             // Service not found, error
-            tsp->error ("service id %d (0x%04X) not found in PAT", int (_service.getId()), int (_service.getId()));
+            tsp->error(u"service id %d (0x%X) not found in PAT", {_service.getId(), _service.getId()});
             _abort = true;
             return;
         }
@@ -299,11 +295,11 @@ void ts::ClearPlugin::processPAT (PAT& pat)
         _service.setId (it->first);
         _service.setPMTPID (it->second);
         _demux.addPID (it->second);
-        tsp->verbose ("using service %d (0x%04X)", int (_service.getId()), int (_service.getId()));
+        tsp->verbose(u"using service %d (0x%X)", {_service.getId(), _service.getId()});
     }
     else {
         // No service specified, no service in PAT, error
-        tsp->error ("no service in PAT");
+        tsp->error(u"no service in PAT");
         _abort = true;
     }
 }
@@ -358,11 +354,10 @@ ts::ProcessorPlugin::Status ts::ClearPlugin::processPacket (TSPacket& pkt, bool&
         // Number of packets in 1 second at current bitrate
         _drop_after = tsp->bitrate() / (PKT_SIZE * 8);
         if (_drop_after == 0) {
-            tsp->error ("bitrate unknown or too low, use option --drop-after-packets");
+            tsp->error(u"bitrate unknown or too low, use option --drop-after-packets");
             return TSP_END;
         }
-        std::string dec (Decimal (_drop_after));
-        tsp->verbose ("will drop %s packets after last clear packet", dec.c_str());
+        tsp->verbose(u"will drop %'d packets after last clear packet", {_drop_after});
     }
 
     // If packets are passing but no clear packet recently found, drop packets
@@ -375,13 +370,10 @@ ts::ProcessorPlugin::Status ts::ClearPlugin::processPacket (TSPacket& pkt, bool&
 
     if (_pass_packets != previous_pass && tsp->verbose()) {
         // State has changed
-        std::string state(_pass_packets ? "passing" : "dropping");
-        std::string curtime(_last_tot.isValid() && !_last_tot.regions.empty() ?
-                            _last_tot.localTime(_last_tot.regions[0]).format(Time::DATE | Time::TIME).toUTF8() : //@@@
-                            "unknown");
-        tsp->log (Severity::Verbose,
-                  "now " + state + " all packets, last TOT local time: " + curtime +
-                  ", current packet: " + Decimal (_current_pkt));
+        const UString curtime(_last_tot.isValid() && !_last_tot.regions.empty() ?
+                              _last_tot.localTime(_last_tot.regions[0]).format(Time::DATE | Time::TIME) :
+                              u"unknown");
+        tsp->verbose(u"now %s all packets, last TOT local time: %s, current packet: %'d", {_pass_packets ? u"passing" : u"dropping", curtime, _current_pkt});
     }
 
     // Count TS packets

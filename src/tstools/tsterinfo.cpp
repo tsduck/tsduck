@@ -33,7 +33,6 @@
 
 #include "tsArgs.h"
 #include "tsTunerParametersBitrateDiffDVBT.h"
-#include "tsDecimal.h"
 TSDUCK_SOURCE;
 
 
@@ -44,33 +43,33 @@ TSDUCK_SOURCE;
 
 namespace {
 
-    const ts::Enumeration DVBTModulationEnum
-        ("QPSK",   ts::QPSK,
-         u"16-QAM", ts::QAM_16,
-         u"64-QAM", ts::QAM_64,
-         TS_NULL);
+    const ts::Enumeration DVBTModulationEnum({
+        {u"QPSK",   ts::QPSK},
+        {u"16-QAM", ts::QAM_16},
+        {u"64-QAM", ts::QAM_64},
+    });
 
-    const ts::Enumeration DVBTHPFECEnum
-        ("1/2",  ts::FEC_1_2,
-         u"2/3",  ts::FEC_2_3,
-         u"3/4",  ts::FEC_3_4,
-         u"5/6",  ts::FEC_5_6,
-         u"7/8",  ts::FEC_7_8,
-         TS_NULL);
+    const ts::Enumeration DVBTHPFECEnum({
+        {u"1/2",  ts::FEC_1_2},
+        {u"2/3",  ts::FEC_2_3},
+        {u"3/4",  ts::FEC_3_4},
+        {u"5/6",  ts::FEC_5_6},
+        {u"7/8",  ts::FEC_7_8},
+    });
 
-    const ts::Enumeration DVBTBandWidthEnum
-        ("8-MHz", ts::BW_8_MHZ,
-         u"7-MHz", ts::BW_7_MHZ,
-         u"6-MHz", ts::BW_6_MHZ,
-         u"5-MHz", ts::BW_5_MHZ,
-         TS_NULL);
+    const ts::Enumeration DVBTBandWidthEnum({
+        {u"8-MHz", ts::BW_8_MHZ},
+        {u"7-MHz", ts::BW_7_MHZ},
+        {u"6-MHz", ts::BW_6_MHZ},
+        {u"5-MHz", ts::BW_5_MHZ},
+    });
 
-    const ts::Enumeration DVBTGuardIntervalEnum
-        ("1/32", ts::GUARD_1_32,
-         u"1/16", ts::GUARD_1_16,
-         u"1/8",  ts::GUARD_1_8,
-         u"1/4",  ts::GUARD_1_4,
-         TS_NULL);
+    const ts::Enumeration DVBTGuardIntervalEnum({
+        {u"1/32", ts::GUARD_1_32},
+        {u"1/16", ts::GUARD_1_16},
+        {u"1/8",  ts::GUARD_1_8},
+        {u"1/4",  ts::GUARD_1_4},
+    });
 }
 
 
@@ -96,7 +95,7 @@ struct Options: public ts::Args
 };
 
 Options::Options(int argc, char *argv[]) :
-    ts::Args("DVB-Terrestrial information utility.", "[options]"),
+    ts::Args(u"DVB-Terrestrial information utility.", u"[options]"),
     frequency(0),
     uhf_channel(0),
     vhf_channel(0),
@@ -193,16 +192,16 @@ Options::Options(int argc, char *argv[]) :
     hf_offset      = intValue<int>(u"offset-count", 0);
     bitrate        = intValue<ts::BitRate>(u"bitrate", 0);
     max_guess      = intValue<ts::BitRate>(u"max-guess", 1);
-    constellation  = enumValue("constellation", ts::QAM_64);
-    fec_hp         = enumValue("high-priority-fec", ts::FEC_AUTO);
-    guard_interval = enumValue("guard-interval", ts::GUARD_AUTO);
-    bandwidth      = enumValue("bandwidth", ts::BW_8_MHZ);
+    constellation  = enumValue(u"constellation", ts::QAM_64);
+    fec_hp         = enumValue(u"high-priority-fec", ts::FEC_AUTO);
+    guard_interval = enumValue(u"guard-interval", ts::GUARD_AUTO);
+    bandwidth      = enumValue(u"bandwidth", ts::BW_8_MHZ);
     simple         = present(u"simple");
 
     if ((fec_hp == ts::FEC_AUTO && guard_interval != ts::GUARD_AUTO) ||
         (fec_hp != ts::FEC_AUTO && guard_interval == ts::GUARD_AUTO))
     {
-        error("specify either both --guard-interval and --high-priority-fec value or none");
+        error(u"specify either both --guard-interval and --high-priority-fec value or none");
     }
 
     exitOnError();
@@ -214,12 +213,9 @@ Options::Options(int argc, char *argv[]) :
 //----------------------------------------------------------------------------
 
 namespace {
-    void Display(const std::string& name, const std::string& value, const std::string& unit)
+    void Display(const ts::UString& name, const ts::UString& value, const ts::UString& unit)
     {
-        std::cout << "  "
-                  << ts::JustifyLeft(name + " ", 22, '.')
-                  << ts::JustifyRight(" " + value, 15, '.')
-                  << " " << unit << std::endl;
+        std::cout << "  " << name.toJustified(value, 37, u'.', 1) << " " << unit << std::endl;
     }
 }
 
@@ -239,7 +235,7 @@ int main(int argc, char *argv[])
         }
         else {
             std::cout << "Carrier Frequency: "
-                      << ts::Decimal(ts::UHF::Frequency(opt.uhf_channel, opt.hf_offset))
+                      << ts::UString::Decimal(ts::UHF::Frequency(opt.uhf_channel, opt.hf_offset))
                       << " Hz" << std::endl;
         }
     }
@@ -251,7 +247,7 @@ int main(int argc, char *argv[])
         }
         else {
             std::cout << "Carrier Frequency: "
-                      << ts::Decimal(ts::VHF::Frequency(opt.vhf_channel, opt.hf_offset))
+                      << ts::UString::Decimal(ts::VHF::Frequency(opt.vhf_channel, opt.hf_offset))
                       << " Hz" << std::endl;
         }
     }
@@ -272,8 +268,8 @@ int main(int argc, char *argv[])
                 if (::abs(diff) > 1) {
                     std::cout << "Warning: exact frequency for channel "
                               << channel << ", offset " << offset << " is "
-                              << ts::Decimal(exact_freq) << " Hz, differ by "
-                              << ts::Decimal(diff) << " Hz" << std::endl;
+                              << ts::UString::Decimal(exact_freq) << " Hz, differ by "
+                              << ts::UString::Decimal(diff) << " Hz" << std::endl;
                 }
             }
         }
@@ -291,17 +287,17 @@ int main(int argc, char *argv[])
                 if (::abs(diff) > 1) {
                     std::cout << "Warning: exact frequency for channel "
                               << channel << ", offset " << offset << " is "
-                              << ts::Decimal(exact_freq) << " Hz, differ by "
-                              << ts::Decimal(diff) << " Hz" << std::endl;
+                              << ts::UString::Decimal(exact_freq) << " Hz, differ by "
+                              << ts::UString::Decimal(diff) << " Hz" << std::endl;
                 }
             }
         }
         else {
-            std::cerr << ts::Decimal(opt.frequency) << " Hz is not in UHF or VHF bands (VHF: "
-                      << ts::Decimal(ts::VHF::Frequency(ts::VHF::FIRST_CHANNEL, -3)) << " - "
-                      << ts::Decimal(ts::VHF::Frequency(ts::VHF::LAST_CHANNEL, 3)) << ", UHF: "
-                      << ts::Decimal(ts::UHF::Frequency(ts::UHF::FIRST_CHANNEL, -3)) << " - "
-                      << ts::Decimal(ts::UHF::Frequency(ts::UHF::LAST_CHANNEL, 3)) << ")"
+            std::cerr << ts::UString::Decimal(opt.frequency) << " Hz is not in UHF or VHF bands (VHF: "
+                      << ts::UString::Decimal(ts::VHF::Frequency(ts::VHF::FIRST_CHANNEL, -3)) << " - "
+                      << ts::UString::Decimal(ts::VHF::Frequency(ts::VHF::LAST_CHANNEL, 3)) << ", UHF: "
+                      << ts::UString::Decimal(ts::UHF::Frequency(ts::UHF::FIRST_CHANNEL, -3)) << " - "
+                      << ts::UString::Decimal(ts::UHF::Frequency(ts::UHF::LAST_CHANNEL, 3)) << ")"
                       << std::endl;
         }
     }
@@ -318,7 +314,7 @@ int main(int argc, char *argv[])
         }
         else {
             std::cout << "Transport stream bitrate: "
-                      << ts::Decimal(params.theoreticalBitrate())
+                      << ts::UString::Decimal(params.theoreticalBitrate())
                       << " b/s" << std::endl;
         }
     }
@@ -350,8 +346,8 @@ int main(int argc, char *argv[])
                 if (count > 0) {
                     std::cout << std::endl;
                 }
-                Display("Nominal bitrate", ts::Decimal(it->theoreticalBitrate()), "b/s");
-                Display("Bitrate difference", ts::Decimal(it->bitrate_diff), "b/s");
+                Display("Nominal bitrate", ts::UString::Decimal(it->theoreticalBitrate()), "b/s");
+                Display("Bitrate difference", ts::UString::Decimal(it->bitrate_diff), "b/s");
                 Display("Bandwidth", ts::BandWidthEnum.name(it->bandwidth), "");
                 Display("FEC (high priority)", ts::InnerFECEnum.name(it->fec_hp), "");
                 Display("Constellation", ts::ModulationEnum.name(it->modulation), "");

@@ -33,8 +33,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsPlugin.h"
-#include "tsFormat.h"
-#include "tsDecimal.h"
 TSDUCK_SOURCE;
 
 
@@ -47,14 +45,12 @@ namespace ts {
     {
     public:
         // Implementation of plugin API
-        ContinuityPlugin (TSP*);
-        virtual bool start();
-        virtual bool stop() {return true;}
-        virtual BitRate getBitrate() {return 0;}
-        virtual Status processPacket (TSPacket&, bool&, bool&);
+        ContinuityPlugin(TSP*);
+        virtual bool start() override;
+        virtual Status processPacket(TSPacket&, bool&, bool&) override;
 
     private:
-        std::string   _tag;            // Message tag
+        UString       _tag;            // Message tag
         PacketCounter _packet_count;   // TS packet count
         uint8_t       _cc[PID_MAX];    // Continuity counter by PID
 
@@ -108,7 +104,7 @@ bool ts::ContinuityPlugin::start()
     }
 
     // Preset continuity counters to invalid values
-    ::memset (_cc, 0xFF, sizeof(_cc));
+    ::memset(_cc, 0xFF, sizeof(_cc));
 
     return true;
 }
@@ -128,13 +124,12 @@ ts::ProcessorPlugin::Status ts::ContinuityPlugin::processPacket (TSPacket& pkt, 
     // Null packets are not subject to CC. Adjacent identical CC on a PID
     // are allowed and indicate a duplicated packet.
 
-    if (pid != PID_NULL &&                // not a null packet
-        _cc[pid] < 16 &&                  // not first packet on PID
-        _cc[pid] != cc &&                 // not a duplicated packet
-        ((_cc[pid] + 1) & 0x0F) != cc) {  // wrong CC
-
-        tsp->log (Severity::Info, _tag + "TS: " + Decimal (_packet_count) +
-                  Format (", PID: 0x%04X, missing: %d", int (pid), int ((cc < _cc[pid] ? 16 : 0) + cc - _cc[pid] - 1)));
+    if (pid != PID_NULL &&              // not a null packet
+        _cc[pid] < 16 &&                // not first packet on PID
+        _cc[pid] != cc &&               // not a duplicated packet
+        ((_cc[pid] + 1) & 0x0F) != cc)  // wrong CC
+    {
+        tsp->info("%sTS: %'d, PID: 0x%X, missing: %d", {_tag, _packet_count, pid, (cc < _cc[pid] ? 16 : 0) + cc - _cc[pid] - 1});
     }
 
     _packet_count++;

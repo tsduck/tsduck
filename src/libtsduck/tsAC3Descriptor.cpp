@@ -200,7 +200,7 @@ void ts::AC3Descriptor::DisplayDescriptor(TablesDisplay& display, DID did, const
         if ((flags & 0x20) && size >= 1) { // mainid
             uint8_t mainid = data[0];
             data++; size--;
-            strm << margin << UString::Format("Main audio service id: %d (0x%X)", {mainid, mainid}) << std::endl;
+            strm << margin << UString::Format(u"Main audio service id: %d (0x%X)", {mainid, mainid}) << std::endl;
         }
         if ((flags & 0x10) && size >= 1) { // asvc
             uint8_t asvc = data[0];

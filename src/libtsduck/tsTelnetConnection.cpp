@@ -93,7 +93,7 @@ bool ts::TelnetConnection::waitForChunk(const std::string eol, std::string& foun
         bool result = SuperClass::receive((void *) &_buffer[_received], BUFFER_SIZE - _received, size, abort, report);
 
         if (!result || !size) {
-            report.info("result = false\n");
+            report.info(u"result = false\n");
             return result;
         }
 

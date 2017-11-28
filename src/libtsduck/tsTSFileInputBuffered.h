@@ -111,7 +111,7 @@ namespace ts {
         //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool open(const std::string& filename, size_t repeat_count, uint64_t start_offset, Report& report);
+        bool open(const UString& filename, size_t repeat_count, uint64_t start_offset, Report& report);
 
         //!
         //! Read TS packets.

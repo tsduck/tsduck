@@ -105,7 +105,7 @@ void ts::BAT::DisplaySection(TablesDisplay& display, const ts::Section& section,
                 if (length > loop_length) {
                     length = loop_length;
                 }
-                strm << margin << UString::Format("Transport Stream Id: %d (0x%X), Original Network Id: %d (0x%X)", {tsid, tsid, nwid, nwid}) << std::endl;
+                strm << margin << UString::Format(u"Transport Stream Id: %d (0x%X), Original Network Id: %d (0x%X)", {tsid, tsid, nwid, nwid}) << std::endl;
                 display.displayDescriptorList(data, length, indent, section.tableId());
                 data += length; size -= length; loop_length -= length;
             }

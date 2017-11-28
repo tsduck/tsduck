@@ -35,7 +35,6 @@
 #include "tsFileNameRate.h"
 #include "tsOutputRedirector.h"
 #include "tsCyclingPacketizer.h"
-#include "tsDecimal.h"
 #include "tsSysUtils.h"
 TSDUCK_SOURCE;
 
@@ -158,7 +157,7 @@ Options::Options(int argc, char *argv[]) :
     // is specified.
     for (ts::FileNameRateList::const_iterator it = infiles.begin(); it != infiles.end(); ++it) {
         if (it->repetition != 0 && bitrate == 0) {
-            error("the PID bitrate must be specified when repetition rates are used");
+            error(u"the PID bitrate must be specified when repetition rates are used");
             break;
         }
     }

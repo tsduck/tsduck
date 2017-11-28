@@ -33,35 +33,30 @@
 
 #include "tsArgs.h"
 #include "tsInputRedirector.h"
-#include "tsDecimal.h"
-#include "tsHexa.h"
 #include "tsPCRAnalyzer.h"
-#include "tsFormat.h"
 TSDUCK_SOURCE;
-
-using namespace ts;
 
 
 //----------------------------------------------------------------------------
 //  Command line options
 //----------------------------------------------------------------------------
 
-struct Options: public Args
+struct Options: public ts::Args
 {
-    Options (int argc, char *argv[]);
+    Options(int argc, char *argv[]);
 
     uint32_t    min_pcr;     // Min # of PCR per PID
     uint16_t    min_pid;     // Min # of PID
-    std::string pcr_name;    // Time stamp type name
+    ts::UString pcr_name;    // Time stamp type name
     bool        use_dts;     // Use DTS instead of PCR
     bool        all;         // All packets analysis
     bool        full;        // Full analysis
     bool        value_only;  // Output value only
-    std::string infile;      // Input file name
+    ts::UString infile;      // Input file name
 };
 
-Options::Options (int argc, char *argv[]) :
-    Args("MPEG Transport Stream Bitrate Evaluation Utility.", "[options] [filename]"),
+Options::Options(int argc, char *argv[]) :
+    Args(u"MPEG Transport Stream Bitrate Evaluation Utility.", u"[options] [filename]"),
     min_pcr(0),
     min_pid(0),
     pcr_name(),
@@ -76,49 +71,49 @@ Options::Options (int argc, char *argv[]) :
     option(u"dts",        'd');
     option(u"full",       'f');
     option(u"min-pcr",     0, Args::POSITIVE);
-    option(u"min-pid",     0, Args::INTEGER, 0, 1, 1, PID_MAX);
+    option(u"min-pid",     0, Args::INTEGER, 0, 1, 1, ts::PID_MAX);
     option(u"value-only", 'v');
 
     setHelp(u"Input file:\n"
-             u"\n"
-             u"  MPEG capture file (standard input if omitted).\n"
-             u"\n"
-             u"Options:\n"
-             u"\n"
-             u"  -a\n"
-             u"  --all\n"
-             u"      Analyze all packets in the input file. By default, stop analysis when\n"
-             u"      enough PCR information has been collected.\n"
-             u"\n"
-             u"  -d\n"
-             u"  --dts\n"
-             u"      Use DTS (Decoding Time Stamps) from video PID's instead of PCR\n"
-             u"      (Program Clock Reference) from the transport layer.\n"
-             u"\n"
-             u"  -f\n"
-             u"  --full\n"
-             u"      Full analysis. The file is entirely analyzed (as with --all) and the\n"
-             u"      final report includes a complete per PID bitrate analysis.\n"
-             u"\n"
-             u"  --help\n"
-             u"      Display this help text.\n"
-             u"\n"
-             u"  --min-pcr value\n"
-             u"      Stop analysis when that number of PCR are read from the required\n"
-             u"      minimum number of PID (default: 64).\n"
-             u"\n"
-             u"  --min-pid value\n"
-             u"      Minimum number of PID to get PCR from (default: 1).\n"
-             u"\n"
-             u"  -v\n"
-             u"  --value-only\n"
-             u"      Display only the bitrate value, in bits/seconds, based on\n"
-             u"      188-byte packets. Useful to reuse the value in command lines.\n"
-             u"\n"
-             u"  --version\n"
-             u"      Display the version number.\n");
+            u"\n"
+            u"  MPEG capture file (standard input if omitted).\n"
+            u"\n"
+            u"Options:\n"
+            u"\n"
+            u"  -a\n"
+            u"  --all\n"
+            u"      Analyze all packets in the input file. By default, stop analysis when\n"
+            u"      enough PCR information has been collected.\n"
+            u"\n"
+            u"  -d\n"
+            u"  --dts\n"
+            u"      Use DTS (Decoding Time Stamps) from video PID's instead of PCR\n"
+            u"      (Program Clock Reference) from the transport layer.\n"
+            u"\n"
+            u"  -f\n"
+            u"  --full\n"
+            u"      Full analysis. The file is entirely analyzed (as with --all) and the\n"
+            u"      final report includes a complete per PID bitrate analysis.\n"
+            u"\n"
+            u"  --help\n"
+            u"      Display this help text.\n"
+            u"\n"
+            u"  --min-pcr value\n"
+            u"      Stop analysis when that number of PCR are read from the required\n"
+            u"      minimum number of PID (default: 64).\n"
+            u"\n"
+            u"  --min-pid value\n"
+            u"      Minimum number of PID to get PCR from (default: 1).\n"
+            u"\n"
+            u"  -v\n"
+            u"  --value-only\n"
+            u"      Display only the bitrate value, in bits/seconds, based on\n"
+            u"      188-byte packets. Useful to reuse the value in command lines.\n"
+            u"\n"
+            u"  --version\n"
+            u"      Display the version number.\n");
 
-    analyze (argc, argv);
+    analyze(argc, argv);
 
     infile = value(u"");
     full = present(u"full");
@@ -127,7 +122,7 @@ Options::Options (int argc, char *argv[]) :
     min_pcr = intValue<uint32_t>(u"min-pcr", 64);
     min_pid = intValue<uint16_t>(u"min-pid", 1);
     use_dts = present(u"dts");
-    pcr_name = use_dts ? "DTS" : "PCR";
+    pcr_name = use_dts ? u"DTS" : u"PCR";
 }
 
 
@@ -135,12 +130,12 @@ Options::Options (int argc, char *argv[]) :
 //  Program entry point
 //----------------------------------------------------------------------------
 
-int main (int argc, char *argv[])
+int main(int argc, char *argv[])
 {
-    Options opt (argc, argv);
-    PCRAnalyzer zer (opt.min_pid, opt.min_pcr);
-    InputRedirector input (opt.infile, opt);
-    TSPacket pkt;
+    Options opt(argc, argv);
+    ts::PCRAnalyzer zer(opt.min_pid, opt.min_pcr);
+    ts::InputRedirector input(opt.infile, opt);
+    ts::TSPacket pkt;
 
     // Reset analyzer for DTS with --dts
     if (opt.use_dts) {
@@ -148,14 +143,14 @@ int main (int argc, char *argv[])
     }
 
     // Read all packets in the file and pass them to the PCR analyzer.
-    while (pkt.read (std::cin, true, opt) && (!zer.feedPacket (pkt) || opt.all)) {}
+    while (pkt.read(std::cin, true, opt) && (!zer.feedPacket(pkt) || opt.all)) {}
 
     // Display results.
-    PCRAnalyzer::Status status;
-    zer.getStatus (status);
+    ts::PCRAnalyzer::Status status;
+    zer.getStatus(status);
 
     if (!status.bitrate_valid) {
-        opt.error ("cannot compute transport bitrate, insufficient " + opt.pcr_name);
+        opt.error(u"cannot compute transport bitrate, insufficient %s", {opt.pcr_name});
         if (!opt.full) {
             return EXIT_FAILURE;
         }
@@ -173,27 +168,24 @@ int main (int argc, char *argv[])
         if (!opt.infile.empty()) {
             std::cout << "File           : " << opt.infile << std::endl;
         }
-        std::cout << "TS packets     : " << Decimal (status.packet_count) << std::endl
-                  << opt.pcr_name << "            : " << Decimal (status.pcr_count) << std::endl
-                  << "PIDs with " << opt.pcr_name << "  : " << Decimal (status.pcr_pids) << std::endl;
+        std::cout << "TS packets     : " << ts::UString::Decimal(status.packet_count) << std::endl
+                  << opt.pcr_name << "            : " << ts::UString::Decimal(status.pcr_count) << std::endl
+                  << "PIDs with " << opt.pcr_name << "  : " << ts::UString::Decimal(status.pcr_pids) << std::endl;
     }
 
     std::cout << "TS bitrate" << (opt.full ? "     " : "") << ": "
-              << Decimal (status.bitrate_188) << " b/s (188-byte), "
-              << Decimal (status.bitrate_204) << " b/s (204-byte)"
+              << ts::UString::Decimal(status.bitrate_188) << " b/s (188-byte), "
+              << ts::UString::Decimal(status.bitrate_204) << " b/s (204-byte)"
               << std::endl;
 
     if (opt.full) {
         std::cout << std::endl
                   << "PID              TS Packets  Bitrate (188-byte)  Bitrate (204-byte)" << std::endl
                   << "-------------  ------------  ------------------  ------------------" << std::endl;
-        for (ts::PID pid = 0; pid < PID_MAX; pid++) {
-            PacketCounter pcount = zer.packetCount (pid);
+        for (ts::PID pid = 0; pid < ts::PID_MAX; pid++) {
+            ts::PacketCounter pcount = zer.packetCount (pid);
             if (pcount > 0) {
-                std::cout << Format ("%4d (0x%04X)  ", int (pid), int (pid))
-                          << Decimal (pcount, 12) << "  "
-                          << Decimal (zer.bitrate188 (pid), 14) << " b/s  "
-                          << Decimal (zer.bitrate204 (pid), 14) << " b/s"
+                std::cout << ts::UString::Format(u"%4d (0x%04X)  %12'd  %14'd b/s  %14'd b/s", {pid, pid, pcount, zer.bitrate188(pid), zer.bitrate204(pid)})
                           << std::endl;
             }
         }

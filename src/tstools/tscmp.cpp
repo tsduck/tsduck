@@ -32,9 +32,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsArgs.h"
-#include "tsHexa.h"
-#include "tsDecimal.h"
-#include "tsFormat.h"
 #include "tsMemoryUtils.h"
 #include "tsTSFileInputBuffered.h"
 #include "tsBinaryTable.h"
@@ -43,8 +40,6 @@
 #include "tsStreamIdentifierDescriptor.h"
 TSDUCK_SOURCE;
 
-using namespace ts;
-
 #define DEFAULT_BUFFERED_PACKETS 10000
 
 
@@ -52,12 +47,12 @@ using namespace ts;
 //  Command line options
 //----------------------------------------------------------------------------
 
-struct Options: public Args
+struct Options: public ts::Args
 {
-    Options (int argc, char *argv[]);
+    Options(int argc, char *argv[]);
 
-    std::string filename1;
-    std::string filename2;
+    ts::UString filename1;
+    ts::UString filename2;
     uint64_t    byte_offset;
     size_t      buffered_packets;
     size_t      threshold_diff;
@@ -74,8 +69,8 @@ struct Options: public Args
     bool        continue_all;
 };
 
-Options::Options (int argc, char *argv[]) :
-    Args("MPEG Transport Stream Files Comparison Utility.", "[options] filename-1 filename-2"),
+Options::Options(int argc, char *argv[]) :
+    Args(u"MPEG Transport Stream Files Comparison Utility.", u"[options] filename-1 filename-2"),
     filename1(),
     filename2(),
     byte_offset(0),
@@ -105,95 +100,95 @@ Options::Options (int argc, char *argv[]) :
     option(u"pcr-ignore",       0);
     option(u"pid-ignore",       0);
     option(u"subset",          's');
-    option(u"threshold-diff",  't', INTEGER, 0, 1, 0, PKT_SIZE);
+    option(u"threshold-diff",  't', INTEGER, 0, 1, 0, ts::PKT_SIZE);
     option(u"quiet",           'q');
     option(u"verbose",         'v');
 
     setHelp(u"Files:\n"
-             u"\n"
-             u"  MPEG capture files to be compared.\n"
-             u"\n"
-             u"Options:\n"
-             u"\n"
-             u"  --buffered-packets value\n"
-             u"      Specifies the files input buffer size in TS packets.\n"
-             u"      The default is " + Decimal (DEFAULT_BUFFERED_PACKETS) + " TS packets.\n"
-             u"\n"
-             u"  -b value\n"
-             u"  --byte-offset value\n"
-             u"      Start reading the files at the specified byte offset (default: 0).\n"
-             u"\n"
-             u"  --cc-ignore\n"
-             u"      Ignore continuity counters when comparing packets. Useful if one file\n"
-             u"      has been resynchronized.\n"
-             u"\n"
-             u"  -c\n"
-             u"  --continue\n"
-             u"      Continue the comparison up to the end of files. By default, stop after\n"
-             u"      the first differing packet.\n"
-             u"\n"
-             u"  -d\n"
-             u"  --dump\n"
-             u"      Dump the content of all differing packets.\n"
-             u"\n"
-             u"  --help\n"
-             u"      Display this help text.\n"
-             u"\n"
-             u"  -n\n"
-             u"  --normalized\n"
-             u"      Report in a normalized output format (useful for automatic analysis).\n"
-             u"\n"
-             u"  -p value\n"
-             u"  --packet-offset value\n"
-             u"      Start reading the files at the specified TS packet (default: 0).\n"
-             u"\n"
-             u"  --payload-only\n"
-             u"      Compare only the payload of the packets, ignore header and adaptation\n"
-             u"      field.\n"
-             u"\n"
-             u"  --pcr-ignore\n"
-             u"      Ignore PCR and OPCR when comparing packets. Useful if one file has been\n"
-             u"      resynchronized.\n"
-             u"\n"
-             u"  --pid-ignore\n"
-             u"      Ignore PID value when comparing packets. Useful if one file has gone\n"
-             u"      through a remapping process.\n"
-             u"\n"
-             u"  -q\n"
-             u"  --quiet\n"
-             u"      Do not output any message. The process simply terminates with a success\n"
-             u"      status if the files are identical and a failure status if they differ.\n"
-             u"\n"
-             u"  -s\n"
-             u"  --subset\n"
-             u"      Specifies that the second file is a subset of the first one. This means\n"
-             u"      that the second file is expected to be identical to the first one, except\n"
-             u"      that some packets may be missing. When a difference is found, the first\n"
-             u"      file is read ahead until a matching packet is found.\n"
-             u"      See also --threshold-diff.\n"
-             u"\n"
-             u"  -t value\n"
-             u"  --threshold-diff value\n"
-             u"      When used with --subset, this value specifies the maximum number of\n"
-             u"      differing bytes in packets to declare them equal. When two packets have\n"
-             u"      more differing bytes than this threshold, the packets are reported as\n"
-             u"      different and the first file is read ahead. The default is zero, which\n"
-             u"      means that two packets must be strictly identical to declare them equal.\n"
-             u"\n"
-             u"  -v\n"
-             u"  --verbose\n"
-             u"      Produce verbose messages.\n"
-             u"\n"
-             u"  --version\n"
-             u"      Display the version number.\n");
+            u"\n"
+            u"  MPEG capture files to be compared.\n"
+            u"\n"
+            u"Options:\n"
+            u"\n"
+            u"  --buffered-packets value\n"
+            u"      Specifies the files input buffer size in TS packets.\n"
+            u"      The default is " + ts::UString::Decimal(DEFAULT_BUFFERED_PACKETS) + u" TS packets.\n"
+            u"\n"
+            u"  -b value\n"
+            u"  --byte-offset value\n"
+            u"      Start reading the files at the specified byte offset (default: 0).\n"
+            u"\n"
+            u"  --cc-ignore\n"
+            u"      Ignore continuity counters when comparing packets. Useful if one file\n"
+            u"      has been resynchronized.\n"
+            u"\n"
+            u"  -c\n"
+            u"  --continue\n"
+            u"      Continue the comparison up to the end of files. By default, stop after\n"
+            u"      the first differing packet.\n"
+            u"\n"
+            u"  -d\n"
+            u"  --dump\n"
+            u"      Dump the content of all differing packets.\n"
+            u"\n"
+            u"  --help\n"
+            u"      Display this help text.\n"
+            u"\n"
+            u"  -n\n"
+            u"  --normalized\n"
+            u"      Report in a normalized output format (useful for automatic analysis).\n"
+            u"\n"
+            u"  -p value\n"
+            u"  --packet-offset value\n"
+            u"      Start reading the files at the specified TS packet (default: 0).\n"
+            u"\n"
+            u"  --payload-only\n"
+            u"      Compare only the payload of the packets, ignore header and adaptation\n"
+            u"      field.\n"
+            u"\n"
+            u"  --pcr-ignore\n"
+            u"      Ignore PCR and OPCR when comparing packets. Useful if one file has been\n"
+            u"      resynchronized.\n"
+            u"\n"
+            u"  --pid-ignore\n"
+            u"      Ignore PID value when comparing packets. Useful if one file has gone\n"
+            u"      through a remapping process.\n"
+            u"\n"
+            u"  -q\n"
+            u"  --quiet\n"
+            u"      Do not output any message. The process simply terminates with a success\n"
+            u"      status if the files are identical and a failure status if they differ.\n"
+            u"\n"
+            u"  -s\n"
+            u"  --subset\n"
+            u"      Specifies that the second file is a subset of the first one. This means\n"
+            u"      that the second file is expected to be identical to the first one, except\n"
+            u"      that some packets may be missing. When a difference is found, the first\n"
+            u"      file is read ahead until a matching packet is found.\n"
+            u"      See also --threshold-diff.\n"
+            u"\n"
+            u"  -t value\n"
+            u"  --threshold-diff value\n"
+            u"      When used with --subset, this value specifies the maximum number of\n"
+            u"      differing bytes in packets to declare them equal. When two packets have\n"
+            u"      more differing bytes than this threshold, the packets are reported as\n"
+            u"      different and the first file is read ahead. The default is zero, which\n"
+            u"      means that two packets must be strictly identical to declare them equal.\n"
+            u"\n"
+            u"  -v\n"
+            u"  --verbose\n"
+            u"      Produce verbose messages.\n"
+            u"\n"
+            u"  --version\n"
+            u"      Display the version number.\n");
 
-    analyze (argc, argv);
+    analyze(argc, argv);
 
-    getValue (filename1, "", "", 0);
-    getValue (filename2, "", "", 1);
+    getValue(filename1, u"", u"", 0);
+    getValue(filename2, u"", u"", 1);
 
     buffered_packets = intValue<size_t>(u"buffered-packets", DEFAULT_BUFFERED_PACKETS);
-    byte_offset = intValue<uint64_t>(u"byte-offset", intValue<uint64_t>(u"packet-offset", 0) * PKT_SIZE);
+    byte_offset = intValue<uint64_t>(u"byte-offset", intValue<uint64_t>(u"packet-offset", 0) * ts::PKT_SIZE);
     threshold_diff = intValue<size_t>(u"threshold-diff", 0);
     subset = present(u"subset");
     payload_only = present(u"payload-only");
@@ -207,11 +202,11 @@ Options::Options (int argc, char *argv[]) :
     dump = !quiet && present(u"dump");
 
     dump_flags =
-        TSPacket::DUMP_TS_HEADER |    // Format TS headers
-        TSPacket::DUMP_PES_HEADER |   // Format PES headers
-        TSPacket::DUMP_RAW |          // Full dump of packet
-        hexa::HEXA |                  // Hexadecimal dump (for TSPacket::DUMP_RAW)
-        hexa::ASCII;                  // ASCII dump (for TSPacket::DUMP_RAW)
+        ts::TSPacket::DUMP_TS_HEADER |    // Format TS headers
+        ts::TSPacket::DUMP_PES_HEADER |   // Format PES headers
+        ts::TSPacket::DUMP_RAW |          // Full dump of packet
+        ts::UString::HEXA |               // Hexadecimal dump (for TSPacket::DUMP_RAW)
+        ts::UString::ASCII;               // ASCII dump (for TSPacket::DUMP_RAW)
 
     exitOnError();
 }
@@ -231,10 +226,10 @@ public:
     size_t diff_count;     // Number of different bytes (can be lower than end_diff-first_diff)
 
     // Constructor
-    Comparator(const TSPacket& pkt1, const TSPacket& pkt2, Options& opt);
+    Comparator(const ts::TSPacket& pkt1, const ts::TSPacket& pkt2, Options& opt);
 
     // Compare two TS packets, return equal
-    bool compare(const TSPacket& pkt1, const TSPacket& pkt2, Options& opt);
+    bool compare(const ts::TSPacket& pkt1, const ts::TSPacket& pkt2, Options& opt);
 
 private:
     // Compare two TS memory regions, return equal
@@ -246,7 +241,7 @@ private:
 //  Packet comparator constructor.
 //----------------------------------------------------------------------------
 
-Comparator::Comparator(const TSPacket& pkt1, const TSPacket& pkt2, Options& opt) :
+Comparator::Comparator(const ts::TSPacket& pkt1, const ts::TSPacket& pkt2, Options& opt) :
     equal(false),
     compared_size(0),
     first_diff(0),
@@ -282,50 +277,50 @@ bool Comparator::compare(const uint8_t* mem1, size_t size1, const uint8_t* mem2,
 //  Offset in packet or in payload, depending on opt.payload_only.
 //----------------------------------------------------------------------------
 
-bool Comparator::compare(const TSPacket& pkt1, const TSPacket& pkt2, Options& opt)
+bool Comparator::compare(const ts::TSPacket& pkt1, const ts::TSPacket& pkt2, Options& opt)
 {
-    if (pkt1.getPID() == PID_NULL || pkt2.getPID() == PID_NULL) {
+    if (pkt1.getPID() == ts::PID_NULL || pkt2.getPID() == ts::PID_NULL) {
         // Null packets are always considered as identical.
         // Non-null packets are always considered as different from null packets.
-        compare (pkt1.b, PKT_SIZE, pkt2.b, PKT_SIZE);
-        return equal = pkt1.getPID() == PID_NULL && pkt2.getPID() == PID_NULL;
+        compare(pkt1.b, ts::PKT_SIZE, pkt2.b, ts::PKT_SIZE);
+        return equal = pkt1.getPID() == ts::PID_NULL && pkt2.getPID() == ts::PID_NULL;
     }
     else if (opt.payload_only) {
         // Compare payload only
-        return compare (pkt1.getPayload(), pkt1.getPayloadSize(), pkt2.getPayload(), pkt2.getPayloadSize());
+        return compare(pkt1.getPayload(), pkt1.getPayloadSize(), pkt2.getPayload(), pkt2.getPayloadSize());
     }
     else if (!opt.pcr_ignore && !opt.pid_ignore && !opt.cc_ignore) {
         // Compare full original packets
-        return compare (pkt1.b, PKT_SIZE, pkt2.b, PKT_SIZE);
+        return compare(pkt1.b, ts::PKT_SIZE, pkt2.b, ts::PKT_SIZE);
     }
     else {
         // Some fields should be ignored, reset them to zero in local copies
-        TSPacket p1, p2;
+        ts::TSPacket p1, p2;
         p1 = pkt1;
         p2 = pkt2;
         if (opt.pcr_ignore) {
             if (p1.hasPCR()) {
-                p1.setPCR (0);
+                p1.setPCR(0);
             }
             if (p1.hasOPCR()) {
-                p1.setOPCR (0);
+                p1.setOPCR(0);
             }
             if (p2.hasPCR()) {
-                p2.setPCR (0);
+                p2.setPCR(0);
             }
             if (p2.hasOPCR()) {
-                p2.setOPCR (0);
+                p2.setOPCR(0);
             }
         }
         if (opt.pid_ignore) {
-            p1.setPID (PID_NULL);
-            p2.setPID (PID_NULL);
+            p1.setPID(ts::PID_NULL);
+            p2.setPID(ts::PID_NULL);
         }
         if (opt.cc_ignore) {
-            p1.setCC (0);
-            p2.setCC (0);
+            p1.setCC(0);
+            p2.setCC(0);
         }
-        return compare (p1.b, PKT_SIZE, p2.b, PKT_SIZE);
+        return compare(p1.b, ts::PKT_SIZE, p2.b, ts::PKT_SIZE);
     }
 }
 
@@ -337,12 +332,12 @@ bool Comparator::compare(const TSPacket& pkt1, const TSPacket& pkt2, Options& op
 int main (int argc, char *argv[])
 {
     Options opt (argc, argv);
-    TSFileInputBuffered file1 (opt.buffered_packets);
-    TSFileInputBuffered file2 (opt.buffered_packets);
+    ts::TSFileInputBuffered file1(opt.buffered_packets);
+    ts::TSFileInputBuffered file2(opt.buffered_packets);
 
     // Open files
-    file1.open (opt.filename1, 1, opt.byte_offset, opt);
-    file2.open (opt.filename2, 1, opt.byte_offset, opt);
+    file1.open(opt.filename1, 1, opt.byte_offset, opt);
+    file2.open(opt.filename2, 1, opt.byte_offset, opt);
     opt.exitOnError();
 
     // Display headers
@@ -356,23 +351,23 @@ int main (int argc, char *argv[])
     }
 
     // Count packets in PIDs in each file
-    PacketCounter count1[PID_MAX];
-    PacketCounter count2[PID_MAX];
-    TS_ZERO (count1);
+    ts::PacketCounter count1[ts::PID_MAX];
+    ts::PacketCounter count2[ts::PID_MAX];
+    TS_ZERO(count1);
     TS_ZERO (count2);
 
     // Currently skipped packets in file1 when --subset
-    PacketCounter subset_skipped = 0;
-    PacketCounter total_subset_skipped = 0;
-    PacketCounter subset_skipped_chunks = 0;
+    ts::PacketCounter subset_skipped = 0;
+    ts::PacketCounter total_subset_skipped = 0;
+    ts::PacketCounter subset_skipped_chunks = 0;
 
     // Number of differences in file
-    PacketCounter diff_count = 0;
+    ts::PacketCounter diff_count = 0;
 
     // Read and compare all packets in the files
-    TSPacket pkt1, pkt2;
+    ts::TSPacket pkt1, pkt2;
     size_t read2 = 0;
-    ts::PID pid2 = PID_NULL;
+    ts::PID pid2 = ts::PID_NULL;
 
     for (;;) {
 
@@ -400,7 +395,7 @@ int main (int argc, char *argv[])
                               << ":filename=" << file2.getFileName() << ":" << std::endl;
                 }
                 else if (!opt.quiet) {
-                    std::cout << "* Packet " << Decimal (file2.getPacketCount())
+                    std::cout << "* Packet " << ts::UString::Decimal(file2.getPacketCount())
                               << ": file " << file2.getFileName() << " is truncated" << std::endl;
                 }
             }
@@ -411,7 +406,7 @@ int main (int argc, char *argv[])
                               << ":filename=" << file1.getFileName() << ":" << std::endl;
                 }
                 else if (!opt.quiet) {
-                    std::cout << "* Packet " << Decimal (file1.getPacketCount())
+                    std::cout << "* Packet " << ts::UString::Decimal(file1.getPacketCount())
                               << ": file " << file1.getFileName() << " is truncated" << std::endl;
                 }
             }
@@ -431,12 +426,12 @@ int main (int argc, char *argv[])
         if (subset_skipped > 0) {
             if (opt.normalized) {
                 std::cout << "skip:packet=" << (file1.getPacketCount() - 1 - subset_skipped)
-                          << ":skipped=" << Decimal (subset_skipped)
+                          << ":skipped=" << ts::UString::Decimal(subset_skipped)
                           << ":" << std::endl;
             }
             else {
-                std::cout << "* Packet " << Decimal (file1.getPacketCount() - 1 - subset_skipped)
-                          << ", missing " << Decimal (subset_skipped)
+                std::cout << "* Packet " << ts::UString::Decimal(file1.getPacketCount() - 1 - subset_skipped)
+                          << ", missing " << ts::UString::Decimal(subset_skipped)
                           << " packets in " << file2.getFileName() << std::endl;
             }
             total_subset_skipped += subset_skipped;
@@ -463,7 +458,7 @@ int main (int argc, char *argv[])
                           << ":" << std::endl;
             }
             else if (!opt.quiet) {
-                std::cout << "* Packet " << Decimal (file1.getPacketCount() - 1) << " differ at offset " << comp.first_diff;
+                std::cout << "* Packet " << ts::UString::Decimal(file1.getPacketCount() - 1) << " differ at offset " << comp.first_diff;
                 if (opt.payload_only) {
                     std::cout << " in payload";
                 }
@@ -475,9 +470,9 @@ int main (int argc, char *argv[])
                 if (pid2 != pid1) {
                     std::cout << "/" << pid2;
                 }
-                std::cout << ", packet " << Decimal (count1[pid1] - 1);
+                std::cout << ", packet " << ts::UString::Decimal(count1[pid1] - 1);
                 if (pid2 != pid1 || count2[pid2] != count1[pid1]) {
-                    std::cout << "/" << Decimal (count2[pid2] - 1);
+                    std::cout << "/" << ts::UString::Decimal(count2[pid2] - 1);
                 }
                 std::cout << " in PID" << std::endl;
                 if (opt.dump) {
@@ -486,11 +481,11 @@ int main (int argc, char *argv[])
                     std::cout << "  Packet from " << file2.getFileName() << ":" << std::endl;
                     pkt2.display (std::cout, opt.dump_flags, 6);
                     std::cout << "  Differing area from " << file1.getFileName() << ":" << std::endl
-                              << Hexa (pkt1.b + (opt.payload_only ? pkt1.getHeaderSize() : 0) + comp.first_diff,
-                                       comp.end_diff - comp.first_diff, opt.dump_flags, 6)
+                              << ts::UString::Dump(pkt1.b + (opt.payload_only ? pkt1.getHeaderSize() : 0) + comp.first_diff,
+                                                   comp.end_diff - comp.first_diff, opt.dump_flags, 6)
                               << "  Differing area from " << file2.getFileName() << ":" << std::endl
-                              << Hexa (pkt2.b + (opt.payload_only ? pkt2.getHeaderSize() : 0) + comp.first_diff,
-                                       comp.end_diff - comp.first_diff, opt.dump_flags, 6);
+                              << ts::UString::Dump(pkt2.b + (opt.payload_only ? pkt2.getHeaderSize() : 0) + comp.first_diff,
+                                                   comp.end_diff - comp.first_diff, opt.dump_flags, 6);
                 }
             }
             if (opt.quiet || !opt.continue_all) {
@@ -508,11 +503,11 @@ int main (int argc, char *argv[])
                   << ":" << std::endl;
     }
     else if (opt.verbose) {
-        std::cout << "* Read " << Decimal (file1.getPacketCount())
-                  << " packets, found " << Decimal (diff_count) << " differences";
+        std::cout << "* Read " << ts::UString::Decimal(file1.getPacketCount())
+                  << " packets, found " << ts::UString::Decimal(diff_count) << " differences";
         if (subset_skipped_chunks > 0) {
-            std::cout << ", missing " << Decimal (total_subset_skipped)
-                      << " packets in " << Decimal (subset_skipped_chunks) << " holes";
+            std::cout << ", missing " << ts::UString::Decimal(total_subset_skipped)
+                      << " packets in " << ts::UString::Decimal(subset_skipped_chunks) << " holes";
         }
         std::cout << std::endl;
     }

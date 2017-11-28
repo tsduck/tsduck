@@ -40,7 +40,7 @@ TSDUCK_SOURCE;
 // Constructor:
 //----------------------------------------------------------------------------
 
-ts::InputRedirector::InputRedirector(const std::string& name,
+ts::InputRedirector::InputRedirector(const UString& name,
                                      Args& args,
                                      std::istream& stream,
                                      std::ios::openmode mode) :
@@ -50,12 +50,12 @@ ts::InputRedirector::InputRedirector(const std::string& name,
 {
     if (!name.empty()) {
         // Flawfinder: ignore: this is our open(), not ::open().
-        _file.open(name.c_str(), mode);
+        _file.open(name.toUTF8().c_str(), mode);
         if (_file) {
             _previous = _stream.rdbuf(_file.rdbuf());
         }
         else {
-            args.error("cannot open file " + name);
+            args.error(u"cannot open file %s", {name});
             args.exitOnError();
         }
     }

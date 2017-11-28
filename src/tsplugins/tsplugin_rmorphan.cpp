@@ -48,11 +48,9 @@ namespace ts {
     {
     public:
         // Implementation of plugin API
-        RMOrphanPlugin (TSP*);
-        virtual bool start();
-        virtual bool stop() {return true;}
-        virtual BitRate getBitrate() {return 0;}
-        virtual Status processPacket (TSPacket&, bool&, bool&);
+        RMOrphanPlugin(TSP*);
+        virtual bool start() override;
+        virtual Status processPacket(TSPacket&, bool&, bool&) override;
 
     private:
         Status        _drop_status; // Status for dropped packets
@@ -60,13 +58,13 @@ namespace ts {
         SectionDemux  _demux;       // Section filter
 
         // Invoked by the demux when a complete table is available.
-        virtual void handleTable (SectionDemux&, const BinaryTable&);
+        virtual void handleTable(SectionDemux&, const BinaryTable&) override;
 
         // Reference a PID
-        void passPID (PID pid);
+        void passPID(PID pid);
 
         // Adds all ECM/EMM PIDs from the specified descriptor list
-        void addCA (const DescriptorList& dlist, TID parent_table);
+        void addCA(const DescriptorList& dlist, TID parent_table);
 
         // Inaccessible operations
         RMOrphanPlugin() = delete;
@@ -83,8 +81,8 @@ TSPLUGIN_DECLARE_PROCESSOR(ts::RMOrphanPlugin)
 // Constructor
 //----------------------------------------------------------------------------
 
-ts::RMOrphanPlugin::RMOrphanPlugin (TSP* tsp_) :
-    ProcessorPlugin(tsp_, "Remove orphan (unreferenced) PID's.", "[options]"),
+ts::RMOrphanPlugin::RMOrphanPlugin(TSP* tsp_) :
+    ProcessorPlugin(tsp_, u"Remove orphan (unreferenced) PID's.", u"[options]"),
     _drop_status(TSP_DROP),
     _pass_pids(),
     _demux(this)
@@ -151,7 +149,7 @@ void ts::RMOrphanPlugin::passPID (PID pid)
 {
     if (!_pass_pids [pid]) {
         _pass_pids.set (pid);
-        tsp->verbose ("PID %d (0x%04X) is referenced", int (pid), int (pid));
+        tsp->verbose(u"PID %d (0x%04X) is referenced", int (pid), int (pid));
     }
 }
 

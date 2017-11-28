@@ -41,8 +41,6 @@
 #include "tsMonotonic.h"
 #include "tsResidentBuffer.h"
 #include "tsIPUtils.h"
-#include "tsDecimal.h"
-#include "tsFormat.h"
 TSDUCK_SOURCE;
 
 
@@ -76,7 +74,7 @@ ts::tsp::TSPInterruptHandler::TSPInterruptHandler(AsyncReport* report, PluginExe
 
 void ts::tsp::TSPInterruptHandler::handleInterrupt()
 {
-    _report->info ("tsp: user interrupt, terminating...");
+    _report->info(u"tsp: user interrupt, terminating...");
 
     // Place all threads in "aborted" state so that each thread will see its
     // successor as aborted. Notify all threads that something happened.
@@ -158,13 +156,10 @@ int main (int argc, char *argv[])
     ts::ResidentBuffer<ts::TSPacket> packet_buffer(opt.bufsize / ts::PKT_SIZE);
 
     if (!packet_buffer.isLocked()) {
-        report.verbose(ts::Format("tsp: buffer failed to lock into physical memory (%d: ", packet_buffer.lockErrorCode()) +
-                       ts::ErrorCodeMessage(packet_buffer.lockErrorCode()) +
-                       "), risk of real-time issue");
+        report.verbose(u"tsp: buffer failed to lock into physical memory (%d: %s), risk of real-time issue",
+                       {packet_buffer.lockErrorCode(), ts::ErrorCodeMessage(packet_buffer.lockErrorCode())});
     }
-    report.debug("tsp: buffer size: " +
-                 ts::Decimal(packet_buffer.count()) + " TS packets, " +
-                 ts::Decimal(packet_buffer.count() * ts::PKT_SIZE) + " bytes");
+    report.debug(u"tsp: buffer size: %'d TS packets, %'d bytes", {packet_buffer.count(), packet_buffer.count() * ts::PKT_SIZE});
 
     // Start all processors, except output, in reverse order (input last).
     // Exit application in case of error.

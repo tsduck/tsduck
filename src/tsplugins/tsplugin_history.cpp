@@ -38,7 +38,6 @@
 #include "tsVariable.h"
 #include "tsTime.h"
 #include "tsTables.h"
-#include "tsFormat.h"
 TSDUCK_SOURCE;
 
 
@@ -51,11 +50,10 @@ namespace ts {
     {
     public:
         // Implementation of plugin API
-        HistoryPlugin (TSP*);
-        virtual bool start();
-        virtual bool stop();
-        virtual BitRate getBitrate() {return 0;}
-        virtual Status processPacket (TSPacket&, bool&, bool&);
+        HistoryPlugin(TSP*);
+        virtual bool start() override;
+        virtual bool stop() override;
+        virtual Status processPacket(TSPacket&, bool&, bool&) override;
 
     private:
         // Description of one PID
@@ -86,16 +84,14 @@ namespace ts {
         PIDContext    _cpids[PID_MAX];    // Description of each PID
 
         // Invoked by the demux when a complete table is available.
-        virtual void handleTable (SectionDemux&, const BinaryTable&);
+        virtual void handleTable(SectionDemux&, const BinaryTable&) override;
 
         // Analyze a list of descriptors, looking for ECM PID's
-        void analyzeCADescriptors (const DescriptorList& dlist, uint16_t service_id);
+        void analyzeCADescriptors(const DescriptorList& dlist, uint16_t service_id);
 
         // Report a history line
-        void report (const std::string&);
-        void report (const char*, ...) TS_PRINTF_FORMAT (2, 3);
-        void report (PacketCounter, const std::string&);
-        void report (PacketCounter, const char*, ...) TS_PRINTF_FORMAT (3, 4);
+        void report(const UChar* fmt, const std::initializer_list<ArgMix> args);
+        void report(PacketCounter, const UChar* fmt, const std::initializer_list<ArgMix> args);
 
         // Inaccessible operations
         HistoryPlugin() = delete;
@@ -215,11 +211,11 @@ bool ts::HistoryPlugin::start()
 
     // Create output file
     if (present(u"output-file")) {
-        const std::string name (value(u"output-file"));
-        tsp->verbose ("creating " + name);
-        _outfile.open (name.c_str(), std::ios::out);
+        const UString name(value(u"output-file"));
+        tsp->verbose(u"creating %s", {name});
+        _outfile.open(name.toUTF8().c_str(), std::ios::out);
         if (!_outfile) {
-            tsp->error ("cannot create " + name);
+            tsp->error(u"cannot create %s", {name});
             return false;
         }
     }
@@ -263,7 +259,7 @@ bool ts::HistoryPlugin::stop()
     // Report last packet of each PID
     for (PIDContext* p = _cpids; p < _cpids + PID_MAX; ++p) {
         if (p->pkt_count > 0) {
-            report (p->last_pkt, "PID %d (0x%04X) last packet, %s", int (p - _cpids), int (p - _cpids), p->scrambling ? "scrambled" : "clear");
+            report(p->last_pkt, u"PID %d (0x%04X) last packet, %s", {p - _cpids, p - _cpids, p->scrambling ? u"scrambled" : u"clear"});
         }
     }
 
@@ -280,22 +276,22 @@ bool ts::HistoryPlugin::stop()
 // Invoked by the demux when a complete table is available.
 //----------------------------------------------------------------------------
 
-void ts::HistoryPlugin::handleTable (SectionDemux& demux, const BinaryTable& table)
+void ts::HistoryPlugin::handleTable(SectionDemux& demux, const BinaryTable& table)
 {
     const PID pid = table.sourcePID();
-    assert (pid < PID_MAX);
+    assert(pid < PID_MAX);
 
     switch (table.tableId()) {
 
         case TID_PAT: {
             if (table.sourcePID() == PID_PAT) {
-                report ("PAT v%d, TS 0x%04X", int (table.version()), int (table.tableIdExtension()));
-                PAT pat (table);
+                report(u"PAT v%d, TS 0x%X", {table.version(), table.tableIdExtension()});
+                PAT pat(table);
                 if (pat.isValid()) {
                     // Filter all PMT PIDs
                     for (PAT::ServiceMap::const_iterator it = pat.pmts.begin(); it != pat.pmts.end(); ++it) {
-                        assert (it->second < PID_MAX);
-                        _demux.addPID (it->second);
+                        assert(it->second < PID_MAX);
+                        _demux.addPID(it->second);
                         _cpids[it->second].service_id = it->first;
                     }
                 }
@@ -306,12 +302,12 @@ void ts::HistoryPlugin::handleTable (SectionDemux& demux, const BinaryTable& tab
         case TID_TDT: {
             if (table.sourcePID() == PID_TDT) {
                 // Save last TDT in context
-                _last_tdt.deserialize (table);
+                _last_tdt.deserialize(table);
                 _last_tdt_pkt = _current_pkt;
                 _last_tdt_reported = false;
                 // Report TDT only if --time-all
                 if (_time_all && _last_tdt.isValid()) {
-                    report ("TDT: " + _last_tdt.utc_time.format(Time::DATE | Time::TIME).toUTF8() + " UTC"); //@@@
+                    report(u"TDT: %s UTC", {_last_tdt.utc_time.format(Time::DATE | Time::TIME)});
                 }
             }
             break;
@@ -320,13 +316,13 @@ void ts::HistoryPlugin::handleTable (SectionDemux& demux, const BinaryTable& tab
         case TID_TOT: {
             if (table.sourcePID() == PID_TOT) {
                 if (_time_all) {
-                    TOT tot (table);
+                    TOT tot(table);
                     if (tot.isValid()) {
                         if (tot.regions.empty()) {
-                            report ("TOT: " + tot.utc_time.format(Time::DATE | Time::TIME).toUTF8() + " UTC"); //@@@
+                            report(u"TOT: %s UTC", {tot.utc_time.format(Time::DATE | Time::TIME)});
                         }
                         else {
-                            report ("TOT: " + tot.localTime(tot.regions[0]).format(Time::DATE | Time::TIME).toUTF8() + " LOCAL"); //@@@
+                            report(u"TOT: %s LOCAL", {tot.localTime(tot.regions[0]).format(Time::DATE | Time::TIME)});
                         }
                     }
                 }
@@ -335,15 +331,15 @@ void ts::HistoryPlugin::handleTable (SectionDemux& demux, const BinaryTable& tab
         }
 
         case TID_PMT: {
-            report ("PMT v%d, service 0x%04X", int (table.version()), int (table.tableIdExtension()));
-            PMT pmt (table);
+            report(u"PMT v%d, service 0x%X", {table.version(), table.tableIdExtension()});
+            PMT pmt(table);
             if (pmt.isValid()) {
                 // Get components of the service, including ECM PID's
-                analyzeCADescriptors (pmt.descs, pmt.service_id);
+                analyzeCADescriptors(pmt.descs, pmt.service_id);
                 for (PMT::StreamMap::const_iterator it = pmt.streams.begin(); it != pmt.streams.end(); ++it) {
-                    assert (it->first < PID_MAX);
+                    assert(it->first < PID_MAX);
                     _cpids[it->first].service_id = pmt.service_id;
-                    analyzeCADescriptors (it->second.descs, pmt.service_id);
+                    analyzeCADescriptors(it->second.descs, pmt.service_id);
                 }
             }
             break;
@@ -352,8 +348,7 @@ void ts::HistoryPlugin::handleTable (SectionDemux& demux, const BinaryTable& tab
         case TID_NIT_ACT:
         case TID_NIT_OTH: {
             if (table.sourcePID() == PID_NIT) {
-                const std::string name(names::TID(table.tableId()).toUTF8());
-                report("%s v%d, network 0x%04X", name.c_str(), int(table.version()), int(table.tableIdExtension()));
+                report(u"%s v%d, network 0x%X", {names::TID(table.tableId()), table.version(), table.tableIdExtension()});
             }
             break;
         }
@@ -361,15 +356,14 @@ void ts::HistoryPlugin::handleTable (SectionDemux& demux, const BinaryTable& tab
         case TID_SDT_ACT:
         case TID_SDT_OTH: {
             if (table.sourcePID() == PID_SDT) {
-                const std::string name(names::TID(table.tableId()).toUTF8());
-                report("%s v%d, TS 0x%04X", name.c_str(), int(table.version()), int(table.tableIdExtension()));
+                report(u"%s v%d, TS 0x%X", {names::TID(table.tableId()), table.version(), table.tableIdExtension()});
             }
             break;
         }
 
         case TID_BAT: {
             if (table.sourcePID() == PID_BAT) {
-                report("BAT v%d, bouquet 0x%04X", int(table.version()), int(table.tableIdExtension()));
+                report(u"BAT v%d, bouquet 0x%X", {table.version(), table.tableIdExtension()});
             }
             break;
         }
@@ -377,8 +371,7 @@ void ts::HistoryPlugin::handleTable (SectionDemux& demux, const BinaryTable& tab
         case TID_CAT:
         case TID_TSDT: {
             // Long sections without TID extension
-            const std::string name(names::TID(table.tableId()).toUTF8());
-            report("%s v%d", name.c_str(), int(table.version()));
+            report(u"%s v%d", {names::TID(table.tableId()), table.version()});
             break;
         }
 
@@ -387,23 +380,21 @@ void ts::HistoryPlugin::handleTable (SectionDemux& demux, const BinaryTable& tab
             // Got an ECM
             if (_report_cas && _cpids[pid].last_tid != table.tableId()) {
                 // Got a new ECM
-                report("PID %d (0x%04X), service 0x%04X, new ECM 0x%02X",
-                       int(pid), int(pid),
-                       int(_cpids[pid].service_id), int(table.tableId()));
+                report(u"PID %d (0x%X), service 0x%X, new ECM 0x%X", {pid, pid, _cpids[pid].service_id, table.tableId()});
             }
             break;
         }
 
         default: {
-            const std::string name(names::TID(table.tableId()).toUTF8());
+            const UString name(names::TID(table.tableId()).toUTF8());
             if (table.tableId() >= TID_EIT_MIN && table.tableId() <= TID_EIT_MAX) {
-                report("%s v%d, service 0x%04X", name.c_str(), int(table.version()), int(table.tableIdExtension()));
+                report(u"%s v%d, service 0x%X", {name, table.version(), table.tableIdExtension()});
             }
             else if (table.sectionCount() > 0 && table.sectionAt(0)->isLongSection()) {
-                report("%s v%d, TIDext 0x%04X", name.c_str(), int(table.version()), int(table.tableIdExtension()));
+                report(u"%s v%d, TIDext 0x%X", {name, table.version(), table.tableIdExtension()});
             }
             else {
-                report(name);
+                report(u"%s", {name});
             }
             break;
         }
@@ -421,7 +412,7 @@ void ts::HistoryPlugin::handleTable (SectionDemux& demux, const BinaryTable& tab
 void ts::HistoryPlugin::analyzeCADescriptors (const DescriptorList& dlist, uint16_t service_id)
 {
     // Loop on all CA descriptors
-    for (size_t index = dlist.search (DID_CA); index < dlist.count(); index = dlist.search (DID_CA, index + 1)) {
+    for (size_t index = dlist.search(DID_CA); index < dlist.count(); index = dlist.search(DID_CA, index + 1)) {
 
         // Descriptor payload
         const uint8_t* desc = dlist[index]->payload();
@@ -431,14 +422,14 @@ void ts::HistoryPlugin::analyzeCADescriptors (const DescriptorList& dlist, uint1
         if (size < 4) {
             continue;
         }
-        uint16_t sysid = GetUInt16 (desc);
-        uint16_t pid = GetUInt16 (desc + 2) & 0x1FFF;
+        uint16_t sysid = GetUInt16(desc);
+        uint16_t pid = GetUInt16(desc + 2) & 0x1FFF;
         desc += 4; size -= 4;
 
         // Record state of main CA pid for this descriptor
         _cpids[pid].service_id = service_id;
         if (_report_cas) {
-            _demux.addPID (pid);
+            _demux.addPID(pid);
         }
 
         // Normally, no PID should be referenced in the private part of
@@ -448,12 +439,12 @@ void ts::HistoryPlugin::analyzeCADescriptors (const DescriptorList& dlist, uint1
             // MediaGuard CA descriptor in the PMT.
             desc += 13; size -= 13;
             while (size >= 15) {
-                pid = GetUInt16 (desc) & 0x1FFF;
+                pid = GetUInt16(desc) & 0x1FFF;
                 desc += 15; size -= 15;
                 // Record state of secondary pid
                 _cpids[pid].service_id = service_id;
                 if (_report_cas) {
-                    _demux.addPID (pid);
+                    _demux.addPID(pid);
                 }
             }
         }
@@ -470,9 +461,9 @@ ts::ProcessorPlugin::Status ts::HistoryPlugin::processPacket (TSPacket& pkt, boo
     // Make sure we know how long to wait for suspended PID
     if (_suspend_after == 0) {
         // Number of packets in 60 second at current bitrate
-        _suspend_after = (PacketCounter (tsp->bitrate()) * 60) / (PKT_SIZE * 8);
+        _suspend_after = (PacketCounter(tsp->bitrate()) * 60) / (PKT_SIZE * 8);
         if (_suspend_after == 0) {
-            tsp->warning ("bitrate unknown or too low, use option --suspend-packet-threshold");
+            tsp->warning(u"bitrate unknown or too low, use option --suspend-packet-threshold");
             return TSP_END;
         }
     }
@@ -481,49 +472,39 @@ ts::ProcessorPlugin::Status ts::HistoryPlugin::processPacket (TSPacket& pkt, boo
     PID pid = pkt.getPID();
     PIDContext* cpid = _cpids + pid;
     uint8_t scrambling = pkt.getScrambling();
-    bool has_pes_start = pkt.getPUSI() && pkt.getPayloadSize() >= 4 && (GetUInt32 (pkt.getPayload()) >> 8) == PES_START;
-    uint8_t pes_stream_id = has_pes_start ? pkt.b [pkt.getHeaderSize() + 3] : 0;
+    bool has_pes_start = pkt.getPUSI() && pkt.getPayloadSize() >= 4 && (GetUInt32(pkt.getPayload()) >> 8) == PES_START;
+    uint8_t pes_stream_id = has_pes_start ? pkt.b[pkt.getHeaderSize() + 3] : 0;
 
     if (cpid->pkt_count == 0) {
         // First packet in a PID
         cpid->first_pkt = _current_pkt;
-        report ("PID %d (0x%04X) first packet, %s", int (pid), int (pid), scrambling ? "scrambled" : "clear");
+        report(u"PID %d (0x%X) first packet, %s", {pid, pid, scrambling ? u"scrambled" : u"clear"});
     }
     else if (cpid->last_pkt + _suspend_after < _current_pkt) {
         // Last packet in the PID is so old that we consider the PID as suspended, and now restarted
-        report (cpid->last_pkt, "PID %d (0x%04X) suspended, %s, service 0x%04X",
-                int (pid), int (pid), cpid->scrambling ? "scrambled" : "clear",
-                int (_cpids[pid].service_id));
-        report ("PID %d (0x%04X) restarted, %s, service 0x%04X",
-                int (pid), int (pid), scrambling ? "scrambled" : "clear",
-                int (_cpids[pid].service_id));
+        report(cpid->last_pkt, u"PID %d (0x%X) suspended, %s, service 0x%X", {pid, pid, cpid->scrambling ? u"scrambled" : u"clear", _cpids[pid].service_id});
+        report(u"PID %d (0x%X) restarted, %s, service 0x%04X", {pid, pid, scrambling ? u"scrambled" : u"clear", _cpids[pid].service_id});
     }
     else if (cpid->scrambling == 0 && scrambling != 0) {
         // Clear to scrambled transition
-        const std::string name(names::ScramblingControl(scrambling).toUTF8());
-        report("PID %d (0x%04X), clear to scrambled transition, %s key, service 0x%04X",
-               int(pid), int(pid), name.c_str(), int(_cpids[pid].service_id));
+        report(u"PID %d (0x%X), clear to scrambled transition, %s key, service 0x%X", {pid, pid, names::ScramblingControl(scrambling), _cpids[pid].service_id});
     }
     else if (cpid->scrambling != 0 && scrambling == 0) {
         // Scrambled to clear transition
-        report("PID %d (0x%04X), scrambled to clear transition, service 0x%04X",
-               int(pid), int(pid), int(_cpids[pid].service_id));
+        report(u"PID %d (0x%X), scrambled to clear transition, service 0x%X", {pid, pid, _cpids[pid].service_id});
     }
     else if (_report_cas && cpid->scrambling != scrambling) {
         // New crypto-period
-        const std::string name(names::ScramblingControl(scrambling).toUTF8());
-        report("PID %d (0x%04X), new crypto-period, %s key, service 0x%04X",
-               int(pid), int(pid), name.c_str(), int(_cpids[pid].service_id));
+        report(u"PID %d (0x%X), new crypto-period, %s key, service 0x%X", {pid, pid, names::ScramblingControl(scrambling), _cpids[pid].service_id});
     }
     if (has_pes_start) {
-        const std::string name(names::StreamId(pes_stream_id, names::FIRST).toUTF8());
         if (!cpid->pes_strid.set()) {
-            // Found PES stream id
-            report("PID %d (0x%04X), PES stream_id is %s", int(pid), int(pid), name.c_str());
+            // Found first PES stream id in the PID.
+            report(u"PID %d (0x%X), PES stream_id is %s", {pid, pid, names::StreamId(pes_stream_id, names::FIRST)});
         }
         else if (cpid->pes_strid != pes_stream_id && !_ignore_stream_id) {
-            report("PID %d (0x%04X), PES stream_id modified from 0x%02X to %s",
-                   int(pid), int(pid), int(cpid->pes_strid.value()), name.c_str());
+            // PES stream id has changed in the PID.
+            report(u"PID %d (0x%X), PES stream_id modified from 0x%X to %s", {pid, pid, cpid->pes_strid.value(), names::StreamId(pes_stream_id, names::FIRST)});
         }
         cpid->pes_strid = pes_stream_id;
     }
@@ -544,46 +525,24 @@ ts::ProcessorPlugin::Status ts::HistoryPlugin::processPacket (TSPacket& pkt, boo
 // Report a history line
 //----------------------------------------------------------------------------
 
-void ts::HistoryPlugin::report (PacketCounter pkt, const std::string& msg)
+void ts::HistoryPlugin::report(const UChar* fmt, const std::initializer_list<ArgMix> args)
+{
+    report(_current_pkt, fmt, args);
+}
+
+void ts::HistoryPlugin::report(PacketCounter pkt, const UChar* fmt, const std::initializer_list<ArgMix> args)
 {
     // Reports the last TDT if required
     if (!_time_all && _last_tdt.isValid() && !_last_tdt_reported) {
         _last_tdt_reported = true;
-        report (_last_tdt_pkt, "TDT: " + _last_tdt.utc_time.format(Time::DATE | Time::TIME).toUTF8() + " UTC"); //@@@
+        report(_last_tdt_pkt, u"TDT: %s UTC", {_last_tdt.utc_time.format(Time::DATE | Time::TIME)});
     }
 
-    // Then report the message if not empty
-    if (!msg.empty()) {
-        const std::string full_msg (Format ("%" FMT_INT64 "u: ", pkt) + msg);
-        if (_outfile.is_open()) {
-            _outfile << full_msg << std::endl;
-        }
-        else {
-            tsp->info (full_msg);
-        }
+    // Then report the message.
+    if (_outfile.is_open()) {
+        _outfile << UString::Format(u"%d: ", {pkt}) << UString::Format(fmt, args) << std::endl;
     }
-}
-
-
-//----------------------------------------------------------------------------
-// Report a history line (encapsulated versions)
-//----------------------------------------------------------------------------
-
-void ts::HistoryPlugin::report (const char* format, ...)
-{
-    std::string result;
-    TS_FORMAT_STRING (result, format);
-    report (_current_pkt, result);
-}
-
-void ts::HistoryPlugin::report (const std::string& msg)
-{
-    report (_current_pkt, msg);
-}
-
-void ts::HistoryPlugin::report (PacketCounter pkt, const char* format, ...)
-{
-    std::string result;
-    TS_FORMAT_STRING (result, format);
-    report (pkt, result);
+    else {
+        tsp->info(u"%d: %s", {pkt, UString::Format(fmt, args)});
+    }
 }

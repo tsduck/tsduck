@@ -33,7 +33,6 @@
 
 #include "tsArgs.h"
 #include "tsSysUtils.h"
-#include "tsStringUtils.h"
 #include "tsBinaryTable.h"
 #include "tsXMLTables.h"
 #include "tsDVBCharset.h"
@@ -155,19 +154,19 @@ Options::Options(int argc, char *argv[]) :
     }
 
     if (!infiles.empty() && xmlModel) {
-        error("do not specify input files with --xml-model");
+        error(u"do not specify input files with --xml-model");
     }
     if (infiles.size() > 1 && !outfile.empty() && !outdir) {
-        error("with more than one input file, --output must be a directory");
+        error(u"with more than one input file, --output must be a directory");
     }
     if (compile && decompile) {
-        error("specify either --compile or --decompile but not both");
+        error(u"specify either --compile or --decompile but not both");
     }
 
     // Get default character set.
     const std::string csName(value(u"default-charset"));
     if (!csName.empty() && (defaultCharset = ts::DVBCharset::GetCharset(csName)) == 0) {
-        error("invalid character set name '%s", csName.c_str());
+        error(u"invalid character set name '%s", csName.c_str());
     }
 
     exitOnError();
@@ -183,10 +182,10 @@ bool DisplayModel(Options& opt)
     // Locate the model file.
     const std::string inName(ts::SearchConfigurationFile("tsduck.xml"));
     if (inName.empty()) {
-        opt.error("XML model file not found");
+        opt.error(u"XML model file not found");
         return false;
     }
-    opt.verbose("original model file is " + inName);
+    opt.verbose(u"original model file is " + inName);
 
     // Save to a file. Default to stdout.
     std::string outName(opt.outfile);
@@ -196,7 +195,7 @@ bool DisplayModel(Options& opt)
         outName.append("tsduck.xml");
     }
     if (!outName.empty()) {
-        opt.verbose("saving model file to " + outName);
+        opt.verbose(u"saving model file to " + outName);
     }
 
     // Redirect input and output, exit in case of error.
@@ -215,7 +214,7 @@ bool DisplayModel(Options& opt)
 
 bool CompileXML(Options& opt, const std::string& infile, const std::string& outfile)
 {
-    opt.verbose("Compiling " + infile + " to " + outfile);
+    opt.verbose(u"Compiling " + infile + " to " + outfile);
     ts::ReportWithPrefix report(opt, ts::BaseName(infile) + ": ");
 
     // Load XML file, convert tables to binary and save binary file.
@@ -230,7 +229,7 @@ bool CompileXML(Options& opt, const std::string& infile, const std::string& outf
 
 bool DecompileBinary(Options& opt, const std::string& infile, const std::string& outfile)
 {
-    opt.verbose("Decompiling " + infile + " to " + outfile);
+    opt.verbose(u"Decompiling " + infile + " to " + outfile);
     ts::ReportWithPrefix report(opt, ts::BaseName(infile) + ": ");
 
     // Load binary tables.
@@ -270,15 +269,15 @@ bool ProcessFile(Options& opt, const std::string& infile)
 
     // Process the input file, starting with error cases.
     if (!compile && !decompile) {
-        opt.error("don't know what to do with file " + infile + ", unknown file type, specify --compile or --decompile");
+        opt.error(u"don't know what to do with file " + infile + ", unknown file type, specify --compile or --decompile");
         return false;
     }
     else if (compile && isBin) {
-        opt.error("cannot compile binary file " + infile);
+        opt.error(u"cannot compile binary file " + infile);
         return false;
     }
     else if (decompile && isXML) {
-        opt.error("cannot decompile XML file " + infile);
+        opt.error(u"cannot decompile XML file " + infile);
         return false;
     }
     else if (compile) {

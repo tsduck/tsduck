@@ -31,7 +31,6 @@
 #include "tsDirectShowUtils.h"
 #include "tsDirectShowGraph.h"
 #include "tsDirectShowFilterCategory.h"
-#include "tsStringUtils.h"
 #include "tsNullReport.h"
 TSDUCK_SOURCE;
 
@@ -91,7 +90,7 @@ void ts::DirectShowTest::testBDATuners(const UString& margin)
     // Build an instance of all tuners.
     DirectShowFilterCategory tuners(KSCATEGORY_BDA_NETWORK_TUNER, _report);
     if (tuners.empty()) {
-        _report.error("no BDA tuner found");
+        _report.error(u"no BDA tuner found");
         return;
     }
 
@@ -216,14 +215,14 @@ void ts::DirectShowTest::testTuningSpaces(const UString& margin)
             _output << margin << "    None" << std::endl;
         }
         else {
-            SaveStrings(good, _output);
+            UString::Save(good, _output);
         }
         _output << std::endl << margin << "  Incompatible tuning spaces:" << std::endl;
         if (bad.empty()) {
             _output << margin << "    None" << std::endl;
         }
         else {
-            SaveStrings(bad, _output);
+            UString::Save(bad, _output);
         }
     }
 

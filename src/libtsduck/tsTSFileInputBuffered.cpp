@@ -69,11 +69,11 @@ ts::TSFileInputBuffered::~TSFileInputBuffered()
 bool ts::TSFileInputBuffered::setBufferSize (size_t buffer_size, Report& report)
 {
     if (isOpen()) {
-        report.error ("file " + getFileName() + " is already open, cannot resize buffer");
+        report.error(u"file %s is already open, cannot resize buffer", {getFileName()});
         return false;
     }
     else {
-        _buffer.resize (std::max<size_t> (buffer_size, MIN_BUFFER_SIZE));
+        _buffer.resize(std::max<size_t>(buffer_size, MIN_BUFFER_SIZE));
         return true;
     }
 }
@@ -83,17 +83,17 @@ bool ts::TSFileInputBuffered::setBufferSize (size_t buffer_size, Report& report)
 // Open file. Override TSFileInput::open().
 //----------------------------------------------------------------------------
 
-bool ts::TSFileInputBuffered::open (const std::string& filename, size_t repeat_count, uint64_t start_offset, Report& report)
+bool ts::TSFileInputBuffered::open(const UString& filename, size_t repeat_count, uint64_t start_offset, Report& report)
 {
     if (isOpen()) {
-        report.error ("file " + getFileName() + " is already open");
+        report.error(u"file %s is already open", {getFileName()});
         return false;
     }
     else {
         _first_index = 0;
         _current_offset = 0;
         _total_count = 0;
-        return TSFileInput::open (filename, repeat_count, start_offset, report);
+        return TSFileInput::open(filename, repeat_count, start_offset, report);
     }
 }
 
@@ -133,7 +133,7 @@ bool ts::TSFileInputBuffered::seek (PacketCounter pos, Report& report)
         return true;
     }
     else {
-        report.error ("trying to seek buffered TS input file outside input buffer");
+        report.error(u"trying to seek buffered TS input file outside input buffer");
         return false;
     }
 }
@@ -146,11 +146,11 @@ bool ts::TSFileInputBuffered::seek (PacketCounter pos, Report& report)
 bool ts::TSFileInputBuffered::seekBackward (size_t packet_count, Report& report)
 {
     if (!isOpen()) {
-        report.error ("file not open");
+        report.error(u"file not open");
         return false;
     }
     else if (packet_count > _current_offset) {
-        report.error ("trying to seek TS input file backward too far");
+        report.error(u"trying to seek TS input file backward too far");
         return false;
     }
     else {
@@ -163,11 +163,11 @@ bool ts::TSFileInputBuffered::seekBackward (size_t packet_count, Report& report)
 bool ts::TSFileInputBuffered::seekForward (size_t packet_count, Report& report)
 {
     if (!isOpen()) {
-        report.error ("file not open");
+        report.error(u"file not open");
         return false;
     }
     else if (_current_offset + packet_count > _total_count) {
-        report.error ("trying to seek TS input file forward too far");
+        report.error(u"trying to seek TS input file forward too far");
         return false;
     }
     else {
@@ -184,7 +184,7 @@ bool ts::TSFileInputBuffered::seekForward (size_t packet_count, Report& report)
 size_t ts::TSFileInputBuffered::read (TSPacket* user_buffer, size_t max_packets, Report& report)
 {
     if (!isOpen()) {
-        report.error ("file not open");
+        report.error(u"file not open");
         return false;
     }
 
