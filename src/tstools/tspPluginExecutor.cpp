@@ -34,7 +34,6 @@
 #include "tspPluginExecutor.h"
 #include "tsGuardCondition.h"
 #include "tsGuard.h"
-#include "tsDecimal.h"
 TSDUCK_SOURCE;
 
 
@@ -73,28 +72,28 @@ ts::tsp::PluginExecutor::PluginExecutor(Options* options,
     switch (pl_options->type) {
         case Options::INPUT:
             if (new_input != 0) {
-                _shlib = new_input (this);
+                _shlib = new_input(this);
                 shell = "tsp -I";
             }
             break;
         case Options::OUTPUT:
             if (new_output != 0) {
-                _shlib = new_output (this);
+                _shlib = new_output(this);
                 shell = "tsp -O";
             }
             break;
         case Options::PROCESSOR:
             if (new_processor != 0) {
-                _shlib = new_processor (this);
+                _shlib = new_processor(this);
                 shell = "tsp -P";
             }
             break;
         default:
-            assert (false);
+            assert(false);
     }
 
     if (_shlib == 0) {
-        error("plugin does not implement the " + Options::PluginTypeName(pl_options->type) + " function");
+        error(u"plugin does not implement the %s function", {Options::PluginTypeNames.name(pl_options->type)});
         unload();
         return;
     }
@@ -135,12 +134,12 @@ ts::tsp::PluginExecutor::~PluginExecutor()
 // synchronous environment, before starting all executor threads.
 //----------------------------------------------------------------------------
 
-void ts::tsp::PluginExecutor::initBuffer (PacketBuffer* buffer,
-                                            size_t        pkt_first,
-                                            size_t        pkt_cnt,
-                                            bool          input_end,
-                                            bool          aborted,
-                                            BitRate       bitrate)
+void ts::tsp::PluginExecutor::initBuffer(PacketBuffer* buffer,
+                                         size_t        pkt_first,
+                                         size_t        pkt_cnt,
+                                         bool          input_end,
+                                         bool          aborted,
+                                         BitRate       bitrate)
 {
     _buffer = buffer;
     _pkt_first = pkt_first;
@@ -157,9 +156,9 @@ void ts::tsp::PluginExecutor::initBuffer (PacketBuffer* buffer,
 // Inherited from Report (via TSP)
 //----------------------------------------------------------------------------
 
-void ts::tsp::PluginExecutor::writeLog (int severity, const std::string& msg)
+void ts::tsp::PluginExecutor::writeLog(int severity, const UString& msg)
 {
-    _report->log (severity, _name + ": " + msg);
+    _report->log(severity, u"%s: %s", {_name, msg});
 }
 
 
@@ -177,20 +176,20 @@ void ts::tsp::PluginExecutor::writeLog (int severity, const std::string& msg)
 // cease to accept packets".
 //----------------------------------------------------------------------------
 
-void ts::tsp::PluginExecutor::passPackets (size_t count,     // of packets to pass
-                                             BitRate bitrate,  // pass to next processor
-                                             bool input_end,   // pass to next processor
-                                             bool aborted)     // set to current processor
+void ts::tsp::PluginExecutor::passPackets(size_t count,     // of packets to pass
+                                          BitRate bitrate,  // pass to next processor
+                                          bool input_end,   // pass to next processor
+                                          bool aborted)     // set to current processor
 
 {
-    assert (count <= _pkt_cnt);
-    assert (_pkt_first + count <= _buffer->count());
+    assert(count <= _pkt_cnt);
+    assert(_pkt_first + count <= _buffer->count());
 
-    log (10, "passPackets (count = %" FMT_SIZE_T "u, bitrate = %d, input_end = %d, aborted = %d)", count, int (bitrate), int (input_end), int (aborted));
+    log(10, u"passPackets (count = %'d, bitrate = %'d, input_end = %'d, aborted = %'d)", {count, bitrate, input_end, aborted});
 
     // We access data under the protection of the global mutex.
 
-    Guard lock (_global_mutex);
+    Guard lock(_global_mutex);
 
     // Update our buffer
 
@@ -223,10 +222,9 @@ void ts::tsp::PluginExecutor::passPackets (size_t count,     // of packets to pa
 // This method sets the current processor in an abort state.
 //----------------------------------------------------------------------------
 
-void ts::tsp::PluginExecutor::setAbort ()
-
+void ts::tsp::PluginExecutor::setAbort()
 {
-    Guard lock (_global_mutex);
+    Guard lock(_global_mutex);
     _tsp_aborting = true;
     ringPrevious<PluginExecutor>()->_to_do.signal();
 }
@@ -240,17 +238,17 @@ void ts::tsp::PluginExecutor::setAbort ()
 // address. The next call to waitWork will return the second part.
 //----------------------------------------------------------------------------
 
-void ts::tsp::PluginExecutor::waitWork (size_t& pkt_first,
-                                          size_t& pkt_cnt,
-                                          BitRate& bitrate,
-                                          bool& input_end,
-                                          bool& aborted)    // get from next processor
+void ts::tsp::PluginExecutor::waitWork(size_t& pkt_first,
+                                       size_t& pkt_cnt,
+                                       BitRate& bitrate,
+                                       bool& input_end,
+                                       bool& aborted)    // get from next processor
 {
-    log (10, "waitWork (...)");
+    log(10, u"waitWork(...)");
 
     // We access data under the protection of the global mutex.
 
-    GuardCondition lock (_global_mutex, _to_do);
+    GuardCondition lock(_global_mutex, _to_do);
 
     while (_pkt_cnt == 0 && !_input_end && !ringNext<PluginExecutor>()->_tsp_aborting) {
 
@@ -263,11 +261,10 @@ void ts::tsp::PluginExecutor::waitWork (size_t& pkt_first,
     }
 
     pkt_first = _pkt_first;
-    pkt_cnt = std::min (_pkt_cnt, _buffer->count() - _pkt_first);
+    pkt_cnt = std::min(_pkt_cnt, _buffer->count() - _pkt_first);
     bitrate = _bitrate;
     input_end = _input_end && pkt_cnt == _pkt_cnt;
     aborted = ringNext<PluginExecutor>()->_tsp_aborting;
 
-    log (10, "waitWork (pkt_first = %" FMT_SIZE_T "u, pkt_cnt = %" FMT_SIZE_T "u, bitrate = %d, input_end = %d, aborted = %d)",
-         pkt_first, pkt_cnt, int (bitrate), int (input_end), int (aborted));
+    log(10, u"waitWork (pkt_first = %'d, pkt_cnt = %'d, bitrate = %'d, input_end = %'d, aborted = %'d)", {pkt_first, pkt_cnt, bitrate, input_end, aborted});
 }

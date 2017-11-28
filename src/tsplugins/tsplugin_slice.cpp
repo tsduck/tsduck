@@ -35,7 +35,6 @@
 #include "tsPlugin.h"
 #include "tsPCRAnalyzer.h"
 #include "tsEnumeration.h"
-#include "tsDecimal.h"
 TSDUCK_SOURCE;
 
 
@@ -48,11 +47,9 @@ namespace ts {
     {
     public:
         // Implementation of plugin API
-        SlicePlugin (TSP*);
-        virtual bool start();
-        virtual bool stop() {return true;}
-        virtual BitRate getBitrate() {return 0;}
-        virtual Status processPacket (TSPacket&, bool&, bool&);
+        SlicePlugin(TSP*);
+        virtual bool start() override;
+        virtual Status processPacket(TSPacket&, bool&, bool&) override;
 
     private:
         // Event description
@@ -63,7 +60,7 @@ namespace ts {
             uint64_t value;    // ... after this packet or milli-second
 
             // Constructor
-            SliceEvent (const Status& s, const uint64_t& v) : status (s), value (v) {}
+            SliceEvent(const Status& s, const uint64_t& v) : status(s), value(v) {}
 
             // Comparison, for sort algorithm
             bool operator< (const SliceEvent& e) const {return value < e.value;}
@@ -82,7 +79,7 @@ namespace ts {
         size_t            _next_index;   // Index of next SliceEvent to apply
 
         // Add event in the list from one option.
-        void addEvents (const char* option, Status status);
+        void addEvents(const UChar* option, Status status);
 
         // Inaccessible operations
         SlicePlugin() = delete;
@@ -99,14 +96,14 @@ TSPLUGIN_DECLARE_PROCESSOR(ts::SlicePlugin)
 // Constructor
 //----------------------------------------------------------------------------
 
-ts::SlicePlugin::SlicePlugin (TSP* tsp_) :
-    ProcessorPlugin(tsp_, "Pass or drop packets based on packet numbers.", "[options]"),
+ts::SlicePlugin::SlicePlugin(TSP* tsp_) :
+    ProcessorPlugin(tsp_, u"Pass or drop packets based on packet numbers.", u"[options]"),
     _use_time(false),
     _ignore_pcr(false),
     _status(TSP_OK),
     _packet_cnt(0),
     _time_factor(0),
-    _status_names("pass", TSP_OK, "stop", TSP_END, "drop", TSP_DROP, "null", TSP_NULL, TS_NULL),
+    _status_names({{u"pass", TSP_OK}, {u"stop", TSP_END}, {u"drop", TSP_DROP}, {u"null", TSP_NULL}}),
     _pcr_analyzer(),
     _events(),
     _next_index(0)
@@ -120,50 +117,50 @@ ts::SlicePlugin::SlicePlugin (TSP* tsp_) :
     option(u"stop",          's', UNSIGNED);
 
     setHelp(u"Options:\n"
-             u"\n"
-             u"  -d value\n"
-             u"  --drop value\n"
-             u"      All packets are dropped after the specified packet number.\n"
-             u"      Several --drop options may be specified.\n"
-             u"\n"
-             u"  --help\n"
-             u"      Display this help text.\n"
-             u"\n"
-             u"  -i\n"
-             u"  --ignore-pcr\n"
-             u"      When --seconds or --milli-seconds is used, do not use PCR's to\n"
-             u"      compute time values. Only rely on bitrate as determined by previous\n"
-             u"      plugins in the chain.\n"
-             u"\n"
-             u"  -m\n"
-             u"  --milli-seconds\n"
-             u"      With options --drop, --null, --pass and --stop, interpret the integer\n"
-             u"      values as milli-seconds from the beginning, not as packet numbers.\n"
-             u"      Time is measured based on bitrate and packet count, not on real time.\n"
-             u"\n"
-             u"  -n value\n"
-             u"  --null value\n"
-             u"      All packets are replaced by null packets after the specified packet\n"
-             u"      number. Several --null options may be specified.\n"
-             u"\n"
-             u"  -p value\n"
-             u"  --pass value\n"
-             u"      All packets are passed unmodified after the specified packet number.\n"
-             u"      Several --pass options may be specified. This is the default for the\n"
-             u"      initial packets.\n"
-             u"\n"
-             u"  --seconds\n"
-             u"      With options --drop, --null, --pass and --stop, interpret the integer\n"
-             u"      values as seconds from the beginning, not as packet numbers.\n"
-             u"      Time is measured based on bitrate and packet count, not on real time.\n"
-             u"\n"
-             u"  -s value\n"
-             u"  --stop value\n"
-             u"      Packet transmission stops after the specified packet number and tsp\n"
-             u"      terminates.\n"
-             u"\n"
-             u"  --version\n"
-             u"      Display the version number.\n");
+            u"\n"
+            u"  -d value\n"
+            u"  --drop value\n"
+            u"      All packets are dropped after the specified packet number.\n"
+            u"      Several --drop options may be specified.\n"
+            u"\n"
+            u"  --help\n"
+            u"      Display this help text.\n"
+            u"\n"
+            u"  -i\n"
+            u"  --ignore-pcr\n"
+            u"      When --seconds or --milli-seconds is used, do not use PCR's to\n"
+            u"      compute time values. Only rely on bitrate as determined by previous\n"
+            u"      plugins in the chain.\n"
+            u"\n"
+            u"  -m\n"
+            u"  --milli-seconds\n"
+            u"      With options --drop, --null, --pass and --stop, interpret the integer\n"
+            u"      values as milli-seconds from the beginning, not as packet numbers.\n"
+            u"      Time is measured based on bitrate and packet count, not on real time.\n"
+            u"\n"
+            u"  -n value\n"
+            u"  --null value\n"
+            u"      All packets are replaced by null packets after the specified packet\n"
+            u"      number. Several --null options may be specified.\n"
+            u"\n"
+            u"  -p value\n"
+            u"  --pass value\n"
+            u"      All packets are passed unmodified after the specified packet number.\n"
+            u"      Several --pass options may be specified. This is the default for the\n"
+            u"      initial packets.\n"
+            u"\n"
+            u"  --seconds\n"
+            u"      With options --drop, --null, --pass and --stop, interpret the integer\n"
+            u"      values as seconds from the beginning, not as packet numbers.\n"
+            u"      Time is measured based on bitrate and packet count, not on real time.\n"
+            u"\n"
+            u"  -s value\n"
+            u"  --stop value\n"
+            u"      Packet transmission stops after the specified packet number and tsp\n"
+            u"      terminates.\n"
+            u"\n"
+            u"  --version\n"
+            u"      Display the version number.\n");
 }
 
 
@@ -183,20 +180,19 @@ bool ts::SlicePlugin::start()
 
     // Get list of time events
     _events.clear();
-    addEvents ("drop", TSP_DROP);
-    addEvents ("null", TSP_NULL);
-    addEvents ("pass", TSP_OK);
-    addEvents ("stop", TSP_END);
+    addEvents(u"drop", TSP_DROP);
+    addEvents(u"null", TSP_NULL);
+    addEvents(u"pass", TSP_OK);
+    addEvents(u"stop", TSP_END);
 
     // Sort events by value
-    std::sort (_events.begin(), _events.end());
+    std::sort(_events.begin(), _events.end());
     _next_index = 0;
 
     if (tsp->verbose()) {
         tsp->log (Severity::Verbose, "initial packet processing: " + _status_names.name (_status));
         for (SliceEventVector::iterator it = _events.begin(); it != _events.end(); ++it) {
-            tsp->log (Severity::Verbose, "packet " + _status_names.name (it->status) +
-                      u" after " + Decimal (it->value) + (_use_time ? " ms" : " packets"));
+            tsp->verbose(u"packet %s after %'d %s", {_status_names.name(it->status), it->value, _use_time ? u"ms" : u"packets"});
         }
     }
 
@@ -208,16 +204,16 @@ bool ts::SlicePlugin::start()
 // Add events in the list fro one option.
 //----------------------------------------------------------------------------
 
-void ts::SlicePlugin::addEvents (const char* option, Status status)
+void ts::SlicePlugin::addEvents(const UChar* option, Status status)
 {
-    for (size_t index = 0; index < count (option); ++index) {
-        uint64_t value = intValue<uint64_t> (option, 0, index);
+    for (size_t index = 0; index < count(option); ++index) {
+        uint64_t value = intValue<uint64_t>(option, 0, index);
         if (value == 0) {
             // First packet, this is the initial action
             _status = status;
         }
         else {
-            _events.push_back (SliceEvent (status, value * _time_factor));
+            _events.push_back(SliceEvent(status, value * _time_factor));
         }
     }
 }
@@ -227,11 +223,11 @@ void ts::SlicePlugin::addEvents (const char* option, Status status)
 // Packet processing method
 //----------------------------------------------------------------------------
 
-ts::ProcessorPlugin::Status ts::SlicePlugin::processPacket (TSPacket& pkt, bool& flush, bool& bitrate_changed)
+ts::ProcessorPlugin::Status ts::SlicePlugin::processPacket(TSPacket& pkt, bool& flush, bool& bitrate_changed)
 {
     // Feed PCR analyzer if necessary
     if (_use_time && !_ignore_pcr) {
-        _pcr_analyzer.feedPacket (pkt);
+        _pcr_analyzer.feedPacket(pkt);
     }
 
     // Compute current "value" (depends on interpretation);
@@ -251,11 +247,11 @@ ts::ProcessorPlugin::Status ts::SlicePlugin::processPacket (TSPacket& pkt, bool&
             bitrate = _pcr_analyzer.bitrate188();
         }
         if (bitrate == 0) {
-            tsp->error ("unknown bitrate, cannot compute time offset");
+            tsp->error(u"unknown bitrate, cannot compute time offset");
             return TSP_END;
         }
         // Compute time in milli-seconds since beginning
-        current_value = PacketInterval (bitrate, _packet_cnt);
+        current_value = PacketInterval(bitrate, _packet_cnt);
     }
 
     // Is it time to change the action?
@@ -263,7 +259,7 @@ ts::ProcessorPlugin::Status ts::SlicePlugin::processPacket (TSPacket& pkt, bool&
         // Yes, we just passed a schedule
         _status = _events[_next_index].status;
         _next_index++;
-        tsp->verbose ("new packet processing: " + _status_names.name (_status) + " after " + Decimal (_packet_cnt) + " packets");
+        tsp->verbose(u"new packet processing: %s after %'d packets", {_status_names.name(_status), _packet_cnt});
     }
 
     // Count packets

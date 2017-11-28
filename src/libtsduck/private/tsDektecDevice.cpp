@@ -329,13 +329,13 @@ bool ts::DektecDevice::getDevice(int& dev_index, int& chan_index, bool is_input,
             }
         }
         if (dev_index < 0) {
-            report.error("no %s Dektec device found", {direction});
+            report.error(u"no %s Dektec device found", {direction});
             return false;
         }
     }
     else if (dev_index >= int(devlist.size())) {
         // Invalid device index specified
-        report.error("invalid Dektec device index: %d", {dev_index});
+        report.error(u"invalid Dektec device index: %d", {dev_index});
         return false;
     }
 
@@ -344,7 +344,7 @@ bool ts::DektecDevice::getDevice(int& dev_index, int& chan_index, bool is_input,
 
     // Check that device has required input or output capability
     if ((is_input && input.size() <= 0) || (!is_input && output.size() <= 0)) {
-        report.error("Dektec device %d has no %s channel", {dev_index, direction});
+        report.error(u"Dektec device %d has no %s channel", {dev_index, direction});
         return false;
     }
 
@@ -353,12 +353,12 @@ bool ts::DektecDevice::getDevice(int& dev_index, int& chan_index, bool is_input,
         chan_index = 0;
     }
     if ((is_input && chan_index >= int(input.size())) || (!is_input && chan_index >= int(output.size()))) {
-        report.error("Dektec device %d has no %s channel %d", {dev_index, direction, chan_index});
+        report.error(u"Dektec device %d has no %s channel %d", {dev_index, direction, chan_index});
         return false;
     }
 
     // Report selected device
-    report.verbose("using Dektec device %d, %s channel %d (%s port %d)",
+    report.verbose(u"using Dektec device %d, %s channel %d (%s port %d)",
                    {dev_index, direction, chan_index, model, is_input ? input[chan_index].m_Port : output[chan_index].m_Port});
     return true;
 }
@@ -400,7 +400,7 @@ void ts::DektecDevice::ReportDvbT2Pars(const Dtapi::DtDvbT2Pars& pars, Report& r
     report.log(severity, u"%sm_StartRfIdx = %d", {margin, pars.m_StartRfIdx});
     report.log(severity, u"%sm_NumPlps = %d", {margin, pars.m_NumPlps});
     for (int i = 0; i < DTAPI_DVBT2_NUM_PLP_MAX && i < pars.m_NumPlps; i++) {
-        ReportDvbT2PlpPars(pars.m_Plps[i], report, severity, UString::Format("%sm_Plps[%d].", {margin, i}));
+        ReportDvbT2PlpPars(pars.m_Plps[i], report, severity, UString::Format(u"%sm_Plps[%d].", {margin, i}));
     }
 }
 

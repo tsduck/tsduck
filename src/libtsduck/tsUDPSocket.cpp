@@ -70,11 +70,11 @@ ts::UDPSocket::~UDPSocket()
 bool ts::UDPSocket::open (Report& report)
 {
     if (_sock != TS_SOCKET_T_INVALID) {
-        report.error ("socket already open");
+        report.error(u"socket already open");
         return false;
     }
     else if ((_sock = ::socket (PF_INET, SOCK_DGRAM, IPPROTO_UDP)) == TS_SOCKET_T_INVALID) {
-        report.error ("error creating socket: " + SocketErrorCodeMessage ());
+        report.error(u"error creating socket: " + SocketErrorCodeMessage ());
         return false;
     }
     else {
@@ -113,7 +113,7 @@ bool ts::UDPSocket::setSendBufferSize (size_t buffer_size, Report& report)
     int size = int (buffer_size);
 
     if (::setsockopt (_sock, SOL_SOCKET, SO_SNDBUF, TS_SOCKOPT_T (&size), sizeof(size)) != 0) {
-        report.error ("error setting socket send buffer size: " + SocketErrorCodeMessage ());
+        report.error(u"error setting socket send buffer size: " + SocketErrorCodeMessage ());
         return false;
     }
     return true;
@@ -131,7 +131,7 @@ bool ts::UDPSocket::setReceiveBufferSize (size_t buffer_size, Report& report)
     int size = int (buffer_size);
 
     if (::setsockopt (_sock, SOL_SOCKET, SO_RCVBUF, TS_SOCKOPT_T (&size), sizeof(size)) != 0) {
-        report.error ("error setting socket receive buffer size: " + SocketErrorCodeMessage ());
+        report.error(u"error setting socket receive buffer size: " + SocketErrorCodeMessage ());
         return false;
     }
     return true;
@@ -149,7 +149,7 @@ bool ts::UDPSocket::reusePort (bool reuse_port, Report& report)
     int reuse = int (reuse_port);
 
     if (::setsockopt (_sock, SOL_SOCKET, SO_REUSEADDR, TS_SOCKOPT_T (&reuse), sizeof(reuse)) != 0) {
-        report.error ("error setting socket reuse port: " + SocketErrorCodeMessage ());
+        report.error(u"error setting socket reuse port: " + SocketErrorCodeMessage ());
         return false;
     }
     return true;
@@ -167,7 +167,7 @@ bool ts::UDPSocket::bind (const SocketAddress& addr, Report& report)
     addr.copy (sock_addr);
 
     if (::bind (_sock, &sock_addr, sizeof(sock_addr)) != 0) {
-        report.error ("error binding socket to local address: " + SocketErrorCodeMessage ());
+        report.error(u"error binding socket to local address: " + SocketErrorCodeMessage ());
         return false;
     }
     return true;
@@ -191,7 +191,7 @@ bool ts::UDPSocket::setOutgoingMulticast (const IPAddress& addr, Report& report)
     addr.copy (iaddr);
 
     if (::setsockopt (_sock, IPPROTO_IP, IP_MULTICAST_IF, TS_SOCKOPT_T (&iaddr), sizeof(iaddr)) != 0) {
-        report.error ("error setting outgoing local address: " + SocketErrorCodeMessage ());
+        report.error(u"error setting outgoing local address: " + SocketErrorCodeMessage ());
         return false;
     }
     return true;
@@ -213,11 +213,11 @@ bool ts::UDPSocket::setDefaultDestination (const std::string& name, Report& repo
 bool ts::UDPSocket::setDefaultDestination (const SocketAddress& addr, Report& report)
 {
     if (!addr.hasAddress()) {
-        report.error ("missing IP address in UDP destination");
+        report.error(u"missing IP address in UDP destination");
         return false;
     }
     else if (!addr.hasPort()) {
-        report.error ("missing port number in UDP destination");
+        report.error(u"missing port number in UDP destination");
         return false;
     }
     else {
@@ -238,14 +238,14 @@ bool ts::UDPSocket::setTTL (int ttl, bool multicast, Report& report)
     if (multicast) {
         TS_SOCKET_MC_TTL_T mttl = (TS_SOCKET_MC_TTL_T) (ttl);
         if (::setsockopt (_sock, IPPROTO_IP, IP_MULTICAST_TTL, TS_SOCKOPT_T (&mttl), sizeof(mttl)) != 0) {
-            report.error ("socket option multicast TTL: " + SocketErrorCodeMessage ());
+            report.error(u"socket option multicast TTL: " + SocketErrorCodeMessage ());
             return false;
         }
     }
     else {
         TS_SOCKET_TTL_T uttl = (TS_SOCKET_TTL_T) (ttl);
         if (::setsockopt (_sock, IPPROTO_IP, IP_TTL, TS_SOCKOPT_T (&uttl), sizeof(uttl)) != 0) {
-            report.error ("socket option unicast TTL: " + SocketErrorCodeMessage ());
+            report.error(u"socket option unicast TTL: " + SocketErrorCodeMessage ());
             return false;
         }
     }
@@ -318,7 +318,7 @@ bool ts::UDPSocket::dropMembership (Report& report)
 {
     bool ok = true;
     for (MReqSet::const_iterator it = _mcast.begin(); it != _mcast.end(); ++it) {
-        report.verbose("leaving multicast group %s from local address %s", {IPAddress(it->req.imr_multiaddr).toString(), IPAddress(it->req.imr_interface).toString()});
+        report.verbose(u"leaving multicast group %s from local address %s", {IPAddress(it->req.imr_multiaddr).toString(), IPAddress(it->req.imr_interface).toString()});
         if (::setsockopt(_sock, IPPROTO_IP, IP_DROP_MEMBERSHIP, TS_SOCKOPT_T(&it->req), sizeof(it->req)) != 0) {
             report.error(u"error dropping multicast membership: " + SocketErrorCodeMessage());
             ok = false;

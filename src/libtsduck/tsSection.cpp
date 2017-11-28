@@ -514,16 +514,16 @@ bool ts::Section::LoadFile(SectionPtrVector& sections, std::istream& strm, CRC32
 //----------------------------------------------------------------------------
 
 bool ts::Section::LoadFile(SectionPtrVector& sections,
-                           const std::string& file_name,
+                           const UString& file_name,
                            CRC32::Validation crc_op,
                            Report& report)
 {
     sections.clear();
 
     // Open the input file.
-    std::ifstream strm(file_name.c_str(), std::ios::in | std::ios::binary);
+    std::ifstream strm(file_name.toUTF8().c_str(), std::ios::in | std::ios::binary);
     if (!strm.is_open()) {
-        report.error("cannot open " + file_name);
+        report.error(u"cannot open %s", {file_name});
         return false;
     }
 

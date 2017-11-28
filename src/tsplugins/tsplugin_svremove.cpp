@@ -37,7 +37,6 @@
 #include "tsSectionDemux.h"
 #include "tsCyclingPacketizer.h"
 #include "tsNames.h"
-#include "tsFormat.h"
 #include "tsTables.h"
 TSDUCK_SOURCE;
 
@@ -51,11 +50,9 @@ namespace ts {
     {
     public:
         // Implementation of plugin API
-        SVRemovePlugin (TSP*);
-        virtual bool start();
-        virtual bool stop() {return true;}
-        virtual BitRate getBitrate() {return 0;}
-        virtual Status processPacket (TSPacket&, bool&, bool&);
+        SVRemovePlugin(TSP*);
+        virtual bool start() override;
+        virtual Status processPacket(TSPacket&, bool&, bool&) override;
 
     private:
         bool              _abort;          // Error (service not found, etc)
@@ -74,17 +71,17 @@ namespace ts {
         CyclingPacketizer _pzer_nit;       // Packetizer for modified NIT
 
         // Invoked by the demux when a complete table is available.
-        virtual void handleTable (SectionDemux&, const BinaryTable&);
+        virtual void handleTable(SectionDemux&, const BinaryTable&) override;
 
         // Process specific tables and descriptors
-        void processPAT (PAT&);
-        void processSDT (SDT&);
-        void processPMT (PMT&);
-        void processNITBAT (AbstractTransportListTable&);
+        void processPAT(PAT&);
+        void processSDT(SDT&);
+        void processPMT(PMT&);
+        void processNITBAT(AbstractTransportListTable&);
         void processNITBATDescriptorList (DescriptorList&);
 
         // Mark all ECM PIDs from the specified descriptor list in the specified PID set
-        void addECMPID (const DescriptorList&, PIDSet&);
+        void addECMPID(const DescriptorList&, PIDSet&);
 
         // Inaccessible operations
         SVRemovePlugin() = delete;
@@ -102,7 +99,7 @@ TSPLUGIN_DECLARE_PROCESSOR(ts::SVRemovePlugin)
 //----------------------------------------------------------------------------
 
 ts::SVRemovePlugin::SVRemovePlugin (TSP* tsp_) :
-    ProcessorPlugin(tsp_, "Remove a service.", "[options] service"),
+    ProcessorPlugin(tsp_, u"Remove a service.", u"[options] service"),
     _abort(false),
     _ready(false),
     _transparent(false),
@@ -125,36 +122,36 @@ ts::SVRemovePlugin::SVRemovePlugin (TSP* tsp_) :
     option(u"stuffing",      's');
 
     setHelp(u"Service:\n"
-             u"  Specifies the service to remove. If the argument is an integer value\n"
-             u"  (either decimal or hexadecimal), it is interpreted as a service id.\n"
-             u"  Otherwise, it is interpreted as a service name, as specified in the SDT.\n"
-             u"  The name is not case sensitive and blanks are ignored.\n"
-             u"\n"
-             u"Options:\n"
-             u"\n"
-             u"  --help\n"
-             u"      Display this help text.\n"
-             u"\n"
-             u"  -a\n"
-             u"  --ignore-absent\n"
-             u"      Ignore service if not present in the transport stream. By default, tsp\n"
-             u"      fails if the service is not found.\n"
-             u"\n"
-             u"  -b\n"
-             u"  --ignore-bat\n"
-             u"      Do not modify the BAT.\n"
-             u"\n"
-             u"  -n\n"
-             u"  --ignore-nit\n"
-             u"      Do not modify the NIT.\n"
-             u"\n"
-             u"  -s\n"
-             u"  --stuffing\n"
-             u"      Replace excluded packets with stuffing (null packets) instead\n"
-             u"      of removing them. Useful to preserve bitrate.\n"
-             u"\n"
-             u"  --version\n"
-             u"      Display the version number.\n");
+            u"  Specifies the service to remove. If the argument is an integer value\n"
+            u"  (either decimal or hexadecimal), it is interpreted as a service id.\n"
+            u"  Otherwise, it is interpreted as a service name, as specified in the SDT.\n"
+            u"  The name is not case sensitive and blanks are ignored.\n"
+            u"\n"
+            u"Options:\n"
+            u"\n"
+            u"  --help\n"
+            u"      Display this help text.\n"
+            u"\n"
+            u"  -a\n"
+            u"  --ignore-absent\n"
+            u"      Ignore service if not present in the transport stream. By default, tsp\n"
+            u"      fails if the service is not found.\n"
+            u"\n"
+            u"  -b\n"
+            u"  --ignore-bat\n"
+            u"      Do not modify the BAT.\n"
+            u"\n"
+            u"  -n\n"
+            u"  --ignore-nit\n"
+            u"      Do not modify the NIT.\n"
+            u"\n"
+            u"  -s\n"
+            u"  --stuffing\n"
+            u"      Replace excluded packets with stuffing (null packets) instead\n"
+            u"      of removing them. Useful to preserve bitrate.\n"
+            u"\n"
+            u"  --version\n"
+            u"      Display the version number.\n");
 }
 
 
@@ -183,28 +180,28 @@ bool ts::SVRemovePlugin::start()
     if (_service.hasId()) {
         _demux.addPID (PID_PAT);
         if (!_ignore_nit) {
-            _demux.addPID (PID_NIT);
+            _demux.addPID(PID_NIT);
         }
     }
 
     // Build a list of referenced PID's (except those in the removed service).
     // Prevent predefined PID's from being removed.
     _ref_pids.reset();
-    _ref_pids.set (PID_PAT);
-    _ref_pids.set (PID_CAT);
-    _ref_pids.set (PID_TSDT);
-    _ref_pids.set (PID_NULL);  // keep stuffing as well
-    _ref_pids.set (PID_NIT);
-    _ref_pids.set (PID_SDT);   // also contains BAT
-    _ref_pids.set (PID_EIT);
-    _ref_pids.set (PID_RST);
-    _ref_pids.set (PID_TDT);   // also contains TOT
-    _ref_pids.set (PID_NETSYNC);
-    _ref_pids.set (PID_RNT);
-    _ref_pids.set (PID_INBSIGN);
-    _ref_pids.set (PID_MEASURE);
-    _ref_pids.set (PID_DIT);
-    _ref_pids.set (PID_SIT);
+    _ref_pids.set(PID_PAT);
+    _ref_pids.set(PID_CAT);
+    _ref_pids.set(PID_TSDT);
+    _ref_pids.set(PID_NULL);  // keep stuffing as well
+    _ref_pids.set(PID_NIT);
+    _ref_pids.set(PID_SDT);   // also contains BAT
+    _ref_pids.set(PID_EIT);
+    _ref_pids.set(PID_RST);
+    _ref_pids.set(PID_TDT);   // also contains TOT
+    _ref_pids.set(PID_NETSYNC);
+    _ref_pids.set(PID_RNT);
+    _ref_pids.set(PID_INBSIGN);
+    _ref_pids.set(PID_MEASURE);
+    _ref_pids.set(PID_DIT);
+    _ref_pids.set(PID_SIT);
 
     // Reset other states
     _abort = false;
@@ -226,38 +223,37 @@ bool ts::SVRemovePlugin::start()
 void ts::SVRemovePlugin::handleTable (SectionDemux& demux, const BinaryTable& table)
 {
     if (tsp->debug()) {
-        std::string name(names::TID(table.tableId()).toUTF8());
-        tsp->debug("Got %s v%d, PID %d (0x%04X), TIDext %d (0x%04X)",
-                   name.c_str(), int(table.version()),
-                   int(table.sourcePID()), int(table.sourcePID()),
-                   int(table.tableIdExtension()), int(table.tableIdExtension()));
+        tsp->debug(u"Got %s v%d, PID %d (0x%X), TIDext %d (0x%X)",
+                   {names::TID(table.tableId()), table.version(),
+                    table.sourcePID(), table.sourcePID(),
+                    table.tableIdExtension(), table.tableIdExtension()});
     }
 
     switch (table.tableId()) {
 
         case TID_PAT: {
             if (table.sourcePID() == PID_PAT) {
-                PAT pat (table);
+                PAT pat(table);
                 if (pat.isValid()) {
-                    processPAT (pat);
+                    processPAT(pat);
                 }
             }
             break;
         }
 
         case TID_PMT: {
-            PMT pmt (table);
+            PMT pmt(table);
             if (pmt.isValid()) {
-                processPMT (pmt);
+                processPMT(pmt);
             }
             break;
         }
 
         case TID_SDT_ACT: {
             if (table.sourcePID() == PID_SDT) {
-                SDT sdt (table);
+                SDT sdt(table);
                 if (sdt.isValid()) {
-                    processSDT (sdt);
+                    processSDT(sdt);
                 }
             }
             break;
@@ -266,8 +262,8 @@ void ts::SVRemovePlugin::handleTable (SectionDemux& demux, const BinaryTable& ta
         case TID_SDT_OTH: {
             if (table.sourcePID() == PID_SDT) {
                 // SDT Other are passed unmodified
-                _pzer_sdt_bat.removeSections (TID_SDT_OTH, table.tableIdExtension());
-                _pzer_sdt_bat.addTable (table);
+                _pzer_sdt_bat.removeSections(TID_SDT_OTH, table.tableIdExtension());
+                _pzer_sdt_bat.addTable(table);
             }
             break;
         }
@@ -280,20 +276,20 @@ void ts::SVRemovePlugin::handleTable (SectionDemux& demux, const BinaryTable& ta
                     // before the first SDT. We do not know yet how to modify the BAT.
                     // Reset the demux on this PID, so that this BAT will be submitted
                     // again the next time.
-                    _demux.resetPID (table.sourcePID());
+                    _demux.resetPID(table.sourcePID());
                 }
                 else if (_ignore_bat) {
                     // Do not modify BAT
-                    _pzer_sdt_bat.removeSections (TID_BAT, table.tableIdExtension());
-                    _pzer_sdt_bat.addTable (table);
+                    _pzer_sdt_bat.removeSections(TID_BAT, table.tableIdExtension());
+                    _pzer_sdt_bat.addTable(table);
                 }
                 else {
                     // Modify BAT
-                    BAT bat (table);
+                    BAT bat(table);
                     if (bat.isValid()) {
-                        processNITBAT (bat);
-                        _pzer_sdt_bat.removeSections (TID_BAT, bat.bouquet_id);
-                        _pzer_sdt_bat.addTable (bat);
+                        processNITBAT(bat);
+                        _pzer_sdt_bat.removeSections(TID_BAT, bat.bouquet_id);
+                        _pzer_sdt_bat.addTable(bat);
                     }
                 }
             }
@@ -303,16 +299,16 @@ void ts::SVRemovePlugin::handleTable (SectionDemux& demux, const BinaryTable& ta
             if (table.sourcePID() == PID_NIT) {
                 if (_ignore_nit) {
                     // Do not modify NIT Actual
-                    _pzer_nit.removeSections (TID_NIT_ACT, table.tableIdExtension());
-                    _pzer_nit.addTable (table);
+                    _pzer_nit.removeSections(TID_NIT_ACT, table.tableIdExtension());
+                    _pzer_nit.addTable(table);
                 }
                 else {
                     // Modify NIT Actual
-                    NIT nit (table);
+                    NIT nit(table);
                     if (nit.isValid()) {
-                        processNITBAT (nit);
-                        _pzer_nit.removeSections (TID_NIT_ACT, nit.network_id);
-                        _pzer_nit.addTable (nit);
+                        processNITBAT(nit);
+                        _pzer_nit.removeSections(TID_NIT_ACT, nit.network_id);
+                        _pzer_nit.addTable(nit);
                     }
                 }
             }
@@ -322,8 +318,8 @@ void ts::SVRemovePlugin::handleTable (SectionDemux& demux, const BinaryTable& ta
         case TID_NIT_OTH: {
             if (table.sourcePID() == PID_NIT) {
                 // NIT Other are passed unmodified
-                _pzer_nit.removeSections (TID_NIT_OTH, table.tableIdExtension());
-                _pzer_nit.addTable (table);
+                _pzer_nit.removeSections(TID_NIT_OTH, table.tableIdExtension());
+                _pzer_nit.addTable(table);
             }
             break;
         }
@@ -346,23 +342,23 @@ void ts::SVRemovePlugin::processSDT (SDT& sdt)
     // Look for the service by name or by id
     if (_service.hasId()) {
         // Search service by id
-        found = sdt.services.find (_service.getId()) != sdt.services.end();
+        found = sdt.services.find(_service.getId()) != sdt.services.end();
         if (!found) {
             // Informational only, SDT entry is not mandatory.
-            tsp->info ("service %d (0x%04X) not found in SDT, ignoring it", int (_service.getId()), int (_service.getId()));
+            tsp->info(u"service %d (0x%X) not found in SDT, ignoring it", {_service.getId(), _service.getId()});
         }
     }
     else {
         // Service id is currently unknown, search service by name
-        found = sdt.findService (_service);
+        found = sdt.findService(_service);
         if (!found) {
             // Here, this is an error. A service can be searched by name only in current TS
             if (_ignore_absent) {
-                tsp->warning ("service \"" + _service.getName() + "\" not found in SDT, ignoring it");
+                tsp->warning(u"service \"%s\" not found in SDT, ignoring it", {_service.getName()});
                 _transparent = true;
             }
             else {
-                tsp->error ("service \"" + _service.getName() + "\" not found in SDT");
+                tsp->error(u"service \"%s\" not found in SDT", {_service.getName()});
                 _abort = true;
             }
             return;
@@ -370,19 +366,19 @@ void ts::SVRemovePlugin::processSDT (SDT& sdt)
         // The service id was previously unknown, now wait for the PAT
         _demux.addPID (PID_PAT);
         if (!_ignore_nit) {
-            _demux.addPID (PID_NIT);
+            _demux.addPID(PID_NIT);
         }
-        tsp->verbose ("found service \"" + _service.getName() + Format ("\", service id is 0x%04X", int (_service.getId())));
+        tsp->verbose(u"found service \"%s\", service id is 0x%X", {_service.getName(), _service.getId()});
     }
 
     // Remove service description in the SDT
     if (_service.hasId()) {
-        sdt.services.erase (_service.getId());
+        sdt.services.erase(_service.getId());
     }
 
     // Replace the SDT in the PID
-    _pzer_sdt_bat.removeSections (TID_SDT_ACT, sdt.ts_id);
-    _pzer_sdt_bat.addTable (sdt);
+    _pzer_sdt_bat.removeSections(TID_SDT_ACT, sdt.ts_id);
+    _pzer_sdt_bat.addTable(sdt);
 }
 
 
@@ -390,14 +386,14 @@ void ts::SVRemovePlugin::processSDT (SDT& sdt)
 //  This method processes a Program Association Table (PAT).
 //----------------------------------------------------------------------------
 
-void ts::SVRemovePlugin::processPAT (PAT& pat)
+void ts::SVRemovePlugin::processPAT(PAT& pat)
 {
     // PAT not normally fetched until service id is known
-    assert (_service.hasId());
+    assert(_service.hasId());
 
     // Save the NIT PID
-    _pzer_nit.setPID (pat.nit_pid);
-    _demux.addPID (pat.nit_pid);
+    _pzer_nit.setPID(pat.nit_pid);
+    _demux.addPID(pat.nit_pid);
 
     // Loop on all services in the PAT. We need to scan all PMT's to know which
     // PID to remove and which to keep (if shared between the removed service
@@ -411,7 +407,7 @@ void ts::SVRemovePlugin::processPAT (PAT& pat)
         if (it->first == _service.getId()) {
             found = true;
             _service.setPMTPID (it->second);
-            tsp->verbose ("found service id 0x%04X, PMT PID is 0x%04X", int (_service.getId()), int (_service.getPMTPID()));
+            tsp->verbose(u"found service id 0x%X, PMT PID is 0x%X", {_service.getId(), _service.getPMTPID()});
             // Drop PMT of the service
             _drop_pids.set (it->second);
         }
@@ -427,18 +423,18 @@ void ts::SVRemovePlugin::processPAT (PAT& pat)
     }
     else if (_ignore_absent || !_ignore_nit || !_ignore_bat) {
         // Service is not present in current TS, but continue
-        tsp->info ("service id 0x%04X not found in PAT, ignoring it", int (_service.getId()));
+        tsp->info(u"service id 0x%X not found in PAT, ignoring it", {_service.getId()});
         _ready = true;
     }
     else {
         // If service is not found and no need to modify to NIT or BAT, abort
-        tsp->error ("service id 0x%04X not found in PAT", int (_service.getId()));
+        tsp->error(u"service id 0x%X not found in PAT", {_service.getId()});
         _abort = true;
     }
 
     // Replace the PAT.in the PID
-    _pzer_pat.removeSections (TID_PAT);
-    _pzer_pat.addTable (pat);
+    _pzer_pat.removeSections(TID_PAT);
+    _pzer_pat.addTable(pat);
 }
 
 
@@ -446,26 +442,26 @@ void ts::SVRemovePlugin::processPAT (PAT& pat)
 //  This method processes a Program Map Table (PMT).
 //----------------------------------------------------------------------------
 
-void ts::SVRemovePlugin::processPMT (PMT& pmt)
+void ts::SVRemovePlugin::processPMT(PMT& pmt)
 {
     // Is this the PMT of the service to remove?
     const bool removed_service = pmt.service_id == _service.getId();
 
     // Mark PIDs as dropped or referenced.
-    PIDSet& pid_set (removed_service ? _drop_pids : _ref_pids);
+    PIDSet& pid_set(removed_service ? _drop_pids : _ref_pids);
 
     // Mark all program-level ECM PID's
-    addECMPID (pmt.descs, pid_set);
+    addECMPID(pmt.descs, pid_set);
 
     // Mark service's PCR PID (usually a referenced component or null PID)
-    pid_set.set (pmt.pcr_pid);
+    pid_set.set(pmt.pcr_pid);
 
     // Loop on all elementary streams
     for (PMT::StreamMap::const_iterator it = pmt.streams.begin(); it != pmt.streams.end(); ++it) {
         // Mark component's PID
-        pid_set.set (it->first);
+        pid_set.set(it->first);
         // Mark all component-level ECM PID's
-        addECMPID (it->second.descs, pid_set);
+        addECMPID(it->second.descs, pid_set);
     }
 
     // When the service to remove has been analyzed, we are ready to filter PIDs
@@ -497,14 +493,14 @@ void ts::SVRemovePlugin::addECMPID (const DescriptorList& dlist, PIDSet& pid_set
 //  This method processes a NIT or a BAT
 //----------------------------------------------------------------------------
 
-void ts::SVRemovePlugin::processNITBAT (AbstractTransportListTable& table)
+void ts::SVRemovePlugin::processNITBAT(AbstractTransportListTable& table)
 {
     // Process the global descriptor list
-    processNITBATDescriptorList (table.descs);
+    processNITBATDescriptorList(table.descs);
 
     // Process each TS descriptor list
     for (AbstractTransportListTable::TransportMap::iterator it = table.transports.begin(); it != table.transports.end(); ++it) {
-        processNITBATDescriptorList (it->second);
+        processNITBATDescriptorList(it->second);
     }
 }
 
@@ -559,7 +555,7 @@ void ts::SVRemovePlugin::processNITBATDescriptorList (DescriptorList& dlist)
             data += 4;
             size -= 4;
         }
-        dlist[i]->resizePayload (new_data - base);
+        dlist[i]->resizePayload(new_data - base);
     }
 }
 
@@ -578,7 +574,7 @@ ts::ProcessorPlugin::Status ts::SVRemovePlugin::processPacket (TSPacket& pkt, bo
     }
 
     // Filter interesting sections
-    _demux.feedPacket (pkt);
+    _demux.feedPacket(pkt);
 
     // If a fatal error occured during section analysis, give up.
     if (_abort) {
@@ -600,10 +596,10 @@ ts::ProcessorPlugin::Status ts::SVRemovePlugin::processPacket (TSPacket& pkt, bo
         _pzer_pat.getNextPacket (pkt);
     }
     else if (pid == _pzer_sdt_bat.getPID()) {
-        _pzer_sdt_bat.getNextPacket (pkt);
+        _pzer_sdt_bat.getNextPacket(pkt);
     }
     else if (!_ignore_nit && pid == _pzer_nit.getPID()) {
-        _pzer_nit.getNextPacket (pkt);
+        _pzer_nit.getNextPacket(pkt);
     }
 
     return TSP_OK;

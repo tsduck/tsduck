@@ -77,7 +77,7 @@ ts::LNB::operator ts::UString() const
         return UString::Format(u"%d,%d,%d", {_low_frequency / 1000000, _high_frequency / 1000000, _switch_frequency / 1000000});
     }
     else {
-        return UString::Format("%d", {_low_frequency / 1000000});
+        return UString::Format(u"%d", {_low_frequency / 1000000});
     }
 }
 

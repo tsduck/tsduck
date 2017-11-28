@@ -61,8 +61,7 @@ namespace ts {
         //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        // Flawfinder: ignore: this is our open(), not ::open().
-        bool open(const std::string& command, bool synchronous, size_t buffer_size, Report& report);
+        bool open(const UString& command, bool synchronous, size_t buffer_size, Report& report);
 
         //!
         //! Close the pipe.

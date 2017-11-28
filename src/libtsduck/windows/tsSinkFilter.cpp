@@ -35,15 +35,12 @@
 #include "tsSinkFilter.h"
 #include "tsDirectShowUtils.h"
 #include "tsMediaTypeUtils.h"
-#include "tsStringUtils.h"
 #include "tsComUtils.h"
 #include "tsMPEG.h"
 #include "tsTime.h"
 #include "tsGuard.h"
 #include "tsGuardCondition.h"
 #include "tsIntegerUtils.h"
-#include "tsDecimal.h"
-#include "tsHexa.h"
 TSDUCK_SOURCE;
 
 #if defined (DEBUG)
@@ -780,12 +777,12 @@ STDMETHODIMP ts::SinkPin::Receive (::IMediaSample* pSample)
     // Enqueue media sample pointer
     GuardCondition lock(_filter->_mutex, _filter->_not_empty, 1000); // timeout = 1000 ms
     if (!lock.isLocked()) {
-        _report.error("cannot enqueue media sample, lock timeout");
+        _report.error(u"cannot enqueue media sample, lock timeout");
     }
     else if (_filter->_max_messages != 0 && _filter->_queue.size() >= _filter->_max_messages) {
         // Cannot enqueue. Don't report consecutive overflow
         if (!_input_overflow) {
-            _report.verbose ("transport stream input overflow");
+            _report.verbose(u"transport stream input overflow");
             _input_overflow = true;
         }
     }

@@ -32,7 +32,6 @@
 //----------------------------------------------------------------------------
 
 #include "tspProcessorExecutor.h"
-#include "tsDecimal.h"
 TSDUCK_SOURCE;
 
 
@@ -41,9 +40,9 @@ TSDUCK_SOURCE;
 //----------------------------------------------------------------------------
 
 ts::tsp::ProcessorExecutor::ProcessorExecutor(Options* options,
-                                                const Options::PluginOptions* pl_options,
-                                                const ThreadAttributes& attributes,
-                                                Mutex& global_mutex) :
+                                              const Options::PluginOptions* pl_options,
+                                              const ThreadAttributes& attributes,
+                                              Mutex& global_mutex) :
 
     PluginExecutor(options, pl_options, attributes, global_mutex),
     _processor(dynamic_cast<ProcessorPlugin*>(_shlib)),
@@ -59,7 +58,7 @@ ts::tsp::ProcessorExecutor::ProcessorExecutor(Options* options,
 
 void ts::tsp::ProcessorExecutor::main()
 {
-    debug ("packet processing thread started");
+    debug(u"packet processing thread started");
 
     PacketCounter passed_packets = 0;
     PacketCounter dropped_packets = 0;
@@ -146,7 +145,7 @@ void ts::tsp::ProcessorExecutor::main()
                         break;
                     default:
                         // Invalid status, report error and accept packet.
-                        error ("invalid packet processing status %d", int (status));
+                        error(u"invalid packet processing status %d", {status});
                         break;
                 }
 
@@ -175,13 +174,8 @@ void ts::tsp::ProcessorExecutor::main()
     } while (!input_end);
 
     // Close the packet processor
-
     _processor->stop();
 
-    std::string status (aborted ? "aborted" : "terminated");
-    this->debug ("packet processing thread " + status + " after " +
-                 Decimal (totalPackets()) + " packets, " +
-                 Decimal (passed_packets) + " passed, " +
-                 Decimal (dropped_packets) + " dropped, " +
-                 Decimal (nullified_packets) + " nullified");
+    debug(u"packet processing thread %s after %'d packets, %'d passed, %'d dropped, %'d nullified",
+          {aborted ? u"aborted" : u"terminated", totalPackets(), passed_packets, dropped_packets, nullified_packets});
 }

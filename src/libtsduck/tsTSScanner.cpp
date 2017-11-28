@@ -102,12 +102,12 @@ bool ts::TSScanner::getServices(ServiceList& services) const
     services.clear();
 
     if (_pat.isNull()) {
-        _report.warning("No PAT found, services are unknown");
+        _report.warning(u"No PAT found, services are unknown");
         return false;
     }
 
     if (_sdt.isNull() && !_pat_only) {
-        _report.warning("No SDT found, services names are unknown");
+        _report.warning(u"No SDT found, services names are unknown");
         // do not return, collect service ids.
     }
 

@@ -33,7 +33,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsPlugin.h"
-#include "tsDecimal.h"
 #include "tsPCRAnalyzer.h"
 TSDUCK_SOURCE;
 
@@ -50,11 +49,10 @@ namespace ts {
     {
     public:
         // Implementation of plugin API
-        PCRBitratePlugin (TSP*);
-        virtual bool start();
-        virtual bool stop() {return true;}
-        virtual BitRate getBitrate();
-        virtual Status processPacket (TSPacket&, bool&, bool&);
+        PCRBitratePlugin(TSP*);
+        virtual bool start() override;
+        virtual BitRate getBitrate() override;
+        virtual Status processPacket(TSPacket&, bool&, bool&) override;
 
     private:
         PCRAnalyzer _pcr_analyzer; // PCR analysis context
@@ -170,7 +168,7 @@ ts::ProcessorPlugin::Status ts::PCRBitratePlugin::processPacket (TSPacket& pkt, 
         if (new_bitrate != _bitrate && (new_bitrate / ::abs (int32_t (new_bitrate) - int32_t (_bitrate))) < REPORT_THRESHOLD) {
             // New bitrate is significantly different, signal it.
             if (tsp->verbose()) {
-                tsp->verbose ("new bitrate from " + _pcr_name + " analysis: " + Decimal (new_bitrate) + " b/s");
+                tsp->verbose(u"new bitrate from " + _pcr_name + " analysis: " + Decimal (new_bitrate) + " b/s");
             }
             _bitrate = new_bitrate;
             bitrate_changed = true;

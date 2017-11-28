@@ -52,10 +52,9 @@ namespace ts {
     public:
         // Implementation of plugin API
         StuffAnalyzePlugin(TSP*);
-        virtual bool start();
-        virtual bool stop();
-        virtual BitRate getBitrate() {return 0;}
-        virtual Status processPacket(TSPacket&, bool&, bool&);
+        virtual bool start() override;
+        virtual bool stop() override;
+        virtual Status processPacket(TSPacket&, bool&, bool&) override;
 
     private:
         // Analysis context for a PID.
@@ -108,7 +107,7 @@ TSPLUGIN_DECLARE_PROCESSOR(ts::StuffAnalyzePlugin)
 //----------------------------------------------------------------------------
 
 ts::StuffAnalyzePlugin::StuffAnalyzePlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, "Analyze the level of stuffing in tables.", "[options]"),
+    ProcessorPlugin(tsp_, u"Analyze the level of stuffing in tables.", u"[options]"),
     TableHandlerInterface(),
     SectionHandlerInterface(),
     _output_name(),
@@ -214,7 +213,7 @@ ts::StuffAnalyzePlugin::PIDContext::PIDContext() :
 
 ts::UString ts::StuffAnalyzePlugin::PIDContext::toString() const
 {
-    return UString::Format("%10d %10d %10d %10d %9s",
+    return UString::Format(u"%10d %10d %10d %10d %9s",
                            {total_sections, stuffing_sections, total_bytes, stuffing_bytes,
                             UString::Percentage(stuffing_bytes, total_bytes)});
 }

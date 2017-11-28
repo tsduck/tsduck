@@ -50,10 +50,9 @@ namespace ts {
     public:
         // Implementation of plugin API
         FileInput(TSP*);
-        virtual bool start();
-        virtual bool stop();
-        virtual BitRate getBitrate() {return 0;}
-        virtual size_t receive(TSPacket*, size_t);
+        virtual bool start() override;
+        virtual bool stop() override;
+        virtual size_t receive(TSPacket*, size_t) override;
     private:
         TSFileInput _file;
 
@@ -69,10 +68,9 @@ namespace ts {
     public:
         // Implementation of plugin API
         FileOutput(TSP*);
-        virtual bool start();
-        virtual bool stop();
-        virtual BitRate getBitrate() {return 0;}
-        virtual bool send(const TSPacket*, size_t);
+        virtual bool start() override;
+        virtual bool stop() override;
+        virtual bool send(const TSPacket*, size_t) override;
     private:
         TSFileOutput _file;
 
@@ -88,10 +86,9 @@ namespace ts {
     public:
         // Implementation of plugin API
         FileProcessor(TSP*);
-        virtual bool start();
-        virtual bool stop();
-        virtual BitRate getBitrate() {return 0;}
-        virtual Status processPacket(TSPacket&, bool&, bool&);
+        virtual bool start() override;
+        virtual bool stop() override;
+        virtual Status processPacket(TSPacket&, bool&, bool&) override;
     private:
         TSFileOutput _file;
 

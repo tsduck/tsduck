@@ -46,10 +46,8 @@ namespace ts {
     public:
         // Implementation of plugin API
         NullInput(TSP*);
-        virtual bool start();
-        virtual bool stop() {return true;}
-        virtual BitRate getBitrate() {return 0;}
-        virtual size_t receive(TSPacket*, size_t);
+        virtual bool start() override;
+        virtual size_t receive(TSPacket*, size_t) override;
 
     private:
         PacketCounter _max_count;   // Number of packets to generate

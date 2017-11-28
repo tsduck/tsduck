@@ -36,7 +36,6 @@
 #include "tsT2MIDemux.h"
 #include "tsT2MIDescriptor.h"
 #include "tsT2MIPacket.h"
-#include "tsFormat.h"
 #include "tsNames.h"
 TSDUCK_SOURCE;
 
@@ -46,16 +45,13 @@ TSDUCK_SOURCE;
 //----------------------------------------------------------------------------
 
 namespace ts {
-    class T2MIPlugin:
-        public ProcessorPlugin,
-        private T2MIHandlerInterface
+    class T2MIPlugin: public ProcessorPlugin, private T2MIHandlerInterface
     {
     public:
         // Implementation of plugin API
         T2MIPlugin(TSP*);
         virtual bool start() override;
         virtual bool stop() override;
-        virtual BitRate getBitrate() override {return 0;}
         virtual Status processPacket(TSPacket&, bool&, bool&) override;
 
     private:
@@ -147,8 +143,8 @@ bool ts::T2MIPlugin::start()
     // Get command line arguments
     _extract = present(u"extract");
     _log = present(u"log");
-    getIntValue<PID>(_pid, "pid", PID_NULL);
-    getIntValue<uint8_t>(_plp, "plp");
+    getIntValue<PID>(_pid, u"pid", PID_NULL);
+    getIntValue<uint8_t>(_plp, u"plp");
     _plp_valid = present(u"plp");
 
     // Extract is the default operation.
@@ -177,7 +173,7 @@ bool ts::T2MIPlugin::start()
 bool ts::T2MIPlugin::stop()
 {
     if (_extract) {
-        tsp->verbose("extracted " + Decimal(_ts_count) + " TS packets from " + Decimal(_t2mi_count) + " T2-MI packets");
+        tsp->verbose(u"extracted %'d TS packets from %'d T2-MI packets", {_ts_count, _t2mi_count});
     }
     return true;
 }
@@ -191,7 +187,7 @@ void ts::T2MIPlugin::handleT2MINewPID(T2MIDemux& demux, const PMT& pmt, PID pid,
 {
     // Found a new PID carrying T2-MI. Use it by default.
     if (_pid == PID_NULL && pid != PID_NULL) {
-        tsp->verbose("using PID 0x%04X (%d) to extract T2-MI stream", int(pid), int(pid));
+        tsp->verbose(u"using PID 0x%X (%d) to extract T2-MI stream", {pid, pid});
         _pid = pid;
         _demux.addPID(_pid);
     }
@@ -206,14 +202,14 @@ void ts::T2MIPlugin::handleT2MIPacket(T2MIDemux& demux, const T2MIPacket& pkt)
 {
     // Log T2-MI packets.
     if (_log) {
-        UString line(Format("PID 0x%04X (%d), packet type: ", int(pkt.getSourcePID()), int(pkt.getSourcePID())));
-        line += names::T2MIPacketType(pkt.packetType(), names::HEXA_FIRST);
-        line += Format(", size: %" FMT_SIZE_T "d bytes, packet count: %d, superframe index: %d, frame index: %d",
-                       pkt.size(), int(pkt.packetCount()), int(pkt.superframeIndex()), int(pkt.frameIndex()));
+        UString plpInfo;
         if (pkt.plpValid()) {
-            line += Format(", PLP: 0x%02X (%d)", int(pkt.plp()), int(pkt.plp()));
+            plpInfo = UString::Format(u", PLP: 0x%X (%d)", {pkt.plp(), pkt.plp()});
         }
-        tsp->info(line);
+        tsp->info(u"PID 0x%X (%d), packet type: %s, size: %d bytes, packet count: %d, superframe index: %d, frame index: %d%s",
+                  {pkt.getSourcePID(), pkt.getSourcePID(),
+                   names::T2MIPacketType(pkt.packetType(), names::HEXA_FIRST),
+                   pkt.size(), pkt.packetCount(), pkt.superframeIndex(), pkt.frameIndex(), plpInfo});
     }
 
     // Select PLP when extraction is requested.
@@ -222,7 +218,7 @@ void ts::T2MIPlugin::handleT2MIPacket(T2MIDemux& demux, const T2MIPacket& pkt)
             // The PLP was not yet specified, use this one by default.
             _plp = pkt.plp();
             _plp_valid = true;
-            tsp->verbose("extracting PLP 0x%02X (%d)", int(_plp), int(_plp));
+            tsp->verbose(u"extracting PLP 0x%X (%d)", {_plp, _plp});
         }
         if (pkt.plp() == _plp) {
             // Count input T2-MI packets.

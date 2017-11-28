@@ -50,10 +50,9 @@ namespace ts {
     public:
         // Implementation of plugin API
         NITScanPlugin(TSP*);
-        virtual bool start();
-        virtual bool stop();
-        virtual BitRate getBitrate() {return 0;}
-        virtual Status processPacket(TSPacket&, bool&, bool&);
+        virtual bool start() override;
+        virtual bool stop() override;
+        virtual Status processPacket(TSPacket&, bool&, bool&) override;
 
     private:
         UString       _output_name;     // Output file name
@@ -71,7 +70,7 @@ namespace ts {
         SectionDemux  _demux;           // Section demux
 
         // Invoked by the demux when a complete table is available.
-        virtual void handleTable(SectionDemux&, const BinaryTable&);
+        virtual void handleTable(SectionDemux&, const BinaryTable&) override;
 
         // Process specific tables
         void processPAT(const PAT&);

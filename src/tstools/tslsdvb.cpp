@@ -35,8 +35,6 @@
 #include "tsCOM.h"
 #include "tsTuner.h"
 #include "tsTunerArgs.h"
-#include "tsFormat.h"
-#include "tsStringUtils.h"
 #include "tsSysUtils.h"
 TSDUCK_SOURCE;
 
@@ -195,7 +193,7 @@ namespace {
                 return;
             }
             else if (tuners.empty()) {
-                opt.error("no DVB device found");
+                opt.error(u"no DVB device found");
             }
             else {
                 if (opt.verbose) {

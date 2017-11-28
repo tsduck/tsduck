@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ImportGroup Label="PropertySheets">
     <Import Project="msvc-common-begin.props" />
@@ -84,8 +84,6 @@
     <ClInclude Include="..\..\src\libtsduck\tsCyclingPacketizer.h" />
     <ClInclude Include="..\..\src\libtsduck\tsDataBroadcastDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsDataBroadcastIdDescriptor.h" />
-    <ClInclude Include="..\..\src\libtsduck\tsDecimal.h" />
-    <ClInclude Include="..\..\src\libtsduck\tsDecimalTemplate.h" />
     <ClInclude Include="..\..\src\libtsduck\tsDektecControl.h" />
     <ClInclude Include="..\..\src\libtsduck\tsDektecUtils.h" />
     <ClInclude Include="..\..\src\libtsduck\private\tsDektec.h" />
@@ -125,12 +123,10 @@
     <ClInclude Include="..\..\src\libtsduck\tsFatal.h" />
     <ClInclude Include="..\..\src\libtsduck\tsFileNameRate.h" />
     <ClInclude Include="..\..\src\libtsduck\tsForkPipe.h" />
-    <ClInclude Include="..\..\src\libtsduck\tsFormat.h" />
     <ClInclude Include="..\..\src\libtsduck\tsGuard.h" />
     <ClInclude Include="..\..\src\libtsduck\tsGuardCondition.h" />
     <ClInclude Include="..\..\src\libtsduck\tsHash.h" />
     <ClInclude Include="..\..\src\libtsduck\tsHDSimulcastLogicalChannelDescriptor.h" />
-    <ClInclude Include="..\..\src\libtsduck\tsHexa.h" />
     <ClInclude Include="..\..\src\libtsduck\tsInputRedirector.h" />
     <ClInclude Include="..\..\src\libtsduck\tsIntegerUtils.h" />
     <ClInclude Include="..\..\src\libtsduck\tsIntegerUtilsTemplate.h" />
@@ -223,8 +219,6 @@
     <ClInclude Include="..\..\src\libtsduck\tsStreamIdentifierDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsUString.h" />
     <ClInclude Include="..\..\src\libtsduck\tsUStringTemplate.h" />
-    <ClInclude Include="..\..\src\libtsduck\tsStringUtils.h" />
-    <ClInclude Include="..\..\src\libtsduck\tsStringUtilsTemplate.h" />
     <ClInclude Include="..\..\src\libtsduck\tsSubtitlingDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsSupplementaryAudioDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsSystemMonitor.h" />
@@ -263,8 +257,6 @@
     <ClInclude Include="..\..\src\libtsduck\tstlvSerializer.h" />
     <ClInclude Include="..\..\src\libtsduck\tstlvStreamMessage.h" />
     <ClInclude Include="..\..\src\libtsduck\tsTLVSyntax.h" />
-    <ClInclude Include="..\..\src\libtsduck\tsToInteger.h" />
-    <ClInclude Include="..\..\src\libtsduck\tsToIntegerTemplate.h" />
     <ClInclude Include="..\..\src\libtsduck\tsTOT.h" />
     <ClInclude Include="..\..\src\libtsduck\tsTransportStreamId.h" />
     <ClInclude Include="..\..\src\libtsduck\tsTSScanner.h" />
@@ -399,11 +391,9 @@
     <ClCompile Include="..\..\src\libtsduck\tsFatal.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsFileNameRate.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsForkPipe.cpp" />
-    <ClCompile Include="..\..\src\libtsduck\tsFormat.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsGuard.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsGuardCondition.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsHDSimulcastLogicalChannelDescriptor.cpp" />
-    <ClCompile Include="..\..\src\libtsduck\tsHexa.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsInputRedirector.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsIntegerUtils.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsIPAddress.cpp" />
@@ -470,7 +460,6 @@
     <ClCompile Include="..\..\src\libtsduck\tsSTDDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsStreamIdentifierDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsUString.cpp" />
-    <ClCompile Include="..\..\src\libtsduck\tsStringUtils.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsSubtitlingDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsSupplementaryAudioDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsSystemMonitor.cpp" />
@@ -497,7 +486,6 @@
     <ClCompile Include="..\..\src\libtsduck\tstlvMessageFactory.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tstlvSerializer.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsTLVSyntax.cpp" />
-    <ClCompile Include="..\..\src\libtsduck\tsToInteger.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsTOT.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsTSDT.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsTSScanner.cpp" />

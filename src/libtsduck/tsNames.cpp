@@ -276,7 +276,7 @@ ts::Names::Names(const UString& fileName) :
     // Locate the configuration file.
     if (_configFile.empty()) {
         // Cannot load configuration, names will not be available.
-        _log.error("configuration file 'tsduck.names' not found");
+        _log.error(u"configuration file 'tsduck.names' not found");
         return;
     }
 
@@ -284,7 +284,7 @@ ts::Names::Names(const UString& fileName) :
     const std::string fileUTF8(_configFile.toUTF8());
     std::ifstream strm(fileUTF8.c_str());
     if (!strm) {
-        _log.error("error opening file " + _configFile);
+        _log.error(u"error opening file " + _configFile);
         return;
     }
 
@@ -549,9 +549,9 @@ ts::UString ts::Names::Formatted(Value value, const UString& name, names::Flags 
         case names::DECIMAL: return UString::Format(u"%s (%d)", {*displayName, value});
         case names::HEXA: return UString::Format(u"%s (0x%0*X)", {*displayName, HexaDigits(bits), value});
         case names::BOTH: return UString::Format(u"%s (0x%0*X, %d)", {*displayName, HexaDigits(bits), value, value});
-        case names::DECIMAL_FIRST: return UString::Format("%d (%s)", {value, *displayName});
-        case names::HEXA_FIRST: return UString::Format("0x%0*X (%s)", {HexaDigits(bits), value, *displayName});
-        case names::BOTH_FIRST: return UString::Format("0x%0*X (%d, %s)", {HexaDigits(bits), value, value, *displayName});
+        case names::DECIMAL_FIRST: return UString::Format(u"%d (%s)", {value, *displayName});
+        case names::HEXA_FIRST: return UString::Format(u"0x%0*X (%s)", {HexaDigits(bits), value, *displayName});
+        case names::BOTH_FIRST: return UString::Format(u"0x%0*X (%d, %s)", {HexaDigits(bits), value, value, *displayName});
         default: assert(false); return UString();
     }
 }

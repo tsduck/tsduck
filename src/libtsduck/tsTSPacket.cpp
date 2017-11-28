@@ -301,7 +301,7 @@ std::istream& ts::TSPacket::read(std::istream& strm, bool check_sync, Report& re
     }
     else if (!strm.eof()) {
         // Not an EOF, actual I/O error
-        report.error("I/O error while reading TS packet" + AfterPackets (position));
+        report.error(u"I/O error while reading TS packet" + AfterPackets (position));
     }
     else if (insize > 0) {
         // EOF, got partial packet.

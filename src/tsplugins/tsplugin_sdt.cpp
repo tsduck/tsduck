@@ -51,11 +51,9 @@ namespace ts {
     {
     public:
         // Implementation of plugin API
-        SDTPlugin (TSP*);
-        virtual bool start();
-        virtual bool stop() {return true;}
-        virtual BitRate getBitrate() {return 0;}
-        virtual Status processPacket (TSPacket&, bool&, bool&);
+        SDTPlugin(TSP*);
+        virtual bool start() override;
+        virtual Status processPacket(TSPacket&, bool&, bool&) override;
 
     private:
         bool                  _abort;             // Error (service not found, etc)
@@ -69,8 +67,8 @@ namespace ts {
         CyclingPacketizer     _pzer;              // Packetizer for modified SDT/BAT
 
         // Invoked by the demux when a complete table is available.
-        virtual void handleTable (SectionDemux&, const BinaryTable&);
-        void processSDT (SDT&);
+        virtual void handleTable(SectionDemux&, const BinaryTable&) override;
+        void processSDT(SDT&);
 
         // Inaccessible operations
         SDTPlugin() = delete;
@@ -87,8 +85,8 @@ TSPLUGIN_DECLARE_PROCESSOR(ts::SDTPlugin)
 // Constructor
 //----------------------------------------------------------------------------
 
-ts::SDTPlugin::SDTPlugin (TSP* tsp_) :
-    ProcessorPlugin(tsp_, "Perform various transformations on the SDT Actual.", "[options]"),
+ts::SDTPlugin::SDTPlugin(TSP* tsp_) :
+    ProcessorPlugin(tsp_, u"Perform various transformations on the SDT Actual.", u"[options]"),
     _abort(false),
     _service(),
     _remove_serv(),
@@ -113,66 +111,66 @@ ts::SDTPlugin::SDTPlugin (TSP* tsp_) :
     option(u"type",                       't', UINT8);
 
     setHelp(u"Options:\n"
-             u"\n"
-             u"  --cleanup-private-descriptors\n"
-             u"      Remove all private descriptors without preceding private_data_specifier\n"
-             u"      descriptor.\n"
-             u"\n"
-             u"  --eit-pf value\n"
-             u"      Specify a new EIT_present_following_flag value for the added or modified\n"
-             u"      service. For new services, the default is 0.\n"
-             u"\n"
-             u"  --eit-schedule value\n"
-             u"      Specify a new EIT_schedule_flag value for the added or modified\n"
-             u"      service. For new services, the default is 0.\n"
-             u"\n"
-             u"  -f value\n"
-             u"  --free-ca-mode value\n"
-             u"      Specify a new free_CA_mode value for the added or modified service.\n"
-             u"      For new services, the default is 0.\n"
-             u"\n"
-             u"  --help\n"
-             u"      Display this help text.\n"
-             u"\n"
-             u"  -i\n"
-             u"  --increment-version\n"
-             u"      Increment the version number of the SDT.\n"
-             u"\n"
-             u"  -n value\n"
-             u"  --name value\n"
-             u"      Specify a new service name for the added or modified service.\n"
-             u"      For new services, the default is an empty string.\n"
-             u"\n"
-             u"  -v value\n"
-             u"  --new-version value\n"
-             u"      Specify a new value for the version of the SDT.\n"
-             u"\n"
-             u"  -p value\n"
-             u"  --provider value\n"
-             u"      Specify a new provider name for the added or modified service.\n"
-             u"      For new services, the default is an empty string.\n"
-             u"\n"
-             u"  --remove-service sid\n"
-             u"      Remove the specified service_id from the SDT. Several --remove-service\n"
-             u"      options may be specified to remove several services.\n"
-             u"\n"
-             u"  -r value\n"
-             u"  --running-status value\n"
-             u"      Specify a new running_status (0 to 7) for the added or modified service.\n"
-             u"      For new services, the default is 4 (\"running\").\n"
-             u"\n"
-             u"  -s value\n"
-             u"  --service-id value\n"
-             u"      Add a new service or modify the existing service with the specified\n"
-             u"      service-id.\n"
-             u"\n"
-             u"  -t value\n"
-             u"  --type value\n"
-             u"      Specify a new service type for the added or modified service. For new\n"
-             u"      services, the default is 0x01 (\"digital television service\").\n"
-             u"\n"
-             u"  --version\n"
-             u"      Display the version number.\n");
+            u"\n"
+            u"  --cleanup-private-descriptors\n"
+            u"      Remove all private descriptors without preceding private_data_specifier\n"
+            u"      descriptor.\n"
+            u"\n"
+            u"  --eit-pf value\n"
+            u"      Specify a new EIT_present_following_flag value for the added or modified\n"
+            u"      service. For new services, the default is 0.\n"
+            u"\n"
+            u"  --eit-schedule value\n"
+            u"      Specify a new EIT_schedule_flag value for the added or modified\n"
+            u"      service. For new services, the default is 0.\n"
+            u"\n"
+            u"  -f value\n"
+            u"  --free-ca-mode value\n"
+            u"      Specify a new free_CA_mode value for the added or modified service.\n"
+            u"      For new services, the default is 0.\n"
+            u"\n"
+            u"  --help\n"
+            u"      Display this help text.\n"
+            u"\n"
+            u"  -i\n"
+            u"  --increment-version\n"
+            u"      Increment the version number of the SDT.\n"
+            u"\n"
+            u"  -n value\n"
+            u"  --name value\n"
+            u"      Specify a new service name for the added or modified service.\n"
+            u"      For new services, the default is an empty string.\n"
+            u"\n"
+            u"  -v value\n"
+            u"  --new-version value\n"
+            u"      Specify a new value for the version of the SDT.\n"
+            u"\n"
+            u"  -p value\n"
+            u"  --provider value\n"
+            u"      Specify a new provider name for the added or modified service.\n"
+            u"      For new services, the default is an empty string.\n"
+            u"\n"
+            u"  --remove-service sid\n"
+            u"      Remove the specified service_id from the SDT. Several --remove-service\n"
+            u"      options may be specified to remove several services.\n"
+            u"\n"
+            u"  -r value\n"
+            u"  --running-status value\n"
+            u"      Specify a new running_status (0 to 7) for the added or modified service.\n"
+            u"      For new services, the default is 4 (\"running\").\n"
+            u"\n"
+            u"  -s value\n"
+            u"  --service-id value\n"
+            u"      Add a new service or modify the existing service with the specified\n"
+            u"      service-id.\n"
+            u"\n"
+            u"  -t value\n"
+            u"  --type value\n"
+            u"      Specify a new service type for the added or modified service. For new\n"
+            u"      services, the default is 0x01 (\"digital television service\").\n"
+            u"\n"
+            u"  --version\n"
+            u"      Display the version number.\n");
 }
 
 
@@ -187,38 +185,38 @@ bool ts::SDTPlugin::start()
     _set_version = present(u"new-version");
     _new_version = intValue<uint8_t>(u"new-version", 0);
     _cleanup_priv_desc = present(u"cleanup-private-descriptors");
-    getIntValues (_remove_serv, "remove-service");
+    getIntValues(_remove_serv, u"remove-service");
     _service.clear();
     if (present(u"eit-pf")) {
-        _service.setEITpfPresent (intValue<int>(u"eit-pf") != 0);
+        _service.setEITpfPresent(intValue<int>(u"eit-pf") != 0);
     }
     if (present(u"eit-schedule")) {
-        _service.setEITsPresent (intValue<int>(u"eit-schedule") != 0);
+        _service.setEITsPresent(intValue<int>(u"eit-schedule") != 0);
     }
     if (present(u"free-ca-mode")) {
-        _service.setCAControlled (intValue<int>(u"free-ca-mode") != 0);
+        _service.setCAControlled(intValue<int>(u"free-ca-mode") != 0);
     }
     if (present(u"name")) {
-        _service.setName (value(u"name"));
+        _service.setName(value(u"name"));
     }
     if (present(u"provider")) {
-        _service.setProvider (value(u"provider"));
+        _service.setProvider(value(u"provider"));
     }
     if (present(u"running-status")) {
         _service.setRunningStatus (intValue<uint8_t>(u"running-status"));
     }
     if (present(u"service-id")) {
-        _service.setId (intValue<uint16_t>(u"service-id"));
+        _service.setId(intValue<uint16_t>(u"service-id"));
     }
     if (present(u"type")) {
-        _service.setType (intValue<uint8_t>(u"type"));
+        _service.setType(intValue<uint8_t>(u"type"));
     }
 
     // Initialize the demux and packetizer
     _demux.reset();
-    _demux.addPID (PID_SDT);
+    _demux.addPID(PID_SDT);
     _pzer.reset();
-    _pzer.setPID (PID_SDT);
+    _pzer.setPID(PID_SDT);
 
     _abort = false;
     return true;
@@ -229,18 +227,18 @@ bool ts::SDTPlugin::start()
 // Invoked by the demux when a complete table is available.
 //----------------------------------------------------------------------------
 
-void ts::SDTPlugin::handleTable (SectionDemux& demux, const BinaryTable& table)
+void ts::SDTPlugin::handleTable(SectionDemux& demux, const BinaryTable& table)
 {
     switch (table.tableId()) {
 
         case TID_SDT_ACT: {
             if (table.sourcePID() == PID_SDT) {
-                SDT sdt (table);
+                SDT sdt(table);
                 if (sdt.isValid()) {
                     // Modify SDT Actual
-                    _pzer.removeSections (TID_SDT_ACT, table.tableIdExtension());
-                    processSDT (sdt);
-                    _pzer.addTable (sdt);
+                    _pzer.removeSections(TID_SDT_ACT, table.tableIdExtension());
+                    processSDT(sdt);
+                    _pzer.addTable(sdt);
                 }
             }
             break;
@@ -249,8 +247,8 @@ void ts::SDTPlugin::handleTable (SectionDemux& demux, const BinaryTable& table)
         case TID_SDT_OTH: {
             if (table.sourcePID() == PID_SDT) {
                 // SDT Other are passed unmodified
-                _pzer.removeSections (TID_SDT_OTH, table.tableIdExtension());
-                _pzer.addTable (table);
+                _pzer.removeSections(TID_SDT_OTH, table.tableIdExtension());
+                _pzer.addTable(table);
             }
             break;
         }
@@ -258,8 +256,8 @@ void ts::SDTPlugin::handleTable (SectionDemux& demux, const BinaryTable& table)
         case TID_BAT: {
             if (table.sourcePID() == PID_BAT) {
                 // Do not modify BAT
-                _pzer.removeSections (TID_BAT, table.tableIdExtension());
-                _pzer.addTable (table);
+                _pzer.removeSections(TID_BAT, table.tableIdExtension());
+                _pzer.addTable(table);
             }
         }
 
@@ -274,7 +272,7 @@ void ts::SDTPlugin::handleTable (SectionDemux& demux, const BinaryTable& table)
 //  This method processes a SDT
 //----------------------------------------------------------------------------
 
-void ts::SDTPlugin::processSDT (SDT& sdt)
+void ts::SDTPlugin::processSDT(SDT& sdt)
 {
     // Update SDT version
     if (_incr_version) {
@@ -288,19 +286,19 @@ void ts::SDTPlugin::processSDT (SDT& sdt)
     if (_service.hasId()) {
 
         // Create new service is not existing
-        if (sdt.services.find (_service.getId()) == sdt.services.end()) {
+        if (sdt.services.find(_service.getId()) == sdt.services.end()) {
             // Service did not exist, create a new one with all defaults
             SDT::Service sv;
             sv.EITs_present = false;
             sv.EITpf_present = false;
             sv.running_status = 4; // running
             sv.CA_controlled = false;
-            sv.descs.add (ServiceDescriptor (0x01, "", ""));
-            sdt.services.insert (std::make_pair (_service.getId(), sv));
+            sv.descs.add(ServiceDescriptor(0x01, "", ""));
+            sdt.services.insert(std::make_pair(_service.getId(), sv));
         }
 
         // Locate service to modify
-        SDT::Service& sv (sdt.services [_service.getId()]);
+        SDT::Service& sv(sdt.services[_service.getId()]);
 
         // Modify service characteristics
         if (_service.hasEITpfPresent()) {
@@ -313,22 +311,22 @@ void ts::SDTPlugin::processSDT (SDT& sdt)
             sv.CA_controlled = _service.getCAControlled();
         }
         if (_service.hasName()) {
-            sv.setName (_service.getName());
+            sv.setName(_service.getName());
         }
         if (_service.hasProvider()) {
-            sv.setProvider (_service.getProvider());
+            sv.setProvider(_service.getProvider());
         }
         if (_service.hasRunningStatus()) {
             sv.running_status = _service.getRunningStatus();
         }
         if (_service.hasType()) {
-            sv.setType (_service.getType());
+            sv.setType(_service.getType());
         }
     }
 
     // Remove selected services
     for (std::vector<uint16_t>::const_iterator it = _remove_serv.begin(); it != _remove_serv.end(); ++it) {
-        sdt.services.erase (*it);
+        sdt.services.erase(*it);
     }
 
     // Remove private descriptors without preceding PDS descriptor
@@ -347,7 +345,7 @@ void ts::SDTPlugin::processSDT (SDT& sdt)
 ts::ProcessorPlugin::Status ts::SDTPlugin::processPacket (TSPacket& pkt, bool& flush, bool& bitrate_changed)
 {
     // Filter interesting sections
-    _demux.feedPacket (pkt);
+    _demux.feedPacket(pkt);
 
     // If a fatal error occured during section analysis, give up.
     if (_abort) {
@@ -356,7 +354,7 @@ ts::ProcessorPlugin::Status ts::SDTPlugin::processPacket (TSPacket& pkt, bool& f
 
     // Replace packets using packetizer
     if (pkt.getPID() == PID_SDT) {
-        _pzer.getNextPacket (pkt);
+        _pzer.getNextPacket(pkt);
     }
 
     return TSP_OK;

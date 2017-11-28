@@ -34,7 +34,6 @@
 
 #include "tsPlugin.h"
 #include "tsForkPipe.h"
-#include "tsStringUtils.h"
 #include "tsSysUtils.h"
 TSDUCK_SOURCE;
 
@@ -55,11 +54,10 @@ namespace ts {
     {
     public:
         // Implementation of plugin API
-        PlayPlugin (TSP*);
-        virtual bool start();
-        virtual bool stop();
-        virtual BitRate getBitrate() {return 0;}
-        virtual bool send (const TSPacket*, size_t);
+        PlayPlugin(TSP*);
+        virtual bool start() override;
+        virtual bool stop() override;
+        virtual bool send(const TSPacket*, size_t);
 
     private:
         bool     _use_mplayer;
@@ -67,7 +65,7 @@ namespace ts {
         ForkPipe _pipe;
 
         // Search a file in a search path. Return true is found
-        bool searchInPath (std::string& result, const StringVector& path, const std::string& name);
+        bool searchInPath(UString& result, const UStringVector& path, const UString& name);
 
         // Inaccessible operations
         PlayPlugin() = delete;
@@ -84,8 +82,8 @@ TSPLUGIN_DECLARE_OUTPUT(ts::PlayPlugin)
 // Constructor
 //----------------------------------------------------------------------------
 
-ts::PlayPlugin::PlayPlugin (TSP* tsp_) :
-    OutputPlugin(tsp_, "Play output TS on any supported media player in the system.", "[options]"),
+ts::PlayPlugin::PlayPlugin(TSP* tsp_) :
+    OutputPlugin(tsp_, u"Play output TS on any supported media player in the system.", u"[options]"),
     _use_mplayer(false),
     _use_xine(false),
     _pipe()
@@ -94,27 +92,27 @@ ts::PlayPlugin::PlayPlugin (TSP* tsp_) :
     option(u"xine",    'x');
 
     setHelp(u"Options:\n"
-             u"\n"
-             u"  --help\n"
-             u"      Display this help text.\n"
+            u"\n"
+            u"  --help\n"
+            u"      Display this help text.\n"
 #if !defined(TS_WINDOWS)
-             u"\n"
-             u"  -m\n"
-             u"  --mplayer\n"
-             u"      Use mplayer for rendering. The default is to look for vlc, mplayer and\n"
-             u"      xine, in this order, and use the first available one.\n"
+            u"\n"
+            u"  -m\n"
+            u"  --mplayer\n"
+            u"      Use mplayer for rendering. The default is to look for vlc, mplayer and\n"
+            u"      xine, in this order, and use the first available one.\n"
 #endif
-             u"\n"
-             u"  --version\n"
-             u"      Display the version number.\n"
+            u"\n"
+            u"  --version\n"
+            u"      Display the version number.\n"
 #if !defined(TS_WINDOWS)
-             u"\n"
-             u"  -x\n"
-             u"  --xine\n"
-             u"      Use xine for rendering. The default is to look for vlc, mplayer and\n"
-             u"      xine, in this order, and use the first available one.\n"
+            u"\n"
+            u"  -x\n"
+            u"  --xine\n"
+            u"      Use xine for rendering. The default is to look for vlc, mplayer and\n"
+            u"      xine, in this order, and use the first available one.\n"
 #endif
-             );
+    );
 }
 
 
@@ -124,17 +122,17 @@ ts::PlayPlugin::PlayPlugin (TSP* tsp_) :
 
 bool ts::PlayPlugin::stop()
 {
-    return _pipe.close (*tsp);
+    return _pipe.close(*tsp);
 }
 
 
 //----------------------------------------------------------------------------
 // Output method
-//----------------------------------------------------------------------------
+//---   -------------------------------------------------------------------------
 
-bool ts::PlayPlugin::send (const TSPacket* buffer, size_t packet_count)
+bool ts::PlayPlugin::send(const TSPacket* buffer, size_t packet_count)
 {
-    return _pipe.write (buffer, PKT_SIZE * packet_count, *tsp);
+    return _pipe.write(buffer, PKT_SIZE * packet_count, *tsp);
 }
 
 
@@ -142,13 +140,13 @@ bool ts::PlayPlugin::send (const TSPacket* buffer, size_t packet_count)
 // Search a file in a search path. Return empty string if not found
 //----------------------------------------------------------------------------
 
-bool ts::PlayPlugin::searchInPath (std::string& result, const StringVector& path, const std::string& name)
+bool ts::PlayPlugin::searchInPath(UString& result, const UStringVector& path, const UString& name)
 {
-    for (StringVector::const_iterator it = path.begin(); it != path.end(); ++it) {
+    for (UStringVector::const_iterator it = path.begin(); it != path.end(); ++it) {
         if (!it->empty()) {
             result = *it + PathSeparator + name;
-            tsp->debug ("looking for " + result);
-            if (FileExists (result)) {
+            tsp->debug(u"looking for %s", {result});
+            if (FileExists(result)) {
                 return true;
             }
         }
@@ -167,12 +165,12 @@ bool ts::PlayPlugin::start()
     _use_mplayer = present(u"mplayer");
     _use_xine = present(u"xine");
     if (_use_mplayer && _use_xine) {
-        tsp->error ("--mplayer (-m) and --xine (-x) are mutually exclusive");
+        tsp->error(u"--mplayer (-m) and --xine (-x) are mutually exclusive");
         return false;
     }
 
     // Command to execute will be built here
-    std::string command;
+    UString command;
 
 #if defined (TS_WINDOWS)
 
@@ -181,86 +179,88 @@ bool ts::PlayPlugin::start()
     // various means.
 
     // Get environment path
-    StringVector search_path;
-    GetEnvironmentPath (search_path, "Path");
+    UStringVector search_path;
+    GetEnvironmentPath(search_path, TS_COMMAND_PATH);
 
     // Look into some registry location
-    std::string ent = GetRegistryValue ("HKLM\\SOFTWARE\\VideoLAN\\VLC", "InstallDir");
+    UString ent = GetRegistryValue("HKLM\\SOFTWARE\\VideoLAN\\VLC", "InstallDir");
     if (!ent.empty()) {
-        search_path.push_back (ent);
+        search_path.push_back(ent);
     }
-    ent = GetRegistryValue ("HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\VLC media player", "UninstallString");
+    ent = GetRegistryValue("HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\VLC media player", "UninstallString");
     if (!ent.empty()) {
-        search_path.push_back (DirectoryName (ent));
+        search_path.push_back(DirectoryName(ent));
     }
 
-    // Add default installation location
-    search_path.push_back ("C:\\Program Files\\VideoLAN\\VLC");
+    // Add default installation locations
+    search_path.push_back("C:\\Program Files\\VideoLAN\\VLC");
+    search_path.push_back("C:\\Program Files (x86)\\VideoLAN\\VLC");
 
     // Then search vlc.exe in these locations
-    std::string exec;
-    if (searchInPath (exec, search_path, "vlc.exe")) {
-        command = "\"" + exec + "\" -";
+    UString exec;
+    if (searchInPath(exec, search_path, u"vlc.exe")) {
+        // Enclose the executable path with quotes and use "-" as parameter (meaning standard input).
+        command = u"\"" + exec + u"\" -";
     }
     else {
-        tsp->error ("VLC not found, install VideoLAN VLC media player, see http://www.videolan.org/vlc/");
+        tsp->error(u"VLC not found, install VideoLAN VLC media player, see http://www.videolan.org/vlc/");
         return false;
     }
 
 #else // UNIX
 
     // Get environment path.
-    StringVector search_path;
-    GetEnvironmentPath (search_path, "PATH");
+    UStringVector search_path;
+    GetEnvironmentPath(search_path, TS_COMMAND_PATH);
 
     // Executable names for various players
-    const char* const vlc_exec = "vlc";
-    const char* const mplayer_exec = "mplayer";
-    const char* const xine_exec = "xine";
+    static const UChar vlc_exec[] = "vlc";
+    static const UChar mplayer_exec[] = "mplayer";
+    static const UChar xine_exec[] = "xine";
 
     // Options to read TS on stdin for various players
-    const char* const vlc_opts = "-";
-    const char* const mplayer_opts = "-demuxer +mpegts -";
-    const char* const xine_opts = "stdin:/#demux:mpeg-ts";
+    static const UChar vlc_opts[] = "-";
+    static const UChar mplayer_opts[] = "-demuxer +mpegts -";
+    static const UChar xine_opts[] = "stdin:/#demux:mpeg-ts";
 
     // Search known media players
-    std::string exec;
-    const char* opts = "";
+    UString exec;
+    const UChar* opts = "";
 
     if (_use_mplayer) {
         opts = mplayer_opts;
-        if (!searchInPath (exec, search_path, mplayer_exec)) {
-            tsp->error ("mplayer not found in PATH");
+        if (!searchInPath(exec, search_path, mplayer_exec)) {
+            tsp->error(u"mplayer not found in PATH");
             return false;
         }
     }
     else if (_use_xine) {
         opts = xine_opts;
-        if (!searchInPath (exec, search_path, xine_exec)) {
-            tsp->error ("xine not found in PATH");
+        if (!searchInPath(exec, search_path, xine_exec)) {
+            tsp->error(u"xine not found in PATH");
             return false;
         }
     }
-    else if (searchInPath (exec, search_path, vlc_exec)) {
+    else if (searchInPath(exec, search_path, vlc_exec)) {
         opts = vlc_opts;
     }
-    else if (searchInPath (exec, search_path, mplayer_exec)) {
+    else if (searchInPath(exec, search_path, mplayer_exec)) {
         opts = mplayer_opts;
     }
-    else if (searchInPath (exec, search_path, xine_exec)) {
+    else if (searchInPath(exec, search_path, xine_exec)) {
         opts = xine_opts;
     }
     else {
-        tsp->error ("no supported media player was found");
+        tsp->error(u"no supported media player was found");
         return false;
     }
 
-    command = "\"" + exec + "\" " + opts;
+    command = u"\"" + exec + u"\" " + opts;
 
 #endif
 
     // Create pipe & process
-    tsp->verbose ("using media player command: " + command);
-    _pipe.setIgnoreAbort (false);
-    return _pipe.open (command, true, PIPE_BUFFER_SIZE, *tsp);
+    tsp->verbose(u"using media player command: %s", {command});
+    _pipe.setIgnoreAbort(false);
+    return _pipe.open(command, true, PIPE_BUFFER_SIZE, *tsp);
 }

@@ -495,7 +495,7 @@ bool ts::Tuner::getCurrentTuning(TunerParameters& params, bool reset_unknown, Re
         }
 
         default: {
-            report.error("cannot convert BDA tuning parameters to " + TunerTypeEnum.name(_tuner_type) + " parameters");
+            report.error(u"cannot convert BDA tuning parameters to " + TunerTypeEnum.name(_tuner_type) + " parameters");
             return false;
         }
     }
@@ -512,7 +512,7 @@ bool ts::Tuner::getCurrentTuning(TunerParameters& params, bool reset_unknown, Re
 bool ts::Tuner::tune(const TunerParameters& params, Report& report)
 {
     if (!_is_open) {
-        report.error("DVB tuner not open");
+        report.error(u"DVB tuner not open");
         return false;
     }
     else {
@@ -530,7 +530,7 @@ bool ts::Tuner::internalTune(const TunerParameters& params, Report& report)
 {
     // Check subclass of TunerParameters
     if (params.tunerType() != _tuner_type) {
-        report.error("inconsistent tuner parameter type");
+        report.error(u"inconsistent tuner parameter type");
         return false;
     }
 
@@ -555,7 +555,7 @@ bool ts::Tuner::internalTune(const TunerParameters& params, Report& report)
 bool ts::Tuner::start(Report& report)
 {
     if (!_is_open) {
-        report.error("DVB tuner not open");
+        report.error(u"DVB tuner not open");
         return false;
     }
 
@@ -622,7 +622,7 @@ bool ts::Tuner::setReceiveTimeout(MilliSecond timeout, Report&)
 size_t ts::Tuner::receive(TSPacket* buffer, size_t max_packets, const AbortInterface* abort, Report& report)
 {
     if (!_is_open) {
-        report.error("DVB tuner not open");
+        report.error(u"DVB tuner not open");
         return 0;
     }
 
@@ -637,7 +637,7 @@ size_t ts::Tuner::receive(TSPacket* buffer, size_t max_packets, const AbortInter
         const Time limit(Time::CurrentUTC() + _receive_timeout);
         got_size = _sink_filter->Read(buffer, max_packets * PKT_SIZE, _receive_timeout);
         if (got_size == 0 && Time::CurrentUTC() >= limit) {
-            report.error("receive timeout on " + _device_name);
+            report.error(u"receive timeout on " + _device_name);
         }
     }
 
@@ -734,7 +734,7 @@ bool ts::Tuner::FindTuners(Tuner* tuner, TunerPtrVector* tuner_list, Report& rep
 
         // Get friendly name of this tuner filter
         const UString tuner_name(GetStringPropertyBag(tuner_monikers[dvb_device_current].pointer(), L"FriendlyName", debug_report));
-        report.debug("found tuner filter \"" + tuner_name + "\"");
+        report.debug(u"found tuner filter \"" + tuner_name + "\"");
 
         // If a device name was specified, filter this name.
         if (tuner != 0 && !tuner->_device_name.empty()) {
@@ -800,14 +800,14 @@ bool ts::Tuner::buildGraph(::IMoniker* tuner_moniker, Report& report)
     _net_provider.queryInterface(_provider_filter.pointer(), ::IID_IBDA_NetworkProvider, report);
     _tuner.queryInterface(_provider_filter.pointer(), ::IID_ITuner, report);
     if (_provider_filter.isNull() || _net_provider.isNull() || _tuner.isNull()) {
-        report.debug("failed to create an instance of network provider");
+        report.debug(u"failed to create an instance of network provider");
         return false;
     }
 
     // Create an instance of tuner from moniker
     _tuner_filter.bindToObject(tuner_moniker, ::IID_IBaseFilter, report);
     if (_tuner_filter.isNull()) {
-        report.debug("failed to create an instance of BDA tuner");
+        report.debug(u"failed to create an instance of BDA tuner");
         return false;
     }
 
@@ -817,7 +817,7 @@ bool ts::Tuner::buildGraph(::IMoniker* tuner_moniker, Report& report)
         !_graph.addFilter(_tuner_filter.pointer(), L"Tuner", report) ||
         !_graph.connectFilters(_provider_filter.pointer(), _tuner_filter.pointer(), report))
     {
-        report.debug("failed to initiate the graph with network provider => tuner");
+        report.debug(u"failed to initiate the graph with network provider => tuner");
         return false;
     }
 
@@ -896,7 +896,7 @@ bool ts::Tuner::buildGraph(::IMoniker* tuner_moniker, Report& report)
 
     // Give up the tuner if no tuning space was found.
     if (!tspace_found) {
-        report.debug("no supported tuning space found for this tuner");
+        report.debug(u"no supported tuning space found for this tuner");
         return false;
     }
 
@@ -1091,7 +1091,7 @@ bool ts::Tuner::buildCaptureGraph(const ComPtr<::IBaseFilter>& base_filter, Repo
         // Try to connect demux filter to tif
         if (_graph.connectFilters(demux_filter.pointer(), tif_filter.pointer(), debug_report)) {
             tif_found = true;
-            report.debug("using TIF \"%s\"", {tif_name});
+            report.debug(u"using TIF \"%s\"", {tif_name});
         }
         else {
             // This tif is not compatible, remove it from the graph

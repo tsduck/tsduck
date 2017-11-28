@@ -62,9 +62,7 @@ namespace ts {
         // Implementation of plugin API
         AESPlugin(TSP*);
         virtual bool start() override;
-        virtual bool stop() override {return true;}
-        virtual BitRate getBitrate() override {return 0;}
-        virtual Status processPacket (TSPacket&, bool&, bool&) override;
+        virtual Status processPacket(TSPacket&, bool&, bool&) override;
 
     private:
         // Private data
@@ -397,7 +395,7 @@ void ts::AESPlugin::processPMT (PMT& pmt)
     for (PMT::StreamMap::const_iterator it = pmt.streams.begin(); it != pmt.streams.end(); ++it) {
         if (it->second.isVideo() || it->second.isAudio() || it->second.isSubtitles()) {
             _scrambled.set(it->first);
-            tsp->verbose("scrambling PID %d (0x%X)", {it->first, it->first});
+            tsp->verbose(u"scrambling PID %d (0x%X)", {it->first, it->first});
         }
     }
 }
@@ -454,13 +452,13 @@ ts::ProcessorPlugin::Status ts::AESPlugin::processPacket (TSPacket& pkt, bool& f
     assert (pl_size < sizeof(tmp));
     if (_descramble) {
         if (!_chain->decrypt (pl, pl_size, tmp, pl_size)) {
-            tsp->error ("AES decrypt error");
+            tsp->error(u"AES decrypt error");
             return TSP_END;
         }
     }
     else {
         if (!_chain->encrypt (pl, pl_size, tmp, pl_size)) {
-            tsp->error ("AES encrypt error");
+            tsp->error(u"AES encrypt error");
             return TSP_END;
         }
     }

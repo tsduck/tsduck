@@ -45,11 +45,9 @@ namespace ts {
     {
     public:
         // Implementation of plugin API
-        SkipPlugin (TSP*);
-        virtual bool start();
-        virtual bool stop() {return true;}
-        virtual BitRate getBitrate() {return 0;}
-        virtual Status processPacket (TSPacket&, bool&, bool&);
+        SkipPlugin(TSP*);
+        virtual bool start() override;
+        virtual Status processPacket(TSPacket&, bool&, bool&) override;
 
     private:
         PacketCounter skip_count;
@@ -70,8 +68,8 @@ TSPLUGIN_DECLARE_PROCESSOR(ts::SkipPlugin)
 // Constructor
 //----------------------------------------------------------------------------
 
-ts::SkipPlugin::SkipPlugin (TSP* tsp_) :
-    ProcessorPlugin(tsp_, "Skip leading TS packets of a stream.", "[options] count"),
+ts::SkipPlugin::SkipPlugin(TSP* tsp_) :
+    ProcessorPlugin(tsp_, u"Skip leading TS packets of a stream.", u"[options] count"),
     skip_count(0),
     use_stuffing(false)
 {
@@ -79,20 +77,20 @@ ts::SkipPlugin::SkipPlugin (TSP* tsp_) :
     option(u"stuffing", 's');
 
     setHelp(u"Count:\n"
-             u"  Number of leading packets to skip.\n"
-             u"\n"
-             u"Options:\n"
-             u"\n"
-             u"  --help\n"
-             u"      Display this help text.\n"
-             u"\n"
-             u"  -s\n"
-             u"  --stuffing\n"
-             u"      Replace excluded leading packets with stuffing (null packets) instead\n"
-             u"      of removing them.\n"
-             u"\n"
-             u"  --version\n"
-             u"      Display the version number.\n");
+            u"  Number of leading packets to skip.\n"
+            u"\n"
+            u"Options:\n"
+            u"\n"
+            u"  --help\n"
+            u"      Display this help text.\n"
+            u"\n"
+            u"  -s\n"
+            u"  --stuffing\n"
+            u"      Replace excluded leading packets with stuffing (null packets) instead\n"
+            u"      of removing them.\n"
+            u"\n"
+            u"  --version\n"
+            u"      Display the version number.\n");
 }
 
 
@@ -112,7 +110,7 @@ bool ts::SkipPlugin::start()
 // Packet processing method
 //----------------------------------------------------------------------------
 
-ts::ProcessorPlugin::Status ts::SkipPlugin::processPacket (TSPacket& pkt, bool& flush, bool& bitrate_changed)
+ts::ProcessorPlugin::Status ts::SkipPlugin::processPacket(TSPacket& pkt, bool& flush, bool& bitrate_changed)
 {
     if (skip_count == 0) {
         return TSP_OK;

@@ -157,7 +157,7 @@ ts::DektecInputPlugin::DektecInputPlugin(TSP* tsp_) :
 bool ts::DektecInputPlugin::start()
 {
     if (_guts->is_started) {
-        tsp->error ("already started");
+        tsp->error(u"already started");
         return false;
     }
 
@@ -266,7 +266,7 @@ ts::BitRate ts::DektecInputPlugin::getBitrate()
     Dtapi::DTAPI_RESULT status = _guts->chan.GetTsRateBps(bitrate);
 
     if (status != DTAPI_OK) {
-        tsp->error("error getting Dektec device input bitrate: " + DektecStrError(status));
+        tsp->error(u"error getting Dektec device input bitrate: " + DektecStrError(status));
         return 0;
     }
     if (_guts->got_bitrate && bitrate != int(_guts->cur_bitrate)) {
@@ -303,7 +303,7 @@ size_t ts::DektecInputPlugin::receive(TSPacket* buffer, size_t max_packets)
         }
         if (fifo_load >= int(DTA_FIFO_SIZE)) {
             // Input overflow.
-            tsp->warning("input fifo full, possible packet loss");
+            tsp->warning(u"input fifo full, possible packet loss");
         }
     }
 

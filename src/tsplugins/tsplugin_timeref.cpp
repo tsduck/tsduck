@@ -49,10 +49,8 @@ namespace ts {
     public:
         // Implementation of plugin API
         TimeRefPlugin(TSP*);
-        virtual bool start();
-        virtual bool stop() {return true;}
-        virtual BitRate getBitrate() {return 0;}
-        virtual Status processPacket(TSPacket&, bool&, bool&);
+        virtual bool start() override;
+        virtual Status processPacket(TSPacket&, bool&, bool&) override;
 
     private:
         MilliSecond   _add_milliseconds;  // Add this to all time values
@@ -79,7 +77,7 @@ TSPLUGIN_DECLARE_PROCESSOR(ts::TimeRefPlugin)
 //----------------------------------------------------------------------------
 
 ts::TimeRefPlugin::TimeRefPlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, "Update TDT and TOT with a new time reference", "[options]"),
+    ProcessorPlugin(tsp_, u"Update TDT and TOT with a new time reference", u"[options]"),
     _add_milliseconds(0),
     _use_timeref(false),
     _timeref(Time::Epoch),
@@ -135,19 +133,19 @@ bool ts::TimeRefPlugin::start()
 
     _use_timeref = present(u"start");
     if (_use_timeref) {
-        const std::string start(value(u"start"));
+        const UString start(value(u"start"));
         try {
             // Decode an absolute time string
-            int year, month, day, hour, minute, second;
-            char unused;
-            if (::sscanf(start.c_str(), "%d/%d/%d:%d:%d:%d%c", &year, &month, &day, &hour, &minute, &second, &unused) != 6) {
-                tsp->error("invalid time value \"%s\" (use \"year/month/day:hour:minute:second\")", start.c_str());
+            int year = 0, month = 0, day = 0, hour = 0, minute = 0, second = 0;
+            char unused = 0;
+            if (::sscanf(start.toUTF8().c_str(), "%d/%d/%d:%d:%d:%d%c", &year, &month, &day, &hour, &minute, &second, &unused) != 6) {
+                tsp->error(u"invalid time value \"%s\" (use \"year/month/day:hour:minute:second\")", {start});
                 return false;
             }
             _timeref = Time(year, month, day, hour, minute, second);
         }
         catch (Time::TimeError) {
-            tsp->error("at least one invalid value in \"%s\"", start.c_str());
+            tsp->error(u"at least one invalid value in \"%s\"", {start});
             return false;
         }
     }
@@ -188,7 +186,7 @@ ts::ProcessorPlugin::Status ts::TimeRefPlugin::processPacket(TSPacket& pkt, bool
     const size_t payload_size = ok ? (GetUInt16(section + 1) & 0x0FFF) : 0;
     ok = payload + payload_size <= pkt.b + PKT_SIZE;
     if (!ok) {
-        tsp->warning("got TDT/TOT PID packet with no complete section inside, cannot update");
+        tsp->warning(u"got TDT/TOT PID packet with no complete section inside, cannot update");
         return TSP_OK;
     }
     const size_t section_size = SHORT_SECTION_HEADER_SIZE + payload_size;
@@ -198,20 +196,20 @@ ts::ProcessorPlugin::Status ts::TimeRefPlugin::processPacket(TSPacket& pkt, bool
         return TSP_OK;
     }
     if (tid != TID_TDT && tid != TID_TOT) {
-        tsp->warning("found table_id %d (0x%02X) in TDT/TOT PID", int(tid), int(tid));
+        tsp->warning(u"found table_id %d (0x%X) in TDT/TOT PID", {tid, tid});
         return TSP_OK;
     }
 
     // Check section size
     if ((tid == TID_TDT && payload_size < MJD_SIZE) || (tid == TID_TOT && payload_size < MJD_SIZE + 4)) {
-        tsp->warning("invalid TDT/TOD, payload too short: %" FMT_SIZE_T "d bytes", payload_size);
+        tsp->warning(u"invalid TDT/TOD, payload too short: %d bytes", {payload_size});
         return TSP_OK;
     }
 
     // Check TOT CRC if needs to be updated
     if (tid == TID_TOT && !_use_timeref) {
         if (CRC32(section, section_size - 4) != GetUInt32(section + section_size - 4)) {
-            tsp->warning("incorrect CRC in TOT, cannot reliably update");
+            tsp->warning(u"incorrect CRC in TOT, cannot reliably update");
             return TSP_OK;
         }
     }
@@ -222,7 +220,7 @@ ts::ProcessorPlugin::Status ts::TimeRefPlugin::processPacket(TSPacket& pkt, bool
     if (_use_timeref) {
         const BitRate bitrate = tsp->bitrate();
         if (bitrate == 0) {
-            tsp->warning("unknown bitrate cannot reliably update TDT/TOT");
+            tsp->warning(u"unknown bitrate cannot reliably update TDT/TOT");
             return TSP_OK;
         }
         _timeref += PacketInterval(bitrate, _current_pkt - _timeref_pkt);
@@ -230,7 +228,7 @@ ts::ProcessorPlugin::Status ts::TimeRefPlugin::processPacket(TSPacket& pkt, bool
         time = _timeref;
     }
     else if (!DecodeMJD(payload, MJD_SIZE, time)) {
-        tsp->warning("error decoding UTC time from TDT/TOT");
+        tsp->warning(u"error decoding UTC time from TDT/TOT");
         return TSP_OK;
     }
 
@@ -239,7 +237,7 @@ ts::ProcessorPlugin::Status ts::TimeRefPlugin::processPacket(TSPacket& pkt, bool
     // Coverity false positive: payload + MJD_SIZE is within packet boudaries.
     // coverity[OVERRUN)
     if (!EncodeMJD(time, payload, MJD_SIZE)) {
-        tsp->warning("error encoding UTC time into TDT/TOT");
+        tsp->warning(u"error encoding UTC time into TDT/TOT");
         return TSP_OK;
     }
 

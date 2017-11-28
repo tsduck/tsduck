@@ -130,11 +130,11 @@ bool ts::TCPConnection::send(const void* buffer, size_t size, Report& report)
 #if !defined(TS_WINDOWS)
         else if (errno == EINTR) {
             // Ignore signal, retry
-            report.debug("send() interrupted by signal, retrying");
+            report.debug(u"send() interrupted by signal, retrying");
         }
 #endif
         else {
-            report.error("error sending data to socket: " + SocketErrorCodeMessage());
+            report.error(u"error sending data to socket: " + SocketErrorCodeMessage());
             return false;
         }
     }
@@ -176,13 +176,13 @@ bool ts::TCPConnection::receive (void* data,             // Buffers address
 #if !defined(TS_WINDOWS)
         else if (err_code == EINTR) {
             // Ignore signal, retry
-            report.debug ("recv() interrupted by signal, retrying");
+            report.debug(u"recv() interrupted by signal, retrying");
         }
 #endif
         else {
             Guard lock (_mutex);
             if (isOpen()) {
-                report.error ("error receiving data from socket: " + SocketErrorCodeMessage (err_code));
+                report.error(u"error receiving data from socket: " + SocketErrorCodeMessage (err_code));
             }
             return false;
         }

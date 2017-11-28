@@ -221,7 +221,7 @@ void ts::PAT::DisplaySection(TablesDisplay& display, const ts::Section& section,
         uint16_t pid = GetUInt16(data + 2) & 0x1FFF;
         data += 4; size -= 4;
         strm << margin
-             << UString::Format("%s %5d (0x%04X)  PID: %4d (0x%04X)", {program == 0 ? u"NIT:    " : u"Program:", program, program, pid, pid})
+             << UString::Format(u"%s %5d (0x%04X)  PID: %4d (0x%04X)", {program == 0 ? u"NIT:    " : u"Program:", program, program, pid, pid})
              << std::endl;
     }
 

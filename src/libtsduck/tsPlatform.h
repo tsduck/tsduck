@@ -696,10 +696,11 @@
 
 #if !defined(DOXYGEN)
     #define TS_STRINGIFY1(x) #x
+    #define TS_USTRINGIFY1(x) u#x
 #endif
 //!
 //! @hideinitializer
-//! This macro transforms the @e value of a macro parameter into the equivalent string.
+//! This macro transforms the @e value of a macro parameter into the equivalent string literal.
 //!
 //! This is a very specific macro. It is typically used only inside the definition of
 //! another macro. It is similar to the @# token in the preprocessor but has a slightly
@@ -710,7 +711,7 @@
 //! The following example illustrates the difference between the @# token and TS_STRINGIFY:
 //!
 //! @code
-//! #define P1(v) printf("#parameter:     %s = %d\n", #v, v)
+//! #define P1(v) printf("#parameter:   %s = %d\n", #v, v)
 //! #define P2(v) printf("TS_STRINGIFY: %s = %d\n", TS_STRINGIFY(v), v)
 //! ....
 //! #define X 1
@@ -721,11 +722,20 @@
 //! This will print:
 //!
 //! @code
-//! #parameter:     X = 1
+//! #parameter:   X = 1
 //! TS_STRINGIFY: 1 = 1
 //! @endcode
 //!
 #define TS_STRINGIFY(x) TS_STRINGIFY1(x)
+
+//!
+//! @hideinitializer
+//! This macro transforms the @e value of a macro parameter into the equivalent 16-bit Unicode string literal.
+//!
+//! This macro is equivalent to TS_STRINGIFY() except that the string literal is of the for @c u"..." instead of @c "..."
+//! @see TS_STRINGIFY()
+//!
+#define TS_USTRINGIFY(x) TS_USTRINGIFY1(x)
 
 //!
 //! Attribute for explicitly unused variables.
@@ -2492,163 +2502,6 @@ namespace ts {
     #error "MemoryBarrier is not implemented on this platform"
 #endif
     }
-}
-
-
-//----------------------------------------------------------------------------
-// Printf-like formatting
-//----------------------------------------------------------------------------
-
-//!
-//! Syntax-checking attribute for functions with a printf-like format.
-//!
-//! Functions like @c printf use a variable-length argument list.
-//! The number of arguments and their required types depend on the content
-//! of the @a format string. For each @a format content, there is a specific
-//! number of expected arguments and the type of each argument is perfectly
-//! defined. But most compilers cannot check the validity of the number of
-//! arguments and their types. If the number of arguments or any of their
-//! types is wrong, the results are unpredictable. This is very well-known
-//! pitfall for C programers.
-//!
-//! However, some compilers such as GCC are able to analyze printf-like format
-//! strings and validate the variable list of arguments at compile time.
-//! This is performed using a specific non-portable function attribute.
-//!
-//! This macro defines a portable way of specifying this attribute. With
-//! compilers such as GCC which are able to perform this check, the specific
-//! attribute is specified and the compile-time checks are performed. With
-//! all other compilers, the macro expands to nothing and no check is performed.
-//!
-//! @param formatIndex Specifies the index of the @a format argument in the function.
-//! @param argIndex Specifies the index of the first argument for the @a format string.
-//!
-//! Parameter indexes start at 1 for functions and at 2 for C++ member
-//! functions (the implicit parameter at index 1 is \c this in the case of
-//! C++ member functions).
-//!
-//! Example:
-//! @code
-//! void MyPrint(const char *format, ...) TS_PRINTF_FORMAT(1, 2);
-//! @endcode
-//!
-#if defined(DOXYGEN)
-    #define TS_PRINTF_FORMAT(formatIndex,argIndex)
-#elif defined(TS_GCC) && __GNUC__ >= 4
-    // Flawfinder: ignore
-    #define TS_PRINTF_FORMAT(f,p) __attribute__((format(printf, f, p)))
-#else
-    #define TS_PRINTF_FORMAT(f,p)
-#endif
-
-#if defined(DOXYGEN)
-    //!
-    //! A string value to specify a @c size_t argument in @c printf @a format strings.
-    //!
-    //! The size of the predefined type @c size_t depends on the platform.
-    //! It is typically 32 or 64 bits. When formatting a @c size_t value
-    //! in printf-like functions, the required specifier is consequently
-    //! unknown. It can be "%d" or "%ld" or instance. It is difficult to
-    //! write portable code which formats a @c size_t value.
-    //! Specifically, GCC/glibc and Microsoft C++ use different specifiers.
-    //!
-    //! This macro translates to a string constant which contains the
-    //! appropriate format specifier for @c size_t on the target platform.
-    //!
-    //! Example:
-    //! @code
-    //! size_t size = ...;
-    //! printf("size_t value is %" FMT_SIZE_T "d", size);
-    //! @endcode
-    //!
-    #define FMT_SIZE_T "platform-specific"
-    //!
-    //! A string value to specify a 64-bit integer argument in @c printf @a format strings.
-    //!
-    //! The C/C++ standards do not specify a format for integer types which are
-    //! <i>longer than @c long</i>, i.e. 64-bit integers on most platforms.
-    //! When formatting a 64-bit integer value in printf-like functions,
-    //! the required specifier is consequently unknown.
-    //! Specifically, GCC/glibc and Microsoft C++ use different specifiers.
-    //!
-    //! This macro translates to a string constant which contains the
-    //! appropriate format specifier for a 64-bit integer on the target platform.
-    //!
-    //! Example:
-    //! @code
-    //! uint64_t ui64 = ...;
-    //! printf("64-bit value is %" FMT_INT64 "d", ui64);
-    //! @endcode
-    //!
-    #define FMT_INT64 "platform-specific"
-
-#elif defined(TS_MSC)
-    #define FMT_SIZE_T "I"
-    #define FMT_INT64  "I64"
-#elif defined(TS_MAC)
-    #define FMT_SIZE_T "z"
-    #define FMT_INT64  "ll"
-#elif defined(TS_GCC) && defined(TS_X86_64)
-    #define FMT_SIZE_T "z"
-    #define FMT_INT64  "j"
-#elif defined(TS_GCC)
-    #define FMT_SIZE_T "z"
-    #define FMT_INT64  "ll"
-#else
-    #error "check printf/scanf format for size_t and 64-bit integers on this platform"
-#endif
-
-//!
-//! @hideinitializer
-//! This macro is used in functions with a variable list of
-//! arguments to format a @c std::string from a printf-like format
-//! and its variable-length list of arguments.
-//!
-//! This operation cannot be done using a function in a portable way.
-//! Consequently, a macro is required.
-//!
-//! Example:
-//! @code
-//! void f(const char *format, ...)
-//! {
-//!     std::string result;
-//!     TS_FORMAT_STRING(result, format);
-//! @endcode
-//!
-//! @param [in] string_var The @c std::string into which the result is stored.
-//! @param [in] format_arg The printf-like format argument of the current function.
-//! The variable-length list of arguments for the format are assumed
-//! to immediately follow the format argument.
-//!
-#define TS_FORMAT_STRING(string_var,format_arg)                           \
-{                                                                         \
-    va_list ap__;                                                         \
-    va_start(ap__, format_arg);                                           \
-    char buf1__[256];                                                     \
-    /* Flawfinder: ignore */                                              \
-    int size1__ = ::vsnprintf(buf1__, sizeof(buf1__), format_arg, ap__);  \
-    va_end(ap__);                                                         \
-    if (size1__ < 0) {                                                    \
-        string_var = "(vsnprintf error)";                                 \
-    }                                                                     \
-    else if (size1__ < int(sizeof(buf1__))) {                             \
-        string_var = std::string(buf1__, size1__);                        \
-    }                                                                     \
-    else {                                                                \
-        char *buf2__ = new char[size1__ + 1];                             \
-        va_start(ap__, format_arg);                                       \
-        /* Flawfinder: ignore */                                          \
-        int size2__ = ::vsnprintf(buf1__, size1__ + 1, format_arg, ap__); \
-        va_end(ap__);                                                     \
-        if (size2__ < 0) {                                                \
-            string_var = "(vsnprintf error)";                             \
-        }                                                                 \
-        else {                                                            \
-            assert(size2__ <= size1__);                                   \
-            string_var = std::string(buf2__, size2__);                    \
-        }                                                                 \
-        delete [] buf2__;                                                 \
-    }                                                                     \
 }
 
 

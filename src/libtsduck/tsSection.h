@@ -608,7 +608,7 @@ namespace ts {
         //! @return True on success, false on error.
         //!
         static bool LoadFile(SectionPtrVector& sections,
-                             const std::string& file_name,
+                             const UString& file_name,
                              CRC32::Validation crc_op = CRC32::IGNORE,
                              Report& report = CERR);
 

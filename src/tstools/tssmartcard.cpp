@@ -32,30 +32,26 @@
 //----------------------------------------------------------------------------
 
 #include "tsArgs.h"
-#include "tsHexa.h"
-#include "tsFormat.h"
 #include "tsPCSC.h"
 TSDUCK_SOURCE;
-
-using namespace ts;
 
 
 //----------------------------------------------------------------------------
 //  Command line options
 //----------------------------------------------------------------------------
 
-struct Options: public Args
+struct Options: public ts::Args
 {
     Options(int argc, char *argv[]);
 
     bool        verbose;       // Verbose output
-    std::string reader;        // Optional reader name
+    ts::UString reader;        // Optional reader name
     ::DWORD     timeout_ms;    // Timeout in milliseconds
     ::DWORD     reset_action;  // Type of reset to apply
 };
 
 Options::Options(int argc, char *argv[]) :
-    Args("Smartcard Listing Utility.", "[options] [reader-name]"),
+    Args(u"Smartcard Listing Utility.", u"[options] [reader-name]"),
     verbose(false),
     reader(),
     timeout_ms(0),
@@ -69,43 +65,43 @@ Options::Options(int argc, char *argv[]) :
     option(u"warm-reset", 'w');
 
     setHelp(u"Parameters:\n"
-             u"  The optional reader-name parameter indicates the smartcard reader device\n"
-             u"  name to list or reset. Without any option or parameter, the command lists\n"
-             u"  all smartcard reader devices in the system.\n"
-             u"\n"
-             u"Options:\n"
-             u"\n"
-             u"  -c\n"
-             u"  --cold-reset\n"
-             u"      Perfom a cold reset on the smartcard.\n"
-             u"\n"
-             u"  -e\n"
-             u"  --eject\n"
-             u"      Eject the smartcard.\n"
-             u"\n"
-             u"  --help\n"
-             u"      Display this help text.\n"
-             u"\n"
-             u"  -t value\n"
-             u"  --timeout value\n"
-             u"      Timeout in milliseconds. The default is 1000 ms.\n"
-             u"\n"
-             u"  -v\n"
-             u"  --verbose\n"
-             u"      Produce verbose output.\n"
-             u"\n"
-             u"  --version\n"
-             u"      Display the version number.\n"
-             u"\n"
-             u"  -w\n"
-             u"  --warm-reset\n"
-             u"      Perfom a warm reset on the smartcard.\n");
+            u"  The optional reader-name parameter indicates the smartcard reader device\n"
+            u"  name to list or reset. Without any option or parameter, the command lists\n"
+            u"  all smartcard reader devices in the system.\n"
+            u"\n"
+            u"Options:\n"
+            u"\n"
+            u"  -c\n"
+            u"  --cold-reset\n"
+            u"      Perfom a cold reset on the smartcard.\n"
+            u"\n"
+            u"  -e\n"
+            u"  --eject\n"
+            u"      Eject the smartcard.\n"
+            u"\n"
+            u"  --help\n"
+            u"      Display this help text.\n"
+            u"\n"
+            u"  -t value\n"
+            u"  --timeout value\n"
+            u"      Timeout in milliseconds. The default is 1000 ms.\n"
+            u"\n"
+            u"  -v\n"
+            u"  --verbose\n"
+            u"      Produce verbose output.\n"
+            u"\n"
+            u"  --version\n"
+            u"      Display the version number.\n"
+            u"\n"
+            u"  -w\n"
+            u"  --warm-reset\n"
+            u"      Perfom a warm reset on the smartcard.\n");
 
-    analyze (argc, argv);
+    analyze(argc, argv);
 
     reader = value(u"");
     verbose = present(u"verbose");
-    timeout_ms = intValue ("timeout", ::DWORD (1000));
+    timeout_ms = intValue(u"timeout", ::DWORD(1000));
 
     if (present(u"eject")) {
         reset_action = SCARD_EJECT_CARD;
@@ -127,13 +123,13 @@ Options::Options(int argc, char *argv[]) :
 //  Return false on error.
 //----------------------------------------------------------------------------
 
-bool Check (::LONG sc_status, Options& opt, const std::string& cause)
+bool Check(::LONG sc_status, Options& opt, const ts::UString& cause)
 {
     if (sc_status == SCARD_S_SUCCESS) {
         return true;
     }
     else {
-        opt.error(cause + Format(": PC/SC error 0x%08X: ", int(sc_status)) + pcsc::StrError(sc_status));
+        opt.error(u"%s: PC/SC error 0x%08X: %s", {cause, sc_status, ts::pcsc::StrError(sc_status)});
         return false;
     }
 }
@@ -143,7 +139,7 @@ bool Check (::LONG sc_status, Options& opt, const std::string& cause)
 //  Return a comma, except a colon the first time
 //----------------------------------------------------------------------------
 
-inline char sep (int& count)
+inline char sep(int& count)
 {
     return count++ == 0 ? ':' : ',';
 }
@@ -153,32 +149,32 @@ inline char sep (int& count)
 //  List one smartcard
 //----------------------------------------------------------------------------
 
-void List (Options& opt, const pcsc::ReaderState& st)
+void List(Options& opt, const ts::pcsc::ReaderState& st)
 {
     std::cout << st.reader;
 
     if (opt.verbose) {
         int count = 0;
         if (st.event_state & SCARD_STATE_UNAVAILABLE) {
-            std::cout << sep (count) << " unavailable state";
+            std::cout << sep(count) << " unavailable state";
         }
         if (st.event_state & SCARD_STATE_EMPTY) {
-            std::cout << sep (count) << " empty";
+            std::cout << sep(count) << " empty";
         }
         if (st.event_state & SCARD_STATE_PRESENT) {
-            std::cout << sep (count) << " smartcard present";
+            std::cout << sep(count) << " smartcard present";
         }
         if (st.event_state & SCARD_STATE_EXCLUSIVE) {
-            std::cout << sep (count) << " exclusive access";
+            std::cout << sep(count) << " exclusive access";
         }
         if (st.event_state & SCARD_STATE_INUSE) {
-            std::cout << sep (count) << " in use";
+            std::cout << sep(count) << " in use";
         }
         if (st.event_state & SCARD_STATE_MUTE) {
-            std::cout << sep (count) << " mute";
+            std::cout << sep(count) << " mute";
         }
         if (!st.atr.empty()) {
-            std::cout << std::endl << "    ATR: " << Hexa (st.atr, hexa::SINGLE_LINE);
+            std::cout << std::endl << "    ATR: " << ts::UString::Dump(st.atr, ts::UString::SINGLE_LINE);
         }
     }
     std::cout << std::endl;
@@ -189,7 +185,7 @@ void List (Options& opt, const pcsc::ReaderState& st)
 //  Reset a smartcard
 //----------------------------------------------------------------------------
 
-bool Reset (Options& opt, ::SCARDCONTEXT pcsc_context, const std::string& reader)
+bool Reset(Options& opt, ::SCARDCONTEXT pcsc_context, const ts::UString& reader)
 {
     if (opt.verbose) {
         std::cout << "resetting " << reader << std::endl;
@@ -197,20 +193,20 @@ bool Reset (Options& opt, ::SCARDCONTEXT pcsc_context, const std::string& reader
 
     ::SCARDHANDLE handle;
     ::DWORD protocol;
-    ::LONG sc_status = ::SCardConnect (pcsc_context,
-                                       reader.c_str(),
-                                       SCARD_SHARE_SHARED,
-                                       SCARD_PROTOCOL_T0 | SCARD_PROTOCOL_T1 | SCARD_PROTOCOL_RAW,
-                                       &handle,
-                                       &protocol);
+    ::LONG sc_status = ::SCardConnect(pcsc_context,
+                                      reader.toUTF8().c_str(),
+                                      SCARD_SHARE_SHARED,
+                                      SCARD_PROTOCOL_T0 | SCARD_PROTOCOL_T1 | SCARD_PROTOCOL_RAW,
+                                      &handle,
+                                      &protocol);
 
-    if (!Check (sc_status, opt, reader)) {
+    if (!Check(sc_status, opt, reader)) {
         return false;
     }
 
-    sc_status = ::SCardDisconnect (handle, opt.reset_action);
+    sc_status = ::SCardDisconnect(handle, opt.reset_action);
 
-    return Check (sc_status, opt, reader);
+    return Check(sc_status, opt, reader);
 }
 
 
@@ -218,26 +214,26 @@ bool Reset (Options& opt, ::SCARDCONTEXT pcsc_context, const std::string& reader
 //  Program entry point
 //----------------------------------------------------------------------------
 
-int main (int argc, char *argv[])
+int main(int argc, char *argv[])
 {
     int status = EXIT_SUCCESS;
-    Options opt (argc, argv);
+    Options opt(argc, argv);
 
     // Establish communication with PC/SC
 
     ::SCARDCONTEXT pcsc_context;
-    ::LONG sc_status = ::SCardEstablishContext (SCARD_SCOPE_SYSTEM, 0, 0, &pcsc_context);
+    ::LONG sc_status = ::SCardEstablishContext(SCARD_SCOPE_SYSTEM, 0, 0, &pcsc_context);
 
-    if (!Check (sc_status, opt, "SCardEstablishContext")) {
+    if (!Check(sc_status, opt, u"SCardEstablishContext")) {
         return EXIT_FAILURE;
     }
 
     // Get a list of all smartcard readers
 
-    pcsc::ReaderStateVector states;
-    sc_status = pcsc::GetStates (pcsc_context, states, opt.timeout_ms);
+    ts::pcsc::ReaderStateVector states;
+    sc_status = ts::pcsc::GetStates(pcsc_context, states, opt.timeout_ms);
 
-    if (!Check (sc_status, opt, "get smartcard readers list")) {
+    if (!Check(sc_status, opt, u"get smartcard readers list")) {
         ::SCardReleaseContext (pcsc_context);
         return EXIT_FAILURE;
     }
@@ -246,7 +242,7 @@ int main (int argc, char *argv[])
 
     bool reader_found = false;
 
-    for (pcsc::ReaderStateVector::const_iterator it = states.begin(); it != states.end(); ++it) {
+    for (ts::pcsc::ReaderStateVector::const_iterator it = states.begin(); it != states.end(); ++it) {
         if (opt.reader.empty() || opt.reader == it->reader) {
             reader_found = true;
             if (opt.reset_action != SCARD_LEAVE_CARD) {
@@ -257,7 +253,7 @@ int main (int argc, char *argv[])
             }
             else {
                 // Default action: list the smartcard
-                List (opt, *it);
+                List(opt, *it);
             }
         }
     }
@@ -265,14 +261,14 @@ int main (int argc, char *argv[])
     // If one reader was specified on the command line, check that is was found
 
     if (!opt.reader.empty() && !reader_found) {
-        opt.error ("smartcard reader \"" + opt.reader + "\" not found");
+        opt.error(u"smartcard reader \"%s\" not found", {opt.reader});
         status = EXIT_FAILURE;
     }
 
     // Release communication with PC/SC
 
-    sc_status = ::SCardReleaseContext (pcsc_context);
-    if (!Check (sc_status, opt, "SCardReleaseContext")) {
+    sc_status = ::SCardReleaseContext(pcsc_context);
+    if (!Check(sc_status, opt, u"SCardReleaseContext")) {
         status = EXIT_FAILURE;
     }
 

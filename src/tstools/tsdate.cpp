@@ -35,11 +35,9 @@
 #include "tsInputRedirector.h"
 #include "tsTablesDisplay.h"
 #include "tsSectionDemux.h"
-#include "tsStringUtils.h"
 #include "tsNames.h"
 #include "tsTDT.h"
 #include "tsTOT.h"
-#include "tsFormat.h"
 TSDUCK_SOURCE;
 
 
@@ -52,15 +50,15 @@ class Options: public ts::Args
 public:
     Options(int argc, char *argv[]);
 
-    bool        no_tdt;      // Do not try to get a TDT
-    bool        no_tot;      // Do not try to get a TOT
-    bool        all;         // Report all tables, not only the first one.
-    bool        verbose;     // Verbose output
-    std::string infile;      // Input file name
+    bool        no_tdt;   // Do not try to get a TDT
+    bool        no_tot;   // Do not try to get a TOT
+    bool        all;      // Report all tables, not only the first one.
+    bool        verbose;  // Verbose output
+    ts::UString infile;   // Input file name
 };
 
 Options::Options(int argc, char *argv[]) :
-    ts::Args("MPEG Transport Stream Time (TDT/TOT) Extraction Utility.", "[options] [filename]"),
+    ts::Args(u"MPEG Transport Stream Time (TDT/TOT) Extraction Utility.", u"[options] [filename]"),
     no_tdt(false),
     no_tot(false),
     all(false),
@@ -139,7 +137,7 @@ public:
     }
 
     // This hook is invoked when a complete table is available.
-    virtual void handleTable(ts::SectionDemux&, const ts::BinaryTable&);
+    virtual void handleTable(ts::SectionDemux&, const ts::BinaryTable&) override;
 };
 
 
@@ -202,9 +200,7 @@ void TableHandler::handleTable(ts::SectionDemux&, const ts::BinaryTable& table)
             if (_opt.verbose) {
                 const ts::TID tid = table.tableId();
                 const ts::PID pid = table.sourcePID();
-                std::cout << "* Got unexpected " << ts::names::TID(tid)
-                          << ts::Format(", TID %d (0x%02X) on PID %d (0x%04X)", int(tid), int(tid), int(pid), int(pid))
-                          << std::endl;
+                std::cout << ts::UString::Format(u"* Got unexpected %s, TID %d (0x%X) on PID %d (0x%X)", {ts::names::TID(tid), tid, tid, pid, pid}) << std::endl;
             }
         }
     }

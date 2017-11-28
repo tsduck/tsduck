@@ -123,7 +123,7 @@ void ts::tlv::MessageFactory::getCompound(TAG tag, std::vector<MSG>& param) cons
     ParameterMultimap::const_iterator last = _params.upper_bound(tag);
     for (int i = 0; it != last; ++it, ++i) {
         if (it->second.compound.isNull()) {
-            throw DeserializationInternalError(UString::Format("Occurence %d of parameter 0x%X not a compound TLV", {i, tag}));
+            throw DeserializationInternalError(UString::Format(u"Occurence %d of parameter 0x%X not a compound TLV", {i, tag}));
         }
         else {
             MessagePtr gen;

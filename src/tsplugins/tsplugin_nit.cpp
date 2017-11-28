@@ -49,11 +49,9 @@ namespace ts {
     {
     public:
         // Implementation of plugin API
-        NITPlugin (TSP*);
-        virtual bool start();
-        virtual bool stop() {return true;}
-        virtual BitRate getBitrate() {return 0;}
-        virtual Status processPacket (TSPacket&, bool&, bool&);
+        NITPlugin(TSP*);
+        virtual bool start() override;
+        virtual Status processPacket(TSPacket&, bool&, bool&) override;
 
     private:
         bool               _abort;             // Error (service not found, etc)
@@ -84,9 +82,9 @@ namespace ts {
         };
 
         // Invoked by the demux when a complete table is available.
-        virtual void handleTable (SectionDemux&, const BinaryTable&);
-        void processNIT (NIT&);
-        void processDescriptorList (DescriptorList&);
+        virtual void handleTable(SectionDemux&, const BinaryTable&) override;
+        void processNIT(NIT&);
+        void processDescriptorList(DescriptorList&);
 
         // Inaccessible operations
         NITPlugin() = delete;
@@ -232,11 +230,11 @@ bool ts::NITPlugin::start()
     _new_version = intValue<uint8_t>(u"new-version", 0);
 
     if (_lcn_oper != LCN_NONE && !_remove_serv.empty()) {
-        tsp->error ("--lcn and --remove-service are mutually exclusive");
+        tsp->error(u"--lcn and --remove-service are mutually exclusive");
         return false;
     }
     if (_sld_oper != LCN_NONE && !_remove_serv.empty()) {
-        tsp->error ("--sld and --remove-service are mutually exclusive");
+        tsp->error(u"--sld and --remove-service are mutually exclusive");
         return false;
     }
 
@@ -272,10 +270,10 @@ void ts::NITPlugin::handleTable (SectionDemux& demux, const BinaryTable& table)
                 if (pat.isValid()) {
                     if ((_nit_pid = pat.nit_pid) == PID_NULL) {
                         _nit_pid = PID_NIT;
-                        tsp->warning ("NIT PID unspecified in PAT, using DVB default: %d (0x%04X)", int (_nit_pid), int (_nit_pid));
+                        tsp->warning(u"NIT PID unspecified in PAT, using DVB default: %d (0x%04X)", int (_nit_pid), int (_nit_pid));
                     }
                     else {
-                        tsp->verbose ("NIT PID is %d (0x%04X) in PAT", int (_nit_pid), int (_nit_pid));
+                        tsp->verbose(u"NIT PID is %d (0x%04X) in PAT", int (_nit_pid), int (_nit_pid));
                     }
                     // No longer filter the PAT
                     _demux.removePID (PID_PAT);
@@ -323,7 +321,7 @@ void ts::NITPlugin::handleTable (SectionDemux& demux, const BinaryTable& table)
 
 void ts::NITPlugin::processNIT (NIT& nit)
 {
-    tsp->debug ("got a NIT, version %d, network Id: %d (0x%04X)", int (nit.version), int (nit.network_id), int (nit.network_id));
+    tsp->debug(u"got a NIT, version %d, network Id: %d (0x%04X)", int (nit.version), int (nit.network_id), int (nit.network_id));
 
     // Update NIT version
     if (_incr_version) {

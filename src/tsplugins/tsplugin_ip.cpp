@@ -36,7 +36,6 @@
 #include "tsIPUtils.h"
 #include "tsUDPSocket.h"
 #include "tsSysUtils.h"
-#include "tsDecimal.h"
 #include "tsTime.h"
 TSDUCK_SOURCE;
 
@@ -59,11 +58,11 @@ namespace ts {
     public:
         // Implementation of plugin API
         IPInput(TSP*);
-        virtual ~IPInput ();
-        virtual bool start();
-        virtual bool stop();
-        virtual BitRate getBitrate();
-        virtual size_t receive(TSPacket*, size_t);
+        virtual ~IPInput();
+        virtual bool start() override;
+        virtual bool stop() override;
+        virtual BitRate getBitrate() override;
+        virtual size_t receive(TSPacket*, size_t) override;
 
     private:
         UDPSocket     _sock;               // Incoming socket
@@ -91,12 +90,11 @@ namespace ts {
     {
     public:
         // Implementation of plugin API
-        IPOutput (TSP*);
-        virtual ~IPOutput ();
-        virtual bool start();
-        virtual bool stop();
-        virtual BitRate getBitrate() {return 0;}
-        virtual bool send (const TSPacket*, size_t);
+        IPOutput(TSP*);
+        virtual ~IPOutput();
+        virtual bool start() override;
+        virtual bool stop() override;
+        virtual bool send(const TSPacket*, size_t) override;
 
     private:
         UDPSocket _sock;        // Outgoing socket
@@ -256,13 +254,13 @@ bool ts::IPInput::start()
 
     // If a destination address is specified, it must be a multicast address
     if (dest_addr.hasAddress() && !dest_addr.isMulticast()) {
-        tsp->error ("address " + std::string (dest_addr) + " is not multicast");
+        tsp->error(u"address " + std::string (dest_addr) + " is not multicast");
         return false;
     }
 
     // The destination port is mandatory
     if (!dest_addr.hasPort()) {
-        tsp->error ("no UDP port specified in " + destination);
+        tsp->error(u"no UDP port specified in " + destination);
         return false;
     }
 
@@ -415,7 +413,7 @@ size_t ts::IPInput::receive (TSPacket* buffer, size_t max_packets)
         }
 
         // No TS packet found in UDP message, wait for another one.
-        tsp->debug ("no TS packet in message from " +
+        tsp->debug(u"no TS packet in message from " +
                     std::string (SocketAddress (sender)) + ", " +
                     Decimal (insize) + " bytes");
     }
@@ -454,7 +452,7 @@ size_t ts::IPInput::receive (TSPacket* buffer, size_t max_packets)
             const MilliSecond ms_total = Time::CurrentUTC() - _start;
             const BitRate br_current = ms_current == 0 ? 0 : BitRate ((_packets_0 * PKT_SIZE * 8 * MilliSecPerSec) / ms_current);
             const BitRate br_average = ms_total == 0 ? 0 : BitRate ((_packets * PKT_SIZE * 8 * MilliSecPerSec) / ms_total);
-            tsp->info ("IP input bitrate: " +
+            tsp->info(u"IP input bitrate: " +
                        (br_current == 0 ? "undefined" : Decimal (br_current) + " b/s") +
                        u", average: " +
                        (br_average == 0 ? "undefined" : Decimal (br_average) + " b/s"));

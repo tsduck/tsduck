@@ -47,14 +47,13 @@ namespace ts {
     {
     public:
         // Implementation of plugin API
-        AnalyzePlugin (TSP*);
-        virtual bool start();
-        virtual bool stop();
-        virtual BitRate getBitrate() {return 0;}
-        virtual Status processPacket (TSPacket&, bool&, bool&);
+        AnalyzePlugin(TSP*);
+        virtual bool start() override;
+        virtual bool stop() override;
+        virtual Status processPacket(TSPacket&, bool&, bool&) override;
 
     private:
-        std::string       _output_name;
+        UString           _output_name;
         std::ofstream     _output_stream;
         std::ostream*     _output;
         MilliSecond       _output_interval;
@@ -86,7 +85,7 @@ TSPLUGIN_DECLARE_PROCESSOR(ts::AnalyzePlugin)
 //----------------------------------------------------------------------------
 
 ts::AnalyzePlugin::AnalyzePlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, "Transport Stream Analyzer.", "[options]"),
+    ProcessorPlugin(tsp_, u"Transport Stream Analyzer.", u"[options]"),
     _output_name(),
     _output_stream(),
     _output(),
@@ -171,24 +170,22 @@ bool ts::AnalyzePlugin::openOutput()
     }
 
     // Build file name in case of --multiple-files
-    std::string name;
+    UString name;
     if (_multiple_output) {
-        const Time::Fields now (Time::CurrentLocalTime());
-        name = PathPrefix (_output_name) +
-            Format ("_%04d%02d%02d_%02d%02d%02d", now.year, now.month, now.day, now.hour, now.minute, now.second) +
-            PathSuffix (_output_name);
+        const Time::Fields now(Time::CurrentLocalTime());
+        name = UString::Format(u"%s_%04d%02d%02d_%02d%02d%02d%s", {PathPrefix(_output_name), now.year, now.month, now.day, now.hour, now.minute, now.second, PathSuffix(_output_name)});
     }
     else {
         name = _output_name;
     }
 
     // Create the file
-    _output_stream.open (name.c_str());
+    _output_stream.open(name.toUTF8().c_str());
     if (_output_stream) {
         return true;
     }
     else {
-        tsp->error ("cannot create file " + name);
+        tsp->error(u"cannot create file %s", {name});
         return false;
     }
 }
@@ -217,11 +214,11 @@ bool ts::AnalyzePlugin::produceReport()
     }
     else {
         // Set last known input bitrate as hint
-        _analyzer.setBitrateHint (tsp->bitrate());
+        _analyzer.setBitrateHint(tsp->bitrate());
 
         // Produce the report
-        _analyzer.report (*_output, _analyzer_options);
-        closeOutput ();
+        _analyzer.report(*_output, _analyzer_options);
+        closeOutput();
         return true;
     }
 }
@@ -254,7 +251,7 @@ void ts::AnalyzePlugin::computeNextReportTime (const Time& current_utc, MilliSec
         _next_report_packet = 0;
     }
     else {
-        _next_report_packet = _current_packet + PacketDistance (bitrate, interval);
+        _next_report_packet = _current_packet + PacketDistance(bitrate, interval);
     }
 }
 
@@ -275,14 +272,14 @@ ts::ProcessorPlugin::Status ts::AnalyzePlugin::processPacket (TSPacket& pkt, boo
     if (_output_interval > 0) {
         if (_current_packet == 1) {
             // Initialize the repetition when the first packet arrives
-            computeNextReportTime (Time::CurrentUTC(), _output_interval);
+            computeNextReportTime(Time::CurrentUTC(), _output_interval);
         }
         else if (_next_report_packet == 0 || (_next_report_packet > 0 && _current_packet >= _next_report_packet)) {
             // Check current time to see if this is time to produce a report
-            const Time current_utc (Time::CurrentUTC());
+            const Time current_utc(Time::CurrentUTC());
             if (current_utc < _next_report_time) {
                 // False alarm, we have to wait some more
-                computeNextReportTime (current_utc, _next_report_time - current_utc);
+                computeNextReportTime(current_utc, _next_report_time - current_utc);
             }
             else {
                 // Time to produce a report

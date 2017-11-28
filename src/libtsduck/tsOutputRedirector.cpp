@@ -40,7 +40,7 @@ TSDUCK_SOURCE;
 // Constructor:
 //----------------------------------------------------------------------------
 
-ts::OutputRedirector::OutputRedirector(const std::string& name,
+ts::OutputRedirector::OutputRedirector(const UString& name,
                                        Args& args,
                                        std::ostream& stream,
                                        std::ios::openmode mode) :
@@ -50,12 +50,12 @@ ts::OutputRedirector::OutputRedirector(const std::string& name,
 {
     // Flawfinder: ignore: this is our open(), not ::open().
     if (!name.empty()) {
-        _file.open(name.c_str(), mode);
+        _file.open(name.toUTF8().c_str(), mode);
         if (_file) {
-            _previous = _stream.rdbuf (_file.rdbuf());
+            _previous = _stream.rdbuf(_file.rdbuf());
         }
         else {
-            args.error ("cannot open file " + name);
+            args.error(u"cannot open file %s", {name});
             args.exitOnError ();
         }
     }
@@ -73,7 +73,7 @@ ts::OutputRedirector::OutputRedirector(const std::string& name,
 ts::OutputRedirector::~OutputRedirector()
 {
     if (_previous != 0) {
-        _stream.rdbuf (_previous);
+        _stream.rdbuf(_previous);
         _previous = 0;
     }
     if (_file.is_open()) {

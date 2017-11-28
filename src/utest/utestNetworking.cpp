@@ -504,7 +504,7 @@ namespace {
         // Thread execution
         virtual void test()
         {
-            CERR.debug("UDPSocketTest: client thread started");
+            CERR.debug(u"UDPSocketTest: client thread started");
             // Create the client socket
             ts::UDPSocket sock(true);
             CPPUNIT_ASSERT(sock.isOpen());
@@ -526,7 +526,7 @@ namespace {
             char buffer [1024];
             size_t size;
             CPPUNIT_ASSERT(sock.receive(buffer, sizeof(buffer), size, sender, 0, CERR));
-            CERR.debug("UDPSocketTest: client thread: reply received, %d bytes", {size});
+            CERR.debug(u"UDPSocketTest: client thread: reply received, %d bytes", {size});
             CPPUNIT_ASSERT(size == sizeof(message));
             CPPUNIT_ASSERT(::memcmp(message, buffer, size) == 0);
             CPPUNIT_ASSERT(ts::IPAddress(sender) == ts::IPAddress::LocalHost);

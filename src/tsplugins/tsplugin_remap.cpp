@@ -41,8 +41,6 @@
 #include "tsCASFamily.h"
 #include "tsCADescriptor.h"
 #include "tsSafePtr.h"
-#include "tsToInteger.h"
-#include "tsStringUtils.h"
 TSDUCK_SOURCE;
 
 
@@ -55,11 +53,9 @@ namespace ts {
     {
     public:
         // Implementation of plugin API
-        RemapPlugin (TSP*);
-        virtual bool start();
-        virtual bool stop() {return true;}
-        virtual BitRate getBitrate() {return 0;}
-        virtual Status processPacket (TSPacket&, bool&, bool&);
+        RemapPlugin(TSP*);
+        virtual bool start() override;
+        virtual Status processPacket(TSPacket&, bool&, bool&) override;
 
     private:
         typedef SafePtr<CyclingPacketizer, NullMutex> CyclingPacketizerPtr;
@@ -75,16 +71,16 @@ namespace ts {
         PacketizerMap _pzer;            // Packetizer for sections
 
         // Invoked by the demux when a complete table is available.
-        virtual void handleTable (SectionDemux&, const BinaryTable&);
+        virtual void handleTable(SectionDemux&, const BinaryTable&) override;
 
         // Get the remapped value of a PID (or same PID if not remapped)
-        PID remap (PID);
+        PID remap(PID);
 
         // Get the packetizer for one PID, create it if necessary and "create"
-        CyclingPacketizerPtr getPacketizer (PID pid, bool create);
+        CyclingPacketizerPtr getPacketizer(PID pid, bool create);
 
         // Process a list of descriptors, remap PIDs in CA descriptors.
-        void processDescriptors (DescriptorList&, TID);
+        void processDescriptors(DescriptorList&, TID);
 
         // Inaccessible operations
         RemapPlugin() = delete;
@@ -102,7 +98,7 @@ TSPLUGIN_DECLARE_PROCESSOR(ts::RemapPlugin)
 //----------------------------------------------------------------------------
 
 ts::RemapPlugin::RemapPlugin (TSP* tsp_) :
-    ProcessorPlugin (tsp_, "Generic PID remapper.", "[options] [pid[-pid]=newpid ...]"),
+    ProcessorPlugin (tsp_, u"Generic PID remapper.", u"[options] [pid[-pid]=newpid ...]"),
     _check_integrity(false),
     _update_psi(false),
     _pmt_ready(false),
@@ -116,35 +112,35 @@ ts::RemapPlugin::RemapPlugin (TSP* tsp_) :
     option(u"unchecked", 'u');
 
     setHelp(u"Specifying PID remapping:\n"
-             u"\n"
-             u"  Each remapping is specified as \"pid=newpid\" or \"pid1-pid2=newpid\"\n"
-             u"  (all PID's can be specified as decimal or hexadecimal values).\n"
-             u"  In the first form, the PID \"pid\" is remapped to \"newpid\".\n"
-             u"  In the later form, all PID's within the range \"pid1\" to \"pid2\"\n"
-             u"  (inclusive) are respectively remapped to \"newpid\", \"newpid\"+1, etc.\n"
-             u"\n"
-             u"Options:\n"
-             u"\n"
-             u"  --help\n"
-             u"      Display this help text.\n"
-             u"\n"
-             u"  -n\n"
-             u"  --no-psi\n"
-             u"      Do not modify the PSI. By default, the PAT, CAT and PMT's are\n"
-             u"      modified so that previous references to the remapped PID's will\n"
-             u"      point to the new PID values.\n"
-             u"\n"
-             u"  -u\n"
-             u"  --unchecked\n"
-             u"      Do not perform any consistency checking while remapping PID's.\n"
-             u"      - Remapping to or from a predefined PID is accepted.\n"
-             u"      - Remapping two PID's to the same PID or to a PID which is\n"
-             u"        already present in the input is accepted.\n"
-             u"      Note that this option should be used with care since the\n"
-             u"      resulting stream can be illegal or inconsistent.\n"
-             u"\n"
-             u"  --version\n"
-             u"      Display the version number.\n");
+            u"\n"
+            u"  Each remapping is specified as \"pid=newpid\" or \"pid1-pid2=newpid\"\n"
+            u"  (all PID's can be specified as decimal or hexadecimal values).\n"
+            u"  In the first form, the PID \"pid\" is remapped to \"newpid\".\n"
+            u"  In the later form, all PID's within the range \"pid1\" to \"pid2\"\n"
+            u"  (inclusive) are respectively remapped to \"newpid\", \"newpid\"+1, etc.\n"
+            u"\n"
+            u"Options:\n"
+            u"\n"
+            u"  --help\n"
+            u"      Display this help text.\n"
+            u"\n"
+            u"  -n\n"
+            u"  --no-psi\n"
+            u"      Do not modify the PSI. By default, the PAT, CAT and PMT's are\n"
+            u"      modified so that previous references to the remapped PID's will\n"
+            u"      point to the new PID values.\n"
+            u"\n"
+            u"  -u\n"
+            u"  --unchecked\n"
+            u"      Do not perform any consistency checking while remapping PID's.\n"
+            u"      - Remapping to or from a predefined PID is accepted.\n"
+            u"      - Remapping two PID's to the same PID or to a PID which is\n"
+            u"        already present in the input is accepted.\n"
+            u"      Note that this option should be used with care since the\n"
+            u"      resulting stream can be illegal or inconsistent.\n"
+            u"\n"
+            u"  --version\n"
+            u"      Display the version number.\n");
 }
 
 
@@ -161,19 +157,19 @@ bool ts::RemapPlugin::start()
     // Decode all PID remappings
     _pid_map.clear();
     _new_pids.reset();
-    for (size_t i = 0; i < count (""); ++i) {
+    for (size_t i = 0; i < count(u""); ++i) {
 
         // Get parameter: pid[-pid]=newpid
-        const std::string param (value(u"", "", i));
+        const UString param(value(u"", u"", i));
 
         // Locate "pid[-pid]" and "newpid"
-        std::vector<std::string> fields;
-        SplitString (fields, param, '=');
+        UStringVector fields;
+        param.split(fields, u'=');
         bool ok = fields.size() == 2;
         // Locate input PID range
-        std::vector<std::string> subfields;
+        UStringVector subfields;
         if (ok) {
-            SplitString (subfields, fields[0], '-');
+            fields[0].split(subfields, u'-');
             ok = subfields.size() == 1 || subfields.size() == 2;
         }
 
@@ -181,24 +177,24 @@ bool ts::RemapPlugin::start()
         PID pid1 = PID_NULL;
         PID pid2 = PID_NULL;
         PID newpid = PID_NULL;
-        ok = ok && ToInteger (pid1, subfields[0]) && ToInteger (newpid, fields[1]);
+        ok = ok && subfields[0].toInteger(pid1) && fields[1].toInteger(newpid);
         if (ok) {
             if (subfields.size() == 1) {
                 pid2 = pid1;
             }
             else {
-                ok = ToInteger (pid2, subfields[1]);
+                ok = subfields[1].toInteger(pid2);
             }
         }
-        ok = ok && pid1 <= PID_MAX && pid2 <= PID_MAX && pid1 <= pid2 && size_t (newpid) + (pid2 - pid1) <= PID_MAX;
+        ok = ok && pid1 <= PID_MAX && pid2 <= PID_MAX && pid1 <= pid2 && size_t(newpid) + (pid2 - pid1) <= PID_MAX;
         if (!ok) {
-            tsp->error ("invalid remapping specification: " + param);
+            tsp->error(u"invalid remapping specification: %s", {param});
             return false;
         }
 
         // Do not accept predefined PID's
         if (_check_integrity && (pid1 < 0x20 || newpid < 0x20)) {
-            tsp->error ("cannot remap predefined PID's (use --unchecked if really necessary)");
+            tsp->error(u"cannot remap predefined PID's (use --unchecked if really necessary)");
             return false;
         }
 
@@ -210,20 +206,20 @@ bool ts::RemapPlugin::start()
         // Remember output PID's
         for (PID pid = newpid; pid <= newpid + (pid2 - pid1); ++pid) {
             if (_check_integrity && _new_pids.test (pid)) {
-                tsp->error ("duplicated remapping to PID %d (0x%04X)", int (pid), int (pid));
+                tsp->error(u"duplicated remapping to PID %d (0x%X)", {pid, pid});
                 return false;
             }
-            _new_pids.set (pid);
+            _new_pids.set(pid);
         }
 
         // Remember all PID mappings
         while (pid1 <= pid2) {
-            const PIDMap::const_iterator it = _pid_map.find (pid1);
+            const PIDMap::const_iterator it = _pid_map.find(pid1);
             if (it != _pid_map.end() && it->second != newpid) {
-                tsp->error ("PID %d (0x%04X) remapped twice", int (pid1), int (pid1));
+                tsp->error(u"PID %d (0x%X) remapped twice", {pid1, pid1});
                 return false;
             }
-            _pid_map.insert (std::make_pair (pid1, newpid));
+            _pid_map.insert(std::make_pair(pid1, newpid));
             ++pid1;
             ++newpid;
         }
@@ -235,16 +231,16 @@ bool ts::RemapPlugin::start()
     // Initialize the demux
     _demux.reset();
     if (_update_psi) {
-        _demux.addPID (PID_PAT);
-        _demux.addPID (PID_CAT);
-        getPacketizer (PID_PAT, true);
-        getPacketizer (PID_CAT, true);
+        _demux.addPID(PID_PAT);
+        _demux.addPID(PID_CAT);
+        getPacketizer(PID_PAT, true);
+        getPacketizer(PID_CAT, true);
     }
 
     // Do not care about PMT if no need to update PSI
     _pmt_ready = !_update_psi;
 
-    tsp->verbose ("%" FMT_SIZE_T "d PID's remapped", _pid_map.size());
+    tsp->verbose(u"%d PID's remapped", {_pid_map.size()});
     return true;
 }
 
@@ -253,9 +249,9 @@ bool ts::RemapPlugin::start()
 // Get the remapped value of a PID (or same PID if not remapped)
 //----------------------------------------------------------------------------
 
-ts::PID ts::RemapPlugin::remap (PID pid)
+ts::PID ts::RemapPlugin::remap(PID pid)
 {
-    const PIDMap::const_iterator it = _pid_map.find (pid);
+    const PIDMap::const_iterator it = _pid_map.find(pid);
     return it == _pid_map.end() ? pid : it->second;
 }
 
@@ -264,19 +260,19 @@ ts::PID ts::RemapPlugin::remap (PID pid)
 // Get the packetizer for one PID, create it if necessary
 //----------------------------------------------------------------------------
 
-ts::RemapPlugin::CyclingPacketizerPtr ts::RemapPlugin::getPacketizer (PID pid, bool create)
+ts::RemapPlugin::CyclingPacketizerPtr ts::RemapPlugin::getPacketizer(PID pid, bool create)
 {
-    const PacketizerMap::const_iterator it = _pzer.find (pid);
+    const PacketizerMap::const_iterator it = _pzer.find(pid);
     if (it != _pzer.end()) {
         return it->second;
     }
     else if (create) {
-        const CyclingPacketizerPtr ptr (new CyclingPacketizer (pid, CyclingPacketizer::ALWAYS));
-        _pzer.insert (std::make_pair (pid, ptr));
+        const CyclingPacketizerPtr ptr(new CyclingPacketizer(pid, CyclingPacketizer::ALWAYS));
+        _pzer.insert(std::make_pair(pid, ptr));
         return ptr;
     }
     else {
-        return CyclingPacketizerPtr (0);
+        return CyclingPacketizerPtr(0);
     }
 }
 
@@ -285,10 +281,10 @@ ts::RemapPlugin::CyclingPacketizerPtr ts::RemapPlugin::getPacketizer (PID pid, b
 // Process a list of descriptors, remap PIDs in CA descriptors.
 //----------------------------------------------------------------------------
 
-void ts::RemapPlugin::processDescriptors (DescriptorList& dlist, TID table_id)
+void ts::RemapPlugin::processDescriptors(DescriptorList& dlist, TID table_id)
 {
     // Process all CA descriptors in the list
-    for (size_t i = dlist.search (DID_CA); i < dlist.count(); i = dlist.search (DID_CA, i + 1)) {
+    for (size_t i = dlist.search(DID_CA); i < dlist.count(); i = dlist.search(DID_CA, i + 1)) {
         const DescriptorPtr& desc(dlist[i]);
         CADescriptor cadesc(*desc);
         if (cadesc.isValid()) {
@@ -366,7 +362,7 @@ void ts::RemapPlugin::handleTable(SectionDemux& demux, const BinaryTable& table)
 ts::ProcessorPlugin::Status ts::RemapPlugin::processPacket (TSPacket& pkt, bool& flush, bool& bitrate_changed)
 {
     const PID pid = pkt.getPID();
-    const PID new_pid = remap (pid);
+    const PID new_pid = remap(pid);
 
     // PSI processing
     if (_update_psi) {
@@ -375,10 +371,10 @@ ts::ProcessorPlugin::Status ts::RemapPlugin::processPacket (TSPacket& pkt, bool&
         _demux.feedPacket (pkt);
 
         // Rebuild PSI packets
-        const CyclingPacketizerPtr pzer = getPacketizer (pid, false);
+        const CyclingPacketizerPtr pzer = getPacketizer(pid, false);
         if (!pzer.isNull()) {
             // This is a PSI PID, its content may haved changed
-            pzer->getNextPacket (pkt);
+            pzer->getNextPacket(pkt);
         }
         else if (!_pmt_ready) {
             // While not all PMT identified, nullify all packets without packetizer
@@ -387,12 +383,12 @@ ts::ProcessorPlugin::Status ts::RemapPlugin::processPacket (TSPacket& pkt, bool&
     }
 
     // Check conflicts
-    if (_check_integrity && new_pid == pid && _new_pids.test (pid)) {
-        tsp->error ("PID conflict: PID %d (0x%04X) present both in input and remap", int (pid), int (pid));
+    if (_check_integrity && new_pid == pid && _new_pids.test(pid)) {
+        tsp->error(u"PID conflict: PID %d (0x%X) present both in input and remap", {pid, pid});
         return TSP_END;
     }
 
     // Finally, perform remapping
-    pkt.setPID (new_pid);
+    pkt.setPID(new_pid);
     return TSP_OK;
 }

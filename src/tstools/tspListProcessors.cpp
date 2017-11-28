@@ -34,7 +34,6 @@
 #include "tspListProcessors.h"
 #include "tsPluginSharedLibrary.h"
 #include "tsSysUtils.h"
-#include "tsStringUtils.h"
 TSDUCK_SOURCE;
 
 

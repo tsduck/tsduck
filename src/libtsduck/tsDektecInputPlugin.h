@@ -54,11 +54,11 @@ namespace ts {
         virtual ~DektecInputPlugin();
 
         // Implementation of plugin API
-        virtual bool start();
-        virtual bool stop();
-        virtual size_t receive(TSPacket*, size_t);
-        virtual BitRate getBitrate();
-        virtual size_t stackUsage() const {return 512 * 1024;} // 512 kB
+        virtual bool start() override;
+        virtual bool stop() override;
+        virtual size_t receive(TSPacket*, size_t) override;
+        virtual BitRate getBitrate() override;
+        virtual size_t stackUsage() const override {return 512 * 1024;} // 512 kB
 
     private:
         class Guts;

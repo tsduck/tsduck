@@ -46,10 +46,8 @@ namespace ts {
     public:
         // Implementation of plugin API
         FilterPlugin (TSP*);
-        virtual bool start();
-        virtual bool stop() {return true;}
-        virtual BitRate getBitrate() {return 0;}
-        virtual Status processPacket (TSPacket&, bool&, bool&);
+        virtual bool start() override;
+        virtual Status processPacket(TSPacket&, bool&, bool&) override;
 
     private:
         int    scrambling_ctrl;  // Scrambling control value (<0: no filter)

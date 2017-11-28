@@ -82,7 +82,7 @@ template <class MUTEX>
 bool ts::tlv::Connection<MUTEX>::send (const Message& msg, Report& report)
 {
     if (report.debug()) {
-        report.debug ("sending message to " + peerName() + "\n" + msg.dump (4));
+        report.debug(u"sending message to " + peerName() + "\n" + msg.dump (4));
     }
 
     ByteBlockPtr bbp (new ByteBlock);
@@ -132,7 +132,7 @@ bool ts::tlv::Connection<MUTEX>::receive (MessagePtr& msg, const AbortInterface*
             _invalid_msg_count = 0;
             mf.factory (msg);
             if (report.debug() && !msg.isNull()) {
-                report.debug ("received message from " + peerName() + "\n" + msg->dump (4));
+                report.debug(u"received message from " + peerName() + "\n" + msg->dump (4));
             }
             return true;
         }
@@ -151,7 +151,7 @@ bool ts::tlv::Connection<MUTEX>::receive (MessagePtr& msg, const AbortInterface*
 
         // If invalid message max has been reached, break the connection
         if (_max_invalid_msg > 0 && _invalid_msg_count >= _max_invalid_msg) {
-            report.error ("too many invalid messages from " + peerName() + ", disconnecting");
+            report.error(u"too many invalid messages from " + peerName() + ", disconnecting");
             disconnect (report);
             return false;
         }

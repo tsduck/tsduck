@@ -63,20 +63,18 @@ namespace ts {
             };
 
             //!
-            //! Displayable name of a plugin type.
-            //! @param [in] type Plugin type.
-            //! @return A displayable name for @a type.
+            //! Displayable names of plugin types.
             //!
-            static std::string PluginTypeName(PluginType type);
+            static const Enumeration PluginTypeNames;
 
             //!
             //! Class containing the options for one plugin.
             //!
             struct PluginOptions
             {
-                PluginType   type;  //!< Plugin type.
-                std::string  name;  //!< Plugin name.
-                StringVector args;  //!< Plugin options.
+                PluginType    type;  //!< Plugin type.
+                UString       name;  //!< Plugin name.
+                UStringVector args;  //!< Plugin options.
 
                 //!
                 //! Default constructor.

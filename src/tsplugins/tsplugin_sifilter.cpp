@@ -38,7 +38,6 @@
 #include "tsDescriptorList.h"
 #include "tsPIDOperator.h"
 #include "tsTables.h"
-#include "tsFormat.h"
 TSDUCK_SOURCE;
 
 
@@ -52,10 +51,8 @@ namespace ts {
     public:
         // Implementation of plugin API
         SIFilterPlugin(TSP*);
-        virtual bool start();
-        virtual bool stop() {return true;}
-        virtual BitRate getBitrate() {return 0;}
-        virtual Status processPacket (TSPacket&, bool&, bool&);
+        virtual bool start() override;
+        virtual Status processPacket(TSPacket&, bool&, bool&) override;
 
     private:
         CASSelectionArgs _cas_args;    // CAS selection
@@ -65,7 +62,7 @@ namespace ts {
         SectionDemux     _demux;       // Section filter
 
         // Invoked by the demux when a complete table is available.
-        virtual void handleTable(SectionDemux&, const BinaryTable&);
+        virtual void handleTable(SectionDemux&, const BinaryTable&) override;
 
         // Process specific tables
         void processPAT(const PAT&);
@@ -85,8 +82,8 @@ TSPLUGIN_DECLARE_PROCESSOR(ts::SIFilterPlugin)
 // Constructor
 //----------------------------------------------------------------------------
 
-ts::SIFilterPlugin::SIFilterPlugin (TSP* tsp_) :
-    ProcessorPlugin(tsp_, "Extract PID's containing the specified PSI/SI.", "[options]"),
+ts::SIFilterPlugin::SIFilterPlugin(TSP* tsp_) :
+    ProcessorPlugin(tsp_, u"Extract PID's containing the specified PSI/SI.", u"[options]"),
     _cas_args(),
     _pass_pmt(false),
     _drop_status(TSP_DROP),
@@ -264,7 +261,7 @@ void ts::SIFilterPlugin::processPAT(const PAT& pat)
         }
         // Pass this PMT PID if PMT are required
         if (_pass_pmt && !_pass_pids[it->second]) {
-            tsp->verbose("Filtering PMT PID %d (0x%04X)", int(it->second), int(it->second));
+            tsp->verbose(u"Filtering PMT PID %d (0x%X)", {it->second, it->second});
             _pass_pids.set(it->second);
         }
     }

@@ -146,7 +146,7 @@ void* ts::SharedLibrary::getSymbol(const std::string& name) const
         result = ::dlsym(_dl, name.c_str());
 #endif
         if (result == 0) {
-            _report.debug("symbol " + name + " not found in " + _filename);
+            _report.debug(u"symbol %s not found in %s", {name, _filename});
         }
         return result;
     }

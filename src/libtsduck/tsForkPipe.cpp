@@ -61,7 +61,7 @@ ts::ForkPipe::ForkPipe() :
 
 ts::ForkPipe::~ForkPipe()
 {
-    close (*NullReport::Instance());
+    close(NULLREP);
 }
 
 
@@ -71,46 +71,45 @@ ts::ForkPipe::~ForkPipe()
 // Return true on success, false on error.
 //----------------------------------------------------------------------------
 
-// Flawfinder: ignore: this is our open(), not ::open().
-bool ts::ForkPipe::open(const std::string& command, bool synchronous, size_t buffer_size, Report& report)
+bool ts::ForkPipe::open(const UString& command, bool synchronous, size_t buffer_size, Report& report)
 {
     if (_is_open) {
-        report.error("pipe is already open");
+        report.error(u"pipe is already open");
         return false;
     }
 
     _broken_pipe = false;
     _synchronous = synchronous;
 
-    report.debug("creating process \"" + command + "\"");
+    report.debug(u"creating process \"%s\"", {command});
 
 #if defined (TS_WINDOWS)
 
     // Create a pipe
     ::HANDLE read_handle;
     ::HANDLE write_handle;
-    ::DWORD bufsize = buffer_size == 0 ? 0 : ::DWORD (std::max<size_t> (32768, buffer_size));
+    ::DWORD bufsize = buffer_size == 0 ? 0 : ::DWORD(std::max<size_t>(32768, buffer_size));
     ::SECURITY_ATTRIBUTES sa;
     sa.nLength = sizeof(sa);
     sa.lpSecurityDescriptor = 0;
     sa.bInheritHandle = TRUE;
-    if (::CreatePipe (&read_handle, &write_handle, &sa, bufsize) == 0) {
-        report.error ("error creating pipe: " + ErrorCodeMessage());
+    if (::CreatePipe(&read_handle, &write_handle, &sa, bufsize) == 0) {
+        report.error(u"error creating pipe: %s", {ErrorCodeMessage()});
         return false;
     }
 
     // CreatePipe can only inherit none or both handles. Since we need the
     // read handle to be inherited by the child process, we said "inherit".
     // Now, make sure that the write handle of the pipe is not inherited.
-    ::SetHandleInformation (write_handle, HANDLE_FLAG_INHERIT, 0);
+    ::SetHandleInformation(write_handle, HANDLE_FLAG_INHERIT, 0);
 
     // Make sure our output handles can be inherited
-    ::SetHandleInformation (::GetStdHandle (STD_OUTPUT_HANDLE), HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT);
-    ::SetHandleInformation (::GetStdHandle (STD_ERROR_HANDLE), HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT);
+    ::SetHandleInformation(::GetStdHandle(STD_OUTPUT_HANDLE), HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT);
+    ::SetHandleInformation(::GetStdHandle(STD_ERROR_HANDLE), HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT);
 
     // Process startup info specifies standard handles
-    ::STARTUPINFO si;
-    TS_ZERO (si);
+    ::STARTUPINFOW si;
+    TS_ZERO(si);
     si.cb = sizeof(si);
     si.hStdInput = read_handle;
     si.hStdOutput = ::GetStdHandle(STD_OUTPUT_HANDLE);
@@ -118,14 +117,13 @@ bool ts::ForkPipe::open(const std::string& command, bool synchronous, size_t buf
     si.dwFlags = STARTF_USESTDHANDLES;
 
     // ::CreateProcess may modify the user-supplied command line (ugly!)
-    std::string cmd(command);
-    char* cmdp = const_cast<char*>(cmd.c_str());
+    UString cmd(command);
+    ::WCHAR* cmdp = const_cast<::WCHAR*>(cmd.wc_str());
 
     // Create the process
     ::PROCESS_INFORMATION pi;
-    // Flawfinder: ignore: CreateProcess causes a new program to execute and is difficult to use safely.
-    if (::CreateProcess(NULL, cmdp, NULL, NULL, TRUE, 0, NULL, NULL, &si, &pi) == 0) {
-        report.error("error creating pipe: " + ErrorCodeMessage());
+    if (::CreateProcessW(NULL, cmdp, NULL, NULL, TRUE, 0, NULL, NULL, &si, &pi) == 0) {
+        report.error(u"error creating pipe: %s", {ErrorCodeMessage()});
         return false;
     }
 
@@ -148,41 +146,41 @@ bool ts::ForkPipe::open(const std::string& command, bool synchronous, size_t buf
 
     // Create a pipe
     int filedes[2];
-    if (::pipe (filedes) < 0) {
-        report.error ("error creating pipe: " + ErrorCodeMessage());
+    if (::pipe(filedes) < 0) {
+        report.error(u"error creating pipe: %s", {ErrorCodeMessage()});
         return false;
     }
 
     // Create the forked process
     if ((_fpid = ::fork()) < 0) {
-        report.error ("fork error: " + ErrorCodeMessage());
+        report.error(u"fork error: " + ErrorCodeMessage());
         return false;
     }
     else if (_fpid == 0) {
         // In the context of the created process.
         // Close standard input.
-        ::close (STDIN_FILENO);
+        ::close(STDIN_FILENO);
         // Close the writing end-point of the pipe.
-        ::close (filedes[1]);
+        ::close(filedes[1]);
         // Redirect the reading end-point of the pipe to standard input
-        if (::dup2 (filedes[0], STDIN_FILENO) < 0) {
-            ::perror ("error redirecting stdin in forked process");
-            ::exit (EXIT_FAILURE);
+        if (::dup2(filedes[0], STDIN_FILENO) < 0) {
+            ::perror("error redirecting stdin in forked process");
+            ::exit(EXIT_FAILURE);
         }
         // Close the now extraneous file descriptor.
-        ::close (filedes[0]);
+        ::close(filedes[0]);
         // Execute the command. Should not return.
         // Flawfinder: ignore: execl causes a new program to execute and is difficult to use safely.
-        ::execl ("/bin/sh", "/bin/sh", "-c", command.c_str(), TS_NULL);
-        ::perror ("exec error");
-        ::exit (EXIT_FAILURE);
-        assert (false); // should never get there
+        ::execl("/bin/sh", "/bin/sh", "-c", command.toUTF8().c_str(), TS_NULL);
+        ::perror("exec error");
+        ::exit(EXIT_FAILURE);
+        assert(false); // should never get there
     }
 
     // Keep the writing end-point of pipe for packet transmission.
     // Close the reading end-point of pipe.
     _fd = filedes[1];
-    ::close (filedes[0]);
+    ::close(filedes[0]);
 
 #endif
 
@@ -208,11 +206,11 @@ bool ts::ForkPipe::close (Report& report)
 #if defined (TS_WINDOWS)
 
     // Close the pipe handle
-    ::CloseHandle (_handle);
+    ::CloseHandle(_handle);
 
     // Wait for termination of child process
-    if (_synchronous && ::WaitForSingleObject (_process, INFINITE) != WAIT_OBJECT_0) {
-        report.error ("error waiting for process termination: " + ErrorCodeMessage());
+    if (_synchronous && ::WaitForSingleObject(_process, INFINITE) != WAIT_OBJECT_0) {
+        report.error(u"error waiting for process termination: %s", {ErrorCodeMessage()});
         result = false;
     }
 
@@ -223,12 +221,12 @@ bool ts::ForkPipe::close (Report& report)
 #else // UNIX
 
     // Close the pipe file descriptor
-    ::close (_fd);
+    ::close(_fd);
 
     // Wait for termination of forked process
-    assert (_fpid != 0);
-    if (_synchronous && ::waitpid (_fpid, NULL, 0) < 0) {
-        report.error ("error waiting for process termination: " + ErrorCodeMessage());
+    assert(_fpid != 0);
+    if (_synchronous && ::waitpid(_fpid, NULL, 0) < 0) {
+        report.error(u"error waiting for process termination: %s", {ErrorCodeMessage()});
         result = false;
     }
 
@@ -247,7 +245,7 @@ bool ts::ForkPipe::close (Report& report)
 bool ts::ForkPipe::write (const void* addr, size_t size, Report& report)
 {
     if (!_is_open) {
-        report.error ("pipe is not open");
+        report.error(u"pipe is not open");
         return false;
     }
 
@@ -266,11 +264,11 @@ bool ts::ForkPipe::write (const void* addr, size_t size, Report& report)
     ::DWORD outsize;
 
     while (remain > 0 && !error) {
-        if (::WriteFile (_handle, data, remain, &outsize, NULL) != 0)  {
+        if (::WriteFile(_handle, data, remain, &outsize, NULL) != 0) {
             // Normal case, some data were written
-            assert (outsize <= remain);
+            assert(outsize <= remain);
             data += outsize;
-            remain -= std::max (remain, outsize);
+            remain -= std::max(remain, outsize);
         }
         else {
             // Write error
@@ -291,9 +289,9 @@ bool ts::ForkPipe::write (const void* addr, size_t size, Report& report)
         ssize_t outsize = ::write (_fd, data, remain);
         if (outsize > 0) {
             // Normal case, some data were written
-            assert (size_t (outsize) <= remain);
+            assert(size_t(outsize) <= remain);
             data += outsize;
-            remain -= std::max (remain, size_t (outsize));
+            remain -= std::max(remain, size_t(outsize));
         }
         else if ((error_code = LastErrorCode()) != EINTR) {
             // Actual error (not an interrupt)
@@ -309,14 +307,14 @@ bool ts::ForkPipe::write (const void* addr, size_t size, Report& report)
     }
     else if (!_broken_pipe) {
         // Always report non-pipe error (message + error status).
-        report.error ("error writing to pipe: " + ErrorCodeMessage (error_code));
+        report.error(u"error writing to pipe: %s", {ErrorCodeMessage(error_code)});
         return false;
     }
     else if (_ignore_abort) {
         // Broken pipe but must be ignored. Report a verbose message
         // the first time to inform that data will continue to be
         // processed but will be ignored by the forked process.
-        report.verbose ("broken pipe, stopping transmission to forked process");
+        report.verbose(u"broken pipe, stopping transmission to forked process");
         // Not an error (ignored)
         return true;
     }

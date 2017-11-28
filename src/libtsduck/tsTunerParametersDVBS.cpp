@@ -282,7 +282,7 @@ void ts::TunerParametersDVBS::displayParameters(std::ostream& strm, const UStrin
 bool ts::TunerParametersDVBS::fromArgs (const TunerArgs& tuner, Report& report)
 {
     if (!tuner.frequency.set()) {
-        report.error ("no frequency specified, use option --frequency");
+        report.error(u"no frequency specified, use option --frequency");
         return false;
     }
 

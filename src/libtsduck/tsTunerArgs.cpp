@@ -127,7 +127,7 @@ void ts::TunerArgs::load(Args& args)
 
     // Tuner identification.
     if (args.present(u"adapter") && args.present(u"device-name")) {
-        args.error("choose either --adapter or --device-name but not both");
+        args.error(u"choose either --adapter or --device-name but not both");
     }
     if (args.present(u"device-name")) {
         device_name = args.value(u"device-name");
@@ -159,7 +159,7 @@ void ts::TunerArgs::load(Args& args)
 
         // Carrier frequency
         if (args.present(u"frequency") + args.present(u"uhf-channel") + args.present(u"vhf-channel") > 1) {
-            args.error("options --frequency, --uhf-channel and --vhf-channel are mutually exclusive");
+            args.error(u"options --frequency, --uhf-channel and --vhf-channel are mutually exclusive");
         }
         else if (args.present(u"frequency")) {
             got_one = true;
@@ -610,7 +610,7 @@ bool ts::TunerArgs::tune(Tuner& tuner, TunerParametersPtr& params, Report& repor
         if (!params->fromTunerArgs(*this, report)) {
             return false;
         }
-        report.debug("tuning to transponder " + params->toPluginOptions());
+        report.debug(u"tuning to transponder " + params->toPluginOptions());
 
         // Tune to transponder
         if (!tuner.tune(*params, report)) {

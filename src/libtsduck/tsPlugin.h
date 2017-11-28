@@ -179,22 +179,17 @@ namespace ts {
 
         //!
         //! The main application invokes start() to start the plugin.
-        //! The command-line arguments have been previously loaded and
-        //! analyzed by the main application using one of the
-        //! Args::analyze() methods of the plugin.
-        //!
-        //! Must be implemented by subclasses.
+        //! Optionally implemented by subclasses.
         //! @return True on success, false on error (ie. not started).
         //!
-        virtual bool start() = 0;
+        virtual bool start() {return true;}
 
         //!
         //! The main application invokes stop() to terminate the plugin.
-        //!
-        //! Must be implemented by subclasses.
+        //! Optionally implemented by subclasses.
         //! @return True on success, false on error (ie. not started).
         //!
-        virtual bool stop() = 0;
+        virtual bool stop() {return true;}
 
         //!
         //! Get the plugin bitrate.
@@ -210,10 +205,12 @@ namespace ts {
         //!   which influence the bitrate by removing packets or introducing
         //!   delays.
         //!
-        //! Must be implemented by subclasses.
+        //! Optionally implemented by subclasses. By default, return that the
+        //! plugin is not aware of the bitrate.
+        //!
         //! @return Plugin bitrate in bits/second. Shall return 0 on error or unknown bitrate.
         //!
-        virtual BitRate getBitrate() = 0;
+        virtual BitRate getBitrate() {return 0;}
 
         //!
         //! Constructor.

@@ -785,7 +785,7 @@ ts::DektecOutputPlugin::DektecOutputPlugin(TSP* tsp_) :
 bool ts::DektecOutputPlugin::start()
 {
     if (_guts->is_started) {
-        tsp->error("already started");
+        tsp->error(u"already started");
         return false;
     }
 
@@ -907,7 +907,7 @@ bool ts::DektecOutputPlugin::start()
             // In case of error, report it but do not fail.
             // This feature is not supported on all modulators and
             // it seems severe to fail if unsupported.
-            tsp->error("set modulator output level: " + DektecStrError(status));
+            tsp->error(u"set modulator output level: " + DektecStrError(status));
         }
     }
 
@@ -991,7 +991,7 @@ bool ts::DektecOutputPlugin::setModulation (int& modulation_type)
 
     // Adjust default modulation type from input plugin
     if (input_dvb != 0) {
-        tsp->debug("found input modulator parameters: " + TunerTypeEnum.name(input_dvb->tunerType()) + " " + input_dvb->toPluginOptions());
+        tsp->debug(u"found input modulator parameters: " + TunerTypeEnum.name(input_dvb->tunerType()) + " " + input_dvb->toPluginOptions());
         if (input_dvbs != 0) {
             if (input_dvbs->delivery_system == DS_DVB_S) {
                 modulation_type = DTAPI_MOD_DVBS_QPSK;
@@ -1104,7 +1104,7 @@ bool ts::DektecOutputPlugin::setModulation (int& modulation_type)
                 }
             }
             fec = intValue<int>(u"convolutional-rate", fec);
-            tsp->verbose ("using DVB-S FEC " + DektecFEC.name (fec));
+            tsp->verbose(u"using DVB-S FEC " + DektecFEC.name (fec));
             // Compute expected bitrate if symbol rate is known
             if (symbol_rate > 0 && !setBitrate (symbol_rate, modulation_type, fec, 0, 0)) {
                 return false;
@@ -1239,7 +1239,7 @@ bool ts::DektecOutputPlugin::setModulation (int& modulation_type)
             const int s48 = time_slice ? DTAPI_MOD_DVBT_S48 : DTAPI_MOD_DVBT_S48_OFF;
             const int s49 = mpe_fec ? DTAPI_MOD_DVBT_S49 : DTAPI_MOD_DVBT_S49_OFF;
             const int cell_id = intValue<int>(u"cell-id", -1);
-            tsp->verbose("using DVB-T FEC " + DektecFEC.name(fec) +
+            tsp->verbose(u"using DVB-T FEC " + DektecFEC.name(fec) +
                          ", bandwidth " + DektecDVBTProperty.name(bw) +
                          ", constellation " + DektecDVBTProperty.name(constel) +
                          ", guard " + DektecDVBTProperty.name(guard) +
@@ -1300,12 +1300,12 @@ bool ts::DektecOutputPlugin::setModulation (int& modulation_type)
                 return startError("error computing PLP parameters", status);
             }
             // Report actual parameters in debug mode
-            tsp->debug("DVB-T2: DtDvbT2Pars = {");
+            tsp->debug(u"DVB-T2: DtDvbT2Pars = {");
             DektecDevice::ReportDvbT2Pars(pars, *tsp, Severity::Debug, "  ");
-            tsp->debug("}");
-            tsp->debug("DVB-T2: DtDvbT2ParamInfo = {");
+            tsp->debug(u"}");
+            tsp->debug(u"DVB-T2: DtDvbT2ParamInfo = {");
             DektecDevice::ReportDvbT2ParamInfo(info, *tsp, Severity::Debug, "  ");
-            tsp->debug("}");
+            tsp->debug(u"}");
             // Check validity of T2 parameters
             status = pars.CheckValidity();
             if (status != DTAPI_OK) {
@@ -1327,7 +1327,7 @@ bool ts::DektecOutputPlugin::setModulation (int& modulation_type)
             }
             constel = intValue<int>(u"vsb", constel);
             const int taps = intValue<int>(u"vsb-taps", 64);
-            tsp->verbose("using ATSC " + DektecVSB.name(constel));
+            tsp->verbose(u"using ATSC " + DektecVSB.name(constel));
             status = _guts->chan.SetModControl(modulation_type, constel, taps, 0);
             break;
         }
@@ -1513,7 +1513,7 @@ bool ts::DektecOutputPlugin::send(const TSPacket* buffer, size_t packet_count)
             }
             else {
                 // FIFO now full enough to start transmitting
-                tsp->verbose("%s output FIFO load is %'d bytes, starting transmission", {_guts->device.model, fifo_load});
+                tsp->verbose(u"%s output FIFO load is %'d bytes, starting transmission", {_guts->device.model, fifo_load});
                 status = _guts->chan.SetTxControl(DTAPI_TXCTRL_SEND);
                 if (status != DTAPI_OK) {
                     tsp->error(u"output device start send error: " + DektecStrError (status));

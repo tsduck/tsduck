@@ -215,7 +215,7 @@ std::ostream& ts::Packetizer::display(std::ostream& strm) const
         << UString::Format(u"  PID: %d (0x%X)", {_pid, _pid}) << std::endl
         << "  Next CC: " << int(_continuity) << std::endl
         << "  Current section: "
-        << (_section.isNull() ? UString(u"none") : UString::Format("%s, offset %d", {names::TID(_section->tableId()), _next_byte}))
+        << (_section.isNull() ? UString(u"none") : UString::Format(u"%s, offset %d", {names::TID(_section->tableId()), _next_byte}))
         << std::endl
         << UString::Format(u"  Output packets: %'d", {_packet_count}) << std::endl
         << UString::Format(u"  Output sections: %'d", {_section_out_count}) << std::endl

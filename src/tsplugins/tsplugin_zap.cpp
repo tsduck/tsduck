@@ -41,7 +41,6 @@
 #include "tsPMT.h"
 #include "tsCAT.h"
 #include "tsSDT.h"
-#include "tsFormat.h"
 TSDUCK_SOURCE;
 
 
@@ -54,11 +53,9 @@ namespace ts {
     {
     public:
         // Implementation of plugin API
-        ZapPlugin (TSP*);
-        virtual bool start();
-        virtual bool stop() {return true;}
-        virtual BitRate getBitrate() {return 0;}
-        virtual Status processPacket (TSPacket&, bool&, bool&);
+        ZapPlugin(TSP*);
+        virtual bool start() override;
+        virtual Status processPacket(TSPacket&, bool&, bool&) override;
 
     private:
         // Each PID is described by one byte
@@ -76,8 +73,8 @@ namespace ts {
         // Private data
         bool              _abort;              // Error (service not found, etc)
         Service           _service;            // Service name & id
-        std::string       _audio;              // Audio language code to keep
-        std::string       _subtitles;          // Subtitles language code to keep
+        UString           _audio;              // Audio language code to keep
+        UString           _subtitles;          // Subtitles language code to keep
         bool              _no_subtitles;       // Remove all subtitles
         bool              _no_ecm;             // Remove all ECM PIDs
         bool              _include_cas;        // Include CAS info (CAT & EMM)
@@ -90,7 +87,7 @@ namespace ts {
         CyclingPacketizer _pzer_pmt;           // Packetizer for modified PMT
 
         // Invoked by the demux when a complete table is available.
-        virtual void handleTable (SectionDemux&, const BinaryTable&);
+        virtual void handleTable(SectionDemux&, const BinaryTable&) override;
 
         // Process specific tables
         void processPAT(PAT&);
@@ -117,21 +114,21 @@ TSPLUGIN_DECLARE_PROCESSOR(ts::ZapPlugin)
 // Constructor
 //----------------------------------------------------------------------------
 
-ts::ZapPlugin::ZapPlugin (TSP* tsp_) :
-    ProcessorPlugin (tsp_, "Zap on one service: Produce an SPTS containing only the specified service.", "[options] service"),
-    _abort (false),
-    _service (),
-    _audio (),
-    _subtitles (),
-    _no_subtitles (false),
+ts::ZapPlugin::ZapPlugin(TSP* tsp_) :
+    ProcessorPlugin(tsp_, u"Zap on one service: Produce an SPTS containing only the specified service.", u"[options] service"),
+    _abort(false),
+    _service(),
+    _audio(),
+    _subtitles(),
+    _no_subtitles(false),
     _no_ecm (false),
     _include_cas (false),
-    _pes_only (false),
-    _drop_status (TSP_DROP),
-    _demux (this),
-    _pzer_sdt (PID_SDT, CyclingPacketizer::ALWAYS),
-    _pzer_pat (PID_PAT, CyclingPacketizer::ALWAYS),
-    _pzer_pmt (PID_NULL, CyclingPacketizer::ALWAYS)
+    _pes_only(false),
+    _drop_status(TSP_DROP),
+    _demux(this),
+    _pzer_sdt(PID_SDT, CyclingPacketizer::ALWAYS),
+    _pzer_pat(PID_PAT, CyclingPacketizer::ALWAYS),
+    _pzer_pmt(PID_NULL, CyclingPacketizer::ALWAYS)
 {
     option(u"",              0,  STRING, 1, 1);
     option(u"audio",        'a', STRING);
@@ -143,53 +140,53 @@ ts::ZapPlugin::ZapPlugin (TSP* tsp_) :
     option(u"subtitles",    't', STRING);
 
     setHelp(u"Service:\n"
-             u"  Specifies the service to keep. If the argument is an integer value (either\n"
-             u"  decimal or hexadecimal), it is interpreted as a service id. Otherwise, it\n"
-             u"  is interpreted as a service name, as specified in the SDT. The name is not\n"
-             u"  case sensitive and blanks are ignored. If the input TS does not contain an\n"
-             u"  SDT, use a service id.\n"
-             u"\n"
-             u"Options:\n"
-             u"\n"
-             u"  -a name\n"
-             u"  --audio name\n"
-             u"      Remove all audio components except the specified one. The name is a\n"
-             u"      three-letters language code. By default, keep all audio components.\n"
-             u"\n"
-             u"  -c\n"
-             u"  --cas\n"
-             u"      Keep Conditional Access System sections (CAT and EMM's).\n"
-             u"      Remove them by default. Note that the ECM's for the specified\n"
-             u"      service are always kept.\n"
-             u"\n"
-             u"  --help\n"
-             u"      Display this help text.\n"
-             u"\n"
-             u"  -e\n"
-             u"  --no-ecm\n"
-             u"      Remove all ECM PID's. By default, keep all ECM PID's.\n"
-             u"\n"
-             u"  -n\n"
-             u"  --no-subtitles\n"
-             u"      Remove all subtitles. By default, keep all subtitles.\n"
-             u"\n"
-             u"  -p\n"
-             u"  --pes-only\n"
-             u"      Keep only the PES elementary streams (audio, video, subtitles).\n"
-             u"      Remove all PSI/SI and CAS information.\n"
-             u"\n"
-             u"  -s\n"
-             u"  --stuffing\n"
-             u"      Replace excluded packets with stuffing (null packets) instead\n"
-             u"      of removing them. Useful to preserve bitrate.\n"
-             u"\n"
-             u"  -t name\n"
-             u"  --subtitles name\n"
-             u"      Remove all subtitles except the specified one. The name is a\n"
-             u"      three-letters language code. By default, keep all subtitles.\n"
-             u"\n"
-             u"  --version\n"
-             u"      Display the version number.\n");
+            u"  Specifies the service to keep. If the argument is an integer value (either\n"
+            u"  decimal or hexadecimal), it is interpreted as a service id. Otherwise, it\n"
+            u"  is interpreted as a service name, as specified in the SDT. The name is not\n"
+            u"  case sensitive and blanks are ignored. If the input TS does not contain an\n"
+            u"  SDT, use a service id.\n"
+            u"\n"
+            u"Options:\n"
+            u"\n"
+            u"  -a name\n"
+            u"  --audio name\n"
+            u"      Remove all audio components except the specified one. The name is a\n"
+            u"      three-letters language code. By default, keep all audio components.\n"
+            u"\n"
+            u"  -c\n"
+            u"  --cas\n"
+            u"      Keep Conditional Access System sections (CAT and EMM's).\n"
+            u"      Remove them by default. Note that the ECM's for the specified\n"
+            u"      service are always kept.\n"
+            u"\n"
+            u"  --help\n"
+            u"      Display this help text.\n"
+            u"\n"
+            u"  -e\n"
+            u"  --no-ecm\n"
+            u"      Remove all ECM PID's. By default, keep all ECM PID's.\n"
+            u"\n"
+            u"  -n\n"
+            u"  --no-subtitles\n"
+            u"      Remove all subtitles. By default, keep all subtitles.\n"
+            u"\n"
+            u"  -p\n"
+            u"  --pes-only\n"
+            u"      Keep only the PES elementary streams (audio, video, subtitles).\n"
+            u"      Remove all PSI/SI and CAS information.\n"
+            u"\n"
+            u"  -s\n"
+            u"  --stuffing\n"
+            u"      Replace excluded packets with stuffing (null packets) instead\n"
+            u"      of removing them. Useful to preserve bitrate.\n"
+            u"\n"
+            u"  -t name\n"
+            u"  --subtitles name\n"
+            u"      Remove all subtitles except the specified one. The name is a\n"
+            u"      three-letters language code. By default, keep all subtitles.\n"
+            u"\n"
+            u"  --version\n"
+            u"      Display the version number.\n");
 }
 
 
@@ -211,15 +208,15 @@ bool ts::ZapPlugin::start()
 
     // All PIDs are dropped by default.
     // Selected PIDs will be added when discovered.
-    ::memset (_pid_state, TSPID_DROP, sizeof(_pid_state));
+    ::memset(_pid_state, TSPID_DROP, sizeof(_pid_state));
 
     // The TOT and TDT are always passed.
-    assert (PID_TOT == PID_TDT);
-    _pid_state [PID_TOT] = TSPID_PASS;
+    assert(PID_TOT == PID_TDT);
+    _pid_state[PID_TOT] = TSPID_PASS;
 
     // Initialize the demux
     _demux.reset();
-    _demux.addPID (PID_SDT);
+    _demux.addPID(PID_SDT);
 
     // When the service id is known, we wait for the PAT. If it is not yet
     // known (only the service name is known), we do not know how to modify
@@ -227,13 +224,13 @@ bool ts::ZapPlugin::start()
     // Packets from PAT PID are analyzed but not passed. When a complete
     // PAT is read, a modified PAT will be transmitted.
     if (_service.hasId()) {
-        _demux.addPID (PID_PAT);
+        _demux.addPID(PID_PAT);
     }
 
     // Include CAT and EMM if required
     if (_include_cas) {
-        _demux.addPID (PID_CAT);
-        _pid_state [PID_CAT] = TSPID_PASS;
+        _demux.addPID(PID_CAT);
+        _pid_state[PID_CAT] = TSPID_PASS;
     }
 
     // Reset other states
@@ -256,9 +253,9 @@ void ts::ZapPlugin::handleTable (SectionDemux& demux, const BinaryTable& table)
 
         case TID_PAT: {
             if (table.sourcePID() == PID_PAT) {
-                PAT pat (table);
+                PAT pat(table);
                 if (pat.isValid()) {
-                    processPAT (pat);
+                    processPAT(pat);
                 }
             }
             break;
@@ -266,9 +263,9 @@ void ts::ZapPlugin::handleTable (SectionDemux& demux, const BinaryTable& table)
 
         case TID_CAT: {
             if (table.sourcePID() == PID_CAT) {
-                CAT cat (table);
+                CAT cat(table);
                 if (cat.isValid()) {
-                    processCAT (cat);
+                    processCAT(cat);
                 }
             }
             break;
@@ -276,18 +273,18 @@ void ts::ZapPlugin::handleTable (SectionDemux& demux, const BinaryTable& table)
 
         case TID_SDT_ACT: {
             if (table.sourcePID() == PID_SDT) {
-                SDT sdt (table);
+                SDT sdt(table);
                 if (sdt.isValid()) {
-                    processSDT (sdt);
+                    processSDT(sdt);
                 }
             }
             break;
         }
 
         case TID_PMT: {
-            PMT pmt (table);
-            if (pmt.isValid() && _service.hasId (pmt.service_id)) {
-                processPMT (pmt);
+            PMT pmt(table);
+            if (pmt.isValid() && _service.hasId(pmt.service_id)) {
+                processPMT(pmt);
             }
             break;
         }
@@ -314,17 +311,17 @@ void ts::ZapPlugin::processSDT (SDT& sdt)
     uint16_t service_id;
 
     if (_service.hasName()) {
-        found = sdt.findService (_service.getName(), service_id);
+        found = sdt.findService(_service.getName(), service_id);
     }
     else {
         service_id = _service.getId();
-        found = sdt.services.find (service_id) != sdt.services.end();
+        found = sdt.services.find(service_id) != sdt.services.end();
     }
 
     // If service not found in SDT and not already found in PAT, error
 
     if (!found && !_service.hasId (service_id)) {
-        tsp->error ("service \"" + _service.getName() + "\" not found in SDT");
+        tsp->error(u"service \"%s\" not found in SDT", {_service.getName()});
         _abort = true;
         return;
     }
@@ -360,24 +357,24 @@ void ts::ZapPlugin::processSDT (SDT& sdt)
         _demux.addPID (PID_PAT);
         _pid_state[PID_PAT] = TSPID_DROP;
 
-        tsp->verbose("found service \"" + _service.getName() + Format("\", service id is 0x%04X", int(_service.getId())));
+        tsp->verbose(u"found service \"%s\", service id is 0x%X", {_service.getName(), _service.getId()});
     }
 
     // Remove all other services from the SDT
 
-    SDT::ServiceMap::iterator it (sdt.services.find (_service.getId()));
+    SDT::ServiceMap::iterator it(sdt.services.find(_service.getId()));
     if (it == sdt.services.end()) {
         // Service not present in SDT
         sdt.services.clear();
     }
     else {
         // Remove other services before zap service
-        sdt.services.erase (sdt.services.begin(), it);
+        sdt.services.erase(sdt.services.begin(), it);
         // Remove other services after zap service
         it = sdt.services.begin();
-        assert (it != sdt.services.end());
-        assert (it->first == _service.getId());
-        sdt.services.erase (++it, sdt.services.end());
+        assert(it != sdt.services.end());
+        assert(it->first == _service.getId());
+        sdt.services.erase(++it, sdt.services.end());
         assert (sdt.services.size() == 1);
     }
 
@@ -385,11 +382,11 @@ void ts::ZapPlugin::processSDT (SDT& sdt)
     // These packets will replace everything on the SDT/BAT PID.
 
     _pzer_sdt.removeAll();
-    _pzer_sdt.addTable (sdt);
+    _pzer_sdt.addTable(sdt);
 
     // Now allow transmission of (modified) packets from SDT PID
 
-    _pid_state [PID_SDT] = TSPID_SDT;
+    _pid_state[PID_SDT] = TSPID_SDT;
 }
 
 
@@ -407,7 +404,7 @@ void ts::ZapPlugin::processPAT (PAT& pat)
     // If service not found, error
 
     if (it == pat.pmts.end()) {
-        tsp->error ("service id 0x%04X not found in PAT", int (_service.getId()));
+        tsp->error(u"service id 0x%X not found in PAT", {_service.getId()});
         _abort = true;
         return;
     }
@@ -433,10 +430,10 @@ void ts::ZapPlugin::processPAT (PAT& pat)
             }
         }
 
-        _service.setPMTPID (it->second);
-        _demux.addPID (it->second);
+        _service.setPMTPID(it->second);
+        _demux.addPID(it->second);
 
-        tsp->verbose ("found service id 0x%04X, PMT PID is 0x%04X", int (_service.getId()), int (_service.getPMTPID()));
+        tsp->verbose(u"found service id 0x%X, PMT PID is 0x%X", {_service.getId(), _service.getPMTPID()});
     }
 
     // Remove all other services from the PAT
@@ -544,7 +541,7 @@ void ts::ZapPlugin::processPMT (PMT& pmt)
     // Check that the requested audio exists
 
     if (!_audio.empty() && audio_in > 0 && audio_out == 0) {
-        tsp->error ("audio language \"%s\" not found in PMT", _audio.c_str());
+        tsp->error(u"audio language \"%s\" not found in PMT", {_audio});
         _abort = true;
         return;
     }
@@ -692,7 +689,7 @@ ts::ProcessorPlugin::Status ts::ZapPlugin::processPacket (TSPacket& pkt, bool& f
 
         default:
             // Should never get there...
-            tsp->error ("internal error, invalid PID state %d", int (_pid_state[pid]));
+            tsp->error(u"internal error, invalid PID state %d", {_pid_state[pid]});
             return TSP_END;
     }
 }

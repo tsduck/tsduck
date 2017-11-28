@@ -50,7 +50,6 @@ public:
     void test64bitLiterals();
     void testStringify();
     void testVersion();
-    void testFormats();
     void testMemoryBarrier();
     void testROL();
     void testROLc();
@@ -111,7 +110,6 @@ public:
     CPPUNIT_TEST(test64bitLiterals);
     CPPUNIT_TEST(testStringify);
     CPPUNIT_TEST(testVersion);
-    CPPUNIT_TEST(testFormats);
     CPPUNIT_TEST(testMemoryBarrier);
     CPPUNIT_TEST(testROL);
     CPPUNIT_TEST(testROLc);
@@ -337,27 +335,6 @@ void PlatformTest::testVersion()
     CPPUNIT_ASSERT_USTRINGS_EQUAL(ts::GetVersion(), ts::GetVersion(ts::VERSION_SHORT));
     CPPUNIT_ASSERT(ts::GetVersion(ts::VERSION_SHORT) != ts::GetVersion(ts::VERSION_LONG));
     CPPUNIT_ASSERT(ts::GetVersion(ts::VERSION_SHORT) != ts::GetVersion(ts::VERSION_NSIS));
-}
-
-// Test case: specialized printf formats
-void PlatformTest::testFormats()
-{
-    char buffer[1024];
-    uint64_t ui64;
-
-    const size_t size = 47;
-    ::snprintf(buffer, sizeof(buffer), "[%" FMT_SIZE_T "d]", size);
-    buffer[sizeof(buffer) - 1] = '\0';
-
-    CPPUNIT_ASSERT_EQUAL(std::string("[47]"), std::string(buffer));
-
-    ui64 = 0;
-    ui64--; // all binary ones
-    // Flawfinder: ignore: snprintf()
-    ::snprintf(buffer, sizeof(buffer), "<%" FMT_INT64 "X>", ui64);
-    buffer[sizeof(buffer) - 1] = '\0';
-
-    CPPUNIT_ASSERT_EQUAL(std::string("<FFFFFFFFFFFFFFFF>"), std::string(buffer));
 }
 
 // Test case: memory barrier.

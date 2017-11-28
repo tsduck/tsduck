@@ -81,7 +81,7 @@ ts::TablesLogger::TablesLogger(const TablesLoggerArgs& opt, TablesDisplay& displ
         case TablesLoggerArgs::BINARY: {
             if (!_opt.multi_files) {
                 // Create one single binary file as output
-                _report.verbose("Creating " + _opt.destination);
+                _report.verbose(u"Creating " + _opt.destination);
                 _outfile.open(_opt.destination.toUTF8().c_str(), std::ios::out | std::ios::binary);
                 if (!_outfile) {
                     _report.error(u"cannot create " + _opt.destination);

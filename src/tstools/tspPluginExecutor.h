@@ -195,7 +195,7 @@ namespace ts {
             }
 
         protected:
-            std::string   _name;   //!< Plugin name.
+            UString       _name;   //!< Plugin name.
             Plugin*       _shlib;  //!< Shared library API.
             PacketBuffer* _buffer; //!< Description of shared packet buffer.
 
@@ -236,11 +236,11 @@ namespace ts {
                           bool& aborted);
 
             // Inherited from Report (via TSP)
-            virtual void writeLog(int severity, const std::string& msg);
+            virtual void writeLog(int severity, const UString& msg) override;
 
         private:
-            Report* _report;   // Common report interface for all plugins
-            Condition        _to_do;    // Notify processor to do something
+            Report*   _report;   // Common report interface for all plugins
+            Condition _to_do;    // Notify processor to do something
 
             // The following private data must be accessed exclusively under the
             // protection of the global mutex.

@@ -34,9 +34,6 @@
 
 #include "tsPlugin.h"
 #include "tsTSFileInput.h"
-#include "tsStringUtils.h"
-#include "tsDecimal.h"
-#include "tsFormat.h"
 #include "tsMemoryUtils.h"
 TSDUCK_SOURCE;
 
@@ -50,11 +47,10 @@ namespace ts {
     {
     public:
         // Implementation of plugin API
-        MuxPlugin (TSP*);
-        virtual bool start();
-        virtual bool stop();
-        virtual BitRate getBitrate() {return 0;}
-        virtual Status processPacket (TSPacket&, bool&, bool&);
+        MuxPlugin(TSP*);
+        virtual bool start() override;
+        virtual bool stop() override;
+        virtual Status processPacket(TSPacket&, bool&, bool&) override;
 
     private:
         TSFileInput   _file;               // Input file
@@ -198,12 +194,12 @@ bool ts::MuxPlugin::start()
     TS_ZERO (_cc);
 
     if (_bitrate != 0 && _inter_pkt != 0) {
-        tsp->error ("--bitrate and --inter-packet are mutually exclusive");
+        tsp->error(u"--bitrate and --inter-packet are mutually exclusive");
         return false;
     }
 
     if (_terminate && tsp->useJointTermination()) {
-        tsp->error ("--terminate and --joint-termination are mutually exclusive");
+        tsp->error(u"--terminate and --joint-termination are mutually exclusive");
         return false;
     }
 
@@ -235,11 +231,11 @@ ts::ProcessorPlugin::Status ts::MuxPlugin::processPacket (TSPacket& pkt, bool& f
         // Compute the inter-packet interval based on the TS bitrate
         BitRate ts_bitrate = tsp->bitrate();
         if (ts_bitrate < _bitrate) {
-            tsp->error ("input bitrate unknown or too low, specify --inter-packet instead of --bitrate");
+            tsp->error(u"input bitrate unknown or too low, specify --inter-packet instead of --bitrate");
             return TSP_END;
         }
         _inter_pkt = ts_bitrate / _bitrate;
-        tsp->verbose ("transport bitrate: " + Decimal (ts_bitrate) + " b/s, packet interval: " + Decimal (_inter_pkt));
+        tsp->verbose(u"transport bitrate: " + Decimal (ts_bitrate) + " b/s, packet interval: " + Decimal (_inter_pkt));
     }
 
     // Count TS
@@ -279,7 +275,7 @@ ts::ProcessorPlugin::Status ts::MuxPlugin::processPacket (TSPacket& pkt, bool& f
     }
     pid = pkt.getPID();
     if (_check_pid_conflict && _ts_pids.test (pid)) {
-        tsp->error ("PID %d (0x%04X) already exists in TS, specify --pid with another value, aborting", int (pid), int (pid));
+        tsp->error(u"PID %d (0x%04X) already exists in TS, specify --pid with another value, aborting", int (pid), int (pid));
         return TSP_END;
     }
     if (_update_cc) {

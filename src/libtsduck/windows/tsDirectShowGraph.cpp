@@ -31,8 +31,6 @@
 #include "tsDirectShowTest.h"
 #include "tsMediaTypeUtils.h"
 #include "tsMemoryUtils.h"
-#include "tsFormat.h"
-#include "tsDecimal.h"
 #include "tsNullReport.h"
 TSDUCK_SOURCE;
 

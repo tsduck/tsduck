@@ -33,7 +33,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsPlugin.h"
-#include "tsStringUtils.h"
 #include "tsByteBlock.h"
 TSDUCK_SOURCE;
 
@@ -47,11 +46,9 @@ namespace ts {
     {
     public:
         // Implementation of plugin API
-        PatternPlugin (TSP*);
-        virtual bool start();
-        virtual bool stop() {return true;}
-        virtual BitRate getBitrate() {return 0;}
-        virtual Status processPacket (TSPacket&, bool&, bool&);
+        PatternPlugin(TSP*);
+        virtual bool start() override;
+        virtual Status processPacket(TSPacket&, bool&, bool&) override;
 
     private:
         uint8_t   _offset_pusi;      // Start offset in packets with PUSI
@@ -140,7 +137,7 @@ bool ts::PatternPlugin::start()
     }
 
     if (!HexaDecode (_pattern, value()) || _pattern.size() == 0) {
-        tsp->error ("invalid hexadecimal pattern");
+        tsp->error(u"invalid hexadecimal pattern");
         return false;
     }
 
