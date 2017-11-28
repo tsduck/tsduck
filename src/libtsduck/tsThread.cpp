@@ -30,6 +30,7 @@
 #include "tsThread.h"
 #include "tsGuard.h"
 #include "tsSysUtils.h"
+#include "tsIntegerUtils.h"
 TSDUCK_SOURCE;
 
 

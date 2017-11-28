@@ -36,8 +36,6 @@
 #include "tsService.h"
 #include "tsSectionDemux.h"
 #include "tsCyclingPacketizer.h"
-#include "tsDecimal.h"
-#include "tsHexa.h"
 #include "tsIntegerUtils.h"
 #include "tsPAT.h"
 #include "tsPMT.h"
@@ -63,10 +61,10 @@ namespace ts {
     public:
         // Implementation of plugin API
         AESPlugin(TSP*);
-        virtual bool start();
-        virtual bool stop() {return true;}
-        virtual BitRate getBitrate() {return 0;}
-        virtual Status processPacket (TSPacket&, bool&, bool&);
+        virtual bool start() override;
+        virtual bool stop() override {return true;}
+        virtual BitRate getBitrate() override {return 0;}
+        virtual Status processPacket (TSPacket&, bool&, bool&) override;
 
     private:
         // Private data
@@ -85,7 +83,7 @@ namespace ts {
         CipherChaining* _chain;           // Selected cipher chaining mode
 
         // Invoked by the demux when a complete table is available.
-        virtual void handleTable(SectionDemux&, const BinaryTable&);
+        virtual void handleTable(SectionDemux&, const BinaryTable&) override;
 
         // Process specific tables
         void processPAT(PAT&);
@@ -108,7 +106,7 @@ TSPLUGIN_DECLARE_PROCESSOR(ts::AESPlugin)
 //----------------------------------------------------------------------------
 
 ts::AESPlugin::AESPlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, "Experimental AES scrambling of TS packets.", "[options] [service]"),
+    ProcessorPlugin(tsp_, u"Experimental AES scrambling of TS packets.", u"[options] [service]"),
     _abort(false),
     _descramble(false),
     _service(),
@@ -201,7 +199,7 @@ ts::AESPlugin::AESPlugin(TSP* tsp_) :
             u"\n"
             u"  --version\n"
             u"      Display the version number.\n");
-
+}
 
 
 //----------------------------------------------------------------------------
@@ -212,14 +210,14 @@ bool ts::AESPlugin::start()
 {
     // Get option values
     _descramble = present(u"descramble");
-    getPIDSet(_scrambled, "pid");
+    getPIDSet(_scrambled, u"pid");
     if (present(u"")) {
         _service.set(value(u""));
     }
 
     // Get chaining mode.
     if (present(u"ecb") + present(u"cbc") + present(u"cts1") + present(u"cts2") + present(u"cts3") + present(u"cts4") + present(u"dvs042") > 1) {
-        tsp->error ("options --cbc, --cts1, --cts2, --cts3, --cts4, --dvs042 and --ecb are mutually exclusive");
+        tsp->error(u"options --cbc, --cts1, --cts2, --cts3, --cts4, --dvs042 and --ecb are mutually exclusive");
         return false;
     }
     if (present(u"cbc")) {
@@ -246,32 +244,32 @@ bool ts::AESPlugin::start()
 
     // Get AES key
     ByteBlock key;
-    if (!HexaDecode (key, value(u"key"))) {
-        tsp->error ("invalid key, specify hexa digits");
+    if (!value(u"key").hexaDecode(key)) {
+        tsp->error(u"invalid key, specify hexa digits");
         return false;
     }
-    if (!_chain->isValidKeySize (key.size())) {
-        tsp->error ("%" FMT_SIZE_T "d bytes is an invalid AES key size", key.size());
+    if (!_chain->isValidKeySize(key.size())) {
+        tsp->error(u"%d bytes is an invalid AES key size", {key.size()});
         return false;
     }
-    if (!_chain->setKey (key.data(), key.size())) {
-        tsp->error ("error in AES key schedule");
+    if (!_chain->setKey(key.data(), key.size())) {
+        tsp->error(u"error in AES key schedule");
         return false;
     }
-    tsp->verbose ("using " + Decimal (key.size() * 8) + " bits key: " + Hexa (key, hexa::SINGLE_LINE));
+    tsp->verbose(u"using %d bits key: %s", {key.size() * 8, UString::Dump(key, UString::SINGLE_LINE)});
 
     // Get IV
     ByteBlock iv (_chain->minIVSize(), 0); // default IV is all zeroes
-    if (present(u"iv") && !HexaDecode (iv, value(u"iv"))) {
-        tsp->error ("invalid initialization vector, specify hexa digits");
+    if (present(u"iv") && !value(u"iv").hexaDecode(iv)) {
+        tsp->error(u"invalid initialization vector, specify hexa digits");
         return false;
     }
-    if (!_chain->setIV (iv.data(), iv.size())) {
-        tsp->error ("incorrect initialization vector");
+    if (!_chain->setIV(iv.data(), iv.size())) {
+        tsp->error(u"incorrect initialization vector");
         return false;
     }
     if (iv.size() > 0) {
-        tsp->verbose ("using " + Decimal (iv.size() * 8) + " bits IV: " + Hexa (iv, hexa::SINGLE_LINE));
+        tsp->verbose(u"using %d bits IV: %s", {iv.size() * 8, UString::Dump(iv, UString::SINGLE_LINE)});
     }
 
     // Initialize the demux
@@ -344,7 +342,7 @@ void ts::AESPlugin::processSDT (SDT& sdt)
     assert (_service.hasName());
     uint16_t service_id;
     if (!sdt.findService (_service.getName(), service_id)) {
-        tsp->error ("service \"" + _service.getName() + "\" not found in SDT");
+        tsp->error(u"service \"%s\" not found in SDT", {_service.getName()});
         _abort = true;
         return;
     }
@@ -352,7 +350,7 @@ void ts::AESPlugin::processSDT (SDT& sdt)
     // Remember service id
     _service.setId (service_id);
     _service.clearPMTPID();
-    tsp->verbose ("found service id %d (0x%04X)", int (_service.getId()), int (_service.getId()));
+    tsp->verbose(u"found service id %d (0x%X)", {_service.getId(), _service.getId()});
 
     // No longer need the SDT, now need the PAT
     _demux.removePID (PID_SDT);
@@ -372,7 +370,7 @@ void ts::AESPlugin::processPAT (PAT& pat)
 
     // If service not found, error
     if (it == pat.pmts.end()) {
-        tsp->error ("service %d (0x%04X) not found in PAT", int (_service.getId()), int (_service.getId()));
+        tsp->error(u"service %d (0x%X) not found in PAT", {_service.getId(), _service.getId()});
         _abort = true;
         return;
     }
@@ -380,7 +378,7 @@ void ts::AESPlugin::processPAT (PAT& pat)
     // Now filter the PMT
     _service.setPMTPID (it->second);
     _demux.addPID (it->second);
-    tsp->verbose ("found PMT PID %d (0x%04X)", int (_service.getPMTPID()), int (_service.getPMTPID()));
+    tsp->verbose(u"found PMT PID %d (0x%X)", {_service.getPMTPID(), _service.getPMTPID()});
 
     // No longer need the PAT
     _demux.removePID (PID_PAT);
@@ -399,7 +397,7 @@ void ts::AESPlugin::processPMT (PMT& pmt)
     for (PMT::StreamMap::const_iterator it = pmt.streams.begin(); it != pmt.streams.end(); ++it) {
         if (it->second.isVideo() || it->second.isAudio() || it->second.isSubtitles()) {
             _scrambled.set(it->first);
-            tsp->verbose ("scrambling PID %d (0x%04X)", int (it->first), int (it->first));
+            tsp->verbose("scrambling PID %d (0x%X)", {it->first, it->first});
         }
     }
 }
@@ -433,7 +431,7 @@ ts::ProcessorPlugin::Status ts::AESPlugin::processPacket (TSPacket& pkt, bool& f
 
     // If packet to scramble is already scrambled, there is an error
     if (!_descramble && pkt.isScrambled()) {
-        tsp->error ("PID %d (0x%04X) already scrambled", int (pid), int (pid));
+        tsp->error(u"PID %d (0x%X) already scrambled", {pid, pid});
         return TSP_END;
     }
 

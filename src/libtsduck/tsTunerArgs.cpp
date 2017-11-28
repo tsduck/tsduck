@@ -140,7 +140,7 @@ void ts::TunerArgs::load(Args& args)
         device_name = UString::Format(u":%d", {adapter});
 #else
         // Does not mean anything, just for error messages.
-        device_name = Format("DVB adapter %d", adapter);
+        device_name = UString::Format(u"DVB adapter %d", {adapter});
 #endif
     }
 
