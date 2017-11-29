@@ -696,7 +696,8 @@
 
 #if !defined(DOXYGEN)
     #define TS_STRINGIFY1(x) #x
-    #define TS_USTRINGIFY1(x) u#x
+    #define TS_USTRINGIFY2(x) u ## x
+    #define TS_USTRINGIFY1(x) TS_USTRINGIFY2(#x)
 #endif
 //!
 //! @hideinitializer
