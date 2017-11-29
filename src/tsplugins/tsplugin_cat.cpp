@@ -133,7 +133,7 @@ ts::CATPlugin::CATPlugin (TSP* tsp_) :
             u"  -b value\n"
             u"  --bitrate value\n"
             u"      Specifies the bitrate in bits / second of the CAT if a new one is\n"
-            u"      created. The default is " + Decimal (DEFAULT_CAT_BITRATE) + " b/s.\n"
+            u"      created. The default is " + UString::Decimal(DEFAULT_CAT_BITRATE) + u" b/s.\n"
             u"\n"
             u"  --cleanup-private-descriptors\n"
             u"      Remove all private descriptors without preceding private_data_specifier\n"
@@ -197,19 +197,19 @@ bool ts::CATPlugin::start()
     _cleanup_priv_desc = present(u"cleanup-private-descriptors");
     _set_version = present(u"new-version");
     _new_version = intValue<uint8_t>(u"new-version", 0);
-    getIntValues (_remove_casid, "remove-casid");
-    getIntValues (_remove_pid, "remove-pid");
+    getIntValues(_remove_casid, u"remove-casid");
+    getIntValues(_remove_pid, u"remove-pid");
 
     // Get list of descriptors to add
-    const size_t add_count = count ("add");
+    const size_t add_count = count(u"add");
     _add_descs.clear();
     for (size_t n = 0; n < add_count; n++) {
-        const std::string val (value(u"add", "", n));
-        int casid, pid;
-        char slash;
-        const int count = ::sscanf (val.c_str(), "%i/%i%c", &casid, &pid, &slash);
+        const UString val(value(u"add", u"", n));
+        int casid = 0, pid = 0;
+        char slash = 0;
+        const int count = ::sscanf(val.toUTF8().c_str(), "%i/%i%c", &casid, &pid, &slash);
         if ((count != 2 && (count != 3 || slash != '/')) || casid < 0 || casid > 0xFFFF || pid < 0 || pid >= PID_MAX) {
-            tsp->error(u"invalid \"cas-id/PID[/private-data]\" value \"" + val + "\"");
+            tsp->error(u"invalid \"cas-id/PID[/private-data]\" value \"%s\"", {val});
             return false;
         }
         CADescriptor desc;
@@ -223,9 +223,9 @@ bool ts::CATPlugin::start()
             assert (pos < val.length() - 1);
             pos = val.find ('/', pos + 1); // Second slash
             assert (pos != std::string::npos);
-            const std::string hexa (val.substr (pos + 1));
-            if (!HexaDecode (desc.private_data, hexa)) {
-                tsp->error(u"invalid private data \"" + hexa + "\" for CA_descriptor, specify an even number of hexa digits");
+            const UString hexa(val.substr(pos + 1));
+            if (!hexa.hexaDecode(desc.private_data)) {
+                tsp->error(u"invalid private data \"%s\" for CA_descriptor, specify an even number of hexa digits", {hexa});
                 return false;
             }
         }
@@ -312,7 +312,7 @@ void ts::CATPlugin::handleCAT (CAT& cat)
     cat.descs.add (_add_descs);
 
     // Place modified CAT in the packetizer
-    tsp->verbose(u"CAT version %d modified", int (cat.version));
+    tsp->verbose(u"CAT version %d modified", {cat.version});
     _pzer.removeSections (TID_CAT);
     _pzer.addTable (cat);
 }

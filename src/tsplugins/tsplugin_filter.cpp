@@ -188,7 +188,7 @@ ts::FilterPlugin::FilterPlugin(TSP* tsp_) :
 
 bool ts::FilterPlugin::start()
 {
-    scrambling_ctrl = present(u"clear") ? 0 : intValue ("scrambling-control", -1);
+    scrambling_ctrl = present(u"clear") ? 0 : intValue(u"scrambling-control", -1);
     with_payload = present(u"payload");
     with_af = present(u"adaptation-field");
     with_pes = present(u"pes");
@@ -201,7 +201,7 @@ bool ts::FilterPlugin::start()
     max_payload = intValue<int>(u"max-payload-size", -1);
     min_af = intValue<int>(u"min-adaptation-field-size", -1);
     max_af = intValue<int>(u"max-adaptation-field-size", -1);
-    getPIDSet (pid, "pid");
+    getPIDSet(pid, u"pid");
 
     return true;
 }

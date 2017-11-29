@@ -241,8 +241,8 @@ bool ts::IPInput::start()
     // Get command line arguments
     _eval_time = MilliSecPerSec * intValue<MilliSecond>(u"evaluation-interval", 0);
     _display_time = MilliSecPerSec * intValue<MilliSecond>(u"display-interval", 0);
-    std::string destination (value(u""));
-    std::string local (value(u"local-address"));
+    UString destination(value(u""));
+    UString local(value(u"local-address"));
     size_t recv_bufsize = intValue<size_t>(u"buffer-size", 0);
     bool reuse_port = present(u"reuse-port");
 
@@ -254,13 +254,13 @@ bool ts::IPInput::start()
 
     // If a destination address is specified, it must be a multicast address
     if (dest_addr.hasAddress() && !dest_addr.isMulticast()) {
-        tsp->error(u"address " + std::string (dest_addr) + " is not multicast");
+        tsp->error(u"address %s is not multicast", {dest_addr.toString()});
         return false;
     }
 
     // The destination port is mandatory
     if (!dest_addr.hasPort()) {
-        tsp->error(u"no UDP port specified in " + destination);
+        tsp->error(u"no UDP port specified in %s", {destination});
         return false;
     }
 
@@ -271,10 +271,10 @@ bool ts::IPInput::start()
     }
 
     // The local socket address to bind is the optional local IP address and the destination port
-    SocketAddress local_addr (local_ip, dest_addr.port());
+    SocketAddress local_addr(local_ip, dest_addr.port());
 
     // Create UDP socket
-    if (!_sock.open (*tsp)) {
+    if (!_sock.open(*tsp)) {
         return false;
     }
 
@@ -413,9 +413,7 @@ size_t ts::IPInput::receive (TSPacket* buffer, size_t max_packets)
         }
 
         // No TS packet found in UDP message, wait for another one.
-        tsp->debug(u"no TS packet in message from " +
-                    std::string (SocketAddress (sender)) + ", " +
-                    Decimal (insize) + " bytes");
+        tsp->debug(u"no TS packet in message from %s, %s bytes", {sender.toString(), insize});
     }
 
     // If new packets were received, we may need to re-evaluate the real-time input bitrate.
@@ -452,10 +450,9 @@ size_t ts::IPInput::receive (TSPacket* buffer, size_t max_packets)
             const MilliSecond ms_total = Time::CurrentUTC() - _start;
             const BitRate br_current = ms_current == 0 ? 0 : BitRate ((_packets_0 * PKT_SIZE * 8 * MilliSecPerSec) / ms_current);
             const BitRate br_average = ms_total == 0 ? 0 : BitRate ((_packets * PKT_SIZE * 8 * MilliSecPerSec) / ms_total);
-            tsp->info(u"IP input bitrate: " +
-                       (br_current == 0 ? "undefined" : Decimal (br_current) + " b/s") +
-                       u", average: " +
-                       (br_average == 0 ? "undefined" : Decimal (br_average) + " b/s"));
+            tsp->info(u"IP input bitrate: %s, average: %s", {
+                br_current == 0 ? u"undefined" : UString::Decimal(br_current) + u" b/s",
+                br_average == 0 ? u"undefined" : UString::Decimal(br_average) + u" b/s"});
         }
     }
 
@@ -476,10 +473,10 @@ size_t ts::IPInput::receive (TSPacket* buffer, size_t max_packets)
 bool ts::IPOutput::start()
 {
     // Get command line arguments
-    std::string dest_name (value(u""));
-    std::string loc_name (value(u"local-address"));
-    int ttl = intValue ("ttl", 0);
-    _pkt_burst = intValue ("packet-burst", DEF_PACKET_BURST);
+    UString dest_name(value(u""));
+    UString loc_name(value(u"local-address"));
+    int ttl = intValue(u"ttl", 0);
+    _pkt_burst = intValue(u"packet-burst", DEF_PACKET_BURST);
 
     // Create UDP socket
     bool ok = _sock.open (*tsp);

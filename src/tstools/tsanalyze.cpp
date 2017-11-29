@@ -46,11 +46,11 @@ struct Options: public ts::TSAnalyzerOptions
     Options(int argc, char *argv[]);
 
     ts::BitRate bitrate;  // Expected bitrate (188-byte packets)
-    std::string infile;   // Input file name
+    ts::UString infile;   // Input file name
 };
 
 Options::Options(int argc, char *argv[]) :
-    ts::TSAnalyzerOptions("MPEG Transport Stream Analysis Utility.", "[options] [filename]"),
+    ts::TSAnalyzerOptions(u"MPEG Transport Stream Analysis Utility.", u"[options] [filename]"),
     bitrate(0),
     infile()
 {

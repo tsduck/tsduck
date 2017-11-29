@@ -58,8 +58,8 @@ struct Options: public ts::Args
     bool                         verbose;    // Verbose output
 };
 
-Options::Options (int argc, char *argv[]) :
-    ts::Args("DVB Devices Listing Utility.", "[options]"),
+Options::Options(int argc, char *argv[]) :
+    ts::Args(u"DVB Devices Listing Utility.", u"[options]"),
     tuner(true, true),
 #if defined(TS_WINDOWS)
     test_type(ts::DirectShowTest::NONE),
@@ -85,7 +85,7 @@ Options::Options (int argc, char *argv[]) :
             u"  --test name\n"
             u"      Run a specific DirectShow test. Very verbose output, for debug only.\n"
             u"      The default is none. The names of the available tests are:\n"
-            u"      " + ts::DirectShowTest::TestNames.nameList() + ".\n"
+            u"      " + ts::DirectShowTest::TestNames.nameList() + u".\n"
             u"\n"
 #endif
             u"  -v\n"
@@ -104,11 +104,11 @@ Options::Options (int argc, char *argv[]) :
     tuner.load(*this);
 
     verbose = present(u"verbose");
-    setDebugLevel(present(u"debug") ? intValue("debug", 1) : ts::Severity::Info);
+    setDebugLevel(present(u"debug") ? intValue(u"debug", 1) : ts::Severity::Info);
 
 #if defined(TS_WINDOWS)
     // Test options on Windows. The legacy option "--enumerate-devices" means "--test enumerate-devices".
-    test_type = enumValue("test", present(u"enumerate-devices") ? ts::DirectShowTest::ENUMERATE_DEVICES : ts::DirectShowTest::NONE);
+    test_type = enumValue(u"test", present(u"enumerate-devices") ? ts::DirectShowTest::ENUMERATE_DEVICES : ts::DirectShowTest::NONE);
 #endif
 
     exitOnError();
@@ -129,7 +129,7 @@ namespace {
         }
 
         // Get tuner information.
-        const std::string info(tuner.deviceInfo());
+        const ts::UString info(tuner.deviceInfo());
         bool something = !info.empty();
         const ts::DeliverySystemSet systems(tuner.deliverySystems());
 

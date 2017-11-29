@@ -133,21 +133,21 @@ ts::ForkPlugin::~ForkPlugin()
 bool ts::ForkPlugin::start()
 {
     // Get command line arguments
-    std::string command (value());
+    UString command(value());
     bool synchronous = !present(u"nowait");
     _buffer_size = intValue<size_t>(u"buffered-packets", 0);
-    _pipe.setIgnoreAbort (present(u"ignore-abort"));
+    _pipe.setIgnoreAbort(present(u"ignore-abort"));
 
     // If packet buffering is requested, allocate the buffer
     _buffer = 0;
     _buffer_count = 0;
-    if (_buffer_size > 0 && (_buffer = new TSPacket [_buffer_size]) == 0) {
+    if (_buffer_size > 0 && (_buffer = new TSPacket[_buffer_size]) == 0) {
         tsp->error(u"cannot allocate packet buffer, reduce --buffered-packets value");
         return false;
     }
 
     // Create pipe & process
-    return _pipe.open (command, synchronous, PKT_SIZE * _buffer_size, *tsp);
+    return _pipe.open(command, synchronous, PKT_SIZE * _buffer_size, *tsp);
 }
 
 
@@ -159,7 +159,7 @@ bool ts::ForkPlugin::stop()
 {
     // Flush buffered packets
     if (_buffer_count > 0) {
-        _pipe.write (_buffer, PKT_SIZE * _buffer_count, *tsp);
+        _pipe.write(_buffer, PKT_SIZE * _buffer_count, *tsp);
     }
 
     // Free packet buffer, if there is one
@@ -169,7 +169,7 @@ bool ts::ForkPlugin::stop()
     }
 
     // Close the pipe
-    return _pipe.close (*tsp);
+    return _pipe.close(*tsp);
 }
 
 

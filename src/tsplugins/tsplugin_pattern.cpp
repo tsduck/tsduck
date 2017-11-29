@@ -85,40 +85,40 @@ ts::PatternPlugin::PatternPlugin(TSP* tsp_) :
     option(u"pid",             'p', PIDVAL,  0, UNLIMITED_COUNT);
 
     setHelp(u"Pattern:\n"
-             u"  Specifies the binary pattern to apply on TS packets payload.\n"
-             u"  The value must be a string of hexadecimal digits specifying any\n"
-             u"  number of bytes.\n"
-             u"\n"
-             u"Options:\n"
-             u"\n"
-             u"  --help\n"
-             u"      Display this help text.\n"
-             u"\n"
-             u"  -n\n"
-             u"  --negate\n"
-             u"      Negate the PID filter: modify packets on all PID's, expect the\n"
-             u"      specified ones.\n"
-             u"\n"
-             u"  -o value\n"
-             u"  --offset-non-pusi value\n"
-             u"      Specify starting offset in payload of packets with the PUSI (payload.\n"
-             u"      unit start indicator) not set. By default, the pattern replacement\n"
-             u"      starts at the beginning of the packet payload (offset 0).\n"
-             u"\n"
-             u"  -u value\n"
-             u"  --offset-pusi value\n"
-             u"      Specify starting offset in payload of packets with the PUSI (payload.\n"
-             u"      unit start indicator) set. By default, the pattern replacement\n"
-             u"      starts at the beginning of the packet payload (offset 0).\n"
-             u"\n"
-             u"  -p value\n"
-             u"  --pid value\n"
-             u"      Select packets with this PID value. Several -p or --pid options\n"
-             u"      may be specified to select multiple PID's. If no such option is\n"
-             u"      specified, packets from all PID's are modified.\n"
-             u"\n"
-             u"  --version\n"
-             u"      Display the version number.\n");
+            u"  Specifies the binary pattern to apply on TS packets payload.\n"
+            u"  The value must be a string of hexadecimal digits specifying any\n"
+            u"  number of bytes.\n"
+            u"\n"
+            u"Options:\n"
+            u"\n"
+            u"  --help\n"
+            u"      Display this help text.\n"
+            u"\n"
+            u"  -n\n"
+            u"  --negate\n"
+            u"      Negate the PID filter: modify packets on all PID's, expect the\n"
+            u"      specified ones.\n"
+            u"\n"
+            u"  -o value\n"
+            u"  --offset-non-pusi value\n"
+            u"      Specify starting offset in payload of packets with the PUSI (payload.\n"
+            u"      unit start indicator) not set. By default, the pattern replacement\n"
+            u"      starts at the beginning of the packet payload (offset 0).\n"
+            u"\n"
+            u"  -u value\n"
+            u"  --offset-pusi value\n"
+            u"      Specify starting offset in payload of packets with the PUSI (payload.\n"
+            u"      unit start indicator) set. By default, the pattern replacement\n"
+            u"      starts at the beginning of the packet payload (offset 0).\n"
+            u"\n"
+            u"  -p value\n"
+            u"  --pid value\n"
+            u"      Select packets with this PID value. Several -p or --pid options\n"
+            u"      may be specified to select multiple PID's. If no such option is\n"
+            u"      specified, packets from all PID's are modified.\n"
+            u"\n"
+            u"  --version\n"
+            u"      Display the version number.\n");
 }
 
 
@@ -131,12 +131,12 @@ bool ts::PatternPlugin::start()
     _offset_pusi = intValue<uint8_t>(u"offset-pusi", 0);
     _offset_non_pusi = intValue<uint8_t>(u"offset-non-pusi", 0);
 
-    getPIDSet (_pid_list, "pid", true);
+    getPIDSet(_pid_list, u"pid", true);
     if (present(u"negate")) {
         _pid_list.flip();
     }
 
-    if (!HexaDecode (_pattern, value()) || _pattern.size() == 0) {
+    if (!value().hexaDecode(_pattern) || _pattern.size() == 0) {
         tsp->error(u"invalid hexadecimal pattern");
         return false;
     }
@@ -149,7 +149,7 @@ bool ts::PatternPlugin::start()
 // Packet processing method
 //----------------------------------------------------------------------------
 
-ts::ProcessorPlugin::Status ts::PatternPlugin::processPacket (TSPacket& pkt, bool& flush, bool& bitrate_changed)
+ts::ProcessorPlugin::Status ts::PatternPlugin::processPacket(TSPacket& pkt, bool& flush, bool& bitrate_changed)
 {
     // If the packet has no payload, or not in a selected PID, leave it unmodified
     if (!pkt.hasPayload() || !_pid_list[pkt.getPID()]) {
@@ -160,7 +160,7 @@ ts::ProcessorPlugin::Status ts::PatternPlugin::processPacket (TSPacket& pkt, boo
     uint8_t* pl = pkt.b + pkt.getHeaderSize() + (pkt.getPUSI() ? _offset_pusi : _offset_non_pusi);
 
     // Compute remaining size to replace (maybe negative if starting offset is beyond the end of the packet).
-    int remain = int (pkt.b + PKT_SIZE - pl);
+    int remain = int(pkt.b + PKT_SIZE - pl);
 
     // Replace the payload with the pattern
     while (remain > 0) {

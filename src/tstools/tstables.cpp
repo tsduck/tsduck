@@ -45,7 +45,7 @@ struct Options: public ts::Args
 {
     Options(int argc, char *argv[]);
 
-    std::string           infile;   // Input file name.
+    ts::UString           infile;   // Input file name.
     ts::TablesLoggerArgs  logger;   // Table logging options.
     ts::TablesDisplayArgs display;  // Table formatting options.
 };

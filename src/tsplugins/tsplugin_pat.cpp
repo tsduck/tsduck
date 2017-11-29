@@ -162,32 +162,32 @@ bool ts::PATPlugin::start()
     _incr_version = present(u"increment-version");
     _set_version = present(u"new-version");
     _new_version = intValue<uint8_t>(u"new-version", 0);
-    getIntValues (_remove_serv, "remove-service");
+    getIntValues(_remove_serv, u"remove-service");
 
     // Get list of services to add
-    const size_t add_count = count ("add-service");
-    std::string sidpid;
+    const size_t add_count = count(u"add-service");
+    UString sidpid;
     _add_serv.clear();
     _add_serv.reserve (add_count);
     for (size_t n = 0; n < add_count; n++) {
-        getValue (sidpid, "add-service", "", n);
-        int sid, pid;
-        char unused;
-        if (::sscanf (sidpid.c_str(), "%i/%i%c", &sid, &pid, &unused) != 2 || sid < 0 || sid > 0xFFFF || pid < 0 || pid >= PID_MAX) {
-            Args::error(u"invalid \"service_id/PID\" value \"" + sidpid + "\"");
+        getValue(sidpid, u"add-service", u"", n);
+        int sid = 0, pid = 0;
+        char unused = 0;
+        if (::sscanf(sidpid.toUTF8().c_str(), "%i/%i%c", &sid, &pid, &unused) != 2 || sid < 0 || sid > 0xFFFF || pid < 0 || pid >= PID_MAX) {
+            Args::error(u"invalid \"service_id/PID\" value \"%s\"", {sidpid});
             return false;
         }
         Service serv;
-        serv.setId (uint16_t (sid));
-        serv.setPMTPID (PID (pid));
+        serv.setId(uint16_t(sid));
+        serv.setPMTPID(PID(pid));
         _add_serv.push_back (serv);
     }
 
     // Initialize the demux and packetizer
     _demux.reset();
-    _demux.addPID (PID_PAT);
+    _demux.addPID(PID_PAT);
     _pzer.reset();
-    _pzer.setPID (PID_PAT);
+    _pzer.setPID(PID_PAT);
 
     _abort = false;
     return true;
@@ -204,7 +204,7 @@ void ts::PATPlugin::handleTable (SectionDemux& demux, const BinaryTable& table)
         return;
     }
 
-    PAT pat (table);
+    PAT pat(table);
     if (!pat.isValid()) {
         return;
     }
@@ -226,18 +226,18 @@ void ts::PATPlugin::handleTable (SectionDemux& demux, const BinaryTable& table)
         pat.nit_pid = _new_nit_pid;
     }
     for (std::vector<uint16_t>::const_iterator it = _remove_serv.begin(); it != _remove_serv.end(); ++it) {
-        pat.pmts.erase (*it);
+        pat.pmts.erase(*it);
     }
     for (ServiceVector::const_iterator it = _add_serv.begin(); it != _add_serv.end(); ++it) {
-        assert (it->hasId());
-        assert (it->hasPMTPID());
-        pat.pmts [it->getId()] = it->getPMTPID();
+        assert(it->hasId());
+        assert(it->hasPMTPID());
+        pat.pmts[it->getId()] = it->getPMTPID();
     }
 
     // Place modified PAT in the packetizer
-    tsp->verbose(u"PAT version %d modified", int (pat.version));
-    _pzer.removeSections (TID_PAT);
-    _pzer.addTable (pat);
+    tsp->verbose(u"PAT version %d modified", {pat.version});
+    _pzer.removeSections(TID_PAT);
+    _pzer.addTable(pat);
 }
 
 

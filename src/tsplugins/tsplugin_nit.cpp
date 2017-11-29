@@ -216,9 +216,9 @@ bool ts::NITPlugin::start()
     _nit_pid = intValue<PID>(u"pid", PID_NULL);
     _lcn_oper = intValue<int>(u"lcn", LCN_NONE);
     _sld_oper = intValue<int>(u"sld", LCN_NONE);
-    getIntValues (_remove_serv, "remove-service");
-    getIntValues (_remove_ts, "remove-ts");
-    getIntValues (_removed_desc, "remove-descriptor");
+    getIntValues(_remove_serv, u"remove-service");
+    getIntValues(_remove_ts, u"remove-ts");
+    getIntValues(_removed_desc, u"remove-descriptor");
     _pds = intValue<PDS>(u"pds");
     _cleanup_priv_desc = present(u"cleanup-private-descriptors");
     _update_mpe_fec = present(u"mpe-fec");
@@ -270,16 +270,16 @@ void ts::NITPlugin::handleTable (SectionDemux& demux, const BinaryTable& table)
                 if (pat.isValid()) {
                     if ((_nit_pid = pat.nit_pid) == PID_NULL) {
                         _nit_pid = PID_NIT;
-                        tsp->warning(u"NIT PID unspecified in PAT, using DVB default: %d (0x%04X)", int (_nit_pid), int (_nit_pid));
+                        tsp->warning(u"NIT PID unspecified in PAT, using DVB default: %d (0x%X)", {_nit_pid, _nit_pid});
                     }
                     else {
-                        tsp->verbose(u"NIT PID is %d (0x%04X) in PAT", int (_nit_pid), int (_nit_pid));
+                        tsp->verbose(u"NIT PID is %d (0x%X) in PAT", {_nit_pid, _nit_pid});
                     }
                     // No longer filter the PAT
-                    _demux.removePID (PID_PAT);
+                    _demux.removePID(PID_PAT);
                     // Now filter the NIT
-                    _demux.addPID (_nit_pid);
-                    _pzer.setPID (_nit_pid);
+                    _demux.addPID(_nit_pid);
+                    _pzer.setPID(_nit_pid);
                 }
             }
             break;
@@ -288,8 +288,8 @@ void ts::NITPlugin::handleTable (SectionDemux& demux, const BinaryTable& table)
         case TID_NIT_OTH: {
             if (table.sourcePID() == _nit_pid) {
                 // NIT Other are passed unmodified
-                _pzer.removeSections (TID_NIT_OTH, table.tableIdExtension());
-                _pzer.addTable (table);
+                _pzer.removeSections(TID_NIT_OTH, table.tableIdExtension());
+                _pzer.addTable(table);
             }
             break;
         }
@@ -297,12 +297,12 @@ void ts::NITPlugin::handleTable (SectionDemux& demux, const BinaryTable& table)
         case TID_NIT_ACT: {
             if (table.sourcePID() == _nit_pid) {
                 // Modify NIT Actual
-                NIT nit (table);
+                NIT nit(table);
                 if (nit.isValid()) {
                     // Transform NIT Actual
-                    _pzer.removeSections (TID_NIT_ACT, nit.network_id);
-                    processNIT (nit);
-                    _pzer.addTable (nit);
+                    _pzer.removeSections(TID_NIT_ACT, nit.network_id);
+                    processNIT(nit);
+                    _pzer.addTable(nit);
                 }
             }
             break;
@@ -321,7 +321,7 @@ void ts::NITPlugin::handleTable (SectionDemux& demux, const BinaryTable& table)
 
 void ts::NITPlugin::processNIT (NIT& nit)
 {
-    tsp->debug(u"got a NIT, version %d, network Id: %d (0x%04X)", int (nit.version), int (nit.network_id), int (nit.network_id));
+    tsp->debug(u"got a NIT, version %d, network Id: %d (0x%X)", {nit.version, nit.network_id, nit.network_id});
 
     // Update NIT version
     if (_incr_version) {
@@ -336,20 +336,20 @@ void ts::NITPlugin::processNIT (NIT& nit)
     do {
         found = false;
         for (NIT::TransportMap::iterator it = nit.transports.begin(); it != nit.transports.end(); ++it) {
-            if (_remove_ts.count (it->first.transport_stream_id) != 0) {
+            if (_remove_ts.count(it->first.transport_stream_id) != 0) {
                 found = true;
-                nit.transports.erase (it->first);
+                nit.transports.erase(it->first);
                 break; // iterator is broken
             }
         }
     } while (found);
 
     // Process the global descriptor list
-    processDescriptorList (nit.descs);
+    processDescriptorList(nit.descs);
 
     // Process each TS descriptor list
     for (NIT::TransportMap::iterator it = nit.transports.begin(); it != nit.transports.end(); ++it) {
-        processDescriptorList (it->second);
+        processDescriptorList(it->second);
     }
 }
 

@@ -235,7 +235,7 @@ ts::ProcessorPlugin::Status ts::MuxPlugin::processPacket (TSPacket& pkt, bool& f
             return TSP_END;
         }
         _inter_pkt = ts_bitrate / _bitrate;
-        tsp->verbose(u"transport bitrate: " + Decimal (ts_bitrate) + " b/s, packet interval: " + Decimal (_inter_pkt));
+        tsp->verbose(u"transport bitrate: %'d b/s, packet interval: %'d", {ts_bitrate, _inter_pkt});
     }
 
     // Count TS
@@ -244,7 +244,7 @@ ts::ProcessorPlugin::Status ts::MuxPlugin::processPacket (TSPacket& pkt, bool& f
 
     // Non-stuffing is transparently passed
     if (pid != PID_NULL) {
-        _ts_pids.set (pid);
+        _ts_pids.set(pid);
         return TSP_OK;
     }
 
@@ -271,15 +271,15 @@ ts::ProcessorPlugin::Status ts::MuxPlugin::processPacket (TSPacket& pkt, bool& f
 
     // Get PID of new packet. Perform checks.
     if (_force_pid) {
-        pkt.setPID (_force_pid_value);
+        pkt.setPID(_force_pid_value);
     }
     pid = pkt.getPID();
-    if (_check_pid_conflict && _ts_pids.test (pid)) {
-        tsp->error(u"PID %d (0x%04X) already exists in TS, specify --pid with another value, aborting", int (pid), int (pid));
+    if (_check_pid_conflict && _ts_pids.test(pid)) {
+        tsp->error(u"PID %d (0x%X) already exists in TS, specify --pid with another value, aborting", {pid, pid});
         return TSP_END;
     }
     if (_update_cc) {
-        pkt.setCC (_cc[pid]);
+        pkt.setCC(_cc[pid]);
         _cc[pid] = (_cc[pid] + 1) & CC_MASK;
     }
 

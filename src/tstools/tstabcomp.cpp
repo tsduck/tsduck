@@ -50,8 +50,8 @@ struct Options: public ts::Args
 {
     Options(int argc, char *argv[]);
 
-    ts::StringVector      infiles;         // Input file names.
-    std::string           outfile;         // Output file path.
+    ts::UStringVector     infiles;         // Input file names.
+    ts::UString           outfile;         // Output file path.
     bool                  outdir;          // Output name is a directory.
     bool                  compile;         // Explicit compilation.
     bool                  decompile;       // Explicit decompilation.
@@ -65,7 +65,7 @@ private:
 };
 
 Options::Options(int argc, char *argv[]) :
-    ts::Args("PSI/SI tables compiler.", "[options] filename ..."),
+    ts::Args(u"PSI/SI tables compiler.", u"[options] filename ..."),
     infiles(),
     outfile(),
     outdir(false),
@@ -102,7 +102,7 @@ Options::Options(int argc, char *argv[]) :
             u"\n"
             u"  --default-charset name\n"
             u"      Default DVB character set to use. The available table names are:\n"
-            u"      " + ts::UString::Join(ts::DVBCharset::GetAllNames()).toSplitLines(74, ts::UString(), ts::UString(6, ts::SPACE)).toUTF8() + ".\n"
+            u"      " + ts::UString::Join(ts::DVBCharset::GetAllNames()).toSplitLines(74, ts::UString(), ts::UString(6, ts::SPACE)) + u".\n"
             u"\n"
             u"      With --compile, this character set is used to encode strings. If a\n"
             u"      given string cannot be encoded with this character set or if this option\n"
@@ -142,8 +142,8 @@ Options::Options(int argc, char *argv[]) :
 
     analyze(argc, argv);
 
-    getValues(infiles, "");
-    getValue(outfile, "output");
+    getValues(infiles, u"");
+    getValue(outfile, u"output");
     compile = present(u"compile");
     decompile = present(u"decompile");
     xmlModel = present(u"xml-model");
@@ -164,9 +164,9 @@ Options::Options(int argc, char *argv[]) :
     }
 
     // Get default character set.
-    const std::string csName(value(u"default-charset"));
+    const ts::UString csName(value(u"default-charset"));
     if (!csName.empty() && (defaultCharset = ts::DVBCharset::GetCharset(csName)) == 0) {
-        error(u"invalid character set name '%s", csName.c_str());
+        error(u"invalid character set name '%s", {csName});
     }
 
     exitOnError();
@@ -180,22 +180,22 @@ Options::Options(int argc, char *argv[]) :
 bool DisplayModel(Options& opt)
 {
     // Locate the model file.
-    const std::string inName(ts::SearchConfigurationFile("tsduck.xml"));
+    const ts::UString inName(ts::SearchConfigurationFile(u"tsduck.xml"));
     if (inName.empty()) {
         opt.error(u"XML model file not found");
         return false;
     }
-    opt.verbose(u"original model file is " + inName);
+    opt.verbose(u"original model file is %s", {inName});
 
     // Save to a file. Default to stdout.
-    std::string outName(opt.outfile);
+    ts::UString outName(opt.outfile);
     if (opt.outdir) {
         // Specified output is a directory, add default name.
         outName.push_back(ts::PathSeparator);
         outName.append("tsduck.xml");
     }
     if (!outName.empty()) {
-        opt.verbose(u"saving model file to " + outName);
+        opt.verbose(u"saving model file to %s", {outName});
     }
 
     // Redirect input and output, exit in case of error.
@@ -212,10 +212,10 @@ bool DisplayModel(Options& opt)
 //  Compile one source file. Return true on success, false on error.
 //----------------------------------------------------------------------------
 
-bool CompileXML(Options& opt, const std::string& infile, const std::string& outfile)
+bool CompileXML(Options& opt, const ts::UString& infile, const ts::UString& outfile)
 {
-    opt.verbose(u"Compiling " + infile + " to " + outfile);
-    ts::ReportWithPrefix report(opt, ts::BaseName(infile) + ": ");
+    opt.verbose(u"Compiling %s to %s", {infile, outfile});
+    ts::ReportWithPrefix report(opt, ts::BaseName(infile) + u": ");
 
     // Load XML file, convert tables to binary and save binary file.
     ts::XMLTables xml;
@@ -227,10 +227,10 @@ bool CompileXML(Options& opt, const std::string& infile, const std::string& outf
 //  Decompile one binary file. Return true on success, false on error.
 //----------------------------------------------------------------------------
 
-bool DecompileBinary(Options& opt, const std::string& infile, const std::string& outfile)
+bool DecompileBinary(Options& opt, const ts::UString& infile, const ts::UString& outfile)
 {
-    opt.verbose(u"Decompiling " + infile + " to " + outfile);
-    ts::ReportWithPrefix report(opt, ts::BaseName(infile) + ": ");
+    opt.verbose(u"Decompiling %s to %s", {infile, outfile});
+    ts::ReportWithPrefix report(opt, ts::BaseName(infile) + u": ");
 
     // Load binary tables.
     ts::BinaryTablePtrVector tables;
@@ -249,17 +249,17 @@ bool DecompileBinary(Options& opt, const std::string& infile, const std::string&
 //  Process one file. Return true on success, false on error.
 //----------------------------------------------------------------------------
 
-bool ProcessFile(Options& opt, const std::string& infile)
+bool ProcessFile(Options& opt, const ts::UString& infile)
 {
-    const std::string ext(ts::LowerCaseValue(ts::PathSuffix(infile)));
-    const bool isXML = ext == ".xml";
-    const bool isBin = ext == ".bin";
+    const ts::UString ext(ts::PathSuffix(infile).toLower());
+    const bool isXML = ext == u".xml";
+    const bool isBin = ext == u".bin";
     const bool compile = opt.compile || isXML;
     const bool decompile = opt.decompile || isBin;
-    const char* const outExt = compile ? ".bin" : ".xml";
+    const ts::UChar* const outExt = compile ? u".bin" : u".xml";
 
     // Compute output file name with default file type.
-    std::string outname(opt.outfile);
+    ts::UString outname(opt.outfile);
     if (outname.empty()) {
         outname = ts::PathPrefix(infile) + outExt;
     }
@@ -269,15 +269,15 @@ bool ProcessFile(Options& opt, const std::string& infile)
 
     // Process the input file, starting with error cases.
     if (!compile && !decompile) {
-        opt.error(u"don't know what to do with file " + infile + ", unknown file type, specify --compile or --decompile");
+        opt.error(u"don't know what to do with file %s, unknown file type, specify --compile or --decompile", {infile});
         return false;
     }
     else if (compile && isBin) {
-        opt.error(u"cannot compile binary file " + infile);
+        opt.error(u"cannot compile binary file %s", {infile});
         return false;
     }
     else if (decompile && isXML) {
-        opt.error(u"cannot decompile XML file " + infile);
+        opt.error(u"cannot decompile XML file %s", {infile});
         return false;
     }
     else if (compile) {

@@ -916,13 +916,13 @@ bool ts::UString::getLine(std::istream& strm)
 // Interpret this string as a sequence of hexadecimal digits (ignore blanks).
 //----------------------------------------------------------------------------
 
-bool ts::UString::hexaDecode(ts::ByteBlock& result)
+bool ts::UString::hexaDecode(ts::ByteBlock& result) const
 {
     result.clear();
     return hexaDecodeAppend(result);
 }
 
-bool ts::UString::hexaDecodeAppend(ts::ByteBlock& result)
+bool ts::UString::hexaDecodeAppend(ts::ByteBlock& result) const
 {
     // Oversize the prereservation in output buffer.
     result.reserve(result.size() + size() / 2);

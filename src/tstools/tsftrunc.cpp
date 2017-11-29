@@ -36,25 +36,23 @@
 #include "tsSysUtils.h"
 TSDUCK_SOURCE;
 
-using namespace ts;
-
 
 //----------------------------------------------------------------------------
 //  Command line options
 //----------------------------------------------------------------------------
 
-struct Options: public Args
+struct Options: public ts::Args
 {
-    Options (int argc, char *argv[]);
+    Options(int argc, char *argv[]);
 
-    bool          check_only;   // check only, do not truncate
-    bool          verbose;      // verbose mode
-    PacketCounter trunc_pkt;    // first packet to truncate (0 means eof)
-    StringVector  files;        // file names
+    bool              check_only;   // check only, do not truncate
+    bool              verbose;      // verbose mode
+    ts::PacketCounter trunc_pkt;    // first packet to truncate (0 means eof)
+    ts::UStringVector files;        // file names
 };
 
-Options::Options (int argc, char *argv[]) :
-    Args("MPEG Transport Stream File Truncation Utility.", "[options] filename ..."),
+Options::Options(int argc, char *argv[]) :
+    Args(u"MPEG Transport Stream File Truncation Utility.", u"[options] filename ..."),
     check_only(false),
     verbose(false),
     trunc_pkt(0),
@@ -66,35 +64,35 @@ Options::Options (int argc, char *argv[]) :
     option(u"verbose",  'v');
 
     setHelp(u"Files:\n"
-             u"\n"
-             u"  MPEG capture files to be truncated.\n"
-             u"\n"
-             u"Options:\n"
-             u"\n"
-             u"  --help\n"
-             u"      Display this help text.\n"
-             u"\n"
-             u"  -n\n"
-             u"  --noaction\n"
-             u"      Do not perform truncation, check mode only.\n"
-             u"\n"
-             u"  -p value\n"
-             u"  --packet value\n"
-             u"      Index of first packet to truncate. If unspecified, all complete\n"
-             u"      packets are kept in the file. Extraneous bytes at end of file\n"
-             u"      (after last multiple of 188 bytes) are truncated.\n"
-             u"\n"
-             u"  -v\n"
-             u"  --verbose\n"
-             u"      Produce verbose messages.\n"
-             u"\n"
-             u"  --version\n"
-             u"      Display the version number.\n");
+            u"\n"
+            u"  MPEG capture files to be truncated.\n"
+            u"\n"
+            u"Options:\n"
+            u"\n"
+            u"  --help\n"
+            u"      Display this help text.\n"
+            u"\n"
+            u"  -n\n"
+            u"  --noaction\n"
+            u"      Do not perform truncation, check mode only.\n"
+            u"\n"
+            u"  -p value\n"
+            u"  --packet value\n"
+            u"      Index of first packet to truncate. If unspecified, all complete\n"
+            u"      packets are kept in the file. Extraneous bytes at end of file\n"
+            u"      (after last multiple of 188 bytes) are truncated.\n"
+            u"\n"
+            u"  -v\n"
+            u"  --verbose\n"
+            u"      Produce verbose messages.\n"
+            u"\n"
+            u"  --version\n"
+            u"      Display the version number.\n");
 
-    analyze (argc, argv);
+    analyze(argc, argv);
 
-    getValues (files);
-    trunc_pkt = intValue<PacketCounter>(u"packet");
+    getValues(files);
+    trunc_pkt = intValue<ts::PacketCounter>(u"packet");
     check_only = present(u"noaction");
     verbose = check_only || present(u"verbose");
 }
@@ -104,21 +102,21 @@ Options::Options (int argc, char *argv[]) :
 //  Program entry point
 //----------------------------------------------------------------------------
 
-int main (int argc, char *argv[])
+int main(int argc, char *argv[])
 {
     Options opt (argc, argv);
     bool success = true;
-    ErrorCode err;
+    ts::ErrorCode err;
 
-    for (StringVector::const_iterator file = opt.files.begin(); file != opt.files.end(); ++file) {
+    for (ts::UStringVector::const_iterator file = opt.files.begin(); file != opt.files.end(); ++file) {
 
         // Get file size
 
-        int64_t size = GetFileSize (*file);
+        int64_t size = GetFileSize(*file);
 
         if (size < 0) {
-            err = LastErrorCode();
-            opt.error (*file + ": " + ErrorCodeMessage (err));
+            err = ts::LastErrorCode();
+            opt.error(u"%s: %s", {*file, ts::ErrorCodeMessage(err)});
             success = false;
             continue;
         }
@@ -126,15 +124,15 @@ int main (int argc, char *argv[])
         // Compute number of packets and how many bytes to keep in file.
 
         uint64_t file_size = uint64_t (size);
-        uint64_t pkt_count = file_size / PKT_SIZE;
-        uint64_t extra = file_size % PKT_SIZE;
+        uint64_t pkt_count = file_size / ts::PKT_SIZE;
+        uint64_t extra = file_size % ts::PKT_SIZE;
         uint64_t keep;
 
         if (opt.trunc_pkt == 0 || opt.trunc_pkt > pkt_count) {
-            keep = pkt_count * PKT_SIZE;
+            keep = pkt_count * ts::PKT_SIZE;
         }
         else {
-            keep = opt.trunc_pkt * PKT_SIZE;
+            keep = opt.trunc_pkt * ts::PKT_SIZE;
         }
 
         // Display info in verbose or check mode
@@ -143,13 +141,13 @@ int main (int argc, char *argv[])
             if (opt.files.size() > 1) {
                 std::cout << *file << ": ";
             }
-            std::cout << Decimal (file_size) << " bytes, "
-                      << Decimal (pkt_count) << " packets, ";
+            std::cout << ts::UString::Decimal(file_size) << " bytes, "
+                      << ts::UString::Decimal(pkt_count) << " packets, ";
             if (extra > 0) {
                 std::cout << extra << " extra bytes, ";
             }
             if (keep < file_size) {
-                std::cout << Decimal (file_size - keep) << " bytes to truncate" << std::endl;
+                std::cout << ts::UString::Decimal(file_size - keep) << " bytes to truncate" << std::endl;
             }
             else {
                 std::cout << "ok" << std::endl;
@@ -158,9 +156,9 @@ int main (int argc, char *argv[])
 
         // Do the truncation
 
-        if (!opt.check_only && keep < file_size && (err = TruncateFile (*file, keep)) != SYS_SUCCESS) {
-            err = LastErrorCode();
-            opt.error (*file + ": " + ErrorCodeMessage (err));
+        if (!opt.check_only && keep < file_size && (err = TruncateFile(*file, keep)) != ts::SYS_SUCCESS) {
+            err = ts::LastErrorCode();
+            opt.error(u"%s: %s", {*file, ts::ErrorCodeMessage(err)});
             success = false;
         }
     }
