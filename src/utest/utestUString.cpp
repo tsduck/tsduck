@@ -1420,13 +1420,17 @@ void UStringTest::testFormat()
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"", ts::UString::Format(u""));
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"", ts::UString::Format(u"", {}));
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"abc", ts::UString::Format(u"abc"));
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"abc%sef", ts::UString::Format(u"abc%sef"));
 
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"abc1", ts::UString::Format(u"abc%d", {1}));
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"abc1def", ts::UString::Format(u"abc%ddef", {1}));
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"1 %d %d", ts::UString::Format(u"%d %d %d", {1}));
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"1 % 2 3", ts::UString::Format(u"%d %% %d %d", {1, 2, 3, 4}));
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"1 ", ts::UString::Format(u"%d %01", {1, 2, 3}));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"abc1de%f", ts::UString::Format(u"abc%dde%%f", {1}));
+
+    // Invalid formats / arguments. Define environment variable TSDUCK_FORMAT_DEBUG to get error messages.
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"a) 1 2",     ts::UString::Format(u"a) %d %d", {1, 2, 3, 4}));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"b) 1 ",      ts::UString::Format(u"b) %d %d", {1}));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"c) 1 abc",   ts::UString::Format(u"c) %d %d", {1, u"abc"}));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"d) 1 2",     ts::UString::Format(u"d) %d %s", {1, 2}));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"e) abXcdef", ts::UString::Format(u"e) ab%scd%sef", {u"X"}));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"f) 1 ",      ts::UString::Format(u"f) %d %01", {1, 2, 3}));
 
     int i = -1234;
     uint16_t u16 = 128;
@@ -1475,7 +1479,7 @@ void UStringTest::testFormat()
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"0014", ts::UString::Format(u"%X", {E20}));
 
     // String.
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"|%s|", ts::UString::Format(u"|%s|", {}));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"||", ts::UString::Format(u"|%s|", {}));
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"|abc|", ts::UString::Format(u"|%s|", {"abc"}));
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"|abc|", ts::UString::Format(u"|%s|", {u"abc"}));
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"|abc|", ts::UString::Format(u"|%s|", {std::string("abc")}));

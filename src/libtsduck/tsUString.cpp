@@ -33,6 +33,7 @@
 
 #include "tsUString.h"
 #include "tsByteBlock.h"
+#include "tsSysUtils.h"
 #include "tsDVBCharsetSingleByte.h"
 #include "tsDVBCharsetUTF8.h"
 TSDUCK_SOURCE;
@@ -319,6 +320,13 @@ std::ostream& operator<<(std::ostream& strm, const ts::UString& str)
 {
     std::string utf8;
     str.toUTF8(utf8);
+    return strm << utf8;
+}
+
+std::ostream& operator<<(std::ostream& strm, const ts::UChar* str)
+{
+    std::string utf8;
+    ts::UString(str).toUTF8(utf8);
     return strm << utf8;
 }
 
@@ -1400,54 +1408,94 @@ ts::UString ts::UString::Format(const UChar* fmt, const std::initializer_list<ts
     UString result;
     result.reserve(256);
 
-    // Iterator inside the argument list.
-    std::initializer_list<ts::ArgMix>::const_iterator arg(args.begin());
-    const std::initializer_list<ts::ArgMix>::const_iterator argsEnd(args.end());
-
-    // Loop into format, stop at each '%' sequence, exit when no more arguments are available.
-    // The variable 'fmt' is incremented all the way.
-    while (*fmt != CHAR_NULL && arg != argsEnd) {
-
-        // Locate the next '%' or end of string.
-        const UChar* const start = fmt;
-        while (*fmt != CHAR_NULL && *fmt != u'%') {
-            ++fmt;
-        }
-
-        // Copy this literal sequence directly into the result.
-        result.append(start, fmt - start);
-
-        // Process '%' sequence.
-        if (*fmt == u'%') {
-            ++fmt;
-            ProcessArgMixs(result, fmt, arg, argsEnd);
-        }
-    }
-
-    // Append the rest of the format into the result. There are maybe other '%s' sequences
-    // but we have no more argument to substitute.
-    result.append(fmt);
+    // Process the string.
+    ArgMixInContext ctx(result, fmt, args);
 
     // Final formatted string.
     return result;
 }
 
 
+//----------------------------------------------------------------------------
+// Debugging support for Format and Scan.
+//----------------------------------------------------------------------------
+
+volatile bool ts::UString::ArgMixContext::_debugOn = false;
+volatile bool ts::UString::ArgMixContext::_debugValid = false;
+
+ts::UString::ArgMixContext::ArgMixContext(const UChar* fmt, bool output) :
+    _fmt(fmt),
+    _format(fmt),
+    _output(output)
+{
+}
+
+bool ts::UString::ArgMixContext::debugInit()
+{
+    _debugOn = ts::EnvironmentExists(u"TSDUCK_FORMAT_DEBUG");
+    _debugValid = true;
+    return _debugOn;
+}
+
+void ts::UString::ArgMixContext::debug(const UString& message, UChar cmd) const
+{
+    if (debugActive()) {
+        std::cerr << (_output ? "[FORMATDBG] " : "[SCANDBG] ") << message;
+        if (cmd != CHAR_NULL) {
+            std::cerr << " for sequence %" << cmd;
+        }
+        std::cerr << " at position " << (_fmt - _format) << " in format string: \"" << _format << "\"" << std::endl;
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Analysis context of a Format string.
+//----------------------------------------------------------------------------
+
+ts::UString::ArgMixInContext::ArgMixInContext(UString& result, const UChar* fmt, const std::initializer_list<ArgMix>& args) :
+    ArgMixContext(fmt, true),
+    _result(result),
+    _arg(args.begin()),
+    _end(args.end())
+{
+    // Loop into format, stop at each '%' sequence.
+    while (*_fmt != CHAR_NULL) {
+
+        // Locate the next '%' or end of string.
+        const UChar* const start = _fmt;
+        while (*_fmt != CHAR_NULL && *_fmt != u'%') {
+            ++_fmt;
+        }
+
+        // Copy this literal sequence directly into the result.
+        result.append(start, _fmt - start);
+
+        // Process '%' sequence.
+        if (*_fmt == u'%') {
+            ++_fmt;
+            processArg();
+        }
+    }
+
+    // Report extraneous parameters.
+    if (_arg != _end && debugActive()) {
+        debug(u"extraneous " + Decimal(_end - _arg) + u" arguments");
+    }
+}
+
 // Anciliary function to process one '%' sequence.
-void ts::UString::ProcessArgMixs(UString& result,
-                                    const UChar*& fmt,
-                                    std::initializer_list<ts::ArgMix>::const_iterator& arg,
-                                    const std::initializer_list<ts::ArgMix>::const_iterator& argsEnd)
+void ts::UString::ArgMixInContext::processArg()
 {
     // Invalid '%' at end of string.
-    if (*fmt == CHAR_NULL) {
+    if (*_fmt == CHAR_NULL) {
         return;
     }
 
     // Process literal '%'.
-    if (*fmt == u'%') {
-        result.push_back(u'%');
-        ++fmt;
+    if (*_fmt == u'%') {
+        _result.push_back(u'%');
+        ++_fmt;
         return;
     }
 
@@ -1467,29 +1515,29 @@ void ts::UString::ProcessArgMixs(UString& result,
     size_t minWidth = 0;
     size_t maxWidth = std::numeric_limits<size_t>::max();
 
-    if (*fmt == u'-') {
+    if (*_fmt == u'-') {
         leftJustified = true;
-        fmt++;
+        _fmt++;
     }
-    if (*fmt == u'+') {
+    if (*_fmt == u'+') {
         forceSign = true;
-        fmt++;
+        _fmt++;
     }
-    if (*fmt == u'0') {
+    if (*_fmt == u'0') {
         pad = u'0';
-        fmt++;
+        _fmt++;
     }
-    GetFormatSize(minWidth, fmt, arg, argsEnd);
-    if (*fmt == u'.') {
-        ++fmt;
-        GetFormatSize(maxWidth, fmt, arg, argsEnd);
+    getFormatSize(minWidth);
+    if (*_fmt == u'.') {
+        ++_fmt;
+        getFormatSize(maxWidth);
         if (maxWidth < minWidth) {
             maxWidth = minWidth;
         }
     }
-    if (*fmt == u'\'') {
+    if (*_fmt == u'\'') {
         useSeparator = true;
-        fmt++;
+        _fmt++;
     }
 
     // The thousands separator to use.
@@ -1504,33 +1552,47 @@ void ts::UString::ProcessArgMixs(UString& result,
     // - %% : Insert a literal % (already done).
 
     // Extract the command and set fmt to its final value, after the '%' sequence.
-    const UChar cmd = *fmt;
+    const UChar cmd = *_fmt;
     if (cmd != CHAR_NULL) {
-        ++fmt;
+        ++_fmt;
     }
 
-    // Process invalid '%' sequence or no more argument to insert.
-    if ((cmd != u's' && cmd != u'c' && cmd != u'd' && cmd != u'x' && cmd != u'X') || arg == argsEnd) {
+    // Process invalid '%' sequence.
+    if (cmd != u's' && cmd != u'c' && cmd != u'd' && cmd != u'x' && cmd != u'X') {
+        if (debugActive()) {
+            debug(u"invalid '%' sequence", cmd);
+        }
+        return;
+    }
+
+    // Process missing argument.
+    if (_arg == _end) {
+        if (debugActive()) {
+            debug(u"missing argument", cmd);
+        }
         return;
     }
 
     // Now, the command is valid, process it.
-    if (arg->isString()) {
+    if (_arg->isString()) {
         // String arguments are always treated as %s, regardless of the % command.
+        if (cmd != u's' && debugActive()) {
+            debug(u"type mismatch, got a string", cmd);
+        }
         // Get the string parameter.
         UString value;
-        switch (arg->type()) {
+        switch (_arg->type()) {
             case ArgMix::CHARPTR:
-                value.assignFromUTF8(arg->toCharPtr());
+                value.assignFromUTF8(_arg->toCharPtr());
                 break;
             case ArgMix::STRING:
-                value.assignFromUTF8(arg->toString());
+                value.assignFromUTF8(_arg->toString());
                 break;
             case ArgMix::UCHARPTR:
-                value.assign(arg->toUCharPtr());
+                value.assign(_arg->toUCharPtr());
                 break;
             case ArgMix::USTRING:
-                value.assign(arg->toUString());
+                value.assign(_arg->toUString());
                 break;
             default:
                 // Not a string, should not get there.
@@ -1545,44 +1607,54 @@ void ts::UString::ProcessArgMixs(UString& result,
         }
         // Insert the string with optional padding.
         if (minWidth > wid && !leftJustified) {
-            result.append(minWidth - wid, pad);
+            _result.append(minWidth - wid, pad);
         }
-        result.append(value);
+        _result.append(value);
         if (minWidth > wid && leftJustified) {
-            result.append(minWidth - wid, pad);
+            _result.append(minWidth - wid, pad);
         }
     }
     else if (cmd == u'c') {
         // Use an integer value as an Unicode code point.
-        result.append(arg->toUInt32());
+        if (!_arg->isInt() && debugActive()) {
+            debug(u"type mismatch, not an integer or character", cmd);
+        }
+        // Get and convert the Unicode code point.
+        _result.append(_arg->toUInt32());
     }
     else if (cmd == u'x' || cmd == u'X') {
         // Insert an integer in hexadecimal.
+        if (!_arg->isInt() && debugActive()) {
+            debug(u"type mismatch, not an integer", cmd);
+        }
         // If min width is not specified, use the "natural" width of the argument.
         if (minWidth == 0) {
-            minWidth = 2 * arg->size(); // number of hexa digits
+            minWidth = 2 * _arg->size(); // number of hexa digits
         }
-        if (arg->size() <= 4) {
-            result.append(Hexa(arg->toUInt32(), minWidth, separator, false, cmd == u'X'));
+        if (_arg->size() <= 4) {
+            _result.append(Hexa(_arg->toUInt32(), minWidth, separator, false, cmd == u'X'));
         }
         else {
-            result.append(Hexa(arg->toUInt64(), minWidth, separator, false, cmd == u'X'));
+            _result.append(Hexa(_arg->toUInt64(), minWidth, separator, false, cmd == u'X'));
         }
     }
     else {
         // Insert an integer in decimal.
-        switch (arg->type()) {
+        if (cmd != u'd' && debugActive()) {
+            debug(u"type mismatch, got an integer", cmd);
+        }
+        switch (_arg->type()) {
             case ArgMix::INT32:
-                result.append(Decimal(arg->toInt32(), minWidth, !leftJustified, separator, forceSign, pad));
+                _result.append(Decimal(_arg->toInt32(), minWidth, !leftJustified, separator, forceSign, pad));
                 break;
             case ArgMix::UINT32:
-                result.append(Decimal(arg->toUInt32(), minWidth, !leftJustified, separator, forceSign, pad));
+                _result.append(Decimal(_arg->toUInt32(), minWidth, !leftJustified, separator, forceSign, pad));
                 break;
             case ArgMix::INT64:
-                result.append(Decimal(arg->toInt64(), minWidth, !leftJustified, separator, forceSign, pad));
+                _result.append(Decimal(_arg->toInt64(), minWidth, !leftJustified, separator, forceSign, pad));
                 break;
             case ArgMix::UINT64:
-                result.append(Decimal(arg->toUInt64(), minWidth, !leftJustified, separator, forceSign, pad));
+                _result.append(Decimal(_arg->toUInt64(), minWidth, !leftJustified, separator, forceSign, pad));
                 break;
             default:
                 // Not an integer, should not get there, should have been already processed as a string.
@@ -1592,28 +1664,28 @@ void ts::UString::ProcessArgMixs(UString& result,
     }
 
     // Finally, absorb the inserted argument.
-    ++arg;
+    ++_arg;
 }
 
 // Anciliary function to extract a size field from a '%' sequence.
-void ts::UString::GetFormatSize(size_t& size,
-                                const UChar*& fmt,
-                                std::initializer_list<ts::ArgMix>::const_iterator& arg,
-                                const std::initializer_list<ts::ArgMix>::const_iterator& argsEnd)
+void ts::UString::ArgMixInContext::getFormatSize(size_t& size)
 {
-    if (IsDigit(*fmt)) {
+    if (IsDigit(*_fmt)) {
         // An decimal integer literal is present, decode it.
         size = 0;
-        while (IsDigit(*fmt)) {
-            size = 10 * size + *fmt++ - u'0';
+        while (IsDigit(*_fmt)) {
+            size = 10 * size + *_fmt++ - u'0';
         }
     }
-    else if (*fmt == u'*') {
+    else if (*_fmt == u'*') {
         // The size field is taken from the argument list.
-        ++fmt;
-        if (arg != argsEnd) {
-            size = arg->toInteger<size_t>();
-            ++arg;
+        ++_fmt;
+        if (_arg != _end) {
+            size = _arg->toInteger<size_t>();
+            ++_arg;
+        }
+        else if (debugActive()) {
+            debug(u"missing argument for %* specifier");
         }
     }
 }

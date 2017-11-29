@@ -463,8 +463,7 @@ namespace ts {
         //! This method displays the content of a transport packet.
         //! @param [in,out] strm A standard stream in output mode (text mode).
         //! @param [in] flags Indicate which part must be dumped. If DUMP_RAW or
-        //! DUMP_PAYLOAD is specified, flags from @link ts::hexa::Flags @endlink
-        //! may also be used.
+        //! DUMP_PAYLOAD is specified, flags from ts::UString::HexaFlags may also be used.
         //! @param [in] indent Indicates the base indentation of lines.
         //! @return A reference to the @a strm object.
         //!
