@@ -214,18 +214,18 @@ bool ts::PlayPlugin::start()
     GetEnvironmentPath(search_path, TS_COMMAND_PATH);
 
     // Executable names for various players
-    static const UChar vlc_exec[] = "vlc";
-    static const UChar mplayer_exec[] = "mplayer";
-    static const UChar xine_exec[] = "xine";
+    static const UChar vlc_exec[] = u"vlc";
+    static const UChar mplayer_exec[] = u"mplayer";
+    static const UChar xine_exec[] = u"xine";
 
     // Options to read TS on stdin for various players
-    static const UChar vlc_opts[] = "-";
-    static const UChar mplayer_opts[] = "-demuxer +mpegts -";
-    static const UChar xine_opts[] = "stdin:/#demux:mpeg-ts";
+    static const UChar vlc_opts[] = u"-";
+    static const UChar mplayer_opts[] = u"-demuxer +mpegts -";
+    static const UChar xine_opts[] = u"stdin:/#demux:mpeg-ts";
 
     // Search known media players
     UString exec;
-    const UChar* opts = "";
+    const UChar* opts = u"";
 
     if (_use_mplayer) {
         opts = mplayer_opts;
