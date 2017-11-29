@@ -57,7 +57,7 @@ namespace ts {
     private:
         PCRAnalyzer _pcr_analyzer; // PCR analysis context
         BitRate     _bitrate;      // Last remembered bitrate (keep it signed)
-        std::string _pcr_name;     // Time stamp type name
+        UString     _pcr_name;     // Time stamp type name
 
         // PCR analysis is done permanently. Typically, the analysis of a
         // constant stream will produce different results quite often. But
@@ -126,11 +126,11 @@ bool ts::PCRBitratePlugin::start()
     const size_t min_pid = intValue<size_t>(u"min-pid", DEF_MIN_PID);
     if (present(u"dts")) {
         _pcr_analyzer.resetAndUseDTS (min_pid, min_pcr);
-        _pcr_name = "DTS";
+        _pcr_name = u"DTS";
     }
     else {
         _pcr_analyzer.reset (min_pid, min_pcr);
-        _pcr_name = "PCR";
+        _pcr_name = u"PCR";
     }
     _bitrate = 0;
     return true;
@@ -143,10 +143,7 @@ bool ts::PCRBitratePlugin::start()
 
 ts::BitRate ts::PCRBitratePlugin::getBitrate()
 {
-    if (tsp->debug()) {
-        tsp->log (Severity::Debug, "getBitrate() called, returning " + Decimal (_bitrate) + " b/s");
-    }
-
+    tsp->debug(u"getBitrate() called, returning %'d b/s", {_bitrate});
     return _bitrate;
 }
 
@@ -165,11 +162,9 @@ ts::ProcessorPlugin::Status ts::PCRBitratePlugin::processPacket (TSPacket& pkt, 
         _pcr_analyzer.reset();
 
         // If the new bitrate is too close to the previous recorded one, no need to signal it.
-        if (new_bitrate != _bitrate && (new_bitrate / ::abs (int32_t (new_bitrate) - int32_t (_bitrate))) < REPORT_THRESHOLD) {
+        if (new_bitrate != _bitrate && (new_bitrate / ::abs(int32_t(new_bitrate) - int32_t(_bitrate))) < REPORT_THRESHOLD) {
             // New bitrate is significantly different, signal it.
-            if (tsp->verbose()) {
-                tsp->verbose(u"new bitrate from " + _pcr_name + " analysis: " + Decimal (new_bitrate) + " b/s");
-            }
+            tsp->verbose(u"new bitrate from %s analysis: %'d b/s", {_pcr_name, new_bitrate});
             _bitrate = new_bitrate;
             bitrate_changed = true;
         }

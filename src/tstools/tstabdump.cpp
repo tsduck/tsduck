@@ -48,12 +48,12 @@ struct Options: public ts::Args
     Options(int argc, char *argv[]);
 
     bool                  verbose;   // Verbose output
-    ts::StringVector      infiles;   // Input file names
+    ts::UStringVector     infiles;   // Input file names
     ts::TablesDisplayArgs display;   // Options about displaying tables
 };
 
 Options::Options(int argc, char *argv[]) :
-    ts::Args("Dump PSI/SI tables, as saved by tstables.", "[options] [filename ...]"),
+    ts::Args(u"Dump PSI/SI tables, as saved by tstables.", u"[options] [filename ...]"),
     verbose(false),
     infiles(),
     display()
@@ -83,7 +83,7 @@ Options::Options(int argc, char *argv[]) :
 
     analyze(argc, argv);
 
-    getValues(infiles, "");
+    getValues(infiles, u"");
     verbose = present(u"verbose");
     display.load(*this);
 
@@ -95,7 +95,7 @@ Options::Options(int argc, char *argv[]) :
 //  Dump routine. Return true on success.
 //----------------------------------------------------------------------------
 
-bool DumpFile(Options& opt, const std::string& file_name)
+bool DumpFile(Options& opt, const ts::UString& file_name)
 {
     // Report file name in case of multiple files
     if (opt.verbose && opt.infiles.size() > 1) {
@@ -106,7 +106,7 @@ bool DumpFile(Options& opt, const std::string& file_name)
     ts::SectionPtrVector sections;
     bool ok;
 
-    if (opt.infiles.size() == 0) {
+    if (file_name.empty() == 0) {
         // no input file specified, use standard input
         SetBinaryModeStdin(opt);
         ok = ts::Section::LoadFile(sections, std::cin, ts::CRC32::IGNORE, opt);
@@ -139,10 +139,10 @@ int main(int argc, char *argv[])
     std::cout << std::endl;
 
     if (opt.infiles.size() == 0) {
-        ok = DumpFile(opt, "");
+        ok = DumpFile(opt, u"");
     }
     else {
-        for (ts::StringVector::const_iterator it = opt.infiles.begin(); it != opt.infiles.end(); ++it) {
+        for (ts::UStringVector::const_iterator it = opt.infiles.begin(); it != opt.infiles.end(); ++it) {
             ok = DumpFile(opt, *it) && ok;
         }
     }

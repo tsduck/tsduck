@@ -53,14 +53,14 @@ struct Options: public ts::Args
     ts::CRC32::Validation  crc_op;     // Validate/recompute CRC32
     ts::PID                pid;        // Target PID
     ts::BitRate            bitrate;    // Target PID bitrate
-    std::string            outfile;    // Output file
+    ts::UString            outfile;    // Output file
     ts::FileNameRateList   infiles;    // Input file names and repetition rates
     bool                   verbose;    // Verbose mode
     bool                   debug;      // Debug mode
 };
 
 Options::Options(int argc, char *argv[]) :
-    ts::Args("Packetize PSI/SI sections in a transport stream PID.", "[options] [input-file[=rate] ...]"),
+    ts::Args(u"Packetize PSI/SI sections in a transport stream PID.", u"[options] [input-file[=rate] ...]"),
     continuous(false),
     stuffing_policy(ts::CyclingPacketizer::NEVER),
     crc_op(ts::CRC32::COMPUTE),
@@ -199,7 +199,7 @@ int main (int argc, char *argv[])
             if (opt.verbose) {
                 std::cerr << "* Loaded " << sections.size() << " sections from " << it->file_name;
                 if (it->repetition > 0) {
-                    std::cerr << ", repetition rate: " << ts::Decimal(it->repetition) << " ms";
+                    std::cerr << ", repetition rate: " << ts::UString::Decimal(it->repetition) << " ms";
                 }
                 std::cerr << std::endl;
             }
@@ -224,7 +224,7 @@ int main (int argc, char *argv[])
 
 
     if (opt.verbose) {
-        std::cerr << "* Generated " << ts::Decimal(count) << " TS packets" << std::endl;
+        std::cerr << "* Generated " << ts::UString::Decimal(count) << " TS packets" << std::endl;
     }
     if (opt.debug) {
         std::cerr << "* After packetization:" << std::endl;

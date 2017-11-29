@@ -1374,7 +1374,7 @@ namespace ts {
         //! @return True on success, false on error (invalid hexa format).
         //! When returning false, the result contains everything that could be decoded before getting the error.
         //!
-        bool hexaDecode(ByteBlock& result);
+        bool hexaDecode(ByteBlock& result) const;
 
         //!
         //! Interpret this string as a sequence of hexadecimal digits (ignore blanks).
@@ -1382,7 +1382,7 @@ namespace ts {
         //! @return True on success, false on error (invalid hexa format).
         //! When returning false, the result contains everything that could be decoded before getting the error.
         //!
-        bool hexaDecodeAppend(ByteBlock& result);
+        bool hexaDecodeAppend(ByteBlock& result) const;
 
         //!
         //! Append an array of C-strings to a container of strings.

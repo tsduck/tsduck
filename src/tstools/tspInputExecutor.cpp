@@ -112,7 +112,7 @@ bool ts::tsp::InputExecutor::initAllBuffers(PacketBuffer* buffer)
         verbose(u"unknown input bitrate");
     }
     else {
-        verbose(u"input bitrate is " + Decimal(init_bitrate) + " b/s");
+        verbose(u"input bitrate is %'d b/s", {init_bitrate});
     }
 
     // Indicate that the loaded packets are now available to the next packet processor.

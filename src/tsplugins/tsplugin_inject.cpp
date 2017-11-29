@@ -368,7 +368,7 @@ ts::ProcessorPlugin::Status ts::InjectPlugin::processPacket(TSPacket& pkt, bool&
                 return TSP_END;
             }
             _pid_inter_pkt = ts_bitrate / _pid_bitrate;
-            tsp->verbose(u"transport bitrate: " + Decimal(ts_bitrate) + " b/s, packet interval: " + Decimal(_pid_inter_pkt));
+            tsp->verbose(u"transport bitrate: %'d b/s, packet interval: %'d", {ts_bitrate, _pid_inter_pkt});
         }
         else if (_specific_rates && _pid_inter_pkt != 0) {
             // Case (2): Evaluate PID bitrate
@@ -379,8 +379,7 @@ ts::ProcessorPlugin::Status ts::InjectPlugin::processPacket(TSPacket& pkt, bool&
             }
             else {
                 _pzer.setBitRate(_pid_bitrate);
-                tsp->log(Severity::Verbose,"transport bitrate: " + Decimal(ts_bitrate) +
-                         " b/s, new PID bitrate: " + Decimal(_pid_bitrate) + " b/s");
+                tsp->verbose(u"transport bitrate: %'d b/s, new PID bitrate: %'d b/s", {ts_bitrate, _pid_bitrate});
             }
         }
     }
@@ -398,9 +397,7 @@ ts::ProcessorPlugin::Status ts::InjectPlugin::processPacket(TSPacket& pkt, bool&
         }
         else {
             _pzer.setBitRate(_pid_bitrate);
-            if (tsp->debug()) {
-                tsp->log(Severity::Debug, "transport bitrate: " + Decimal(ts_bitrate) + " b/s, new PID bitrate: " + Decimal(_pid_bitrate));
-            }
+            tsp->debug(u"transport bitrate: %'d b/s, new PID bitrate: %'d b/s", {ts_bitrate, _pid_bitrate});
         }
         _pid_packet_count = 0;
         _packet_count = 0;
@@ -448,7 +445,7 @@ ts::ProcessorPlugin::Status ts::InjectPlugin::processPacket(TSPacket& pkt, bool&
         }
         else {
             // Don't replace. Target PID should not be present on input.
-            tsp->error(u"PID %d (0x%04X) already exists, specify --replace or use another PID, aborting", int(_inject_pid), int(_inject_pid));
+            tsp->error(u"PID %d (0x%X) already exists, specify --replace or use another PID, aborting", {_inject_pid, _inject_pid});
             return TSP_END;
         }
     }

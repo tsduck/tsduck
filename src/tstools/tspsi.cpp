@@ -45,13 +45,13 @@ struct Options: public ts::Args
 {
     Options(int argc, char *argv[]);
 
-    std::string           infile;   // Input file name
+    ts::UString           infile;   // Input file name
     ts::PSILoggerArgs     logger;   // Table logging options
     ts::TablesDisplayArgs display;  // Table formatting options.
 };
 
 Options::Options(int argc, char *argv[]) :
-    ts::Args("MPEG Transport Stream PSI Extraction Utility.", "[options] [filename]"),
+    ts::Args(u"MPEG Transport Stream PSI Extraction Utility.", u"[options] [filename]"),
     infile(),
     logger(),
     display()

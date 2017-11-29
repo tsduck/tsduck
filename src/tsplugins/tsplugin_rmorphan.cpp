@@ -116,26 +116,26 @@ bool ts::RMOrphanPlugin::start()
     // List of referenced PID's, ie. PID's which must be passed.
     // Initially contains all predefined PID's
     _pass_pids.reset();
-    passPID (PID_PAT);
-    passPID (PID_CAT);
-    passPID (PID_TSDT);
-    passPID (PID_NULL);  // keep stuffing as well
-    passPID (PID_NIT);
-    passPID (PID_SDT);   // also contains BAT
-    passPID (PID_EIT);
-    passPID (PID_RST);
-    passPID (PID_TDT);   // also contains TOT
-    passPID (PID_NETSYNC);
-    passPID (PID_RNT);
-    passPID (PID_INBSIGN);
-    passPID (PID_MEASURE);
-    passPID (PID_DIT);
-    passPID (PID_SIT);
+    passPID(PID_PAT);
+    passPID(PID_CAT);
+    passPID(PID_TSDT);
+    passPID(PID_NULL);  // keep stuffing as well
+    passPID(PID_NIT);
+    passPID(PID_SDT);   // also contains BAT
+    passPID(PID_EIT);
+    passPID(PID_RST);
+    passPID(PID_TDT);   // also contains TOT
+    passPID(PID_NETSYNC);
+    passPID(PID_RNT);
+    passPID(PID_INBSIGN);
+    passPID(PID_MEASURE);
+    passPID(PID_DIT);
+    passPID(PID_SIT);
 
     // Reinitialize the demux. TS entry points are PAT and CAT.
     _demux.reset();
-    _demux.addPID (PID_PAT);
-    _demux.addPID (PID_CAT);
+    _demux.addPID(PID_PAT);
+    _demux.addPID(PID_CAT);
 
     return true;
 }
@@ -145,11 +145,11 @@ bool ts::RMOrphanPlugin::start()
 // Reference a PID
 //----------------------------------------------------------------------------
 
-void ts::RMOrphanPlugin::passPID (PID pid)
+void ts::RMOrphanPlugin::passPID(PID pid)
 {
-    if (!_pass_pids [pid]) {
-        _pass_pids.set (pid);
-        tsp->verbose(u"PID %d (0x%04X) is referenced", int (pid), int (pid));
+    if (!_pass_pids[pid]) {
+        _pass_pids.set(pid);
+        tsp->verbose(u"PID %d (0x%X) is referenced", {pid, pid});
     }
 }
 
@@ -158,11 +158,11 @@ void ts::RMOrphanPlugin::passPID (PID pid)
 // Adds all ECM/EMM PIDs from the specified descriptor list
 //----------------------------------------------------------------------------
 
-void ts::RMOrphanPlugin::addCA (const DescriptorList& dlist, TID parent_table)
+void ts::RMOrphanPlugin::addCA(const DescriptorList& dlist, TID parent_table)
 {
     // Loop on all CA descriptors
-    for (size_t index = dlist.search (DID_CA); index < dlist.count(); index = dlist.search (DID_CA, index + 1)) {
-        CADescriptor ca (*dlist[index]);
+    for (size_t index = dlist.search(DID_CA); index < dlist.count(); index = dlist.search(DID_CA, index + 1)) {
+        CADescriptor ca(*dlist[index]);
         if (!ca.isValid()) {
             // Cannot deserialize a valid CA descriptor, ignore it
         }

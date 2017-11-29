@@ -45,12 +45,12 @@ void ts::tsp::ListProcessors (Report& report)
 {
     // Get list of shared library files
 
-    StringVector files;
+    UStringVector files;
     ApplicationSharedLibrary::GetPluginList(files, "tsplugin_", TS_PLUGINS_PATH);
 
     // Build list of names and load shared libraries
 
-    StringVector names(files.size());
+    UStringVector names(files.size());
     std::vector<PluginSharedLibraryPtr> shlibs(files.size());
     size_t name_width = 0;
 
@@ -58,7 +58,7 @@ void ts::tsp::ListProcessors (Report& report)
         shlibs[i] = new PluginSharedLibrary(files[i], report);
         names[i] = shlibs[i]->moduleName();
         if (shlibs[i]->isLoaded()) {
-            name_width = std::max(name_width, names[i].size());
+            name_width = std::max(name_width, names[i].width());
         }
     }
 
@@ -68,8 +68,7 @@ void ts::tsp::ListProcessors (Report& report)
     for (size_t i = 0; i < files.size(); ++i) {
         if (shlibs[i]->isLoaded() && shlibs[i]->new_input != 0) {
             Plugin* p = shlibs[i]->new_input(0);
-            std::cerr << "  " << JustifyLeft(names[i] + ' ', name_width + 1, '.')
-                      << " " << p->getDescription() << std::endl;
+            std::cerr << "  " << names[i].toJustifiedLeft(name_width + 1, u'.', false, 1) << " " << p->getDescription() << std::endl;
             delete p;
         }
     }
@@ -78,8 +77,7 @@ void ts::tsp::ListProcessors (Report& report)
     for (size_t i = 0; i < files.size(); ++i) {
         if (shlibs[i]->isLoaded() && shlibs[i]->new_output != 0) {
             Plugin* p = shlibs[i]->new_output(0);
-            std::cerr << "  " << JustifyLeft (names[i] + ' ', name_width + 1, '.')
-                      << " " << p->getDescription() << std::endl;
+            std::cerr << "  " << names[i].toJustifiedLeft(name_width + 1, u'.', false, 1) << " " << p->getDescription() << std::endl;
             delete p;
         }
     }
@@ -88,8 +86,7 @@ void ts::tsp::ListProcessors (Report& report)
     for (size_t i = 0; i < files.size(); ++i) {
         if (shlibs[i]->isLoaded() && shlibs[i]->new_processor != 0) {
             Plugin* p = shlibs[i]->new_processor(0);
-            std::cerr << "  " << JustifyLeft(names[i] + ' ', name_width + 1, '.')
-                      << " " << p->getDescription() << std::endl;
+            std::cerr << "  " << names[i].toJustifiedLeft(name_width + 1, u'.', false, 1) << " " << p->getDescription() << std::endl;
             delete p;
         }
     }

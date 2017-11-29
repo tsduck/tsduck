@@ -35,7 +35,7 @@
 #include "tsPlugin.h"
 TSDUCK_SOURCE;
 
-#define DEFAULT_SEPARATOR ";"
+#define DEFAULT_SEPARATOR u";"
 
 
 //----------------------------------------------------------------------------
@@ -58,14 +58,14 @@ namespace ts {
         typedef std::map<PID,PIDContext> PIDContextMap;
 
         // PCRExtractPlugin private members
-        std::string   _separator;      // Field separator
+        UString       _separator;      // Field separator
         bool          _noheader;       // Suppress header
         bool          _good_pts_only;  // Keep "good" PTS only
         bool          _get_pcr;        // Get PCR
         bool          _get_opcr;       // Get OPCR
         bool          _get_pts;        // Get PTS
         bool          _get_dts;        // Get DTS
-        std::string   _output_name;    // Output file name (NULL means stderr)
+        UString       _output_name;    // Output file name (NULL means stderr)
         std::ofstream _output_stream;  // Output stream file
         std::ostream* _output;         // Reference to actual output stream file
         PacketCounter _packet_count;   // Global packets count
@@ -116,8 +116,8 @@ TSPLUGIN_DECLARE_PROCESSOR(ts::PCRExtractPlugin)
 // Constructor
 //----------------------------------------------------------------------------
 
-ts::PCRExtractPlugin::PCRExtractPlugin (TSP* tsp_) :
-    ProcessorPlugin(tsp_, "Extracts PCR, OPCR, PTS, DTS from TS packet for analysis.", "[options]"),
+ts::PCRExtractPlugin::PCRExtractPlugin(TSP* tsp_) :
+    ProcessorPlugin(tsp_, u"Extracts PCR, OPCR, PTS, DTS from TS packet for analysis.", u"[options]"),
     _separator(),
     _noheader(false),
     _good_pts_only(false),
@@ -141,47 +141,47 @@ ts::PCRExtractPlugin::PCRExtractPlugin (TSP* tsp_) :
     option(u"separator",     's', STRING);
 
     setHelp(u"Options:\n"
-             u"\n"
-             u"  -d\n"
-             u"  --dts\n"
-             u"      Report Decoding Time Stamps (DTS). By default, if none of --pcr, --opcr,\n"
-             u"      --pts, --dts is specified, report them all.\n"
-             u"\n"
-             u"  -g\n"
-             u"  --good-pts-only\n"
-             u"      Keep only \"good\" PTS, ie. PTS which have a higher value than the\n"
-             u"      previous good PTS. This eliminates PTS from out-of-sequence B-frames.\n"
-             u"\n"
-             u"  --help\n"
-             u"      Display this help text.\n"
-             u"\n"
-             u"  -n\n"
-             u"  --noheader\n"
-             u"      Do not output initial header line.\n"
-             u"\n"
-             u"  --opcr\n"
-             u"      Report Original Program Clock References (OPCR). By default, if none of\n"
-             u"      --pcr, --opcr, --pts, --dts is specified, report them all.\n"
-             u"\n"
-             u"  -o filename\n"
-             u"  --output-file filename\n"
-             u"      Output file name (standard error by default).\n"
-             u"\n"
-             u"  --pcr\n"
-             u"      Report Program Clock References (PCR). By default, if none of --pcr,\n"
-             u"      --opcr, --pts, --dts is specified, report them all.\n"
-             u"\n"
-             u"  -p\n"
-             u"  --pts\n"
-             u"      Report Presentation Time Stamps (PTS). By default, if none of --pcr,\n"
-             u"      --opcr, --pts, --dts is specified, report them all.\n"
-             u"\n"
-             u"  -s string\n"
-             u"  --separator string\n"
-             u"      Field separator string in output (default: '" DEFAULT_SEPARATOR "').\n"
-             u"\n"
-             u"  --version\n"
-             u"      Display the version number.\n");
+            u"\n"
+            u"  -d\n"
+            u"  --dts\n"
+            u"      Report Decoding Time Stamps (DTS). By default, if none of --pcr, --opcr,\n"
+            u"      --pts, --dts is specified, report them all.\n"
+            u"\n"
+            u"  -g\n"
+            u"  --good-pts-only\n"
+            u"      Keep only \"good\" PTS, ie. PTS which have a higher value than the\n"
+            u"      previous good PTS. This eliminates PTS from out-of-sequence B-frames.\n"
+            u"\n"
+            u"  --help\n"
+            u"      Display this help text.\n"
+            u"\n"
+            u"  -n\n"
+            u"  --noheader\n"
+            u"      Do not output initial header line.\n"
+            u"\n"
+            u"  --opcr\n"
+            u"      Report Original Program Clock References (OPCR). By default, if none of\n"
+            u"      --pcr, --opcr, --pts, --dts is specified, report them all.\n"
+            u"\n"
+            u"  -o filename\n"
+            u"  --output-file filename\n"
+            u"      Output file name (standard error by default).\n"
+            u"\n"
+            u"  --pcr\n"
+            u"      Report Program Clock References (PCR). By default, if none of --pcr,\n"
+            u"      --opcr, --pts, --dts is specified, report them all.\n"
+            u"\n"
+            u"  -p\n"
+            u"  --pts\n"
+            u"      Report Presentation Time Stamps (PTS). By default, if none of --pcr,\n"
+            u"      --opcr, --pts, --dts is specified, report them all.\n"
+            u"\n"
+            u"  -s string\n"
+            u"  --separator string\n"
+            u"      Field separator string in output (default: '" DEFAULT_SEPARATOR "').\n"
+            u"\n"
+            u"  --version\n"
+            u"      Display the version number.\n");
 }
 
 
@@ -210,9 +210,9 @@ bool ts::PCRExtractPlugin::start()
     }
     else {
         _output = &_output_stream;
-        _output_stream.open (_output_name.c_str());
+        _output_stream.open(_output_name.toUTF8().c_str());
         if (!_output_stream) {
-            tsp->error(u"cannot create file %s", _output_name.c_str());
+            tsp->error(u"cannot create file %s", {_output_name});
             return false;
         }
     }
