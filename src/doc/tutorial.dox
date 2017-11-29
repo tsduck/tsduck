@@ -39,11 +39,12 @@ UTF-16 values, called a "surrogate pair".
 
 Technically, ts::UString is a subclass of `std::u16string`. So any operation
 on standard C++ strings is also available to ts::UString. But many more operations
-have been added to manipulate unicode strings.
+have been added to manipulate Unicode strings.
 
 For consistency, the type ts::UChar is a typedef for `char16_t`. The file
 tsUChar.h defines some utility functions on ts::UChar. It also defines
-constants for most Unicode characters like ts::COLON or ts::LATIN_CAPITAL_LETTER_A_WITH_ACUTE.
+constants for most Unicode characters like ts::COLON or
+ts::LATIN_CAPITAL_LETTER_A_WITH_ACUTE, among hundredths of others.
 
 Some interesting features in class ts::UString are:
 - Explicit and implicit conversions between UTF-8 and UTF-16.

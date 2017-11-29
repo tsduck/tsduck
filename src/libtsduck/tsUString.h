@@ -1253,6 +1253,37 @@ namespace ts {
         //! i = -1,234, u16 = 0x0080, 27 abc def ghi jkl
         //! @endcode
         //!
+        //! Incorrect format specifiers are silently ignored. Extraneous or missing parameters are also
+        //! silently ignored. Incorrect types are fixed when possible. To report all these discrepancies,
+        //! define the environment variable @c TSDUCK_FORMAT_DEBUG and error messages will be reported
+        //! on standard error.
+        //!
+        //! Sample incorrect formats or combination of arguments:
+        //! @code
+        //! ts::UString::Format(u"a) %d %d", {1, 2, 3, 4});  // return "a) 1 2"
+        //! ts::UString::Format(u"b) %d %d", {1});           // return "b) 1 "
+        //! ts::UString::Format(u"c) %d %d", {1, u"abc"});   // return "c) 1 abc"
+        //! ts::UString::Format(u"d) %d %s", {1, 2});        // return "d) 1 2"
+        //! ts::UString::Format(u"e) ab%scd%sef", {u"X"});   // return "e) abXcdef"
+        //! ts::UString::Format(u"f) %d %01", {1, 2, 3});    // return "f) 1 "
+        //! @endcode
+        //!
+        //! To report errors which are otherwise silently fixed:
+        //! @code
+        //! $ utests
+        //! $
+        //! $ export TSDUCK_FORMAT_DEBUG=true
+        //! $ utests
+        //! [FORMATDBG] extraneous 2 arguments at position 8 in format string: "a) %d %d"
+        //! [FORMATDBG] missing argument for sequence %d at position 8 in format string: "b) %d %d"
+        //! [FORMATDBG] type mismatch, got a string for sequence %d at position 8 in format string: "c) %d %d"
+        //! [FORMATDBG] type mismatch, got an integer for sequence %s at position 8 in format string: "d) %d %s"
+        //! [FORMATDBG] missing argument for sequence %s at position 11 in format string: "e) ab%scd%sef"
+        //! [FORMATDBG] invalid '%' sequence at position 9 in format string: "f) %d %01"
+        //! [FORMATDBG] extraneous 2 arguments at position 9 in format string: "f) %d %01"
+        //! $
+        //! @endcode
+        //! 
         //! @param [in] args List of arguments to substitute in the format string.
         //! @return The formatted string.
         //!
@@ -1566,30 +1597,86 @@ namespace ts {
 
     private:
         //!
-        //! Internal function to process a Format() argument.
-        //! @param [in,out] result Output string being built.
-        //! @param [in,out] fmt Format string being decoded. Updated.
-        //! Input: point after the '\%'. Output: After the complete '\%' sequence.
-        //! @param [in,out] arg Current pointer into argument list. Updated.
-        //! @param [in] argsEnd End of argument list.
+        //! Analysis context of a Format or Scan string, base class.
         //!
-        static void ProcessArgMixs(UString& result,
-                                      const UChar*& fmt,
-                                      std::initializer_list<ts::ArgMix>::const_iterator& arg,
-                                      const std::initializer_list<ts::ArgMix>::const_iterator& argsEnd);
+        class ArgMixContext
+        {
+        public:
+            //!
+            //! Constructor.
+            //! @param [in] output Output context (Format), not input (Scan).
+            //! @param [in] fmt Format string with embedded '\%' sequences.
+            //!
+            ArgMixContext(const UChar* fmt, bool output);
+
+            //!
+            //! Fast check if debug is active.
+            //! @return True if debug is active.
+            //!
+            static inline bool debugActive() {
+                return _debugValid ? _debugOn : debugInit();
+            }
+
+            //!
+            //! Report an error message if debug is active.
+            //! For performance reason, it is better to check debugActive() first.
+            //! @param [in] message Message to display.
+            //! @param [in] cmd Command character after the '%'.
+            //!
+            void debug(const UString& message, UChar cmd = CHAR_NULL) const;
+
+        protected:
+            const UChar* _fmt;                 //!< Current pointer into format string.
+        private:
+            const UChar* const _format;        //!< Format string.
+            const bool _output;                //!< Output context (Format), not input (Scan).
+            static volatile bool _debugOn;     //!< Check if debugging is on.
+            static volatile bool _debugValid;  //!< Check if _debugOn is valid.
+            static bool debugInit();           //!< Set _debugOn, normally executed only once.
+
+            // Inaccessible operations.
+            ArgMixContext() = delete;
+            ArgMixContext(const ArgMixContext&) = delete;
+            ArgMixContext& operator=(const ArgMixContext&) = delete;
+        };
 
         //!
-        //! Internal function to process a size field inside a Format() argument.
-        //! @param [in,out] size Size value. Unmodified if no size is found in @fmt.
-        //! @param [in,out] fmt Format string being decoded. Input: point at an optional size field.
-        //! Output: After the size field, unmodified if there is no size field.
-        //! @param [in,out] arg Current pointer into argument list. Updated.
-        //! @param [in] argsEnd End of argument list.
+        //! Analysis context of a Format string.
         //!
-        static void GetFormatSize(size_t& size,
-                                  const UChar*& fmt,
-                                  std::initializer_list<ts::ArgMix>::const_iterator& arg,
-                                  const std::initializer_list<ts::ArgMix>::const_iterator& argsEnd);
+        class ArgMixInContext : public ArgMixContext
+        {
+        public:
+            //!
+            //! Constructor, format the string.
+            //! @param [in,out] result The formatted string is appended here
+            //! @param [in] fmt Format string with embedded '\%' sequences.
+            //! @param [in] args List of arguments to substitute in the format string.
+            //!
+            ArgMixInContext(UString& result, const UChar* fmt, const std::initializer_list<ArgMix>& args);
+
+        private:
+            typedef std::initializer_list<ts::ArgMix>::const_iterator ArgIterator;
+
+            UString&          _result;  //!< Result string.
+            ArgIterator       _arg;     //!< Current argument.
+            const ArgIterator _end;     //!< After last argument.
+
+            //!
+            //! Internal function to process the current Format() argument.
+            //!
+            void processArg();
+
+            //!
+            //! Internal function to process a size field inside a Format() argument.
+            //! @param [in,out] size Size value. Unmodified if no size is found at @e _fmt.
+            //!
+            void getFormatSize(size_t& size);
+
+            // Inaccessible operations.
+            ArgMixInContext() = delete;
+            ArgMixInContext(const ArgMixInContext&) = delete;
+            ArgMixInContext& operator=(const ArgMixInContext&) = delete;
+        };
     };
 }
 
@@ -1600,6 +1687,14 @@ namespace ts {
 //! @return A reference to the @a strm object.
 //!
 TSDUCKDLL std::ostream& operator<<(std::ostream& strm, const ts::UString& str);
+
+//!
+//! Output operator for Unicode string on standard text streams with UTF-8 conversion.
+//! @param [in,out] strm A standard stream in output mode.
+//! @param [in] str A string.
+//! @return A reference to the @a strm object.
+//!
+TSDUCKDLL std::ostream& operator<<(std::ostream& strm, const ts::UChar* str);
 
 //!
 //! Output operator for ts::UChar on standard text streams with UTF-8 conversion.
