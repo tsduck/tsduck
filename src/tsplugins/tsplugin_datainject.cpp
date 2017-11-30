@@ -81,7 +81,7 @@ namespace ts {
         tlv::Connection<Mutex> _client;    // Connection with EMMG/PDG client
 
         // Invoked in the context of the server thread.
-        virtual void main();
+        virtual void main() override;
 
         // Process bandwidth request. Invoked in the server thread.
         // Return true on success, false on error.

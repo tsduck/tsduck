@@ -43,8 +43,9 @@ TSDUCK_SOURCE;
 class PluginTest: public CppUnit::TestFixture
 {
 public:
-    void setUp();
-    void tearDown();
+    virtual void setUp() override;
+    virtual void tearDown() override;
+
     void testInput();
     void testOutput();
     void testProcessor();

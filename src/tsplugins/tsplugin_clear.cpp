@@ -70,7 +70,7 @@ namespace ts {
         SectionDemux  _demux;           // Section demux
 
         // Invoked by the demux when a complete table is available.
-        virtual void handleTable (SectionDemux&, const BinaryTable&);
+        virtual void handleTable (SectionDemux&, const BinaryTable&) override;
 
         // Process specific tables
         void processPAT (PAT&);

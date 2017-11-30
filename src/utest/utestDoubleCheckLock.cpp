@@ -43,8 +43,9 @@ TSDUCK_SOURCE;
 class DoubleCheckLockTest: public CppUnit::TestFixture
 {
 public:
-    void setUp();
-    void tearDown();
+    virtual void setUp() override;
+    virtual void tearDown() override;
+
     void testDoubleCheckLock();
 
     CPPUNIT_TEST_SUITE (DoubleCheckLockTest);

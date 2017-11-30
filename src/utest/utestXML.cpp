@@ -44,8 +44,9 @@ TSDUCK_SOURCE;
 class XMLTest: public CppUnit::TestFixture
 {
 public:
-    void setUp();
-    void tearDown();
+    virtual void setUp() override;
+    virtual void tearDown() override;
+
     void testDocument();
     void testVisitor();
     void testInvalid();
@@ -181,56 +182,56 @@ namespace {
             return _iter == _ref.end();
         }
 
-        virtual bool VisitEnter(const ts::XML::Document& doc)
+        virtual bool VisitEnter(const ts::XML::Document& doc) override
         {
             utest::Out() << "XMLTest::Visitor::VisitEnter (document)" << std::endl;
             AssertNext("EnterDocument", "");
             return true;
         }
 
-        virtual bool VisitExit(const ts::XML::Document& doc)
+        virtual bool VisitExit(const ts::XML::Document& doc) override
         {
             utest::Out() << "XMLTest::Visitor::VisitExit (document)" << std::endl;
             AssertNext("ExitDocument", "");
             return true;
         }
 
-        virtual bool VisitEnter(const ts::XML::Element& element, const ts::XML::Attribute* firstAttribute)
+        virtual bool VisitEnter(const ts::XML::Element& element, const ts::XML::Attribute* firstAttribute) override
         {
             utest::Out() << "XMLTest::Visitor::VisitEnter (element) name='" << element.Name() << "'" << std::endl;
             AssertNext("EnterElement", element.Name());
             return true;
         }
 
-        virtual bool VisitExit(const ts::XML::Element& element)
+        virtual bool VisitExit(const ts::XML::Element& element) override
         {
             utest::Out() << "XMLTest::Visitor::VisitExit (element) name='" << element.Name() << "'" << std::endl;
             AssertNext("ExitElement", element.Name());
             return true;
         }
 
-        virtual bool Visit(const ts::XML::Declaration& declaration)
+        virtual bool Visit(const ts::XML::Declaration& declaration) override
         {
             utest::Out() << "XMLTest::Visitor::Visit (declaration) value='" << declaration.Value() << "'" << std::endl;
             AssertNext("Declaration", declaration.Value());
             return true;
         }
 
-        virtual bool Visit(const ts::XML::Text& text)
+        virtual bool Visit(const ts::XML::Text& text) override
         {
             utest::Out() << "XMLTest::Visitor::Visit (text) value='" << text.Value() << "'" << std::endl;
             AssertNext("Text", text.Value());
             return true;
         }
 
-        virtual bool Visit(const ts::XML::Comment& comment)
+        virtual bool Visit(const ts::XML::Comment& comment) override
         {
             utest::Out() << "XMLTest::Visitor::Visit (comment) value='" << comment.Value() << "'" << std::endl;
             AssertNext("Comment", comment.Value());
             return true;
         }
 
-        virtual bool Visit(const ts::XML::Unknown& unknown)
+        virtual bool Visit(const ts::XML::Unknown& unknown) override
         {
             utest::Out() << "XMLTest::Visitor::Visit (unknown) value='" << unknown.Value() << "'" << std::endl;
             AssertNext("Unknown", unknown.Value());

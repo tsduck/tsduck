@@ -66,6 +66,6 @@ namespace utest {
         virtual void test() = 0;
 
         // Implementation of thread interface.
-        virtual void main();
+        virtual void main() override;
     };
 }

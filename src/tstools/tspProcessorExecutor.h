@@ -67,7 +67,7 @@ namespace ts {
             size_t const     _max_flush_pkt;   // Max processed packets before flush
 
             // Inherited from Thread
-            virtual void main();
+            virtual void main() override;
 
             // Inaccessible operations
             ProcessorExecutor() = delete;

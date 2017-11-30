@@ -68,8 +68,9 @@ TSDUCK_SOURCE;
 class CryptoTest: public CppUnit::TestFixture
 {
 public:
-    void setUp();
-    void tearDown();
+    virtual void setUp() override;
+    virtual void tearDown() override;
+
     void testAES();
     void testAESECB();
     void testAES_CBC();

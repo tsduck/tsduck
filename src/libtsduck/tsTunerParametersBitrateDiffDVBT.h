@@ -78,6 +78,6 @@ namespace ts {
         static void EvaluateToBitrate(TunerParametersBitrateDiffDVBTList& params, BitRate bitrate);
 
         // Reimplemented from TunerParametersDVBT
-        virtual void copy(const TunerParameters&);
+        virtual void copy(const TunerParameters&) override;
     };
 }

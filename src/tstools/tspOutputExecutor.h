@@ -66,7 +66,7 @@ namespace ts {
             OutputPlugin* _output;
 
             // Inherited from Thread
-            virtual void main();
+            virtual void main() override;
 
             // Inaccessible operations
             OutputExecutor() = delete;

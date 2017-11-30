@@ -70,7 +70,7 @@ namespace ts {
         CyclingPacketizer  _pzer;              // Packetizer for modified SDT/BAT
 
         // Invoked by the demux when a complete table is available.
-        virtual void handleTable (SectionDemux&, const BinaryTable&);
+        virtual void handleTable (SectionDemux&, const BinaryTable&) override;
         void processBAT (BAT&);
         void processDescriptorList (DescriptorList&);
 

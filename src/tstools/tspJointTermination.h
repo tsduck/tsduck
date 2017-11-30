@@ -60,10 +60,10 @@ namespace ts {
             virtual ~JointTermination() {}
 
             // Implementation of "joint termination", inherited from TSP.
-            virtual void useJointTermination(bool on);
-            virtual void jointTerminate();
-            virtual bool useJointTermination() const {return _use_jt;}
-            virtual bool thisJointTerminated() const {return _jt_completed;}
+            virtual void useJointTermination(bool on) override;
+            virtual void jointTerminate() override;
+            virtual bool useJointTermination() const override {return _use_jt;}
+            virtual bool thisJointTerminated() const override {return _jt_completed;}
 
         protected:
             Mutex& _global_mutex; //!< Reference to the TSP global mutex.

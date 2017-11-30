@@ -52,8 +52,9 @@ TSDUCK_SOURCE;
 class XMLTablesTest: public CppUnit::TestFixture
 {
 public:
-    void setUp();
-    void tearDown();
+    virtual void setUp() override;
+    virtual void tearDown() override;
+
     void testConfigurationFile();
     void testGenericDescriptor();
     void testGenericShortTable();

@@ -48,8 +48,9 @@ TSDUCK_SOURCE;
 class DirectShowTest: public CppUnit::TestFixture
 {
 public:
-    void setUp();
-    void tearDown();
+    virtual void setUp() override;
+    virtual void tearDown() override;
+
     void testDevices();
 
     CPPUNIT_TEST_SUITE(DirectShowTest);

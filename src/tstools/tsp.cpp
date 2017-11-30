@@ -54,7 +54,7 @@ namespace ts {
         {
         public:
             TSPInterruptHandler(AsyncReport* report = 0, PluginExecutor* first_plugin = 0);
-            virtual void handleInterrupt();
+            virtual void handleInterrupt() override;
         private:
             AsyncReport*    _report;
             PluginExecutor* _first_plugin;

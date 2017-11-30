@@ -54,8 +54,10 @@ class ThreadTest: public CppUnit::TestFixture
 {
 public:
     ThreadTest();
-    void setUp();
-    void tearDown();
+
+    virtual void setUp() override;
+    virtual void tearDown() override;
+
     void testAttributes();
     void testTermination();
     void testDeleteWhenTerminated();
@@ -121,7 +123,7 @@ namespace {
             utest::CppUnitThread(attributes)
         {
         }
-        virtual void test()
+        virtual void test() override
         {
             CPPUNIT_FAIL("ThreadConstructor should not have started");
         }
@@ -164,7 +166,7 @@ namespace {
         {
             waitForTermination();
         }
-        virtual void test()
+        virtual void test() override
         {
             CPPUNIT_ASSERT(isCurrentThread());
             const ts::Time before (ts::Time::CurrentUTC());
@@ -216,7 +218,7 @@ namespace {
             utest::Out() << "ThreadTest: ThreadDeleteWhenTerminated deleted" << std::endl;
             _report = true;
         }
-        virtual void test()
+        virtual void test() override
         {
             const ts::Time before(ts::Time::CurrentUTC());
             ts::SleepThread(_delay);
@@ -289,7 +291,7 @@ namespace {
             waitForTermination();
         }
         // Main: decrement data and signal condition every 100 ms
-        virtual void test()
+        virtual void test() override
         {
             // Acquire the test mutex.
             ts::Guard lock1(_mutex, 0);
@@ -357,7 +359,7 @@ namespace {
             waitForTermination();
         }
         // Main: decrement data and signal condition every 100 ms
-        virtual void test()
+        virtual void test() override
         {
             {
                 ts::Guard lock(_mutex);

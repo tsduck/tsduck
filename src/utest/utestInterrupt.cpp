@@ -48,8 +48,9 @@ TSDUCK_SOURCE;
 class InterruptTest: public CppUnit::TestFixture
 {
 public:
-    void setUp();
-    void tearDown();
+    virtual void setUp() override;
+    virtual void tearDown() override;
+
     void testInterrupt();
 
     CPPUNIT_TEST_SUITE(InterruptTest);
@@ -83,7 +84,7 @@ namespace {
     class TestHandler: public ts::InterruptHandler
     {
     public:
-        virtual void handleInterrupt()
+        virtual void handleInterrupt() override
         {
             std::cout << "* Got user-interrupt, next time should kill the process" << std::endl;
         }

@@ -154,8 +154,8 @@ namespace ts {
 
         public:
             // Implementation of pure virtual methods
-            virtual void factory(const tlv::MessageFactory&, tlv::MessagePtr&) const;
-            virtual void buildErrorResponse(const tlv::MessageFactory&, tlv::MessagePtr&) const;
+            virtual void factory(const tlv::MessageFactory&, tlv::MessagePtr&) const override;
+            virtual void buildErrorResponse(const tlv::MessageFactory&, tlv::MessagePtr&) const override;
         };
 
 

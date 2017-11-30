@@ -88,8 +88,8 @@ namespace ts {
         PIDContextMap    _pid_contexts;   // Contexts of analyzed PID's.
 
         // Invoked by the demux when a complete table is available.
-        virtual void handleTable(SectionDemux&, const BinaryTable&);
-        virtual void handleSection(SectionDemux&, const Section&);
+        virtual void handleTable(SectionDemux&, const BinaryTable&) override;
+        virtual void handleSection(SectionDemux&, const Section&) override;
 
         // Inaccessible operations
         StuffAnalyzePlugin() = delete;

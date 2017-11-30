@@ -74,10 +74,10 @@ namespace ts {
         }
 
         //! @copydoc SectionDemux::reset()
-        void reset();
+        virtual void reset() override;
 
         //! @copydoc SectionDemux::resetPID()
-        void resetPID(PID pid);
+        virtual void resetPID(PID pid) override;
 
     private:
         // Private members
@@ -85,7 +85,7 @@ namespace ts {
 
         // Inherited from TableHandlerInterface
         // This hook is invoked when a complete table is available.
-        void handleTable(SectionDemux&, const BinaryTable&);
+        virtual void handleTable(SectionDemux&, const BinaryTable&) override;
 
         // Make these methods inaccessible
         void setHandler(TableHandlerInterface*);

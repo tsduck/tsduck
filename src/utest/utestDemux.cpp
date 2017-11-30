@@ -75,8 +75,9 @@ TSDUCK_SOURCE;
 class DemuxTest: public CppUnit::TestFixture
 {
 public:
-    void setUp();
-    void tearDown();
+    virtual void setUp() override;
+    virtual void tearDown() override;
+
     void testPAT();
     void testCATR3();
     void testCATR6();

@@ -43,8 +43,9 @@ TSDUCK_SOURCE;
 class ByteBlockTest: public CppUnit::TestFixture
 {
 public:
-    void setUp();
-    void tearDown();
+    virtual void setUp() override;
+    virtual void tearDown() override;
+
     void testAppend();
 
     CPPUNIT_TEST_SUITE (ByteBlockTest);

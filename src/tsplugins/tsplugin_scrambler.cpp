@@ -150,7 +150,7 @@ namespace ts {
             void generateECM();
 
             // Invoked when an ECM is available, maybe in the context of an external thread.
-            virtual void handleECM(const ecmgscs::ECMResponse&);
+            virtual void handleECM(const ecmgscs::ECMResponse&) override;
 
             // Inaccessible operations
             CryptoPeriod(const CryptoPeriod&) = delete;

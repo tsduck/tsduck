@@ -103,7 +103,7 @@ namespace ts {
         ts::SafePtr<ts::NIT>   _nit;
 
         // Implementation of TableHandlerInterface.
-        virtual void handleTable(ts::SectionDemux&, const ts::BinaryTable&);
+        virtual void handleTable(ts::SectionDemux&, const ts::BinaryTable&) override;
 
         // Inaccessible operations.
         TSScanner() = delete;

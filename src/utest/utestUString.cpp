@@ -45,8 +45,10 @@ class UStringTest: public CppUnit::TestFixture
 {
 public:
     UStringTest();
-    void setUp();
-    void tearDown();
+
+    virtual void setUp() override;
+    virtual void tearDown() override;
+
     void testIsSpace();
     void testUTF();
     void testDiacritical();

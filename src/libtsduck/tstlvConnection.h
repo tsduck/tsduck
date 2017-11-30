@@ -123,7 +123,7 @@ namespace ts {
 
         protected:
             // Inherited from TCPConnection
-            virtual void handleConnected(Report&);
+            virtual void handleConnected(Report&) override;
 
         private:
             const Protocol* _protocol;

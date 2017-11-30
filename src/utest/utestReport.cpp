@@ -46,8 +46,10 @@ class ReportTest: public CppUnit::TestFixture
 {
 public:
     ReportTest();
-    void setUp();
-    void tearDown();
+
+    virtual void setUp() override;
+    virtual void tearDown() override;
+
     void testSeverity();
     void testString();
     void testPrintf();

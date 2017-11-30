@@ -44,8 +44,9 @@ TSDUCK_SOURCE;
 class PlatformTest: public CppUnit::TestFixture
 {
 public:
-    void setUp();
-    void tearDown();
+    virtual void setUp() override;
+    virtual void tearDown() override;
+
     void testIntegerTypes();
     void test64bitLiterals();
     void testStringify();

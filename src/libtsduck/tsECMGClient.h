@@ -185,7 +185,7 @@ namespace ts {
         MessageQueue <tlv::Message, NullMutex> _response_queue;
 
         // Receiver thread main code
-        virtual void main();
+        virtual void main() override;
 
         // Report specified error message if not empty, abort connection and return false
         bool abortConnection(const UString& = UString());

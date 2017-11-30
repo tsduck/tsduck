@@ -48,8 +48,9 @@ TSDUCK_SOURCE;
 class SectionTest: public CppUnit::TestFixture
 {
 public:
-    void setUp();
-    void tearDown();
+    virtual void setUp() override;
+    virtual void tearDown() override;
+
     void testTOT();
     void testBAT();
     void testNIT();

@@ -99,7 +99,7 @@ namespace ts {
         //! aborting for some reason (user interrupt for instance).
         //! @return True if the tsp application is currently aborting.
         //!
-        virtual bool aborting() const {return _tsp_aborting;}
+        virtual bool aborting() const override {return _tsp_aborting;}
 
         //!
         //! Activates or deactivates "joint termination".

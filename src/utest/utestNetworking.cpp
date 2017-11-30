@@ -51,8 +51,10 @@ class NetworkingTest: public CppUnit::TestFixture
 {
 public:
     NetworkingTest();
-    void setUp();
-    void tearDown();
+
+    virtual void setUp() override;
+    virtual void tearDown() override;
+
     void testIPAddressConstructors();
     void testIPAddress();
     void testGetLocalIPAddresses();
@@ -379,7 +381,7 @@ namespace {
         }
 
         // Thread execution
-        virtual void test()
+        virtual void test() override
         {
             CERR.debug(u"TCPSocketTest: client thread: started");
 
@@ -502,7 +504,7 @@ namespace {
         }
 
         // Thread execution
-        virtual void test()
+        virtual void test() override
         {
             CERR.debug(u"UDPSocketTest: client thread started");
             // Create the client socket
