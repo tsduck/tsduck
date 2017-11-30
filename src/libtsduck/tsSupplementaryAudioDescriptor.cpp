@@ -135,13 +135,13 @@ void ts::SupplementaryAudioDescriptor::deserialize(const Descriptor& desc, const
 ts::XML::Element* ts::SupplementaryAudioDescriptor::toXML(XML& xml, XML::Element* parent) const
 {
     XML::Element* root = _is_valid ? xml.addElement(parent, _xml_name) : 0;
-    xml.setIntAttribute(root, "mix_type", mix_type);
-    xml.setIntAttribute(root, "editorial_classification", editorial_classification, true);
+    xml.setIntAttribute(root, u"mix_type", mix_type);
+    xml.setIntAttribute(root, u"editorial_classification", editorial_classification, true);
     if (!language_code.empty()) {
-        xml.setAttribute(root, "language_code", language_code);
+        xml.setAttribute(root, u"language_code", language_code);
     }
     if (!private_data.empty()) {
-        xml.addHexaText(xml.addElement(root, "private_data"), private_data);
+        xml.addHexaText(xml.addElement(root, u"private_data"), private_data);
     }
     return root;
 }
@@ -155,10 +155,10 @@ void ts::SupplementaryAudioDescriptor::fromXML(XML& xml, const XML::Element* ele
 {
     _is_valid =
         checkXMLName(xml, element) &&
-        xml.getIntAttribute<uint8_t>(mix_type, element, "mix_type", true, 0, 0, 1) &&
-        xml.getIntAttribute<uint8_t>(editorial_classification, element, "editorial_classification", true, 0, 0x00, 0x1F) &&
-        xml.getAttribute(language_code, element, "language_code", false, "", 3, 3) &&
-        xml.getHexaTextChild(private_data, element, "private_data", false, 0, MAX_DESCRIPTOR_SIZE - 7);
+        xml.getIntAttribute<uint8_t>(mix_type, element, u"mix_type", true, 0, 0, 1) &&
+        xml.getIntAttribute<uint8_t>(editorial_classification, element, u"editorial_classification", true, 0, 0x00, 0x1F) &&
+        xml.getAttribute(language_code, element, u"language_code", false, u"", 3, 3) &&
+        xml.getHexaTextChild(private_data, element, u"private_data", false, 0, MAX_DESCRIPTOR_SIZE - 7);
 }
 
 

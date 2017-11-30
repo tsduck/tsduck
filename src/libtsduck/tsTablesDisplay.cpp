@@ -395,9 +395,9 @@ void ts::TablesDisplay::displayTLV(const uint8_t* data,
 
         // Description of the TLV record.
         strm << UString::Format(u"%*s%04X:  %*sTag: %*u (0x%0*X), length: %*u bytes, value: ",
-                                {indent, "",
+                                {indent, u"",
                                  dataOffset + index,
-                                 innerIndent, "",
+                                 innerIndent, u"",
                                  MaxDecimalWidth(tlv.getTagSize()), tag,
                                  MaxHexaWidth(tlv.getTagSize()), tag,
                                  MaxDecimalWidth(tlv.getLengthSize()), valueSize});

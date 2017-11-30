@@ -257,9 +257,9 @@ ts::UString ts::emmgmux::ChannelSetup::dump (size_t indent) const
 {
     return UString::Format(u"%*schannel_setup (EMMG/PDG<=>MUX)\n", {indent, u""}) +
         tlv::Message::dump (indent) +
-        dumpHexa (indent, "client_id", client_id) +
-        dumpHexa (indent, "data_channel_id", channel_id) +
-        dumpDecimal (indent, "section_TSpkt_flag", section_TSpkt_flag ? 1 : 0);
+        dumpHexa(indent, u"client_id", client_id) +
+        dumpHexa(indent, u"data_channel_id", channel_id) +
+        dumpDecimal(indent, u"section_TSpkt_flag", section_TSpkt_flag ? 1 : 0);
 }
 
 
@@ -291,8 +291,8 @@ ts::UString ts::emmgmux::ChannelTest::dump (size_t indent) const
 {
     return UString::Format(u"%*schannel_test (EMMG/PDG<=>MUX)\n", {indent, u""}) +
         tlv::Message::dump (indent) +
-        dumpHexa (indent, "client_id", client_id) +
-        dumpHexa (indent, "data_channel_id", channel_id);
+        dumpHexa(indent, u"client_id", client_id) +
+        dumpHexa(indent, u"data_channel_id", channel_id);
 }
 
 
@@ -327,9 +327,9 @@ ts::UString ts::emmgmux::ChannelStatus::dump (size_t indent) const
 {
     return UString::Format(u"%*schannel_status (EMMG/PDG<=>MUX)\n", {indent, u""}) +
         tlv::Message::dump (indent) +
-        dumpHexa (indent, "client_id", client_id) +
-        dumpHexa (indent, "data_channel_id", channel_id) +
-        dumpDecimal (indent, "section_TSpkt_flag", section_TSpkt_flag ? 1 : 0);
+        dumpHexa(indent, u"client_id", client_id) +
+        dumpHexa(indent, u"data_channel_id", channel_id) +
+        dumpDecimal(indent, u"section_TSpkt_flag", section_TSpkt_flag ? 1 : 0);
 }
 
 
@@ -361,8 +361,8 @@ ts::UString ts::emmgmux::ChannelClose::dump (size_t indent) const
 {
     return UString::Format(u"%*schannel_close (EMMG/PDG<=>MUX)\n", {indent, u""}) +
         tlv::Message::dump (indent) +
-        dumpHexa (indent, "client_id", client_id) +
-        dumpHexa (indent, "data_channel_id", channel_id);
+        dumpHexa(indent, u"client_id", client_id) +
+        dumpHexa(indent, u"data_channel_id", channel_id);
 }
 
 
@@ -402,10 +402,10 @@ ts::UString ts::emmgmux::ChannelError::dump (size_t indent) const
 {
     return UString::Format(u"%*schannel_error (EMMG/PDG<=>MUX)\n", {indent, u""}) +
         tlv::Message::dump (indent) +
-        dumpHexa (indent, "client_id", client_id) +
-        dumpHexa (indent, "data_channel_id", channel_id) +
-        dumpVector (indent, "error_status", error_status) +
-        dumpVector (indent, "error_information", error_information);
+        dumpHexa(indent, u"client_id", client_id) +
+        dumpHexa(indent, u"data_channel_id", channel_id) +
+        dumpVector(indent, u"error_status", error_status) +
+        dumpVector(indent, u"error_information", error_information);
 }
 
 
@@ -445,11 +445,11 @@ ts::UString ts::emmgmux::StreamSetup::dump (size_t indent) const
 {
     return UString::Format(u"%*sstream_setup (EMMG/PDG<=>MUX)\n", {indent, u""}) +
         tlv::Message::dump (indent) +
-        dumpHexa (indent, "client_id", client_id) +
-        dumpHexa (indent, "data_channel_id", channel_id) +
-        dumpHexa (indent, "data_stream_id", stream_id) +
-        dumpHexa (indent, "data_id", data_id) +
-        dumpHexa (indent, "data_type", data_type);
+        dumpHexa(indent, u"client_id", client_id) +
+        dumpHexa(indent, u"data_channel_id", channel_id) +
+        dumpHexa(indent, u"data_stream_id", stream_id) +
+        dumpHexa(indent, u"data_id", data_id) +
+        dumpHexa(indent, u"data_type", data_type);
 }
 
 
@@ -483,9 +483,9 @@ ts::UString ts::emmgmux::StreamTest::dump (size_t indent) const
 {
     return UString::Format(u"%*sstream_test (EMMG/PDG<=>MUX)\n", {indent, u""}) +
         tlv::Message::dump (indent) +
-        dumpHexa (indent, "client_id", client_id) +
-        dumpHexa (indent, "data_channel_id", channel_id) +
-        dumpHexa (indent, "data_stream_id", stream_id);
+        dumpHexa(indent, u"client_id", client_id) +
+        dumpHexa(indent, u"data_channel_id", channel_id) +
+        dumpHexa(indent, u"data_stream_id", stream_id);
 }
 
 
@@ -525,11 +525,11 @@ ts::UString ts::emmgmux::StreamStatus::dump (size_t indent) const
 {
     return UString::Format(u"%*sstream_status (EMMG/PDG<=>MUX)\n", {indent, u""}) +
         tlv::Message::dump (indent) +
-        dumpHexa (indent, "client_id", client_id) +
-        dumpHexa (indent, "data_channel_id", channel_id) +
-        dumpHexa (indent, "data_stream_id", stream_id) +
-        dumpHexa (indent, "data_id", data_id) +
-        dumpHexa (indent, "data_type", data_type);
+        dumpHexa(indent, u"client_id", client_id) +
+        dumpHexa(indent, u"data_channel_id", channel_id) +
+        dumpHexa(indent, u"data_stream_id", stream_id) +
+        dumpHexa(indent, u"data_id", data_id) +
+        dumpHexa(indent, u"data_type", data_type);
 }
 
 
@@ -563,9 +563,9 @@ ts::UString ts::emmgmux::StreamCloseRequest::dump (size_t indent) const
 {
     return UString::Format(u"%*sstream_close_request (EMMG/PDG<=>MUX)\n", {indent, u""}) +
         tlv::Message::dump (indent) +
-        dumpHexa (indent, "client_id", client_id) +
-        dumpHexa (indent, "data_channel_id", channel_id) +
-        dumpHexa (indent, "data_stream_id", stream_id);
+        dumpHexa(indent, u"client_id", client_id) +
+        dumpHexa(indent, u"data_channel_id", channel_id) +
+        dumpHexa(indent, u"data_stream_id", stream_id);
 }
 
 
@@ -599,9 +599,9 @@ ts::UString ts::emmgmux::StreamCloseResponse::dump (size_t indent) const
 {
     return UString::Format(u"%*sstream_close_response (EMMG/PDG<=>MUX)\n", {indent, u""}) +
         tlv::Message::dump (indent) +
-        dumpHexa (indent, "client_id", client_id) +
-        dumpHexa (indent, "data_channel_id", channel_id) +
-        dumpHexa (indent, "data_stream_id", stream_id);
+        dumpHexa(indent, u"client_id", client_id) +
+        dumpHexa(indent, u"data_channel_id", channel_id) +
+        dumpHexa(indent, u"data_stream_id", stream_id);
 }
 
 
@@ -643,11 +643,11 @@ ts::UString ts::emmgmux::StreamError::dump (size_t indent) const
 {
     return UString::Format(u"%*sstream_error (EMMG/PDG<=>MUX)\n", {indent, u""}) +
         tlv::Message::dump (indent) +
-        dumpHexa (indent, "client_id", client_id) +
-        dumpHexa (indent, "data_channel_id", channel_id) +
-        dumpHexa (indent, "data_stream_id", stream_id) +
-        dumpVector (indent, "error_status", error_status) +
-        dumpVector (indent, "error_information", error_information);
+        dumpHexa(indent, u"client_id", client_id) +
+        dumpHexa(indent, u"data_channel_id", channel_id) +
+        dumpHexa(indent, u"data_stream_id", stream_id) +
+        dumpVector(indent, u"error_status", error_status) +
+        dumpVector(indent, u"error_information", error_information);
 }
 
 
@@ -688,10 +688,10 @@ ts::UString ts::emmgmux::StreamBWRequest::dump (size_t indent) const
 {
     return UString::Format(u"%*sstream_BW_request (EMMG/PDG<=>MUX)\n", {indent, u""}) +
         tlv::Message::dump (indent) +
-        dumpHexa (indent, "client_id", client_id) +
-        dumpHexa (indent, "data_channel_id", channel_id) +
-        dumpHexa (indent, "data_stream_id", stream_id) +
-        dumpOptionalDecimal (indent, "bandwidth", has_bandwidth, bandwidth);
+        dumpHexa(indent, u"client_id", client_id) +
+        dumpHexa(indent, u"data_channel_id", channel_id) +
+        dumpHexa(indent, u"data_stream_id", stream_id) +
+        dumpOptionalDecimal(indent, u"bandwidth", has_bandwidth, bandwidth);
 }
 
 
@@ -732,10 +732,10 @@ ts::UString ts::emmgmux::StreamBWAllocation::dump (size_t indent) const
 {
     return UString::Format(u"%*sstream_BW_allocation (EMMG/PDG<=>MUX)\n", {indent, u""}) +
         tlv::Message::dump (indent) +
-        dumpHexa (indent, "client_id", client_id) +
-        dumpHexa (indent, "data_channel_id", channel_id) +
-        dumpHexa (indent, "data_stream_id", stream_id) +
-        dumpOptionalDecimal (indent, "bandwidth", has_bandwidth, bandwidth);
+        dumpHexa(indent, u"client_id", client_id) +
+        dumpHexa(indent, u"data_channel_id", channel_id) +
+        dumpHexa(indent, u"data_stream_id", stream_id) +
+        dumpOptionalDecimal(indent, u"bandwidth", has_bandwidth, bandwidth);
 }
 
 
@@ -783,12 +783,12 @@ ts::UString ts::emmgmux::DataProvision::dump(size_t indent) const
 {
     UString value(UString::Format(u"%*sdata_provision (EMMG/PDG<=>MUX)\n", {indent, u""}));
     value += tlv::Message::dump(indent);
-    value += dumpHexa(indent, "client_id", client_id);
-    value += dumpHexa(indent, "data_channel_id", channel_id);
-    value += dumpHexa(indent, "data_stream_id", stream_id);
-    value += dumpHexa(indent, "data_id", data_id);
+    value += dumpHexa(indent, u"client_id", client_id);
+    value += dumpHexa(indent, u"data_channel_id", channel_id);
+    value += dumpHexa(indent, u"data_stream_id", stream_id);
+    value += dumpHexa(indent, u"data_id", data_id);
     for (size_t i = 0; i < datagram.size(); ++i) {
-        value += dumpOptional(indent, "datagram", true, *(datagram[i]), UString::HEXA);
+        value += dumpOptional(indent, u"datagram", true, *(datagram[i]), UString::HEXA);
     }
     return value;
 }

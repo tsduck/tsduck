@@ -171,13 +171,13 @@ void ts::DataBroadcastDescriptor::deserialize (const Descriptor& desc, const DVB
 ts::XML::Element* ts::DataBroadcastDescriptor::toXML(XML& xml, XML::Element* parent) const
 {
     XML::Element* root = _is_valid ? xml.addElement(parent, _xml_name) : 0;
-    xml.setIntAttribute(root, "data_broadcast_id", data_broadcast_id, true);
-    xml.setIntAttribute(root, "component_tag", component_tag, true);
-    xml.setAttribute(root, "language_code", language_code);
+    xml.setIntAttribute(root, u"data_broadcast_id", data_broadcast_id, true);
+    xml.setIntAttribute(root, u"component_tag", component_tag, true);
+    xml.setAttribute(root, u"language_code", language_code);
     if (!selector_bytes.empty()) {
-        xml.addHexaText(xml.addElement(root, "selector_bytes"), selector_bytes);
+        xml.addHexaText(xml.addElement(root, u"selector_bytes"), selector_bytes);
     }
-    xml.addText(xml.addElement(root, "text"), text);
+    xml.addText(xml.addElement(root, u"text"), text);
     return root;
 }
 
@@ -194,9 +194,9 @@ void ts::DataBroadcastDescriptor::fromXML(XML& xml, const XML::Element* element)
 
     _is_valid =
         checkXMLName(xml, element) &&
-        xml.getIntAttribute<uint16_t>(data_broadcast_id, element, "data_broadcast_id", true) &&
-        xml.getIntAttribute<uint8_t>(component_tag, element, "component_tag", true) &&
-        xml.getAttribute(language_code, element, "language_code", true, "", 3, 3) &&
-        xml.getHexaTextChild(selector_bytes, element, "selector_bytes", true) &&
-        xml.getTextChild(text, element, "text", true, false);
+        xml.getIntAttribute<uint16_t>(data_broadcast_id, element, u"data_broadcast_id", true) &&
+        xml.getIntAttribute<uint8_t>(component_tag, element, u"component_tag", true) &&
+        xml.getAttribute(language_code, element, u"language_code", true, u"", 3, 3) &&
+        xml.getHexaTextChild(selector_bytes, element, u"selector_bytes", true) &&
+        xml.getTextChild(text, element, u"text", true, false);
 }

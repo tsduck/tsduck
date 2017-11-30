@@ -42,13 +42,13 @@ TSDUCK_SOURCE;
 // has just become connected.
 //----------------------------------------------------------------------------
 
-void ts::TCPConnection::declareConnected (Report& report)
+void ts::TCPConnection::declareConnected(Report& report)
 {
     {
-        Guard lock (_mutex);
+        Guard lock(_mutex);
         if (_is_connected) {
-            report.fatal ("implementation error: TCP socket already connected");
-            throw ImplementationError ("TCP socket already connected");
+            report.fatal(u"implementation error: TCP socket already connected");
+            throw ImplementationError(u"TCP socket already connected");
             return;
         }
         _is_connected = true;

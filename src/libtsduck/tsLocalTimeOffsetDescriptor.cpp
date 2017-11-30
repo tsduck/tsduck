@@ -192,12 +192,12 @@ ts::XML::Element* ts::LocalTimeOffsetDescriptor::toXML(XML& xml, XML::Element* p
 {
     XML::Element* root = _is_valid ? xml.addElement(parent, _xml_name) : 0;
     for (RegionVector::const_iterator it = regions.begin(); it != regions.end(); ++it) {
-        XML::Element* e = xml.addElement(root, "region");
-        xml.setAttribute(e, "country_code", it->country);
-        xml.setIntAttribute(e, "country_region_id", it->region_id);
-        xml.setIntAttribute(e, "local_time_offset", it->time_offset);
-        xml.setDateTimeAttribute(e, "time_of_change", it->next_change);
-        xml.setIntAttribute(e, "next_time_offset", it->next_time_offset);
+        XML::Element* e = xml.addElement(root, u"region");
+        xml.setAttribute(e, u"country_code", it->country);
+        xml.setIntAttribute(e, u"country_region_id", it->region_id);
+        xml.setIntAttribute(e, u"local_time_offset", it->time_offset);
+        xml.setDateTimeAttribute(e, u"time_of_change", it->next_change);
+        xml.setIntAttribute(e, u"next_time_offset", it->next_time_offset);
     }
     return root;
 }
@@ -213,16 +213,16 @@ void ts::LocalTimeOffsetDescriptor::fromXML(XML& xml, const XML::Element* elemen
     XML::ElementVector children;
     _is_valid =
         checkXMLName(xml, element) &&
-        xml.getChildren(children, element, "region");
+        xml.getChildren(children, element, u"region");
 
     for (size_t index = 0; _is_valid && index < children.size(); ++index) {
         Region region;
         _is_valid =
-            xml.getAttribute(region.country, children[index], "country_code", true, "", 3, 3) &&
-            xml.getIntAttribute<unsigned int>(region.region_id, children[index], "country_region_id", true, 0, 0, 63) &&
-            xml.getIntAttribute<int>(region.time_offset, children[index], "local_time_offset", true, 0, -780, 780) &&
-            xml.getDateTimeAttribute(region.next_change, children[index], "time_of_change", true) &&
-            xml.getIntAttribute<int>(region.next_time_offset, children[index], "next_time_offset", true, 0, -780, 780);
+            xml.getAttribute(region.country, children[index], u"country_code", true, u"", 3, 3) &&
+            xml.getIntAttribute<unsigned int>(region.region_id, children[index], u"country_region_id", true, 0, 0, 63) &&
+            xml.getIntAttribute<int>(region.time_offset, children[index], u"local_time_offset", true, 0, -780, 780) &&
+            xml.getDateTimeAttribute(region.next_change, children[index], u"time_of_change", true) &&
+            xml.getIntAttribute<int>(region.next_time_offset, children[index], u"next_time_offset", true, 0, -780, 780);
         if (_is_valid) {
             regions.push_back(region);
         }

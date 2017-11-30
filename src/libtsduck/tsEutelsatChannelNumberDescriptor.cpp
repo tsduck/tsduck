@@ -147,11 +147,11 @@ ts::XML::Element* ts::EutelsatChannelNumberDescriptor::toXML(XML& xml, XML::Elem
 {
     XML::Element* root = _is_valid ? xml.addElement(parent, _xml_name) : 0;
     for (EntryList::const_iterator it = entries.begin(); it != entries.end(); ++it) {
-        XML::Element* e = xml.addElement(root, "service");
-        xml.setIntAttribute(e, "original_network_id", it->onetw_id, true);
-        xml.setIntAttribute(e, "transport_stream_id", it->ts_id, true);
-        xml.setIntAttribute(e, "service_id", it->service_id, true);
-        xml.setIntAttribute(e, "eutelsat_channel_number", it->ecn, false);
+        XML::Element* e = xml.addElement(root, u"service");
+        xml.setIntAttribute(e, u"original_network_id", it->onetw_id, true);
+        xml.setIntAttribute(e, u"transport_stream_id", it->ts_id, true);
+        xml.setIntAttribute(e, u"service_id", it->service_id, true);
+        xml.setIntAttribute(e, u"eutelsat_channel_number", it->ecn, false);
     }
     return root;
 }
@@ -168,15 +168,15 @@ void ts::EutelsatChannelNumberDescriptor::fromXML(XML& xml, const XML::Element* 
     XML::ElementVector children;
     _is_valid =
         checkXMLName(xml, element) &&
-        xml.getChildren(children, element, "service", 0, MAX_ENTRIES);
+        xml.getChildren(children, element, u"service", 0, MAX_ENTRIES);
 
     for (size_t i = 0; _is_valid && i < children.size(); ++i) {
         Entry entry;
         _is_valid =
-            xml.getIntAttribute<uint16_t>(entry.onetw_id, children[i], "original_network_id", true, 0, 0x0000, 0xFFFF) &&
-            xml.getIntAttribute<uint16_t>(entry.ts_id, children[i], "transport_stream_id", true, 0, 0x0000, 0xFFFF) &&
-            xml.getIntAttribute<uint16_t>(entry.service_id, children[i], "service_id", true, 0, 0x0000, 0xFFFF) &&
-            xml.getIntAttribute<uint16_t>(entry.ecn, children[i], "eutelsat_channel_number", true, 0, 0x0000, 0x03FF);
+            xml.getIntAttribute<uint16_t>(entry.onetw_id, children[i], u"original_network_id", true, 0, 0x0000, 0xFFFF) &&
+            xml.getIntAttribute<uint16_t>(entry.ts_id, children[i], u"transport_stream_id", true, 0, 0x0000, 0xFFFF) &&
+            xml.getIntAttribute<uint16_t>(entry.service_id, children[i], u"service_id", true, 0, 0x0000, 0xFFFF) &&
+            xml.getIntAttribute<uint16_t>(entry.ecn, children[i], u"eutelsat_channel_number", true, 0, 0x0000, 0x03FF);
         if (_is_valid) {
             entries.push_back(entry);
         }

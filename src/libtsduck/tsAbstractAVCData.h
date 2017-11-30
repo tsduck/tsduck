@@ -108,8 +108,8 @@ namespace ts {
         //! @param [in] name A name to display for the value.
         //! @param [in] n The integer value to display.
         //!
-        template <typename INT>
-        void disp(std::ostream& out, const UString& margin, const char* name, INT n) const
+        template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+        void disp(std::ostream& out, const UString& margin, const UChar* name, INT n) const
         {
             out << margin << name << " = ";
             if (sizeof(INT) < 2) {
@@ -130,8 +130,8 @@ namespace ts {
         //! @param [in] name A name to display for the value.
         //! @param [in] n The integer values to display.
         //!
-        template <typename INT>
-        void disp(std::ostream& out, const std::string& margin, const char* name, std::vector<INT> n) const
+        template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+        void disp(std::ostream& out, const UString& margin, const UChar* name, std::vector<INT> n) const
         {
             for (size_t i = 0; i < n.size(); ++i) {
                 out << margin << name << "[" << i << "] = ";

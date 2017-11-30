@@ -122,9 +122,9 @@ void ts::MessageDescriptor::deserialize(const Descriptor& desc, const DVBCharset
 ts::XML::Element* ts::MessageDescriptor::toXML(XML& xml, XML::Element* parent) const
 {
     XML::Element* root = _is_valid ? xml.addElement(parent, _xml_name) : 0;
-    xml.setIntAttribute(root, "message_id", message_id, true);
-    xml.setAttribute(root, "language_code", language_code);
-    xml.addText(xml.addElement(root, "text"), message);
+    xml.setIntAttribute(root, u"message_id", message_id, true);
+    xml.setAttribute(root, u"language_code", language_code);
+    xml.addText(xml.addElement(root, u"text"), message);
     return root;
 }
 
@@ -137,9 +137,9 @@ void ts::MessageDescriptor::fromXML(XML& xml, const XML::Element* element)
 {
     _is_valid =
         checkXMLName(xml, element) &&
-        xml.getIntAttribute(message_id, element, "message_id", true) &&
-        xml.getAttribute(language_code, element, "language_code", true, "", 3, 3) &&
-        xml.getTextChild(message, element, "text");
+        xml.getIntAttribute(message_id, element, u"message_id", true) &&
+        xml.getAttribute(language_code, element, u"language_code", true, u"", 3, 3) &&
+        xml.getTextChild(message, element, u"text");
 }
 
 

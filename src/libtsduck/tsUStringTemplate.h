@@ -390,7 +390,7 @@ bool ts::UString::Load(CONTAINER& container, const UString& fileName)
 // Convert a string into an integer.
 //----------------------------------------------------------------------------
 
-template <typename INT>
+template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
 bool ts::UString::toInteger(INT& value, const UString& thousandSeparators) const
 {
     // In this function, we work on formal integer types INT. We use std::numeric_limits<INT> to test the
@@ -483,7 +483,7 @@ bool ts::UString::toInteger(INT& value, const UString& thousandSeparators) const
 // Convert a string containing a list of integers into a container of integers.
 //----------------------------------------------------------------------------
 
-template <class CONTAINER>
+template <class CONTAINER, typename std::enable_if<std::is_integral<typename CONTAINER::value_type>::value>::type*>
 bool ts::UString::toIntegers(CONTAINER& container, const UString& thousandSeparators, const UString& listSeparators) const
 {
     // Let's name INT the integer type.
@@ -546,7 +546,7 @@ CONTAINER& ts::UString::Append(CONTAINER& container, int argc, const char* const
 // Format a string containing a decimal value.
 //----------------------------------------------------------------------------
 
-template <typename INT>
+template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
 ts::UString ts::UString::Decimal(INT value,
                                  size_type min_width,
                                  bool right_justified,
@@ -629,7 +629,7 @@ ts::UString ts::UString::Decimal(INT value,
 // Format a string containing an hexadecimal value.
 //----------------------------------------------------------------------------
 
-template <typename INT>
+template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
 ts::UString ts::UString::Hexa(INT value,
                               size_type width,
                               const UString& separator,
@@ -684,7 +684,7 @@ ts::UString ts::UString::Hexa(INT value,
 // Format a percentage string.
 //----------------------------------------------------------------------------
 
-template<typename INT>
+template<typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
 ts::UString ts::UString::Percentage(INT value, INT total)
 {
     if (total < 0) {

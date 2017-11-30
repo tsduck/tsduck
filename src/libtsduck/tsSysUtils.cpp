@@ -91,7 +91,7 @@ ts::UString ts::DirectoryName(const UString& path)
     UString::size_type sep = path.rfind(PathSeparator);
 
     if (sep == UString::NPOS) {
-        return u".";                 // No '/' in path => current directory
+        return u".";               // No '/' in path => current directory
     }
     else if (sep == 0) {
         return path.substr(0, 1);  // '/' at beginning => root
@@ -194,13 +194,13 @@ ts::UString ts::UserHomeDirectory()
     const ::DWORD error = ::GetLastError();
     ::CloseHandle(process);
     if (status == 0) {
-        throw ts::Exception("error getting user profile directory", ::GetLastError());
+        throw ts::Exception(u"error getting user profile directory", ::GetLastError());
     }
     return UString(name, length);
 
 #else
 
-    return GetEnvironment("HOME");
+    return GetEnvironment(u"HOME");
 
 #endif
 }
@@ -228,7 +228,7 @@ ts::UString ts::ExecutableFile()
     char name[1024];
     // Flawfinder: ignore: readlink does not terminate with ASCII NUL.
     if ((length = ::readlink("/proc/self/exe", name, sizeof(name))) < 0) {
-        throw ts::Exception("Symbolic link /proc/self/exe error", errno);
+        throw ts::Exception(u"Symbolic link /proc/self/exe error", errno);
     }
     else {
         assert(length <= int(sizeof(name)));
@@ -244,7 +244,7 @@ ts::UString ts::ExecutableFile()
     int length;
     char name[PROC_PIDPATHINFO_MAXSIZE];
     if ((length = ::proc_pidpath(getpid(), name, sizeof(name))) < 0) {
-        throw ts::Exception("proc_pidpath error", errno);
+        throw ts::Exception(u"proc_pidpath error", errno);
     }
     else {
         assert(length <= int(sizeof(name)));
@@ -278,8 +278,9 @@ ts::UString ts::HostName()
 
     // POSIX implementation.
     char name[1024];
-    if (::gethostname(name, sizeof(name)) < 0)
-        return "";
+    if (::gethostname(name, sizeof(name)) < 0) {
+        return UString();
+    }
     else {
         name[sizeof(name) - 1] = '\0';
         return name;
@@ -313,7 +314,7 @@ void ts::SleepThread(MilliSecond delay)
         }
         else {
             // Actual error
-            throw ts::Exception("nanosleep error", errno);
+            throw ts::Exception(u"nanosleep error", errno);
             break;
         }
     }
@@ -339,7 +340,7 @@ size_t ts::MemoryPageSize()
     // POSIX implementation.
     long size = ::sysconf(_SC_PAGESIZE);
     if (size < 0) {
-        throw ts::Exception("sysconf (page size) error", errno);
+        throw ts::Exception(u"sysconf (page size) error", errno);
     }
     return size_t(size);
 
@@ -386,7 +387,7 @@ ts::UString ts::TempDirectory()
     ::DWORD status = ::GetTempPathW(::DWORD(buf.size()), buf.data());
     return status <= 0 ? u"C:\\" : UString(buf);
 #else
-    return "/tmp";
+    return u"/tmp";
 #endif
 }
 
@@ -564,7 +565,7 @@ ts::UString ts::SearchConfigurationFile(const UString& fileName)
     GetEnvironmentPath(tmp, TS_PLUGINS_PATH);
     dirList.insert(dirList.end(), tmp.begin(), tmp.end());
 #if defined(TS_UNIX)
-    GetEnvironmentPath(tmp, "LD_LIBRARY_PATH");
+    GetEnvironmentPath(tmp, u"LD_LIBRARY_PATH");
     dirList.insert(dirList.end(), tmp.begin(), tmp.end());
 #endif
     GetEnvironmentPath(tmp, TS_COMMAND_PATH);
@@ -648,14 +649,14 @@ void ts::GetProcessMetrics(ProcessMetrics& metrics)
     // Get process CPU time
     ::FILETIME creation_time, exit_time, kernel_time, user_time;
     if (::GetProcessTimes(proc, &creation_time, &exit_time, &kernel_time, &user_time) == 0) {
-        throw ts::Exception("GetProcessTimes error", ::GetLastError());
+        throw ts::Exception(u"GetProcessTimes error", ::GetLastError());
     }
     metrics.cpu_time = ts::Time::Win32FileTimeToMilliSecond(kernel_time) + ts::Time::Win32FileTimeToMilliSecond(user_time);
 
     // Get virtual memory size
     ::PROCESS_MEMORY_COUNTERS_EX mem_counters;
     if (::GetProcessMemoryInfo(proc, (::PROCESS_MEMORY_COUNTERS*)&mem_counters, sizeof(mem_counters)) == 0) {
-        throw ts::Exception("GetProcessMemoryInfo error", ::GetLastError());
+        throw ts::Exception(u"GetProcessMemoryInfo error", ::GetLastError());
     }
     metrics.vmem_size = mem_counters.PrivateUsage;
 
@@ -751,7 +752,7 @@ void ts::GetProcessMetrics(ProcessMetrics& metrics)
     ::mach_msg_type_number_t count = MACH_TASK_BASIC_INFO_COUNT;
     const ::kern_return_t status1 = ::task_info(::mach_task_self(), MACH_TASK_BASIC_INFO, ::task_info_t(&taskinfo), &count);
     if (status1 != KERN_SUCCESS) {
-        throw ts::Exception("task_info error");
+        throw ts::Exception(u"task_info error");
         return;
     }
     metrics.vmem_size = taskinfo.virtual_size;
@@ -760,7 +761,7 @@ void ts::GetProcessMetrics(ProcessMetrics& metrics)
     ::rusage usage;
     const int status2 = ::getrusage(RUSAGE_SELF, &usage);
     if (status2 < 0) {
-        throw ts::Exception("getrusage error");
+        throw ts::Exception(u"getrusage error");
         return;
     }
 

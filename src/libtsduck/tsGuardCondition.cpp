@@ -47,7 +47,7 @@ ts::GuardCondition::GuardCondition (Mutex& mutex, Condition& condition, MilliSec
     _is_locked = mutex.acquire (timeout);
 
     if (timeout == Infinite && !_is_locked) {
-        throw GuardConditionError ("failed to acquire mutex");
+        throw GuardConditionError(u"failed to acquire mutex");
     }
 }
 
@@ -71,7 +71,7 @@ ts::GuardCondition::~GuardCondition()
 void ts::GuardCondition::signal()
 {
     if (!_is_locked) {
-        throw GuardConditionError("GuardCondition: signal condition while mutex not locked");
+        throw GuardConditionError(u"GuardCondition: signal condition while mutex not locked");
     }
     else {
         _condition.signal();
@@ -86,7 +86,7 @@ void ts::GuardCondition::signal()
 bool ts::GuardCondition::waitCondition(MilliSecond timeout)
 {
     if (!_is_locked) {
-        throw GuardConditionError("GuardCondition: wait condition while mutex not locked");
+        throw GuardConditionError(u"GuardCondition: wait condition while mutex not locked");
     }
     else {
         return _condition.wait(_mutex, timeout);

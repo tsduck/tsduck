@@ -140,9 +140,9 @@ void ts::ServiceDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, c
 ts::XML::Element* ts::ServiceDescriptor::toXML(XML& xml, XML::Element* parent) const
 {
     XML::Element* root = _is_valid ? xml.addElement(parent, _xml_name) : 0;
-    xml.setIntAttribute(root, "service_type", service_type, true);
-    xml.setAttribute(root, "service_provider_name", provider_name);
-    xml.setAttribute(root, "service_name", service_name);
+    xml.setIntAttribute(root, u"service_type", service_type, true);
+    xml.setAttribute(root, u"service_provider_name", provider_name);
+    xml.setAttribute(root, u"service_name", service_name);
     return root;
 }
 
@@ -155,7 +155,7 @@ void ts::ServiceDescriptor::fromXML(XML& xml, const XML::Element* element)
 {
     _is_valid =
         checkXMLName(xml, element) &&
-        xml.getIntAttribute<uint8_t>(service_type, element, "service_type", true) &&
-        xml.getAttribute(provider_name, element, "service_provider_name", true) &&
-        xml.getAttribute(service_name, element, "service_name", true);
+        xml.getIntAttribute<uint8_t>(service_type, element, u"service_type", true) &&
+        xml.getAttribute(provider_name, element, u"service_provider_name", true) &&
+        xml.getAttribute(service_name, element, u"service_name", true);
 }

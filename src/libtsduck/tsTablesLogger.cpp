@@ -359,7 +359,7 @@ void ts::TablesLogger::logSection(const Section& sect)
     // Display time stamp if required.
     if (_opt.time_stamp) {
         header += UString(Time::CurrentLocalTime());
-        header += ": ";
+        header += u": ";
     }
 
     // Display packet index if required.

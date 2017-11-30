@@ -39,8 +39,8 @@ TSDUCK_SOURCE;
 // Configuration instances.
 //----------------------------------------------------------------------------
 
-TS_STATIC_INSTANCE_DEFINITION(ts::Names, ("tsduck.dvb.names"), ts::NamesDVB, NamesDVB);
-TS_STATIC_INSTANCE_DEFINITION(ts::Names, ("tsduck.oui.names"), ts::NamesOUI, NamesOUI);
+TS_STATIC_INSTANCE_DEFINITION(ts::Names, (u"tsduck.dvb.names"), ts::NamesDVB, NamesDVB);
+TS_STATIC_INSTANCE_DEFINITION(ts::Names, (u"tsduck.oui.names"), ts::NamesOUI, NamesOUI);
 
 
 //----------------------------------------------------------------------------

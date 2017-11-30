@@ -942,7 +942,7 @@ bool ts::DektecOutputPlugin::startError(const UString& message, unsigned int sta
         tsp->error(message);
     }
     else {
-        tsp->error(message + ": " + DektecStrError(status));
+        tsp->error(message + u": " + DektecStrError(status));
     }
     _guts->chan.Detach(DTAPI_INSTANT_DETACH);
     _guts->dtdev.Detach();
@@ -980,7 +980,7 @@ bool ts::DektecOutputPlugin::setModulation (int& modulation_type)
 {
     // Get input plugin modulation parameters if required
     const bool use_input_modulation = present(u"input-modulation");
-    const ObjectPtr input_params(use_input_modulation ? Object::RetrieveFromRepository("tsp.dvb.params") : 0);
+    const ObjectPtr input_params(use_input_modulation ? Object::RetrieveFromRepository(u"tsp.dvb.params") : 0);
 
     // Various views of the input modulation parameters (at most one is non-zero)
     const TunerParameters*     input_dvb  = dynamic_cast <const TunerParameters*>(input_params.pointer());
@@ -991,7 +991,7 @@ bool ts::DektecOutputPlugin::setModulation (int& modulation_type)
 
     // Adjust default modulation type from input plugin
     if (input_dvb != 0) {
-        tsp->debug(u"found input modulator parameters: " + TunerTypeEnum.name(input_dvb->tunerType()) + " " + input_dvb->toPluginOptions());
+        tsp->debug(u"found input modulator parameters: %s %s", {TunerTypeEnum.name(input_dvb->tunerType()), input_dvb->toPluginOptions()});
         if (input_dvbs != 0) {
             if (input_dvbs->delivery_system == DS_DVB_S) {
                 modulation_type = DTAPI_MOD_DVBS_QPSK;
@@ -1024,13 +1024,13 @@ bool ts::DektecOutputPlugin::setModulation (int& modulation_type)
     // Get user-specified modulation
     modulation_type = intValue<int>(u"modulation", modulation_type);
     if (modulation_type < 0) {
-        return startError("unspecified modulation type for " + _guts->device.model, DTAPI_OK);
+        return startError(u"unspecified modulation type for " + _guts->device.model, DTAPI_OK);
     }
 
     // Get user-specified symbol rate, used only with DVB-S/S2/C.
     int symbol_rate = intValue<int>(u"symbol-rate", -1);
     if (present(u"bitrate") && present(u"symbol-rate")) {
-        return startError("options --symbol-rate and --bitrate are mutually exclusive", DTAPI_OK);
+        return startError(u"options --symbol-rate and --bitrate are mutually exclusive", DTAPI_OK);
     }
 
     // Get LNB description, in case --satellite-frequency is used
@@ -1049,7 +1049,7 @@ bool ts::DektecOutputPlugin::setModulation (int& modulation_type)
     // Compute carrier frequency
     uint64_t frequency = 0;
     if (present(u"frequency") + present(u"satellite-frequency") + present(u"uhf-channel") + present(u"vhf-channel") > 1) {
-        return startError("options --frequency, --satellite-frequency, --uhf-channel, --vhf-channel are mutually exclusive", DTAPI_OK);
+        return startError(u"options --frequency, --satellite-frequency, --uhf-channel, --vhf-channel are mutually exclusive", DTAPI_OK);
     }
     if (present(u"uhf-channel")) {
         frequency = UHF::Frequency(intValue<int>(u"uhf-channel", 0), intValue<int>(u"offset-count", 0));
@@ -1079,7 +1079,7 @@ bool ts::DektecOutputPlugin::setModulation (int& modulation_type)
         frequency = input_atsc->frequency;
     }
     if (frequency == 0) {
-        return startError ("unspecified frequency (required for modulator devices)", DTAPI_OK);
+        return startError(u"unspecified frequency (required for modulator devices)", DTAPI_OK);
     }
 
     // Set modulation parameters
@@ -1239,11 +1239,12 @@ bool ts::DektecOutputPlugin::setModulation (int& modulation_type)
             const int s48 = time_slice ? DTAPI_MOD_DVBT_S48 : DTAPI_MOD_DVBT_S48_OFF;
             const int s49 = mpe_fec ? DTAPI_MOD_DVBT_S49 : DTAPI_MOD_DVBT_S49_OFF;
             const int cell_id = intValue<int>(u"cell-id", -1);
-            tsp->verbose(u"using DVB-T FEC " + DektecFEC.name(fec) +
-                         ", bandwidth " + DektecDVBTProperty.name(bw) +
-                         ", constellation " + DektecDVBTProperty.name(constel) +
-                         ", guard " + DektecDVBTProperty.name(guard) +
-                         ", transmission " + DektecDVBTProperty.name(tr_mode));
+            tsp->verbose(u"using DVB-T FEC %s, bandwidth %s, constellation %s, guard %s, transmission %s",
+                         {DektecFEC.name(fec),
+                          DektecDVBTProperty.name(bw),
+                          DektecDVBTProperty.name(constel),
+                          DektecDVBTProperty.name(guard),
+                          DektecDVBTProperty.name(tr_mode)});
             const int param1 = bw | constel | guard | interleave | tr_mode | dvb_h | s48 | s49;
             // Compute exact expected bitrate (no symbol rate on DVB-T)
             if (!setBitrate(-1, modulation_type, fec, param1, cell_id)) {
@@ -1297,19 +1298,19 @@ bool ts::DektecOutputPlugin::setModulation (int& modulation_type)
             Dtapi::DtDvbT2ParamInfo info;
             status = pars.OptimisePlpNumBlocks(info, pars.m_Plps[0].m_NumBlocks, pars.m_NumDataSyms);
             if (status != DTAPI_OK) {
-                return startError("error computing PLP parameters", status);
+                return startError(u"error computing PLP parameters", status);
             }
             // Report actual parameters in debug mode
             tsp->debug(u"DVB-T2: DtDvbT2Pars = {");
-            DektecDevice::ReportDvbT2Pars(pars, *tsp, Severity::Debug, "  ");
+            DektecDevice::ReportDvbT2Pars(pars, *tsp, Severity::Debug, u"  ");
             tsp->debug(u"}");
             tsp->debug(u"DVB-T2: DtDvbT2ParamInfo = {");
-            DektecDevice::ReportDvbT2ParamInfo(info, *tsp, Severity::Debug, "  ");
+            DektecDevice::ReportDvbT2ParamInfo(info, *tsp, Severity::Debug, u"  ");
             tsp->debug(u"}");
             // Check validity of T2 parameters
             status = pars.CheckValidity();
             if (status != DTAPI_OK) {
-                return startError("invalid combination of DVB-T2 parameters", status);
+                return startError(u"invalid combination of DVB-T2 parameters", status);
             }
             // Set modulation parameters
             status = _guts->chan.SetModControl(pars);
@@ -1347,10 +1348,10 @@ bool ts::DektecOutputPlugin::setModulation (int& modulation_type)
 
         case DTAPI_MOD_CMMB: {
             if (_guts->cur_bitrate <= 0) {
-                return startError("unknown bitrate, required with CMMB modulation, use --bitrate option", DTAPI_OK);
+                return startError(u"unknown bitrate, required with CMMB modulation, use --bitrate option", DTAPI_OK);
             }
             if (!present(u"cmmb-pid")) {
-                return startError("option --cmmb-pid is required with CMMB modulation", DTAPI_OK);
+                return startError(u"option --cmmb-pid is required with CMMB modulation", DTAPI_OK);
             }
             Dtapi::DtCmmbPars pars;
             pars.m_Bandwidth = intValue<int>(u"cmmb-bandwidth", DTAPI_CMMB_BW_8MHZ);
@@ -1363,7 +1364,7 @@ bool ts::DektecOutputPlugin::setModulation (int& modulation_type)
         }
 
         case DTAPI_MOD_ISDBT: {
-            return startError("ISDB-T modulation not yet supported", DTAPI_OK);
+            return startError(u"ISDB-T modulation not yet supported", DTAPI_OK);
             break;
         }
 
@@ -1374,12 +1375,12 @@ bool ts::DektecOutputPlugin::setModulation (int& modulation_type)
         }
 
         default: {
-            return startError("unsupported modulation type", DTAPI_OK);
+            return startError(u"unsupported modulation type", DTAPI_OK);
         }
     }
 
     if (status != DTAPI_OK) {
-        return startError("error while setting modulation mode", status);
+        return startError(u"error while setting modulation mode", status);
     }
 
     // Set carrier frequency.
@@ -1407,7 +1408,7 @@ bool ts::DektecOutputPlugin::setModulation (int& modulation_type)
 bool ts::DektecOutputPlugin::stop()
 {
     if (_guts->is_started) {
-        tsp->verbose(u"terminating " + _guts->device.model + " output");
+        tsp->verbose(u"terminating %s output", {_guts->device.model});
 
         // Mute output signal for modulators which support this
         if (_guts->mute_on_stop) {
@@ -1422,7 +1423,7 @@ bool ts::DektecOutputPlugin::stop()
         _guts->dtdev.Detach();
 
         _guts->is_started = false;
-        tsp->verbose(_guts->device.model + u" output terminated");
+        tsp->verbose(u"%s output terminated", {_guts->device.model});
     }
     return true;
 }

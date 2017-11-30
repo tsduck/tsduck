@@ -209,9 +209,9 @@ void ts::ShortEventDescriptor::DisplayDescriptor(TablesDisplay& display, DID did
 ts::XML::Element* ts::ShortEventDescriptor::toXML(XML& xml, XML::Element* parent) const
 {
     XML::Element* root = _is_valid ? xml.addElement(parent, _xml_name) : 0;
-    xml.setAttribute(root, "language_code", language_code);
-    xml.addText(xml.addElement(root, "event_name"), event_name);
-    xml.addText(xml.addElement(root, "text"), text);
+    xml.setAttribute(root, u"language_code", language_code);
+    xml.addText(xml.addElement(root, u"event_name"), event_name);
+    xml.addText(xml.addElement(root, u"text"), text);
     return root;
 }
 
@@ -224,7 +224,7 @@ void ts::ShortEventDescriptor::fromXML(XML& xml, const XML::Element* element)
 {
     _is_valid =
         checkXMLName(xml, element) &&
-        xml.getAttribute(language_code, element, "language_code", true, "", 3, 3) &&
-        xml.getTextChild(event_name, element, "event_name") &&
-        xml.getTextChild(text, element, "text");
+        xml.getAttribute(language_code, element, u"language_code", true, u"", 3, 3) &&
+        xml.getTextChild(event_name, element, u"event_name") &&
+        xml.getTextChild(text, element, u"text");
 }

@@ -131,7 +131,7 @@ void ts::EacemStreamIdentifierDescriptor::DisplayDescriptor(TablesDisplay& displ
 ts::XML::Element* ts::EacemStreamIdentifierDescriptor::toXML(XML& xml, XML::Element* parent) const
 {
     XML::Element* root = _is_valid ? xml.addElement(parent, _xml_name) : 0;
-    xml.setIntAttribute(root, "version_byte", version, true);
+    xml.setIntAttribute(root, u"version_byte", version, true);
     return root;
 }
 
@@ -144,5 +144,5 @@ void ts::EacemStreamIdentifierDescriptor::fromXML(XML& xml, const XML::Element* 
 {
     _is_valid =
         checkXMLName(xml, element) &&
-        xml.getIntAttribute<uint8_t>(version, element, "version_byte", true, 0, 0x00, 0xFF);
+        xml.getIntAttribute<uint8_t>(version, element, u"version_byte", true, 0, 0x00, 0xFF);
 }

@@ -57,7 +57,7 @@ ts::AVCAttributes::AVCAttributes() :
 ts::UString ts::AVCAttributes::toString() const
 {
     if (!_is_valid) {
-        return "";
+        return UString();
     }
 
     UString desc(UString::Format(u"%dx%d, ", {_hsize, _vsize}));

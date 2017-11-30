@@ -183,7 +183,7 @@ namespace ts {
             //! @param [in] value Integer value.
             //! @return The formatted string with embedded new-lines.
             //!
-            template <typename INT>
+            template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
             static UString dumpDecimal(size_t indent, const UString& name, const INT& value)
             {
                 return UString::Format(u"%*s%s = %d\n", {indent, u"", name, value});
@@ -197,7 +197,7 @@ namespace ts {
             //! @param [in] value Integer value.
             //! @return The formatted string with embedded new-lines.
             //!
-            template <typename INT>
+            template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
             static UString dumpHexa(size_t indent, const UString& name, const INT& value)
             {
                 return UString::Format(u"%*s%s = 0x%X\n", {indent, u"", name, value});
@@ -212,7 +212,7 @@ namespace ts {
             //! @param [in] value Integer value.
             //! @return The formatted string with embedded new-lines.
             //!
-            template <typename INT>
+            template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
             static UString dumpInteger(size_t indent, const UString& name, const INT& value)
             {
                 return std::numeric_limits<INT>::is_signed ? dumpDecimal(indent, name, value) : dumpHexa(indent, name, value);
@@ -227,7 +227,7 @@ namespace ts {
             //! @param [in] value Integer value.
             //! @return The formatted string with embedded new-lines.
             //!
-            template <typename INT>
+            template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
             static UString dumpOptionalDecimal(size_t indent, const UString& name, bool has_value, const INT& value)
             {
                 return has_value ? dumpDecimal(indent, name, value) : u"";
@@ -242,7 +242,7 @@ namespace ts {
             //! @param [in] value Integer value.
             //! @return The formatted string with embedded new-lines.
             //!
-            template <typename INT>
+            template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
             static UString dumpOptionalHexa(size_t indent, const UString& name, bool has_value, const INT& value)
             {
                 return has_value ? dumpHexa(indent, name, value) : u"";
@@ -258,7 +258,7 @@ namespace ts {
             //! @param [in] value Integer value.
             //! @return The formatted string with embedded new-lines.
             //!
-            template <typename INT>
+            template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
             static UString dumpOptionalInteger(size_t indent, const UString& name, bool has_value, const INT& value)
             {
                 return has_value ? dumpInteger(indent, name, value) : u"";
@@ -273,7 +273,7 @@ namespace ts {
             //! @param [in] val Vector of integer values.
             //! @return The formatted string with embedded new-lines.
             //!
-            template <typename INT>
+            template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
             static UString dumpVector(size_t indent, const UString& name, const std::vector<INT>& val)
             {
                 UString s;

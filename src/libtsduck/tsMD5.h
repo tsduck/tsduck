@@ -46,12 +46,12 @@ namespace ts {
         static const size_t BLOCK_SIZE = 64;  //!< MD-5 block size in bytes.
 
         // Implementation of Hash interface:
-        virtual std::string name() const {return "MD-5";}
-        virtual size_t hashSize() const {return HASH_SIZE;}
-        virtual size_t blockSize() const {return BLOCK_SIZE;}
-        virtual bool init();
-        virtual bool add(const void* data, size_t size);
-        virtual bool getHash(void* hash, size_t bufsize, size_t* retsize = 0);
+        virtual UString name() const override {return u"MD-5";}
+        virtual size_t hashSize() const override {return HASH_SIZE;}
+        virtual size_t blockSize() const override {return BLOCK_SIZE;}
+        virtual bool init() override;
+        virtual bool add(const void* data, size_t size) override;
+        virtual bool getHash(void* hash, size_t bufsize, size_t* retsize = 0) override;
 
         //! Constructor
         MD5();

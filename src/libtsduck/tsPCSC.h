@@ -106,7 +106,7 @@ namespace ts {
             //! @param [in] reader_ Smartcard reader name.
             //! @param [in] current_state_ Current reader state.
             //!
-            ReaderState(const UString& reader_ = "", ::DWORD current_state_ = SCARD_STATE_UNAWARE) :
+            ReaderState(const UString& reader_ = UString(), ::DWORD current_state_ = SCARD_STATE_UNAWARE) :
                 reader(reader_),
                 atr(),
                 current_state(current_state_),

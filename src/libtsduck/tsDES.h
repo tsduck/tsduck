@@ -47,22 +47,22 @@ namespace ts {
         static const size_t ROUNDS = 16;     //!< DES number of rounds.
 
         // Implementation of BlockCipher interface:
-        virtual std::string name() const {return "DES";}
-        virtual size_t blockSize() const {return BLOCK_SIZE;}
-        virtual size_t minKeySize() const {return KEY_SIZE;}
-        virtual size_t maxKeySize() const {return KEY_SIZE;}
-        virtual bool isValidKeySize (size_t size) const {return size == KEY_SIZE;}
-        virtual size_t minRounds() const {return ROUNDS;}
-        virtual size_t maxRounds() const {return ROUNDS;}
-        virtual size_t defaultRounds() const {return ROUNDS;}
+        virtual UString name() const override {return u"DES";}
+        virtual size_t blockSize() const override {return BLOCK_SIZE;}
+        virtual size_t minKeySize() const override {return KEY_SIZE;}
+        virtual size_t maxKeySize() const override {return KEY_SIZE;}
+        virtual bool isValidKeySize (size_t size) const override {return size == KEY_SIZE;}
+        virtual size_t minRounds() const override {return ROUNDS;}
+        virtual size_t maxRounds() const override {return ROUNDS;}
+        virtual size_t defaultRounds() const override {return ROUNDS;}
 
-        virtual bool setKey (const void* key, size_t key_length, size_t rounds = 0);
-        virtual bool encrypt (const void* plain, size_t plain_length,
-                              void* cipher, size_t cipher_maxsize,
-                              size_t* cipher_length = 0);
-        virtual bool decrypt (const void* cipher, size_t cipher_length,
-                              void* plain, size_t plain_maxsize,
-                              size_t* plain_length = 0);
+        virtual bool setKey(const void* key, size_t key_length, size_t rounds = 0) override;
+        virtual bool encrypt(const void* plain, size_t plain_length,
+                             void* cipher, size_t cipher_maxsize,
+                             size_t* cipher_length = 0) override;
+        virtual bool decrypt(const void* cipher, size_t cipher_length,
+                             void* plain, size_t plain_maxsize,
+                             size_t* plain_length = 0) override;
 
     private:
         uint32_t _ek[32];  // Encryption keys
@@ -72,8 +72,8 @@ namespace ts {
         friend class TDES;
         static const uint16_t EN0 = 0;
         static const uint16_t DE1 = 1;
-        static void cookey (const uint32_t* raw1, uint32_t* keyout);
-        static void deskey (const uint8_t* key, uint16_t edf, uint32_t* keyout);
-        static void desfunc (uint32_t* block, const uint32_t* keys);
+        static void cookey(const uint32_t* raw1, uint32_t* keyout);
+        static void deskey(const uint8_t* key, uint16_t edf, uint32_t* keyout);
+        static void desfunc(uint32_t* block, const uint32_t* keys);
     };
 }

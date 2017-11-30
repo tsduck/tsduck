@@ -227,7 +227,7 @@ std::ostream& ts::AVCVUIParameters::display(std::ostream& out, const UString& ma
         return out;
     }
 
-#define DISP(n) disp(out, margin, #n, n)
+#define DISP(n) disp(out, margin, u ## #n, n)
 
     DISP(aspect_ratio_info_present_flag);
     if (aspect_ratio_info_present_flag) {
@@ -265,11 +265,11 @@ std::ostream& ts::AVCVUIParameters::display(std::ostream& out, const UString& ma
     }
     DISP(nal_hrd_parameters_present_flag);
     if (nal_hrd_parameters_present_flag) {
-        nal_hrd.display(out, margin + "nal_hrd.");
+        nal_hrd.display(out, margin + u"nal_hrd.");
     }
     DISP(vcl_hrd_parameters_present_flag);
     if (vcl_hrd_parameters_present_flag) {
-        vcl_hrd.display(out, margin + "vcl_hrd.");
+        vcl_hrd.display(out, margin + u"vcl_hrd.");
     }
     if (nal_hrd_parameters_present_flag || vcl_hrd_parameters_present_flag) {
         DISP (low_delay_hrd_flag);
