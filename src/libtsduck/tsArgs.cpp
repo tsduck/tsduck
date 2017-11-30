@@ -156,7 +156,7 @@ ts::Args::IOption::IOption(const UChar*       name_,
     }
     // Handle invalid values
     if (max_occur < min_occur) {
-        throw ArgsError("invalid occurences for " + display());
+        throw ArgsError(u"invalid occurences for " + display());
     }
 }
 
@@ -167,7 +167,7 @@ ts::Args::IOption::IOption(const UChar*       name_,
 
 ts::UString ts::Args::IOption::display() const
 {
-    UString plural(min_occur > 1 ? "s" : "");
+    UString plural(min_occur > 1 ? u"s" : u"");
     if (name.empty()) {
         return u"parameter" + plural;
     }
@@ -194,7 +194,7 @@ ts::Args::Args(const UString& description, const UString& syntax, const UString&
     _shell(),
     _syntax(syntax),
     _help(help),
-    _app_name(""),
+    _app_name(),
     _args(),
     _is_valid(false),
     _flags(flags)
@@ -533,9 +533,9 @@ bool ts::Args::analyze()
                 short_opt_index = UString::NPOS;
             }
         }
-        else if (force_parameters || _args[next_arg].empty() || _args[next_arg][0] != '-') {
+        else if (force_parameters || _args[next_arg].empty() || _args[next_arg][0] != u'-') {
             // Arg is a parameter
-            if ((opt = search("")) == 0) {
+            if ((opt = search(u"")) == 0) {
                 ++next_arg;
             }
             force_parameters = (_flags & GATHER_PARAMETERS) != 0;
@@ -543,7 +543,7 @@ bool ts::Args::analyze()
         else if (_args[next_arg].length() == 1) {
             // Arg is '-', next arg is a parameter, even if it starts with '-'
             ++next_arg;
-            if ((opt = search("")) == 0) {
+            if ((opt = search(u"")) == 0) {
                 ++next_arg;
             }
         }

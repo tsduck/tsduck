@@ -62,7 +62,7 @@ namespace ts {
         virtual void clear() override;
         virtual bool parse(const void* data, size_t size) override {return AbstractAVCStructure::parse(data, size);}
         virtual bool parse(AVCParser& parser) override;
-        virtual std::ostream& display(std::ostream& strm = std::cout, const std::string& margin = "") const override;
+        virtual std::ostream& display(std::ostream& strm = std::cout, const UString& margin = UString()) const override;
 
         // VUI parameters fields.
         // See ISO/IEC 14496-10 sections E.1.1 and E.2.1.

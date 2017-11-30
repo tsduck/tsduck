@@ -155,7 +155,7 @@ ts::InjectPlugin::InjectPlugin (TSP* tsp_) :
             u"      specified for some input files, the bitrate of the target PID is\n"
             u"      re-evaluated on a regular basis. The value of this option specifies\n"
             u"      the number of packet in the target PID before re-evaluating its\n"
-            u"      bitrate. The default is " TS_STRINGIFY (DEF_EVALUATE_INTERVAL) " packets.\n"
+            u"      bitrate. The default is " TS_STRINGIFY (DEF_EVALUATE_INTERVAL) u" packets.\n"
             u"\n"
             u"  -f\n"
             u"  --force-crc\n"

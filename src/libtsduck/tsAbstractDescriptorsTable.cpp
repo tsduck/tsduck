@@ -165,8 +165,8 @@ void ts::AbstractDescriptorsTable::DisplaySection(TablesDisplay& display, const 
 ts::XML::Element* ts::AbstractDescriptorsTable::toXML(XML& xml, XML::Element* parent) const
 {
     XML::Element* root = _is_valid ? xml.addElement(parent, _xml_name) : 0;
-    xml.setIntAttribute(root, "version", version);
-    xml.setBoolAttribute(root, "current", is_current);
+    xml.setIntAttribute(root, u"version", version);
+    xml.setBoolAttribute(root, u"current", is_current);
     XMLTables::ToXML(xml, root, descs);
     return root;
 }
@@ -181,7 +181,7 @@ void ts::AbstractDescriptorsTable::fromXML(XML& xml, const XML::Element* element
     descs.clear();
     _is_valid =
         checkXMLName(xml, element) &&
-        xml.getIntAttribute<uint8_t>(version, element, "version", false, 0, 0, 31) &&
-        xml.getBoolAttribute(is_current, element, "current", false, true) &&
+        xml.getIntAttribute<uint8_t>(version, element, u"version", false, 0, 0, 31) &&
+        xml.getBoolAttribute(is_current, element, u"current", false, true) &&
         XMLTables::FromDescriptorListXML(descs, xml, element);
 }

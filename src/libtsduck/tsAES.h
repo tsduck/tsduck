@@ -51,22 +51,22 @@ namespace ts {
         static const size_t DEFAULT_ROUNDS = 10;  //!< AES default number of rounds, actually depends on key size.
 
         // Implementation of BlockCipher interface:
-        virtual std::string name() const {return "AES";}
-        virtual size_t blockSize() const {return BLOCK_SIZE;}
-        virtual size_t minKeySize() const {return MIN_KEY_SIZE;}
-        virtual size_t maxKeySize() const {return MAX_KEY_SIZE;}
-        virtual bool isValidKeySize (size_t size) const {return size == 16 || size == 24 || size == 32;}
-        virtual size_t minRounds() const {return MIN_ROUNDS;}
-        virtual size_t maxRounds() const {return MAX_ROUNDS;}
-        virtual size_t defaultRounds() const {return DEFAULT_ROUNDS;}
+        virtual UString name() const override {return u"AES";}
+        virtual size_t blockSize() const override {return BLOCK_SIZE;}
+        virtual size_t minKeySize() const override {return MIN_KEY_SIZE;}
+        virtual size_t maxKeySize() const override {return MAX_KEY_SIZE;}
+        virtual bool isValidKeySize (size_t size) const override {return size == 16 || size == 24 || size == 32;}
+        virtual size_t minRounds() const override {return MIN_ROUNDS;}
+        virtual size_t maxRounds() const override {return MAX_ROUNDS;}
+        virtual size_t defaultRounds() const override {return DEFAULT_ROUNDS;}
 
-        virtual bool setKey(const void* key, size_t key_length, size_t rounds = 0);
+        virtual bool setKey(const void* key, size_t key_length, size_t rounds = 0) override;
         virtual bool encrypt(const void* plain, size_t plain_length,
                              void* cipher, size_t cipher_maxsize,
-                             size_t* cipher_length = 0);
+                             size_t* cipher_length = 0) override;
         virtual bool decrypt(const void* cipher, size_t cipher_length,
                              void* plain, size_t plain_maxsize,
-                             size_t* plain_length = 0);
+                             size_t* plain_length = 0) override;
 
     private:
         int      _Nr;     //!< Number of rounds

@@ -108,14 +108,14 @@ ts::UString ts::GetRegistryValue(const UString& key, const UString& value_name)
     ::HKEY root;
     UString subkey;
     if (!SplitRegistryKey(key, root, subkey)) {
-        return "";
+        return UString();
     }
 
     // Open registry key
     ::HKEY hkey;
     ::LONG hr = ::RegOpenKeyExW(root, subkey.wc_str(), 0, KEY_READ, &hkey);
     if (hr != ERROR_SUCCESS) {
-        return "";
+        return UString();
     }
 
     // Query the the size of the value in the key. By giving a NULL address
@@ -125,7 +125,7 @@ ts::UString ts::GetRegistryValue(const UString& key, const UString& value_name)
     hr = ::RegQueryValueExW(hkey, value_name.wc_str(), NULL, &type, NULL, &size);
     if ((hr != ERROR_SUCCESS && hr != ERROR_MORE_DATA) || size <= 0) {
         ::RegCloseKey(hkey);
-        return "";
+        return UString();
     }
 
     // Allocate new buffer and actually get the value

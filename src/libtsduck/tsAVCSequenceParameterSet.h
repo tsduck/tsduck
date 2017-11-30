@@ -61,7 +61,7 @@ namespace ts {
 
         // Inherited methods
         virtual void clear() override;
-        virtual std::ostream& display(std::ostream& strm = std::cout, const std::string& margin = "") const override;
+        virtual std::ostream& display(std::ostream& strm = std::cout, const UString& margin = UString()) const override;
 
         //!
         //! Get chroma_format_idc, applying default value (see H.264 7.4.2.1.1).

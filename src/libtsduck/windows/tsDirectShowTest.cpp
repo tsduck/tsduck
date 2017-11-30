@@ -264,7 +264,7 @@ bool ts::DirectShowTest::displayDevicesByCategory(const ::GUID& category, const 
 
         // Display characteristics of this device filter
         _output << std::endl << margin << "device \"" << filters.name(index) << "\"" << std::endl;
-        displayObject(filters.filter(index).pointer(), margin + "  ");
+        displayObject(filters.filter(index).pointer(), margin + u"  ");
 
         // List all pins on the filter
         // Create a pin enumerator
@@ -299,7 +299,7 @@ bool ts::DirectShowTest::displayDevicesByCategory(const ::GUID& category, const 
             pin_info.pFilter->Release();
 
             _output << std::endl << margin << "  - Pin \"" << pin_name << "\", direction: " << PinDirectionName(dir) << std::endl;
-            displayObject(pin.pointer(), margin + "    ");
+            displayObject(pin.pointer(), margin + u"    ");
         }
     }
     return true;
@@ -361,7 +361,7 @@ bool ts::DirectShowTest::displayTuningSpaces(const UString& margin)
 
     const bool ok = getAllTuningSpaces(tsContainer, tsEnum);
     if (ok) {
-        displayEnumerateTuningSpaces(tsEnum.pointer(), margin + "  ");
+        displayEnumerateTuningSpaces(tsEnum.pointer(), margin + u"  ");
     }
     return ok;
 }
@@ -503,7 +503,7 @@ void ts::DirectShowTest::displayIKsControl(::IUnknown* object, const UString& ma
     _output << margin << "IKsControl properties support:" << std::endl;
 
     // Check some supported properties
-#define _P_(ps,id) displayOneIKsControl(control.pointer(), KSPROPSETID_Bda##ps, #ps, KSPROPERTY_BDA_##id, #id, margin + "  ")
+#define _P_(ps,id) displayOneIKsControl(control.pointer(), KSPROPSETID_Bda##ps, #ps, KSPROPERTY_BDA_##id, #id, margin + u"  ")
 
     _P_(SignalStats, SIGNAL_STRENGTH);
     _P_(SignalStats, SIGNAL_QUALITY);
@@ -565,7 +565,7 @@ void ts::DirectShowTest::displayIKsTopologyInfo(::IUnknown* object, const UStrin
     // List categories
     ::DWORD cat_count;
     ::HRESULT hr = topinfo->get_NumCategories(&cat_count);
-    if (ComSuccess(hr, "IKsTopologyInfo::get_NumCategories", _report)) {
+    if (ComSuccess(hr, u"IKsTopologyInfo::get_NumCategories", _report)) {
         _output << margin << "  Categories:";
         if (cat_count <= 0) {
             _output << " none";
@@ -573,7 +573,7 @@ void ts::DirectShowTest::displayIKsTopologyInfo(::IUnknown* object, const UStrin
         for (::DWORD cat = 0; cat < cat_count; cat++) {
             ::GUID category;
             hr = topinfo->get_Category(cat, &category);
-            if (ComSuccess(hr, "IKsTopologyInfo::get_Category", _report)) {
+            if (ComSuccess(hr, u"IKsTopologyInfo::get_Category", _report)) {
                 _output << " " << NameGUID(category);
             }
         }
@@ -583,7 +583,7 @@ void ts::DirectShowTest::displayIKsTopologyInfo(::IUnknown* object, const UStrin
     // List nodes
     ::DWORD node_count;
     hr = topinfo->get_NumNodes(&node_count);
-    if (ComSuccess(hr, "IKsTopologyInfo::get_NumNodes", _report)) {
+    if (ComSuccess(hr, u"IKsTopologyInfo::get_NumNodes", _report)) {
         if (node_count <= 0) {
             _output << margin << "  No node found" << std::endl;
         }
@@ -591,14 +591,14 @@ void ts::DirectShowTest::displayIKsTopologyInfo(::IUnknown* object, const UStrin
             _output << margin << "  Node " << n;
             ::GUID node_type;
             hr = topinfo->get_NodeType(n, &node_type);
-            if (ComSuccess(hr, "IKsTopologyInfo::get_NodeType", _report)) {
+            if (ComSuccess(hr, u"IKsTopologyInfo::get_NodeType", _report)) {
                 _output << ", type " << NameGUID(node_type);
             }
             static const ::DWORD MAX_NODE_NAME = 256;
             ::WCHAR name [MAX_NODE_NAME];
             ::DWORD name_size;
             hr = topinfo->get_NodeName(n, name, MAX_NODE_NAME, &name_size);
-            if (ComSuccess(hr, "IKsTopologyInfo::get_NodeName", NULLREP)) {
+            if (ComSuccess(hr, u"IKsTopologyInfo::get_NodeName", NULLREP)) {
                 _output << ", name \"" << ToString(name) << "\"";
             }
             _output << std::endl;
@@ -633,7 +633,7 @@ void ts::DirectShowTest::displayBDATopology(::IUnknown* object, const UString& m
     ::BDANODE_DESCRIPTOR desc [MAX_NODES];
     count = MAX_NODES;
     hr = topology->GetNodeDescriptors(&count, MAX_NODES, desc);
-    if (!ComSuccess(hr, "IBDA_Topology::GetNodeDescriptors", _report)) {
+    if (!ComSuccess(hr, u"IBDA_Topology::GetNodeDescriptors", _report)) {
         return;
     }
     _output << margin << "  Node descriptors:" << std::endl;
@@ -648,7 +648,7 @@ void ts::DirectShowTest::displayBDATopology(::IUnknown* object, const UString& m
     ::ULONG types [MAX_NODES];
     count = MAX_NODES;
     hr = topology->GetNodeTypes(&count, MAX_NODES, types);
-    if (!ComSuccess(hr, "IBDA_Topology::GetNodeTypes", _report)) {
+    if (!ComSuccess(hr, u"IBDA_Topology::GetNodeTypes", _report)) {
         return;
     }
     for (::ULONG node = 0; node < count; node++) {
@@ -658,7 +658,7 @@ void ts::DirectShowTest::displayBDATopology(::IUnknown* object, const UString& m
         ::GUID interfaces [MAX_NODES];
         ::ULONG interfaces_count = MAX_NODES;
         hr = topology->GetNodeInterfaces(types[node], &interfaces_count, MAX_NODES, interfaces);
-        if (ts::ComSuccess(hr, "IBDA_Topology::GetNodeInterfaces", _report)) {
+        if (ts::ComSuccess(hr, u"IBDA_Topology::GetNodeInterfaces", _report)) {
             for (::ULONG n = 0; n < interfaces_count; n++) {
                 _output << margin << "    interface " << ts::NameGUID(interfaces[n]) << std::endl;
             }
@@ -667,15 +667,15 @@ void ts::DirectShowTest::displayBDATopology(::IUnknown* object, const UString& m
         // Get control node for this type
         ts::ComPtr<::IUnknown> cnode;
         hr = topology->GetControlNode(0, 1, types[node], cnode.creator());
-        if (ts::ComSuccess(hr, "IBDA_Topology::GetControlNode", _report)) {
-            displayObject(cnode.pointer(), margin + "    ");
+        if (ts::ComSuccess(hr, u"IBDA_Topology::GetControlNode", _report)) {
+            displayObject(cnode.pointer(), margin + u"    ");
         }
     }
 
     // Get pin types
     count = MAX_NODES;
     hr = topology->GetPinTypes(&count, MAX_NODES, types);
-    if (!ts::ComSuccess(hr, "IBDA_Topology::GetPinTypes", _report)) {
+    if (!ts::ComSuccess(hr, u"IBDA_Topology::GetPinTypes", _report)) {
         return;
     }
     _output << margin << "  Pin types:";
@@ -693,7 +693,7 @@ void ts::DirectShowTest::displayBDATopology(::IUnknown* object, const UString& m
     ::BDA_TEMPLATE_CONNECTION conn [MAX_NODES];
     count = MAX_NODES;
     hr = topology->GetTemplateConnections(&count, MAX_NODES, conn);
-    if (!ts::ComSuccess(hr, "IBDA_Topology::GetTemplateConnections", _report)) {
+    if (!ts::ComSuccess(hr, u"IBDA_Topology::GetTemplateConnections", _report)) {
         return;
     }
 
@@ -749,12 +749,12 @@ void ts::DirectShowTest::displayITuner(::IUnknown* object, const UString& margin
     // List tuning spaces.
     ComPtr<::IEnumTuningSpaces> enum_tspace;
     ::HRESULT hr = tuner->EnumTuningSpaces(enum_tspace.creator());
-    if (ComSuccess(hr, "cannot enumerate tuning spaces", _report)) {
+    if (ComSuccess(hr, u"cannot enumerate tuning spaces", _report)) {
         if (hr != S_OK) {
             _output << margin << "  No tuning space found" << std::endl;
         }
         else {
-            displayEnumerateTuningSpaces(enum_tspace.pointer(), margin + "  ");
+            displayEnumerateTuningSpaces(enum_tspace.pointer(), margin + u"  ");
         }
     }
 }
@@ -767,7 +767,7 @@ void ts::DirectShowTest::displayITuner(::IUnknown* object, const UString& margin
 void ts::DirectShowTest::displayObject(::IUnknown* object, const UString& margin)
 {
     _output << margin << "Some supported interfaces:" << std::endl;
-    displayInterfaces(object, margin + "  ");
+    displayInterfaces(object, margin + u"  ");
     displayIKsPropertySet(object, margin);
     displayIKsControl(object , margin);
     displayIKsTopologyInfo(object, margin);

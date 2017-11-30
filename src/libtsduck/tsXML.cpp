@@ -165,7 +165,7 @@ bool ts::XML::loadDocument(Document& doc, const UString& fileName, bool search)
 
     // Eliminate non-existent files.
     if (actualFileName.empty()) {
-        reportError("File not found: " + fileName);
+        reportError(u"File not found: " + fileName);
         return false;
     }
 

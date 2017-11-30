@@ -58,11 +58,11 @@ ts::TunerParametersATSC::TunerParametersATSC() :
 // Virtual assignment
 //----------------------------------------------------------------------------
 
-void ts::TunerParametersATSC::copy (const TunerParameters& obj)
+void ts::TunerParametersATSC::copy(const TunerParameters& obj)
 {
     const TunerParametersATSC* other = dynamic_cast <const TunerParametersATSC*> (&obj);
     if (other == 0) {
-        throw IncompatibleTunerParametersError ("ATSC != " + TunerTypeEnum.name (obj.tunerType()));
+        throw IncompatibleTunerParametersError(u"ATSC != " + TunerTypeEnum.name(obj.tunerType()));
     }
     else {
         this->frequency = other->frequency;

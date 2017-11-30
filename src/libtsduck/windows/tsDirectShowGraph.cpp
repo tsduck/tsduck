@@ -118,7 +118,7 @@ bool ts::DirectShowGraph::addFilter(::IBaseFilter* filter, const wchar_t* name, 
 {
     if (isValid() && filter != 0) {
         const ::HRESULT hr = _graph_builder->AddFilter(filter, name != 0 ? name : L"");
-        return ComSuccess(hr, "IFilterGraph::AddFilter", report);
+        return ComSuccess(hr, u"IFilterGraph::AddFilter", report);
     }
     else {
         return false;
@@ -129,7 +129,7 @@ bool ts::DirectShowGraph::removeFilter(::IBaseFilter* filter, Report& report)
 {
     if (isValid() && filter != 0) {
         const ::HRESULT hr = _graph_builder->RemoveFilter(filter);
-        return ComSuccess(hr, "IFilterGraph::RemoveFilter", report);
+        return ComSuccess(hr, u"IFilterGraph::RemoveFilter", report);
     }
     else {
         return false;
@@ -145,7 +145,7 @@ bool ts::DirectShowGraph::run(Report& report)
 {
     if (isValid()) {
         const ::HRESULT hr = _media_control->Run();
-        return ComSuccess(hr, "cannot start DirectShow graph", report);
+        return ComSuccess(hr, u"cannot start DirectShow graph", report);
     }
     else {
         return false;
@@ -166,7 +166,7 @@ bool ts::DirectShowGraph::stop(Report& report)
     // Get graph state
     ::OAFilterState state;
     ::HRESULT hr = _media_control->GetState(1000, &state); // 1000 ms timeout
-    const bool stopped = ComSuccess(hr, "IMediaControl::GetState", report) && state == ::State_Stopped;
+    const bool stopped = ComSuccess(hr, u"IMediaControl::GetState", report) && state == ::State_Stopped;
 
     // Stop the graph when necessary
     if (stopped) {
@@ -174,7 +174,7 @@ bool ts::DirectShowGraph::stop(Report& report)
     }
     else {
         hr = _media_control->Stop();
-        return ComSuccess(hr, "IMediaControl::Stop", report);
+        return ComSuccess(hr, u"IMediaControl::Stop", report);
     }
 }
 
@@ -194,7 +194,7 @@ bool ts::DirectShowGraph::connectFilters(::IBaseFilter* filter1, ::IBaseFilter* 
             for (size_t i1 = 0; i1 < pins1.size(); ++i1) {
                 for (size_t i2 = 0; i2 < pins2.size(); ++i2) {
                     const ::HRESULT hr = _graph_builder->Connect(pins1[i1].pointer(), pins2[i2].pointer());
-                    if (ComSuccess(hr, "failed to connect pins", report)) {
+                    if (ComSuccess(hr, u"failed to connect pins", report)) {
                         return true;
                     }
                 }
@@ -236,14 +236,14 @@ bool ts::DirectShowGraph::cleanupDownstream(::IBaseFilter* filter, Report& repor
 
         // Get connected pin (input pin of next filter)
         ::HRESULT hr = pin->ConnectedTo(next_pin.creator());
-        ok = ComSuccess(hr, "IPin::ConnectedTo", report) && ok;
+        ok = ComSuccess(hr, u"IPin::ConnectedTo", report) && ok;
 
         // Get next filter
         if (!next_pin.isNull()) {
             ::PIN_INFO pin_info;
             TS_ZERO(pin_info);
             hr = next_pin->QueryPinInfo(&pin_info);
-            ok = ComSuccess(hr, "IPin::QueryPinInfo", report) && ok;
+            ok = ComSuccess(hr, u"IPin::QueryPinInfo", report) && ok;
             // If not null, pFilter has a reference, manage it to release it later.
             next_filter = pin_info.pFilter;
             // Pin is no longer needed. The object will be destroyed with the next
@@ -258,7 +258,7 @@ bool ts::DirectShowGraph::cleanupDownstream(::IBaseFilter* filter, Report& repor
 
         // Disconnect pin to next filter
         hr = pin->Disconnect();
-        ok = ComSuccess(hr, "IPin::Disconnect", report) && ok;
+        ok = ComSuccess(hr, u"IPin::Disconnect", report) && ok;
 
         // Remove next filter from the graph
         if (!next_filter.isNull()) {
@@ -287,7 +287,7 @@ bool ts::DirectShowGraph::getPin(PinPtrVector& pins, ::IBaseFilter* filter, int 
     // Create a pin enumerator
     ComPtr<::IEnumPins> enum_pins;
     ::HRESULT hr = filter->EnumPins(enum_pins.creator());
-    if (!ComSuccess(hr, "IBaseFilter::EnumPins", report)) {
+    if (!ComSuccess(hr, u"IBaseFilter::EnumPins", report)) {
         return false;
     }
 
@@ -324,7 +324,7 @@ ts::ComPtr<::IBaseFilter> ts::DirectShowGraph::startingFilter(Report& report)
         // Enumerate all filters in the graph.
         ComPtr<::IEnumFilters> enum_filters;
         const ::HRESULT hr = _graph_builder->EnumFilters(enum_filters.creator());
-        if (ComSuccess(hr, "IFilterGraph::EnumFilters", report)) {
+        if (ComSuccess(hr, u"IFilterGraph::EnumFilters", report)) {
             // Find first filter with no connected in pin.
             ComPtr<::IBaseFilter> filter;
             PinPtrVector pins;
@@ -414,7 +414,7 @@ void ts::DirectShowGraph::display(std::ostream& output, Report& report, const Co
                 output << margin << bar << " vendor: \"" << filter_vendor << "\"" << std::endl;
             }
             output << margin << bar << " class GUID: " << NameGUID(class_id) << std::endl;
-            test.displayObject(filter.pointer(), margin + bar + " ");
+            test.displayObject(filter.pointer(), margin + bar + u" ");
         }
 
         // Loop on all connected output pins
@@ -456,13 +456,13 @@ void ts::DirectShowGraph::display(std::ostream& output, Report& report, const Co
             }
             output << margin1 << "- Output pin \"" << pin_name << "\", id \"" << pin_id << "\"" << std::endl;
             if (verbose) {
-                test.displayObject(out_pin.pointer(), margin2 + "  ");
+                test.displayObject(out_pin.pointer(), margin2 + u"  ");
             }
 
             // Get connection media type
             ::AM_MEDIA_TYPE media;
             hr = out_pin->ConnectionMediaType(&media);
-            if (!ComSuccess(hr, "IPin::ConnectionMediaType", report)) {
+            if (!ComSuccess(hr, u"IPin::ConnectionMediaType", report)) {
                 return;
             }
 
@@ -483,13 +483,13 @@ void ts::DirectShowGraph::display(std::ostream& output, Report& report, const Co
             // Get connected pin (input pin of next filter)
             ComPtr<::IPin> in_pin;
             hr = out_pin->ConnectedTo(in_pin.creator());
-            if (!ComSuccess(hr, "IPin::ConnectedTo", report)) {
+            if (!ComSuccess(hr, u"IPin::ConnectedTo", report)) {
                 return;
             }
 
             // Get next input pin info
             hr = in_pin->QueryPinInfo(&pin_info);
-            if (!ComSuccess(hr, "IPin::QueryPinInfo", report)) {
+            if (!ComSuccess(hr, u"IPin::QueryPinInfo", report)) {
                 return;
             }
             pin_name = ToString(pin_info.achName);
@@ -497,7 +497,7 @@ void ts::DirectShowGraph::display(std::ostream& output, Report& report, const Co
 
             // Get input pin id
             hr = in_pin->QueryId(&wid);
-            if (!ComSuccess(hr, "IPin::QueryPinId", report)) {
+            if (!ComSuccess(hr, u"IPin::QueryPinId", report)) {
                 return;
             }
             pin_id = ToString(wid);
@@ -509,7 +509,7 @@ void ts::DirectShowGraph::display(std::ostream& output, Report& report, const Co
             }
             output << margin2 << "- Input pin \"" << pin_name << "\", id \"" << pin_id << "\"" << std::endl;
             if (verbose) {
-                test.displayObject(in_pin.pointer(), margin2 + "  ");
+                test.displayObject(in_pin.pointer(), margin2 + u"  ");
             }
 
             // If more than one branch, recurse

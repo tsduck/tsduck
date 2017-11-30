@@ -108,7 +108,7 @@ bool ts::DirectShowFilterCategory::getAllFiltersInstance(const ::GUID& category)
 
     // Enumerate all devices for this category
     ::HRESULT hr = _enum->CreateClassEnumerator(category, _moniker.creator(), 0);
-    if (!ComSuccess(hr, "CreateClassEnumerator", _report)) {
+    if (!ComSuccess(hr, u"CreateClassEnumerator", _report)) {
         _enum.release();
         return false;
     }

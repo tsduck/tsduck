@@ -53,14 +53,14 @@ ts::TunerParametersBitrateDiffDVBT::TunerParametersBitrateDiffDVBT() :
 // Virtual assignment
 //----------------------------------------------------------------------------
 
-void ts::TunerParametersBitrateDiffDVBT::copy (const TunerParameters& obj)
+void ts::TunerParametersBitrateDiffDVBT::copy(const TunerParameters& obj)
 {
     const TunerParametersBitrateDiffDVBT* other = dynamic_cast <const TunerParametersBitrateDiffDVBT*> (&obj);
     if (other == 0) {
-        throw IncompatibleTunerParametersError ("BitrateDiff DVBT != " + TunerTypeEnum.name (obj.tunerType()));
+        throw IncompatibleTunerParametersError(u"BitrateDiff DVBT != " + TunerTypeEnum.name(obj.tunerType()));
     }
     else {
-        TunerParametersDVBT::copy (obj); // superclass
+        TunerParametersDVBT::copy(obj); // superclass
         this->bitrate_diff = other->bitrate_diff;
     }
 }

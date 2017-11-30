@@ -34,7 +34,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsPlatform.h"
+#include "tsUString.h"
 
 namespace ts {
 
@@ -85,7 +85,7 @@ namespace ts {
         //! @param [in] margin The prefix string on each line, empty by default.
         //! @return A reference to @a stream.
         //!
-        virtual std::ostream& display(std::ostream& stream = std::cout, const std::string& margin = "") const = 0;
+        virtual std::ostream& display(std::ostream& stream = std::cout, const UString& margin = UString()) const = 0;
 
         //!
         //! Valid flag.
@@ -109,7 +109,7 @@ namespace ts {
         //! @param [in] n The integer value to display.
         //!
         template <typename INT>
-        void disp(std::ostream& out, const std::string& margin, const char* name, INT n) const
+        void disp(std::ostream& out, const UString& margin, const char* name, INT n) const
         {
             out << margin << name << " = ";
             if (sizeof(INT) < 2) {

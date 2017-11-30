@@ -185,7 +185,7 @@ ts::Time ts::Time::localToUTC() const
     ::tm stime;
     TS_ZERO(stime);
     if (::localtime_r(&seconds, &stime) == 0) {
-        throw TimeError("gmtime_r error");
+        throw TimeError(u"gmtime_r error");
     }
 
 #if defined(__sun)
@@ -222,7 +222,7 @@ ts::Time ts::Time::UTCToLocal() const
     ::tm stime;
     TS_ZERO(stime);
     if (::localtime_r(&seconds, &stime) == 0) {
-        throw TimeError("localtime_r error");
+        throw TimeError(u"localtime_r error");
     }
 
 #if defined(__sun)
@@ -255,7 +255,7 @@ ts::Time ts::Time::CurrentUTC()
 
     ::timeval result;
     if (::gettimeofday(&result, NULL) < 0) {
-        throw TimeError("gettimeofday error", errno);
+        throw TimeError(u"gettimeofday error", errno);
     }
     return Time(int64_t(result.tv_usec) + 1000000 * int64_t(result.tv_sec));
 
@@ -320,7 +320,7 @@ ts::NanoSecond ts::Time::UnixClockNanoSeconds(clockid_t clock, const MilliSecond
     // Minimum resolution is a nanosecond, but much more in fact.
     ::timespec result;
     if (::clock_gettime(clock, &result) != 0) {
-        throw TimeError("clock_gettime error", errno);
+        throw TimeError(u"clock_gettime error", errno);
     }
 
     // Current time in nano-seconds:
@@ -385,7 +385,7 @@ int64_t ts::Time::ToInt64(int year, int month, int day, int hour, int minute, in
     time_t seconds = ::mktime(&stime);
 
     if (seconds == time_t(-1)) {
-        throw TimeError("mktime error");
+        throw TimeError(u"mktime error");
         return 0;
     }
 
@@ -411,24 +411,24 @@ int64_t ts::Time::ToInt64(int year, int month, int day, int hour, int minute, in
 
 ts::Time::operator Fields() const
 {
-#if defined (TS_WINDOWS)
+#if defined(TS_WINDOWS)
 
     ::SYSTEMTIME st;
     FileTime ft;
     ft.i = _value;
-    if (::FileTimeToSystemTime (&ft.ft, &st) == 0) {
-        throw TimeError (::GetLastError ());
+    if (::FileTimeToSystemTime(&ft.ft, &st) == 0) {
+        throw TimeError(::GetLastError ());
     }
-    return Fields (st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, st.wSecond, st.wMilliseconds);
+    return Fields(st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, st.wSecond, st.wMilliseconds);
 
 #else
 
-    time_t seconds (_value / (1000 * TICKS_PER_MS));
+    time_t seconds(_value / (1000 * TICKS_PER_MS));
     ::tm st;
-    if (::gmtime_r (&seconds, &st) == 0) {
-        throw TimeError ("gmtime_r error");
+    if (::gmtime_r(&seconds, &st) == 0) {
+        throw TimeError(u"gmtime_r error");
     }
-    return Fields (st.tm_year + 1900, st.tm_mon + 1, st.tm_mday, st.tm_hour, st.tm_min, st.tm_sec, (_value / TICKS_PER_MS) % 1000);
+    return Fields(st.tm_year + 1900, st.tm_mon + 1, st.tm_mday, st.tm_hour, st.tm_min, st.tm_sec, (_value / TICKS_PER_MS) % 1000);
 
 #endif
 }

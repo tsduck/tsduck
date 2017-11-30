@@ -75,11 +75,11 @@ ts::TunerParametersDVBS::TunerParametersDVBS() :
 // Virtual assignment
 //----------------------------------------------------------------------------
 
-void ts::TunerParametersDVBS::copy (const TunerParameters& obj)
+void ts::TunerParametersDVBS::copy(const TunerParameters& obj)
 {
     const TunerParametersDVBS* other = dynamic_cast <const TunerParametersDVBS*> (&obj);
     if (other == 0) {
-        throw IncompatibleTunerParametersError ("DVBS != " + TunerTypeEnum.name (obj.tunerType()));
+        throw IncompatibleTunerParametersError(u"DVBS != " + TunerTypeEnum.name(obj.tunerType()));
     }
     else {
         this->frequency = other->frequency;

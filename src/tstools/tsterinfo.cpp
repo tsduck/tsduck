@@ -346,12 +346,12 @@ int main(int argc, char *argv[])
                 if (count > 0) {
                     std::cout << std::endl;
                 }
-                Display("Nominal bitrate", ts::UString::Decimal(it->theoreticalBitrate()), "b/s");
-                Display("Bitrate difference", ts::UString::Decimal(it->bitrate_diff), "b/s");
-                Display("Bandwidth", ts::BandWidthEnum.name(it->bandwidth), "");
-                Display("FEC (high priority)", ts::InnerFECEnum.name(it->fec_hp), "");
-                Display("Constellation", ts::ModulationEnum.name(it->modulation), "");
-                Display("Guard interval", ts::GuardIntervalEnum.name(it->guard_interval), "");
+                Display(u"Nominal bitrate", ts::UString::Decimal(it->theoreticalBitrate()), u"b/s");
+                Display(u"Bitrate difference", ts::UString::Decimal(it->bitrate_diff), u"b/s");
+                Display(u"Bandwidth", ts::BandWidthEnum.name(it->bandwidth), u"");
+                Display(u"FEC (high priority)", ts::InnerFECEnum.name(it->fec_hp), u"");
+                Display(u"Constellation", ts::ModulationEnum.name(it->modulation), u"");
+                Display(u"Guard interval", ts::GuardIntervalEnum.name(it->guard_interval), u"");
             }
         }
     }

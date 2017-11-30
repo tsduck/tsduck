@@ -71,11 +71,11 @@ ts::TunerParametersDVBT::TunerParametersDVBT() :
 // Virtual assignment
 //----------------------------------------------------------------------------
 
-void ts::TunerParametersDVBT::copy (const TunerParameters& obj)
+void ts::TunerParametersDVBT::copy(const TunerParameters& obj)
 {
     const TunerParametersDVBT* other = dynamic_cast <const TunerParametersDVBT*> (&obj);
     if (other == 0) {
-        throw IncompatibleTunerParametersError ("DVBT != " + TunerTypeEnum.name (obj.tunerType()));
+        throw IncompatibleTunerParametersError(u"DVBT != " + TunerTypeEnum.name(obj.tunerType()));
     }
     else {
         this->frequency = other->frequency;
@@ -273,7 +273,7 @@ ts::UString ts::TunerParametersDVBT::shortDescription(int strength, int quality)
         }
         desc += u" (";
     }
-    desc += UString::Decimal(frequency) + " Hz";
+    desc += UString::Decimal(frequency) + u" Hz";
     if (band != 0) {
         desc += u")";
     }

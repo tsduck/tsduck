@@ -48,7 +48,7 @@ bool ts::XML::getIntAttribute(INT& value,
     if (!getAttribute(str, elem, name, required, UString::Decimal(defValue))) {
         return false;
     }
-    else if (!str.toInteger(val, ",")) {
+    else if (!str.toInteger(val, u",")) {
         reportError(u"'%s' is not a valid integer value for attribute '%s' in <%s>, line %d",
                     {str, name, ElementName(elem), elem->GetLineNum()});
         return false;

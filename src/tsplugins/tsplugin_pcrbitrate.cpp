@@ -85,7 +85,7 @@ TSPLUGIN_DECLARE_PROCESSOR(ts::PCRBitratePlugin)
 //----------------------------------------------------------------------------
 
 ts::PCRBitratePlugin::PCRBitratePlugin (TSP* tsp_) :
-    ProcessorPlugin(tsp_, "Permanently recompute bitrate based on PCR analysis.", "[options]"),
+    ProcessorPlugin(tsp_, u"Permanently recompute bitrate based on PCR analysis.", u"[options]"),
     _pcr_analyzer(),
     _bitrate(0),
     _pcr_name()
@@ -95,24 +95,24 @@ ts::PCRBitratePlugin::PCRBitratePlugin (TSP* tsp_) :
     option(u"min-pid",  0, POSITIVE);
 
     setHelp(u"Options:\n"
-             u"\n"
-             u"  -d\n"
-             u"  --dts\n"
-             u"      Use DTS (Decoding Time Stamps) from video PID's instead of PCR\n"
-             u"      (Program Clock Reference) from the transport layer.\n"
-             u"\n"
-             u"  --help\n"
-             u"      Display this help text.\n"
-             u"\n"
-             u"  --min-pcr value\n"
-             u"      Stop analysis when that number of PCR are read from the required\n"
-             u"      minimum number of PID (default: " TS_STRINGIFY (DEF_MIN_PCR_CNT) ").\n"
-             u"\n"
-             u"  --min-pid value\n"
-             u"      Minimum number of PID to get PCR from (default: " TS_STRINGIFY (DEF_MIN_PID) ").\n"
-             u"\n"
-             u"  --version\n"
-             u"      Display the version number.\n");
+            u"\n"
+            u"  -d\n"
+            u"  --dts\n"
+            u"      Use DTS (Decoding Time Stamps) from video PID's instead of PCR\n"
+            u"      (Program Clock Reference) from the transport layer.\n"
+            u"\n"
+            u"  --help\n"
+            u"      Display this help text.\n"
+            u"\n"
+            u"  --min-pcr value\n"
+            u"      Stop analysis when that number of PCR are read from the required\n"
+            u"      minimum number of PID (default: " TS_STRINGIFY(DEF_MIN_PCR_CNT) u").\n"
+            u"\n"
+            u"  --min-pid value\n"
+            u"      Minimum number of PID to get PCR from (default: " TS_STRINGIFY(DEF_MIN_PID) u").\n"
+            u"\n"
+            u"  --version\n"
+            u"      Display the version number.\n");
 }
 
 

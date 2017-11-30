@@ -183,18 +183,18 @@ bool ts::PlayPlugin::start()
     GetEnvironmentPath(search_path, TS_COMMAND_PATH);
 
     // Look into some registry location
-    UString ent = GetRegistryValue("HKLM\\SOFTWARE\\VideoLAN\\VLC", "InstallDir");
+    UString ent = GetRegistryValue(u"HKLM\\SOFTWARE\\VideoLAN\\VLC", u"InstallDir");
     if (!ent.empty()) {
         search_path.push_back(ent);
     }
-    ent = GetRegistryValue("HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\VLC media player", "UninstallString");
+    ent = GetRegistryValue(u"HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\VLC media player", u"UninstallString");
     if (!ent.empty()) {
         search_path.push_back(DirectoryName(ent));
     }
 
     // Add default installation locations
-    search_path.push_back("C:\\Program Files\\VideoLAN\\VLC");
-    search_path.push_back("C:\\Program Files (x86)\\VideoLAN\\VLC");
+    search_path.push_back(u"C:\\Program Files\\VideoLAN\\VLC");
+    search_path.push_back(u"C:\\Program Files (x86)\\VideoLAN\\VLC");
 
     // Then search vlc.exe in these locations
     UString exec;

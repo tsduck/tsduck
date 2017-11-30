@@ -184,7 +184,7 @@ bool ts::BitrateMonitorPlugin::start()
 void ts::BitrateMonitorPlugin::runAlarmCommand(const ts::UString& parameter)
 {
     // Do nothing if alarm command was not specified
-    if (_alarm_command != "") {
+    if (!_alarm_command.empty()) {
         const UString completeCommand(_alarm_command + u" \"" + parameter + u'"');
         // Flawfinder: ignore: system causes a new program to execute and is difficult to use safely.
         if (::system(completeCommand.toUTF8().c_str()) != 0) {

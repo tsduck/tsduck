@@ -334,77 +334,77 @@ bool ts::AVCSequenceParameterSet::parseBody (AVCParser& parser)
 // Display structure content
 //----------------------------------------------------------------------------
 
-std::ostream& ts::AVCSequenceParameterSet::display (std::ostream& out, const std::string& margin) const
+std::ostream& ts::AVCSequenceParameterSet::display(std::ostream& out, const UString& margin) const
 {
     if (!valid) {
         return out;
     }
 
-#define DISP(n) disp (out, margin, #n, n)
+#define DISP(n) disp(out, margin, #n, n)
 
-    DISP (forbidden_zero_bit);
-    DISP (nal_ref_idc);
-    DISP (nal_unit_type);
-    DISP (profile_idc);
-    DISP (constraint_set0_flag);
-    DISP (constraint_set1_flag);
-    DISP (constraint_set2_flag);
-    DISP (constraint_set3_flag);
-    DISP (reserved_zero_4bits);
-    DISP (level_idc);
-    DISP (seq_parameter_set_id);
+    DISP(forbidden_zero_bit);
+    DISP(nal_ref_idc);
+    DISP(nal_unit_type);
+    DISP(profile_idc);
+    DISP(constraint_set0_flag);
+    DISP(constraint_set1_flag);
+    DISP(constraint_set2_flag);
+    DISP(constraint_set3_flag);
+    DISP(reserved_zero_4bits);
+    DISP(level_idc);
+    DISP(seq_parameter_set_id);
     if (extension1()) {
-        DISP (chroma_format_idc);
+        DISP(chroma_format_idc);
         if (chroma_format_idc == 3) {
-            DISP (separate_colour_plane_flag);
+            DISP(separate_colour_plane_flag);
         }
-        DISP (bit_depth_luma_minus8);
-        DISP (bit_depth_chroma_minus8);
-        DISP (qpprime_y_zero_transform_bypass_flag);
-        DISP (seq_scaling_matrix_present_flag);
+        DISP(bit_depth_luma_minus8);
+        DISP(bit_depth_chroma_minus8);
+        DISP(qpprime_y_zero_transform_bypass_flag);
+        DISP(seq_scaling_matrix_present_flag);
     }
-    DISP (log2_max_frame_num_minus4);
-    DISP (pic_order_cnt_type);
+    DISP(log2_max_frame_num_minus4);
+    DISP(pic_order_cnt_type);
     if (pic_order_cnt_type == 0) {
-        DISP (log2_max_pic_order_cnt_lsb_minus4);
+        DISP(log2_max_pic_order_cnt_lsb_minus4);
     }
     else if (pic_order_cnt_type == 1) {
-        DISP (delta_pic_order_always_zero_flag);
-        DISP (offset_for_non_ref_pic);
-        DISP (offset_for_top_to_bottom_field);
-        DISP (num_ref_frames_in_pic_order_cnt_cycle);
-        DISP (offset_for_ref_frame);
+        DISP(delta_pic_order_always_zero_flag);
+        DISP(offset_for_non_ref_pic);
+        DISP(offset_for_top_to_bottom_field);
+        DISP(num_ref_frames_in_pic_order_cnt_cycle);
+        DISP(offset_for_ref_frame);
     }
-    DISP (num_ref_frames);
-    DISP (gaps_in_frame_num_value_allowed_flag);
-    DISP (pic_width_in_mbs_minus1);
-    DISP (pic_height_in_map_units_minus1);
-    DISP (frame_mbs_only_flag);
+    DISP(num_ref_frames);
+    DISP(gaps_in_frame_num_value_allowed_flag);
+    DISP(pic_width_in_mbs_minus1);
+    DISP(pic_height_in_map_units_minus1);
+    DISP(frame_mbs_only_flag);
     if (!frame_mbs_only_flag) {
-        DISP (mb_adaptive_frame_field_flag);
+        DISP(mb_adaptive_frame_field_flag);
     }
-    DISP (direct_8x8_inference_flag);
-    DISP (frame_cropping_flag);
+    DISP(direct_8x8_inference_flag);
+    DISP(frame_cropping_flag);
     if (frame_cropping_flag) {
-        DISP (frame_crop_left_offset);
-        DISP (frame_crop_right_offset);
-        DISP (frame_crop_top_offset);
-        DISP (frame_crop_bottom_offset);
+        DISP(frame_crop_left_offset);
+        DISP(frame_crop_right_offset);
+        DISP(frame_crop_top_offset);
+        DISP(frame_crop_bottom_offset);
     }
-    DISP (vui_parameters_present_flag);
+    DISP(vui_parameters_present_flag);
     if (vui_parameters_present_flag) {
-        vui.display (out, margin + "vui.");
+        vui.display(out, margin + u"vui.");
     }
-    DISP (rbsp_trailing_bits_valid);
-    DISP (rbsp_trailing_bits_count);
+    DISP(rbsp_trailing_bits_valid);
+    DISP(rbsp_trailing_bits_count);
 
-    disp (out, margin, "ChromaArrayType", chromaArrayType());
-    disp (out, margin, "SubWidthC", subWidthC());
-    disp (out, margin, "SubHeightC", subHeightC());
-    disp (out, margin, "CropUnitX", cropUnitX());
-    disp (out, margin, "CropUnitY", cropUnitY());
-    disp (out, margin, "frame width", frameWidth());
-    disp (out, margin, "frame height", frameHeight());
+    disp(out, margin, u"ChromaArrayType", chromaArrayType());
+    disp(out, margin, u"SubWidthC", subWidthC());
+    disp(out, margin, u"SubHeightC", subHeightC());
+    disp(out, margin, u"CropUnitX", cropUnitX());
+    disp(out, margin, u"CropUnitY", cropUnitY());
+    disp(out, margin, u"frame width", frameWidth());
+    disp(out, margin, u"frame height", frameHeight());
 
 #undef DISP
 

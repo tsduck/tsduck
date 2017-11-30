@@ -296,7 +296,7 @@ ts::ComPtr<COMCLASS>& ts::ComPtr<COMCLASS>::createInstance(const ::IID& class_id
                                       ::CLSCTX_INPROC_SERVER, // Object "runs" in same process
                                       interface_id,           // ID of interface we request
                                       (void**)&_ptr);         // Returned pointer to interface
-    if (!ComSuccess(hr, "CoCreateInstance", report)) {
+    if (!ComSuccess(hr, u"CoCreateInstance", report)) {
         _ptr = 0;
     }
     TRACE_COCREATE();
@@ -314,7 +314,7 @@ ts::ComPtr<COMCLASS>& ts::ComPtr<COMCLASS>::queryInterface(::IUnknown* obj, cons
     release();
     if (obj != 0) {
         ::HRESULT hr = obj->QueryInterface(interface_id, (void**)&_ptr);
-        if (!ComSuccess(hr, "IUnknown::QueryInterface", report)) {
+        if (!ComSuccess(hr, u"IUnknown::QueryInterface", report)) {
             _ptr = 0;
         }
         TRACE_QUERY();
@@ -336,7 +336,7 @@ ts::ComPtr<COMCLASS>& ts::ComPtr<COMCLASS>::bindToObject(::IMoniker* moniker, co
                                              0,               // Not part of a composite
                                              interface_id,    // ID of interface we request
                                              (void**)&_ptr);  // Returned pointer to interface
-        if (!ComSuccess(hr, "IMoniker::BindToObject", report)) {
+        if (!ComSuccess(hr, u"IMoniker::BindToObject", report)) {
             _ptr = 0;
         }
         TRACE_BIND();
@@ -362,7 +362,7 @@ bool ts::ComPtr<COMCLASS>::expose(const ::IID& iid) const
 //-----------------------------------------------------------------------------
 
 template <class COMCLASS>
-std::string ts::ComPtr<COMCLASS>::className() const
+ts::UString ts::ComPtr<COMCLASS>::className() const
 {
     TRACE_ENTRY();
     ::GUID guid(GUID_NULL);
@@ -371,7 +371,7 @@ std::string ts::ComPtr<COMCLASS>::className() const
         persist->GetClassID(&guid);
         persist->Release();
     }
-    return guid == GUID_NULL ? "" : NameGUID(guid);
+    return guid == GUID_NULL ? UString() : NameGUID(guid);
 }
 
 #undef TRACE_CONSTRUCT

@@ -225,12 +225,12 @@ void ts::AC3Descriptor::DisplayDescriptor(TablesDisplay& display, DID did, const
 ts::XML::Element* ts::AC3Descriptor::toXML(XML& xml, XML::Element* parent) const
 {
     XML::Element* root = _is_valid ? xml.addElement(parent, _xml_name) : 0;
-    xml.setOptionalIntAttribute(root, "component_type", component_type, true);
-    xml.setOptionalIntAttribute(root, "bsid", bsid, true);
-    xml.setOptionalIntAttribute(root, "mainid", mainid, true);
-    xml.setOptionalIntAttribute(root, "asvc", asvc, true);
+    xml.setOptionalIntAttribute(root, u"component_type", component_type, true);
+    xml.setOptionalIntAttribute(root, u"bsid", bsid, true);
+    xml.setOptionalIntAttribute(root, u"mainid", mainid, true);
+    xml.setOptionalIntAttribute(root, u"asvc", asvc, true);
     if (!additional_info.empty()) {
-        xml.addHexaText(xml.addElement(root, "additional_info"), additional_info);
+        xml.addHexaText(xml.addElement(root, u"additional_info"), additional_info);
     }
     return root;
 }
@@ -244,9 +244,9 @@ void ts::AC3Descriptor::fromXML(XML& xml, const XML::Element* element)
 {
     _is_valid =
         checkXMLName(xml, element) &&
-        xml.getOptionalIntAttribute(component_type, element, "component_type") &&
-        xml.getOptionalIntAttribute(bsid, element, "bsid") &&
-        xml.getOptionalIntAttribute(mainid, element, "mainid") &&
-        xml.getOptionalIntAttribute(asvc, element, "asvc") &&
-        xml.getHexaTextChild(additional_info, element, "additional_info", false, 0, MAX_DESCRIPTOR_SIZE - 8);
+        xml.getOptionalIntAttribute(component_type, element, u"component_type") &&
+        xml.getOptionalIntAttribute(bsid, element, u"bsid") &&
+        xml.getOptionalIntAttribute(mainid, element, u"mainid") &&
+        xml.getOptionalIntAttribute(asvc, element, u"asvc") &&
+        xml.getHexaTextChild(additional_info, element, u"additional_info", false, 0, MAX_DESCRIPTOR_SIZE - 8);
 }

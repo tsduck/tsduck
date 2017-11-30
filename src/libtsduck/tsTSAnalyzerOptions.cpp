@@ -142,26 +142,26 @@ void ts::TSAnalyzerOptions::setHelp(const UString& help)
 //----------------------------------------------------------------------------
 
 ts::TSAnalyzerOptions::TSAnalyzerOptions(const UString& description, const UString& syntax, const UString& help, int flags) :
-    Args(description, syntax, u"", flags),
-    ts_analysis (false),
-    service_analysis (false),
-    pid_analysis (false),
-    table_analysis (false),
-    error_analysis (false),
-    normalized (false),
-    service_list (false),
-    pid_list (false),
-    global_pid_list (false),
-    unreferenced_pid_list (false),
-    pes_pid_list (false),
-    service_pid_list (false),
-    service_id (0),
-    prefix (""),
-    title (""),
-    suspect_min_error_count (1),
-    suspect_max_consecutive (1)
+    Args(description, syntax, UString(), flags),
+    ts_analysis(false),
+    service_analysis(false),
+    pid_analysis(false),
+    table_analysis(false),
+    error_analysis(false),
+    normalized(false),
+    service_list(false),
+    pid_list(false),
+    global_pid_list(false),
+    unreferenced_pid_list(false),
+    pes_pid_list(false),
+    service_pid_list(false),
+    service_id(0),
+    prefix(),
+    title(),
+    suspect_min_error_count(1),
+    suspect_max_consecutive(1)
 {
-    setHelp (help);
+    setHelp(help);
 
     option(u"ts-analysis");
     option(u"service-analysis");

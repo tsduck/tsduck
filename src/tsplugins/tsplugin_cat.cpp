@@ -217,19 +217,19 @@ bool ts::CATPlugin::start()
         desc.ca_pid = PID (pid);
         if (count == 3) {
             // There is a private part
-            assert (slash == '/');
-            size_t pos = val.find ('/'); // First slash
-            assert (pos != std::string::npos);
-            assert (pos < val.length() - 1);
-            pos = val.find ('/', pos + 1); // Second slash
-            assert (pos != std::string::npos);
+            assert(slash == '/');
+            size_t pos = val.find(u'/'); // First slash
+            assert(pos != UString::npos);
+            assert(pos < val.length() - 1);
+            pos = val.find(u'/', pos + 1); // Second slash
+            assert(pos != UString::npos);
             const UString hexa(val.substr(pos + 1));
             if (!hexa.hexaDecode(desc.private_data)) {
                 tsp->error(u"invalid private data \"%s\" for CA_descriptor, specify an even number of hexa digits", {hexa});
                 return false;
             }
         }
-        _add_descs.add (desc);
+        _add_descs.add(desc);
     }
 
     // Initialize the demux and packetizer

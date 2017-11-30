@@ -242,7 +242,7 @@ namespace ts {
         //! Warning: Very slow, eat CPU time, use with care.
         //! @return A formatted GUID or an empty string on error or if the object does not expose IPersist interface.
         //!
-        std::string className() const;
+        UString className() const;
     };
 }
 

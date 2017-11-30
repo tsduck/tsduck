@@ -148,7 +148,7 @@ ts::UString ts::GetStringPropertyBag(::IMoniker* object_moniker, const ::OLECHAR
                                                  ::IID_IPropertyBag,      // ID of requested interface
                                                  (void**)pbag.creator()); // Returned interface
     if (!ComSuccess(hr, u"IMoniker::BindToStorage", report)) {
-        return "";
+        return UString();
     }
 
     // Get property from property bag

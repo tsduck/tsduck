@@ -174,7 +174,7 @@ void ts::TSPacket::setPCR(const uint64_t& pcr)
 {
     size_t offset(PCROffset());
     if (offset == 0) {
-        throw AdaptationFieldError("No PCR in packet, cannot replace");
+        throw AdaptationFieldError(u"No PCR in packet, cannot replace");
     }
     else {
         PutPCR(b + offset, pcr);
@@ -185,7 +185,7 @@ void ts::TSPacket::setOPCR(const uint64_t& opcr)
 {
     size_t offset(OPCROffset());
     if (offset == 0) {
-        throw AdaptationFieldError("No OPCR in packet, cannot replace");
+        throw AdaptationFieldError(u"No OPCR in packet, cannot replace");
     }
     else {
         PutPCR(b + offset, opcr);

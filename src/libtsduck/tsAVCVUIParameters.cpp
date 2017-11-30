@@ -221,69 +221,69 @@ bool ts::AVCVUIParameters::parse (AVCParser& parser)
 // Display structure content
 //----------------------------------------------------------------------------
 
-std::ostream& ts::AVCVUIParameters::display (std::ostream& out, const std::string& margin) const
+std::ostream& ts::AVCVUIParameters::display(std::ostream& out, const UString& margin) const
 {
     if (!valid) {
         return out;
     }
 
-#define DISP(n) disp (out, margin, #n, n)
+#define DISP(n) disp(out, margin, #n, n)
 
-    DISP (aspect_ratio_info_present_flag);
+    DISP(aspect_ratio_info_present_flag);
     if (aspect_ratio_info_present_flag) {
-        DISP (aspect_ratio_idc);
+        DISP(aspect_ratio_idc);
         if (aspect_ratio_idc == 255) {  // Extended_SAR
-            DISP (sar_width);
-            DISP (sar_height);
+            DISP(sar_width);
+            DISP(sar_height);
         }
     }
-    DISP (overscan_info_present_flag);
+    DISP(overscan_info_present_flag);
     if (overscan_info_present_flag) {
-        DISP (overscan_appropriate_flag);
+        DISP(overscan_appropriate_flag);
     }
-    DISP (video_signal_type_present_flag);
+    DISP(video_signal_type_present_flag);
     if (video_signal_type_present_flag) {
-        DISP (video_format);
-        DISP (video_full_range_flag);
-        DISP (colour_description_present_flag);
+        DISP(video_format);
+        DISP(video_full_range_flag);
+        DISP(colour_description_present_flag);
         if (colour_description_present_flag) {
-            DISP (colour_primaries);
-            DISP (transfer_characteristics);
-            DISP (matrix_coefficients);
+            DISP(colour_primaries);
+            DISP(transfer_characteristics);
+            DISP(matrix_coefficients);
         }
     }
-    DISP (chroma_loc_info_present_flag);
+    DISP(chroma_loc_info_present_flag);
     if (chroma_loc_info_present_flag) {
-        DISP (chroma_sample_loc_type_top_field);
-        DISP (chroma_sample_loc_type_bottom_field);
+        DISP(chroma_sample_loc_type_top_field);
+        DISP(chroma_sample_loc_type_bottom_field);
     }
-    DISP (timing_info_present_flag);
+    DISP(timing_info_present_flag);
     if (timing_info_present_flag) {
-        DISP (num_units_in_tick);
-        DISP (time_scale);
-        DISP (fixed_frame_rate_flag);
+        DISP(num_units_in_tick);
+        DISP(time_scale);
+        DISP(fixed_frame_rate_flag);
     }
-    DISP (nal_hrd_parameters_present_flag);
+    DISP(nal_hrd_parameters_present_flag);
     if (nal_hrd_parameters_present_flag) {
-        nal_hrd.display (out, margin + "nal_hrd.");
+        nal_hrd.display(out, margin + "nal_hrd.");
     }
-    DISP (vcl_hrd_parameters_present_flag);
+    DISP(vcl_hrd_parameters_present_flag);
     if (vcl_hrd_parameters_present_flag) {
-        vcl_hrd.display (out, margin + "vcl_hrd.");
+        vcl_hrd.display(out, margin + "vcl_hrd.");
     }
     if (nal_hrd_parameters_present_flag || vcl_hrd_parameters_present_flag) {
         DISP (low_delay_hrd_flag);
     }
-    DISP (pic_struct_present_flag);
-    DISP (bitstream_restriction_flag);
+    DISP(pic_struct_present_flag);
+    DISP(bitstream_restriction_flag);
     if (bitstream_restriction_flag) {
-        DISP (motion_vectors_over_pic_boundaries_flag);
-        DISP (max_bytes_per_pic_denom);
-        DISP (max_bits_per_mb_denom);
-        DISP (log2_max_mv_length_horizontal);
-        DISP (log2_max_mv_length_vertical);
-        DISP (num_reorder_frames);
-        DISP (max_dec_frame_buffering);
+        DISP(motion_vectors_over_pic_boundaries_flag);
+        DISP(max_bytes_per_pic_denom);
+        DISP(max_bits_per_mb_denom);
+        DISP(log2_max_mv_length_horizontal);
+        DISP(log2_max_mv_length_vertical);
+        DISP(num_reorder_frames);
+        DISP(max_dec_frame_buffering);
     }
 
 #undef DISP

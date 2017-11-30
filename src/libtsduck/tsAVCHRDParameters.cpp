@@ -81,7 +81,7 @@ void ts::AVCHRDParameters::clear()
 // Parse a memory area. Return the "valid" flag.
 //----------------------------------------------------------------------------
 
-bool ts::AVCHRDParameters::parse (AVCParser& parser)
+bool ts::AVCHRDParameters::parse(AVCParser& parser)
 {
     clear();
 
@@ -119,20 +119,20 @@ bool ts::AVCHRDParameters::parse (AVCParser& parser)
 // Display structure content
 //----------------------------------------------------------------------------
 
-std::ostream& ts::AVCHRDParameters::display (std::ostream& out, const std::string& margin) const
+std::ostream& ts::AVCHRDParameters::display(std::ostream& out, const UString& margin) const
 {
     if (valid) {
-#define DISP(n) disp (out, margin, #n, n)
-        DISP (cpb_cnt_minus1);
-        DISP (bit_rate_scale);
-        DISP (cpb_size_scale);
-        DISP (bit_rate_value_minus1);
-        DISP (cpb_size_value_minus1);
-        DISP (cbr_flag);
-        DISP (initial_cpb_removal_delay_length_minus1);
-        DISP (cpb_removal_delay_length_minus1);
-        DISP (dpb_output_delay_length_minus1);
-        DISP (time_offset_length);
+#define DISP(n) disp(out, margin, #n, n)
+        DISP(cpb_cnt_minus1);
+        DISP(bit_rate_scale);
+        DISP(cpb_size_scale);
+        DISP(bit_rate_value_minus1);
+        DISP(cpb_size_value_minus1);
+        DISP(cbr_flag);
+        DISP(initial_cpb_removal_delay_length_minus1);
+        DISP(cpb_removal_delay_length_minus1);
+        DISP(dpb_output_delay_length_minus1);
+        DISP(time_offset_length);
 #undef DISP
     }
     return out;

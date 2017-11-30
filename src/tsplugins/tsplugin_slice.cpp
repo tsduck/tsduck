@@ -190,7 +190,7 @@ bool ts::SlicePlugin::start()
     _next_index = 0;
 
     if (tsp->verbose()) {
-        tsp->log (Severity::Verbose, "initial packet processing: " + _status_names.name (_status));
+        tsp->verbose(u"initial packet processing: %s", {_status_names.name(_status)});
         for (SliceEventVector::iterator it = _events.begin(); it != _events.end(); ++it) {
             tsp->verbose(u"packet %s after %'d %s", {_status_names.name(it->status), it->value, _use_time ? u"ms" : u"packets"});
         }

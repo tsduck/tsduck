@@ -59,7 +59,7 @@ ts::tsp::PluginExecutor::PluginExecutor(Options* options,
     _input_end(false),
     _bitrate(0)
 {
-    const char* shell = 0;
+    const UChar* shell = 0;
 
     // If shared library not loaded, give up.
 
@@ -73,19 +73,19 @@ ts::tsp::PluginExecutor::PluginExecutor(Options* options,
         case Options::INPUT:
             if (new_input != 0) {
                 _shlib = new_input(this);
-                shell = "tsp -I";
+                shell = u"tsp -I";
             }
             break;
         case Options::OUTPUT:
             if (new_output != 0) {
                 _shlib = new_output(this);
-                shell = "tsp -O";
+                shell = u"tsp -O";
             }
             break;
         case Options::PROCESSOR:
             if (new_processor != 0) {
                 _shlib = new_processor(this);
-                shell = "tsp -P";
+                shell = u"tsp -P";
             }
             break;
         default:
