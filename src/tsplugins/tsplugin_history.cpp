@@ -90,8 +90,8 @@ namespace ts {
         void analyzeCADescriptors(const DescriptorList& dlist, uint16_t service_id);
 
         // Report a history line
-        void report(const UChar* fmt, const std::initializer_list<ArgMix> args);
-        void report(PacketCounter, const UChar* fmt, const std::initializer_list<ArgMix> args);
+        void report(const UChar* fmt, const std::initializer_list<ArgMixIn> args);
+        void report(PacketCounter, const UChar* fmt, const std::initializer_list<ArgMixIn> args);
 
         // Inaccessible operations
         HistoryPlugin() = delete;
@@ -525,12 +525,12 @@ ts::ProcessorPlugin::Status ts::HistoryPlugin::processPacket (TSPacket& pkt, boo
 // Report a history line
 //----------------------------------------------------------------------------
 
-void ts::HistoryPlugin::report(const UChar* fmt, const std::initializer_list<ArgMix> args)
+void ts::HistoryPlugin::report(const UChar* fmt, const std::initializer_list<ArgMixIn> args)
 {
     report(_current_pkt, fmt, args);
 }
 
-void ts::HistoryPlugin::report(PacketCounter pkt, const UChar* fmt, const std::initializer_list<ArgMix> args)
+void ts::HistoryPlugin::report(PacketCounter pkt, const UChar* fmt, const std::initializer_list<ArgMixIn> args)
 {
     // Reports the last TDT if required
     if (!_time_all && _last_tdt.isValid() && !_last_tdt_reported) {

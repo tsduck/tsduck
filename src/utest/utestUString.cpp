@@ -85,8 +85,10 @@ public:
     void testDecimal();
     void testHexa();
     void testHexaDump();
-    void testArgMix();
+    void testArgMixIn();
+    void testArgMixOut();
     void testFormat();
+    void testScan();
 
     CPPUNIT_TEST_SUITE(UStringTest);
     CPPUNIT_TEST(testIsSpace);
@@ -124,8 +126,10 @@ public:
     CPPUNIT_TEST(testDecimal);
     CPPUNIT_TEST(testHexa);
     CPPUNIT_TEST(testHexaDump);
-    CPPUNIT_TEST(testArgMix);
+    CPPUNIT_TEST(testArgMixIn);
+    CPPUNIT_TEST(testArgMixOut);
     CPPUNIT_TEST(testFormat);
+    CPPUNIT_TEST(testScan);
     CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -134,8 +138,9 @@ private:
     ts::UString temporaryFileName(int) const;
     ts::UString newTemporaryFileName();
 
-    void testArgMixCalled1(const std::initializer_list<ts::ArgMix> list);
-    void testArgMixCalled2(const std::initializer_list<ts::ArgMix> list);
+    void testArgMixInCalled1(const std::initializer_list<ts::ArgMixIn> list);
+    void testArgMixInCalled2(const std::initializer_list<ts::ArgMixIn> list);
+    void testArgMixOutCalled(const std::initializer_list<ts::ArgMixOut> list);
 
     // Two sample Unicode characters from the supplementary planes:
     //   U+1D538: MATHEMATICAL DOUBLE-STRUCK CAPITAL A
@@ -1140,9 +1145,9 @@ void UStringTest::testHexaDump()
     CPPUNIT_ASSERT_USTRINGS_EQUAL(ref8, hex8);
 }
 
-void UStringTest::testArgMix()
+void UStringTest::testArgMixIn()
 {
-    testArgMixCalled1({});
+    testArgMixInCalled1({});
 
     const std::string ok("ok");
     const ts::UString us(u"an UString");
@@ -1153,28 +1158,32 @@ void UStringTest::testArgMix()
     enum : uint16_t {EA = 7, EB = 48};
     enum : int8_t {EC = 4, ED = 8};
 
-    testArgMixCalled2({12, u8, i16, TS_CONST64(-99), "foo", ok, u"bar", us, ok + " 2", us + u" 2", sz, EB, EC});
+    testArgMixInCalled2({12, u8, i16, TS_CONST64(-99), "foo", ok, u"bar", us, ok + " 2", us + u" 2", sz, EB, EC});
 }
 
-void UStringTest::testArgMixCalled1(const std::initializer_list<ts::ArgMix> list)
+void UStringTest::testArgMixInCalled1(const std::initializer_list<ts::ArgMixIn> list)
 {
     CPPUNIT_ASSERT_EQUAL(size_t(0), list.size());
 }
 
-void UStringTest::testArgMixCalled2(const std::initializer_list<ts::ArgMix> list)
+void UStringTest::testArgMixInCalled2(const std::initializer_list<ts::ArgMixIn> list)
 {
     CPPUNIT_ASSERT_EQUAL(size_t(13), list.size());
 
-    std::initializer_list<ts::ArgMix>::const_iterator it = list.begin();
+    std::initializer_list<ts::ArgMixIn>::const_iterator it = list.begin();
 
     // 12
-    CPPUNIT_ASSERT_EQUAL(ts::ArgMix::INT32, it->type());
-    CPPUNIT_ASSERT(it->isInt());
+    CPPUNIT_ASSERT(!it->isOutputInteger());
+    CPPUNIT_ASSERT(it->isInteger());
     CPPUNIT_ASSERT(it->isSigned());
     CPPUNIT_ASSERT(!it->isUnsigned());
+    CPPUNIT_ASSERT(!it->isAnyString());
+    CPPUNIT_ASSERT(!it->isAnyString8());
+    CPPUNIT_ASSERT(!it->isAnyString16());
+    CPPUNIT_ASSERT(!it->isCharPtr());
     CPPUNIT_ASSERT(!it->isString());
-    CPPUNIT_ASSERT(!it->isString8());
-    CPPUNIT_ASSERT(!it->isString16());
+    CPPUNIT_ASSERT(!it->isUCharPtr());
+    CPPUNIT_ASSERT(!it->isUString());
     CPPUNIT_ASSERT_EQUAL(size_t(4), it->size());
     CPPUNIT_ASSERT_EQUAL(int32_t(12), it->toInt32());
     CPPUNIT_ASSERT_EQUAL(uint32_t(12), it->toUInt32());
@@ -1187,13 +1196,17 @@ void UStringTest::testArgMixCalled2(const std::initializer_list<ts::ArgMix> list
     ++it;
 
     // u8 = 23
-    CPPUNIT_ASSERT_EQUAL(ts::ArgMix::UINT32, it->type());
-    CPPUNIT_ASSERT(it->isInt());
+    CPPUNIT_ASSERT(!it->isOutputInteger());
+    CPPUNIT_ASSERT(it->isInteger());
     CPPUNIT_ASSERT(!it->isSigned());
     CPPUNIT_ASSERT(it->isUnsigned());
+    CPPUNIT_ASSERT(!it->isAnyString());
+    CPPUNIT_ASSERT(!it->isAnyString8());
+    CPPUNIT_ASSERT(!it->isAnyString16());
+    CPPUNIT_ASSERT(!it->isCharPtr());
     CPPUNIT_ASSERT(!it->isString());
-    CPPUNIT_ASSERT(!it->isString8());
-    CPPUNIT_ASSERT(!it->isString16());
+    CPPUNIT_ASSERT(!it->isUCharPtr());
+    CPPUNIT_ASSERT(!it->isUString());
     CPPUNIT_ASSERT_EQUAL(size_t(1), it->size());
     CPPUNIT_ASSERT_EQUAL(int32_t(23), it->toInt32());
     CPPUNIT_ASSERT_EQUAL(uint32_t(23), it->toUInt32());
@@ -1206,13 +1219,17 @@ void UStringTest::testArgMixCalled2(const std::initializer_list<ts::ArgMix> list
     ++it;
 
     // i16 = -432
-    CPPUNIT_ASSERT_EQUAL(ts::ArgMix::INT32, it->type());
-    CPPUNIT_ASSERT(it->isInt());
+    CPPUNIT_ASSERT(!it->isOutputInteger());
+    CPPUNIT_ASSERT(it->isInteger());
     CPPUNIT_ASSERT(it->isSigned());
     CPPUNIT_ASSERT(!it->isUnsigned());
+    CPPUNIT_ASSERT(!it->isAnyString());
+    CPPUNIT_ASSERT(!it->isAnyString8());
+    CPPUNIT_ASSERT(!it->isAnyString16());
+    CPPUNIT_ASSERT(!it->isCharPtr());
     CPPUNIT_ASSERT(!it->isString());
-    CPPUNIT_ASSERT(!it->isString8());
-    CPPUNIT_ASSERT(!it->isString16());
+    CPPUNIT_ASSERT(!it->isUCharPtr());
+    CPPUNIT_ASSERT(!it->isUString());
     CPPUNIT_ASSERT_EQUAL(size_t(2), it->size());
     CPPUNIT_ASSERT_EQUAL(int32_t(-432), it->toInt32());
     CPPUNIT_ASSERT_EQUAL(int64_t(-432), it->toInt64());
@@ -1223,13 +1240,17 @@ void UStringTest::testArgMixCalled2(const std::initializer_list<ts::ArgMix> list
     ++it;
 
     // TS_CONST64(-99)
-    CPPUNIT_ASSERT_EQUAL(ts::ArgMix::INT64, it->type());
-    CPPUNIT_ASSERT(it->isInt());
+    CPPUNIT_ASSERT(!it->isOutputInteger());
+    CPPUNIT_ASSERT(it->isInteger());
     CPPUNIT_ASSERT(it->isSigned());
     CPPUNIT_ASSERT(!it->isUnsigned());
+    CPPUNIT_ASSERT(!it->isAnyString());
+    CPPUNIT_ASSERT(!it->isAnyString8());
+    CPPUNIT_ASSERT(!it->isAnyString16());
+    CPPUNIT_ASSERT(!it->isCharPtr());
     CPPUNIT_ASSERT(!it->isString());
-    CPPUNIT_ASSERT(!it->isString8());
-    CPPUNIT_ASSERT(!it->isString16());
+    CPPUNIT_ASSERT(!it->isUCharPtr());
+    CPPUNIT_ASSERT(!it->isUString());
     CPPUNIT_ASSERT_EQUAL(size_t(8), it->size());
     CPPUNIT_ASSERT_EQUAL(int32_t(-99), it->toInt32());
     CPPUNIT_ASSERT_EQUAL(int64_t(-99), it->toInt64());
@@ -1240,13 +1261,17 @@ void UStringTest::testArgMixCalled2(const std::initializer_list<ts::ArgMix> list
     ++it;
 
     // "foo"
-    CPPUNIT_ASSERT_EQUAL(ts::ArgMix::CHARPTR, it->type());
-    CPPUNIT_ASSERT(!it->isInt());
+    CPPUNIT_ASSERT(!it->isOutputInteger());
+    CPPUNIT_ASSERT(!it->isInteger());
     CPPUNIT_ASSERT(!it->isSigned());
     CPPUNIT_ASSERT(!it->isUnsigned());
-    CPPUNIT_ASSERT(it->isString());
-    CPPUNIT_ASSERT(it->isString8());
-    CPPUNIT_ASSERT(!it->isString16());
+    CPPUNIT_ASSERT(it->isAnyString());
+    CPPUNIT_ASSERT(it->isAnyString8());
+    CPPUNIT_ASSERT(!it->isAnyString16());
+    CPPUNIT_ASSERT(it->isCharPtr());
+    CPPUNIT_ASSERT(!it->isString());
+    CPPUNIT_ASSERT(!it->isUCharPtr());
+    CPPUNIT_ASSERT(!it->isUString());
     CPPUNIT_ASSERT_EQUAL(size_t(0), it->size());
     CPPUNIT_ASSERT_EQUAL(int32_t(0), it->toInt32());
     CPPUNIT_ASSERT_EQUAL(uint32_t(0), it->toUInt32());
@@ -1259,13 +1284,17 @@ void UStringTest::testArgMixCalled2(const std::initializer_list<ts::ArgMix> list
     ++it;
 
     // ok = "ok"
-    CPPUNIT_ASSERT_EQUAL(ts::ArgMix::STRING, it->type());
-    CPPUNIT_ASSERT(!it->isInt());
+    CPPUNIT_ASSERT(!it->isOutputInteger());
+    CPPUNIT_ASSERT(!it->isInteger());
     CPPUNIT_ASSERT(!it->isSigned());
     CPPUNIT_ASSERT(!it->isUnsigned());
+    CPPUNIT_ASSERT(it->isAnyString());
+    CPPUNIT_ASSERT(it->isAnyString8());
+    CPPUNIT_ASSERT(!it->isAnyString16());
+    CPPUNIT_ASSERT(!it->isCharPtr());
     CPPUNIT_ASSERT(it->isString());
-    CPPUNIT_ASSERT(it->isString8());
-    CPPUNIT_ASSERT(!it->isString16());
+    CPPUNIT_ASSERT(!it->isUCharPtr());
+    CPPUNIT_ASSERT(!it->isUString());
     CPPUNIT_ASSERT_EQUAL(size_t(0), it->size());
     CPPUNIT_ASSERT_EQUAL(int32_t(0), it->toInt32());
     CPPUNIT_ASSERT_EQUAL(uint32_t(0), it->toUInt32());
@@ -1278,13 +1307,17 @@ void UStringTest::testArgMixCalled2(const std::initializer_list<ts::ArgMix> list
     ++it;
 
     // u"bar"
-    CPPUNIT_ASSERT_EQUAL(ts::ArgMix::UCHARPTR, it->type());
-    CPPUNIT_ASSERT(!it->isInt());
+    CPPUNIT_ASSERT(!it->isOutputInteger());
+    CPPUNIT_ASSERT(!it->isInteger());
     CPPUNIT_ASSERT(!it->isSigned());
     CPPUNIT_ASSERT(!it->isUnsigned());
-    CPPUNIT_ASSERT(it->isString());
-    CPPUNIT_ASSERT(!it->isString8());
-    CPPUNIT_ASSERT(it->isString16());
+    CPPUNIT_ASSERT(it->isAnyString());
+    CPPUNIT_ASSERT(!it->isAnyString8());
+    CPPUNIT_ASSERT(it->isAnyString16());
+    CPPUNIT_ASSERT(!it->isCharPtr());
+    CPPUNIT_ASSERT(!it->isString());
+    CPPUNIT_ASSERT(it->isUCharPtr());
+    CPPUNIT_ASSERT(!it->isUString());
     CPPUNIT_ASSERT_EQUAL(size_t(0), it->size());
     CPPUNIT_ASSERT_EQUAL(int32_t(0), it->toInt32());
     CPPUNIT_ASSERT_EQUAL(uint32_t(0), it->toUInt32());
@@ -1297,13 +1330,17 @@ void UStringTest::testArgMixCalled2(const std::initializer_list<ts::ArgMix> list
     ++it;
 
     // us = u"an UString"
-    CPPUNIT_ASSERT_EQUAL(ts::ArgMix::USTRING, it->type());
-    CPPUNIT_ASSERT(!it->isInt());
+    CPPUNIT_ASSERT(!it->isOutputInteger());
+    CPPUNIT_ASSERT(!it->isInteger());
     CPPUNIT_ASSERT(!it->isSigned());
     CPPUNIT_ASSERT(!it->isUnsigned());
-    CPPUNIT_ASSERT(it->isString());
-    CPPUNIT_ASSERT(!it->isString8());
-    CPPUNIT_ASSERT(it->isString16());
+    CPPUNIT_ASSERT(it->isAnyString());
+    CPPUNIT_ASSERT(!it->isAnyString8());
+    CPPUNIT_ASSERT(it->isAnyString16());
+    CPPUNIT_ASSERT(!it->isCharPtr());
+    CPPUNIT_ASSERT(!it->isString());
+    CPPUNIT_ASSERT(!it->isUCharPtr());
+    CPPUNIT_ASSERT(it->isUString());
     CPPUNIT_ASSERT_EQUAL(size_t(0), it->size());
     CPPUNIT_ASSERT_EQUAL(int32_t(0), it->toInt32());
     CPPUNIT_ASSERT_EQUAL(uint32_t(0), it->toUInt32());
@@ -1316,13 +1353,17 @@ void UStringTest::testArgMixCalled2(const std::initializer_list<ts::ArgMix> list
     ++it;
 
     // ok + " 2"
-    CPPUNIT_ASSERT_EQUAL(ts::ArgMix::STRING, it->type());
-    CPPUNIT_ASSERT(!it->isInt());
+    CPPUNIT_ASSERT(!it->isOutputInteger());
+    CPPUNIT_ASSERT(!it->isInteger());
     CPPUNIT_ASSERT(!it->isSigned());
     CPPUNIT_ASSERT(!it->isUnsigned());
+    CPPUNIT_ASSERT(it->isAnyString());
+    CPPUNIT_ASSERT(it->isAnyString8());
+    CPPUNIT_ASSERT(!it->isAnyString16());
+    CPPUNIT_ASSERT(!it->isCharPtr());
     CPPUNIT_ASSERT(it->isString());
-    CPPUNIT_ASSERT(it->isString8());
-    CPPUNIT_ASSERT(!it->isString16());
+    CPPUNIT_ASSERT(!it->isUCharPtr());
+    CPPUNIT_ASSERT(!it->isUString());
     CPPUNIT_ASSERT_EQUAL(size_t(0), it->size());
     CPPUNIT_ASSERT_EQUAL(int32_t(0), it->toInt32());
     CPPUNIT_ASSERT_EQUAL(uint32_t(0), it->toUInt32());
@@ -1335,13 +1376,17 @@ void UStringTest::testArgMixCalled2(const std::initializer_list<ts::ArgMix> list
     ++it;
 
     // us + u" 2"
-    CPPUNIT_ASSERT_EQUAL(ts::ArgMix::USTRING, it->type());
-    CPPUNIT_ASSERT(!it->isInt());
+    CPPUNIT_ASSERT(!it->isOutputInteger());
+    CPPUNIT_ASSERT(!it->isInteger());
     CPPUNIT_ASSERT(!it->isSigned());
     CPPUNIT_ASSERT(!it->isUnsigned());
-    CPPUNIT_ASSERT(it->isString());
-    CPPUNIT_ASSERT(!it->isString8());
-    CPPUNIT_ASSERT(it->isString16());
+    CPPUNIT_ASSERT(it->isAnyString());
+    CPPUNIT_ASSERT(!it->isAnyString8());
+    CPPUNIT_ASSERT(it->isAnyString16());
+    CPPUNIT_ASSERT(!it->isCharPtr());
+    CPPUNIT_ASSERT(!it->isString());
+    CPPUNIT_ASSERT(!it->isUCharPtr());
+    CPPUNIT_ASSERT(it->isUString());
     CPPUNIT_ASSERT_EQUAL(size_t(0), it->size());
     CPPUNIT_ASSERT_EQUAL(int32_t(0), it->toInt32());
     CPPUNIT_ASSERT_EQUAL(uint32_t(0), it->toUInt32());
@@ -1353,18 +1398,18 @@ void UStringTest::testArgMixCalled2(const std::initializer_list<ts::ArgMix> list
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"an UString 2", it->toUString());
     ++it;
 
-    // sz = 8
-#if TS_ADDRESS_BITS <= 32
-    CPPUNIT_ASSERT_EQUAL(ts::ArgMix::UINT32, it->type());
-#else
-    CPPUNIT_ASSERT_EQUAL(ts::ArgMix::UINT64, it->type());
-#endif
-    CPPUNIT_ASSERT(it->isInt());
+    // sz = 8 (size_t)
+    CPPUNIT_ASSERT(!it->isOutputInteger());
+    CPPUNIT_ASSERT(it->isInteger());
     CPPUNIT_ASSERT(!it->isSigned());
     CPPUNIT_ASSERT(it->isUnsigned());
+    CPPUNIT_ASSERT(!it->isAnyString());
+    CPPUNIT_ASSERT(!it->isAnyString8());
+    CPPUNIT_ASSERT(!it->isAnyString16());
+    CPPUNIT_ASSERT(!it->isCharPtr());
     CPPUNIT_ASSERT(!it->isString());
-    CPPUNIT_ASSERT(!it->isString8());
-    CPPUNIT_ASSERT(!it->isString16());
+    CPPUNIT_ASSERT(!it->isUCharPtr());
+    CPPUNIT_ASSERT(!it->isUString());
     CPPUNIT_ASSERT_EQUAL(size_t(TS_ADDRESS_BITS / 8), it->size());
     CPPUNIT_ASSERT_EQUAL(int32_t(8), it->toInt32());
     CPPUNIT_ASSERT_EQUAL(uint32_t(8), it->toUInt32());
@@ -1377,13 +1422,17 @@ void UStringTest::testArgMixCalled2(const std::initializer_list<ts::ArgMix> list
     ++it;
 
     // EB (48, uint16_t)
-    CPPUNIT_ASSERT_EQUAL(ts::ArgMix::UINT32, it->type());
-    CPPUNIT_ASSERT(it->isInt());
+    CPPUNIT_ASSERT(!it->isOutputInteger());
+    CPPUNIT_ASSERT(it->isInteger());
     CPPUNIT_ASSERT(!it->isSigned());
     CPPUNIT_ASSERT(it->isUnsigned());
+    CPPUNIT_ASSERT(!it->isAnyString());
+    CPPUNIT_ASSERT(!it->isAnyString8());
+    CPPUNIT_ASSERT(!it->isAnyString16());
+    CPPUNIT_ASSERT(!it->isCharPtr());
     CPPUNIT_ASSERT(!it->isString());
-    CPPUNIT_ASSERT(!it->isString8());
-    CPPUNIT_ASSERT(!it->isString16());
+    CPPUNIT_ASSERT(!it->isUCharPtr());
+    CPPUNIT_ASSERT(!it->isUString());
     CPPUNIT_ASSERT_EQUAL(size_t(2), it->size());
     CPPUNIT_ASSERT_EQUAL(int32_t(48), it->toInt32());
     CPPUNIT_ASSERT_EQUAL(uint32_t(48), it->toUInt32());
@@ -1396,13 +1445,17 @@ void UStringTest::testArgMixCalled2(const std::initializer_list<ts::ArgMix> list
     ++it;
 
     // EC (4, int8_t)
-    CPPUNIT_ASSERT_EQUAL(ts::ArgMix::INT32, it->type());
-    CPPUNIT_ASSERT(it->isInt());
+    CPPUNIT_ASSERT(!it->isOutputInteger());
+    CPPUNIT_ASSERT(it->isInteger());
     CPPUNIT_ASSERT(it->isSigned());
     CPPUNIT_ASSERT(!it->isUnsigned());
+    CPPUNIT_ASSERT(!it->isAnyString());
+    CPPUNIT_ASSERT(!it->isAnyString8());
+    CPPUNIT_ASSERT(!it->isAnyString16());
+    CPPUNIT_ASSERT(!it->isCharPtr());
     CPPUNIT_ASSERT(!it->isString());
-    CPPUNIT_ASSERT(!it->isString8());
-    CPPUNIT_ASSERT(!it->isString16());
+    CPPUNIT_ASSERT(!it->isUCharPtr());
+    CPPUNIT_ASSERT(!it->isUString());
     CPPUNIT_ASSERT_EQUAL(size_t(1), it->size());
     CPPUNIT_ASSERT_EQUAL(int32_t(4), it->toInt32());
     CPPUNIT_ASSERT_EQUAL(uint32_t(4), it->toUInt32());
@@ -1419,9 +1472,8 @@ void UStringTest::testArgMixCalled2(const std::initializer_list<ts::ArgMix> list
 
 void UStringTest::testFormat()
 {
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"", ts::UString::Format(u""));
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"", ts::UString::Format(u"", {}));
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"abc", ts::UString::Format(u"abc"));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"abc", ts::UString::Format(u"abc", {}));
 
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"abc1", ts::UString::Format(u"abc%d", {1}));
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"abc1de%f", ts::UString::Format(u"abc%dde%%f", {1}));
@@ -1496,4 +1548,157 @@ void UStringTest::testFormat()
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"|abcdefgh|", ts::UString::Format(u"|%-*.*s|", {8, 12, u"abcdefgh"}));
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"|abcdefghijkl|", ts::UString::Format(u"|%-*.*s|", {8, 12, u"abcdefghijklmnop"}));
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"|abcdefghijklmnop|", ts::UString::Format(u"|%-*s|", {8, u"abcdefghijklmnop"}));
+}
+
+void UStringTest::testArgMixOut()
+{
+    enum E1 : uint16_t {E10 = 5, E11, E12, E13};
+    enum E2 : int8_t   {E20 = -10, E21, E22, E23};
+
+    int8_t   i8  = -2;
+    uint8_t  u8  = 23;
+    int16_t  i16 = -432;
+    uint16_t u16 = 439;
+    int32_t  i32 = -123456;
+    uint32_t u32 = 987654;
+    int64_t  i64 = TS_CONST64(-1234567890123);
+    uint64_t u64 = TS_UCONST64(9876543210657);
+    size_t   sz  = 8;
+    E1       e1  = E11;
+    E2       e2  = E20;
+
+    testArgMixOutCalled({&i8, &u8, &i16, &u16, &i32, &u32, &i64, &u64, &sz, &e1, &e2});
+
+    CPPUNIT_ASSERT_EQUAL(int8_t(-1), i8);
+    CPPUNIT_ASSERT_EQUAL(uint8_t(24), u8);
+    CPPUNIT_ASSERT_EQUAL(int16_t(-431), i16);
+    CPPUNIT_ASSERT_EQUAL(uint16_t(440), u16);
+    CPPUNIT_ASSERT_EQUAL(int32_t(-123455), i32);
+    CPPUNIT_ASSERT_EQUAL(uint32_t(987655), u32);
+    CPPUNIT_ASSERT_EQUAL(TS_CONST64(-1234567890122), i64);
+    CPPUNIT_ASSERT_EQUAL(TS_UCONST64(9876543210658), u64);
+    CPPUNIT_ASSERT_EQUAL(size_t(9), sz);
+    CPPUNIT_ASSERT_EQUAL(E12, e1);
+    CPPUNIT_ASSERT_EQUAL(E21, e2);
+}
+
+void UStringTest::testArgMixOutCalled(const std::initializer_list<ts::ArgMixOut> list)
+{
+    CPPUNIT_ASSERT_EQUAL(size_t(11), list.size());
+    
+    int32_t  i32 = 0;
+    uint32_t u32 = 0;
+    int64_t  i64 = 0;
+    uint64_t u64 = 0;
+
+    // Test all invariants.
+    for (std::initializer_list<ts::ArgMixOut>::const_iterator it = list.begin(); it != list.end(); ++it) {
+        CPPUNIT_ASSERT(it->isOutputInteger());
+        CPPUNIT_ASSERT(it->isInteger());
+        CPPUNIT_ASSERT(!it->isAnyString());
+        CPPUNIT_ASSERT(!it->isAnyString8());
+        CPPUNIT_ASSERT(!it->isAnyString16());
+        CPPUNIT_ASSERT(!it->isCharPtr());
+        CPPUNIT_ASSERT(!it->isString());
+        CPPUNIT_ASSERT(!it->isUCharPtr());
+        CPPUNIT_ASSERT(!it->isUString());
+    }
+
+    // Now test specific values.
+    std::initializer_list<ts::ArgMixOut>::const_iterator it = list.begin();
+
+    // int8_t   i8  = -2;
+    CPPUNIT_ASSERT(it->isSigned());
+    CPPUNIT_ASSERT(!it->isUnsigned());
+    CPPUNIT_ASSERT_EQUAL(size_t(1), it->size());
+    CPPUNIT_ASSERT_EQUAL(int32_t(-2), i32 = it->toInt32());
+    CPPUNIT_ASSERT(it->storeInteger(++i32));
+    ++it;
+
+    // uint8_t  u8  = 23;
+    CPPUNIT_ASSERT(!it->isSigned());
+    CPPUNIT_ASSERT(it->isUnsigned());
+    CPPUNIT_ASSERT_EQUAL(size_t(1), it->size());
+    CPPUNIT_ASSERT_EQUAL(uint32_t(23), u32 = it->toUInt32());
+    CPPUNIT_ASSERT(it->storeInteger(++u32));
+    ++it;
+
+    // int16_t  i16 = -432;
+    CPPUNIT_ASSERT(it->isSigned());
+    CPPUNIT_ASSERT(!it->isUnsigned());
+    CPPUNIT_ASSERT_EQUAL(size_t(2), it->size());
+    CPPUNIT_ASSERT_EQUAL(int32_t(-432), i32 = it->toInt32());
+    CPPUNIT_ASSERT(it->storeInteger(++i32));
+    ++it;
+
+    // uint16_t u16 = 439;
+    CPPUNIT_ASSERT(!it->isSigned());
+    CPPUNIT_ASSERT(it->isUnsigned());
+    CPPUNIT_ASSERT_EQUAL(size_t(2), it->size());
+    CPPUNIT_ASSERT_EQUAL(uint32_t(439), u32 = it->toUInt32());
+    CPPUNIT_ASSERT(it->storeInteger(++u32));
+    ++it;
+
+    // int32_t  i32 = -123456;
+    CPPUNIT_ASSERT(it->isSigned());
+    CPPUNIT_ASSERT(!it->isUnsigned());
+    CPPUNIT_ASSERT_EQUAL(size_t(4), it->size());
+    CPPUNIT_ASSERT_EQUAL(int32_t(-123456), i32 = it->toInt32());
+    CPPUNIT_ASSERT(it->storeInteger(++i32));
+    ++it;
+
+    // uint32_t u32 = 987654;
+    CPPUNIT_ASSERT(!it->isSigned());
+    CPPUNIT_ASSERT(it->isUnsigned());
+    CPPUNIT_ASSERT_EQUAL(size_t(4), it->size());
+    CPPUNIT_ASSERT_EQUAL(uint32_t(987654), u32 = it->toUInt32());
+    CPPUNIT_ASSERT(it->storeInteger(++u32));
+    ++it;
+
+    // int64_t  i64 = TS_CONST64(-1234567890123);
+    CPPUNIT_ASSERT(it->isSigned());
+    CPPUNIT_ASSERT(!it->isUnsigned());
+    CPPUNIT_ASSERT_EQUAL(size_t(8), it->size());
+    CPPUNIT_ASSERT_EQUAL(TS_CONST64(-1234567890123), i64 = it->toInt64());
+    CPPUNIT_ASSERT(it->storeInteger(++i64));
+    ++it;
+
+    // uint64_t u64 = TS_UCONST64(9876543210657);
+    CPPUNIT_ASSERT(!it->isSigned());
+    CPPUNIT_ASSERT(it->isUnsigned());
+    CPPUNIT_ASSERT_EQUAL(size_t(8), it->size());
+    CPPUNIT_ASSERT_EQUAL(TS_UCONST64(9876543210657), u64 = it->toUInt64());
+    CPPUNIT_ASSERT(it->storeInteger(++u64));
+    ++it;
+
+    // size_t   sz  = 8;
+    CPPUNIT_ASSERT(!it->isSigned());
+    CPPUNIT_ASSERT(it->isUnsigned());
+    CPPUNIT_ASSERT_EQUAL(size_t(TS_ADDRESS_BITS / 8), it->size());
+    CPPUNIT_ASSERT_EQUAL(uint64_t(8), u64 = it->toUInt64());
+    CPPUNIT_ASSERT(it->storeInteger(++u64));
+    ++it;
+
+    // E1       e1  = E11;
+    CPPUNIT_ASSERT(!it->isSigned());
+    CPPUNIT_ASSERT(it->isUnsigned());
+    CPPUNIT_ASSERT_EQUAL(size_t(2), it->size());
+    CPPUNIT_ASSERT_EQUAL(uint32_t(6), u32 = it->toUInt32());
+    CPPUNIT_ASSERT(it->storeInteger(++u32));
+    ++it;
+
+    // E2       e2  = E20;
+    CPPUNIT_ASSERT(it->isSigned());
+    CPPUNIT_ASSERT(!it->isUnsigned());
+    CPPUNIT_ASSERT_EQUAL(size_t(1), it->size());
+    CPPUNIT_ASSERT_EQUAL(int32_t(-10), i32 = it->toInt32());
+    CPPUNIT_ASSERT(it->storeInteger(++i32));
+    ++it;
+
+    CPPUNIT_ASSERT(it == list.end());
+}
+
+void UStringTest::testScan()
+{
+    //@@@@
 }

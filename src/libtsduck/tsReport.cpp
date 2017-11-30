@@ -111,14 +111,14 @@ void ts::Report::log(int severity, const UString& msg)
     }
 }
 
-void ts::Report::log(int severity, const UChar* fmt, const std::initializer_list<ArgMix> args)
+void ts::Report::log(int severity, const UChar* fmt, const std::initializer_list<ArgMixIn> args)
 {
     if (severity <= _max_severity) {
         log(severity, UString::Format(fmt, args));
     }
 }
 
-void ts::Report::log(int severity, const UString& fmt, const std::initializer_list<ArgMix> args)
+void ts::Report::log(int severity, const UString& fmt, const std::initializer_list<ArgMixIn> args)
 {
     if (severity <= _max_severity) {
         log(severity, UString::Format(fmt, args));

@@ -41,105 +41,69 @@ namespace ts {
     class UString;
 
     //!
-    //! Define an element of an argument list with mixed integer and string types.
+    //! Base class for elements of an argument list with mixed types.
     //!
     //! This class is typically used as element in an std::initializer_list.
-    //! This mechanism is used by ts::UString::Format() for instance.
-    //!
-    //! An instance of ArgMix may reference external data. The lifetime of the
-    //! pointed data must be longer than the ArgMix instance. This is the case
-    //! for a std::initializer_list<ArgMix> which is used as parameter to Format().
-    //! But this is not guaranteed in other usages.
+    //! It is used only through the two derived classes ArgMixIn and ArgMixOut.
     //!
     class TSDUCKDLL ArgMix
     {
     public:
         //!
-        //! Type of an argument.
-        //! Only integers and strings are supported. Integers are stored as 32 or 64 bits only.
-        //!
-        //! Binary encoding:
-        //! - xx0 = signed/char,    xx1 = unsigned/uchar
-        //! - x0x = 32-bit/pointer, x1x = 64-bit/class
-        //! - 0xx = integer,        1xx = string
-        //!
-        enum Type {
-            INT32    = 0x00,  // Signed 32-bit integer.
-            UINT32   = 0x01,  // Unsigned 32-bit integer.
-            INT64    = 0x02,  // Signed 64-bit integer.
-            UINT64   = 0x03,  // Unsigned 64-bit integer.
-            CHARPTR  = 0x04,  // Pointer to a nul-terminated string of 8-bit characters.
-            UCHARPTR = 0x05,  // Pointer to a nul-terminated string of 16-bit characters.
-            STRING   = 0x06,  // Reference to a std::string.
-            USTRING  = 0x07   // Reference to a ts::UString.
-        };
-
-        //!
-        //! Default constructor.
-        //!
-        ArgMix() : _type(INT32), _size(0), _value(int32_t(0)) {}
-        //!
-        //! Constructor from a nul-terminated string of 8-bit characters.
-        //! @param [in] s Address of nul-terminated string.
-        //!
-        ArgMix(const char* s) : _type(CHARPTR), _size(0), _value(s) {}
-        //!
-        //! Constructor from a nul-terminated string of 16-bit characters.
-        //! @param [in] s Address of nul-terminated string.
-        //!
-        ArgMix(const UChar* s) : _type(UCHARPTR), _size(0), _value(s) {}
-        //!
-        //! Constructor from a C++ string of 8-bit characters.
-        //! @param [in] s Reference to a C++ string.
-        //!
-        ArgMix(const std::string& s) : _type(STRING), _size(0), _value(s) {}
-        //!
-        //! Constructor from a C++ string of 16-bit characters.
-        //! @param [in] s Reference to a C++ string.
-        //!
-        ArgMix(const UString& s) : _type(USTRING), _size(0), _value(s) {}
-        //!
-        //! Constructor from an integer or enum type.
-        //! @param [in] i Integer value of the ArgMix. Internally stored as a 32-bit or 64-bit integer.
-        //!
-        template<typename T, typename std::enable_if<std::is_integral<T>::value || std::is_enum<T>::value>::type* = nullptr>
-        ArgMix(T i) : _type(storage_type<T>::value), _size(sizeof(i)), _value((typename storage_type<T>::type)(i)) {}
-
-        //!
-        //! Get the argument data type.
-        //! @return The argument data type.
-        //!
-        Type type() const { return _type; }
-        //!
-        //! Check if the argument value is an integer.
+        //! Check if the argument value is an integer, either input or output.
         //! @return True if the argument value is an integer.
         //!
-        bool isInt() const { return (_type & 0x04) == 0x00; }
+        bool isInteger() const { return (_type & INTEGER) == INTEGER; }
         //!
-        //! Check if the argument value is a signed integer.
+        //! Check if the argument value is an output integer.
+        //! @return True if the argument value is an output integer.
+        //!
+        bool isOutputInteger() const { return (_type & (INTEGER | POINTER)) == (INTEGER | POINTER); }
+        //!
+        //! Check if the argument value is a signed integer, either input or output.
         //! @return True if the argument value is a signed integer.
         //!
-        bool isSigned() const { return (_type & 0x05) == 0x00; }
+        bool isSigned() const { return (_type & (SIGNED | INTEGER)) == (SIGNED | INTEGER); }
         //!
-        //! Check if the argument value is an unsigned integer.
+        //! Check if the argument value is an unsigned integer, either input or output.
         //! @return True if the argument value is an unsigned integer.
         //!
-        bool isUnsigned() const { return (_type & 0x05) == 0x01; }
+        bool isUnsigned() const { return (_type & (SIGNED | INTEGER)) == INTEGER; }
         //!
         //! Check if the argument value is a string of any type.
-        //! @return True if the argument value is a string (CHARPTR, UCHARPTR, STRING, USTRING).
+        //! @return True if the argument value is a string.
         //!
-        bool isString() const { return (_type & 0x04) == 0x04; }
+        bool isAnyString() const { return (_type & STRING) == STRING; }
         //!
         //! Check if the argument value is a string of 8-bit characters.
-        //! @return True if the argument value is a string of 8-bit characters (CHARPTR or STRING).
+        //! @return True if the argument value is a string of 8-bit characters (char* or std::string).
         //!
-        bool isString8() const { return (_type & 0x05) == 0x04; }
+        bool isAnyString8() const { return (_type & (STRING | BIT8)) == (STRING | BIT8); }
         //!
         //! Check if the argument value is a string of 16-bit characters.
-        //! @return True if the argument value is a string of 16-bit characters (UCHARPTR or USTRING).
+        //! @return True if the argument value is a string of 16-bit characters (UChar* or ts::UString).
         //!
-        bool isString16() const { return (_type & 0x05) == 0x05; }
+        bool isAnyString16() const { return (_type & (STRING | BIT16)) == (STRING | BIT16); }
+        //!
+        //! Check if the argument value is a char* string.
+        //! @return True if the argument value is a char* string.
+        //!
+        bool isCharPtr() const { return (_type & (STRING | BIT8 | CLASS)) == (STRING | BIT8); }
+        //!
+        //! Check if the argument value is a std::string.
+        //! @return True if the argument value is a std::string.
+        //!
+        bool isString() const { return (_type & (STRING | BIT8 | CLASS)) == (STRING | BIT8 | CLASS); }
+        //!
+        //! Check if the argument value is a UChar* string.
+        //! @return True if the argument value is a UChar* string.
+        //!
+        bool isUCharPtr() const { return (_type & (STRING | BIT16 | CLASS)) == (STRING | BIT16); }
+        //!
+        //! Check if the argument value is a ts::UString.
+        //! @return True if the argument value is a ts::UString.
+        //!
+        bool isUString() const { return (_type & (STRING | BIT16 | CLASS)) == (STRING | BIT16 | CLASS); }
         //!
         //! Get the original integer size in bytes of the argument data.
         //! @return The original integer size in bytes of the argument data or zero for a string.
@@ -151,7 +115,7 @@ namespace ts {
         //! @tparam INT An integer type.
         //! @return The argument data as an integer value of type @a INT or zero for a string.
         //!
-        template <typename INT>
+        template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
         INT toInteger() const;
         //!
         //! Get the argument data value as a 32-bit signed integer.
@@ -187,15 +151,47 @@ namespace ts {
         //! Get the argument data value as constant reference to a C++ string of 8-bit characters.
         //! @return Reference to the string for STRING, to an empty string for other data types.
         //!
-        const std::string& toString() const { return _type == STRING && _value.string != 0 ? *_value.string : empty; }
+        const std::string& toString() const;
         //!
         //! Get the argument data value as constant reference to a C++ string of 16-bit characters.
         //! @return Reference to the string for USTRING, to an empty string for other data types.
         //!
-        const UString& toUString() const { return _type == USTRING && _value.ustring != 0 ? *_value.ustring : uempty; }
+        const UString& toUString() const;
 
-    private:
-        // There must be exactly one value in Type per overlay in Value.
+        //!
+        //! Store an integer value in the argument data, for pointers to integer.
+        //! @tparam INT An integer type.
+        //! @param [in] i The integer value to store in the argument data.
+        //! @return True on success, false if the argument data is not a pointer to integer.
+        //!
+        template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+        bool storeInteger(INT i) const;
+
+    protected:
+        //!
+        //! Type of an argument, used as bitmask.
+        //!
+        typedef uint16_t TypeFlags;
+
+        //!
+        //! Anonymous enum, used as bitmask.
+        //!
+        enum : TypeFlags {
+            INTEGER = 0x0001,  //!< Integer type.
+            SIGNED  = 0x0002,  //!< With INTEGER, 1 means signed, 0 means unsigned.
+            STRING  = 0x0004,  //!< String of characters.
+            CLASS   = 0x0008,  //!< With STRING, 1 means std::string or ts::UString, O means const char* or const UChar*.
+            BIT8    = 0x0010,  //!< 8-bit integer or string of 8-bit characters (char).
+            BIT16   = 0x0020,  //!< 16-bit integer or string of 16-bit characters (UChar).
+            BIT32   = 0x0040,  //!< 32-bit integer.
+            BIT64   = 0x0080,  //!< 64-bit integer.
+            POINTER = 0x0100,  //!< A pointer to a writeable data (data type is given by other bits).
+        };
+
+#if !defined(DOXYGEN)
+        //!
+        //! Storage of an argument.
+        //!
         union Value {
             int32_t            int32;
             uint32_t           uint32;
@@ -205,7 +201,9 @@ namespace ts {
             const UChar*       ucharptr;
             const std::string* string;
             const UString*     ustring;
+            void*              intptr;  // output
 
+            Value(void* p)              : intptr(p) {}
             Value(int32_t i)            : int32(i) {}
             Value(uint32_t i)           : uint32(i) {}
             Value(int64_t i)            : int64(i) {}
@@ -215,15 +213,23 @@ namespace ts {
             Value(const std::string& s) : string(&s) {}
             Value(const UString& s)     : ustring(&s) {}
         };
+#endif
 
-        Type   _type;  // which overlay to use in _value
-        size_t _size;  // for integer type, informative only
-        Value  _value; // actual value of the 
+        //!
+        //! Default constructor.
+        //! The argument does not represent anything.
+        //!
+        ArgMix() : _type(0), _size(0), _value(int32_t(0)) {}
 
-        // Used to return references to constant empty strings.
-        static const std::string empty;
-        static const ts::UString uempty;
+        //!
+        //! Constructor for subclasses.
+        //! @param [in] type Indicate which overlay to use in _value.
+        //! @param [in] size Original size for integer type.
+        //! @param [in] value Actual value of the argument.
+        //!
+        ArgMix(TypeFlags type, uint16_t size, const Value value) : _type(type), _size(size), _value(value) {}
 
+#if !defined(DOXYGEN)
         // Warning: The rest of this class is carefully crafted template meta-programming (aka. Black Magic).
         // It is correct, it works, but it is not immediately easy to understand. So, do not modify it if you
         // are not 100% sure to have understood it and you know what you are doing. You have been warned...
@@ -250,7 +256,7 @@ namespace ts {
         };
 
         // The meta-type "storage_type" defines the characteristics of the type which is
-        // used to store an integer or enum types in an ArgMix.
+        // used to store an integer or enum type in an ArgMixIn.
         template <typename T>
         struct storage_type {
 
@@ -261,17 +267,154 @@ namespace ts {
                 typename std::conditional<(sizeof(T) > 4), uint64_t, uint32_t>::type
             >::type type;
 
-            // The meta-type "type_constant" defines the ArgMix::Type value for the type T.
+            // The meta-type "type_constant" defines the ArgMix type flags value for the type T.
             typedef typename std::conditional<
                 std::is_signed<typename underlying_type<T>::type>::value,
-                typename std::conditional<(sizeof(T) > 4), std::integral_constant<Type,INT64>, std::integral_constant<Type,INT32>>::type,
-                typename std::conditional<(sizeof(T) > 4), std::integral_constant<Type,UINT64>, std::integral_constant<Type,UINT32>>::type
+                typename std::conditional<
+                    (sizeof(T) > 4),
+                    std::integral_constant<TypeFlags, INTEGER | SIGNED | BIT64>,
+                    std::integral_constant<TypeFlags, INTEGER | SIGNED | BIT32>
+                >::type,
+                typename std::conditional<
+                    (sizeof(T) > 4),
+                    std::integral_constant<TypeFlags, INTEGER | BIT64>,
+                    std::integral_constant<TypeFlags, INTEGER | BIT32>
+                >::type
             >::type type_constant;
 
-            // The "value" is the ArgMix::Type value for the type T.
-            static constexpr Type value = type_constant::value;
+            // The "value" is the ArgMix type flags value for the type T.
+            static constexpr TypeFlags value = type_constant::value;
         };
 
+        // The meta-type "reference_type" defines the characteristics of the type which is
+        // used to reference an integer or enum type in an ArgMixOut.
+        template <typename T>
+        struct reference_type {
+
+            // The meta-type "type" is the storage type.
+            typedef typename std::conditional<
+                std::is_signed<typename underlying_type<T>::type>::value,
+                typename std::conditional<(sizeof(T) > 4), int64_t, std::conditional<(sizeof(T) > 2), int32_t, std::conditional<(sizeof(T) > 1), int16_t, int8_t>>>::type,
+                typename std::conditional<(sizeof(T) > 4), uint64_t, std::conditional<(sizeof(T) > 2), uint32_t, std::conditional<(sizeof(T) > 1), uint16_t, uint8_t>>>::type
+            >::type type;
+
+            // The meta-type "type_constant" defines the ArgMix type flags value for the type T.
+            typedef typename std::conditional<
+                std::is_signed<typename underlying_type<T>::type>::value,
+                typename std::conditional<
+                    (sizeof(T) > 4),
+                    std::integral_constant<TypeFlags, POINTER | INTEGER | SIGNED | BIT64>,
+                    typename std::conditional<
+                        (sizeof(T) > 2),
+                        std::integral_constant<TypeFlags, POINTER | INTEGER | SIGNED | BIT32>,
+                        typename std::conditional<
+                            (sizeof(T) > 1),
+                            std::integral_constant<TypeFlags, POINTER | INTEGER | SIGNED | BIT16>,
+                            std::integral_constant<TypeFlags, POINTER | INTEGER | SIGNED | BIT8>
+                        >::type
+                    >::type
+                >::type,
+                typename std::conditional<
+                    (sizeof(T) > 4),
+                    std::integral_constant<TypeFlags, POINTER | INTEGER | BIT64>,
+                    typename std::conditional<
+                        (sizeof(T) > 2),
+                        std::integral_constant<TypeFlags, POINTER | INTEGER | BIT32>,
+                        typename std::conditional<
+                            (sizeof(T) > 1),
+                            std::integral_constant<TypeFlags, POINTER | INTEGER | BIT16>,
+                            std::integral_constant<TypeFlags, POINTER | INTEGER | BIT8>
+                        >::type
+                    >::type
+                >::type
+            >::type type_constant;
+
+            // The "value" is the ArgMix type flags value for the type T.
+            static constexpr TypeFlags value = type_constant::value;
+        };
+#endif
+
+    private:
+        // Implementation of an ArgMix.
+        TypeFlags _type;  //!< Indicate which overlay to use in _value.
+        uint16_t  _size;  //!< Original size for integer type.
+        Value     _value; //!< Actual value of the argument.
+
+        // Static data used to return references to constant empty string class objects.
+        static const std::string empty;
+        static const ts::UString uempty;
+    };
+
+    //!
+    //! Define an element of an argument list with mixed integer and string input types.
+    //!
+    //! This class is typically used as element in an std::initializer_list.
+    //! This mechanism is used by ts::UString::Format() for instance.
+    //!
+    //! An instance of ArgMixIn may reference external data. The lifetime of the
+    //! pointed data must be longer than the ArgMixIn instance. This is the case
+    //! for a std::initializer_list<ArgMixIn> which is used as parameter to Format().
+    //! But this is not guaranteed in other usages.
+    //!
+    class TSDUCKDLL ArgMixIn: public ArgMix
+    {
+    public:
+        //!
+        //! Default constructor.
+        //!
+        ArgMixIn() : ArgMix() {}
+        //!
+        //! Constructor from a nul-terminated string of 8-bit characters.
+        //! @param [in] s Address of nul-terminated string.
+        //!
+        ArgMixIn(const char* s) : ArgMix(STRING | BIT8, 0, s) {}
+        //!
+        //! Constructor from a nul-terminated string of 16-bit characters.
+        //! @param [in] s Address of nul-terminated string.
+        //!
+        ArgMixIn(const UChar* s) : ArgMix(STRING | BIT16, 0, s) {}
+        //!
+        //! Constructor from a C++ string of 8-bit characters.
+        //! @param [in] s Reference to a C++ string.
+        //!
+        ArgMixIn(const std::string& s) : ArgMix(STRING | BIT8 | CLASS, 0, s) {}
+        //!
+        //! Constructor from a C++ string of 16-bit characters.
+        //! @param [in] s Reference to a C++ string.
+        //!
+        ArgMixIn(const UString& s) : ArgMix(STRING | BIT16 | CLASS, 0, s) {}
+        //!
+        //! Constructor from an integer or enum type.
+        //! @param [in] i Integer value of the ArgMix. Internally stored as a 32-bit or 64-bit integer.
+        //!
+        template<typename T, typename std::enable_if<std::is_integral<T>::value || std::is_enum<T>::value>::type* = nullptr>
+        ArgMixIn(T i) : ArgMix(storage_type<T>::value, sizeof(i), static_cast<typename storage_type<T>::type>(i)) {}
+    };
+
+    //!
+    //! Define an element of an argument list with integer output types of mixed sizes.
+    //!
+    //! This class is typically used as element in an std::initializer_list.
+    //! This mechanism is used by ts::UString::Scan() for instance.
+    //!
+    //! An instance of ArgMixOut references external data. The lifetime of the
+    //! pointed data must be longer than the ArgMixOut instance. This is the case
+    //! for a std::initializer_list<ArgMixOut> which is used as parameter to Scan().
+    //! But this is not guaranteed in other usages.
+    //!
+    class TSDUCKDLL ArgMixOut: public ArgMix
+    {
+    public:
+        //!
+        //! Default constructor.
+        //!
+        ArgMixOut() : ArgMix() {}
+        //!
+        //! Constructor from the address of an integer or enum data.
+        //! @param [in] ptr Address of an integer or enum data.
+        //!
+        template<typename T, typename std::enable_if<std::is_integral<T>::value || std::is_enum<T>::value>::type* = nullptr>
+        ArgMixOut(T* ptr) : ArgMix(reference_type<T>::value, sizeof(T), (ptr)) {}
     };
 }
 

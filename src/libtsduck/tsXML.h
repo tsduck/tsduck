@@ -145,7 +145,7 @@ namespace ts {
         //! @param [in] node Optional node which triggered the error.
         //! @see UString::format()
         //!
-        void reportError(const UChar* fmt, const std::initializer_list<ArgMix> args, tinyxml2::XMLError code = tinyxml2::XML_SUCCESS, Node* node = 0)
+        void reportError(const UChar* fmt, const std::initializer_list<ArgMixIn> args, tinyxml2::XMLError code = tinyxml2::XML_SUCCESS, Node* node = 0)
         {
             reportError(UString::Format(fmt, args), code, node);
         }
@@ -158,7 +158,7 @@ namespace ts {
         //! @param [in] node Optional node which triggered the error.
         //! @see UString::format()
         //!
-        void reportError(const UString& fmt, const std::initializer_list<ArgMix> args, tinyxml2::XMLError code = tinyxml2::XML_SUCCESS, Node* node = 0)
+        void reportError(const UString& fmt, const std::initializer_list<ArgMixIn> args, tinyxml2::XMLError code = tinyxml2::XML_SUCCESS, Node* node = 0)
         {
             reportError(fmt.c_str(), args, code, node);
         }

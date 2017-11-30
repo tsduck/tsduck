@@ -60,7 +60,7 @@ Some interesting features in class ts::UString are:
 - Splitting and joining strings based on separators or line widths.
 - Reading or writing text lines from or to a text file.
 - Data formatting using
-  @ref ts::UString::format() "Format()",
+  @ref ts::UString::Format() "Format()",
   @ref ts::UString::Decimal() "Decimal()",
   @ref ts::UString::Hexa() "Hexa()" or
   @ref ts::UString::Dump() "Dump()".
