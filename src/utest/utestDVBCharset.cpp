@@ -42,8 +42,9 @@ TSDUCK_SOURCE;
 class DVBCharsetTest: public CppUnit::TestFixture
 {
 public:
-    void setUp();
-    void tearDown();
+    virtual void setUp() override;
+    virtual void tearDown() override;
+
     void testRepository();
 
     CPPUNIT_TEST_SUITE(DVBCharsetTest);

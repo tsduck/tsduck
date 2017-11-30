@@ -205,8 +205,8 @@ namespace ts {
         bool atCycleBoundary() const;
 
         // Inherited from Packetizer.
-        virtual void reset();
-        virtual std::ostream& display(std::ostream& strm) const;
+        virtual void reset() override;
+        virtual std::ostream& display(std::ostream& strm) const override;
 
     private:
         // Each section is identified by a SectionDesc instance
@@ -257,8 +257,8 @@ namespace ts {
         void removeSections(SectionDescList&, TID, uint16_t tid_ext, bool use_tid_ext, bool scheduled);
 
         // Inherited from SectionProviderInterface
-        virtual void provideSection(SectionCounter, SectionPtr&);
-        virtual bool doStuffing();
+        virtual void provideSection(SectionCounter, SectionPtr&) override;
+        virtual bool doStuffing() override;
 
         // Hide this method, we do not want the section provider to be replaced
         void setSectionProvider(SectionProviderInterface*);

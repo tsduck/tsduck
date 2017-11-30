@@ -53,8 +53,9 @@ TSDUCK_SOURCE;
 class PacketizerTest: public CppUnit::TestFixture
 {
 public:
-    void setUp();
-    void tearDown();
+    virtual void setUp() override;
+    virtual void tearDown() override;
+
     void testPacketizer();
 
     CPPUNIT_TEST_SUITE(PacketizerTest);

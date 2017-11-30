@@ -44,8 +44,9 @@ TSDUCK_SOURCE;
 class TSPacketTest: public CppUnit::TestFixture
 {
 public:
-    void setUp();
-    void tearDown();
+    virtual void setUp() override;
+    virtual void tearDown() override;
+
     void testPacket();
 
     CPPUNIT_TEST_SUITE(TSPacketTest);

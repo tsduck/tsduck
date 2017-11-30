@@ -43,8 +43,9 @@ TSDUCK_SOURCE;
 class BitStreamTest: public CppUnit::TestFixture
 {
 public:
-    void setUp();
-    void tearDown();
+    virtual void setUp() override;
+    virtual void tearDown() override;
+
     void testConstructors();
     void testAssignment();
     void testReset();

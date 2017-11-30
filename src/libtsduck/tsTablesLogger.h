@@ -95,8 +95,8 @@ namespace ts {
 
     protected:
         // Implementation of interfaces.
-        virtual void handleTable(SectionDemux&, const BinaryTable&);
-        virtual void handleSection(SectionDemux&, const Section&);
+        virtual void handleTable(SectionDemux&, const BinaryTable&) override;
+        virtual void handleSection(SectionDemux&, const Section&) override;
 
         //!
         //! Log a section (option @c --log).

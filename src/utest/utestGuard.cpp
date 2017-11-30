@@ -44,8 +44,9 @@ TSDUCK_SOURCE;
 class GuardTest: public CppUnit::TestFixture
 {
 public:
-    void setUp();
-    void tearDown();
+    virtual void setUp() override;
+    virtual void tearDown() override;
+
     void testGuard();
     void testAcquireFailed();
     void testReleaseFailed();
@@ -89,7 +90,7 @@ namespace {
 
         // Acquire the mutex. Block until granted.
         // Return true on success and false on error.
-        virtual bool acquire(ts::MilliSecond timeout = ts::Infinite)
+        virtual bool acquire(ts::MilliSecond timeout = ts::Infinite) override
         {
             _count++;
             return _acquireResult;
@@ -97,7 +98,7 @@ namespace {
 
         // Release the mutex.
         // Return true on success and false on error.
-        virtual bool release()
+        virtual bool release() override
         {
             _count--;
             return _failResult;

@@ -104,8 +104,8 @@ namespace ts {
         SectionDemux     _demux;
 
         // Hooks
-        virtual void handleTable(SectionDemux&, const BinaryTable&);
-        virtual void handleSection(SectionDemux&, const Section&);
+        virtual void handleTable(SectionDemux&, const BinaryTable&) override;
+        virtual void handleSection(SectionDemux&, const Section&) override;
     };
 
     //!

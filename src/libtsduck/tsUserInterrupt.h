@@ -104,7 +104,7 @@ namespace ts {
 #elif defined(TS_UNIX)
 
         static void sysHandler(int sig);
-        virtual void main(); // ts::Thread implementation
+        virtual void main() override;  // ts::Thread implementation
 
         volatile bool           _terminate;
         volatile ::sig_atomic_t _got_sigint;

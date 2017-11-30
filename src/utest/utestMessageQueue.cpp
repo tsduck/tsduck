@@ -47,8 +47,10 @@ class MessageQueueTest: public CppUnit::TestFixture
 {
 public:
     MessageQueueTest();
-    void setUp();
-    void tearDown();
+
+    virtual void setUp() override;
+    virtual void tearDown() override;
+
     void testConstructor();
     void testQueue();
 
@@ -123,7 +125,7 @@ namespace {
         {
         }
 
-        virtual void test()
+        virtual void test() override
         {
             utest::Out() << "MessageQueueTest: test thread: started" << std::endl;
 

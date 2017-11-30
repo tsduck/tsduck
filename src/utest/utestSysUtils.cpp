@@ -47,8 +47,10 @@ class SysUtilsTest: public CppUnit::TestFixture
 {
 public:
     SysUtilsTest();
-    void setUp();
-    void tearDown();
+
+    virtual void setUp() override;
+    virtual void tearDown() override;
+
     void testCurrentProcessId();
     void testCurrentExecutableFile();
     void testSleep();

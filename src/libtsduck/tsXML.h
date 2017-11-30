@@ -574,7 +574,7 @@ namespace ts {
             //! Prints out the space before an element.
             //! @param [in] depth Nesting level of the element.
             //!
-            virtual void PrintSpace(int depth);
+            virtual void PrintSpace(int depth) override;
 
         private:
             int _indent;  //!< Indentation width of each level.

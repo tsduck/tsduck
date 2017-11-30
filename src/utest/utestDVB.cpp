@@ -48,8 +48,9 @@ TSDUCK_SOURCE;
 class DVBTest: public CppUnit::TestFixture
 {
 public:
-    void setUp();
-    void tearDown();
+    virtual void setUp() override;
+    virtual void tearDown() override;
+
     void testTunerArgs();
     void testZapFiles();
     void testTunerParams();

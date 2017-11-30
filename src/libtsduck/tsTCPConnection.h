@@ -222,7 +222,7 @@ namespace ts {
         virtual void handleDisconnected(Report& report = CERR) {}
 
         // Overriden methods
-        virtual void handleClosed(Report& report = CERR);
+        virtual void handleClosed(Report& report = CERR) override;
 
     private:
         bool _is_connected;

@@ -43,8 +43,9 @@ TSDUCK_SOURCE;
 class ResidentBufferTest: public CppUnit::TestFixture
 {
 public:
-    void setUp();
-    void tearDown();
+    virtual void setUp() override;
+    virtual void tearDown() override;
+
     void testResidentBuffer();
 
     CPPUNIT_TEST_SUITE(ResidentBufferTest);

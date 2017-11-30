@@ -82,7 +82,7 @@ namespace ts {
             size_t            _instuff_inpkt_remain;
 
             // Inherited from Thread
-            virtual void main();
+            virtual void main() override;
 
             // Encapsulation of the plugin's receive() method,
             // checking the validity of the input.

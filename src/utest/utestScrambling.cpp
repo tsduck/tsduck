@@ -45,8 +45,9 @@ TSDUCK_SOURCE;
 class ScramblingTest: public CppUnit::TestFixture
 {
 public:
-    void setUp();
-    void tearDown();
+    virtual void setUp() override;
+    virtual void tearDown() override;
+
     void testScrambling();
 
     CPPUNIT_TEST_SUITE(ScramblingTest);

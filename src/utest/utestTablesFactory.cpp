@@ -43,8 +43,9 @@ TSDUCK_SOURCE;
 class TablesFactoryTest: public CppUnit::TestFixture
 {
 public:
-    void setUp();
-    void tearDown();
+    virtual void setUp() override;
+    virtual void tearDown() override;
+
     void testRegistrations();
 
     CPPUNIT_TEST_SUITE(TablesFactoryTest);

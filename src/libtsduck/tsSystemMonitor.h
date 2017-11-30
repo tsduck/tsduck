@@ -80,7 +80,7 @@ namespace ts {
         bool      _terminate;  // accessed under mutex
 
         // Inherited from Thread
-        virtual void main();
+        virtual void main() override;
 
         // Prefix strings for all monitor messages
         static UString MonPrefix(const ts::Time& date);

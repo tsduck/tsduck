@@ -43,8 +43,9 @@ TSDUCK_SOURCE;
 class VariableTest: public CppUnit::TestFixture
 {
 public:
-    void setUp();
-    void tearDown();
+    virtual void setUp() override;
+    virtual void tearDown() override;
+
     void testElementaryType();
     void testClass();
     void testUninitialized();

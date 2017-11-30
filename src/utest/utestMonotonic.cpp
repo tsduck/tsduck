@@ -46,8 +46,10 @@ class MonotonicTest: public CppUnit::TestFixture
 {
 public:
     MonotonicTest();
-    void setUp();
-    void tearDown();
+
+    virtual void setUp() override;
+    virtual void tearDown() override;
+
     void testArithmetic();
     void testSysWait();
     void testWait();
@@ -149,5 +151,5 @@ void MonotonicTest::testWait()
     const ts::Time end(ts::Time::CurrentLocalTime());
 
     CPPUNIT_ASSERT(end >= start + 100 - _msPrecision);
-    CPPUNIT_ASSERT(end < start + 130);
+    CPPUNIT_ASSERT(end < start + 150);
 }

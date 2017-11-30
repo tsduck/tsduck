@@ -51,8 +51,9 @@ namespace {
 class AlgorithmTest: public CppUnit::TestFixture
 {
 public:
-    void setUp();
-    void tearDown();
+    virtual void setUp() override;
+    virtual void tearDown() override;
+
     void testEnumerateCombinations();
 
     CPPUNIT_TEST_SUITE (AlgorithmTest);

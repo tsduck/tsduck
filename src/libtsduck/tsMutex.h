@@ -91,7 +91,7 @@ namespace ts {
         //! @param [in] timeout Maximum number of milliseconds to wait for the mutex.
         //! @return True on success and false on error or when the timeout expires.
         //!
-        virtual bool acquire(MilliSecond timeout = Infinite);
+        virtual bool acquire(MilliSecond timeout = Infinite) override;
 
         //!
         //! Release the mutex.
@@ -101,7 +101,7 @@ namespace ts {
         //!
         //! @return true on success and false on error.
         //!
-        virtual bool release();
+        virtual bool release() override;
 
     private:
         // Unreachable ops
