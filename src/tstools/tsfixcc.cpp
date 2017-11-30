@@ -108,7 +108,7 @@ bool Options::fileError(const ts::UChar* message)
         return false;
     }
     else {
-        error("%s: %s", {filename, message});
+        error(u"%s: %s", {filename, message});
         return true;
     }
 }

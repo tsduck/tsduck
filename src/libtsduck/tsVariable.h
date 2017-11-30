@@ -163,7 +163,7 @@ namespace ts {
                 return *_access;
             }
             else {
-                throw UninitializedVariable("uninitialized variable");
+                throw UninitializedVariable(u"uninitialized variable");
             }
         }
 
@@ -179,7 +179,7 @@ namespace ts {
                 return *_access;
             }
             else {
-                throw UninitializedVariable("uninitialized variable");
+                throw UninitializedVariable(u"uninitialized variable");
             }
         }
 

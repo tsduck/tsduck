@@ -46,7 +46,7 @@ void ts::tsp::ListProcessors (Report& report)
     // Get list of shared library files
 
     UStringVector files;
-    ApplicationSharedLibrary::GetPluginList(files, "tsplugin_", TS_PLUGINS_PATH);
+    ApplicationSharedLibrary::GetPluginList(files, u"tsplugin_", TS_PLUGINS_PATH);
 
     // Build list of names and load shared libraries
 

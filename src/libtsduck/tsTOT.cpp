@@ -309,7 +309,7 @@ void ts::TOT::DisplaySection(TablesDisplay& display, const ts::Section& section,
 ts::XML::Element* ts::TOT::toXML(XML& xml, XML::Element* parent) const
 {
     XML::Element* root = _is_valid ? xml.addElement(parent, _xml_name) : 0;
-    xml.setDateTimeAttribute(root, "UTC_time", utc_time);
+    xml.setDateTimeAttribute(root, u"UTC_time", utc_time);
 
     // Add one local_time_offset_descriptor per set of regions.
     // Each local_time_offset_descriptor can contain up to 19 regions.
@@ -347,7 +347,7 @@ void ts::TOT::fromXML(XML& xml, const XML::Element* element)
     // Get all descriptors in a separated list.
     _is_valid =
         checkXMLName(xml, element) &&
-        xml.getDateTimeAttribute(utc_time, element, "UTC_time", true) &&
+        xml.getDateTimeAttribute(utc_time, element, u"UTC_time", true) &&
         XMLTables::FromDescriptorListXML(orig, xml, element);
 
     // Then, split local_time_offset_descriptor and others.

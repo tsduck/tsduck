@@ -135,7 +135,7 @@ bool ts::TSFileInput::openInternal (Report& report)
         _handle = ::CreateFile(_filename.toUTF8().c_str(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
         if (_handle == INVALID_HANDLE_VALUE) {
             ErrorCode error_code = LastErrorCode ();
-            report.log(_severity, "cannot open file " + _filename + ": " + ErrorCodeMessage(error_code));
+            report.log(_severity, u"cannot open file %s: %s", {_filename, ErrorCodeMessage(error_code)});
             return false;
         }
     }
@@ -143,7 +143,7 @@ bool ts::TSFileInput::openInternal (Report& report)
     // If a repeat count or initial offset is specified, the input file must be a regular file
 
     if ((_repeat != 1 || _start_offset != 0) && ::GetFileType (_handle) != FILE_TYPE_DISK) {
-        report.log(_severity, ("input file " + _filename + " is not a regular file, cannot ") + (_repeat != 1 ? "repeat" : "specify start offset"));
+        report.log(_severity, u"input file %s is not a regular file, cannot %s", {_filename, _repeat != 1 ? u"repeat" : u"specify start offset"});
         if (!_filename.empty()) {
             ::CloseHandle(_handle);
         }
@@ -157,7 +157,7 @@ bool ts::TSFileInput::openInternal (Report& report)
         ::LARGE_INTEGER offset(*(::LARGE_INTEGER*)(&_start_offset));
         if (::SetFilePointerEx(_handle, offset, NULL, FILE_BEGIN) == 0) {
             ErrorCode error_code = LastErrorCode();
-            report.log(_severity, "error seeking input file " + _filename + ": " + ErrorCodeMessage(error_code));
+            report.log(_severity, u"error seeking input file %s: %s", {_filename, ErrorCodeMessage(error_code)});
             if (!_filename.empty()) {
                 ::CloseHandle(_handle);
             }
@@ -174,7 +174,7 @@ bool ts::TSFileInput::openInternal (Report& report)
     }
     else if ((_fd = ::open(_filename.toUTF8().c_str(), O_RDONLY | O_LARGEFILE)) < 0) {
         ErrorCode error_code = LastErrorCode();
-        report.log(_severity, "cannot open file " + _filename + ": " + ErrorCodeMessage(error_code));
+        report.log(_severity, u"cannot open file %s: %s", {_filename, ErrorCodeMessage(error_code)});
         return false;
     }
 
@@ -185,14 +185,14 @@ bool ts::TSFileInput::openInternal (Report& report)
         struct stat st;
         if (::fstat(_fd, &st) < 0) {
             ErrorCode error_code = LastErrorCode ();
-            report.log(_severity, "cannot stat input file " + _filename + ": " + ErrorCodeMessage(error_code));
+            report.log(_severity, u"cannot stat input file %s: %s", {_filename, ErrorCodeMessage(error_code)});
             if (!_filename.empty()) {
                 ::close (_fd);
             }
             return false;
         }
         if (!S_ISREG(st.st_mode)) {
-            report.log(_severity, ("input file " + _filename + " is not a regular file, cannot ") + (_repeat != 1 ? "repeat" : "specify start offset"));
+            report.log(_severity, u"input file %s is not a regular file, cannot %s", {_filename, _repeat != 1 ? u"repeat" : u"specify start offset"});
             if (!_filename.empty()) {
                 ::close(_fd);
             }
@@ -204,7 +204,7 @@ bool ts::TSFileInput::openInternal (Report& report)
 
     if (_start_offset != 0 && ::lseek (_fd, off_t (_start_offset), SEEK_SET) == off_t (-1)) {
         ErrorCode error_code = LastErrorCode ();
-        report.log (_severity, "error seeking input file " + _filename + ": " + ErrorCodeMessage (error_code));
+        report.log (_severity, u"error seeking input file %s: %s", {_filename, ErrorCodeMessage(error_code)});
         if (!_filename.empty()) {
             ::close (_fd);
         }
@@ -234,7 +234,7 @@ bool ts::TSFileInput::seekInternal(uint64_t index, Report& report)
     if (::lseek(_fd, off_t(_start_offset + index), SEEK_SET) == off_t(-1)) {
 #endif
         ErrorCode error_code = LastErrorCode();
-        report.log(_severity, "error seeking input file " + _filename + ": " + ErrorCodeMessage(error_code));
+        report.log(_severity, u"error seeking input file %s: %s", {_filename, ErrorCodeMessage(error_code)});
         return false;
     }
     else {
@@ -249,18 +249,18 @@ bool ts::TSFileInput::seekInternal(uint64_t index, Report& report)
 // The file must have been open in rewindable mode.
 //----------------------------------------------------------------------------
 
-bool ts::TSFileInput::seek (PacketCounter packet_index, Report& report)
+bool ts::TSFileInput::seek(PacketCounter packet_index, Report& report)
 {
     if (!_is_open) {
-        report.log (_severity, "not open");
+        report.log(_severity, u"not open");
         return false;
     }
     else if (!_rewindable) {
-        report.log (_severity, "input file " + _filename + " is not rewindable");
+        report.log(_severity, u"input file %s is not rewindable", {_filename});
         return false;
     }
     else {
-        return seekInternal (packet_index * PKT_SIZE, report);
+        return seekInternal(packet_index * PKT_SIZE, report);
     }
 }
 
@@ -269,18 +269,18 @@ bool ts::TSFileInput::seek (PacketCounter packet_index, Report& report)
 // Close file.
 //----------------------------------------------------------------------------
 
-bool ts::TSFileInput::close (Report& report)
+bool ts::TSFileInput::close(Report& report)
 {
     if (!_is_open) {
-        report.log (_severity, "not open");
+        report.log(_severity, u"not open");
         return false;
     }
 
     if (!_filename.empty()) {
 #if defined (TS_WINDOWS)
-        ::CloseHandle (_handle);
+        ::CloseHandle(_handle);
 #else
-        ::close (_fd);
+        ::close(_fd);
 #endif
     }
 
@@ -297,10 +297,10 @@ bool ts::TSFileInput::close (Report& report)
 // Returning zero means error or end of file repetition.
 //----------------------------------------------------------------------------
 
-size_t ts::TSFileInput::read (TSPacket* buffer, size_t max_packets, Report& report)
+size_t ts::TSFileInput::read(TSPacket* buffer, size_t max_packets, Report& report)
 {
     if (!_is_open) {
-        report.log (_severity, "not open");
+        report.log(_severity, u"not open");
         return 0;
     }
 

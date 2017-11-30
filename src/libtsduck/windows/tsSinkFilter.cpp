@@ -336,7 +336,7 @@ size_t ts::SinkFilter::Read(void* buffer, size_t buffer_size, MilliSecond timeou
         // Locate data area in the media sample.
         ::LONG ms_size = ms->GetActualDataLength();
         ::BYTE* ms_buffer;
-        if (!ComSuccess(ms->GetPointer(&ms_buffer), "IMediaSample::GetPointer", _report)) {
+        if (!ComSuccess(ms->GetPointer(&ms_buffer), u"IMediaSample::GetPointer", _report)) {
             // Error getting media sample address
             ms_size = 0;
         }

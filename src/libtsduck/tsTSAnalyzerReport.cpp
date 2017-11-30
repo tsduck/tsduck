@@ -554,7 +554,7 @@ void ts::TSAnalyzerReport::reportErrors(std::ostream& stm, const UString& title)
 
     // Header
     stm << "TITLE: ERROR ANALYSIS REPORT" << std::endl;
-    if (title != "") {
+    if (!title.empty()) {
         stm << "TITLE: " << title << std::endl;
     }
     if (_ts_id_valid) {
@@ -853,7 +853,7 @@ void ts::TSAnalyzerReport::reportNormalized(std::ostream& stm, const UString& ti
         if (pc.carry_video) {
             stm << "video:";
         }
-        if (pc.language != "") {
+        if (!pc.language.empty()) {
             stm << "language=" << pc.language << ":";
         }
         stm << "servcount=" << pc.services.size() << ":";

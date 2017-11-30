@@ -100,7 +100,7 @@ bool ts::ContinuityPlugin::start()
     // Command line arguments
     _tag = value(u"tag");
     if (!_tag.empty()) {
-        _tag += ": ";
+        _tag += u": ";
     }
 
     // Preset continuity counters to invalid values
@@ -129,7 +129,7 @@ ts::ProcessorPlugin::Status ts::ContinuityPlugin::processPacket (TSPacket& pkt, 
         _cc[pid] != cc &&               // not a duplicated packet
         ((_cc[pid] + 1) & 0x0F) != cc)  // wrong CC
     {
-        tsp->info("%sTS: %'d, PID: 0x%X, missing: %d", {_tag, _packet_count, pid, (cc < _cc[pid] ? 16 : 0) + cc - _cc[pid] - 1});
+        tsp->info(u"%sTS: %'d, PID: 0x%X, missing: %d", {_tag, _packet_count, pid, (cc < _cc[pid] ? 16 : 0) + cc - _cc[pid] - 1});
     }
 
     _packet_count++;

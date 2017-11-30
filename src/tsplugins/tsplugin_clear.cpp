@@ -92,8 +92,8 @@ TSPLUGIN_DECLARE_PROCESSOR(ts::ClearPlugin)
 // Constructor
 //----------------------------------------------------------------------------
 
-ts::ClearPlugin::ClearPlugin (TSP* tsp_) :
-    ProcessorPlugin (tsp_, "Extract clear (non scrambled) sequences of a transport stream.", "[options]"),
+ts::ClearPlugin::ClearPlugin(TSP* tsp_) :
+    ProcessorPlugin(tsp_, u"Extract clear (non scrambled) sequences of a transport stream.", u"[options]"),
     _abort(false),
     _service(),
     _pass_packets(false),

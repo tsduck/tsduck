@@ -103,7 +103,7 @@ bool ts::TelnetConnection::waitForChunk(const std::string eol, std::string& foun
 
 bool ts::TelnetConnection::waitForPrompt(const AbortInterface* abort, Report& report)
 {
-    std::string found = "";
+    std::string found;
     bool result = waitForChunk(_prompt, found, abort, report);
     return result;
 }

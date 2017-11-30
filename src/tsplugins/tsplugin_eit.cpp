@@ -279,7 +279,7 @@ bool ts::EITPlugin::stop()
         << std::endl;
 
     // Summary by service
-    const UString h_name("Name");
+    const UString h_name(u"Name");
     name_width = std::max(name_width, h_name.length());
     out << UString::Format(u"A/O  TS Id   Srv Id  %-*s  EITp/f  EITs  EPG days", {name_width, u"Name"}) << std::endl
         << UString::Format(u"---  ------  ------  %s  ------  ----  --------", {UString(name_width, u'-')}) << std::endl;

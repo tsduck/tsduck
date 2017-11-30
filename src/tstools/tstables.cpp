@@ -51,7 +51,7 @@ struct Options: public ts::Args
 };
 
 Options::Options(int argc, char *argv[]) :
-    ts::Args("MPEG Transport Stream PSI/SI Tables Collector.", "[options] [filename]"),
+    ts::Args(u"MPEG Transport Stream PSI/SI Tables Collector.", u"[options] [filename]"),
     infile(),
     logger(),
     display()

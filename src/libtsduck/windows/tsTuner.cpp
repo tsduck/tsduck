@@ -495,7 +495,7 @@ bool ts::Tuner::getCurrentTuning(TunerParameters& params, bool reset_unknown, Re
         }
 
         default: {
-            report.error(u"cannot convert BDA tuning parameters to " + TunerTypeEnum.name(_tuner_type) + " parameters");
+            report.error(u"cannot convert BDA tuning parameters to %s parameters", {TunerTypeEnum.name(_tuner_type)});
             return false;
         }
     }
@@ -543,7 +543,7 @@ bool ts::Tuner::internalTune(const TunerParameters& params, Report& report)
 
     // Tune to transponder
     ::HRESULT hr = _tuner->put_TuneRequest(tune_request.pointer());
-    return ComSuccess(hr, "DirectShow tuning error", report);
+    return ComSuccess(hr, u"DirectShow tuning error", report);
 }
 
 
@@ -666,7 +666,7 @@ std::ostream& ts::Tuner::displayStatus(std::ostream& strm, const UString& margin
         strm << margin << "Signal strength:  " << UString::Decimal(strength) << " milli dB" << std::endl;
     }
     strm << std::endl << margin << "DirectShow graph:" << std::endl;
-    _graph.display(strm, report, margin + "  ", true);
+    _graph.display(strm, report, margin + u"  ", true);
 
     return strm;
 }
@@ -734,7 +734,7 @@ bool ts::Tuner::FindTuners(Tuner* tuner, TunerPtrVector* tuner_list, Report& rep
 
         // Get friendly name of this tuner filter
         const UString tuner_name(GetStringPropertyBag(tuner_monikers[dvb_device_current].pointer(), L"FriendlyName", debug_report));
-        report.debug(u"found tuner filter \"" + tuner_name + "\"");
+        report.debug(u"found tuner filter \"%s\"", {tuner_name});
 
         // If a device name was specified, filter this name.
         if (tuner != 0 && !tuner->_device_name.empty()) {
@@ -832,7 +832,7 @@ bool ts::Tuner::buildGraph(::IMoniker* tuner_moniker, Report& report)
     }
     ComPtr<::IEnumTuningSpaces> tsEnum;
     ::HRESULT hr = tsContainer->get_EnumTuningSpaces(tsEnum.creator());
-    if (!ComSuccess(hr, "ITuningSpaceContainer::get_EnumTuningSpaces", report)) {
+    if (!ComSuccess(hr, u"ITuningSpaceContainer::get_EnumTuningSpaces", report)) {
         return false;
     }
 
@@ -1064,7 +1064,7 @@ bool ts::Tuner::buildCaptureGraph(const ComPtr<::IBaseFilter>& base_filter, Repo
     ComPtr<::IEnumMoniker> enum_tif;
     if (ok) {
         ::HRESULT hr = enum_devices->CreateClassEnumerator(KSCATEGORY_BDA_TRANSPORT_INFORMATION, enum_tif.creator(), 0);
-        ok = ComSuccess(hr, "CreateClassEnumerator (for TIF)", report) && hr == S_OK;
+        ok = ComSuccess(hr, u"CreateClassEnumerator (for TIF)", report) && hr == S_OK;
     }
 
     // Loop on all enumerated TIF

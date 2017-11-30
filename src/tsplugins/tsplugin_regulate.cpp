@@ -126,7 +126,7 @@ ts::RegulatePlugin::RegulatePlugin(TSP* tsp_) :
             u"  --packet-burst value\n"
             u"      Number of packets to burst at a time. Does not modify the average\n"
             u"      output bitrate but influence smoothing and CPU load. The default\n"
-            u"      is " TS_STRINGIFY(DEF_PACKET_BURST) " packets.\n"
+            u"      is " TS_STRINGIFY(DEF_PACKET_BURST) u" packets.\n"
             u"\n"
             u"  --version\n"
             u"      Display the version number.\n");

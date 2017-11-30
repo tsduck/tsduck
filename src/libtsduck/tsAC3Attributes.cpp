@@ -272,7 +272,7 @@ int ts::AC3Attributes::extractEAC3bsmod (const uint8_t* data, size_t size)
 ts::UString ts::AC3Attributes::toString() const
 {
     if (!_is_valid) {
-        return "";
+        return UString();
     }
 
     UString desc(_eac3 ? u"E-" : u"");

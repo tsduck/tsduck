@@ -67,24 +67,24 @@ namespace ts {
         //! @return The previous value which was associated to that name or a null
         //! pointer when not previously assigned.
         //!
-        static ObjectPtr StoreInRepository(const std::string& name, const ObjectPtr& value);
+        static ObjectPtr StoreInRepository(const UString& name, const ObjectPtr& value);
 
         //!
         //! Get the safe pointer to an Object in the static thread-safe repository.
         //! @param [in] name Name which is associated to the object.
         //! @return A safe-pointer to the stored object or a null pointer when not found.
         //!
-        static ObjectPtr RetrieveFromRepository(const std::string& name);
+        static ObjectPtr RetrieveFromRepository(const UString& name);
 
         //!
         //! Erase an object from the static thread-safe repository.
         //! @param [in] name Name which is associated to the object to erase.
         //!
-        static void EraseFromRepository(const std::string& name);
+        static void EraseFromRepository(const UString& name);
 
     private:
         // Static thread-safe repository of Object
-        static std::map<std::string, ObjectPtr> _repository;
+        static std::map<UString, ObjectPtr> _repository;
 
         // Mutex protecting access to the static thread-safe repository of Object
         static Mutex _repository_mutex;

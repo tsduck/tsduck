@@ -124,6 +124,6 @@ void ts::ApplicationSharedLibrary::GetPluginList(UStringVector& files, const USt
     // Try in each directory.
     for (UStringList::const_iterator it = dirs.begin(); it != dirs.end(); ++it) {
         // Get list of shared library files matching the requested pattern in this directory.
-        ExpandWildcardAndAppend(files, *it + PathSeparator + prefix + "*" + TS_SHARED_LIB_SUFFIX);
+        ExpandWildcardAndAppend(files, *it + PathSeparator + prefix + u"*" TS_SHARED_LIB_SUFFIX);
     }
 }

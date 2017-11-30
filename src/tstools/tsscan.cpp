@@ -145,7 +145,7 @@ Options::Options(int argc, char *argv[]) :
             u"\n"
             u"  --first-offset value\n"
             u"      For UHF-band scanning, specify the first offset to scan (default: " +
-            ts::UString::Decimal(DEFAULT_FIRST_OFFSET, 0, true, ",", true) + u")\n"
+            ts::UString::Decimal(DEFAULT_FIRST_OFFSET, 0, true, u",", true) + u")\n"
             u"      on each channel.\n"
             u"\n"
             u"  -g\n"
@@ -162,7 +162,7 @@ Options::Options(int argc, char *argv[]) :
             u"\n"
             u"  --last-offset value\n"
             u"      For UHF-band scanning, specify the last offset to scan (default: " +
-            ts::UString::Decimal(DEFAULT_LAST_OFFSET, 0, true, ",", true) + u")\n"
+            ts::UString::Decimal(DEFAULT_LAST_OFFSET, 0, true, u",", true) + u")\n"
             u"      on each channel.\n"
             u"\n"
             u"  --min-quality value\n"
@@ -496,7 +496,7 @@ namespace {
     {
         // UHF means DVB-T
         if (tuner.tunerType() != ts::DVB_T) {
-            opt.error(u"UHF scanning needs DVB-T, tuner " + tuner.deviceName() + " is " + ts::TunerTypeEnum.name(tuner.tunerType()));
+            opt.error(u"UHF scanning needs DVB-T, tuner %s is %s", {tuner.deviceName(), ts::TunerTypeEnum.name(tuner.tunerType())});
             return;
         }
 
@@ -595,14 +595,14 @@ namespace {
             NITScan(opt, tuner, all_services);
         }
         else {
-            opt.fatal("inconsistent options, internal error");
+            opt.fatal(u"inconsistent options, internal error");
         }
 
         // Report global list of services if required
         if (opt.global_services) {
             all_services.sort(ts::Service::Sort1);
             std::cout << std::endl;
-            ts::Service::Display(std::cout, "", all_services);
+            ts::Service::Display(std::cout, u"", all_services);
         }
     }
 }

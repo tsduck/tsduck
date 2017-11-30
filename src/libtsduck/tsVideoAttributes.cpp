@@ -69,7 +69,7 @@ ts::VideoAttributes::VideoAttributes() :
 ts::UString ts::VideoAttributes::toString() const
 {
     if (!_is_valid) {
-        return "";
+        return UString();
     }
 
     UString desc(UString::Format(u"%dx%d", {_hsize, _vsize}));
@@ -99,7 +99,7 @@ ts::UString ts::VideoAttributes::frameRateName() const
     size_t fr100;
 
     if (!_is_valid || _fr_div == 0) {
-        return "";
+        return UString();
     }
     else if ((fr100 = frameRate100()) % 100 == 0) {
         return UString::Format(u"@%d Hz", {fr100 / 100});

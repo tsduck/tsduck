@@ -73,7 +73,7 @@ TSPLUGIN_DECLARE_PROCESSOR(ts::TablesPlugin)
 //----------------------------------------------------------------------------
 
 ts::TablesPlugin::TablesPlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, "Collect PSI/SI Tables.", "[options]"),
+    ProcessorPlugin(tsp_, u"Collect PSI/SI Tables.", u"[options]"),
     _display_options(),
     _logger_options(),
     _display(_display_options, *tsp),

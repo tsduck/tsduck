@@ -827,7 +827,7 @@ namespace ts {
         //! @return The big string containing all segments and separators.
         //!
         template <class ITERATOR>
-        static UString Join(ITERATOR begin, ITERATOR end, const UString& separator = UString(", "));
+        static UString Join(ITERATOR begin, ITERATOR end, const UString& separator = UString(u", "));
 
         //!
         //! Join a container of strings into one big string.
@@ -838,7 +838,7 @@ namespace ts {
         //! @return The big string containing all segments and separators.
         //!
         template <class CONTAINER>
-        static UString Join(const CONTAINER& container, const UString& separator = UString(", "))
+        static UString Join(const CONTAINER& container, const UString& separator = UString(u", "))
         {
             return Join(container.begin(), container.end(), separator);
         }

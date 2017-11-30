@@ -165,7 +165,7 @@ namespace {
         // Display verbose information
         if (opt.verbose) {
             std::cout << std::endl;
-            tuner.displayStatus(std::cout, "  ", opt);
+            tuner.displayStatus(std::cout, u"  ", opt);
             std::cout << std::endl;
         }
     }

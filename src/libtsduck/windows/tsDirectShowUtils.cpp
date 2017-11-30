@@ -41,7 +41,7 @@ TSDUCK_SOURCE;
 // Put the value of a property (named "type") into a COM object.
 // Report errors through a variable named report (must be accessible).
 // Return true on success, false on error.
-#define PUT(obj,type,value) ComSuccess((obj)->put_##type(value), "error setting " #type, report)
+#define PUT(obj,type,value) ComSuccess((obj)->put_##type(value), u"error setting " #type, report)
 
 
 //-----------------------------------------------------------------------------
@@ -64,7 +64,7 @@ bool ts::EnumerateDevicesByClass(const ::CLSID& clsid, std::vector <ComPtr <::IM
     // Enumerate devices
     ComPtr <::IEnumMoniker> enum_monikers;
     ::HRESULT hr = enum_devices->CreateClassEnumerator(clsid, enum_monikers.creator(), 0);
-    if (!ComSuccess(hr, "CreateClassEnumerator", report)) {
+    if (!ComSuccess(hr, u"CreateClassEnumerator", report)) {
         return false;
     }
     if (hr != S_OK) {
@@ -227,7 +227,7 @@ bool ts::CreateTuneRequest(ComPtr<::ITuneRequest>& request, ::ITuningSpace* tuni
     // Create a DirectShow tune request
     ComPtr<::ITuneRequest> tune_request;
     ::HRESULT hr = tuning_space->CreateTuneRequest(tune_request.creator());
-    if (!ComSuccess(hr, "cannot create DirectShow tune request", report)) {
+    if (!ComSuccess(hr, u"cannot create DirectShow tune request", report)) {
         return false;
     }
     assert(!tune_request.isNull());
@@ -251,7 +251,7 @@ bool ts::CreateTuneRequest(ComPtr<::ITuneRequest>& request, ::ITuningSpace* tuni
 
     // Set the locator in the tune request
     hr = tune_request->put_Locator(locator.pointer());
-    if (!ComSuccess(hr, "ITuneRequest::put_Locator", report)) {
+    if (!ComSuccess(hr, u"ITuneRequest::put_Locator", report)) {
         return false;
     }
 
@@ -283,7 +283,7 @@ bool ts::CreateLocator(ComPtr<::IDigitalLocator>& locator, const TunerParameters
         return CreateLocatorDVBC(locator, *dvb_c, report);
     }
     else {
-        report.error(u"cannot convert " + TunerTypeEnum.name(params.tunerType()) + " parameters to DirectShow tuning parameters");
+        report.error(u"cannot convert %s parameters to DirectShow tuning parameters", {TunerTypeEnum.name(params.tunerType())});
         return false;
     }
 }
@@ -299,14 +299,14 @@ bool ts::CreateLocatorDVBT(ComPtr<::IDigitalLocator>& locator, const TunerParame
     ComPtr<::IDVBTLocator> loc(CLSID_DVBTLocator, ::IID_IDVBTLocator, report);
 
     if (loc.isNull() ||
-        !CheckModEnum(params.inversion, "spectral inversion", SpectralInversionEnum, report) ||
-        !CheckModEnum(params.bandwidth, "bandwidth", BandWidthEnum, report) ||
-        !CheckModEnum(params.fec_hp, "FEC", InnerFECEnum, report) ||
-        !CheckModEnum(params.fec_lp, "FEC", InnerFECEnum, report) ||
-        !CheckModEnum(params.modulation, "constellation", ModulationEnum, report) ||
-        !CheckModEnum(params.transmission_mode, "transmission mode", TransmissionModeEnum, report) ||
-        !CheckModEnum(params.guard_interval, "guard interval", GuardIntervalEnum, report) ||
-        !CheckModEnum(params.hierarchy, "hierarchy", HierarchyEnum, report) ||
+        !CheckModEnum(params.inversion, u"spectral inversion", SpectralInversionEnum, report) ||
+        !CheckModEnum(params.bandwidth, u"bandwidth", BandWidthEnum, report) ||
+        !CheckModEnum(params.fec_hp, u"FEC", InnerFECEnum, report) ||
+        !CheckModEnum(params.fec_lp, u"FEC", InnerFECEnum, report) ||
+        !CheckModEnum(params.modulation, u"constellation", ModulationEnum, report) ||
+        !CheckModEnum(params.transmission_mode, u"transmission mode", TransmissionModeEnum, report) ||
+        !CheckModEnum(params.guard_interval, u"guard interval", GuardIntervalEnum, report) ||
+        !CheckModEnum(params.hierarchy, u"hierarchy", HierarchyEnum, report) ||
         !PUT(loc, CarrierFrequency, long(params.frequency / 1000)) ||  // frequency in kHz
         !PUT(loc, Modulation, ::ModulationType(params.modulation)) ||
         !PUT(loc, Bandwidth, long(params.bandwidth)) ||
@@ -340,9 +340,9 @@ bool ts::CreateLocatorDVBC(ComPtr<::IDigitalLocator>& locator, const TunerParame
     ComPtr<::IDVBCLocator> loc(CLSID_DVBCLocator, ::IID_IDVBCLocator, report);
 
     if (loc.isNull() ||
-        !CheckModEnum(params.inversion, "spectral inversion", SpectralInversionEnum, report) ||
-        !CheckModEnum(params.inner_fec, "FEC", InnerFECEnum, report) ||
-        !CheckModEnum(params.modulation, "modulation", ModulationEnum, report) ||
+        !CheckModEnum(params.inversion, u"spectral inversion", SpectralInversionEnum, report) ||
+        !CheckModEnum(params.inner_fec, u"FEC", InnerFECEnum, report) ||
+        !CheckModEnum(params.modulation, u"modulation", ModulationEnum, report) ||
         !PUT(loc, CarrierFrequency, long(params.frequency / 1000)) ||  // frequency in kHz
         !PUT(loc, Modulation, ::ModulationType(params.modulation)) ||
         !PUT(loc, InnerFEC, ::BDA_FEC_VITERBI) ||
@@ -402,9 +402,9 @@ bool ts::CreateLocatorDVBS(ComPtr<::IDigitalLocator>& locator, const TunerParame
     ComPtr<::IDVBSLocator2> loc(CLSID_DVBSLocator, ::IID_IDVBSLocator2, report);
 
     if (loc.isNull() ||
-        !CheckModEnum(params.modulation, "modulation", ModulationEnum, report) ||
-        !CheckModEnum(params.inner_fec, "FEC", InnerFECEnum, report) ||
-        !CheckModEnum(params.polarity, "polarity", PolarizationEnum, report) ||
+        !CheckModEnum(params.modulation, u"modulation", ModulationEnum, report) ||
+        !CheckModEnum(params.inner_fec, u"FEC", InnerFECEnum, report) ||
+        !CheckModEnum(params.polarity, u"polarity", PolarizationEnum, report) ||
         !PUT(loc, CarrierFrequency, long(params.frequency / 1000)) ||  // frequency in kHz
         !PUT(loc, Modulation, ::ModulationType(params.modulation)) ||
         !PUT(loc, SignalPolarisation, ::Polarisation(params.polarity)) ||
@@ -422,8 +422,8 @@ bool ts::CreateLocatorDVBS(ComPtr<::IDigitalLocator>& locator, const TunerParame
 
     // DVB-S2 specific parameters
     if (params.delivery_system == DS_DVB_S2 &&
-        (!CheckModEnum(params.pilots, "pilot", PilotEnum, report) ||
-         !CheckModEnum(params.roll_off, "roll-off factor", RollOffEnum, report) ||
+        (!CheckModEnum(params.pilots, u"pilot", PilotEnum, report) ||
+         !CheckModEnum(params.roll_off, u"roll-off factor", RollOffEnum, report) ||
          !PUT(loc, SignalPilot, ::Pilot(params.pilots)) ||
          !PUT(loc, SignalRollOff, ::RollOff(params.roll_off))))
     {

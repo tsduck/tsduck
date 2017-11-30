@@ -134,14 +134,14 @@ bool ts::DVBInput::start()
     if (!_tuner_args.configureTuner(_tuner, *tsp)) {
         return false;
     }
-    tsp->verbose(u"using " + _tuner.deviceName() + " (" + TunerTypeEnum.name(_tuner.tunerType()) + ")");
+    tsp->verbose(u"using %s (%s)", {_tuner.deviceName(), TunerTypeEnum.name(_tuner.tunerType())});
 
     // Tune to the specified frequency.
     if (!_tuner_args.tune(_tuner, _tuner_params, *tsp)) {
         stop();
         return false;
     }
-    tsp->verbose(u"tuned to transponder " + _tuner_params->toPluginOptions());
+    tsp->verbose(u"tuned to transponder %s", {_tuner_params->toPluginOptions()});
 
     // Start receiving packets
     tsp->debug(u"starting tuner reception");
@@ -188,9 +188,9 @@ ts::BitRate ts::DVBInput::getBitrate()
     // When bitrate changes, the modulation parameters have changed
     if (bitrate != _previous_bitrate && tsp->verbose()) {
         // Store the new parameters in a global repository (may be used by other plugins)
-        TunerParameters* new_params (TunerParameters::Factory (_tuner_params->tunerType()));
-        new_params->copy (*_tuner_params);
-        Object::StoreInRepository ("tsp.dvb.params", ObjectPtr (new_params));
+        TunerParameters* new_params(TunerParameters::Factory(_tuner_params->tunerType()));
+        new_params->copy(*_tuner_params);
+        Object::StoreInRepository(u"tsp.dvb.params", ObjectPtr(new_params));
         // Display new tuning info
         tsp->verbose(u"actual tuning options: " + new_params->toPluginOptions());
     }

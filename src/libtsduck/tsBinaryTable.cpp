@@ -488,7 +488,7 @@ bool ts::BinaryTable::LoadFile(BinaryTablePtrVector& tables, const UString& file
     }
 
     // Load the section file
-    ReportWithPrefix report_internal(report, file_name + ": ");
+    ReportWithPrefix report_internal(report, file_name + u": ");
     const bool success = LoadFile(tables, strm, crc_op, report_internal);
     strm.close();
     return success;
@@ -519,7 +519,7 @@ bool ts::BinaryTable::SaveFile(const BinaryTablePtrVector& tables, const UString
     const std::string file_name_utf8(file_name.toUTF8());
     std::ofstream outfile(file_name_utf8.c_str(), std::ios::out | std::ios::binary);
     if (!outfile) {
-        report.error(u"error creating " + file_name);
+        report.error(u"error creating %s", {file_name});
         return false;
     }
     else {

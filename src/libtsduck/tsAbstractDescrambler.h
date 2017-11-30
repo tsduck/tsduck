@@ -67,9 +67,9 @@ namespace ts {
         //! @param [in] help A multi-line string describing the usage of options and parameters.
         //!
         AbstractDescrambler(TSP* tsp,
-                            const UString& description = "",
-                            const UString& syntax = "",
-                            const UString& help = "");
+                            const UString& description = UString(),
+                            const UString& syntax = UString(),
+                            const UString& help = UString());
 
         // Implementation of ProcessorPlugin interface.
         // If overridden by descrambler subclass, superclass must be explicitely invoked.

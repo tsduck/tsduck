@@ -293,7 +293,7 @@ void ts::SDTPlugin::processSDT(SDT& sdt)
             sv.EITpf_present = false;
             sv.running_status = 4; // running
             sv.CA_controlled = false;
-            sv.descs.add(ServiceDescriptor(0x01, "", ""));
+            sv.descs.add(ServiceDescriptor(0x01, u"", u""));
             sdt.services.insert(std::make_pair(_service.getId(), sv));
         }
 

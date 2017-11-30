@@ -187,8 +187,8 @@ ts::IPInput::IPInput(TSP* tsp_) :
 // Output constructor
 //----------------------------------------------------------------------------
 
-ts::IPOutput::IPOutput (TSP* tsp_) :
-    OutputPlugin(tsp_, "Send TS packets using UDP/IP, multicast or unicast.", "[options] address:port"),
+ts::IPOutput::IPOutput(TSP* tsp_) :
+    OutputPlugin(tsp_, u"Send TS packets using UDP/IP, multicast or unicast.", u"[options] address:port"),
     _sock(false, *tsp_),
     _pkt_burst(DEF_PACKET_BURST)
 {
@@ -198,37 +198,37 @@ ts::IPOutput::IPOutput (TSP* tsp_) :
     option(u"ttl",           't', POSITIVE);
 
     setHelp(u"Parameter:\n"
-             u"  The parameter address:port describes the destination for UDP packets.\n"
-             u"  The 'address' specifies an IP address which can be either unicast or\n"
-             u"  multicast. It can be also a host name that translates to an IP address.\n"
-             u"  The 'port' specifies the destination UDP port.\n"
-             u"\n"
-             u"Options:\n"
-             u"\n"
-             u"  --help\n"
-             u"      Display this help text.\n"
-             u"\n"
-             u"  -l address\n"
-             u"  --local-address address\n"
-             u"      When the destination is a multicast address, specify the IP address\n"
-             u"      of the outgoing local interface. It can be also a host name that\n"
-             u"      translates to a local address.\n"
-             u"\n"
-             u"  -p value\n"
-             u"  --packet-burst value\n"
-             u"      Specifies how many TS packets should be grouped into a UDP packet.\n"
-             u"      The default is " TS_STRINGIFY (DEF_PACKET_BURST) ", the maximum is "
-             TS_STRINGIFY (MAX_PACKET_BURST) ".\n"
-             u"\n"
-             u"  -t value\n"
-             u"  --ttl value\n"
-             u"      Specifies the TTL (Time-To-Live) socket option. The actual option\n"
-             u"      is either \"Unicast TTL\" or \"Multicast TTL\", depending on the\n"
-             u"      destination address. Remember that the default Multicast TTL is 1\n"
-             u"      on most systems.\n"
-             u"\n"
-             u"  --version\n"
-             u"      Display the version number.\n");
+            u"  The parameter address:port describes the destination for UDP packets.\n"
+            u"  The 'address' specifies an IP address which can be either unicast or\n"
+            u"  multicast. It can be also a host name that translates to an IP address.\n"
+            u"  The 'port' specifies the destination UDP port.\n"
+            u"\n"
+            u"Options:\n"
+            u"\n"
+            u"  --help\n"
+            u"      Display this help text.\n"
+            u"\n"
+            u"  -l address\n"
+            u"  --local-address address\n"
+            u"      When the destination is a multicast address, specify the IP address\n"
+            u"      of the outgoing local interface. It can be also a host name that\n"
+            u"      translates to a local address.\n"
+            u"\n"
+            u"  -p value\n"
+            u"  --packet-burst value\n"
+            u"      Specifies how many TS packets should be grouped into a UDP packet.\n"
+            u"      The default is " TS_STRINGIFY(DEF_PACKET_BURST) u", the maximum is "
+            TS_STRINGIFY(MAX_PACKET_BURST) u".\n"
+            u"\n"
+            u"  -t value\n"
+            u"  --ttl value\n"
+            u"      Specifies the TTL (Time-To-Live) socket option. The actual option\n"
+            u"      is either \"Unicast TTL\" or \"Multicast TTL\", depending on the\n"
+            u"      destination address. Remember that the default Multicast TTL is 1\n"
+            u"      on most systems.\n"
+            u"\n"
+            u"  --version\n"
+            u"      Display the version number.\n");
 }
 
 

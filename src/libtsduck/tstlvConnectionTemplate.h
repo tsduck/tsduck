@@ -39,14 +39,14 @@
 //----------------------------------------------------------------------------
 
 template <class MUTEX>
-ts::tlv::Connection<MUTEX>::Connection (const Protocol* protocol, bool auto_error_response, size_t max_invalid_msg) :
-    ts::TCPConnection (),
-    _protocol (protocol),
-    _auto_error_response (auto_error_response),
-    _max_invalid_msg (max_invalid_msg),
-    _invalid_msg_count (0),
-    _send_mutex (),
-    _receive_mutex ()
+ts::tlv::Connection<MUTEX>::Connection(const Protocol* protocol, bool auto_error_response, size_t max_invalid_msg) :
+    ts::TCPConnection(),
+    _protocol(protocol),
+    _auto_error_response(auto_error_response),
+    _max_invalid_msg(max_invalid_msg),
+    _invalid_msg_count(0),
+    _send_mutex(),
+    _receive_mutex()
 {
 }
 
@@ -82,7 +82,7 @@ template <class MUTEX>
 bool ts::tlv::Connection<MUTEX>::send (const Message& msg, Report& report)
 {
     if (report.debug()) {
-        report.debug(u"sending message to " + peerName() + "\n" + msg.dump (4));
+        report.debug(u"sending message to %s\n%s", {peerName(), msg.dump(4)});
     }
 
     ByteBlockPtr bbp (new ByteBlock);
@@ -132,7 +132,7 @@ bool ts::tlv::Connection<MUTEX>::receive (MessagePtr& msg, const AbortInterface*
             _invalid_msg_count = 0;
             mf.factory (msg);
             if (report.debug() && !msg.isNull()) {
-                report.debug(u"received message from " + peerName() + "\n" + msg->dump (4));
+                report.debug(u"received message from %s\n%s"{peerName(), msg->dump(4)});
             }
             return true;
         }
@@ -151,7 +151,7 @@ bool ts::tlv::Connection<MUTEX>::receive (MessagePtr& msg, const AbortInterface*
 
         // If invalid message max has been reached, break the connection
         if (_max_invalid_msg > 0 && _invalid_msg_count >= _max_invalid_msg) {
-            report.error(u"too many invalid messages from " + peerName() + ", disconnecting");
+            report.error(u"too many invalid messages from %s, disconnecting", {peerName()});
             disconnect (report);
             return false;
         }

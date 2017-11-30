@@ -579,13 +579,13 @@ bool ts::Tuner::getCurrentTuning(TunerParameters& params, bool reset_unknown, Re
             break;
         }
         default: {
-            report.error(u"cannot convert Linux DVB parameters to " + TunerTypeEnum.name(_tuner_type) + " parameters");
+            report.error(u"cannot convert Linux DVB parameters to %s parameters", {TunerTypeEnum.name(_tuner_type)});
             return false;
         }
     }
 
     if (error != SYS_SUCCESS) {
-        report.error(u"error getting DVB frontend parameters : " + ErrorCodeMessage(error));
+        report.error(u"error getting DVB frontend parameters : %s", {ErrorCodeMessage(error)});
         return false;
     }
 
@@ -614,7 +614,7 @@ void ts::Tuner::discardFrontendEvents(Report& report)
 
 bool ts::Tuner::tune(DTVProperties& props, Report& report)
 {
-    report.debug(u"tuning on " + _frontend_name);
+    report.debug(u"tuning on %s", {_frontend_name});
     props.report(report, Severity::Debug);
     if (::ioctl(_frontend_fd, FE_SET_PROPERTY, props.getIoctlParam()) < 0) {
         report.error(u"tuning error on %s: %s", {_frontend_name, ErrorCodeMessage()});
@@ -738,11 +738,11 @@ bool ts::Tuner::tuneDVBS(const TunerParametersDVBS& params, Report& report)
     }
 
     // End of dish setup, now configure the tuner
-    if (!CheckModEnum(params.inversion, "spectral inversion", SpectralInversionEnum, report) ||
-        !CheckModEnum(params.inner_fec, "FEC", InnerFECEnum, report) ||
-        !CheckModEnum(params.modulation, "modulation", ModulationEnum, report) ||
-        !CheckModEnum(params.pilots, "pilots", PilotEnum, report) ||
-        !CheckModEnum(params.roll_off, "roll-off factor", RollOffEnum, report)) {
+    if (!CheckModEnum(params.inversion, u"spectral inversion", SpectralInversionEnum, report) ||
+        !CheckModEnum(params.inner_fec, u"FEC", InnerFECEnum, report) ||
+        !CheckModEnum(params.modulation, u"modulation", ModulationEnum, report) ||
+        !CheckModEnum(params.pilots, u"pilots", PilotEnum, report) ||
+        !CheckModEnum(params.roll_off, u"roll-off factor", RollOffEnum, report)) {
         return false;
     }
 
@@ -772,9 +772,9 @@ bool ts::Tuner::tuneDVBS(const TunerParametersDVBS& params, Report& report)
 
 bool ts::Tuner::tuneDVBC(const TunerParametersDVBC& params, Report& report)
 {
-    if (!CheckModEnum(params.inversion, "spectral inversion", SpectralInversionEnum, report) ||
-        !CheckModEnum(params.inner_fec, "FEC", InnerFECEnum, report) ||
-        !CheckModEnum(params.modulation, "modulation", ModulationEnum, report)) {
+    if (!CheckModEnum(params.inversion, u"spectral inversion", SpectralInversionEnum, report) ||
+        !CheckModEnum(params.inner_fec, u"FEC", InnerFECEnum, report) ||
+        !CheckModEnum(params.modulation, u"modulation", ModulationEnum, report)) {
         return false;
     }
 
@@ -801,14 +801,14 @@ bool ts::Tuner::tuneDVBC(const TunerParametersDVBC& params, Report& report)
 
 bool ts::Tuner::tuneDVBT(const TunerParametersDVBT& params, Report& report)
 {
-    if (!CheckModEnum(params.inversion, "spectral inversion", SpectralInversionEnum, report) ||
-        !CheckModEnum(params.bandwidth, "bandwidth", BandWidthEnum, report) ||
-        !CheckModEnum(params.fec_hp, "FEC", InnerFECEnum, report) ||
-        !CheckModEnum(params.fec_lp, "FEC", InnerFECEnum, report) ||
-        !CheckModEnum(params.modulation, "constellation", ModulationEnum, report) ||
-        !CheckModEnum(params.transmission_mode, "transmission mode", TransmissionModeEnum, report) ||
-        !CheckModEnum(params.guard_interval, "guard interval", GuardIntervalEnum, report) ||
-        !CheckModEnum(params.hierarchy, "hierarchy", HierarchyEnum, report)) {
+    if (!CheckModEnum(params.inversion, u"spectral inversion", SpectralInversionEnum, report) ||
+        !CheckModEnum(params.bandwidth, u"bandwidth", BandWidthEnum, report) ||
+        !CheckModEnum(params.fec_hp, u"FEC", InnerFECEnum, report) ||
+        !CheckModEnum(params.fec_lp, u"FEC", InnerFECEnum, report) ||
+        !CheckModEnum(params.modulation, u"constellation", ModulationEnum, report) ||
+        !CheckModEnum(params.transmission_mode, u"transmission mode", TransmissionModeEnum, report) ||
+        !CheckModEnum(params.guard_interval, u"guard interval", GuardIntervalEnum, report) ||
+        !CheckModEnum(params.hierarchy, u"hierarchy", HierarchyEnum, report)) {
         return false;
     }
 
@@ -842,8 +842,8 @@ bool ts::Tuner::tuneDVBT(const TunerParametersDVBT& params, Report& report)
 
 bool ts::Tuner::tuneATSC(const TunerParametersATSC& params, Report& report)
 {
-    if (!CheckModEnum(params.inversion, "spectral inversion", SpectralInversionEnum, report) ||
-        !CheckModEnum(params.modulation, "modulation", ModulationEnum, report)) {
+    if (!CheckModEnum(params.inversion, u"spectral inversion", SpectralInversionEnum, report) ||
+        !CheckModEnum(params.modulation, u"modulation", ModulationEnum, report)) {
         return false;
     }
 
@@ -1430,79 +1430,79 @@ std::ostream& ts::Tuner::displayStatus(std::ostream& strm, const ts::UString& ma
     }
 
     // Display current information
-    DisplayFlags(strm, margin, "Status", uint32_t(status), enum_fe_status);
+    DisplayFlags(strm, margin, u"Status", uint32_t(status), enum_fe_status);
     strm << std::endl;
-    Display(strm, margin, "Bit error rate",     UString::Decimal(ber),      Percent(ber));
-    Display(strm, margin, "Signal/noise ratio", UString::Decimal(snr),      Percent(snr));
-    Display(strm, margin, "Signal strength",    UString::Decimal(strength), Percent(strength));
-    Display(strm, margin, "Uncorrected blocks", UString::Decimal(ublocks),  "");
+    Display(strm, margin, u"Bit error rate",     UString::Decimal(ber),      Percent(ber));
+    Display(strm, margin, u"Signal/noise ratio", UString::Decimal(snr),      Percent(snr));
+    Display(strm, margin, u"Signal strength",    UString::Decimal(strength), Percent(strength));
+    Display(strm, margin, u"Uncorrected blocks", UString::Decimal(ublocks),  u"");
 
     // Display frequency characteristics
     const uint64_t hz_factor = _fe_info.type == ::FE_QPSK ? 1000 : 1;
     strm << margin << "Frequencies:" << std::endl;
     if (params_dvbs != 0) {
-        Display(strm, margin, "  Current", UString::Decimal(params_dvbs->frequency), "Hz");
+        Display(strm, margin, u"  Current", UString::Decimal(params_dvbs->frequency), u"Hz");
     }
     if (params_dvbc != 0) {
-        Display(strm, margin, "  Current", UString::Decimal(params_dvbc->frequency), "Hz");
+        Display(strm, margin, u"  Current", UString::Decimal(params_dvbc->frequency), u"Hz");
     }
     if (params_dvbt != 0) {
-        Display(strm, margin, "  Current", UString::Decimal(params_dvbt->frequency), "Hz");
+        Display(strm, margin, u"  Current", UString::Decimal(params_dvbt->frequency), u"Hz");
         if (UHF::InBand(params_dvbt->frequency)) {
-            Display(strm, margin, "  UHF channel", UString::Decimal(UHF::Channel(params_dvbt->frequency)), "");
+            Display(strm, margin, u"  UHF channel", UString::Decimal(UHF::Channel(params_dvbt->frequency)), u"");
         }
         else if (VHF::InBand(params_dvbt->frequency)) {
-            Display(strm, margin, "  VHF channel", UString::Decimal(VHF::Channel(params_dvbt->frequency)), "");
+            Display(strm, margin, u"  VHF channel", UString::Decimal(VHF::Channel(params_dvbt->frequency)), u"");
         }
     }
     if (params_atsc != 0) {
-        Display(strm, margin, "  Current", UString::Decimal(params_atsc->frequency), "Hz");
+        Display(strm, margin, u"  Current", UString::Decimal(params_atsc->frequency), u"Hz");
     }
-    Display(strm, margin, "  Min", UString::Decimal(hz_factor * _fe_info.frequency_min), "Hz");
-    Display(strm, margin, "  Max", UString::Decimal(hz_factor * _fe_info.frequency_max), "Hz");
-    Display(strm, margin, "  Step", UString::Decimal(hz_factor * _fe_info.frequency_stepsize), "Hz");
-    Display(strm, margin, "  Tolerance", UString::Decimal(hz_factor * _fe_info.frequency_tolerance), "Hz");
+    Display(strm, margin, u"  Min", UString::Decimal(hz_factor * _fe_info.frequency_min), u"Hz");
+    Display(strm, margin, u"  Max", UString::Decimal(hz_factor * _fe_info.frequency_max), u"Hz");
+    Display(strm, margin, u"  Step", UString::Decimal(hz_factor * _fe_info.frequency_stepsize), u"Hz");
+    Display(strm, margin, u"  Tolerance", UString::Decimal(hz_factor * _fe_info.frequency_tolerance), u"Hz");
 
     // Display symbol rate characteristics.
 
     if (params_dvbs != 0 || params_dvbc != 0) {
         strm << margin << "Symbol rates:" << std::endl;
-        Display(strm, margin, "  Current",
+        Display(strm, margin, u"  Current",
                  UString::Decimal(params_dvbs != 0 ? params_dvbs->symbol_rate : params_dvbc->symbol_rate),
                  "sym/s");
-        Display(strm, margin, "  Min", UString::Decimal(_fe_info.symbol_rate_min), "sym/s");
-        Display(strm, margin, "  Max", UString::Decimal(_fe_info.symbol_rate_max), "sym/s");
-        Display(strm, margin, "  Tolerance", UString::Decimal(_fe_info.symbol_rate_tolerance), "sym/s");
+        Display(strm, margin, u"  Min", UString::Decimal(_fe_info.symbol_rate_min), u"sym/s");
+        Display(strm, margin, u"  Max", UString::Decimal(_fe_info.symbol_rate_max), u"sym/s");
+        Display(strm, margin, u"  Tolerance", UString::Decimal(_fe_info.symbol_rate_tolerance), u"sym/s");
     }
 
     // Frontend-specific information
     if (params_dvbs != 0) {
-        Display(strm, margin, "Spectral inversion", SpectralInversionEnum.name(params_dvbs->inversion), "");
-        Display(strm, margin, "FEC(inner)", InnerFECEnum.name(params_dvbs->inner_fec) , "");
+        Display(strm, margin, u"Spectral inversion", SpectralInversionEnum.name(params_dvbs->inversion), u"");
+        Display(strm, margin, u"FEC(inner)", InnerFECEnum.name(params_dvbs->inner_fec) , u"");
     }
     if (params_dvbc != 0) {
-        Display(strm, margin, "Spectral inversion", SpectralInversionEnum.name(params_dvbc->inversion), "");
-        Display(strm, margin, "FEC(inner)", InnerFECEnum.name(params_dvbc->inner_fec) , "");
-        Display(strm, margin, "Modulation", ModulationEnum.name(params_dvbc->modulation) , "");
+        Display(strm, margin, u"Spectral inversion", SpectralInversionEnum.name(params_dvbc->inversion), u"");
+        Display(strm, margin, u"FEC(inner)", InnerFECEnum.name(params_dvbc->inner_fec) , u"");
+        Display(strm, margin, u"Modulation", ModulationEnum.name(params_dvbc->modulation) , u"");
     }
     if (params_dvbt != 0) {
-        Display(strm, margin, "Spectral inversion", SpectralInversionEnum.name(params_dvbt->inversion), "");
-        Display(strm, margin, "Bandwidth", BandWidthEnum.name(params_dvbt->bandwidth) , "");
-        Display(strm, margin, "FEC(high priority)", InnerFECEnum.name(params_dvbt->fec_hp) , "");
-        Display(strm, margin, "FEC(low priority)", InnerFECEnum.name(params_dvbt->fec_lp) , "");
-        Display(strm, margin, "Constellation", ModulationEnum.name(params_dvbt->modulation) , "");
-        Display(strm, margin, "Transmission mode", TransmissionModeEnum.name(params_dvbt->transmission_mode) , "");
-        Display(strm, margin, "Guard interval", GuardIntervalEnum.name(params_dvbt->guard_interval) , "");
-        Display(strm, margin, "Hierarchy", HierarchyEnum.name(params_dvbt->hierarchy) , "");
+        Display(strm, margin, u"Spectral inversion", SpectralInversionEnum.name(params_dvbt->inversion), u"");
+        Display(strm, margin, u"Bandwidth", BandWidthEnum.name(params_dvbt->bandwidth) , u"");
+        Display(strm, margin, u"FEC(high priority)", InnerFECEnum.name(params_dvbt->fec_hp) , u"");
+        Display(strm, margin, u"FEC(low priority)", InnerFECEnum.name(params_dvbt->fec_lp) , u"");
+        Display(strm, margin, u"Constellation", ModulationEnum.name(params_dvbt->modulation) , u"");
+        Display(strm, margin, u"Transmission mode", TransmissionModeEnum.name(params_dvbt->transmission_mode) , u"");
+        Display(strm, margin, u"Guard interval", GuardIntervalEnum.name(params_dvbt->guard_interval) , u"");
+        Display(strm, margin, u"Hierarchy", HierarchyEnum.name(params_dvbt->hierarchy) , u"");
     }
     if (params_atsc != 0) {
-        Display(strm, margin, "Spectral inversion", SpectralInversionEnum.name(params_atsc->inversion), "");
-        Display(strm, margin, "Modulation", ModulationEnum.name(params_atsc->modulation) , "");
+        Display(strm, margin, u"Spectral inversion", SpectralInversionEnum.name(params_atsc->inversion), u"");
+        Display(strm, margin, u"Modulation", ModulationEnum.name(params_atsc->modulation) , u"");
     }
 
     // Display general capabilities
     strm << std::endl;
-    DisplayFlags(strm, margin, "Capabilities", uint32_t(_fe_info.caps), enum_fe_caps);
+    DisplayFlags(strm, margin, u"Capabilities", uint32_t(_fe_info.caps), enum_fe_caps);
 
     return strm;
 }

@@ -35,7 +35,7 @@
 TSDUCK_SOURCE;
 
 // Static thread-safe repository of Object
-std::map <std::string, ts::ObjectPtr> ts::Object::_repository;
+std::map <ts::UString, ts::ObjectPtr> ts::Object::_repository;
 ts::Mutex ts::Object::_repository_mutex;
 
 
@@ -43,12 +43,12 @@ ts::Mutex ts::Object::_repository_mutex;
 // Store a safe pointer to an Object in a static thread-safe repository.
 //----------------------------------------------------------------------------
 
-ts::ObjectPtr ts::Object::StoreInRepository (const std::string& name, const ObjectPtr& value)
+ts::ObjectPtr ts::Object::StoreInRepository(const UString& name, const ObjectPtr& value)
 {
-    Guard lock (_repository_mutex);
+    Guard lock(_repository_mutex);
     const ObjectPtr previous = _repository[name];
     if (value.isNull()) {
-        _repository.erase (name);
+        _repository.erase(name);
     }
     else {
         _repository[name] = value;
@@ -61,11 +61,11 @@ ts::ObjectPtr ts::Object::StoreInRepository (const std::string& name, const Obje
 // Get the safe pointer to an Object in the static thread-safe repository
 //----------------------------------------------------------------------------
 
-ts::ObjectPtr ts::Object::RetrieveFromRepository (const std::string& name)
+ts::ObjectPtr ts::Object::RetrieveFromRepository(const UString& name)
 {
-    Guard lock (_repository_mutex);
-    const std::map <std::string, ObjectPtr>::const_iterator pos = _repository.find (name);
-    return pos != _repository.end() ? pos->second : ObjectPtr (0);
+    Guard lock(_repository_mutex);
+    const std::map <UString, ObjectPtr>::const_iterator pos = _repository.find(name);
+    return pos != _repository.end() ? pos->second : ObjectPtr(0);
 }
 
 
@@ -74,8 +74,8 @@ ts::ObjectPtr ts::Object::RetrieveFromRepository (const std::string& name)
 // the specified name.
 //----------------------------------------------------------------------------
 
-void ts::Object::EraseFromRepository (const std::string& name)
+void ts::Object::EraseFromRepository(const UString& name)
 {
-    Guard lock (_repository_mutex);
-    _repository.erase (name);
+    Guard lock(_repository_mutex);
+    _repository.erase(name);
 }

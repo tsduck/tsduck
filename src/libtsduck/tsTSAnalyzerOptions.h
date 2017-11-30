@@ -52,9 +52,9 @@ namespace ts {
         //! @param [in] help A multi-line string describing the usage of options and parameters.
         //! @param [in] flags An or'ed mask of ts::Args::Flags values.
         //!
-        TSAnalyzerOptions(const UString& description = "",
-                          const UString& syntax = "",
-                          const UString& help = "",
+        TSAnalyzerOptions(const UString& description = UString(),
+                          const UString& syntax = UString(),
+                          const UString& help = UString(),
                           int flags = 0);
 
         // Full analysis options:

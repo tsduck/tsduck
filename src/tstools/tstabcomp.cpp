@@ -192,7 +192,7 @@ bool DisplayModel(Options& opt)
     if (opt.outdir) {
         // Specified output is a directory, add default name.
         outName.push_back(ts::PathSeparator);
-        outName.append("tsduck.xml");
+        outName.append(u"tsduck.xml");
     }
     if (!outName.empty()) {
         opt.verbose(u"saving model file to %s", {outName});

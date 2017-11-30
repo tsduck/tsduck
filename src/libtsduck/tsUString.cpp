@@ -821,17 +821,17 @@ ts::UString ts::UString::toHTML() const
 
 ts::UString ts::UString::YesNo(bool b)
 {
-    return FromUTF8(b ? "yes" : "no");
+    return b ? u"yes" : u"no";
 }
 
 ts::UString ts::UString::TrueFalse(bool b)
 {
-    return FromUTF8(b ? "true" : "false");
+    return b ? u"true" : u"false";
 }
 
 ts::UString ts::UString::OnOff(bool b)
 {
-    return FromUTF8(b ? "on" : "off");
+    return b ? u"on" : u"off";
 }
 
 ts::UString ts::UString::AfterBytes(const std::streampos& position)
@@ -845,16 +845,16 @@ ts::UString ts::UString::HumanSize(int64_t value, const UString& units, bool for
     const int64_t k = TS_CONST64(1024);
 
     if (value < 8 * k) { // less than 8 kB => use bytes
-        return Decimal(value, 0, true, ",", forceSign) + u" " + units;
+        return Decimal(value, 0, true, u",", forceSign) + u" " + units;
     }
     else if (value < 8 * k * k) { // between 8 kB and 8 MB => use kB
-        return Decimal(value / k, 0, true, ",", forceSign) + u" k" + units;
+        return Decimal(value / k, 0, true, u",", forceSign) + u" k" + units;
     }
     else if (value < 8 * k * k * k) { // between 8 MB and 8 GB => use MB
-        return Decimal(value / (k * k), 0, true, ",", forceSign) + u" M" + units;
+        return Decimal(value / (k * k), 0, true, u",", forceSign) + u" M" + units;
     }
     else { // more than 8 GB => use GB
-        return Decimal(value / (k * k * k), 0, true, ",", forceSign) + u" G" + units;
+        return Decimal(value / (k * k * k), 0, true, u",", forceSign) + u" G" + units;
     }
 }
 
