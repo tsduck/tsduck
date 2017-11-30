@@ -2,6 +2,16 @@
 TSDuck Change Log and Release Notes
 ===================================
 
+Version 3.5
+
+- For programmers, the TSDuck library API was extensively modified. All usage
+  of 8-bit strings (char* and std::string) has been removed and replaced by
+  Java-like Unicode strings (ts::UString). Many interface have been updated.
+  The utilities in tsStringUtils have been removed. Equivalent services exist
+  in class ts::UString. All of this break the backward compatibility of user
+  code. This is unfortunate but TSDuck code is now more robust and faster to
+  maintain.
+
 Version 3.4-20171110
 
 - TSDuck now fully handles DVB character sets in signalization. All textual
