@@ -36,23 +36,33 @@ const ts::UString ts::ArgMix::uempty;
 
 
 //----------------------------------------------------------------------------
-// Return ArgMix value as an address of nul-terminated strings.
+// Return ArgMix value as a string.
 //----------------------------------------------------------------------------
 
 const char* ts::ArgMix::toCharPtr() const
 {
     switch (_type) {
-        case CHARPTR: return _value.charptr == 0 ? "" : _value.charptr;
-        case STRING:  return _value.string == 0 ? "" : _value.string->c_str();
-        default:      return "";
+        case STRING | BIT8 | CLASS:  return _value.string == 0 ? "" : _value.string->c_str();
+        case STRING | BIT8: return _value.charptr == 0 ? "" : _value.charptr;
+        default: return "";
     }
 }
 
 const ts::UChar* ts::ArgMix::toUCharPtr() const
 {
     switch (_type) {
-        case UCHARPTR: return _value.ucharptr == 0 ? u"" : _value.ucharptr;
-        case USTRING:  return _value.ustring == 0 ? u"" : _value.ustring->c_str();
-        default:       return u"";
+        case STRING | BIT16 | CLASS:  return _value.ustring == 0 ? u"" : _value.ustring->c_str();
+        case STRING | BIT16: return _value.ucharptr == 0 ? u"" : _value.ucharptr;
+        default: return u"";
     }
+}
+
+const std::string& ts::ArgMix::toString() const
+{
+    return _type == (STRING | BIT8 | CLASS) && _value.string != 0 ? *_value.string : empty;
+}
+
+const ts::UString& ts::ArgMix::toUString() const
+{
+    return _type == (STRING | BIT16 | CLASS) && _value.ustring != 0 ? *_value.ustring : uempty;
 }

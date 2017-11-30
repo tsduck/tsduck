@@ -1210,7 +1210,7 @@ namespace ts {
         //!
         //! Format a string using a template and arguments.
         //!
-        //! This method is similar in principle to @c printf(). This string object is used as a
+        //! This method is similar in principle to @c printf(). The @a fmt paramter is used as a
         //! @e format or @e template where sequences starting with '\%' are place-holders for
         //! arguments. The main different with @c printf() is that the argument list is typed,
         //! thanks to C++ features. Thus, the risk of mismatch or crash is eliminated. When
@@ -1235,9 +1235,6 @@ namespace ts {
         //! - @c . @e digits : Starting with a dot. Maximum field width for strings. Ignored for integers.
         //! - @c ' : For integer conversions, use a separator for groups of thousands.
         //! - @c * : Can be used instead of @e digits. The integer value is taken from the argument list.
-        //!
-        //! This method uses this string object as format. But there are static variants of this method,
-        //! named Format(), which use an explicit format parameter.
         //!
         //! Since the argument list is typed, it is possible to mix integers and strings of various types
         //! and sizes. Example:
@@ -1284,31 +1281,20 @@ namespace ts {
         //! $
         //! @endcode
         //! 
+        //! @param [in] fmt Format string with embedded '\%' sequences.
         //! @param [in] args List of arguments to substitute in the format string.
         //! @return The formatted string.
         //!
-        UString format(const std::initializer_list<ArgMix> args = std::initializer_list<ArgMix>()) const
-        {
-            return Format(c_str(), args);
-        }
+        static UString Format(const UChar* fmt, std::initializer_list<ArgMixIn> args);
 
         //!
         //! Format a string using a template and arguments.
         //! @param [in] fmt Format string with embedded '\%' sequences.
         //! @param [in] args List of arguments to substitute in the format string.
         //! @return The formatted string.
-        //! @see format()
+        //! @see Format(const UChar* fmt, std::initializer_list<ArgMixIn> args)
         //!
-        static UString Format(const UChar* fmt, const std::initializer_list<ArgMix> args = std::initializer_list<ArgMix>());
-
-        //!
-        //! Format a string using a template and arguments.
-        //! @param [in] fmt Format string with embedded '\%' sequences.
-        //! @param [in] args List of arguments to substitute in the format string.
-        //! @return The formatted string.
-        //! @see format()
-        //!
-        static UString Format(const UString& fmt, const std::initializer_list<ArgMix> args = std::initializer_list<ArgMix>())
+        static UString Format(const UString& fmt, std::initializer_list<ArgMixIn> args)
         {
             return Format(fmt.c_str(), args);
         }
@@ -1652,10 +1638,10 @@ namespace ts {
             //! @param [in] fmt Format string with embedded '\%' sequences.
             //! @param [in] args List of arguments to substitute in the format string.
             //!
-            ArgMixInContext(UString& result, const UChar* fmt, const std::initializer_list<ArgMix>& args);
+            ArgMixInContext(UString& result, const UChar* fmt, const std::initializer_list<ArgMixIn>& args);
 
         private:
-            typedef std::initializer_list<ts::ArgMix>::const_iterator ArgIterator;
+            typedef std::initializer_list<ts::ArgMixIn>::const_iterator ArgIterator;
 
             UString&          _result;  //!< Result string.
             ArgIterator       _arg;     //!< Current argument.

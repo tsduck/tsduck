@@ -2532,6 +2532,7 @@ namespace ts {
 #define TS_FLAGS_OPERATORS(type)
 #else
 #define TS_FLAGS_OPERATORS(type)                                                      \
+    inline constexpr type operator~(type a) { return type(~int(a)); }                 \
     inline constexpr type operator|(type a, type b) { return type(int(a) | int(b)); } \
     inline constexpr type operator&(type a, type b) { return type(int(a) & int(b)); } \
     inline constexpr type operator^(type a, type b) { return type(int(a) ^ int(b)); } \

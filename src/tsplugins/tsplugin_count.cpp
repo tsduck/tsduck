@@ -77,7 +77,7 @@ namespace ts {
         PacketCounter  _counters[PID_MAX];  // Packet counter per PID
 
         // Report a line
-        void report(const UChar* fmt, const std::initializer_list<ArgMix> args);
+        void report(const UChar* fmt, const std::initializer_list<ArgMixIn> args);
 
         // Inaccessible operations
         CountPlugin() = delete;
@@ -250,7 +250,7 @@ bool ts::CountPlugin::stop()
 // Report a history line
 //----------------------------------------------------------------------------
 
-void ts::CountPlugin::report(const UChar* fmt, const std::initializer_list<ArgMix> args)
+void ts::CountPlugin::report(const UChar* fmt, const std::initializer_list<ArgMixIn> args)
 {
     if (_outfile.is_open()) {
         _outfile << UString::Format(fmt, args) << std::endl;

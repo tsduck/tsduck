@@ -1402,7 +1402,7 @@ ts::ByteBlock ts::UString::toDVBWithByteLength(size_type start, size_type count,
 // Format a string using a template and arguments.
 //----------------------------------------------------------------------------
 
-ts::UString ts::UString::Format(const UChar* fmt, const std::initializer_list<ts::ArgMix> args)
+ts::UString ts::UString::Format(const UChar* fmt, const std::initializer_list<ts::ArgMixIn> args)
 {
     // Output string. Pre-reserve some space. We don't really know how much. Just address the most comman cases.
     UString result;
@@ -1453,7 +1453,7 @@ void ts::UString::ArgMixContext::debug(const UString& message, UChar cmd) const
 // Analysis context of a Format string.
 //----------------------------------------------------------------------------
 
-ts::UString::ArgMixInContext::ArgMixInContext(UString& result, const UChar* fmt, const std::initializer_list<ArgMix>& args) :
+ts::UString::ArgMixInContext::ArgMixInContext(UString& result, const UChar* fmt, const std::initializer_list<ArgMixIn>& args) :
     ArgMixContext(fmt, true),
     _result(result),
     _arg(args.begin()),
@@ -1574,30 +1574,22 @@ void ts::UString::ArgMixInContext::processArg()
     }
 
     // Now, the command is valid, process it.
-    if (_arg->isString()) {
+    if (_arg->isAnyString()) {
         // String arguments are always treated as %s, regardless of the % command.
         if (cmd != u's' && debugActive()) {
             debug(u"type mismatch, got a string", cmd);
         }
         // Get the string parameter.
         UString value;
-        switch (_arg->type()) {
-            case ArgMix::CHARPTR:
-                value.assignFromUTF8(_arg->toCharPtr());
-                break;
-            case ArgMix::STRING:
-                value.assignFromUTF8(_arg->toString());
-                break;
-            case ArgMix::UCHARPTR:
-                value.assign(_arg->toUCharPtr());
-                break;
-            case ArgMix::USTRING:
-                value.assign(_arg->toUString());
-                break;
-            default:
-                // Not a string, should not get there.
-                assert(false);
-                break;
+        if (_arg->isAnyString8()) {
+            value.assignFromUTF8(_arg->toCharPtr());
+        }
+        else if (_arg->isAnyString16()) {
+            value.assign(_arg->toUCharPtr());
+        }
+        else {
+            // Not a string, should not get there.
+            assert(false);
         }
         // Truncate the string.
         size_t wid = value.width();
@@ -1616,7 +1608,7 @@ void ts::UString::ArgMixInContext::processArg()
     }
     else if (cmd == u'c') {
         // Use an integer value as an Unicode code point.
-        if (!_arg->isInt() && debugActive()) {
+        if (!_arg->isInteger() && debugActive()) {
             debug(u"type mismatch, not an integer or character", cmd);
         }
         // Get and convert the Unicode code point.
@@ -1624,7 +1616,7 @@ void ts::UString::ArgMixInContext::processArg()
     }
     else if (cmd == u'x' || cmd == u'X') {
         // Insert an integer in hexadecimal.
-        if (!_arg->isInt() && debugActive()) {
+        if (!_arg->isInteger() && debugActive()) {
             debug(u"type mismatch, not an integer", cmd);
         }
         // If min width is not specified, use the "natural" width of the argument.
@@ -1643,23 +1635,23 @@ void ts::UString::ArgMixInContext::processArg()
         if (cmd != u'd' && debugActive()) {
             debug(u"type mismatch, got an integer", cmd);
         }
-        switch (_arg->type()) {
-            case ArgMix::INT32:
-                _result.append(Decimal(_arg->toInt32(), minWidth, !leftJustified, separator, forceSign, pad));
-                break;
-            case ArgMix::UINT32:
-                _result.append(Decimal(_arg->toUInt32(), minWidth, !leftJustified, separator, forceSign, pad));
-                break;
-            case ArgMix::INT64:
+        if (_arg->size() > 4) {
+            // Stored as 64-bit integer.
+            if (_arg->isSigned()) {
                 _result.append(Decimal(_arg->toInt64(), minWidth, !leftJustified, separator, forceSign, pad));
-                break;
-            case ArgMix::UINT64:
+            }
+            else {
                 _result.append(Decimal(_arg->toUInt64(), minWidth, !leftJustified, separator, forceSign, pad));
-                break;
-            default:
-                // Not an integer, should not get there, should have been already processed as a string.
-                assert(false);
-                break;
+            }
+        }
+        else {
+            // Stored as 32-bit integer.
+            if (_arg->isSigned()) {
+                _result.append(Decimal(_arg->toInt32(), minWidth, !leftJustified, separator, forceSign, pad));
+            }
+            else {
+                _result.append(Decimal(_arg->toUInt32(), minWidth, !leftJustified, separator, forceSign, pad));
+            }
         }
     }
 
