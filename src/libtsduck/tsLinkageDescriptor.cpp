@@ -382,12 +382,12 @@ void ts::LinkageDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, c
             uint8_t hand_over = *data >> 4;
             uint8_t origin = *data & 0x01;
             data += 1; size -= 1;
-            const char *name;
+            const UChar *name;
             switch (hand_over) {
-                case 0x01: name = "identical service in neighbour country"; break;
-                case 0x02: name = "local variation of same service"; break;
-                case 0x03: name = "associated service"; break;
-                default:   name = "unknown"; break;
+                case 0x01: name = u"identical service in neighbour country"; break;
+                case 0x02: name = u"local variation of same service"; break;
+                case 0x03: name = u"associated service"; break;
+                default:   name = u"unknown"; break;
             }
             strm << margin << UString::Format(u"Hand-over type: 0x%X, %s, Origin: %s", {hand_over, name, origin ? u"SDT" : u"NIT"}) << std::endl;
             if ((hand_over == 0x01 || hand_over == 0x02 || hand_over == 0x03) && size >= 2) {
@@ -465,54 +465,54 @@ namespace {
 ts::XML::Element* ts::LinkageDescriptor::toXML(XML& xml, XML::Element* parent) const
 {
     XML::Element* root = _is_valid ? xml.addElement(parent, _xml_name) : 0;
-    xml.setIntAttribute(root, "transport_stream_id", ts_id, true);
-    xml.setIntAttribute(root, "original_network_id", onetw_id, true);
-    xml.setIntAttribute(root, "service_id", service_id, true);
-    xml.setIntAttribute(root, "linkage_type", linkage_type, true);
+    xml.setIntAttribute(root, u"transport_stream_id", ts_id, true);
+    xml.setIntAttribute(root, u"original_network_id", onetw_id, true);
+    xml.setIntAttribute(root, u"service_id", service_id, true);
+    xml.setIntAttribute(root, u"linkage_type", linkage_type, true);
 
     if (linkage_type == LINKAGE_HAND_OVER) {
-        XML::Element* e = xml.addElement(root, "mobile_handover_info");
-        xml.setIntAttribute(e, "handover_type", mobile_handover_info.handover_type, true);
-        xml.setIntEnumAttribute(OriginTypeNames, e, "origin_type", mobile_handover_info.origin_type);
+        XML::Element* e = xml.addElement(root, u"mobile_handover_info");
+        xml.setIntAttribute(e, u"handover_type", mobile_handover_info.handover_type, true);
+        xml.setIntEnumAttribute(OriginTypeNames, e, u"origin_type", mobile_handover_info.origin_type);
         if (mobile_handover_info.handover_type >= 1 && mobile_handover_info.handover_type <= 3) {
-            xml.setIntAttribute(e, "network_id", mobile_handover_info.network_id, true);
+            xml.setIntAttribute(e, u"network_id", mobile_handover_info.network_id, true);
         }
         if (mobile_handover_info.origin_type == 0x00) {
-            xml.setIntAttribute(e, "initial_service_id", mobile_handover_info.initial_service_id, true);
+            xml.setIntAttribute(e, u"initial_service_id", mobile_handover_info.initial_service_id, true);
         }
     }
     else if (linkage_type == LINKAGE_EVENT) {
-        XML::Element* e = xml.addElement(root, "event_linkage_info");
-        xml.setIntAttribute(e, "target_event_id", event_linkage_info.target_event_id, true);
-        xml.setBoolAttribute(e, "target_listed", event_linkage_info.target_listed);
-        xml.setBoolAttribute(e, "event_simulcast", event_linkage_info.event_simulcast);
+        XML::Element* e = xml.addElement(root, u"event_linkage_info");
+        xml.setIntAttribute(e, u"target_event_id", event_linkage_info.target_event_id, true);
+        xml.setBoolAttribute(e, u"target_listed", event_linkage_info.target_listed);
+        xml.setBoolAttribute(e, u"event_simulcast", event_linkage_info.event_simulcast);
     }
     else if (linkage_type >= LINKAGE_EXT_EVENT_MIN && linkage_type <= LINKAGE_EXT_EVENT_MAX) {
-        XML::Element* extInfo = xml.addElement(root, "extended_event_linkage_info");
+        XML::Element* extInfo = xml.addElement(root, u"extended_event_linkage_info");
         for (ExtendedEventLinkageList::const_iterator it = extended_event_linkage_info.begin(); it != extended_event_linkage_info.end(); ++it) {
-            XML::Element* e = xml.addElement(extInfo, "event");
-            xml.setIntAttribute(e, "target_event_id", it->target_event_id, true);
-            xml.setBoolAttribute(e, "target_listed", it->target_listed);
-            xml.setBoolAttribute(e, "event_simulcast", it->event_simulcast);
-            xml.setIntAttribute(e, "link_type", it->link_type, true);
-            xml.setIntAttribute(e, "target_id_type", it->target_id_type, true);
+            XML::Element* e = xml.addElement(extInfo, u"event");
+            xml.setIntAttribute(e, u"target_event_id", it->target_event_id, true);
+            xml.setBoolAttribute(e, u"target_listed", it->target_listed);
+            xml.setBoolAttribute(e, u"event_simulcast", it->event_simulcast);
+            xml.setIntAttribute(e, u"link_type", it->link_type, true);
+            xml.setIntAttribute(e, u"target_id_type", it->target_id_type, true);
             if (it->target_id_type == 3) {
-                xml.setIntAttribute(e, "user_defined_id", it->user_defined_id, true);
+                xml.setIntAttribute(e, u"user_defined_id", it->user_defined_id, true);
             }
             if (it->target_id_type == 1) {
-                xml.setIntAttribute(e, "target_transport_stream_id", it->target_transport_stream_id, true);
+                xml.setIntAttribute(e, u"target_transport_stream_id", it->target_transport_stream_id, true);
             }
             if (it->target_original_network_id.set()) {
-                xml.setIntAttribute(e, "target_original_network_id", it->target_original_network_id.value(), true);
+                xml.setIntAttribute(e, u"target_original_network_id", it->target_original_network_id.value(), true);
             }
             if (it->target_service_id.set()) {
-                xml.setIntAttribute(e, "target_service_id", it->target_service_id.value(), true);
+                xml.setIntAttribute(e, u"target_service_id", it->target_service_id.value(), true);
             }
         }
     }
 
     if (!private_data.empty()) {
-        xml.addHexaText(xml.addElement(root, "private_data"), private_data);
+        xml.addHexaText(xml.addElement(root, u"private_data"), private_data);
     }
     return root;
 }
@@ -528,11 +528,11 @@ void ts::LinkageDescriptor::fromXML(XML& xml, const XML::Element* element)
 
     _is_valid =
         checkXMLName(xml, element) &&
-        xml.getIntAttribute<uint16_t>(ts_id, element, "transport_stream_id", true) &&
-        xml.getIntAttribute<uint16_t>(onetw_id, element, "original_network_id", true) &&
-        xml.getIntAttribute<uint16_t>(service_id, element, "service_id", true) &&
-        xml.getIntAttribute<uint8_t>(linkage_type, element, "linkage_type", true) &&
-        xml.getHexaTextChild(private_data, element, "private_data", false);
+        xml.getIntAttribute<uint16_t>(ts_id, element, u"transport_stream_id", true) &&
+        xml.getIntAttribute<uint16_t>(onetw_id, element, u"original_network_id", true) &&
+        xml.getIntAttribute<uint16_t>(service_id, element, u"service_id", true) &&
+        xml.getIntAttribute<uint8_t>(linkage_type, element, u"linkage_type", true) &&
+        xml.getHexaTextChild(private_data, element, u"private_data", false);
 
     XML::ElementVector mobileElements;
     XML::ElementVector eventElements;
@@ -543,42 +543,42 @@ void ts::LinkageDescriptor::fromXML(XML& xml, const XML::Element* element)
         const size_t eventCount = linkage_type == LINKAGE_EVENT ? 1 : 0;
         const size_t extEventCount = linkage_type >= LINKAGE_EXT_EVENT_MIN && linkage_type <= LINKAGE_EXT_EVENT_MAX ? 1 : 0;
         _is_valid =
-            xml.getChildren(mobileElements, element, "mobile_handover_info", mobileCount, mobileCount) &&
-            xml.getChildren(eventElements, element, "event_linkage_info", eventCount, eventCount) &&
-            xml.getChildren(extEventElements, element, "extended_event_linkage_info", extEventCount, extEventCount);
+            xml.getChildren(mobileElements, element, u"mobile_handover_info", mobileCount, mobileCount) &&
+            xml.getChildren(eventElements, element, u"event_linkage_info", eventCount, eventCount) &&
+            xml.getChildren(extEventElements, element, u"extended_event_linkage_info", extEventCount, extEventCount);
     }
 
     if (_is_valid && !mobileElements.empty()) {
         _is_valid =
-            xml.getIntAttribute<uint8_t>(mobile_handover_info.handover_type, mobileElements[0], "handover_type", true, 0, 0, 0x0F) &&
-            xml.getIntEnumAttribute(mobile_handover_info.origin_type, OriginTypeNames, mobileElements[0], "origin_type", true) &&
-            xml.getIntAttribute<uint16_t>(mobile_handover_info.network_id, mobileElements[0], "network_id",
+            xml.getIntAttribute<uint8_t>(mobile_handover_info.handover_type, mobileElements[0], u"handover_type", true, 0, 0, 0x0F) &&
+            xml.getIntEnumAttribute(mobile_handover_info.origin_type, OriginTypeNames, mobileElements[0], u"origin_type", true) &&
+            xml.getIntAttribute<uint16_t>(mobile_handover_info.network_id, mobileElements[0], u"network_id",
                                           mobile_handover_info.handover_type >= 1 && mobile_handover_info.handover_type <= 3) &&
-            xml.getIntAttribute<uint16_t>(mobile_handover_info.initial_service_id, mobileElements[0], "initial_service_id",
+            xml.getIntAttribute<uint16_t>(mobile_handover_info.initial_service_id, mobileElements[0], u"initial_service_id",
                                           mobile_handover_info.origin_type == 0x00);
     }
 
     if (_is_valid && !eventElements.empty()) {
         _is_valid =
-            xml.getIntAttribute<uint16_t>(event_linkage_info.target_event_id, eventElements[0], "target_event_id", true) &&
-            xml.getBoolAttribute(event_linkage_info.target_listed, eventElements[0], "target_listed", true) &&
-            xml.getBoolAttribute(event_linkage_info.event_simulcast, eventElements[0], "event_simulcast", true);
+            xml.getIntAttribute<uint16_t>(event_linkage_info.target_event_id, eventElements[0], u"target_event_id", true) &&
+            xml.getBoolAttribute(event_linkage_info.target_listed, eventElements[0], u"target_listed", true) &&
+            xml.getBoolAttribute(event_linkage_info.event_simulcast, eventElements[0], u"event_simulcast", true);
     }
 
     if (_is_valid && !extEventElements.empty()) {
-        _is_valid = xml.getChildren(eventElements, extEventElements[0], "event");
+        _is_valid = xml.getChildren(eventElements, extEventElements[0], u"event");
         for (size_t i = 0; _is_valid && i < eventElements.size(); ++i) {
             ExtendedEventLinkageInfo info;
             _is_valid =
-                xml.getIntAttribute<uint16_t>(info.target_event_id, eventElements[i], "target_event_id", true) &&
-                xml.getBoolAttribute(info.target_listed, eventElements[i], "target_listed", true) &&
-                xml.getBoolAttribute(info.event_simulcast, eventElements[i], "event_simulcast", true) &&
-                xml.getIntAttribute<uint8_t>(info.link_type, eventElements[i], "link_type", true, 0, 0, 3) &&
-                xml.getIntAttribute<uint8_t>(info.target_id_type, eventElements[i], "target_id_type", true, 0, 0, 3) &&
-                xml.getIntAttribute<uint16_t>(info.user_defined_id, eventElements[i], "user_defined_id", info.target_id_type == 3) &&
-                xml.getIntAttribute<uint16_t>(info.target_transport_stream_id, eventElements[i], "target_transport_stream_id", info.target_id_type == 1) &&
-                xml.getOptionalIntAttribute<uint16_t>(info.target_original_network_id, eventElements[i], "target_original_network_id") &&
-                xml.getOptionalIntAttribute<uint16_t>(info.target_service_id, eventElements[i], "target_service_id");
+                xml.getIntAttribute<uint16_t>(info.target_event_id, eventElements[i], u"target_event_id", true) &&
+                xml.getBoolAttribute(info.target_listed, eventElements[i], u"target_listed", true) &&
+                xml.getBoolAttribute(info.event_simulcast, eventElements[i], u"event_simulcast", true) &&
+                xml.getIntAttribute<uint8_t>(info.link_type, eventElements[i], u"link_type", true, 0, 0, 3) &&
+                xml.getIntAttribute<uint8_t>(info.target_id_type, eventElements[i], u"target_id_type", true, 0, 0, 3) &&
+                xml.getIntAttribute<uint16_t>(info.user_defined_id, eventElements[i], u"user_defined_id", info.target_id_type == 3) &&
+                xml.getIntAttribute<uint16_t>(info.target_transport_stream_id, eventElements[i], u"target_transport_stream_id", info.target_id_type == 1) &&
+                xml.getOptionalIntAttribute<uint16_t>(info.target_original_network_id, eventElements[i], u"target_original_network_id") &&
+                xml.getOptionalIntAttribute<uint16_t>(info.target_service_id, eventElements[i], u"target_service_id");
             if (_is_valid) {
                 extended_event_linkage_info.push_back(info);
             }

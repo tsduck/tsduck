@@ -48,14 +48,14 @@ namespace ts {
     {
     public:
         // Implementation of BlockCipher interface:
-        virtual size_t blockSize() const;
-        virtual size_t minKeySize() const;
-        virtual size_t maxKeySize() const;
-        virtual bool isValidKeySize(size_t size) const;
-        virtual size_t minRounds() const;
-        virtual size_t maxRounds() const;
-        virtual size_t defaultRounds() const;
-        virtual bool setKey(const void* key, size_t key_length, size_t rounds = 0);
+        virtual size_t blockSize() const override;
+        virtual size_t minKeySize() const override;
+        virtual size_t maxKeySize() const override;
+        virtual bool isValidKeySize(size_t size) const override;
+        virtual size_t minRounds() const override;
+        virtual size_t maxRounds() const override;
+        virtual size_t defaultRounds() const override;
+        virtual bool setKey(const void* key, size_t key_length, size_t rounds = 0) override;
 
         //!
         //! Set a new initialization vector.
@@ -104,10 +104,10 @@ namespace ts {
         //! @param [in] iv_max_blocks Maximum IV size in multiples of cipher block size (default: 1).
         //! @param [in] work_blocks Temporary work buffer size in multiples of cipher block size (default: 1).
         //!
-        CipherChaining (BlockCipher* cipher = 0,
-                        size_t iv_min_blocks = 1,
-                        size_t iv_max_blocks = 1,
-                        size_t work_blocks = 1);
+        CipherChaining(BlockCipher* cipher = 0,
+                       size_t iv_min_blocks = 1,
+                       size_t iv_max_blocks = 1,
+                       size_t work_blocks = 1);
 
     private:
         // Private fields

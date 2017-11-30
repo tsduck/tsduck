@@ -65,16 +65,16 @@ ts::Mutex::Mutex() :
     ::pthread_mutexattr_t attr;
 
     if ((error = ::pthread_mutexattr_init (&attr)) != 0) {
-        throw MutexError ("mutex attr init", error);
+        throw MutexError(u"mutex attr init", error);
     }
     if ((error = ::pthread_mutexattr_settype (&attr, PTHREAD_MUTEX_RECURSIVE)) != 0) {
-        throw MutexError ("mutex attr set type", error);
+        throw MutexError(u"mutex attr set type", error);
     }
     if ((error = ::pthread_mutex_init (&_mutex, &attr)) != 0) {
-        throw MutexError ("mutex init", error);
+        throw MutexError(u"mutex init", error);
     }
     if ((error = ::pthread_mutexattr_destroy (&attr)) != 0) {
-        throw MutexError ("mutex attr destroy", error);
+        throw MutexError(u"mutex attr destroy", error);
     }
 
 #endif
@@ -115,7 +115,7 @@ bool ts::Mutex::tryLock()
         return false; // mutex already locked
     }
     else {
-        throw MutexError("mutex try lock", error);
+        throw MutexError(u"mutex try lock", error);
     }
 }
 #endif
@@ -155,7 +155,7 @@ bool ts::Mutex::acquire(MilliSecond timeout)
             return true; // success
         }
         else {
-            throw MutexError("mutex lock", error);
+            throw MutexError(u"mutex lock", error);
         }
     }
     else if (timeout == 0) {
@@ -186,7 +186,7 @@ bool ts::Mutex::acquire(MilliSecond timeout)
             tspec.tv_nsec = long(remain % NanoSecPerSec);
             if (::nanosleep(&tspec, NULL) < 0 && errno != EINTR) {
                 // Actual error, not interrupted by a signal
-                throw MutexError("nanosleep error", errno);
+                throw MutexError(u"nanosleep error", errno);
             }
         }
 #else
@@ -202,7 +202,7 @@ bool ts::Mutex::acquire(MilliSecond timeout)
             return false; // not locked after timeout
         }
         else {
-            throw MutexError("mutex timed lock", error);
+            throw MutexError(u"mutex timed lock", error);
         }
 #endif
     }

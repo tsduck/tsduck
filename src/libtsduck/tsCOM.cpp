@@ -37,7 +37,7 @@ ts::COM::COM(Report& report) :
     _is_init(false)
 {
 #if defined(TS_WINDOWS)
-    _is_init = ComSuccess(::CoInitializeEx(NULL, ::COINIT_MULTITHREADED), "COM initialization", report);
+    _is_init = ComSuccess(::CoInitializeEx(NULL, ::COINIT_MULTITHREADED), u"COM initialization", report);
 #else
     _is_init = true;
 #endif

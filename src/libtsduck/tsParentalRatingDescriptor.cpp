@@ -164,9 +164,9 @@ ts::XML::Element* ts::ParentalRatingDescriptor::toXML(XML& xml, XML::Element* pa
 {
     XML::Element* root = _is_valid ? xml.addElement(parent, _xml_name) : 0;
     for (EntryList::const_iterator it = entries.begin(); it != entries.end(); ++it) {
-        XML::Element* e = xml.addElement(root, "country");
-        xml.setAttribute(e, "country_code", it->country_code);
-        xml.setIntAttribute(e, "rating", it->rating, true);
+        XML::Element* e = xml.addElement(root, u"country");
+        xml.setAttribute(e, u"country_code", it->country_code);
+        xml.setIntAttribute(e, u"rating", it->rating, true);
     }
     return root;
 }
@@ -183,13 +183,13 @@ void ts::ParentalRatingDescriptor::fromXML(XML& xml, const XML::Element* element
     XML::ElementVector children;
     _is_valid =
         checkXMLName(xml, element) &&
-        xml.getChildren(children, element, "country", 0, MAX_ENTRIES);
+        xml.getChildren(children, element, u"country", 0, MAX_ENTRIES);
 
     for (size_t i = 0; _is_valid && i < children.size(); ++i) {
         Entry entry;
         _is_valid =
-            xml.getAttribute(entry.country_code, children[i], "country_code", true, "", 3, 3) &&
-            xml.getIntAttribute<uint8_t>(entry.rating, children[i], "rating", true, 0, 0x00, 0xFF);
+            xml.getAttribute(entry.country_code, children[i], u"country_code", true, u"", 3, 3) &&
+            xml.getIntAttribute<uint8_t>(entry.rating, children[i], u"rating", true, 0, 0x00, 0xFF);
         if (_is_valid) {
             entries.push_back(entry);
         }

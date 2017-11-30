@@ -225,6 +225,6 @@ void ts::SSULinkageDescriptor::fromXML(XML& xml, const XML::Element* element)
 {
     // There is no specific representation of this descriptor.
     // We cannot be called since there is no registration in the XML factory.
-    xml.reportError("Internal error, there is no XML representation for SSULinkageDescriptor");
+    xml.reportError(u"Internal error, there is no XML representation for SSULinkageDescriptor");
     _is_valid = false;
 }

@@ -1006,7 +1006,7 @@ namespace ts {
         //! @param [in] total The total value.
         //! @return A string reprenting the percentage of @a value in @a total.
         //!
-        template<typename INT>
+        template<typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
         static UString Percentage(INT value, INT total);
 
         //!
@@ -1139,7 +1139,7 @@ namespace ts {
         //! may have one character only.
         //! @return True on success, false on error (invalid string).
         //!
-        template <typename INT>
+        template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
         bool toInteger(INT& value, const UString& thousandSeparators = UString()) const;
 
         //!
@@ -1164,7 +1164,7 @@ namespace ts {
         //! Note that this implies that the list separators may have one character only.
         //! @return True on success, false on error (invalid string).
         //!
-        template <class CONTAINER>
+        template <class CONTAINER, typename std::enable_if<std::is_integral<typename CONTAINER::value_type>::value>::type* = nullptr>
         bool toIntegers(CONTAINER& container, const UString& thousandSeparators = UString(), const UString& listSeparators = UString(u",; ")) const;
 
         //!
@@ -1181,7 +1181,7 @@ namespace ts {
         //! @param [in] pad The padding character to adjust the width.
         //! @return The formatted string.
         //!
-        template <typename INT>
+        template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
         static UString Decimal(INT value,
                                size_type min_width = 0,
                                bool right_justified = true,
@@ -1200,7 +1200,7 @@ namespace ts {
         //! @param [in] use_upper If true, use upper-case hexadecimal digits.
         //! @return The formatted string.
         //!
-        template <typename INT>
+        template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
         static UString Hexa(INT value,
                             size_type width = 0,
                             const UString& separator = UString(),

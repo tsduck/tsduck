@@ -676,13 +676,13 @@ bool ts::Tuner::tuneDVBS(const TunerParametersDVBS& params, Report& report)
 
     // Stop 22 kHz continuous tone (was on if previously tuned on high band)
     if (ioctl_fe_set_tone(_frontend_fd, SEC_TONE_OFF) < 0) {
-        report.error(u"DVB frontend FE_SET_TONE error: " + ErrorCodeMessage());
+        report.error(u"DVB frontend FE_SET_TONE error: %s", {ErrorCodeMessage()});
         return false;
     }
 
     // Setup polarisation voltage: 13V for vertical polarisation, 18V for horizontal
     if (ioctl_fe_set_voltage(_frontend_fd, params.polarity == POL_VERTICAL ? SEC_VOLTAGE_13 : SEC_VOLTAGE_18) < 0) {
-        report.error(u"DVB frontend FE_SET_VOLTAGE error: " + ErrorCodeMessage());
+        report.error(u"DVB frontend FE_SET_VOLTAGE error: %s", {ErrorCodeMessage()});
         return false;
     }
 
@@ -702,7 +702,7 @@ bool ts::Tuner::tuneDVBS(const TunerParametersDVBS& params, Report& report)
     //      In reply to this report, the answer was "thanks, committed" but it does
     //      not appear to be committed. Here, we use the "probably correct" code.
     if (ioctl_fe_diseqc_send_burst(_frontend_fd, params.satellite_number == 0 ? SEC_MINI_A : SEC_MINI_B) < 0) {
-        report.error(u"DVB frontend FE_DISEQC_SEND_BURST error: " + ErrorCodeMessage());
+        report.error(u"DVB frontend FE_DISEQC_SEND_BURST error: %s", {ErrorCodeMessage()});
         return false;
     }
 
@@ -724,7 +724,7 @@ bool ts::Tuner::tuneDVBS(const TunerParametersDVBS& params, Report& report)
     cmd.msg[5] = 0x00;  // Unused
 
     if (::ioctl(_frontend_fd, FE_DISEQC_SEND_MASTER_CMD, &cmd) < 0) {
-        report.error(u"DVB frontend FE_DISEQC_SEND_MASTER_CMD error: " + ErrorCodeMessage());
+        report.error(u"DVB frontend FE_DISEQC_SEND_MASTER_CMD error: %s", {ErrorCodeMessage()});
         return false;
     }
 
@@ -733,7 +733,7 @@ bool ts::Tuner::tuneDVBS(const TunerParametersDVBS& params, Report& report)
 
     // Start the 22kHz continuous tone when tuning to a transponder in the high band
     if (::ioctl_fe_set_tone(_frontend_fd, high_band ? SEC_TONE_ON : SEC_TONE_OFF) < 0) {
-        report.error(u"DVB frontend FE_SET_TONE error: " + ErrorCodeMessage());
+        report.error(u"DVB frontend FE_SET_TONE error: %s", {ErrorCodeMessage()});
         return false;
     }
 
@@ -906,7 +906,7 @@ bool ts::Tuner::tune(const TunerParameters& params, Report& report)
             return tuneATSC(*tpp, report);
         }
         default: {
-            report.error(u"cannot convert " + TunerTypeEnum.name(_tuner_type) + " parameters to Linux DVB parameters");
+            report.error(u"cannot convert %s parameters to Linux DVB parameters", {TunerTypeEnum.name(_tuner_type)});
             return false;
         }
     }
@@ -929,7 +929,7 @@ bool ts::Tuner::start(Report& report)
     // completely undersized for full TS capture.
 
     if (::ioctl(_demux_fd, DMX_SET_BUFFER_SIZE, _demux_bufsize) < 0) {
-        report.error(u"error setting buffer size on " + _demux_name + ": " + ErrorCodeMessage());
+        report.error(u"error setting buffer size on %s: %s", {_demux_name, ErrorCodeMessage()});
         return false;
     }
 
@@ -953,7 +953,7 @@ bool ts::Tuner::start(Report& report)
     filter.flags = DMX_IMMEDIATE_START; // Start capture immediately
 
     if (::ioctl(_demux_fd, DMX_SET_PES_FILTER, &filter) < 0) {
-        report.error(u"error setting filter on " + _demux_name + ": " + ErrorCodeMessage());
+        report.error(u"error setting filter on %s: %s", {_demux_name, ErrorCodeMessage()});
         return false;
     }
 
@@ -1006,7 +1006,7 @@ bool ts::Tuner::stop(Report& report)
 
     // Stop the demux
     if (::ioctl(_demux_fd, DMX_STOP) < 0) {
-        report.error(u"error stopping demux on " + _demux_name + ": " + ErrorCodeMessage());
+        report.error(u"error stopping demux on %s: %s", {_demux_name, ErrorCodeMessage()});
         return false;
     }
 
@@ -1048,7 +1048,7 @@ bool ts::Tuner::setReceiveTimeout(MilliSecond timeout, Report& report)
             ::sigemptyset(&sac.sa_mask);
             sac.sa_handler = empty_signal_handler;
             if (::sigaction(_rt_signal, &sac, 0) < 0) {
-                report.error(u"error setting tuner receive timer signal: " + ErrorCodeMessage());
+                report.error(u"error setting tuner receive timer signal: %s", {ErrorCodeMessage()});
                 SignalAllocator::Instance()->release(_rt_signal);
                 _rt_signal = -1;
                 return false;
@@ -1062,7 +1062,7 @@ bool ts::Tuner::setReceiveTimeout(MilliSecond timeout, Report& report)
             sev.sigev_notify = SIGEV_SIGNAL;
             sev.sigev_signo = _rt_signal;
             if (::timer_create(CLOCK_REALTIME, &sev, &_rt_timer) < 0) {
-                report.error(u"error creating tuner receive timer: " + ErrorCodeMessage());
+                report.error(u"error creating tuner receive timer: %s", {ErrorCodeMessage()});
                 return false;
             }
             _rt_timer_valid = true;
@@ -1085,7 +1085,7 @@ bool ts::Tuner::setReceiveTimeout(MilliSecond timeout, Report& report)
             ::sigemptyset(&sac.sa_mask);
             sac.sa_handler = SIG_IGN;
             if (::sigaction(_rt_signal, &sac, 0) < 0) {
-                report.error(u"error ignoring tuner receive timer signal: " + ErrorCodeMessage());
+                report.error(u"error ignoring tuner receive timer signal: %s", {ErrorCodeMessage()});
                 ok = false;
             }
             // Release signal
@@ -1097,7 +1097,7 @@ bool ts::Tuner::setReceiveTimeout(MilliSecond timeout, Report& report)
         if (_rt_timer_valid) {
             _rt_timer_valid = false;
             if (::timer_delete(_rt_timer) < 0) {
-                report.error(u"error deleting tuner receive timer: " + ErrorCodeMessage());
+                report.error(u"error deleting tuner receive timer: %s", {ErrorCodeMessage()});
                 ok = false;
             }
         }
@@ -1137,7 +1137,7 @@ size_t ts::Tuner::receive(TSPacket* buffer, size_t max_packets, const AbortInter
         timeout.it_interval.tv_sec = 0;
         timeout.it_interval.tv_nsec = 0;
         if (::timer_settime(_rt_timer, 0, &timeout, 0) < 0) {
-            report.error(u"error arming tuner receive timer: " + ErrorCodeMessage());
+            report.error(u"error arming tuner receive timer: %s", {ErrorCodeMessage()});
             return 0;
         }
         // Deadline time
@@ -1171,7 +1171,7 @@ size_t ts::Tuner::receive(TSPacket* buffer, size_t max_packets, const AbortInter
             got_overflow = true;
         }
         else {
-            report.error(u"receive error on " + _dvr_name + ": " + ErrorCodeMessage());
+            report.error(u"receive error on %s: %s", {_dvr_name, ErrorCodeMessage()});
             break;
         }
 
@@ -1193,7 +1193,7 @@ size_t ts::Tuner::receive(TSPacket* buffer, size_t max_packets, const AbortInter
         // apply to this read.
         if (_receive_timeout > 0 && Time::CurrentLocalTime() >= time_limit) {
             if (got_size == 0) {
-                report.error(u"receive timeout on " + _device_name);
+                report.error(u"receive timeout on %s", {_device_name});
             }
             break;
         }
@@ -1207,7 +1207,7 @@ size_t ts::Tuner::receive(TSPacket* buffer, size_t max_packets, const AbortInter
         timeout.it_interval.tv_sec = 0;
         timeout.it_interval.tv_nsec = 0;
         if (::timer_settime(_rt_timer, 0, &timeout, 0) < 0) {
-            report.error(u"error disarming tuner receive timer: " + ErrorCodeMessage());
+            report.error(u"error disarming tuner receive timer: %s", {ErrorCodeMessage()});
         }
     }
 
@@ -1248,7 +1248,7 @@ size_t ts::Tuner::receive(TSPacket* buffer, size_t max_packets, const AbortInter
             }
 
             // Report error
-            report.error(u"tuner packet synchronization lost, dropping " + UString::Decimal(resync_offset - offset) + " bytes");
+            report.error(u"tuner packet synchronization lost, dropping %'d bytes", {resync_offset - offset});
 
             // Pack rest of buffer
             ::memmove(data + offset, data + resync_offset, got_size - resync_offset);
@@ -1469,7 +1469,7 @@ std::ostream& ts::Tuner::displayStatus(std::ostream& strm, const ts::UString& ma
         strm << margin << "Symbol rates:" << std::endl;
         Display(strm, margin, u"  Current",
                  UString::Decimal(params_dvbs != 0 ? params_dvbs->symbol_rate : params_dvbc->symbol_rate),
-                 "sym/s");
+                 u"sym/s");
         Display(strm, margin, u"  Min", UString::Decimal(_fe_info.symbol_rate_min), u"sym/s");
         Display(strm, margin, u"  Max", UString::Decimal(_fe_info.symbol_rate_max), u"sym/s");
         Display(strm, margin, u"  Tolerance", UString::Decimal(_fe_info.symbol_rate_tolerance), u"sym/s");

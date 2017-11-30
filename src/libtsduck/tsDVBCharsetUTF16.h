@@ -58,7 +58,7 @@ namespace ts {
         //! Constructor.
         //! There is only one definition for such DVB character sets.
         //!
-        DVBCharsetUTF16() : DVBCharset("UNICODE", 0x000011) {}
+        DVBCharsetUTF16() : DVBCharset(u"UNICODE", 0x000011) {}
 
     private:
         // Unaccessible operations.

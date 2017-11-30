@@ -155,7 +155,7 @@ bool ts::ECMGClient::connect(const SocketAddress& ecmg_address,
     channel_setup.channel_id = ecm_channel_id;
     channel_setup.Super_CAS_id = super_cas_id;
     if (!_connection.send(channel_setup, *_report)) {
-        return abortConnection("");
+        return abortConnection();
     }
 
     // Tell the receiver thread to start listening for incoming messages
@@ -168,7 +168,7 @@ bool ts::ECMGClient::connect(const SocketAddress& ecmg_address,
     // Wait for a channel_status from the ECMG
     tlv::MessagePtr msg;
     if (!_response_queue.dequeue(msg, RESPONSE_TIMEOUT)) {
-        return abortConnection("ECMG channel_setup response timeout");
+        return abortConnection(u"ECMG channel_setup response timeout");
     }
     if (msg->tag() != ecmgscs::Tags::channel_status) {
         return abortConnection(u"unexpected response from ECMG (expected channel_status):\n" + msg->dump(4));
@@ -184,15 +184,15 @@ bool ts::ECMGClient::connect(const SocketAddress& ecmg_address,
     stream_setup.ECM_id = ecm_id;
     stream_setup.nominal_CP_duration = nominal_cp_duration;
     if (!_connection.send(stream_setup, *_report)) {
-        return abortConnection("");
+        return abortConnection();
     }
 
     // Wait for a stream_status from the ECMG
     if (!_response_queue.dequeue(msg, RESPONSE_TIMEOUT)) {
-        return abortConnection("ECMG stream_setup response timeout");
+        return abortConnection(u"ECMG stream_setup response timeout");
     }
     if (msg->tag() != ecmgscs::Tags::stream_status) {
-        return abortConnection("unexpected response from ECMG (expected stream_status):\n" + msg->dump(4));
+        return abortConnection(u"unexpected response from ECMG (expected stream_status):\n" + msg->dump(4));
     }
     ecmgscs::StreamStatus* const ssp = dynamic_cast<ecmgscs::StreamStatus*>(msg.pointer());
     assert(ssp != 0);

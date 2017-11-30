@@ -528,7 +528,7 @@ bool ts::Section::LoadFile(SectionPtrVector& sections,
     }
 
     // Load the section file
-    ReportWithPrefix report_internal(report, file_name + ": ");
+    ReportWithPrefix report_internal(report, file_name + u": ");
     bool success = LoadFile(sections, strm, crc_op, report_internal);
     strm.close();
 

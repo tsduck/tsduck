@@ -244,7 +244,7 @@ namespace ts {
     //! @param [in] suffix An optional suffix to add to the file name.
     //! @return A unique temporary file name.
     //!
-    TSDUCKDLL UString TempFile(const UString& suffix = ".tmp");
+    TSDUCKDLL UString TempFile(const UString& suffix = u".tmp");
 
     //!
     //! Get the size in bytes of a file.

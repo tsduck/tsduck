@@ -122,7 +122,7 @@ bool ts::AVCHRDParameters::parse(AVCParser& parser)
 std::ostream& ts::AVCHRDParameters::display(std::ostream& out, const UString& margin) const
 {
     if (valid) {
-#define DISP(n) disp(out, margin, #n, n)
+#define DISP(n) disp(out, margin, u ## #n, n)
         DISP(cpb_cnt_minus1);
         DISP(bit_rate_scale);
         DISP(cpb_size_scale);

@@ -137,7 +137,7 @@ namespace {
 ts::XML::Element* ts::PrivateDataSpecifierDescriptor::toXML(XML& xml, XML::Element* parent) const
 {
     XML::Element* root = _is_valid ? xml.addElement(parent, _xml_name) : 0;
-    xml.setIntEnumAttribute(KnownPDS, root, "private_data_specifier", pds);
+    xml.setIntEnumAttribute(KnownPDS, root, u"private_data_specifier", pds);
     return root;
 }
 
@@ -150,5 +150,5 @@ void ts::PrivateDataSpecifierDescriptor::fromXML(XML& xml, const XML::Element* e
 {
     _is_valid =
         checkXMLName(xml, element) &&
-        xml.getIntEnumAttribute(pds, KnownPDS, element, "private_data_specifier", true);
+        xml.getIntEnumAttribute(pds, KnownPDS, element, u"private_data_specifier", true);
 }

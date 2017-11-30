@@ -126,7 +126,7 @@ void ts::CADescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const 
         // Extract common part
         uint16_t sysid = GetUInt16(data);
         uint16_t pid = GetUInt16(data + 2) & 0x1FFF;
-        const char* const dtype = tid == TID_CAT ? "EMM" : (tid == TID_PMT ? "ECM" : "CA");
+        const UChar* const dtype = tid == TID_CAT ? u"EMM" : (tid == TID_PMT ? u"ECM" : u"CA");
         data += 4; size -= 4;
 
         strm << margin << UString::Format(u"CA System Id: %s, %s PID: %d (0x%X)", {names::CASId(sysid, names::FIRST), dtype, pid, pid}) << std::endl;

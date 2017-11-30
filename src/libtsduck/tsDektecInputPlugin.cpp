@@ -52,7 +52,7 @@ ts::DektecInputPlugin::DektecInputPlugin(TSP* tsp_) :
     InputPlugin(tsp_, u"Receive packets from a Dektec DVB-ASI device.", u"[options]"),
     _guts(0)
 {
-    setHelp(TS_NO_DTAPI_MESSAGE "\n");
+    setHelp(TS_NO_DTAPI_MESSAGE u"\n");
 }
 
 ts::DektecInputPlugin::~DektecInputPlugin()

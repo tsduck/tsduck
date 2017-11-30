@@ -75,7 +75,7 @@ namespace {
 
 ts::UString ts::SystemMonitor::MonPrefix(const ts::Time& date)
 {
-    return "[MON] " + date.format(ts::Time::DATE | ts::Time::HOUR | ts::Time::MINUTE).toUTF8() + ", ";
+    return u"[MON] " + date.format(ts::Time::DATE | ts::Time::HOUR | ts::Time::MINUTE) + u", ";
 }
 
 
@@ -83,12 +83,12 @@ ts::UString ts::SystemMonitor::MonPrefix(const ts::Time& date)
 // Constructor
 //----------------------------------------------------------------------------
 
-ts::SystemMonitor::SystemMonitor (Report* report) :
-    Thread (ThreadAttributes().setPriority(ThreadAttributes::GetMinimumPriority()).setStackSize(MONITOR_STACK_SIZE)),
-    _report (report),
-    _mutex (),
-    _wake_up (),
-    _terminate (false)
+ts::SystemMonitor::SystemMonitor(Report* report) :
+    Thread(ThreadAttributes().setPriority(ThreadAttributes::GetMinimumPriority()).setStackSize(MONITOR_STACK_SIZE)),
+    _report(report),
+    _mutex(),
+    _wake_up(),
+    _terminate(false)
 {
 }
 
@@ -97,12 +97,12 @@ ts::SystemMonitor::SystemMonitor (Report* report) :
 // Destructor
 //----------------------------------------------------------------------------
 
-ts::SystemMonitor::~SystemMonitor ()
+ts::SystemMonitor::~SystemMonitor()
 {
     // Signal that the thread shall terminate
 
     {
-        GuardCondition lock (_mutex, _wake_up);
+        GuardCondition lock(_mutex, _wake_up);
         _terminate = true;
         lock.signal();
     }
@@ -125,7 +125,7 @@ void ts::SystemMonitor::main()
     Time vsize_uptime(start_time);              // Time of last vsize increase
     size_t vsize_max(start_metrics.vmem_size);  // Maximum vsize
 
-    _report->info(MonPrefix(last_time) + "resource monitoring started");
+    _report->info(u"%sresource monitoring started", {MonPrefix(Time::CurrentLocalTime())});
 
     // Loop on monitoring intervals
 
@@ -140,9 +140,9 @@ void ts::SystemMonitor::main()
         // Wait until due time or termination request
 
         {
-            GuardCondition lock (_mutex, _wake_up);
+            GuardCondition lock(_mutex, _wake_up);
             if (!_terminate) {
-                lock.waitCondition (time_profile->interval);
+                lock.waitCondition(time_profile->interval);
             }
             if (_terminate) {
                 break;
@@ -151,9 +151,9 @@ void ts::SystemMonitor::main()
 
         // Get current process metrics
 
-        Time current_time (Time::CurrentLocalTime());
+        Time current_time(Time::CurrentLocalTime());
         ProcessMetrics metrics;
-        GetProcessMetrics (metrics);
+        GetProcessMetrics(metrics);
 
         // Format virtual memory size status
 
@@ -161,13 +161,13 @@ void ts::SystemMonitor::main()
 
         if (metrics.vmem_size != last_metrics.vmem_size) {
             // Virtual memory has changed
-            message += " (" + UString::HumanSize(ptrdiff_t(metrics.vmem_size) - ptrdiff_t(last_metrics.vmem_size), u"B", true) + ")";
+            message += u" (" + UString::HumanSize(ptrdiff_t(metrics.vmem_size) - ptrdiff_t(last_metrics.vmem_size), u"B", true) + u")";
         }
         else {
             // VM stable since last time. Check if temporarily stable or
             // safely stable. If no increase during last 95% of the running
             // time, then we are stable.
-            message += (current_time - vsize_uptime) > (95 * (current_time - start_time)) / 100 ? " (stable)" : " (leaking)";
+            message += (current_time - vsize_uptime) > (95 * (current_time - start_time)) / 100 ? u" (stable)" : u" (leaking)";
         }
 
         if (metrics.vmem_size > vsize_max) {
@@ -192,5 +192,5 @@ void ts::SystemMonitor::main()
         last_metrics = metrics;
     }
 
-    _report->info(MonPrefix(Time::CurrentLocalTime()) + "resource monitoring terminated");
+    _report->info(u"%sresource monitoring terminated", {MonPrefix(Time::CurrentLocalTime())});
 }

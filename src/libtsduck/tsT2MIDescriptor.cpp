@@ -110,11 +110,11 @@ void ts::T2MIDescriptor::deserialize(const Descriptor& desc, const DVBCharset* c
 ts::XML::Element* ts::T2MIDescriptor::toXML(XML& xml, XML::Element* parent) const
 {
     XML::Element* root = _is_valid ? xml.addElement(parent, _xml_name) : 0;
-    xml.setIntAttribute(root, "t2mi_stream_id", t2mi_stream_id, true);
-    xml.setIntAttribute(root, "num_t2mi_streams_minus_one", num_t2mi_streams_minus_one);
-    xml.setBoolAttribute(root, "pcr_iscr_common_clock_flag", pcr_iscr_common_clock_flag);
+    xml.setIntAttribute(root, u"t2mi_stream_id", t2mi_stream_id, true);
+    xml.setIntAttribute(root, u"num_t2mi_streams_minus_one", num_t2mi_streams_minus_one);
+    xml.setBoolAttribute(root, u"pcr_iscr_common_clock_flag", pcr_iscr_common_clock_flag);
     if (!reserved.empty()) {
-        xml.addHexaText(xml.addElement(root, "reserved"), reserved);
+        xml.addHexaText(xml.addElement(root, u"reserved"), reserved);
     }
     return root;
 }
@@ -128,10 +128,10 @@ void ts::T2MIDescriptor::fromXML(XML& xml, const XML::Element* element)
 {
     _is_valid =
         checkXMLName(xml, element) &&
-        xml.getIntAttribute<uint8_t>(t2mi_stream_id, element, "t2mi_stream_id", true, 0, 0, 7) &&
-        xml.getIntAttribute<uint8_t>(num_t2mi_streams_minus_one, element, "num_t2mi_streams_minus_one", false, 0, 0, 7) &&
-        xml.getBoolAttribute(pcr_iscr_common_clock_flag, element, "pcr_iscr_common_clock_flag", false, false) &&
-        xml.getHexaTextChild(reserved, element, "reserved", false, 0, MAX_DESCRIPTOR_SIZE - 6);
+        xml.getIntAttribute<uint8_t>(t2mi_stream_id, element, u"t2mi_stream_id", true, 0, 0, 7) &&
+        xml.getIntAttribute<uint8_t>(num_t2mi_streams_minus_one, element, u"num_t2mi_streams_minus_one", false, 0, 0, 7) &&
+        xml.getBoolAttribute(pcr_iscr_common_clock_flag, element, u"pcr_iscr_common_clock_flag", false, false) &&
+        xml.getHexaTextChild(reserved, element, u"reserved", false, 0, MAX_DESCRIPTOR_SIZE - 6);
 }
 
 

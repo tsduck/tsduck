@@ -83,14 +83,14 @@ namespace ts {
         /** Constructor.                                       */ \
         /** @param [in] w Error message for the exception.     */ \
         explicit name(const ts::UString& w) :                     \
-            ts::Exception(#name ": " + w)                         \
+            ts::Exception(u ## #name u": " + w)                   \
         {                                                         \
         }                                                         \
         /** Constructor.                                       */ \
         /** @param [in] w Error message for the exception.     */ \
         /** @param [in] code System error code.                */ \
         explicit name(const ts::UString& w, ts::ErrorCode code) : \
-            ts::Exception(#name ": " + w, code)                   \
+            ts::Exception(u ## #name u": " + w, code)             \
         {                                                         \
         }                                                         \
         /** Constructor.                                       */ \

@@ -138,10 +138,10 @@ ts::XML::Element* ts::ContentDescriptor::toXML(XML& xml, XML::Element* parent) c
 {
     XML::Element* root = _is_valid ? xml.addElement(parent, _xml_name) : 0;
     for (EntryList::const_iterator it = entries.begin(); it != entries.end(); ++it) {
-        XML::Element* e = xml.addElement(root, "content");
-        xml.setIntAttribute(e, "content_nibble_level_1", it->content_nibble_level_1);
-        xml.setIntAttribute(e, "content_nibble_level_2", it->content_nibble_level_2);
-        xml.setIntAttribute(e, "user_byte", uint8_t((it->user_nibble_1 << 4) | it->user_nibble_2), true);
+        XML::Element* e = xml.addElement(root, u"content");
+        xml.setIntAttribute(e, u"content_nibble_level_1", it->content_nibble_level_1);
+        xml.setIntAttribute(e, u"content_nibble_level_2", it->content_nibble_level_2);
+        xml.setIntAttribute(e, u"user_byte", uint8_t((it->user_nibble_1 << 4) | it->user_nibble_2), true);
     }
     return root;
 }
@@ -158,15 +158,15 @@ void ts::ContentDescriptor::fromXML(XML& xml, const XML::Element* element)
     XML::ElementVector children;
     _is_valid =
         checkXMLName(xml, element) &&
-        xml.getChildren(children, element, "content", 0, MAX_ENTRIES);
+        xml.getChildren(children, element, u"content", 0, MAX_ENTRIES);
 
     for (size_t i = 0; _is_valid && i < children.size(); ++i) {
         Entry entry;
         uint8_t user = 0;
         _is_valid =
-            xml.getIntAttribute<uint8_t>(entry.content_nibble_level_1, children[i], "content_nibble_level_1", true, 0, 0x00, 0x0F) &&
-            xml.getIntAttribute<uint8_t>(entry.content_nibble_level_2, children[i], "content_nibble_level_2", true, 0, 0x00, 0x0F) &&
-            xml.getIntAttribute<uint8_t>(user, children[i], "user_byte", true, 0, 0x00, 0xFF);
+            xml.getIntAttribute<uint8_t>(entry.content_nibble_level_1, children[i], u"content_nibble_level_1", true, 0, 0x00, 0x0F) &&
+            xml.getIntAttribute<uint8_t>(entry.content_nibble_level_2, children[i], u"content_nibble_level_2", true, 0, 0x00, 0x0F) &&
+            xml.getIntAttribute<uint8_t>(user, children[i], u"user_byte", true, 0, 0x00, 0xFF);
         if (_is_valid) {
             entry.user_nibble_1 = (user >> 4) & 0x0F;
             entry.user_nibble_2 = user & 0x0F;

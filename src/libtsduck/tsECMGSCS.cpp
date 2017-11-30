@@ -249,8 +249,8 @@ ts::UString ts::ecmgscs::ChannelSetup::dump (size_t indent) const
 {
     return UString::Format(u"%*schannel_setup (ECMG<=>SCS)\n", {indent, u""}) +
         tlv::Message::dump (indent) +
-        dumpHexa (indent, "ECM_channel_id", channel_id) +
-        dumpHexa (indent, "Super_CAS_id", Super_CAS_id);
+        dumpHexa(indent, u"ECM_channel_id", channel_id) +
+        dumpHexa(indent, u"Super_CAS_id", Super_CAS_id);
 }
 
 
@@ -279,7 +279,7 @@ ts::UString ts::ecmgscs::ChannelTest::dump (size_t indent) const
 {
     return UString::Format(u"%*schannel_test (ECMG<=>SCS)\n", {indent, u""}) +
         tlv::Message::dump (indent) +
-        dumpHexa (indent, "ECM_channel_id", channel_id);
+        dumpHexa(indent, u"ECM_channel_id", channel_id);
 }
 
 
@@ -363,20 +363,20 @@ ts::UString ts::ecmgscs::ChannelStatus::dump (size_t indent) const
 {
     return UString::Format(u"%*schannel_status (ECMG<=>SCS)\n", {indent, u""}) +
         tlv::Message::dump (indent) +
-        dumpHexa (indent, "ECM_channel_id", channel_id) +
-        dumpDecimal (indent, "section_TSpkt_flag", section_TSpkt_flag ? 1 : 0) +
-        dumpOptionalDecimal (indent, "AC_delay_start", has_AC_delay_start, AC_delay_start) +
-        dumpOptionalDecimal (indent, "AC_delay_stop", has_AC_delay_stop, AC_delay_stop) +
-        dumpDecimal (indent, "delay_start", delay_start) +
-        dumpDecimal (indent, "delay_stop", delay_stop) +
-        dumpOptionalDecimal (indent, "transition_delay_start", has_transition_delay_start, transition_delay_start) +
-        dumpOptionalDecimal (indent, "transition_delay_stop", has_transition_delay_stop, transition_delay_stop) +
-        dumpDecimal (indent, "ECM_rep_period", ECM_rep_period) +
-        dumpDecimal (indent, "max_streams", max_streams) +
-        dumpDecimal (indent, "min_CP_duration", min_CP_duration) +
-        dumpDecimal (indent, "lead_CW", lead_CW) +
-        dumpDecimal (indent, "CW_per_msg", CW_per_msg) +
-        dumpDecimal (indent, "max_comp_time", max_comp_time);
+        dumpHexa(indent, u"ECM_channel_id", channel_id) +
+        dumpDecimal(indent, u"section_TSpkt_flag", section_TSpkt_flag ? 1 : 0) +
+        dumpOptionalDecimal(indent, u"AC_delay_start", has_AC_delay_start, AC_delay_start) +
+        dumpOptionalDecimal(indent, u"AC_delay_stop", has_AC_delay_stop, AC_delay_stop) +
+        dumpDecimal(indent, u"delay_start", delay_start) +
+        dumpDecimal(indent, u"delay_stop", delay_stop) +
+        dumpOptionalDecimal(indent, u"transition_delay_start", has_transition_delay_start, transition_delay_start) +
+        dumpOptionalDecimal(indent, u"transition_delay_stop", has_transition_delay_stop, transition_delay_stop) +
+        dumpDecimal(indent, u"ECM_rep_period", ECM_rep_period) +
+        dumpDecimal(indent, u"max_streams", max_streams) +
+        dumpDecimal(indent, u"min_CP_duration", min_CP_duration) +
+        dumpDecimal(indent, u"lead_CW", lead_CW) +
+        dumpDecimal(indent, u"CW_per_msg", CW_per_msg) +
+        dumpDecimal(indent, u"max_comp_time", max_comp_time);
 }
 
 
@@ -405,7 +405,7 @@ ts::UString ts::ecmgscs::ChannelClose::dump (size_t indent) const
 {
     return UString::Format(u"%*schannel_close (ECMG<=>SCS)\n", {indent, u""}) +
         tlv::Message::dump (indent) +
-        dumpHexa (indent, "ECM_channel_id", channel_id);
+        dumpHexa(indent, u"ECM_channel_id", channel_id);
 }
 
 
@@ -442,9 +442,9 @@ ts::UString ts::ecmgscs::ChannelError::dump (size_t indent) const
 {
     return UString::Format(u"%*schannel_error (ECMG<=>SCS)\n", {indent, u""}) +
         tlv::Message::dump (indent) +
-        dumpHexa (indent, "ECM_channel_id", channel_id) +
-        dumpVector (indent, "error_status", error_status) +
-        dumpVector (indent, "error_information", error_information);
+        dumpHexa(indent, u"ECM_channel_id", channel_id) +
+        dumpVector(indent, u"error_status", error_status) +
+        dumpVector(indent, u"error_information", error_information);
 }
 
 
@@ -481,10 +481,10 @@ ts::UString ts::ecmgscs::StreamSetup::dump (size_t indent) const
 {
     return UString::Format(u"%*sstream_setup (ECMG<=>SCS)\n", {indent, u""}) +
         tlv::Message::dump (indent) +
-        dumpHexa (indent, "ECM_channel_id", channel_id) +
-        dumpHexa (indent, "ECM_stream_id", stream_id) +
-        dumpHexa (indent, "ECM_id", ECM_id) +
-        dumpDecimal (indent, "nominal_CP_duration", nominal_CP_duration);
+        dumpHexa(indent, u"ECM_channel_id", channel_id) +
+        dumpHexa(indent, u"ECM_stream_id", stream_id) +
+        dumpHexa(indent, u"ECM_id", ECM_id) +
+        dumpDecimal(indent, u"nominal_CP_duration", nominal_CP_duration);
 }
 
 
@@ -515,8 +515,8 @@ ts::UString ts::ecmgscs::StreamTest::dump (size_t indent) const
 {
     return UString::Format(u"%*sstream_test (ECMG<=>SCS)\n", {indent, u""}) +
         tlv::Message::dump (indent) +
-        dumpHexa (indent, "ECM_channel_id", channel_id) +
-        dumpHexa (indent, "ECM_stream_id", stream_id);
+        dumpHexa(indent, u"ECM_channel_id", channel_id) +
+        dumpHexa(indent, u"ECM_stream_id", stream_id);
 }
 
 
@@ -553,10 +553,10 @@ ts::UString ts::ecmgscs::StreamStatus::dump (size_t indent) const
 {
     return UString::Format(u"%*sstream_status (ECMG<=>SCS)\n", {indent, u""}) +
         tlv::Message::dump (indent) +
-        dumpHexa (indent, "ECM_channel_id", channel_id) +
-        dumpHexa (indent, "ECM_stream_id", stream_id) +
-        dumpHexa (indent, "ECM_id", ECM_id) +
-        dumpDecimal (indent, "access_criteria_transfer_mode", access_criteria_transfer_mode ? 1 : 0);
+        dumpHexa(indent, u"ECM_channel_id", channel_id) +
+        dumpHexa(indent, u"ECM_stream_id", stream_id) +
+        dumpHexa(indent, u"ECM_id", ECM_id) +
+        dumpDecimal(indent, u"access_criteria_transfer_mode", access_criteria_transfer_mode ? 1 : 0);
 }
 
 
@@ -587,8 +587,8 @@ ts::UString ts::ecmgscs::StreamCloseRequest::dump (size_t indent) const
 {
     return UString::Format(u"%*sstream_close_request (ECMG<=>SCS)\n", {indent, u""}) +
         tlv::Message::dump (indent) +
-        dumpHexa (indent, "ECM_channel_id", channel_id) +
-        dumpHexa (indent, "ECM_stream_id", stream_id);
+        dumpHexa(indent, u"ECM_channel_id", channel_id) +
+        dumpHexa(indent, u"ECM_stream_id", stream_id);
 }
 
 
@@ -619,8 +619,8 @@ ts::UString ts::ecmgscs::StreamCloseResponse::dump (size_t indent) const
 {
     return UString::Format(u"%*sstream_close_response (ECMG<=>SCS)\n", {indent, u""}) +
         tlv::Message::dump (indent) +
-        dumpHexa (indent, "ECM_channel_id", channel_id) +
-        dumpHexa (indent, "ECM_stream_id", stream_id);
+        dumpHexa(indent, u"ECM_channel_id", channel_id) +
+        dumpHexa(indent, u"ECM_stream_id", stream_id);
 }
 
 
@@ -659,10 +659,10 @@ ts::UString ts::ecmgscs::StreamError::dump (size_t indent) const
 {
     return UString::Format(u"%*sstream_error (ECMG<=>SCS)\n", {indent, u""}) +
         tlv::Message::dump (indent) +
-        dumpHexa (indent, "ECM_channel_id", channel_id) +
-        dumpHexa (indent, "ECM_stream_id", stream_id) +
-        dumpVector (indent, "error_status", error_status) +
-        dumpVector (indent, "error_information", error_information);
+        dumpHexa(indent, u"ECM_channel_id", channel_id) +
+        dumpHexa(indent, u"ECM_stream_id", stream_id) +
+        dumpVector(indent, u"error_status", error_status) +
+        dumpVector(indent, u"error_information", error_information);
 }
 
 
@@ -742,16 +742,16 @@ ts::UString ts::ecmgscs::CWProvision::dump (size_t indent) const
     UString dump =
         UString::Format(u"%*sCW_provision (ECMG<=>SCS)\n", {indent, u""}) +
         tlv::Message::dump (indent) +
-        dumpHexa (indent, "ECM_channel_id", channel_id) +
-        dumpHexa (indent, "ECM_stream_id", stream_id) +
-        dumpDecimal (indent, "CP_number", CP_number) +
-        dumpOptional (indent, "CW_encryption", has_CW_encryption, CW_encryption, UString::HEXA) +
-        dumpOptionalDecimal (indent, "CP_duration", has_CP_duration, CP_duration) +
-        dumpOptional (indent, "access_criteria", has_access_criteria, access_criteria, UString::HEXA);
+        dumpHexa(indent, u"ECM_channel_id", channel_id) +
+        dumpHexa(indent, u"ECM_stream_id", stream_id) +
+        dumpDecimal(indent, u"CP_number", CP_number) +
+        dumpOptional(indent, u"CW_encryption", has_CW_encryption, CW_encryption, UString::HEXA) +
+        dumpOptionalDecimal(indent, u"CP_duration", has_CP_duration, CP_duration) +
+        dumpOptional(indent, u"access_criteria", has_access_criteria, access_criteria, UString::HEXA);
 
     for (std::vector<CPCWCombination>::const_iterator it = CP_CW_combination.begin(); it != CP_CW_combination.end(); ++it) {
-        dump += dumpDecimal (indent, "CP", it->CP);
-        dump += dumpOptional (indent, "CW", true, it->CW, UString::SINGLE_LINE);
+        dump += dumpDecimal(indent, u"CP", it->CP);
+        dump += dumpOptional(indent, u"CW", true, it->CW, UString::SINGLE_LINE);
     }
 
     return dump;
@@ -792,8 +792,8 @@ ts::UString ts::ecmgscs::ECMResponse::dump (size_t indent) const
 {
     return UString::Format(u"%*sECM_response (ECMG<=>SCS)\n", {indent, u"   "}) +
         tlv::Message::dump(indent) +
-        dumpHexa (indent, "ECM_chann    el_id", channel_id) +
-        dumpHexa (indent, "ECM_stream_id    ", stream_id) +
-        dumpDecimal(indent, "CP_number", CP_number) +
-        dumpOptional(indent, "ECM_datagram", true, ECM_datagram, UString::HEXA);
+        dumpHexa(indent, u"ECM_chann    el_id", channel_id) +
+        dumpHexa(indent, u"ECM_stream_id    ", stream_id) +
+        dumpDecimal(indent, u"CP_number", CP_number) +
+        dumpOptional(indent, u"ECM_datagram", true, ECM_datagram, UString::HEXA);
 }

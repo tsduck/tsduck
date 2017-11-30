@@ -33,7 +33,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsPlatform.h"
+#include "tsUString.h"
 
 namespace ts {
     //!
@@ -46,7 +46,7 @@ namespace ts {
         //! Algorithm name (informational only).
         //! @return The algorithm name.
         //!
-        virtual std::string name() const = 0;
+        virtual UString name() const = 0;
 
         //!
         //! Size in bytes of the block used by the algorithm.

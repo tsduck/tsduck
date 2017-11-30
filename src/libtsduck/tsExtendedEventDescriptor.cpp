@@ -331,15 +331,15 @@ void ts::ExtendedEventDescriptor::DisplayDescriptor(TablesDisplay& display, DID 
 ts::XML::Element* ts::ExtendedEventDescriptor::toXML(XML& xml, XML::Element* parent) const
 {
     XML::Element* root = _is_valid ? xml.addElement(parent, _xml_name) : 0;
-    xml.setIntAttribute(root, "descriptor_number", descriptor_number, false);
-    xml.setIntAttribute(root, "last_descriptor_number", last_descriptor_number, false);
-    xml.setAttribute(root, "language_code", language_code);
-    xml.addText(xml.addElement(root, "text"), text);
+    xml.setIntAttribute(root, u"descriptor_number", descriptor_number, false);
+    xml.setIntAttribute(root, u"last_descriptor_number", last_descriptor_number, false);
+    xml.setAttribute(root, u"language_code", language_code);
+    xml.addText(xml.addElement(root, u"text"), text);
 
     for (EntryList::const_iterator it = entries.begin(); it != entries.end(); ++it) {
-        XML::Element* e = xml.addElement(root, "item");
-        xml.addText(xml.addElement(e, "description"), it->item_description);
-        xml.addText(xml.addElement(e, "name"), it->item);
+        XML::Element* e = xml.addElement(root, u"item");
+        xml.addText(xml.addElement(e, u"description"), it->item_description);
+        xml.addText(xml.addElement(e, u"name"), it->item);
     }
     return root;
 }
@@ -358,17 +358,17 @@ void ts::ExtendedEventDescriptor::fromXML(XML& xml, const XML::Element* element)
     XML::ElementVector children;
     _is_valid =
         checkXMLName(xml, element) &&
-        xml.getIntAttribute(descriptor_number, element, "descriptor_number", true) &&
-        xml.getIntAttribute(last_descriptor_number, element, "last_descriptor_number", true) &&
-        xml.getAttribute(language_code, element, "language_code", true, "", 3, 3) &&
-        xml.getTextChild(text, element, "text") &&
-        xml.getChildren(children, element, "item");
+        xml.getIntAttribute(descriptor_number, element, u"descriptor_number", true) &&
+        xml.getIntAttribute(last_descriptor_number, element, u"last_descriptor_number", true) &&
+        xml.getAttribute(language_code, element, u"language_code", true, u"", 3, 3) &&
+        xml.getTextChild(text, element, u"text") &&
+        xml.getChildren(children, element, u"item");
 
     for (size_t i = 0; _is_valid && i < children.size(); ++i) {
         Entry entry;
         _is_valid =
-            xml.getTextChild(entry.item_description, children[i], "description") &&
-            xml.getTextChild(entry.item, children[i], "name");
+            xml.getTextChild(entry.item_description, children[i], u"description") &&
+            xml.getTextChild(entry.item, children[i], u"name");
         if (_is_valid) {
             entries.push_back(entry);
         }

@@ -201,12 +201,12 @@ ts::XML::Element* ts::RST::toXML(XML& xml, XML::Element* parent) const
 {
     XML::Element* root = _is_valid ? xml.addElement(parent, _xml_name) : 0;
     for (EventList::const_iterator it = events.begin(); it != events.end(); ++it) {
-        XML::Element* e = xml.addElement(root, "event");
-        xml.setIntAttribute(e, "transport_stream_id", it->transport_stream_id, true);
-        xml.setIntAttribute(e, "original_network_id", it->original_network_id, true);
-        xml.setIntAttribute(e, "service_id", it->service_id, true);
-        xml.setIntAttribute(e, "event_id", it->event_id, true);
-        xml.setEnumAttribute(RunningStatusNames, e, "running_status", it->running_status);
+        XML::Element* e = xml.addElement(root, u"event");
+        xml.setIntAttribute(e, u"transport_stream_id", it->transport_stream_id, true);
+        xml.setIntAttribute(e, u"original_network_id", it->original_network_id, true);
+        xml.setIntAttribute(e, u"service_id", it->service_id, true);
+        xml.setIntAttribute(e, u"event_id", it->event_id, true);
+        xml.setEnumAttribute(RunningStatusNames, e, u"running_status", it->running_status);
     }
     return root;
 }
@@ -223,16 +223,16 @@ void ts::RST::fromXML(XML& xml, const XML::Element* element)
     XML::ElementVector children;
     _is_valid =
         checkXMLName(xml, element) &&
-        xml.getChildren(children, element, "event");
+        xml.getChildren(children, element, u"event");
 
     for (size_t index = 0; _is_valid && index < children.size(); ++index) {
         Event event;
         _is_valid =
-            xml.getIntAttribute<uint16_t>(event.transport_stream_id, children[index], "transport_stream_id", true, 0, 0x0000, 0xFFFF) &&
-            xml.getIntAttribute<uint16_t>(event.original_network_id, children[index], "original_network_id", true, 0, 0x0000, 0xFFFF) &&
-            xml.getIntAttribute<uint16_t>(event.service_id, children[index], "service_id", true, 0, 0x0000, 0xFFFF) &&
-            xml.getIntAttribute<uint16_t>(event.event_id, children[index], "event_id", true, 0, 0x0000, 0xFFFF) &&
-            xml.getIntEnumAttribute<uint8_t>(event.running_status, RunningStatusNames, children[index], "running_status", true);
+            xml.getIntAttribute<uint16_t>(event.transport_stream_id, children[index], u"transport_stream_id", true, 0, 0x0000, 0xFFFF) &&
+            xml.getIntAttribute<uint16_t>(event.original_network_id, children[index], u"original_network_id", true, 0, 0x0000, 0xFFFF) &&
+            xml.getIntAttribute<uint16_t>(event.service_id, children[index], u"service_id", true, 0, 0x0000, 0xFFFF) &&
+            xml.getIntAttribute<uint16_t>(event.event_id, children[index], u"event_id", true, 0, 0x0000, 0xFFFF) &&
+            xml.getIntEnumAttribute<uint8_t>(event.running_status, RunningStatusNames, children[index], u"running_status", true);
         if (_is_valid) {
             events.push_back(event);
         }

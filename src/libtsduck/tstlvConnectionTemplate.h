@@ -132,7 +132,7 @@ bool ts::tlv::Connection<MUTEX>::receive (MessagePtr& msg, const AbortInterface*
             _invalid_msg_count = 0;
             mf.factory (msg);
             if (report.debug() && !msg.isNull()) {
-                report.debug(u"received message from %s\n%s"{peerName(), msg->dump(4)});
+                report.debug(u"received message from %s\n%s", {peerName(), msg->dump(4)});
             }
             return true;
         }

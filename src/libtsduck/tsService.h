@@ -122,7 +122,7 @@ namespace ts {
         //! @hideinitializer
         //!
 #define SERVICE_PROPERTY_STRING(suffix,field,fullname)                  \
-        SERVICE_PROPERTY(UString, suffix, field, "", fullname)          \
+        SERVICE_PROPERTY(UString, suffix, field, UString(), fullname)   \
         /** Set the fullname.                                        */ \
         /** @param [in] value The fullname.                          */ \
         void set##suffix(const UString& value) {field = value;}         \

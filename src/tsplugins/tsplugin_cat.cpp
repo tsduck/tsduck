@@ -219,10 +219,10 @@ bool ts::CATPlugin::start()
             // There is a private part
             assert(slash == '/');
             size_t pos = val.find(u'/'); // First slash
-            assert(pos != UString::npos);
+            assert(pos != UString::NPOS);
             assert(pos < val.length() - 1);
             pos = val.find(u'/', pos + 1); // Second slash
-            assert(pos != UString::npos);
+            assert(pos != UString::NPOS);
             const UString hexa(val.substr(pos + 1));
             if (!hexa.hexaDecode(desc.private_data)) {
                 tsp->error(u"invalid private data \"%s\" for CA_descriptor, specify an even number of hexa digits", {hexa});

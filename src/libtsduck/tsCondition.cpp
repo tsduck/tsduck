@@ -59,22 +59,22 @@ ts::Condition::Condition() :
     ::pthread_condattr_t attr;
 
     if ((error = ::pthread_condattr_init(&attr)) != 0) {
-        throw ConditionError("cond attr init", error);
+        throw ConditionError(u"cond attr init", error);
         return;
     }
 #if !defined(TS_MAC)
     // The clock attribute is not implemented in MacOS, just keep the default clock.
     else if ((error = ::pthread_condattr_setclock(&attr, CLOCK_REALTIME)) != 0) {
-        throw ConditionError("cond attr set clock", error);
+        throw ConditionError(u"cond attr set clock", error);
         return;
     }
 #endif
     else if ((error = ::pthread_cond_init(&_cond, &attr)) != 0) {
-        throw ConditionError("cond init", error);
+        throw ConditionError(u"cond init", error);
         return;
     }
     else if ((error = ::pthread_condattr_destroy(&attr)) != 0) {
-        throw ConditionError("cond attr destroy", error);
+        throw ConditionError(u"cond attr destroy", error);
         return;
     }
 
@@ -118,7 +118,7 @@ void ts::Condition::signal()
 #else
     int error;
     if ((error = ::pthread_cond_signal(&_cond)) != 0) {
-        throw ConditionError("cond signal", error);
+        throw ConditionError(u"cond signal", error);
     }
 #endif
 }
@@ -189,7 +189,7 @@ bool ts::Condition::wait (Mutex& mutex, MilliSecond timeout, bool& signaled)
     }
     else {
         // Error
-        throw ConditionError("cond timed wait", error);
+        throw ConditionError(u"cond timed wait", error);
     }
 
 #endif

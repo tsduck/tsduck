@@ -57,17 +57,17 @@ namespace ts {
         CTS2() : CipherChainingTemplate<CIPHER>(1, 1, 1) {}
 
         // Implementation of CipherChaining interface.
-        virtual size_t minMessageSize() const {return this->block_size;}
-        virtual bool residueAllowed() const {return true;}
+        virtual size_t minMessageSize() const override {return this->block_size;}
+        virtual bool residueAllowed() const override {return true;}
 
         // Implementation of BlockCipher interface.
-        virtual std::string name() const {return this->algo == 0 ? "" : this->algo->name() + "-CTS2";}
+        virtual UString name() const override {return this->algo == 0 ? UString() : this->algo->name() + u"-CTS2";}
         virtual bool encrypt(const void* plain, size_t plain_length,
                              void* cipher, size_t cipher_maxsize,
-                             size_t* cipher_length = 0);
+                             size_t* cipher_length = 0) override;
         virtual bool decrypt(const void* cipher, size_t cipher_length,
                              void* plain, size_t plain_maxsize,
-                             size_t* plain_length = 0);
+                             size_t* plain_length = 0) override;
     };
 }
 

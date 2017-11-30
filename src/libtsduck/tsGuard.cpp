@@ -47,7 +47,7 @@ ts::Guard::Guard(MutexInterface& mutex, MilliSecond timeout) :
     _is_locked = mutex.acquire(timeout);
 
     if (timeout == Infinite && !_is_locked) {
-        throw GuardError("failed to acquire mutex");
+        throw GuardError(u"failed to acquire mutex");
     }
 }
 

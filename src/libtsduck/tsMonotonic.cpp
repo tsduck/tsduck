@@ -163,7 +163,7 @@ void ts::Monotonic::wait()
         tspec.tv_nsec = long(nano % NanoSecPerSec);
         if (::nanosleep(&tspec, NULL) < 0 && errno != EINTR) {
             // Actual error, not interrupted by a signal
-            throw MonotonicError("nanosleep error", errno);
+            throw MonotonicError(u"nanosleep error", errno);
         }
     }
 
@@ -181,7 +181,7 @@ void ts::Monotonic::wait()
     while ((status = ::clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &due, NULL)) != 0) {
         if (status != EINTR) {
             // Actual error, not interrupted by a signal
-            throw MonotonicError("clock_nanosleep error", errno);
+            throw MonotonicError(u"clock_nanosleep error", errno);
         }
     }
 
@@ -216,7 +216,7 @@ ts::NanoSecond ts::Monotonic::SetPrecision(const NanoSecond& requested)
     ::UINT fail = good;
     do {
         if (good >= 1000) { // 1000 ms = 1 s
-            throw MonotonicError("cannot get system timer precision");
+            throw MonotonicError(u"cannot get system timer precision");
         }
         good = 2 * good;
     } while (::timeBeginPeriod(good) != TIMERR_NOERROR);
@@ -243,7 +243,7 @@ ts::NanoSecond ts::Monotonic::SetPrecision(const NanoSecond& requested)
     // The timer precision cannot be changed. Simply get the smallest delay.
     unsigned long jps = sysconf(_SC_CLK_TCK); // jiffies per second
     if (jps <= 0) {
-        throw MonotonicError("system error: cannot get clock tick");
+        throw MonotonicError(u"system error: cannot get clock tick");
     }
     return std::max(requested, NanoSecond(NanoSecPerSec / jps));
 

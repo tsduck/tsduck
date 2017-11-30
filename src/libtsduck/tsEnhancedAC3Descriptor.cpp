@@ -291,16 +291,16 @@ void ts::EnhancedAC3Descriptor::DisplayDescriptor(TablesDisplay& display, DID di
 ts::XML::Element* ts::EnhancedAC3Descriptor::toXML(XML& xml, XML::Element* parent) const
 {
     XML::Element* root = _is_valid ? xml.addElement(parent, _xml_name) : 0;
-    xml.setBoolAttribute(root, "mixinfoexists", mixinfoexists);
-    xml.setOptionalIntAttribute(root, "component_type", component_type, true);
-    xml.setOptionalIntAttribute(root, "bsid", bsid, true);
-    xml.setOptionalIntAttribute(root, "mainid", mainid, true);
-    xml.setOptionalIntAttribute(root, "asvc", asvc, true);
-    xml.setOptionalIntAttribute(root, "substream1", substream1, true);
-    xml.setOptionalIntAttribute(root, "substream2", substream2, true);
-    xml.setOptionalIntAttribute(root, "substream3", substream3, true);
+    xml.setBoolAttribute(root, u"mixinfoexists", mixinfoexists);
+    xml.setOptionalIntAttribute(root, u"component_type", component_type, true);
+    xml.setOptionalIntAttribute(root, u"bsid", bsid, true);
+    xml.setOptionalIntAttribute(root, u"mainid", mainid, true);
+    xml.setOptionalIntAttribute(root, u"asvc", asvc, true);
+    xml.setOptionalIntAttribute(root, u"substream1", substream1, true);
+    xml.setOptionalIntAttribute(root, u"substream2", substream2, true);
+    xml.setOptionalIntAttribute(root, u"substream3", substream3, true);
     if (!additional_info.empty()) {
-        xml.addHexaText(xml.addElement(root, "additional_info"), additional_info);
+        xml.addHexaText(xml.addElement(root, u"additional_info"), additional_info);
     }
     return root;
 }
@@ -314,13 +314,13 @@ void ts::EnhancedAC3Descriptor::fromXML(XML& xml, const XML::Element* element)
 {
     _is_valid =
         checkXMLName(xml, element) &&
-        xml.getBoolAttribute(mixinfoexists, element, "mixinfoexists", true) &&
-        xml.getOptionalIntAttribute(component_type, element, "component_type") &&
-        xml.getOptionalIntAttribute(bsid, element, "bsid") &&
-        xml.getOptionalIntAttribute(mainid, element, "mainid") &&
-        xml.getOptionalIntAttribute(asvc, element, "asvc") &&
-        xml.getOptionalIntAttribute(substream1, element, "substream1") &&
-        xml.getOptionalIntAttribute(substream2, element, "substream2") &&
-        xml.getOptionalIntAttribute(substream3, element, "substream3") &&
-        xml.getHexaTextChild(additional_info, element, "additional_info", false, 0, MAX_DESCRIPTOR_SIZE - 8);
+        xml.getBoolAttribute(mixinfoexists, element, u"mixinfoexists", true) &&
+        xml.getOptionalIntAttribute(component_type, element, u"component_type") &&
+        xml.getOptionalIntAttribute(bsid, element, u"bsid") &&
+        xml.getOptionalIntAttribute(mainid, element, u"mainid") &&
+        xml.getOptionalIntAttribute(asvc, element, u"asvc") &&
+        xml.getOptionalIntAttribute(substream1, element, u"substream1") &&
+        xml.getOptionalIntAttribute(substream2, element, u"substream2") &&
+        xml.getOptionalIntAttribute(substream3, element, u"substream3") &&
+        xml.getHexaTextChild(additional_info, element, u"additional_info", false, 0, MAX_DESCRIPTOR_SIZE - 8);
 }

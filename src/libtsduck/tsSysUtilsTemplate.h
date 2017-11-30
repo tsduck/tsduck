@@ -47,7 +47,7 @@ bool ts::ExpandWildcardAndAppend(CONTAINER& container, const UString& pattern)
     // On Win32, FindFirstFile / FindNextFile return the file name without directory.
     // We keep the directory part in the pattern to add it later to all file names.
     const UString::size_type pos = pattern.rfind(PathSeparator);
-    const UString dir(pos == UString::NPOS ? "" : pattern.substr(0, pos + 1));
+    const UString dir(pos == UString::NPOS ? u"" : pattern.substr(0, pos + 1));
 
     ::WIN32_FIND_DATAW fdata;
 

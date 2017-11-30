@@ -340,7 +340,7 @@ std::ostream& ts::AVCSequenceParameterSet::display(std::ostream& out, const UStr
         return out;
     }
 
-#define DISP(n) disp(out, margin, #n, n)
+#define DISP(n) disp(out, margin, u ## #n, n)
 
     DISP(forbidden_zero_bit);
     DISP(nal_ref_idc);
