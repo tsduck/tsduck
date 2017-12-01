@@ -139,6 +139,8 @@ void ts::S2SatelliteDeliverySystemDescriptor::deserialize (const Descriptor& des
         input_stream_identifier = GetUInt8(data);
         data += 1; size -= 1;
     }
+
+    _is_valid = size == 0;
 }
 
 
