@@ -134,7 +134,7 @@ void ts::DataBroadcastIdDescriptor::DisplayDescriptor(TablesDisplay& display, DI
 // Static method to display a data broadcast selector bytes.
 //----------------------------------------------------------------------------
 
-void ts::DataBroadcastIdDescriptor::DisplaySelectorBytes(TablesDisplay & display, const uint8_t * data, size_t size, int indent, uint16_t dbid)
+void ts::DataBroadcastIdDescriptor::DisplaySelectorBytes(TablesDisplay& display, const uint8_t* data, size_t size, int indent, uint16_t dbid)
 {
     std::ostream& strm(display.out());
     const std::string margin(indent, ' ');
@@ -197,14 +197,16 @@ void ts::DataBroadcastIdDescriptor::DisplaySelectorBytes(TablesDisplay & display
         if (size > 0) {
             strm << margin << "Private data:" << std::endl
                  << UString::Dump(data, size, UString::HEXA | UString::ASCII, indent);
-            data += size; size = 0;
+            // Unused, end of function.
+            // data += size; size = 0;
         }
     }
     else if (size > 0) {
         // Generic "id selector".
         strm << margin << "Data Broadcast Id selector:" << std::endl
              << UString::Dump(data, size, UString::HEXA | UString::ASCII, indent);
-        data += size; size = 0;
+        // Unused, end of function.
+        // data += size; size = 0;
     }
 }
 

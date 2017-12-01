@@ -264,9 +264,11 @@ void ts::Grid::adjustLayout()
     // Copy requested layout.
     _layout = _requestedLayout;
 
+    // Number of columns containing text (ie. not a border).
+    size_t textColCount = 0;
+
     // Compute total width.
     size_t allWidth = 0;
-    size_t textColCount = 0;
     for (LayoutVector::iterator it = _layout.begin(); it != _layout.end(); ++it) {
         if (!it->isBorder()) {
             textColCount++;
@@ -325,7 +327,7 @@ void ts::Grid::adjustLayout()
 
     // We fall-through here even if we already reduced the column sizes because if
     // we decided to remove borders, we may have reduced the width a bit too much.
-    if (allWidth < _contentWidth) {
+    if (allWidth < _contentWidth && textColCount > 0) {
         // Distribute more space on all text columns.
         // The value "more" may be insufficient because of rounding.
         // We allocate one more space is the last columns to compensate rounding.
