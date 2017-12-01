@@ -1300,6 +1300,102 @@ namespace ts {
         }
 
         //!
+        //! Scan this string for integer or character values using a template and arguments.
+        //!
+        //! This method is similar in principle to @c scanf(). The @a fmt paramter is used as a
+        //! @e format or @e template where sequences starting with '\%' are place-holders for
+        //! arguments. The main different with @c scanf() is that the argument list is typed,
+        //! thanks to C++ features. Thus, the risk of mismatch or crash is eliminated. When
+        //! a '\%' sequence is matched, the presence and type of the corresponding argument
+        //! is known. For this reason, the syntax of the '\%' sequences is simplified.
+        //!
+        //! All spaces in the input string are ignored. A sequence of space characters only
+        //! forces a separation between two fields. Other characters in @a fmt, outside '%'
+        //! sequences, must match the corresponding character in the input string. Scanning
+        //! the input string stops when a match fails.
+        //!
+        //! The available '\%' sequences are:
+        //! - @c \%d : Matches an integer in decimal or hexadecimal. If the field starts with 0x or 0X,
+        //!            the value is interpreted as hexadecimal. Decimal otherwise.
+        //! - @c \%x : Matches an integer in hexadecimal, case-insensitive, without 0x or 0X prefix.
+        //! - @c \%X : Same as %x.
+        //! - @c \%c : Matches the next non-space character. The Unicode code point is returned.
+        //! - @c \%\% : Matches a literal \%.
+        //!
+        //! @param [out] extractedCount The number of successfully extracted values.
+        //! @param [out] endIndex The index in this string after the last extracted value.
+        //! @param [in] fmt Format string with embedded '\%' sequences.
+        //! @param [in] args List of output arguments to receive extracted values.
+        //! The @a args list is built from pointers to integer data of any size, signed or unsigned.
+        //! @return True if the entire string is consumed and the entire format is parsed.
+        //! False otherwise. In other words, the method returns true when this object string
+        //! exactly matches the format in @a fmt.
+        //! @see Format(const UChar* fmt, std::initializer_list<ArgMixIn> args)
+        //!
+        //! @param [out] extractedCount The number of successfully extracted values.
+        //! @param [out] endIndex The index in this string after the last extracted value.
+        //! @param [in] fmt Format string with embedded '\%' sequences.
+        //! @param [in] args List of output arguments to receive extracted values.
+        //! The @a args list is built from pointers to integer data of any size, signed or unsigned.
+        //! @return True if the entire string is consumed and the entire format is parsed.
+        //! False otherwise. In other words, the method returns true when this object string
+        //! exactly matches the format in @a fmt.
+        //! @see scan(size_t&, size_type&, const UChar*, std::initializer_list<ArgMixOut>)
+        //!
+        bool scan(size_t& extractedCount, size_type& endIndex, const UChar* fmt, std::initializer_list<ArgMixOut> args) const;
+
+        //!
+        //! Scan this string for integer or character values using a template and arguments.
+        //! @param [out] extractedCount The number of successfully extracted values.
+        //! @param [out] endIndex The index in this string after the last extracted value.
+        //! @param [in] fmt Format string with embedded '\%' sequences.
+        //! @param [in] args List of output arguments to receive extracted values.
+        //! The @a args list is built from pointers to integer data of any size, signed or unsigned.
+        //! @return True if the entire string is consumed and the entire format is parsed.
+        //! False otherwise. In other words, the method returns true when this object string
+        //! exactly matches the format in @a fmt.
+        //! @see scan(size_t&, size_type&, const UChar*, std::initializer_list<ArgMixOut>)
+        //!
+        bool scan(size_t& extractedCount, size_type& endIndex, const UString& fmt, std::initializer_list<ArgMixOut> args) const
+        {
+            return scan(extractedCount, endIndex, fmt.c_str(), args);
+        }
+
+        //!
+        //! Scan this string for integer or character values using a template and arguments.
+        //! @param [in] fmt Format string with embedded '\%' sequences.
+        //! @param [in] args List of output arguments to receive extracted values.
+        //! The @a args list is built from pointers to integer data of any size, signed or unsigned.
+        //! @return True if the entire string is consumed and the entire format is parsed.
+        //! False otherwise. In other words, the method returns true when this object string
+        //! exactly matches the format in @a fmt.
+        //! @see scan(size_t&, size_type&, const UChar*, std::initializer_list<ArgMixOut>)
+        //!
+        bool scan(const UChar* fmt, std::initializer_list<ArgMixOut> args) const
+        {
+            size_t extractedCount;
+            size_type endIndex;
+            return scan(extractedCount, endIndex, fmt, args);
+        }
+
+        //!
+        //! Scan this string for integer or character values using a template and arguments.
+        //! @param [in] fmt Format string with embedded '\%' sequences.
+        //! @param [in] args List of output arguments to receive extracted values.
+        //! The @a args list is built from pointers to integer data of any size, signed or unsigned.
+        //! @return True if the entire string is consumed and the entire format is parsed.
+        //! False otherwise. In other words, the method returns true when this object string
+        //! exactly matches the format in @a fmt.
+        //! @see scan(size_t&, size_type&, const UChar*, std::initializer_list<ArgMixOut>)
+        //!
+        bool scan(const UString& fmt, std::initializer_list<ArgMixOut> args) const
+        {
+            size_t extractedCount;
+            size_type endIndex;
+            return scan(extractedCount, endIndex, fmt.c_str(), args);
+        }
+
+        //!
         //! Build a multi-line string containing the hexadecimal dump of a memory area.
         //! @param [in] data Starting address of the memory area to dump.
         //! @param [in] size Size in bytes of the memory area to dump.
@@ -1662,6 +1758,41 @@ namespace ts {
             ArgMixInContext() = delete;
             ArgMixInContext(const ArgMixInContext&) = delete;
             ArgMixInContext& operator=(const ArgMixInContext&) = delete;
+        };
+
+        //!
+        //! Analysis context of a Scan string.
+        //!
+        class ArgMixOutContext : public ArgMixContext
+        {
+        public:
+            //!
+            //! Constructor, parse the string and extract values.
+            //! @param [out] extractedCount The number of successfully extracted values.
+            //! @param [in,out] input Input string to parse. Updated after the last extracted sequence.
+            //! @param [in,out] fmt Format string with embedded '\%' sequences. Updated after the last matched sequence.
+            //! @param [in] args List of output arguments to receive extracted values.
+            //!
+            ArgMixOutContext(size_t& extractedCount, const UChar*& input, const UChar*& fmt, const std::initializer_list<ArgMixOut>& args);
+
+        private:
+            typedef std::initializer_list<ts::ArgMixOut>::const_iterator ArgIterator;
+
+            const UChar*      _input;   //!< Current pointer into input string.
+            ArgIterator       _arg;     //!< Current argument.
+            const ArgIterator _end;     //!< After last argument.
+
+            // Skip space sequences in a string.
+            void skipSpaces(const UChar*& s);
+
+            // Process one field, either a literal character or a '%' sequence.
+            // Return true on match, false on error.
+            bool processField();
+
+            // Inaccessible operations.
+            ArgMixOutContext() = delete;
+            ArgMixOutContext(const ArgMixOutContext&) = delete;
+            ArgMixOutContext& operator=(const ArgMixOutContext&) = delete;
         };
     };
 }
