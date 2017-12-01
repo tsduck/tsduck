@@ -1417,6 +1417,24 @@ ts::UString ts::UString::Format(const UChar* fmt, const std::initializer_list<ts
 
 
 //----------------------------------------------------------------------------
+// Scan this string for integer or character values.
+//----------------------------------------------------------------------------
+
+bool ts::UString::scan(size_t& extractedCount, size_type& endIndex, const UChar* fmt, std::initializer_list<ArgMixOut> args) const
+{
+    // Process this string instance.
+    const UChar* input = data();
+    ArgMixOutContext ctx(extractedCount, input, fmt, args);
+
+    // Compute the next index in the input string.
+    endIndex = input - data();
+
+    // Return true when both the input string and the format have been completely consumed.
+    return *input == CHAR_NULL && *fmt == CHAR_NULL;
+}
+
+
+//----------------------------------------------------------------------------
 // Debugging support for Format and Scan.
 //----------------------------------------------------------------------------
 
@@ -1680,4 +1698,68 @@ void ts::UString::ArgMixInContext::getFormatSize(size_t& size)
             debug(u"missing argument for %* specifier");
         }
     }
+}
+
+
+//----------------------------------------------------------------------------
+// Analysis context of a Scan string.
+//----------------------------------------------------------------------------
+
+ts::UString::ArgMixOutContext::ArgMixOutContext(size_t& extractedCount, const UChar*& input, const UChar*& fmt, const std::initializer_list<ArgMixOut>& args) :
+    ArgMixContext(fmt, false),
+    _input(input),
+    _arg(args.begin()),
+    _end(args.end())
+{
+    // Initialize output fields.
+    extractedCount = 0;
+
+    // Process all fields until end of any string or mismatch.
+    do {
+        // Skip spaces in input and format to point to next meaningful field.
+        skipSpaces(_input);
+        skipSpaces(_fmt);
+    } while (*_input != CHAR_NULL && *_fmt != CHAR_NULL && processField());
+
+    // Return updated pointers.
+    extractedCount = _arg - args.begin();
+    input = _input;
+    fmt = _fmt;
+
+    // In debug mode, check if the number of remaining '%' sequences matches the number of remaining arguments.
+    if (debugActive()) {
+        //@@@@
+    }
+}
+
+// Skip space sequences in a string.
+void ts::UString::ArgMixOutContext::skipSpaces(const UChar*& s)
+{
+    while (IsSpace(*s)) {
+        ++s;
+    }
+}
+
+// Process one field, either a literal character or a '%' sequence.
+// Return true on match, false on error.
+bool ts::UString::ArgMixOutContext::processField()
+{
+    // Process literal characters.
+    if (*_fmt != u'%' || _fmt[1] == u'%') {
+        // Either not a '%' sequence or a '%%' meaning a literal '%'.
+        if (*_input != *_fmt) {
+            // Failed to match a literal character.
+            return false;
+        }
+        else {
+            // The literal character matched, advance pointers.
+            ++_input;
+            _fmt += *_fmt == '%' ? 2 : 1;
+            return true;
+        }
+    }
+
+    // This is a '%' sequence.
+
+    return false; //@@@@@@
 }
