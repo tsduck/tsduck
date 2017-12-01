@@ -87,6 +87,12 @@ namespace ts {
 TSPLUGIN_DECLARE_VERSION
 TSPLUGIN_DECLARE_PROCESSOR(ts::BitrateMonitorPlugin)
 
+#if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
+const ts::BitRate ts::BitrateMonitorPlugin::DEFAULT_BITRATE_MIN;
+const ts::BitRate ts::BitrateMonitorPlugin::DEFAULT_BITRATE_MAX;
+const size_t ts::BitrateMonitorPlugin::DEFAULT_TIME_WINDOW_SIZE;
+#endif
+
 
 //----------------------------------------------------------------------------
 // Constructor
