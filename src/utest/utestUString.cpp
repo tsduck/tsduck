@@ -1700,5 +1700,67 @@ void UStringTest::testArgMixOutCalled(const std::initializer_list<ts::ArgMixOut>
 
 void UStringTest::testScan()
 {
-    //@@@@
+    size_t count = 0;
+    size_t index = 0;
+    int i = 0;
+    uint8_t u8 = 0;
+    int16_t i16 = 0;
+    uint32_t u32 = 0;
+    int64_t i64 = 0;
+    ts::UChar uc = ts::CHAR_NULL;
+
+    CPPUNIT_ASSERT(ts::UString(u"").scan(count, index, u"", {}));
+    CPPUNIT_ASSERT_EQUAL(size_t(0), count);
+    CPPUNIT_ASSERT_EQUAL(size_t(0), index);
+
+    CPPUNIT_ASSERT(ts::UString(u"  ").scan(count, index, u" ", {}));
+    CPPUNIT_ASSERT_EQUAL(size_t(0), count);
+    CPPUNIT_ASSERT_EQUAL(size_t(2), index);
+
+    CPPUNIT_ASSERT(ts::UString(u" ").scan(count, index, u"   ", {}));
+    CPPUNIT_ASSERT_EQUAL(size_t(0), count);
+    CPPUNIT_ASSERT_EQUAL(size_t(1), index);
+
+    CPPUNIT_ASSERT(ts::UString(u"-133").scan(count, index, u"%d", {&i}));
+    CPPUNIT_ASSERT_EQUAL(size_t(1), count);
+    CPPUNIT_ASSERT_EQUAL(size_t(4), index);
+    CPPUNIT_ASSERT_EQUAL(-133, i);
+
+    CPPUNIT_ASSERT(ts::UString(u"  6893  ").scan(count, index, u"%d", {&i}));
+    CPPUNIT_ASSERT_EQUAL(size_t(1), count);
+    CPPUNIT_ASSERT_EQUAL(size_t(8), index);
+    CPPUNIT_ASSERT_EQUAL(6893, i);
+
+    CPPUNIT_ASSERT(ts::UString(u" -654 / 0x54/0x0123456789ABCDEF x 54:5  ").scan(count, index, u" %d/%d/%d%c%d:%d", {&i, &u8, &i64, &uc, &i16, &u32}));
+    CPPUNIT_ASSERT_EQUAL(size_t(6), count);
+    CPPUNIT_ASSERT_EQUAL(size_t(40), index);
+    CPPUNIT_ASSERT_EQUAL(-654, i);
+    CPPUNIT_ASSERT_EQUAL(uint8_t(0x54), u8);
+    CPPUNIT_ASSERT_EQUAL(TS_CONST64(0x0123456789ABCDEF), i64);
+    CPPUNIT_ASSERT_EQUAL(u'x', uc);
+    CPPUNIT_ASSERT_EQUAL(int16_t(54), i16);
+    CPPUNIT_ASSERT_EQUAL(uint32_t(5), u32);
+
+    u32 = 27;
+    CPPUNIT_ASSERT(!ts::UString(u" 45 / 79").scan(count, index, u" %d/%d/%d", {&u8, &i16, &u32}));
+    CPPUNIT_ASSERT_EQUAL(size_t(2), count);
+    CPPUNIT_ASSERT_EQUAL(size_t(8), index);
+    CPPUNIT_ASSERT_EQUAL(uint8_t(45), u8);
+    CPPUNIT_ASSERT_EQUAL(int16_t(79), i16);
+    CPPUNIT_ASSERT_EQUAL(uint32_t(27), u32);
+
+    i = 87;
+    CPPUNIT_ASSERT(!ts::UString(u" 67 / 657 / 46 / 78").scan(count, index, u" %d/%d/%d", {&u8, &i16, &u32, &i}));
+    CPPUNIT_ASSERT_EQUAL(size_t(3), count);
+    CPPUNIT_ASSERT_EQUAL(size_t(15), index);
+    CPPUNIT_ASSERT_EQUAL(uint8_t(67), u8);
+    CPPUNIT_ASSERT_EQUAL(int16_t(657), i16);
+    CPPUNIT_ASSERT_EQUAL(uint32_t(46), u32);
+    CPPUNIT_ASSERT_EQUAL(87, i);
+
+    CPPUNIT_ASSERT(!ts::UString(u" 98 / -7889 / 89 / 2 ").scan(count, index, u" %d/%d/%d", {&u8, &i16}));
+    CPPUNIT_ASSERT_EQUAL(size_t(2), count);
+    CPPUNIT_ASSERT_EQUAL(size_t(14), index);
+    CPPUNIT_ASSERT_EQUAL(uint8_t(98), u8);
+    CPPUNIT_ASSERT_EQUAL(int16_t(-7889), i16);
 }
