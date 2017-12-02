@@ -1562,7 +1562,7 @@ namespace ts {
 
         //
         // Override methods which return strings so that they return the new class.
-        // Define additional overloads which char and strings.
+        // Define additional overloads with char and strings.
         //
 #if !defined(DOXYGEN)
         bool operator==(const SuperClass& other) const { return static_cast<SuperClass>(*this) == other; }
