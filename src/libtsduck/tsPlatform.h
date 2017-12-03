@@ -488,10 +488,6 @@
 // warning C4355: 'this' : used in base member initializer list
 #pragma warning (disable:4355)
 
-// Depending on VC++ versions, defining _CRT_SECURE_NO_DEPRECATE is not sufficient.
-// warning C4995: 'sprintf': name was marked as #pragma deprecated
-#pragma warning (disable:4995)
-
 #endif
 
 // System headers
@@ -644,17 +640,6 @@
 
 #if defined(Yield)
 #undef Yield
-#endif
-
-// Other Microsoft VC oddities....
-
-#if defined(TS_WINDOWS) && !defined(DOXYGEN)
-    // Flawfinder: ignore
-    #define snprintf _snprintf
-    // Flawfinder: ignore
-    #define vsnprintf _vsnprintf
-    #define strcasecmp _stricmp
-    #define strncasecmp _strnicmp
 #endif
 
 // For platforms not supporting large files:

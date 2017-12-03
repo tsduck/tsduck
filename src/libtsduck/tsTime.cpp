@@ -107,7 +107,44 @@ bool ts::Time::Fields::operator!= (const Fields& f) const
 {
     return year != f.year || month != f.month || day != f.day ||
         hour != f.hour || minute != f.minute || second != f.second ||
-        millisecond != f.millisecond;
+            millisecond != f.millisecond;
+}
+
+
+//----------------------------------------------------------------------------
+// Check if a year is a leap year (29 days in February).
+//----------------------------------------------------------------------------
+
+bool ts::Time::IsLeapYear(int year)
+{
+    // https://en.wikipedia.org/wiki/Leap_year : "Every year that is exactly
+    // divisible by four is a leap year, except for years that are exactly
+    // divisible by 100, but these centurial years are leap years if they are
+    // exactly divisible by 400. For example, the years 1700, 1800, and 1900
+    // were not leap years, but the years 1600 and 2000 were."
+
+    return year % 4 == 0 && (year % 100 != 0 || year % 400 == 0);
+}
+
+
+//----------------------------------------------------------------------------
+// Validation of the fields.
+//----------------------------------------------------------------------------
+
+bool ts::Time::Fields::isValid() const
+{
+    // Number of days per month.
+    static const int dpm[12] = {31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 31, 31};
+
+    // We don't accept pre-UNIX years to make sure it works everywhere.
+    return year >= 1970 &&
+        month >= 1 && month <= 12 &&
+        day >= 1 && day <= dpm[month - 1] &&
+        (month != 2 || IsLeapYear(year) || day <= 28) &&
+        hour >= 0 && hour <= 23 &&
+        minute >= 0 && minute <= 59 &&
+        second >= 0 && second <= 59 &&
+        millisecond >= 0 && millisecond <= 999;
 }
 
 
@@ -161,6 +198,88 @@ ts::UString ts::Time::format(int fields) const
         s.append(UString::Format(u"%03d", {f.millisecond}));
     }
     return s;
+}
+
+
+//----------------------------------------------------------------------------
+// Decode a time from a string.
+//----------------------------------------------------------------------------
+
+bool ts::Time::decode(const ts::UString& str, int fields)
+{
+    // Replace all non-digit character by spaces.
+    UString s(str);
+    for (size_t i = 0; i < s.size(); ++i) {
+        if (!IsDigit(s[i])) {
+            s[i] = u' ';
+        }
+    }
+
+    // Decode up to 7 integer fields.
+    int f[7];
+    size_t count = 0;
+    size_t end = 0;
+    s.scan(count, end, u"%d %d %d %d %d %d %d", {&f[0], &f[1], &f[2], &f[3], &f[4], &f[5], &f[6]});
+
+    // Count how many fields are expected.
+    size_t expected = 0;
+    for (int i = 0; i < 7; ++i) {
+        if ((fields & (1 << i)) != 0) {
+            ++expected;
+        }
+    }
+
+    // The complete string must have been decoded.
+    if (expected == 0 || count != expected || end < s.length()) {
+        return false;
+    }
+
+    // Preset time fields with default values.
+    Fields t(0, 1, 1, 0, 0, 0, 0);
+
+    // Distribute fields according to user-supplied flags.
+    size_t index = 0;
+    if ((fields & YEAR) != 0) {
+        t.year = f[index++];
+    }
+    if ((fields & MONTH) != 0) {
+        t.month = f[index++];
+    }
+    if ((fields & DAY) != 0) {
+        t.day = f[index++];
+    }
+    if ((fields & HOUR) != 0) {
+        t.hour = f[index++];
+    }
+    if ((fields & MINUTE) != 0) {
+        t.minute = f[index++];
+    }
+    if ((fields & SECOND) != 0) {
+        t.second = f[index++];
+    }
+    if ((fields & MILLISECOND) != 0) {
+        t.millisecond = f[index++];
+    }
+
+    // The default year is this year.
+    if (t.year == 0) {
+        Fields now(CurrentLocalTime());
+        t.year = now.year;
+    }
+
+    // Check that all provided fields are correct.
+    if (!t.isValid()) {
+        return false;
+    }
+
+    // Build the time value.
+    try {
+        *this = Time(t);
+    }
+    catch (TimeError) {
+        return false;
+    }
+    return true;
 }
 
 

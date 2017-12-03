@@ -204,26 +204,25 @@ bool ts::CATPlugin::start()
     const size_t add_count = count(u"add");
     _add_descs.clear();
     for (size_t n = 0; n < add_count; n++) {
+
+        // Get a description: cas-id/PID[/private-data]
         const UString val(value(u"add", u"", n));
         int casid = 0, pid = 0;
-        char slash = 0;
-        const int count = ::sscanf(val.toUTF8().c_str(), "%i/%i%c", &casid, &pid, &slash);
-        if ((count != 2 && (count != 3 || slash != '/')) || casid < 0 || casid > 0xFFFF || pid < 0 || pid >= PID_MAX) {
+        size_t count = 0, index = 0;
+        val.scan(count, index, u"%i/%i", {&casid, &pid});
+        // On return, index points to the next index in val after "cas-id/PID".
+        // If there is a private part, then index must points to a '/'.
+        if (count != 2 || casid < 0 || casid > 0xFFFF || pid < 0 || pid >= PID_MAX || (index < val.length() && val[index] != u'/')) {
             tsp->error(u"invalid \"cas-id/PID[/private-data]\" value \"%s\"", {val});
             return false;
         }
+
         CADescriptor desc;
-        desc.cas_id = uint16_t (casid);
-        desc.ca_pid = PID (pid);
-        if (count == 3) {
+        desc.cas_id = uint16_t(casid);
+        desc.ca_pid = PID(pid);
+        if (index < val.length()) {
             // There is a private part
-            assert(slash == '/');
-            size_t pos = val.find(u'/'); // First slash
-            assert(pos != UString::NPOS);
-            assert(pos < val.length() - 1);
-            pos = val.find(u'/', pos + 1); // Second slash
-            assert(pos != UString::NPOS);
-            const UString hexa(val.substr(pos + 1));
+            const UString hexa(val.substr(index + 1));
             if (!hexa.hexaDecode(desc.private_data)) {
                 tsp->error(u"invalid private data \"%s\" for CA_descriptor, specify an even number of hexa digits", {hexa});
                 return false;

@@ -1763,4 +1763,14 @@ void UStringTest::testScan()
     CPPUNIT_ASSERT_EQUAL(size_t(14), index);
     CPPUNIT_ASSERT_EQUAL(uint8_t(98), u8);
     CPPUNIT_ASSERT_EQUAL(int16_t(-7889), i16);
+
+    CPPUNIT_ASSERT(ts::UString(u"8/9/").scan(count, index, u" %i/%i/", {&u8, &i16}));
+    CPPUNIT_ASSERT_EQUAL(size_t(2), count);
+    CPPUNIT_ASSERT_EQUAL(size_t(4), index);
+    CPPUNIT_ASSERT_EQUAL(uint8_t(8), u8);
+    CPPUNIT_ASSERT_EQUAL(int16_t(9), i16);
+
+    CPPUNIT_ASSERT(ts::UString(u"73/-3457").scan(u" %i/%i", {&u8, &i16}));
+    CPPUNIT_ASSERT_EQUAL(uint8_t(73), u8);
+    CPPUNIT_ASSERT_EQUAL(int16_t(-3457), i16);
 }

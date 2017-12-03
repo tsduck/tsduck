@@ -235,35 +235,28 @@ bool ts::TimePlugin::addEvents(const UChar* option, Status status)
     const Time start_time(Time::CurrentLocalTime());
 
     for (size_t index = 0; index < count(option); ++index) {
-        const UString time(value(option, u"", index));
-        try {
-            if (time.empty()) {
-                // If the time string is empty, this is the initial action
-                _status = status;
-            }
-            else if (_relative) {
-                // Decode relative time string (a number of seconds)
-                MilliSecond second = 0;
-                if (!time.toInteger(second)) {
-                    tsp->error(u"invalid relative number of seconds: %s", {time});
-                    return false;
-                }
-                _events.push_back(TimeEvent(status, start_time + second * MilliSecPerSec));
-            }
-            else {
-                // Decode an absolute time string
-                int year = 0, month = 0, day = 0, hour = 0, minute = 0, second = 0;
-                char unused = 0;
-                if (::sscanf(time.toUTF8().c_str(), "%d/%d/%d:%d:%d:%d%c", &year, &month, &day, &hour, &minute, &second, &unused) != 6) {
-                    tsp->error(u"invalid time value \"%s\" (use \"year/month/day:hour:minute:second\")", {time});
-                    return false;
-                }
-                _events.push_back(TimeEvent(status, Time(year, month, day, hour, minute, second)));
-            }
+        const UString timeString(value(option, u"", index));
+        if (timeString.empty()) {
+            // If the time string is empty, this is the initial action
+            _status = status;
         }
-        catch (Time::TimeError) {
-            tsp->error(u"at least one invalid value in \"%s\"", {time});
-            return false;
+        else if (_relative) {
+            // Decode relative time string (a number of seconds)
+            MilliSecond second = 0;
+            if (!timeString.toInteger(second)) {
+                tsp->error(u"invalid relative number of seconds: %s", {timeString});
+                return false;
+            }
+            _events.push_back(TimeEvent(status, start_time + second * MilliSecPerSec));
+        }
+        else {
+            // Decode an absolute time string
+            Time absTime;
+            if (!absTime.decode(timeString)) {
+                tsp->error(u"invalid time value \"%s\" (use \"year/month/day:hour:minute:second\")", {timeString});
+                return false;
+            }
+            _events.push_back(TimeEvent(status, absTime));
         }
     }
 

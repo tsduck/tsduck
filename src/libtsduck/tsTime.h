@@ -265,6 +265,12 @@ namespace ts {
             //! @c false otherwise.
             //!
             bool operator!=(const Fields& other) const;
+
+            //!
+            //! Validation of the fields.
+            //! @return True if the fields are valid, false otherwise.
+            //!
+            bool isValid() const;
         };
 
         //!
@@ -318,11 +324,26 @@ namespace ts {
         //! Format a string representation of a time.
         //! @param [in] fields A combination of option flags indicating which fields
         //! should be included. This is typically the result of or'ed values from the enum
-        //! type @link FieldMask @endlink.
+        //! type FieldMask.
         //! @return A string containing the formatted date.
         //! @throw ts::Time::TimeError In case of operating system time error.
         //!
         UString format(int fields = ALL) const;
+
+        //!
+        //! Decode a time from a string.
+        //! The resulting decoded time is stored in this object.
+        //! @param [in] str A string describing a date and time in a rudimentary format.
+        //! The string shall contain integer values describing the various fields
+        //! in descending order, from year to millisecond. The integer fields can
+        //! be separated by any combination of non-digit characters. The list of
+        //! expected fields is given by the parameter @a fields.
+        //! @param [in] fields A combination of option flags indicating which fields
+        //! should be included. This is typically the result of or'ed values from the enum
+        //! type FieldMask.
+        //! @return True on success, false if the string cannot be decoded.
+        //!
+        bool decode(const UString& str, int fields = DATE | TIME);
 
         //!
         //! Conversion operator from @c Time to @c UString.
@@ -570,6 +591,13 @@ namespace ts {
         {
             return CurrentLocalTime().nextYear();
         }
+
+        //!
+        //! Check if a year is a leap year (29 days in February).
+        //! @param [in] year The year to check.
+        //! @return True if @a year is a leap year.
+        //!
+        static bool IsLeapYear(int year);
 
         //!
         //! Constant representing the Epoch, ie the first representable time

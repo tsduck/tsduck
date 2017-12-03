@@ -1317,8 +1317,9 @@ namespace ts {
         //! The available '\%' sequences are:
         //! - @c \%d : Matches an integer in decimal or hexadecimal. If the field starts with 0x or 0X,
         //!            the value is interpreted as hexadecimal. Decimal otherwise.
+        //! - @c \%i : Same as \%d.
         //! - @c \%x : Matches an integer in hexadecimal, case-insensitive, without 0x or 0X prefix.
-        //! - @c \%X : Same as %x.
+        //! - @c \%X : Same as \%x.
         //! - @c \%c : Matches the next non-space character. The Unicode code point is returned.
         //! - @c \%\% : Matches a literal \%.
         //!

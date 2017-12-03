@@ -134,18 +134,9 @@ bool ts::TimeRefPlugin::start()
     _use_timeref = present(u"start");
     if (_use_timeref) {
         const UString start(value(u"start"));
-        try {
-            // Decode an absolute time string
-            int year = 0, month = 0, day = 0, hour = 0, minute = 0, second = 0;
-            char unused = 0;
-            if (::sscanf(start.toUTF8().c_str(), "%d/%d/%d:%d:%d:%d%c", &year, &month, &day, &hour, &minute, &second, &unused) != 6) {
-                tsp->error(u"invalid time value \"%s\" (use \"year/month/day:hour:minute:second\")", {start});
-                return false;
-            }
-            _timeref = Time(year, month, day, hour, minute, second);
-        }
-        catch (Time::TimeError) {
-            tsp->error(u"at least one invalid value in \"%s\"", {start});
+        // Decode an absolute time string
+        if (!_timeref.decode(start)) {
+            tsp->error(u"invalid time value \"%s\" (use \"year/month/day:hour:minute:second\")", {start});
             return false;
         }
     }
