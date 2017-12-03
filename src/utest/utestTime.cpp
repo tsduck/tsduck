@@ -52,15 +52,19 @@ public:
     void testLocalTime();
     void testThisNext();
     void testFields();
+    void testFieldsValid();
+    void testDecode();
 
-    CPPUNIT_TEST_SUITE (TimeTest);
-    CPPUNIT_TEST (testTime);
-    CPPUNIT_TEST (testFormat);
-    CPPUNIT_TEST (testOperators);
-    CPPUNIT_TEST (testLocalTime);
-    CPPUNIT_TEST (testThisNext);
-    CPPUNIT_TEST (testFields);
-    CPPUNIT_TEST_SUITE_END ();
+    CPPUNIT_TEST_SUITE(TimeTest);
+    CPPUNIT_TEST(testTime);
+    CPPUNIT_TEST(testFormat);
+    CPPUNIT_TEST(testOperators);
+    CPPUNIT_TEST(testLocalTime);
+    CPPUNIT_TEST(testThisNext);
+    CPPUNIT_TEST(testFields);
+    CPPUNIT_TEST(testFieldsValid);
+    CPPUNIT_TEST(testDecode);
+    CPPUNIT_TEST_SUITE_END();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION (TimeTest);
@@ -195,4 +199,54 @@ void TimeTest::testFields()
 
     ts::Time::Fields f3 (t1);
     CPPUNIT_ASSERT(f3 == f1);
+}
+
+void TimeTest::testFieldsValid()
+{
+    CPPUNIT_ASSERT(ts::Time::Fields(2012, 8, 24, 10, 25, 12, 100).isValid());
+    CPPUNIT_ASSERT(ts::Time::Fields(2017, 2, 28, 0, 0, 0, 0).isValid());
+    CPPUNIT_ASSERT(!ts::Time::Fields(2017, 2, 29, 0, 0, 0, 0).isValid());
+    CPPUNIT_ASSERT(ts::Time::Fields(1996, 2, 29, 0, 0, 0, 0).isValid());
+    CPPUNIT_ASSERT(ts::Time::Fields(2000, 2, 29, 0, 0, 0, 0).isValid());
+    CPPUNIT_ASSERT(!ts::Time::Fields(2100, 2, 29, 0, 0, 0, 0).isValid());
+    CPPUNIT_ASSERT(!ts::Time::Fields(1960, 8, 24, 10, 25, 12, 100).isValid());
+    CPPUNIT_ASSERT(!ts::Time::Fields(2012, 13, 24, 10, 25, 12, 100).isValid());
+    CPPUNIT_ASSERT(!ts::Time::Fields(2012, 4, 31, 10, 25, 12, 100).isValid());
+    CPPUNIT_ASSERT(!ts::Time::Fields(2012, 8, 24, 24, 25, 12, 100).isValid());
+    CPPUNIT_ASSERT(!ts::Time::Fields(2012, 8, 24, 10, 66, 12, 100).isValid());
+    CPPUNIT_ASSERT(!ts::Time::Fields(2012, 8, 24, 10, 25, 89, 100).isValid());
+    CPPUNIT_ASSERT(!ts::Time::Fields(2012, 8, 24, 10, 25, 12, 1100).isValid());
+}
+
+void TimeTest::testDecode()
+{
+    ts::Time t;
+    ts::Time::Fields f;
+
+    CPPUNIT_ASSERT(t.decode(u" 2017-12-02 17:28:46"));
+    f = ts::Time::Fields(t);
+    CPPUNIT_ASSERT_EQUAL(2017, f.year);
+    CPPUNIT_ASSERT_EQUAL(12, f.month);
+    CPPUNIT_ASSERT_EQUAL(2, f.day);
+    CPPUNIT_ASSERT_EQUAL(17, f.hour);
+    CPPUNIT_ASSERT_EQUAL(28, f.minute);
+    CPPUNIT_ASSERT_EQUAL(46, f.second);
+    CPPUNIT_ASSERT_EQUAL(0, f.millisecond);
+
+    CPPUNIT_ASSERT(!t.decode(u" 2017-00-02 17:28:46"));
+    CPPUNIT_ASSERT(!t.decode(u" 2017-12-40 17:28:46"));
+    CPPUNIT_ASSERT(!t.decode(u" 2017-12-02 46:28:46"));
+    CPPUNIT_ASSERT(!t.decode(u" 2017-12-02 17:67:46"));
+    CPPUNIT_ASSERT(!t.decode(u" 2017-12-02 17:28:345"));
+    CPPUNIT_ASSERT(!t.decode(u" 2017-12-02 17:28:46", ts::Time::YEAR | ts::Time::MONTH));
+
+    CPPUNIT_ASSERT(t.decode(u" 2017 / 12 x 02 ", ts::Time::YEAR | ts::Time::MINUTE | ts::Time::MILLISECOND));
+    f = ts::Time::Fields(t);
+    CPPUNIT_ASSERT_EQUAL(2017, f.year);
+    CPPUNIT_ASSERT_EQUAL(1, f.month);
+    CPPUNIT_ASSERT_EQUAL(1, f.day);
+    CPPUNIT_ASSERT_EQUAL(0, f.hour);
+    CPPUNIT_ASSERT_EQUAL(12, f.minute);
+    CPPUNIT_ASSERT_EQUAL(0, f.second);
+    CPPUNIT_ASSERT_EQUAL(2, f.millisecond);
 }

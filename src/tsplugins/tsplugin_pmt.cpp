@@ -277,10 +277,7 @@ bool ts::PMTPlugin::start()
     for (size_t n = 0; n < add_count; n++) {
         const UString s(value(u"add-pid", u"", n));
         int pid = 0, stype = 0;
-        char unused = 0;
-        if (::sscanf(s.toUTF8().c_str(), "%i/%i%c", &pid, &stype, &unused) == 2 &&
-            pid >= 0 && pid < PID_MAX && stype >= 0 && stype <= 0xFF)
-        {
+        if (s.scan("%i/%i", {&pid, &stype}) && pid >= 0 && pid < PID_MAX && stype >= 0 && stype <= 0xFF) {
             _added_pid.push_back(NewPID(PID(pid), uint8_t(stype)));
         }
         else {
@@ -294,8 +291,7 @@ bool ts::PMTPlugin::start()
     for (size_t n = 0; n < move_count; n++) {
         const UString s(value(u"move-pid", u"", n));
         int opid = 0, npid = 0;
-        char unused;
-        if (::sscanf(s.toUTF8().c_str(), "%i/%i%c", &opid, &npid, &unused) != 2 || opid < 0 || opid >= PID_MAX || npid < 0 || npid >= PID_MAX) {
+        if (!s.scan("%i/%i", {&opid, &npid}) || opid < 0 || opid >= PID_MAX || npid < 0 || npid >= PID_MAX) {
             error(u"invalid \"old-PID/new-PID\" value \"%s\"", {s});
             return false;
         }

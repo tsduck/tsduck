@@ -1776,7 +1776,7 @@ bool ts::UString::ArgMixOutContext::processField()
     }
 
     // Process invalid '%' sequence.
-    if (cmd != u'c' && cmd != u'd' && cmd != u'x' && cmd != u'X') {
+    if (cmd != u'c' && cmd != u'd' && cmd != u'i' && cmd != u'x' && cmd != u'X') {
         if (debugActive()) {
             debug(u"invalid '%' sequence", cmd);
         }
