@@ -156,7 +156,7 @@ ts::UString ts::DektecDevice::GetPortDescription(const Dtapi::DtHwFuncDesc& port
     // When using DTAPI <= 5.27 with GCC >= 5.1.0, we cannot use methods handling strings.
 
     UString caps;
-#if defined(TS_GCC_VERSION) && (TS_GCC_VERSION >= 50100) && (TS_DTAPI_VERSION <= 527)
+#if defined(TS_GCC_VERSION) && (TS_GCC_VERSION >= 50100) && (TS_DTAPI_VERSION <= 528)
     // This is the configuration where we cannot use DtCaps::ToString.
     // Fallback to a list of integers. There is no public value to get the
     // maximum number of capabilities. As of DTAPI 5.24, there are 256 of them.

@@ -379,7 +379,7 @@ void ArgsTest::testValidCommandContainer()
     arguments.push_back(u"--opt3");
     arguments.push_back(u"0");
 
-    CPPUNIT_ASSERT(args.analyze(u"test", {arguments}));
+    CPPUNIT_ASSERT(args.analyze(u"test", arguments));
 
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"test", args.appName());
     CPPUNIT_ASSERT(args.count(u"") == 2);
