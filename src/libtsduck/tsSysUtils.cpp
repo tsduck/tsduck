@@ -233,7 +233,7 @@ ts::UString ts::ExecutableFile()
     else {
         assert(length <= int(sizeof(name)));
         // We handle here the fact that readlink does not terminate with ASCII NUL.
-        return UString(name, length);
+        return UString::FromUTF8(name, length);
     }
 
 #elif defined(TS_MAC)
@@ -248,7 +248,7 @@ ts::UString ts::ExecutableFile()
     }
     else {
         assert(length <= int(sizeof(name)));
-        return UString(name, length);
+        return UString::FromUTF8(name, length);
     }
 
 
@@ -283,7 +283,7 @@ ts::UString ts::HostName()
     }
     else {
         name[sizeof(name) - 1] = '\0';
-        return name;
+        return UString::FromUTF8(name);
     }
 
 #endif
@@ -620,7 +620,7 @@ ts::UString ts::ErrorCodeMessage(ts::ErrorCode code)
         message[sizeof(message) - 1] = 0;
         // Remove trailing newlines (if any)
         for (size_t i = ::strlen(result); i > 0 && (result[i - 1] == '\n' || result[i - 1] == '\r'); result[--i] = 0) {}
-        return result;
+        return UString::FromUTF8(result);
     }
 
 #endif
@@ -874,7 +874,7 @@ ts::UString ts::GetEnvironment(const UString& name, const UString& def)
 #else
     // Flawfinder: ignore: Environment variables are untrustable input.
     const char* value = ::getenv(name.toUTF8().c_str());
-    return value != 0 ? value : def;
+    return value != 0 ? UString::FromUTF8(value) : def;
 #endif
 }
 
@@ -1018,7 +1018,7 @@ void ts::GetEnvironment(Environment& env)
 #else
 
     for (char** p = ::environ; *p != 0; ++p) {
-        AddNameValue(env, *p);
+        AddNameValue(env, UString::FromUTF8(*p));
     }
 
 #endif
