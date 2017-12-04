@@ -83,12 +83,12 @@ void TablesFactoryTest::testRegistrations()
     utest::Out() << "TablesFactoryTest::testRegistrations: table names: " << ts::UString::Join(names) << std::endl;
 
     CPPUNIT_ASSERT(!names.empty());
-    CPPUNIT_ASSERT(ts::UString("PAT").containSimilar(names));
-    CPPUNIT_ASSERT(ts::UString("PMT").containSimilar(names));
+    CPPUNIT_ASSERT(ts::UString(u"PAT").containSimilar(names));
+    CPPUNIT_ASSERT(ts::UString(u"PMT").containSimilar(names));
 
     ts::TablesFactory::Instance()->getRegisteredDescriptorNames(names);
     utest::Out() << "TablesFactoryTest::testRegistrations: descriptor names: " << ts::UString::Join(names) << std::endl;
 
     CPPUNIT_ASSERT(!names.empty());
-    CPPUNIT_ASSERT(ts::UString("ca_descriptor").containSimilar(names));
+    CPPUNIT_ASSERT(ts::UString(u"ca_descriptor").containSimilar(names));
 }

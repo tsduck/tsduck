@@ -172,7 +172,7 @@ bool ts::PATPlugin::start()
     for (size_t n = 0; n < add_count; n++) {
         getValue(sidpid, u"add-service", u"", n);
         int sid = 0, pid = 0;
-        if (!sidpid.scan("%i/%i", {&sid, &pid}) || sid < 0 || sid > 0xFFFF || pid < 0 || pid >= PID_MAX) {
+        if (!sidpid.scan(u"%i/%i", {&sid, &pid}) || sid < 0 || sid > 0xFFFF || pid < 0 || pid >= PID_MAX) {
             Args::error(u"invalid \"service_id/PID\" value \"%s\"", {sidpid});
             return false;
         }

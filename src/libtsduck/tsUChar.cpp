@@ -848,7 +848,7 @@ void ts::UString::convertToHTML()
             ++i;
         }
         else {
-            const UString rep(it->second);
+            const UString rep(UString::FromUTF8(it->second));
             at(i) = ts::AMPERSAND;
             insert(i + 1, rep);
             insert(i + 1 + rep.length(), 1, ts::SEMICOLON);

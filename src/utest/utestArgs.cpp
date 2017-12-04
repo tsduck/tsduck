@@ -169,7 +169,7 @@ void ArgsTest::testHelp()
     const ts::UString version(log.getMessages());
     const size_t dash = version.find(u'-');
     CPPUNIT_ASSERT(dash != ts::UString::NPOS);
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(TS_STRINGIFY(TS_VERSION_MAJOR) "." TS_STRINGIFY(TS_VERSION_MINOR), version.substr(0, dash));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(TS_USTRINGIFY(TS_VERSION_MAJOR) u"." TS_USTRINGIFY(TS_VERSION_MINOR), version.substr(0, dash));
 }
 
 // Test case: copy options
@@ -210,8 +210,8 @@ namespace {
             option(u"opt6", 'b', ts::Args::UINT8);
             option(u"opt7",  0,  ts::Args::UINT16);
             option(u"opt8",  0,  ts::Args::UINT32, 0, 0, 0, 0, true);
-            option(u"opt9", 'c', ts::Enumeration({{"val1", 11}, {u"val2", 12}, {u"val3", 13}}));
-            option(u"mask",  0,  ts::Enumeration({{"bit1", 0x01}, {u"bit2", 0x02}, {u"bit3", 0x04}}), 0, ts::Args::UNLIMITED_COUNT);
+            option(u"opt9", 'c', ts::Enumeration({{u"val1", 11}, {u"val2", 12}, {u"val3", 13}}));
+            option(u"mask",  0,  ts::Enumeration({{u"bit1", 0x01}, {u"bit2", 0x02}, {u"bit3", 0x04}}), 0, ts::Args::UNLIMITED_COUNT);
         }
     };
 }
@@ -258,8 +258,8 @@ void ArgsTest::testValidCommandVariableArgs()
     ts::UStringVector vs;
     args.getValues(vs, u"");
     ts::UStringVector ref;
-    ref.push_back("a");
-    ref.push_back("b");
+    ref.push_back(u"a");
+    ref.push_back(u"b");
     CPPUNIT_ASSERT(vs == ref);
 
     int i;
@@ -342,8 +342,8 @@ void ArgsTest::testValidCommandArgcArgv()
     ts::UStringVector vs;
     args.getValues(vs, u"");
     ts::UStringVector ref;
-    ref.push_back("a");
-    ref.push_back("b");
+    ref.push_back(u"a");
+    ref.push_back(u"b");
     CPPUNIT_ASSERT(vs == ref);
 
     int i;
@@ -414,8 +414,8 @@ void ArgsTest::testValidCommandContainer()
     ts::UStringVector vs;
     args.getValues(vs, u"");
     ts::UStringVector ref;
-    ref.push_back("a");
-    ref.push_back("b");
+    ref.push_back(u"a");
+    ref.push_back(u"b");
     CPPUNIT_ASSERT(vs == ref);
 
     int i;
@@ -541,7 +541,7 @@ void ArgsTest::testInvalidEnum()
 
     CPPUNIT_ASSERT(!args.analyze(u"test", {u"--opt9", u"x", u"a", u"b"}));
     utest::Out() << "ArgsTest: testInvalidEnum: \"" << log << "\"" << std::endl;
-    CPPUNIT_ASSERT_EQUAL(ts::UString("Error: invalid value x for option --opt9 (-c), use one of val1, val2, val3"), log.getMessages());
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"Error: invalid value x for option --opt9 (-c), use one of val1, val2, val3", log.getMessages());
 }
 
 // Test case:
@@ -574,7 +574,7 @@ void ArgsTest::testBitMask()
 void ArgsTest::testGatherParameters()
 {
     ts::ReportBuffer<> log;
-    ts::Args args("description", u"syntax", u"help", ts::Args::NO_EXIT_ON_ERROR | ts::Args::GATHER_PARAMETERS);
+    ts::Args args(u"description", u"syntax", u"help", ts::Args::NO_EXIT_ON_ERROR | ts::Args::GATHER_PARAMETERS);
     args.redirectReport(&log);
 
     args.option(u"");

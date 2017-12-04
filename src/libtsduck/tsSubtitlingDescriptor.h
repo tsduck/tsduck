@@ -57,12 +57,21 @@ namespace ts {
 
             //!
             //! Default constructor.
-            //! @param [in] code ISO-639 language code, 3 characters, as a C-string. Can be null.
+            //! @param [in] code ISO-639 language code, 3 characters. Can be null.
             //! @param [in] subt Subtitling type.
             //! @param [in] comp Composition page identifier.
             //! @param [in] ancil Ancillary page identifier.
             //!
-            Entry(const char* code = 0, uint8_t subt = 0, uint16_t comp = 0, uint16_t ancil = 0);
+            Entry(const UChar* code = 0, uint8_t subt = 0, uint16_t comp = 0, uint16_t ancil = 0);
+
+            //!
+            //! Default constructor.
+            //! @param [in] code ISO-639 language code, 3 characters.
+            //! @param [in] subt Subtitling type.
+            //! @param [in] comp Composition page identifier.
+            //! @param [in] ancil Ancillary page identifier.
+            //!
+            Entry(const UString& code, uint8_t subt = 0, uint16_t comp = 0, uint16_t ancil = 0);
         };
 
         //!

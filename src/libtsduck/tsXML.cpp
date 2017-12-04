@@ -73,11 +73,11 @@ void ts::XML::reportError(const UString& message, tinyxml2::XMLError code, Node*
         UString msg(message);
         if (err1 != 0 && err1[0] != '\0') {
             msg += u", ";
-            msg += err1;
+            msg += UString::FromUTF8(err1);
         }
         if (err2 != 0 && err2[0] != '\0') {
             msg += u", ";
-            msg += err2;
+            msg += UString::FromUTF8(err2);
         }
         const char* name = 0;
         if (int(code) >= 0 && code < tinyxml2::XML_ERROR_COUNT) {
@@ -85,7 +85,7 @@ void ts::XML::reportError(const UString& message, tinyxml2::XMLError code, Node*
         }
         if (name != 0 && name[0] != '\0') {
             msg += u" (";
-            msg += name;
+            msg += UString::FromUTF8(name);
             msg += u")";
         }
         else {
@@ -191,7 +191,7 @@ ts::UString ts::XML::toString(const Document& doc, int indent)
     doc.Print(&printer);
 
     // Extract the resulting string and normalize end of lines.
-    return UString(printer.CStr()).toSubstituted(UString(1, CARRIAGE_RETURN), UString());
+    return UString::FromUTF8(printer.CStr()).toSubstituted(UString(1, CARRIAGE_RETURN), UString());
 }
 
 
@@ -463,7 +463,7 @@ bool ts::XML::getText(UString& data, const Element* elem, bool trim, size_t minS
         if (text != 0) {
             const char* s = text->Value();
             if (s != 0) {
-                data.append(s);
+                data.append(UString::FromUTF8(s));
             }
         }
     }
@@ -691,32 +691,8 @@ ts::UString ts::XML::TimeToString(Second value)
 
 bool ts::XML::DateTimeFromString(Time& value, const UString& str)
 {
-    UStringVector main;
-    UStringVector date;
-    UStringVector time;
-
-    str.split(main, u' ', true);
-    bool ok = main.size() == 2;
-    if (ok) {
-        main[0].split(date, u'-', true);
-        main[1].split(time, ':', true);
-        ok = date.size() == 3 && time.size() == 3;
-    }
-
-    Time::Fields f;
-    ok = ok &&
-        date[0].toInteger(f.year)   &&
-        date[1].toInteger(f.month)  && f.month  >= 1 && f.month  <= 12 &&
-        date[2].toInteger(f.day)    && f.day    >= 1 && f.day    <= 31 &&
-        time[0].toInteger(f.hour)   && f.hour   >= 0 && f.hour   <= 23 &&
-        time[1].toInteger(f.minute) && f.minute >= 0 && f.minute <= 59 &&
-        time[2].toInteger(f.second) && f.second >= 0 && f.second <= 59;
-
-    if (ok) {
-        value = Time(f);
-    }
-
-    return ok;
+    // We are tolerant on syntax, decode 6 fields, regardless of separators.
+    return value.decode(str, Time::YEAR | Time::MONTH | Time::DAY | Time::HOUR | Time::MINUTE | Time::SECOND);
 }
 
 
@@ -726,16 +702,14 @@ bool ts::XML::DateTimeFromString(Time& value, const UString& str)
 
 bool ts::XML::TimeFromString(Second& value, const UString& str)
 {
-    UStringVector time;
     Second hours = 0;
     Second minutes = 0;
     Second seconds = 0;
-
-    str.split(time, u':', true);
-    bool ok = time.size() == 3 &&
-        time[0].toInteger(hours)   && hours   >= 0 && hours   <= 23 &&
-        time[1].toInteger(minutes) && minutes >= 0 && minutes <= 59 &&
-        time[2].toInteger(seconds) && seconds >= 0 && seconds <= 59;
+    
+    const bool ok = str.scan(u"%d:%d:%d", {&hours, &minutes, &seconds}) &&
+        hours   >= 0 && hours   <= 23 &&
+        minutes >= 0 && minutes <= 59 &&
+        seconds >= 0 && seconds <= 59;
 
     if (ok) {
         value = (hours * 3600) + (minutes * 60) + seconds;
@@ -824,9 +798,9 @@ const ts::XML::Element* ts::XML::findModelElement(const Element* elem, const cha
     }
 
     // Loop on all children.
-    const UString uName(name);
+    const UString uName(UString::FromUTF8(name));
     for (const Element* child = elem->FirstChildElement(); child != 0; child = child->NextSiblingElement()) {
-        const UString childName(child->Name());
+        const UString childName(UString::FromUTF8(child->Name()));
         if (childName.similar(uName)) {
             // Found the child.
             return child;
@@ -844,7 +818,7 @@ const ts::XML::Element* ts::XML::findModelElement(const Element* elem, const cha
                 // Locate the referenced node inside the model root.
                 const Document* document = elem->GetDocument();
                 const Element* root = document == 0 ? 0 : document->RootElement();
-                const Element* refElem = root == 0 ? 0 : findFirstChild(root, refName, true);
+                const Element* refElem = root == 0 ? 0 : findFirstChild(root, UString::FromUTF8(refName), true);
                 if (refElem == 0) {
                     // The referenced element does not exist.
                     reportError(u"Invalid XML model, <%s> not found in model root, referenced in line %d", {refName, attr->GetLineNum()});
@@ -900,7 +874,7 @@ bool ts::XML::validateElement(const Element* model, const Element* doc)
     // Check that all attributes in doc exist in model.
     for (const Attribute* attr = doc->FirstAttribute(); attr != 0; attr = attr->Next()) {
         const char* name = attr->Name();
-        if (name != 0 && findAttribute(model, name, true) == 0) {
+        if (name != 0 && findAttribute(model, UString::FromUTF8(name), true) == 0) {
             // The corresponding attribute does not exist in the model.
             reportError(u"Unexpected attribute '%s' in <%s>, line %d", {name, ElementName(doc), attr->GetLineNum()});
             success = false;

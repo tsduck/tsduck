@@ -152,7 +152,7 @@ ts::DVBCharset::DVBCharset(const UString& name, uint32_t tableCode) :
         repo->byCode.insert(std::make_pair(_code, this));
     }
     else {
-        throw DuplicateDVBCharset(_name.toUTF8());
+        throw DuplicateDVBCharset(_name);
     }
 }
 

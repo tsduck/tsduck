@@ -74,6 +74,69 @@ namespace ts {
     //!
     //! This class is an extension of @c std::u16string with additional services.
     //!
+    //! The class UString implements Java-like Unicode strings. Each character
+    //! uses 16 bits of storage. Formally, UString uses UTF-16 representation.
+    //! This means that all characters from all modern languages can be represented
+    //! as one single character. Characters from archaic languages may need two
+    //! UTF-16 values, called a "surrogate pair".
+    //!
+    //! The element of a UString is a @link UChar @endlink (or @c char16_t).
+    //! Nul-terminated strings of @link UChar @endlink are implicitly converted
+    //! to UString when necessary. Be aware that strings literals of @c char16_t
+    //! are prefixed by a letter @c u as illustrated below:
+    //!
+    //! @code
+    //! ts::UString s1(u"abcd");
+    //! ts::UString s2 = s1 + u"efgh";
+    //! @endcode
+    //!
+    //! Some interesting features in class UString are:
+    //!
+    //! - Explicit and implicit(*) conversions between UTF-8 and UTF-16.
+    //! - Including automatic conversion to UTF-8 when writing to text streams.
+    //! - Conversions with DVB character sets.
+    //! - Conversions with HTML encoding.
+    //! - Management of "display width", that is to say the amount of space which
+    //!   is used when the string is displayed. This can be different from the
+    //!   string length in the presence of combining diacritical characters or
+    //!   surrogate pairs.
+    //! - String padding, trimming, truncation, justification, case conversions.
+    //! - Substring, prefix or suffix detection, removal or substitution.
+    //! - Splitting and joining strings based on separators or line widths.
+    //! - Reading or writing text lines from or to a text file.
+    //! - Data formatting using Format(), Decimal(), Hexa() or Dump().
+    //! - Data scanning using scan().
+    //!
+    //! (*) Implicit conversions from UTF-8 C-strings (<code>const char*</code>)
+    //! and @c std::string are disabled by default. You may enabled implicit
+    //! conversions by defining @c TS_ALLOW_IMPLICIT_UTF8_CONVERSION before
+    //! including tsUString.h. Thus, there is no need to explicitly invoke
+    //! FromUTF8() all the time. However, leaving the implicit conversions
+    //! disabled has some advantages like flagging useless and costly UTF-8
+    //! conversions, for instance when string literals are incorrectly spelled
+    //! as illustrated below:
+    //!
+    //! @code
+    //! ts::UString us;
+    //!
+    //! us = "efgh";               // only if implicit conversions are enabled
+    //! us = u"efgh";              // always ok and much faster
+    //!
+    //! std::string s;
+    //! us = UString::FromUTF8(s); // always ok
+    //! us.assignFromUTF8(s);      // always ok, probably faster
+    //! us = s;                    // only if implicit conversions are enabled
+    //! @endcode
+    //!
+    //! Unicode strings can be converted to and from DVB strings. Most DVB-defined
+    //! character sets are implemented (see the class DVBCharset) and recognized
+    //! when a string is read from a descriptor.
+    //!
+    //! When a string is serialized into a binary DVB descriptor, the
+    //! most appropriate DVB character set is used. In practice, a few known DVB
+    //! character sets are used and when the string cannot be encoded in any of
+    //! them UTF-8 is used (UTF-8 is a valid DVB character set).
+    //!
     //! Warning for maintainers: The standard classes @c std::u16string and @c std::basic_string
     //! do not have virtual destructors. The means that if a UString is destroyed through, for
     //! instance, a @c std::u16string*, the destructor for the class UString will not be
@@ -282,8 +345,10 @@ namespace ts {
         UString(std::initializer_list<UChar> init, const allocator_type& alloc = allocator_type()) :
             SuperClass(init, alloc) {}
 
+#if defined(TS_ALLOW_IMPLICIT_UTF8_CONVERSION) || defined(DOXYGEN)
         //!
         //! Constructor from an UTF-8 string.
+        //! Available only when the macro @c TS_ALLOW_IMPLICIT_UTF8_CONVERSION is externally defined.
         //! @param [in] utf8 A string in UTF-8 representation.
         //!
         UString(const std::string& utf8)
@@ -293,6 +358,7 @@ namespace ts {
 
         //!
         //! Constructor from an UTF-8 string.
+        //! Available only when the macro @c TS_ALLOW_IMPLICIT_UTF8_CONVERSION is externally defined.
         //! @param [in] utf8 Address of a nul-terminated string in UTF-8 representation.
         //!
         UString(const char* utf8)
@@ -302,6 +368,7 @@ namespace ts {
 
         //!
         //! Constructor from an UTF-8 string.
+        //! Available only when the macro @c TS_ALLOW_IMPLICIT_UTF8_CONVERSION is externally defined.
         //! @param [in] utf8 Address of a string in UTF-8 representation.
         //! @param [in] count Size in bytes of the UTF-8 string (not necessarily a number of characters).
         //!
@@ -309,26 +376,21 @@ namespace ts {
         {
             assignFromUTF8(utf8, count);
         }
+#endif
 
         //!
         //! Convert an UTF-8 string into UTF-16.
         //! @param [in] utf8 A string in UTF-8 representation.
         //! @return The equivalent UTF-16 string.
         //!
-        static UString FromUTF8(const std::string& utf8)
-        {
-            return UString(utf8);
-        }
+        static UString FromUTF8(const std::string& utf8);
 
         //!
         //! Convert an UTF-8 string into UTF-16.
         //! @param [in] utf8 Address of a nul-terminated string in UTF-8 representation.
         //! @return The equivalent UTF-16 string. Empty string if @a utf8 is a null pointer.
         //!
-        static UString FromUTF8(const char* utf8)
-        {
-            return UString(utf8);
-        }
+        static UString FromUTF8(const char* utf8);
 
         //!
         //! Convert an UTF-8 string into UTF-16.
@@ -336,10 +398,7 @@ namespace ts {
         //! @param [in] count Size in bytes of the UTF-8 string (not necessarily a number of characters).
         //! @return The equivalent UTF-16 string. Empty string if @a utf8 is a null pointer.
         //!
-        static UString FromUTF8(const char* utf8, size_type count)
-        {
-            return UString(utf8, count);
-        }
+        static UString FromUTF8(const char* utf8, size_type count);
 
         //!
         //! Convert an UTF-8 string into this object.
@@ -1292,7 +1351,7 @@ namespace ts {
         //! @param [in] fmt Format string with embedded '\%' sequences.
         //! @param [in] args List of arguments to substitute in the format string.
         //! @return The formatted string.
-        //! @see Format(const UChar* fmt, std::initializer_list<ArgMixIn> args)
+        //! @see Format()
         //!
         static UString Format(const UString& fmt, std::initializer_list<ArgMixIn> args)
         {
@@ -1341,7 +1400,6 @@ namespace ts {
         //! @return True if the entire string is consumed and the entire format is parsed.
         //! False otherwise. In other words, the method returns true when this object string
         //! exactly matches the format in @a fmt.
-        //! @see scan(size_t&, size_type&, const UChar*, std::initializer_list<ArgMixOut>)
         //!
         bool scan(size_t& extractedCount, size_type& endIndex, const UChar* fmt, std::initializer_list<ArgMixOut> args) const;
 
@@ -1355,7 +1413,7 @@ namespace ts {
         //! @return True if the entire string is consumed and the entire format is parsed.
         //! False otherwise. In other words, the method returns true when this object string
         //! exactly matches the format in @a fmt.
-        //! @see scan(size_t&, size_type&, const UChar*, std::initializer_list<ArgMixOut>)
+        //! @see scan()
         //!
         bool scan(size_t& extractedCount, size_type& endIndex, const UString& fmt, std::initializer_list<ArgMixOut> args) const
         {
@@ -1563,18 +1621,16 @@ namespace ts {
 
         //
         // Override methods which return strings so that they return the new class.
-        // Define additional overloads with char and strings.
+        // Define additional overloads with char and strings. Not documented in
+        // Doxygen since they are equivalent to their counterparts in superclass.
         //
 #if !defined(DOXYGEN)
+
         bool operator==(const SuperClass& other) const { return static_cast<SuperClass>(*this) == other; }
         bool operator==(const UChar* other) const { return static_cast<SuperClass>(*this) == other; }
-        bool operator==(const std::string& other) const { return operator==(FromUTF8(other)); }
-        bool operator==(const char* other) const { return other != 0 && operator==(FromUTF8(other)); }
 
         bool operator!=(const SuperClass& other) const { return static_cast<SuperClass>(*this) != other; }
         bool operator!=(const UChar* other) const { return static_cast<SuperClass>(*this) != other; }
-        bool operator!=(const std::string& other) const { return !operator==(other); }
-        bool operator!=(const char* other) const { return !operator==(other); }
 
         UString substr(size_type pos = 0, size_type count = NPOS) const { return SuperClass::substr(pos, count); }
 
@@ -1587,13 +1643,9 @@ namespace ts {
         UString& append(size_type count, UChar ch) { SuperClass::append(count, ch); return *this; }
         UString& append(size_type count, char ch) { return append(count, UChar(ch)); }
         UString& append(const SuperClass& str) { SuperClass::append(str); return *this; }
-        UString& append(const std::string& str) { return append(FromUTF8(str)); }
         UString& append(const SuperClass& str, size_type pos, size_type count = NPOS) { SuperClass::append(str, pos, count); return *this; }
-        UString& append(const std::string& str, size_type pos, size_type count = NPOS) { return append(FromUTF8(str.substr(pos, count))); }
         UString& append(const UChar* s, size_type count) { SuperClass::append(s, count); return *this; }
-        UString& append(const char* s, size_type count) { return append(FromUTF8(s, count)); }
         UString& append(const UChar* s) { SuperClass::append(s); return *this; }
-        UString& append(const char* s) { return append(FromUTF8(s)); }
         UString& append(UChar c) { push_back(c); return *this; }
         UString& append(char c) { push_back(UChar(c)); return *this; }
         UString& append(uint32_t c);
@@ -1601,18 +1653,14 @@ namespace ts {
         UString& append(std::initializer_list<UChar> ilist) { SuperClass::append(ilist); return *this; }
 
         UString& operator+=(const SuperClass& s) { return append(s); }
-        UString& operator+=(const std::string& s) { return append(s); }
         UString& operator+=(const UChar* s) { return append(s); }
-        UString& operator+=(const char* s) { return append(s); }
         UString& operator+=(UChar c) { return append(c); }
         UString& operator+=(char c) { return append(c); }
         UString& operator+=(std::initializer_list<UChar> ilist) { return append(ilist); }
 
         UString& operator=(const SuperClass& s) { SuperClass::assign(s); return *this; }
         UString& operator=(SuperClass&& s) { SuperClass::assign(s); return *this; }
-        UString& operator=(const std::string& s) { SuperClass::assign(FromUTF8(s)); return *this; }
         UString& operator=(const UChar* s) { SuperClass::assign(s); return *this; }
-        UString& operator=(const char* s) { SuperClass::assign(FromUTF8(s)); return *this; }
         UString& operator=(UChar c) { SuperClass::assign(1, c); return *this; }
         UString& operator=(char c) { SuperClass::assign(1, UChar(c)); return *this; }
         UString& operator=(std::initializer_list<UChar> ilist) { SuperClass::assign(ilist); return *this; }
@@ -1651,7 +1699,26 @@ namespace ts {
         UString& replace(const_iterator first, const_iterator last, size_type count2, UChar ch) { SuperClass::replace(first, last, count2, ch); return *this; }
         UString& replace(const_iterator first, const_iterator last, std::initializer_list<UChar> ilist) { SuperClass::replace(first, last, ilist); return *this; }
 #endif
+
+#if defined(TS_ALLOW_IMPLICIT_UTF8_CONVERSION)
+        bool operator==(const std::string& other) const { return operator==(FromUTF8(other)); }
+        bool operator==(const char* other) const { return other != 0 && operator==(FromUTF8(other)); }
+        bool operator!=(const std::string& other) const { return !operator==(other); }
+        bool operator!=(const char* other) const { return !operator==(other); }
+
+        UString& append(const std::string& str) { return append(FromUTF8(str)); }
+        UString& append(const std::string& str, size_type pos, size_type count = NPOS) { return append(FromUTF8(str.substr(pos, count))); }
+        UString& append(const char* s, size_type count) { return append(FromUTF8(s, count)); }
+        UString& append(const char* s) { return append(FromUTF8(s)); }
+
+        UString& operator+=(const std::string& s) { return append(s); }
+        UString& operator+=(const char* s) { return append(s); }
+
+        UString& operator=(const std::string& s) { SuperClass::assign(FromUTF8(s)); return *this; }
+        UString& operator=(const char* s) { SuperClass::assign(FromUTF8(s)); return *this; }
 #endif
+
+#endif // DOXYGEN
 
         //
         // On Windows, all methods which take 'npos' as default argument need to be overriden
@@ -1824,13 +1891,10 @@ TSDUCKDLL std::ostream& operator<<(std::ostream& strm, const ts::UChar c);
 
 //
 // Override reversed binary operators.
+// Not documented in Doxygen.
 //
 #if !defined(DOXYGEN)
-TSDUCKDLL inline bool operator==(const std::string& s1, const ts::UString& s2) { return s2 == s1; }
-TSDUCKDLL inline bool operator==(const char* s1, const ts::UString& s2) { return s2 == s1; }
 TSDUCKDLL inline bool operator==(const ts::UChar* s1, const ts::UString& s2) { return s2 == s1; }
-TSDUCKDLL inline bool operator!=(const std::string& s1, const ts::UString& s2) { return s2 != s1; }
-TSDUCKDLL inline bool operator!=(const char* s1, const ts::UString& s2) { return s2 != s1; }
 TSDUCKDLL inline bool operator!=(const ts::UChar* s1, const ts::UString& s2) { return s2 != s1; }
 
 TSDUCKDLL inline ts::UString operator+(const ts::UString& s1, const ts::UString& s2)
@@ -1845,6 +1909,21 @@ TSDUCKDLL inline ts::UString operator+(ts::UChar s1, const ts::UString& s2)
 {
     return s1 + *static_cast<const ts::UString::SuperClass*>(&s2);
 }
+TSDUCKDLL inline ts::UString operator+(const ts::UString& s1, const ts::UChar* s2)
+{
+    return *static_cast<const ts::UString::SuperClass*>(&s1) + s2;
+}
+TSDUCKDLL inline ts::UString operator+(const ts::UChar* s1, const ts::UString& s2)
+{
+    return s1 + *static_cast<const ts::UString::SuperClass*>(&s2);
+}
+
+#if defined(TS_ALLOW_IMPLICIT_UTF8_CONVERSION)
+TSDUCKDLL inline bool operator==(const std::string& s1, const ts::UString& s2) { return s2 == s1; }
+TSDUCKDLL inline bool operator==(const char* s1, const ts::UString& s2) { return s2 == s1; }
+TSDUCKDLL inline bool operator!=(const std::string& s1, const ts::UString& s2) { return s2 != s1; }
+TSDUCKDLL inline bool operator!=(const char* s1, const ts::UString& s2) { return s2 != s1; }
+
 TSDUCKDLL inline ts::UString operator+(const ts::UString& s1, const std::string& s2)
 {
     return s1 + ts::UString::FromUTF8(s2);
@@ -1861,14 +1940,8 @@ TSDUCKDLL inline ts::UString operator+(const char* s1, const ts::UString& s2)
 {
     return ts::UString::FromUTF8(s1) + s2;
 }
-TSDUCKDLL inline ts::UString operator+(const ts::UString& s1, const ts::UChar* s2)
-{
-    return *static_cast<const ts::UString::SuperClass*>(&s1) + s2;
-}
-TSDUCKDLL inline ts::UString operator+(const ts::UChar* s1, const ts::UString& s2)
-{
-    return s1 + *static_cast<const ts::UString::SuperClass*>(&s2);
-}
 #endif
+
+#endif // DOXYGEN
 
 #include "tsUStringTemplate.h"

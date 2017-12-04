@@ -473,7 +473,7 @@ void ts::PESPlugin::handleAVCAccessUnit(PESDemux&, const PESPacket& pkt, uint8_t
         case AVC_AUT_SEQPARAMS:
         {
             AVCSequenceParameterSet params(pkt.payload() + offset, size);
-            params.display(out, "  ");
+            params.display(out, u"  ");
             break;
         }
         default: {

@@ -331,7 +331,7 @@ void PlatformTest::testVersion()
     const ts::UString version(ts::GetVersion());
     const size_t dash = version.find(u'-');
     CPPUNIT_ASSERT(dash != ts::UString::NPOS);
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(TS_STRINGIFY(TS_VERSION_MAJOR) "." TS_STRINGIFY(TS_VERSION_MINOR), version.substr(0, dash));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(TS_USTRINGIFY(TS_VERSION_MAJOR) u"." TS_USTRINGIFY(TS_VERSION_MINOR), version.substr(0, dash));
 
     CPPUNIT_ASSERT_USTRINGS_EQUAL(ts::GetVersion(), ts::GetVersion(ts::VERSION_SHORT));
     CPPUNIT_ASSERT(ts::GetVersion(ts::VERSION_SHORT) != ts::GetVersion(ts::VERSION_LONG));

@@ -49,7 +49,14 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::TeletextDescriptor::DisplayDescriptor, ts::EDID(MY_
 // Constructors.
 //----------------------------------------------------------------------------
 
-ts::TeletextDescriptor::Entry::Entry(uint8_t type, uint16_t page, const char* code) :
+ts::TeletextDescriptor::Entry::Entry(const UChar* code, uint8_t type, uint16_t page) :
+    teletext_type(type),
+    page_number(page),
+    language_code(code)
+{
+}
+
+ts::TeletextDescriptor::Entry::Entry(const UString& code, uint8_t type, uint16_t page) :
     teletext_type(type),
     page_number(page),
     language_code(code)

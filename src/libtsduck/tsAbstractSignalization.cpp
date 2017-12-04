@@ -77,7 +77,7 @@ bool ts::AbstractSignalization::checkXMLName(XML& xml, const XML::Element* eleme
         return false;
     }
     const UString myName(_xml_name);
-    const UString elemName(element->Name());
+    const UString elemName(UString::FromUTF8(element->Name()));
     if (myName.similar(elemName)) {
         return true;
     }

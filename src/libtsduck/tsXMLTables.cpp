@@ -112,7 +112,7 @@ bool ts::XMLTables::parseDocument(XML& xml, const XML::Document& doc, const DVBC
     for (const XML::Element* node = root == 0 ? 0 : root->FirstChildElement(); node != 0; node = node->NextSiblingElement()) {
 
         BinaryTablePtr bin;
-        const UString name(XML::ElementName(node));
+        const UString name(UString::FromUTF8(XML::ElementName(node)));
 
         // Get the table factory for that kind of XML tag.
         const TablesFactory::TableFactory fac = TablesFactory::Instance()->getTableFactory(name);
@@ -395,7 +395,7 @@ bool ts::XMLTables::FromDescriptorListXML(DescriptorList& list, XML::ElementVect
     for (const XML::Element* node = parent == 0 ? 0 : parent->FirstChildElement(); node != 0; node = node->NextSiblingElement()) {
 
         DescriptorPtr bin;
-        const UString name(XML::ElementName(node));
+        const UString name(UString::FromUTF8(XML::ElementName(node)));
         bool isDescriptor = false;
 
         // Get the descriptor factory for that kind of XML tag.
@@ -457,7 +457,7 @@ ts::BinaryTablePtr ts::XMLTables::FromGenericTableXML(XML& xml, const XML::Eleme
     }
 
     // There are two possible forms of generic tables.
-    const UString name(XML::ElementName(elem));
+    const UString name(UString::FromUTF8(XML::ElementName(elem)));
     if (name.similar(XML_GENERIC_SHORT_TABLE)) {
 
         TID tid = 0xFF;
@@ -528,7 +528,7 @@ ts::DescriptorPtr ts::XMLTables::FromGenericDescriptorXML(XML& xml, const XML::E
     // Decode XML.
     DID tag = 0xFF;
     ByteBlock payload;
-    const UString name(XML::ElementName(elem));
+    const UString name(UString::FromUTF8(XML::ElementName(elem)));
     const bool ok =
         name.similar(XML_GENERIC_DESCRIPTOR) &&
         xml.getIntAttribute<DID>(tag, elem, u"tag", true, 0xFF, 0x00, 0xFF) &&

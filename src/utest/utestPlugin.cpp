@@ -93,7 +93,7 @@ void PluginTest::display(const ts::PluginSharedLibrary& lib)
 
 void PluginTest::testInput()
 {
-    ts::PluginSharedLibrary plugin("null");
+    ts::PluginSharedLibrary plugin(u"null");
     display(plugin);
 
     CPPUNIT_ASSERT(plugin.isLoaded());
@@ -104,7 +104,7 @@ void PluginTest::testInput()
 
 void PluginTest::testOutput()
 {
-    ts::PluginSharedLibrary plugin("drop");
+    ts::PluginSharedLibrary plugin(u"drop");
     display(plugin);
 
     CPPUNIT_ASSERT(plugin.isLoaded());
@@ -115,7 +115,7 @@ void PluginTest::testOutput()
 
 void PluginTest::testProcessor()
 {
-    ts::PluginSharedLibrary plugin("skip");
+    ts::PluginSharedLibrary plugin(u"skip");
     display(plugin);
 
     CPPUNIT_ASSERT(plugin.isLoaded());

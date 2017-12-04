@@ -161,7 +161,7 @@ void GuardTest::testAcquireFailed()
 // Test case: release() error is properly handled.
 void GuardTest::testReleaseFailed()
 {
-    if (ts::EnvironmentExists("UTEST_FATAL_CRASH_ALLOWED")) {
+    if (ts::EnvironmentExists(u"UTEST_FATAL_CRASH_ALLOWED")) {
         std::cerr << "FatalTest: Guard destructor should fail !" << std::endl
                   << "Unset UTEST_FATAL_CRASH_ALLOWED to skip the crash test" << std::endl;
         MutexTest mutex(true, false);

@@ -55,11 +55,19 @@ namespace ts {
 
             //!
             //! Default constructor.
+            //! @param [in] code ISO-639 language code, 3 characters. Can be null.
             //! @param [in] type Teletext type, 5 bits.
             //! @param [in] page Teletext page number, combination of page and magazine number.
-            //! @param [in] code ISO-639 language code, 3 characters, as a C-string. Can be null.
             //!
-            Entry(uint8_t type = 0, uint16_t page = 0, const char* code = 0);
+            Entry(const UChar* code = 0, uint8_t type = 0, uint16_t page = 0);
+
+            //!
+            //! Default constructor.
+            //! @param [in] type Teletext type, 5 bits.
+            //! @param [in] page Teletext page number, combination of page and magazine number.
+            //! @param [in] code ISO-639 language code, 3 characters.
+            //!
+            Entry(const UString& code, uint8_t type = 0, uint16_t page = 0);
 
             //!
             //! Build a full Teletext page number from magazine and page numbers.

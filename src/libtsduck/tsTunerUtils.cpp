@@ -63,7 +63,7 @@ bool ts::GetTunerFromZapFile(const UString& channel_name,
 
     std::string lineUTF8;
     while (std::getline(file, lineUTF8)) {
-        const UString line(lineUTF8);
+        const UString line(UString::FromUTF8(lineUTF8));
 
         // Locate channel name: before first ':'
         const size_t first_colon = line.find(u':');

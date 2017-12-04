@@ -172,7 +172,7 @@ void CryptoTest::testCipher(ts::BlockCipher& algo,
                             const void* cipher,
                             size_t cipher_size)
 {
-    const ts::UString name(algo.name() + " test vector " + ts::UString::Decimal(tv_index + 1) + "/" + ts::UString::Decimal(tv_count));
+    const ts::UString name(ts::UString::Format(u"%s test vector %d/%d", {algo.name(), tv_index + 1, tv_count}));
     std::vector<uint8_t> tmp(std::max(plain_size, cipher_size));
     size_t retsize;
 
@@ -228,7 +228,7 @@ void CryptoTest::testChainingSizes(ts::CipherChaining& algo, int sizes, ...)
     va_start(ap, sizes);
     while (size > 0) {
 
-        const ts::UString name(algo.name() + " on " + ts::UString::Decimal(size) + " bytes");
+        const ts::UString name(ts::UString::Format(u"%s on %d bytes", {algo.name(), size}));
 
         size_t retsize = 0;
         ts::ByteBlock plain(size);
@@ -267,7 +267,7 @@ void CryptoTest::testHash(ts::Hash& algo,
                           const void* hash,
                           size_t hash_size)
 {
-    const ts::UString name(algo.name() + " test vector " + ts::UString::Decimal(tv_index + 1) + "/" + ts::UString::Decimal(tv_count));
+    const ts::UString name(ts::UString::Format(u"%s test vector %d/%d", {algo.name(), tv_index + 1, tv_count}));
     std::vector<uint8_t> tmp(2 * hash_size);
     size_t retsize;
 

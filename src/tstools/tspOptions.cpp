@@ -314,7 +314,7 @@ ts::tsp::Options::Options(int argc, char *argv[]) :
         }
 
         opt->type = type;
-        opt->name = argv[start+1];
+        opt->name = UString::FromUTF8(argv[start+1]);
         UString::Assign(opt->args, plugin_index - start - 2, argv + start + 2);
     }
 

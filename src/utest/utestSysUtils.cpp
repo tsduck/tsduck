@@ -186,50 +186,49 @@ void SysUtilsTest::testSleep()
 
 void SysUtilsTest::testEnvironment()
 {
-    utest::Out()
-        << "SysUtilsTest: EnvironmentExists (\"HOME\") = "
-        << ts::EnvironmentExists("HOME") << std::endl
-        << "SysUtilsTest: GetEnvironment(\"HOME\") = \""
-        << ts::GetEnvironment("HOME", "(default)") << "\"" << std::endl
-        << "SysUtilsTest: EnvironmentExists (\"HOMEPATH\") = "
-        << ts::EnvironmentExists ("HOMEPATH") << std::endl
-        << "SysUtilsTest: GetEnvironment(\"HOMEPATH\") = \""
-        << ts::GetEnvironment("HOMEPATH", "(default)") << "\"" << std::endl;
+    utest::Out() << "SysUtilsTest: EnvironmentExists(\"HOME\") = "
+                 << ts::EnvironmentExists(u"HOME") << std::endl
+                 << "SysUtilsTest: GetEnvironment(\"HOME\") = \""
+                 << ts::GetEnvironment(u"HOME", u"(default)") << "\"" << std::endl
+                 << "SysUtilsTest: EnvironmentExists(\"HOMEPATH\") = "
+                 << ts::EnvironmentExists(u"HOMEPATH") << std::endl
+                 << "SysUtilsTest: GetEnvironment(\"HOMEPATH\") = \""
+                 << ts::GetEnvironment(u"HOMEPATH", u"(default)") << "\"" << std::endl;
 
-    CPPUNIT_ASSERT(ts::SetEnvironment("UTEST_A", "foo"));
-    CPPUNIT_ASSERT(ts::EnvironmentExists ("UTEST_A"));
-    CPPUNIT_ASSERT(ts::GetEnvironment("UTEST_A") == "foo");
-    CPPUNIT_ASSERT(ts::DeleteEnvironment("UTEST_A"));
-    CPPUNIT_ASSERT(!ts::EnvironmentExists("UTEST_A"));
-    CPPUNIT_ASSERT(ts::GetEnvironment("UTEST_A") == "");
-    CPPUNIT_ASSERT(ts::GetEnvironment("UTEST_A", "bar") == "bar");
+    CPPUNIT_ASSERT(ts::SetEnvironment(u"UTEST_A", u"foo"));
+    CPPUNIT_ASSERT(ts::EnvironmentExists(u"UTEST_A"));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"foo", ts::GetEnvironment(u"UTEST_A"));
+    CPPUNIT_ASSERT(ts::DeleteEnvironment(u"UTEST_A"));
+    CPPUNIT_ASSERT(!ts::EnvironmentExists(u"UTEST_A"));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"", ts::GetEnvironment(u"UTEST_A"));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"bar", ts::GetEnvironment(u"UTEST_A", u"bar"));
 
     // Very large value
-    const ts::UString large (2000, 'x');
-    ts::SetEnvironment("UTEST_A", large);
-    CPPUNIT_ASSERT(ts::EnvironmentExists("UTEST_A"));
-    CPPUNIT_ASSERT(ts::GetEnvironment("UTEST_A") == large);
+    const ts::UString large(2000, 'x');
+    ts::SetEnvironment(u"UTEST_A", large);
+    CPPUNIT_ASSERT(ts::EnvironmentExists(u"UTEST_A"));
+    CPPUNIT_ASSERT(ts::GetEnvironment(u"UTEST_A") == large);
 
     // Overwrite existing value
-    ts::SetEnvironment("UTEST_A", "azerty");
-    CPPUNIT_ASSERT(ts::EnvironmentExists ("UTEST_A"));
-    CPPUNIT_ASSERT(ts::GetEnvironment("UTEST_A") == "azerty");
+    ts::SetEnvironment(u"UTEST_A", u"azerty");
+    CPPUNIT_ASSERT(ts::EnvironmentExists(u"UTEST_A"));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"azerty", ts::GetEnvironment(u"UTEST_A"));
 
     // Analyze full environment
-    ts::SetEnvironment("UTEST_A", "123456789");
-    ts::SetEnvironment("UTEST_B", "abcdefghijklm");
-    ts::SetEnvironment("UTEST_C", "nopqrstuvwxyz");
+    ts::SetEnvironment(u"UTEST_A", u"123456789");
+    ts::SetEnvironment(u"UTEST_B", u"abcdefghijklm");
+    ts::SetEnvironment(u"UTEST_C", u"nopqrstuvwxyz");
 
     ts::Environment env;
-    ts::GetEnvironment (env);
+    ts::GetEnvironment(env);
 
     for (ts::Environment::const_iterator it = env.begin(); it != env.end(); ++it) {
         utest::Out() << "SysUtilsTest: env: \"" << it->first << "\" = \"" << it->second << "\"" << std::endl;
     }
 
-    CPPUNIT_ASSERT(env["UTEST_A"] == "123456789");
-    CPPUNIT_ASSERT(env["UTEST_B"] == "abcdefghijklm");
-    CPPUNIT_ASSERT(env["UTEST_C"] == "nopqrstuvwxyz");
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"123456789",     env[u"UTEST_A"]);
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"abcdefghijklm", env[u"UTEST_B"]);
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"nopqrstuvwxyz", env[u"UTEST_C"]);
 
     // Search path
     ts::UStringVector ref;
@@ -238,34 +237,34 @@ void SysUtilsTest::testEnvironment()
     ref.push_back(u"fsdvsdf");
     ref.push_back(u"qs5veazr5--verv");
 
-    ts::UString value (ref[0]);
+    ts::UString value(ref[0]);
     for (size_t i = 1; i < ref.size(); ++i) {
         value += ts::SearchPathSeparator + ref[i];
     }
-    ts::SetEnvironment("UTEST_A", value);
+    ts::SetEnvironment(u"UTEST_A", value);
 
     ts::UStringVector path;
-    ts::GetEnvironmentPath (path, "UTEST_A");
+    ts::GetEnvironmentPath(path, u"UTEST_A");
     CPPUNIT_ASSERT(path == ref);
 
     // Expand variables in a string
-    CPPUNIT_ASSERT(ts::SetEnvironment("UTEST_A", "123456789"));
-    CPPUNIT_ASSERT(ts::SetEnvironment("UTEST_B", "abcdefghijklm"));
-    CPPUNIT_ASSERT(ts::SetEnvironment("UTEST_C", "nopqrstuvwxyz"));
-    ts::DeleteEnvironment("UTEST_D");
+    CPPUNIT_ASSERT(ts::SetEnvironment(u"UTEST_A", u"123456789"));
+    CPPUNIT_ASSERT(ts::SetEnvironment(u"UTEST_B", u"abcdefghijklm"));
+    CPPUNIT_ASSERT(ts::SetEnvironment(u"UTEST_C", u"nopqrstuvwxyz"));
+    ts::DeleteEnvironment(u"UTEST_D");
 
     utest::Out()
         << "SysUtilsTest: ExpandEnvironment(\"\\$UTEST_A\") = \""
-        << ts::ExpandEnvironment("\\$UTEST_A") << "\"" << std::endl;
+        << ts::ExpandEnvironment(u"\\$UTEST_A") << "\"" << std::endl;
 
-    CPPUNIT_ASSERT(ts::ExpandEnvironment("") == "");
-    CPPUNIT_ASSERT(ts::ExpandEnvironment("abc") == "abc");
-    CPPUNIT_ASSERT(ts::ExpandEnvironment("$UTEST_A") == "123456789");
-    CPPUNIT_ASSERT(ts::ExpandEnvironment("${UTEST_A}") == "123456789");
-    CPPUNIT_ASSERT(ts::ExpandEnvironment("\\$UTEST_A") == "$UTEST_A");
-    CPPUNIT_ASSERT(ts::ExpandEnvironment("abc$UTEST_A") == "abc123456789");
-    CPPUNIT_ASSERT(ts::ExpandEnvironment("abc$UTEST_A$UTEST_B$UTEST_D$UTEST_A/qsd") == "abc123456789abcdefghijklm123456789/qsd");
-    CPPUNIT_ASSERT(ts::ExpandEnvironment("abc${UTEST_A}a$UTEST_B$UTEST_D$UTEST_A/qsd") == "abc123456789aabcdefghijklm123456789/qsd");
+    CPPUNIT_ASSERT(ts::ExpandEnvironment(u"").empty());
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"abc", ts::ExpandEnvironment(u"abc"));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"123456789", ts::ExpandEnvironment(u"$UTEST_A"));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"123456789", ts::ExpandEnvironment(u"${UTEST_A}"));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"$UTEST_A", ts::ExpandEnvironment(u"\\$UTEST_A"));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"abc123456789", ts::ExpandEnvironment(u"abc$UTEST_A"));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"abc123456789abcdefghijklm123456789/qsd", ts::ExpandEnvironment(u"abc$UTEST_A$UTEST_B$UTEST_D$UTEST_A/qsd"));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"abc123456789aabcdefghijklm123456789/qsd", ts::ExpandEnvironment(u"abc${UTEST_A}a$UTEST_B$UTEST_D$UTEST_A/qsd"));
 }
 
 void SysUtilsTest::testIgnoreBrokenPipes()
@@ -275,7 +274,7 @@ void SysUtilsTest::testIgnoreBrokenPipes()
     // to define the environment variable NO_IGNORE_BROKEN_PIPES to
     // inhibit this test.
 
-    if (ts::EnvironmentExists("NO_IGNORE_BROKEN_PIPES")) {
+    if (ts::EnvironmentExists(u"NO_IGNORE_BROKEN_PIPES")) {
         utest::Out() << "SysUtilsTest: ignoring test case testIgnoreBrokenPipes" << std::endl;
     }
     else {
@@ -343,101 +342,101 @@ void SysUtilsTest::testUid()
 void SysUtilsTest::testVernacularFilePath()
 {
 #if defined(TS_WINDOWS)
-    CPPUNIT_ASSERT(ts::VernacularFilePath ("C:\\alpha/beta\\gamma") == "C:\\alpha\\beta\\gamma");
-    CPPUNIT_ASSERT(ts::VernacularFilePath ("/d/alpha/beta/gamma") == "D:\\alpha\\beta\\gamma");
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"C:\\alpha\\beta\\gamma", ts::VernacularFilePath(u"C:\\alpha/beta\\gamma"));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"D:\\alpha\\beta\\gamma", ts::VernacularFilePath(u"/d/alpha/beta/gamma"));
 #elif defined(TS_UNIX)
-    CPPUNIT_ASSERT(ts::VernacularFilePath ("C:\\alpha/beta\\gamma") == "C:/alpha/beta/gamma");
-    CPPUNIT_ASSERT(ts::VernacularFilePath ("/alpha-beta/gamma") == "/alpha-beta/gamma");
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"C:/alpha/beta/gamma", ts::VernacularFilePath(u"C:\\alpha/beta\\gamma"));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"/alpha-beta/gamma", ts::VernacularFilePath(u"/alpha-beta/gamma"));
 #endif
 }
 
 void SysUtilsTest::testFilePaths()
 {
-    const ts::UString dir(ts::VernacularFilePath("/dir/for/this.test"));
+    const ts::UString dir(ts::VernacularFilePath(u"/dir/for/this.test"));
     const ts::UString sep(1, ts::PathSeparator);
     const ts::UString dirSep(dir + ts::PathSeparator);
 
-    CPPUNIT_ASSERT(ts::DirectoryName(dirSep + "foo.bar") == dir);
-    CPPUNIT_ASSERT(ts::DirectoryName("foo.bar") == ".");
-    CPPUNIT_ASSERT(ts::DirectoryName(sep + "foo.bar") == sep);
+    CPPUNIT_ASSERT(ts::DirectoryName(dirSep + u"foo.bar") == dir);
+    CPPUNIT_ASSERT(ts::DirectoryName(u"foo.bar") == u".");
+    CPPUNIT_ASSERT(ts::DirectoryName(sep + u"foo.bar") == sep);
 
-    CPPUNIT_ASSERT(ts::BaseName(dirSep + "foo.bar") == "foo.bar");
-    CPPUNIT_ASSERT(ts::BaseName(dirSep) == "");
+    CPPUNIT_ASSERT(ts::BaseName(dirSep + u"foo.bar") == u"foo.bar");
+    CPPUNIT_ASSERT(ts::BaseName(dirSep) == u"");
 
-    CPPUNIT_ASSERT(ts::PathSuffix(dirSep + "foo.bar") == ".bar");
-    CPPUNIT_ASSERT(ts::PathSuffix(dirSep + "foo.") == ".");
-    CPPUNIT_ASSERT(ts::PathSuffix(dirSep + "foo") == "");
+    CPPUNIT_ASSERT(ts::PathSuffix(dirSep + u"foo.bar") == u".bar");
+    CPPUNIT_ASSERT(ts::PathSuffix(dirSep + u"foo.") == u".");
+    CPPUNIT_ASSERT(ts::PathSuffix(dirSep + u"foo") == u"");
 
-    CPPUNIT_ASSERT(ts::AddPathSuffix(dirSep + "foo", ".none") == dirSep + "foo.none");
-    CPPUNIT_ASSERT(ts::AddPathSuffix(dirSep + "foo.", ".none") == dirSep + "foo.");
-    CPPUNIT_ASSERT(ts::AddPathSuffix(dirSep + "foo.bar", ".none") == dirSep + "foo.bar");
+    CPPUNIT_ASSERT(ts::AddPathSuffix(dirSep + u"foo", u".none") == dirSep + u"foo.none");
+    CPPUNIT_ASSERT(ts::AddPathSuffix(dirSep + u"foo.", u".none") == dirSep + u"foo.");
+    CPPUNIT_ASSERT(ts::AddPathSuffix(dirSep + u"foo.bar", u".none") == dirSep + u"foo.bar");
 
-    CPPUNIT_ASSERT(ts::PathPrefix(dirSep + "foo.bar") == dirSep + "foo");
-    CPPUNIT_ASSERT(ts::PathPrefix(dirSep + "foo.") == dirSep + "foo");
-    CPPUNIT_ASSERT(ts::PathPrefix(dirSep + "foo") == dirSep + "foo");
+    CPPUNIT_ASSERT(ts::PathPrefix(dirSep + u"foo.bar") == dirSep + u"foo");
+    CPPUNIT_ASSERT(ts::PathPrefix(dirSep + u"foo.") == dirSep + u"foo");
+    CPPUNIT_ASSERT(ts::PathPrefix(dirSep + u"foo") == dirSep + u"foo");
 }
 
 void SysUtilsTest::testTempFiles()
 {
     utest::Out() << "SysUtilsTest: TempDirectory() = \"" << ts::TempDirectory() << "\"" << std::endl;
     utest::Out() << "SysUtilsTest: TempFile() = \"" << ts::TempFile() << "\"" << std::endl;
-    utest::Out() << "SysUtilsTest: TempFile(\".foo\") = \"" << ts::TempFile(".foo") << "\"" << std::endl;
+    utest::Out() << "SysUtilsTest: TempFile(\".foo\") = \"" << ts::TempFile(u".foo") << "\"" << std::endl;
 
     // Check that the temporary directory exists
-    CPPUNIT_ASSERT(ts::IsDirectory (ts::TempDirectory()));
+    CPPUNIT_ASSERT(ts::IsDirectory(ts::TempDirectory()));
 
     // Check that temporary files are in this directory
-    const ts::UString tmpName (ts::TempFile());
-    CPPUNIT_ASSERT(ts::DirectoryName (tmpName) == ts::TempDirectory());
+    const ts::UString tmpName(ts::TempFile());
+    CPPUNIT_ASSERT(ts::DirectoryName(tmpName) == ts::TempDirectory());
 
     // Check that we are allowed to create temporary files.
-    CPPUNIT_ASSERT(!ts::FileExists (tmpName));
-    CPPUNIT_ASSERT(_CreateFile (tmpName, 0));
-    CPPUNIT_ASSERT(ts::FileExists (tmpName));
+    CPPUNIT_ASSERT(!ts::FileExists(tmpName));
+    CPPUNIT_ASSERT(_CreateFile(tmpName, 0));
+    CPPUNIT_ASSERT(ts::FileExists(tmpName));
     CPPUNIT_ASSERT(ts::GetFileSize(tmpName) == 0);
-    CPPUNIT_ASSERT(ts::DeleteFile (tmpName) == ts::SYS_SUCCESS);
-    CPPUNIT_ASSERT(!ts::FileExists (tmpName));
+    CPPUNIT_ASSERT(ts::DeleteFile(tmpName) == ts::SYS_SUCCESS);
+    CPPUNIT_ASSERT(!ts::FileExists(tmpName));
 }
 
 void SysUtilsTest::testFileSize()
 {
-    const ts::UString tmpName (ts::TempFile());
-    CPPUNIT_ASSERT(!ts::FileExists (tmpName));
+    const ts::UString tmpName(ts::TempFile());
+    CPPUNIT_ASSERT(!ts::FileExists(tmpName));
 
     // Create a file
-    CPPUNIT_ASSERT(_CreateFile (tmpName, 1234));
-    CPPUNIT_ASSERT(ts::FileExists (tmpName));
+    CPPUNIT_ASSERT(_CreateFile(tmpName, 1234));
+    CPPUNIT_ASSERT(ts::FileExists(tmpName));
     CPPUNIT_ASSERT(ts::GetFileSize(tmpName) == 1234);
 
-    CPPUNIT_ASSERT(ts::TruncateFile (tmpName, 567) == ts::SYS_SUCCESS);
+    CPPUNIT_ASSERT(ts::TruncateFile(tmpName, 567) == ts::SYS_SUCCESS);
     CPPUNIT_ASSERT(ts::GetFileSize(tmpName) == 567);
 
-    const ts::UString tmpName2 (ts::TempFile());
-    CPPUNIT_ASSERT(!ts::FileExists (tmpName2));
-    CPPUNIT_ASSERT(ts::RenameFile (tmpName, tmpName2) == ts::SYS_SUCCESS);
-    CPPUNIT_ASSERT(ts::FileExists (tmpName2));
-    CPPUNIT_ASSERT(!ts::FileExists (tmpName));
+    const ts::UString tmpName2(ts::TempFile());
+    CPPUNIT_ASSERT(!ts::FileExists(tmpName2));
+    CPPUNIT_ASSERT(ts::RenameFile(tmpName, tmpName2) == ts::SYS_SUCCESS);
+    CPPUNIT_ASSERT(ts::FileExists(tmpName2));
+    CPPUNIT_ASSERT(!ts::FileExists(tmpName));
     CPPUNIT_ASSERT(ts::GetFileSize(tmpName2) == 567);
 
-    CPPUNIT_ASSERT(ts::DeleteFile (tmpName2) == ts::SYS_SUCCESS);
-    CPPUNIT_ASSERT(!ts::FileExists (tmpName2));
+    CPPUNIT_ASSERT(ts::DeleteFile(tmpName2) == ts::SYS_SUCCESS);
+    CPPUNIT_ASSERT(!ts::FileExists(tmpName2));
 }
 
 void SysUtilsTest::testFileTime()
 {
-    const ts::UString tmpName (ts::TempFile());
+    const ts::UString tmpName(ts::TempFile());
 
-    const ts::Time before (ts::Time::CurrentUTC());
-    CPPUNIT_ASSERT(_CreateFile (tmpName, 0));
-    const ts::Time after (ts::Time::CurrentUTC());
+    const ts::Time before(ts::Time::CurrentUTC());
+    CPPUNIT_ASSERT(_CreateFile(tmpName, 0));
+    const ts::Time after(ts::Time::CurrentUTC());
 
     // Some systems may not store the milliseconds in the file time.
     // So we use "before" without milliseconds.
-    ts::Time::Fields beforeFields (before);
+    ts::Time::Fields beforeFields(before);
     beforeFields.millisecond = 0;
-    const ts::Time beforeBase (beforeFields);
+    const ts::Time beforeBase(beforeFields);
 
-    CPPUNIT_ASSERT(ts::FileExists (tmpName));
+    CPPUNIT_ASSERT(ts::FileExists(tmpName));
     const ts::Time fileUtc(ts::GetFileModificationTimeUTC(tmpName));
     const ts::Time fileLocal(ts::GetFileModificationTimeLocal(tmpName));
 
@@ -458,58 +457,58 @@ void SysUtilsTest::testFileTime()
     CPPUNIT_ASSERT(fileUtc.UTCToLocal() == fileLocal);
     CPPUNIT_ASSERT(fileLocal.localToUTC() == fileUtc);
 
-    CPPUNIT_ASSERT(ts::DeleteFile (tmpName) == ts::SYS_SUCCESS);
-    CPPUNIT_ASSERT(!ts::FileExists (tmpName));
+    CPPUNIT_ASSERT(ts::DeleteFile(tmpName) == ts::SYS_SUCCESS);
+    CPPUNIT_ASSERT(!ts::FileExists(tmpName));
 }
 
 void SysUtilsTest::testDirectory()
 {
-    const ts::UString dirName(ts::TempFile(""));
+    const ts::UString dirName(ts::TempFile(u""));
     const ts::UString sep(1, ts::PathSeparator);
-    const ts::UString fileName(sep + "foo.bar");
+    const ts::UString fileName(sep + u"foo.bar");
 
-    CPPUNIT_ASSERT(!ts::FileExists (dirName));
-    CPPUNIT_ASSERT(ts::CreateDirectory (dirName) == ts::SYS_SUCCESS);
-    CPPUNIT_ASSERT(ts::FileExists (dirName));
-    CPPUNIT_ASSERT(ts::IsDirectory (dirName));
+    CPPUNIT_ASSERT(!ts::FileExists(dirName));
+    CPPUNIT_ASSERT(ts::CreateDirectory(dirName) == ts::SYS_SUCCESS);
+    CPPUNIT_ASSERT(ts::FileExists(dirName));
+    CPPUNIT_ASSERT(ts::IsDirectory(dirName));
 
-    CPPUNIT_ASSERT(_CreateFile (dirName + fileName, 0));
-    CPPUNIT_ASSERT(ts::FileExists (dirName + fileName));
-    CPPUNIT_ASSERT(!ts::IsDirectory (dirName + fileName));
+    CPPUNIT_ASSERT(_CreateFile(dirName + fileName, 0));
+    CPPUNIT_ASSERT(ts::FileExists(dirName + fileName));
+    CPPUNIT_ASSERT(!ts::IsDirectory(dirName + fileName));
 
-    const ts::UString dirName2 (ts::TempFile(""));
-    CPPUNIT_ASSERT(!ts::FileExists (dirName2));
-    CPPUNIT_ASSERT(ts::RenameFile (dirName, dirName2) == ts::SYS_SUCCESS);
-    CPPUNIT_ASSERT(ts::FileExists (dirName2));
-    CPPUNIT_ASSERT(ts::IsDirectory (dirName2));
-    CPPUNIT_ASSERT(!ts::FileExists (dirName));
-    CPPUNIT_ASSERT(!ts::IsDirectory (dirName));
-    CPPUNIT_ASSERT(ts::FileExists (dirName2 + fileName));
-    CPPUNIT_ASSERT(!ts::IsDirectory (dirName2 + fileName));
+    const ts::UString dirName2(ts::TempFile(u""));
+    CPPUNIT_ASSERT(!ts::FileExists(dirName2));
+    CPPUNIT_ASSERT(ts::RenameFile(dirName, dirName2) == ts::SYS_SUCCESS);
+    CPPUNIT_ASSERT(ts::FileExists(dirName2));
+    CPPUNIT_ASSERT(ts::IsDirectory(dirName2));
+    CPPUNIT_ASSERT(!ts::FileExists(dirName));
+    CPPUNIT_ASSERT(!ts::IsDirectory(dirName));
+    CPPUNIT_ASSERT(ts::FileExists(dirName2 + fileName));
+    CPPUNIT_ASSERT(!ts::IsDirectory(dirName2 + fileName));
 
-    CPPUNIT_ASSERT(ts::DeleteFile (dirName2 + fileName) == ts::SYS_SUCCESS);
-    CPPUNIT_ASSERT(!ts::FileExists (dirName2 + fileName));
-    CPPUNIT_ASSERT(ts::IsDirectory (dirName2));
+    CPPUNIT_ASSERT(ts::DeleteFile(dirName2 + fileName) == ts::SYS_SUCCESS);
+    CPPUNIT_ASSERT(!ts::FileExists(dirName2 + fileName));
+    CPPUNIT_ASSERT(ts::IsDirectory(dirName2));
 
-    CPPUNIT_ASSERT(ts::DeleteFile (dirName2) == ts::SYS_SUCCESS);
-    CPPUNIT_ASSERT(!ts::FileExists (dirName2));
-    CPPUNIT_ASSERT(!ts::IsDirectory (dirName2));
+    CPPUNIT_ASSERT(ts::DeleteFile(dirName2) == ts::SYS_SUCCESS);
+    CPPUNIT_ASSERT(!ts::FileExists(dirName2));
+    CPPUNIT_ASSERT(!ts::IsDirectory(dirName2));
 }
 
 void SysUtilsTest::testWildcard()
 {
-    const ts::UString dirName (ts::TempFile(""));
-    const ts::UString filePrefix (dirName + ts::PathSeparator + "foo.");
+    const ts::UString dirName(ts::TempFile(u""));
+    const ts::UString filePrefix(dirName + ts::PathSeparator + u"foo.");
     const size_t count = 10;
 
     // Create temporary directory
-    CPPUNIT_ASSERT(ts::CreateDirectory (dirName) == ts::SYS_SUCCESS);
-    CPPUNIT_ASSERT(ts::IsDirectory (dirName));
+    CPPUNIT_ASSERT(ts::CreateDirectory(dirName) == ts::SYS_SUCCESS);
+    CPPUNIT_ASSERT(ts::IsDirectory(dirName));
 
     // Create one file with unique pattern
-    const ts::UString spuriousFileName (dirName + ts::PathSeparator + "tagada");
-    CPPUNIT_ASSERT(_CreateFile (spuriousFileName, 0));
-    CPPUNIT_ASSERT(ts::FileExists (spuriousFileName));
+    const ts::UString spuriousFileName(dirName + ts::PathSeparator + u"tagada");
+    CPPUNIT_ASSERT(_CreateFile(spuriousFileName, 0));
+    CPPUNIT_ASSERT(ts::FileExists(spuriousFileName));
 
     // Create many files
     ts::UStringVector fileNames;
@@ -520,13 +519,13 @@ void SysUtilsTest::testWildcard()
         CPPUNIT_ASSERT(ts::FileExists(fileName));
         fileNames.push_back(fileName);
     }
-    Display("created files:", "file: ", fileNames);
+    Display(u"created files:", u"file: ", fileNames);
 
     // Get wildcard
     ts::UStringVector expanded;
-    CPPUNIT_ASSERT(ts::ExpandWildcard(expanded, filePrefix + "*"));
+    CPPUNIT_ASSERT(ts::ExpandWildcard(expanded, filePrefix + u"*"));
     std::sort(expanded.begin(), expanded.end());
-    Display("expanded wildcard:", "expanded: ", expanded);
+    Display(u"expanded wildcard:", u"expanded: ", expanded);
     CPPUNIT_ASSERT(expanded == fileNames);
 
     // Final cleanup

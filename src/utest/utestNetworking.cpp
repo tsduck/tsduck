@@ -147,10 +147,10 @@ void NetworkingTest::testIPAddressConstructors()
     ts::IPAddress a6 (sa6);
     CPPUNIT_ASSERT(a6.address() == 0x01020304);
 
-    ts::IPAddress a7 ("2.3.4.5");
+    ts::IPAddress a7(u"2.3.4.5");
     CPPUNIT_ASSERT(a7.address() == 0x02030405);
 
-    ts::IPAddress a8 ("localhost");
+    ts::IPAddress a8(u"localhost");
     CPPUNIT_ASSERT(a8.address() == 0x7F000001); // 127.0.0.1
     CPPUNIT_ASSERT(a8 == ts::IPAddress::LocalHost);
 }
@@ -199,10 +199,10 @@ void NetworkingTest::testIPAddress()
     CPPUNIT_ASSERT(sai.sin_addr.s_addr == htonl (0x01020304));
     CPPUNIT_ASSERT(sai.sin_port == htons (80));
 
-    a1.resolve ("2.3.4.5");
+    a1.resolve(u"2.3.4.5");
     CPPUNIT_ASSERT(a1.address() == 0x02030405);
 
-    a1.resolve ("localhost");
+    a1.resolve(u"localhost");
     CPPUNIT_ASSERT(a1.address() == 0x7F000001); // 127.0.0.1
     CPPUNIT_ASSERT(a1 == ts::IPAddress::LocalHost);
 
@@ -210,10 +210,10 @@ void NetworkingTest::testIPAddress()
     const ts::UString s1(a1.toString());
     CPPUNIT_ASSERT(s1 == u"2.3.4.5");
 
-    utest::Out() << "NetworkingTest: localhost = " << ts::IPAddress("localhost") << std::endl;
+    utest::Out() << "NetworkingTest: localhost = " << ts::IPAddress(u"localhost") << std::endl;
 
     // Note: fail if not connected to a network.
-    utest::Out() << "NetworkingTest: www.google.com = " << ts::IPAddress("www.google.com") << std::endl;
+    utest::Out() << "NetworkingTest: www.google.com = " << ts::IPAddress(u"www.google.com") << std::endl;
 }
 
 void NetworkingTest::testGetLocalIPAddresses()
@@ -276,26 +276,26 @@ void NetworkingTest::testSocketAddressConstructors()
 
     ::sockaddr_in sa6;
     sa6.sin_family = AF_INET;
-    sa6.sin_addr.s_addr = htonl (0x01020304);
-    sa6.sin_port = htons (80);
-    ts::SocketAddress a6 (sa6);
+    sa6.sin_addr.s_addr = htonl(0x01020304);
+    sa6.sin_port = htons(80);
+    ts::SocketAddress a6(sa6);
     CPPUNIT_ASSERT(a6.address() == 0x01020304);
     CPPUNIT_ASSERT(a6.port() == 80);
 
-    ts::SocketAddress a7 ("2.3.4.5");
+    ts::SocketAddress a7(u"2.3.4.5");
     CPPUNIT_ASSERT(a7.address() == 0x02030405);
     CPPUNIT_ASSERT(a7.port() == ts::SocketAddress::AnyPort);
 
-    ts::SocketAddress a8 ("localhost");
+    ts::SocketAddress a8(u"localhost");
     CPPUNIT_ASSERT(a8.address() == 0x7F000001); // 127.0.0.1
     CPPUNIT_ASSERT(a8 == ts::IPAddress::LocalHost);
     CPPUNIT_ASSERT(a8.port() == ts::SocketAddress::AnyPort);
 
-    ts::SocketAddress a9 ("2.3.4.5:80");
+    ts::SocketAddress a9(u"2.3.4.5:80");
     CPPUNIT_ASSERT(a9.address() == 0x02030405);
     CPPUNIT_ASSERT(a9.port() == 80);
 
-    ts::SocketAddress a10 (":80");
+    ts::SocketAddress a10(u":80");
     CPPUNIT_ASSERT(a10.address() == ts::IPAddress::AnyAddress);
     CPPUNIT_ASSERT(a10.port() == 80);
 }
@@ -304,15 +304,15 @@ void NetworkingTest::testSocketAddress()
 {
     CPPUNIT_ASSERT(ts::IPInitialize());
 
-    ts::SocketAddress a1 (1, 2, 3, 4, 80);
-    ts::SocketAddress a2 (1, 2, 3, 4, 80);
-    ts::SocketAddress a3 (1, 3, 4, 5, 81);
+    ts::SocketAddress a1(1, 2, 3, 4, 80);
+    ts::SocketAddress a2(1, 2, 3, 4, 80);
+    ts::SocketAddress a3(1, 3, 4, 5, 81);
 
     CPPUNIT_ASSERT(a1 == a2);
     CPPUNIT_ASSERT(a1 != a3);
 
-    a1.setAddress (1, 3, 4, 5);
-    a1.setPort (81);
+    a1.setAddress(1, 3, 4, 5);
+    a1.setPort(81);
     CPPUNIT_ASSERT(a1 == a3);
 
     a1.setPort(80);
@@ -351,11 +351,11 @@ void NetworkingTest::testSocketAddress()
 
     a1.set(2, 3, 4, 5, 80);
     const ts::UString s1(a1.toString());
-    CPPUNIT_ASSERT(s1 == "2.3.4.5:80");
+    CPPUNIT_ASSERT(s1 == u"2.3.4.5:80");
 
     a1.clearPort();
     const ts::UString s2(a1.toString());
-    CPPUNIT_ASSERT(s2 == "2.3.4.5");
+    CPPUNIT_ASSERT(s2 == u"2.3.4.5");
 }
 
 // A thread class which implements a TCP/IP client.

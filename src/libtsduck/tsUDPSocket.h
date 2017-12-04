@@ -156,7 +156,7 @@ namespace ts {
         //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
-        bool setDefaultDestination(const std::string& name, Report& report = CERR);
+        bool setDefaultDestination(const UString& name, Report& report = CERR);
 
         //!
         //! Get the default destination address and port for outgoing messages.
@@ -181,7 +181,7 @@ namespace ts {
         //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
-        bool setOutgoingMulticast(const std::string& name, Report& report = CERR);
+        bool setOutgoingMulticast(const UString& name, Report& report = CERR);
 
         //!
         //! Set the Time To Live (TTL) option.

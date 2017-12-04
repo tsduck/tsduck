@@ -291,7 +291,7 @@ void XMLTest::testValidation()
     ts::XML xml(CERR);
 
     ts::XML::Document model;
-    CPPUNIT_ASSERT(xml.loadDocument(model, "tsduck.xml"));
+    CPPUNIT_ASSERT(xml.loadDocument(model, u"tsduck.xml"));
 
     const ts::UString xmlContent(
         u"<?xml version='1.0' encoding='UTF-8'?>\n"
@@ -325,20 +325,20 @@ void XMLTest::testCreation()
     ts::XML::Element* e1 = 0;
     ts::XML::Element* e2 = 0;
 
-    ts::XML::Element* root = xml.initializeDocument(&doc, "theRoot");
+    ts::XML::Element* root = xml.initializeDocument(&doc, u"theRoot");
     CPPUNIT_ASSERT(root != 0);
     CPPUNIT_ASSERT_EQUAL(0, ts::XML::NodeDepth(&doc));
     CPPUNIT_ASSERT_EQUAL(1, ts::XML::NodeDepth(root));
 
-    CPPUNIT_ASSERT((e1 = xml.addElement(root, "child1")) != 0);
+    CPPUNIT_ASSERT((e1 = xml.addElement(root, u"child1")) != 0);
     CPPUNIT_ASSERT_EQUAL(2, ts::XML::NodeDepth(e1));
     e1->SetAttribute("str", "a string");
     e1->SetAttribute("int", -47);
-    CPPUNIT_ASSERT(xml.addElement(e1, "subChild1") != 0);
-    CPPUNIT_ASSERT((e2 = xml.addElement(e1, "subChild2")) != 0);
+    CPPUNIT_ASSERT(xml.addElement(e1, u"subChild1") != 0);
+    CPPUNIT_ASSERT((e2 = xml.addElement(e1, u"subChild2")) != 0);
     e2->SetAttribute("int64", TS_CONST64(0x7FFFFFFFFFFFFFFF));
-    CPPUNIT_ASSERT((e2 = xml.addElement(root, "child2")) != 0);
-    CPPUNIT_ASSERT(xml.addElement(e2, "fooBar") != 0);
+    CPPUNIT_ASSERT((e2 = xml.addElement(root, u"child2")) != 0);
+    CPPUNIT_ASSERT(xml.addElement(e2, u"fooBar") != 0);
 
     ts::UString text(xml.toString(doc));
     utest::Out() << "XMLTest::testCreation: " << text << std::endl;

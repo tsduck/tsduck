@@ -68,7 +68,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(DirectShowTest);
 // Test suite initialization method.
 void DirectShowTest::setUp()
 {
-    CPPUNIT_ASSERT(ts::ComSuccess(::CoInitializeEx(NULL, ::COINIT_MULTITHREADED), "CoInitializeEx", CERR));
+    CPPUNIT_ASSERT(ts::ComSuccess(::CoInitializeEx(NULL, ::COINIT_MULTITHREADED), u"CoInitializeEx", CERR));
 }
 
 // Test suite cleanup method.

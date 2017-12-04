@@ -49,7 +49,15 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::SubtitlingDescriptor::DisplayDescriptor, ts::EDID(M
 // Constructors.
 //----------------------------------------------------------------------------
 
-ts::SubtitlingDescriptor::Entry::Entry(const char* code, uint8_t subt, uint16_t comp, uint16_t ancil) :
+ts::SubtitlingDescriptor::Entry::Entry(const UChar* code, uint8_t subt, uint16_t comp, uint16_t ancil) :
+    language_code(code),
+    subtitling_type(subt),
+    composition_page_id(comp),
+    ancillary_page_id(ancil)
+{
+}
+
+ts::SubtitlingDescriptor::Entry::Entry(const UString& code, uint8_t subt, uint16_t comp, uint16_t ancil) :
     language_code(code),
     subtitling_type(subt),
     composition_page_id(comp),

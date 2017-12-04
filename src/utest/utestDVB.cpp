@@ -94,7 +94,7 @@ void DVBTest::tearDown()
 
 void DVBTest::testTunerArgs()
 {
-    ts::Args args("Test tuner", "[options]", "<help intro>\n");
+    ts::Args args(u"Test tuner", u"[options]", u"<help intro>\n");
     ts::TunerArgs tuner_args;
     tuner_args.addHelp(args);
     utest::Out() << "DVBTest:: TunerArgs: " << std::endl << args.getHelp() << std::endl;
@@ -130,7 +130,7 @@ void DVBTest::testParameters(const ts::TunerParameters& params)
     tuner_args.defineOptions(args);
     ts::UStringVector args_vec;
     opts.split(args_vec, u' ');
-    CPPUNIT_ASSERT(args.analyze("", args_vec));
+    CPPUNIT_ASSERT(args.analyze(u"", args_vec));
 
     ts::TunerArgs tuner;
     tuner.load(args);
@@ -165,23 +165,23 @@ void DVBTest::displayLNB(const ts::LNB& lnb, const ts::UString& name)
 void DVBTest::testLNB()
 {
     ts::LNB lnb1;
-    displayLNB(lnb1, "universal LNB");
+    displayLNB(lnb1, u"universal LNB");
     CPPUNIT_ASSERT(lnb1.isValid());
 
-    ts::LNB lnb2("9000,10000,11000");
-    displayLNB(lnb2, "9000,10000,11000");
+    ts::LNB lnb2(u"9000,10000,11000");
+    displayLNB(lnb2, u"9000,10000,11000");
     CPPUNIT_ASSERT(lnb2.isValid());
 
-    ts::LNB lnb3("9500");
-    displayLNB(lnb3, "9500");
+    ts::LNB lnb3(u"9500");
+    displayLNB(lnb3, u"9500");
     CPPUNIT_ASSERT(lnb3.isValid());
 
-    ts::LNB lnb4("9500,10000");
-    displayLNB(lnb4, "9500,10000");
+    ts::LNB lnb4(u"9500,10000");
+    displayLNB(lnb4, u"9500,10000");
     CPPUNIT_ASSERT(!lnb4.isValid());
 
-    ts::LNB lnb5("azerty");
-    displayLNB(lnb5, "azerty");
+    ts::LNB lnb5(u"azerty");
+    displayLNB(lnb5, u"azerty");
     CPPUNIT_ASSERT(!lnb5.isValid());
 }
 
