@@ -250,7 +250,7 @@ bool ts::Tuner::open(const UString& device_name, bool info_only, Report& report)
         return close(report) || false;
     }
     _fe_info.name[sizeof(_fe_info.name) - 1] = 0;
-    _device_info = _fe_info.name;
+    _device_info = UString::FromUTF8(_fe_info.name);
     _delivery_systems.reset();
 
     switch (_fe_info.type) {

@@ -127,7 +127,7 @@ bool ts::IPAddress::resolve(const UString& name, Report& report)
             errmsg = ErrorCodeMessage(code);
         }
         else {
-            errmsg = gai_strerror(status);
+            errmsg = UString::FromUTF8(gai_strerror(status));
         }
         report.error(name + u": " + errmsg);
     #endif
