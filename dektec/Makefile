@@ -47,7 +47,7 @@ RECURSE_ORDER = none
 .PHONY: copy download sdkfile getversion expand dtapi
 
 # The download URL is a generic one ending in ../LatestLinuxSDK.
-DEKTEC_URL = http://www.dektec.com/products/SDK/DTAPI/Downloads/LatestLinuxSDK
+DEKTEC_URL = https://www.dektec.com/products/SDK/DTAPI/Downloads/LatestLinuxSDK
 
 # The actual file is redirected as ../LinuxSDK_v5.06.2017.0.tar.gz for instance.
 # The file LinuxSDK.version is created to contain the actual file name.
