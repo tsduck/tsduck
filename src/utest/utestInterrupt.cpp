@@ -93,7 +93,7 @@ namespace {
 
 void InterruptTest::testInterrupt()
 {
-    if (ts::EnvironmentExists("UTEST_INTERRUPT_ALLOWED")) {
+    if (ts::EnvironmentExists(u"UTEST_INTERRUPT_ALLOWED")) {
         std::cerr << "InterruptTest: Unset UTEST_INTERRUPT_ALLOWED to skip the interrupt test" << std::endl;
 
         TestHandler handler;

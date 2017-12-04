@@ -179,19 +179,19 @@ bool ts::UDPSocket::bind (const SocketAddress& addr, Report& report)
 // Return true on success, false on error.
 //----------------------------------------------------------------------------
 
-bool ts::UDPSocket::setOutgoingMulticast (const std::string& name, Report& report)
+bool ts::UDPSocket::setOutgoingMulticast(const UString& name, Report& report)
 {
     IPAddress addr;
-    return addr.resolve (name, report) && setOutgoingMulticast (addr, report);
+    return addr.resolve(name, report) && setOutgoingMulticast(addr, report);
 }
 
-bool ts::UDPSocket::setOutgoingMulticast (const IPAddress& addr, Report& report)
+bool ts::UDPSocket::setOutgoingMulticast(const IPAddress& addr, Report& report)
 {
     ::in_addr iaddr;
-    addr.copy (iaddr);
+    addr.copy(iaddr);
 
-    if (::setsockopt (_sock, IPPROTO_IP, IP_MULTICAST_IF, TS_SOCKOPT_T (&iaddr), sizeof(iaddr)) != 0) {
-        report.error(u"error setting outgoing local address: " + SocketErrorCodeMessage ());
+    if (::setsockopt(_sock, IPPROTO_IP, IP_MULTICAST_IF, TS_SOCKOPT_T(&iaddr), sizeof(iaddr)) != 0) {
+        report.error(u"error setting outgoing local address: " + SocketErrorCodeMessage());
         return false;
     }
     return true;
@@ -204,13 +204,13 @@ bool ts::UDPSocket::setOutgoingMulticast (const IPAddress& addr, Report& report)
 // Return true on success, false on error.
 //----------------------------------------------------------------------------
 
-bool ts::UDPSocket::setDefaultDestination (const std::string& name, Report& report)
+bool ts::UDPSocket::setDefaultDestination(const UString& name, Report& report)
 {
     SocketAddress addr;
-    return addr.resolve (name, report) && setDefaultDestination (addr, report);
+    return addr.resolve(name, report) && setDefaultDestination(addr, report);
 }
 
-bool ts::UDPSocket::setDefaultDestination (const SocketAddress& addr, Report& report)
+bool ts::UDPSocket::setDefaultDestination(const SocketAddress& addr, Report& report)
 {
     if (!addr.hasAddress()) {
         report.error(u"missing IP address in UDP destination");

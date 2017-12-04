@@ -536,7 +536,7 @@ CONTAINER& ts::UString::Append(CONTAINER& container, int argc, const char* const
 {
     const size_type size = argc < 0 ? 0 : size_type(argc);
     for (size_type i = 0; i < size; ++i) {
-        container.push_back(UString(argv[i]));
+        container.push_back(UString::FromUTF8(argv[i]));
     }
     return container;
 }

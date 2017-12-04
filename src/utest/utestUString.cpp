@@ -169,7 +169,7 @@ UStringTest::UStringTest() :
 void UStringTest::setUp()
 {
     // Select the directory name and prefix for temporary files
-    _tempFilePrefix = ts::TempFile(".");
+    _tempFilePrefix = ts::TempFile(u".");
 
     // Next file will use suffix "000"
     _nextFileIndex = 0;
@@ -274,8 +274,8 @@ void UStringTest::testUTF()
 
     ts::UString s1(reinterpret_cast<const ts::UChar*>(utf16_values));
     ts::UString s2(reinterpret_cast<const ts::UChar*>(utf16_values), utf16_count);
-    ts::UString s3(reinterpret_cast<const char*>(utf8_bytes));
-    ts::UString s4(reinterpret_cast<const char*>(utf8_bytes), utf8_count);
+    ts::UString s3(ts::UString::FromUTF8(reinterpret_cast<const char*>(utf8_bytes)));
+    ts::UString s4(ts::UString::FromUTF8(reinterpret_cast<const char*>(utf8_bytes), utf8_count));
 
     utest::Out() << "UStringTest::testUTF: utf16_count = " << utf16_count << ", s1.length() = " << s1.length() << std::endl;
 
@@ -637,14 +637,14 @@ void UStringTest::testBreakLines()
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"r+oih zf", v1[2]);
 
     std::vector<ts::UString> v2;
-    ts::UString(u"aze arf erf r+oih zf").splitLines(v2, 8, "+");
+    ts::UString(u"aze arf erf r+oih zf").splitLines(v2, 8, u"+");
     CPPUNIT_ASSERT(v2.size() == 3);
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"aze arf", v2[0]);
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"erf r+", v2[1]);
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"oih zf", v2[2]);
 
-    std::vector<ts::UString> v3;
-    ts::UString(u"aze arf erf r+oih zf").splitLines(v3, 8, "", "==");
+    ts::UStringVector v3;
+    ts::UString(u"aze arf erf r+oih zf").splitLines(v3, 8, u"", u"==");
     CPPUNIT_ASSERT(v3.size() == 4);
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"aze arf", v3[0]);
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"==erf", v3[1]);
@@ -659,7 +659,7 @@ void UStringTest::testBreakLines()
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"ff", v4[2]);
 
     std::vector<ts::UString> v5;
-    ts::UString(u"aze arf dkvyfngofnb ff").splitLines(v5, 8, "", "", true);
+    ts::UString(u"aze arf dkvyfngofnb ff").splitLines(v5, 8, u"", u"", true);
     CPPUNIT_ASSERT(v5.size() == 3);
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"aze arf", v5[0]);
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"dkvyfngo", v5[1]);
@@ -1123,7 +1123,7 @@ void UStringTest::testHexaDump()
     CPPUNIT_ASSERT_USTRINGS_EQUAL(ref4, hex4);
 
     const ts::UString hex5(ts::UString::Dump(refBytes + 32, 12, ts::UString::SINGLE_LINE));
-    const char* ref5 = "20 21 22 23 24 25 26 27 28 29 2A 2B";
+    const ts::UChar* ref5 = u"20 21 22 23 24 25 26 27 28 29 2A 2B";
     CPPUNIT_ASSERT_USTRINGS_EQUAL(ref5, hex5);
 
     const ts::UString hex6(ts::UString::Dump(refBytes + 32, 20, ts::UString::HEXA | ts::UString::C_STYLE));

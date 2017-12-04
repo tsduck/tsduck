@@ -340,3 +340,10 @@ bool ts::NotifySettingChange()
     ::LRESULT res = ::SendMessageTimeout(HWND_BROADCAST, WM_SETTINGCHANGE, 0, 0, SMTO_ABORTIFHUNG, 5000, NULL);
     return res != 0;
 }
+
+bool ts::NotifyEnvironmentChange()
+{
+    // timeout: 5000 ms
+    ::LRESULT res = ::SendMessageTimeout(HWND_BROADCAST, WM_SETTINGCHANGE, 0, reinterpret_cast<LPARAM>(L"Environment"), SMTO_ABORTIFHUNG, 5000, NULL);
+    return res != 0;
+}

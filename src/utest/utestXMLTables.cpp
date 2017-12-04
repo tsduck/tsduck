@@ -155,7 +155,7 @@ void XMLTablesTest::testGenericDescriptor()
 
     ts::XML xml(CERR);
     ts::XML::Document doc;
-    ts::XML::Element* root = xml.initializeDocument(&doc, "test");
+    ts::XML::Element* root = xml.initializeDocument(&doc, u"test");
     CPPUNIT_ASSERT(root != 0);
     CPPUNIT_ASSERT(ts::XMLTables::ToGenericDescriptor(xml, root, desc) != 0);
 
@@ -178,7 +178,7 @@ void XMLTablesTest::testGenericDescriptor()
     CPPUNIT_ASSERT_STRINGS_EQUAL("test", root->Name());
 
     ts::XML::ElementVector children;
-    CPPUNIT_ASSERT(xml.getChildren(children, root, "generic_descriptor", 1, 1));
+    CPPUNIT_ASSERT(xml.getChildren(children, root, u"generic_descriptor", 1, 1));
     CPPUNIT_ASSERT_EQUAL(size_t(1), children.size());
 
     ts::ByteBlock payload;
@@ -208,7 +208,7 @@ void XMLTablesTest::testGenericShortTable()
 
     ts::XML xml(CERR);
     ts::XML::Document doc;
-    ts::XML::Element* root = xml.initializeDocument(&doc, "test");
+    ts::XML::Element* root = xml.initializeDocument(&doc, u"test");
     CPPUNIT_ASSERT(root != 0);
     CPPUNIT_ASSERT(ts::XMLTables::ToGenericTable(xml, root, refTable) != 0);
 
@@ -231,7 +231,7 @@ void XMLTablesTest::testGenericShortTable()
     CPPUNIT_ASSERT_STRINGS_EQUAL("test", root->Name());
 
     ts::XML::ElementVector children;
-    CPPUNIT_ASSERT(xml.getChildren(children, root, "GENERIC_SHORT_TABLE", 1, 1));
+    CPPUNIT_ASSERT(xml.getChildren(children, root, u"GENERIC_SHORT_TABLE", 1, 1));
     CPPUNIT_ASSERT_EQUAL(size_t(1), children.size());
 
     ts::BinaryTablePtr tab(ts::XMLTables::FromGenericTableXML(xml, children[0]));
@@ -267,7 +267,7 @@ void XMLTablesTest::testGenericLongTable()
 
     ts::XML xml(CERR);
     ts::XML::Document doc;
-    ts::XML::Element* root = xml.initializeDocument(&doc, "test");
+    ts::XML::Element* root = xml.initializeDocument(&doc, u"test");
     CPPUNIT_ASSERT(root != 0);
     CPPUNIT_ASSERT(ts::XMLTables::ToGenericTable(xml, root, refTable) != 0);
 
@@ -295,7 +295,7 @@ void XMLTablesTest::testGenericLongTable()
     CPPUNIT_ASSERT_STRINGS_EQUAL("test", root->Name());
 
     ts::XML::ElementVector children;
-    CPPUNIT_ASSERT(xml.getChildren(children, root, "GENERIC_long_TABLE", 1, 1));
+    CPPUNIT_ASSERT(xml.getChildren(children, root, u"GENERIC_long_TABLE", 1, 1));
     CPPUNIT_ASSERT_EQUAL(size_t(1), children.size());
 
     ts::BinaryTablePtr tab(ts::XMLTables::FromGenericTableXML(xml, children[0]));

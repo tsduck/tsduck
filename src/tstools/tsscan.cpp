@@ -241,7 +241,7 @@ Options::Options(int argc, char *argv[]) :
 
 namespace {
     void DisplayTS(std::ostream& strm,
-                   const std::string& margin,
+                   const ts::UString& margin,
                    Options& opt,
                    ts::Tuner& tuner,
                    ts::TunerParametersPtr tparams,
@@ -513,7 +513,7 @@ namespace {
                           << std::endl;
 
                 // Analyze PSI/SI if required
-                DisplayTS(std::cout, "  ", opt, tuner, ts::TunerParametersPtr(), all_services);
+                DisplayTS(std::cout, u"  ", opt, tuner, ts::TunerParametersPtr(), all_services);
             }
         }
     }
@@ -562,7 +562,7 @@ namespace {
                         std::cout << "* Frequency: " << tp->shortDescription(tuner.signalStrength(opt), tuner.signalQuality(opt)) << std::endl;
 
                         // Analyze PSI/SI if required
-                        DisplayTS(std::cout, "  ", opt, tuner, tp, all_services);
+                        DisplayTS(std::cout, u"  ", opt, tuner, tp, all_services);
                     }
                 }
             }

@@ -96,7 +96,7 @@ namespace ts {
         /** Constructor.                                       */ \
         /** @param [in] code System error code.                */ \
         explicit name(ts::ErrorCode code) :                       \
-            ts::Exception(#name, code)                            \
+            ts::Exception(u ## #name, code)                       \
         {                                                         \
         }                                                         \
     }

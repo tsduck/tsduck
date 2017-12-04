@@ -128,14 +128,14 @@ void ReportTest::testSeverity()
 namespace {
     void _testStringSequence(ts::ReportBuffer<>& log, int level)
     {
-        const ts::UString str1("1");
-        const ts::UString str2("2");
-        const ts::UString str3("3");
-        const ts::UString str4("4");
-        const ts::UString str5("5");
-        const ts::UString str6("6");
-        const ts::UString str7("7");
-        const ts::UString str8("8");
+        const ts::UString str1(u"1");
+        const ts::UString str2(u"2");
+        const ts::UString str3(u"3");
+        const ts::UString str4(u"4");
+        const ts::UString str5(u"5");
+        const ts::UString str6(u"6");
+        const ts::UString str7(u"7");
+        const ts::UString str8(u"8");
 
         log.setDebugLevel(level);
         log.resetMessages();
@@ -281,8 +281,8 @@ void ReportTest::testByName()
     }
 
     ts::UStringVector ref;
-    ref.push_back("info 1");
-    ref.push_back("Error: error 1");
+    ref.push_back(u"info 1");
+    ref.push_back(u"Error: error 1");
 
     ts::UStringVector value;
     ts::UString::Load(value, _fileName);

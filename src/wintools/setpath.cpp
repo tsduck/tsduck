@@ -42,6 +42,11 @@
 #include "tsArgs.h"
 #include "tsByteBlock.h"
 #include "tsSysUtils.h"
+
+#if defined(TS_WINDOWS)
+#include "tsRegistryUtils.h"
+#endif
+
 TSDUCK_SOURCE;
 
 
@@ -55,16 +60,16 @@ struct Options: public ts::Args
 
     enum UpdateCommand {APPEND, PREPEND, REMOVE};
     ts::UString   directory;
-    std::string   registryKey;
-    std::string   registryValue;
+    ts::UString   registryKey;
+    ts::UString   registryValue;
     UpdateCommand command;
 };
 
 Options::Options(int argc, char *argv[]) :
     ts::Args(u"Add or remove a directory to the system Path.", u"[options] directory"),
     directory(),
-    registryKey("SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment"),
-    registryValue("Path"),
+    registryKey(u"SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment"),
+    registryValue(u"Path"),
     command(APPEND)
 {
     option(u"",         0,  Args::STRING, 1, 1);
@@ -138,42 +143,16 @@ int main(int argc, char* argv[])
 
 #if defined(TS_WINDOWS)
 
-    // Access registry value.
-    ::HKEY hkey;
-    ::LONG status = ::RegOpenKey(HKEY_LOCAL_MACHINE, opt.registryKey.c_str(), &hkey);
-    if (status != ERROR_SUCCESS) {
-        opt.fatal(ts::ErrorCodeMessage(status));
-    }
-
-    // Get the size and type of the Path value.
-    ::DWORD type = 0;
-    ::DWORD pathSize = 0;
-    status = ::RegQueryValueEx(hkey, opt.registryValue.c_str(), NULL, &type, NULL, &pathSize);
-    if (status != ERROR_SUCCESS) {
-        opt.error(ts::ErrorCodeMessage(status));
-    }
-    opt.debug(u"Path size: %d bytes, type: %d", {pathSize, type});
-    if (type != REG_SZ && type != REG_EXPAND_SZ) {
-        opt.error(u"invalid data type in %s\\%s", {opt.registryKey, opt.registryValue});
-    }
-
     // Get the Path value.
-    ts::ByteBlock pathBuffer(pathSize + 256);
-    pathSize = ::DWORD(pathBuffer.size());
-    status = ::RegQueryValueEx(hkey, opt.registryValue.c_str(), NULL, &type, &pathBuffer[0], &pathSize);
-    if (status != ERROR_SUCCESS) {
-        opt.error(ts::ErrorCodeMessage(status));
+    ts::UString path(ts::GetRegistryValue(opt.registryKey, opt.registryValue));
+    opt.debug(u"Path value: %s", {path});
+    if (path.empty()) {
+        opt.fatal(u"cannot get Path from registry: %s\\%s", {opt.registryKey, opt.registryValue});
     }
-    pathBuffer.resize(std::min(pathBuffer.size(), size_t(pathSize)));
-
-    // Turn the path value into a string.
-    pathBuffer.push_back(0);
-    ts::UString pathValue(reinterpret_cast<char*>(&pathBuffer[0]));
-    opt.debug(u"Path value: %s", {pathValue});
 
     // Split the Path into a list of clean directories.
     ts::UStringList dirs;
-    pathValue.split(dirs, ts::SearchPathSeparator, true);
+    path.split(dirs, ts::SearchPathSeparator, true);
     for (ts::UStringList::iterator it = dirs.begin(); it != dirs.end(); ++it) {
         *it = CleanupDirectory(*it);
     }
@@ -195,20 +174,17 @@ int main(int argc, char* argv[])
     }
 
     // Rebuild the new Path.
-    pathValue = ts::UString::Join(dirs, std::string(1, ts::SearchPathSeparator));
-    opt.debug(u"new Path value: %s", {pathValue});
+    path = ts::UString::Join(dirs, ts::UString(1, ts::SearchPathSeparator));
+    opt.debug(u"new Path value: %s", {path});
 
     // Update the Path in the registry.
     // Always set type as REG_EXPAND_SZ, in case there is a variable reference in the add path.
-    // Make sure the trailing nul character is included in the data size.
-    const std::string pathValueUTF8(pathValue.toUTF8());
-    status = ::RegSetValueEx(hkey, opt.registryValue.c_str(), 0, REG_EXPAND_SZ, reinterpret_cast<const ::BYTE*>(pathValueUTF8.c_str()), ::DWORD(pathValue.size()) + 1);
-    if (status != ERROR_SUCCESS) {
-        opt.error(ts::ErrorCodeMessage(status));
+    if (!ts::SetRegistryValue(opt.registryKey, opt.registryValue, path, true)) {
+        opt.fatal(u"error setting Path in registry: %s\\%s", {opt.registryKey, opt.registryValue});
     }
 
     // Notify all applications that the Path was updated.
-    ::SendNotifyMessageW(HWND_BROADCAST, WM_WININICHANGE, 0, reinterpret_cast<LPARAM>(L"Environment"));
+    ts::NotifyEnvironmentChange();
 
 #else
     opt.error(u"no effect on non-Windows systems");

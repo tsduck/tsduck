@@ -57,7 +57,7 @@ namespace ts {
             //! @param [in] code ISO-639 language code, 3 characters, as a C-string. Can be null.
             //! @param [in] type Audio type.
             //!
-            Entry(const char* code = 0, uint8_t type = 0);
+            Entry(const UChar* code = 0, uint8_t type = 0);
 
             //!
             //! Constructor.

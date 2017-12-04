@@ -31,6 +31,12 @@
 //
 //----------------------------------------------------------------------------
 
+// In the implementation of UString, we allow the implicit UTF-8 conversions
+// to ensure that the symbols are defined and exported from the DLL on Windows.
+// Otherwise, applications may get undefined symbols if thet allow these
+// implicit conversions.
+#define TS_ALLOW_IMPLICIT_UTF8_CONVERSION 1
+
 #include "tsUString.h"
 #include "tsByteBlock.h"
 #include "tsSysUtils.h"
@@ -249,6 +255,32 @@ ts::UString& ts::UString::append(uint32_t code)
         push_back(UChar(0xDC00 + (code & 0x03FF)));
     }
     return *this;
+}
+
+
+//----------------------------------------------------------------------------
+// Convert an UTF-8 string into a new UString.
+//----------------------------------------------------------------------------
+
+ts::UString ts::UString::FromUTF8(const std::string& utf8)
+{
+    UString str;
+    str.assignFromUTF8(utf8);
+    return str;
+}
+
+ts::UString ts::UString::FromUTF8(const char* utf8)
+{
+    UString str;
+    str.assignFromUTF8(utf8);
+    return str;
+}
+
+ts::UString ts::UString::FromUTF8(const char* utf8, size_type count)
+{
+    UString str;
+    str.assignFromUTF8(utf8, count);
+    return str;
 }
 
 

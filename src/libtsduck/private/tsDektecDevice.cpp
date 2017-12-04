@@ -42,7 +42,7 @@ bool tsDektecDeviceIsEmpty = true; // Avoid warning about empty module.
 
 ts::UString ts::DektecStrError(Dtapi::DTAPI_RESULT status)
 {
-    return Dtapi::DtapiResult2Str(status) + UString::Format(u" (DTAPI status %d)", {status});
+    return UString::FromUTF8(Dtapi::DtapiResult2Str(status)) + UString::Format(u" (DTAPI status %d)", {status});
 }
 
 
@@ -109,7 +109,7 @@ ts::UString ts::DektecDevice::GetDeviceDescription(const Dtapi::DtDeviceDesc& de
                                                                  sizeof(str));
     if (status == DTAPI_OK) {
         str[sizeof(str) - 1] = '\0';
-        return UString(str);
+        return UString::FromUTF8(str);
     }
     else {
         // Forge a name
@@ -169,7 +169,7 @@ ts::UString ts::DektecDevice::GetPortDescription(const Dtapi::DtHwFuncDesc& port
         }
     }
 #else
-    caps = UString(port.m_Flags.ToString());
+    caps = UString::FromUTF8(port.m_Flags.ToString());
 #endif
 
     if (!caps.empty()) {
@@ -227,7 +227,7 @@ ts::UString ts::DektecDevice::GetInterfaceDescription(const Dtapi::DtHwFuncDesc&
                                                                      str,
                                                                      sizeof(str));
         str[status == DTAPI_OK ? sizeof(str) - 1 : 0] = '\0';
-        desc = UString(str);
+        desc = UString::FromUTF8(str);
     }
 
     return desc;

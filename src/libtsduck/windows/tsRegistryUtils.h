@@ -98,7 +98,7 @@ namespace ts {
     TSDUCKDLL bool DeleteRegistryKey(const UString& key);
 
     //!
-    //! Get the root key of a registry path.
+    //! Get the root key of a registry path (Windows-specific).
     //! @param [in] key Registry key to split.
     //! @param [out] root_key Handle to the root key.
     //! @param [out] subkey Subkey name.
@@ -107,7 +107,7 @@ namespace ts {
     TSDUCKDLL bool SplitRegistryKey(const UString& key, ::HKEY& root_key, UString& subkey);
 
     //!
-    //! Get the root key of a registry path.
+    //! Get the root key of a registry path (Windows-specific).
     //! @param [in] key Registry key to split.
     //! @param [out] root_key Handle to the root key.
     //! @param [out] midkey Middle key name (without root key and final component).
@@ -121,4 +121,10 @@ namespace ts {
     //! @return True on success, false on error.
     //!
     TSDUCKDLL bool NotifySettingChange();
+
+    //!
+    //! Notify all applications that the environment was modified (Windows-specific).
+    //! @return True on success, false on error.
+    //!
+    TSDUCKDLL bool NotifyEnvironmentChange();
 }

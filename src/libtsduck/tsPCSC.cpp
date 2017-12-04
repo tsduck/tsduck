@@ -85,7 +85,7 @@ bool ts::pcsc::Success(::LONG status, Report& report)
     if (status == SCARD_S_SUCCESS) {
         size_t len;
         for (const char* p = names; (len = ::strlen(p)) != 0; p += len + 1) {  // Flawfinder: ignore: strlen()
-            readers.push_back(p);
+            readers.push_back(UString::FromUTF8(p));
         }
     }
 

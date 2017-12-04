@@ -50,7 +50,7 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::ParentalRatingDescriptor::DisplayDescriptor, ts::ED
 // Constructors
 //----------------------------------------------------------------------------
 
-ts::ParentalRatingDescriptor::Entry::Entry(const char* code, uint8_t rate) :
+ts::ParentalRatingDescriptor::Entry::Entry(const UChar* code, uint8_t rate) :
     country_code(code),
     rating(rate)
 {

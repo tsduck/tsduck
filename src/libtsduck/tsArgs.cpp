@@ -486,7 +486,7 @@ bool ts::Args::analyze(const UString& app_name, const UStringVector& arguments)
 
 bool ts::Args::analyze(int argc, char* argv[])
 {
-    _app_name = argc > 0 ? BaseName(argv[0], TS_EXECUTABLE_SUFFIX) : UString();
+    _app_name = argc > 0 ? BaseName(UString::FromUTF8(argv[0]), TS_EXECUTABLE_SUFFIX) : UString();
     if (argc < 2) {
         _args.clear();
     }

@@ -107,7 +107,7 @@ void EnumerationTest::testEnumeration()
     CPPUNIT_ASSERT(e3 == e4);
     CPPUNIT_ASSERT(e3 != e1);
 
-    e3.add("AddedElement", 458);
+    e3.add(u"AddedElement", 458);
     CPPUNIT_ASSERT(e3.size() == 5);
     CPPUNIT_ASSERT(e3 != e4);
     CPPUNIT_ASSERT(e3 != e1);
@@ -133,7 +133,7 @@ void EnumerationTest::testName()
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"AddedElement", e1.name(458));
 
     CPPUNIT_ASSERT(e1.size() == 5);
-    e1.add("Other7", 7);
+    e1.add(u"Other7", 7);
     CPPUNIT_ASSERT(e1.size() == 6);
 
     const ts::UString v7(e1.name(7));
@@ -186,7 +186,7 @@ void EnumerationTest::testValue()
     CPPUNIT_ASSERT(e1.value(u"First") == ts::Enumeration::UNKNOWN);
 
     CPPUNIT_ASSERT(e1.size() == 5);
-    e1.add("FirstRepetition", 48);
+    e1.add(u"FirstRepetition", 48);
     CPPUNIT_ASSERT(e1.size() == 6);
 
     const int vFirstRepetition = e1.value(u"FirstRepetition");
@@ -206,11 +206,11 @@ void EnumerationTest::testNameList()
                         {u"AddedElement", 458}});
 
     ts::UStringVector ref;
-    ref.push_back("FirstElement");
-    ref.push_back("SecondElement");
-    ref.push_back("FirstRepetition");
-    ref.push_back("OtherValue");
-    ref.push_back("AddedElement");
+    ref.push_back(u"FirstElement");
+    ref.push_back(u"SecondElement");
+    ref.push_back(u"FirstRepetition");
+    ref.push_back(u"OtherValue");
+    ref.push_back(u"AddedElement");
 
     const ts::UString list(e1.nameList());
     utest::Out() << "EnumerationTest: e1.nameList() = \"" << list << "\"" << std::endl;
@@ -232,11 +232,11 @@ void EnumerationTest::testIterators()
                         {u"AddedElement", 458}});
 
     std::map <int, ts::UString> ref;
-    ref.insert(std::make_pair(-1, "FirstElement"));
-    ref.insert(std::make_pair(7, "SecondElement"));
-    ref.insert(std::make_pair(47, "FirstRepetition"));
-    ref.insert(std::make_pair(-123, "OtherValue"));
-    ref.insert(std::make_pair(458, "AddedElement"));
+    ref.insert(std::make_pair(-1, u"FirstElement"));
+    ref.insert(std::make_pair(7, u"SecondElement"));
+    ref.insert(std::make_pair(47, u"FirstRepetition"));
+    ref.insert(std::make_pair(-123, u"OtherValue"));
+    ref.insert(std::make_pair(458, u"AddedElement"));
 
     std::map <int, ts::UString> value;
     for (ts::Enumeration::const_iterator it = e1.begin(); it != e1.end(); ++it) {

@@ -386,7 +386,7 @@ void ts::HistoryPlugin::handleTable(SectionDemux& demux, const BinaryTable& tabl
         }
 
         default: {
-            const UString name(names::TID(table.tableId()).toUTF8());
+            const UString name(names::TID(table.tableId()));
             if (table.tableId() >= TID_EIT_MIN && table.tableId() <= TID_EIT_MAX) {
                 report(u"%s v%d, service 0x%X", {name, table.version(), table.tableIdExtension()});
             }

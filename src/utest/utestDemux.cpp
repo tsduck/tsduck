@@ -291,8 +291,8 @@ void DemuxTest::testTable(const char* name, const uint8_t* ref_packets, size_t r
             CPPUNIT_ASSERT(sdt.services[0x0304].descs.count() == 1);
             CPPUNIT_ASSERT(sdt.services[0x0304].descs[0]->tag() == ts::DID_SERVICE);
             CPPUNIT_ASSERT(sdt.services[0x0304].serviceType() == 0x01);
-            CPPUNIT_ASSERT(sdt.services[0x0304].serviceName() == "PLANETE");
-            CPPUNIT_ASSERT(sdt.services[0x0304].providerName() == "CNH");
+            CPPUNIT_ASSERT(sdt.services[0x0304].serviceName() == u"PLANETE");
+            CPPUNIT_ASSERT(sdt.services[0x0304].providerName() == u"CNH");
             sdt.serialize(table2);
             break;
         }
@@ -358,7 +358,7 @@ void DemuxTest::testTable(const char* name, const uint8_t* ref_packets, size_t r
             CPPUNIT_ASSERT(tot.utc_time == ts::Time(2007, 11, 23, 13, 25, 14));
             CPPUNIT_ASSERT(tot.regions.size() == 1);
             CPPUNIT_ASSERT(tot.descs.count() == 0);
-            CPPUNIT_ASSERT(tot.regions[0].country == "FRA");
+            CPPUNIT_ASSERT(tot.regions[0].country == u"FRA");
             CPPUNIT_ASSERT(tot.regions[0].region_id == 0);
             CPPUNIT_ASSERT(tot.regions[0].time_offset == 60);
             CPPUNIT_ASSERT(tot.regions[0].next_change == ts::Time(2008, 3, 30, 1, 0, 0));

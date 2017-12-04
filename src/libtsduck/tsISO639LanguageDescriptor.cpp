@@ -49,7 +49,7 @@ TS_ID_DESCRIPTOR_DISPLAY(ts::ISO639LanguageDescriptor::DisplayDescriptor, ts::ED
 // Constructors
 //----------------------------------------------------------------------------
 
-ts::ISO639LanguageDescriptor::Entry::Entry(const char* code, uint8_t type) :
+ts::ISO639LanguageDescriptor::Entry::Entry(const UChar* code, uint8_t type) :
     language_code(code),
     audio_type(type)
 {
