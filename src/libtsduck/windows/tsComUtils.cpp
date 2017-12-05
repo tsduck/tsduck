@@ -34,7 +34,7 @@
 #include "tsComUtils.h"
 #include "tsComPtr.h"
 #include "tsSysUtils.h"
-#include "tsRegistryUtils.h"
+#include "tsRegistry.h"
 #include "tsFatal.h"
 TSDUCK_SOURCE;
 
@@ -219,10 +219,10 @@ ts::UString ts::NameGUID(const ::GUID& guid)
     // Check if the GUID is stored in the registry.
     for (const RegistryLocation* p = registryLocations; p->key != 0; ++p) {
         UString name;
-        if (!(name = GetRegistryValue(p->key + fmt)).empty() ||
-            !(name = GetRegistryValue(p->key + fmt0)).empty() ||
-            !(name = GetRegistryValue(p->key + fmt1)).empty() ||
-            !(name = GetRegistryValue(p->key + fmt2)).empty())
+        if (!(name = Registry::GetValue(p->key + fmt)).empty() ||
+            !(name = Registry::GetValue(p->key + fmt0)).empty() ||
+            !(name = Registry::GetValue(p->key + fmt1)).empty() ||
+            !(name = Registry::GetValue(p->key + fmt2)).empty())
         {
             return p->prefix + name;
         }

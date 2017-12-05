@@ -116,6 +116,20 @@ namespace {
 
 
 //----------------------------------------------------------------------------
+// Build a version string depending on a revision.
+//----------------------------------------------------------------------------
+
+namespace {
+    ts::UString VersionString(int revision)
+    {
+        return revision == 0 ?
+            ts::UString::Format(u"%d.%d", {TS_VERSION_MAJOR, TS_VERSION_MINOR}) :
+            ts::UString::Format(u"%d.%d-%d", {TS_VERSION_MAJOR, TS_VERSION_MINOR, revision});
+    }
+}
+
+
+//----------------------------------------------------------------------------
 // Build version string.
 //----------------------------------------------------------------------------
 
@@ -134,7 +148,11 @@ ts::UString ts::GetVersion(VersionFormat format, const UString& applicationName,
         }
         case VERSION_NSIS: {
             // A definition directive for NSIS.
-            return u"!define tsduckVersion \"" + GetVersion(VERSION_GLOBAL, applicationName, revisionFile) + u'"';
+            // The name tsduckVersion contains the visible version.
+            // The name tsduckVersionVI contains a Window normalized version number X.X.X.X.
+            const int revision = GetHighestRevision();
+            return UString::Format(u"!define tsduckVersion \"%s\"\n!define tsduckVersionVI \"%d.%d.%d.%d\"",
+                                   {VersionString(revision), TS_VERSION_MAJOR, TS_VERSION_MINOR, revision / 10000, revision % 10000});
         }
         case VERSION_DEKTEC: {
             // The version of Dektec components.
@@ -146,22 +164,11 @@ ts::UString ts::GetVersion(VersionFormat format, const UString& applicationName,
         }
         case VERSION_SHORT: {
             // The simple version with the revision from the current executable and the TSDuck library.
-            const int revision = GetRevision(revisionFile, true);
-            return revision == 0 ?
-                UString::Format(u"%d.%d", {TS_VERSION_MAJOR, TS_VERSION_MINOR}) :
-                UString::Format(u"%d.%d-%d", {TS_VERSION_MAJOR, TS_VERSION_MINOR, revision});
+            return VersionString(GetRevision(revisionFile, true));
         }
         case VERSION_GLOBAL: {
             // Same as short but use the highest revision of all TSDuck files.
-            UStringVector files;
-            GetAllModules(files);
-            int revision = 0;
-            for (UStringVector::const_iterator it = files.begin(); it != files.end(); ++it) {
-                revision = std::max(revision, GetRevision(*it, false));
-            }
-            return revision == 0 ?
-                UString::Format(u"%d.%d", {TS_VERSION_MAJOR, TS_VERSION_MINOR}) :
-                UString::Format(u"%d.%d-%d", {TS_VERSION_MAJOR, TS_VERSION_MINOR, revision});
+            return VersionString(GetHighestRevision());
         }
         case VERSION_FILES: {
             // A list of revisions for all files.
@@ -300,6 +307,24 @@ int ts::GetRevision(const UString& fileName, bool includeLibrary)
     if (includeLibrary) {
         const UString shlibName(DirectoryName(execFile) + PathSeparator + u"tsduck" + TS_SHARED_LIB_SUFFIX);
         revision = std::max(revision, GetRevision(shlibName, false));
+    }
+
+    return revision;
+}
+
+
+//----------------------------------------------------------------------------
+// Get the highest revision number as integer from all TSDuck binary files.
+//----------------------------------------------------------------------------
+
+int ts::GetHighestRevision()
+{
+    UStringVector files;
+    GetAllModules(files);
+
+    int revision = 0;
+    for (UStringVector::const_iterator it = files.begin(); it != files.end(); ++it) {
+        revision = std::max(revision, GetRevision(*it, false));
     }
 
     return revision;

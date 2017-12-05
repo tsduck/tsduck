@@ -99,4 +99,10 @@ namespace ts {
     //! @return The revision number or zero if not found.
     //!
     TSDUCKDLL int GetRevision(const UString& fileName = UString(), bool includeLibrary = true);
+
+    //!
+    //! Get the highest revision number as integer from all TSDuck binary files.
+    //! @return The revision number or zero if not found.
+    //!
+    TSDUCKDLL int GetHighestRevision();
 }

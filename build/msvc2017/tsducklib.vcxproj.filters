@@ -713,7 +713,7 @@
     <ClInclude Include="..\..\src\libtsduck\windows\tsMediaTypeUtils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\libtsduck\windows\tsRegistryUtils.h">
+    <ClInclude Include="..\..\src\libtsduck\tsRegistry.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\libtsduck\windows\tsSinkFilter.h">
@@ -1390,7 +1390,7 @@
     <ClCompile Include="..\..\src\libtsduck\windows\tsMediaTypeUtils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\libtsduck\windows\tsRegistryUtils.cpp">
+    <ClCompile Include="..\..\src\libtsduck\tsRegistry.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\libtsduck\windows\tsSinkFilter.cpp">

@@ -178,6 +178,7 @@
 #include "tsPrivateDataSpecifierDescriptor.h"
 #include "tsRST.h"
 #include "tsRandomGenerator.h"
+#include "tsRegistry.h"
 #include "tsReport.h"
 #include "tsReportBuffer.h"
 #include "tsReportFile.h"
@@ -300,7 +301,6 @@
 #include "tsDirectShowTest.h"
 #include "tsDirectShowUtils.h"
 #include "tsMediaTypeUtils.h"
-#include "tsRegistryUtils.h"
 #include "tsSinkFilter.h"
 #endif
 

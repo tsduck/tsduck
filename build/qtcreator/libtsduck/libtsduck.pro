@@ -171,6 +171,7 @@ HEADERS += \
     ../../../src/libtsduck/tsPollFiles.h \
     ../../../src/libtsduck/tsPrivateDataSpecifierDescriptor.h \
     ../../../src/libtsduck/tsRandomGenerator.h \
+    ../../../src/libtsduck/tsRegistry.h \
     ../../../src/libtsduck/tsReportBuffer.h \
     ../../../src/libtsduck/tsReportBufferTemplate.h \
     ../../../src/libtsduck/tsReportFile.h \
@@ -415,6 +416,7 @@ SOURCES += \
     ../../../src/libtsduck/tsPluginSharedLibrary.cpp \
     ../../../src/libtsduck/tsPollFiles.cpp \
     ../../../src/libtsduck/tsPrivateDataSpecifierDescriptor.cpp \
+    ../../../src/libtsduck/tsRegistry.cpp \
     ../../../src/libtsduck/tsReport.cpp \
     ../../../src/libtsduck/tsReportWithPrefix.cpp \
     ../../../src/libtsduck/tsRingNode.cpp \
@@ -524,14 +526,12 @@ win32|win64 {
         ../../../src/libtsduck/windows/tsComUtils.h \
         ../../../src/libtsduck/windows/tsDirectShowUtils.h \
         ../../../src/libtsduck/windows/tsMediaTypeUtils.h \
-        ../../../src/libtsduck/windows/tsRegistryUtils.h \
         ../../../src/libtsduck/windows/tsSinkFilter.h
     SOURCES += \ 
         ../../../src/libtsduck/windows/tsComIds.cpp \
         ../../../src/libtsduck/windows/tsComUtils.cpp \
         ../../../src/libtsduck/windows/tsDirectShowUtils.cpp \
         ../../../src/libtsduck/windows/tsMediaTypeUtils.cpp \
-        ../../../src/libtsduck/windows/tsRegistryUtils.cpp \
         ../../../src/libtsduck/windows/tsSinkFilter.cpp \
         ../../../src/libtsduck/windows/tsTuner.cpp
 }

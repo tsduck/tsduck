@@ -8,10 +8,6 @@ Abstract:
   either as recorded files or live streams. The structure of an MPEG TS is
   defined in ISO 13818-1.
 
-  Unless specified otherwise, the TS files are binary files containing adjacent
-  188-byte TS packets. Use the utility tsresync if a captured file is corrupted
-  or contains 204-byte packets.
-
   Through tsp, the Transport Stream Processor, many types of analysis and
   transformation can be applied on live or recorded transport streams.
   This utility can be extended through plugins. Existing plugins can be
@@ -21,7 +17,6 @@ Usage:
 
   All utilities accept the options --help and --version.
   Using --help, each utility displays its syntax and exits.
-  Using --version, it displays the TSDuck version and exits.
 
 Building:
 

@@ -37,12 +37,14 @@
 ;-----------------------------------------------------------------------------
 
 Name "TSDuck"
+Caption "TSDuck Installer"
 
 !verbose push
 !verbose 0
 !include "MUI2.nsh"
 !include "Sections.nsh"
 !include "TextFunc.nsh"
+!include "FileFunc.nsh"
 !include "WinMessages.nsh"
 !include "x64.nsh"
 !verbose pop
@@ -65,6 +67,15 @@ Name "TSDuck"
 !system '"${BinDir}\tsp.exe" --version=nsis 2>tsduck-tmp.nsh'
 !include tsduck-tmp.nsh
 !delfile tsduck-tmp.nsh
+
+VIProductVersion ${tsduckVersionVI}
+VIAddVersionKey ProductName "TSDuck"
+VIAddVersionKey ProductVersion "${tsduckVersion}"
+VIAddVersionKey Comments "TSDuck - The MPEG Transport Stream Toolkit"
+VIAddVersionKey CompanyName "Thierry Lelegard"
+VIAddVersionKey LegalCopyright "Copyright (c) 2005-2017, Thierry Lelegard"
+VIAddVersionKey FileVersion "${tsduckVersionVI}"
+VIAddVersionKey FileDescription "TSDuck - The MPEG Transport Stream Toolkit"
 
 ; Name of binary installer file.
 !ifdef Win64
@@ -257,12 +268,19 @@ Section "-Common" SectionCommon
 
     ; Create uninstaller
     WriteUninstaller "$INSTDIR\TSDuckUninstall.exe"
-
+ 
     ; Declare uninstaller in "Add/Remove Software" control panel
     WriteRegStr HKLM "${UninstallKey}" "DisplayName" "TSDuck"
+    WriteRegStr HKLM "${UninstallKey}" "Publisher" "Thierry Lelegard"
+    WriteRegStr HKLM "${UninstallKey}" "URLInfoAbout" "https://tsduck.github.io/"
     WriteRegStr HKLM "${UninstallKey}" "DisplayVersion" "${tsduckVersion}"
     WriteRegStr HKLM "${UninstallKey}" "DisplayIcon" "$INSTDIR\TSDuckUninstall.exe"
     WriteRegStr HKLM "${UninstallKey}" "UninstallString" "$INSTDIR\TSDuckUninstall.exe"
+
+    ; Get estimated size of installed files
+    ${GetSize} "$INSTDIR" "/S=0K" $0 $1 $2
+    IntFmt $0 "0x%08X" $0
+    WriteRegDWORD HKLM "${UninstallKey}" "EstimatedSize" "$0"
 
     ; Remember installation selections in registry.
     ; Cleanup previously installed options which are now unselected.
@@ -345,6 +363,15 @@ Section "Uninstall"
     ; Get installation folder from registry
     ReadRegStr $0 HKLM "${ProductKey}" "InstallDir"
 
+    ; Delete start menu entries  
+    RMDir /r "$SMPROGRAMS\TSDuck"
+
+    ; Delete product registry entries
+    DeleteRegKey HKCU "${ProductKey}"
+    DeleteRegKey HKLM "${ProductKey}"
+    DeleteRegKey HKLM "${UninstallKey}"
+    DeleteRegValue HKLM ${EnvironmentKey} "TSDUCK"
+
     ; Remove binaries folder from system path
     ExecWait '"$0\setup\setpath.exe" --remove "$0\bin"'
 
@@ -359,14 +386,5 @@ Section "Uninstall"
     RMDir "$0\setup"
     Delete "$0\TSDuckUninstall.exe"
     RMDir "$0"
-
-    ; Delete start menu entries  
-    RMDir /r "$SMPROGRAMS\TSDuck"
-
-    ; Delete registry entries
-    DeleteRegKey HKCU "${ProductKey}"
-    DeleteRegKey HKLM "${ProductKey}"
-    DeleteRegKey HKLM "${UninstallKey}"
-    DeleteRegValue HKLM ${EnvironmentKey} "TSDUCK"
 
 SectionEnd
