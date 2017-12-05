@@ -298,7 +298,7 @@
     <ClInclude Include="..\..\src\libtsduck\windows\tsDirectShowTest.h" />
     <ClInclude Include="..\..\src\libtsduck\windows\tsDirectShowUtils.h" />
     <ClInclude Include="..\..\src\libtsduck\windows\tsMediaTypeUtils.h" />
-    <ClInclude Include="..\..\src\libtsduck\windows\tsRegistryUtils.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsRegistry.h" />
     <ClInclude Include="..\..\src\libtsduck\windows\tsSinkFilter.h" />
   </ItemGroup>
   <ItemGroup>
@@ -519,7 +519,7 @@
     <ClCompile Include="..\..\src\libtsduck\windows\tsDirectShowTest.cpp" />
     <ClCompile Include="..\..\src\libtsduck\windows\tsDirectShowUtils.cpp" />
     <ClCompile Include="..\..\src\libtsduck\windows\tsMediaTypeUtils.cpp" />
-    <ClCompile Include="..\..\src\libtsduck\windows\tsRegistryUtils.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsRegistry.cpp" />
     <ClCompile Include="..\..\src\libtsduck\windows\tsSinkFilter.cpp" />
     <ClCompile Include="..\..\src\libtsduck\windows\tsTuner.cpp" />
   </ItemGroup>

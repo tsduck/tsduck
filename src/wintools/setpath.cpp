@@ -42,10 +42,7 @@
 #include "tsArgs.h"
 #include "tsByteBlock.h"
 #include "tsSysUtils.h"
-
-#if defined(TS_WINDOWS)
-#include "tsRegistryUtils.h"
-#endif
+#include "tsRegistry.h"
 
 TSDUCK_SOURCE;
 
@@ -60,20 +57,19 @@ struct Options: public ts::Args
 
     enum UpdateCommand {APPEND, PREPEND, REMOVE};
     ts::UString   directory;
-    ts::UString   registryKey;
-    ts::UString   registryValue;
     UpdateCommand command;
+    bool          dryRun;
 };
 
 Options::Options(int argc, char *argv[]) :
     ts::Args(u"Add or remove a directory to the system Path.", u"[options] directory"),
     directory(),
-    registryKey(u"SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment"),
-    registryValue(u"Path"),
-    command(APPEND)
+    command(APPEND),
+    dryRun(false)
 {
     option(u"",         0,  Args::STRING, 1, 1);
     option(u"append",  'a');
+    option(u"dry-run", 'n');
     option(u"prepend", 'p');
     option(u"remove",  'r');
 
@@ -85,18 +81,22 @@ Options::Options(int argc, char *argv[]) :
             u"\n"
             u"  -a\n"
             u"  --append\n"
-            u"    Append the directory to the system path (the default).\n"
+            u"      Append the directory to the system path (the default).\n"
             u"\n"
             u"  --help\n"
             u"      Display this help text.\n"
             u"\n"
+            u"  -n\n"
+            u"  --dry-run\n"
+            u"      Display what would be done, but does not do anything.\n"
+            u"\n"
             u"  -p\n"
             u"  --prepend\n"
-            u"    Prepend the directory to the system path.\n"
+            u"      Prepend the directory to the system path.\n"
             u"\n"
             u"  -r\n"
             u"  --remove\n"
-            u"    Remove the directory from the system path.\n"
+            u"      Remove the directory from the system path.\n"
             u"\n"
             u"  --version\n"
             u"      Display the version number.\n");
@@ -104,6 +104,7 @@ Options::Options(int argc, char *argv[]) :
     analyze(argc, argv);
 
     directory = value(u"");
+    dryRun = present(u"dry-run");
     if (present(u"append")) {
         command = APPEND;
     }
@@ -141,13 +142,13 @@ int main(int argc, char* argv[])
     // Decode command line.
     Options opt(argc, argv);
 
-#if defined(TS_WINDOWS)
-
     // Get the Path value.
-    ts::UString path(ts::GetRegistryValue(opt.registryKey, opt.registryValue));
-    opt.debug(u"Path value: %s", {path});
+    ts::UString path(ts::Registry::GetValue(ts::Registry::SystemEnvironmentKey, u"Path", opt));
     if (path.empty()) {
-        opt.fatal(u"cannot get Path from registry: %s\\%s", {opt.registryKey, opt.registryValue});
+        opt.fatal(u"cannot get Path from registry: %s\\Path", {ts::Registry::SystemEnvironmentKey});
+    }
+    if (opt.dryRun) {
+        opt.info(u"Previous Path value: %s", {path});
     }
 
     // Split the Path into a list of clean directories.
@@ -175,20 +176,19 @@ int main(int argc, char* argv[])
 
     // Rebuild the new Path.
     path = ts::UString::Join(dirs, ts::UString(1, ts::SearchPathSeparator));
-    opt.debug(u"new Path value: %s", {path});
-
-    // Update the Path in the registry.
-    // Always set type as REG_EXPAND_SZ, in case there is a variable reference in the add path.
-    if (!ts::SetRegistryValue(opt.registryKey, opt.registryValue, path, true)) {
-        opt.fatal(u"error setting Path in registry: %s\\%s", {opt.registryKey, opt.registryValue});
+    if (opt.dryRun) {
+        opt.info(u"New Path value: %s", {path});
     }
+    else {
+        // Update the Path in the registry.
+        // Always set type as REG_EXPAND_SZ, in case there is a variable reference in the add path.
+        if (!ts::Registry::SetValue(ts::Registry::SystemEnvironmentKey, u"Path", path, true, opt)) {
+            opt.fatal(u"error setting Path in registry: %s\\Path", {ts::Registry::SystemEnvironmentKey});
+        }
 
-    // Notify all applications that the Path was updated.
-    ts::NotifyEnvironmentChange();
-
-#else
-    opt.error(u"no effect on non-Windows systems");
-#endif
+        // Notify all applications that the Path was updated.
+        ts::Registry::NotifyEnvironmentChange(opt);
+    }
 
     return EXIT_SUCCESS;
 }

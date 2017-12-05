@@ -593,8 +593,13 @@ ts::UString ts::ErrorCodeMessage(ts::ErrorCode code)
 #if defined(TS_WINDOWS)
 
     // Windows implementation
-    std::array <::WCHAR, 1024> message;
+    std::array<::WCHAR, 1024> message;
     ::DWORD length = ::FormatMessageW(FORMAT_MESSAGE_FROM_SYSTEM, NULL, code, 0, message.data(), ::DWORD(message.size()), NULL);
+
+    // Remove trailing newlines (if any)
+    while (length > 0 && (message[length - 1] == 0 || message[length - 1] == '\n' || message[length - 1] == '\r')) {
+        --length;
+    }
     if (length > 0) {
         return UString(message, length);
     }

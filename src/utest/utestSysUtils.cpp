@@ -32,6 +32,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsSysUtils.h"
+#include "tsRegistry.h"
 #include "tsMonotonic.h"
 #include "tsTime.h"
 #include "tsUID.h"
@@ -55,6 +56,7 @@ public:
     void testCurrentExecutableFile();
     void testSleep();
     void testEnvironment();
+    void testRegistry();
     void testIgnoreBrokenPipes();
     void testErrorCode();
     void testUid();
@@ -74,6 +76,7 @@ public:
     CPPUNIT_TEST(testCurrentExecutableFile);
     CPPUNIT_TEST(testSleep);
     CPPUNIT_TEST(testEnvironment);
+    CPPUNIT_TEST(testRegistry);
     CPPUNIT_TEST(testIgnoreBrokenPipes);
     CPPUNIT_TEST(testErrorCode);
     CPPUNIT_TEST(testUid);
@@ -265,6 +268,62 @@ void SysUtilsTest::testEnvironment()
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"abc123456789", ts::ExpandEnvironment(u"abc$UTEST_A"));
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"abc123456789abcdefghijklm123456789/qsd", ts::ExpandEnvironment(u"abc$UTEST_A$UTEST_B$UTEST_D$UTEST_A/qsd"));
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"abc123456789aabcdefghijklm123456789/qsd", ts::ExpandEnvironment(u"abc${UTEST_A}a$UTEST_B$UTEST_D$UTEST_A/qsd"));
+}
+
+void SysUtilsTest::testRegistry()
+{
+    utest::Out()
+        << "SysUtilsTest: SystemEnvironmentKey = " << ts::Registry::SystemEnvironmentKey << std::endl
+        << "SysUtilsTest: UserEnvironmentKey = " << ts::Registry::UserEnvironmentKey << std::endl;
+
+#if defined(TS_WINDOWS)
+
+    const ts::UString path(ts::Registry::GetValue(ts::Registry::SystemEnvironmentKey, u"Path"));
+    utest::Out() << "SysUtilsTest: Path = " << path << std::endl;
+    CPPUNIT_ASSERT(!path.empty());
+
+    
+    ts::Registry::Handle root;
+    ts::UString subkey, endkey;
+    CPPUNIT_ASSERT(ts::Registry::SplitKey(u"HKLM\\FOO\\BAR\\TOE", root, subkey));
+    CPPUNIT_ASSERT(root == HKEY_LOCAL_MACHINE);
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"FOO\\BAR\\TOE", subkey);
+
+    CPPUNIT_ASSERT(ts::Registry::SplitKey(u"HKCU\\FOO1\\BAR1\\TOE1", root, subkey, endkey));
+    CPPUNIT_ASSERT(root == HKEY_CURRENT_USER);
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"FOO1\\BAR1", subkey);
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"TOE1", endkey);
+
+    CPPUNIT_ASSERT(!ts::Registry::SplitKey(u"HKFOO\\FOO1\\BAR1\\TOE1", root, subkey, endkey));
+
+    const ts::UString key(ts::Registry::UserEnvironmentKey + u"\\UTEST_Z");
+
+    CPPUNIT_ASSERT(ts::Registry::CreateKey(key, true));
+    CPPUNIT_ASSERT(ts::Registry::SetValue(key, u"UTEST_X", u"VAL_X"));
+    CPPUNIT_ASSERT(ts::Registry::SetValue(key, u"UTEST_Y", 47));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"VAL_X", ts::Registry::GetValue(key, u"UTEST_X"));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"47", ts::Registry::GetValue(key, u"UTEST_Y"));
+    CPPUNIT_ASSERT(ts::Registry::DeleteValue(key, u"UTEST_X"));
+    CPPUNIT_ASSERT(ts::Registry::DeleteValue(key, u"UTEST_Y"));
+    CPPUNIT_ASSERT(!ts::Registry::DeleteValue(key, u"UTEST_Y"));
+    CPPUNIT_ASSERT(ts::Registry::DeleteKey(key));
+    CPPUNIT_ASSERT(!ts::Registry::DeleteKey(key));
+
+    CPPUNIT_ASSERT(ts::Registry::NotifySettingChange());
+    CPPUNIT_ASSERT(ts::Registry::NotifyEnvironmentChange());
+
+#else
+
+    CPPUNIT_ASSERT(ts::Registry::GetValue(ts::Registry::SystemEnvironmentKey, u"Path").empty());
+    CPPUNIT_ASSERT(!ts::Registry::SetValue(ts::Registry::UserEnvironmentKey, u"UTEST_X", u"VAL_X"));
+    CPPUNIT_ASSERT(!ts::Registry::SetValue(ts::Registry::UserEnvironmentKey, u"UTEST_Y", 47));
+    CPPUNIT_ASSERT(!ts::Registry::DeleteValue(ts::Registry::UserEnvironmentKey, u"UTEST_X"));
+    CPPUNIT_ASSERT(!ts::Registry::CreateKey(ts::Registry::UserEnvironmentKey + u"\\UTEST_Z", true));
+    CPPUNIT_ASSERT(!ts::Registry::DeleteKey(ts::Registry::UserEnvironmentKey + u"\\UTEST_Z"));
+    CPPUNIT_ASSERT(!ts::Registry::NotifySettingChange());
+    CPPUNIT_ASSERT(!ts::Registry::NotifyEnvironmentChange());
+
+#endif
 }
 
 void SysUtilsTest::testIgnoreBrokenPipes()

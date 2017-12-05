@@ -35,11 +35,8 @@
 #include "tsPlugin.h"
 #include "tsForkPipe.h"
 #include "tsSysUtils.h"
+#include "tsRegistry.h"
 TSDUCK_SOURCE;
-
-#if defined(TS_WINDOWS)
-#include "tsRegistryUtils.h"
-#endif
 
 // Pipe buffer size is used on Windows only.
 #define PIPE_BUFFER_SIZE 65536
@@ -183,11 +180,11 @@ bool ts::PlayPlugin::start()
     GetEnvironmentPath(search_path, TS_COMMAND_PATH);
 
     // Look into some registry location
-    UString ent = GetRegistryValue(u"HKLM\\SOFTWARE\\VideoLAN\\VLC", u"InstallDir");
+    UString ent = Registry::GetValue(u"HKLM\\SOFTWARE\\VideoLAN\\VLC", u"InstallDir");
     if (!ent.empty()) {
         search_path.push_back(ent);
     }
-    ent = GetRegistryValue(u"HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\VLC media player", u"UninstallString");
+    ent = Registry::GetValue(u"HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\VLC media player", u"UninstallString");
     if (!ent.empty()) {
         search_path.push_back(DirectoryName(ent));
     }

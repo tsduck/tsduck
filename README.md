@@ -4,8 +4,7 @@
 
 [TSDuck](https://tsduck.github.io/) is an extensible toolkit for MPEG/DVB transport streams.
 
-TSDuck is ideally used in digital television systems for test, monitoring,
-integration debug, lab, demo and more.
+TSDuck is used in digital television systems for test, monitoring, integration debug, lab or demo.
 
 In practice, TSDuck can be used for:
 
