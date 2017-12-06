@@ -5,7 +5,7 @@ Summary:        MPEG transport stream toolkit
 
 Group:          Applications/Multimedia
 License:        BSD
-Source0:        tsduck-%{version}.tgz
+Source0:        tsduck-%{version}-%{release}.tgz
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 Requires:       pcsc-lite
 BuildRequires:  gcc-c++
@@ -33,10 +33,10 @@ developing applications that use %{name}.
 %global debug_package %{nil}
 
 %prep
-%setup -q
+%setup -q -n %{name}-%{version}-%{release}
 
 %build
-make %{?_smp_mflags} %{?mflags}
+make %{?_smp_mflags} %{?mflags} NOTEST=true
 
 %install
 rm -rf $RPM_BUILD_ROOT
