@@ -27,7 +27,7 @@
 #
 #-----------------------------------------------------------------------------
 #
-#  There is nothing to build here, but cleanup is required.
+#  Makefile for the build subdirectory.
 #
 #-----------------------------------------------------------------------------
 
@@ -36,7 +36,25 @@ include ../Makefile.tsduck
 EXTRA_DISTCLEAN += build-tsduck-*
 NORECURSE_SUBDIRS += build-tsduck-%
 
-default:
+# The script git-hook.sh shall be invoked for some selected Git hooks.
+#  - GITHOOKS_CMD     : File which executes the git hooks (relative to repository root).
+#  - GITHOOKS_LIST    : List of git hooks to update.
+#  - GITHOOKS_DIR     : Target directory for git hooks.
+#  - GITHOOKS_TARGETS : List of hooks to install (none if not in a git repository):
+GITHOOKS_CMD     = build/git-hook.sh
+GITHOOKS_LIST    = pre-commit post-merge
+GITHOOKS_DIR     = ../.git/hooks
+GITHOOKS_TARGETS = $(if $(wildcard $(GITHOOKS_DIR)),$(addprefix $(GITHOOKS_DIR)/,$(GITHOOKS_LIST)),)
+
+# A rule to create a git hook script.
+$(GITHOOKS_TARGETS): Makefile
+	@echo '  [GIT] updating $(notdir $@) hook'; \
+	 echo '#!/bin/bash' >$@; \
+	 echo 'exec $$GIT_DIR/../$(GITHOOKS_CMD) $(notdir $@)' >>$@; \
+	 chmod a+x "$@"
+
+# At least enforce the presence of the git hooks.
+default: $(GITHOOKS_TARGETS)
 	@true
 
 # Check if dot (from Graphviz) is installed.
@@ -60,7 +78,7 @@ install-devel:
 	@true
 
 # Build the source tarballs for distribution.
-TARNAME = tsduck-$(TS_VERSION)
+TARNAME = tsduck-$(TS_FULL_VERSION)
 TARFILE = $(INSTALLERDIR)/$(TARNAME).tgz
 TMPROOT = $(INSTALLERDIR)/tmp
 .PHONY: tarball
@@ -92,10 +110,10 @@ DTAPI_ORIGIN = $(if $(wildcard $(ROOTDIR)/dektec/LinuxSDK.version),$(ROOTDIR)/de
 rpm: tarball $(RPMBUILDROOT)
 	cp -f $(TARFILE) $(RPMBUILDROOT)/SOURCES/
 	$(if $(wildcard $(DTAPI_ORIGIN)),MAKEFLAGS=DTAPI_ORIGIN=$(DTAPI_ORIGIN),) \
-	  $(RPMBUILD) $(RPMBUILDFLAGS) -D 'version $(TS_VERSION)' -D 'release $(RPM_RELEASE)' tsduck.spec
-	cp -uf $(RPMBUILDROOT)/RPMS/*/tsduck-$(TS_VERSION)-$(RPM_RELEASE).*.rpm $(INSTALLERDIR)
-	cp -uf $(RPMBUILDROOT)/RPMS/*/tsduck-devel-$(TS_VERSION)-$(RPM_RELEASE).*.rpm $(INSTALLERDIR)
-	cp -uf $(RPMBUILDROOT)/SRPMS/tsduck-$(TS_VERSION)-$(RPM_RELEASE).src.rpm $(INSTALLERDIR)
+	  $(RPMBUILD) $(RPMBUILDFLAGS) -D 'version $(TS_VERSION)' -D 'release $(TS_COMMIT)' tsduck.spec
+	cp -uf $(RPMBUILDROOT)/RPMS/*/tsduck-$(TS_FULL_VERSION).*.rpm $(INSTALLERDIR)
+	cp -uf $(RPMBUILDROOT)/RPMS/*/tsduck-devel-$(TS_FULL_VERSION).*.rpm $(INSTALLERDIR)
+	cp -uf $(RPMBUILDROOT)/SRPMS/tsduck-$(TS_FULL_VERSION).src.rpm $(INSTALLERDIR)
 rpm32:
 	$(MAKE) rpm M32=true
 
@@ -108,7 +126,7 @@ deb-main:
 	rm -rf $(TMPDIR)
 	$(MAKE) -C $(ROOTDIR) install SYSROOT=$(TMPDIR)
 	mkdir $(TMPDIR)/DEBIAN
-	sed -e 's/{{VERSION}}/$(TS_VERSION)-$(RELEASE_DATE)/g' \
+	sed -e 's/{{VERSION}}/$(TS_FULL_VERSION)/g' \
 	    -e 's/{{ARCH}}/$(shell dpkg-architecture -qDEB_BUILD_ARCH)/g' \
 	    tsduck.control >$(TMPDIR)/DEBIAN/control
 	sed -e 's|{{EXECS}}|$(addprefix /usr/bin/,$(TSEXECS))|g' \
@@ -122,7 +140,7 @@ deb-dev:
 	rm -rf $(TMPDIR)
 	$(MAKE) -C $(ROOTDIR) install-devel SYSROOT=$(TMPDIR)
 	mkdir $(TMPDIR)/DEBIAN
-	sed -e 's/{{VERSION}}/$(TS_VERSION)-$(RELEASE_DATE)/g' \
+	sed -e 's/{{VERSION}}/$(TS_FULL_VERSION)/g' \
 	    -e 's/{{ARCH}}/$(shell dpkg-architecture -qDEB_BUILD_ARCH)/g' \
 	    tsduck-dev.control >$(TMPDIR)/DEBIAN/control
 	cp tsduck-dev.postinst $(TMPDIR)/DEBIAN/postinst

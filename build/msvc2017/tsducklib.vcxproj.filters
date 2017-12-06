@@ -695,6 +695,9 @@
     <ClInclude Include="..\..\src\libtsduck\tsVersion.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\libtsduck\tsVersionInfo.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\src\libtsduck\tsVideoAttributes.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -1369,7 +1372,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsUserInterrupt.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\libtsduck\tsVersion.cpp">
+    <ClCompile Include="..\..\src\libtsduck\tsVersionInfo.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\libtsduck\tsVideoAttributes.cpp">

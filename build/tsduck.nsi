@@ -68,7 +68,7 @@ Caption "TSDuck Installer"
 !include tsduck-tmp.nsh
 !delfile tsduck-tmp.nsh
 
-VIProductVersion ${tsduckVersionVI}
+VIProductVersion ${tsduckVersionInfo}
 VIAddVersionKey ProductName "TSDuck"
 VIAddVersionKey ProductVersion "${tsduckVersion}"
 VIAddVersionKey Comments "TSDuck - The MPEG Transport Stream Toolkit"

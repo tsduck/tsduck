@@ -29,7 +29,7 @@
 
 #include "tsArgs.h"
 #include "tsSysUtils.h"
-#include "tsVersion.h"
+#include "tsVersionInfo.h"
 TSDUCK_SOURCE;
 
 // Unlimited number of occurences

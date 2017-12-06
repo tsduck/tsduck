@@ -28,20 +28,41 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Version identification of TSDuck.
+//!  Information about version identification of TSDuck.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
+#include "tsEnumeration.h"
+
 //!
-//! TSDuck major version.
+//! TSDuck namespace, containing all TSDuck classes and functions.
 //!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 5
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 367
+namespace ts {
+
+    //!
+    //! Types of version formatting, for predefined option --version.
+    //!
+    enum VersionFormat {
+        VERSION_SHORT,   //!< Short format X.Y-R.
+        VERSION_LONG,    //!< Full explanatory format.
+        VERSION_DATE,    //!< Build date.
+        VERSION_NSIS,    //!< Output NSIS @c !define directives.
+        VERSION_DEKTEC,  //!< Version of embedded Dektec DTAPI and detected Dektec drivers.
+        VERSION_TINYXML, //!< Version of embedded TinyXML-2.
+    };
+
+    //!
+    //! Enumeration description of ts::VersionFormat.
+    //! Typically used to implement the -\-version command line option.
+    //!
+    TSDUCKDLL extern const Enumeration VersionFormatEnum;
+
+    //!
+    //! Get the TSDuck formatted version number.
+    //! @param [in] format Type of output, short by default.
+    //! @param [in] applicationName Name of the application to prepend to the long format.
+    //! @return The formatted version string.
+    //!
+    TSDUCKDLL UString GetVersion(VersionFormat format = VERSION_SHORT, const UString& applicationName = UString());
+}
