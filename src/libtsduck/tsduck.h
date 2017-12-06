@@ -273,6 +273,7 @@
 #include "tsVBITeletextDescriptor.h"
 #include "tsVariable.h"
 #include "tsVersion.h"
+#include "tsVersionInfo.h"
 #include "tsViaccessDate.h"
 #include "tsVideoAttributes.h"
 #include "tsXML.h"
