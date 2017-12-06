@@ -74,7 +74,7 @@ VIAddVersionKey ProductVersion "${tsduckVersion}"
 VIAddVersionKey Comments "TSDuck - The MPEG Transport Stream Toolkit"
 VIAddVersionKey CompanyName "Thierry Lelegard"
 VIAddVersionKey LegalCopyright "Copyright (c) 2005-2017, Thierry Lelegard"
-VIAddVersionKey FileVersion "${tsduckVersionVI}"
+VIAddVersionKey FileVersion "${tsduckVersionInfo}"
 VIAddVersionKey FileDescription "TSDuck - The MPEG Transport Stream Toolkit"
 
 ; Name of binary installer file.
