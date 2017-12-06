@@ -146,7 +146,8 @@ if (-not $NoSource) {
     # Get version name.
     $Major = ((Get-Content $SrcDir\libtsduck\tsVersion.h | Select-String -Pattern "#define TS_VERSION_MAJOR ").ToString() -replace "#define TS_VERSION_MAJOR *","")
     $Minor = ((Get-Content $SrcDir\libtsduck\tsVersion.h | Select-String -Pattern "#define TS_VERSION_MINOR ").ToString() -replace "#define TS_VERSION_MINOR *","")
-    $version = "${Major}.${Minor}"
+    $Commit = ((Get-Content $SrcDir\libtsduck\tsVersion.h | Select-String -Pattern "#define TS_COMMIT ").ToString() -replace "#define TS_COMMIT *","")
+    $Version = "${Major}.${Minor}-${Commit}"
 
     # Source archive name.
     $SrcArchive = (Join-Path $InstallerDir "TSDduck-${Version}-src.zip")
