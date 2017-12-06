@@ -85,6 +85,9 @@ if (-not $Win32 -and -not $Win64) {
 $VS = Search-VisualStudio
 $SolutionFileName = "tsduck.sln"
 
+# Make sure that Git hooks are installed.
+& (Join-Path $PSScriptRoot git-hook-update.ps1) -NoPause
+
 # We need to work in the directory the project files.
 Set-Location $VS.MsvcDir
 
