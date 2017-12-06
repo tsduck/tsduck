@@ -33,6 +33,7 @@
 
 #include "tsPlatform.h"
 #include "tsVersion.h"
+#include "tsVersionInfo.h"
 #include "utestCppUnitTest.h"
 TSDUCK_SOURCE;
 
@@ -328,11 +329,7 @@ void PlatformTest::testVersion()
                  << "PlatformTest: GetVersion(VERSION_TINYXML) = \"" << ts::GetVersion(ts::VERSION_TINYXML) << "\"" << std::endl
                  << "PlatformTest: GetVersion(VERSION_NSIS) = \"" << ts::GetVersion(ts::VERSION_NSIS) << "\"" << std::endl;
 
-    const ts::UString version(ts::GetVersion());
-    const size_t dash = version.find(u'-');
-    CPPUNIT_ASSERT(dash != ts::UString::NPOS);
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(TS_USTRINGIFY(TS_VERSION_MAJOR) u"." TS_USTRINGIFY(TS_VERSION_MINOR), version.substr(0, dash));
-
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(TS_USTRINGIFY(TS_VERSION_MAJOR) u"." TS_USTRINGIFY(TS_VERSION_MINOR) u"-" TS_USTRINGIFY(TS_COMMIT), ts::GetVersion(ts::VERSION_SHORT));
     CPPUNIT_ASSERT_USTRINGS_EQUAL(ts::GetVersion(), ts::GetVersion(ts::VERSION_SHORT));
     CPPUNIT_ASSERT(ts::GetVersion(ts::VERSION_SHORT) != ts::GetVersion(ts::VERSION_LONG));
     CPPUNIT_ASSERT(ts::GetVersion(ts::VERSION_SHORT) != ts::GetVersion(ts::VERSION_NSIS));
