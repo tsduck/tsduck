@@ -16,9 +16,16 @@
     <ClCompile>
       <PreprocessorDefinitions>_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>TS_WINVER_FILETYPE=VFT_APP;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ResourceCompile>
     <Link>
       <SubSystem>Console</SubSystem>
     </Link>
   </ItemDefinitionGroup>
+
+  <ItemGroup Condition="'$(SolutionName)'=='tsduck'">
+    <ResourceCompile Include="..\tsduck.rc" />
+  </ItemGroup>
 
 </Project>
