@@ -36,6 +36,11 @@ TSDUCK_SOURCE;
 // on Windows, the libtsduck DLL will no contain the referenced code.
 #include "tsduck.h"
 
+// Exported version of the TSDuck library.
+const int tsduckLibraryVersionMajor = TS_VERSION_MAJOR;
+const int tsduckLibraryVersionMinor = TS_VERSION_MINOR;
+const int tsduckLibraryVersionCommit = TS_COMMIT;
+
 // Enumeration description of ts::VersionFormat.
 const ts::Enumeration ts::VersionFormatEnum({
     {u"short",   ts::VERSION_SHORT},

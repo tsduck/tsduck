@@ -36,6 +36,7 @@
 #include "tsTuner.h"
 #include "tsTunerArgs.h"
 #include "tsSysUtils.h"
+#include "tsVersionInfo.h"
 TSDUCK_SOURCE;
 
 #if defined(TS_WINDOWS)
@@ -220,6 +221,7 @@ namespace {
 
 int main(int argc, char *argv[])
 {
+    TSDuckLibCheckVersion();
     Options opt(argc, argv);
     ts::COM com(opt);
 

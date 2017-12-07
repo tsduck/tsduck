@@ -34,6 +34,7 @@
 #include "tsArgs.h"
 #include "tsInputRedirector.h"
 #include "tsPCRAnalyzer.h"
+#include "tsVersionInfo.h"
 TSDUCK_SOURCE;
 
 
@@ -132,6 +133,7 @@ Options::Options(int argc, char *argv[]) :
 
 int main(int argc, char *argv[])
 {
+    TSDuckLibCheckVersion();
     Options opt(argc, argv);
     ts::PCRAnalyzer zer(opt.min_pid, opt.min_pcr);
     ts::InputRedirector input(opt.infile, opt);

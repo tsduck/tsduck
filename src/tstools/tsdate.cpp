@@ -38,6 +38,7 @@
 #include "tsNames.h"
 #include "tsTDT.h"
 #include "tsTOT.h"
+#include "tsVersionInfo.h"
 TSDUCK_SOURCE;
 
 
@@ -213,6 +214,7 @@ void TableHandler::handleTable(ts::SectionDemux&, const ts::BinaryTable& table)
 
 int main(int argc, char *argv[])
 {
+    TSDuckLibCheckVersion();
     Options opt(argc, argv);
     TableHandler handler(opt);
     ts::SectionDemux demux(&handler);

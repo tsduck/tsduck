@@ -33,6 +33,7 @@
 
 #include "tsArgs.h"
 #include "tsPCSC.h"
+#include "tsVersionInfo.h"
 TSDUCK_SOURCE;
 
 
@@ -216,6 +217,7 @@ bool Reset(Options& opt, ::SCARDCONTEXT pcsc_context, const ts::UString& reader)
 
 int main(int argc, char *argv[])
 {
+    TSDuckLibCheckVersion();
     int status = EXIT_SUCCESS;
     Options opt(argc, argv);
 

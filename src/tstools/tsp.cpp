@@ -41,6 +41,7 @@
 #include "tsMonotonic.h"
 #include "tsResidentBuffer.h"
 #include "tsIPUtils.h"
+#include "tsVersionInfo.h"
 TSDUCK_SOURCE;
 
 
@@ -92,6 +93,7 @@ void ts::tsp::TSPInterruptHandler::handleInterrupt()
 
 int main (int argc, char *argv[])
 {
+    TSDuckLibCheckVersion();
     ts::TSPacket::SanityCheck();
 
     ts::tsp::Options opt(argc, argv);

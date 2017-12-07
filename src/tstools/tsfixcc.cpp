@@ -33,6 +33,7 @@
 
 #include "tsArgs.h"
 #include "tsTSPacket.h"
+#include "tsVersionInfo.h"
 TSDUCK_SOURCE;
 
 
@@ -151,6 +152,7 @@ public:
 
 int main(int argc, char *argv[])
 {
+    TSDuckLibCheckVersion();
     Options opt(argc, argv);
 
     // Open file in read/write mode (CC are overwritten)

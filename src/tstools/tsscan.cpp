@@ -46,6 +46,7 @@
 #include "tsDescriptorList.h"
 #include "tsTime.h"
 #include "tsNullReport.h"
+#include "tsVersionInfo.h"
 TSDUCK_SOURCE;
 
 #define DEFAULT_PSI_TIMEOUT   10000 // ms
@@ -614,6 +615,7 @@ namespace {
 
 int main(int argc, char *argv[])
 {
+    TSDuckLibCheckVersion();
     Options opt(argc, argv);
     ts::COM com(opt);
 

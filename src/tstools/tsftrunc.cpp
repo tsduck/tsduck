@@ -34,6 +34,7 @@
 #include "tsArgs.h"
 #include "tsMPEG.h"
 #include "tsSysUtils.h"
+#include "tsVersionInfo.h"
 TSDUCK_SOURCE;
 
 
@@ -104,6 +105,7 @@ Options::Options(int argc, char *argv[]) :
 
 int main(int argc, char *argv[])
 {
+    TSDuckLibCheckVersion();
     Options opt (argc, argv);
     bool success = true;
     ts::ErrorCode err;

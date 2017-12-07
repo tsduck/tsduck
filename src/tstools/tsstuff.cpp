@@ -35,6 +35,7 @@
 #include "tsTSFileInputBuffered.h"
 #include "tsTSFileOutput.h"
 #include "tsVariable.h"
+#include "tsVersionInfo.h"
 TSDUCK_SOURCE;
 
 namespace {
@@ -498,6 +499,7 @@ namespace {
 
 int main (int argc, char *argv[])
 {
+    TSDuckLibCheckVersion();
     Options opt(argc, argv);
     Stuffer stuffer(opt);
     stuffer.stuff();

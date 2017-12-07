@@ -34,6 +34,7 @@
 #include "tsArgs.h"
 #include "tsInputRedirector.h"
 #include "tsPSILogger.h"
+#include "tsVersionInfo.h"
 TSDUCK_SOURCE;
 
 
@@ -82,6 +83,7 @@ Options::Options(int argc, char *argv[]) :
 
 int main (int argc, char *argv[])
 {
+    TSDuckLibCheckVersion();
     Options opt(argc, argv);
     ts::InputRedirector input(opt.infile, opt);
     ts::TablesDisplay display(opt.display, opt);

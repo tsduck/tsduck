@@ -36,6 +36,7 @@
 #include "tsOutputRedirector.h"
 #include "tsCyclingPacketizer.h"
 #include "tsSysUtils.h"
+#include "tsVersionInfo.h"
 TSDUCK_SOURCE;
 
 
@@ -172,6 +173,7 @@ Options::Options(int argc, char *argv[]) :
 
 int main (int argc, char *argv[])
 {
+    TSDuckLibCheckVersion();
     Options opt (argc, argv);
     ts::OutputRedirector output(opt.outfile, opt);
     ts::CyclingPacketizer pzer(opt.pid, opt.stuffing_policy, opt.bitrate);
