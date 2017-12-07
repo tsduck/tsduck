@@ -39,6 +39,7 @@
 #include "tsReportWithPrefix.h"
 #include "tsInputRedirector.h"
 #include "tsOutputRedirector.h"
+#include "tsVersionInfo.h"
 TSDUCK_SOURCE;
 
 
@@ -295,6 +296,7 @@ bool ProcessFile(Options& opt, const ts::UString& infile)
 
 int main(int argc, char *argv[])
 {
+    TSDuckLibCheckVersion();
     Options opt(argc, argv);
     bool ok = true;
     if (opt.xmlModel) {

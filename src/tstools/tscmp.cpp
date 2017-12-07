@@ -38,6 +38,7 @@
 #include "tsSection.h"
 #include "tsPMT.h"
 #include "tsStreamIdentifierDescriptor.h"
+#include "tsVersionInfo.h"
 TSDUCK_SOURCE;
 
 #define DEFAULT_BUFFERED_PACKETS 10000
@@ -331,6 +332,7 @@ bool Comparator::compare(const ts::TSPacket& pkt1, const ts::TSPacket& pkt2, Opt
 
 int main (int argc, char *argv[])
 {
+    TSDuckLibCheckVersion();
     Options opt (argc, argv);
     ts::TSFileInputBuffered file1(opt.buffered_packets);
     ts::TSFileInputBuffered file2(opt.buffered_packets);

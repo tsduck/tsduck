@@ -36,6 +36,7 @@
 #include "tsCASFamily.h"
 #include "tsSection.h"
 #include "tsSysUtils.h"
+#include "tsVersionInfo.h"
 TSDUCK_SOURCE;
 
 
@@ -133,6 +134,7 @@ bool DumpFile(Options& opt, const ts::UString& file_name)
 
 int main(int argc, char *argv[])
 {
+    TSDuckLibCheckVersion();
     Options opt(argc, argv);
     bool ok = true;
 

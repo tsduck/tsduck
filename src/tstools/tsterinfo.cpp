@@ -33,6 +33,7 @@
 
 #include "tsArgs.h"
 #include "tsTunerParametersBitrateDiffDVBT.h"
+#include "tsVersionInfo.h"
 TSDUCK_SOURCE;
 
 
@@ -226,6 +227,7 @@ namespace {
 
 int main(int argc, char *argv[])
 {
+    TSDuckLibCheckVersion();
     Options opt(argc, argv);
 
     // Convert UHF channel to frequency
