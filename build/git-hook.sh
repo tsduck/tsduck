@@ -68,7 +68,8 @@ case "$HOOK" in
         if [[ -z "$COMMIT" ]]; then
             # Get max number of commits from every local or remote branch.
             COMMIT=$SRCCOMMIT
-            for n in $(git branch -a | sed -e 's/^[\* ]*//' -e 's/ .*//' | xargs -n 1 git rev-list --count); do
+            BRANCHES=$(git branch -a | sed -e 's/^[\* ]*//' -e 's/ .*//')
+            for n in $(for b in $BRANCHES; do git rev-list --count $b; done); do
                 [[ "$n" -gt "$COMMIT" ]] && COMMIT=$n
             done
             # With pre-commit, we must have at least this max + 1.
