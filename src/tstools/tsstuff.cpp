@@ -85,7 +85,6 @@ namespace {
         option(u"",                      0,  Args::STRING, 0, 1);
         option(u"bitrate",              'b', Args::POSITIVE, 1, 1);
         option(u"buffer-size",           0,  Args::INTEGER, 0, 1, MIN_TS_BUFFER_SIZE, MAX_TS_BUFFER_SIZE);
-        option(u"debug",                 0,  Args::POSITIVE, 0, 1, 0, 0, true);
         option(u"dts-based",            'd');
         option(u"final-inter-packet",   'f', Args::UNSIGNED);
         option(u"initial-inter-packet", 'i', Args::UNSIGNED);
@@ -93,7 +92,6 @@ namespace {
         option(u"output-file",          'o', Args::STRING);
         option(u"reference-pid",        'r', Args::PIDVAL);
         option(u"trailing-packets",     't', Args::UNSIGNED);
-        option(u"verbose",              'v');
 
         setHelp(u"Input file:\n"
                 u"  The input file is a TS file, typically with variable bitrate content.\n"
@@ -161,8 +159,6 @@ namespace {
                 u"      Display the version number.\n");
 
         analyze(argc, argv);
-
-        setDebugLevel(present(u"debug") ? intValue(u"debug", ts::Severity::Debug) : (present(u"verbose") ? ts::Severity::Verbose : ts::Severity::Info));
 
         getValue(input_file, u"");
         getValue(output_file, u"output-file");

@@ -93,16 +93,16 @@ NetworkingTest::NetworkingTest() :
 // Test suite initialization method.
 void NetworkingTest::setUp()
 {
-    _previousSeverity = CERR.debugLevel();
+    _previousSeverity = CERR.maxSeverity();
     if (utest::DebugMode()) {
-        CERR.setDebugLevel(ts::Severity::Debug);
+        CERR.setMaxSeverity(ts::Severity::Debug);
     }
 }
 
 // Test suite cleanup method.
 void NetworkingTest::tearDown()
 {
-    CERR.setDebugLevel(_previousSeverity);
+    CERR.setMaxSeverity(_previousSeverity);
 }
 
 

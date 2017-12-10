@@ -60,15 +60,11 @@ namespace ts {
         //! @param [in] file_name The name of the file to create. If the file creation fails,
         //! a fatal error is generated with an error message on std::cerr. The file will be
         //! closed when this object is destroyed.
-        //!
         //! @param [in] append If true, append the messages at the end of the file.
         //! If false (the default), overwrite the file if it already existed.
+        //! @param [in] max_severity Maximum debug level to display. None by default.
         //!
-        //! @param [in] verbose If true, display verbose messages.
-        //!
-        //! @param [in] debug_level Maximum debug level to display. None by default.
-        //!
-        ReportFile(const UString& file_name, bool append = false, bool verbose = false, int debug_level = 0);
+        ReportFile(const UString& file_name, bool append = false, int max_severity = Severity::Info);
 
         //!
         //! Constructor using an open file stream.
@@ -76,15 +72,11 @@ namespace ts {
         //! @param [in,out] stream A reference to an open output file stream to log the messages.
         //! The corresponding stream object must remain valid as long as this object exists.
         //! Typical valid values are std::cout and std::cerr.
-        //!
         //! @param [in] append If true, append the messages at the end of the file.
         //! If false (the default), overwrite the file if it already existed.
+        //! @param [in] max_severity Maximum debug level to display. None by default.
         //!
-        //! @param [in] verbose If true, display verbose messages.
-        //!
-        //! @param [in] debug_level Maximum debug level to display. None by default.
-        //!
-        ReportFile(std::ostream& stream, bool append = false, bool verbose = false, int debug_level = 0);
+        ReportFile(std::ostream& stream, bool append = false, int max_severity = 0);
 
         //!
         //! Destructor

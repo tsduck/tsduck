@@ -104,22 +104,22 @@ void ReportTest::tearDown()
 void ReportTest::testSeverity()
 {
     ts::ReportBuffer<> log1;
-    CPPUNIT_ASSERT(log1.debugLevel() == ts::Severity::Info);
+    CPPUNIT_ASSERT(log1.maxSeverity() == ts::Severity::Info);
     CPPUNIT_ASSERT(!log1.debug());
     CPPUNIT_ASSERT(!log1.verbose());
 
     ts::ReportBuffer<> log2(true);
-    CPPUNIT_ASSERT(log2.debugLevel() == ts::Severity::Verbose);
+    CPPUNIT_ASSERT(log2.maxSeverity() == ts::Severity::Verbose);
     CPPUNIT_ASSERT(!log2.debug());
     CPPUNIT_ASSERT(log2.verbose());
 
-    log2.setDebugLevel(4);
-    CPPUNIT_ASSERT(log2.debugLevel() == 4);
+    log2.setMaxSeverity(4);
+    CPPUNIT_ASSERT(log2.maxSeverity() == 4);
     CPPUNIT_ASSERT(log2.debug());
     CPPUNIT_ASSERT(log2.verbose());
 
-    log2.setDebugLevel(ts::Severity::Warning);
-    CPPUNIT_ASSERT(log2.debugLevel() == ts::Severity::Warning);
+    log2.setMaxSeverity(ts::Severity::Warning);
+    CPPUNIT_ASSERT(log2.maxSeverity() == ts::Severity::Warning);
     CPPUNIT_ASSERT(!log2.debug());
     CPPUNIT_ASSERT(!log2.verbose());
 }
@@ -137,7 +137,7 @@ namespace {
         const ts::UString str7(u"7");
         const ts::UString str8(u"8");
 
-        log.setDebugLevel(level);
+        log.setMaxSeverity(level);
         log.resetMessages();
 
         log.log(ts::Severity::Info, str1);
@@ -209,7 +209,7 @@ void ReportTest::testString()
 namespace {
     void _testPrintfSequence(ts::ReportBuffer<>& log, int level)
     {
-        log.setDebugLevel(level);
+        log.setMaxSeverity(level);
         log.resetMessages();
 
         log.log(ts::Severity::Info, u"%d", {1});

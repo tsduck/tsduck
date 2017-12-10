@@ -52,8 +52,6 @@ const ts::Enumeration ts::tsp::Options::PluginTypeNames({
 //----------------------------------------------------------------------------
 
 ts::tsp::Options::Options(int argc, char *argv[]) :
-    verbose(false),
-    debug(0),
     timed_log(false),
     list_proc(false),
     monitor(false),
@@ -73,7 +71,6 @@ ts::tsp::Options::Options(int argc, char *argv[]) :
     option(u"bitrate",                  'b', Args::POSITIVE);
     option(u"bitrate-adjust-interval",   0,  Args::POSITIVE);
     option(u"buffer-size-mb",            0,  Args::POSITIVE);
-    option(u"debug",                    'd', Args::POSITIVE, 0, 1, 0, 0, true);
     option(u"ignore-joint-termination", 'i');
     option(u"list-processors",          'l');
     option(u"max-flushed-packets",       0,  Args::POSITIVE);
@@ -81,7 +78,6 @@ ts::tsp::Options::Options(int argc, char *argv[]) :
     option(u"no-realtime-clock",         0); // was a temporary workaround, now ignored
     option(u"monitor",                  'm');
     option(u"timed-log",                't');
-    option(u"verbose",                  'v');
 
 #if defined(TS_WINDOWS)
 #define HELP_SHLIB    u"DLL"
@@ -231,10 +227,6 @@ ts::tsp::Options::Options(int argc, char *argv[]) :
     // Analyze the tsp command, not including the plugin options
     analyze(plugin_index, argv);
 
-    debug = present(u"debug") ? intValue(u"debug", 1) : 0;
-    verbose = debug > 0 || present(u"verbose");
-    setDebugLevel(debug > 0 ? debug : (verbose ? ts::Severity::Verbose : ts::Severity::Info));
-
     timed_log = present(u"timed-log");
     list_proc = present(u"list-processors");
     monitor = present(u"monitor");
@@ -319,7 +311,7 @@ ts::tsp::Options::Options(int argc, char *argv[]) :
     }
 
     // Debug display
-    if (debug >= 2) {
+    if (maxSeverity() >= 2) {
         display(std::cerr);
     }
 
@@ -366,12 +358,12 @@ std::ostream& ts::tsp::Options::display(std::ostream& strm, int indent) const
          << margin << "  --bitrate: " << UString::Decimal(bitrate) << " b/s" << std::endl
          << margin << "  --bitrate-adjust-interval: " << UString::Decimal(bitrate_adj) << " milliseconds" << std::endl
          << margin << "  --buffer-size-mb: " << UString::Decimal(bufsize) << " bytes" << std::endl
-         << margin << "  --debug: " << debug << std::endl
+         << margin << "  --debug: " << maxSeverity() << std::endl
          << margin << "  --list-processors: " << list_proc << std::endl
          << margin << "  --max-flushed-packets: " << UString::Decimal(max_flush_pkt) << std::endl
          << margin << "  --max-input-packets: " << UString::Decimal(max_input_pkt) << std::endl
          << margin << "  --monitor: " << monitor << std::endl
-         << margin << "  --verbose: " << verbose << std::endl
+         << margin << "  --verbose: " << verbose() << std::endl
          << margin << "  Number of packet processors: " << plugins.size() << std::endl
          << margin << "  Input plugin:" << std::endl;
     input.display(strm, indent + 4);

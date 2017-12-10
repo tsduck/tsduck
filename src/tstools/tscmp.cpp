@@ -61,7 +61,6 @@ struct Options: public ts::Args
     bool        dump;
     uint32_t    dump_flags;
     bool        normalized;
-    bool        verbose;
     bool        quiet;
     bool        payload_only;
     bool        pcr_ignore;
@@ -81,7 +80,6 @@ Options::Options(int argc, char *argv[]) :
     dump(false),
     dump_flags(0),
     normalized(false),
-    verbose(false),
     quiet(false),
     payload_only(false),
     pcr_ignore(false),
@@ -103,7 +101,6 @@ Options::Options(int argc, char *argv[]) :
     option(u"subset",          's');
     option(u"threshold-diff",  't', INTEGER, 0, 1, 0, ts::PKT_SIZE);
     option(u"quiet",           'q');
-    option(u"verbose",         'v');
 
     setHelp(u"Files:\n"
             u"\n"
@@ -199,8 +196,11 @@ Options::Options(int argc, char *argv[]) :
     continue_all = present(u"continue");
     quiet = present(u"quiet");
     normalized = !quiet && present(u"normalized");
-    verbose = !quiet && present(u"verbose");
     dump = !quiet && present(u"dump");
+
+    if (quiet) {
+        setMaxSeverity(ts::Severity::Info);
+    }
 
     dump_flags =
         ts::TSPacket::DUMP_TS_HEADER |    // Format TS headers
@@ -348,7 +348,7 @@ int main (int argc, char *argv[])
                   << "file:file=2:filename=" << file2.getFileName() << ":" << std::endl;
 
     }
-    else if (opt.verbose) {
+    else if (opt.verbose()) {
         std::cout << "* Comparing " << file1.getFileName() << " and " << file2.getFileName() << std::endl;
     }
 
@@ -504,7 +504,7 @@ int main (int argc, char *argv[])
                   << ":holes=" << subset_skipped_chunks
                   << ":" << std::endl;
     }
-    else if (opt.verbose) {
+    else if (opt.verbose()) {
         std::cout << "* Read " << ts::UString::Decimal(file1.getPacketCount())
                   << " packets, found " << ts::UString::Decimal(diff_count) << " differences";
         if (subset_skipped_chunks > 0) {

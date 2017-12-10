@@ -45,9 +45,9 @@ namespace ts {
     //! An encapsulation of command line syntax and analysis.
     //!
     //! The various properties of a command line (an instance of this class) are:
-    //! @li The "description" string: A short one-line description, e.g. "Wonderful File Copier".
-    //! @li The "syntax" string: A short one-line syntax summary, e.g. "[options] filename ...".
-    //! @li The "help" string: A multi-line string describing the usage of options and parameters.
+    //! - The "description" string: A short one-line description, e.g. "Wonderful File Copier".
+    //! - The "syntax" string: A short one-line syntax summary, e.g. "[options] filename ...".
+    //! - The "help" string: A multi-line string describing the usage of options and parameters.
     //!
     //! <h3>Parameters and options</h3>
     //!
@@ -60,43 +60,48 @@ namespace ts {
     //! Although this syntax is inspired by Linux and the GNU utilities, the same syntax
     //! is used in all environments where this class is compiled.
     //!
-    //! As an example, consider a utility which accepts the two options @c -\-verbose (short name ­v)
+    //! As an example, consider a utility which accepts the two options @c -\-verbose (short name <code>-­v</code>)
     //! and @c -\-version (no short name). Then, the verbose mode can be equally triggered by ­@c -v,
-    //! @c -\-verbose, @c -\-verb but not @c -\-ver since there an ambiguity with @c -\-version.
+    //! @c -\-verbose, @c -\-verb but not @c -\-ver since there an ambiguity with <code>-\-version</code>.
     //!
-    //! The various options are declared using an @link option() @endlink method.
-    //! An option can be declared with a mandatory value (e.g. "--output file.txt"),
-    //! without value (e.g. "--verbose") or with an optional value.
+    //! The various options are declared using an option() method.
+    //! An option can be declared with a mandatory value (e.g. <code>--output file.txt</code>),
+    //! without value (e.g. <code>-\-verbose</code>) or with an optional value.
     //!
     //! The options may be specified on the command line in any order.
     //! Everything which is not an option (or the value of an option) is considered
     //! as a @e parameter.
-    //! The syntax of the parameters is declared using an @link option() @endlink method
+    //! The syntax of the parameters is declared using an option() method
     //! with an empty option name.
     //!
     //! When an option is declared with a mandatory value, two syntaxes are accepted:
-    //! "--output file.txt" or "--output=file.txt". When an option is declared with
-    //! an optional value, only the second form is possible, e.g. "--debug=2". The
-    //! form "--debug 2" is considered as @e option -\-debug without value (it is optional)
-    //! followed by @e parameter "2".
+    //! an optional value, only the second form is possible, e.g. <code>--debug=2</code>.
+    //! The form <code>--debug 2</code> is considered as @e option <code>-\-debug</code>
+    //! without value(it is optional) followed by @e parameter <code>2</code>.
     //!
     //! Following the GNU convention, when the short one-letter form of an option is
     //! used, the value may immediately follow the option without space.
     //!
-    //! If the option "--output" has a short form "-o", all the following forms are
+    //! If the option <code>--output</code> has a short form <code>-o</code>, all the following forms are
     //! equivalent:
-    //! @li -\-output file.txt
-    //! @li -\-output=file.txt
-    //! @li -o file.txt
-    //! @li -ofile.txt
+    //! - <code>-\-output file.txt</code>
+    //! - <code>-\-output=file.txt</code>
+    //! - <code>-o file.txt</code>
+    //! - <code>-ofile.txt</code>
     //!
     //! <h3>Predefined options</h3>
     //!
-    //! The option @c -\-help is always predefined, it displays the help text and
-    //! terminates the application.
+    //! Some options are always predefined and do not need to be redefined using a call to option().
     //!
-    //! Similarly, the option @c -\-version is also always predefined, it displays
-    //! the TSDuck version and terminates the application.
+    //! - <code>-\-help</code> : displays the help text and terminates the application.
+    //! - <code>-\-version</code> : displays the TSDuck version and terminates the application.
+    //! - <code>-\-verbose</code> or <code>-v</code> : sets the reporting level to @e verbose.
+    //! - <code>-\-debug</code> or <code>-d</code> : sets the reporting level to @e debug.
+    //!   This option accepts an optional positive number, the debug level. The default
+    //!   debug level is 1. The higher the level is, the more information is logged.
+    //!
+    //! The short names @c -v and @c -d are mapped by default to <code>-\-verbose</code> and
+    //! <code>-\-debug</code> respectively, unless an application-defined option reuses them.
     //!
     //! <h3>Command line argument type</h3>
     //!
@@ -112,24 +117,24 @@ namespace ts {
     //!
     //! There are several types of error situations:
     //!
-    //! @li Internal coding errors: These errors are internal inconsistencies of
-    //!     the application. Examples include declaring an option with an integer
-    //!     value in the range 1..0 (min > max) or fetching the state of option
-    //!     "foo" when no such option has been declared in the syntax of the command.
-    //!     These errors are bugs in the application and are reported with severity
-    //!     @link ts::Severity::Fatal @endlink. If the declared log does not terminate the
-    //!     application on fatal errors, a default "void" processing is then applied,
-    //!     depending on the situation.
+    //! - Internal coding errors: These errors are internal inconsistencies of
+    //!   the application. Examples include declaring an option with an integer
+    //!   value in the range 1..0 (min > max) or fetching the state of option
+    //!   "foo" when no such option has been declared in the syntax of the command.
+    //!   These errors are bugs in the application and are reported with severity
+    //!   @link ts::Severity::Fatal @endlink. If the declared log does not terminate the
+    //!   application on fatal errors, a default "void" processing is then applied,
+    //!   depending on the situation.
     //!
-    //! @li Command line errors: They are user errors, when the user enters an incorrect
-    //!     command. These errors are reported with severity @link ts::Severity::Error @endlink.
-    //!     In the various analyze() methods, after the command line is completely
-    //!     analyzed and all command line errors reported, the application is terminated.
+    //! - Command line errors: They are user errors, when the user enters an incorrect
+    //!   command. These errors are reported with severity @link ts::Severity::Error @endlink.
+    //!   In the various analyze() methods, after the command line is completely
+    //!   analyzed and all command line errors reported, the application is terminated.
     //!
-    //! @li Predefined help or version options: This is triggered when the user enters
-    //!     the @c -\-help or @c -\-version option. This is not really an error but the
-    //!     command is not usable. In this case, the help text is displayed and the
-    //!     command is terminated.
+    //! - Predefined help or version options: This is triggered when the user enters
+    //!   the @c -\-help or @c -\-version option. This is not really an error but the
+    //!   command is not usable. In this case, the help text is displayed and the
+    //!   command is terminated.
     //!
     //! When the flag @link NO_EXIT_ON_ERROR @endlink is specified, command line errors
     //! and predefined help or version options do not terminate the application.
@@ -158,7 +163,7 @@ namespace ts {
     //!     ts::UString inFile1;
     //!     ts::UString inFile2;
     //!     ts::UString outFile;
-    //!     bool        verbose;
+    //!     bool        force;
     //!     size_t      bufferSize;
     //! };
     //!
@@ -170,7 +175,7 @@ namespace ts {
     //!     option(u"", 0, STRING, 1, 2);
     //!     option(u"buffer-size", u'b', INTEGER, 0, 1, 256, 4096);
     //!     option(u"output", u'o', STRING);
-    //!     option(u"verbose", u'v');
+    //!     option(u"force", u'f');
     //!     setHelp(u"Parameters:\n"
     //!             u"\n"
     //!             u"  file-1 : Base file to merge.\n"
@@ -182,13 +187,13 @@ namespace ts {
     //!             u"  --buffer-size value\n"
     //!             u"      Buffer size in bytes, from 256 to 4096 bytes (default: 1024).\n"
     //!             u"\n"
+    //!             u"  -f\n"
+    //!             u"  --force\n"
+    //!             u"      Force overwriting the output file if it already exists.\n"
+    //!             u"\n"
     //!             u"  -o filename\n"
     //!             u"  --output filename\n"
-    //!             u"      Specify the output file (default: standard output).\n"
-    //!             u"\n"
-    //!             u"  -v\n"
-    //!             u"  --verbose\n"
-    //!             u"      Display verbose messages.");
+    //!             u"      Specify the output file (default: standard output).\n");
     //!
     //!     // Analyze the command
     //!     analyze(argc, argv);
@@ -197,7 +202,7 @@ namespace ts {
     //!     getValue(inFile1, u"", u"", 0);
     //!     getValue(inFile2, u"", u"", 1);
     //!     getValue(outFile, u"output");
-    //!     verbose = present(u"verbose");
+    //!     force = present(u"force");
     //!     bufferSize = intValue<size_t>(u"buffer-size", 1024);
     //! }
     //!
@@ -211,7 +216,7 @@ namespace ts {
     //!         << "inFile1 = \"" << args.inFile1 << "\", "
     //!         << "inFile2 = \"" << args.inFile2 << "\", "
     //!         << "outFile = \"" << args.outFile << "\", "
-    //!         << "verbose = " << ts::UString::TrueFalse(args.verbose) << ", "
+    //!         << "force = " << ts::UString::TrueFalse(args.force) << ", "
     //!         << "bufferSize = " << args.bufferSize << std::endl;
     //!
     //!     return EXIT_SUCCESS;
@@ -238,13 +243,13 @@ namespace ts {
     //!   --buffer-size value
     //!       Buffer size in bytes, from 256 to 4096 bytes (default: 1024).
     //!
+    //!   -f
+    //!   --force
+    //!       Force overwriting the output file if it already exists.
+    //!
     //!   -o filename
     //!   --output filename
     //!       Specify the output file (default: standard output).
-    //!
-    //!   -v
-    //!   --verbose
-    //!       Display verbose messages.
     //!
     //! $
     //! @endcode
@@ -253,25 +258,25 @@ namespace ts {
     //!
     //! @code
     //! $ supermerge f1
-    //! inFile1 = "f1", inFile2 = "", outFile = "", verbose = false, bufferSize = 1024
+    //! inFile1 = "f1", inFile2 = "", outFile = "", force = false, bufferSize = 1024
     //! $
     //! $ supermerge f1 f2
-    //! inFile1 = "f1", inFile2 = "f2", outFile = "", verbose = false, bufferSize = 1024
+    //! inFile1 = "f1", inFile2 = "f2", outFile = "", force = false, bufferSize = 1024
     //! $
     //! $ supermerge f1 f2 f3
     //! supermerge: too many parameter, 2 maximum
     //! $
-    //! $ supermerge f1 -o out.txt -v
-    //! inFile1 = "f1", inFile2 = "", outFile = "out.txt", verbose = true, bufferSize = 1024
+    //! $ supermerge f1 -o out.txt -f
+    //! inFile1 = "f1", inFile2 = "", outFile = "out.txt", force = true, bufferSize = 1024
     //! $
-    //! $ supermerge f1 -o out.txt -v --buffer-size 2048
-    //! inFile1 = "f1", inFile2 = "", outFile = "out.txt", verbose = true, bufferSize = 2048
+    //! $ supermerge f1 -o out.txt -f --buffer-size 2048
+    //! inFile1 = "f1", inFile2 = "", outFile = "out.txt", force = true, bufferSize = 2048
     //! $
     //! $ supermerge f1 -o out.txt --ver
     //! supermerge: ambiguous option --ver (--verbose, --version)
     //! $
     //! $ supermerge f1 -o out.txt --verb
-    //! inFile1 = "f1", inFile2 = "", outFile = "out.txt", verbose = true, bufferSize = 1024
+    //! inFile1 = "f1", inFile2 = "", outFile = "out.txt", force = false, bufferSize = 1024
     //! $
     //! @endcode
     //!
@@ -376,12 +381,11 @@ namespace ts {
         //! to import all option definitions of another instance.
         //!
         //! @param [in] other Another instance from which to get the options.
-        //! @param [in] override If true, override duplicated options which were
-        //!             already declared in this object. If false (the default),
-        //!             duplicated options are ignored.
+        //! @param [in] replace If true, override duplicated options which were already
+        //! declared in this object. If false (the default), duplicated options are ignored.
         //! @return A reference to this object.
         //!
-        Args& copyOptions(const Args& other, const bool override = false);
+        Args& copyOptions(const Args& other, const bool replace = false);
 
         //!
         //! Unlimited number of occurences.
@@ -765,6 +769,9 @@ namespace ts {
         //!
         void redirectReport(Report* report);
 
+        // Inherited from Report.
+        virtual void raiseMaxSeverity(int level) override;
+
     protected:
         // Display an error message, as if it was produced during command line analysis.
         // Mark this instance as error if severity <= Severity::Error.
@@ -803,7 +810,8 @@ namespace ts {
                      size_t       max_occur,
                      int64_t      min_value,
                      int64_t      max_value,
-                     bool         optional);
+                     bool         optional,
+                     bool         predefined);
 
             // Constructor:
             IOption (const UChar*       name,
@@ -811,7 +819,8 @@ namespace ts {
                      const Enumeration& enumeration,
                      size_t             min_occur,
                      size_t             max_occur,
-                     bool               optional);
+                     bool               optional,
+                     bool               predefined);
 
             // Displayable name
             UString display() const;
@@ -836,15 +845,16 @@ namespace ts {
         // Common code: analyze the command line.
         bool analyze();
 
-        // Locate an option description.
+        // Add a new option.
+        void addOption(const IOption& opt);
+
+        // Locate an option description. Used during command line parsing.
         // Return 0 if not found.
-        // Used during command line parsing.
         IOption* search(UChar c);
         IOption* search(const UString& name);
 
-        // Locate an option description.
+        // Locate an option description. Used by application to get values.
         // Throw exception if not found.
-        // Used by application to get values.
         const IOption& getIOption(const UChar* name) const;
     };
 }

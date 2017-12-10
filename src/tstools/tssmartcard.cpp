@@ -45,7 +45,6 @@ struct Options: public ts::Args
 {
     Options(int argc, char *argv[]);
 
-    bool        verbose;       // Verbose output
     ts::UString reader;        // Optional reader name
     ::DWORD     timeout_ms;    // Timeout in milliseconds
     ::DWORD     reset_action;  // Type of reset to apply
@@ -53,7 +52,6 @@ struct Options: public ts::Args
 
 Options::Options(int argc, char *argv[]) :
     Args(u"Smartcard Listing Utility.", u"[options] [reader-name]"),
-    verbose(false),
     reader(),
     timeout_ms(0),
     reset_action(0)
@@ -62,7 +60,6 @@ Options::Options(int argc, char *argv[]) :
     option(u"cold-reset", 'c');
     option(u"eject",      'e');
     option(u"timeout",    't', Args::UNSIGNED);
-    option(u"verbose",    'v');
     option(u"warm-reset", 'w');
 
     setHelp(u"Parameters:\n"
@@ -101,7 +98,6 @@ Options::Options(int argc, char *argv[]) :
     analyze(argc, argv);
 
     reader = value(u"");
-    verbose = present(u"verbose");
     timeout_ms = intValue(u"timeout", ::DWORD(1000));
 
     if (present(u"eject")) {
@@ -154,7 +150,7 @@ void List(Options& opt, const ts::pcsc::ReaderState& st)
 {
     std::cout << st.reader;
 
-    if (opt.verbose) {
+    if (opt.verbose()) {
         int count = 0;
         if (st.event_state & SCARD_STATE_UNAVAILABLE) {
             std::cout << sep(count) << " unavailable state";
@@ -188,7 +184,7 @@ void List(Options& opt, const ts::pcsc::ReaderState& st)
 
 bool Reset(Options& opt, ::SCARDCONTEXT pcsc_context, const ts::UString& reader)
 {
-    if (opt.verbose) {
+    if (opt.verbose()) {
         std::cout << "resetting " << reader << std::endl;
     }
 

@@ -37,8 +37,8 @@
 //----------------------------------------------------------------------------
 
 template <class MUTEX>
-ts::ReportFile<MUTEX>::ReportFile(const UString& file_name, bool append, bool verbose, int debug_level) :
-    Report(verbose, debug_level),
+ts::ReportFile<MUTEX>::ReportFile(const UString& file_name, bool append, int max_severity) :
+    Report(max_severity),
     _mutex(),
     _file_name(file_name.toUTF8()),
     _named_file(_file_name.c_str(), append ? (std::ios::out | std::ios::app) : std::ios::out),
@@ -56,8 +56,8 @@ ts::ReportFile<MUTEX>::ReportFile(const UString& file_name, bool append, bool ve
 //----------------------------------------------------------------------------
 
 template <class MUTEX>
-ts::ReportFile<MUTEX>::ReportFile(std::ostream& stream, bool append, bool verbose, int debug_level) :
-    Report(verbose, debug_level),
+ts::ReportFile<MUTEX>::ReportFile(std::ostream& stream, bool append, int max_severity) :
+    Report(max_severity),
     _mutex(),
     _file_name(),
     _named_file(),

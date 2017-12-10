@@ -35,8 +35,8 @@ TSDUCK_SOURCE;
 // Constructors.
 //----------------------------------------------------------------------------
 
-ts::TSP::TSP(bool verbose, int debug_level) :
-    Report(verbose, debug_level),
+ts::TSP::TSP(int max_severity) :
+    Report(max_severity),
     _tsp_bitrate(0),
     _tsp_aborting(false)
 {

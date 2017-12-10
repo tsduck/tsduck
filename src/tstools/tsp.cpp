@@ -91,13 +91,13 @@ void ts::tsp::TSPInterruptHandler::handleInterrupt()
 //  Program entry point
 //----------------------------------------------------------------------------
 
-int main (int argc, char *argv[])
+int main(int argc, char *argv[])
 {
     TSDuckLibCheckVersion();
     ts::TSPacket::SanityCheck();
 
     ts::tsp::Options opt(argc, argv);
-    CERR.setDebugLevel(opt.debug > 0 ? opt.debug : (opt.verbose ? ts::Severity::Verbose : ts::Severity::Info));
+    CERR.setMaxSeverity(opt.maxSeverity());
 
     // Process the --list-processors option
 
@@ -145,12 +145,12 @@ int main (int argc, char *argv[])
     // Create an asynchronous error logger. Can be used in multi-threaded
     // context. Set this logger as report method for all executors.
 
-    ts::AsyncReport report(opt.verbose, opt.debug, opt.timed_log);
+    ts::AsyncReport report(opt.maxSeverity(), opt.timed_log);
 
     ts::tsp::PluginExecutor* proc = input;
     do {
         proc->setReport(&report);
-        proc->setDebugLevel(report.debugLevel());
+        proc->setMaxSeverity(report.maxSeverity());
     } while ((proc = proc->ringNext<ts::tsp::PluginExecutor>()) != input);
 
     // Allocate a memory-resident buffer of TS packets

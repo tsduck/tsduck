@@ -53,7 +53,8 @@ ts::Args::IOption::IOption(const UChar* name_,
                            size_t       max_occur_,
                            int64_t      min_value_,
                            int64_t      max_value_,
-                           bool         optional_) :
+                           bool         optional_,
+                           bool         predefined_) :
 
     name        (name_ == 0 ? UString() : name_),
     short_name  (short_name_),
@@ -63,7 +64,7 @@ ts::Args::IOption::IOption(const UChar* name_,
     min_value   (min_value_),
     max_value   (max_value_),
     optional    (optional_),
-    predefined  (false),
+    predefined  (predefined_),
     enumeration (),
     values      ()
 {
@@ -136,7 +137,8 @@ ts::Args::IOption::IOption(const UChar*       name_,
                            const Enumeration& enumeration_,
                            size_t             min_occur_,
                            size_t             max_occur_,
-                           bool               optional_) :
+                           bool               optional_,
+                           bool               predefined_) :
 
     name        (name_ == 0 ? UString() : name_),
     short_name  (short_name_),
@@ -146,7 +148,7 @@ ts::Args::IOption::IOption(const UChar*       name_,
     min_value   (std::numeric_limits<int>::min()),
     max_value   (std::numeric_limits<int>::max()),
     optional    (optional_),
-    predefined  (false),
+    predefined  (predefined_),
     enumeration (enumeration_),
     values      ()
 {
@@ -199,11 +201,35 @@ ts::Args::Args(const UString& description, const UString& syntax, const UString&
     _is_valid(false),
     _flags(flags)
 {
-    // Add predefined option
-    option(u"help");
-    option(u"version", 0, VersionFormatEnum, 0, 1, true);
-    search(u"help")->predefined = true;
-    search(u"version")->predefined = true;
+    // Add predefined options.
+    addOption(IOption(u"help",     0,  NONE, 0, 1, 0, 0, false, true));
+    addOption(IOption(u"version",  0,  VersionFormatEnum, 0, 1, true, true));
+    addOption(IOption(u"verbose", 'v', NONE, 0, 1, 0, 0, false, true));
+    addOption(IOption(u"debug",   'd', POSITIVE, 0, 1, 0, 0, true, true));
+}
+
+
+//----------------------------------------------------------------------------
+// Add a new option.
+//----------------------------------------------------------------------------
+
+void ts::Args::addOption(const IOption& opt)
+{
+    // Erase previous version, if any.
+    _iopts.erase(opt.name);
+
+    // If the new option has a short name, erase previous options with same short name.
+    if (opt.short_name != 0) {
+        for (IOptionMap::iterator it = _iopts.begin(); it != _iopts.end(); ++it) {
+            if (it->second.short_name == opt.short_name) {
+                it->second.short_name = 0;
+                break; // there was at most one
+            }
+        }
+    }
+
+    // Finally add the new option.
+    _iopts.insert(std::make_pair(opt.name, opt));
 }
 
 
@@ -220,9 +246,7 @@ ts::Args& ts::Args::option(const UChar* name,
                            int64_t      max_value,
                            bool         optional)
 {
-    IOption opt(name, short_name, type, min_occur, max_occur, min_value, max_value, optional);
-    _iopts.erase(opt.name);
-    _iopts.insert(std::make_pair(opt.name, opt));
+    addOption(IOption(name, short_name, type, min_occur, max_occur, min_value, max_value, optional, false));
     return *this;
 }
 
@@ -238,9 +262,7 @@ ts::Args& ts::Args::option(const UChar*       name,
                            size_t             max_occur,
                            bool               optional)
 {
-    IOption opt(name, short_name, enumeration, min_occur, max_occur, optional);
-    _iopts.erase(opt.name);
-    _iopts.insert(std::make_pair(opt.name, opt));
+    addOption(IOption(name, short_name, enumeration, min_occur, max_occur, optional, false));
     return *this;
 }
 
@@ -250,12 +272,11 @@ ts::Args& ts::Args::option(const UChar*       name,
 // If override is true, override duplicated options.
 //----------------------------------------------------------------------------
 
-ts::Args& ts::Args::copyOptions(const Args& other, const bool override)
+ts::Args& ts::Args::copyOptions(const Args& other, const bool replace)
 {
     for (IOptionMap::const_iterator it = other._iopts.begin(); it != other._iopts.end(); ++it) {
-        if (override || _iopts.find(it->second.name) == _iopts.end()) {
-            _iopts.erase(it->second.name);
-            _iopts.insert(std::make_pair(it->second.name, it->second));
+        if (!it->second.predefined && (replace || _iopts.find(it->second.name) == _iopts.end())) {
+            addOption(it->second);
         }
     }
     return *this;
@@ -269,21 +290,35 @@ ts::Args& ts::Args::copyOptions(const Args& other, const bool override)
 void ts::Args::redirectReport(Report* rep)
 {
     _subreport = rep;
-    if (rep != 0 && rep->debugLevel() > this->debugLevel()) {
-        this->setDebugLevel(rep->debugLevel());
+    if (rep != 0 && rep->maxSeverity() > this->maxSeverity()) {
+        this->setMaxSeverity(rep->maxSeverity());
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Adjust debug level, always increase verbosity, never decrease.
+//----------------------------------------------------------------------------
+
+void ts::Args::raiseMaxSeverity(int level)
+{
+    // Propagate to superclass (for this object).
+    Report::raiseMaxSeverity(level);
+
+    // Propagate to redirected report, if one is set.
+    if (_subreport != 0) {
+        _subreport->raiseMaxSeverity(level);
     }
 }
 
 
 //----------------------------------------------------------------------------
 // Display an error message, as if it was produced during command line analysis.
-// Mark this instance as error if severity <= Severity::Error.
-// Immediately abort application is severity == Severity::Fatal.
-// Inherited from Report.
 //----------------------------------------------------------------------------
 
 void ts::Args::writeLog(int severity, const UString& message)
 {
+    // Process error message if flag NO_ERROR_DISPLAY it not set.
     if ((_flags & NO_ERROR_DISPLAY) == 0) {
         if (_subreport != 0) {
             _subreport->log(severity, message);
@@ -295,7 +330,11 @@ void ts::Args::writeLog(int severity, const UString& message)
             std::cerr << message << std::endl;
         }
     }
+
+    // Mark this instance as error if severity <= Severity::Error.
     _is_valid = _is_valid && severity > Severity::Error;
+
+    // Immediately abort application is severity == Severity::Fatal.
     if (severity <= Severity::Fatal) {
         ::exit(EXIT_FAILURE);
     }
@@ -662,6 +701,16 @@ bool ts::Args::analyze()
             ::exit(EXIT_SUCCESS);
         }
         return _is_valid = false;
+    }
+
+    // Process --verbose predefined option
+    if (present(u"verbose") && search(u"verbose")->predefined) {
+        raiseMaxSeverity(Severity::Verbose);
+    }
+
+    // Process --debug predefined option
+    if (present(u"debug") && search(u"debug")->predefined) {
+        raiseMaxSeverity(intValue(u"debug", Severity::Debug));
     }
 
     // Look for parameters/options number of occurences.

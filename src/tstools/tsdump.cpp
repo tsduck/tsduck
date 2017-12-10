@@ -110,6 +110,10 @@ Options::Options(int argc, char *argv[]) :
             u"  --raw-file\n"
             u"      Raw dump of file, do not interpret as TS packets.\n"
             u"\n"
+            u"  -v\n"
+            u"  --verbose\n"
+            u"      Produce verbose output.\n"
+            u"\n"
             u"  --version\n"
             u"      Display the version number.\n");
 

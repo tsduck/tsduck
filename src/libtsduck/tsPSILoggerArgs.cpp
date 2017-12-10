@@ -106,9 +106,7 @@ void ts::PSILoggerArgs::defineOptions(Args& args) const
     args.option(u"all-versions", 'a');
     args.option(u"cat-only",      0);
     args.option(u"clear",        'c');
-    args.option(u"debug",         0, Args::POSITIVE, 0, 1, 0, 0, true);
     args.option(u"dump",         'd');
-    args.option(u"verbose",      'v');
     args.option(u"output-file",  'o', Args::STRING);
 }
 
@@ -120,10 +118,9 @@ void ts::PSILoggerArgs::defineOptions(Args& args) const
 
 void ts::PSILoggerArgs::load(Args& args)
 {
-    args.setDebugLevel(args.present(u"debug") ? args.intValue(u"debug", Severity::Debug) : args.present(u"verbose") ? Severity::Verbose : Severity::Info);
     all_versions = args.present(u"all-versions");
-    clear = args.present(u"clear");
     cat_only = args.present(u"cat-only");
+    clear = args.present(u"clear");
     dump = args.present(u"dump");
     output = args.value(u"output-file");
 }

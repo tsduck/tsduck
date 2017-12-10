@@ -40,15 +40,15 @@ TSDUCK_SOURCE;
 //----------------------------------------------------------------------------
 
 ts::ReportWithPrefix::ReportWithPrefix(ts::Report& report, const UString& prefix) :
+    Report(report.maxSeverity()),
     _report(report),
     _prefix(prefix)
 {
 }
 
 
-
 //----------------------------------------------------------------------------
-// Rport interface.
+// Report interface.
 //----------------------------------------------------------------------------
 
 void ts::ReportWithPrefix::writeLog(int severity, const UString& msg)

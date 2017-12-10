@@ -56,8 +56,6 @@ struct Options: public ts::Args
     ts::BitRate            bitrate;    // Target PID bitrate
     ts::UString            outfile;    // Output file
     ts::FileNameRateList   infiles;    // Input file names and repetition rates
-    bool                   verbose;    // Verbose mode
-    bool                   debug;      // Debug mode
 };
 
 Options::Options(int argc, char *argv[]) :
@@ -68,19 +66,15 @@ Options::Options(int argc, char *argv[]) :
     pid(ts::PID_NULL),
     bitrate(0),
     outfile(),
-    infiles(),
-    verbose(false),
-    debug(false)
+    infiles()
 {
     option(u"",            0,  Args::STRING);
     option(u"bitrate",    'b', Args::UNSIGNED);
     option(u"continuous", 'c');
-    option(u"debug",      'd');
     option(u"force-crc",  'f');
     option(u"output",     'o', Args::STRING);
     option(u"pid",        'p', Args::PIDVAL, 1, 1);
     option(u"stuffing",   's');
-    option(u"verbose",    'v');
 
     setHelp(u"Input files:\n"
             u"\n"
@@ -151,8 +145,6 @@ Options::Options(int argc, char *argv[]) :
     bitrate = intValue<ts::BitRate>(u"bitrate");
     outfile = value(u"output");
     infiles.getArgs(*this);
-    debug = present(u"debug");
-    verbose = debug || present(u"verbose");
 
     // If any non-zero repetition rate is specified, make sure that a bitrate
     // is specified.
@@ -171,10 +163,10 @@ Options::Options(int argc, char *argv[]) :
 //  Program entry point
 //----------------------------------------------------------------------------
 
-int main (int argc, char *argv[])
+int main(int argc, char *argv[])
 {
     TSDuckLibCheckVersion();
-    Options opt (argc, argv);
+    Options opt(argc, argv);
     ts::OutputRedirector output(opt.outfile, opt);
     ts::CyclingPacketizer pzer(opt.pid, opt.stuffing_policy, opt.bitrate);
     ts::SectionPtrVector sections;
@@ -188,7 +180,7 @@ int main (int argc, char *argv[])
             return EXIT_FAILURE;
         }
         pzer.addSections(sections);
-        if (opt.verbose) {
+        if (opt.verbose()) {
             std::cerr << "* Loaded " << sections.size() << " sections from standard input" << std::endl;
         }
     }
@@ -198,7 +190,7 @@ int main (int argc, char *argv[])
                 return EXIT_FAILURE;
             }
             pzer.addSections(sections, it->repetition);
-            if (opt.verbose) {
+            if (opt.verbose()) {
                 std::cerr << "* Loaded " << sections.size() << " sections from " << it->file_name;
                 if (it->repetition > 0) {
                     std::cerr << ", repetition rate: " << ts::UString::Decimal(it->repetition) << " ms";
@@ -208,7 +200,7 @@ int main (int argc, char *argv[])
         }
     }
 
-    if (opt.debug) {
+    if (opt.debug()) {
         std::cerr << "* Before packetization:" << std::endl;
         pzer.display(std::cerr);
     }
@@ -225,10 +217,10 @@ int main (int argc, char *argv[])
     } while (opt.valid() && (opt.continuous || !pzer.atCycleBoundary()));
 
 
-    if (opt.verbose) {
+    if (opt.verbose()) {
         std::cerr << "* Generated " << ts::UString::Decimal(count) << " TS packets" << std::endl;
     }
-    if (opt.debug) {
+    if (opt.debug()) {
         std::cerr << "* After packetization:" << std::endl;
         pzer.display(std::cerr);
     }

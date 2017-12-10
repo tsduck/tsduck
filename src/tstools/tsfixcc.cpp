@@ -66,7 +66,6 @@ Options::Options(int argc, char *argv[]) :
     option(u"",          0,  Args::STRING, 1, 1);
     option(u"circular", 'c');
     option(u"noaction", 'n');
-    option(u"verbose",  'v');
 
     setHelp(u"File:\n"
             u"\n"
@@ -99,7 +98,10 @@ Options::Options(int argc, char *argv[]) :
     filename = value(u"");
     circular = present(u"circular");
     test = present(u"noaction");
-    setDebugLevel(test || present(u"verbose") ? ts::Severity::Verbose : ts::Severity::Info);
+
+    if (test) {
+        setMaxSeverity(ts::Severity::Verbose);
+    }
 }
 
 // Check error on file

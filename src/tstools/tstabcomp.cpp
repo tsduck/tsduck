@@ -80,7 +80,6 @@ Options::Options(int argc, char *argv[]) :
     option(u"decompile",      'd');
     option(u"default-charset", 0, Args::STRING);
     option(u"output",         'o', ts::Args::STRING);
-    option(u"verbose",        'v');
     option(u"xml-model",      'x');
 
     setHelp(u"Input files:\n"
@@ -149,10 +148,6 @@ Options::Options(int argc, char *argv[]) :
     decompile = present(u"decompile");
     xmlModel = present(u"xml-model");
     outdir = !outfile.empty() && ts::IsDirectory(outfile);
-
-    if (present(u"verbose")) {
-        setDebugLevel(ts::Severity::Verbose);
-    }
 
     if (!infiles.empty() && xmlModel) {
         error(u"do not specify input files with --xml-model");
