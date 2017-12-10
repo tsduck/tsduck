@@ -73,6 +73,10 @@ Options::Options(int argc, char *argv[]) :
             u"  --help\n"
             u"      Display this help text.\n"
             u"\n"
+            u"  -v\n"
+            u"  --verbose\n"
+            u"      Produce verbose output.\n"
+            u"\n"
             u"  --version\n"
             u"      Display the version number.\n");
 

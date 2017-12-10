@@ -62,11 +62,10 @@ namespace ts {
         //!
         //! Constructor.
         //! The default initial report level is Info.
-        //! @param [in] verbose If true, set initial report level to Verbose.
-        //! @param [in] debug_level If greater than zero, set initial report to that level and ignore @a verbose.
+        //! @param [in] max_severity Set initial level report to that level.
         //! @param [in] time_stamp If true, time stamps are added to all messages.
         //!
-        AsyncReport(bool verbose = false, int debug_level = 0, bool time_stamp = false);
+        AsyncReport(int max_severity = Severity::Info, bool time_stamp = false);
 
         //!
         //! Destructor.

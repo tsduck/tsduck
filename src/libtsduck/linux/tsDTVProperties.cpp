@@ -107,7 +107,7 @@ uint32_t ts::DTVProperties::getByCommand(uint32_t cmd) const
 
 void ts::DTVProperties::report(Report& report, int severity) const
 {
-    if (report.debugLevel() < severity) {
+    if (report.maxSeverity() < severity) {
         return;
     }
 

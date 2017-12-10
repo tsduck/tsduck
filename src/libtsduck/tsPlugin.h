@@ -138,10 +138,9 @@ namespace ts {
 
         //!
         //! Constructor for subclasses.
-        //! @param [in] verbose If true, set initial report level to Verbose.
-        //! @param [in] debug_level If greater than zero, set initial report to that level and ignore @a verbose.
+        //! @param [in] max_severity Initial maximum severity of reported messages.
         //!
-        TSP(bool verbose, int debug_level);
+        TSP(int max_severity);
 
     private:
         // Inaccessible operations

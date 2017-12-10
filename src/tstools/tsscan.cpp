@@ -106,7 +106,6 @@ Options::Options(int argc, char *argv[]) :
     // 'a', 'c', 'd', 'f', 'm', 's', 'z'
     option(u"best-quality",         0);
     option(u"best-strength",        0);
-    option(u"debug",                0,  POSITIVE, 0, 1, 0, 0, true);
     option(u"first-uhf-channel",    0,  INTEGER, 0, 1, ts::UHF::FIRST_CHANNEL, ts::UHF::LAST_CHANNEL);
     option(u"first-offset",         0,  INTEGER, 0, 1, -40, +40);
     option(u"global-service-list", 'g');
@@ -119,7 +118,6 @@ Options::Options(int argc, char *argv[]) :
     option(u"service-list",        'l');
     option(u"show-modulation",      0);
     option(u"uhf-band",            'u');
-    option(u"verbose",             'v');
     tuner.defineOptions(*this);
 
     setHelp(u"If tuning parameters are present (frequency or channel reference), the NIT is\n"
@@ -205,8 +203,6 @@ Options::Options(int argc, char *argv[]) :
 
     analyze(argc, argv);
     tuner.load(*this);
-
-    setDebugLevel(present(u"debug") ? intValue(u"debug", ts::Severity::Debug) : (present(u"verbose") ? ts::Severity::Verbose : ts::Severity::Info));
 
     uhf_scan          = present(u"uhf-band");
     nit_scan          = tuner.hasTuningInfo();

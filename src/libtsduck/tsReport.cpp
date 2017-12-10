@@ -49,8 +49,8 @@ const int ts::Severity::Debug;
 // Constructor.
 //----------------------------------------------------------------------------
 
-ts::Report::Report(bool verbose, int debug_level) :
-    _max_severity(debug_level > 0 ? debug_level : (verbose ? Severity::Verbose : Severity::Info))
+ts::Report::Report(int max_severity) :
+    _max_severity(max_severity)
 {
 }
 
@@ -59,11 +59,18 @@ ts::Report::Report(bool verbose, int debug_level) :
 // Set maximum debug level.
 //----------------------------------------------------------------------------
 
-void ts::Report::setDebugLevel(int level)
+void ts::Report::setMaxSeverity(int level)
 {
     _max_severity = level;
     if (level >= Severity::Debug) {
         log(level, u"debug level set to %d", {level});
+    }
+}
+
+void ts::Report::raiseMaxSeverity(int level)
+{
+    if (_max_severity < level) {
+        setMaxSeverity(level);
     }
 }
 

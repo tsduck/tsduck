@@ -111,6 +111,9 @@ Options::Options(int argc, char *argv[]) :
             u"      Display only the bitrate value, in bits/seconds, based on\n"
             u"      188-byte packets. Useful to reuse the value in command lines.\n"
             u"\n"
+            u"  --verbose\n"
+            u"      Produce verbose output.\n"
+            u"\n"
             u"  --version\n"
             u"      Display the version number.\n");
 

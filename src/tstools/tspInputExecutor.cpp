@@ -179,7 +179,7 @@ size_t ts::tsp::InputExecutor::receiveAndValidate(TSPacket* buffer, size_t max_p
             error(u"synchronization lost after %'d packets, got 0x%X instead of 0x%X", {_total_in_packets, buffer[n].b[0], SYNC_BYTE});
             // In debug mode, partial dump of input
             // (one packet before lost of sync and 3 packets starting at lost of sync).
-            if (debugLevel() >= 1) {
+            if (maxSeverity() >= 1) {
                 if (n > 0) {
                     debug(u"content of packet before lost of synchronization:\n" +
                           UString::Dump(buffer[n-1].b, PKT_SIZE, UString::HEXA | UString::OFFSET | UString::BPL, 4, 16));

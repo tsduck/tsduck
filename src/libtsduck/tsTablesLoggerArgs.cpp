@@ -263,7 +263,6 @@ void ts::TablesLoggerArgs::defineOptions(Args& args) const
     args.option(u"tid-ext",             'e', Args::UINT16, 0, Args::UNLIMITED_COUNT);
     args.option(u"time-stamp",           0);
     args.option(u"ttl",                  0,  Args::POSITIVE);
-    args.option(u"verbose",             'v');
 }
 
 
@@ -310,11 +309,6 @@ void ts::TablesLoggerArgs::load(Args& args)
     negate_tidext = args.present(u"negate-tid-ext");
     no_duplicate = args.present(u"no-duplicate");
     udp_raw = args.present(u"no-encapsulation");
-
-    if (args.present(u"verbose")) {
-        args.setDebugLevel(Severity::Verbose);
-    }
-
     add_pmt_pids = args.present(u"psi-si");
 
     if (add_pmt_pids || args.present(u"pid")) {

@@ -71,10 +71,9 @@ namespace ts {
         //!
         //! Constructor.
         //! The default initial report level is Info.
-        //! @param [in] verbose If true, set initial report level to Verbose.
-        //! @param [in] debug_level If greater than zero, set initial report to that level and ignore @a verbose.
+        //! @param [in] max_severity Initial maximum severity of reported messages.
         //!
-        Report(bool verbose = false, int debug_level = 0);
+        Report(int max_severity = Severity::Info);
 
         //!
         //! Destructor.
@@ -82,16 +81,23 @@ namespace ts {
         virtual ~Report() {}
 
         //!
-        //! Set maximum debug level.
+        //! Set maximum severity level.
+        //! Messages with higher severities are not reported.
         //! @param [in] level Set report to that level.
         //!
-        virtual void setDebugLevel(int level);
+        virtual void setMaxSeverity(int level);
 
         //!
-        //! Get maximum debug level.
+        //! Raise maximum severity level.
+        //! @param [in] level Set report at least to that level.
+        //!
+        virtual void raiseMaxSeverity(int level);
+
+        //!
+        //! Get maximum severity level.
         //! @return Current maximum debug level.
         //!
-        int debugLevel() const { return _max_severity; }
+        int maxSeverity() const { return _max_severity; }
 
         //!
         //! Check if debugging is active.
@@ -109,7 +115,7 @@ namespace ts {
         //! Report a message with an explicit severity.
         //!
         //! This method is the central reporting point. If filters the severity
-        //! and drops the message if @a severity is higher than debugLevel().
+        //! and drops the message if @a severity is higher than maxSeverity().
         //!
         //! Subclasses should override writeLog() to implement a specific reporting
         //! device. It is not necessary to override log() unless the subclass needs

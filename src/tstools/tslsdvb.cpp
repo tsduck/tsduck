@@ -56,19 +56,15 @@ struct Options: public ts::Args
 #if defined(TS_WINDOWS)
     ts::DirectShowTest::TestType test_type;  // DirectShow test (Windows only).
 #endif
-    bool                         verbose;    // Verbose output
 };
 
 Options::Options(int argc, char *argv[]) :
     ts::Args(u"DVB Devices Listing Utility.", u"[options]"),
-    tuner(true, true),
+    tuner(true, true)
 #if defined(TS_WINDOWS)
-    test_type(ts::DirectShowTest::NONE),
+    , test_type(ts::DirectShowTest::NONE)
 #endif
-    verbose(false)
 {
-    option(u"debug", 0, POSITIVE, 0, 1, 0, 0, true);
-    option(u"verbose", 'v');
 #if defined(TS_WINDOWS)
     option(u"enumerate-devices", 'e');  // Legacy, not documented anymore
     option(u"test", 't', ts::DirectShowTest::TestNames);
@@ -103,9 +99,6 @@ Options::Options(int argc, char *argv[]) :
     // Analyze command line options.
     analyze(argc, argv);
     tuner.load(*this);
-
-    verbose = present(u"verbose");
-    setDebugLevel(present(u"debug") ? intValue(u"debug", 1) : ts::Severity::Info);
 
 #if defined(TS_WINDOWS)
     // Test options on Windows. The legacy option "--enumerate-devices" means "--test enumerate-devices".
@@ -164,7 +157,7 @@ namespace {
         std::cout << ")" << std::endl;
 
         // Display verbose information
-        if (opt.verbose) {
+        if (opt.verbose()) {
             std::cout << std::endl;
             tuner.displayStatus(std::cout, u"  ", opt);
             std::cout << std::endl;
@@ -197,7 +190,7 @@ namespace {
                 opt.error(u"no DVB device found");
             }
             else {
-                if (opt.verbose) {
+                if (opt.verbose()) {
                     std::cout << std::endl;
                 }
                 for (size_t i = 0; i < tuners.size(); ++i) {

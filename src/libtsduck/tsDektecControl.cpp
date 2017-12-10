@@ -59,8 +59,7 @@ ts::DektecControl::DektecControl(int argc, char *argv[]) :
     _set_led(false),
     _led_state(0),
     _set_input(0),
-    _set_output(0),
-    _verbose(false)
+    _set_output(0)
 {
     option(u"", 0, Args::UNSIGNED, 0, 1); // parameter is an optional integer
     option(u"all", 'a');
@@ -68,7 +67,6 @@ ts::DektecControl::DektecControl(int argc, char *argv[]) :
     option(u"normalized", 'n');
     option(u"output", 'o', Args::UNSIGNED);
     option(u"reset", 'r');
-    option(u"verbose", 'v');
     option(u"wait", 'w', Args::UNSIGNED);
     option(u"led", 'l', Enumeration({
         {u"off", DTAPI_LED_OFF},
@@ -143,7 +141,6 @@ ts::DektecControl::DektecControl(int argc, char *argv[]) :
     _set_input  = intValue(u"input", -1);
     _set_output = intValue(u"output", -1);
     _wait_sec   = intValue(u"wait", _set_led ? 5 : 0);
-    _verbose    = present(u"verbose");
 }
 
 
@@ -171,7 +168,7 @@ int ts::DektecControl::listDevices(const DektecDeviceVector& devices)
 
     // Display DTAPI and device drivers versions
 
-    if (_verbose) {
+    if (verbose()) {
         std::cout << std::endl
                   << GetDektecVersions() << std::endl
                   << std::endl;
@@ -187,7 +184,7 @@ int ts::DektecControl::listDevices(const DektecDeviceVector& devices)
 
         // Print short info
 
-        std::cout << (_verbose ? "* Device " : "") << index << ": " << device.model;
+        std::cout << (verbose() ? "* Device " : "") << index << ": " << device.model;
         if (vpd.vpdid[0] != 0) {
             std::cout << " (" << vpd.vpdid << ")";
         }
@@ -195,7 +192,7 @@ int ts::DektecControl::listDevices(const DektecDeviceVector& devices)
 
         // Print verbose info
 
-        if (_verbose) {
+        if (verbose()) {
             std::cout << "  Physical ports: " << device.desc.m_NumPorts << std::endl
                       << "  Channels: input: " << device.input.size()
                       << ", output: " << device.output.size() << std::endl;
@@ -464,7 +461,7 @@ int ts::DektecControl::oneDevice(const DektecDevice& device)
                           << ": " << DektecStrError(status) << std::endl;
             }
             else {
-                if (_verbose) {
+                if (verbose()) {
                     std::cout << "Resetting input channel " << ci << std::endl;
                 }
                 status = chan.Reset (DTAPI_FULL_RESET);
@@ -484,7 +481,7 @@ int ts::DektecControl::oneDevice(const DektecDevice& device)
                           << ": " << DektecStrError(status) << std::endl;
             }
             else {
-                if (_verbose) {
+                if (verbose()) {
                     std::cout << "Resetting output channel " << ci << std::endl;
                 }
                 status = chan.Reset(DTAPI_FULL_RESET);

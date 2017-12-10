@@ -54,7 +54,6 @@ public:
     bool        no_tdt;   // Do not try to get a TDT
     bool        no_tot;   // Do not try to get a TOT
     bool        all;      // Report all tables, not only the first one.
-    bool        verbose;  // Verbose output
     ts::UString infile;   // Input file name
 };
 
@@ -63,14 +62,12 @@ Options::Options(int argc, char *argv[]) :
     no_tdt(false),
     no_tot(false),
     all(false),
-    verbose(false),
     infile()
 {
     option(u"",         0, Args::STRING, 0, 1);
     option(u"all",     'a');
     option(u"notdt",    0);
     option(u"notot",    0);
-    option(u"verbose", 'v');
 
     setHelp(u"Input file:\n"
             u"\n"
@@ -103,7 +100,6 @@ Options::Options(int argc, char *argv[]) :
 
     infile = value(u"");
     all = present(u"all");
-    verbose = present(u"verbose");
     no_tdt = present(u"notdt");
     no_tot = present(u"notot");
 }
@@ -155,7 +151,7 @@ void TableHandler::handleTable(ts::SectionDemux&, const ts::BinaryTable& table)
                 break;
             }
             _tdt_ok = !_opt.all;
-            if (_opt.verbose) {
+            if (_opt.verbose()) {
                 _display.displayTable(table) << std::endl;
                 break;
             }
@@ -172,7 +168,7 @@ void TableHandler::handleTable(ts::SectionDemux&, const ts::BinaryTable& table)
                 break;
             }
             _tot_ok = !_opt.all;
-            if (_opt.verbose) {
+            if (_opt.verbose()) {
                 _display.displayTable(table) << std::endl;
                 break;
             }
@@ -198,7 +194,7 @@ void TableHandler::handleTable(ts::SectionDemux&, const ts::BinaryTable& table)
         }
 
         default: {
-            if (_opt.verbose) {
+            if (_opt.verbose()) {
                 const ts::TID tid = table.tableId();
                 const ts::PID pid = table.sourcePID();
                 std::cout << ts::UString::Format(u"* Got unexpected %s, TID %d (0x%X) on PID %d (0x%X)", {ts::names::TID(tid), tid, tid, pid, pid}) << std::endl;

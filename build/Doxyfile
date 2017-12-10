@@ -46,8 +46,8 @@ PROJECT_LOGO   = ../images/tsduck-32.png
 
 FILE_PATTERNS    = *.h *.dox *.md
 EXCLUDE_PATTERNS = *Template.h tsduck.h
-INPUT            = ../src
-EXCLUDE          = ../src/libtsduck/private ../src/libtsduck/tinyxml ../src/utest/crypto ../src/utest/tables
+INPUT            = ../src/doc ../src/libtsduck ../src/tstools
+EXCLUDE          = ../src/libtsduck/private ../src/libtsduck/tinyxml
 RECURSIVE        = YES
 OUTPUT_DIRECTORY = ../doxy
 

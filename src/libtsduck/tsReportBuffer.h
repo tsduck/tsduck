@@ -57,11 +57,9 @@ namespace ts {
         //!
         //! Constructor.
         //!
-        //! @param [in] verbose If true, display verbose messages.
+        //! @param [in] max_severity Maximum debug level to display. None by default.
         //!
-        //! @param [in] debug_level Maximum debug level to display. None by default.
-        //!
-        ReportBuffer(bool verbose = false, int debug_level = 0);
+        ReportBuffer(int max_severity = Severity::Info);
 
         //!
         //! Reset the content of the internal buffer.

@@ -96,8 +96,6 @@ namespace ts {
             typedef std::vector<PluginOptions> PluginOptionsVector;
 
             // Option values
-            bool          verbose;         //!< Verbose output.
-            int           debug;           //!< Debug level.
             bool          timed_log;       //!< Add time stamps in log messages.
             bool          list_proc;       //!< List processors.
             bool          monitor;         //!< Run a resource monitoring thread.

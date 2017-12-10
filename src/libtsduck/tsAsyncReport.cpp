@@ -35,8 +35,8 @@ TSDUCK_SOURCE;
 // Default constructor
 //----------------------------------------------------------------------------
 
-ts::AsyncReport::AsyncReport(bool verbose, int debug_level, bool time_stamp) :
-    Report(verbose, debug_level),
+ts::AsyncReport::AsyncReport(int max_severity, bool time_stamp) :
+    Report(max_severity),
     Thread(ThreadAttributes().setPriority(ThreadAttributes::GetMinimumPriority())),
     _log_queue(MAX_LOG_MESSAGES),
     _default_handler(*this),

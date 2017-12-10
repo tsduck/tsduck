@@ -36,8 +36,8 @@
 //----------------------------------------------------------------------------
 
 template <class MUTEX>
-ts::ReportBuffer<MUTEX>::ReportBuffer(bool verbose, int debug_level) :
-    Report(verbose, debug_level),
+ts::ReportBuffer<MUTEX>::ReportBuffer(int max_severity) :
+    Report(max_severity),
     _mutex(),
     _buffer()
 {

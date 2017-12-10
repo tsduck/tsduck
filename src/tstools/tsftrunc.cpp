@@ -47,7 +47,6 @@ struct Options: public ts::Args
     Options(int argc, char *argv[]);
 
     bool              check_only;   // check only, do not truncate
-    bool              verbose;      // verbose mode
     ts::PacketCounter trunc_pkt;    // first packet to truncate (0 means eof)
     ts::UStringVector files;        // file names
 };
@@ -55,14 +54,12 @@ struct Options: public ts::Args
 Options::Options(int argc, char *argv[]) :
     Args(u"MPEG Transport Stream File Truncation Utility.", u"[options] filename ..."),
     check_only(false),
-    verbose(false),
     trunc_pkt(0),
     files()
 {
     option(u"",          0,  Args::STRING, 1, Args::UNLIMITED_COUNT);
     option(u"packet",   'p', Args::UNSIGNED);
     option(u"noaction", 'n');
-    option(u"verbose",  'v');
 
     setHelp(u"Files:\n"
             u"\n"
@@ -95,7 +92,10 @@ Options::Options(int argc, char *argv[]) :
     getValues(files);
     trunc_pkt = intValue<ts::PacketCounter>(u"packet");
     check_only = present(u"noaction");
-    verbose = check_only || present(u"verbose");
+
+    if (check_only) {
+        setMaxSeverity(ts::Severity::Verbose);
+    }
 }
 
 
@@ -139,7 +139,7 @@ int main(int argc, char *argv[])
 
         // Display info in verbose or check mode
 
-        if (opt.verbose) {
+        if (opt.verbose()) {
             if (opt.files.size() > 1) {
                 std::cout << *file << ": ";
             }

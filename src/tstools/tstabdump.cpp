@@ -48,21 +48,18 @@ struct Options: public ts::Args
 {
     Options(int argc, char *argv[]);
 
-    bool                  verbose;   // Verbose output
     ts::UStringVector     infiles;   // Input file names
     ts::TablesDisplayArgs display;   // Options about displaying tables
 };
 
 Options::Options(int argc, char *argv[]) :
     ts::Args(u"Dump PSI/SI tables, as saved by tstables.", u"[options] [filename ...]"),
-    verbose(false),
     infiles(),
     display()
 {
     // Warning, the following short options are already defined in TablesDisplayArgs:
     // 'c', 'r'
     option(u"", 0, ts::Args::STRING);
-    option(u"verbose", 'v');
     display.defineOptions(*this);
 
     setHelp(u"Input file:\n"
@@ -85,7 +82,6 @@ Options::Options(int argc, char *argv[]) :
     analyze(argc, argv);
 
     getValues(infiles, u"");
-    verbose = present(u"verbose");
     display.load(*this);
 
     exitOnError();
@@ -99,7 +95,7 @@ Options::Options(int argc, char *argv[]) :
 bool DumpFile(Options& opt, const ts::UString& file_name)
 {
     // Report file name in case of multiple files
-    if (opt.verbose && opt.infiles.size() > 1) {
+    if (opt.verbose() && opt.infiles.size() > 1) {
         std::cout << "* File: " << file_name << std::endl << std::endl;
     }
 

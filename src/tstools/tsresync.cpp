@@ -62,7 +62,6 @@ public:
     size_t      contig_size; // required size of contiguous packets to accept a stream slice
     size_t      packet_size; // specific non-standard input packet size (zero means use standard sizes)
     size_t      header_size; // header size (when packet_size > 0)
-    bool        verbose;     // verbose mode
     bool        cont_sync;   // continuous synchronization (default: stop on error)
     bool        keep;        // keep packet size (default: reduce to 188 bytes)
     ts::UString infile;      // Input file name
@@ -75,7 +74,6 @@ Options::Options(int argc, char *argv[]) :
     contig_size(0),
     packet_size(0),
     header_size(0),
-    verbose(false),
     cont_sync(false),
     keep(false),
     infile(),
@@ -89,7 +87,6 @@ Options::Options(int argc, char *argv[]) :
     option(u"packet-size",    'p', INTEGER, 0, 1, ts::PKT_SIZE, 0x7FFFFFFFL);
     option(u"output",         'o', STRING);
     option(u"sync-size",      's', INTEGER, 0, 1, MIN_SYNC_SIZE, MAX_SYNC_SIZE);
-    option(u"verbose",        'v');
 
     setHelp(u"Input file:\n"
             u"\n"
@@ -153,7 +150,6 @@ Options::Options(int argc, char *argv[]) :
     contig_size = intValue<size_t>(u"min-contiguous", DEFAULT_CONTIG_SIZE);
     header_size = intValue<size_t>(u"header-size", 0);
     packet_size = intValue<size_t>(u"packet-size", 0);
-    verbose = present(u"verbose");
     keep = present(u"keep");
     cont_sync = present(u"continue");
 
@@ -332,7 +328,7 @@ int main(int argc, char *argv[])
         size_t const sync_size = sync_pre_size + read_size;
         uint8_t* const sync_end = sync_buf + sync_size;
 
-        if (opt.verbose) {
+        if (opt.verbose()) {
             std::cerr << "* Analyzing " << prefix_fn << " " << ts::UString::Decimal(sync_size) << " bytes" << std::endl;
             prefix_fn = "next";
         }
@@ -370,7 +366,7 @@ int main(int argc, char *argv[])
             resync.setStatus (RS_ERROR);
             break;
         }
-        if (opt.verbose) {
+        if (opt.verbose()) {
             std::cerr << "* Found synchronization after " << ts::UString::Decimal(start - sync_buf) << " bytes" << std::endl
                       << "* Packet size is " << resync.inputPacketSize() << " bytes";
             if (resync.inputHeaderSize() > 0) {
@@ -427,7 +423,7 @@ int main(int argc, char *argv[])
 
     } while (resync.status() == RS_OK || (resync.status() == RS_SYNC_LOST && opt.cont_sync));
 
-    if (opt.verbose) {
+    if (opt.verbose()) {
         std::cerr << ts::UString::Format(u"* Output %'d bytes, %'d %d-byte packets", {resync.outputFileBytes(), resync.outputFilePackets(), resync.outputPacketSize()})
                   << std::endl;
     }
