@@ -45,8 +45,12 @@ const size_t ts::TablesLoggerArgs::DEFAULT_LOG_SIZE;
 //----------------------------------------------------------------------------
 
 ts::TablesLoggerArgs::TablesLoggerArgs() :
-    mode(TEXT),
-    destination(),
+    use_text(false),
+    use_binary(false),
+    use_udp(false),
+    text_destination(),
+    bin_destination(),
+    udp_destination(),
     multi_files(false),
     flush(false),
     udp_local(),
@@ -80,6 +84,10 @@ void ts::TablesLoggerArgs::addHelp(Args& args) const
         u"\n"
         u"Tables and sections logging options:\n"
         u"\n"
+        u"  By default, the tables are interpreted and formatted as text on the standard\n"
+        u"  output. Several destinations can be specified at the same time: human-readable\n"
+        u"  text output, binary output, UDP/IP messages.\n"
+        u"\n"
         u"  -a\n"
         u"  --all-sections\n"
         u"      Display/save all sections, as they appear in the stream.\n"
@@ -89,8 +97,7 @@ void ts::TablesLoggerArgs::addHelp(Args& args) const
         u"\n"
         u"  -b filename\n"
         u"  --binary-output filename\n"
-        u"      Binary output file name where the table sections are saved.\n"
-        u"      By default, the tables are interpreted and formatted as text.\n"
+        u"      Save sections in the specified binary output file.\n"
         u"      See also option -m, --multiple-files.\n"
         u"\n"
         u"  -d\n"
@@ -169,7 +176,12 @@ void ts::TablesLoggerArgs::addHelp(Args& args) const
         u"\n"
         u"  -o filename\n"
         u"  --output-file filename\n"
-        u"      File name for text output.\n"
+        u"  --text-output filename\n"
+        u"      Save the tables or sections in human-readable text format in the specified\n"
+        u"      file. By default, when no output option is specified, text is produced on\n"
+        u"      the standard output. If you need text formatting on the standard output in\n"
+        u"      addition to other output like binary files or UPD/IP, explicitly specify\n"
+        u"      this option with \"-\" as output file name.\n"
         u"\n"
         u"  --packet-index\n"
         u"      Display the index of the first and last TS packet of each displayed\n"
@@ -246,6 +258,7 @@ void ts::TablesLoggerArgs::defineOptions(Args& args) const
     args.option(u"packet-index",         0);
     args.option(u"pid",                 'p', Args::PIDVAL, 0, Args::UNLIMITED_COUNT);
     args.option(u"psi-si",               0);
+    args.option(u"text-output",          0,  Args::STRING); // synonym for --output-file
     args.option(u"tid",                 't', Args::UINT8,  0, Args::UNLIMITED_COUNT);
     args.option(u"tid-ext",             'e', Args::UINT16, 0, Args::UNLIMITED_COUNT);
     args.option(u"time-stamp",           0);
@@ -261,6 +274,27 @@ void ts::TablesLoggerArgs::defineOptions(Args& args) const
 
 void ts::TablesLoggerArgs::load(Args& args)
 {
+    // Type of output, text is the default.
+    use_binary = args.present(u"binary-output");
+    use_udp = args.present(u"ip-udp");
+    use_text = args.present(u"output-file") || args.present(u"text-output") || (!use_binary && !use_udp);
+
+    // --output-file and --text-output are synonyms.
+    if (args.present(u"output-file") && args.present(u"text-output")) {
+        args.error(u"--output-file and --text-output are synonyms, do not use both");
+    }
+
+    // Output destinations.
+    bin_destination = args.value(u"binary-output");
+    udp_destination = args.value(u"ip-udp");
+    text_destination = args.value(u"output-file", args.value(u"text-output").c_str());
+
+    // When use_text is true and text_destination is empty, use standard output.
+    // Also accept "-" as a specification for standard output (common convention in UNIX world).
+    if (text_destination == u"-") {
+        text_destination.clear();
+    }
+
     multi_files = args.present(u"multiple-files");
     flush = args.present(u"flush");
     udp_local = args.value(u"local-udp");
@@ -275,23 +309,10 @@ void ts::TablesLoggerArgs::load(Args& args)
     negate_tid = args.present(u"negate-tid");
     negate_tidext = args.present(u"negate-tid-ext");
     no_duplicate = args.present(u"no-duplicate");
+    udp_raw = args.present(u"no-encapsulation");
 
     if (args.present(u"verbose")) {
         args.setDebugLevel(Severity::Verbose);
-    }
-
-    if (args.present(u"ip-udp")) {
-        mode = UDP;
-        destination = args.value(u"ip-udp");
-        udp_raw = args.present(u"no-encapsulation");
-    }
-    else if (args.present(u"binary-output")) {
-        mode = BINARY;
-        destination = args.value(u"binary-output");
-    }
-    else {
-        mode = TEXT;
-        destination = args.value(u"output-file");
     }
 
     add_pmt_pids = args.present(u"psi-si");

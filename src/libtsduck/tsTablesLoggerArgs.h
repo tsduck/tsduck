@@ -53,18 +53,13 @@ namespace ts {
         //!
         virtual ~TablesLoggerArgs() {}
 
-        //!
-        //! Type of logging destination.
-        //!
-        enum Mode {
-            TEXT,    //!< Formatted human-readable tables.
-            BINARY,  //!< Save binary sections.
-            UDP      //!< Send sections using UDP/IP.
-        };
-
         // Public fields, by options.
-        Mode     mode;              //!< Type of destination.
-        UString  destination;       //!< Destination name (file, host, etc).
+        bool     use_text;          //!< Produce formatted human-readable tables.
+        bool     use_binary;        //!< Save binary sections.
+        bool     use_udp;           //!< Send sections using UDP/IP.
+        UString  text_destination;  //!< Text output file name.
+        UString  bin_destination;   //!< Binary output file name.
+        UString  udp_destination;   //!< UDP/IP destination address:port.
         bool     multi_files;       //!< Multiple binary output files (one per section).
         bool     flush;             //!< Flush output file.
         UString  udp_local;         //!< Name of outgoing local address (empty if unspecified).
@@ -99,7 +94,7 @@ namespace ts {
         //!
         bool useCout() const
         {
-            return mode == TEXT && destination.empty();
+            return use_text && text_destination.empty();
         }
 
         //!

@@ -86,7 +86,7 @@ int main(int argc, char *argv[])
     TSDuckLibCheckVersion();
     Options opt (argc, argv);
     // IP initialization required when using UDP
-    if (opt.logger.mode == ts::TablesLoggerArgs::UDP && !ts::IPInitialize()) {
+    if (opt.logger.use_udp && !ts::IPInitialize()) {
         return EXIT_FAILURE;
     }
     ts::InputRedirector input(opt.infile, opt);
