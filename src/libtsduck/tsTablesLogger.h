@@ -114,17 +114,17 @@ namespace ts {
         virtual bool isFiltered(const Section& section, CASFamily cas) const;
 
     private:
-        const TablesLoggerArgs& _opt;
-        TablesDisplay&   _display;
-        Report& _report;
-        bool             _abort;
-        bool             _exit;
-        uint32_t         _table_count;
-        PacketCounter    _packet_count;
-        SectionDemux     _demux;
-        CASMapper        _cas_mapper;
-        std::ofstream    _outfile;  // Binary output file.
-        UDPSocket        _sock;     // Output socket.
+        const TablesLoggerArgs&  _opt;
+        TablesDisplay&           _display;
+        Report&                  _report;
+        bool                     _abort;
+        bool                     _exit;
+        uint32_t                 _table_count;
+        PacketCounter            _packet_count;
+        SectionDemux             _demux;
+        CASMapper                _cas_mapper;
+        std::ofstream            _outfile;         // Binary output file.
+        UDPSocket                _sock;            // Output socket.
         std::map<PID,SectionPtr> _shortSections;   // Tracking duplicate short sections by PID.
 
         // Save a section in a binary file

@@ -4,6 +4,10 @@ TSDuck Change Log and Release Notes
 
 Version 3.5
 
+- With tstables and plugin tables, it is possible to specify several formats
+  at the same time. For instance, it is possible to save tables in text and
+  binary format at the same time.
+
 - For programmers, the TSDuck library API was extensively modified. All usage
   of 8-bit strings (char* and std::string) has been removed and replaced by
   Java-like Unicode strings (ts::UString). Many interface have been updated.

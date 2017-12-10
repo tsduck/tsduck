@@ -67,47 +67,36 @@ ts::TablesLogger::TablesLogger(const TablesLoggerArgs& opt, TablesDisplay& displ
         _demux.setTableHandler(this);
     }
 
-    // Open/create the destination
-    switch (_opt.mode) {
+    // Open/create the text output.
+    if (_opt.use_text && !_display.redirect(_opt.text_destination)) {
+        _abort = true;
+        return;
+    }
 
-        case TablesLoggerArgs::TEXT: {
-            if (!_display.redirect(_opt.destination)) {
+    // Open/create the binary output.
+    if (_opt.use_binary) {
+        if (!_opt.multi_files) {
+            // Create one single binary file as output
+            _report.verbose(u"Creating " + _opt.bin_destination);
+            _outfile.open(_opt.bin_destination.toUTF8().c_str(), std::ios::out | std::ios::binary);
+            if (!_outfile) {
+                _report.error(u"cannot create %s", {_opt.bin_destination});
                 _abort = true;
                 return;
             }
-            break;
         }
+    }
 
-        case TablesLoggerArgs::BINARY: {
-            if (!_opt.multi_files) {
-                // Create one single binary file as output
-                _report.verbose(u"Creating " + _opt.destination);
-                _outfile.open(_opt.destination.toUTF8().c_str(), std::ios::out | std::ios::binary);
-                if (!_outfile) {
-                    _report.error(u"cannot create " + _opt.destination);
-                    _abort = true;
-                    return;
-                }
-            }
-            break;
-        }
-
-        case TablesLoggerArgs::UDP: {
-            // Create UDP socket.
-            _abort =
-                !_sock.open(_report) ||
-                !_sock.setDefaultDestination(_opt.destination, _report) ||
-                (!_opt.udp_local.empty() && !_sock.setOutgoingMulticast(_opt.udp_local, _report)) ||
-                (_opt.udp_ttl > 0 && !_sock.setTTL(_opt.udp_ttl, _report));
-            if (_abort) {
-                _sock.close();
-            }
-            break;
-        }
-
-        default: {
-            // Should never get there
-            assert(false);
+    // Initialize UDP output.
+    if (_opt.use_udp) {
+        // Create UDP socket.
+        _abort =
+            !_sock.open(_report) ||
+            !_sock.setDefaultDestination(_opt.udp_destination, _report) ||
+            (!_opt.udp_local.empty() && !_sock.setOutgoingMulticast(_opt.udp_local, _report)) ||
+            (_opt.udp_ttl > 0 && !_sock.setTTL(_opt.udp_ttl, _report));
+        if (_abort) {
+            _sock.close();
         }
     }
 }
@@ -179,57 +168,47 @@ void ts::TablesLogger::handleTable(SectionDemux&, const BinaryTable& table)
         }
     }
 
-    switch (_opt.mode) {
-
-        case TablesLoggerArgs::TEXT: {
-            preDisplay(table.getFirstTSPacketIndex(), table.getLastTSPacketIndex());
-            if (_opt.logger) {
-                // Short log message
-                logSection(*table.sectionAt(0));
-            }
-            else {
-                // Full table formatting
-                _display.displayTable(table, 0, _cas_mapper.casFamily(pid)) << std::endl;
-            }
-            postDisplay();
-            break;
+    // Filtering done, now save data.
+    if (_opt.use_text) {
+        preDisplay(table.getFirstTSPacketIndex(), table.getLastTSPacketIndex());
+        if (_opt.logger) {
+            // Short log message
+            logSection(*table.sectionAt(0));
         }
+        else {
+            // Full table formatting
+            _display.displayTable(table, 0, _cas_mapper.casFamily(pid)) << std::endl;
+        }
+        postDisplay();
+    }
 
-        case TablesLoggerArgs::BINARY: {
-            // Save each section in binary format
+    if (_opt.use_binary) {
+        // Save each section in binary format
+        for (size_t i = 0; i < table.sectionCount(); ++i) {
+            saveSection(*table.sectionAt(i));
+        }
+    }
+
+    if (_opt.use_udp) {
+        ByteBlock bb;
+        // Minimize allocation by reserving over size
+        bb.reserve(table.totalSize() + 32 + 4 * table.sectionCount());
+        if (_opt.udp_raw) {
+            // Add raw content of each section the message
             for (size_t i = 0; i < table.sectionCount(); ++i) {
-                saveSection(*table.sectionAt(i));
+                const Section& sect(*table.sectionAt(i));
+                bb.append(sect.content(), sect.size());
             }
-            break;
         }
-
-        case TablesLoggerArgs::UDP: {
-            ByteBlock bb;
-            // Minimize allocation by reserving over size
-            bb.reserve(table.totalSize() + 32 + 4 * table.sectionCount());
-            if (_opt.udp_raw) {
-                // Add raw content of each section the message
-                for (size_t i = 0; i < table.sectionCount(); ++i) {
-                    const Section& sect(*table.sectionAt(i));
-                    bb.append(sect.content(), sect.size());
-                }
+        else {
+            // Build a TLV message. Each section is a separate PRM_SECTION parameter.
+            startMessage(bb, tlv::MSG_LOG_TABLE, pid);
+            for (size_t i = 0; i < table.sectionCount(); ++i) {
+                addSection(bb, *table.sectionAt(i));
             }
-            else {
-                // Build a TLV message. Each section is a separate PRM_SECTION parameter.
-                startMessage(bb, tlv::MSG_LOG_TABLE, pid);
-                for (size_t i = 0; i < table.sectionCount(); ++i) {
-                    addSection(bb, *table.sectionAt(i));
-                }
-            }
-            // Send TLV message over UDP
-            _sock.send(bb.data(), bb.size(), _report);
-            break;
         }
-
-        default: {
-            // Should never get there
-            assert(false);
-        }
+        // Send TLV message over UDP
+        _sock.send(bb.data(), bb.size(), _report);
     }
 
     // Check max table count
@@ -257,49 +236,39 @@ void ts::TablesLogger::handleSection(SectionDemux&, const Section& sect)
         return;
     }
 
-    switch (_opt.mode) {
-
-        case TablesLoggerArgs::TEXT: {
-            preDisplay(sect.getFirstTSPacketIndex(), sect.getLastTSPacketIndex());
-            if (_opt.logger) {
-                // Short log message
-                logSection(sect);
-            }
-            else {
-                // Full section formatting.
-                _display.displaySection(sect, 0, _cas_mapper.casFamily(sect.sourcePID())) << std::endl;
-            }
-            postDisplay();
-            break;
+    // Filtering done, now save data.
+    if (_opt.use_text) {
+        preDisplay(sect.getFirstTSPacketIndex(), sect.getLastTSPacketIndex());
+        if (_opt.logger) {
+            // Short log message
+            logSection(sect);
         }
-
-        case TablesLoggerArgs::BINARY: {
-            // Save section in binary format
-            saveSection(sect);
-            break;
+        else {
+            // Full section formatting.
+            _display.displaySection(sect, 0, _cas_mapper.casFamily(sect.sourcePID())) << std::endl;
         }
+        postDisplay();
+    }
 
-        case TablesLoggerArgs::UDP: {
-            if (_opt.udp_raw) {
-                // Send raw content of section as one single UDP message
-                _sock.send(sect.content(), sect.size(), _report);
-            }
-            else {
-                ByteBlock bb;
-                // Minimize allocation by reserving over size
-                bb.reserve(sect.size() + 32);
-                // Build a TLV message with one PRM_SECTION parameter.
-                startMessage(bb, tlv::MSG_LOG_SECTION, sect.sourcePID());
-                addSection(bb, sect);
-                // Send TLV message over UDP
-                _sock.send(bb.data(), bb.size(), _report);
-            }
-            break;
+    if (_opt.use_udp) {
+        // Save section in binary format
+        saveSection(sect);
+    }
+
+    if (_opt.use_udp) {
+        if (_opt.udp_raw) {
+            // Send raw content of section as one single UDP message
+            _sock.send(sect.content(), sect.size(), _report);
         }
-
-        default: {
-            // Should never get there
-            assert(false);
+        else {
+            ByteBlock bb;
+            // Minimize allocation by reserving over size
+            bb.reserve(sect.size() + 32);
+            // Build a TLV message with one PRM_SECTION parameter.
+            startMessage(bb, tlv::MSG_LOG_SECTION, sect.sourcePID());
+            addSection(bb, sect);
+            // Send TLV message over UDP
+            _sock.send(bb.data(), bb.size(), _report);
         }
     }
 
@@ -320,17 +289,17 @@ void ts::TablesLogger::saveSection(const Section& sect)
     // Create individual file for this section if required.
     if (_opt.multi_files) {
         // Build a unique file name for this section
-        UString outname(PathPrefix(_opt.destination));
+        UString outname(PathPrefix(_opt.bin_destination));
         outname += UString::Format(u"_p%04X_t%02X", {sect.sourcePID(), sect.tableId()});
         if (sect.isLongSection()) {
             outname += UString::Format(u"_e%04X_v%02X_s%02X", {sect.tableIdExtension(), sect.version(), sect.sectionNumber()});
         }
-        outname += PathSuffix(_opt.destination);
+        outname += PathSuffix(_opt.bin_destination);
         // Create the output file
-        _report.verbose(u"creating " + outname);
+        _report.verbose(u"creating %s", {outname});
         _outfile.open(outname.toUTF8().c_str(), std::ios::out | std::ios::binary);
         if (!_outfile) {
-            _report.error(u"error creating " + outname);
+            _report.error(u"error creating %s", {outname});
             _abort = true;
             return;
         }
