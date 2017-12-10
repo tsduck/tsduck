@@ -108,7 +108,7 @@ void ReportTest::testSeverity()
     CPPUNIT_ASSERT(!log1.debug());
     CPPUNIT_ASSERT(!log1.verbose());
 
-    ts::ReportBuffer<> log2(true);
+    ts::ReportBuffer<> log2(ts::Severity::Verbose);
     CPPUNIT_ASSERT(log2.maxSeverity() == ts::Severity::Verbose);
     CPPUNIT_ASSERT(!log2.debug());
     CPPUNIT_ASSERT(log2.verbose());
