@@ -291,6 +291,7 @@ HEADERS += \
     ../../../src/libtsduck/tstlvProtocol.h \
     ../../../src/libtsduck/tstlvSerializer.h \
     ../../../src/libtsduck/tstlvStreamMessage.h \
+    ../../../src/libtsduck/tsxmlNode.h \
     ../../../src/libtsduck/tinyxml/tinyxml2.h
 
 SOURCES += \
@@ -503,6 +504,7 @@ SOURCES += \
     ../../../src/libtsduck/tstlvMessage.cpp \
     ../../../src/libtsduck/tstlvMessageFactory.cpp \
     ../../../src/libtsduck/tstlvSerializer.cpp \
+    ../../../src/libtsduck/tsxmlNode.cpp \
     ../../../src/libtsduck/tinyxml/tinyxml2.cpp
     
 linux {

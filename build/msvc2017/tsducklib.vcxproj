@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ImportGroup Label="PropertySheets">
     <Import Project="msvc-common-begin.props" />
@@ -289,6 +289,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsViaccessDate.h" />
     <ClInclude Include="..\..\src\libtsduck\tsVideoAttributes.h" />
     <ClInclude Include="..\..\src\libtsduck\tsXML.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsxmlNode.h" />
     <ClInclude Include="..\..\src\libtsduck\tsXMLTables.h" />
     <ClInclude Include="..\..\src\libtsduck\tsXMLTemplate.h" />
     <ClInclude Include="..\..\src\libtsduck\windows\tsComIds.h" />
@@ -514,6 +515,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsVersionInfo.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsVideoAttributes.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsXML.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsxmlNode.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsXMLTables.cpp" />
     <ClCompile Include="..\..\src\libtsduck\windows\tsComIds.cpp" />
     <ClCompile Include="..\..\src\libtsduck\windows\tsComUtils.cpp" />
