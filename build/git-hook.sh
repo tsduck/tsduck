@@ -44,6 +44,10 @@ info()  { echo >&2 "$SCRIPT: $*"; }
 SRCFILE="$ROOTDIR/src/libtsduck/tsVersion.h"
 PREFIX="#define TS_COMMIT"
 
+# Use GNU variants of sed and grep when available.
+[[ -n "$(which gsed 2>/dev/null)" ]] && sed() { gsed "$@"; }
+[[ -n "$(which ggrep 2>/dev/null)" ]] && grep() { ggrep "$@"; }
+
 # Get commit number from the source file.
 get-src-commit-count()
 {
