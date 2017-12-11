@@ -46,7 +46,7 @@ TSDUCK_SOURCE;
 #define MAP_SINGLETON(classname, key_type, value_type)      \
     class classname : public std::map<key_type, value_type> \
     {                                                       \
-        TS_DECLARE_SINGLETON(classname);                      \
+        TS_DECLARE_SINGLETON(classname);                    \
         typedef std::map<key_type, value_type> SuperClass;  \
     };                                                      \
     TS_DEFINE_SINGLETON(classname)
@@ -248,7 +248,7 @@ namespace {
         // Build inversed table from UpperLower.
         const UpperLower* ul = UpperLower::Instance();
         for (UpperLower::const_iterator it = ul->begin(); it != ul->end(); ++it) {
-            insert(std::pair<ts::UChar, ts::UChar>(it->second, it->first));
+            insert(std::make_pair(it->second, it->first));
         }
     }
 }
@@ -478,6 +478,7 @@ namespace {
     HTMLEntities::HTMLEntities() : SuperClass({
         {ts::QUOTATION_MARK, "quot"},
         {ts::AMPERSAND, "amp"},
+        {ts::APOSTROPHE, "apos"},
         {ts::LESS_THAN_SIGN, "lt"},
         {ts::GREATER_THAN_SIGN, "gt"},
         {ts::NO_BREAK_SPACE, "nbsp"},
@@ -731,6 +732,22 @@ namespace {
     }) {}
 }
 
+//----------------------------------------------------------------------------
+// Map html entity => character.
+//----------------------------------------------------------------------------
+
+namespace {
+    MAP_SINGLETON(HTMLCharacters, std::string, ts::UChar);
+    HTMLCharacters::HTMLCharacters() : SuperClass()
+    {
+        // Build inversed table from HTMLEntities.
+        const HTMLEntities* he = HTMLEntities::Instance();
+        for (HTMLEntities::const_iterator it = he->begin(); it != he->end(); ++it) {
+            insert(std::make_pair(it->second, it->first));
+        }
+    }
+}
+
 
 //----------------------------------------------------------------------------
 // Character conversions.
@@ -838,6 +855,13 @@ ts::UString ts::ToHTML(UChar c)
     return it == he->end() ? ts::UString(1, c) : (ts::UChar('&') + ts::UString::FromUTF8(it->second) + ts::UChar(';'));
 }
 
+ts::UChar ts::FromHTML(const UString& entity)
+{
+    const HTMLCharacters* hc = HTMLCharacters::Instance();
+    const HTMLCharacters::const_iterator it(hc->find(entity.toUTF8()));
+    return it == hc->end() ? CHAR_NULL : it->second;
+}
+
 void ts::UString::convertToHTML()
 {
     // Should not be there, but this is much faster to do it that way.
@@ -854,5 +878,53 @@ void ts::UString::convertToHTML()
             insert(i + 1 + rep.length(), 1, ts::SEMICOLON);
             i += rep.length() + 2;
         }
+    }
+}
+
+void ts::UString::convertFromHTML()
+{
+    // Should not be there, but this is much faster to do it that way.
+    const HTMLCharacters* hc = HTMLCharacters::Instance();
+    for (size_type i = 0; i < length(); ) {
+
+        // Find next "&...;" sequence.
+        const size_type amp = find(u'&', i);
+        if (amp == NPOS) {
+            // No more sequence, conversion is over.
+            return;
+        }
+        const size_type semi = find(u';', amp + 1);
+        if (semi == NPOS) {
+            // Sequence not terminated, invalid, do not modify.
+            return;
+        }
+
+        // Sequence found, locate character translation.
+        assert(semi > amp);
+        const HTMLCharacters::const_iterator it(hc->find(substr(amp + 1, semi - amp - 1).toUTF8()));
+        if (it == hc->end()) {
+            // Unknown sequence, leave it as is.
+            i = semi + 1;
+        }
+        else {
+            // Replace the sequence by the character.
+            at(amp) = it->second;
+            erase(amp + 1, semi - amp);
+            i = amp + 1;
+        }
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Check two characters match, case sensitive or insensitive.
+//----------------------------------------------------------------------------
+
+bool ts::Match(UChar c1, UChar c2, CaseSensitivity cs)
+{
+    switch (cs) {
+        case CASE_INSENSITIVE: return ToUpper(c1) == ToUpper(c2);
+        case CASE_SENSITIVE: return c1 == c2;
+        default: return false; // invalid cs
     }
 }

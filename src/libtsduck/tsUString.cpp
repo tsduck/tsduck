@@ -835,14 +835,21 @@ ts::UString ts::UString::toJustified(const UString& right, size_type wid, UChar 
 
 
 //----------------------------------------------------------------------------
-// Convert into a suitable HTML representation.
-// For performance reasons convertToHTML() is implemented in tsUChar.cpp.
+// Convert HTML representation. For performance reasons convertToHTML() and
+// convertFromHTML() are implemented in tsUChar.cpp.
 //----------------------------------------------------------------------------
 
 ts::UString ts::UString::toHTML() const
 {
     UString result(*this);
     result.convertToHTML();
+    return result;
+}
+
+ts::UString ts::UString::FromHTML() const
+{
+    UString result(*this);
+    result.convertFromHTML();
     return result;
 }
 
@@ -941,12 +948,22 @@ bool ts::UString::getLine(std::istream& strm)
         return false;
     }
     else {
+        const char* start = line.data();
+        size_type len = line.size();
+
         // Remove potential trailing mixed CR/LF characters
-        size_type len;
-        for (len = line.size(); len > 0 && (line[len - 1] == '\r' || line[len - 1] == '\n'); --len) {
+        while (len > 0 && (start[len - 1] == '\r' || start[len - 1] == '\n')) {
+            --len;
         }
-        line.resize(len);
-        assignFromUTF8(line);
+ 
+        // Remove potential UTF-8 BOM (Byte Order Mark) at beginning of line.
+        if (len >= UTF8_BOM_SIZE && line.compare(0, UTF8_BOM_SIZE, UTF8_BOM, UTF8_BOM_SIZE) == 0) {
+            start += UTF8_BOM_SIZE;
+            len -= UTF8_BOM_SIZE;
+        }
+        
+        // Convert from UTF-8 to UTF-16.
+        assignFromUTF8(start, len);
         return true;
     }
 }

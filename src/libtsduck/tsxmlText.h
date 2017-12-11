@@ -43,10 +43,27 @@ namespace ts {
         class TSDUCKDLL Text: public Node
         {
         public:
+            //!
+            //! Constructor.
+            //! @param [in] line Line number in input document.
+            //! @param [in] cdata The text is a CDATA node.
+            //!
+            Text(size_t line = 0, bool cdata = false);
+
+            //!
+            //! Check if the text is a CDATA node.
+            //! @return True if the text is a CDATA node.
+            //!
+            bool isCData() const { return _isCData; }
+
+        protected:
+            // Inherited from xml::Node.
+            virtual bool parseContinue(Parser& parser, UString& endToken) override;
 
         private:
+            bool _isCData;
+
             // Unaccessible operations.
-            Text() = delete;
             Text(const Text&) = delete;
             Text& operator=(const Text&) = delete;
         };

@@ -34,6 +34,7 @@
 
 #pragma once
 #include "tsUString.h"
+#include "tsRingNode.h"
 
 namespace ts {
     //!
@@ -56,31 +57,97 @@ namespace ts {
     //!
     namespace xml {
 
-        class Document;
+        class Parser;
 
         //!
         //! Base class for all XML objects.
         //!
-        class TSDUCKDLL Node
+        class TSDUCKDLL Node :
+            protected RingNode  // used to link all siblings, children of the same parent
         {
         public:
             //!
-            //! Get the document which contains this node.
-            //! @return A pointer to thedocument which contains this node, never null.
+            //! Get the line number in input document.
+            //! @return The line number in input document, zero if the node was built programmatically.
             //!
-            const Document* document() const { return _document; }
+            size_t lineNumber() const { return _inputLineNum; }
 
             //!
-            //! Get the document which contains this node.
-            //! @return A pointer to thedocument which contains this node, never null.
+            //! Clear the content of the node.
+            //! The node becomes empty but remains attached to its parent.
             //!
-            Document* document() { return _document; }
+            virtual void clear();
+
+            //!
+            //! Attach the node to a new parent.
+            //! The node is first detached from its previous parent.
+            //! @param [in,out] newParent New parent. The child is added at the end of the list of children.
+            //! If zero, the node becomes orphan. In that case, the node will no longer be freed by its
+            //! parent and must be explicitly deleted.
+            //!
+            virtual void reparent(Node* newParent);
+
+            //!
+            //! Get the first child of a node.
+            //! @return The first child of the node or zero if there is no children.
+            //!
+            const Node* firstChild() const { return _firstChild; }
+
+            //!
+            //! Get the first child of a node.
+            //! @return The first child of the node or zero if there is no children.
+            //!
+            Node* firstChild() { return _firstChild; }
+
+            //!
+            //! Get the next sibling node.
+            //! @return The next sibling node or zero if there is no children.
+            //!
+            const Node* nextSibling() const { return (const_cast<Node*>(this))->nextSibling(); }
+
+            //!
+            //! Get the next sibling node.
+            //! @return The next sibling node or zero if there is no children.
+            //!
+            Node* nextSibling();
+
+            //!
+            //! Virtual destructor.
+            //!
+            virtual ~Node();
+
+        protected:
+            //!
+            //! Constructor.
+            //! @param [in] line Line number in input document.
+            //!
+            Node(size_t line = 0);
+
+            //!
+            //! Continue the parsing of a document from the point where this node start up to the end.
+            //! @param [in,out] parser The document parser.
+            //! @param [out] endToken The toek which is returned at the end of this parsing.
+            //! @return True on success, false on error.
+            //!
+            virtual bool parseContinue(Parser& parser, UString& endToken);
+
+        protected:
+            UString _value;         //!< Value of the node, depend on the node type.
 
         private:
-            Document* _document; //!< Document containing the node, never null.
+            //! Used only during element parsing.
+            enum ElementClosingType {
+                OPEN,       //!< As in <foo>
+                CLOSED,     //!< As in <foo/>
+                CLOSING     //!< As in </foo>
+            };
+
+            Node*              _parent;        //!< Parent node, null for a document.
+            Node*              _firstChild;    //!< First child, can be null, other children are linked through the RingNode.
+            size_t             _inputLineNum;  //!< Line number in input document, zero if build programmatically.
+            ElementClosingType _closingType;   //!< State of element parsing.
 
             // Unaccessible operations.
-            Node() = delete;
             Node(const Node&) = delete;
             Node& operator=(const Node&) = delete;
         };

@@ -33,20 +33,32 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsUString.h"
+#include "tsxmlNode.h"
 
 namespace ts {
     namespace xml {
         //!
         //! Attribute of an XML element.
         //!
-        class TSDUCKDLL Attribute
+        //! This class is a subclass of xml::Node but is not a regular XML node.
+        //! An xml::Element has a separate list of children and a separate list
+        //! of attributes.
+        //!
+        class TSDUCKDLL Attribute: public Node
         {
         public:
+            //!
+            //! Constructor.
+            //! @param [in] line Line number in input document.
+            //!
+            Attribute(size_t line = 0) : Node(line) {}
+
+        protected:
+            // Inherited from xml::Node.
+            virtual bool parseContinue(Parser& parser, UString& endToken) override;
 
         private:
             // Unaccessible operations.
-            Attribute() = delete;
             Attribute(const Attribute&) = delete;
             Attribute& operator=(const Attribute&) = delete;
         };

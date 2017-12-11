@@ -299,7 +299,8 @@ HEADERS += \
     ../../../src/libtsduck/tsxmlDocument.h \
     ../../../src/libtsduck/tsxmlElement.h \
     ../../../src/libtsduck/tsxmlText.h \
-    ../../../src/libtsduck/tsxmlUnknown.h
+    ../../../src/libtsduck/tsxmlUnknown.h \
+    ../../../src/libtsduck/private/tsxmlParser.h
 
 SOURCES += \
     ../../../src/libtsduck/tsAACDescriptor.cpp \
@@ -519,7 +520,8 @@ SOURCES += \
     ../../../src/libtsduck/tsxmlDocument.cpp \
     ../../../src/libtsduck/tsxmlElement.cpp \
     ../../../src/libtsduck/tsxmlText.cpp \
-    ../../../src/libtsduck/tsxmlUnknown.cpp
+    ../../../src/libtsduck/tsxmlUnknown.cpp \
+    ../../../src/libtsduck/private/tsxmlParser.cpp
     
 linux {
     HEADERS += \

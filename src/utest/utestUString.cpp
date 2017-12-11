@@ -58,7 +58,8 @@ public:
     void testTrim();
     void testLetterCase();
     void testAccent();
-    void testHTML();
+    void testToHTML();
+    void testFromHTML();
     void testRemove();
     void testSubstitute();
     void testSplit();
@@ -100,7 +101,8 @@ public:
     CPPUNIT_TEST(testTrim);
     CPPUNIT_TEST(testLetterCase);
     CPPUNIT_TEST(testAccent);
-    CPPUNIT_TEST(testHTML);
+    CPPUNIT_TEST(testToHTML);
+    CPPUNIT_TEST(testFromHTML);
     CPPUNIT_TEST(testRemove);
     CPPUNIT_TEST(testSubstitute);
     CPPUNIT_TEST(testSplit);
@@ -493,7 +495,7 @@ void UStringTest::testAccent()
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"oe", ts::RemoveAccent(ts::LATIN_SMALL_LIGATURE_OE));
 }
 
-void UStringTest::testHTML()
+void UStringTest::testToHTML()
 {
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"A", ts::ToHTML('A'));
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u":", ts::ToHTML(':'));
@@ -508,6 +510,22 @@ void UStringTest::testHTML()
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"", ts::UString().toHTML());
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"abcdefgh = xyz:", ts::UString(u"abcdefgh = xyz:").toHTML());
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"&lt;abcd&gt; = &quot;&amp;", ts::UString(u"<abcd> = \"&").toHTML());
+}
+
+void UStringTest::testFromHTML()
+{
+    CPPUNIT_ASSERT_EQUAL(ts::CHAR_NULL, ts::FromHTML(u"A"));
+    CPPUNIT_ASSERT_EQUAL(ts::QUOTATION_MARK, ts::FromHTML(u"quot"));
+    CPPUNIT_ASSERT_EQUAL(ts::AMPERSAND, ts::FromHTML(u"amp"));
+    CPPUNIT_ASSERT_EQUAL(ts::LESS_THAN_SIGN, ts::FromHTML(u"lt"));
+    CPPUNIT_ASSERT_EQUAL(ts::GREATER_THAN_SIGN, ts::FromHTML(u"gt"));
+    CPPUNIT_ASSERT_EQUAL(ts::NO_BREAK_SPACE, ts::FromHTML(u"nbsp"));
+    CPPUNIT_ASSERT_EQUAL(ts::LEFT_DOUBLE_QUOTATION_MARK, ts::FromHTML(u"ldquo"));
+    CPPUNIT_ASSERT_EQUAL(ts::BLACK_DIAMOND_SUIT, ts::FromHTML(u"diams"));
+
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"", ts::UString().FromHTML());
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"abcdefgh = xyz:", ts::UString(u"abcdefgh = xyz:").FromHTML());
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"<abcd> = \"&", ts::UString(u"&lt;abcd&gt; = &quot;&amp;").FromHTML());
 }
 
 void UStringTest::testRemove()

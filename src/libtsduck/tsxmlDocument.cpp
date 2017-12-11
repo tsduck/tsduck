@@ -28,4 +28,55 @@
 //----------------------------------------------------------------------------
 
 #include "tsxmlDocument.h"
+#include "tsxmlParser.h"
+#include "tsReportWithPrefix.h"
 TSDUCK_SOURCE;
+
+
+//----------------------------------------------------------------------------
+// Parse an XML document.
+//----------------------------------------------------------------------------
+
+bool ts::xml::Document::parse(const UStringList& lines, Report& report)
+{
+    Parser parser(lines, report);
+    parser.skipWhiteSpace();
+    if (parser.eof()) {
+        parser.error(u"empty XML document");
+        return false;
+    }
+    else {
+        UString token;
+        return parseContinue(parser, token);
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Parse an XML document.
+//----------------------------------------------------------------------------
+
+bool ts::xml::Document::parse(const UString& text, Report& report)
+{
+    UStringList lines;
+    text.split(lines, u'\n', false);
+    return parse(lines, report);
+}
+
+
+//----------------------------------------------------------------------------
+// Load and parse an XML file.
+//----------------------------------------------------------------------------
+
+bool ts::xml::Document::load(const UString& fileName, Report& report)
+{
+    UStringList lines;
+    if (UString::Load(lines, fileName)) {
+        report.error(u"error reading file %s", {fileName});
+        return false;
+    }
+    else {
+        ReportWithPrefix report2(report, fileName + u": ");
+        return parse(lines, report2);
+    }
+}

@@ -28,4 +28,16 @@
 //----------------------------------------------------------------------------
 
 #include "tsxmlAttribute.h"
+#include "tsxmlParser.h"
 TSDUCK_SOURCE;
+
+
+//----------------------------------------------------------------------------
+// Continue the parsing of a document from the point where this node start up
+// to the end. This is the Attribute implementation.
+//----------------------------------------------------------------------------
+
+bool ts::xml::Attribute::parseContinue(Parser& parser, UString& endToken)
+{
+    return false; //@@@@@@@@@@@
+}

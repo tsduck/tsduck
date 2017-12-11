@@ -62,9 +62,11 @@ void ts::RingNode::ringInsertBefore (RingNode* o)
 
 void ts::RingNode::ringRemove()
 {
-    _ring_next->_ring_previous = _ring_previous;
-    _ring_previous->_ring_next = _ring_next;
-    _ring_next = _ring_previous = this;
+    if (_ring_next != this) {
+        _ring_next->_ring_previous = _ring_previous;
+        _ring_previous->_ring_next = _ring_next;
+        _ring_next = _ring_previous = this;
+    }
 }
 
 // Count the number of element in the rings.

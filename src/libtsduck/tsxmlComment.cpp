@@ -28,4 +28,22 @@
 //----------------------------------------------------------------------------
 
 #include "tsxmlComment.h"
+#include "tsxmlParser.h"
 TSDUCK_SOURCE;
+
+
+//----------------------------------------------------------------------------
+// Continue the parsing of a document from the point where this node start up
+// to the end. This is the Comment implementation.
+//----------------------------------------------------------------------------
+
+bool ts::xml::Comment::parseContinue(Parser& parser, UString& endToken)
+{
+    // The current point of parsing is right after "<!--". The content of the
+    // comment is up (but not including) the "-->".
+    bool ok = parser.parseText(_value, u"-->", false);
+    if (!ok) {
+        parser.errorAtLine(lineNumber(), u"error parsing XML comment, not properly terminated", {});
+    }
+    return ok;
+}
