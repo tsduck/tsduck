@@ -4,6 +4,7 @@
     <Import Project="msvc-common-begin.props" />
   </ImportGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\src\libtsduck\private\tsxmlParser.h" />
     <ClInclude Include="..\..\src\libtsduck\tinyxml\tinyxml2.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAACDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAbortInterface.h" />
@@ -312,6 +313,7 @@
     <ClInclude Include="..\..\src\libtsduck\windows\tsSinkFilter.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\src\libtsduck\private\tsxmlParser.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tinyxml\tinyxml2.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAACDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAbstractAVCAccessUnit.cpp" />

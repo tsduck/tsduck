@@ -28,4 +28,16 @@
 //----------------------------------------------------------------------------
 
 #include "tsxmlElement.h"
+#include "tsxmlParser.h"
 TSDUCK_SOURCE;
+
+
+//----------------------------------------------------------------------------
+// Continue the parsing of a document from the point where this node start up
+// to the end. This is the Element implementation.
+//----------------------------------------------------------------------------
+
+bool ts::xml::Element::parseContinue(Parser& parser, UString& endToken)
+{
+    return false; //@@@@@@@@@@@
+}

@@ -46,6 +46,14 @@ namespace ts {
     typedef char16_t UChar;
 
     //!
+    //! Case sensitivity used on string operations.
+    //!
+    enum CaseSensitivity {
+        CASE_SENSITIVE,     //!< The operation is case-sensitive.
+        CASE_INSENSITIVE    //!< The operation is not case-sensitive.
+    };
+
+    //!
     //! Check if a character is a space.
     //! @param [in] c A character.
     //! @return True if @a c is a space, tab, new line character.
@@ -138,6 +146,15 @@ namespace ts {
     TSDUCKDLL UChar ToUpper(UChar c);
 
     //!
+    //! Check two characters match, case sensitive or insensitive.
+    //! @param [in] c1 First character.
+    //! @param [in] c2 Second character.
+    //! @param [in] cs Case sensitivity of the comparision.
+    //! @return True if the two characters match.
+    //!
+    TSDUCKDLL bool Match(UChar c1, UChar c2, CaseSensitivity cs);
+
+    //!
     //! Check if a character contains an accent.
     //! @param [in] c A character.
     //! @return True if @a c contains an accent.
@@ -197,6 +214,13 @@ namespace ts {
     //! @return A string containing the html sequence for @a c.
     //!
     TSDUCKDLL UString ToHTML(UChar c);
+
+    //!
+    //! Convert the body on an HTML entity into a character.
+    //! @param [in] entity The body on an HTML entity (e.g. "amp" for sequence "\&amp;").
+    //! @return The corresponding character or CHAR_NULL if not found.
+    //!
+    TSDUCKDLL UChar FromHTML(const UString& entity);
 
     //
     // The following constants define all characters which can be

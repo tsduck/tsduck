@@ -28,4 +28,46 @@
 //----------------------------------------------------------------------------
 
 #include "tsxmlText.h"
+#include "tsxmlParser.h"
 TSDUCK_SOURCE;
+
+
+//----------------------------------------------------------------------------
+// Constructor.
+//----------------------------------------------------------------------------
+
+ts::xml::Text::Text(size_t line, bool cdata) :
+    Node(line),
+    _isCData(cdata)
+{
+}
+
+
+//----------------------------------------------------------------------------
+// Continue the parsing of a document from the point where this node start up
+// to the end. This is the Text implementation.
+//----------------------------------------------------------------------------
+
+bool ts::xml::Text::parseContinue(Parser& parser, UString& endToken)
+{
+    bool ok;
+
+    // The current point of parsing is the first character of the text.
+    if (_isCData) {
+        // In the case of CDATA, we right after the "<![CDATA[". Parse up to "]]>".
+        ok = parser.parseText(_value, u"]]>", false);
+        if (!ok) {
+            parser.errorAtLine(lineNumber(), u"no ]]> found to close the <![CDATA[", {});
+        }
+    }
+    else {
+        // Outside CDATA, the text ends at the next "<" (start of tag).
+        // HTML entities shall be translated.
+        ok = parser.parseText(_value, u"<", true);
+        if (!ok) {
+            parser.errorAtLine(lineNumber(), u"error parsing text element, not properly terminated", {});
+        }
+    }
+
+    return ok;
+}

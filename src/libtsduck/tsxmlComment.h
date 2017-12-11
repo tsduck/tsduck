@@ -43,10 +43,18 @@ namespace ts {
         class TSDUCKDLL Comment: public Node
         {
         public:
+            //!
+            //! Constructor.
+            //! @param [in] line Line number in input document.
+            //!
+            Comment(size_t line = 0) : Node(line) {}
+
+        protected:
+            // Inherited from xml::Node.
+            virtual bool parseContinue(Parser& parser, UString& endToken) override;
 
         private:
             // Unaccessible operations.
-            Comment() = delete;
             Comment(const Comment&) = delete;
             Comment& operator=(const Comment&) = delete;
         };

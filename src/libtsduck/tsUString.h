@@ -44,14 +44,6 @@ namespace ts {
     class DVBCharset;
 
     //!
-    //! Case sensitivity used on string operations.
-    //!
-    enum CaseSensitivity {
-        CASE_SENSITIVE,     //!< The operation is case-sensitive.
-        CASE_INSENSITIVE    //!< The operation is not case-sensitive.
-    };
-
-    //!
     //! Direction used on string operations.
     //!
     enum StringDirection {
@@ -1020,6 +1012,17 @@ namespace ts {
         //! @return The string in a suitable HTML representation.
         //!
         UString toHTML() const;
+
+        //!
+        //! Convert all HTML entities in the string into plain characters.
+        //!
+        void convertFromHTML();
+
+        //!
+        //! Return the string with all HTML entities converted into plain characters.
+        //! @return The string with HTML entities translated.
+        //!
+        UString FromHTML() const;
 
         //!
         //! Format a boolean value as "yes" or "no".
