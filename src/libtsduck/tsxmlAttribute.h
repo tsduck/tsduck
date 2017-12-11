@@ -28,20 +28,27 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Version identification of TSDuck.
+//!  Attribute of an XML element.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 5
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 382
+#include "tsUString.h"
+
+namespace ts {
+    namespace xml {
+        //!
+        //! Attribute of an XML element.
+        //!
+        class TSDUCKDLL Attribute
+        {
+        public:
+
+        private:
+            // Unaccessible operations.
+            Attribute() = delete;
+            Attribute(const Attribute&) = delete;
+            Attribute& operator=(const Attribute&) = delete;
+        };
+    }
+}

@@ -28,20 +28,27 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Version identification of TSDuck.
+//!  Text element in an XML document.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 5
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 382
+#include "tsxmlNode.h"
+
+namespace ts {
+    namespace xml {
+        //!
+        //! Text element in an XML document.
+        //!
+        class TSDUCKDLL Text: public Node
+        {
+        public:
+
+        private:
+            // Unaccessible operations.
+            Text() = delete;
+            Text(const Text&) = delete;
+            Text& operator=(const Text&) = delete;
+        };
+    }
+}

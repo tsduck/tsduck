@@ -287,6 +287,14 @@
 #include "tstlvProtocol.h"
 #include "tstlvSerializer.h"
 #include "tstlvStreamMessage.h"
+#include "tsxmlAttribute.h"
+#include "tsxmlComment.h"
+#include "tsxmlDeclaration.h"
+#include "tsxmlDocument.h"
+#include "tsxmlElement.h"
+#include "tsxmlNode.h"
+#include "tsxmlText.h"
+#include "tsxmlUnknown.h"
 
 #if defined(__linux)
 #include "tsDTVProperties.h"
