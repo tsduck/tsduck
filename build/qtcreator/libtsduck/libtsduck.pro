@@ -292,7 +292,14 @@ HEADERS += \
     ../../../src/libtsduck/tstlvSerializer.h \
     ../../../src/libtsduck/tstlvStreamMessage.h \
     ../../../src/libtsduck/tsxmlNode.h \
-    ../../../src/libtsduck/tinyxml/tinyxml2.h
+    ../../../src/libtsduck/tinyxml/tinyxml2.h \
+    ../../../src/libtsduck/tsxmlAttribute.h \
+    ../../../src/libtsduck/tsxmlComment.h \
+    ../../../src/libtsduck/tsxmlDeclaration.h \
+    ../../../src/libtsduck/tsxmlDocument.h \
+    ../../../src/libtsduck/tsxmlElement.h \
+    ../../../src/libtsduck/tsxmlText.h \
+    ../../../src/libtsduck/tsxmlUnknown.h
 
 SOURCES += \
     ../../../src/libtsduck/tsAACDescriptor.cpp \
@@ -505,7 +512,14 @@ SOURCES += \
     ../../../src/libtsduck/tstlvMessageFactory.cpp \
     ../../../src/libtsduck/tstlvSerializer.cpp \
     ../../../src/libtsduck/tsxmlNode.cpp \
-    ../../../src/libtsduck/tinyxml/tinyxml2.cpp
+    ../../../src/libtsduck/tinyxml/tinyxml2.cpp \
+    ../../../src/libtsduck/tsxmlAttribute.cpp \
+    ../../../src/libtsduck/tsxmlComment.cpp \
+    ../../../src/libtsduck/tsxmlDeclaration.cpp \
+    ../../../src/libtsduck/tsxmlDocument.cpp \
+    ../../../src/libtsduck/tsxmlElement.cpp \
+    ../../../src/libtsduck/tsxmlText.cpp \
+    ../../../src/libtsduck/tsxmlUnknown.cpp
     
 linux {
     HEADERS += \
