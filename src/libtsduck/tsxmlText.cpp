@@ -36,36 +36,35 @@ TSDUCK_SOURCE;
 // Constructor.
 //----------------------------------------------------------------------------
 
-ts::xml::Text::Text(size_t line, bool cdata) :
-    Node(line),
+ts::xml::Text::Text(Report& report, size_t line, bool cdata) :
+    Node(report, line),
     _isCData(cdata)
 {
 }
 
 
 //----------------------------------------------------------------------------
-// Continue the parsing of a document from the point where this node start up
-// to the end. This is the Text implementation.
+// Parse the node.
 //----------------------------------------------------------------------------
 
-bool ts::xml::Text::parseContinue(Parser& parser, UString& endToken)
+bool ts::xml::Text::parseNode(Parser& parser, const Node* parent)
 {
     bool ok;
 
     // The current point of parsing is the first character of the text.
     if (_isCData) {
         // In the case of CDATA, we right after the "<![CDATA[". Parse up to "]]>".
-        ok = parser.parseText(_value, u"]]>", false);
+        ok = parser.parseText(_value, u"]]>", true, false);
         if (!ok) {
-            parser.errorAtLine(lineNumber(), u"no ]]> found to close the <![CDATA[", {});
+            _report.error(u"line %d: no ]]> found to close the <![CDATA[", {lineNumber()});
         }
     }
     else {
         // Outside CDATA, the text ends at the next "<" (start of tag).
         // HTML entities shall be translated.
-        ok = parser.parseText(_value, u"<", true);
+        ok = parser.parseText(_value, u"<", false, true);
         if (!ok) {
-            parser.errorAtLine(lineNumber(), u"error parsing text element, not properly terminated", {});
+            _report.error(u"line %d: error parsing text element, not properly terminated", {lineNumber()});
         }
     }
 

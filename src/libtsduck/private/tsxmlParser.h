@@ -43,14 +43,14 @@ namespace ts {
         //!
         //! A class which parses an XML document.
         //!
-        class Parser: public Report
+        class Parser
         {
         public:
             //!
             //! Constructor.
             //! @param [in] lines Reference to a list of text lines forming the XML document.
             //! The lifetime of the referenced list must equals or exceeds the lifetime of the parser.
-            //! @param [in] report Where to report errors.
+            //! @param [in,out] report Where to report errors.
             //!
             Parser(const UStringList& lines, Report& report);
 
@@ -67,18 +67,11 @@ namespace ts {
             size_t lineNumber() const { return _curLineNumber; }
 
             //!
-            //! Report an error message for a specific line.
-            //! @param [in] lineNumber Input line number of the error.
-            //! @param [in] fmt Format string with embedded '\%' sequences.
-            //! @param [in] args List of arguments to substitute in the format string.
-            //!
-            void errorAtLine(size_t lineNumber, const UChar* fmt, const std::initializer_list<ArgMixIn> args);
-
-            //!
             //! Skip all whitespaces, including end of lines.
             //! Note that the optional BOM at start of an UTF-8 file has already been removed by the UTF-16 conversion.
+            //! @return Always true.
             //!
-            void skipWhiteSpace();
+            bool skipWhiteSpace();
 
             //!
             //! Check if the current position in the document matches a string.
@@ -87,13 +80,14 @@ namespace ts {
             //! @param [in] cs Case sensitivity of the comparision.
             //! @return True if @a str matches the current position in the document.
             //!
-            bool match(const UChar* str, bool skipIfMatch, CaseSensitivity cs);
+            bool match(const UChar* str, bool skipIfMatch, CaseSensitivity cs = CASE_SENSITIVE);
 
             //!
             //! Identify the next token in the document.
-            //! Where the parsing stops depends on the type of node.
-            //! @return A new node or null on fatal error or end of document.
+            //! @return A new node or zero at end.
             //! The returned node is not yet linked to its parent and siblings.
+            //! When not zero, the parser is located after the tag which identified the node ("<?", "<!--", etc.)
+            //! Return zero either at end of document or before a "</" sequence.
             //!
             Node* identify();
 
@@ -101,11 +95,18 @@ namespace ts {
             //! Parse text up to a given token.
             //! @param [out] result Returned parsed text.
             //! @param [in] endToken Stop when this token is found. Do not include @a endToken
-            //! in returned string. Skip it in the parser.
+            //! in returned string. 
+            //! @param [in] skipIfMatch If true, skip @a endToken in the parser.
             //! @param [in] translateEntities If true, translate HTML entities in the text.
             //! @return True on success, false if @a endToken was not found.
             //!
-            bool parseText(UString& result, const UString endToken, bool translateEntities);
+            bool parseText(UString& result, const UString endToken, bool skipIfMatch, bool translateEntities);
+
+            //!
+            //! Check if the parser is at the start of a name.
+            //! @return True if the parser is at the start of a name.
+            //!
+            bool isAtNameStart() const;
 
             //!
             //! Parse a tag name.
@@ -113,10 +114,6 @@ namespace ts {
             //! @return True on success, false if no name was not found.
             //!
             bool parseName(UString& name);
-
-        protected:
-            // Inherited methods.
-            virtual void writeLog(int severity, const UString& msg) override;
 
         private:
             Report&                           _report;

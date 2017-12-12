@@ -43,30 +43,12 @@ TSDUCK_SOURCE;
 //----------------------------------------------------------------------------
 
 ts::xml::Parser::Parser(const UStringList& lines, Report& report) :
-    Report(report.maxSeverity()),
     _report(report),
     _curLine(lines.begin()),
     _endLine(lines.end()),
-    _curLineNumber(1)
+    _curLineNumber(1),
+    _curIndex(0)
 {
-}
-
-
-//----------------------------------------------------------------------------
-// Parser report interface.
-//----------------------------------------------------------------------------
-
-void ts::xml::Parser::writeLog(int severity, const UString& msg)
-{
-    _report.log(severity, u"line %d: %s", {_curLineNumber, msg});
-}
-
-void ts::xml::Parser::errorAtLine(size_t lineNumber, const UChar* fmt, const std::initializer_list<ArgMixIn> args)
-{
-    const size_t previousLine = _curLineNumber;
-    _curLineNumber = lineNumber;
-    log(Severity::Error, fmt, args);
-    _curLineNumber = previousLine;
 }
 
 
@@ -74,7 +56,7 @@ void ts::xml::Parser::errorAtLine(size_t lineNumber, const UChar* fmt, const std
 // Parser: Skip all whitespaces.
 //----------------------------------------------------------------------------
 
-void ts::xml::Parser::skipWhiteSpace()
+bool ts::xml::Parser::skipWhiteSpace()
 {
     while (_curLine != _endLine) {
         // Skip spaces in current line.
@@ -83,13 +65,14 @@ void ts::xml::Parser::skipWhiteSpace()
         }
         // Stop if not at end of line (non-space character found).
         if (_curIndex < _curLine->length()) {
-            return;
+            return true;
         }
         // Move to next line.
         _curLine++;
         _curLineNumber++;
         _curIndex = 0;
     }
+    return true;
 }
 
 
@@ -137,35 +120,45 @@ ts::xml::Node* ts::xml::Parser::identify()
     // Skip all white spaces until next token.
     skipWhiteSpace();
 
-    // Error at end of document.
-    if (eof()) {
+    // Stop at end of document or before "</".
+    if (eof() || match(u"</", false)) {
         return 0;
     }
 
     // Check each expected token.
-    if (match(u"<?", true, CASE_SENSITIVE)) {
-        return new Declaration(_curLineNumber);
+    if (match(u"<?", true)) {
+        return new Declaration(_report, _curLineNumber);
     }
-    else if (match(u"<!--", true, CASE_SENSITIVE)) {
-        return new Comment(_curLineNumber);
+    else if (match(u"<!--", true)) {
+        return new Comment(_report, _curLineNumber);
     }
     else if (match(u"<![CDATA[", true, CASE_INSENSITIVE)) {
-        return new Text(_curLineNumber, true);
+        return new Text(_report, _curLineNumber, true);
     }
-    else if (match(u"<!", true, CASE_SENSITIVE)) {
+    else if (match(u"<!", true)) {
         // Should be a DTD, we ignore it.
-        return new Unknown(_curLineNumber);
+        return new Unknown(_report, _curLineNumber);
     }
-    else if (match(u"<", true, CASE_SENSITIVE)) {
-        return new Element(_curLineNumber);
+    else if (match(u"<", true)) {
+        return new Element(_report, _curLineNumber);
     }
     else {
         // This must be a text node. Revert skipped spaces, they are part of the text.
         _curLine = savedCurLine;
         _curLineNumber = savedCurLineNumber;
         _curIndex = savedCurIndex;
-        return new Text(_curLineNumber, false);
+        return new Text(_report, _curLineNumber, false);
     }
+}
+
+
+//----------------------------------------------------------------------------
+// Check if the parser is at the start of a name.
+//----------------------------------------------------------------------------
+
+bool ts::xml::Parser::isAtNameStart() const
+{
+    return _curLine != _endLine && _curIndex < _curLine->length() && IsNameStartChar(_curLine->at(_curIndex));
 }
 
 
@@ -177,11 +170,8 @@ bool ts::xml::Parser::parseName(UString& name)
 {
     name.clear();
 
-    // We may have spaces between "<" and the name. May we? We accept it anyway.
-    skipWhiteSpace();
-
     // Check that the next character is valid to start a name.
-    if (eof() || !IsNameStartChar(_curLine->at(_curIndex))) {
+    if (!isAtNameStart()) {
         return false;
     }
 
@@ -191,13 +181,6 @@ bool ts::xml::Parser::parseName(UString& name)
         name.append(c);
         _curIndex++;
     }
-
-    // Handle end of line.
-    if (_curIndex >= _curLine->length()) {
-        _curLine++;
-        _curLineNumber++;
-        _curIndex = 0;
-    }
     return true;
 }
 
@@ -206,7 +189,7 @@ bool ts::xml::Parser::parseName(UString& name)
 // Parse text up to a given token.
 //----------------------------------------------------------------------------
 
-bool ts::xml::Parser::parseText(UString& result, const UString endToken, bool translateEntities)
+bool ts::xml::Parser::parseText(UString& result, const UString endToken, bool skipIfMatch, bool translateEntities)
 {
     result.clear();
     bool found = false;
@@ -227,7 +210,7 @@ bool ts::xml::Parser::parseText(UString& result, const UString endToken, bool tr
         else {
             // Found end token, stop here.
             result.append(*_curLine, _curIndex, end - _curIndex);
-            _curIndex = end + endToken.length();
+            _curIndex = skipIfMatch ? end + endToken.length() : end;
             found = true;
         }
     }

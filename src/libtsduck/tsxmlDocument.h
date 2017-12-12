@@ -46,32 +46,49 @@ namespace ts {
         public:
             //!
             //! Constructor.
+            //! @param [in,out] report Where to report errors.
             //!
-            Document() : Node(1) {}
+            Document(Report& report = NULLREP) : Node(report, 1) {}
 
             //!
             //! Parse an XML document.
             //! @param [in] lines List of text lines forming the XML document.
-            //! @param [in] report Where to report errors.
             //! @return True on success, false on error.
             //!
-            bool parse(const UStringList& lines, Report& report);
+            bool parse(const UStringList& lines);
 
             //!
             //! Parse an XML document.
             //! @param [in] text The XML document.
-            //! @param [in] report Where to report errors.
             //! @return True on success, false on error.
             //!
-            bool parse(const UString& text, Report& report);
+            bool parse(const UString& text);
 
             //!
             //! Load and parse an XML file.
             //! @param [in] fileName The XML file name.
-            //! @param [in] report Where to report errors.
             //! @return True on success, false on error.
             //!
-            bool load(const UString& fileName, Report& report);
+            bool load(const UString& fileName);
+
+            //!
+            //! Get the root element of the document.
+            //! @return The root element of the document or zero if there is none.
+            //!
+            const Element* rootElement() const { return firstChildElement(); }
+
+            //!
+            //! Get the root element of the document.
+            //! @return The root element of the document or zero if there is none.
+            //!
+            Element* rootElement() { return firstChildElement(); }
+
+            // Inherited from xml::Node.
+            virtual UString typeName() const { return u"Document"; }
+
+        protected:
+            // Inherited from xml::Node.
+            virtual bool parseNode(Parser& parser, const Node* parent) override;
 
         private:
             // Unaccessible operations.

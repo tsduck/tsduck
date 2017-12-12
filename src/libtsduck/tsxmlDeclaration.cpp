@@ -28,22 +28,27 @@
 //----------------------------------------------------------------------------
 
 #include "tsxmlDeclaration.h"
+#include "tsxmlDocument.h"
 #include "tsxmlParser.h"
 TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------
-// Continue the parsing of a document from the point where this node start up
-// to the end. This is the Declaration implementation.
+// Parse the node.
 //----------------------------------------------------------------------------
 
-bool ts::xml::Declaration::parseContinue(Parser& parser, UString& endToken)
+bool ts::xml::Declaration::parseNode(Parser& parser, const Node* parent)
 {
-    // The current point of parsing is right after "<?". The content of the
-    // comment is up (but not including) the "?>".
-    bool ok = parser.parseText(_value, u"?>", false);
+    // The current point of parsing is right after "<?".
+    // The content of the declaration is up (but not including) the "?>".
+
+    bool ok = parser.parseText(_value, u"?>", true, false);
     if (!ok) {
-        parser.errorAtLine(lineNumber(), u"error parsing XML declaration, not properly terminated", {});
+        _report.error(u"line %d: error parsing XML declaration, not properly terminated", {lineNumber()});
+    }
+    else if (dynamic_cast<const Document*>(parent) == 0) {
+        _report.error(u"line %d: misplaced declaration, not directly inside a document", {lineNumber()});
+        ok = false;
     }
     return ok;
 }

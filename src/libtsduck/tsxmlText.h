@@ -45,10 +45,11 @@ namespace ts {
         public:
             //!
             //! Constructor.
+            //! @param [in,out] report Where to report errors.
             //! @param [in] line Line number in input document.
             //! @param [in] cdata The text is a CDATA node.
             //!
-            Text(size_t line = 0, bool cdata = false);
+            Text(Report& report = NULLREP, size_t line = 0, bool cdata = false);
 
             //!
             //! Check if the text is a CDATA node.
@@ -56,9 +57,12 @@ namespace ts {
             //!
             bool isCData() const { return _isCData; }
 
+            // Inherited from xml::Node.
+            virtual UString typeName() const { return u"Text"; }
+
         protected:
             // Inherited from xml::Node.
-            virtual bool parseContinue(Parser& parser, UString& endToken) override;
+            virtual bool parseNode(Parser& parser, const Node* parent) override;
 
         private:
             bool _isCData;

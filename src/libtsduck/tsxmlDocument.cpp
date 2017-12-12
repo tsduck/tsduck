@@ -28,6 +28,8 @@
 //----------------------------------------------------------------------------
 
 #include "tsxmlDocument.h"
+#include "tsxmlElement.h"
+#include "tsxmlDeclaration.h"
 #include "tsxmlParser.h"
 #include "tsReportWithPrefix.h"
 TSDUCK_SOURCE;
@@ -37,18 +39,10 @@ TSDUCK_SOURCE;
 // Parse an XML document.
 //----------------------------------------------------------------------------
 
-bool ts::xml::Document::parse(const UStringList& lines, Report& report)
+bool ts::xml::Document::parse(const UStringList& lines)
 {
-    Parser parser(lines, report);
-    parser.skipWhiteSpace();
-    if (parser.eof()) {
-        parser.error(u"empty XML document");
-        return false;
-    }
-    else {
-        UString token;
-        return parseContinue(parser, token);
-    }
+    Parser parser(lines, _report);
+    return parseNode(parser, 0);
 }
 
 
@@ -56,11 +50,11 @@ bool ts::xml::Document::parse(const UStringList& lines, Report& report)
 // Parse an XML document.
 //----------------------------------------------------------------------------
 
-bool ts::xml::Document::parse(const UString& text, Report& report)
+bool ts::xml::Document::parse(const UString& text)
 {
     UStringList lines;
     text.split(lines, u'\n', false);
-    return parse(lines, report);
+    return parse(lines);
 }
 
 
@@ -68,15 +62,63 @@ bool ts::xml::Document::parse(const UString& text, Report& report)
 // Load and parse an XML file.
 //----------------------------------------------------------------------------
 
-bool ts::xml::Document::load(const UString& fileName, Report& report)
+bool ts::xml::Document::load(const UString& fileName)
 {
     UStringList lines;
     if (UString::Load(lines, fileName)) {
-        report.error(u"error reading file %s", {fileName});
+        _report.error(u"error reading file %s", {fileName});
         return false;
     }
     else {
-        ReportWithPrefix report2(report, fileName + u": ");
-        return parse(lines, report2);
+        setReportPrefix(fileName + u": ");
+        const bool ok = parse(lines);
+        setReportPrefix(u"");
+        return ok;
     }
+}
+
+//----------------------------------------------------------------------------
+// Parse the node.
+//----------------------------------------------------------------------------
+
+bool ts::xml::Document::parseNode(Parser& parser, const Node* parent)
+{
+    // The document is a simple list of children.
+    if (!parseChildren(parser)) {
+        return false;
+    }
+    std::cerr << "document : " << debug() << std::endl; //@@@@
+
+    // We must have reached the end of document.
+    if (!parser.eof()) {
+        _report.error(u"line %d: trailing character sequence, invalid XML document", {parser.lineNumber()});
+        return false;
+    }
+
+    // A document must contain optional declarations, followed by one single element (the root).
+    Node* child = firstChild();
+
+    // First, skip all leading declarations.
+    while (dynamic_cast<Declaration*>(child) != 0) {
+        child = child->nextSibling();
+    }
+
+    // Check presence of root element.
+    if (dynamic_cast<Element*>(child) == 0) {
+        std::cerr << "document root: " << (child == 0 ? u"null" : child->debug()) << std::endl; //@@@@
+        _report.error(u"invalid XML document, no root element found");
+        return false;
+    }
+
+    // Skip root element.
+    child = child->nextSibling();
+
+    // Verify that there is no additional children.
+    if (child != 0) {
+        _report.error(u"line %d: trailing %s, invalid XML document, need one single root element", {child->lineNumber(), child->typeName()});
+        return false;
+    }
+
+    // Valid document.
+    return true;
 }
