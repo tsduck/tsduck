@@ -33,8 +33,9 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsUString.h"
 #include "tsRingNode.h"
+#include "tsNullReport.h"
+#include "tsReportWithPrefix.h"
 
 namespace ts {
     //!
@@ -58,6 +59,17 @@ namespace ts {
     namespace xml {
 
         class Parser;
+        class Element;
+
+        //!
+        //! Vector of constant elements.
+        //!
+        typedef std::vector<const Element*> ElementVector;
+
+        //!
+        //! Specify an unlimited number of elements.
+        //!
+        static const size_t UNLIMITED = std::numeric_limits<size_t>::max();
 
         //!
         //! Base class for all XML objects.
@@ -88,6 +100,30 @@ namespace ts {
             virtual void reparent(Node* newParent);
 
             //!
+            //! Get the parent's node.
+            //! @return The parent's node or zero if this is a top-level document.
+            //!
+            const Node* parent() const { return _parent; }
+
+            //!
+            //! Get the depth of an XML element.
+            //! @return The depth of the element, ie. the number of ancestors.
+            //!
+            size_t depth() const;
+
+            //!
+            //! Check if the node has children.
+            //! @return True if the node has children.
+            //!
+            bool hasChildren() const { return _firstChild != 0; }
+
+            //!
+            //! Get the number of children.
+            //! @return The number of children.
+            //!
+            size_t childrenCount() const { return _firstChild == 0 ? 0 : _firstChild->ringSize(); }
+
+            //!
             //! Get the first child of a node.
             //! @return The first child of the node or zero if there is no children.
             //!
@@ -98,6 +134,18 @@ namespace ts {
             //! @return The first child of the node or zero if there is no children.
             //!
             Node* firstChild() { return _firstChild; }
+
+            //!
+            //! Get the last child.
+            //! @return The last child or zero if there is none.
+            //!
+            const Node* lastChild() const { return _firstChild == 0 ? 0 : _firstChild->ringPrevious<Node>(); }
+
+            //!
+            //! Get the last child.
+            //! @return The last child or zero if there is none.
+            //!
+            Node* lastChild() { return _firstChild == 0 ? 0 : _firstChild->ringPrevious<Node>(); }
 
             //!
             //! Get the next sibling node.
@@ -112,6 +160,70 @@ namespace ts {
             Node* nextSibling();
 
             //!
+            //! Get the first child Element of a node.
+            //! @return The first child Element of the node or zero if there is no child Element.
+            //!
+            const Element* firstChildElement() const { return (const_cast<Node*>(this))->firstChildElement(); }
+
+            //!
+            //! Get the first child Element of a node.
+            //! @return The first child Element of the node or zero if there is no child Element.
+            //!
+            Element* firstChildElement();
+
+            //!
+            //! Find the next sibling element.
+            //! @return Element address or zero if not found.
+            //!
+            const Element* nextSiblingElement() const { return (const_cast<Node*>(this))->nextSiblingElement(); }
+
+            //!
+            //! Find the next sibling element.
+            //! @return Element address or zero if not found.
+            //!
+            Element* nextSiblingElement();
+
+            //!
+            //! Get the value of the node.
+            //!
+            //! The semantic of the @e value depends on the node subclass:
+            //! - Comment: Content of the comment, without "<!--" and "-->".
+            //! - Declaration: Content of the declaration, without "<?" and "?>".
+            //! - Document: Empty.
+            //! - Element: Name of the element.
+            //! - Text: Text content of the element, including spaces and new-lines.
+            //! - Unknown: Content of the tag, probably an uninterpreted DTD.
+            //!
+            //! @return A constant reference to the node value, as a string.
+            //!
+            const UString& value() const { return _value; }
+
+            //!
+            //! Set the value of the node.
+            //! @param [in] value New value to set.
+            //! @see value()
+            //!
+            void setValue(const UString& value) { _value = value; }
+
+            //!
+            //! Set the prefix to display on report lines.
+            //! @param [in] prefix The prefix to prepend to all messages.
+            //!
+            void setReportPrefix(const UString& prefix) { _report.setPrefix(prefix); }
+
+            //!
+            //! Return a node type name, mainly for debug purpose.
+            //! @return Node type name.
+            //!
+            virtual UString typeName() const = 0;
+
+            //!
+            //! Build a debug string for the node.
+            //! @return A debug string for the node.
+            //!
+            UString debug() const;
+
+            //!
             //! Virtual destructor.
             //!
             virtual ~Node();
@@ -119,33 +231,36 @@ namespace ts {
         protected:
             //!
             //! Constructor.
+            //! @param [in,out] report Where to report errors.
             //! @param [in] line Line number in input document.
             //!
-            Node(size_t line = 0);
+            Node(Report& report, size_t line = 0);
 
             //!
-            //! Continue the parsing of a document from the point where this node start up to the end.
-            //! @param [in,out] parser The document parser.
-            //! @param [out] endToken The toek which is returned at the end of this parsing.
+            //! Parse the node.
+            //! @param [in,out] parser The document parser. On input, the current position of the
+            //! parser after the tag which identified the node ("<?", "<!--", etc.) On output, it
+            //! must be after the last character of the node.
+            //! @param [in] parent Candidate parent node, for information only, do not modify. Can be null.
             //! @return True on success, false on error.
             //!
-            virtual bool parseContinue(Parser& parser, UString& endToken);
+            virtual bool parseNode(Parser& parser, const Node* parent) = 0;
 
-        protected:
-            UString _value;         //!< Value of the node, depend on the node type.
+            //!
+            //! Parse children nodes and add them to the node.
+            //! Stop either at end of document or before a "</" sequence or on error.
+            //! @param [in,out] parser The document parser.
+            //! @return True on success, false on error.
+            //!
+            virtual bool parseChildren(Parser& parser);
+
+            mutable ReportWithPrefix _report;       //!< Where to report errors.
+            UString                  _value;        //!< Value of the node, depend on the node type.
 
         private:
-            //! Used only during element parsing.
-            enum ElementClosingType {
-                OPEN,       //!< As in <foo>
-                CLOSED,     //!< As in <foo/>
-                CLOSING     //!< As in </foo>
-            };
-
-            Node*              _parent;        //!< Parent node, null for a document.
-            Node*              _firstChild;    //!< First child, can be null, other children are linked through the RingNode.
-            size_t             _inputLineNum;  //!< Line number in input document, zero if build programmatically.
-            ElementClosingType _closingType;   //!< State of element parsing.
+            Node*   _parent;        //!< Parent node, null for a document.
+            Node*   _firstChild;    //!< First child, can be null, other children are linked through the RingNode.
+            size_t  _inputLineNum;  //!< Line number in input document, zero if build programmatically.
 
             // Unaccessible operations.
             Node(const Node&) = delete;

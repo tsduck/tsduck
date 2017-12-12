@@ -31,13 +31,26 @@
 #include "tsxmlParser.h"
 TSDUCK_SOURCE;
 
+// A constant static invalid instance.
+const ts::xml::Attribute ts::xml::Attribute::INVALID;
+
 
 //----------------------------------------------------------------------------
-// Continue the parsing of a document from the point where this node start up
-// to the end. This is the Attribute implementation.
+// Constructors.
 //----------------------------------------------------------------------------
 
-bool ts::xml::Attribute::parseContinue(Parser& parser, UString& endToken)
+ts::xml::Attribute::Attribute() :
+    _valid(false),
+    _name(),
+    _value(),
+    _line(0)
 {
-    return false; //@@@@@@@@@@@
+}
+
+ts::xml::Attribute::Attribute(const UString& name, const UString& value, size_t line) :
+    _valid(true),
+    _name(name),
+    _value(value),
+    _line(line)
+{
 }

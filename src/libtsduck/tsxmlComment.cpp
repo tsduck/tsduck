@@ -33,17 +33,17 @@ TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------
-// Continue the parsing of a document from the point where this node start up
-// to the end. This is the Comment implementation.
+// Parse the node.
 //----------------------------------------------------------------------------
 
-bool ts::xml::Comment::parseContinue(Parser& parser, UString& endToken)
+bool ts::xml::Comment::parseNode(Parser& parser, const Node* parent)
 {
-    // The current point of parsing is right after "<!--". The content of the
-    // comment is up (but not including) the "-->".
-    bool ok = parser.parseText(_value, u"-->", false);
+    // The current point of parsing is right after "<!--".
+    // The content of the comment is up (but not including) the "-->".
+
+    bool ok = parser.parseText(_value, u"-->", true, false);
     if (!ok) {
-        parser.errorAtLine(lineNumber(), u"error parsing XML comment, not properly terminated", {});
+        _report.error(u"line %d: error parsing XML comment, not properly terminated", {lineNumber()});
     }
     return ok;
 }

@@ -45,13 +45,17 @@ namespace ts {
         public:
             //!
             //! Constructor.
+            //! @param [in,out] report Where to report errors.
             //! @param [in] line Line number in input document.
             //!
-            Declaration(size_t line = 0) : Node(line) {}
+            Declaration(Report& report = NULLREP, size_t line = 0) : Node(report, line) {}
+
+            // Inherited from xml::Node.
+            virtual UString typeName() const { return u"Declaration"; }
 
         protected:
             // Inherited from xml::Node.
-            virtual bool parseContinue(Parser& parser, UString& endToken) override;
+            virtual bool parseNode(Parser& parser, const Node* parent) override;
 
         private:
             // Unaccessible operations.

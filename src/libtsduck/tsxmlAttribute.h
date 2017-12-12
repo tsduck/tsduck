@@ -40,27 +40,58 @@ namespace ts {
         //!
         //! Attribute of an XML element.
         //!
-        //! This class is a subclass of xml::Node but is not a regular XML node.
-        //! An xml::Element has a separate list of children and a separate list
-        //! of attributes.
-        //!
-        class TSDUCKDLL Attribute: public Node
+        class TSDUCKDLL Attribute
         {
         public:
             //!
-            //! Constructor.
+            //! Default constructor.
+            //! The argument is initially invalid, everything will fail.
+            //!
+            Attribute();
+
+            //!
+            //! Full constructor.
+            //! @param [in] name Attribute name with original case sensitivity.
+            //! @param [in] value Attribute value.
             //! @param [in] line Line number in input document.
             //!
-            Attribute(size_t line = 0) : Node(line) {}
+            Attribute(const UString& name, const UString& value = UString(), size_t line = 0);
 
-        protected:
-            // Inherited from xml::Node.
-            virtual bool parseContinue(Parser& parser, UString& endToken) override;
+            //!
+            //! Check if the attribute is valid.
+            //! @return True if the attribute is valid.
+            //!
+            bool isValid() const { return _valid; }
+
+            //!
+            //! Get the line number in input document.
+            //! @return The line number in input document, zero if the attribute was built programmatically.
+            //!
+            size_t lineNumber() const { return _line; }
+
+            //!
+            //! Get the attribute name with original case sensitivity.
+            //! @return A constant reference to the attribute name with original case sensitivity.
+            //!
+            const UString& name() const { return _name; }
+
+            //!
+            //! Get the attribute value.
+            //! @return A constant reference to the attribute value.
+            //!
+            const UString& value() const { return _value; }
+
+            //!
+            //! A constant static invalid instance.
+            //! Used as universal invalid attribute.
+            //!
+            static const Attribute INVALID;
 
         private:
-            // Unaccessible operations.
-            Attribute(const Attribute&) = delete;
-            Attribute& operator=(const Attribute&) = delete;
+            bool    _valid;
+            UString _name;
+            UString _value;
+            size_t  _line;
         };
     }
 }

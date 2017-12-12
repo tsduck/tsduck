@@ -39,13 +39,13 @@ TSDUCK_SOURCE;
 // Node constructor.
 //----------------------------------------------------------------------------
 
-ts::xml::Node::Node(size_t line) :
+ts::xml::Node::Node(Report& report, size_t line) :
     RingNode(),
+    _report(report),
     _value(),
     _parent(this),
     _firstChild(0),
-    _inputLineNum(line),
-    _closingType(OPEN)
+    _inputLineNum(line)
 {
 }
 
@@ -119,6 +119,24 @@ void ts::xml::Node::reparent(Node* newParent)
 
 
 //----------------------------------------------------------------------------
+// Get the depth of an XML element.
+//----------------------------------------------------------------------------
+
+size_t ts::xml::Node::depth() const
+{
+    size_t count = 0;
+    const Node* node = _parent;
+    while (node != 0) {
+        node = node->_parent;
+        count++;
+        // Fool-proof check.
+        assert(count < 1024);
+    }
+    return count;
+}
+
+
+//----------------------------------------------------------------------------
 // Get the next sibling node.
 //----------------------------------------------------------------------------
 
@@ -131,93 +149,75 @@ ts::xml::Node* ts::xml::Node::nextSibling()
 
 
 //----------------------------------------------------------------------------
-// Continue the parsing of a document from the point where this node start up
-// to the end. This is the base Node implementation.
+// Find the next sibling element.
 //----------------------------------------------------------------------------
 
-bool ts::xml::Node::parseContinue(Parser& parser, UString& endToken)
+ts::xml::Element* ts::xml::Node::nextSiblingElement()
+{
+    for (Node* child = nextSibling(); child != 0; child = child->nextSibling()) {
+        Element* elem = dynamic_cast<Element*>(child);
+        if (elem != 0) {
+            return elem;
+        }
+    }
+    return 0;
+}
+
+
+//----------------------------------------------------------------------------
+// Find the first child element by name, case-insensitive.
+//----------------------------------------------------------------------------
+
+ts::xml::Element* ts::xml::Node::firstChildElement()
+{
+    // Loop on all children.
+    for (Node* child = firstChild(); child != 0; child = child->nextSibling()) {
+        Element* elem = dynamic_cast<Element*>(child);
+        if (elem != 0) {
+            return elem;
+        }
+    }
+    return 0;
+}
+
+
+//----------------------------------------------------------------------------
+// Parse children nodes and add them to the node.
+//----------------------------------------------------------------------------
+
+bool ts::xml::Node::parseChildren(Parser& parser)
 {
     bool result = true;
     Node* node;
 
     // Loop on each token we find.
+    // Exit loop either at end of document or before a "</" sequence.
     while ((node = parser.identify()) != 0) {
-
-        bool thisOneOk = true;
+        std::cerr << "parser identify returned: " << node->debug() << std::endl; //@@@@
 
         // Read the complete node.
-        if (!node->parseContinue(parser, endToken)) {
-            parser.errorAtLine(node->lineNumber(), u"parsing error", {});
-            thisOneOk = false;
-        }
-        else {
-            // Special checks for a few types.
-            Declaration* decl = dynamic_cast<Declaration*>(node);
-            Element* elem = dynamic_cast<Element*>(node);
-
-            if (decl != 0) {
-                // This is a declaration, must be at the beginning of a document.
-                if (dynamic_cast<Document*>(this) == 0) {
-                    parser.errorAtLine(node->lineNumber(), u"misplaced declaration, not directly inside a document", {});
-                    thisOneOk = false;
-                }
-                // Check that all preceding nodes are declarations as well.
-                for (Node* ch = firstChild(); thisOneOk && ch != 0; ch = ch->nextSibling()) {
-                    if (dynamic_cast<Declaration*>(ch) == 0) {
-                        parser.errorAtLine(node->lineNumber(), u"misplaced declaration, must be at the beginning of the document", {});
-                        thisOneOk = false;
-                    }
-                }
-            }
-
-            if (elem != 0) {
-                // This is an element.
-
-                /*@@@@@@@@
-                // We read the end tag. Return it to the parent.
-                if ( ele->ClosingType() == XMLElement::CLOSING ) {
-                    if ( parentEndTag ) {
-                        ele->_value.TransferTo( parentEndTag );
-                    }
-                    node->_memPool->SetTracked();   // created and then immediately deleted.
-                    DeleteNode( node );
-                    return p;
-                }
-
-                // Handle an end tag returned to this level.
-                // And handle a bunch of annoying errors.
-                bool mismatch = false;
-                if ( endTag.Empty() ) {
-                    if ( ele->ClosingType() == XMLElement::OPEN ) {
-                        mismatch = true;
-                    }
-                }
-                else {
-                    if ( ele->ClosingType() != XMLElement::OPEN ) {
-                        mismatch = true;
-                    }
-                    else if ( !XMLUtil::StringEqual( endTag.GetStr(), ele->Name() ) ) {
-                        mismatch = true;
-                    }
-                }
-                if ( mismatch ) {
-                    _document->SetError( XML_ERROR_MISMATCHED_ELEMENT, ele->Name(), 0, initialLineNum);
-                    DeleteNode( node );
-                    break;
-                }
-                @@@@@@@@@*/
-            }
-        }
-
-        // If the child element is fine, insert it.
-        if (thisOneOk) {
+        if (node->parseNode(parser, this)) {
+            // The child node is fine, insert it.
+            std::cerr << "accepted: " << node->debug() << std::endl; //@@@@
             node->reparent(this);
         }
         else {
+            _report.error(u"line %d: parsing error", {node->lineNumber()});
+            std::cerr << "rejected: " << node->debug() << std::endl; //@@@@
             delete node;
             result = false;
         }
     }
 
     return result;
+}
+
+
+//----------------------------------------------------------------------------
+// Build a debug string for the node.
+//----------------------------------------------------------------------------
+
+ts::UString ts::xml::Node::debug() const
+{
+    return UString::Format(u"%s, line %d, children: %d, value '%s'", {typeName(), lineNumber(), childrenCount(), value()});
 }

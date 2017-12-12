@@ -33,17 +33,17 @@ TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------
-// Continue the parsing of a document from the point where this node start up
-// to the end. This is the Unknown implementation.
+// Parse the node.
 //----------------------------------------------------------------------------
 
-bool ts::xml::Unknown::parseContinue(Parser& parser, UString& endToken)
+bool ts::xml::Unknown::parseNode(Parser& parser, const Node* parent)
 {
     // The current point of parsing is right after "<!", probably a DTD we do not manage.
     // The content of the node is up (but not including) the ">".
-    bool ok = parser.parseText(_value, u">", false);
+
+    bool ok = parser.parseText(_value, u">", true, false);
     if (!ok) {
-        parser.errorAtLine(lineNumber(), u"error parsing unknown or DTD node, not properly terminated", {});
+        _report.error(u"line %d: error parsing unknown or DTD node, not properly terminated", {lineNumber()});
     }
     return ok;
 }

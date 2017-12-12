@@ -32,6 +32,8 @@
 //----------------------------------------------------------------------------
 
 #include "tsXML.h"
+#include "tsxmlDocument.h"
+#include "tsxmlElement.h"
 #include "tsCerrReport.h"
 #include "utestCppUnitTest.h"
 TSDUCK_SOURCE;
@@ -60,6 +62,9 @@ public:
     CPPUNIT_TEST(testValidation);
     CPPUNIT_TEST(testCreation);
     CPPUNIT_TEST_SUITE_END();
+
+private:
+    ts::Report& report();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(XMLTest);
@@ -79,6 +84,16 @@ void XMLTest::tearDown()
 {
 }
 
+ts::Report& XMLTest::report()
+{
+    if (utest::DebugMode()) {
+        return CERR;
+    }
+    else {
+        return NULLREP;
+    }
+}
+
 
 //----------------------------------------------------------------------------
 // Unitary tests.
@@ -86,18 +101,19 @@ void XMLTest::tearDown()
 
 void XMLTest::testDocument()
 {
-    static const char* const document =
-        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-        "<root attr1=\"val1\">\n"
-        "  <node1 a1=\"v1\" a2=\"v2\">Text in node1</node1>\n"
-        "  <node2 b1=\"x1\">Text in node2</node2>\n"
-        "  <node3 foo=\"bar\"/>\n"
-        "  <node4/>\n"
-        "</root>\n";
+    static const ts::UChar* const document =
+        u"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+        u"<root attr1=\"val1\">\n"
+        u"  <node1 a1=\"v1\" a2=\"v2\">Text in node1</node1>\n"
+        u"  <node2 b1=\"x1\">Text in node2</node2>\n"
+        u"  <node3 foo=\"bar\"/>\n"
+        u"  <node4/>\n"
+        u"</root>\n";
 
-    ts::XML::Document doc;
-    CPPUNIT_ASSERT_EQUAL(tinyxml2::XML_SUCCESS, doc.Parse(document));
+    ts::xml::Document doc(report());
+    CPPUNIT_ASSERT(doc.parse(document));
 
+    /*@@@@@@@@
     ts::XML::Element* root = doc.RootElement();
     CPPUNIT_ASSERT(root != 0);
     CPPUNIT_ASSERT(root->Name() != 0);
@@ -148,6 +164,8 @@ void XMLTest::testDocument()
 
     elem = elem->NextSiblingElement();
     CPPUNIT_ASSERT(elem == 0);
+
+    @@@@@*/
 }
 
 namespace {

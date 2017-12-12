@@ -99,7 +99,18 @@ namespace ts {
         //! @return Address of the next node in the ring or zero if the next node is not a subclass of @a T.
         //!
         template <typename T>
-        T* ringNext() const
+        T* ringNext()
+        {
+            return dynamic_cast<T*>(_ring_next);
+        }
+
+        //!
+        //! Get the next node in the ring.
+        //! @tparam T A superclass of RingNode, the expected type of the next object in the ring.
+        //! @return Address of the next node in the ring or zero if the next node is not a subclass of @a T.
+        //!
+        template <typename T>
+        const T* ringNext() const
         {
             return dynamic_cast<T*>(_ring_next);
         }
@@ -110,7 +121,18 @@ namespace ts {
         //! @return Address of the previous node in the ring or zero if the previous node is not a subclass of @a T.
         //!
         template <typename T>
-        T* ringPrevious() const
+        T* ringPrevious()
+        {
+            return dynamic_cast<T*>(_ring_previous);
+        }
+
+        //!
+        //! Get the previous node in the ring.
+        //! @tparam T A superclass of RingNode, the expected type of the previous object in the ring.
+        //! @return Address of the previous node in the ring or zero if the previous node is not a subclass of @a T.
+        //!
+        template <typename T>
+        const T* ringPrevious() const
         {
             return dynamic_cast<T*>(_ring_previous);
         }
