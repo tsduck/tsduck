@@ -45,6 +45,8 @@ SRCFILE="$ROOTDIR/src/libtsduck/tsVersion.h"
 PREFIX="#define TS_COMMIT"
 
 # Use GNU variants of sed and grep when available.
+# Add /usr/local/bin at end of PATH in case we can find them there.
+export PATH=PATH:/usr/local/bin
 [[ -n "$(which gsed 2>/dev/null)" ]] && sed() { gsed "$@"; }
 [[ -n "$(which ggrep 2>/dev/null)" ]] && grep() { ggrep "$@"; }
 
