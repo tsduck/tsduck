@@ -48,7 +48,7 @@ namespace ts {
             //! Constructor.
             //! @param [in,out] report Where to report errors.
             //!
-            Document(Report& report = NULLREP) : Node(report, 1) {}
+            explicit Document(Report& report = NULLREP) : Node(report, 1) {}
 
             //!
             //! Parse an XML document.
@@ -66,10 +66,38 @@ namespace ts {
 
             //!
             //! Load and parse an XML file.
-            //! @param [in] fileName The XML file name.
+            //! @param [in] fileName Name of the XML file to load.
+            //! @param [in] search If true, use a search algorithm for the XML file:
+            //! If @a fileName is not found and does not contain any directory part, search this file
+            //! in the following places:
+            //! - Directory of the current executable.
+            //! - All directories in @c TSPLUGINS_PATH environment variable.
+            //! - All directories in @c LD_LIBRARY_PATH environment variable (UNIX only).
+            //! - All directories in @c PATH (UNIX) or @c Path (Windows) environment variable.
             //! @return True on success, false on error.
             //!
-            bool load(const UString& fileName);
+            bool load(const UString& fileName, bool search = true);
+
+            //!
+            //! Validate the XML document.
+            //!
+            //! This is a minimal mechanism, much less powerful than XML-Schema.
+            //! But since we do not support schema, this is a cheap alternative.
+            //!
+            //! @param [in] model The model document. This document contains the structure
+            //! of a valid document, with all possible elements and attributes. There is
+            //! no type checking, no cardinality check. Comments and texts are ignored.
+            //! The values of attributes are ignored.
+            //! @return True if this document matches @a model, false if it does not.
+            //!
+            bool validate(const Document& model) const;
+
+            //!
+            //! Convert the document to an XML string.
+            //! @param [in] indent Indentation width of each level.
+            //! @return The content of the XML document.
+            //!
+            UString toString(size_t indent = 2) const;
 
             //!
             //! Get the root element of the document.
@@ -83,6 +111,16 @@ namespace ts {
             //!
             Element* rootElement() { return firstChildElement(); }
 
+            //!
+            //! Initialize the document.
+            //! The initial declaration and root are created.
+            //! @param [in] rootName Name of the root element to create.
+            //! @param [in] declaration Optional XML declaration. When omitted, the standard declaration
+            //! is used, specifying UTF-8 as format.
+            //! @return New root element of the document or null on error.
+            //!
+            Element* initialize(const UString& rootName, const UString& declaration = UString());
+
             // Inherited from xml::Node.
             virtual UString typeName() const override { return u"Document"; }
 
@@ -91,6 +129,22 @@ namespace ts {
             virtual bool parseNode(Parser& parser, const Node* parent) override;
 
         private:
+            //!
+            //! Validate an XML tree of elements, used by validate().
+            //! @param [in] model The model element.
+            //! @param [in] doc The element to validate.
+            //! @return True if @a doc matches @a model, false if it does not.
+            //!
+            bool validateElement(const Element* model, const Element* doc) const;
+
+            //!
+            //! Find a child element by name in an XML model element.
+            //! @param [in] elem An XML element in a model document.
+            //! @param [in] name Name of the child element to search.
+            //! @return Address of the child model or zero if not found.
+            //!
+            const Element* findModelElement(const Element* elem, const UString& name) const;
+
             // Unaccessible operations.
             Document(const Document&) = delete;
             Document& operator=(const Document&) = delete;

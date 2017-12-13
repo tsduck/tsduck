@@ -55,7 +55,7 @@ void ts::tlv::MessageFactory::checkParamSize(TAG tag, const ParameterMultimap::c
 // Get first occurence of an integer parameter:
 //----------------------------------------------------------------------------
 
-template <typename INT>
+template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
 INT ts::tlv::MessageFactory::get(TAG tag) const
 {
     ParameterMultimap::const_iterator it = _params.find(tag);
@@ -73,7 +73,7 @@ INT ts::tlv::MessageFactory::get(TAG tag) const
 // Get all occurences of an integer parameter.
 //----------------------------------------------------------------------------
 
-template <typename INT>
+template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
 void ts::tlv::MessageFactory::get(TAG tag, std::vector<INT>& param) const
 {
     // Reinitialize result vector

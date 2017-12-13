@@ -219,7 +219,7 @@ namespace ts {
             //! @param [in] tag Parameter tag to search.
             //! @return The parameter value.
             //!
-            template <typename INT>
+            template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
             INT get(TAG tag) const;
 
             //!
@@ -229,7 +229,7 @@ namespace ts {
             //! @param [in] tag Parameter tag to search.
             //! @param [out] param All parameter values.
             //!
-            template <typename INT>
+            template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
             void get(TAG tag, std::vector<INT>& param) const;
 
             //!

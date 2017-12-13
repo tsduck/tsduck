@@ -28,16 +28,24 @@
 //----------------------------------------------------------------------------
 
 #include "tsxmlText.h"
+#include "tsxmlElement.h"
 #include "tsxmlParser.h"
+#include "tsFatal.h"
 TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------
-// Constructor.
+// Constructors.
 //----------------------------------------------------------------------------
 
 ts::xml::Text::Text(Report& report, size_t line, bool cdata) :
     Node(report, line),
+    _isCData(cdata)
+{
+}
+
+ts::xml::Text::Text(Element* parent, const UString& text, bool cdata) :
+    Node(parent, text),
     _isCData(cdata)
 {
 }

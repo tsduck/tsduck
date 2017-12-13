@@ -32,6 +32,24 @@
 #include "tsxmlParser.h"
 TSDUCK_SOURCE;
 
+// Default XML declaration.
+const ts::UChar* const ts::xml::Declaration::DEFAULT_XML_DECLARATION = u"xml version='1.0' encoding='UTF-8'";
+
+
+//----------------------------------------------------------------------------
+// Constructors.
+//----------------------------------------------------------------------------
+
+ts::xml::Declaration::Declaration(Report& report, size_t line) :
+    Node(report, line)
+{
+}
+
+ts::xml::Declaration::Declaration(Document* parent, const UString& value) :
+    Node(parent, value.empty() ? DEFAULT_XML_DECLARATION : value)
+{
+}
+
 
 //----------------------------------------------------------------------------
 // Parse the node.

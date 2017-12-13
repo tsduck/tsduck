@@ -1318,7 +1318,7 @@ namespace {
 //-----------------------------------------------------------------------------
 
 namespace {
-    template <typename INT>
+    template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
     ts::UString Percent(INT value)
     {
         return ts::UString::Format(u"(%d%%)", {(uint64_t(value) * 100) / uint64_t(std::numeric_limits<INT>::max())});

@@ -33,7 +33,7 @@
 
 // In the implementation of UString, we allow the implicit UTF-8 conversions
 // to ensure that the symbols are defined and exported from the DLL on Windows.
-// Otherwise, applications may get undefined symbols if thet allow these
+// Otherwise, applications may get undefined symbols if they allow these
 // implicit conversions.
 #define TS_ALLOW_IMPLICIT_UTF8_CONVERSION 1
 
@@ -45,7 +45,7 @@
 TSDUCK_SOURCE;
 
 // The UTF-8 Byte Order Mark
-const char* const ts::UString::UTF8_BOM = "\0xEF\0xBB\0xBF";
+const char* const ts::UString::UTF8_BOM = "\xEF\xBB\xBF";
 
 // Default separator string for groups of thousands, a comma.
 const ts::UString ts::UString::DEFAULT_THOUSANDS_SEPARATOR(1, u',');

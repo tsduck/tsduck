@@ -290,6 +290,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsVideoAttributes.h" />
     <ClInclude Include="..\..\src\libtsduck\tsXML.h" />
     <ClInclude Include="..\..\src\libtsduck\tsxmlAttribute.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsxmlElementTemplate.h" />
     <ClInclude Include="..\..\src\libtsduck\tsxmlComment.h" />
     <ClInclude Include="..\..\src\libtsduck\tsxmlDeclaration.h" />
     <ClInclude Include="..\..\src\libtsduck\tsxmlDocument.h" />

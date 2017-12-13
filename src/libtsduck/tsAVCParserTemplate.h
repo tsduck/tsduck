@@ -34,7 +34,7 @@
 // Provide the next n bits without advancing the bitstream pointer.
 //----------------------------------------------------------------------------
 
-template <typename INT>
+template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
 bool ts::AVCParser::nextBits (INT& val, size_t n)
 {
     const uint8_t* saved_byte = _byte;
@@ -50,7 +50,7 @@ bool ts::AVCParser::nextBits (INT& val, size_t n)
 // Read the next n bits and advance the bitstream pointer.
 //----------------------------------------------------------------------------
 
-template <typename INT>
+template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
 bool ts::AVCParser::readBits (INT& val, size_t n)
 {
     val = 0;
@@ -87,7 +87,7 @@ bool ts::AVCParser::readBits (INT& val, size_t n)
 // Extract Exp-Golomb-coded value using n bits.
 //----------------------------------------------------------------------------
 
-template <typename INT>
+template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
 bool ts::AVCParser::expColomb (INT& val)
 {
     // See ISO/IEC 14496-10 section 9.1
@@ -111,7 +111,7 @@ bool ts::AVCParser::expColomb (INT& val)
 // Signed integer Exp-Golomb-coded using n bits.
 //----------------------------------------------------------------------------
 
-template <typename INT>
+template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
 bool ts::AVCParser::se (INT& val)
 {
     // See ISO/IEC 14496-10 section 9.1.1

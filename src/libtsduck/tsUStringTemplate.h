@@ -42,7 +42,7 @@
     #pragma warning(disable:4127)
 #endif
 
-template <typename CHARTYPE, typename INT>
+template <typename CHARTYPE, typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
 ts::UString& ts::UString::assign(const std::vector<CHARTYPE>& vec, INT count)
 {
     // The character type must be 16 bits.
@@ -65,7 +65,7 @@ ts::UString& ts::UString::assign(const std::vector<CHARTYPE>& vec, INT count)
     return *this;
 }
 
-template <typename CHARTYPE, std::size_t SIZE, typename INT>
+template <typename CHARTYPE, std::size_t SIZE, typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
 ts::UString& ts::UString::assign(const std::array<CHARTYPE, SIZE>& arr, INT count)
 {
     // The character type must be 16 bits.
@@ -109,7 +109,7 @@ ts::UString& ts::UString::assign(const std::array<CHARTYPE, SIZE>& arr)
 // Template constructors.
 //----------------------------------------------------------------------------
 
-template <typename CHARTYPE, typename INT>
+template <typename CHARTYPE, typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
 ts::UString::UString(const std::vector<CHARTYPE>& vec, INT count, const allocator_type& alloc) :
     SuperClass(alloc)
 {
@@ -123,7 +123,7 @@ ts::UString::UString(const std::vector<CHARTYPE>& vec, const allocator_type& all
     assign(vec);
 }
 
-template <typename CHARTYPE, std::size_t SIZE, typename INT>
+template <typename CHARTYPE, std::size_t SIZE, typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
 ts::UString::UString(const std::array<CHARTYPE, SIZE>& arr, INT count, const allocator_type& alloc) :
     SuperClass(alloc)
 {

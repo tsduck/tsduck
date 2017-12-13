@@ -44,11 +44,23 @@ namespace ts {
         {
         public:
             //!
+            //! Default XML declaration.
+            //!
+            static const UChar* const DEFAULT_XML_DECLARATION;
+
+            //!
             //! Constructor.
             //! @param [in,out] report Where to report errors.
             //! @param [in] line Line number in input document.
             //!
-            Declaration(Report& report = NULLREP, size_t line = 0) : Node(report, line) {}
+            explicit Declaration(Report& report = NULLREP, size_t line = 0);
+
+            //!
+            //! Constructor.
+            //! @param [in,out] parent The parent document into which the declaration is added.
+            //! @param [in] value Content of the declaration. If empty, the default XML declaration is used.
+            //!
+            explicit Declaration(Document* parent, const UString& value = UString());
 
             // Inherited from xml::Node.
             virtual UString typeName() const override { return u"Declaration"; }

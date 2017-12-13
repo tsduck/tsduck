@@ -30,6 +30,7 @@
 #include "tsxmlElement.h"
 #include "tsxmlText.h"
 #include "tsxmlParser.h"
+#include "tsFatal.h"
 TSDUCK_SOURCE;
 
 
@@ -39,6 +40,13 @@ TSDUCK_SOURCE;
 
 ts::xml::Element::Element(Report& report, size_t line, CaseSensitivity attributeCase) :
     Node(report, line),
+    _attributeCase(attributeCase),
+    _attributes()
+{
+}
+
+ts::xml::Element::Element(Node* parent, const UString& name, CaseSensitivity attributeCase) :
+    Node(parent, name), // the "value" of an element node is its name.
     _attributeCase(attributeCase),
     _attributes()
 {
@@ -245,6 +253,51 @@ bool ts::xml::Element::getHexaText(ByteBlock& data, size_t minSize, size_t maxSi
 
 
 //----------------------------------------------------------------------------
+// Add a new child element at the end of children.
+//----------------------------------------------------------------------------
+
+ts::xml::Element* ts::xml::Element::addElement(const UString& childName)
+{
+    Element* child = new Element(this, childName);
+    CheckNonNull(child);
+    return child;
+}
+
+
+//----------------------------------------------------------------------------
+// Add a new text inside this node.
+//----------------------------------------------------------------------------
+
+ts::xml::Text* ts::xml::Element::addText(const UString& text)
+{
+    Text* child = new Text(this, text);
+    CheckNonNull(child);
+    return child;
+}
+
+
+//----------------------------------------------------------------------------
+// Add a new text containing hexadecimal data inside this node.
+//----------------------------------------------------------------------------
+
+ts::xml::Text* ts::xml::Element::addHexaText(const void* data, size_t size)
+{
+    // Filter incorrect parameters.
+    if (data == 0) {
+        data = "";
+        size = 0;
+    }
+
+    // Format the data.
+    const size_t dep = depth();
+    const UString hex(UString::Dump(data, size, UString::HEXA | UString::BPL, 2 * dep, 16));
+
+    // Add the text node. Try to indent it in a nice way.
+    return addText(u"\n" + hex + UString(dep == 0 ? 0 : 2 * (dep - 1), u' '));
+}
+
+
+//----------------------------------------------------------------------------
 // Attribute map management.
 //----------------------------------------------------------------------------
 
@@ -268,10 +321,155 @@ bool ts::xml::Element::hasAttribute(const UString& name) const
     return findAttribute(name) != _attributes.end();
 }
 
-const ts::xml::Attribute& ts::xml::Element::attribute(const UString& attributeName) const
+ts::xml::Attribute& ts::xml::Element::refAttribute(const UString& name)
+{
+    const AttributeMap::iterator it(_attributes.find(attributeKey(name)));
+    return it == _attributes.end() ? (_attributes[attributeKey(name)] = Attribute(name, u"")) : it->second;
+}
+
+
+//----------------------------------------------------------------------------
+// Get an attribute.
+//----------------------------------------------------------------------------
+
+const ts::xml::Attribute& ts::xml::Element::attribute(const UString& attributeName, bool silent) const
 {
     const AttributeMap::const_iterator it(findAttribute(attributeName));
-    return it == _attributes.end() ? Attribute::INVALID : it->second;
+    if (it != _attributes.end()) {
+        // Found the real attribute.
+        return it->second;
+    }
+    if (!silent) {
+        _report.error(u"attribute '%s' not found in <%s>, line %d", {attributeName, name(), lineNumber()});
+    }
+    // Return a reference to a static invalid attribute.
+    return Attribute::INVALID;
+}
+
+
+//----------------------------------------------------------------------------
+// Get a string attribute of an XML element.
+//----------------------------------------------------------------------------
+
+bool ts::xml::Element::getAttribute(UString& value,
+                                    const UString& name,
+                                    bool required,
+                                    const UString& defValue,
+                                    size_t minSize,
+                                    size_t maxSize) const
+{
+    const Attribute& attr(attribute(name, !required));
+    if (!attr.isValid()) {
+        // Attribute not present.
+        value = defValue;
+        return !required;
+    }
+    else {
+        // Attribute found, get its value.
+        value = attr.value();
+        if (value.length() >= minSize && value.length() <= maxSize) {
+            return true;
+        }
+
+        // Incorrect value size.
+        if (maxSize == UNLIMITED) {
+            _report.error(u"Incorrect value for attribute '%s' in <%s>, line %d, contains %d characters, at least %d required",
+                          {name, this->name(), attr.lineNumber(), value.length(), minSize});
+            return false;
+        }
+        else {
+            _report.error(u"Incorrect value for attribute '%s' in <%s>, line %d, contains %d characters, allowed %d to %d",
+                          {name, this->name(), attr.lineNumber(), value.length(), minSize, maxSize});
+            return false;
+        }
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Get a boolean attribute of an XML element.
+//----------------------------------------------------------------------------
+
+bool ts::xml::Element::getBoolAttribute(bool& value, const UString& name, bool required, bool defValue) const
+{
+    UString str;
+    if (!getAttribute(str, name, required, UString::TrueFalse(defValue))) {
+        return false;
+    }
+    else if (str.similar(u"true") || str.similar(u"yes") || str.similar(u"1")) {
+        value = true;
+        return true;
+    }
+    else if (str.similar(u"false") || str.similar(u"no") || str.similar(u"0")) {
+        value = false;
+        return true;
+    }
+    else {
+        _report.error(u"'%s' is not a valid boolean value for attribute '%s' in <%s>, line %d", {str, name, this->name(), lineNumber()});
+        return false;
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Get an enumeration attribute of an XML element.
+//----------------------------------------------------------------------------
+
+bool ts::xml::Element::getEnumAttribute(int& value, const Enumeration& definition, const UString& name, bool required, int defValue) const
+{
+    UString str;
+    if (!getAttribute(str, name, required, UString::Decimal(defValue))) {
+        return false;
+    }
+    const int val = definition.value(str, false);
+    if (val == Enumeration::UNKNOWN) {
+        _report.error(u"'%s' is not a valid value for attribute '%s' in <%s>, line %d", {str, name, this->name(), lineNumber()});
+        return false;
+    }
+    else {
+        value = val;
+        return true;
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Get a date/time attribute of an XML element.
+//----------------------------------------------------------------------------
+
+bool ts::xml::Element::getDateTimeAttribute(Time& value, const UString& name, bool required, const Time& defValue) const
+{
+    UString str;
+    if (!getAttribute(str, name, required, Attribute::DateTimeToString(defValue))) {
+        return false;
+    }
+
+    // Analyze the time string.
+    const bool ok = Attribute::DateTimeFromString(value, str);
+    if (!ok) {
+        _report.error(u"'%s' is not a valid date/time for attribute '%s' in <%s>, line %d, use \"YYYY-MM-DD hh:mm:ss\"", {str, name, this->name(), lineNumber()});
+    }
+    return ok;
+}
+
+
+//----------------------------------------------------------------------------
+// Get a time attribute of an XML element in "hh:mm:ss" format.
+//----------------------------------------------------------------------------
+
+bool ts::xml::Element::getTimeAttribute(Second& value, const UString& name, bool required, Second defValue) const
+{
+    UString str;
+    if (!getAttribute(str, name, required, Attribute::TimeToString(defValue))) {
+        return false;
+    }
+
+    // Analyze the time string.
+    const bool ok = Attribute::TimeFromString(value, str);
+    if (!ok) {
+        _report.error(u"'%s' is not a valid time for attribute '%s' in <%s>, line %d, use \"hh:mm:ss\"", {str, name, this->name(), lineNumber()});
+    }
+    return ok;
 }
 
 

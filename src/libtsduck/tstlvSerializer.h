@@ -293,7 +293,7 @@ namespace ts {
             //! @tparam INT Integer type.
             //! @param [in] i Integer value to insert.
             //!
-            template <typename INT>
+            template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
             void put(INT i) {_bb->append<INT>(i);}
 
             //!
@@ -302,7 +302,7 @@ namespace ts {
             //! @param [in] tag Message or parameter tag.
             //! @param [in] i Integer value to insert.
             //!
-            template <typename INT>
+            template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
             void put(TAG tag, INT i) {_bb->appendUInt16(tag); _bb->appendUInt16(sizeof(INT)); _bb->append<INT>(i);}
 
             //!
@@ -311,7 +311,7 @@ namespace ts {
             //! @param [in] tag Message or parameter tag.
             //! @param [in] val Vector of integer values to insert.
             //!
-            template <typename INT>
+            template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
             void put(TAG tag, const std::vector<INT>& val)
             {
                 for (typename std::vector<INT>::const_iterator it = val.begin(); it != val.end(); ++it) {

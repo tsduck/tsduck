@@ -243,7 +243,8 @@ namespace ts {
         //! @param [in] def Default value to return if less than @a n bits before end of stream.
         //! @return The value of the next @a n bits.
         //!
-        template <typename INT> INT read(size_t n, INT def = 0)
+        template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+        INT read(size_t n, INT def = 0)
         {
             if (_next_bit + n > _end_bit) {
                 return def;

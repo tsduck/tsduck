@@ -298,6 +298,7 @@ HEADERS += \
     ../../../src/libtsduck/tsxmlDeclaration.h \
     ../../../src/libtsduck/tsxmlDocument.h \
     ../../../src/libtsduck/tsxmlElement.h \
+    ../../../src/libtsduck/tsxmlElementTemplate.h \
     ../../../src/libtsduck/tsxmlText.h \
     ../../../src/libtsduck/tsxmlUnknown.h \
     ../../../src/libtsduck/private/tsxmlParser.h

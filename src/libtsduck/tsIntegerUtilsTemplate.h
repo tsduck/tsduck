@@ -47,7 +47,7 @@
 // Perform a bounded addition without overflow.
 //----------------------------------------------------------------------------
 
-template <typename INT>
+template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
 INT ts::BoundedAdd(INT a, INT b)
 {
     if (std::numeric_limits<INT>::is_signed) {
@@ -82,7 +82,7 @@ INT ts::BoundedAdd(INT a, INT b)
 // Perform a bounded subtraction without overflow.
 //----------------------------------------------------------------------------
 
-template <typename INT>
+template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
 INT ts::BoundedSub(INT a, INT b)
 {
     if (std::numeric_limits<INT>::is_signed) {

@@ -607,8 +607,9 @@
 #endif
 
 
-// Some standard Windows headers have the very-very bad idea
-// to define common words as macros
+// Some standard Windows headers have the very-very bad idea to define common
+// words as macros. Also, common function names, used by TSDuck, are defined
+// as macros, breaking C++ visibility rules.
 
 #if defined(min)
 #undef min
@@ -640,6 +641,14 @@
 
 #if defined(Yield)
 #undef Yield
+#endif
+
+#if defined(CreateDirectory)
+#undef CreateDirectory
+#endif
+
+#if defined(DeleteFile)
+#undef DeleteFile
 #endif
 
 // For platforms not supporting large files:
@@ -1931,7 +1940,7 @@ namespace ts {
     //! @return On little-endian platforms, return the value of @a x where bytes were swapped.
     //! On big-endian platforms, return the value of @a x unmodified.
     //!
-    template <typename INT>
+    template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
     TSDUCKDLL inline INT CondByteSwapBE(INT x)
     {
 #if defined(TS_BIG_ENDIAN)
@@ -1956,7 +1965,7 @@ namespace ts {
     //! @return On big-endian platforms, return the value of @a x where bytes were swapped.
     //! On little-endian platforms, return the value of @a x unmodified.
     //!
-    template <typename INT>
+    template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
     TSDUCKDLL inline INT CondByteSwapLE(INT x)
     {
 #if defined(TS_BIG_ENDIAN)
@@ -1981,7 +1990,7 @@ namespace ts {
     //! @return On little-endian platforms, return the value of @a x where bytes were swapped.
     //! On big-endian platforms, return the value of @a x unmodified.
     //!
-    template <typename INT>
+    template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
     TSDUCKDLL inline INT CondByteSwap (INT x)
     {
         return CondByteSwapBE<INT>(x);
@@ -1994,7 +2003,7 @@ namespace ts {
     //! @param [in] p An address pointing to an INT in big endian representation.
     //! @return The INT value in native byte order, deserialized from @a p.
     //!
-    template <typename INT>
+    template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
     TSDUCKDLL inline INT GetInt (const void* p)
     {
         return CondByteSwapBE<INT>(*(static_cast<const INT*>(p)));
@@ -2007,7 +2016,7 @@ namespace ts {
     //! @param [in] p An address pointing to an INT in big endian representation.
     //! @return The INT value in native byte order, deserialized from @a p.
     //!
-    template <typename INT>
+    template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
     TSDUCKDLL inline INT GetIntBE (const void* p)
     {
         return CondByteSwapBE<INT>(*(static_cast<const INT*>(p)));
@@ -2020,7 +2029,7 @@ namespace ts {
     //! @param [in] p An address pointing to an INT in little endian representation.
     //! @return The INT value in native byte order, deserialized from @a p.
     //!
-    template <typename INT>
+    template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
     TSDUCKDLL inline INT GetIntLE (const void* p)
     {
         return CondByteSwapLE<INT>(*(static_cast<const INT*>(p)));
@@ -2033,7 +2042,7 @@ namespace ts {
     //! @param [in] p An address pointing to an INT in big endian representation.
     //! @param [out] i The INT value in native byte order, deserialized from @a p.
     //!
-    template <typename INT>
+    template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
     TSDUCKDLL inline void GetInt (const void* p, INT& i)
     {
         i = CondByteSwapBE<INT>(*(static_cast<const INT*>(p)));
@@ -2046,7 +2055,7 @@ namespace ts {
     //! @param [in] p An address pointing to an INT in big endian representation.
     //! @param [out] i The INT value in native byte order, deserialized from @a p.
     //!
-    template <typename INT>
+    template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
     TSDUCKDLL inline void GetIntBE (const void* p, INT& i)
     {
         i = CondByteSwapBE<INT>(*(static_cast<const INT*>(p)));
@@ -2059,7 +2068,7 @@ namespace ts {
     //! @param [in] p An address pointing to an INT in little endian representation.
     //! @param [out] i The INT value in native byte order, deserialized from @a p.
     //!
-    template <typename INT>
+    template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
     TSDUCKDLL inline void GetIntLE (const void* p, INT& i)
     {
         i = CondByteSwapLE<INT>(*(static_cast<const INT*>(p)));
@@ -2072,7 +2081,7 @@ namespace ts {
     //! @param [out] p An address where to serialize the integer.
     //! @param [in]  i The INT in native byte order to serialize in big endian representation.
     //!
-    template <typename INT>
+    template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
     TSDUCKDLL inline void PutInt (void* p, INT i)
     {
         *(static_cast<INT*>(p)) = CondByteSwapBE<INT>(i);
@@ -2085,7 +2094,7 @@ namespace ts {
     //! @param [out] p An address where to serialize the integer.
     //! @param [in]  i The INT in native byte order to serialize in big endian representation.
     //!
-    template <typename INT>
+    template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
     TSDUCKDLL inline void PutIntBE (void* p, INT i)
     {
         *(static_cast<INT*>(p)) = CondByteSwapBE<INT>(i);
@@ -2098,7 +2107,7 @@ namespace ts {
     //! @param [out] p An address where to serialize the integer.
     //! @param [in]  i The INT in native byte order to serialize in little endian representation.
     //!
-    template <typename INT>
+    template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
     TSDUCKDLL inline void PutIntLE (void* p, INT i)
     {
         *(static_cast<INT*>(p)) = CondByteSwapLE<INT>(i);
