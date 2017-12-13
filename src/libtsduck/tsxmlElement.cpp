@@ -146,6 +146,13 @@ bool ts::xml::Element::getTextChild(UString& data,
 // Get a text child of an element.
 //----------------------------------------------------------------------------
 
+ts::UString ts::xml::Element::text(bool trim) const
+{
+    UString str;
+    getText(str, trim);
+    return str;
+}
+
 bool ts::xml::Element::getText(UString& data, const bool trim, size_t minSize, size_t maxSize) const
 {
     data.clear();
@@ -286,7 +293,7 @@ bool ts::xml::Element::parseNode(Parser& parser, const Node* parent)
     while (ok) {
         UString name;
         UString value;
-        UChar* quote = 0;
+        const UChar* quote = 0;
 
         parser.skipWhiteSpace();
 
@@ -305,6 +312,8 @@ bool ts::xml::Element::parseNode(Parser& parser, const Node* parent)
             // Expect '='.
             parser.skipWhiteSpace();
             ok = parser.match(u"=", true);
+
+            // Expect either single or double quote. Both can be used for the attribute value.
             if (ok) {
                 parser.skipWhiteSpace();
                 if (parser.match(u"\"", true)) {

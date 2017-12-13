@@ -127,6 +127,13 @@ namespace ts {
             bool getText(UString& data, bool trim = true, size_t minSize = 0, size_t maxSize = UNLIMITED) const;
 
             //!
+            //! Get text children of an element.
+            //! @param [in] trim If true, remove leading and trailing spaces.
+            //! @return The content of the text children, empty if non-existent.
+            //!
+            UString text(bool trim = true) const;
+
+            //!
             //! Get text in a child containing hexadecimal data.
             //! @param [out] data The content of the text in the child element.
             //! @param [in] name Name of the child element to search.
@@ -231,7 +238,7 @@ namespace ts {
 
             // Inherited from xml::Node.
             virtual void clear() override;
-            virtual UString typeName() const { return u"Element"; }
+            virtual UString typeName() const override { return u"Element"; }
 
         protected:
             // Inherited from xml::Node.

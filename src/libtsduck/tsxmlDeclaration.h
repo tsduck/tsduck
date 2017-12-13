@@ -51,7 +51,7 @@ namespace ts {
             Declaration(Report& report = NULLREP, size_t line = 0) : Node(report, line) {}
 
             // Inherited from xml::Node.
-            virtual UString typeName() const { return u"Declaration"; }
+            virtual UString typeName() const override { return u"Declaration"; }
 
         protected:
             // Inherited from xml::Node.

@@ -112,7 +112,7 @@ namespace ts {
         template <typename T>
         const T* ringNext() const
         {
-            return dynamic_cast<T*>(_ring_next);
+            return dynamic_cast<const T*>(_ring_next);
         }
 
         //!
@@ -134,7 +134,7 @@ namespace ts {
         template <typename T>
         const T* ringPrevious() const
         {
-            return dynamic_cast<T*>(_ring_previous);
+            return dynamic_cast<const T*>(_ring_previous);
         }
 
         //!

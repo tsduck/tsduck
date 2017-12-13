@@ -87,7 +87,6 @@ bool ts::xml::Document::parseNode(Parser& parser, const Node* parent)
     if (!parseChildren(parser)) {
         return false;
     }
-    std::cerr << "document : " << debug() << std::endl; //@@@@
 
     // We must have reached the end of document.
     if (!parser.eof()) {
@@ -105,7 +104,6 @@ bool ts::xml::Document::parseNode(Parser& parser, const Node* parent)
 
     // Check presence of root element.
     if (dynamic_cast<Element*>(child) == 0) {
-        std::cerr << "document root: " << (child == 0 ? u"null" : child->debug()) << std::endl; //@@@@
         _report.error(u"invalid XML document, no root element found");
         return false;
     }
