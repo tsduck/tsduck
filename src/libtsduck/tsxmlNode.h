@@ -74,8 +74,12 @@ namespace ts {
         //!
         //! Base class for all XML objects.
         //!
-        class TSDUCKDLL Node :
-            protected RingNode  // used to link all siblings, children of the same parent
+        //! Implementation note on inheritance: Node is a subclass of RingNode. The "ring" is
+        //! used to link all siblings. This inheritance should be private since it is an
+        //! internal characteristics of Node. However, if we make this inheritance private,
+        //! the dynamic_cast operations in RingNode fail. This is a very annoying C++ feature.
+        //!
+        class TSDUCKDLL Node : public RingNode
         {
         public:
             //!

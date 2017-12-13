@@ -84,7 +84,7 @@ namespace ts {
             Element* rootElement() { return firstChildElement(); }
 
             // Inherited from xml::Node.
-            virtual UString typeName() const { return u"Document"; }
+            virtual UString typeName() const override { return u"Document"; }
 
         protected:
             // Inherited from xml::Node.

@@ -58,7 +58,7 @@ namespace ts {
             bool isCData() const { return _isCData; }
 
             // Inherited from xml::Node.
-            virtual UString typeName() const { return u"Text"; }
+            virtual UString typeName() const override { return u"Text"; }
 
         protected:
             // Inherited from xml::Node.

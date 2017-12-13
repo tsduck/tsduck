@@ -193,17 +193,14 @@ bool ts::xml::Node::parseChildren(Parser& parser)
     // Loop on each token we find.
     // Exit loop either at end of document or before a "</" sequence.
     while ((node = parser.identify()) != 0) {
-        std::cerr << "parser identify returned: " << node->debug() << std::endl; //@@@@
 
         // Read the complete node.
         if (node->parseNode(parser, this)) {
             // The child node is fine, insert it.
-            std::cerr << "accepted: " << node->debug() << std::endl; //@@@@
             node->reparent(this);
         }
         else {
             _report.error(u"line %d: parsing error", {node->lineNumber()});
-            std::cerr << "rejected: " << node->debug() << std::endl; //@@@@
             delete node;
             result = false;
         }
