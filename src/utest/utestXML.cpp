@@ -31,10 +31,11 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsXML.h"
 #include "tsxmlDocument.h"
 #include "tsxmlElement.h"
 #include "tsCerrReport.h"
+#include "tsReportBuffer.h"
+#include "tsSysUtils.h"
 #include "utestCppUnitTest.h"
 TSDUCK_SOURCE;
 
@@ -46,22 +47,27 @@ TSDUCK_SOURCE;
 class XMLTest: public CppUnit::TestFixture
 {
 public:
+    XMLTest();
+
     virtual void setUp() override;
     virtual void tearDown() override;
 
     void testDocument();
     void testInvalid();
+    void testFileBOM();
     void testValidation();
     void testCreation();
 
     CPPUNIT_TEST_SUITE(XMLTest);
     CPPUNIT_TEST(testDocument);
     CPPUNIT_TEST(testInvalid);
+    CPPUNIT_TEST(testFileBOM);
     CPPUNIT_TEST(testValidation);
     CPPUNIT_TEST(testCreation);
     CPPUNIT_TEST_SUITE_END();
 
 private:
+    ts::UString _tempFileName;
     ts::Report& report();
 };
 
@@ -72,14 +78,22 @@ CPPUNIT_TEST_SUITE_REGISTRATION(XMLTest);
 // Initialization.
 //----------------------------------------------------------------------------
 
+// Constructor.
+XMLTest::XMLTest() :
+    _tempFileName(ts::TempFile(u".tmp.xml"))
+{
+}
+
 // Test suite initialization method.
 void XMLTest::setUp()
 {
+    ts::DeleteFile(_tempFileName);
 }
 
 // Test suite cleanup method.
 void XMLTest::tearDown()
 {
+    ts::DeleteFile(_tempFileName);
 }
 
 ts::Report& XMLTest::report()
@@ -123,9 +137,9 @@ void XMLTest::testDocument()
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"val1", root->attribute(u"attr1").value());
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"val1", root->attribute(u"AtTr1").value());
     CPPUNIT_ASSERT(!root->hasAttribute(u"nonexistent"));
-    CPPUNIT_ASSERT(!root->attribute(u"nonexistent").isValid());
-    CPPUNIT_ASSERT(root->attribute(u"nonexistent").value().empty());
-    CPPUNIT_ASSERT(root->attribute(u"nonexistent").name().empty());
+    CPPUNIT_ASSERT(!root->attribute(u"nonexistent", true).isValid());
+    CPPUNIT_ASSERT(root->attribute(u"nonexistent", true).value().empty());
+    CPPUNIT_ASSERT(root->attribute(u"nonexistent", true).name().empty());
 
     ts::xml::Element* elem = root->firstChildElement();
     CPPUNIT_ASSERT(elem != 0);
@@ -166,23 +180,63 @@ void XMLTest::testDocument()
 void XMLTest::testInvalid()
 {
     // Incorrect XML document
-    static const char* xmlContent =
-        "<?xml version='1.0' encoding='UTF-8'?>\n"
-        "<foo>\n"
-        "</bar>";
+    static const ts::UChar* xmlContent =
+        u"<?xml version='1.0' encoding='UTF-8'?>\n"
+        u"<foo>\n"
+        u"</bar>";
 
-    ts::XML::Document doc;
-    CPPUNIT_ASSERT_EQUAL(tinyxml2::XML_ERROR_MISMATCHED_ELEMENT, doc.Parse(xmlContent));
-    CPPUNIT_ASSERT_STRINGS_EQUAL("foo", doc.GetErrorStr1());
-    CPPUNIT_ASSERT_STRINGS_EQUAL("", doc.GetErrorStr2());
+    ts::ReportBuffer<> rep;
+    ts::xml::Document doc(rep);
+    CPPUNIT_ASSERT(!doc.parse(xmlContent));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"Error: line 3: parsing error, expected </foo> to match <foo> at line 2", rep.getMessages());
+}
+
+void XMLTest::testFileBOM()
+{
+    // Binary content of XML file with BOM, accented characters and HTML entities.
+    const ts::ByteBlock fileData({
+        0xEF, 0xBB, 0xBF, 0x3C, 0x3F, 0x78, 0x6D, 0x6C, 0x20, 0x76, 0x65, 0x72, 0x73, 0x69, 0x6F, 0x6E,
+        0x3D, 0x27, 0x31, 0x2E, 0x30, 0x27, 0x20, 0x65, 0x6E, 0x63, 0x6F, 0x64, 0x69, 0x6E, 0x67, 0x3D,
+        0x27, 0x55, 0x54, 0x46, 0x2D, 0x38, 0x27, 0x3F, 0x3E, 0x0A, 0x3C, 0x66, 0x6F, 0x6F, 0x3E, 0x0A,
+        0x20, 0x20, 0x3C, 0x62, 0xC3, 0xA0, 0x41, 0xC3, 0xA7, 0x20, 0x66, 0xC3, 0xB9, 0x3D, 0x22, 0x63,
+        0xC3, 0xA9, 0x22, 0x3E, 0x0A, 0x20, 0x20, 0x20, 0x20, 0x66, 0x26, 0x6C, 0x74, 0x3B, 0x26, 0x67,
+        0x74, 0x3B, 0x0A, 0x20, 0x20, 0x3C, 0x2F, 0x42, 0xC3, 0x80, 0x41, 0xC3, 0x87, 0x3E, 0x0A, 0x3C,
+        0x2F, 0x66, 0x6F, 0x6F, 0x3E, 0x0A,
+    });
+
+    const ts::UString rootName(u"foo");
+    const ts::UString childName({u'b', ts::LATIN_SMALL_LETTER_A_WITH_GRAVE, u'A', ts::LATIN_SMALL_LETTER_C_WITH_CEDILLA});
+    const ts::UString childAttrName({u'f', ts::LATIN_SMALL_LETTER_U_WITH_GRAVE});
+    const ts::UString childAttrValue({u'c', ts::LATIN_SMALL_LETTER_E_WITH_ACUTE});
+    const ts::UString childText1(u"\n    f<>\n  ");
+    const ts::UString childText2(u"f<>");
+
+    CPPUNIT_ASSERT(fileData.saveToFile(_tempFileName, &report()));
+
+    ts::xml::Document doc(report());
+    CPPUNIT_ASSERT(doc.load(_tempFileName));
+
+    ts::xml::Element* root = doc.rootElement();
+    CPPUNIT_ASSERT_EQUAL(size_t(2), doc.childrenCount());
+    CPPUNIT_ASSERT(root != 0);
+    CPPUNIT_ASSERT_EQUAL(size_t(1), root->childrenCount());
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(rootName, root->name());
+
+    ts::xml::Element* elem = root->firstChildElement();
+    CPPUNIT_ASSERT(elem != 0);
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(childName, elem->name());
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(childAttrName, elem->attribute(childAttrName).name());
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(childAttrValue, elem->attribute(childAttrName).value());
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(childText1, elem->text(false));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(childText2, elem->text(true));
+
+    CPPUNIT_ASSERT(ts::DeleteFile(_tempFileName) == ts::SYS_SUCCESS);
 }
 
 void XMLTest::testValidation()
 {
-    ts::XML xml(CERR);
-
-    ts::XML::Document model;
-    CPPUNIT_ASSERT(xml.loadDocument(model, u"tsduck.xml"));
+    ts::xml::Document model(report());
+    CPPUNIT_ASSERT(model.load(u"tsduck.xml"));
 
     const ts::UString xmlContent(
         u"<?xml version='1.0' encoding='UTF-8'?>\n"
@@ -204,33 +258,47 @@ void XMLTest::testValidation()
         u"  </PMT>\n"
         u"</tsduck>");
 
-    ts::XML::Document doc;
-    CPPUNIT_ASSERT(xml.parseDocument(doc, xmlContent));
-    CPPUNIT_ASSERT(xml.validateDocument(model, doc));
+    ts::xml::Document doc(report());
+    CPPUNIT_ASSERT(doc.parse(xmlContent));
+    CPPUNIT_ASSERT(doc.validate(model));
 }
 
 void XMLTest::testCreation()
 {
-    ts::XML xml(CERR);
-    ts::XML::Document doc;
-    ts::XML::Element* e1 = 0;
-    ts::XML::Element* e2 = 0;
+    ts::xml::Document doc(report());
+    ts::xml::Element* child1 = 0;
+    ts::xml::Element* child2 = 0;
+    ts::xml::Element* subchild2 = 0;
 
-    ts::XML::Element* root = xml.initializeDocument(&doc, u"theRoot");
+    ts::xml::Element* root = doc.initialize(u"theRoot");
     CPPUNIT_ASSERT(root != 0);
-    CPPUNIT_ASSERT_EQUAL(0, ts::XML::NodeDepth(&doc));
-    CPPUNIT_ASSERT_EQUAL(1, ts::XML::NodeDepth(root));
+    CPPUNIT_ASSERT_EQUAL(size_t(0), doc.depth());
+    CPPUNIT_ASSERT_EQUAL(size_t(1), root->depth());
 
-    CPPUNIT_ASSERT((e1 = xml.addElement(root, u"child1")) != 0);
-    CPPUNIT_ASSERT_EQUAL(2, ts::XML::NodeDepth(e1));
-    e1->SetAttribute("str", "a string");
-    e1->SetAttribute("int", -47);
-    CPPUNIT_ASSERT(xml.addElement(e1, u"subChild1") != 0);
-    CPPUNIT_ASSERT((e2 = xml.addElement(e1, u"subChild2")) != 0);
-    e2->SetAttribute("int64", TS_CONST64(0x7FFFFFFFFFFFFFFF));
-    CPPUNIT_ASSERT((e2 = xml.addElement(root, u"child2")) != 0);
-    CPPUNIT_ASSERT(xml.addElement(e2, u"fooBar") != 0);
+    CPPUNIT_ASSERT((child1 = root->addElement(u"child1")) != 0);
+    CPPUNIT_ASSERT_EQUAL(size_t(2), child1->depth());
+    child1->setAttribute(u"str", u"a string");
+    child1->setIntAttribute(u"int", -47);
+    CPPUNIT_ASSERT(child1->addElement(u"subChild1") != 0);
+    CPPUNIT_ASSERT((subchild2 = child1->addElement(u"subChild2")) != 0);
+    subchild2->setIntAttribute(u"int64", TS_CONST64(0x7FFFFFFFFFFFFFFF));
 
+    CPPUNIT_ASSERT((child2 = root->addElement(u"child2")) != 0);
+    CPPUNIT_ASSERT(child2->addElement(u"fooBar") != 0);
+
+    ts::UString str;
+    CPPUNIT_ASSERT(child1->getAttribute(str, u"str", true));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"a string", str);
+
+    int i;
+    CPPUNIT_ASSERT(child1->getIntAttribute(i, u"int", true));
+    CPPUNIT_ASSERT_EQUAL(-47, i);
+
+    int64_t i64;
+    CPPUNIT_ASSERT(subchild2->getIntAttribute(i64, u"int64", true));
+    CPPUNIT_ASSERT_EQUAL(TS_CONST64(0x7FFFFFFFFFFFFFFF), i64);
+
+    /*@@@@@
     ts::UString text(xml.toString(doc));
     utest::Out() << "XMLTest::testCreation: " << text << std::endl;
 
@@ -246,4 +314,6 @@ void XMLTest::testCreation()
         u"  </child2>\n"
         u"</theRoot>\n",
         text);
+
+    @@@@@*/
 }

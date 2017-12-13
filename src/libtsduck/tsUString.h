@@ -279,7 +279,7 @@ namespace ts {
         //! Can be of any integer type, including a signed type.
         //! @param [in] alloc Allocator.
         //!
-        template <typename CHARTYPE, typename INT>
+        template <typename CHARTYPE, typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
         UString(const std::vector<CHARTYPE>& vec, INT count, const allocator_type& alloc = allocator_type());
 
         //!
@@ -302,7 +302,7 @@ namespace ts {
         //! Can be of any integer type, including a signed type.
         //! @param [in] alloc Allocator.
         //!
-        template <typename CHARTYPE, std::size_t SIZE, typename INT>
+        template <typename CHARTYPE, std::size_t SIZE, typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
         UString(const std::array<CHARTYPE, SIZE>& arr, INT count, const allocator_type& alloc = allocator_type());
 
         //!
@@ -555,7 +555,7 @@ namespace ts {
         //! Can be of any integer type, including a signed type.
         //! @return A reference to this object.
         //!
-        template <typename CHARTYPE, typename INT>
+        template <typename CHARTYPE, typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
         UString& assign(const std::vector<CHARTYPE>& vec, INT count);
 
         //!
@@ -578,7 +578,7 @@ namespace ts {
         //! Can be of any integer type, including a signed type.
         //! @return A reference to this object.
         //!
-        template <typename CHARTYPE, std::size_t SIZE, typename INT>
+        template <typename CHARTYPE, std::size_t SIZE, typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
         UString& assign(const std::array<CHARTYPE, SIZE>& arr, INT count);
 
         //!
@@ -1068,7 +1068,7 @@ namespace ts {
         //! @param [in] total The total value.
         //! @return A string reprenting the percentage of @a value in @a total.
         //!
-        template<typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+        template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
         static UString Percentage(INT value, INT total);
 
         //!

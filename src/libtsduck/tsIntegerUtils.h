@@ -45,7 +45,7 @@ namespace ts {
     //! case of underflow or overflow, the result is the min or max
     //! value of the type, respectively.
     //!
-    template <typename INT>
+    template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
     INT BoundedAdd(INT a, INT b);
 
     //!
@@ -57,7 +57,7 @@ namespace ts {
     //! case of underflow or overflow, the result is the min or max
     //! value of the type, respectively.
     //!
-    template <typename INT>
+    template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
     INT BoundedSub(INT a, INT b);
 
     //!
@@ -67,7 +67,7 @@ namespace ts {
     //! @param [in] f A factor.
     //! @return The value @a x rounded down to previous multiple of @a f.
     //!
-    template<typename INT>
+    template<typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
     inline INT RoundDown(INT x, INT f)
     {
         return x - x % f;
@@ -80,7 +80,7 @@ namespace ts {
     //! @param [in] f A factor.
     //! @return The value @a x rounded up to next multiple of @a f.
     //!
-    template<typename INT>
+    template<typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
     inline INT RoundUp(INT x, INT f)
     {
         return RoundDown(x + f - 1, f);

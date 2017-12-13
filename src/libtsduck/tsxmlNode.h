@@ -55,11 +55,18 @@ namespace ts {
     //! - Case-insensitive search of names and attributes.
     //! - Getting values and attributes with cardinality and value bounds checks.
     //! - Print / format any subset of a document.
+    //! - XML document validation using a template.
     //!
     namespace xml {
 
         class Parser;
+        class Document;
         class Element;
+        class Attribute;
+        class Text;
+        class Comment;
+        class Unknown;
+        class Declaration;
 
         //!
         //! Vector of constant elements.
@@ -97,17 +104,36 @@ namespace ts {
             //!
             //! Attach the node to a new parent.
             //! The node is first detached from its previous parent.
-            //! @param [in,out] newParent New parent. The child is added at the end of the list of children.
-            //! If zero, the node becomes orphan. In that case, the node will no longer be freed by its
-            //! parent and must be explicitly deleted.
+            //! @param [in,out] newParent New parent. If zero, the node becomes orphan. In that 
+            //! case, the node will no longer be freed by its parent and must be explicitly deleted.
+            //! @param [in] last If true, the child is added at the end of the list of children.
+            //! If false, it is added at the beginning.
             //!
-            virtual void reparent(Node* newParent);
+            virtual void reparent(Node* newParent, bool last = true);
 
             //!
             //! Get the parent's node.
             //! @return The parent's node or zero if this is a top-level document.
             //!
             const Node* parent() const { return _parent; }
+
+            //!
+            //! Get the parent's node.
+            //! @return The parent's node or zero if this is a top-level document.
+            //!
+            Node* parent() { return _parent; }
+
+            //!
+            //! Get the document into which the node is located.
+            //! @return The node's document or zero if there is no document.
+            //!
+            const Document* document() const { return (const_cast<Node*>(this))->document(); }
+
+            //!
+            //! Get the document into which the node is located.
+            //! @return The node's document or zero if there is no document.
+            //!
+            Document* document();
 
             //!
             //! Get the depth of an XML element.
@@ -238,7 +264,14 @@ namespace ts {
             //! @param [in,out] report Where to report errors.
             //! @param [in] line Line number in input document.
             //!
-            Node(Report& report, size_t line = 0);
+            explicit Node(Report& report, size_t line = 0);
+
+            //!
+            //! Constructor.
+            //! @param [in,out] parent The parent document into which the declaration is added.
+            //! @param [in] value Value of the node.
+            //!
+            explicit Node(Node* parent, const UString& value = UString());
 
             //!
             //! Parse the node.

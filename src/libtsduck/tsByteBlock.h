@@ -39,6 +39,7 @@
 namespace ts {
 
     class UString;
+    class Report;
 
     //!
     //! Definition of a generic block of bytes.
@@ -403,11 +404,81 @@ namespace ts {
         //! @tparam INT Integer type to serialize.
         //! @param [in] i Integer value to serialize at the end of the block.
         //!
-        template<typename INT>
+        template<typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
         void append(INT i)
         {
             PutInt<INT>(enlarge(sizeof(INT)), i);
         }
+
+        //!
+        //! Read a byte block from a binary file.
+        //! @param [in] fileName Input file name.
+        //! @param [in] maxSize Maximum size to read. By default, read up to end of file or error.
+        //! @param [in,out] report If not null, where to report errors.
+        //! @return True on success, false on error.
+        //!
+        bool loadFromFile(const UString& fileName, size_t maxSize = std::numeric_limits<size_t>::max(), Report* report = 0);
+
+        //!
+        //! Read a byte block from a binary file and append to existing content.
+        //! @param [in] fileName Input file name.
+        //! @param [in] maxSize Maximum size to read. By default, read up to end of file or error.
+        //! @param [in,out] report If not null, where to report errors.
+        //! @return True on success, false on error.
+        //!
+        bool appendFromFile(const UString& fileName, size_t maxSize = std::numeric_limits<size_t>::max(), Report* report = 0);
+
+        //!
+        //! Save a byte block to a binary file.
+        //! @param [in] fileName Output file name.
+        //! @param [in,out] report If not null, where to report errors.
+        //! @return True on success, false on error.
+        //!
+        bool saveToFile(const UString& fileName, Report* report = 0) const
+        {
+            return writeToFile(fileName, std::ios::out | std::ios::binary, report);
+        }
+
+        //!
+        //! Save a byte block to a binary file, append to existing file content.
+        //! @param [in] fileName Output file name.
+        //! @param [in,out] report If not null, where to report errors.
+        //! @return True on success, false on error.
+        //!
+        bool appendToFile(const UString& fileName, Report* report = 0) const
+        {
+            return writeToFile(fileName, std::ios::out | std::ios::app | std::ios::binary, report);
+        }
+
+        //!
+        //! Read a byte block from standard streams (binary mode).
+        //! @param [in,out] strm A standard stream in input mode.
+        //! @param [in] maxSize Maximum size to read. By default, read up to end of file or error.
+        //! @return A reference to the @a strm object.
+        //!
+        std::istream& read(std::istream& strm, size_t maxSize = std::numeric_limits<size_t>::max());
+
+        //!
+        //! Read a byte block from standard streams and append to existing content (binary mode).
+        //! @param [in,out] strm A standard stream in input mode.
+        //! @param [in] maxSize Maximum size to read. By default, read up to end of file or error.
+        //! @return A reference to the @a strm object.
+        //!
+        std::istream& append(std::istream& strm, size_t maxSize = std::numeric_limits<size_t>::max());
+
+        //!
+        //! Write a byte to standard streams (binary mode).
+        //! @param [in,out] strm A standard stream in output mode.
+        //! @return A reference to the @a strm object.
+        //!
+        std::ostream& write(std::ostream& strm) const
+        {
+            return strm.write(reinterpret_cast<const char*>(data()), std::streamsize(size()));
+        }
+
+    private:
+        // Common code for saveToFile and appendToFile.
+        bool writeToFile(const UString& fileName, std::ios::openmode mode, Report* report) const;
     };
 
 #if !defined(DOXYGEN)
@@ -425,4 +496,26 @@ namespace ts {
     //! Safe pointer for ByteBlock, thread-safe (MT = multi-thread).
     //!
     typedef SafePtr<ByteBlock, Mutex> ByteBlockPtrMT;
+}
+
+//!
+//! Output operator for ts::ByteBlock on standard binary streams.
+//! @param [in,out] strm A standard stream in binary output mode.
+//! @param [in] bb A byte block.
+//! @return A reference to the @a strm object.
+//!
+TSDUCKDLL inline std::ostream& operator<<(std::ostream& strm, const ts::ByteBlock& bb)
+{
+    return bb.write(strm);
+}
+
+//!
+//! Input operator for ts::ByteBlock from standard binary streams.
+//! @param [in,out] strm A standard stream in binary input mode.
+//! @param [out] bb A byte block.
+//! @return A reference to the @a strm object.
+//!
+TSDUCKDLL inline std::istream& operator>>(std::istream& strm, ts::ByteBlock& bb)
+{
+    return bb.read(strm);
 }

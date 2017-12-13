@@ -32,6 +32,7 @@
 #include "tsxmlDocument.h"
 #include "tsxmlDeclaration.h"
 #include "tsxmlElement.h"
+#include "tsNullReport.h"
 TSDUCK_SOURCE;
 
 
@@ -43,10 +44,17 @@ ts::xml::Node::Node(Report& report, size_t line) :
     RingNode(),
     _report(report),
     _value(),
-    _parent(this),
+    _parent(0),
     _firstChild(0),
     _inputLineNum(line)
 {
+}
+
+ts::xml::Node::Node(Node* parent, const UString& value) :
+    Node(parent == 0 ? *static_cast<Report*>(&NULLREP) : parent->_report, 0)
+{
+    setValue(value);
+    reparent(parent);
 }
 
 
@@ -83,7 +91,7 @@ void ts::xml::Node::clear()
 // Attach the node to a new parent.
 //----------------------------------------------------------------------------
 
-void ts::xml::Node::reparent(Node* newParent)
+void ts::xml::Node::reparent(Node* newParent, bool last)
 {
     // If the parent does not change (including zero), nothing to do.
     if (newParent == _parent) {
@@ -113,8 +121,26 @@ void ts::xml::Node::reparent(Node* newParent)
         else {
             // Insert in the ring of children, "before the first child", meaning at end of list.
             ringInsertBefore(_parent->_firstChild);
+            if (!last) {
+                // If we need to be added as first child, simply adjust the pointer to the first child.
+                _parent->_firstChild = this;
+            }
         }
     }
+}
+
+
+//----------------------------------------------------------------------------
+// Get the document into which the node is located.
+//----------------------------------------------------------------------------
+
+ts::xml::Document* ts::xml::Node::document()
+{
+    Node* node = this;
+    while (node->_parent != 0) {
+        node = node->_parent;
+    }
+    return dynamic_cast<Document*>(node);
 }
 
 
@@ -200,7 +226,7 @@ bool ts::xml::Node::parseChildren(Parser& parser)
             node->reparent(this);
         }
         else {
-            _report.error(u"line %d: parsing error", {node->lineNumber()});
+            // Error, we expect the child's parser to have displayed the error message.
             delete node;
             result = false;
         }

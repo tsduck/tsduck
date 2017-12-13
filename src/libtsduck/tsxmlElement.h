@@ -36,6 +36,7 @@
 #include "tsxmlNode.h"
 #include "tsxmlAttribute.h"
 #include "tsByteBlock.h"
+#include "tsVariable.h"
 
 namespace ts {
     namespace xml {
@@ -55,7 +56,15 @@ namespace ts {
             //! @param [in] line Line number in input document.
             //! @param [in] attributeCase State if attribute names are stored wit case sensitivity.
             //!
-            Element(Report& report = NULLREP, size_t line = 0, CaseSensitivity attributeCase = CASE_INSENSITIVE);
+            explicit Element(Report& report = NULLREP, size_t line = 0, CaseSensitivity attributeCase = CASE_INSENSITIVE);
+
+            //!
+            //! Constructor.
+            //! @param [in,out] parent The parent into which the element is added.
+            //! @param [in] name Name of the element.
+            //! @param [in] attributeCase State if attribute names are stored wit case sensitivity.
+            //!
+            Element(Node* parent, const UString& name, CaseSensitivity attributeCase = CASE_INSENSITIVE);
 
             //!
             //! Get the element name.
@@ -117,7 +126,8 @@ namespace ts {
                               size_t maxSize = UNLIMITED) const;
 
             //!
-            //! Get text children of an element.
+            //! Get text inside an element.
+            //! In practice, concatenate the content of all Text children inside the element.
             //! @param [out] data The content of the text children.
             //! @param [in] trim If true, remove leading and trailing spaces.
             //! @param [in] minSize Minimum allowed size for the value string.
@@ -127,7 +137,8 @@ namespace ts {
             bool getText(UString& data, bool trim = true, size_t minSize = 0, size_t maxSize = UNLIMITED) const;
 
             //!
-            //! Get text children of an element.
+            //! Get text inside an element.
+            //! In practice, concatenate the content of all Text children inside the element.
             //! @param [in] trim If true, remove leading and trailing spaces.
             //! @return The content of the text children, empty if non-existent.
             //!
@@ -149,7 +160,9 @@ namespace ts {
                                   size_t maxSize = UNLIMITED) const;
 
             //!
-            //! Get a text child of an element containing hexadecimal data.
+            //! Get and interpret the hexadecimal data inside the element.
+            //! In practice, concatenate the content of all Text children inside the element
+            //! and interpret the result as hexadecimal data.
             //! @param [out] data Buffer receiving the decoded hexadecimal data.
             //! @param [in] minSize Minimum size of the returned data.
             //! @param [in] maxSize Maximum size of the returned data.
@@ -158,11 +171,36 @@ namespace ts {
             bool getHexaText(ByteBlock& data, size_t minSize = 0, size_t maxSize = UNLIMITED) const;
 
             //!
-            //! Set an attribute.
-            //! @param [in] name Attribute name.
-            //! @param [in] value Attribute value.
+            //! Add a new child element at the end of children.
+            //! @param [in] childName Name of new child element to create.
+            //! @return New child element or null on error.
             //!
-            void setAttribute(const UString& name, const UString& value);
+            Element* addElement(const UString& childName);
+
+            //!
+            //! Add a new text inside this node.
+            //! @param [in] text Text string to add.
+            //! @return New child element or null on error.
+            //!
+            Text* addText(const UString& text);
+
+            //!
+            //! Add a new text containing hexadecimal data inside this node.
+            //! @param [in] data Address of binary data.
+            //! @param [in] size Size in bytes of binary data.
+            //! @return New child element or null on error.
+            //!
+            Text* addHexaText(const void* data, size_t size);
+
+            //!
+            //! Add a new text containing hexadecimal data inside this node.
+            //! @param [in] data Binary data.
+            //! @return New child element or null on error.
+            //!
+            Text* addHexaText(const ByteBlock& data)
+            {
+                return addHexaText(data.data(), data.size());
+            }
 
             //!
             //! Check if an attribute exists in the element.
@@ -174,10 +212,208 @@ namespace ts {
             //!
             //! Get an attribute.
             //! @param [in] attributeName Attribute name.
-            //! @return A constant reference to an attribute. If the argument does not exist, the referenced object is marked invalid.
+            //! @param [in] silent If true, do not report error.
+            //! @return A constant reference to an attribute.
+            //! If the argument does not exist, the referenced object is marked invalid.
             //! The reference is valid as long as the Element object is not modified.
             //!
-            const Attribute& attribute(const UString& attributeName) const;
+            const Attribute& attribute(const UString& attributeName, bool silent = false) const;
+
+            //!
+            //! Set an attribute.
+            //! @param [in] name Attribute name.
+            //! @param [in] value Attribute value.
+            //!
+            void setAttribute(const UString& name, const UString& value);
+
+            //!
+            //! Set a bool attribute to a node.
+            //! @param [in] name Attribute name.
+            //! @param [in] value Attribute value.
+            //!
+            void setBoolAttribute(const UString& name, bool value)
+            {
+                refAttribute(name).setBool(value);
+            }
+
+            //!
+            //! Set an attribute with an integer value to a node.
+            //! @tparam INT An integer type.
+            //! @param [in] name Attribute name.
+            //! @param [in] value Attribute value.
+            //! @param [in] hexa If true, use an hexadecimal representation (0x...).
+            //!
+            template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+            void setIntAttribute(const UString& name, INT value, bool hexa = false)
+            {
+                refAttribute(name).setInteger<INT>(value, hexa);
+            }
+
+            //!
+            //! Set an optional attribute with an integer value to a node.
+            //! @tparam INT An integer type.
+            //! @param [in] name Attribute name.
+            //! @param [in] value Attribute optional value. If the variable is not set, no attribute is set.
+            //! @param [in] hexa If true, use an hexadecimal representation (0x...).
+            //!
+            template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+            void setOptionalIntAttribute(const UString& name, const Variable<INT>& value, bool hexa = false)
+            {
+                if (value.set()) {
+                    refAttribute(name).setInteger<INT>(value.value(), hexa);
+                }
+            }
+
+            //!
+            //! Set an enumeration attribute of a node.
+            //! @param [in] definition The definition of enumeration values.
+            //! @param [in] name Attribute name.
+            //! @param [in] value Attribute value.
+            //!
+            void setEnumAttribute(const Enumeration& definition, const UString& name, int value)
+            {
+                refAttribute(name).setEnum(definition, value);
+            }
+
+            //!
+            //! Set an enumeration attribute of a node.
+            //! @tparam INT An integer type.
+            //! @param [in] definition The definition of enumeration values.
+            //! @param [in] name Attribute name.
+            //! @param [in] value Attribute value.
+            //!
+            template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+            void setIntEnumAttribute(const Enumeration& definition, const UString& name, INT value)
+            {
+                refAttribute(name).setIntEnum(definition, value);
+            }
+
+            //!
+            //! Set a date/time attribute of an XML element.
+            //! @param [in] name Attribute name.
+            //! @param [in] value Attribute value.
+            //!
+            void setDateTimeAttribute(const UString& name, const Time& value)
+            {
+                refAttribute(name).setDateTime(value);
+            }
+
+            //!
+            //! Set a time attribute of an XML element in "hh:mm:ss" format.
+            //! @param [in] name Attribute name.
+            //! @param [in] value Attribute value.
+            //!
+            void setTimeAttribute(const UString& name, Second value)
+            {
+                refAttribute(name).setTime(value);
+            }
+
+            //!
+            //! Get a string attribute of an XML element.
+            //! @param [out] value Returned value of the attribute.
+            //! @param [in] name Name of the attribute.
+            //! @param [in] required If true, generate an error if the attribute is not found.
+            //! @param [in] defValue Default value to return if the attribute is not present.
+            //! @param [in] minSize Minimum allowed size for the value string.
+            //! @param [in] maxSize Maximum allowed size for the value string.
+            //! @return True on success, false on error.
+            //!
+            bool getAttribute(UString& value,
+                              const UString& name,
+                              bool required = false,
+                              const UString& defValue = UString(),
+                              size_t minSize = 0,
+                              size_t maxSize = UNLIMITED) const;
+
+            //!
+            //! Get a boolean attribute of an XML element.
+            //! @param [out] value Returned value of the attribute.
+            //! @param [in] name Name of the attribute.
+            //! @param [in] required If true, generate an error if the attribute is not found.
+            //! @param [in] defValue Default value to return if the attribute is not present.
+            //! @return True on success, false on error.
+            //!
+            bool getBoolAttribute(bool& value, const UString& name, bool required = false, bool defValue = false) const;
+
+            //!
+            //! Get an integer attribute of an XML element.
+            //! @tparam INT An integer type.
+            //! @param [out] value Returned value of the attribute.
+            //! @param [in] name Name of the attribute.
+            //! @param [in] required If true, generate an error if the attribute is not found.
+            //! @param [in] defValue Default value to return if the attribute is not present.
+            //! @param [in] minValue Minimum allowed value for the attribute.
+            //! @param [in] maxValue Maximum allowed value for the attribute.
+            //! @return True on success, false on error.
+            //!
+            template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+            bool getIntAttribute(INT& value,
+                                 const UString& name,
+                                 bool required = false,
+                                 INT defValue = 0,
+                                 INT minValue = std::numeric_limits<INT>::min(),
+                                 INT maxValue = std::numeric_limits<INT>::max()) const;
+
+            //!
+            //! Get an optional integer attribute of an XML element.
+            //! @tparam INT An integer type.
+            //! @param [out] value Returned value of the attribute. If the attribute is ot present, the variable is reset.
+            //! @param [in] name Name of the attribute.
+            //! @param [in] minValue Minimum allowed value for the attribute.
+            //! @param [in] maxValue Maximum allowed value for the attribute.
+            //! @return True on success, false on error.
+            //!
+            template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+            bool getOptionalIntAttribute(Variable<INT>& value,
+                                         const UString& name,
+                                         INT minValue = std::numeric_limits<INT>::min(),
+                                         INT maxValue = std::numeric_limits<INT>::max()) const;
+
+            //!
+            //! Get an enumeration attribute of an XML element.
+            //! Integer literals and integer values are accepted in the attribute.
+            //! @param [out] value Returned value of the attribute.
+            //! @param [in] definition The definition of enumeration values.
+            //! @param [in] name Name of the attribute.
+            //! @param [in] required If true, generate an error if the attribute is not found.
+            //! @param [in] defValue Default value to return if the attribute is not present.
+            //! @return True on success, false on error.
+            //!
+            bool getEnumAttribute(int& value, const Enumeration& definition, const UString& name, bool required = false, int defValue = 0) const;
+
+            //!
+            //! Get an enumeration attribute of an XML element.
+            //! Integer literals and integer values are accepted in the attribute.
+            //! @tparam INT An integer type.
+            //! @param [out] value Returned value of the attribute.
+            //! @param [in] definition The definition of enumeration values.
+            //! @param [in] name Name of the attribute.
+            //! @param [in] required If true, generate an error if the attribute is not found.
+            //! @param [in] defValue Default value to return if the attribute is not present.
+            //! @return True on success, false on error.
+            //!
+            template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+            bool getIntEnumAttribute(INT& value, const Enumeration& definition, const UString& name, bool required = false, INT defValue = INT(0)) const;
+
+            //!
+            //! Get a date/time attribute of an XML element.
+            //! @param [out] value Returned value of the attribute.
+            //! @param [in] name Name of the attribute.
+            //! @param [in] required If true, generate an error if the attribute is not found.
+            //! @param [in] defValue Default value to return if the attribute is not present.
+            //! @return True on success, false on error.
+            //!
+            bool getDateTimeAttribute(Time& value, const UString& name, bool required = false, const Time& defValue = Time()) const;
+
+            //!
+            //! Get a time attribute of an XML element in "hh:mm:ss" format.
+            //! @param [out] value Returned value of the attribute.
+            //! @param [in] name Name of the attribute.
+            //! @param [in] required If true, generate an error if the attribute is not found.
+            //! @param [in] defValue Default value to return if the attribute is not present.
+            //! @return True on success, false on error.
+            //!
+            bool getTimeAttribute(Second& value, const UString& name, bool required = false, Second defValue = 0) const;
 
             //!
             //! A class to iterate through the list of attributes of an element.
@@ -254,9 +490,14 @@ namespace ts {
             // Find a key in the attribute map.
             AttributeMap::const_iterator findAttribute(const UString& attributeName) const;
 
+            // Get a modifiable reference to an attribute, create if does not exist.
+            Attribute& refAttribute(const UString& attributeName);
+
             // Unaccessible operations.
             Element(const Element&) = delete;
             Element& operator=(const Element&) = delete;
         };
     }
 }
+
+#include "tsxmlElementTemplate.h"

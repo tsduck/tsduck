@@ -145,7 +145,8 @@ namespace ts {
         //! @param [in] n Number of bits to read.
         //! @return True on success, false on error.
         //!
-        template <typename INT> bool nextBits(INT& val, size_t n);
+        template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+        bool nextBits(INT& val, size_t n);
 
         //!
         //! Read the next @a n bits and advance the bitstream pointer.
@@ -154,7 +155,8 @@ namespace ts {
         //! @param [in] n Number of bits to read.
         //! @return True on success, false on error.
         //!
-        template <typename INT> bool readBits(INT& val, size_t n);
+        template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+        bool readBits(INT& val, size_t n);
 
         //!
         //! Read the next unsigned integer using @a n bits and advance the bitstream pointer.
@@ -163,7 +165,8 @@ namespace ts {
         //! @param [in] n Number of bits to read.
         //! @return True on success, false on error.
         //!
-        template <typename INT> bool u(INT& val, size_t n)
+        template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+        bool u(INT& val, size_t n)
         {
             assert(std::numeric_limits<INT>::is_integer);
             assert(!std::numeric_limits<INT>::is_signed);
@@ -178,7 +181,8 @@ namespace ts {
         //! @param [in] n Number of bits to read.
         //! @return True on success, false on error.
         //!
-        template <typename INT> bool i(INT& val, size_t n)
+        template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+        bool i(INT& val, size_t n)
         {
             assert(std::numeric_limits<INT>::is_integer);
             assert(std::numeric_limits<INT>::is_signed);
@@ -191,7 +195,8 @@ namespace ts {
         //! @param [out] val Returned integer value.
         //! @return True on success, false on error.
         //!
-        template <typename INT> bool ue(INT& val)
+        template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+        bool ue(INT& val)
         {
             assert(std::numeric_limits<INT>::is_integer);
             assert(!std::numeric_limits<INT>::is_signed);
@@ -204,7 +209,8 @@ namespace ts {
         //! @param [out] val Returned integer value.
         //! @return True on success, false on error.
         //!
-        template <typename INT> bool se(INT& val);
+        template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+        bool se(INT& val);
 
     private:
         AVCParser() = delete;
@@ -248,7 +254,8 @@ namespace ts {
         }
 
         // Extract Exp-Golomb-coded value using n bits.
-        template <typename INT> bool expColomb(INT&);
+        template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+        bool expColomb(INT&);
     };
 }
 

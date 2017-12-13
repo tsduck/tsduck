@@ -30,7 +30,10 @@
 #include "tsxmlDocument.h"
 #include "tsxmlElement.h"
 #include "tsxmlDeclaration.h"
+#include "tsxmlComment.h"
 #include "tsxmlParser.h"
+#include "tsSysUtils.h"
+#include "tsFatal.h"
 #include "tsReportWithPrefix.h"
 TSDUCK_SOURCE;
 
@@ -62,20 +65,31 @@ bool ts::xml::Document::parse(const UString& text)
 // Load and parse an XML file.
 //----------------------------------------------------------------------------
 
-bool ts::xml::Document::load(const UString& fileName)
+bool ts::xml::Document::load(const UString& fileName, bool search)
 {
-    UStringList lines;
-    if (UString::Load(lines, fileName)) {
-        _report.error(u"error reading file %s", {fileName});
+    // Actual file name to load after optional search in directories.
+    const UString actualFileName(search ? SearchConfigurationFile(fileName) : fileName);
+
+    // Eliminate non-existent files.
+    if (actualFileName.empty()) {
+        _report.error(u"file not found: %s", {fileName});
         return false;
     }
-    else {
-        setReportPrefix(fileName + u": ");
+
+    // Load the lines from the file.
+    UStringList lines;
+    if (UString::Load(lines, actualFileName)) {
+        setReportPrefix(actualFileName + u": ");
         const bool ok = parse(lines);
         setReportPrefix(u"");
         return ok;
     }
+    else {
+        _report.error(u"error reading file %s", {actualFileName});
+        return false;
+    }
 }
+
 
 //----------------------------------------------------------------------------
 // Parse the node.
@@ -95,10 +109,11 @@ bool ts::xml::Document::parseNode(Parser& parser, const Node* parent)
     }
 
     // A document must contain optional declarations, followed by one single element (the root).
+    // Comment are always ignored.
     Node* child = firstChild();
 
-    // First, skip all leading declarations.
-    while (dynamic_cast<Declaration*>(child) != 0) {
+    // First, skip all leading declarations and comments.
+    while (dynamic_cast<Declaration*>(child) != 0 || dynamic_cast<Comment*>(child) != 0) {
         child = child->nextSibling();
     }
 
@@ -111,6 +126,11 @@ bool ts::xml::Document::parseNode(Parser& parser, const Node* parent)
     // Skip root element.
     child = child->nextSibling();
 
+    // Skip all subsequent comments.
+    while (dynamic_cast<Comment*>(child) != 0) {
+        child = child->nextSibling();
+    }
+
     // Verify that there is no additional children.
     if (child != 0) {
         _report.error(u"line %d: trailing %s, invalid XML document, need one single root element", {child->lineNumber(), child->typeName()});
@@ -119,4 +139,156 @@ bool ts::xml::Document::parseNode(Parser& parser, const Node* parent)
 
     // Valid document.
     return true;
+}
+
+
+//----------------------------------------------------------------------------
+// Validate the XML document.
+//----------------------------------------------------------------------------
+
+bool ts::xml::Document::validate(const Document& model) const
+{
+    const Element* modelRoot = model.rootElement();
+    const Element* docRoot = rootElement();
+
+    if (modelRoot == 0) {
+        _report.error(u"invalid XML model, no root element");
+        return false;
+    }
+    else if (modelRoot->haveSameName(docRoot)) {
+        return validateElement(modelRoot, docRoot);
+    }
+    else {
+        _report.error(u"invalid XML document, expected <%s> as root, found <%s>", {modelRoot->name(), docRoot == 0 ? u"(null)" : docRoot->name()});
+        return false;
+    }
+}
+
+// Validate an XML tree of elements, used by validate().
+bool ts::xml::Document::validateElement(const Element* model, const Element* doc) const
+{
+    if (model == 0) {
+        _report.error(u"invalid XML model document");
+        return false;
+    }
+    if (doc == 0) {
+        _report.error(u"invalid XML document");
+        return false;
+    }
+
+    // Report all errors, return final status at the end.
+    bool success = true;
+
+    // Check that all attributes in doc exist in model.
+    for (Element::AttributeIterator it(*doc); !it.atEnd(); it.next()) {
+        if (!model->hasAttribute(it->name())) {
+            // The corresponding attribute does not exist in the model.
+            _report.error(u"unexpected attribute '%s' in <%s>, line %d", {it->name(), doc->name(), it->lineNumber()});
+            success = false;
+        }
+    }
+
+    // Check that all children elements in doc exist in model.
+    for (const Element* docChild = doc->firstChildElement(); docChild != 0; docChild = docChild->nextSiblingElement()) {
+        const Element* modelChild = findModelElement(model, docChild->name());
+        if (modelChild == 0) {
+            // The corresponding node does not exist in the model.
+            _report.error(u"unexpected node <%s> in <%s>, line %d", {docChild->name(), doc->name(), docChild->lineNumber()});
+            success = false;
+        }
+        else if (!validateElement(modelChild, docChild)) {
+            success = false;
+        }
+    }
+
+    return success;
+}
+
+// References in XML model files.
+// Example: <_any in="_descriptors"/>
+// means: accept all children of <_descriptors> in root of document.
+namespace {
+    const ts::UString TSXML_REF_NODE(u"_any");
+    const ts::UString TSXML_REF_ATTR(u"in");
+}
+
+// Find a child element by name in an XML model element.
+const ts::xml::Element* ts::xml::Document::findModelElement(const Element* elem, const UString& name) const
+{
+    // Filter invalid parameters.
+    if (elem == 0 || name.empty()) {
+        return 0;
+    }
+
+    // Loop on all children.
+    for (const Element* child = elem->firstChildElement(); child != 0; child = child->nextSiblingElement()) {
+        if (name.similar(child->name())) {
+            // Found the child.
+            return child;
+        }
+        else if (child->name().similar(TSXML_REF_NODE)) {
+            // The model contains a reference to a child of the root of the document.
+            // Example: <_any in="_descriptors"/> => child is the <_any> node.
+            // Find the reference name, "_descriptors" in the example.
+            const UString refName(child->attribute(TSXML_REF_ATTR).value());
+            if (refName.empty()) {
+                _report.error(u"invalid XML model, missing or empty attribute 'in' for <%s> at line %d", {child->name(), child->lineNumber()});
+            }
+            else {
+                // Locate the referenced node inside the model root.
+                const Document* document = elem->document();
+                const Element* root = document == 0 ? 0 : document->rootElement();
+                const Element* refElem = root == 0 ? 0 : root->findFirstChild(refName, true);
+                if (refElem == 0) {
+                    // The referenced element does not exist.
+                    _report.error(u"invalid XML model, <%s> not found in model root, referenced in line %d", {refName, child->attribute(TSXML_REF_ATTR).lineNumber()});
+                }
+                else {
+                    // Check if the child is found inside the referenced element.
+                    const Element* e = findModelElement(refElem, name);
+                    if (e != 0) {
+                        return e;
+                    }
+                }
+            }
+        }
+    }
+
+    // Child node not found.
+    return 0;
+}
+
+
+//----------------------------------------------------------------------------
+// Convert the document to an XML string.
+//----------------------------------------------------------------------------
+
+ts::UString ts::xml::Document::toString(size_t indent) const
+{
+    return UString();//@@@@@@@@@
+}
+
+
+//----------------------------------------------------------------------------
+// Initialize an XML document.
+//----------------------------------------------------------------------------
+
+ts::xml::Element* ts::xml::Document::initialize(const UString& rootName, const UString& declaration)
+{
+    // Filter incorrect parameters.
+    if (rootName.empty()) {
+        return 0;
+    }
+
+    // Cleanup all previous content of the document.
+    clear();
+
+    // Create the initial declaration.
+    Declaration* decl = new Declaration(this, declaration);
+    CheckNonNull(decl);
+
+    // Create the document root.
+    Element* root = new Element(this, rootName);
+    CheckNonNull(root);
+    return root;
 }

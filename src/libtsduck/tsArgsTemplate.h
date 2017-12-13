@@ -34,7 +34,7 @@
 // Get the integer value of an option.
 //----------------------------------------------------------------------------
 
-template <typename INT>
+template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
 void ts::Args::getIntValue(INT& value, const UChar* name, const INT& def_value, size_t index) const
 {
     const IOption& opt(getIOption(name));
@@ -46,7 +46,7 @@ void ts::Args::getIntValue(INT& value, const UChar* name, const INT& def_value, 
     }
 }
 
-template <typename INT>
+template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
 INT ts::Args::intValue(const UChar* name, const INT& def_value, size_t index) const
 {
     INT value = def_value;
@@ -88,7 +88,7 @@ ENUM ts::Args::enumValue(const UChar* name, ENUM def_value, size_t index) const
 // Return all occurences of this option in a vector of integers.
 //----------------------------------------------------------------------------
 
-template <typename INT>
+template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
 void ts::Args::getIntValues(std::vector<INT>& values, const UChar* name) const
 {
     INT value;
@@ -109,7 +109,7 @@ void ts::Args::getIntValues(std::vector<INT>& values, const UChar* name) const
 // Return all occurences of this option in a set of integers.
 //----------------------------------------------------------------------------
 
-template <typename INT>
+template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
 void ts::Args::getIntValues(std::set<INT>& values, const UChar* name) const
 {
     INT value;
@@ -129,7 +129,7 @@ void ts::Args::getIntValues(std::set<INT>& values, const UChar* name) const
 // Get an OR'ed of all values of an integer option.
 //----------------------------------------------------------------------------
 
-template <typename INT>
+template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
 void ts::Args::getBitMaskValue(INT& value, const UChar* name, const INT& def_value) const
 {
     const IOption& opt(getIOption(name));
@@ -149,7 +149,7 @@ void ts::Args::getBitMaskValue(INT& value, const UChar* name, const INT& def_val
     }
 }
 
-template <typename INT>
+template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
 INT ts::Args::bitMaskValue(const UChar* name, const INT& def_value) const
 {
     INT value(def_value);

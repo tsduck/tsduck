@@ -49,7 +49,15 @@ namespace ts {
             //! @param [in] line Line number in input document.
             //! @param [in] cdata The text is a CDATA node.
             //!
-            Text(Report& report = NULLREP, size_t line = 0, bool cdata = false);
+            explicit Text(Report& report = NULLREP, size_t line = 0, bool cdata = false);
+
+            //!
+            //! Constructor.
+            //! @param [in,out] parent The parent into which the element is added.
+            //! @param [in] text Content of the text.
+            //! @param [in] cdata The text is a CDATA node.
+            //!
+            Text(Element* parent, const UString& text, bool cdata = false);
 
             //!
             //! Check if the text is a CDATA node.

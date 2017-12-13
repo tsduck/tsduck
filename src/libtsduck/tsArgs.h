@@ -626,7 +626,7 @@ namespace ts {
         //! @param [in] index The occurence of the option to return. Zero designates the
         //! first occurence.
         //!
-        template <typename INT>
+        template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
         void getIntValue(INT& value,
                          const UChar* name = 0,
                          const INT& def_value = static_cast<INT>(0),
@@ -646,7 +646,7 @@ namespace ts {
         //! first occurence.
         //! @return The integer value of the option or parameter.
         //!
-        template <typename INT>
+        template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
         INT intValue(const UChar* name = 0,
                      const INT& def_value = static_cast<INT>(0),
                      size_t index = 0) const;
@@ -660,7 +660,7 @@ namespace ts {
         //! was not declared in the syntax of the command or declared as a non-string type,
         //! a fatal error is reported.
         //!
-        template <typename INT>
+        template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
         void getIntValues(std::vector<INT>& values, const UChar* name = 0) const;
 
         //!
@@ -672,7 +672,7 @@ namespace ts {
         //! was not declared in the syntax of the command or declared as a non-string type,
         //! a fatal error is reported.
         //!
-        template <typename INT>
+        template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
         void getIntValues(std::set<INT>& values, const UChar* name = 0) const;
 
         //!
@@ -691,7 +691,7 @@ namespace ts {
         //! is not present in the command line.
         //! @return The OR'ed values of the integer option.
         //!
-        template <typename INT>
+        template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
         INT bitMaskValue(const UChar* name = 0, const INT& def_value = static_cast<INT>(0)) const;
 
         //!
@@ -710,7 +710,7 @@ namespace ts {
         //! @param [in] def_value The value to return in @a value if the option or parameter
         //! is not present in the command line.
         //!
-        template <typename INT>
+        template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
         void getBitMaskValue(INT& value, const UChar* name = 0, const INT& def_value = static_cast<INT>(0)) const;
 
         //!

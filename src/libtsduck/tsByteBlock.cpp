@@ -33,6 +33,7 @@
 
 #include "tsByteBlock.h"
 #include "tsUString.h"
+#include "tsReport.h"
 TSDUCK_SOURCE;
 
 
@@ -145,4 +146,94 @@ void ts::ByteBlock::erase(size_type first, size_type size)
 {
     assert(first + size <= this->size());
     ByteVector::erase(begin() + first, begin() + first + size);
+}
+
+//----------------------------------------------------------------------------
+// Read byte blocks from binary files.
+//----------------------------------------------------------------------------
+
+bool ts::ByteBlock::loadFromFile(const UString& fileName, size_t maxSize, Report* report)
+{
+    clear();
+    return appendFromFile(fileName, maxSize, report);
+}
+
+bool ts::ByteBlock::appendFromFile(const UString& fileName, size_t maxSize, Report* report)
+{
+    // Open the input file.
+    std::ifstream strm(fileName.toUTF8().c_str(), std::ios::in | std::ios::binary);
+    if (!strm.is_open()) {
+        if (report != 0) {
+            report->error(u"cannot open %s", {fileName});
+        }
+        return false;
+    }
+
+    // Load the file content.
+    append(strm, maxSize);
+
+    // Success if no error or reached EOF without error
+    const bool success = !strm.fail() || strm.eof();
+    strm.close();
+    if (!success && report != 0) {
+        report->error(u"error reading %s", {fileName});
+    }
+    return success;
+}
+
+std::istream& ts::ByteBlock::read(std::istream& strm, size_t maxSize)
+{
+    clear();
+    return append(strm, maxSize);
+}
+
+std::istream& ts::ByteBlock::append(std::istream& strm, size_t maxSize)
+{
+    // Read by chunks of this size:
+    constexpr size_t chunkSize = 32 * 1024;
+
+    while (!strm.fail() && !strm.eof() && maxSize > 0) {
+
+        // Size of the next chunk to read.
+        size_t readSize = std::min(maxSize, chunkSize);
+
+        // Make more space in byte block for reading a chunk.
+        const size_t previousSize = size();
+        resize(previousSize + readSize);
+
+        // Read a chunk of data.
+        strm.read(reinterpret_cast<char*>(data() + previousSize), std::streamsize(readSize));
+        const std::streamsize gc = strm.gcount();
+        readSize = gc < 0 ? 0 : std::min(size_t(gc), readSize);
+
+        // Adjust buffer size.
+        resize(previousSize + readSize);
+    }
+
+    return strm;
+}
+
+//----------------------------------------------------------------------------
+// Save byte blocks to binary files.
+//----------------------------------------------------------------------------
+
+bool ts::ByteBlock::writeToFile(const UString& fileName, std::ios::openmode mode, Report* report) const
+{
+    // Create the file
+    std::ofstream strm(fileName.toUTF8().c_str(), mode);
+    if (!strm.is_open()) {
+        if (report != 0) {
+            report->error(u"cannot create %s", {fileName});
+        }
+        return false;
+    }
+
+    // Write the content.
+    write(strm);
+    const bool success = !strm.fail();
+    strm.close();
+    if (!success && report != 0) {
+        report->error(u"error writing %s", {fileName});
+    }
+    return success;
 }

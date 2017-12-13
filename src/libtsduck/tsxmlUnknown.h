@@ -48,7 +48,14 @@ namespace ts {
             //! @param [in,out] report Where to report errors.
             //! @param [in] line Line number in input document.
             //!
-            Unknown(Report& report = NULLREP, size_t line = 0) : Node(report, line) {}
+            explicit Unknown(Report& report = NULLREP, size_t line = 0);
+
+            //!
+            //! Constructor.
+            //! @param [in,out] parent The parent node into which the object is added.
+            //! @param [in] text Optional content of the node.
+            //!
+            explicit Unknown(Node* parent, const UString& text = UString());
 
             // Inherited from xml::Node.
             virtual UString typeName() const override { return u"Unknown"; }

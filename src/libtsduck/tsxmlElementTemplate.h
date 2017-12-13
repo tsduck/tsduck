@@ -27,85 +27,71 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsxmlAttribute.h"
-#include "tsxmlParser.h"
-TSDUCK_SOURCE;
-
-// A constant static invalid instance.
-const ts::xml::Attribute ts::xml::Attribute::INVALID;
+#pragma once
 
 
 //----------------------------------------------------------------------------
-// Constructors.
+// Get an integer attribute of an XML element.
 //----------------------------------------------------------------------------
 
-ts::xml::Attribute::Attribute() :
-    _valid(false),
-    _name(),
-    _value(),
-    _line(0)
+template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
+bool ts::xml::Element::getIntAttribute(INT& value, const UString& name, bool required, INT defValue, INT minValue, INT maxValue) const
 {
-}
-
-ts::xml::Attribute::Attribute(const UString& name, const UString& value, size_t line) :
-    _valid(true),
-    _name(name),
-    _value(value),
-    _line(line)
-{
-}
-
-
-//----------------------------------------------------------------------------
-// Static date/time conversions.
-//----------------------------------------------------------------------------
-
-ts::UString ts::xml::Attribute::DateTimeToString(const Time& value)
-{
-    const Time::Fields f(value);
-    return UString::Format(u"%04d-%02d-%02d %02d:%02d:%02d", {f.year, f.month, f.day, f.hour, f.minute, f.second});
-}
-
-
-//----------------------------------------------------------------------------
-// Convert a time into a string, as required in attributes.
-//----------------------------------------------------------------------------
-
-ts::UString ts::xml::Attribute::TimeToString(Second value)
-{
-    return UString::Format(u"%02d:%02d:%02d", {value / 3600, (value / 60) % 60, value % 60});
-}
-
-
-//----------------------------------------------------------------------------
-// Convert a string into a time, as required in attributes.
-//----------------------------------------------------------------------------
-
-bool ts::xml::Attribute::DateTimeFromString(Time& value, const UString& str)
-{
-    // We are tolerant on syntax, decode 6 fields, regardless of separators.
-    return value.decode(str, Time::YEAR | Time::MONTH | Time::DAY | Time::HOUR | Time::MINUTE | Time::SECOND);
-}
-
-
-//----------------------------------------------------------------------------
-// Convert a string into a time, as required in attributes.
-//----------------------------------------------------------------------------
-
-bool ts::xml::Attribute::TimeFromString(Second& value, const UString& str)
-{
-    Second hours = 0;
-    Second minutes = 0;
-    Second seconds = 0;
-
-    const bool ok = str.scan(u"%d:%d:%d", {&hours, &minutes, &seconds}) &&
-        hours   >= 0 && hours   <= 23 &&
-        minutes >= 0 && minutes <= 59 &&
-        seconds >= 0 && seconds <= 59;
-
-    if (ok) {
-        value = (hours * 3600) + (minutes * 60) + seconds;
+    INT val;
+    UString str;
+    if (!getAttribute(str, name, required, UString::Decimal(defValue))) {
+        return false;
     }
+    else if (!str.toInteger(val, u",")) {
+        _report.error(u"'%s' is not a valid integer value for attribute '%s' in <%s>, line %d", {str, name, this->name(), lineNumber()});
+        return false;
+    }
+    else if (value < minValue || value > maxValue) {
+        _report.error(u"'%s' must be in range %'d to %'d for attribute '%s' in <%s>, line %d", {str, minValue, maxValue, name, this->name(), lineNumber()});
+        return false;
+    }
+    else {
+        value = val;
+        return true;
+    }
+}
 
+
+//----------------------------------------------------------------------------
+// Get an optional integer attribute of an XML element.
+//----------------------------------------------------------------------------
+
+template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
+bool ts::xml::Element::getOptionalIntAttribute(Variable<INT>& value, const UString& name, INT minValue, INT maxValue) const
+{
+    INT v = 0;
+    if (!hasAttribute(name)) {
+        // Attribute not present, ok.
+        value.reset();
+        return true;
+    }
+    else if (getIntAttribute<INT>(v, name, false, 0, minValue, maxValue)) {
+        // Attribute present, correct value.
+        value = v;
+        return true;
+    }
+    else {
+        // Attribute present, incorrect value.
+        value.reset();
+        return false;
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Get an enumeration attribute of an XML element.
+//----------------------------------------------------------------------------
+
+template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
+bool ts::xml::Element::getIntEnumAttribute(INT& value, const Enumeration& definition, const UString& name, bool required, INT defValue) const
+{
+    int v = 0;
+    const bool ok = getEnumAttribute(v, definition, name, required, int(defValue));
+    value = ok ? INT(v) : defValue;
     return ok;
 }

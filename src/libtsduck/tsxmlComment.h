@@ -48,7 +48,14 @@ namespace ts {
             //! @param [in,out] report Where to report errors.
             //! @param [in] line Line number in input document.
             //!
-            Comment(Report& report = NULLREP, size_t line = 0) : Node(report, line) {}
+            explicit Comment(Report& report = NULLREP, size_t line = 0);
+
+            //!
+            //! Constructor.
+            //! @param [in,out] parent The parent node into which the comment is added.
+            //! @param [in] text Content of the comment.
+            //!
+            Comment(Node* parent, const UString& text);
 
             // Inherited from xml::Node.
             virtual UString typeName() const override { return u"Comment"; }
