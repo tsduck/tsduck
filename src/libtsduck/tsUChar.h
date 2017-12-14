@@ -54,13 +54,39 @@ namespace ts {
     };
 
     //!
+    //! Characteristics of a character.
+    //! Bitwise combinations are allowed.
+    //!
+    enum : uint32_t {
+        CCHAR_LETTER   = 0x0001,  //!< The character is a letter.
+        CCHAR_DIGIT    = 0x0002,  //!< The character is a digit.
+        CCHAR_HEXA     = 0x0004,  //!< The character is an hexadecimal digit.
+        CCHAR_LATIN    = 0x0008,  //!< The character is latin.
+        CCHAR_GREEK    = 0x0010,  //!< The character is greek.
+        CCHAR_HEBREW   = 0x0020,  //!< The character is hebrew.
+        CCHAR_ARABIC   = 0x0040,  //!< The character is arabic.
+        CCHAR_THAI     = 0x0080,  //!< The character is thai.
+        CCHAR_CYRILLIC = 0x0100,  //!< The character is cyrillic.
+        CCHAR_CDIACRIT = 0x0200,  //!< The character is combining diacritical.
+        CCHAR_SPACE    = 0x0400,  //!< The character is space.
+        CCHAR_PRINT    = 0x0800,  //!< The character is printable.
+    };
+
+    //!
+    //! Get the characteristics of a character.
+    //! @param [in] c A character.
+    //! @return Bitmask of the characteristics of @a c.
+    //!
+    TSDUCKDLL uint32_t UCharacteristics(UChar c);
+
+    //!
     //! Check if a character is a space.
     //! @param [in] c A character.
     //! @return True if @a c is a space, tab, new line character.
     //!
     TSDUCKDLL inline bool IsSpace(UChar c)
     {
-        return std::iswspace(wint_t(c)) != 0;
+        return (UCharacteristics(c) & CCHAR_SPACE) != 0;
     }
 
     //!
@@ -70,7 +96,7 @@ namespace ts {
     //!
     TSDUCKDLL inline bool IsPrintable(UChar c)
     {
-        return std::iswprint(wint_t(c)) != 0;
+        return (UCharacteristics(c) & CCHAR_PRINT) != 0;
     }
 
     //!
@@ -80,7 +106,7 @@ namespace ts {
     //!
     TSDUCKDLL inline bool IsAlpha(UChar c)
     {
-        return std::iswalpha(wint_t(c)) != 0;
+        return (UCharacteristics(c) & CCHAR_LETTER) != 0;
     }
 
     //!
@@ -90,7 +116,7 @@ namespace ts {
     //!
     TSDUCKDLL inline bool IsDigit(UChar c)
     {
-        return std::iswdigit(wint_t(c)) != 0;
+        return (UCharacteristics(c) & CCHAR_DIGIT) != 0;
     }
 
     //!
@@ -100,7 +126,7 @@ namespace ts {
     //!
     TSDUCKDLL inline bool IsHexa(UChar c)
     {
-        return std::iswxdigit(wint_t(c)) != 0;
+        return (UCharacteristics(c) & CCHAR_HEXA) != 0;
     }
 
     //!
@@ -175,7 +201,10 @@ namespace ts {
     //! @param [in] c A character.
     //! @return True if @a c is a combining diacritical character.
     //!
-    TSDUCKDLL bool IsCombiningDiacritical(UChar c);
+    TSDUCKDLL inline bool IsCombiningDiacritical(UChar c)
+    {
+        return (UCharacteristics(c) & CCHAR_CDIACRIT) != 0;
+    }
 
     //!
     //! Check if a character is a "leading surrogate" value.
