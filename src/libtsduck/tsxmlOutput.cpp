@@ -37,7 +37,7 @@ TSDUCK_SOURCE;
 //----------------------------------------------------------------------------
 
 ts::xml::Output::Output(Report& report) :
-    _report(_report),
+    _report(report),
     _outFile(),
     _outString(),
     _out(&_outFile), // _out is never null, points by default to a closed file (discard output)
