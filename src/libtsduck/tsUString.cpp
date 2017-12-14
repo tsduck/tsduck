@@ -839,10 +839,10 @@ ts::UString ts::UString::toJustified(const UString& right, size_type wid, UChar 
 // convertFromHTML() are implemented in tsUChar.cpp.
 //----------------------------------------------------------------------------
 
-ts::UString ts::UString::toHTML() const
+ts::UString ts::UString::toHTML(const UString& convert) const
 {
     UString result(*this);
-    result.convertToHTML();
+    result.convertToHTML(convert);
     return result;
 }
 

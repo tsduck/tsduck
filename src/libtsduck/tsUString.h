@@ -1002,16 +1002,17 @@ namespace ts {
 
         //!
         //! Convert the string into a suitable HTML representation.
-        //! All special characters are converted to the corresponding HTML entities.
+        //! @param [in] convert A string containing all characters to convert into
+        //! their corresponding HTML entities. If empty, all characters are converted.
         //!
-        void convertToHTML();
+        void convertToHTML(const UString& convert = UString());
 
         //!
         //! Return the string in a suitable HTML representation.
-        //! All special characters are converted to the corresponding HTML entities.
-        //! @return The string in a suitable HTML representation.
+        //! @param [in] convert A string containing all characters to convert into
+        //! their corresponding HTML entities. If empty, all characters are converted.
         //!
-        UString toHTML() const;
+        UString toHTML(const UString& convert = UString()) const;
 
         //!
         //! Convert all HTML entities in the string into plain characters.

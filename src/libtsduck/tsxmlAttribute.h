@@ -84,22 +84,25 @@ namespace ts {
             const UString& value() const { return _value; }
 
             //!
+            //! Get the update sequence number.
+            //! Each time an attribute is updated, a global (non-thread-safe) index is incremented.
+            //! The method returns the value of the global index the last time the attribute was
+            //! modified. This is a way to rebuild the list of attributes in their order of modification.
+            //! @return The update sequence number.
+            //!
+            size_t sequence() const { return _sequence; }
+
+            //!
             //! Set a string attribute.
             //! @param [in] value Attribute value.
             //!
-            void setString(const UString& value)
-            {
-                _value = value;
-            }
+            void setString(const UString& value);
 
             //!
             //! Set a bool attribute to a node.
             //! @param [in] value Attribute value.
             //!
-            void setBool(bool value)
-            {
-                _value = UString::TrueFalse(value);
-            }
+            void setBool(bool value);
 
             //!
             //! Set an attribute with an integer value to a node.
@@ -110,7 +113,7 @@ namespace ts {
             template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
             void setInteger(INT value, bool hexa = false)
             {
-                _value = hexa ? UString::Hexa(value) : UString::Decimal(value);
+                setString(hexa ? UString::Hexa(value) : UString::Decimal(value, 0, true, UString()));
             }
 
             //!
@@ -118,10 +121,7 @@ namespace ts {
             //! @param [in] definition The definition of enumeration values.
             //! @param [in] value Attribute value.
             //!
-            void setEnum(const Enumeration& definition, int value)
-            {
-                _value = definition.name(value);
-            }
+            void setEnum(const Enumeration& definition, int value);
 
             //!
             //! Set an enumeration attribute of a node.
@@ -132,26 +132,20 @@ namespace ts {
             template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
             void setIntEnum(const Enumeration& definition, INT value)
             {
-                _value = definition.name(int(value), true, 2 * sizeof(INT));
+                setString(definition.name(int(value), true, 2 * sizeof(INT)));
             }
 
             //!
             //! Set a date/time attribute of an XML element.
             //! @param [in] value Attribute value.
             //!
-            void setDateTime(const Time& value)
-            {
-                _value = DateTimeToString(value);
-            }
+            void setDateTime(const Time& value);
 
             //!
             //! Set a time attribute of an XML element in "hh:mm:ss" format.
             //! @param [in] value Attribute value.
             //!
-            void setTime(Second value)
-            {
-                _value = TimeToString(value);
-            }
+            void setTime(Second value);
 
             //!
             //! Convert a date/time into a string, as required in attributes.
@@ -194,6 +188,10 @@ namespace ts {
             UString _name;
             UString _value;
             size_t  _line;
+            size_t  _sequence;  // insertion sequence
+
+            // A non-thread-safe allocator for sequence numbers.
+            static volatile size_t _allocator;
         };
     }
 }

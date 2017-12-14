@@ -59,14 +59,10 @@ namespace ts {
     //!
     namespace xml {
 
-        class Parser;
         class Document;
         class Element;
-        class Attribute;
-        class Text;
-        class Comment;
-        class Unknown;
-        class Declaration;
+        class Output;
+        class Parser;
 
         //!
         //! Vector of constant elements.
@@ -179,15 +175,27 @@ namespace ts {
 
             //!
             //! Get the next sibling node.
-            //! @return The next sibling node or zero if there is no children.
+            //! @return The next sibling node or zero if the node is the last child.
             //!
             const Node* nextSibling() const { return (const_cast<Node*>(this))->nextSibling(); }
 
             //!
             //! Get the next sibling node.
-            //! @return The next sibling node or zero if there is no children.
+            //! @return The next sibling node or zero if the node is the last child.
             //!
             Node* nextSibling();
+
+            //!
+            //! Get the previous sibling node.
+            //! @return The previous sibling node or zero if the node is the first child.
+            //!
+            const Node* previousSibling() const { return (const_cast<Node*>(this))->previousSibling(); }
+
+            //!
+            //! Get the previous sibling node.
+            //! @return The previous sibling node or zero if the node is the first child.
+            //!
+            Node* previousSibling();
 
             //!
             //! Get the first child Element of a node.
@@ -246,6 +254,30 @@ namespace ts {
             //! @return Node type name.
             //!
             virtual UString typeName() const = 0;
+
+            //!
+            //! Format the node for an output XML document.
+            //! @param [in,out] output The output object to format the XML document.
+            //! @param [in] keepNodeOpen If true, keep the node open so that children may be printed later.
+            //!
+            virtual void print(Output& output, bool keepNodeOpen = false) const = 0;
+
+            //!
+            //! Print the closing tags for the node.
+            //! Typically used after print() when @a keepNodeOpen was @e true.
+            //! The default implementation is to do nothing. Subclasses may replace this.
+            //! @param [in,out] output The output object to format the XML document.
+            //! @param [in] levels Number of levels to close. By default, close the complete document.
+            //! If zero, no output is produced.
+            //!
+            virtual void printClose(Output& output, size_t levels = std::numeric_limits<size_t>::max()) const {}
+
+            //!
+            //! Check if the text shall be stuck to other elements in XML output.
+            //! @return True if the text shall be stuck to other elements.
+            //! False by default.
+            //!
+            virtual bool stickyOutput() const { return false; }
 
             //!
             //! Build a debug string for the node.

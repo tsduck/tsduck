@@ -575,6 +575,7 @@
 #include <istream>
 #include <ostream>
 #include <fstream>
+#include <sstream>
 #include <iostream>
 #include <exception>
 

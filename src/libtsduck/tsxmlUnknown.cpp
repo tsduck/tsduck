@@ -29,6 +29,7 @@
 
 #include "tsxmlUnknown.h"
 #include "tsxmlParser.h"
+#include "tsxmlOutput.h"
 TSDUCK_SOURCE;
 
 
@@ -44,6 +45,16 @@ ts::xml::Unknown::Unknown(Report& report, size_t line) :
 ts::xml::Unknown::Unknown(Node* parent, const UString& text) :
     Node(parent, text)
 {
+}
+
+
+//----------------------------------------------------------------------------
+// Print the node.
+//----------------------------------------------------------------------------
+
+void ts::xml::Unknown::print(Output& output, bool keepNodeOpen) const
+{
+    output.stream() << "<!" << _value.toHTML(u"<>") << ">";
 }
 
 

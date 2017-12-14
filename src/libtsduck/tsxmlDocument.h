@@ -123,6 +123,7 @@ namespace ts {
 
             // Inherited from xml::Node.
             virtual UString typeName() const override { return u"Document"; }
+            virtual void print(Output& output, bool keepNodeOpen = false) const override;
 
         protected:
             // Inherited from xml::Node.

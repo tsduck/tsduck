@@ -32,6 +32,7 @@
 #include "tsxmlDeclaration.h"
 #include "tsxmlComment.h"
 #include "tsxmlParser.h"
+#include "tsxmlOutput.h"
 #include "tsSysUtils.h"
 #include "tsFatal.h"
 #include "tsReportWithPrefix.h"
@@ -87,6 +88,20 @@ bool ts::xml::Document::load(const UString& fileName, bool search)
     else {
         _report.error(u"error reading file %s", {actualFileName});
         return false;
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Print the node.
+//----------------------------------------------------------------------------
+
+void ts::xml::Document::print(Output& output, bool keepNodeOpen) const
+{
+    // Simply print all children one by one without encapsulation.
+    for (const Node* node = firstChild(); node != 0; node = node->nextSibling()) {
+        node->print(output, false);
+        output.newLine();
     }
 }
 
@@ -179,11 +194,16 @@ bool ts::xml::Document::validateElement(const Element* model, const Element* doc
     // Report all errors, return final status at the end.
     bool success = true;
 
+    // Get all attributes names.
+    UStringList names;
+    doc->getAttributesNames(names);
+
     // Check that all attributes in doc exist in model.
-    for (Element::AttributeIterator it(*doc); !it.atEnd(); it.next()) {
-        if (!model->hasAttribute(it->name())) {
+    for (UStringList::const_iterator it = names.begin(); it != names.end(); ++it) {
+        if (!model->hasAttribute(*it)) {
             // The corresponding attribute does not exist in the model.
-            _report.error(u"unexpected attribute '%s' in <%s>, line %d", {it->name(), doc->name(), it->lineNumber()});
+            const Attribute& attr(doc->attribute(*it));
+            _report.error(u"unexpected attribute '%s' in <%s>, line %d", {attr.name(), doc->name(), attr.lineNumber()});
             success = false;
         }
     }
@@ -265,7 +285,13 @@ const ts::xml::Element* ts::xml::Document::findModelElement(const Element* elem,
 
 ts::UString ts::xml::Document::toString(size_t indent) const
 {
-    return UString();//@@@@@@@@@
+    Output out(_report);
+    out.setIndentSize(indent);
+    out.setString();
+    print(out);
+    UString str;
+    out.getString(str);
+    return str;
 }
 
 

@@ -30,6 +30,7 @@
 #include "tsxmlText.h"
 #include "tsxmlElement.h"
 #include "tsxmlParser.h"
+#include "tsxmlOutput.h"
 #include "tsFatal.h"
 TSDUCK_SOURCE;
 
@@ -52,6 +53,21 @@ ts::xml::Text::Text(Element* parent, const UString& text, bool cdata) :
 
 
 //----------------------------------------------------------------------------
+// Print the node.
+//----------------------------------------------------------------------------
+
+void ts::xml::Text::print(Output& output, bool keepNodeOpen) const
+{
+    if (_isCData) {
+        output.stream() << "<![CDATA[" << _value << "]]>";
+    }
+    else {
+        output.stream() << _value.toHTML(u"<>");
+    }
+}
+
+
+//----------------------------------------------------------------------------
 // Parse the node.
 //----------------------------------------------------------------------------
 
@@ -61,7 +77,7 @@ bool ts::xml::Text::parseNode(Parser& parser, const Node* parent)
 
     // The current point of parsing is the first character of the text.
     if (_isCData) {
-        // In the case of CDATA, we right after the "<![CDATA[". Parse up to "]]>".
+        // In the case of CDATA, we are right after the "<![CDATA[". Parse up to "]]>".
         ok = parser.parseText(_value, u"]]>", true, false);
         if (!ok) {
             _report.error(u"line %d: no ]]> found to close the <![CDATA[", {lineNumber()});

@@ -32,6 +32,7 @@
 #include "tsxmlDocument.h"
 #include "tsxmlDeclaration.h"
 #include "tsxmlElement.h"
+#include "tsxmlOutput.h"
 #include "tsNullReport.h"
 TSDUCK_SOURCE;
 
@@ -163,7 +164,7 @@ size_t ts::xml::Node::depth() const
 
 
 //----------------------------------------------------------------------------
-// Get the next sibling node.
+// Get the next or previous sibling node.
 //----------------------------------------------------------------------------
 
 ts::xml::Node* ts::xml::Node::nextSibling()
@@ -171,6 +172,12 @@ ts::xml::Node* ts::xml::Node::nextSibling()
     // When the ring points to the first child, this is the end of the list.
     Node* next = ringNext<Node>();
     return next == this || (_parent != 0 && next == _parent->_firstChild) ? 0 : next;
+}
+
+ts::xml::Node* ts::xml::Node::previousSibling()
+{
+    Node* prev = ringPrevious<Node>();
+    return prev == this || (_parent != 0 && this == _parent->_firstChild) ? 0 : prev;
 }
 
 
