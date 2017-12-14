@@ -30,6 +30,7 @@
 #include "tsxmlElement.h"
 #include "tsxmlText.h"
 #include "tsxmlParser.h"
+#include "tsxmlOutput.h"
 #include "tsFatal.h"
 TSDUCK_SOURCE;
 
@@ -470,6 +471,126 @@ bool ts::xml::Element::getTimeAttribute(Second& value, const UString& name, bool
         _report.error(u"'%s' is not a valid time for attribute '%s' in <%s>, line %d, use \"hh:mm:ss\"", {str, name, this->name(), lineNumber()});
     }
     return ok;
+}
+
+
+//----------------------------------------------------------------------------
+// Get the list of all attribute names.
+//----------------------------------------------------------------------------
+
+void ts::xml::Element::getAttributesNames(UStringList& names) const
+{
+    names.clear();
+    for (AttributeMap::const_iterator it = _attributes.begin(); it != _attributes.end(); ++it) {
+        names.push_back(it->second.name());
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Get the list of all attribute names, sorted by modification order.
+//----------------------------------------------------------------------------
+
+void ts::xml::Element::getAttributesNamesInModificationOrder(UStringList& names) const
+{
+    // Map of names, indexed by sequence number.
+    typedef std::multimap<size_t, UString> NameMap;
+    NameMap nameMap;
+
+    // Read all names and build a map indexed by sequence number.
+    for (AttributeMap::const_iterator it = _attributes.begin(); it != _attributes.end(); ++it) {
+        nameMap.insert(std::make_pair(it->second.sequence(), it->second.name()));
+    }
+
+    // Then build the name list, ordered by sequence number.
+    names.clear();
+    for (NameMap::const_iterator it = nameMap.begin(); it != nameMap.end(); ++it) {
+        names.push_back(it->second);
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Print the node.
+//----------------------------------------------------------------------------
+
+void ts::xml::Element::print(Output& output, bool keepNodeOpen) const
+{
+    // Output element name.
+    output.stream() << "<" << name();
+
+    // Get all attributes names, by modification order.
+    UStringList names;
+    getAttributesNamesInModificationOrder(names);
+
+    // Loop on all attributes.
+    for (UStringList::const_iterator it = names.begin(); it != names.end(); ++it) {
+        const Attribute& attr(attribute(*it));
+        output.stream() << " " << attr.name() << "=";
+
+        // Check if attribute value contains simple or double quotes.
+        // Use double quote if not present, simple quote otherwise.
+        const char quote = attr.value().find(u'"') == UString::NPOS ? '"' : '\'';
+        output.stream() << quote;
+        if (attr.value().find(quote) == UString::NPOS) {
+            // The selected quote is not present, add the raw value.
+            output.stream() << attr.value();
+        }
+        else {
+            // If both quotes are present, translate those in the value as HTML entities.
+            output.stream() << attr.value().toHTML(UString(1, quote));
+        }
+        output.stream() << quote;
+    }
+
+    // Close the tag and return if nothing else to output.
+    if (!hasChildren() && !keepNodeOpen) {
+        output.stream() << "/>";
+        return;
+    }
+
+    // Keep the tag open for children.
+    output.stream() << ">";
+
+    output.pushIndent();
+    bool sticky = false;
+
+    // Display list of children.
+    for (const Node* node = firstChild(); node != 0; node = node->nextSibling()) {
+        const bool previousSticky = sticky;
+        sticky = node->stickyOutput();
+        if (!previousSticky && !sticky) {
+            output.newLine();
+            output.margin();
+        }
+        node->print(output, false);
+    }
+
+    // Close the element if required.
+    if (!sticky || keepNodeOpen) {
+        output.newLine();
+    }
+    if (!keepNodeOpen) {
+        output.popIndent();
+        if (!sticky) {
+            output.margin();
+        }
+        output.stream() << "</" << name() << ">";
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Print the closing tags for a node.
+//----------------------------------------------------------------------------
+
+void ts::xml::Element::printClose(Output& output, size_t levels) const
+{
+    for (const Element* elem = this; levels-- > 0 && elem != 0; elem = dynamic_cast<const Element*>(elem->parent())) {
+        output.popIndent();
+        output.margin() << "</" << elem->name() << ">";
+        output.newLine();
+    }
 }
 
 

@@ -33,6 +33,7 @@
 
 #include "tsxmlDocument.h"
 #include "tsxmlElement.h"
+#include "tsxmlOutput.h"
 #include "tsCerrReport.h"
 #include "tsReportBuffer.h"
 #include "tsSysUtils.h"
@@ -57,6 +58,7 @@ public:
     void testFileBOM();
     void testValidation();
     void testCreation();
+    void testKeepOpen();
 
     CPPUNIT_TEST_SUITE(XMLTest);
     CPPUNIT_TEST(testDocument);
@@ -64,6 +66,7 @@ public:
     CPPUNIT_TEST(testFileBOM);
     CPPUNIT_TEST(testValidation);
     CPPUNIT_TEST(testCreation);
+    CPPUNIT_TEST(testKeepOpen);
     CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -298,10 +301,6 @@ void XMLTest::testCreation()
     CPPUNIT_ASSERT(subchild2->getIntAttribute(i64, u"int64", true));
     CPPUNIT_ASSERT_EQUAL(TS_CONST64(0x7FFFFFFFFFFFFFFF), i64);
 
-    /*@@@@@
-    ts::UString text(xml.toString(doc));
-    utest::Out() << "XMLTest::testCreation: " << text << std::endl;
-
     CPPUNIT_ASSERT_USTRINGS_EQUAL(
         u"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
         u"<theRoot>\n"
@@ -313,7 +312,78 @@ void XMLTest::testCreation()
         u"    <fooBar/>\n"
         u"  </child2>\n"
         u"</theRoot>\n",
-        text);
+        doc.toString(2));
 
-    @@@@@*/
+    ts::xml::Output out(report());
+    out.setCompact(true);
+    out.setString();
+    doc.print(out);
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(
+        u"<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+        u"<theRoot>"
+        u"<child1 str=\"a string\" int=\"-47\">"
+        u"<subChild1/>"
+        u"<subChild2 int64=\"9223372036854775807\"/>"
+        u"</child1>"
+        u"<child2><fooBar/></child2>"
+        u"</theRoot>",
+        out.toString());
+
+}
+
+void XMLTest::testKeepOpen()
+{
+    static const ts::UChar* const document =
+        u"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+        u"<root attr1=\"val1\">\n"
+        u"  <node1>  Text in node1  </node1>\n"
+        u"  <node2>\n"
+        u"    <node21>\n"
+        u"      <node211/>\n"
+        u"    </node21>\n"
+        u"    <node22/>\n"
+        u"  </node2>\n"
+        u"  <node3 foo=\"bar\"/>\n"
+        u"  <node4/>\n"
+        u"</root>\n";
+
+    ts::xml::Document doc(report());
+    CPPUNIT_ASSERT(doc.parse(document));
+
+    ts::xml::Element* root = doc.rootElement();
+    CPPUNIT_ASSERT(root != 0);
+
+    ts::xml::Element* node2 = root->findFirstChild(u"NODE2");
+    CPPUNIT_ASSERT(node2 != 0);
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"node2", node2->name());
+
+    ts::xml::Output out(report());
+    node2->print(out.setString());
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(
+        u"<node2>\n"
+        u"  <node21>\n"
+        u"    <node211/>\n"
+        u"  </node21>\n"
+        u"  <node22/>\n"
+        u"</node2>",
+        out.toString());
+
+    node2->print(out.setString(), true);
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(
+        u"<node2>\n"
+        u"  <node21>\n"
+        u"    <node211/>\n"
+        u"  </node21>\n"
+        u"  <node22/>\n",
+        out.toString());
+
+    node2->printClose(out, 1);
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(
+        u"<node2>\n"
+        u"  <node21>\n"
+        u"    <node211/>\n"
+        u"  </node21>\n"
+        u"  <node22/>\n"
+        u"</node2>\n",
+        out.toString());
 }

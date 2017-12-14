@@ -30,10 +30,11 @@
 #include "tsxmlDeclaration.h"
 #include "tsxmlDocument.h"
 #include "tsxmlParser.h"
+#include "tsxmlOutput.h"
 TSDUCK_SOURCE;
 
 // Default XML declaration.
-const ts::UChar* const ts::xml::Declaration::DEFAULT_XML_DECLARATION = u"xml version='1.0' encoding='UTF-8'";
+const ts::UChar* const ts::xml::Declaration::DEFAULT_XML_DECLARATION = u"xml version=\"1.0\" encoding=\"UTF-8\"";
 
 
 //----------------------------------------------------------------------------
@@ -48,6 +49,16 @@ ts::xml::Declaration::Declaration(Report& report, size_t line) :
 ts::xml::Declaration::Declaration(Document* parent, const UString& value) :
     Node(parent, value.empty() ? DEFAULT_XML_DECLARATION : value)
 {
+}
+
+
+//----------------------------------------------------------------------------
+// Print the node.
+//----------------------------------------------------------------------------
+
+void ts::xml::Declaration::print(Output& output, bool keepNodeOpen) const
+{
+    output.stream() << "<?" << _value << "?>";
 }
 
 

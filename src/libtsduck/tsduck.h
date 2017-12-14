@@ -293,6 +293,7 @@
 #include "tsxmlDocument.h"
 #include "tsxmlElement.h"
 #include "tsxmlNode.h"
+#include "tsxmlOutput.h"
 #include "tsxmlText.h"
 #include "tsxmlUnknown.h"
 

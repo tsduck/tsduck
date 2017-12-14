@@ -40,6 +40,9 @@
 
 namespace ts {
     namespace xml {
+
+        class Text;
+
         //!
         //! Comment in an XML document.
         //!
@@ -54,7 +57,7 @@ namespace ts {
             //! Constructor.
             //! @param [in,out] report Where to report errors.
             //! @param [in] line Line number in input document.
-            //! @param [in] attributeCase State if attribute names are stored wit case sensitivity.
+            //! @param [in] attributeCase State if attribute names are stored with case sensitivity.
             //!
             explicit Element(Report& report = NULLREP, size_t line = 0, CaseSensitivity attributeCase = CASE_INSENSITIVE);
 
@@ -416,65 +419,23 @@ namespace ts {
             bool getTimeAttribute(Second& value, const UString& name, bool required = false, Second defValue = 0) const;
 
             //!
-            //! A class to iterate through the list of attributes of an element.
+            //! Get the list of all attribute names.
+            //! @param [out] names Returned list of all attribute names.
             //!
-            class AttributeIterator
-            {
-            public:
-                //!
-                //! Constructor.
-                //! @param [in] element The element to browse. It the list of attributes of
-                //! the element is modified, the AttributeIterator object becomes invalid.
-                //! The iterator is initially at the beginning of the list of attributes.
-                //!
-                AttributeIterator(const Element& element) :
-                    _begin(element._attributes.begin()),
-                    _current(_begin),
-                    _end(element._attributes.end())
-                {
-                }
-                //!
-                //! Check if the iterator is at the beginning of the list of attributes.
-                //! @return True if the iterator is at the beginning of the list of attributes.
-                //!
-                bool atBegin() const { return _current == _begin; }
-                //!
-                //! Check if the iterator is after the end of the list of attributes.
-                //! @return True if the iterator is after the end of the list of attributes.
-                //!
-                bool atEnd() const { return _current == _end; }
-                //!
-                //! Move to previous attribute, if not already atBegin().
-                //!
-                void previous() { if (_current != _begin) { --_current; } }
-                //!
-                //! Move to next attribute, if not already atEnd().
-                //!
-                void next() { if (_current != _end) { ++_current; } }
-                //!
-                //! Move back to the beginning of the list of attributes.
-                //!
-                void reset() { _current = _begin; }
-                //!
-                //! Get the current attribute.
-                //! @return A constant reference to the current attribute name, invalid if atEnd().
-                //!
-                const Attribute& operator*() { return _current == _end ? Attribute::INVALID : _current->second; }
-                //!
-                //! Access the current attribute.
-                //! @return A constant pointer to the current attribute name, invalid if atEnd().
-                //!
-                const Attribute* operator->() { return _current == _end ? &Attribute::INVALID : &_current->second; }
-            private:
-                AttributeMap::const_iterator _begin;
-                AttributeMap::const_iterator _current;
-                AttributeMap::const_iterator _end;
-                AttributeIterator() = delete;
-            };
+            void getAttributesNames(UStringList& names) const;
+
+            //!
+            //! Get the list of all attribute names, sorted by modification order.
+            //! The method is slower than getAttributesNames().
+            //! @param [out] names Returned list of all attribute names.
+            //!
+            void getAttributesNamesInModificationOrder(UStringList& names) const;
 
             // Inherited from xml::Node.
             virtual void clear() override;
             virtual UString typeName() const override { return u"Element"; }
+            virtual void print(Output& output, bool keepNodeOpen = false) const override;
+            virtual void printClose(Output& output, size_t levels = std::numeric_limits<size_t>::max()) const override;
 
         protected:
             // Inherited from xml::Node.

@@ -34,6 +34,9 @@ TSDUCK_SOURCE;
 // A constant static invalid instance.
 const ts::xml::Attribute ts::xml::Attribute::INVALID;
 
+// A non-thread-safe allocator for sequence numbers.
+volatile size_t ts::xml::Attribute::_allocator = 0;
+
 
 //----------------------------------------------------------------------------
 // Constructors.
@@ -43,7 +46,8 @@ ts::xml::Attribute::Attribute() :
     _valid(false),
     _name(),
     _value(),
-    _line(0)
+    _line(0),
+    _sequence(++_allocator)
 {
 }
 
@@ -51,8 +55,40 @@ ts::xml::Attribute::Attribute(const UString& name, const UString& value, size_t 
     _valid(true),
     _name(name),
     _value(value),
-    _line(line)
+    _line(line),
+    _sequence(++_allocator)
 {
+}
+
+
+//----------------------------------------------------------------------------
+// Set attribute value.
+//----------------------------------------------------------------------------
+
+void ts::xml::Attribute::setString(const UString& value)
+{
+    _value = value;
+    _sequence = ++_allocator;
+}
+
+void ts::xml::Attribute::setBool(bool value)
+{
+    setString(UString::TrueFalse(value));
+}
+
+void ts::xml::Attribute::setEnum(const Enumeration& definition, int value)
+{
+    setString(definition.name(value));
+}
+
+void ts::xml::Attribute::setDateTime(const Time& value)
+{
+    setString(DateTimeToString(value));
+}
+
+void ts::xml::Attribute::setTime(Second value)
+{
+    setString(TimeToString(value));
 }
 
 
@@ -66,31 +102,16 @@ ts::UString ts::xml::Attribute::DateTimeToString(const Time& value)
     return UString::Format(u"%04d-%02d-%02d %02d:%02d:%02d", {f.year, f.month, f.day, f.hour, f.minute, f.second});
 }
 
-
-//----------------------------------------------------------------------------
-// Convert a time into a string, as required in attributes.
-//----------------------------------------------------------------------------
-
 ts::UString ts::xml::Attribute::TimeToString(Second value)
 {
     return UString::Format(u"%02d:%02d:%02d", {value / 3600, (value / 60) % 60, value % 60});
 }
-
-
-//----------------------------------------------------------------------------
-// Convert a string into a time, as required in attributes.
-//----------------------------------------------------------------------------
 
 bool ts::xml::Attribute::DateTimeFromString(Time& value, const UString& str)
 {
     // We are tolerant on syntax, decode 6 fields, regardless of separators.
     return value.decode(str, Time::YEAR | Time::MONTH | Time::DAY | Time::HOUR | Time::MINUTE | Time::SECOND);
 }
-
-
-//----------------------------------------------------------------------------
-// Convert a string into a time, as required in attributes.
-//----------------------------------------------------------------------------
 
 bool ts::xml::Attribute::TimeFromString(Second& value, const UString& str)
 {

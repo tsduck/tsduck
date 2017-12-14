@@ -1782,21 +1782,31 @@ ts::UChar ts::FromHTML(const UString& entity)
     return it == hc->end() ? CHAR_NULL : it->second;
 }
 
-void ts::UString::convertToHTML()
+void ts::UString::convertToHTML(const UString& convert)
 {
     // Should not be there, but this is much faster to do it that way.
+    const bool convertAll = convert.empty();
     const HTMLEntities* he = HTMLEntities::Instance();
     for (size_type i = 0; i < length(); ) {
-        const HTMLEntities::const_iterator it(he->find(at(i)));
-        if (it == he->end()) {
+        if (!convertAll && convert.find(at(i)) == NPOS) {
+            // Do not convert this one.
             ++i;
         }
         else {
-            const UString rep(UString::FromUTF8(it->second));
-            at(i) = ts::AMPERSAND;
-            insert(i + 1, rep);
-            insert(i + 1 + rep.length(), 1, ts::SEMICOLON);
-            i += rep.length() + 2;
+            // Look for an HTML entity.
+            const HTMLEntities::const_iterator it(he->find(at(i)));
+            if (it == he->end()) {
+                // No HTML entity for this character, don't convert.
+                ++i;
+            }
+            else {
+                // Replace the character with the HTML entity.
+                const UString rep(UString::FromUTF8(it->second));
+                at(i) = ts::AMPERSAND;
+                insert(i + 1, rep);
+                insert(i + 1 + rep.length(), 1, ts::SEMICOLON);
+                i += rep.length() + 2;
+            }
         }
     }
 }
