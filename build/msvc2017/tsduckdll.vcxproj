@@ -287,7 +287,6 @@
     <ClInclude Include="..\..\src\libtsduck\tsVersionInfo.h" />
     <ClInclude Include="..\..\src\libtsduck\tsViaccessDate.h" />
     <ClInclude Include="..\..\src\libtsduck\tsVideoAttributes.h" />
-    <ClInclude Include="..\..\src\libtsduck\tsXML.h" />
     <ClInclude Include="..\..\src\libtsduck\tsxmlAttribute.h" />
     <ClInclude Include="..\..\src\libtsduck\tsxmlElementTemplate.h" />
     <ClInclude Include="..\..\src\libtsduck\tsxmlComment.h" />
@@ -297,7 +296,6 @@
     <ClInclude Include="..\..\src\libtsduck\tsxmlNode.h" />
     <ClInclude Include="..\..\src\libtsduck\tsxmlOutput.h" />
     <ClInclude Include="..\..\src\libtsduck\tsXMLTables.h" />
-    <ClInclude Include="..\..\src\libtsduck\tsXMLTemplate.h" />
     <ClInclude Include="..\..\src\libtsduck\tsxmlText.h" />
     <ClInclude Include="..\..\src\libtsduck\tsxmlUnknown.h" />
     <ClInclude Include="..\..\src\libtsduck\windows\tsComIds.h" />
@@ -521,7 +519,6 @@
     <ClCompile Include="..\..\src\libtsduck\tsVBITeletextDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsVersionInfo.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsVideoAttributes.cpp" />
-    <ClCompile Include="..\..\src\libtsduck\tsXML.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsxmlAttribute.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsxmlComment.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsxmlDeclaration.cpp" />
