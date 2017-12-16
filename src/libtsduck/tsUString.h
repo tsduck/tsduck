@@ -1011,6 +1011,7 @@ namespace ts {
         //! Return the string in a suitable HTML representation.
         //! @param [in] convert A string containing all characters to convert into
         //! their corresponding HTML entities. If empty, all characters are converted.
+        //! @return The string with HTML entities replacing special characters.
         //!
         UString toHTML(const UString& convert = UString()) const;
 

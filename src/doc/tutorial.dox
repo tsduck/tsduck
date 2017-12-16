@@ -215,14 +215,10 @@ enumeration values. Integer values are recognized in decimal or hexadecimal
 form (prefix `0x`) and thousands separators ('`,`') which are present for
 clarity are ignored. Enumeration values are handled through ts::Enumeration.
 
-## XML data {#tinyxml}
+## XML data {#xml}
 
-The TSDuck library embeds <a href="http://www.grinninglizard.com/tinyxml2/">TinyXML-2</a>,
-a lightweight and efficient XML parser.
-
-TinyXML-2 can be used directly. But the class ts::XML provides some encapsulation
-and utility functions. Specifically, UTF-8 encoded strings and attributes from
-the XML file can be directly returned as ts::UString.
+The TSDuck library embeds an XML parser and several classes to handle a DOM structure.
+See the class ts::xml::Node, the abstract base class of the DOM hierarchy.
 
 # Cryptography {#crypto}
 

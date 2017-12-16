@@ -5,7 +5,6 @@
   </ImportGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\libtsduck\private\tsxmlParser.h" />
-    <ClInclude Include="..\..\src\libtsduck\tinyxml\tinyxml2.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAACDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAbortInterface.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAbstractAudioVideoAttributes.h" />
@@ -316,7 +315,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\libtsduck\private\tsxmlParser.cpp" />
-    <ClCompile Include="..\..\src\libtsduck\tinyxml\tinyxml2.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAACDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAbstractAVCAccessUnit.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAbstractAVCStructure.cpp" />
@@ -565,7 +563,7 @@
   </ImportGroup>
   <ItemDefinitionGroup>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(TSDuckRootDir)\src\libtsduck;$(TSDuckRootDir)\src\libtsduck\windows;$(TSDuckRootDir)\src\libtsduck\private;$(TSDuckRootDir)src\libtsduck\tinyxml;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(TSDuckRootDir)\src\libtsduck;$(TSDuckRootDir)\src\libtsduck\windows;$(TSDuckRootDir)\src\libtsduck\private;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
   <ImportGroup Label="PropertySheets">

@@ -49,7 +49,6 @@ namespace ts {
         VERSION_DATE,    //!< Build date.
         VERSION_NSIS,    //!< Output NSIS @c !define directives.
         VERSION_DEKTEC,  //!< Version of embedded Dektec DTAPI and detected Dektec drivers.
-        VERSION_TINYXML, //!< Version of embedded TinyXML-2.
     };
 
     //!

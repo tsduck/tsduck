@@ -276,7 +276,6 @@
 #include "tsVersionInfo.h"
 #include "tsViaccessDate.h"
 #include "tsVideoAttributes.h"
-#include "tsXML.h"
 #include "tsXMLTables.h"
 #include "tstlv.h"
 #include "tstlvAnalyzer.h"
