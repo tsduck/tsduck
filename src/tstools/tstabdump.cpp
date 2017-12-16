@@ -103,7 +103,7 @@ bool DumpFile(Options& opt, const ts::UString& file_name)
     ts::SectionPtrVector sections;
     bool ok;
 
-    if (file_name.empty() == 0) {
+    if (file_name.empty()) {
         // no input file specified, use standard input
         SetBinaryModeStdin(opt);
         ok = ts::Section::LoadFile(sections, std::cin, ts::CRC32::IGNORE, opt);
