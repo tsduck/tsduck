@@ -152,11 +152,9 @@ void ts::TDT::DisplaySection(TablesDisplay& display, const ts::Section& section,
 // XML serialization
 //----------------------------------------------------------------------------
 
-ts::XML::Element* ts::TDT::toXML(XML& xml, XML::Element* parent) const
+void ts::TDT::buildXML(xml::Element* root) const
 {
-    XML::Element* root = _is_valid ? xml.addElement(parent, _xml_name) : 0;
-    xml.setDateTimeAttribute(root, u"UTC_time", utc_time);
-    return root;
+    root->setDateTimeAttribute(u"UTC_time", utc_time);
 }
 
 
@@ -164,9 +162,9 @@ ts::XML::Element* ts::TDT::toXML(XML& xml, XML::Element* parent) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::TDT::fromXML(XML& xml, const XML::Element* element)
+void ts::TDT::fromXML(const xml::Element* element)
 {
     _is_valid =
-        checkXMLName(xml, element) &&
-        xml.getDateTimeAttribute(utc_time, element, u"UTC_time", true);
+        checkXMLName(element) &&
+        element->getDateTimeAttribute(utc_time, u"UTC_time", true);
 }

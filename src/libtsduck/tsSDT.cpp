@@ -475,25 +475,23 @@ void ts::SDT::DisplaySection(TablesDisplay& display, const ts::Section& section,
 // XML serialization
 //----------------------------------------------------------------------------
 
-ts::XML::Element* ts::SDT::toXML(XML& xml, XML::Element* parent) const
+void ts::SDT::buildXML(xml::Element* root) const
 {
-    XML::Element* root = _is_valid ? xml.addElement(parent, _xml_name) : 0;
-    xml.setIntAttribute(root, u"version", version);
-    xml.setBoolAttribute(root, u"current", is_current);
-    xml.setIntAttribute(root, u"transport_stream_id", ts_id, true);
-    xml.setIntAttribute(root, u"original_network_id", onetw_id, true);
-    xml.setBoolAttribute(root, u"actual", isActual());
+    root->setIntAttribute(u"version", version);
+    root->setBoolAttribute(u"current", is_current);
+    root->setIntAttribute(u"transport_stream_id", ts_id, true);
+    root->setIntAttribute(u"original_network_id", onetw_id, true);
+    root->setBoolAttribute(u"actual", isActual());
 
     for (ServiceMap::const_iterator it = services.begin(); it != services.end(); ++it) {
-        XML::Element* e = xml.addElement(root, u"service");
-        xml.setIntAttribute(e, u"service_id", it->first, true);
-        xml.setBoolAttribute(e, u"EIT_schedule", it->second.EITs_present);
-        xml.setBoolAttribute(e, u"EIT_present_following", it->second.EITpf_present);
-        xml.setBoolAttribute(e, u"CA_mode", it->second.CA_controlled);
-        xml.setEnumAttribute(RST::RunningStatusNames, e, u"running_status", it->second.running_status);
-        XMLTables::ToXML(xml, e, it->second.descs);
+        xml::Element* e = root->addElement(u"service");
+        e->setIntAttribute(u"service_id", it->first, true);
+        e->setBoolAttribute(u"EIT_schedule", it->second.EITs_present);
+        e->setBoolAttribute(u"EIT_present_following", it->second.EITpf_present);
+        e->setBoolAttribute(u"CA_mode", it->second.CA_controlled);
+        e->setEnumAttribute(RST::RunningStatusNames, u"running_status", it->second.running_status);
+        XMLTables::ToXML(e, it->second.descs);
     }
-    return root;
 }
 
 
@@ -501,21 +499,21 @@ ts::XML::Element* ts::SDT::toXML(XML& xml, XML::Element* parent) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::SDT::fromXML(XML& xml, const XML::Element* element)
+void ts::SDT::fromXML(const xml::Element* element)
 {
     services.clear();
 
-    XML::ElementVector children;
+    xml::ElementVector children;
     bool actual = true;
 
     _is_valid =
-        checkXMLName(xml, element) &&
-        xml.getIntAttribute<uint8_t>(version, element, u"version", false, 0, 0, 31) &&
-        xml.getBoolAttribute(is_current, element, u"current", false, true) &&
-        xml.getIntAttribute<uint16_t>(ts_id, element, u"transport_stream_id", true, 0, 0x0000, 0xFFFF) &&
-        xml.getIntAttribute<uint16_t>(onetw_id, element, u"original_network_id", true, 0, 0x0000, 0xFFFF) &&
-        xml.getBoolAttribute(actual, element, u"actual", false, true) &&
-        xml.getChildren(children, element, u"service");
+        checkXMLName(element) &&
+        element->getIntAttribute<uint8_t>(version, u"version", false, 0, 0, 31) &&
+        element->getBoolAttribute(is_current, u"current", false, true) &&
+        element->getIntAttribute<uint16_t>(ts_id, u"transport_stream_id", true, 0, 0x0000, 0xFFFF) &&
+        element->getIntAttribute<uint16_t>(onetw_id, u"original_network_id", true, 0, 0x0000, 0xFFFF) &&
+        element->getBoolAttribute(actual, u"actual", false, true) &&
+        element->getChildren(children, u"service");
 
     setActual(actual);
 
@@ -524,12 +522,12 @@ void ts::SDT::fromXML(XML& xml, const XML::Element* element)
         Service srv;
         int rs = 0;
         _is_valid =
-            xml.getIntAttribute<uint16_t>(id, children[index], u"service_id", true, 0, 0x0000, 0xFFFF) &&
-            xml.getBoolAttribute(srv.EITs_present, children[index], u"EIT_schedule", false, false) &&
-            xml.getBoolAttribute(srv.EITpf_present, children[index], u"EIT_present_following", false, false) &&
-            xml.getBoolAttribute(srv.CA_controlled, children[index], u"CA_mode", false, false) &&
-            xml.getEnumAttribute(rs, RST::RunningStatusNames, children[index], u"running_status", false, 0) &&
-            XMLTables::FromDescriptorListXML(srv.descs, xml, children[index]);
+            children[index]->getIntAttribute<uint16_t>(id, u"service_id", true, 0, 0x0000, 0xFFFF) &&
+            children[index]->getBoolAttribute(srv.EITs_present, u"EIT_schedule", false, false) &&
+            children[index]->getBoolAttribute(srv.EITpf_present, u"EIT_present_following", false, false) &&
+            children[index]->getBoolAttribute(srv.CA_controlled, u"CA_mode", false, false) &&
+            children[index]->getEnumAttribute(rs, RST::RunningStatusNames, u"running_status", false, 0) &&
+            XMLTables::FromDescriptorListXML(srv.descs, children[index]);
         if (_is_valid) {
             srv.running_status = uint8_t(rs);
             services[id] = srv;

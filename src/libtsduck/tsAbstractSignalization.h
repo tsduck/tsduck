@@ -33,7 +33,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsXML.h"
+#include "tsxmlElement.h"
 
 namespace ts {
     //!
@@ -67,21 +67,28 @@ namespace ts {
         UString xmlName() const;
 
         //!
-        //! This abstract method converts this object to XML.
-        //! @param [in,out] xml XML utility for error reporting
+        //! This method converts this object to XML.
+        //!
+        //! When this object is valid, the default implementation of toXML()
+        //! creates a root node with the default XML name and then invoke
+        //! buildXML() to populate the XML node.
+        //!
+        //! Subclasses have the choice to either implement buildXML() or toXML().
+        //! If the object is serialized as one single XML node, it is simpler to
+        //! implement buidlXML().
+        //!
         //! @param [in,out] parent The parent node for the new XML tree.
         //! @return The new XML element.
         //!
-        virtual XML::Element* toXML(XML& xml, XML::Element* parent) const = 0;
+        virtual xml::Element* toXML(xml::Element* parent) const;
 
         //!
         //! This abstract converts an XML structure to a table or descriptor.
         //! In case of success, this object is replaced with the interpreted content of the XML structure.
         //! In case of error, this object is invalidated.
-        //! @param [in,out] xml XML utility for error reporting
         //! @param [in] element XML element to convert.
         //!
-        virtual void fromXML(XML& xml, const XML::Element* element) = 0;
+        virtual void fromXML(const xml::Element* element) = 0;
 
         //!
         //! Virtual destructor
@@ -119,12 +126,26 @@ namespace ts {
         AbstractSignalization& operator=(const AbstractSignalization& other);
 
         //!
+        //! Helper method to convert this object to XML.
+        //!
+        //! When this object is valid, the default implementation of toXML()
+        //! creates a root node with the default XML name and then invoke
+        //! buildXML() to populate the XML node.
+        //!
+        //! The default implementation is to do nothing. Subclasses which
+        //! override toXML() do not need to implement buildXML() since it
+        //! won't be invoked.
+        //!
+        //! @param [in,out] root The root node for the new XML tree.
+        //!
+        virtual void buildXML(xml::Element* root) const {}
+
+        //!
         //! Check that an XML element has the right name for this table.
-        //! @param [in,out] xml XML utility for error reporting
         //! @param [in] element XML element to check.
         //! @return True on success, false on error.
         //!
-        bool checkXMLName(XML& xml, const XML::Element* element) const;
+        bool checkXMLName(const xml::Element* element) const;
 
         //!
         //! This static method serializes a DVB string with a required fixed size.

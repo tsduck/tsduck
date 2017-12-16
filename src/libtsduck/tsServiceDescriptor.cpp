@@ -137,13 +137,11 @@ void ts::ServiceDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, c
 // XML serialization
 //----------------------------------------------------------------------------
 
-ts::XML::Element* ts::ServiceDescriptor::toXML(XML& xml, XML::Element* parent) const
+void ts::ServiceDescriptor::buildXML(xml::Element* root) const
 {
-    XML::Element* root = _is_valid ? xml.addElement(parent, _xml_name) : 0;
-    xml.setIntAttribute(root, u"service_type", service_type, true);
-    xml.setAttribute(root, u"service_provider_name", provider_name);
-    xml.setAttribute(root, u"service_name", service_name);
-    return root;
+    root->setIntAttribute(u"service_type", service_type, true);
+    root->setAttribute(u"service_provider_name", provider_name);
+    root->setAttribute(u"service_name", service_name);
 }
 
 
@@ -151,11 +149,11 @@ ts::XML::Element* ts::ServiceDescriptor::toXML(XML& xml, XML::Element* parent) c
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::ServiceDescriptor::fromXML(XML& xml, const XML::Element* element)
+void ts::ServiceDescriptor::fromXML(const xml::Element* element)
 {
     _is_valid =
-        checkXMLName(xml, element) &&
-        xml.getIntAttribute<uint8_t>(service_type, element, u"service_type", true) &&
-        xml.getAttribute(provider_name, element, u"service_provider_name", true) &&
-        xml.getAttribute(service_name, element, u"service_name", true);
+        checkXMLName(element) &&
+        element->getIntAttribute<uint8_t>(service_type, u"service_type", true) &&
+        element->getAttribute(provider_name, u"service_provider_name", true) &&
+        element->getAttribute(service_name, u"service_name", true);
 }

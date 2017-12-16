@@ -288,21 +288,19 @@ void ts::EnhancedAC3Descriptor::DisplayDescriptor(TablesDisplay& display, DID di
 // XML serialization
 //----------------------------------------------------------------------------
 
-ts::XML::Element* ts::EnhancedAC3Descriptor::toXML(XML& xml, XML::Element* parent) const
+void ts::EnhancedAC3Descriptor::buildXML(xml::Element* root) const
 {
-    XML::Element* root = _is_valid ? xml.addElement(parent, _xml_name) : 0;
-    xml.setBoolAttribute(root, u"mixinfoexists", mixinfoexists);
-    xml.setOptionalIntAttribute(root, u"component_type", component_type, true);
-    xml.setOptionalIntAttribute(root, u"bsid", bsid, true);
-    xml.setOptionalIntAttribute(root, u"mainid", mainid, true);
-    xml.setOptionalIntAttribute(root, u"asvc", asvc, true);
-    xml.setOptionalIntAttribute(root, u"substream1", substream1, true);
-    xml.setOptionalIntAttribute(root, u"substream2", substream2, true);
-    xml.setOptionalIntAttribute(root, u"substream3", substream3, true);
+    root->setBoolAttribute(u"mixinfoexists", mixinfoexists);
+    root->setOptionalIntAttribute(u"component_type", component_type, true);
+    root->setOptionalIntAttribute(u"bsid", bsid, true);
+    root->setOptionalIntAttribute(u"mainid", mainid, true);
+    root->setOptionalIntAttribute(u"asvc", asvc, true);
+    root->setOptionalIntAttribute(u"substream1", substream1, true);
+    root->setOptionalIntAttribute(u"substream2", substream2, true);
+    root->setOptionalIntAttribute(u"substream3", substream3, true);
     if (!additional_info.empty()) {
-        xml.addHexaText(xml.addElement(root, u"additional_info"), additional_info);
+        root->addElement(u"additional_info")->addHexaText(additional_info);
     }
-    return root;
 }
 
 
@@ -310,17 +308,17 @@ ts::XML::Element* ts::EnhancedAC3Descriptor::toXML(XML& xml, XML::Element* paren
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::EnhancedAC3Descriptor::fromXML(XML& xml, const XML::Element* element)
+void ts::EnhancedAC3Descriptor::fromXML(const xml::Element* element)
 {
     _is_valid =
-        checkXMLName(xml, element) &&
-        xml.getBoolAttribute(mixinfoexists, element, u"mixinfoexists", true) &&
-        xml.getOptionalIntAttribute(component_type, element, u"component_type") &&
-        xml.getOptionalIntAttribute(bsid, element, u"bsid") &&
-        xml.getOptionalIntAttribute(mainid, element, u"mainid") &&
-        xml.getOptionalIntAttribute(asvc, element, u"asvc") &&
-        xml.getOptionalIntAttribute(substream1, element, u"substream1") &&
-        xml.getOptionalIntAttribute(substream2, element, u"substream2") &&
-        xml.getOptionalIntAttribute(substream3, element, u"substream3") &&
-        xml.getHexaTextChild(additional_info, element, u"additional_info", false, 0, MAX_DESCRIPTOR_SIZE - 8);
+        checkXMLName(element) &&
+        element->getBoolAttribute(mixinfoexists, u"mixinfoexists", true) &&
+        element->getOptionalIntAttribute(component_type, u"component_type") &&
+        element->getOptionalIntAttribute(bsid, u"bsid") &&
+        element->getOptionalIntAttribute(mainid, u"mainid") &&
+        element->getOptionalIntAttribute(asvc, u"asvc") &&
+        element->getOptionalIntAttribute(substream1, u"substream1") &&
+        element->getOptionalIntAttribute(substream2, u"substream2") &&
+        element->getOptionalIntAttribute(substream3, u"substream3") &&
+        element->getHexaTextChild(additional_info, u"additional_info", false, 0, MAX_DESCRIPTOR_SIZE - 8);
 }

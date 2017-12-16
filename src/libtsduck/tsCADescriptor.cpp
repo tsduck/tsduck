@@ -147,15 +147,13 @@ void ts::CADescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const 
 // XML serialization
 //----------------------------------------------------------------------------
 
-ts::XML::Element* ts::CADescriptor::toXML(XML& xml, XML::Element* parent) const
+void ts::CADescriptor::buildXML(xml::Element* root) const
 {
-    XML::Element* root = _is_valid ? xml.addElement(parent, _xml_name) : 0;
-    xml.setIntAttribute(root, u"CA_system_id", cas_id, true);
-    xml.setIntAttribute(root, u"CA_PID", ca_pid, true);
+    root->setIntAttribute(u"CA_system_id", cas_id, true);
+    root->setIntAttribute(u"CA_PID", ca_pid, true);
     if (!private_data.empty()) {
-        xml.addHexaText(xml.addElement(root, u"private_data"), private_data);
+        root->addElement(u"private_data")->addHexaText(private_data);
     }
-    return root;
 }
 
 
@@ -163,11 +161,11 @@ ts::XML::Element* ts::CADescriptor::toXML(XML& xml, XML::Element* parent) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::CADescriptor::fromXML(XML& xml, const XML::Element* element)
+void ts::CADescriptor::fromXML(const xml::Element* element)
 {
     _is_valid =
-        checkXMLName(xml, element) &&
-        xml.getIntAttribute<uint16_t>(cas_id, element, u"CA_system_id", true, 0, 0x0000, 0xFFFF) &&
-        xml.getIntAttribute<PID>(ca_pid, element, u"CA_PID", true, 0, 0x0000, 0x1FFF) &&
-        xml.getHexaTextChild(private_data, element, u"private_data", false, 0, MAX_DESCRIPTOR_SIZE - 4);
+        checkXMLName(element) &&
+        element->getIntAttribute<uint16_t>(cas_id, u"CA_system_id", true, 0, 0x0000, 0xFFFF) &&
+        element->getIntAttribute<PID>(ca_pid, u"CA_PID", true, 0, 0x0000, 0x1FFF) &&
+        element->getHexaTextChild(private_data, u"private_data", false, 0, MAX_DESCRIPTOR_SIZE - 4);
 }

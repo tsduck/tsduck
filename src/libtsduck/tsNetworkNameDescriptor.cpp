@@ -114,11 +114,9 @@ void ts::NetworkNameDescriptor::DisplayDescriptor(TablesDisplay& display, DID di
 // XML serialization
 //----------------------------------------------------------------------------
 
-ts::XML::Element* ts::NetworkNameDescriptor::toXML(XML& xml, XML::Element* parent) const
+void ts::NetworkNameDescriptor::buildXML(xml::Element* root) const
 {
-    XML::Element* root = _is_valid ? xml.addElement(parent, _xml_name) : 0;
-    xml.setAttribute(root, u"network_name", name);
-    return root;
+    root->setAttribute(u"network_name", name);
 }
 
 
@@ -126,9 +124,9 @@ ts::XML::Element* ts::NetworkNameDescriptor::toXML(XML& xml, XML::Element* paren
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::NetworkNameDescriptor::fromXML(XML& xml, const XML::Element* element)
+void ts::NetworkNameDescriptor::fromXML(const xml::Element* element)
 {
     _is_valid =
-        checkXMLName(xml, element) &&
-        xml.getAttribute(name, element, u"network_name", true, u"", 0, MAX_DESCRIPTOR_SIZE - 2);
+        checkXMLName(element) &&
+        element->getAttribute(name, u"network_name", true, u"", 0, MAX_DESCRIPTOR_SIZE - 2);
 }

@@ -190,13 +190,13 @@ void ts::SSUDataBroadcastIdDescriptor::deserialize (const Descriptor& desc, cons
 // XML serialization
 //----------------------------------------------------------------------------
 
-ts::XML::Element* ts::SSUDataBroadcastIdDescriptor::toXML(XML& xml, XML::Element* parent) const
+ts::xml::Element* ts::SSUDataBroadcastIdDescriptor::toXML(xml::Element* parent) const
 {
     // There is no specific representation of this descriptor.
     // Convert to a data_broadcast_id_descriptor.
     DataBroadcastIdDescriptor desc;
     toDataBroadcastIdDescriptor(desc);
-    return desc.toXML(xml, parent);
+    return desc.toXML(parent);
 }
 
 
@@ -204,10 +204,10 @@ ts::XML::Element* ts::SSUDataBroadcastIdDescriptor::toXML(XML& xml, XML::Element
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::SSUDataBroadcastIdDescriptor::fromXML(XML& xml, const XML::Element* element)
+void ts::SSUDataBroadcastIdDescriptor::fromXML(const xml::Element* element)
 {
     // There is no specific representation of this descriptor.
     // We cannot be called since there is no registration in the XML factory.
-    xml.reportError(u"Internal error, there is no XML representation for SSUDataBroadcastIdDescriptor");
+    element->report().error(u"Internal error, there is no XML representation for SSUDataBroadcastIdDescriptor");
     _is_valid = false;
 }

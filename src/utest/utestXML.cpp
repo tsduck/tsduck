@@ -306,7 +306,7 @@ void XMLTest::testCreation()
         u"<theRoot>\n"
         u"  <child1 str=\"a string\" int=\"-47\">\n"
         u"    <subChild1/>\n"
-        u"    <subChild2 int64=\"9223372036854775807\"/>\n"
+        u"    <subChild2 int64=\"9,223,372,036,854,775,807\"/>\n"
         u"  </child1>\n"
         u"  <child2>\n"
         u"    <fooBar/>\n"
@@ -323,7 +323,7 @@ void XMLTest::testCreation()
         u"<theRoot>"
         u"<child1 str=\"a string\" int=\"-47\">"
         u"<subChild1/>"
-        u"<subChild2 int64=\"9223372036854775807\"/>"
+        u"<subChild2 int64=\"9,223,372,036,854,775,807\"/>"
         u"</child1>"
         u"<child2><fooBar/></child2>"
         u"</theRoot>",

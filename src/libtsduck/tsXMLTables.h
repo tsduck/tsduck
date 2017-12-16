@@ -33,7 +33,8 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsXML.h"
+#include "tsxmlDocument.h"
+#include "tsxmlElement.h"
 #include "tsMPEG.h"
 #include "tsUString.h"
 #include "tsDVBCharset.h"
@@ -144,52 +145,47 @@ namespace ts {
 
         //!
         //! This method converts a table to the appropriate XML tree.
-        //! @param [in,out] xml XML utility for error reporting
         //! @param [in,out] parent The parent node for the new XML tree.
         //! @param [in] table The table to serialize.
         //! @param [in] charset If not zero, character set to use without explicit table code.
         //! @return The new XML element or zero if @a table is invalid.
         //!
-        static XML::Element* ToXML(XML& xml, XML::Element* parent, const BinaryTable& table, const DVBCharset* charset = 0);
+        static xml::Element* ToXML(xml::Element* parent, const BinaryTable& table, const DVBCharset* charset = 0);
 
         //!
         //! This method converts a descriptor to the appropriate XML tree.
-        //! @param [in,out] xml XML utility for error reporting
         //! @param [in,out] parent The parent node for the new XML tree.
         //! @param [in] desc The descriptor to serialize.
         //! @param [in] pds Associated private data specifier.
         //! @param [in] charset If not zero, character set to use without explicit table code.
         //! @return The new XML element or zero if @a table is invalid.
         //!
-        static XML::Element* ToXML(XML& xml, XML::Element* parent, const Descriptor& desc, PDS pds = 0, const DVBCharset* charset = 0);
+        static xml::Element* ToXML(xml::Element* parent, const Descriptor& desc, PDS pds = 0, const DVBCharset* charset = 0);
 
         //!
         //! This method converts a list of descriptors to XML.
-        //! @param [in,out] xml XML utility for error reporting
         //! @param [in,out] parent The parent node for the all descriptors.
         //! @param [in] list The list of descriptors to serialize.
         //! @param [in] charset If not zero, character set to use without explicit table code.
         //! @return True on success, false on error.
         //!
-        static bool ToXML(XML& xml, XML::Element* parent, const DescriptorList& list, const DVBCharset* charset = 0);
+        static bool ToXML(xml::Element* parent, const DescriptorList& list, const DVBCharset* charset = 0);
 
         //!
         //! This method converts a generic table to XML.
-        //! @param [in,out] xml XML utility for error reporting
         //! @param [in,out] parent The parent node for the new XML tree.
         //! @param [in] table The table to serialize.
         //! @return The new XML element or zero if @a table is invalid.
         //!
-        static XML::Element* ToGenericTable(XML& xml, XML::Element* parent, const BinaryTable& table);
+        static xml::Element* ToGenericTable(xml::Element* parent, const BinaryTable& table);
 
         //!
         //! This method converts a generic descriptor to XML.
-        //! @param [in,out] xml XML utility for error reporting
         //! @param [in,out] parent The parent node for the new XML tree.
         //! @param [in] desc The descriptor to serialize.
         //! @return The new XML element or zero if @a desc is invalid.
         //!
-        static XML::Element* ToGenericDescriptor(XML& xml, XML::Element* parent, const Descriptor& desc);
+        static xml::Element* ToGenericDescriptor(xml::Element* parent, const Descriptor& desc);
 
         //--------------------------------------------------------------------
         // XML to PSI/SI utilities.
@@ -200,72 +196,65 @@ namespace ts {
         //! @param [out] list Returned descriptor list.
         //! @param [out] others Returned list of non-descriptor XML elements.
         //! All these elements are not null and their names are in @a allowedOthers.
-        //! @param [in,out] xml XML utility for error reporting
         //! @param [in] parent The XML element containing all descriptors.
         //! @param [in] allowedOthers A list of allowed element names inside @a parent which are not descriptors.
         //! @param [in] charset If not zero, character set to use without explicit table code.
         //! @return True on success, false on error.
         //!
-        static bool FromDescriptorListXML(DescriptorList& list, XML::ElementVector& others, XML& xml, const XML::Element* parent, const UStringList& allowedOthers, const DVBCharset* charset = 0);
+        static bool FromDescriptorListXML(DescriptorList& list, xml::ElementVector& others, const xml::Element* parent, const UStringList& allowedOthers, const DVBCharset* charset = 0);
 
         //!
         //! This method decodes an XML list of descriptors.
         //! @param [out] list Returned descriptor list.
         //! @param [out] others Returned list of non-descriptor XML elements.
         //! All these elements are not null and their names are in @a allowedOthers.
-        //! @param [in,out] xml XML utility for error reporting
         //! @param [in] parent The XML element containing all descriptors.
         //! @param [in] allowedOthers A comma-separated list of allowed element names inside @a parent which are not descriptors.
         //! @param [in] charset If not zero, character set to use without explicit table code.
         //! @return True on success, false on error.
         //!
-        static bool FromDescriptorListXML(DescriptorList& list, XML::ElementVector& others, XML& xml, const XML::Element* parent, const UString& allowedOthers, const DVBCharset* charset = 0);
+        static bool FromDescriptorListXML(DescriptorList& list, xml::ElementVector& others, const xml::Element* parent, const UString& allowedOthers, const DVBCharset* charset = 0);
 
         //!
         //! This method decodes an XML list of descriptors.
         //! @param [out] list Returned descriptor list.
-        //! @param [in,out] xml XML utility for error reporting
         //! @param [in] parent The XML element containing all descriptors.
         //! All children must be valid descriptors.
         //! @return True on success, false on error.
         //!
-        static bool FromDescriptorListXML(DescriptorList& list, XML& xml, const XML::Element* parent);
+        static bool FromDescriptorListXML(DescriptorList& list, const xml::Element* parent);
 
         //!
         //! This method decodes a \<generic_short_table> or \<generic_long_table>.
-        //! @param [in,out] xml XML utility for error reporting
         //! @param [in] elem The XML element.
         //! @return A safe pointer to the decoded table or a null pointer on error.
         //!
-        static BinaryTablePtr FromGenericTableXML(XML& xml, const XML::Element* elem);
+        static BinaryTablePtr FromGenericTableXML(const xml::Element* elem);
 
         //!
         //! This method decodes a \<generic_descriptor>.
-        //! @param [in,out] xml XML utility for error reporting
         //! @param [in] elem The XML element.
         //! @return A safe pointer to the decoded descriptor or a null pointer on error.
         //!
-        static DescriptorPtr FromGenericDescriptorXML(XML& xml, const XML::Element* elem);
+        static DescriptorPtr FromGenericDescriptorXML(const xml::Element* elem);
 
     private:
         BinaryTablePtrVector _tables;   //!< Loaded tables.
 
         //!
         //! Parse an XML document.
-        //! @param [in,out] xml XML handling.
         //! @param [in] doc Document to load.
         //! @param [in] charset If not zero, default character set to encode strings.
         //! @return True on success, false on error.
         //!
-        bool parseDocument(XML& xml, const XML::Document& doc, const DVBCharset* charset);
+        bool parseDocument(const xml::Document& doc, const DVBCharset* charset);
 
         //!
         //! Generate an XML document.
-        //! @param [in,out] xml XML handling.
-        //! @param [in,out] printer XML printer.
+        //! @param [in,out] doc XML document.
         //! @param [in] charset If not zero, character set to use without explicit table code.
         //! @return True on success, false on error.
         //!
-        bool generateDocument(XML& xml, XML::Printer& printer, const DVBCharset* charset) const;
+        bool generateDocument(xml::Document& doc, const DVBCharset* charset) const;
     };
 }

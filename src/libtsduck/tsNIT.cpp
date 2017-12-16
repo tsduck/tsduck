@@ -122,22 +122,20 @@ void ts::NIT::DisplaySection(TablesDisplay& display, const ts::Section& section,
 // XML serialization
 //----------------------------------------------------------------------------
 
-ts::XML::Element* ts::NIT::toXML(XML& xml, XML::Element* parent) const
+void ts::NIT::buildXML(xml::Element* root) const
 {
-    XML::Element* root = _is_valid ? xml.addElement(parent, _xml_name) : 0;
-    xml.setIntAttribute(root, u"version", version);
-    xml.setBoolAttribute(root, u"current", is_current);
-    xml.setIntAttribute(root, u"network_id", network_id, true);
-    xml.setBoolAttribute(root, u"actual", isActual());
-    XMLTables::ToXML(xml, root, descs);
+    root->setIntAttribute(u"version", version);
+    root->setBoolAttribute(u"current", is_current);
+    root->setIntAttribute(u"network_id", network_id, true);
+    root->setBoolAttribute(u"actual", isActual());
+    XMLTables::ToXML(root, descs);
 
     for (TransportMap::const_iterator it = transports.begin(); it != transports.end(); ++it) {
-        XML::Element* e = xml.addElement(root, u"transport_stream");
-        xml.setIntAttribute(e, u"transport_stream_id", it->first.transport_stream_id, true);
-        xml.setIntAttribute(e, u"original_network_id", it->first.original_network_id, true);
-        XMLTables::ToXML(xml, e, it->second);
+        xml::Element* e = root->addElement(u"transport_stream");
+        e->setIntAttribute(u"transport_stream_id", it->first.transport_stream_id, true);
+        e->setIntAttribute(u"original_network_id", it->first.original_network_id, true);
+        XMLTables::ToXML(e, it->second);
     }
-    return root;
 }
 
 
@@ -145,29 +143,29 @@ ts::XML::Element* ts::NIT::toXML(XML& xml, XML::Element* parent) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::NIT::fromXML(XML& xml, const XML::Element* element)
+void ts::NIT::fromXML(const xml::Element* element)
 {
     descs.clear();
     transports.clear();
 
-    XML::ElementVector children;
+    xml::ElementVector children;
     bool actual = true;
 
     _is_valid =
-        checkXMLName(xml, element) &&
-        xml.getIntAttribute<uint8_t>(version, element, u"version", false, 0, 0, 31) &&
-        xml.getBoolAttribute(is_current, element, u"current", false, true) &&
-        xml.getIntAttribute<uint16_t>(network_id, element, u"network_id", true, 0, 0x0000, 0xFFFF) &&
-        xml.getBoolAttribute(actual, element, u"actual", false, true) &&
-        XMLTables::FromDescriptorListXML(descs, children, xml, element, u"transport_stream");
+        checkXMLName(element) &&
+        element->getIntAttribute<uint8_t>(version, u"version", false, 0, 0, 31) &&
+        element->getBoolAttribute(is_current, u"current", false, true) &&
+        element->getIntAttribute<uint16_t>(network_id, u"network_id", true, 0, 0x0000, 0xFFFF) &&
+        element->getBoolAttribute(actual, u"actual", false, true) &&
+        XMLTables::FromDescriptorListXML(descs, children, element, u"transport_stream");
 
     setActual(actual);
 
     for (size_t index = 0; _is_valid && index < children.size(); ++index) {
         TransportStreamId ts;
         _is_valid =
-            xml.getIntAttribute<uint16_t>(ts.transport_stream_id, children[index], u"transport_stream_id", true, 0, 0x0000, 0xFFFF) &&
-            xml.getIntAttribute<uint16_t>(ts.original_network_id, children[index], u"original_network_id", true, 0, 0x0000, 0xFFFF) &&
-            XMLTables::FromDescriptorListXML(transports[ts], xml, children[index]);
+            children[index]->getIntAttribute<uint16_t>(ts.transport_stream_id, u"transport_stream_id", true, 0, 0x0000, 0xFFFF) &&
+            children[index]->getIntAttribute<uint16_t>(ts.original_network_id, u"original_network_id", true, 0, 0x0000, 0xFFFF) &&
+            XMLTables::FromDescriptorListXML(transports[ts], children[index]);
     }
 }

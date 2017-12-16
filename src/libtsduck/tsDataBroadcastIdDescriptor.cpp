@@ -215,14 +215,12 @@ void ts::DataBroadcastIdDescriptor::DisplaySelectorBytes(TablesDisplay& display,
 // XML serialization
 //----------------------------------------------------------------------------
 
-ts::XML::Element* ts::DataBroadcastIdDescriptor::toXML(XML& xml, XML::Element* parent) const
+void ts::DataBroadcastIdDescriptor::buildXML(xml::Element* root) const
 {
-    XML::Element* root = _is_valid ? xml.addElement(parent, _xml_name) : 0;
-    xml.setIntAttribute(root, u"data_broadcast_id", data_broadcast_id, true);
+    root->setIntAttribute(u"data_broadcast_id", data_broadcast_id, true);
     if (!private_data.empty()) {
-        xml.addHexaText(xml.addElement(root, u"selector_bytes"), private_data);
+        root->addElement(u"selector_bytes")->addHexaText(private_data);
     }
-    return root;
 }
 
 
@@ -230,10 +228,10 @@ ts::XML::Element* ts::DataBroadcastIdDescriptor::toXML(XML& xml, XML::Element* p
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::DataBroadcastIdDescriptor::fromXML(XML& xml, const XML::Element* element)
+void ts::DataBroadcastIdDescriptor::fromXML(const xml::Element* element)
 {
     _is_valid =
-        checkXMLName(xml, element) &&
-        xml.getIntAttribute<uint16_t>(data_broadcast_id, element, u"data_broadcast_id", true, 0, 0x0000, 0xFFFF) &&
-        xml.getHexaTextChild(private_data, element, u"selector_bytes", false, 0, MAX_DESCRIPTOR_SIZE - 2);
+        checkXMLName(element) &&
+        element->getIntAttribute<uint16_t>(data_broadcast_id, u"data_broadcast_id", true, 0, 0x0000, 0xFFFF) &&
+        element->getHexaTextChild(private_data, u"selector_bytes", false, 0, MAX_DESCRIPTOR_SIZE - 2);
 }

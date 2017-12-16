@@ -108,12 +108,14 @@ namespace ts {
             //! Set an attribute with an integer value to a node.
             //! @tparam INT An integer type.
             //! @param [in] value Attribute value.
-            //! @param [in] hexa If true, use an hexadecimal representation (0x...).
+            //! @param [in] hexa If true, use an hexadecimal representation.
+            //! When decimal is used, a comma is used as thousands separator.
+            //! When hexadecimal is used, a 0x prefix is added.
             //!
             template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
             void setInteger(INT value, bool hexa = false)
             {
-                setString(hexa ? UString::Hexa(value) : UString::Decimal(value, 0, true, UString()));
+                setString(hexa ? UString::Hexa(value) : UString::Decimal(value));
             }
 
             //!

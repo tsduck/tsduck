@@ -116,7 +116,7 @@ namespace ts {
         // Inherited methods
         virtual void serialize(Descriptor&, const DVBCharset* = 0) const override;
         virtual void deserialize(const Descriptor&, const DVBCharset* = 0) override;
-        virtual XML::Element* toXML(XML&, XML::Element*) const override;
-        virtual void fromXML(XML&, const XML::Element*) override;
+        virtual xml::Element* toXML(xml::Element*) const override;
+        virtual void fromXML(const xml::Element*) override;
     };
 }

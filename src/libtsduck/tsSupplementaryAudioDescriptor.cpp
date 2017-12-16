@@ -132,18 +132,16 @@ void ts::SupplementaryAudioDescriptor::deserialize(const Descriptor& desc, const
 // XML serialization
 //----------------------------------------------------------------------------
 
-ts::XML::Element* ts::SupplementaryAudioDescriptor::toXML(XML& xml, XML::Element* parent) const
+void ts::SupplementaryAudioDescriptor::buildXML(xml::Element* root) const
 {
-    XML::Element* root = _is_valid ? xml.addElement(parent, _xml_name) : 0;
-    xml.setIntAttribute(root, u"mix_type", mix_type);
-    xml.setIntAttribute(root, u"editorial_classification", editorial_classification, true);
+    root->setIntAttribute(u"mix_type", mix_type);
+    root->setIntAttribute(u"editorial_classification", editorial_classification, true);
     if (!language_code.empty()) {
-        xml.setAttribute(root, u"language_code", language_code);
+        root->setAttribute(u"language_code", language_code);
     }
     if (!private_data.empty()) {
-        xml.addHexaText(xml.addElement(root, u"private_data"), private_data);
+        root->addElement(u"private_data")->addHexaText(private_data);
     }
-    return root;
 }
 
 
@@ -151,14 +149,14 @@ ts::XML::Element* ts::SupplementaryAudioDescriptor::toXML(XML& xml, XML::Element
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::SupplementaryAudioDescriptor::fromXML(XML& xml, const XML::Element* element)
+void ts::SupplementaryAudioDescriptor::fromXML(const xml::Element* element)
 {
     _is_valid =
-        checkXMLName(xml, element) &&
-        xml.getIntAttribute<uint8_t>(mix_type, element, u"mix_type", true, 0, 0, 1) &&
-        xml.getIntAttribute<uint8_t>(editorial_classification, element, u"editorial_classification", true, 0, 0x00, 0x1F) &&
-        xml.getAttribute(language_code, element, u"language_code", false, u"", 3, 3) &&
-        xml.getHexaTextChild(private_data, element, u"private_data", false, 0, MAX_DESCRIPTOR_SIZE - 7);
+        checkXMLName(element) &&
+        element->getIntAttribute<uint8_t>(mix_type, u"mix_type", true, 0, 0, 1) &&
+        element->getIntAttribute<uint8_t>(editorial_classification, u"editorial_classification", true, 0, 0x00, 0x1F) &&
+        element->getAttribute(language_code, u"language_code", false, u"", 3, 3) &&
+        element->getHexaTextChild(private_data, u"private_data", false, 0, MAX_DESCRIPTOR_SIZE - 7);
 }
 
 

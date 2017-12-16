@@ -74,6 +74,7 @@ public:
 private:
     // Unitary test for one table.
     void testTable(const char* name, const ts::UChar* ref_xml, const uint8_t* ref_sections, size_t ref_sections_size);
+    ts::Report& report();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(XMLTablesTest);
@@ -91,6 +92,16 @@ void XMLTablesTest::setUp()
 // Test suite cleanup method.
 void XMLTablesTest::tearDown()
 {
+}
+
+ts::Report& XMLTablesTest::report()
+{
+    if (utest::DebugMode()) {
+        return CERR;
+    }
+    else {
+        return NULLREP;
+    }
 }
 
 
@@ -153,13 +164,12 @@ void XMLTablesTest::testGenericDescriptor()
     CPPUNIT_ASSERT_EQUAL(9, int(desc.size()));
     CPPUNIT_ASSERT_EQUAL(7, int(desc.payloadSize()));
 
-    ts::XML xml(CERR);
-    ts::XML::Document doc;
-    ts::XML::Element* root = xml.initializeDocument(&doc, u"test");
+    ts::xml::Document doc(report());
+    ts::xml::Element* root = doc.initialize(u"test");
     CPPUNIT_ASSERT(root != 0);
-    CPPUNIT_ASSERT(ts::XMLTables::ToGenericDescriptor(xml, root, desc) != 0);
+    CPPUNIT_ASSERT(ts::XMLTables::ToGenericDescriptor(root, desc) != 0);
 
-    ts::UString text(xml.toString(doc));
+    ts::UString text(doc.toString());
     utest::Out() << "XMLTablesTest::testGenericDescriptor: " << text << std::endl;
     CPPUNIT_ASSERT_USTRINGS_EQUAL(
         u"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
@@ -170,23 +180,22 @@ void XMLTablesTest::testGenericDescriptor()
         u"</test>\n",
         text);
 
-    ts::XML::Document doc2;
-    CPPUNIT_ASSERT(xml.parseDocument(doc2, text));
-    root = doc2.RootElement();
+    ts::xml::Document doc2(report());
+    CPPUNIT_ASSERT(doc2.parse(text));
+    root = doc2.rootElement();
     CPPUNIT_ASSERT(root != 0);
-    CPPUNIT_ASSERT(root->Name() != 0);
-    CPPUNIT_ASSERT_STRINGS_EQUAL("test", root->Name());
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"test", root->name());
 
-    ts::XML::ElementVector children;
-    CPPUNIT_ASSERT(xml.getChildren(children, root, u"generic_descriptor", 1, 1));
+    ts::xml::ElementVector children;
+    CPPUNIT_ASSERT(root->getChildren(children, u"generic_descriptor", 1, 1));
     CPPUNIT_ASSERT_EQUAL(size_t(1), children.size());
 
     ts::ByteBlock payload;
-    CPPUNIT_ASSERT(xml.getHexaText(payload, children[0]));
+    CPPUNIT_ASSERT(children[0]->getHexaText(payload));
     CPPUNIT_ASSERT_EQUAL(size_t(7), payload.size());
     CPPUNIT_ASSERT(payload == ts::ByteBlock(descData + 2, sizeof(descData) - 2));
 
-    ts::DescriptorPtr dp(ts::XMLTables::FromGenericDescriptorXML(xml, children[0]));
+    ts::DescriptorPtr dp(ts::XMLTables::FromGenericDescriptorXML(children[0]));
     CPPUNIT_ASSERT(!dp.isNull());
     CPPUNIT_ASSERT_EQUAL(ts::DID(0x72), dp->tag());
     CPPUNIT_ASSERT_EQUAL(size_t(7), dp->payloadSize());
@@ -206,13 +215,12 @@ void XMLTablesTest::testGenericShortTable()
     CPPUNIT_ASSERT(refTable.isValid());
     CPPUNIT_ASSERT_EQUAL(size_t(1), refTable.sectionCount());
 
-    ts::XML xml(CERR);
-    ts::XML::Document doc;
-    ts::XML::Element* root = xml.initializeDocument(&doc, u"test");
+    ts::xml::Document doc(report());
+    ts::xml::Element* root = doc.initialize(u"test");
     CPPUNIT_ASSERT(root != 0);
-    CPPUNIT_ASSERT(ts::XMLTables::ToGenericTable(xml, root, refTable) != 0);
+    CPPUNIT_ASSERT(ts::XMLTables::ToGenericTable(root, refTable) != 0);
 
-    ts::UString text(xml.toString(doc));
+    ts::UString text(doc.toString());
     utest::Out() << "XMLTablesTest::testGenericShortTable: " << text << std::endl;
     CPPUNIT_ASSERT_USTRINGS_EQUAL(
         u"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
@@ -223,18 +231,17 @@ void XMLTablesTest::testGenericShortTable()
         u"</test>\n",
         text);
 
-    ts::XML::Document doc2;
-    CPPUNIT_ASSERT(xml.parseDocument(doc2, text));
-    root = doc2.RootElement();
+    ts::xml::Document doc2(report());
+    CPPUNIT_ASSERT(doc2.parse(text));
+    root = doc2.rootElement();
     CPPUNIT_ASSERT(root != 0);
-    CPPUNIT_ASSERT(root->Name() != 0);
-    CPPUNIT_ASSERT_STRINGS_EQUAL("test", root->Name());
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"test", root->name());
 
-    ts::XML::ElementVector children;
-    CPPUNIT_ASSERT(xml.getChildren(children, root, u"GENERIC_SHORT_TABLE", 1, 1));
+    ts::xml::ElementVector children;
+    CPPUNIT_ASSERT(root->getChildren(children, u"GENERIC_SHORT_TABLE", 1, 1));
     CPPUNIT_ASSERT_EQUAL(size_t(1), children.size());
 
-    ts::BinaryTablePtr tab(ts::XMLTables::FromGenericTableXML(xml, children[0]));
+    ts::BinaryTablePtr tab(ts::XMLTables::FromGenericTableXML(children[0]));
     CPPUNIT_ASSERT(!tab.isNull());
     CPPUNIT_ASSERT(tab->isValid());
     CPPUNIT_ASSERT(tab->isShortSection());
@@ -265,13 +272,12 @@ void XMLTablesTest::testGenericLongTable()
     CPPUNIT_ASSERT_EQUAL(uint16_t(0x1234), refTable.tableIdExtension());
     CPPUNIT_ASSERT_EQUAL(size_t(2), refTable.sectionCount());
 
-    ts::XML xml(CERR);
-    ts::XML::Document doc;
-    ts::XML::Element* root = xml.initializeDocument(&doc, u"test");
+    ts::xml::Document doc(report());
+    ts::xml::Element* root = doc.initialize(u"test");
     CPPUNIT_ASSERT(root != 0);
-    CPPUNIT_ASSERT(ts::XMLTables::ToGenericTable(xml, root, refTable) != 0);
+    CPPUNIT_ASSERT(ts::XMLTables::ToGenericTable(root, refTable) != 0);
 
-    ts::UString text(xml.toString(doc));
+    ts::UString text(doc.toString());
     utest::Out() << "XMLTablesTest::testGenericLongTable: " << text << std::endl;
     CPPUNIT_ASSERT_USTRINGS_EQUAL(
         u"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
@@ -287,18 +293,17 @@ void XMLTablesTest::testGenericLongTable()
         u"</test>\n",
         text);
 
-    ts::XML::Document doc2;
-    CPPUNIT_ASSERT(xml.parseDocument(doc2, text));
-    root = doc2.RootElement();
+    ts::xml::Document doc2(report());
+    CPPUNIT_ASSERT(doc2.parse(text));
+    root = doc2.rootElement();
     CPPUNIT_ASSERT(root != 0);
-    CPPUNIT_ASSERT(root->Name() != 0);
-    CPPUNIT_ASSERT_STRINGS_EQUAL("test", root->Name());
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"test", root->name());
 
-    ts::XML::ElementVector children;
-    CPPUNIT_ASSERT(xml.getChildren(children, root, u"GENERIC_long_TABLE", 1, 1));
+    ts::xml::ElementVector children;
+    CPPUNIT_ASSERT(root->getChildren(children, u"GENERIC_long_TABLE", 1, 1));
     CPPUNIT_ASSERT_EQUAL(size_t(1), children.size());
 
-    ts::BinaryTablePtr tab(ts::XMLTables::FromGenericTableXML(xml, children[0]));
+    ts::BinaryTablePtr tab(ts::XMLTables::FromGenericTableXML(children[0]));
     CPPUNIT_ASSERT(!tab.isNull());
     CPPUNIT_ASSERT(tab->isValid());
     CPPUNIT_ASSERT(!tab->isShortSection());
