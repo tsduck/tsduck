@@ -116,7 +116,7 @@ bool DumpFile(Options& opt, const ts::UString& file_name)
         // Display all sections.
         ts::TablesDisplay display(opt.display, opt);
         for (ts::SectionPtrVector::const_iterator it = sections.begin(); it != sections.end(); ++it) {
-            display.displaySection(**it);
+            display.displaySection(**it) << std::endl;
         }
     }
 
