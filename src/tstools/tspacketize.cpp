@@ -44,7 +44,6 @@ TSDUCK_SOURCE;
 //  Command line options
 //----------------------------------------------------------------------------
 
-
 struct Options: public ts::Args
 {
     Options(int argc, char *argv[]);
