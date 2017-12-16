@@ -102,6 +102,8 @@ Options::Options(int argc, char *argv[]) :
     if (test) {
         setMaxSeverity(ts::Severity::Verbose);
     }
+
+    exitOnError();
 }
 
 // Check error on file

@@ -84,6 +84,8 @@ Options::Options(int argc, char *argv[]) :
 
     infile = value(u"");
     bitrate = intValue<ts::BitRate>(u"bitrate");
+
+    exitOnError();
 }
 
 

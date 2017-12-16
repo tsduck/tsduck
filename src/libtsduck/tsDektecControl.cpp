@@ -141,6 +141,8 @@ ts::DektecControl::DektecControl(int argc, char *argv[]) :
     _set_input  = intValue(u"input", -1);
     _set_output = intValue(u"output", -1);
     _wait_sec   = intValue(u"wait", _set_led ? 5 : 0);
+
+    exitOnError();
 }
 
 

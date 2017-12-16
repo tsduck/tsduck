@@ -112,6 +112,8 @@ Options::Options(int argc, char *argv[]) :
     else {
         reset_action = SCARD_LEAVE_CARD;
     }
+
+    exitOnError();
 }
 
 

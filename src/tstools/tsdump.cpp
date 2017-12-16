@@ -151,6 +151,8 @@ Options::Options(int argc, char *argv[]) :
         dump_flags &= ~ts::TSPacket::DUMP_RAW;
         dump_flags |= ~ts::TSPacket::DUMP_PAYLOAD;
     }
+
+    exitOnError();
 }
 
 

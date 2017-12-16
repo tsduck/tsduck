@@ -102,6 +102,8 @@ Options::Options(int argc, char *argv[]) :
     all = present(u"all");
     no_tdt = present(u"notdt");
     no_tot = present(u"notot");
+
+    exitOnError();
 }
 
 

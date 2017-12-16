@@ -127,6 +127,8 @@ Options::Options(int argc, char *argv[]) :
     min_pid = intValue<uint16_t>(u"min-pid", 1);
     use_dts = present(u"dts");
     pcr_name = use_dts ? u"DTS" : u"PCR";
+
+    exitOnError();
 }
 
 
