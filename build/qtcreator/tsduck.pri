@@ -58,7 +58,7 @@ CONFIG *= warn_on
 
 # Other configuration.
 QMAKE_CXXFLAGS += -I$$SRCROOT/libtsduck
-INCLUDEPATH += $$SRCROOT/libtsduck $$SRCROOT/libtsduck/tinyxml
+INCLUDEPATH += $$SRCROOT/libtsduck
 linux|mac|mingw {
     # GCC/clang options
     QMAKE_CXXFLAGS_WARN_ON = -Werror -Wall -Wextra \

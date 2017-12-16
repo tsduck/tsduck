@@ -209,12 +209,14 @@ Section /o "Development" SectionDevelopment
     ; Work on "all users" context, not current user.
     SetShellVarContext all
 
+    ; Delete obsolete files from previous versions.
+    Delete "$INSTDIR\include\tinyxml*"
+
     ; TSDuck header files.
     CreateDirectory "$INSTDIR\include"
     SetOutPath "$INSTDIR\include"
     File "${RootDir}\src\libtsduck\*.h"
     File "${RootDir}\src\libtsduck\windows\*.h"
-    File "${RootDir}\src\libtsduck\tinyxml\*.h"
 
     ; TSDuck libraries.
     CreateDirectory "$INSTDIR\lib"

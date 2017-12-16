@@ -48,7 +48,6 @@ const ts::Enumeration ts::VersionFormatEnum({
     {u"date",    ts::VERSION_DATE},
     {u"nsis",    ts::VERSION_NSIS},
     {u"dektec",  ts::VERSION_DEKTEC},
-    {u"tinyxml", ts::VERSION_TINYXML},
 });
 
 
@@ -83,10 +82,6 @@ ts::UString ts::GetVersion(VersionFormat format, const UString& applicationName)
         case VERSION_DEKTEC: {
             // The version of Dektec components.
             return GetDektecVersions();
-        }
-        case VERSION_TINYXML: {
-            // The version of TinyXML-2.
-            return UString::Format(u"TinyXML-2 %d.%d.%d", {TIXML2_MAJOR_VERSION, TIXML2_MINOR_VERSION, TIXML2_PATCH_VERSION});
         }
         default: {
             // Undefined type, return an empty string.

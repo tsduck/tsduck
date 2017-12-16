@@ -35,7 +35,7 @@
 # Some source files are located in subdirectories but should be considered as part of libtsduck.
 
 OSDIR    := $(if $(findstring darwin,$(shell uname -s | tr A-Z a-z)),mac,linux)
-CXXVPATH  = $(OSDIR) private tinyxml
+CXXVPATH  = $(OSDIR) private
 
 # Detect the presence of the Dektec DTAPI.
 # DTAPI shall be separately downloaded using "make dtapi".
@@ -83,7 +83,6 @@ $(OBJDIR)/tsSHA256.o:     CFLAGS_OPTIMIZE = $(CFLAGS_FULLSPEED)
 $(OBJDIR)/tsSHA512.o:     CFLAGS_OPTIMIZE = $(CFLAGS_FULLSPEED)
 $(OBJDIR)/tsMD5.o:        CFLAGS_OPTIMIZE = $(CFLAGS_FULLSPEED)
 $(OBJDIR)/tsScrambling.o: CFLAGS_OPTIMIZE = $(CFLAGS_FULLSPEED)
-$(OBJDIR)/tinyxml2.o:     CXXFLAGS := $(filter-out -Wformat-nonliteral, $(CXXFLAGS))
 
 # Dektec code is encapsulated into the TSDuck library.
 
@@ -140,4 +139,4 @@ install-devel: $(OBJDIR)/$(STATIC_LIBTSDUCK) tsduck.h
 	install -d -m 755 $(SYSROOT)$(USRLIBDIR)
 	install -m 644 $(OBJDIR)/$(STATIC_LIBTSDUCK) $(SYSROOT)$(USRLIBDIR)
 	install -d -m 755 $(SYSROOT)$(SYSPREFIX)/include/tsduck
-	install -m 644 tsduck.mk ts*.h $(wildcard $(OSDIR)/ts*.h) $(wildcard tinyxml/*.h) $(SYSROOT)$(SYSPREFIX)/include/tsduck
+	install -m 644 tsduck.mk ts*.h $(wildcard $(OSDIR)/ts*.h) $(SYSROOT)$(SYSPREFIX)/include/tsduck
