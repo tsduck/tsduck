@@ -172,18 +172,16 @@ void ts::AVCVideoDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, 
 // XML serialization
 //----------------------------------------------------------------------------
 
-ts::XML::Element* ts::AVCVideoDescriptor::toXML(XML& xml, XML::Element* parent) const
+void ts::AVCVideoDescriptor::buildXML(xml::Element* root) const
 {
-    XML::Element* root = _is_valid ? xml.addElement(parent, _xml_name) : 0;
-    xml.setIntAttribute(root, u"profile_idc", profile_idc, true);
-    xml.setBoolAttribute(root, u"constraint_set0", constraint_set0);
-    xml.setBoolAttribute(root, u"constraint_set1", constraint_set1);
-    xml.setBoolAttribute(root, u"constraint_set2", constraint_set2);
-    xml.setIntAttribute(root, u"AVC_compatible_flags", AVC_compatible_flags, true);
-    xml.setIntAttribute(root, u"level_idc", level_idc, true);
-    xml.setBoolAttribute(root, u"AVC_still_present", level_idc);
-    xml.setBoolAttribute(root, u"AVC_24_hour_picture", AVC_24_hour_picture);
-    return root;
+    root->setIntAttribute(u"profile_idc", profile_idc, true);
+    root->setBoolAttribute(u"constraint_set0", constraint_set0);
+    root->setBoolAttribute(u"constraint_set1", constraint_set1);
+    root->setBoolAttribute(u"constraint_set2", constraint_set2);
+    root->setIntAttribute(u"AVC_compatible_flags", AVC_compatible_flags, true);
+    root->setIntAttribute(u"level_idc", level_idc, true);
+    root->setBoolAttribute(u"AVC_still_present", level_idc);
+    root->setBoolAttribute(u"AVC_24_hour_picture", AVC_24_hour_picture);
 }
 
 
@@ -191,16 +189,16 @@ ts::XML::Element* ts::AVCVideoDescriptor::toXML(XML& xml, XML::Element* parent) 
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::AVCVideoDescriptor::fromXML(XML& xml, const XML::Element* element)
+void ts::AVCVideoDescriptor::fromXML(const xml::Element* element)
 {
     _is_valid =
-        checkXMLName(xml, element) &&
-        xml.getIntAttribute<uint8_t>(profile_idc, element, u"profile_idc", true, 0, 0x00, 0xFF) &&
-        xml.getBoolAttribute(constraint_set0, element, u"constraint_set0", true) &&
-        xml.getBoolAttribute(constraint_set1, element, u"constraint_set1", true) &&
-        xml.getBoolAttribute(constraint_set2, element, u"constraint_set2", true) &&
-        xml.getIntAttribute<uint8_t>(AVC_compatible_flags, element, u"AVC_compatible_flags", true, 0, 0x00, 0x1F) &&
-        xml.getIntAttribute<uint8_t>(level_idc, element, u"level_idc", true, 0, 0x00, 0xFF) &&
-        xml.getBoolAttribute(AVC_still_present, element, u"AVC_still_present", true) &&
-        xml.getBoolAttribute(AVC_24_hour_picture, element, u"AVC_24_hour_picture", true);
+        checkXMLName(element) &&
+        element->getIntAttribute<uint8_t>(profile_idc, u"profile_idc", true, 0, 0x00, 0xFF) &&
+        element->getBoolAttribute(constraint_set0, u"constraint_set0", true) &&
+        element->getBoolAttribute(constraint_set1, u"constraint_set1", true) &&
+        element->getBoolAttribute(constraint_set2, u"constraint_set2", true) &&
+        element->getIntAttribute<uint8_t>(AVC_compatible_flags, u"AVC_compatible_flags", true, 0, 0x00, 0x1F) &&
+        element->getIntAttribute<uint8_t>(level_idc, u"level_idc", true, 0, 0x00, 0xFF) &&
+        element->getBoolAttribute(AVC_still_present, u"AVC_still_present", true) &&
+        element->getBoolAttribute(AVC_24_hour_picture, u"AVC_24_hour_picture", true);
 }

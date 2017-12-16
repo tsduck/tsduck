@@ -153,15 +153,13 @@ void ts::CountryAvailabilityDescriptor::DisplayDescriptor(TablesDisplay& display
 // XML serialization
 //----------------------------------------------------------------------------
 
-ts::XML::Element* ts::CountryAvailabilityDescriptor::toXML(XML& xml, XML::Element* parent) const
+void ts::CountryAvailabilityDescriptor::buildXML(xml::Element* root) const
 {
-    XML::Element* root = _is_valid ? xml.addElement(parent, _xml_name) : 0;
-    xml.setBoolAttribute(root, u"country_availability", country_availability);
+    root->setBoolAttribute(u"country_availability", country_availability);
     for (UStringVector::const_iterator it = country_codes.begin(); it != country_codes.end(); ++it) {
-        XML::Element* e = xml.addElement(root, u"country");
-        xml.setAttribute(e, u"country_code", *it);
+        xml::Element* e = root->addElement(u"country");
+        e->setAttribute(u"country_code", *it);
     }
-    return root;
 }
 
 
@@ -169,19 +167,19 @@ ts::XML::Element* ts::CountryAvailabilityDescriptor::toXML(XML& xml, XML::Elemen
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::CountryAvailabilityDescriptor::fromXML(XML& xml, const XML::Element* element)
+void ts::CountryAvailabilityDescriptor::fromXML(const xml::Element* element)
 {
     country_codes.clear();
 
-    XML::ElementVector children;
+    xml::ElementVector children;
     _is_valid =
-        checkXMLName(xml, element) &&
-        xml.getBoolAttribute(country_availability, element, u"country_availability", true) &&
-        xml.getChildren(children, element, u"country", 0, MAX_ENTRIES);
+        checkXMLName(element) &&
+        element->getBoolAttribute(country_availability, u"country_availability", true) &&
+        element->getChildren(children, u"country", 0, MAX_ENTRIES);
 
     for (size_t i = 0; _is_valid && i < children.size(); ++i) {
         UString name;
-        _is_valid = xml.getAttribute(name, children[i], u"country_code", true, UString(), 3, 3);
+        _is_valid = children[i]->getAttribute(name, u"country_code", true, UString(), 3, 3);
         if (_is_valid) {
             country_codes.push_back(name);
         }

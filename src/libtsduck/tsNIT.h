@@ -80,8 +80,8 @@ namespace ts {
         }
 
         // Inherited methods
-        virtual XML::Element* toXML(XML&, XML::Element*) const override;
-        virtual void fromXML(XML&, const XML::Element*) override;
+        virtual void buildXML(xml::Element*) const override;
+        virtual void fromXML(const xml::Element*) override;
 
         //!
         //! A static method to display a section.

@@ -68,21 +68,33 @@ ts::UString ts::AbstractSignalization::xmlName() const
 
 
 //----------------------------------------------------------------------------
+// XML serialization
+//----------------------------------------------------------------------------
+
+ts::xml::Element* ts::AbstractSignalization::toXML(xml::Element* parent) const
+{
+    xml::Element* root = _is_valid && parent != 0 ? parent->addElement(_xml_name) : 0;
+    if (root != 0) {
+        buildXML(root);
+    }
+    return root;
+}
+
+
+//----------------------------------------------------------------------------
 // Check that an XML element has the right name for this table.
 //----------------------------------------------------------------------------
 
-bool ts::AbstractSignalization::checkXMLName(XML& xml, const XML::Element* element) const
+bool ts::AbstractSignalization::checkXMLName(const xml::Element* element) const
 {
     if (element == 0) {
         return false;
     }
-    const UString myName(_xml_name);
-    const UString elemName(UString::FromUTF8(element->Name()));
-    if (myName.similar(elemName)) {
+    else if (element->name().similar(_xml_name)) {
         return true;
     }
     else {
-        xml.reportError(u"Incorrect <%s>, expected <%s>", {elemName, myName});
+        element->report().error(u"Incorrect <%s>, expected <%s>", {element->name(), _xml_name});
         return false;
     }
 }

@@ -133,7 +133,7 @@ void ts::PAT::deserialize (const BinaryTable& table, const DVBCharset* charset)
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::PAT::serialize (BinaryTable& table, const DVBCharset* charset) const
+void ts::PAT::serialize(BinaryTable& table, const DVBCharset* charset) const
 {
     // Reinitialize table object
     table.clear();
@@ -233,21 +233,19 @@ void ts::PAT::DisplaySection(TablesDisplay& display, const ts::Section& section,
 // XML serialization
 //----------------------------------------------------------------------------
 
-ts::XML::Element* ts::PAT::toXML(XML& xml, XML::Element* parent) const
+void ts::PAT::buildXML(xml::Element* root) const
 {
-    XML::Element* root = _is_valid ? xml.addElement(parent, _xml_name) : 0;
-    xml.setIntAttribute(root, u"version", version);
-    xml.setBoolAttribute(root, u"current", is_current);
-    xml.setIntAttribute(root, u"transport_stream_id", ts_id, true);
+    root->setIntAttribute(u"version", version);
+    root->setBoolAttribute(u"current", is_current);
+    root->setIntAttribute(u"transport_stream_id", ts_id, true);
     if (nit_pid != PID_NULL) {
-        xml.setIntAttribute(root, u"network_PID", nit_pid, true);
+        root->setIntAttribute(u"network_PID", nit_pid, true);
     }
     for (ServiceMap::const_iterator it = pmts.begin(); it != pmts.end(); ++it) {
-        XML::Element* e = xml.addElement(root, u"service");
-        xml.setIntAttribute(e, u"service_id", it->first, true);
-        xml.setIntAttribute(e, u"program_map_PID", it->second, true);
+        xml::Element* e = root->addElement(u"service");
+        e->setIntAttribute(u"service_id", it->first, true);
+        e->setIntAttribute(u"program_map_PID", it->second, true);
     }
-    return root;
 }
 
 
@@ -255,24 +253,24 @@ ts::XML::Element* ts::PAT::toXML(XML& xml, XML::Element* parent) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::PAT::fromXML(XML& xml, const XML::Element* element)
+void ts::PAT::fromXML(const xml::Element* element)
 {
-    XML::ElementVector children;
+    xml::ElementVector children;
     _is_valid =
-        checkXMLName(xml, element) &&
-        xml.getIntAttribute<uint8_t>(version, element, u"version", false, 0, 0, 31) &&
-        xml.getBoolAttribute(is_current, element, u"current", false, true) &&
-        xml.getIntAttribute<uint16_t>(ts_id, element, u"transport_stream_id", true, 0, 0x0000, 0xFFFF) &&
-        xml.getIntAttribute<PID>(nit_pid, element, u"network_PID", false, PID_NULL, 0x0000, 0x1FFF) &&
-        xml.getChildren(children, element, u"service", 0, 0x10000);
+        checkXMLName(element) &&
+        element->getIntAttribute<uint8_t>(version, u"version", false, 0, 0, 31) &&
+        element->getBoolAttribute(is_current, u"current", false, true) &&
+        element->getIntAttribute<uint16_t>(ts_id, u"transport_stream_id", true, 0, 0x0000, 0xFFFF) &&
+        element->getIntAttribute<PID>(nit_pid, u"network_PID", false, PID_NULL, 0x0000, 0x1FFF) &&
+        element->getChildren(children, u"service", 0, 0x10000);
 
     pmts.clear();
     for (size_t index = 0; _is_valid && index < children.size(); ++index) {
         uint16_t id = 0;
         PID pid = PID_NULL;
         _is_valid =
-            xml.getIntAttribute<uint16_t>(id, children[index], u"service_id", true, 0, 0x0000, 0xFFFF) &&
-            xml.getIntAttribute<PID>(pid, children[index], u"program_map_PID", true, 0, 0x0000, 0x1FFF);
+            children[index]->getIntAttribute<uint16_t>(id, u"service_id", true, 0, 0x0000, 0xFFFF) &&
+            children[index]->getIntAttribute<PID>(pid, u"program_map_PID", true, 0, 0x0000, 0x1FFF);
         if (_is_valid) {
             pmts[id] = pid;
         }

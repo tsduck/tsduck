@@ -318,24 +318,22 @@ void ts::PMT::DisplaySection(TablesDisplay& display, const ts::Section& section,
 // XML serialization
 //----------------------------------------------------------------------------
 
-ts::XML::Element* ts::PMT::toXML(XML& xml, XML::Element* parent) const
+void ts::PMT::buildXML(xml::Element* root) const
 {
-    XML::Element* root = _is_valid ? xml.addElement(parent, _xml_name) : 0;
-    xml.setIntAttribute(root, u"version", version);
-    xml.setBoolAttribute(root, u"current", is_current);
-    xml.setIntAttribute(root, u"service_id", service_id, true);
+    root->setIntAttribute(u"version", version);
+    root->setBoolAttribute(u"current", is_current);
+    root->setIntAttribute(u"service_id", service_id, true);
     if (pcr_pid != PID_NULL) {
-        xml.setIntAttribute(root, u"PCR_PID", pcr_pid, true);
+        root->setIntAttribute(u"PCR_PID", pcr_pid, true);
     }
-    XMLTables::ToXML(xml, root, descs);
+    XMLTables::ToXML(root, descs);
 
     for (StreamMap::const_iterator it = streams.begin(); it != streams.end(); ++it) {
-        XML::Element* e = xml.addElement(root, u"component");
-        xml.setIntAttribute(e, u"elementary_PID", it->first, true);
-        xml.setIntAttribute(e, u"stream_type", it->second.stream_type, true);
-        XMLTables::ToXML(xml, e, it->second.descs);
+        xml::Element* e = root->addElement(u"component");
+        e->setIntAttribute(u"elementary_PID", it->first, true);
+        e->setIntAttribute(u"stream_type", it->second.stream_type, true);
+        XMLTables::ToXML(e, it->second.descs);
     }
-    return root;
 }
 
 
@@ -343,27 +341,27 @@ ts::XML::Element* ts::PMT::toXML(XML& xml, XML::Element* parent) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::PMT::fromXML(XML& xml, const XML::Element* element)
+void ts::PMT::fromXML(const xml::Element* element)
 {
     descs.clear();
     streams.clear();
 
-    XML::ElementVector children;
+    xml::ElementVector children;
     _is_valid =
-        checkXMLName(xml, element) &&
-        xml.getIntAttribute<uint8_t>(version, element, u"version", false, 0, 0, 31) &&
-        xml.getBoolAttribute(is_current, element, u"current", false, true) &&
-        xml.getIntAttribute<uint16_t>(service_id, element, u"service_id", true, 0, 0x0000, 0xFFFF) &&
-        xml.getIntAttribute<PID>(pcr_pid, element, u"PCR_PID", false, PID_NULL, 0x0000, 0x1FFF) &&
-        XMLTables::FromDescriptorListXML(descs, children, xml, element, u"component");
+        checkXMLName(element) &&
+        element->getIntAttribute<uint8_t>(version, u"version", false, 0, 0, 31) &&
+        element->getBoolAttribute(is_current, u"current", false, true) &&
+        element->getIntAttribute<uint16_t>(service_id, u"service_id", true, 0, 0x0000, 0xFFFF) &&
+        element->getIntAttribute<PID>(pcr_pid, u"PCR_PID", false, PID_NULL, 0x0000, 0x1FFF) &&
+        XMLTables::FromDescriptorListXML(descs, children, element, u"component");
 
     for (size_t index = 0; _is_valid && index < children.size(); ++index) {
         PID pid = PID_NULL;
         Stream stream;
         _is_valid =
-            xml.getIntAttribute<uint8_t>(stream.stream_type, children[index], u"stream_type", true, 0, 0x00, 0xFF) &&
-            xml.getIntAttribute<PID>(pid, children[index], u"elementary_PID", true, 0, 0x0000, 0x1FFF) &&
-            XMLTables::FromDescriptorListXML(stream.descs, xml, children[index]);
+            children[index]->getIntAttribute<uint8_t>(stream.stream_type, u"stream_type", true, 0, 0x00, 0xFF) &&
+            children[index]->getIntAttribute<PID>(pid, u"elementary_PID", true, 0, 0x0000, 0x1FFF) &&
+            XMLTables::FromDescriptorListXML(stream.descs, children[index]);
         if (_is_valid) {
             streams[pid] = stream;
         }

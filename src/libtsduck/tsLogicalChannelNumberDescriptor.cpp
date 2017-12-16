@@ -168,16 +168,14 @@ void ts::LogicalChannelNumberDescriptor::DisplayDescriptor(TablesDisplay& displa
 // XML serialization
 //----------------------------------------------------------------------------
 
-ts::XML::Element* ts::LogicalChannelNumberDescriptor::toXML(XML& xml, XML::Element* parent) const
+void ts::LogicalChannelNumberDescriptor::buildXML(xml::Element* root) const
 {
-    XML::Element* root = _is_valid ? xml.addElement(parent, _xml_name) : 0;
     for (EntryList::const_iterator it = entries.begin(); it != entries.end(); ++it) {
-        XML::Element* e = xml.addElement(root, u"service");
-        xml.setIntAttribute(e, u"service_id", it->service_id, true);
-        xml.setIntAttribute(e, u"logical_channel_number", it->lcn, false);
-        xml.setBoolAttribute(e, u"visible_service", it->visible);
+        xml::Element* e = root->addElement(u"service");
+        e->setIntAttribute(u"service_id", it->service_id, true);
+        e->setIntAttribute(u"logical_channel_number", it->lcn, false);
+        e->setBoolAttribute(u"visible_service", it->visible);
     }
-    return root;
 }
 
 
@@ -185,21 +183,21 @@ ts::XML::Element* ts::LogicalChannelNumberDescriptor::toXML(XML& xml, XML::Eleme
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::LogicalChannelNumberDescriptor::fromXML(XML& xml, const XML::Element* element)
+void ts::LogicalChannelNumberDescriptor::fromXML(const xml::Element* element)
 {
     entries.clear();
 
-    XML::ElementVector children;
+    xml::ElementVector children;
     _is_valid =
-        checkXMLName(xml, element) &&
-        xml.getChildren(children, element, u"service", 0, MAX_ENTRIES);
+        checkXMLName(element) &&
+        element->getChildren(children, u"service", 0, MAX_ENTRIES);
 
     for (size_t i = 0; _is_valid && i < children.size(); ++i) {
         Entry entry;
         _is_valid =
-            xml.getIntAttribute<uint16_t>(entry.service_id, children[i], u"service_id", true, 0, 0x0000, 0xFFFF) &&
-            xml.getIntAttribute<uint16_t>(entry.lcn, children[i], u"logical_channel_number", true, 0, 0x0000, 0x03FF) &&
-            xml.getBoolAttribute(entry.visible, children[i], u"visible_service", false, true);
+            children[i]->getIntAttribute<uint16_t>(entry.service_id, u"service_id", true, 0, 0x0000, 0xFFFF) &&
+            children[i]->getIntAttribute<uint16_t>(entry.lcn, u"logical_channel_number", true, 0, 0x0000, 0x03FF) &&
+            children[i]->getBoolAttribute(entry.visible, u"visible_service", false, true);
         if (_is_valid) {
             entries.push_back(entry);
         }

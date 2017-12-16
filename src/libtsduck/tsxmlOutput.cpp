@@ -111,13 +111,17 @@ bool ts::xml::Output::getString(UString& str)
     else {
         // Get internal buffer, do not reset it.
         str.assignFromUTF8(_outString.str());
+        // Cleanup end of lines.
+        str.substitute(UString(1, CARRIAGE_RETURN), UString());
         return true;
     }
 }
 
 ts::UString ts::xml::Output::toString()
 {
-    return _out != &_outString ? UString() : UString::FromUTF8(_outString.str());
+    UString str;
+    getString(str);
+    return str;
 }
 
 

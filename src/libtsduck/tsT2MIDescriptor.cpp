@@ -107,16 +107,14 @@ void ts::T2MIDescriptor::deserialize(const Descriptor& desc, const DVBCharset* c
 // XML serialization
 //----------------------------------------------------------------------------
 
-ts::XML::Element* ts::T2MIDescriptor::toXML(XML& xml, XML::Element* parent) const
+void ts::T2MIDescriptor::buildXML(xml::Element* root) const
 {
-    XML::Element* root = _is_valid ? xml.addElement(parent, _xml_name) : 0;
-    xml.setIntAttribute(root, u"t2mi_stream_id", t2mi_stream_id, true);
-    xml.setIntAttribute(root, u"num_t2mi_streams_minus_one", num_t2mi_streams_minus_one);
-    xml.setBoolAttribute(root, u"pcr_iscr_common_clock_flag", pcr_iscr_common_clock_flag);
+    root->setIntAttribute(u"t2mi_stream_id", t2mi_stream_id, true);
+    root->setIntAttribute(u"num_t2mi_streams_minus_one", num_t2mi_streams_minus_one);
+    root->setBoolAttribute(u"pcr_iscr_common_clock_flag", pcr_iscr_common_clock_flag);
     if (!reserved.empty()) {
-        xml.addHexaText(xml.addElement(root, u"reserved"), reserved);
+        root->addElement(u"reserved")->addHexaText(reserved);
     }
-    return root;
 }
 
 
@@ -124,14 +122,14 @@ ts::XML::Element* ts::T2MIDescriptor::toXML(XML& xml, XML::Element* parent) cons
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::T2MIDescriptor::fromXML(XML& xml, const XML::Element* element)
+void ts::T2MIDescriptor::fromXML(const xml::Element* element)
 {
     _is_valid =
-        checkXMLName(xml, element) &&
-        xml.getIntAttribute<uint8_t>(t2mi_stream_id, element, u"t2mi_stream_id", true, 0, 0, 7) &&
-        xml.getIntAttribute<uint8_t>(num_t2mi_streams_minus_one, element, u"num_t2mi_streams_minus_one", false, 0, 0, 7) &&
-        xml.getBoolAttribute(pcr_iscr_common_clock_flag, element, u"pcr_iscr_common_clock_flag", false, false) &&
-        xml.getHexaTextChild(reserved, element, u"reserved", false, 0, MAX_DESCRIPTOR_SIZE - 6);
+        checkXMLName(element) &&
+        element->getIntAttribute<uint8_t>(t2mi_stream_id, u"t2mi_stream_id", true, 0, 0, 7) &&
+        element->getIntAttribute<uint8_t>(num_t2mi_streams_minus_one, u"num_t2mi_streams_minus_one", false, 0, 0, 7) &&
+        element->getBoolAttribute(pcr_iscr_common_clock_flag, u"pcr_iscr_common_clock_flag", false, false) &&
+        element->getHexaTextChild(reserved, u"reserved", false, 0, MAX_DESCRIPTOR_SIZE - 6);
 }
 
 

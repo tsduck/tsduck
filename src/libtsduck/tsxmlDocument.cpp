@@ -280,6 +280,25 @@ const ts::xml::Element* ts::xml::Document::findModelElement(const Element* elem,
 
 
 //----------------------------------------------------------------------------
+// Save an XML file.
+//----------------------------------------------------------------------------
+
+bool ts::xml::Document::save(const UString& fileName, size_t indent)
+{
+    Output out(_report);
+    out.setIndentSize(indent);
+    if (!out.setFile(fileName)) {
+        return false;
+    }
+    else {
+        print(out);
+        out.close();
+        return true;
+    }
+}
+
+
+//----------------------------------------------------------------------------
 // Convert the document to an XML string.
 //----------------------------------------------------------------------------
 

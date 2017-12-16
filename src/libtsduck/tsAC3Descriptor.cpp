@@ -222,17 +222,15 @@ void ts::AC3Descriptor::DisplayDescriptor(TablesDisplay& display, DID did, const
 // XML serialization
 //----------------------------------------------------------------------------
 
-ts::XML::Element* ts::AC3Descriptor::toXML(XML& xml, XML::Element* parent) const
+void ts::AC3Descriptor::buildXML(xml::Element* root) const
 {
-    XML::Element* root = _is_valid ? xml.addElement(parent, _xml_name) : 0;
-    xml.setOptionalIntAttribute(root, u"component_type", component_type, true);
-    xml.setOptionalIntAttribute(root, u"bsid", bsid, true);
-    xml.setOptionalIntAttribute(root, u"mainid", mainid, true);
-    xml.setOptionalIntAttribute(root, u"asvc", asvc, true);
+    root->setOptionalIntAttribute(u"component_type", component_type, true);
+    root->setOptionalIntAttribute(u"bsid", bsid, true);
+    root->setOptionalIntAttribute(u"mainid", mainid, true);
+    root->setOptionalIntAttribute(u"asvc", asvc, true);
     if (!additional_info.empty()) {
-        xml.addHexaText(xml.addElement(root, u"additional_info"), additional_info);
+        root->addElement(u"additional_info")->addHexaText(additional_info);
     }
-    return root;
 }
 
 
@@ -240,13 +238,13 @@ ts::XML::Element* ts::AC3Descriptor::toXML(XML& xml, XML::Element* parent) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::AC3Descriptor::fromXML(XML& xml, const XML::Element* element)
+void ts::AC3Descriptor::fromXML(const xml::Element* element)
 {
     _is_valid =
-        checkXMLName(xml, element) &&
-        xml.getOptionalIntAttribute(component_type, element, u"component_type") &&
-        xml.getOptionalIntAttribute(bsid, element, u"bsid") &&
-        xml.getOptionalIntAttribute(mainid, element, u"mainid") &&
-        xml.getOptionalIntAttribute(asvc, element, u"asvc") &&
-        xml.getHexaTextChild(additional_info, element, u"additional_info", false, 0, MAX_DESCRIPTOR_SIZE - 8);
+        checkXMLName(element) &&
+        element->getOptionalIntAttribute(component_type, u"component_type") &&
+        element->getOptionalIntAttribute(bsid, u"bsid") &&
+        element->getOptionalIntAttribute(mainid, u"mainid") &&
+        element->getOptionalIntAttribute(asvc, u"asvc") &&
+        element->getHexaTextChild(additional_info, u"additional_info", false, 0, MAX_DESCRIPTOR_SIZE - 8);
 }

@@ -406,34 +406,32 @@ void ts::EIT::DisplaySection(TablesDisplay& display, const ts::Section& section,
 // XML serialization
 //----------------------------------------------------------------------------
 
-ts::XML::Element* ts::EIT::toXML(XML& xml, XML::Element* parent) const
+void ts::EIT::buildXML(xml::Element* root) const
 {
-    XML::Element* root = _is_valid ? xml.addElement(parent, _xml_name) : 0;
     if (isPresentFollowing()) {
-        xml.setAttribute(root, u"type", u"pf");
+        root->setAttribute(u"type", u"pf");
     }
     else {
-        xml.setIntAttribute(root, u"type", _table_id - (isActual() ? TID_EIT_S_ACT_MIN : TID_EIT_S_OTH_MIN));
+        root->setIntAttribute(u"type", _table_id - (isActual() ? TID_EIT_S_ACT_MIN : TID_EIT_S_OTH_MIN));
     }
-    xml.setIntAttribute(root, u"version", version);
-    xml.setBoolAttribute(root, u"current", is_current);
-    xml.setBoolAttribute(root, u"actual", isActual());
-    xml.setIntAttribute(root, u"service_id", service_id, true);
-    xml.setIntAttribute(root, u"transport_stream_id", ts_id, true);
-    xml.setIntAttribute(root, u"original_network_id", onetw_id, true);
-    xml.setIntAttribute(root, u"segment_last_section_number", segment_last, true);
-    xml.setIntAttribute(root, u"last_table_id", last_table_id, true);
+    root->setIntAttribute(u"version", version);
+    root->setBoolAttribute(u"current", is_current);
+    root->setBoolAttribute(u"actual", isActual());
+    root->setIntAttribute(u"service_id", service_id, true);
+    root->setIntAttribute(u"transport_stream_id", ts_id, true);
+    root->setIntAttribute(u"original_network_id", onetw_id, true);
+    root->setIntAttribute(u"segment_last_section_number", segment_last, true);
+    root->setIntAttribute(u"last_table_id", last_table_id, true);
 
     for (EventMap::const_iterator it = events.begin(); it != events.end(); ++it) {
-        XML::Element* e = xml.addElement(root, u"event");
-        xml.setIntAttribute(e, u"event_id", it->first, true);
-        xml.setDateTimeAttribute(e, u"start_time", it->second.start_time);
-        xml.setTimeAttribute(e, u"duration", it->second.duration);
-        xml.setEnumAttribute(RST::RunningStatusNames, e, u"running_status", it->second.running_status);
-        xml.setBoolAttribute(e, u"CA_mode", it->second.CA_controlled);
-        XMLTables::ToXML(xml, e, it->second.descs);
+        xml::Element* e = root->addElement(u"event");
+        e->setIntAttribute(u"event_id", it->first, true);
+        e->setDateTimeAttribute(u"start_time", it->second.start_time);
+        e->setTimeAttribute(u"duration", it->second.duration);
+        e->setEnumAttribute(RST::RunningStatusNames, u"running_status", it->second.running_status);
+        e->setBoolAttribute(u"CA_mode", it->second.CA_controlled);
+        XMLTables::ToXML(e, it->second.descs);
     }
-    return root;
 }
 
 
@@ -441,25 +439,25 @@ ts::XML::Element* ts::EIT::toXML(XML& xml, XML::Element* parent) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::EIT::fromXML(XML& xml, const XML::Element* element)
+void ts::EIT::fromXML(const xml::Element* element)
 {
     events.clear();
     UString type;
     bool actual = 0;
 
-    XML::ElementVector children;
+    xml::ElementVector children;
     _is_valid =
-        checkXMLName(xml, element) &&
-        xml.getAttribute(type, element, u"type", false, u"pf") &&
-        xml.getIntAttribute<uint8_t>(version, element, u"version", false, 0, 0, 31) &&
-        xml.getBoolAttribute(is_current, element, u"current", false, true) &&
-        xml.getBoolAttribute(actual, element, u"actual", false, true) &&
-        xml.getIntAttribute<uint16_t>(service_id, element, u"service_id", true, 0, 0x0000, 0xFFFF) &&
-        xml.getIntAttribute<uint16_t>(ts_id, element, u"transport_stream_id", true, 0, 0x0000, 0xFFFF) &&
-        xml.getIntAttribute<uint16_t>(onetw_id, element, u"original_network_id", true, 0, 0x00, 0xFFFF) &&
-        xml.getIntAttribute<uint8_t>(segment_last, element, u"segment_last_section_number", true, 0, 0x00, 0xFF) &&
-        xml.getIntAttribute<TID>(last_table_id, element, u"last_table_id", true, 0, 0x00, 0xFF) &&
-        xml.getChildren(children, element, u"event");
+        checkXMLName(element) &&
+        element->getAttribute(type, u"type", false, u"pf") &&
+        element->getIntAttribute<uint8_t>(version, u"version", false, 0, 0, 31) &&
+        element->getBoolAttribute(is_current, u"current", false, true) &&
+        element->getBoolAttribute(actual, u"actual", false, true) &&
+        element->getIntAttribute<uint16_t>(service_id, u"service_id", true, 0, 0x0000, 0xFFFF) &&
+        element->getIntAttribute<uint16_t>(ts_id, u"transport_stream_id", true, 0, 0x0000, 0xFFFF) &&
+        element->getIntAttribute<uint16_t>(onetw_id, u"original_network_id", true, 0, 0x00, 0xFFFF) &&
+        element->getIntAttribute<uint8_t>(segment_last, u"segment_last_section_number", true, 0, 0x00, 0xFF) &&
+        element->getIntAttribute<TID>(last_table_id, u"last_table_id", true, 0, 0x00, 0xFF) &&
+        element->getChildren(children, u"event");
 
     // Update table id.
     if (_is_valid) {
@@ -472,7 +470,7 @@ void ts::EIT::fromXML(XML& xml, const XML::Element* element)
             _table_id += actual ? TID_EIT_S_ACT_MIN : TID_EIT_S_OTH_MIN;
         }
         else {
-            xml.reportError(u"'%s' is not a valid value for attribute 'type' in <%s>, line %d", {type, XML::ElementName(element), element->GetLineNum()});
+            element->report().error(u"'%s' is not a valid value for attribute 'type' in <%s>, line %d", {type, element->name(), element->lineNumber()});
             _is_valid = false;
         }
     }
@@ -482,12 +480,12 @@ void ts::EIT::fromXML(XML& xml, const XML::Element* element)
         Event event;
         uint16_t event_id = 0;
         _is_valid =
-            xml.getIntAttribute<uint16_t>(event_id, children[i], u"event_id", true, 0, 0x0000, 0xFFFF) &&
-            xml.getDateTimeAttribute(event.start_time, children[i], u"start_time", true) &&
-            xml.getTimeAttribute(event.duration, children[i], u"duration", true) &&
-            xml.getIntEnumAttribute<uint8_t>(event.running_status, RST::RunningStatusNames, children[i], u"running_status", false, 0) &&
-            xml.getBoolAttribute(event.CA_controlled, children[i], u"CA_mode", false, false) &&
-            XMLTables::FromDescriptorListXML(event.descs, xml, children[i]);
+            children[i]->getIntAttribute<uint16_t>(event_id, u"event_id", true, 0, 0x0000, 0xFFFF) &&
+            children[i]->getDateTimeAttribute(event.start_time, u"start_time", true) &&
+            children[i]->getTimeAttribute(event.duration, u"duration", true) &&
+            children[i]->getIntEnumAttribute<uint8_t>(event.running_status, RST::RunningStatusNames, u"running_status", false, 0) &&
+            children[i]->getBoolAttribute(event.CA_controlled, u"CA_mode", false, false) &&
+            XMLTables::FromDescriptorListXML(event.descs, children[i]);
         if (_is_valid) {
             events[event_id] = event;
         }

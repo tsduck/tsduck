@@ -158,15 +158,13 @@ void ts::ServiceListDescriptor::DisplayDescriptor(TablesDisplay& display, DID di
 // XML serialization
 //----------------------------------------------------------------------------
 
-ts::XML::Element* ts::ServiceListDescriptor::toXML(XML& xml, XML::Element* parent) const
+void ts::ServiceListDescriptor::buildXML(xml::Element* root) const
 {
-    XML::Element* root = _is_valid ? xml.addElement(parent, _xml_name) : 0;
     for (EntryList::const_iterator it = entries.begin(); it != entries.end(); ++it) {
-        XML::Element* e = xml.addElement(root, u"service");
-        xml.setIntAttribute(e, u"service_id", it->service_id, true);
-        xml.setIntAttribute(e, u"service_type", it->service_type, true);
+        xml::Element* e = root->addElement(u"service");
+        e->setIntAttribute(u"service_id", it->service_id, true);
+        e->setIntAttribute(u"service_type", it->service_type, true);
     }
-    return root;
 }
 
 
@@ -174,20 +172,20 @@ ts::XML::Element* ts::ServiceListDescriptor::toXML(XML& xml, XML::Element* paren
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::ServiceListDescriptor::fromXML(XML& xml, const XML::Element* element)
+void ts::ServiceListDescriptor::fromXML(const xml::Element* element)
 {
     entries.clear();
 
-    XML::ElementVector children;
+    xml::ElementVector children;
     _is_valid =
-        checkXMLName(xml, element) &&
-        xml.getChildren(children, element, u"service", 0, MAX_ENTRIES);
+        checkXMLName(element) &&
+        element->getChildren(children, u"service", 0, MAX_ENTRIES);
 
     for (size_t i = 0; _is_valid && i < children.size(); ++i) {
         Entry entry;
         _is_valid =
-            xml.getIntAttribute<uint16_t>(entry.service_id, children[i], u"service_id", true, 0, 0x0000, 0xFFFF) &&
-            xml.getIntAttribute<uint8_t>(entry.service_type, children[i], u"service_type", true, 0, 0x00, 0xFF);
+            children[i]->getIntAttribute<uint16_t>(entry.service_id, u"service_id", true, 0, 0x0000, 0xFFFF) &&
+            children[i]->getIntAttribute<uint8_t>(entry.service_type, u"service_type", true, 0, 0x00, 0xFF);
         if (_is_valid) {
             entries.push_back(entry);
         }

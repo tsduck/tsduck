@@ -93,6 +93,14 @@ namespace ts {
             bool validate(const Document& model) const;
 
             //!
+            //! Save an XML file.
+            //! @param [in] fileName Name of the XML file to save.
+            //! @param [in] indent Indentation width of each level.
+            //! @return True on success, false on error.
+            //!
+            bool save(const UString& fileName, size_t indent = 2);
+
+            //!
             //! Convert the document to an XML string.
             //! @param [in] indent Indentation width of each level.
             //! @return The content of the XML document.

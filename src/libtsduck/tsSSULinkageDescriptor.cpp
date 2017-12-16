@@ -207,13 +207,13 @@ void ts::SSULinkageDescriptor::deserialize (const Descriptor& desc, const DVBCha
 // XML serialization
 //----------------------------------------------------------------------------
 
-ts::XML::Element* ts::SSULinkageDescriptor::toXML(XML& xml, XML::Element* parent) const
+ts::xml::Element* ts::SSULinkageDescriptor::toXML(xml::Element* parent) const
 {
     // There is no specific representation of this descriptor.
     // Convert to a linkage_descriptor.
     LinkageDescriptor desc;
     toLinkageDescriptor(desc);
-    return desc.toXML(xml, parent);
+    return desc.toXML(parent);
 }
 
 
@@ -221,10 +221,10 @@ ts::XML::Element* ts::SSULinkageDescriptor::toXML(XML& xml, XML::Element* parent
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::SSULinkageDescriptor::fromXML(XML& xml, const XML::Element* element)
+void ts::SSULinkageDescriptor::fromXML(const xml::Element* element)
 {
     // There is no specific representation of this descriptor.
     // We cannot be called since there is no registration in the XML factory.
-    xml.reportError(u"Internal error, there is no XML representation for SSULinkageDescriptor");
+    element->report().error(u"Internal error, there is no XML representation for SSULinkageDescriptor");
     _is_valid = false;
 }

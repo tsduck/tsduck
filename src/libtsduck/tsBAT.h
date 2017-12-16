@@ -61,8 +61,8 @@ namespace ts {
         BAT(const BinaryTable& table, const DVBCharset* charset = 0);
 
         // Inherited methods
-        virtual XML::Element* toXML(XML& xml, XML::Element* parent) const override;
-        virtual void fromXML(XML& xml, const XML::Element* element) override;
+        virtual void buildXML(xml::Element*) const override;
+        virtual void fromXML(const xml::Element*) override;
 
         //!
         //! A static method to display a BAT section.

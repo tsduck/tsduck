@@ -160,15 +160,13 @@ void ts::ParentalRatingDescriptor::DisplayDescriptor(TablesDisplay& display, DID
 // XML serialization
 //----------------------------------------------------------------------------
 
-ts::XML::Element* ts::ParentalRatingDescriptor::toXML(XML& xml, XML::Element* parent) const
+void ts::ParentalRatingDescriptor::buildXML(xml::Element* root) const
 {
-    XML::Element* root = _is_valid ? xml.addElement(parent, _xml_name) : 0;
     for (EntryList::const_iterator it = entries.begin(); it != entries.end(); ++it) {
-        XML::Element* e = xml.addElement(root, u"country");
-        xml.setAttribute(e, u"country_code", it->country_code);
-        xml.setIntAttribute(e, u"rating", it->rating, true);
+        xml::Element* e = root->addElement(u"country");
+        e->setAttribute(u"country_code", it->country_code);
+        e->setIntAttribute(u"rating", it->rating, true);
     }
-    return root;
 }
 
 
@@ -176,20 +174,20 @@ ts::XML::Element* ts::ParentalRatingDescriptor::toXML(XML& xml, XML::Element* pa
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::ParentalRatingDescriptor::fromXML(XML& xml, const XML::Element* element)
+void ts::ParentalRatingDescriptor::fromXML(const xml::Element* element)
 {
     entries.clear();
 
-    XML::ElementVector children;
+    xml::ElementVector children;
     _is_valid =
-        checkXMLName(xml, element) &&
-        xml.getChildren(children, element, u"country", 0, MAX_ENTRIES);
+        checkXMLName(element) &&
+        element->getChildren(children, u"country", 0, MAX_ENTRIES);
 
     for (size_t i = 0; _is_valid && i < children.size(); ++i) {
         Entry entry;
         _is_valid =
-            xml.getAttribute(entry.country_code, children[i], u"country_code", true, u"", 3, 3) &&
-            xml.getIntAttribute<uint8_t>(entry.rating, children[i], u"rating", true, 0, 0x00, 0xFF);
+            children[i]->getAttribute(entry.country_code, u"country_code", true, u"", 3, 3) &&
+            children[i]->getIntAttribute<uint8_t>(entry.rating, u"rating", true, 0, 0x00, 0xFF);
         if (_is_valid) {
             entries.push_back(entry);
         }

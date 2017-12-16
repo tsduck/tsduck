@@ -77,42 +77,40 @@ void ts::XMLTables::add(const AbstractTablePtr& table, const DVBCharset* charset
 bool ts::XMLTables::loadXML(const UString& file_name, Report& report, const DVBCharset* charset)
 {
     clear();
-    XML xml(report);
-    XML::Document doc;
-    return xml.loadDocument(doc, file_name, false) && parseDocument(xml, doc, charset);
+    xml::Document doc(report);
+    return doc.load(file_name, false) && parseDocument(doc, charset);
 }
 
 bool ts::XMLTables::parseXML(const UString& xml_content, Report& report, const DVBCharset* charset)
 {
     clear();
-    XML xml(report);
-    XML::Document doc;
-    return xml.parseDocument(doc, xml_content) && parseDocument(xml, doc, charset);
+    xml::Document doc(report);
+    return doc.parse(xml_content) && parseDocument(doc, charset);
 }
 
-bool ts::XMLTables::parseDocument(XML& xml, const XML::Document& doc, const DVBCharset* charset)
+bool ts::XMLTables::parseDocument(const xml::Document& doc, const DVBCharset* charset)
 {
     // Load the XML model for TSDuck files. Search it in TSDuck directory.
-    XML::Document model;
-    if (!xml.loadDocument(model, u"tsduck.xml", true)) {
-        xml.reportError(u"Model for TSDuck XML files not found");
+    xml::Document model(doc.report());
+    if (!model.load(u"tsduck.xml", true)) {
+        doc.report().error(u"Model for TSDuck XML files not found");
         return false;
     }
 
     // Validate the input document according to the model.
-    if (!xml.validateDocument(model, doc)) {
+    if (!doc.validate(model)) {
         return false;
     }
 
     // Get the root in the document. Should be ok since we validated the document.
-    const XML::Element* root = doc.RootElement();
+    const xml::Element* root = doc.rootElement();
     bool success = true;
 
     // Analyze all tables in the document.
-    for (const XML::Element* node = root == 0 ? 0 : root->FirstChildElement(); node != 0; node = node->NextSiblingElement()) {
+    for (const xml::Element* node = root == 0 ? 0 : root->firstChildElement(); node != 0; node = node->nextSiblingElement()) {
 
         BinaryTablePtr bin;
-        const UString name(UString::FromUTF8(XML::ElementName(node)));
+        const UString name(node->name());
 
         // Get the table factory for that kind of XML tag.
         const TablesFactory::TableFactory fac = TablesFactory::Instance()->getTableFactory(name);
@@ -120,7 +118,7 @@ bool ts::XMLTables::parseDocument(XML& xml, const XML::Document& doc, const DVBC
             // Create a table instance of the right type.
             AbstractTablePtr table = fac();
             if (!table.isNull()) {
-                table->fromXML(xml, node);
+                table->fromXML(node);
             }
             if (!table.isNull() && table->isValid()) {
                 // Serialize the table.
@@ -130,7 +128,7 @@ bool ts::XMLTables::parseDocument(XML& xml, const XML::Document& doc, const DVBC
         }
         else {
             // No known factory, add a generic table.
-            bin = FromGenericTableXML(xml, node);
+            bin = FromGenericTableXML(node);
         }
 
         // Insert created table or report error.
@@ -138,7 +136,7 @@ bool ts::XMLTables::parseDocument(XML& xml, const XML::Document& doc, const DVBC
             _tables.push_back(bin);
         }
         else {
-            xml.reportError(u"Error in table <%s> at line %d", {name, node->GetLineNum()});
+            doc.report().error(u"Error in table <%s> at line %d", {name, node->lineNumber()});
             success = false;
         }
     }
@@ -152,35 +150,14 @@ bool ts::XMLTables::parseDocument(XML& xml, const XML::Document& doc, const DVBC
 
 bool ts::XMLTables::saveXML(const UString& file_name, Report& report, const DVBCharset* charset) const
 {
-    // Create the file.
-    const std::string nameUTF8(file_name.toUTF8());
-    ::FILE* fp = ::fopen(nameUTF8.c_str(), "w");
-    if (fp == 0) {
-        report.error(u"cannot create file " + file_name);
-        return false;
-    }
-
-    // Generate the XML content.
-    XML xml(report);
-    XML::Printer printer(2, fp);
-    const bool success = generateDocument(xml, printer, charset);
-
-    // Cleanup.
-    ::fclose(fp);
-    return success;
+    xml::Document doc(report);
+    return generateDocument(doc, charset) && doc.save(file_name);
 }
 
 ts::UString ts::XMLTables::toText(Report& report, const DVBCharset* charset) const
 {
-    // Generate the XML content.
-    XML xml(report);
-    XML::Printer printer(2);
-    if (!generateDocument(xml, printer, charset)) {
-        return UString();
-    }
-
-    // Get result and cleanup end of lines.
-    return UString::FromUTF8(printer.CStr()).toSubstituted(UString(1, CARRIAGE_RETURN), UString());
+    xml::Document doc(report);
+    return generateDocument(doc, charset) ? doc.toString() : UString();
 }
 
 
@@ -188,11 +165,10 @@ ts::UString ts::XMLTables::toText(Report& report, const DVBCharset* charset) con
 // Generate an XML document.
 //----------------------------------------------------------------------------
 
-bool ts::XMLTables::generateDocument(XML& xml, XML::Printer& printer, const DVBCharset* charset) const
+bool ts::XMLTables::generateDocument(xml::Document& doc, const DVBCharset* charset) const
 {
     // Initialize the document structure.
-    XML::Document doc;
-    XML::Element* root = xml.initializeDocument(&doc, u"tsduck");
+    xml::Element* root = doc.initialize(u"tsduck");
     if (root == 0) {
         return false;
     }
@@ -201,12 +177,10 @@ bool ts::XMLTables::generateDocument(XML& xml, XML::Printer& printer, const DVBC
     for (BinaryTablePtrVector::const_iterator it = _tables.begin(); it != _tables.end(); ++it) {
         const BinaryTablePtr& table(*it);
         if (!table.isNull()) {
-            ToXML(xml, root, *table, charset);
+            ToXML(root, *table, charset);
         }
     }
 
-    // Format the document.
-    doc.Print(&printer);
     return true;
 }
 
@@ -215,7 +189,7 @@ bool ts::XMLTables::generateDocument(XML& xml, XML::Printer& printer, const DVBC
 // This method converts a table to the appropriate XML tree.
 //----------------------------------------------------------------------------
 
-ts::XML::Element* ts::XMLTables::ToXML(XML& xml, XML::Element* parent, const BinaryTable& table, const DVBCharset* charset)
+ts::xml::Element* ts::XMLTables::ToXML(xml::Element* parent, const BinaryTable& table, const DVBCharset* charset)
 {
     // Filter invalid tables.
     if (!table.isValid()) {
@@ -223,7 +197,7 @@ ts::XML::Element* ts::XMLTables::ToXML(XML& xml, XML::Element* parent, const Bin
     }
 
     // The XML node we will generate.
-    XML::Element* node = 0;
+    xml::Element* node = 0;
 
     // Do we know how to deserialize this table?
     TablesFactory::TableFactory fac = TablesFactory::Instance()->getTableFactory(table.tableId());
@@ -235,14 +209,14 @@ ts::XML::Element* ts::XMLTables::ToXML(XML& xml, XML::Element* parent, const Bin
             tp->deserialize(table, charset);
             if (tp->isValid()) {
                 // Serialize from object to XML.
-                node = tp->toXML(xml, parent);
+                node = tp->toXML(parent);
             }
         }
     }
 
     // If we could not generate a typed node, generate a generic one.
     if (node == 0) {
-        node = ToGenericTable(xml, parent, table);
+        node = ToGenericTable(parent, table);
     }
 
     return node;
@@ -253,7 +227,7 @@ ts::XML::Element* ts::XMLTables::ToXML(XML& xml, XML::Element* parent, const Bin
 // This method converts a descriptor to the appropriate XML tree.
 //----------------------------------------------------------------------------
 
-ts::XML::Element* ts::XMLTables::ToXML(XML& xml, XML::Element* parent, const Descriptor& desc, PDS pds, const DVBCharset* charset)
+ts::xml::Element* ts::XMLTables::ToXML(xml::Element* parent, const Descriptor& desc, PDS pds, const DVBCharset* charset)
 {
     // Filter invalid descriptors.
     if (!desc.isValid()) {
@@ -261,7 +235,7 @@ ts::XML::Element* ts::XMLTables::ToXML(XML& xml, XML::Element* parent, const Des
     }
 
     // The XML node we will generate.
-    XML::Element* node = 0;
+    xml::Element* node = 0;
 
     // Do we know how to deserialize this descriptor?
     TablesFactory::DescriptorFactory fac = TablesFactory::Instance()->getDescriptorFactory(desc.edid(pds));
@@ -273,14 +247,14 @@ ts::XML::Element* ts::XMLTables::ToXML(XML& xml, XML::Element* parent, const Des
             dp->deserialize(desc, charset);
             if (dp->isValid()) {
                 // Serialize from object to XML.
-                node = dp->toXML(xml, parent);
+                node = dp->toXML(parent);
             }
         }
     }
 
     // If we could not generate a typed node, generate a generic one.
     if (node == 0) {
-        node = ToGenericDescriptor(xml, parent, desc);
+        node = ToGenericDescriptor(parent, desc);
     }
 
     return node;
@@ -291,12 +265,12 @@ ts::XML::Element* ts::XMLTables::ToXML(XML& xml, XML::Element* parent, const Des
 // This method converts a list of descriptors to XML.
 //----------------------------------------------------------------------------
 
-bool ts::XMLTables::ToXML(XML& xml, XML::Element* parent, const DescriptorList& list, const DVBCharset* charset)
+bool ts::XMLTables::ToXML(xml::Element* parent, const DescriptorList& list, const DVBCharset* charset)
 {
     bool success = true;
     for (size_t index = 0; index < list.count(); ++index) {
         const DescriptorPtr desc(list[index]);
-        if (desc.isNull() || ToXML(xml, parent, *desc, list.privateDataSpecifier(index), charset) == 0) {
+        if (desc.isNull() || ToXML(parent, *desc, list.privateDataSpecifier(index), charset) == 0) {
             success = false;
         }
     }
@@ -308,7 +282,7 @@ bool ts::XMLTables::ToXML(XML& xml, XML::Element* parent, const DescriptorList& 
 // This method converts a generic table to XML.
 //----------------------------------------------------------------------------
 
-ts::XML::Element* ts::XMLTables::ToGenericTable(XML& xml, XML::Element* parent, const BinaryTable& table)
+ts::xml::Element* ts::XMLTables::ToGenericTable(xml::Element* parent, const BinaryTable& table)
 {
     // Filter invalid tables.
     if (!table.isValid() || table.sectionCount() == 0) {
@@ -321,27 +295,26 @@ ts::XML::Element* ts::XMLTables::ToGenericTable(XML& xml, XML::Element* parent, 
 
     if (table.isShortSection()) {
         // Create a short section node.
-        XML::Element* root = xml.addElement(parent, u"generic_short_table");
-        xml.setIntAttribute(root, u"table_id", section->tableId(), true);
-        xml.setBoolAttribute(root, u"private", section->isPrivateSection());
-        xml.addHexaText(root, section->payload(), section->payloadSize());
+        xml::Element* root = parent->addElement(u"generic_short_table");
+        root->setIntAttribute(u"table_id", section->tableId(), true);
+        root->setBoolAttribute(u"private", section->isPrivateSection());
+        root->addHexaText(section->payload(), section->payloadSize());
         return root;
     }
     else {
         // Create a table with long sections.
-        XML::Element* root = xml.addElement(parent, u"generic_long_table");
-        xml.setIntAttribute(root, u"table_id", table.tableId(), true);
-        xml.setIntAttribute(root, u"table_id_ext", table.tableIdExtension(), true);
-        xml.setIntAttribute(root, u"version", table.version());
-        xml.setBoolAttribute(root, u"current", section->isCurrent());
-        xml.setBoolAttribute(root, u"private", section->isPrivateSection());
+        xml::Element* root = parent->addElement(u"generic_long_table");
+        root->setIntAttribute(u"table_id", table.tableId(), true);
+        root->setIntAttribute(u"table_id_ext", table.tableIdExtension(), true);
+        root->setIntAttribute(u"version", table.version());
+        root->setBoolAttribute(u"current", section->isCurrent());
+        root->setBoolAttribute(u"private", section->isPrivateSection());
 
         // Add each section in binary format.
         for (size_t index = 0; index < table.sectionCount(); ++index) {
             section = table.sectionAt(index);
             if (!section.isNull() && section->isValid()) {
-                XML::Element* child = xml.addElement(root, u"section");
-                xml.addHexaText(child, section->payload(), section->payloadSize());
+                root->addElement(u"section")->addHexaText(section->payload(), section->payloadSize());
             }
         }
         return root;
@@ -353,7 +326,7 @@ ts::XML::Element* ts::XMLTables::ToGenericTable(XML& xml, XML::Element* parent, 
 // This method converts a generic descriptor to XML.
 //----------------------------------------------------------------------------
 
-ts::XML::Element* ts::XMLTables::ToGenericDescriptor(XML& xml, XML::Element* parent, const Descriptor& desc)
+ts::xml::Element* ts::XMLTables::ToGenericDescriptor(xml::Element* parent, const Descriptor& desc)
 {
     // Filter invalid descriptor.
     if (!desc.isValid()) {
@@ -361,9 +334,9 @@ ts::XML::Element* ts::XMLTables::ToGenericDescriptor(XML& xml, XML::Element* par
     }
 
     // Create the XML node.
-    XML::Element* root = xml.addElement(parent, XML_GENERIC_DESCRIPTOR);
-    xml.setIntAttribute(root, u"tag", desc.tag(), true);
-    xml.addHexaText(root, desc.payload(), desc.payloadSize());
+    xml::Element* root = parent->addElement(XML_GENERIC_DESCRIPTOR);
+    root->setIntAttribute(u"tag", desc.tag(), true);
+    root->addHexaText(desc.payload(), desc.payloadSize());
     return root;
 }
 
@@ -372,30 +345,30 @@ ts::XML::Element* ts::XMLTables::ToGenericDescriptor(XML& xml, XML::Element* par
 // This method decodes an XML list of descriptors.
 //----------------------------------------------------------------------------
 
-bool ts::XMLTables::FromDescriptorListXML(DescriptorList& list, XML::ElementVector& others, XML& xml, const XML::Element* parent, const UString& allowedOthers, const DVBCharset* charset)
+bool ts::XMLTables::FromDescriptorListXML(DescriptorList& list, xml::ElementVector& others, const xml::Element* parent, const UString& allowedOthers, const DVBCharset* charset)
 {
     UStringList allowed;
     allowedOthers.split(allowed);
-    return FromDescriptorListXML(list, others, xml, parent, allowed, charset);
+    return FromDescriptorListXML(list, others, parent, allowed, charset);
 }
 
-bool ts::XMLTables::FromDescriptorListXML(DescriptorList& list, XML& xml, const XML::Element* parent)
+bool ts::XMLTables::FromDescriptorListXML(DescriptorList& list, const xml::Element* parent)
 {
-    XML::ElementVector others;
-    return FromDescriptorListXML(list, others, xml, parent, UStringList());
+    xml::ElementVector others;
+    return FromDescriptorListXML(list, others, parent, UStringList());
 }
 
-bool ts::XMLTables::FromDescriptorListXML(DescriptorList& list, XML::ElementVector& others, XML& xml, const XML::Element* parent, const UStringList& allowedOthers, const DVBCharset* charset)
+bool ts::XMLTables::FromDescriptorListXML(DescriptorList& list, xml::ElementVector& others, const xml::Element* parent, const UStringList& allowedOthers, const DVBCharset* charset)
 {
     bool success = true;
     list.clear();
     others.clear();
 
     // Analyze all children nodes.
-    for (const XML::Element* node = parent == 0 ? 0 : parent->FirstChildElement(); node != 0; node = node->NextSiblingElement()) {
+    for (const xml::Element* node = parent == 0 ? 0 : parent->firstChildElement(); node != 0; node = node->nextSiblingElement()) {
 
         DescriptorPtr bin;
-        const UString name(UString::FromUTF8(XML::ElementName(node)));
+        const UString name(node->name());
         bool isDescriptor = false;
 
         // Get the descriptor factory for that kind of XML tag.
@@ -405,7 +378,7 @@ bool ts::XMLTables::FromDescriptorListXML(DescriptorList& list, XML::ElementVect
             // Create a descriptor instance of the right type.
             AbstractDescriptorPtr desc = fac();
             if (!desc.isNull()) {
-                desc->fromXML(xml, node);
+                desc->fromXML(node);
             }
             if (!desc.isNull() && desc->isValid()) {
                 // Serialize the descriptor.
@@ -417,7 +390,7 @@ bool ts::XMLTables::FromDescriptorListXML(DescriptorList& list, XML::ElementVect
         else if (name.similar(XML_GENERIC_DESCRIPTOR)) {
             isDescriptor = true;
             // Add a generic descriptor.
-            bin = FromGenericDescriptorXML(xml, node);
+            bin = FromGenericDescriptorXML(node);
         }
 
         if (isDescriptor) {
@@ -426,7 +399,7 @@ bool ts::XMLTables::FromDescriptorListXML(DescriptorList& list, XML::ElementVect
                 list.add(bin);
             }
             else {
-                xml.reportError(u"Error in descriptor <%s> at line %d", {name, node->GetLineNum()});
+                parent->report().error(u"Error in descriptor <%s> at line %d", {name, node->lineNumber()});
                 success = false;
             }
         }
@@ -436,7 +409,7 @@ bool ts::XMLTables::FromDescriptorListXML(DescriptorList& list, XML::ElementVect
                 others.push_back(node);
             }
             else {
-                xml.reportError(u"Illegal <%s> at line %d", {name, node->GetLineNum()});
+                parent->report().error(u"Illegal <%s> at line %d", {name, node->lineNumber()});
                 success = false;
             }
         }
@@ -449,7 +422,7 @@ bool ts::XMLTables::FromDescriptorListXML(DescriptorList& list, XML::ElementVect
 // This method decodes a <generic_short_table> or <generic_long_table>.
 //----------------------------------------------------------------------------
 
-ts::BinaryTablePtr ts::XMLTables::FromGenericTableXML(XML& xml, const XML::Element* elem)
+ts::BinaryTablePtr ts::XMLTables::FromGenericTableXML(const xml::Element* elem)
 {
     // Silently ignore invalid parameters.
     if (elem == 0) {
@@ -457,16 +430,16 @@ ts::BinaryTablePtr ts::XMLTables::FromGenericTableXML(XML& xml, const XML::Eleme
     }
 
     // There are two possible forms of generic tables.
-    const UString name(UString::FromUTF8(XML::ElementName(elem)));
+    const UString name(elem->name());
     if (name.similar(XML_GENERIC_SHORT_TABLE)) {
 
         TID tid = 0xFF;
         bool priv = true;
         ByteBlock payload;
         bool ok =
-            xml.getIntAttribute<TID>(tid, elem, u"table_id", true, 0xFF, 0x00, 0xFF) &&
-            xml.getBoolAttribute(priv, elem, u"private", false, true) &&
-            xml.getHexaText(payload, elem, 0, MAX_PSI_SHORT_SECTION_PAYLOAD_SIZE);
+            elem->getIntAttribute<TID>(tid, u"table_id", true, 0xFF, 0x00, 0xFF) &&
+            elem->getBoolAttribute(priv, u"private", false, true) &&
+            elem->getHexaText(payload, 0, MAX_PSI_SHORT_SECTION_PAYLOAD_SIZE);
 
         if (ok) {
             BinaryTablePtr table(new BinaryTable);
@@ -483,21 +456,21 @@ ts::BinaryTablePtr ts::XMLTables::FromGenericTableXML(XML& xml, const XML::Eleme
         uint8_t version = 0;
         bool priv = true;
         bool current = true;
-        XML::ElementVector sectionNodes;
+        xml::ElementVector sectionNodes;
         bool ok =
-            xml.getIntAttribute<TID>(tid, elem, u"table_id", true, 0xFF, 0x00, 0xFF) &&
-            xml.getIntAttribute<uint16_t>(tidExt, elem, u"table_id_ext", false, 0xFFFF, 0x0000, 0xFFFF) &&
-            xml.getIntAttribute<uint8_t>(version, elem, u"version", false, 0, 0, 31) &&
-            xml.getBoolAttribute(current, elem, u"current", false, true) &&
-            xml.getBoolAttribute(priv, elem, u"private", false, true) &&
-            xml.getChildren(sectionNodes, elem, u"section", 1, 256);
+            elem->getIntAttribute<TID>(tid, u"table_id", true, 0xFF, 0x00, 0xFF) &&
+            elem->getIntAttribute<uint16_t>(tidExt, u"table_id_ext", false, 0xFFFF, 0x0000, 0xFFFF) &&
+            elem->getIntAttribute<uint8_t>(version, u"version", false, 0, 0, 31) &&
+            elem->getBoolAttribute(current, u"current", false, true) &&
+            elem->getBoolAttribute(priv, u"private", false, true) &&
+            elem->getChildren(sectionNodes, u"section", 1, 256);
 
         if (ok) {
             BinaryTablePtr table(new BinaryTable);
             for (size_t index = 0; ok && index < sectionNodes.size(); ++index) {
                 assert(sectionNodes[index] != 0);
                 ByteBlock payload;
-                ok = xml.getHexaText(payload, sectionNodes[index], 0, MAX_PSI_LONG_SECTION_PAYLOAD_SIZE);
+                ok = sectionNodes[index]->getHexaText(payload, 0, MAX_PSI_LONG_SECTION_PAYLOAD_SIZE);
                 if (ok) {
                     table->addSection(SectionPtr(new Section(tid, priv, tidExt, version, current, uint8_t(index), uint8_t(index), payload.data(), payload.size())));
                 }
@@ -509,7 +482,7 @@ ts::BinaryTablePtr ts::XMLTables::FromGenericTableXML(XML& xml, const XML::Eleme
     }
 
     // At this point, the table is invalid.
-    xml.reportError(u"<%s>, line %d, is not a valid table", {name, elem->GetLineNum()});
+    elem->report().error(u"<%s>, line %d, is not a valid table", {name, elem->lineNumber()});
     return BinaryTablePtr();
 }
 
@@ -518,7 +491,7 @@ ts::BinaryTablePtr ts::XMLTables::FromGenericTableXML(XML& xml, const XML::Eleme
 // This method decodes a <generic_descriptor>.
 //----------------------------------------------------------------------------
 
-ts::DescriptorPtr ts::XMLTables::FromGenericDescriptorXML(XML& xml, const XML::Element* elem)
+ts::DescriptorPtr ts::XMLTables::FromGenericDescriptorXML(const xml::Element* elem)
 {
     // Silently ignore invalid parameters.
     if (elem == 0) {
@@ -528,18 +501,18 @@ ts::DescriptorPtr ts::XMLTables::FromGenericDescriptorXML(XML& xml, const XML::E
     // Decode XML.
     DID tag = 0xFF;
     ByteBlock payload;
-    const UString name(UString::FromUTF8(XML::ElementName(elem)));
+    const UString name(elem->name());
     const bool ok =
         name.similar(XML_GENERIC_DESCRIPTOR) &&
-        xml.getIntAttribute<DID>(tag, elem, u"tag", true, 0xFF, 0x00, 0xFF) &&
-        xml.getHexaText(payload, elem, 0, 255);
+        elem->getIntAttribute<DID>(tag, u"tag", true, 0xFF, 0x00, 0xFF) &&
+        elem->getHexaText(payload, 0, 255);
 
     // Build descriptor.
     if (ok) {
         return DescriptorPtr(new Descriptor(tag, payload));
     }
     else {
-        xml.reportError(u"<%s>, line %d, is not a valid descriptor", {name, elem->GetLineNum()});
+        elem->report().error(u"<%s>, line %d, is not a valid descriptor", {name, elem->lineNumber()});
         return DescriptorPtr();
     }
 }

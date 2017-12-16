@@ -149,15 +149,13 @@ void ts::ISO639LanguageDescriptor::DisplayDescriptor(TablesDisplay& display, DID
 // XML serialization
 //----------------------------------------------------------------------------
 
-ts::XML::Element* ts::ISO639LanguageDescriptor::toXML(XML& xml, XML::Element* parent) const
+void ts::ISO639LanguageDescriptor::buildXML(xml::Element* root) const
 {
-    XML::Element* root = _is_valid ? xml.addElement(parent, _xml_name) : 0;
     for (EntryList::const_iterator it = entries.begin(); it != entries.end(); ++it) {
-        XML::Element* e = xml.addElement(root, u"language");
-        xml.setAttribute(e, u"code", it->language_code);
-        xml.setIntAttribute(e, u"audio_type", it->audio_type, true);
+        xml::Element* e = root->addElement(u"language");
+        e->setAttribute(u"code", it->language_code);
+        e->setIntAttribute(u"audio_type", it->audio_type, true);
     }
-    return root;
 }
 
 
@@ -165,20 +163,20 @@ ts::XML::Element* ts::ISO639LanguageDescriptor::toXML(XML& xml, XML::Element* pa
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::ISO639LanguageDescriptor::fromXML(XML& xml, const XML::Element* element)
+void ts::ISO639LanguageDescriptor::fromXML(const xml::Element* element)
 {
     entries.clear();
 
-    XML::ElementVector children;
+    xml::ElementVector children;
     _is_valid =
-        checkXMLName(xml, element) &&
-        xml.getChildren(children, element, u"language", 0, MAX_ENTRIES);
+        checkXMLName(element) &&
+        element->getChildren(children, u"language", 0, MAX_ENTRIES);
 
     for (size_t i = 0; _is_valid && i < children.size(); ++i) {
         Entry entry;
         _is_valid =
-            xml.getAttribute(entry.language_code, children[i], u"code", true, u"", 3, 3) &&
-            xml.getIntAttribute<uint8_t>(entry.audio_type, children[i], u"audio_type", true, 0, 0x00, 0xFF);
+            children[i]->getAttribute(entry.language_code, u"code", true, u"", 3, 3) &&
+            children[i]->getIntAttribute<uint8_t>(entry.audio_type, u"audio_type", true, 0, 0x00, 0xFF);
         if (_is_valid) {
             entries.push_back(entry);
         }

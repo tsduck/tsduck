@@ -286,6 +286,12 @@ namespace ts {
             UString debug() const;
 
             //!
+            //! Get a reference to the report object for the XML node.
+            //! @return A reference to the report object for the XML node.
+            //!
+            Report& report() const { return _report; }
+
+            //!
             //! Virtual destructor.
             //!
             virtual ~Node();

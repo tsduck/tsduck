@@ -95,8 +95,8 @@ namespace ts {
         // Inherited methods
         virtual void serialize(BinaryTable& table, const DVBCharset* = 0) const override;
         virtual void deserialize(const BinaryTable& table, const DVBCharset* = 0) override;
-        virtual XML::Element* toXML(XML&, XML::Element*) const override;
-        virtual void fromXML(XML&, const XML::Element*) override;
+        virtual void buildXML(xml::Element*) const override;
+        virtual void fromXML(const xml::Element*) override;
 
         //!
         //! A static method to display a section.

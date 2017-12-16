@@ -119,13 +119,11 @@ void ts::MessageDescriptor::deserialize(const Descriptor& desc, const DVBCharset
 // XML serialization
 //----------------------------------------------------------------------------
 
-ts::XML::Element* ts::MessageDescriptor::toXML(XML& xml, XML::Element* parent) const
+void ts::MessageDescriptor::buildXML(xml::Element* root) const
 {
-    XML::Element* root = _is_valid ? xml.addElement(parent, _xml_name) : 0;
-    xml.setIntAttribute(root, u"message_id", message_id, true);
-    xml.setAttribute(root, u"language_code", language_code);
-    xml.addText(xml.addElement(root, u"text"), message);
-    return root;
+    root->setIntAttribute(u"message_id", message_id, true);
+    root->setAttribute(u"language_code", language_code);
+    root->addElement(u"text")->addText(message);
 }
 
 
@@ -133,13 +131,13 @@ ts::XML::Element* ts::MessageDescriptor::toXML(XML& xml, XML::Element* parent) c
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::MessageDescriptor::fromXML(XML& xml, const XML::Element* element)
+void ts::MessageDescriptor::fromXML(const xml::Element* element)
 {
     _is_valid =
-        checkXMLName(xml, element) &&
-        xml.getIntAttribute(message_id, element, u"message_id", true) &&
-        xml.getAttribute(language_code, element, u"language_code", true, u"", 3, 3) &&
-        xml.getTextChild(message, element, u"text");
+        checkXMLName(element) &&
+        element->getIntAttribute(message_id, u"message_id", true) &&
+        element->getAttribute(language_code, u"language_code", true, u"", 3, 3) &&
+        element->getTextChild(message, u"text");
 }
 
 

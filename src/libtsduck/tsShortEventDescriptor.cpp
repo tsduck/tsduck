@@ -206,13 +206,11 @@ void ts::ShortEventDescriptor::DisplayDescriptor(TablesDisplay& display, DID did
 // XML serialization
 //----------------------------------------------------------------------------
 
-ts::XML::Element* ts::ShortEventDescriptor::toXML(XML& xml, XML::Element* parent) const
+void ts::ShortEventDescriptor::buildXML(xml::Element* root) const
 {
-    XML::Element* root = _is_valid ? xml.addElement(parent, _xml_name) : 0;
-    xml.setAttribute(root, u"language_code", language_code);
-    xml.addText(xml.addElement(root, u"event_name"), event_name);
-    xml.addText(xml.addElement(root, u"text"), text);
-    return root;
+    root->setAttribute(u"language_code", language_code);
+    root->addElement(u"event_name")->addText(event_name);
+    root->addElement(u"text")->addText(text);
 }
 
 
@@ -220,11 +218,11 @@ ts::XML::Element* ts::ShortEventDescriptor::toXML(XML& xml, XML::Element* parent
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::ShortEventDescriptor::fromXML(XML& xml, const XML::Element* element)
+void ts::ShortEventDescriptor::fromXML(const xml::Element* element)
 {
     _is_valid =
-        checkXMLName(xml, element) &&
-        xml.getAttribute(language_code, element, u"language_code", true, u"", 3, 3) &&
-        xml.getTextChild(event_name, element, u"event_name") &&
-        xml.getTextChild(text, element, u"text");
+        checkXMLName(element) &&
+        element->getAttribute(language_code, u"language_code", true, u"", 3, 3) &&
+        element->getTextChild(event_name, u"event_name") &&
+        element->getTextChild(text, u"text");
 }

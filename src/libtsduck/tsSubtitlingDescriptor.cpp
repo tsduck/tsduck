@@ -158,17 +158,15 @@ void ts::SubtitlingDescriptor::deserialize (const Descriptor& desc, const DVBCha
 // XML serialization
 //----------------------------------------------------------------------------
 
-ts::XML::Element* ts::SubtitlingDescriptor::toXML(XML& xml, XML::Element* parent) const
+void ts::SubtitlingDescriptor::buildXML(xml::Element* root) const
 {
-    XML::Element* root = _is_valid ? xml.addElement(parent, _xml_name) : 0;
     for (EntryList::const_iterator it = entries.begin(); it != entries.end(); ++it) {
-        XML::Element* e = xml.addElement(root, u"subtitling");
-        xml.setAttribute(e, u"language_code", it->language_code);
-        xml.setIntAttribute(e, u"subtitling_type", it->subtitling_type, true);
-        xml.setIntAttribute(e, u"composition_page_id", it->composition_page_id, true);
-        xml.setIntAttribute(e, u"ancillary_page_id", it->ancillary_page_id, true);
+        xml::Element* e = root->addElement(u"subtitling");
+        e->setAttribute(u"language_code", it->language_code);
+        e->setIntAttribute(u"subtitling_type", it->subtitling_type, true);
+        e->setIntAttribute(u"composition_page_id", it->composition_page_id, true);
+        e->setIntAttribute(u"ancillary_page_id", it->ancillary_page_id, true);
     }
-    return root;
 }
 
 
@@ -176,21 +174,21 @@ ts::XML::Element* ts::SubtitlingDescriptor::toXML(XML& xml, XML::Element* parent
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::SubtitlingDescriptor::fromXML(XML& xml, const XML::Element* element)
+void ts::SubtitlingDescriptor::fromXML(const xml::Element* element)
 {
     entries.clear();
-    XML::ElementVector children;
+    xml::ElementVector children;
     _is_valid =
-        checkXMLName(xml, element) &&
-        xml.getChildren(children, element, u"subtitling", 0, MAX_ENTRIES);
+        checkXMLName(element) &&
+        element->getChildren(children, u"subtitling", 0, MAX_ENTRIES);
 
     for (size_t i = 0; _is_valid && i < children.size(); ++i) {
         Entry entry;
         _is_valid =
-            xml.getAttribute(entry.language_code, children[i], u"language_code", true, u"", 3, 3) &&
-            xml.getIntAttribute<uint8_t>(entry.subtitling_type, children[i], u"subtitling_type", true) &&
-            xml.getIntAttribute<uint16_t>(entry.composition_page_id, children[i], u"composition_page_id", true) &&
-            xml.getIntAttribute<uint16_t>(entry.ancillary_page_id, children[i], u"ancillary_page_id", true);
+            children[i]->getAttribute(entry.language_code, u"language_code", true, u"", 3, 3) &&
+            children[i]->getIntAttribute<uint8_t>(entry.subtitling_type, u"subtitling_type", true) &&
+            children[i]->getIntAttribute<uint16_t>(entry.composition_page_id, u"composition_page_id", true) &&
+            children[i]->getIntAttribute<uint16_t>(entry.ancillary_page_id, u"ancillary_page_id", true);
         if (_is_valid) {
             entries.push_back(entry);
         }

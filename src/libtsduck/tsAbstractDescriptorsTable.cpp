@@ -162,13 +162,11 @@ void ts::AbstractDescriptorsTable::DisplaySection(TablesDisplay& display, const 
 // XML serialization
 //----------------------------------------------------------------------------
 
-ts::XML::Element* ts::AbstractDescriptorsTable::toXML(XML& xml, XML::Element* parent) const
+void ts::AbstractDescriptorsTable::buildXML(xml::Element* root) const
 {
-    XML::Element* root = _is_valid ? xml.addElement(parent, _xml_name) : 0;
-    xml.setIntAttribute(root, u"version", version);
-    xml.setBoolAttribute(root, u"current", is_current);
-    XMLTables::ToXML(xml, root, descs);
-    return root;
+    root->setIntAttribute(u"version", version);
+    root->setBoolAttribute(u"current", is_current);
+    XMLTables::ToXML(root, descs);
 }
 
 
@@ -176,12 +174,12 @@ ts::XML::Element* ts::AbstractDescriptorsTable::toXML(XML& xml, XML::Element* pa
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::AbstractDescriptorsTable::fromXML(XML& xml, const XML::Element* element)
+void ts::AbstractDescriptorsTable::fromXML(const xml::Element* element)
 {
     descs.clear();
     _is_valid =
-        checkXMLName(xml, element) &&
-        xml.getIntAttribute<uint8_t>(version, element, u"version", false, 0, 0, 31) &&
-        xml.getBoolAttribute(is_current, element, u"current", false, true) &&
-        XMLTables::FromDescriptorListXML(descs, xml, element);
+        checkXMLName(element) &&
+        element->getIntAttribute<uint8_t>(version, u"version", false, 0, 0, 31) &&
+        element->getBoolAttribute(is_current, u"current", false, true) &&
+        XMLTables::FromDescriptorListXML(descs, element);
 }

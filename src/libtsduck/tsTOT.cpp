@@ -306,10 +306,9 @@ void ts::TOT::DisplaySection(TablesDisplay& display, const ts::Section& section,
 // XML serialization
 //----------------------------------------------------------------------------
 
-ts::XML::Element* ts::TOT::toXML(XML& xml, XML::Element* parent) const
+void ts::TOT::buildXML(xml::Element* root) const
 {
-    XML::Element* root = _is_valid ? xml.addElement(parent, _xml_name) : 0;
-    xml.setDateTimeAttribute(root, u"UTC_time", utc_time);
+    root->setDateTimeAttribute(u"UTC_time", utc_time);
 
     // Add one local_time_offset_descriptor per set of regions.
     // Each local_time_offset_descriptor can contain up to 19 regions.
@@ -318,19 +317,17 @@ ts::XML::Element* ts::TOT::toXML(XML& xml, XML::Element* parent) const
         lto.regions.push_back(*it);
         if (lto.regions.size() >= LocalTimeOffsetDescriptor::MAX_REGION) {
             // The descriptor is full, flush it in the list.
-            lto.toXML(xml, root);
+            lto.toXML(root);
             lto.regions.clear();
         }
     }
     if (!lto.regions.empty()) {
         // The descriptor is not empty, flush it in the list.
-        lto.toXML(xml, root);
+        lto.toXML(root);
     }
 
     // Add other descriptors.
-    XMLTables::ToXML(xml, root, descs);
-
-    return root;
+    XMLTables::ToXML(root, descs);
 }
 
 
@@ -338,7 +335,7 @@ ts::XML::Element* ts::TOT::toXML(XML& xml, XML::Element* parent) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::TOT::fromXML(XML& xml, const XML::Element* element)
+void ts::TOT::fromXML(const xml::Element* element)
 {
     regions.clear();
     descs.clear();
@@ -346,9 +343,9 @@ void ts::TOT::fromXML(XML& xml, const XML::Element* element)
 
     // Get all descriptors in a separated list.
     _is_valid =
-        checkXMLName(xml, element) &&
-        xml.getDateTimeAttribute(utc_time, element, u"UTC_time", true) &&
-        XMLTables::FromDescriptorListXML(orig, xml, element);
+        checkXMLName(element) &&
+        element->getDateTimeAttribute(utc_time, u"UTC_time", true) &&
+        XMLTables::FromDescriptorListXML(orig, element);
 
     // Then, split local_time_offset_descriptor and others.
     addDescriptors(orig);

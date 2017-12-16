@@ -328,20 +328,18 @@ void ts::ExtendedEventDescriptor::DisplayDescriptor(TablesDisplay& display, DID 
 // XML serialization
 //----------------------------------------------------------------------------
 
-ts::XML::Element* ts::ExtendedEventDescriptor::toXML(XML& xml, XML::Element* parent) const
+void ts::ExtendedEventDescriptor::buildXML(xml::Element* root) const
 {
-    XML::Element* root = _is_valid ? xml.addElement(parent, _xml_name) : 0;
-    xml.setIntAttribute(root, u"descriptor_number", descriptor_number, false);
-    xml.setIntAttribute(root, u"last_descriptor_number", last_descriptor_number, false);
-    xml.setAttribute(root, u"language_code", language_code);
-    xml.addText(xml.addElement(root, u"text"), text);
+    root->setIntAttribute(u"descriptor_number", descriptor_number, false);
+    root->setIntAttribute(u"last_descriptor_number", last_descriptor_number, false);
+    root->setAttribute(u"language_code", language_code);
+    root->addElement(u"text")->addText(text);
 
     for (EntryList::const_iterator it = entries.begin(); it != entries.end(); ++it) {
-        XML::Element* e = xml.addElement(root, u"item");
-        xml.addText(xml.addElement(e, u"description"), it->item_description);
-        xml.addText(xml.addElement(e, u"name"), it->item);
+        xml::Element* e = root->addElement(u"item");
+        e->addElement(u"description")->addText(it->item_description);
+        e->addElement(u"name")->addText(it->item);
     }
-    return root;
 }
 
 
@@ -349,26 +347,26 @@ ts::XML::Element* ts::ExtendedEventDescriptor::toXML(XML& xml, XML::Element* par
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::ExtendedEventDescriptor::fromXML(XML& xml, const XML::Element* element)
+void ts::ExtendedEventDescriptor::fromXML(const xml::Element* element)
 {
     language_code.clear();
     text.clear();
     entries.clear();
 
-    XML::ElementVector children;
+    xml::ElementVector children;
     _is_valid =
-        checkXMLName(xml, element) &&
-        xml.getIntAttribute(descriptor_number, element, u"descriptor_number", true) &&
-        xml.getIntAttribute(last_descriptor_number, element, u"last_descriptor_number", true) &&
-        xml.getAttribute(language_code, element, u"language_code", true, u"", 3, 3) &&
-        xml.getTextChild(text, element, u"text") &&
-        xml.getChildren(children, element, u"item");
+        checkXMLName(element) &&
+        element->getIntAttribute(descriptor_number, u"descriptor_number", true) &&
+        element->getIntAttribute(last_descriptor_number, u"last_descriptor_number", true) &&
+        element->getAttribute(language_code, u"language_code", true, u"", 3, 3) &&
+        element->getTextChild(text, u"text") &&
+        element->getChildren(children, u"item");
 
     for (size_t i = 0; _is_valid && i < children.size(); ++i) {
         Entry entry;
         _is_valid =
-            xml.getTextChild(entry.item_description, children[i], u"description") &&
-            xml.getTextChild(entry.item, children[i], u"name");
+            children[i]->getTextChild(entry.item_description, u"description") &&
+            children[i]->getTextChild(entry.item, u"name");
         if (_is_valid) {
             entries.push_back(entry);
         }

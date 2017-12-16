@@ -182,17 +182,15 @@ void ts::S2SatelliteDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& d
 // XML serialization
 //----------------------------------------------------------------------------
 
-ts::XML::Element* ts::S2SatelliteDeliverySystemDescriptor::toXML(XML& xml, XML::Element* parent) const
+void ts::S2SatelliteDeliverySystemDescriptor::buildXML(xml::Element* root) const
 {
-    XML::Element* root = _is_valid ? xml.addElement(parent, _xml_name) : 0;
-    xml.setBoolAttribute(root, u"backwards_compatibility", backwards_compatibility_indicator);
+    root->setBoolAttribute(u"backwards_compatibility", backwards_compatibility_indicator);
     if (scrambling_sequence_selector) {
-        xml.setIntAttribute(root, u"scrambling_sequence_index", scrambling_sequence_index, true);
+        root->setIntAttribute(u"scrambling_sequence_index", scrambling_sequence_index, true);
     }
     if (multiple_input_stream_flag) {
-        xml.setIntAttribute(root, u"input_stream_identifier", input_stream_identifier, true);
+        root->setIntAttribute(u"input_stream_identifier", input_stream_identifier, true);
     }
-    return root;
 }
 
 
@@ -200,16 +198,16 @@ ts::XML::Element* ts::S2SatelliteDeliverySystemDescriptor::toXML(XML& xml, XML::
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::S2SatelliteDeliverySystemDescriptor::fromXML(XML& xml, const XML::Element* element)
+void ts::S2SatelliteDeliverySystemDescriptor::fromXML(const xml::Element* element)
 {
     Variable<uint32_t> scrambling;
     Variable<uint8_t> stream;
 
     _is_valid =
-        checkXMLName(xml, element) &&
-        xml.getBoolAttribute(backwards_compatibility_indicator, element, u"backwards_compatibility", true) &&
-        xml.getOptionalIntAttribute<uint32_t>(scrambling, element, u"scrambling_sequence_index", 0x00000000, 0x0003FFFF) &&
-        xml.getOptionalIntAttribute<uint8_t>(stream, element, u"input_stream_identifier");
+        checkXMLName(element) &&
+        element->getBoolAttribute(backwards_compatibility_indicator, u"backwards_compatibility", true) &&
+        element->getOptionalIntAttribute<uint32_t>(scrambling, u"scrambling_sequence_index", 0x00000000, 0x0003FFFF) &&
+        element->getOptionalIntAttribute<uint8_t>(stream, u"input_stream_identifier");
 
     if (scrambling.set()) {
         scrambling_sequence_selector = true;

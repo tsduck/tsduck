@@ -121,11 +121,9 @@ void ts::StreamIdentifierDescriptor::DisplayDescriptor(TablesDisplay& display, D
 // XML serialization
 //----------------------------------------------------------------------------
 
-ts::XML::Element* ts::StreamIdentifierDescriptor::toXML(XML& xml, XML::Element* parent) const
+void ts::StreamIdentifierDescriptor::buildXML(xml::Element* root) const
 {
-    XML::Element* root = _is_valid ? xml.addElement(parent, _xml_name) : 0;
-    xml.setIntAttribute(root, u"component_tag", component_tag, true);
-    return root;
+    root->setIntAttribute(u"component_tag", component_tag, true);
 }
 
 
@@ -133,9 +131,9 @@ ts::XML::Element* ts::StreamIdentifierDescriptor::toXML(XML& xml, XML::Element* 
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::StreamIdentifierDescriptor::fromXML(XML& xml, const XML::Element* element)
+void ts::StreamIdentifierDescriptor::fromXML(const xml::Element* element)
 {
     _is_valid =
-        checkXMLName(xml, element) &&
-        xml.getIntAttribute<uint8_t>(component_tag, element, u"component_tag", true);
+        checkXMLName(element) &&
+        element->getIntAttribute<uint8_t>(component_tag, u"component_tag", true);
 }
