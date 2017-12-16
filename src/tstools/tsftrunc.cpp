@@ -58,6 +58,7 @@ Options::Options(int argc, char *argv[]) :
     files()
 {
     option(u"",          0,  Args::STRING, 1, Args::UNLIMITED_COUNT);
+    option(u"byte",     'b', Args::UNSIGNED);
     option(u"packet",   'p', Args::UNSIGNED);
     option(u"noaction", 'n');
 
@@ -73,6 +74,11 @@ Options::Options(int argc, char *argv[]) :
             u"  -n\n"
             u"  --noaction\n"
             u"      Do not perform truncation, check mode only.\n"
+            u"\n"
+            u"  -b value\n"
+            u"  --byte value\n"
+            u"      Truncate the file at the next packet boundary after the specified size\n"
+            u"      in bytes. Mutually exclusive with --packet.\n"
             u"\n"
             u"  -p value\n"
             u"  --packet value\n"
@@ -90,12 +96,22 @@ Options::Options(int argc, char *argv[]) :
     analyze(argc, argv);
 
     getValues(files);
-    trunc_pkt = intValue<ts::PacketCounter>(u"packet");
     check_only = present(u"noaction");
 
+    if (present(u"byte") && present(u"packet")) {
+        error(u"--byte and --packet are mutually exclusive");
+    }
+    if (present(u"byte")) {
+        trunc_pkt = (intValue<ts::PacketCounter>(u"byte") + ts::PKT_SIZE - 1) / ts::PKT_SIZE;
+    }
+    else {
+        trunc_pkt = intValue<ts::PacketCounter>(u"packet");
+    }
     if (check_only) {
         setMaxSeverity(ts::Severity::Verbose);
     }
+
+    exitOnError();
 }
 
 
