@@ -12,6 +12,12 @@ h3 {
 a {
     font-weight: bold;
 }
+code, fragment, pre.fragment, div.line {
+    font-family: consolas,monospace,fixed;
+}
+.overload {
+    font-family: consolas,"courier new",courier,monospace;
+}
 #headertitle {
     font-size: 1.6em;
 }

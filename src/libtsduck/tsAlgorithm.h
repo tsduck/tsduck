@@ -150,6 +150,122 @@ namespace ts {
     //!
     template <class MAP>
     std::list<typename MAP::mapped_type> MapValues(const MAP& container);
+
+    //!
+    //! I/O manipulator for subclasses of <code>std::basic_ostream</code>.
+    //!
+    //! The standard C++ library contains support for I/O manipulators on <code>std::basic_ios</code>,
+    //! <code>std::basic_istream</code> and <code>std::basic_ostream</code> but not for their subclasses.
+    //! This template function is a support routine for I/O manipulators on subclasses.
+    //!
+    //! Sample usage:
+    //! @code
+    //! namespace ts {
+    //!     // The class:
+    //!     class TextFormatter : public std::basic_ostream<char>
+    //!     {
+    //!     public:
+    //!         TextFormatter& margin();
+    //!         ....
+    //!     };
+    //!
+    //!     // The I/O manipulator:
+    //!     std::ostream& margin(std::ostream& os)
+    //!     {
+    //!         return IOManipulator(os, &TextFormatter::margin);
+    //!     }
+    //! }
+    //!
+    //! // Usage:
+    //! ts::TextFormatter out;
+    //! out << ts::margin << "<foo>" << std::endl;
+    //! @endcode
+    //!
+    //! @tparam OSTREAM A subclass of <code>std::basic_ostream</code>.
+    //! @param [in,out] strm The stream of class @a OSTREAM to manipulate.
+    //! @param [in] func A pointer to member function in @a OSTREAM. This method
+    //! shall take no parameter and return a reference to the @a OSTREAM object.
+    //! @return A reference to the @a strm object.
+    //!
+    template <class OSTREAM, class TRAITS = std::char_traits<typename OSTREAM::char_type>>
+    std::basic_ostream<typename OSTREAM::char_type, TRAITS>& IOManipulator(std::basic_ostream<typename OSTREAM::char_type, TRAITS>& strm, OSTREAM& (OSTREAM::*func)())
+    {
+        OSTREAM* sub = dynamic_cast<OSTREAM*>(&strm);
+        return sub == 0 ? strm : (sub->*func)();
+    }
+
+    //!
+    //! I/O manipulator with argument for subclasses of <code>std::basic_ostream</code>.
+    //!
+    //! This class has a similar role as IOManipulator() for functions using one argument.
+    //!
+    //! Sample usage:
+    //! @code
+    //! namespace ts {
+    //!     // The class:
+    //!     class TextFormatter : public std::basic_ostream<char>
+    //!     {
+    //!     public:
+    //!         TextFormatter& setMarginSize(size_t margin);
+    //!         ....
+    //!     };
+    //!
+    //!     // The I/O manipulator:
+    //!     IOManipulatorProxy<TextFormatter,size_t> margin(size_t size)
+    //!     {
+    //!         return IOManipulatorProxy<TextFormatter,size_t>(&TextFormatter::setMarginSize, size);
+    //!     }
+    //! }
+    //!
+    //! // Usage:
+    //! ts::TextFormatter out;
+    //! out << ts::margin(2) << "<foo>" << std::endl;
+    //! @endcode
+    //!
+    //! @tparam OSTREAM A subclass of <code>std::basic_ostream</code>.
+    //! @tparam PARAM The type of the parameter for the manipulator.
+    //!
+    template <class OSTREAM, class PARAM, class TRAITS = std::char_traits<typename OSTREAM::char_type>>
+    class IOManipulatorProxy
+    {
+    private:
+        OSTREAM& (OSTREAM::*_func)(PARAM);
+        PARAM _param;
+    public:
+        //!
+        //! Constructor.
+        //! @param [in] func A pointer to member function in @a OSTREAM. This method shall take
+        //! one parameter or type @a PARAM and return a reference to the @a OSTREAM object.
+        //! @param [in] param The parameter value to pass to the I/O manipulator.
+        //!
+        IOManipulatorProxy(OSTREAM& (OSTREAM::*func)(PARAM), PARAM param) : _func(func), _param(param) {}
+
+        //!
+        //! Invoke the I/O manipulator, typically invoked by the operator "<<".
+        //! @param [in,out] strm The stream of class @a OSTREAM to manipulate.
+        //! @return A reference to the @a strm object.
+        //!
+        std::basic_ostream<typename OSTREAM::char_type, TRAITS>& manipulator(std::basic_ostream<typename OSTREAM::char_type, TRAITS>& strm) const
+        {
+            OSTREAM* sub = dynamic_cast<OSTREAM*>(&strm);
+            return sub == 0 ? strm : (sub->*_func)(_param);
+        }
+    };
+}
+
+//!
+//! An overload of operator "<<" on <code>std::basic_ostream</code> for ts::IOManipulatorProxy.
+//! @tparam OSTREAM A subclass of <code>std::basic_ostream</code>.
+//! @tparam PARAM The type of the parameter for the manipulator.
+//! @param [in,out] strm The stream of class @a OSTREAM to manipulate.
+//! @param [in] proxy The ts::IOManipulatorProxy object.
+//! @return A reference to the @a strm object.
+//! @see ts::IOManipulatorProxy
+//!
+template <class OSTREAM, class PARAM, class TRAITS = std::char_traits<typename OSTREAM::char_type>>
+std::basic_ostream<typename OSTREAM::char_type, TRAITS>& operator<<(std::basic_ostream<typename OSTREAM::char_type, TRAITS>& strm, const ts::IOManipulatorProxy<OSTREAM, PARAM, TRAITS>& proxy)
+{
+    return proxy.manipulator(strm);
 }
 
 #include "tsAlgorithmTemplate.h"

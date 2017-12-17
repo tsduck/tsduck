@@ -59,10 +59,10 @@ ts::xml::Text::Text(Element* parent, const UString& text, bool cdata) :
 void ts::xml::Text::print(TextFormatter& output, bool keepNodeOpen) const
 {
     if (_isCData) {
-        output.stream() << "<![CDATA[" << _value << "]]>";
+        output << "<![CDATA[" << _value << "]]>";
     }
     else {
-        output.stream() << _value.toHTML(u"<>");
+        output << _value.toHTML(u"<>");
     }
 }
 
