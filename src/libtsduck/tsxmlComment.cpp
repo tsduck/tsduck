@@ -29,7 +29,7 @@
 
 #include "tsxmlComment.h"
 #include "tsxmlParser.h"
-#include "tsxmlOutput.h"
+#include "tsTextFormatter.h"
 TSDUCK_SOURCE;
 
 
@@ -42,8 +42,8 @@ ts::xml::Comment::Comment(Report& report, size_t line) :
 {
 }
 
-ts::xml::Comment::Comment(Node* parent, const UString& text) :
-    Node(parent, text)
+ts::xml::Comment::Comment(Node* parent, const UString& text, bool last) :
+    Node(parent, text, last)
 {
 }
 
@@ -52,7 +52,7 @@ ts::xml::Comment::Comment(Node* parent, const UString& text) :
 // Print the node.
 //----------------------------------------------------------------------------
 
-void ts::xml::Comment::print(Output& output, bool keepNodeOpen) const
+void ts::xml::Comment::print(TextFormatter& output, bool keepNodeOpen) const
 {
     output.stream() << "<!--" << _value << "-->";
 }

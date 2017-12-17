@@ -35,6 +35,7 @@
 #include "tsSSUDataBroadcastIdDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
+#include "tsxmlElement.h"
 TSDUCK_SOURCE;
 
 

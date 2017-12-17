@@ -27,8 +27,7 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsxmlOutput.h"
-#include "tsxmlElement.h"
+#include "tsTextFormatter.h"
 TSDUCK_SOURCE;
 
 
@@ -36,7 +35,7 @@ TSDUCK_SOURCE;
 // Constructors and destructor.
 //----------------------------------------------------------------------------
 
-ts::xml::Output::Output(Report& report) :
+ts::TextFormatter::TextFormatter(Report& report) :
     _report(report),
     _outFile(),
     _outString(),
@@ -48,7 +47,7 @@ ts::xml::Output::Output(Report& report) :
 {
 }
 
-ts::xml::Output::~Output()
+ts::TextFormatter::~TextFormatter()
 {
     close();
 }
@@ -58,7 +57,7 @@ ts::xml::Output::~Output()
 // Set output to an open text stream.
 //----------------------------------------------------------------------------
 
-ts::xml::Output& ts::xml::Output::setStream(std::ostream& strm)
+ts::TextFormatter& ts::TextFormatter::setStream(std::ostream& strm)
 {
     close();
     _out = &strm;
@@ -70,7 +69,7 @@ ts::xml::Output& ts::xml::Output::setStream(std::ostream& strm)
 // Set output to a text file.
 //----------------------------------------------------------------------------
 
-bool ts::xml::Output::setFile(const UString& fileName)
+bool ts::TextFormatter::setFile(const UString& fileName)
 {
     close();
     _outFile.open(fileName.toUTF8().c_str(), std::ios::out);
@@ -89,7 +88,7 @@ bool ts::xml::Output::setFile(const UString& fileName)
 // Set output to an internal string buffer. 
 //----------------------------------------------------------------------------
 
-ts::xml::Output& ts::xml::Output::setString()
+ts::TextFormatter& ts::TextFormatter::setString()
 {
     close();
     _out = &_outString;
@@ -101,7 +100,7 @@ ts::xml::Output& ts::xml::Output::setString()
 // Retrieve the current contentn of the internal string buffer. 
 //----------------------------------------------------------------------------
 
-bool ts::xml::Output::getString(UString& str)
+bool ts::TextFormatter::getString(UString& str)
 {
     if (_out != &_outString) {
         // Output is not set to string.
@@ -117,7 +116,7 @@ bool ts::xml::Output::getString(UString& str)
     }
 }
 
-ts::UString ts::xml::Output::toString()
+ts::UString ts::TextFormatter::toString()
 {
     UString str;
     getString(str);
@@ -129,7 +128,7 @@ ts::UString ts::xml::Output::toString()
 // Check if the Output is open to some output.
 //----------------------------------------------------------------------------
 
-bool ts::xml::Output::isOpen() const
+bool ts::TextFormatter::isOpen() const
 {
     return _out != &_outFile || _outFile.is_open();
 }
@@ -139,7 +138,7 @@ bool ts::xml::Output::isOpen() const
 // Close the current output.
 //----------------------------------------------------------------------------
 
-void ts::xml::Output::close()
+void ts::TextFormatter::close()
 {
     if (_out == &_outString) {
         // Output is set to string. Reset internal buffer.
@@ -160,7 +159,7 @@ void ts::xml::Output::close()
 // Output new lines and spaces on a stream if not in compact mode.
 //----------------------------------------------------------------------------
 
-std::ostream& ts::xml::Output::newLine() const
+std::ostream& ts::TextFormatter::newLine() const
 {
     if (!_compact) {
         *_out << std::endl;
@@ -168,7 +167,7 @@ std::ostream& ts::xml::Output::newLine() const
     return *_out;
 }
 
-std::ostream& ts::xml::Output::spaces(size_t count) const
+std::ostream& ts::TextFormatter::spaces(size_t count) const
 {
     if (!_compact && count > 0) {
         *_out << std::string(count, ' ');

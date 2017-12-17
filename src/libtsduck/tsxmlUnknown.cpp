@@ -29,7 +29,7 @@
 
 #include "tsxmlUnknown.h"
 #include "tsxmlParser.h"
-#include "tsxmlOutput.h"
+#include "tsTextFormatter.h"
 TSDUCK_SOURCE;
 
 
@@ -52,7 +52,7 @@ ts::xml::Unknown::Unknown(Node* parent, const UString& text) :
 // Print the node.
 //----------------------------------------------------------------------------
 
-void ts::xml::Unknown::print(Output& output, bool keepNodeOpen) const
+void ts::xml::Unknown::print(TextFormatter& output, bool keepNodeOpen) const
 {
     output.stream() << "<!" << _value.toHTML(u"<>") << ">";
 }

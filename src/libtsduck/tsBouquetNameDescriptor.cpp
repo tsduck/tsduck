@@ -34,6 +34,7 @@
 #include "tsBouquetNameDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
+#include "tsxmlElement.h"
 TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"bouquet_name_descriptor"

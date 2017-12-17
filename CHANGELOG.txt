@@ -8,6 +8,10 @@ Version 3.5
   at the same time. For instance, it is possible to save tables in text and
   binary format at the same time.
 
+- Added option --xml-output to tstables and plugin tables. Tables can be saved
+  directly in XML format. It is no longer necessary to save in binary and then
+  use the decompiler to rebuild XML files.
+
 - Added option --byte to tsftrunc.
 
 - The options --verbose and --debug have been generalized to all commands.

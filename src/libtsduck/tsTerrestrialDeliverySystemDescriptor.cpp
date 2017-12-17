@@ -35,6 +35,7 @@
 #include "tsTunerParametersDVBT.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
+#include "tsxmlElement.h"
 TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"terrestrial_delivery_system_descriptor"

@@ -36,6 +36,7 @@
 #include "tsRingNode.h"
 #include "tsNullReport.h"
 #include "tsReportWithPrefix.h"
+#include "tsTextFormatter.h"
 
 namespace ts {
     //!
@@ -61,7 +62,6 @@ namespace ts {
 
         class Document;
         class Element;
-        class Output;
         class Parser;
 
         //!
@@ -260,7 +260,7 @@ namespace ts {
             //! @param [in,out] output The output object to format the XML document.
             //! @param [in] keepNodeOpen If true, keep the node open so that children may be printed later.
             //!
-            virtual void print(Output& output, bool keepNodeOpen = false) const = 0;
+            virtual void print(TextFormatter& output, bool keepNodeOpen = false) const = 0;
 
             //!
             //! Print the closing tags for the node.
@@ -270,7 +270,7 @@ namespace ts {
             //! @param [in] levels Number of levels to close. By default, close the complete document.
             //! If zero, no output is produced.
             //!
-            virtual void printClose(Output& output, size_t levels = std::numeric_limits<size_t>::max()) const {}
+            virtual void printClose(TextFormatter& output, size_t levels = std::numeric_limits<size_t>::max()) const {}
 
             //!
             //! Check if the text shall be stuck to other elements in XML output.
@@ -308,8 +308,10 @@ namespace ts {
             //! Constructor.
             //! @param [in,out] parent The parent document into which the declaration is added.
             //! @param [in] value Value of the node.
+            //! @param [in] last If true, the child is added at the end of the list of children.
+            //! If false, it is added at the beginning.
             //!
-            explicit Node(Node* parent, const UString& value = UString());
+            explicit Node(Node* parent, const UString& value = UString(), bool last = true);
 
             //!
             //! Parse the node.

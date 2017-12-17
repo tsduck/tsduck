@@ -55,9 +55,11 @@ namespace ts {
 
         // Public fields, by options.
         bool     use_text;          //!< Produce formatted human-readable tables.
+        bool     use_xml;           //!< Produce XML tables.
         bool     use_binary;        //!< Save binary sections.
         bool     use_udp;           //!< Send sections using UDP/IP.
         UString  text_destination;  //!< Text output file name.
+        UString  xml_destination;   //!< XML output file name.
         UString  bin_destination;   //!< Binary output file name.
         UString  udp_destination;   //!< UDP/IP destination address:port.
         bool     multi_files;       //!< Multiple binary output files (one per section).
@@ -87,15 +89,6 @@ namespace ts {
         //! The default is 8 bytes.
         //!
         static const size_t DEFAULT_LOG_SIZE = 8;
-
-        //!
-        //! Check if standard output shall be used.
-        //! @return True if standard output shall be used.
-        //!
-        bool useCout() const
-        {
-            return use_text && text_destination.empty();
-        }
 
         //!
         //! Define command line options in an Args.

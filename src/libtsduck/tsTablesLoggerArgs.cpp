@@ -46,9 +46,11 @@ const size_t ts::TablesLoggerArgs::DEFAULT_LOG_SIZE;
 
 ts::TablesLoggerArgs::TablesLoggerArgs() :
     use_text(false),
+    use_xml(false),
     use_binary(false),
     use_udp(false),
     text_destination(),
+    xml_destination(),
     bin_destination(),
     udp_destination(),
     multi_files(false),
@@ -90,10 +92,11 @@ void ts::TablesLoggerArgs::addHelp(Args& args) const
         u"\n"
         u"  -a\n"
         u"  --all-sections\n"
-        u"      Display/save all sections, as they appear in the stream.\n"
-        u"      By default, collect complete tables, with all sections of\n"
-        u"      the tables grouped and ordered and collect each version\n"
-        u"      of a table only once.\n"
+        u"      Display/save all sections, as they appear in the stream. By default,\n"
+        u"      collect complete tables, with all sections of the tables grouped and\n"
+        u"      ordered and collect each version of a table only once. Note that this\n"
+        u"      mode is incompatible with --xml-output since valid XML structures may\n"
+        u"      contain complete tables only.\n"
         u"\n"
         u"  -b filename\n"
         u"  --binary-output filename\n"
@@ -227,7 +230,12 @@ void ts::TablesLoggerArgs::addHelp(Args& args) const
         u"      Produce verbose output.\n"
         u"\n"
         u"  --version\n"
-        u"      Display the version number.\n";
+        u"      Display the version number.\n"
+        u"\n"
+        u"  --xml-output filename\n"
+        u"      Save the tables in XML format in the specified file. To output the XML\n"
+        u"      text on the standard output, explicitly specify this option with \"-\"\n"
+        u"      as output file name.\n";
 
     args.setHelp(args.getHelp() + help);
 }
@@ -263,6 +271,7 @@ void ts::TablesLoggerArgs::defineOptions(Args& args) const
     args.option(u"tid-ext",             'e', Args::UINT16, 0, Args::UNLIMITED_COUNT);
     args.option(u"time-stamp",           0);
     args.option(u"ttl",                  0,  Args::POSITIVE);
+    args.option(u"xml-output",           0,  Args::STRING);
 }
 
 
@@ -274,9 +283,10 @@ void ts::TablesLoggerArgs::defineOptions(Args& args) const
 void ts::TablesLoggerArgs::load(Args& args)
 {
     // Type of output, text is the default.
+    use_xml = args.present(u"xml-output");
     use_binary = args.present(u"binary-output");
     use_udp = args.present(u"ip-udp");
-    use_text = args.present(u"output-file") || args.present(u"text-output") || (!use_binary && !use_udp);
+    use_text = args.present(u"output-file") || args.present(u"text-output") || ( !use_xml && !use_binary && !use_udp);
 
     // --output-file and --text-output are synonyms.
     if (args.present(u"output-file") && args.present(u"text-output")) {
@@ -284,14 +294,17 @@ void ts::TablesLoggerArgs::load(Args& args)
     }
 
     // Output destinations.
+    xml_destination = args.value(u"xml-output");
     bin_destination = args.value(u"binary-output");
     udp_destination = args.value(u"ip-udp");
     text_destination = args.value(u"output-file", args.value(u"text-output").c_str());
 
-    // When use_text is true and text_destination is empty, use standard output.
-    // Also accept "-" as a specification for standard output (common convention in UNIX world).
+    // Accept "-" as a specification for standard output (common convention in UNIX world).
     if (text_destination == u"-") {
         text_destination.clear();
+    }
+    if (xml_destination == u"-") {
+        xml_destination.clear();
     }
 
     multi_files = args.present(u"multiple-files");

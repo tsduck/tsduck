@@ -37,9 +37,11 @@
 #include "tsTSPacket.h"
 #include "tsSectionDemux.h"
 #include "tsTablesLoggerArgs.h"
+#include "tsTextFormatter.h"
 #include "tsSocketAddress.h"
 #include "tsUDPSocket.h"
 #include "tsCASMapper.h"
+#include "tsxmlDocument.h"
 
 namespace ts {
     //!
@@ -123,7 +125,10 @@ namespace ts {
         PacketCounter            _packet_count;
         SectionDemux             _demux;
         CASMapper                _cas_mapper;
-        std::ofstream            _outfile;         // Binary output file.
+        TextFormatter            _xmlOut;          // XML output formatter.
+        xml::Document            _xmlDoc;          // XML root document.
+        bool                     _xmlOpen;         // The XML root element is open.
+        std::ofstream            _binfile;         // Binary output file.
         UDPSocket                _sock;            // Output socket.
         std::map<PID,SectionPtr> _shortSections;   // Tracking duplicate short sections by PID.
 

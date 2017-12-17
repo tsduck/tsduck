@@ -30,7 +30,7 @@
 #include "tsxmlDeclaration.h"
 #include "tsxmlDocument.h"
 #include "tsxmlParser.h"
-#include "tsxmlOutput.h"
+#include "tsTextFormatter.h"
 TSDUCK_SOURCE;
 
 // Default XML declaration.
@@ -56,7 +56,7 @@ ts::xml::Declaration::Declaration(Document* parent, const UString& value) :
 // Print the node.
 //----------------------------------------------------------------------------
 
-void ts::xml::Declaration::print(Output& output, bool keepNodeOpen) const
+void ts::xml::Declaration::print(TextFormatter& output, bool keepNodeOpen) const
 {
     output.stream() << "<?" << _value << "?>";
 }

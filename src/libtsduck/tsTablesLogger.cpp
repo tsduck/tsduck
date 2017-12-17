@@ -36,6 +36,8 @@
 #include "tstlv.h"
 #include "tsTime.h"
 #include "tsSimulCryptDate.h"
+#include "tsXMLTables.h"
+#include "tsxmlComment.h"
 TSDUCK_SOURCE;
 
 
@@ -55,7 +57,10 @@ ts::TablesLogger::TablesLogger(const TablesLoggerArgs& opt, TablesDisplay& displ
     _packet_count(0),
     _demux(0, 0, opt.pid),
     _cas_mapper(report),
-    _outfile(),
+    _xmlOut(report),
+    _xmlDoc(report),
+    _xmlOpen(false),
+    _binfile(),
     _sock(false, report),
     _shortSections()
 {
@@ -73,13 +78,27 @@ ts::TablesLogger::TablesLogger(const TablesLoggerArgs& opt, TablesDisplay& displ
         return;
     }
 
+    // Open/create the XML output.
+    if (_opt.use_xml) {
+        if (_opt.xml_destination.empty()) {
+            // Use standard output.
+            _xmlOut.setStream(std::cout);
+        }
+        else if (!_xmlOut.setFile(_opt.xml_destination)) {
+            _abort = true;
+            return;
+        }
+        // Initialize the XML document.
+        _xmlDoc.initialize(u"tsduck");
+    }
+
     // Open/create the binary output.
     if (_opt.use_binary) {
         if (!_opt.multi_files) {
             // Create one single binary file as output
             _report.verbose(u"Creating " + _opt.bin_destination);
-            _outfile.open(_opt.bin_destination.toUTF8().c_str(), std::ios::out | std::ios::binary);
-            if (!_outfile) {
+            _binfile.open(_opt.bin_destination.toUTF8().c_str(), std::ios::out | std::ios::binary);
+            if (!_binfile) {
                 _report.error(u"cannot create %s", {_opt.bin_destination});
                 _abort = true;
                 return;
@@ -108,7 +127,13 @@ ts::TablesLogger::TablesLogger(const TablesLoggerArgs& opt, TablesDisplay& displ
 
 ts::TablesLogger::~TablesLogger()
 {
-    // Files and sockets are automatically closed by their destructors.
+    // Close the XML document if needed.
+    if (_xmlOpen) {
+        _xmlDoc.printClose(_xmlOut);
+        _xmlOpen = false;
+    }
+
+    // Other files and sockets are automatically closed by their destructors.
 }
 
 
@@ -182,6 +207,32 @@ void ts::TablesLogger::handleTable(SectionDemux&, const BinaryTable& table)
         postDisplay();
     }
 
+    if (_opt.use_xml) {
+        // Convert the table into an XML structure.
+        xml::Element* elem = XMLTables::ToXML(_xmlDoc.rootElement(), table, _display.dvbCharset());
+        if (elem != 0) {
+            // Add an XML comment as first child of the table.
+            new xml::Comment(elem,
+                             UString::Format(u" PID 0x%X (%d), first TS packet: %'d, last: %'d, time: %s ",
+                                              {pid, pid, table.getFirstTSPacketIndex(), table.getLastTSPacketIndex(), UString(Time::CurrentLocalTime())}),
+                             false); // first position
+            // Print the new table.
+            if (_xmlOpen) {
+                _xmlOut.margin();
+                elem->print(_xmlOut, false);
+                _xmlOut.newLine();
+            }
+            else {
+                // If this is the first table, print the document header with it.
+                _xmlOpen = true;
+                _xmlDoc.print(_xmlOut, true);
+            }
+            // Now remove the table from the document. Keeping them would eat up memory for no use.
+            // Deallocating the element forces the removal from the document through the destructor.
+            delete elem;
+        }
+    }
+
     if (_opt.use_binary) {
         // Save each section in binary format
         for (size_t i = 0; i < table.sectionCount(); ++i) {
@@ -237,6 +288,8 @@ void ts::TablesLogger::handleSection(SectionDemux&, const Section& sect)
     }
 
     // Filtering done, now save data.
+    // Note that no XML can be produced since valid XML structures contain complete tables only.
+
     if (_opt.use_text) {
         preDisplay(sect.getFirstTSPacketIndex(), sect.getLastTSPacketIndex());
         if (_opt.logger) {
@@ -297,8 +350,8 @@ void ts::TablesLogger::saveSection(const Section& sect)
         outname += PathSuffix(_opt.bin_destination);
         // Create the output file
         _report.verbose(u"creating %s", {outname});
-        _outfile.open(outname.toUTF8().c_str(), std::ios::out | std::ios::binary);
-        if (!_outfile) {
+        _binfile.open(outname.toUTF8().c_str(), std::ios::out | std::ios::binary);
+        if (!_binfile) {
             _report.error(u"error creating %s", {outname});
             _abort = true;
             return;
@@ -306,13 +359,13 @@ void ts::TablesLogger::saveSection(const Section& sect)
     }
 
     // Write the section to the file
-    if (!sect.write(_outfile, _report)) {
+    if (!sect.write(_binfile, _report)) {
         _abort = true;
     }
 
     // Close individual files
     if (_opt.multi_files) {
-        _outfile.close();
+        _binfile.close();
     }
 }
 

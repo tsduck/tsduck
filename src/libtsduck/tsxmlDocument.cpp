@@ -32,7 +32,7 @@
 #include "tsxmlDeclaration.h"
 #include "tsxmlComment.h"
 #include "tsxmlParser.h"
-#include "tsxmlOutput.h"
+#include "tsTextFormatter.h"
 #include "tsSysUtils.h"
 #include "tsFatal.h"
 #include "tsReportWithPrefix.h"
@@ -96,12 +96,26 @@ bool ts::xml::Document::load(const UString& fileName, bool search)
 // Print the node.
 //----------------------------------------------------------------------------
 
-void ts::xml::Document::print(Output& output, bool keepNodeOpen) const
+void ts::xml::Document::print(TextFormatter& output, bool keepNodeOpen) const
 {
     // Simply print all children one by one without encapsulation.
+    // If keepNodeOpen is true, leave the last child open.
+    const Node* last = lastChild();
     for (const Node* node = firstChild(); node != 0; node = node->nextSibling()) {
-        node->print(output, false);
-        output.newLine();
+        const bool keep = keepNodeOpen && node == last;
+        node->print(output, keep);
+        if (!keep) {
+            output.newLine();
+        }
+    }
+}
+
+void ts::xml::Document::printClose(TextFormatter& output, size_t levels) const
+{
+    // Close the last child.
+    const Node* last = lastChild();
+    if (last != 0) {
+        last->printClose(output, levels);
     }
 }
 
@@ -285,7 +299,7 @@ const ts::xml::Element* ts::xml::Document::findModelElement(const Element* elem,
 
 bool ts::xml::Document::save(const UString& fileName, size_t indent)
 {
-    Output out(_report);
+    TextFormatter out(_report);
     out.setIndentSize(indent);
     if (!out.setFile(fileName)) {
         return false;
@@ -304,7 +318,7 @@ bool ts::xml::Document::save(const UString& fileName, size_t indent)
 
 ts::UString ts::xml::Document::toString(size_t indent) const
 {
-    Output out(_report);
+    TextFormatter out(_report);
     out.setIndentSize(indent);
     out.setString();
     print(out);
