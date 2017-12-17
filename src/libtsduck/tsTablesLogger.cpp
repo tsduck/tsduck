@@ -213,8 +213,8 @@ void ts::TablesLogger::handleTable(SectionDemux&, const BinaryTable& table)
         if (elem != 0) {
             // Add an XML comment as first child of the table.
             new xml::Comment(elem,
-                             UString::Format(u" PID 0x%X (%d), first TS packet: %'d, last: %'d, time: %s ",
-                                              {pid, pid, table.getFirstTSPacketIndex(), table.getLastTSPacketIndex(), UString(Time::CurrentLocalTime())}),
+                             UString::Format(u" PID 0x%X (%d), first TS packet: %'d, last: %'d ",
+                                              {pid, pid, table.getFirstTSPacketIndex(), table.getLastTSPacketIndex()}),
                              false); // first position
             // Print the new table.
             if (_xmlOpen) {
