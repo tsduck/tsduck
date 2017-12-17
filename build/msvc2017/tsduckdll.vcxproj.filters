@@ -916,7 +916,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsxmlElementTemplate.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\libtsduck\tsxmlOutput.h">
+    <ClInclude Include="..\..\src\libtsduck\tsTextFormatter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -1602,7 +1602,7 @@
     <ClCompile Include="..\..\src\libtsduck\private\tsxmlParser.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\libtsduck\tsxmlOutput.cpp">
+    <ClCompile Include="..\..\src\libtsduck\tsTextFormatter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

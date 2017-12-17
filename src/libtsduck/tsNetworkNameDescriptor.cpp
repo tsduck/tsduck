@@ -34,6 +34,7 @@
 #include "tsNetworkNameDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
+#include "tsxmlElement.h"
 TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"network_name_descriptor"

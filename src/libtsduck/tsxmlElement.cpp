@@ -30,7 +30,7 @@
 #include "tsxmlElement.h"
 #include "tsxmlText.h"
 #include "tsxmlParser.h"
-#include "tsxmlOutput.h"
+#include "tsTextFormatter.h"
 #include "tsFatal.h"
 TSDUCK_SOURCE;
 
@@ -514,7 +514,7 @@ void ts::xml::Element::getAttributesNamesInModificationOrder(UStringList& names)
 // Print the node.
 //----------------------------------------------------------------------------
 
-void ts::xml::Element::print(Output& output, bool keepNodeOpen) const
+void ts::xml::Element::print(TextFormatter& output, bool keepNodeOpen) const
 {
     // Output element name.
     output.stream() << "<" << name();
@@ -584,7 +584,7 @@ void ts::xml::Element::print(Output& output, bool keepNodeOpen) const
 // Print the closing tags for a node.
 //----------------------------------------------------------------------------
 
-void ts::xml::Element::printClose(Output& output, size_t levels) const
+void ts::xml::Element::printClose(TextFormatter& output, size_t levels) const
 {
     for (const Element* elem = this; levels-- > 0 && elem != 0; elem = dynamic_cast<const Element*>(elem->parent())) {
         output.popIndent();

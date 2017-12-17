@@ -54,12 +54,14 @@ namespace ts {
             //! Constructor.
             //! @param [in,out] parent The parent node into which the comment is added.
             //! @param [in] text Content of the comment.
+            //! @param [in] last If true, the child is added at the end of the list of children.
+            //! If false, it is added at the beginning.
             //!
-            Comment(Node* parent, const UString& text);
+            Comment(Node* parent, const UString& text, bool last = true);
 
             // Inherited from xml::Node.
             virtual UString typeName() const override { return u"Comment"; }
-            virtual void print(Output& output, bool keepNodeOpen = false) const override;
+            virtual void print(TextFormatter& output, bool keepNodeOpen = false) const override;
 
         protected:
             // Inherited from xml::Node.

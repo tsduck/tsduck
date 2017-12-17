@@ -35,6 +35,7 @@
 #include "tsVariable.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
+#include "tsxmlElement.h"
 #include "tsXMLTables.h"
 TSDUCK_SOURCE;
 

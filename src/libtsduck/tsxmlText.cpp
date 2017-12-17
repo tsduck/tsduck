@@ -30,7 +30,7 @@
 #include "tsxmlText.h"
 #include "tsxmlElement.h"
 #include "tsxmlParser.h"
-#include "tsxmlOutput.h"
+#include "tsTextFormatter.h"
 #include "tsFatal.h"
 TSDUCK_SOURCE;
 
@@ -56,7 +56,7 @@ ts::xml::Text::Text(Element* parent, const UString& text, bool cdata) :
 // Print the node.
 //----------------------------------------------------------------------------
 
-void ts::xml::Text::print(Output& output, bool keepNodeOpen) const
+void ts::xml::Text::print(TextFormatter& output, bool keepNodeOpen) const
 {
     if (_isCData) {
         output.stream() << "<![CDATA[" << _value << "]]>";

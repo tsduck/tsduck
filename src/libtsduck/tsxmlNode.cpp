@@ -32,7 +32,7 @@
 #include "tsxmlDocument.h"
 #include "tsxmlDeclaration.h"
 #include "tsxmlElement.h"
-#include "tsxmlOutput.h"
+#include "tsTextFormatter.h"
 #include "tsNullReport.h"
 TSDUCK_SOURCE;
 
@@ -51,11 +51,11 @@ ts::xml::Node::Node(Report& report, size_t line) :
 {
 }
 
-ts::xml::Node::Node(Node* parent, const UString& value) :
+ts::xml::Node::Node(Node* parent, const UString& value, bool last) :
     Node(parent == 0 ? *static_cast<Report*>(&NULLREP) : parent->_report, 0)
 {
     setValue(value);
-    reparent(parent);
+    reparent(parent, last);
 }
 
 

@@ -35,6 +35,7 @@
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
+#include "tsxmlElement.h"
 TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"supplementary_audio_descriptor"

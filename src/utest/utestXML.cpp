@@ -33,7 +33,7 @@
 
 #include "tsxmlDocument.h"
 #include "tsxmlElement.h"
-#include "tsxmlOutput.h"
+#include "tsTextFormatter.h"
 #include "tsCerrReport.h"
 #include "tsReportBuffer.h"
 #include "tsSysUtils.h"
@@ -314,7 +314,7 @@ void XMLTest::testCreation()
         u"</theRoot>\n",
         doc.toString(2));
 
-    ts::xml::Output out(report());
+    ts::TextFormatter out(report());
     out.setCompact(true);
     out.setString();
     doc.print(out);
@@ -357,7 +357,7 @@ void XMLTest::testKeepOpen()
     CPPUNIT_ASSERT(node2 != 0);
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"node2", node2->name());
 
-    ts::xml::Output out(report());
+    ts::TextFormatter out(report());
     node2->print(out.setString());
     CPPUNIT_ASSERT_USTRINGS_EQUAL(
         u"<node2>\n"

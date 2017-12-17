@@ -33,9 +33,15 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsxmlElement.h"
+#include "tsByteBlock.h"
 
 namespace ts {
+
+    // Avoid dependency on XML header files.
+    namespace xml {
+        class Element;
+    }
+
     //!
     //! Abstract base class for MPEG PSI/SI tables and descriptors.
     //!

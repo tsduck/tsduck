@@ -35,6 +35,7 @@
 #include "tsHDSimulcastLogicalChannelDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
+#include "tsxmlElement.h"
 TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"HD_simulcast_logical_channel_descriptor"

@@ -251,6 +251,7 @@
 #include "tsTeletextDescriptor.h"
 #include "tsTelnetConnection.h"
 #include "tsTerrestrialDeliverySystemDescriptor.h"
+#include "tsTextFormatter.h"
 #include "tsThread.h"
 #include "tsThreadAttributes.h"
 #include "tsTime.h"
@@ -292,7 +293,6 @@
 #include "tsxmlDocument.h"
 #include "tsxmlElement.h"
 #include "tsxmlNode.h"
-#include "tsxmlOutput.h"
 #include "tsxmlText.h"
 #include "tsxmlUnknown.h"
 
