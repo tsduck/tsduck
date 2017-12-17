@@ -58,7 +58,7 @@ ts::xml::Declaration::Declaration(Document* parent, const UString& value) :
 
 void ts::xml::Declaration::print(TextFormatter& output, bool keepNodeOpen) const
 {
-    output.stream() << "<?" << _value << "?>";
+    output << "<?" << _value << "?>";
 }
 
 

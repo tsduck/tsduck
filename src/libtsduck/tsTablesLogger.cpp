@@ -218,9 +218,9 @@ void ts::TablesLogger::handleTable(SectionDemux&, const BinaryTable& table)
                              false); // first position
             // Print the new table.
             if (_xmlOpen) {
-                _xmlOut.margin();
+                _xmlOut << ts::margin;
                 elem->print(_xmlOut, false);
-                _xmlOut.newLine();
+                _xmlOut << std::endl;
             }
             else {
                 // If this is the first table, print the document header with it.

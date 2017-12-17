@@ -54,7 +54,7 @@ ts::xml::Unknown::Unknown(Node* parent, const UString& text) :
 
 void ts::xml::Unknown::print(TextFormatter& output, bool keepNodeOpen) const
 {
-    output.stream() << "<!" << _value.toHTML(u"<>") << ">";
+    output << "<!" << _value.toHTML(u"<>") << ">";
 }
 
 

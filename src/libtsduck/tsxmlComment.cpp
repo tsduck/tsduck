@@ -54,7 +54,7 @@ ts::xml::Comment::Comment(Node* parent, const UString& text, bool last) :
 
 void ts::xml::Comment::print(TextFormatter& output, bool keepNodeOpen) const
 {
-    output.stream() << "<!--" << _value << "-->";
+    output << "<!--" << _value << "-->";
 }
 
 

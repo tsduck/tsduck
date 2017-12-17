@@ -517,7 +517,7 @@ void ts::xml::Element::getAttributesNamesInModificationOrder(UStringList& names)
 void ts::xml::Element::print(TextFormatter& output, bool keepNodeOpen) const
 {
     // Output element name.
-    output.stream() << "<" << name();
+    output << "<" << name();
 
     // Get all attributes names, by modification order.
     UStringList names;
@@ -526,33 +526,33 @@ void ts::xml::Element::print(TextFormatter& output, bool keepNodeOpen) const
     // Loop on all attributes.
     for (UStringList::const_iterator it = names.begin(); it != names.end(); ++it) {
         const Attribute& attr(attribute(*it));
-        output.stream() << " " << attr.name() << "=";
+        output << " " << attr.name() << "=";
 
         // Check if attribute value contains simple or double quotes.
         // Use double quote if not present, simple quote otherwise.
         const char quote = attr.value().find(u'"') == UString::NPOS ? '"' : '\'';
-        output.stream() << quote;
+        output << quote;
         if (attr.value().find(quote) == UString::NPOS) {
             // The selected quote is not present, add the raw value.
-            output.stream() << attr.value();
+            output << attr.value();
         }
         else {
             // If both quotes are present, translate those in the value as HTML entities.
-            output.stream() << attr.value().toHTML(UString(1, quote));
+            output << attr.value().toHTML(UString(1, quote));
         }
-        output.stream() << quote;
+        output << quote;
     }
 
     // Close the tag and return if nothing else to output.
     if (!hasChildren() && !keepNodeOpen) {
-        output.stream() << "/>";
+        output << "/>";
         return;
     }
 
     // Keep the tag open for children.
-    output.stream() << ">";
+    output << ">";
 
-    output.pushIndent();
+    output << ts::indent;
     bool sticky = false;
 
     // Display list of children.
@@ -560,22 +560,21 @@ void ts::xml::Element::print(TextFormatter& output, bool keepNodeOpen) const
         const bool previousSticky = sticky;
         sticky = node->stickyOutput();
         if (!previousSticky && !sticky) {
-            output.newLine();
-            output.margin();
+            output << std::endl << ts::margin;
         }
         node->print(output, false);
     }
 
     // Close the element if required.
     if (!sticky || keepNodeOpen) {
-        output.newLine();
+        output << std::endl;
     }
     if (!keepNodeOpen) {
-        output.popIndent();
+        output << ts::unindent;
         if (!sticky) {
-            output.margin();
+            output << ts::margin;
         }
-        output.stream() << "</" << name() << ">";
+        output << "</" << name() << ">";
     }
 }
 
@@ -587,9 +586,7 @@ void ts::xml::Element::print(TextFormatter& output, bool keepNodeOpen) const
 void ts::xml::Element::printClose(TextFormatter& output, size_t levels) const
 {
     for (const Element* elem = this; levels-- > 0 && elem != 0; elem = dynamic_cast<const Element*>(elem->parent())) {
-        output.popIndent();
-        output.margin() << "</" << elem->name() << ">";
-        output.newLine();
+        output << ts::unindent << ts::margin << "</" << elem->name() << ">" << std::endl;
     }
 }
 
