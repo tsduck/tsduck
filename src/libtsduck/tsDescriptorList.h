@@ -282,6 +282,44 @@ namespace ts {
         //!
         size_t lengthSerialize(uint8_t*& addr, size_t& size, size_t start = 0) const;
 
+        //!
+        //! This method converts a descriptor list to XML.
+        //! @param [in,out] parent The parent node for the XML descriptors.
+        //! @param [in] charset If not zero, default character set to use.
+        //! @return True on success, false on error.
+        //!
+        bool toXML(xml::Element* parent, const DVBCharset* charset = 0) const;
+
+        //!
+        //! This method decodes an XML list of descriptors.
+        //! @param [out] others Returned list of non-descriptor XML elements.
+        //! All these elements are not null and their names are in @a allowedOthers.
+        //! @param [in] parent The XML element containing all descriptors.
+        //! @param [in] allowedOthers A list of allowed element names inside @a parent which are not descriptors.
+        //! @param [in] charset If not zero, character set to use without explicit table code.
+        //! @return True on success, false on error.
+        //!
+        bool fromXML(xml::ElementVector& others, const xml::Element* parent, const UStringList& allowedOthers, const DVBCharset* charset = 0);
+
+        //!
+        //! This method decodes an XML list of descriptors.
+        //! @param [out] others Returned list of non-descriptor XML elements.
+        //! All these elements are not null and their names are in @a allowedOthers.
+        //! @param [in] parent The XML element containing all descriptors.
+        //! @param [in] allowedOthers A comma-separated list of allowed element names inside @a parent which are not descriptors.
+        //! @param [in] charset If not zero, character set to use without explicit table code.
+        //! @return True on success, false on error.
+        //!
+        bool fromXML(xml::ElementVector& others, const xml::Element* parent, const UString& allowedOthers, const DVBCharset* charset = 0);
+
+        //!
+        //! This method decodes an XML list of descriptors.
+        //! @param [in] parent The XML element containing all descriptors.
+        //! All children must be valid descriptors.
+        //! @return True on success, false on error.
+        //!
+        bool fromXML(const xml::Element* parent);
+
     private:
         // Each entry contains a descriptor and its corresponding private data specifier.
         struct Element

@@ -430,7 +430,7 @@ void ts::EIT::buildXML(xml::Element* root) const
         e->setTimeAttribute(u"duration", it->second.duration);
         e->setEnumAttribute(RST::RunningStatusNames, u"running_status", it->second.running_status);
         e->setBoolAttribute(u"CA_mode", it->second.CA_controlled);
-        XMLTables::ToXML(e, it->second.descs);
+        it->second.descs.toXML(e);
     }
 }
 
@@ -485,7 +485,7 @@ void ts::EIT::fromXML(const xml::Element* element)
             children[i]->getTimeAttribute(event.duration, u"duration", true) &&
             children[i]->getIntEnumAttribute<uint8_t>(event.running_status, RST::RunningStatusNames, u"running_status", false, 0) &&
             children[i]->getBoolAttribute(event.CA_controlled, u"CA_mode", false, false) &&
-            XMLTables::FromDescriptorListXML(event.descs, children[i]);
+            event.descs.fromXML(children[i]);
         if (_is_valid) {
             events[event_id] = event;
         }

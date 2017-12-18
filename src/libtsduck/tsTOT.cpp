@@ -328,7 +328,7 @@ void ts::TOT::buildXML(xml::Element* root) const
     }
 
     // Add other descriptors.
-    XMLTables::ToXML(root, descs);
+    descs.toXML(root);
 }
 
 
@@ -346,7 +346,7 @@ void ts::TOT::fromXML(const xml::Element* element)
     _is_valid =
         checkXMLName(element) &&
         element->getDateTimeAttribute(utc_time, u"UTC_time", true) &&
-        XMLTables::FromDescriptorListXML(orig, element);
+        orig.fromXML(element);
 
     // Then, split local_time_offset_descriptor and others.
     addDescriptors(orig);

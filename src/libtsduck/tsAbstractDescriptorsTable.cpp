@@ -166,7 +166,7 @@ void ts::AbstractDescriptorsTable::buildXML(xml::Element* root) const
 {
     root->setIntAttribute(u"version", version);
     root->setBoolAttribute(u"current", is_current);
-    XMLTables::ToXML(root, descs);
+    descs.toXML(root);
 }
 
 
@@ -181,5 +181,5 @@ void ts::AbstractDescriptorsTable::fromXML(const xml::Element* element)
         checkXMLName(element) &&
         element->getIntAttribute<uint8_t>(version, u"version", false, 0, 0, 31) &&
         element->getBoolAttribute(is_current, u"current", false, true) &&
-        XMLTables::FromDescriptorListXML(descs, element);
+        descs.fromXML(element);
 }

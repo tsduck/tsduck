@@ -209,7 +209,7 @@ void ts::TablesLogger::handleTable(SectionDemux&, const BinaryTable& table)
 
     if (_opt.use_xml) {
         // Convert the table into an XML structure.
-        xml::Element* elem = XMLTables::ToXML(_xmlDoc.rootElement(), table, _display.dvbCharset());
+        xml::Element* elem = table.toXML(_xmlDoc.rootElement(), false, _display.dvbCharset());
         if (elem != 0) {
             // Add an XML comment as first child of the table.
             new xml::Comment(elem,

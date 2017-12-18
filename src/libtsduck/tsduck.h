@@ -288,6 +288,7 @@
 #include "tstlvProtocol.h"
 #include "tstlvSerializer.h"
 #include "tstlvStreamMessage.h"
+#include "tsxml.h"
 #include "tsxmlAttribute.h"
 #include "tsxmlComment.h"
 #include "tsxmlDeclaration.h"

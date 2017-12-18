@@ -34,14 +34,22 @@
 
 #pragma once
 #include "tsByteBlock.h"
+#include "tsxml.h"
+
+//!
+//! XML tag name for generic descriptors.
+//!
+#define TS_XML_GENERIC_DESCRIPTOR u"generic_descriptor"
+//!
+//! XML tag name for generic short sections.
+//!
+#define TS_XML_GENERIC_SHORT_TABLE u"generic_short_table"
+//!
+//! XML tag name for generic tables with long sections.
+//!
+#define TS_XML_GENERIC_LONG_TABLE u"generic_long_table"
 
 namespace ts {
-
-    // Avoid dependency on XML header files.
-    namespace xml {
-        class Element;
-    }
-
     //!
     //! Abstract base class for MPEG PSI/SI tables and descriptors.
     //!

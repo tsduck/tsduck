@@ -37,6 +37,7 @@
 #include "tsUString.h"
 #include "tsTablesPtr.h"
 #include "tsTLVSyntax.h"
+#include "tsxml.h"
 
 namespace ts {
     //!
@@ -311,6 +312,26 @@ namespace ts {
         //! @return True on success, false on error.
         //!
         static bool SaveFile(const BinaryTablePtrVector& tables, const UString& file_name, Report& report = CERR);
+
+        //!
+        //! This method converts the table to XML.
+        //! If the table has a specialized implementation, generate a specialized XML structure.
+        //! Otherwise, generate a \<generic_short_table> or \<generic_long_table> node.
+        //! @param [in,out] parent The parent node for the XML representation.
+        //! @param [in] forceGeneric Force a generic table node even if the table can be specialized.
+        //! @param [in] charset If not zero, default character set to use.
+        //! @return The new XML element or zero if the table is not valid.
+        //!
+        xml::Element* toXML(xml::Element* parent, bool forceGeneric = false, const DVBCharset* charset = 0) const;
+
+        //!
+        //! This method converts an XML node as a binary table.
+        //! @param [in] node The root of the XML descriptor.
+        //! @param [in] charset If not zero, default character set to use.
+        //! @return True if the XML element name is a valid table name, false otherwise.
+        //! If the name is valid but the content is incorrect, true is returned and this object is invalidated.
+        //!
+        bool fromXML(const xml::Element* node, const DVBCharset* charset = 0);
 
     private:
         BinaryTable(const BinaryTable& table) = delete;
