@@ -38,6 +38,7 @@
 #include "tsTablesPtr.h"
 #include "tsMPEG.h"
 #include "tsEDID.h"
+#include "tsxml.h"
 
 namespace ts {
     //!
@@ -244,6 +245,27 @@ namespace ts {
         {
             return !(*this == desc);
         }
+
+        //!
+        //! This method converts a descriptor to XML.
+        //! If the descriptor has a specialized implementation, generate a specialized
+        //! XML structure. Otherwise, generate a \<generic_descriptor> node.
+        //! @param [in,out] parent The parent node for the XML descriptor.
+        //! @param [in] pds Associated private data specifier.
+        //! @param [in] forceGeneric Force a \<generic_descriptor> node even if the descriptor can be specialized.
+        //! @param [in] charset If not zero, default character set to use.
+        //! @return The new XML element or zero if the descriptor is not valid.
+        //!
+        xml::Element* toXML(xml::Element* parent, PDS pds = 0, bool forceGeneric = false, const DVBCharset* charset = 0) const;
+
+        //!
+        //! This method converts an XML node as a binary descriptor.
+        //! @param [in] node The root of the XML descriptor.
+        //! @param [in] charset If not zero, default character set to use.
+        //! @return True if the XML element name is a valid descriptor name, false otherwise.
+        //! If the name is valid but the content is incorrect, true is returned and this object is invalidated.
+        //!
+        bool fromXML(const xml::Element* node, const DVBCharset* charset = 0);
 
     private:
         Descriptor(const Descriptor&) = delete;

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ImportGroup Label="PropertySheets">
     <Import Project="msvc-common-begin.props" />
@@ -287,6 +287,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsVersionInfo.h" />
     <ClInclude Include="..\..\src\libtsduck\tsViaccessDate.h" />
     <ClInclude Include="..\..\src\libtsduck\tsVideoAttributes.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsxml.h" />
     <ClInclude Include="..\..\src\libtsduck\tsxmlAttribute.h" />
     <ClInclude Include="..\..\src\libtsduck\tsxmlElementTemplate.h" />
     <ClInclude Include="..\..\src\libtsduck\tsxmlComment.h" />

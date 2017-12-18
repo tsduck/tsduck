@@ -291,13 +291,14 @@ HEADERS += \
     ../../../src/libtsduck/tstlvProtocol.h \
     ../../../src/libtsduck/tstlvSerializer.h \
     ../../../src/libtsduck/tstlvStreamMessage.h \
-    ../../../src/libtsduck/tsxmlNode.h \
+    ../../../src/libtsduck/tsxml.h \
     ../../../src/libtsduck/tsxmlAttribute.h \
     ../../../src/libtsduck/tsxmlComment.h \
     ../../../src/libtsduck/tsxmlDeclaration.h \
     ../../../src/libtsduck/tsxmlDocument.h \
     ../../../src/libtsduck/tsxmlElement.h \
     ../../../src/libtsduck/tsxmlElementTemplate.h \
+    ../../../src/libtsduck/tsxmlNode.h \
     ../../../src/libtsduck/tsxmlText.h \
     ../../../src/libtsduck/tsxmlUnknown.h
 

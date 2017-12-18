@@ -34,6 +34,7 @@
 #include "tsDescriptorList.h"
 #include "tsAbstractDescriptor.h"
 #include "tsPrivateDataSpecifierDescriptor.h"
+#include "tsxmlElement.h"
 TSDUCK_SOURCE;
 
 
@@ -401,4 +402,76 @@ size_t ts::DescriptorList::searchSubtitle(const UString& language, size_t start_
     }
 
     return not_found;
+}
+
+
+//----------------------------------------------------------------------------
+// This method converts a descriptor list to XML.
+//----------------------------------------------------------------------------
+
+bool ts::DescriptorList::toXML(xml::Element* parent, const DVBCharset* charset) const
+{
+    bool success = true;
+    for (size_t index = 0; index < _list.size(); ++index) {
+        if (_list[index].desc.isNull() || _list[index].desc->toXML(parent, _list[index].pds, false, charset) == 0) {
+            success = false;
+        }
+    }
+    return success;
+}
+
+
+//----------------------------------------------------------------------------
+// These methods decode an XML list of descriptors.
+//----------------------------------------------------------------------------
+
+bool ts::DescriptorList::fromXML(xml::ElementVector& others, const xml::Element* parent, const UString& allowedOthers, const DVBCharset* charset)
+{
+    UStringList allowed;
+    allowedOthers.split(allowed);
+    return fromXML(others, parent, allowed, charset);
+}
+
+bool ts::DescriptorList::fromXML(const xml::Element* parent)
+{
+    xml::ElementVector others;
+    return fromXML(others, parent, UStringList());
+}
+
+bool ts::DescriptorList::fromXML(xml::ElementVector& others, const xml::Element* parent, const UStringList& allowedOthers, const DVBCharset* charset)
+{
+    bool success = true;
+    clear();
+    others.clear();
+
+    // Analyze all children nodes.
+    for (const xml::Element* node = parent == 0 ? 0 : parent->firstChildElement(); node != 0; node = node->nextSiblingElement()) {
+
+        DescriptorPtr bin = new Descriptor;
+        CheckNonNull(bin.pointer());
+
+        // Try to analyze the XML element.
+        if (bin->fromXML(node, charset)) {
+            // The XML tag is a valid descriptor name.
+            if (bin->isValid()) {
+                add(bin);
+            }
+            else {
+                // The XML name is correct but the XML structure failed to produce a valid descriptor.
+                parent->report().error(u"Error in descriptor <%s> at line %d", {node->name(), node->lineNumber()});
+                success = false;
+            }
+        }
+        else {
+            // The tag is not a descriptor name, check if this is one of the allowed node.
+            if (node->name().containSimilar(allowedOthers)) {
+                others.push_back(node);
+            }
+            else {
+                parent->report().error(u"Illegal <%s> at line %d", {node->name(), node->lineNumber()});
+                success = false;
+            }
+        }
+    }
+    return success;
 }

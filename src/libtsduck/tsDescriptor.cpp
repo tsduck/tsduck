@@ -33,6 +33,9 @@
 
 #include "tsDescriptor.h"
 #include "tsMemoryUtils.h"
+#include "tsAbstractDescriptor.h"
+#include "tsTablesFactory.h"
+#include "tsxmlElement.h"
 TSDUCK_SOURCE;
 
 
@@ -189,4 +192,102 @@ bool ts::Descriptor::operator== (const Descriptor& desc) const
     return _data == desc._data ||
         (_data.isNull() && desc._data.isNull()) ||
         (!_data.isNull() && !desc._data.isNull() && *_data == *desc._data);
+}
+
+
+//----------------------------------------------------------------------------
+// This method converts a descriptor to XML.
+//----------------------------------------------------------------------------
+
+ts::xml::Element* ts::Descriptor::toXML(xml::Element* parent, PDS pds, bool forceGeneric, const DVBCharset* charset) const
+{
+    // Filter invalid descriptors.
+    if (!isValid()) {
+        return 0;
+    }
+
+    // The XML node we will generate.
+    xml::Element* node = 0;
+
+    // Try to generate a specialized XML structure.
+    if (!forceGeneric) {
+        // Do we know how to deserialize this descriptor?
+        TablesFactory::DescriptorFactory fac = TablesFactory::Instance()->getDescriptorFactory(edid(pds));
+        if (fac != 0) {
+            // We know how to deserialize it.
+            AbstractDescriptorPtr dp = fac();
+            if (!dp.isNull()) {
+                // Deserialize from binary to object.
+                dp->deserialize(*this, charset);
+                if (dp->isValid()) {
+                    // Serialize from object to XML.
+                    node = dp->toXML(parent);
+                }
+            }
+        }
+    }
+
+    // If we could not generate a typed node, generate a generic one.
+    if (node == 0) {
+        // Create the XML node.
+        node = parent->addElement(TS_XML_GENERIC_DESCRIPTOR);
+        node->setIntAttribute(u"tag", tag(), true);
+        node->addHexaText(payload(), payloadSize());
+    }
+
+    return node;
+}
+
+
+//----------------------------------------------------------------------------
+// This method converts an XML node as a binary descriptor.
+//----------------------------------------------------------------------------
+
+bool ts::Descriptor::fromXML(const xml::Element* node, const DVBCharset* charset)
+{
+    // Filter invalid parameters.
+    invalidate();
+    if (node == 0) {
+        // Not a valid XML name (not even an XML element).
+        return false;
+    }
+
+    // Try to get the descriptor factory for that kind of XML tag.
+    const TablesFactory::DescriptorFactory fac = TablesFactory::Instance()->getDescriptorFactory(node->name());
+    if (fac != 0) {
+        // Create a descriptor instance of the right type.
+        AbstractDescriptorPtr desc = fac();
+        if (!desc.isNull()) {
+            desc->fromXML(node);
+        }
+        if (!desc.isNull() && desc->isValid()) {
+            // Serialize the descriptor.
+            desc->serialize(*this, charset);
+        }
+        // The XML element name was valid.
+        return true;
+    }
+
+    // Try to decode a generic descriptor.
+    if (node->name().similar(TS_XML_GENERIC_DESCRIPTOR)) {
+        DID tag = 0xFF;
+        ByteBlock payload;
+        if (node->getIntAttribute<DID>(tag, u"tag", true, 0xFF, 0x00, 0xFF) &&
+            node->getHexaText(payload, 0, 255))
+        {
+            // Build descriptor.
+            _data = new ByteBlock(2);
+            (*_data)[0] = tag;
+            (*_data)[1] = uint8_t(payload.size());
+            _data->append(payload);
+        }
+        else {
+            node->report().error(u"<%s>, line %d, is not a valid descriptor", {node->name(), node->lineNumber()});
+        }
+        // The XML element name was valid.
+        return true;
+    }
+
+    // The XML element name was not valid.
+    return false;
 }

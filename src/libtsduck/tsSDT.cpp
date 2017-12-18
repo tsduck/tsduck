@@ -491,7 +491,7 @@ void ts::SDT::buildXML(xml::Element* root) const
         e->setBoolAttribute(u"EIT_present_following", it->second.EITpf_present);
         e->setBoolAttribute(u"CA_mode", it->second.CA_controlled);
         e->setEnumAttribute(RST::RunningStatusNames, u"running_status", it->second.running_status);
-        XMLTables::ToXML(e, it->second.descs);
+        it->second.descs.toXML(e);
     }
 }
 
@@ -528,7 +528,7 @@ void ts::SDT::fromXML(const xml::Element* element)
             children[index]->getBoolAttribute(srv.EITpf_present, u"EIT_present_following", false, false) &&
             children[index]->getBoolAttribute(srv.CA_controlled, u"CA_mode", false, false) &&
             children[index]->getEnumAttribute(rs, RST::RunningStatusNames, u"running_status", false, 0) &&
-            XMLTables::FromDescriptorListXML(srv.descs, children[index]);
+            srv.descs.fromXML(children[index]);
         if (_is_valid) {
             srv.running_status = uint8_t(rs);
             services[id] = srv;

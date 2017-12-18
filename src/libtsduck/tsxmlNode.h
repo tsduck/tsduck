@@ -38,42 +38,10 @@
 #include "tsReportWithPrefix.h"
 #include "tsTextFormatter.h"
 #include "tsTextParser.h"
+#include "tsxml.h"
 
 namespace ts {
-    //!
-    //! Namespace for XML classes.
-    //!
-    //! The XML features of TSDuck are freely inspired from TinyXML-2, a simple
-    //! and lightweight XML library originally developed by Lee Thomason.
-    //!
-    //! TSDuck used to embed TinyXML-2 in the past but no longer does to allow
-    //! more specialized operations. This set of classes is probably less fast
-    //! than TinyXML-2 but TSDuck does not manipulate huge XML files. So, this
-    //! should be OK.
-    //!
-    //! Among the differences between TinyXML-2 and this set of classes:
-    //! - Uses Unicode strings from the beginning.
-    //! - Error reporting using ts::Report.
-    //! - Case-insensitive search of names and attributes.
-    //! - Getting values and attributes with cardinality and value bounds checks.
-    //! - Print / format any subset of a document.
-    //! - XML document validation using a template.
-    //!
     namespace xml {
-
-        class Document;
-        class Element;
-
-        //!
-        //! Vector of constant elements.
-        //!
-        typedef std::vector<const Element*> ElementVector;
-
-        //!
-        //! Specify an unlimited number of elements.
-        //!
-        static const size_t UNLIMITED = std::numeric_limits<size_t>::max();
-
         //!
         //! Base class for all XML objects.
         //!
