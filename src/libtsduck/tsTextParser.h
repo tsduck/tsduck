@@ -65,6 +65,11 @@ namespace ts {
         TextParser(const UString& text, Report& report);
 
         //!
+        //! Destructor.
+        //!
+        virtual ~TextParser() {}
+
+        //!
         //! Clear the document in the parser.
         //!
         virtual void clear();
