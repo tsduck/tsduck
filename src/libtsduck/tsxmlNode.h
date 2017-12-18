@@ -37,6 +37,7 @@
 #include "tsNullReport.h"
 #include "tsReportWithPrefix.h"
 #include "tsTextFormatter.h"
+#include "tsTextParser.h"
 
 namespace ts {
     //!
@@ -62,7 +63,6 @@ namespace ts {
 
         class Document;
         class Element;
-        class Parser;
 
         //!
         //! Vector of constant elements.
@@ -314,6 +314,16 @@ namespace ts {
             explicit Node(Node* parent, const UString& value = UString(), bool last = true);
 
             //!
+            //! Identify the next token in the document.
+            //! @param [in,out] parser The document parser.
+            //! @return A new node or zero either at end of document or before a "</" sequence.
+            //! The returned node, when not zero, is not yet linked to its parent and siblings.
+            //! When the returned node is not zero, the parser is located after the tag which
+            //! identified the node ("<?", "<!--", etc.)
+            //!
+            Node* identifyNextNode(TextParser& parser);
+
+            //!
             //! Parse the node.
             //! @param [in,out] parser The document parser. On input, the current position of the
             //! parser after the tag which identified the node ("<?", "<!--", etc.) On output, it
@@ -321,7 +331,7 @@ namespace ts {
             //! @param [in] parent Candidate parent node, for information only, do not modify. Can be null.
             //! @return True on success, false on error.
             //!
-            virtual bool parseNode(Parser& parser, const Node* parent) = 0;
+            virtual bool parseNode(TextParser& parser, const Node* parent) = 0;
 
             //!
             //! Parse children nodes and add them to the node.
@@ -329,7 +339,7 @@ namespace ts {
             //! @param [in,out] parser The document parser.
             //! @return True on success, false on error.
             //!
-            virtual bool parseChildren(Parser& parser);
+            virtual bool parseChildren(TextParser& parser);
 
             mutable ReportWithPrefix _report;       //!< Where to report errors.
             UString                  _value;        //!< Value of the node, depend on the node type.

@@ -28,10 +28,12 @@
 //----------------------------------------------------------------------------
 
 #include "tsxmlNode.h"
-#include "tsxmlParser.h"
-#include "tsxmlDocument.h"
+#include "tsxmlComment.h"
 #include "tsxmlDeclaration.h"
+#include "tsxmlDocument.h"
 #include "tsxmlElement.h"
+#include "tsxmlText.h"
+#include "tsxmlUnknown.h"
 #include "tsTextFormatter.h"
 #include "tsNullReport.h"
 TSDUCK_SOURCE;
@@ -218,14 +220,14 @@ ts::xml::Element* ts::xml::Node::firstChildElement()
 // Parse children nodes and add them to the node.
 //----------------------------------------------------------------------------
 
-bool ts::xml::Node::parseChildren(Parser& parser)
+bool ts::xml::Node::parseChildren(TextParser& parser)
 {
     bool result = true;
     Node* node;
 
     // Loop on each token we find.
     // Exit loop either at end of document or before a "</" sequence.
-    while ((node = parser.identify()) != 0) {
+    while ((node = identifyNextNode(parser)) != 0) {
 
         // Read the complete node.
         if (node->parseNode(parser, this)) {
@@ -250,4 +252,46 @@ bool ts::xml::Node::parseChildren(Parser& parser)
 ts::UString ts::xml::Node::debug() const
 {
     return UString::Format(u"%s, line %d, children: %d, value '%s'", {typeName(), lineNumber(), childrenCount(), value()});
+}
+
+
+//----------------------------------------------------------------------------
+// Identify the next token in the document.
+//----------------------------------------------------------------------------
+
+ts::xml::Node* ts::xml::Node::identifyNextNode(TextParser& parser)
+{
+    // Save the current state in case we realize that the leading spaces are part of the token.
+    const TextParser::Position previous(parser.position());
+
+    // Skip all white spaces until next token.
+    parser.skipWhiteSpace();
+
+    // Stop at end of document or before "</".
+    if (parser.eof() || parser.match(u"</", false)) {
+        return 0;
+    }
+
+    // Check each expected token.
+    if (parser.match(u"<?", true)) {
+        return new Declaration(_report, parser.lineNumber());
+    }
+    else if (parser.match(u"<!--", true)) {
+        return new Comment(_report, parser.lineNumber());
+    }
+    else if (parser.match(u"<![CDATA[", true, CASE_INSENSITIVE)) {
+        return new Text(_report, parser.lineNumber(), true);
+    }
+    else if (parser.match(u"<!", true)) {
+        // Should be a DTD, we ignore it.
+        return new Unknown(_report, parser.lineNumber());
+    }
+    else if (parser.match(u"<", true)) {
+        return new Element(_report, parser.lineNumber());
+    }
+    else {
+        // This must be a text node. Revert skipped spaces, they are part of the text.
+        parser.seek(previous);
+        return new Text(_report, parser.lineNumber(), false);
+    }
 }

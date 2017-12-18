@@ -29,8 +29,6 @@
 
 #include "tsxmlText.h"
 #include "tsxmlElement.h"
-#include "tsxmlParser.h"
-#include "tsTextFormatter.h"
 #include "tsFatal.h"
 TSDUCK_SOURCE;
 
@@ -71,7 +69,7 @@ void ts::xml::Text::print(TextFormatter& output, bool keepNodeOpen) const
 // Parse the node.
 //----------------------------------------------------------------------------
 
-bool ts::xml::Text::parseNode(Parser& parser, const Node* parent)
+bool ts::xml::Text::parseNode(TextParser& parser, const Node* parent)
 {
     bool ok;
 

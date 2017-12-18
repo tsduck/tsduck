@@ -28,7 +28,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsxmlAttribute.h"
-#include "tsxmlParser.h"
 TSDUCK_SOURCE;
 
 // A constant static invalid instance.

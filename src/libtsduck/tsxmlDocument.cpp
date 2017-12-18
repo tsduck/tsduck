@@ -31,11 +31,8 @@
 #include "tsxmlElement.h"
 #include "tsxmlDeclaration.h"
 #include "tsxmlComment.h"
-#include "tsxmlParser.h"
-#include "tsTextFormatter.h"
 #include "tsSysUtils.h"
 #include "tsFatal.h"
-#include "tsReportWithPrefix.h"
 TSDUCK_SOURCE;
 
 
@@ -45,7 +42,7 @@ TSDUCK_SOURCE;
 
 bool ts::xml::Document::parse(const UStringList& lines)
 {
-    Parser parser(lines, _report);
+    TextParser parser(lines, _report);
     return parseNode(parser, 0);
 }
 
@@ -124,7 +121,7 @@ void ts::xml::Document::printClose(TextFormatter& output, size_t levels) const
 // Parse the node.
 //----------------------------------------------------------------------------
 
-bool ts::xml::Document::parseNode(Parser& parser, const Node* parent)
+bool ts::xml::Document::parseNode(TextParser& parser, const Node* parent)
 {
     // The document is a simple list of children.
     if (!parseChildren(parser)) {

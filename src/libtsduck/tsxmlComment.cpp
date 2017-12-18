@@ -28,8 +28,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsxmlComment.h"
-#include "tsxmlParser.h"
-#include "tsTextFormatter.h"
 TSDUCK_SOURCE;
 
 
@@ -62,7 +60,7 @@ void ts::xml::Comment::print(TextFormatter& output, bool keepNodeOpen) const
 // Parse the node.
 //----------------------------------------------------------------------------
 
-bool ts::xml::Comment::parseNode(Parser& parser, const Node* parent)
+bool ts::xml::Comment::parseNode(TextParser& parser, const Node* parent)
 {
     // The current point of parsing is right after "<!--".
     // The content of the comment is up (but not including) the "-->".

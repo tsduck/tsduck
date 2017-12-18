@@ -4,7 +4,6 @@
     <Import Project="msvc-common-begin.props" />
   </ImportGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\src\libtsduck\private\tsxmlParser.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAACDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAbortInterface.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAbstractAudioVideoAttributes.h" />
@@ -64,6 +63,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsT2MIDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsT2MIHandlerInterface.h" />
     <ClInclude Include="..\..\src\libtsduck\tsT2MIPacket.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsTextParser.h" />
     <ClInclude Include="..\..\src\libtsduck\tsUChar.h" />
     <ClInclude Include="..\..\src\libtsduck\tsCipherChaining.h" />
     <ClInclude Include="..\..\src\libtsduck\tsCOM.h" />
@@ -311,7 +311,6 @@
     <ClInclude Include="..\..\src\libtsduck\windows\tsSinkFilter.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\src\libtsduck\private\tsxmlParser.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAACDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAbstractAVCAccessUnit.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAbstractAVCStructure.cpp" />
@@ -358,6 +357,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsT2MIDemux.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsT2MIDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsT2MIPacket.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsTextParser.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsUChar.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsCipherChaining.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsCOM.cpp" />
