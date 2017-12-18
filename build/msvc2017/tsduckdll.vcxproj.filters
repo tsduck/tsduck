@@ -910,13 +910,13 @@
     <ClInclude Include="..\..\src\libtsduck\tsxmlUnknown.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\libtsduck\private\tsxmlParser.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\libtsduck\tsxmlElementTemplate.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\libtsduck\tsTextFormatter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\libtsduck\tsTextParser.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -1599,10 +1599,10 @@
     <ClCompile Include="..\..\src\libtsduck\tsxmlUnknown.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\libtsduck\private\tsxmlParser.cpp">
+    <ClCompile Include="..\..\src\libtsduck\tsTextFormatter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\libtsduck\tsTextFormatter.cpp">
+    <ClCompile Include="..\..\src\libtsduck\tsTextParser.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

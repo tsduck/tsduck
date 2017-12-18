@@ -29,8 +29,6 @@
 
 #include "tsxmlElement.h"
 #include "tsxmlText.h"
-#include "tsxmlParser.h"
-#include "tsTextFormatter.h"
 #include "tsFatal.h"
 TSDUCK_SOURCE;
 
@@ -595,7 +593,7 @@ void ts::xml::Element::printClose(TextFormatter& output, size_t levels) const
 // Parse the node.
 //----------------------------------------------------------------------------
 
-bool ts::xml::Element::parseNode(Parser& parser, const Node* parent)
+bool ts::xml::Element::parseNode(TextParser& parser, const Node* parent)
 {
     // We just read the "<". Skip spaces and read the tag name.
     parser.skipWhiteSpace();

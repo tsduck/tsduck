@@ -28,8 +28,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsxmlUnknown.h"
-#include "tsxmlParser.h"
-#include "tsTextFormatter.h"
 TSDUCK_SOURCE;
 
 
@@ -62,7 +60,7 @@ void ts::xml::Unknown::print(TextFormatter& output, bool keepNodeOpen) const
 // Parse the node.
 //----------------------------------------------------------------------------
 
-bool ts::xml::Unknown::parseNode(Parser& parser, const Node* parent)
+bool ts::xml::Unknown::parseNode(TextParser& parser, const Node* parent)
 {
     // The current point of parsing is right after "<!", probably a DTD we do not manage.
     // The content of the node is up (but not including) the ">".

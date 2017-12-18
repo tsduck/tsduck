@@ -68,7 +68,7 @@ namespace ts {
 
         protected:
             // Inherited from xml::Node.
-            virtual bool parseNode(Parser& parser, const Node* parent) override;
+            virtual bool parseNode(TextParser& parser, const Node* parent) override;
 
         private:
             // Unaccessible operations.

@@ -253,6 +253,8 @@ HEADERS += \
     ../../../src/libtsduck/tsTeletextDescriptor.h \
     ../../../src/libtsduck/tsTelnetConnection.h \
     ../../../src/libtsduck/tsTerrestrialDeliverySystemDescriptor.h \
+    ../../../src/libtsduck/tsTextFormatter.h \
+    ../../../src/libtsduck/tsTextParser.h \
     ../../../src/libtsduck/tsThread.h \
     ../../../src/libtsduck/tsThreadAttributes.h \
     ../../../src/libtsduck/tsTime.h \
@@ -296,10 +298,8 @@ HEADERS += \
     ../../../src/libtsduck/tsxmlDocument.h \
     ../../../src/libtsduck/tsxmlElement.h \
     ../../../src/libtsduck/tsxmlElementTemplate.h \
-    ../../../src/libtsduck/tsTextFormatter.h \
     ../../../src/libtsduck/tsxmlText.h \
-    ../../../src/libtsduck/tsxmlUnknown.h \
-    ../../../src/libtsduck/private/tsxmlParser.h
+    ../../../src/libtsduck/tsxmlUnknown.h
 
 SOURCES += \
     ../../../src/libtsduck/tsAACDescriptor.cpp \
@@ -487,6 +487,8 @@ SOURCES += \
     ../../../src/libtsduck/tsTeletextDescriptor.cpp \
     ../../../src/libtsduck/tsTelnetConnection.cpp \
     ../../../src/libtsduck/tsTerrestrialDeliverySystemDescriptor.cpp \
+    ../../../src/libtsduck/tsTextFormatter.cpp \
+    ../../../src/libtsduck/tsTextParser.cpp \
     ../../../src/libtsduck/tsThread.cpp \
     ../../../src/libtsduck/tsThreadAttributes.cpp \
     ../../../src/libtsduck/tsTime.cpp \
@@ -516,10 +518,8 @@ SOURCES += \
     ../../../src/libtsduck/tsxmlDeclaration.cpp \
     ../../../src/libtsduck/tsxmlDocument.cpp \
     ../../../src/libtsduck/tsxmlElement.cpp \
-    ../../../src/libtsduck/tsTextFormatter.cpp \
     ../../../src/libtsduck/tsxmlText.cpp \
-    ../../../src/libtsduck/tsxmlUnknown.cpp \
-    ../../../src/libtsduck/private/tsxmlParser.cpp
+    ../../../src/libtsduck/tsxmlUnknown.cpp
     
 linux {
     HEADERS += \

@@ -29,7 +29,6 @@
 
 #include "tsxmlDeclaration.h"
 #include "tsxmlDocument.h"
-#include "tsxmlParser.h"
 #include "tsTextFormatter.h"
 TSDUCK_SOURCE;
 
@@ -66,7 +65,7 @@ void ts::xml::Declaration::print(TextFormatter& output, bool keepNodeOpen) const
 // Parse the node.
 //----------------------------------------------------------------------------
 
-bool ts::xml::Declaration::parseNode(Parser& parser, const Node* parent)
+bool ts::xml::Declaration::parseNode(TextParser& parser, const Node* parent)
 {
     // The current point of parsing is right after "<?".
     // The content of the declaration is up (but not including) the "?>".
