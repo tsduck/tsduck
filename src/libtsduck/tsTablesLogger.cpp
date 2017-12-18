@@ -36,8 +36,8 @@
 #include "tstlv.h"
 #include "tsTime.h"
 #include "tsSimulCryptDate.h"
-#include "tsXMLTables.h"
 #include "tsxmlComment.h"
+#include "tsxmlElement.h"
 TSDUCK_SOURCE;
 
 

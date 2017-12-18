@@ -278,7 +278,7 @@ HEADERS += \
     ../../../src/libtsduck/tsVersionInfo.h \
     ../../../src/libtsduck/tsViaccessDate.h \
     ../../../src/libtsduck/tsVideoAttributes.h \
-    ../../../src/libtsduck/tsXMLTables.h \
+    ../../../src/libtsduck/tsSectionFile.h \
     ../../../src/libtsduck/tsduck.h \
     ../../../src/libtsduck/tstlv.h \
     ../../../src/libtsduck/tstlvAnalyzer.h \
@@ -508,7 +508,7 @@ SOURCES += \
     ../../../src/libtsduck/tsVBITeletextDescriptor.cpp \
     ../../../src/libtsduck/tsVersionInfo.cpp \
     ../../../src/libtsduck/tsVideoAttributes.cpp \
-    ../../../src/libtsduck/tsXMLTables.cpp \
+    ../../../src/libtsduck/tsSectionFile.cpp \
     ../../../src/libtsduck/tstlvAnalyzer.cpp \
     ../../../src/libtsduck/tstlvMessage.cpp \
     ../../../src/libtsduck/tstlvMessageFactory.cpp \

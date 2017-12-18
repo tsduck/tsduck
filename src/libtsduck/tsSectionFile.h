@@ -28,7 +28,7 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  XML files containing PSI/SI tables.
+//!  Binary or XML files containing PSI/SI sections and tables.
 //!
 //----------------------------------------------------------------------------
 
@@ -40,17 +40,92 @@
 #include "tsDVBCharset.h"
 #include "tsTablesPtr.h"
 
+//!
+//! Default suffix of binary section file names.
+//!
+#define TS_DEFAULT_BINARY_SECTION_FILE_SUFFIX u".bin"
+//!
+//! Default suffix of XML section file names.
+//!
+#define TS_DEFAULT_XML_SECTION_FILE_SUFFIX u".xml"
+
 namespace ts {
     //!
-    //! An XML file containing PSI/SI tables.
+    //! A binary or XML file containing PSI/SI sections and tables.
     //!
-    class TSDUCKDLL XMLTables
+    //! A <i>section file</i> contains one or more sections. Short sections are
+    //! also tables. Long sections need to be grouped to form a table. When a
+    //! section file contains only complete valid tables, we also call it a
+    //! <i>table file</i>.
+    //!
+    //! When a section file is loaded, the application can indifferently access:
+    //!
+    //! - All sections in the file.
+    //! - All complete tables in the file.
+    //! - Sections which do not belong to a table (<i>orphan sections</i>).
+    //!
+    //! There are currently two storage formats for section files: binary and XML.
+    //! By default, file names ending in <code>.bin</code> are considered as binary files
+    //! while names ending in <code>.xml</code> are considered as XML files.
+    //! To manipulate other file formats, the application must specify the file type.
+    //!
+    //! ### Binary section file format
+    //!
+    //! A binary section file is simply the concatenation of complete sections,
+    //! header and payload, without any encapsulation. Sections must be read from
+    //! the beginning of the file. The @e length field in the section header shall
+    //! be used to locate the next section, immediately after the current section.
+    //!
+    //! Short sections are read and recognized as complete tables on their own.
+    //! To get a valid table with long sections, all sections forming this table
+    //! must be stored contiguously in the order of their section number.
+    //!
+    //! ### XML section file format
+    //!
+    //! The format of XML section files is documented in the TSDuck user's guide.
+    //! An informal template is given in file <code>tsduck.xml</code>. This file
+    //! is used to validate the content of XML section files.
+    //!
+    //! Sample XML section file:
+    //! @code
+    //! <?xml version="1.0" encoding="UTF-8"?>
+    //! <tsduck>
+    //!   <PAT version="8" current="true" transport_stream_id="0x0012" network_PID="0x0010">
+    //!     <service service_id="0x0001" program_map_PID="0x1234"/>
+    //!     <service service_id="0x0002" program_map_PID="0x0678"/>
+    //!   </PAT>
+    //! </tsduck>
+    //! @endcode
+    //!
+    //! Each XML node describes a complete table. As a consequence, an XML section
+    //! file contains complete tables only. There is no orphan section.
+    //!
+    class TSDUCKDLL SectionFile
     {
     public:
         //!
         //! Default constructor.
         //!
-        XMLTables();
+        SectionFile();
+
+        //!
+        //! Destructor.
+        //!
+        virtual ~SectionFile();
+
+        //!
+        //! Section file formats.
+        //!
+        enum FileType {
+            UNSPECIFIED,  //!< Unspecified, depends on file name extension.
+            BINARY,       //!< Binary section file.
+            XML,          //!< XML section file.
+        };
+
+        //!
+        //! Clear the list of loaded tables and sections.
+        //!
+        void clear();
 
         //!
         //! Load an XML file.
@@ -106,30 +181,16 @@ namespace ts {
         }
 
         //!
-        //! Clear the list of loaded tables.
-        //!
-        void clear()
-        {
-            _tables.clear();
-        }
-
-        //!
         //! Add a table in the file.
         //! @param [in] table The binary table to add.
         //!
-        void add(const BinaryTablePtr& table)
-        {
-            _tables.push_back(table);
-        }
+        void add(const BinaryTablePtr& table);
 
         //!
         //! Add several tables in the file.
         //! @param [in] tables The binary tables to add.
         //!
-        void add(const BinaryTablePtrVector& tables)
-        {
-            _tables.insert(_tables.end(), tables.begin(), tables.end());
-        }
+        void add(const BinaryTablePtrVector& tables);
 
         //!
         //! Add a table in the file.
@@ -140,7 +201,9 @@ namespace ts {
         void add(const AbstractTablePtr& table, const DVBCharset* charset = 0);
 
     private:
-        BinaryTablePtrVector _tables;   //!< Loaded tables.
+        BinaryTablePtrVector _tables;          //!< Loaded tables.
+        SectionPtrVector     _sections;        //!< All sections from the file.
+        SectionPtrVector     _orphanSections;  //!< Sections which do not belong to any table.
 
         //!
         //! Parse an XML document.
@@ -157,5 +220,11 @@ namespace ts {
         //! @return True on success, false on error.
         //!
         bool generateDocument(xml::Document& doc, const DVBCharset* charset) const;
+
+        //!
+        //! Check it a table can be formed using the last sections in _sections.
+        //! If the sections were present at end of _orphanSections, they are removed.
+        //!
+        void collectLastTable();
     };
 }

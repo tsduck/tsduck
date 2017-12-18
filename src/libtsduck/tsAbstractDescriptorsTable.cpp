@@ -34,7 +34,7 @@
 #include "tsAbstractDescriptorsTable.h"
 #include "tsBinaryTable.h"
 #include "tsTablesDisplay.h"
-#include "tsXMLTables.h"
+#include "tsxmlElement.h"
 TSDUCK_SOURCE;
 
 

@@ -799,7 +799,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsViaccessDate.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\libtsduck\tsXMLTables.h">
+    <ClInclude Include="..\..\src\libtsduck\tsSectionFile.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\libtsduck\tsTablesPtr.h">
@@ -1500,7 +1500,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsAbstractCASDate.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\libtsduck\tsXMLTables.cpp">
+    <ClCompile Include="..\..\src\libtsduck\tsSectionFile.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\libtsduck\tsCAT.cpp">

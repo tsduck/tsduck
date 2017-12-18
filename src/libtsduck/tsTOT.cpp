@@ -38,7 +38,6 @@
 #include "tsBinaryTable.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
-#include "tsXMLTables.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
 

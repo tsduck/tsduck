@@ -278,7 +278,7 @@
 #include "tsVersionInfo.h"
 #include "tsViaccessDate.h"
 #include "tsVideoAttributes.h"
-#include "tsXMLTables.h"
+#include "tsSectionFile.h"
 #include "tstlv.h"
 #include "tstlvAnalyzer.h"
 #include "tstlvChannelMessage.h"
