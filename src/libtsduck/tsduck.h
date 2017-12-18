@@ -252,6 +252,7 @@
 #include "tsTelnetConnection.h"
 #include "tsTerrestrialDeliverySystemDescriptor.h"
 #include "tsTextFormatter.h"
+#include "tsTextParser.h"
 #include "tsThread.h"
 #include "tsThreadAttributes.h"
 #include "tsTime.h"
