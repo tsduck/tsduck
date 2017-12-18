@@ -38,7 +38,6 @@
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 #include "tsxmlElement.h"
-#include "tsXMLTables.h"
 TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"SDT"

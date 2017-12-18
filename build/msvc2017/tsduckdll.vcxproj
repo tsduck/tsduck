@@ -296,7 +296,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsxmlElement.h" />
     <ClInclude Include="..\..\src\libtsduck\tsxmlNode.h" />
     <ClInclude Include="..\..\src\libtsduck\tsTextFormatter.h" />
-    <ClInclude Include="..\..\src\libtsduck\tsXMLTables.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsSectionFile.h" />
     <ClInclude Include="..\..\src\libtsduck\tsxmlText.h" />
     <ClInclude Include="..\..\src\libtsduck\tsxmlUnknown.h" />
     <ClInclude Include="..\..\src\libtsduck\windows\tsComIds.h" />
@@ -527,7 +527,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsxmlElement.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsxmlNode.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsTextFormatter.cpp" />
-    <ClCompile Include="..\..\src\libtsduck\tsXMLTables.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsSectionFile.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsxmlText.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsxmlUnknown.cpp" />
     <ClCompile Include="..\..\src\libtsduck\windows\tsComIds.cpp" />

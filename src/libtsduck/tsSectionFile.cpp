@@ -31,7 +31,7 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsXMLTables.h"
+#include "tsSectionFile.h"
 #include "tsAbstractTable.h"
 #include "tsAbstractDescriptor.h"
 #include "tsBinaryTable.h"
@@ -41,12 +41,30 @@ TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------
-// Constructor.
+// Constructors and destructors.
 //----------------------------------------------------------------------------
 
-ts::XMLTables::XMLTables() :
-    _tables()
+ts::SectionFile::SectionFile() :
+    _tables(),
+    _sections(),
+    _orphanSections()
 {
+}
+
+ts::SectionFile::~SectionFile()
+{
+}
+
+
+//----------------------------------------------------------------------------
+// Clear the list of loaded tables and sections.
+//----------------------------------------------------------------------------
+
+void ts::SectionFile::clear()
+{
+    _tables.clear();
+    _sections.clear();
+    _orphanSections.clear();
 }
 
 
@@ -54,7 +72,7 @@ ts::XMLTables::XMLTables() :
 // Add a table in the file.
 //----------------------------------------------------------------------------
 
-void ts::XMLTables::add(const AbstractTablePtr& table, const DVBCharset* charset)
+void ts::SectionFile::add(const AbstractTablePtr& table, const DVBCharset* charset)
 {
     if (!table.isNull() && table->isValid()) {
         BinaryTablePtr bin(new BinaryTable);
@@ -65,26 +83,63 @@ void ts::XMLTables::add(const AbstractTablePtr& table, const DVBCharset* charset
     }
 }
 
+void ts::SectionFile::add(const BinaryTablePtrVector& tables)
+{
+    for (BinaryTablePtrVector::const_iterator it = tables.begin(); it != tables.end(); ++it) {
+        add(*it);
+    }
+}
+
+void ts::SectionFile::add(const BinaryTablePtr& table)
+{
+    if (!table.isNull() && table->isValid()) {
+        // Add the table as a whole.
+        _tables.push_back(table);
+        // Add all its sections (none of them is orphan).
+        for (size_t i = 0; i < table->sectionCount(); ++i) {
+            _sections.push_back(table->sectionAt(i));
+        }
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Add a section in the file.
+//----------------------------------------------------------------------------
+
+//@@@@
+
+
+//----------------------------------------------------------------------------
+// Check it a table can be formed using the last sections in _sections.
+// If the sections were present at end of _orphanSections, they are removed.
+//----------------------------------------------------------------------------
+
+void ts::SectionFile::collectLastTable()
+{
+    //@@@@@
+}
+
 
 //----------------------------------------------------------------------------
 // Load / parse an XML file.
 //----------------------------------------------------------------------------
 
-bool ts::XMLTables::loadXML(const UString& file_name, Report& report, const DVBCharset* charset)
+bool ts::SectionFile::loadXML(const UString& file_name, Report& report, const DVBCharset* charset)
 {
     clear();
     xml::Document doc(report);
     return doc.load(file_name, false) && parseDocument(doc, charset);
 }
 
-bool ts::XMLTables::parseXML(const UString& xml_content, Report& report, const DVBCharset* charset)
+bool ts::SectionFile::parseXML(const UString& xml_content, Report& report, const DVBCharset* charset)
 {
     clear();
     xml::Document doc(report);
     return doc.parse(xml_content) && parseDocument(doc, charset);
 }
 
-bool ts::XMLTables::parseDocument(const xml::Document& doc, const DVBCharset* charset)
+bool ts::SectionFile::parseDocument(const xml::Document& doc, const DVBCharset* charset)
 {
     // Load the XML model for TSDuck files. Search it in TSDuck directory.
     xml::Document model(doc.report());
@@ -122,13 +177,13 @@ bool ts::XMLTables::parseDocument(const xml::Document& doc, const DVBCharset* ch
 // Create XML file or text.
 //----------------------------------------------------------------------------
 
-bool ts::XMLTables::saveXML(const UString& file_name, Report& report, const DVBCharset* charset) const
+bool ts::SectionFile::saveXML(const UString& file_name, Report& report, const DVBCharset* charset) const
 {
     xml::Document doc(report);
     return generateDocument(doc, charset) && doc.save(file_name);
 }
 
-ts::UString ts::XMLTables::toText(Report& report, const DVBCharset* charset) const
+ts::UString ts::SectionFile::toText(Report& report, const DVBCharset* charset) const
 {
     xml::Document doc(report);
     return generateDocument(doc, charset) ? doc.toString() : UString();
@@ -139,7 +194,7 @@ ts::UString ts::XMLTables::toText(Report& report, const DVBCharset* charset) con
 // Generate an XML document.
 //----------------------------------------------------------------------------
 
-bool ts::XMLTables::generateDocument(xml::Document& doc, const DVBCharset* charset) const
+bool ts::SectionFile::generateDocument(xml::Document& doc, const DVBCharset* charset) const
 {
     // Initialize the document structure.
     xml::Element* root = doc.initialize(u"tsduck");

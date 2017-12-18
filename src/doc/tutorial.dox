@@ -581,12 +581,14 @@ pmt.serialize(table);
 ~~~~
 
 Finally, specialized classes for tables and descriptors can be converted
-to and from XML using the methods @e toXML() and @e fromXML(). These
-methods are typically used by the class ts::XMLTables which represents
-a file containing tables in XML format. The class can be used to load
-a set of tables in XML format or to store table objects in XML format.
+to and from XML using the methods @e toXML() and @e fromXML().
 
-The class ts::XMLTables is the core of the _tstabcomp_ utility, the
+These methods are typically used by the class ts::SectionFile which represents
+a file containing sections and tables in binary or XML format. The class
+can be used to load a set of tables in XML format or to store table objects
+in XML format.
+
+The class ts::SectionFile is the core of the _tstabcomp_ utility, the
 tables compiler (or decompiler).
 
 ### Demux and packetization {#demux}

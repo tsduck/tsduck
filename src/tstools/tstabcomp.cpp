@@ -34,7 +34,7 @@
 #include "tsArgs.h"
 #include "tsSysUtils.h"
 #include "tsBinaryTable.h"
-#include "tsXMLTables.h"
+#include "tsSectionFile.h"
 #include "tsDVBCharset.h"
 #include "tsReportWithPrefix.h"
 #include "tsInputRedirector.h"
@@ -214,7 +214,7 @@ bool CompileXML(Options& opt, const ts::UString& infile, const ts::UString& outf
     ts::ReportWithPrefix report(opt, ts::BaseName(infile) + u": ");
 
     // Load XML file, convert tables to binary and save binary file.
-    ts::XMLTables xml;
+    ts::SectionFile xml;
     return xml.loadXML(infile, report, opt.defaultCharset) && ts::BinaryTable::SaveFile(xml.tables(), outfile, report);
 }
 
@@ -235,7 +235,7 @@ bool DecompileBinary(Options& opt, const ts::UString& infile, const ts::UString&
     }
 
     // Convert tables to XML and save XML file.
-    ts::XMLTables xml;
+    ts::SectionFile xml;
     xml.add(tables);
     return xml.saveXML(outfile, report, opt.defaultCharset);
 }

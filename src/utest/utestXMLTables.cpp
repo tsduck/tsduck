@@ -31,7 +31,7 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsXMLTables.h"
+#include "tsSectionFile.h"
 #include "tsTables.h"
 #include "tsSysUtils.h"
 #include "tsBinaryTable.h"
@@ -123,7 +123,7 @@ void XMLTablesTest::testTable(const char* name, const ts::UChar* ref_xml, const 
     utest::Out() << "XMLTablesTest: Testing " << name << std::endl;
 
     // Convert XML reference content to binary tables.
-    ts::XMLTables xml;
+    ts::SectionFile xml;
     CPPUNIT_ASSERT(xml.parseXML(ref_xml, CERR));
 
     // Serialize binary tables to section data.
