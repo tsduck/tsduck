@@ -359,7 +359,7 @@ void SectionFileTest::testBuildSections()
     ts::PAT pat(7, true, 0x1234);
     CPPUNIT_ASSERT_EQUAL(ts::PID(ts::PID_NIT), pat.nit_pid);
     for (uint16_t srv = 3; srv < ts::MAX_PSI_LONG_SECTION_PAYLOAD_SIZE / 4 + 16; ++srv) {
-        pat.pmts[srv] = PID(srv + 2);
+        pat.pmts[srv] = ts::PID(srv + 2);
     }
 
     // Serialize the PAT.
