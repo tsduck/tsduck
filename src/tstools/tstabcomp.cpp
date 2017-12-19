@@ -205,82 +205,50 @@ bool DisplayModel(Options& opt)
 
 
 //----------------------------------------------------------------------------
-//  Compile one source file. Return true on success, false on error.
-//----------------------------------------------------------------------------
-
-bool CompileXML(Options& opt, const ts::UString& infile, const ts::UString& outfile)
-{
-    opt.verbose(u"Compiling %s to %s", {infile, outfile});
-    ts::ReportWithPrefix report(opt, ts::BaseName(infile) + u": ");
-
-    // Load XML file, convert tables to binary and save binary file.
-    ts::SectionFile xml;
-    return xml.loadXML(infile, report, opt.defaultCharset) && ts::BinaryTable::SaveFile(xml.tables(), outfile, report);
-}
-
-
-//----------------------------------------------------------------------------
-//  Decompile one binary file. Return true on success, false on error.
-//----------------------------------------------------------------------------
-
-bool DecompileBinary(Options& opt, const ts::UString& infile, const ts::UString& outfile)
-{
-    opt.verbose(u"Decompiling %s to %s", {infile, outfile});
-    ts::ReportWithPrefix report(opt, ts::BaseName(infile) + u": ");
-
-    // Load binary tables.
-    ts::BinaryTablePtrVector tables;
-    if (!ts::BinaryTable::LoadFile(tables, infile, ts::CRC32::CHECK, report)) {
-        return false;
-    }
-
-    // Convert tables to XML and save XML file.
-    ts::SectionFile xml;
-    xml.add(tables);
-    return xml.saveXML(outfile, report, opt.defaultCharset);
-}
-
-
-//----------------------------------------------------------------------------
 //  Process one file. Return true on success, false on error.
 //----------------------------------------------------------------------------
 
 bool ProcessFile(Options& opt, const ts::UString& infile)
 {
-    const ts::UString ext(ts::PathSuffix(infile).toLower());
-    const bool isXML = ext == u".xml";
-    const bool isBin = ext == u".bin";
-    const bool compile = opt.compile || isXML;
-    const bool decompile = opt.decompile || isBin;
-    const ts::UChar* const outExt = compile ? u".bin" : u".xml";
+    const ts::SectionFile::FileType inType = ts::SectionFile::GetFileType(infile);
+    const bool compile = opt.compile || inType == ts::SectionFile::XML;
+    const bool decompile = opt.decompile || inType == ts::SectionFile::BINARY;
+    const ts::SectionFile::FileType outType = compile ? ts::SectionFile::BINARY : ts::SectionFile::XML;
 
     // Compute output file name with default file type.
     ts::UString outname(opt.outfile);
     if (outname.empty()) {
-        outname = ts::PathPrefix(infile) + outExt;
+        outname = ts::SectionFile::BuildFileName(infile, outType);
     }
     else if (opt.outdir) {
-        outname += ts::PathSeparator + ts::PathPrefix(ts::BaseName(infile)) + outExt;
+        outname += ts::PathSeparator + ts::SectionFile::BuildFileName(ts::BaseName(infile), outType);
     }
+
+    ts::SectionFile file;
+    ts::ReportWithPrefix report(opt, ts::BaseName(infile) + u": ");
 
     // Process the input file, starting with error cases.
     if (!compile && !decompile) {
         opt.error(u"don't know what to do with file %s, unknown file type, specify --compile or --decompile", {infile});
         return false;
     }
-    else if (compile && isBin) {
+    else if (compile && inType == ts::SectionFile::BINARY) {
         opt.error(u"cannot compile binary file %s", {infile});
         return false;
     }
-    else if (decompile && isXML) {
+    else if (decompile && inType == ts::SectionFile::XML) {
         opt.error(u"cannot decompile XML file %s", {infile});
         return false;
     }
     else if (compile) {
-        return CompileXML(opt, infile, outname);
+        // Load XML file and save binary sections.
+        opt.verbose(u"Compiling %s to %s", {infile, outname});
+        return file.loadXML(infile, report, opt.defaultCharset) && file.saveBinary(outname, report);
     }
     else {
-        return DecompileBinary(opt, infile, outname);
+        // Load binary sections and save XML file.
+        opt.verbose(u"Decompiling %s to %s", {infile, outname});
+        return file.loadBinary(infile, report, ts::CRC32::CHECK) && file.saveXML(outname, report, opt.defaultCharset);
     }
 }
 

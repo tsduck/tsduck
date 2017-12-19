@@ -363,20 +363,28 @@ bool ts::UString::Save(const CONTAINER& container, const UString& fileName, bool
 //----------------------------------------------------------------------------
 
 template <class CONTAINER>
-bool ts::UString::LoadAppend(CONTAINER& container, const UString& fileName)
+bool ts::UString::LoadAppend(CONTAINER& container, std::istream& strm)
 {
     UString line;
-    std::ifstream file(fileName.toUTF8().c_str());
-    while (line.getLine(file)) {
+    while (line.getLine(strm)) {
         container.push_back(line);
     }
-    return file.eof();
+    return strm.eof();
 }
 
+template <class CONTAINER>
+bool ts::UString::Load(CONTAINER& container, std::istream& strm)
+{
+    container.clear();
+    return LoadAppend(container, strm);
+}
 
-//----------------------------------------------------------------------------
-// Load strings from a file, one per line, into a container.
-//----------------------------------------------------------------------------
+template <class CONTAINER>
+bool ts::UString::LoadAppend(CONTAINER& container, const UString& fileName)
+{
+    std::ifstream file(fileName.toUTF8().c_str());
+    return LoadAppend(container, file);
+}
 
 template <class CONTAINER>
 bool ts::UString::Load(CONTAINER& container, const UString& fileName)

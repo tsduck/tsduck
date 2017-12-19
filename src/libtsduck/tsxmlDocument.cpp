@@ -53,15 +53,27 @@ bool ts::xml::Document::parse(const UStringList& lines)
 
 bool ts::xml::Document::parse(const UString& text)
 {
-    UStringList lines;
-    text.split(lines, u'\n', false);
-    return parse(lines);
+    TextParser parser(text, _report);
+    return parseNode(parser, 0);
 }
 
 
 //----------------------------------------------------------------------------
 // Load and parse an XML file.
 //----------------------------------------------------------------------------
+
+bool ts::xml::Document::load(std::istream& strm)
+{
+    // Load the lines from the file.
+    UStringList lines;
+    if (UString::Load(lines, strm)) {
+        return parse(lines);
+    }
+    else {
+        _report.error(u"error reading input file");
+        return false;
+    }
+}
 
 bool ts::xml::Document::load(const UString& fileName, bool search)
 {

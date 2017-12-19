@@ -32,6 +32,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsArgs.h"
+#include "tsSectionFile.h"
 #include "tsTablesDisplay.h"
 #include "tsCASFamily.h"
 #include "tsSection.h"
@@ -100,22 +101,22 @@ bool DumpFile(Options& opt, const ts::UString& file_name)
     }
 
     // Load all sections
-    ts::SectionPtrVector sections;
+    ts::SectionFile file;
     bool ok;
 
     if (file_name.empty()) {
         // no input file specified, use standard input
         SetBinaryModeStdin(opt);
-        ok = ts::Section::LoadFile(sections, std::cin, ts::CRC32::IGNORE, opt);
+        ok = file.loadBinary(std::cin, opt, ts::CRC32::IGNORE);
     }
     else {
-        ok = ts::Section::LoadFile(sections, file_name, ts::CRC32::IGNORE, opt);
+        ok = file.loadBinary(file_name, opt, ts::CRC32::IGNORE);
     }
 
     if (ok) {
         // Display all sections.
         ts::TablesDisplay display(opt.display, opt);
-        for (ts::SectionPtrVector::const_iterator it = sections.begin(); it != sections.end(); ++it) {
+        for (ts::SectionPtrVector::const_iterator it = file.sections().begin(); it != file.sections().end(); ++it) {
             display.displaySection(**it) << std::endl;
         }
     }

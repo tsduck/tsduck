@@ -79,6 +79,13 @@ namespace ts {
             bool load(const UString& fileName, bool search = true);
 
             //!
+            //! Load and parse an XML file.
+            //! @param [in,out] strm A standard text stream in input mode.
+            //! @return True on success, false on error.
+            //!
+            bool load(std::istream& strm);
+
+            //!
             //! Validate the XML document.
             //!
             //! This is a minimal mechanism, much less powerful than XML-Schema.

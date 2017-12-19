@@ -4,13 +4,18 @@ TSDuck Change Log and Release Notes
 
 Version 3.5
 
-- With tstables and plugin tables, it is possible to specify several formats
-  at the same time. For instance, it is possible to save tables in text and
-  binary format at the same time.
-
 - Added option --xml-output to tstables and plugin tables. Tables can be saved
   directly in XML format. It is no longer necessary to save in binary and then
   use the decompiler to rebuild XML files.
+
+- With tstables and plugin tables, it is possible to specify several formats
+  at the same time. For instance, it is possible to save tables in text, XML
+  and binary format at the same time.
+
+- With tspacketize and plugin inject, it is now possible to load tables in XML
+  format. The options --binary and --xml have been added to specify the file
+  type if its name is neither .bin nor .xml. It is no longer necessary to use
+  the compiler to rebuild binary section files.
 
 - Added option --byte to tsftrunc.
 

@@ -49,7 +49,7 @@
     <ClCompile Include="..\..\src\utest\utestTSPacket.cpp" />
     <ClCompile Include="..\..\src\utest\utestVariable.cpp" />
     <ClCompile Include="..\..\src\utest\utestXML.cpp" />
-    <ClCompile Include="..\..\src\utest\utestXMLTables.cpp" />
+    <ClCompile Include="..\..\src\utest\utestSectionFile.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\utest\crypto\tv_aes.h" />
