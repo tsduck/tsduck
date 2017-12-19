@@ -57,7 +57,7 @@ SOURCES += \
     ../../../src/utest/utestUString.cpp \
     ../../../src/utest/utestVariable.cpp \
     ../../../src/utest/utestXML.cpp \
-    ../../../src/utest/utestXMLTables.cpp \
+    ../../../src/utest/utestSectionFile.cpp \
     ../../../src/utest/utestCppUnitThread.cpp
 
 DISTFILES += \

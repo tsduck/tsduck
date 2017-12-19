@@ -485,58 +485,6 @@ std::istream& ts::Section::read(std::istream& strm, CRC32::Validation crc_op, Re
 
 
 //----------------------------------------------------------------------------
-// This static method reads all sections from the specified file.
-// Return true on success, false on error.
-//----------------------------------------------------------------------------
-
-bool ts::Section::LoadFile(SectionPtrVector& sections, std::istream& strm, CRC32::Validation crc_op, Report& report)
-{
-    sections.clear();
-
-    for (;;) {
-        SectionPtr sp(new Section);
-        if (sp->read(strm, crc_op, report)) {
-            sections.push_back(sp);
-        }
-        else {
-            break;
-        }
-    }
-
-    // Success if reached EOF without error
-    return strm.eof();
-}
-
-
-//----------------------------------------------------------------------------
-// This static method reads all sections from the specified file.
-// Return true on success, false on error.
-//----------------------------------------------------------------------------
-
-bool ts::Section::LoadFile(SectionPtrVector& sections,
-                           const UString& file_name,
-                           CRC32::Validation crc_op,
-                           Report& report)
-{
-    sections.clear();
-
-    // Open the input file.
-    std::ifstream strm(file_name.toUTF8().c_str(), std::ios::in | std::ios::binary);
-    if (!strm.is_open()) {
-        report.error(u"cannot open %s", {file_name});
-        return false;
-    }
-
-    // Load the section file
-    ReportWithPrefix report_internal(report, file_name + u": ");
-    bool success = LoadFile(sections, strm, crc_op, report_internal);
-    strm.close();
-
-    return success;
-}
-
-
-//----------------------------------------------------------------------------
 // Dump the section on an output stream
 //----------------------------------------------------------------------------
 

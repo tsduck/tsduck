@@ -27,7 +27,7 @@
 //
 //----------------------------------------------------------------------------
 //
-//  CppUnit test suite for XML tables and descriptors.
+//  CppUnit test suite for SectionFile (binary and XML).
 //
 //----------------------------------------------------------------------------
 
@@ -49,9 +49,11 @@ TSDUCK_SOURCE;
 // The test fixture
 //----------------------------------------------------------------------------
 
-class XMLTablesTest: public CppUnit::TestFixture
+class SectionFileTest: public CppUnit::TestFixture
 {
 public:
+    SectionFileTest();
+
     virtual void setUp() override;
     virtual void tearDown() override;
 
@@ -61,40 +63,55 @@ public:
     void testGenericLongTable();
     void testPAT1();
     void testAllTables();
+    void testBuildSections();
 
-    CPPUNIT_TEST_SUITE(XMLTablesTest);
+    CPPUNIT_TEST_SUITE(SectionFileTest);
     CPPUNIT_TEST(testConfigurationFile);
     CPPUNIT_TEST(testGenericDescriptor);
     CPPUNIT_TEST(testGenericShortTable);
     CPPUNIT_TEST(testGenericLongTable);
     CPPUNIT_TEST(testPAT1);
     CPPUNIT_TEST(testAllTables);
+    CPPUNIT_TEST(testBuildSections);
     CPPUNIT_TEST_SUITE_END();
 
 private:
     // Unitary test for one table.
     void testTable(const char* name, const ts::UChar* ref_xml, const uint8_t* ref_sections, size_t ref_sections_size);
     ts::Report& report();
+    ts::UString _tempFileNameBin;
+    ts::UString _tempFileNameXML;
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION(XMLTablesTest);
+CPPUNIT_TEST_SUITE_REGISTRATION(SectionFileTest);
 
 
 //----------------------------------------------------------------------------
 // Initialization.
 //----------------------------------------------------------------------------
 
-// Test suite initialization method.
-void XMLTablesTest::setUp()
+// Constructor.
+SectionFileTest::SectionFileTest() :
+    _tempFileNameBin(ts::TempFile(u".tmp.bin")),
+    _tempFileNameXML(ts::TempFile(u".tmp.xml"))
 {
+}
+
+// Test suite initialization method.
+void SectionFileTest::setUp()
+{
+    //@@ ts::DeleteFile(_tempFileNameBin);
+    //@@ ts::DeleteFile(_tempFileNameXML);
 }
 
 // Test suite cleanup method.
-void XMLTablesTest::tearDown()
+void SectionFileTest::tearDown()
 {
+    //@@ ts::DeleteFile(_tempFileNameBin);
+    //@@ ts::DeleteFile(_tempFileNameXML);
 }
 
-ts::Report& XMLTablesTest::report()
+ts::Report& SectionFileTest::report()
 {
     if (utest::DebugMode()) {
         return CERR;
@@ -110,7 +127,7 @@ ts::Report& XMLTablesTest::report()
 //----------------------------------------------------------------------------
 
 #define TESTTABLE(name, data)                                                                     \
-    void XMLTablesTest::test##name()                                                              \
+    void SectionFileTest::test##name()                                                            \
     {                                                                                             \
         testTable(#name, psi_##data##_xml, psi_##data##_sections, sizeof(psi_##data##_sections)); \
     }
@@ -118,9 +135,9 @@ ts::Report& XMLTablesTest::report()
 TESTTABLE(PAT1, pat1)
 TESTTABLE(AllTables, all)
 
-void XMLTablesTest::testTable(const char* name, const ts::UChar* ref_xml, const uint8_t* ref_sections, size_t ref_sections_size)
+void SectionFileTest::testTable(const char* name, const ts::UChar* ref_xml, const uint8_t* ref_sections, size_t ref_sections_size)
 {
-    utest::Out() << "XMLTablesTest: Testing " << name << std::endl;
+    utest::Out() << "SectionFileTest: Testing " << name << std::endl;
 
     // Convert XML reference content to binary tables.
     ts::SectionFile xml;
@@ -128,7 +145,7 @@ void XMLTablesTest::testTable(const char* name, const ts::UChar* ref_xml, const 
 
     // Serialize binary tables to section data.
     std::ostringstream strm;
-    CPPUNIT_ASSERT(ts::BinaryTable::SaveFile(xml.tables(), strm, CERR));
+    CPPUNIT_ASSERT(xml.saveBinary(strm, CERR));
 
     // Compare serialized section data to reference section data.
     const std::string sections(strm.str());
@@ -136,7 +153,7 @@ void XMLTablesTest::testTable(const char* name, const ts::UChar* ref_xml, const 
     CPPUNIT_ASSERT_EQUAL(0, ::memcmp(ref_sections, sections.data(), ref_sections_size));
 
     // Convert binary tables to XML.
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(ref_xml, xml.toText(CERR));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(ref_xml, xml.toXML(CERR));
 }
 
 
@@ -144,14 +161,14 @@ void XMLTablesTest::testTable(const char* name, const ts::UChar* ref_xml, const 
 // Other unitary tests.
 //----------------------------------------------------------------------------
 
-void XMLTablesTest::testConfigurationFile()
+void SectionFileTest::testConfigurationFile()
 {
     const ts::UString conf(ts::SearchConfigurationFile(u"tsduck.xml"));
-    utest::Out() << "XMLTablesTest::testConfigurationFile: " << conf << std::endl;
+    utest::Out() << "SectionFileTest::testConfigurationFile: " << conf << std::endl;
     CPPUNIT_ASSERT(ts::FileExists(conf));
 }
 
-void XMLTablesTest::testGenericDescriptor()
+void SectionFileTest::testGenericDescriptor()
 {
     static const uint8_t descData[] = {
         0x72,   // tag
@@ -170,7 +187,7 @@ void XMLTablesTest::testGenericDescriptor()
     CPPUNIT_ASSERT(desc.toXML(root, 0, true) != 0);
 
     ts::UString text(doc.toString());
-    utest::Out() << "XMLTablesTest::testGenericDescriptor: " << text << std::endl;
+    utest::Out() << "SectionFileTest::testGenericDescriptor: " << text << std::endl;
     CPPUNIT_ASSERT_USTRINGS_EQUAL(
         u"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
         u"<test>\n"
@@ -202,7 +219,7 @@ void XMLTablesTest::testGenericDescriptor()
     CPPUNIT_ASSERT(ts::ByteBlock(desc2.payload(), desc2.payloadSize()) == ts::ByteBlock(descData + 2, sizeof(descData) - 2));
 }
 
-void XMLTablesTest::testGenericShortTable()
+void SectionFileTest::testGenericShortTable()
 {
     static const uint8_t refData[] = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06};
 
@@ -221,7 +238,7 @@ void XMLTablesTest::testGenericShortTable()
     CPPUNIT_ASSERT(refTable.toXML(root, true) != 0);
 
     ts::UString text(doc.toString());
-    utest::Out() << "XMLTablesTest::testGenericShortTable: " << text << std::endl;
+    utest::Out() << "SectionFileTest::testGenericShortTable: " << text << std::endl;
     CPPUNIT_ASSERT_USTRINGS_EQUAL(
         u"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
         u"<test>\n"
@@ -258,7 +275,7 @@ void XMLTablesTest::testGenericShortTable()
     CPPUNIT_ASSERT(ts::ByteBlock(sec->payload(), sec->payloadSize()) == ts::ByteBlock(refData, sizeof(refData)));
 }
 
-void XMLTablesTest::testGenericLongTable()
+void SectionFileTest::testGenericLongTable()
 {
     static const uint8_t refData0[] = {0x01, 0x02, 0x03, 0x04, 0x05};
     static const uint8_t refData1[] = {0x11, 0x12, 0x13, 0x14};
@@ -278,7 +295,7 @@ void XMLTablesTest::testGenericLongTable()
     CPPUNIT_ASSERT(refTable.toXML(root, true) != 0);
 
     ts::UString text(doc.toString());
-    utest::Out() << "XMLTablesTest::testGenericLongTable: " << text << std::endl;
+    utest::Out() << "SectionFileTest::testGenericLongTable: " << text << std::endl;
     CPPUNIT_ASSERT_USTRINGS_EQUAL(
         u"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
         u"<test>\n"
@@ -334,4 +351,106 @@ void XMLTablesTest::testGenericLongTable()
     CPPUNIT_ASSERT(sec->isCurrent());
     CPPUNIT_ASSERT_EQUAL(sizeof(refData1), sec->payloadSize());
     CPPUNIT_ASSERT(ts::ByteBlock(sec->payload(), sec->payloadSize()) == ts::ByteBlock(refData1, sizeof(refData1)));
+}
+
+void SectionFileTest::testBuildSections()
+{
+    // Build a PAT with 2 sections.
+    ts::PAT pat(7, true, 0x1234);
+    CPPUNIT_ASSERT_EQUAL(ts::PID(ts::PID_NIT), pat.nit_pid);
+    for (uint16_t srv = 3; srv < ts::MAX_PSI_LONG_SECTION_PAYLOAD_SIZE / 4 + 16; ++srv) {
+        pat.pmts[srv] = PID(srv + 2);
+    }
+
+    // Serialize the PAT.
+    ts::BinaryTablePtr patBin(new(ts::BinaryTable));
+    CPPUNIT_ASSERT(!patBin.isNull());
+    pat.serialize(*patBin);
+    CPPUNIT_ASSERT(patBin->isValid());
+    CPPUNIT_ASSERT_EQUAL(size_t(2), patBin->sectionCount());
+
+    // Build a section file.
+    ts::SectionFile file;
+    file.add(patBin);
+    CPPUNIT_ASSERT_EQUAL(size_t(1), file.tables().size());
+    CPPUNIT_ASSERT_EQUAL(size_t(2), file.sections().size());
+    CPPUNIT_ASSERT_EQUAL(size_t(0), file.orphanSections().size());
+
+    file.add(patBin->sectionAt(0));
+    CPPUNIT_ASSERT_EQUAL(size_t(1), file.tables().size());
+    CPPUNIT_ASSERT_EQUAL(size_t(3), file.sections().size());
+    CPPUNIT_ASSERT_EQUAL(size_t(1), file.orphanSections().size());
+
+    file.add(patBin->sectionAt(1));
+    CPPUNIT_ASSERT_EQUAL(size_t(2), file.tables().size());
+    CPPUNIT_ASSERT_EQUAL(size_t(4), file.sections().size());
+    CPPUNIT_ASSERT_EQUAL(size_t(0), file.orphanSections().size());
+
+    // Build a TDT (short section).
+    const ts::Time tdtTime(ts::Time::Fields(2017, 12, 25, 14, 55, 27));
+    ts::TDT tdt(tdtTime);
+
+    ts::BinaryTablePtr tdtBin(new(ts::BinaryTable));
+    CPPUNIT_ASSERT(!tdtBin.isNull());
+    tdt.serialize(*tdtBin);
+    CPPUNIT_ASSERT(tdtBin->isValid());
+    CPPUNIT_ASSERT_EQUAL(size_t(1), tdtBin->sectionCount());
+
+    file.add(tdtBin);
+    CPPUNIT_ASSERT_EQUAL(size_t(3), file.tables().size());
+    CPPUNIT_ASSERT_EQUAL(size_t(5), file.sections().size());
+    CPPUNIT_ASSERT_EQUAL(size_t(0), file.orphanSections().size());
+
+    // Save files.
+    utest::Out() << "SectionFileTest::testBuildSections: saving " << _tempFileNameBin << std::endl;
+    CPPUNIT_ASSERT(!ts::FileExists(_tempFileNameBin));
+    CPPUNIT_ASSERT(file.saveBinary(_tempFileNameBin, report()));
+    CPPUNIT_ASSERT(ts::FileExists(_tempFileNameBin));
+
+    utest::Out() << "SectionFileTest::testBuildSections: saving " << _tempFileNameXML << std::endl;
+    CPPUNIT_ASSERT(!ts::FileExists(_tempFileNameXML));
+    CPPUNIT_ASSERT(file.saveXML(_tempFileNameXML, report()));
+    CPPUNIT_ASSERT(ts::FileExists(_tempFileNameXML));
+
+    // Reload files.
+    ts::SectionFile binFile;
+    CPPUNIT_ASSERT(binFile.loadBinary(_tempFileNameBin, report(), ts::CRC32::CHECK));
+    CPPUNIT_ASSERT_EQUAL(size_t(3), binFile.tables().size());
+    CPPUNIT_ASSERT_EQUAL(size_t(5), binFile.sections().size());
+    CPPUNIT_ASSERT_EQUAL(size_t(0), binFile.orphanSections().size());
+
+    ts::SectionFile xmlFile;
+    CPPUNIT_ASSERT(xmlFile.loadXML(_tempFileNameXML, report()));
+    CPPUNIT_ASSERT_EQUAL(size_t(3), xmlFile.tables().size());
+    CPPUNIT_ASSERT_EQUAL(size_t(5), xmlFile.sections().size());
+    CPPUNIT_ASSERT_EQUAL(size_t(0), xmlFile.orphanSections().size());
+
+    for (size_t i = 0; i < file.tables().size(); ++i) {
+        CPPUNIT_ASSERT(*file.tables()[i] == *binFile.tables()[i]);
+        CPPUNIT_ASSERT(*file.tables()[i] == *xmlFile.tables()[i]);
+    }
+    for (size_t i = 0; i < file.sections().size(); ++i) {
+        CPPUNIT_ASSERT(*file.sections()[i] == *binFile.sections()[i]);
+        CPPUNIT_ASSERT(*file.sections()[i] == *xmlFile.sections()[i]);
+    }
+
+    ts::PAT binPAT(*binFile.tables()[0]);
+    CPPUNIT_ASSERT(binPAT.isValid());
+    CPPUNIT_ASSERT_EQUAL(uint8_t(7), binPAT.version);
+    CPPUNIT_ASSERT_EQUAL(uint16_t(0x1234), binPAT.ts_id);
+    CPPUNIT_ASSERT_EQUAL(ts::PID(ts::PID_NIT), binPAT.nit_pid);
+    CPPUNIT_ASSERT(binPAT.pmts == pat.pmts);
+
+    ts::PAT xmlPAT(*xmlFile.tables()[0]);
+    CPPUNIT_ASSERT(xmlPAT.isValid());
+    CPPUNIT_ASSERT_EQUAL(uint8_t(7), xmlPAT.version);
+    CPPUNIT_ASSERT_EQUAL(uint16_t(0x1234), xmlPAT.ts_id);
+    CPPUNIT_ASSERT_EQUAL(ts::PID(ts::PID_NIT), xmlPAT.nit_pid);
+    CPPUNIT_ASSERT(xmlPAT.pmts == pat.pmts);
+
+    ts::TDT binTDT(*binFile.tables()[2]);
+    CPPUNIT_ASSERT(tdtTime == binTDT.utc_time);
+
+    ts::TDT xmlTDT(*xmlFile.tables()[2]);
+    CPPUNIT_ASSERT(tdtTime == xmlTDT.utc_time);
 }

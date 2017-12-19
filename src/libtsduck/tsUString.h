@@ -1180,6 +1180,26 @@ namespace ts {
         static bool LoadAppend(CONTAINER& container, const UString& fileName);
 
         //!
+        //! Load all lines of a text file in UTF-8 format as UString's into a container.
+        //! @tparam CONTAINER A container class of UString as defined by the C++ Standard Template Library (STL).
+        //! @param [out] container A container of UString receiving all lines of the file. Each line of the text file is a separate string.
+        //! @param [in,out] strm A standard text stream in input mode. Each line of the text file is inserted as a separate string.
+        //! @return True on success, false on error (mostly file errors).
+        //!
+        template <class CONTAINER>
+        static bool Load(CONTAINER& container, std::istream& strm);
+
+        //!
+        //! Load all lines of a text file in UTF-8 format as UString's and append them in a container.
+        //! @tparam CONTAINER A container class of UString as defined by the C++ Standard Template Library (STL).
+        //! @param [in,out] container A container of UString receiving all lines of the file. Each line of the text file is a separate string.
+        //! @param [in,out] strm A standard text stream in input mode. Each line of the text file is inserted as a separate string.
+        //! @return True on success, false on error (mostly file errors).
+        //!
+        template <class CONTAINER>
+        static bool LoadAppend(CONTAINER& container, std::istream& strm);
+
+        //!
         //! Read one UTF-8 line from a text file and load it into this object.
         //! @param [in,out] strm A standard stream in input mode.
         //! @return True on success, false on error (mostly file errors).

@@ -586,32 +586,6 @@ namespace ts {
         //!
         std::ostream& dump(std::ostream& strm, int indent = 0, CASFamily cas = CAS_OTHER, bool no_header = false) const;
 
-        //!
-        //! This static method reads all sections from the specified file.
-        //! @param [out] sections Returned list of sections.
-        //! @param [in,out] strm A standard stream in input mode (binary mode).
-        //! @param [in] crc_op How to process the CRC32 of the input packet.
-        //! @param [in,out] report Where to report errors.
-        //! @return True on success, false on error.
-        //!
-        static bool LoadFile(SectionPtrVector& sections,
-                             std::istream& strm,
-                             CRC32::Validation crc_op = CRC32::IGNORE,
-                             Report& report = CERR);
-
-        //!
-        //! This static method reads all sections from the specified file.
-        //! @param [out] sections Returned list of sections.
-        //! @param [in] file_name Name of the file to read.
-        //! @param [in] crc_op How to process the CRC32 of the input packet.
-        //! @param [in,out] report Where to report errors.
-        //! @return True on success, false on error.
-        //!
-        static bool LoadFile(SectionPtrVector& sections,
-                             const UString& file_name,
-                             CRC32::Validation crc_op = CRC32::IGNORE,
-                             Report& report = CERR);
-
     private:
         // Private fields
         bool          _is_valid;    // Content of *_data is a valid section

@@ -37,6 +37,7 @@
 #include "tsBinaryTable.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
+#include "tsSysUtils.h"
 TSDUCK_SOURCE;
 
 
@@ -107,17 +108,165 @@ void ts::SectionFile::add(const BinaryTablePtr& table)
 // Add a section in the file.
 //----------------------------------------------------------------------------
 
-//@@@@
+void ts::SectionFile::add(const SectionPtrVector& sections)
+{
+    for (SectionPtrVector::const_iterator it = sections.begin(); it != sections.end(); ++it) {
+        add(*it);
+    }
+}
+
+void ts::SectionFile::add(const SectionPtr& section)
+{
+    if (!section.isNull() && section->isValid()) {
+        // Make the section part of the global list of sections.
+        _sections.push_back(section);
+        // Temporary push this section in the orphan list.
+        _orphanSections.push_back(section);
+        // Try to build a table from the list of orphans.
+        collectLastTable();
+    }
+}
 
 
 //----------------------------------------------------------------------------
-// Check it a table can be formed using the last sections in _sections.
-// If the sections were present at end of _orphanSections, they are removed.
+// Check it a table can be formed using the last sections in _orphanSections.
 //----------------------------------------------------------------------------
 
 void ts::SectionFile::collectLastTable()
 {
-    //@@@@@
+    // If there is no orphan section, nothing to do.
+    if (_orphanSections.empty()) {
+        return;
+    }
+
+    // Get a iterator to last section.
+    SectionPtrVector::iterator first = _orphanSections.end();
+    --first;
+    assert(!first->isNull());
+    assert((*first)->isValid());
+
+    // A short section should be a table in itself, no need to dive further.
+    // Long sections must be all present for the same table.
+    if ((*first)->isLongSection()) {
+
+        // Last section of the table.
+        const SectionPtr last(*first);
+
+        // Check if all sections are present in order.
+        for (uint8_t num = last->lastSectionNumber(); ; --num) {
+            assert(!first->isNull());
+            assert((*first)->isValid());
+
+            // Give up if the section is not the expected one for the table.
+            if ((*first)->tableId() != last->tableId() ||
+                (*first)->tableIdExtension() != last->tableIdExtension() ||
+                (*first)->version() != last->version() ||
+                (*first)->sectionNumber() != num ||
+                (*first)->lastSectionNumber() != last->lastSectionNumber())
+            {
+                return;
+            }
+
+            // Reached the first section in the table?
+            if (num == 0) {
+                break;
+            }
+
+            // Move to previous section.
+            if (first == _orphanSections.begin()) {
+                return; // beginning of the table is missing.
+            }
+            else {
+                --first;
+            }
+        }
+    }
+
+    // We have now identified sections for a complete table.
+    BinaryTablePtr table(new BinaryTable);
+    CheckNonNull(table.pointer());
+    if (!table->addSections(first, _orphanSections.end(), false, false) || !table->isValid()) {
+        // Invalid table after all.
+        return;
+    }
+
+    // Built a valid table.
+    _tables.push_back(table);
+    _orphanSections.erase(first, _orphanSections.end());
+}
+
+
+//----------------------------------------------------------------------------
+// Load a binary section file.
+//----------------------------------------------------------------------------
+
+bool ts::SectionFile::loadBinary(const UString& file_name, Report& report, CRC32::Validation crc_op)
+{
+    // Open the input file.
+    std::ifstream strm(file_name.toUTF8().c_str(), std::ios::in | std::ios::binary);
+    if (!strm.is_open()) {
+        clear();
+        report.error(u"cannot open %s", {file_name});
+        return false;
+    }
+
+    // Load the section file.
+    ReportWithPrefix report_internal(report, file_name + u": ");
+    const bool success = loadBinary(strm, report_internal, crc_op);
+    strm.close();
+
+    return success;
+}
+
+bool ts::SectionFile::loadBinary(std::istream& strm, Report& report, CRC32::Validation crc_op)
+{
+    clear();
+
+    // Read all binary sections one by one.
+    for (;;) {
+        SectionPtr sp(new Section);
+        if (sp->read(strm, crc_op, report)) {
+            add(sp);
+        }
+        else {
+            break;
+        }
+    }
+
+    // Success if reached EOF without error.
+    return strm.eof();
+}
+
+
+//----------------------------------------------------------------------------
+// Save a binary section file.
+//----------------------------------------------------------------------------
+
+bool ts::SectionFile::saveBinary(const UString& file_name, Report& report) const
+{
+    // Create the output file.
+    std::ofstream strm(file_name.toUTF8().c_str(), std::ios::out | std::ios::binary);
+    if (!strm.is_open()) {
+        report.error(u"error creating %s", {file_name});
+        return false;
+    }
+
+    // Save sections.
+    ReportWithPrefix report_internal(report, file_name + u": ");
+    const bool success = saveBinary(strm, report_internal);
+    strm.close();
+
+    return success;
+}
+
+bool ts::SectionFile::saveBinary(std::ostream& strm, Report& report) const
+{
+    for (size_t i = 0; i < _sections.size() && strm.good(); ++i) {
+        if (!_sections[i].isNull() && _sections[i]->isValid()) {
+            _sections[i]->write(strm, report);
+        }
+    }
+    return strm.good();
 }
 
 
@@ -130,6 +279,13 @@ bool ts::SectionFile::loadXML(const UString& file_name, Report& report, const DV
     clear();
     xml::Document doc(report);
     return doc.load(file_name, false) && parseDocument(doc, charset);
+}
+
+bool ts::SectionFile::loadXML(std::istream& strm, Report& report, const DVBCharset* charset)
+{
+    clear();
+    xml::Document doc(report);
+    return doc.load(strm) && parseDocument(doc, charset);
 }
 
 bool ts::SectionFile::parseXML(const UString& xml_content, Report& report, const DVBCharset* charset)
@@ -162,7 +318,7 @@ bool ts::SectionFile::parseDocument(const xml::Document& doc, const DVBCharset* 
         BinaryTablePtr bin(new BinaryTable);
         CheckNonNull(bin.pointer());
         if (bin->fromXML(node) && bin->isValid()) {
-            _tables.push_back(bin);
+            add(bin);
         }
         else {
             doc.report().error(u"Error in table <%s> at line %d", {node->name(), node->lineNumber()});
@@ -183,7 +339,7 @@ bool ts::SectionFile::saveXML(const UString& file_name, Report& report, const DV
     return generateDocument(doc, charset) && doc.save(file_name);
 }
 
-ts::UString ts::SectionFile::toText(Report& report, const DVBCharset* charset) const
+ts::UString ts::SectionFile::toXML(Report& report, const DVBCharset* charset) const
 {
     xml::Document doc(report);
     return generateDocument(doc, charset) ? doc.toString() : UString();
@@ -210,5 +366,78 @@ bool ts::SectionFile::generateDocument(xml::Document& doc, const DVBCharset* cha
         }
     }
 
+    // Issue a warning if incomplete tables were not saved.
+    if (!_orphanSections.empty()) {
+        doc.report().warning(u"%d orphan sections not saved in XML document (%d tables saved)", {_orphanSections.size(), _tables.size()});
+    }
+
     return true;
 }
+
+
+//----------------------------------------------------------------------------
+// Get a file type, based on a file name.
+//----------------------------------------------------------------------------
+
+ts::SectionFile::FileType ts::SectionFile::GetFileType(const UString& file_name, FileType type)
+{
+    if (type != UNSPECIFIED) {
+        return type; // already known
+    }
+    const UString ext(PathSuffix(file_name).toLower());
+    if (ext == TS_DEFAULT_XML_SECTION_FILE_SUFFIX) {
+        return XML;
+    }
+    else if (ext == TS_DEFAULT_BINARY_SECTION_FILE_SUFFIX) {
+        return BINARY;
+    }
+    else {
+        return UNSPECIFIED;
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Build a file name, based on a file type.
+//----------------------------------------------------------------------------
+
+ts::UString ts::SectionFile::BuildFileName(const UString& file_name, FileType type)
+{
+    switch (type) {
+        case BINARY: return PathPrefix(file_name) + TS_DEFAULT_BINARY_SECTION_FILE_SUFFIX;
+        case XML: return PathPrefix(file_name) + TS_DEFAULT_XML_SECTION_FILE_SUFFIX;
+        default: return file_name;
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Load a binary or XML file.
+//----------------------------------------------------------------------------
+
+bool ts::SectionFile::load(const UString& file_name, Report& report, FileType type, CRC32::Validation crc_op, const DVBCharset* charset)
+{
+    switch (GetFileType(file_name, type)) {
+        case BINARY:
+            return loadBinary(file_name, report, crc_op);
+        case XML:
+            return loadXML(file_name, report, charset);
+        default:
+            report.error(u"unknown file type for %s", {file_name});
+            return false;
+    }
+}
+
+bool ts::SectionFile::load(std::istream& strm, Report& report, FileType type, CRC32::Validation crc_op, const DVBCharset* charset)
+{
+    switch (type) {
+        case BINARY:
+            return loadBinary(strm, report, crc_op);
+        case XML:
+            return loadXML(strm, report, charset);
+        default:
+            report.error(u"unknown input file type");
+            return false;
+    }
+}
+

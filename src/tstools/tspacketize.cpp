@@ -32,6 +32,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsArgs.h"
+#include "tsSectionFile.h"
 #include "tsFileNameRate.h"
 #include "tsOutputRedirector.h"
 #include "tsCyclingPacketizer.h"
@@ -48,13 +49,14 @@ struct Options: public ts::Args
 {
     Options(int argc, char *argv[]);
 
-    bool                   continuous; // Continuous packetization
+    bool                      continuous; // Continuous packetization
     ts::CyclingPacketizer::StuffingPolicy stuffing_policy;
-    ts::CRC32::Validation  crc_op;     // Validate/recompute CRC32
-    ts::PID                pid;        // Target PID
-    ts::BitRate            bitrate;    // Target PID bitrate
-    ts::UString            outfile;    // Output file
-    ts::FileNameRateList   infiles;    // Input file names and repetition rates
+    ts::CRC32::Validation     crc_op;     // Validate/recompute CRC32
+    ts::PID                   pid;        // Target PID
+    ts::BitRate               bitrate;    // Target PID bitrate
+    ts::UString               outfile;    // Output file
+    ts::FileNameRateList      infiles;    // Input file names and repetition rates
+    ts::SectionFile::FileType inType;     // Input files type
 };
 
 Options::Options(int argc, char *argv[]) :
@@ -65,19 +67,27 @@ Options::Options(int argc, char *argv[]) :
     pid(ts::PID_NULL),
     bitrate(0),
     outfile(),
-    infiles()
+    infiles(),
+    inType(ts::SectionFile::UNSPECIFIED)
 {
     option(u"",            0,  Args::STRING);
+    option(u"binary",      0);
     option(u"bitrate",    'b', Args::UNSIGNED);
     option(u"continuous", 'c');
     option(u"force-crc",  'f');
     option(u"output",     'o', Args::STRING);
     option(u"pid",        'p', Args::PIDVAL, 1, 1);
     option(u"stuffing",   's');
+    option(u"xml",         0);
 
     setHelp(u"Input files:\n"
             u"\n"
-            u"  Binary files containing sections (standard input if omitted).\n"
+            u"  Binary or XML files containing one or more sections or tables. By default,\n"
+            u"  files ending in .xml are XML and files ending in .bin are binary. For other\n"
+            u"  file names, explicitly specify --binary or --xml. If the file name is\n"
+            u"  omitted, the standard input is used (binary by default, specify --xml\n"
+            u"  otherwise).\n"
+            u"\n"
             u"  If different repetition rates are required for different files,\n"
             u"  a parameter can be \"filename=value\" where value is the\n"
             u"  repetition rate in milliseconds for all sections in that file.\n"
@@ -85,6 +95,9 @@ Options::Options(int argc, char *argv[]) :
             u"  PID must be specified, see option -b or --bitrate.\n"
             u"\n"
             u"Options:\n"
+            u"\n"
+            u"  --binary\n"
+            u"      Specify that all input files are binary, regardless of their file name.\n"
             u"\n"
             u"  -b value\n"
             u"  --bitrate value\n"
@@ -125,7 +138,10 @@ Options::Options(int argc, char *argv[]) :
             u"      Display verbose information.\n"
             u"\n"
             u"  --version\n"
-            u"      Display the version number.\n");
+            u"      Display the version number.\n"
+            u"\n"
+            u"  --xml\n"
+            u"      Specify that all input files are XML, regardless of their file name.\n");
 
     analyze(argc, argv);
 
@@ -144,6 +160,12 @@ Options::Options(int argc, char *argv[]) :
     bitrate = intValue<ts::BitRate>(u"bitrate");
     outfile = value(u"output");
     infiles.getArgs(*this);
+    if (present(u"xml")) {
+        inType = ts::SectionFile::XML;
+    }
+    else if (present(u"binary")) {
+        inType = ts::SectionFile::BINARY;
+    }
 
     // If any non-zero repetition rate is specified, make sure that a bitrate
     // is specified.
@@ -168,29 +190,33 @@ int main(int argc, char *argv[])
     Options opt(argc, argv);
     ts::OutputRedirector output(opt.outfile, opt);
     ts::CyclingPacketizer pzer(opt.pid, opt.stuffing_policy, opt.bitrate);
-    ts::SectionPtrVector sections;
+    ts::SectionFile file;
 
     // Load sections
 
     if (opt.infiles.size() == 0) {
-        // Read sections from standard input
-        SetBinaryModeStdin(opt);
-        if (!ts::Section::LoadFile(sections, std::cin, opt.crc_op, opt)) {
+        // Read sections from standard input.
+        if (opt.inType != ts::SectionFile::XML) {
+            // Default type for standard input is binary.
+            SetBinaryModeStdin(opt);
+            opt.inType = ts::SectionFile::BINARY;
+        }
+        if (!file.load(std::cin, opt, opt.inType, opt.crc_op)) {
             return EXIT_FAILURE;
         }
-        pzer.addSections(sections);
+        pzer.addSections(file.sections());
         if (opt.verbose()) {
-            std::cerr << "* Loaded " << sections.size() << " sections from standard input" << std::endl;
+            std::cerr << "* Loaded " << file.sections().size() << " sections from standard input" << std::endl;
         }
     }
     else {
         for (ts::FileNameRateList::const_iterator it = opt.infiles.begin(); it != opt.infiles.end(); ++it) {
-            if (!ts::Section::LoadFile(sections, it->file_name, opt.crc_op, opt)) {
+            if (!file.load(it->file_name, opt, opt.inType, opt.crc_op)) {
                 return EXIT_FAILURE;
             }
-            pzer.addSections(sections, it->repetition);
+            pzer.addSections(file.sections(), it->repetition);
             if (opt.verbose()) {
-                std::cerr << "* Loaded " << sections.size() << " sections from " << it->file_name;
+                std::cerr << "* Loaded " << file.sections().size() << " sections from " << it->file_name;
                 if (it->repetition > 0) {
                     std::cerr << ", repetition rate: " << ts::UString::Decimal(it->repetition) << " ms";
                 }

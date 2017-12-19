@@ -142,7 +142,24 @@ namespace ts {
         //! In this case, all sections which were previously added in the table are modified.
         //! @return True on succes, false if a section could not be added (inconsistent property).
         //!
-        bool addSections(const SectionPtrVector& sections, bool replace = true, bool grow = true);
+        bool addSections(const SectionPtrVector& sections, bool replace = true, bool grow = true)
+        {
+            return addSections(sections.begin(), sections.end(), replace, grow);
+        }
+
+        //!
+        //! Add several sections to a table.
+        //! @param [in] first First iterator to an array of smart pointers to sections.
+        //! @param [in] last Last iterator to an array of smart pointers to sections.
+        //! @param [in] replace If true, duplicated sections may be replaced.
+        //! Otherwise, sections which are already present (based on section number)
+        //! are not replaced.
+        //! @param [in] grow If true, the "last_section_number" of a section
+        //! may be greater than the current "last_section_number" of the table.
+        //! In this case, all sections which were previously added in the table are modified.
+        //! @return True on succes, false if a section could not be added (inconsistent property).
+        //!
+        bool addSections(SectionPtrVector::const_iterator first, SectionPtrVector::const_iterator last, bool replace = true, bool grow = true);
 
         //!
         //! Check if the table is valid.
@@ -248,70 +265,6 @@ namespace ts {
         //! @return True if this is a table with one short section.
         //!
         bool isShortSection() const;
-
-        //!
-        //! Write the binary table on a standard stream.
-        //! @param [in,out] strm Output stream (binary output).
-        //! @param [in,out] report Where to report errors.
-        //! @return A reference to @a strm.
-        //!
-        std::ostream& write(std::ostream& strm, Report& report = CERR) const;
-
-        //!
-        //! Save the binary table in a file.
-        //! @param [in] file_name Name of the output file.
-        //! @param [in,out] report Where to report errors.
-        //! @return True on success, false on error.
-        //!
-        bool save(const UString& file_name, Report& report = CERR) const;
-
-        //!
-        //! This static method reads all tables from the specified file.
-        //! The file shall contain all sections of each table contiguously
-        //! and in increasing order of section numbers.
-        //! @param [out] tables Returned list of tables.
-        //! @param [in,out] strm A standard stream in input mode (binary mode).
-        //! @param [in] crc_op How to process the CRC32 of the input sections.
-        //! @param [in,out] report Where to report errors.
-        //! @return True on success, false on error.
-        //!
-        static bool LoadFile(BinaryTablePtrVector& tables,
-                             std::istream& strm,
-                             CRC32::Validation crc_op = CRC32::IGNORE,
-                             Report& report = CERR);
-
-        //!
-        //! This static method reads all tables from the specified file.
-        //! The file shall contain all sections of each table contiguously
-        //! and in increasing order of section numbers.
-        //! @param [out] tables Returned list of tables.
-        //! @param [in] file_name Name of the file to read.
-        //! @param [in] crc_op How to process the CRC32 of the input sections.
-        //! @param [in,out] report Where to report errors.
-        //! @return True on success, false on error.
-        //!
-        static bool LoadFile(BinaryTablePtrVector& tables,
-                             const UString& file_name,
-                             CRC32::Validation crc_op = CRC32::IGNORE,
-                             Report& report = CERR);
-
-        //!
-        //! This static method writes all tables to the specified file.
-        //! @param [in] tables List of tables to write.
-        //! @param [in,out] strm A standard stream in output mode (binary mode).
-        //! @param [in,out] report Where to report errors.
-        //! @return A reference to @a strm.
-        //!
-        static std::ostream& SaveFile(const BinaryTablePtrVector& tables, std::ostream& strm, Report& report = CERR);
-
-        //!
-        //! This static method writes all tables to the specified file.
-        //! @param [in] tables List of tables to write.
-        //! @param [in] file_name Name of the file to write.
-        //! @param [in,out] report Where to report errors.
-        //! @return True on success, false on error.
-        //!
-        static bool SaveFile(const BinaryTablePtrVector& tables, const UString& file_name, Report& report = CERR);
 
         //!
         //! This method converts the table to XML.

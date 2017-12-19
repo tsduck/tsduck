@@ -35,6 +35,7 @@
 #include "tsPlugin.h"
 #include "tsCyclingPacketizer.h"
 #include "tsFileNameRate.h"
+#include "tsSectionFile.h"
 #include "tsSysUtils.h"
 TSDUCK_SOURCE;
 
@@ -57,25 +58,26 @@ namespace ts {
         virtual Status processPacket(TSPacket&, bool&, bool&) override;
 
     private:
-        FileNameRateList   _infiles;           // Input file names and repetition rates
-        bool               _specific_rates;    // Some input files have specific repetition rates
-        PID                _inject_pid;        // Target PID
-        CRC32::Validation  _crc_op;            // Validate/recompute CRC32
-        bool               _replace;           // Replace existing PID content
-        bool               _poll_files;        // Poll the presence of input files at regular intervals
-        MilliSecond        _poll_files_ms;     // Interval in milliseconds between two file polling
-        Time               _poll_file_next;    // Next UTC time of poll file
-        bool               _terminate;         // Terminate processing when insertion is complete
-        bool               _completed;         // Last cycle terminated
-        size_t             _repeat_count;      // Repeat cycle, zero means infinite
-        BitRate            _pid_bitrate;       // Target bitrate for new PID
-        PacketCounter      _pid_inter_pkt;     // # TS packets between 2 new PID packets
-        PacketCounter      _pid_next_pkt;      // Next time to insert a packet
-        PacketCounter      _packet_count;      // TS packet counter
-        PacketCounter      _pid_packet_count;  // Packet counter in -PID to replace
-        PacketCounter      _eval_interval;     // PID bitrate re-evaluation interval
-        PacketCounter      _cycle_count;       // Number of insertion cycles
-        CyclingPacketizer  _pzer;              // Packetizer for table
+        FileNameRateList      _infiles;           // Input file names and repetition rates
+        SectionFile::FileType _inType;            // Input files type
+        bool                  _specific_rates;    // Some input files have specific repetition rates
+        PID                   _inject_pid;        // Target PID
+        CRC32::Validation     _crc_op;            // Validate/recompute CRC32
+        bool                  _replace;           // Replace existing PID content
+        bool                  _poll_files;        // Poll the presence of input files at regular intervals
+        MilliSecond           _poll_files_ms;     // Interval in milliseconds between two file polling
+        Time                  _poll_file_next;    // Next UTC time of poll file
+        bool                  _terminate;         // Terminate processing when insertion is complete
+        bool                  _completed;         // Last cycle terminated
+        size_t                _repeat_count;      // Repeat cycle, zero means infinite
+        BitRate               _pid_bitrate;       // Target bitrate for new PID
+        PacketCounter         _pid_inter_pkt;     // # TS packets between 2 new PID packets
+        PacketCounter         _pid_next_pkt;      // Next time to insert a packet
+        PacketCounter         _packet_count;      // TS packet counter
+        PacketCounter         _pid_packet_count;  // Packet counter in -PID to replace
+        PacketCounter         _eval_interval;     // PID bitrate re-evaluation interval
+        PacketCounter         _cycle_count;       // Number of insertion cycles
+        CyclingPacketizer     _pzer;              // Packetizer for table
         CyclingPacketizer::StuffingPolicy _stuffing_policy;
 
         // Reload files, reset packetizer.
@@ -103,6 +105,7 @@ TSPLUGIN_DECLARE_PROCESSOR(ts::InjectPlugin)
 ts::InjectPlugin::InjectPlugin (TSP* tsp_) :
     ProcessorPlugin(tsp_, u"Inject tables and sections in a TS.", u"[options] input-file[=rate] ..."),
     _infiles(),
+    _inType(SectionFile::UNSPECIFIED),
     _specific_rates(false),
     _inject_pid(PID_NULL),
     _crc_op(CRC32::CHECK),
@@ -124,6 +127,7 @@ ts::InjectPlugin::InjectPlugin (TSP* tsp_) :
     _stuffing_policy(CyclingPacketizer::NEVER)
 {
     option(u"",                   0,  STRING, 1, UNLIMITED_COUNT);
+    option(u"binary",             0);
     option(u"bitrate",           'b', UINT32);
     option(u"evaluate-interval", 'e', POSITIVE);
     option(u"force-crc",         'f');
@@ -135,15 +139,22 @@ ts::InjectPlugin::InjectPlugin (TSP* tsp_) :
     option(u"replace",           'r');
     option(u"stuffing",          's');
     option(u"terminate",         't');
+    option(u"xml",                0);
 
     setHelp(u"Input files:\n"
             u"\n"
-            u"  Binary files containing one or more sections.\n"
+            u"  Binary or XML files containing one or more sections or tables. By default,\n"
+            u"  files ending in .xml are XML and files ending in .bin are binary. For other\n"
+            u"  file names, explicitly specify --binary or --xml.\n"
+            u"\n"
             u"  If different repetition rates are required for different files,\n"
             u"  a parameter can be \"filename=value\" where value is the\n"
             u"  repetition rate in milliseconds for all sections in that file.\n"
             u"\n"
             u"Options:\n"
+            u"\n"
+            u"  --binary\n"
+            u"      Specify that all input files are binary, regardless of their file name.\n"
             u"\n"
             u"  -b value\n"
             u"  --bitrate value\n"
@@ -155,7 +166,7 @@ ts::InjectPlugin::InjectPlugin (TSP* tsp_) :
             u"      specified for some input files, the bitrate of the target PID is\n"
             u"      re-evaluated on a regular basis. The value of this option specifies\n"
             u"      the number of packet in the target PID before re-evaluating its\n"
-            u"      bitrate. The default is " TS_STRINGIFY (DEF_EVALUATE_INTERVAL) u" packets.\n"
+            u"      bitrate. The default is " TS_STRINGIFY(DEF_EVALUATE_INTERVAL) u" packets.\n"
             u"\n"
             u"  -f\n"
             u"  --force-crc\n"
@@ -217,7 +228,10 @@ ts::InjectPlugin::InjectPlugin (TSP* tsp_) :
             u"      by stuffing).\n"
             u"\n"
             u"  --version\n"
-            u"      Display the version number.\n");
+            u"      Display the version number.\n"
+            u"\n"
+            u"  --xml\n"
+            u"      Specify that all input files are XML, regardless of their file name.\n");
 }
 
 
@@ -239,8 +253,15 @@ bool ts::InjectPlugin::start()
     _pid_inter_pkt = intValue<PacketCounter>(u"inter-packet", 0);
     _eval_interval = intValue<PacketCounter>(u"evaluate-interval", DEF_EVALUATE_INTERVAL);
 
+    if (present(u"xml")) {
+        _inType = SectionFile::XML;
+    }
+    else if (present(u"binary")) {
+        _inType = SectionFile::BINARY;
+    }
+
     if (present(u"stuffing")) {
-        _stuffing_policy = CyclingPacketizer::ALWAYS;
+            _stuffing_policy = CyclingPacketizer::ALWAYS;
     }
     else if (_repeat_count == 0 && !_poll_files) {
         _stuffing_policy = CyclingPacketizer::NEVER;
@@ -301,14 +322,14 @@ bool ts::InjectPlugin::reloadFiles()
     // Load sections from input files
     bool success = true;
     _specific_rates = false;
-    SectionPtrVector sections;
+    SectionFile file;
 
     for (FileNameRateList::iterator it = _infiles.begin(); it != _infiles.end(); ++it) {
         if (_poll_files && !FileExists(it->file_name)) {
             // With --poll-files, we ignore non-existent files.
             it->retry_count = 0;  // no longer needed to retry
         }
-        else if (!Section::LoadFile(sections, it->file_name, _crc_op, *tsp)) {
+        else if (!file.load(it->file_name, *tsp, _inType, _crc_op)) {
             success = false;
             if (it->retry_count > 0) {
                 it->retry_count--;
@@ -317,10 +338,10 @@ bool ts::InjectPlugin::reloadFiles()
         else {
             // File successfully loaded.
             it->retry_count = 0;  // no longer needed to retry
-            _pzer.addSections(sections, it->repetition);
+            _pzer.addSections(file.sections(), it->repetition);
             _specific_rates = _specific_rates || it->repetition != 0;
             tsp->verbose(u"loaded %d sections from %s, repetition rate: %s",
-                         {sections.size(), it->file_name, it->repetition > 0 ? UString::Decimal(it->repetition) + u" ms" : u"unspecified"});
+                         {file.sections().size(), it->file_name, it->repetition > 0 ? UString::Decimal(it->repetition) + u" ms" : u"unspecified"});
         }
     }
 
