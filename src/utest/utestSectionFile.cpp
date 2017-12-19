@@ -100,15 +100,15 @@ SectionFileTest::SectionFileTest() :
 // Test suite initialization method.
 void SectionFileTest::setUp()
 {
-    //@@ ts::DeleteFile(_tempFileNameBin);
-    //@@ ts::DeleteFile(_tempFileNameXML);
+    ts::DeleteFile(_tempFileNameBin);
+    ts::DeleteFile(_tempFileNameXML);
 }
 
 // Test suite cleanup method.
 void SectionFileTest::tearDown()
 {
-    //@@ ts::DeleteFile(_tempFileNameBin);
-    //@@ ts::DeleteFile(_tempFileNameXML);
+    ts::DeleteFile(_tempFileNameBin);
+    ts::DeleteFile(_tempFileNameXML);
 }
 
 ts::Report& SectionFileTest::report()
