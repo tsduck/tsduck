@@ -108,10 +108,10 @@ DTAPI_ORIGIN = $(if $(wildcard $(ROOTDIR)/dektec/LinuxSDK.version),$(ROOTDIR)/de
 rpm: tarball $(RPMBUILDROOT)
 	cp -f $(TARFILE) $(RPMBUILDROOT)/SOURCES/
 	$(if $(wildcard $(DTAPI_ORIGIN)),MAKEFLAGS=DTAPI_ORIGIN=$(DTAPI_ORIGIN),) \
-	  $(RPMBUILD) $(RPMBUILDFLAGS) -D 'version $(TS_VERSION)' -D 'release $(TS_COMMIT)' tsduck.spec
-	cp -uf $(RPMBUILDROOT)/RPMS/*/tsduck-$(TS_FULL_VERSION).*.rpm $(INSTALLERDIR)
-	cp -uf $(RPMBUILDROOT)/RPMS/*/tsduck-devel-$(TS_FULL_VERSION).*.rpm $(INSTALLERDIR)
-	cp -uf $(RPMBUILDROOT)/SRPMS/tsduck-$(TS_FULL_VERSION).src.rpm $(INSTALLERDIR)
+	  $(RPMBUILD) $(RPMBUILDFLAGS) -D 'version $(TS_VERSION)' -D 'commit $(TS_COMMIT)'  -D 'distro $(DISTRO)' tsduck.spec
+	cp -uf $(RPMBUILDROOT)/RPMS/*/tsduck-$(TS_FULL_VERSION)$(DISTRO).*.rpm $(INSTALLERDIR)
+	cp -uf $(RPMBUILDROOT)/RPMS/*/tsduck-devel-$(TS_FULL_VERSION)$(DISTRO).*.rpm $(INSTALLERDIR)
+	cp -uf $(RPMBUILDROOT)/SRPMS/tsduck-$(TS_FULL_VERSION)$(DISTRO).src.rpm $(INSTALLERDIR)
 rpm32:
 	$(MAKE) rpm M32=true
 
@@ -120,9 +120,9 @@ TMPDIR = /tmp/tsduck-deb-$(USER)
 .PHONY: deb deb-main deb-dev
 deb: deb-main deb-dev
 deb-main:
-	$(MAKE) -C $(ROOTDIR) -j$(CPU_COUNT)
+	$(MAKE) NOTEST=true -C $(ROOTDIR) -j$(CPU_COUNT)
 	rm -rf $(TMPDIR)
-	$(MAKE) -C $(ROOTDIR) install SYSROOT=$(TMPDIR)
+	$(MAKE) NOTEST=true -C $(ROOTDIR) install SYSROOT=$(TMPDIR)
 	mkdir $(TMPDIR)/DEBIAN
 	sed -e 's/{{VERSION}}/$(TS_FULL_VERSION)/g' \
 	    -e 's/{{ARCH}}/$(shell dpkg-architecture -qDEB_BUILD_ARCH)/g' \
@@ -134,9 +134,9 @@ deb-main:
 	dpkg --build $(TMPDIR) $(INSTALLERDIR)
 	rm -rf $(TMPDIR)
 deb-dev:
-	$(MAKE) -C $(ROOTDIR) -j$(CPU_COUNT)
+	$(MAKE) NOTEST=true -C $(ROOTDIR) -j$(CPU_COUNT)
 	rm -rf $(TMPDIR)
-	$(MAKE) -C $(ROOTDIR) install-devel SYSROOT=$(TMPDIR)
+	$(MAKE) NOTEST=true -C $(ROOTDIR) install-devel SYSROOT=$(TMPDIR)
 	mkdir $(TMPDIR)/DEBIAN
 	sed -e 's/{{VERSION}}/$(TS_FULL_VERSION)/g' \
 	    -e 's/{{ARCH}}/$(shell dpkg-architecture -qDEB_BUILD_ARCH)/g' \
