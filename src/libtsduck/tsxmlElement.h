@@ -44,7 +44,7 @@ namespace ts {
         class Text;
 
         //!
-        //! Comment in an XML document.
+        //! Structured element in an XML document.
         //!
         class TSDUCKDLL Element: public Node
         {

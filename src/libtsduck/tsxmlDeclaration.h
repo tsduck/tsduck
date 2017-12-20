@@ -28,7 +28,7 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Comment in an XML document.
+//!  Declaration in an XML document.
 //!
 //----------------------------------------------------------------------------
 
@@ -38,7 +38,7 @@
 namespace ts {
     namespace xml {
         //!
-        //! Comment in an XML document.
+        //! Declaration in an XML document.
         //!
         class TSDUCKDLL Declaration: public Node
         {
