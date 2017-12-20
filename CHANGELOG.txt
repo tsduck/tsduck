@@ -2,7 +2,7 @@
 TSDuck Change Log and Release Notes
 ===================================
 
-Version 3.5
+Version 3.5-414
 
 - Added option --xml-output to tstables and plugin tables. Tables can be saved
   directly in XML format. It is no longer necessary to save in binary and then
