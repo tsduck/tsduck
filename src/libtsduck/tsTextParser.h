@@ -218,9 +218,9 @@ namespace ts {
         virtual bool parseName(UString& name);
 
     private:
-        Report&     _report;
-        UStringList _lines;
-        Position    _pos;
+        TS_UNUSED Report& _report;
+        UStringList       _lines;
+        Position          _pos;
 
         // Unaccessible operations.
         TextParser() = delete;
