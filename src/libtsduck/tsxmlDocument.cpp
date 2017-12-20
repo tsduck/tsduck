@@ -46,33 +46,16 @@ bool ts::xml::Document::parse(const UStringList& lines)
     return parseNode(parser, 0);
 }
 
-
-//----------------------------------------------------------------------------
-// Parse an XML document.
-//----------------------------------------------------------------------------
-
 bool ts::xml::Document::parse(const UString& text)
 {
     TextParser parser(text, _report);
     return parseNode(parser, 0);
 }
 
-
-//----------------------------------------------------------------------------
-// Load and parse an XML file.
-//----------------------------------------------------------------------------
-
 bool ts::xml::Document::load(std::istream& strm)
 {
-    // Load the lines from the file.
-    UStringList lines;
-    if (UString::Load(lines, strm)) {
-        return parse(lines);
-    }
-    else {
-        _report.error(u"error reading input file");
-        return false;
-    }
+    TextParser parser(_report);
+    return parser.loadStream(strm) && parseNode(parser, 0);
 }
 
 bool ts::xml::Document::load(const UString& fileName, bool search)
@@ -86,18 +69,9 @@ bool ts::xml::Document::load(const UString& fileName, bool search)
         return false;
     }
 
-    // Load the lines from the file.
-    UStringList lines;
-    if (UString::Load(lines, actualFileName)) {
-        setReportPrefix(actualFileName + u": ");
-        const bool ok = parse(lines);
-        setReportPrefix(u"");
-        return ok;
-    }
-    else {
-        _report.error(u"error reading file %s", {actualFileName});
-        return false;
-    }
+    // Parse the document from the file.
+    TextParser parser(_report);
+    return parser.loadFile(actualFileName) && parseNode(parser, 0);
 }
 
 
