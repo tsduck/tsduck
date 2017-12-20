@@ -95,6 +95,13 @@ namespace ts {
         bool loadFile(const UString& fileName);
 
         //!
+        //! Load the document to parse from a text stream.
+        //! @param [in,out] strm A standard text stream in input mode.
+        //! @return True on success, false on error.
+        //!
+        bool loadStream(std::istream& strm);
+
+        //!
         //! Check end of file.
         //! @return True if the parser reached the end of file.
         //!
@@ -218,9 +225,9 @@ namespace ts {
         virtual bool parseName(UString& name);
 
     private:
-        TS_UNUSED Report& _report;
-        UStringList       _lines;
-        Position          _pos;
+        Report&     _report;
+        UStringList _lines;
+        Position    _pos;
 
         // Unaccessible operations.
         TextParser() = delete;

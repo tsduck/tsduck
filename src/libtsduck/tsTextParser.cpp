@@ -90,15 +90,26 @@ void ts::TextParser::loadDocument(const UString& text)
     _pos = Position(_lines);
 }
 
-
-//----------------------------------------------------------------------------
-// Load the document to parse from a text file.
-//----------------------------------------------------------------------------
-
 bool ts::TextParser::loadFile(const UString& fileName)
 {
     // Load the file into the internal lines buffer.
     const bool ok = UString::Load(_lines, fileName);
+    if (!ok) {
+        _report.error(u"error reading file %s", {fileName});
+    }
+
+    // Initialize the parser on the internal lines buffer, including on file error (empty).
+    _pos = Position(_lines);
+    return ok;
+}
+
+bool ts::TextParser::loadStream(std::istream& strm)
+{
+    // Load the file into the internal lines buffer.
+    const bool ok = UString::Load(_lines, strm);
+    if (!ok) {
+        _report.error(u"error reading input document");
+    }
 
     // Initialize the parser on the internal lines buffer, including on file error (empty).
     _pos = Position(_lines);
