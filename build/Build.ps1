@@ -91,12 +91,13 @@ if (-not $Win32 -and -not $Win64) {
 
 # Get location of Visual Studio and project files.
 $VS = Search-VisualStudio
-$ProjectFileName = (Join-Path $VS.MsvcDir "tsduck.vcxproj")
+$ProjDir = $VS.MsvcDir
+$SolutionFileName = (Join-Path $ProjDir "tsduck.sln")
 
 # A function to invoke MSBuild.
-function Call-MSBuild ([string] $configuration, [string] $platform, [string] $target)
+function Call-MSBuild ([string] $configuration, [string] $platform, [string] $target = "")
 {
-    & $VS.MSBuild $ProjectFileName /nologo /maxcpucount /property:Configuration=$configuration /property:Platform=$platform /target:$target
+    & $VS.MSBuild $SolutionFileName /nologo /maxcpucount /property:Configuration=$configuration /property:Platform=$platform $target
     if ($LastExitCode -ne 0) {
         Exit-Script -NoPause:$NoPause "Error building $platform $configuration"
     }
@@ -104,34 +105,42 @@ function Call-MSBuild ([string] $configuration, [string] $platform, [string] $ta
 
 # Rebuild TSDuck.
 if ($Installer) {
-    # An installer needs the DLL for all configurations (development environment).
+    # We build everything except test programs for the "Release" configuration.
+    # Then, we need the DLL for all configurations (development environment).
+    $AllTargets = @(Select-String -Path (Join-Path $ProjDir "*.vcxproj") -Pattern '<RootNameSpace>' |
+                    ForEach-Object { $_ -replace '.*<RootNameSpace> *','' -replace ' *</RootNameSpace>.*','' })
+    $plugins = ($AllTargets | Select-String "tsplugin_*") -join ';'
+    $commands = ($AllTargets | Select-String -NotMatch @("tsduck*", "tsplugin_*", "setpath","utest*")) -join ';'
+    $targets = "tsduckdll;tsducklib;$commands;$plugins;setpath"
+
     if ($Win32 -and $Win64) {
-        Call-MSBuild Release x64   BuildInstaller
-        Call-MSBuild Release Win32 BuildInstaller
+        Call-MSBuild Release x64   /target:$targets
+        Call-MSBuild Release Win32 /target:$targets
     }
     elseif ($Win32) {
-        Call-MSBuild Release x64   BuildDLL
-        Call-MSBuild Release Win32 BuildInstaller
+        Call-MSBuild Release x64   /target:tsduckdll
+        Call-MSBuild Release Win32 /target:$targets
     }
     elseif ($Win64) {
-        Call-MSBuild Release x64   BuildInstaller
-        Call-MSBuild Release Win32 BuildDLL
+        Call-MSBuild Release x64   /target:$targets
+        Call-MSBuild Release Win32 /target:tsduckdll
     }
-    Call-MSBuild Debug x64   BuildDLL
-    Call-MSBuild Debug Win32 BuildDLL
+    Call-MSBuild Debug x64   /target:tsduckdll
+    Call-MSBuild Debug Win32 /target:tsduckdll
 }
 else {
+    # Not for an installer, build everything.
     if ($Release -and $Win64) {
-        Call-MSBuild Release x64 BuildAll
+        Call-MSBuild Release x64
     }
     if ($Release -and $Win32) {
-        Call-MSBuild Release Win32 BuildAll
+        Call-MSBuild Release Win32
     }
     if ($Debug -and $Win64) {
-        Call-MSBuild Debug x64 BuildAll
+        Call-MSBuild Debug x64
     }
     if ($Debug -and $Win32) {
-        Call-MSBuild Debug Win32 BuildAll
+        Call-MSBuild Debug Win32
     }
 }
 
