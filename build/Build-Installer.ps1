@@ -116,10 +116,10 @@ if (-not $NoInstaller) {
     $NsisScript = Join-Path $PSScriptRoot "tsduck.nsi"
 }
 
-# Build the project in release and debug mode (debug libraries for development environment option).
+# Build the project.
 if (-not $NoBuild) {
     Push-Location
-    & (Join-Path $PSScriptRoot Build.ps1) -Release -Debug -NoPause -Win32:$Win32 -Win64:$Win64
+    & (Join-Path $PSScriptRoot Build.ps1) -Installer -NoPause -Win32:$Win32 -Win64:$Win64
     $Code = $LastExitCode
     Pop-Location
     if ($Code -ne 0) {

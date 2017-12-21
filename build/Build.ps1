@@ -32,6 +32,10 @@
 
   Build TSDuck from the command line, an alternative to Visual Studio.
 
+ .PARAMETER Installer
+
+  Generate everything which is needed for installer.
+
  .PARAMETER Debug
 
   Generate the debug version of the binaries. If neither -Release nor -Debug
@@ -58,6 +62,7 @@
   when the script was run from Windows Explorer.
 #>
 param(
+    [switch]$Installer = $false,
     [switch]$Debug = $false,
     [switch]$Release = $false,
     [switch]$Win32 = $false,
@@ -73,7 +78,7 @@ if (((Get-ExecutionPolicy) -ne "Unrestricted") -and ((Get-ExecutionPolicy) -ne "
 Import-Module -Force -Name (Join-Path $PSScriptRoot Build-Common.psm1)
 
 # Apply defaults.
-if (-not $Debug -and -not $Release) {
+if (-not $Debug -and -not $Release -and -not $Installer) {
     $Release = $true
 }
 if (-not $Win32 -and -not $Win64) {
@@ -81,39 +86,52 @@ if (-not $Win32 -and -not $Win64) {
     $Win64 = $true
 }
 
-# Get location of Visual Studio and project files.
-$VS = Search-VisualStudio
-$SolutionFileName = "tsduck.sln"
-
 # Make sure that Git hooks are installed.
 & (Join-Path $PSScriptRoot git-hook-update.ps1) -NoPause
 
-# We need to work in the directory the project files.
-Set-Location $VS.MsvcDir
+# Get location of Visual Studio and project files.
+$VS = Search-VisualStudio
+$ProjectFileName = (Join-Path $VS.MsvcDir "tsduck.vcxproj")
+
+# A function to invoke MSBuild.
+function Call-MSBuild ([string] $configuration, [string] $platform, [string] $target)
+{
+    & $VS.MSBuild $ProjectFileName /nologo /maxcpucount /property:Configuration=$configuration /property:Platform=$platform /target:$target
+    if ($LastExitCode -ne 0) {
+        Exit-Script -NoPause:$NoPause "Error building $platform $configuration"
+    }
+}
 
 # Rebuild TSDuck.
-if ($Release -and $Win64) {
-    & $VS.MSBuild $SolutionFileName /nologo /maxcpucount /property:Configuration=Release /property:Platform=x64
-    if ($LastExitCode -ne 0) {
-        Exit-Script -NoPause:$NoPause "Error building 64-bit Release"
+if ($Installer) {
+    # An installer needs the DLL for all configurations (development environment).
+    if ($Win32 -and $Win64) {
+        Call-MSBuild Release x64   BuildInstaller
+        Call-MSBuild Release Win32 BuildInstaller
     }
-}
-if ($Release -and $Win32) {
-    & $VS.MSBuild $SolutionFileName /nologo /maxcpucount /property:Configuration=Release /property:Platform=Win32
-    if ($LastExitCode -ne 0) {
-        Exit-Script -NoPause:$NoPause "Error building 32-bit Release"
+    elseif ($Win32) {
+        Call-MSBuild Release x64   BuildDLL
+        Call-MSBuild Release Win32 BuildInstaller
     }
-}
-if ($Debug -and $Win64) {
-    & $VS.MSBuild $SolutionFileName /nologo /maxcpucount /property:Configuration=Debug /property:Platform=x64
-    if ($LastExitCode -ne 0) {
-        Exit-Script -NoPause:$NoPause "Error building 64-bit Debug"
+    elseif ($Win64) {
+        Call-MSBuild Release x64   BuildInstaller
+        Call-MSBuild Release Win32 BuildDLL
     }
+    Call-MSBuild Debug x64   BuildDLL
+    Call-MSBuild Debug Win32 BuildDLL
 }
-if ($Debug -and $Win32) {
-    & $VS.MSBuild $SolutionFileName /nologo /maxcpucount /property:Configuration=Debug /property:Platform=Win32
-    if ($LastExitCode -ne 0) {
-        Exit-Script -NoPause:$NoPause "Error building 32-bit Debug"
+else {
+    if ($Release -and $Win64) {
+        Call-MSBuild Release x64 BuildAll
+    }
+    if ($Release -and $Win32) {
+        Call-MSBuild Release Win32 BuildAll
+    }
+    if ($Debug -and $Win64) {
+        Call-MSBuild Debug x64 BuildAll
+    }
+    if ($Debug -and $Win32) {
+        Call-MSBuild Debug Win32 BuildAll
     }
 }
 

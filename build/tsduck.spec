@@ -40,8 +40,8 @@ make NOTEST=true %{?_smp_mflags} %{?mflags}
 
 %install
 rm -rf $RPM_BUILD_ROOT
-make install SYSROOT=$RPM_BUILD_ROOT
-make install-devel SYSROOT=$RPM_BUILD_ROOT
+make NOTEST=true install SYSROOT=$RPM_BUILD_ROOT
+make NOTEST=true install-devel SYSROOT=$RPM_BUILD_ROOT
 
 %clean
 rm -rf $RPM_BUILD_ROOT
