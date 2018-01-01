@@ -30,5 +30,5 @@ License:
 
 Copyright:
 
-  Copyright (c) 2005-2017, Thierry Lelegard
+  Copyright (c) 2005-2018, Thierry Lelegard
   All rights reserved.
