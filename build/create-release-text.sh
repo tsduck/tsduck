@@ -18,7 +18,7 @@ ROOTDIR=$(cd $SCRIPTDIR/..; pwd)
 INSTALLDIR=$ROOTDIR/installers
 
 # Get most recent git tag.
-TAG=$(cd $ROOTDIR; git tag --sort=-taggerdate | head -1)
+TAG=$(cd $ROOTDIR; git tag --sort=-creatordate | head -1)
 [[ -n "$TAG" ]] || error "no git tag found"
 
 # Get content of web page for release.
