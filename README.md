@@ -59,5 +59,5 @@ are available for Windows, Fedora and Ubuntu. On MacOS,
 TSDuck is distributed under the terms of the Simplified BSD License.
 See the file `LICENSE.txt` for details.
 
-*Copyright (c) 2005-2017, Thierry Lelegard*<br/>
+*Copyright (c) 2005-2018, Thierry Lelegard*<br/>
 *All rights reserved*
