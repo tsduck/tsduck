@@ -174,6 +174,9 @@ bool ts::OutputPager(Report& report, bool useStdout, bool useStderr, const UStri
         report.error(u"error setting stderr: %s", {ErrorCodeMessage()});
     }
 
+    // Successful creation.
+    return true;
+
 #else // UNIX
 
     // Create a pipe
@@ -184,23 +187,31 @@ bool ts::OutputPager(Report& report, bool useStdout, bool useStderr, const UStri
     }
 
     // Create the forked process
-    if ((_fpid = ::fork()) < 0) {
+    const ::pid_t child = ::fork();
+    if (child < 0) {
         report.error(u"fork error: %s", {ErrorCodeMessage()});
         return false;
     }
-    else if (_fpid == 0) {
-        // In the context of the created process.
-        // Close standard input.
-        ::close(STDIN_FILENO);
+
+    // There is a trick here. We execute the pager in the *parent* process
+    // and we continue the application in the *child* process. Doing the
+    // opposite (which could seem more natural) messes up the terminal.
+    // The reason for this is still a mystery...
+    if (child > 0) {
+        // In the context of the parent process: execute the pager.
+
         // Close the writing end-point of the pipe.
         ::close(filedes[1]);
+
         // Redirect the reading end-point of the pipe to standard input
         if (::dup2(filedes[0], STDIN_FILENO) < 0) {
             ::perror("error redirecting stdin in forked process");
             ::exit(EXIT_FAILURE);
         }
+
         // Close the now extraneous file descriptor.
         ::close(filedes[0]);
+
         // Execute the command. Should not return.
         const std::string cmd(pager.toUTF8());
         if (pagerIsExec) {
@@ -211,22 +222,26 @@ bool ts::OutputPager(Report& report, bool useStdout, bool useStderr, const UStri
         }
         ::perror("exec error");
         ::exit(EXIT_FAILURE);
-        assert(false); // should never get there
-    }
 
-    // Close the reading end-point of pipe.
-    ::close(filedes[0]);
-
-    // Use the writing end-point of pipe for stdout and/or stderr.
-    if (useStdout && ::dup2(filedes[1], STDOUT_FILENO) < 0) {
-        report.error(u"error setting stdout: %s", {ErrorCodeMessage()});
+        // Should never get there, jsut make the compiler happy.
+        assert(false);
+        return false;
     }
-    if (useStderr && ::dup2(filedes[1], STDERR_FILENO) < 0) {
-        report.error(u"error setting stderr: %s", {ErrorCodeMessage()});
-    }
+    else {
+        // In the context of the child process: continue the application.
 
+        // Close the reading end-point of pipe.
+        ::close(filedes[0]);
+
+        // Use the writing end-point of pipe for stdout and/or stderr.
+        if (useStdout && ::dup2(filedes[1], STDOUT_FILENO) < 0) {
+            report.error(u"error setting stdout: %s", {ErrorCodeMessage()});
+        }
+        if (useStderr && ::dup2(filedes[1], STDERR_FILENO) < 0) {
+            report.error(u"error setting stderr: %s", {ErrorCodeMessage()});
+        }
+
+        return true;
+    }
 #endif
-
-    // Successful creation.
-    return true;
 }

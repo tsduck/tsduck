@@ -848,6 +848,10 @@ namespace ts {
         // Add a new option.
         void addOption(const IOption& opt);
 
+        // Process --help and --version predefined options.
+        void processHelp();
+        void processVersion();
+
         // Locate an option description. Used during command line parsing.
         // Return 0 if not found.
         IOption* search(UChar c);
