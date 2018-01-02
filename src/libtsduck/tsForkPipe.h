@@ -54,14 +54,24 @@ namespace ts {
         ~ForkPipe();
 
         //!
+        //! How to merge standard output and standard error in the created process.
+        //!
+        enum OutputMode {
+            KEEP_BOTH,     //!< Keep same stdout and stderr as current process.
+            STDOUT_ONLY,   //!< Merge stderr into current stdout.
+            STDERR_ONLY,   //!< Merge stdout into current stderr.
+        };
+
+        //!
         //! Create the process, open the pipe.
         //! @param [in] command The command to execute.
         //! @param [in] synchronous If true, wait for process termination in close().
         //! @param [in] buffer_size The pipe buffer size in bytes. Used on Windows only. Zero means default.
         //! @param [in,out] report Where to report errors.
+        //! @param [in] out_mode How to handle stdout and stderr.
         //! @return True on success, false on error.
         //!
-        bool open(const UString& command, bool synchronous, size_t buffer_size, Report& report);
+        bool open(const UString& command, bool synchronous, size_t buffer_size, Report& report, OutputMode out_mode = KEEP_BOTH);
 
         //!
         //! Close the pipe.
@@ -138,5 +148,9 @@ namespace ts {
         ::pid_t  _fpid;          // Forked process id (UNIX PID, not MPEG PID!)
         int      _fd;            // Pipe output file descriptor
 #endif
+
+        // Inacessible operations.
+        ForkPipe(const ForkPipe&) = delete;
+        ForkPipe& operator=(const ForkPipe&) = delete;
     };
 }

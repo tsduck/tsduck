@@ -28,34 +28,63 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Send application output to a "pager" application such as "more".
+//!  Send output to a "pager" application such as "more".
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsReport.h"
-#include "tsNullReport.h"
+#include "tsForkPipe.h"
 
 namespace ts {
     //!
     //! Send application output to a "pager" application such as "more" or "less".
     //!
-    //! By default, the standard output and standard error are merged and sent
-    //! through a pipe to a created process. Either standard output or error or
-    //! both can be redirected. If any device to be redirected is not a terminal,
-    //! the function fails.
-    //!
-    //! The created command can be specified using the environment variable @c PAGER.
-    //! By default, the application searches for commands "less" and "more" in this order;
-    //!
-    //! @param [in,out] report Where to log "real errors" and debug messages.
-    //! @param [in] useStdout Include standard output in the redirection.
-    //! @param [in] useStderr Include standard error in the redirection.
-    //! @param [in] envName Name of the optional environment variable containing the pager command name.
-    //! @return True on success, false on error
-    //!
-    TSDUCKDLL bool OutputPager(Report& report = NULLREP,
-                               bool useStdout = true,
-                               bool useStderr = true,
-                               const UString& envName = u"PAGER");
+    class TSDUCKDLL OutputPager : public ForkPipe
+    {
+    public:
+        //!
+        //! Default constructor.
+        //! @param [in] envName Name of the optional environment variable containing the pager command name.
+        //!
+        OutputPager(const UString& envName = u"PAGER");
+
+        //!
+        //! Check if we can run a pager.
+        //! To run a pager, we must have found a valid pager command and either stdout or stderr must be a terminal.
+        //! @return True if we can page.
+        //!
+        bool canPage() const { return _hasTerminal && !_pagerCommand.empty(); }
+
+        //!
+        //! Get the pager command which is used.
+        //! @return The pager command which is used.
+        //!
+        UString pagerCommand() const { return _pagerCommand; }
+
+        //!
+        //! Create the process, open the pipe.
+        //! @param [in] synchronous If true, wait for process termination in close().
+        //! @param [in] buffer_size The pipe buffer size in bytes. Used on Windows only. Zero means default.
+        //! @param [in,out] report Where to report errors.
+        //! @return True on success, false on error.
+        //!
+        bool open(bool synchronous, size_t buffer_size, Report& report);
+
+        //!
+        //! Write data to the pipe (received at process' standard input).
+        //! @param [in] test Text to write.
+        //! @param [in,out] report Where to report errors.
+        //! @return True on success, false on error.
+        //!
+        bool write(const UString& text, Report& report);
+
+    private:
+        bool       _hasTerminal;
+        OutputMode _outputMode;
+        UString    _pagerCommand;
+
+        // Inacessible operations.
+        OutputPager(const OutputPager&) = delete;
+        OutputPager& operator=(const OutputPager&) = delete;
+    };
 }

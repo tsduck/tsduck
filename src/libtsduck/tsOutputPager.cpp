@@ -29,219 +29,103 @@
 
 #include "tsOutputPager.h"
 #include "tsSysUtils.h"
-#include "tsMemoryUtils.h"
 
 
 //----------------------------------------------------------------------------
-// Get the pager command.
+// Default constructor.
 //----------------------------------------------------------------------------
 
-namespace {
-    //!
-    //! Get the pager command
-    //! @param [out] cmd Page command.
-    //! @param [out] exe It true, @a cmd is an executable file, otherwise it is a shell command.
-    //! @param [in,out] report Where to log "real errors" and debug messages.
-    //! @param [in] envName Name of the optional environment variable containing the pager command name.
-    //! @return True on success, false on error
-    //!
-    bool GetPagerCommand(ts::UString& cmd, bool& exe, ts::Report& report, const ts::UString& envName)
-    {
-        // Check if the PAGER variable contains something.
-        if (!envName.empty()) {
-            cmd = ts::GetEnvironment(envName);
-            cmd.trim();
-            if (!cmd.empty()) {
-                report.debug(u"%s is \"%s\"", {envName, cmd});
-                exe = false;
-                return true;
-            }
-        }
+ts::OutputPager::OutputPager(const UString& envName) :
+    ForkPipe(),
+    _hasTerminal(false),
+    _outputMode(KEEP_BOTH),
+    _pagerCommand()
+{
+    // Check if we have a terminal.
+    const bool outTerm = StdOutIsTerminal();
+    const bool errTerm = StdErrIsTerminal();
+    _hasTerminal = outTerm || errTerm;
+
+    // Check if we should redirect one output.
+    if (outTerm && !errTerm) {
+        _outputMode = STDOUT_ONLY;
+    }
+    else if (!outTerm && errTerm) {
+        _outputMode = STDERR_ONLY;
+    }
+
+    // Get the pager command.
+    // First, check if the PAGER variable contains something.
+    if (!envName.empty()) {
+        _pagerCommand = ts::GetEnvironment(envName);
+        _pagerCommand.trim();
+    }
+
+    // If there is no pager command, try to find one.
+    if (_pagerCommand.empty()) {
 
         // Get the path search list.
-        ts::UStringList dirs;
-        ts::GetEnvironmentPath(dirs, TS_COMMAND_PATH);
+        UStringList dirs;
+        GetEnvironmentPath(dirs, TS_COMMAND_PATH);
 
-        // Predefined list of commands:
-        static const ts::UChar* const names[] = {
-            u"less" TS_EXECUTABLE_SUFFIX,
-            u"more" TS_EXECUTABLE_SUFFIX,
-            0
+        // Predefined list of commands. 
+        struct PredefinedPager {
+            UString command;
+            UString parameters;
         };
+        const std::list<PredefinedPager> pagers({
+            {u"less", u"-QFX"}, 
+            {u"more", u""}
+        });
 
         // Search the predefined pager commands in the path.
-        for (size_t i = 0; names[i] != 0; ++i) {
-            for (ts::UStringList::const_iterator it = dirs.begin(); it != dirs.end(); ++it) {
-                cmd = (*it + ts::PathSeparator) + names[i];
-                if (ts::FileExists(cmd)) {
-                    report.debug(u"pager executable is \"%s\"", {cmd});
-                    exe = true;
-                    return true;
+        for (std::list<PredefinedPager>::const_iterator itPager = pagers.begin(); itPager != pagers.end() && _pagerCommand.empty(); ++itPager) {
+            for (UStringList::const_iterator itDir = dirs.begin(); itDir != dirs.end() && _pagerCommand.empty(); ++itDir) {
+                // Full path of executable file.
+                const UString exe(*itDir + PathSeparator + itPager->command + TS_EXECUTABLE_SUFFIX);
+                if (FileExists(exe)) {
+                    // The executable exists. Build the command line.
+                    _pagerCommand = u'"' + exe + u"\" " + itPager->parameters;
                 }
             }
         }
+    }
 
-        // No pager command found.
+    // On Windows, we can always use the embedded "more" command.
 #if defined(TS_WINDOWS)
-        // On Windows, we can always use the embedded "more" command.
-        cmd = u"more";
-        exe = false;
-        return true;
-#else
-        report.debug(u"no pager command found");
-        return false;
+    if (_pagerCommand.empty()) {
+        _pagerCommand = u"cmd /d /q /c more";
+    }
 #endif
+}
+
+
+//----------------------------------------------------------------------------
+// Create the process, open the pipe.
+//----------------------------------------------------------------------------
+
+bool ts::OutputPager::open(bool synchronous, size_t buffer_size, Report& report)
+{
+    if (!_hasTerminal) {
+        report.error(u"not a terminal, cannot page");
+        return false;
+    }
+    else if (_pagerCommand.empty()) {
+        report.error(u"no pager command found, cannot page");
+        return false;
+    }
+    else {
+        return ForkPipe::open(_pagerCommand, synchronous, buffer_size, report, _outputMode);
     }
 }
 
 
 //----------------------------------------------------------------------------
-// Send application output to a "pager" application such as "more" or "less".
+// Write data to the pipe (received at process' standard input).
 //----------------------------------------------------------------------------
 
-bool ts::OutputPager(Report& report, bool useStdout, bool useStderr, const UString& envName)
+bool ts::OutputPager::write(const UString& text, Report& report)
 {
-    // Check that all requested devices are terminals.
-    if ((useStdout && !StdOutIsTerminal()) || (useStderr && !StdErrIsTerminal()) || (!useStdout && !useStderr)) {
-        return false;
-    }
-
-    // Locate the pager command.
-    UString pager;
-    bool pagerIsExec = false;
-    if (!GetPagerCommand(pager, pagerIsExec, report, envName)) {
-        return false;
-    }
-
-#if defined (TS_WINDOWS)
-
-    // Create a pipe
-    ::HANDLE read_handle;
-    ::HANDLE write_handle;
-    ::SECURITY_ATTRIBUTES sa;
-    sa.nLength = sizeof(sa);
-    sa.lpSecurityDescriptor = 0;
-    sa.bInheritHandle = TRUE;
-    if (::CreatePipe(&read_handle, &write_handle, &sa, 0) == 0) {
-        report.error(u"error creating pipe: %s", {ErrorCodeMessage()});
-        return false;
-    }
-
-    // CreatePipe can only inherit none or both handles. Since we need the
-    // read handle to be inherited by the child process, we said "inherit".
-    // Now, make sure that the write handle of the pipe is not inherited.
-    ::SetHandleInformation(write_handle, HANDLE_FLAG_INHERIT, 0);
-
-    // Make sure our output handles can be inherited
-    ::SetHandleInformation(::GetStdHandle(STD_OUTPUT_HANDLE), HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT);
-    ::SetHandleInformation(::GetStdHandle(STD_ERROR_HANDLE), HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT);
-
-    // Process startup info specifies standard handles
-    ::STARTUPINFOW si;
-    TS_ZERO(si);
-    si.cb = sizeof(si);
-    si.hStdInput = read_handle;
-    si.hStdOutput = ::GetStdHandle(STD_OUTPUT_HANDLE);
-    si.hStdError = ::GetStdHandle(STD_ERROR_HANDLE);
-    si.dwFlags = STARTF_USESTDHANDLES;
-
-    // If the pager is a command to be decoded (ie not an executable file), build the full command name.
-    if (!pagerIsExec) {
-        pager.insert(0, u"cmd /q /d /c");
-    }
-
-    // Create the process
-    ::PROCESS_INFORMATION pi;
-    if (::CreateProcessW(NULL, const_cast<::WCHAR*>(pager.wc_str()), NULL, NULL, TRUE, 0, NULL, NULL, &si, &pi) == 0) {
-        report.error(u"error creating pager process: %s", {ErrorCodeMessage()});
-        ::CloseHandle(read_handle);
-        ::CloseHandle(write_handle);
-        return false;
-    }
-
-    // Close unused process handles
-    ::CloseHandle(pi.hProcess);
-    ::CloseHandle(pi.hThread);
-
-    // Close the reading end-point of pipe.
-    ::CloseHandle(read_handle);
-
-    // Use the writing end-point of pipe for stdout and/or stderr.
-    if (useStdout && !::SetStdHandle(STD_OUTPUT_HANDLE, write_handle)) {
-        report.error(u"error setting stdout: %s", {ErrorCodeMessage()});
-    }
-    if (useStderr && !::SetStdHandle(STD_ERROR_HANDLE, write_handle)) {
-        report.error(u"error setting stderr: %s", {ErrorCodeMessage()});
-    }
-
-    // Successful creation.
-    return true;
-
-#else // UNIX
-
-    // Create a pipe
-    int filedes[2];
-    if (::pipe(filedes) < 0) {
-        report.error(u"error creating pipe: %s", {ErrorCodeMessage()});
-        return false;
-    }
-
-    // Create the forked process
-    const ::pid_t child = ::fork();
-    if (child < 0) {
-        report.error(u"fork error: %s", {ErrorCodeMessage()});
-        return false;
-    }
-
-    // There is a trick here. We execute the pager in the *parent* process
-    // and we continue the application in the *child* process. Doing the
-    // opposite (which could seem more natural) messes up the terminal.
-    // The reason for this is still a mystery...
-    if (child > 0) {
-        // In the context of the parent process: execute the pager.
-
-        // Close the writing end-point of the pipe.
-        ::close(filedes[1]);
-
-        // Redirect the reading end-point of the pipe to standard input
-        if (::dup2(filedes[0], STDIN_FILENO) < 0) {
-            ::perror("error redirecting stdin in forked process");
-            ::exit(EXIT_FAILURE);
-        }
-
-        // Close the now extraneous file descriptor.
-        ::close(filedes[0]);
-
-        // Execute the command. Should not return.
-        const std::string cmd(pager.toUTF8());
-        if (pagerIsExec) {
-            ::execl(cmd.c_str(), cmd.c_str(), TS_NULL);
-        }
-        else {
-            ::execl("/bin/sh", "/bin/sh", "-c", cmd.c_str(), TS_NULL);
-        }
-        ::perror("exec error");
-        ::exit(EXIT_FAILURE);
-
-        // Should never get there, jsut make the compiler happy.
-        assert(false);
-        return false;
-    }
-    else {
-        // In the context of the child process: continue the application.
-
-        // Close the reading end-point of pipe.
-        ::close(filedes[0]);
-
-        // Use the writing end-point of pipe for stdout and/or stderr.
-        if (useStdout && ::dup2(filedes[1], STDOUT_FILENO) < 0) {
-            report.error(u"error setting stdout: %s", {ErrorCodeMessage()});
-        }
-        if (useStderr && ::dup2(filedes[1], STDERR_FILENO) < 0) {
-            report.error(u"error setting stderr: %s", {ErrorCodeMessage()});
-        }
-
-        return true;
-    }
-#endif
+    const std::string utf8Text(text.toUTF8());
+    return ForkPipe::write(utf8Text.data(), utf8Text.size(), report);
 }
