@@ -30,18 +30,23 @@
 #include "tsAsyncReport.h"
 TSDUCK_SOURCE;
 
+#if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
+const size_t ts::AsyncReport::MAX_LOG_MESSAGES;
+#endif
+
 
 //----------------------------------------------------------------------------
 // Default constructor
 //----------------------------------------------------------------------------
 
-ts::AsyncReport::AsyncReport(int max_severity, bool time_stamp) :
+ts::AsyncReport::AsyncReport(int max_severity, bool time_stamp, size_t max_messages, bool synchronous) :
     Report(max_severity),
     Thread(ThreadAttributes().setPriority(ThreadAttributes::GetMinimumPriority())),
-    _log_queue(MAX_LOG_MESSAGES),
+    _log_queue(max_messages),
     _default_handler(*this),
     _handler(&_default_handler),
     _time_stamp(time_stamp),
+    _synchronous(synchronous),
     _terminated(false)
 {
     // Start the logging thread
@@ -85,7 +90,8 @@ void ts::AsyncReport::writeLog(int severity, const UString &msg)
 {
     if (!_terminated) {
         // Enqueue the message immediately (timeout = 0), drop message on overflow.
-        _log_queue.enqueue(new LogMessage(false, severity, msg), 0);
+        // On the contrary, in synchronous mode, wait infinitely until the message is queued.
+        _log_queue.enqueue(new LogMessage(false, severity, msg), _synchronous ? Infinite : 0);
     }
 }
 

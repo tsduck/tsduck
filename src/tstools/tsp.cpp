@@ -145,7 +145,7 @@ int main(int argc, char *argv[])
     // Create an asynchronous error logger. Can be used in multi-threaded
     // context. Set this logger as report method for all executors.
 
-    ts::AsyncReport report(opt.maxSeverity(), opt.timed_log);
+    ts::AsyncReport report(opt.maxSeverity(), opt.timed_log, opt.log_msg_count, opt.sync_log);
 
     ts::tsp::PluginExecutor* proc = input;
     do {
