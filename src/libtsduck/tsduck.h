@@ -157,6 +157,7 @@
 #include "tsNullReport.h"
 #include "tsObject.h"
 #include "tsOneShotPacketizer.h"
+#include "tsOutputPager.h"
 #include "tsOutputRedirector.h"
 #include "tsPAT.h"
 #include "tsPCR.h"
@@ -306,12 +307,12 @@
 #if defined(__windows)
 #include "tsComIds.h"
 #include "tsComPtr.h"
-#include "tsWinUtils.h"
 #include "tsDirectShowFilterCategory.h"
 #include "tsDirectShowGraph.h"
 #include "tsDirectShowTest.h"
 #include "tsDirectShowUtils.h"
 #include "tsMediaTypeUtils.h"
 #include "tsSinkFilter.h"
+#include "tsWinUtils.h"
 #endif
 
