@@ -38,7 +38,7 @@
 TSDUCK_SOURCE;
 
 #if defined(TS_WINDOWS)
-#include "tsComUtils.h"
+#include "tsWinUtils.h"
 #endif
 
 #if defined(TS_MAC)
@@ -1033,10 +1033,40 @@ void ts::GetEnvironment(Environment& env)
 // Check if the standard input/output/error is a terminal.
 //----------------------------------------------------------------------------
 
+#if defined(TS_WINDOWS)
+namespace {
+    // On Windows, only the DOS and PowerShell consoles are considered as terminal.
+    // We also want to recognize as terminals the Cygwin and Msys consoles (mintty).
+    bool StdHandleIsATerminal(::DWORD ns)
+    {
+        const ::HANDLE handle = ::GetStdHandle(ns);
+        switch (::GetFileType(handle)) {
+            case FILE_TYPE_CHAR: {
+                // A native console (DOS or PowerShell).
+                return true;
+            }
+            case FILE_TYPE_PIPE: {
+                // Check if associated file name matches Cygwin or Msys pty name.
+                // With mintty, the standard devices are named pipes. With Cygwin,
+                // the name starts with \cygwin. With Msys, the name starts with \msys.
+                // Then, if the device is the mintty console, the name contains -pty.
+                // For actual pipes, -pty is replaced by -pipe.
+                const ts::UString name = ts::WinDeviceName(handle).toLower();
+                return (name.find(u"\\cygwin") != ts::UString::NPOS || name.find(u"\\msys") != ts::UString::NPOS) && name.find(u"-pty") != ts::UString::NPOS;
+            }
+            default: {
+                // Cannot be a terminal.
+                return false;
+            }
+        }
+    }
+}
+#endif
+
 bool ts::StdInIsTerminal()
 {
 #if defined(TS_WINDOWS)
-    return ::GetFileType(::GetStdHandle(STD_INPUT_HANDLE)) == FILE_TYPE_CHAR;
+    return StdHandleIsATerminal(STD_INPUT_HANDLE);
 #else
     return ::isatty(STDIN_FILENO);
 #endif
@@ -1045,7 +1075,7 @@ bool ts::StdInIsTerminal()
 bool ts::StdOutIsTerminal()
 {
 #if defined(TS_WINDOWS)
-    return ::GetFileType(::GetStdHandle(STD_OUTPUT_HANDLE)) == FILE_TYPE_CHAR;
+    return StdHandleIsATerminal(STD_OUTPUT_HANDLE);
 #else
     return ::isatty(STDOUT_FILENO);
 #endif
@@ -1054,7 +1084,7 @@ bool ts::StdOutIsTerminal()
 bool ts::StdErrIsTerminal()
 {
 #if defined(TS_WINDOWS)
-    return ::GetFileType(::GetStdHandle(STD_ERROR_HANDLE)) == FILE_TYPE_CHAR;
+    return StdHandleIsATerminal(STD_ERROR_HANDLE);
 #else
     return ::isatty(STDERR_FILENO);
 #endif

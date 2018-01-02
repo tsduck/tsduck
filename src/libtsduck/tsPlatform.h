@@ -436,10 +436,10 @@
 
 #if defined(TS_WINDOWS) && !defined(DOXYGEN)
     #if !defined(WINVER)
-        #define WINVER 0x0501            // Allow use of features specific to Windows XP or later.
+        #define WINVER 0x0601            // Allow use of features specific to Windows 7 or later.
     #endif
     #if !defined(_WIN32_WINNT)
-        #define _WIN32_WINNT 0x0501      // Allow use of features specific to Windows XP or later.
+        #define _WIN32_WINNT 0x0601      // Allow use of features specific to Windows 7 or later.
     #endif
     #if defined(UNICODE)
         #undef UNICODE                   // No unicode in TSDuck, use single byte char

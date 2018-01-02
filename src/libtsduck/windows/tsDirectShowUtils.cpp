@@ -33,7 +33,7 @@
 
 #include "tsDirectShowUtils.h"
 #include "tsMediaTypeUtils.h"
-#include "tsComUtils.h"
+#include "tsWinUtils.h"
 #include "tsMemoryUtils.h"
 #include "tsNullReport.h"
 TSDUCK_SOURCE;

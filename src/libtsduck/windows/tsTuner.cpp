@@ -40,7 +40,7 @@
 #include "tsNullReport.h"
 #include "tsSysUtils.h"
 #include "tsDirectShowUtils.h"
-#include "tsComUtils.h"
+#include "tsWinUtils.h"
 #include "tsComPtr.h"
 TSDUCK_SOURCE;
 

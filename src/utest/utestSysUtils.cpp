@@ -39,6 +39,10 @@
 #include "utestCppUnitTest.h"
 TSDUCK_SOURCE;
 
+#if defined(TS_WINDOWS)
+#include "tsWinUtils.h"
+#endif
+
 
 //----------------------------------------------------------------------------
 // The test fixture
@@ -649,6 +653,11 @@ void SysUtilsTest::testMemory()
 
 void SysUtilsTest::testIsTerminal()
 {
+#if defined(TS_WINDOWS)
+    utest::Out() << "SysUtilsTest::testIsTerminal: stdin  = \"" << ts::WinDeviceName(::GetStdHandle(STD_INPUT_HANDLE)) << "\"" << std::endl
+                 << "SysUtilsTest::testIsTerminal: stdout = \"" << ts::WinDeviceName(::GetStdHandle(STD_OUTPUT_HANDLE)) << "\"" << std::endl
+                 << "SysUtilsTest::testIsTerminal: stderr = \"" << ts::WinDeviceName(::GetStdHandle(STD_ERROR_HANDLE)) << "\"" << std::endl;
+#endif
     utest::Out() << "SysUtilsTest::testIsTerminal: StdInIsTerminal = " << ts::UString::TrueFalse(ts::StdInIsTerminal())
                  << ", StdOutIsTerminal = " << ts::UString::TrueFalse(ts::StdOutIsTerminal())
                  << ", StdErrIsTerminal = " << ts::UString::TrueFalse(ts::StdErrIsTerminal())
