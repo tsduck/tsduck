@@ -59,6 +59,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsArgMix.h" />
     <ClInclude Include="..\..\src\libtsduck\tsArgMixTemplate.h" />
     <ClInclude Include="..\..\src\libtsduck\tsGrid.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsOutputPager.h" />
     <ClInclude Include="..\..\src\libtsduck\tsT2MIDemux.h" />
     <ClInclude Include="..\..\src\libtsduck\tsT2MIDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsT2MIHandlerInterface.h" />
@@ -354,6 +355,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsCerrReport.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsArgMix.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsGrid.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsOutputPager.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsPlugin.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsT2MIDemux.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsT2MIDescriptor.cpp" />

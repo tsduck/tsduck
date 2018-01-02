@@ -922,6 +922,9 @@
     <ClInclude Include="..\..\src\libtsduck\tsxml.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\libtsduck\tsOutputPager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\libtsduck\tsAbstractAVCAccessUnit.cpp">
@@ -1606,6 +1609,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\libtsduck\tsTextParser.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\libtsduck\tsOutputPager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

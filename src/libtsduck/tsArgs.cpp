@@ -30,6 +30,7 @@
 #include "tsArgs.h"
 #include "tsSysUtils.h"
 #include "tsVersionInfo.h"
+#include "tsOutputPager.h"
 TSDUCK_SOURCE;
 
 // Unlimited number of occurences
@@ -680,14 +681,31 @@ bool ts::Args::analyze()
         opt->values.push_back(val);
     }
 
+    // Process --verbose predefined option
+    if (present(u"verbose") && search(u"verbose")->predefined) {
+        raiseMaxSeverity(Severity::Verbose);
+    }
+
+    // Process --debug predefined option
+    if (present(u"debug") && search(u"debug")->predefined) {
+        raiseMaxSeverity(intValue(u"debug", Severity::Debug));
+    }
+
     // Process --help predefined option
     if (present(u"help") && search(u"help")->predefined) {
+        // Build the help text.
         UString text(u"\n" + _description + u"\n\n" + u"Usage: ");
         if (!_shell.empty()) {
             text += _shell + u" ";
         }
         text += _app_name + u" " + _syntax + u"\n\n" + _help;
+        // Create a pager process if we intend to exit immediately after.
+        if ((_flags & NO_EXIT_ON_HELP) == 0) {
+            OutputPager(*this, true, true);
+        }
+        // Display the help text.
         info(text);
+        // Exit application, unless specified otherwise.
         if ((_flags & NO_EXIT_ON_HELP) == 0) {
             ::exit(EXIT_SUCCESS);
         }
@@ -701,16 +719,6 @@ bool ts::Args::analyze()
             ::exit(EXIT_SUCCESS);
         }
         return _is_valid = false;
-    }
-
-    // Process --verbose predefined option
-    if (present(u"verbose") && search(u"verbose")->predefined) {
-        raiseMaxSeverity(Severity::Verbose);
-    }
-
-    // Process --debug predefined option
-    if (present(u"debug") && search(u"debug")->predefined) {
-        raiseMaxSeverity(intValue(u"debug", Severity::Debug));
     }
 
     // Look for parameters/options number of occurences.

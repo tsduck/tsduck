@@ -151,6 +151,7 @@ HEADERS += \
     ../../../src/libtsduck/tsNullReport.h \
     ../../../src/libtsduck/tsObject.h \
     ../../../src/libtsduck/tsOneShotPacketizer.h \
+    ../../../src/libtsduck/tsOutputPager.h \
     ../../../src/libtsduck/tsOutputRedirector.h \
     ../../../src/libtsduck/tsPAT.h \
     ../../../src/libtsduck/tsPCR.h \
@@ -409,6 +410,7 @@ SOURCES += \
     ../../../src/libtsduck/tsNullReport.cpp \
     ../../../src/libtsduck/tsObject.cpp \
     ../../../src/libtsduck/tsOneShotPacketizer.cpp \
+    ../../../src/libtsduck/tsOutputPager.cpp \
     ../../../src/libtsduck/tsOutputRedirector.cpp \
     ../../../src/libtsduck/tsPAT.cpp \
     ../../../src/libtsduck/tsPCR.cpp \
@@ -541,17 +543,17 @@ win32|win64 {
     HEADERS += \
         ../../../src/libtsduck/windows/tsComIds.h \
         ../../../src/libtsduck/windows/tsComPtr.h \
-        ../../../src/libtsduck/windows/tsWinUtils.h \
         ../../../src/libtsduck/windows/tsDirectShowUtils.h \
         ../../../src/libtsduck/windows/tsMediaTypeUtils.h \
-        ../../../src/libtsduck/windows/tsSinkFilter.h
+        ../../../src/libtsduck/windows/tsSinkFilter.h \
+        ../../../src/libtsduck/windows/tsWinUtils.h
     SOURCES += \ 
         ../../../src/libtsduck/windows/tsComIds.cpp \
-        ../../../src/libtsduck/windows/tsWinUtils.cpp \
         ../../../src/libtsduck/windows/tsDirectShowUtils.cpp \
         ../../../src/libtsduck/windows/tsMediaTypeUtils.cpp \
         ../../../src/libtsduck/windows/tsSinkFilter.cpp \
-        ../../../src/libtsduck/windows/tsTuner.cpp
+        ../../../src/libtsduck/windows/tsTuner.cpp \
+        ../../../src/libtsduck/windows/tsWinUtils.cpp
 }
 
 DISTFILES += \

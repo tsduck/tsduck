@@ -28,20 +28,34 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Version identification of TSDuck.
+//!  Send application output to a "pager" application such as "more".
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 6
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 424
+#include "tsReport.h"
+#include "tsNullReport.h"
+
+namespace ts {
+    //!
+    //! Send application output to a "pager" application such as "more" or "less".
+    //!
+    //! By default, the standard output and standard error are merged and sent
+    //! through a pipe to a created process. Either standard output or error or
+    //! both can be redirected. If any device to be redirected is not a terminal,
+    //! the function fails.
+    //!
+    //! The created command can be specified using the environment variable @c PAGER.
+    //! By default, the application searches for commands "less" and "more" in this order;
+    //!
+    //! @param [in,out] report Where to log "real errors" and debug messages.
+    //! @param [in] useStdout Include standard output in the redirection.
+    //! @param [in] useStderr Include standard error in the redirection.
+    //! @param [in] envName Name of the optional environment variable containing the pager command name.
+    //! @return True on success, false on error
+    //!
+    TSDUCKDLL bool OutputPager(Report& report = NULLREP,
+                               bool useStdout = true,
+                               bool useStderr = true,
+                               const UString& envName = u"PAGER");
+}
