@@ -738,15 +738,14 @@ void ts::Args::processHelp()
     text += _app_name + u" " + _syntax + u"\n\n" + _help;
 
     // Create a pager process if we intend to exit immediately after.
-    // Note: This is currently broken on Windows (display is messed up).
-#if !defined(TS_WINDOWS)
-    if ((_flags & NO_EXIT_ON_HELP) == 0) {
-        OutputPager(*this, true, true);
+    OutputPager pager;
+    if ((_flags & NO_EXIT_ON_HELP) == 0 && pager.canPage() && pager.open(true, 0, *this)) {
+        pager.write(text, *this);
+        pager.close(*this);
     }
-#endif
-
-    // Display the help text.
-    info(text);
+    else {
+        info(text);
+    }
 
     // Exit application, unless specified otherwise.
     if ((_flags & NO_EXIT_ON_HELP) == 0) {

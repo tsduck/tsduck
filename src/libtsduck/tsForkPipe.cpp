@@ -71,7 +71,7 @@ ts::ForkPipe::~ForkPipe()
 // Return true on success, false on error.
 //----------------------------------------------------------------------------
 
-bool ts::ForkPipe::open(const UString& command, bool synchronous, size_t buffer_size, Report& report)
+bool ts::ForkPipe::open(const UString& command, bool synchronous, size_t buffer_size, Report& report, OutputMode out_mode)
 {
     if (_is_open) {
         report.error(u"pipe is already open");
@@ -103,18 +103,38 @@ bool ts::ForkPipe::open(const UString& command, bool synchronous, size_t buffer_
     // Now, make sure that the write handle of the pipe is not inherited.
     ::SetHandleInformation(write_handle, HANDLE_FLAG_INHERIT, 0);
 
-    // Make sure our output handles can be inherited
-    ::SetHandleInformation(::GetStdHandle(STD_OUTPUT_HANDLE), HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT);
-    ::SetHandleInformation(::GetStdHandle(STD_ERROR_HANDLE), HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT);
+    // Our standard handles.
+    const ::HANDLE out_handle = ::GetStdHandle(STD_OUTPUT_HANDLE);
+    const ::HANDLE err_handle = ::GetStdHandle(STD_ERROR_HANDLE);
 
-    // Process startup info specifies standard handles
+    // Process startup info specifies standard handles.
+    // Make sure our output handles can be inherited.
     ::STARTUPINFOW si;
     TS_ZERO(si);
     si.cb = sizeof(si);
-    si.hStdInput = read_handle;
-    si.hStdOutput = ::GetStdHandle(STD_OUTPUT_HANDLE);
-    si.hStdError = ::GetStdHandle(STD_ERROR_HANDLE);
     si.dwFlags = STARTF_USESTDHANDLES;
+    si.hStdInput = read_handle;
+    switch (out_mode) {
+        case KEEP_BOTH:
+            ::SetHandleInformation(out_handle, HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT);
+            ::SetHandleInformation(err_handle, HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT);
+            si.hStdOutput = out_handle;
+            si.hStdError = err_handle;
+            break;
+        case STDOUT_ONLY:
+            ::SetHandleInformation(out_handle, HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT);
+            si.hStdOutput = si.hStdError = out_handle;
+            break;
+        case STDERR_ONLY:
+            ::SetHandleInformation(err_handle, HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT);
+            si.hStdOutput = si.hStdError = err_handle;
+            break;
+        default:
+            // Invalid enum value.
+            ::CloseHandle(read_handle);
+            ::CloseHandle(write_handle);
+            return false;
+    }
 
     // ::CreateProcess may modify the user-supplied command line (ugly!)
     UString cmd(command);
@@ -123,7 +143,9 @@ bool ts::ForkPipe::open(const UString& command, bool synchronous, size_t buffer_
     // Create the process
     ::PROCESS_INFORMATION pi;
     if (::CreateProcessW(NULL, cmdp, NULL, NULL, TRUE, 0, NULL, NULL, &si, &pi) == 0) {
-        report.error(u"error creating pipe: %s", {ErrorCodeMessage()});
+        report.error(u"error creating process: %s", {ErrorCodeMessage()});
+        ::CloseHandle(read_handle);
+        ::CloseHandle(write_handle);
         return false;
     }
 
@@ -153,34 +175,63 @@ bool ts::ForkPipe::open(const UString& command, bool synchronous, size_t buffer_
 
     // Create the forked process
     if ((_fpid = ::fork()) < 0) {
-        report.error(u"fork error: " + ErrorCodeMessage());
+        report.error(u"fork error: %s", {ErrorCodeMessage()});
+        ::close(filedes[0]);
+        ::close(filedes[1]);
         return false;
     }
     else if (_fpid == 0) {
         // In the context of the created process.
+
         // Close standard input.
         ::close(STDIN_FILENO);
+
         // Close the writing end-point of the pipe.
         ::close(filedes[1]);
+
         // Redirect the reading end-point of the pipe to standard input
         if (::dup2(filedes[0], STDIN_FILENO) < 0) {
             ::perror("error redirecting stdin in forked process");
             ::exit(EXIT_FAILURE);
         }
+
         // Close the now extraneous file descriptor.
         ::close(filedes[0]);
+
+        // Merge stdout and stderr if requested.
+        switch (out_mode) {
+            case STDOUT_ONLY:
+                // Use stdout as stderr as well.
+                if (::dup2(STDOUT_FILENO, STDERR_FILENO) < 0) {
+                    ::perror("error redirecting stdout to stderr");
+                }
+                break;
+            case STDERR_ONLY:
+                // Use stderr as stdout as well.
+                if (::dup2(STDERR_FILENO, STDOUT_FILENO) < 0) {
+                    ::perror("error redirecting stderr to stdout");
+                }
+                break;
+            default:
+                // Nothing to do.
+                break;
+        }
+
         // Execute the command. Should not return.
-        // Flawfinder: ignore: execl causes a new program to execute and is difficult to use safely.
         ::execl("/bin/sh", "/bin/sh", "-c", command.toUTF8().c_str(), TS_NULL);
         ::perror("exec error");
         ::exit(EXIT_FAILURE);
         assert(false); // should never get there
     }
+    else {
+        // In the context of the parent process.
 
-    // Keep the writing end-point of pipe for packet transmission.
-    // Close the reading end-point of pipe.
-    _fd = filedes[1];
-    ::close(filedes[0]);
+        // Keep the writing end-point of pipe for packet transmission.
+        _fd = filedes[1];
+
+        // Close the reading end-point of pipe.
+        ::close(filedes[0]);
+    }
 
 #endif
 
