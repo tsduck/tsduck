@@ -2,6 +2,12 @@
 TSDuck Change Log and Release Notes
 ===================================
 
+Version 3.6
+
+- Added options --synchronous-log and --log-message-count to tsp. They affect
+  the way log messages are dropped or displayed in case a vast amount of log
+  messages are produced in a short period of time.
+
 Version 3.5-414
 
 - Added option --xml-output to tstables and plugin tables. Tables can be saved

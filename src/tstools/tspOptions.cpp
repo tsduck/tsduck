@@ -33,6 +33,7 @@
 
 #include "tspOptions.h"
 #include "tsSysUtils.h"
+#include "tsAsyncReport.h"
 TSDUCK_SOURCE;
 
 #define DEF_BUFSIZE_MB           16  // mega-bytes
@@ -56,7 +57,9 @@ ts::tsp::Options::Options(int argc, char *argv[]) :
     list_proc(false),
     monitor(false),
     ignore_jt(false),
+    sync_log(false),
     bufsize(0),
+    log_msg_count(AsyncReport::MAX_LOG_MESSAGES),
     max_flush_pkt(0),
     max_input_pkt(0),
     instuff_nullpkt(0),
@@ -73,10 +76,12 @@ ts::tsp::Options::Options(int argc, char *argv[]) :
     option(u"buffer-size-mb",            0,  Args::POSITIVE);
     option(u"ignore-joint-termination", 'i');
     option(u"list-processors",          'l');
+    option(u"log-message-count",         0,  Args::POSITIVE);
     option(u"max-flushed-packets",       0,  Args::POSITIVE);
     option(u"max-input-packets",         0,  Args::POSITIVE);
     option(u"no-realtime-clock",         0); // was a temporary workaround, now ignored
     option(u"monitor",                  'm');
+    option(u"synchronous-log",          's');
     option(u"timed-log",                't');
 
 #if defined(TS_WINDOWS)
@@ -156,6 +161,15 @@ ts::tsp::Options::Options(int argc, char *argv[]) :
             u"  --list-processors\n"
             u"      List all available processors.\n"
             u"\n"
+            u"  --log-message-count value\n"
+            u"      Specify the maximum number of buffered log messages. Log messages are\n"
+            u"      displayed asynchronously in a low priority thread. This value specifies\n"
+            u"      the maximum number of buffered log messages in memory, before being\n"
+            u"      displayed. When too many messages are logged in a short period of time,\n"
+            u"      while plugins use all CPU power, extra messages are dropped. Increase\n"
+            u"      this value if you think that too many messages are dropped. The default\n"
+            u"      is " + UString::Decimal(AsyncReport::MAX_LOG_MESSAGES) + u" messages.\n"
+            u"\n"
             u"  --max-flushed-packets value\n"
             u"      Specify the maximum number of packets to be processed before flushing\n"
             u"      them to the next processor or the output. When the processing time\n"
@@ -172,6 +186,16 @@ ts::tsp::Options::Options(int argc, char *argv[]) :
             u"      Continuously monitor the system resources which are used by tsp.\n"
             u"      This includes CPU load, virtual memory usage. Useful to verify the\n"
             u"      stability of the application.\n"
+            u"\n"
+            u"  -s\n"
+            u"  --synchronous-log\n"
+            u"      Each logged message is guaranteed to be displayed, synchronously, without\n"
+            u"      any loss of message. The downside is that a plugin thread may be blocked\n"
+            u"      for a short while when too many messages are logged. This option shall be\n"
+            u"      used when all log messages are needed and the source and destination are\n"
+            u"      not live streams (files for instance). This option is not recommended for\n"
+            u"      live streams, when the responsiveness of the application is more important\n"
+            u"      than the logged messages.\n"
             u"\n"
             u"  -t\n"
             u"  --timed-log\n"
@@ -230,11 +254,13 @@ ts::tsp::Options::Options(int argc, char *argv[]) :
     timed_log = present(u"timed-log");
     list_proc = present(u"list-processors");
     monitor = present(u"monitor");
+    sync_log = present(u"synchronous-log");
     bufsize = 1024 * 1024 * intValue<size_t>(u"buffer-size-mb", DEF_BUFSIZE_MB);
     bitrate = intValue<BitRate>(u"bitrate", 0);
     bitrate_adj = MilliSecPerSec * intValue(u"bitrate-adjust-interval", DEF_BITRATE_INTERVAL);
     max_flush_pkt = intValue<size_t>(u"max-flushed-packets", DEF_MAX_FLUSH_PKT);
     max_input_pkt = intValue<size_t>(u"max-input-packets", 0);
+    log_msg_count = intValue<size_t>(u"log-message-count", AsyncReport::MAX_LOG_MESSAGES);
     ignore_jt = present(u"ignore-joint-termination");
 
     if (present(u"add-input-stuffing")) {

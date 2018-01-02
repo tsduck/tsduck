@@ -100,7 +100,9 @@ namespace ts {
             bool          list_proc;       //!< List processors.
             bool          monitor;         //!< Run a resource monitoring thread.
             bool          ignore_jt;       //!< Ignore "joint termination" options in plugins.
+            bool          sync_log;        //!< Synchronous log.
             size_t        bufsize;         //!< Buffer size.
+            size_t        log_msg_count;   //!< Maximum buffered log messages.
             size_t        max_flush_pkt;   //!< Max processed packets before flush.
             size_t        max_input_pkt;   //!< Max packets per input operation.
             size_t        instuff_nullpkt; //!< Add input stuffing: add @a nullpkt null packets every @a inpkt input packets.

@@ -60,12 +60,24 @@ namespace ts {
     {
     public:
         //!
+        //! Default maximum number of messages in the queue.
+        //! Must be limited since the logging thread has a low priority.
+        //! If a high priority thread loops on report, it would exhaust the memory.
+        //!
+        static const size_t MAX_LOG_MESSAGES = 512;
+
+        //!
         //! Constructor.
         //! The default initial report level is Info.
         //! @param [in] max_severity Set initial level report to that level.
         //! @param [in] time_stamp If true, time stamps are added to all messages.
+        //! @param [in] max_messages Maximum number of buffered messages.
+        //! @param [in] synchronous If true, the delivery of messages is synchronous.
+        //! No message is dropped, all messages are delivered. The downside is that
+        //! the emitted thread may be temporarily blocked when the message queue is
+        //! full. By default, @a synchronous is false.
         //!
-        AsyncReport(int max_severity = Severity::Info, bool time_stamp = false);
+        AsyncReport(int max_severity = Severity::Info, bool time_stamp = false, size_t max_messages = MAX_LOG_MESSAGES, bool synchronous = false);
 
         //!
         //! Destructor.
@@ -90,6 +102,19 @@ namespace ts {
         //! @return True if time stamps are added in log messages.
         //!
         bool getTimeStamp() const { return _time_stamp; }
+
+        //!
+        //! Activate or deactivate the synchronous mode
+        //! @param [in] on If true, the delivery of messages is synchronous.
+        //! No message is dropped, all messages are delivered.
+        //!
+        void setSynchronous(bool on) { _synchronous = on; }
+
+        //!
+        //! Check if synchronous mode is on.
+        //! @return True if the delivery of messages is synchronous.
+        //!
+        bool getSynchronous() const { return _synchronous; }
 
         //!
         //! Synchronously terminate the report thread.
@@ -119,11 +144,6 @@ namespace ts {
         typedef SafePtr <LogMessage, NullMutex> LogMessagePtr;
         typedef MessageQueue <LogMessage, NullMutex> LogMessageQueue;
 
-        // Maximum number of messages in the queue.
-        // Must be limited since the logging thread has a low priority.
-        // If a high priority thread loops on report, it would exhaust the memory.
-        static const size_t MAX_LOG_MESSAGES = 512;
-
         // Default report handler:
         class DefaultHandler : public ReportHandler
         {
@@ -139,6 +159,7 @@ namespace ts {
         DefaultHandler          _default_handler;
         ReportHandler* volatile _handler;
         volatile bool           _time_stamp;
+        volatile bool           _synchronous;
         volatile bool           _terminated;
 
         // Inaccessible operations.
