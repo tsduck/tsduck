@@ -70,6 +70,7 @@ public:
     void testHomeDirectory();
     void testProcessMetrics();
     void testMemory();
+    void testIsTerminal();
 
     CPPUNIT_TEST_SUITE(SysUtilsTest);
     CPPUNIT_TEST(testCurrentProcessId);
@@ -90,6 +91,7 @@ public:
     CPPUNIT_TEST(testHomeDirectory);
     CPPUNIT_TEST(testProcessMetrics);
     CPPUNIT_TEST(testMemory);
+    CPPUNIT_TEST(testIsTerminal);
     CPPUNIT_TEST_SUITE_END();
 private:
     ts::NanoSecond  _nsPrecision;
@@ -643,4 +645,12 @@ void SysUtilsTest::testMemory()
     utest::Out() << "SysUtilsTest: MemoryPageSize() = " << ts::MemoryPageSize() << " bytes" << std::endl;
     CPPUNIT_ASSERT(ts::MemoryPageSize() > 0);
     CPPUNIT_ASSERT(ts::MemoryPageSize() % 256 == 0);
+}
+
+void SysUtilsTest::testIsTerminal()
+{
+    utest::Out() << "SysUtilsTest::testIsTerminal: StdInIsTerminal = " << ts::UString::TrueFalse(ts::StdInIsTerminal())
+                 << ", StdOutIsTerminal = " << ts::UString::TrueFalse(ts::StdOutIsTerminal())
+                 << ", StdErrIsTerminal = " << ts::UString::TrueFalse(ts::StdErrIsTerminal())
+                 << std::endl;
 }

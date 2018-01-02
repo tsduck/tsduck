@@ -1028,3 +1028,34 @@ void ts::GetEnvironment(Environment& env)
 
 #endif
 }
+
+//----------------------------------------------------------------------------
+// Check if the standard input/output/error is a terminal.
+//----------------------------------------------------------------------------
+
+bool ts::StdInIsTerminal()
+{
+#if defined(TS_WINDOWS)
+    return ::GetFileType(::GetStdHandle(STD_INPUT_HANDLE)) == FILE_TYPE_CHAR;
+#else
+    return ::isatty(STDIN_FILENO);
+#endif
+}
+
+bool ts::StdOutIsTerminal()
+{
+#if defined(TS_WINDOWS)
+    return ::GetFileType(::GetStdHandle(STD_OUTPUT_HANDLE)) == FILE_TYPE_CHAR;
+#else
+    return ::isatty(STDOUT_FILENO);
+#endif
+}
+
+bool ts::StdErrIsTerminal()
+{
+#if defined(TS_WINDOWS)
+    return ::GetFileType(::GetStdHandle(STD_ERROR_HANDLE)) == FILE_TYPE_CHAR;
+#else
+    return ::isatty(STDERR_FILENO);
+#endif
+}

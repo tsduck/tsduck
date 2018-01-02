@@ -503,6 +503,24 @@ namespace ts {
     TSDUCKDLL void IgnorePipeSignal();
 
     //!
+    //! Check if the standard input is a terminal.
+    //! @return True if the standard input is a terminal.
+    //!
+    TSDUCKDLL bool StdInIsTerminal();
+
+    //!
+    //! Check if the standard output is a terminal.
+    //! @return True if the standard output is a terminal.
+    //!
+    TSDUCKDLL bool StdOutIsTerminal();
+
+    //!
+    //! Check if the standard error is a terminal.
+    //! @return True if the standard error is a terminal.
+    //!
+    TSDUCKDLL bool StdErrIsTerminal();
+
+    //!
     //! Put the standard input stream in binary mode.
     //!
     //! On UNIX systems, this does not make any difference.
