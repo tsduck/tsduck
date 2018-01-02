@@ -8,6 +8,9 @@ Version 3.6
   the way log messages are dropped or displayed in case a vast amount of log
   messages are produced in a short period of time.
 
+- The help text of all TSDuck applications (using option --help) is now paged
+  through "less" or any any other pager application.
+
 Version 3.5-414
 
 - Added option --xml-output to tstables and plugin tables. Tables can be saved

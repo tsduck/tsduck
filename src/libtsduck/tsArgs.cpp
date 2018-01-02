@@ -693,31 +693,13 @@ bool ts::Args::analyze()
 
     // Process --help predefined option
     if (present(u"help") && search(u"help")->predefined) {
-        // Build the help text.
-        UString text(u"\n" + _description + u"\n\n" + u"Usage: ");
-        if (!_shell.empty()) {
-            text += _shell + u" ";
-        }
-        text += _app_name + u" " + _syntax + u"\n\n" + _help;
-        // Create a pager process if we intend to exit immediately after.
-        if ((_flags & NO_EXIT_ON_HELP) == 0) {
-            OutputPager(*this, true, true);
-        }
-        // Display the help text.
-        info(text);
-        // Exit application, unless specified otherwise.
-        if ((_flags & NO_EXIT_ON_HELP) == 0) {
-            ::exit(EXIT_SUCCESS);
-        }
+        processHelp();
         return _is_valid = false;
     }
 
     // Process --version predefined option
     if (present(u"version") && search(u"version")->predefined) {
-        info(GetVersion(enumValue(u"version", VERSION_LONG), _app_name));
-        if ((_flags & NO_EXIT_ON_VERSION) == 0) {
-            ::exit(EXIT_SUCCESS);
-        }
+        processVersion();
         return _is_valid = false;
     }
 
@@ -739,4 +721,51 @@ bool ts::Args::analyze()
     exitOnError();
 
     return _is_valid;
+}
+
+
+//----------------------------------------------------------------------------
+// Process --help predefined option.
+//----------------------------------------------------------------------------
+
+void ts::Args::processHelp()
+{
+    // Build the help text.
+    UString text(u"\n" + _description + u"\n\n" + u"Usage: ");
+    if (!_shell.empty()) {
+        text += _shell + u" ";
+    }
+    text += _app_name + u" " + _syntax + u"\n\n" + _help;
+
+    // Create a pager process if we intend to exit immediately after.
+    // Note: This is currently broken on Windows (display is messed up).
+#if !defined(TS_WINDOWS)
+    if ((_flags & NO_EXIT_ON_HELP) == 0) {
+        OutputPager(*this, true, true);
+    }
+#endif
+
+    // Display the help text.
+    info(text);
+
+    // Exit application, unless specified otherwise.
+    if ((_flags & NO_EXIT_ON_HELP) == 0) {
+        ::exit(EXIT_SUCCESS);
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Process --version predefined option.
+//----------------------------------------------------------------------------
+
+void ts::Args::processVersion()
+{
+    // The meaning of the option value is managed inside GetVersion.
+    info(GetVersion(enumValue(u"version", VERSION_LONG), _app_name));
+
+    // Exit application, unless specified otherwise.
+    if ((_flags & NO_EXIT_ON_VERSION) == 0) {
+        ::exit(EXIT_SUCCESS);
+    }
 }
