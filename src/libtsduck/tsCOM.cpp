@@ -29,7 +29,7 @@
 
 #include "tsCOM.h"
 #if defined (TS_WINDOWS)
-#include "tsComUtils.h"
+#include "tsWinUtils.h"
 #endif
 TSDUCK_SOURCE;
 

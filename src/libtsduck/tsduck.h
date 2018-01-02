@@ -306,7 +306,7 @@
 #if defined(__windows)
 #include "tsComIds.h"
 #include "tsComPtr.h"
-#include "tsComUtils.h"
+#include "tsWinUtils.h"
 #include "tsDirectShowFilterCategory.h"
 #include "tsDirectShowGraph.h"
 #include "tsDirectShowTest.h"

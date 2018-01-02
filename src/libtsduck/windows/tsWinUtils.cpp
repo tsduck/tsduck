@@ -26,17 +26,80 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //-----------------------------------------------------------------------------
-//
-//  Windows Common Object Model (COM) utilities. Windows-specific
-//
-//-----------------------------------------------------------------------------
 
-#include "tsComUtils.h"
+#include "tsWinUtils.h"
 #include "tsComPtr.h"
 #include "tsSysUtils.h"
 #include "tsRegistry.h"
 #include "tsFatal.h"
 TSDUCK_SOURCE;
+
+
+//-----------------------------------------------------------------------------
+// Convert Windows strings to UString (empty on error)
+//-----------------------------------------------------------------------------
+
+ts::UString ts::ToString(const ::VARIANT& var)
+{
+    return var.vt == ::VT_BSTR ? ToString(var.bstrVal) : UString();
+}
+
+ts::UString ts::ToString(const ::BSTR bstr)
+{
+    assert(sizeof(*bstr) == sizeof(ts::UChar));
+    return UString(reinterpret_cast<const UChar*>(bstr));
+}
+
+ts::UString ts::ToString(const ::WCHAR* str)
+{
+    assert(sizeof(*str) == sizeof(ts::UChar));
+    return UString(reinterpret_cast<const UChar*>(str));
+}
+
+
+//-----------------------------------------------------------------------------
+// Get the device or file name from a Windows handle
+//-----------------------------------------------------------------------------
+
+
+ts::UString ts::WinDeviceName(::HANDLE handle)
+{
+    // First, try with GetFinalPathNameByHandle.
+    // This works fine for files but not for named pipes.
+    std::array<::WCHAR, 2048> name_buffer;
+    ::DWORD size = ::GetFinalPathNameByHandleW(handle, name_buffer.data(), ::DWORD(name_buffer.size() - 1), FILE_NAME_NORMALIZED);
+    size = std::max(::DWORD(0), std::min(size, ::DWORD(name_buffer.size() - 1)));
+
+    // If a non-empty name was found, use it.
+    if (size > 0) {
+        // Convert to a UString.
+        UString name(name_buffer, size);
+        // Remove useless prefix \\?\ if present.
+        if (name.startWith(u"\\\\?\\")) {
+            name.erase(0, 4);
+        }
+        return name;
+    }
+
+    // Could not find a useful name with GetFinalPathNameByHandle.
+    // Try GetFileInformationByHandleEx (which uses an untyped buffer).
+    uint8_t buf[2048];
+    ::memset(buf, 0, sizeof(buf));
+
+    // With FileNameInfo, the buffer is a FILE_NAME_INFO structure.
+    PFILE_NAME_INFO info = PFILE_NAME_INFO(&buf);
+
+    // Maximum number of WCHAR in the FileName field of the FILE_NAME_INFO.
+    const size_t max_wchar = (buf + sizeof(buf) - (uint8_t*)(info->FileName)) / sizeof(::WCHAR);
+
+    if (!::GetFileInformationByHandleEx(handle, ::FileNameInfo, buf, sizeof(buf))) {
+        return UString(); // error
+    }
+    else {
+        info->FileName[std::min<size_t>(max_wchar - 1, info->FileNameLength)] = 0;
+        return ToString(info->FileName);
+    }
+}
 
 
 //-----------------------------------------------------------------------------
@@ -109,28 +172,6 @@ bool ts::ComExpose(::IUnknown* object, const ::IID& iid)
     else {
         return false;
     }
-}
-
-
-//-----------------------------------------------------------------------------
-// Convert COM strings to UString (empty on error)
-//-----------------------------------------------------------------------------
-
-ts::UString ts::ToString(const ::VARIANT& var)
-{
-    return var.vt == ::VT_BSTR ? ToString(var.bstrVal) : UString();
-}
-
-ts::UString ts::ToString(const ::BSTR bstr)
-{
-    assert(sizeof(*bstr) == sizeof(ts::UChar));
-    return UString(reinterpret_cast<const UChar*>(bstr));
-}
-
-ts::UString ts::ToString(const ::WCHAR* str)
-{
-    assert(sizeof(*str) == sizeof(ts::UChar));
-    return UString(reinterpret_cast<const UChar*>(str));
 }
 
 

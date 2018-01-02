@@ -688,7 +688,7 @@
     <ClInclude Include="..\..\src\libtsduck\windows\tsComPtr.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\libtsduck\windows\tsComUtils.h">
+    <ClInclude Include="..\..\src\libtsduck\windows\tsWinUtils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\libtsduck\windows\tsDirectShowUtils.h">
@@ -1392,7 +1392,7 @@
     <ClCompile Include="..\..\src\libtsduck\windows\tsComIds.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\libtsduck\windows\tsComUtils.cpp">
+    <ClCompile Include="..\..\src\libtsduck\windows\tsWinUtils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\libtsduck\windows\tsDirectShowUtils.cpp">

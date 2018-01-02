@@ -37,7 +37,7 @@ TSDUCK_SOURCE;
 
 #include "tsTunerUtils.h"
 #include "tsDirectShowTest.h"
-#include "tsComUtils.h"
+#include "tsWinUtils.h"
 #include "utestCppUnitTest.h"
 
 

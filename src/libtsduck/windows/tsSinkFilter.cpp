@@ -35,7 +35,7 @@
 #include "tsSinkFilter.h"
 #include "tsDirectShowUtils.h"
 #include "tsMediaTypeUtils.h"
-#include "tsComUtils.h"
+#include "tsWinUtils.h"
 #include "tsMPEG.h"
 #include "tsTime.h"
 #include "tsGuard.h"

@@ -28,7 +28,8 @@
 //-----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Utilities for Windows Common Object Model (COM).
+//!  Utilities for Windows and Common Object Model (COM).
+//!  Windows-specific module.
 //!
 //-----------------------------------------------------------------------------
 
@@ -68,7 +69,7 @@ namespace ts {
     TSDUCKDLL bool ComSuccess(::HRESULT status, const UString& message, Report& report);
 
     //!
-    //! Check if an object exposes an interface.
+    //! Check if a COM object exposes an interface (Windows-specific).
     //! @param [in] object Object to query.
     //! @param [in] iid Id of the interface we request in the object.
     //! @return True if @a object exposes the @a iid interface.
@@ -83,16 +84,16 @@ namespace ts {
     TSDUCKDLL UString ToString(const ::VARIANT& s);
 
     //!
-    //! Convert a COM string to Unicode string (Windows-specific).
+    //! Convert a Windows string to Unicode string (Windows-specific).
     //! @param [in] s The COM string.
     //! @return The equivalent C++ string or an empty string on error.
     //!
     TSDUCKDLL UString ToString(const ::BSTR s);
 
     //!
-    //! Convert a Windows string to a string (Windows-specific).
-    //! @param [in] s The Unicode string.
-    //! @return The equivalent C++ string or an empty string on error.
+    //! Convert a Windows string to Unicode string (Windows-specific).
+    //! @param [in] s The Windows string.
+    //! @return The equivalent Unicode string or an empty string on error.
     //!
     TSDUCKDLL UString ToString(const ::WCHAR* s);
 
@@ -113,11 +114,18 @@ namespace ts {
     TSDUCKDLL UString NameGUID(const ::GUID& guid);
 
     //!
-    //! Get a string property from the "property bag" of an object (Windows-specific).
+    //! Get a string property from the "property bag" of a COM object (Windows-specific).
     //! @param [in,out] moniker Moniker defining the object.
     //! @param [in] property_name Name of the property to fetch.
     //! @param [in,out] report Where to report errors.
     //! @return The property value.
     //!
     TSDUCKDLL UString GetStringPropertyBag(::IMoniker* moniker, const ::OLECHAR* property_name, Report& report);
+
+    //!
+    //! Get the device or file name from a Windows handle (Windows-specific).
+    //! @param [in] handle A Windows handle.
+    //! @return The device name or an empty string on error.
+    //!
+    TSDUCKDLL UString WinDeviceName(::HANDLE handle);
 }
