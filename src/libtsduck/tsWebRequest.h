@@ -1,0 +1,193 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2018, Thierry Lelegard
+// All rights reserved.
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
+//
+// 1. Redistributions of source code must retain the above copyright notice,
+//    this list of conditions and the following disclaimer.
+// 2. Redistributions in binary form must reproduce the above copyright
+//    notice, this list of conditions and the following disclaimer in the
+//    documentation and/or other materials provided with the distribution.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+// THE POSSIBILITY OF SUCH DAMAGE.
+//
+//----------------------------------------------------------------------------
+//!
+//!  @file
+//!  Perform a simple Web request (HTTP, HTTPS, FTP).
+//!
+//----------------------------------------------------------------------------
+
+#pragma once
+#include "tsReport.h"
+#include "tsByteBlock.h"
+#include "tsUString.h"
+
+namespace ts {
+    //!
+    //! Perform a simple Web request (HTTP, HTTPS, FTP).
+    //!
+    //! On UNIX systems, the implementation uses libcurl.
+    //! On Windows systems, the implementation uses Microsoft Wininet.
+    //! We could have used libcurl on Windows but building it was a pain...
+    //!
+    //! The URL and optional proxy settings must be set before any download
+    //! operation. By default, no proxy is used. On Windows, if no proxy is
+    //! set, the default system proxy is used.
+    //!
+    //! The response headers are available after a successful download operation.
+    //!
+    class TSDUCKDLL WebRequest
+    {
+    public:
+        //!
+        //! Constructor.
+        //! @param [in,out] report Where to report errors.
+        //!
+        WebRequest(Report& report);
+
+        //!
+        //! Destructor.
+        //!
+        virtual ~WebRequest();
+
+        //!
+        //! Set the URL to get.
+        //! @param [in] url The complete URL to fetch.
+        //!
+        void setURL(const UString& url);
+
+        //!
+        //! Get the original URL, as set by setURL().
+        //! @return The original URL.
+        //!
+        UString originalURL() const
+        {
+            return _originalURL;
+        }
+
+        //!
+        //! Get the final URL of the actual download operation.
+        //! It can be different from originalURL() if some HTTP redirections were performed.
+        //! When call before a download operation, return originalURL().
+        //! @return The final URL.
+        //!
+        UString finalURL() const
+        {
+            return _finalURL;
+        }
+
+        //!
+        //! Set the optional proxy host and port.
+        //! @param [in] host Proxy host name or address.
+        //! @param [in] port Proxy port number.
+        //!
+        void setProxyHost(const UString& host, uint16_t port);
+
+        //!
+        //! Set the optional proxy authentication.
+        //! @param [in] user Proxy user name.
+        //! @param [in] password Proxy user's password.
+        //!
+        void setProxyUser(const UString& user, const UString& password);
+
+        //!
+        //! Download the content of the URL as binary data.
+        //! @param [out] data The content of the URL.
+        //! @return True on success, false on error.
+        //!
+        bool downloadBinaryContent(ByteBlock& data);
+
+        //!
+        //! Download the content of the URL as text.
+        //! The downloaded text is converted from UTF-8.
+        //! End of lines are normalized as LF.
+        //! @param [out] text The content of the URL.
+        //! @return True on success, false on error.
+        //!
+        bool downloadTextContent(UString& text);
+
+        //!
+        //! Download the content of the URL in a file.
+        //! No transformation is applied to the data.
+        //! @param [in] fileName Name of the file to create.
+        //! @return True on success, false on error.
+        //!
+        bool downloadFile(const UString& fileName);
+
+        //!
+        //! Representation of reponse headers.
+        //! The keys of the map are the header names.
+        //!
+        typedef std::multimap<UString,UString> HeadersMap;
+
+        //!
+        //! Get all response headers.
+        //! @param [out] headers A multimap of all response headers.
+        //!
+        void getHeaders(HeadersMap& headers) const;
+
+        //!
+        //! Get the value of one header.
+        //! @param [in] name Header name, case sensitive.
+        //! @return Header value or an empty string when the header is not found.
+        //! If the header is present more than once, the first value is returned.
+        //!
+        UString header(const UString& name) const;
+
+        //!
+        //! Get the size in bytes of the downloaded content.
+        //! @return Size in bytes of the downloaded content.
+        //!
+        size_t contentSize() const
+        {
+            return _contentSize;
+        }
+
+    private:
+        // System-specific parts are stored in a private structure.
+        // This is done to avoid inclusion of specialized headers in this public file.
+        class SystemGuts;
+
+        Report&     _report;
+        UString     _originalURL;
+        UString     _finalURL;
+        UString     _proxyHost;
+        uint16_t    _proxyPort;
+        UString     _proxyUser;
+        UString     _proxyPassword;
+        HeadersMap  _headers;            // all response headers
+        size_t      _contentSize;        // actually downloaded size
+        size_t      _headerContentSize;  // content size, as announced in response header
+        SystemGuts* _guts;               // system-specific data
+
+        // Alloate and deallocate guts (depend on implementations).
+        void allocateGuts();
+        void deleteGuts();
+
+        // Perform initialization before any download.
+        bool downloadInitialize();
+
+        // Process a list of headers. Header lines are terminated by LF or CRLF.
+        void processHeaders(const UString& text);
+
+        // Inaccessible operations.
+        WebRequest() = delete;
+        WebRequest(const WebRequest&) = delete;
+        WebRequest& operator=(const WebRequest&) = delete;
+    };
+}

@@ -7,6 +7,11 @@ INCLUDEPATH += $$SRCROOT/libtsduck/private
 linux:QMAKE_LFLAGS += -Wl,-soname=tsduck.so
 mac:QMAKE_POST_LINK += install_name_tool -id $$OUT_PWD/tsduck.so $$OUT_PWD/tsduck.so $$escape_expand(\\n\\t)
 
+linux|mac {
+    QMAKE_CXXFLAGS += $$system("curl-config --cflags")
+    QMAKE_LFLAGS += $$system("curl-config --libs")
+}
+
 HEADERS += \
     ../../../src/libtsduck/tsAACDescriptor.h \
     ../../../src/libtsduck/tsAC3Attributes.h \
@@ -199,6 +204,7 @@ HEADERS += \
     ../../../src/libtsduck/tsScrambling.h \
     ../../../src/libtsduck/tsSection.h \
     ../../../src/libtsduck/tsSectionDemux.h \
+    ../../../src/libtsduck/tsSectionFile.h \
     ../../../src/libtsduck/tsSectionHandlerInterface.h \
     ../../../src/libtsduck/tsSectionProviderInterface.h \
     ../../../src/libtsduck/tsService.h \
@@ -279,7 +285,7 @@ HEADERS += \
     ../../../src/libtsduck/tsVersionInfo.h \
     ../../../src/libtsduck/tsViaccessDate.h \
     ../../../src/libtsduck/tsVideoAttributes.h \
-    ../../../src/libtsduck/tsSectionFile.h \
+    ../../../src/libtsduck/tsWebRequest.h \
     ../../../src/libtsduck/tsduck.h \
     ../../../src/libtsduck/tstlv.h \
     ../../../src/libtsduck/tstlvAnalyzer.h \
@@ -444,6 +450,7 @@ SOURCES += \
     ../../../src/libtsduck/tsSatelliteDeliverySystemDescriptor.cpp \
     ../../../src/libtsduck/tsScrambling.cpp \
     ../../../src/libtsduck/tsSection.cpp \
+    ../../../src/libtsduck/tsSectionFile.cpp \
     ../../../src/libtsduck/tsSectionDemux.cpp \
     ../../../src/libtsduck/tsService.cpp \
     ../../../src/libtsduck/tsServiceDescriptor.cpp \
@@ -510,7 +517,7 @@ SOURCES += \
     ../../../src/libtsduck/tsVBITeletextDescriptor.cpp \
     ../../../src/libtsduck/tsVersionInfo.cpp \
     ../../../src/libtsduck/tsVideoAttributes.cpp \
-    ../../../src/libtsduck/tsSectionFile.cpp \
+    ../../../src/libtsduck/tsWebRequest.cpp \
     ../../../src/libtsduck/tstlvAnalyzer.cpp \
     ../../../src/libtsduck/tstlvMessage.cpp \
     ../../../src/libtsduck/tstlvMessageFactory.cpp \
@@ -529,6 +536,7 @@ linux {
         ../../../src/libtsduck/linux/tsDTVProperties.h \
         ../../../src/libtsduck/linux/tsSignalAllocator.h
     SOURCES += \
+        ../../../src/libtsduck/unix/tsWebRequestGuts.cpp \
         ../../../src/libtsduck/linux/tsDTVProperties.cpp \
         ../../../src/libtsduck/linux/tsSignalAllocator.cpp \
         ../../../src/libtsduck/linux/tsTuner.cpp
@@ -536,6 +544,7 @@ linux {
 
 mac {
     SOURCES += \
+        ../../../src/libtsduck/unix/tsWebRequestGuts.cpp \
         ../../../src/libtsduck/mac/tsTuner.cpp
 }
 
@@ -553,6 +562,7 @@ win32|win64 {
         ../../../src/libtsduck/windows/tsMediaTypeUtils.cpp \
         ../../../src/libtsduck/windows/tsSinkFilter.cpp \
         ../../../src/libtsduck/windows/tsTuner.cpp \
+        ../../../src/libtsduck/windows/tsWebRequestGuts.cpp \
         ../../../src/libtsduck/windows/tsWinUtils.cpp
 }
 

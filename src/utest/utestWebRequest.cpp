@@ -26,22 +26,57 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//!
-//!  @file
-//!  Version identification of TSDuck.
-//!
+//
+//  CppUnit test suite for class ts::WebRequest.
+//
 //----------------------------------------------------------------------------
 
-#pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 6
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 428
+#include "tsWebRequest.h"
+#include "tsCerrReport.h"
+#include "utestCppUnitTest.h"
+TSDUCK_SOURCE;
+
+
+//----------------------------------------------------------------------------
+// The test fixture
+//----------------------------------------------------------------------------
+
+class WebRequestTest: public CppUnit::TestFixture
+{
+public:
+    virtual void setUp() override;
+    virtual void tearDown() override;
+
+    void testRequest();
+
+    CPPUNIT_TEST_SUITE(WebRequestTest);
+    CPPUNIT_TEST(testRequest);
+    CPPUNIT_TEST_SUITE_END();
+};
+
+CPPUNIT_TEST_SUITE_REGISTRATION (WebRequestTest);
+
+
+//----------------------------------------------------------------------------
+// Initialization.
+//----------------------------------------------------------------------------
+
+// Test suite initialization method.
+void WebRequestTest::setUp()
+{
+}
+
+// Test suite cleanup method.
+void WebRequestTest::tearDown()
+{
+}
+
+//----------------------------------------------------------------------------
+// Test cases
+//----------------------------------------------------------------------------
+
+void WebRequestTest::testRequest()
+{
+    ts::WebRequest request(CERR);
+    request.setURL(u"http://www.github.com/");
+}

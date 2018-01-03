@@ -71,6 +71,11 @@ SYSROOT =
 
 # External include directories and libraries.
 
+ifndef CFLAGS_CURL
+    export CFLAGS_CURL := $(shell curl-config --cflags)
+    export LDLIBS_CURL := $(shell curl-config --libs)
+endif
+
 ifdef MACOS
     CFLAGS_INCLUDES += -I/usr/local/opt/pcsc-lite/include/PCSC -I$(LIBTSDUCKDIR)/mac
     LDLIBS := -L/usr/local/opt/pcsc-lite/lib/ $(LDLIBS)
@@ -81,5 +86,5 @@ else
     LDFLAGS_EXTRA += -Wl,-rpath,'$$ORIGIN'
     SOFLAGS = -Wl,-soname=$(notdir $@)
 endif
-CFLAGS_INCLUDES += -I$(LIBTSDUCKDIR)
-LDLIBS := -lpcsclite -ldl $(LDLIBS)
+CFLAGS_INCLUDES += $(CFLAGS_CURL) -I$(LIBTSDUCKDIR)
+LDLIBS := $(LDLIBS_CURL) -lpcsclite -ldl $(LDLIBS)

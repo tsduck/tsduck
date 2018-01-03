@@ -46,20 +46,22 @@ TS_MAC    := $(if $(subst darwin,,$(TS_SYSTEM)),,true)
 TS_INCLUDE_DIR := $(abspath $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST)))))
 
 # Build options
+CFLAGS_CURL := $(shell curl-config --cflags)
+LDLIBS_CURL := $(shell curl-config --libs)
 ifdef TS_MAC
     TS_INCLUDES += -I/usr/local/opt/pcsc-lite/include/PCSC -I$(TS_INCLUDE_DIR)
-    LDLIBS += $(if $(TS_STATIC),-L/usr/local/lib -ltsduck,/usr/local/bin/tsduck.so) -L/usr/local/opt/pcsc-lite/lib -lpcsclite -lpthread -ldl -lm -lstdc++
+    LDLIBS += $(if $(TS_STATIC),-L/usr/local/lib -ltsduck,/usr/local/bin/tsduck.so) $(LDLIBS_CURL) -L/usr/local/opt/pcsc-lite/lib -lpcsclite -lpthread -ldl -lm -lstdc++
     ifndef TS_STATIC
         LDFLAGS += -Wl,-rpath,@executable_path,-rpath,/usr/local/bin
     endif
 else
     TS_INCLUDES += -I/usr/include/PCSC -I$(TS_INCLUDE_DIR)
-    LDLIBS += $(if $(TS_STATIC),-ltsduck,/usr/bin/tsduck.so) -lpcsclite -lpthread -lrt -ldl -lm -lstdc++
+    LDLIBS += $(if $(TS_STATIC),-ltsduck,/usr/bin/tsduck.so) $(LDLIBS_CURL) -lpcsclite -lpthread -lrt -ldl -lm -lstdc++
     ifndef TS_STATIC
         LDFLAGS += -Wl,-rpath,'$$ORIGIN',-rpath,/usr/bin
     endif
 endif
 
 # Includes may use either CFLAGS of CXXFLAGS
-CFLAGS += $(TS_INCLUDES) --std=c++11
-CXXFLAGS += $(TS_INCLUDES) --std=c++11
+CFLAGS += $(TS_INCLUDES) $(CFLAGS_CURL) --std=c++11
+CXXFLAGS += $(TS_INCLUDES) $(CFLAGS_CURL) --std=c++11

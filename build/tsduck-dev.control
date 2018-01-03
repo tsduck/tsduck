@@ -5,7 +5,7 @@ Maintainer: Thierry Lelegard <thierry@lelegard.fr>
 Architecture: {{ARCH}}
 Section: free/video
 Priority: optional
-Depends: tsduck, libc6, libstdc++6, libgcc1, libpcsclite1
+Depends: tsduck, libc6, libstdc++6, libgcc1, libpcsclite1, libpcsclite-dev, libcurl3, libcurl3-dev
 Description: MPEG Transport Stream Toolkit Development
  The MPEG Transport Stream Toolkit provides some simple utilities to process
  MPEG Transport Streams (TS). This package provides the development environment
