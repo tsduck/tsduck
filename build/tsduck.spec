@@ -8,11 +8,13 @@ License:        BSD
 Source0:        tsduck-%{version}-%{commit}.tgz
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 Requires:       pcsc-lite
+Requires:       libcurl
 BuildRequires:  gcc-c++
 BuildRequires:  gcc
 BuildRequires:  make
 BuildRequires:  binutils
 BuildRequires:  pcsc-lite-devel
+BuildRequires:  libcurl-devel
 
 %description
 The MPEG Transport Stream Toolkit provides some simple utilities to process

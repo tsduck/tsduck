@@ -29,6 +29,7 @@
 
 #include "tsOutputPager.h"
 #include "tsSysUtils.h"
+TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

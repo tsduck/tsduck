@@ -45,6 +45,7 @@ SOURCES += \
     ../../../src/utest/utestSafePtr.cpp \
     ../../../src/utest/utestScrambling.cpp \
     ../../../src/utest/utestSection.cpp \
+    ../../../src/utest/utestSectionFile.cpp \
     ../../../src/utest/utestSingleton.cpp \
     ../../../src/utest/utestStaticInstance.cpp \
     ../../../src/utest/utestSystemRandomGenerator.cpp \
@@ -56,8 +57,8 @@ SOURCES += \
     ../../../src/utest/utestTSPacket.cpp \
     ../../../src/utest/utestUString.cpp \
     ../../../src/utest/utestVariable.cpp \
+    ../../../src/utest/utestWebRequest.cpp \
     ../../../src/utest/utestXML.cpp \
-    ../../../src/utest/utestSectionFile.cpp \
     ../../../src/utest/utestCppUnitThread.cpp
 
 DISTFILES += \

@@ -38,49 +38,35 @@ MacOS can only support files and IP for TS input and output.
 
 - Setup for a TSDuck native build:
 ~~~~
-dnf install gcc-c++ doxygen graphviz curl pcsc-tools pcsc-lite-devel cppunit-devel
+dnf install gcc-c++ doxygen graphviz curl pcsc-tools pcsc-lite-devel cppunit-devel libcurl libcurl-devel
 ~~~~
 
 - Setup to build 32-bit TSDuck on 64-bit system (command `make m32`):
 ~~~~
-dnf install glibc-devel.i686 libstdc++-devel.i686 pcsc-lite-devel.i686 cppunit-devel.i686
+dnf install glibc-devel.i686 libstdc++-devel.i686 pcsc-lite-devel.i686 cppunit-devel.i686 libcurl-devel.i686
 ~~~~
 
 ## Red Hat Entreprise Linux, CentOS {#reqrhel}
 
 - Setup for a TSDuck native build:
 ~~~~
-yum install gcc-c++ doxygen graphviz curl pcsc-tools pcsc-lite-devel cppunit-devel
+yum install gcc-c++ doxygen graphviz curl pcsc-tools pcsc-lite-devel cppunit-devel libcurl libcurl-devel
 ~~~~
 
 - Setup to build 32-bit TSDuck on 64-bit system (command `make m32`):
 ~~~~
-yum install glibc-devel.i686 libstdc++-devel.i686 pcsc-lite-devel.i686 cppunit-devel.i686
+yum install glibc-devel.i686 libstdc++-devel.i686 pcsc-lite-devel.i686 cppunit-devel.i686 libcurl-devel.i686
 ~~~~
 
 ## Ubuntu {#requbuntu}
 
 - Setup for a TSDuck native build:
 ~~~~
-apt-get install g++ doxygen graphviz curl pcscd libpcsclite-dev libcppunit-dev
+apt-get install g++ doxygen graphviz curl pcscd libpcsclite-dev libcppunit-dev libcurl3 libcurl3-dev
 ~~~~
 
-- Setup to build 32-bit TSDuck on 64-bit system (command `make m32`), start with:
-~~~~
-    apt-get install gcc-multilib g++-multilib
-~~~~
-  However, there is no 32-bit cross-compiled package for pcsc and cppunit on
-  Ubuntu 64-bit. To build a 32-bit TSDuck on Ubuntu 64-bit, first force the
-  installation of the 32-bit native (not cross-compiled) 32-bit versions:
-~~~~
-apt-get install libpcsclite-dev:i386 libcppunit-dev:i386
-~~~~
-  Then build TSDuck (`make m32`). But you can no longer rebuild a 64-bit
-  version since the native libraries for pcsc and cppunit were over-written.
-  So, you need to reinstall the native 64-bit versions:
-~~~~
-apt-get install libpcsclite-dev libcppunit-dev
-~~~~
+- It is not possible to build 32-bit TSDuck on 64-bit Ubuntu system (command `make m32`) because
+  there is no 32-bit cross-compiled package for pcsc and cppunit on Ubuntu 64-bit.
 
 ## All Linux distros {#reqlinux}
 
@@ -95,7 +81,6 @@ apt-get install libpcsclite-dev libcppunit-dev
 ~~~~
 brew install pcsc-lite cppunit doxygen graphviz gnu-sed grep
 ~~~~
-
 
 # Building the TSDuck binaries {#buildbin}
 

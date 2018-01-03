@@ -26,22 +26,68 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//!
-//!  @file
-//!  Version identification of TSDuck.
-//!
+//
+//  Perform a simple Web request - Windows specific parts.
+//
 //----------------------------------------------------------------------------
 
-#pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 6
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 428
+#include "tsWebRequest.h"
+TSDUCK_SOURCE;
+
+
+//----------------------------------------------------------------------------
+// System-specific parts are stored in a private structure.
+//----------------------------------------------------------------------------
+
+class ts::WebRequest::SystemGuts
+{
+public:
+    // Constructor with a reference to parent WebRequest.
+    SystemGuts(WebRequest& request);
+
+    // Destructor.
+    ~SystemGuts();
+
+private:
+    WebRequest& _request;
+
+    // Inaccessible operations.
+    SystemGuts() = delete;
+    SystemGuts(const SystemGuts&) = delete;
+    SystemGuts& operator=(const SystemGuts&) = delete;
+};
+
+
+//----------------------------------------------------------------------------
+// System-specific constructor and destructor.
+//----------------------------------------------------------------------------
+
+ts::WebRequest::SystemGuts::SystemGuts(WebRequest& request) :
+    _request(request)
+{
+}
+
+ts::WebRequest::SystemGuts::~SystemGuts()
+{
+}
+
+void ts::WebRequest::allocateGuts()
+{
+    _guts = new SystemGuts(*this);
+}
+
+void ts::WebRequest::deleteGuts()
+{
+    delete _guts;
+}
+
+
+//----------------------------------------------------------------------------
+// Perform initialization before any download.
+//----------------------------------------------------------------------------
+
+bool ts::WebRequest::downloadInitialize()
+{
+    //@@@@@
+    return false;
+}
