@@ -77,6 +77,22 @@ void WebRequestTest::tearDown()
 
 void WebRequestTest::testRequest()
 {
+    // Warning: this test fails if there is no Internet connection or if a proxy is required.
+
     ts::WebRequest request(CERR);
     request.setURL(u"http://www.github.com/");
+
+    ts::UString data;
+    CPPUNIT_ASSERT(request.downloadTextContent(data));
+
+    utest::Out() << "WebRequestTest::testRequest:" << std::endl
+                 << "    Original URL: " << request.originalURL() << std::endl
+                 << "    Final URL: " << request.finalURL() << std::endl
+                 << "    Content size: " << request.contentSize() << std::endl
+                 << "    Text size: " << data.length() << std::endl;
+
+    CPPUNIT_ASSERT(!data.empty());
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"http://www.github.com/", request.originalURL());
+    CPPUNIT_ASSERT(!request.finalURL().empty());
+    CPPUNIT_ASSERT(request.finalURL() != request.originalURL());  // we know there are redirections
 }

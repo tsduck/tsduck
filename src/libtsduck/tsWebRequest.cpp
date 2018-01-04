@@ -34,6 +34,7 @@
 
 #include "tsWebRequest.h"
 #include "tsFatal.h"
+#include "tsIntegerUtils.h"
 TSDUCK_SOURCE;
 
 
@@ -52,6 +53,8 @@ ts::WebRequest::WebRequest(Report& report) :
     _headers(),
     _contentSize(0),
     _headerContentSize(0),
+    _dlData(0),
+    _dlFile(),
     _guts(0)
 {
     allocateGuts();
@@ -168,14 +171,74 @@ void ts::WebRequest::processHeaders(const UString& text)
 bool ts::WebRequest::downloadBinaryContent(ByteBlock& data)
 {
     data.clear();
+    _contentSize = 0;
+    _headerContentSize = 0;
 
     // Transfer initialization.
-    if (!downloadInitialize()) {
-        return false;
+    bool ok = downloadInitialize();
+
+    // Actual transfer.
+    if (ok) {
+        try {
+            _dlData = &data;
+            ok = download();
+        }
+        catch (...) {
+            ok = false;
+        }
+        _dlData = 0;
     }
 
-    //@@@@@
-    return false;
+    return ok;
+}
+
+
+//----------------------------------------------------------------------------
+// Copy some data in _dlData.
+//----------------------------------------------------------------------------
+
+bool ts::WebRequest::copyData(const void* addr, size_t size)
+{
+    if (_dlData != 0) {
+        // Check maximum buffer size.
+        const size_t newSize = BoundedAdd(_dlData->size(), size);
+        if (newSize >= _dlData->max_size()) {
+            return false; // too large (but unlikely)
+        }
+
+        // Enlarge the buffer capacity to avoid too frequent reallocations.
+        // At least double the capacity of the buffer each time.
+        if (newSize > _dlData->capacity()) {
+            _dlData->reserve(std::max(newSize, 2 * _dlData->capacity()));
+        }
+
+        // Finally copy the data.
+        _dlData->append(addr, size);
+        _contentSize = _dlData->size();
+    }
+    return true;
+}
+
+
+//----------------------------------------------------------------------------
+// Provide possible total download size.
+//----------------------------------------------------------------------------
+
+bool ts::WebRequest::setPossibleContentSize(size_t totalSize)
+{
+    if (totalSize > 0) {
+        // Keep this value.
+        _headerContentSize = totalSize;
+
+        // Enlarge memory buffer when necessary to avoid too frequent reallocations.
+        if (_dlData != 0 && totalSize > _dlData->capacity()) {
+            if (totalSize > _dlData->max_size()) {
+                return false; // too large (but unlikely)
+            }
+            _dlData->reserve(totalSize);
+        }
+    }
+    return true;
 }
 
 
@@ -208,11 +271,29 @@ bool ts::WebRequest::downloadTextContent(UString& text)
 
 bool ts::WebRequest::downloadFile(const UString& fileName)
 {
+    _contentSize = 0;
+    _headerContentSize = 0;
+
+    // Close spurious file (should not happen).
+    if (_dlFile.is_open()) {
+        _dlFile.close();
+    }
+
     // Transfer initialization.
     if (!downloadInitialize()) {
         return false;
     }
 
-    //@@@@@
-    return false;
+    // Create the output file.
+    _dlFile.open(fileName.toUTF8().c_str(), std::ios::out | std::ios::binary);
+    if (!_dlFile) {
+        _report.error(u"error creating file %s", {fileName});
+        downloadAbort();
+        return false;
+    }
+
+    // Actual transfer.
+    const bool ok = download();
+    _dlFile.close();
+    return ok;
 }
