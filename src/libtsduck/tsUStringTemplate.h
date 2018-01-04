@@ -143,7 +143,7 @@ ts::UString::UString(const std::array<CHARTYPE, SIZE>& arr, const allocator_type
 //----------------------------------------------------------------------------
 
 template <class CONTAINER>
-void ts::UString::split(CONTAINER& container, UChar separator, bool trimSpaces) const
+void ts::UString::split(CONTAINER& container, UChar separator, bool trimSpaces, bool removeEmpty) const
 {
     const UChar* sep = 0;
     const UChar* input = c_str();
@@ -158,7 +158,9 @@ void ts::UString::split(CONTAINER& container, UChar separator, bool trimSpaces) 
         if (trimSpaces) {
             segment.trim();
         }
-        container.push_back(segment);
+        if (!removeEmpty || !segment.empty()) {
+            container.push_back(segment);
+        }
         // Move to beginning of next segment
         input = *sep == 0 ? sep : sep + 1;
     } while (*sep != 0);

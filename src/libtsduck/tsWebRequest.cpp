@@ -129,18 +129,21 @@ void ts::WebRequest::processHeaders(const UString& text)
     // Split header lines.
     const UString CR(1, u'\r');
     UStringList lines;
-    text.toRemoved(CR).split(lines, u'\n');
+    text.toRemoved(CR).split(lines, u'\n', true, true);
 
     // Process headers one by one.
     for (UStringList::const_iterator it = lines.begin(); it != lines.end(); ++it) {
+
+        _report.debug(u"HTTP header: %s", {*it});
         const size_t colon = it->find(u':');
+        size_t size = 0;
+
         if (it->startWith(u"HTTP/")) {
             // This is the initial header. When we receive this, this is either
             // the first time we are called for this request or we have been
             // redirected to another URL. In all cases, reset the context.
             _headers.clear();
             _headerContentSize = 0;
-            _finalURL = _originalURL;
         }
         else if (colon != UString::NPOS) {
             // Found a real header.
@@ -155,9 +158,10 @@ void ts::WebRequest::processHeaders(const UString& text)
             // Process specific headers.
             if (name.similar(u"Location")) {
                 _finalURL = value;
+                _report.debug(u"redirected to %s", {_finalURL});
             }
-            else if (name.similar(u"Content-length")) {
-                value.toInteger(_headerContentSize);
+            else if (name.similar(u"Content-length") && value.toInteger(size)) {
+                setPossibleContentSize(size);
             }
         }
     }
@@ -165,40 +169,12 @@ void ts::WebRequest::processHeaders(const UString& text)
 
 
 //----------------------------------------------------------------------------
-// Download the content of the URL as binary data.
-//----------------------------------------------------------------------------
-
-bool ts::WebRequest::downloadBinaryContent(ByteBlock& data)
-{
-    data.clear();
-    _contentSize = 0;
-    _headerContentSize = 0;
-
-    // Transfer initialization.
-    bool ok = downloadInitialize();
-
-    // Actual transfer.
-    if (ok) {
-        try {
-            _dlData = &data;
-            ok = download();
-        }
-        catch (...) {
-            ok = false;
-        }
-        _dlData = 0;
-    }
-
-    return ok;
-}
-
-
-//----------------------------------------------------------------------------
-// Copy some data in _dlData.
+// Copy some downloaded data.
 //----------------------------------------------------------------------------
 
 bool ts::WebRequest::copyData(const void* addr, size_t size)
 {
+    // Copy data in memory buffer if there is one.
     if (_dlData != 0) {
         // Check maximum buffer size.
         const size_t newSize = BoundedAdd(_dlData->size(), size);
@@ -214,8 +190,18 @@ bool ts::WebRequest::copyData(const void* addr, size_t size)
 
         // Finally copy the data.
         _dlData->append(addr, size);
-        _contentSize = _dlData->size();
     }
+
+    // Save data in file if there is one.
+    if (_dlFile.is_open()) {
+        _dlFile.write(reinterpret_cast<const char*>(addr), size);
+        if (!_dlFile) {
+            _report.error(u"error saving downloaded file");
+            return false;
+        }
+    }
+
+    _contentSize += size;
     return true;
 }
 
@@ -226,9 +212,10 @@ bool ts::WebRequest::copyData(const void* addr, size_t size)
 
 bool ts::WebRequest::setPossibleContentSize(size_t totalSize)
 {
-    if (totalSize > 0) {
+    if (totalSize > _headerContentSize) {
         // Keep this value.
         _headerContentSize = totalSize;
+        _report.debug(u"announced content size: %d bytes", {_headerContentSize});
 
         // Enlarge memory buffer when necessary to avoid too frequent reallocations.
         if (_dlData != 0 && totalSize > _dlData->capacity()) {
@@ -262,6 +249,35 @@ bool ts::WebRequest::downloadTextContent(UString& text)
         text.clear();
         return false;
     }
+}
+
+
+//----------------------------------------------------------------------------
+// Download the content of the URL as binary data.
+//----------------------------------------------------------------------------
+
+bool ts::WebRequest::downloadBinaryContent(ByteBlock& data)
+{
+    data.clear();
+    _contentSize = 0;
+    _headerContentSize = 0;
+
+    // Transfer initialization.
+    bool ok = downloadInitialize();
+
+    // Actual transfer.
+    if (ok) {
+        try {
+            _dlData = &data;
+            ok = download();
+        }
+        catch (...) {
+            ok = false;
+        }
+        _dlData = 0;
+    }
+
+    return ok;
 }
 
 
