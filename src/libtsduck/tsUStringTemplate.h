@@ -694,7 +694,7 @@ ts::UString ts::UString::Hexa(INT value,
 // Format a percentage string.
 //----------------------------------------------------------------------------
 
-template<typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
+template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
 ts::UString ts::UString::Percentage(INT value, INT total)
 {
     if (total < 0) {
@@ -710,4 +710,18 @@ ts::UString ts::UString::Percentage(INT value, INT total)
         const int p2 = int(((10000 * uint64_t(value)) / uint64_t(total)) % 100);
         return Format(u"%d.%02d%%", {p1, p2});
     }
+}
+
+
+//----------------------------------------------------------------------------
+// Reduce the size of the string to a given length from an alien integer type.
+//----------------------------------------------------------------------------
+
+template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
+void ts::UString::trimLength(INT length, bool trimTrailingSpaces)
+{
+    // We assume here that UString::size_type is the largest unsigned type
+    // and that it is safe to convert any positive value into this type.
+    resize(std::min<size_type>(size(), size_type(std::max<INT>(0, length))));
+    trim(false, trimTrailingSpaces);
 }

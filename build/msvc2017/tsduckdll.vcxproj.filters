@@ -925,6 +925,9 @@
     <ClInclude Include="..\..\src\libtsduck\tsOutputPager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\libtsduck\tsWebRequest.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\libtsduck\tsAbstractAVCAccessUnit.cpp">
@@ -1612,6 +1615,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\libtsduck\tsOutputPager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\libtsduck\windows\tsWebRequestGuts.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\libtsduck\tsWebRequest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

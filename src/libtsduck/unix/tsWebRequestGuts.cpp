@@ -137,12 +137,6 @@ bool ts::WebRequest::SystemGuts::init()
     // Make sure we start from a clean state.
     clear();
 
-    // Make sure we have an URL.
-    if (_request._originalURL.empty()) {
-        _request._report.error(u"no URL specified");
-        return false;
-    }
-
     // Initialize CURL Easy
     if ((_curl = ::curl_easy_init()) == 0) {
         _request._report.error(u"libcurl 'curl easy' initialization error");
@@ -152,6 +146,11 @@ bool ts::WebRequest::SystemGuts::init()
     // Setup the error message buffer.
     ::CURLcode status = ::curl_easy_setopt(_curl, CURLOPT_ERRORBUFFER, _error);
 
+    // Set the user agent.
+    if (status == ::CURLE_OK && !_request._userAgent.empty()) {
+        status = ::curl_easy_setopt(_curl, CURLOPT_USERAGENT, _request._userAgent.toUTF8().c_str());
+    }
+    
     // Set the starting URL.
     if (status == ::CURLE_OK) {
         status = ::curl_easy_setopt(_curl, CURLOPT_URL, _request._originalURL.toUTF8().c_str());
@@ -183,7 +182,7 @@ bool ts::WebRequest::SystemGuts::init()
 
     // Always follow redirections.
     if (status == ::CURLE_OK) {
-        status = ::curl_easy_setopt(_curl, CURLOPT_FOLLOWLOCATION, 1L);
+        status = ::curl_easy_setopt(_curl, CURLOPT_FOLLOWLOCATION, _request._autoRedirect ? 1L : 0L);
     }
 
     // Set the proxy settings.

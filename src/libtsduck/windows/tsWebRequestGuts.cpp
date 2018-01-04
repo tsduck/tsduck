@@ -29,9 +29,24 @@
 //
 //  Perform a simple Web request - Windows specific parts.
 //
+//  IMPLEMENTATION ISSUE:
+//  If we allow redirection, we need to get notified of the final redirected
+//  URL. To do this, we must use InternetSetStatusCallback and specify a
+//  callback which will be notified of various events, including redirection.
+//  This works fine with Win64. However, this crashes on Win32. To be honest,
+//  the code does not even compile in Win32 even though the profile of the
+//  callback is directly copied/pasted from INTERNET_STATUS_CALLBACK in
+//  wininet.h (and it compiles in Win64). Using a type cast, the compilation
+//  works but the execution crashes. The reason for this is a complete
+//  mystery. As a workaround, we disable the automatic redirection and
+//  we handle the redirection manually. Thus, we do not need a callback.
+//
 //----------------------------------------------------------------------------
 
 #include "tsWebRequest.h"
+#include "tsSysUtils.h"
+#include "tsWinUtils.h"
+#include <WinInet.h>
 TSDUCK_SOURCE;
 
 
@@ -48,8 +63,23 @@ public:
     // Destructor.
     ~SystemGuts();
 
+    // Initialize, clear, start Web transfer.
+    bool init();
+    void clear();
+    bool start();
+
+    // Report an error message.
+    void error(const UChar* message, ::DWORD code = ::GetLastError());
+
 private:
-    WebRequest& _request;
+    WebRequest& _request;        // Parent request.
+    ::HINTERNET _inet;           // Handle to all Internet operations.
+    ::HINTERNET _url;            // Handle to URL operations.
+    int         _redirectCount;  // Current number of redirections.
+    UString     _previousURL;    // Previous URL, before getting a redirection.
+
+    // Transmit response headers to the WebRequest.
+    void transmitResponseHeaders();
 
     // Inaccessible operations.
     SystemGuts() = delete;
@@ -63,12 +93,16 @@ private:
 //----------------------------------------------------------------------------
 
 ts::WebRequest::SystemGuts::SystemGuts(WebRequest& request) :
-    _request(request)
+    _request(request),
+    _inet(0),
+    _url(0),
+    _redirectCount(0)
 {
 }
 
 ts::WebRequest::SystemGuts::~SystemGuts()
 {
+    clear();
 }
 
 void ts::WebRequest::allocateGuts()
@@ -83,150 +117,212 @@ void ts::WebRequest::deleteGuts()
 
 
 //----------------------------------------------------------------------------
-// Perform initialization before any download.
+// Download operations from the WebRequest class.
 //----------------------------------------------------------------------------
 
 bool ts::WebRequest::downloadInitialize()
 {
-    //@@@@@
-    return false;
+    return _guts->init();
+}
+
+void ts::WebRequest::downloadAbort()
+{
+    _guts->clear();
+}
+
+bool ts::WebRequest::download()
+{
+    return _guts->start();
 }
 
 
-/*@@@@@@@@@@@@@@@@@@@
-void StatusCallback(::HINTERNET handle, ::DWORD_PTR context, ::DWORD status, ::LPVOID statusInfo, ::DWORD statusInfoLength)
+//----------------------------------------------------------------------------
+// Report an error message.
+//----------------------------------------------------------------------------
+
+void ts::WebRequest::SystemGuts::error(const UChar* message, ::DWORD code)
 {
-    const char* name;
-    switch (status) {
-        case INTERNET_STATUS_RESOLVING_NAME: name = "INTERNET_STATUS_RESOLVING_NAME"; break;
-        case INTERNET_STATUS_NAME_RESOLVED: name = "INTERNET_STATUS_NAME_RESOLVED"; break;
-        case INTERNET_STATUS_CONNECTING_TO_SERVER: name = "INTERNET_STATUS_CONNECTING_TO_SERVER"; break;
-        case INTERNET_STATUS_CONNECTED_TO_SERVER: name = "INTERNET_STATUS_CONNECTED_TO_SERVER"; break;
-        case INTERNET_STATUS_SENDING_REQUEST: name = "INTERNET_STATUS_SENDING_REQUEST"; break;
-        case INTERNET_STATUS_REQUEST_SENT: name = "INTERNET_STATUS_REQUEST_SENT"; break;
-        case INTERNET_STATUS_RECEIVING_RESPONSE: name = "INTERNET_STATUS_RECEIVING_RESPONSE"; break;
-        case INTERNET_STATUS_RESPONSE_RECEIVED: name = "INTERNET_STATUS_RESPONSE_RECEIVED"; break;
-        case INTERNET_STATUS_CTL_RESPONSE_RECEIVED: name = "INTERNET_STATUS_CTL_RESPONSE_RECEIVED"; break;
-        case INTERNET_STATUS_PREFETCH: name = "INTERNET_STATUS_PREFETCH"; break;
-        case INTERNET_STATUS_CLOSING_CONNECTION: name = "INTERNET_STATUS_CLOSING_CONNECTION"; break;
-        case INTERNET_STATUS_CONNECTION_CLOSED: name = "INTERNET_STATUS_CONNECTION_CLOSED"; break;
-        case INTERNET_STATUS_HANDLE_CREATED: name = "INTERNET_STATUS_HANDLE_CREATED"; break;
-        case INTERNET_STATUS_HANDLE_CLOSING: name = "INTERNET_STATUS_HANDLE_CLOSING"; break;
-        case INTERNET_STATUS_DETECTING_PROXY: name = "INTERNET_STATUS_DETECTING_PROXY"; break;
-        case INTERNET_STATUS_REQUEST_COMPLETE: name = "INTERNET_STATUS_REQUEST_COMPLETE"; break;
-        case INTERNET_STATUS_REDIRECT: name = "INTERNET_STATUS_REDIRECT"; break;
-        case INTERNET_STATUS_INTERMEDIATE_RESPONSE: name = "INTERNET_STATUS_INTERMEDIATE_RESPONSE"; break;
-        case INTERNET_STATUS_USER_INPUT_REQUIRED: name = "INTERNET_STATUS_USER_INPUT_REQUIRED"; break;
-        case INTERNET_STATUS_STATE_CHANGE: name = "INTERNET_STATUS_STATE_CHANGE"; break;
-        case INTERNET_STATUS_COOKIE_SENT: name = "INTERNET_STATUS_COOKIE_SENT"; break;
-        case INTERNET_STATUS_COOKIE_RECEIVED: name = "INTERNET_STATUS_COOKIE_RECEIVED"; break;
-        case INTERNET_STATUS_PRIVACY_IMPACTED: name = "INTERNET_STATUS_PRIVACY_IMPACTED"; break;
-        case INTERNET_STATUS_P3P_HEADER: name = "INTERNET_STATUS_P3P_HEADER"; break;
-        case INTERNET_STATUS_P3P_POLICYREF: name = "INTERNET_STATUS_P3P_POLICYREF"; break;
-        case INTERNET_STATUS_COOKIE_HISTORY: name = "INTERNET_STATUS_COOKIE_HISTORY"; break;
-        default: name = "(unknown)"; break;
-    }
-
-    std::cout << "StatusCallback: status = " << status << " " << name
-        << ", info: " << (statusInfo == 0 ? "NULL" : "not NULL")
-        << ", info size: " << statusInfoLength << std::endl;
-
-    if (status == INTERNET_STATUS_REDIRECT && statusInfo != 0) {
-        const std::string newURL(reinterpret_cast<const char*>(statusInfo), size_t(statusInfoLength));
-        std::cout << "StatusCallback: redirected to " << newURL << std::endl;
-    }
-}
-
-int main(int argc, char* argv[])
-{
-    ::HINTERNET iHandle = ::InternetOpenA("Test", INTERNET_OPEN_TYPE_PRECONFIG, 0, 0, 0);
-    if (iHandle == 0) {
-        Fatal("InternetOpen");
-    }
-
-    ::INTERNET_STATUS_CALLBACK previous = ::InternetSetStatusCallback(iHandle, StatusCallback);
-    if (previous == NULL) {
-        std::cout << "InternetSetStatusCallback returned NULL" << std::endl;
-    }
-    else if (previous == INTERNET_INVALID_STATUS_CALLBACK) {
-        std::cout << "InternetSetStatusCallback returned INTERNET_INVALID_STATUS_CALLBACK" << std::endl;
-    }
-
-    ::DWORD urlFlags =
-        INTERNET_FLAG_IGNORE_REDIRECT_TO_HTTPS |
-        INTERNET_FLAG_IGNORE_REDIRECT_TO_HTTP |
-        INTERNET_FLAG_KEEP_CONNECTION |
-        INTERNET_FLAG_NO_UI |
-        INTERNET_FLAG_NO_COOKIES;
-
-    int userContext = 27;
-
-    const char* url = 
-        // "http://www.google.com/";
-        "https://github.com/tsduck/tsduck/releases/download/v3.5-419/tsduck-3.5-419.fc27.x86_64.rpm";
-
-    ::HINTERNET urlHandle = ::InternetOpenUrlA(iHandle, url, 0, 0, urlFlags, ::DWORD_PTR(&userContext));
-    if (urlHandle == 0) {
-        Fatal("InternetOpenUrl");
-    }
-
-
-
-    std::array<char, 4096> respText;
-    ::DWORD respCode = 0;
-    ::DWORD respTextSize = ::DWORD(respText.size());
-    if (!::InternetGetLastResponseInfoA(&respCode, respText.data(), &respTextSize)) {
-        Fatal("InternetGetLastResponseInfo");
-    }
-    respTextSize = std::min(std::max<DWORD>(0, respTextSize), ::DWORD(respText.size() - 1));
-    std::cout << "Response info: " << std::string(respText.data(), size_t(respTextSize)) << std::endl;
-
-
-
-    respTextSize = ::DWORD(respText.size());
-    ::DWORD index = 0;
-    if (!::HttpQueryInfoA(urlHandle, HTTP_QUERY_RAW_HEADERS_CRLF, respText.data(), &respTextSize, &index)) {
-        Fatal("HttpQueryInfo(HTTP_QUERY_RAW_HEADERS_CRLF)");
-    }
-    respTextSize = std::min(std::max<DWORD>(0, respTextSize), ::DWORD(respText.size() - 1));
-    std::cout << "Raw headers: " << std::string(respText.data(), size_t(respTextSize)) << std::endl;
-
-
-    ::DWORD contentLength = 0;
-    ::DWORD contentLengthSize = sizeof(contentLength);
-    index = 0;
-    if (::HttpQueryInfoA(urlHandle, HTTP_QUERY_CONTENT_LENGTH | HTTP_QUERY_FLAG_NUMBER, &contentLength, &contentLengthSize, &index)) {
-        std::cout << "Content length: " << contentLength << std::endl;
+    if (code == ERROR_SUCCESS) {
+        _request._report.error(u"Web error: %s", {message});
     }
     else {
-        std::cout << "Content length is not available" << std::endl;
+        _request._report.error(u"Web error: %s (%s)", {message, WinErrorMessage(code, u"Wininet.dll", INTERNET_ERROR_BASE, INTERNET_ERROR_LAST)});
     }
-
-
-    size_t totalSize = 0;
-    for (;;) {
-        std::array<char, 1024> data;
-        ::DWORD gotSize = 0;
-        if (!::InternetReadFile(urlHandle, data.data(), ::DWORD(data.size()), &gotSize)) {
-            Fatal("InternetReadFile");
-            break;
-        }
-        if (gotSize == 0) {
-            break; // eof
-        }
-        std::cout << "Read " << gotSize << " bytes" << std::endl;
-        totalSize += size_t(gotSize);
-    }
-    std::cout << "End of read, total size: " << totalSize << " bytes" << std::endl;
-
-    if (!::InternetCloseHandle(urlHandle)) {
-        Fatal("InternetCloseHandle(urlHandle)");
-    }
-    if (!::InternetCloseHandle(iHandle)) {
-        Fatal("InternetCloseHandle(iHandle)");
-    }
-
-    return EXIT_SUCCESS;
 }
 
-  @@@@@@@@@@@@@@@@@@@*/
+
+//----------------------------------------------------------------------------
+// Initialize Web transfer.
+//----------------------------------------------------------------------------
+
+bool ts::WebRequest::SystemGuts::init()
+{
+    // Make sure we start from a clean state.
+    clear();
+
+    // Prepare proxy name.
+    const bool useProxy = !_request._proxyHost.empty();
+    ::DWORD access = INTERNET_OPEN_TYPE_PRECONFIG;
+    const ::WCHAR* proxy = 0;
+    UString proxyName;
+
+    if (useProxy) {
+        access = INTERNET_OPEN_TYPE_PROXY;
+        proxyName = _request._proxyPort == 0 ? _request._proxyHost : UString::Format(u"%s:%d", {_request._proxyHost, _request._proxyPort});
+        proxy = proxyName.wc_str();
+    }
+
+    // Open the main Internet handle.
+    _inet = ::InternetOpenW(_request._userAgent.wc_str(), access, proxy, 0, 0);
+    if (_inet == 0) {
+        error(u"error accessing Internet handle");
+        return false;
+    }
+
+    // Specify the proxy authentication, if provided.
+    if (useProxy) {
+        if (!_request._proxyUser.empty() &&
+            !::InternetSetOptionW(_inet, INTERNET_OPTION_PROXY_USERNAME, &_request._proxyUser[0], ::DWORD(_request._proxyUser.size())))
+        {
+            error(u"error setting proxy username");
+            clear();
+            return false;
+        }
+        if (!_request._proxyPassword.empty() &&
+            !::InternetSetOptionW(_inet, INTERNET_OPTION_PROXY_PASSWORD, &_request._proxyPassword[0], ::DWORD(_request._proxyPassword.size())))
+        {
+            error(u"error setting proxy password");
+            clear();
+            return false;
+        }
+    }
+
+    // URL connection flags. Always disable redirections (see comment on top of file).
+    const ::DWORD urlFlags =
+        INTERNET_FLAG_KEEP_CONNECTION |
+        INTERNET_FLAG_NO_UI |
+        INTERNET_FLAG_NO_COOKIES |
+        INTERNET_FLAG_PASSIVE |
+        INTERNET_FLAG_NO_AUTO_REDIRECT;
+
+    // Loop on redirections.
+    for (;;) {
+        // Keep track of current URL to fetch.
+        _previousURL = _request._finalURL;
+
+        // Now open the URL.
+        _url = ::InternetOpenUrlW(_inet, _previousURL.wc_str(), 0, 0, urlFlags, 0);
+        if (_url == 0) {
+            error(u"error opening URL");
+            clear();
+            return false;
+        }
+
+        // Send the response headers to the WebRequest object.
+        transmitResponseHeaders();
+
+        // If redirections are not allowed or no redirection occured, stop now.
+        // Redirection codes are 3xx (eg. "HTTP/1.1 301 Moved Permanently").
+        if (!_request._autoRedirect || _request._httpStatus / 100 != 3 || _request._finalURL == _previousURL) {
+            break;
+        }
+
+        // Close this URL, we need to redirect to _finalURL.
+        ::InternetCloseHandle(_url);
+        _url = 0;
+
+        // Limit the number of redirections to avoid "looping sites".
+        if (++_redirectCount > 16) {
+            error(u"too many HTTP redirections");
+            clear();
+            return false;
+        }
+    };
+
+    return true;
+}
+
+
+//----------------------------------------------------------------------------
+// Abort / clear the Web transfer.
+//----------------------------------------------------------------------------
+
+void ts::WebRequest::SystemGuts::clear()
+{
+    // Close Internet handles.
+    if (_url != 0 && !::InternetCloseHandle(_url)) {
+        error(u"error closing URL handle");
+    }
+    if (_inet != 0 && !::InternetCloseHandle(_inet)) {
+        error(u"error closing main Internet handle");
+    }
+    _url = _inet = 0;
+    _redirectCount = 0;
+}
+
+
+//----------------------------------------------------------------------------
+// Perform the Web transfer.
+// The URL is open, the response headers have been received, now receive data.
+//----------------------------------------------------------------------------
+
+bool ts::WebRequest::SystemGuts::start()
+{
+    bool success = true;
+    std::array<uint8_t, 1024> data;
+
+    while (success) {
+        ::DWORD gotSize = 0;
+        if (!::InternetReadFile(_url, data.data(), ::DWORD(data.size()), &gotSize)) {
+            error(u"download error");
+            success = false;
+        }
+        else if (gotSize == 0) {
+            // Successfully reading zero bytes means end of file.
+            break;
+        }
+        else {
+            // Get real data, transmit them to the WebRequest object.
+            success = _request.copyData(data.data(), size_t(gotSize));
+        }
+    }
+
+    return success;
+}
+
+
+//----------------------------------------------------------------------------
+// Transmit response headers to the WebRequest.
+//----------------------------------------------------------------------------
+
+void ts::WebRequest::SystemGuts::transmitResponseHeaders()
+{
+    // Query the response headers from the URL handle.
+    // First try with an arbitrary buffer size.
+    UString headers(1024, CHAR_NULL);
+    ::DWORD headersSize = ::DWORD(headers.size());
+    ::DWORD index = 0;
+    if (!::HttpQueryInfoW(_url, HTTP_QUERY_RAW_HEADERS_CRLF, &headers[0], &headersSize, &index)) {
+
+        // Process actual error.
+        if (::GetLastError() != ERROR_INSUFFICIENT_BUFFER) {
+            error(u"error getting HTTP response headers");
+            return;
+        }
+
+        // The buffer was too small, reallocate one.
+        headers.resize(size_t(headersSize));
+        headersSize = ::DWORD(headers.size());
+        index = 0;
+        if (!::HttpQueryInfoW(_url, HTTP_QUERY_RAW_HEADERS_CRLF, &headers[0], &headersSize, &index)) {
+            error(u"error getting HTTP response headers");
+            return;
+        }
+    }
+
+    // Adjust actual string length.
+    headers.resize(std::min(std::max<::DWORD>(0, headersSize), ::DWORD(headers.size() - 1)));
+
+    // Pass the headers to the WebRequest.
+    _request.processHeaders(headers);
+}

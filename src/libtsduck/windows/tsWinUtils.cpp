@@ -32,6 +32,7 @@
 #include "tsSysUtils.h"
 #include "tsRegistry.h"
 #include "tsFatal.h"
+#include <WinInet.h>
 TSDUCK_SOURCE;
 
 
@@ -58,9 +59,60 @@ ts::UString ts::ToString(const ::WCHAR* str)
 
 
 //-----------------------------------------------------------------------------
-// Get the device or file name from a Windows handle
+// Format a Windows error message (Windows-specific).
 //-----------------------------------------------------------------------------
 
+ts::UString ts::WinErrorMessage(::DWORD code, const UString& moduleName, ::DWORD minModuleCode, ::DWORD maxModuleCode)
+{
+    UString message;
+
+    // Start with module-specific error codes.
+    if (!moduleName.empty() && code >= minModuleCode && code <= maxModuleCode) {
+        // Get a handle to the module. Fail if the module is not loaded in memory.
+        // This kind of handle does not need to be closed.
+        const ::HMODULE hmod = ::GetModuleHandleW(moduleName.wc_str());
+        if (hmod != 0) {
+            message.resize(1024);
+            ::DWORD length = ::FormatMessageW(FORMAT_MESSAGE_FROM_HMODULE, hmod, code, 0, message.wc_str(), ::DWORD(message.size()), NULL);
+            message.trimLength(length, true);
+        }
+    }
+
+    // If no message was found from a specific module, search in the system base.
+    if (message.empty()) {
+        message.resize(1024);
+        ::DWORD length = ::FormatMessageW(FORMAT_MESSAGE_FROM_SYSTEM, NULL, code, 0, message.wc_str(), ::DWORD(message.size()), NULL);
+        message.trimLength(length, true);
+    }
+
+    // Get additional information for some special code.
+    if (code == ERROR_INTERNET_EXTENDED_ERROR) {
+        ::DWORD code2 = 0;
+        ::DWORD length = 0;
+        // First call without output buffer, to get the required size.
+        ::InternetGetLastResponseInfoW(&code2, 0, &length);
+        if (length > 0) {
+            // Now, we know the required size. Retry with a correctly-sized buffer.
+            UString info(size_t(length), CHAR_NULL);
+            if (::InternetGetLastResponseInfoW(&code2, info.wc_str(), &length)) {
+                // Got an extended message, append to previous message.
+                info.trimLength(length, true);
+                if (!message.empty()) {
+                    message.append(u", ");
+                }
+                message.append(info);
+            }
+        }
+    }
+
+    // If no message is found, return a generic message.
+    return message.empty() ? UString::Format(u"System error %d (0x%X)", {code, code}) : message;
+}
+
+
+//-----------------------------------------------------------------------------
+// Get the device or file name from a Windows handle
+//-----------------------------------------------------------------------------
 
 ts::UString ts::WinDeviceName(::HANDLE handle)
 {

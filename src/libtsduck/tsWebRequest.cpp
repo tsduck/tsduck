@@ -44,6 +44,8 @@ TSDUCK_SOURCE;
 
 ts::WebRequest::WebRequest(Report& report) :
     _report(report),
+    _userAgent(u"tsduck"),
+    _autoRedirect(true),
     _originalURL(),
     _finalURL(),
     _proxyHost(),
@@ -51,6 +53,7 @@ ts::WebRequest::WebRequest(Report& report) :
     _proxyUser(),
     _proxyPassword(),
     _headers(),
+    _httpStatus(0),
     _contentSize(0),
     _headerContentSize(0),
     _dlData(0),
@@ -144,6 +147,14 @@ void ts::WebRequest::processHeaders(const UString& text)
             // redirected to another URL. In all cases, reset the context.
             _headers.clear();
             _headerContentSize = 0;
+            _httpStatus = 0;
+
+            // The HTTP status is in the second field, as in "HTTP/1.1 200 OK".
+            UStringVector fields;
+            it->split(fields, u' ', true, true);
+            if (fields.size() < 2 || !fields[1].toInteger(_httpStatus)) {
+                _report.warning(u"no HTTP status found in header: %s", {*it});
+            }
         }
         else if (colon != UString::NPOS) {
             // Found a real header.
@@ -253,17 +264,41 @@ bool ts::WebRequest::downloadTextContent(UString& text)
 
 
 //----------------------------------------------------------------------------
+// Clear the transfer results, status, etc.
+//----------------------------------------------------------------------------
+
+bool ts::WebRequest::clearTransferResults()
+{
+    _httpStatus = 0;
+    _contentSize = 0;
+    _headerContentSize = 0;
+    _finalURL = _originalURL;
+
+    // Close spurious file (should not happen).
+    if (_dlFile.is_open()) {
+        _dlFile.close();
+    }
+
+    // Make sure we have an URL.
+    if (_originalURL.empty()) {
+        _report.error(u"no URL specified");
+        return false;
+    }
+
+    return true;
+}
+
+
+//----------------------------------------------------------------------------
 // Download the content of the URL as binary data.
 //----------------------------------------------------------------------------
 
 bool ts::WebRequest::downloadBinaryContent(ByteBlock& data)
 {
     data.clear();
-    _contentSize = 0;
-    _headerContentSize = 0;
 
     // Transfer initialization.
-    bool ok = downloadInitialize();
+    bool ok = clearTransferResults() && downloadInitialize();
 
     // Actual transfer.
     if (ok) {
@@ -287,16 +322,8 @@ bool ts::WebRequest::downloadBinaryContent(ByteBlock& data)
 
 bool ts::WebRequest::downloadFile(const UString& fileName)
 {
-    _contentSize = 0;
-    _headerContentSize = 0;
-
-    // Close spurious file (should not happen).
-    if (_dlFile.is_open()) {
-        _dlFile.close();
-    }
-
     // Transfer initialization.
-    if (!downloadInitialize()) {
+    if (!clearTransferResults() || !downloadInitialize()) {
         return false;
     }
 
