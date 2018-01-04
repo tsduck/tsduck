@@ -809,10 +809,11 @@ namespace ts {
         //! @param [out] container A container of @c UString which receives the segments of the splitted string.
         //! @param [in] separator The character which is used to separate the segments.
         //! @param [in] trimSpaces If true (the default), each segment is trimmed,
+        //! @param [in] removeEmpty If true, empty segments are ignored
         //! i.e. all leading and trailing space characters are removed.
         //!
         template <class CONTAINER>
-        void split(CONTAINER& container, UChar separator = COMMA, bool trimSpaces = true) const;
+        void split(CONTAINER& container, UChar separator = COMMA, bool trimSpaces = true, bool removeEmpty = false) const;
 
         //!
         //! Split a string into segments which are identified by their starting / ending characters (respectively "[" and "]" by default).
