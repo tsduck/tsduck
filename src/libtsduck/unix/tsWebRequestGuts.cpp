@@ -75,9 +75,10 @@ public:
     // Destructor.
     ~SystemGuts();
 
-    // Initialize and clear CURL Easy transfer.
+    // Initialize, clear, start CURL Easy transfer.
     bool init();
     void clear();
+    bool start();
 
     // Build an error message from libcurl.
     UString message(const UString& title, ::CURLcode = ::CURLE_OK);
@@ -91,6 +92,7 @@ private:
     // The userdata points to this object.
     static size_t headerCallback(char *ptr, size_t size, size_t nmemb, void *userdata);
     static size_t writeCallback(char *ptr, size_t size, size_t nmemb, void *userdata);
+    static int progressCallback(void *clientp, ::curl_off_t dltotal, ::curl_off_t dlnow, ::curl_off_t ultotal, ::curl_off_t ulnow);
 
     // Inaccessible operations.
     SystemGuts() = delete;
@@ -168,6 +170,16 @@ bool ts::WebRequest::SystemGuts::init()
     if (status == ::CURLE_OK) {
         status = ::curl_easy_setopt(_curl, CURLOPT_HEADERDATA, this);
     }
+    if (status == ::CURLE_OK) {
+        status = ::curl_easy_setopt(_curl, CURLOPT_XFERINFOFUNCTION, &SystemGuts::progressCallback);
+    }
+    if (status == ::CURLE_OK) {
+        status = ::curl_easy_setopt(_curl, CURLOPT_XFERINFODATA, this);
+    }
+    if (status == ::CURLE_OK) {
+        // Enable progress meter.
+        status = ::curl_easy_setopt(_curl, CURLOPT_NOPROGRESS, 0L);
+    }
 
     // Always follow redirections.
     if (status == ::CURLE_OK) {
@@ -219,6 +231,27 @@ void ts::WebRequest::SystemGuts::clear()
 }
 
 
+
+//----------------------------------------------------------------------------
+// Perform transfer.
+//----------------------------------------------------------------------------
+
+bool ts::WebRequest::SystemGuts::start()
+{
+    assert(_curl != 0);
+
+    const ::CURLcode status = ::curl_easy_perform(_curl);
+    const bool ok = status == ::CURLE_OK;
+
+    if (!ok) {
+        _request._report.error(message(u"download error", status));
+    }
+
+    clear();
+    return ok;
+}
+
+
 //----------------------------------------------------------------------------
 // Build an error message from libcurl.
 //----------------------------------------------------------------------------
@@ -263,6 +296,26 @@ bool ts::WebRequest::downloadInitialize()
 
 
 //----------------------------------------------------------------------------
+// Abort initialized download.
+//----------------------------------------------------------------------------
+
+void ts::WebRequest::downloadAbort()
+{
+    _guts->clear();
+}
+
+
+//----------------------------------------------------------------------------
+// Perform actual download.
+//----------------------------------------------------------------------------
+
+bool ts::WebRequest::download()
+{
+    return _guts->start();
+}
+
+
+//----------------------------------------------------------------------------
 // Libcurl callback for response headers.
 //----------------------------------------------------------------------------
 
@@ -273,14 +326,12 @@ size_t ts::WebRequest::SystemGuts::headerCallback(char *ptr, size_t size, size_t
     if (guts == 0) {
         return 0; // error
     }
-
-    // Header size.
-    const size_t headerSize = size * nmemb;
-
-    // Store headers in the request.
-    guts->_request.processHeaders(UString::FromUTF8(ptr, headerSize));
-
-    return headerSize;
+    else {
+        // Store headers in the request.
+        const size_t headerSize = size * nmemb;
+        guts->_request.processHeaders(UString::FromUTF8(ptr, headerSize));
+        return headerSize;
+    }
 }
 
 
@@ -290,16 +341,25 @@ size_t ts::WebRequest::SystemGuts::headerCallback(char *ptr, size_t size, size_t
 
 size_t ts::WebRequest::SystemGuts::writeCallback(char *ptr, size_t size, size_t nmemb, void *userdata)
 {
-    // The userdata points to the guts object.
-    SystemGuts* guts = reinterpret_cast<SystemGuts*>(userdata);
-    if (guts == 0) {
-        return 0; // error
-    }
-
-    // Data size.
     const size_t dataSize = size * nmemb;
 
-    //@@@@@
+    // The userdata points to the guts object.
+    SystemGuts* guts = reinterpret_cast<SystemGuts*>(userdata);
 
-    return dataSize;
+    // Process downloaded data. Return 0 on error.
+    return guts != 0 && guts->_request.copyData(ptr, dataSize) ? dataSize : 0;
+}
+
+
+//----------------------------------------------------------------------------
+// Libcurl progress callback for response data.
+//----------------------------------------------------------------------------
+
+int ts::WebRequest::SystemGuts::progressCallback(void *clientp, ::curl_off_t dltotal, ::curl_off_t dlnow, ::curl_off_t ultotal, ::curl_off_t ulnow)
+{
+    // The clientp points to the guts object.
+    SystemGuts* guts = reinterpret_cast<SystemGuts*>(clientp);
+
+    // We only use dltotal to reserve the buffer size. Return 0 on success.
+    return guts != 0 && guts->_request.setPossibleContentSize(dltotal) ? 0 : 1;
 }

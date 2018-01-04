@@ -163,27 +163,41 @@ namespace ts {
         // This is done to avoid inclusion of specialized headers in this public file.
         class SystemGuts;
 
-        Report&     _report;
-        UString     _originalURL;
-        UString     _finalURL;
-        UString     _proxyHost;
-        uint16_t    _proxyPort;
-        UString     _proxyUser;
-        UString     _proxyPassword;
-        HeadersMap  _headers;            // all response headers
-        size_t      _contentSize;        // actually downloaded size
-        size_t      _headerContentSize;  // content size, as announced in response header
-        SystemGuts* _guts;               // system-specific data
+        Report&       _report;
+        UString       _originalURL;
+        UString       _finalURL;
+        UString       _proxyHost;
+        uint16_t      _proxyPort;
+        UString       _proxyUser;
+        UString       _proxyPassword;
+        HeadersMap    _headers;            // all response headers
+        size_t        _contentSize;        // actually downloaded size
+        size_t        _headerContentSize;  // content size, as announced in response header
+        ByteBlock*    _dlData;             // download data buffer
+        std::ofstream _dlFile;             // download file
+        SystemGuts*   _guts;               // system-specific data
 
-        // Alloate and deallocate guts (depend on implementations).
+        // Allocate and deallocate guts (depend on implementations).
         void allocateGuts();
         void deleteGuts();
 
         // Perform initialization before any download.
         bool downloadInitialize();
 
+        // Abort initialized download.
+        void downloadAbort();
+
+        // Perform actual download.
+        bool download();
+
         // Process a list of headers. Header lines are terminated by LF or CRLF.
         void processHeaders(const UString& text);
+
+        // Copy some downloaded data.
+        bool copyData(const void* addr, size_t size);
+
+        // Provide possible total download size.
+        bool setPossibleContentSize(size_t totalSize);
 
         // Inaccessible operations.
         WebRequest() = delete;
