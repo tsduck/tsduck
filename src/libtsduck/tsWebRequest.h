@@ -82,9 +82,14 @@ namespace ts {
 
         //!
         //! Get the final URL of the actual download operation.
+        //!
         //! It can be different from originalURL() if some HTTP redirections were performed.
-        //! When call before a download operation, return originalURL().
-        //! @return The final URL.
+        //! When called before a download operation, return originalURL().
+        //!
+        //! If redirections are disabled using setAutoRedirect() and the site
+        //! returned a redirection, finalURL() returns the redirected URL.
+        //!
+        //! @return The final / redirected URL.
         //!
         UString finalURL() const
         {
