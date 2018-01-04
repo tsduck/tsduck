@@ -26,6 +26,7 @@ For developers of third-party applications:
 
 For TSDuck maintainers:
 - @ref building "Building TSDuck"
+- @ref testing "Testing TSDuck"
 - @ref devplugin "A tutorial on developing TSP Plugins"
 
 */
