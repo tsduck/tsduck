@@ -72,7 +72,7 @@ namespace ts {
 
         //!
         //! Write data to the pipe (received at process' standard input).
-        //! @param [in] test Text to write.
+        //! @param [in] text Text to write.
         //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!

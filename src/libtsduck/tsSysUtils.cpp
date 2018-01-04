@@ -591,21 +591,8 @@ ts::UString ts::SearchConfigurationFile(const UString& fileName)
 ts::UString ts::ErrorCodeMessage(ts::ErrorCode code)
 {
 #if defined(TS_WINDOWS)
-
-    // Windows implementation
-    std::array<::WCHAR, 1024> message;
-    ::DWORD length = ::FormatMessageW(FORMAT_MESSAGE_FROM_SYSTEM, NULL, code, 0, message.data(), ::DWORD(message.size()), NULL);
-
-    // Remove trailing newlines (if any)
-    while (length > 0 && (message[length - 1] == 0 || message[length - 1] == '\n' || message[length - 1] == '\r')) {
-        --length;
-    }
-    if (length > 0) {
-        return UString(message, length);
-    }
-
+    return WinErrorMessage(code);
 #else
-
     char* result;
     char message[1024];
     TS_ZERO(message);
@@ -628,10 +615,9 @@ ts::UString ts::ErrorCodeMessage(ts::ErrorCode code)
         return UString::FromUTF8(result);
     }
 
-#endif
-
     // At this point, the message is not found.
     return UString::Format(u"System error %d (0x%X)", {code, code});
+#endif
 }
 
 

@@ -636,15 +636,25 @@ namespace ts {
         //!
         UString toTruncatedWidth(size_type maxWidth, StringDirection direction = LEFT_TO_RIGHT) const;
 
+#if defined(TS_WINDOWS) || defined(DOXYGEN)
         //!
         //! Get the address of the underlying null-terminated Unicode string (Windows-specific).
         //! @return The address of the underlying null-terminated Unicode string .
         //!
-#if defined(TS_WINDOWS) || defined(DOXYGEN)
         const ::WCHAR* wc_str() const
         {
             assert(sizeof(::WCHAR) == sizeof(UChar));
             return reinterpret_cast<const ::WCHAR*>(data());
+        }
+
+        //!
+        //! Get the address of the underlying null-terminated Unicode string (Windows-specific).
+        //! @return The address of the underlying null-terminated Unicode string .
+        //!
+        ::WCHAR* wc_str()
+        {
+            assert(sizeof(::WCHAR) == sizeof(UChar));
+            return reinterpret_cast<::WCHAR*>(const_cast<UChar*>(data()));
         }
 #endif
 
@@ -672,6 +682,16 @@ namespace ts {
         //! Reverse the order of characters in the string.
         //!
         void reverse();
+
+        //!
+        //! Reduce the size of the string to a given length from an alien integer type.
+        //! This method is useful when the string has been used as an input buffer.
+        //! @tparam INT An integer type.
+        //! @param [in] length New size of the string. Ignored if negative or greater than the current string length.
+        //! @param [in] trimTrailingSpaces If true, also remove any trailing space.
+        //!
+        template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+        void trimLength(INT length, bool trimTrailingSpaces = true);
 
         //!
         //! Return a copy of the string where characters are reversed.

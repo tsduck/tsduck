@@ -289,6 +289,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsVersionInfo.h" />
     <ClInclude Include="..\..\src\libtsduck\tsViaccessDate.h" />
     <ClInclude Include="..\..\src\libtsduck\tsVideoAttributes.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsWebRequest.h" />
     <ClInclude Include="..\..\src\libtsduck\tsxml.h" />
     <ClInclude Include="..\..\src\libtsduck\tsxmlAttribute.h" />
     <ClInclude Include="..\..\src\libtsduck\tsxmlElementTemplate.h" />
@@ -524,6 +525,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsVBITeletextDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsVersionInfo.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsVideoAttributes.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsWebRequest.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsxmlAttribute.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsxmlComment.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsxmlDeclaration.cpp" />
@@ -535,6 +537,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsxmlText.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsxmlUnknown.cpp" />
     <ClCompile Include="..\..\src\libtsduck\windows\tsComIds.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\windows\tsWebRequestGuts.cpp" />
     <ClCompile Include="..\..\src\libtsduck\windows\tsWinUtils.cpp" />
     <ClCompile Include="..\..\src\libtsduck\windows\tsDirectShowFilterCategory.cpp" />
     <ClCompile Include="..\..\src\libtsduck\windows\tsDirectShowGraph.cpp" />

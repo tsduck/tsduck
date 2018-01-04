@@ -58,6 +58,7 @@ public:
     void testGitHub();
     void testGoogle();
     void testReadMeFile();
+    void testNoRedirection();
     void testNonExistentHost();
     void testInvalidURL();
 
@@ -65,6 +66,7 @@ public:
     CPPUNIT_TEST(testGitHub);
     CPPUNIT_TEST(testGoogle);
     CPPUNIT_TEST(testReadMeFile);
+    CPPUNIT_TEST(testNoRedirection);
     CPPUNIT_TEST(testNonExistentHost);
     CPPUNIT_TEST(testInvalidURL);
     CPPUNIT_TEST_SUITE_END();
@@ -125,9 +127,10 @@ void WebRequestTest::testURL(const ts::UString& url, bool expectRedirection, boo
     request.setURL(url);
     CPPUNIT_ASSERT(request.downloadBinaryContent(data));
 
-    utest::Out() << "WebRequestTest::testRequest:" << std::endl
+    utest::Out() << "WebRequestTest::testURL:" << std::endl
                  << "    Original URL: " << request.originalURL() << std::endl
                  << "    Final URL: " << request.finalURL() << std::endl
+                 << "    HTTP status: " << request.httpStatus() << std::endl
                  << "    Content size: " << request.contentSize() << std::endl;
 
     CPPUNIT_ASSERT(!data.empty());
@@ -152,7 +155,7 @@ void WebRequestTest::testURL(const ts::UString& url, bool expectRedirection, boo
         CPPUNIT_ASSERT(request.downloadTextContent(text));
 
         if (text.size() < 2048) {
-            utest::Out() << "WebRequestTest::testRequest: downloaded text: " << text << std::endl;
+            utest::Out() << "WebRequestTest::testURL: downloaded text: " << text << std::endl;
         }
 
         CPPUNIT_ASSERT(!text.empty());
@@ -188,7 +191,7 @@ void WebRequestTest::testURL(const ts::UString& url, bool expectRedirection, boo
     // Load downloaded file.
     ts::ByteBlock fileContent;
     CPPUNIT_ASSERT(fileContent.loadFromFile(_tempFileName, 10000000, &report()));
-    utest::Out() << "WebRequestTest::testRequest: downloaded file size: " << fileContent.size() << std::endl;
+    utest::Out() << "WebRequestTest::testURL: downloaded file size: " << fileContent.size() << std::endl;
     CPPUNIT_ASSERT(!fileContent.empty());
     if (expectInvariant) {
         CPPUNIT_ASSERT(fileContent == data);
@@ -227,16 +230,36 @@ void WebRequestTest::testReadMeFile()
             true);    // expectInvariant
 }
 
+void WebRequestTest::testNoRedirection()
+{
+    ts::WebRequest request(report());
+    request.setURL(u"http://www.github.com/");
+    request.setAutoRedirect(false);
+
+    ts::ByteBlock data;
+    CPPUNIT_ASSERT(request.downloadBinaryContent(data));
+
+    utest::Out() << "WebRequestTest::testNoRedirection:" << std::endl
+        << "    Original URL: " << request.originalURL() << std::endl
+        << "    Final URL: " << request.finalURL() << std::endl
+        << "    HTTP status: " << request.httpStatus() << std::endl
+        << "    Content size: " << request.contentSize() << std::endl;
+
+    CPPUNIT_ASSERT_EQUAL(3, request.httpStatus() / 100);
+    CPPUNIT_ASSERT(!request.finalURL().empty());
+    CPPUNIT_ASSERT(request.finalURL() != request.originalURL());
+}
+
 void WebRequestTest::testNonExistentHost()
 {
-    ts::ReportBuffer<> rep;
+        ts::ReportBuffer<> rep;
     ts::WebRequest request(rep);
 
     ts::ByteBlock data;
     request.setURL(u"http://non.existent.fake-domain/");
     CPPUNIT_ASSERT(!request.downloadBinaryContent(data));
 
-    utest::Out() << "WebRequestTest::testRequest: error message for invalid host: " << rep.getMessages() << std::endl;
+    utest::Out() << "WebRequestTest::testNonExistentHost: " << rep.getMessages() << std::endl;
 }
 
 void WebRequestTest::testInvalidURL()
@@ -248,5 +271,5 @@ void WebRequestTest::testInvalidURL()
     request.setURL(u"pouette://tagada/tsoin/tsoin");
     CPPUNIT_ASSERT(!request.downloadBinaryContent(data));
 
-    utest::Out() << "WebRequestTest::testRequest: error message for invalid URL: " << rep.getMessages() << std::endl;
+    utest::Out() << "WebRequestTest::testInvalidURL: " << rep.getMessages() << std::endl;
 }

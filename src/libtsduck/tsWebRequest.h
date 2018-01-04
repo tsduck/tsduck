@@ -106,6 +106,25 @@ namespace ts {
         void setProxyUser(const UString& user, const UString& password);
 
         //!
+        //! Set the user agent name to use in HTTP headers.
+        //! @param [in] name The user agent name.
+        //!
+        void setUserAgent(const UString& name)
+        {
+            _userAgent = name;
+        }
+
+        //!
+        //! Enable or disable the automatic redirection of HTTP requests.
+        //! This option in active by default.
+        //! @param [in] on If true, allow automatic redirection of HTTP requests.
+        //!
+        void setAutoRedirect(bool on)
+        {
+            _autoRedirect = on;
+        }
+
+        //!
         //! Download the content of the URL as binary data.
         //! @param [out] data The content of the URL.
         //! @return True on success, false on error.
@@ -158,12 +177,23 @@ namespace ts {
             return _contentSize;
         }
 
+        //!
+        //! Get the HTTP status code (200, 404, etc).
+        //! @return The HTTP status code.
+        //!
+        int httpStatus() const
+        {
+            return _httpStatus;
+        }
+
     private:
         // System-specific parts are stored in a private structure.
         // This is done to avoid inclusion of specialized headers in this public file.
         class SystemGuts;
 
         Report&       _report;
+        UString       _userAgent;
+        bool          _autoRedirect;
         UString       _originalURL;
         UString       _finalURL;
         UString       _proxyHost;
@@ -171,6 +201,7 @@ namespace ts {
         UString       _proxyUser;
         UString       _proxyPassword;
         HeadersMap    _headers;            // all response headers
+        int           _httpStatus;         // 200, 404, etc.
         size_t        _contentSize;        // actually downloaded size
         size_t        _headerContentSize;  // content size, as announced in response header
         ByteBlock*    _dlData;             // download data buffer
@@ -198,6 +229,9 @@ namespace ts {
 
         // Provide possible total download size.
         bool setPossibleContentSize(size_t totalSize);
+
+        // Clear the transfer results, status, etc.
+        bool clearTransferResults();
 
         // Inaccessible operations.
         WebRequest() = delete;
