@@ -109,4 +109,5 @@ SUBDIRS += \
     tstabcomp \
     tstabdump \
     tstables \
-    tsterinfo
+    tsterinfo \
+    tsversion
