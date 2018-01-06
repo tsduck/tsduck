@@ -58,7 +58,11 @@
     <ClInclude Include="..\..\src\libtsduck\tsCerrReport.h" />
     <ClInclude Include="..\..\src\libtsduck\tsArgMix.h" />
     <ClInclude Include="..\..\src\libtsduck\tsArgMixTemplate.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsGitHubRelease.h" />
     <ClInclude Include="..\..\src\libtsduck\tsGrid.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsjsonArray.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsjsonObject.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsjsonValue.h" />
     <ClInclude Include="..\..\src\libtsduck\tsOutputPager.h" />
     <ClInclude Include="..\..\src\libtsduck\tsT2MIDemux.h" />
     <ClInclude Include="..\..\src\libtsduck\tsT2MIDescriptor.h" />
@@ -355,7 +359,11 @@
     <ClCompile Include="..\..\src\libtsduck\tsCAT.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsCerrReport.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsArgMix.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsGitHubRelease.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsGrid.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsjsonArray.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsjsonObject.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsjsonValue.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsOutputPager.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsPlugin.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsT2MIDemux.cpp" />

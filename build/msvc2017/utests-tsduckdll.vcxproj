@@ -23,6 +23,7 @@
     <ClCompile Include="..\..\src\utest\utestGrid.cpp" />
     <ClCompile Include="..\..\src\utest\utestGuard.cpp" />
     <ClCompile Include="..\..\src\utest\utestInterrupt.cpp" />
+    <ClCompile Include="..\..\src\utest\utestJSON.cpp" />
     <ClCompile Include="..\..\src\utest\utestMessageQueue.cpp" />
     <ClCompile Include="..\..\src\utest\utestMonotonic.cpp" />
     <ClCompile Include="..\..\src\utest\utestMutex.cpp" />

@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26403.7
+VisualStudioVersion = 15.0.26430.14
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "utests-tsduckdll", "utests-tsduckdll.vcxproj", "{A5E2A70F-CA57-460C-9BE0-473BD61DF467}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -439,6 +439,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tstabcomp", "tstabcomp.vcxp
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tsplugin_t2mi", "tsplugin_t2mi.vcxproj", "{13B6CA5C-6EC3-4C80-AA9E-9E17CA713355}"
+	ProjectSection(ProjectDependencies) = postProject
+		{1AD31049-26B0-4922-89CF-778040DFC51E} = {1AD31049-26B0-4922-89CF-778040DFC51E}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tsversion", "tsversion.vcxproj", "{DAA77608-8755-4E65-8FAE-6667C4317385}"
 	ProjectSection(ProjectDependencies) = postProject
 		{1AD31049-26B0-4922-89CF-778040DFC51E} = {1AD31049-26B0-4922-89CF-778040DFC51E}
 	EndProjectSection
@@ -1075,6 +1080,14 @@ Global
 		{13B6CA5C-6EC3-4C80-AA9E-9E17CA713355}.Release|Win32.Build.0 = Release|Win32
 		{13B6CA5C-6EC3-4C80-AA9E-9E17CA713355}.Release|x64.ActiveCfg = Release|x64
 		{13B6CA5C-6EC3-4C80-AA9E-9E17CA713355}.Release|x64.Build.0 = Release|x64
+		{DAA77608-8755-4E65-8FAE-6667C4317385}.Debug|Win32.ActiveCfg = Debug|Win32
+		{DAA77608-8755-4E65-8FAE-6667C4317385}.Debug|Win32.Build.0 = Debug|Win32
+		{DAA77608-8755-4E65-8FAE-6667C4317385}.Debug|x64.ActiveCfg = Debug|x64
+		{DAA77608-8755-4E65-8FAE-6667C4317385}.Debug|x64.Build.0 = Debug|x64
+		{DAA77608-8755-4E65-8FAE-6667C4317385}.Release|Win32.ActiveCfg = Release|Win32
+		{DAA77608-8755-4E65-8FAE-6667C4317385}.Release|Win32.Build.0 = Release|Win32
+		{DAA77608-8755-4E65-8FAE-6667C4317385}.Release|x64.ActiveCfg = Release|x64
+		{DAA77608-8755-4E65-8FAE-6667C4317385}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -28,20 +28,29 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Version identification of TSDuck.
+//!  Simple and basic implementation of a JSON Object.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 6
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 436
+#include "tsjsonValue.h"
+
+namespace ts {
+    namespace json {
+        //!
+        //! Implementation of a JSON object.
+        //!
+        class TSDUCKDLL Object: public Value
+        {
+        public:
+            // Implementation of ts::json::Value.
+            virtual Type type() const override { return TypeObject; }
+            virtual bool isObject() const override { return true; }
+            virtual size_t size() const override { return _fields.size(); }
+            virtual const Value& value(const UString& name) const override;
+
+        private:
+            std::map<UString, ValuePtr> _fields;
+        };
+    }
+}

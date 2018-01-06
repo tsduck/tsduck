@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ImportGroup Label="PropertySheets">
     <Import Project="msvc-common-begin.props" />
@@ -58,7 +58,11 @@
     <ClInclude Include="..\..\src\libtsduck\tsCerrReport.h" />
     <ClInclude Include="..\..\src\libtsduck\tsArgMix.h" />
     <ClInclude Include="..\..\src\libtsduck\tsArgMixTemplate.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsGitHubRelease.h" />
     <ClInclude Include="..\..\src\libtsduck\tsGrid.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsjsonArray.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsjsonObject.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsjsonValue.h" />
     <ClInclude Include="..\..\src\libtsduck\tsOutputPager.h" />
     <ClInclude Include="..\..\src\libtsduck\tsStaticReferencesDVB.h" />
     <ClInclude Include="..\..\src\libtsduck\tsT2MIDemux.h" />
@@ -356,7 +360,11 @@
     <ClCompile Include="..\..\src\libtsduck\tsCAT.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsCerrReport.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsArgMix.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsGitHubRelease.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsGrid.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsjsonArray.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsjsonObject.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsjsonValue.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsOutputPager.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsPlugin.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsStaticReferencesDVB.cpp" />
