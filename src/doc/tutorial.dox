@@ -375,6 +375,11 @@ on top of TCP/IP. Currently, the available subclasses are ts::TelnetConnection
 and ts::tlv::Connection. The latter is used in @ref dvbprotocols
 "DVB SimulCrypt head-end protocols".
 
+The class ts::WebRequest performs simple Web requests using HTTP, HTTPS or FTP.
+Using a URL, the result can be downloaded in memory or in a file. Multiple
+redirections and SSL/TLS are automatically handled. This class is built on
+top of native system libraries (_libcurl_ on UNIX systems, _Wininet_ on Windows).
+
 ## Shared libraries {#sharelibs}
 
 The TSDuck library contains classes to load shared libraries (@c .dll on Windows,
