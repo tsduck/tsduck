@@ -26,22 +26,55 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//!
-//!  @file
-//!  Version identification of TSDuck.
-//!
+//
+//  CppUnit test suite for JSON classes.
+//
 //----------------------------------------------------------------------------
 
-#pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 6
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 436
+#include "tsjsonValue.h"
+#include "utestCppUnitTest.h"
+TSDUCK_SOURCE;
+
+
+//----------------------------------------------------------------------------
+// The test fixture
+//----------------------------------------------------------------------------
+
+class JsonTest: public CppUnit::TestFixture
+{
+public:
+    virtual void setUp() override;
+    virtual void tearDown() override;
+
+    void testSimple();
+
+    CPPUNIT_TEST_SUITE(JsonTest);
+    CPPUNIT_TEST(testSimple);
+    CPPUNIT_TEST_SUITE_END();
+};
+
+CPPUNIT_TEST_SUITE_REGISTRATION (JsonTest);
+
+
+//----------------------------------------------------------------------------
+// Initialization.
+//----------------------------------------------------------------------------
+
+// Test suite initialization method.
+void JsonTest::setUp()
+{
+}
+
+// Test suite cleanup method.
+void JsonTest::tearDown()
+{
+}
+
+
+//----------------------------------------------------------------------------
+// Test cases
+//----------------------------------------------------------------------------
+
+void JsonTest::testSimple()
+{
+}

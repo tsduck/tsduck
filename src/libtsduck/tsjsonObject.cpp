@@ -26,22 +26,22 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//!
-//!  @file
-//!  Version identification of TSDuck.
-//!
+
+#include "tsjsonObject.h"
+TSDUCK_SOURCE;
+
+
+//----------------------------------------------------------------------------
+// Access to a field.
 //----------------------------------------------------------------------------
 
-#pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 6
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 436
+const ts::json::Value& ts::json::Object::value(const UString& name) const
+{
+    std::map<UString, ValuePtr>::const_iterator it = _fields.find(name);
+    if (it == _fields.end()) {
+        return NullValue;
+    }
+    else {
+        return *it->second;
+    }
+}

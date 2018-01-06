@@ -28,20 +28,18 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Version identification of TSDuck.
+//!  Get information from GitHub about the releases of a project.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 6
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 436
+#include "tsReport.h"
+
+namespace ts {
+    //!
+    //! Get information from GitHub about the releases of a project.
+    //!
+    class TSDUCKDLL GitHubRelease
+    {
+    };
+}

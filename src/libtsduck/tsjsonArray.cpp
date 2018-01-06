@@ -26,22 +26,21 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//!
-//!  @file
-//!  Version identification of TSDuck.
-//!
+
+#include "tsjsonArray.h"
+TSDUCK_SOURCE;
+
+
+//----------------------------------------------------------------------------
+// Access to an element.
 //----------------------------------------------------------------------------
 
-#pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 6
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 436
+const ts::json::Value& ts::json::Array::at(size_t index) const
+{
+    if (index >= _value.size()) {
+        return NullValue;
+    }
+    else {
+        return *_value[index];
+    }
+}

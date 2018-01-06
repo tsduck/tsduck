@@ -121,6 +121,7 @@ HEADERS += \
     ../../../src/libtsduck/tsForkPipe.h \
     ../../../src/libtsduck/tsArgMix.h \
     ../../../src/libtsduck/tsArgMixTemplate.h \
+    ../../../src/libtsduck/tsGitHubRelease.h \
     ../../../src/libtsduck/tsGrid.h \
     ../../../src/libtsduck/tsGuard.h \
     ../../../src/libtsduck/tsGuardCondition.h \
@@ -133,6 +134,9 @@ HEADERS += \
     ../../../src/libtsduck/tsIntegerUtils.h \
     ../../../src/libtsduck/tsIntegerUtilsTemplate.h \
     ../../../src/libtsduck/tsInterruptHandler.h \
+    ../../../src/libtsduck/tsjsonArray.h \
+    ../../../src/libtsduck/tsjsonObject.h \
+    ../../../src/libtsduck/tsjsonValue.h \
     ../../../src/libtsduck/tsLNB.h \
     ../../../src/libtsduck/tsLinkageDescriptor.h \
     ../../../src/libtsduck/tsLocalTimeOffsetDescriptor.h \
@@ -389,6 +393,7 @@ SOURCES += \
     ../../../src/libtsduck/tsFileNameRate.cpp \
     ../../../src/libtsduck/tsForkPipe.cpp \
     ../../../src/libtsduck/tsArgMix.cpp \
+    ../../../src/libtsduck/tsGitHubRelease.cpp \
     ../../../src/libtsduck/tsGrid.cpp \
     ../../../src/libtsduck/tsGuard.cpp \
     ../../../src/libtsduck/tsGuardCondition.cpp \
@@ -398,6 +403,9 @@ SOURCES += \
     ../../../src/libtsduck/tsISO639LanguageDescriptor.cpp \
     ../../../src/libtsduck/tsInputRedirector.cpp \
     ../../../src/libtsduck/tsIntegerUtils.cpp \
+    ../../../src/libtsduck/tsjsonArray.cpp \
+    ../../../src/libtsduck/tsjsonObject.cpp \
+    ../../../src/libtsduck/tsjsonValue.cpp \
     ../../../src/libtsduck/tsLNB.cpp \
     ../../../src/libtsduck/tsLinkageDescriptor.cpp \
     ../../../src/libtsduck/tsLocalTimeOffsetDescriptor.cpp \
