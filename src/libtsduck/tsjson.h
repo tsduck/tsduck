@@ -220,6 +220,13 @@ namespace ts {
             //!
             virtual void remove(const UString& name) {}
             //!
+            //! Extract a field from an object.
+            //! The field is removed but its previous content is returned.
+            //! @param [in] name Field name.
+            //! @return A smart pointer to the extracted content or a null pointer if the field does not exist.
+            //!
+            virtual ValuePtr extract(const UString& name) { return ValuePtr(); }
+            //!
             //! Add a field into an object.
             //! @param [in] name Field name.
             //! @param [in] value Smart pointer to a JSON value. The pointed object is shared.
@@ -245,6 +252,13 @@ namespace ts {
             //! @param [in] count Number of elements to erase.
             //!
             virtual void erase(size_t index, size_t count = 1) {}
+            //!
+            //! Extract an element from an array.
+            //! The element is removed but its previous content is returned.
+            //! @param [in] index Index to erase in the array. Ignored if out of bound.
+            //! @return A smart pointer to the extracted content or a null pointer if the element does not exist.
+            //!
+            virtual ValuePtr extractAt(size_t index) { return ValuePtr(); }
         };
 
         //!
@@ -355,6 +369,7 @@ namespace ts {
             virtual size_t size() const override { return _fields.size(); }
             virtual const Value& value(const UString& name) const override;
             virtual void remove(const UString& name) override;
+            virtual ValuePtr extract(const UString& name) override;
             virtual void add(const UString& name, const ValuePtr& value) override;
             virtual void clear() override { _fields.clear(); }
             virtual void getNames(UStringList& names) const override;
@@ -378,6 +393,7 @@ namespace ts {
             virtual const Value& at(size_t index) const override;
             virtual size_t set(const ValuePtr& value, size_t index = std::numeric_limits<size_t>::max()) override;
             virtual void erase(size_t index, size_t count = 1) override;
+            virtual ValuePtr extractAt(size_t index) override;
 
         private:
             std::vector<ValuePtr> _value;
