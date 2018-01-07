@@ -27,7 +27,7 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsjsonValue.h"
+#include "tsjson.h"
 TSDUCK_SOURCE;
 
 // A general-purpose constant null JSON value.
@@ -70,5 +70,77 @@ bool ts::json::String::toBoolean(bool defaultValue) const
     }
     else {
         return defaultValue;
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Manage object fields.
+//----------------------------------------------------------------------------
+
+const ts::json::Value& ts::json::Object::value(const UString& name) const
+{
+    std::map<UString, ValuePtr>::const_iterator it = _fields.find(name);
+    if (it == _fields.end() || it->second.isNull()) {
+        return NullValue;
+    }
+    else {
+        return *it->second;
+    }
+}
+
+void ts::json::Object::remove(const UString& name)
+{
+    _fields.erase(name);
+}
+
+void ts::json::Object::add(const UString& name, const ValuePtr& value)
+{
+    // If the pointer is null, explicitly create a "null" value.
+    _fields[name] = value.isNull() ? ValuePtr(new Null) : value;
+}
+
+void ts::json::Object::getNames(UStringList& names) const
+{
+    names.clear();
+    for (std::map<UString, ValuePtr>::const_iterator it = _fields.begin(); it != _fields.end(); ++it) {
+        names.push_back(it->first);
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Access to an array element.
+//----------------------------------------------------------------------------
+
+const ts::json::Value& ts::json::Array::at(size_t index) const
+{
+    if (index >= _value.size() || _value[index].isNull()) {
+        return NullValue;
+    }
+    else {
+        return *_value[index];
+    }
+}
+
+size_t ts::json::Array::set(const ValuePtr& value, size_t index)
+{
+    // If the pointer is null, explicitly create a "null" value.
+    const ValuePtr actualValue(value.isNull() ? ValuePtr(new Null) : value);
+
+    if (index < _value.size()) {
+        _value[index] = actualValue;
+        return index;
+    }
+    else {
+        _value.push_back(actualValue);
+        return _value.size() - 1;
+    }
+}
+
+void ts::json::Array::erase(size_t index, size_t count)
+{
+    if (index < _value.size() && count > 0) {
+        _value.erase(_value.begin() + index, _value.begin() + std::min(index + count, _value.size()));
     }
 }

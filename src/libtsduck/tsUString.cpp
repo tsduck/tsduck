@@ -846,11 +846,104 @@ ts::UString ts::UString::toHTML(const UString& convert) const
     return result;
 }
 
-ts::UString ts::UString::FromHTML() const
+ts::UString ts::UString::fromHTML() const
 {
     UString result(*this);
     result.convertFromHTML();
     return result;
+}
+
+
+//----------------------------------------------------------------------------
+// Convert JSON representations.
+//----------------------------------------------------------------------------
+
+ts::UString ts::UString::toJSON() const
+{
+    UString result(*this);
+    result.convertToJSON();
+    return result;
+}
+
+ts::UString ts::UString::fromJSON() const
+{
+    UString result(*this);
+    result.convertFromJSON();
+    return result;
+}
+
+void ts::UString::convertToJSON()
+{
+    for (size_type i = 0; i < length(); ) {
+        const UChar c = at(i);
+
+        // Known backslash sequences.
+        UChar quoted = CHAR_NULL;
+        switch (c) {
+            case QUOTATION_MARK:
+            case REVERSE_SOLIDUS:
+            case SOLIDUS: quoted = c; break;
+            case BACKSPACE: quoted = u'b'; break;
+            case FORM_FEED: quoted = u'f'; break;
+            case LINE_FEED: quoted = u'n'; break;
+            case CARRIAGE_RETURN: quoted = u'r'; break;
+            case HORIZONTAL_TABULATION: quoted = u't'; break;
+            default: break;
+        }
+
+        if (quoted != CHAR_NULL) {
+            // Single character backslash sequence
+            at(i) = REVERSE_SOLIDUS;
+            insert(i + 1, 1, quoted);
+            i += 2;
+        }
+        else if (c >= 0x0020 && c <= 0x007E) {
+            // Unmodified character
+            i++;
+        }
+        else {
+            // Other Unicode character, use hex code.
+            at(i) = REVERSE_SOLIDUS;
+            insert(i + 1, Format(u"u%04X", {uint16_t(c)}));
+            i += 6;
+        }
+    }
+}
+
+void ts::UString::convertFromJSON()
+{
+    // We don't check the last character (a final backslash cannot be modified).
+    if (length() > 1) {
+        for (size_type i = 0; i < length() - 1; ++i) {
+            if (at(i) == REVERSE_SOLIDUS) {
+                const UChar c = at(i+1);
+                UChar unquoted = CHAR_NULL;
+                if (c == u'u' && i+6 <= length() && (u"0x" + substr(i+2, 4)).toInteger(unquoted)) {
+                    // Hexa sequence.
+                    at(i) = unquoted;
+                    erase(i+1, 5);
+                }
+                else {
+                    // Single character sequence.
+                    switch (c) {
+                        case QUOTATION_MARK:
+                        case REVERSE_SOLIDUS:
+                        case SOLIDUS: unquoted = c; break;
+                        case u'b': unquoted = BACKSPACE; break;
+                        case u'f': unquoted = FORM_FEED; break;
+                        case u'n': unquoted = LINE_FEED; break;
+                        case u'r': unquoted = CARRIAGE_RETURN; break;
+                        case u't': unquoted = HORIZONTAL_TABULATION; break;
+                        default: break;
+                    }
+                    if (unquoted != CHAR_NULL) {
+                        at(i) = unquoted;
+                        erase(i+1, 1);
+                    }
+                }
+            }
+        }
+    }
 }
 
 
@@ -955,13 +1048,13 @@ bool ts::UString::getLine(std::istream& strm)
         while (len > 0 && (start[len - 1] == '\r' || start[len - 1] == '\n')) {
             --len;
         }
- 
+
         // Remove potential UTF-8 BOM (Byte Order Mark) at beginning of line.
         if (len >= UTF8_BOM_SIZE && line.compare(0, UTF8_BOM_SIZE, UTF8_BOM, UTF8_BOM_SIZE) == 0) {
             start += UTF8_BOM_SIZE;
             len -= UTF8_BOM_SIZE;
         }
-        
+
         // Convert from UTF-8 to UTF-16.
         assignFromUTF8(start, len);
         return true;

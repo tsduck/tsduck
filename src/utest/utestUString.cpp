@@ -60,6 +60,8 @@ public:
     void testAccent();
     void testToHTML();
     void testFromHTML();
+    void testToJSON();
+    void testFromJSON();
     void testRemove();
     void testSubstitute();
     void testSplit();
@@ -103,6 +105,8 @@ public:
     CPPUNIT_TEST(testAccent);
     CPPUNIT_TEST(testToHTML);
     CPPUNIT_TEST(testFromHTML);
+    CPPUNIT_TEST(testToJSON);
+    CPPUNIT_TEST(testFromJSON);
     CPPUNIT_TEST(testRemove);
     CPPUNIT_TEST(testSubstitute);
     CPPUNIT_TEST(testSplit);
@@ -523,9 +527,23 @@ void UStringTest::testFromHTML()
     CPPUNIT_ASSERT_EQUAL(ts::LEFT_DOUBLE_QUOTATION_MARK, ts::FromHTML(u"ldquo"));
     CPPUNIT_ASSERT_EQUAL(ts::BLACK_DIAMOND_SUIT, ts::FromHTML(u"diams"));
 
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"", ts::UString().FromHTML());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"abcdefgh = xyz:", ts::UString(u"abcdefgh = xyz:").FromHTML());
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"<abcd> = \"&", ts::UString(u"&lt;abcd&gt; = &quot;&amp;").FromHTML());
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"", ts::UString().fromHTML());
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"abcdefgh = xyz:", ts::UString(u"abcdefgh = xyz:").fromHTML());
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"<abcd> = \"&", ts::UString(u"&lt;abcd&gt; = &quot;&amp;").fromHTML());
+}
+
+void UStringTest::testToJSON()
+{
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"", ts::UString().toJSON());
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"abc", ts::UString(u"abc").toJSON());
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"ab\\nfoo\\t\\\"", ts::UString(u"ab\nfoo\t\"").toJSON());
+}
+
+void UStringTest::testFromJSON()
+{
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"", ts::UString().fromJSON());
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"abc", ts::UString(u"abc").fromJSON());
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"ab\n\"a", ts::UString(u"ab\\n\\\"\\u0061").fromJSON());
 }
 
 void UStringTest::testRemove()
@@ -1603,7 +1621,7 @@ void UStringTest::testArgMixOut()
 void UStringTest::testArgMixOutCalled(const std::initializer_list<ts::ArgMixOut> list)
 {
     CPPUNIT_ASSERT_EQUAL(size_t(11), list.size());
-    
+
     int32_t  i32 = 0;
     uint32_t u32 = 0;
     int64_t  i64 = 0;

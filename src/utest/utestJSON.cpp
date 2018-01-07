@@ -31,7 +31,7 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsjsonValue.h"
+#include "tsjson.h"
 #include "utestCppUnitTest.h"
 TSDUCK_SOURCE;
 

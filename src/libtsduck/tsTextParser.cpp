@@ -225,21 +225,21 @@ bool ts::TextParser::match(const UString& str, bool skipIfMatch, CaseSensitivity
 // Check and parse names.
 //----------------------------------------------------------------------------
 
-bool ts::TextParser::isNameStartChar(UChar c) const
+bool ts::TextParser::isXMLNameStartChar(UChar c) const
 {
     return IsAlpha(c) || c == u':' || c == u'_';
 }
 
-bool ts::TextParser::isNameChar(UChar c) const
+bool ts::TextParser::isXMLNameChar(UChar c) const
 {
-    return isNameStartChar(c) || IsDigit(c) || c == u'.' || c == u'-';
+    return isXMLNameStartChar(c) || IsDigit(c) || c == u'.' || c == u'-';
 }
 
-bool ts::TextParser::isAtNameStart() const
+bool ts::TextParser::isAtXMLNameStart() const
 {
     return _pos._curLine != _pos._lines->end() &&
         _pos._curIndex < _pos._curLine->length() &&
-        isNameStartChar((*_pos._curLine)[_pos._curIndex]);
+        isXMLNameStartChar((*_pos._curLine)[_pos._curIndex]);
 }
 
 
@@ -247,18 +247,18 @@ bool ts::TextParser::isAtNameStart() const
 // Parse a tag name.
 //----------------------------------------------------------------------------
 
-bool ts::TextParser::parseName(UString& name)
+bool ts::TextParser::parseXMLName(UString& name)
 {
     name.clear();
 
     // Check that the next character is valid to start a name.
-    if (!isAtNameStart()) {
+    if (!isAtXMLNameStart()) {
         return false;
     }
 
     // Get the name.
     UChar c;
-    while (_pos._curIndex < _pos._curLine->length() && isNameChar(c = (*_pos._curLine)[_pos._curIndex])) {
+    while (_pos._curIndex < _pos._curLine->length() && isXMLNameChar(c = (*_pos._curLine)[_pos._curIndex])) {
         name.append(c);
         _pos._curIndex++;
     }

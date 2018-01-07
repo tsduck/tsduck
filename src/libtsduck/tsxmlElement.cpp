@@ -597,7 +597,7 @@ bool ts::xml::Element::parseNode(TextParser& parser, const Node* parent)
 {
     // We just read the "<". Skip spaces and read the tag name.
     parser.skipWhiteSpace();
-    if (!parser.parseName(_value)) {
+    if (!parser.parseXMLName(_value)) {
         _report.error(u"line %d: parsing error, tag name expected", {parser.lineNumber()});
         return false;
     }
@@ -619,7 +619,7 @@ bool ts::xml::Element::parseNode(TextParser& parser, const Node* parent)
             // Found end of standalone tag, without children.
             return true;
         }
-        else if (parser.parseName(name)) {
+        else if (parser.parseXMLName(name)) {
             // Found a name, probably an attribute.
             const size_t line = parser.lineNumber();
 
@@ -679,7 +679,7 @@ bool ts::xml::Element::parseNode(TextParser& parser, const Node* parent)
     ok = parser.match(u"</", true);
     if (ok) {
         UString endTag;
-        ok = parser.skipWhiteSpace() && parser.parseName(endTag) && parser.skipWhiteSpace() && endTag.similar(_value);
+        ok = parser.skipWhiteSpace() && parser.parseXMLName(endTag) && parser.skipWhiteSpace() && endTag.similar(_value);
         ok = parser.match(u">", true) && ok;
     }
 

@@ -88,6 +88,7 @@ namespace ts {
     //! - Including automatic conversion to UTF-8 when writing to text streams.
     //! - Conversions with DVB character sets.
     //! - Conversions with HTML encoding.
+    //! - Conversions with JSON encoding.
     //! - Management of "display width", that is to say the amount of space which
     //!   is used when the string is displayed. This can be different from the
     //!   string length in the presence of combining diacritical characters or
@@ -1045,7 +1046,30 @@ namespace ts {
         //! Return the string with all HTML entities converted into plain characters.
         //! @return The string with HTML entities translated.
         //!
-        UString FromHTML() const;
+        UString fromHTML() const;
+
+        //!
+        //! Convert the string into a suitable JSON representation.
+        //! The characters to escape are converted with backslashes.
+        //!
+        void convertToJSON();
+
+        //!
+        //! Return the string in a suitable JSON representation.
+        //! @return The string with backslash sequences replacing special characters.
+        //!
+        UString toJSON() const;
+
+        //!
+        //! Convert all JSON backslash sequences in the string into plain characters.
+        //!
+        void convertFromJSON();
+
+        //!
+        //! Return the string with all JSON backslash sequences converted into plain characters.
+        //! @return The string with JSON backslash sequences translated.
+        //!
+        UString fromJSON() const;
 
         //!
         //! Format a boolean value as "yes" or "no".
@@ -1385,7 +1409,7 @@ namespace ts {
         //! [FORMATDBG] extraneous 2 arguments at position 9 in format string: "f) %d %01"
         //! $
         //! @endcode
-        //! 
+        //!
         //! @param [in] fmt Format string with embedded '\%' sequences.
         //! @param [in] args List of arguments to substitute in the format string.
         //! @return The formatted string.

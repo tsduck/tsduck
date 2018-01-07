@@ -182,7 +182,7 @@ namespace ts {
         //!
         //! Parse text up to a given token.
         //! @param [out] result Returned parsed text.
-        //! @param [in] endToken Stop when this token is found. Do not include @a endToken in returned string. 
+        //! @param [in] endToken Stop when this token is found. Do not include @a endToken in returned string.
         //! @param [in] skipIfMatch If true, skip @a endToken in the parser.
         //! @param [in] translateEntities If true, translate HTML entities in the text.
         //! @return True on success, false if @a endToken was not found.
@@ -192,37 +192,35 @@ namespace ts {
         //!
         //! Check if a character is suitable for starting a @e name.
         //! The concept of @e name depends on the type of text which is parsed.
-        //! The default implementation is compatible with XML: a name starts with a letter,
-        //! underscore or colon. For other text syntaxes, derive the TextParser class and
-        //! override this method.
+        //! This implementation is compatible with XML: a name starts with a letter,
+        //! underscore or colon.
         //! @param [in] c The character to check.
         //! @return True if @a c is suitable for starting a name.
         //!
-        virtual bool isNameStartChar(UChar c) const;
+        virtual bool isXMLNameStartChar(UChar c) const;
 
         //!
         //! Check if a character is suitable in the middle of a name.
         //! The concept of @e name depends on the type of text which is parsed.
-        //! The default implementation is compatible with XML: a name contains letters,
-        //! digits, underscores, colons, dots and dashes. For other text syntaxes,
-        //! derive the TextParser class and override this method.
+        //! This implementation is compatible with XML: a name contains letters,
+        //! digits, underscores, colons, dots and dashes.
         //! @param [in] c The character to check.
         //! @return True if @a c is suitable in the middle of a name.
         //!
-        virtual bool isNameChar(UChar c) const;
+        virtual bool isXMLNameChar(UChar c) const;
 
         //!
         //! Check if the parser is at the start of a name.
         //! @return True if the parser is at the start of a name.
         //!
-        virtual bool isAtNameStart() const;
+        virtual bool isAtXMLNameStart() const;
 
         //!
-        //! Parse a name.
+        //! Parse an XML name.
         //! @param [out] name Returned parsed name.
         //! @return True on success, false if no name was not found.
         //!
-        virtual bool parseName(UString& name);
+        virtual bool parseXMLName(UString& name);
 
     private:
         Report&     _report;

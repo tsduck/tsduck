@@ -934,13 +934,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsGitHubRelease.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\libtsduck\tsjsonArray.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\libtsduck\tsjsonObject.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\libtsduck\tsjsonValue.h">
+    <ClInclude Include="..\..\src\libtsduck\tsjson.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -1644,13 +1638,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsGitHubRelease.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\libtsduck\tsjsonArray.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\libtsduck\tsjsonObject.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\libtsduck\tsjsonValue.cpp">
+    <ClCompile Include="..\..\src\libtsduck\tsjson.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

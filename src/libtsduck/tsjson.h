@@ -70,9 +70,7 @@ namespace ts {
         //! A JSON document is composed of one value (usually of type "object" or "array").
         //! JSON is defined by RFC 8259.
         //!
-        //! This implementation is simple and basic. Currently, it can only deserialize
-        //! a JSON value from text. The JSON value is read-only and serialization is
-        //! not yet implemented.
+        //! This implementation is simple and basic.
         //!
         //! Fetching a non-existent element, field or whatever always fails silently
         //! by returning a reference to a "null" value. Thus, it is possible to access
@@ -151,11 +149,38 @@ namespace ts {
             //!
             virtual UString toString(const UString& defaultValue = UString()) const { return defaultValue; }
             //!
+            //! Clear the content of the value;
+            //!
+            virtual void clear() {}
+            //!
             //! Get the "size" of the value.
             //! @return The size of the value: the number of characters for strings, of fields for objects,
             //! of elements for arrays, zero for other types.
             //!
             virtual size_t size() const { return 0; }
+            //!
+            //! Get all field names in an object.
+            //! @param [out] names Receive the list of field names.
+            //!
+            virtual void getNames(UStringList& names) const { names.clear(); }
+            //!
+            //! Get the value of an object field.
+            //! @param [in] name Field name.
+            //! @return For a JSON object, return a constant reference to the given element.
+            //! When the field does not exist or for other types of JSON values, return a reference to a null JSON.
+            //!
+            virtual const Value& value(const UString& name) const;
+            //!
+            //! Remove a field from an object.
+            //! @param [in] name Field name.
+            //!
+            virtual void remove(const UString& name) {}
+            //!
+            //! Add a field into an object.
+            //! @param [in] name Field name.
+            //! @param [in] value Smart pointer to a JSON value. The pointed object is shared.
+            //!
+            virtual void add(const UString& name, const ValuePtr& value) {}
             //!
             //! Get an element of an array.
             //! @param [in] index Index to fetch in the array.
@@ -164,12 +189,18 @@ namespace ts {
             //!
             virtual const Value& at(size_t index) const;
             //!
-            //! Get the value of an object field.
-            //! @param [in] name Field name.
-            //! @return For a JSON object, return a constant reference to the given element.
-            //! When the field does not exist or for other types of JSON values, return a reference to a null JSON.
+            //! Set an element of an array.
+            //! @param [in] value Smart pointer to a JSON value. The pointed object is shared.
+            //! @param [in] index Index to fetch in the array. If out of bound, the @a value is added at the end of the array.
+            //! @return The actual index of the added value.
             //!
-            virtual const Value& value(const UString& name) const;
+            virtual size_t set(const ValuePtr& value, size_t index = std::numeric_limits<size_t>::max()) { return 0; }
+            //!
+            //! Erase elements from an array.
+            //! @param [in] index Index to erase in the array. Ignored if out of bound.
+            //! @param [in] count Number of elements to erase.
+            //!
+            virtual void erase(size_t index, size_t count = 1) {}
         };
 
         //!
@@ -231,6 +262,7 @@ namespace ts {
             virtual bool toBoolean(bool defaultValue = false) const override { return false; }
             virtual int64_t toInteger(int64_t defaultValue = 0) const override { return _value; }
             virtual UString toString(const UString& defaultValue = UString()) const override { return UString::Decimal(_value, 0, true, UString()); }
+            virtual void clear() override { _value = 0; }
 
         private:
             int64_t _value;
@@ -255,9 +287,49 @@ namespace ts {
             virtual int64_t toInteger(int64_t defaultValue = 0) const override;
             virtual UString toString(const UString& defaultValue = UString()) const override { return _value; }
             virtual size_t size() const override { return _value.size(); }
+            virtual void clear() override { _value.clear(); }
 
         private:
             UString _value;
+        };
+
+        //!
+        //! Implementation of a JSON object.
+        //!
+        class TSDUCKDLL Object: public Value
+        {
+        public:
+            // Implementation of ts::json::Value.
+            virtual Type type() const override { return TypeObject; }
+            virtual bool isObject() const override { return true; }
+            virtual size_t size() const override { return _fields.size(); }
+            virtual const Value& value(const UString& name) const override;
+            virtual void remove(const UString& name) override;
+            virtual void add(const UString& name, const ValuePtr& value) override;
+            virtual void clear() override { _fields.clear(); }
+            virtual void getNames(UStringList& names) const override;
+
+        private:
+            std::map<UString, ValuePtr> _fields;
+        };
+
+        //!
+        //! Implementation of a JSON array.
+        //!
+        class TSDUCKDLL Array: public Value
+        {
+        public:
+            // Implementation of ts::json::Value.
+            virtual Type type() const override { return TypeArray; }
+            virtual bool isArray() const override { return true; }
+            virtual size_t size() const override { return _value.size(); }
+            virtual void clear() override { _value.clear(); }
+            virtual const Value& at(size_t index) const override;
+            virtual size_t set(const ValuePtr& value, size_t index = std::numeric_limits<size_t>::max()) override;
+            virtual void erase(size_t index, size_t count = 1) override;
+
+        private:
+            std::vector<ValuePtr> _value;
         };
 
         //!
