@@ -244,7 +244,7 @@ bool ts::TextParser::isAtXMLNameStart() const
 
 
 //----------------------------------------------------------------------------
-// Parse a tag name.
+// Parse an XML name.
 //----------------------------------------------------------------------------
 
 bool ts::TextParser::parseXMLName(UString& name)
@@ -263,6 +263,172 @@ bool ts::TextParser::parseXMLName(UString& name)
         _pos._curIndex++;
     }
     return true;
+}
+
+
+//----------------------------------------------------------------------------
+// Check if the parser is at the start of a number (digit or minus sign).
+//----------------------------------------------------------------------------
+
+bool ts::TextParser::isAtNumberStart() const
+{
+    UChar c = CHAR_NULL;
+    return _pos._curLine != _pos._lines->end() &&
+        _pos._curIndex < _pos._curLine->length() &&
+        (IsDigit(c = (*_pos._curLine)[_pos._curIndex]) || c == u'-' || c == u'+');
+}
+
+
+//----------------------------------------------------------------------------
+// Parse a numeric literal.
+//----------------------------------------------------------------------------
+
+bool ts::TextParser::parseNumericLiteral(UString& str, bool allowHexa, bool allowFloat)
+{
+    str.clear();
+
+    // Eliminate end of file or line.
+    if (_pos._curLine == _pos._lines->end() || _pos._curIndex >= _pos._curLine->length()) {
+        return false;
+    }
+
+    const UString& line(*_pos._curLine);
+    const size_t end = line.length();
+    size_t index = _pos._curIndex;
+
+    // Skip optional sign.
+    if (line[index] == u'-' || line[index] == u'+') {
+        ++index;
+    }
+
+    // Detect number start.
+    if (index >= end || !IsDigit(line[index])) {
+        return false;
+    }
+
+    // Detect hexadecimal literal, skip integral part.
+    if (index + 2 < end && line[index] == u'0' && (line[index+1] == u'x' || line[index+1] == u'X') && IsHexa(line[index+2])) {
+        // Detected hexadecimal prefix, skip it.
+        index += 3;
+        // Reject if hexa not allowed by caller.
+        if (!allowHexa) {
+            return false;
+        }
+        // Reject floating point format with hexa.
+        allowFloat = false;
+        // Skip all hexa digits.
+        while (index < end && IsHexa(line[index])) {
+            ++index;
+        }
+    }
+    else {
+        // Skip decimal integral part.
+        while (index < end && IsDigit(line[index])) {
+            ++index;
+        }
+    }
+
+    // Skip additional floating point representation.
+    if (allowFloat) {
+        if (index < end && line[index] == u'.') {
+            ++index;
+            while (index < end && IsDigit(line[index])) {
+                ++index;
+            }
+        }
+        if (index < end && (line[index] == u'e' || line[index] == u'E')) {
+            ++index;
+            if (index < end && (line[index] == u'+' || line[index] == u'-')) {
+                ++index;
+            }
+            while (index < end && IsDigit(line[index])) {
+                ++index;
+            }
+        }
+    }
+
+    // Reached end of numeric literal. Validate next character.
+    if (index < end && (line[index] == u'.' || line[index] == u'_' || IsAlpha(line[index]))) {
+        return false;
+    }
+    else {
+        // Now we have a valid numeric literal.
+        str = _pos._curLine->substr(_pos._curIndex, index - _pos._curIndex);
+        _pos._curIndex = index;
+        return true;
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Parse a string literal.
+//----------------------------------------------------------------------------
+
+bool ts::TextParser::parseStringLiteral(UString& str, UChar requiredQuote)
+{
+    str.clear();
+
+    // Check that we are at the beginning of something.
+    if (_pos._curLine == _pos._lines->end() || _pos._curIndex >= _pos._curLine->length()) {
+        // At eol or eof.
+        return false;
+    }
+
+    const UString& line(*_pos._curLine);
+    const size_t end = line.length();
+    size_t index = _pos._curIndex;
+
+    // Validate the type of quote.
+    const UChar quote = line[index++];
+    if (requiredQuote == u'\'' && quote != u'\'') {
+        return false;
+    }
+    if (requiredQuote == u'"' && quote != u'"') {
+        return false;
+    }
+    if (quote != u'\'' && quote != u'"') {
+        return false;
+    }
+
+    // Now parse all characters in the string.
+    UChar c = CHAR_NULL;
+    while (index < end && (c = line[index]) != quote) {
+        index++;
+        if (c == u'\\') {
+            index++; // skip character after backslash.
+        }
+    }
+    if (index >= end) {
+        // Reached eol without finding the closing quote.
+        return false;
+    }
+    else {
+        // Now we have a string literal.
+        str = line.substr(_pos._curIndex, index + 1 - _pos._curIndex);
+        _pos._curIndex = index + 1;
+        return true;
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Parse a JSON string literal.
+//----------------------------------------------------------------------------
+
+bool ts::TextParser::parseJSONStringLiteral(UString& str)
+{
+    // JSON strings always start with a double quote.
+    if (parseStringLiteral(str, u'"')) {
+        assert(str.length() >= 2);
+        assert(str.front() == str.back());
+        str.erase(0, 1);
+        str.pop_back();
+        str.convertFromJSON();
+        return true;
+    }
+    else {
+        return false;
+    }
 }
 
 
