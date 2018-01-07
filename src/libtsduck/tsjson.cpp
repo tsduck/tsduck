@@ -144,3 +144,199 @@ void ts::json::Array::erase(size_t index, size_t count)
         _value.erase(_value.begin() + index, _value.begin() + std::min(index + count, _value.size()));
     }
 }
+
+
+//----------------------------------------------------------------------------
+// Format the value as JSON text.
+//----------------------------------------------------------------------------
+
+ts::UString ts::json::Value::printed(size_t indent, Report& report) const
+{
+    TextFormatter out(report);
+    out.setIndentSize(indent);
+    out.setString();
+    print(out);
+    UString str;
+    out.getString(str);
+    return str;
+}
+
+
+//----------------------------------------------------------------------------
+// Format a JSON object.
+//----------------------------------------------------------------------------
+
+void ts::json::Object::print(TextFormatter& output) const
+{
+    // Opening sequence, then indent.
+    output << "{" << ts::indent;
+
+    // Format all fields.
+    for (std::map<UString, ValuePtr>::const_iterator it = _fields.begin(); it != _fields.end(); ++it) {
+        if (it != _fields.begin()) {
+            output << ",";
+        }
+        output << std::endl << ts::margin << '"' << it->first.toJSON() << "\": ";
+        it->second->print(output);
+    }
+
+    // Unindent and closing sequence.
+    output << std::endl << ts::unindent << ts::margin << "}";
+}
+
+
+//----------------------------------------------------------------------------
+// Format a JSON array.
+//----------------------------------------------------------------------------
+
+void ts::json::Array::print(TextFormatter& output) const
+{
+    // Opening sequence, then indent.
+    output << "[" << ts::indent;
+
+    // Format all fields.
+    for (std::vector<ValuePtr>::const_iterator it = _value.begin(); it != _value.end(); ++it) {
+        if (it != _value.begin()) {
+            output << ",";
+        }
+        output << std::endl << ts::margin;
+        (*it)->print(output);
+    }
+
+    // Unindent and closing sequence.
+    output << std::endl << ts::unindent << ts::margin << "]";
+}
+
+
+//----------------------------------------------------------------------------
+// Parse a JSON value (typically an object or array.
+//----------------------------------------------------------------------------
+
+bool ts::json::Parse(ValuePtr& value, const UStringList& lines, Report& report)
+{
+    TextParser parser(lines, report);
+    return Parse(value, parser, true, report);
+}
+
+bool ts::json::Parse(ValuePtr& value, const UString& text, Report& report)
+{
+    TextParser parser(text, report);
+    return Parse(value, parser, true, report);
+}
+
+bool ts::json::Parse(ValuePtr& value, TextParser& parser, bool jsonOnly, Report& report)
+{
+    value.clear();
+
+    UString str;
+    int64_t intVal;
+
+    // Leading spaces are ignored.
+    parser.skipWhiteSpace();
+
+    // Look for one of the seven possible forms or JSON value.
+    if (parser.match(u"null", true)) {
+        value = new Null;
+    }
+    else if (parser.match(u"true", true)) {
+        value = new True;
+    }
+    else if (parser.match(u"false", true)) {
+        value = new False;
+    }
+    else if (parser.parseJSONStringLiteral(str)) {
+        value = new String(str);
+    }
+    else if (parser.parseNumericLiteral(str, false, true)) {
+        if (str.toInteger(intVal)) {
+            value = new Number(intVal);
+        }
+        else {
+            // Invalid integer, 
+            report.error(u"line %d: JSON floating-point numbers not yet supported, using \"null\" instead", {parser.lineNumber()});
+            value = new Null;
+        }
+    }
+    else if (parser.match(u"{", true)) {
+        // Parse an object.
+        value = new Object;
+        // Loop on all fields of the object.
+        for (;;) {
+            parser.skipWhiteSpace();
+            // Exit at end of object
+            if (parser.match(u"}", true)) {
+                break;
+            }
+            ValuePtr element;
+            if (!parser.parseJSONStringLiteral(str) ||
+                !parser.skipWhiteSpace() ||
+                !parser.match(u":", true) ||
+                !parser.skipWhiteSpace() ||
+                !Parse(element, parser, false, report))
+            {
+                return false;
+            }
+            // Found field.
+            value->add(str, element);
+            parser.skipWhiteSpace();
+            // Exit at end of object
+            if (parser.match(u"}", true)) {
+                break;
+            }
+            // Expect a comma before next field.
+            if (!parser.match(u",", true)) {
+                report.error(u"line %d: syntax error in JSON object, missing ','", {parser.lineNumber()});
+                return false;
+            }
+        }
+    }
+    else if (parser.match(u"[", true)) {
+        // Parse an array.
+        value = new Array;
+        // Loop on all elements of the array.
+        for (;;) {
+            parser.skipWhiteSpace();
+            // Exit at end of array.
+            if (parser.match(u"]", true)) {
+                break;
+            }
+            ValuePtr element;
+            if (!Parse(element, parser, false, report)) {
+                return false;
+            }
+            // Found an element.
+            value->set(element);
+            parser.skipWhiteSpace();
+            // Exit at end of array.
+            if (parser.match(u"]", true)) {
+                break;
+            }
+            // Expect a comma before next element
+            if (!parser.match(u",", true)) {
+                report.error(u"line %d: syntax error in JSON array, missing ','", {parser.lineNumber()});
+                return false;
+            }
+        }
+    }
+    else {
+        report.error(u"line %d: not a valid JSON value", {parser.lineNumber()});
+        return false;
+    }
+
+    // Process text after the JSON value.
+    if (jsonOnly) {
+        // Nothing is allowed after the JSON value.
+        parser.skipWhiteSpace();
+        if (parser.eof()) {
+            return true;
+        }
+        else {
+            report.error(u"line %d: extraneous text after JSON value", {parser.lineNumber()});
+            return false;
+        }
+    }
+    else {
+        // Do not parse further.
+        return true;
+    }
+}

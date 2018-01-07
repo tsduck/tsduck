@@ -881,8 +881,7 @@ void ts::UString::convertToJSON()
         UChar quoted = CHAR_NULL;
         switch (c) {
             case QUOTATION_MARK:
-            case REVERSE_SOLIDUS:
-            case SOLIDUS: quoted = c; break;
+            case REVERSE_SOLIDUS: quoted = c; break;
             case BACKSPACE: quoted = u'b'; break;
             case FORM_FEED: quoted = u'f'; break;
             case LINE_FEED: quoted = u'n'; break;

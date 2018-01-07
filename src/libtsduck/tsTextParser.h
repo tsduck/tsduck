@@ -190,27 +190,23 @@ namespace ts {
         virtual bool parseText(UString& result, const UString endToken, bool skipIfMatch, bool translateEntities);
 
         //!
-        //! Check if a character is suitable for starting a @e name.
-        //! The concept of @e name depends on the type of text which is parsed.
-        //! This implementation is compatible with XML: a name starts with a letter,
-        //! underscore or colon.
+        //! Check if a character is suitable for starting an XML @e name.
+        //! An XML name starts with a letter, underscore or colon.
         //! @param [in] c The character to check.
-        //! @return True if @a c is suitable for starting a name.
+        //! @return True if @a c is suitable for starting an XML name.
         //!
         virtual bool isXMLNameStartChar(UChar c) const;
 
         //!
-        //! Check if a character is suitable in the middle of a name.
-        //! The concept of @e name depends on the type of text which is parsed.
-        //! This implementation is compatible with XML: a name contains letters,
-        //! digits, underscores, colons, dots and dashes.
+        //! Check if a character is suitable in the middle of an XML name.
+        //! An XML name contains letters, digits, underscores, colons, dots and dashes.
         //! @param [in] c The character to check.
-        //! @return True if @a c is suitable in the middle of a name.
+        //! @return True if @a c is suitable in the middle of an XML name.
         //!
         virtual bool isXMLNameChar(UChar c) const;
 
         //!
-        //! Check if the parser is at the start of a name.
+        //! Check if the parser is at the start of an XML name.
         //! @return True if the parser is at the start of a name.
         //!
         virtual bool isAtXMLNameStart() const;
@@ -221,6 +217,42 @@ namespace ts {
         //! @return True on success, false if no name was not found.
         //!
         virtual bool parseXMLName(UString& name);
+
+        //!
+        //! Check if the parser is at the start of a number (digit or minus sign).
+        //! @return True if the parser is at the start of a number.
+        //!
+        virtual bool isAtNumberStart() const;
+
+        //!
+        //! Parse a numeric literal.
+        //! @param [out] str Returned numeric literal
+        //! @param [in] allowHexa If true, hexadecimal integers "0x..." are allowed.
+        //! @param [in] allowFloat It true, floating point values "[-]digits[.digits][e|E[+|-]digits]" are allowed.
+        //! @return True on success, false if no string literal was not found.
+        //!
+        virtual bool parseNumericLiteral(UString& str, bool allowHexa = false, bool allowFloat = false);
+
+        //!
+        //! Parse a string literal.
+        //! A string literal is enclosed in simple or double quotes.
+        //! Any similar quotation mark is considered part of the string when it is preceded
+        //! by a backslash character.
+        //! @param [out] str Returned string literal, including the first and last quote.
+        //! When the method returns true (success), it is consequently guaranteed that
+        //! the length of the returned string is greater than or equal to 2.
+        //! @param [in] requiredQuote If defined as single or double quote, accept only
+        //! that type of quote. Otherwise, accept any of the two.
+        //! @return True on success, false if no string literal was not found.
+        //!
+        virtual bool parseStringLiteral(UString& str, UChar requiredQuote = CHAR_NULL);
+
+        //!
+        //! Parse a JSON string literal.
+        //! @param [out] str Returned decoded value of the string literal.
+        //! @return True on success, false if no string literal was not found.
+        //!
+        virtual bool parseJSONStringLiteral(UString& str);
 
     private:
         Report&     _report;

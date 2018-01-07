@@ -33,9 +33,11 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsReport.h"
 #include "tsUString.h"
 #include "tsSafePtr.h"
+#include "tsTextFormatter.h"
+#include "tsTextParser.h"
+#include "tsNullReport.h"
 
 namespace ts {
     //!
@@ -63,6 +65,36 @@ namespace ts {
             TypeObject,   //!< structured object.
             TypeArray     //!< array of values.
         };
+
+        //!
+        //! Parse a JSON value (typically an object or array.
+        //! @param [out] value A smart pointer to the parsed JSON value (null on error).
+        //! @param [in] lines List of text lines forming the JSON value.
+        //! @param [in,out] report Where to report errors.
+        //! @return True on success, false on error.
+        //!
+        TSDUCKDLL bool Parse(ValuePtr& value, const UStringList& lines, Report& report = NULLREP);
+
+        //!
+        //! Parse a JSON value (typically an object or array.
+        //! @param [out] value A smart pointer to the parsed JSON value (null on error).
+        //! @param [in] text The text forming the JSON value.
+        //! @param [in,out] report Where to report errors.
+        //! @return True on success, false on error.
+        //!
+        TSDUCKDLL bool Parse(ValuePtr& value, const UString& text, Report& report = NULLREP);
+
+        //!
+        //! Parse a JSON value (typically an object or array.
+        //! @param [out] value A smart pointer to the parsed JSON value (null on error).
+        //! @param [in,out] parser A text parser.
+        //! @param [in] jsonOnly If true, the parsed text shall not contain anything else than
+        //! the JSON value (except white spaces). If false, on output, the position of the parser
+        //! is right after the JSON value.
+        //! @param [in,out] report Where to report errors.
+        //! @return True on success, false on error.
+        //!
+        TSDUCKDLL bool Parse(ValuePtr& value, TextParser& parser, bool jsonOnly, Report& report = NULLREP);
 
         //!
         //! Abstract base class of a JSON value.
@@ -95,6 +127,18 @@ namespace ts {
             //! @return The JSON value type.
             //!
             virtual Type type() const = 0;
+            //!
+            //! Format the value as JSON text.
+            //! @param [in,out] output The output object to format.
+            //!
+            virtual void print(TextFormatter& output) const = 0;
+            //!
+            //! Format the value as JSON text.
+            //! @param [in] indent Indentation width of each level.
+            //! @param [in,out] report Where to report errors.
+            //! @return The formatted JSON text.
+            //!
+            virtual UString printed(size_t indent = 2, Report& report = NULLREP) const;
             //!
             //! Check if this instance a is JSON null literal.
             //! @return True if this instance a is JSON null literal.
@@ -212,6 +256,7 @@ namespace ts {
             // Implementation of ts::json::Value.
             virtual Type type() const override { return TypeNull; }
             virtual bool isNull() const override { return true; }
+            virtual void print(TextFormatter& output) const override { output << "null"; }
         };
 
         //!
@@ -223,6 +268,7 @@ namespace ts {
             // Implementation of ts::json::Value.
             virtual Type type() const override { return TypeTrue; }
             virtual bool isTrue() const override { return true; }
+            virtual void print(TextFormatter& output) const override { output << "true"; }
             virtual bool toBoolean(bool defaultValue = false) const override { return true; }
             virtual int64_t toInteger(int64_t defaultValue = 0) const override { return 1; }
             virtual UString toString(const UString& defaultValue = UString()) const override { return u"true"; }
@@ -237,6 +283,7 @@ namespace ts {
             // Implementation of ts::json::Value.
             virtual Type type() const override { return TypeFalse; }
             virtual bool isFalse() const override { return true; }
+            virtual void print(TextFormatter& output) const override { output << "false"; }
             virtual bool toBoolean(bool defaultValue = false) const override { return false; }
             virtual int64_t toInteger(int64_t defaultValue = 0) const override{ return 0; }
             virtual UString toString(const UString& defaultValue = UString()) const override { return u"false"; }
@@ -259,6 +306,7 @@ namespace ts {
             // Implementation of ts::json::Value.
             virtual Type type() const override { return TypeNumber; }
             virtual bool isNumber() const override { return true; }
+            virtual void print(TextFormatter& output) const override { output << UString::Decimal(_value, 0, true, UString()); }
             virtual bool toBoolean(bool defaultValue = false) const override { return false; }
             virtual int64_t toInteger(int64_t defaultValue = 0) const override { return _value; }
             virtual UString toString(const UString& defaultValue = UString()) const override { return UString::Decimal(_value, 0, true, UString()); }
@@ -283,6 +331,7 @@ namespace ts {
             // Implementation of ts::json::Value.
             virtual Type type() const override { return TypeString; }
             virtual bool isString() const override { return true; }
+            virtual void print(TextFormatter& output) const override { output << '"' << _value.toJSON() << '"'; }
             virtual bool toBoolean(bool defaultValue = false) const override;
             virtual int64_t toInteger(int64_t defaultValue = 0) const override;
             virtual UString toString(const UString& defaultValue = UString()) const override { return _value; }
@@ -302,6 +351,7 @@ namespace ts {
             // Implementation of ts::json::Value.
             virtual Type type() const override { return TypeObject; }
             virtual bool isObject() const override { return true; }
+            virtual void print(TextFormatter& output) const override;
             virtual size_t size() const override { return _fields.size(); }
             virtual const Value& value(const UString& name) const override;
             virtual void remove(const UString& name) override;
@@ -322,6 +372,7 @@ namespace ts {
             // Implementation of ts::json::Value.
             virtual Type type() const override { return TypeArray; }
             virtual bool isArray() const override { return true; }
+            virtual void print(TextFormatter& output) const override;
             virtual size_t size() const override { return _value.size(); }
             virtual void clear() override { _value.clear(); }
             virtual const Value& at(size_t index) const override;
