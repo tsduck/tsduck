@@ -94,6 +94,17 @@ void ts::json::Object::remove(const UString& name)
     _fields.erase(name);
 }
 
+ts::json::ValuePtr ts::json::Object::extract(const UString& name)
+{
+    ValuePtr result;
+    std::map<UString, ValuePtr>::const_iterator it = _fields.find(name);
+    if (it != _fields.end()) {
+        result = it->second;
+        _fields.erase(name);
+    }
+    return result;
+}
+
 void ts::json::Object::add(const UString& name, const ValuePtr& value)
 {
     // If the pointer is null, explicitly create a "null" value.
@@ -143,6 +154,16 @@ void ts::json::Array::erase(size_t index, size_t count)
     if (index < _value.size() && count > 0) {
         _value.erase(_value.begin() + index, _value.begin() + std::min(index + count, _value.size()));
     }
+}
+
+ts::json::ValuePtr ts::json::Array::extractAt(size_t index)
+{
+    ValuePtr result;
+    if (index < _value.size()) {
+        result = _value[index];
+        _value.erase(_value.begin() + index, _value.begin() + index + 1);
+    }
+    return result;
 }
 
 
