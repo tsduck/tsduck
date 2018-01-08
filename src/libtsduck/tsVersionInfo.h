@@ -64,6 +64,14 @@ namespace ts {
     //! @return The formatted version string.
     //!
     TSDUCKDLL UString GetVersion(VersionFormat format = VERSION_SHORT, const UString& applicationName = UString());
+
+    //!
+    //! Compare two version strings.
+    //! @param [in] v1 First version string.
+    //! @param [in] v2 First version string.
+    //! @return One of -1, 0, 1 when @a v1 < @v2, @a v1 == @v2, @a v1 > @v2.
+    //!
+    TSDUCKDLL int CompareVersions(const UString& v1, const UString& v2);
 }
 
 extern "C" {

@@ -338,6 +338,31 @@ namespace ts {
         UString(std::initializer_list<UChar> init, const allocator_type& alloc = allocator_type()) :
             SuperClass(init, alloc) {}
 
+#if defined(TS_WINDOWS) || defined(DOXYGEN)
+        //!
+        //! Constructor using a Windows Unicode string (Windows-specific).
+        //! @param [in] s Address of a string. Can be a null pointer if @a count is zero, in which case the string is empty.
+        //! @param [in] count Number of characters to copy from @a s. That number of characters is always copied, including null characters.
+        //! @param [in] alloc Allocator.
+        //!
+        UString(const ::WCHAR* s, size_type count, const allocator_type& alloc = allocator_type()) :
+            UString(reinterpret_cast<const UChar*>(s), count, alloc)
+        {
+            assert(sizeof(::WCHAR) == sizeof(UChar));
+        }
+
+        //!
+        //! Constructor using a null-terminated Windows Unicode string (Windows-specific).
+        //! @param [in] s Address of a null-terminated string. Can be a null pointer, in which case the string is empty.
+        //! @param [in] alloc Allocator.
+        //!
+        UString(const ::WCHAR* s, const allocator_type& alloc = allocator_type()) :
+            UString(s == 0 ? &CHAR_NULL : reinterpret_cast<const UChar*>(s), alloc)
+        {
+            assert(sizeof(::WCHAR) == sizeof(UChar));
+        }
+#endif
+
 #if defined(TS_ALLOW_IMPLICIT_UTF8_CONVERSION) || defined(DOXYGEN)
         //!
         //! Constructor from an UTF-8 string.
@@ -815,6 +840,14 @@ namespace ts {
         //! @return True if this string starts with @a prefix, false otherwise.
         //!
         bool startWith(const UString& prefix, CaseSensitivity cs = CASE_SENSITIVE) const;
+
+        //!
+        //! Check if a string contains a specified substring.
+        //! @param [in] substring A substring to check.
+        //! @param [in] cs Indicate if the comparison is case-sensitive.
+        //! @return True if this string contains @a sunstring, false otherwise.
+        //!
+        bool contain(const UString& substring, CaseSensitivity cs = CASE_SENSITIVE) const;
 
         //!
         //! Check if a string ends with a specified suffix.

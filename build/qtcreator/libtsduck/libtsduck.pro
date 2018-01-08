@@ -226,6 +226,7 @@ HEADERS += \
     ../../../src/libtsduck/tsUStringTemplate.h \
     ../../../src/libtsduck/tsSubtitlingDescriptor.h \
     ../../../src/libtsduck/tsSupplementaryAudioDescriptor.h \
+    ../../../src/libtsduck/tsSysInfo.h \
     ../../../src/libtsduck/tsSysUtils.h \
     ../../../src/libtsduck/tsSysUtilsTemplate.h \
     ../../../src/libtsduck/tsSystemMonitor.h \
@@ -470,6 +471,7 @@ SOURCES += \
     ../../../src/libtsduck/tsUString.cpp \
     ../../../src/libtsduck/tsSubtitlingDescriptor.cpp \
     ../../../src/libtsduck/tsSupplementaryAudioDescriptor.cpp \
+    ../../../src/libtsduck/tsSysInfo.cpp \
     ../../../src/libtsduck/tsSysUtils.cpp \
     ../../../src/libtsduck/tsSystemMonitor.cpp \
     ../../../src/libtsduck/tsSystemRandomGenerator.cpp \

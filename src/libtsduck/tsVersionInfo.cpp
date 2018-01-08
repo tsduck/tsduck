@@ -51,7 +51,6 @@ const ts::Enumeration ts::VersionFormatEnum({
 });
 
 
-
 //----------------------------------------------------------------------------
 // Build version string.
 //----------------------------------------------------------------------------
@@ -61,12 +60,15 @@ ts::UString ts::GetVersion(VersionFormat format, const UString& applicationName)
     switch (format) {
         case VERSION_SHORT: {
             // The simplest version.
-            return ts::UString::Format(u"%d.%d-%d", {TS_VERSION_MAJOR, TS_VERSION_MINOR, TS_COMMIT});
+            // This undocumented environment variable can be used to force the version (for debug purpose).
+            const UString forcedVersion(GetEnvironment(u"TS_FORCED_VERSION"));
+            return forcedVersion.empty() ? ts::UString::Format(u"%d.%d-%d", {TS_VERSION_MAJOR, TS_VERSION_MINOR, TS_COMMIT}) : forcedVersion;
         }
         case VERSION_LONG: {
             // The long explanatory version.
             return (applicationName.empty() ? UString() : applicationName + u": ") +
-                    ts::UString::Format(u"TSDuck - The MPEG Transport Stream Toolkit - version %d.%d-%d", {TS_VERSION_MAJOR, TS_VERSION_MINOR, TS_COMMIT});
+                u"TSDuck - The MPEG Transport Stream Toolkit - version " +
+                GetVersion(VERSION_SHORT);
         }
         case VERSION_DATE: {
             // The build date.
@@ -76,8 +78,8 @@ ts::UString ts::GetVersion(VersionFormat format, const UString& applicationName)
             // A definition directive for NSIS.
             // The name tsduckVersion contains the visible version.
             // The name tsduckVersionInfi contains a Window normalized version number X.X.X.X.
-            return UString::Format(u"!define tsduckVersion \"%d.%d-%d\"\n!define tsduckVersionInfo \"%d.%d.%d.0\"",
-                                   {TS_VERSION_MAJOR, TS_VERSION_MINOR, TS_COMMIT, TS_VERSION_MAJOR, TS_VERSION_MINOR, TS_COMMIT});
+            return UString::Format(u"!define tsduckVersion \"%s\"\n!define tsduckVersionInfo \"%d.%d.%d.0\"",
+                                   {GetVersion(VERSION_SHORT), TS_VERSION_MAJOR, TS_VERSION_MINOR, TS_COMMIT});
         }
         case VERSION_DEKTEC: {
             // The version of Dektec components.
@@ -87,5 +89,75 @@ ts::UString ts::GetVersion(VersionFormat format, const UString& applicationName)
             // Undefined type, return an empty string.
             return UString();
         }
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Compare two version strings.
+//----------------------------------------------------------------------------
+
+namespace {
+    // Convert a version string into a vector of integers.
+    void VersionToInts(std::vector<int>& ints, const ts::UString& version)
+    {
+        // Replace all non-digit characters by spaces.
+        ts::UString s(version);
+        for (size_t i = 0; i < s.size(); ++i) {
+            if (!ts::IsDigit(s[i])) {
+                s[i] = u' ';
+            }
+        }
+
+        // Split into a list of strings.
+        ts::UStringList strings;
+        s.split(strings, u' ', true, true);
+
+        // Convert strings into integers.
+        ints.clear();
+        int val = 0;
+        for (ts::UStringList::const_iterator it = strings.begin(); it != strings.end(); ++it) {
+            if (it->toInteger(val)) {
+                ints.push_back(val);
+            }
+        }
+    }
+}
+
+int ts::CompareVersions(const UString& v1, const UString& v2)
+{
+    // Convert versions to arrays of integers.
+    std::vector<int> ints1;
+    std::vector<int> ints2;
+    VersionToInts(ints1, v1);
+    VersionToInts(ints2, v2);
+
+    // Compare arrays of integers.
+    size_t i1 = 0;
+    size_t i2 = 0;
+    while (i1 < ints1.size() && i2 < ints2.size()) {
+        if (ints1[i1] < ints2[i2]) {
+            return -1;
+        }
+        else if (ints1[i1] > ints2[i2]) {
+            return 1;
+        }
+        else {
+            ++i1;
+            ++i2;
+        }
+    }
+
+    if (i1 < ints1.size()) {
+        // i1 = i2 + something
+        return 1;
+    }
+    else if (i2 < ints2.size()) {
+        // i2 = i1 + something
+        return -1;
+    }
+    else {
+        // i1 == i2
+        return 0;
     }
 }
