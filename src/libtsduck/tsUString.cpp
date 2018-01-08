@@ -715,6 +715,22 @@ bool ts::UString::endWith(const UString& suffix, CaseSensitivity cs) const
     }
 }
 
+bool ts::UString::contain(const UString& substring, CaseSensitivity cs) const
+{
+    switch (cs) {
+        case CASE_SENSITIVE: {
+            return find(substring) != NPOS;
+        }
+        case CASE_INSENSITIVE: {
+            return toLower().find(substring.toLower()) != NPOS;
+        }
+        default: {
+            assert(false);
+            return false;
+        }
+    }
+}
+
 
 //----------------------------------------------------------------------------
 // Split a string into multiple lines which are not longer than a specified maximum width.

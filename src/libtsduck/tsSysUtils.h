@@ -457,6 +457,20 @@ namespace ts {
     TSDUCKDLL void GetEnvironment(Environment& env);
 
     //!
+    //! Load a text file containing environment variables.
+    //! Each line shall be in the form "name = value".
+    //! Empty line and line starting with '#' are ignored.
+    //! Spaces are trimmed.
+    //!
+    //! @param [out] env An associative container which receives the content of the environment.
+    //! Each @e key is the name of an environment variable and the corresponding @e value is
+    //! the value of this environment variable.
+    //! @param [in] fileName Name of the file to load.
+    //! @return True on success, false on error.
+    //!
+    TSDUCKDLL bool LoadEnvironment(Environment& env, const UString& fileName);
+
+    //!
     //! Format an error code into a string.
     //!
     //! @param [in] code An error code from the operating system.

@@ -32,6 +32,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsSysUtils.h"
+#include "tsSysInfo.h"
 #include "tsRegistry.h"
 #include "tsMonotonic.h"
 #include "tsTime.h"
@@ -75,6 +76,7 @@ public:
     void testProcessMetrics();
     void testMemory();
     void testIsTerminal();
+    void testSysInfo();
 
     CPPUNIT_TEST_SUITE(SysUtilsTest);
     CPPUNIT_TEST(testCurrentProcessId);
@@ -96,6 +98,7 @@ public:
     CPPUNIT_TEST(testProcessMetrics);
     CPPUNIT_TEST(testMemory);
     CPPUNIT_TEST(testIsTerminal);
+    CPPUNIT_TEST(testSysInfo);
     CPPUNIT_TEST_SUITE_END();
 private:
     ts::NanoSecond  _nsPrecision;
@@ -655,11 +658,40 @@ void SysUtilsTest::testIsTerminal()
 {
 #if defined(TS_WINDOWS)
     utest::Out() << "SysUtilsTest::testIsTerminal: stdin  = \"" << ts::WinDeviceName(::GetStdHandle(STD_INPUT_HANDLE)) << "\"" << std::endl
-                 << "SysUtilsTest::testIsTerminal: stdout = \"" << ts::WinDeviceName(::GetStdHandle(STD_OUTPUT_HANDLE)) << "\"" << std::endl
-                 << "SysUtilsTest::testIsTerminal: stderr = \"" << ts::WinDeviceName(::GetStdHandle(STD_ERROR_HANDLE)) << "\"" << std::endl;
+        << "SysUtilsTest::testIsTerminal: stdout = \"" << ts::WinDeviceName(::GetStdHandle(STD_OUTPUT_HANDLE)) << "\"" << std::endl
+        << "SysUtilsTest::testIsTerminal: stderr = \"" << ts::WinDeviceName(::GetStdHandle(STD_ERROR_HANDLE)) << "\"" << std::endl;
 #endif
     utest::Out() << "SysUtilsTest::testIsTerminal: StdInIsTerminal = " << ts::UString::TrueFalse(ts::StdInIsTerminal())
-                 << ", StdOutIsTerminal = " << ts::UString::TrueFalse(ts::StdOutIsTerminal())
-                 << ", StdErrIsTerminal = " << ts::UString::TrueFalse(ts::StdErrIsTerminal())
-                 << std::endl;
+        << ", StdOutIsTerminal = " << ts::UString::TrueFalse(ts::StdOutIsTerminal())
+        << ", StdErrIsTerminal = " << ts::UString::TrueFalse(ts::StdErrIsTerminal())
+        << std::endl;
+}
+
+void SysUtilsTest::testSysInfo()
+{
+    utest::Out() << "SysUtilsTest::testSysInfo: " << std::endl
+                 << "    isLinux = " << ts::UString::TrueFalse(ts::SysInfo::Instance()->isLinux()) << std::endl
+                 << "    isFedora = " << ts::UString::TrueFalse(ts::SysInfo::Instance()->isFedora()) << std::endl
+                 << "    isRedHat = " << ts::UString::TrueFalse(ts::SysInfo::Instance()->isRedHat()) << std::endl
+                 << "    isUbuntu = " << ts::UString::TrueFalse(ts::SysInfo::Instance()->isUbuntu()) << std::endl
+                 << "    isMacOS = " << ts::UString::TrueFalse(ts::SysInfo::Instance()->isMacOS()) << std::endl
+                 << "    isWindows = " << ts::UString::TrueFalse(ts::SysInfo::Instance()->isWindows()) << std::endl
+                 << "    isIntel32 = " << ts::UString::TrueFalse(ts::SysInfo::Instance()->isIntel32()) << std::endl
+                 << "    isIntel64 = " << ts::UString::TrueFalse(ts::SysInfo::Instance()->isIntel64()) << std::endl
+                 << "    systemVersion = \"" << ts::SysInfo::Instance()->systemVersion() << '"' << std::endl
+                 << "    systemName = \"" << ts::SysInfo::Instance()->systemName() << '"' << std::endl;
+
+#if defined(TS_WINDOWS)
+    CPPUNIT_ASSERT(ts::SysInfo::Instance()->isWindows());
+    CPPUNIT_ASSERT(!ts::SysInfo::Instance()->isLinux());
+    CPPUNIT_ASSERT(!ts::SysInfo::Instance()->isMacOS());
+#elif defined(TS_LINUX)
+    CPPUNIT_ASSERT(!ts::SysInfo::Instance()->isWindows());
+    CPPUNIT_ASSERT(ts::SysInfo::Instance()->isLinux());
+    CPPUNIT_ASSERT(!ts::SysInfo::Instance()->isMacOS());
+#elif defined(TS_MAC)
+    CPPUNIT_ASSERT(!ts::SysInfo::Instance()->isWindows());
+    CPPUNIT_ASSERT(!ts::SysInfo::Instance()->isLinux());
+    CPPUNIT_ASSERT(ts::SysInfo::Instance()->isMacOS());
+#endif
 }

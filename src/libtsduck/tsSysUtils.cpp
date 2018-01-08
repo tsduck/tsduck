@@ -967,19 +967,37 @@ ts::UString ts::ExpandEnvironment(const UString& path)
 
 
 //----------------------------------------------------------------------------
-// Add a "name=value" string to a container
+// Add a "name=value" string to a container.
+// If exact is true, the definition is always valid.
+// Otherwise, cleanup the string and ignore lines without "="
 //----------------------------------------------------------------------------
 
 namespace {
-    void AddNameValue(ts::Environment& env, const ts::UString& s)
+    void AddNameValue(ts::Environment& env, const ts::UString& line, bool exact)
     {
+        ts::UString s(line);
+
+        // Filter and cleanup line.
+        if (!exact) {
+            s.trim();
+            if (s.empty() || s.front() == u'#') {
+                // Empty or comment line
+                return;
+            }
+        }
+
         const size_t pos = s.find(u"=");
         if (pos == ts::UString::NPOS) {
-            // No "=", empty value
-            env.insert(std::make_pair(s, ts::UString()));
+            if (exact) {
+                // No "=" means empty value
+                env.insert(std::make_pair(s, ts::UString()));
+            }
+        }
+        else if (exact) {
+            env.insert(std::make_pair(s.substr(0, pos), s.substr(pos + 1)));
         }
         else {
-            env.insert(std::make_pair(s.substr(0, pos), s.substr(pos + 1)));
+            env.insert(std::make_pair(s.substr(0, pos).toTrimmed(), s.substr(pos + 1).toTrimmed()));
         }
     }
 }
@@ -1001,7 +1019,7 @@ void ts::GetEnvironment(Environment& env)
         size_t len;
         for (const ::WCHAR* p = strings; (len = ::wcslen(p)) != 0; p += len + 1) {
             assert(sizeof(::WCHAR) == sizeof(UChar));
-            AddNameValue(env, UString(reinterpret_cast<const UChar*>(p), len));
+            AddNameValue(env, UString(reinterpret_cast<const UChar*>(p), len), true);
         }
         ::FreeEnvironmentStringsW(strings);
     }
@@ -1009,11 +1027,30 @@ void ts::GetEnvironment(Environment& env)
 #else
 
     for (char** p = ::environ; *p != 0; ++p) {
-        AddNameValue(env, UString::FromUTF8(*p));
+        AddNameValue(env, UString::FromUTF8(*p), true);
     }
 
 #endif
 }
+
+
+//----------------------------------------------------------------------------
+// Load a text file containing environment variables.
+//----------------------------------------------------------------------------
+
+bool ts::LoadEnvironment(Environment& env, const UString& fileName)
+{
+    env.clear();
+    UStringList lines;
+    const bool ok = UString::Load(lines, fileName);
+    if (ok) {
+        for (UStringList::const_iterator it = lines.begin(); it != lines.end(); ++it) {
+            AddNameValue(env, *it, false);
+        }
+    }
+    return ok;
+}
+
 
 //----------------------------------------------------------------------------
 // Check if the standard input/output/error is a terminal.

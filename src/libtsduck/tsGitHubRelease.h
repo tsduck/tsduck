@@ -146,10 +146,44 @@ namespace ts {
         UString sourceZipURL() const;
 
         //!
+        //! Get the most appropriate URL of the source archive for the release.
+        //! On Windows, prefer zip files. On UNIX, prefer tarballs.
+        //! @return The URL.
+        //!
+        UString sourceURL() const;
+
+        //!
+        //! Get an appropriate file name to download sourceURL().
+        //! @return The local file name.
+        //! @see sourceURL()
+        //!
+        UString sourceFileName() const;
+
+        //!
+        //! Get the number of downloads for the assets of the release.
+        //! @return The number of downloads for the assets.
+        //!
+        int assetDownloadCount() const;
+
+        //!
         //! Get the list of all assets for the release.
         //! @param [out] assets The returned list of assets.
         //!
         void getAssets(AssetList& assets) const;
+
+        //!
+        //! Get the list of assets for the current platform.
+        //! @param [out] assets The returned list of assets.
+        //!
+        void getPlatformAssets(AssetList& assets) const;
+
+        //!
+        //! Check if a binary file is appropriate for the current platform.
+        //! The check is based on various naming conventions.
+        //! @param [in] fileName Asset base file name (no directory).
+        //! @return True is @a fileName seems appropriate for the local platform.
+        //!
+        static bool IsPlatformAsset(const UString& fileName);
 
         //!
         //! Download information from GitHub for all versions of a product.
@@ -161,11 +195,16 @@ namespace ts {
         static bool GetAllVersions(GitHubReleaseVector& versions, const UString& owner, const UString& repository, Report& report = CERR);
 
     private:
-        bool _isValid;
+        bool    _isValid;
+        UString _owner;
+        UString _repository;
         json::ValuePtr _root;
 
         // Basic validation of the root JSON.
         bool validate(Report& report);
+
+        // Check if we should use the source tarball or zip file.
+        bool useSourceZip() const;
 
         // Fetch a API request for a repository. Return a JSON structure.
         static bool CallGitHub(json::ValuePtr& response, json::Type expectedType, const UString& owner, const UString& repository, const UString& request, Report& report);

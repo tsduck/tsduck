@@ -34,6 +34,8 @@
 
 #include "tsArgs.h"
 #include "tsGitHubRelease.h"
+#include "tsWebRequest.h"
+#include "tsSysUtils.h"
 #include "tsVersionInfo.h"
 TSDUCK_SOURCE;
 
@@ -50,7 +52,8 @@ struct Options: public ts::Args
     bool        latest;    // Display the latest version of TSDuck.
     bool        check;     // Check if a new version of TSDuck is available.
     bool        all;       // List all available versions of TSDuck.
-    bool        download;  // Download the lastest version.
+    bool        download;  // Download the latest version.
+    bool        force;     // Force downloads.
     bool        binary;    // With --download, fetch the binaries.
     bool        source;    // With --download, feth the source code instead of the binaries.
     bool        upgrade;   // Upgrade TSDuck to the latest version.
@@ -70,6 +73,7 @@ Options::Options(int argc, char *argv[]) :
     check(false),
     all(false),
     download(false),
+    force(false),
     binary(false),
     source(false),
     upgrade(false),
@@ -80,6 +84,7 @@ Options::Options(int argc, char *argv[]) :
     option(u"binary",           'b');
     option(u"check",            'c');
     option(u"download",         'd');
+    option(u"force",            'f');
     option(u"latest",           'l');
     option(u"name",             'n', Args::STRING);
     option(u"output-directory", 'o', Args::STRING);
@@ -105,10 +110,14 @@ Options::Options(int argc, char *argv[]) :
             u"\n"
             u"  -d\n"
             u"  --download\n"
-            u"      Download the lastest version (or the version specified by --name) from\n"
+            u"      Download the latest version (or the version specified by --name) from\n"
             u"      GitHub. By default, download the binary installers for the current\n"
             u"      operating system and architecture. Specify --source to download the\n"
             u"      source code.\n"
+            u"\n"
+            u"  -f\n"
+            u"  --force\n"
+            u"      Force downloads even if a file with same name and size already exists.\n"
             u"\n"
             u"  --help\n"
             u"      Display this help text.\n"
@@ -152,12 +161,39 @@ Options::Options(int argc, char *argv[]) :
     current = present(u"this");
     latest = present(u"latest");
     check = present(u"check");
-    download = present(u"download");
     binary = present(u"binary");
     source = present(u"source");
-    upgrade = present(u"upgrade");
+    download = present(u"download") || binary || source;
+    force = present(u"force");
+    upgrade = present(u"upgrade") || binary || source;
     getValue(name, u"name");
     getValue(out_dir, u"output-directory");
+
+    // Default download is --source.
+    if (download && !binary && !source) {
+        binary = true;
+    }
+
+    // Filter invalid combinations of options.
+    if (all + current + latest + check + !name.empty() > 1) {
+        error(u"specify only one of --this --latest --name --check --all");
+    }
+
+    // If nothing is specified, default to --this
+    if (!all && !latest && !check && !download && !upgrade && name.empty()) {
+        current = true;
+    }
+
+    // Check output directory.
+    if (!out_dir.empty()) {
+        if (!ts::IsDirectory(out_dir)) {
+            error(u"directory not found: %s", {out_dir});
+        }
+        else if (!out_dir.endWith(ts::UString(1, ts::PathSeparator))) {
+            // Make sure we can use out_dir directly with a file name.
+            out_dir.append(ts::PathSeparator);
+        }
+    }
 
     exitOnError();
 }
@@ -175,17 +211,229 @@ bool ListAllVersions(Options& opt)
         return false;
     }
 
-    // List them all.
-    for (ts::GitHubReleaseVector::const_iterator it = rels.begin(); it != rels.end(); ++it) {
-        if (!it->isNull()) {
-            const ts::GitHubRelease& rel(**it);
-            if (opt.verbose()) {
+    // In non-verbose mode, simply list the versions in the same order as returned by GitHub.
+    if (!opt.verbose()) {
+        for (ts::GitHubReleaseVector::const_iterator it = rels.begin(); it != rels.end(); ++it) {
+            std::cout << (*it)->version() << std::endl;
+        }
+        return true;
+    }
 
+    // Compute column widths.
+    const ts::UString versionHeader(u"Version");
+    const ts::UString dateHeader(u"Published");
+    const ts::UString descriptionHeader(u"Description");
+    const ts::UString binariesHeader(u"Binaries");
+    const ts::UString downloadsHeader(u"Downloads");
+
+    size_t versionWidth = versionHeader.width();
+    size_t dateWidth = std::max<size_t>(dateHeader.width(), 10); // "yyyy-mm-dd"
+    size_t descriptionWidth = descriptionHeader.width();
+    size_t binariesWidth = binariesHeader.width();
+    size_t downloadsWidth = downloadsHeader.width();
+
+    for (ts::GitHubReleaseVector::const_iterator it = rels.begin(); it != rels.end(); ++it) {
+        versionWidth = std::max(versionWidth, (*it)->version().width());
+        descriptionWidth = std::max(descriptionWidth, (*it)->versionName().width());
+    }
+
+    // List them all.
+    std::cout << versionHeader.toJustifiedLeft(versionWidth) << "  "
+              << dateHeader.toJustifiedLeft(dateWidth) << "  "
+              << binariesHeader.toJustifiedRight(binariesWidth) << "  "
+              << downloadsHeader.toJustifiedRight(downloadsWidth) << "  "
+              << descriptionHeader.toJustifiedLeft(descriptionWidth) << std::endl
+              << ts::UString(versionWidth, u'-') << "  "
+              << ts::UString(dateWidth, u'-') << "  "
+              << ts::UString(binariesWidth, u'-') << "  "
+              << ts::UString(downloadsWidth, u'-') << "  "
+              << ts::UString(descriptionWidth, u'-') << std::endl;
+
+    for (ts::GitHubReleaseVector::const_iterator it = rels.begin(); it != rels.end(); ++it) {
+        ts::GitHubRelease::AssetList assets;
+        (*it)->getAssets(assets);
+        std::cout << (*it)->version().toJustifiedLeft(versionWidth) << "  "
+                  << (*it)->publishDate().format(ts::Time::DATE).toJustifiedLeft(dateWidth) << "  "
+                  << ts::UString::Decimal(assets.size()).toJustifiedRight(binariesWidth) << "  "
+                  << ts::UString::Decimal((*it)->assetDownloadCount()).toJustifiedRight(downloadsWidth) << "  "
+                  << (*it)->versionName() << std::endl;
+    }
+    return true;
+}
+
+
+//----------------------------------------------------------------------------
+//  Display one release.
+//----------------------------------------------------------------------------
+
+bool DisplayRelease(Options& opt, const ts::GitHubRelease rel)
+{
+    // In non-verbose mode, simply display the version.
+    if (!opt.verbose()) {
+        std::cout << rel.version() << std::endl;
+        return true;
+    }
+
+    // Release overview
+    std::cout << "Version: " << rel.version() << std::endl
+              << "Description: " << rel.versionName() << std::endl
+              << "Published: " << rel.publishDate().format(ts::Time::DATE) << std::endl
+              << "Downloads: " << rel.assetDownloadCount() << std::endl
+              << "Source code: " << rel.sourceURL() << std::endl;
+
+    // Binary assets.
+    ts::GitHubRelease::AssetList assets;
+    rel.getAssets(assets);
+
+    if (assets.empty()) {
+        std::cout << "No binary package available" << std::endl;
+    }
+    else {
+        std::cout << "Binary packages:" << std::endl;
+        size_t applyCount = 0;
+        for (ts::GitHubRelease::AssetList::const_iterator it = assets.begin(); it != assets.end();  ++it) {
+            if (ts::GitHubRelease::IsPlatformAsset(it->name)) {
+                ++applyCount;
             }
-            else {
-                std::cout << rel.version() << std::endl;
+            std::cout << "  " << it->name << " (" << ts::UString::HumanSize(it->size) << ")" <<  std::endl;
+        }
+        if (applyCount > 0) {
+            std::cout << "Available downloads for your system:" << std::endl;
+            for (ts::GitHubRelease::AssetList::const_iterator it = assets.begin(); it != assets.end();  ++it) {
+                if (ts::GitHubRelease::IsPlatformAsset(it->name)) {
+                    std::cout << "  " << it->url << std::endl;
+                }
             }
         }
+    }
+
+    return true;
+}
+
+
+//----------------------------------------------------------------------------
+//  Download a file.
+//----------------------------------------------------------------------------
+
+bool DownloadFile(Options& opt, const ts::UString& url, const ts::UString& file, int64_t size)
+{
+    // Without --force, don't download when a file exists with same size.
+    if (!opt.force) {
+        // If the size is unknown, do not download again if the file is not empty, trust the size.
+        const int64_t fileSize = ts::GetFileSize(file);
+        if ((size == 0 && fileSize > 0) || (size > 0 && fileSize == size)) {
+            if (opt.verbose()) {
+                std::cout << "File already downloaded: " << file << std::endl;
+            }
+            return true;
+        }
+    }
+
+    // Download the file.
+    ts::WebRequest web(opt);
+    web.setURL(url);
+    std::cout << "Downloading " << file << " ..." << std::endl;
+    return web.downloadFile(file);
+}
+
+
+//----------------------------------------------------------------------------
+//  Download a release.
+//----------------------------------------------------------------------------
+
+bool DownloadRelease(Options& opt, const ts::GitHubRelease rel, bool forceBinary)
+{
+    bool success = true;
+
+    // Download source package if required.
+    if (opt.source) {
+        // Size of source archive is unknown, not sent by GitHub.
+        // This is probably because source archives are generated on the
+        // fly and it is difficult to predict the size of a compressed file.
+        success = DownloadFile(opt, rel.sourceURL(), opt.out_dir + rel.sourceFileName(), 0);
+    }
+
+    // Get assets for this platform.
+    if (opt.binary || forceBinary) {
+
+        ts::GitHubRelease::AssetList assets;
+        rel.getPlatformAssets(assets);
+
+        if (assets.empty()) {
+            if (opt.verbose()) {
+                std::cout << "There is no binary package for this release." << std::endl;
+                #if defined(TS_MAC)
+                    std::cout << "On macOS, use Homebrew (brew upgrade tsduck)." << std::endl;
+                #endif
+            }
+        }
+        else {
+            for (ts::GitHubRelease::AssetList::const_iterator it = assets.begin(); it != assets.end();  ++it) {
+                success = DownloadFile(opt, it->url, opt.out_dir + it->name, it->size) && success;
+            }
+        }
+    }
+
+    return success;
+}
+
+
+//----------------------------------------------------------------------------
+//  Upgrade to a release.
+//----------------------------------------------------------------------------
+
+bool UpgradeRelease(Options& opt, const ts::GitHubRelease rel)
+{
+    // Download binaries if not yet done.
+    if (!DownloadRelease(opt, rel, true)) {
+        return false;
+    }
+
+
+    //@@@
+    return true;
+}
+
+
+//----------------------------------------------------------------------------
+//  Check the availability of a new version.
+//----------------------------------------------------------------------------
+
+bool CheckNewVersion(Options& opt, const ts::GitHubRelease rel)
+{
+    const ts::UString current(ts::GetVersion());
+    const ts::UString remote(rel.version());
+    const int comp = ts::CompareVersions(current, remote);
+
+    // Cases where there is no new version.
+    if (comp == 0) {
+        std::cout << "Your version " << current << " is the latest one" << std::endl;
+        return true;
+    }
+    else if (comp > 0) {
+        std::cout << "Your version " << current << " is more recent than " << remote << " online" << std::endl;
+        return true;
+    }
+
+    // We have a new version, get available assets for this platform.
+    ts::GitHubRelease::AssetList assets;
+    rel.getPlatformAssets(assets);
+
+    // Display new version.
+    std::cout << "New version " << remote << " is available (yours is " << current << ")" << std::endl;
+    if (opt.verbose() && !assets.empty()) {
+        std::cout << "Available downloads for your system:" << std::endl;
+        for (ts::GitHubRelease::AssetList::const_iterator it = assets.begin(); it != assets.end();  ++it) {
+            std::cout << "  " << it->url << std::endl;
+        }
+    }
+
+    // Download and/or upgrade.
+    if (opt.upgrade) {
+        return UpgradeRelease(opt, rel);
+    }
+    if (opt.download) {
+        return DownloadRelease(opt, rel, false);
     }
     return true;
 }
@@ -197,7 +445,39 @@ bool ListAllVersions(Options& opt)
 
 bool ProcessVersion(Options& opt)
 {
-    //@@@@@
+    // By convention, TSDuck use tag named "vX.Y-Z" for version X.Y-Z.
+    // An empty tag name specifies the latest version.
+    ts::UString tagName;
+    if (!opt.name.empty()) {
+        tagName = u"v" + opt.name;
+    }
+
+    // Get information about the release.
+    const ts::GitHubRelease rel(u"tsduck", u"tsduck", tagName, opt);
+    if (!rel.isValid()) {
+        return false;
+    }
+    if (rel.version().empty()) {
+        opt.error(u"unable to identify version");
+        return false;
+    }
+
+    // Display release name if nothing more to do.
+    if (!opt.check && !opt.download && !opt.upgrade) {
+        return DisplayRelease(opt, rel);
+    }
+
+    // Check existence of more recent version.
+    // --upgrade if done only on new versions.
+    if (opt.check || opt.upgrade) {
+        return CheckNewVersion(opt, rel);
+    }
+
+    // Download a version (without checking).
+    if (opt.download) {
+        return DownloadRelease(opt, rel, false);
+    }
+
     return true;
 }
 

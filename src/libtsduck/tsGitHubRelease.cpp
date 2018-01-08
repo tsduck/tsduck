@@ -46,6 +46,7 @@
 
 #include "tsGitHubRelease.h"
 #include "tsWebRequest.h"
+#include "tsSysUtils.h"
 TSDUCK_SOURCE;
 
 
@@ -55,6 +56,8 @@ TSDUCK_SOURCE;
 
 ts::GitHubRelease::GitHubRelease() :
     _isValid(false),
+    _owner(),
+    _repository(),
     _root()
 {
 }
@@ -144,6 +147,8 @@ bool ts::GitHubRelease::CallGitHub(json::ValuePtr& response, json::Type expected
 bool ts::GitHubRelease::downloadInfo(const UString& owner, const UString& repository, const UString& tag, Report& report)
 {
     _root.clear();
+    _owner = owner;
+    _repository = repository;
     _isValid = false;
 
     // Send the request to GitHub. We expect a JSON object.
@@ -290,6 +295,46 @@ ts::UString ts::GitHubRelease::sourceZipURL() const
     return _isValid ? _root->value(u"zipball_url").toString() : UString();
 }
 
+bool ts::GitHubRelease::useSourceZip() const
+{
+#if defined(TS_UNIX)
+    // On UNIX, prefer tarballs. Use zip only is tarball not present.
+    return sourceTarURL().empty();
+#else
+    // On Windows, prefer zip files when present.
+    return !sourceZipURL().empty();
+#endif
+
+}
+
+ts::UString ts::GitHubRelease::sourceURL() const
+{
+    return useSourceZip() ? sourceZipURL() : sourceTarURL();
+}
+
+ts::UString ts::GitHubRelease::sourceFileName() const
+{
+    return (_repository + u"-" + version() + u"-src") + (useSourceZip() ? u".zip" : u".tgz");
+}
+
+int ts::GitHubRelease::assetDownloadCount() const
+{
+    int count = 0;
+    if (_isValid) {
+        // Get the array of assets.
+        const json::Value& arr(_root->value(u"assets"));
+        for (size_t i = 0; i < arr.size(); ++i) {
+            count += int(arr.at(i).value(u"download_count").toInteger());
+        }
+    }
+    return count;
+}
+
+
+//----------------------------------------------------------------------------
+// Get the list of all assets for the release.
+//----------------------------------------------------------------------------
+
 void ts::GitHubRelease::getAssets(AssetList& assets) const
 {
     assets.clear();
@@ -304,6 +349,94 @@ void ts::GitHubRelease::getAssets(AssetList& assets) const
             if (!a.name.empty()) {
                 assets.push_back(a);
             }
+        }
+
+        // Sort assets by name.
+        assets.sort([](const Asset& a1, const Asset& a2) { return a1.name < a2.name; });
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Check if a binary file is appropriate for the current platform.
+//----------------------------------------------------------------------------
+
+bool ts::GitHubRelease::IsPlatformAsset(const UString& fileName)
+{
+#if defined(TS_WINDOWS) && defined(TS_X86_64)
+    return fileName.contain(u"win64", ts::CASE_INSENSITIVE) && fileName.endWith(u".exe", ts::CASE_INSENSITIVE);
+#elif defined(TS_WINDOWS) && defined(TS_I386)
+    return fileName.contain(u"win32", ts::CASE_INSENSITIVE) && fileName.endWith(u".exe", ts::CASE_INSENSITIVE);
+#elif defined(TS_MAC) && defined(TS_X86_64)
+    return fileName.endWith(u".dmg");
+#elif defined(TS_LINUX)
+
+    // Need to find the Linux flavor.
+    static volatile bool done = false;
+    static volatile bool fedora = false;
+    static volatile bool rhel = false;
+    static volatile bool ubuntu = false;
+
+    if (!done) {
+        if (FileExists(u"/etc/fedora-release")) {
+            fedora = true;
+        }
+        else if (FileExists(u"/etc/redhat-release")) {
+            rhel = true;
+        }
+        else if (FileExists(u"/etc/lsb-release")) {
+            UStringList lines;
+            UString::Load(lines, u"/etc/lsb-release");
+            ubuntu = UString(u"DISTRIB_ID=Ubuntu").containSimilar(lines);
+        }
+        done = true;
+    }
+
+#if defined(TS_X86_64)
+    if (fedora) {
+        return fileName.contain(u".fc") && (fileName.endWith(u".x86_64.rpm") || fileName.endWith(u".noarch.rpm"));
+    }
+    else if (rhel) {
+        return fileName.contain(u".el") && (fileName.endWith(u".x86_64.rpm") || fileName.endWith(u".noarch.rpm"));
+    }
+    else if (ubuntu) {
+        return fileName.endWith(u"_amd64.deb") || fileName.endWith(u"_all.deb");
+    }
+#elif defined(TS_I386)
+    if (fedora) {
+        return fileName.contain(u".fc") && (fileName.endWith(u".i386.rpm") || fileName.endWith(u".i686.rpm") || fileName.endWith(u".noarch.rpm"));
+    }
+    else if (rhel) {
+        return fileName.contain(u".el") && (fileName.endWith(u".i386.rpm") || fileName.endWith(u".i686.rpm") || fileName.endWith(u".noarch.rpm"));
+    }
+    else if (ubuntu) {
+        return fileName.endWith(u"_i386.deb") || fileName.endWith(u"_i686.deb") || fileName.endWith(u"_all.deb");
+    }
+#endif
+    return false;  // unknown linux platform.
+
+#else
+    return false;  // unknown platform.
+#endif
+}
+
+
+//----------------------------------------------------------------------------
+// Get the list of assets for the current platform.
+//----------------------------------------------------------------------------
+
+void ts::GitHubRelease::getPlatformAssets(AssetList& assets) const
+{
+    // First, get all assets.
+    getAssets(assets);
+
+    // Then, remove assets which are not suitable for the local platform.
+    for (AssetList::iterator it = assets.begin(); it != assets.end(); ) {
+        if (IsPlatformAsset(it->name)) {
+            ++it;
+        }
+        else {
+            it = assets.erase(it);
         }
     }
 }
