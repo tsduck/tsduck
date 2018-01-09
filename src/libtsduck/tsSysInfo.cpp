@@ -30,6 +30,11 @@
 #include "tsSysInfo.h"
 #include "tsSysUtils.h"
 #include "tsMemoryUtils.h"
+#if defined(TS_MAC)
+#include "tsMacPList.h"
+#include <sys/param.h>
+#include <sys/sysctl.h>
+#endif
 TSDUCK_SOURCE;
 
 // Define singleton instance
@@ -69,6 +74,11 @@ ts::SysInfo::SysInfo() :
 #else
     _isIntel64(false),
 #endif
+#if defined(TS_UNIX)
+    _isRootUser(::geteuid() == 0),
+#else
+    _isRootUser(false),
+#endif
     _systemVersion(),
     _systemName()
 {
@@ -105,7 +115,36 @@ ts::SysInfo::SysInfo() :
 
 #elif defined(TS_MAC)
 
-    _systemName = u"macOS";
+    // Get system version.
+    MacPList sysList(u"/System/Library/CoreServices/SystemVersion.plist");
+    const UString sysName(sysList[u"ProductName"]);
+    const UString sysVersion(sysList[u"ProductVersion"]);
+    if (!sysName.empty() && !sysVersion.empty()) {
+        _systemName = sysName;
+        _systemVersion = sysName + u" " + sysVersion;
+    }
+    else {
+        _systemName = u"macOS";
+    }
+
+    // Get kernel version.
+    int mib[2];
+    size_t len;
+    mib[0] = CTL_KERN;
+    mib[1] = KERN_OSRELEASE;
+    if (::sysctl(mib, 2, NULL, &len, NULL, 0) == 0 ) {
+        std::string version(len, 0);
+        if (::sysctl(mib, 2, &version[0], &len, NULL, 0) == 0 ) {
+            const bool wasEmpty = _systemVersion.empty();
+            if (!wasEmpty) {
+                _systemVersion += u" (";
+            }
+            _systemVersion += u"Darwin " + UString::FromUTF8(&version[0], len);
+            if (!wasEmpty) {
+                _systemVersion += u")";
+            }
+        }
+    }
 
 #elif defined(TS_WINDOWS)
 

@@ -115,7 +115,7 @@ $(OBJDIR)/$(SHARED_LIBTSDUCK): $(filter-out $(OBJDIR)/tsStaticReferencesDVB.o,$(
 # The header tsduck.h includes all headers
 
 GEN_FILES = $(sort $(filter-out tsduck.h %Template.h,$(wildcard $(if $(1),$(1)/,)*.h)))
-GEN_INCLUDES = $(if $(call GEN_FILES,$(1)),$(if $(1),echo; echo -n '\#if defined(__$(1))';,) \
+GEN_INCLUDES = $(if $(call GEN_FILES,$(1)),$(if $(1),echo; echo -n '\#if defined(TS_'; tr <<<'$(1))' 'a-z\n' 'A-Z ';,) \
     $(SED) <<<'$(call GEN_FILES,$(1))' -e 's| *$(if $(1),$(1)/,)\([^\. ]*\).h|\n\#include "\1.h"|g' \
     $(if $(1),; echo '\#endif',),true)
 

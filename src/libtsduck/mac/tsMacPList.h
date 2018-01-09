@@ -28,20 +28,39 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Version identification of TSDuck.
+//!  Reading MacOS XML PList files.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 6
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 441
+#include "tsUString.h"
+#include "tsNullReport.h"
+
+namespace ts {
+    //!
+    //! This class implements a MacOS XML PList file.
+    //!
+    class TSDUCKDLL MacPList: public std::map<UString, UString>
+    {
+    public:
+        //!
+        //! Explicit reference to the SuperClass
+        //!
+        typedef std::map<UString, UString> SuperClass;
+
+        //!
+        //! Constructor from an optional MacOS XML PList file.
+        //! @param [in] fileName MacOS XML PList file name.
+        //! @param [in,out] report Where to report errors.
+        //!
+        explicit MacPList(const UString& fileName = UString(), Report& report = NULLREP);
+
+        //!
+        //! Reload from a MacOS XML PList file.
+        //! @param [in] fileName MacOS XML PList file name.
+        //! @param [in,out] report Where to report errors.
+        //! @return True on success, false on error.
+        //!
+        bool load(const UString& fileName, Report& report = NULLREP);
+    };
+}

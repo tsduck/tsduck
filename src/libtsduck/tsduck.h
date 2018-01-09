@@ -219,6 +219,7 @@
 #include "tsStreamIdentifierDescriptor.h"
 #include "tsSubtitlingDescriptor.h"
 #include "tsSupplementaryAudioDescriptor.h"
+#include "tsSysInfo.h"
 #include "tsSysUtils.h"
 #include "tsSystemMonitor.h"
 #include "tsSystemRandomGenerator.h"
@@ -302,12 +303,16 @@
 #include "tsxmlText.h"
 #include "tsxmlUnknown.h"
 
-#if defined(__linux)
+#if defined(TS_LINUX) 
 #include "tsDTVProperties.h"
 #include "tsSignalAllocator.h"
 #endif
 
-#if defined(__windows)
+#if defined(TS_MAC) 
+#include "tsMacPList.h"
+#endif
+
+#if defined(TS_WINDOWS) 
 #include "tsComIds.h"
 #include "tsComPtr.h"
 #include "tsDirectShowFilterCategory.h"

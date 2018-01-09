@@ -47,6 +47,7 @@
 #include "tsGitHubRelease.h"
 #include "tsWebRequest.h"
 #include "tsSysUtils.h"
+#include "tsSysInfo.h"
 TSDUCK_SOURCE;
 
 
@@ -301,7 +302,7 @@ bool ts::GitHubRelease::useSourceZip() const
     // On UNIX, prefer tarballs. Use zip only is tarball not present.
     return sourceTarURL().empty();
 #else
-    // On Windows, prefer zip files when present.
+    // On Windows (or other systems), prefer zip files when present.
     return !sourceZipURL().empty();
 #endif
 
@@ -363,61 +364,38 @@ void ts::GitHubRelease::getAssets(AssetList& assets) const
 
 bool ts::GitHubRelease::IsPlatformAsset(const UString& fileName)
 {
-#if defined(TS_WINDOWS) && defined(TS_X86_64)
-    return fileName.contain(u"win64", ts::CASE_INSENSITIVE) && fileName.endWith(u".exe", ts::CASE_INSENSITIVE);
-#elif defined(TS_WINDOWS) && defined(TS_I386)
-    return fileName.contain(u"win32", ts::CASE_INSENSITIVE) && fileName.endWith(u".exe", ts::CASE_INSENSITIVE);
-#elif defined(TS_MAC) && defined(TS_X86_64)
-    return fileName.endWith(u".dmg");
-#elif defined(TS_LINUX)
+    const SysInfo& sys(*SysInfo::Instance());
 
-    // Need to find the Linux flavor.
-    static volatile bool done = false;
-    static volatile bool fedora = false;
-    static volatile bool rhel = false;
-    static volatile bool ubuntu = false;
-
-    if (!done) {
-        if (FileExists(u"/etc/fedora-release")) {
-            fedora = true;
-        }
-        else if (FileExists(u"/etc/redhat-release")) {
-            rhel = true;
-        }
-        else if (FileExists(u"/etc/lsb-release")) {
-            UStringList lines;
-            UString::Load(lines, u"/etc/lsb-release");
-            ubuntu = UString(u"DISTRIB_ID=Ubuntu").containSimilar(lines);
-        }
-        done = true;
+    if (sys.isWindows() && sys.isIntel64()) {
+        return fileName.contain(u"win64", ts::CASE_INSENSITIVE) && fileName.endWith(u".exe", ts::CASE_INSENSITIVE);
     }
-
-#if defined(TS_X86_64)
-    if (fedora) {
+    else if (sys.isWindows() && sys.isIntel32()) {
+        return fileName.contain(u"win32", ts::CASE_INSENSITIVE) && fileName.endWith(u".exe", ts::CASE_INSENSITIVE);
+    }
+    else if (sys.isMacOS() && sys.isIntel64()) {
+        return fileName.endWith(u".dmg");
+    }
+    else if (sys.isFedora() && sys.isIntel64()) {
         return fileName.contain(u".fc") && (fileName.endWith(u".x86_64.rpm") || fileName.endWith(u".noarch.rpm"));
     }
-    else if (rhel) {
-        return fileName.contain(u".el") && (fileName.endWith(u".x86_64.rpm") || fileName.endWith(u".noarch.rpm"));
-    }
-    else if (ubuntu) {
-        return fileName.endWith(u"_amd64.deb") || fileName.endWith(u"_all.deb");
-    }
-#elif defined(TS_I386)
-    if (fedora) {
+    else if (sys.isFedora() && sys.isIntel32()) {
         return fileName.contain(u".fc") && (fileName.endWith(u".i386.rpm") || fileName.endWith(u".i686.rpm") || fileName.endWith(u".noarch.rpm"));
     }
-    else if (rhel) {
+    else if (sys.isRedHat() && sys.isIntel64()) {
+        return fileName.contain(u".el") && (fileName.endWith(u".x86_64.rpm") || fileName.endWith(u".noarch.rpm"));
+    }
+    else if (sys.isRedHat() && sys.isIntel32()) {
         return fileName.contain(u".el") && (fileName.endWith(u".i386.rpm") || fileName.endWith(u".i686.rpm") || fileName.endWith(u".noarch.rpm"));
     }
-    else if (ubuntu) {
+    else if (sys.isUbuntu() && sys.isIntel64()) {
+        return fileName.endWith(u"_amd64.deb") || fileName.endWith(u"_all.deb");
+    }
+    else if (sys.isUbuntu() && sys.isIntel32()) {
         return fileName.endWith(u"_i386.deb") || fileName.endWith(u"_i686.deb") || fileName.endWith(u"_all.deb");
     }
-#endif
-    return false;  // unknown linux platform.
-
-#else
-    return false;  // unknown platform.
-#endif
+    else {
+        return false;  // unknown platform.
+    }
 }
 
 

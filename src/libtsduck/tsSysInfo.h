@@ -86,6 +86,11 @@ namespace ts {
         //!
         bool isIntel64() const { return _isIntel64; }
         //!
+        //! Check if the current user is root.
+        //! @return True if the current user is root.
+        //!
+        bool isRootUser() const { return _isRootUser; }
+        //!
         //! Get the operating system version.
         //! @return The operating system version.
         //!
@@ -105,6 +110,7 @@ namespace ts {
         bool    _isWindows;
         bool    _isIntel32;
         bool    _isIntel64;
+        bool    _isRootUser;
         UString _systemVersion;
         UString _systemName;
     };

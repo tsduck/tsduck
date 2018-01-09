@@ -536,7 +536,7 @@ SOURCES += \
     ../../../src/libtsduck/tsxmlElement.cpp \
     ../../../src/libtsduck/tsxmlText.cpp \
     ../../../src/libtsduck/tsxmlUnknown.cpp
-    
+
 linux {
     HEADERS += \
         ../../../src/libtsduck/linux/tsDTVProperties.h \
@@ -549,8 +549,11 @@ linux {
 }
 
 mac {
+    HEADERS += \
+        ../../../src/libtsduck/mac/tsMacPList.h
     SOURCES += \
         ../../../src/libtsduck/unix/tsWebRequestGuts.cpp \
+        ../../../src/libtsduck/mac/tsMacPList.cpp \
         ../../../src/libtsduck/mac/tsTuner.cpp
 }
 
@@ -562,7 +565,7 @@ win32|win64 {
         ../../../src/libtsduck/windows/tsMediaTypeUtils.h \
         ../../../src/libtsduck/windows/tsSinkFilter.h \
         ../../../src/libtsduck/windows/tsWinUtils.h
-    SOURCES += \ 
+    SOURCES += \
         ../../../src/libtsduck/windows/tsComIds.cpp \
         ../../../src/libtsduck/windows/tsDirectShowUtils.cpp \
         ../../../src/libtsduck/windows/tsMediaTypeUtils.cpp \

@@ -36,6 +36,8 @@
 #include "tsGitHubRelease.h"
 #include "tsWebRequest.h"
 #include "tsSysUtils.h"
+#include "tsSysInfo.h"
+#include "tsForkPipe.h"
 #include "tsVersionInfo.h"
 TSDUCK_SOURCE;
 
@@ -165,7 +167,7 @@ Options::Options(int argc, char *argv[]) :
     source = present(u"source");
     download = present(u"download") || binary || source;
     force = present(u"force");
-    upgrade = present(u"upgrade") || binary || source;
+    upgrade = present(u"upgrade");
     getValue(name, u"name");
     getValue(out_dir, u"output-directory");
 
@@ -363,7 +365,7 @@ bool DownloadRelease(Options& opt, const ts::GitHubRelease rel, bool forceBinary
             if (opt.verbose()) {
                 std::cout << "There is no binary package for this release." << std::endl;
                 #if defined(TS_MAC)
-                    std::cout << "On macOS, use Homebrew (brew upgrade tsduck)." << std::endl;
+                    std::cout << "On macOS, use Homebrew (\"brew upgrade tsduck\")." << std::endl;
                 #endif
             }
         }
@@ -379,6 +381,24 @@ bool DownloadRelease(Options& opt, const ts::GitHubRelease rel, bool forceBinary
 
 
 //----------------------------------------------------------------------------
+//  Run an upgrade command.
+//----------------------------------------------------------------------------
+
+bool RunCommand(Options& opt, const ts::UString& command, bool needRoot)
+{
+    // Use a sudo command ?
+    const ts::UString sudo(!needRoot || ts::SysInfo::Instance()->isRootUser() ? u"" : u"sudo ");
+    std::cout << "Running: " << sudo << command << std::endl;
+
+    // Start the process. We don't need the pipe, its just an easy way to create a process.
+    ts::ForkPipe process;
+    bool success = process.open(sudo + command, true, 0, CERR);
+    process.close(NULLREP);
+    return success;
+}
+
+
+//----------------------------------------------------------------------------
 //  Upgrade to a release.
 //----------------------------------------------------------------------------
 
@@ -389,9 +409,45 @@ bool UpgradeRelease(Options& opt, const ts::GitHubRelease rel)
         return false;
     }
 
+    // Get local asset files for this platform.
+    ts::GitHubRelease::AssetList assets;
+    rel.getPlatformAssets(assets);
+    ts::UStringList files;
+    for (ts::GitHubRelease::AssetList::const_iterator it = assets.begin(); it != assets.end();  ++it) {
+        files.push_back(opt.out_dir + it->name);
+    }
 
-    //@@@
-    return true;
+    // Get system info to determine which command to run.
+    const ts::SysInfo& sys(*ts::SysInfo::Instance());
+    const ts::UString sysName(sys.systemName().empty() ? u"this system" : sys.systemName());
+
+    if (files.empty() && !sys.isMacOS()) {
+        opt.error(u"no binary installer available for %s", {sysName});
+        return false;
+    }
+
+    if (sys.isWindows()) {
+        // On Windows, run installers one by one (there should be only one anyway).
+        for (ts::UStringList::const_iterator it = files.begin(); it != files.end(); ++it) {
+            if (!RunCommand(opt, *it, false)) {
+                return false;
+            }
+        }
+        return true;
+    }
+    else if (sys.isMacOS()) {
+        return RunCommand(opt, u"brew upgrade tsduck", false);
+    }
+    else if (sys.isFedora() || sys.isRedHat()) {
+        return RunCommand(opt, u"rpm -Uvh " + ts::UString::Join(files, u" "), true);
+    }
+    else if (sys.isUbuntu()) {
+        return RunCommand(opt, u"dpkg -i " + ts::UString::Join(files, u" "), true);
+    }
+    else {
+        opt.error(u"don't know how to upgrade on %s, rebuild from sources", {sysName});
+        return false;
+    }
 }
 
 

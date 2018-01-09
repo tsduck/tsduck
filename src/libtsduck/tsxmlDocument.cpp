@@ -31,6 +31,7 @@
 #include "tsxmlElement.h"
 #include "tsxmlDeclaration.h"
 #include "tsxmlComment.h"
+#include "tsxmlUnknown.h"
 #include "tsSysUtils.h"
 #include "tsFatal.h"
 TSDUCK_SOURCE;
@@ -124,8 +125,8 @@ bool ts::xml::Document::parseNode(TextParser& parser, const Node* parent)
     // Comment are always ignored.
     Node* child = firstChild();
 
-    // First, skip all leading declarations and comments.
-    while (dynamic_cast<Declaration*>(child) != 0 || dynamic_cast<Comment*>(child) != 0) {
+    // First, skip all leading declarations and comments (and unknown DTD).
+    while (dynamic_cast<Declaration*>(child) != 0 || dynamic_cast<Comment*>(child) != 0 || dynamic_cast<Unknown*>(child) != 0) {
         child = child->nextSibling();
     }
 
