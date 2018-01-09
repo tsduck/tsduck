@@ -74,32 +74,28 @@ ts::SysInfo::SysInfo() :
 #else
     _isIntel64(false),
 #endif
-#if defined(TS_UNIX)
-    _isRootUser(::geteuid() == 0),
-#else
-    _isRootUser(false),
-#endif
     _systemVersion(),
-    _systemName()
+    _systemName(),
+    _hostName(),
+    _memoryPageSize(0)
 {
+    //
+    // Get operating system name and version.
+    //
 #if defined(TS_LINUX)
 
-    // On Linux, the actual system shall determined dynamically.
+    // On Linux, the actual system shall be determined dynamically.
     UStringList lines;
     Environment env;
-    if (UString::Load(lines, u"/etc/fedora-release")) {
+    if (UString::Load(lines, u"/etc/fedora-release") && !lines.empty()) {
         _isFedora = true;
         _systemName = u"Fedora";
-        if (!lines.empty()) {
-            _systemVersion = lines.front();
-        }
+        _systemVersion = lines.front();
     }
-    else if (UString::Load(lines, u"/etc/redhat-release")) {
+    else if (UString::Load(lines, u"/etc/redhat-release") && !lines.empty()) {
         _isRedHat = true;
         _systemName = u"Red Hat Entreprise Linux";
-        if (!lines.empty()) {
-            _systemVersion = lines.front();
-        }
+        _systemVersion = lines.front();
     }
     else if (LoadEnvironment(env, u"/etc/lsb-release")) {
         _systemName = env[u"DISTRIB_ID"];
@@ -152,10 +148,10 @@ ts::SysInfo::SysInfo() :
 
     // With Microsoft compiler:
     // warning C4996: 'GetVersionExW': was declared deprecated
-#if defined(TS_MSC)
-#pragma warning(push)
-#pragma warning(disable:4996)
-#endif
+    #if defined(TS_MSC)
+        #pragma warning(push)
+        #pragma warning(disable:4996)
+    #endif
 
     // System version.
     ::OSVERSIONINFOW info;
@@ -166,9 +162,9 @@ ts::SysInfo::SysInfo() :
         _systemVersion.trim();
     }
 
-#if defined(TS_MSC)
-#pragma warning(pop)
-#endif
+    #if defined(TS_MSC)
+        #pragma warning(pop)
+    #endif
 
     // Detect 32-bit application on 64-bit system.
     ::BOOL wow64 = 0;
@@ -184,4 +180,46 @@ ts::SysInfo::SysInfo() :
     if (_systemVersion.empty()) {
         _systemVersion = _systemName;
     }
+
+    //
+    // Get host name.
+    //
+#if defined(TS_WINDOWS)
+
+    // Window implementation.
+    std::array<::WCHAR, 1024> name;
+    ::DWORD length = ::DWORD(name.size());
+    if (::GetComputerNameW(name.data(), &length)) {
+        _hostName.assign(name, length);
+    }
+
+#else
+
+    // POSIX implementation.
+    char name[1024];
+    if (::gethostname(name, sizeof(name)) = 0) {
+        name[sizeof(name) - 1] = '\0';
+        _hostName.assignFromUTF8(name);
+    }
+
+#endif
+
+    //
+    // Get system memory page size
+    //
+#if defined(TS_WINDOWS)
+
+    ::SYSTEM_INFO sysinfo;
+    ::GetSystemInfo(&sysinfo);
+    _memoryPageSize = size_t(sysinfo.dwPageSize);
+
+#else
+
+    // POSIX implementation.
+    const long pageSize = ::sysconf(_SC_PAGESIZE);
+    if (size > 0) {
+        _memoryPageSize = size_t(pageSize);
+    }
+
+#endif
 }

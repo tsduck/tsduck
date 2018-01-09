@@ -86,11 +86,6 @@ namespace ts {
         //!
         bool isIntel64() const { return _isIntel64; }
         //!
-        //! Check if the current user is root.
-        //! @return True if the current user is root.
-        //!
-        bool isRootUser() const { return _isRootUser; }
-        //!
         //! Get the operating system version.
         //! @return The operating system version.
         //!
@@ -100,6 +95,16 @@ namespace ts {
         //! @return The operating system name.
         //!
         UString systemName() const { return _systemName; }
+        //!
+        //! Get the name of the system host.
+        //! @return The name of the system host.
+        //!
+        UString hostName() const { return _hostName; }
+        //!
+        //! Get system memory page size.
+        //! @return The system memory page size in bytes.
+        //!
+        size_t memoryPageSize() const { return _memoryPageSize; }
 
     public:
         bool    _isLinux;
@@ -110,8 +115,9 @@ namespace ts {
         bool    _isWindows;
         bool    _isIntel32;
         bool    _isIntel64;
-        bool    _isRootUser;
         UString _systemVersion;
         UString _systemName;
+        UString _hostName;
+        size_t  _memoryPageSize;
     };
 }

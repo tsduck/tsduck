@@ -259,38 +259,6 @@ ts::UString ts::ExecutableFile()
 
 
 //----------------------------------------------------------------------------
-// Return the current hostname
-//----------------------------------------------------------------------------
-
-ts::UString ts::HostName()
-{
-#if defined(TS_WINDOWS)
-
-    // Window implementation.
-    std::array<::WCHAR, 1024> name;
-    ::DWORD length = ::DWORD(name.size());
-    if (::GetComputerNameW(name.data(), &length) == 0) {
-        throw ts::Exception(u"GetComputerName error", ::GetLastError());
-    }
-    return UString(name, length);
-
-#else
-
-    // POSIX implementation.
-    char name[1024];
-    if (::gethostname(name, sizeof(name)) < 0) {
-        return UString();
-    }
-    else {
-        name[sizeof(name) - 1] = '\0';
-        return UString::FromUTF8(name);
-    }
-
-#endif
-}
-
-
-//----------------------------------------------------------------------------
 // Suspend the current thread for the specified period
 //----------------------------------------------------------------------------
 
@@ -324,32 +292,7 @@ void ts::SleepThread(MilliSecond delay)
 
 
 //----------------------------------------------------------------------------
-// Get system memory page size
-//----------------------------------------------------------------------------
-
-size_t ts::MemoryPageSize()
-{
-#if defined(TS_WINDOWS)
-
-    ::SYSTEM_INFO sysinfo;
-    ::GetSystemInfo(&sysinfo);
-    return size_t(sysinfo.dwPageSize);
-
-#else
-
-    // POSIX implementation.
-    long size = ::sysconf(_SC_PAGESIZE);
-    if (size < 0) {
-        throw ts::Exception(u"sysconf (page size) error", errno);
-    }
-    return size_t(size);
-
-#endif
-}
-
-
-//----------------------------------------------------------------------------
-// Get current process id
+// Get current process characteristics.
 //----------------------------------------------------------------------------
 
 ts::ProcessId ts::CurrentProcessId()
@@ -358,6 +301,15 @@ ts::ProcessId ts::CurrentProcessId()
     return ::GetCurrentProcessId();
 #else
     return ::getpid();
+#endif
+}
+
+bool ts::IsRootUser()
+{
+#if defined(TS_UNIX)
+    return ::geteuid() == 0;
+#else
+    return false;
 #endif
 }
 

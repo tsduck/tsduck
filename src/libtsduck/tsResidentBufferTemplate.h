@@ -35,6 +35,7 @@
 #pragma once
 #include "tsIntegerUtils.h"
 #include "tsSysUtils.h"
+#include "tsSysInfo.h"
 #include "tsFatal.h"
 
 
@@ -45,43 +46,43 @@
 //----------------------------------------------------------------------------
 
 template <typename T>
-ts::ResidentBuffer<T>::ResidentBuffer (size_t elem_count) :
-    _allocated_base (0),
-    _locked_base (0),
-    _base (0),
-    _allocated_size (0),
-    _locked_size (0),
-    _elem_count (elem_count),
-    _is_locked (false),
-    _error_code (SYS_SUCCESS)
+ts::ResidentBuffer<T>::ResidentBuffer(size_t elem_count) :
+    _allocated_base(0),
+    _locked_base(0),
+    _base(0),
+    _allocated_size(0),
+    _locked_size(0),
+    _elem_count(elem_count),
+    _is_locked(false),
+    _error_code(SYS_SUCCESS)
 {
-    const size_t requested_size (elem_count * sizeof(T));
-    const size_t page_size (MemoryPageSize ());
+    const size_t requested_size = elem_count * sizeof(T);
+    const size_t page_size = SysInfo::Instance()->memoryPageSize();
 
     // Allocate enough space to include memory pages around the requested size
 
     _allocated_size = requested_size + 2 * page_size;
-    _allocated_base = new char [_allocated_size];
+    _allocated_base = new char[_allocated_size];
 
     // Locked space starts at next page boundary after allocated base:
     // Its size is the next multiple of page size after requested_size:
 
-    _locked_base = (char*) (RoundUp (uint64_t (_allocated_base), uint64_t (page_size)));
-    _locked_size = RoundUp (requested_size, page_size);
+    _locked_base = (char*)(RoundUp(uint64_t(_allocated_base), uint64_t(page_size)));
+    _locked_size = RoundUp(requested_size, page_size);
 
-    _base = new (_locked_base) T [elem_count];
+    _base = new (_locked_base) T[elem_count];
 
     // Integrity checks
 
-    assert (_allocated_base <= _locked_base);
-    assert (_locked_base < _allocated_base + page_size);
-    assert (_locked_base + _locked_size <= _allocated_base + _allocated_size);
-    assert (requested_size <= _locked_size);
-    assert (_locked_size <= _allocated_size);
-    assert (uint64_t (_locked_base) % page_size == 0);
-    assert (uint64_t (_locked_base) == uint64_t (_base));
-    assert ((char*) (_base + elem_count) <= _locked_base + _locked_size);
-    assert (_locked_size % page_size == 0);
+    assert(_allocated_base <= _locked_base);
+    assert(_locked_base < _allocated_base + page_size);
+    assert(_locked_base + _locked_size <= _allocated_base + _allocated_size);
+    assert(requested_size <= _locked_size);
+    assert(_locked_size <= _allocated_size);
+    assert(uint64_t(_locked_base) % page_size == 0);
+    assert(uint64_t(_locked_base) == uint64_t(_base));
+    assert((char*)(_base + elem_count) <= _locked_base + _locked_size);
+    assert(_locked_size % page_size == 0);
 
 #if defined (TS_WINDOWS)
 
@@ -90,19 +91,19 @@ ts::ResidentBuffer<T>::ResidentBuffer (size_t elem_count) :
     // Get the current working set of the process.
     // If working set too low, try to extend working set.
     ::SIZE_T wsmin, wsmax;
-    if (::GetProcessWorkingSetSize (::GetCurrentProcess(), &wsmin, &wsmax) == 0) {
+    if (::GetProcessWorkingSetSize(::GetCurrentProcess(), &wsmin, &wsmax) == 0) {
         _error_code = LastErrorCode();
     }
-    else if (size_t (wsmin) < 2 * _locked_size) {
-        wsmin = ::SIZE_T (2 * _locked_size);
-        wsmax = std::max (wsmax, ::SIZE_T (4 * _locked_size));
-        if (::SetProcessWorkingSetSize (::GetCurrentProcess(), wsmin, wsmax) == 0) {
+    else if (size_t(wsmin) < 2 * _locked_size) {
+        wsmin = ::SIZE_T(2 * _locked_size);
+        wsmax = std::max(wsmax, ::SIZE_T(4 * _locked_size));
+        if (::SetProcessWorkingSetSize(::GetCurrentProcess(), wsmin, wsmax) == 0) {
             _error_code = LastErrorCode();
         }
     }
 
     // Lock in virtual memory
-    _is_locked = ::VirtualLock (_locked_base, _locked_size) != 0;
+    _is_locked = ::VirtualLock(_locked_base, _locked_size) != 0;
     if (!_is_locked && _error_code == SYS_SUCCESS) {
         _error_code = LastErrorCode();
     }
@@ -111,7 +112,7 @@ ts::ResidentBuffer<T>::ResidentBuffer (size_t elem_count) :
 
     // UNIX implementation
 
-    _is_locked = ::mlock (_locked_base, _locked_size) == 0;
+    _is_locked = ::mlock(_locked_base, _locked_size) == 0;
     _error_code = _is_locked ? SYS_SUCCESS : LastErrorCode();
 
 #endif
@@ -123,20 +124,20 @@ ts::ResidentBuffer<T>::ResidentBuffer (size_t elem_count) :
 //----------------------------------------------------------------------------
 
 template <typename T>
-ts::ResidentBuffer<T>::~ResidentBuffer ()
+ts::ResidentBuffer<T>::~ResidentBuffer()
 {
     // Unlock from physical memory
     if (_is_locked) {
 #if defined (TS_WINDOWS)
-        ::VirtualUnlock (_locked_base, _locked_size);
+        ::VirtualUnlock(_locked_base, _locked_size);
 #else
-        ::munlock (_locked_base, _locked_size);
+        ::munlock(_locked_base, _locked_size);
 #endif
     }
 
     // Free memory
     if (_allocated_base != 0) {
-        delete [] _allocated_base;
+        delete[] _allocated_base;
     }
 
     // Reset state (it explicit call of destructor)

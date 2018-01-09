@@ -387,7 +387,7 @@ bool DownloadRelease(Options& opt, const ts::GitHubRelease rel, bool forceBinary
 bool RunCommand(Options& opt, const ts::UString& command, bool needRoot)
 {
     // Use a sudo command ?
-    const ts::UString sudo(!needRoot || ts::SysInfo::Instance()->isRootUser() ? u"" : u"sudo ");
+    const ts::UString sudo(!needRoot || ts::IsRootUser() ? u"" : u"sudo ");
     std::cout << "Running: " << sudo << command << std::endl;
 
     // Start the process. We don't need the pipe, its just an easy way to create a process.
