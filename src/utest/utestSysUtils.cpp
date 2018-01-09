@@ -74,7 +74,6 @@ public:
     void testWildcard();
     void testHomeDirectory();
     void testProcessMetrics();
-    void testMemory();
     void testIsTerminal();
     void testSysInfo();
 
@@ -96,7 +95,6 @@ public:
     CPPUNIT_TEST(testWildcard);
     CPPUNIT_TEST(testHomeDirectory);
     CPPUNIT_TEST(testProcessMetrics);
-    CPPUNIT_TEST(testMemory);
     CPPUNIT_TEST(testIsTerminal);
     CPPUNIT_TEST(testSysInfo);
     CPPUNIT_TEST_SUITE_END();
@@ -646,14 +644,6 @@ void SysUtilsTest::testProcessMetrics()
     CPPUNIT_ASSERT(pm2.vmem_size > 0);
 }
 
-void SysUtilsTest::testMemory()
-{
-    // We can't predict the memory page size, except that it must be a multiple of 256.
-    utest::Out() << "SysUtilsTest: MemoryPageSize() = " << ts::MemoryPageSize() << " bytes" << std::endl;
-    CPPUNIT_ASSERT(ts::MemoryPageSize() > 0);
-    CPPUNIT_ASSERT(ts::MemoryPageSize() % 256 == 0);
-}
-
 void SysUtilsTest::testIsTerminal()
 {
 #if defined(TS_WINDOWS)
@@ -679,7 +669,9 @@ void SysUtilsTest::testSysInfo()
                  << "    isIntel32 = " << ts::UString::TrueFalse(ts::SysInfo::Instance()->isIntel32()) << std::endl
                  << "    isIntel64 = " << ts::UString::TrueFalse(ts::SysInfo::Instance()->isIntel64()) << std::endl
                  << "    systemVersion = \"" << ts::SysInfo::Instance()->systemVersion() << '"' << std::endl
-                 << "    systemName = \"" << ts::SysInfo::Instance()->systemName() << '"' << std::endl;
+                 << "    systemName = \"" << ts::SysInfo::Instance()->systemName() << '"' << std::endl
+                 << "    hostName = \"" << ts::SysInfo::Instance()->hostName() << '"' << std::endl
+                 << "    memoryPageSize = " << ts::SysInfo::Instance()->memoryPageSize() << std::endl;
 
 #if defined(TS_WINDOWS)
     CPPUNIT_ASSERT(ts::SysInfo::Instance()->isWindows());
@@ -694,4 +686,8 @@ void SysUtilsTest::testSysInfo()
     CPPUNIT_ASSERT(!ts::SysInfo::Instance()->isLinux());
     CPPUNIT_ASSERT(ts::SysInfo::Instance()->isMacOS());
 #endif
+
+    // We can't predict the memory page size, except that it must be a multiple of 256.
+    CPPUNIT_ASSERT(ts::SysInfo::Instance()->memoryPageSize() > 0);
+    CPPUNIT_ASSERT(ts::SysInfo::Instance()->memoryPageSize() % 256 == 0);
 }

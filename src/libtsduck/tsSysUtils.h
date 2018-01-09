@@ -190,22 +190,10 @@ namespace ts {
     TSDUCKDLL UString ExecutableFile();
 
     //!
-    //! Get the name of the system host.
-    //! @return The name of the system host.
-    //!
-    TSDUCKDLL UString HostName();
-
-    //!
     //! Suspend the current thread for the specified period.
     //! @param [in] delay Number of milliseconds to sleep the current thread.
     //!
     TSDUCKDLL void SleepThread(MilliSecond delay);
-
-    //!
-    //! Get system memory page size.
-    //! @return The system memory page size in bytes.
-    //!
-    TSDUCKDLL size_t MemoryPageSize();
 
     //!
     //! Integer type for process identifier
@@ -225,6 +213,12 @@ namespace ts {
     //! @return Identification of the current process.
     //!
     TSDUCKDLL ProcessId CurrentProcessId();
+
+    //!
+    //! Check if the current user is root.
+    //! @return True if the current user is root (UNIX). Always false on Windows.
+    //!
+    TSDUCKDLL bool IsRootUser();
 
     //!
     //! Create a directory
