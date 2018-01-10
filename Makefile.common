@@ -696,8 +696,12 @@ ifdef MACOS
     CFLAGS_WARNINGS   += -Wno-unused-command-line-argument
     CXXFLAGS_WARNINGS += -Wno-unused-command-line-argument
 else
-    CFLAGS_WARNINGS   += -Wcast-align
-    CXXFLAGS_WARNINGS += -Wcast-align -Wstrict-null-sentinel
+    CXXFLAGS_WARNINGS += -Wstrict-null-sentinel
+    ifneq ($(MAIN_ARCH),arm)
+        # ARM target is known to generate too many spurious cast-align errors
+        CFLAGS_WARNINGS   += -Wcast-align
+        CXXFLAGS_WARNINGS += -Wcast-align
+    endif
     ifdef GCC_6_OR_MORE
         CXXFLAGS_WARNINGS += -Wsuggest-override
     endif

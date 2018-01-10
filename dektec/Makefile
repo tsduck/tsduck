@@ -33,13 +33,21 @@
 
 include ../Makefile.tsduck
 
-# By default, download and expand LinuxSDK (if necessary) on Linux only.
-ifdef MACOS
-default:
-	@true
-else
-default: dtapi
+# By default, download and expand LinuxSDK (if necessary).
+# This SDK is available on Linux and Windows, Intel CPU's only.
+
+DTAPI_TARGET :=
+ifeq ($(LOCAL_OS),linux)
+    ifeq ($(MAIN_ARCH),i386)
+        DTAPI_TARGET := dtapi
+    endif
+    ifeq ($(MAIN_ARCH),x86_64)
+        DTAPI_TARGET := dtapi
+    endif
 endif
+
+default: $(DTAPI_TARGET)
+	@true
 
 EXTRA_DISTCLEAN += WinSDK*.zip WinSDK LinuxSDK.zip LinuxSDK*.tar.gz LinuxSDK LinuxSDK.version
 RECURSE_ORDER = none
