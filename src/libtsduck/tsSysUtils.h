@@ -215,10 +215,10 @@ namespace ts {
     TSDUCKDLL ProcessId CurrentProcessId();
 
     //!
-    //! Check if the current user is root.
-    //! @return True if the current user is root (UNIX). Always false on Windows.
+    //! Check if the current user is privileged (root on UNIX, an administrator on Windows).
+    //! @return True if the current user is privileged.
     //!
-    TSDUCKDLL bool IsRootUser();
+    TSDUCKDLL bool IsPrivilegedUser();
 
     //!
     //! Create a directory

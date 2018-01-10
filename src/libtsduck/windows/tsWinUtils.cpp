@@ -31,8 +31,10 @@
 #include "tsComPtr.h"
 #include "tsSysUtils.h"
 #include "tsRegistry.h"
+#include "tsMemoryUtils.h"
 #include "tsFatal.h"
 #include <WinInet.h>
+#include <Shellapi.h>
 TSDUCK_SOURCE;
 
 
@@ -151,6 +153,36 @@ ts::UString ts::WinDeviceName(::HANDLE handle)
         info->FileName[std::min<size_t>(max_wchar - 1, info->FileNameLength)] = 0;
         return ToString(info->FileName);
     }
+}
+
+
+//-----------------------------------------------------------------------------
+// Start an application with elevated privileges (Windows-specific).
+//-----------------------------------------------------------------------------
+
+bool ts::WinCreateElevatedProcess(const UString& exeName, bool synchronous, Report& report)
+{
+    ::SHELLEXECUTEINFOW info;
+    TS_ZERO(info);
+    info.cbSize = sizeof(info);
+
+    info.fMask = synchronous ? SEE_MASK_NOCLOSEPROCESS : SEE_MASK_DEFAULT;
+    info.lpVerb = L"runas";
+    info.lpFile = exeName.wc_str();
+    info.lpParameters = L"";
+    info.nShow = SW_SHOW;
+
+    if (!::ShellExecuteExW(&info)) {
+        report.error(u"error starting %s: %s", {exeName, WinErrorMessage(::GetLastError())});
+        return false;
+    }
+    
+    // Wait for process termination.
+    if (synchronous) {
+        ::WaitForSingleObject(info.hProcess, INFINITE);
+        ::CloseHandle(info.hProcess);
+    }
+    return true;
 }
 
 

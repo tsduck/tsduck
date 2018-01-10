@@ -169,7 +169,8 @@ void SysUtilsTest::testCurrentProcessId()
     // Hard to make automated tests since we do not expect predictible values
 
     utest::Out() << "SysUtilsTest: sizeof(ts::ProcessId) = " << sizeof(ts::ProcessId) << std::endl
-                 << "SysUtilsTest: ts::CurrentProcessId() = " << ts::CurrentProcessId() << std::endl;
+                 << "SysUtilsTest: ts::CurrentProcessId() = " << ts::CurrentProcessId() << std::endl
+                 << "SysUtilsTest: ts::IsPrivilegedUser() = " << ts::IsPrivilegedUser() << std::endl;
 }
 
 void SysUtilsTest::testCurrentExecutableFile()
