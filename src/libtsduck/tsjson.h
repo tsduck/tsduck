@@ -362,6 +362,11 @@ namespace ts {
         class TSDUCKDLL Object: public Value
         {
         public:
+            //!
+            //! Constructor.
+            //!
+            Object() : _fields() {}
+
             // Implementation of ts::json::Value.
             virtual Type type() const override { return TypeObject; }
             virtual bool isObject() const override { return true; }
@@ -384,6 +389,11 @@ namespace ts {
         class TSDUCKDLL Array: public Value
         {
         public:
+            //!
+            //! Constructor.
+            //!
+            Array() : _value() {}
+
             // Implementation of ts::json::Value.
             virtual Type type() const override { return TypeArray; }
             virtual bool isArray() const override { return true; }

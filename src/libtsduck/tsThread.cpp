@@ -30,6 +30,7 @@
 #include "tsThread.h"
 #include "tsGuard.h"
 #include "tsSysUtils.h"
+#include "tsSysInfo.h"
 #include "tsIntegerUtils.h"
 TSDUCK_SOURCE;
 
@@ -203,7 +204,7 @@ bool ts::Thread::start()
     // Set required stack size.
     if (_attributes._stackSize > 0) {
         // Round to a multiple of the page size. This is required on MacOS.
-        const size_t size = RoundUp(std::max<size_t>(PTHREAD_STACK_MIN, _attributes._stackSize), MemoryPageSize());
+        const size_t size = RoundUp(std::max<size_t>(PTHREAD_STACK_MIN, _attributes._stackSize), SysInfo::Instance()->memoryPageSize());
         if (::pthread_attr_setstacksize(&attr, size) != 0) {
             ::pthread_attr_destroy(&attr);
             return false;

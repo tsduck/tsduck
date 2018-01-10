@@ -197,7 +197,7 @@ ts::SysInfo::SysInfo() :
 
     // POSIX implementation.
     char name[1024];
-    if (::gethostname(name, sizeof(name)) = 0) {
+    if (::gethostname(name, sizeof(name)) == 0) {
         name[sizeof(name) - 1] = '\0';
         _hostName.assignFromUTF8(name);
     }
@@ -217,7 +217,7 @@ ts::SysInfo::SysInfo() :
 
     // POSIX implementation.
     const long pageSize = ::sysconf(_SC_PAGESIZE);
-    if (size > 0) {
+    if (pageSize > 0) {
         _memoryPageSize = size_t(pageSize);
     }
 
