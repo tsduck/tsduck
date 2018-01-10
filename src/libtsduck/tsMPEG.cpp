@@ -79,7 +79,9 @@ bool ts::IsPES (uint8_t st)
         st == ST_AVC_VIDEO   ||
         st == ST_AAC_AUDIO   ||
         st == ST_AC3_AUDIO   ||
-        st == ST_EAC3_AUDIO;
+        st == ST_EAC3_AUDIO  ||
+        st == ST_HEVC_VIDEO  ||
+        st == ST_HEVC_SUBVIDEO;
 }
 
 
@@ -93,7 +95,9 @@ bool ts::IsVideoST (uint8_t st)
         st == ST_MPEG1_VIDEO ||
         st == ST_MPEG2_VIDEO ||
         st == ST_MPEG4_VIDEO ||
-        st == ST_AVC_VIDEO;
+        st == ST_AVC_VIDEO   ||
+        st == ST_HEVC_VIDEO  ||
+        st == ST_HEVC_SUBVIDEO;
 }
 
 

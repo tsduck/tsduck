@@ -212,10 +212,10 @@ ts::UString ts::names::T2MIPacketType(uint8_t type, Flags flags)
 
 ts::UString ts::names::ComponentType(uint16_t type, Flags flags)
 {
-    if ((type & 0xFF00) == 0x0300) {
+    if ((type & 0xFF00) == 0x3F00) {
         return SubtitlingType(type & 0x00FF, flags);
     }
-    else if ((type & 0xFF00) == 0x0400) {
+    else if ((type & 0xFF00) == 0x4F00) {
         return AC3ComponentType(type & 0x00FF, flags);
     }
     else {

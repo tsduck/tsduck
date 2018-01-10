@@ -332,9 +332,9 @@ void NamesTest::testAC3ComponentType()
 
 void NamesTest::testComponentType()
 {
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"MPEG-2 video, 4:3 aspect ratio, 30 Hz", ts::names::ComponentType(0x0105));
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"DVB subtitles, no aspect ratio", ts::names::ComponentType(0x0310));
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"Enhanced AC-3, combined, visually impaired, 2 channels", ts::names::ComponentType(0x0492));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"MPEG-2 video, 4:3 aspect ratio, 30 Hz", ts::names::ComponentType(0x1F05));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"DVB subtitles, no aspect ratio", ts::names::ComponentType(0x3F10));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"Enhanced AC-3, combined, visually impaired, 2 channels", ts::names::ComponentType(0x4F92));
 }
 
 void NamesTest::testSubtitlingType()
