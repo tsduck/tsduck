@@ -37,7 +37,7 @@
 
 namespace ts {
     //!
-    //! DVB-T (terrestrial, OFDM) tuners parameters
+    //! DVB-T / DVB-T2 (terrestrial, OFDM) tuners parameters
     //!
     class TSDUCKDLL TunerParametersDVBT: public TunerParameters
     {
@@ -52,6 +52,7 @@ namespace ts {
         TransmissionMode  transmission_mode;  //!< Transmission mode.
         GuardInterval     guard_interval;     //!< Guard interval.
         Hierarchy         hierarchy;          //!< Hierarchy.
+        PLP               plp;                //!< Physical Layer Pipe (PLP) id (DVB-T2 only).
 
         // Default values
         static const SpectralInversion DEFAULT_INVERSION         = SPINV_AUTO;      //!< Default value for inversion.
@@ -62,6 +63,7 @@ namespace ts {
         static const TransmissionMode  DEFAULT_TRANSMISSION_MODE = TM_8K;           //!< Default value for transmission_mode.
         static const GuardInterval     DEFAULT_GUARD_INTERVAL    = GUARD_1_32;      //!< Default value for guard_interval.
         static const Hierarchy         DEFAULT_HIERARCHY         = HIERARCHY_NONE;  //!< Default value for hierarchy.
+        static const PLP               DEFAULT_PLP               = PLP_DISABLE;     //!< Default value for PLP id.
 
         //!
         //! Default constructor.

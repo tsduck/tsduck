@@ -73,6 +73,7 @@ ts::TunerArgs::TunerArgs(bool info_only, bool allow_short_options) :
     delivery_system(),
     pilots(),
     roll_off(),
+    plp(),
     _info_only(info_only),
     _allow_short_options(allow_short_options)
 {
@@ -113,6 +114,7 @@ void ts::TunerArgs::reset()
     delivery_system.reset();
     pilots.reset();
     roll_off.reset();
+    plp.reset();
 }
 
 
@@ -231,6 +233,10 @@ void ts::TunerArgs::load(Args& args)
             got_one = true;
             roll_off = args.enumValue<RollOff>(u"roll-off");
         }
+        if (args.present(u"plp")) {
+            got_one = true;
+            plp = args.enumValue<PLP>(u"plp");
+        }
 
         // Local options (not related to transponder)
         if (args.present(u"lnb")) {
@@ -305,6 +311,7 @@ void ts::TunerArgs::defineOptions(Args& args) const
         args.option(u"pilots", 0, PilotEnum);
         args.option(u"polarity", 0, PolarizationEnum);
         args.option(u"roll-off", 0, RollOffEnum);
+        args.option(u"plp", 0, Args::UINT8);
         args.option(u"satellite-number", 0, Args::INTEGER, 0, 1, 0, 3);
         args.option(u"spectral-inversion", 0, SpectralInversionEnum);
         args.option(u"symbol-rate", _allow_short_options ? 's' : 0, Args::UNSIGNED);
@@ -452,6 +459,12 @@ void ts::TunerArgs::addHelp(Args& args) const
             u"      Used for DVB-S2 tuners only.\n"
             u"      Presence of pilots frames. Must be one of \"auto\", \"on\" or \"off\".\n"
             u"      The default is \"off\".\n"
+            u"\n"
+            u"  --plp value\n"
+            u"      Used for DVB-T2 tuners only.\n"
+            u"      Physical Layer Pipe (PLP) number to select, from 0 to 255.\n"
+            u"      The default is to keep the entire stream, without PLP selection.\n"
+            u"      Warning: this option is supported on Linux only.\n"
             u"\n"
             u"  --polarity value\n"
             u"      Used for DVB-S and DVB-S2 tuners only.\n"
