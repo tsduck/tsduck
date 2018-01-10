@@ -186,18 +186,18 @@ bool ts::WebRequest::SystemGuts::init()
     }
 
     // Set the proxy settings.
-    if (status == ::CURLE_OK && !_request._proxyHost.empty()) {
-        status = ::curl_easy_setopt(_curl, CURLOPT_PROXY, _request._proxyHost.toUTF8().c_str());
-        if (status == ::CURLE_OK && _request._proxyPort != 0) {
-            status = ::curl_easy_setopt(_curl, CURLOPT_PROXYPORT, long(_request._proxyPort));
+    if (status == ::CURLE_OK && !_request.proxyHost().empty()) {
+        status = ::curl_easy_setopt(_curl, CURLOPT_PROXY, _request.proxyHost().toUTF8().c_str());
+        if (status == ::CURLE_OK && _request.proxyPort() != 0) {
+            status = ::curl_easy_setopt(_curl, CURLOPT_PROXYPORT, long(_request.proxyPort()));
         }
-        if (status == ::CURLE_OK && !_request._proxyUser.empty()) {
+        if (status == ::CURLE_OK && !_request.proxyUser().empty()) {
             status = ::curl_easy_setopt(_curl, CURLOPT_PROXYAUTH, CURLAUTH_ANY);
             if (status == ::CURLE_OK) {
-                status = ::curl_easy_setopt(_curl, CURLOPT_PROXYUSERNAME, _request._proxyUser.toUTF8().c_str());
+                status = ::curl_easy_setopt(_curl, CURLOPT_PROXYUSERNAME, _request.proxyUser().toUTF8().c_str());
             }
-            if (status == ::CURLE_OK && !_request._proxyPassword.empty()) {
-                status = ::curl_easy_setopt(_curl, CURLOPT_PROXYPASSWORD, _request._proxyPassword.toUTF8().c_str());
+            if (status == ::CURLE_OK && !_request.proxyPassword().empty()) {
+                status = ::curl_easy_setopt(_curl, CURLOPT_PROXYPASSWORD, _request.proxyPassword().toUTF8().c_str());
             }
         }
     }
