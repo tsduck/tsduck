@@ -66,6 +66,12 @@ namespace ts {
         //!
         bool isUbuntu() const { return _isUbuntu; }
         //!
+        //! Check if the running operating system is Linux Debian.
+        //! Note that Ubuntu is not considered a real Debian.
+        //! @return True if the running operating system is Linux Debian.
+        //!
+        bool isDebian() const { return _isDebian; }
+        //!
         //! Check if the running operating system is macOS.
         //! @return True if the running operating system is macOS.
         //!
@@ -111,6 +117,7 @@ namespace ts {
         bool    _isFedora;
         bool    _isRedHat;
         bool    _isUbuntu;
+        bool    _isDebian;
         bool    _isMacOS;
         bool    _isWindows;
         bool    _isIntel32;
