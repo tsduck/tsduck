@@ -37,6 +37,11 @@
 #include "tsIntegerUtils.h"
 TSDUCK_SOURCE;
 
+ts::UString ts::WebRequest::_defaultProxyHost;
+uint16_t    ts::WebRequest::_defaultProxyPort = 0;
+ts::UString ts::WebRequest::_defaultProxyUser;
+ts::UString ts::WebRequest::_defaultProxyPassword;
+
 
 //----------------------------------------------------------------------------
 // Constructor.
@@ -104,6 +109,19 @@ void ts::WebRequest::setProxyUser(const UString& user, const UString& password)
 {
     _proxyUser = user;
     _proxyPassword = password;
+}
+
+void ts::WebRequest::SetDefaultProxyHost(const UString& host, uint16_t port)
+{
+    _defaultProxyHost = host;
+    _defaultProxyPort = port;
+}
+
+
+void ts::WebRequest::SetDefaultProxyUser(const UString& user, const UString& password)
+{
+    _defaultProxyUser = user;
+    _defaultProxyPassword = password;
 }
 
 

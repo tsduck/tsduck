@@ -90,6 +90,10 @@ Options::Options(int argc, char *argv[]) :
     option(u"latest",           'l');
     option(u"name",             'n', Args::STRING);
     option(u"output-directory", 'o', Args::STRING);
+    option(u"proxy-host",        0,  Args::STRING);
+    option(u"proxy-password",    0,  Args::STRING);
+    option(u"proxy-port",        0,  Args::UINT16);
+    option(u"proxy-user",        0,  Args::STRING);
     option(u"source",           's');
     option(u"this",             't');
     option(u"upgrade",          'u');
@@ -137,6 +141,18 @@ Options::Options(int argc, char *argv[]) :
             u"  --output-directory dir-name\n"
             u"      Output directory for downloaded files (current directory by default).\n"
             u"\n"
+            u"  --proxy-host name\n"
+            u"      Optional proxy host name for Internet access.\n"
+            u"\n"
+            u"  --proxy-password string\n"
+            u"      Optional proxy password for Internet access (for use with --proxy-user).\n"
+            u"\n"
+            u"  --proxy-port value\n"
+            u"      Optional proxy port for Internet access (for use with --proxy-host).\n"
+            u"\n"
+            u"  --proxy-user name\n"
+            u"      Optional proxy user name for Internet access.\n"
+            u"\n"
             u"  -s\n"
             u"  --source\n"
             u"      With --download, download the source code archive instead of the binary\n"
@@ -170,6 +186,10 @@ Options::Options(int argc, char *argv[]) :
     upgrade = present(u"upgrade");
     getValue(name, u"name");
     getValue(out_dir, u"output-directory");
+
+    // Proxy settings.
+    ts::WebRequest::SetDefaultProxyHost(value(u"proxy-host"), intValue<uint16_t>(u"proxy-port"));
+    ts::WebRequest::SetDefaultProxyUser(value(u"proxy-user"), value(u"proxy-password"));
 
     // Default download is --source.
     if (download && !binary && !source) {

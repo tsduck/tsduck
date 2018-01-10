@@ -161,14 +161,16 @@ bool ts::WebRequest::SystemGuts::init()
     clear();
 
     // Prepare proxy name.
-    const bool useProxy = !_request._proxyHost.empty();
+    const bool useProxy = !_request.proxyHost().empty();
     ::DWORD access = INTERNET_OPEN_TYPE_PRECONFIG;
     const ::WCHAR* proxy = 0;
-    UString proxyName;
+    UString proxyName(_request.proxyHost());
 
     if (useProxy) {
         access = INTERNET_OPEN_TYPE_PROXY;
-        proxyName = _request._proxyPort == 0 ? _request._proxyHost : UString::Format(u"%s:%d", {_request._proxyHost, _request._proxyPort});
+        if (_request.proxyPort() != 0) {
+            proxyName += UString::Format(u":%d", {_request.proxyPort()});
+        }
         proxy = proxyName.wc_str();
     }
 
@@ -181,16 +183,14 @@ bool ts::WebRequest::SystemGuts::init()
 
     // Specify the proxy authentication, if provided.
     if (useProxy) {
-        if (!_request._proxyUser.empty() &&
-            !::InternetSetOptionW(_inet, INTERNET_OPTION_PROXY_USERNAME, &_request._proxyUser[0], ::DWORD(_request._proxyUser.size())))
-        {
+        UString user(_request.proxyUser());
+        UString pass(_request.proxyPassword());
+        if (!user.empty() && !::InternetSetOptionW(_inet, INTERNET_OPTION_PROXY_USERNAME, &user[0], ::DWORD(user.size()))) {
             error(u"error setting proxy username");
             clear();
             return false;
         }
-        if (!_request._proxyPassword.empty() &&
-            !::InternetSetOptionW(_inet, INTERNET_OPTION_PROXY_PASSWORD, &_request._proxyPassword[0], ::DWORD(_request._proxyPassword.size())))
-        {
+        if (!pass.empty() && !::InternetSetOptionW(_inet, INTERNET_OPTION_PROXY_PASSWORD, &pass[0], ::DWORD(pass.size()))) {
             error(u"error setting proxy password");
             clear();
             return false;

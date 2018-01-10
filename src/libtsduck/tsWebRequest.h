@@ -97,18 +97,32 @@ namespace ts {
         }
 
         //!
-        //! Set the optional proxy host and port.
+        //! Set the optional proxy host and port for this request.
         //! @param [in] host Proxy host name or address.
         //! @param [in] port Proxy port number.
         //!
         void setProxyHost(const UString& host, uint16_t port);
 
         //!
-        //! Set the optional proxy authentication.
+        //! Set the optional proxy authentication for this request.
         //! @param [in] user Proxy user name.
         //! @param [in] password Proxy user's password.
         //!
         void setProxyUser(const UString& user, const UString& password);
+
+        //!
+        //! Set the default proxy host and port for all subsequent requests.
+        //! @param [in] host Proxy host name or address.
+        //! @param [in] port Proxy port number.
+        //!
+        static void SetDefaultProxyHost(const UString& host, uint16_t port);
+
+        //!
+        //! Set the default proxy authentication for all subsequent requests.
+        //! @param [in] user Proxy user name.
+        //! @param [in] password Proxy user's password.
+        //!
+        static void SetDefaultProxyUser(const UString& user, const UString& password);
 
         //!
         //! Set the user agent name to use in HTTP headers.
@@ -213,6 +227,11 @@ namespace ts {
         std::ofstream _dlFile;             // download file
         SystemGuts*   _guts;               // system-specific data
 
+        static UString  _defaultProxyHost;
+        static uint16_t _defaultProxyPort;
+        static UString  _defaultProxyUser;
+        static UString  _defaultProxyPassword;
+
         // Allocate and deallocate guts (depend on implementations).
         void allocateGuts();
         void deleteGuts();
@@ -237,6 +256,12 @@ namespace ts {
 
         // Clear the transfer results, status, etc.
         bool clearTransferResults();
+
+        // Get references to actual proxy characteristics.
+        const UString&  proxyHost() const { return _proxyHost.empty() ? _defaultProxyHost : _proxyHost; }
+        const uint16_t& proxyPort() const { return _proxyPort == 0 ? _defaultProxyPort : _proxyPort; }
+        const UString&  proxyUser() const { return _proxyUser.empty() ? _defaultProxyUser : _proxyUser; }
+        const UString&  proxyPassword() const { return _proxyPassword.empty() ? _defaultProxyPassword : _proxyPassword; }
 
         // Inaccessible operations.
         WebRequest() = delete;
