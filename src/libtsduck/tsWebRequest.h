@@ -259,7 +259,7 @@ namespace ts {
 
         // Get references to actual proxy characteristics.
         const UString&  proxyHost() const { return _proxyHost.empty() ? _defaultProxyHost : _proxyHost; }
-        const uint16_t& proxyPort() const { return _proxyPort == 0 ? _defaultProxyPort : _proxyPort; }
+        uint16_t        proxyPort() const { return _proxyPort == 0 ? _defaultProxyPort : _proxyPort; }
         const UString&  proxyUser() const { return _proxyUser.empty() ? _defaultProxyUser : _proxyUser; }
         const UString&  proxyPassword() const { return _proxyPassword.empty() ? _defaultProxyPassword : _proxyPassword; }
 
