@@ -624,11 +624,13 @@ namespace ts {
         TID_RST           = 0x71, //!< Table id for Running Status Table
         TID_ST            = 0x72, //!< Table id for Stuffing Table
         TID_TOT           = 0x73, //!< Table id for Time Offset Table
-        TID_RNT           = 0x74, //!< Table id for Resolution Notification (TV-Anytime)
+        TID_AIT           = 0x74, //!< Table id for Application Information Table
         TID_CT            = 0x75, //!< Table id for Container Table (TV-Anytime)
         TID_RCT           = 0x76, //!< Table id for Related Content Table (TV-Anytime)
         TID_CIT           = 0x77, //!< Table id for Content Identifier Table (TV-Anytime)
         TID_MPE_FEC       = 0x78, //!< Table id for MPE-FEC Table (Data Broadcasting)
+        TID_RNT           = 0x79, //!< Table id for Resolution Notification (TV-Anytime)
+        TID_MPE_IFEC      = 0x7A, //!< Table id for MPE-IFEC Table
         TID_DIT           = 0x7E, //!< Table id for Discontinuity Information Table
         TID_SIT           = 0x7F, //!< Table id for Selection Information Table
 
