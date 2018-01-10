@@ -118,6 +118,21 @@ bool ts::TextParser::loadStream(std::istream& strm)
 
 
 //----------------------------------------------------------------------------
+// Save the document to parse to a text file.
+//----------------------------------------------------------------------------
+
+bool ts::TextParser::saveFile(const UString& fileName)
+{
+    return UString::Save(_lines, fileName);
+}
+
+bool ts::TextParser::saveStream(std::ostream& strm)
+{
+    return UString::Save(_lines, strm);
+}
+
+
+//----------------------------------------------------------------------------
 // Restore a previous position in the document.
 //----------------------------------------------------------------------------
 

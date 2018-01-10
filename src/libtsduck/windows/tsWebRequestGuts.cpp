@@ -326,3 +326,14 @@ void ts::WebRequest::SystemGuts::transmitResponseHeaders()
     // Pass the headers to the WebRequest.
     _request.processHeaders(headers);
 }
+
+
+//----------------------------------------------------------------------------
+// Get the version of the underlying HTTP library.
+//----------------------------------------------------------------------------
+
+ts::UString ts::WebRequest::GetLibraryVersion()
+{
+    // Do not know which version...
+    return u"WinInet";
+}

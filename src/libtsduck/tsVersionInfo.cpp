@@ -48,6 +48,7 @@ const ts::Enumeration ts::VersionFormatEnum({
     {u"date",    ts::VERSION_DATE},
     {u"nsis",    ts::VERSION_NSIS},
     {u"dektec",  ts::VERSION_DEKTEC},
+    {u"http",    ts::VERSION_HTTP},
 });
 
 
@@ -84,6 +85,10 @@ ts::UString ts::GetVersion(VersionFormat format, const UString& applicationName)
         case VERSION_DEKTEC: {
             // The version of Dektec components.
             return GetDektecVersions();
+        }
+        case VERSION_HTTP: {
+            // The version of the HTTP library.
+            return WebRequest::GetLibraryVersion();
         }
         default: {
             // Undefined type, return an empty string.

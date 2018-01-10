@@ -370,6 +370,12 @@ bool ts::UString::LoadAppend(CONTAINER& container, std::istream& strm)
     UString line;
     while (line.getLine(strm)) {
         container.push_back(line);
+        // Weird behaviour (bug?) with gcc 4.8.5: When we read 2 consecutive lines
+        // with the same length, the storage of the previous string *in the container*
+        // if overwritten by the new line. Maybe not in all cases. No problem with
+        // other versions or compilers. As a workaround, we clear the string
+        // between read operations.
+        line.clear();
     }
     return strm.eof();
 }

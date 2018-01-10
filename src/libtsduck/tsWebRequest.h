@@ -205,6 +205,12 @@ namespace ts {
             return _httpStatus;
         }
 
+        //!
+        //! Get the version of the underlying HTTP library.
+        //! @return The library version.
+        //!
+        static UString GetLibraryVersion();
+
     private:
         // System-specific parts are stored in a private structure.
         // This is done to avoid inclusion of specialized headers in this public file.

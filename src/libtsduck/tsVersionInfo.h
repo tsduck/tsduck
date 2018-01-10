@@ -49,6 +49,7 @@ namespace ts {
         VERSION_DATE,    //!< Build date.
         VERSION_NSIS,    //!< Output NSIS @c !define directives.
         VERSION_DEKTEC,  //!< Version of embedded Dektec DTAPI and detected Dektec drivers.
+        VERSION_HTTP,    //!< Version of HTTP library which is used.
     };
 
     //!
