@@ -938,7 +938,7 @@ namespace {
     {
         ts::UString s(line);
 
-        // Filter and cleanup line.
+        // With loose line, do some initial cleanup.
         if (!exact) {
             s.trim();
             if (s.empty() || s.front() == u'#') {
@@ -947,18 +947,33 @@ namespace {
             }
         }
 
+        // Locate the "=" between name and value.
         const size_t pos = s.find(u"=");
+
         if (pos == ts::UString::NPOS) {
+            // With exact line, no "=" means empty value.
+            // With loose line, not a valid definition.
             if (exact) {
-                // No "=" means empty value
                 env.insert(std::make_pair(s, ts::UString()));
             }
         }
-        else if (exact) {
-            env.insert(std::make_pair(s.substr(0, pos), s.substr(pos + 1)));
-        }
         else {
-            env.insert(std::make_pair(s.substr(0, pos).toTrimmed(), s.substr(pos + 1).toTrimmed()));
+            // Isolate name and value.
+            ts::UString name(s.substr(0, pos));
+            ts::UString value(s.substr(pos + 1));
+            // With loose line, do some additional cleanup.
+            if (!exact) {
+                name.trim();
+                value.trim();
+                if (value.size() >= 2 && (value.front() == u'\'' || value.front() == u'"') && value.back() == value.front()) {
+                    // Remove surrounding quotes in the value.
+                    value.pop_back();
+                    value.erase(0, 1);
+                }
+            }
+            if (!name.empty()) {
+                env.insert(std::make_pair(name, value));
+            }
         }
     }
 }
