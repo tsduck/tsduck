@@ -39,6 +39,9 @@
 #include "tsSysInfo.h"
 #include "tsForkPipe.h"
 #include "tsVersionInfo.h"
+#if defined(TS_WINDOWS)
+#include "tsWinUtils.h"
+#endif
 TSDUCK_SOURCE;
 
 
@@ -404,15 +407,26 @@ bool DownloadRelease(Options& opt, const ts::GitHubRelease rel, bool forceBinary
 //  Run an upgrade command.
 //----------------------------------------------------------------------------
 
-bool RunCommand(Options& opt, const ts::UString& command, bool needRoot)
+bool RunCommand(Options& opt, const ts::UString& command, bool needPrivilege)
 {
-    // Use a sudo command ?
-    const ts::UString sudo(!needRoot || ts::IsRootUser() ? u"" : u"sudo ");
-    std::cout << "Running: " << sudo << command << std::endl;
+    ts::UString cmd(command);
+
+    // Use a privileged command from an non-privileged process ?
+    if (needPrivilege && !ts::IsPrivilegedUser()) {
+#if defined(TS_UNIX)
+        // Same command using sudo.
+        cmd.insert(0, u"sudo ");
+#elif defined(TS_WINDOWS)
+        // On Windows, use a completely different method.
+        std::cout << "Running: " << cmd << std::endl;
+        return ts::WinCreateElevatedProcess(cmd, true, opt);
+#endif
+    }
+    std::cout << "Running: " << cmd << std::endl;
 
     // Start the process.
     ts::ForkPipe process;
-    bool success = process.open(sudo + command, true, 0, CERR, ts::ForkPipe::KEEP_BOTH, ts::ForkPipe::KEEP_STDIN);
+    bool success = process.open(cmd, true, 0, CERR, ts::ForkPipe::KEEP_BOTH, ts::ForkPipe::KEEP_STDIN);
     process.close(NULLREP);
     return success;
 }
@@ -448,8 +462,9 @@ bool UpgradeRelease(Options& opt, const ts::GitHubRelease rel)
 
     if (sys.isWindows()) {
         // On Windows, run installers one by one (there should be only one anyway).
+        // We require a privileged execution.
         for (ts::UStringList::const_iterator it = files.begin(); it != files.end(); ++it) {
-            if (!RunCommand(opt, *it, false)) {
+            if (!RunCommand(opt, *it, true)) {
                 return false;
             }
         }

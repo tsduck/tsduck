@@ -143,4 +143,13 @@ namespace ts {
     //! @return The device name or an empty string on error.
     //!
     TSDUCKDLL UString WinDeviceName(::HANDLE handle);
+
+    //!
+    //! Start an application with elevated privileges (Windows-specific).
+    //! @param [in] exeName Path name of the executable file to run.
+    //! @param [in] synchronous If true, wait for the process to terminate.
+    //! @param [in,out] report Where to report errors.
+    //! @return True on success, false on error.
+    //!
+    TSDUCKDLL bool WinCreateElevatedProcess(const UString& exeName, bool synchronous, Report& report);
 }

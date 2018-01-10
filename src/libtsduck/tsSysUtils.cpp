@@ -304,12 +304,21 @@ ts::ProcessId ts::CurrentProcessId()
 #endif
 }
 
-bool ts::IsRootUser()
+bool ts::IsPrivilegedUser()
 {
 #if defined(TS_UNIX)
     return ::geteuid() == 0;
 #else
-    return false;
+    ::SID_IDENTIFIER_AUTHORITY NtAuthority = SECURITY_NT_AUTHORITY;
+    ::PSID AdministratorsGroup; 
+    ::BOOL ok = ::AllocateAndInitializeSid(&NtAuthority, 2, SECURITY_BUILTIN_DOMAIN_RID, DOMAIN_ALIAS_RID_ADMINS, 0, 0, 0, 0, 0, 0, &AdministratorsGroup); 
+    if (ok) {
+        if (!::CheckTokenMembership(NULL, AdministratorsGroup, &ok)) {
+            ok = FALSE;
+        } 
+        ::FreeSid(AdministratorsGroup);
+    }
+    return ok;
 #endif
 }
 
