@@ -11,6 +11,9 @@ Version 3.6
 - The help text of all TSDuck applications (using option --help) is now paged
   through "less" or any any other pager application.
 
+- Added the utility tsversion to manage TSDuck versions, detect new versions,
+  upgrade, etc.
+
 Version 3.5-414
 
 - Added option --xml-output to tstables and plugin tables. Tables can be saved

@@ -106,7 +106,7 @@ namespace ts {
         //!
         size_t memoryPageSize() const { return _memoryPageSize; }
 
-    public:
+    private:
         bool    _isLinux;
         bool    _isFedora;
         bool    _isRedHat;

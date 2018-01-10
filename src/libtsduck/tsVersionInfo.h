@@ -69,7 +69,7 @@ namespace ts {
     //! Compare two version strings.
     //! @param [in] v1 First version string.
     //! @param [in] v2 First version string.
-    //! @return One of -1, 0, 1 when @a v1 < @v2, @a v1 == @v2, @a v1 > @v2.
+    //! @return One of -1, 0, 1 when @a v1 < @a v2, @a v1 == @a v2, @a v1 > @a v2.
     //!
     TSDUCKDLL int CompareVersions(const UString& v1, const UString& v2);
 }
