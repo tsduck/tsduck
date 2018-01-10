@@ -54,6 +54,7 @@ ts::SysInfo::SysInfo() :
     _isFedora(false),
     _isRedHat(false),
     _isUbuntu(false),
+    _isDebian(false),
 #if defined(TS_MAC)
     _isMacOS(true),
 #else
@@ -104,6 +105,11 @@ ts::SysInfo::SysInfo() :
             _systemVersion = env[u"DISTRIB_RELEASE"];
         }
         _isUbuntu = _systemName.similar(u"Ubuntu");
+        _isDebian = _systemName.similar(u"Debian");
+    }
+    if (_systemName.empty() && UString::Load(lines, u"/etc/debian_version") && !lines.empty()) {
+        _systemName = u"Debian";
+        _systemVersion = u"Debian " + lines.front();
     }
     if (_systemName.empty()) {
         _systemName = u"Linux";
