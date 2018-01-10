@@ -176,6 +176,7 @@ namespace ts {
             virtual bool isArray() const { return false; }
             //!
             //! Convert this instance to a boolean.
+            //! @param [in] defaultValue Default value to return when no conversion is possible.
             //! @return The boolean value of this instance or @a defaultValue if no conversion is possible.
             //! For numbers, zero is false, all other values are true. For string, "yes", "true", "on" and
             //! non-zero integers are true; "no", "false", "off" and zero integers are false.
@@ -183,12 +184,14 @@ namespace ts {
             virtual bool toBoolean(bool defaultValue = false) const { return defaultValue; }
             //!
             //! Convert this instance to an integer.
+            //! @param [in] defaultValue Default value to return when no conversion is possible.
             //! @return The integer value of this instance or @a defaultValue if no conversion is possible.
             //! Strings containing integers are converted.
             //!
             virtual int64_t toInteger(int64_t defaultValue = 0) const { return defaultValue; }
             //!
             //! Convert this instance to a string.
+            //! @param [in] defaultValue Default value to return when no conversion is possible.
             //! @return The string value of this instance or @a defaultValue if no conversion is possible.
             //!
             virtual UString toString(const UString& defaultValue = UString()) const { return defaultValue; }

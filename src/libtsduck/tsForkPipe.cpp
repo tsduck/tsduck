@@ -87,9 +87,12 @@ bool ts::ForkPipe::open(const UString& command, bool synchronous, size_t buffer_
 
 #if defined (TS_WINDOWS)
 
+    _handle = INVALID_HANDLE_VALUE;
+    _process = INVALID_HANDLE_VALUE;
+    ::HANDLE read_handle = INVALID_HANDLE_VALUE;
+    ::HANDLE write_handle = INVALID_HANDLE_VALUE;
+
     // Create a pipe
-    ::HANDLE read_handle;
-    ::HANDLE write_handle;
     if (_in_mode == USE_PIPE) {
         ::DWORD bufsize = buffer_size == 0 ? 0 : ::DWORD(std::max<size_t>(32768, buffer_size));
         ::SECURITY_ATTRIBUTES sa;
@@ -119,12 +122,21 @@ bool ts::ForkPipe::open(const UString& command, bool synchronous, size_t buffer_
     si.cb = sizeof(si);
     si.dwFlags = STARTF_USESTDHANDLES;
 
-    if (_in_mode == USE_PIPE) {
-        si.hStdInput = read_handle;
-    }
-    else {
-        ::SetHandleInformation(in_handle, HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT);
-        si.hStdInput = in_handle;
+    switch (_in_mode) {
+        case USE_PIPE:
+            si.hStdInput = read_handle;
+            break;
+        case KEEP_STDIN:
+            ::SetHandleInformation(in_handle, HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT);
+            si.hStdInput = in_handle;
+            break;
+        default:
+            // Invalid enum value.
+            if (_in_mode == USE_PIPE) {
+                ::CloseHandle(read_handle);
+                ::CloseHandle(write_handle);
+            }
+            return false;
     }
 
     switch (out_mode) {
@@ -144,8 +156,10 @@ bool ts::ForkPipe::open(const UString& command, bool synchronous, size_t buffer_
             break;
         default:
             // Invalid enum value.
-            ::CloseHandle(read_handle);
-            ::CloseHandle(write_handle);
+            if (_in_mode == USE_PIPE) {
+                ::CloseHandle(read_handle);
+                ::CloseHandle(write_handle);
+            }
             return false;
     }
 
@@ -157,8 +171,10 @@ bool ts::ForkPipe::open(const UString& command, bool synchronous, size_t buffer_
     ::PROCESS_INFORMATION pi;
     if (::CreateProcessW(NULL, cmdp, NULL, NULL, TRUE, 0, NULL, NULL, &si, &pi) == 0) {
         report.error(u"error creating process: %s", {ErrorCodeMessage()});
-        ::CloseHandle(read_handle);
-        ::CloseHandle(write_handle);
+        if (_in_mode == USE_PIPE) {
+            ::CloseHandle(read_handle);
+            ::CloseHandle(write_handle);
+        }
         return false;
     }
 

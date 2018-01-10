@@ -87,6 +87,7 @@ namespace ts {
         //! @param [in] repository Project repository name.
         //! @param [in] tag Git tag of the version to fetch. If empty, fetch the latest version.
         //! @param [in,out] report Where to report error.
+        //! @return True on success, false on error.
         //!
         bool downloadInfo(const UString& owner, const UString& repository, const UString& tag = UString(), Report& report = CERR);
 
@@ -191,6 +192,7 @@ namespace ts {
         //! @param [in] owner Project owner, either a GitHub user name or organization name.
         //! @param [in] repository Project repository name.
         //! @param [in,out] report Where to report error.
+        //! @return True on success, false on error.
         //!
         static bool GetAllVersions(GitHubReleaseVector& versions, const UString& owner, const UString& repository, Report& report = CERR);
 
