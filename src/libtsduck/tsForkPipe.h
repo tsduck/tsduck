@@ -38,7 +38,7 @@
 
 namespace ts {
     //!
-    //! Fork a process and create a pipe to its standard input.
+    //! Fork a process and create an optional pipe to its standard input.
     //!
     class TSDUCKDLL ForkPipe
     {
@@ -54,6 +54,14 @@ namespace ts {
         ~ForkPipe();
 
         //!
+        //! How to standard input in the created process.
+        //!
+        enum InputMode {
+            KEEP_STDIN,    //!< Keep same stdin as current process.
+            USE_PIPE,      //!< Use the pipe as stdin.
+        };
+
+        //!
         //! How to merge standard output and standard error in the created process.
         //!
         enum OutputMode {
@@ -63,15 +71,17 @@ namespace ts {
         };
 
         //!
-        //! Create the process, open the pipe.
+        //! Create the process, open the optional pipe.
         //! @param [in] command The command to execute.
         //! @param [in] synchronous If true, wait for process termination in close().
         //! @param [in] buffer_size The pipe buffer size in bytes. Used on Windows only. Zero means default.
         //! @param [in,out] report Where to report errors.
         //! @param [in] out_mode How to handle stdout and stderr.
+        //! @param [in] in_mode How to handle stdin. Use the pipe by default.
+        //! When set to KEEP_STDIN, no pipe is created.
         //! @return True on success, false on error.
         //!
-        bool open(const UString& command, bool synchronous, size_t buffer_size, Report& report, OutputMode out_mode = KEEP_BOTH);
+        bool open(const UString& command, bool synchronous, size_t buffer_size, Report& report, OutputMode out_mode = KEEP_BOTH, InputMode in_mode = USE_PIPE);
 
         //!
         //! Close the pipe.
@@ -82,7 +92,7 @@ namespace ts {
         bool close(Report& report);
 
         //!
-        //! Check if the process is running and the pipe is open.
+        //! Check if the process is running and the pipe is open (when used).
         //! @return True if the process is running and the pipe is open.
         //!
         bool isOpen() const
@@ -137,16 +147,17 @@ namespace ts {
         bool write(const void* addr, size_t size, Report& report);
 
     private:
-        bool     _is_open;       // Open and running.
-        bool     _synchronous;   // Wait for child process termination in stop()
-        bool     _ignore_abort;  // Ignore early termination of child process
-        bool     _broken_pipe;   // Pipe is broken, do not attempt to write
+        InputMode _in_mode;       // Input mode for the created process.
+        bool      _is_open;       // Open and running.
+        bool      _synchronous;   // Wait for child process termination in close().
+        bool      _ignore_abort;  // Ignore early termination of child process.
+        bool      _broken_pipe;   // Pipe is broken, do not attempt to write.
 #if defined(TS_WINDOWS)
-        ::HANDLE _handle;        // Pipe output handle
-        ::HANDLE _process;       // Handle to child process
+        ::HANDLE  _handle;        // Pipe output handle.
+        ::HANDLE  _process;       // Handle to child process.
 #else
-        ::pid_t  _fpid;          // Forked process id (UNIX PID, not MPEG PID!)
-        int      _fd;            // Pipe output file descriptor
+        ::pid_t   _fpid;          // Forked process id (UNIX PID, not MPEG PID!)
+        int       _fd;            // Pipe output file descriptor.
 #endif
 
         // Inacessible operations.

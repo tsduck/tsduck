@@ -410,9 +410,9 @@ bool RunCommand(Options& opt, const ts::UString& command, bool needRoot)
     const ts::UString sudo(!needRoot || ts::IsRootUser() ? u"" : u"sudo ");
     std::cout << "Running: " << sudo << command << std::endl;
 
-    // Start the process. We don't need the pipe, its just an easy way to create a process.
+    // Start the process.
     ts::ForkPipe process;
-    bool success = process.open(sudo + command, true, 0, CERR);
+    bool success = process.open(sudo + command, true, 0, CERR, ts::ForkPipe::KEEP_BOTH, ts::ForkPipe::KEEP_STDIN);
     process.close(NULLREP);
     return success;
 }
