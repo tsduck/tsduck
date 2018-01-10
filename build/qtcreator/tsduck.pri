@@ -60,11 +60,14 @@ CONFIG *= warn_on
 QMAKE_CXXFLAGS += -I$$SRCROOT/libtsduck
 INCLUDEPATH += $$SRCROOT/libtsduck
 linux|mac|mingw {
-    # GCC/clang options
-    QMAKE_CXXFLAGS_WARN_ON = -Werror -Wall -Wextra \
-        -Wpedantic -Wformat-security -Wswitch-default -Wuninitialized -Wshadow \
-        -Wno-unused-parameter -Wfloat-equal -Wpointer-arith -Woverloaded-virtual -Wctor-dtor-privacy \
-        -Wnon-virtual-dtor -Weffc++ -Woverloaded-virtual -Wsign-promo
+    # GCC/clang options. Some of them depend on the compiler version.
+    GCC_VERSION = $$system($$QMAKE_CXX " -dumpversion")
+    GCC_FIELDS = $$split(GCC_VERSION, ".")
+    GCC_MAJOR = $$member(GCC_FIELDS, 0)
+    QMAKE_CXXFLAGS_WARN_ON = -Werror -Wall -Wextra -Wformat-security -Wswitch-default \
+        -Wuninitialized -Wno-unused-parameter -Wfloat-equal -Wpointer-arith -Wsign-promo \
+        -Woverloaded-virtual -Wctor-dtor-privacy -Wnon-virtual-dtor -Woverloaded-virtual
+    greaterThan(GCC_MAJOR, 4): QMAKE_CXXFLAGS_WARN_ON += -Wpedantic -Weffc++ -Wshadow
     QMAKE_CXXFLAGS += -fno-strict-aliasing -fstack-protector-all
 }
 linux|mingw {

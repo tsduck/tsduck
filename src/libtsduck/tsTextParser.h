@@ -102,6 +102,20 @@ namespace ts {
         bool loadStream(std::istream& strm);
 
         //!
+        //! Save the document to parse to a text file.
+        //! @param [in] fileName Name of the file to save.
+        //! @return True on success, false on failure.
+        //!
+        bool saveFile(const UString& fileName);
+
+        //!
+        //! Save the document to parse to a text stream.
+        //! @param [in,out] strm A standard text stream in output mode.
+        //! @return True on success, false on error.
+        //!
+        bool saveStream(std::ostream& strm);
+
+        //!
         //! Check end of file.
         //! @return True if the parser reached the end of file.
         //!

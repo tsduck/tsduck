@@ -36,6 +36,24 @@
 #include <curl/curl.h>
 TSDUCK_SOURCE;
 
+//
+// The callback CURLOPT_XFERINFOFUNCTION was introduced with libcurl 7.32.0.
+// Before this version, CURLOPT_PROGRESSFUNCTION shall be used.
+//
+// The function is equivalent, the callbacks are equivalent, except
+// that the old callback used "double" parameters while the new one
+// uses "curl_off_t" values.
+//
+#if LIBCURL_VERSION_NUM < 0x072000
+    #define TS_CALLBACK_PARAM     double
+    #define TS_CALLBACK_FUNCTION  CURLOPT_PROGRESSFUNCTION
+    #define TS_CALLBACK_DATA      CURLOPT_PROGRESSDATA
+#else
+    #define TS_CALLBACK_PARAM     ::curl_off_t
+    #define TS_CALLBACK_FUNCTION  CURLOPT_XFERINFOFUNCTION
+    #define TS_CALLBACK_DATA      CURLOPT_XFERINFODATA
+#endif
+
 
 //----------------------------------------------------------------------------
 // Global libcurl initialization using a singleton.
@@ -92,7 +110,7 @@ private:
     // The userdata points to this object.
     static size_t headerCallback(char *ptr, size_t size, size_t nmemb, void *userdata);
     static size_t writeCallback(char *ptr, size_t size, size_t nmemb, void *userdata);
-    static int progressCallback(void *clientp, ::curl_off_t dltotal, ::curl_off_t dlnow, ::curl_off_t ultotal, ::curl_off_t ulnow);
+    static int progressCallback(void *clientp, TS_CALLBACK_PARAM dltotal, TS_CALLBACK_PARAM dlnow, TS_CALLBACK_PARAM ultotal, TS_CALLBACK_PARAM ulnow);
 
     // Inaccessible operations.
     SystemGuts() = delete;
@@ -170,10 +188,10 @@ bool ts::WebRequest::SystemGuts::init()
         status = ::curl_easy_setopt(_curl, CURLOPT_HEADERDATA, this);
     }
     if (status == ::CURLE_OK) {
-        status = ::curl_easy_setopt(_curl, CURLOPT_XFERINFOFUNCTION, &SystemGuts::progressCallback);
+        status = ::curl_easy_setopt(_curl, TS_CALLBACK_FUNCTION, &SystemGuts::progressCallback);
     }
     if (status == ::CURLE_OK) {
-        status = ::curl_easy_setopt(_curl, CURLOPT_XFERINFODATA, this);
+        status = ::curl_easy_setopt(_curl, TS_CALLBACK_DATA, this);
     }
     if (status == ::CURLE_OK) {
         // Enable progress meter.
@@ -354,11 +372,37 @@ size_t ts::WebRequest::SystemGuts::writeCallback(char *ptr, size_t size, size_t 
 // Libcurl progress callback for response data.
 //----------------------------------------------------------------------------
 
-int ts::WebRequest::SystemGuts::progressCallback(void *clientp, ::curl_off_t dltotal, ::curl_off_t dlnow, ::curl_off_t ultotal, ::curl_off_t ulnow)
+int ts::WebRequest::SystemGuts::progressCallback(void *clientp, TS_CALLBACK_PARAM dltotal, TS_CALLBACK_PARAM dlnow, TS_CALLBACK_PARAM ultotal, TS_CALLBACK_PARAM ulnow)
 {
     // The clientp points to the guts object.
     SystemGuts* guts = reinterpret_cast<SystemGuts*>(clientp);
 
     // We only use dltotal to reserve the buffer size. Return 0 on success.
-    return guts != 0 && guts->_request.setPossibleContentSize(dltotal) ? 0 : 1;
+    return guts != 0 && guts->_request.setPossibleContentSize(size_t(dltotal)) ? 0 : 1;
+}
+
+
+//----------------------------------------------------------------------------
+// Get the version of the underlying HTTP library.
+//----------------------------------------------------------------------------
+
+ts::UString ts::WebRequest::GetLibraryVersion()
+{
+    UString result(u"libcurl");
+
+    // Get version from libcurl.
+    const ::curl_version_info_data* info = ::curl_version_info(CURLVERSION_NOW);
+    if (info != 0) {
+        if (info->version != 0) {
+            result += u": " + UString::FromUTF8(info->version);
+        }
+        if (info->ssl_version != 0) {
+            result += u", ssl: " + UString::FromUTF8(info->ssl_version);
+        }
+        if (info->libz_version != 0) {
+            result += u", libz: " + UString::FromUTF8(info->libz_version);
+        }
+    }
+
+    return result;
 }
