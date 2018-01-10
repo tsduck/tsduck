@@ -485,36 +485,38 @@ namespace ts {
     //---------------------------------------------------------------------
 
     enum : uint8_t {
-        ST_MPEG1_VIDEO = 0x01, //!< MPEG-1 Video
-        ST_MPEG2_VIDEO = 0x02, //!< MPEG-2 Video
-        ST_MPEG1_AUDIO = 0x03, //!< MPEG-1 Audio
-        ST_MPEG2_AUDIO = 0x04, //!< MPEG-2 Audio
-        ST_PRIV_SECT   = 0x05, //!< MPEG-2 Private sections
-        ST_PES_PRIV    = 0x06, //!< MPEG-2 PES private data
-        ST_MHEG        = 0x07, //!< MHEG
-        ST_DSMCC       = 0x08, //!< DSM-CC
-        ST_MPEG2_ATM   = 0x09, //!< MPEG-2 over ATM
-        ST_DSMCC_MPE   = 0x0A, //!< DSM-CC Multi-Protocol Encapsulation
-        ST_DSMCC_UN    = 0x0B, //!< DSM-CC User-to-Network messages
-        ST_DSMCC_SD    = 0x0C, //!< DSM-CC Stream Descriptors
-        ST_DSMCC_SECT  = 0x0D, //!< DSM-CC Sections
-        ST_MPEG2_AUX   = 0x0E, //!< MPEG-2 Auxiliary
-        ST_AAC_AUDIO   = 0x0F, //!< Advanced Audio Coding (ISO 13818-7)
-        ST_MPEG4_VIDEO = 0x10, //!< MPEG-4 Video
-        ST_MPEG4_AUDIO = 0x11, //!< MPEG-4 Audio
-        ST_MPEG4_PES   = 0x12, //!< MPEG-4 SL or FlexMux in PES packets
-        ST_MPEG4_SECT  = 0x13, //!< MPEG-4 SL or FlexMux in sections
-        ST_DSMCC_DLOAD = 0x14, //!< DSM-CC Synchronized Download Protocol
-        ST_MDATA_PES   = 0x15, //!< MPEG-7 MetaData in PES packets
-        ST_MDATA_SECT  = 0x16, //!< MPEG-7 MetaData in sections
-        ST_MDATA_DC    = 0x17, //!< MPEG-7 MetaData in DSM-CC Data Carousel
-        ST_MDATA_OC    = 0x18, //!< MPEG-7 MetaData in DSM-CC Object Carousel
-        ST_MDATA_DLOAD = 0x19, //!< MPEG-7 MetaData in DSM-CC Sync Downl Proto
-        ST_MPEG2_IPMP  = 0x1A, //!< MPEG-2 IPMP stream
-        ST_AVC_VIDEO   = 0x1B, //!< AVC video
-        ST_IPMP        = 0x7F, //!< IPMP stream
-        ST_AC3_AUDIO   = 0x81, //!< AC-3 Audio (ATSC only)
-        ST_EAC3_AUDIO  = 0x87, //!< Enhanced-AC-3 Audio (ATSC only)
+        ST_MPEG1_VIDEO   = 0x01, //!< MPEG-1 Video
+        ST_MPEG2_VIDEO   = 0x02, //!< MPEG-2 Video
+        ST_MPEG1_AUDIO   = 0x03, //!< MPEG-1 Audio
+        ST_MPEG2_AUDIO   = 0x04, //!< MPEG-2 Audio
+        ST_PRIV_SECT     = 0x05, //!< MPEG-2 Private sections
+        ST_PES_PRIV      = 0x06, //!< MPEG-2 PES private data
+        ST_MHEG          = 0x07, //!< MHEG
+        ST_DSMCC         = 0x08, //!< DSM-CC
+        ST_MPEG2_ATM     = 0x09, //!< MPEG-2 over ATM
+        ST_DSMCC_MPE     = 0x0A, //!< DSM-CC Multi-Protocol Encapsulation
+        ST_DSMCC_UN      = 0x0B, //!< DSM-CC User-to-Network messages
+        ST_DSMCC_SD      = 0x0C, //!< DSM-CC Stream Descriptors
+        ST_DSMCC_SECT    = 0x0D, //!< DSM-CC Sections
+        ST_MPEG2_AUX     = 0x0E, //!< MPEG-2 Auxiliary
+        ST_AAC_AUDIO     = 0x0F, //!< Advanced Audio Coding (ISO 13818-7)
+        ST_MPEG4_VIDEO   = 0x10, //!< MPEG-4 Video
+        ST_MPEG4_AUDIO   = 0x11, //!< MPEG-4 Audio
+        ST_MPEG4_PES     = 0x12, //!< MPEG-4 SL or FlexMux in PES packets
+        ST_MPEG4_SECT    = 0x13, //!< MPEG-4 SL or FlexMux in sections
+        ST_DSMCC_DLOAD   = 0x14, //!< DSM-CC Synchronized Download Protocol
+        ST_MDATA_PES     = 0x15, //!< MPEG-7 MetaData in PES packets
+        ST_MDATA_SECT    = 0x16, //!< MPEG-7 MetaData in sections
+        ST_MDATA_DC      = 0x17, //!< MPEG-7 MetaData in DSM-CC Data Carousel
+        ST_MDATA_OC      = 0x18, //!< MPEG-7 MetaData in DSM-CC Object Carousel
+        ST_MDATA_DLOAD   = 0x19, //!< MPEG-7 MetaData in DSM-CC Sync Downl Proto
+        ST_MPEG2_IPMP    = 0x1A, //!< MPEG-2 IPMP stream
+        ST_AVC_VIDEO     = 0x1B, //!< AVC video
+        ST_HEVC_VIDEO    = 0x24,  //!< HEVC video
+        ST_HEVC_SUBVIDEO = 0x25, //!< HEVC temporal video subset of an HEVC video stream
+        ST_IPMP          = 0x7F, //!< IPMP stream
+        ST_AC3_AUDIO     = 0x81, //!< AC-3 Audio (ATSC only)
+        ST_EAC3_AUDIO    = 0x87, //!< Enhanced-AC-3 Audio (ATSC only)
     };
 
     //!
@@ -754,6 +756,21 @@ namespace ts {
         DID_AVC_VIDEO           = 0x28, //!< DID for AVC_video_descriptor
         DID_MPEG2_IPMP          = 0x29, //!< DID for MPEG-2_IPMP_descriptor
         DID_AVC_TIMING_HRD      = 0x2A, //!< DID for AVC_timing_and_HRD_descriptor
+        DID_MPEG2_AAC_AUDIO     = 0x2B, //!< DID for MPEG-2 AAC Audio descriptor
+        DID_FLEX_MUX_TIMING     = 0x2C, //!< DID for FlexMuxTiming descriptor
+        DID_MPEG4_TEXT          = 0x2D, //!< DID for MPEG-4 Text descriptor
+        DID_MPEG4_AUDIO_EXT     = 0x2E, //!< DID for MPEG-4 Audio Extension descriptor
+        DID_AUX_VIDEO           = 0x2F, //!< DID for Auxiliary Video Stream descriptor
+        DID_SVC_EXT             = 0x30, //!< DID for SVC Extension descriptor
+        DID_MVC_EXT             = 0x31, //!< DID for MVC Extension descriptor
+        DID_J2K_VIDEO           = 0x32, //!< DID for J2K Video descriptor
+        DID_MVC_OPER_POINT      = 0x33, //!< DID for MVC Operation Point descriptor
+        DID_STEREO_VIDEO_FORMAT = 0x34, //!< DID for MPEG-2 Stereoscopic Video Format descriptor
+        DID_STEREO_PROG_INFO    = 0x35, //!< DID for Stereoscopic Program Info descriptor
+        DID_STEREO_VIDEO_INFO   = 0x36, //!< DID for Stereoscopic Video Info descriptor
+        DID_TRANSPORT_PROFILE   = 0x37, //!< DID for Transport Profile descriptor
+        DID_HEVC_VIDEO          = 0x38, //!< DID for HEVC Video descriptor
+        DID_MPEG2_EXTENSION     = 0x3F, //!< DID for MPEG-2 Extension descriptor
 
         // Valid in DVB context:
 
