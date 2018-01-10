@@ -319,6 +319,10 @@ bool ts::CreateLocatorDVBT(ComPtr<::IDigitalLocator>& locator, const TunerParame
         return false;
     }
 
+    if (params.plp != PLP_DISABLE) {
+        report.warning(u"DVT-T2 PLP selection disabled on Windows");
+    }
+
     // Pending questions:
     // - Shall we call loc->put_OtherFrequencyInUse ? Documented as
     //   "specifies whether the frequency is being used by another

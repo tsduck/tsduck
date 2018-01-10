@@ -483,6 +483,9 @@ ts::ErrorCode ts::Tuner::getCurrentTuningDVBT(TunerParametersDVBT& params)
     props.add(DTV_TRANSMISSION_MODE);
     props.add(DTV_GUARD_INTERVAL);
     props.add(DTV_HIERARCHY);
+#if defined(DTV_STREAM_ID)
+    props.add(DTV_STREAM_ID);
+#endif
 
     if (::ioctl(_frontend_fd, FE_GET_PROPERTY, props.getIoctlParam()) < 0) {
         return LastErrorCode();
@@ -497,6 +500,9 @@ ts::ErrorCode ts::Tuner::getCurrentTuningDVBT(TunerParametersDVBT& params)
     params.transmission_mode = TransmissionMode(props.getByCommand(DTV_TRANSMISSION_MODE));
     params.guard_interval = GuardInterval(props.getByCommand(DTV_GUARD_INTERVAL));
     params.hierarchy = Hierarchy(props.getByCommand(DTV_HIERARCHY));
+#if defined(DTV_STREAM_ID)
+    params.plp = PLP(props.getByCommand(DTV_STREAM_ID));
+#endif
 
     return SYS_SUCCESS;
 }
@@ -830,6 +836,13 @@ bool ts::Tuner::tuneDVBT(const TunerParametersDVBT& params, Report& report)
     props.add(DTV_TRANSMISSION_MODE, uint32_t(params.transmission_mode));
     props.add(DTV_GUARD_INTERVAL, uint32_t(params.guard_interval));
     props.add(DTV_HIERARCHY, uint32_t(params.hierarchy));
+    if (params.plp != PLP_DISABLE) {
+#if defined(DTV_STREAM_ID)
+        props.add(DTV_STREAM_ID, uint32_t(params.plp));
+#else
+        report.warning(u"DVT-T2 PLP selection disabled on this version of Linux");
+#endif
+    }
     props.add(DTV_TUNE);
 
     return tune(props, report);
@@ -1494,6 +1507,9 @@ std::ostream& ts::Tuner::displayStatus(std::ostream& strm, const ts::UString& ma
         Display(strm, margin, u"Transmission mode", TransmissionModeEnum.name(params_dvbt->transmission_mode) , u"");
         Display(strm, margin, u"Guard interval", GuardIntervalEnum.name(params_dvbt->guard_interval) , u"");
         Display(strm, margin, u"Hierarchy", HierarchyEnum.name(params_dvbt->hierarchy) , u"");
+        if (params_dvbt->plp != PLP_DISABLE) {
+            Display(strm, margin, u"PLP", UString::Decimal(uint32_t(params_dvbt->plp)) , u"");
+        }
     }
     if (params_atsc != 0) {
         Display(strm, margin, u"Spectral inversion", SpectralInversionEnum.name(params_atsc->inversion), u"");

@@ -82,6 +82,7 @@ namespace ts {
         Variable<DeliverySystem>    delivery_system;    //!< Delivery system (DS_DVB_*).
         Variable<Pilot>             pilots;             //!< Presence of pilots (DVB-S2 only).
         Variable<RollOff>           roll_off;           //!< Roll-off factor (DVB-S2 only).
+        Variable<PLP>               plp;                //!< PLP identification (DVB-T2 only).
 
         //!
         //! Default constructor.

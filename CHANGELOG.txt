@@ -8,6 +8,9 @@ Version 3.6
   the way log messages are dropped or displayed in case a vast amount of log
   messages are produced in a short period of time.
 
+- Added option --plp to tsscan and plugin dvb. Used to select the DVB-T2 PLP.
+  This option is unsupported on Windows.
+
 - The help text of all TSDuck applications (using option --help) is now paged
   through "less" or any any other pager application.
 

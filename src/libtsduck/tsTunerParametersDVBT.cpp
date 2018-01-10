@@ -53,16 +53,17 @@ const ts::Hierarchy ts::TunerParametersDVBT::DEFAULT_HIERARCHY;
 //----------------------------------------------------------------------------
 
 ts::TunerParametersDVBT::TunerParametersDVBT() :
-    TunerParameters (DVB_T),
-    frequency (0),
-    inversion (DEFAULT_INVERSION),
-    bandwidth (DEFAULT_BANDWIDTH),
-    fec_hp (DEFAULT_FEC_HP),
-    fec_lp (DEFAULT_FEC_LP),
-    modulation (DEFAULT_MODULATION),
-    transmission_mode (DEFAULT_TRANSMISSION_MODE),
-    guard_interval (DEFAULT_GUARD_INTERVAL),
-    hierarchy (DEFAULT_HIERARCHY)
+    TunerParameters(DVB_T),
+    frequency(0),
+    inversion(DEFAULT_INVERSION),
+    bandwidth(DEFAULT_BANDWIDTH),
+    fec_hp(DEFAULT_FEC_HP),
+    fec_lp(DEFAULT_FEC_LP),
+    modulation(DEFAULT_MODULATION),
+    transmission_mode(DEFAULT_TRANSMISSION_MODE),
+    guard_interval(DEFAULT_GUARD_INTERVAL),
+    hierarchy(DEFAULT_HIERARCHY),
+    plp(DEFAULT_PLP)
 {
 }
 
@@ -87,6 +88,7 @@ void ts::TunerParametersDVBT::copy(const TunerParameters& obj)
         this->transmission_mode = other->transmission_mode;
         this->guard_interval = other->guard_interval;
         this->hierarchy = other->hierarchy;
+        this->plp = other->plp;
     }
 }
 
@@ -221,6 +223,7 @@ bool ts::TunerParametersDVBT::fromZapFormat(const UString& zap)
     transmission_mode = TransmissionMode(trans);
     guard_interval = GuardInterval(guard);
     hierarchy = Hierarchy(hier);
+    plp = PLP_DISABLE;
 
     return true;
 }
@@ -232,15 +235,30 @@ bool ts::TunerParametersDVBT::fromZapFormat(const UString& zap)
 
 ts::UString ts::TunerParametersDVBT::toPluginOptions(bool no_local) const
 {
-    return UString::Format(u"--frequency %d", {frequency}) +
-        u" --spectral-inversion " + SpectralInversionEnum.name (inversion) +
-        u" --modulation " + ModulationEnum.name (modulation) +
-        u" --high-priority-fec " + InnerFECEnum.name (fec_hp) +
-        u" --low-priority-fec " + InnerFECEnum.name (fec_lp) +
-        u" --bandwidth " + BandWidthEnum.name (bandwidth) +
-        u" --transmission-mode " + TransmissionModeEnum.name (transmission_mode) +
-        u" --guard-interval " + GuardIntervalEnum.name (guard_interval) +
-        u" --hierarchy " + HierarchyEnum.name (hierarchy);
+    UString opt(UString::Format(
+        u"--frequency %'d"
+        u" --spectral-inversion %s"
+        u" --modulation %s"
+        u" --high-priority-fec %s"
+        u" --low-priority-fec %s"
+        u" --bandwidth %s"
+        u" --transmission-mode %s"
+        u" --guard-interval %s"
+        u" --hierarchy %s", {
+        frequency,
+        SpectralInversionEnum.name(inversion),
+        ModulationEnum.name(modulation),
+        InnerFECEnum.name(fec_hp),
+        InnerFECEnum.name(fec_lp),
+        BandWidthEnum.name(bandwidth),
+        TransmissionModeEnum.name(transmission_mode),
+        GuardIntervalEnum.name(guard_interval),
+        HierarchyEnum.name(hierarchy)}));
+
+    if (plp != PLP_DISABLE) {
+        opt += UString::Format(u" --plp %d", {plp});
+    }
+    return opt;
 }
 
 
@@ -278,6 +296,9 @@ ts::UString ts::TunerParametersDVBT::shortDescription(int strength, int quality)
         desc += u")";
     }
 
+    if (plp != PLP_DISABLE) {
+        desc += UString::Format(u", PLP %d", {plp});
+    }
     if (strength >= 0) {
         desc += UString::Format(u", strength: %d%%", {strength});
     }
@@ -345,6 +366,7 @@ bool ts::TunerParametersDVBT::fromArgs(const TunerArgs& tuner, Report& report)
     transmission_mode = tuner.transmission_mode.set() ? tuner.transmission_mode.value() : DEFAULT_TRANSMISSION_MODE;
     guard_interval = tuner.guard_interval.set() ? tuner.guard_interval.value() : DEFAULT_GUARD_INTERVAL;
     hierarchy = tuner.hierarchy.set() ? tuner.hierarchy.value() : DEFAULT_HIERARCHY;
+    plp = tuner.plp.set() ? tuner.plp.value() : DEFAULT_PLP;
 
     return true;
 }

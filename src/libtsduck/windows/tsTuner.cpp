@@ -438,7 +438,7 @@ bool ts::Tuner::getCurrentTuning(TunerParameters& params, bool reset_unknown, Re
             if (reset_unknown) {
                 tpp->frequency = 0;
             }
-            // Spectral inver   sion
+            // Spectral inversion
             ::SpectralInversion spinv = ::BDA_SPECTRAL_INVERSION_NOT_SET;
             SEARCHPROP(found, spinv, psFIRST,
                        _demods, get_SpectralInversion, ::SpectralInversion,
@@ -470,6 +470,7 @@ bool ts::Tuner::getCurrentTuning(TunerParameters& params, bool reset_unknown, Re
             tpp->bandwidth = BW_AUTO;
             tpp->hierarchy = HIERARCHY_AUTO;
             tpp->fec_lp = FEC_AUTO;
+            tpp->plp = PLP_DISABLE;
             break;
         }
 

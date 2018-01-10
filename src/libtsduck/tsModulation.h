@@ -505,6 +505,16 @@ namespace ts {
     TSDUCKDLL extern const Enumeration HierarchyEnum;
 
     //!
+    //! Representation of a Physical Layer Pipe (PLP) id (DVB-T2).
+    //!
+    //! For DVB-T2, the valid range of PLP ids is 0 to 255.
+    //! The special value PLP_DISABLE is used to disable PLP selection.
+    //!
+    enum PLP : uint32_t {
+        PLP_DISABLE = 0xFFFFFFFF //!< Special value meaning "disable PLP selection".
+    };
+
+    //!
     //! UHF (Ultra High Frequecy) band.
     //!
     //! UHF channels in MHz: frequency = 306 + 8 * channel.
