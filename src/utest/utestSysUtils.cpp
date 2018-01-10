@@ -665,6 +665,7 @@ void SysUtilsTest::testSysInfo()
                  << "    isFedora = " << ts::UString::TrueFalse(ts::SysInfo::Instance()->isFedora()) << std::endl
                  << "    isRedHat = " << ts::UString::TrueFalse(ts::SysInfo::Instance()->isRedHat()) << std::endl
                  << "    isUbuntu = " << ts::UString::TrueFalse(ts::SysInfo::Instance()->isUbuntu()) << std::endl
+                 << "    isDebian = " << ts::UString::TrueFalse(ts::SysInfo::Instance()->isDebian()) << std::endl
                  << "    isMacOS = " << ts::UString::TrueFalse(ts::SysInfo::Instance()->isMacOS()) << std::endl
                  << "    isWindows = " << ts::UString::TrueFalse(ts::SysInfo::Instance()->isWindows()) << std::endl
                  << "    isIntel32 = " << ts::UString::TrueFalse(ts::SysInfo::Instance()->isIntel32()) << std::endl
