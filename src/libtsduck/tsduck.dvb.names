@@ -775,6 +775,10 @@ Bits = 8
 0x1B = AVC video
 0x24 = HEVC video
 0x25 = HEVC temporal video subset of an HEVC video stream
+0x28 = HEVC enhancement sub-partition, TemporalId 0 of HEVC Annex G
+0x29 = HEVC temporal enhancement sub-partition of HEVC stream Annex G
+0x2A = HEVC enhancement sub-partition, TemporalId 0 of HEVC Annex H
+0x2B = HEVC temporal enhancement sub-partition of HEVC stream Annex H
 0x7F = IPMP
 # ATSC values
 0x81 = ATSC AC-3 Audio

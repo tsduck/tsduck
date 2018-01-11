@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ImportGroup Label="PropertySheets">
     <Import Project="msvc-common-begin.props" />
@@ -131,6 +131,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsGuardCondition.h" />
     <ClInclude Include="..\..\src\libtsduck\tsHash.h" />
     <ClInclude Include="..\..\src\libtsduck\tsHDSimulcastLogicalChannelDescriptor.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsHEVCVideoDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsInputRedirector.h" />
     <ClInclude Include="..\..\src\libtsduck\tsIntegerUtils.h" />
     <ClInclude Include="..\..\src\libtsduck\tsIntegerUtilsTemplate.h" />
@@ -413,6 +414,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsGuard.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsGuardCondition.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsHDSimulcastLogicalChannelDescriptor.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsHEVCVideoDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsInputRedirector.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsIntegerUtils.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsIPAddress.cpp" />

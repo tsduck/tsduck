@@ -129,6 +129,7 @@
 #include "tsGuard.h"
 #include "tsGuardCondition.h"
 #include "tsHDSimulcastLogicalChannelDescriptor.h"
+#include "tsHEVCVideoDescriptor.h"
 #include "tsHash.h"
 #include "tsIPAddress.h"
 #include "tsIPUtils.h"
