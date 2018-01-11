@@ -71,6 +71,7 @@
 #include "tsEutelsatChannelNumberDescriptor.h"
 #include "tsExtendedEventDescriptor.h"
 #include "tsHDSimulcastLogicalChannelDescriptor.h"
+#include "tsHEVCVideoDescriptor.h"
 #include "tsISO639LanguageDescriptor.h"
 #include "tsLinkageDescriptor.h"
 #include "tsLocalTimeOffsetDescriptor.h"
