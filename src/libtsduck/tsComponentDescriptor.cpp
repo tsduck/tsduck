@@ -54,10 +54,7 @@ void ts::ComponentDescriptor::DisplayDescriptor(TablesDisplay& display, DID did,
     const std::string margin(indent, ' ');
 
     if (size >= 6) {
-        uint16_t type = GetUInt16(data);
-        // We must exchange stream_content_ext and stream_content to get the name.
-        // See comment in tsduck.dvb.names, section [ComponentType]
-        type = ((type & 0xF000) >> 4) | ((type & 0x0F00) << 4) | (type & 0x00FF);
+        const uint16_t type = GetUInt16(data);
         const uint8_t tag = data[2];
         strm << margin << "Content/type: " << names::ComponentType(type, names::FIRST) << std::endl
              << margin << UString::Format(u"Component tag: %d (0x%X)", {tag, tag}) << std::endl

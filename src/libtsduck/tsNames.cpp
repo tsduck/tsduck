@@ -207,19 +207,43 @@ ts::UString ts::names::T2MIPacketType(uint8_t type, Flags flags)
 
 //----------------------------------------------------------------------------
 // Component Type (in Component Descriptor)
-// Combination of stream_content (4 bits) and component_type (8 bits)
 //----------------------------------------------------------------------------
 
 ts::UString ts::names::ComponentType(uint16_t type, Flags flags)
 {
-    if ((type & 0xFF00) == 0x3F00) {
-        return SubtitlingType(type & 0x00FF, flags);
+    // There is a special case here. The binary layout of the 16 bits are:
+    //   stream_content_ext (4 bits)
+    //   stream_content (4 bits)
+    //   component_type (8 bits).
+    //
+    // In the beginning, stream_content_ext did not exist and, as a reserved
+    // field, was 0xF. Starting with stream_content > 8, stream_content_ext
+    // appeared and may have different values. Logically, stream_content_ext
+    // is a subsection of stream_content. So, the bit order for values in the
+    // name file is stream_content || stream_content_ext || component_type.
+    //
+    // We apply the following transformations:
+    // - The lookup the name, we use stream_content || stream_content_ext || component_type.
+    // - To display the value, we use the real binary value where stream_content_ext
+    //   is forced to zero when stream_content is in the range 1 to 8.
+
+    // Stream content:
+    const uint16_t sc = (type & 0x0F00) >> 8;
+
+    // Value to use for name lookup:
+    const uint16_t nType = (sc >= 1 && sc <= 8 ? 0x0F00 : ((type & 0xF000) >> 4)) | ((type & 0x0F00) << 4) | (type & 0x00FF);
+
+    // Value to display:
+    const uint16_t dType = sc >= 1 && sc <= 8 ? (type & 0x0FFF) : type;
+
+    if ((nType & 0xFF00) == 0x3F00) {
+        return SubtitlingType(nType & 0x00FF, flags);
     }
-    else if ((type & 0xFF00) == 0x4F00) {
-        return AC3ComponentType(type & 0x00FF, flags);
+    else if ((nType & 0xFF00) == 0x4F00) {
+        return AC3ComponentType(nType & 0x00FF, flags);
     }
     else {
-        return NamesDVB::Instance().nameFromSection(u"ComponentType", Names::Value(type), flags, 16);
+        return NamesDVB::Instance().nameFromSection(u"ComponentType", Names::Value(nType), flags | names::ALTERNATE, 16, dType);
     }
 }
 
@@ -521,11 +545,16 @@ ts::Names::Value ts::Names::DisplayMask(size_t bits)
 // Format a name.
 //----------------------------------------------------------------------------
 
-ts::UString ts::Names::Formatted(Value value, const UString& name, names::Flags flags, size_t bits)
+ts::UString ts::Names::Formatted(Value value, const UString& name, names::Flags flags, size_t bits, Value alternateValue)
 {
     // If neither decimal nor hexa are specified, hexa is the default.
     if ((flags & (names::DECIMAL | names::HEXA)) == 0) {
         flags |= names::HEXA;
+    }
+
+    // Actual value to display.
+    if ((flags & names::ALTERNATE) != 0) {
+        value = alternateValue;
     }
 
     // Display meaningful bits only.
@@ -561,7 +590,7 @@ ts::UString ts::Names::Formatted(Value value, const UString& name, names::Flags 
 // Get a name from a specified section.
 //----------------------------------------------------------------------------
 
-ts::UString ts::Names::nameFromSection(const UString& sectionName, Value value, names::Flags flags, size_t bits) const
+ts::UString ts::Names::nameFromSection(const UString& sectionName, Value value, names::Flags flags, size_t bits, Value alternateValue) const
 {
     // Get the section, normalize the section name.
     ConfigSectionMap::const_iterator it = _sections.find(sectionName.toTrimmed().toLower());
@@ -569,10 +598,10 @@ ts::UString ts::Names::nameFromSection(const UString& sectionName, Value value, 
 
     if (section == 0) {
         // Non-existent section, no name.
-        return Formatted(value, UString(), flags, bits);
+        return Formatted(value, UString(), flags, bits, alternateValue);
     }
     else {
-        return Formatted(value, section->getName(value), flags, bits != 0 ? bits : section->bits);
+        return Formatted(value, section->getName(value), flags, bits != 0 ? bits : section->bits, alternateValue);
     }
 }
 
@@ -581,7 +610,7 @@ ts::UString ts::Names::nameFromSection(const UString& sectionName, Value value, 
 // Get a name from a specified section, with alternate fallback value.
 //----------------------------------------------------------------------------
 
-ts::UString ts::Names::nameFromSectionWithFallback(const UString& sectionName, Value value1, Value value2, names::Flags flags, size_t bits) const
+ts::UString ts::Names::nameFromSectionWithFallback(const UString& sectionName, Value value1, Value value2, names::Flags flags, size_t bits, Value alternateValue) const
 {
     // Get the section, normalize the section name.
     ConfigSectionMap::const_iterator it = _sections.find(sectionName.toTrimmed().toLower());
@@ -589,17 +618,17 @@ ts::UString ts::Names::nameFromSectionWithFallback(const UString& sectionName, V
 
     if (section == 0) {
         // Non-existent section, no name.
-        return Formatted(value1, UString(), flags, bits);
+        return Formatted(value1, UString(), flags, bits, alternateValue);
     }
     else {
         const UString name(section->getName(value1));
         if (!name.empty()) {
             // value1 has a name
-            return Formatted(value1, name, flags, bits != 0 ? bits : section->bits);
+            return Formatted(value1, name, flags, bits != 0 ? bits : section->bits, alternateValue);
         }
         else {
             // value1 has no name, use value2.
-            return Formatted(value2, section->getName(value2), flags, bits != 0 ? bits : section->bits);
+            return Formatted(value2, section->getName(value2), flags, bits != 0 ? bits : section->bits, alternateValue);
         }
     }
 }
