@@ -652,6 +652,10 @@
 #undef DeleteFile
 #endif
 
+#if defined(ALTERNATE)
+#undef ALTERNATE
+#endif
+
 // For platforms not supporting large files:
 
 #if !defined(TS_WINDOWS) && !defined(O_LARGEFILE) && !defined(DOXYGEN)
