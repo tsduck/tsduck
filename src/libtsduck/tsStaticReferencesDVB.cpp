@@ -93,6 +93,7 @@ ts::StaticReferencesDVB::StaticReferencesDVB() :
     REF(ts::EutelsatChannelNumberDescriptor);
     REF(ts::ExtendedEventDescriptor);
     REF(ts::HDSimulcastLogicalChannelDescriptor);
+    REF(ts::HEVCVideoDescriptor);
     REF(ts::ISO639LanguageDescriptor);
     REF(ts::LinkageDescriptor);
     REF(ts::LocalTimeOffsetDescriptor);

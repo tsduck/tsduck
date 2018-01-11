@@ -69,15 +69,7 @@ ts::AVCVideoDescriptor::AVCVideoDescriptor() :
 //----------------------------------------------------------------------------
 
 ts::AVCVideoDescriptor::AVCVideoDescriptor(const Descriptor& desc, const DVBCharset* charset) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
-    profile_idc(0),
-    constraint_set0(false),
-    constraint_set1(false),
-    constraint_set2(false),
-    AVC_compatible_flags(0),
-    level_idc(0),
-    AVC_still_present(false),
-    AVC_24_hour_picture(false)
+    AVCVideoDescriptor()
 {
     deserialize(desc, charset);
 }

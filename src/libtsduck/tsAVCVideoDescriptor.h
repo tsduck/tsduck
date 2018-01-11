@@ -55,7 +55,7 @@ namespace ts {
         uint8_t AVC_compatible_flags;  //!< Same as AVC concept.
         uint8_t level_idc;             //!< Same as AVC concept.
         bool    AVC_still_present;     //!< May contain still pictures.
-        bool    AVC_24_hour_picture;   //!< May contain 25-hour pictures.
+        bool    AVC_24_hour_picture;   //!< May contain 24-hour pictures.
 
         //!
         //! Default constructor.
