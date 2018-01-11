@@ -66,6 +66,8 @@ TSDUCK_SOURCE;
 #include "tables/psi_tdt_tnt_sections.h"
 #include "tables/psi_tot_tnt_packets.h"
 #include "tables/psi_tot_tnt_sections.h"
+#include "tables/psi_pmt_hevc_packets.h"
+#include "tables/psi_pmt_hevc_sections.h"
 
 
 //----------------------------------------------------------------------------
@@ -88,6 +90,7 @@ public:
     void testBATCanalPlus();
     void testTDT();
     void testTOT();
+    void testHEVC();
 
     CPPUNIT_TEST_SUITE(DemuxTest);
     CPPUNIT_TEST(testPAT);
@@ -100,6 +103,7 @@ public:
     CPPUNIT_TEST(testBATCanalPlus);
     CPPUNIT_TEST(testTDT);
     CPPUNIT_TEST(testTOT);
+    CPPUNIT_TEST(testHEVC);
     CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -246,8 +250,7 @@ void DemuxTest::testTable(const char* name, const uint8_t* ref_packets, size_t r
     ts::BinaryTable table2;
 
     switch (table1.tableId()) {
-        case ts::TID_PAT:
-        { // TNT R4
+        case ts::TID_PAT: { // TNT R4
             ts::PAT pat(table1);
             CPPUNIT_ASSERT(pat.ts_id == 0x0004);
             CPPUNIT_ASSERT(pat.nit_pid == 0x0010);
@@ -256,30 +259,45 @@ void DemuxTest::testTable(const char* name, const uint8_t* ref_packets, size_t r
             pat.serialize(table2);
             break;
         }
-        case ts::TID_CAT:
-        { // TNT R3 or R6
+        case ts::TID_CAT: { // TNT R3 or R6
             ts::CAT cat(table1);
             CPPUNIT_ASSERT(cat.descs.count() == 1 || cat.descs.count() == 2);
             cat.serialize(table2);
             break;
         }
-        case ts::TID_PMT:
-        { // Planete (TNT R3)
+        case ts::TID_PMT: { // Planete (TNT R3) or HEVC
             ts::PMT pmt(table1);
-            CPPUNIT_ASSERT(pmt.service_id == 0x0304);
-            CPPUNIT_ASSERT(pmt.pcr_pid == 0x00A3);
-            CPPUNIT_ASSERT(pmt.descs.count() == 1);
-            CPPUNIT_ASSERT(pmt.descs[0]->tag() == ts::DID_CA);
-            CPPUNIT_ASSERT(pmt.streams.size() == 2);
-            CPPUNIT_ASSERT(pmt.streams[0x00A3].stream_type == 0x1B);
-            CPPUNIT_ASSERT(pmt.streams[0x00A3].descs.count() == 3);
-            CPPUNIT_ASSERT(pmt.streams[0x005C].stream_type == 0x04);
-            CPPUNIT_ASSERT(pmt.streams[0x005C].descs.count() == 3);
+            switch (pmt.service_id) {
+                case 0x0304: { // Planete
+                    CPPUNIT_ASSERT(pmt.pcr_pid == 0x00A3);
+                    CPPUNIT_ASSERT(pmt.descs.count() == 1);
+                    CPPUNIT_ASSERT(pmt.descs[0]->tag() == ts::DID_CA);
+                    CPPUNIT_ASSERT(pmt.streams.size() == 2);
+                    CPPUNIT_ASSERT(pmt.streams[0x00A3].stream_type == 0x1B);
+                    CPPUNIT_ASSERT(pmt.streams[0x00A3].descs.count() == 3);
+                    CPPUNIT_ASSERT(pmt.streams[0x005C].stream_type == 0x04);
+                    CPPUNIT_ASSERT(pmt.streams[0x005C].descs.count() == 3);
+                    break;
+                }
+                case 0x11FB: { // HEVC
+                    CPPUNIT_ASSERT(pmt.pcr_pid == 0x01C9);
+                    CPPUNIT_ASSERT(pmt.descs.count() == 0);
+                    CPPUNIT_ASSERT(pmt.streams.size() == 2);
+                    CPPUNIT_ASSERT(pmt.streams[0x01C9].stream_type == 0x24);
+                    CPPUNIT_ASSERT(pmt.streams[0x01C9].descs.count() == 1);
+                    CPPUNIT_ASSERT(pmt.streams[0x01C9].descs[0]->tag() == ts::DID_HEVC_VIDEO);
+                    CPPUNIT_ASSERT(pmt.streams[0x01CA].stream_type == 0x0F);
+                    CPPUNIT_ASSERT(pmt.streams[0x01CA].descs.count() == 2);
+                    break;
+                }
+                default: {
+                    CPPUNIT_FAIL("unexpected service id");
+                }
+            }
             pmt.serialize(table2);
             break;
         }
-        case ts::TID_SDT_ACT:
-        { // TNT R3
+        case ts::TID_SDT_ACT: { // TNT R3
             ts::SDT sdt(table1);
             CPPUNIT_ASSERT(sdt.ts_id == 0x0003);
             CPPUNIT_ASSERT(sdt.onetw_id == 0x20FA);
@@ -296,8 +314,7 @@ void DemuxTest::testTable(const char* name, const uint8_t* ref_packets, size_t r
             sdt.serialize(table2);
             break;
         }
-        case ts::TID_NIT_ACT:
-        { // TNT v23
+        case ts::TID_NIT_ACT: { // TNT v23
             ts::NIT nit(table1);
             CPPUNIT_ASSERT(nit.network_id == 0x20FA);
             CPPUNIT_ASSERT(nit.descs.count() == 8);
@@ -311,12 +328,10 @@ void DemuxTest::testTable(const char* name, const uint8_t* ref_packets, size_t r
             nit.serialize(table2);
             break;
         }
-        case ts::TID_BAT:
-        { // Tv Numeric or Canal+ TNT
+        case ts::TID_BAT: { // Tv Numeric or Canal+ TNT
             ts::BAT bat(table1);
             switch (bat.bouquet_id) {
-                case 0x0086:
-                { // Tv Numeric
+                case 0x0086: { // Tv Numeric
                     CPPUNIT_ASSERT(bat.descs.count() == 5);
                     CPPUNIT_ASSERT(bat.descs[0]->tag() == ts::DID_BOUQUET_NAME);
                     CPPUNIT_ASSERT(bat.descs[4]->tag() == ts::DID_LW_SUBSCRIPTION);
@@ -326,8 +341,7 @@ void DemuxTest::testTable(const char* name, const uint8_t* ref_packets, size_t r
                     CPPUNIT_ASSERT(bat.transports[id][0]->tag() == ts::DID_SERVICE_LIST);
                     break;
                 }
-                case 0xC003:
-                { // Canal+ TNT
+                case 0xC003: { // Canal+ TNT
                     CPPUNIT_ASSERT(bat.descs.count() == 4);
                     CPPUNIT_ASSERT(bat.descs[0]->tag() == ts::DID_BOUQUET_NAME);
                     CPPUNIT_ASSERT(bat.descs[1]->tag() == ts::DID_LINKAGE);
@@ -337,23 +351,20 @@ void DemuxTest::testTable(const char* name, const uint8_t* ref_packets, size_t r
                     CPPUNIT_ASSERT(bat.transports[id][0]->tag() == ts::DID_SERVICE_LIST);
                     break;
                 }
-                default:
-                {
+                default: {
                     CPPUNIT_FAIL("unexpected bouquet id");
                 }
             }
             bat.serialize(table2);
             break;
         }
-        case ts::TID_TDT:
-        { // TNT
+        case ts::TID_TDT: { // TNT
             ts::TDT tdt(table1);
             CPPUNIT_ASSERT(tdt.utc_time == ts::Time(2007, 11, 23, 13, 25, 03));
             tdt.serialize(table2);
             break;
         }
-        case ts::TID_TOT:
-        { // TNT
+        case ts::TID_TOT: { // TNT
             ts::TOT tot(table1);
             CPPUNIT_ASSERT(tot.utc_time == ts::Time(2007, 11, 23, 13, 25, 14));
             CPPUNIT_ASSERT(tot.regions.size() == 1);
@@ -366,8 +377,7 @@ void DemuxTest::testTable(const char* name, const uint8_t* ref_packets, size_t r
             tot.serialize(table2);
             break;
         }
-        default:
-        {
+        default: {
             CPPUNIT_FAIL("unexpected table id");
         }
     }
@@ -418,72 +428,61 @@ void DemuxTest::testTable(const char* name, const uint8_t* ref_packets, size_t r
     CPPUNIT_ASSERT(table2 == table3);
 }
 
+#define TEST_TABLE(title,name) testTable(title, \
+         psi_##name##_packets, sizeof(psi_##name##_packets), \
+         psi_##name##_sections, sizeof(psi_##name##_sections));
+
 void DemuxTest::testPAT()
 {
-    testTable("PAT: TNT R4",
-         psi_pat_r4_packets, sizeof(psi_pat_r4_packets),
-         psi_pat_r4_sections, sizeof(psi_pat_r4_sections));
+    TEST_TABLE("PAT: TNT R4", pat_r4);
 }
 
 void DemuxTest::testCATR3()
 {
-    testTable("CAT: TNT R3",
-         psi_cat_r3_packets, sizeof(psi_cat_r3_packets),
-         psi_cat_r3_sections, sizeof(psi_cat_r3_sections));
+    TEST_TABLE("CAT: TNT R3", cat_r3);
 }
 
 void DemuxTest::testCATR6()
 {
-    testTable("CAT: TNT R6",
-         psi_cat_r6_packets, sizeof(psi_cat_r6_packets),
-         psi_cat_r6_sections, sizeof(psi_cat_r6_sections));
+    TEST_TABLE("CAT: TNT R6", cat_r6);
 }
 
 void DemuxTest::testPMT()
 {
-    testTable("PMT: Planete (TNT R3)",
-         psi_pmt_planete_packets, sizeof(psi_pmt_planete_packets),
-         psi_pmt_planete_sections, sizeof(psi_pmt_planete_sections));
+    TEST_TABLE("PMT: Planete (TNT R3)", pmt_planete);
 }
 
 void DemuxTest::testSDT()
 {
-    testTable("SDT: TNT R3",
-         psi_sdt_r3_packets, sizeof(psi_sdt_r3_packets),
-         psi_sdt_r3_sections, sizeof(psi_sdt_r3_sections));
+    TEST_TABLE("SDT: TNT R3", sdt_r3);
 }
 
 void DemuxTest::testNIT()
 {
-    testTable("NIT: TNT v23",
-         psi_nit_tntv23_packets, sizeof(psi_nit_tntv23_packets),
-         psi_nit_tntv23_sections, sizeof(psi_nit_tntv23_sections));
+    TEST_TABLE("NIT: TNT v23", nit_tntv23);
 }
 
 void DemuxTest::testBATTvNumeric()
 {
-    testTable("BAT: Tv Numeric",
-         psi_bat_tvnum_packets, sizeof(psi_bat_tvnum_packets),
-         psi_bat_tvnum_sections, sizeof(psi_bat_tvnum_sections));
+    TEST_TABLE("BAT: Tv Numeric", bat_tvnum);
 }
 
 void DemuxTest::testBATCanalPlus()
 {
-    testTable("BAT: Canal+ TNT",
-         psi_bat_cplus_packets, sizeof(psi_bat_cplus_packets),
-         psi_bat_cplus_sections, sizeof(psi_bat_cplus_sections));
+    TEST_TABLE("BAT: Canal+ TNT", bat_cplus);
 }
 
 void DemuxTest::testTDT()
 {
-    testTable("TDT: TNT",
-         psi_tdt_tnt_packets, sizeof(psi_tdt_tnt_packets),
-         psi_tdt_tnt_sections, sizeof(psi_tdt_tnt_sections));
+    TEST_TABLE("TDT: TNT", tdt_tnt);
 }
 
 void DemuxTest::testTOT()
 {
-    testTable("TOT: TNT",
-         psi_tot_tnt_packets, sizeof(psi_tot_tnt_packets),
-         psi_tot_tnt_sections, sizeof(psi_tot_tnt_sections));
+    TEST_TABLE("TOT: TNT", tot_tnt);
+}
+
+void DemuxTest::testHEVC()
+{
+    TEST_TABLE("PMT with HEVC descriptor", pmt_hevc);
 }

@@ -512,7 +512,7 @@ namespace ts {
         ST_MDATA_DLOAD   = 0x19, //!< MPEG-7 MetaData in DSM-CC Sync Downl Proto
         ST_MPEG2_IPMP    = 0x1A, //!< MPEG-2 IPMP stream
         ST_AVC_VIDEO     = 0x1B, //!< AVC video
-        ST_HEVC_VIDEO    = 0x24,  //!< HEVC video
+        ST_HEVC_VIDEO    = 0x24, //!< HEVC video
         ST_HEVC_SUBVIDEO = 0x25, //!< HEVC temporal video subset of an HEVC video stream
         ST_IPMP          = 0x7F, //!< IPMP stream
         ST_AC3_AUDIO     = 0x81, //!< AC-3 Audio (ATSC only)

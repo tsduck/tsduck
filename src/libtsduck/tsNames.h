@@ -57,6 +57,7 @@ namespace ts {
             HEXA_FIRST    = FIRST | HEXA,            //! Value in hexadecimal in first position.
             DECIMAL_FIRST = FIRST | DECIMAL,         //! Value in decimal in first position.
             BOTH_FIRST    = FIRST | HEXA | DECIMAL,  //! Value in decimal and hexadecimal in first position.
+            ALTERNATE     = 0x0010,                  //! Display an alternate integer value.
         };
 
         //!
@@ -215,7 +216,7 @@ namespace ts {
         //!
         //! Name of Component Type (in Component Descriptor).
         //! @param [in] ct Component Type (in Component Descriptor).
-        //! Combination of stream_content (4 bits) and component_type (8 bits).
+        //! Combination of stream_content_ext (4 bits), stream_content (4 bits) and component_type (8 bits).
         //! @param [in] flags Presentation flags.
         //! @return The corresponding name.
         //!
@@ -373,9 +374,10 @@ namespace ts {
         //! @param [in] value Value to get the name for.
         //! @param [in] flags Presentation flags.
         //! @param [in] bits Nominal size in bits of the data, optional.
+        //! @param [in] alternateValue Display this integer value if flags ALTERNATE is set.
         //! @return The corresponding name.
         //!
-        UString nameFromSection(const UString& sectionName, Value value, names::Flags flags = names::NAME, size_t bits = 0) const;
+        UString nameFromSection(const UString& sectionName, Value value, names::Flags flags = names::NAME, size_t bits = 0, Value alternateValue = 0) const;
 
         //!
         //! Get a name from a specified section, with alternate fallback value.
@@ -384,9 +386,10 @@ namespace ts {
         //! @param [in] value2 Alternate value if no name is found for @a value1.
         //! @param [in] flags Presentation flags.
         //! @param [in] bits Nominal size in bits of the data, optional.
+        //! @param [in] alternateValue Display this integer value if flags ALTERNATE is set.
         //! @return The corresponding name.
         //!
-        UString nameFromSectionWithFallback(const UString& sectionName, Value value1, Value value2, names::Flags flags = names::NAME, size_t bits = 0) const;
+        UString nameFromSectionWithFallback(const UString& sectionName, Value value1, Value value2, names::Flags flags = names::NAME, size_t bits = 0, Value alternateValue = 0) const;
 
         //!
         //! Format a name using flags.
@@ -394,9 +397,10 @@ namespace ts {
         //! @param [in] name Name for the value.
         //! @param [in] flags Presentation flags.
         //! @param [in] bits Nominal size in bits of the data, optional.
+        //! @param [in] alternateValue Display this integer value if flags ALTERNATE is set.
         //! @return The corresponding name.
         //!
-        static UString Formatted(Value value, const UString& name, names::Flags flags, size_t bits);
+        static UString Formatted(Value value, const UString& name, names::Flags flags, size_t bits, Value alternateValue = 0);
 
     private:
         // Description of a configuration entry.
