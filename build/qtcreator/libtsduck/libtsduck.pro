@@ -126,6 +126,7 @@ HEADERS += \
     ../../../src/libtsduck/tsGuard.h \
     ../../../src/libtsduck/tsGuardCondition.h \
     ../../../src/libtsduck/tsHDSimulcastLogicalChannelDescriptor.h \
+    ../../../src/libtsduck/tsHEVCVideoDescriptor.h \
     ../../../src/libtsduck/tsHash.h \
     ../../../src/libtsduck/tsIPAddress.h \
     ../../../src/libtsduck/tsIPUtils.h \
@@ -397,6 +398,7 @@ SOURCES += \
     ../../../src/libtsduck/tsGuard.cpp \
     ../../../src/libtsduck/tsGuardCondition.cpp \
     ../../../src/libtsduck/tsHDSimulcastLogicalChannelDescriptor.cpp \
+    ../../../src/libtsduck/tsHEVCVideoDescriptor.cpp \
     ../../../src/libtsduck/tsIPAddress.cpp \
     ../../../src/libtsduck/tsIPUtils.cpp \
     ../../../src/libtsduck/tsISO639LanguageDescriptor.cpp \
