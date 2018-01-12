@@ -59,6 +59,10 @@
 #    (executables, shared libraries, etc.) and files for other architectures
 #    are not deleted. Recursively apply to all subdirectories.
 #
+#  cloc:
+#    Run cloc, a tool to count lines of code, on the source tree starting at
+#    the current directory.
+#
 #  cmacros:
 #    Display the predefined macros for the C compiler.
 #
@@ -136,6 +140,18 @@
 #  CFLAGS_STANDARD
 #    C language standard level. Default to -std=c11.
 #    This variable can be defined after inclusion of this makefile.
+#
+#  CLOC
+#    Contains the absolute path of the cloc line count utility.
+#    If empty, cloc is searched in $PATH.
+#
+#  CLOC_FLAGS
+#    Contains additional options for cloc. Typically empty since the
+#    usual options are automatically added in this makefile.
+#
+#  CLOC_SOURCES
+#    List of source files or directories on which to run cloc.
+#    By default, use the source tree starting at current directory.
 #
 #  COVERITY
 #    Contains the absolute path of the Coverity static code analyzer.
@@ -328,6 +344,9 @@
 #  CFLAGS_OPTSIZE
 #    Contains the C/C++ optimization options for minimum code size.
 #    Same usage as CFLAGS_FULLSPEED.
+#
+#  CLOC_FLAGS
+#    Same as input variables with additional usual options.
 #
 #  COMMA
 #    Contains a comma. Use $(COMMA) wherever a plain "," is syntaxtically not
@@ -831,7 +850,8 @@ $(OBJDIR)/%.dep: %.cpp
 	rm -f $@
 
 # Rebuild and include all .dep files, unless the explicit targets do not require the .dep files.
-NODEPS += clean cmacros coverity cppcheck cppcheck-xml cxxmacros debug m32 distclean doxygen flawfinder listvars scan-build unixify
+NODEPS += clean cmacros coverity cppcheck cppcheck-xml cxxmacros debug m32 distclean doxygen \
+          flawfinder cloc listvars scan-build unixify
 ifeq ($(DONT_BUILD_DEPS),)
     ifneq ($(MAKECMDGOALS),)
         DONT_BUILD_DEPS := $(if $(filter-out $(NODEPS),$(MAKECMDGOALS)),,true)
@@ -932,6 +952,16 @@ SCANBUILD_FLAGS += -o $(OBJDIR)
 .PHONY: scan-build
 scan-build:
 	$(SCANBUILD) $(SCANBUILD_FLAGS) $(MAKE) -C $(SCANBUILD_SOURCES)
+
+# Count lines of code: Run cloc on the source code tree starting at current directory.
+CLOC ?= cloc
+CLOC_SOURCES ?= $(CURDIR)
+CLOC_FLAGS += --skip-uniqueness --quiet
+.PHONY: cloc
+cloc:
+	@$(CLOC) $(CLOC_FLAGS) $(CLOC_SOURCES) | \
+	tee /dev/stderr | grep SUM: | awk '{print "Total lines in source files:   " $$3 + $$4 + $$5}'
+	@echo >&2 '-------------------------------------------'
 
 # Utilities: display predefined macros for C and C++
 .PHONY: cmacros cxxmacros
