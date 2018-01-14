@@ -55,11 +55,12 @@ Bits = 8
 0x78 = MPE-FEC
 0x79 = Resolution Provider Notification
 0x7A = MPE-IFEC
-0x7E = DIT
-0x7F = SIT
+0x7E = DIT (Discontinuity Information)
+0x7F = SIT (Selection Information)
 0x80 = ECM (even)
 0x81 = ECM (odd)
 0x82-0x8F = EMM
+0xFC = SCTE 35 Splice Information
 0xFF = Forbidden TID 0xFF
 # CAS-specific values, most significant byte is a CAS family.
 0x0180 = MediaGuard ECM (even)
@@ -389,6 +390,8 @@ Bits = 8
 0x7D = XAIT Location
 0x7E = FTA Content Management
 0x7F = Extension Descriptor
+# ANSI / SCTE defined. Incompatible with DVB (no PDS present).
+0x8A = Cue Identifier (SCTE 35)
 0xFF = Forbidden Descriptor Id 0xFF
 # With PDS for Canal+ / NDS France (MediaHighway).
 0x000000C080 = DTG Stream Indicator/PIO Offset Time (MediaHighway)
@@ -782,6 +785,7 @@ Bits = 8
 0x7F = IPMP
 # ATSC values
 0x81 = ATSC AC-3 Audio
+0x86 = SCTE 35 Splice Info
 0x87 = ATSC Enhanced-AC-3 Audio
 # Canal+ values (no longer displayed by default, need C+ context)
 # 0xBF = C+ Dummy stream

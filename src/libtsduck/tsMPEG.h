@@ -516,6 +516,7 @@ namespace ts {
         ST_HEVC_SUBVIDEO = 0x25, //!< HEVC temporal video subset of an HEVC video stream
         ST_IPMP          = 0x7F, //!< IPMP stream
         ST_AC3_AUDIO     = 0x81, //!< AC-3 Audio (ATSC only)
+        ST_SCTE35_SPLICE = 0x86, //!< SCTE 35 splice information tables
         ST_EAC3_AUDIO    = 0x87, //!< Enhanced-AC-3 Audio (ATSC only)
     };
 
@@ -686,6 +687,10 @@ namespace ts {
         TID_MG_EMM_I      = 0x85, //!< Table id for MediaGuard EMM-I
         TID_MG_EMM_C      = 0x86, //!< Table id for MediaGuard EMM-C
         TID_MG_EMM_CG     = 0x89, //!< Table id for MediaGuard EMM-CG
+
+        // Valid in ATSC / SCTE context:
+
+        TID_SCTE35_SIT    = 0xFC, //!< Table id for SCTE 35 Splice Information Table
     };
 
     const size_t TID_MAX = 0x100; //!< Maximum number of TID values.
@@ -839,13 +844,14 @@ namespace ts {
         DID_FTA_CONTENT_MGMT    = 0x7E, //!< DID for DVB FTA_content_management_descriptor
         DID_EXTENSION           = 0x7F, //!< DID for DVB extension_descriptor
 
-        // Valid in ATSC context:
+        // Valid in ATSC / SCTE context:
 
         DID_ATSC_STUFFING       = 0X80, //!< DID for ATSC stuffing_descriptor
         DID_AC3_AUDIO_STREAM    = 0x81, //!< DID for ATSC ac3_audio_stream_descriptor
         DID_ATSC_PID            = 0x85, //!< DID for ATSC program_identifier_descriptor
         DID_CAPTION             = 0x86, //!< DID for ATSC caption_service_descriptor
         DID_CONTENT_ADVIS       = 0x87, //!< DID for ATSC content_advisory_descriptor
+        DID_CUE_IDENTIFIER      = 0x8A, //!< DID for SCTE 35 cue_identifier_descriptor
         DID_EXT_CHAN_NAME       = 0xA0, //!< DID for ATSC extended_channel_name_descriptor
         DID_SERV_LOCATION       = 0xA1, //!< DID for ATSC service_location_descriptor
         DID_ATSC_TIME_SHIFT     = 0xA2, //!< DID for ATSC time_shifted_event_descriptor
@@ -1155,4 +1161,31 @@ namespace ts {
     //! See ETSI EN 302 765, section 5.1.7.
     //!
     const size_t T2_BBHEADER_SIZE = 10;
+
+    //---------------------------------------------------------------------
+    // ANSI / SCTE 35 (splice information for ads insertion)
+    //---------------------------------------------------------------------
+
+    //!
+    //! Cue stream type values in cue_identifier_descriptor.
+    //!
+    enum : uint8_t {
+        CUE_INSERT_NULL_SCHEDULE = 0x00, //!< Only splice_insert, splice_null, splice_schedule are allowed in this PID.
+        CUE_ALL_COMMANDS         = 0x01, //!< All messages can be used in this PID.
+        CUE_SEGMENTATION         = 0x02, //!< This PID carries the time_signal command and the segmentation descriptor.
+        CUE_TIERED_SPLICING      = 0x03, //!< Tiered Splicing .
+        CUE_TIERED_SEGMENTATION  = 0x04, //!< Tiered Segmentation.
+    };
+
+    //!
+    //! Splaice commands in Splice Information Table.
+    //!
+    enum : uint8_t {
+        SPLICE_NULL                  = 0x00, //!< SpliceNull
+        SPLICE_SCHEDULE              = 0x04, //!< SpliceSchedule
+        SPLICE_INSERT                = 0x05, //!< SpliceInsert
+        SPLICE_TIME_SIGNAL           = 0x06, //!< TimeSignal
+        SPLICE_BANDWIDTH_RESERVATION = 0x07, //!< BandwidthReservation
+        SPLICE_PRIVATE_COMMAND       = 0xFF, //!< PrivateCommand
+    };
 }

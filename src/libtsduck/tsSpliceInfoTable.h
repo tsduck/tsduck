@@ -28,20 +28,29 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Version identification of TSDuck.
+//!  Representation of an SCTE 35 Splice Information Table.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 6
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 469
+#include "tsAbstractTable.h"
+
+namespace ts {
+    //!
+    //! Representation of an SCTE 35 Splice Information Table.
+    //! @see ANSI/SCTE 35, 9.2.
+    //!
+    //! Incomplete implementation, to be completed.
+    //!
+    class TSDUCKDLL SpliceInfoTable
+    {
+    public:
+        //!
+        //! A static method to display a section.
+        //! @param [in,out] display Display engine.
+        //! @param [in] section The section to display.
+        //! @param [in] indent Indentation width.
+        //!
+        static void DisplaySection(TablesDisplay& display, const Section& section, int indent);
+    };
+}
