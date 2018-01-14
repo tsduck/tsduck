@@ -11,6 +11,8 @@ Version 3.6
 - Added option --plp to tsscan and plugin dvb. Used to select the DVB-T2 PLP.
   This option is unsupported on Windows.
 
+- Added options --output-file, --append and --keep to plugin t2mi.
+
 - The help text of all TSDuck applications (using option --help) is now paged
   through "less" or any any other pager application.
 
