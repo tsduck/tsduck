@@ -36,6 +36,7 @@
 #include "tsT2MIDemux.h"
 #include "tsT2MIDescriptor.h"
 #include "tsT2MIPacket.h"
+#include "tsTSFileOutput.h"
 #include "tsNames.h"
 TSDUCK_SOURCE;
 
@@ -56,11 +57,17 @@ namespace ts {
 
     private:
         // Plugin private fields.
+        bool          _abort;           // Error, abort asap.
         bool          _extract;         // Extract encapsulated TS.
+        bool          _replace_ts;      // Replace transferred TS.
         bool          _log;             // Log T2-MI packets.
         PID           _pid;             // PID carrying the T2-MI encapsulation.
         uint8_t       _plp;             // The PLP to extract in _pid.
         bool          _plp_valid;       // False if PLP not yet known.
+        bool          _outfile_append;  // Append file.
+        bool          _outfile_keep;    // Keep existing output file, do not overwrite.
+        UString       _outfile_name;    // Output file name.
+        TSFileOutput  _outfile;         // Output file for extracted stream.
         PacketCounter _t2mi_count;      // Number of input T2-MI packets.
         PacketCounter _ts_count;        // Number of extracted TS packets.
         T2MIDemux     _demux;           // Demux for PSI parsing.
@@ -89,35 +96,60 @@ TSPLUGIN_DECLARE_PROCESSOR(ts::T2MIPlugin)
 ts::T2MIPlugin::T2MIPlugin(TSP* tsp_) :
     ProcessorPlugin(tsp_, u"Extract T2-MI (DVB-T2 Modulator Interface) packets.", u"[options]"),
     T2MIHandlerInterface(),
+    _abort(false),
     _extract(false),
+    _replace_ts(false),
     _log(false),
     _pid(PID_NULL),
     _plp(0),
     _plp_valid(false),
+    _outfile_append(false),
+    _outfile_keep(false),
+    _outfile_name(),
+    _outfile(),
     _t2mi_count(0),
     _ts_count(0),
     _demux(this),
     _ts_queue()
 {
-    option(u"extract", 'e');
-    option(u"log",     'l');
-    option(u"pid",     'p', PIDVAL);
-    option(u"plp",      0,  UINT8);
+    option(u"append",      'a');
+    option(u"extract",     'e');
+    option(u"keep",        'k');
+    option(u"log",         'l');
+    option(u"output-file", 'o', STRING);
+    option(u"pid",         'p', PIDVAL);
+    option(u"plp",          0,  UINT8);
 
     setHelp(u"Options:\n"
+            u"\n"
+            u"  -a\n"
+            u"  --append\n"
+            u"      With --output-file, if the file already exists, append to the end of the\n"
+            u"      file. By default, existing files are overwritten.\n"
             u"\n"
             u"  -e\n"
             u"  --extract\n"
             u"      Extract encapsulated TS packets from one PLP of a T2-MI stream.\n"
-            u"      The transport stream is completely replaced by the extracted stream.\n"
             u"      This is the default if neither --extract nor --log is specified.\n"
+            u"      By default, the transport stream is completely replaced by the extracted\n"
+            u"      stream. See option --output-file.\n"
+            u"\n"
+            u"  --help\n"
+            u"      Display this help text.\n"
+            u"\n"
+            u"  -k\n"
+            u"  --keep\n"
+            u"      With --output-file, keep existing file (abort if the specified file\n"
+            u"      already exists). By default, existing files are overwritten.\n"
             u"\n"
             u"  -l\n"
             u"  --log\n"
             u"      Log all T2-MI packets using one single summary line per packet.\n"
             u"\n"
-            u"  --help\n"
-            u"      Display this help text.\n"
+            u"  -o filename\n"
+            u"  --output-file filename\n"
+            u"      Specify that the extracted stream is saved in this file. In that case,\n"
+            u"      the main transport stream is passed unchanged to the next plugin.\n"
             u"\n"
             u"  -p value\n"
             u"  --pid value\n"
@@ -146,6 +178,10 @@ bool ts::T2MIPlugin::start()
     getIntValue<PID>(_pid, u"pid", PID_NULL);
     getIntValue<uint8_t>(_plp, u"plp");
     _plp_valid = present(u"plp");
+    _outfile_append = present(u"append");
+    _outfile_keep = present(u"keep");
+    getValue(_outfile_name, u"output-file");
+    _replace_ts = _outfile_name.empty();
 
     // Extract is the default operation.
     if (!_extract && !_log) {
@@ -162,7 +198,10 @@ bool ts::T2MIPlugin::start()
     _ts_queue.clear();
     _t2mi_count = 0;
     _ts_count = 0;
-    return true;
+    _abort = false;
+
+    // Open output file if present.
+    return _replace_ts || _outfile.open(_outfile_name, _outfile_append, _outfile_keep, *tsp);
 }
 
 
@@ -175,7 +214,7 @@ bool ts::T2MIPlugin::stop()
     if (_extract) {
         tsp->verbose(u"extracted %'d TS packets from %'d T2-MI packets", {_ts_count, _t2mi_count});
     }
-    return true;
+    return _replace_ts || _outfile.close(*tsp);
 }
 
 
@@ -245,13 +284,18 @@ void ts::T2MIPlugin::handleTSPacket(T2MIDemux& demux, const T2MIPacket& t2mi, co
     // Keep packet from the filtered PLP only.
     if (t2mi.plp() == _plp) {
 
-        // Enqueue the TS packet.
-        _ts_queue.push_back(ts);
-
-        // We do not really care about queue size because an overflow is not possible.
-        // This plugin deletes all input packets and replacez them with demux'ed packets.
-        // And the number of input TS packets is always higher than the number of output
-        // packets because of T2-MI encapsulation and other PID's.
+        if (_replace_ts) {
+            // Enqueue the TS packet for replacement later.
+            // We do not really care about queue size because an overflow is not possible.
+            // This plugin deletes all input packets and replaces them with demux'ed packets.
+            // And the number of input TS packets is always higher than the number of output
+            // packets because of T2-MI encapsulation and other PID's.
+            _ts_queue.push_back(ts);
+        }
+        else {
+            // Write the packet to output file.
+            _abort = _abort || !_outfile.write(&ts, 1, *tsp);
+        }
     }
 }
 
@@ -265,8 +309,11 @@ ts::ProcessorPlugin::Status ts::T2MIPlugin::processPacket(TSPacket& pkt, bool& f
     // Feed the T2-MI demux.
     _demux.feedPacket(pkt);
 
-    if (!_extract) {
-        // Without TS extraction, we simply pass all packets, unchanged.
+    if (_abort) {
+        return TSP_END;
+    }
+    else if (!_extract || !_replace_ts) {
+        // Without TS extraction or replacement, we simply pass all packets, unchanged.
         return TSP_OK;
     }
     else if (_ts_queue.empty()) {
