@@ -81,6 +81,7 @@ HEADERS += \
     ../../../src/libtsduck/tsCondition.h \
     ../../../src/libtsduck/tsContentDescriptor.h \
     ../../../src/libtsduck/tsCountryAvailabilityDescriptor.h \
+    ../../../src/libtsduck/tsCueIdentifierDescriptor.h \
     ../../../src/libtsduck/tsCyclingPacketizer.h \
     ../../../src/libtsduck/tsDES.h \
     ../../../src/libtsduck/tsDTSDescriptor.h \
@@ -180,6 +181,7 @@ HEADERS += \
     ../../../src/libtsduck/tsPollFiles.h \
     ../../../src/libtsduck/tsPrivateDataSpecifierDescriptor.h \
     ../../../src/libtsduck/tsRandomGenerator.h \
+    ../../../src/libtsduck/tsRegistrationDescriptor.h \
     ../../../src/libtsduck/tsRegistry.h \
     ../../../src/libtsduck/tsReportBuffer.h \
     ../../../src/libtsduck/tsReportBufferTemplate.h \
@@ -219,6 +221,7 @@ HEADERS += \
     ../../../src/libtsduck/tsSimulCryptDate.h \
     ../../../src/libtsduck/tsSingletonManager.h \
     ../../../src/libtsduck/tsSocketAddress.h \
+    ../../../src/libtsduck/tsSpliceInfoTable.h \
     ../../../src/libtsduck/tsStandaloneTableDemux.h \
     ../../../src/libtsduck/tsStaticInstance.h \
     ../../../src/libtsduck/tsStaticReferencesDVB.h \
@@ -362,6 +365,7 @@ SOURCES += \
     ../../../src/libtsduck/tsCondition.cpp \
     ../../../src/libtsduck/tsContentDescriptor.cpp \
     ../../../src/libtsduck/tsCountryAvailabilityDescriptor.cpp \
+    ../../../src/libtsduck/tsCueIdentifierDescriptor.cpp \
     ../../../src/libtsduck/tsCyclingPacketizer.cpp \
     ../../../src/libtsduck/tsDES.cpp \
     ../../../src/libtsduck/tsDTSDescriptor.cpp \
@@ -441,6 +445,7 @@ SOURCES += \
     ../../../src/libtsduck/tsPluginSharedLibrary.cpp \
     ../../../src/libtsduck/tsPollFiles.cpp \
     ../../../src/libtsduck/tsPrivateDataSpecifierDescriptor.cpp \
+    ../../../src/libtsduck/tsRegistrationDescriptor.cpp \
     ../../../src/libtsduck/tsRegistry.cpp \
     ../../../src/libtsduck/tsReport.cpp \
     ../../../src/libtsduck/tsReportWithPrefix.cpp \
@@ -467,6 +472,7 @@ SOURCES += \
     ../../../src/libtsduck/tsSimulCryptDate.cpp \
     ../../../src/libtsduck/tsSingletonManager.cpp \
     ../../../src/libtsduck/tsSocketAddress.cpp \
+    ../../../src/libtsduck/tsSpliceInfoTable.cpp \
     ../../../src/libtsduck/tsStandaloneTableDemux.cpp \
     ../../../src/libtsduck/tsStaticReferencesDVB.cpp \
     ../../../src/libtsduck/tsStreamIdentifierDescriptor.cpp \

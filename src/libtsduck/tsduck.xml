@@ -256,6 +256,11 @@
       <country country_code="char3, required"/>
     </country_availability_descriptor>
 
+    <cue_identifier_descriptor
+        cue_stream_type="insert_null_schedule|all|segmentation|tiered_splicing|tiered_segmentation|uint8, required">
+      <!-- Defined by SCTE 35 for use in PMT -->
+    </cue_identifier_descriptor>
+    
     <data_broadcast_descriptor
         data_broadcast_id="uint16, required"
         component_tag="uint8, required"
@@ -400,6 +405,12 @@
 
     <private_data_specifier_descriptor private_data_specifier="uint32|eacem|eutelsat, required"/>
 
+    <registration_descriptor format_identifier="uint32, required">
+      <additional_identification_info>
+        Hexadecimal content (optional element)
+      </additional_identification_info>
+    </registration_descriptor>
+    
     <S2_satellite_delivery_system_descriptor
         backwards_compatibility="bool, required"
         scrambling_sequence_index="uint18, optional"

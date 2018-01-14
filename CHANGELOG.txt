@@ -13,6 +13,10 @@ Version 3.6
 
 - Added options --output-file, --append and --keep to plugin t2mi.
 
+- Added HEVC signalization.
+
+- Added SCTE 35 signalization (splice information for ads insertion).
+
 - The help text of all TSDuck applications (using option --help) is now paged
   through "less" or any any other pager application.
 

@@ -230,7 +230,7 @@ void ts::RST::fromXML(const xml::Element* element)
             children[index]->getIntAttribute<uint16_t>(event.original_network_id, u"original_network_id", true, 0, 0x0000, 0xFFFF) &&
             children[index]->getIntAttribute<uint16_t>(event.service_id, u"service_id", true, 0, 0x0000, 0xFFFF) &&
             children[index]->getIntAttribute<uint16_t>(event.event_id, u"event_id", true, 0, 0x0000, 0xFFFF) &&
-           children[index]->getIntEnumAttribute<uint8_t>(event.running_status,RunningStatusNames, u"running_status", true);
+            children[index]->getIntEnumAttribute<uint8_t>(event.running_status, RunningStatusNames, u"running_status", true);
         if (_is_valid) {
             events.push_back(event);
         }

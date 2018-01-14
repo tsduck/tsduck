@@ -128,7 +128,8 @@ bool ts::IsSectionST (uint8_t st)
         st == ST_DSMCC_UN ||
         st == ST_DSMCC_SECT ||
         st == ST_MPEG4_SECT ||
-        st == ST_MDATA_SECT;
+        st == ST_MDATA_SECT ||
+        st == ST_SCTE35_SPLICE;
 }
 
 

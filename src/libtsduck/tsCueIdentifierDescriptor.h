@@ -28,97 +28,46 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Representation of a linkage_descriptor for SSU.
+//!  Representation of a cue_identifier_descriptor (SCTE 35).
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
 #include "tsAbstractDescriptor.h"
-#include "tsLinkageDescriptor.h"
 
 namespace ts {
     //!
-    //! Representation of a linkage_descriptor for system software update.
-    //! SSU uses linkage type 0x09.
+    //! Representation of a cue_identifier_descriptor (SCTE 35).
+    //! @see ANSI/SCTE 35, 8.2.
     //!
-    class TSDUCKDLL SSULinkageDescriptor : public AbstractDescriptor
+    class TSDUCKDLL CueIdentifierDescriptor : public AbstractDescriptor
     {
     public:
-        //!
-        //! OUI entry.
-        //!
-        struct TSDUCKDLL Entry
-        {
-            // Public members
-            uint32_t  oui;       //!< OUI, 24 bits.
-            ByteBlock selector;  //!< Selector bytes.
-
-            //!
-            //! Constructor.
-            //! @param [in] oui_ OUI, 24 bits.
-            //!
-            Entry(uint32_t oui_ = 0) :
-                oui(oui_),
-                selector()
-            {
-            }
-        };
+        // CueIdentifierDescriptor public members:
+        uint8_t cue_stream_type;   //!< Type of cue messages in the PID.
 
         //!
-        //! List of OUI entries.
+        //! Definition of names for cue stream types.
         //!
-        typedef std::list<Entry> EntryList;
-
-        // SSULinkageDescriptor public members:
-        uint16_t  ts_id;         //!< Transport stream id.
-        uint16_t  onetw_id;      //!< Original network id.
-        uint16_t  service_id;    //!< Service id.
-        EntryList entries;       //!< The list of OUI entries.
-        ByteBlock private_data;  //!< Private data.
+        static const Enumeration CueStreamTypeNames;
 
         //!
         //! Default constructor.
-        //! @param [in] ts Transport stream id.
-        //! @param [in] onetw Original network id
-        //! @param [in] service Service id.
+        //! @param [in] type Allowed command types.
         //!
-        SSULinkageDescriptor(uint16_t ts = 0, uint16_t onetw = 0, uint16_t service = 0);
-
-        //!
-        //! Constructor with one OUI.
-        //! @param [in] ts Transport stream id.
-        //! @param [in] onetw Original network id
-        //! @param [in] service Service id.
-        //! @param [in] oui OUI, 24 bits.
-        //!
-        SSULinkageDescriptor(uint16_t ts, uint16_t onetw, uint16_t service, uint32_t oui);
+        CueIdentifierDescriptor(uint8_t type = CUE_ALL_COMMANDS);
 
         //!
         //! Constructor from a binary descriptor
         //! @param [in] bin A binary descriptor to deserialize.
         //! @param [in] charset If not zero, character set to use without explicit table code.
         //!
-        SSULinkageDescriptor(const Descriptor& bin, const DVBCharset* charset = 0);
-
-        //!
-        //! Constructor from a linkage_descriptor.
-        //! @param [in] desc A linkage_descriptor to convert.
-        //! The data_broadcast_id must be 0x000A.
-        //! @param [in] charset If not zero, character set to use without explicit table code.
-        //!
-        SSULinkageDescriptor(const LinkageDescriptor& desc, const DVBCharset* charset = 0);
-
-        //!
-        //! Convert to a linkage_descriptor.
-        //! @param [out] desc A linkage_descriptor to convert.
-        //! @param [in] charset If not zero, character set to use without explicit table code.
-        //!
-        void toLinkageDescriptor(LinkageDescriptor& desc, const DVBCharset* charset = 0) const;
+        CueIdentifierDescriptor(const Descriptor& bin, const DVBCharset* charset = 0);
 
         // Inherited methods
         virtual void serialize(Descriptor&, const DVBCharset* = 0) const override;
         virtual void deserialize(const Descriptor&, const DVBCharset* = 0) override;
-        virtual xml::Element* toXML(xml::Element*) const override;
+        virtual void buildXML(xml::Element*) const override;
         virtual void fromXML(const xml::Element*) override;
 
         //!
@@ -131,9 +80,6 @@ namespace ts {
         //! @param [in] tid Table id of table containing the descriptors.
         //! @param [in] pds Private Data Specifier. Used to interpret private descriptors.
         //!
-        static void DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* payload, size_t size, int indent, TID tid, PDS pds)
-        {
-            LinkageDescriptor::DisplayDescriptor(display, did, payload, size, indent, tid, pds);
-        }
+        static void DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* payload, size_t size, int indent, TID tid, PDS pds);
     };
 }
