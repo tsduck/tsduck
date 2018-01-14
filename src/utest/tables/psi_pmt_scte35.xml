@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <PMT version="11" current="true" service_id="0x03F2" PCR_PID="0x03F3">
+    <registration_descriptor format_identifier="0x43554549"/>
+    <component elementary_PID="0x03F3" stream_type="0x1B"/>
+    <component elementary_PID="0x03F4" stream_type="0x03"/>
+    <component elementary_PID="0x03F6" stream_type="0x06">
+      <teletext_descriptor>
+        <teletext language_code="rus" teletext_type="0x01" page_number="100"/>
+      </teletext_descriptor>
+    </component>
+    <component elementary_PID="0x03F7" stream_type="0x86">
+      <cue_identifier_descriptor cue_stream_type="insert_null_schedule"/>
+      <cue_identifier_descriptor cue_stream_type="tiered_splicing"/>
+    </component>
+  </PMT>
+</tsduck>

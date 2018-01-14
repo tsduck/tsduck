@@ -91,23 +91,30 @@ void ts::SpliceInfoTable::DisplaySection(TablesDisplay& display, const ts::Secti
     }
     strm << std::endl
          << margin << UString::Format(u"PTS adjustment: 0x%09X", {pts_adjustment}) << std::endl
-         << margin << UString::Format(u"CW index: %d", {cw_index}) << std::endl
-         << margin << UString::Format(u"Command type: 0x%X", {cmd_type});
-    switch (cmd_type) {
-        case 0x00: strm << " (SpliceNull)"; break;
-        case 0x04: strm << " (SpliceSchedule)"; break;
-        case 0x05: strm << " (SpliceInsert)"; break;
-        case 0x06: strm << " (TimeSignal)"; break;
-        case 0x07: strm << " (BandwidthReservation)"; break;
-        case 0xFF: strm << " (PrivateCommand)"; break;
-        default: break;
-    }
-    strm << UString::Format(u", size: %d bytes", {cmd_length}) << std::endl;
+         << margin << UString::Format(u"CW index: 0x%X (%d), tier: 0x%03X (%d)", {cw_index, cw_index, tier, tier}) << std::endl;
 
-    // Variable part.
-    if (size > 0) {
-        strm << margin<< "Command content and splice descriptors (" << size << " bytes):" << std::endl
-             << UString::Dump(data, size, UString::HEXA | UString::ASCII | UString::OFFSET, indent + 2);
+    if (encrypted_packet) {
+        strm << margin << "Encrypted command, cannot display" << std::endl;
+    }
+    else {
+        // The encrypted part starts at the command type.
+        strm << margin << UString::Format(u"Command type: 0x%X", {cmd_type});
+        switch (cmd_type) {
+            case 0x00: strm << " (SpliceNull)"; break;
+            case 0x04: strm << " (SpliceSchedule)"; break;
+            case 0x05: strm << " (SpliceInsert)"; break;
+            case 0x06: strm << " (TimeSignal)"; break;
+            case 0x07: strm << " (BandwidthReservation)"; break;
+            case 0xFF: strm << " (PrivateCommand)"; break;
+            default: break;
+        }
+        strm << UString::Format(u", size: %d bytes", {cmd_length}) << std::endl;
+
+        // Variable part.
+        if (size > 0) {
+            strm << margin<< "Command content and splice descriptors (" << size << " bytes):" << std::endl
+                 << UString::Dump(data, size, UString::HEXA | UString::ASCII | UString::OFFSET, indent + 2);
+        }
     }
 
     // Final CRC32
