@@ -1,0 +1,18 @@
+static const ts::UChar psi_pmt_scte35_xml[] = 
+    u"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+    u"<tsduck>\n"
+    u"  <PMT version=\"11\" current=\"true\" service_id=\"0x03F2\" PCR_PID=\"0x03F3\">\n"
+    u"    <registration_descriptor format_identifier=\"0x43554549\"/>\n"
+    u"    <component elementary_PID=\"0x03F3\" stream_type=\"0x1B\"/>\n"
+    u"    <component elementary_PID=\"0x03F4\" stream_type=\"0x03\"/>\n"
+    u"    <component elementary_PID=\"0x03F6\" stream_type=\"0x06\">\n"
+    u"      <teletext_descriptor>\n"
+    u"        <teletext language_code=\"rus\" teletext_type=\"0x01\" page_number=\"100\"/>\n"
+    u"      </teletext_descriptor>\n"
+    u"    </component>\n"
+    u"    <component elementary_PID=\"0x03F7\" stream_type=\"0x86\">\n"
+    u"      <cue_identifier_descriptor cue_stream_type=\"insert_null_schedule\"/>\n"
+    u"      <cue_identifier_descriptor cue_stream_type=\"tiered_splicing\"/>\n"
+    u"    </component>\n"
+    u"  </PMT>\n"
+    u"</tsduck>\n";
