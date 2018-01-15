@@ -359,19 +359,57 @@ bool ts::UDPSocket::receive(void* data,
                             size_t max_size,
                             size_t& ret_size,
                             SocketAddress& sender,
+                            SocketAddress& destination,
                             const AbortInterface* abort,
                             Report& report)
 {
     // Clear returned values
     ret_size = 0;
     sender.clear();
+    destination.clear();
 
     // Loop on unsollicited interrupts
     for (;;) {
 
+        // Reserve a socket address to receive the sender address.
         ::sockaddr sender_sock;
-        TS_SOCKET_SOCKLEN_T senderlen = sizeof(sender_sock);
-        TS_SOCKET_SSIZE_T insize = ::recvfrom(_sock, TS_RECVBUF_T(data), int(max_size), 0, &sender_sock, &senderlen);
+        TS_ZERO(sender_sock);
+
+        // Build an iovec pointing to the message.
+        ::iovec vec;
+        TS_ZERO(vec);
+        vec.iov_base = data;
+        vec.iov_len = max_size;
+
+        // Reserve a buffer to receive packet ancillary data.
+        uint8_t ancil_data[1024];
+        TS_ZERO(ancil_data);
+
+        // Build a msghdr structure for recvmsg().
+        ::msghdr hdr;
+        TS_ZERO(hdr);
+        hdr.msg_name = &sender_sock;
+        hdr.msg_namelen = sizeof(sender_sock);
+        hdr.msg_iov = &vec;
+        hdr.msg_iovlen = 1; // number of iovec structures
+        hdr.msg_control = ancil_data;
+        hdr.msg_controllen = sizeof(ancil_data);
+
+        // Wait for a message.
+        TS_SOCKET_SSIZE_T insize = ::recvmsg(_sock, &hdr, 0);
+
+        // Browse returned ancillary data.
+        for (::cmsghdr* cmsg = CMSG_FIRSTHDR(&hdr); cmsg != 0; cmsg = CMSG_NXTHDR(&hdr, cmsg)) {
+            //@@ if (cmsg->cmsg_level == SOL_IP && (cmsg->cmsg_type == IP_RECVORIGDSTADDR)) {
+            //@@     memcpy(&dstaddr, CMSG_DATA(cmsg), sizeof (dstaddr));
+            //@@     dstaddr.sin_family = AF_INET;
+            //@@ }
+        }
+        //@@@@ to be continued - destination is currently not returned
+
+        //@@ Previous implementation:
+        //@@ TS_SOCKET_SOCKLEN_T senderlen = sizeof(sender_sock);
+        //@@ TS_SOCKET_SSIZE_T insize = ::recvfrom(_sock, TS_RECVBUF_T(data), int(max_size), 0, &sender_sock, &senderlen);
 
         if (insize >= 0) {
             // Received a message

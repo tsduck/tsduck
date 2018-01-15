@@ -283,6 +283,8 @@ namespace ts {
         //! @param [out] ret_size Size in bytes of the received message.
         //! Will never be larger than @a max_size.
         //! @param [out] sender Socket address of the sender.
+        //! @param [out] destination Socket address of the packet destination.
+        //! Can be useful to check in multicast packets.
         //! @param [in] abort If non-zero, invoked when I/O is interrupted
         //! (in case of user-interrupt, return, otherwise retry).
         //! @param [in,out] report Where to report error.
@@ -292,6 +294,7 @@ namespace ts {
                      size_t max_size,
                      size_t& ret_size,
                      SocketAddress& sender,
+                     SocketAddress& destination,
                      const AbortInterface* abort = 0,
                      Report& report = CERR);
 
