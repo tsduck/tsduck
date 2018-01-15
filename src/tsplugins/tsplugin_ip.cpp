@@ -369,11 +369,16 @@ size_t ts::IPInput::receive(TSPacket* buffer, size_t max_packets)
         // the multicast MAC address management is such that any socket which
         // is bound to the common port will receive the traffic for all streams.
         // This is why we need to check the destination address and exclude
-        // packets which are not from the intended stream. If we listen to
-        // a multicast address, we check that the address is the same.
-        // If we listen to unicast traffic, we check that the address is unicast.
+        // packets which are not from the intended stream.
+        //
+        // We accept a packet in any of:
+        // 1) Actual packet destination is unknown. Probably, the system cannot
+        //    report the destination address.
+        // 2) We listen to a multicast address and the actual destination is the same.
+        // 3) If we listen to unicast traffic and the actual destination is unicast.
+        //    In that case, unicast is by definition sent to us.
 
-        if ((_dest_addr.hasAddress() && destination != _dest_addr) || (!_dest_addr.hasAddress() && destination.isMulticast())) {
+        if (destination.hasAddress() && ((_dest_addr.hasAddress() && destination != _dest_addr) || (!_dest_addr.hasAddress() && destination.isMulticast()))) {
             // This is a spurious packet.
             continue;
         }

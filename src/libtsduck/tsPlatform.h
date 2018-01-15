@@ -497,6 +497,7 @@
 #include <windows.h>
 #include <winsock2.h>
 #include <ws2tcpip.h>
+#include <mswsock.h>
 #include <userenv.h>
 #include <memory.h>
 #include <io.h>

@@ -293,6 +293,14 @@ namespace ts {
         SocketAddress _default_destination;
         MReqSet       _mcast; // Current list of multicast memberships
 
+        // Perform one receive operation. Hide the system mud.
+        SocketErrorCode receiveOne(void* data, size_t max_size, size_t& ret_size, SocketAddress& sender, SocketAddress& destination);
+
+        // Furiously idiotic Windows feature, see comment in receiveOne()
+#if defined(TS_WINDOWS)
+        static volatile ::LPFN_WSARECVMSG _wsaRevcMsg;
+#endif
+
         // Unreachable operations
         UDPSocket(const UDPSocket&) = delete;
         UDPSocket& operator=(const UDPSocket&) = delete;
