@@ -33,6 +33,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
+#include "tsSocket.h"
 #include "tsSocketAddress.h"
 #include "tsAbortInterface.h"
 #include "tsReport.h"
@@ -55,7 +56,7 @@ namespace ts {
     //!   - A TCP/IP server creates a TCPServer instance and @e waits for clients. For each
     //!     client session, a TCPConnection instance is created.
     //!
-    class TSDUCKDLL TCPSocket
+    class TSDUCKDLL TCPSocket: public Socket
     {
     public:
         //!
@@ -67,51 +68,6 @@ namespace ts {
         //! Destructor.
         //!
         virtual ~TCPSocket();
-
-        //!
-        //! Open the socket.
-        //! @param [in,out] report Where to report error.
-        //! @return True on success, false on error.
-        //!
-        virtual bool open(Report& report = CERR);
-
-        //!
-        //! Close the socket.
-        //! @param [in,out] report Where to report error.
-        //! @return True on success, false on error.
-        //!
-        virtual bool close(Report& report = CERR);
-
-        //!
-        //! Check if socket is open.
-        //! @return True if socket is open.
-        //!
-        bool isOpen() const {return _sock != TS_SOCKET_T_INVALID;}
-
-        //!
-        //! Set the "send buffer size".
-        //! @param [in] size The buffer size in bytes to set.
-        //! @param [in,out] report Where to report error.
-        //! @return True on success, false on error.
-        //!
-        bool setSendBufferSize(size_t size, Report& report = CERR);
-
-        //!
-        //! Set the "receive buffer size".
-        //! @param [in] size The buffer size in bytes to set.
-        //! @param [in,out] report Where to report error.
-        //! @return True on success, false on error.
-        //!
-        bool setReceiveBufferSize(size_t size, Report& report = CERR);
-
-        //!
-        //! Set the "reuse port" option.
-        //! @param [in] active If true, the socket is allowed to reuse a local
-        //! TCP port which is already bound.
-        //! @param [in,out] report Where to report error.
-        //! @return True on success, false on error.
-        //!
-        bool reusePort(bool active, Report& report = CERR);
 
         //!
         //! Set the Time To Live (TTL) option.
@@ -183,27 +139,9 @@ namespace ts {
         //!
         bool bind(const SocketAddress& addr, Report& report = CERR);
 
-        //!
-        //! Get local socket address
-        //! @param [out] addr Local socket address of the connection.
-        //! @param [in,out] report Where to report error.
-        //! @return True on success, false on error.
-        //!
-        bool getLocalAddress(SocketAddress& addr, Report& report = CERR);
-
-        //!
-        //! Get the underlying socket device handle (use with care).
-        //!
-        //! This method is reserved for low-level operations and should
-        //! not be used by normal applications.
-        //!
-        //! @return The underlying socket system device handle or file descriptor.
-        //! Return @link TS_SOCKET_T_INVALID @endlink if the socket is not open.
-        //!
-        TS_SOCKET_T getSocket() const
-        {
-            return _sock;
-        }
+        // Implementation of Socket interface.
+        virtual bool open(Report& report = CERR) override;
+        virtual bool close(Report& report = CERR) override;
 
     protected:
         Mutex _mutex; //!< Mutex protecting this object.
@@ -213,22 +151,19 @@ namespace ts {
         //! All subclasses should explicitely invoke their superclass' handlers.
         //! @param [in,out] report Where to report error.
         //!
-        virtual void handleOpened(Report& report = CERR) {}
+        virtual void handleOpened(Report& report) {}
 
         //!
         //! This virtual method can be overriden by subclasses to be notified of close.
         //! All subclasses should explicitely invoke their superclass' handlers.
         //! @param [in,out] report Where to report error.
         //!
-        virtual void handleClosed(Report& report = CERR) {}
+        virtual void handleClosed(Report& report) {}
+
+        // Implementation of Socket interface.
+        virtual void declareOpened(TS_SOCKET_T sock, Report& report) override;
 
     private:
-        TS_SOCKET_T _sock;
-
-        // This method is used by a server to declare that the socket has just become opened.
-        void declareOpened(TS_SOCKET_T, Report& report = CERR);
-        friend class TCPServer;
-
         // Unreachable operations
         TCPSocket(const TCPSocket&) = delete;
         TCPSocket& operator=(const TCPSocket&) = delete;

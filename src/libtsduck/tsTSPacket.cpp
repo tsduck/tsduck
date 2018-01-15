@@ -263,7 +263,7 @@ namespace {
     ts::UString AfterPackets(const std::streampos& position)
     {
         const int64_t packets = int64_t(std::streamoff(position)) / ts::PKT_SIZE;
-        if (packets > 0) {
+        if (packets > 0 && position != std::streampos(-1)) {
             return ts::UString::Format(u" after %'d TS packets", {packets});
         }
         else {
@@ -286,8 +286,8 @@ std::istream& ts::TSPacket::read(std::istream& strm, bool check_sync, Report& re
         return strm;
     }
 
-    std::streampos position (strm.tellg());
-    strm.read(reinterpret_cast <char*> (b), PKT_SIZE);
+    std::streampos position(strm.tellg());
+    strm.read(reinterpret_cast<char*>(b), PKT_SIZE);
     size_t insize = size_t(strm.gcount());
 
     if (insize == PKT_SIZE) {

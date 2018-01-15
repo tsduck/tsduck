@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ImportGroup Label="PropertySheets">
     <Import Project="msvc-common-begin.props" />
@@ -244,6 +244,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsTCPConnection.h" />
     <ClInclude Include="..\..\src\libtsduck\tsTCPServer.h" />
     <ClInclude Include="..\..\src\libtsduck\tsTCPSocket.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsSocket.h" />
     <ClInclude Include="..\..\src\libtsduck\tsTDES.h" />
     <ClInclude Include="..\..\src\libtsduck\tsTDT.h" />
     <ClInclude Include="..\..\src\libtsduck\tsTeletextDescriptor.h" />
@@ -497,6 +498,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsTablesFactory.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsTablesLogger.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsTablesLoggerArgs.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsSocket.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsTCPConnection.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsTCPServer.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsTCPSocket.cpp" />
