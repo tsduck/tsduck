@@ -356,8 +356,9 @@ size_t ts::IPInput::receive (TSPacket* buffer, size_t max_packets)
 
         // Wait for a UDP message
         SocketAddress sender;
+        SocketAddress destination;
         size_t insize;
-        if (!_sock.receive (_inbuf, sizeof(_inbuf), insize, sender, tsp, *tsp)) {
+        if (!_sock.receive (_inbuf, sizeof(_inbuf), insize, sender, destination, tsp, *tsp)) {
             return 0;
         }
 
