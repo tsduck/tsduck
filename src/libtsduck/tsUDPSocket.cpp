@@ -35,6 +35,11 @@
 #include "tsNullReport.h"
 TSDUCK_SOURCE;
 
+// Furiously idiotic Windows feature, see comment in receiveOne()
+#if defined(TS_WINDOWS)
+volatile ::LPFN_WSARECVMSG ts::UDPSocket::_wsaRevcMsg = 0;
+#endif
+
 
 //----------------------------------------------------------------------------
 // Constructor
@@ -79,7 +84,7 @@ bool ts::UDPSocket::open(Report& report)
     // Set the IP_PKTINFO option. This option is used to get the destination address of all
     // UDP packets arriving on this socket. Actual socket option is an int.
     int opt = 1;
-    if (::setsockopt(getSocket(), SOL_IP, IP_PKTINFO, TS_SOCKOPT_T(&opt), sizeof(opt)) != 0) {
+    if (::setsockopt(getSocket(), IPPROTO_IP, IP_PKTINFO, TS_SOCKOPT_T(&opt), sizeof(opt)) != 0) {
         report.error(u"error setting socket IP_PKTINFO option: %s", {SocketErrorCodeMessage()});
         return false;
     }
@@ -317,71 +322,159 @@ bool ts::UDPSocket::receive(void* data,
                             const AbortInterface* abort,
                             Report& report)
 {
-    // Clear returned values
-    ret_size = 0;
-    sender.clear();
-    destination.clear();
-
     // Loop on unsollicited interrupts
     for (;;) {
 
-        // Reserve a socket address to receive the sender address.
-        ::sockaddr sender_sock;
-        TS_ZERO(sender_sock);
-
-        // Build an iovec pointing to the message.
-        ::iovec vec;
-        TS_ZERO(vec);
-        vec.iov_base = data;
-        vec.iov_len = max_size;
-
-        // Reserve a buffer to receive packet ancillary data.
-        uint8_t ancil_data[1024];
-        TS_ZERO(ancil_data);
-
-        // Build a msghdr structure for recvmsg().
-        ::msghdr hdr;
-        TS_ZERO(hdr);
-        hdr.msg_name = &sender_sock;
-        hdr.msg_namelen = sizeof(sender_sock);
-        hdr.msg_iov = &vec;
-        hdr.msg_iovlen = 1; // number of iovec structures
-        hdr.msg_control = ancil_data;
-        hdr.msg_controllen = sizeof(ancil_data);
-
         // Wait for a message.
-        TS_SOCKET_SSIZE_T insize = ::recvmsg(getSocket(), &hdr, 0);
+        const SocketErrorCode err = receiveOne(data, max_size, ret_size, sender, destination);
 
-        if (insize >= 0) {
-            // Received a message
-            ret_size = size_t(insize);
-            sender = SocketAddress(sender_sock);
-
-            // Browse returned ancillary data.
-            for (::cmsghdr* cmsg = CMSG_FIRSTHDR(&hdr); cmsg != 0; cmsg = CMSG_NXTHDR(&hdr, cmsg)) {
-                report.debug(u"UDP recvmsg, ancillary message %d, level %d, %d bytes", {cmsg->cmsg_type, cmsg->cmsg_level, cmsg->cmsg_len});
-                if (cmsg->cmsg_level == SOL_IP && cmsg->cmsg_type == IP_PKTINFO && cmsg->cmsg_len >= sizeof(::in_pktinfo)) {
-                    const ::in_pktinfo* info = reinterpret_cast<const ::in_pktinfo*>(CMSG_DATA(cmsg));
-                    destination = SocketAddress(info->ipi_addr, _local_address.port());
-                }
-            }
-
+        if (err == SYS_SUCCESS) {
             return true;
         }
         else if (abort != 0 && abort->aborting()) {
             // User-interrupt, end of processing but no error message
             return false;
         }
-#if !defined (TS_WINDOWS)
-        else if (errno == EINTR) {
+#if !defined(TS_WINDOWS)
+        else if (err == EINTR) {
             // Got a signal, not a user interrupt, will ignore it
             report.debug(u"signal, not user interrupt");
         }
 #endif
         else {
             // Abort on non-interrupt errors.
-            report.error(u"error receiving from UDP socket: %s", {SocketErrorCodeMessage()});
+            report.error(u"error receiving from UDP socket: %s", {SocketErrorCodeMessage(err)});
             return false;
         }
     }
+}
+
+
+//----------------------------------------------------------------------------
+// Perform one receive operation. Hide the system mud.
+//----------------------------------------------------------------------------
+
+ts::SocketErrorCode ts::UDPSocket::receiveOne(void* data, size_t max_size, size_t& ret_size, SocketAddress& sender, SocketAddress& destination)
+{
+    // Clear returned values
+    ret_size = 0;
+    sender.clear();
+    destination.clear();
+
+    // Reserve a socket address to receive the sender address.
+    ::sockaddr sender_sock;
+    TS_ZERO(sender_sock);
+
+    // Normally, this operation should be done quite easily using recvmsg.
+    // On Windows, all socket operations are smoothly emulated, including
+    // recvfrom, allowing a reasonable portability. However, in the specific
+    // case of recvmsg, there is no equivalent but a similar - but carefully
+    // incompatible - function named WSARecvMsg. Not only this function is
+    // different from recvmsg, but it is also not exported from any DLL.
+    // Its address must be queried dynamically. The stupid idiot who had
+    // this pervert idea at Microsoft deserves to burn in hell (twice) !!
+
+#if defined(TS_WINDOWS)
+
+    // First, get the address of WSARecvMsg the first time we use it.
+    // Non-intuitive sequence. See sample code in:
+    // https://github.com/pauldotknopf/WindowsSDK7-Samples/tree/master/netds/winsock/recvmsg
+
+    if (_wsaRevcMsg == 0) {
+        ::LPFN_WSARECVMSG funcAddress = 0;
+        ::GUID guid = WSAID_WSARECVMSG;
+        ::DWORD dwBytes = 0;
+        const ::SOCKET sock = ::socket(AF_INET, SOCK_DGRAM, 0);
+        if (sock == INVALID_SOCKET) {
+            return LastSocketErrorCode();
+        }
+        if (::WSAIoctl(sock, SIO_GET_EXTENSION_FUNCTION_POINTER, &guid, sizeof(guid), &funcAddress, sizeof(funcAddress), &dwBytes, 0, 0) != 0) {
+            ::closesocket(sock);
+            return LastSocketErrorCode();
+        }
+        ::closesocket(sock);
+        // Now update the volatile value.
+        _wsaRevcMsg = funcAddress;
+    }
+
+    // Build an WSABUF pointing to the message.
+    ::WSABUF vec;
+    TS_ZERO(vec);
+    vec.buf = reinterpret_cast<CHAR*>(data);
+    vec.len = ::ULONG(max_size);
+
+    // Reserve a buffer to receive packet ancillary data.
+    ::CHAR ancil_data[1024];
+    TS_ZERO(ancil_data);
+
+    // Build a WSAMSG for WSARecvMsg.
+    ::WSAMSG msg;
+    TS_ZERO(msg);
+    msg.name = &sender_sock;
+    msg.namelen = sizeof(sender_sock);
+    msg.lpBuffers = &vec;
+    msg.dwBufferCount = 1; // number of WSAMSG
+    msg.Control.buf = ancil_data;
+    msg.Control.len = ::ULONG(sizeof(ancil_data));
+
+    // Wait for a message.
+    ::DWORD insize = 0;
+    if (_wsaRevcMsg(getSocket(), &msg, &insize, 0, 0)  != 0) {
+        return LastSocketErrorCode();
+    }
+
+    // Browse returned ancillary data.
+    for (::WSACMSGHDR* cmsg = WSA_CMSG_FIRSTHDR(&msg); cmsg != 0; cmsg = WSA_CMSG_NXTHDR(&msg, cmsg)) {
+        if (cmsg->cmsg_level == IPPROTO_IP && cmsg->cmsg_type == IP_PKTINFO) {
+            const ::IN_PKTINFO* info = reinterpret_cast<const ::IN_PKTINFO*>(WSA_CMSG_DATA(cmsg));
+            destination = SocketAddress(info->ipi_addr, _local_address.port());
+        }
+    }
+
+#else
+    // UNIX implementation, use a standard recvmsg sequence.
+
+    // Build an iovec pointing to the message.
+    ::iovec vec;
+    TS_ZERO(vec);
+    vec.iov_base = data;
+    vec.iov_len = max_size;
+
+    // Reserve a buffer to receive packet ancillary data.
+    uint8_t ancil_data[1024];
+    TS_ZERO(ancil_data);
+
+    // Build a msghdr structure for recvmsg().
+    ::msghdr hdr;
+    TS_ZERO(hdr);
+    hdr.msg_name = &sender_sock;
+    hdr.msg_namelen = sizeof(sender_sock);
+    hdr.msg_iov = &vec;
+    hdr.msg_iovlen = 1; // number of iovec structures
+    hdr.msg_control = ancil_data;
+    hdr.msg_controllen = sizeof(ancil_data);
+
+    // Wait for a message.
+    TS_SOCKET_SSIZE_T insize = ::recvmsg(getSocket(), &hdr, 0);
+
+    if (insize < 0) {
+        return LastSocketErrorCode();
+    }
+
+    // Browse returned ancillary data.
+    for (::cmsghdr* cmsg = CMSG_FIRSTHDR(&hdr); cmsg != 0; cmsg = CMSG_NXTHDR(&hdr, cmsg)) {
+        report.debug(u"UDP recvmsg, ancillary message %d, level %d, %d bytes", {cmsg->cmsg_type, cmsg->cmsg_level, cmsg->cmsg_len});
+        if (cmsg->cmsg_level == IPROTO_IP && cmsg->cmsg_type == IP_PKTINFO && cmsg->cmsg_len >= sizeof(::in_pktinfo)) {
+            const ::in_pktinfo* info = reinterpret_cast<const ::in_pktinfo*>(CMSG_DATA(cmsg));
+            destination = SocketAddress(info->ipi_addr, _local_address.port());
+        }
+    }
+
+#endif // Windows vs. UNIX
+
+    // Successfully received a message
+    ret_size = size_t(insize);
+    sender = SocketAddress(sender_sock);
+
+    return SYS_SUCCESS;
 }
