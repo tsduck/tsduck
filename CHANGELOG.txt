@@ -17,6 +17,11 @@ Version 3.6
 
 - Added SCTE 35 signalization (splice information for ads insertion).
 
+- Fixed input plugin ip: When multiple multicast streams are sent to the same
+  UDP port (although with different addresses), make sure we receive only the
+  requested stream. Previously, in some system configurations, the input plugin
+  ip could receive packets from distinct multicast streams.
+
 - The help text of all TSDuck applications (using option --help) is now paged
   through "less" or any any other pager application.
 

@@ -33,6 +33,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
+#include "tsSocket.h"
 #include "tsSocketAddress.h"
 #include "tsAbortInterface.h"
 #include "tsReport.h"
@@ -42,7 +43,7 @@ namespace ts {
     //!
     //! UDP Socket.
     //!
-    class TSDUCKDLL UDPSocket
+    class TSDUCKDLL UDPSocket: public Socket
     {
     public:
         //!
@@ -56,49 +57,6 @@ namespace ts {
         //! Destructor.
         //!
         virtual ~UDPSocket();
-
-        //!
-        //! Open the socket.
-        //! @param [in,out] report Where to report error.
-        //! @return True on success, false on error.
-        //!
-        bool open(Report& report = CERR);
-
-        //!
-        //! Close the socket.
-        //!
-        void close();
-
-        //!
-        //! Check if socket is open.
-        //! @return True if socket is open.
-        //!
-        bool isOpen() const {return _sock != TS_SOCKET_T_INVALID;}
-
-        //!
-        //! Set the send buffer size.
-        //! @param [in] size Send buffer size in bytes.
-        //! @param [in,out] report Where to report error.
-        //! @return True on success, false on error.
-        //!
-        bool setSendBufferSize(size_t size, Report& report = CERR);
-
-        //!
-        //! Set the receive buffer size.
-        //! @param [in] size Receive buffer size in bytes.
-        //! @param [in,out] report Where to report error.
-        //! @return True on success, false on error.
-        //!
-        bool setReceiveBufferSize(size_t size, Report& report = CERR);
-
-        //!
-        //! Set the "reuse port" option.
-        //! @param [in] reuse_port If true, the socket is allowed to reuse a local
-        //! UDP port which is already bound.
-        //! @param [in,out] report Where to report error.
-        //! @return True on success, false on error.
-        //!
-        bool reusePort(bool reuse_port, Report& report = CERR);
 
         //!
         //! Bind to a local address and port.
@@ -298,19 +256,9 @@ namespace ts {
                      const AbortInterface* abort = 0,
                      Report& report = CERR);
 
-        //!
-        //! Get the underlying socket device handle (use with care).
-        //!
-        //! This method is reserved for low-level operations and should
-        //! not be used by normal applications.
-        //!
-        //! @return The underlying socket system device handle or file descriptor.
-        //! Return @link TS_SOCKET_T_INVALID @endlink if the socket is not open.
-        //!
-        TS_SOCKET_T getSocket() const
-        {
-            return _sock;
-        }
+        // Implementation of Socket interface.
+        virtual bool open(Report& report = CERR) override;
+        virtual bool close(Report& report = CERR) override;
 
     private:
         // Encapsulate an ::ip_mreq
@@ -341,7 +289,7 @@ namespace ts {
         typedef std::set<MReq> MReqSet;
 
         // Private members
-        TS_SOCKET_T   _sock;
+        SocketAddress _local_address;
         SocketAddress _default_destination;
         MReqSet       _mcast; // Current list of multicast memberships
 

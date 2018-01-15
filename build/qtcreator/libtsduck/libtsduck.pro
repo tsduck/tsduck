@@ -220,14 +220,13 @@ HEADERS += \
     ../../../src/libtsduck/tsShortEventDescriptor.h \
     ../../../src/libtsduck/tsSimulCryptDate.h \
     ../../../src/libtsduck/tsSingletonManager.h \
+    ../../../src/libtsduck/tsSocket.h \
     ../../../src/libtsduck/tsSocketAddress.h \
     ../../../src/libtsduck/tsSpliceInfoTable.h \
     ../../../src/libtsduck/tsStandaloneTableDemux.h \
     ../../../src/libtsduck/tsStaticInstance.h \
     ../../../src/libtsduck/tsStaticReferencesDVB.h \
     ../../../src/libtsduck/tsStreamIdentifierDescriptor.h \
-    ../../../src/libtsduck/tsUString.h \
-    ../../../src/libtsduck/tsUStringTemplate.h \
     ../../../src/libtsduck/tsSubtitlingDescriptor.h \
     ../../../src/libtsduck/tsSupplementaryAudioDescriptor.h \
     ../../../src/libtsduck/tsSysInfo.h \
@@ -285,6 +284,8 @@ HEADERS += \
     ../../../src/libtsduck/tsUDPSocket.h \
     ../../../src/libtsduck/tsUID.h \
     ../../../src/libtsduck/tsUserInterrupt.h \
+    ../../../src/libtsduck/tsUString.h \
+    ../../../src/libtsduck/tsUStringTemplate.h \
     ../../../src/libtsduck/tsVBIDataDescriptor.h \
     ../../../src/libtsduck/tsVBITeletextDescriptor.h \
     ../../../src/libtsduck/tsVariable.h \
@@ -471,12 +472,12 @@ SOURCES += \
     ../../../src/libtsduck/tsShortEventDescriptor.cpp \
     ../../../src/libtsduck/tsSimulCryptDate.cpp \
     ../../../src/libtsduck/tsSingletonManager.cpp \
+    ../../../src/libtsduck/tsSocket.cpp \
     ../../../src/libtsduck/tsSocketAddress.cpp \
     ../../../src/libtsduck/tsSpliceInfoTable.cpp \
     ../../../src/libtsduck/tsStandaloneTableDemux.cpp \
     ../../../src/libtsduck/tsStaticReferencesDVB.cpp \
     ../../../src/libtsduck/tsStreamIdentifierDescriptor.cpp \
-    ../../../src/libtsduck/tsUString.cpp \
     ../../../src/libtsduck/tsSubtitlingDescriptor.cpp \
     ../../../src/libtsduck/tsSupplementaryAudioDescriptor.cpp \
     ../../../src/libtsduck/tsSysInfo.cpp \
@@ -527,6 +528,7 @@ SOURCES += \
     ../../../src/libtsduck/tsUDPSocket.cpp \
     ../../../src/libtsduck/tsUID.cpp \
     ../../../src/libtsduck/tsUserInterrupt.cpp \
+    ../../../src/libtsduck/tsUString.cpp \
     ../../../src/libtsduck/tsVBIDataDescriptor.cpp \
     ../../../src/libtsduck/tsVBITeletextDescriptor.cpp \
     ../../../src/libtsduck/tsVersionInfo.cpp \

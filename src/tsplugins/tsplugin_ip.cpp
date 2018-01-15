@@ -66,6 +66,7 @@ namespace ts {
 
     private:
         UDPSocket     _sock;               // Incoming socket
+        SocketAddress _dest_addr;          // Expected destination of packets
         MilliSecond   _eval_time;          // Bitrate evaluation interval in milli-seconds
         MilliSecond   _display_time;       // Bitrate display interval in milli-seconds
         Time          _next_display;       // Next bitrate display time
@@ -119,6 +120,7 @@ TSPLUGIN_DECLARE_OUTPUT(ts::IPOutput)
 ts::IPInput::IPInput(TSP* tsp_) :
     InputPlugin(tsp_, u"Receive TS packets from UDP/IP, multicast or unicast.", u"[options] [address:]port"),
     _sock(false, *tsp_),
+    _dest_addr(),
     _eval_time(0),
     _display_time(0),
     _next_display(Time::Epoch),
@@ -247,31 +249,30 @@ bool ts::IPInput::start()
     bool reuse_port = present(u"reuse-port");
 
     // Resolve specified destination address:port
-    SocketAddress dest_addr;
-    if (!dest_addr.resolve (destination, *tsp)) {
+    if (!_dest_addr.resolve(destination, *tsp)) {
         return false;
     }
 
     // If a destination address is specified, it must be a multicast address
-    if (dest_addr.hasAddress() && !dest_addr.isMulticast()) {
-        tsp->error(u"address %s is not multicast", {dest_addr.toString()});
+    if (_dest_addr.hasAddress() && !_dest_addr.isMulticast()) {
+        tsp->error(u"address %s is not multicast", {_dest_addr.toString()});
         return false;
     }
 
     // The destination port is mandatory
-    if (!dest_addr.hasPort()) {
+    if (!_dest_addr.hasPort()) {
         tsp->error(u"no UDP port specified in %s", {destination});
         return false;
     }
 
     // Translate optional local address
     IPAddress local_ip;
-    if (!local.empty() && !local_ip.resolve (local, *tsp)) {
+    if (!local.empty() && !local_ip.resolve(local, *tsp)) {
         return false;
     }
 
     // The local socket address to bind is the optional local IP address and the destination port
-    SocketAddress local_addr(local_ip, dest_addr.port());
+    SocketAddress local_addr(local_ip, _dest_addr.port());
 
     // Create UDP socket
     if (!_sock.open(*tsp)) {
@@ -281,10 +282,10 @@ bool ts::IPInput::start()
     // Initialize socket.
     // Note: On Windows, bind must be done *before* joining multicast groups.
     bool ok =
-        (!reuse_port || _sock.reusePort (true, *tsp)) &&
-        (recv_bufsize <= 0 ||_sock.setReceiveBufferSize (recv_bufsize, *tsp)) &&
-        _sock.bind (local_addr, *tsp) &&
-        (!dest_addr.hasAddress() || _sock.addMembership (dest_addr, local_ip, *tsp));
+        (!reuse_port || _sock.reusePort(true, *tsp)) &&
+        (recv_bufsize <= 0 ||_sock.setReceiveBufferSize(recv_bufsize, *tsp)) &&
+        _sock.bind(local_addr, *tsp) &&
+        (!_dest_addr.hasAddress() || _sock.addMembership(_dest_addr, local_ip, *tsp));
 
     if (!ok) {
         _sock.close();
@@ -336,7 +337,7 @@ ts::BitRate ts::IPInput::getBitrate()
         // Evaluate bitrate since start of previous evaluation period.
         // The current period may be too short for correct evaluation.
         const MilliSecond ms = Time::CurrentUTC() - _start_0;
-        return ms == 0 ? 0 : BitRate ((_packets_0 * PKT_SIZE * 8 * MilliSecPerSec) / ms);
+        return ms == 0 ? 0 : BitRate((_packets_0 * PKT_SIZE * 8 * MilliSecPerSec) / ms);
     }
 }
 
@@ -345,7 +346,7 @@ ts::BitRate ts::IPInput::getBitrate()
 // Input method
 //----------------------------------------------------------------------------
 
-size_t ts::IPInput::receive (TSPacket* buffer, size_t max_packets)
+size_t ts::IPInput::receive(TSPacket* buffer, size_t max_packets)
 {
     // Check if we receive new packets or process remain of previous buffer.
     bool new_packets = false;
@@ -358,9 +359,25 @@ size_t ts::IPInput::receive (TSPacket* buffer, size_t max_packets)
         SocketAddress sender;
         SocketAddress destination;
         size_t insize;
-        if (!_sock.receive (_inbuf, sizeof(_inbuf), insize, sender, destination, tsp, *tsp)) {
+        if (!_sock.receive(_inbuf, sizeof(_inbuf), insize, sender, destination, tsp, *tsp)) {
             return 0;
         }
+
+        // Check the destination address to exclude packets from other streams.
+        // When several multicast streams use the same destination port and several
+        // applications on the same system listen to these distinct streams,
+        // the multicast MAC address management is such that any socket which
+        // is bound to the common port will receive the traffic for all streams.
+        // This is why we need to check the destination address and exclude
+        // packets which are not from the intended stream. If we listen to
+        // a multicast address, we check that the address is the same.
+        // If we listen to unicast traffic, we check that the address is unicast.
+
+        if ((_dest_addr.hasAddress() && destination != _dest_addr) || (!_dest_addr.hasAddress() && destination.isMulticast())) {
+            // This is a spurious packet.
+            continue;
+        }
+
 
         // Locate the TS packets inside the UDP message. Basically, we
         // expect the message to contain only TS packets. However, we
@@ -420,7 +437,7 @@ size_t ts::IPInput::receive (TSPacket* buffer, size_t max_packets)
     // If new packets were received, we may need to re-evaluate the real-time input bitrate.
     if (new_packets && _eval_time > 0) {
 
-        const Time now (Time::CurrentUTC());
+        const Time now(Time::CurrentUTC());
 
         // Detect start time
         if (_packets == 0) {
@@ -449,8 +466,8 @@ size_t ts::IPInput::receive (TSPacket* buffer, size_t max_packets)
             _next_display += _display_time;
             const MilliSecond ms_current = Time::CurrentUTC() - _start_0;
             const MilliSecond ms_total = Time::CurrentUTC() - _start;
-            const BitRate br_current = ms_current == 0 ? 0 : BitRate ((_packets_0 * PKT_SIZE * 8 * MilliSecPerSec) / ms_current);
-            const BitRate br_average = ms_total == 0 ? 0 : BitRate ((_packets * PKT_SIZE * 8 * MilliSecPerSec) / ms_total);
+            const BitRate br_current = ms_current == 0 ? 0 : BitRate((_packets_0 * PKT_SIZE * 8 * MilliSecPerSec) / ms_current);
+            const BitRate br_average = ms_total == 0 ? 0 : BitRate((_packets * PKT_SIZE * 8 * MilliSecPerSec) / ms_total);
             tsp->info(u"IP input bitrate: %s, average: %s", {
                 br_current == 0 ? u"undefined" : UString::Decimal(br_current) + u" b/s",
                 br_average == 0 ? u"undefined" : UString::Decimal(br_average) + u" b/s"});
@@ -458,8 +475,8 @@ size_t ts::IPInput::receive (TSPacket* buffer, size_t max_packets)
     }
 
     // Return packets from the input buffer
-    size_t pkt_cnt = std::min (_inbuf_count, max_packets);
-    ::memcpy (buffer, _inbuf + _inbuf_next, pkt_cnt * PKT_SIZE);
+    size_t pkt_cnt = std::min(_inbuf_count, max_packets);
+    ::memcpy(buffer, _inbuf + _inbuf_next, pkt_cnt * PKT_SIZE);
     _inbuf_count -= pkt_cnt;
     _inbuf_next += pkt_cnt * PKT_SIZE;
 
@@ -480,12 +497,12 @@ bool ts::IPOutput::start()
     _pkt_burst = intValue(u"packet-burst", DEF_PACKET_BURST);
 
     // Create UDP socket
-    bool ok = _sock.open (*tsp);
+    bool ok = _sock.open(*tsp);
 
     if (ok) {
-        ok = _sock.setDefaultDestination (dest_name, *tsp) &&
-            (loc_name.empty() || _sock.setOutgoingMulticast (loc_name, *tsp)) &&
-            (ttl <= 0 || _sock.setTTL (ttl, _sock.setTTL (ttl, *tsp)));
+        ok = _sock.setDefaultDestination(dest_name, *tsp) &&
+            (loc_name.empty() || _sock.setOutgoingMulticast(loc_name, *tsp)) &&
+            (ttl <= 0 || _sock.setTTL(ttl, _sock.setTTL(ttl, *tsp)));
         if (!ok) {
             _sock.close();
         }
@@ -520,13 +537,13 @@ ts::IPOutput::~IPOutput()
 // Output method
 //----------------------------------------------------------------------------
 
-bool ts::IPOutput::send (const TSPacket* pkt, size_t packet_count)
+bool ts::IPOutput::send(const TSPacket* pkt, size_t packet_count)
 {
     // Send TS packets in UDP messages, grouped according to burst size.
 
     while (packet_count > 0) {
-        size_t count = std::min (packet_count, _pkt_burst);
-        if (!_sock.send (pkt, count * PKT_SIZE, *tsp)) {
+        size_t count = std::min(packet_count, _pkt_burst);
+        if (!_sock.send(pkt, count * PKT_SIZE, *tsp)) {
             return false;
         }
         pkt += count;

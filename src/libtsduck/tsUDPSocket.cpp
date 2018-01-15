@@ -32,6 +32,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsUDPSocket.h"
+#include "tsNullReport.h"
 TSDUCK_SOURCE;
 
 
@@ -40,7 +41,8 @@ TSDUCK_SOURCE;
 //----------------------------------------------------------------------------
 
 ts::UDPSocket::UDPSocket(bool auto_open, Report& report) :
-    _sock(TS_SOCKET_T_INVALID),
+    Socket(),
+    _local_address(),
     _default_destination(),
     _mcast()
 {
@@ -58,7 +60,7 @@ ts::UDPSocket::UDPSocket(bool auto_open, Report& report) :
 
 ts::UDPSocket::~UDPSocket()
 {
-    close();
+    UDPSocket::close(NULLREP);
 }
 
 
@@ -67,19 +69,22 @@ ts::UDPSocket::~UDPSocket()
 // Return true on success, false on error.
 //----------------------------------------------------------------------------
 
-bool ts::UDPSocket::open (Report& report)
+bool ts::UDPSocket::open(Report& report)
 {
-    if (_sock != TS_SOCKET_T_INVALID) {
-        report.error(u"socket already open");
+    // Create a datagram socket.
+    if (!createSocket(PF_INET, SOCK_DGRAM, IPPROTO_UDP, report)) {
         return false;
     }
-    else if ((_sock = ::socket (PF_INET, SOCK_DGRAM, IPPROTO_UDP)) == TS_SOCKET_T_INVALID) {
-        report.error(u"error creating socket: " + SocketErrorCodeMessage ());
+
+    // Set the IP_PKTINFO option. This option is used to get the destination address of all
+    // UDP packets arriving on this socket. Actual socket option is an int.
+    int opt = 1;
+    if (::setsockopt(getSocket(), SOL_IP, IP_PKTINFO, TS_SOCKOPT_T(&opt), sizeof(opt)) != 0) {
+        report.error(u"error setting socket IP_PKTINFO option: %s", {SocketErrorCodeMessage()});
         return false;
     }
-    else {
-        return true;
-    }
+
+    return true;
 }
 
 
@@ -87,72 +92,18 @@ bool ts::UDPSocket::open (Report& report)
 // Close the socket
 //----------------------------------------------------------------------------
 
-void ts::UDPSocket::close()
+bool ts::UDPSocket::close(Report& report)
 {
-    if (_sock != TS_SOCKET_T_INVALID) {
-        // Leave all multicast groups.
+    // Leave all multicast groups.
+    if (isOpen()) {
         for (MReqSet::const_iterator it = _mcast.begin(); it != _mcast.end(); ++it) {
-            ::setsockopt (_sock, IPPROTO_IP, IP_DROP_MEMBERSHIP, TS_SOCKOPT_T (&it->req), sizeof(it->req));
+            ::setsockopt(getSocket(), IPPROTO_IP, IP_DROP_MEMBERSHIP, TS_SOCKOPT_T(&it->req), sizeof(it->req));
         }
         _mcast.clear();
-        // Close socket
-        TS_SOCKET_CLOSE (_sock);
-        _sock = TS_SOCKET_T_INVALID;
     }
-}
 
-
-//----------------------------------------------------------------------------
-// Set the send buffer size.
-// Return true on success, false on error.
-//----------------------------------------------------------------------------
-
-bool ts::UDPSocket::setSendBufferSize (size_t buffer_size, Report& report)
-{
-    // Actual socket option is an int.
-    int size = int (buffer_size);
-
-    if (::setsockopt (_sock, SOL_SOCKET, SO_SNDBUF, TS_SOCKOPT_T (&size), sizeof(size)) != 0) {
-        report.error(u"error setting socket send buffer size: " + SocketErrorCodeMessage ());
-        return false;
-    }
-    return true;
-}
-
-
-//----------------------------------------------------------------------------
-// Set the receive buffer size.
-// Return true on success, false on error.
-//----------------------------------------------------------------------------
-
-bool ts::UDPSocket::setReceiveBufferSize (size_t buffer_size, Report& report)
-{
-    // Actual socket option is an int.
-    int size = int (buffer_size);
-
-    if (::setsockopt (_sock, SOL_SOCKET, SO_RCVBUF, TS_SOCKOPT_T (&size), sizeof(size)) != 0) {
-        report.error(u"error setting socket receive buffer size: " + SocketErrorCodeMessage ());
-        return false;
-    }
-    return true;
-}
-
-
-//----------------------------------------------------------------------------
-// Set the "reuse port" option.
-// Return true on success, false on error.
-//----------------------------------------------------------------------------
-
-bool ts::UDPSocket::reusePort (bool reuse_port, Report& report)
-{
-    // Actual socket option is an int.
-    int reuse = int (reuse_port);
-
-    if (::setsockopt (_sock, SOL_SOCKET, SO_REUSEADDR, TS_SOCKOPT_T (&reuse), sizeof(reuse)) != 0) {
-        report.error(u"error setting socket reuse port: " + SocketErrorCodeMessage ());
-        return false;
-    }
-    return true;
+    // Close socket
+    return Socket::close(report);
 }
 
 
@@ -161,16 +112,19 @@ bool ts::UDPSocket::reusePort (bool reuse_port, Report& report)
 // Return true on success, false on error.
 //----------------------------------------------------------------------------
 
-bool ts::UDPSocket::bind (const SocketAddress& addr, Report& report)
+bool ts::UDPSocket::bind(const SocketAddress& addr, Report& report)
 {
     ::sockaddr sock_addr;
-    addr.copy (sock_addr);
+    addr.copy(sock_addr);
 
-    if (::bind (_sock, &sock_addr, sizeof(sock_addr)) != 0) {
-        report.error(u"error binding socket to local address: " + SocketErrorCodeMessage ());
+    report.debug(u"binding socket to %s", {addr.toString()});
+    if (::bind(getSocket(), &sock_addr, sizeof(sock_addr)) != 0) {
+        report.error(u"error binding socket to local address: %s", {SocketErrorCodeMessage()});
         return false;
     }
-    return true;
+
+    // Keep a cached value of the bound local address.
+    return getLocalAddress(_local_address, report);
 }
 
 
@@ -190,7 +144,7 @@ bool ts::UDPSocket::setOutgoingMulticast(const IPAddress& addr, Report& report)
     ::in_addr iaddr;
     addr.copy(iaddr);
 
-    if (::setsockopt(_sock, IPPROTO_IP, IP_MULTICAST_IF, TS_SOCKOPT_T(&iaddr), sizeof(iaddr)) != 0) {
+    if (::setsockopt(getSocket(), IPPROTO_IP, IP_MULTICAST_IF, TS_SOCKOPT_T(&iaddr), sizeof(iaddr)) != 0) {
         report.error(u"error setting outgoing local address: " + SocketErrorCodeMessage());
         return false;
     }
@@ -237,14 +191,14 @@ bool ts::UDPSocket::setTTL (int ttl, bool multicast, Report& report)
 {
     if (multicast) {
         TS_SOCKET_MC_TTL_T mttl = (TS_SOCKET_MC_TTL_T) (ttl);
-        if (::setsockopt (_sock, IPPROTO_IP, IP_MULTICAST_TTL, TS_SOCKOPT_T (&mttl), sizeof(mttl)) != 0) {
+        if (::setsockopt (getSocket(), IPPROTO_IP, IP_MULTICAST_TTL, TS_SOCKOPT_T (&mttl), sizeof(mttl)) != 0) {
             report.error(u"socket option multicast TTL: " + SocketErrorCodeMessage ());
             return false;
         }
     }
     else {
         TS_SOCKET_TTL_T uttl = (TS_SOCKET_TTL_T) (ttl);
-        if (::setsockopt (_sock, IPPROTO_IP, IP_TTL, TS_SOCKOPT_T (&uttl), sizeof(uttl)) != 0) {
+        if (::setsockopt (getSocket(), IPPROTO_IP, IP_TTL, TS_SOCKOPT_T (&uttl), sizeof(uttl)) != 0) {
             report.error(u"socket option unicast TTL: " + SocketErrorCodeMessage ());
             return false;
         }
@@ -268,7 +222,7 @@ bool ts::UDPSocket::addMembership(const IPAddress& multicast, const IPAddress& l
         // Add one membership
         report.verbose(u"joining multicast group %s from local address %s", {multicast.toString(), local.toString()});
         MReq req(multicast, local);
-        if (::setsockopt(_sock, IPPROTO_IP, IP_ADD_MEMBERSHIP, TS_SOCKOPT_T(&req.req), sizeof(req.req)) != 0) {
+        if (::setsockopt(getSocket(), IPPROTO_IP, IP_ADD_MEMBERSHIP, TS_SOCKOPT_T(&req.req), sizeof(req.req)) != 0) {
             report.error(u"error adding multicast membership to %s from local address %s: %s", {multicast.toString(), local.toString(), SocketErrorCodeMessage()});
             return false;
         }
@@ -319,7 +273,7 @@ bool ts::UDPSocket::dropMembership (Report& report)
     bool ok = true;
     for (MReqSet::const_iterator it = _mcast.begin(); it != _mcast.end(); ++it) {
         report.verbose(u"leaving multicast group %s from local address %s", {IPAddress(it->req.imr_multiaddr).toString(), IPAddress(it->req.imr_interface).toString()});
-        if (::setsockopt(_sock, IPPROTO_IP, IP_DROP_MEMBERSHIP, TS_SOCKOPT_T(&it->req), sizeof(it->req)) != 0) {
+        if (::setsockopt(getSocket(), IPPROTO_IP, IP_DROP_MEMBERSHIP, TS_SOCKOPT_T(&it->req), sizeof(it->req)) != 0) {
             report.error(u"error dropping multicast membership: " + SocketErrorCodeMessage());
             ok = false;
         }
@@ -340,7 +294,7 @@ bool ts::UDPSocket::send(const void* data, size_t size, const SocketAddress& des
     ::sockaddr addr;
     dest.copy(addr);
 
-    if (::sendto(_sock, TS_SENDBUF_T(data), TS_SOCKET_SSIZE_T(size), 0, &addr, sizeof(addr)) < 0) {
+    if (::sendto(getSocket(), TS_SENDBUF_T(data), TS_SOCKET_SSIZE_T(size), 0, &addr, sizeof(addr)) < 0) {
         report.error(u"error sending UDP message: " + SocketErrorCodeMessage());
         return false;
     }
@@ -396,25 +350,22 @@ bool ts::UDPSocket::receive(void* data,
         hdr.msg_controllen = sizeof(ancil_data);
 
         // Wait for a message.
-        TS_SOCKET_SSIZE_T insize = ::recvmsg(_sock, &hdr, 0);
-
-        // Browse returned ancillary data.
-        for (::cmsghdr* cmsg = CMSG_FIRSTHDR(&hdr); cmsg != 0; cmsg = CMSG_NXTHDR(&hdr, cmsg)) {
-            //@@ if (cmsg->cmsg_level == SOL_IP && (cmsg->cmsg_type == IP_RECVORIGDSTADDR)) {
-            //@@     memcpy(&dstaddr, CMSG_DATA(cmsg), sizeof (dstaddr));
-            //@@     dstaddr.sin_family = AF_INET;
-            //@@ }
-        }
-        //@@@@ to be continued - destination is currently not returned
-
-        //@@ Previous implementation:
-        //@@ TS_SOCKET_SOCKLEN_T senderlen = sizeof(sender_sock);
-        //@@ TS_SOCKET_SSIZE_T insize = ::recvfrom(_sock, TS_RECVBUF_T(data), int(max_size), 0, &sender_sock, &senderlen);
+        TS_SOCKET_SSIZE_T insize = ::recvmsg(getSocket(), &hdr, 0);
 
         if (insize >= 0) {
             // Received a message
-            ret_size = size_t (insize);
-            sender = SocketAddress (sender_sock);
+            ret_size = size_t(insize);
+            sender = SocketAddress(sender_sock);
+
+            // Browse returned ancillary data.
+            for (::cmsghdr* cmsg = CMSG_FIRSTHDR(&hdr); cmsg != 0; cmsg = CMSG_NXTHDR(&hdr, cmsg)) {
+                report.debug(u"UDP recvmsg, ancillary message %d, level %d, %d bytes", {cmsg->cmsg_type, cmsg->cmsg_level, cmsg->cmsg_len});
+                if (cmsg->cmsg_level == SOL_IP && cmsg->cmsg_type == IP_PKTINFO && cmsg->cmsg_len >= sizeof(::in_pktinfo)) {
+                    const ::in_pktinfo* info = reinterpret_cast<const ::in_pktinfo*>(CMSG_DATA(cmsg));
+                    destination = SocketAddress(info->ipi_addr, _local_address.port());
+                }
+            }
+
             return true;
         }
         else if (abort != 0 && abort->aborting()) {
@@ -429,7 +380,7 @@ bool ts::UDPSocket::receive(void* data,
 #endif
         else {
             // Abort on non-interrupt errors.
-            report.error(u"error receiving from UDP socket: " + SocketErrorCodeMessage());
+            report.error(u"error receiving from UDP socket: %s", {SocketErrorCodeMessage()});
             return false;
         }
     }

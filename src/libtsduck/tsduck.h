@@ -215,6 +215,7 @@
 #include "tsShortEventDescriptor.h"
 #include "tsSimulCryptDate.h"
 #include "tsSingletonManager.h"
+#include "tsSocket.h"
 #include "tsSocketAddress.h"
 #include "tsSpliceInfoTable.h"
 #include "tsStandaloneTableDemux.h"
