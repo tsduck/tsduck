@@ -33,6 +33,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsPlugin.h"
+#include "tsPluginRepository.h"
 #include "tsPCRAnalyzer.h"
 #include "tsEnumeration.h"
 TSDUCK_SOURCE;
@@ -89,7 +90,7 @@ namespace ts {
 }
 
 TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_PROCESSOR(ts::SlicePlugin)
+TSPLUGIN_DECLARE_PROCESSOR(slice, ts::SlicePlugin)
 
 
 //----------------------------------------------------------------------------

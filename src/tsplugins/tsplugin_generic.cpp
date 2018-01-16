@@ -46,10 +46,10 @@ namespace ts {
     public:
         // Implementation of plugin API
         GenericPlugin(TSP*);
-        virtual bool start();
-        virtual bool stop();
-        virtual BitRate getBitrate();
-        virtual Status processPacket(TSPacket&, bool&, bool&);
+        virtual bool start() override;
+        virtual bool stop() override;
+        virtual BitRate getBitrate() override;
+        virtual Status processPacket(TSPacket&, bool&, bool&) override;
 
     private:
         // Inaccessible operations
@@ -60,7 +60,7 @@ namespace ts {
 }
 
 TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_PROCESSOR(ts::GenericPlugin)
+TSPLUGIN_DECLARE_PROCESSOR(generic, ts::GenericPlugin)
 
 
 //----------------------------------------------------------------------------

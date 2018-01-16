@@ -33,6 +33,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsPlugin.h"
+#include "tsPluginRepository.h"
 #include "tsOneShotPacketizer.h"
 #include "tsEMMGMUX.h"
 #include "tstlvConnection.h"
@@ -103,7 +104,7 @@ namespace ts {
 }
 
 TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_PROCESSOR(ts::DataInjectPlugin)
+TSPLUGIN_DECLARE_PROCESSOR(datainject, ts::DataInjectPlugin)
 
 
 //----------------------------------------------------------------------------

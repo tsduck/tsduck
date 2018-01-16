@@ -33,6 +33,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsPlugin.h"
+#include "tsPluginRepository.h"
 #include "tsT2MIDemux.h"
 #include "tsT2MIDescriptor.h"
 #include "tsT2MIPacket.h"
@@ -86,7 +87,7 @@ namespace ts {
 }
 
 TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_PROCESSOR(ts::T2MIPlugin)
+TSPLUGIN_DECLARE_PROCESSOR(t2mi, ts::T2MIPlugin)
 
 
 //----------------------------------------------------------------------------

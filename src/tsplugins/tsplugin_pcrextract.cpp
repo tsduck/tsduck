@@ -33,6 +33,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsPlugin.h"
+#include "tsPluginRepository.h"
 TSDUCK_SOURCE;
 
 #define DEFAULT_SEPARATOR u";"
@@ -109,7 +110,7 @@ namespace ts {
 }
 
 TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_PROCESSOR(ts::PCRExtractPlugin)
+TSPLUGIN_DECLARE_PROCESSOR(pcrextract, ts::PCRExtractPlugin)
 
 
 //----------------------------------------------------------------------------

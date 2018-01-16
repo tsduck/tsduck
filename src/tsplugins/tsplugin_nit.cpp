@@ -33,6 +33,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsPlugin.h"
+#include "tsPluginRepository.h"
 #include "tsSectionDemux.h"
 #include "tsCyclingPacketizer.h"
 #include "tsPAT.h"
@@ -94,7 +95,7 @@ namespace ts {
 }
 
 TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_PROCESSOR(ts::NITPlugin)
+TSPLUGIN_DECLARE_PROCESSOR(nit, ts::NITPlugin)
 
 
 //----------------------------------------------------------------------------

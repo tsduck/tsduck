@@ -33,6 +33,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsPlugin.h"
+#include "tsPluginRepository.h"
 #include "tsScrambling.h"
 #include "tsByteBlock.h"
 TSDUCK_SOURCE;
@@ -67,7 +68,7 @@ namespace ts {
 }
 
 TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_PROCESSOR(ts::DescramblerPlugin)
+TSPLUGIN_DECLARE_PROCESSOR(descrambler, ts::DescramblerPlugin)
 
 
 //----------------------------------------------------------------------------

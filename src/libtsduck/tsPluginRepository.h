@@ -153,21 +153,21 @@ namespace ts {
             //! @param [in] name Plugin name.
             //! @param [in] allocator New input plugin allocator function.
             //!
-            Register(const UString& name, NewInputProfile allocator);
+            Register(const char* name, NewInputProfile allocator);
 
             //!
             //! The constructor registers a packet processor plugin.
             //! @param [in] name Plugin name.
             //! @param [in] allocator New packet processor plugin allocator function.
             //!
-            Register(const UString& name, NewProcessorProfile allocator);
+            Register(const char* name, NewProcessorProfile allocator);
 
             //!
             //! The constructor registers an output plugin.
             //! @param [in] name Plugin name.
             //! @param [in] allocator New output plugin allocator function.
             //!
-            Register(const UString& name, NewOutputProfile allocator);
+            Register(const char* name, NewOutputProfile allocator);
 
         private:
             // Inaccessible operations.

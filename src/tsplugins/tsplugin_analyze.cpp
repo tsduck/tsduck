@@ -33,6 +33,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsPlugin.h"
+#include "tsPluginRepository.h"
 #include "tsTSAnalyzerReport.h"
 #include "tsSysUtils.h"
 TSDUCK_SOURCE;
@@ -77,7 +78,7 @@ namespace ts {
 }
 
 TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_PROCESSOR(ts::AnalyzePlugin)
+TSPLUGIN_DECLARE_PROCESSOR(analyze, ts::AnalyzePlugin)
 
 
 //----------------------------------------------------------------------------

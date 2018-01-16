@@ -33,6 +33,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsPlugin.h"
+#include "tsPluginRepository.h"
 TSDUCK_SOURCE;
 
 
@@ -57,7 +58,7 @@ namespace ts {
 }
 
 TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_OUTPUT(ts::DropOutput)
+TSPLUGIN_DECLARE_OUTPUT(drop, ts::DropOutput)
 
 
 //----------------------------------------------------------------------------

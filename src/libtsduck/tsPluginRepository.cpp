@@ -74,19 +74,19 @@ void ts::PluginRepository::registerOutput(const UString& name, NewOutputProfile 
     }
 }
 
-ts::PluginRepository::Register::Register(const UString& name, NewInputProfile allocator)
+ts::PluginRepository::Register::Register(const char* name, NewInputProfile allocator)
 {
-    PluginRepository::Instance()->registerInput(name, allocator);
+    PluginRepository::Instance()->registerInput(UString::FromUTF8(name), allocator);
 }
 
-ts::PluginRepository::Register::Register(const UString& name, NewProcessorProfile allocator)
+ts::PluginRepository::Register::Register(const char* name, NewProcessorProfile allocator)
 {
-    PluginRepository::Instance()->registerProcessor(name, allocator);
+    PluginRepository::Instance()->registerProcessor(UString::FromUTF8(name), allocator);
 }
 
-ts::PluginRepository::Register::Register(const UString& name, NewOutputProfile allocator)
+ts::PluginRepository::Register::Register(const char* name, NewOutputProfile allocator)
 {
-    PluginRepository::Instance()->registerOutput(name, allocator);
+    PluginRepository::Instance()->registerOutput(UString::FromUTF8(name), allocator);
 }
 
 

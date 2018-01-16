@@ -33,6 +33,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsPlugin.h"
+#include "tsPluginRepository.h"
 #include "tsSectionDemux.h"
 #include "tsService.h"
 #include "tsTables.h"
@@ -106,7 +107,7 @@ namespace ts {
 }
 
 TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_PROCESSOR(ts::EITPlugin)
+TSPLUGIN_DECLARE_PROCESSOR(eit, ts::EITPlugin)
 
 
 //----------------------------------------------------------------------------

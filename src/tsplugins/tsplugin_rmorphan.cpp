@@ -33,6 +33,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsPlugin.h"
+#include "tsPluginRepository.h"
 #include "tsSectionDemux.h"
 #include "tsTables.h"
 #include "tsCASFamily.h"
@@ -74,7 +75,7 @@ namespace ts {
 }
 
 TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_PROCESSOR(ts::RMOrphanPlugin)
+TSPLUGIN_DECLARE_PROCESSOR(rmorphan, ts::RMOrphanPlugin)
 
 
 //----------------------------------------------------------------------------

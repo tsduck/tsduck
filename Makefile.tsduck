@@ -69,6 +69,15 @@ endif
 
 SYSROOT =
 
+# A shortcut-target to rebuild with static linking. Not meaningfull everywhere.
+.PHONY: static
+static:
+	+@$(MAKE) STATIC=true
+
+ifdef STATIC
+    CFLAGS_INCLUDES += -DTSDUCK_STATIC=1
+endif
+
 # External include directories and libraries.
 
 ifndef CFLAGS_CURL

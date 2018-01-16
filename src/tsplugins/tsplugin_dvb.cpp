@@ -32,8 +32,8 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsPlatform.h"
 #include "tsPlugin.h"
+#include "tsPluginRepository.h"
 #include "tsTuner.h"
 #include "tsTunerArgs.h"
 #include "tsTunerParameters.h"
@@ -75,7 +75,7 @@ namespace ts {
 }
 
 TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_INPUT(ts::DVBInput)
+TSPLUGIN_DECLARE_INPUT(dvb, ts::DVBInput)
 
 
 //----------------------------------------------------------------------------

@@ -44,6 +44,12 @@
 #include "tsVersionInfo.h"
 TSDUCK_SOURCE;
 
+// With static link, enforce a reference to MPEG/DVB structures.
+#if defined(TSDUCK_STATIC)
+#include "tsStaticReferencesDVB.h"
+const ts::StaticReferencesDVB dependenciesForStaticLib;
+#endif
+
 
 //----------------------------------------------------------------------------
 //  Interrupt handler

@@ -33,6 +33,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsPlugin.h"
+#include "tsPluginRepository.h"
 #include "tsPESDemux.h"
 #include "tsAVCSequenceParameterSet.h"
 #include "tsNames.h"
@@ -95,7 +96,7 @@ namespace ts {
 }
 
 TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_PROCESSOR(ts::PESPlugin)
+TSPLUGIN_DECLARE_PROCESSOR(pes, ts::PESPlugin)
 
 
 //----------------------------------------------------------------------------

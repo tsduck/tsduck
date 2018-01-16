@@ -33,6 +33,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsPlugin.h"
+#include "tsPluginRepository.h"
 #include "tsTSFileOutput.h"
 #include "tsTSFileInput.h"
 TSDUCK_SOURCE;
@@ -100,9 +101,9 @@ namespace ts {
 }
 
 TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_INPUT(ts::FileInput)
-TSPLUGIN_DECLARE_OUTPUT(ts::FileOutput)
-TSPLUGIN_DECLARE_PROCESSOR(ts::FileProcessor)
+TSPLUGIN_DECLARE_INPUT(file, ts::FileInput)
+TSPLUGIN_DECLARE_OUTPUT(file, ts::FileOutput)
+TSPLUGIN_DECLARE_PROCESSOR(file, ts::FileProcessor)
 
 
 //----------------------------------------------------------------------------

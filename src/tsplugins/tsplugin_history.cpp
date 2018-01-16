@@ -33,6 +33,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsPlugin.h"
+#include "tsPluginRepository.h"
 #include "tsSectionDemux.h"
 #include "tsNames.h"
 #include "tsVariable.h"
@@ -101,7 +102,7 @@ namespace ts {
 }
 
 TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_PROCESSOR(ts::HistoryPlugin)
+TSPLUGIN_DECLARE_PROCESSOR(history, ts::HistoryPlugin)
 
 
 //----------------------------------------------------------------------------

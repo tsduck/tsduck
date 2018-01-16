@@ -450,11 +450,25 @@ namespace ts {
 //  Helper macros for shared libraries
 //----------------------------------------------------------------------------
 
+#if defined(DOXYGEN)
+//!
+//! User-defined macro to enable static linking.
+//!
+//! If TSDUCK_STATIC is defined, typically on the compilation command line,
+//! the code is compiled and linked statically. Dynamic loading of plugins
+//! is disabled. All know plugins are linked inside tsp. No external plugin
+//! can be loaded.
+//! @hideinitializer
+//!
+#define TSDUCK_STATIC 1
+#endif
+
 //!
 //! Export the plugin API version number out of the shared library.
 //! All @c tsp plugin shared libraries must invoke this macro once.
 //! @hideinitializer
 //!
+#if defined(DOXYGEN) || !defined(TSDUCK_STATIC)
 #define TSPLUGIN_DECLARE_VERSION                        \
     extern "C" {                                        \
         /** @cond nodoxygen */                          \
@@ -462,57 +476,56 @@ namespace ts {
         int tspInterfaceVersion = ts::TSP::API_VERSION; \
         /** @endcond */                                 \
     }
+#else
+#define TSPLUGIN_DECLARE_VERSION
+#endif
+
+// Support macro for plugin declaration macros.
+#if !defined(DOXYGEN)
+#if defined(TSDUCK_STATIC)
+#define _TSPLUGIN_DECLARE_PLUGIN(name,type,suffix) \
+    namespace {                                    \
+        /** @cond nodoxygen */                     \
+        ts::suffix##Plugin* tspNew##suffix(ts::TSP* tsp) { return new type(tsp); } \
+        TS_UNUSED ts::PluginRepository::Register tspRegister##suffix(#name, &tspNew##suffix); \
+        /** @endcond */                            \
+    }
+#else
+#define _TSPLUGIN_DECLARE_PLUGIN(name,type,suffix) \
+    extern "C" {                                   \
+        /** @cond nodoxygen */                     \
+        TS_DLL_EXPORT ts::suffix##Plugin* tspNew##suffix(ts::TSP* tsp) { return new type(tsp); } \
+        /** @endcond */                            \
+    }
+#endif
+#endif
 
 //!
 //! Export input plugin interface out of the shared library.
 //! This macro declares the plugin allocation routine.
 //! Shall be used by shared libraries which provide input capability.
+//! @param name Plugin name. Only used with static link.
 //! @param type Name of a subclass of ts::InputPlugin implementing the plugin.
 //! @hideinitializer
 //!
-#define TSPLUGIN_DECLARE_INPUT(type)               \
-    extern "C" {                                   \
-        /** @cond nodoxygen */                     \
-        TS_DLL_EXPORT                              \
-        ts::InputPlugin* tspNewInput(ts::TSP* tsp) \
-        {                                          \
-            return new type(tsp);                  \
-        }                                          \
-        /** @endcond */                            \
-    }
+#define TSPLUGIN_DECLARE_INPUT(name,type) _TSPLUGIN_DECLARE_PLUGIN(name,type,Input)
 
 //!
 //! Export output plugin interface out of the shared library.
 //! This macro declares the plugin allocation routine.
 //! Shall be used by shared libraries which provide output capability.
+//! @param name Plugin name. Only used with static link.
 //! @param type Name of a subclass of ts::OutputPlugin implementing the plugin.
 //! @hideinitializer
 //!
-#define TSPLUGIN_DECLARE_OUTPUT(type)                 \
-    extern "C" {                                      \
-        /** @cond nodoxygen */                        \
-        TS_DLL_EXPORT                                 \
-        ts::OutputPlugin* tspNewOutput(ts::TSP* tsp)  \
-        {                                             \
-            return new type(tsp);                     \
-        }                                             \
-        /** @endcond */                               \
-    }
+#define TSPLUGIN_DECLARE_OUTPUT(name,type) _TSPLUGIN_DECLARE_PLUGIN(name,type,Output)
 
 //!
 //! Export packet processing plugin interface out of the shared library.
 //! This macro declares the plugin allocation routine.
 //! Shall be used by shared libraries which provide packet processing capability.
+//! @param name Plugin name. Only used with static link.
 //! @param type Name of a subclass of ts::ProcessorPlugin implementing the plugin.
 //! @hideinitializer
 //!
-#define TSPLUGIN_DECLARE_PROCESSOR(type)                   \
-    extern "C" {                                           \
-        /** @cond nodoxygen */                             \
-        TS_DLL_EXPORT                                      \
-        ts::ProcessorPlugin* tspNewProcessor(ts::TSP* tsp) \
-        {                                                  \
-            return new type(tsp);                          \
-        }                                                  \
-        /** @endcond */                                    \
-    }
+#define TSPLUGIN_DECLARE_PROCESSOR(name,type) _TSPLUGIN_DECLARE_PLUGIN(name,type,Processor)

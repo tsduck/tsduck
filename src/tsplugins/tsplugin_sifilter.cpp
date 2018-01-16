@@ -33,6 +33,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsPlugin.h"
+#include "tsPluginRepository.h"
 #include "tsCASSelectionArgs.h"
 #include "tsSectionDemux.h"
 #include "tsDescriptorList.h"
@@ -75,7 +76,7 @@ namespace ts {
 }
 
 TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_PROCESSOR(ts::SIFilterPlugin)
+TSPLUGIN_DECLARE_PROCESSOR(sifilter, ts::SIFilterPlugin)
 
 
 //----------------------------------------------------------------------------

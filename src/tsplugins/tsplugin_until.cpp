@@ -33,6 +33,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsPlugin.h"
+#include "tsPluginRepository.h"
 #include "tsTime.h"
 TSDUCK_SOURCE;
 
@@ -73,7 +74,7 @@ namespace ts {
 }
 
 TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_PROCESSOR(ts::UntilPlugin)
+TSPLUGIN_DECLARE_PROCESSOR(until, ts::UntilPlugin)
 
 
 //----------------------------------------------------------------------------

@@ -33,6 +33,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsPlugin.h"
+#include "tsPluginRepository.h"
 #include "tsTablesLogger.h"
 TSDUCK_SOURCE;
 
@@ -65,7 +66,7 @@ namespace ts {
 }
 
 TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_PROCESSOR(ts::TablesPlugin)
+TSPLUGIN_DECLARE_PROCESSOR(tables, ts::TablesPlugin)
 
 
 //----------------------------------------------------------------------------

@@ -33,6 +33,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsPlugin.h"
+#include "tsPluginRepository.h"
 #include "tsTime.h"
 #include "tsMemoryUtils.h"
 TSDUCK_SOURCE;
@@ -87,7 +88,7 @@ namespace ts {
 }
 
 TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_PROCESSOR(ts::CountPlugin)
+TSPLUGIN_DECLARE_PROCESSOR(count, ts::CountPlugin)
 
 
 //----------------------------------------------------------------------------

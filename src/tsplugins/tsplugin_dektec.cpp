@@ -29,8 +29,9 @@
 
 #include "tsDektecInputPlugin.h"
 #include "tsDektecOutputPlugin.h"
+#include "tsPluginRepository.h"
 TSDUCK_SOURCE;
 
 TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_INPUT(ts::DektecInputPlugin)
-TSPLUGIN_DECLARE_OUTPUT(ts::DektecOutputPlugin)
+TSPLUGIN_DECLARE_INPUT(dektec, ts::DektecInputPlugin)
+TSPLUGIN_DECLARE_OUTPUT(dektec, ts::DektecOutputPlugin)

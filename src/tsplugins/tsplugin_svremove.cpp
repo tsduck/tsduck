@@ -33,6 +33,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsPlugin.h"
+#include "tsPluginRepository.h"
 #include "tsService.h"
 #include "tsSectionDemux.h"
 #include "tsCyclingPacketizer.h"
@@ -91,7 +92,7 @@ namespace ts {
 }
 
 TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_PROCESSOR(ts::SVRemovePlugin)
+TSPLUGIN_DECLARE_PROCESSOR(svremove, ts::SVRemovePlugin)
 
 
 //----------------------------------------------------------------------------

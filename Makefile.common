@@ -275,6 +275,12 @@
 #    non-standard "clean" targets, it should set them in NODEPS before
 #    inclusion of this make file.
 #
+#  OBJDIR_PREFIX
+#    Fixed prefix to add to OBJDIR variable.
+#
+#  OBJDIR_SUFFIX
+#    Fixed suffix to add to OBJDIR variable.
+#
 #  RECURSE_ORDER
 #    Define which subdirectories should be used in which order in the
 #    $(RECURSE) shell command. Non-existent subdirectories are ignored.
@@ -462,6 +468,7 @@
 #  OBJDIR
 #    Name of the subdirectory which receives all generated binary files.
 #    Typically either "release-{arch}" or "debug-{arch}".
+#    See also input variables OBJDIR_PREFIX and OBJDIR_SUFFIX.
 #
 #  OBJS
 #    All object files (.o) to build, for all C/C++ source files.
@@ -767,9 +774,9 @@ ARFLAGS  = rc$(if $(MACOS),,U) $(ARFLAGS_EXTRA)
 
 # Output subdirectories in each project directory
 ifdef DEBUG
-    OBJDIR = debug-$(MAIN_ARCH)
+    OBJDIR = $(OBJDIR_PREFIX)debug-$(MAIN_ARCH)$(OBJDIR_SUFFIX)
 else
-    OBJDIR = release-$(MAIN_ARCH)
+    OBJDIR = $(OBJDIR_PREFIX)release-$(MAIN_ARCH)$(OBJDIR_SUFFIX)
 endif
 
 # Implicit search directives.
