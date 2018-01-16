@@ -326,7 +326,7 @@ bool ts::UDPSocket::receive(void* data,
     for (;;) {
 
         // Wait for a message.
-        const SocketErrorCode err = receiveOne(data, max_size, ret_size, sender, destination);
+        const SocketErrorCode err = receiveOne(data, max_size, ret_size, sender, destination, report);
 
         if (err == SYS_SUCCESS) {
             return true;
@@ -354,7 +354,7 @@ bool ts::UDPSocket::receive(void* data,
 // Perform one receive operation. Hide the system mud.
 //----------------------------------------------------------------------------
 
-ts::SocketErrorCode ts::UDPSocket::receiveOne(void* data, size_t max_size, size_t& ret_size, SocketAddress& sender, SocketAddress& destination)
+ts::SocketErrorCode ts::UDPSocket::receiveOne(void* data, size_t max_size, size_t& ret_size, SocketAddress& sender, SocketAddress& destination, Report& report)
 {
     // Clear returned values
     ret_size = 0;
@@ -464,7 +464,7 @@ ts::SocketErrorCode ts::UDPSocket::receiveOne(void* data, size_t max_size, size_
     // Browse returned ancillary data.
     for (::cmsghdr* cmsg = CMSG_FIRSTHDR(&hdr); cmsg != 0; cmsg = CMSG_NXTHDR(&hdr, cmsg)) {
         report.debug(u"UDP recvmsg, ancillary message %d, level %d, %d bytes", {cmsg->cmsg_type, cmsg->cmsg_level, cmsg->cmsg_len});
-        if (cmsg->cmsg_level == IPROTO_IP && cmsg->cmsg_type == IP_PKTINFO && cmsg->cmsg_len >= sizeof(::in_pktinfo)) {
+        if (cmsg->cmsg_level == IPPROTO_IP && cmsg->cmsg_type == IP_PKTINFO && cmsg->cmsg_len >= sizeof(::in_pktinfo)) {
             const ::in_pktinfo* info = reinterpret_cast<const ::in_pktinfo*>(CMSG_DATA(cmsg));
             destination = SocketAddress(info->ipi_addr, _local_address.port());
         }
