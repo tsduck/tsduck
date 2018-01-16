@@ -36,7 +36,6 @@
 #include "tspOptions.h"
 #include "tspJointTermination.h"
 #include "tsPlugin.h"
-#include "tsPluginSharedLibrary.h"
 #include "tsResidentBuffer.h"
 #include "tsUserInterrupt.h"
 #include "tsRingNode.h"
@@ -121,8 +120,7 @@ namespace ts {
         class PluginExecutor:
             public RingNode,
             public JointTermination,
-            public Thread,
-            public PluginSharedLibrary
+            public Thread
         {
         public:
             //!

@@ -32,6 +32,7 @@
 //----------------------------------------------------------------------------
 
 #include "tspPluginExecutor.h"
+#include "tsPluginRepository.h"
 #include "tsGuardCondition.h"
 #include "tsGuard.h"
 TSDUCK_SOURCE;
@@ -48,7 +49,6 @@ ts::tsp::PluginExecutor::PluginExecutor(Options* options,
     RingNode(),
     JointTermination(options, global_mutex),
     Thread(attributes),
-    PluginSharedLibrary(pl_options->name, *options),
     _name(pl_options->name),
     _shlib(0),
     _buffer(0),
@@ -61,40 +61,38 @@ ts::tsp::PluginExecutor::PluginExecutor(Options* options,
 {
     const UChar* shell = 0;
 
-    // If shared library not loaded, give up.
-
-    if (!isLoaded()) {
-        return;
-    }
-
     // Create the plugin instance object
-
     switch (pl_options->type) {
-        case Options::INPUT:
-            if (new_input != 0) {
-                _shlib = new_input(this);
+        case Options::INPUT: {
+            NewInputProfile allocator = PluginRepository::Instance()->getInput(_name, *options);
+            if (allocator != 0) {
+                _shlib = allocator(this);
                 shell = u"tsp -I";
             }
             break;
-        case Options::OUTPUT:
-            if (new_output != 0) {
-                _shlib = new_output(this);
+        }
+        case Options::OUTPUT: {
+            NewOutputProfile allocator = PluginRepository::Instance()->getOutput(_name, *options);
+            if (allocator != 0) {
+                _shlib = allocator(this);
                 shell = u"tsp -O";
             }
             break;
-        case Options::PROCESSOR:
-            if (new_processor != 0) {
-                _shlib = new_processor(this);
-                shell = u"tsp -P";
+        }
+        case Options::PROCESSOR: {
+            NewProcessorProfile allocator = PluginRepository::Instance()->getProcessor(_name, *options);
+            if (allocator != 0) {
+                _shlib = allocator(this);
+               shell = u"tsp -P";
             }
             break;
+        }
         default:
             assert(false);
     }
 
     if (_shlib == 0) {
-        error(u"plugin does not implement the %s function", {Options::PluginTypeNames.name(pl_options->type)});
-        unload();
+        // Error message already displayed.
         return;
     }
     else {
@@ -103,7 +101,6 @@ ts::tsp::PluginExecutor::PluginExecutor(Options* options,
 
     // Submit the plugin arguments for analysis.
     // The process should terminate on argument error.
-
     _shlib->analyze(pl_options->name, pl_options->args);
     assert(_shlib->valid());
 

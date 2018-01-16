@@ -177,6 +177,7 @@
 #include "tsParentalRatingDescriptor.h"
 #include "tsPlatform.h"
 #include "tsPlugin.h"
+#include "tsPluginRepository.h"
 #include "tsPluginSharedLibrary.h"
 #include "tsPollFiles.h"
 #include "tsPrivateDataSpecifierDescriptor.h"

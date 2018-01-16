@@ -177,6 +177,7 @@ HEADERS += \
     ../../../src/libtsduck/tsParentalRatingDescriptor.h \
     ../../../src/libtsduck/tsPlatform.h \
     ../../../src/libtsduck/tsPlugin.h \
+    ../../../src/libtsduck/tsPluginRepository.h \
     ../../../src/libtsduck/tsPluginSharedLibrary.h \
     ../../../src/libtsduck/tsPollFiles.h \
     ../../../src/libtsduck/tsPrivateDataSpecifierDescriptor.h \
@@ -443,6 +444,7 @@ SOURCES += \
     ../../../src/libtsduck/tsPacketizer.cpp \
     ../../../src/libtsduck/tsParentalRatingDescriptor.cpp \
     ../../../src/libtsduck/tsPlugin.cpp \
+    ../../../src/libtsduck/tsPluginRepository.cpp \
     ../../../src/libtsduck/tsPluginSharedLibrary.cpp \
     ../../../src/libtsduck/tsPollFiles.cpp \
     ../../../src/libtsduck/tsPrivateDataSpecifierDescriptor.cpp \

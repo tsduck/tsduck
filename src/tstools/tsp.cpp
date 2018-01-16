@@ -32,10 +32,10 @@
 //----------------------------------------------------------------------------
 
 #include "tspOptions.h"
-#include "tspListProcessors.h"
 #include "tspInputExecutor.h"
 #include "tspOutputExecutor.h"
 #include "tspProcessorExecutor.h"
+#include "tsPluginRepository.h"
 #include "tsAsyncReport.h"
 #include "tsSystemMonitor.h"
 #include "tsMonotonic.h"
@@ -96,30 +96,37 @@ int main(int argc, char *argv[])
     TSDuckLibCheckVersion();
     ts::TSPacket::SanityCheck();
 
+    // Get command line options.
     ts::tsp::Options opt(argc, argv);
     CERR.setMaxSeverity(opt.maxSeverity());
 
-    // Process the --list-processors option
+    // Get the repository of plugins.
+    ts::PluginRepository* plugins = ts::PluginRepository::Instance();
+    ts::CheckNonNull(plugins);
 
+    // If the initial number of plugins is not zero, we assume that plugins were statically linked.
+    // Disallow the dynamic loading of plugins.
+    if (plugins->inputCount() + plugins->processorCount() + plugins->outputCount() > 0) {
+        plugins->setSharedLibraryAllowed(false);
+    }
+
+    // Process the --list-processors option
     if (opt.list_proc) {
-        ts::tsp::ListProcessors(opt);
+        plugins->listPlugins(true, std::cerr, opt);
         return EXIT_SUCCESS;
     }
 
     // IP initialization required on foolish OS
-
     if (!ts::IPInitialize(CERR)) {
         return EXIT_FAILURE;
     }
 
     // Prevent from being killed when writing on broken pipes.
-
     ts::IgnorePipeSignal();
 
     // There is one global mutex for protected operations.
     // The resulting bottleneck of this single mutex is acceptable as long
     // as all protected operations are fast (pointer update, simple arithmetic).
-
     ts::Mutex global_mutex;
 
     // Load all plugins and analyze their command line arguments.
@@ -139,14 +146,12 @@ int main(int argc, char *argv[])
     }
 
     // Exit on error when initializing the plugins
-
     opt.exitOnError();
 
-    // Create an asynchronous error logger. Can be used in multi-threaded
-    // context. Set this logger as report method for all executors.
-
+    // Create an asynchronous error logger. Can be used in multi-threaded context.
     ts::AsyncReport report(opt.maxSeverity(), opt.timed_log, opt.log_msg_count, opt.sync_log);
 
+    // Set this logger as report method for all executors.
     ts::tsp::PluginExecutor* proc = input;
     do {
         proc->setReport(&report);
@@ -154,9 +159,7 @@ int main(int argc, char *argv[])
     } while ((proc = proc->ringNext<ts::tsp::PluginExecutor>()) != input);
 
     // Allocate a memory-resident buffer of TS packets
-
     ts::ResidentBuffer<ts::TSPacket> packet_buffer(opt.bufsize / ts::PKT_SIZE);
-
     if (!packet_buffer.isLocked()) {
         report.verbose(u"tsp: buffer failed to lock into physical memory (%d: %s), risk of real-time issue",
                        {packet_buffer.lockErrorCode(), ts::ErrorCodeMessage(packet_buffer.lockErrorCode())});
@@ -165,7 +168,6 @@ int main(int argc, char *argv[])
 
     // Start all processors, except output, in reverse order (input last).
     // Exit application in case of error.
-
     for (proc = output->ringPrevious<ts::tsp::PluginExecutor>(); proc != output; proc = proc->ringPrevious<ts::tsp::PluginExecutor>()) {
         if (!proc->plugin()->start()) {
             return EXIT_FAILURE;
@@ -174,46 +176,39 @@ int main(int argc, char *argv[])
 
     // Initialize packet buffer in the ring of executors.
     // Exit application in case of error.
-
     if (!input->initAllBuffers(&packet_buffer)) {
         return EXIT_FAILURE;
     }
 
     // Start the output device (we now have an idea of the bitrate).
     // Exit application in case of error.
-
     if (!output->plugin()->start()) {
         return EXIT_FAILURE;
     }
 
     // Use a Ctrl+C interrupt handler
-
     ts::tsp::TSPInterruptHandler interrupt_handler(&report, input);
     ts::UserInterrupt interrupt_manager(&interrupt_handler, true, true);
 
     // Create a monitoring thread if required.
-
     ts::SystemMonitor monitor(&report);
     if (opt.monitor) {
         monitor.start();
     }
 
     // Create all plugin executors threads.
-
     proc = input;
     do {
         proc->start();
     } while ((proc = proc->ringNext<ts::tsp::PluginExecutor>()) != input);
 
     // Wait for threads to terminate
-
     proc = input;
     do {
         proc->waitForTermination();
     } while ((proc = proc->ringNext<ts::tsp::PluginExecutor>()) != input);
 
     // Deallocate all plugins and plugin executor
-
     bool last;
     proc = input;
     do {
