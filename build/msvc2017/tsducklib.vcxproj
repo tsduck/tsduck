@@ -178,6 +178,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsPIDOperator.h" />
     <ClInclude Include="..\..\src\libtsduck\tsPlatform.h" />
     <ClInclude Include="..\..\src\libtsduck\tsPlugin.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsPluginRepository.h" />
     <ClInclude Include="..\..\src\libtsduck\tsPluginSharedLibrary.h" />
     <ClInclude Include="..\..\src\libtsduck\tsPMT.h" />
     <ClInclude Include="..\..\src\libtsduck\tsPollFiles.h" />
@@ -370,6 +371,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsjson.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsOutputPager.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsPlugin.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsPluginRepository.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsRegistrationDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsSpliceInfoTable.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsStaticReferencesDVB.cpp" />

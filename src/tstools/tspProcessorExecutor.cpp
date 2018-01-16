@@ -48,7 +48,6 @@ ts::tsp::ProcessorExecutor::ProcessorExecutor(Options* options,
     _processor(dynamic_cast<ProcessorPlugin*>(_shlib)),
     _max_flush_pkt(options->max_flush_pkt)
 {
-    assert(!isLoaded() || _processor != 0);
 }
 
 

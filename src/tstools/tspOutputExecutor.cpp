@@ -45,9 +45,8 @@ ts::tsp::OutputExecutor::OutputExecutor(Options* options,
                                         Mutex& global_mutex) :
 
     PluginExecutor(options, pl_options, attributes, global_mutex),
-    _output(dynamic_cast<OutputPlugin*> (_shlib))
+    _output(dynamic_cast<OutputPlugin*>(_shlib))
 {
-    assert (!isLoaded() || _output != 0);
 }
 
 

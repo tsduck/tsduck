@@ -58,7 +58,6 @@ ts::tsp::InputExecutor::InputExecutor(Options* options,
     _instuff_nullpkt_remain(0),
     _instuff_inpkt_remain(0)
 {
-    assert(!isLoaded() || _input != 0);
 }
 
 

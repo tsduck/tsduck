@@ -13,9 +13,6 @@
     <ClCompile Include="..\..\src\tstools\tspJointTermination.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\tstools\tspListProcessors.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\tstools\tspOptions.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -37,9 +34,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\tstools\tspJointTermination.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\tstools\tspListProcessors.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\tstools\tspOptions.h">
