@@ -48,7 +48,7 @@ namespace ts {
     //!
     //! @return True on success, false on error.
     //!
-    TSDUCKDLL bool IPInitialize (Report& = CERR);
+    TSDUCKDLL bool IPInitialize(Report& = CERR);
 
     //!
     //! Type for socket error code.

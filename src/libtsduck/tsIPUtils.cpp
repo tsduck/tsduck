@@ -40,18 +40,21 @@ TSDUCK_SOURCE;
 // Initialize IP usage. Shall be called once at least.
 //----------------------------------------------------------------------------
 
-bool ts::IPInitialize (Report& report)
+bool ts::IPInitialize(Report& report)
 {
 #if defined (TS_WINDOWS)
-
-    // Request version 2.2 of Winsock
-    ::WSADATA data;
-    int err = ::WSAStartup (MAKEWORD (2, 2), &data);
-    if (err != 0) {
-        report.error(u"WSAStartup failed, WinSock error %X", {err});
-        return false;
+    // Execute only once (except - harmless - race conditions during startup).
+    static volatile bool done = false;
+    if (!done) {
+        // Request version 2.2 of Winsock
+        ::WSADATA data;
+        int err = ::WSAStartup(MAKEWORD(2, 2), &data);
+        if (err != 0) {
+            report.error(u"WSAStartup failed, WinSock error %X", {err});
+            return false;
+        }
+        done = true;
     }
-
 #endif
 
     return true;
