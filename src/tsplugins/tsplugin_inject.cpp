@@ -33,6 +33,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsPlugin.h"
+#include "tsPluginRepository.h"
 #include "tsCyclingPacketizer.h"
 #include "tsFileNameRate.h"
 #include "tsSectionFile.h"
@@ -95,7 +96,7 @@ namespace ts {
 }
 
 TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_PROCESSOR(ts::InjectPlugin)
+TSPLUGIN_DECLARE_PROCESSOR(inject, ts::InjectPlugin)
 
 
 //----------------------------------------------------------------------------

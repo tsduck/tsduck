@@ -33,6 +33,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsPlugin.h"
+#include "tsPluginRepository.h"
 #include "tsPSILogger.h"
 TSDUCK_SOURCE;
 
@@ -65,7 +66,7 @@ namespace ts {
 }
 
 TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_PROCESSOR(ts::PSIPlugin)
+TSPLUGIN_DECLARE_PROCESSOR(psi, ts::PSIPlugin)
 
 
 //----------------------------------------------------------------------------

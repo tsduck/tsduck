@@ -33,6 +33,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsPlugin.h"
+#include "tsPluginRepository.h"
 TSDUCK_SOURCE;
 
 
@@ -85,7 +86,7 @@ namespace ts {
 }
 
 TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_PROCESSOR(ts::BitrateMonitorPlugin)
+TSPLUGIN_DECLARE_PROCESSOR(bitrate_monitor, ts::BitrateMonitorPlugin)
 
 #if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
 const ts::BitRate ts::BitrateMonitorPlugin::DEFAULT_BITRATE_MIN;

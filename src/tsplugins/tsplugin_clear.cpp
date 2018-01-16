@@ -33,6 +33,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsPlugin.h"
+#include "tsPluginRepository.h"
 #include "tsService.h"
 #include "tsSectionDemux.h"
 #include "tsPAT.h"
@@ -85,7 +86,7 @@ namespace ts {
 }
 
 TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_PROCESSOR(ts::ClearPlugin)
+TSPLUGIN_DECLARE_PROCESSOR(clear, ts::ClearPlugin)
 
 
 //----------------------------------------------------------------------------

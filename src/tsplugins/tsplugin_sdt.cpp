@@ -33,6 +33,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsPlugin.h"
+#include "tsPluginRepository.h"
 #include "tsSectionDemux.h"
 #include "tsCyclingPacketizer.h"
 #include "tsServiceDescriptor.h"
@@ -78,7 +79,7 @@ namespace ts {
 }
 
 TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_PROCESSOR(ts::SDTPlugin)
+TSPLUGIN_DECLARE_PROCESSOR(sdt, ts::SDTPlugin)
 
 
 //----------------------------------------------------------------------------

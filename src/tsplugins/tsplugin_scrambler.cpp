@@ -33,6 +33,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsPlugin.h"
+#include "tsPluginRepository.h"
 #include "tsScrambling.h"
 #include "tsByteBlock.h"
 #include "tsService.h"
@@ -235,7 +236,7 @@ namespace ts {
 }
 
 TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_PROCESSOR(ts::ScramblerPlugin)
+TSPLUGIN_DECLARE_PROCESSOR(scrambler, ts::ScramblerPlugin)
 
 
 //----------------------------------------------------------------------------

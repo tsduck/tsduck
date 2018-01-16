@@ -33,6 +33,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsPlugin.h"
+#include "tsPluginRepository.h"
 #include "tsSectionDemux.h"
 #include "tsTunerUtils.h"
 #include "tsPAT.h"
@@ -84,7 +85,7 @@ namespace ts {
 }
 
 TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_PROCESSOR(ts::NITScanPlugin)
+TSPLUGIN_DECLARE_PROCESSOR(nitscan, ts::NITScanPlugin)
 
 
 //----------------------------------------------------------------------------

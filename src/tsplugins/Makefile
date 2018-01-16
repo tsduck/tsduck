@@ -31,20 +31,37 @@
 #
 #-----------------------------------------------------------------------------
 
+# With static link, we compile in a specific directory.
+OBJDIR_SUFFIX := $(if $(STATIC),-static,)
+
 include ../../Makefile.tsduck
+
+.PHONY: shlibs install install-devel
+
+ifndef STATIC
+
+# Dynamic link (the default), we build shared objects.
+SHLIBS := $(addprefix $(OBJDIR)/,$(addsuffix .so,$(TSPLUGINS)))
 
 default: shlibs
 	@true
-
-SHLIBS := $(addprefix $(OBJDIR)/,$(addsuffix .so,$(TSPLUGINS)))
-
-.PHONY: shlibs
 shlibs: $(SHLIBS)
 $(SHLIBS): $(LIBTSDUCKDIR)/$(OBJDIR)/$(SHARED_LIBTSDUCK)
 
-.PHONY: install install-devel
 install: $(SHLIBS)
 	install -d -m 755 $(SYSROOT)$(SYSPREFIX)/bin
 	install -m 755 $(SHLIBS) $(SYSROOT)$(SYSPREFIX)/bin
 install-devel:
 	@true
+
+else
+
+# With static link, we compile only (in a specific directory), we do not build shared objects.
+default: $(addprefix $(OBJDIR)/,$(addsuffix .o,$(TSPLUGINS)))
+	@true
+install:
+	@true
+install-devel:
+	@true
+
+endif

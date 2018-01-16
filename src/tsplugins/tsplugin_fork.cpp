@@ -33,6 +33,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsPlugin.h"
+#include "tsPluginRepository.h"
 #include "tsForkPipe.h"
 TSDUCK_SOURCE;
 
@@ -66,7 +67,7 @@ namespace ts {
 }
 
 TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_PROCESSOR(ts::ForkPlugin)
+TSPLUGIN_DECLARE_PROCESSOR(fork, ts::ForkPlugin)
 
 
 //----------------------------------------------------------------------------

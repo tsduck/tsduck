@@ -33,6 +33,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsPlugin.h"
+#include "tsPluginRepository.h"
 TSDUCK_SOURCE;
 
 
@@ -73,7 +74,7 @@ namespace ts {
 }
 
 TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_PROCESSOR(ts::FilterPlugin)
+TSPLUGIN_DECLARE_PROCESSOR(filter, ts::FilterPlugin)
 
 
 //----------------------------------------------------------------------------

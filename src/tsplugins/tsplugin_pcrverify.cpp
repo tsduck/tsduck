@@ -33,6 +33,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsPlugin.h"
+#include "tsPluginRepository.h"
 #include "tsTime.h"
 TSDUCK_SOURCE;
 
@@ -91,7 +92,7 @@ namespace ts {
 }
 
 TSPLUGIN_DECLARE_VERSION
-TSPLUGIN_DECLARE_PROCESSOR(ts::PCRVerifyPlugin)
+TSPLUGIN_DECLARE_PROCESSOR(pcrverify, ts::PCRVerifyPlugin)
 
 #if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
 const int64_t ts::PCRVerifyPlugin::PCR_PER_MICRO_SEC;
