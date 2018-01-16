@@ -38,6 +38,7 @@
 #include "tsUDPSocket.h"
 #include "tsThread.h"
 #include "tsSysUtils.h"
+#include "tsIPUtils.h"
 #include "tsCerrReport.h"
 #include "utestCppUnitThread.h"
 TSDUCK_SOURCE;
@@ -437,6 +438,8 @@ namespace {
 // Test cases
 void NetworkingTest::testTCPSocket()
 {
+    CPPUNIT_ASSERT(ts::IPInitialize());
+
     const uint16_t portNumber = 12345;
 
     // Create server socket
@@ -543,6 +546,8 @@ namespace {
 // Test cases
 void NetworkingTest::testUDPSocket()
 {
+    CPPUNIT_ASSERT(ts::IPInitialize());
+
     const uint16_t portNumber = 12345;
 
     // Create server socket

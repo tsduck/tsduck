@@ -368,7 +368,7 @@ ts::SocketErrorCode ts::UDPSocket::receiveOne(void* data, size_t max_size, size_
     // Normally, this operation should be done quite easily using recvmsg.
     // On Windows, all socket operations are smoothly emulated, including
     // recvfrom, allowing a reasonable portability. However, in the specific
-    // case of recvmsg, there is no equivalent but a similar - but carefully
+    // case of recvmsg, there is no equivalent but a similar - and carefully
     // incompatible - function named WSARecvMsg. Not only this function is
     // different from recvmsg, but it is also not exported from any DLL.
     // Its address must be queried dynamically. The stupid idiot who had
@@ -377,9 +377,6 @@ ts::SocketErrorCode ts::UDPSocket::receiveOne(void* data, size_t max_size, size_
 #if defined(TS_WINDOWS)
 
     // First, get the address of WSARecvMsg the first time we use it.
-    // Non-intuitive sequence. See sample code in:
-    // https://github.com/pauldotknopf/WindowsSDK7-Samples/tree/master/netds/winsock/recvmsg
-
     if (_wsaRevcMsg == 0) {
         ::LPFN_WSARECVMSG funcAddress = 0;
         ::GUID guid = WSAID_WSARECVMSG;
@@ -389,8 +386,9 @@ ts::SocketErrorCode ts::UDPSocket::receiveOne(void* data, size_t max_size, size_
             return LastSocketErrorCode();
         }
         if (::WSAIoctl(sock, SIO_GET_EXTENSION_FUNCTION_POINTER, &guid, sizeof(guid), &funcAddress, sizeof(funcAddress), &dwBytes, 0, 0) != 0) {
+            const SocketErrorCode err = LastSocketErrorCode();
             ::closesocket(sock);
-            return LastSocketErrorCode();
+            return err;
         }
         ::closesocket(sock);
         // Now update the volatile value.
