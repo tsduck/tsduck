@@ -22,6 +22,8 @@ Version 3.6
   requested stream. Previously, in some system configurations, the input plugin
   ip could receive packets from distinct multicast streams.
 
+- Various fixes about UDP on macOS (multicast reception, --reuse-port options).
+
 - The help text of all TSDuck applications (using option --help) is now paged
   through "less" or any any other pager application.
 

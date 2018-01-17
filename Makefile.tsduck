@@ -69,7 +69,13 @@ endif
 
 SYSROOT =
 
-# A shortcut-target to rebuild with static linking. Not meaningfull everywhere.
+# A shortcut-target to rebuild with static linking.
+# Not meaningfull everywhere:
+# - Static linking with system libraries is not supported on macOS.
+# - On Linux, all used libraries must be installed. This is not supported
+#   on all distros. On Fedora, you may install "glibc-static libstdc++-static"
+#   but there is no static package for curl and pcsclite.
+
 .PHONY: static
 static:
 	+@$(MAKE) STATIC=true
