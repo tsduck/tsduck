@@ -48,21 +48,21 @@ ts::IPAddress::IPAddress(uint8_t b1, uint8_t b2, uint8_t b3, uint8_t b4) :
 {
 }
 
-ts::IPAddress::IPAddress (const ::sockaddr& s) :
-    _addr (AnyAddress)
+ts::IPAddress::IPAddress(const ::sockaddr& s) :
+    _addr(AnyAddress)
 {
     if (s.sa_family == AF_INET) {
-        assert (sizeof(::sockaddr) == sizeof(::sockaddr_in));
-        const ::sockaddr_in* sp = reinterpret_cast<const ::sockaddr_in*> (&s);
-        _addr = ntohl (sp->sin_addr.s_addr);
+        assert(sizeof(::sockaddr) >= sizeof(::sockaddr_in));
+        const ::sockaddr_in* sp = reinterpret_cast<const ::sockaddr_in*>(&s);
+        _addr = ntohl(sp->sin_addr.s_addr);
     }
 }
 
-ts::IPAddress::IPAddress (const ::sockaddr_in& s) :
-    _addr (AnyAddress)
+ts::IPAddress::IPAddress(const ::sockaddr_in& s) :
+    _addr(AnyAddress)
 {
     if (s.sin_family == AF_INET) {
-        _addr = ntohl (s.sin_addr.s_addr);
+        _addr = ntohl(s.sin_addr.s_addr);
     }
 }
 

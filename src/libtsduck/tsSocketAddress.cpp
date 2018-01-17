@@ -40,19 +40,19 @@ TSDUCK_SOURCE;
 //----------------------------------------------------------------------------
 
 ts::SocketAddress::SocketAddress(const ::sockaddr& s) :
-    IPAddress (s),
-    _port (AnyPort)
+    IPAddress(s),
+    _port(AnyPort)
 {
     if (s.sa_family == AF_INET) {
-        assert (sizeof(::sockaddr) == sizeof(::sockaddr_in));
-        const ::sockaddr_in* sp = reinterpret_cast<const ::sockaddr_in*> (&s);
-        _port = ntohs (sp->sin_port);
+        assert(sizeof(::sockaddr) >= sizeof(::sockaddr_in));
+        const ::sockaddr_in* sp = reinterpret_cast<const ::sockaddr_in*>(&s);
+        _port = ntohs(sp->sin_port);
     }
 }
 
 ts::SocketAddress::SocketAddress(const ::sockaddr_in& s) :
-    IPAddress (s),
-    _port (s.sin_family == AF_INET ? ntohs(s.sin_port) : AnyPort)
+    IPAddress(s),
+    _port(s.sin_family == AF_INET ? ntohs(s.sin_port) : AnyPort)
 {
 }
 

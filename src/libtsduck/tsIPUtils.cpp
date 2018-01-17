@@ -33,6 +33,9 @@
 
 #include "tsIPUtils.h"
 #include "tsIPAddress.h"
+#if defined(TS_MAC)
+#include <ifaddrs.h>
+#endif
 TSDUCK_SOURCE;
 
 
@@ -68,8 +71,7 @@ bool ts::IPInitialize(Report& report)
 bool ts::IsLocalIPAddress(const IPAddress& address)
 {
     IPAddressVector locals;
-    return address == IPAddress::LocalHost ||
-        (GetLocalIPAddresses(locals) && std::find(locals.begin(), locals.end(), address) != locals.end());
+    return address == IPAddress::LocalHost || (GetLocalIPAddresses(locals) && std::find(locals.begin(), locals.end(), address) != locals.end());
 }
 
 
@@ -77,15 +79,39 @@ bool ts::IsLocalIPAddress(const IPAddress& address)
 // This method returns the list of all local IPv4 addresses in the system
 //----------------------------------------------------------------------------
 
-bool ts::GetLocalIPAddresses (IPAddressVector& list, Report& report)
+bool ts::GetLocalIPAddresses(IPAddressVector& list, Report& report)
 {
     bool status = true;
     list.clear();
 
-    // Create a socket to query the system
+#if defined(TS_MAC)
+
+    // Get the list of local addresses. The memory is allocated by getifaddrs().
+    ::ifaddrs* start = 0;
+    if (::getifaddrs(&start) != 0) {
+        report.error(u"error getting local addresses: %s", {ErrorCodeMessage()});
+        return false;
+    }
+
+    // Browse the list of interfaces.
+    for (::ifaddrs* ifa = start; ifa != 0; ifa = ifa->ifa_next) {
+        if (ifa->ifa_addr != 0) {
+            IPAddress addr(*ifa->ifa_addr);
+            if (addr.hasAddress() && addr != IPAddress::LocalHost) {
+                list.push_back(addr);
+            }
+        }
+    }
+
+    // Free the system-allocated memory.
+    ::freeifaddrs(start);
+
+#elif defined(TS_WINDOWS) || defined(TS_UNIX)
+
+    // Create a socket to query the system on
     TS_SOCKET_T sock = ::socket (PF_INET, SOCK_DGRAM, IPPROTO_UDP);
     if (sock == TS_SOCKET_T_INVALID) {
-        report.error(u"error creating socket: " + SocketErrorCodeMessage());
+        report.error(u"error creating socket: %s", {SocketErrorCodeMessage()});
         return false;
     }
 
@@ -96,14 +122,14 @@ bool ts::GetLocalIPAddresses (IPAddressVector& list, Report& report)
     ::INTERFACE_INFO info[32];  // max 32 local interface (arbitrary)
     ::DWORD retsize;
     if (::WSAIoctl (sock, SIO_GET_INTERFACE_LIST, 0, 0, info, ::DWORD (sizeof(info)), &retsize, 0, 0) != 0) {
-        report.error(u"error getting local addresses: " + SocketErrorCodeMessage());
+        report.error(u"error getting local addresses: %s", {SocketErrorCodeMessage()});
         status = false;
     }
     else {
-        retsize = std::max<::DWORD> (0, std::min (retsize, ::DWORD (sizeof(info))));
+        retsize = std::max<::DWORD>(0, std::min(retsize, ::DWORD(sizeof(info))));
         size_t count = retsize / sizeof(::INTERFACE_INFO);
         for (size_t i = 0; i < count; ++i) {
-            IPAddress addr (info[i].iiAddress.Address);
+            IPAddress addr(info[i].iiAddress.Address);
             if (addr.hasAddress() && addr != IPAddress::LocalHost) {
                 list.push_back (addr);
             }
@@ -120,17 +146,17 @@ bool ts::GetLocalIPAddresses (IPAddressVector& list, Report& report)
     ifc.ifc_req = info;
     ifc.ifc_len = sizeof(info);
 
-    if (::ioctl (sock, SIOCGIFCONF, &ifc) != 0) {
-        report.error(u"error getting local addresses: " + SocketErrorCodeMessage());
+    if (::ioctl(sock, SIOCGIFCONF, &ifc) != 0) {
+        report.error(u"error getting local addresses: %s", {SocketErrorCodeMessage()});
         status = false;
     }
     else {
-        ifc.ifc_len = std::max (0, std::min (ifc.ifc_len, int (sizeof(info))));
+        ifc.ifc_len = std::max(0, std::min(ifc.ifc_len, int(sizeof(info))));
         size_t count = ifc.ifc_len / sizeof(::ifreq);
         for (size_t i = 0; i < count; ++i) {
-            IPAddress addr (info[i].ifr_addr);
+            IPAddress addr(info[i].ifr_addr);
             if (addr.hasAddress() && addr != IPAddress::LocalHost) {
-                list.push_back (addr);
+                list.push_back(addr);
             }
         }
     }
@@ -139,5 +165,13 @@ bool ts::GetLocalIPAddresses (IPAddressVector& list, Report& report)
 
     // Close socket
     TS_SOCKET_CLOSE (sock);
+
+#else
+
+    report.error(u"getting local addresses is not implemented");
+    status = false;
+
+#endif
+
     return status;
 }
