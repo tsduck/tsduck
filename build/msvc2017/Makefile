@@ -27,11 +27,13 @@
 #
 #-----------------------------------------------------------------------------
 #
-#  There is nothing to build here, but cleanup is required.
+#  Makefile for directory containing MS Visual Studio project files.
 #
 #-----------------------------------------------------------------------------
 
 include ../../Makefile.tsduck
+
+RECURSE_ORDER = none
 
 default:
 	@true
