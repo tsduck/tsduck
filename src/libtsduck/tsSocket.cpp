@@ -148,9 +148,16 @@ bool ts::Socket::reusePort(bool active, Report& report)
     int reuse = int(active); // Actual socket option is an int.
     report.debug(u"setting socket reuse address to %'d", {reuse});
     if (::setsockopt(_sock, SOL_SOCKET, SO_REUSEADDR, TS_SOCKOPT_T(&reuse), sizeof(reuse)) != 0) {
+        report.error(u"error setting socket reuse address: %s", {SocketErrorCodeMessage()});
+        return false;
+    }
+#if defined(TS_MAC)
+    // BSD (MacOS) also needs SO_REUSEPORT in addition to SO_REUSEADDR.
+    if (::setsockopt(_sock, SOL_SOCKET, SO_REUSEPORT, TS_SOCKOPT_T(&reuse), sizeof(reuse)) != 0) {
         report.error(u"error setting socket reuse port: %s", {SocketErrorCodeMessage()});
         return false;
     }
+#endif
     return true;
 }
 
