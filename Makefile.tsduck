@@ -75,7 +75,11 @@ static:
 	+@$(MAKE) STATIC=true
 
 ifdef STATIC
-    CFLAGS_INCLUDES += -DTSDUCK_STATIC=1
+    ifdef MACOS
+        $(error static linking is not supported on macOS)
+    else
+        CFLAGS_INCLUDES += -DTSDUCK_STATIC=1
+    endif
 endif
 
 # External include directories and libraries.
