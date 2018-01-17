@@ -301,7 +301,7 @@ namespace ts {
     //! @param [in] tsp Associated callback to @c tsp executable.
     //! @return A new allocated object implementing ts::InputPlugin.
     //!
-    typedef InputPlugin* (*NewInputProfile)(const TSP* tsp);
+    typedef InputPlugin* (*NewInputProfile)(TSP* tsp);
 
 
     //-------------------------------------------------------------------------
@@ -360,7 +360,7 @@ namespace ts {
     //! @param [in] tsp Associated callback to @c tsp executable.
     //! @return A new allocated object implementing ts::OutputPlugin.
     //!
-    typedef OutputPlugin* (*NewOutputProfile)(const TSP* tsp);
+    typedef OutputPlugin* (*NewOutputProfile)(TSP* tsp);
 
 
     //-------------------------------------------------------------------------
@@ -442,7 +442,7 @@ namespace ts {
     //! @param [in] tsp Associated callback to @c tsp executable.
     //! @return A new allocated object implementing ts::ProcessorPlugin.
     //!
-    typedef ProcessorPlugin* (*NewProcessorProfile)(const TSP* tsp);
+    typedef ProcessorPlugin* (*NewProcessorProfile)(TSP* tsp);
 }
 
 

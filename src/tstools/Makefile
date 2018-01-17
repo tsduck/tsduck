@@ -31,20 +31,23 @@
 #
 #-----------------------------------------------------------------------------
 
+# With static link, we compile in a specific directory.
+OBJDIR_SUFFIX := $(if $(STATIC),-static,)
+
 include ../../Makefile.tsduck
 
 default: execs $(OBJDIR)/setenv.sh
 	@true
 
 # Definition of OBJDIR for directories without static alternative
-OBJDIR_OTHER := $(OBJDIR)
+OBJDIR_OTHER := $(subst -static,,$(OBJDIR))
 
 ifndef STATIC
 # With dynamic link (the default), we use the shareable library.
 $(EXECS): $(LIBTSDUCKDIR)/$(OBJDIR)/$(SHARED_LIBTSDUCK)
 else
 # With static link, we compile in a specific directory and we link tsp with all plugins.
-OBJDIR := $(OBJDIR)-static
+LDFLAGS_EXTRA = -static
 $(EXECS): $(LIBTSDUCKDIR)/$(OBJDIR_OTHER)/$(STATIC_LIBTSDUCK)
 $(OBJDIR)/tsp: $(addprefix $(TSPLUGINSDIR)/$(OBJDIR)/,$(addsuffix .o,$(TSDUCK_STATIC)))
 endif
