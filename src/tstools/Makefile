@@ -49,7 +49,7 @@ else
 # With static link, we compile in a specific directory and we link tsp with all plugins.
 LDFLAGS_EXTRA = -static
 $(EXECS): $(LIBTSDUCKDIR)/$(OBJDIR_OTHER)/$(STATIC_LIBTSDUCK)
-$(OBJDIR)/tsp: $(addprefix $(TSPLUGINSDIR)/$(OBJDIR)/,$(addsuffix .o,$(TSDUCK_STATIC)))
+$(OBJDIR)/tsp: $(addprefix $(TSPLUGINSDIR)/$(OBJDIR)/,$(addsuffix .o,$(TSPLUGINS)))
 endif
 
 .PHONY: execs
