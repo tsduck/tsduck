@@ -87,9 +87,7 @@ namespace ts {
         return ErrorCodeMessage(code);
     }
 
-    //! @cond nodoxygen
     class IPAddress;
-    //! @endcond
 
     //!
     //! Vector of IP addresses.
