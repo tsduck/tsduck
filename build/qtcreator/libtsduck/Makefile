@@ -31,9 +31,11 @@
 #
 #-----------------------------------------------------------------------------
 
-include ../../Makefile.tsduck
+include ../../../Makefile.tsduck
 
-RECURSE_ORDER = libtsduck
+default: libtsduck-files.pri
+	@true
 
-default:
-	+@$(RECURSE)
+libtsduck-files.pri: $(BUILD_PROJ_FILES) $(LIB_HEADERS) $(LIB_SOURCES)
+	@echo '  [REBUILD] $@'; \
+	$(BUILD_PROJ_FILES) $@

@@ -92,20 +92,16 @@ OBJS += $(DTAPI_OBJECT)
 # Library containing all modules.
 # - Both static and dynamic libraries are created but only use the dynamic one when building
 #   tools and plugins.
-# - On MacOS, there is no "flock" command and it is not possible to serialize access to the
-#   .a file. So, we create the library in one single big command.
+# - There are so many object files that one single big 'ar' command is faster than individual
+#   'ar' commands per object module.
 # - The module tsStaticReferencesDVB is used only in the static library. It is useless in
 #   the dynamic library. In fact, it would only slow down application startup.
 
 .PHONY: libs
 libs: $(OBJDIR)/$(STATIC_LIBTSDUCK) $(OBJDIR)/$(SHARED_LIBTSDUCK)
 
-ifdef MACOS
 $(OBJDIR)/$(STATIC_LIBTSDUCK): $(OBJS)
 	@echo '  [AR] $@'; $(AR) $(ARFLAGS) $@ $^
-else
-$(OBJDIR)/$(STATIC_LIBTSDUCK): $(OBJDIR)/$(STATIC_LIBTSDUCK)($(OBJS))
-endif
 
 $(OBJDIR)/$(SHARED_LIBTSDUCK): $(filter-out $(OBJDIR)/tsStaticReferencesDVB.o,$(OBJS))
 	@echo '  [DTAPI] $(if $(DTAPI_OBJECT),using $(DTAPI_OBJECT),no DTAPI available)'; \
@@ -114,20 +110,9 @@ $(OBJDIR)/$(SHARED_LIBTSDUCK): $(filter-out $(OBJDIR)/tsStaticReferencesDVB.o,$(
 
 # The header tsduck.h includes all headers
 
-GEN_FILES = $(sort $(filter-out tsduck.h %Template.h,$(wildcard $(if $(1),$(1)/,)*.h)))
-GEN_INCLUDES = $(if $(call GEN_FILES,$(1)),$(if $(1),echo; echo -n '\#if defined(TS_'; tr <<<'$(1))' 'a-z\n' 'A-Z ';,) \
-    $(SED) <<<'$(call GEN_FILES,$(1))' -e 's| *$(if $(1),$(1)/,)\([^\. ]*\).h|\n\#include "\1.h"|g' \
-    $(if $(1),; echo '\#endif',),true)
-
-tsduck.h: $(SRCROOT)/HEADER.txt $(call GEN_FILES,) $(call GEN_FILES,linux) $(call GEN_FILES,mac) $(call GEN_FILES,windows)
+tsduck.h: $(BUILD_PROJ_FILES) $(SRCROOT)/HEADER.txt $(LIB_HEADERS)
 	@echo '  [REBUILD] $@'; \
-	(cat $(SRCROOT)/HEADER.txt; \
-	echo; echo -n '#pragma once'; \
-	$(call GEN_INCLUDES,); \
-	$(call GEN_INCLUDES,linux); \
-	$(call GEN_INCLUDES,mac); \
-	$(call GEN_INCLUDES,windows); \
-	echo) >$@
+	$(BUILD_PROJ_FILES) $@
 
 # Installing the shared library in same directory as executables
 

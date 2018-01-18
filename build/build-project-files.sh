@@ -32,11 +32,23 @@
 #  This script is useful when source files are added to or removed from the
 #  directory src\libtsduck.
 #
+#  The following files are rebuilt:
+#
+#  - build/msvc2017/libtsduck-files.props
+#  - build/msvc2017/libtsduck-filters.props
+#  - build/qtcreator/libtsduck/libtsduck-files.pri
+#  - src/libtsduck/tsduck.h
+#
+#  See the PowerShell script Build-Project-Files.ps1 for a Windows equivalent.
+#
 #-----------------------------------------------------------------------------
 
 SCRIPT=$(basename ${BASH_SOURCE[0]} .sh)
 
 error() { echo >&2 "$SCRIPT: $*"; exit 1; }
+
+# Optional file to build.
+TARGET=$1
 
 # Get the project directories.
 BUILDDIR=$(cd $(dirname ${BASH_SOURCE[0]}); pwd)
@@ -51,16 +63,22 @@ QT_RELPATH="../../../src/libtsduck/"
 MSVCDIR=$(ls -d "$BUILDDIR"/msvc* | sort | tail -1)
 [[ -z "$MSVCDIR" ]] && error "MSVC project directory not found"
 
+# find(1) option to limit the search to one level.
+[[ $(uname -s) == Linux ]] && FIND1="-maxdepth 1" || FIND1="-depth 1"
+
+# Enforce LANG to get the same sort order as "Sort-Object -Culture en-US" in PowerShell
+LANG=en_US.UTF-8
+# Embedded newline character for variables.
+NL=$'\n'
+
 # Get all libtsduck files by type.
 GetSources()
 {
     local type="$1"; shift
     local subdir="$1"; shift
-    local prefix="$1"; shift
-    local suffix="$1"; shift
 
-    for f in $(find "$SRCDIR/$subdir" -depth 1 -type f -name "*.$type" "$@" | sort --ignore-case); do
-        echo "$prefix$(basename $f)$suffix"
+    for f in $(find "$SRCDIR/$subdir" $FIND1 -type f -name "*.$type" "$@" | sort --ignore-case); do
+        echo "${PREFIX}$(basename $f)${SUFFIX}"
     done
 }
 
@@ -68,121 +86,142 @@ GetSources()
 GenerateMSProject()
 {
     echo '<?xml version="1.0" encoding="utf-8"?>'
-#    echo '<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">'
-#    echo '  <ItemGroup>'
-#    local prefix="    <ClInclude Include=\"$MS_RELPATH"
-#    local suffix="\" />"
-#    GetSources h "" "$prefix" "$suffix" ! -name "tsStaticReferences*"
-#    GetSources h private "${prefix}private\\" "$suffix"
-#    GetSources h windows "${prefix}windows\\" "$suffix"
-#    echo '  </ItemGroup>'
-#    echo '  <ItemGroup>'
-#    prefix="    <ClCompile Include=\"$MS_RELPATH"
-#    suffix="\" />"
-#    GetSources cpp "" "$prefix" "$suffix" ! -name "tsStaticReferences*"
-#    GetSources cpp private "${prefix}private\\" "$suffix"
-#    GetSources cpp windows "${prefix}windows\\" "$suffix"
-#    echo '  </ItemGroup>'
-#    echo '</Project>'
+    echo '<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">'
+    echo '  <ItemGroup>'
+    PREFIX="    <ClInclude Include=\"${MS_RELPATH}"
+    SUFFIX="\" />"
+    GetSources h "" ! -name "tsStaticReferences*"
+    PREFIX="    <ClInclude Include=\"${MS_RELPATH}private\\"
+    GetSources h private
+    PREFIX="    <ClInclude Include=\"${MS_RELPATH}windows\\"
+    GetSources h windows
+    echo '  </ItemGroup>'
+    echo '  <ItemGroup>'
+    PREFIX="    <ClCompile Include=\"${MS_RELPATH}"
+    GetSources cpp "" ! -name "tsStaticReferences*"
+    PREFIX="    <ClCompile Include=\"${MS_RELPATH}private\\"
+    GetSources cpp private
+    PREFIX="    <ClCompile Include=\"${MS_RELPATH}windows\\"
+    GetSources cpp windows
+    echo '  </ItemGroup>'
+    echo '</Project>'
 }
 
 # Generate the MS filters file.
 GenerateMSFilters()
 {
     echo '<?xml version="1.0" encoding="utf-8"?>'
-#    echo '<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">'
-#    echo '  <ItemGroup>'
-#    local prefix="    <ClInclude Include=\"$MsSrcRelPath"
-#    local suffix="\">\n      <Filter>Header Files</Filter>\n    </ClInclude>"
-#    GetSources h "" $prefix $suffix ! -name "tsStaticReferences*"
-#    GetSources h private "${prefix}private\\" "$suffix"
-#    GetSources h windows "${prefix}windows\\" "$suffix"
-#    echo '  </ItemGroup>'
-#    echo '  <ItemGroup>'
-#    prefix="    <ClCompile Include=\"$MsSrcRelPath"
-#    suffix="\">\n      <Filter>Source Files</Filter>\n    </ClCompile>"
-#    GetSources cpp "" $prefix $suffix ! -name "tsStaticReferences*"
-#    GetSources cpp private "${prefix}private\\" "$suffix"
-#    GetSources cpp windows "${prefix}windows\\" "$suffix"
-#    echo '  </ItemGroup>'
-#    echo '</Project>'
+    echo '<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">'
+    echo '  <ItemGroup>'
+    PREFIX="    <ClInclude Include=\"${MS_RELPATH}"
+    SUFFIX="\">${NL}      <Filter>Header Files</Filter>${NL}    </ClInclude>"
+    GetSources h "" ! -name "tsStaticReferences*"
+    PREFIX="    <ClInclude Include=\"${MS_RELPATH}private\\"
+    GetSources h private
+    PREFIX="    <ClInclude Include=\"${MS_RELPATH}windows\\"
+    GetSources h windows
+    echo '  </ItemGroup>'
+    echo '  <ItemGroup>'
+    PREFIX="    <ClCompile Include=\"${MS_RELPATH}"
+    SUFFIX="\">${NL}      <Filter>Source Files</Filter>${NL}    </ClCompile>"
+    GetSources cpp "" ! -name "tsStaticReferences*"
+    PREFIX="    <ClCompile Include=\"${MS_RELPATH}private\\"
+    GetSources cpp private
+    PREFIX="    <ClCompile Include=\"${MS_RELPATH}windows\\"
+    GetSources cpp windows
+    echo '  </ItemGroup>'
+    echo '</Project>'
 }
 
 # Generate the Qt Creator project file.
 GenerateQtProject()
 {
-    echo 'HEADERS += \\'
-#    local prefix="    $QtSrcRelPath"
-#    local suffix=" \\"
-#    GetSources h "" "$prefix" "$suffix" ! -name "tsStaticReferences*"
-#    GetSources h private "${prefix}private/" $suffix
-#    echo ''
-#    echo 'SOURCES += \\'
-#    GetSources cpp "" $prefix $suffix ! -name "tsStaticReferences*"
-#    GetSources cpp private "${prefix}private/" "$suffix
-#    $prefix = "    $prefix"
-#    echo ''
-#    echo 'linux {'
-#    echo '    HEADERS += \\'
-#    GetSources h unix "${prefix}unix/" $suffix
-#    GetSources h linux "${prefix}linux/" $suffix
-#    echo ''
-#    echo '    SOURCES += \\'
-#    GetSources cpp unix "${prefix}unix/" $suffix
-#    GetSources cpp linux "${prefix}linux/" $suffix
-#    echo ''
-#    echo '}'
-#    echo ''
-#    echo 'mac {'
-#    echo '    HEADERS += \\'
-#    GetSources h unix "${prefix}unix/" $suffix
-#    GetSources h mac "${prefix}mac/" $suffix
-#    echo ''
-#    echo '    SOURCES += \\'
-#    GetSources cpp unix "${prefix}unix/" $suffix
-#    GetSources cpp mac "${prefix}mac/" $suffix
-#    echo ''
-#    echo '}'
-#    echo ''
-#    echo 'win32|win64 {'
-#    echo '    HEADERS += \\'
-#    GetSources h windows "${prefix}windows/" $suffix
-#    echo ''
-#    echo '    SOURCES += \\'
-#    GetSources cpp windows "${prefix}windows/" $suffix
-#    echo ''
-#    echo '}'
+    echo 'HEADERS += \'
+    PREFIX="    ${QT_RELPATH}"
+    SUFFIX=" \\"
+    GetSources h "" ! -name "tsStaticReferences*"
+    PREFIX="    ${QT_RELPATH}private/"
+    GetSources h private
+    echo ''
+    echo 'SOURCES += \'
+    PREFIX="    ${QT_RELPATH}"
+    GetSources cpp "" ! -name "tsStaticReferences*"
+    PREFIX="    ${QT_RELPATH}private/"
+    GetSources cpp private
+    PREFIX="        ${QT_RELPATH}"
+    echo ''
+    echo 'linux {'
+    echo '    HEADERS += \'
+    PREFIX="        ${QT_RELPATH}unix/"
+    GetSources h unix
+    PREFIX="        ${QT_RELPATH}linux/"
+    GetSources h linux
+    echo ''
+    echo '    SOURCES += \'
+    PREFIX="        ${QT_RELPATH}unix/"
+    GetSources cpp unix
+    PREFIX="        ${QT_RELPATH}linux/"
+    GetSources cpp linux
+    echo ''
+    echo '}'
+    echo ''
+    echo 'mac {'
+    echo '    HEADERS += \'
+    PREFIX="        ${QT_RELPATH}unix/"
+    GetSources h unix
+    PREFIX="        ${QT_RELPATH}mac/"
+    GetSources h mac
+    echo ''
+    echo '    SOURCES += \'
+    PREFIX="        ${QT_RELPATH}unix/"
+    GetSources cpp unix
+    PREFIX="        ${QT_RELPATH}mac/"
+    GetSources cpp mac
+    echo ''
+    echo '}'
+    echo ''
+    echo 'win32|win64 {'
+    echo '    HEADERS += \'
+    PREFIX="        ${QT_RELPATH}windows/"
+    GetSources h windows
+    echo ''
+    echo '    SOURCES += \'
+    GetSources cpp windows
+    echo ''
+    echo '}'
 }
 
 # Generate the main TSDuck header file.
 GenerateMainHeader()
 {
-    local prefix="#include \""
-    local suffix="\""
+    PREFIX="#include \""
+    SUFFIX="\""
 
-#    cat "$SRCDIR/../HEADER.txt"
-#    echo ''
-#    echo '#pragma once'
-#    GetSources h "" "$prefix" "$suffix" ! -name "tsStaticReferences*" ! -name "*Template.h"
-#    echo ''
-#    echo '#if defined(TS_LINUX)'
-#    GetSources h unix "$prefix" "$suffix" ! -name "*Template.h"
-#    GetSources h linux "$prefix" "$suffix" ! -name "*Template.h"
-#    echo '#endif'
-#    echo ''
-#    echo '#if defined(TS_MAC)'
-#    GetSources h unix "$prefix" "$suffix" ! -name "*Template.h"
-#    GetSources h mac "$prefix" "$suffix" ! -name "*Template.h"
-#    echo '#endif'
-#    echo ''
-#    echo '#if defined(TS_WINDOWS)'
-#    GetSources h windows "$prefix" "$suffix" ! -name "*Template.h"
-#    echo '#endif'
+    cat "$ROOTDIR/src/HEADER.txt"
+    echo ''
+    echo '#pragma once'
+    GetSources h "" ! -name "tsStaticReferences*" ! -name "*Template.h"
+    echo ''
+    echo '#if defined(TS_LINUX)'
+    GetSources h unix ! -name "*Template.h"
+    GetSources h linux ! -name "*Template.h"
+    echo '#endif'
+    echo ''
+    echo '#if defined(TS_MAC)'
+    GetSources h unix ! -name "*Template.h"
+    GetSources h mac ! -name "*Template.h"
+    echo '#endif'
+    echo ''
+    echo '#if defined(TS_WINDOWS)'
+    GetSources h windows ! -name "*Template.h"
+    echo '#endif'
 }
 
 
 # Generate the files.
-# GenerateMSProject  | Out-File -Encoding ascii $MsvcDir\libtsduck-files.props
-# GenerateMSFilters  | Out-File -Encoding ascii $MsvcDir\libtsduck-filters.props
-# GenerateQtProject  | Out-File -Encoding ascii $RootDir\build\qtcreator\libtsduck\libtsduck-files.pri
-# GenerateMainHeader | Out-File -Encoding ascii $SrcDir\tsduck.h
+[[ -z "$TARGET" || "$TARGET" == "libtsduck-files.props"   ]] && GenerateMSProject  >"$MSVCDIR/libtsduck-files.props"
+[[ -z "$TARGET" || "$TARGET" == "libtsduck-filters.props" ]] && GenerateMSFilters  >"$MSVCDIR/libtsduck-filters.props"
+[[ -z "$TARGET" || "$TARGET" == "libtsduck-files.pri"     ]] && GenerateQtProject  >"$ROOTDIR/build/qtcreator/libtsduck/libtsduck-files.pri"
+[[ -z "$TARGET" || "$TARGET" == "tsduck.h"                ]] && GenerateMainHeader >"$SRCDIR/tsduck.h"
+
+exit 0

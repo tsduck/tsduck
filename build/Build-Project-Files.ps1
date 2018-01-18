@@ -37,6 +37,15 @@
   This script is useful when source files are added to or removed from the
   directory src\libtsduck.
 
+  The following files are rebuilt:
+
+  - build/msvc2017/libtsduck-files.props
+  - build/msvc2017/libtsduck-filters.props
+  - build/qtcreator/libtsduck/libtsduck-files.pri
+  - src/libtsduck/tsduck.h
+
+  See the shell script build-project-files.sh for a Unix equivalent.
+
  .PARAMETER NoPause
 
   Do not wait for the user to press <enter> at end of execution. By default,
@@ -68,7 +77,9 @@ $MsvcDir = $VS.MsvcDir
 # Get all libtsduck files by type.
 function GetSources([string]$type, [string]$subdir = "", [string]$prefix = "", [string]$suffix, $exclude = "")
 {
-    Get-ChildItem "$SrcDir\$subdir\*" -Include "*.$type" -Exclude $exclude | ForEach-Object {$prefix + $_.Name + $suffix} | Sort-Object -CaseSensitive
+    Get-ChildItem "$SrcDir\$subdir\*" -Include "*.$type" -Exclude $exclude | `
+        ForEach-Object {$prefix + $_.Name + $suffix} | `
+        Sort-Object -Culture en-US
 }
 
 # Generate the MS project file.
