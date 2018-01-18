@@ -71,12 +71,6 @@ function GetSources([string]$type, [string]$subdir = "", [string]$prefix = "", [
     Get-ChildItem "$SrcDir\$subdir\*" -Include "*.$type" -Exclude $exclude | ForEach-Object {$prefix + $_.Name + $suffix} | Sort-Object -CaseSensitive
 }
 
-
-# List of source subdirectories: windows unix linux mac private
-# Other specific files:
-$StaticHeaders = (Get-ChildItem $SrcDir\* -Include "tsStaticReferences*.h").Name
-$StaticSources = (Get-ChildItem $SrcDir\* -Include "tsStaticReferences*.cpp").Name
-
 # Generate the MS project file.
 function GenerateMSProject()
 {
@@ -188,7 +182,7 @@ function GenerateMainHeader()
     GetSources h mac $prefix $suffix @("*Template.h")
     echo '#endif'
     echo ''
-    echo '#if defined(TS_WINDOWS) '
+    echo '#if defined(TS_WINDOWS)'
     GetSources h windows $prefix $suffix @("*Template.h")
     echo '#endif'
 }
