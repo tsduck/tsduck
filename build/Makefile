@@ -55,7 +55,7 @@ $(GITHOOKS_TARGETS): Makefile
 
 # At least enforce the presence of the git hooks.
 default: $(GITHOOKS_TARGETS)
-	@true
+	+@$(RECURSE)
 
 # Check if dot (from Graphviz) is installed.
 # These environment variables are used in Doxyfile.

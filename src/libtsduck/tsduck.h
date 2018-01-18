@@ -318,7 +318,7 @@
 #include "tsMacPList.h"
 #endif
 
-#if defined(TS_WINDOWS) 
+#if defined(TS_WINDOWS)
 #include "tsComIds.h"
 #include "tsComPtr.h"
 #include "tsDirectShowFilterCategory.h"
