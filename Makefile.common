@@ -716,7 +716,7 @@ endif
 # Get current compiler version, usually in form x.y.z
 ifeq ($(GCC_VERSION_DONE),)
     export GCC_VERSION_DONE = true
-    export GCC_VERSION := $(shell $(GCC) -dumpversion 2>&1)
+    export GCC_VERSION := $(shell $(GCC) -dumpversion 2>/dev/null)
     export GCC_MAJOR := $(firstword $(subst .,$(SPACE),$(GCC_VERSION)))
     ifeq ($(shell test 0$(GCC_MAJOR) -ge 6; echo $$?),0)
         export GCC_6_OR_MORE := true
@@ -724,7 +724,7 @@ ifeq ($(GCC_VERSION_DONE),)
         GCC_6_OR_MORE :=
         unexport GCC_6_OR_MORE
     endif
-    export LLVM_VERSION := $(shell clang -dumpversion 2>&1)
+    export LLVM_VERSION := $(shell clang -dumpversion 2>/dev/null)
 endif
 
 # When C++ source files are present, automatically define LDCXX.
@@ -829,10 +829,10 @@ LDLIBS += $(if $(LDCXX),-lstdc++,) -lpthread $(if $(MACOS),,-lrt) -lm
 # Global compilation flags.
 # Additional flags can be passed on the "make" command line using FLAGS_EXTRA.
 CFLAGS   = $(CFLAGS_DEBUG) $(CFLAGS_M32) $(CFLAGS_GCOV) $(CFLAGS_WARNINGS) $(CFLAGS_SECURITY) $(CFLAGS_INCLUDES) \
-           $(TARGET_ARCH) $(CFLAGS_FPIC) $(CFLAGS_STANDARD) $(CFLAGS_CROSS) $(CFLAGS_EXTRA)
+           $(TARGET_ARCH) $(CFLAGS_FPIC) $(CFLAGS_STANDARD) $(CFLAGS_CROSS) -pthread $(CFLAGS_EXTRA)
 CXXFLAGS = $(CFLAGS_DEBUG) $(CFLAGS_M32) $(CFLAGS_GCOV) $(CXXFLAGS_WARNINGS) $(CXXFLAGS_SECURITY) $(CXXFLAGS_INCLUDES) \
-           $(TARGET_ARCH) $(CFLAGS_FPIC) $(CXXFLAGS_STANDARD) $(CFLAGS_CROSS) $(CXXFLAGS_EXTRA)
-LDFLAGS  = $(LDFLAGS_DEBUG) $(LDFLAGS_M32) $(LDFLAGS_GCOV) $(TARGET_ARCH) $(LDFLAGS_CROSS) $(LDFLAGS_EXTRA)
+           $(TARGET_ARCH) $(CFLAGS_FPIC) $(CXXFLAGS_STANDARD) $(CFLAGS_CROSS) -pthread $(CXXFLAGS_EXTRA)
+LDFLAGS  = $(LDFLAGS_DEBUG) $(LDFLAGS_M32) $(LDFLAGS_GCOV) $(TARGET_ARCH) $(LDFLAGS_CROSS) -pthread $(LDFLAGS_EXTRA)
 ARFLAGS  = rc$(if $(MACOS),,U) $(ARFLAGS_EXTRA)
 
 # Output subdirectories in each project directory

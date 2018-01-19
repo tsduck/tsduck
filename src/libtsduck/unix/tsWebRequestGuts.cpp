@@ -50,6 +50,7 @@ void ts::WebRequest::deleteGuts() {}
 bool ts::WebRequest::downloadInitialize() { _report.error(TS_NO_CURL_MESSAGE); return false; }
 void ts::WebRequest::downloadAbort() {}
 bool ts::WebRequest::download() { _report.error(TS_NO_CURL_MESSAGE); return false; }
+ts::UString ts::WebRequest::GetLibraryVersion() { return UString(); }
 
 #else
 

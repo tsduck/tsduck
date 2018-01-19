@@ -37,7 +37,16 @@
 #include "tsByteBlock.h"
 #include "tsCerrReport.h"
 
-#if !defined(TS_NO_PCSC)
+#if defined(TS_NO_PCSC)
+
+// Define a few dummy values when PC/SC is not available.
+#define SCARD_EJECT_CARD   0
+#define SCARD_UNPOWER_CARD 0
+#define SCARD_RESET_CARD   0
+#define SCARD_LEAVE_CARD   0
+
+#else // PC/SC support available
+
 #include <winscard.h>
 #if defined(TS_LINUX)
 #include <PCSC/reader.h>

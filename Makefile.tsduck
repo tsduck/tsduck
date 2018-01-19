@@ -86,6 +86,8 @@ ifdef STATIC
     else
         CFLAGS_INCLUDES += -DTSDUCK_STATIC=1
     endif
+else
+    LDLIBS := -ldl $(LDLIBS)
 endif
 
 # External include directories and libraries.
@@ -107,7 +109,6 @@ else
 endif
 
 CFLAGS_INCLUDES += -I$(LIBTSDUCKDIR)
-LDLIBS := -ldl $(LDLIBS)
 
 ifdef CROSS_TARGET
     # Some libraries are bypassed in cross-compilation.
