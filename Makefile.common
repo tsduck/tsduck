@@ -823,16 +823,20 @@ else
     LDFLAGS_GCOV =
 endif
 
+# Compilation flags for posix threads.
+CFLAGS_PTHREAD = -pthread
+LDFLAGS_PTHREAD = $(if $(MACOS),,-pthread)
+
 # External libraries
 LDLIBS += $(if $(LDCXX),-lstdc++,) -lpthread $(if $(MACOS),,-lrt) -lm
 
 # Global compilation flags.
 # Additional flags can be passed on the "make" command line using FLAGS_EXTRA.
 CFLAGS   = $(CFLAGS_DEBUG) $(CFLAGS_M32) $(CFLAGS_GCOV) $(CFLAGS_WARNINGS) $(CFLAGS_SECURITY) $(CFLAGS_INCLUDES) \
-           $(TARGET_ARCH) $(CFLAGS_FPIC) $(CFLAGS_STANDARD) $(CFLAGS_CROSS) -pthread $(CFLAGS_EXTRA)
+           $(TARGET_ARCH) $(CFLAGS_FPIC) $(CFLAGS_STANDARD) $(CFLAGS_CROSS) $(CFLAGS_PTHREAD) $(CFLAGS_EXTRA)
 CXXFLAGS = $(CFLAGS_DEBUG) $(CFLAGS_M32) $(CFLAGS_GCOV) $(CXXFLAGS_WARNINGS) $(CXXFLAGS_SECURITY) $(CXXFLAGS_INCLUDES) \
-           $(TARGET_ARCH) $(CFLAGS_FPIC) $(CXXFLAGS_STANDARD) $(CFLAGS_CROSS) -pthread $(CXXFLAGS_EXTRA)
-LDFLAGS  = $(LDFLAGS_DEBUG) $(LDFLAGS_M32) $(LDFLAGS_GCOV) $(TARGET_ARCH) $(LDFLAGS_CROSS) -pthread $(LDFLAGS_EXTRA)
+           $(TARGET_ARCH) $(CFLAGS_FPIC) $(CXXFLAGS_STANDARD) $(CFLAGS_CROSS) $(CFLAGS_PTHREAD) $(CXXFLAGS_EXTRA)
+LDFLAGS  = $(LDFLAGS_DEBUG) $(LDFLAGS_M32) $(LDFLAGS_GCOV) $(TARGET_ARCH) $(LDFLAGS_CROSS) $(LDFLAGS_PTHREAD) $(LDFLAGS_EXTRA)
 ARFLAGS  = rc$(if $(MACOS),,U) $(ARFLAGS_EXTRA)
 
 # Output subdirectories in each project directory
