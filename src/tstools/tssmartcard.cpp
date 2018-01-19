@@ -46,8 +46,8 @@ struct Options: public ts::Args
     Options(int argc, char *argv[]);
 
     ts::UString reader;        // Optional reader name
-    ::DWORD     timeout_ms;    // Timeout in milliseconds
-    ::DWORD     reset_action;  // Type of reset to apply
+    uint32_t    timeout_ms;    // Timeout in milliseconds
+    uint32_t    reset_action;  // Type of reset to apply
 };
 
 Options::Options(int argc, char *argv[]) :
@@ -98,7 +98,7 @@ Options::Options(int argc, char *argv[]) :
     analyze(argc, argv);
 
     reader = value(u"");
-    timeout_ms = intValue(u"timeout", ::DWORD(1000));
+    timeout_ms = intValue<uint32_t>(u"timeout", 1000);
 
     if (present(u"eject")) {
         reset_action = SCARD_EJECT_CARD;
@@ -115,6 +115,21 @@ Options::Options(int argc, char *argv[]) :
 
     exitOnError();
 }
+
+
+//----------------------------------------------------------------------------
+//  Program stub without PC/SC support.
+//----------------------------------------------------------------------------
+
+#if defined(TS_NO_PCSC)
+int main(int argc, char *argv[])
+{
+    TSDuckLibCheckVersion();
+    Options opt(argc, argv);
+    opt.error(u"This version of TSDuck was compiled without smartcard support");
+    return EXIT_FAILURE;
+}
+#else
 
 
 //----------------------------------------------------------------------------
@@ -203,7 +218,7 @@ bool Reset(Options& opt, ::SCARDCONTEXT pcsc_context, const ts::UString& reader)
         return false;
     }
 
-    sc_status = ::SCardDisconnect(handle, opt.reset_action);
+    sc_status = ::SCardDisconnect(handle, ::DWORD(opt.reset_action));
 
     return Check(sc_status, opt, reader);
 }
@@ -274,3 +289,5 @@ int main(int argc, char *argv[])
 
     return status;
 }
+
+#endif // TS_NO_PCSC

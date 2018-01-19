@@ -36,6 +36,7 @@
 #include "tsMemoryUtils.h"
 TSDUCK_SOURCE;
 
+#if !defined(TS_NO_PCSC)
 
 //----------------------------------------------------------------------------
 // Check a PC/SC status. In case of error, report an error message.
@@ -99,7 +100,7 @@ bool ts::pcsc::Success(::LONG status, Report& report)
 // Return a PC/SC status.
 //----------------------------------------------------------------------------
 
-::LONG ts::pcsc::GetStatesChange(::SCARDCONTEXT context, ReaderStateVector& states, ::DWORD timeout_ms)
+::LONG ts::pcsc::GetStatesChange(::SCARDCONTEXT context, ReaderStateVector& states, uint32_t timeout_ms)
 {
     // Allocate and initializes a structure array
 
@@ -120,7 +121,7 @@ bool ts::pcsc::Success(::LONG status, Report& report)
 
     // Check status of all smartcard readers
 
-    ::LONG status = ::SCardGetStatusChange(context, timeout_ms, c_states, ::DWORD(states.size()));
+    ::LONG status = ::SCardGetStatusChange(context, ::DWORD(timeout_ms), c_states, ::DWORD(states.size()));
 
     if (status == SCARD_S_SUCCESS) {
         for (size_t i = 0; i < states.size(); ++i) {
@@ -139,7 +140,7 @@ bool ts::pcsc::Success(::LONG status, Report& report)
 // Return a PC/SC status.
 //----------------------------------------------------------------------------
 
-::LONG ts::pcsc::GetStates(::SCARDCONTEXT context, ReaderStateVector& states, ::DWORD timeout_ms)
+::LONG ts::pcsc::GetStates(::SCARDCONTEXT context, ReaderStateVector& states, uint32_t timeout_ms)
 {
     states.clear();
 
@@ -195,14 +196,14 @@ bool ts::pcsc::MatchATR(const uint8_t* atr1,
                                  size_t          pwr_size,
                                  const uint8_t*  pwr_mask,
                                  size_t          pwr_mask_size,
-                                 ::DWORD         timeout_ms)
+                                 uint32_t        timeout_ms)
 {
     reader_name.clear();
 
     // Get the list of all smartcard readers
 
     ReaderStateVector states;
-    ::LONG status = GetStates (context, states, timeout_ms);
+    ::LONG status = GetStates(context, states, timeout_ms);
 
     if (status != SCARD_S_SUCCESS) {
         return status;
@@ -400,11 +401,13 @@ const char* ts::pcsc::StrError(::LONG status)
             return "CARD_NOT_AUTHENTICATED, No PIN was presented to the smart card";
 #endif
         default:
-#if defined (TS_LINUX)
-            // pcsc_stringify_error is specific to pcsc-lite on Linux
+#if defined(TS_LINUX) || defined(TS_MAC)
+            // pcsc_stringify_error is specific to pcsc-lite.
             return pcsc_stringify_error (long (status));
 #else
             return "Unknown PC/SC error code";
 #endif
     }
 }
+
+#endif // TS_NO_PCSC
