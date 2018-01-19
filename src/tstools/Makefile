@@ -39,8 +39,11 @@ include ../../Makefile.tsduck
 default: execs $(OBJDIR)/setenv.sh
 	@true
 
-# Definition of OBJDIR for directories without static alternative
-OBJDIR_OTHER := $(subst -static,,$(OBJDIR))
+.PHONY: execs
+execs: $(EXECS)
+
+# tsp has additional modules
+$(OBJDIR)/tsp: $(addprefix $(OBJDIR)/,$(addsuffix .o,$(filter tsp%,$(MODULES_LIB))))
 
 ifndef STATIC
 # With dynamic link (the default), we use the shareable library.
@@ -48,13 +51,9 @@ $(EXECS): $(LIBTSDUCKDIR)/$(OBJDIR)/$(SHARED_LIBTSDUCK)
 else
 # With static link, we compile in a specific directory and we link tsp with all plugins.
 LDFLAGS_EXTRA = -static
-$(EXECS): $(LIBTSDUCKDIR)/$(OBJDIR_OTHER)/$(STATIC_LIBTSDUCK)
 $(OBJDIR)/tsp: $(addprefix $(TSPLUGINSDIR)/$(OBJDIR)/,$(addsuffix .o,$(TSPLUGINS)))
+$(EXECS): $(LIBTSDUCKDIR)/$(OBJDIR)/$(STATIC_LIBTSDUCK)
 endif
-
-.PHONY: execs
-execs: $(EXECS)
-$(OBJDIR)/tsp: $(addprefix $(OBJDIR)/,$(addsuffix .o,$(filter tsp%,$(MODULES_LIB))))
 
 $(OBJDIR)/setenv.sh: Makefile
 	echo '[[ ":$$PATH:" != *:$(realpath $(OBJDIR)):* ]] && export PATH="$(realpath $(OBJDIR)):$$PATH"' >$@

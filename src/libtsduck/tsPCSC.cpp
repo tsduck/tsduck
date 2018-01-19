@@ -232,7 +232,7 @@ bool ts::pcsc::MatchATR(const uint8_t* atr1,
 //----------------------------------------------------------------------------
 
 ::LONG ts::pcsc::Transmit(::SCARDHANDLE handle,       // in
-                          ::DWORD       protocol,     // in
+                          uint32_t      protocol,     // in
                           const void*   send,         // in
                           size_t        send_size,    // in
                           void*         resp,         // out (SW stripped)

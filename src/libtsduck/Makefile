@@ -65,12 +65,13 @@ else
     CXXFLAGS_INCLUDES += -isystem $(DTAPI_ROOT)/Include
 endif
 
-# Now, we can include the common makefile.
+# With static link, we compile in a specific directory.
+OBJDIR_SUFFIX := $(if $(STATIC),-static,)
 
+# Now, we can include the common makefile.
 include ../../Makefile.tsduck
 
 # Building the TSDuck library.
-
 default: tsduck.h libs
 	@true
 

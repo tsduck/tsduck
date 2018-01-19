@@ -83,7 +83,9 @@ void ts::SharedLibrary::load(const UString& filename)
     _filename = filename;
     _report.debug(u"trying to load " + _filename);
 
-#if defined(TS_WINDOWS)
+#if defined(TSDUCK_STATIC)
+    _error = u"statically linked application";
+#elif defined(TS_WINDOWS)
     // Flawfinder: ignore: LoadLibraryEx: Ensure that the full path to the library is specified
     _module = ::LoadLibraryExW(_filename.wc_str(), NULL, 0);
     _is_loaded = _module != 0;
@@ -118,7 +120,9 @@ void ts::SharedLibrary::load(const UString& filename)
 void ts::SharedLibrary::unload()
 {
     if (_is_loaded) {
-#if defined(TS_WINDOWS)
+#if defined(TSDUCK_STATIC)
+        // Nothing to do, load() previously failed.
+#elif defined(TS_WINDOWS)
         ::FreeLibrary(_module);
 #else
         ::dlclose(_dl);
@@ -139,7 +143,9 @@ void* ts::SharedLibrary::getSymbol(const std::string& name) const
     }
     else {
         void* result = 0;
-#if defined(TS_WINDOWS)
+#if defined(TSDUCK_STATIC)
+        // Nothing to do, load() previously failed.
+#elif defined(TS_WINDOWS)
         result = ::GetProcAddress(_module, name.c_str());
 #else
         result = ::dlsym(_dl, name.c_str());

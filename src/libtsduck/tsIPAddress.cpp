@@ -109,6 +109,25 @@ bool ts::IPAddress::resolve(const UString& name, Report& report)
 {
     _addr = AnyAddress;
 
+    // The best way to resolve a name is getaddrinfo(). However, this function
+    // tries to activate shared objects to lookup services. Consequently, it
+    // cannot be used when the application is statically linked. With statically
+    // linked application, we need a plain address string "x.x.x.x".
+
+#if defined(TSDUCK_STATIC)
+
+    uint8_t b1, b2, b3, b4;
+    if (name.scan(u"%d.%d.%d.%d", {&b1, &b2, &b3, &b4})) {
+        setAddress(b1, b2, b3, b4);
+        return true;
+    }
+    else {
+        report.error(u"error resolving %s: must be an IPv4 address x.x.x.x (statically linked application)", {name});
+        return false;
+    }
+
+#else
+    
     ::addrinfo hints;
     TS_ZERO(hints);
     hints.ai_family = AF_INET;
@@ -151,6 +170,8 @@ bool ts::IPAddress::resolve(const UString& name, Report& report)
     }
     ::freeaddrinfo(res);
     return ai != 0;
+
+#endif // TSDUCK_STATIC
 }
 
 
