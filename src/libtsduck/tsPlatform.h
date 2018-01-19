@@ -553,7 +553,6 @@
 #include <linux/dvb/version.h>
 #include <linux/dvb/frontend.h>
 #include <linux/dvb/dmx.h>
-#include <PCSC/reader.h>
 #endif
 
 #if defined(TS_MAC)
@@ -589,7 +588,6 @@
 #include <cctype>
 #include <cstddef>     // size_t
 #include <fcntl.h>
-#include <winscard.h>  // PC/SC
 
 
 // Required link libraries under Windows.

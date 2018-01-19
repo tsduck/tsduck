@@ -101,12 +101,21 @@ ifdef MACOS
     LDFLAGS_EXTRA += -Wl,-rpath,@executable_path
     SOFLAGS = -install_name '@rpath/$(notdir $@)'
 else
-    CFLAGS_INCLUDES += -I/usr/include/PCSC -I$(LIBTSDUCKDIR)/linux
+    CFLAGS_INCLUDES += -I$(LIBTSDUCKDIR)/linux
     LDFLAGS_EXTRA += -Wl,-rpath,'$$ORIGIN'
     SOFLAGS = -Wl,-soname=$(notdir $@)
 endif
-CFLAGS_INCLUDES += $(CFLAGS_CURL) -I$(LIBTSDUCKDIR)
-LDLIBS := $(LDLIBS_CURL) -lpcsclite -ldl $(LDLIBS)
+
+CFLAGS_INCLUDES += -I$(LIBTSDUCKDIR)
+LDLIBS := -ldl $(LDLIBS)
+
+ifdef CROSS_TARGET
+    # Some libraries are bypassed in cross-compilation.
+    CFLAGS_INCLUDES += -DTS_NO_PCSC=1 -DTS_NO_CURL=1 -DTS_NO_DTAPI=1
+else
+    CFLAGS_INCLUDES += -I/usr/include/PCSC $(CFLAGS_CURL)
+    LDLIBS := $(LDLIBS_CURL) -lpcsclite $(LDLIBS)
+endif
 
 # The following script is used to build a few project files.
 # It shall be used when source files are added or removed in the library.
