@@ -33,9 +33,31 @@
 
 #include "tsWebRequest.h"
 #include "tsSingletonManager.h"
-#include <curl/curl.h>
 TSDUCK_SOURCE;
 
+
+//----------------------------------------------------------------------------
+// Stubs when libcurl is not available.
+//----------------------------------------------------------------------------
+
+#if defined(TS_NO_CURL)
+
+#define TS_NO_CURL_MESSAGE u"This version of TSDuck was compiled without Web support"
+
+class ts::WebRequest::SystemGuts {};
+void ts::WebRequest::allocateGuts() {}
+void ts::WebRequest::deleteGuts() {}
+bool ts::WebRequest::downloadInitialize() { _report.error(TS_NO_CURL_MESSAGE); return false; }
+void ts::WebRequest::downloadAbort() {}
+bool ts::WebRequest::download() { _report.error(TS_NO_CURL_MESSAGE); return false; }
+
+#else
+
+//----------------------------------------------------------------------------
+// Normal libcurl support
+//----------------------------------------------------------------------------
+
+#include <curl/curl.h>
 //
 // The callback CURLOPT_XFERINFOFUNCTION was introduced with libcurl 7.32.0.
 // Before this version, CURLOPT_PROGRESSFUNCTION shall be used.
@@ -406,3 +428,5 @@ ts::UString ts::WebRequest::GetLibraryVersion()
 
     return result;
 }
+
+#endif // TS_NO_CURL

@@ -71,22 +71,22 @@ ts::IPAddress::IPAddress(const ::sockaddr_in& s) :
 // Copy into socket structures
 //----------------------------------------------------------------------------
 
-void ts::IPAddress::copy (::sockaddr& s, uint16_t port) const
+void ts::IPAddress::copy(::sockaddr& s, uint16_t port) const
 {
-    TS_ZERO (s);
-    assert (sizeof(::sockaddr) == sizeof(::sockaddr_in));
-    ::sockaddr_in* sp = reinterpret_cast< ::sockaddr_in*> (&s);
+    TS_ZERO(s);
+    assert(sizeof(::sockaddr) >= sizeof(::sockaddr_in));
+    ::sockaddr_in* sp = reinterpret_cast<::sockaddr_in*> (&s);
     sp->sin_family = AF_INET;
-    sp->sin_addr.s_addr = htonl (_addr);
-    sp->sin_port = htons (port);
+    sp->sin_addr.s_addr = htonl(_addr);
+    sp->sin_port = htons(port);
 }
 
-void ts::IPAddress::copy (::sockaddr_in& s, uint16_t port) const
+void ts::IPAddress::copy(::sockaddr_in& s, uint16_t port) const
 {
-    TS_ZERO (s);
+    TS_ZERO(s);
     s.sin_family = AF_INET;
-    s.sin_addr.s_addr = htonl (_addr);
-    s.sin_port = htons (port);
+    s.sin_addr.s_addr = htonl(_addr);
+    s.sin_port = htons(port);
 }
 
 
@@ -110,14 +110,14 @@ bool ts::IPAddress::resolve(const UString& name, Report& report)
     _addr = AnyAddress;
 
     ::addrinfo hints;
-    TS_ZERO (hints);
+    TS_ZERO(hints);
     hints.ai_family = AF_INET;
     ::addrinfo* res = 0;
 
     const int status = ::getaddrinfo(name.toUTF8().c_str(), (char*)0, &hints, &res);
 
     if (status != 0) {
-#if defined (TS_WINDOWS)
+#if defined(TS_WINDOWS)
         const SocketErrorCode code = LastSocketErrorCode();
         report.error(name + u": " + SocketErrorCodeMessage(code));
 #else
@@ -142,14 +142,14 @@ bool ts::IPAddress::resolve(const UString& name, Report& report)
         ai = ai->ai_next;
     }
     if (ai != 0) {
-        assert(sizeof(::sockaddr) == sizeof(::sockaddr_in));
+        assert(sizeof(::sockaddr) >= sizeof(::sockaddr_in));
         const ::sockaddr_in* sp = reinterpret_cast<const ::sockaddr_in*> (ai->ai_addr);
         _addr = ntohl(sp->sin_addr.s_addr);
     }
     else {
         report.error(u"no IPv4 address found for " + name);
     }
-    ::freeaddrinfo (res);
+    ::freeaddrinfo(res);
     return ai != 0;
 }
 

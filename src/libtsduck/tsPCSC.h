@@ -37,6 +37,11 @@
 #include "tsByteBlock.h"
 #include "tsCerrReport.h"
 
+#if !defined(TS_NO_PCSC)
+#include <winscard.h>
+#include <PCSC/reader.h>
+#endif
+
 namespace ts {
     //!
     //! PC/SC smartcard API utilities
