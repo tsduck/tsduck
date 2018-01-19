@@ -39,6 +39,7 @@
 
 #if !defined(TS_NO_PCSC)
 #include <winscard.h>
+#if defined(TS_LINUX)
 #include <PCSC/reader.h>
 #endif
 
@@ -134,7 +135,7 @@ namespace ts {
         //!
         TSDUCKDLL ::LONG GetStates(::SCARDCONTEXT context,
                                    ReaderStateVector& states,
-                                   ::DWORD timeout_ms = INFINITE);
+                                   uint32_t timeout_ms = INFINITE);
 
         //!
         //! Get the state change of all smartcard readers in the system.
@@ -145,7 +146,7 @@ namespace ts {
         //!
         TSDUCKDLL ::LONG GetStatesChange(::SCARDCONTEXT context,
                                          ReaderStateVector& states,
-                                         ::DWORD timeout_ms = INFINITE);
+                                         uint32_t timeout_ms = INFINITE);
 
         //!
         //! Search all smartcard readers for a smartcard matching an expected ATR.
@@ -181,7 +182,7 @@ namespace ts {
                                          size_t          pwr_size = 0,
                                          const uint8_t*  pwr_mask = 0,
                                          size_t          pwr_mask_size = 0,
-                                         ::DWORD         timeout_ms = INFINITE);
+                                         uint32_t        timeout_ms = INFINITE);
 
         //!
         //! Transmit an APDU to smartcard and read response.
@@ -198,7 +199,7 @@ namespace ts {
         //! @return A PC/SC status.
         //!
         TSDUCKDLL ::LONG Transmit(::SCARDHANDLE handle,
-                                  ::DWORD       protocol,
+                                  uint32_t      protocol,
                                   const void*   send,
                                   size_t        send_size,
                                   void*         resp,
@@ -207,3 +208,5 @@ namespace ts {
                                   size_t&       resp_length);
     }
 }
+
+#endif // TS_NO_PCSC
