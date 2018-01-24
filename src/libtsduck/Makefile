@@ -75,6 +75,12 @@ include ../../Makefile.tsduck
 default: tsduck.h libs
 	@true
 
+# This is the only module which explicitly depends on tsduck.h.
+# This header file is regenerated and, normally, make should know that tsduck.h must be
+# finished before building tsVersionInfo.o. However, the .dep file contains full paths
+# of dependencies and make cannot realize it is the same tsduck.h!
+$(OBJDIR)/tsVersionInfo.o: tsduck.h
+
 # Specific (per-module) compilation options:
 
 $(OBJDIR)/tsAES.o:        CFLAGS_OPTIMIZE = $(CFLAGS_FULLSPEED)
