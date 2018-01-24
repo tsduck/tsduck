@@ -72,7 +72,7 @@ namespace ts {
                             const UString& help = UString());
 
         // Implementation of ProcessorPlugin interface.
-        // If overridden by descrambler subclass, superclass must be explicitely invoked.
+        // If overridden by descrambler subclass, superclass must be explicitly invoked.
         virtual bool stop() override;
         virtual BitRate getBitrate() override {return 0;}
         virtual Status processPacket(TSPacket&, bool&, bool&) override;
@@ -147,7 +147,7 @@ namespace ts {
 
     protected:
         // Implementation of TableHandlerInterface.
-        // If overridden by a subclass, superclass must be explicitely invoked.
+        // If overridden by a subclass, superclass must be explicitly invoked.
         virtual void handleTable (SectionDemux&, const BinaryTable&) override;
 
     private:

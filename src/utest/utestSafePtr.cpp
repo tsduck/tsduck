@@ -245,7 +245,7 @@ void SafePtrTest::testSafePtr()
         CPPUNIT_ASSERT(p3->value() == 27);
         CPPUNIT_ASSERT(TestData::InstanceCount() == 2);
 
-        // Now explicitely deallocate object (was no longer managed)
+        // Now explicitly deallocate object (was no longer managed)
         delete px;
         CPPUNIT_ASSERT(TestData::InstanceCount() == 1);
     }

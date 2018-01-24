@@ -244,7 +244,7 @@ namespace ts {
 
         //
         // These fields describe the operating system priority range.
-        // There is no need to explicitely synchronize access to them:
+        // There is no need to explicitly synchronize access to them:
         // - Synchronization is required only in the presence of multiple threads.
         // - To create a thread, you need to create a ThreadAttribute object first.
         // - The constructor of the first ThreadAttribute object initializes them.

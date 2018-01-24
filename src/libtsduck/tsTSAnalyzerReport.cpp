@@ -204,7 +204,7 @@ void ts::TSAnalyzerReport::reportTS(Grid& grid, const UString& title)
 
     grid.putLine();
     grid.putLine(u"Note 1: C=Clear, S=Scrambled");
-    grid.putMultiLine(u"Note 2: Unless explicitely specified otherwise, all bitrates are based on 188 bytes per packet.");
+    grid.putMultiLine(u"Note 2: Unless explicitly specified otherwise, all bitrates are based on 188 bytes per packet.");
 
     grid.closeTable();
 }

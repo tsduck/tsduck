@@ -352,7 +352,7 @@ ts::ProcessorPlugin::Status ts::CATPlugin::processPacket (TSPacket& pkt, bool& f
         _pzer.getNextPacket (pkt);
         // Next CAT insertion point
         if (_cat_inter_pkt != 0) {
-            // CAT packet interval was explicitely specified
+            // CAT packet interval was explicitly specified
             _pkt_insert_cat += _cat_inter_pkt;
         }
         else {
