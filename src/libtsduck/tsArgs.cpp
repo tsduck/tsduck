@@ -741,6 +741,7 @@ void ts::Args::processHelp()
     OutputPager pager;
     if ((_flags & NO_EXIT_ON_HELP) == 0 && pager.canPage() && pager.open(true, 0, *this)) {
         pager.write(text, *this);
+        pager.write(u"\n", *this);
         pager.close(*this);
     }
     else {

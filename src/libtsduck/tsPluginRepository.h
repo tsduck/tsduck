@@ -134,10 +134,10 @@ namespace ts {
         //! This function is typically used to implement the <code>tsp -\-list-processors</code> option.
         //! @param [in] loadAll When true, all available plugins are loaded first.
         //! Ignored when dynamic loading of plugins is disabled.
-        //! @param [in,out] strm Where to output the list.
         //! @param [in,out] report Where to report errors.
+        //! @return The text to display.
         //!
-        void listPlugins(bool loadAll, std::ostream& strm, Report& report);
+        UString listPlugins(bool loadAll, Report& report);
 
         //!
         //! A class to register plugins.
@@ -185,5 +185,8 @@ namespace ts {
         InputMap     _inputPlugins;
         ProcessorMap _processorPlugins;
         OutputMap    _outputPlugins;
+
+        // List one plugin.
+        static void ListOnePlugin(UString& out, const UString& name, Plugin* plugin, size_t name_width);
     };
 }

@@ -6,6 +6,8 @@ Version 3.7
 
 - More details are displayed in SCTE 35 splice information.
 
+- The command tsp --list is now paged, like option --help.
+
 Version 3.6-491
 
 - Added options --synchronous-log and --log-message-count to tsp. They affect

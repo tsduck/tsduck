@@ -220,8 +220,12 @@ void ts::PluginRepository::loadAllPlugins(Report& report)
 // List all tsp processors.
 //----------------------------------------------------------------------------
 
-void ts::PluginRepository::listPlugins(bool loadAll, std::ostream& strm, Report& report)
+ts::UString ts::PluginRepository::listPlugins(bool loadAll, Report& report)
 {
+    // Output text, use some preservation.
+    UString out;
+    out.reserve(5000);
+
     // Load all shareable plugins first.
     if (loadAll) {
         loadAllPlugins(report);
@@ -239,27 +243,41 @@ void ts::PluginRepository::listPlugins(bool loadAll, std::ostream& strm, Report&
         name_width = std::max(name_width, it->first.width());
     }
 
-    // List capabilities
-    strm << std::endl << "List of tsp input plugins:" << std::endl << std::endl;
+    // List capabilities.
+    out += u"\nList of tsp input plugins:\n\n";
     for (InputMap::const_iterator it = _inputPlugins.begin(); it != _inputPlugins.end(); ++it) {
         Plugin* p = it->second(0);
-        strm << "  " << it->first.toJustifiedLeft(name_width + 1, u'.', false, 1) << " " << p->getDescription() << std::endl;
+        ListOnePlugin(out, it->first, p, name_width);
         delete p;
     }
 
-    strm << std::endl << "List of tsp output plugins:" << std::endl << std::endl;
+    out += u"\nList of tsp output plugins:\n\n";
     for (OutputMap::const_iterator it = _outputPlugins.begin(); it != _outputPlugins.end(); ++it) {
         Plugin* p = it->second(0);
-        strm << "  " << it->first.toJustifiedLeft(name_width + 1, u'.', false, 1) << " " << p->getDescription() << std::endl;
+        ListOnePlugin(out, it->first, p, name_width);
         delete p;
     }
 
-    strm << std::endl << "List of tsp packet processor plugins:" << std::endl << std::endl;
+    out += u"\nList of tsp packet processor plugins:\n\n";
     for (ProcessorMap::const_iterator it = _processorPlugins.begin(); it != _processorPlugins.end(); ++it) {
         Plugin* p = it->second(0);
-        strm << "  " << it->first.toJustifiedLeft(name_width + 1, u'.', false, 1) << " " << p->getDescription() << std::endl;
+        ListOnePlugin(out, it->first, p, name_width);
         delete p;
     }
 
-    strm << std::endl;
+    return out;
+}
+
+
+//----------------------------------------------------------------------------
+// List one plugin.
+//----------------------------------------------------------------------------
+
+void ts::PluginRepository::ListOnePlugin(UString& out, const UString& name, Plugin* plugin, size_t name_width)
+{
+    out += u"  ";
+    out += name.toJustifiedLeft(name_width + 1, u'.', false, 1);
+    out += u" ";
+    out += plugin->getDescription();
+    out += u"\n";
 }
