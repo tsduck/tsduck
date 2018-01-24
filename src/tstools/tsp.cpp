@@ -40,6 +40,7 @@
 #include "tsSystemMonitor.h"
 #include "tsMonotonic.h"
 #include "tsResidentBuffer.h"
+#include "tsOutputPager.h"
 #include "tsIPUtils.h"
 #include "tsVersionInfo.h"
 TSDUCK_SOURCE;
@@ -118,7 +119,18 @@ int main(int argc, char *argv[])
 
     // Process the --list-processors option
     if (opt.list_proc) {
-        plugins->listPlugins(true, std::cerr, opt);
+        // Build the list of plugins.
+        const ts::UString text(plugins->listPlugins(true, opt));
+        // Try to page, raw output otherwise.
+        ts::OutputPager pager;
+        if (pager.canPage() && pager.open(true, 0, opt)) {
+            pager.write(text, opt);
+            pager.write(u"\n", opt);
+            pager.close(opt);
+        }
+        else {
+            opt.info(text);
+        }
         return EXIT_SUCCESS;
     }
 
