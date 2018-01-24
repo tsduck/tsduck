@@ -52,5 +52,15 @@ namespace ts {
         //! @param [in] indent Indentation width.
         //!
         static void DisplaySection(TablesDisplay& display, const Section& section, int indent);
+
+    private:
+        // Display various splice commands.
+        static void DisplaySpliceInsert(std::ostream& strm, const std::string& margin, const uint8_t* data, size_t size);
+
+        // Format a splice_time structure, skip the data area.
+        static UString SpliceTime(const uint8_t*& data, size_t size);
+
+        // Format a break_duration structure, skip the data area.
+        static UString BreakDuration(const uint8_t*& data, size_t size);
     };
 }

@@ -29,6 +29,7 @@
 
 #include "tsSpliceInfoTable.h"
 #include "tsBinaryTable.h"
+#include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 TSDUCK_SOURCE;
@@ -70,7 +71,7 @@ void ts::SpliceInfoTable::DisplaySection(TablesDisplay& display, const ts::Secti
     const uint64_t pts_adjustment = (uint64_t(data[1] & 0x01) << 32) | uint64_t(GetUInt32(data + 2));
     const uint8_t cw_index = data[6];
     const uint16_t tier = (GetUInt16(data + 7) >> 4) & 0x0FFF;
-    const uint16_t cmd_length = GetUInt16(data + 8) & 0x0FFF;
+    size_t cmd_length = GetUInt16(data + 8) & 0x0FFF;
     const uint8_t cmd_type = data[10];
     data += 11; size -= 11;
 
@@ -94,26 +95,46 @@ void ts::SpliceInfoTable::DisplaySection(TablesDisplay& display, const ts::Secti
          << margin << UString::Format(u"CW index: 0x%X (%d), tier: 0x%03X (%d)", {cw_index, cw_index, tier, tier}) << std::endl;
 
     if (encrypted_packet) {
+        // The encrypted part starts at the command type.
         strm << margin << "Encrypted command, cannot display" << std::endl;
     }
     else {
-        // The encrypted part starts at the command type.
-        strm << margin << UString::Format(u"Command type: 0x%X", {cmd_type});
-        switch (cmd_type) {
-            case 0x00: strm << " (SpliceNull)"; break;
-            case 0x04: strm << " (SpliceSchedule)"; break;
-            case 0x05: strm << " (SpliceInsert)"; break;
-            case 0x06: strm << " (TimeSignal)"; break;
-            case 0x07: strm << " (BandwidthReservation)"; break;
-            case 0xFF: strm << " (PrivateCommand)"; break;
-            default: break;
-        }
-        strm << UString::Format(u", size: %d bytes", {cmd_length}) << std::endl;
+        // Unencrypted packet, can display everything.
+        strm << margin << UString::Format(u"Command type: %s, size: %d bytes", {DVBNameFromSection(u"SpliceCommandType", cmd_type, names::HEXA_FIRST), cmd_length}) << std::endl;
 
-        // Variable part.
-        if (size > 0) {
-            strm << margin<< "Command content and splice descriptors (" << size << " bytes):" << std::endl
-                 << UString::Dump(data, size, UString::HEXA | UString::ASCII | UString::OFFSET, indent + 2);
+        // Display the command body. Format some commands, simply dump others.
+        if (cmd_length > size) {
+            cmd_length = size;
+        }
+        if (cmd_type == SPLICE_INSERT) {
+            DisplaySpliceInsert(strm, margin, data, cmd_length);
+        }
+        else if (cmd_length > 0) {
+            // Unexpected command or unexpected command size.
+            strm << margin << "Command content:" << std::endl
+                 << UString::Dump(data, cmd_length, UString::HEXA | UString::ASCII | UString::OFFSET, indent + 2);
+        }
+        data += cmd_length; size -= cmd_length;
+
+        // Splice descriptors.
+        if (size >= 2) {
+            size_t dl_length = GetUInt16(data);
+            data += 2; size -= 2;
+            if (dl_length > size) {
+                dl_length = size;
+            }
+            while (dl_length >= 6) {
+                const uint8_t tag = data[0];
+                const size_t len = std::max<size_t>(4, std::min<size_t>(dl_length - 2, data[1]));
+                const uint32_t id = GetUInt32(data + 2);
+                strm << margin
+                     << UString::Format(u"Splice descriptor tag: %s, size: %d bytes, id: 0x%X, content: %s",
+                                        {DVBNameFromSection(u"SpliceDescriptorTag", tag, names::HEXA_FIRST), len, id, UString::Dump(data + 6, len - 4, UString::SINGLE_LINE)})
+                     << std::endl;
+                data += 2 + len;
+                size -= 2 + len;
+                dl_length -= 2 + len;
+            }
         }
     }
 
@@ -126,4 +147,98 @@ void ts::SpliceInfoTable::DisplaySection(TablesDisplay& display, const ts::Secti
         strm << UString::Format(u"(WRONG, expected 0x%X)", {comp_crc32.value()});
     }
     strm << std::endl;
+}
+
+
+//----------------------------------------------------------------------------
+// Format a splice_time structure, skip the data area.
+//----------------------------------------------------------------------------
+
+ts::UString ts::SpliceInfoTable::SpliceTime(const uint8_t*& data, size_t size)
+{
+    if (size >= 1 && (data[0] & 0x80) == 0) {
+        data++; size--;
+        return u"unspecified";
+    }
+    else if (size >= 5 && (data[0] & 0x80) != 0) {
+        const uint64_t pts = (uint64_t(data[0] & 0x01) << 32) | uint64_t(GetUInt32(data + 1));
+        data += 5; size -= 5;
+        return UString::Format(u"pts: 0x%09X", {pts});
+    }
+    else {
+        return u"invalid";
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Format a break_duration structure, skip the data area.
+//----------------------------------------------------------------------------
+
+ts::UString ts::SpliceInfoTable::BreakDuration(const uint8_t*& data, size_t size)
+{
+    if (size >= 5) {
+        const uint8_t autoret = data[0] >> 7;
+        const uint64_t pts = (uint64_t(data[0] & 0x01) << 32) | uint64_t(GetUInt32(data + 1));
+        data += 5; size -= 5;
+        return UString::Format(u"pts: 0x%09X, auto return: %d", {pts, autoret});
+    }
+    else {
+        return u"invalid";
+    }
+
+}
+
+
+//----------------------------------------------------------------------------
+// Display various splice commands. Return false when incorrect size.
+//----------------------------------------------------------------------------
+
+void ts::SpliceInfoTable::DisplaySpliceInsert(std::ostream& strm, const std::string& margin, const uint8_t* data, size_t size)
+{
+    if (size >= 5) {
+        const uint32_t evid = GetUInt32(data);
+        const bool cancel = (data[4] & 0x80) != 0;
+        data += 5; size -= 5;
+        strm << margin << UString::Format(u"Splice event id: 0x%X, cancel: %d", {evid, cancel}) << std::endl;
+
+        if (!cancel && size >= 3) {
+            const bool outofnet = (data[0] & 0x80) != 0;
+            const bool pgsplice = (data[0] & 0x40) != 0;
+            const bool duration = (data[0] & 0x20) != 0;
+            const bool immediate = (data[0] & 0x10) != 0;
+            data += 1; size -= 1;
+            strm << margin << "Out of network: " << outofnet << ", program splice: " << pgsplice << ", duration: " << duration << ", immediate: " << immediate << std::endl;
+
+            if (pgsplice == 1 && immediate == 0) {
+                // The complete program switches at a given time.
+                strm << margin << "Time: " << SpliceTime(data, size) << std::endl;
+            }
+            if (pgsplice == 0 && size >= 1) {
+                // Program components switch individually.
+                size_t count = data[0];
+                data++; size--;
+                strm << margin << "Number of components: " << count << std::endl;
+                while (count-- > 0 && size >= 1) {
+                    const uint8_t ctag = data[0];
+                    data++; size--;
+                    strm << margin << UString::Format(u"  Component tag: 0x%X (%d)", {ctag, ctag});
+                    if (immediate == 0) {
+                        strm << ", time: " << SpliceTime(data, size);
+                    }
+                    strm << std::endl;
+                }
+            }
+            if (duration == 1) {
+                strm << margin << "Duration: " << BreakDuration(data, size) << std::endl;
+            }
+            if (size >= 4) {
+                const uint16_t pgid = GetUInt16(data);
+                const uint8_t avail = data[2];
+                const uint8_t expect = data[3];
+                strm << margin << UString::Format(u"Unique program id: 0x%X (%d), avail: 0x%X (%d), avails expected: %d", {pgid, pgid, avail, avail, expect}) << std::endl;
+                data+= 4; size -= 4;
+            }
+        }
+    }
 }

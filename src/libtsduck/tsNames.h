@@ -473,6 +473,22 @@ namespace ts {
     //! Since the number of OUI values is very large, they are placed in a separate configuration file.
     //!
     TS_STATIC_INSTANCE_DECLARATION(ts::Names, TSDUCKDLL, NamesOUI);
+
+    //!
+    //! Get a name from a specified section in the DVB names file.
+    //! @tparam INT An integer name.
+    //! @param [in] sectionName Name of section to search. Not case-sensitive.
+    //! @param [in] value Value to get the name for.
+    //! @param [in] flags Presentation flags.
+    //! @param [in] bits Nominal size in bits of the data, optional.
+    //! @param [in] alternateValue Display this integer value if flags ALTERNATE is set.
+    //! @return The corresponding name.
+    //!
+    template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+    UString DVBNameFromSection(const UString& sectionName, INT value, names::Flags flags = names::NAME, size_t bits = 0, INT alternateValue = 0)
+    {
+        return NamesDVB::Instance().nameFromSection(sectionName, Names::Value(value), flags, bits, Names::Value(alternateValue));
+    }
 }
 
 TS_FLAGS_OPERATORS(ts::names::Flags)

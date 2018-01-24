@@ -1166,6 +1166,9 @@ namespace ts {
     // ANSI / SCTE 35 (splice information for ads insertion)
     //---------------------------------------------------------------------
 
+    //! Registered splice identifier for SCTE 35
+    const uint32_t SPLICE_ID_CUEI = 0x43554549;   // ASCII “CUEI”
+
     //!
     //! Cue stream type values in cue_identifier_descriptor.
     //!
@@ -1178,7 +1181,7 @@ namespace ts {
     };
 
     //!
-    //! Splaice commands in Splice Information Table.
+    //! Splice commands in Splice Information Table.
     //!
     enum : uint8_t {
         SPLICE_NULL                  = 0x00, //!< SpliceNull
@@ -1187,5 +1190,15 @@ namespace ts {
         SPLICE_TIME_SIGNAL           = 0x06, //!< TimeSignal
         SPLICE_BANDWIDTH_RESERVATION = 0x07, //!< BandwidthReservation
         SPLICE_PRIVATE_COMMAND       = 0xFF, //!< PrivateCommand
+    };
+
+    //!
+    //! Splice descriptor tags in Splice Information Table.
+    //!
+    enum : uint8_t {
+        SPLICE_DESC_AVAIL   = 0x00, //!< avail_descriptor
+        SPLICE_DESC_DTMF    = 0x01, //!< DTMF_descriptor
+        SPLICE_DESC_SEGMENT = 0x02, //!< segmentation_descriptor
+        SPLICE_DESC_TIME    = 0x03, //!< time_descriptor
     };
 }
