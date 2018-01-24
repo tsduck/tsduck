@@ -148,14 +148,14 @@ namespace ts {
 
         //!
         //! This virtual method can be overriden by subclasses to be notified of open.
-        //! All subclasses should explicitely invoke their superclass' handlers.
+        //! All subclasses should explicitly invoke their superclass' handlers.
         //! @param [in,out] report Where to report error.
         //!
         virtual void handleOpened(Report& report) {}
 
         //!
         //! This virtual method can be overriden by subclasses to be notified of close.
-        //! All subclasses should explicitely invoke their superclass' handlers.
+        //! All subclasses should explicitly invoke their superclass' handlers.
         //! @param [in,out] report Where to report error.
         //!
         virtual void handleClosed(Report& report) {}

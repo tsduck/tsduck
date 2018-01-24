@@ -2623,7 +2623,7 @@ namespace ts {
     //! This type is mostly used as parent for all other representations
     //! of sub-quantities of seconds (@link MilliSecond @endlink,
     //! @link NanoSecond @endlink, etc.) Although these types are all
-    //! identical, they should be used explicitely for clarity. Thus,
+    //! identical, they should be used explicitly for clarity. Thus,
     //! when reading some code, it the variable for a duration has type
     //! MilliSecond, it is clear that it contains a number of milliseconds,
     //! not seconds or microseconds.
@@ -2634,22 +2634,22 @@ namespace ts {
     typedef int64_t SubSecond;
     //!
     //! This integer type is used to represent a number of seconds.
-    //! Should be explicitely used for clarity when a variable contains a number of seconds.
+    //! Should be explicitly used for clarity when a variable contains a number of seconds.
     //!
     typedef SubSecond Second;
     //!
     //! This integer type is used to represent a number of milliseconds.
-    //! Should be explicitely used for clarity when a variable contains a number of milliseconds.
+    //! Should be explicitly used for clarity when a variable contains a number of milliseconds.
     //!
     typedef SubSecond MilliSecond;
     //!
     //! This integer type is used to represent a number of microseconds.
-    //! Should be explicitely used for clarity when a variable contains a number of microseconds.
+    //! Should be explicitly used for clarity when a variable contains a number of microseconds.
     //!
     typedef SubSecond MicroSecond;
     //!
     //! This integer type is used to represent a number of nanoseconds.
-    //! Should be explicitely used for clarity when a variable contains a number of nanoseconds.
+    //! Should be explicitly used for clarity when a variable contains a number of nanoseconds.
     //!
     typedef SubSecond NanoSecond;
     //!

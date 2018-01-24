@@ -276,7 +276,7 @@ bool ts::DirectShowGraph::cleanupDownstream(::IBaseFilter* filter, Report& repor
 
 bool ts::DirectShowGraph::getPin(PinPtrVector& pins, ::IBaseFilter* filter, int flags, Report& report)
 {
-    // Clear result vector (explicitely nullify previous values to release objects)
+    // Clear result vector (explicitly nullify previous values to release objects)
     pins.clear();
 
     // If neither input nor output, neither connected nor unconnected, nothing to search.

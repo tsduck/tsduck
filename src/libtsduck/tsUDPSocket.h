@@ -87,7 +87,7 @@ namespace ts {
         //!
         //! Set a default destination address and port for outgoing messages.
         //!
-        //! There are two versions of the send() method. One of them explicitely
+        //! There are two versions of the send() method. One of them explicitly
         //! specifies the destination of the packet to send. The second version
         //! does not specify a destination; the packet is sent to the <i>default
         //! destination</i>.
@@ -104,7 +104,7 @@ namespace ts {
         //!
         //! Set a default destination address and port for outgoing messages.
         //!
-        //! There are two versions of the send() method. One of them explicitely
+        //! There are two versions of the send() method. One of them explicitly
         //! specifies the destination of the packet to send. The second version
         //! does not specify a destination; the packet is sent to the <i>default
         //! destination</i>.

@@ -70,7 +70,7 @@ namespace ts {
         //!
         //! Open the file in rewindable mode.
         //! The file must be a rewindable file, eg. not a pipe.
-        //! There is no repeat count, rewind must be done explicitely.
+        //! There is no repeat count, rewind must be done explicitly.
         //! @param [in] filename File name. If empty, use standard input.
         //! @param [in] start_offset Offset in bytes from the beginning of the file
         //! where to start reading packets.
