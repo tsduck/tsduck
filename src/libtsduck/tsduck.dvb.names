@@ -2272,3 +2272,21 @@ Bits = 8
 0xB1 = black and white
 0xB2 = unpublished
 0xB3 = live broadcast
+
+[SpliceCommandType]
+# In SCTE 35 splice_information_table
+Bits = 8
+0x00 = SpliceNull
+0x04 = SpliceSchedule
+0x05 = SpliceInsert
+0x06 = TimeSignal
+0x07 = BandwidthReservation
+0xFF = PrivateCommand
+
+[SpliceDescriptorTag]
+# In SCTE 35 splice_information_table
+Bits = 8
+0x00 = avail_descriptor
+0x01 = DTMF_descriptor
+0x02 = segmentation_descriptor
+0x03 = time_descriptor

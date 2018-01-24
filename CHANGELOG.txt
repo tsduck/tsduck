@@ -2,7 +2,11 @@
 TSDuck Change Log and Release Notes
 ===================================
 
-Version 3.6
+Version 3.7
+
+- More details are displayed in SCTE 35 splice information.
+
+Version 3.6-491
 
 - Added options --synchronous-log and --log-message-count to tsp. They affect
   the way log messages are dropped or displayed in case a vast amount of log
