@@ -91,7 +91,7 @@ void ts::SpliceInfoTable::DisplaySection(TablesDisplay& display, const ts::Secti
         }
     }
     strm << std::endl
-         << margin << UString::Format(u"PTS adjustment: 0x%09X", {pts_adjustment}) << std::endl
+         << margin << UString::Format(u"PTS adjustment: 0x%09X (%d)", {pts_adjustment, pts_adjustment}) << std::endl
          << margin << UString::Format(u"CW index: 0x%X (%d), tier: 0x%03X (%d)", {cw_index, cw_index, tier, tier}) << std::endl;
 
     if (encrypted_packet) {
@@ -163,7 +163,7 @@ ts::UString ts::SpliceInfoTable::SpliceTime(const uint8_t*& data, size_t size)
     else if (size >= 5 && (data[0] & 0x80) != 0) {
         const uint64_t pts = (uint64_t(data[0] & 0x01) << 32) | uint64_t(GetUInt32(data + 1));
         data += 5; size -= 5;
-        return UString::Format(u"pts: 0x%09X", {pts});
+        return UString::Format(u"pts: 0x%09X (%d)", {pts, pts});
     }
     else {
         return u"invalid";
@@ -181,7 +181,7 @@ ts::UString ts::SpliceInfoTable::BreakDuration(const uint8_t*& data, size_t size
         const uint8_t autoret = data[0] >> 7;
         const uint64_t pts = (uint64_t(data[0] & 0x01) << 32) | uint64_t(GetUInt32(data + 1));
         data += 5; size -= 5;
-        return UString::Format(u"pts: 0x%09X, auto return: %d", {pts, autoret});
+        return UString::Format(u"pts: 0x%09X (%d), auto return: %d", {pts, pts, autoret});
     }
     else {
         return u"invalid";
