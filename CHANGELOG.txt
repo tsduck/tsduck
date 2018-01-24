@@ -8,6 +8,8 @@ Version 3.7
 
 - The command tsp --list is now paged, like option --help.
 
+- Bug fix in plugin pcrextract, options --pts and --dts were reversed.
+
 Version 3.6-491
 
 - Added options --synchronous-log and --log-message-count to tsp. They affect

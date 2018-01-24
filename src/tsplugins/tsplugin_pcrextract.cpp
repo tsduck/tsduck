@@ -196,8 +196,8 @@ bool ts::PCRExtractPlugin::start()
     _noheader = present(u"noheader");
     _output_name = value(u"output-file");
     _good_pts_only = present(u"good-pts-only");
-    _get_pts = present(u"dts");
-    _get_dts = present(u"pts");
+    _get_pts = present(u"pts");
+    _get_dts = present(u"dts");
     _get_pcr = present(u"pcr");
     _get_opcr = present(u"opcr");
     if (!_get_pts && !_get_dts && !_get_pcr && !_get_opcr) {
