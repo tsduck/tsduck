@@ -8,7 +8,10 @@ Version 3.7
 
 - The command tsp --list is now paged, like option --help.
 
-- Bug fix in plugin pcrextract, options --pts and --dts were reversed.
+- Bug fix in tstables and plugin tables: with XML output, option --time-stamp
+  was ineffective and option --packet-index was always on.
+
+- Bug fix in plugin pcrextract: options --pts and --dts were reversed.
 
 Version 3.6-491
 
