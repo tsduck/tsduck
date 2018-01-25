@@ -212,10 +212,15 @@ void ts::TablesLogger::handleTable(SectionDemux&, const BinaryTable& table)
         xml::Element* elem = table.toXML(_xmlDoc.rootElement(), false, _display.dvbCharset());
         if (elem != 0) {
             // Add an XML comment as first child of the table.
-            new xml::Comment(elem,
-                             UString::Format(u" PID 0x%X (%d), first TS packet: %'d, last: %'d ",
-                                              {pid, pid, table.getFirstTSPacketIndex(), table.getLastTSPacketIndex()}),
-                             false); // first position
+            UString comment(UString::Format(u" PID 0x%X (%d)", {pid, pid}));
+            if (_opt.time_stamp) {
+                comment += u", at " + UString(Time::CurrentLocalTime());
+            }
+            if (_opt.packet_index) {
+                comment += UString::Format(u", first TS packet: %'d, last: %'d", {table.getFirstTSPacketIndex(), table.getLastTSPacketIndex()});
+            }
+            new xml::Comment(elem, comment + u" ", false); // first position
+
             // Print the new table.
             if (_xmlOpen) {
                 _xmlOut << ts::margin;
@@ -227,6 +232,7 @@ void ts::TablesLogger::handleTable(SectionDemux&, const BinaryTable& table)
                 _xmlOpen = true;
                 _xmlDoc.print(_xmlOut, true);
             }
+
             // Now remove the table from the document. Keeping them would eat up memory for no use.
             // Deallocating the element forces the removal from the document through the destructor.
             delete elem;
