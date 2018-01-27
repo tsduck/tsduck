@@ -4,6 +4,9 @@ TSDuck Change Log and Release Notes
 
 Version 3.7
 
+- Added plugin rmsplice to remove ads insertions when signaled using SCTE 35
+  splice information.
+
 - More details are displayed in SCTE 35 splice information.
 
 - The command tsp --list is now paged, like option --help.

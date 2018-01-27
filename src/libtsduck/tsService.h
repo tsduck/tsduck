@@ -62,17 +62,22 @@ namespace ts {
         Service(const UString& desc);
 
         //!
+        //! Destructor.
+        //!
+        virtual ~Service() {}
+
+        //!
         //! Reset using a string description.
         //! @param [in] desc Service description string.
         //! If the string evaluates to an integer (decimal or hexa),
         //! this is a service id, otherwise this is a service name.
         //!
-        void set(const UString& desc);
+        virtual void set(const UString& desc);
 
         //!
         //! Clear all fields.
         //!
-        void clear();
+        virtual void clear();
 
         // Accessors to the properties are repeated, use macros.
 

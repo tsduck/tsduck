@@ -107,11 +107,18 @@ void ts::SpliceInfoTable::DisplaySection(TablesDisplay& display, const ts::Secti
             cmd_length = size;
         }
         if (cmd_type == SPLICE_INSERT) {
-            DisplaySpliceInsert(strm, margin, data, cmd_length);
+            SpliceInsert cmd;
+            const int done = cmd.deserialize(data, cmd_length);
+            if (done >= 0) {
+                cmd.display(display, indent);
+                data += done;
+                cmd_length -= done;
+                size -= done;
+            }
         }
-        else if (cmd_length > 0) {
+        if (cmd_length > 0) {
             // Unexpected command or unexpected command size.
-            strm << margin << "Command content:" << std::endl
+            strm << margin << "Remaining command content:" << std::endl
                  << UString::Dump(data, cmd_length, UString::HEXA | UString::ASCII | UString::OFFSET, indent + 2);
         }
         data += cmd_length; size -= cmd_length;
@@ -151,94 +158,47 @@ void ts::SpliceInfoTable::DisplaySection(TablesDisplay& display, const ts::Secti
 
 
 //----------------------------------------------------------------------------
-// Format a splice_time structure, skip the data area.
+// A static method to extract a SpliceInsert command from a section.
 //----------------------------------------------------------------------------
 
-ts::UString ts::SpliceInfoTable::SpliceTime(const uint8_t*& data, size_t size)
+bool ts::SpliceInfoTable::ExtractSpliceInsert(SpliceInsert& command, const Section& section)
 {
-    if (size >= 1 && (data[0] & 0x80) == 0) {
-        data++; size--;
-        return u"unspecified";
-    }
-    else if (size >= 5 && (data[0] & 0x80) != 0) {
-        const uint64_t pts = (uint64_t(data[0] & 0x01) << 32) | uint64_t(GetUInt32(data + 1));
-        data += 5; size -= 5;
-        return UString::Format(u"pts: 0x%09X (%d)", {pts, pts});
-    }
-    else {
-        return u"invalid";
-    }
-}
+    // Payload layout: fixed part (11 bytes), variable part, CRC2 (4 bytes).
+    const uint8_t* data = section.payload();
+    size_t size = section.payloadSize();
 
-
-//----------------------------------------------------------------------------
-// Format a break_duration structure, skip the data area.
-//----------------------------------------------------------------------------
-
-ts::UString ts::SpliceInfoTable::BreakDuration(const uint8_t*& data, size_t size)
-{
-    if (size >= 5) {
-        const uint8_t autoret = data[0] >> 7;
-        const uint64_t pts = (uint64_t(data[0] & 0x01) << 32) | uint64_t(GetUInt32(data + 1));
-        data += 5; size -= 5;
-        return UString::Format(u"pts: 0x%09X (%d), auto return: %d", {pts, pts, autoret});
-    }
-    else {
-        return u"invalid";
+    if (!section.isValid() || section.tableId() != MY_TID || size < 15) {
+        // Not a valid section.
+        return false;
     }
 
-}
-
-
-//----------------------------------------------------------------------------
-// Display various splice commands. Return false when incorrect size.
-//----------------------------------------------------------------------------
-
-void ts::SpliceInfoTable::DisplaySpliceInsert(std::ostream& strm, const std::string& margin, const uint8_t* data, size_t size)
-{
-    if (size >= 5) {
-        const uint32_t evid = GetUInt32(data);
-        const bool cancel = (data[4] & 0x80) != 0;
-        data += 5; size -= 5;
-        strm << margin << UString::Format(u"Splice event id: 0x%X, cancel: %d", {evid, cancel}) << std::endl;
-
-        if (!cancel && size >= 3) {
-            const bool outofnet = (data[0] & 0x80) != 0;
-            const bool pgsplice = (data[0] & 0x40) != 0;
-            const bool duration = (data[0] & 0x20) != 0;
-            const bool immediate = (data[0] & 0x10) != 0;
-            data += 1; size -= 1;
-            strm << margin << "Out of network: " << outofnet << ", program splice: " << pgsplice << ", duration: " << duration << ", immediate: " << immediate << std::endl;
-
-            if (pgsplice == 1 && immediate == 0) {
-                // The complete program switches at a given time.
-                strm << margin << "Time: " << SpliceTime(data, size) << std::endl;
-            }
-            if (pgsplice == 0 && size >= 1) {
-                // Program components switch individually.
-                size_t count = data[0];
-                data++; size--;
-                strm << margin << "Number of components: " << count << std::endl;
-                while (count-- > 0 && size >= 1) {
-                    const uint8_t ctag = data[0];
-                    data++; size--;
-                    strm << margin << UString::Format(u"  Component tag: 0x%X (%d)", {ctag, ctag});
-                    if (immediate == 0) {
-                        strm << ", time: " << SpliceTime(data, size);
-                    }
-                    strm << std::endl;
-                }
-            }
-            if (duration == 1) {
-                strm << margin << "Duration: " << BreakDuration(data, size) << std::endl;
-            }
-            if (size >= 4) {
-                const uint16_t pgid = GetUInt16(data);
-                const uint8_t avail = data[2];
-                const uint8_t expect = data[3];
-                strm << margin << UString::Format(u"Unique program id: 0x%X (%d), avail: 0x%X (%d), avails expected: %d", {pgid, pgid, avail, avail, expect}) << std::endl;
-                data+= 4; size -= 4;
-            }
-        }
+    // Check CRC32.
+    if (CRC32(section.content(), section.size() - 4) != GetUInt32(data + size - 4)) {
+        // Invalid CRC in section.
+        return false;
     }
+    size -= 4;
+
+    // Fixed part
+    if ((data[1] & 0x80) != 0) {
+        // Encrypted command, cannot get it.
+        return false;
+    }
+
+    // PTS adjustment for all time fields.
+    const uint64_t pts_adjustment = (uint64_t(data[1] & 0x01) << 32) | uint64_t(GetUInt32(data + 2));
+
+    // Locate splice command.
+    size_t cmd_length = GetUInt16(data + 8) & 0x0FFF;
+    const uint8_t cmd_type = data[10];
+    data += 11; size -= 11;
+
+    if (cmd_length > size || cmd_type != SPLICE_INSERT || command.deserialize(data, cmd_length) < 0) {
+        // Invalid length or not a valid SpliceInsert
+        return false;
+    }
+
+    // SpliceInsert command successfully found.
+    command.adjustPTS(pts_adjustment);
+    return true;
 }

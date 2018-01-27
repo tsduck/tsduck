@@ -61,18 +61,7 @@ ts::Service::Service() :
 //----------------------------------------------------------------------------
 
 ts::Service::Service(const UString& desc) :
-    _id(),
-    _tsid(),
-    _onid(),
-    _pmt_pid(),
-    _lcn(),
-    _type(),
-    _name(),
-    _provider(),
-    _eits_present(),
-    _eitpf_present(),
-    _ca_controlled(),
-    _running_status()
+    Service()
 {
     set(desc);
 }
