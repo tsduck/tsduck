@@ -74,6 +74,7 @@ SUBDIRS += \
     tsplugin_regulate \
     tsplugin_remap \
     tsplugin_rmorphan \
+    tsplugin_rmsplice \
     tsplugin_scrambler \
     tsplugin_sdt \
     tsplugin_sifilter \

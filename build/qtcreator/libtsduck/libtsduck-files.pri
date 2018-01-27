@@ -164,6 +164,7 @@ HEADERS += \
     ../../../src/libtsduck/tsPluginRepository.h \
     ../../../src/libtsduck/tsPluginSharedLibrary.h \
     ../../../src/libtsduck/tsPMT.h \
+    ../../../src/libtsduck/tsPMTHandlerInterface.h \
     ../../../src/libtsduck/tsPollFiles.h \
     ../../../src/libtsduck/tsPrivateDataSpecifierDescriptor.h \
     ../../../src/libtsduck/tsPSILogger.h \
@@ -196,6 +197,7 @@ HEADERS += \
     ../../../src/libtsduck/tsSectionProviderInterface.h \
     ../../../src/libtsduck/tsService.h \
     ../../../src/libtsduck/tsServiceDescriptor.h \
+    ../../../src/libtsduck/tsServiceDiscovery.h \
     ../../../src/libtsduck/tsServiceListDescriptor.h \
     ../../../src/libtsduck/tsServiceTemplate.h \
     ../../../src/libtsduck/tsSHA1.h \
@@ -208,6 +210,7 @@ HEADERS += \
     ../../../src/libtsduck/tsSocket.h \
     ../../../src/libtsduck/tsSocketAddress.h \
     ../../../src/libtsduck/tsSpliceInfoTable.h \
+    ../../../src/libtsduck/tsSpliceInsert.h \
     ../../../src/libtsduck/tsSSUDataBroadcastIdDescriptor.h \
     ../../../src/libtsduck/tsSSULinkageDescriptor.h \
     ../../../src/libtsduck/tsStandaloneTableDemux.h \
@@ -451,6 +454,7 @@ SOURCES += \
     ../../../src/libtsduck/tsSectionFile.cpp \
     ../../../src/libtsduck/tsService.cpp \
     ../../../src/libtsduck/tsServiceDescriptor.cpp \
+    ../../../src/libtsduck/tsServiceDiscovery.cpp \
     ../../../src/libtsduck/tsServiceListDescriptor.cpp \
     ../../../src/libtsduck/tsSHA1.cpp \
     ../../../src/libtsduck/tsSHA256.cpp \
@@ -462,6 +466,7 @@ SOURCES += \
     ../../../src/libtsduck/tsSocket.cpp \
     ../../../src/libtsduck/tsSocketAddress.cpp \
     ../../../src/libtsduck/tsSpliceInfoTable.cpp \
+    ../../../src/libtsduck/tsSpliceInsert.cpp \
     ../../../src/libtsduck/tsSSUDataBroadcastIdDescriptor.cpp \
     ../../../src/libtsduck/tsSSULinkageDescriptor.cpp \
     ../../../src/libtsduck/tsStandaloneTableDemux.cpp \

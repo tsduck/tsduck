@@ -496,6 +496,9 @@
     <ClInclude Include="..\..\src\libtsduck\tsPMT.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\libtsduck\tsPMTHandlerInterface.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\src\libtsduck\tsPollFiles.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -592,6 +595,9 @@
     <ClInclude Include="..\..\src\libtsduck\tsServiceDescriptor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\libtsduck\tsServiceDiscovery.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\src\libtsduck\tsServiceListDescriptor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -626,6 +632,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\libtsduck\tsSpliceInfoTable.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\libtsduck\tsSpliceInsert.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\libtsduck\tsSSUDataBroadcastIdDescriptor.h">
@@ -1383,6 +1392,9 @@
     <ClCompile Include="..\..\src\libtsduck\tsServiceDescriptor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\libtsduck\tsServiceDiscovery.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\libtsduck\tsServiceListDescriptor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -1414,6 +1426,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\libtsduck\tsSpliceInfoTable.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\libtsduck\tsSpliceInsert.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\libtsduck\tsSSUDataBroadcastIdDescriptor.cpp">

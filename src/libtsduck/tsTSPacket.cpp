@@ -248,11 +248,25 @@ uint64_t ts::TSPacket::getPDTS (size_t offset) const
         return 0;
     }
     else {
-        return (uint64_t (b[offset] & 0x0E) << 29) |
-            (uint64_t (GetUInt16 (b + offset + 1) & 0xFFFE) << 14) |
-            (uint64_t (GetUInt16 (b + offset + 3)) >> 1);
+        return (uint64_t(b[offset] & 0x0E) << 29) |
+            (uint64_t(GetUInt16(b + offset + 1) & 0xFFFE) << 14) |
+            (uint64_t(GetUInt16(b + offset + 3)) >> 1);
     }
 }
+
+//----------------------------------------------------------------------------
+// Set PTS or DTS at specified offset.
+//----------------------------------------------------------------------------
+
+void ts::TSPacket::setPDTS(uint64_t pdts, size_t offset)
+{
+    if (offset != 0) {
+        b[offset] = (b[offset] & 0xF1) | (uint8_t(pdts >> 29) & 0x0E);
+        PutUInt16(b + offset + 1, (GetUInt16(b + offset + 1) & 0x0001) | (uint16_t(pdts >> 14) & 0xFFFE));
+        PutUInt16(b + offset + 3, (GetUInt16(b + offset + 3) & 0x0001) | (uint16_t(pdts << 1) & 0xFFFE));
+    }
+}
+
 
 //----------------------------------------------------------------------------
 // Error message fragment indicating the number of packets previously

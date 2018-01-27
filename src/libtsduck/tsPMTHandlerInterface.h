@@ -28,39 +28,29 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Representation of an SCTE 35 Splice Information Table.
+//!  General-purpose PMT handler interface.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsAbstractTable.h"
-#include "tsSpliceInsert.h"
+#include "tsPMT.h"
 
 namespace ts {
     //!
-    //! Representation of an SCTE 35 Splice Information Table.
-    //! @see ANSI/SCTE 35, 9.2.
+    //! General-purpose PMT handler interface.
     //!
-    //! Incomplete implementation, to be completed.
-    //!
-    class TSDUCKDLL SpliceInfoTable
+    class TSDUCKDLL PMTHandlerInterface
     {
     public:
         //!
-        //! A static method to display a section.
-        //! @param [in,out] display Display engine.
-        //! @param [in] section The section to display.
-        //! @param [in] indent Indentation width.
+        //! This hook is invoked when a new PMT is available.
+        //! @param [in] table A reference to the new PMT.
         //!
-        static void DisplaySection(TablesDisplay& display, const Section& section, int indent);
+        virtual void handlePMT(const PMT& table) = 0;
 
         //!
-        //! A static method to extract a SpliceInsert command from a splice information section.
-        //! @param [out] command Extracted SpliceInsert commmand. The PTS time are adjusted when
-        //! necessary using the pts_adjustment field of the section.
-        //! @param [in] section The section to analyze.
-        //! @return True on success, false on error.
+        //! Virtual destructor.
         //!
-        static bool ExtractSpliceInsert(SpliceInsert& command, const Section& section);
+        virtual ~PMTHandlerInterface() {}
     };
 }

@@ -432,6 +432,24 @@ namespace ts {
         }
 
         //!
+        //! Replace the PTS value - 33 bits
+        //! @param [in] pts The new PTS value.
+        //!
+        void setPTS(const uint64_t& pts)
+        {
+            setPDTS(pts, PTSOffset());
+        }
+
+        //!
+        //! Replace the DTS value - 33 bits
+        //! @param [in] dts The new DTS value.
+        //!
+        void setDTS(const uint64_t& dts)
+        {
+            setPDTS(dts, DTSOffset());
+        }
+
+        //!
         //! Read a packet from standard streams (binary mode).
         //! @param [in,out] strm A standard stream in input mode.
         //! @param [in] check_sync If true, the sync byte of the input packet is checked.
@@ -486,8 +504,9 @@ namespace ts {
         size_t PTSOffset() const;
         size_t DTSOffset() const;
 
-        // Get PTS or DTS at specified offset. Return 0 if offset is zero.
+        // Get or set PTS or DTS at specified offset. Return 0 if offset is zero.
         uint64_t getPDTS(size_t offset) const;
+        void setPDTS(uint64_t pdts, size_t offset);
     };
 
     //!

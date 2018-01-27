@@ -166,6 +166,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsPluginRepository.h" />
     <ClInclude Include="..\..\src\libtsduck\tsPluginSharedLibrary.h" />
     <ClInclude Include="..\..\src\libtsduck\tsPMT.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsPMTHandlerInterface.h" />
     <ClInclude Include="..\..\src\libtsduck\tsPollFiles.h" />
     <ClInclude Include="..\..\src\libtsduck\tsPrivateDataSpecifierDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsPSILogger.h" />
@@ -198,6 +199,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsSectionProviderInterface.h" />
     <ClInclude Include="..\..\src\libtsduck\tsService.h" />
     <ClInclude Include="..\..\src\libtsduck\tsServiceDescriptor.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsServiceDiscovery.h" />
     <ClInclude Include="..\..\src\libtsduck\tsServiceListDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsServiceTemplate.h" />
     <ClInclude Include="..\..\src\libtsduck\tsSHA1.h" />
@@ -210,6 +212,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsSocket.h" />
     <ClInclude Include="..\..\src\libtsduck\tsSocketAddress.h" />
     <ClInclude Include="..\..\src\libtsduck\tsSpliceInfoTable.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsSpliceInsert.h" />
     <ClInclude Include="..\..\src\libtsduck\tsSSUDataBroadcastIdDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsSSULinkageDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsStandaloneTableDemux.h" />
@@ -463,6 +466,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsSectionFile.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsService.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsServiceDescriptor.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsServiceDiscovery.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsServiceListDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsSHA1.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsSHA256.cpp" />
@@ -474,6 +478,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsSocket.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsSocketAddress.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsSpliceInfoTable.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsSpliceInsert.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsSSUDataBroadcastIdDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsSSULinkageDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsStandaloneTableDemux.cpp" />
