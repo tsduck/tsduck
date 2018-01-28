@@ -217,6 +217,7 @@ HEADERS += \
     ../../../src/libtsduck/tsStaticInstance.h \
     ../../../src/libtsduck/tsSTDDescriptor.h \
     ../../../src/libtsduck/tsStreamIdentifierDescriptor.h \
+    ../../../src/libtsduck/tsSubRipGenerator.h \
     ../../../src/libtsduck/tsSubtitlingDescriptor.h \
     ../../../src/libtsduck/tsSupplementaryAudioDescriptor.h \
     ../../../src/libtsduck/tsSysInfo.h \
@@ -253,7 +254,7 @@ HEADERS += \
     ../../../src/libtsduck/tsThread.h \
     ../../../src/libtsduck/tsThreadAttributes.h \
     ../../../src/libtsduck/tsTime.h \
-    ../../../src/libtsduck/tsTimeStamper.h \
+    ../../../src/libtsduck/tsTimeTrackerDemux.h \
     ../../../src/libtsduck/tstlv.h \
     ../../../src/libtsduck/tstlvAnalyzer.h \
     ../../../src/libtsduck/tstlvChannelMessage.h \
@@ -477,6 +478,7 @@ SOURCES += \
     ../../../src/libtsduck/tsStandaloneTableDemux.cpp \
     ../../../src/libtsduck/tsSTDDescriptor.cpp \
     ../../../src/libtsduck/tsStreamIdentifierDescriptor.cpp \
+    ../../../src/libtsduck/tsSubRipGenerator.cpp \
     ../../../src/libtsduck/tsSubtitlingDescriptor.cpp \
     ../../../src/libtsduck/tsSupplementaryAudioDescriptor.cpp \
     ../../../src/libtsduck/tsSysInfo.cpp \
@@ -507,7 +509,7 @@ SOURCES += \
     ../../../src/libtsduck/tsThread.cpp \
     ../../../src/libtsduck/tsThreadAttributes.cpp \
     ../../../src/libtsduck/tsTime.cpp \
-    ../../../src/libtsduck/tsTimeStamper.cpp \
+    ../../../src/libtsduck/tsTimeTrackerDemux.cpp \
     ../../../src/libtsduck/tstlvAnalyzer.cpp \
     ../../../src/libtsduck/tstlvMessage.cpp \
     ../../../src/libtsduck/tstlvMessageFactory.cpp \

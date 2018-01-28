@@ -73,6 +73,7 @@ ts::T2MIDemux::~T2MIDemux()
 
 void ts::T2MIDemux::immediateReset()
 {
+    SuperClass::immediateReset();
     _pids.clear();
 
     // Reset the PSI demux since the transport may be completely different.
@@ -85,6 +86,7 @@ void ts::T2MIDemux::immediateReset()
 
 void ts::T2MIDemux::immediateResetPID(PID pid)
 {
+    SuperClass::immediateResetPID(pid);
     _pids.erase(pid);
 }
 
@@ -96,6 +98,9 @@ void ts::T2MIDemux::immediateResetPID(PID pid)
 void ts::T2MIDemux::feedPacket(const TSPacket& pkt)
 {
     const PID pid = pkt.getPID();
+
+    // Super class processing first.
+    SuperClass::feedPacket(pkt);
 
     // Submit the packet to the PSI handler to detect T2-MI streams.
     _psi_demux.feedPacket(pkt);

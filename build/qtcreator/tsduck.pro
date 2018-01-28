@@ -85,6 +85,7 @@ SUBDIRS += \
     tsplugin_svrename \
     tsplugin_t2mi \
     tsplugin_tables \
+    tsplugin_teletext \
     tsplugin_time \
     tsplugin_timeref \
     tsplugin_tsrename \

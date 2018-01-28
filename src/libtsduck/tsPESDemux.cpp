@@ -57,8 +57,7 @@ namespace {
 ts::PESDemux::PESDemux(PESHandlerInterface* pes_handler, const PIDSet& pid_filter) :
     SuperClass(pid_filter),
     _pes_handler(pes_handler),
-    _pids(),
-    _packet_count(0)
+    _pids()
 {
 }
 
@@ -98,11 +97,13 @@ ts::PESDemux::PIDContext::PIDContext() :
 
 void ts::PESDemux::immediateReset()
 {
+    SuperClass::immediateReset();
     _pids.clear();
 }
 
 void ts::PESDemux::immediateResetPID(PID pid)
 {
+    SuperClass::immediateResetPID(pid);
     _pids.erase(pid);
 }
 
@@ -172,7 +173,7 @@ void ts::PESDemux::feedPacket(const TSPacket& pkt)
     if (_pid_filter[pkt.getPID()]) {
         processPacket(pkt);
     }
-    _packet_count++;
+    SuperClass::feedPacket(pkt);
 }
 
 void ts::PESDemux::processPacket(const TSPacket& pkt)
