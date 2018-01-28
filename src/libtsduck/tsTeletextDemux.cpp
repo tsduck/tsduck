@@ -404,7 +404,7 @@ void ts::TeletextDemux::processTeletextPacket(PID pid, PIDContext& pc, uint8_t d
             }
 
             // ETS 300 706, chapter 12.3.1, table 27: character from G2 set
-            if (tmode == 0x0f && rowAddressGroup) {
+            if (tmode == 0x0f && !rowAddressGroup) {
                 x26Col = taddr;
                 if (tdata > 31) {
                     page.text[x26Row][x26Col] = page.charset.g2ToUcs2(tdata);
@@ -467,8 +467,8 @@ void ts::TeletextDemux::processTeletextPage(PID pid, PIDContext& pc, int pageNum
 
     // Optimization: slicing column by column -- higher probability we could find boxed area start mark sooner
     bool pageIsEmpty = true;
-    for (uint8_t col = 0; pageIsEmpty && col < 40; col++) {
-        for (uint8_t row = 1; pageIsEmpty && row < 25; row++) {
+    for (int col = 0; pageIsEmpty && col < 40; col++) {
+        for (int row = 1; pageIsEmpty && row < 25; row++) {
             if (page.text[row][col] == 0x0B) {
                 pageIsEmpty = false;
             }
@@ -488,14 +488,14 @@ void ts::TeletextDemux::processTeletextPage(PID pid, PIDContext& pc, int pageNum
     TeletextFrame frame(pid, pageBcdToBinary(pageNumber), page.frameCount, page.showTimestamp, page.hideTimestamp);
 
     // Process page data.
-    for (uint8_t row = 1; row < 25; row++) {
+    for (int row = 1; row < 25; row++) {
         UString line;
 
         // Anchors for string trimming purpose
-        uint8_t colStart = 40;
-        uint8_t colStop = 40;
+        int colStart = 40;
+        int colStop = 40;
 
-        for (uint8_t col = 39; col >= 0; col--) {
+        for (int col = 39; col >= 0; col--) {
             if (page.text[row][col] == 0x0B) {
                 colStart = col;
                 break;
@@ -506,7 +506,7 @@ void ts::TeletextDemux::processTeletextPage(PID pid, PIDContext& pc, int pageNum
             continue;
         }
 
-        for (uint8_t col = colStart + 1; col <= 39; col++) {
+        for (int col = colStart + 1; col <= 39; col++) {
             if (page.text[row][col] > 0x20) {
                 if (colStop > 39) {
                     colStart = col;
@@ -529,7 +529,7 @@ void ts::TeletextDemux::processTeletextPage(PID pid, PIDContext& pc, int pageNum
         uint16_t foregroundColor = 0x07;
         bool fontTagOpened = false;
 
-        for (uint8_t col = 0; col <= colStop; col++) {
+        for (int col = 0; col <= colStop; col++) {
             // v is just a shortcut
             UChar v = page.text[row][col];
 
