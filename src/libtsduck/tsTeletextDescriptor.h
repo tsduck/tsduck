@@ -84,14 +84,14 @@ namespace ts {
             //! @return Teletext magazine number, 3-bit value from descriptor.
             //! @see setFullNumber()
             //!
-            uint8_t pageNumber() const;
+            uint8_t magazineNumber() const;
 
             //!
             //! Extract page number from then full Teletext page number.
             //! @return Teletext page number, 8-bit value from descriptor.
             //! @see setFullNumber()
             //!
-            uint8_t magazineNumber() const;
+            uint8_t pageNumber() const;
         };
 
         //!

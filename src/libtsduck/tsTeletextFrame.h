@@ -40,7 +40,7 @@ namespace ts {
     //!
     //! Description of one Teletext frame.
     //!
-    class TeletextFrame
+    class TSDUCKDLL TeletextFrame
     {
     public:
         //!

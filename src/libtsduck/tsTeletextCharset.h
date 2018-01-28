@@ -39,7 +39,7 @@ namespace ts {
     //!
     //! Implementation of a Teletext character set.
     //!
-    class TeletextCharset
+    class TSDUCKDLL TeletextCharset
     {
     public:
         //!

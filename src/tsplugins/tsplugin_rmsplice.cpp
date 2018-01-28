@@ -62,9 +62,6 @@ namespace ts {
         // Data Model
         // ------------------------------------------------------------
 
-        // An invalid PTS value.
-        static const uint64_t INVALID_PTS = TS_UCONST64(0xFFFFFFFFFFFFFFFF);
-
         // In case of splicing by component, each PID in the service is identified by a component tag.
         // This is a map of component tags, indexed by PID.
         typedef std::map<PID, uint8_t> TagByPID;

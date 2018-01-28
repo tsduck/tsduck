@@ -37,6 +37,7 @@ TSDUCK_SOURCE;
 
 ts::AbstractDemux::AbstractDemux(const PIDSet& pid_filter) :
     _pid_filter(pid_filter),
+    _packet_count(0),
     _in_handler(false),
     _pid_in_handler(PID_NULL),
     _reset_pending(false),
@@ -123,6 +124,18 @@ void ts::AbstractDemux::immediateReset()
 
 void ts::AbstractDemux::immediateResetPID(PID pid)
 {
+}
+
+
+//----------------------------------------------------------------------------
+// Feed the demux with a TS packet.
+//----------------------------------------------------------------------------
+
+void ts::AbstractDemux::feedPacket(const TSPacket& pkt)
+{
+    // At this stage, we only count packets.
+    // More interesting stuff in subclasses.
+    _packet_count++;
 }
 
 

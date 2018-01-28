@@ -41,7 +41,7 @@ namespace ts {
     //!
     //! This class extracts Teletext subtitles from TS packets.
     //!
-    class TeletextDemux : public PESDemux
+    class TSDUCKDLL TeletextDemux : public PESDemux
     {
     public:
         //!
@@ -130,7 +130,7 @@ namespace ts {
             MilliSecond     hideTimestamp; //!< Hide at timestamp (in ms).
             bool            tainted;       //!< True if text variable contains any data.
             TeletextCharset charset;       //!< Charset to use.
-            uint16_t        text[25][40];  //!< 25 lines x 40 cols (1 screen/page) of wide chars.
+            UChar           text[25][40];  //!< 25 lines x 40 cols (1 screen/page) of wide chars.
             //!
             //! Default constructor.
             //!
@@ -243,7 +243,6 @@ namespace ts {
         bool                      _addColors;     //!< Add font color tags.
 
         // Unaccessible operations.
-        TeletextDemux() = delete;
         TeletextDemux(const TeletextDemux&) = delete;
         TeletextDemux& operator=(const TeletextDemux&) = delete;
     };

@@ -51,7 +51,7 @@ namespace ts {
         //! The following method feeds the demux with a TS packet.
         //! @param [in] pkt A TS packet.
         //!
-        virtual void feedPacket(const TSPacket& pkt) = 0;
+        virtual void feedPacket(const TSPacket& pkt);
 
         //!
         //! Replace the list of PID's to filter.
@@ -171,10 +171,9 @@ namespace ts {
         //!
         virtual void immediateResetPID(PID pid);
 
-        //!
-        //! Current set of filtered PID's, directly accessible to subclasses.
-        //!
-        PIDSet _pid_filter;
+        // Protected directly accessible to subclasses.
+        PIDSet        _pid_filter;   //!< Current set of filtered PID's.
+        PacketCounter _packet_count; //!< Number of TS packets in the demultiplexed stream.
 
     private:
         bool _in_handler;        // true when in the context of an application-defined handler

@@ -33,7 +33,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsAbstractDemux.h"
+#include "tsTimeTrackerDemux.h"
 #include "tsPESPacket.h"
 #include "tsPESHandlerInterface.h"
 #include "tsAudioAttributes.h"
@@ -45,13 +45,13 @@ namespace ts {
     //!
     //! This class extracts PES packets from TS packets.
     //!
-    class TSDUCKDLL PESDemux: public AbstractDemux
+    class TSDUCKDLL PESDemux: public TimeTrackerDemux
     {
     public:
         //!
         //! Explicit reference to superclass.
         //!
-        typedef AbstractDemux SuperClass;
+        typedef TimeTrackerDemux SuperClass;
 
         //!
         //! Constructor.
@@ -166,7 +166,6 @@ namespace ts {
         // Private members:
         PESHandlerInterface* _pes_handler;
         PIDContextMap        _pids;
-        PacketCounter        _packet_count;    // number of TS packets in demultiplexed stream
 
         // Inacessible operations
         PESDemux(const PESDemux&) = delete;

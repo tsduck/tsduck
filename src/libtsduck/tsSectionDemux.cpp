@@ -141,9 +141,8 @@ ts::SectionDemux::SectionDemux(TableHandlerInterface* table_handler,
     SuperClass(pid_filter),
     _table_handler(table_handler),
     _section_handler(section_handler),
-    _pids (),
-    _status (),
-    _packet_count (0)
+    _pids(),
+    _status()
 {
 }
 
@@ -163,11 +162,13 @@ ts::SectionDemux::~SectionDemux ()
 
 void ts::SectionDemux::immediateReset()
 {
+    SuperClass::immediateReset();
     _pids.clear();
 }
 
 void ts::SectionDemux::immediateResetPID(PID pid)
 {
+    SuperClass::immediateResetPID(pid);
     _pids.erase(pid);
 }
 
@@ -181,7 +182,7 @@ void ts::SectionDemux::feedPacket(const TSPacket& pkt)
     if (_pid_filter[pkt.getPID()]) {
         processPacket(pkt);
     }
-    _packet_count++;
+    SuperClass::feedPacket(pkt);
 }
 
 void ts::SectionDemux::processPacket(const TSPacket& pkt)

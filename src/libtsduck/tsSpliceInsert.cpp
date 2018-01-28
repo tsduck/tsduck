@@ -44,9 +44,9 @@ ts::SpliceInsert::SpliceInsert() :
     immediate(false),
     program_splice(false),
     use_duration(false),
-    program_pts(~0),
+    program_pts(INVALID_PTS),
     components_pts(),
-    duration_pts(~0),
+    duration_pts(INVALID_PTS),
     auto_return(false),
     program_id(0),
     avail_num(0),
@@ -67,9 +67,9 @@ void ts::SpliceInsert::clear()
     immediate = false;
     program_splice = false;
     use_duration = false;
-    program_pts = ~0;
+    program_pts = INVALID_PTS;
     components_pts.clear();
-    duration_pts = ~0;
+    duration_pts = INVALID_PTS;
     auto_return = false;
     program_id = 0;
     avail_num = 0;
@@ -164,7 +164,7 @@ int ts::SpliceInsert::deserialize(const uint8_t* data, size_t size)
     data += 5; size -= 5;
 
     if (canceled) {
-        return data - start;  // end of command
+        return int(data - start);  // end of command
     }
     if (size < 1) {
         return -1; // too short
@@ -194,7 +194,7 @@ int ts::SpliceInsert::deserialize(const uint8_t* data, size_t size)
                 return -1; // too short
             }
             const uint8_t ctag = data[0];
-            uint64_t pts = ~0;
+            uint64_t pts = INVALID_PTS;
             data++; size--;
             if (!immediate && !GetSpliceTime(pts, data, size)) {
                 return -1; // invalid
@@ -216,8 +216,8 @@ int ts::SpliceInsert::deserialize(const uint8_t* data, size_t size)
     program_id = GetUInt16(data);
     avail_num = data[2];
     avails_expected = data[3];
-    data+= 4; size -= 4;
-    return data - start;
+    data += 4; size -= 4;
+    return int(data - start);
 }
 
 
@@ -228,7 +228,7 @@ int ts::SpliceInsert::deserialize(const uint8_t* data, size_t size)
 bool ts::SpliceInsert::GetSpliceTime(uint64_t& pts, const uint8_t*& data, size_t& size)
 {
     if (size >= 1 && (data[0] & 0x80) == 0) {
-        pts = ~0; // unspecified PTS value
+        pts = INVALID_PTS;
         data++; size--;
         return true;
     }

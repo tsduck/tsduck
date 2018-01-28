@@ -213,7 +213,6 @@ namespace ts {
         SectionHandlerInterface* _section_handler;
         std::map<PID,PIDContext> _pids;
         Status                   _status;
-        PacketCounter            _packet_count;    // number of TS packets in demultiplexed stream
 
         // Inacessible operations
         SectionDemux(const SectionDemux&) = delete;

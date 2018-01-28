@@ -319,6 +319,26 @@ namespace ts {
     const uint32_t SYSTEM_CLOCK_SUBFREQ = SYSTEM_CLOCK_FREQ / SYSTEM_CLOCK_SUBFACTOR;
 
     //!
+    //! Size in bits of a PCR (Program Clock Reference).
+    //!
+    const size_t PCR_BIT_SIZE = 42;
+
+    //!
+    //! Size in bits of a PTS (Presentation Time Stamp) or DTS (Decoding Time Stamp).
+    //!
+    const size_t PTS_DTS_BIT_SIZE = 33;
+
+    //!
+    //! Mask for PCR values (wrap up at 2**42).
+    //!
+    const uint64_t PCR_MASK = TS_UCONST64(0x000003FFFFFFFFFF);
+
+    //!
+    //! Scale factor for PCR values (wrap up at 2**42).
+    //!
+    const uint64_t PCR_SCALE = TS_UCONST64(0x0000040000000000);
+
+    //!
     //! Mask for PTS and DTS values (wrap up at 2**33).
     //!
     const uint64_t PTS_DTS_MASK = TS_UCONST64(0x00000001FFFFFFFF);
@@ -327,6 +347,32 @@ namespace ts {
     //! Scale factor for PTS and DTS values (wrap up at 2**33).
     //!
     const uint64_t PTS_DTS_SCALE = TS_UCONST64(0x0000000200000000);
+
+    //!
+    //! An invalid PCR (Program Clock Reference) value, can be used as a marker.
+    //!
+    const uint64_t INVALID_PCR = TS_UCONST64(0xFFFFFFFFFFFFFFFF);
+    
+    //!
+    //! An invalid PTS value, can be used as a marker.
+    //!
+    const uint64_t INVALID_PTS = TS_UCONST64(0xFFFFFFFFFFFFFFFF);
+
+    //!
+    //! An invalid DTS value, can be used as a marker.
+    //!
+    const uint64_t INVALID_DTS = TS_UCONST64(0xFFFFFFFFFFFFFFFF);
+
+    //!
+    //! Check if PCR2 follows PCR1 after wrap up.
+    //! @param [in] pcr1 First PCR.
+    //! @param [in] pcr2 Second PCR.
+    //! @return True is @a pcr2 is probably following @a pcr1 after wrapping up at 2**42.
+    //!
+    TSDUCKDLL inline bool WrapUpPCR(uint64_t pcr1, uint64_t pcr2)
+    {
+        return pcr2 < pcr1 && (pcr1 - pcr2) > TS_UCONST64(0x000003F000000000);
+    }
 
     //!
     //! Check if PTS2 follows PTS1 after wrap up.

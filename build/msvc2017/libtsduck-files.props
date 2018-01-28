@@ -219,6 +219,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsStaticInstance.h" />
     <ClInclude Include="..\..\src\libtsduck\tsSTDDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsStreamIdentifierDescriptor.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsSubRipGenerator.h" />
     <ClInclude Include="..\..\src\libtsduck\tsSubtitlingDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsSupplementaryAudioDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsSysInfo.h" />
@@ -255,7 +256,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsThread.h" />
     <ClInclude Include="..\..\src\libtsduck\tsThreadAttributes.h" />
     <ClInclude Include="..\..\src\libtsduck\tsTime.h" />
-    <ClInclude Include="..\..\src\libtsduck\tsTimeStamper.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsTimeTrackerDemux.h" />
     <ClInclude Include="..\..\src\libtsduck\tstlv.h" />
     <ClInclude Include="..\..\src\libtsduck\tstlvAnalyzer.h" />
     <ClInclude Include="..\..\src\libtsduck\tstlvChannelMessage.h" />
@@ -489,6 +490,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsStandaloneTableDemux.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsSTDDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsStreamIdentifierDescriptor.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsSubRipGenerator.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsSubtitlingDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsSupplementaryAudioDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsSysInfo.cpp" />
@@ -519,7 +521,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsThread.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsThreadAttributes.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsTime.cpp" />
-    <ClCompile Include="..\..\src\libtsduck\tsTimeStamper.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsTimeTrackerDemux.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tstlvAnalyzer.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tstlvMessage.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tstlvMessageFactory.cpp" />

@@ -655,6 +655,9 @@
     <ClInclude Include="..\..\src\libtsduck\tsStreamIdentifierDescriptor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\libtsduck\tsSubRipGenerator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\src\libtsduck\tsSubtitlingDescriptor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -763,7 +766,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsTime.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\libtsduck\tsTimeStamper.h">
+    <ClInclude Include="..\..\src\libtsduck\tsTimeTrackerDemux.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\libtsduck\tstlv.h">
@@ -1461,6 +1464,9 @@
     <ClCompile Include="..\..\src\libtsduck\tsStreamIdentifierDescriptor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\libtsduck\tsSubRipGenerator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\libtsduck\tsSubtitlingDescriptor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -1551,7 +1557,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsTime.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\libtsduck\tsTimeStamper.cpp">
+    <ClCompile Include="..\..\src\libtsduck\tsTimeTrackerDemux.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\libtsduck\tstlvAnalyzer.cpp">

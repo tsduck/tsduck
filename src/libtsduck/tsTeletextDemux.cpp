@@ -241,10 +241,6 @@ void ts::TeletextDemux::handlePESPacket(const PESPacket& packet)
     const PID pid = packet.getSourcePID();
     PIDContext& pc(_pids[pid]);
 
-    // Make sure the PID context knows our demux, if just created.
-    pc.timeStamper.setDemux(this);
-    pc.timeStamper.processPesPacket(packet);
-
     // Explore PES payload.
     const uint8_t* pl = packet.payload();
     size_t plSize = packet.payloadSize();
@@ -346,13 +342,13 @@ void ts::TeletextDemux::processTeletextPacket(PID pid, PIDContext& pc, uint8_t d
         TeletextPage& page(pc.pages[pageNumber]);
         if (page.tainted) {
             // It would not be nice if subtitle hides previous video frame, so we contract 40 ms (1 frame @25 fps)
-            page.hideTimestamp = pc.timeStamper.lastTimeStamp() - 40;
+            page.hideTimestamp = pidDuration(pid) - 40;
             processTeletextPage(pid, pc, pageNumber);
         }
 
         // Start new page.
         pc.currentPage = pageNumber;
-        page.reset(pc.timeStamper.lastTimeStamp());
+        page.reset(pidDuration(pid));
         page.charset.resetX28(charset);
         pc.receivingData = true;
     }
@@ -372,8 +368,8 @@ void ts::TeletextDemux::processTeletextPacket(PID pid, PIDContext& pc, uint8_t d
     }
     else if (m == magazineOf(pc.currentPage) && y == 26 && pc.receivingData) {
         // ETS 300 706, chapter 12.3.2: X/26 definition
-        uint8_t x26Row = 0;
-        uint8_t x26Col = 0;
+        uint32_t x26Row = 0;
+        uint32_t x26Col = 0;
 
         uint32_t triplets[13] = { 0 };
         for (uint8_t i = 1, j = 0; i < 40; i += 3, j++) {
@@ -386,16 +382,16 @@ void ts::TeletextDemux::processTeletextPacket(PID pid, PIDContext& pc, uint8_t d
                 continue;
             }
 
-            const uint8_t data = (triplets[j] & 0x3f800) >> 11;
-            const uint8_t mode = (triplets[j] & 0x7c0) >> 6;
-            const uint8_t address = triplets[j] & 0x3f;
-            const bool rowAddressGroup = (address >= 40) && (address <= 63);
+            const uint8_t tdata = uint8_t((triplets[j] & 0x3f800) >> 11);
+            const uint8_t tmode = uint8_t((triplets[j] & 0x7c0) >> 6);
+            const uint8_t taddr = uint8_t(triplets[j] & 0x3f);
+            const bool rowAddressGroup = (taddr >= 40) && (taddr <= 63);
 
             TeletextPage& page(pc.pages[pc.currentPage]);
 
             // ETS 300 706, chapter 12.3.1, table 27: set active position
-            if (mode == 0x04 && rowAddressGroup) {
-                x26Row = address - 40;
+            if (tmode == 0x04 && rowAddressGroup) {
+                x26Row = taddr - 40;
                 if (x26Row == 0) {
                     x26Row = 24;
                 }
@@ -403,22 +399,22 @@ void ts::TeletextDemux::processTeletextPacket(PID pid, PIDContext& pc, uint8_t d
             }
 
             // ETS 300 706, chapter 12.3.1, table 27: termination marker
-            if (mode >= 0x11 && mode <= 0x1f && rowAddressGroup) {
+            if (tmode >= 0x11 && tmode <= 0x1f && rowAddressGroup) {
                 break;
             }
 
             // ETS 300 706, chapter 12.3.1, table 27: character from G2 set
-            if (mode == 0x0f && rowAddressGroup) {
-                x26Col = address;
-                if (data > 31) {
-                    page.text[x26Row][x26Col] = page.charset.g2ToUcs2(data);
+            if (tmode == 0x0f && rowAddressGroup) {
+                x26Col = taddr;
+                if (tdata > 31) {
+                    page.text[x26Row][x26Col] = page.charset.g2ToUcs2(tdata);
                 }
             }
 
             // ETS 300 706, chapter 12.3.1, table 27: G0 character with diacritical mark
-            if (mode >= 0x11 && mode <= 0x1f && !rowAddressGroup) {
-                x26Col = address;
-                page.text[x26Row][x26Col] = page.charset.g2AccentToUcs2(data, mode - 0x11);
+            if (tmode >= 0x11 && tmode <= 0x1f && !rowAddressGroup) {
+                x26Col = taddr;
+                page.text[x26Row][x26Col] = page.charset.g2AccentToUcs2(tdata, tmode - 0x11);
             }
         }
     }
@@ -432,7 +428,7 @@ void ts::TeletextDemux::processTeletextPacket(PID pid, PIDContext& pc, uint8_t d
             const uint32_t triplet0 = unham_24_18((data[3] << 16) | (data[2] << 8) | data[1]);
             // ETS 300 706, chapter 9.4.2: Packet X/28/0 Format 1 only
             if ((triplet0 & 0x0f) == 0x00) {
-                pc.pages[pc.currentPage].charset.setX28((triplet0 & 0x3f80) >> 7);
+                pc.pages[pc.currentPage].charset.setX28(uint8_t((triplet0 & 0x3f80) >> 7));
             }
         }
     }
@@ -447,7 +443,7 @@ void ts::TeletextDemux::processTeletextPacket(PID pid, PIDContext& pc, uint8_t d
             // ETS 300 706, table 11: Coding of Packet M/29/0
             // ETS 300 706, table 13: Coding of Packet M/29/4
             if ((triplet0 & 0xff) == 0x00) {
-                pc.pages[pc.currentPage].charset.setM29((triplet0 & 0x3f80) >> 7);
+                pc.pages[pc.currentPage].charset.setM29(uint8_t((triplet0 & 0x3f80) >> 7));
             }
         }
     }
@@ -499,7 +495,7 @@ void ts::TeletextDemux::processTeletextPage(PID pid, PIDContext& pc, int pageNum
         uint8_t colStart = 40;
         uint8_t colStop = 40;
 
-        for (int col = 39; col >= 0; col--) {
+        for (uint8_t col = 39; col >= 0; col--) {
             if (page.text[row][col] == 0x0B) {
                 colStart = col;
                 break;
@@ -530,12 +526,12 @@ void ts::TeletextDemux::processTeletextPage(PID pid, PIDContext& pc, int pageNum
         // used for colour changes _before_ start box mark
         // white is default as stated in ETS 300 706, chapter 12.2
         // black(0), red(1), green(2), yellow(3), blue(4), magenta(5), cyan(6), white(7)
-        uint8_t foregroundColor = 0x07;
+        uint16_t foregroundColor = 0x07;
         bool fontTagOpened = false;
 
         for (uint8_t col = 0; col <= colStop; col++) {
             // v is just a shortcut
-            uint16_t v = page.text[row][col];
+            UChar v = page.text[row][col];
 
             if (col < colStart) {
                 if (v <= 0x7) {
@@ -598,7 +594,7 @@ void ts::TeletextDemux::processTeletextPage(PID pid, PIDContext& pc, int pageNum
                 }
 
                 if (v >= 0x20) {
-                    line.append(UChar(v));
+                    line.append(v);
                 }
             }
         }
@@ -631,8 +627,10 @@ void ts::TeletextDemux::flushTeletext()
         for (TeletextPageMap::iterator itPage = itPid->second.pages.begin(); itPage != itPid->second.pages.end(); ++itPage) {
             if (itPage->second.tainted) {
                 // Use the last timestamp (ms) for end of message.
+                const MilliSecond ms = pidDuration(itPid->first);
+
                 // This time, we do not subtract any frames, there will be no more frames.
-                itPage->second.hideTimestamp = itPid->second.timeStamper.lastTimeStamp();
+                itPage->second.hideTimestamp = ms;
 
                 beforeCallingHandler();
                 try {
@@ -644,7 +642,7 @@ void ts::TeletextDemux::flushTeletext()
                 }
                 afterCallingHandler(true);
 
-                itPage->second.reset(itPid->second.timeStamper.lastTimeStamp());
+                itPage->second.reset(ms);
             }
         }
     }
