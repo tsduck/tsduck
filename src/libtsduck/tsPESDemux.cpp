@@ -280,6 +280,18 @@ void ts::PESDemux::processPacket(const TSPacket& pkt)
 }
 
 
+//-----------------------------------------------------------------------------
+// This hook is invoked when a complete PES packet is available.
+//-----------------------------------------------------------------------------
+
+void ts::PESDemux::handlePESPacket(const PESPacket& packet)
+{
+    if (_pes_handler != 0) {
+        _pes_handler->handlePESPacket(*this, packet);
+    }
+}
+
+
 //----------------------------------------------------------------------------
 // Process a complete PES packet
 //----------------------------------------------------------------------------
@@ -287,7 +299,7 @@ void ts::PESDemux::processPacket(const TSPacket& pkt)
 void ts::PESDemux::processPESPacket(PID pid, PIDContext& pc)
 {
     // Build a PES packet object around the TS buffer
-    PESPacket pp (pc.ts, pid);
+    PESPacket pp(pc.ts, pid);
     if (!pp.isValid()) {
         return;
     }
@@ -296,8 +308,8 @@ void ts::PESDemux::processPESPacket(PID pid, PIDContext& pc)
     pc.pes_count++;
 
     // Location of the PES packet inside the demultiplexed stream
-    pp.setFirstTSPacketIndex (pc.first_pkt);
-    pp.setLastTSPacketIndex (pc.last_pkt);
+    pp.setFirstTSPacketIndex(pc.first_pkt);
+    pp.setLastTSPacketIndex(pc.last_pkt);
 
     // Mark that we are in the context of handlers.
     // This is used to prevent the destruction of PID contexts during
@@ -305,9 +317,7 @@ void ts::PESDemux::processPESPacket(PID pid, PIDContext& pc)
     beforeCallingHandler(pid);
     try {
         // Handle complete packet
-        if (_pes_handler != 0) {
-            _pes_handler->handlePESPacket (*this, pp);
-        }
+        handlePESPacket(pp);
 
         // Packet payload content (constants)
         const uint8_t* const pdata = pp.payload();
