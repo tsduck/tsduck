@@ -26,22 +26,26 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//!
-//!  @file
-//!  Version identification of TSDuck.
-//!
+
+#include "tsTeletextFrame.h"
+TSDUCK_SOURCE;
+
+
+//----------------------------------------------------------------------------
+// Constructor.
 //----------------------------------------------------------------------------
 
-#pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 7
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 502
+ts::TeletextFrame::TeletextFrame(PID pid,
+                                 int page,
+                                 int frameCount,
+                                 MilliSecond showTimestamp,
+                                 MilliSecond hideTimestamp,
+                                 const UStringList& lines) :
+    _pid(pid),
+    _page(page),
+    _frameCount(frameCount),
+    _showTimestamp(showTimestamp),
+    _hideTimestamp(hideTimestamp),
+    _lines(lines)
+{
+}
