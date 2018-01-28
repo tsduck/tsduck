@@ -241,7 +241,11 @@ HEADERS += \
     ../../../src/libtsduck/tsTCPSocket.h \
     ../../../src/libtsduck/tsTDES.h \
     ../../../src/libtsduck/tsTDT.h \
+    ../../../src/libtsduck/tsTeletextCharset.h \
+    ../../../src/libtsduck/tsTeletextDemux.h \
     ../../../src/libtsduck/tsTeletextDescriptor.h \
+    ../../../src/libtsduck/tsTeletextFrame.h \
+    ../../../src/libtsduck/tsTeletextHandlerInterface.h \
     ../../../src/libtsduck/tsTelnetConnection.h \
     ../../../src/libtsduck/tsTerrestrialDeliverySystemDescriptor.h \
     ../../../src/libtsduck/tsTextFormatter.h \
@@ -249,6 +253,7 @@ HEADERS += \
     ../../../src/libtsduck/tsThread.h \
     ../../../src/libtsduck/tsThreadAttributes.h \
     ../../../src/libtsduck/tsTime.h \
+    ../../../src/libtsduck/tsTimeStamper.h \
     ../../../src/libtsduck/tstlv.h \
     ../../../src/libtsduck/tstlvAnalyzer.h \
     ../../../src/libtsduck/tstlvChannelMessage.h \
@@ -491,7 +496,10 @@ SOURCES += \
     ../../../src/libtsduck/tsTCPSocket.cpp \
     ../../../src/libtsduck/tsTDES.cpp \
     ../../../src/libtsduck/tsTDT.cpp \
+    ../../../src/libtsduck/tsTeletextCharset.cpp \
+    ../../../src/libtsduck/tsTeletextDemux.cpp \
     ../../../src/libtsduck/tsTeletextDescriptor.cpp \
+    ../../../src/libtsduck/tsTeletextFrame.cpp \
     ../../../src/libtsduck/tsTelnetConnection.cpp \
     ../../../src/libtsduck/tsTerrestrialDeliverySystemDescriptor.cpp \
     ../../../src/libtsduck/tsTextFormatter.cpp \
@@ -499,6 +507,7 @@ SOURCES += \
     ../../../src/libtsduck/tsThread.cpp \
     ../../../src/libtsduck/tsThreadAttributes.cpp \
     ../../../src/libtsduck/tsTime.cpp \
+    ../../../src/libtsduck/tsTimeStamper.cpp \
     ../../../src/libtsduck/tstlvAnalyzer.cpp \
     ../../../src/libtsduck/tstlvMessage.cpp \
     ../../../src/libtsduck/tstlvMessageFactory.cpp \

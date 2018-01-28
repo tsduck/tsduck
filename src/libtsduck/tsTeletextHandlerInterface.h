@@ -28,20 +28,34 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Version identification of TSDuck.
+//!  Interface to be notified of Teletext messages using a Teletext demux.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 7
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 502
+#include "tsPlatform.h"
+
+namespace ts {
+
+    class TeletextFrame;
+    class TeletextDemux;
+
+    //!
+    //! Interface to be implemented by classes which need to be notified of Teletext messages using a Teletext demux.
+    //!
+    class TeletextHandlerInterface
+    {
+    public:
+        //!
+        //! This hook is invoked when a complete Teletext message is available.
+        //! @param [in,out] demux The Teletext demux.
+        //! @param [in] frame Teletext frame.
+        //!
+        virtual void handleTeletextMessage(TeletextDemux& demux, const TeletextFrame& frame) = 0;
+
+        //!
+        //! Virtual destructor.
+        //!
+        virtual ~TeletextHandlerInterface() {}
+    };
+}

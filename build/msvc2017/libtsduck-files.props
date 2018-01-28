@@ -243,7 +243,11 @@
     <ClInclude Include="..\..\src\libtsduck\tsTCPSocket.h" />
     <ClInclude Include="..\..\src\libtsduck\tsTDES.h" />
     <ClInclude Include="..\..\src\libtsduck\tsTDT.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsTeletextCharset.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsTeletextDemux.h" />
     <ClInclude Include="..\..\src\libtsduck\tsTeletextDescriptor.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsTeletextFrame.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsTeletextHandlerInterface.h" />
     <ClInclude Include="..\..\src\libtsduck\tsTelnetConnection.h" />
     <ClInclude Include="..\..\src\libtsduck\tsTerrestrialDeliverySystemDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsTextFormatter.h" />
@@ -251,6 +255,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsThread.h" />
     <ClInclude Include="..\..\src\libtsduck\tsThreadAttributes.h" />
     <ClInclude Include="..\..\src\libtsduck\tsTime.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsTimeStamper.h" />
     <ClInclude Include="..\..\src\libtsduck\tstlv.h" />
     <ClInclude Include="..\..\src\libtsduck\tstlvAnalyzer.h" />
     <ClInclude Include="..\..\src\libtsduck\tstlvChannelMessage.h" />
@@ -503,7 +508,10 @@
     <ClCompile Include="..\..\src\libtsduck\tsTCPSocket.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsTDES.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsTDT.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsTeletextCharset.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsTeletextDemux.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsTeletextDescriptor.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsTeletextFrame.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsTelnetConnection.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsTerrestrialDeliverySystemDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsTextFormatter.cpp" />
@@ -511,6 +519,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsThread.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsThreadAttributes.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsTime.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsTimeStamper.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tstlvAnalyzer.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tstlvMessage.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tstlvMessageFactory.cpp" />
