@@ -63,7 +63,7 @@ namespace ts {
         //!
         //! Destructor.
         //!
-        ~PESDemux();
+        virtual ~PESDemux();
 
         // Inherited methods
         virtual void feedPacket(const TSPacket& pkt) override;
@@ -121,6 +121,13 @@ namespace ts {
         bool allAC3(PID) const;
 
     protected:
+        //!
+        //! This hook is invoked when a complete PES packet is available.
+        //! Can be overloaded by subclasses to add intermediate processing.
+        //! @param [in] packet The PES packet.
+        //!
+        virtual void handlePESPacket(const PESPacket& packet);
+
         // Inherited methods
         virtual void immediateReset() override;
         virtual void immediateResetPID(PID pid) override;
@@ -129,17 +136,17 @@ namespace ts {
         // This internal structure contains the analysis context for one PID.
         struct PIDContext
         {
-            PacketCounter pes_count; // Number of detected valid PES packets on this PID
-            uint8_t continuity;        // Last continuity counter
-            bool sync;               // We are synchronous in this PID
-            PacketCounter first_pkt; // Index of first TS packet for current PES packet
-            PacketCounter last_pkt;  // Index of last TS packet for current PES packet
-            ByteBlockPtr ts;         // TS payload buffer
-            AudioAttributes audio;   // Current audio attributes
-            VideoAttributes video;   // Current video attributes (MPEG-1, MPEG-2)
-            AVCAttributes avc;       // Current AVC attributes
-            AC3Attributes ac3;       // Current AC-3 attributes
-            PacketCounter ac3_count; // Number of PES packets with contents which looks like AC-3
+            PacketCounter   pes_count;   // Number of detected valid PES packets on this PID
+            uint8_t         continuity;  // Last continuity counter
+            bool            sync;        // We are synchronous in this PID
+            PacketCounter   first_pkt;   // Index of first TS packet for current PES packet
+            PacketCounter   last_pkt;    // Index of last TS packet for current PES packet
+            ByteBlockPtr    ts;          // TS payload buffer
+            AudioAttributes audio;       // Current audio attributes
+            VideoAttributes video;       // Current video attributes (MPEG-1, MPEG-2)
+            AVCAttributes   avc;         // Current AVC attributes
+            AC3Attributes   ac3;         // Current AC-3 attributes
+            PacketCounter   ac3_count;   // Number of PES packets with contents which looks like AC-3
 
             // Default constructor:
             PIDContext();

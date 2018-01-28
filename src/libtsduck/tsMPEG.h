@@ -1163,6 +1163,33 @@ namespace ts {
     const size_t T2_BBHEADER_SIZE = 10;
 
     //---------------------------------------------------------------------
+    // Teletext PES packets.
+    // See ETSI EN 300 472 V1.3.1, "DVB; Specification for conveying ITU-R
+    // System B Teletext in DVB bitstreams"
+    //---------------------------------------------------------------------
+
+    //!
+    //! Size in bytes of a Teletext packet.
+    //!
+    const size_t TELETEXT_PACKET_SIZE = 44;
+
+    const uint8_t TELETEXT_PES_FIRST_EBU_DATA_ID = 0x10;  //!< First EBU data_identifier value in PES packets conveying Teletext.
+    const uint8_t TELETEXT_PES_LAST_EBU_DATA_ID  = 0x1F;  //!< Last EBU data_identifier value in PES packets conveying Teletext.
+
+    //!
+    //! Teletext data unit ids.
+    //! @see ETSI EN 300 472
+    //!
+    enum : uint8_t {
+        TELETEXT_DATA_UNIT_ID_NON_SUBTITLE    = 0x02,  //!< Data_unit_id for EBU Teletext non-subtitle data.
+        TELETEXT_DATA_UNIT_ID_SUBTITLE        = 0x03,  //!< Data_unit_id for EBU Teletext subtitle data.
+        TELETEXT_DATA_UNIT_ID_INVERTED        = 0x0C,  //!< Data_unit_id for EBU EBU Teletext Inverted (extension ?).
+        TELETEXT_DATA_UNIT_ID_VPS             = 0xC3,  //!< Data_unit_id for VPS (extension ?).
+        TELETEXT_DATA_UNIT_ID_CLOSED_CAPTIONS = 0xC5,  //!< Data_unit_id for Closed Caption (extension ?).
+        TELETEXT_DATA_UNIT_ID_STUFFING        = 0xFF,  //!< Data_unit_id for stuffing data.
+    };
+
+    //---------------------------------------------------------------------
     // ANSI / SCTE 35 (splice information for ads insertion)
     //---------------------------------------------------------------------
 
