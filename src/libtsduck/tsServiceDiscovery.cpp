@@ -68,16 +68,20 @@ void ts::ServiceDiscovery::set(const UString& desc)
     // Clear and set superclass.
     Service::set(desc);
 
-    // Start to intercept tables. If desc was an empty string, we have neither
-    // name nor id and we do not intercept anything (because there isn't anything to find).
-    if (hasId()) {
+    // Start to intercept tables.
+    if (hasName()) {
+        // We know the service name, get SDT first, PAT later.
+        _demux.addPID(PID_SDT);
+    }
+    else if (hasId()) {
         // We know the service id, get PAT and SDT.
         _demux.addPID(PID_PAT);
         _demux.addPID(PID_SDT);
     }
-    else if (hasName()) {
-        // We know the service name, get SDT first, PAT later.
-        _demux.addPID(PID_SDT);
+    else {
+        // We have neither name nor id (desc was an empty string).
+        // Get the PAT and we will select the first service within it.
+        _demux.addPID(PID_PAT);
     }
 }
 
@@ -210,15 +214,29 @@ void ts::ServiceDiscovery::processSDT(const SDT& sdt)
 
 void ts::ServiceDiscovery::processPAT(const PAT& pat)
 {
-    // Locate the service in the PAT
-    assert(hasId());
-    PAT::ServiceMap::const_iterator it = pat.pmts.find(getId());
-
-    // If service not found, error
-    if (it == pat.pmts.end()) {
-        _report.error(u"service id 0x%X (%d) not found in PAT", {getId(), getId()});
-        _notFound = true;
-        return;
+    // Locate the service in the PAT.
+    PAT::ServiceMap::const_iterator it = pat.pmts.end();
+    if (hasId()) {
+        // A service id was known, locate the service in the PAT.
+        it = pat.pmts.find(getId());
+        if (it == pat.pmts.end()) {
+            _report.error(u"service id 0x%X (%d) not found in PAT", {getId(), getId()});
+            _notFound = true;
+            return;
+        }
+    }
+    else {
+        // If no service was specified, use the first service from the PAT.
+        if (pat.pmts.empty()) {
+            _report.error(u"no service found in PAT");
+            _notFound = true;
+            return;
+        }
+        it = pat.pmts.begin();
+        // Now, we have a service id.
+        setId(it->first);
+        // Intercept the SDT for more details.
+        _demux.addPID(PID_SDT);
     }
 
     // If the PMT PID was previously unknown wait for the PMT.

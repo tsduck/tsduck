@@ -61,9 +61,8 @@ namespace ts {
 
         //!
         //! Constructor using a string description.
-        //! @param [in] desc Service description string.
-        //! If the string evaluates to an integer (decimal or hexa),
-        //! this is a service id, otherwise this is a service name.
+        //! @param [in] desc Service description string. If the string evaluates to an integer (decimal or hexa),
+        //! this is a service id, otherwise this is a service name. If the string is empty, use the first service from the PAT.
         //! @param [in] pmtHandler Handler to call for each new PMT.
         //! @param [in,out] report Where to report error and verbose messages.
         //! @param [in] charset If not zero, character set to use without explicit table code.

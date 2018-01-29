@@ -147,7 +147,7 @@ TSPLUGIN_DECLARE_PROCESSOR(rmsplice, ts::RMSplicePlugin)
 //----------------------------------------------------------------------------
 
 ts::RMSplicePlugin::RMSplicePlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Remove ads insertions from a program using SCTE 35 splice information.", u"[options] service"),
+    ProcessorPlugin(tsp_, u"Remove ads insertions from a program using SCTE 35 splice information.", u"[options] [service]"),
     _abort(false),
     _continue(false),
     _adjustTime(false),
@@ -158,7 +158,7 @@ ts::RMSplicePlugin::RMSplicePlugin(TSP* tsp_) :
     _tagsByPID(),
     _states()
 {
-    option(u"", 0, STRING, 1, 1);
+    option(u"", 0, STRING, 0, 1);
     option(u"adjust-time", 'a');
     option(u"continue",    'c');
     option(u"fix-cc",      'f');
@@ -169,7 +169,7 @@ ts::RMSplicePlugin::RMSplicePlugin(TSP* tsp_) :
             u"  decimal or hexadecimal), it is interpreted as a service id. Otherwise, it\n"
             u"  is interpreted as a service name, as specified in the SDT. The name is not\n"
             u"  case sensitive and blanks are ignored. If the input TS does not contain an\n"
-            u"  SDT, use a service id.\n"
+            u"  SDT, use a service id. When omitted, the first service in the PAT is used.\n"
             u"\n"
             u"Options:\n"
             u"\n"
