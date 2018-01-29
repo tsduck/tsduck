@@ -175,7 +175,7 @@ ts::TeletextDemux::TeletextDemux(TeletextHandlerInterface* handler, const PIDSet
     SuperClass(0, pidFilter),
     _txtHandler(handler),
     _pids(),
-    _addColors()
+    _addColors(false)
 {
 }
 
@@ -450,7 +450,7 @@ void ts::TeletextDemux::processTeletextPacket(PID pid, PIDContext& pc, uint8_t d
     else if ((m == 8) && (y == 30)) {
         // ETS 300 706, chapter 9.8: Broadcast Service Data Packets.
         // We can find here "Programme Identification Data" and absolute data / time stamps.
-        // It is processed in telxcc but is not interesting for us .
+        // It is processed in telxcc but is not interesting for us.
     }
 }
 
