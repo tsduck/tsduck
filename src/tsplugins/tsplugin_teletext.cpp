@@ -63,7 +63,7 @@ namespace ts {
         bool             _abort;      // Error (service not found, etc).
         PID              _pid;        // Teletext PID.
         int              _page;       // Teletext page.
-        PacketCounter    _maxFrames;  // Max number of Teletext frames to generate.
+        int              _maxFrames;  // Max number of Teletext frames to generate.
         UString          _language;   // Language to select.
         UString          _outFile;    // Output file name.
         ServiceDiscovery _service;    // Service name & id.
@@ -172,7 +172,7 @@ bool ts::TeletextPlugin::start()
     _service.set(value(u"service"));
     _pid = intValue<PID>(u"pid", PID_NULL);
     _page = intValue<int>(u"page", -1);
-    _maxFrames = intValue<PacketCounter>(u"max-frames", 0);
+    _maxFrames = intValue<int>(u"max-frames", 0);
     getValue(_language, u"language");
     getValue(_outFile, u"output-file");
     _demux.setAddColors(present(u"colors"));
