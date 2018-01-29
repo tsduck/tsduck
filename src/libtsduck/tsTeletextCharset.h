@@ -70,6 +70,12 @@ namespace ts {
         UChar g2ToUcs2(uint8_t c) const;
 
         //!
+        //! Set default G0 character set.
+        //! @param [in] triplet Charset triplet.
+        //!
+        void setG0Charset(uint32_t triplet);
+
+        //!
         //! Set the X/28 character set and use it as current character set.
         //! @param [in] charset Charactet set index.
         //!
@@ -131,9 +137,10 @@ namespace ts {
         void remapG0(uint8_t charset);
 
         // Private members.
-        uint8_t       _current;  //!< Current charset index.
-        uint8_t       _g0m29;    //!< M/29 charset.
-        uint8_t       _g0x28;    //!< X/28 charset.
-        G0CharsetData _G0;       //!< Current character set data.
+        uint8_t        _current;   //!< Current charset index.
+        uint8_t        _g0m29;     //!< M/29 charset.
+        uint8_t        _g0x28;     //!< X/28 charset.
+        G0CharsetIndex _g0Default; //!< Default G0 index.
+        G0CharsetData  _G0;        //!< Current character set data.
     };
 }
