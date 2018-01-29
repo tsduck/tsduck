@@ -428,6 +428,7 @@ void ts::TeletextDemux::processTeletextPacket(PID pid, PIDContext& pc, uint8_t d
             const uint32_t triplet0 = unham_24_18((data[3] << 16) | (data[2] << 8) | data[1]);
             // ETS 300 706, chapter 9.4.2: Packet X/28/0 Format 1 only
             if ((triplet0 & 0x0f) == 0x00) {
+                pc.pages[pc.currentPage].charset.setG0Charset(triplet0);
                 pc.pages[pc.currentPage].charset.setX28(uint8_t((triplet0 & 0x3f80) >> 7));
             }
         }
@@ -443,6 +444,7 @@ void ts::TeletextDemux::processTeletextPacket(PID pid, PIDContext& pc, uint8_t d
             // ETS 300 706, table 11: Coding of Packet M/29/0
             // ETS 300 706, table 13: Coding of Packet M/29/4
             if ((triplet0 & 0xff) == 0x00) {
+                pc.pages[pc.currentPage].charset.setG0Charset(triplet0);
                 pc.pages[pc.currentPage].charset.setM29(uint8_t((triplet0 & 0x3f80) >> 7));
             }
         }

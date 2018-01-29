@@ -321,7 +321,8 @@ namespace {
 ts::TeletextCharset::TeletextCharset() :
     _current(0x00),
     _g0m29(UNDEFINED),
-    _g0x28(UNDEFINED)
+    _g0x28(UNDEFINED),
+    _g0Default(LATIN)
 {
     ::memcpy(&_G0, G0Base, sizeof(_G0));
 }
@@ -339,7 +340,15 @@ ts::UChar ts::TeletextCharset::teletextToUcs2(uint8_t c) const
     }
     else {
         const UChar r = c & 0x7F;
-        return (r >= 0x20 ? _G0[LATIN][r - 0x20] : r);
+        if (r < 0x20) {
+            return r;
+        }
+        else if (_g0Default == LATIN) {
+            return _G0[LATIN][r - 0x20];
+        }
+        else {
+            return G0Base[_g0Default][r - 0x20];
+        }
     }
 }
 
@@ -371,23 +380,49 @@ ts::UChar ts::TeletextCharset::g2AccentToUcs2(uint8_t c, uint8_t accent) const
 // Change character sets.
 //-----------------------------------------------------------------------------
 
+void ts::TeletextCharset::setG0Charset(uint32_t triplet)
+{
+    // ETS 300 706, Table 32
+    if ((triplet & 0x3c00) != 0x1000) {
+        _g0Default = LATIN;
+    }
+    else if ((triplet & 0x0380) == 0x0000) {
+        _g0Default = CYRILLIC1;
+    }
+    else if ((triplet & 0x0380) == 0x0200) {
+        _g0Default = CYRILLIC2;
+    }
+    else if ((triplet & 0x0380) == 0x0280) {
+        _g0Default = CYRILLIC3;
+    }
+    else {
+        _g0Default = LATIN;
+    }
+}
+
 void ts::TeletextCharset::setX28(uint8_t charset)
 {
-    remapG0(_g0x28 = charset);
+    if (_g0Default == LATIN) {
+        remapG0(_g0x28 = charset);
+    }
 }
 
 void ts::TeletextCharset::setM29(uint8_t charset)
 {
-    _g0m29 = charset;
-    if (_g0x28 == UNDEFINED) {
-        remapG0(_g0m29);
+    if (_g0Default == LATIN) {
+        _g0m29 = charset;
+        if (_g0x28 == UNDEFINED) {
+            remapG0(_g0m29);
+        }
     }
 }
 
 void ts::TeletextCharset::resetX28(uint8_t fallback)
 {
-    _g0x28 = UNDEFINED;
-    remapG0(_g0m29 != UNDEFINED ? _g0m29 : fallback);
+    if (_g0Default == LATIN) {
+        _g0x28 = UNDEFINED;
+        remapG0(_g0m29 != UNDEFINED ? _g0m29 : fallback);
+    }
 }
 
 
