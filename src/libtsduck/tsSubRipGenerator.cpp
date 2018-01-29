@@ -131,7 +131,7 @@ void ts::SubRipGenerator::addFrame(MilliSecond showTimestamp, MilliSecond hideTi
                  << FormatDuration(showTimestamp, hideTimestamp) << std::endl;
 
         // Subsequent lines: Subtitle text.
-        for (UStringList::const_iterator it = lines.begin(); !notEmpty && it != lines.end(); ++it) {
+        for (UStringList::const_iterator it = lines.begin(); it != lines.end(); ++it) {
             // Empty lines are illegal in SRT, skip them.
             if (!it->empty()) {
                 *_stream << *it << std::endl;

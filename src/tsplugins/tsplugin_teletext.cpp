@@ -122,15 +122,15 @@ ts::TeletextPlugin::TeletextPlugin(TSP* tsp_) :
             u"      SRT subtitles are displayed on the standard output.\n"
             u"\n"
             u"  --page value\n"
-            u"      Specificies the Teletext page to extract. This option is useful only when\n"
+            u"      Specifies the Teletext page to extract. This option is useful only when\n"
             u"      the Teletext PID contains several pages. By default, the first Teletext\n"
             u"      frame defines the page to use.\n"
             u"\n"
             u"  -p value\n"
             u"  --pid value\n"
             u"      Specifies the PID carrying Teletext subtitles. Alternatively, if the\n"
-            u"      Teletext PID is properly signaled in the PMT of its service, the option\n"
-            u"      --service can be used. Exactly one of --service or --pid shall be specified.\n"
+            u"      Teletext PID is properly signalled in the PMT of its service, the option\n"
+            u"      --service can be used instead.\n"
             u"\n"
             u"  -s value\n"
             u"  --service value\n"
@@ -139,8 +139,8 @@ ts::TeletextPlugin::TeletextPlugin(TSP* tsp_) :
             u"      service id. Otherwise, it is interpreted as a service name, as specified\n"
             u"      in the SDT. The name is not case sensitive and blanks are ignored.\n"
             u"      The first teletext_descriptor in the PMT of the service is used to\n"
-            u"      identify the PID carrying Teletext subtitles.\n"
-            u"      Exactly one of --service or --pid shall be specified.\n"
+            u"      identify the PID carrying Teletext subtitles. If neither --service nor\n"
+            u"      --pid is specified, the first service in the PAT is used.\n"
             u"\n"
             u"  --version\n"
             u"      Display the version number.\n");
@@ -154,15 +154,11 @@ ts::TeletextPlugin::TeletextPlugin(TSP* tsp_) :
 bool ts::TeletextPlugin::start()
 {
     // Get command line arguments.
-    if (present(u"pid") + present(u"service") != 1) {
-        tsp->error(u"specify exactly one of --service or --pid");
-        return false;
-    }
     _service.set(value(u"service"));
+    _pid = intValue<PID>(u"pid", PID_NULL);
+    _page = intValue<int>(u"page", -1);
     getValue(_language, u"language");
     getValue(_outFile, u"output-file");
-    _page = intValue<int>(u"page", -1);
-    _pid = intValue<PID>(u"pid", PID_NULL);
 
     // Create the output file.
     if (_outFile.empty()) {
@@ -193,6 +189,7 @@ bool ts::TeletextPlugin::start()
 
 bool ts::TeletextPlugin::stop()
 {
+    _demux.flushTeletext();
     _srtOutput.close();
     return true;
 }
@@ -255,7 +252,14 @@ void ts::TeletextPlugin::handleTeletextMessage(TeletextDemux& demux, const Telet
 
 ts::ProcessorPlugin::Status ts::TeletextPlugin::processPacket(TSPacket& pkt, bool& flush, bool& bitrate_changed)
 {
-    _service.feedPacket(pkt);
+    // As long as the Teletext PID is not found, we look for the service.
+    if (_pid == PID_NULL) {
+        _service.feedPacket(pkt);
+    }
+
+    // Demux Teletext streams.
     _demux.feedPacket(pkt);
+
+    // Do not change packet but abort on error.
     return _service.nonExistentService() || _abort ? TSP_END : TSP_OK;
 }
