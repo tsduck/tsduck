@@ -63,11 +63,13 @@ namespace ts {
         bool             _abort;      // Error (service not found, etc).
         PID              _pid;        // Teletext PID.
         int              _page;       // Teletext page.
+        PacketCounter    _maxFrames;  // Max number of Teletext frames to generate.
         UString          _language;   // Language to select.
         UString          _outFile;    // Output file name.
         ServiceDiscovery _service;    // Service name & id.
         TeletextDemux    _demux;      // Teletext demux to extract subtitle frames.
         SubRipGenerator  _srtOutput;  // Generate SRT output file.
+        std::set<int>    _pages;      // Set of all Teletext pages in the PID (for information only).
 
         // Implementation of interfaces.
         virtual void handlePMT(const PMT& table) override;
@@ -93,19 +95,27 @@ ts::TeletextPlugin::TeletextPlugin(TSP* tsp_) :
     _abort(false),
     _pid(PID_NULL),
     _page(-1),
+    _maxFrames(0),
     _language(),
     _outFile(),
     _service(this, *tsp),
-    _demux(this),
-    _srtOutput()
+    _demux(this, NoPID),
+    _srtOutput(),
+    _pages()
 {
+    option(u"colors",      'c');
     option(u"language",    'l', STRING);
+    option(u"max-frames",  'm', POSITIVE);
     option(u"output-file", 'o', STRING);
     option(u"page",         0,  POSITIVE);
     option(u"pid",         'p', PIDVAL);
     option(u"service",     's', STRING);
 
     setHelp(u"Options:\n"
+            u"\n"
+            u"  -c\n"
+            u"  --colors\n"
+            u"      Add font color tags in the subtitles. By default, no color is specified.\n"
             u"\n"
             u"  --help\n"
             u"      Display this help text.\n"
@@ -115,6 +125,11 @@ ts::TeletextPlugin::TeletextPlugin(TSP* tsp_) :
             u"      Specifies the language of the subtitles to select. This option is useful\n"
             u"      only with --service, when the PMT of the service declares Teletext\n"
             u"      subtitles in different languages.\n"
+            u"\n"
+            u"  -m value\n"
+            u"  --max-frames value\n"
+            u"      Specifies the maximum number of Teletext frames to extract. The processing\n"
+            u"      is then stopped. By default, all frames are extracted.\n"
             u"\n"
             u"  -o filename\n"
             u"  --output-file filename\n"
@@ -157,8 +172,10 @@ bool ts::TeletextPlugin::start()
     _service.set(value(u"service"));
     _pid = intValue<PID>(u"pid", PID_NULL);
     _page = intValue<int>(u"page", -1);
+    _maxFrames = intValue<PacketCounter>(u"max-frames", 0);
     getValue(_language, u"language");
     getValue(_outFile, u"output-file");
+    _demux.setAddColors(present(u"colors"));
 
     // Create the output file.
     if (_outFile.empty()) {
@@ -173,6 +190,7 @@ bool ts::TeletextPlugin::start()
     // Reinitialize the plugin state.
     _abort = false;
     _demux.reset();
+    _pages.clear();
 
     // If the Teletext page is already known, filter it immediately.
     if (_pid != PID_NULL) {
@@ -201,6 +219,9 @@ bool ts::TeletextPlugin::stop()
 
 void ts::TeletextPlugin::handlePMT(const PMT& pmt)
 {
+    bool languageOK = _language.empty();
+    bool pageOK = _page < 0;
+
     // Analyze all components in the PMT until our Teletext PID is found.
     for (PMT::StreamMap::const_iterator it = pmt.streams.begin(); _pid == PID_NULL && it != pmt.streams.end(); ++it) {
         const PID pid = it->first;
@@ -216,14 +237,37 @@ void ts::TeletextPlugin::handlePMT(const PMT& pmt)
             else if (desc.isValid()) {
                 // Loop on all descriptor entries, until we find a matching one.
                 for (TeletextDescriptor::EntryList::const_iterator itEntry = desc.entries.begin(); _pid == PID_NULL && itEntry != desc.entries.end(); ++itEntry) {
+                    // Does it match the requested language and/or page?
                     const bool matchLanguage = _language.empty() || _language.similar(itEntry->language_code);
                     const bool matchPage = _page < 0 || _page == itEntry->page_number;
                     if (matchPage && matchLanguage) {
                         _pid = pid;
                     }
+                    // Keep track of languages and pages we found.
+                    languageOK = languageOK || matchLanguage;
+                    pageOK = pageOK || matchPage;
                 }
             }
         }
+    }
+
+    if (_pid != PID_NULL) {
+        // Found a Teletext PID, demux it.
+        _demux.addPID(_pid);
+        tsp->verbose(u"using Teletext PID 0x%X (%d)", {_pid, _pid});
+    }
+    else {
+        // Display error if you could not find any appropriate Teletext PID
+        if (!pageOK) {
+            tsp->error(u"no Teletext page %d declared in PMT", {_page});
+        }
+        if (!languageOK) {
+            tsp->error(u"no Teletext subtitles found for language \"%s\"", {_language});
+        }
+        if (pageOK && languageOK) {
+            tsp->error(u"no Teletext subtitles found for service 0x%X (%d)", {pmt.service_id, pmt.service_id});
+        }
+        _abort = true;
     }
 }
 
@@ -237,11 +281,25 @@ void ts::TeletextPlugin::handleTeletextMessage(TeletextDemux& demux, const Telet
     // If the Teletext page was not specified, use the first one.
     if (_page < 0) {
         _page = frame.page();
+        _pages.insert(_page);
+        tsp->verbose(u"using Teletext page %d", {_page});
+    }
+
+    // For information, report all Teletext pages in the PID.
+    if (_pages.count(frame.page()) == 0) {
+        _pages.insert(frame.page());
+        tsp->verbose(u"Teletext page %d found in PID 0x%X (%d)", {frame.page(), frame.pid(), frame.pid()});
     }
 
     // Save only frames from the selected Teletext page.
     if (frame.page() == _page) {
+        // Format frame as SRT.
         _srtOutput.addFrame(frame.showTimestamp(), frame.hideTimestamp(), frame.lines());
+
+        // Count frames and stop when the maximum is reached.
+        if (_maxFrames > 0 && frame.frameCount() >= _maxFrames) {
+            _abort = true;
+        }
     }
 }
 
