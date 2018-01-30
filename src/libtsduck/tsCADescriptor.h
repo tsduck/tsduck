@@ -37,8 +37,12 @@
 #include "tsAbstractDescriptor.h"
 #include "tsSafePtr.h"
 #include "tsMutex.h"
+#include "tsNullReport.h"
 
 namespace ts {
+
+    class DescriptorList;
+
     //!
     //! Representation of a generic CA_descriptor.
     //! Specialized classes may exist, depending on the CA_system_id.
@@ -77,6 +81,26 @@ namespace ts {
         //! @param [in] pds Private Data Specifier. Used to interpret private descriptors.
         //!
         static void DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* payload, size_t size, int indent, TID tid, PDS pds);
+
+        //!
+        //! Decode a command-line CA_descriptor and fills this object with it.
+        //! @param [in] value CA descriptor in command-line form: casid/pid[/private-data]
+        //! The mandatory parts, casid and pid, are integer values, either decimal or hexadecimal.
+        //! The optional private data must be a suite of hexadecimal digits.
+        //! @param [in,out] report Where to report errors (typically badly formed parameters).
+        //! @return True on success, false on error.
+        //!
+        bool fromCommmandLine(const UString& value, Report& report = NULLREP);
+
+        //!
+        //! Static method to decode command-line CA_descriptor and add them in a descriptor list.
+        //! @param [in,out] dlist Descriptor list. The new CA descriptors are added in the list.
+        //! @param [in] values List of CA descriptors in command-line form: casid/pid[/private-data]
+        //! @param [in,out] report Where to report errors (typically badly formed parameters).
+        //! @return True on success, false on error.
+        //! @see fromCommmandLine()
+        //!
+        static bool AddFromCommandLine(DescriptorList& dlist, const UStringVector& values, Report& report = NULLREP);
 
         // Inherited methods
         virtual void serialize(Descriptor&, const DVBCharset* = 0) const override;
