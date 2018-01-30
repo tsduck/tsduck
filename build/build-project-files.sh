@@ -67,7 +67,9 @@ MSVCDIR=$(ls -d "$BUILDDIR"/msvc* | sort | tail -1)
 [[ $(uname -s) == Linux ]] && FIND1="-maxdepth 1" || FIND1="-depth 1"
 
 # Enforce LANG to get the same sort order as "Sort-Object -Culture en-US" in PowerShell
-LANG=en_US.UTF-8
+export LANG=C
+export LC_ALL=$LANG
+
 # Embedded newline character for variables.
 NL=$'\n'
 
@@ -217,10 +219,9 @@ GenerateMainHeader()
     echo '#endif'
 }
 
-
 # Generate the files.
-[[ -z "$TARGET" || "$TARGET" == "libtsduck-files.props"   ]] && GenerateMSProject  >"$MSVCDIR/libtsduck-files.props"
-[[ -z "$TARGET" || "$TARGET" == "libtsduck-filters.props" ]] && GenerateMSFilters  >"$MSVCDIR/libtsduck-filters.props"
+[[ -z "$TARGET" || "$TARGET" == "libtsduck-files.props"   ]] && GenerateMSProject | unix2dos >"$MSVCDIR/libtsduck-files.props"
+[[ -z "$TARGET" || "$TARGET" == "libtsduck-filters.props" ]] && GenerateMSFilters | unix2dos >"$MSVCDIR/libtsduck-filters.props"
 [[ -z "$TARGET" || "$TARGET" == "libtsduck-files.pri"     ]] && GenerateQtProject  >"$ROOTDIR/build/qtcreator/libtsduck/libtsduck-files.pri"
 [[ -z "$TARGET" || "$TARGET" == "tsduck.h"                ]] && GenerateMainHeader >"$SRCDIR/tsduck.h"
 
