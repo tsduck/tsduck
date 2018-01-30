@@ -112,7 +112,7 @@ ts::CATPlugin::CATPlugin (TSP* tsp_) :
     _demux(this),
     _pzer()
 {
-    option(u"add",                        'a', STRING, 0, UNLIMITED_COUNT);
+    option(u"add-ca-descriptor",          'a', STRING, 0, UNLIMITED_COUNT);
     option(u"bitrate",                    'b', POSITIVE);
     option(u"cleanup-private-descriptors", 0);
     option(u"create",                     'c');
@@ -126,10 +126,11 @@ ts::CATPlugin::CATPlugin (TSP* tsp_) :
     setHelp(u"Options:\n"
             u"\n"
             u"  -a casid/pid[/private-data]\n"
-            u"  --add casid/pid[/private-data]\n"
+            u"  --add-ca-descriptor casid/pid[/private-data]\n"
             u"      Add a CA_descriptor in the CAT with the specified CA System Id and\n"
             u"      EMM PID. The optional private data must be a suite of hexadecimal digits.\n"
-            u"      Several --add options may be specified to add several descriptors.\n"
+            u"      Several --add-ca-descriptor options may be specified to add several\n"
+            u"      descriptors.\n"
             u"\n"
             u"  -b value\n"
             u"  --bitrate value\n"
@@ -202,34 +203,11 @@ bool ts::CATPlugin::start()
     getIntValues(_remove_pid, u"remove-pid");
 
     // Get list of descriptors to add
-    const size_t add_count = count(u"add");
+    UStringVector cadescs;
+    getValues(cadescs, u"add-ca-descriptor");
     _add_descs.clear();
-    for (size_t n = 0; n < add_count; n++) {
-
-        // Get a description: cas-id/PID[/private-data]
-        const UString val(value(u"add", u"", n));
-        int casid = 0, pid = 0;
-        size_t count = 0, index = 0;
-        val.scan(count, index, u"%i/%i", {&casid, &pid});
-        // On return, index points to the next index in val after "cas-id/PID".
-        // If there is a private part, then index must points to a '/'.
-        if (count != 2 || casid < 0 || casid > 0xFFFF || pid < 0 || pid >= PID_MAX || (index < val.length() && val[index] != u'/')) {
-            tsp->error(u"invalid \"cas-id/PID[/private-data]\" value \"%s\"", {val});
-            return false;
-        }
-
-        CADescriptor desc;
-        desc.cas_id = uint16_t(casid);
-        desc.ca_pid = PID(pid);
-        if (index < val.length()) {
-            // There is a private part
-            const UString hexa(val.substr(index + 1));
-            if (!hexa.hexaDecode(desc.private_data)) {
-                tsp->error(u"invalid private data \"%s\" for CA_descriptor, specify an even number of hexa digits", {hexa});
-                return false;
-            }
-        }
-        _add_descs.add(desc);
+    if (!CADescriptor::AddFromCommandLine(_add_descs, cadescs, *tsp)) {
+        return false;
     }
 
     // Initialize the demux and packetizer
@@ -270,7 +248,7 @@ void ts::CATPlugin::handleTable (SectionDemux& demux, const BinaryTable& table)
 // Process a new CAT
 //----------------------------------------------------------------------------
 
-void ts::CATPlugin::handleCAT (CAT& cat)
+void ts::CATPlugin::handleCAT(CAT& cat)
 {
     // CAT is found, no longer try to create a new one
     _cat_found = true;
@@ -284,9 +262,9 @@ void ts::CATPlugin::handleCAT (CAT& cat)
     }
 
     // Remove descriptors
-    for (size_t index = cat.descs.search (DID_CA); index < cat.descs.count(); index = cat.descs.search (DID_CA, index)) {
+    for (size_t index = cat.descs.search(DID_CA); index < cat.descs.count(); index = cat.descs.search(DID_CA, index)) {
         bool remove_it = false;
-        const CADescriptor desc (*(cat.descs[index]));
+        const CADescriptor desc(*(cat.descs[index]));
         if (desc.isValid()) {
             for (size_t i = 0; !remove_it && i < _remove_casid.size(); ++i) {
                 remove_it = desc.cas_id == _remove_casid[i];
@@ -296,7 +274,7 @@ void ts::CATPlugin::handleCAT (CAT& cat)
             }
         }
         if (remove_it) {
-            cat.descs.removeByIndex (index);
+            cat.descs.removeByIndex(index);
         }
         else {
             index++;
@@ -309,12 +287,12 @@ void ts::CATPlugin::handleCAT (CAT& cat)
     }
 
     // Add descriptors
-    cat.descs.add (_add_descs);
+    cat.descs.add(_add_descs);
 
     // Place modified CAT in the packetizer
     tsp->verbose(u"CAT version %d modified", {cat.version});
-    _pzer.removeSections (TID_CAT);
-    _pzer.addTable (cat);
+    _pzer.removeSections(TID_CAT);
+    _pzer.addTable(cat);
 }
 
 
@@ -322,7 +300,7 @@ void ts::CATPlugin::handleCAT (CAT& cat)
 // Packet processing method
 //----------------------------------------------------------------------------
 
-ts::ProcessorPlugin::Status ts::CATPlugin::processPacket (TSPacket& pkt, bool& flush, bool& bitrate_changed)
+ts::ProcessorPlugin::Status ts::CATPlugin::processPacket(TSPacket& pkt, bool& flush, bool& bitrate_changed)
 {
     const PID pid = pkt.getPID();
 
@@ -330,18 +308,18 @@ ts::ProcessorPlugin::Status ts::CATPlugin::processPacket (TSPacket& pkt, bool& f
     _pkt_current++;
 
     // Filter incoming sections
-    _demux.feedPacket (pkt);
+    _demux.feedPacket(pkt);
 
     // Determine when a new CAT shall be created. Executed only once, when the bitrate is known
     if (_create_after_ms > 0 && _pkt_create_cat == 0) {
-        _pkt_create_cat = PacketDistance (tsp->bitrate(), _create_after_ms);
+        _pkt_create_cat = PacketDistance(tsp->bitrate(), _create_after_ms);
     }
 
     // Create a new CAT when necessary
     if (!_cat_found && _pkt_create_cat > 0 && _pkt_current >= _pkt_create_cat) {
         // Create a new empty CAT and process it as if it comes from the TS
         CAT cat;
-        handleCAT (cat);
+        handleCAT(cat);
         // Insert first CAT packet as soon as possible
         _pkt_insert_cat = _pkt_current;
     }
@@ -367,7 +345,7 @@ ts::ProcessorPlugin::Status ts::CATPlugin::processPacket (TSPacket& pkt, bool& f
     }
     else if (pid == PID_CAT) {
         // Replace an existing CAT packet
-        _pzer.getNextPacket (pkt);
+        _pzer.getNextPacket(pkt);
     }
 
     return TSP_OK;

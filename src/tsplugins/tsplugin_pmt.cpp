@@ -89,6 +89,7 @@ namespace ts {
         bool                _ac3_atsc2dvb;      // Modify AC-3 signaling from ATSC to DVB method
         bool                _eac3_atsc2dvb;     // Modify Enhanced-AC-3 signaling from ATSC to DVB method
         bool                _cleanup_priv_desc; // Remove private desc without preceding PDS desc
+        DescriptorList      _add_descs;         // List of descriptors to add
         AudioLanguageOptionsVector _languages;  // Audio languages to set
         SectionDemux        _demux;             // Section demux
         CyclingPacketizer   _pzer;              // Packetizer for modified PMT
@@ -132,11 +133,13 @@ ts::PMTPlugin::PMTPlugin(TSP* tsp_) :
     _ac3_atsc2dvb(false),
     _eac3_atsc2dvb(false),
     _cleanup_priv_desc(false),
+    _add_descs(),
     _languages(),
     _demux(this),
     _pzer()
 {
     option(u"ac3-atsc2dvb",                0);
+    option(u"add-ca-descriptor",           0,  STRING, 0, UNLIMITED_COUNT);
     option(u"add-pid",                    'a', STRING, 0, UNLIMITED_COUNT);
     option(u"add-stream-identifier",       0);
     option(u"audio-language",              0,  STRING, 0, UNLIMITED_COUNT);
@@ -160,6 +163,12 @@ ts::PMTPlugin::PMTPlugin(TSP* tsp_) :
             u"      In details, this means that all components with stream_type 0x81 are\n"
             u"      modified with stream_type 0x06 (PES private data) and an AC-3_descriptor\n"
             u"      is added on this component (if none was already there).\n"
+            u"\n"
+            u"  --add-ca-descriptor casid/pid[/private-data]\n"
+            u"      Add a CA_descriptor at program level in the PMT with the specified CA\n"
+            u"      System Id and ECM PID. The optional private data must be a suite of\n"
+            u"      hexadecimal digits. Several --add-ca-descriptor options may be specified\n"
+            u"      to add several descriptors.\n"
             u"\n"
             u"  -a pid/stream_type\n"
             u"  --add-pid pid/stream_type\n"
@@ -304,6 +313,14 @@ bool ts::PMTPlugin::start()
         return false;
     }
 
+    // Get list of descriptors to add
+    UStringVector cadescs;
+    getValues(cadescs, u"add-ca-descriptor");
+    _add_descs.clear();
+    if (!CADescriptor::AddFromCommandLine(_add_descs, cadescs, *tsp)) {
+        return false;
+    }
+
     // Get PMT PID or service description
     if (present(u"pmt-pid") && present(u"service")) {
         error(u"options --pmt-pid and --service are mutually exclusive");
@@ -439,6 +456,8 @@ void ts::PMTPlugin::handleTable (SectionDemux& demux, const BinaryTable& table)
             }
             // Modify audio languages
             _languages.apply(pmt, *tsp);
+            // Add CA descriptors
+            pmt.descs.add(_add_descs);
             // Remove components
             for (std::vector<PID>::const_iterator it = _removed_pid.begin(); it != _removed_pid.end(); ++it) {
                 pmt.streams.erase(*it);

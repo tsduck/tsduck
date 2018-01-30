@@ -31,9 +31,14 @@ POSSIBILITY OF SUCH DAMAGE.
 
                               --------------------
 
-                        Licenses of third-party libraries
+                        Licenses of third-party software
 
                                 ==== DTAPI ====
+
+[[ DTAPI is proprietary software from Dektec. It is delivered in binary    ]]
+[[ form only. TSDuck source code does not include DTAPI. The build scripts ]]
+[[ of TSDuck download DTAPI and include it in TSDuck binary packages.      ]]
+[[ Reference site: https://www.dektec.com/downloads/SDK/                   ]]
 
 Copyright (C) 2000-2017 DekTec Digital Video B.V.
 
@@ -55,3 +60,66 @@ FOR THE LOSS OF USE, INFORMATION, GOODWILL, PROFIT, WORK STOPPAGE, DATA, BUSINES
 REVENUE) UNDER ANY CIRCUMSTANCES, OR UNDER ANY LEGAL THEORY, WHETHER IN CONTRACT, IN
 TORT, IN NEGLIGENCE, OR OTHERWISE, ARISING FROM THE USE OF, OR INABILITY TO USE THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
+
+                             ==== LibTomCrypt ====
+
+[[ LibTomCrypt is not fully used or included by TSDuck. However, some code ]]
+[[ was directly copied and adapted from LibTomCrypt into TSDuck.           ]]
+[[ Reference site: http://www.libtom.net/LibTomCrypt/                      ]]
+
+LibTomCrypt is licensed under DUAL licensing terms.
+Choose and use the license of your needs.
+
+LICENSE #1
+
+LibTomCrypt is public domain.  As should all quality software be.
+Tom St Denis
+
+LICENSE #2
+
+            DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE
+                    Version 2, December 2004
+
+Copyright (C) 2004 Sam Hocevar <sam@hocevar.net>
+
+Everyone is permitted to copy and distribute verbatim or modified
+copies of this license document, and changing it is allowed as long
+as the name is changed.
+
+            DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE
+   TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION
+
+  0. You just DO WHAT THE FUCK YOU WANT TO.
+  
+                               ==== Telxcc ====
+
+[[ Telxcc is not fully used or included by TSDuck. However, some code ]]
+[[ was directly copied and adapted from Telxcc into TSDuck.           ]]
+[[ Reference site: https://github.com/petrkutalek/telxcc              ]]
+
+(c) 2011-2016 Petr Kutalek: telxcc
+
+Some portions/inspirations:
+(c) 2007 Vincent Penne, telx.c : Minimalistic Teletext subtitles decoder
+(c) 2001-2005 by dvb.matt, ProjectX java dvb decoder
+(c) Dave Chapman <dave@dchapman.com> 2003-2004, dvbtextsubs
+(c) Ralph Metzler, DVB driver, vbidecode
+(c) Jan Pantelje, submux-dvd
+(c) Ragnar Sundblad, dvbtextsubs, VDR teletext subtitles plugin
+(c) Scott T. Smith, dvdauthor
+(c) 2007 Vladimir Voroshilov <voroshil@gmail.com>, mplayer
+(c) 2001, 2002, 2003, 2004, 2007 Michael H. Schimek, libzvbi
+
+This program is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License as published by the
+Free Software Foundation; either version 2 of the License, or (at your
+option) any later version.
+
+This program is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
+for more details.
+
+You should have received a copy of the GNU General Public License along
+with this program; if not, write to the Free Software Foundation, Inc.,
+51 Franklin Street, Fifth Floor, Boston MA 02110-1301, USA.

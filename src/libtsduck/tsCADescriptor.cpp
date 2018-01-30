@@ -37,6 +37,7 @@
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 #include "tsxmlElement.h"
+#include "tsDescriptorList.h"
 TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"CA_descriptor"
@@ -169,4 +170,62 @@ void ts::CADescriptor::fromXML(const xml::Element* element)
         element->getIntAttribute<uint16_t>(cas_id, u"CA_system_id", true, 0, 0x0000, 0xFFFF) &&
         element->getIntAttribute<PID>(ca_pid, u"CA_PID", true, 0, 0x0000, 0x1FFF) &&
         element->getHexaTextChild(private_data, u"private_data", false, 0, MAX_DESCRIPTOR_SIZE - 4);
+}
+
+
+//----------------------------------------------------------------------------
+// Decode a command-line CA_descriptor and fills this object with it.
+//----------------------------------------------------------------------------
+
+bool ts::CADescriptor::fromCommmandLine(const UString& value, Report& report)
+{
+    private_data.clear();
+
+    int casid = 0;
+    int pid = 0;
+    size_t count = 0;
+    size_t index = 0;
+
+    value.scan(count, index, u"%i/%i", {&casid, &pid});
+
+    // On return, index points to the next index in val after "cas-id/PID".
+    // If there is a private part, then index must points to a '/'.
+    if (count != 2 || casid < 0 || casid > 0xFFFF || pid < 0 || pid >= int(PID_MAX) || (index < value.length() && value[index] != u'/')) {
+        report.error(u"invalid \"cas-id/PID[/private-data]\" value \"%s\"", {value});
+        return false;
+    }
+
+    cas_id = uint16_t(casid);
+    ca_pid = PID(pid);
+
+    if (index < value.length()) {
+        // There is a private part
+        const UString hexa(value.substr(index + 1));
+        if (!hexa.hexaDecode(private_data)) {
+            report.error(u"invalid private data \"%s\" for CA_descriptor, specify an even number of hexa digits", {hexa});
+            return false;
+        }
+    }
+
+    return true;
+}
+
+
+//----------------------------------------------------------------------------
+// Decode command-line CA_descriptor and add them in a descriptor list.
+//----------------------------------------------------------------------------
+
+bool ts::CADescriptor::AddFromCommandLine(DescriptorList& dlist, const UStringVector& values, Report& report)
+{
+    bool result = true;
+    for (size_t i = 0; i < values.size(); ++i) {
+        CADescriptor desc;
+        if (desc.fromCommmandLine(values[i], report)) {
+            dlist.add(desc);
+        }
+        else {
+            result = false;
+        }
+    }
+    return result;
 }
