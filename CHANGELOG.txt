@@ -2,7 +2,7 @@
 TSDuck Change Log and Release Notes
 ===================================
 
-Version 3.7
+Version 3.7-512
 
 - Added plugin teletext to extract Teletext subtitles in SRT format.
 
