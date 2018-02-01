@@ -1,0 +1,88 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="PropertySheets">
+    <Import Project="msvc-common-begin.props" />
+  </ImportGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\src\tsplugins\tsplugin_aes.cpp" />
+    <ClCompile Include="..\..\src\tsplugins\tsplugin_analyze.cpp" />
+    <ClCompile Include="..\..\src\tsplugins\tsplugin_bat.cpp" />
+    <ClCompile Include="..\..\src\tsplugins\tsplugin_bitrate_monitor.cpp" />
+    <ClCompile Include="..\..\src\tsplugins\tsplugin_boostpid.cpp" />
+    <ClCompile Include="..\..\src\tsplugins\tsplugin_cat.cpp" />
+    <ClCompile Include="..\..\src\tsplugins\tsplugin_clear.cpp" />
+    <ClCompile Include="..\..\src\tsplugins\tsplugin_continuity.cpp" />
+    <ClCompile Include="..\..\src\tsplugins\tsplugin_count.cpp" />
+    <ClCompile Include="..\..\src\tsplugins\tsplugin_datainject.cpp" />
+    <ClCompile Include="..\..\src\tsplugins\tsplugin_dektec.cpp" />
+    <ClCompile Include="..\..\src\tsplugins\tsplugin_descrambler.cpp" />
+    <ClCompile Include="..\..\src\tsplugins\tsplugin_drop.cpp" />
+    <ClCompile Include="..\..\src\tsplugins\tsplugin_dvb.cpp" />
+    <ClCompile Include="..\..\src\tsplugins\tsplugin_eit.cpp" />
+    <ClCompile Include="..\..\src\tsplugins\tsplugin_file.cpp" />
+    <ClCompile Include="..\..\src\tsplugins\tsplugin_filter.cpp" />
+    <ClCompile Include="..\..\src\tsplugins\tsplugin_fork.cpp" />
+    <ClCompile Include="..\..\src\tsplugins\tsplugin_history.cpp" />
+    <ClCompile Include="..\..\src\tsplugins\tsplugin_inject.cpp" />
+    <ClCompile Include="..\..\src\tsplugins\tsplugin_ip.cpp" />
+    <ClCompile Include="..\..\src\tsplugins\tsplugin_mux.cpp" />
+    <ClCompile Include="..\..\src\tsplugins\tsplugin_nit.cpp" />
+    <ClCompile Include="..\..\src\tsplugins\tsplugin_nitscan.cpp" />
+    <ClCompile Include="..\..\src\tsplugins\tsplugin_null.cpp" />
+    <ClCompile Include="..\..\src\tsplugins\tsplugin_pat.cpp" />
+    <ClCompile Include="..\..\src\tsplugins\tsplugin_pattern.cpp" />
+    <ClCompile Include="..\..\src\tsplugins\tsplugin_pcrbitrate.cpp" />
+    <ClCompile Include="..\..\src\tsplugins\tsplugin_pcrextract.cpp" />
+    <ClCompile Include="..\..\src\tsplugins\tsplugin_pcrverify.cpp" />
+    <ClCompile Include="..\..\src\tsplugins\tsplugin_pes.cpp" />
+    <ClCompile Include="..\..\src\tsplugins\tsplugin_play.cpp" />
+    <ClCompile Include="..\..\src\tsplugins\tsplugin_pmt.cpp" />
+    <ClCompile Include="..\..\src\tsplugins\tsplugin_psi.cpp" />
+    <ClCompile Include="..\..\src\tsplugins\tsplugin_reduce.cpp" />
+    <ClCompile Include="..\..\src\tsplugins\tsplugin_regulate.cpp" />
+    <ClCompile Include="..\..\src\tsplugins\tsplugin_remap.cpp" />
+    <ClCompile Include="..\..\src\tsplugins\tsplugin_rmorphan.cpp" />
+    <ClCompile Include="..\..\src\tsplugins\tsplugin_rmsplice.cpp" />
+    <ClCompile Include="..\..\src\tsplugins\tsplugin_scrambler.cpp" />
+    <ClCompile Include="..\..\src\tsplugins\tsplugin_sdt.cpp" />
+    <ClCompile Include="..\..\src\tsplugins\tsplugin_sifilter.cpp" />
+    <ClCompile Include="..\..\src\tsplugins\tsplugin_skip.cpp" />
+    <ClCompile Include="..\..\src\tsplugins\tsplugin_slice.cpp" />
+    <ClCompile Include="..\..\src\tsplugins\tsplugin_stuffanalyze.cpp" />
+    <ClCompile Include="..\..\src\tsplugins\tsplugin_svremove.cpp" />
+    <ClCompile Include="..\..\src\tsplugins\tsplugin_svrename.cpp" />
+    <ClCompile Include="..\..\src\tsplugins\tsplugin_t2mi.cpp" />
+    <ClCompile Include="..\..\src\tsplugins\tsplugin_tables.cpp" />
+    <ClCompile Include="..\..\src\tsplugins\tsplugin_teletext.cpp" />
+    <ClCompile Include="..\..\src\tsplugins\tsplugin_time.cpp" />
+    <ClCompile Include="..\..\src\tsplugins\tsplugin_timeref.cpp" />
+    <ClCompile Include="..\..\src\tsplugins\tsplugin_tsrename.cpp" />
+    <ClCompile Include="..\..\src\tsplugins\tsplugin_until.cpp" />
+    <ClCompile Include="..\..\src\tsplugins\tsplugin_zap.cpp" />
+    <ClCompile Include="..\..\src\tstools\tsp.cpp" />
+    <ClCompile Include="..\..\src\tstools\tspInputExecutor.cpp" />
+    <ClCompile Include="..\..\src\tstools\tspJointTermination.cpp" />
+    <ClCompile Include="..\..\src\tstools\tspOptions.cpp" />
+    <ClCompile Include="..\..\src\tstools\tspOutputExecutor.cpp" />
+    <ClCompile Include="..\..\src\tstools\tspPluginExecutor.cpp" />
+    <ClCompile Include="..\..\src\tstools\tspProcessorExecutor.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\src\tstools\tspInputExecutor.h" />
+    <ClInclude Include="..\..\src\tstools\tspJointTermination.h" />
+    <ClInclude Include="..\..\src\tstools\tspOptions.h" />
+    <ClInclude Include="..\..\src\tstools\tspOutputExecutor.h" />
+    <ClInclude Include="..\..\src\tstools\tspPluginExecutor.h" />
+    <ClInclude Include="..\..\src\tstools\tspProcessorExecutor.h" />
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{0305170C-F14D-4812-8B14-1468D6607794}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>tsp_static</RootNamespace>
+  </PropertyGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="msvc-target-exe.props" />
+    <Import Project="msvc-use-tsducklib.props" />
+    <Import Project="msvc-common-end.props" />
+  </ImportGroup>
+</Project>

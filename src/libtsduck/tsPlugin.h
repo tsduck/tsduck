@@ -450,25 +450,12 @@ namespace ts {
 //  Helper macros for shared libraries
 //----------------------------------------------------------------------------
 
-#if defined(DOXYGEN)
-//!
-//! User-defined macro to enable static linking.
-//!
-//! If TSDUCK_STATIC is defined, typically on the compilation command line,
-//! the code is compiled and linked statically. Dynamic loading of plugins
-//! is disabled. All know plugins are linked inside tsp. No external plugin
-//! can be loaded.
-//! @hideinitializer
-//!
-#define TSDUCK_STATIC 1
-#endif
-
 //!
 //! Export the plugin API version number out of the shared library.
 //! All @c tsp plugin shared libraries must invoke this macro once.
 //! @hideinitializer
 //!
-#if defined(DOXYGEN) || !defined(TSDUCK_STATIC)
+#if defined(DOXYGEN) || !defined(TSDUCK_STATIC_PLUGINS)
 #define TSPLUGIN_DECLARE_VERSION                        \
     extern "C" {                                        \
         /** @cond nodoxygen */                          \
@@ -482,7 +469,7 @@ namespace ts {
 
 // Support macro for plugin declaration macros.
 #if !defined(DOXYGEN)
-#if defined(TSDUCK_STATIC)
+#if defined(TSDUCK_STATIC_PLUGINS)
 #define _TSPLUGIN_DECLARE_PLUGIN(name,type,suffix) \
     namespace {                                    \
         /** @cond nodoxygen */                     \
