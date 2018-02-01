@@ -429,6 +429,56 @@
 
 
 //----------------------------------------------------------------------------
+// Static linking.
+//----------------------------------------------------------------------------
+
+#if defined(DOXYGEN)
+//!
+//! User-defined macro to enable static linking of plugins.
+//!
+//! If TSDUCK_STATIC_PLUGINS is defined, typically on the compilation command line,
+//! all plugins are linked statically. Dynamic loading of plugins is disabled.
+//! @hideinitializer
+//!
+#define TSDUCK_STATIC_PLUGINS 1
+//!
+//! Applications which link against the TSDuck static library.
+//!
+//! Applications which link against the TSDuck static library should define
+//! TSDUCK_STATIC_LIBRARY. This symbol can be used to force external references.
+//!
+//! TSDUCK_STATIC_LIBRARY enforces TSDUCK_STATIC_PLUGINS.
+//! @hideinitializer
+//!
+#define TSDUCK_STATIC_LIBRARY 1
+//!
+//! User-defined macro to enable full static linking.
+//!
+//! If TSDUCK_STATIC is defined, typically on the compilation command line,
+//! the code is compiled and linked statically, including system libraries.
+//! On Linux, this is not recommended since a few features such as IP address
+//! resolution are disabled.
+//!
+//! TSDUCK_STATIC enforces TSDUCK_STATIC_LIBRARY and TSDUCK_STATIC_PLUGINS.
+//! @hideinitializer
+//!
+#define TSDUCK_STATIC 1
+#else
+
+// Full static linking enforces the usage of TSDuck static library.
+#if defined(TSDUCK_STATIC) && !defined(TSDUCK_STATIC_LIBRARY)
+#define TSDUCK_STATIC_LIBRARY 1
+#endif
+
+// Linking against the TSDuck static library enforces statically linked plugins.
+#if defined(TSDUCK_STATIC_LIBRARY) && !defined(TSDUCK_STATIC_PLUGINS)
+#define TSDUCK_STATIC_PLUGINS 1
+#endif
+
+#endif // DOXYGEN
+
+
+//----------------------------------------------------------------------------
 // System-specific settings
 //----------------------------------------------------------------------------
 

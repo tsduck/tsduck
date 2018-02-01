@@ -9,6 +9,7 @@
 
   <ItemDefinitionGroup>
     <ClCompile>
+      <PreprocessorDefinitions>TSDUCK_STATIC_LIBRARY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(TSDuckRootDir)src\libtsduck;$(TSDuckRootDir)src\libtsduck\windows;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>

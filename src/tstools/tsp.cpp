@@ -46,7 +46,7 @@
 TSDUCK_SOURCE;
 
 // With static link, enforce a reference to MPEG/DVB structures.
-#if defined(TSDUCK_STATIC)
+#if defined(TSDUCK_STATIC_LIBRARY)
 #include "tsStaticReferencesDVB.h"
 const ts::StaticReferencesDVB dependenciesForStaticLib;
 #endif
@@ -111,11 +111,10 @@ int main(int argc, char *argv[])
     ts::PluginRepository* plugins = ts::PluginRepository::Instance();
     ts::CheckNonNull(plugins);
 
-    // If the initial number of plugins is not zero, we assume that plugins were statically linked.
-    // Disallow the dynamic loading of plugins.
-    if (plugins->inputCount() + plugins->processorCount() + plugins->outputCount() > 0) {
-        plugins->setSharedLibraryAllowed(false);
-    }
+    // If plugins were statically linked, disallow the dynamic loading of plugins.
+#if defined(TSDUCK_STATIC_PLUGINS)
+    plugins->setSharedLibraryAllowed(false);
+#endif
 
     // Process the --list-processors option
     if (opt.list_proc) {

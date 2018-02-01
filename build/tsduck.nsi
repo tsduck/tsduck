@@ -171,7 +171,7 @@ Section "Tools & Plugins" SectionTools
     ; Create folder for binaries
     CreateDirectory "$INSTDIR\bin"
     SetOutPath "$INSTDIR\bin"
-    File "${BinDir}\ts*.exe"
+    File /x *_static.exe "${BinDir}\ts*.exe"
     File "${BinDir}\ts*.dll"
     File "${RootDir}\src\libtsduck\tsduck.xml"
     File "${RootDir}\src\libtsduck\tsduck.*.names"
