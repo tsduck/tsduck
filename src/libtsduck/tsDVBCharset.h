@@ -136,6 +136,19 @@ namespace ts {
         virtual bool canEncode(const UString& str, size_t start = 0, size_t count = UString::NPOS) const = 0;
 
         //!
+        //! Encode the character set table code.
+        //!
+        //! Stop either when the specified number of characters are serialized or
+        //! when the buffer is full, whichever comes first.
+        //!
+        //! @param [in,out] buffer Address of the buffer.
+        //! The address is updated to point after the encoded value.
+        //! @param [in,out] size Size of the buffer. Updated to remaining size.
+        //! @return The number of serialized byte.
+        //!
+        virtual size_t encodeTableCode(uint8_t*& buffer, size_t& size) const;
+
+        //!
         //! Encode a C++ Unicode string into a DVB string.
         //!
         //! Unmappable characters are skipped. Stop either when

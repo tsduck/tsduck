@@ -1456,8 +1456,11 @@ ts::UString::size_type ts::UString::toDVB(uint8_t*& buffer, size_t& size, size_t
         return 0;
     }
 
+    // Serialize the table code.
+    const size_t codeSize = charset->encodeTableCode(buffer, size);
+
     // Encode the string.
-    return charset->encode(buffer, size, *this, start, count);
+    return codeSize + charset->encode(buffer, size, *this, start, count);
 }
 
 

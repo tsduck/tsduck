@@ -2,6 +2,12 @@
 TSDuck Change Log and Release Notes
 ===================================
 
+Version 3.8
+
+- Bug fix in the compilation of XML tables: when DVB string were encoded with
+  a character set different from ISO-6937 (the default character set), the
+  table code was not correctly inserted at the beginning of the string.
+
 Version 3.7-512
 
 - Added plugin teletext to extract Teletext subtitles in SRT format.

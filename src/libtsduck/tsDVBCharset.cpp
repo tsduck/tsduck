@@ -86,6 +86,51 @@ bool ts::DVBCharset::GetCharCodeTable(uint32_t& code, size_t& codeSize, const ui
 
 
 //----------------------------------------------------------------------------
+// Encode the character set table code.
+//----------------------------------------------------------------------------
+
+size_t ts::DVBCharset::encodeTableCode(uint8_t*& buffer, size_t& size) const
+{
+    // Intermediate buffer, just in case the output buffer is too small.
+    uint8_t buf[4] = {0};
+    size_t codeSize = 0;
+
+    if (buffer == 0 || size == 0 || _code == 0) {
+        // Empty buffer or default character set.
+        return 0;
+    }
+    else if (_code < 0x1F && _code != 0x10) {
+        // On byte code.
+        buf[0] = uint8_t(_code);
+        codeSize = 1;
+    }
+    else if ((_code & 0xFFFFFF00) == 0x00001F00) {
+        // Two bytes, 0x1F followed by encoding_type_id.
+        PutUInt16(buf, uint16_t(_code));
+        codeSize = 2;
+    }
+    else if ((_code & 0xFFFF0000) == 0x00100000) {
+        // Three bytes, 0x10 followed by 16-bit code.
+        PutUInt24(buf, _code);
+        codeSize = 3;
+    }
+    else {
+        // Invalid table code.
+        return 0;
+    }
+
+    // Now copy the table code.
+    if (codeSize > size) {
+        codeSize = size;
+    }
+    ::memcpy(buffer, buf, codeSize);
+    buffer += codeSize;
+    size -= codeSize;
+    return codeSize;
+}
+
+
+//----------------------------------------------------------------------------
 // Repository of character sets.
 //----------------------------------------------------------------------------
 
