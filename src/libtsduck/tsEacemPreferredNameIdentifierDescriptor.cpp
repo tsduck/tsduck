@@ -35,16 +35,71 @@
 #include "tsEacemPreferredNameIdentifierDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
+#include "tsxmlElement.h"
 TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"eacem_preferred_name_identifier_descriptor"
 #define MY_DID ts::DID_PREF_NAME_ID
 #define MY_PDS ts::PDS_EACEM
 
+TS_XML_DESCRIPTOR_FACTORY(ts::EacemPreferredNameIdentifierDescriptor, MY_XML_NAME);
+TS_ID_DESCRIPTOR_FACTORY(ts::EacemPreferredNameIdentifierDescriptor, ts::EDID(MY_DID, MY_PDS));
 TS_ID_DESCRIPTOR_DISPLAY(ts::EacemPreferredNameIdentifierDescriptor::DisplayDescriptor, ts::EDID(MY_DID, MY_PDS));
 
 // Incorrect use of TPS private data, TPS broadcasters should use EACEM/EICTA PDS instead.
+TS_ID_DESCRIPTOR_FACTORY(ts::EacemPreferredNameIdentifierDescriptor, ts::EDID(MY_DID, ts::PDS_TPS));
 TS_ID_DESCRIPTOR_DISPLAY(ts::EacemPreferredNameIdentifierDescriptor::DisplayDescriptor, ts::EDID(MY_DID, ts::PDS_TPS));
+
+
+//----------------------------------------------------------------------------
+// Default constructor:
+//----------------------------------------------------------------------------
+
+ts::EacemPreferredNameIdentifierDescriptor::EacemPreferredNameIdentifierDescriptor(uint8_t id) :
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_PDS),
+    name_id(id)
+{
+    _is_valid = true;
+}
+
+
+//----------------------------------------------------------------------------
+// Constructor from a binary descriptor
+//----------------------------------------------------------------------------
+
+ts::EacemPreferredNameIdentifierDescriptor::EacemPreferredNameIdentifierDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_PDS),
+    name_id(0)
+{
+    deserialize(desc, charset);
+}
+
+
+//----------------------------------------------------------------------------
+// Serialization
+//----------------------------------------------------------------------------
+
+void ts::EacemPreferredNameIdentifierDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+{
+    ByteBlockPtr bbp(serializeStart());
+    bbp->appendUInt8(name_id);
+    serializeEnd(desc, bbp);
+}
+
+
+//----------------------------------------------------------------------------
+// Deserialization
+//----------------------------------------------------------------------------
+
+void ts::EacemPreferredNameIdentifierDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+{
+    _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() == 1;
+
+    if (_is_valid) {
+        const uint8_t* data = desc.payload();
+        name_id = data[0];
+    }
+}
 
 
 //----------------------------------------------------------------------------
@@ -63,4 +118,26 @@ void ts::EacemPreferredNameIdentifierDescriptor::DisplayDescriptor(TablesDisplay
     }
 
     display.displayExtraData(data, size, indent);
+}
+
+
+//----------------------------------------------------------------------------
+// XML serialization
+//----------------------------------------------------------------------------
+
+void ts::EacemPreferredNameIdentifierDescriptor::buildXML(xml::Element* root) const
+{
+    root->setIntAttribute(u"name_id", name_id, true);
+}
+
+
+//----------------------------------------------------------------------------
+// XML deserialization
+//----------------------------------------------------------------------------
+
+void ts::EacemPreferredNameIdentifierDescriptor::fromXML(const xml::Element* element)
+{
+    _is_valid =
+        checkXMLName(element) &&
+        element->getIntAttribute<uint8_t>(name_id, u"name_id", true, 0, 0x00, 0xFF);
 }

@@ -273,6 +273,16 @@
       <selector_bytes>Hexadecimal content</selector_bytes>
     </data_broadcast_id_descriptor>
 
+    <eacem_preferred_name_identifier_descriptor name_id="uint8, required"/>
+
+    <eacem_preferred_name_list_descriptor>
+      <!-- One per language -->
+      <language code="char3, required">
+        <!-- One per name -->
+        <name name_id="uint8, required" name="string, required"/>
+      </language>
+    </eacem_preferred_name_list_descriptor>
+
     <eacem_stream_identifier_descriptor version_byte="uint8, required"/>
 
     <enhanced_AC3_descriptor

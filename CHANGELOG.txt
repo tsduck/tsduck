@@ -8,6 +8,8 @@ Version 3.8
   a character set different from ISO-6937 (the default character set), the
   table code was not correctly inserted at the beginning of the string.
 
+- Added XML support for more DVB and EACEM descriptors.
+
 Version 3.7-512
 
 - Added plugin teletext to extract Teletext subtitles in SRT format.
