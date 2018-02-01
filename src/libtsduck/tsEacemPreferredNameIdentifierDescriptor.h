@@ -43,11 +43,25 @@ namespace ts {
     //! This is a private descriptor, must be preceeded by the EACEM/EICTA PDS.
     //! @see EACEM Technical Report Number TR-030, 9.2.11.2.
     //!
-    //! Incomplete implementation, to be completed.
-    //!
-    class TSDUCKDLL EacemPreferredNameIdentifierDescriptor
+    class TSDUCKDLL EacemPreferredNameIdentifierDescriptor : public AbstractDescriptor
     {
     public:
+        // EacemPreferredNameIdentifierDescriptor public members:
+        uint8_t name_id;  //!< Service name id from an EacemPreferredNameListDescriptor.
+
+        //!
+        //! Default constructor.
+        //! @param [in] name_id Service name id from an EacemPreferredNameListDescriptor.
+        //!
+        EacemPreferredNameIdentifierDescriptor(uint8_t name_id = 0);
+
+        //!
+        //! Constructor from a binary descriptor
+        //! @param [in] bin A binary descriptor to deserialize.
+        //! @param [in] charset If not zero, character set to use without explicit table code.
+        //!
+        EacemPreferredNameIdentifierDescriptor(const Descriptor& bin, const DVBCharset* charset = 0);
+
         //!
         //! Static method to display a descriptor.
         //! @param [in,out] display Display engine.
@@ -59,5 +73,11 @@ namespace ts {
         //! @param [in] pds Private Data Specifier. Used to interpret private descriptors.
         //!
         static void DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* payload, size_t size, int indent, TID tid, PDS pds);
+
+        // Inherited methods
+        virtual void serialize(Descriptor&, const DVBCharset* = 0) const override;
+        virtual void deserialize(const Descriptor&, const DVBCharset* = 0) override;
+        virtual void buildXML(xml::Element*) const override;
+        virtual void fromXML(const xml::Element*) override;
     };
 }
