@@ -32,7 +32,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsVBITeletextDescriptor.h"
-#include "tsTeletextDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 TSDUCK_SOURCE;
@@ -40,15 +39,23 @@ TSDUCK_SOURCE;
 #define MY_XML_NAME u"VBI_teletext_descriptor"
 #define MY_DID ts::DID_VBI_TELETEXT
 
+TS_XML_DESCRIPTOR_FACTORY(ts::VBITeletextDescriptor, MY_XML_NAME);
+TS_ID_DESCRIPTOR_FACTORY(ts::VBITeletextDescriptor, ts::EDID(MY_DID));
 TS_ID_DESCRIPTOR_DISPLAY(ts::VBITeletextDescriptor::DisplayDescriptor, ts::EDID(MY_DID));
 
 
 //----------------------------------------------------------------------------
-// Static method to display a descriptor.
+// Constructors.
 //----------------------------------------------------------------------------
 
-void ts::VBITeletextDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+ts::VBITeletextDescriptor::VBITeletextDescriptor() :
+    TeletextDescriptor(MY_DID, MY_XML_NAME)
 {
-    // Same encoding as teletext_descriptor.
-    TeletextDescriptor::DisplayDescriptor(display, did, data, size, indent, tid, pds);
+    _is_valid = true;
+}
+
+ts::VBITeletextDescriptor::VBITeletextDescriptor(const Descriptor& bin, const DVBCharset* charset) :
+    TeletextDescriptor(MY_DID, MY_XML_NAME)
+{
+    deserialize(bin, charset);
 }

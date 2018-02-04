@@ -71,6 +71,12 @@ ts::TeletextDescriptor::TeletextDescriptor() :
     _is_valid = true;
 }
 
+ts::TeletextDescriptor::TeletextDescriptor(DID tag, const UChar* xml_name, PDS pds) :
+    AbstractDescriptor(tag, xml_name, pds),
+    entries()
+{
+}
+
 ts::TeletextDescriptor::TeletextDescriptor(const Descriptor& desc, const DVBCharset* charset) :
     AbstractDescriptor(MY_DID, MY_XML_NAME),
     entries()

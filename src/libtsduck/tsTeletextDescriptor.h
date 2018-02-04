@@ -136,5 +136,15 @@ namespace ts {
         //! @param [in] pds Private Data Specifier. Used to interpret private descriptors.
         //!
         static void DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* payload, size_t size, int indent, TID tid, PDS pds);
+
+    protected:
+        //!
+        //! Protected constructor for subclasses.
+        //! This is used by subclasses which have exactly the same structure as a teletext_descriptor.
+        //! @param [in] tag Descriptor tag.
+        //! @param [in] xml_name Descriptor name, as used in XML structures.
+        //! @param [in] pds Required private data specifier if this is a private descriptor.
+        //!
+        TeletextDescriptor(DID tag, const UChar* xml_name, PDS pds = 0);
     };
 }

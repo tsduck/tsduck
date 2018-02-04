@@ -547,6 +547,25 @@
         transmission_mode="2k|8k|4k, required"
         other_frequency="bool, required"/>
 
+    <VBI_data_descriptor>
+      <!-- One per VBI data service -->
+      <service data_service_id="Uint8, required">
+        <!-- One per field in the service -->
+        <field field_parity="bool, default=false" line_offset="uint5, default=0"/>
+        <!-- Valid only when data_service_id is not any of 1, 2, 4, 5, 6, 7 -->
+        <reserved>
+          Hexadecimal content.
+        </reserved>
+      </service>
+    </VBI_data_descriptor>
+
+    <VBI_teletext_descriptor>
+      <!-- One per page -->
+      <teletext language_code="char3, required"
+                teletext_type="uint5, required"
+                page_number="uint16, required"/>
+    </VBI_teletext_descriptor>
+
   </_descriptors>
 
 </tsduck>

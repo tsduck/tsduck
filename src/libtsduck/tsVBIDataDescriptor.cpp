@@ -35,12 +35,66 @@
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
+#include "tsxmlElement.h"
 TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"VBI_data_descriptor"
 #define MY_DID ts::DID_VBI_DATA
 
+TS_XML_DESCRIPTOR_FACTORY(ts::VBIDataDescriptor, MY_XML_NAME);
+TS_ID_DESCRIPTOR_FACTORY(ts::VBIDataDescriptor, ts::EDID(MY_DID));
 TS_ID_DESCRIPTOR_DISPLAY(ts::VBIDataDescriptor::DisplayDescriptor, ts::EDID(MY_DID));
+
+
+//----------------------------------------------------------------------------
+// Constructors.
+//----------------------------------------------------------------------------
+
+ts::VBIDataDescriptor::Field::Field(bool parity, uint8_t offset) :
+    field_parity(parity),
+    line_offset(offset)
+{
+}
+
+ts::VBIDataDescriptor::Service::Service(uint8_t id) :
+    data_service_id(id),
+    fields(),
+    reserved()
+{
+}
+
+ts::VBIDataDescriptor::VBIDataDescriptor() :
+    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    services()
+{
+    _is_valid = true;
+}
+
+ts::VBIDataDescriptor::VBIDataDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+    VBIDataDescriptor()
+{
+    deserialize(desc, charset);
+}
+
+
+//----------------------------------------------------------------------------
+// Check if an entry has reserved bytes.
+//----------------------------------------------------------------------------
+
+bool ts::VBIDataDescriptor::EntryHasReservedBytes(uint8_t data_service_id)
+{
+    switch (data_service_id) {
+        case 0x01:
+        case 0x02:
+        case 0x04:
+        case 0x05:
+        case 0x06:
+        case 0x07:
+            return false;
+        default:
+            return true;
+    }
+}
 
 
 //----------------------------------------------------------------------------
@@ -59,18 +113,8 @@ void ts::VBIDataDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, c
         if (length > size) {
             length = size;
         }
-        strm << margin << UString::Format(u"Data service id: %d (0x%X)", {data_id, data_id});
-        switch (data_id) {
-            case 1:  strm << ", EBU teletext"; break;
-            case 2:  strm << ", Inverted teletext"; break;
-            case 4:  strm << ", VPS, Video Programming System"; break;
-            case 5:  strm << ", WSS, Wide Screen Signaling"; break;
-            case 6:  strm << ", Closed captioning"; break;
-            case 7:  strm << ", Monochrone 4:2:2 samples"; break;
-            default: strm << ", data id " << int(data_id) << " (reserved)"; break;
-        }
-        strm << std::endl;
-        if (data_id == 1 || data_id == 2 || (data_id >= 4 && data_id <= 7)) {
+        strm << margin << "Data service id: " << DVBNameFromSection(u"VBIDataServiceId", data_id, names::HEXA_FIRST) << std::endl;
+        if (!EntryHasReservedBytes(data_id)) {
             while (length > 0) {
                 const uint8_t field_parity = (data[0] >> 5) & 0x01;
                 const uint8_t line_offset = data[0] & 0x1F;
@@ -86,4 +130,133 @@ void ts::VBIDataDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, c
     }
 
     display.displayExtraData(data, size, indent);
+}
+
+
+//----------------------------------------------------------------------------
+// Serialization
+//----------------------------------------------------------------------------
+
+void ts::VBIDataDescriptor::serialize (Descriptor& desc, const DVBCharset* charset) const
+{
+    ByteBlockPtr bbp(serializeStart());
+
+    for (ServiceList::const_iterator it1 = services.begin(); it1 != services.end(); ++it1) {
+        bbp->appendUInt8(it1->data_service_id);
+        if (it1->hasReservedBytes()) {
+            bbp->appendUInt8(it1->reserved.size());
+            bbp->append(it1->reserved);
+        }
+        else {
+            bbp->appendUInt8(it1->fields.size()); // one byte per field entry
+            for (FieldList::const_iterator it2 = it1->fields.begin(); it2 != it1->fields.end(); ++it2) {
+                bbp->appendUInt8(0xC0 | (it2->field_parity ? 0x20 : 0x00) | (it2->line_offset & 0x1F));
+            }
+        }
+    }
+
+    serializeEnd(desc, bbp);
+}
+
+
+//----------------------------------------------------------------------------
+// Deserialization
+//----------------------------------------------------------------------------
+
+void ts::VBIDataDescriptor::deserialize (const Descriptor& desc, const DVBCharset* charset)
+{
+    services.clear();
+
+    if (!(_is_valid = desc.isValid() && desc.tag() == _tag)) {
+        return;
+    }
+
+    const uint8_t* data = desc.payload();
+    size_t size = desc.payloadSize();
+
+    while (size >= 2) {
+        Service service(data[0]);
+        size_t length = data[1];
+        data += 2; size -= 2;
+        if (length > size) {
+            length = size;
+        }
+        if (!service.hasReservedBytes()) {
+            while (length > 0) {
+                service.fields.push_back(Field((data[0] & 0x20) != 0, data[0] & 0x1F));
+                data++; size--; length--;
+            }
+        }
+        else if (length > 0) {
+            service.reserved.copy(data, length);
+            data += length; size -= length;
+        }
+    }
+
+    _is_valid = size == 0;
+}
+
+
+//----------------------------------------------------------------------------
+// XML serialization
+//----------------------------------------------------------------------------
+
+void ts::VBIDataDescriptor::buildXML(xml::Element* root) const
+{
+    for (ServiceList::const_iterator it1 = services.begin(); it1 != services.end(); ++it1) {
+        xml::Element* e = root->addElement(u"service");
+        e->setIntAttribute(u"data_service_id", it1->data_service_id);
+        if (it1->hasReservedBytes()) {
+            if (!it1->reserved.empty()) {
+                e->addElement(u"reserved")->addHexaText(it1->reserved);
+            }
+        }
+        else {
+            for (FieldList::const_iterator it2 = it1->fields.begin(); it2 != it1->fields.end(); ++it2) {
+                xml::Element* f = e->addElement(u"field");
+                f->setBoolAttribute(u"field_parity", it2->field_parity);
+                f->setIntAttribute(u"line_offset", it2->line_offset);
+            }
+        }
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// XML deserialization
+//----------------------------------------------------------------------------
+
+void ts::VBIDataDescriptor::fromXML(const xml::Element* element)
+{
+    /* @@@@@@@@@@@
+    entries.clear();
+    xml::ElementVector children;
+    _is_valid =
+        checkXMLName(element) &&
+        element->getChildren(children, u"teletext", 0, MAX_ENTRIES);
+
+    for (size_t i = 0; _is_valid && i < children.size(); ++i) {
+        Entry entry;
+        _is_valid =
+            children[i]->getAttribute(entry.language_code, u"language_code", true, u"", 3, 3) &&
+            children[i]->getIntAttribute<uint8_t>(entry.teletext_type, u"teletext_type", true) &&
+            children[i]->getIntAttribute<uint16_t>(entry.page_number, u"page_number", true);
+        if (_is_valid) {
+            entries.push_back(entry);
+        }
+    }
+
+    <VBI_data_descriptor>
+      <!-- One per VBI data service -->
+      <service data_service_id="Uint8, required">
+        <!-- One per field in the service -->
+        <field field_parity="bool, default=false" line_offset="uint5, default=0"/>
+        <!-- Valid only when data_service_id is not any of 1, 2, 4, 5, 6, 7 -->
+        <reserved>
+          Hexadecimal content.
+        </reserved>
+      </service>
+    </VBI_data_descriptor>
+
+    @@@@@@@@ */
 }
