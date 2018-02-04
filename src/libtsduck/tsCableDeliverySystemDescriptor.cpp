@@ -85,7 +85,7 @@ void ts::CableDeliverySystemDescriptor::serialize(Descriptor& desc, const DVBCha
     bbp->appendUInt16(0xFFF0 | FEC_outer);
     bbp->appendUInt8(modulation);
     bbp->appendBCD(symbol_rate, 7);   // The last 4 bits are unused.
-    const uint8_t last = bbp->size() - 1;
+    const size_t last = bbp->size() - 1;
     (*bbp)[last] = ((*bbp)[last] & 0xF0) | (FEC_inner & 0x0F);
 
     serializeEnd(desc, bbp);
