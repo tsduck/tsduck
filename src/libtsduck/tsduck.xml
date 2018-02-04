@@ -549,7 +549,7 @@
 
     <VBI_data_descriptor>
       <!-- One per VBI data service -->
-      <service data_service_id="Uint8, required">
+      <service data_service_id="uint8, required">
         <!-- One per field in the service -->
         <field field_parity="bool, default=false" line_offset="uint5, default=0"/>
         <!-- Valid only when data_service_id is not any of 1, 2, 4, 5, 6, 7 -->

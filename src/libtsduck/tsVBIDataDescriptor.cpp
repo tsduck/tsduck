@@ -191,6 +191,7 @@ void ts::VBIDataDescriptor::deserialize (const Descriptor& desc, const DVBCharse
             service.reserved.copy(data, length);
             data += length; size -= length;
         }
+        services.push_back(service);
     }
 
     _is_valid = size == 0;
@@ -228,35 +229,47 @@ void ts::VBIDataDescriptor::buildXML(xml::Element* root) const
 
 void ts::VBIDataDescriptor::fromXML(const xml::Element* element)
 {
-    /* @@@@@@@@@@@
-    entries.clear();
-    xml::ElementVector children;
+    services.clear();
+
+    xml::ElementVector srv;
     _is_valid =
         checkXMLName(element) &&
-        element->getChildren(children, u"teletext", 0, MAX_ENTRIES);
+        element->getChildren(srv, u"service");
 
-    for (size_t i = 0; _is_valid && i < children.size(); ++i) {
-        Entry entry;
+    for (size_t srvIndex = 0; _is_valid && srvIndex < srv.size(); ++srvIndex) {
+        Service service;
+        xml::ElementVector fld;
+
         _is_valid =
-            children[i]->getAttribute(entry.language_code, u"language_code", true, u"", 3, 3) &&
-            children[i]->getIntAttribute<uint8_t>(entry.teletext_type, u"teletext_type", true) &&
-            children[i]->getIntAttribute<uint16_t>(entry.page_number, u"page_number", true);
+            srv[srvIndex]->getIntAttribute<uint8_t>(service.data_service_id, u"data_service_id", true) &&
+            srv[srvIndex]->getChildren(fld, u"field") &&
+            srv[srvIndex]->getHexaTextChild(service.reserved, u"reserved", false);
+
         if (_is_valid) {
-            entries.push_back(entry);
+            if (service.hasReservedBytes()) {
+                if (!fld.empty()) {
+                    element->report().error(u"no <field> allowed in <service>, line %d, when data_service_id='%d'", {srv[srvIndex]->lineNumber(), service.data_service_id});
+                    _is_valid = false;
+                }
+            }
+            else {
+                if (!service.reserved.empty()) {
+                    element->report().error(u"no <reserved> allowed in <service>, line %d, when data_service_id='%d'", {srv[srvIndex]->lineNumber(), service.data_service_id});
+                    _is_valid = false;
+                }
+            }
+        }
+
+        for (size_t fldIndex = 0; _is_valid && fldIndex < fld.size(); ++fldIndex) {
+            Field field;
+            _is_valid =
+                fld[fldIndex]->getBoolAttribute(field.field_parity, u"field_parity", false, false) &&
+                fld[fldIndex]->getIntAttribute<uint8_t>(field.line_offset, u"line_offset", false, 0x00, 0x00, 0x1F);
+            service.fields.push_back(field);
+        }
+
+        if (_is_valid) {
+            services.push_back(service);
         }
     }
-
-    <VBI_data_descriptor>
-      <!-- One per VBI data service -->
-      <service data_service_id="Uint8, required">
-        <!-- One per field in the service -->
-        <field field_parity="bool, default=false" line_offset="uint5, default=0"/>
-        <!-- Valid only when data_service_id is not any of 1, 2, 4, 5, 6, 7 -->
-        <reserved>
-          Hexadecimal content.
-        </reserved>
-      </service>
-    </VBI_data_descriptor>
-
-    @@@@@@@@ */
 }
