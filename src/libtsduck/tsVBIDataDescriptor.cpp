@@ -144,11 +144,11 @@ void ts::VBIDataDescriptor::serialize (Descriptor& desc, const DVBCharset* chars
     for (ServiceList::const_iterator it1 = services.begin(); it1 != services.end(); ++it1) {
         bbp->appendUInt8(it1->data_service_id);
         if (it1->hasReservedBytes()) {
-            bbp->appendUInt8(it1->reserved.size());
+            bbp->appendUInt8(uint8_t(it1->reserved.size()));
             bbp->append(it1->reserved);
         }
         else {
-            bbp->appendUInt8(it1->fields.size()); // one byte per field entry
+            bbp->appendUInt8(uint8_t(it1->fields.size())); // one byte per field entry
             for (FieldList::const_iterator it2 = it1->fields.begin(); it2 != it1->fields.end(); ++it2) {
                 bbp->appendUInt8(0xC0 | (it2->field_parity ? 0x20 : 0x00) | (it2->line_offset & 0x1F));
             }

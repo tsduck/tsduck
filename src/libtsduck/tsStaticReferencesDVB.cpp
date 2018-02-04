@@ -105,7 +105,9 @@ ts::StaticReferencesDVB::StaticReferencesDVB() :
     REF_TYPE(LogicalChannelNumberDescriptor);
     REF_TYPE(MessageDescriptor);
     REF_TYPE(NetworkNameDescriptor);
+    REF_TYPE(NVODReferenceDescriptor);
     REF_TYPE(ParentalRatingDescriptor);
+    REF_TYPE(PrivateDataIndicatorDescriptor);
     REF_TYPE(PrivateDataSpecifierDescriptor);
     REF_TYPE(RegistrationDescriptor);
     REF_TYPE(S2SatelliteDeliverySystemDescriptor);
@@ -122,6 +124,8 @@ ts::StaticReferencesDVB::StaticReferencesDVB() :
     REF_TYPE(T2MIDescriptor);
     REF_TYPE(TeletextDescriptor);
     REF_TYPE(TerrestrialDeliverySystemDescriptor);
+    REF_TYPE(TimeShiftedEventDescriptor);
+    REF_TYPE(TimeShiftedServiceDescriptor);
     REF_TYPE(VBIDataDescriptor);
     REF_TYPE(VBITeletextDescriptor);
 }
