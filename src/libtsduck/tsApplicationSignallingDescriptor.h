@@ -41,11 +41,61 @@ namespace ts {
     //! Representation of an application_signalling_descriptor.
     //! @see ETSI TS 102 809, 5.3.5.1.
     //!
-    //! Incomplete implementation, to be completed.
-    //!
-    class TSDUCKDLL ApplicationSignallingDescriptor
+    class TSDUCKDLL ApplicationSignallingDescriptor : public AbstractDescriptor
     {
     public:
+        //!
+        //! Application entry.
+        //!
+        struct TSDUCKDLL Entry
+        {
+            // Public members
+            uint16_t application_type;     //!< Application type, 15 bits.
+            uint8_t  AIT_version_number;   //!< Application Information Table version number, 5 bits.
+
+            //!
+            //! Default constructor.
+            //! @param [in] type Application type.
+            //! @param [in] version AIT version number.
+            //!
+            Entry(uint16_t type = 0, uint8_t version = 0) :
+                application_type(type),
+                AIT_version_number(version)
+            {
+            }
+        };
+
+        //!
+        //! List of application entries.
+        //!
+        typedef std::list<Entry> EntryList;
+
+        //!
+        //! Maximum number of entries to fit in 255 bytes.
+        //!
+        static const size_t MAX_ENTRIES = 85;
+
+        // ApplicationSignallingDescriptor public members:
+        EntryList entries;  //!< The list of application entries.
+
+        //!
+        //! Default constructor.
+        //!
+        ApplicationSignallingDescriptor();
+
+        //!
+        //! Constructor from a binary descriptor
+        //! @param [in] bin A binary descriptor to deserialize.
+        //! @param [in] charset If not zero, character set to use without explicit table code.
+        //!
+        ApplicationSignallingDescriptor(const Descriptor& bin, const DVBCharset* charset = 0);
+
+        // Inherited methods
+        virtual void serialize(Descriptor&, const DVBCharset* = 0) const override;
+        virtual void deserialize(const Descriptor&, const DVBCharset* = 0) override;
+        virtual void buildXML(xml::Element*) const override;
+        virtual void fromXML(const xml::Element*) override;
+
         //!
         //! Static method to display a descriptor.
         //! @param [in,out] display Display engine.

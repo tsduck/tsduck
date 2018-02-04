@@ -46,7 +46,7 @@ bool ts::xml::Element::getIntAttribute(INT& value, const UString& name, bool req
         _report.error(u"'%s' is not a valid integer value for attribute '%s' in <%s>, line %d", {str, name, this->name(), lineNumber()});
         return false;
     }
-    else if (value < minValue || value > maxValue) {
+    else if (val < minValue || val > maxValue) {
         _report.error(u"'%s' must be in range %'d to %'d for attribute '%s' in <%s>, line %d", {str, minValue, maxValue, name, this->name(), lineNumber()});
         return false;
     }

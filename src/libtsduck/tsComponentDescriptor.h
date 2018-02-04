@@ -41,11 +41,29 @@ namespace ts {
     //! Representation of a component_descriptor.
     //! @see ETSI 300 468, 6.2.8.
     //!
-    //! Incomplete implementation, to be completed.
-    //!
-    class TSDUCKDLL ComponentDescriptor
+    class TSDUCKDLL ComponentDescriptor : public AbstractDescriptor
     {
     public:
+        // Public members:
+        uint8_t stream_content_ext;  //!< 4 bits, see ETSI 300 468, 6.2.8.
+        uint8_t stream_content;      //!< 4 bits, see ETSI 300 468, 6.2.8.
+        uint8_t component_type;      //!< See ETSI 300 468, 6.2.8.
+        uint8_t component_tag;       //!< See ETSI 300 468, 6.2.8.
+        UString language_code;       //!< 3 chars, see ETSI 300 468, 6.2.8.
+        UString text;                //!< See ETSI 300 468, 6.2.8.
+
+        //!
+        //! Default constructor.
+        //!
+        ComponentDescriptor();
+
+        //!
+        //! Constructor from a binary descriptor
+        //! @param [in] bin A binary descriptor to deserialize.
+        //! @param [in] charset If not zero, character set to use without explicit table code.
+        //!
+        ComponentDescriptor(const Descriptor& bin, const DVBCharset* charset = 0);
+
         //!
         //! Static method to display a descriptor.
         //! @param [in,out] display Display engine.
@@ -57,5 +75,11 @@ namespace ts {
         //! @param [in] pds Private Data Specifier. Used to interpret private descriptors.
         //!
         static void DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* payload, size_t size, int indent, TID tid, PDS pds);
+
+        // Inherited methods
+        virtual void serialize(Descriptor&, const DVBCharset* = 0) const override;
+        virtual void deserialize(const Descriptor&, const DVBCharset* = 0) override;
+        virtual void buildXML(xml::Element*) const override;
+        virtual void fromXML(const xml::Element*) override;
     };
 }

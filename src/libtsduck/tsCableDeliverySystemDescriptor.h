@@ -40,11 +40,34 @@ namespace ts {
     //! Representation of a cable_delivery_system_descriptor.
     //! @see ETSI 300 468, 6.2.13.1.
     //!
-    //! Incomplete implementation, to be completed.
-    //!
-    class TSDUCKDLL CableDeliverySystemDescriptor
+    class TSDUCKDLL CableDeliverySystemDescriptor : public AbstractDeliverySystemDescriptor
     {
     public:
+        // SatelliteDeliverySystemDescriptor public members:
+        uint32_t frequency;          //!< Frequency, unit is 100 Hz.
+        uint8_t  FEC_outer;          //!< FEC outer, 4 bits.
+        uint8_t  modulation;         //!< Modulation type, 8 bits.
+        uint32_t symbol_rate;        //!< Symbol rate, 28 bits, unit is 100 symbol/s.
+        uint8_t  FEC_inner;          //!< FEC inner, 4 bits.
+
+        //!
+        //! Default constructor.
+        //!
+        CableDeliverySystemDescriptor();
+
+        //!
+        //! Constructor from a binary descriptor.
+        //! @param [in] bin A binary descriptor to deserialize.
+        //! @param [in] charset If not zero, character set to use without explicit table code.
+        //!
+        CableDeliverySystemDescriptor(const Descriptor& bin, const DVBCharset* charset = 0);
+
+        // Inherited methods
+        virtual void serialize(Descriptor&, const DVBCharset* = 0) const override;
+        virtual void deserialize(const Descriptor&, const DVBCharset* = 0) override;
+        virtual void buildXML(xml::Element*) const override;
+        virtual void fromXML(const xml::Element*) override;
+
         //!
         //! Static method to display a descriptor.
         //! @param [in,out] display Display engine.

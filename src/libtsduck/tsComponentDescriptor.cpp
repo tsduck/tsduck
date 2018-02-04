@@ -41,7 +41,80 @@ TSDUCK_SOURCE;
 #define MY_XML_NAME u"component_descriptor"
 #define MY_DID ts::DID_COMPONENT
 
+TS_XML_DESCRIPTOR_FACTORY(ts::ComponentDescriptor, MY_XML_NAME);
+TS_ID_DESCRIPTOR_FACTORY(ts::ComponentDescriptor, ts::EDID(MY_DID));
 TS_ID_DESCRIPTOR_DISPLAY(ts::ComponentDescriptor::DisplayDescriptor, ts::EDID(MY_DID));
+
+
+//----------------------------------------------------------------------------
+// Default constructor:
+//----------------------------------------------------------------------------
+
+ts::ComponentDescriptor::ComponentDescriptor() :
+    AbstractDescriptor(MY_DID, MY_XML_NAME),
+    stream_content_ext(0),
+    stream_content(0),
+    component_type(0),
+    component_tag(0),
+    language_code(),
+    text()
+{
+    _is_valid = true;
+}
+
+
+//----------------------------------------------------------------------------
+// Constructor from a binary descriptor
+//----------------------------------------------------------------------------
+
+ts::ComponentDescriptor::ComponentDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+    ComponentDescriptor()
+{
+    deserialize(desc, charset);
+}
+
+
+//----------------------------------------------------------------------------
+// Serialization
+//----------------------------------------------------------------------------
+
+void ts::ComponentDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+{
+    ByteBlockPtr bbp(serializeStart());
+
+    bbp->appendUInt8((stream_content_ext << 4) | (stream_content & 0x0F));
+    bbp->appendUInt8(component_type);
+    bbp->appendUInt8(component_tag);
+    if (!SerializeLanguageCode(*bbp, language_code, charset)) {
+        desc.invalidate();
+        return;
+    }
+    bbp->append(text.toDVB(0, UString::NPOS, charset));
+
+    serializeEnd(desc, bbp);
+}
+
+
+//----------------------------------------------------------------------------
+// Deserialization
+//----------------------------------------------------------------------------
+
+void ts::ComponentDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+{
+    const uint8_t* data = desc.payload();
+    size_t size = desc.payloadSize();
+
+    _is_valid = desc.isValid() && desc.tag() == _tag && size >= 6;
+
+    if (_is_valid) {
+        stream_content_ext = (data[0] >> 4) & 0x0F;
+        stream_content = data[0] & 0x0F;
+        component_type = data[1];
+        component_tag = data[2];
+        language_code.assign(UString::FromDVB(data + 3, 3, charset));
+        text.assign(UString::FromDVB(data + 6, size - 6, charset));
+    }
+}
 
 
 //----------------------------------------------------------------------------
@@ -67,4 +140,36 @@ void ts::ComponentDescriptor::DisplayDescriptor(TablesDisplay& display, DID did,
     }
 
     display.displayExtraData(data, size, indent);
+}
+
+
+//----------------------------------------------------------------------------
+// XML serialization
+//----------------------------------------------------------------------------
+
+void ts::ComponentDescriptor::buildXML(xml::Element* root) const
+{
+    root->setIntAttribute(u"stream_content", stream_content, true);
+    root->setIntAttribute(u"stream_content_ext", stream_content_ext, true);
+    root->setIntAttribute(u"component_type", component_type, true);
+    root->setIntAttribute(u"component_tag", component_tag, true);
+    root->setAttribute(u"language_code", language_code);
+    root->setAttribute(u"text", text);
+}
+
+
+//----------------------------------------------------------------------------
+// XML deserialization
+//----------------------------------------------------------------------------
+
+void ts::ComponentDescriptor::fromXML(const xml::Element* element)
+{
+    _is_valid =
+        checkXMLName(element) &&
+        element->getIntAttribute<uint8_t>(stream_content, u"stream_content", true, 0x00, 0x00, 0x0F) &&
+        element->getIntAttribute<uint8_t>(stream_content_ext, u"stream_content_ext", false, 0x0F, 0x00, 0x0F) &&
+        element->getIntAttribute<uint8_t>(component_type, u"component_type", true, 0x00, 0x00, 0xFF) &&
+        element->getIntAttribute<uint8_t>(component_tag, u"component_tag", false, 0x00, 0x00, 0xFF) &&
+        element->getAttribute(language_code, u"language_code", true, u"", 3, 3) &&
+        element->getAttribute(text, u"text", false, u"", 0, MAX_DESCRIPTOR_SIZE - 8);
 }

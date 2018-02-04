@@ -41,11 +41,27 @@ namespace ts {
     //! Representation of an AAC_descriptor.
     //! @see ETSI 300 468, H.2.1.
     //!
-    //! Incomplete implementation, to be completed.
-    //!
-    class TSDUCKDLL AACDescriptor
+    class TSDUCKDLL AACDescriptor : public AbstractDescriptor
     {
     public:
+        // Public members:
+        uint8_t           profile_and_level;  //!< See ETSI 300 468, H.2.1.
+        bool              SAOC_DE;            //!< See ETSI 300 468, H.2.1.
+        Variable<uint8_t> AAC_type;           //!< See ETSI 300 468, H.2.1.
+        ByteBlock         additional_info;    //!< See ETSI 300 468, H.2.1.
+
+        //!
+        //! Default constructor.
+        //!
+        AACDescriptor();
+
+        //!
+        //! Constructor from a binary descriptor
+        //! @param [in] bin A binary descriptor to deserialize.
+        //! @param [in] charset If not zero, character set to use without explicit table code.
+        //!
+        AACDescriptor(const Descriptor& bin, const DVBCharset* charset = 0);
+
         //!
         //! Static method to display a descriptor.
         //! @param [in,out] display Display engine.
@@ -57,5 +73,11 @@ namespace ts {
         //! @param [in] pds Private Data Specifier. Used to interpret private descriptors.
         //!
         static void DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* payload, size_t size, int indent, TID tid, PDS pds);
+
+        // Inherited methods
+        virtual void serialize(Descriptor&, const DVBCharset* = 0) const override;
+        virtual void deserialize(const Descriptor&, const DVBCharset* = 0) override;
+        virtual void buildXML(xml::Element*) const override;
+        virtual void fromXML(const xml::Element*) override;
     };
 }

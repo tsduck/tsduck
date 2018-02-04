@@ -34,6 +34,7 @@
 #include "tsByteBlock.h"
 #include "tsUString.h"
 #include "tsReport.h"
+#include "tsBCD.h"
 TSDUCK_SOURCE;
 
 
@@ -109,6 +110,17 @@ void* ts::ByteBlock::enlarge(size_type n)
     const size_type oldsize = this->size();
     resize(oldsize + n);
     return &(*this)[oldsize];
+}
+
+//----------------------------------------------------------------------------
+// Append an integer in Binary Coded Decimal (BCD) representation at the end.
+//----------------------------------------------------------------------------
+
+void ts::ByteBlock::appendBCD(uint32_t i, size_t bcd_count)
+{
+    const size_type oldsize = this->size();
+    resize(oldsize + (bcd_count + 1) / 2);
+    EncodeBCD(&(*this)[oldsize], bcd_count, i);
 }
 
 //----------------------------------------------------------------------------
