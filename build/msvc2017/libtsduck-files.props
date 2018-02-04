@@ -130,6 +130,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsLNB.h" />
     <ClInclude Include="..\..\src\libtsduck\tsLocalTimeOffsetDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsLogicalChannelNumberDescriptor.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsMaximumBitrateDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsMD5.h" />
     <ClInclude Include="..\..\src\libtsduck\tsMediaGuardDate.h" />
     <ClInclude Include="..\..\src\libtsduck\tsMemoryUtils.h" />
@@ -147,6 +148,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsNIT.h" />
     <ClInclude Include="..\..\src\libtsduck\tsNullMutex.h" />
     <ClInclude Include="..\..\src\libtsduck\tsNullReport.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsNVODReferenceDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsObject.h" />
     <ClInclude Include="..\..\src\libtsduck\tsOneShotPacketizer.h" />
     <ClInclude Include="..\..\src\libtsduck\tsOutputPager.h" />
@@ -168,6 +170,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsPMT.h" />
     <ClInclude Include="..\..\src\libtsduck\tsPMTHandlerInterface.h" />
     <ClInclude Include="..\..\src\libtsduck\tsPollFiles.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsPrivateDataIndicatorDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsPrivateDataSpecifierDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsPSILogger.h" />
     <ClInclude Include="..\..\src\libtsduck\tsPSILoggerArgs.h" />
@@ -256,6 +259,8 @@
     <ClInclude Include="..\..\src\libtsduck\tsThread.h" />
     <ClInclude Include="..\..\src\libtsduck\tsThreadAttributes.h" />
     <ClInclude Include="..\..\src\libtsduck\tsTime.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsTimeShiftedEventDescriptor.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsTimeShiftedServiceDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsTimeTrackerDemux.h" />
     <ClInclude Include="..\..\src\libtsduck\tstlv.h" />
     <ClInclude Include="..\..\src\libtsduck\tstlvAnalyzer.h" />
@@ -424,6 +429,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsLNB.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsLocalTimeOffsetDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsLogicalChannelNumberDescriptor.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsMaximumBitrateDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsMD5.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsMemoryUtils.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsMessageDescriptor.cpp" />
@@ -436,6 +442,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsNetworkNameDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsNIT.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsNullReport.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsNVODReferenceDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsObject.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsOneShotPacketizer.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsOutputPager.cpp" />
@@ -454,6 +461,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsPluginSharedLibrary.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsPMT.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsPollFiles.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsPrivateDataIndicatorDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsPrivateDataSpecifierDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsPSILogger.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsPSILoggerArgs.cpp" />
@@ -521,6 +529,8 @@
     <ClCompile Include="..\..\src\libtsduck\tsThread.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsThreadAttributes.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsTime.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsTimeShiftedEventDescriptor.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsTimeShiftedServiceDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsTimeTrackerDemux.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tstlvAnalyzer.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tstlvMessage.cpp" />

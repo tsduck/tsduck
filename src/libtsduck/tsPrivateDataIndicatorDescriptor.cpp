@@ -27,37 +27,38 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsRegistrationDescriptor.h"
-#include "tsNames.h"
+#include "tsPrivateDataIndicatorDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
 
-#define MY_XML_NAME u"registration_descriptor"
-#define MY_DID ts::DID_REGISTRATION
+#define MY_XML_NAME u"private_data_indicator_descriptor"
+#define MY_DID ts::DID_PRIV_DATA_IND
 
-TS_XML_DESCRIPTOR_FACTORY(ts::RegistrationDescriptor, MY_XML_NAME);
-TS_ID_DESCRIPTOR_FACTORY(ts::RegistrationDescriptor, ts::EDID(MY_DID));
-TS_ID_DESCRIPTOR_DISPLAY(ts::RegistrationDescriptor::DisplayDescriptor, ts::EDID(MY_DID));
+TS_XML_DESCRIPTOR_FACTORY(ts::PrivateDataIndicatorDescriptor, MY_XML_NAME);
+TS_ID_DESCRIPTOR_FACTORY(ts::PrivateDataIndicatorDescriptor, ts::EDID(MY_DID));
+TS_ID_DESCRIPTOR_DISPLAY(ts::PrivateDataIndicatorDescriptor::DisplayDescriptor, ts::EDID(MY_DID));
 
 
 //----------------------------------------------------------------------------
-// Constructors
+// Default constructor:
 //----------------------------------------------------------------------------
 
-ts::RegistrationDescriptor::RegistrationDescriptor(uint32_t identifier, const ByteBlock& info) :
+ts::PrivateDataIndicatorDescriptor::PrivateDataIndicatorDescriptor(uint32_t pdi) :
     AbstractDescriptor(MY_DID, MY_XML_NAME),
-    format_identifier(identifier),
-    additional_identification_info(info)
+    private_data_indicator(pdi)
 {
     _is_valid = true;
 }
 
-ts::RegistrationDescriptor::RegistrationDescriptor(const Descriptor& desc, const DVBCharset* charset) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
-    format_identifier(0),
-    additional_identification_info()
+
+//----------------------------------------------------------------------------
+// Constructor from a binary descriptor
+//----------------------------------------------------------------------------
+
+ts::PrivateDataIndicatorDescriptor::PrivateDataIndicatorDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+    PrivateDataIndicatorDescriptor()
 {
     deserialize(desc, charset);
 }
@@ -67,11 +68,10 @@ ts::RegistrationDescriptor::RegistrationDescriptor(const Descriptor& desc, const
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::RegistrationDescriptor::serialize (Descriptor& desc, const DVBCharset* charset) const
+void ts::PrivateDataIndicatorDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
 {
     ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt32(format_identifier);
-    bbp->append(additional_identification_info);
+    bbp->appendUInt32(private_data_indicator);
     serializeEnd(desc, bbp);
 }
 
@@ -80,16 +80,12 @@ void ts::RegistrationDescriptor::serialize (Descriptor& desc, const DVBCharset* 
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::RegistrationDescriptor::deserialize (const Descriptor& desc, const DVBCharset* charset)
+void ts::PrivateDataIndicatorDescriptor::deserialize (const Descriptor& desc, const DVBCharset* charset)
 {
-    _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() >= 4;
-    additional_identification_info.clear();
+    _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() == 4;
 
     if (_is_valid) {
-        const uint8_t* data = desc.payload();
-        size_t size = desc.payloadSize();
-        format_identifier = GetUInt32(data);
-        additional_identification_info.copy(data + 4, size - 4);
+        private_data_indicator = GetUInt32(desc.payload());
     }
 }
 
@@ -98,23 +94,17 @@ void ts::RegistrationDescriptor::deserialize (const Descriptor& desc, const DVBC
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::RegistrationDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::PrivateDataIndicatorDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
     std::ostream& strm(display.out());
     const std::string margin(indent, ' ');
 
     if (size >= 4) {
-        // Sometimes, the format identifier is made of ASCII characters. Try to display them.
-        strm << margin << UString::Format(u"Format identifier: 0x%X", {GetUInt32(data)});
+        // Sometimes, the indicator is made of ASCII characters. Try to display them.
+        strm << margin << UString::Format(u"Private data indicator: 0x%X", {GetUInt32(data)});
         display.displayIfASCII(data, 4, u" (\"", u"\")");
         strm << std::endl;
         data += 4; size -= 4;
-        // Additional binary info.
-        if (size > 0) {
-            strm << margin << "Additional identification info:" << std::endl
-                 << UString::Dump(data, size, UString::HEXA | UString::ASCII | UString::OFFSET, indent);
-            data += size; size = 0;
-        }
     }
 
     display.displayExtraData(data, size, indent);
@@ -125,12 +115,9 @@ void ts::RegistrationDescriptor::DisplayDescriptor(TablesDisplay& display, DID d
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::RegistrationDescriptor::buildXML(xml::Element* root) const
+void ts::PrivateDataIndicatorDescriptor::buildXML(xml::Element* root) const
 {
-    root->setIntAttribute(u"format_identifier", format_identifier, true);
-    if (!additional_identification_info.empty()) {
-        root->addElement(u"additional_identification_info")->addHexaText(additional_identification_info);
-    }
+    root->setIntAttribute(u"private_data_indicator", private_data_indicator, true);
 }
 
 
@@ -138,10 +125,9 @@ void ts::RegistrationDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::RegistrationDescriptor::fromXML(const xml::Element* element)
+void ts::PrivateDataIndicatorDescriptor::fromXML(const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&
-        element->getIntAttribute<uint32_t>(format_identifier, u"format_identifier", true) &&
-        element->getHexaTextChild(additional_identification_info, u"additional_identification_info", false, 0, MAX_DESCRIPTOR_SIZE - 6);
+        element->getIntAttribute<uint32_t>(private_data_indicator, u"private_data_indicator", true);
 }

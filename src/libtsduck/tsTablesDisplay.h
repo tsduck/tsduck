@@ -188,6 +188,25 @@ namespace ts {
         virtual std::ostream& displayExtraData(const void *data, size_t size, int indent = 0);
 
         //!
+        //! A utility method to interpret data as an ASCII string.
+        //! @param [in] data Address of data.
+        //! @param [in] size Size of data.
+        //! @return If all bytes in data are ASCII (optioanlly padded with zeroes), return the
+        //! equivalent ASCII string. Otherwise, return an empty string.
+        //!
+        static std::string ToASCII(const void *data, size_t size);
+
+        //!
+        //! A utility method to display data if it can be interpreted as an ASCII string.
+        //! @param [in] data Address of data.
+        //! @param [in] size Size of data.
+        //! @param [in] prefix To print before the ASCII data.
+        //! @param [in] suffix To print after the ASCII data.
+        //! @return A reference to the output stream.
+        //!
+        virtual std::ostream& displayIfASCII(const void *data, size_t size, const UString& prefix = UString(), const UString& suffix = UString());
+
+        //!
         //! Redirect the output stream to a file.
         //! The previous file is closed.
         //! @param [in] file_name The file name to create. If empty, reset to @c std::cout.

@@ -27,37 +27,41 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsRegistrationDescriptor.h"
+#include "tsNVODReferenceDescriptor.h"
 #include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
 
-#define MY_XML_NAME u"registration_descriptor"
-#define MY_DID ts::DID_REGISTRATION
+#define MY_XML_NAME u"NVOD_reference_descriptor"
+#define MY_DID ts::DID_NVOD_REFERENCE
 
-TS_XML_DESCRIPTOR_FACTORY(ts::RegistrationDescriptor, MY_XML_NAME);
-TS_ID_DESCRIPTOR_FACTORY(ts::RegistrationDescriptor, ts::EDID(MY_DID));
-TS_ID_DESCRIPTOR_DISPLAY(ts::RegistrationDescriptor::DisplayDescriptor, ts::EDID(MY_DID));
+TS_XML_DESCRIPTOR_FACTORY(ts::NVODReferenceDescriptor, MY_XML_NAME);
+TS_ID_DESCRIPTOR_FACTORY(ts::NVODReferenceDescriptor, ts::EDID(MY_DID));
+TS_ID_DESCRIPTOR_DISPLAY(ts::NVODReferenceDescriptor::DisplayDescriptor, ts::EDID(MY_DID));
 
 
 //----------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------
 
-ts::RegistrationDescriptor::RegistrationDescriptor(uint32_t identifier, const ByteBlock& info) :
+ts::NVODReferenceDescriptor::Entry::Entry(uint16_t ts, uint16_t net, uint16_t srv) :
+    transport_stream_id(ts),
+    original_network_id(net),
+    service_id(srv)
+{
+}
+
+ts::NVODReferenceDescriptor::NVODReferenceDescriptor() :
     AbstractDescriptor(MY_DID, MY_XML_NAME),
-    format_identifier(identifier),
-    additional_identification_info(info)
+    entries()
 {
     _is_valid = true;
 }
 
-ts::RegistrationDescriptor::RegistrationDescriptor(const Descriptor& desc, const DVBCharset* charset) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
-    format_identifier(0),
-    additional_identification_info()
+ts::NVODReferenceDescriptor::NVODReferenceDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+    NVODReferenceDescriptor()
 {
     deserialize(desc, charset);
 }
@@ -67,11 +71,14 @@ ts::RegistrationDescriptor::RegistrationDescriptor(const Descriptor& desc, const
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::RegistrationDescriptor::serialize (Descriptor& desc, const DVBCharset* charset) const
+void ts::NVODReferenceDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
 {
     ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt32(format_identifier);
-    bbp->append(additional_identification_info);
+    for (EntryList::const_iterator it = entries.begin(); it != entries.end(); ++it) {
+        bbp->appendUInt16(it->transport_stream_id);
+        bbp->appendUInt16(it->original_network_id);
+        bbp->appendUInt16(it->service_id);
+    }
     serializeEnd(desc, bbp);
 }
 
@@ -80,16 +87,18 @@ void ts::RegistrationDescriptor::serialize (Descriptor& desc, const DVBCharset* 
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::RegistrationDescriptor::deserialize (const Descriptor& desc, const DVBCharset* charset)
+void ts::NVODReferenceDescriptor::deserialize (const Descriptor& desc, const DVBCharset* charset)
 {
-    _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() >= 4;
-    additional_identification_info.clear();
+    _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() % 6 == 0;
+    entries.clear();
 
     if (_is_valid) {
         const uint8_t* data = desc.payload();
         size_t size = desc.payloadSize();
-        format_identifier = GetUInt32(data);
-        additional_identification_info.copy(data + 4, size - 4);
+        while (size >= 6) {
+            entries.push_back(Entry(GetUInt16(data), GetUInt16(data + 2), GetUInt16(data + 4)));
+            data += 6; size -= 6;
+        }
     }
 }
 
@@ -98,23 +107,19 @@ void ts::RegistrationDescriptor::deserialize (const Descriptor& desc, const DVBC
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::RegistrationDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::NVODReferenceDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
     std::ostream& strm(display.out());
     const std::string margin(indent, ' ');
 
-    if (size >= 4) {
-        // Sometimes, the format identifier is made of ASCII characters. Try to display them.
-        strm << margin << UString::Format(u"Format identifier: 0x%X", {GetUInt32(data)});
-        display.displayIfASCII(data, 4, u" (\"", u"\")");
-        strm << std::endl;
-        data += 4; size -= 4;
-        // Additional binary info.
-        if (size > 0) {
-            strm << margin << "Additional identification info:" << std::endl
-                 << UString::Dump(data, size, UString::HEXA | UString::ASCII | UString::OFFSET, indent);
-            data += size; size = 0;
-        }
+    while (size >= 6) {
+        const uint16_t ts = GetUInt16(data);
+        const uint16_t net = GetUInt16(data + 2);
+        const uint16_t srv = GetUInt16(data + 4);
+        data += 6; size -= 6;
+        strm << margin << UString::Format(u"- Transport stream id: 0x%X (%d)", {ts, ts}) << std::endl
+             << margin << UString::Format(u"  Original network id: 0x%X (%d)", {net, net}) << std::endl
+             << margin << UString::Format(u"  Service id: 0x%X (%d)", {srv, srv}) << std::endl;
     }
 
     display.displayExtraData(data, size, indent);
@@ -125,11 +130,13 @@ void ts::RegistrationDescriptor::DisplayDescriptor(TablesDisplay& display, DID d
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::RegistrationDescriptor::buildXML(xml::Element* root) const
+void ts::NVODReferenceDescriptor::buildXML(xml::Element* root) const
 {
-    root->setIntAttribute(u"format_identifier", format_identifier, true);
-    if (!additional_identification_info.empty()) {
-        root->addElement(u"additional_identification_info")->addHexaText(additional_identification_info);
+    for (EntryList::const_iterator it = entries.begin(); it != entries.end(); ++it) {
+        xml::Element* e = root->addElement(u"service");
+        e->setIntAttribute(u"transport_stream_id", it->transport_stream_id, true);
+        e->setIntAttribute(u"original_network_id", it->original_network_id, true);
+        e->setIntAttribute(u"service_id", it->service_id, true);
     }
 }
 
@@ -138,10 +145,23 @@ void ts::RegistrationDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::RegistrationDescriptor::fromXML(const xml::Element* element)
+void ts::NVODReferenceDescriptor::fromXML(const xml::Element* element)
 {
+    entries.clear();
+
+    xml::ElementVector children;
     _is_valid =
         checkXMLName(element) &&
-        element->getIntAttribute<uint32_t>(format_identifier, u"format_identifier", true) &&
-        element->getHexaTextChild(additional_identification_info, u"additional_identification_info", false, 0, MAX_DESCRIPTOR_SIZE - 6);
+        element->getChildren(children, u"service", 0, MAX_ENTRIES);
+
+    for (size_t i = 0; _is_valid && i < children.size(); ++i) {
+        Entry entry;
+        _is_valid =
+            children[i]->getIntAttribute<uint16_t>(entry.transport_stream_id, u"transport_stream_id", true) &&
+            children[i]->getIntAttribute<uint16_t>(entry.original_network_id, u"original_network_id", true) &&
+            children[i]->getIntAttribute<uint16_t>(entry.service_id, u"service_id", true);
+        if (_is_valid) {
+            entries.push_back(entry);
+        }
+    }
 }
