@@ -33,29 +33,27 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsAbstractDescriptor.h"
-#include "tsVariable.h"
+#include "tsTeletextDescriptor.h"
 
 namespace ts {
     //!
     //! Representation of a VBI_teletext_descriptor.
+    //! This descriptor has the same structure as a teletext_descriptor.
     //! @see ETSI 300 468, 6.2.48.
     //!
-    //! Incomplete implementation, to be completed.
-    //!
-    class TSDUCKDLL VBITeletextDescriptor
+    class TSDUCKDLL VBITeletextDescriptor : public TeletextDescriptor
     {
     public:
         //!
-        //! Static method to display a descriptor.
-        //! @param [in,out] display Display engine.
-        //! @param [in] did Descriptor id.
-        //! @param [in] payload Address of the descriptor payload.
-        //! @param [in] size Size in bytes of the descriptor payload.
-        //! @param [in] indent Indentation width.
-        //! @param [in] tid Table id of table containing the descriptors.
-        //! @param [in] pds Private Data Specifier. Used to interpret private descriptors.
+        //! Default constructor.
         //!
-        static void DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* payload, size_t size, int indent, TID tid, PDS pds);
+        VBITeletextDescriptor();
+
+        //!
+        //! Constructor from a binary descriptor
+        //! @param [in] bin A binary descriptor to deserialize.
+        //! @param [in] charset If not zero, character set to use without explicit table code.
+        //!
+        VBITeletextDescriptor(const Descriptor& bin, const DVBCharset* charset = 0);
     };
 }
