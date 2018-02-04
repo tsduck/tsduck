@@ -146,6 +146,52 @@ std::ostream& ts::TablesDisplay::displayExtraData(const void* data, size_t size,
 
 
 //----------------------------------------------------------------------------
+// A utility method to display data if it can be interpreted as an ASCII string.
+//----------------------------------------------------------------------------
+
+std::ostream& ts::TablesDisplay::displayIfASCII(const void *data, size_t size, const UString& prefix, const UString& suffix)
+{
+    std::ostream& strm(out());
+    const std::string ascii(ToASCII(data, size));
+    if (!ascii.empty()) {
+        strm << prefix << ascii << suffix;
+    }
+    return strm;
+}
+
+
+//----------------------------------------------------------------------------
+// A utility method to interpret data as an ASCII string.
+//----------------------------------------------------------------------------
+
+std::string ts::TablesDisplay::ToASCII(const void *data, size_t size)
+{
+    const char* str = reinterpret_cast<const char*>(data);
+    size_t strSize = 0;
+
+    for (size_t i = 0; i < size; ++i) {
+        if (str[i] >= 0x20 && str[i] <= 0x7E) {
+            // This is an ASCII character.
+            if (i == strSize) {
+                strSize++;
+            }
+            else {
+                // But come after trailing zero.
+                return std::string();
+            }
+        }
+        else if (str[i] != 0) {
+            // Not ASCII, not trailing zero, unusable string.
+            return std::string();
+        }
+    }
+
+    // Found an ASCII string.
+    return std::string(str, strSize);
+}
+
+
+//----------------------------------------------------------------------------
 // Display a table on the output stream.
 //----------------------------------------------------------------------------
 

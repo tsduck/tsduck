@@ -27,37 +27,39 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsRegistrationDescriptor.h"
-#include "tsNames.h"
+#include "tsTimeShiftedEventDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
 
-#define MY_XML_NAME u"registration_descriptor"
-#define MY_DID ts::DID_REGISTRATION
+#define MY_XML_NAME u"time_shifted_event_descriptor"
+#define MY_DID ts::DID_TIME_SHIFT_EVENT
 
-TS_XML_DESCRIPTOR_FACTORY(ts::RegistrationDescriptor, MY_XML_NAME);
-TS_ID_DESCRIPTOR_FACTORY(ts::RegistrationDescriptor, ts::EDID(MY_DID));
-TS_ID_DESCRIPTOR_DISPLAY(ts::RegistrationDescriptor::DisplayDescriptor, ts::EDID(MY_DID));
+TS_XML_DESCRIPTOR_FACTORY(ts::TimeShiftedEventDescriptor, MY_XML_NAME);
+TS_ID_DESCRIPTOR_FACTORY(ts::TimeShiftedEventDescriptor, ts::EDID(MY_DID));
+TS_ID_DESCRIPTOR_DISPLAY(ts::TimeShiftedEventDescriptor::DisplayDescriptor, ts::EDID(MY_DID));
 
 
 //----------------------------------------------------------------------------
-// Constructors
+// Default constructor:
 //----------------------------------------------------------------------------
 
-ts::RegistrationDescriptor::RegistrationDescriptor(uint32_t identifier, const ByteBlock& info) :
+ts::TimeShiftedEventDescriptor::TimeShiftedEventDescriptor() :
     AbstractDescriptor(MY_DID, MY_XML_NAME),
-    format_identifier(identifier),
-    additional_identification_info(info)
+    reference_service_id(0),
+    reference_event_id(0)
 {
     _is_valid = true;
 }
 
-ts::RegistrationDescriptor::RegistrationDescriptor(const Descriptor& desc, const DVBCharset* charset) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
-    format_identifier(0),
-    additional_identification_info()
+
+//----------------------------------------------------------------------------
+// Constructor from a binary descriptor
+//----------------------------------------------------------------------------
+
+ts::TimeShiftedEventDescriptor::TimeShiftedEventDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+    TimeShiftedEventDescriptor()
 {
     deserialize(desc, charset);
 }
@@ -67,11 +69,11 @@ ts::RegistrationDescriptor::RegistrationDescriptor(const Descriptor& desc, const
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::RegistrationDescriptor::serialize (Descriptor& desc, const DVBCharset* charset) const
+void ts::TimeShiftedEventDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
 {
     ByteBlockPtr bbp(serializeStart());
-    bbp->appendUInt32(format_identifier);
-    bbp->append(additional_identification_info);
+    bbp->appendUInt16(reference_service_id);
+    bbp->appendUInt16(reference_event_id);
     serializeEnd(desc, bbp);
 }
 
@@ -80,16 +82,14 @@ void ts::RegistrationDescriptor::serialize (Descriptor& desc, const DVBCharset* 
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::RegistrationDescriptor::deserialize (const Descriptor& desc, const DVBCharset* charset)
+void ts::TimeShiftedEventDescriptor::deserialize (const Descriptor& desc, const DVBCharset* charset)
 {
-    _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() >= 4;
-    additional_identification_info.clear();
+    _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() == 4;
 
     if (_is_valid) {
         const uint8_t* data = desc.payload();
-        size_t size = desc.payloadSize();
-        format_identifier = GetUInt32(data);
-        additional_identification_info.copy(data + 4, size - 4);
+        reference_service_id = GetUInt16(data);
+        reference_event_id = GetUInt16(data + 2);
     }
 }
 
@@ -98,23 +98,17 @@ void ts::RegistrationDescriptor::deserialize (const Descriptor& desc, const DVBC
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::RegistrationDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
+void ts::TimeShiftedEventDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
     std::ostream& strm(display.out());
     const std::string margin(indent, ' ');
 
     if (size >= 4) {
-        // Sometimes, the format identifier is made of ASCII characters. Try to display them.
-        strm << margin << UString::Format(u"Format identifier: 0x%X", {GetUInt32(data)});
-        display.displayIfASCII(data, 4, u" (\"", u"\")");
-        strm << std::endl;
+        const uint16_t service = GetUInt16(data);
+        const uint16_t event = GetUInt16(data + 2);
         data += 4; size -= 4;
-        // Additional binary info.
-        if (size > 0) {
-            strm << margin << "Additional identification info:" << std::endl
-                 << UString::Dump(data, size, UString::HEXA | UString::ASCII | UString::OFFSET, indent);
-            data += size; size = 0;
-        }
+        strm << margin << UString::Format(u"Reference service id: 0x%X (%d)", {service, service}) << std::endl
+             << margin << UString::Format(u"Reference event id: 0x%X (%d)", {event, event}) << std::endl;
     }
 
     display.displayExtraData(data, size, indent);
@@ -125,12 +119,10 @@ void ts::RegistrationDescriptor::DisplayDescriptor(TablesDisplay& display, DID d
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::RegistrationDescriptor::buildXML(xml::Element* root) const
+void ts::TimeShiftedEventDescriptor::buildXML(xml::Element* root) const
 {
-    root->setIntAttribute(u"format_identifier", format_identifier, true);
-    if (!additional_identification_info.empty()) {
-        root->addElement(u"additional_identification_info")->addHexaText(additional_identification_info);
-    }
+    root->setIntAttribute(u"reference_service_id", reference_service_id, true);
+    root->setIntAttribute(u"reference_event_id", reference_event_id, true);
 }
 
 
@@ -138,10 +130,10 @@ void ts::RegistrationDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::RegistrationDescriptor::fromXML(const xml::Element* element)
+void ts::TimeShiftedEventDescriptor::fromXML(const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&
-        element->getIntAttribute<uint32_t>(format_identifier, u"format_identifier", true) &&
-        element->getHexaTextChild(additional_identification_info, u"additional_identification_info", false, 0, MAX_DESCRIPTOR_SIZE - 6);
+        element->getIntAttribute<uint16_t>(reference_service_id, u"reference_service_id", true) &&
+        element->getIntAttribute<uint16_t>(reference_event_id, u"reference_event_id", true);
 }

@@ -128,6 +128,7 @@ HEADERS += \
     ../../../src/libtsduck/tsLNB.h \
     ../../../src/libtsduck/tsLocalTimeOffsetDescriptor.h \
     ../../../src/libtsduck/tsLogicalChannelNumberDescriptor.h \
+    ../../../src/libtsduck/tsMaximumBitrateDescriptor.h \
     ../../../src/libtsduck/tsMD5.h \
     ../../../src/libtsduck/tsMediaGuardDate.h \
     ../../../src/libtsduck/tsMemoryUtils.h \
@@ -145,6 +146,7 @@ HEADERS += \
     ../../../src/libtsduck/tsNIT.h \
     ../../../src/libtsduck/tsNullMutex.h \
     ../../../src/libtsduck/tsNullReport.h \
+    ../../../src/libtsduck/tsNVODReferenceDescriptor.h \
     ../../../src/libtsduck/tsObject.h \
     ../../../src/libtsduck/tsOneShotPacketizer.h \
     ../../../src/libtsduck/tsOutputPager.h \
@@ -166,6 +168,7 @@ HEADERS += \
     ../../../src/libtsduck/tsPMT.h \
     ../../../src/libtsduck/tsPMTHandlerInterface.h \
     ../../../src/libtsduck/tsPollFiles.h \
+    ../../../src/libtsduck/tsPrivateDataIndicatorDescriptor.h \
     ../../../src/libtsduck/tsPrivateDataSpecifierDescriptor.h \
     ../../../src/libtsduck/tsPSILogger.h \
     ../../../src/libtsduck/tsPSILoggerArgs.h \
@@ -254,6 +257,8 @@ HEADERS += \
     ../../../src/libtsduck/tsThread.h \
     ../../../src/libtsduck/tsThreadAttributes.h \
     ../../../src/libtsduck/tsTime.h \
+    ../../../src/libtsduck/tsTimeShiftedEventDescriptor.h \
+    ../../../src/libtsduck/tsTimeShiftedServiceDescriptor.h \
     ../../../src/libtsduck/tsTimeTrackerDemux.h \
     ../../../src/libtsduck/tstlv.h \
     ../../../src/libtsduck/tstlvAnalyzer.h \
@@ -412,6 +417,7 @@ SOURCES += \
     ../../../src/libtsduck/tsLNB.cpp \
     ../../../src/libtsduck/tsLocalTimeOffsetDescriptor.cpp \
     ../../../src/libtsduck/tsLogicalChannelNumberDescriptor.cpp \
+    ../../../src/libtsduck/tsMaximumBitrateDescriptor.cpp \
     ../../../src/libtsduck/tsMD5.cpp \
     ../../../src/libtsduck/tsMemoryUtils.cpp \
     ../../../src/libtsduck/tsMessageDescriptor.cpp \
@@ -424,6 +430,7 @@ SOURCES += \
     ../../../src/libtsduck/tsNetworkNameDescriptor.cpp \
     ../../../src/libtsduck/tsNIT.cpp \
     ../../../src/libtsduck/tsNullReport.cpp \
+    ../../../src/libtsduck/tsNVODReferenceDescriptor.cpp \
     ../../../src/libtsduck/tsObject.cpp \
     ../../../src/libtsduck/tsOneShotPacketizer.cpp \
     ../../../src/libtsduck/tsOutputPager.cpp \
@@ -442,6 +449,7 @@ SOURCES += \
     ../../../src/libtsduck/tsPluginSharedLibrary.cpp \
     ../../../src/libtsduck/tsPMT.cpp \
     ../../../src/libtsduck/tsPollFiles.cpp \
+    ../../../src/libtsduck/tsPrivateDataIndicatorDescriptor.cpp \
     ../../../src/libtsduck/tsPrivateDataSpecifierDescriptor.cpp \
     ../../../src/libtsduck/tsPSILogger.cpp \
     ../../../src/libtsduck/tsPSILoggerArgs.cpp \
@@ -509,6 +517,8 @@ SOURCES += \
     ../../../src/libtsduck/tsThread.cpp \
     ../../../src/libtsduck/tsThreadAttributes.cpp \
     ../../../src/libtsduck/tsTime.cpp \
+    ../../../src/libtsduck/tsTimeShiftedEventDescriptor.cpp \
+    ../../../src/libtsduck/tsTimeShiftedServiceDescriptor.cpp \
     ../../../src/libtsduck/tsTimeTrackerDemux.cpp \
     ../../../src/libtsduck/tstlvAnalyzer.cpp \
     ../../../src/libtsduck/tstlvMessage.cpp \

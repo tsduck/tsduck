@@ -443,6 +443,8 @@
                visible_service="bool, default=true"/>
     </logical_channel_number_descriptor>
 
+    <maximum_bitrate_descriptor maximum_bitrate="uint32, in bits/second, required"/>
+
     <message_descriptor message_id="uint8, required"
                         language_code="char3, required">
       <text>String</text>
@@ -450,12 +452,21 @@
 
     <network_name_descriptor network_name="string, required"/>
 
+    <NVOD_reference_descriptor>
+      <!-- One per service -->
+      <service transport_stream_id="uint16, required"
+               original_network_id="uint16, required"
+               service_id="uint16, required"/>
+    </NVOD_reference_descriptor>
+
     <parental_rating_descriptor>
       <!-- One per country -->
       <country country_code="char3, required"
                rating="uint8, required"/>
     </parental_rating_descriptor>
 
+    <private_data_indicator_descriptor private_data_indicator="uint32, required"/>
+    
     <private_data_specifier_descriptor private_data_specifier="uint32|eacem|eutelsat, required"/>
 
     <registration_descriptor format_identifier="uint32, required">
@@ -546,6 +557,12 @@
         guard_interval="1/32|1/16|1/8|1/4, required"
         transmission_mode="2k|8k|4k, required"
         other_frequency="bool, required"/>
+
+    <time_shifted_event_descriptor
+        reference_service_id="uint16, required"
+        reference_event_id="uint16, required"/>
+
+    <time_shifted_service_descriptor reference_service_id="uint16, required"/>
 
     <VBI_data_descriptor>
       <!-- One per VBI data service -->
