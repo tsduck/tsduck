@@ -411,6 +411,13 @@ namespace ts {
         }
 
         //!
+        //! Append an integer in Binary Coded Decimal (BCD) representation at the end.
+        //! @param [in] i Integer value to serialize at the end of the block.
+        //! @param [in] bcd_count Number of BCD digits. Note that @a bcd_count can be even.
+        //!
+        void appendBCD(uint32_t i, size_t bcd_count);
+
+        //!
         //! Read a byte block from a binary file.
         //! @param [in] fileName Input file name.
         //! @param [in] maxSize Maximum size to read. By default, read up to end of file or error.

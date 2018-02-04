@@ -94,14 +94,12 @@ void ts::BCDToString(std::string &str, const uint8_t* bcd, size_t bcd_count, int
     str.clear();
     str.reserve(bcd_count + 2);
 
-    // Insert Decimal point in first position
-    if (decimal == 0) {
-        str.push_back('0');
-    }
-
     // Decode the BCD
     for (size_t i = 0; i < bcd_count; i++) {
         if (decimal == int (i)) {
+            if (str.empty()) {
+                str.push_back('0');
+            }
             str.push_back('.');
         }
         int digit = (i % 2 == 0) ? (*bcd >> 4) : (*bcd++ & 0x0F);

@@ -1441,6 +1441,7 @@ Bits = 8
 0 = none
 1 = matrixed
 2 = discrete
+3 = undefined
 
 [ScramblingControl]
 # In TS header
