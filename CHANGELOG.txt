@@ -8,6 +8,9 @@ Version 3.8
   a character set different from ISO-6937 (the default character set), the
   table code was not correctly inserted at the beginning of the string.
 
+- Bug fix in plugin bitrate_monitor. The message was incorrect when the bitrate
+  is *greater* then the limit (the message was ok in other cases).
+
 - Added XML support for more DVB and EACEM descriptors.
 
 Version 3.7-512
