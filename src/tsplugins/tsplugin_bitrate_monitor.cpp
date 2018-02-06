@@ -241,7 +241,7 @@ void ts::BitrateMonitorPlugin::computeBitrate()
                 alarmMessage += UString::Format(u" is back in allowed range (%'d-%'d bits/s)", {_min_bitrate, _max_bitrate});
                 break;
             case GREATER:
-                alarmMessage = UString::Format(u" is greater than allowed maximum (%'d bits/s)", {_max_bitrate});
+                alarmMessage += UString::Format(u" is greater than allowed maximum (%'d bits/s)", {_max_bitrate});
                 break;
             default:
                 assert(false); // should not get there
