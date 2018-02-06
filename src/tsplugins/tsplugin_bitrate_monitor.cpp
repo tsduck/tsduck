@@ -231,7 +231,7 @@ void ts::BitrateMonitorPlugin::computeBitrate()
     const BitRate bitrate = BitRate(total_pkt_count * PKT_SIZE * 8 / _pkt_count.size());
 
     // Periodic bitrate display.
-    if (_periodic_bitrate > 0 && _periodic_countdown-- <= 0) {
+    if (_periodic_bitrate > 0 && --_periodic_countdown <= 0) {
         _periodic_countdown = _periodic_bitrate;
         tsp->info(u"%s, pid %d (0x%X), bitrate: %'d bits/s", {Time::CurrentLocalTime().format(Time::DATE | Time::TIME), _pid, _pid, bitrate});
     }
