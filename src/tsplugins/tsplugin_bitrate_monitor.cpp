@@ -34,6 +34,7 @@
 
 #include "tsPlugin.h"
 #include "tsPluginRepository.h"
+#include "tsTime.h"
 TSDUCK_SOURCE;
 
 
@@ -63,6 +64,8 @@ namespace ts {
         PID         _pid;                  // Monitored PID
         BitRate     _min_bitrate;          // Minimum allowed bitrate
         BitRate     _max_bitrate;          // Maximum allowed bitrate
+        Second      _periodic_bitrate;     // Report bitrate at regular intervals, even if in range
+        Second      _periodic_countdown;   // Countdown to report bitrate
         RangeStatus _last_bitrate_status;  // Status of the last bitrate, regarding allowed range
         UString     _alarm_command;        // Alarm command name
         time_t      _last_second;          // Last second number
@@ -104,6 +107,8 @@ ts::BitrateMonitorPlugin::BitrateMonitorPlugin(TSP* tsp_) :
     _pid(PID_NULL),
     _min_bitrate(0),
     _max_bitrate(0),
+    _periodic_bitrate(0),
+    _periodic_countdown(0),
     _last_bitrate_status(LOWER),
     _alarm_command(),
     _last_second(0),
@@ -112,11 +117,12 @@ ts::BitrateMonitorPlugin::BitrateMonitorPlugin(TSP* tsp_) :
     _pkt_count_index(0),
     _pkt_count()
 {
-    option(u""             ,  0,  PIDVAL, 1, 1);   // PID nb is a required parameter
-    option(u"alarm_command", 'a', STRING);
-    option(u"time_interval", 't', UINT16);
-    option(u"min"          ,  0,  UINT32);
-    option(u"max"          ,  0,  UINT32);
+    option(u"",                  0,  PIDVAL, 1, 1);   // PID nb is a required parameter
+    option(u"alarm-command",    'a', STRING);
+    option(u"time-interval",    't', UINT16);
+    option(u"min",               0,  UINT32);
+    option(u"max",               0,  UINT32);
+    option(u"periodic-bitrate", 'p', POSITIVE);
 
     setHelp(u"PID:\n"
             u"      Specifies the PID to monitor.\n"
@@ -124,7 +130,7 @@ ts::BitrateMonitorPlugin::BitrateMonitorPlugin(TSP* tsp_) :
             u"Options:\n"
             u"\n"
             u"  -a command\n"
-            u"  --alarm_command command\n"
+            u"  --alarm-command command\n"
             u"      Command to be run when an alarm is detected (bitrate out of range).\n"
             u"\n"
             u"  --min value\n"
@@ -135,8 +141,13 @@ ts::BitrateMonitorPlugin::BitrateMonitorPlugin(TSP* tsp_) :
             u"      Set maximum allowed value for bitrate (bits/s).\n"
             u"      Default: " + UString::Decimal(DEFAULT_BITRATE_MAX) + u" b/s.\n"
             u"\n"
+            u"  -p value\n"
+            u"  --periodic-bitrate value\n"
+            u"      Always report bitrate at the specific interval in seconds, even if the\n"
+            u"      bitrate is in range.\n"
+            u"\n"
             u"  -t value\n"
-            u"  --time_interval value\n"
+            u"  --time-interval value\n"
             u"      Time interval (in seconds) used to compute the bitrate.\n"
             u"      Default: " + UString::Decimal(DEFAULT_TIME_WINDOW_SIZE) + u" s.\n"
             u"\n"
@@ -155,11 +166,12 @@ ts::BitrateMonitorPlugin::BitrateMonitorPlugin(TSP* tsp_) :
 bool ts::BitrateMonitorPlugin::start()
 {
     // Get command line arguments
-    _alarm_command = value(u"alarm_command");
+    _alarm_command = value(u"alarm-command");
     _pid = intValue<PID>(u"", PID_NULL);
-    _window_size = intValue(u"time_interval", DEFAULT_TIME_WINDOW_SIZE);
+    _window_size = intValue(u"time-interval", DEFAULT_TIME_WINDOW_SIZE);
     _min_bitrate = intValue(u"min", DEFAULT_BITRATE_MIN);
     _max_bitrate = intValue(u"max", DEFAULT_BITRATE_MAX);
+    _periodic_bitrate = intValue(u"periodic-bitrate", 0);
 
     if (_min_bitrate > _max_bitrate) {
         tsp->error(u"bad parameters, bitrate min (%'d) > max (%'d), exiting", {_min_bitrate, _max_bitrate});
@@ -174,6 +186,7 @@ bool ts::BitrateMonitorPlugin::start()
         _pkt_count[i] = 0;
     }
 
+    _periodic_countdown = _periodic_bitrate;
     _last_bitrate_status = IN_RANGE;
     _last_second = time(NULL);
     _startup = true;
@@ -208,8 +221,7 @@ void ts::BitrateMonitorPlugin::runAlarmCommand(const ts::UString& parameter)
 void ts::BitrateMonitorPlugin::computeBitrate()
 {
     // Bitrate is computed with the following formula :
-    // (Sum of packets received during the last time window) * (packet size) /
-    // (time window)
+    // (Sum of packets received during the last time window) * (packet size) / (time window)
 
     PacketCounter total_pkt_count = 0;
     for (uint16_t i = 0; i < _pkt_count.size(); i++) {
@@ -217,6 +229,12 @@ void ts::BitrateMonitorPlugin::computeBitrate()
     }
 
     const BitRate bitrate = BitRate(total_pkt_count * PKT_SIZE * 8 / _pkt_count.size());
+
+    // Periodic bitrate display.
+    if (_periodic_bitrate > 0 && _periodic_countdown-- <= 0) {
+        _periodic_countdown = _periodic_bitrate;
+        tsp->info(u"%s, pid %d (0x%X), bitrate: %'d bits/s", {Time::CurrentLocalTime().format(Time::DATE | Time::TIME), _pid, _pid, bitrate});
+    }
 
     // Check the bitrate value, regarding the allowed range.
     RangeStatus new_bitrate_status;

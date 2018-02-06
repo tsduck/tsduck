@@ -11,6 +11,8 @@ Version 3.8
 - Bug fix in plugin bitrate_monitor. The message was incorrect when the bitrate
   is *greater* then the limit (the message was ok in other cases).
 
+- Added option --periodic-bitrate to plugin bitrate_monitor.
+
 - Added XML support for more DVB and EACEM descriptors.
 
 Version 3.7-512
