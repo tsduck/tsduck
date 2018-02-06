@@ -26,12 +26,6 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//!
-//! @file tsDektecOutputPlugin.h
-//!
-//! Declare the ts::DektecOutputPlugin class.
-//!
-//----------------------------------------------------------------------------
 
 #include "tsDektecOutputPlugin.h"
 #include "tsDektecUtils.h"
@@ -965,8 +959,28 @@ bool ts::DektecOutputPlugin::setBitrate(int symbol_rate, int dt_modulation, int 
         return startError(u"Error computing bitrate from symbol rate", status);
     }
     else {
+        tsp->verbose(u"setting output TS bitrate to %'d b/s", {bitrate});
         _guts->opt_bitrate = _guts->cur_bitrate = BitRate(bitrate);
         return true;
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Compute and display symbol rate if not explicitly specified by the user.
+//----------------------------------------------------------------------------
+
+void ts::DektecOutputPlugin::displaySymbolRate(int ts_bitrate, int dt_modulation, int param0, int param1, int param2)
+{
+    if (ts_bitrate > 0) {
+        int symrate = -1;
+        Dtapi::DTAPI_RESULT status = Dtapi::DtapiModPars2SymRate(symrate, dt_modulation, param0, param1, param2, ts_bitrate);
+        if (status != DTAPI_OK) {
+            tsp->verbose(u"error computing symbol rate: ", {DektecStrError(status)});
+        }
+        else {
+            tsp->verbose(u"output symbol rate: %'d symbols/second", {symrate});
+        }
     }
 }
 
@@ -976,7 +990,7 @@ bool ts::DektecOutputPlugin::setBitrate(int symbol_rate, int dt_modulation, int 
 // Return true on success, false on error.
 //----------------------------------------------------------------------------
 
-bool ts::DektecOutputPlugin::setModulation (int& modulation_type)
+bool ts::DektecOutputPlugin::setModulation(int& modulation_type)
 {
     // Get input plugin modulation parameters if required
     const bool use_input_modulation = present(u"input-modulation");
@@ -1104,12 +1118,15 @@ bool ts::DektecOutputPlugin::setModulation (int& modulation_type)
                 }
             }
             fec = intValue<int>(u"convolutional-rate", fec);
-            tsp->verbose(u"using DVB-S FEC " + DektecFEC.name (fec));
+            tsp->verbose(u"using DVB-S FEC " + DektecFEC.name(fec));
             // Compute expected bitrate if symbol rate is known
-            if (symbol_rate > 0 && !setBitrate (symbol_rate, modulation_type, fec, 0, 0)) {
+            if (symbol_rate <= 0) {
+                displaySymbolRate(_guts->opt_bitrate, modulation_type, fec, 0, 0);
+            }
+            else if (!setBitrate(symbol_rate, modulation_type, fec, 0, 0)) {
                 return false;
             }
-            status = _guts->chan.SetModControl (modulation_type, fec, 0, 0);
+            status = _guts->chan.SetModControl(modulation_type, fec, 0, 0);
             break;
         }
 
@@ -1149,7 +1166,10 @@ bool ts::DektecOutputPlugin::setModulation (int& modulation_type)
             const int fec_frame = present(u"s2-short-fec-frame") ? DTAPI_MOD_S2_SHORTFRM : DTAPI_MOD_S2_LONGFRM;
             const int gold_code = intValue<int>(u"s2-gold-code", 0);
             // Compute expected bitrate if symbol rate is known
-            if (symbol_rate > 0 && !setBitrate(symbol_rate, modulation_type, fec, pilots | fec_frame, gold_code)) {
+            if (symbol_rate <= 0) {
+                displaySymbolRate(_guts->opt_bitrate, modulation_type, fec, pilots | fec_frame, gold_code);
+            }
+            else if (!setBitrate(symbol_rate, modulation_type, fec, pilots | fec_frame, gold_code)) {
                 return false;
             }
             status = _guts->chan.SetModControl(modulation_type, fec, pilots | fec_frame, gold_code);
@@ -1166,7 +1186,10 @@ bool ts::DektecOutputPlugin::setModulation (int& modulation_type)
             const int j83 = intValue<int>(u"j83", DTAPI_MOD_J83_A);
             const int qam_b = j83 != DTAPI_MOD_J83_B ? 0 : intValue<int>(u"qam-b", DTAPI_MOD_QAMB_I128_J1D);
             // Compute expected bitrate if symbol rate is known
-            if (symbol_rate > 0 && !setBitrate(symbol_rate, modulation_type, j83, qam_b, 0)) {
+            if (symbol_rate <= 0) {
+                displaySymbolRate(_guts->opt_bitrate, modulation_type, j83, qam_b, 0);
+            }
+            else if (!setBitrate(symbol_rate, modulation_type, j83, qam_b, 0)) {
                 return false;
             }
             status = _guts->chan.SetModControl(modulation_type, j83, qam_b, 0);
@@ -1278,7 +1301,7 @@ bool ts::DektecOutputPlugin::setModulation (int& modulation_type)
             pars.m_NetworkId = intValue<int>(u"t2-network-id", 0);
             pars.m_T2SystemId = intValue<int>(u"t2-system-id", 0);
             // Obsolete field in DTAPI 4.10.0.145:
-            // pars.m_Frequency = int (frequency);
+            // pars.m_Frequency = int(frequency);
             pars.m_NumPlps = 1; // This version supports single-PLP only
             pars.m_Plps[0].Init(); // default values
             pars.m_Plps[0].m_Hem = present(u"plp0-high-efficiency");
@@ -1471,7 +1494,7 @@ bool ts::DektecOutputPlugin::send(const TSPacket* buffer, size_t packet_count)
         return false;
     }
 
-    char* data = reinterpret_cast<char*>(const_cast<TSPacket*> (buffer));
+    char* data = reinterpret_cast<char*>(const_cast<TSPacket*>(buffer));
     int remain = int(packet_count * PKT_SIZE);
     Dtapi::DTAPI_RESULT status;
 
@@ -1517,7 +1540,7 @@ bool ts::DektecOutputPlugin::send(const TSPacket* buffer, size_t packet_count)
                 tsp->verbose(u"%s output FIFO load is %'d bytes, starting transmission", {_guts->device.model, fifo_load});
                 status = _guts->chan.SetTxControl(DTAPI_TXCTRL_SEND);
                 if (status != DTAPI_OK) {
-                    tsp->error(u"output device start send error: " + DektecStrError (status));
+                    tsp->error(u"output device start send error: " + DektecStrError(status));
                     return false;
                 }
                 // Now fully started
