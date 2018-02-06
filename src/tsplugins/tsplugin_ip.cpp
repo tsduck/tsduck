@@ -77,6 +77,10 @@ namespace ts {
         PacketCounter _packets_0;          // Number of received packets since _start_0
         Time          _start_1;            // Start of previous bitrate evaluation period
         PacketCounter _packets_1;          // Number of received packets since _start_1
+        bool          _use_first_source;   // Use socket address of first received packet to filter subsequent packets.
+        SocketAddress _use_source;         // Filter on this socket address of sender.
+        SocketAddress _first_source;       // Socket address of first received packet.
+        std::set<SocketAddress> _sources;  // Set of all detected packet sources.
         size_t        _inbuf_count;        // Remaining TS packets in inbuf
         size_t        _inbuf_next;         // Index in inbuf of next TS packet to return
         uint8_t       _inbuf[MAX_IP_SIZE]; // Input buffer
@@ -131,6 +135,10 @@ ts::IPInput::IPInput(TSP* tsp_) :
     _packets_0(0),
     _start_1(Time::Epoch),
     _packets_1(0),
+    _use_first_source(false),
+    _use_source(),
+    _first_source(),
+    _sources(),
     _inbuf_count(0),
     _inbuf_next(0),
     _inbuf()
@@ -139,8 +147,10 @@ ts::IPInput::IPInput(TSP* tsp_) :
     option(u"buffer-size",         'b', UNSIGNED);
     option(u"display-interval",    'd', POSITIVE);
     option(u"evaluation-interval", 'e', POSITIVE);
+    option(u"first-source",        'f');
     option(u"local-address",       'l', STRING);
     option(u"reuse-port",          'r');
+    option(u"source",              's', STRING);
 
     setHelp(u"Parameter:\n"
             u"  The parameter [address:]port describes the destination of UDP packets.\n"
@@ -168,6 +178,16 @@ ts::IPInput::IPInput(TSP* tsp_) :
             u"      By default, the real-time input bitrate is never evaluated and the input\n"
             u"      bitrate is evaluated from the PCR in the input packets.\n"
             u"\n"
+            u"  -f\n"
+            u"  --first-source\n"
+            u"      Filter UDP packets based on the source address. Use the sender address of\n"
+            u"      the first received packet as only allowed source. This option is useful\n"
+            u"      when several sources send packets to the same destination address and port.\n"
+            u"      Accepting all packets could result in a corrupted stream and only one\n"
+            u"      sender shall be accepted. To allow a more precise selection of the sender,\n"
+            u"      use option --source. Options --first-source and --source are mutually\n"
+            u"      exclusive.\n"
+            u"\n"
             u"  --help\n"
             u"      Display this help text.\n"
             u"\n"
@@ -180,6 +200,14 @@ ts::IPInput::IPInput(TSP* tsp_) :
             u"  -r\n"
             u"  --reuse-port\n"
             u"      Set the reuse port socket option.\n"
+            u"\n"
+            u"  -s address[:port]\n"
+            u"  --source address[:port]\n"
+            u"      Filter UDP packets based on the specified source address. This option is\n"
+            u"      useful when several sources send packets to the same destination address\n"
+            u"      and port. Accepting all packets could result in a corrupted stream and\n"
+            u"      only one sender shall be accepted. Options --first-source and --source\n"
+            u"      are mutually exclusive.\n"
             u"\n"
             u"  --version\n"
             u"      Display the version number.\n");
@@ -248,6 +276,8 @@ bool ts::IPInput::start()
     UString local(value(u"local-address"));
     size_t recv_bufsize = intValue<size_t>(u"buffer-size", 0);
     bool reuse_port = present(u"reuse-port");
+    _use_first_source = present(u"first-source");
+    UString source(value(u"source"));
 
     // Resolve specified destination address:port
     if (!_dest_addr.resolve(destination, *tsp)) {
@@ -270,6 +300,23 @@ bool ts::IPInput::start()
     IPAddress local_ip;
     if (!local.empty() && !local_ip.resolve(local, *tsp)) {
         return false;
+    }
+
+    // Translate optional source address.
+    _use_source.clear();
+    if (!source.empty()) {
+        if (!_use_source.resolve(source, *tsp)) {
+            return false;
+        }
+        else if (!_use_source.hasAddress()) {
+            // If source is specified, the port is optional but the address is mandatory.
+            tsp->error(u"missing IP address in --source %s", {source});
+            return false;
+        }
+        else if (_use_first_source) {
+            tsp->error(u"--first-source and --source are mutually exclusive");
+            return false;
+        }
     }
 
     // The local socket address to bind is the optional local IP address and the destination port
@@ -298,6 +345,8 @@ bool ts::IPInput::start()
     _inbuf_count = _inbuf_next = 0;
     _start = _start_0 = _start_1 = _next_display = Time::Epoch;
     _packets = _packets_0 = _packets_1 = 0;
+    _first_source.clear();
+    _sources.clear();
 
     return true;
 }
@@ -363,6 +412,7 @@ size_t ts::IPInput::receive(TSPacket* buffer, size_t max_packets)
         if (!_sock.receive(_inbuf, sizeof(_inbuf), insize, sender, destination, tsp, *tsp)) {
             return 0;
         }
+        tsp->log(2, u"received UDP packet, source: %s, destination: %s", {sender.toString(), destination.toString()});
 
         // Check the destination address to exclude packets from other streams.
         // When several multicast streams use the same destination port and several
@@ -384,6 +434,39 @@ size_t ts::IPInput::receive(TSPacket* buffer, size_t max_packets)
             continue;
         }
 
+        // Keep track of the first sender address.
+        if (!_first_source.hasAddress()) {
+            // First packet, keep address of the sender.
+            _first_source = sender;
+            _sources.insert(sender);
+
+            // With option --first-source, use this one to filter packets.
+            if (_use_first_source) {
+                assert(!_use_source.hasAddress());
+                _use_source = sender;
+                tsp->verbose(u"now filtering on source address %s", {sender.toString()});
+            }
+        }
+
+        // Keep track of senders (sources) to detect or filter multiple sources.
+        if (_sources.count(sender) == 0) {
+            // Detected an additional source, warn the user that distinct streams are potentially mixed.
+            // If no source filtering is applied, this is a warning since this may affect the resulting stream.
+            // With source filtering, this is just an informational verbose-level message.
+            const int level = _use_source.hasAddress() ? Severity::Verbose : Severity::Warning;
+            tsp->log(level, u"detected multiple sources for the same destination %s with potentially distinct streams", {destination.toString()});
+            if (_sources.size() == 1) {
+                tsp->log(level, u"detected source: %s", {_first_source.toString()});
+            }
+            tsp->log(level, u"detected source: %s", {sender.toString()});
+            _sources.insert(sender);
+        }
+
+        // Filter packets based on source address if requested.
+        if ((_use_source.hasAddress() && _use_source.address() != sender.address()) || (_use_source.hasPort() && _use_source.port() != sender.port())) {
+            // Not the expected source, this is a spurious packet.
+            continue;
+        }
 
         // Locate the TS packets inside the UDP message. Basically, we
         // expect the message to contain only TS packets. However, we

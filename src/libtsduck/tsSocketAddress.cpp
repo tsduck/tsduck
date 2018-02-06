@@ -63,7 +63,7 @@ ts::SocketAddress::SocketAddress(const ::sockaddr_in& s) :
 // Return true on success, false on error.
 //----------------------------------------------------------------------------
 
-bool ts::SocketAddress::resolve (const UString& name, Report& report)
+bool ts::SocketAddress::resolve(const UString& name, Report& report)
 {
     // Clear address & port
     clear();
@@ -103,4 +103,14 @@ bool ts::SocketAddress::resolve (const UString& name, Report& report)
 ts::UString ts::SocketAddress::toString() const
 {
     return IPAddress::toString() + (_port == AnyPort ? u"" : UString::Format(u":%d", {_port}));
+}
+
+
+//----------------------------------------------------------------------------
+// Comparison "less than" operator.
+//----------------------------------------------------------------------------
+
+bool ts::SocketAddress::operator<(const SocketAddress& other) const
+{
+    return address() < other.address() || (address() == other.address() && _port < other._port);
 }

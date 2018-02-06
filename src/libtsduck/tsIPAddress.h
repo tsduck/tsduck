@@ -118,14 +118,14 @@ namespace ts {
         //! @param [in] a Another instance to compare with.
         //! @return True if both object contains the same address, false otherwise.
         //!
-        bool operator== (const IPAddress& a) const {return _addr == a._addr;}
+        bool operator==(const IPAddress& a) const { return _addr == a._addr; }
 
         //!
         //! Unequality operator.
         //! @param [in] a Another instance to compare with.
         //! @return True if both object contains distinct addresses, false otherwise.
         //!
-        bool operator!= (const IPAddress& a) const {return _addr != a._addr;}
+        bool operator!=(const IPAddress& a) const {return _addr != a._addr;}
 
         //!
         //! Constructor from a string, host name or "a.b.c.d" integer format.
@@ -145,13 +145,13 @@ namespace ts {
         //! Get the IP address as a 32-bit integer value in host byte order.
         //! @return The IP address as a 32-bit integer value in host byte order.
         //!
-        uint32_t address() const {return _addr;}
+        uint32_t address() const { return _addr; }
 
         //!
         //! Set the IP address from a 32-bit integer value in host byte order.
         //! @param [in] addr The IP v4 address as an integer in host byte order.
         //!
-        void setAddress(uint32_t addr) {_addr = addr;}
+        void setAddress(uint32_t addr) { _addr = addr; }
 
         //!
         //! Set the IP address from 4 bytes (classical IPv4 notation).
@@ -166,19 +166,19 @@ namespace ts {
         //! Check if the address is a multicast address.
         //! @return True if the address is a multicast address, false otherwise.
         //!
-        bool isMulticast() const {return IN_MULTICAST(_addr);}
+        bool isMulticast() const { return IN_MULTICAST(_addr); }
 
         //!
         //! Check if this object is set to a valid address (ie not AnyAddress).
         //! @return True if this object is set to a valid address (ie not AnyAddress),
         //! false otherwise.
         //!
-        bool hasAddress() const {return _addr != AnyAddress;}
+        bool hasAddress() const { return _addr != AnyAddress; }
 
         //!
         //! Clear address (set it to AnyAddress).
         //!
-        void clear() {_addr = AnyAddress;}
+        void clear() { _addr = AnyAddress; }
 
         //!
         //! Copy the address into a system "struct sockaddr" structure (socket API).
@@ -198,7 +198,7 @@ namespace ts {
         //! Copy the address into a system "struct in_addr" structure (socket API).
         //! @param [out] a A system "struct in_addr" structure.
         //!
-        void copy(::in_addr& a) const {a.s_addr = htonl(_addr);}
+        void copy(::in_addr& a) const { a.s_addr = htonl(_addr); }
 
         //!
         //! Decode a string, numeric address or hostname which is resolved.
@@ -216,6 +216,14 @@ namespace ts {
         //! @return This object, converted as a string.
         //!
         virtual UString toString() const;
+
+        //!
+        //! Comparison "less than" operator.
+        //! It does not really makes sense. Only defined to allow usage in containers.
+        //! @param [in] other Other instance to compare.
+        //! @return True if this instance is less than to @a other.
+        //!
+        bool operator<(const IPAddress& other) const { return _addr < other._addr; }
 
     private:
         uint32_t _addr;  // An IPv4 address is a 32-bit word in host byte order
