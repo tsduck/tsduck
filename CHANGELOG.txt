@@ -4,16 +4,18 @@ TSDuck Change Log and Release Notes
 
 Version 3.8
 
-- Bug fix in the compilation of XML tables: when DVB string were encoded with
+- Added options --source and --first-source to input plugin ip.
+
+- Added option --periodic-bitrate to plugin bitrate_monitor.
+
+- Added XML support for more DVB and EACEM descriptors.
+
+- Bug fix in the compilation of XML tables: when DVB strings were encoded with
   a character set different from ISO-6937 (the default character set), the
   table code was not correctly inserted at the beginning of the string.
 
 - Bug fix in plugin bitrate_monitor. The message was incorrect when the bitrate
   is *greater* then the limit (the message was ok in other cases).
-
-- Added option --periodic-bitrate to plugin bitrate_monitor.
-
-- Added XML support for more DVB and EACEM descriptors.
 
 Version 3.7-512
 

@@ -258,6 +258,14 @@ namespace ts {
         //!
         virtual UString toString() const override;
 
+        //!
+        //! Comparison "less than" operator.
+        //! It does not really makes sense. Only defined to allow usage in containers.
+        //! @param [in] other Other instance to compare.
+        //! @return True if this instance is less than to @a other.
+        //!
+        bool operator<(const SocketAddress& other) const;
+
     private:
         uint16_t _port;  // Port in host byte order
     };
