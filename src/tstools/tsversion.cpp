@@ -320,7 +320,11 @@ bool DisplayRelease(Options& opt, const ts::GitHubRelease rel)
             if (ts::GitHubRelease::IsPlatformAsset(it->name)) {
                 ++applyCount;
             }
-            std::cout << "  " << it->name << " (" << ts::UString::HumanSize(it->size) << ")" <<  std::endl;
+            std::cout << "  " << it->name << " (" << ts::UString::HumanSize(it->size);
+            if (it->downloadCount > 0) {
+                std::cout << ts::UString::Format(u", %'d downloads", {it->downloadCount});
+            }
+            std::cout << ")" << std::endl;
         }
         if (applyCount > 0) {
             std::cout << "Available downloads for your system:" << std::endl;
