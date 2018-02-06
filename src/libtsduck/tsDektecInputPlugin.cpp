@@ -26,12 +26,6 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//!
-//! @file tsDektecInputPlugin.h
-//!
-//! Declare the ts::DektecInputPlugin class.
-//!
-//----------------------------------------------------------------------------
 
 #include "tsDektecInputPlugin.h"
 #include "tsDektecUtils.h"

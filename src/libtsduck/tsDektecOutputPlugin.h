@@ -73,6 +73,9 @@ namespace ts {
         // and close channel on error. Return true if the bitrate was successfully computed.
         bool setBitrate(int symbol_rate, int dt_modulation, int param0, int param1, int param2);
 
+        // Compute and display symbol rate (modulators only) if not explicitly specified by the user.
+        void displaySymbolRate(int ts_bitrate, int dt_modulation, int param0, int param1, int param2);
+
         // Set modulation parameters (modulators only). Return true on success, false on error.
         bool setModulation(int& modulation_type);
 #endif

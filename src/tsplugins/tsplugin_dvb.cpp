@@ -143,6 +143,13 @@ bool ts::DVBInput::start()
     }
     tsp->verbose(u"tuned to transponder %s", {_tuner_params->toPluginOptions()});
 
+    // Compute theoretical TS bitrate from tuning parameters.
+    assert(!_tuner_params.isNull());
+    const BitRate bitrate = _tuner_params->theoreticalBitrate();
+    if (bitrate > 0) {
+        tsp->verbose(u"expected bitrate from tuning parameters: %'d b/s", {bitrate});
+    }
+
     // Start receiving packets
     tsp->debug(u"starting tuner reception");
     if (!_tuner.start(*tsp)) {
