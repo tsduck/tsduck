@@ -1,10 +1,10 @@
 # Building TSDuck   {#building}
 [TOC]
 
-TSDuck can be built on Windows, Linux and MacOS.
+TSDuck can be built on Windows, Linux and macOS.
 
 Support for Dektec devices and DVB tuners is implemented only on Windows and Linux.
-MacOS can only support files and IP for TS input and output.
+macOS can only support files and IP for TS input and output.
 
 
 # Pre-requisites: build tools {#buildreq}
@@ -73,11 +73,19 @@ apt-get install g++ doxygen graphviz curl pcscd libpcsclite-dev libcppunit-dev l
 - Optional Dektec DTAPI: The command `make` at the top level will automatically
   download the LinuxSDK from the Dektec site. See `dektec/Makefile` for details.
 
-## MacOS {#reqmac}
+## macOS {#reqmac}
 
-- Install Xcode and its command line utilities.
+- Install the Xcode command line utilities (in other words, the _clang_ compiler suite):
+~~~~
+xcode-select --install
+~~~~
 
-- To install additional tools from HomeBrew:
+- Install the [Homebrew](https://brew.sh/) package manager:
+~~~~
+ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+~~~~
+
+- Install common open source tools using Homebrew:
 ~~~~
 brew install pcsc-lite cppunit doxygen graphviz gnu-sed grep
 ~~~~
@@ -90,7 +98,7 @@ Execute the PowerShell script `build\Build.ps1`. The TSDuck binaries, executable
 DLL's, are built in directories `msvc2017\Release-Win32` and `msvc2017\Release-x64`
 for 32-bit and 64-bit platforms respectively.
 
-## Linux and MacOS {#buildlinux}
+## Linux and macOS {#buildlinux}
 
 Execute the command `make` at top level. The TSDuck binaries, executables and shared
 objects (`.so`), are built in the `src` directory tree in subdirectories `release-i386`
@@ -127,26 +135,26 @@ architecture as the build system.
 
 The following table summarizes the packages which are built and dropped
 into the `installers` directory, through a few examples, assuming that the
-current version of TSDuck is 3.1-20170711.
+current version of TSDuck is 3.7-512.
 
-| File name                                 | Description
-| ----------------------------------------- | -------------------------
-| TSDduck-3.1-src.zip                       | Source archive on Windows
-| tsduck-3.1.tgz                            | Source archive on Linux and MacOS
-| tsduck_3.1-20170711_amd64.deb             | Binary package for 64-bit Ubuntu
-| tsduck-3.1-20170711.el7.i386.rpm          | Binary package for 32-bit Red Hat or CentOS 7.x
-| tsduck-3.1-20170711.el7.x86_64.rpm        | Binary package for 64-bit Red Hat or CentOS 7.x
-| tsduck-3.1-20170711.el7.src.rpm           | Source package for Red Hat or CentOS 7.x
-| tsduck-3.1-20170711.fc25.i386.rpm         | Binary package for 32-bit Fedora 25
-| tsduck-3.1-20170711.fc25.x86_64.rpm       | Binary package for 64-bit Fedora 25
-| tsduck-3.1-20170711.fc25.src.rpm          | Source package for Fedora 25
-| tsduck-dev_3.1-20170711_amd64.deb         | Development package for 64-bit Ubuntu
-| tsduck-devel-3.1-20170711.el7.i386.rpm    | Development package for 32-bit Red Hat or CentOS 7.x
-| tsduck-devel-3.1-20170711.el7.x86_64.rpm  | Development package for 64-bit Red Hat or CentOS 7.x
-| tsduck-devel-3.1-20170711.fc25.i386.rpm   | Development package for 32-bit Fedora 25
-| tsduck-devel-3.1-20170711.fc25.x86_64.rpm | Development package for 64-bit Fedora 25
-| TSDuck-Win32-3.1-20170711.exe             | Binary package for 32-bit Windows
-| TSDuck-Win64-3.1-20170711.exe             | Binary package for 64-bit Windows
+| File name                            | Description
+| ------------------------------------ | -------------------------
+| TSDduck-3.7-512-src.zip              | Source archive on Windows
+| tsduck-3.7-512.tgz                   | Source archive on Linux and macOS
+| tsduck_3.7-512_amd64.deb             | Binary package for 64-bit Ubuntu
+| tsduck-3.7-512.el7.i386.rpm          | Binary package for 32-bit Red Hat or CentOS 7.x
+| tsduck-3.7-512.el7.x86_64.rpm        | Binary package for 64-bit Red Hat or CentOS 7.x
+| tsduck-3.7-512.el7.src.rpm           | Source package for Red Hat or CentOS 7.x
+| tsduck-3.7-512.fc25.i386.rpm         | Binary package for 32-bit Fedora 25
+| tsduck-3.7-512.fc25.x86_64.rpm       | Binary package for 64-bit Fedora 25
+| tsduck-3.7-512.fc25.src.rpm          | Source package for Fedora 25
+| tsduck-dev_3.7-512_amd64.deb         | Development package for 64-bit Ubuntu
+| tsduck-devel-3.7-512.el7.i386.rpm    | Development package for 32-bit Red Hat or CentOS 7.x
+| tsduck-devel-3.7-512.el7.x86_64.rpm  | Development package for 64-bit Red Hat or CentOS 7.x
+| tsduck-devel-3.7-512.fc25.i386.rpm   | Development package for 32-bit Fedora 25
+| tsduck-devel-3.7-512.fc25.x86_64.rpm | Development package for 64-bit Fedora 25
+| TSDuck-Win32-3.7-512.exe             | Binary package for 32-bit Windows
+| TSDuck-Win64-3.7-512.exe             | Binary package for 64-bit Windows
 
 On Linux systems, there are two different packages. The package `tsduck` contains
 the tools and plugins. This is the only required package if you just need to use

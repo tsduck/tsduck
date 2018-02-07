@@ -74,11 +74,11 @@ $DoxyDir = (Join-Path $RootDir "doxy")
 # Get the product version.
 if (-not $Version) {
     $VersionFile = (Join-Path (Join-Path $SrcDir "libtsduck") "tsVersion.h")
-    $VersionMajor = (Get-Content $VersionFile | Select-String '^ *#define .*_VERSION_MAJOR  *') -replace '^ *#define .*_VERSION_MAJOR  *' -replace ' *$'
-    $VersionMinor = (Get-Content $VersionFile | Select-String '^ *#define .*_VERSION_MINOR  *') -replace '^ *#define .*_VERSION_MINOR  *' -replace ' *$'
-    $Version = "${VersionMajor}.${VersionMinor}"
+    $VersionMajor = (Get-Content $VersionFile | Select-String '^ *#define  *TS_VERSION_MAJOR  *') -replace '^ *#define  *TS_VERSION_MAJOR  *' -replace ' *$'
+    $VersionMinor = (Get-Content $VersionFile | Select-String '^ *#define  *TS_VERSION_MINOR  *') -replace '^ *#define  *TS_VERSION_MINOR  *' -replace ' *$'
+    $VersionCommit = (Get-Content $VersionFile | Select-String '^ *#define  *TS_COMMIT  *') -replace '^ *#define  *TS_COMMIT  *' -replace ' *$'
 }
-$env:TS_VERSION = $Version
+$env:TS_FULL_VERSION = "${VersionMajor}.${VersionMinor}-${VersionCommit}"
 
 # Check if Doxygen is installed.
 $DoxyExe = (Get-ChildItem 'C:\Program Files*\Doxygen*\bin' -Include doxygen.exe -Recurse | Select-Object FullName -First 1)

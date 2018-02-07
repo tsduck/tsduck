@@ -215,7 +215,7 @@
     //!
     #define TS_LINUX
     //!
-    //! Defined when compiled for a MacOS target platform.
+    //! Defined when compiled for a macOS target platform.
     //!
     #define TS_MAC
      //!
@@ -394,7 +394,7 @@
 // GCC extension while #error is standard.
 
 #if !defined(TS_LINUX) && !defined(TS_WINDOWS) && !defined(TS_MAC)
-    #error "TSDuck has been tested on Linux, MacOS and Windows only, review this code"
+    #error "TSDuck has been tested on Linux, macOS and Windows only, review this code"
 #endif
 
 #if !defined(TS_GCC) && !defined(TS_MSC)
@@ -722,14 +722,14 @@
     #define TS_DVB_API_VERSION ((DVB_API_VERSION * 100) + DVB_API_VERSION_MINOR)
 #endif
 
-// MacOS has a POSIX-compliant version of strerror_r, returning an int.
+// macOS has a POSIX-compliant version of strerror_r, returning an int.
 // But fails to report this by defining HAVE_INT_STRERROR_R.
 
 #if defined(TS_MAC) && !defined(HAVE_INT_STRERROR_R) && !defined(DOXYGEN)
 #define HAVE_INT_STRERROR_R 1
 #endif
 
-// On MacOS, sigaction(2) uses the flag named SA_RESETHAND instead of SA_ONESHOT.
+// On macOS, sigaction(2) uses the flag named SA_RESETHAND instead of SA_ONESHOT.
 
 #if defined(TS_MAC) && !defined(SA_ONESHOT) && !defined(DOXYGEN)
 #define SA_ONESHOT SA_RESETHAND
