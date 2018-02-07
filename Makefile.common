@@ -455,7 +455,7 @@
 #    Local operating system name in lower-case ("linux", "cygwin", etc.)
 #
 #  MACOS
-#    Defined to a non-empty value on MacOS systems.
+#    Defined to a non-empty value on macOS systems.
 #
 #  MAIN_ARCH
 #    Local processor architecture family ("i386", "x86_64", "arm", etc.)
@@ -759,7 +759,7 @@ CFLAGS_OPTSIZE   = -Os -fno-strict-aliasing
 optsize:
 	+@$(MAKE) CFLAGS_OPTIMIZE="$(CFLAGS_OPTSIZE)"
 
-# On MacOS, HomeBrew development packages are installed in /usr/local.
+# On macOS, HomeBrew development packages are installed in /usr/local.
 ifdef MACOS
     CFLAGS_INCLUDES += -I/usr/local/include
     LDLIBS := -L/usr/local/lib $(LDLIBS)
@@ -776,7 +776,7 @@ CFLAGS_WARNINGS   = $(COMMON_WARNINGS) -Wstrict-prototypes -Wmissing-prototypes 
 CXXFLAGS_WARNINGS = $(COMMON_WARNINGS) -Woverloaded-virtual -Wctor-dtor-privacy -Wnon-virtual-dtor \
                     -Woverloaded-virtual -Wsign-promo
 ifneq (,$(or $(MACOS),$(subst 4,,$(lastword $(sort 4 $(GCC_MAJOR))))))
-    # Use these warnings on MacOS or with GCC 5.x and higher only.
+    # Use these warnings on macOS or with GCC 5.x and higher only.
     # They are supported with GCC 4.x but are totally insane before 5.x.
     COMMON_WARNINGS += -Wshadow -Wpedantic
     CXXFLAGS_WARNINGS += -Weffc++
@@ -885,7 +885,7 @@ EXECS        := $(addprefix $(OBJDIR)/,$(MODULES_MAIN))
 # This foolish make can run simultaneous "ar" commands on the same .a file,
 # which usually results in a corrupted library file. We have to explicitly
 # serialize access to the library file using flock. However, flock is specific
-# to Linux and not present on MacOS.
+# to Linux and not present on macOS.
 FLOCK ?= $(call F_SEARCH,flock)
 ARLOCK = $(if $(FLOCK),$(FLOCK) -w 60 $(patsubst %/,%,$(dir $@)),)
 export FLOCK

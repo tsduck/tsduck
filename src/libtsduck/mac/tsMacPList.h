@@ -28,7 +28,7 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Reading MacOS XML PList files.
+//!  Reading macOS XML PList files.
 //!
 //----------------------------------------------------------------------------
 
@@ -38,7 +38,7 @@
 
 namespace ts {
     //!
-    //! This class implements a MacOS XML PList file.
+    //! This class implements a macOS XML PList file.
     //!
     class TSDUCKDLL MacPList: public std::map<UString, UString>
     {
@@ -49,15 +49,15 @@ namespace ts {
         typedef std::map<UString, UString> SuperClass;
 
         //!
-        //! Constructor from an optional MacOS XML PList file.
-        //! @param [in] fileName MacOS XML PList file name.
+        //! Constructor from an optional macOS XML PList file.
+        //! @param [in] fileName macOS XML PList file name.
         //! @param [in,out] report Where to report errors.
         //!
         explicit MacPList(const UString& fileName = UString(), Report& report = NULLREP);
 
         //!
-        //! Reload from a MacOS XML PList file.
-        //! @param [in] fileName MacOS XML PList file name.
+        //! Reload from a macOS XML PList file.
+        //! @param [in] fileName macOS XML PList file name.
         //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!

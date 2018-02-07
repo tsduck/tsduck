@@ -38,7 +38,7 @@
 # Project description:
 
 PROJECT_NAME   = "TSDuck"
-PROJECT_NUMBER = "Version $(TS_VERSION)"
+PROJECT_NUMBER = "Version $(TS_FULL_VERSION)"
 PROJECT_BRIEF  = "TSDuck - The MPEG Transport Stream Toolkit"
 PROJECT_LOGO   = ../images/tsduck-32.png
 

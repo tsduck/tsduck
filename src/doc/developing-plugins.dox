@@ -14,7 +14,7 @@ To develop a new plugin named `foo`, follow these steps:
 
 - Create a source file named `tsplugin_foo.cpp` in the `tsplugins` subdirectory.
 
-- On Linux or MacOS systems, this new source file will be automatically recognized by
+- On Linux or macOS systems, this new source file will be automatically recognized by
   the Makefile and the new plugin will be built.
 
 - On Windows systems, create a project file named `tsplugin_foo.vcxproj` in the `msvc2017`
