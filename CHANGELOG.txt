@@ -2,15 +2,20 @@
 TSDuck Change Log and Release Notes
 ===================================
 
-Version 3.8
+Version 3.8-534
 
 - Added options --source and --first-source to input plugin ip.
 
 - Added option --periodic-bitrate to plugin bitrate_monitor.
 
+- Added options --pid, --csv and --log to plugin pcrextract.
+
 - Added XML support for more DVB and EACEM descriptors.
 
-- On macOS, the output plugin play now correctly detect VLC in its original
+- When the output plugin "play" uses VLC, the player exits automatically at the
+  end of the video playout.
+
+- On macOS, the output plugin "play" now correctly detects VLC in its original
   installation path.
 
 - Bug fix in the compilation of XML tables: when DVB strings were encoded with
@@ -19,6 +24,9 @@ Version 3.8
 
 - Bug fix in plugin bitrate_monitor. The message was incorrect when the bitrate
   is *greater* then the limit (the message was ok in other cases).
+
+- Bug fix in plugin rmsplice. With option --adjust time, the time stamps were
+  not correctly adjusted.
 
 Version 3.7-512
 
