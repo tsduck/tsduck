@@ -126,7 +126,7 @@ bool ts::PlayPlugin::stop()
 
 //----------------------------------------------------------------------------
 // Output method
-//---   -------------------------------------------------------------------------
+//----------------------------------------------------------------------------
 
 bool ts::PlayPlugin::send(const TSPacket* buffer, size_t packet_count)
 {
@@ -227,7 +227,7 @@ bool ts::PlayPlugin::start()
 #endif
 
     // Options to read TS on stdin for various players
-    static const UChar vlc_opts[] = u"-";
+    static const UChar vlc_opts[] = u"- --play-and-exit";
     static const UChar mplayer_opts[] = u"-demuxer +mpegts -";
     static const UChar xine_opts[] = u"stdin:/#demux:mpeg-ts";
 
