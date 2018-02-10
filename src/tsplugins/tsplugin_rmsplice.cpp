@@ -445,16 +445,16 @@ ts::ProcessorPlugin::Status ts::RMSplicePlugin::processPacket(TSPacket& pkt, boo
             // Adjust PTS and DTS time stamps to compensate removed sequences.
             if (_adjustTime && state.totalAdjust > 0) {
                 if (pkt.hasPTS()) {
-                    pkt.setPTS(pkt.getPTS() + state.totalAdjust);
+                    pkt.setPTS((pkt.getPTS() - state.totalAdjust) & PTS_DTS_MASK);
                 }
                 if (pkt.hasDTS()) {
-                    pkt.setDTS(pkt.getDTS() + state.totalAdjust);
+                    pkt.setDTS((pkt.getDTS() - state.totalAdjust) & PTS_DTS_MASK);
                 }
                 if (pkt.hasPCR()) {
-                    pkt.setPCR(pkt.getPCR() + state.totalAdjust * SYSTEM_CLOCK_SUBFACTOR);
+                    pkt.setPCR((pkt.getPCR() - state.totalAdjust * SYSTEM_CLOCK_SUBFACTOR) & PCR_MASK);
                 }
                 if (pkt.hasOPCR()) {
-                    pkt.setOPCR(pkt.getOPCR() + state.totalAdjust * SYSTEM_CLOCK_SUBFACTOR);
+                    pkt.setOPCR((pkt.getOPCR() - state.totalAdjust * SYSTEM_CLOCK_SUBFACTOR) & PCR_MASK);
                 }
             }
             // Fix continuity counters.
