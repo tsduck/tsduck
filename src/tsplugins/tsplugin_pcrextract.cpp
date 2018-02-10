@@ -59,6 +59,7 @@ namespace ts {
         typedef std::map<PID,PIDContext> PIDContextMap;
 
         // PCRExtractPlugin private members
+        PIDSet        _pids;           // List of PID's to analyze
         UString       _separator;      // Field separator
         bool          _noheader;       // Suppress header
         bool          _good_pts_only;  // Keep "good" PTS only
@@ -66,6 +67,8 @@ namespace ts {
         bool          _get_opcr;       // Get OPCR
         bool          _get_pts;        // Get PTS
         bool          _get_dts;        // Get DTS
+        bool          _csv_format;     // Output in CSV format
+        bool          _log_format;     // Output in log format
         UString       _output_name;    // Output file name (NULL means stderr)
         std::ofstream _output_stream;  // Output stream file
         std::ostream* _output;         // Reference to actual output stream file
@@ -119,6 +122,7 @@ TSPLUGIN_DECLARE_PROCESSOR(pcrextract, ts::PCRExtractPlugin)
 
 ts::PCRExtractPlugin::PCRExtractPlugin(TSP* tsp_) :
     ProcessorPlugin(tsp_, u"Extracts PCR, OPCR, PTS, DTS from TS packet for analysis.", u"[options]"),
+    _pids(),
     _separator(),
     _noheader(false),
     _good_pts_only(false),
@@ -126,22 +130,33 @@ ts::PCRExtractPlugin::PCRExtractPlugin(TSP* tsp_) :
     _get_opcr(false),
     _get_pts(false),
     _get_dts(false),
+    _csv_format(false),
+    _log_format(false),
     _output_name(),
     _output_stream(),
     _output(0),
     _packet_count(0),
     _stats()
 {
+    option(u"csv",           'c');
     option(u"dts",           'd');
     option(u"good-pts-only", 'g');
+    option(u"log",           'l');
     option(u"noheader",      'n');
     option(u"opcr",           0);
     option(u"output-file",   'o', STRING);
     option(u"pcr",            0);
-    option(u"pts",           'p');
+    option(u"pid",           'p', PIDVAL, 0, UNLIMITED_COUNT);
+    option(u"pts",            0);
     option(u"separator",     's', STRING);
 
     setHelp(u"Options:\n"
+            u"\n"
+            u"  -c\n"
+            u"  --csv\n"
+            u"      Report data in CSV (comma-separated values) format. All values are reported\n"
+            u"      in decimal. This is the default output format. It is suitable for later\n"
+            u"      analysis using tools such as Microsoft Excel.\n"
             u"\n"
             u"  -d\n"
             u"  --dts\n"
@@ -156,9 +171,14 @@ ts::PCRExtractPlugin::PCRExtractPlugin(TSP* tsp_) :
             u"  --help\n"
             u"      Display this help text.\n"
             u"\n"
+            u"  -l\n"
+            u"  --log\n"
+            u"      Report data in \"log\" format through the standard tsp logging system.\n"
+            u"      All values are reported in hexadecimal.\n"
+            u"\n"
             u"  -n\n"
             u"  --noheader\n"
-            u"      Do not output initial header line.\n"
+            u"      Do not output initial header line in CSV format.\n"
             u"\n"
             u"  --opcr\n"
             u"      Report Original Program Clock References (OPCR). By default, if none of\n"
@@ -166,20 +186,24 @@ ts::PCRExtractPlugin::PCRExtractPlugin(TSP* tsp_) :
             u"\n"
             u"  -o filename\n"
             u"  --output-file filename\n"
-            u"      Output file name (standard error by default).\n"
+            u"      Output file name for CSV reporting (standard error by default).\n"
             u"\n"
             u"  --pcr\n"
             u"      Report Program Clock References (PCR). By default, if none of --pcr,\n"
             u"      --opcr, --pts, --dts is specified, report them all.\n"
             u"\n"
-            u"  -p\n"
+            u"  -p value\n"
+            u"  --pid value\n"
+            u"      Specifies a PID to analyze. By default, all PID's are analyzed.\n"
+            u"      Several --pid options may be specified.\n"
+            u"\n"
             u"  --pts\n"
             u"      Report Presentation Time Stamps (PTS). By default, if none of --pcr,\n"
             u"      --opcr, --pts, --dts is specified, report them all.\n"
             u"\n"
             u"  -s string\n"
             u"  --separator string\n"
-            u"      Field separator string in output (default: '" DEFAULT_SEPARATOR u"').\n"
+            u"      Field separator string in CSV output (default: '" DEFAULT_SEPARATOR u"').\n"
             u"\n"
             u"  --version\n"
             u"      Display the version number.\n");
@@ -192,6 +216,7 @@ ts::PCRExtractPlugin::PCRExtractPlugin(TSP* tsp_) :
 
 bool ts::PCRExtractPlugin::start()
 {
+    getPIDSet(_pids, u"pid", true);
     _separator = value(u"separator", DEFAULT_SEPARATOR);
     _noheader = present(u"noheader");
     _output_name = value(u"output-file");
@@ -200,9 +225,15 @@ bool ts::PCRExtractPlugin::start()
     _get_dts = present(u"dts");
     _get_pcr = present(u"pcr");
     _get_opcr = present(u"opcr");
+    _csv_format = present(u"csv") || !_output_name.empty();
+    _log_format = present(u"log");
     if (!_get_pts && !_get_dts && !_get_pcr && !_get_opcr) {
         // Report them all by default
         _get_pts = _get_dts = _get_pcr = _get_opcr = true;
+    }
+    if (!_csv_format && !_log_format) {
+        // Use CSV format by default.
+        _csv_format = true;
     }
 
     // Create the output file if there is one
@@ -223,7 +254,7 @@ bool ts::PCRExtractPlugin::start()
     _stats.clear();
 
     // Output header
-    if (!_noheader) {
+    if (_csv_format && !_noheader) {
         *_output << "PID" << _separator
                  << "Packet index in TS" << _separator
                  << "Packet index in PID" << _separator
@@ -254,99 +285,125 @@ bool ts::PCRExtractPlugin::stop()
 // Packet processing method
 //----------------------------------------------------------------------------
 
-ts::ProcessorPlugin::Status ts::PCRExtractPlugin::processPacket (TSPacket& pkt, bool& flush, bool& bitrate_changed)
+ts::ProcessorPlugin::Status ts::PCRExtractPlugin::processPacket(TSPacket& pkt, bool& flush, bool& bitrate_changed)
 {
     const PID pid = pkt.getPID();
-    PIDContext& pc (_stats[pid]);
-    const bool has_pcr = pkt.hasPCR();
-    const bool has_opcr = pkt.hasOPCR();
-    const bool has_pts = pkt.hasPTS();
-    const bool has_dts = pkt.hasDTS();
-    const uint64_t pcr = pkt.getPCR();
 
-    if (has_pcr) {
-        if (pc.pcr_count++ == 0) {
-            pc.first_pcr = pcr;
-        }
-        if (_get_pcr) {
-            *_output << pid << _separator
-                     << _packet_count << _separator
-                     << pc.packet_count << _separator
-                     << "PCR" << _separator
-                     << pc.pcr_count << _separator
-                     << pcr << _separator
-                     << (pcr - pc.first_pcr) << _separator
-                     << std::endl;
-        }
-    }
+    // Check if we must analyze this PID.
+    if (_pids.test(pid)) {
 
-    if (has_opcr) {
-        const uint64_t opcr = pkt.getOPCR();
-        if (pc.opcr_count++ == 0) {
-            pc.first_opcr = opcr;
-        }
-        if (_get_opcr) {
-            *_output << pid << _separator
-                     << _packet_count << _separator
-                     << pc.packet_count << _separator
-                     << "OPCR" << _separator
-                     << pc.opcr_count << _separator
-                     << opcr << _separator
-                     << (opcr - pc.first_opcr) << _separator;
-            if (has_pcr) {
-                *_output << (int64_t (opcr) - int64_t (pcr));
+        PIDContext& pc(_stats[pid]);
+        const bool has_pcr = pkt.hasPCR();
+        const bool has_opcr = pkt.hasOPCR();
+        const bool has_pts = pkt.hasPTS();
+        const bool has_dts = pkt.hasDTS();
+        const uint64_t pcr = pkt.getPCR();
+
+        if (has_pcr) {
+            if (pc.pcr_count++ == 0) {
+                pc.first_pcr = pcr;
             }
-            *_output << std::endl;
-        }
-    }
-
-    if (has_pts) {
-        const uint64_t pts = pkt.getPTS();
-        if (pc.pts_count++ == 0) {
-            pc.first_pts = pc.last_good_pts = pts;
-        }
-        // Check if this is a "good" PTS, ie. greater than the last good PTS
-        // (or wrapping around the max PTS value 2**33)
-        const bool good_pts = SequencedPTS (pc.last_good_pts, pts);
-        if (good_pts) {
-            pc.last_good_pts = pts;
-        }
-        if (_get_pts && (good_pts || !_good_pts_only)) {
-            *_output << pid << _separator
-                     << _packet_count << _separator
-                     << pc.packet_count << _separator
-                     << "PTS" << _separator
-                     << pc.pts_count << _separator
-                     << pts << _separator
-                     << (pts - pc.first_pts) << _separator;
-            if (has_pcr) {
-                *_output << (int64_t (pts) - int64_t (pcr / SYSTEM_CLOCK_SUBFACTOR));
+            if (_get_pcr) {
+                if (_csv_format) {
+                    *_output << pid << _separator
+                             << _packet_count << _separator
+                             << pc.packet_count << _separator
+                             << "PCR" << _separator
+                             << pc.pcr_count << _separator
+                             << pcr << _separator
+                             << (pcr - pc.first_pcr) << _separator
+                             << std::endl;
+                }
+                if (_log_format) {
+                    tsp->info(u"PID: 0x%X (%d), PCR: 0x%011X, (0x%011X from start of PID)", {pid, pid, pcr, pcr - pc.first_pcr});
+                }
             }
-            *_output << std::endl;
         }
-    }
 
-    if (has_dts) {
-        const uint64_t dts = pkt.getDTS();
-        if (pc.dts_count++ == 0) {
-            pc.first_dts = dts;
-        }
-        if (_get_dts) {
-            *_output << pid << _separator
-                     << _packet_count << _separator
-                     << pc.packet_count << _separator
-                     << "DTS" << _separator
-                     << pc.dts_count << _separator
-                     << dts << _separator
-                     << (dts - pc.first_dts) << _separator;
-            if (has_pcr) {
-                *_output << (int64_t (dts) - int64_t (pcr / SYSTEM_CLOCK_SUBFACTOR));
+        if (has_opcr) {
+            const uint64_t opcr = pkt.getOPCR();
+            if (pc.opcr_count++ == 0) {
+                pc.first_opcr = opcr;
             }
-            *_output << std::endl;
+            if (_get_opcr) {
+                if (_csv_format) {
+                    *_output << pid << _separator
+                             << _packet_count << _separator
+                             << pc.packet_count << _separator
+                             << "OPCR" << _separator
+                             << pc.opcr_count << _separator
+                             << opcr << _separator
+                             << (opcr - pc.first_opcr) << _separator;
+                    if (has_pcr) {
+                        *_output << (int64_t(opcr) - int64_t(pcr));
+                    }
+                    *_output << std::endl;
+                }
+                if (_log_format) {
+                    tsp->info(u"PID: 0x%X (%d), OPCR: 0x%011X, (0x%011X from start of PID)", {pid, pid, opcr, opcr - pc.first_opcr});
+                }
+            }
         }
+
+        if (has_pts) {
+            const uint64_t pts = pkt.getPTS();
+            if (pc.pts_count++ == 0) {
+                pc.first_pts = pc.last_good_pts = pts;
+            }
+            // Check if this is a "good" PTS, ie. greater than the last good PTS
+            // (or wrapping around the max PTS value 2**33)
+            const bool good_pts = SequencedPTS (pc.last_good_pts, pts);
+            if (good_pts) {
+                pc.last_good_pts = pts;
+            }
+            if (_get_pts && (good_pts || !_good_pts_only)) {
+                if (_csv_format) {
+                    *_output << pid << _separator
+                             << _packet_count << _separator
+                             << pc.packet_count << _separator
+                             << "PTS" << _separator
+                             << pc.pts_count << _separator
+                             << pts << _separator
+                             << (pts - pc.first_pts) << _separator;
+                    if (has_pcr) {
+                        *_output << (int64_t(pts) - int64_t(pcr / SYSTEM_CLOCK_SUBFACTOR));
+                    }
+                    *_output << std::endl;
+                }
+                if (_log_format) {
+                    tsp->info(u"PID: 0x%X (%d), PTS: 0x%09X, (0x%09X from start of PID)", {pid, pid, pts, pts - pc.first_pts});
+                }
+            }
+        }
+
+        if (has_dts) {
+            const uint64_t dts = pkt.getDTS();
+            if (pc.dts_count++ == 0) {
+                pc.first_dts = dts;
+            }
+            if (_get_dts) {
+                if (_csv_format) {
+                    *_output << pid << _separator
+                             << _packet_count << _separator
+                             << pc.packet_count << _separator
+                             << "DTS" << _separator
+                             << pc.dts_count << _separator
+                             << dts << _separator
+                             << (dts - pc.first_dts) << _separator;
+                    if (has_pcr) {
+                        *_output << (int64_t (dts) - int64_t (pcr / SYSTEM_CLOCK_SUBFACTOR));
+                    }
+                    *_output << std::endl;
+                }
+                if (_log_format) {
+                    tsp->info(u"PID: 0x%X (%d), DTS: 0x%09X, (0x%09X from start of PID)", {pid, pid, dts, dts - pc.first_dts});
+                }
+            }
+        }
+
+        pc.packet_count++;
     }
 
     _packet_count++;
-    pc.packet_count++;
     return TSP_OK;
 }
