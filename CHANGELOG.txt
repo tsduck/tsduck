@@ -10,6 +10,9 @@ Version 3.8
 
 - Added XML support for more DVB and EACEM descriptors.
 
+- On macOS, the output plugin play now correctly detect VLC in its original
+  installation path.
+
 - Bug fix in the compilation of XML tables: when DVB strings were encoded with
   a character set different from ISO-6937 (the default character set), the
   table code was not correctly inserted at the beginning of the string.
