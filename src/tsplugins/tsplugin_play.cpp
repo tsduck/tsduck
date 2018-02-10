@@ -211,10 +211,20 @@ bool ts::PlayPlugin::start()
     UStringVector search_path;
     GetEnvironmentPath(search_path, TS_COMMAND_PATH);
 
+    // On macOS, additional applications are installed on /usr/local because of system integrity protection.
+#if defined(TS_MAC)
+    search_path.push_back(u"/usr/local/bin");
+#endif
+
     // Executable names for various players
     static const UChar vlc_exec[] = u"vlc";
     static const UChar mplayer_exec[] = u"mplayer";
     static const UChar xine_exec[] = u"xine";
+
+    // On macOS, the applications are installed elsewhere.
+#if defined(TS_MAC)
+    static const UChar mac_vlc_exec[] = u"/Applications/VLC.app/Contents/MacOS/VLC";
+#endif
 
     // Options to read TS on stdin for various players
     static const UChar vlc_opts[] = u"-";
@@ -239,6 +249,12 @@ bool ts::PlayPlugin::start()
             return false;
         }
     }
+#if defined(TS_MAC)
+    else if (FileExists(mac_vlc_exec)) {
+        exec = mac_vlc_exec;
+        opts = vlc_opts;
+    }
+#endif
     else if (searchInPath(exec, search_path, vlc_exec)) {
         opts = vlc_opts;
     }
