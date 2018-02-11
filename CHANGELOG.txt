@@ -2,6 +2,10 @@
 TSDuck Change Log and Release Notes
 ===================================
 
+Version 3.9
+
+- Added options --sei-avc and --uuid-sei to plugin pes.
+
 Version 3.8-534
 
 - Added options --source and --first-source to input plugin ip.

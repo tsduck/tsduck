@@ -350,17 +350,18 @@ void ts::PESDemux::processPESPacket(PID pid, PIDContext& pc)
         else if (pp.isAVC()) {
             for (size_t offset = 0; offset < psize; ) {
                 // Locate next access unit: starts with 00 00 01 (this start code is not part of the NALunit)
-                const uint8_t* p1 = reinterpret_cast <const uint8_t*> (LocatePattern (pdata + offset, psize - offset,
-                                                                                  StartCodePrefix, sizeof(StartCodePrefix)));
+                const uint8_t* p1 = reinterpret_cast<const uint8_t*>(
+                            LocatePattern(pdata + offset, psize - offset, StartCodePrefix, sizeof(StartCodePrefix)));
                 if (p1 == 0) {
                     break;
                 }
                 offset = p1 - pdata + sizeof(StartCodePrefix);
+
                 // Locate end of access unit: ends with 00 00 00, 00 00 01 or end of
-                const uint8_t* p2 = reinterpret_cast <const uint8_t*> (LocatePattern (pdata + offset, psize - offset,
-                                                                                  StartCodePrefix, sizeof(StartCodePrefix)));
-                const uint8_t* p3 = reinterpret_cast <const uint8_t*> (LocatePattern (pdata + offset, psize - offset,
-                                                                                  Zero3, sizeof(Zero3)));
+                const uint8_t* p2 = reinterpret_cast<const uint8_t*>(
+                            LocatePattern(pdata + offset, psize - offset, StartCodePrefix, sizeof(StartCodePrefix)));
+                const uint8_t* p3 = reinterpret_cast<const uint8_t*>(
+                            LocatePattern(pdata + offset, psize - offset, Zero3, sizeof(Zero3)));
                 size_t nalunit_size;
                 if (p2 == 0 && p3 == 0) {
                     nalunit_size = psize - offset;
@@ -371,15 +372,50 @@ void ts::PESDemux::processPESPacket(PID pid, PIDContext& pc)
                 else {
                     nalunit_size = p2 - pdata - offset;
                 }
-                // Invoke handler
+
+                // Compute NALunit type.
+                const uint8_t nalunit_type = nalunit_size == 0 ? 0 : (pdata[offset] & 0x1F);
+                const uint8_t* nalunit_end = pdata + offset + nalunit_size;
+
+                // Invoke handler for the complete NALunit.
                 if (_pes_handler != 0) {
-                    _pes_handler->handleAVCAccessUnit (*this, pp, pdata[offset] & 0x1F, offset, nalunit_size);
+                    _pes_handler->handleAVCAccessUnit(*this, pp, nalunit_type, offset, nalunit_size);
                 }
+
+                // If the NALunit is an SEI, locate it.
+                if (nalunit_type == AVC_AUT_SEI) {
+                    // See H.264 section 7.3.2.3.1, "Supplemental enhancement information message syntax".
+                    // Point after nalunit type:
+                    const uint8_t* p = pdata + offset + 1;
+                    // Compute SEI payload type.
+                    uint32_t sei_type = 0;
+                    while (p < nalunit_end && *p == 0xFF) {
+                        sei_type += *p++;
+                    }
+                    if (p < nalunit_end) {
+                        sei_type += *p++;
+                    }
+                    // Compute SEI payload size.
+                    size_t sei_size = 0;
+                    while (p < nalunit_end && *p == 0xFF) {
+                        sei_size += *p++;
+                    }
+                    if (p < nalunit_end) {
+                        sei_size += *p++;
+                    }
+                    sei_size = std::min<size_t>(sei_size, nalunit_end - p);
+                    // Invoke handler for the SEI.
+                    if (_pes_handler != 0) {
+                        _pes_handler->handleSEI(*this, pp, sei_type, p - pdata, sei_size);
+                    }
+                }
+
                 // Accumulate info from access units to extract video attributes.
                 // If new attributes were found, invoke handler.
-                if (pc.avc.moreBinaryData (pdata + offset, nalunit_size) && _pes_handler != 0) {
-                    _pes_handler->handleNewAVCAttributes (*this, pp, pc.avc);
+                if (pc.avc.moreBinaryData(pdata + offset, nalunit_size) && _pes_handler != 0) {
+                    _pes_handler->handleNewAVCAttributes(*this, pp, pc.avc);
                 }
+
                 // Move to next start code
                 offset += nalunit_size;
             }
