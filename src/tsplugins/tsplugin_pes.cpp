@@ -65,7 +65,9 @@ namespace ts {
         bool            _dump_pes_payload;
         bool            _dump_start_code;
         bool            _dump_nal_units;
+        bool            _dump_avc_sei;
         std::bitset<32> _nal_unit_filter;
+        std::list<ByteBlock> _sei_uuid_filter;
         bool            _video_attributes;
         bool            _audio_attributes;
         size_t          _max_dump_size;
@@ -77,13 +79,14 @@ namespace ts {
         PESDemux        _demux;
 
         // Process dump count. Return true when terminated. Also process error on output.
-        bool lastDump (std::ostream&);
+        bool lastDump(std::ostream&);
 
         // Hooks
         virtual void handlePESPacket (PESDemux&, const PESPacket&) override;
         virtual void handleVideoStartCode (PESDemux&, const PESPacket&, uint8_t, size_t, size_t) override;
         virtual void handleNewVideoAttributes (PESDemux&, const PESPacket&, const VideoAttributes&) override;
         virtual void handleAVCAccessUnit (PESDemux&, const PESPacket&, uint8_t, size_t, size_t) override;
+        virtual void handleSEI(PESDemux& demux, const PESPacket& packet, uint32_t sei_type, size_t offset, size_t size) override;
         virtual void handleNewAVCAttributes (PESDemux&, const PESPacket&, const AVCAttributes&) override;
         virtual void handleNewAudioAttributes (PESDemux&, const PESPacket&, const AudioAttributes&) override;
         virtual void handleNewAC3Attributes (PESDemux&, const PESPacket&, const AC3Attributes&) override;
@@ -113,7 +116,9 @@ ts::PESPlugin::PESPlugin(TSP* tsp_) :
     _dump_pes_payload(false),
     _dump_start_code(false),
     _dump_nal_units(false),
+    _dump_avc_sei(false),
     _nal_unit_filter(),
+    _sei_uuid_filter(),
     _video_attributes(false),
     _audio_attributes(false),
     _max_dump_size(0),
@@ -140,8 +145,10 @@ ts::PESPlugin::PESPlugin(TSP* tsp_) :
     option(u"packet-index",         0);
     option(u"payload",              0);
     option(u"pid",                 'p', PIDVAL, 0, UNLIMITED_COUNT);
+    option(u"sei-avc",              0);
     option(u"start-code",          's');
     option(u"trace-packets",       't');
+    option(u"uuid-sei",             0,  STRING, 0, UNLIMITED_COUNT);
     option(u"video-attributes",    'v');
 
     setHelp(u"Options:\n"
@@ -214,6 +221,10 @@ ts::PESPlugin::PESPlugin(TSP* tsp_) :
             u"  --payload\n"
             u"      Dump PES packet payload.\n"
             u"\n"
+            u"  --sei-avc\n"
+            u"      Dump all SEI (Supplemental Enhancement Information) in AVC/H.264\n"
+            u"      access units .\n"
+            u"\n"
             u"  -s\n"
             u"  --start-code\n"
             u"      Dump all start codes in PES packet payload.\n"
@@ -221,6 +232,13 @@ ts::PESPlugin::PESPlugin(TSP* tsp_) :
             u"  -t\n"
             u"  --trace-packets\n"
             u"      Trace all PES packets.\n"
+            u"\n"
+            u"  --uuid-sei value\n"
+            u"      AVC SEI filter: with --sei-avc, select \"user data unregistered\" SEI\n"
+            u"      access units with the specified UUID value (default: all SEI). Several\n"
+            u"      --sei-avc options may be specified. The UUID value must be 16 bytes long.\n"
+            u"      It must be either an ASCII string of exactly 16 characters or an hexa-\n"
+            u"      decimal value representing 16 bytes.\n"
             u"\n"
             u"  --version\n"
             u"      Display the version number.\n"
@@ -244,6 +262,7 @@ bool ts::PESPlugin::start()
     _trace_packet_index = present(u"packet-index");
     _dump_start_code = present(u"start-code");
     _dump_nal_units = present(u"avc-access-unit");
+    _dump_avc_sei = present(u"sei-avc");
     _video_attributes = present(u"video-attributes");
     _audio_attributes = present(u"audio-attributes");
     _max_dump_size = intValue<size_t>(u"max-dump-size", 0);
@@ -289,6 +308,23 @@ bool ts::PESPlugin::start()
         }
         if (present(u"negate-nal-unit-type")) {
             _nal_unit_filter.flip();
+        }
+    }
+
+    // SEI UUID's to filter.
+    const size_t uuid_count = count(u"uuid-sei");
+    _sei_uuid_filter.clear();
+    for (size_t n = 0; n < uuid_count; n++) {
+        const UString uuid(value(u"uuid-sei"));
+        ByteBlock bytes;
+        // Try to use parameter value as 16-char string or 16-byte hexa string.
+        bytes.appendUTF8(uuid);
+        if (bytes.size() == AVC_SEI_UUID_SIZE || (uuid.hexaDecode(bytes) && bytes.size() == AVC_SEI_UUID_SIZE)) {
+            _sei_uuid_filter.push_back(bytes);
+        }
+        else {
+            error(u"invalid UUID \"%s\"", {uuid});
+            return false;
         }
     }
 
@@ -483,6 +519,51 @@ void ts::PESPlugin::handleAVCAccessUnit(PESDemux&, const PESPacket& pkt, uint8_t
     }
 
     lastDump(out);
+}
+
+
+//----------------------------------------------------------------------------
+// This hook is invoked when an AVC SEI is found.
+//----------------------------------------------------------------------------
+
+void ts::PESPlugin::handleSEI(PESDemux& demux, const PESPacket& pkt, uint32_t sei_type, size_t offset, size_t size)
+{
+    if ( !_dump_avc_sei) {
+        return;
+    }
+
+    // Check if we must filter UUID on SEI's.
+    if (!_sei_uuid_filter.empty()) {
+        // Filter out SEI's other than user_data_unregistered (or SEI too short).
+        if (sei_type != AVC_SEI_USER_DATA_UNREG || size < AVC_SEI_UUID_SIZE) {
+            return;
+        }
+        // Check if the UUID (in the 16 first bytes of the SEI payload) must be filtered.
+        bool found = false;
+        for (std::list<ByteBlock>::const_iterator it = _sei_uuid_filter.begin(); !found && it != _sei_uuid_filter.end(); ++it) {
+            assert(it->size() == AVC_SEI_UUID_SIZE);
+            found = ::memcmp(it->data(), pkt.payload() + offset, AVC_SEI_UUID_SIZE) == 0;
+        }
+        if (!found) {
+            // We don't want to dump this one.
+            return;
+        }
+    }
+
+    // Now display the SEI.
+    std::ostream& out(_outfile.is_open() ? _outfile : std::cout);
+    out << UString::Format(u"* PID 0x%X, SEI type %s", {pkt.getSourcePID(), DVBNameFromSection(u"AVCSEIType", sei_type, names::FIRST)})
+        << std::endl
+        << UString::Format(u"  Offset in PES payload: %d, size: %d bytes", {offset, size})
+        << std::endl;
+
+    size_t dsize = size;
+    out << "  AVC SEI";
+    if (_max_dump_size > 0 && dsize > _max_dump_size) {
+        dsize = _max_dump_size;
+        out << " (truncated)";
+    }
+    out << ":" << std::endl << UString::Dump(pkt.payload() + offset, dsize, _hexa_flags | UString::ASCII, 4, _hexa_bpl);
 }
 
 

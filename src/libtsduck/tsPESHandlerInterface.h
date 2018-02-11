@@ -86,6 +86,16 @@ namespace ts {
         virtual void handleAVCAccessUnit(PESDemux& demux, const PESPacket& packet, uint8_t nal_unit_type, size_t offset, size_t size) {}
 
         //!
+        //! This hook is invoked when an AVC SEI (Supplemental Enhancement Information) is found.
+        //! @param [in,out] demux A reference to the PES demux.
+        //! @param [in] packet The demultiplexed PES packet.
+        //! @param [in] sei_type SEI type.
+        //! @param [in] offset Offset of the SEI payload in the PES packet payload.
+        //! @param [in] size Size of the SEI payload.
+        //!
+        virtual void handleSEI(PESDemux& demux, const PESPacket& packet, uint32_t sei_type, size_t offset, size_t size) {}
+
+        //!
         //! This hook is invoked when new AVC attributes are found in a video PID
         //! @param [in,out] demux A reference to the PES demux.
         //! @param [in] packet The demultiplexed PES packet.
