@@ -157,13 +157,13 @@ void ts::LocalTimeOffsetDescriptor::DisplayDescriptor(TablesDisplay& display, DI
             uint8_t region_id = *data >> 2;
             uint8_t polarity = *data & 0x01;
             data += 1; size -= 1;
-            strm << margin << "" << int(region_id)
-                 << UString::Format(u"Region id: %d (0x%X)", {region_id, region_id})
-                 << ", polarity: " << (polarity ? "west" : "east")
-                 << " of Greenwich" << std::endl;
+            strm << margin
+                 << UString::Format(u"Region id: %d (0x%X), polarity: %s of Greenwich", {region_id, region_id, polarity ? u"west" : u"east"})
+                 << std::endl;
             if (size >= 2) {
-                strm << margin << "Local time offset: " << (polarity ? "-" : "")
-                     << UString::Format(u"%02d:%02d", {DecodeBCD(data[0]), DecodeBCD(data[1])}) << std::endl;
+                strm << margin
+                     << UString::Format(u"Local time offset: %s%02d:%02d", {polarity ? u"-" : u"", DecodeBCD(data[0]), DecodeBCD(data[1])})
+                     << std::endl;
                 data += 2; size -= 2;
                 if (size >= 5) {
                     Time next_change;
@@ -171,8 +171,8 @@ void ts::LocalTimeOffsetDescriptor::DisplayDescriptor(TablesDisplay& display, DI
                     data += 5; size -= 5;
                     strm << margin << "Next change: " << next_change.format(Time::DATE | Time::TIME) << std::endl;
                     if (size >= 2) {
-                        strm << margin << "Next time offset: " << (polarity ? "-" : "")
-                             << UString::Format(u"%02d:%02d", {DecodeBCD(data[0]), DecodeBCD(data[1])})
+                        strm << margin
+                             << UString::Format(u"Next time offset: %s%02d:%02d", {polarity ? u"-" : u"", DecodeBCD(data[0]), DecodeBCD(data[1])})
                              << std::endl;
                         data += 2; size -= 2;
                     }
