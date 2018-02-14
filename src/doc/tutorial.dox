@@ -220,6 +220,11 @@ clarity are ignored. Enumeration values are handled through ts::Enumeration.
 The TSDuck library embeds an XML parser and several classes to handle a DOM structure.
 See the class ts::xml::Node, the abstract base class of the DOM hierarchy.
 
+## JSON data {#json}
+
+The TSDuck library embeds a JSON parser and several classes to handle JSON values.
+See the class ts::json::Value, the abstract base class of the JSON hierarchy.
+
 # Cryptography {#crypto}
 
 The TSDuck library contains a few cryptographic classes. The TSDuck library
@@ -524,8 +529,10 @@ or recomputed after modification of the section content.
 
 Tables can be stored in binary files. The format of the files is quite
 simple. They just contain raw binary sections, without any encapsulation.
-The static methods ts::BinaryTable::SaveFile() and ts::BinaryTable::LoadFile()
-respectively stores and loads binary tables.
+Tables can also be stored in XML files (see below).
+The class ts::SectionFile reads and writes tables or section from
+files, independently of the format, either a binary section file
+or an XML file.
 
 Tables and descriptors can also be manipulated using specialized
 classes such as ts::PAT or ts::PMT for tables and ts::ContentDescriptor or
@@ -646,11 +653,12 @@ vendors.
 
 We have already mentioned the classes ts::SectionDemux and ts::PESDemux.
 Other specialized forms of demux can be implemented. The class ts::T2MIDemux
-demuxes T2-MI (DVB-T2 Modulator Interface) packets and extracts
-encapsulated transport streams.
+demuxes T2-MI (DVB-T2 Modulator Interface) packets and extracts encapsulated
+transport streams. Similarly, the class ts::TeletextDemux extracts Teletext
+subtitles from TS packets.
 
-Since all forms of demux share a number of properties, they all
-inherit from a root abstract class named ts::AbstractDemux.
+Since all forms of demux share a number of properties, they all inherit from
+a root abstract class named ts::AbstractDemux.
 
 ## DVB tuners {#dvbtuners}
 
