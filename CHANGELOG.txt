@@ -6,6 +6,9 @@ Version 3.9
 
 - Added options --sei-avc and --uuid-sei to plugin pes.
 
+- Bug fix on Windows: Command "tsversion --upgrade" failed because tsversion.exe
+  and tsduck.dll were locked by upgrade command.
+
 Version 3.8-534
 
 - Added options --source and --first-source to input plugin ip.

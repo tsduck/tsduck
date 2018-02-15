@@ -411,7 +411,7 @@ bool DownloadRelease(Options& opt, const ts::GitHubRelease rel, bool forceBinary
 //  Run an upgrade command.
 //----------------------------------------------------------------------------
 
-bool RunCommand(Options& opt, const ts::UString& command, bool needPrivilege)
+bool RunCommand(Options& opt, const ts::UString& command, bool needPrivilege, bool synchronous)
 {
     ts::UString cmd(command);
 
@@ -423,14 +423,14 @@ bool RunCommand(Options& opt, const ts::UString& command, bool needPrivilege)
 #elif defined(TS_WINDOWS)
         // On Windows, use a completely different method.
         std::cout << "Running: " << cmd << std::endl;
-        return ts::WinCreateElevatedProcess(cmd, true, opt);
+        return ts::WinCreateElevatedProcess(cmd, synchronous, opt);
 #endif
     }
     std::cout << "Running: " << cmd << std::endl;
 
     // Start the process.
     ts::ForkPipe process;
-    bool success = process.open(cmd, true, 0, CERR, ts::ForkPipe::KEEP_BOTH, ts::ForkPipe::KEEP_STDIN);
+    bool success = process.open(cmd, synchronous, 0, CERR, ts::ForkPipe::KEEP_BOTH, ts::ForkPipe::KEEP_STDIN);
     process.close(NULLREP);
     return success;
 }
@@ -465,23 +465,25 @@ bool UpgradeRelease(Options& opt, const ts::GitHubRelease rel)
     }
 
     if (sys.isWindows()) {
-        // On Windows, run installers one by one (there should be only one anyway).
-        // We require a privileged execution.
-        for (ts::UStringList::const_iterator it = files.begin(); it != files.end(); ++it) {
-            if (!RunCommand(opt, *it, true)) {
-                return false;
-            }
+        // On Windows, there should be only one installer.
+        if (files.size() != 1) {
+            opt.error(u"found %d installers for this version, manually run one of: %s", {files.size(), ts::UString::Join(files, u" ")});
+            return false;
         }
-        return true;
+        // We require a privileged execution.
+        // The execution is asynchronous. We exit tsversion immediately after launching the installer.
+        // We can't wait for the completion of the installer since it will replace tsversion.exe and
+        // tsduck.dll, which would be locked if tsversion is still executing.
+        return RunCommand(opt, files.front(), true, false);
     }
     else if (sys.isMacOS()) {
-        return RunCommand(opt, u"brew upgrade tsduck", false);
+        return RunCommand(opt, u"brew upgrade tsduck", false, true);
     }
     else if (sys.isFedora() || sys.isRedHat()) {
-        return RunCommand(opt, u"rpm -Uvh " + ts::UString::Join(files, u" "), true);
+        return RunCommand(opt, u"rpm -Uvh " + ts::UString::Join(files, u" "), true, false);
     }
     else if (sys.isUbuntu()) {
-        return RunCommand(opt, u"dpkg -i " + ts::UString::Join(files, u" "), true);
+        return RunCommand(opt, u"dpkg -i " + ts::UString::Join(files, u" "), true, false);
     }
     else {
         opt.error(u"don't know how to upgrade on %s, rebuild from sources", {sysName});
