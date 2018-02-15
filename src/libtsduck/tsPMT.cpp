@@ -55,7 +55,7 @@ ts::PMT::PMT(uint8_t version_, bool is_current_, uint16_t service_id_, PID pcr_p
     AbstractLongTable(MY_TID, MY_XML_NAME, version_, is_current_),
     service_id(service_id_),
     pcr_pid(pcr_pid_),
-    descs(),
+    descs(this),
     streams()
 {
     _is_valid = true;
@@ -67,11 +67,7 @@ ts::PMT::PMT(uint8_t version_, bool is_current_, uint16_t service_id_, PID pcr_p
 //----------------------------------------------------------------------------
 
 ts::PMT::PMT(const BinaryTable& table, const DVBCharset* charset) :
-    AbstractLongTable(MY_TID, MY_XML_NAME),
-    service_id(0),
-    pcr_pid(PID_NULL),
-    descs(),
-    streams()
+    PMT()
 {
     deserialize(table, charset);
 }

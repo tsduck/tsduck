@@ -77,6 +77,30 @@ namespace ts {
         //!
         virtual ~AbstractTable() {}
 
+
+
+        class AbstractEntry
+        {
+        public:
+            DescriptorList descs;
+        protected:
+            explicit AbstractEntry(AbstractTable* p) : descs(p) {}
+        private:
+            AbstractEntry() = delete;
+        };
+
+        template<typename KEY, class ENTRY, typename std::enable_if<std::is_base_of<AbstractEntry, ENTRY>::value>::type* = nullptr>
+        class AbstractEntryMap : public std::map<KEY, ENTRY>
+        {
+        public:
+            explicit AbstractEntryMap(AbstractTable* p) : descs(p) {}
+            ENTRY& operator[](const KEY& key) { return emplace(key, ENTRY(_p)).first->second; }
+        private:
+            AbstractTable* const _table;  // Parent table (zero for descriptor list object outside a table).
+            AbstractEntryMap() = delete;
+        };
+
+
     protected:
         //!
         //! The table id can be modified by subclasses only.

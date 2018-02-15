@@ -57,7 +57,7 @@ ts::TOT::TOT(const Time& utc_time_) :
     AbstractTable(MY_TID, MY_XML_NAME),
     utc_time(utc_time_),
     regions(),
-    descs()
+    descs(this)
 {
     _is_valid = true;
 }
@@ -68,10 +68,7 @@ ts::TOT::TOT(const Time& utc_time_) :
 //----------------------------------------------------------------------------
 
 ts::TOT::TOT(const BinaryTable& table, const DVBCharset* charset) :
-    AbstractTable(MY_TID, MY_XML_NAME),
-    utc_time(),
-    regions(),
-    descs()
+    TOT()
 {
     deserialize(table, charset);
 }

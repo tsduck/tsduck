@@ -36,6 +36,9 @@
 #include "tsDescriptor.h"
 
 namespace ts {
+
+    class AbstractTable;
+
     //!
     //! List of MPEG PSI/SI descriptors.
     //!
@@ -43,22 +46,32 @@ namespace ts {
     {
     public:
         //!
-        //! Default constructor.
+        //! Basic constructor.
+        //! @param [in] table Parent table. A descriptor list is always attached to a table it is part of.
+        //! Use zero for a descriptor list object outside a table. There is no default value because
+        //! zero is considered as an unusual use case and we want to avoid missing table pointer in
+        //! constructors of the various tables.
         //!
-        DescriptorList() :
-            _list()
-        {
-        }
+        explicit DescriptorList(AbstractTable* table);
 
         //!
-        //! Copy constructor.
+        //! Basic copy-like constructor.
+        //! We forbid a real copy constructor because we want to copy the descriptors only,
+        //! while the parent table is usually different.
         //! The descriptors objects are shared between the two lists.
+        //! @param [in] table Parent table. A descriptor list is always attached to a table it is part of.
+        //! Use zero for a descriptor list object outside a table.
         //! @param [in] dl Another instance to copy.
         //!
-        DescriptorList(const DescriptorList& dl) :
-            _list(dl._list)
-        {
-        }
+        DescriptorList(AbstractTable* table, const DescriptorList& dl);
+
+        //!
+        //! Assignment operator.
+        //! The descriptors objects are shared between the two lists.
+        //! The parent table remains unchanged.
+        //! @param [in] dl Another instance to copy.
+        //!
+        DescriptorList& operator=(const DescriptorList& dl);
 
         //!
         //! Get the number of descriptors in the list.
@@ -68,6 +81,18 @@ namespace ts {
         {
             return _list.size();
         }
+
+        //!
+        //! Get the table id of the parent table.
+        //! @return The table id of the parent table or TID_NULL if there is none.
+        //!
+        TID tableId() const;
+
+        //!
+        //! Get the parent table.
+        //! @return The parent table or zero if there is none.
+        //!
+        AbstractTable* table() const { return _table; }
 
         //!
         //! Comparison operator.
@@ -334,12 +359,17 @@ namespace ts {
         typedef std::vector <Element> ElementVector;
 
         // Private members
-        ElementVector _list;
+        AbstractTable* const _table;  // Parent table (zero for descriptor list object outside a table).
+        ElementVector        _list;   // Vector of smart pointers to descriptors.
 
         // Prepare removal of a private_data_specifier descriptor.
         // Return true if can be removed, false if it cannot (private descriptors ahead).
         // When it can be removed, the current PDS of all subsequent descriptors is updated.
         bool prepareRemovePDS(const ElementVector::iterator&);
+
+        // Inaccessible operations.
+        DescriptorList() = delete;
+        DescriptorList(const DescriptorList&) = delete;
     };
 }
 
