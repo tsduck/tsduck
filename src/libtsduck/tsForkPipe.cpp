@@ -44,7 +44,7 @@ TSDUCK_SOURCE;
 ts::ForkPipe::ForkPipe() :
     _in_mode(USE_PIPE),
     _is_open(false),
-    _synchronous(false),
+    _wait_mode(ASYNCHRONOUS),
     _ignore_abort(false),
     _broken_pipe(false),
 #if defined(TS_WINDOWS)
@@ -68,20 +68,24 @@ ts::ForkPipe::~ForkPipe()
 
 //----------------------------------------------------------------------------
 // Create the process, open the pipe.
-// If synchronous is true, wait for process termination in close.
-// Return true on success, false on error.
 //----------------------------------------------------------------------------
 
-bool ts::ForkPipe::open(const UString& command, bool synchronous, size_t buffer_size, Report& report, OutputMode out_mode, InputMode in_mode)
+bool ts::ForkPipe::open(const UString& command, WaitMode wait_mode, size_t buffer_size, Report& report, OutputMode out_mode, InputMode in_mode)
 {
     if (_is_open) {
         report.error(u"pipe is already open");
         return false;
     }
 
+    // We cannot use a pipe if we plan to exit immediately.
+    if (wait_mode == EXIT_PROCESS && in_mode == USE_PIPE) {
+        report.error(u"cannot use a pipe with exit-process option");
+        return false;
+    }
+
     _in_mode = in_mode;
     _broken_pipe = false;
-    _synchronous = synchronous;
+    _wait_mode = wait_mode;
 
     report.debug(u"creating process \"%s\"", {command});
 
@@ -179,12 +183,24 @@ bool ts::ForkPipe::open(const UString& command, bool synchronous, size_t buffer_
     }
 
     // Close unused handles
-    if (_synchronous) {
-        _process = pi.hProcess;
-    }
-    else {
-        _process = INVALID_HANDLE_VALUE;
-        ::CloseHandle(pi.hProcess);
+    switch (_wait_mode) {
+        case ASYNCHRONOUS:
+            // Process handle is useless, we won't use it.
+            _process = INVALID_HANDLE_VALUE;
+            ::CloseHandle(pi.hProcess);
+            break;
+        case SYNCHRONOUS:
+            // Keep process handle to wait for it.
+            _process = pi.hProcess;
+            break;
+        case EXIT_PROCESS:
+            // Exit parent process.
+            ::exit(EXIT_SUCCESS);
+            break;
+        default:
+            // Should not get there.
+            assert(false);
+            break;
     }
     ::CloseHandle(pi.hThread);
 
@@ -205,7 +221,11 @@ bool ts::ForkPipe::open(const UString& command, bool synchronous, size_t buffer_
     }
 
     // Create the forked process
-    if ((_fpid = ::fork()) < 0) {
+    if (_wait_mode == EXIT_PROCESS) {
+        // Don't fork, the parent process will directly call exec().
+        _fpid = 0;
+    }
+    else if ((_fpid = ::fork()) < 0) {
         report.error(u"fork error: %s", {ErrorCodeMessage()});
         if (_in_mode == USE_PIPE) {
             ::close(filedes[0]);
@@ -213,8 +233,22 @@ bool ts::ForkPipe::open(const UString& command, bool synchronous, size_t buffer_
         }
         return false;
     }
-    else if (_fpid == 0) {
-        // In the context of the created process.
+
+    if (_fpid != 0) {
+        // In the context of the parent process.
+
+        if (_in_mode == USE_PIPE) {
+            // Keep the writing end-point of pipe for data transmission.
+            // Close the reading end-point of pipe.
+            _fd = filedes[1];
+            ::close(filedes[0]);
+        }
+    }
+    else {
+        // In the context of the created process (or application if EXIT_PROCESS mode).
+        // In the first case, abort on error. In the latter, report error and return to caller.
+        int error = 0;
+        const char* message = 0;
 
         // Setup input pipe.
         if (_in_mode == USE_PIPE) {
@@ -226,8 +260,8 @@ bool ts::ForkPipe::open(const UString& command, bool synchronous, size_t buffer_
 
             // Redirect the reading end-point of the pipe to standard input
             if (::dup2(filedes[0], STDIN_FILENO) < 0) {
-                ::perror("error redirecting stdin in forked process");
-                ::exit(EXIT_FAILURE);
+                error = errno;
+                message = "error redirecting stdin in forked process";
             }
 
             // Close the now extraneous file descriptor.
@@ -239,13 +273,15 @@ bool ts::ForkPipe::open(const UString& command, bool synchronous, size_t buffer_
             case STDOUT_ONLY:
                 // Use stdout as stderr as well.
                 if (::dup2(STDOUT_FILENO, STDERR_FILENO) < 0) {
-                    ::perror("error redirecting stdout to stderr");
+                    error = errno;
+                    message = "error redirecting stdout to stderr";
                 }
                 break;
             case STDERR_ONLY:
                 // Use stderr as stdout as well.
                 if (::dup2(STDERR_FILENO, STDOUT_FILENO) < 0) {
-                    ::perror("error redirecting stderr to stdout");
+                    error = errno;
+                    message = "error redirecting stderr to stdout";
                 }
                 break;
             default:
@@ -253,20 +289,26 @@ bool ts::ForkPipe::open(const UString& command, bool synchronous, size_t buffer_
                 break;
         }
 
-        // Execute the command. Should not return.
-        ::execl("/bin/sh", "/bin/sh", "-c", command.toUTF8().c_str(), TS_NULL);
-        ::perror("exec error");
-        ::exit(EXIT_FAILURE);
-        assert(false); // should never get there
-    }
-    else {
-        // In the context of the parent process.
+        // Execute the command if there was no prior error.
+        if (message == 0) {
+            ::execl("/bin/sh", "/bin/sh", "-c", command.toUTF8().c_str(), TS_NULL);
+            // Should not return, so this is an error if we get there.
+            error = errno;
+            message = "exec error";
+        }
 
-        // Keep the writing end-point of pipe for data transmission.
-        // Close the reading end-point of pipe.
-        if (_in_mode == USE_PIPE) {
-            _fd = filedes[1];
-            ::close(filedes[0]);
+        // At this point, there was an error.
+        if (_wait_mode == EXIT_PROCESS) {
+            // No process was created, so return to the caller.
+            report.error(u"%s: %s", {message, ErrorCodeMessage(error)});
+            return false;
+        }
+        else {
+            // In a created process, the application is still running elsewhere.
+            errno = error;
+            ::perror(message);
+            ::exit(EXIT_FAILURE);
+            assert(false); // should never get there
         }
     }
 
@@ -299,7 +341,7 @@ bool ts::ForkPipe::close (Report& report)
     }
 
     // Wait for termination of child process
-    if (_synchronous && ::WaitForSingleObject(_process, INFINITE) != WAIT_OBJECT_0) {
+    if (_wait_mode == SYNCHRONOUS && ::WaitForSingleObject(_process, INFINITE) != WAIT_OBJECT_0) {
         report.error(u"error waiting for process termination: %s", {ErrorCodeMessage()});
         result = false;
     }
@@ -317,7 +359,7 @@ bool ts::ForkPipe::close (Report& report)
 
     // Wait for termination of forked process
     assert(_fpid != 0);
-    if (_synchronous && ::waitpid(_fpid, NULL, 0) < 0) {
+    if (_wait_mode == SYNCHRONOUS && ::waitpid(_fpid, NULL, 0) < 0) {
         report.error(u"error waiting for process termination: %s", {ErrorCodeMessage()});
         result = false;
     }

@@ -116,7 +116,7 @@ bool ts::OutputPager::open(bool synchronous, size_t buffer_size, Report& report)
         return false;
     }
     else {
-        return ForkPipe::open(_pagerCommand, synchronous, buffer_size, report, _outputMode);
+        return ForkPipe::open(_pagerCommand, synchronous ? ForkPipe::SYNCHRONOUS : ForkPipe::ASYNCHRONOUS, buffer_size, report, _outputMode);
     }
 }
 

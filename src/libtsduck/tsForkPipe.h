@@ -54,11 +54,20 @@ namespace ts {
         ~ForkPipe();
 
         //!
+        //! How to wait for the created process when close() is invoked.
+        //!
+        enum WaitMode {
+            ASYNCHRONOUS,  //!< Don't wait, close() will return immediately.
+            SYNCHRONOUS,   //!< Wait for process completion during close().
+            EXIT_PROCESS,  //!< Exit parent process diring open(). UNIX: call exec(), Windows: call exit() @e after process creation.
+        };
+
+        //!
         //! How to standard input in the created process.
         //!
         enum InputMode {
             KEEP_STDIN,    //!< Keep same stdin as current process.
-            USE_PIPE,      //!< Use the pipe as stdin.
+            USE_PIPE,      //!< Use the pipe as stdin (forbidden when wait mode is EXIT_PROCESS).
         };
 
         //!
@@ -73,19 +82,20 @@ namespace ts {
         //!
         //! Create the process, open the optional pipe.
         //! @param [in] command The command to execute.
-        //! @param [in] synchronous If true, wait for process termination in close().
+        //! @param [in] wait_mode How to wait for process termination in close().
         //! @param [in] buffer_size The pipe buffer size in bytes. Used on Windows only. Zero means default.
         //! @param [in,out] report Where to report errors.
         //! @param [in] out_mode How to handle stdout and stderr.
         //! @param [in] in_mode How to handle stdin. Use the pipe by default.
         //! When set to KEEP_STDIN, no pipe is created.
         //! @return True on success, false on error.
+        //! Do not return on success when @a wait_mode is EXIT_PROCESS.
         //!
-        bool open(const UString& command, bool synchronous, size_t buffer_size, Report& report, OutputMode out_mode = KEEP_BOTH, InputMode in_mode = USE_PIPE);
+        bool open(const UString& command, WaitMode wait_mode, size_t buffer_size, Report& report, OutputMode out_mode = KEEP_BOTH, InputMode in_mode = USE_PIPE);
 
         //!
         //! Close the pipe.
-        //! Optionally wait for process termination if @a synchronous was true on open().
+        //! Optionally wait for process termination if @a wait_mode was SYNCHRONOUS on open().
         //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
@@ -115,7 +125,7 @@ namespace ts {
         //!
         bool isSynchronous() const
         {
-            return _synchronous;
+            return _wait_mode == SYNCHRONOUS;
         }
 
         //!
@@ -149,7 +159,7 @@ namespace ts {
     private:
         InputMode _in_mode;       // Input mode for the created process.
         bool      _is_open;       // Open and running.
-        bool      _synchronous;   // Wait for child process termination in close().
+        WaitMode  _wait_mode;     // How to wait for child process termination in close().
         bool      _ignore_abort;  // Ignore early termination of child process.
         bool      _broken_pipe;   // Pipe is broken, do not attempt to write.
 #if defined(TS_WINDOWS)

@@ -135,7 +135,7 @@ bool ts::ForkPlugin::start()
 {
     // Get command line arguments
     UString command(value());
-    bool synchronous = !present(u"nowait");
+    bool nowait = present(u"nowait");
     _buffer_size = intValue<size_t>(u"buffered-packets", 0);
     _pipe.setIgnoreAbort(present(u"ignore-abort"));
 
@@ -148,7 +148,7 @@ bool ts::ForkPlugin::start()
     }
 
     // Create pipe & process
-    return _pipe.open(command, synchronous, PKT_SIZE * _buffer_size, *tsp);
+    return _pipe.open(command, nowait ? ForkPipe::ASYNCHRONOUS : ForkPipe::SYNCHRONOUS, PKT_SIZE * _buffer_size, *tsp);
 }
 
 
