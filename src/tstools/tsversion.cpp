@@ -409,9 +409,11 @@ bool DownloadRelease(Options& opt, const ts::GitHubRelease rel, bool forceBinary
 
 //----------------------------------------------------------------------------
 //  Run an upgrade command.
+//  Do not stay in current tsversion process since the upgrade command
+//  will upgrade its executable file.
 //----------------------------------------------------------------------------
 
-bool RunCommand(Options& opt, const ts::UString& command, bool needPrivilege, bool synchronous)
+bool RunUpgradeCommand(Options& opt, const ts::UString& command, bool needPrivilege)
 {
     ts::UString cmd(command);
 
@@ -428,9 +430,9 @@ bool RunCommand(Options& opt, const ts::UString& command, bool needPrivilege, bo
     }
     std::cout << "Running: " << cmd << std::endl;
 
-    // Start the process.
+    // Run the upgrade command and exit current process.
     ts::ForkPipe process;
-    bool success = process.open(cmd, synchronous, 0, CERR, ts::ForkPipe::KEEP_BOTH, ts::ForkPipe::KEEP_STDIN);
+    bool success = process.open(cmd, ts::ForkPipe::EXIT_PROCESS, 0, CERR, ts::ForkPipe::KEEP_BOTH, ts::ForkPipe::KEEP_STDIN);
     process.close(NULLREP);
     return success;
 }
@@ -474,16 +476,16 @@ bool UpgradeRelease(Options& opt, const ts::GitHubRelease rel)
         // The execution is asynchronous. We exit tsversion immediately after launching the installer.
         // We can't wait for the completion of the installer since it will replace tsversion.exe and
         // tsduck.dll, which would be locked if tsversion is still executing.
-        return RunCommand(opt, files.front(), true, false);
+        return RunUpgradeCommand(opt, files.front(), true);
     }
     else if (sys.isMacOS()) {
-        return RunCommand(opt, u"brew upgrade tsduck", false, true);
+        return RunUpgradeCommand(opt, u"brew upgrade tsduck", false);
     }
     else if (sys.isFedora() || sys.isRedHat()) {
-        return RunCommand(opt, u"rpm -Uvh " + ts::UString::Join(files, u" "), true, false);
+        return RunUpgradeCommand(opt, u"rpm -Uvh " + ts::UString::Join(files, u" "), true);
     }
     else if (sys.isUbuntu()) {
-        return RunCommand(opt, u"dpkg -i " + ts::UString::Join(files, u" "), true, false);
+        return RunUpgradeCommand(opt, u"dpkg -i " + ts::UString::Join(files, u" "), true);
     }
     else {
         opt.error(u"don't know how to upgrade on %s, rebuild from sources", {sysName});

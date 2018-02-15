@@ -276,5 +276,5 @@ bool ts::PlayPlugin::start()
     // Create pipe & process
     tsp->verbose(u"using media player command: %s", {command});
     _pipe.setIgnoreAbort(false);
-    return _pipe.open(command, true, PIPE_BUFFER_SIZE, *tsp);
+    return _pipe.open(command, ForkPipe::SYNCHRONOUS, PIPE_BUFFER_SIZE, *tsp);
 }
