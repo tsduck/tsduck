@@ -33,16 +33,53 @@
 
 #include "tsDescriptorList.h"
 #include "tsAbstractDescriptor.h"
+#include "tsAbstractTable.h"
 #include "tsPrivateDataSpecifierDescriptor.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------
+// Constructor and assignment.
+//----------------------------------------------------------------------------
+
+ts::DescriptorList::DescriptorList(AbstractTable* table) :
+    _table(table),
+    _list()
+{
+}
+
+ts::DescriptorList::DescriptorList(AbstractTable* table, const DescriptorList& dl) :
+    _table(table),
+    _list(dl._list)
+{
+}
+
+ts::DescriptorList& ts::DescriptorList::operator=(const DescriptorList& dl)
+{
+    if (&dl != this) {
+        // Copy the list of descriptors but preserve the parent table.
+        _list = dl._list;
+    }
+    return *this;
+}
+
+
+//----------------------------------------------------------------------------
+// Get the table id of the parent table.
+//----------------------------------------------------------------------------
+
+ts::TID ts::DescriptorList::tableId() const
+{
+    return _table == 0 ? TID_NULL : _table->tableId();
+}
+
+
+//----------------------------------------------------------------------------
 // Comparison
 //----------------------------------------------------------------------------
 
-bool ts::DescriptorList::operator== (const DescriptorList& other) const
+bool ts::DescriptorList::operator==(const DescriptorList& other) const
 {
     if (_list.size() != other._list.size()) {
         return false;
@@ -62,7 +99,7 @@ bool ts::DescriptorList::operator== (const DescriptorList& other) const
 // Add one descriptor at end of list
 //----------------------------------------------------------------------------
 
-void ts::DescriptorList::add (const DescriptorPtr& desc)
+void ts::DescriptorList::add(const DescriptorPtr& desc)
 {
     PDS pds;
 

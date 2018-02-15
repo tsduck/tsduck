@@ -48,7 +48,7 @@ ts::AbstractTransportListTable::AbstractTransportListTable(TID tid_,
                                                            uint8_t version_,
                                                            bool is_current_) :
     AbstractLongTable(tid_, xml_name, version_, is_current_),
-    descs(),
+    descs(this),
     transports(),
     section_hints(),
     _tid_ext(tid_ext_)
@@ -61,9 +61,9 @@ ts::AbstractTransportListTable::AbstractTransportListTable(TID tid_,
 // Constructor from a binary table
 //----------------------------------------------------------------------------
 
-ts::AbstractTransportListTable::AbstractTransportListTable (TID tid, const UChar* xml_name, const BinaryTable& table, const DVBCharset* charset) :
+ts::AbstractTransportListTable::AbstractTransportListTable(TID tid, const UChar* xml_name, const BinaryTable& table, const DVBCharset* charset) :
     AbstractLongTable(tid, xml_name),
-    descs(),
+    descs(this),
     transports(),
     section_hints(),
     _tid_ext(0xFFFF)
