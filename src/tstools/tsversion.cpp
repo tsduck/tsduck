@@ -425,7 +425,7 @@ bool RunUpgradeCommand(Options& opt, const ts::UString& command, bool needPrivil
 #elif defined(TS_WINDOWS)
         // On Windows, use a completely different method.
         std::cout << "Running: " << cmd << std::endl;
-        return ts::WinCreateElevatedProcess(cmd, synchronous, opt);
+        return ts::WinCreateElevatedProcess(cmd, false, opt);
 #endif
     }
     std::cout << "Running: " << cmd << std::endl;
