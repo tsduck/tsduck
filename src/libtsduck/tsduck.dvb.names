@@ -40,6 +40,7 @@ Bits = 8
 0x42 = SDT Actual
 0x46 = SDT Other
 0x4A = BAT
+0x4C = INT (IP/MAC Notification)
 0x4E = EIT p/f Actual
 0x4F = EIT p/f Other
 0x50-0x5F = EIT schedule Actual
