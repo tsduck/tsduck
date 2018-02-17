@@ -133,7 +133,7 @@ ts::PMTPlugin::PMTPlugin(TSP* tsp_) :
     _ac3_atsc2dvb(false),
     _eac3_atsc2dvb(false),
     _cleanup_priv_desc(false),
-    _add_descs(),
+    _add_descs(0),
     _languages(),
     _demux(this),
     _pzer()

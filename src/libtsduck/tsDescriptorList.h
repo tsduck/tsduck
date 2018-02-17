@@ -52,7 +52,7 @@ namespace ts {
         //! zero is considered as an unusual use case and we want to avoid missing table pointer in
         //! constructors of the various tables.
         //!
-        explicit DescriptorList(AbstractTable* table);
+        explicit DescriptorList(const AbstractTable* table);
 
         //!
         //! Basic copy-like constructor.
@@ -63,13 +63,14 @@ namespace ts {
         //! Use zero for a descriptor list object outside a table.
         //! @param [in] dl Another instance to copy.
         //!
-        DescriptorList(AbstractTable* table, const DescriptorList& dl);
+        DescriptorList(const AbstractTable* table, const DescriptorList& dl);
 
         //!
         //! Assignment operator.
         //! The descriptors objects are shared between the two lists.
         //! The parent table remains unchanged.
         //! @param [in] dl Another instance to copy.
+        //! @return A reference to this object.
         //!
         DescriptorList& operator=(const DescriptorList& dl);
 
@@ -92,7 +93,7 @@ namespace ts {
         //! Get the parent table.
         //! @return The parent table or zero if there is none.
         //!
-        AbstractTable* table() const { return _table; }
+        const AbstractTable* table() const { return _table; }
 
         //!
         //! Comparison operator.
@@ -359,8 +360,8 @@ namespace ts {
         typedef std::vector <Element> ElementVector;
 
         // Private members
-        AbstractTable* const _table;  // Parent table (zero for descriptor list object outside a table).
-        ElementVector        _list;   // Vector of smart pointers to descriptors.
+        const AbstractTable* const _table;  // Parent table (zero for descriptor list object outside a table).
+        ElementVector              _list;   // Vector of smart pointers to descriptors.
 
         // Prepare removal of a private_data_specifier descriptor.
         // Return true if can be removed, false if it cannot (private descriptors ahead).

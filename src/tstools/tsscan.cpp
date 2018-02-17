@@ -543,7 +543,7 @@ namespace {
 
         // Process each TS descriptor list in the NIT.
         for (ts::NIT::TransportMap::const_iterator it = nit->transports.begin(); it != nit->transports.end(); ++it) {
-            const ts::DescriptorList& dlist(it->second);
+            const ts::DescriptorList& dlist(it->second.descs);
 
             // Loop on all descriptors for the current TS.
             for (size_t i = 0; i < dlist.count(); ++i) {

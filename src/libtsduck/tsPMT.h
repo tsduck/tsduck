@@ -43,57 +43,24 @@ namespace ts {
     class TSDUCKDLL PMT : public AbstractLongTable
     {
     public:
-        struct Stream;
-        //!
-        //! List of elementary streams, indexed by PID.
-        //!
-        typedef std::map<PID, Stream> StreamMap;
-
-        // PMT public members:
-        uint16_t       service_id;  //!< Service id aka "program_number".
-        PID            pcr_pid;     //!< PID for PCR data.
-        DescriptorList descs;       //!< Program-level descriptor list.
-        StreamMap      streams;     //!< Map of stream descriptions: key=PID, value=stream_description.
-
-        //!
-        //! Default constructor.
-        //! @param [in] version Table version number.
-        //! @param [in] is_current True if table is current, false if table is next.
-        //! @param [in] service_id Service identifier.
-        //! @param [in] pcr_pid PID of the PCR. Default: none.
-        //!
-        PMT(uint8_t  version = 0,
-            bool     is_current = true,
-            uint16_t service_id = 0,
-            PID      pcr_pid = PID_NULL);
-
-        //!
-        //! Constructor from a binary table.
-        //! @param [in] table Binary table to deserialize.
-        //! @param [in] charset If not zero, character set to use without explicit table code.
-        //!
-        PMT(const BinaryTable& table, const DVBCharset* charset = 0);
-
-        // Inherited methods
-        virtual void serialize(BinaryTable& table, const DVBCharset* = 0) const override;
-        virtual void deserialize(const BinaryTable& table, const DVBCharset* = 0) override;
-        virtual void buildXML(xml::Element*) const override;
-        virtual void fromXML(const xml::Element*) override;
-
         //!
         //! Description of an elementary stream.
         //!
-        struct TSDUCKDLL Stream
+        //! Note: by inheriting from EntryWithDescriptors, there is a
+        //! public field "DescriptorList descs".
+        //!
+        struct TSDUCKDLL Stream : public EntryWithDescriptors
         {
-            uint8_t        stream_type;  //!< Stream type, one of ST_* (eg ts::ST_MPEG2_VIDEO).
-            DescriptorList descs;        //!< Stream-level descriptor list.
+            uint8_t stream_type;  //!< Stream type, one of ST_* (eg ts::ST_MPEG2_VIDEO).
 
             //!
-            //! Default constructor.
+            //! Constructor.
+            //! @param [in] table Parent PMT.
+            //! @param [in] type Stream type.
             //!
-            Stream() :
-                stream_type(0),
-                descs()
+            explicit Stream(const AbstractTable* table, uint8_t type = 0) :
+                EntryWithDescriptors(table),
+                stream_type(type)
             {
             }
 
@@ -120,7 +87,54 @@ namespace ts {
             //! @return True if the elementary stream carries subtitles.
             //!
             bool isSubtitles() const;
+
+        private:
+            // Inaccessible operations.
+            Stream() = delete;
+            Stream(const Stream&) = delete;
         };
+
+        //!
+        //! List of elementary streams, indexed by PID.
+        //!
+        typedef EntryWithDescriptorsMap<PID, Stream> StreamMap;
+
+        // PMT public members:
+        uint16_t       service_id;  //!< Service id aka "program_number".
+        PID            pcr_pid;     //!< PID for PCR data.
+        DescriptorList descs;       //!< Program-level descriptor list.
+        StreamMap      streams;     //!< Map of stream descriptions: key=PID, value=stream_description.
+
+        //!
+        //! Default constructor.
+        //! @param [in] version Table version number.
+        //! @param [in] is_current True if table is current, false if table is next.
+        //! @param [in] service_id Service identifier.
+        //! @param [in] pcr_pid PID of the PCR. Default: none.
+        //!
+        PMT(uint8_t  version = 0,
+            bool     is_current = true,
+            uint16_t service_id = 0,
+            PID      pcr_pid = PID_NULL);
+
+        //!
+        //! Copy constructor.
+        //! @param [in] other Other instance to copy.
+        //!
+        PMT(const PMT& other);
+
+        //!
+        //! Constructor from a binary table.
+        //! @param [in] table Binary table to deserialize.
+        //! @param [in] charset If not zero, character set to use without explicit table code.
+        //!
+        PMT(const BinaryTable& table, const DVBCharset* charset = 0);
+
+        // Inherited methods
+        virtual void serialize(BinaryTable& table, const DVBCharset* = 0) const override;
+        virtual void deserialize(const BinaryTable& table, const DVBCharset* = 0) override;
+        virtual void buildXML(xml::Element*) const override;
+        virtual void fromXML(const xml::Element*) override;
 
         //!
         //! A static method to display a section.

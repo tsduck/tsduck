@@ -43,13 +43,13 @@ TSDUCK_SOURCE;
 // Constructor and assignment.
 //----------------------------------------------------------------------------
 
-ts::DescriptorList::DescriptorList(AbstractTable* table) :
+ts::DescriptorList::DescriptorList(const AbstractTable* table) :
     _table(table),
     _list()
 {
 }
 
-ts::DescriptorList::DescriptorList(AbstractTable* table, const DescriptorList& dl) :
+ts::DescriptorList::DescriptorList(const AbstractTable* table, const DescriptorList& dl) :
     _table(table),
     _list(dl._list)
 {

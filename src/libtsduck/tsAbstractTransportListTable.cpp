@@ -39,7 +39,7 @@ TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------
-// Default constructor
+// Constructors
 //----------------------------------------------------------------------------
 
 ts::AbstractTransportListTable::AbstractTransportListTable(TID tid_,
@@ -49,22 +49,26 @@ ts::AbstractTransportListTable::AbstractTransportListTable(TID tid_,
                                                            bool is_current_) :
     AbstractLongTable(tid_, xml_name, version_, is_current_),
     descs(this),
-    transports(),
+    transports(this),
     section_hints(),
     _tid_ext(tid_ext_)
 {
     _is_valid = true;
 }
 
-
-//----------------------------------------------------------------------------
-// Constructor from a binary table
-//----------------------------------------------------------------------------
+ts::AbstractTransportListTable::AbstractTransportListTable(const AbstractTransportListTable& other) :
+    AbstractLongTable(other),
+    descs(this, other.descs),
+    transports(this, other.transports),
+    section_hints(other.section_hints),
+    _tid_ext(other._tid_ext)
+{
+}
 
 ts::AbstractTransportListTable::AbstractTransportListTable(TID tid, const UChar* xml_name, const BinaryTable& table, const DVBCharset* charset) :
     AbstractLongTable(tid, xml_name),
     descs(this),
-    transports(),
+    transports(this),
     section_hints(),
     _tid_ext(0xFFFF)
 {
@@ -104,7 +108,7 @@ void ts::AbstractTransportListTable::deserialize(const BinaryTable& table, const
     for (size_t si = 0; si < table.sectionCount(); ++si) {
 
         // Reference to current section
-        const Section& sect (*table.sectionAt(si));
+        const Section& sect(*table.sectionAt(si));
 
         // Abort if not expected table
         if (sect.tableId() != _table_id) {
@@ -117,8 +121,8 @@ void ts::AbstractTransportListTable::deserialize(const BinaryTable& table, const
         _tid_ext = sect.tableIdExtension();
 
         // Analyze the section payload:
-        const uint8_t* data (sect.payload());
-        size_t remain (sect.payloadSize());
+        const uint8_t* data = sect.payload();
+        size_t remain = sect.payloadSize();
 
         // Get top-level descriptor list
         if (remain < 2) {
@@ -143,12 +147,12 @@ void ts::AbstractTransportListTable::deserialize(const BinaryTable& table, const
 
         // Get transports description
         while (remain >= 6) {
-            TransportStreamId id (GetUInt16 (data), GetUInt16 (data + 2)); // tsid, onid
-            info_length = GetUInt16 (data + 4) & 0x0FFF;
+            TransportStreamId id(GetUInt16 (data), GetUInt16 (data + 2)); // tsid, onid
+            info_length = GetUInt16(data + 4) & 0x0FFF;
             data += 6;
             remain -= 6;
-            info_length = std::min (info_length, remain);
-            transports[id].add (data, info_length);
+            info_length = std::min(info_length, remain);
+            transports[id].descs.add(data, info_length);
             data += info_length;
             remain -= info_length;
         }
@@ -329,9 +333,9 @@ void ts::AbstractTransportListTable::serialize(BinaryTable& table, const DVBChar
         }
 
         // Locate transport description
-        const TransportMap::const_iterator ts_iter (transports.find (ts_id));
-        assert (ts_iter != transports.end());
-        const DescriptorList& dlist (ts_iter->second);
+        const TransportMap::const_iterator ts_iter(transports.find(ts_id));
+        assert(ts_iter != transports.end());
+        const DescriptorList& dlist(ts_iter->second.descs);
 
         // If we are not at the beginning of the transport loop, make sure that the
         // entire transport description fits in the section. If it does not fit,

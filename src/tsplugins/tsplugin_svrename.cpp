@@ -478,12 +478,12 @@ void ts::SVRenamePlugin::processPMT(PMT& pmt)
 //  This method processes a NIT or a BAT
 //----------------------------------------------------------------------------
 
-void ts::SVRenamePlugin::processNITBAT (AbstractTransportListTable& table)
+void ts::SVRenamePlugin::processNITBAT(AbstractTransportListTable& table)
 {
     // Process the descriptor list for the current TS
     for (AbstractTransportListTable::TransportMap::iterator it = table.transports.begin(); it != table.transports.end(); ++it) {
         if (it->first.transport_stream_id == _ts_id) {
-            processNITBATDescriptorList(it->second);
+            processNITBATDescriptorList(it->second.descs);
         }
     }
 }

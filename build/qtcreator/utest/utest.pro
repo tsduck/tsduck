@@ -51,6 +51,7 @@ SOURCES += \
     ../../../src/utest/utestStaticInstance.cpp \
     ../../../src/utest/utestSystemRandomGenerator.cpp \
     ../../../src/utest/utestSysUtils.cpp \
+    ../../../src/utest/utestTable.cpp \
     ../../../src/utest/utestTablesFactory.cpp \
     ../../../src/utest/utestThread.cpp \
     ../../../src/utest/utestThreadAttributes.cpp \
