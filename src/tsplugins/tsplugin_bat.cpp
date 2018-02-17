@@ -233,7 +233,7 @@ void ts::BATPlugin::handleTable (SectionDemux& demux, const BinaryTable& table)
 //  This method processes a BAT
 //----------------------------------------------------------------------------
 
-void ts::BATPlugin::processBAT (BAT& bat)
+void ts::BATPlugin::processBAT(BAT& bat)
 {
     tsp->debug(u"got a BAT, version %d, bouquet id: %d (0x%X)", {bat.version, bat.bouquet_id, bat.bouquet_id});
 
@@ -259,11 +259,11 @@ void ts::BATPlugin::processBAT (BAT& bat)
     } while (found);
 
     // Process the global descriptor list
-    processDescriptorList (bat.descs);
+    processDescriptorList(bat.descs);
 
     // Process each TS descriptor list
     for (BAT::TransportMap::iterator it = bat.transports.begin(); it != bat.transports.end(); ++it) {
-        processDescriptorList (it->second);
+        processDescriptorList(it->second.descs);
     }
 }
 
@@ -272,7 +272,7 @@ void ts::BATPlugin::processBAT (BAT& bat)
 //  This method processes a BAT descriptor list
 //----------------------------------------------------------------------------
 
-void ts::BATPlugin::processDescriptorList (DescriptorList& dlist)
+void ts::BATPlugin::processDescriptorList(DescriptorList& dlist)
 {
     // Process descriptor removal
     for (std::vector<DID>::const_iterator it = _removed_desc.begin(); it != _removed_desc.end(); ++it) {

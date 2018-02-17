@@ -148,7 +148,7 @@ bool ts::TSScanner::getServices(ServiceList& services) const
             const TransportStreamId ts(srv.getTSId(), srv.getONId());
             const NIT::TransportMap::const_iterator tit = _nit->transports.find(ts);
             if (tit != _nit->transports.end()) {
-                const DescriptorList& dlist(tit->second);
+                const DescriptorList& dlist(tit->second.descs);
                 // Loop on all logical_channel_number_descriptors
                 for (size_t i = dlist.search(DID_LOGICAL_CHANNEL_NUM, 0, PDS_EICTA);
                      i < dlist.count() && !srv.hasLCN();

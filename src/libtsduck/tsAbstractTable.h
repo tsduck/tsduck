@@ -35,6 +35,7 @@
 #pragma once
 #include "tsAbstractSignalization.h"
 #include "tsTablesPtr.h"
+#include "tsDescriptorList.h"
 #include "tsMPEG.h"
 
 namespace ts {
@@ -77,29 +78,176 @@ namespace ts {
         //!
         virtual ~AbstractTable() {}
 
-
-
-        class AbstractEntry
+        //!
+        //! Base inner class for table entries with a descriptor list.
+        //!
+        //! Some tables, such as PMT, BAT or NIT, contain a list or map of "entries".
+        //! Each entry contains a descriptor list. The difficulty here is that the
+        //! class DescriptorList needs to be constructed with a reference to a parent
+        //! table. The inner class EntryWithDescriptorList can be used as base class
+        //! for such entries, combined with the template container classes
+        //! EntryWithDescriptorsList and EntryWithDescriptorsMap.
+        //!
+        class TSDUCKDLL EntryWithDescriptors
         {
         public:
+            //!
+            //! List of descriptors for this entry, publicly accessible.
+            //!
             DescriptorList descs;
-        protected:
-            explicit AbstractEntry(AbstractTable* p) : descs(p) {}
+
+            //!
+            //! Basic constructor.
+            //! @param [in] table Parent table. A descriptor list is always attached to a table.
+            //!
+            explicit EntryWithDescriptors(const AbstractTable* table);
+
+            //!
+            //! Basic copy-like constructor.
+            //! @param [in] table Parent table. A descriptor list is always attached to a table.
+            //! @param [in] other Another instance to copy.
+            //!
+            EntryWithDescriptors(const AbstractTable* table, const EntryWithDescriptors& other);
+
+            //!
+            //! Assignment operator.
+            //! The parent table remains unchanged.
+            //! @param [in] other Another instance to copy.
+            //! @return A reference to this object.
+            //!
+            EntryWithDescriptors& operator=(const EntryWithDescriptors& other);
+
         private:
-            AbstractEntry() = delete;
+            // Inaccessible operations.
+            EntryWithDescriptors() = delete;
+            EntryWithDescriptors(const EntryWithDescriptors&) = delete;
         };
 
-        template<typename KEY, class ENTRY, typename std::enable_if<std::is_base_of<AbstractEntry, ENTRY>::value>::type* = nullptr>
-        class AbstractEntryMap : public std::map<KEY, ENTRY>
+        //!
+        //! Template list of subclasses of EntryWithDescriptors.
+        //! @tparam ENTRY A subclass of EntryWithDescriptors (enforced at compile-time).
+        //!
+        template<class ENTRY, typename std::enable_if<std::is_base_of<EntryWithDescriptors, ENTRY>::value>::type* = nullptr>
+        class EntryWithDescriptorsList : public std::list<ENTRY>
         {
         public:
-            explicit AbstractEntryMap(AbstractTable* p) : descs(p) {}
-            ENTRY& operator[](const KEY& key) { return emplace(key, ENTRY(_p)).first->second; }
+            //!
+            //! Explicit reference to the super class.
+            //!
+            typedef std::list<ENTRY> SuperClass;
+
+            //!
+            //! Basic constructor.
+            //! @param [in] table Parent table. A descriptor list is always attached to a table.
+            //!
+            explicit EntryWithDescriptorsList(const AbstractTable* table);
+
+            //!
+            //! Basic copy-like constructor.
+            //! @param [in] table Parent table. A descriptor list is always attached to a table.
+            //! @param [in] other Another instance to copy.
+            //!
+            EntryWithDescriptorsList(const AbstractTable* table, const SuperClass& other);
+
+            //!
+            //! Assignment operator.
+            //! The parent table remains unchanged.
+            //! @param [in] other Another instance to copy.
+            //! @return A reference to this object.
+            //!
+            EntryWithDescriptorsList& operator=(const EntryWithDescriptorsList& other);
+
+            //!
+            //! Swap two instances (override of std::list).
+            //! @param [in,out] other Another instance to swap with the current object.
+            //!
+            void swap(EntryWithDescriptorsList& other);
+
+            //!
+            //! Create a new entry at front of the list and return a reference to it.
+            //! @return A reference to the newly created element.
+            //!
+            ENTRY& newFront();
+
+            //!
+            //! Create a new entry at the back of the list and return a reference to it.
+            //! @return A reference to the newly created element.
+            //!
+            ENTRY& newBack();
+
         private:
-            AbstractTable* const _table;  // Parent table (zero for descriptor list object outside a table).
-            AbstractEntryMap() = delete;
+            // Parent table (zero for descriptor list object outside a table).
+            const AbstractTable* const _table;
+
+            // Inaccessible operations.
+            EntryWithDescriptorsList() = delete;
+            EntryWithDescriptorsList(const EntryWithDescriptorsList&) = delete;
         };
 
+        //!
+        //! Template map of subclasses of EntryWithDescriptors.
+        //! @tparam KEY A type which is used as key of the map.
+        //! @tparam ENTRY A subclass of EntryWithDescriptors (enforced at compile-time).
+        //!
+        template<typename KEY, class ENTRY, typename std::enable_if<std::is_base_of<EntryWithDescriptors, ENTRY>::value>::type* = nullptr>
+        class EntryWithDescriptorsMap : public std::map<KEY, ENTRY>
+        {
+        public:
+            //!
+            //! Explicit reference to the super class.
+            //!
+            typedef std::map<KEY, ENTRY> SuperClass;
+
+            //!
+            //! Basic constructor.
+            //! @param [in] table Parent table. A descriptor list is always attached to a table.
+            //!
+            explicit EntryWithDescriptorsMap(const AbstractTable* table);
+
+            //!
+            //! Basic copy-like constructor.
+            //! @param [in] table Parent table. A descriptor list is always attached to a table.
+            //! @param [in] other Another instance to copy.
+            //!
+            EntryWithDescriptorsMap(const AbstractTable* table, const SuperClass& other);
+
+            //!
+            //! Assignment operator.
+            //! The parent table remains unchanged.
+            //! @param [in] other Another instance to copy.
+            //! @return A reference to this object.
+            //!
+            EntryWithDescriptorsMap& operator=(const EntryWithDescriptorsMap& other);
+
+            //!
+            //! Swap two instances (override of std::list).
+            //! @param [in,out] other Another instance to swap with the current object.
+            //!
+            void swap(EntryWithDescriptorsMap& other);
+
+            //!
+            //! Access or create an entry.
+            //! @param [in] key The key of the entry to access.
+            //! @return A reference to the retrieved or created entry.
+            //!
+            ENTRY& operator[](const KEY& key);
+
+            //!
+            //! Access an existing entry in a read-only map.
+            //! @param [in] key The key of the entry to access.
+            //! @return A constant reference to the retrieved entry.
+            //! @throw std::out_of_range When the entry does not exist.
+            //!
+            const ENTRY& operator[](const KEY& key) const;
+
+        private:
+            // Parent table (zero for descriptor list object outside a table).
+            const AbstractTable* const _table;
+
+            // Inaccessible operations.
+            EntryWithDescriptorsMap() = delete;
+            EntryWithDescriptorsMap(const EntryWithDescriptorsMap&) = delete;
+        };
 
     protected:
         //!
@@ -119,3 +267,5 @@ namespace ts {
         AbstractTable() = delete;
     };
 }
+
+#include "tsAbstractTableTemplate.h"

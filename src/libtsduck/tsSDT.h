@@ -45,101 +45,26 @@ namespace ts {
     class TSDUCKDLL SDT : public AbstractLongTable
     {
     public:
-        class Service;
-        //!
-        //! List of services, indexed by service_id.
-        //!
-        typedef std::map<uint16_t, Service> ServiceMap;
-
-        // SDT public members:
-        uint16_t   ts_id;     //!< Transport stream_id.
-        uint16_t   onetw_id;  //!< Original network id.
-        ServiceMap services;  //!< Map of services: key=service_id, value=service_description.
-
-        //!
-        //! Default constructor.
-        //! @param [in] is_actual True for SDT Actual TS, false for SDT Other TS.
-        //! @param [in] version Table version number.
-        //! @param [in] is_current True if table is current, false if table is next.
-        //! @param [in] ts_id Transport stream identifier.
-        //! @param [in] onetw_id Original network id.
-        //!
-        SDT(bool is_actual = true,
-            uint8_t version = 0,
-            bool is_current = true,
-            uint16_t ts_id = 0,
-            uint16_t onetw_id = 0);
-
-        //!
-        //! Constructor from a binary table.
-        //! @param [in] table Binary table to deserialize.
-        //! @param [in] charset If not zero, character set to use without explicit table code.
-        //!
-        SDT(const BinaryTable& table, const DVBCharset* charset = 0);
-
-        //!
-        //! Check if this is an "actual" SDT.
-        //! @return True for SDT Actual TS, false for SDT Other TS.
-        //!
-        bool isActual() const
-        {
-            return _table_id == TID_SDT_ACT;
-        }
-
-        //!
-        //! Set if this is an "actual" SDT.
-        //! @param [in] is_actual True for SDT Actual TS, false for SDT Other TS.
-        //!
-        void setActual(bool is_actual)
-        {
-            _table_id = is_actual ? TID_SDT_ACT : TID_SDT_OTH;
-        }
-
-        //!
-        //! Search a service by name.
-        //! @param [in] name Service name to search.
-        //! @param [out] service_id Returned service id.
-        //! @param [in] exact_match If true, the service name must be exactly
-        //! identical to @a name. If it is false, the search is case-insensitive
-        //! and blanks are ignored.
-        //! @return True if the service is found, false if not found.
-        //!
-        bool findService(const UString& name, uint16_t& service_id, bool exact_match = false) const;
-
-        //!
-        //! Search a service by name, using a ts::Service class.
-        //! @param [in,out] service Service description. Use service name to search.
-        //! Set the service id if found.
-        //! @param [in] exact_match If true, the service name must be exactly
-        //! identical to the name in @a service. If it is false, the search is case-insensitive
-        //! and blanks are ignored.
-        //! @return True if the service is found, false if not found.
-        //!
-        bool findService(ts::Service& service, bool exact_match = false) const;
-
-        // Inherited methods
-        virtual void serialize(BinaryTable& table, const DVBCharset* = 0) const override;
-        virtual void deserialize(const BinaryTable& table, const DVBCharset* = 0) override;
-        virtual void buildXML(xml::Element*) const override;
-        virtual void fromXML(const xml::Element*) override;
-
         //!
         //! Description of a service.
         //!
-        class TSDUCKDLL Service
+        //! Note: by inheriting from EntryWithDescriptors, there is a
+        //! public field "DescriptorList descs".
+        //!
+        class TSDUCKDLL Service : public EntryWithDescriptors
         {
         public:
             // Public members
-            bool           EITs_present;    //!< There are EIT schedule on current TS.
-            bool           EITpf_present;   //!< There are EIT present/following on current TS.
-            uint8_t        running_status;  //!< Running status code.
-            bool           CA_controlled;   //!< Controlled by a CA_system.
-            DescriptorList descs;           //!< Descriptor list.
+            bool    EITs_present;    //!< There are EIT schedule on current TS.
+            bool    EITpf_present;   //!< There are EIT present/following on current TS.
+            uint8_t running_status;  //!< Running status code.
+            bool    CA_controlled;   //!< Controlled by a CA_system.
 
             //!
-            //! Default constructor:
+            //! Constructor.
+            //! @param [in] table Parent SDT.
             //!
-            Service();
+            Service(const AbstractTable* table);
 
             //!
             //! Get the service type.
@@ -232,7 +157,88 @@ namespace ts {
             //! @param [in] charset If not zero, defautl DVB character set to use.
             //!
             void setString(UString ServiceDescriptor::* field, const UString& value, uint8_t service_type, const DVBCharset* charset);
+
+            // Inaccessible operations.
+            Service() = delete;
+            Service(const Service&) = delete;
         };
+
+        //!
+        //! List of services, indexed by service_id.
+        //!
+        typedef EntryWithDescriptorsMap<uint16_t, Service> ServiceMap;
+
+        // SDT public members:
+        uint16_t   ts_id;     //!< Transport stream_id.
+        uint16_t   onetw_id;  //!< Original network id.
+        ServiceMap services;  //!< Map of services: key=service_id, value=service_description.
+
+        //!
+        //! Default constructor.
+        //! @param [in] is_actual True for SDT Actual TS, false for SDT Other TS.
+        //! @param [in] version Table version number.
+        //! @param [in] is_current True if table is current, false if table is next.
+        //! @param [in] ts_id Transport stream identifier.
+        //! @param [in] onetw_id Original network id.
+        //!
+        SDT(bool is_actual = true,
+            uint8_t version = 0,
+            bool is_current = true,
+            uint16_t ts_id = 0,
+            uint16_t onetw_id = 0);
+
+        //!
+        //! Constructor from a binary table.
+        //! @param [in] table Binary table to deserialize.
+        //! @param [in] charset If not zero, character set to use without explicit table code.
+        //!
+        SDT(const BinaryTable& table, const DVBCharset* charset = 0);
+
+        //!
+        //! Check if this is an "actual" SDT.
+        //! @return True for SDT Actual TS, false for SDT Other TS.
+        //!
+        bool isActual() const
+        {
+            return _table_id == TID_SDT_ACT;
+        }
+
+        //!
+        //! Set if this is an "actual" SDT.
+        //! @param [in] is_actual True for SDT Actual TS, false for SDT Other TS.
+        //!
+        void setActual(bool is_actual)
+        {
+            _table_id = is_actual ? TID_SDT_ACT : TID_SDT_OTH;
+        }
+
+        //!
+        //! Search a service by name.
+        //! @param [in] name Service name to search.
+        //! @param [out] service_id Returned service id.
+        //! @param [in] exact_match If true, the service name must be exactly
+        //! identical to @a name. If it is false, the search is case-insensitive
+        //! and blanks are ignored.
+        //! @return True if the service is found, false if not found.
+        //!
+        bool findService(const UString& name, uint16_t& service_id, bool exact_match = false) const;
+
+        //!
+        //! Search a service by name, using a ts::Service class.
+        //! @param [in,out] service Service description. Use service name to search.
+        //! Set the service id if found.
+        //! @param [in] exact_match If true, the service name must be exactly
+        //! identical to the name in @a service. If it is false, the search is case-insensitive
+        //! and blanks are ignored.
+        //! @return True if the service is found, false if not found.
+        //!
+        bool findService(ts::Service& service, bool exact_match = false) const;
+
+        // Inherited methods
+        virtual void serialize(BinaryTable& table, const DVBCharset* = 0) const override;
+        virtual void deserialize(const BinaryTable& table, const DVBCharset* = 0) override;
+        virtual void buildXML(xml::Element*) const override;
+        virtual void fromXML(const xml::Element*) override;
 
         //!
         //! A static method to display a section.

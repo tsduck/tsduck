@@ -67,7 +67,7 @@ ts::EIT::EIT(bool is_actual_,
     onetw_id(onetw_id_),
     segment_last(0),
     last_table_id(_table_id),
-    events()
+    events(this)
 {
     _is_valid = true;
 }
@@ -84,7 +84,7 @@ ts::EIT::EIT(const BinaryTable& table, const DVBCharset* charset) :
     onetw_id(0),
     segment_last(0),
     last_table_id(0),
-    events()
+    events(this)
 {
     deserialize(table, charset);
 }
@@ -337,12 +337,12 @@ void ts::EIT::addSection(BinaryTable& table, int& section_number, uint8_t* paylo
 // Event description constructor
 //----------------------------------------------------------------------------
 
-ts::EIT::Event::Event() :
+ts::EIT::Event::Event(const AbstractTable* table) :
+    EntryWithDescriptors(table),
     start_time(),
     duration(0),
     running_status(0),
-    CA_controlled(false),
-    descs()
+    CA_controlled(false)
 {
 }
 
@@ -477,17 +477,13 @@ void ts::EIT::fromXML(const xml::Element* element)
 
     // Get all events.
     for (size_t i = 0; _is_valid && i < children.size(); ++i) {
-        Event event;
         uint16_t event_id = 0;
         _is_valid =
             children[i]->getIntAttribute<uint16_t>(event_id, u"event_id", true, 0, 0x0000, 0xFFFF) &&
-            children[i]->getDateTimeAttribute(event.start_time, u"start_time", true) &&
-            children[i]->getTimeAttribute(event.duration, u"duration", true) &&
-            children[i]->getIntEnumAttribute<uint8_t>(event.running_status, RST::RunningStatusNames, u"running_status", false, 0) &&
-            children[i]->getBoolAttribute(event.CA_controlled, u"CA_mode", false, false) &&
-            event.descs.fromXML(children[i]);
-        if (_is_valid) {
-            events[event_id] = event;
-        }
+            children[i]->getDateTimeAttribute(events[event_id].start_time, u"start_time", true) &&
+            children[i]->getTimeAttribute(events[event_id].duration, u"duration", true) &&
+            children[i]->getIntEnumAttribute<uint8_t>(events[event_id].running_status, RST::RunningStatusNames, u"running_status", false, 0) &&
+            children[i]->getBoolAttribute(events[event_id].CA_controlled, u"CA_mode", false, false) &&
+            events[event_id].descs.fromXML(children[i]);
     }
 }

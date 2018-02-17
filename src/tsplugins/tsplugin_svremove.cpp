@@ -79,7 +79,7 @@ namespace ts {
         void processSDT(SDT&);
         void processPMT(PMT&);
         void processNITBAT(AbstractTransportListTable&);
-        void processNITBATDescriptorList (DescriptorList&);
+        void processNITBATDescriptorList(DescriptorList&);
 
         // Mark all ECM PIDs from the specified descriptor list in the specified PID set
         void addECMPID(const DescriptorList&, PIDSet&);
@@ -501,7 +501,7 @@ void ts::SVRemovePlugin::processNITBAT(AbstractTransportListTable& table)
 
     // Process each TS descriptor list
     for (AbstractTransportListTable::TransportMap::iterator it = table.transports.begin(); it != table.transports.end(); ++it) {
-        processNITBATDescriptorList(it->second);
+        processNITBATDescriptorList(it->second.descs);
     }
 }
 
@@ -510,7 +510,7 @@ void ts::SVRemovePlugin::processNITBAT(AbstractTransportListTable& table)
 //  This method processes a NIT or a BAT descriptor list
 //----------------------------------------------------------------------------
 
-void ts::SVRemovePlugin::processNITBATDescriptorList (DescriptorList& dlist)
+void ts::SVRemovePlugin::processNITBATDescriptorList(DescriptorList& dlist)
 {
     // Process all service_list_descriptors
     for (size_t i = dlist.search (DID_SERVICE_LIST); i < dlist.count(); i = dlist.search (DID_SERVICE_LIST, i + 1)) {
@@ -565,7 +565,7 @@ void ts::SVRemovePlugin::processNITBATDescriptorList (DescriptorList& dlist)
 // Packet processing method
 //----------------------------------------------------------------------------
 
-ts::ProcessorPlugin::Status ts::SVRemovePlugin::processPacket (TSPacket& pkt, bool& flush, bool& bitrate_changed)
+ts::ProcessorPlugin::Status ts::SVRemovePlugin::processPacket(TSPacket& pkt, bool& flush, bool& bitrate_changed)
 {
     const PID pid = pkt.getPID();
 

@@ -56,9 +56,23 @@ ts::PMT::PMT(uint8_t version_, bool is_current_, uint16_t service_id_, PID pcr_p
     service_id(service_id_),
     pcr_pid(pcr_pid_),
     descs(this),
-    streams()
+    streams(this)
 {
     _is_valid = true;
+}
+
+
+//----------------------------------------------------------------------------
+// Copy constructor.
+//----------------------------------------------------------------------------
+
+ts::PMT::PMT(const PMT& other) :
+    AbstractLongTable(other),
+    service_id(other.service_id),
+    pcr_pid(other.pcr_pid),
+    descs(this, other.descs),
+    streams(this, other.streams)
+{
 }
 
 
@@ -193,7 +207,7 @@ void ts::PMT::serialize(BinaryTable& table, const DVBCharset* charset) const
     }
 
     // Add one single section in the table
-    table.addSection(new Section(MY_TID,          // tid
+    table.addSection(new Section(MY_TID,           // tid
                                  false,            // is_private_section
                                  service_id,       // tid_ext
                                  version,
@@ -353,13 +367,9 @@ void ts::PMT::fromXML(const xml::Element* element)
 
     for (size_t index = 0; _is_valid && index < children.size(); ++index) {
         PID pid = PID_NULL;
-        Stream stream;
         _is_valid =
-            children[index]->getIntAttribute<uint8_t>(stream.stream_type, u"stream_type", true, 0, 0x00, 0xFF) &&
             children[index]->getIntAttribute<PID>(pid, u"elementary_PID", true, 0, 0x0000, 0x1FFF) &&
-            stream.descs.fromXML(children[index]);
-        if (_is_valid) {
-            streams[pid] = stream;
-        }
+            children[index]->getIntAttribute<uint8_t>(streams[pid].stream_type, u"stream_type", true, 0, 0x00, 0xFF) &&
+            streams[pid].descs.fromXML(children[index]);
     }
 }

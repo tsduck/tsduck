@@ -30,10 +30,10 @@
 //  Cipher Text Stealing (CTS) mode.
 //  Template class using a BlockCipher subclass as template argument.
 //
-//
 //  Several incompatible designs of CTS exist. This one implements the
 //  description in http://csrc.nist.gov/groups/ST/toolkit/BCM/documents/
 //  ciphertext%20stealing%20proposal.pdf
+//
 //----------------------------------------------------------------------------
 
 #pragma once

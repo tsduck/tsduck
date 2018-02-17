@@ -40,3 +40,27 @@ ts::AbstractTable::AbstractTable(TID tid, const UChar* xml_name) :
     _table_id(tid)
 {
 }
+
+
+//----------------------------------------------------------------------------
+// Entry base class implementation.
+//----------------------------------------------------------------------------
+
+ts::AbstractTable::EntryWithDescriptors::EntryWithDescriptors(const AbstractTable* table) :
+    descs(table)
+{
+}
+
+ts::AbstractTable::EntryWithDescriptors::EntryWithDescriptors(const AbstractTable* table, const EntryWithDescriptors& other) :
+    descs(table, other.descs)
+{
+}
+
+ts::AbstractTable::EntryWithDescriptors& ts::AbstractTable::EntryWithDescriptors::operator=(const EntryWithDescriptors& other)
+{
+    if (&other != this) {
+        // Copying the descriptor list preserves the associated table of the target.
+        descs = other.descs;
+    }
+    return *this;
+}

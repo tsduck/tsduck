@@ -174,7 +174,7 @@ void ts::TOT::deserialize(const BinaryTable& table, const DVBCharset* charset)
 
     // Get descriptor list.
     // Build a descriptor list.
-    DescriptorList dlist;
+    DescriptorList dlist(0);
     dlist.add(data, length);
     addDescriptors(dlist);
 
@@ -186,7 +186,7 @@ void ts::TOT::deserialize(const BinaryTable& table, const DVBCharset* charset)
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::TOT::serialize (BinaryTable& table, const DVBCharset* charset) const
+void ts::TOT::serialize(BinaryTable& table, const DVBCharset* charset) const
 {
     // Reinitialize table object
     table.clear();
@@ -207,7 +207,7 @@ void ts::TOT::serialize (BinaryTable& table, const DVBCharset* charset) const
     remain -= MJD_SIZE;
 
     // Build a descriptor list.
-    DescriptorList dlist;
+    DescriptorList dlist(0);
 
     // Add all regions in one or more local_time_offset_descriptor.
     LocalTimeOffsetDescriptor lto;
@@ -336,7 +336,7 @@ void ts::TOT::fromXML(const xml::Element* element)
 {
     regions.clear();
     descs.clear();
-    DescriptorList orig;
+    DescriptorList orig(this);
 
     // Get all descriptors in a separated list.
     _is_valid =

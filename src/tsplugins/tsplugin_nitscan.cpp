@@ -304,7 +304,7 @@ void ts::NITScanPlugin::processNIT(const NIT& nit)
     // Process each TS descriptor list
     for (NIT::TransportMap::const_iterator it = nit.transports.begin(); it != nit.transports.end(); ++it) {
         const TransportStreamId& tsid(it->first);
-        const DescriptorList& dlist(it->second);
+        const DescriptorList& dlist(it->second.descs);
 
         // Loop on all descriptors for the current TS
         for (size_t i = 0; i < dlist.count(); ++i) {
