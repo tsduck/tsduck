@@ -71,7 +71,7 @@ ts::DescriptorList& ts::DescriptorList::operator=(const DescriptorList& dl)
 
 ts::TID ts::DescriptorList::tableId() const
 {
-    return _table == 0 ? TID_NULL : _table->tableId();
+    return _table == 0 ? TID(TID_NULL) : _table->tableId();
 }
 
 

@@ -152,11 +152,11 @@ ts::UString ts::DektecDevice::GetPortDescription(const Dtapi::DtHwFuncDesc& port
     // Device capabilities.
     // With GCC, we have an issue here. Starting with GCC 5.1, the ABI of UString
     // has changed (see https://gcc.gnu.org/onlinedocs/libstdc++/manual/using_dual_abi.html).
-    // Up to DTAPI 5.24, DTAPI is compiled only with an old version of the compiler (pre 5.1).
-    // When using DTAPI <= 5.27 with GCC >= 5.1.0, we cannot use methods handling strings.
+    // Up to DTAPI 5.?, DTAPI is compiled only with an old version of the compiler (pre 5.1).
+    // When using DTAPI <= 5.? with GCC >= 5.1.0, we cannot use methods handling strings.
 
     UString caps;
-#if defined(TS_GCC_VERSION) && (TS_GCC_VERSION >= 50100) && (TS_DTAPI_VERSION <= 528)
+#if defined(TS_GCC_VERSION) && (TS_GCC_VERSION >= 50100) && (TS_DTAPI_VERSION <= 530)
     // This is the configuration where we cannot use DtCaps::ToString.
     // Fallback to a list of integers. There is no public value to get the
     // maximum number of capabilities. As of DTAPI 5.24, there are 256 of them.
