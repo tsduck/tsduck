@@ -352,7 +352,7 @@ namespace ts {
     //! An invalid PCR (Program Clock Reference) value, can be used as a marker.
     //!
     const uint64_t INVALID_PCR = TS_UCONST64(0xFFFFFFFFFFFFFFFF);
-    
+
     //!
     //! An invalid PTS value, can be used as a marker.
     //!
@@ -709,6 +709,7 @@ namespace ts {
         TID_SDT_ACT       = 0x42, //!< Table id for Service Description Table - Actual TS
         TID_SDT_OTH       = 0x46, //!< Table id for Service Description Table - Other TS
         TID_BAT           = 0x4A, //!< Table id for Bouquet Association Table
+        TID_INT           = 0x4C, //!< Table id for IP/MAC Notification Table
         TID_EIT_PF_ACT    = 0x4E, //!< Table id for EIT present/following - Actual network
         TID_EIT_PF_OTH    = 0x4F, //!< Table id for EIT present/following - Other network
         TID_EIT_S_ACT_MIN = 0x50, //!< Table id for EIT schedule - Actual network
