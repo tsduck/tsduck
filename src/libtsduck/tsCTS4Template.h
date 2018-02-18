@@ -30,9 +30,9 @@
 //  Cipher text Stealing (CTS) mode.
 //  Template class using a BlockCipher subclass as template argument.
 //
-//
 //  Several incompatible designs of CTS exist. This one implements the
 //  weird ST 71xx ECB-CTS implementation.
+//
 //----------------------------------------------------------------------------
 
 #pragma once

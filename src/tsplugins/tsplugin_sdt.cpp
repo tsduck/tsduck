@@ -289,13 +289,12 @@ void ts::SDTPlugin::processSDT(SDT& sdt)
         // Create new service is not existing
         if (sdt.services.find(_service.getId()) == sdt.services.end()) {
             // Service did not exist, create a new one with all defaults
-            SDT::Service sv;
+            SDT::Service& sv(sdt.services[_service.getId()]);
             sv.EITs_present = false;
             sv.EITpf_present = false;
             sv.running_status = 4; // running
             sv.CA_controlled = false;
             sv.descs.add(ServiceDescriptor(0x01, u"", u""));
-            sdt.services.insert(std::make_pair(_service.getId(), sv));
         }
 
         // Locate service to modify

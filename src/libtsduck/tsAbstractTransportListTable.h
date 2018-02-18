@@ -49,7 +49,7 @@ namespace ts {
         //!
         //! List of DescriptorList's, indexed by TransportStreamId.
         //!
-        typedef std::map <TransportStreamId, DescriptorList> TransportMap;
+        typedef EntryWithDescriptorsMap<TransportStreamId, EntryWithDescriptors> TransportMap;
 
         //!
         //! Map of section serialization "hint".
@@ -58,7 +58,7 @@ namespace ts {
         //! When unspecified for a TS, the corresponding TS description is
         //! serialized in an arbitrary section.
         //!
-        typedef std::map <TransportStreamId, int> SectionHintsMap;
+        typedef std::map<TransportStreamId, int> SectionHintsMap;
 
         // NIT/BAT common public members:
         DescriptorList  descs;          //!< Top-level descriptor list.
@@ -68,6 +68,12 @@ namespace ts {
         // Inherited methods
         virtual void serialize(BinaryTable& table, const DVBCharset* = 0) const override;
         virtual void deserialize(const BinaryTable& table, const DVBCharset* = 0) override;
+
+        //!
+        //! Copy constructor.
+        //! @param [in] other Other instance to copy.
+        //!
+        AbstractTransportListTable(const AbstractTransportListTable& other);
 
     protected:
         //!

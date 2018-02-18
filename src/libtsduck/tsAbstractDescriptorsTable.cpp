@@ -44,7 +44,7 @@ TSDUCK_SOURCE;
 
 ts::AbstractDescriptorsTable::AbstractDescriptorsTable(TID tid_, const UChar* xml_name, uint16_t tid_ext_, uint8_t version_, bool is_current_) :
     AbstractLongTable(tid_, xml_name, version_, is_current_),
-    descs(),
+    descs(this),
     _tid_ext(tid_ext_)
 {
     _is_valid = true;
@@ -57,7 +57,7 @@ ts::AbstractDescriptorsTable::AbstractDescriptorsTable(TID tid_, const UChar* xm
 
 ts::AbstractDescriptorsTable::AbstractDescriptorsTable(TID tid, const UChar* xml_name, const BinaryTable& table, const DVBCharset* charset) :
     AbstractLongTable(tid, xml_name),
-    descs(),
+    descs(this),
     _tid_ext(0xFFFF)
 {
     deserialize(table, charset);

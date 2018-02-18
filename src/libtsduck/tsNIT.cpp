@@ -48,7 +48,7 @@ TS_ID_SECTION_DISPLAY(ts::NIT::DisplaySection, ts::TID_NIT_OTH);
 
 
 //----------------------------------------------------------------------------
-// Constructors
+// Constructors and assignment.
 //----------------------------------------------------------------------------
 
 ts::NIT::NIT(bool is_actual, uint8_t vers, bool cur, uint16_t id) :
@@ -61,6 +61,21 @@ ts::NIT::NIT(const BinaryTable& table, const DVBCharset* charset) :
     AbstractTransportListTable(TID_NIT_ACT, MY_XML_NAME, table, charset),  // TID updated by deserialize()
     network_id(_tid_ext)
 {
+}
+
+ts::NIT::NIT(const NIT& other) :
+    AbstractTransportListTable(other),
+    network_id(_tid_ext)
+{
+}
+
+ts::NIT& ts::NIT::operator=(const NIT& other)
+{
+    if (&other != this) {
+        // Assign super class but leave uint16_t& network_id unchanged.
+        AbstractTransportListTable::operator=(other);
+    }
+    return *this;
 }
 
 
@@ -134,7 +149,7 @@ void ts::NIT::buildXML(xml::Element* root) const
         xml::Element* e = root->addElement(u"transport_stream");
         e->setIntAttribute(u"transport_stream_id", it->first.transport_stream_id, true);
         e->setIntAttribute(u"original_network_id", it->first.original_network_id, true);
-        it->second.toXML(e);
+        it->second.descs.toXML(e);
     }
 }
 
@@ -166,6 +181,6 @@ void ts::NIT::fromXML(const xml::Element* element)
         _is_valid =
             children[index]->getIntAttribute<uint16_t>(ts.transport_stream_id, u"transport_stream_id", true, 0, 0x0000, 0xFFFF) &&
             children[index]->getIntAttribute<uint16_t>(ts.original_network_id, u"original_network_id", true, 0, 0x0000, 0xFFFF) &&
-            transports[ts].fromXML(children[index]);
+            transports[ts].descs.fromXML(children[index]);
     }
 }

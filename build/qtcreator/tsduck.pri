@@ -68,7 +68,7 @@ linux|mac|mingw {
         -Wuninitialized -Wno-unused-parameter -Wfloat-equal -Wpointer-arith -Wsign-promo \
         -Woverloaded-virtual -Wctor-dtor-privacy -Wnon-virtual-dtor -Woverloaded-virtual
     greaterThan(GCC_MAJOR, 4): QMAKE_CXXFLAGS_WARN_ON += -Wpedantic -Weffc++ -Wshadow
-    QMAKE_CXXFLAGS += -fno-strict-aliasing -fstack-protector-all
+    QMAKE_CXXFLAGS += -fno-strict-aliasing -fstack-protector-all -std=c++11
 }
 linux|mingw {
     QMAKE_CXXFLAGS_WARN_ON += -Wundef -Wcast-align -Wstrict-null-sentinel

@@ -14,6 +14,7 @@ HEADERS += \
     ../../../src/libtsduck/tsAbstractLongTable.h \
     ../../../src/libtsduck/tsAbstractSignalization.h \
     ../../../src/libtsduck/tsAbstractTable.h \
+    ../../../src/libtsduck/tsAbstractTableTemplate.h \
     ../../../src/libtsduck/tsAbstractTransportListTable.h \
     ../../../src/libtsduck/tsAC3Attributes.h \
     ../../../src/libtsduck/tsAC3Descriptor.h \

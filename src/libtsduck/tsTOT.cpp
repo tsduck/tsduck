@@ -50,30 +50,30 @@ TS_ID_SECTION_DISPLAY(ts::TOT::DisplaySection, MY_TID);
 
 
 //----------------------------------------------------------------------------
-// Default constructor:
+// Constructors
 //----------------------------------------------------------------------------
 
 ts::TOT::TOT(const Time& utc_time_) :
     AbstractTable(MY_TID, MY_XML_NAME),
     utc_time(utc_time_),
     regions(),
-    descs()
+    descs(this)
 {
     _is_valid = true;
 }
 
-
-//----------------------------------------------------------------------------
-// Constructor from a binary table
-//----------------------------------------------------------------------------
-
 ts::TOT::TOT(const BinaryTable& table, const DVBCharset* charset) :
-    AbstractTable(MY_TID, MY_XML_NAME),
-    utc_time(),
-    regions(),
-    descs()
+    TOT()
 {
     deserialize(table, charset);
+}
+
+ts::TOT::TOT(const TOT& other) :
+    AbstractTable(other),
+    utc_time(other.utc_time),
+    regions(other.regions),
+    descs(this, other.descs)
+{
 }
 
 
@@ -177,7 +177,7 @@ void ts::TOT::deserialize(const BinaryTable& table, const DVBCharset* charset)
 
     // Get descriptor list.
     // Build a descriptor list.
-    DescriptorList dlist;
+    DescriptorList dlist(0);
     dlist.add(data, length);
     addDescriptors(dlist);
 
@@ -189,7 +189,7 @@ void ts::TOT::deserialize(const BinaryTable& table, const DVBCharset* charset)
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::TOT::serialize (BinaryTable& table, const DVBCharset* charset) const
+void ts::TOT::serialize(BinaryTable& table, const DVBCharset* charset) const
 {
     // Reinitialize table object
     table.clear();
@@ -210,7 +210,7 @@ void ts::TOT::serialize (BinaryTable& table, const DVBCharset* charset) const
     remain -= MJD_SIZE;
 
     // Build a descriptor list.
-    DescriptorList dlist;
+    DescriptorList dlist(0);
 
     // Add all regions in one or more local_time_offset_descriptor.
     LocalTimeOffsetDescriptor lto;
@@ -339,7 +339,7 @@ void ts::TOT::fromXML(const xml::Element* element)
 {
     regions.clear();
     descs.clear();
-    DescriptorList orig;
+    DescriptorList orig(this);
 
     // Get all descriptors in a separated list.
     _is_valid =

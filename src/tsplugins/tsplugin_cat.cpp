@@ -108,7 +108,7 @@ ts::CATPlugin::CATPlugin (TSP* tsp_) :
     _new_version(0),
     _remove_casid(),
     _remove_pid(),
-    _add_descs(),
+    _add_descs(0),
     _demux(this),
     _pzer()
 {
