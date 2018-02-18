@@ -50,7 +50,7 @@ TS_ID_SECTION_DISPLAY(ts::TOT::DisplaySection, MY_TID);
 
 
 //----------------------------------------------------------------------------
-// Default constructor:
+// Constructors
 //----------------------------------------------------------------------------
 
 ts::TOT::TOT(const Time& utc_time_) :
@@ -62,15 +62,18 @@ ts::TOT::TOT(const Time& utc_time_) :
     _is_valid = true;
 }
 
-
-//----------------------------------------------------------------------------
-// Constructor from a binary table
-//----------------------------------------------------------------------------
-
 ts::TOT::TOT(const BinaryTable& table, const DVBCharset* charset) :
     TOT()
 {
     deserialize(table, charset);
+}
+
+ts::TOT::TOT(const TOT& other) :
+    AbstractTable(other),
+    utc_time(other.utc_time),
+    regions(other.regions),
+    descs(this, other.descs)
+{
 }
 
 

@@ -48,10 +48,20 @@ public:
 
     void testAssignPMT();
     void testCopyPMT();
+    void testBAT();
+    void testEIT();
+    void testNIT();
+    void testSDT();
+    void testTOT();
 
     CPPUNIT_TEST_SUITE(TableTest);
     CPPUNIT_TEST(testAssignPMT);
     CPPUNIT_TEST(testCopyPMT);
+    CPPUNIT_TEST(testBAT);
+    CPPUNIT_TEST(testEIT);
+    CPPUNIT_TEST(testNIT);
+    CPPUNIT_TEST(testSDT);
+    CPPUNIT_TEST(testTOT);
     CPPUNIT_TEST_SUITE_END();
 };
 
@@ -158,4 +168,110 @@ void TableTest::testCopyPMT()
     CPPUNIT_ASSERT_EQUAL(ts::DID(ts::DID_CA), pmt2.streams[4004].descs[1]->tag());
     CPPUNIT_ASSERT_EQUAL(ts::TID(ts::TID_PMT), pmt2.streams[4004].descs.tableId());
     CPPUNIT_ASSERT(pmt2.streams[4004].descs.table() == &pmt2);
+}
+
+void TableTest::testBAT()
+{
+    ts::BAT bat1;
+    bat1.transports[ts::TransportStreamId(1,2)].descs.add(ts::CADescriptor());
+    CPPUNIT_ASSERT(bat1.descs.table() == &bat1);
+    CPPUNIT_ASSERT_EQUAL(size_t(1), bat1.transports.size());
+    CPPUNIT_ASSERT(bat1.transports.begin()->first == ts::TransportStreamId(1,2));
+    CPPUNIT_ASSERT(bat1.transports.begin()->second.descs.table() == &bat1);
+
+    ts::BAT bat2(bat1);
+    CPPUNIT_ASSERT(bat2.descs.table() == &bat2);
+    CPPUNIT_ASSERT_EQUAL(size_t(1), bat2.transports.size());
+    CPPUNIT_ASSERT(bat2.transports.begin()->first == ts::TransportStreamId(1,2));
+    CPPUNIT_ASSERT(bat2.transports.begin()->second.descs.table() == &bat2);
+
+    ts::BAT bat3;
+    bat3 = bat1;
+    CPPUNIT_ASSERT(bat3.descs.table() == &bat3);
+    CPPUNIT_ASSERT_EQUAL(size_t(1), bat3.transports.size());
+    CPPUNIT_ASSERT(bat3.transports.begin()->first == ts::TransportStreamId(1,2));
+    CPPUNIT_ASSERT(bat3.transports.begin()->second.descs.table() == &bat3);
+}
+
+void TableTest::testEIT()
+{
+    ts::EIT eit1;
+    eit1.events[1].descs.add(ts::CADescriptor());
+    CPPUNIT_ASSERT_EQUAL(size_t(1), eit1.events.size());
+    CPPUNIT_ASSERT(eit1.events.begin()->first == 1);
+    CPPUNIT_ASSERT(eit1.events.begin()->second.descs.table() == &eit1);
+
+    ts::EIT eit2(eit1);
+    CPPUNIT_ASSERT_EQUAL(size_t(1), eit2.events.size());
+    CPPUNIT_ASSERT(eit2.events.begin()->first == 1);
+    CPPUNIT_ASSERT(eit2.events.begin()->second.descs.table() == &eit2);
+
+    ts::EIT eit3;
+    eit3 = eit1;
+    CPPUNIT_ASSERT_EQUAL(size_t(1), eit3.events.size());
+    CPPUNIT_ASSERT(eit3.events.begin()->first == 1);
+    CPPUNIT_ASSERT(eit3.events.begin()->second.descs.table() == &eit3);
+}
+
+void TableTest::testNIT()
+{
+    ts::NIT nit1;
+    nit1.transports[ts::TransportStreamId(1,2)].descs.add(ts::CADescriptor());
+    CPPUNIT_ASSERT(nit1.descs.table() == &nit1);
+    CPPUNIT_ASSERT_EQUAL(size_t(1), nit1.transports.size());
+    CPPUNIT_ASSERT(nit1.transports.begin()->first == ts::TransportStreamId(1,2));
+    CPPUNIT_ASSERT(nit1.transports.begin()->second.descs.table() == &nit1);
+
+    ts::NIT nit2(nit1);
+    CPPUNIT_ASSERT(nit2.descs.table() == &nit2);
+    CPPUNIT_ASSERT_EQUAL(size_t(1), nit2.transports.size());
+    CPPUNIT_ASSERT(nit2.transports.begin()->first == ts::TransportStreamId(1,2));
+    CPPUNIT_ASSERT(nit2.transports.begin()->second.descs.table() == &nit2);
+
+    ts::NIT nit3;
+    nit3 = nit1;
+    CPPUNIT_ASSERT(nit3.descs.table() == &nit3);
+    CPPUNIT_ASSERT_EQUAL(size_t(1), nit3.transports.size());
+    CPPUNIT_ASSERT(nit3.transports.begin()->first == ts::TransportStreamId(1,2));
+    CPPUNIT_ASSERT(nit3.transports.begin()->second.descs.table() == &nit3);
+}
+
+void TableTest::testSDT()
+{
+    ts::SDT sdt1;
+    sdt1.services[1].descs.add(ts::CADescriptor());
+    CPPUNIT_ASSERT_EQUAL(size_t(1), sdt1.services.size());
+    CPPUNIT_ASSERT(sdt1.services.begin()->first == 1);
+    CPPUNIT_ASSERT(sdt1.services.begin()->second.descs.table() == &sdt1);
+
+    ts::SDT sdt2(sdt1);
+    CPPUNIT_ASSERT_EQUAL(size_t(1), sdt2.services.size());
+    CPPUNIT_ASSERT(sdt2.services.begin()->first == 1);
+    CPPUNIT_ASSERT(sdt2.services.begin()->second.descs.table() == &sdt2);
+
+    ts::SDT sdt3;
+    sdt3 = sdt1;
+    CPPUNIT_ASSERT_EQUAL(size_t(1), sdt3.services.size());
+    CPPUNIT_ASSERT(sdt3.services.begin()->first == 1);
+    CPPUNIT_ASSERT(sdt3.services.begin()->second.descs.table() == &sdt3);
+}
+
+void TableTest::testTOT()
+{
+    ts::TOT tot1;
+    tot1.descs.add(ts::CADescriptor());
+    CPPUNIT_ASSERT(tot1.descs.table() == &tot1);
+    CPPUNIT_ASSERT_EQUAL(size_t(1), tot1.descs.count());
+    CPPUNIT_ASSERT_EQUAL(ts::DID(ts::DID_CA), tot1.descs[0]->tag());
+
+    ts::TOT tot2(tot1);
+    CPPUNIT_ASSERT(tot2.descs.table() == &tot2);
+    CPPUNIT_ASSERT_EQUAL(size_t(1), tot2.descs.count());
+    CPPUNIT_ASSERT_EQUAL(ts::DID(ts::DID_CA), tot2.descs[0]->tag());
+
+    ts::TOT tot3;
+    tot3 = tot1;
+    CPPUNIT_ASSERT(tot3.descs.table() == &tot3);
+    CPPUNIT_ASSERT_EQUAL(size_t(1), tot2.descs.count());
+    CPPUNIT_ASSERT_EQUAL(ts::DID(ts::DID_CA), tot2.descs[0]->tag());
 }

@@ -62,6 +62,18 @@ namespace ts {
         NIT(const BinaryTable& table, const DVBCharset* charset = 0);
 
         //!
+        //! Copy constructor.
+        //! @param [in] other Other instance to copy.
+        //!
+        NIT(const NIT& other);
+
+        //!
+        //! Assignment operator.
+        //! @param [in] other Other instance to copy.
+        //!
+        NIT& operator=(const NIT& other);
+
+        //!
         //! Check if this is an "actual" NIT.
         //! @return True for NIT Actual Network, false for NIT Other Network.
         //!

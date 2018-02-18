@@ -195,6 +195,12 @@ namespace ts {
         SDT(const BinaryTable& table, const DVBCharset* charset = 0);
 
         //!
+        //! Copy constructor.
+        //! @param [in] other Other instance to copy.
+        //!
+        SDT(const SDT& other);
+
+        //!
         //! Check if this is an "actual" SDT.
         //! @return True for SDT Actual TS, false for SDT Other TS.
         //!

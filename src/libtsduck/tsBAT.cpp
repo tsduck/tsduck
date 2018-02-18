@@ -47,7 +47,7 @@ TS_ID_SECTION_DISPLAY(ts::BAT::DisplaySection, MY_TID);
 
 
 //----------------------------------------------------------------------------
-// Constructors
+// Constructors and assignment.
 //----------------------------------------------------------------------------
 
 ts::BAT::BAT(uint8_t vers, bool cur, uint16_t id) :
@@ -60,6 +60,21 @@ ts::BAT::BAT(const BinaryTable& table, const DVBCharset* charset) :
     AbstractTransportListTable(MY_TID, MY_XML_NAME, table, charset),
     bouquet_id(_tid_ext)
 {
+}
+
+ts::BAT::BAT(const BAT& other) :
+    AbstractTransportListTable(other),
+    bouquet_id(_tid_ext)
+{
+}
+
+ts::BAT& ts::BAT::operator=(const BAT& other)
+{
+    if (&other != this) {
+        // Assign super class but leave uint16_t& bouquet_id unchanged.
+        AbstractTransportListTable::operator=(other);
+    }
+    return *this;
 }
 
 

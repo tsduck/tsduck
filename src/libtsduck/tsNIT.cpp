@@ -48,7 +48,7 @@ TS_ID_SECTION_DISPLAY(ts::NIT::DisplaySection, ts::TID_NIT_OTH);
 
 
 //----------------------------------------------------------------------------
-// Constructors
+// Constructors and assignment.
 //----------------------------------------------------------------------------
 
 ts::NIT::NIT(bool is_actual, uint8_t vers, bool cur, uint16_t id) :
@@ -61,6 +61,21 @@ ts::NIT::NIT(const BinaryTable& table, const DVBCharset* charset) :
     AbstractTransportListTable(TID_NIT_ACT, MY_XML_NAME, table, charset),  // TID updated by deserialize()
     network_id(_tid_ext)
 {
+}
+
+ts::NIT::NIT(const NIT& other) :
+    AbstractTransportListTable(other),
+    network_id(_tid_ext)
+{
+}
+
+ts::NIT& ts::NIT::operator=(const NIT& other)
+{
+    if (&other != this) {
+        // Assign super class but leave uint16_t& network_id unchanged.
+        AbstractTransportListTable::operator=(other);
+    }
+    return *this;
 }
 
 
