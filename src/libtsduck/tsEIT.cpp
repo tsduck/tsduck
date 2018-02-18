@@ -50,7 +50,7 @@ TS_ID_SECTION_RANGE_DISPLAY(ts::EIT::DisplaySection, ts::TID_EIT_MIN, ts::TID_EI
 
 
 //----------------------------------------------------------------------------
-// Default constructor
+// Constructors
 //----------------------------------------------------------------------------
 
 ts::EIT::EIT(bool is_actual_,
@@ -72,11 +72,6 @@ ts::EIT::EIT(bool is_actual_,
     _is_valid = true;
 }
 
-
-//----------------------------------------------------------------------------
-// Constructor from a binary table
-//----------------------------------------------------------------------------
-
 ts::EIT::EIT(const BinaryTable& table, const DVBCharset* charset) :
     AbstractLongTable(TID_EIT_PF_ACT, MY_XML_NAME),  // TID will be updated by deserialize()
     service_id(0),
@@ -87,6 +82,18 @@ ts::EIT::EIT(const BinaryTable& table, const DVBCharset* charset) :
     events(this)
 {
     deserialize(table, charset);
+}
+
+
+ts::EIT::EIT(const EIT& other) :
+    AbstractLongTable(other),
+    service_id(other.service_id),
+    ts_id(other.ts_id),
+    onetw_id(other.onetw_id),
+    segment_last(other.segment_last),
+    last_table_id(other.last_table_id),
+    events(this, other.events)
+{
 }
 
 

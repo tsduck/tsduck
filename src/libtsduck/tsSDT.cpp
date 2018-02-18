@@ -50,7 +50,7 @@ TS_ID_SECTION_DISPLAY(ts::SDT::DisplaySection, ts::TID_SDT_OTH);
 
 
 //----------------------------------------------------------------------------
-// Default constructor
+// Constructors
 //----------------------------------------------------------------------------
 
 ts::SDT::SDT(bool is_actual_,
@@ -66,11 +66,6 @@ ts::SDT::SDT(bool is_actual_,
     _is_valid = true;
 }
 
-
-//----------------------------------------------------------------------------
-// Constructor from a binary table
-//----------------------------------------------------------------------------
-
 ts::SDT::SDT(const BinaryTable& table, const DVBCharset* charset) :
     AbstractLongTable(TID_SDT_ACT, MY_XML_NAME),  // TID will be updated by deserialize()
     ts_id(0),
@@ -78,6 +73,14 @@ ts::SDT::SDT(const BinaryTable& table, const DVBCharset* charset) :
     services(this)
 {
     deserialize(table, charset);
+}
+
+ts::SDT::SDT(const SDT& other) :
+    AbstractLongTable(other),
+    ts_id(other.ts_id),
+    onetw_id(other.onetw_id),
+    services(this, other.services)
+{
 }
 
 

@@ -121,6 +121,12 @@ namespace ts {
         EIT(const BinaryTable& table, const DVBCharset* charset = 0);
 
         //!
+        //! Copy constructor.
+        //! @param [in] other Other instance to copy.
+        //!
+        EIT(const EIT& other);
+
+        //!
         //! Check if this is an "actual" EIT.
         //! @return True for EIT Actual TS, false for EIT Other TS.
         //!

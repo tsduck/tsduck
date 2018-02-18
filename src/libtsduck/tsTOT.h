@@ -67,6 +67,12 @@ namespace ts {
         TOT(const BinaryTable& table, const DVBCharset* charset = 0);
 
         //!
+        //! Copy constructor.
+        //! @param [in] other Other instance to copy.
+        //!
+        TOT(const TOT& other);
+
+        //!
         //! Get the local time according to a region description.
         //! Use the UTC time from the TOT and the local time offset from the region.
         //! @param [in] region Region to get the local time for.

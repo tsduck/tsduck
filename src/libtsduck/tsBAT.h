@@ -60,6 +60,18 @@ namespace ts {
         //!
         BAT(const BinaryTable& table, const DVBCharset* charset = 0);
 
+        //!
+        //! Copy constructor.
+        //! @param [in] other Other instance to copy.
+        //!
+        BAT(const BAT& other);
+
+        //!
+        //! Assignment operator.
+        //! @param [in] other Other instance to copy.
+        //!
+        BAT& operator=(const BAT& other);
+
         // Inherited methods
         virtual void buildXML(xml::Element*) const override;
         virtual void fromXML(const xml::Element*) override;
