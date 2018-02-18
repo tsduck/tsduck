@@ -174,6 +174,7 @@ ts::UString ts::TablesFactory::descriptorTables(const UString& desc_node_name) c
             result.append(u", ");
         }
         result.append(names::TID(it->second, CAS_OTHER, names::NAME | names::HEXA));
+        ++it;
     }
 
     return result;
@@ -187,7 +188,7 @@ ts::UString ts::TablesFactory::descriptorTables(const UString& desc_node_name) c
 template <typename FUNCTION>
 FUNCTION ts::TablesFactory::getDescriptorFunction(const EDID& edid, TID tid, const std::map<EDID,FUNCTION>& funcMap) const
 {
-    std::map<EDID, FUNCTION>::const_iterator it(funcMap.end());
+    typename std::map<EDID, FUNCTION>::const_iterator it(funcMap.end());
     if (edid.isStandard() && tid != TID_NULL) {
         // For standard descriptors, first search a table-specific descriptor.
         it = funcMap.find(EDID::TableSpecific(edid.did(), tid));
