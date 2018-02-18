@@ -58,7 +58,7 @@ ts::PrivateDataIndicatorDescriptor::PrivateDataIndicatorDescriptor(uint32_t pdi)
 //----------------------------------------------------------------------------
 
 ts::PrivateDataIndicatorDescriptor::PrivateDataIndicatorDescriptor(const Descriptor& desc, const DVBCharset* charset) :
-    PrivateDataIndicatorDescriptor()
+    PrivateDataIndicatorDescriptor(0)
 {
     deserialize(desc, charset);
 }

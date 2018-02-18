@@ -49,7 +49,7 @@ namespace ts {
         //!
         //! Default constructor.
         //!
-        explicit TimeShiftedServiceDescriptor();
+        TimeShiftedServiceDescriptor();
 
         //!
         //! Constructor from a binary descriptor

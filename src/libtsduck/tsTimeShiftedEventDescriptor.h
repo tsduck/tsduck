@@ -50,7 +50,7 @@ namespace ts {
         //!
         //! Default constructor.
         //!
-        explicit TimeShiftedEventDescriptor();
+        TimeShiftedEventDescriptor();
 
         //!
         //! Constructor from a binary descriptor
