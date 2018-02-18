@@ -709,7 +709,8 @@ namespace ts {
         TID_SDT_ACT       = 0x42, //!< Table id for Service Description Table - Actual TS
         TID_SDT_OTH       = 0x46, //!< Table id for Service Description Table - Other TS
         TID_BAT           = 0x4A, //!< Table id for Bouquet Association Table
-        TID_INT           = 0x4C, //!< Table id for IP/MAC Notification Table
+        TID_UNT           = 0x4B, //!< Table id for Update Notification Table (SSU, ETSI TS 102 006)
+        TID_INT           = 0x4C, //!< Table id for IP/MAC Notification Table (MPE, ETSI EN 301 192)
         TID_EIT_PF_ACT    = 0x4E, //!< Table id for EIT present/following - Actual network
         TID_EIT_PF_OTH    = 0x4F, //!< Table id for EIT present/following - Other network
         TID_EIT_S_ACT_MIN = 0x50, //!< Table id for EIT schedule - Actual network
@@ -720,7 +721,7 @@ namespace ts {
         TID_RST           = 0x71, //!< Table id for Running Status Table
         TID_ST            = 0x72, //!< Table id for Stuffing Table
         TID_TOT           = 0x73, //!< Table id for Time Offset Table
-        TID_AIT           = 0x74, //!< Table id for Application Information Table
+        TID_AIT           = 0x74, //!< Table id for Application Information Table (HbbTV, ETSI TS 102 809)
         TID_CT            = 0x75, //!< Table id for Container Table (TV-Anytime)
         TID_RCT           = 0x76, //!< Table id for Related Content Table (TV-Anytime)
         TID_CIT           = 0x77, //!< Table id for Content Identifier Table (TV-Anytime)
