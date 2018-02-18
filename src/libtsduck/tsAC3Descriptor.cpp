@@ -41,9 +41,9 @@ TSDUCK_SOURCE;
 #define MY_XML_NAME u"AC3_descriptor"
 #define MY_DID ts::DID_AC3
 
-TS_ID_DESCRIPTOR_FACTORY(ts::AC3Descriptor, ts::EDID(MY_DID));
+TS_ID_DESCRIPTOR_FACTORY(ts::AC3Descriptor, ts::EDID::Standard(MY_DID));
 TS_XML_DESCRIPTOR_FACTORY(ts::AC3Descriptor, MY_XML_NAME);
-TS_ID_DESCRIPTOR_DISPLAY(ts::AC3Descriptor::DisplayDescriptor, ts::EDID(MY_DID));
+TS_ID_DESCRIPTOR_DISPLAY(ts::AC3Descriptor::DisplayDescriptor, ts::EDID::Standard(MY_DID));
 
 
 //----------------------------------------------------------------------------

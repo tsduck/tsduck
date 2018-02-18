@@ -189,7 +189,7 @@ void SectionFileTest::testGenericDescriptor()
     ts::xml::Document doc(report());
     ts::xml::Element* root = doc.initialize(u"test");
     CPPUNIT_ASSERT(root != 0);
-    CPPUNIT_ASSERT(desc.toXML(root, 0, true) != 0);
+    CPPUNIT_ASSERT(desc.toXML(root, 0, ts::TID_NULL, true) != 0);
 
     ts::UString text(doc.toString());
     utest::Out() << "SectionFileTest::testGenericDescriptor: " << text << std::endl;

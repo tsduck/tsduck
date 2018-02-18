@@ -28,61 +28,57 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Representation of a Bouquet Association Table (BAT)
+//!  Representation of an application_usage_descriptor (AIT specific).
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsAbstractTransportListTable.h"
+#include "tsAbstractDescriptor.h"
 
 namespace ts {
     //!
-    //! Representation of a Bouquet Association Table (BAT).
+    //! Representation of an application_usage_descriptor (AIT specific).
     //!
-    class TSDUCKDLL BAT : public AbstractTransportListTable
+    //! This descriptor cannot be present in other tables than an AIT
+    //! because its tag reuses an MPEG-defined one.
+    //!
+    //! @see ETSI TS 102 809, 5.3.5.5.
+    //!
+    class TSDUCKDLL ApplicationUsageDescriptor : public AbstractDescriptor
     {
     public:
-        // BAT public members:
-        uint16_t& bouquet_id;  //!< Bouquet identifier.
+        // ApplicationUsageDescriptor public members:
+        uint8_t usage_type;  //!< Usage type.
 
         //!
         //! Default constructor.
-        //! @param [in] vers Table version number.
-        //! @param [in] cur True if table is current, false if table is next.
-        //! @param [in] id Bouquet identifier.
+        //! @param [in] type Usage type.
         //!
-        BAT(uint8_t vers = 0, bool cur = true, uint16_t id = 0);
+        ApplicationUsageDescriptor(uint8_t type = 0);
 
         //!
-        //! Constructor from a binary table.
-        //! @param [in] table Binary table to deserialize.
+        //! Constructor from a binary descriptor.
+        //! @param [in] bin A binary descriptor to deserialize.
         //! @param [in] charset If not zero, character set to use without explicit table code.
         //!
-        BAT(const BinaryTable& table, const DVBCharset* charset = 0);
-
-        //!
-        //! Copy constructor.
-        //! @param [in] other Other instance to copy.
-        //!
-        BAT(const BAT& other);
-
-        //!
-        //! Assignment operator.
-        //! @param [in] other Other instance to copy.
-        //! @return A reference to this object.
-        //!
-        BAT& operator=(const BAT& other);
+        ApplicationUsageDescriptor(const Descriptor& bin, const DVBCharset* charset = 0);
 
         // Inherited methods
+        virtual void serialize(Descriptor&, const DVBCharset* = 0) const override;
+        virtual void deserialize(const Descriptor&, const DVBCharset* = 0) override;
         virtual void buildXML(xml::Element*) const override;
         virtual void fromXML(const xml::Element*) override;
 
         //!
-        //! A static method to display a BAT section.
+        //! Static method to display a descriptor.
         //! @param [in,out] display Display engine.
-        //! @param [in] section The section to display.
+        //! @param [in] did Descriptor id.
+        //! @param [in] payload Address of the descriptor payload.
+        //! @param [in] size Size in bytes of the descriptor payload.
         //! @param [in] indent Indentation width.
+        //! @param [in] tid Table id of table containing the descriptors.
+        //! @param [in] pds Private Data Specifier. Used to interpret private descriptors.
         //!
-        static void DisplaySection(TablesDisplay& display, const Section& section, int indent);
+        static void DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* payload, size_t size, int indent, TID tid, PDS pds);
     };
 }

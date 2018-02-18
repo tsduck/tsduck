@@ -52,7 +52,7 @@ namespace ts {
             VALUE         = 0x0001,   //! Include the value: "name (value)".
             FIRST         = 0x0002,   //! Same with value first: "value (name)".
             HEXA          = 0x0004,   //! Value in hexadecimal. This is the default.
-            DECIMAL       = 0x0008,   //! Value in decimal. Both USE_DECIMAL and USE_HEXA can be specified.
+            DECIMAL       = 0x0008,   //! Value in decimal. Both DECIMAL and HEXA can be specified.
             BOTH          = HEXA | DECIMAL,          //! Value in decimal and hexadecimal.
             HEXA_FIRST    = FIRST | HEXA,            //! Value in hexadecimal in first position.
             DECIMAL_FIRST = FIRST | DECIMAL,         //! Value in decimal in first position.
@@ -73,10 +73,11 @@ namespace ts {
         //! Name of Descriptor ID.
         //! @param [in] did Descriptor ID.
         //! @param [in] pds Private data specified if @a did >= 0x80.
+        //! @param [in] tid Optional id of the enclosing table.
         //! @param [in] flags Presentation flags.
         //! @return The corresponding name.
         //!
-        TSDUCKDLL UString DID(uint8_t did, uint32_t pds = 0, Flags flags = NAME);
+        TSDUCKDLL UString DID(uint8_t did, uint32_t pds = 0, uint8_t tid = 0xFF, Flags flags = NAME);
 
         //!
         //! Name of Extended descriptor ID.

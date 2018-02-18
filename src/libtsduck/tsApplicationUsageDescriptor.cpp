@@ -26,32 +26,29 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Representation of a bouquet_name_descriptor
-//
-//----------------------------------------------------------------------------
 
-#include "tsBouquetNameDescriptor.h"
+#include "tsApplicationUsageDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 #include "tsxmlElement.h"
 TSDUCK_SOURCE;
 
-#define MY_XML_NAME u"bouquet_name_descriptor"
-#define MY_DID ts::DID_BOUQUET_NAME
+#define MY_XML_NAME u"application_usage_descriptor"
+#define MY_DID ts::DID_AIT_APP_USAGE
+#define MY_TID ts::TID_AIT
 
-TS_XML_DESCRIPTOR_FACTORY(ts::BouquetNameDescriptor, MY_XML_NAME);
-TS_ID_DESCRIPTOR_FACTORY(ts::BouquetNameDescriptor, ts::EDID::Standard(MY_DID));
-TS_ID_DESCRIPTOR_DISPLAY(ts::BouquetNameDescriptor::DisplayDescriptor, ts::EDID::Standard(MY_DID));
+TS_XML_TABSPEC_DESCRIPTOR_FACTORY(ts::ApplicationUsageDescriptor, MY_XML_NAME, MY_TID);
+TS_ID_DESCRIPTOR_FACTORY(ts::ApplicationUsageDescriptor, ts::EDID::TableSpecific(MY_DID, MY_TID));
+TS_ID_DESCRIPTOR_DISPLAY(ts::ApplicationUsageDescriptor::DisplayDescriptor, ts::EDID::TableSpecific(MY_DID, MY_TID));
 
 
 //----------------------------------------------------------------------------
 // Default constructor:
 //----------------------------------------------------------------------------
 
-ts::BouquetNameDescriptor::BouquetNameDescriptor(const UString& name_) :
+ts::ApplicationUsageDescriptor::ApplicationUsageDescriptor(uint8_t type) :
     AbstractDescriptor(MY_DID, MY_XML_NAME),
-    name(name_)
+    usage_type(type)
 {
     _is_valid = true;
 }
@@ -61,9 +58,8 @@ ts::BouquetNameDescriptor::BouquetNameDescriptor(const UString& name_) :
 // Constructor from a binary descriptor
 //----------------------------------------------------------------------------
 
-ts::BouquetNameDescriptor::BouquetNameDescriptor(const Descriptor& desc, const DVBCharset* charset) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME),
-    name()
+ts::ApplicationUsageDescriptor::ApplicationUsageDescriptor(const Descriptor& desc, const DVBCharset* charset) :
+    ApplicationUsageDescriptor()
 {
     deserialize(desc, charset);
 }
@@ -73,10 +69,10 @@ ts::BouquetNameDescriptor::BouquetNameDescriptor(const Descriptor& desc, const D
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::BouquetNameDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
+void ts::ApplicationUsageDescriptor::serialize(Descriptor& desc, const DVBCharset* charset) const
 {
     ByteBlockPtr bbp(serializeStart());
-    bbp->append(name.toDVB(0, UString::NPOS, charset));
+    bbp->appendUInt8(usage_type);
     serializeEnd(desc, bbp);
 }
 
@@ -85,15 +81,12 @@ void ts::BouquetNameDescriptor::serialize(Descriptor& desc, const DVBCharset* ch
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::BouquetNameDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
+void ts::ApplicationUsageDescriptor::deserialize(const Descriptor& desc, const DVBCharset* charset)
 {
-    _is_valid = desc.isValid() && desc.tag() == _tag;
+    _is_valid = desc.isValid() && desc.tag() == _tag && desc.payloadSize() >= 1;
 
     if (_is_valid) {
-        name.assign(UString::FromDVB(desc.payload(), desc.payloadSize(), charset));
-    }
-    else {
-        name.clear();
+        usage_type = GetUInt8(desc.payload());
     }
 }
 
@@ -102,12 +95,17 @@ void ts::BouquetNameDescriptor::deserialize(const Descriptor& desc, const DVBCha
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::BouquetNameDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* payload, size_t size, int indent, TID tid, PDS pds)
+void ts::ApplicationUsageDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, const uint8_t* data, size_t size, int indent, TID tid, PDS pds)
 {
-    display.out() << std::string(indent, ' ')
-                  << "Name: \""
-                  << UString::FromDVB(payload, size, display.dvbCharset())
-                  << "\"" << std::endl;
+    std::ostream& strm(display.out());
+
+    if (size >= 1) {
+        uint8_t type = data[0];
+        data += 1; size -= 1;
+        strm << UString::Format(u"%*sUsage type: %d (0x%X)", {indent, u"", type, type}) << std::endl;
+    }
+
+    display.displayExtraData(data, size, indent);
 }
 
 
@@ -115,9 +113,9 @@ void ts::BouquetNameDescriptor::DisplayDescriptor(TablesDisplay& display, DID di
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::BouquetNameDescriptor::buildXML(xml::Element* root) const
+void ts::ApplicationUsageDescriptor::buildXML(xml::Element* root) const
 {
-    root->setAttribute(u"bouquet_name", name);
+    root->setIntAttribute(u"usage_type", usage_type, true);
 }
 
 
@@ -125,9 +123,9 @@ void ts::BouquetNameDescriptor::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::BouquetNameDescriptor::fromXML(const xml::Element* element)
+void ts::ApplicationUsageDescriptor::fromXML(const xml::Element* element)
 {
     _is_valid =
         checkXMLName(element) &&
-        element->getAttribute(name, u"bouquet_name", true, u"", 0, MAX_DESCRIPTOR_SIZE - 2);
+        element->getIntAttribute<uint8_t>(usage_type, u"usage_type", true);
 }

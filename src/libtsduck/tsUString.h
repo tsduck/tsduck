@@ -1177,12 +1177,11 @@ namespace ts {
         bool containSimilar(const CONTAINER& container) const;
 
         //!
-        //! Locate into a map an element with a similar string.
+        //! Locate into a map or multimap an element with a similar string.
         //! @tparam CONTAINER A map container class using UString as key.
         //! @param [in] container A map container with UString keys.
-        //! @return An iterator to the first element of @a container with a key value
-        //! which is similar to this string according to similar(). Return @a container.end()
-        //! if not found.
+        //! @return An iterator to the first element of @a container with a key value which is 
+        //! similar to this string according to similar(). Return @a container.end() if not found.
         //! @see similar()
         //!
         template <class CONTAINER>

@@ -54,6 +54,7 @@
 #include "tsAACDescriptor.h"
 #include "tsAC3Descriptor.h"
 #include "tsApplicationSignallingDescriptor.h"
+#include "tsApplicationUsageDescriptor.h"
 #include "tsAVCVideoDescriptor.h"
 #include "tsBouquetNameDescriptor.h"
 #include "tsCableDeliverySystemDescriptor.h"

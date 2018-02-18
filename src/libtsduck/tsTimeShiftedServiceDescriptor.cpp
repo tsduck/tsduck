@@ -37,8 +37,8 @@ TSDUCK_SOURCE;
 #define MY_DID ts::DID_TIME_SHIFT_SERVICE
 
 TS_XML_DESCRIPTOR_FACTORY(ts::TimeShiftedServiceDescriptor, MY_XML_NAME);
-TS_ID_DESCRIPTOR_FACTORY(ts::TimeShiftedServiceDescriptor, ts::EDID(MY_DID));
-TS_ID_DESCRIPTOR_DISPLAY(ts::TimeShiftedServiceDescriptor::DisplayDescriptor, ts::EDID(MY_DID));
+TS_ID_DESCRIPTOR_FACTORY(ts::TimeShiftedServiceDescriptor, ts::EDID::Standard(MY_DID));
+TS_ID_DESCRIPTOR_DISPLAY(ts::TimeShiftedServiceDescriptor::DisplayDescriptor, ts::EDID::Standard(MY_DID));
 
 
 //----------------------------------------------------------------------------

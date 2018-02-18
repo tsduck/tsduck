@@ -244,7 +244,7 @@ void NamesTest::testDID()
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"Data Broadcast Id", ts::names::DID(ts::DID_DATA_BROADCAST_ID));
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"unknown (0x83)", ts::names::DID(ts::DID_LOGICAL_CHANNEL_NUM));
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"Logical Channel Number", ts::names::DID(ts::DID_LOGICAL_CHANNEL_NUM, ts::PDS_EACEM));
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"0x83 (Logical Channel Number)", ts::names::DID(ts::DID_LOGICAL_CHANNEL_NUM, ts::PDS_EACEM, ts::names::FIRST));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"0x83 (Logical Channel Number)", ts::names::DID(ts::DID_LOGICAL_CHANNEL_NUM, ts::PDS_EACEM, ts::TID_NULL, ts::names::FIRST));
 }
 
 void NamesTest::testEDID()

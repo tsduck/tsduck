@@ -39,8 +39,8 @@ TSDUCK_SOURCE;
 #define MY_EDID ts::EDID_T2MI
 
 TS_XML_DESCRIPTOR_FACTORY(ts::T2MIDescriptor, MY_XML_NAME);
-TS_ID_DESCRIPTOR_FACTORY(ts::T2MIDescriptor, ts::EDID(MY_DID, MY_EDID));
-TS_ID_DESCRIPTOR_DISPLAY(ts::T2MIDescriptor::DisplayDescriptor, ts::EDID(MY_DID, MY_EDID));
+TS_ID_DESCRIPTOR_FACTORY(ts::T2MIDescriptor, ts::EDID::Extension(MY_EDID));
+TS_ID_DESCRIPTOR_DISPLAY(ts::T2MIDescriptor::DisplayDescriptor, ts::EDID::Extension(MY_EDID));
 
 
 //----------------------------------------------------------------------------

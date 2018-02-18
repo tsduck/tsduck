@@ -41,8 +41,8 @@ TSDUCK_SOURCE;
 #define MY_DID ts::DID_NETWORK_NAME
 
 TS_XML_DESCRIPTOR_FACTORY(ts::NetworkNameDescriptor, MY_XML_NAME);
-TS_ID_DESCRIPTOR_FACTORY(ts::NetworkNameDescriptor, ts::EDID(MY_DID));
-TS_ID_DESCRIPTOR_DISPLAY(ts::NetworkNameDescriptor::DisplayDescriptor, ts::EDID(MY_DID));
+TS_ID_DESCRIPTOR_FACTORY(ts::NetworkNameDescriptor, ts::EDID::Standard(MY_DID));
+TS_ID_DESCRIPTOR_DISPLAY(ts::NetworkNameDescriptor::DisplayDescriptor, ts::EDID::Standard(MY_DID));
 
 
 //----------------------------------------------------------------------------

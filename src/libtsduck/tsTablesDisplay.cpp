@@ -521,7 +521,7 @@ std::ostream& ts::TablesDisplay::displayDescriptorList(const void* data, size_t 
 
         // Display descriptor header
         strm << margin << "- Descriptor " << desc_index++ << ": "
-             << names::DID(desc_tag, actualPDS(pds), names::VALUE | names::BOTH) << ", "
+             << names::DID(desc_tag, actualPDS(pds), tid, names::VALUE | names::BOTH) << ", "
              << desc_length << " bytes" << std::endl;
 
         // If the descriptor contains a private_data_specifier, keep it
@@ -558,7 +558,7 @@ std::ostream& ts::TablesDisplay::displayDescriptorList(const DescriptorList& lis
         if (!desc.isNull()) {
             pds = list.privateDataSpecifier(i);
             strm << margin << "- Descriptor " << i << ": "
-                 << names::DID(desc->tag(), actualPDS(pds), names::VALUE | names::BOTH) << ", "
+                 << names::DID(desc->tag(), actualPDS(pds), tid, names::VALUE | names::BOTH) << ", "
                  << desc->size() << " bytes" << std::endl;
             displayDescriptor(*desc, indent + 2, tid, actualPDS(pds), cas);
         }
@@ -580,23 +580,23 @@ std::ostream& ts::TablesDisplay::displayDescriptorData(DID did, const uint8_t* p
     EDID edid;
     if (did >= 0x80) {
         // Private descriptor.
-        edid = EDID(did, actualPDS(pds));
+        edid = EDID::Private(did, actualPDS(pds));
     }
     else if (did == DID_EXTENSION && size >= 1) {
         // Extension descriptor, the extension id is in the first byte of the payload.
         const uint8_t ext = *payload++;
-        edid = EDID(did, ext);
+        edid = EDID::Extension(ext);
         size--;
         // Display extended descriptor header
         strm << std::string(indent, ' ') << "Extended descriptor: " << names::EDID(ext, names::VALUE | names::BOTH) << std::endl;
     }
     else {
         // Simple descriptor.
-        edid = EDID(did);
+        edid = EDID::Standard(did);
     }
 
     // Locate the display handler for this descriptor payload.
-    TablesFactory::DisplayDescriptorFunction handler = TablesFactory::Instance()->getDescriptorDisplay(edid);
+    TablesFactory::DisplayDescriptorFunction handler = TablesFactory::Instance()->getDescriptorDisplay(edid, tid);
 
     if (handler != 0) {
         handler(*this, did, payload, size, indent, tid, actualPDS(pds));

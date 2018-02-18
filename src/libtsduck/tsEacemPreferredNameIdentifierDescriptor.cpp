@@ -43,12 +43,12 @@ TSDUCK_SOURCE;
 #define MY_PDS ts::PDS_EACEM
 
 TS_XML_DESCRIPTOR_FACTORY(ts::EacemPreferredNameIdentifierDescriptor, MY_XML_NAME);
-TS_ID_DESCRIPTOR_FACTORY(ts::EacemPreferredNameIdentifierDescriptor, ts::EDID(MY_DID, MY_PDS));
-TS_ID_DESCRIPTOR_DISPLAY(ts::EacemPreferredNameIdentifierDescriptor::DisplayDescriptor, ts::EDID(MY_DID, MY_PDS));
+TS_ID_DESCRIPTOR_FACTORY(ts::EacemPreferredNameIdentifierDescriptor, ts::EDID::Private(MY_DID, MY_PDS));
+TS_ID_DESCRIPTOR_DISPLAY(ts::EacemPreferredNameIdentifierDescriptor::DisplayDescriptor, ts::EDID::Private(MY_DID, MY_PDS));
 
 // Incorrect use of TPS private data, TPS broadcasters should use EACEM/EICTA PDS instead.
-TS_ID_DESCRIPTOR_FACTORY(ts::EacemPreferredNameIdentifierDescriptor, ts::EDID(MY_DID, ts::PDS_TPS));
-TS_ID_DESCRIPTOR_DISPLAY(ts::EacemPreferredNameIdentifierDescriptor::DisplayDescriptor, ts::EDID(MY_DID, ts::PDS_TPS));
+TS_ID_DESCRIPTOR_FACTORY(ts::EacemPreferredNameIdentifierDescriptor, ts::EDID::Private(MY_DID, ts::PDS_TPS));
+TS_ID_DESCRIPTOR_DISPLAY(ts::EacemPreferredNameIdentifierDescriptor::DisplayDescriptor, ts::EDID::Private(MY_DID, ts::PDS_TPS));
 
 
 //----------------------------------------------------------------------------

@@ -53,10 +53,16 @@ ts::UString ts::names::TID(uint8_t tid, ts::CASFamily cas, Flags flags)
     return NamesDVB::Instance().nameFromSectionWithFallback(u"TableId", (Names::Value(cas) << 8) | Names::Value(tid), Names::Value(tid), flags, 8);
 }
 
-ts::UString ts::names::DID(uint8_t did, uint32_t pds, Flags flags)
+ts::UString ts::names::DID(uint8_t did, uint32_t pds, uint8_t tid, Flags flags)
 {
-    // Use version with PDS first, then without PDS.
-    return NamesDVB::Instance().nameFromSectionWithFallback(u"DescriptorId", (Names::Value(pds) << 8) | Names::Value(did), Names::Value(did), flags, 8);
+    // Use version with PDS or table first, then without it.
+    const Names::Value fullValue = (did >= 0x80 && pds != 0 && pds != PDS_NULL) || tid == 0xFF ?
+        // Could be a private descriptor.
+        ((Names::Value(pds) << 8) | Names::Value(did)) :
+        // Could be a table-specific descriptor.
+        ((Names::Value(tid) << 40) | TS_UCONST64(0x000000FFFFFFFF00) | Names::Value(did));
+
+    return NamesDVB::Instance().nameFromSectionWithFallback(u"DescriptorId", fullValue, Names::Value(did), flags, 8);
 }
 
 ts::UString ts::names::EDID(uint8_t edid, Flags flags)

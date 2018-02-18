@@ -234,6 +234,10 @@
                    AIT_version_number="uint5, required"/>
     </application_signalling_descriptor>
 
+    <application_usage_descriptor usage_type="uint8, required">
+      <!-- Must be in an AIT (table id 0x74) -->
+    </application_usage_descriptor>
+
     <AVC_video_descriptor
         profile_idc="uint8, required"
         constraint_set0="bool, required"
