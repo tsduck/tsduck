@@ -320,7 +320,7 @@ void ts::NITPlugin::handleTable (SectionDemux& demux, const BinaryTable& table)
 //  This method processes a NIT
 //----------------------------------------------------------------------------
 
-void ts::NITPlugin::processNIT (NIT& nit)
+void ts::NITPlugin::processNIT(NIT& nit)
 {
     tsp->debug(u"got a NIT, version %d, network Id: %d (0x%X)", {nit.version, nit.network_id, nit.network_id});
 
@@ -350,7 +350,7 @@ void ts::NITPlugin::processNIT (NIT& nit)
 
     // Process each TS descriptor list
     for (NIT::TransportMap::iterator it = nit.transports.begin(); it != nit.transports.end(); ++it) {
-        processDescriptorList(it->second);
+        processDescriptorList(it->second.descs);
     }
 }
 
@@ -359,7 +359,7 @@ void ts::NITPlugin::processNIT (NIT& nit)
 //  This method processes a NIT descriptor list
 //----------------------------------------------------------------------------
 
-void ts::NITPlugin::processDescriptorList (DescriptorList& dlist)
+void ts::NITPlugin::processDescriptorList(DescriptorList& dlist)
 {
     // Process descriptor removal
     for (std::vector<DID>::const_iterator it = _removed_desc.begin(); it != _removed_desc.end(); ++it) {

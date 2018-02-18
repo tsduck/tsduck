@@ -50,7 +50,7 @@ TS_ID_SECTION_DISPLAY(ts::SDT::DisplaySection, ts::TID_SDT_OTH);
 
 
 //----------------------------------------------------------------------------
-// Default constructor
+// Constructors
 //----------------------------------------------------------------------------
 
 ts::SDT::SDT(bool is_actual_,
@@ -61,23 +61,26 @@ ts::SDT::SDT(bool is_actual_,
     AbstractLongTable(TID(is_actual_ ? TID_SDT_ACT : TID_SDT_OTH), MY_XML_NAME, version_, is_current_),
     ts_id(ts_id_),
     onetw_id(onetw_id_),
-    services()
+    services(this)
 {
     _is_valid = true;
 }
-
-
-//----------------------------------------------------------------------------
-// Constructor from a binary table
-//----------------------------------------------------------------------------
 
 ts::SDT::SDT(const BinaryTable& table, const DVBCharset* charset) :
     AbstractLongTable(TID_SDT_ACT, MY_XML_NAME),  // TID will be updated by deserialize()
     ts_id(0),
     onetw_id(0),
-    services()
+    services(this)
 {
     deserialize(table, charset);
+}
+
+ts::SDT::SDT(const SDT& other) :
+    AbstractLongTable(other),
+    ts_id(other.ts_id),
+    onetw_id(other.onetw_id),
+    services(this, other.services)
+{
 }
 
 
@@ -117,7 +120,7 @@ bool ts::SDT::findService(ts::Service& service, bool exact_match) const
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::SDT::deserialize (const BinaryTable& table, const DVBCharset* charset)
+void ts::SDT::deserialize(const BinaryTable& table, const DVBCharset* charset)
 {
     // Clear table content
     _is_valid = false;
@@ -307,12 +310,12 @@ void ts::SDT::serialize(BinaryTable& table, const DVBCharset* charset) const
 // Default constructor for SDT::Service
 //----------------------------------------------------------------------------
 
-ts::SDT::Service::Service() :
+ts::SDT::Service::Service(const AbstractTable* table) :
+    EntryWithDescriptors(table),
     EITs_present(false),
     EITpf_present(false),
     running_status(0),
-    CA_controlled(false),
-    descs()
+    CA_controlled(false)
 {
 }
 
@@ -519,18 +522,16 @@ void ts::SDT::fromXML(const xml::Element* element)
 
     for (size_t index = 0; _is_valid && index < children.size(); ++index) {
         uint16_t id = 0;
-        Service srv;
         int rs = 0;
         _is_valid =
             children[index]->getIntAttribute<uint16_t>(id, u"service_id", true, 0, 0x0000, 0xFFFF) &&
-            children[index]->getBoolAttribute(srv.EITs_present, u"EIT_schedule", false, false) &&
-            children[index]->getBoolAttribute(srv.EITpf_present, u"EIT_present_following", false, false) &&
-            children[index]->getBoolAttribute(srv.CA_controlled, u"CA_mode", false, false) &&
+            children[index]->getBoolAttribute(services[id].EITs_present, u"EIT_schedule", false, false) &&
+            children[index]->getBoolAttribute(services[id].EITpf_present, u"EIT_present_following", false, false) &&
+            children[index]->getBoolAttribute(services[id].CA_controlled, u"CA_mode", false, false) &&
             children[index]->getEnumAttribute(rs, RST::RunningStatusNames, u"running_status", false, 0) &&
-            srv.descs.fromXML(children[index]);
+            services[id].descs.fromXML(children[index]);
         if (_is_valid) {
-            srv.running_status = uint8_t(rs);
-            services[id] = srv;
+            services[id].running_status = uint8_t(rs);
         }
     }
 }

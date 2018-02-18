@@ -44,11 +44,37 @@ namespace ts {
     class TSDUCKDLL EIT : public AbstractLongTable
     {
     public:
-        class Event;
+        //!
+        //! Description of an event.
+        //!
+        //! Note: by inheriting from EntryWithDescriptors, there is a
+        //! public field "DescriptorList descs".
+        //!
+        class TSDUCKDLL Event : public EntryWithDescriptors
+        {
+        public:
+            // Public members
+            Time    start_time;      //!< Event start_time.
+            Second  duration;        //!< Event duration in seconds.
+            uint8_t running_status;  //!< Running status code.
+            bool    CA_controlled;   //!< Controlled by a CA_system.
+
+            //!
+            //! Constructor.
+            //! @param [in] table Parent EIT.
+            //!
+            Event(const AbstractTable* table);
+
+        private:
+            // Inaccessible operations.
+            Event() = delete;
+            Event(const Event&) = delete;
+        };
+
         //!
         //! List of events, indexed by event_id.
         //!
-        typedef std::map<uint16_t,Event> EventMap;
+        typedef EntryWithDescriptorsMap<uint16_t,Event> EventMap;
 
         // EIT public members:
         uint16_t service_id;     //!< Service_id.
@@ -95,6 +121,12 @@ namespace ts {
         EIT(const BinaryTable& table, const DVBCharset* charset = 0);
 
         //!
+        //! Copy constructor.
+        //! @param [in] other Other instance to copy.
+        //!
+        EIT(const EIT& other);
+
+        //!
         //! Check if this is an "actual" EIT.
         //! @return True for EIT Actual TS, false for EIT Other TS.
         //!
@@ -120,25 +152,6 @@ namespace ts {
         virtual void deserialize(const BinaryTable& table, const DVBCharset* = 0) override;
         virtual void buildXML(xml::Element*) const override;
         virtual void fromXML(const xml::Element*) override;
-
-        //!
-        //! Description of an event.
-        //!
-        class TSDUCKDLL Event
-        {
-        public:
-            // Public members
-            Time           start_time;      //!< Event start_time.
-            Second         duration;        //!< Event duration in seconds.
-            uint8_t        running_status;  //!< Running status code.
-            bool           CA_controlled;   //!< Controlled by a CA_system.
-            DescriptorList descs;           //!< Descriptor list.
-
-            //!
-            //! Default constructor.
-            //!
-            Event();
-        };
 
         //!
         //! A static method to display a section.

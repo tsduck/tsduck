@@ -46,6 +46,9 @@
     <ClInclude Include="..\..\src\libtsduck\tsAbstractTable.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\libtsduck\tsAbstractTableTemplate.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\src\libtsduck\tsAbstractTransportListTable.h">
       <Filter>Header Files</Filter>
     </ClInclude>

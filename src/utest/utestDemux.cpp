@@ -322,9 +322,9 @@ void DemuxTest::testTable(const char* name, const uint8_t* ref_packets, size_t r
             CPPUNIT_ASSERT(nit.descs[7]->tag() == ts::DID_LINKAGE);
             CPPUNIT_ASSERT(nit.transports.size() == 7);
             ts::TransportStreamId id(0x0004, 0x20FA); // TNT R4
-            CPPUNIT_ASSERT(nit.transports[id].count() == 4);
-            CPPUNIT_ASSERT(nit.transports[id][0]->tag() == ts::DID_PRIV_DATA_SPECIF);
-            CPPUNIT_ASSERT(nit.transports[id][3]->tag() == ts::DID_TERREST_DELIVERY);
+            CPPUNIT_ASSERT(nit.transports[id].descs.count() == 4);
+            CPPUNIT_ASSERT(nit.transports[id].descs[0]->tag() == ts::DID_PRIV_DATA_SPECIF);
+            CPPUNIT_ASSERT(nit.transports[id].descs[3]->tag() == ts::DID_TERREST_DELIVERY);
             nit.serialize(table2);
             break;
         }
@@ -337,8 +337,8 @@ void DemuxTest::testTable(const char* name, const uint8_t* ref_packets, size_t r
                     CPPUNIT_ASSERT(bat.descs[4]->tag() == ts::DID_LW_SUBSCRIPTION);
                     CPPUNIT_ASSERT(bat.transports.size() == 3);
                     ts::TransportStreamId id(0x0006, 0x20FA); // TNT R6
-                    CPPUNIT_ASSERT(bat.transports[id].count() == 1);
-                    CPPUNIT_ASSERT(bat.transports[id][0]->tag() == ts::DID_SERVICE_LIST);
+                    CPPUNIT_ASSERT(bat.transports[id].descs.count() == 1);
+                    CPPUNIT_ASSERT(bat.transports[id].descs[0]->tag() == ts::DID_SERVICE_LIST);
                     break;
                 }
                 case 0xC003: { // Canal+ TNT
@@ -347,8 +347,8 @@ void DemuxTest::testTable(const char* name, const uint8_t* ref_packets, size_t r
                     CPPUNIT_ASSERT(bat.descs[1]->tag() == ts::DID_LINKAGE);
                     CPPUNIT_ASSERT(bat.transports.size() == 6);
                     ts::TransportStreamId id(0x0003, 0x20FA); // TNT R3
-                    CPPUNIT_ASSERT(bat.transports[id].count() == 5);
-                    CPPUNIT_ASSERT(bat.transports[id][0]->tag() == ts::DID_SERVICE_LIST);
+                    CPPUNIT_ASSERT(bat.transports[id].descs.count() == 5);
+                    CPPUNIT_ASSERT(bat.transports[id].descs[0]->tag() == ts::DID_SERVICE_LIST);
                     break;
                 }
                 default: {

@@ -47,7 +47,7 @@ TS_ID_SECTION_DISPLAY(ts::BAT::DisplaySection, MY_TID);
 
 
 //----------------------------------------------------------------------------
-// Constructors
+// Constructors and assignment.
 //----------------------------------------------------------------------------
 
 ts::BAT::BAT(uint8_t vers, bool cur, uint16_t id) :
@@ -60,6 +60,21 @@ ts::BAT::BAT(const BinaryTable& table, const DVBCharset* charset) :
     AbstractTransportListTable(MY_TID, MY_XML_NAME, table, charset),
     bouquet_id(_tid_ext)
 {
+}
+
+ts::BAT::BAT(const BAT& other) :
+    AbstractTransportListTable(other),
+    bouquet_id(_tid_ext)
+{
+}
+
+ts::BAT& ts::BAT::operator=(const BAT& other)
+{
+    if (&other != this) {
+        // Assign super class but leave uint16_t& bouquet_id unchanged.
+        AbstractTransportListTable::operator=(other);
+    }
+    return *this;
 }
 
 
@@ -131,7 +146,7 @@ void ts::BAT::buildXML(xml::Element* root) const
         xml::Element* e = root->addElement(u"transport_stream");
         e->setIntAttribute(u"transport_stream_id", it->first.transport_stream_id, true);
         e->setIntAttribute(u"original_network_id", it->first.original_network_id, true);
-        it->second.toXML(e);
+        it->second.descs.toXML(e);
     }
 }
 
@@ -158,6 +173,6 @@ void ts::BAT::fromXML(const xml::Element* element)
         _is_valid =
             children[index]->getIntAttribute<uint16_t>(ts.transport_stream_id, u"transport_stream_id", true, 0, 0x0000, 0xFFFF) &&
             children[index]->getIntAttribute<uint16_t>(ts.original_network_id, u"original_network_id", true, 0, 0x0000, 0xFFFF) &&
-            transports[ts].fromXML(children[index]);
+            transports[ts].descs.fromXML(children[index]);
     }
 }

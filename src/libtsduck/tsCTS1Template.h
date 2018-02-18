@@ -30,13 +30,13 @@
 //  Cipher Text Stealing (CTS) mode.
 //  Template class using a BlockCipher subclass as template argument.
 //
-//
 //  Several incompatible designs of CTS exist. This one implements the
 //  description in:
 //  1) Bruce Schneier, Applied Cryptography (2nd, Ed.), pp 191, 195
 //  2) RFC 2040, The RC5, RC5-CBC, RC5-CBC-Pad, and RC5-CTS Algorithms
 //  3) "CBC ciphertext stealing" in
 //     http://en.wikipedia.org/wiki/Ciphertext_stealing
+//
 //----------------------------------------------------------------------------
 
 #pragma once
