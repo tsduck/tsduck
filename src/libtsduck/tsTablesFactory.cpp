@@ -32,6 +32,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsTablesFactory.h"
+#include "tsNames.h"
 TSDUCK_SOURCE;
 
 TS_DEFINE_SINGLETON(ts::TablesFactory);
@@ -46,6 +47,7 @@ ts::TablesFactory::TablesFactory() :
     _descriptorIds(),
     _tableNames(),
     _descriptorNames(),
+    _descriptorTablesIds(),
     _sectionDisplays(),
     _descriptorDisplays()
 {
@@ -58,46 +60,49 @@ ts::TablesFactory::TablesFactory() :
 
 ts::TablesFactory::Register::Register(TID id, TableFactory factory)
 {
-    TablesFactory::Instance()->_tableIds.insert(std::pair<TID,TableFactory>(id, factory));
+    TablesFactory::Instance()->_tableIds.insert(std::make_pair(id, factory));
 }
 
 ts::TablesFactory::Register::Register(TID minId, TID maxId, TableFactory factory)
 {
     for (TID id = minId; id <= maxId; ++id) {
-        TablesFactory::Instance()->_tableIds.insert(std::pair<TID, TableFactory>(id, factory));
+        TablesFactory::Instance()->_tableIds.insert(std::make_pair(id, factory));
     }
 }
 
 ts::TablesFactory::Register::Register(const EDID& id, DescriptorFactory factory)
 {
-    TablesFactory::Instance()->_descriptorIds.insert(std::pair<EDID,DescriptorFactory>(id, factory));
+    TablesFactory::Instance()->_descriptorIds.insert(std::make_pair(id, factory));
 }
 
 ts::TablesFactory::Register::Register(const UString& node_name, TableFactory factory)
 {
-    TablesFactory::Instance()->_tableNames.insert(std::pair<UString,TableFactory>(node_name, factory));
+    TablesFactory::Instance()->_tableNames.insert(std::make_pair(node_name, factory));
 }
 
-ts::TablesFactory::Register::Register(const UString& node_name, DescriptorFactory factory)
+ts::TablesFactory::Register::Register(const UString& node_name, DescriptorFactory factory, std::initializer_list<TID> tids)
 {
-    TablesFactory::Instance()->_descriptorNames.insert(std::pair<UString,DescriptorFactory>(node_name, factory));
+    TablesFactory::Instance()->_descriptorNames.insert(std::make_pair(node_name, factory));
+    for (auto it = tids.begin(); it != tids.end(); ++it) {
+        TablesFactory::Instance()->_descriptorTablesIds.insert(std::make_pair(node_name, *it));
+    }
 }
 
 ts::TablesFactory::Register::Register(TID id, DisplaySectionFunction func)
 {
-    TablesFactory::Instance()->_sectionDisplays.insert(std::pair<TID,DisplaySectionFunction>(id, func));
+    TablesFactory::Instance()->_sectionDisplays.insert(std::make_pair(id, func));
 }
 
 ts::TablesFactory::Register::Register(TID minId, TID maxId, DisplaySectionFunction func)
 {
     for (TID id = minId; id <= maxId; ++id) {
-        TablesFactory::Instance()->_sectionDisplays.insert(std::pair<TID, DisplaySectionFunction>(id, func));
+        TablesFactory::Instance()->_sectionDisplays.insert(std::make_pair(id, func));
     }
 }
 
 ts::TablesFactory::Register::Register(const EDID& edid, DisplayDescriptorFunction func)
 {
-    TablesFactory::Instance()->_descriptorDisplays.insert(std::pair<EDID,DisplayDescriptorFunction>(edid, func));
+    TablesFactory::Instance()->_descriptorDisplays.insert(std::make_pair(edid, func));
 }
 
 
@@ -109,12 +114,6 @@ ts::TablesFactory::TableFactory ts::TablesFactory::getTableFactory(TID id) const
 {
     std::map<TID,TableFactory>::const_iterator it = _tableIds.find(id);
     return it != _tableIds.end() ? it->second : 0;
-}
-
-ts::TablesFactory::DescriptorFactory ts::TablesFactory::getDescriptorFactory(const EDID& id) const
-{
-    std::map<EDID, DescriptorFactory>::const_iterator it = _descriptorIds.find(id);
-    return it != _descriptorIds.end() ? it->second : 0;
 }
 
 ts::TablesFactory::TableFactory ts::TablesFactory::getTableFactory(const UString& node_name) const
@@ -135,11 +134,85 @@ ts::TablesFactory::DisplaySectionFunction ts::TablesFactory::getSectionDisplay(T
     return it != _sectionDisplays.end() ? it->second : 0;
 }
 
-ts::TablesFactory::DisplayDescriptorFunction ts::TablesFactory::getDescriptorDisplay(const EDID& edid) const
+
+//----------------------------------------------------------------------------
+// Check if a descriptor is allowed in a table.
+//----------------------------------------------------------------------------
+
+bool ts::TablesFactory::isDescriptorAllowed(const UString& desc_node_name, TID table_id) const
 {
-    std::map<EDID,DisplayDescriptorFunction>::const_iterator it = _descriptorDisplays.find(edid);
-    return it != _descriptorDisplays.end() ? it->second : 0;
+    std::multimap<UString, TID>::const_iterator it = desc_node_name.findSimilar(_descriptorTablesIds);
+    if (it == _descriptorTablesIds.end()) {
+        // Not a table-specific descriptor, allowed anywhere
+        return true;
+    }
+    else {
+        // Table specific descriptor, the table needs to be listed.
+        do {
+            if (table_id == it->second) {
+                // The table is explicitly allowed.
+                return true;
+            }
+        } while (++it != _descriptorTablesIds.end() && desc_node_name.similar(it->first));
+        // The requested table if was not found.
+        return false;
+    }
 }
+
+
+//----------------------------------------------------------------------------
+// Get the list of tables where a descriptor is allowed.
+//----------------------------------------------------------------------------
+
+ts::UString ts::TablesFactory::descriptorTables(const UString& desc_node_name) const
+{
+    std::multimap<UString, TID>::const_iterator it = desc_node_name.findSimilar(_descriptorTablesIds);
+    UString result;
+
+    while (it != _descriptorTablesIds.end() && desc_node_name.similar(it->first)) {
+        if (!result.empty()) {
+            result.append(u", ");
+        }
+        result.append(names::TID(it->second, CAS_OTHER, names::NAME | names::HEXA));
+    }
+
+    return result;
+}
+
+
+//----------------------------------------------------------------------------
+// Get registered descriptors (specific table-specific feature).
+//----------------------------------------------------------------------------
+
+template <typename FUNCTION>
+FUNCTION ts::TablesFactory::getDescriptorFunction(const EDID& edid, TID tid, const std::map<EDID,FUNCTION>& funcMap) const
+{
+    std::map<EDID, FUNCTION>::const_iterator it(funcMap.end());
+    if (edid.isStandard() && tid != TID_NULL) {
+        // For standard descriptors, first search a table-specific descriptor.
+        it = funcMap.find(EDID::TableSpecific(edid.did(), tid));
+    }
+    if (it == funcMap.end()) {
+        // If non-standard or no table-specific descriptor found, use direct lookup.
+        it = funcMap.find(edid);
+    }
+    return it != funcMap.end() ? it->second : 0;
+}
+
+ts::TablesFactory::DescriptorFactory ts::TablesFactory::getDescriptorFactory(const EDID& edid, TID tid) const
+{
+    return getDescriptorFunction(edid, tid, _descriptorIds);
+}
+
+ts::TablesFactory::DisplayDescriptorFunction ts::TablesFactory::getDescriptorDisplay(const EDID& edid, TID tid) const
+{
+    return getDescriptorFunction(edid, tid, _descriptorDisplays);
+}
+
+
+//----------------------------------------------------------------------------
+// Get all registered items of a given type.
+//----------------------------------------------------------------------------
 
 void ts::TablesFactory::getRegisteredTableIds(std::vector<TID>& ids) const
 {

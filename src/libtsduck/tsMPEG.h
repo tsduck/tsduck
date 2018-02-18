@@ -805,6 +805,7 @@ namespace ts {
         PDS_LOGIWAYS  = 0x000000A2, //!< Private data specifier for Logiways.
         PDS_CANALPLUS = 0x000000C0, //!< Private data specifier for Canal+.
         PDS_EUTELSAT  = 0x0000055F, //!< Private data specifier for EutelSat.
+        PDS_NULL      = 0xFFFFFFFF, //!< An invalid private data specifier, can be used as placeholder.
     };
 
     //!
@@ -937,6 +938,54 @@ namespace ts {
         DID_XAIT_LOCATION       = 0x7D, //!< DID for DVB XAIT_location_descriptor (DVB-MHP)
         DID_FTA_CONTENT_MGMT    = 0x7E, //!< DID for DVB FTA_content_management_descriptor
         DID_EXTENSION           = 0x7F, //!< DID for DVB extension_descriptor
+
+        // Valid in an AIT (Application Information Table, ETSI TS 102 809):
+
+        DID_AIT_APPLICATION     = 0x00, //!< DID for AIT application_descriptor.
+        DID_AIT_APP_NAME        = 0x01, //!< DID for AIT application_name_descriptor.
+        DID_AIT_TRANSPORT_PROTO = 0x02, //!< DID for AIT transport_protocol_descriptor.
+        DID_AIT_EXT_APP_AUTH    = 0x05, //!< DID for AIT external_application_authorisation_descriptor.
+        DID_AIT_APP_RECORDING   = 0x06, //!< DID for AIT application_recording_descriptor.
+        DID_AIT_APP_ICONS       = 0x0B, //!< DID for AIT application_icons_descriptor.
+        DID_AIT_APP_STORAGE     = 0x10, //!< DID for AIT application_storage_descriptor
+        DID_AIT_GRAPHICS_CONST  = 0x14, //!< DID for AIT graphics_constraints_descriptor.
+        DID_AIT_APP_LOCATION    = 0x15, //!< DID for AIT simple_application_location_descriptor
+        DID_AIT_APP_USAGE       = 0x16, //!< DID for AIT application_usage_descriptor.
+        DID_AIT_APP_BOUNDARY    = 0x17, //!< DID for AIT simple_application_boundary_descriptor
+
+        // Valid in an INT (IP/MAC Notification Table, ETSI EN 301 192):
+
+        DID_INT_SMARTCARD       = 0x06, //!< DID for INT target_smartcard_descriptor
+        DID_INT_MAC_ADDR        = 0x07, //!< DID for INT target_MAC_address_descriptor
+        DID_INT_SERIAL_NUM      = 0x08, //!< DID for INT target_serial_number_descriptor
+        DID_INT_IP_ADDR         = 0x09, //!< DID for INT target_IP_address_descriptor
+        DID_INT_IPV6_ADDR       = 0x0A, //!< DID for INT target_IPv6_address_descriptor
+        DID_INT_PF_NAME         = 0x0C, //!< DID for INT IP/MAC_platform_name_descriptor
+        DID_INT_PF_PROVIDER     = 0x0D, //!< DID for INT IP/MAC_platform_provider_name_descriptor
+        DID_INT_MAC_ADDR_RANGE  = 0x0E, //!< DID for INT target_MAC_address_range_descriptor
+        DID_INT_IP_SLASH        = 0x0F, //!< DID for INT target_IP_slash_descriptor
+        DID_INT_IP_SRC_SLASH    = 0x10, //!< DID for INT target_IP_source_slash_descriptor
+        DID_INT_IPV6_SLASH      = 0x11, //!< DID for INT target_IPv6_slash_descriptor
+        DID_INT_IPV6_SRC_SLASH  = 0x12, //!< DID for INT target_IPv6_source_slash_descriptor
+        DID_INT_STREAM_LOC      = 0x13, //!< DID for INT IP/MAC_stream_location_descriptor
+        DID_INT_ISP_ACCESS      = 0x14, //!< DID for INT ISP_access_mode_descriptor
+        DID_INT_GEN_STREAM_LOC  = 0x15, //!< DID for INT IP/MAC_generic_stream_location_descriptor
+
+        // Valid in a UNT (Update Notification Table, ETSI TS 102 006):
+
+        DID_UNT_SCHEDULING      = 0x01, //!< DID for UNT scheduling_descriptor
+        DID_UNT_UPDATE          = 0x02, //!< DID for UNT update_descriptor
+        DID_UNT_SSU_LOCATION    = 0x03, //!< DID for UNT ssu_location_descriptor
+        DID_UNT_MESSAGE         = 0x04, //!< DID for UNT message_descriptor
+        DID_UNT_SSU_EVENT_NAME  = 0x05, //!< DID for UNT ssu_event_name_descriptor
+        DID_UNT_SMARTCARD       = 0x06, //!< DID for UNT target_smartcard_descriptor
+        DID_UNT_MAC_ADDR        = 0x07, //!< DID for UNT target_MAC_address_descriptor
+        DID_UNT_SERIAL_NUM      = 0x08, //!< DID for UNT target_serial_number_descriptor
+        DID_UNT_IP_ADDR         = 0x09, //!< DID for UNT target_IP_address_descriptor
+        DID_UNT_IPV6_ADDR       = 0x0A, //!< DID for UNT target_IPv6_address_descriptor
+        DID_UNT_SUBGROUP_ASSOC  = 0x0B, //!< DID for UNT ssu_subgroup_association_descriptor
+        DID_UNT_ENHANCED_MSG    = 0x0C, //!< DID for UNT enhanced_message_descriptor
+        DID_UNT_SSU_URI         = 0x0D, //!< DID for UNT ssu_uri_descriptor
 
         // Valid in ATSC / SCTE context:
 
@@ -1091,6 +1140,7 @@ namespace ts {
         EDID_CI_ANCILLARY_DATA  = 0x14, //!< Ext.DID for CI_ancillary_data_descriptor
         EDID_AC4                = 0x15, //!< Ext.DID for AC4_descriptor
         EDID_C2_BUNDLE_DELIVERY = 0x16, //!< Ext.DID for C2_bundle_system_delivery_descriptor
+        EDID_NULL               = 0xFF, //!< Invalid EDID value, can be used as placeholder.
     };
 
     //---------------------------------------------------------------------

@@ -42,8 +42,8 @@ TSDUCK_SOURCE;
 #define MY_DID ts::DID_SERVICE_LIST
 
 TS_XML_DESCRIPTOR_FACTORY(ts::ServiceListDescriptor, MY_XML_NAME);
-TS_ID_DESCRIPTOR_FACTORY(ts::ServiceListDescriptor, ts::EDID(MY_DID));
-TS_ID_DESCRIPTOR_DISPLAY(ts::ServiceListDescriptor::DisplayDescriptor, ts::EDID(MY_DID));
+TS_ID_DESCRIPTOR_FACTORY(ts::ServiceListDescriptor, ts::EDID::Standard(MY_DID));
+TS_ID_DESCRIPTOR_DISPLAY(ts::ServiceListDescriptor::DisplayDescriptor, ts::EDID::Standard(MY_DID));
 
 
 //----------------------------------------------------------------------------

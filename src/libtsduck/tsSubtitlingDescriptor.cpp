@@ -42,8 +42,8 @@ TSDUCK_SOURCE;
 #define MY_DID ts::DID_SUBTITLING
 
 TS_XML_DESCRIPTOR_FACTORY(ts::SubtitlingDescriptor, MY_XML_NAME);
-TS_ID_DESCRIPTOR_FACTORY(ts::SubtitlingDescriptor, ts::EDID(MY_DID));
-TS_ID_DESCRIPTOR_DISPLAY(ts::SubtitlingDescriptor::DisplayDescriptor, ts::EDID(MY_DID));
+TS_ID_DESCRIPTOR_FACTORY(ts::SubtitlingDescriptor, ts::EDID::Standard(MY_DID));
+TS_ID_DESCRIPTOR_DISPLAY(ts::SubtitlingDescriptor::DisplayDescriptor, ts::EDID::Standard(MY_DID));
 
 
 //----------------------------------------------------------------------------

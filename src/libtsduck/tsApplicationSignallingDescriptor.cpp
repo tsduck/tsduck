@@ -42,8 +42,8 @@ TSDUCK_SOURCE;
 #define MY_DID ts::DID_APPLI_SIGNALLING
 
 TS_XML_DESCRIPTOR_FACTORY(ts::ApplicationSignallingDescriptor, MY_XML_NAME);
-TS_ID_DESCRIPTOR_FACTORY(ts::ApplicationSignallingDescriptor, ts::EDID(MY_DID));
-TS_ID_DESCRIPTOR_DISPLAY(ts::ApplicationSignallingDescriptor::DisplayDescriptor, ts::EDID(MY_DID));
+TS_ID_DESCRIPTOR_FACTORY(ts::ApplicationSignallingDescriptor, ts::EDID::Standard(MY_DID));
+TS_ID_DESCRIPTOR_DISPLAY(ts::ApplicationSignallingDescriptor::DisplayDescriptor, ts::EDID::Standard(MY_DID));
 
 
 //----------------------------------------------------------------------------

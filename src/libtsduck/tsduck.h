@@ -50,6 +50,7 @@
 #include "tsAlgorithm.h"
 #include "tsApplicationSharedLibrary.h"
 #include "tsApplicationSignallingDescriptor.h"
+#include "tsApplicationUsageDescriptor.h"
 #include "tsArgMix.h"
 #include "tsArgs.h"
 #include "tsAsyncReport.h"

@@ -40,8 +40,8 @@ TSDUCK_SOURCE;
 #define MY_DID ts::DID_VBI_TELETEXT
 
 TS_XML_DESCRIPTOR_FACTORY(ts::VBITeletextDescriptor, MY_XML_NAME);
-TS_ID_DESCRIPTOR_FACTORY(ts::VBITeletextDescriptor, ts::EDID(MY_DID));
-TS_ID_DESCRIPTOR_DISPLAY(ts::VBITeletextDescriptor::DisplayDescriptor, ts::EDID(MY_DID));
+TS_ID_DESCRIPTOR_FACTORY(ts::VBITeletextDescriptor, ts::EDID::Standard(MY_DID));
+TS_ID_DESCRIPTOR_DISPLAY(ts::VBITeletextDescriptor::DisplayDescriptor, ts::EDID::Standard(MY_DID));
 
 
 //----------------------------------------------------------------------------

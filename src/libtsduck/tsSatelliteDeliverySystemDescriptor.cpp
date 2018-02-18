@@ -42,8 +42,8 @@ TSDUCK_SOURCE;
 #define MY_DID ts::DID_SAT_DELIVERY
 
 TS_XML_DESCRIPTOR_FACTORY(ts::SatelliteDeliverySystemDescriptor, MY_XML_NAME);
-TS_ID_DESCRIPTOR_FACTORY(ts::SatelliteDeliverySystemDescriptor, ts::EDID(MY_DID));
-TS_ID_DESCRIPTOR_DISPLAY(ts::SatelliteDeliverySystemDescriptor::DisplayDescriptor, ts::EDID(MY_DID));
+TS_ID_DESCRIPTOR_FACTORY(ts::SatelliteDeliverySystemDescriptor, ts::EDID::Standard(MY_DID));
+TS_ID_DESCRIPTOR_DISPLAY(ts::SatelliteDeliverySystemDescriptor::DisplayDescriptor, ts::EDID::Standard(MY_DID));
 
 
 //----------------------------------------------------------------------------

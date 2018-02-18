@@ -41,8 +41,8 @@ TSDUCK_SOURCE;
 #define MY_DID ts::DID_AVC_VIDEO
 
 TS_XML_DESCRIPTOR_FACTORY(ts::AVCVideoDescriptor, MY_XML_NAME);
-TS_ID_DESCRIPTOR_FACTORY(ts::AVCVideoDescriptor, ts::EDID(MY_DID));
-TS_ID_DESCRIPTOR_DISPLAY(ts::AVCVideoDescriptor::DisplayDescriptor, ts::EDID(MY_DID));
+TS_ID_DESCRIPTOR_FACTORY(ts::AVCVideoDescriptor, ts::EDID::Standard(MY_DID));
+TS_ID_DESCRIPTOR_DISPLAY(ts::AVCVideoDescriptor::DisplayDescriptor, ts::EDID::Standard(MY_DID));
 
 
 //----------------------------------------------------------------------------

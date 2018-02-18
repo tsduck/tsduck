@@ -109,10 +109,13 @@ namespace ts {
 
         //!
         //! Get the descriptor factory for a given descriptor tag.
-        //! @param [in] edid Exended descriptor id.
+        //! @param [in] edid Extended descriptor id.
+        //! @param [in] tid Optional table id of the table containing the descriptor.
+        //! If @a edid is a standard descriptor and @a tid is specified, try first a
+        //! table-specific descriptor for this table. Fallback to the standard descriptor.
         //! @return Corresponding factory or zero if there is none.
         //!
-        DescriptorFactory getDescriptorFactory(const EDID& edid) const;
+        DescriptorFactory getDescriptorFactory(const EDID& edid, TID tid = TID_NULL) const;
 
         //!
         //! Get the table factory for a given XML node name.
@@ -129,6 +132,24 @@ namespace ts {
         DescriptorFactory getDescriptorFactory(const UString& node_name) const;
 
         //!
+        //! Check if a descriptor is allowed in a table.
+        //! @param [in] desc_node_name Name of the XML node for the descriptor.
+        //! @param [in] table_id Table id of the table to check.
+        //! @return True if the descriptor is allowed, false otherwise.
+        //! Non-table-specific descriptors are allowed everywhere.
+        //! Table-specific descriptors are allowed only in a set of specific tables.
+        //!
+        bool isDescriptorAllowed(const UString& desc_node_name, TID table_id) const;
+
+        //!
+        //! Get the list of tables where a descriptor is allowed.
+        //! @param [in] desc_node_name Name of the XML node for the descriptor.
+        //! @return Human-readable list of tables where the descriptor is allowed.
+        //! Empty string for non-table-specific descriptors.
+        //!
+        UString descriptorTables(const UString& desc_node_name) const;
+
+        //!
         //! Get the display function for a given table id.
         //! @param [in] id Table id.
         //! @return Corresponding display function or zero if there is none.
@@ -137,10 +158,13 @@ namespace ts {
 
         //!
         //! Get the display function for a given extended descriptor id.
-        //! @param [in] edid Exended descriptor id.
+        //! @param [in] edid Extended descriptor id.
+        //! @param [in] tid Optional table id of the table containing the descriptor.
+        //! If @a edid is a standard descriptor and @a tid is specified, try first a
+        //! table-specific descriptor for this table. Fallback to the standard descriptor.
         //! @return Corresponding display function or zero if there is none.
         //!
-        DisplayDescriptorFunction getDescriptorDisplay(const EDID& edid) const;
+        DisplayDescriptorFunction getDescriptorDisplay(const EDID& edid, TID tid = TID_NULL) const;
 
         //!
         //! Get the list of all registered table ids.
@@ -212,9 +236,10 @@ namespace ts {
             //! The constructor registers a descriptor factory for a given XML node name.
             //! @param [in] node_name Name of XML nodes implementing this descriptor.
             //! @param [in] factory Function which creates a descriptor of the appropriate type.
+            //! @param [in] tids For table-specific descriptors, list of table ids where the descriptor is allowed to appear.
             //! @see TS_XML_DESCRIPTOR_FACTORY
             //!
-            Register(const UString& node_name, DescriptorFactory factory);
+            Register(const UString& node_name, DescriptorFactory factory, std::initializer_list<TID> tids = std::initializer_list<TID>());
 
             //!
             //! The constructor registers a section display function for a given table id.
@@ -253,8 +278,13 @@ namespace ts {
         std::map<EDID, DescriptorFactory>         _descriptorIds;
         std::map<UString, TableFactory>           _tableNames;
         std::map<UString, DescriptorFactory>      _descriptorNames;
+        std::multimap<UString, TID>               _descriptorTablesIds;  // For table-specific descriptors
         std::map<TID, DisplaySectionFunction>     _sectionDisplays;
         std::map<EDID, DisplayDescriptorFunction> _descriptorDisplays;
+
+        // Common code for getDescriptorFactory and getDescriptorDisplay.
+        template <typename FUNCTION>
+        FUNCTION getDescriptorFunction(const EDID& edid, TID tid, const std::map<EDID,FUNCTION>& funcMap) const;
     };
 }
 
@@ -309,6 +339,13 @@ namespace ts {
 //! This macro is typically used in the .cpp file of a descriptor.
 //!
 #define TS_XML_DESCRIPTOR_FACTORY(classname, xmlname) _TS_DESCRIPTOR_FACTORY(classname) _TS_FACTORY_REGISTER(xmlname, _TS_FACTORY_NAME(_Factory))
+
+//!
+//! @hideinitializer
+//! Registration of the XML name of a subclass of ts::AbstractDescriptor for a table-specific descriptor.
+//! This macro is typically used in the .cpp file of a descriptor.
+//!
+#define TS_XML_TABSPEC_DESCRIPTOR_FACTORY(classname, xmlname, ...) _TS_DESCRIPTOR_FACTORY(classname) _TS_FACTORY_REGISTER(xmlname, _TS_FACTORY_NAME(_Factory), {__VA_ARGS__})
 
 //!
 //! @hideinitializer

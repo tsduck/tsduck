@@ -272,7 +272,8 @@ Bits = 32
 0xFCFCFCFC = France Telecom
 
 [DescriptorId]
-# Most significant bytes contain a private data specifier
+# Private descriptors: Most significant bytes contain a private data specifier.
+# Table-specific descriptors: MSB contains table if followed by FFFFFFFF.
 Bits = 8
 # MPEG-defined:
 0x01 = NPT Reference
@@ -395,6 +396,48 @@ Bits = 8
 # ANSI / SCTE defined. Incompatible with DVB (no PDS present).
 0x8A = Cue Identifier (SCTE 35)
 0xFF = Forbidden Descriptor Id 0xFF
+# Valid in a UNT (0x4B, Update Notification Table, ETSI TS 102 006):
+0x4BFFFFFFFF01 = UNT Scheduling
+0x4BFFFFFFFF02 = UNT Update
+0x4BFFFFFFFF03 = UNT SSU Location
+0x4BFFFFFFFF04 = UNT Message
+0x4BFFFFFFFF05 = UNT SSU Event Name
+0x4BFFFFFFFF06 = UNT Target Smartcard
+0x4BFFFFFFFF07 = UNT Target MAC Address
+0x4BFFFFFFFF08 = UNT Target Serial Number
+0x4BFFFFFFFF09 = UNT Target IP Address
+0x4BFFFFFFFF0A = UNT Target IPv6 Address
+0x4BFFFFFFFF0B = UNT SSU Subgroup Association
+0x4BFFFFFFFF0C = UNT Enhanced Message
+0x4BFFFFFFFF0D = UNT SSU URI
+# Valid in an INT (0x4C, IP/MAC Notification Table, ETSI EN 301 192):
+0x4CFFFFFFFF06 = INT Target Smartcard
+0x4CFFFFFFFF07 = INT Target MAC Address
+0x4CFFFFFFFF08 = INT Target Serial Number
+0x4CFFFFFFFF09 = INT Target IP Address
+0x4CFFFFFFFF0A = INT Target IPv6 Address
+0x4CFFFFFFFF0C = INT IP/MAC Platform Name
+0x4CFFFFFFFF0D = INT IP/MAC Platform Provider Name
+0x4CFFFFFFFF0E = INT Target MAC Address Range
+0x4CFFFFFFFF0F = INT Target IP Slash
+0x4CFFFFFFFF10 = INT Target IP Source Slash
+0x4CFFFFFFFF11 = INT Target IPv6 Slash
+0x4CFFFFFFFF12 = INT Target IPv6 Source Slash
+0x4CFFFFFFFF13 = INT IP/MAC Stream Location
+0x4CFFFFFFFF14 = INT ISP Access Mode
+0x4CFFFFFFFF15 = INT IP/MAC Generic Stream Location
+# Valid in an AIT (0x74, Application Information Table, ETSI TS 102 809):
+0x74FFFFFFFF00 = AIT Application
+0x74FFFFFFFF01 = AIT Application Name
+0x74FFFFFFFF02 = AIT Transport Protocol
+0x74FFFFFFFF05 = AIT External Application Authorisation
+0x74FFFFFFFF06 = AIT Application Recording
+0x74FFFFFFFF0B = AIT Application Icons
+0x74FFFFFFFF10 = AIT Application Storage
+0x74FFFFFFFF14 = AIT Graphics Constraints
+0x74FFFFFFFF15 = AIT Simple Application Location
+0x74FFFFFFFF16 = AIT Application Usage
+0x74FFFFFFFF17 = AIT Simple Application Boundary
 # With PDS for Canal+ / NDS France (MediaHighway).
 0x000000C080 = DTG Stream Indicator/PIO Offset Time (MediaHighway)
 0x000000C081 = Logical Channel/AC-3 Audio Stream (MediaHighway)

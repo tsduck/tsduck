@@ -79,6 +79,7 @@ ts::StaticReferencesDVB::StaticReferencesDVB() :
     REF_TYPE(AACDescriptor);
     REF_TYPE(AC3Descriptor);
     REF_TYPE(ApplicationSignallingDescriptor);
+    REF_TYPE(ApplicationUsageDescriptor);
     REF_TYPE(AVCVideoDescriptor);
     REF_TYPE(BouquetNameDescriptor);
     REF_TYPE(CableDeliverySystemDescriptor);

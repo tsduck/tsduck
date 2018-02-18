@@ -450,7 +450,7 @@ bool ts::DescriptorList::toXML(xml::Element* parent, const DVBCharset* charset) 
 {
     bool success = true;
     for (size_t index = 0; index < _list.size(); ++index) {
-        if (_list[index].desc.isNull() || _list[index].desc->toXML(parent, _list[index].pds, false, charset) == 0) {
+        if (_list[index].desc.isNull() || _list[index].desc->toXML(parent, _list[index].pds, tableId() , false, charset) == 0) {
             success = false;
         }
     }
@@ -488,7 +488,7 @@ bool ts::DescriptorList::fromXML(xml::ElementVector& others, const xml::Element*
         CheckNonNull(bin.pointer());
 
         // Try to analyze the XML element.
-        if (bin->fromXML(node, charset)) {
+        if (bin->fromXML(node, tableId(), charset)) {
             // The XML tag is a valid descriptor name.
             if (bin->isValid()) {
                 add(bin);

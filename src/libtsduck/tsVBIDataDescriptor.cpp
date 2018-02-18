@@ -42,8 +42,8 @@ TSDUCK_SOURCE;
 #define MY_DID ts::DID_VBI_DATA
 
 TS_XML_DESCRIPTOR_FACTORY(ts::VBIDataDescriptor, MY_XML_NAME);
-TS_ID_DESCRIPTOR_FACTORY(ts::VBIDataDescriptor, ts::EDID(MY_DID));
-TS_ID_DESCRIPTOR_DISPLAY(ts::VBIDataDescriptor::DisplayDescriptor, ts::EDID(MY_DID));
+TS_ID_DESCRIPTOR_FACTORY(ts::VBIDataDescriptor, ts::EDID::Standard(MY_DID));
+TS_ID_DESCRIPTOR_DISPLAY(ts::VBIDataDescriptor::DisplayDescriptor, ts::EDID::Standard(MY_DID));
 
 
 //----------------------------------------------------------------------------

@@ -38,8 +38,8 @@ TSDUCK_SOURCE;
 #define MY_DID ts::DID_NVOD_REFERENCE
 
 TS_XML_DESCRIPTOR_FACTORY(ts::NVODReferenceDescriptor, MY_XML_NAME);
-TS_ID_DESCRIPTOR_FACTORY(ts::NVODReferenceDescriptor, ts::EDID(MY_DID));
-TS_ID_DESCRIPTOR_DISPLAY(ts::NVODReferenceDescriptor::DisplayDescriptor, ts::EDID(MY_DID));
+TS_ID_DESCRIPTOR_FACTORY(ts::NVODReferenceDescriptor, ts::EDID::Standard(MY_DID));
+TS_ID_DESCRIPTOR_DISPLAY(ts::NVODReferenceDescriptor::DisplayDescriptor, ts::EDID::Standard(MY_DID));
 
 
 //----------------------------------------------------------------------------
