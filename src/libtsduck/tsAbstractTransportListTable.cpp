@@ -164,7 +164,7 @@ void ts::AbstractTransportListTable::deserialize(const BinaryTable& table, const
 
 //----------------------------------------------------------------------------
 // Private method: Add a new section to a table being serialized.
-// Session number is incremented. Data and remain are reinitialized.
+// Section number is incremented. Data and remain are reinitialized.
 //----------------------------------------------------------------------------
 
 void ts::AbstractTransportListTable::addSection(BinaryTable& table,

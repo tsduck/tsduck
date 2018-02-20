@@ -872,35 +872,58 @@ void ts::TSAnalyzer::analyzeDescriptors(const DescriptorList& descs, ServiceCont
                 break;
             }
             case DID_DATA_BROADCAST_ID: {
-                if (size >= 2 && GetUInt16(data) == 0x000A) {
-                    // Data broadcast id 0x000A: System Software Update(SSU, ETSI TS 102 006)
-                    // Skip data_broadcast_id, already checked == 0x000A
-                    data += 2; size -= 2;
-                    if (svp != 0) {
-                        // Mark the service as carrying SSU
-                        svp->carry_ssu = true;
-                    }
-                    if (ps != 0 && size >= 1) {
-                        // Rest of descriptor is a system_software_update_info structure.
-                        // Store the list of OUI's in PID context.
-                        // OUI_data_length:
-                        uint8_t dlength = data[0];
-                        data += 1; size -= 1;
-                        if (dlength > size) {
-                            dlength = uint8_t(size);
-                        }
-                        // OUI loop:
-                        while (dlength >= 6) {
-                            // Fixed part (6 bytes) followed by variable-length selector
-                            uint32_t oui = GetUInt32(data - 1) & 0x00FFFFFF; // 24 bits
-                            uint8_t slength = data[5];
-                            data += 6; size -= 6; dlength -= 6;
-                            if (slength > dlength) {
-                                slength = dlength;
+                if (size >= 2) {
+                    // Get the data broadcast id.
+                    switch (GetUInt16(data)) {
+                        case 0x000A: {
+                            // System Software Update(SSU, ETSI TS 102 006)
+                            // Skip data_broadcast_id, already checked == 0x000A
+                            data += 2; size -= 2;
+                            if (svp != 0) {
+                                // Mark the service as carrying SSU
+                                svp->carry_ssu = true;
                             }
-                            data += slength; size -= slength; dlength -= slength;
-                            // Store OUI in PID context
-                            ps->ssu_oui.insert(oui);
+                            if (ps != 0 && size >= 1) {
+                                // Rest of descriptor is a system_software_update_info structure.
+                                // Store the list of OUI's in PID context.
+                                // OUI_data_length:
+                                uint8_t dlength = data[0];
+                                data += 1; size -= 1;
+                                if (dlength > size) {
+                                    dlength = uint8_t(size);
+                                }
+                                // OUI loop:
+                                while (dlength >= 6) {
+                                    // Fixed part (6 bytes) followed by variable-length selector
+                                    uint32_t oui = GetUInt32(data - 1) & 0x00FFFFFF; // 24 bits
+                                    uint8_t slength = data[5];
+                                    data += 6; size -= 6; dlength -= 6;
+                                    if (slength > dlength) {
+                                        slength = dlength;
+                                    }
+                                    data += slength; size -= slength; dlength -= slength;
+                                    // Store OUI in PID context
+                                    ps->ssu_oui.insert(oui);
+                                }
+                            }
+                            break;
+                        }
+                        case 0x0005: {
+                            // Multi-Protocol Encapsulation.
+                            if (ps != 0) {
+                                ps->comment = u"MPE";
+                            }
+                            break;
+                        }
+                        case 0x000B: {
+                            // IP/MAC Notification Table.
+                            if (ps != 0) {
+                                ps->comment = u"INT, IP/MAC Notification";
+                            }
+                            break;
+                        }
+                        default: {
+                            break;
                         }
                     }
                 }

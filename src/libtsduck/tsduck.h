@@ -135,6 +135,7 @@
 #include "tsHDSimulcastLogicalChannelDescriptor.h"
 #include "tsHEVCVideoDescriptor.h"
 #include "tsInputRedirector.h"
+#include "tsINT.h"
 #include "tsIntegerUtils.h"
 #include "tsInterruptHandler.h"
 #include "tsIPAddress.h"

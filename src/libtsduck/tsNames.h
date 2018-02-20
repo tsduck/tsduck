@@ -71,13 +71,21 @@ namespace ts {
 
         //!
         //! Name of Descriptor ID.
-        //! @param [in] did Descriptor ID.
+        //! @param [in] did Descriptor id.
         //! @param [in] pds Private data specified if @a did >= 0x80.
         //! @param [in] tid Optional id of the enclosing table.
         //! @param [in] flags Presentation flags.
         //! @return The corresponding name.
         //!
         TSDUCKDLL UString DID(uint8_t did, uint32_t pds = 0, uint8_t tid = 0xFF, Flags flags = NAME);
+
+        //!
+        //! Check if a descriptor id has a specific name for a given table.
+        //! @param [in] did Descriptor id.
+        //! @param [in] tid Table id of the enclosing table.
+        //! @return True if descriptor @a did has a specific name for table @a tid.
+        //!
+        TSDUCKDLL bool HasTableSpecificName(uint8_t did, uint8_t tid);
 
         //!
         //! Name of Extended descriptor ID.
@@ -304,6 +312,14 @@ namespace ts {
         TSDUCKDLL UString NetworkId(uint16_t id, Flags flags = NAME);
 
         //!
+        //! Name of Platform Id.
+        //! @param [in] id Platform Id.
+        //! @param [in] flags Presentation flags.
+        //! @return The corresponding name.
+        //!
+        TSDUCKDLL UString PlatformId(uint32_t id, Flags flags = NAME);
+
+        //!
         //! Name of Data broadcast id (in Data Broadcast Id Descriptor).
         //! @param [in] id Data broadcast id (in Data Broadcast Id Descriptor).
         //! @param [in] flags Presentation flags.
@@ -368,6 +384,14 @@ namespace ts {
         {
             return _configErrors;
         }
+
+        //!
+        //! Check if a name exists in a specified section.
+        //! @param [in] sectionName Name of section to search. Not case-sensitive.
+        //! @param [in] value Value to get the name for.
+        //! @return True if a name exists for @a value in @a sectionName.
+        //!
+        bool nameExists(const UString& sectionName, Value value) const;
 
         //!
         //! Get a name from a specified section.

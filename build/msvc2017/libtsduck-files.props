@@ -121,6 +121,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsHDSimulcastLogicalChannelDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsHEVCVideoDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsInputRedirector.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsINT.h" />
     <ClInclude Include="..\..\src\libtsduck\tsIntegerUtils.h" />
     <ClInclude Include="..\..\src\libtsduck\tsIntegerUtilsTemplate.h" />
     <ClInclude Include="..\..\src\libtsduck\tsInterruptHandler.h" />
@@ -423,6 +424,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsHDSimulcastLogicalChannelDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsHEVCVideoDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsInputRedirector.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsINT.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsIntegerUtils.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsIPAddress.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsIPUtils.cpp" />
