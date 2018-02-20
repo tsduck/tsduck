@@ -6,6 +6,8 @@ Version 3.9
 
 - Added options --sei-avc and --uuid-sei to plugin pes.
 
+- Added signalization for data broadcast and MPE.
+
 - Bug fix on Windows: Command "tsversion --upgrade" failed because tsversion.exe
   and tsduck.dll were locked by upgrade command.
 

@@ -75,7 +75,25 @@ namespace ts {
         DescriptorList& operator=(const DescriptorList& dl);
 
         //!
-        //! Get the number of descriptors in the list.
+        //! Check if the descriptor list is empty.
+        //! @return True if the descriptor list is empty.
+        //!
+        bool empty() const
+        {
+            return _list.empty();
+        }
+
+        //!
+        //! Get the number of descriptors in the list (same as count()).
+        //! @return The number of descriptors in the list.
+        //!
+        size_t size() const
+        {
+            return _list.size();
+        }
+
+        //!
+        //! Get the number of descriptors in the list (same as size()).
         //! @return The number of descriptors in the list.
         //!
         size_t count() const

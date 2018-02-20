@@ -79,7 +79,14 @@ namespace ts {
         virtual ~AbstractTable() {}
 
         //!
-        //! Base inner class for table entries with a descriptor list.
+        //! Base inner class for table entries with one or more descriptor lists.
+        //!
+        class TSDUCKDLL EntryBase
+        {
+        };
+
+        //!
+        //! Base inner class for table entries with one descriptor list.
         //!
         //! Some tables, such as PMT, BAT or NIT, contain a list or map of "entries".
         //! Each entry contains a descriptor list. The difficulty here is that the
@@ -88,7 +95,7 @@ namespace ts {
         //! for such entries, combined with the template container classes
         //! EntryWithDescriptorsList and EntryWithDescriptorsMap.
         //!
-        class TSDUCKDLL EntryWithDescriptors
+        class TSDUCKDLL EntryWithDescriptors : public EntryBase
         {
         public:
             //!
@@ -124,72 +131,11 @@ namespace ts {
         };
 
         //!
-        //! Template list of subclasses of EntryWithDescriptors.
-        //! @tparam ENTRY A subclass of EntryWithDescriptors (enforced at compile-time).
-        //!
-        template<class ENTRY, typename std::enable_if<std::is_base_of<EntryWithDescriptors, ENTRY>::value>::type* = nullptr>
-        class EntryWithDescriptorsList : public std::list<ENTRY>
-        {
-        public:
-            //!
-            //! Explicit reference to the super class.
-            //!
-            typedef std::list<ENTRY> SuperClass;
-
-            //!
-            //! Basic constructor.
-            //! @param [in] table Parent table. A descriptor list is always attached to a table.
-            //!
-            explicit EntryWithDescriptorsList(const AbstractTable* table);
-
-            //!
-            //! Basic copy-like constructor.
-            //! @param [in] table Parent table. A descriptor list is always attached to a table.
-            //! @param [in] other Another instance to copy.
-            //!
-            EntryWithDescriptorsList(const AbstractTable* table, const SuperClass& other);
-
-            //!
-            //! Assignment operator.
-            //! The parent table remains unchanged.
-            //! @param [in] other Another instance to copy.
-            //! @return A reference to this object.
-            //!
-            EntryWithDescriptorsList& operator=(const EntryWithDescriptorsList& other);
-
-            //!
-            //! Swap two instances (override of std::list).
-            //! @param [in,out] other Another instance to swap with the current object.
-            //!
-            void swap(EntryWithDescriptorsList& other);
-
-            //!
-            //! Create a new entry at front of the list and return a reference to it.
-            //! @return A reference to the newly created element.
-            //!
-            ENTRY& newFront();
-
-            //!
-            //! Create a new entry at the back of the list and return a reference to it.
-            //! @return A reference to the newly created element.
-            //!
-            ENTRY& newBack();
-
-        private:
-            // Parent table (zero for descriptor list object outside a table).
-            const AbstractTable* const _table;
-
-            // Inaccessible operations.
-            EntryWithDescriptorsList() = delete;
-            EntryWithDescriptorsList(const EntryWithDescriptorsList&) = delete;
-        };
-
-        //!
-        //! Template map of subclasses of EntryWithDescriptors.
+        //! Template map of subclasses of EntryBase.
         //! @tparam KEY A type which is used as key of the map.
-        //! @tparam ENTRY A subclass of EntryWithDescriptors (enforced at compile-time).
+        //! @tparam ENTRY A subclass of EntryBase (enforced at compile-time).
         //!
-        template<typename KEY, class ENTRY, typename std::enable_if<std::is_base_of<EntryWithDescriptors, ENTRY>::value>::type* = nullptr>
+        template<typename KEY, class ENTRY, typename std::enable_if<std::is_base_of<EntryBase, ENTRY>::value>::type* = nullptr>
         class EntryWithDescriptorsMap : public std::map<KEY, ENTRY>
         {
         public:
@@ -247,6 +193,47 @@ namespace ts {
             // Inaccessible operations.
             EntryWithDescriptorsMap() = delete;
             EntryWithDescriptorsMap(const EntryWithDescriptorsMap&) = delete;
+        };
+
+        //!
+        //! Template map of subclasses of EntryBase, indexed by size_t.
+        //! This is replacement for vectors and lists, which cannot be used by entries
+        //! containing a descriptor list since it is not CopyAssignable or CopyConstructible. 
+        //! @tparam ENTRY A subclass of EntryBase (enforced at compile-time).
+        //!
+        template<class ENTRY, typename std::enable_if<std::is_base_of<EntryBase, ENTRY>::value>::type* = nullptr>
+        class EntryWithDescriptorsList : public EntryWithDescriptorsMap<size_t, ENTRY>
+        {
+        public:
+            //!
+            //! Explicit reference to the super class.
+            //!
+            typedef EntryWithDescriptorsMap<size_t, ENTRY> SuperClass;
+
+            //!
+            //! Basic constructor.
+            //! @param [in] table Parent table. A descriptor list is always attached to a table.
+            //!
+            explicit EntryWithDescriptorsList(const AbstractTable* table) : SuperClass(table) {}
+
+            //!
+            //! Basic copy-like constructor.
+            //! @param [in] table Parent table. A descriptor list is always attached to a table.
+            //! @param [in] other Another instance to copy.
+            //!
+            EntryWithDescriptorsList(const AbstractTable* table, const SuperClass& other) : SuperClass(table, other) {}
+
+            //!
+            //! Get a new unused index, greater than the greatest entry.
+            //! @return A new unused index.
+            //!
+            size_t nextIndex() const { return empty() ? 0 : this->end()->first + 1; }
+
+            //!
+            //! Create a new entry in the map.
+            //! @return A constant reference to the new entry.
+            //!
+            ENTRY& newEntry() { return (*this)[this->nextIndex()]; }
         };
 
     protected:

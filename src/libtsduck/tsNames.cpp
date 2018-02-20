@@ -44,13 +44,14 @@ TS_STATIC_INSTANCE_DEFINITION(ts::Names, (u"tsduck.oui.names"), ts::NamesOUI, Na
 
 
 //----------------------------------------------------------------------------
-// Public functions returning names.
+// Descriptor ids: specific processing for table-specific descriptors.
 //----------------------------------------------------------------------------
 
-ts::UString ts::names::TID(uint8_t tid, ts::CASFamily cas, Flags flags)
+bool ts::names::HasTableSpecificName(uint8_t did, uint8_t tid)
 {
-    // Use version with CAS first, then without CAS.
-    return NamesDVB::Instance().nameFromSectionWithFallback(u"TableId", (Names::Value(cas) << 8) | Names::Value(tid), Names::Value(tid), flags, 8);
+    return tid != TID_NULL &&
+        did < 0x80 &&
+        NamesDVB::Instance().nameExists(u"DescriptorId", (Names::Value(tid) << 40) | TS_UCONST64(0x000000FFFFFFFF00) | Names::Value(did));
 }
 
 ts::UString ts::names::DID(uint8_t did, uint32_t pds, uint8_t tid, Flags flags)
@@ -63,6 +64,16 @@ ts::UString ts::names::DID(uint8_t did, uint32_t pds, uint8_t tid, Flags flags)
         ((Names::Value(tid) << 40) | TS_UCONST64(0x000000FFFFFFFF00) | Names::Value(did));
 
     return NamesDVB::Instance().nameFromSectionWithFallback(u"DescriptorId", fullValue, Names::Value(did), flags, 8);
+}
+
+//----------------------------------------------------------------------------
+// Public functions returning names.
+//----------------------------------------------------------------------------
+
+ts::UString ts::names::TID(uint8_t tid, ts::CASFamily cas, Flags flags)
+{
+    // Use version with CAS first, then without CAS.
+    return NamesDVB::Instance().nameFromSectionWithFallback(u"TableId", (Names::Value(cas) << 8) | Names::Value(tid), Names::Value(tid), flags, 8);
 }
 
 ts::UString ts::names::EDID(uint8_t edid, Flags flags)
@@ -108,6 +119,11 @@ ts::UString ts::names::OriginalNetworkId(uint16_t id, Flags flags)
 ts::UString ts::names::NetworkId(uint16_t id, Flags flags)
 {
     return NamesDVB::Instance().nameFromSection(u"NetworkId", Names::Value(id), flags, 16);
+}
+
+ts::UString ts::names::PlatformId(uint32_t id, Flags flags)
+{
+    return NamesDVB::Instance().nameFromSection(u"PlatformId", Names::Value(id), flags, 24);
 }
 
 ts::UString ts::names::DataBroadcastId(uint16_t id, Flags flags)
@@ -589,6 +605,18 @@ ts::UString ts::Names::Formatted(Value value, const UString& name, names::Flags 
         case names::BOTH_FIRST: return UString::Format(u"0x%0*X (%d, %s)", {HexaDigits(bits), value, value, *displayName});
         default: assert(false); return UString();
     }
+}
+
+
+//----------------------------------------------------------------------------
+// Check if a name exists in a specified section.
+//----------------------------------------------------------------------------
+
+bool ts::Names::nameExists(const UString& sectionName, Value value) const
+{
+    // Get the section, normalize the section name.
+    ConfigSectionMap::const_iterator it = _sections.find(sectionName.toTrimmed().toLower());
+    return it != _sections.end() && !it->second->getName(value).empty();
 }
 
 

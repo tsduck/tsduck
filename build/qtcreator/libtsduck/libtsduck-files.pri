@@ -119,6 +119,7 @@ HEADERS += \
     ../../../src/libtsduck/tsHDSimulcastLogicalChannelDescriptor.h \
     ../../../src/libtsduck/tsHEVCVideoDescriptor.h \
     ../../../src/libtsduck/tsInputRedirector.h \
+    ../../../src/libtsduck/tsINT.h \
     ../../../src/libtsduck/tsIntegerUtils.h \
     ../../../src/libtsduck/tsIntegerUtilsTemplate.h \
     ../../../src/libtsduck/tsInterruptHandler.h \
@@ -411,6 +412,7 @@ SOURCES += \
     ../../../src/libtsduck/tsHDSimulcastLogicalChannelDescriptor.cpp \
     ../../../src/libtsduck/tsHEVCVideoDescriptor.cpp \
     ../../../src/libtsduck/tsInputRedirector.cpp \
+    ../../../src/libtsduck/tsINT.cpp \
     ../../../src/libtsduck/tsIntegerUtils.cpp \
     ../../../src/libtsduck/tsIPAddress.cpp \
     ../../../src/libtsduck/tsIPUtils.cpp \

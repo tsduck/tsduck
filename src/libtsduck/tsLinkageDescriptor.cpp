@@ -378,64 +378,24 @@ void ts::LinkageDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, c
              << margin << UString::Format(u"Linkage type: %s", {names::LinkageType(ltype, names::FIRST)}) << std::endl;
 
         // Variable part
-        if (ltype == 0x08 && size >= 1) {
-            // Mobile hand-over
-            uint8_t hand_over = *data >> 4;
-            uint8_t origin = *data & 0x01;
-            data += 1; size -= 1;
-            const UChar *name;
-            switch (hand_over) {
-                case 0x01: name = u"identical service in neighbour country"; break;
-                case 0x02: name = u"local variation of same service"; break;
-                case 0x03: name = u"associated service"; break;
-                default:   name = u"unknown"; break;
-            }
-            strm << margin << UString::Format(u"Hand-over type: 0x%X, %s, Origin: %s", {hand_over, name, origin ? u"SDT" : u"NIT"}) << std::endl;
-            if ((hand_over == 0x01 || hand_over == 0x02 || hand_over == 0x03) && size >= 2) {
-                uint16_t nwid = GetUInt16(data);
-                data += 2; size -= 2;
-                strm << margin << UString::Format(u"Network id: %d (0x%X)", {nwid, nwid}) << std::endl;
-            }
-            if (origin == 0x00 && size >= 2) {
-                uint16_t org_servid = GetUInt16(data);
-                data += 2; size -= 2;
-                strm << margin << UString::Format(u"Original service id: %d (0x%X)", {org_servid, org_servid}) << std::endl;
-            }
-        }
-        else if (ltype == 0x09 && size >= 1) {
-            // System Software Update (ETSI TS 102 006)
-            uint8_t dlength = data[0];
-            data += 1; size -= 1;
-            if (dlength > size) {
-                dlength = uint8_t(size);
-            }
-            while (dlength >= 4) {
-                uint32_t oui = GetUInt32(data - 1) & 0x00FFFFFF; // 24 bits
-                uint8_t slength = data[3];
-                data += 4; size -= 4; dlength -= 4;
-                const uint8_t* sdata = data;
-                if (slength > dlength) {
-                    slength = dlength;
-                }
-                data += slength; size -= slength; dlength -= slength;
-                strm << margin << "OUI: " << names::OUI(oui, names::FIRST) << std::endl;
-                if (slength > 0) {
-                    strm << margin << "Selector data:" << std::endl
-                         << UString::Dump(sdata, slength, UString::HEXA | UString::ASCII, indent);
-                }
-            }
-        }
-        else if (ltype == 0x0A && size >= 1) {
-            // TS with System Software Update BAT or NIT (ETSI TS 102 006)
-            uint8_t ttype = data[0];
-            data += 1; size -= 1;
-            strm << margin << "SSU table type: ";
-            switch (ttype) {
-                case 0x01: strm << "NIT"; break;
-                case 0x02: strm << "BAT"; break;
-                default:   strm << UString::Hexa(ttype); break;
-            }
-            strm << std::endl;
+        switch (ltype) {
+            case 0x08:
+                DisplayPrivateMobileHandover(display, data, size, indent, ltype);
+                break;
+            case 0x09:
+                DisplayPrivateSSU(display, data, size, indent, ltype);
+                break;
+            case 0x0A:
+                DisplayPrivateTableSSU(display, data, size, indent, ltype);
+                break;
+            case 0x0B:
+                DisplayPrivateINT(display, data, size, indent, ltype);
+                break;
+            case 0x0C:
+                DisplayPrivateDeferredINT(display, data, size, indent, ltype);
+                break;
+            default:
+                break;
         }
 
         // Remaining private data
@@ -447,6 +407,186 @@ void ts::LinkageDescriptor::DisplayDescriptor(TablesDisplay& display, DID did, c
     }
 
     display.displayExtraData(data, size, indent);
+}
+
+
+//----------------------------------------------------------------------------
+// Display linkage private data for mobile hand-over
+//----------------------------------------------------------------------------
+
+void ts::LinkageDescriptor::DisplayPrivateMobileHandover(TablesDisplay& display, const uint8_t*& data, size_t& size, int indent, uint8_t ltype)
+{
+    if (size < 1) {
+        return;
+    }
+
+    std::ostream& strm(display.out());
+    const std::string margin(indent, ' ');
+
+    uint8_t hand_over = *data >> 4;
+    uint8_t origin = *data & 0x01;
+    data += 1; size -= 1;
+
+    const UChar *name;
+    switch (hand_over) {
+        case 0x01: name = u"identical service in neighbour country"; break;
+        case 0x02: name = u"local variation of same service"; break;
+        case 0x03: name = u"associated service"; break;
+        default:   name = u"unknown"; break;
+    }
+    strm << margin << UString::Format(u"Hand-over type: 0x%X, %s, Origin: %s", {hand_over, name, origin ? u"SDT" : u"NIT"}) << std::endl;
+
+    if ((hand_over == 0x01 || hand_over == 0x02 || hand_over == 0x03) && size >= 2) {
+        uint16_t nwid = GetUInt16(data);
+        data += 2; size -= 2;
+        strm << margin << UString::Format(u"Network id: %d (0x%X)", {nwid, nwid}) << std::endl;
+    }
+
+    if (origin == 0x00 && size >= 2) {
+        uint16_t org_servid = GetUInt16(data);
+        data += 2; size -= 2;
+        strm << margin << UString::Format(u"Original service id: %d (0x%X)", {org_servid, org_servid}) << std::endl;
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Display linkage private data for System Software Update (ETSI TS 102 006)
+//----------------------------------------------------------------------------
+
+void ts::LinkageDescriptor::DisplayPrivateSSU(TablesDisplay& display, const uint8_t*& data, size_t& size, int indent, uint8_t ltype)
+{
+    if (size < 1) {
+        return;
+    }
+
+    std::ostream& strm(display.out());
+    const std::string margin(indent, ' ');
+
+    uint8_t dlength = data[0];
+    data += 1; size -= 1;
+    if (dlength > size) {
+        dlength = uint8_t(size);
+    }
+
+    while (dlength >= 4) {
+        uint32_t oui = GetUInt24(data);
+        uint8_t slength = data[3];
+        data += 4; size -= 4; dlength -= 4;
+        const uint8_t* sdata = data;
+        if (slength > dlength) {
+            slength = dlength;
+        }
+        data += slength; size -= slength; dlength -= slength;
+        strm << margin << "OUI: " << names::OUI(oui, names::FIRST) << std::endl;
+        if (slength > 0) {
+            strm << margin << "Selector data:" << std::endl
+                 << UString::Dump(sdata, slength, UString::HEXA | UString::ASCII, indent);
+        }
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Display linkage private data for TS with System Software Update
+// BAT or NIT (ETSI TS 102 006)
+//----------------------------------------------------------------------------
+
+void ts::LinkageDescriptor::DisplayPrivateTableSSU(TablesDisplay& display, const uint8_t*& data, size_t& size, int indent, uint8_t ltype)
+{
+    if (size >= 1) {
+        std::ostream& strm(display.out());
+        const std::string margin(indent, ' ');
+
+        uint8_t ttype = data[0];
+        data += 1; size -= 1;
+
+        strm << margin << "SSU table type: ";
+        switch (ttype) {
+            case 0x01: strm << "NIT"; break;
+            case 0x02: strm << "BAT"; break;
+            default:   strm << UString::Hexa(ttype); break;
+        }
+        strm << std::endl;
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Display linkage private data for 
+//----------------------------------------------------------------------------
+
+void ts::LinkageDescriptor::DisplayPrivateINT(TablesDisplay& display, const uint8_t*& data, size_t& size, int indent, uint8_t ltype)
+{
+    if (size < 1) {
+        return;
+    }
+
+    std::ostream& strm(display.out());
+    const std::string margin(indent, ' ');
+
+    uint8_t data_length = data[0];
+    data += 1; size -= 1;
+    if (data_length > size) {
+        data_length = uint8_t(size);
+    }
+
+    while (data_length >= 4) {
+
+        uint32_t plf_id = GetUInt24(data);
+        uint8_t loop_length = data[3];
+        data += 4; size -= 4; data_length -= 4;
+        if (loop_length > data_length) {
+            loop_length = data_length;
+        }
+
+        strm << margin << UString::Format(u"- Platform id: %s", {ts::names::PlatformId(plf_id, names::HEXA_FIRST)}) << std::endl;
+
+        while (loop_length >= 4) {
+            const UString lang(UString::FromDVB(data, 3, display.dvbCharset()));
+            uint8_t name_length = data[3];
+            data += 4; size -= 4;  data_length -= 4; loop_length -= 4;
+            if (name_length > loop_length) {
+                name_length = loop_length;
+            }
+
+            const UString name(UString::FromDVB(data, name_length, display.dvbCharset()));
+            data += name_length; size -= name_length; data_length -= name_length; loop_length -= name_length;
+
+            strm << margin << "  Language: " << lang << ", name: \"" << name << "\"" << std::endl;
+        }
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Display linkage private data for 
+//----------------------------------------------------------------------------
+
+void ts::LinkageDescriptor::DisplayPrivateDeferredINT(TablesDisplay& display, const uint8_t*& data, size_t& size, int indent, uint8_t ltype)
+{
+    if (size >= 1) {
+        std::ostream& strm(display.out());
+        const std::string margin(indent, ' ');
+
+        uint8_t ttype = data[0];
+        data += 1; size -= 1;
+
+        strm << margin << "INT linkage table type: ";
+        switch (ttype) {
+            case 0x00: strm << "unspecified"; break;
+            case 0x01: strm << "NIT"; break;
+            case 0x02: strm << "BAT"; break;
+            default:   strm << UString::Hexa(ttype); break;
+        }
+        strm << std::endl;
+
+        if (ttype == 0x02 && size >= 2) {
+            const uint16_t bid = GetUInt16(data);
+            data += 2; size -= 2;
+            strm << margin << UString::Format(u"Bouquet id: 0x%X (%d)", {bid, bid}) << std::endl;
+        }
+    }
 }
 
 

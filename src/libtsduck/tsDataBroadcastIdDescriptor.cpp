@@ -137,77 +137,181 @@ void ts::DataBroadcastIdDescriptor::DisplayDescriptor(TablesDisplay& display, DI
 
 void ts::DataBroadcastIdDescriptor::DisplaySelectorBytes(TablesDisplay& display, const uint8_t* data, size_t size, int indent, uint16_t dbid)
 {
+    // Interpretation depends in the data broadcast id.
+    switch (dbid) {
+        case 0x0005:
+            DisplaySelectorMPE(display, data, size, indent, dbid);
+            break;
+        case 0x000A:
+            DisplaySelectorSSU(display, data, size, indent, dbid);
+            break;
+        case 0x000B:
+            DisplaySelectorINT(display, data, size, indent, dbid);
+            break;
+        default:
+            DisplaySelectorGeneric(display, data, size, indent, dbid);
+            break;
+    }
+    display.displayExtraData(data, size, indent);
+}
+
+
+//----------------------------------------------------------------------------
+// Generic selector bytes
+//----------------------------------------------------------------------------
+
+void ts::DataBroadcastIdDescriptor::DisplaySelectorGeneric(TablesDisplay& display, const uint8_t*& data, size_t& size, int indent, uint16_t dbid)
+{
+    if (size > 0) {
+        display.out() << std::string(indent, ' ') << "Data Broadcast selector:" << std::endl
+                      << UString::Dump(data, size, UString::HEXA | UString::ASCII, indent);
+        data += size; size = 0;
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// System Software Update (ETSI TS 102 006)
+// Id selector is a system_software_update_info structure.
+//----------------------------------------------------------------------------
+
+void ts::DataBroadcastIdDescriptor::DisplaySelectorSSU(TablesDisplay& display, const uint8_t*& data, size_t& size, int indent, uint16_t dbid)
+{
     std::ostream& strm(display.out());
     const std::string margin(indent, ' ');
 
-    // Interpretation depends in the data broadcast id.
-    if (dbid == 0x000A && size >= 1) {
-        // System Software Update (ETSI TS 102 006)
-        // Id selector is a system_software_update_info structure.
-        // OUI_data_length:
-        uint8_t dlength = data[0];
-        data += 1; size -= 1;
-        if (dlength > size) {
-            dlength = uint8_t(size);
+    // OUI_data_length:
+    if (size < 1) {
+        return;
+    }
+    uint8_t dlength = data[0];
+    data += 1; size -= 1;
+    if (dlength > size) {
+        dlength = uint8_t(size);
+    }
+
+    // OUI loop:
+    while (dlength >= 6) {
+        // Get fixed part (6 bytes)
+        uint32_t oui = GetUInt32(data - 1) & 0x00FFFFFF; // 24 bits
+        uint8_t upd_type = data[3] & 0x0F;
+        uint8_t upd_flag = (data[4] >> 5) & 0x01;
+        uint8_t upd_version = data[4] & 0x1F;
+        uint8_t slength = data[5];
+        data += 6; size -= 6; dlength -= 6;
+        // Get variable-length selector
+        const uint8_t* sdata = data;
+        if (slength > dlength) {
+            slength = dlength;
         }
-        // OUI loop:
-        while (dlength >= 6) {
-            // Get fixed part (6 bytes)
-            uint32_t oui = GetUInt32(data - 1) & 0x00FFFFFF; // 24 bits
-            uint8_t upd_type = data[3] & 0x0F;
-            uint8_t upd_flag = (data[4] >> 5) & 0x01;
-            uint8_t upd_version = data[4] & 0x1F;
-            uint8_t slength = data[5];
-            data += 6; size -= 6; dlength -= 6;
-            // Get variable-length selector
-            const uint8_t* sdata = data;
-            if (slength > dlength) {
-                slength = dlength;
-            }
-            data += slength; size -= slength; dlength -= slength;
-            // Display
-            strm << margin << "OUI: " << names::OUI(oui, names::FIRST) << std::endl
-                 << margin << UString::Format(u"  Update type: 0x%X (", {upd_type});
-            switch (upd_type) {
-                case 0x00: strm << "proprietary update solution"; break;
-                case 0x01: strm << "standard update carousel (no notification) via broadcast"; break;
-                case 0x02: strm << "system software update with UNT via broadcast"; break;
-                case 0x03: strm << "system software update using return channel with UNT"; break;
-                default:   strm << "reserved"; break;
-            }
-            strm << ")" << std::endl << margin << "  Update version: ";
-            if (upd_flag == 0) {
-                strm << "none";
-            }
-            else {
-                strm << UString::Format(u"%d (0x%02X)", {upd_version, upd_version});
-            }
-            strm << std::endl;
-            if (slength > 0) {
-                strm << margin << "  Selector data:" << std::endl
-                     << UString::Dump(sdata, slength, UString::HEXA | UString::ASCII, indent + 2);
-            }
+        data += slength; size -= slength; dlength -= slength;
+        // Display
+        strm << margin << "OUI: " << names::OUI(oui, names::FIRST) << std::endl
+            << margin << UString::Format(u"  Update type: 0x%X (", {upd_type});
+        switch (upd_type) {
+            case 0x00: strm << "proprietary update solution"; break;
+            case 0x01: strm << "standard update carousel (no notification) via broadcast"; break;
+            case 0x02: strm << "system software update with UNT via broadcast"; break;
+            case 0x03: strm << "system software update using return channel with UNT"; break;
+            default:   strm << "reserved"; break;
         }
-        // Extraneous data in OUI_loop:
-        if (dlength > 0) {
-            strm << margin << "Extraneous data in OUI loop:" << std::endl
-                 << UString::Dump(data, dlength, UString::HEXA | UString::ASCII, indent);
-            data += dlength; size -= dlength;
+        strm << ")" << std::endl << margin << "  Update version: ";
+        if (upd_flag == 0) {
+            strm << "none";
         }
-        // Private data
-        if (size > 0) {
-            strm << margin << "Private data:" << std::endl
-                 << UString::Dump(data, size, UString::HEXA | UString::ASCII, indent);
-            // Unused, end of function.
-            // data += size; size = 0;
+        else {
+            strm << UString::Format(u"%d (0x%02X)", {upd_version, upd_version});
+        }
+        strm << std::endl;
+        if (slength > 0) {
+            strm << margin << "  Selector data:" << std::endl
+                << UString::Dump(sdata, slength, UString::HEXA | UString::ASCII, indent + 2);
         }
     }
-    else if (size > 0) {
-        // Generic "id selector".
-        strm << margin << "Data Broadcast Id selector:" << std::endl
+
+    // Extraneous data in OUI_loop:
+    if (dlength > 0) {
+        strm << margin << "Extraneous data in OUI loop:" << std::endl
+             << UString::Dump(data, dlength, UString::HEXA | UString::ASCII, indent);
+        data += dlength; size -= dlength;
+    }
+
+    // Private data
+    if (size > 0) {
+        strm << margin << "Private data:" << std::endl
              << UString::Dump(data, size, UString::HEXA | UString::ASCII, indent);
-        // Unused, end of function.
-        // data += size; size = 0;
+        data += size; size = 0;
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Multi-Protocol Encapsulation (MPE, ETSI EN 301 192, section 7.2.1)
+// Id selector is a multiprotocol_encapsulation_info structure.
+//----------------------------------------------------------------------------
+
+void ts::DataBroadcastIdDescriptor::DisplaySelectorMPE(TablesDisplay& display, const uint8_t*& data, size_t& size, int indent, uint16_t dbid)
+{
+    // Fixed length: 2 bytes.
+    if (size >= 2) {
+        std::ostream& strm(display.out());
+        const std::string margin(indent, ' ');
+        strm << margin << UString::Format(u"MAC address range: %d, MAC/IP mapping: %d, alignment: %d bits",
+                                          {(data[0] >> 5) & 0x07, (data[0] >> 4) & 0x01, (data[0] & 0x08) == 0 ? 8 : 32})
+             << std::endl
+             << margin << UString::Format(u"Max sections per datagram: %d", {data[1]})
+             << std::endl;
+        data += 2; size -= 2;
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// IP/MAC Notification Table (ETSI EN 301 192)
+// Id selector is a IP/MAC_notification_info structure.
+//----------------------------------------------------------------------------
+
+void ts::DataBroadcastIdDescriptor::DisplaySelectorINT(TablesDisplay& display, const uint8_t*& data, size_t& size, int indent, uint16_t dbid)
+{
+    std::ostream& strm(display.out());
+    const std::string margin(indent, ' ');
+
+    // platform_id_data_length:
+    if (size < 1) {
+        return;
+    }
+    uint8_t dlength = data[0];
+    data += 1; size -= 1;
+    if (dlength > size) {
+        dlength = uint8_t(size);
+    }
+
+    // Platform id loop.
+    while (dlength >= 5) {
+        strm << margin << UString::Format(u"- Platform id: %s", {ts::names::PlatformId(GetUInt24(data), names::HEXA_FIRST)}) << std::endl
+             << margin << UString::Format(u"  Action type: 0x%X, version: ", {data[3]});
+        if ((data[4] & 0x20) != 0) {
+            strm << UString::Decimal(data[4] & 0x1F);
+        }
+        else {
+            strm << "unspecified";
+        }
+        strm << std::endl;
+        data += 5; size -= 5;  dlength -= 5;
+    }
+
+    // Extraneous data in Platform id loop:
+    if (dlength > 0) {
+        strm << margin << "Extraneous data in platform_id loop:" << std::endl
+             << UString::Dump(data, dlength, UString::HEXA | UString::ASCII, indent);
+        data += dlength; size -= dlength;
+    }
+
+    // Private data
+    if (size > 0) {
+        strm << margin << "Private data:" << std::endl
+             << UString::Dump(data, size, UString::HEXA | UString::ASCII, indent);
+        data += size; size = 0;
     }
 }
 

@@ -31,90 +31,17 @@
 
 
 //----------------------------------------------------------------------------
-// Template list of subclasses of EntryWithDescriptors - Constructors.
-//----------------------------------------------------------------------------
-
-template<class ENTRY, typename std::enable_if<std::is_base_of<ts::AbstractTable::EntryWithDescriptors, ENTRY>::value>::type* N>
-ts::AbstractTable::EntryWithDescriptorsList<ENTRY,N>::EntryWithDescriptorsList(const ts::AbstractTable* table) :
-    SuperClass(),
-    _table(table)
-{
-}
-
-template<class ENTRY, typename std::enable_if<std::is_base_of<ts::AbstractTable::EntryWithDescriptors, ENTRY>::value>::type* N>
-ts::AbstractTable::EntryWithDescriptorsList<ENTRY,N>::EntryWithDescriptorsList(const AbstractTable* table, const SuperClass& other) :
-    SuperClass(),
-    _table(table)
-{
-    // Copy each entry one by one to ensure that the copied entries actually point to the constructed table.
-    for (typename EntryWithDescriptorsList::const_iterator it = other.begin(); it != other.end(); ++it) {
-        this->newBack() = *it;
-    }
-}
-
-
-//----------------------------------------------------------------------------
-// Template list of subclasses of EntryWithDescriptors - Assignment.
-//----------------------------------------------------------------------------
-
-template<class ENTRY, typename std::enable_if<std::is_base_of<ts::AbstractTable::EntryWithDescriptors, ENTRY>::value>::type* N>
-ts::AbstractTable::EntryWithDescriptorsList<ENTRY,N>& ts::AbstractTable::EntryWithDescriptorsList<ENTRY,N>::operator=(const EntryWithDescriptorsList& other)
-{
-    if (&other != this) {
-        // Clear and copy each entry one by one to ensure that the copied entries actually point to the target table.
-        this->clear();
-        for (typename EntryWithDescriptorsList::const_iterator it = other.begin(); it != other.end(); ++it) {
-            this->newBack() = *it;
-        }
-    }
-    return *this;
-}
-
-
-//----------------------------------------------------------------------------
-// Template list of subclasses of EntryWithDescriptors - Swap.
-//----------------------------------------------------------------------------
-
-template<class ENTRY, typename std::enable_if<std::is_base_of<ts::AbstractTable::EntryWithDescriptors, ENTRY>::value>::type* N>
-void ts::AbstractTable::EntryWithDescriptorsList<ENTRY,N>::swap(EntryWithDescriptorsList& other)
-{
-    if (&other != this) {
-        // Unefficient but functionally correct.
-        const EntryWithDescriptorsList tmp(0, other);
-        other = *this;
-        *this = tmp;
-    }
-}
-
-//----------------------------------------------------------------------------
-// Template list of subclasses of EntryWithDescriptors - Add new entries.
-//----------------------------------------------------------------------------
-
-template<class ENTRY, typename std::enable_if<std::is_base_of<ts::AbstractTable::EntryWithDescriptors, ENTRY>::value>::type* N>
-ENTRY& ts::AbstractTable::EntryWithDescriptorsList<ENTRY,N>::newFront()
-{
-    return *this->emplace(this->begin(), _table);
-}
-
-template<class ENTRY, typename std::enable_if<std::is_base_of<ts::AbstractTable::EntryWithDescriptors, ENTRY>::value>::type* N>
-ENTRY& ts::AbstractTable::EntryWithDescriptorsList<ENTRY,N>::newBack()
-{
-    return *this->emplace(this->end(), _table);
-}
-
-
-//----------------------------------------------------------------------------
 // Template map of subclasses of EntryWithDescriptors - Constructors.
 //----------------------------------------------------------------------------
 
-template<typename KEY, class ENTRY, typename std::enable_if<std::is_base_of<ts::AbstractTable::EntryWithDescriptors, ENTRY>::value>::type* N>
+template<typename KEY, class ENTRY, typename std::enable_if<std::is_base_of<ts::AbstractTable::EntryBase, ENTRY>::value>::type* N>
 ts::AbstractTable::EntryWithDescriptorsMap<KEY,ENTRY,N>::EntryWithDescriptorsMap(const AbstractTable* table) :
     SuperClass(),
     _table(table)
 {
 }
 
-template<typename KEY, class ENTRY, typename std::enable_if<std::is_base_of<ts::AbstractTable::EntryWithDescriptors, ENTRY>::value>::type* N>
+template<typename KEY, class ENTRY, typename std::enable_if<std::is_base_of<ts::AbstractTable::EntryBase, ENTRY>::value>::type* N>
 ts::AbstractTable::EntryWithDescriptorsMap<KEY,ENTRY,N>::EntryWithDescriptorsMap(const AbstractTable* table, const SuperClass& other) :
     SuperClass(),
     _table(table)
@@ -130,7 +57,7 @@ ts::AbstractTable::EntryWithDescriptorsMap<KEY,ENTRY,N>::EntryWithDescriptorsMap
 // Template list of subclasses of EntryWithDescriptors - Assignment.
 //----------------------------------------------------------------------------
 
-template<typename KEY, class ENTRY, typename std::enable_if<std::is_base_of<ts::AbstractTable::EntryWithDescriptors, ENTRY>::value>::type* N>
+template<typename KEY, class ENTRY, typename std::enable_if<std::is_base_of<ts::AbstractTable::EntryBase, ENTRY>::value>::type* N>
 ts::AbstractTable::EntryWithDescriptorsMap<KEY,ENTRY,N>& ts::AbstractTable::EntryWithDescriptorsMap<KEY,ENTRY,N>::operator=(const EntryWithDescriptorsMap& other)
 {
     if (&other != this) {
@@ -143,12 +70,11 @@ ts::AbstractTable::EntryWithDescriptorsMap<KEY,ENTRY,N>& ts::AbstractTable::Entr
     return *this;
 }
 
-
 //----------------------------------------------------------------------------
 // Template map of subclasses of EntryWithDescriptors - Swap.
 //----------------------------------------------------------------------------
 
-template<typename KEY, class ENTRY, typename std::enable_if<std::is_base_of<ts::AbstractTable::EntryWithDescriptors, ENTRY>::value>::type* N>
+template<typename KEY, class ENTRY, typename std::enable_if<std::is_base_of<ts::AbstractTable::EntryBase, ENTRY>::value>::type* N>
 void ts::AbstractTable::EntryWithDescriptorsMap<KEY,ENTRY,N>::swap(EntryWithDescriptorsMap& other)
 {
     if (&other != this) {
@@ -163,7 +89,7 @@ void ts::AbstractTable::EntryWithDescriptorsMap<KEY,ENTRY,N>::swap(EntryWithDesc
 // Template map of subclasses of EntryWithDescriptors - Subscripts.
 //----------------------------------------------------------------------------
 
-template<typename KEY, class ENTRY, typename std::enable_if<std::is_base_of<ts::AbstractTable::EntryWithDescriptors, ENTRY>::value>::type* N>
+template<typename KEY, class ENTRY, typename std::enable_if<std::is_base_of<ts::AbstractTable::EntryBase, ENTRY>::value>::type* N>
 ENTRY& ts::AbstractTable::EntryWithDescriptorsMap<KEY,ENTRY,N>::operator[](const KEY& key)
 {
     // The emplace operation ensures that the object is constructed with the supplied arguments (and not copied).
@@ -173,7 +99,7 @@ ENTRY& ts::AbstractTable::EntryWithDescriptorsMap<KEY,ENTRY,N>::operator[](const
     return this->emplace(std::piecewise_construct, std::forward_as_tuple(key), std::forward_as_tuple(_table)).first->second;
 }
 
-template<typename KEY, class ENTRY, typename std::enable_if<std::is_base_of<ts::AbstractTable::EntryWithDescriptors, ENTRY>::value>::type* N>
+template<typename KEY, class ENTRY, typename std::enable_if<std::is_base_of<ts::AbstractTable::EntryBase, ENTRY>::value>::type* N>
 const ENTRY& ts::AbstractTable::EntryWithDescriptorsMap<KEY,ENTRY,N>::operator[](const KEY& key) const
 {
     // Here, we must not create any element (the instance is read-only).

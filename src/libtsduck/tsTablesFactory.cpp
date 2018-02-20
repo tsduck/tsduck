@@ -192,6 +192,11 @@ FUNCTION ts::TablesFactory::getDescriptorFunction(const EDID& edid, TID tid, con
     if (edid.isStandard() && tid != TID_NULL) {
         // For standard descriptors, first search a table-specific descriptor.
         it = funcMap.find(EDID::TableSpecific(edid.did(), tid));
+        // If not found and there is a table-specific name for the descriptor,
+        // do not fallback to non-table-specific function for this descriptor.
+        if (it == funcMap.end() && (edid.isTableSpecific() || names::HasTableSpecificName(edid.did(), tid))) {
+            return 0;
+        }
     }
     if (it == funcMap.end()) {
         // If non-standard or no table-specific descriptor found, use direct lookup.

@@ -190,7 +190,7 @@ void ts::SDT::deserialize(const BinaryTable& table, const DVBCharset* charset)
 
 //----------------------------------------------------------------------------
 // Private method: Add a new section to a table being serialized.
-// Session number is incremented. Data and remain are reinitialized.
+// Section number is incremented. Data and remain are reinitialized.
 //----------------------------------------------------------------------------
 
 void ts::SDT::addSection(BinaryTable& table,

@@ -89,5 +89,13 @@ namespace ts {
         virtual void deserialize(const Descriptor&, const DVBCharset* = 0) override;
         virtual void buildXML(xml::Element*) const override;
         virtual void fromXML(const xml::Element*) override;
+
+    private:
+        // Display selector bytes of various types.
+        // Fields data and size are updated.
+        static void DisplaySelectorSSU(TablesDisplay& display, const uint8_t*& data, size_t& size, int indent, uint16_t dbid);
+        static void DisplaySelectorINT(TablesDisplay& display, const uint8_t*& data, size_t& size, int indent, uint16_t dbid);
+        static void DisplaySelectorMPE(TablesDisplay& display, const uint8_t*& data, size_t& size, int indent, uint16_t dbid);
+        static void DisplaySelectorGeneric(TablesDisplay& display, const uint8_t*& data, size_t& size, int indent, uint16_t dbid);
     };
 }

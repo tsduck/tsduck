@@ -82,6 +82,7 @@ public:
     void testRunningStatus();
     void testAudioType();
     void testT2MIPacketType();
+    void testPlatformId();
 
     CPPUNIT_TEST_SUITE(NamesTest);
     CPPUNIT_TEST(testConfigFile);
@@ -118,6 +119,7 @@ public:
     CPPUNIT_TEST(testRunningStatus);
     CPPUNIT_TEST(testAudioType);
     CPPUNIT_TEST(testT2MIPacketType);
+    CPPUNIT_TEST(testPlatformId);
     CPPUNIT_TEST_SUITE_END();
 };
 
@@ -365,4 +367,11 @@ void NamesTest::testAudioType()
 void NamesTest::testT2MIPacketType()
 {
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"Individual addressing", ts::names::T2MIPacketType(0x21));
+}
+
+void NamesTest::testPlatformId()
+{
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"Horizonsat", ts::names::PlatformId(10));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"0x000004 (TV digitale mobile (Telecom Italia))", ts::names::PlatformId(4, ts::names::FIRST));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"VTC Mobile TV (0x704001)", ts::names::PlatformId(0x704001, ts::names::VALUE));
 }
