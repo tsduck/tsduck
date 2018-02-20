@@ -433,10 +433,10 @@ void ts::INT::buildXML(xml::Element* root) const
         const Device& dev(it->second);
         if (!dev.target_descs.empty() || !dev.operational_descs.empty()) {
             xml::Element* e = root->addElement(u"device");
-            if (dev.target_descs.empty()) {
+            if (!dev.target_descs.empty()) {
                 dev.target_descs.toXML(e->addElement(u"target"));
             }
-            if (dev.operational_descs.empty()) {
+            if (!dev.operational_descs.empty()) {
                 dev.operational_descs.toXML(e->addElement(u"operational"));
             }
         }

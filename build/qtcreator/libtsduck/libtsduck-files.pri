@@ -124,6 +124,9 @@ HEADERS += \
     ../../../src/libtsduck/tsIntegerUtilsTemplate.h \
     ../../../src/libtsduck/tsInterruptHandler.h \
     ../../../src/libtsduck/tsIPAddress.h \
+    ../../../src/libtsduck/tsIPMACPlatformNameDescriptor.h \
+    ../../../src/libtsduck/tsIPMACPlatformProviderNameDescriptor.h \
+    ../../../src/libtsduck/tsIPMACStreamLocationDescriptor.h \
     ../../../src/libtsduck/tsIPUtils.h \
     ../../../src/libtsduck/tsISO639LanguageDescriptor.h \
     ../../../src/libtsduck/tsjson.h \
@@ -243,6 +246,8 @@ HEADERS += \
     ../../../src/libtsduck/tsTablesLogger.h \
     ../../../src/libtsduck/tsTablesLoggerArgs.h \
     ../../../src/libtsduck/tsTablesPtr.h \
+    ../../../src/libtsduck/tsTargetIPAddressDescriptor.h \
+    ../../../src/libtsduck/tsTargetIPSlashDescriptor.h \
     ../../../src/libtsduck/tsTCPConnection.h \
     ../../../src/libtsduck/tsTCPServer.h \
     ../../../src/libtsduck/tsTCPSocket.h \
@@ -415,6 +420,9 @@ SOURCES += \
     ../../../src/libtsduck/tsINT.cpp \
     ../../../src/libtsduck/tsIntegerUtils.cpp \
     ../../../src/libtsduck/tsIPAddress.cpp \
+    ../../../src/libtsduck/tsIPMACPlatformNameDescriptor.cpp \
+    ../../../src/libtsduck/tsIPMACPlatformProviderNameDescriptor.cpp \
+    ../../../src/libtsduck/tsIPMACStreamLocationDescriptor.cpp \
     ../../../src/libtsduck/tsIPUtils.cpp \
     ../../../src/libtsduck/tsISO639LanguageDescriptor.cpp \
     ../../../src/libtsduck/tsjson.cpp \
@@ -506,6 +514,8 @@ SOURCES += \
     ../../../src/libtsduck/tsTablesFactory.cpp \
     ../../../src/libtsduck/tsTablesLogger.cpp \
     ../../../src/libtsduck/tsTablesLoggerArgs.cpp \
+    ../../../src/libtsduck/tsTargetIPAddressDescriptor.cpp \
+    ../../../src/libtsduck/tsTargetIPSlashDescriptor.cpp \
     ../../../src/libtsduck/tsTCPConnection.cpp \
     ../../../src/libtsduck/tsTCPServer.cpp \
     ../../../src/libtsduck/tsTCPSocket.cpp \
