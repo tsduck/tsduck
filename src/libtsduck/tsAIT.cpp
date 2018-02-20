@@ -54,8 +54,8 @@ ts::AIT::AIT(uint8_t version_, bool is_current_, uint16_t application_type_, boo
     : AbstractLongTable(MY_TID, MY_XML_NAME, version_, is_current_)
     , application_type(application_type_)
     , test_application_flag(test_application_)
-    , descs()
-    , applications()
+    , descs(this)
+    , applications(this)
 {
     _is_valid = true;
 }
@@ -68,8 +68,8 @@ ts::AIT::AIT(const BinaryTable& table, const DVBCharset* charset)
     : AbstractLongTable(MY_TID, MY_XML_NAME)
     , application_type(0)
     , test_application_flag(false)
-    , descs()
-    , applications()
+    , descs(this)
+    , applications(this)
 {
     deserialize(table, charset);
 }
@@ -216,8 +216,7 @@ void ts::AIT::DisplaySection(TablesDisplay& display, const ts::Section& section,
     const uint8_t* data = section.payload();
     size_t size = section.payloadSize();
 
-    // TODO Check size for AIT
-    if (size >= 4) {
+    if (size >= 6) {
         // Fixed part
         PID pid = GetUInt16(data) & 0x1FFF;
         size_t length_field = GetUInt16(data + 2) & 0x0FFF; // section_length
@@ -231,6 +230,9 @@ void ts::AIT::DisplaySection(TablesDisplay& display, const ts::Section& section,
         strm << margin << UString::Format(u"Application type: %d (0x%X)", { application_type, application_type });
         strm << u", Test application: " << test_application_flag << std::endl;
 
+        length_field = GetUInt16(data) & 0x0FFF; // common_descriptors_length
+        data += 2;
+        size -= 2;
         // Process and display "common descriptors loop"
         if (length_field > 0) {
             strm << margin << "Common descriptor loop:" << std::endl;
@@ -239,23 +241,35 @@ void ts::AIT::DisplaySection(TablesDisplay& display, const ts::Section& section,
         data += length_field;
         size -= length_field;
 
-        // Process and display "application loop"
-        strm << margin << "Applications:" << std::endl;
-        while (size >= 9) {
-            // TODO fill in this loop for displaying applications
-            uint8_t stream = *data;
-            PID es_pid = GetUInt16(data + 1) & 0x1FFF;
-            size_t es_info_length = GetUInt16(data + 3) & 0x0FFF;
-            data += 5;
-            size -= 5;
-            if (es_info_length > size) {
-                es_info_length = size;
+        if (size > 2) {
+            length_field = GetUInt16(data) & 0x0FFF; // application loop length
+
+            data += 2;
+            size -= 2;
+            size = std::min(size, length_field);
+
+            // Process and display "application loop"
+            strm << margin << "Applications:" << std::endl;
+            while (size >= 9) {
+                uint32_t org_id = GetUInt32(data);
+                uint16_t app_id = GetUInt16(data + 4);
+                uint8_t control_code = *(data + 6);
+                length_field = GetUInt16(data + 7) & 0xFFF; // application_descriptors_loop_length
+                data += 9;
+                size -= 9;
+
+                if (length_field > size) {
+                    length_field = size;
+                }
+
+                strm << margin << "Application: Identifier: (Organization id: " << UString::Format(u"%d (0x%X)", { org_id, org_id })
+                     << ", Application id: " << UString::Format(u"%d (0x%X)", { app_id, app_id })
+                     << UString::Format(u"), Control code: %d", { control_code })
+                     << std::endl;
+                display.displayDescriptorList(data, length_field, indent, section.tableId());
+                data += length_field;
+                size -= length_field;
             }
-            strm << margin << "Elementary stream: type " << names::StreamType(stream, names::FIRST)
-                 << ", PID: " << es_pid << UString::Format(u" (0x%X)", { es_pid }) << std::endl;
-            display.displayDescriptorList(data, es_info_length, indent, section.tableId());
-            data += es_info_length;
-            size -= es_info_length;
         }
     }
 
@@ -266,20 +280,21 @@ void ts::AIT::DisplaySection(TablesDisplay& display, const ts::Section& section,
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::PMT::buildXML(xml::Element* root) const
+void ts::AIT::buildXML(xml::Element* root) const
 {
     root->setIntAttribute(u"version", version);
     root->setBoolAttribute(u"current", is_current);
-    root->setIntAttribute(u"service_id", service_id, true);
-    if (pcr_pid != PID_NULL) {
-        root->setIntAttribute(u"PCR_PID", pcr_pid, true);
-    }
+    root->setBoolAttribute(u"test_application_flag", test_application_flag);
+    root->setIntAttribute(u"application_type", application_type, true);
     descs.toXML(root);
 
-    for (StreamMap::const_iterator it = streams.begin(); it != streams.end(); ++it) {
-        xml::Element* e = root->addElement(u"component");
-        e->setIntAttribute(u"elementary_PID", it->first, true);
-        e->setIntAttribute(u"stream_type", it->second.stream_type, true);
+    for (ApplicationMap::const_iterator it = applications.begin(); it != applications.end(); ++it) {
+        xml::Element* e = root->addElement(u"application");
+        e->setIntAttribute(u"control_code", it->second.control_code, true);
+        xml::Element* id = e->addElement(u"application_identifier");
+        id->setIntAttribute(u"organisation_id", it->first.organisation_id, true);
+        id->setIntAttribute(u"application_id", it->first.application_id, true);
+
         it->second.descs.toXML(e);
     }
 }
@@ -288,20 +303,22 @@ void ts::PMT::buildXML(xml::Element* root) const
 // XML deserialization
 //----------------------------------------------------------------------------
 
-void ts::PMT::fromXML(const xml::Element* element)
+void ts::AIT::fromXML(const xml::Element* element)
 {
     descs.clear();
-    streams.clear();
+    applications.clear();
 
     xml::ElementVector children;
-    _is_valid = checkXMLName(element) && element->getIntAttribute<uint8_t>(version, u"version", false, 0, 0, 31) && element->getBoolAttribute(is_current, u"current", false, true) && element->getIntAttribute<uint16_t>(service_id, u"service_id", true, 0, 0x0000, 0xFFFF) && element->getIntAttribute<PID>(pcr_pid, u"PCR_PID", false, PID_NULL, 0x0000, 0x1FFF) && descs.fromXML(children, element, u"component");
+    _is_valid = checkXMLName(element) && element->getIntAttribute<uint8_t>(version, u"version", false, 0, 0, 31) && element->getBoolAttribute(is_current, u"current", false, true) && element->getBoolAttribute(test_application_flag, u"test_application_flag", false, true) && element->getIntAttribute<uint16_t>(application_type, u"application_type", true, 0, 0x0000, 0x7FFF) && descs.fromXML(children, element, u"application");
 
     for (size_t index = 0; _is_valid && index < children.size(); ++index) {
-        PID pid = PID_NULL;
-        Stream stream;
-        _is_valid = children[index]->getIntAttribute<uint8_t>(stream.stream_type, u"stream_type", true, 0, 0x00, 0xFF) && children[index]->getIntAttribute<PID>(pid, u"elementary_PID", true, 0, 0x0000, 0x1FFF) && stream.descs.fromXML(children[index]);
+        Application application(this);
+        ApplicationIdentifier identifier;
+        const xml::Element* id = element->findFirstChild(u"application_identifier", true);
+        _is_valid = children[index]->getIntAttribute<uint8_t>(application.control_code, u"control_code", true, 0, 0x00, 0xFF) && application.descs.fromXML(children[index]) && id != 0 && id->getIntAttribute<uint32_t>(identifier.organisation_id, u"organisation_id", true, 0, 0xFFFFFFFF) && id->getIntAttribute<uint16_t>(identifier.application_id, u"application_id", true, 0, 0xFFFF);
+
         if (_is_valid) {
-            streams[pid] = stream;
+            applications[identifier] = application;
         }
     }
 }
