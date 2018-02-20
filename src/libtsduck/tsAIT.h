@@ -42,12 +42,51 @@ namespace ts {
 //!
 class TSDUCKDLL AIT : public AbstractLongTable {
 public:
-    struct Application;
-    struct ApplicationIdentifier;
+    //!
+    //! Representation of an Application Identifier
+    //!
+    struct TSDUCKDLL ApplicationIdentifier {
+        uint32_t organisation_id; //!< The organisation identifier
+        uint16_t application_id;  //!< The application identifeir
+
+        //!
+        //! Constructor from two ids.
+        //! @param [in] org_id The organisation identifier.
+        //! @param [in] app_id The application identifier.
+        //!
+        ApplicationIdentifier(uint32_t org_id = 0, uint16_t app_id = 0)
+            : organisation_id(org_id)
+            , application_id(app_id)
+        {
+        }
+    };
+
+    //!
+    //! Description of an application inside an AIT
+    //!
+    //! Note: by inheriting from EntryWithDescriptors, there is a
+    //! public field "DescriptorList descs".
+    //!
+    struct TSDUCKDLL Application : public EntryWithDescriptors {
+        ApplicationIdentifier application_id; //!< Application Identifier
+        uint8_t control_code;                 //!< Control code of the application
+
+        //!
+        //! Constructor.
+        //!
+        //! @param [in] table Parent AIT.
+        //!
+        explicit Application(const AbstractTable* table)
+            : EntryWithDescriptors(table)
+            , application_id(0, 0)
+            , control_code(0)
+        {
+        }
+    };
     //!
     //! List of applications, indexed by their identifier.
     //!
-    typedef std::map<ApplicationIdentifier, Application> ApplicationMap;
+    typedef EntryWithDescriptorsMap<ApplicationIdentifier, Application> ApplicationMap;
 
     // AIT public members:
     uint16_t application_type;   //!< Type of the applications.
@@ -79,44 +118,6 @@ public:
     virtual void deserialize(const BinaryTable& table, const DVBCharset* = 0) override;
     virtual void buildXML(xml::Element*) const override;
     virtual void fromXML(const xml::Element*) override;
-
-    //!
-    //! Representation of an Application Identifier
-    //!
-    struct TSDUCKDLL ApplicationIdentifier {
-        uint32_t organisation_id; //!< The organisation identifier
-        uint16_t application_id;  //!< The application identifeir
-
-        //!
-        //! Constructor from two ids.
-        //! @param [in] org_id The organisation identifier.
-        //! @param [in] app_id The application identifier.
-        //!
-        ApplicationIdentifier(uint32_t org_id = 0, uint16_t app_id = 0)
-            : organisation_id(org_id)
-            , application_id(app_id)
-        {
-        }
-    };
-
-    //!
-    //! Description of an application inside an AIT
-    //!
-    struct TSDUCKDLL Application {
-        ApplicationIdentifier application_id; //!< Application Identifier
-        uint8_t control_code;                 //!< Control code of the application
-        DescriptorList descs;                 //!< Application-level descriptor list.
-
-        //!
-        //! Default constructor.
-        //!
-        Application()
-            : application_id(0, 0)
-            , control_code(8)
-            , descs()
-        {
-        }
-    };
 
     //!
     //! A static method to display a section.

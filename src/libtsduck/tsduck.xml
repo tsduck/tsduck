@@ -182,6 +182,20 @@
     </device>
   </INT>
 
+  <!-- Application Information Table -->
+  <AIT version="uint5, default=0"
+       current="bool, default=true"
+       test_application_flag="bool, default=true"
+       application_type="uint15, required">
+    <!-- Common descriptors loop -->
+    <_any in="_descriptors"/>
+    <!-- One per application -->
+    <application control_code="uint8, required">
+      <application_identifier organisation_id="uint32, required" application_id="uint16, required" />
+      <_any in="_descriptors"/>
+    </application>
+  </AIT>
+
   <!-- Generic short table -->
   <generic_short_table
       table_id="uint8, required"
@@ -510,7 +524,7 @@
     </parental_rating_descriptor>
 
     <private_data_indicator_descriptor private_data_indicator="uint32, required"/>
-    
+
     <private_data_specifier_descriptor private_data_specifier="uint32|eacem|eutelsat, required"/>
 
     <registration_descriptor format_identifier="uint32, required">
@@ -586,7 +600,7 @@
       <!-- One per IPv4 address: -->
       <address IPv4_addr="IPv4 address, required"/>
     </target_IP_address_descriptor>
-    
+
     <target_IP_slash_descriptor>
       <!-- Must be in an INT (table id 0x4C) -->
       <!-- One per IPv4 address: -->
@@ -594,7 +608,7 @@
           IPv4_addr="IPv4 address, required"
           IPv4_slash_mask="uint8, required"/>
     </target_IP_slash_descriptor>
-    
+
     <teletext_descriptor>
       <!-- One per page -->
       <teletext language_code="char3, required"
