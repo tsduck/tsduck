@@ -372,6 +372,6 @@ void NamesTest::testT2MIPacketType()
 void NamesTest::testPlatformId()
 {
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"Horizonsat", ts::names::PlatformId(10));
-    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"0x000004 (TV digitale mobile (Telecom Italia))", ts::names::PlatformId(4, ts::names::FIRST));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"0x000004 (TV digitale mobile, Telecom Italia)", ts::names::PlatformId(4, ts::names::FIRST));
     CPPUNIT_ASSERT_USTRINGS_EQUAL(u"VTC Mobile TV (0x704001)", ts::names::PlatformId(0x704001, ts::names::VALUE));
 }

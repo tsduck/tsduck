@@ -37,6 +37,7 @@
 #include "tsxmlAttribute.h"
 #include "tsByteBlock.h"
 #include "tsVariable.h"
+#include "tsIPAddress.h"
 
 namespace ts {
     namespace xml {
@@ -312,6 +313,16 @@ namespace ts {
             }
 
             //!
+            //! Set an IPv4 address attribute of an XML element in "x.x.x.y" format.
+            //! @param [in] name Attribute name.
+            //! @param [in] value Attribute value.
+            //!
+            void setIPAttribute(const UString& name, const IPAddress& value)
+            {
+                setAttribute(name, value.toString());
+            }
+
+            //!
             //! Get a string attribute of an XML element.
             //! @param [out] value Returned value of the attribute.
             //! @param [in] name Name of the attribute.
@@ -417,6 +428,16 @@ namespace ts {
             //! @return True on success, false on error.
             //!
             bool getTimeAttribute(Second& value, const UString& name, bool required = false, Second defValue = 0) const;
+
+            //!
+            //! Get an IPv4 address attribute of an XML element in "x.x.x.y" format or host name.
+            //! @param [out] value Returned value of the attribute.
+            //! @param [in] name Name of the attribute.
+            //! @param [in] required If true, generate an error if the attribute is not found.
+            //! @param [in] defValue Default value to return if the attribute is not present.
+            //! @return True on success, false on error.
+            //!
+            bool getIPAttribute(IPAddress& value, const UString& name, bool required = false, const IPAddress& defValue = IPAddress()) const;
 
             //!
             //! Get the list of all attribute names.

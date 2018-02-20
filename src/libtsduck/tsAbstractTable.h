@@ -227,7 +227,7 @@ namespace ts {
             //! Get a new unused index, greater than the greatest entry.
             //! @return A new unused index.
             //!
-            size_t nextIndex() const { return empty() ? 0 : this->end()->first + 1; }
+            size_t nextIndex() const { return this->empty() ? 0 : this->end()->first + 1; }
 
             //!
             //! Create a new entry in the map.

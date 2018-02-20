@@ -408,6 +408,27 @@
         temporal_id_min="uint3, optional, specify both min and max or none"
         temporal_id_max="uint3, optional, specify both min and max or none"/>
 
+    <IPMAC_platform_name_descriptor
+        language_code="char3, required"
+        text="string, required">
+      <!-- Must be in an INT (table id 0x4C) -->
+    </IPMAC_platform_name_descriptor>
+
+    <IPMAC_platform_provider_name_descriptor
+        language_code="char3, required"
+        text="string, required">
+      <!-- Must be in an INT (table id 0x4C) -->
+    </IPMAC_platform_provider_name_descriptor>
+
+    <IPMAC_stream_location_descriptor
+        network_id="uint16, required"
+        original_network_id="uint16, required"
+        transport_stream_id="uint16, required"
+        service_id="uint16, required"
+        component_tag="uint8, required">
+      <!-- Must be in an INT (table id 0x4C) -->
+    </IPMAC_stream_location_descriptor>
+
     <ISO_639_language_descriptor>
       <!-- One per language -->
       <language code="char3, required"
@@ -560,6 +581,20 @@
       </reserved>
     </T2MI_descriptor>
 
+    <target_IP_address_descriptor IPv4_addr_mask="IPv4 address, required">
+      <!-- Must be in an INT (table id 0x4C) -->
+      <!-- One per IPv4 address: -->
+      <address IPv4_addr="IPv4 address, required"/>
+    </target_IP_address_descriptor>
+    
+    <target_IP_slash_descriptor>
+      <!-- Must be in an INT (table id 0x4C) -->
+      <!-- One per IPv4 address: -->
+      <address
+          IPv4_addr="IPv4 address, required"
+          IPv4_slash_mask="uint8, required"/>
+    </target_IP_slash_descriptor>
+    
     <teletext_descriptor>
       <!-- One per page -->
       <teletext language_code="char3, required"
