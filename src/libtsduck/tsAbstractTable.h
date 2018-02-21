@@ -198,7 +198,7 @@ namespace ts {
         //!
         //! Template map of subclasses of EntryBase, indexed by size_t.
         //! This is replacement for vectors and lists, which cannot be used by entries
-        //! containing a descriptor list since it is not CopyAssignable or CopyConstructible. 
+        //! containing a descriptor list since it is not CopyAssignable or CopyConstructible.
         //! @tparam ENTRY A subclass of EntryBase (enforced at compile-time).
         //!
         template<class ENTRY, typename std::enable_if<std::is_base_of<EntryBase, ENTRY>::value>::type* = nullptr>
@@ -227,7 +227,7 @@ namespace ts {
             //! Get a new unused index, greater than the greatest entry.
             //! @return A new unused index.
             //!
-            size_t nextIndex() const { return this->empty() ? 0 : this->end()->first + 1; }
+            size_t nextIndex() const { return this->empty() ? 0 : this->rbegin()->first + 1; }
 
             //!
             //! Create a new entry in the map.
