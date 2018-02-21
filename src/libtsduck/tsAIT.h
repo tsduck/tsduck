@@ -59,6 +59,21 @@ public:
             , application_id(app_id)
         {
         }
+
+        bool operator==(const ApplicationIdentifier& that) const
+        {
+            return organisation_id == that.organisation_id && application_id == that.application_id;
+        }
+
+        bool operator!=(const ApplicationIdentifier& that) const
+        {
+            return organisation_id != that.organisation_id && application_id != that.application_id;
+        }
+
+        bool operator<(const ApplicationIdentifier& that) const
+        {
+            return organisation_id < that.organisation_id || (organisation_id == that.organisation_id && application_id < that.application_id);
+        }
     };
 
     //!
@@ -82,6 +97,11 @@ public:
             , control_code(0)
         {
         }
+
+    private:
+        // Inaccessible operations.
+        Application() = delete;
+        Application(const Application&) = delete;
     };
     //!
     //! List of applications, indexed by their identifier.
@@ -112,6 +132,12 @@ public:
     //! @param [in] charset If not zero, character set to use without explicit table code.
     //!
     AIT(const BinaryTable& table, const DVBCharset* charset = 0);
+
+    //!
+    //! Copy constructor.
+    //! @param [in] other Other instance to copy.
+    //!
+    AIT(const AIT& other);
 
     // Inherited methods
     virtual void serialize(BinaryTable& table, const DVBCharset* = 0) const override;

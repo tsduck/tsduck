@@ -47,6 +47,7 @@
 #include "tsAC3Attributes.h"
 #include "tsAC3Descriptor.h"
 #include "tsAES.h"
+#include "tsAIT.h"
 #include "tsAlgorithm.h"
 #include "tsApplicationSharedLibrary.h"
 #include "tsApplicationSignallingDescriptor.h"
