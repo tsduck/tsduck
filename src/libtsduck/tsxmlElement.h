@@ -38,6 +38,7 @@
 #include "tsByteBlock.h"
 #include "tsVariable.h"
 #include "tsIPAddress.h"
+#include "tsMACAddress.h"
 
 namespace ts {
     namespace xml {
@@ -313,11 +314,21 @@ namespace ts {
             }
 
             //!
-            //! Set an IPv4 address attribute of an XML element in "x.x.x.y" format.
+            //! Set an IPv4 address attribute of an XML element in "x.x.x.x" format.
             //! @param [in] name Attribute name.
             //! @param [in] value Attribute value.
             //!
             void setIPAttribute(const UString& name, const IPAddress& value)
+            {
+                setAttribute(name, value.toString());
+            }
+
+            //!
+            //! Set a MAC address attribute of an XML element in "x:x:x:x:x:x" format.
+            //! @param [in] name Attribute name.
+            //! @param [in] value Attribute value.
+            //!
+            void setMACAttribute(const UString& name, const MACAddress& value)
             {
                 setAttribute(name, value.toString());
             }
@@ -430,7 +441,7 @@ namespace ts {
             bool getTimeAttribute(Second& value, const UString& name, bool required = false, Second defValue = 0) const;
 
             //!
-            //! Get an IPv4 address attribute of an XML element in "x.x.x.y" format or host name.
+            //! Get an IPv4 address attribute of an XML element in "x.x.x.x" format or host name.
             //! @param [out] value Returned value of the attribute.
             //! @param [in] name Name of the attribute.
             //! @param [in] required If true, generate an error if the attribute is not found.
@@ -438,6 +449,16 @@ namespace ts {
             //! @return True on success, false on error.
             //!
             bool getIPAttribute(IPAddress& value, const UString& name, bool required = false, const IPAddress& defValue = IPAddress()) const;
+
+            //!
+            //! Get a MAC address attribute of an XML element in "x:x:x:x:x:x" format.
+            //! @param [out] value Returned value of the attribute.
+            //! @param [in] name Name of the attribute.
+            //! @param [in] required If true, generate an error if the attribute is not found.
+            //! @param [in] defValue Default value to return if the attribute is not present.
+            //! @return True on success, false on error.
+            //!
+            bool getMACAttribute(MACAddress& value, const UString& name, bool required = false, const MACAddress& defValue = MACAddress()) const;
 
             //!
             //! Get the list of all attribute names.

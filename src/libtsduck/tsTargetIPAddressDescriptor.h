@@ -39,7 +39,7 @@
 
 namespace ts {
     //!
-    //! Representation of an target_IP_address_descriptor (INT specific).
+    //! Representation of a target_IP_address_descriptor (INT specific).
     //!
     //! This descriptor cannot be present in other tables than an INT
     //! because its tag reuses an MPEG-defined one.
@@ -54,7 +54,7 @@ namespace ts {
         IPAddressVector IPv4_addr;       //!< IPv4 addresses
 
         //!
-        //! Maximum number of language entries to fit in 255 bytes.
+        //! Maximum number of entries to fit in 255 bytes.
         //!
         static const size_t MAX_ENTRIES = 62;
 
