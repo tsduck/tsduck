@@ -47,7 +47,7 @@ TS_ID_TABLE_FACTORY(ts::AIT, MY_TID);
 TS_ID_SECTION_DISPLAY(ts::AIT::DisplaySection, MY_TID);
 
 //----------------------------------------------------------------------------
-// Default constructor:
+// Constructors:
 //----------------------------------------------------------------------------
 
 ts::AIT::AIT(uint8_t version_, bool is_current_, uint16_t application_type_, bool test_application_)
@@ -60,10 +60,6 @@ ts::AIT::AIT(uint8_t version_, bool is_current_, uint16_t application_type_, boo
     _is_valid = true;
 }
 
-//----------------------------------------------------------------------------
-// Constructor from a binary table
-//----------------------------------------------------------------------------
-
 ts::AIT::AIT(const BinaryTable& table, const DVBCharset* charset)
     : AbstractLongTable(MY_TID, MY_XML_NAME)
     , application_type(0)
@@ -72,6 +68,15 @@ ts::AIT::AIT(const BinaryTable& table, const DVBCharset* charset)
     , applications(this)
 {
     deserialize(table, charset);
+}
+
+ts::AIT::AIT(const AIT& other)
+    : AbstractLongTable(other)
+    , application_type(other.application_type)
+    , test_application_flag(other.test_application_flag)
+    , descs(this, other.descs)
+    , applications(this, other.applications)
+{
 }
 
 //----------------------------------------------------------------------------
@@ -218,7 +223,6 @@ void ts::AIT::DisplaySection(TablesDisplay& display, const ts::Section& section,
 
     if (size >= 6) {
         // Fixed part
-        PID pid = GetUInt16(data) & 0x1FFF;
         size_t length_field = GetUInt16(data + 2) & 0x0FFF; // section_length
         data += 4;
         size -= 4;
