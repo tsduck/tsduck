@@ -391,7 +391,7 @@ void ts::INT::DisplaySection(TablesDisplay& display, const ts::Section& section,
              << margin
              << UString::Format(u"Action type: 0x%X, processing order: 0x%X, id hash: 0x%X (%s)",
                                 {action_type, processing_order, id_hash, 
-                                 id_hash == comp_hash ? u"valid" : UString(u"invalid, should be 0x%X", {comp_hash})})
+                                 id_hash == comp_hash ? u"valid" : UString::Format(u"invalid, should be 0x%X", {comp_hash})})
              << std::endl
              << margin << "Platform descriptors:" << std::endl;
 
