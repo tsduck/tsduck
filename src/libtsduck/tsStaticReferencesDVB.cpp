@@ -64,6 +64,7 @@ ts::StaticReferencesDVB::StaticReferencesDVB() :
     REF_TYPE(BAT);
     REF_TYPE(CAT);
     REF_TYPE(EIT);
+    REF_TYPE(INT);
     REF_TYPE(NIT);
     REF_TYPE(PAT);
     REF_TYPE(PMT);
@@ -100,6 +101,9 @@ ts::StaticReferencesDVB::StaticReferencesDVB() :
     REF_TYPE(ExtendedEventDescriptor);
     REF_TYPE(HDSimulcastLogicalChannelDescriptor);
     REF_TYPE(HEVCVideoDescriptor);
+    REF_TYPE(IPMACPlatformNameDescriptor);
+    REF_TYPE(IPMACPlatformProviderNameDescriptor);
+    REF_TYPE(IPMACStreamLocationDescriptor);
     REF_TYPE(ISO639LanguageDescriptor);
     REF_TYPE(LinkageDescriptor);
     REF_TYPE(LocalTimeOffsetDescriptor);
@@ -123,6 +127,11 @@ ts::StaticReferencesDVB::StaticReferencesDVB() :
     REF_TYPE(SubtitlingDescriptor);
     REF_TYPE(SupplementaryAudioDescriptor);
     REF_TYPE(T2MIDescriptor);
+    REF_TYPE(TargetIPAddressDescriptor);
+    REF_TYPE(TargetIPSlashDescriptor);
+    REF_TYPE(TargetIPSourceSlashDescriptor);
+    REF_TYPE(TargetMACAddressDescriptor);
+    REF_TYPE(TargetMACAddressRangeDescriptor);
     REF_TYPE(TeletextDescriptor);
     REF_TYPE(TerrestrialDeliverySystemDescriptor);
     REF_TYPE(TimeShiftedEventDescriptor);

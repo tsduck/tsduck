@@ -28,63 +28,62 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Representation of a target_IP_slash_descriptor (INT specific).
+//!  Representation of a target_MAC_address_range_descriptor (INT specific).
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
 #include "tsAbstractDescriptor.h"
-#include "tsIPAddress.h"
-#include "tsIPUtils.h"
+#include "tsMACAddress.h"
 
 namespace ts {
     //!
-    //! Representation of a target_IP_slash_descriptor (INT specific).
+    //! Representation of a target_MAC_address_range_descriptor (INT specific).
     //!
     //! This descriptor cannot be present in other tables than an INT
     //! because its tag reuses an MPEG-defined one.
     //!
-    //! @see ETSI EN 301 182, 8.4.5.9
+    //! @see ETSI EN 301 182, 8.4.5.7
     //!
-    class TSDUCKDLL TargetIPSlashDescriptor : public AbstractDescriptor
+    class TSDUCKDLL TargetMACAddressRangeDescriptor : public AbstractDescriptor
     {
     public:
         //!
-        //! Structure of an address entry in the descriptor.
+        //! Structure of an address range entry in the descriptor.
         //!
-        class Address
+        class Range
         {
         public:
-            IPAddress IPv4_addr;         //!< IPv4 address.
-            uint8_t   IPv4_slash_mask;   //!< Number of bits in network mask.
+            MACAddress MAC_addr_low;   //!< First MAC address.
+            MACAddress MAC_addr_high;  //!< Last MAC address.
 
             //!
             //! Constructor
-            //! @param [in] addr IPv4 address.
-            //! @param [in] mask Number of bits in network mask.
+            //! @param [in] addr1 First MAC address.
+            //! @param [in] addr2 Last MAC address.
             //!
-            Address(const IPAddress& addr = IPAddress(), uint8_t mask = 0);
+            Range(const MACAddress& addr1 = MACAddress(), const MACAddress& addr2 = MACAddress());
         };
         
-        // TargetIPSlashDescriptor public members:
-        std::vector<Address> addresses;  //!< IPv4 addresses
+        // TargetMACAddressRangeDescriptor public members:
+        std::vector<Range> ranges;  //!< MAC address ranges.
 
         //!
         //! Maximum number of entries to fit in 255 bytes.
         //!
-        static const size_t MAX_ENTRIES = 51;
+        static const size_t MAX_ENTRIES = 21;
 
         //!
         //! Default constructor.
         //!
-        TargetIPSlashDescriptor();
+        TargetMACAddressRangeDescriptor();
 
         //!
         //! Constructor from a binary descriptor.
         //! @param [in] bin A binary descriptor to deserialize.
         //! @param [in] charset If not zero, character set to use without explicit table code.
         //!
-        TargetIPSlashDescriptor(const Descriptor& bin, const DVBCharset* charset = 0);
+        TargetMACAddressRangeDescriptor(const Descriptor& bin, const DVBCharset* charset = 0);
 
         // Inherited methods
         virtual void serialize(Descriptor&, const DVBCharset* = 0) const override;
