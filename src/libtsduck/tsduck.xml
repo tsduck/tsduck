@@ -510,7 +510,7 @@
     </parental_rating_descriptor>
 
     <private_data_indicator_descriptor private_data_indicator="uint32, required"/>
-    
+
     <private_data_specifier_descriptor private_data_specifier="uint32|eacem|eutelsat, required"/>
 
     <registration_descriptor format_identifier="uint32, required">
@@ -586,7 +586,7 @@
       <!-- One per IPv4 address: -->
       <address IPv4_addr="IPv4 address, required"/>
     </target_IP_address_descriptor>
-    
+
     <target_IP_slash_descriptor>
       <!-- Must be in an INT (table id 0x4C) -->
       <!-- One per IPv4 address: -->
@@ -594,7 +594,7 @@
           IPv4_addr="IPv4 address, required"
           IPv4_slash_mask="uint8, required"/>
     </target_IP_slash_descriptor>
-    
+
     <target_IP_source_slash_descriptor>
       <!-- Must be in an INT (table id 0x4C) -->
       <!-- One per pair of IPv4 address: -->
@@ -604,13 +604,13 @@
           IPv4_dest_addr="IPv4 address, required"
           IPv4_dest_slash_mask="uint8, required"/>
     </target_IP_source_slash_descriptor>
-    
+
     <target_MAC_address_descriptor MAC_addr_mask="MAC address, required">
       <!-- Must be in an INT (table id 0x4C) -->
       <!-- One per MAC address: -->
       <address MAC_addr="MAC address, required"/>
     </target_MAC_address_descriptor>
-    
+
     <target_MAC_address_range_descriptor>
       <!-- Must be in an INT (table id 0x4C) -->
       <!-- One per MAC address range: -->
@@ -618,7 +618,7 @@
           MAC_addr_low="MAC address, required"
           MAC_addr_high="MAC address, required"/>
     </target_MAC_address_range_descriptor>
-    
+
     <teletext_descriptor>
       <!-- One per page -->
       <teletext language_code="char3, required"
