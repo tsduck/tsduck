@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
-// Copyright (c) 2005-2018, Tristan Claverie
+// Copyright (c) 2018, Tristan Claverie
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -60,16 +60,31 @@ public:
         {
         }
 
+        //!
+        //! Equality operator.
+        //! @param[in] that The identifier to compare to.
+        //! @return true if both identifiers are equals, false otherwise.
+        //!
         bool operator==(const ApplicationIdentifier& that) const
         {
             return organisation_id == that.organisation_id && application_id == that.application_id;
         }
 
+        //!
+        //! Inequality operator.
+        //! @param[in] that The identifier to compare to.
+        //! @return true if both identifiers are not equals, false otherwise.
+        //!
         bool operator!=(const ApplicationIdentifier& that) const
         {
             return organisation_id != that.organisation_id && application_id != that.application_id;
         }
 
+        //!
+        //! Lower than operator. It compares first the organisation id, then the application id.
+        //! @param[in] that The identifier to compare to.
+        //! @return true if the identifier is lower than the other one, false otherwise.
+        //!
         bool operator<(const ApplicationIdentifier& that) const
         {
             return organisation_id < that.organisation_id || (organisation_id == that.organisation_id && application_id < that.application_id);
@@ -77,7 +92,7 @@ public:
     };
 
     //!
-    //! Description of an application inside an AIT
+    //! Description of an application inside an AIT.
     //!
     //! Note: by inheriting from EntryWithDescriptors, there is a
     //! public field "DescriptorList descs".

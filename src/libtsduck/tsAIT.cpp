@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
-// Copyright (c) 2005-2018, Tristan Claverie
+// Copyright (c) 2018, Tristan Claverie
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -97,7 +97,7 @@ void ts::AIT::deserialize(const BinaryTable& table, const DVBCharset* charset)
         return;
     }
 
-    // TODO Deal with sections
+    // Assume the AIT is composed of a single section
     for (size_t si = 0; si < table.sectionCount(); ++si) {
 
         // Reference to current section
@@ -167,7 +167,6 @@ void ts::AIT::serialize(BinaryTable& table, const DVBCharset* charset) const
         return;
     }
 
-    // TODO section
     uint8_t payload[MAX_PSI_LONG_SECTION_PAYLOAD_SIZE];
     uint8_t* data(payload);
     size_t remain(sizeof(payload));
@@ -187,10 +186,8 @@ void ts::AIT::serialize(BinaryTable& table, const DVBCharset* charset) const
 
         // Insert application descriptors list (with leading length field)
         size_t next_index = it->second.descs.lengthSerialize(data, remain);
-        // TODO Handle sections
         if (next_index != it->second.descs.count()) {
             // Not enough space to serialize all descriptors in the section.
-            // A PMT cannot have more than one section.
             // Return with table left in invalid state.
             return;
         }
@@ -230,7 +227,7 @@ void ts::AIT::DisplaySection(TablesDisplay& display, const ts::Section& section,
         size_t length_field = GetUInt16(data) & 0x0FFF; // common_descriptors_length
         data += 2;
         size -= 2;
-        //
+
         // Process and display "common descriptors loop"
         if (length_field > 0) {
             strm << margin << "Common descriptor loop:" << std::endl;
@@ -240,7 +237,7 @@ void ts::AIT::DisplaySection(TablesDisplay& display, const ts::Section& section,
         size -= length_field;
 
         if (size > 2) {
-            length_field = GetUInt16(data) & 0x0FFF; // application loop length
+            length_field = GetUInt16(data) & 0x0FFF; // application_loop_length
 
             data += 2;
             size -= 2;
