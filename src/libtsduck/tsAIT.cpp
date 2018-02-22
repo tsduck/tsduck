@@ -221,22 +221,16 @@ void ts::AIT::DisplaySection(TablesDisplay& display, const ts::Section& section,
     const uint8_t* data = section.payload();
     size_t size = section.payloadSize();
 
-    if (size >= 6) {
-        // Fixed part
-        size_t length_field = GetUInt16(data + 2) & 0x0FFF; // section_length
-        data += 4;
-        size -= 4;
-        if (length_field > size) {
-            length_field = size;
-        }
+    if (size >= 4) {
         uint16_t application_type = section.tableIdExtension() & 0x7FFF;
         bool test_application_flag = (section.tableIdExtension() & 0x8000) > 0;
         strm << margin << UString::Format(u"Application type: %d (0x%X)", { application_type, application_type });
         strm << u", Test application: " << test_application_flag << std::endl;
 
-        length_field = GetUInt16(data) & 0x0FFF; // common_descriptors_length
+        size_t length_field = GetUInt16(data) & 0x0FFF; // common_descriptors_length
         data += 2;
         size -= 2;
+        //
         // Process and display "common descriptors loop"
         if (length_field > 0) {
             strm << margin << "Common descriptor loop:" << std::endl;
@@ -253,7 +247,6 @@ void ts::AIT::DisplaySection(TablesDisplay& display, const ts::Section& section,
             size = std::min(size, length_field);
 
             // Process and display "application loop"
-            strm << margin << "Applications:" << std::endl;
             while (size >= 9) {
                 uint32_t org_id = GetUInt32(data);
                 uint16_t app_id = GetUInt16(data + 4);
