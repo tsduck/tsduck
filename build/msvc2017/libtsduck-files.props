@@ -136,6 +136,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsLNB.h" />
     <ClInclude Include="..\..\src\libtsduck\tsLocalTimeOffsetDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsLogicalChannelNumberDescriptor.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsMACAddress.h" />
     <ClInclude Include="..\..\src\libtsduck\tsMaximumBitrateDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsMD5.h" />
     <ClInclude Include="..\..\src\libtsduck\tsMediaGuardDate.h" />
@@ -250,6 +251,9 @@
     <ClInclude Include="..\..\src\libtsduck\tsTablesPtr.h" />
     <ClInclude Include="..\..\src\libtsduck\tsTargetIPAddressDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsTargetIPSlashDescriptor.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsTargetIPSourceSlashDescriptor.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsTargetMACAddressDescriptor.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsTargetMACAddressRangeDescriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsTCPConnection.h" />
     <ClInclude Include="..\..\src\libtsduck\tsTCPServer.h" />
     <ClInclude Include="..\..\src\libtsduck\tsTCPSocket.h" />
@@ -442,6 +446,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsLNB.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsLocalTimeOffsetDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsLogicalChannelNumberDescriptor.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsMACAddress.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsMaximumBitrateDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsMD5.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsMemoryUtils.cpp" />
@@ -528,6 +533,9 @@
     <ClCompile Include="..\..\src\libtsduck\tsTablesLoggerArgs.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsTargetIPAddressDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsTargetIPSlashDescriptor.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsTargetIPSourceSlashDescriptor.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsTargetMACAddressDescriptor.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsTargetMACAddressRangeDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsTCPConnection.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsTCPServer.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsTCPSocket.cpp" />

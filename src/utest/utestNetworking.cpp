@@ -32,6 +32,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsIPAddress.h"
+#include "tsMACAddress.h"
 #include "tsSocketAddress.h"
 #include "tsTCPConnection.h"
 #include "tsTCPServer.h"
@@ -58,6 +59,7 @@ public:
 
     void testIPAddressConstructors();
     void testIPAddress();
+    void testMACAddress();
     void testGetLocalIPAddresses();
     void testSocketAddressConstructors();
     void testSocketAddress();
@@ -67,6 +69,7 @@ public:
     CPPUNIT_TEST_SUITE(NetworkingTest);
     CPPUNIT_TEST(testIPAddressConstructors);
     CPPUNIT_TEST(testIPAddress);
+    CPPUNIT_TEST(testMACAddress);
     CPPUNIT_TEST(testGetLocalIPAddresses);
     CPPUNIT_TEST(testSocketAddressConstructors);
     CPPUNIT_TEST(testSocketAddress);
@@ -200,10 +203,10 @@ void NetworkingTest::testIPAddress()
     CPPUNIT_ASSERT(sai.sin_addr.s_addr == htonl (0x01020304));
     CPPUNIT_ASSERT(sai.sin_port == htons (80));
 
-    a1.resolve(u"2.3.4.5");
+    CPPUNIT_ASSERT(a1.resolve(u"2.3.4.5"));
     CPPUNIT_ASSERT(a1.address() == 0x02030405);
 
-    a1.resolve(u"localhost");
+    CPPUNIT_ASSERT(a1.resolve(u"localhost"));
     CPPUNIT_ASSERT(a1.address() == 0x7F000001); // 127.0.0.1
     CPPUNIT_ASSERT(a1 == ts::IPAddress::LocalHost);
 
@@ -215,6 +218,35 @@ void NetworkingTest::testIPAddress()
 
     // Note: fail if not connected to a network.
     utest::Out() << "NetworkingTest: www.google.com = " << ts::IPAddress(u"www.google.com") << std::endl;
+}
+
+void NetworkingTest::testMACAddress()
+{
+    ts::MACAddress a1;
+    CPPUNIT_ASSERT(!a1.hasAddress());
+    CPPUNIT_ASSERT(!a1.isMulticast());
+
+    CPPUNIT_ASSERT(a1.resolve(u"52:54:00:26:92:b4"));
+    CPPUNIT_ASSERT(a1.hasAddress());
+    CPPUNIT_ASSERT(!a1.isMulticast());
+    CPPUNIT_ASSERT_EQUAL(TS_UCONST64(0x5254002692B4), a1.address());
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"52:54:00:26:92:B4", a1.toString());
+
+    CPPUNIT_ASSERT(a1.resolve(u" 23:b3-A6 . bE : 56-4D"));
+    CPPUNIT_ASSERT(a1.hasAddress());
+    CPPUNIT_ASSERT(!a1.isMulticast());
+    CPPUNIT_ASSERT_EQUAL(TS_UCONST64(0x23B3A6BE564D), a1.address());
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"23:B3:A6:BE:56:4D", a1.toString());
+
+    CPPUNIT_ASSERT(a1.toMulticast(ts::IPAddress(225, 1, 2, 3)));
+    CPPUNIT_ASSERT(a1.hasAddress());
+    CPPUNIT_ASSERT(a1.isMulticast());
+    CPPUNIT_ASSERT_EQUAL(TS_UCONST64(0x01005E010203), a1.address());
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"01:00:5E:01:02:03", a1.toString());
+
+    CPPUNIT_ASSERT(!a1.toMulticast(ts::IPAddress(192, 168, 2, 3)));
+    CPPUNIT_ASSERT(!a1.hasAddress());
+    CPPUNIT_ASSERT(!a1.isMulticast());
 }
 
 void NetworkingTest::testGetLocalIPAddresses()
