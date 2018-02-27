@@ -79,6 +79,8 @@ public:
     void testGetUInt32LE();
     void testGetUInt64BE();
     void testGetUInt64LE();
+    void testGetUInt48BE();
+    void testGetUInt48LE();
     void testGetInt8();
     void testGetInt16BE();
     void testGetInt16LE();
@@ -97,6 +99,8 @@ public:
     void testPutUInt32LE();
     void testPutUInt64BE();
     void testPutUInt64LE();
+    void testPutUInt48BE();
+    void testPutUInt48LE();
     void testPutInt8();
     void testPutInt16BE();
     void testPutInt16LE();
@@ -139,6 +143,8 @@ public:
     CPPUNIT_TEST(testGetUInt32LE);
     CPPUNIT_TEST(testGetUInt64BE);
     CPPUNIT_TEST(testGetUInt64LE);
+    CPPUNIT_TEST(testGetUInt48BE);
+    CPPUNIT_TEST(testGetUInt48LE);
     CPPUNIT_TEST(testGetInt8);
     CPPUNIT_TEST(testGetInt16BE);
     CPPUNIT_TEST(testGetInt16LE);
@@ -157,6 +163,8 @@ public:
     CPPUNIT_TEST(testPutUInt32LE);
     CPPUNIT_TEST(testPutUInt64BE);
     CPPUNIT_TEST(testPutUInt64LE);
+    CPPUNIT_TEST(testPutUInt48BE);
+    CPPUNIT_TEST(testPutUInt48LE);
     CPPUNIT_TEST(testPutInt8);
     CPPUNIT_TEST(testPutInt16BE);
     CPPUNIT_TEST(testPutInt16LE);
@@ -550,6 +558,16 @@ void PlatformTest::testGetUInt64LE()
     CPPUNIT_ASSERT_EQUAL(TS_UCONST64(0x908F8E8D8C8B8A89), ts::GetUInt64LE(_bytes + 0x89));
 }
 
+void PlatformTest::testGetUInt48BE()
+{
+    CPPUNIT_ASSERT_EQUAL(TS_UCONST64(0x0000898A8B8C8D8E), ts::GetUInt48BE(_bytes + 0x89));
+}
+
+void PlatformTest::testGetUInt48LE()
+{
+    CPPUNIT_ASSERT_EQUAL(TS_UCONST64(0x00008E8D8C8B8A89), ts::GetUInt48LE(_bytes + 0x89));
+}
+
 void PlatformTest::testGetInt8()
 {
     CPPUNIT_ASSERT_EQUAL(int8_t(3), ts::GetInt8(_bytes + 0x03));
@@ -658,6 +676,21 @@ void PlatformTest::testPutUInt64LE()
     uint8_t out[16];
     ts::PutUInt64LE(out, TS_UCONST64(0x908F8E8D8C8B8A89));
     CPPUNIT_ASSERT_EQUAL(0, ::memcmp(out, _bytes + 0x89, 8));
+}
+
+
+void PlatformTest::testPutUInt48BE()
+{
+    uint8_t out[16];
+    ts::PutUInt48BE(out, TS_UCONST64(0x0000898A8B8C8D8E));
+    CPPUNIT_ASSERT_EQUAL(0, ::memcmp(out, _bytes + 0x89, 6));
+}
+
+void PlatformTest::testPutUInt48LE()
+{
+    uint8_t out[16];
+    ts::PutUInt48LE(out, TS_UCONST64(0x00008E8D8C8B8A89));
+    CPPUNIT_ASSERT_EQUAL(0, ::memcmp(out, _bytes + 0x89, 6));
 }
 
 

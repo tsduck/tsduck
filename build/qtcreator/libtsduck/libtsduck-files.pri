@@ -134,6 +134,7 @@ HEADERS += \
     ../../../src/libtsduck/tsLNB.h \
     ../../../src/libtsduck/tsLocalTimeOffsetDescriptor.h \
     ../../../src/libtsduck/tsLogicalChannelNumberDescriptor.h \
+    ../../../src/libtsduck/tsMACAddress.h \
     ../../../src/libtsduck/tsMaximumBitrateDescriptor.h \
     ../../../src/libtsduck/tsMD5.h \
     ../../../src/libtsduck/tsMediaGuardDate.h \
@@ -248,6 +249,9 @@ HEADERS += \
     ../../../src/libtsduck/tsTablesPtr.h \
     ../../../src/libtsduck/tsTargetIPAddressDescriptor.h \
     ../../../src/libtsduck/tsTargetIPSlashDescriptor.h \
+    ../../../src/libtsduck/tsTargetIPSourceSlashDescriptor.h \
+    ../../../src/libtsduck/tsTargetMACAddressDescriptor.h \
+    ../../../src/libtsduck/tsTargetMACAddressRangeDescriptor.h \
     ../../../src/libtsduck/tsTCPConnection.h \
     ../../../src/libtsduck/tsTCPServer.h \
     ../../../src/libtsduck/tsTCPSocket.h \
@@ -430,6 +434,7 @@ SOURCES += \
     ../../../src/libtsduck/tsLNB.cpp \
     ../../../src/libtsduck/tsLocalTimeOffsetDescriptor.cpp \
     ../../../src/libtsduck/tsLogicalChannelNumberDescriptor.cpp \
+    ../../../src/libtsduck/tsMACAddress.cpp \
     ../../../src/libtsduck/tsMaximumBitrateDescriptor.cpp \
     ../../../src/libtsduck/tsMD5.cpp \
     ../../../src/libtsduck/tsMemoryUtils.cpp \
@@ -516,6 +521,9 @@ SOURCES += \
     ../../../src/libtsduck/tsTablesLoggerArgs.cpp \
     ../../../src/libtsduck/tsTargetIPAddressDescriptor.cpp \
     ../../../src/libtsduck/tsTargetIPSlashDescriptor.cpp \
+    ../../../src/libtsduck/tsTargetIPSourceSlashDescriptor.cpp \
+    ../../../src/libtsduck/tsTargetMACAddressDescriptor.cpp \
+    ../../../src/libtsduck/tsTargetMACAddressRangeDescriptor.cpp \
     ../../../src/libtsduck/tsTCPConnection.cpp \
     ../../../src/libtsduck/tsTCPServer.cpp \
     ../../../src/libtsduck/tsTCPSocket.cpp \

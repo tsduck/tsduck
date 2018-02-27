@@ -28,7 +28,7 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Representation of a target_IP_slash_descriptor (INT specific).
+//!  Representation of a target_IP_source_slash_descriptor (INT specific).
 //!
 //----------------------------------------------------------------------------
 
@@ -39,14 +39,14 @@
 
 namespace ts {
     //!
-    //! Representation of a target_IP_slash_descriptor (INT specific).
+    //! Representation of a target_IP_source_slash_descriptor (INT specific).
     //!
     //! This descriptor cannot be present in other tables than an INT
     //! because its tag reuses an MPEG-defined one.
     //!
-    //! @see ETSI EN 301 182, 8.4.5.9
+    //! @see ETSI EN 301 182, 8.4.5.10
     //!
-    class TSDUCKDLL TargetIPSlashDescriptor : public AbstractDescriptor
+    class TSDUCKDLL TargetIPSourceSlashDescriptor : public AbstractDescriptor
     {
     public:
         //!
@@ -55,36 +55,40 @@ namespace ts {
         class Address
         {
         public:
-            IPAddress IPv4_addr;         //!< IPv4 address.
-            uint8_t   IPv4_slash_mask;   //!< Number of bits in network mask.
+            IPAddress IPv4_source_addr;         //!< IPv4 source address.
+            uint8_t   IPv4_source_slash_mask;   //!< Number of bits in source network mask.
+            IPAddress IPv4_dest_addr;           //!< IPv4 destination address.
+            uint8_t   IPv4_dest_slash_mask;     //!< Number of bits in destination network mask.
 
             //!
             //! Constructor
-            //! @param [in] addr IPv4 address.
-            //! @param [in] mask Number of bits in network mask.
+            //! @param [in] addr1 IPv4 source address.
+            //! @param [in] mask1 Number of bits in source network mask.
+            //! @param [in] addr2 IPv4 destination address.
+            //! @param [in] mask2 Number of bits in destination network mask.
             //!
-            Address(const IPAddress& addr = IPAddress(), uint8_t mask = 0);
+            Address(const IPAddress& addr1 = IPAddress(), uint8_t mask1 = 0, const IPAddress& addr2 = IPAddress(), uint8_t mask2 = 0);
         };
         
-        // TargetIPSlashDescriptor public members:
+        // TargetIPSourceSlashDescriptor public members:
         std::vector<Address> addresses;  //!< IPv4 addresses
 
         //!
         //! Maximum number of entries to fit in 255 bytes.
         //!
-        static const size_t MAX_ENTRIES = 51;
+        static const size_t MAX_ENTRIES = 25;
 
         //!
         //! Default constructor.
         //!
-        TargetIPSlashDescriptor();
+        TargetIPSourceSlashDescriptor();
 
         //!
         //! Constructor from a binary descriptor.
         //! @param [in] bin A binary descriptor to deserialize.
         //! @param [in] charset If not zero, character set to use without explicit table code.
         //!
-        TargetIPSlashDescriptor(const Descriptor& bin, const DVBCharset* charset = 0);
+        TargetIPSourceSlashDescriptor(const Descriptor& bin, const DVBCharset* charset = 0);
 
         // Inherited methods
         virtual void serialize(Descriptor&, const DVBCharset* = 0) const override;

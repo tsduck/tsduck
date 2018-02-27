@@ -28,63 +28,46 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Representation of a target_IP_slash_descriptor (INT specific).
+//!  Representation of a target_MAC_address_descriptor (INT specific).
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
 #include "tsAbstractDescriptor.h"
-#include "tsIPAddress.h"
-#include "tsIPUtils.h"
+#include "tsMACAddress.h"
 
 namespace ts {
     //!
-    //! Representation of a target_IP_slash_descriptor (INT specific).
+    //! Representation of a target_MAC_address_descriptor (INT specific).
     //!
     //! This descriptor cannot be present in other tables than an INT
     //! because its tag reuses an MPEG-defined one.
     //!
-    //! @see ETSI EN 301 182, 8.4.5.9
+    //! @see ETSI EN 301 182, 8.4.5.6
     //!
-    class TSDUCKDLL TargetIPSlashDescriptor : public AbstractDescriptor
+    class TSDUCKDLL TargetMACAddressDescriptor : public AbstractDescriptor
     {
     public:
-        //!
-        //! Structure of an address entry in the descriptor.
-        //!
-        class Address
-        {
-        public:
-            IPAddress IPv4_addr;         //!< IPv4 address.
-            uint8_t   IPv4_slash_mask;   //!< Number of bits in network mask.
-
-            //!
-            //! Constructor
-            //! @param [in] addr IPv4 address.
-            //! @param [in] mask Number of bits in network mask.
-            //!
-            Address(const IPAddress& addr = IPAddress(), uint8_t mask = 0);
-        };
-        
-        // TargetIPSlashDescriptor public members:
-        std::vector<Address> addresses;  //!< IPv4 addresses
+        // TargetMACAddressDescriptor public members:
+        MACAddress       MAC_addr_mask;  //!< MAC address mask
+        MACAddressVector MAC_addr;       //!< MAC addresses
 
         //!
         //! Maximum number of entries to fit in 255 bytes.
         //!
-        static const size_t MAX_ENTRIES = 51;
+        static const size_t MAX_ENTRIES = 41;
 
         //!
         //! Default constructor.
         //!
-        TargetIPSlashDescriptor();
+        TargetMACAddressDescriptor();
 
         //!
         //! Constructor from a binary descriptor.
         //! @param [in] bin A binary descriptor to deserialize.
         //! @param [in] charset If not zero, character set to use without explicit table code.
         //!
-        TargetIPSlashDescriptor(const Descriptor& bin, const DVBCharset* charset = 0);
+        TargetMACAddressDescriptor(const Descriptor& bin, const DVBCharset* charset = 0);
 
         // Inherited methods
         virtual void serialize(Descriptor&, const DVBCharset* = 0) const override;
