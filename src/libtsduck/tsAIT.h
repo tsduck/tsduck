@@ -37,135 +37,139 @@
 #include "tsDescriptorList.h"
 
 namespace ts {
-//!
-//! Representation of an Application Information Table (AIT)
-//!
-class TSDUCKDLL AIT : public AbstractLongTable {
-public:
     //!
-    //! Representation of an Application Identifier
+    //! Representation of an Application Information Table (AIT)
     //!
-    struct TSDUCKDLL ApplicationIdentifier {
-        uint32_t organisation_id; //!< The organisation identifier
-        uint16_t application_id;  //!< The application identifeir
+    class TSDUCKDLL AIT : public AbstractLongTable
+    {
+    public:
+        //!
+        //! Representation of an Application Identifier
+        //!
+        struct TSDUCKDLL ApplicationIdentifier
+        {
+            uint32_t organisation_id; //!< The organisation identifier
+            uint16_t application_id;  //!< The application identifier
+
+            //!
+            //! Constructor from two ids.
+            //! @param [in] org_id Organisation identifier.
+            //! @param [in] app_id Application identifier.
+            //!
+            ApplicationIdentifier(uint32_t org_id = 0, uint16_t app_id = 0)
+                : organisation_id(org_id)
+                , application_id(app_id)
+            {
+            }
+
+            //!
+            //! Equality operator.
+            //! @param[in] that Identifier to compare to.
+            //! @return True if both identifiers are equals, False otherwise.
+            //!
+            bool operator==(const ApplicationIdentifier& that) const
+            {
+                return organisation_id == that.organisation_id && application_id == that.application_id;
+            }
+
+            //!
+            //! Inequality operator.
+            //! @param[in] that Identifier to compare to.
+            //! @return True if both identifiers are not equals, False otherwise.
+            //!
+            bool operator!=(const ApplicationIdentifier& that) const
+            {
+                return organisation_id != that.organisation_id && application_id != that.application_id;
+            }
+
+            //!
+            //! Lower than operator. It compares first the organisation id, then the application id.
+            //! @param[in] that Identifier to compare to.
+            //! @return True if the identifier is lower than the other one, False otherwise.
+            //!
+            bool operator<(const ApplicationIdentifier& that) const
+            {
+                return organisation_id < that.organisation_id || (organisation_id == that.organisation_id && application_id < that.application_id);
+            }
+        };
 
         //!
-        //! Constructor from two ids.
-        //! @param [in] org_id The organisation identifier.
-        //! @param [in] app_id The application identifier.
+        //! Description of an application inside an AIT.
         //!
-        ApplicationIdentifier(uint32_t org_id = 0, uint16_t app_id = 0)
-            : organisation_id(org_id)
-            , application_id(app_id)
+        //! Note: by inheriting from EntryWithDescriptors, there is a
+        //! public field "DescriptorList descs".
+        //!
+        struct TSDUCKDLL Application : public EntryWithDescriptors
         {
-        }
+            ApplicationIdentifier application_id; //!< Application Identifier
+            uint8_t control_code;                 //!< Control code of the application
+
+            //!
+            //! Constructor.
+            //!
+            //! @param [in] table Parent AIT.
+            //!
+            explicit Application(const AbstractTable* table)
+                : EntryWithDescriptors(table)
+                , application_id(0, 0)
+                , control_code(0)
+            {
+            }
+
+        private:
+            // Inaccessible operations.
+            Application() = delete;
+            Application(const Application&) = delete;
+        };
 
         //!
-        //! Equality operator.
-        //! @param[in] that The identifier to compare to.
-        //! @return true if both identifiers are equals, false otherwise.
+        //! List of applications, indexed by their identifier.
         //!
-        bool operator==(const ApplicationIdentifier& that) const
-        {
-            return organisation_id == that.organisation_id && application_id == that.application_id;
-        }
+        typedef EntryWithDescriptorsMap<ApplicationIdentifier, Application> ApplicationMap;
+
+        // AIT public members:
+        uint16_t application_type;   //!< Type of the application.
+        bool test_application_flag;  //!< Indicates the application is meant for receiver testing.
+        DescriptorList descs;        //!< Common descriptor list.
+        ApplicationMap applications; //!< Map of applications: key=application_identifier, value=application.
 
         //!
-        //! Inequality operator.
-        //! @param[in] that The identifier to compare to.
-        //! @return true if both identifiers are not equals, false otherwise.
+        //! Default constructor.
+        //! @param [in] version Table version number.
+        //! @param [in] is_current True if table is current, false if table is next.
+        //! @param [in] application_type Application type.
+        //! @param [in] test_application True if this is a test application, false otherwise.
         //!
-        bool operator!=(const ApplicationIdentifier& that) const
-        {
-            return organisation_id != that.organisation_id && application_id != that.application_id;
-        }
+        AIT(uint8_t  version = 0,
+            bool     is_current = true,
+            uint16_t application_type = 0,
+            bool     test_application = false);
 
         //!
-        //! Lower than operator. It compares first the organisation id, then the application id.
-        //! @param[in] that The identifier to compare to.
-        //! @return true if the identifier is lower than the other one, false otherwise.
+        //! Copy constructor.
+        //! @param [in] other Other instance to copy.
         //!
-        bool operator<(const ApplicationIdentifier& that) const
-        {
-            return organisation_id < that.organisation_id || (organisation_id == that.organisation_id && application_id < that.application_id);
-        }
+        AIT(const AIT& other);
+
+        //!
+        //! Constructor from a binary table.
+        //! @param [in] table Binary table to deserialize.
+        //! @param [in] charset If not zero, character set to use without explicit table code.
+        //!
+        AIT(const BinaryTable& table, const DVBCharset* charset = 0);
+
+        // Inherited methods
+        virtual void serialize(BinaryTable& table, const DVBCharset* = 0) const override;
+        virtual void deserialize(const BinaryTable& table, const DVBCharset* = 0) override;
+        virtual void buildXML(xml::Element*) const override;
+        virtual void fromXML(const xml::Element*) override;
+
+        //!
+        //! A static method to display a section.
+        //! @param [in,out] display Display engine.
+        //! @param [in] section The section to display.
+        //! @param [in] indent Indentation width.
+        //!
+        static void DisplaySection(TablesDisplay& display, const Section& section, int indent);
     };
-
-    //!
-    //! Description of an application inside an AIT.
-    //!
-    //! Note: by inheriting from EntryWithDescriptors, there is a
-    //! public field "DescriptorList descs".
-    //!
-    struct TSDUCKDLL Application : public EntryWithDescriptors {
-        ApplicationIdentifier application_id; //!< Application Identifier
-        uint8_t control_code;                 //!< Control code of the application
-
-        //!
-        //! Constructor.
-        //!
-        //! @param [in] table Parent AIT.
-        //!
-        explicit Application(const AbstractTable* table)
-            : EntryWithDescriptors(table)
-            , application_id(0, 0)
-            , control_code(0)
-        {
-        }
-
-    private:
-        // Inaccessible operations.
-        Application() = delete;
-        Application(const Application&) = delete;
-    };
-    //!
-    //! List of applications, indexed by their identifier.
-    //!
-    typedef EntryWithDescriptorsMap<ApplicationIdentifier, Application> ApplicationMap;
-
-    // AIT public members:
-    uint16_t application_type;   //!< Type of the applications.
-    bool test_application_flag;  //!< Indicates the application is meant for receiver testing.
-    DescriptorList descs;        //!< Common descriptor list.
-    ApplicationMap applications; //!< Map of applications: key=application_identifier, value=application.
-
-    //!
-    //! Default constructor.
-    //! @param [in] version Table version number.
-    //! @param [in] is_current True if table is current, false if table is next.
-    //! @param [in] application_type Application type.
-    //! @param [in] test_application True if this is a test application, false otherwise.
-    //!
-    AIT(uint8_t version = 0,
-        bool is_current = true,
-        uint16_t application_type = 0,
-        bool test_application = false);
-
-    //!
-    //! Constructor from a binary table.
-    //! @param [in] table Binary table to deserialize.
-    //! @param [in] charset If not zero, character set to use without explicit table code.
-    //!
-    AIT(const BinaryTable& table, const DVBCharset* charset = 0);
-
-    //!
-    //! Copy constructor.
-    //! @param [in] other Other instance to copy.
-    //!
-    AIT(const AIT& other);
-
-    // Inherited methods
-    virtual void serialize(BinaryTable& table, const DVBCharset* = 0) const override;
-    virtual void deserialize(const BinaryTable& table, const DVBCharset* = 0) override;
-    virtual void buildXML(xml::Element*) const override;
-    virtual void fromXML(const xml::Element*) override;
-
-    //!
-    //! A static method to display a section.
-    //! @param [in,out] display Display engine.
-    //! @param [in] section The section to display.
-    //! @param [in] indent Indentation width.
-    //!
-    static void DisplaySection(TablesDisplay& display, const Section& section, int indent);
-};
 }
