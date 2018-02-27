@@ -85,7 +85,6 @@ ts::AIT::AIT(const AIT& other)
 
 void ts::AIT::deserialize(const BinaryTable& table, const DVBCharset* charset)
 {
-    uint16_t tmpUint16;
     // Clear table content
     _is_valid = false;
     application_type = 0;
@@ -106,9 +105,9 @@ void ts::AIT::deserialize(const BinaryTable& table, const DVBCharset* charset)
         // Get common properties (should be identical in all sections)
         version = sect.version();
         is_current = sect.isCurrent();
-        tmpUint16 = sect.tableIdExtension();
-        test_application_flag = (tmpUint16 & 0x8000) > 0;
-        application_type = tmpUint16 & 0x7fff;
+        uint16_t tid_ext(sect.tableIdExtension());
+        test_application_flag = (tid_ext & 0x8000) > 0;
+        application_type = tid_ext & 0x7fff;
 
         // Analyze the section payload:
         const uint8_t* data(sect.payload());
