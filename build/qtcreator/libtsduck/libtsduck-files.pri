@@ -19,6 +19,7 @@ HEADERS += \
     ../../../src/libtsduck/tsAC3Attributes.h \
     ../../../src/libtsduck/tsAC3Descriptor.h \
     ../../../src/libtsduck/tsAES.h \
+    ../../../src/libtsduck/tsAIT.h \
     ../../../src/libtsduck/tsAlgorithm.h \
     ../../../src/libtsduck/tsAlgorithmTemplate.h \
     ../../../src/libtsduck/tsApplicationSharedLibrary.h \
@@ -349,6 +350,7 @@ SOURCES += \
     ../../../src/libtsduck/tsAC3Attributes.cpp \
     ../../../src/libtsduck/tsAC3Descriptor.cpp \
     ../../../src/libtsduck/tsAES.cpp \
+    ../../../src/libtsduck/tsAIT.cpp \
     ../../../src/libtsduck/tsApplicationSharedLibrary.cpp \
     ../../../src/libtsduck/tsApplicationSignallingDescriptor.cpp \
     ../../../src/libtsduck/tsApplicationUsageDescriptor.cpp \
