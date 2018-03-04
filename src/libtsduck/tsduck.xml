@@ -182,6 +182,20 @@
     </device>
   </INT>
 
+  <!-- Application Information Table -->
+  <AIT version="uint5, default=0"
+       current="bool, default=true"
+       test_application_flag="bool, default=true"
+       application_type="uint15, required">
+    <!-- Common descriptors loop -->
+    <_any in="_descriptors"/>
+    <!-- One per application -->
+    <application control_code="uint8, required">
+      <application_identifier organisation_id="uint32, required" application_id="uint16, required" />
+      <_any in="_descriptors"/>
+    </application>
+  </AIT>
+
   <!-- Generic short table -->
   <generic_short_table
       table_id="uint8, required"
