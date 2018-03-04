@@ -517,14 +517,14 @@ void ts::Args::getPIDSet(PIDSet& values, const UChar* name, bool defValue) const
 // Load arguments and analyze them.
 //----------------------------------------------------------------------------
 
-bool ts::Args::analyze(const UString& app_name, const UStringVector& arguments)
+bool ts::Args::analyze(const UString& app_name, const UStringVector& arguments, bool processRedirections)
 {
     _app_name = app_name;
     _args = arguments;
-    return analyze();
+    return analyze(processRedirections);
 }
 
-bool ts::Args::analyze(int argc, char* argv[])
+bool ts::Args::analyze(int argc, char* argv[], bool processRedirections)
 {
     _app_name = argc > 0 ? BaseName(UString::FromUTF8(argv[0]), TS_EXECUTABLE_SUFFIX) : UString();
     if (argc < 2) {
@@ -533,7 +533,7 @@ bool ts::Args::analyze(int argc, char* argv[])
     else {
         UString::Assign(_args, argc - 1, argv + 1);
     }
-    return analyze();
+    return analyze(processRedirections);
 }
 
 
@@ -541,15 +541,15 @@ bool ts::Args::analyze(int argc, char* argv[])
 // Common code: analyze the command line.
 //----------------------------------------------------------------------------
 
-bool ts::Args::analyze()
+bool ts::Args::analyze(bool processRedirections)
 {
     // Clear previous values
     for (IOptionMap::iterator it = _iopts.begin(); it != _iopts.end(); ++it) {
         it->second.values.clear();
     }
 
-    // Assume valid command
-    _is_valid = true;
+    // Process redirections.
+    _is_valid = !processRedirections || processArgsRedirection(_args);
 
     // Process argument list
     size_t next_arg = 0;                     // Index of next arg to process
@@ -557,7 +557,7 @@ bool ts::Args::analyze()
     size_t short_opt_index = UString::NPOS;  // Short option index in _args[short_opt_arg]
     bool force_parameters = false;           // Force all items to be parameters
 
-    while (short_opt_arg != UString::NPOS || next_arg < _args.size()) {
+    while (_is_valid && (short_opt_arg != UString::NPOS || next_arg < _args.size())) {
 
         IOption* opt = 0;
         ArgValue val;
@@ -768,4 +768,52 @@ void ts::Args::processVersion()
     if ((_flags & NO_EXIT_ON_VERSION) == 0) {
         ::exit(EXIT_SUCCESS);
     }
+}
+
+
+//----------------------------------------------------------------------------
+// Process argument redirection using @c '\@' on a vector of strings.
+//----------------------------------------------------------------------------
+
+bool ts::Args::processArgsRedirection(UStringVector& args)
+{
+    bool result = true;
+
+    UStringVector::iterator it = args.begin();
+    while (it != args.end()) {
+        if (it->startWith(u"@@")) {
+            // An initial double @ means a single literal @. Remove the first @.
+            it->erase(0, 1);
+            ++it;
+        }
+        else if (it->startWith(u"@")) {
+            // Replace the line with the content of a file.
+
+            // Get the file name.
+            const UString fileName(it->substr(1));
+
+            // Remove the line from the argument array.
+            it = args.erase(it);
+
+            // Load the text file.
+            UStringVector lines;
+            if (UString::Load(lines, fileName)) {
+                // Insert the loaded lines.
+                it = args.insert(it, lines.begin(), lines.end());
+                // Now "it" points to the first inserted element. This means that the loaded
+                // content will now be processed, allowing nested '@' directives.
+            }
+            else {
+                // Error loading file.
+                result = false;
+                error(u"error reading command line arguments from file \"%s\"", {fileName});
+            }
+        }
+        else {
+            // No leading '@', nothing to do
+            ++it;
+        }
+    }
+
+    return result;
 }

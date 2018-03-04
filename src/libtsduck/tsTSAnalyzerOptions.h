@@ -86,8 +86,8 @@ namespace ts {
 
         // Overriden methods.
         virtual void setHelp(const UString& help) override;
-        virtual bool analyze(int argc, char* argv[]) override;
-        virtual bool analyze(const UString& app_name, const UStringVector& arguments) override;
+        virtual bool analyze(int argc, char* argv[], bool processRedirections = true) override;
+        virtual bool analyze(const UString& app_name, const UStringVector& arguments, bool processRedirections = true) override;
 
         //!
         //! Get option values (the public fields) after analysis of another ts::Args object defining the same options.

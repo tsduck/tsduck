@@ -128,13 +128,12 @@ namespace ts {
 
             //!
             //! Search the next plugin option.
-            //! @param [in] argc Number of arguments from command line.
-            //! @param [in] argv Arguments from command line.
-            //! @param [in] index Start searching at index + 1.
+            //! @param [in] args Arguments from command line.
+            //! @param [in] index Start searching at @a index.
             //! @param [out] type Plugin type.
-            //! @return Index of plugin option or @a argc if not found.
+            //! @return Index of plugin option or @a args.size() if not found.
             //!
-            static int nextProcOpt(int argc, char *argv[], int index, PluginType& type);
+            static size_t nextProcOpt(const UStringVector& args, size_t index, PluginType& type);
         };
     }
 }

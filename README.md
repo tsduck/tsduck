@@ -4,18 +4,20 @@
 
 [TSDuck](https://tsduck.github.io/) is an extensible toolkit for MPEG/DVB transport streams.
 
-TSDuck is used in digital television systems for test, monitoring, integration debug, lab or demo.
+TSDuck is used in digital television systems for test, monitoring, integration, debug, lab or demo.
 
-In practice, TSDuck can be used for:
+In practice, TSDuck is used for:
 
 - Transport stream acquisition or transmodulation.
-- Analyzing transport streams, visualizing the PSI/SI signalization.
-- Monitoring conditions on the stream.
-- Working on live transport streams, DVB-S/C/T, ASI, IP, or on offline transport stream files.
-- On-the-fly transformation or injection on the content and signalization.
-- Using specialized hardware such as cheap DVB tuners (USB, PCI, etc) or professional Dektec devices.
-- Emulating a CAS head-end using DVB SimulCrypt interfaces to ECMG or EMMG.
-- Content scrambling or descrambling.
+- Analyze transport streams, PSI/SI signalization, bitrates, timestamps.
+- Monitor and report conditions on the stream (video and audio properties, bitrates, crypto-periods, signalization).
+- On-the-fly transformation or injection of content and signalization.
+- Modify, remove, rename, extract services.
+- Work on live transport streams, DVB-S/C/T, ASI, IP-TV or offline transport stream files.
+- Use specialized hardware such as cheap DVB tuners (USB, PCI) or professional Dektec devices.
+- Re-route transport streams to other applications.
+- Emulate a CAS head-end using DVB SimulCrypt interfaces to ECMG or EMMG.
+- Extract specific encapsulated data (Teletext, T2-MI, SCTE 35 cues).
 - And more...
 
 TSDuck is developed in C++ in a modular architecture. It is easy to extend
@@ -45,13 +47,13 @@ and its [tutorial](https://tsduck.github.io/doxy/html/libtutorial.html).
 
 ### Building
 
-TSDuck can be built on Windows, Linux and MacOS systems. See the
+TSDuck can be built on Windows, Linux and macOS systems. See the
 [building guide](https://tsduck.github.io/doxy/html/building.html) for details.
 
 ### Download
 
 Pre-built [binary packages](https://github.com/tsduck/tsduck/releases)
-are available for Windows, Fedora and Ubuntu. On MacOS,
+are available for Windows, Fedora and Ubuntu. On macOS,
 [use the Homebrew packager](https://github.com/tsduck/homebrew-tsduck/blob/master/README.md).
 
 ### License
