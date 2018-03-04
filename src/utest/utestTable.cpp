@@ -35,11 +35,13 @@
 #include "utestCppUnitTest.h"
 TSDUCK_SOURCE;
 
+
 //----------------------------------------------------------------------------
 // The test fixture
 //----------------------------------------------------------------------------
 
-class TableTest : public CppUnit::TestFixture {
+class TableTest: public CppUnit::TestFixture
+{
 public:
     virtual void setUp() override;
     virtual void tearDown() override;

@@ -21,6 +21,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsAC3Attributes.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAC3Descriptor.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAES.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsAIT.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAlgorithm.h" />
     <ClInclude Include="..\..\src\libtsduck\tsAlgorithmTemplate.h" />
     <ClInclude Include="..\..\src\libtsduck\tsApplicationSharedLibrary.h" />
@@ -361,6 +362,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsAC3Attributes.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAC3Descriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsAES.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsAIT.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsApplicationSharedLibrary.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsApplicationSignallingDescriptor.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsApplicationUsageDescriptor.cpp" />
