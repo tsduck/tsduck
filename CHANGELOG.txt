@@ -8,6 +8,8 @@ Version 3.9
 
 - Added signalization for data broadcast and MPE.
 
+- Improved display of Dektec devices capabilities.
+
 - Bug fix on Windows: Command "tsversion --upgrade" failed because tsversion.exe
   and tsduck.dll were locked by upgrade command.
 

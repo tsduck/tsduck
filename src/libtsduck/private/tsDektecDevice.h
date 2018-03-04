@@ -117,6 +117,10 @@ namespace ts {
         // Get a string description of a Dektec interface type
         static UString GetInterfaceDescription(const Dtapi::DtHwFuncDesc&);
 
+        // Get a string description of Dektec capabilities, either using one index or full set.
+        static UString DtCapsIndexToString(int);
+        static UString DtCapsToString(const Dtapi::DtCaps&);
+
         // Display various Dektec data structure for debug
         static void ReportDvbT2Pars(const Dtapi::DtDvbT2Pars&, Report& = CERR, int severity = Severity::Info, const UString& margin = UString());
         static void ReportDvbT2PlpPars(const Dtapi::DtDvbT2PlpPars&, Report& = CERR, int severity = Severity::Info, const UString& margin = UString());
