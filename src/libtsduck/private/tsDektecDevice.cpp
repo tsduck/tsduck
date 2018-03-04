@@ -150,28 +150,7 @@ ts::UString ts::DektecDevice::GetPortDescription(const Dtapi::DtHwFuncDesc& port
     }
 
     // Device capabilities.
-    // With GCC, we have an issue here. Starting with GCC 5.1, the ABI of UString
-    // has changed (see https://gcc.gnu.org/onlinedocs/libstdc++/manual/using_dual_abi.html).
-    // Up to DTAPI 5.?, DTAPI is compiled only with an old version of the compiler (pre 5.1).
-    // When using DTAPI <= 5.? with GCC >= 5.1.0, we cannot use methods handling strings.
-
-    UString caps;
-#if defined(TS_GCC_VERSION) && (TS_GCC_VERSION >= 50100) && (TS_DTAPI_VERSION <= 530)
-    // This is the configuration where we cannot use DtCaps::ToString.
-    // Fallback to a list of integers. There is no public value to get the
-    // maximum number of capabilities. As of DTAPI 5.24, there are 256 of them.
-    for (int c = 0; c < 256; c++) {
-        if ((port.m_Flags & Dtapi::DtCaps(c)) != 0) {
-            if (!caps.empty()) {
-                caps += u", ";
-            }
-            caps += UString::Decimal(c);
-        }
-    }
-#else
-    caps = UString::FromUTF8(port.m_Flags.ToString());
-#endif
-
+    const UString caps(DtCapsToString(port.m_Flags));
     if (!caps.empty()) {
         desc += u" (";
         desc += caps;
@@ -361,6 +340,313 @@ bool ts::DektecDevice::getDevice(int& dev_index, int& chan_index, bool is_input,
     report.verbose(u"using Dektec device %d, %s channel %d (%s port %d)",
                    {dev_index, direction, chan_index, model, is_input ? input[chan_index].m_Port : output[chan_index].m_Port});
     return true;
+}
+
+
+//-----------------------------------------------------------------------------
+// Get a string description of one Dektec device capability by index
+//-----------------------------------------------------------------------------
+
+ts::UString ts::DektecDevice::DtCapsIndexToString(int index)
+{
+    // Manually built from DTAPI.h
+    static const UChar* const names[] = {
+        // Capability group APPS - Applications
+        /* 0 */   u"C2Xpert",
+        /* 1 */   u"DtGrabber+ and DtTV",
+        /* 2 */   u"DtTV",
+        /* 3 */   u"DtEncode",
+        /* 4 */   u"DtJitter",
+        /* 5 */   u"J2K engine",
+        /* 6 */   u"MuxXpert runtime",
+        /* 7 */   u"MuxXpert SDK",
+        /* 8 */   u"MuxXpert",
+        /* 9 */   u"StreamXpress remote control",
+        /* 10 */  u"RFXpert",
+        /* 11 */  u"StreamXpert Lite",
+        /* 12 */  u"StreamXpress stream player",
+        /* 13 */  u"StreamXpress through local NIC",
+        /* 14 */  u"StreamXpert analyzer",
+        /* 15 */  u"StreamXpert via local NIC (dongled)",
+        /* 16 */  u"SdEye",
+        /* 17 */  u"Xpect",
+        /* 18 */  u"T2Xpert",
+        /* 19 */  u"VF-REC",
+        /* 20 */  u"VF-REC (dongled)",
+
+        // Capability group AUDENC - Supported audio standards
+        /* 21 */  u"AAC audio encoder",
+        /* 22 */  u"AC3 audio encoder",
+        /* 23 */  u"GOLD for audio encoder",
+        /* 24 */  u"GOLD for two audio encoders",
+        /* 25 */  u"MPEG1-layer II audio encoder",
+
+        // Capability group BOOLIO - Boolean I/O capabilities
+        /* 26 */  u"26 (DEPRECATED)",
+        /* 27 */  u"A fail-over relay is available",
+        /* 28 */  u"Fractional mode is supported",
+        /* 29 */  u"Locked to a genlock reference",
+        /* 30 */  u"Genlock reference input",
+        /* 31 */  u"DVB-S2 APSK mode",
+
+        // Capability group DEMODPROPS - Demodulation properties
+        /* 32 */  u"Antenna power",
+        /* 33 */  u"LNB",
+        /* 34 */  u"Advanced demodulation",
+
+        // Capability group FREQBAND - Frequency band
+        /* 35 */  u"L-band 950-2150MHz",
+        /* 36 */  u"VHF-band 47-470MHz",
+        /* 37 */  u"UHF-band 400-862MHz",
+
+        // Capability group HDMISTD - HDMI standard
+        /* 38 */  u"HDMI 1.4",
+        /* 39 */  u"HDMI 2.0",
+
+        // Capability group IODIR - I/O direction
+        /* 40 */  u"Port is disabled",
+        /* 41 */  u"Uni-directional input",
+        /* 42 */  u"Internal input port",
+        /* 43 */  u"Monitor of input or output",
+        /* 44 */  u"Uni-directional output",
+
+        // Subcapabilities of IODIR, DTAPI_CAP_INPUT
+        /* 45 */  u"Get antenna signal from another port",
+
+        // Subcapabilities of IODIR, DTAPI_CAP_OUTPUT
+        /* 46 */  u"Double buffered output",
+        /* 47 */  u"Loop-through of DVB-S2 in L3-frames",
+        /* 48 */  u"Loop-through of an DVB-S(2) input",
+        /* 49 */  u"Loop-through of another input",
+
+        // Capability group IOPROPS - Miscellaneous I/O properties
+        /* 50 */  u"ASI output signal can be inverted",
+        /* 51 */  u"Slaved genlock reference",
+        /* 52 */  u"Huffman coding for SDI",
+        /* 53 */  u"Network port supports failover",
+        /* 54 */  u"L3-frame mode",
+        /* 55 */  u"Matrix API support",
+        /* 56 */  u"High-level Matrix API support",
+        /* 57 */  u"Raw ASI",
+        /* 58 */  u"10-bit network byte order",
+        /* 59 */  u"SDI timestamping",
+        /* 60 */  u"64-bit timestamping",
+        /* 61 */  u"Transparent mode",
+        /* 62 */  u"MPEG-2 transport stream",
+        /* 63 */  u"Transmit on timestamp",
+        /* 64 */  u"Virtual port, no physical connection",
+
+        // Capability group IOSTD - I/O standard
+        /* 65 */  u"12G-SDI",
+        /* 66 */  u"3G-SDI",
+        /* 67 */  u"6G-SDI",
+        /* 68 */  u"DVB-ASI transport stream",
+        /* 69 */  u"Audio/video encoder",
+        /* 70 */  u"Demodulation",
+        /* 71 */  u"1PPS and 10MHz GPS-clock input",
+        /* 72 */  u"HDMI",
+        /* 73 */  u"HD-SDI",
+        /* 74 */  u"IF A/D converter",
+        /* 75 */  u"Transport stream over IP",
+        /* 76 */  u"Modulator output",
+        /* 77 */  u"Phase noise injection",
+        /* 78 */  u"RS422 port",
+        /* 79 */  u"SDI receiver",
+        /* 80 */  u"SD-SDI",
+        /* 81 */  u"DVB-SPI transport stream",
+        /* 82 */  u"SD-SDI on a parallel port",
+
+        // Subcapabilities of IOSTD, DTAPI_CAP_12GSDI
+        /* 83 */  u"2160p/50 lvl A",
+        /* 84 */  u"2160p/50 lvl B",
+        /* 85 */  u"2160p/59.94 lvl A",
+        /* 86 */  u"2160p/59.94 lvl B",
+        /* 87 */  u"2160p/60 lvl A",
+        /* 88 */  u"2160p/60 lvl B",
+
+        // Subcapabilities of IOSTD, DTAPI_CAP_3GSDI
+        /* 89 */  u"1080p/50 lvl A",
+        /* 90 */  u"1080p/50 lvl B",
+        /* 91 */  u"1080p/59.94 lvl A",
+        /* 92 */  u"1080p/59.94 lvl B",
+        /* 93 */  u"1080p/60 lvl A",
+        /* 94 */  u"1080p/60 lvl B",
+
+        // Subcapabilities of IOSTD, DTAPI_CAP_6GSDI
+        /* 95 */  u"2160p/23.98",
+        /* 96 */  u"2160p/24",
+        /* 97 */  u"2160p/25",
+        /* 98 */  u"2160p/29.97",
+        /* 99 */  u"2160p/30",
+
+        // Subcapabilities of IOSTD, DTAPI_CAP_HDSDI
+        /* 100 */ u"1080i/50",
+        /* 101 */ u"1080i/59.94",
+        /* 102 */ u"1080i/60",
+        /* 103 */ u"1080p/23.98",
+        /* 104 */ u"1080p/24",
+        /* 105 */ u"1080p/25",
+        /* 106 */ u"1080p/29.97",
+        /* 107 */ u"1080p/30",
+        /* 108 */ u"1080psf/23.98",
+        /* 109 */ u"1080psf/24",
+        /* 110 */ u"1080psf/25",
+        /* 111 */ u"1080psf/29.97",
+        /* 112 */ u"1080psf/30",
+        /* 113 */ u"720p/23.98",
+        /* 114 */ u"720p/24",
+        /* 115 */ u"720p/25",
+        /* 116 */ u"720p/29.97",
+        /* 117 */ u"720p/30",
+        /* 118 */ u"720p/50",
+        /* 119 */ u"720p/59.94",
+        /* 120 */ u"720p/60",
+
+        // Subcapabilities of IOSTD, DTAPI_CAP_SDI
+        /* 121 */ u"525i/59.94",
+        /* 122 */ u"625i/50",
+
+        // Subcapabilities of IOSTD, DTAPI_CAP_SPISDI
+        /* 123 */ u"SPI 525i/59.94",
+        /* 124 */ u"SPI 625i/50",
+
+        // Capability group PWRMODE - Power mode
+        /* 125 */ u"High-quality modulation",
+        /* 126 */ u"Low-power mode",
+
+        // Capability group MODSTD - Modulation standards
+        /* 127 */ u"ATSC 8-VSB modulation",
+        /* 128 */ u"ATSC3.0 modulation",
+        /* 129 */ u"CMMB modulation",
+        /* 130 */ u"DAB modulation",
+        /* 131 */ u"DTMB modulation",
+        /* 132 */ u"DVB-C2 modulation",
+        /* 133 */ u"DVB-S modulation",
+        /* 134 */ u"DVB-S2 modulation",
+        /* 135 */ u"DVB-S2X modulation",
+        /* 136 */ u"DVB-T modulation",
+        /* 137 */ u"DVB-T2 modulation",
+        /* 138 */ u"GOLD for modulators",
+        /* 139 */ u"Eight-channel HW modulation",
+        /* 140 */ u"I/Q sample modulation",
+        /* 141 */ u"ISDB-S modulation",
+        /* 142 */ u"ISDB-T modulation",
+        /* 143 */ u"ISDB-Tmm modulation",
+        /* 144 */ u"ATSC-MH modulation",
+        /* 145 */ u"QAM-A modulation",
+        /* 146 */ u"QAM-B modulation",
+        /* 147 */ u"QAM-C modulation",
+        /* 148 */ u"SW multi-channel modulation",
+        /* 149 */ u"T2MI transmission",
+        /* 150 */ u"DVB-T2 single PLP modulation",
+
+        // Capability group MODPROPS - Modulation properties
+        /* 151 */ u"Adjustable output level",
+        /* 152 */ u"Channel simulation",
+        /* 153 */ u"Continuous wave",
+        /* 154 */ u"Digital I/Q sample output",
+        /* 155 */ u"DVB carrier ID ",
+        /* 156 */ u"IF output",
+        /* 157 */ u"Mute RF output signal",
+        /* 158 */ u"Adjustable roll-off factor",
+        /* 159 */ u"DVB-S2 16-APSK/32-APSK",
+        /* 160 */ u"AWGN insertion",
+        /* 161 */ u"16MHz bandwidth mode",
+        /* 162 */ u"SNF operation",
+
+        // Capability group RFCLKSEL - RF clock source selection
+        /* 163 */ u"External RF clock input",
+        /* 164 */ u"Internal RF clock reference",
+
+        // Capability group RXSTD - Receiver standards
+        /* 165 */ u"ATSC 8-VSB reception",
+        /* 166 */ u"ATSC3.0 reception",
+        /* 167 */ u"CMMB reception",
+        /* 168 */ u"DAB reception",
+        /* 169 */ u"DTMB reception",
+        /* 170 */ u"DVB-C2 reception",
+        /* 171 */ u"DVB-S reception",
+        /* 172 */ u"DVB-S2 reception",
+        /* 173 */ u"DVB-T reception",
+        /* 174 */ u"DVB-T2 reception",
+        /* 175 */ u"GOLD for receivers",
+        /* 176 */ u"I/Q sample reception",
+        /* 177 */ u"ISDB-S reception",
+        /* 178 */ u"ISDB-T reception",
+        /* 179 */ u"ATSC-MH reception",
+        /* 180 */ u"QAM-A reception",
+        /* 181 */ u"QAM-B reception",
+        /* 182 */ u"QAM-C reception",
+        /* 183 */ u"T2MI reception",
+
+        // Capability group SPICLKSEL - Parallel port clock source selection
+        /* 184 */ u"External clock input",
+        /* 185 */ u"Internal clock reference",
+
+        // Capability group SPIMODE - Parallel port mode
+        /* 186 */ u"SPI fixed clock with valid signal",
+        /* 187 */ u"SPI DVB mode",
+        /* 188 */ u"SPI serial 8-bit mode",
+        /* 189 */ u"SPI serial 10-bit mode",
+
+        // Capability group SPISTD - Parallel port I/O standard
+        /* 190 */ u"LVDS1",
+        /* 191 */ u"LVDS2",
+        /* 192 */ u"LVTTL",
+
+        // Capability group TSRATESEL - Transport-stream rate selection
+        /* 193 */ u"External TS rate clock input",
+        /* 194 */ u"External TS rate clock with ratio",
+        /* 195 */ u"Internal TS rate clock reference",
+        /* 196 */ u"Lock TS rate to input port",
+
+        // Capability group VIDENC - Supported video standards
+        /* 197 */ u"H.264 video encoder",
+        /* 198 */ u"MPEG2 video encoder",
+
+        #define TS_DT_CAPS_LAST 198   // UPDATE WHEN NEW LINES ARE ADDED
+    };
+
+    static const int names_count = int(sizeof(names) / sizeof(names[0]));
+    assert(names_count == TS_DT_CAPS_LAST + 1);
+
+    const UChar* const str = index < 0 || index >= names_count ? 0 : names[index];
+    return str == 0 || str[0] == 0 ? UString::Decimal(index) : UString(str);
+}
+
+
+//-----------------------------------------------------------------------------
+// Get a string description of a set of Dektec capabilities
+//-----------------------------------------------------------------------------
+
+ts::UString ts::DektecDevice::DtCapsToString(const Dtapi::DtCaps& flags)
+{
+    // Normally, this function should be as simple as;
+    // return UString::FromUTF8(flags.ToString());
+    
+    // However, there are several issues.
+    //
+    // With GCC, starting with GCC 5.1, the ABI of std::string has changed
+    // (see https://gcc.gnu.org/onlinedocs/libstdc++/manual/using_dual_abi.html).
+    // Up to now, DTAPI is compiled only with an old version of the compiler (pre 5.1)
+    // and we cannot use methods returning std::string.
+    //
+    // With Visual Studio, using a DTU-315 Universal modulator, the method
+    // Dtapi::DtCaps::ToString() returns only "LBAND", which is only the first value.
+    //
+    // As a consequence, we build the list manually.
+    // As of DTAPI 5.24, there are no more than 256 capabilities.
+
+    UString caps;
+    for (int c = 0; c < 256; c++) {
+        if ((flags & Dtapi::DtCaps(c)) != 0) {
+            if (!caps.empty()) {
+                caps += u", ";
+            }
+            caps += DtCapsIndexToString(c);
+        }
+    }
+    return caps;
 }
 
 
