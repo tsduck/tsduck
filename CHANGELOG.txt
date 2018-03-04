@@ -10,6 +10,9 @@ Version 3.9
 
 - Improved display of Dektec devices capabilities.
 
+- In all TSDuck commands, parameters can be read from a file using the syntax
+  "@filename" anywhere in the command line. See the user's guide for details.
+
 - Bug fix on Windows: Command "tsversion --upgrade" failed because tsversion.exe
   and tsduck.dll were locked by upgrade command.
 

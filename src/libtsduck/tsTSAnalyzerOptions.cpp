@@ -230,18 +230,18 @@ void ts::TSAnalyzerOptions::getOptions (const Args& args)
 // Overriden analysis methods.
 //----------------------------------------------------------------------------
 
-bool ts::TSAnalyzerOptions::analyze(int argc, char* argv[])
+bool ts::TSAnalyzerOptions::analyze(int argc, char* argv[], bool processRedirections)
 {
-    const bool ok = Args::analyze(argc, argv);
+    const bool ok = Args::analyze(argc, argv, processRedirections);
     if (ok) {
         getOptions(*this);
     }
     return ok;
 }
 
-bool ts::TSAnalyzerOptions::analyze(const UString& app_name, const UStringVector& arguments)
+bool ts::TSAnalyzerOptions::analyze(const UString& app_name, const UStringVector& arguments, bool processRedirections)
 {
-    const bool ok = Args::analyze(app_name, arguments);
+    const bool ok = Args::analyze(app_name, arguments, processRedirections);
     if (ok) {
         getOptions(*this);
     }

@@ -101,7 +101,8 @@ ts::tsp::PluginExecutor::PluginExecutor(Options* options,
 
     // Submit the plugin arguments for analysis.
     // The process should terminate on argument error.
-    _shlib->analyze(pl_options->name, pl_options->args);
+    // Do not process argument redirection, already done at tsp command level.
+    _shlib->analyze(pl_options->name, pl_options->args, false);
     assert(_shlib->valid());
 
     // Define thread stack size

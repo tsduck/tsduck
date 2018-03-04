@@ -70,19 +70,19 @@ ts::tsp::Options::Options(int argc, char *argv[]) :
     output(),
     plugins()
 {
-    option(u"add-input-stuffing",       'a', Args::STRING);
-    option(u"bitrate",                  'b', Args::POSITIVE);
-    option(u"bitrate-adjust-interval",   0,  Args::POSITIVE);
-    option(u"buffer-size-mb",            0,  Args::POSITIVE);
+    option(u"add-input-stuffing", 'a', Args::STRING);
+    option(u"bitrate", 'b', Args::POSITIVE);
+    option(u"bitrate-adjust-interval", 0, Args::POSITIVE);
+    option(u"buffer-size-mb", 0, Args::POSITIVE);
     option(u"ignore-joint-termination", 'i');
-    option(u"list-processors",          'l');
-    option(u"log-message-count",         0,  Args::POSITIVE);
-    option(u"max-flushed-packets",       0,  Args::POSITIVE);
-    option(u"max-input-packets",         0,  Args::POSITIVE);
-    option(u"no-realtime-clock",         0); // was a temporary workaround, now ignored
-    option(u"monitor",                  'm');
-    option(u"synchronous-log",          's');
-    option(u"timed-log",                't');
+    option(u"list-processors", 'l');
+    option(u"log-message-count", 0, Args::POSITIVE);
+    option(u"max-flushed-packets", 0, Args::POSITIVE);
+    option(u"max-input-packets", 0, Args::POSITIVE);
+    option(u"no-realtime-clock", 0); // was a temporary workaround, now ignored
+    option(u"monitor", 'm');
+    option(u"synchronous-log", 's');
+    option(u"timed-log", 't');
 
 #if defined(TS_WINDOWS)
 #define HELP_SHLIB    u"DLL"
@@ -244,12 +244,23 @@ ts::tsp::Options::Options(int argc, char *argv[]) :
             u"corresponding plug-in. Try \"tsp {-I|-O|-P} name --help\" to display the\n"
             u"help text for a specific plug-in.\n");
 
+    // Load arguments and process redirections.
+    const UString app_name(argc > 0 ? BaseName(UString::FromUTF8(argv[0]), TS_EXECUTABLE_SUFFIX) : UString());
+    UStringVector args;
+    if (argc > 1) {
+        UString::Assign(args, argc - 1, argv + 1);
+    }
+    if (!processArgsRedirection(args)) {
+        exitOnError();
+        return;
+    }
+
     // Locate the first processor option. All preceeding options are tsp options and must be analyzed.
     PluginType plugin_type;
-    int plugin_index = nextProcOpt(argc, argv, 0, plugin_type);
+    size_t plugin_index = nextProcOpt(args, 0, plugin_type);
 
-    // Analyze the tsp command, not including the plugin options
-    analyze(plugin_index, argv);
+    // Analyze the tsp command, not including the plugin options, not processing redirections.
+    analyze(app_name, UStringVector(args.begin(), args.begin() + plugin_index), false);
 
     timed_log = present(u"timed-log");
     list_proc = present(u"list-processors");
@@ -263,15 +274,8 @@ ts::tsp::Options::Options(int argc, char *argv[]) :
     log_msg_count = intValue<size_t>(u"log-message-count", AsyncReport::MAX_LOG_MESSAGES);
     ignore_jt = present(u"ignore-joint-termination");
 
-    if (present(u"add-input-stuffing")) {
-        UString stuff(value(u"add-input-stuffing"));
-        UString::size_type slash = stuff.find(u"/");
-        bool valid = slash != UString::NPOS &&
-            stuff.substr(0, slash).toInteger(instuff_nullpkt) &&
-            stuff.substr(slash + 1).toInteger(instuff_inpkt);
-        if (!valid) {
-            error(u"invalid value for --add-input-stuffing, use \"nullpkt/inpkt\" format");
-        }
+    if (present(u"add-input-stuffing") && !value(u"add-input-stuffing").scan(u"%d/%d", {&instuff_nullpkt, &instuff_inpkt})) {
+        error(u"invalid value for --add-input-stuffing, use \"nullpkt/inpkt\" format");
     }
 
     // The first processor is always the input.
@@ -289,23 +293,25 @@ ts::tsp::Options::Options(int argc, char *argv[]) :
 
     // Locate all plugins
 
-    plugins.reserve(argc);
+    plugins.reserve(args.size());
     bool got_input = false;
     bool got_output = false;
 
-    while (plugin_index < argc) {
+    while (plugin_index < args.size()) {
+
+        // Check that a plugin name is present after the processor option.
+
+        if (plugin_index >= args.size() - 1) {
+            error(u"missing plugin name for option %s", {args[plugin_index]});
+            break;
+        }
 
         // Locate plugin description, seach for next plugin
 
-        int start = plugin_index;
+        const size_t start = plugin_index;
         PluginType type = plugin_type;
-        plugin_index = nextProcOpt(argc, argv, plugin_index, plugin_type);
+        plugin_index = nextProcOpt(args, plugin_index + 2, plugin_type);
         PluginOptions* opt = 0;
-
-        if (start >= argc - 1) {
-            error(u"missing plugin name for option %s", {argv[start]});
-            break;
-        }
 
         switch (type) {
             case PROCESSOR:
@@ -332,8 +338,9 @@ ts::tsp::Options::Options(int argc, char *argv[]) :
         }
 
         opt->type = type;
-        opt->name = UString::FromUTF8(argv[start+1]);
-        UString::Assign(opt->args, plugin_index - start - 2, argv + start + 2);
+        opt->name = args[start + 1];
+        opt->args.clear();
+        opt->args.insert(opt->args.begin(), args.begin() + start + 2, args.begin() + plugin_index);
     }
 
     // Debug display
@@ -350,24 +357,25 @@ ts::tsp::Options::Options(int argc, char *argv[]) :
 // Search the next plugin option.
 //----------------------------------------------------------------------------
 
-int ts::tsp::Options::nextProcOpt(int argc, char *argv[], int index, PluginType& type)
+size_t ts::tsp::Options::nextProcOpt(const UStringVector& args, size_t index, PluginType& type)
 {
-    while (++index < argc) {
-        const std::string arg(argv[index]);
-        if (arg == "-I" || arg == "--input") {
+    while (index < args.size()) {
+        const UString& arg(args[index]);
+        if (arg == u"-I" || arg == u"--input") {
             type = INPUT;
             return index;
         }
-        if (arg == "-O" || arg == "--output") {
+        if (arg == u"-O" || arg == u"--output") {
             type = OUTPUT;
             return index;
         }
-        if (arg == "-P" || arg == "--processor") {
+        if (arg == u"-P" || arg == u"--processor") {
             type = PROCESSOR;
             return index;
         }
+        index++;
     }
-    return std::min(argc, index);
+    return std::min(args.size(), index);
 }
 
 

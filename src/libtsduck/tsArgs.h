@@ -493,12 +493,15 @@ namespace ts {
         //! @param [in] argv Arguments from command line.
         //! The application name is in argv[0].
         //! The subsequent elements contain the arguments.
+        //! @param [in] processRedirections If true (the default), process command line arguments
+        //! redirection. All lines with the form @c '\@filename' are replaced by the content
+        //! of @a filename.
         //! @return By default, always return true or the application is automatically
         //! terminated in case of error. If some flags prevent the termination
         //! of the application, return @c true if the command is correct, @c false
         //! if the command is incorrect or @c -\-help or @c -\-version is specified.
         //!
-        virtual bool analyze(int argc, char* argv[]);
+        virtual bool analyze(int argc, char* argv[], bool processRedirections = true);
 
         //!
         //! Load command arguments and analyze them.
@@ -510,12 +513,15 @@ namespace ts {
         //!
         //! @param [in] app_name Application name.
         //! @param [in] arguments Arguments from command line.
+        //! @param [in] processRedirections If true (the default), process command line arguments
+        //! redirection. All lines with the form @c '\@filename' are replaced by the content
+        //! of @a filename.
         //! @return By default, always return true or the application is automatically
         //! terminated in case of error. If some flags prevent the termination
         //! of the application, return @c true if the command is correct, @c false
         //! if the command is incorrect or @c -\-help or @c -\-version is specified.
         //!
-        virtual bool analyze(const UString& app_name, const UStringVector& arguments);
+        virtual bool analyze(const UString& app_name, const UStringVector& arguments, bool processRedirections = true);
 
         //!
         //! Check if options were correct during the last command line analysis.
@@ -772,6 +778,17 @@ namespace ts {
         // Inherited from Report.
         virtual void raiseMaxSeverity(int level) override;
 
+        //!
+        //! Process argument redirection using @c '\@' on a vector of strings.
+        //!
+        //! @param [in,out] args A vector of strings. All lines of the form @c '\@filename' are
+        //! replaced by the content of the given file. A double @c '\@\@' at the beginning of a line
+        //! is replaced by a single @c '\@' without reading a file.
+        //! @return True on success, false on error (non existent file for instance). Errors are
+        //! reported though this object.
+        //!
+        bool processArgsRedirection(UStringVector& args);
+
     protected:
         // Display an error message, as if it was produced during command line analysis.
         // Mark this instance as error if severity <= Severity::Error.
@@ -843,7 +860,7 @@ namespace ts {
         static const UChar* const THOUSANDS_SEPARATORS;
 
         // Common code: analyze the command line.
-        bool analyze();
+        bool analyze(bool processRedirections);
 
         // Add a new option.
         void addOption(const IOption& opt);

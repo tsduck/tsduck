@@ -33,6 +33,7 @@
 
 #include "tsArgs.h"
 #include "tsReportBuffer.h"
+#include "tsSysUtils.h"
 #include "tsVersion.h"
 #include "utestCppUnitTest.h"
 TSDUCK_SOURCE;
@@ -66,6 +67,7 @@ public:
     void testValidEnum();
     void testBitMask();
     void testGatherParameters();
+    void testRedirection();
 
     CPPUNIT_TEST_SUITE(ArgsTest);
     CPPUNIT_TEST(testAccessors);
@@ -86,7 +88,12 @@ public:
     CPPUNIT_TEST(testValidEnum);
     CPPUNIT_TEST(testBitMask);
     CPPUNIT_TEST(testGatherParameters);
+    CPPUNIT_TEST(testRedirection);
     CPPUNIT_TEST_SUITE_END();
+
+private:
+    ts::UString _tempFile1;
+    ts::UString _tempFile2;
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(ArgsTest);
@@ -99,11 +106,15 @@ CPPUNIT_TEST_SUITE_REGISTRATION(ArgsTest);
 // Test suite initialization method.
 void ArgsTest::setUp()
 {
+    _tempFile1 = ts::TempFile();
+    _tempFile2 = ts::TempFile();
 }
 
 // Test suite cleanup method.
 void ArgsTest::tearDown()
 {
+    ts::DeleteFile(_tempFile1);
+    ts::DeleteFile(_tempFile2);
 }
 
 
@@ -594,4 +605,30 @@ void ArgsTest::testGatherParameters()
     CPPUNIT_ASSERT(args.valid());
     args.invalidate();
     CPPUNIT_ASSERT(!args.valid());
+}
+
+// Test case: redirect parameters from file
+void ArgsTest::testRedirection()
+{
+    TestArgs args(&CERR);
+
+    CPPUNIT_ASSERT(ts::UString::Save(ts::UStringVector({u"param2", u"--opt1", u"--opt2", u"@@foo"}), _tempFile1));
+    CPPUNIT_ASSERT(ts::UString::Save(ts::UStringVector({u"--opt4", u"3", u"@" + _tempFile1}), _tempFile2));
+    
+    CPPUNIT_ASSERT(args.analyze(u"test", {u"param1", u"@" + _tempFile2, u"--opt4", u"5"}));
+    CPPUNIT_ASSERT(args.present(u""));
+    CPPUNIT_ASSERT(args.present(u"opt1"));
+    CPPUNIT_ASSERT(args.present(u"opt2"));
+    CPPUNIT_ASSERT(!args.present(u"opt3"));
+    CPPUNIT_ASSERT(args.present(u"opt4"));
+
+    CPPUNIT_ASSERT_EQUAL(size_t(2), args.count(u""));
+    CPPUNIT_ASSERT_EQUAL(size_t(1), args.count(u"opt1"));
+    CPPUNIT_ASSERT_EQUAL(size_t(1), args.count(u"opt2"));
+    CPPUNIT_ASSERT_EQUAL(size_t(2), args.count(u"opt4"));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"param1", args.value(u"", u"", 0));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"param2", args.value(u"", u"", 1));
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"@foo", args.value(u"opt2"));
+    CPPUNIT_ASSERT_EQUAL(3, args.intValue<int>(u"opt4", 0, 0));
+    CPPUNIT_ASSERT_EQUAL(5, args.intValue<int>(u"opt4", 0, 1));
 }
