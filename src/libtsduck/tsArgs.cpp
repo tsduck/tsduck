@@ -744,8 +744,11 @@ void ts::Args::processHelp()
         pager.write(u"\n", *this);
         pager.close(*this);
     }
-    else {
+    else if ((_flags & HELP_ON_THIS) != 0) {
         info(text);
+    }
+    else {
+        std::cerr << text << std::endl;
     }
 
     // Exit application, unless specified otherwise.

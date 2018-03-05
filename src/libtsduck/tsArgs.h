@@ -300,6 +300,7 @@ namespace ts {
                                           //!< Once the first parameter is found, all subsequent elements on
                                           //!< the command line are considered as parameters, even if they
                                           //!< start with '-' or '-\-'.
+            HELP_ON_THIS       = 0x0020,  //!< Display help using info() on this object, not standard error.
         };
 
         //!

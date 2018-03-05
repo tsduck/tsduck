@@ -144,8 +144,8 @@ bool ts::AnalyzePlugin::start()
     _output_interval = MilliSecPerSec * intValue<MilliSecond>(u"interval", 0);
     _multiple_output = present(u"multiple-files");
     _output = _output_name.empty() ? &std::cout : &_output_stream;
-    _analyzer_options.getOptions (*this);
-    _analyzer.setAnalysisOptions (_analyzer_options);
+    _analyzer_options.getOptions(*this);
+    _analyzer.setAnalysisOptions(_analyzer_options);
     _current_packet = 0;
 
     // Create the output file. Note that this file is used only in the stop

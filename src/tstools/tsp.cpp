@@ -128,7 +128,7 @@ int main(int argc, char *argv[])
             pager.close(opt);
         }
         else {
-            opt.info(text);
+            std::cerr << text << std::endl;
         }
         return EXIT_SUCCESS;
     }

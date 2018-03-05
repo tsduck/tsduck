@@ -42,8 +42,8 @@ TSDUCK_SOURCE;
 
 // Displayable names of plugin types.
 const ts::Enumeration ts::tsp::Options::PluginTypeNames({
-    {u"input", ts::tsp::Options::INPUT},
-    {u"output", ts::tsp::Options::OUTPUT},
+    {u"input",            ts::tsp::Options::INPUT},
+    {u"output",           ts::tsp::Options::OUTPUT},
     {u"packet processor", ts::tsp::Options::PROCESSOR},
 });
 
@@ -70,19 +70,19 @@ ts::tsp::Options::Options(int argc, char *argv[]) :
     output(),
     plugins()
 {
-    option(u"add-input-stuffing", 'a', Args::STRING);
-    option(u"bitrate", 'b', Args::POSITIVE);
-    option(u"bitrate-adjust-interval", 0, Args::POSITIVE);
-    option(u"buffer-size-mb", 0, Args::POSITIVE);
+    option(u"add-input-stuffing",       'a', Args::STRING);
+    option(u"bitrate",                  'b', Args::POSITIVE);
+    option(u"bitrate-adjust-interval",   0,  Args::POSITIVE);
+    option(u"buffer-size-mb",            0,  Args::POSITIVE);
     option(u"ignore-joint-termination", 'i');
-    option(u"list-processors", 'l');
-    option(u"log-message-count", 0, Args::POSITIVE);
-    option(u"max-flushed-packets", 0, Args::POSITIVE);
-    option(u"max-input-packets", 0, Args::POSITIVE);
-    option(u"no-realtime-clock", 0); // was a temporary workaround, now ignored
-    option(u"monitor", 'm');
-    option(u"synchronous-log", 's');
-    option(u"timed-log", 't');
+    option(u"list-processors",          'l');
+    option(u"log-message-count",         0,  Args::POSITIVE);
+    option(u"max-flushed-packets",       0,  Args::POSITIVE);
+    option(u"max-input-packets",         0,  Args::POSITIVE);
+    option(u"no-realtime-clock",         0); // was a temporary workaround, now ignored
+    option(u"monitor",                  'm');
+    option(u"synchronous-log",          's');
+    option(u"timed-log",                't');
 
 #if defined(TS_WINDOWS)
 #define HELP_SHLIB    u"DLL"
@@ -280,19 +280,16 @@ ts::tsp::Options::Options(int argc, char *argv[]) :
 
     // The first processor is always the input.
     // The default input is the standard input file.
-
     input.type = INPUT;
     input.name = u"file";
     input.args.clear();
 
     // The default output is the standard output file.
-
     output.type = OUTPUT;
     output.name = u"file";
     output.args.clear();
 
     // Locate all plugins
-
     plugins.reserve(args.size());
     bool got_input = false;
     bool got_output = false;
@@ -300,14 +297,12 @@ ts::tsp::Options::Options(int argc, char *argv[]) :
     while (plugin_index < args.size()) {
 
         // Check that a plugin name is present after the processor option.
-
         if (plugin_index >= args.size() - 1) {
             error(u"missing plugin name for option %s", {args[plugin_index]});
             break;
         }
 
-        // Locate plugin description, seach for next plugin
-
+        // Locate plugin description, search for next plugin
         const size_t start = plugin_index;
         PluginType type = plugin_type;
         plugin_index = nextProcOpt(args, plugin_index + 2, plugin_type);
