@@ -88,6 +88,7 @@ ts::TSAnalyzer::TSAnalyzer(BitRate bitrate_hint) :
     _preceding_suspects(0),
     _min_error_before_suspect(1),
     _max_consecutive_suspects(1),
+    _default_charset(0),
     _demux(this, this),
     _pes_demux(this),
     _t2mi_demux(this)
@@ -707,8 +708,8 @@ void ts::TSAnalyzer::analyzeSDT(const SDT& sdt)
         svp->service_type = it->second.serviceType();
 
         // Replace names only if they are not empty.
-        const UString provider(it->second.providerName());
-        const UString name(it->second.serviceName());
+        const UString provider(it->second.providerName(_default_charset));
+        const UString name(it->second.serviceName(_default_charset));
         if (!provider.empty()) {
             svp->provider = provider;
         }

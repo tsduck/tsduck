@@ -44,6 +44,7 @@ void ts::TSAnalyzerReport::setAnalysisOptions(const TSAnalyzerOptions& opt)
 {
     setMinErrorCountBeforeSuspect(opt.suspect_min_error_count);
     setMaxConsecutiveSuspectCount(opt.suspect_max_consecutive);
+    setDefaultCharacterSet(opt.default_charset);
 }
 
 

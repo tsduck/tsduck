@@ -50,13 +50,6 @@ namespace ts {
         CRC32() : _fcs(0xFFFFFFFF) {}
 
         //!
-        //! Copy constructor.
-        //! @param [in] c Other instance to copy. The current computation state of this
-        //! object is the same as @a c.
-        //!
-        CRC32(const CRC32& c) : _fcs(c._fcs) {}
-
-        //!
         //! Constructor, compute the CRC32 of a data area.
         //! @param [in] data Address of area to analyze.
         //! @param [in] size Size in bytes of area to analyze.
@@ -89,18 +82,6 @@ namespace ts {
         //! @return The value of the CRC32 as computed so far.
         //!
         operator uint32_t() const {return _fcs;}
-
-        //!
-        //! Assigment operator.
-        //! @param [in] c Other instance to copy. The current computation state of this
-        //! object is the same as @a c.
-        //! @return A reference to this object.
-        //!
-        CRC32& operator=(const CRC32& c)
-        {
-            _fcs = c._fcs;
-            return *this;
-        }
 
         //!
         //! Comparison operator with another CRC32 instance.

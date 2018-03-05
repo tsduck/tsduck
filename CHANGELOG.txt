@@ -10,6 +10,8 @@ Version 3.9
 
 - Improved display of Dektec devices capabilities.
 
+- Added option --default-charset to tsanalyze and plugin analyze.
+
 - In all TSDuck commands, parameters can be read from a file using the syntax
   "@filename" anywhere in the command line. See the user's guide for details.
 

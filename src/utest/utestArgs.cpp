@@ -46,6 +46,8 @@ TSDUCK_SOURCE;
 class ArgsTest: public CppUnit::TestFixture
 {
 public:
+    ArgsTest();
+
     virtual void setUp() override;
     virtual void tearDown() override;
 
@@ -103,6 +105,13 @@ CPPUNIT_TEST_SUITE_REGISTRATION(ArgsTest);
 // Initialization.
 //----------------------------------------------------------------------------
 
+// Constructor.
+ArgsTest::ArgsTest() :
+    _tempFile1(),
+    _tempFile2()
+{
+}
+
 // Test suite initialization method.
 void ArgsTest::setUp()
 {
@@ -152,7 +161,8 @@ void ArgsTest::testAccessors()
 void ArgsTest::testHelp()
 {
     ts::ReportBuffer<> log;
-    ts::Args args(u"{description}", u"{syntax}", u"{help}", ts::Args::NO_EXIT_ON_ERROR | ts::Args::NO_EXIT_ON_HELP | ts::Args::NO_EXIT_ON_VERSION);
+    ts::Args args(u"{description}", u"{syntax}", u"{help}",
+                  ts::Args::NO_EXIT_ON_ERROR | ts::Args::NO_EXIT_ON_HELP | ts::Args::NO_EXIT_ON_VERSION | ts::Args::HELP_ON_THIS);
     args.redirectReport(&log);
 
     CPPUNIT_ASSERT(!args.analyze(u"test", {u"--help"}));
@@ -614,7 +624,7 @@ void ArgsTest::testRedirection()
 
     CPPUNIT_ASSERT(ts::UString::Save(ts::UStringVector({u"param2", u"--opt1", u"--opt2", u"@@foo"}), _tempFile1));
     CPPUNIT_ASSERT(ts::UString::Save(ts::UStringVector({u"--opt4", u"3", u"@" + _tempFile1}), _tempFile2));
-    
+
     CPPUNIT_ASSERT(args.analyze(u"test", {u"param1", u"@" + _tempFile2, u"--opt4", u"5"}));
     CPPUNIT_ASSERT(args.present(u""));
     CPPUNIT_ASSERT(args.present(u"opt1"));

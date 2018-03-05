@@ -128,9 +128,11 @@ namespace ts {
 
         //!
         //! Copy constructor.
+        //! Use default implementation, just tell the compiler we understand
+        //! the consequences of copying a pointer member.
         //! @param [in] other The other instance to copy.
         //!
-        AbstractSignalization(const AbstractSignalization& other);
+        AbstractSignalization(const AbstractSignalization& other) = default;
 
         //!
         //! Assignment operator.

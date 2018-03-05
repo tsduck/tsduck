@@ -72,12 +72,6 @@ namespace ts {
         Time() : _value(0) {}
 
         //!
-        //! Copy constructor.
-        //! @param [in] other Another time from which to initialize this object.
-        //!
-        Time(const Time& other) : _value(other._value) {}
-
-        //!
         //! Constructor from broken-down date fields.
         //! @param [in] year Number of years.
         //! @param [in] month Number of months (1 to 12).
@@ -112,17 +106,6 @@ namespace ts {
         Time operator-(const MilliSecond& duration) const
         {
             return Time(_value - duration * TICKS_PER_MS);
-        }
-
-        //!
-        //! Assigment operator.
-        //! @param [in] other Another time from which to initialize this object.
-        //! @return A reference to this object.
-        //!
-        Time& operator=(const Time& other)
-        {
-            _value = other._value;
-            return *this;
         }
 
         //!

@@ -32,7 +32,7 @@
 
 
 //----------------------------------------------------------------------------
-// Constructors.
+// Constructors and assignments.
 //----------------------------------------------------------------------------
 
 ts::AbstractSignalization::AbstractSignalization(const UChar* xml_name) :
@@ -41,17 +41,13 @@ ts::AbstractSignalization::AbstractSignalization(const UChar* xml_name) :
 {
 }
 
-ts::AbstractSignalization::AbstractSignalization(const AbstractSignalization& other) :
-    _xml_name(other._xml_name),  // Normally a pointer to constant static string.
-    _is_valid(other._is_valid)
-{
-}
-
-
 ts::AbstractSignalization& ts::AbstractSignalization::operator=(const AbstractSignalization& other)
 {
     if (this != &other) {
-        assert((_xml_name == 0 && other._xml_name == 0) || (_xml_name != 0 && other._xml_name != 0 && UString(_xml_name) == UString(other._xml_name)));
+        // Don't copy the pointer to XML name, this is a const value.
+        // In debug mode, check that we have the same XML name.
+        assert((_xml_name == 0 && other._xml_name == 0) ||
+               (_xml_name != 0 && other._xml_name != 0 && UString(_xml_name) == UString(other._xml_name)));
         _is_valid = other._is_valid;
     }
     return *this;

@@ -118,6 +118,16 @@ namespace ts {
         }
 
         //!
+        //! Set the default DVB character set to use (for incorrect signalization only).
+        //! @param [in] charset The DVB character set to use when no charset code is
+        //! present and the signalisation is incorrect. Initially set to none.
+        //!
+        void setDefaultCharacterSet(const DVBCharset* charset)
+        {
+            _default_charset = charset;
+        }
+
+        //!
         //! Get the list of service ids.
         //! @param [out] list The returned list of service ids.
         //!
@@ -481,15 +491,20 @@ namespace ts {
         virtual void handleTSPacket(T2MIDemux& demux, const T2MIPacket& t2mi, const TSPacket& ts) override;
 
         // TSAnalyzer private members (state data, used during analysis):
-        bool         _modified;                  // Internal data modified, need recomputeStatistics
-        uint64_t     _ts_bitrate_sum;            // Sum of all computed TS bitrates
-        uint64_t     _ts_bitrate_cnt;            // Number of computed TS bitrates
-        uint64_t     _preceding_errors;          // Number of contiguous invalid packets before current packet
-        uint64_t     _preceding_suspects;        // Number of contiguous suspects packets before current packet
-        uint64_t     _min_error_before_suspect;  // Required number of invalid packets before starting suspect
-        uint64_t     _max_consecutive_suspects;  // Max number of consecutive suspect packets before clearing suspect
-        SectionDemux _demux;                     // PSI tables analysis
-        PESDemux     _pes_demux;                 // Audio/video analysis
-        T2MIDemux    _t2mi_demux;                // T2-MI analysis
+        bool              _modified;                  // Internal data modified, need recomputeStatistics
+        uint64_t          _ts_bitrate_sum;            // Sum of all computed TS bitrates
+        uint64_t          _ts_bitrate_cnt;            // Number of computed TS bitrates
+        uint64_t          _preceding_errors;          // Number of contiguous invalid packets before current packet
+        uint64_t          _preceding_suspects;        // Number of contiguous suspects packets before current packet
+        uint64_t          _min_error_before_suspect;  // Required number of invalid packets before starting suspect
+        uint64_t          _max_consecutive_suspects;  // Max number of consecutive suspect packets before clearing suspect
+        const DVBCharset* _default_charset;           // Default DVB character set to use
+        SectionDemux      _demux;                     // PSI tables analysis
+        PESDemux          _pes_demux;                 // Audio/video analysis
+        T2MIDemux         _t2mi_demux;                // T2-MI analysis
+
+        // Inaccessible operations.
+        TSAnalyzer(const TSAnalyzer&) = delete;
+        TSAnalyzer& operator=(const TSAnalyzer&) = delete;
     };
 }

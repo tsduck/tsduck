@@ -60,16 +60,20 @@ namespace ts {
 
         //!
         //! Copy constructor.
+        //! Use default implementation, just tell the compiler we understand
+        //! the consequences of copying a pointer member.
         //! @param [in] other The other instance to copy.
         //!
-        TablesDisplayArgs(const TablesDisplayArgs& other);
+        TablesDisplayArgs(const TablesDisplayArgs& other) = default;
 
         //!
         //! Assignment operator.
+        //! Use default implementation, just tell the compiler we understand
+        //! the consequences of copying a pointer member.
         //! @param [in] other The other instance to copy.
         //! @return A reference to this object.
         //!
-        TablesDisplayArgs& operator=(const TablesDisplayArgs& other);
+        TablesDisplayArgs& operator=(const TablesDisplayArgs& other) = default;
 
         //!
         //! Virtual destructor.

@@ -46,6 +46,15 @@ void ts::TSAnalyzerOptions::setHelp(const UString& help)
         u"\n"
         u"Controlling analysis:\n"
         u"\n"
+        u"  --default-charset name\n"
+        u"      Default character set to use when interpreting DVB strings without\n"
+        u"      explicit character table code. According to DVB standard ETSI EN 300 468,\n"
+        u"      the default DVB character set is ISO-6937. However, some bogus\n"
+        u"      signalization may assume that the default character set is different,\n"
+        u"      typically the usual local character table for the region. This option\n"
+        u"      forces a non-standard character table. The available table names are:\n"
+        u"      " + UString::Join(DVBCharset::GetAllNames()).toSplitLines(74, UString(), UString(6, SPACE)) + u".\n"
+        u"\n"
         u"  --suspect-max-consecutive value\n"
         u"      Specifies the maximum number of consecutive \"suspect\" packets.\n"
         u"      The default value is 1. If set to zero, the suspect packet detection\n"
@@ -159,7 +168,8 @@ ts::TSAnalyzerOptions::TSAnalyzerOptions(const UString& description, const UStri
     prefix(),
     title(),
     suspect_min_error_count(1),
-    suspect_max_consecutive(1)
+    suspect_max_consecutive(1),
+    default_charset(0)
 {
     setHelp(help);
 
@@ -179,6 +189,7 @@ ts::TSAnalyzerOptions::TSAnalyzerOptions(const UString& description, const UStri
     option(u"title", 0, STRING);
     option(u"suspect-min-error-count", 0, UNSIGNED);
     option(u"suspect-max-consecutive", 0, UNSIGNED);
+    option(u"default-charset", 0, STRING);
 }
 
 
@@ -187,7 +198,7 @@ ts::TSAnalyzerOptions::TSAnalyzerOptions(const UString& description, const UStri
 // ts::Args object defining the same options.
 //----------------------------------------------------------------------------
 
-void ts::TSAnalyzerOptions::getOptions (const Args& args)
+void ts::TSAnalyzerOptions::getOptions(Args& args)
 {
     ts_analysis = args.present(u"ts-analysis");
     service_analysis = args.present(u"service-analysis");
@@ -206,6 +217,12 @@ void ts::TSAnalyzerOptions::getOptions (const Args& args)
     title = args.value(u"title");
     suspect_min_error_count = args.intValue<uint64_t>(u"suspect-min-error-count", 1);
     suspect_max_consecutive = args.intValue<uint64_t>(u"suspect-max-consecutive", 1);
+
+    // Get default DVB character set.
+    const UString csName(args.value(u"default-charset"));
+    if (!csName.empty() && (default_charset = DVBCharset::GetCharset(csName)) == 0) {
+        args.error(u"invalid character set name '%s", {csName});
+    }
 
     // Default: --ts-analysis --service-analysis --pid-analysis
     if (!ts_analysis &&

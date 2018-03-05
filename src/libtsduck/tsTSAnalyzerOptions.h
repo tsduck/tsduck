@@ -34,6 +34,7 @@
 
 #pragma once
 #include "tsArgs.h"
+#include "tsDVBCharset.h"
 
 namespace ts {
     //!
@@ -56,6 +57,23 @@ namespace ts {
                           const UString& syntax = UString(),
                           const UString& help = UString(),
                           int flags = 0);
+
+        //!
+        //! Copy constructor.
+        //! Use default implementation, just tell the compiler we understand
+        //! the consequences of copying a pointer member.
+        //! @param [in] other The other instance to copy.
+        //!
+        TSAnalyzerOptions(const TSAnalyzerOptions& other) = default;
+
+        //!
+        //! Assignment operator.
+        //! Use default implementation, just tell the compiler we understand
+        //! the consequences of copying a pointer member.
+        //! @param [in] other The other instance to copy.
+        //! @return A reference to this object.
+        //!
+        TSAnalyzerOptions& operator=(const TSAnalyzerOptions& other) = default;
 
         // Full analysis options:
         bool ts_analysis;            //!< Option -\-ts-analysis
@@ -84,6 +102,9 @@ namespace ts {
         uint64_t suspect_min_error_count;  //!< Option -\-suspect-min-error-count
         uint64_t suspect_max_consecutive;  //!< Option -\-suspect-max-consecutive
 
+        // Table analysis options
+        const DVBCharset* default_charset;  //!< Option -\-default-charset
+
         // Overriden methods.
         virtual void setHelp(const UString& help) override;
         virtual bool analyze(int argc, char* argv[], bool processRedirections = true) override;
@@ -93,6 +114,6 @@ namespace ts {
         //! Get option values (the public fields) after analysis of another ts::Args object defining the same options.
         //! @param [in] args Another ts::Args object defining the same TSAnalyzer options.
         //!
-        void getOptions(const Args& args);
+        void getOptions(Args& args);
     };
 }
