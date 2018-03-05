@@ -9,6 +9,7 @@ Makefile* text
 *.c text
 *.cpp text
 *.asm text
+*.xml text
 *.pro text
 *.pri text
 *.control text

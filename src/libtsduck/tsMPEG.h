@@ -944,14 +944,22 @@ namespace ts {
         DID_AIT_APPLICATION     = 0x00, //!< DID for AIT application_descriptor.
         DID_AIT_APP_NAME        = 0x01, //!< DID for AIT application_name_descriptor.
         DID_AIT_TRANSPORT_PROTO = 0x02, //!< DID for AIT transport_protocol_descriptor.
+        DID_AIT_DVBJ_APP        = 0x03, //!< DID for AIT dvb_j_application_descriptor.
+        DID_AIT_DVBJ_APP_LOC    = 0x04, //!< DID for AIT dvb_j_application_location_descriptor.
         DID_AIT_EXT_APP_AUTH    = 0x05, //!< DID for AIT external_application_authorisation_descriptor.
         DID_AIT_APP_RECORDING   = 0x06, //!< DID for AIT application_recording_descriptor.
+        DID_AIT_HTML_APP        = 0x08, //!< DID for AIT dvb_html_application_descriptor.
+        DID_AIT_HTML_APP_LOC    = 0x09, //!< DID for AIT dvb_html_application_location_descriptor.
+        DID_AIT_HTML_APP_BOUND  = 0x0A, //!< DID for AIT dvb_html_application_boundary_descriptor.
         DID_AIT_APP_ICONS       = 0x0B, //!< DID for AIT application_icons_descriptor.
-        DID_AIT_APP_STORAGE     = 0x10, //!< DID for AIT application_storage_descriptor
+        DID_AIT_PREFETCH        = 0x0C, //!< DID for AIT prefetch_descriptor.
+        DID_AIT_DII_LOCATION    = 0x0D, //!< DID for AIT DII_location_descriptor.
+        DID_AIT_APP_STORAGE     = 0x10, //!< DID for AIT application_storage_descriptor.
+        DID_AIT_IP_SIGNALLING   = 0x11, //!< DID for AIT IP_signalling_descriptor.
         DID_AIT_GRAPHICS_CONST  = 0x14, //!< DID for AIT graphics_constraints_descriptor.
-        DID_AIT_APP_LOCATION    = 0x15, //!< DID for AIT simple_application_location_descriptor
+        DID_AIT_APP_LOCATION    = 0x15, //!< DID for AIT simple_application_location_descriptor.
         DID_AIT_APP_USAGE       = 0x16, //!< DID for AIT application_usage_descriptor.
-        DID_AIT_APP_BOUNDARY    = 0x17, //!< DID for AIT simple_application_boundary_descriptor
+        DID_AIT_APP_BOUNDARY    = 0x17, //!< DID for AIT simple_application_boundary_descriptor.
 
         // Valid in an INT (IP/MAC Notification Table, ETSI EN 301 192):
 
