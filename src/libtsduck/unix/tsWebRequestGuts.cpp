@@ -125,9 +125,10 @@ public:
     UString message(const UString& title, ::CURLcode = ::CURLE_OK);
 
 private:
-    WebRequest& _request;
-    ::CURL*     _curl;
-    char        _error[CURL_ERROR_SIZE];  // Error message buffer for libcurl.
+    WebRequest&   _request;
+    ::CURL*       _curl;
+    ::curl_slist* _headers;
+    char          _error[CURL_ERROR_SIZE];  // Error message buffer for libcurl.
 
     // Libcurl callbacks for response headers and response data.
     // The userdata points to this object.
@@ -149,6 +150,7 @@ private:
 ts::WebRequest::SystemGuts::SystemGuts(WebRequest& request) :
     _request(request),
     _curl(0),
+    _headers(0),
     _error{0}
 {
 }
@@ -243,6 +245,15 @@ bool ts::WebRequest::SystemGuts::init()
         }
     }
 
+    // Set the request headers.
+    if (status == ::CURLE_OK && !_request._requestHeaders.empty()) {
+        for (HeadersMap::const_iterator it = _request._requestHeaders.begin(); it != _request._requestHeaders.end(); ++it) {
+            const UString header(it->first + u": " + it->second);
+            _headers = ::curl_slist_append(_headers, header.toUTF8().c_str());
+        }
+        status = ::curl_easy_setopt(_curl, CURLOPT_HTTPHEADER, _headers);
+    }
+
     // Now process setopt error.
     if (status != ::CURLE_OK) {
         _request._report.error(message(u"libcurl setopt error", status));
@@ -260,6 +271,12 @@ bool ts::WebRequest::SystemGuts::init()
 
 void ts::WebRequest::SystemGuts::clear()
 {
+    // Deallocate list of headers.
+    if (_headers != 0) {
+        ::curl_slist_free_all(_headers);
+        _headers = 0;
+    }
+
     // Make sure the CURL Easy is clean.
     if (_curl != 0) {
         ::curl_easy_cleanup(_curl);
@@ -269,7 +286,6 @@ void ts::WebRequest::SystemGuts::clear()
     // Erase nul-terminated error message.
     _error[0] = 0;
 }
-
 
 
 //----------------------------------------------------------------------------
