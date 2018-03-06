@@ -801,10 +801,19 @@ bool ts::Args::processArgsRedirection(UStringVector& args)
             // Load the text file.
             UStringVector lines;
             if (UString::Load(lines, fileName)) {
-                // Insert the loaded lines.
+                // Insert the loaded lines. Then, make "it" point to the first inserted element.
+                // This means that the loaded content will now be processed, allowing nested '@' directives.
+#if defined(TS_CXX11_STRING)
+                // Starting with C++11, std::vector::insert() shall return an iterator.
                 it = args.insert(it, lines.begin(), lines.end());
-                // Now "it" points to the first inserted element. This means that the loaded
-                // content will now be processed, allowing nested '@' directives.
+#else
+                // However, with GCC, there is the same problem as C++11 strings, GCC 4 claims to
+                // be C++11 compliant but in fact it is not. So, we have to manually recompute
+                // the iterator after insertion for old versions of GCC.
+                const size_t index = it - args.begin();
+                args.insert(it, lines.begin(), lines.end());
+                it = args.begin() + index;
+#endif
             }
             else {
                 // Error loading file.
