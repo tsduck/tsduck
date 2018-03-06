@@ -57,7 +57,8 @@ ts::WebRequest::WebRequest(Report& report) :
     _proxyPort(0),
     _proxyUser(),
     _proxyPassword(),
-    _headers(),
+    _requestHeaders(),
+    _responseHeaders(),
     _httpStatus(0),
     _contentSize(0),
     _headerContentSize(0),
@@ -126,18 +127,33 @@ void ts::WebRequest::SetDefaultProxyUser(const UString& user, const UString& pas
 
 
 //----------------------------------------------------------------------------
+// Set request headers.
+//----------------------------------------------------------------------------
+
+void ts::WebRequest::setRequestHeader(const UString& name, const UString& value)
+{
+    _requestHeaders.insert(std::make_pair(name, value));
+}
+
+void ts::WebRequest::clearRequestHeaders()
+{
+    _requestHeaders.clear();
+}
+
+
+//----------------------------------------------------------------------------
 // Get the value of one or all headers.
 //----------------------------------------------------------------------------
 
-void ts::WebRequest::getHeaders(HeadersMap& headers) const
+void ts::WebRequest::getResponseHeaders(HeadersMap& headers) const
 {
-    headers = _headers;
+    headers = _responseHeaders;
 }
 
-ts::UString ts::WebRequest::header(const UString& name) const
+ts::UString ts::WebRequest::reponseHeader(const UString& name) const
 {
-    const HeadersMap::const_iterator it = _headers.find(name);
-    return it == _headers.end() ? UString() : it->second;
+    const HeadersMap::const_iterator it = _responseHeaders.find(name);
+    return it == _responseHeaders.end() ? UString() : it->second;
 }
 
 
@@ -145,7 +161,7 @@ ts::UString ts::WebRequest::header(const UString& name) const
 // Process a list of headers. Header lines are terminated by LF or CRLF.
 //----------------------------------------------------------------------------
 
-void ts::WebRequest::processHeaders(const UString& text)
+void ts::WebRequest::processReponseHeaders(const UString& text)
 {
     // Split header lines.
     const UString CR(1, u'\r');
@@ -163,7 +179,7 @@ void ts::WebRequest::processHeaders(const UString& text)
             // This is the initial header. When we receive this, this is either
             // the first time we are called for this request or we have been
             // redirected to another URL. In all cases, reset the context.
-            _headers.clear();
+            _responseHeaders.clear();
             _headerContentSize = 0;
             _httpStatus = 0;
 
@@ -182,7 +198,7 @@ void ts::WebRequest::processHeaders(const UString& text)
             value.trim();
 
             // Insert header.
-            _headers.insert(std::make_pair(name, value));
+            _responseHeaders.insert(std::make_pair(name, value));
 
             // Process specific headers.
             if (name.similar(u"Location")) {
