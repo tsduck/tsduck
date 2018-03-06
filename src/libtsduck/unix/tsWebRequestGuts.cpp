@@ -369,7 +369,7 @@ size_t ts::WebRequest::SystemGuts::headerCallback(char *ptr, size_t size, size_t
     else {
         // Store headers in the request.
         const size_t headerSize = size * nmemb;
-        guts->_request.processHeaders(UString::FromUTF8(ptr, headerSize));
+        guts->_request.processReponseHeaders(UString::FromUTF8(ptr, headerSize));
         return headerSize;
     }
 }

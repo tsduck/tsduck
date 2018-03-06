@@ -144,6 +144,18 @@ namespace ts {
         }
 
         //!
+        //! Set a header which will be sent with the request.
+        //! @param [in] name The header name.
+        //! @param [in] value The header value.
+        //!
+        void setRequestHeader(const UString& name, const UString& value);
+
+        //!
+        //! Clear all headers which will be sent with the request.
+        //!
+        void clearRequestHeaders();
+
+        //!
         //! Download the content of the URL as binary data.
         //! @param [out] data The content of the URL.
         //! @return True on success, false on error.
@@ -168,7 +180,7 @@ namespace ts {
         bool downloadFile(const UString& fileName);
 
         //!
-        //! Representation of reponse headers.
+        //! Representation of request or reponse headers.
         //! The keys of the map are the header names.
         //!
         typedef std::multimap<UString,UString> HeadersMap;
@@ -177,7 +189,7 @@ namespace ts {
         //! Get all response headers.
         //! @param [out] headers A multimap of all response headers.
         //!
-        void getHeaders(HeadersMap& headers) const;
+        void getResponseHeaders(HeadersMap& headers) const;
 
         //!
         //! Get the value of one header.
@@ -185,7 +197,7 @@ namespace ts {
         //! @return Header value or an empty string when the header is not found.
         //! If the header is present more than once, the first value is returned.
         //!
-        UString header(const UString& name) const;
+        UString reponseHeader(const UString& name) const;
 
         //!
         //! Get the size in bytes of the downloaded content.
@@ -225,7 +237,8 @@ namespace ts {
         uint16_t      _proxyPort;
         UString       _proxyUser;
         UString       _proxyPassword;
-        HeadersMap    _headers;            // all response headers
+        HeadersMap    _requestHeaders;     // all request headers (to send)
+        HeadersMap    _responseHeaders;    // all response headers (received)
         int           _httpStatus;         // 200, 404, etc.
         size_t        _contentSize;        // actually downloaded size
         size_t        _headerContentSize;  // content size, as announced in response header
@@ -251,8 +264,8 @@ namespace ts {
         // Perform actual download.
         bool download();
 
-        // Process a list of headers. Header lines are terminated by LF or CRLF.
-        void processHeaders(const UString& text);
+        // Process a list of response headers. Header lines are terminated by LF or CRLF.
+        void processReponseHeaders(const UString& text);
 
         // Copy some downloaded data.
         bool copyData(const void* addr, size_t size);

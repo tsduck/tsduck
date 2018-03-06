@@ -113,9 +113,36 @@ void ts::GitHubRelease::InvalidResponse(const json::ValuePtr& response, Report& 
 
 bool ts::GitHubRelease::CallGitHub(json::ValuePtr& response, json::Type expectedType, const UString& owner, const UString& repository, const UString& request, Report& report)
 {
+    // Get the GitHub URL. The default value is hardcoded but an alternate value
+    // can be specified in environment variable TSDUCK_GITHUB_URL.
+    UString github(GetEnvironment(u"TSDUCK_GITHUB_URL", u"https://api.github.com/"));
+
+    // Remove all leading slashes.
+    while (!github.empty() && github.back() == u'/') {
+        github.pop_back();
+    }
+
     // Build the request.
     WebRequest req(report);
-    req.setURL(u"https://api.github.com/repos/" + owner + u"/" + repository + request);
+    req.setURL(github + u"/repos/" + owner + u"/" + repository + request);
+
+    // Look for an optional GitHub authorization token.
+    UString token(GetEnvironment(u"TSDUCK_GITHUB_API_TOKEN"));
+    if (token.empty()) {
+        token = GetEnvironment(u"GITHUB_API_TOKEN");
+    }
+
+    // On macOS, use the HomeBrew token if no other is found.
+#if defined(TS_MAC)
+    if (token.empty()) {
+        token = GetEnvironment(u"HOMEBREW_GITHUB_API_TOKEN");
+    }
+#endif
+
+    // If a GitHub API token is found, add it in the request headers.
+    if (!token.empty()) {
+        req.setRequestHeader(u"Authorization", u"token " + token);
+    }
 
     // Send the request, fetch the response, analyze the JSON.
     UString text;

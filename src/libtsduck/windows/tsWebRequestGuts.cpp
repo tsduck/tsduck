@@ -205,13 +205,30 @@ bool ts::WebRequest::SystemGuts::init()
         INTERNET_FLAG_PASSIVE |
         INTERNET_FLAG_NO_AUTO_REDIRECT;
 
+    // Build the list of request headers.
+    ::WCHAR* headerAddress = 0;
+    ::DWORD headerLength = 0;
+    UString headers;
+    if (!_request._requestHeaders.empty()) {
+        for (HeadersMap::const_iterator it = _request._requestHeaders.begin(); it != _request._requestHeaders.end(); ++it) {
+            if (!headers.empty()) {
+                headers.append(u"\r\n");
+            }
+            headers.append(it->first);
+            headers.append(u": ");
+            headers.append(it->second);
+        }
+        headerAddress = headers.wc_str();
+        headerLength = ::DWORD(headers.size());
+    }
+
     // Loop on redirections.
     for (;;) {
         // Keep track of current URL to fetch.
         _previousURL = _request._finalURL;
 
         // Now open the URL.
-        _url = ::InternetOpenUrlW(_inet, _previousURL.wc_str(), 0, 0, urlFlags, 0);
+        _url = ::InternetOpenUrlW(_inet, _previousURL.wc_str(), headerAddress, headerLength, urlFlags, 0);
         if (_url == 0) {
             error(u"error opening URL");
             clear();
@@ -324,7 +341,7 @@ void ts::WebRequest::SystemGuts::transmitResponseHeaders()
     headers.resize(std::min(std::max<::DWORD>(0, headersSize), ::DWORD(headers.size() - 1)));
 
     // Pass the headers to the WebRequest.
-    _request.processHeaders(headers);
+    _request.processReponseHeaders(headers);
 }
 
 
