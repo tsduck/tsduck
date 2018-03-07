@@ -175,3 +175,71 @@ bool ts::GetLocalIPAddresses(IPAddressVector& list, Report& report)
 
     return status;
 }
+
+
+//----------------------------------------------------------------------------
+// Get the size in bytes of an IPv4 header.
+//----------------------------------------------------------------------------
+
+size_t ts::IPHeaderSize(const void* data, size_t size)
+{
+    const uint8_t* ip = reinterpret_cast<const uint8_t*>(data);
+    size_t headerSize = 0;
+
+    // The first byte of the header contains the IP version and the number
+    // of 32-bit words in the header.
+    if (ip != 0 && size >= IPv4_MIN_HEADER_SIZE && ((ip[0] >> 4) & 0x0F) == IPv4_VERSION) {
+        headerSize = sizeof(uint32_t) * size_t(ip[0] & 0x0F);
+    }
+
+    return headerSize <= size ? headerSize : 0;
+}
+
+
+//----------------------------------------------------------------------------
+// Compute the checksum of an IPv4 header.
+//----------------------------------------------------------------------------
+
+uint16_t ts::IPHeaderChecksum(const void* data, size_t size)
+{
+    const size_t hSize = IPHeaderSize(data, size);
+    const uint8_t* ip = reinterpret_cast<const uint8_t*>(data);
+    uint32_t checksum = 0;
+
+    // Add all 16-bit words in the header (except checksum).
+    for (size_t i = 0; i < hSize; i += 2) {
+        if (i != IPv4_CHECKSUM_OFFSET) {
+            checksum += GetUInt16(ip + i);
+        }
+    }
+
+    // Add carries until they are all gone.
+    while (checksum > 0xFFFF) {
+        checksum = (checksum & 0xFFFF) + (checksum >> 16);
+    }
+
+    // Take the complement.
+    return hSize == 0 ? 0 : uint16_t(checksum ^ 0xFFFF);
+}
+
+
+//----------------------------------------------------------------------------
+// Verify or update the checksum of an IPv4 header.
+//----------------------------------------------------------------------------
+
+bool ts::VerifyIPHeaderChecksum(const void* data, size_t size)
+{
+    const bool ok = IPHeaderSize(data, size) > 0;
+    const uint8_t* ip = reinterpret_cast<const uint8_t*>(data);
+    return ok && GetUInt16(ip + IPv4_CHECKSUM_OFFSET) == IPHeaderChecksum(data, size);
+}
+
+bool ts::UpdateIPHeaderChecksum(void* data, size_t size)
+{
+    const bool ok = IPHeaderSize(data, size) > 0;
+    if (ok) {
+        uint8_t* ip = reinterpret_cast<uint8_t*>(data);
+        PutUInt16(ip + IPv4_CHECKSUM_OFFSET, IPHeaderChecksum(data, size));
+    }
+    return ok;
+}

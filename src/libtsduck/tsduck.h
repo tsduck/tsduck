@@ -161,6 +161,7 @@
 #include "tsModulation.h"
 #include "tsMonotonic.h"
 #include "tsMPEG.h"
+#include "tsMPEPacket.h"
 #include "tsMutex.h"
 #include "tsMutexInterface.h"
 #include "tsNames.h"

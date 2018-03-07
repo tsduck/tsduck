@@ -297,13 +297,15 @@ void ts::Section::initialize(const ByteBlockPtr& bbp, PID pid, CRC32::Validation
 // between the two section objects.
 //----------------------------------------------------------------------------
 
-ts::Section& ts::Section::operator= (const Section& sect)
+ts::Section& ts::Section::operator=(const Section& sect)
 {
-    _is_valid = sect._is_valid;
-    _source_pid = sect._source_pid;
-    _first_pkt = sect._first_pkt;
-    _last_pkt = sect._last_pkt;
-    _data = sect._data;
+    if (&sect != this) {
+        _is_valid = sect._is_valid;
+        _source_pid = sect._source_pid;
+        _first_pkt = sect._first_pkt;
+        _last_pkt = sect._last_pkt;
+        _data = sect._data;
+    }
     return *this;
 }
 
@@ -313,13 +315,15 @@ ts::Section& ts::Section::operator= (const Section& sect)
 // is duplicated.
 //----------------------------------------------------------------------------
 
-ts::Section& ts::Section::copy (const Section& sect)
+ts::Section& ts::Section::copy(const Section& sect)
 {
-    _is_valid = sect._is_valid;
-    _source_pid = sect._source_pid;
-    _first_pkt = sect._first_pkt;
-    _last_pkt = sect._last_pkt;
-    _data = sect._is_valid ? new ByteBlock (*sect._data) : 0;
+    if (&sect != this) {
+        _is_valid = sect._is_valid;
+        _source_pid = sect._source_pid;
+        _first_pkt = sect._first_pkt;
+        _last_pkt = sect._last_pkt;
+        _data = sect._is_valid ? new ByteBlock(*sect._data) : 0;
+    }
     return *this;
 }
 

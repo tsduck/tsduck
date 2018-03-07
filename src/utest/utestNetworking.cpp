@@ -65,6 +65,7 @@ public:
     void testSocketAddress();
     void testTCPSocket();
     void testUDPSocket();
+    void testIPHeader();
 
     CPPUNIT_TEST_SUITE(NetworkingTest);
     CPPUNIT_TEST(testIPAddressConstructors);
@@ -75,6 +76,7 @@ public:
     CPPUNIT_TEST(testSocketAddress);
     CPPUNIT_TEST(testTCPSocket);
     CPPUNIT_TEST(testUDPSocket);
+    CPPUNIT_TEST(testIPHeader);
     CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -608,4 +610,30 @@ void NetworkingTest::testUDPSocket()
 
     CPPUNIT_ASSERT(sock.send(buffer, size, sender, CERR));
     CERR.debug(u"UDPSocketTest: main thread: reply sent");
+}
+
+// Test IP header
+void NetworkingTest::testIPHeader()
+{
+    static const uint8_t reference_header[] = {
+        0x45, 0x00, 0x05, 0xBE, 0xFB, 0x6E, 0x00, 0x00, 0x32, 0x06,
+        0x32, 0x8B, 0xD8, 0x3A, 0xCC, 0x8E, 0xAC, 0x14, 0x04, 0x63,
+    };
+
+    CPPUNIT_ASSERT_EQUAL(sizeof(reference_header), ts::IPHeaderSize(reference_header, sizeof(reference_header)));
+    CPPUNIT_ASSERT_EQUAL(uint16_t(0x328B), ts::IPHeaderChecksum(reference_header, sizeof(reference_header)));
+    CPPUNIT_ASSERT(ts::VerifyIPHeaderChecksum(reference_header, sizeof(reference_header)));
+
+    uint8_t header[sizeof(reference_header)];
+    ::memcpy(header, reference_header, sizeof(header));
+
+    CPPUNIT_ASSERT(ts::VerifyIPHeaderChecksum(header, sizeof(header)));
+    header[ts::IPv4_CHECKSUM_OFFSET] = 0x00;
+    header[ts::IPv4_CHECKSUM_OFFSET + 1] = 0x00;
+    CPPUNIT_ASSERT(!ts::VerifyIPHeaderChecksum(header, sizeof(header)));
+    CPPUNIT_ASSERT_EQUAL(uint16_t(0x328B), ts::IPHeaderChecksum(header, sizeof(header)));
+
+    CPPUNIT_ASSERT(ts::UpdateIPHeaderChecksum(header, sizeof(header)));
+    CPPUNIT_ASSERT(ts::VerifyIPHeaderChecksum(header, sizeof(header)));
+    CPPUNIT_ASSERT_EQUAL(uint16_t(0x328B), ts::IPHeaderChecksum(header, sizeof(header)));
 }
