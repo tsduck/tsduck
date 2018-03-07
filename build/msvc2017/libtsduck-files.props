@@ -149,6 +149,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsModulation.h" />
     <ClInclude Include="..\..\src\libtsduck\tsMonotonic.h" />
     <ClInclude Include="..\..\src\libtsduck\tsMPEG.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsMPEPacket.h" />
     <ClInclude Include="..\..\src\libtsduck\tsMutex.h" />
     <ClInclude Include="..\..\src\libtsduck\tsMutexInterface.h" />
     <ClInclude Include="..\..\src\libtsduck\tsNames.h" />
@@ -457,6 +458,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsModulation.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsMonotonic.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsMPEG.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsMPEPacket.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsMutex.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsNames.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsNetworkNameDescriptor.cpp" />

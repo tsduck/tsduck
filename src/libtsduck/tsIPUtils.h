@@ -113,6 +113,64 @@ namespace ts {
     TSDUCKDLL bool IsLocalIPAddress(const IPAddress& address);
 
     //------------------------------------------------------------------------
+    // Internals of the IPv4 protocol.
+    //------------------------------------------------------------------------
+
+    const uint8_t IPv4_VERSION          =  4;   //!< Protocol version of IPv4 is ... 4 !
+    const size_t  IPv4_PROTOCOL_OFFSET  =  9;   //!< Offset of the protocol identifier in an IPv4 header.
+    const size_t  IPv4_CHECKSUM_OFFSET  = 10;   //!< Offset of the checksum in an IPv4 header.
+    const size_t  IPv4_SRC_ADDR_OFFSET  = 12;   //!< Offset of source IP address in an IPv4 header.
+    const size_t  IPv4_DEST_ADDR_OFFSET = 16;   //!< Offset of destination IP address in an IPv4 header.
+    const size_t  IPv4_MIN_HEADER_SIZE  = 20;   //!< Minimum size of an IPv4 header.
+    const size_t  UDP_HEADER_SIZE       =  8;   //!< Size of a UDP header.
+
+    //!
+    //! Selected IP protocol identifiers.
+    //!
+    enum : uint8_t {
+        IPv4_PROTO_ICMP = 1,   //!< Protocol identifier for ICMP.
+        IPv4_PROTO_IGMP = 2,   //!< Protocol identifier for IGMP.
+        IPv4_PROTO_TCP  = 6,   //!< Protocol identifier for TCP.
+        IPv4_PROTO_UDP  = 17,  //!< Protocol identifier for UDP.
+    };
+
+    //!
+    //! Get the size in bytes of an IPv4 header.
+    //!
+    //! @param [in] data Address of the IP packet.
+    //! @param [in] size Size of the IP packet or header (must be larger than the header size).
+    //! @return The size in bytes of the IP header or zero on error.
+    //!
+    TSDUCKDLL size_t IPHeaderSize(const void* data, size_t size);
+
+    //!
+    //! Compute the checksum of an IPv4 header.
+    //!
+    //! @param [in] data Address of the IP packet.
+    //! @param [in] size Size of the IP packet or header (must be larger than the header size).
+    //! @return The computed checksum of the header.
+    //!
+    TSDUCKDLL uint16_t IPHeaderChecksum(const void* data, size_t size);
+
+    //!
+    //! Verify the checksum of an IPv4 header.
+    //!
+    //! @param [in] data Address of the IP packet.
+    //! @param [in] size Size of the IP packet or header (must be larger than the header size).
+    //! @return True if the checksum of the header if correct, false otherwise.
+    //!
+    TSDUCKDLL bool VerifyIPHeaderChecksum(const void* data, size_t size);
+
+    //!
+    //! Update the checksum of an IPv4 header.
+    //!
+    //! @param [in,out] data Address of the IP packet.
+    //! @param [in] size Size of the IP packet or header (must be larger than the header size).
+    //! @return True if the checksum was update, false on incorrect buffer.
+    //!
+    TSDUCKDLL bool UpdateIPHeaderChecksum(void* data, size_t size);
+
+    //------------------------------------------------------------------------
     // Socket programming portability macros.
     // Most socket types and functions have identical API in UNIX and Windows.
     // However, there are some slight incompatibilities which are solved by

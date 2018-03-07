@@ -33,6 +33,7 @@ SOURCES += \
     ../../../src/utest/utestInterrupt.cpp \
     ../../../src/utest/utestJSON.cpp \
     ../../../src/utest/utestMessageQueue.cpp \
+    ../../../src/utest/utestMPEPacket.cpp \
     ../../../src/utest/utestMonotonic.cpp \
     ../../../src/utest/utestMutex.cpp \
     ../../../src/utest/utestNames.cpp \
