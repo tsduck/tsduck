@@ -309,7 +309,7 @@ void ts::TablesLogger::handleSection(SectionDemux&, const Section& sect)
         postDisplay();
     }
 
-    if (_opt.use_udp) {
+    if (_opt.use_binary) {
         // Save section in binary format
         saveSection(sect);
     }

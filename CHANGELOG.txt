@@ -15,8 +15,15 @@ Version 3.9
 - In all TSDuck commands, parameters can be read from a file using the syntax
   "@filename" anywhere in the command line. See the user's guide for details.
 
+- Bug fix in tstables and plugin tables: When all sections were collected
+  (option --all), the sections were not properly saved in binary section files
+  (option --binary).
+
 - Bug fix on Windows: Command "tsversion --upgrade" failed because tsversion.exe
   and tsduck.dll were locked by upgrade command.
+
+- Added possibility to specify a GitHub authentication token in tsversion to
+  avoid "API rate limit exceeded" errors.
 
 Version 3.8-534
 
