@@ -786,7 +786,10 @@ ifdef MACOS
     CXXFLAGS_WARNINGS += -Wno-unused-command-line-argument
 else
     CXXFLAGS_WARNINGS += -Wstrict-null-sentinel
-    ifneq ($(MAIN_ARCH),arm)
+    ifeq ($(MAIN_ARCH),arm)
+        CFLAGS_WARNINGS   += -Wno-psabi
+        CXXFLAGS_WARNINGS += -Wno-psabi
+    else
         # ARM target is known to generate too many spurious cast-align errors
         CFLAGS_WARNINGS   += -Wcast-align
         CXXFLAGS_WARNINGS += -Wcast-align
