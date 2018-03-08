@@ -34,7 +34,7 @@
 
 #pragma once
 #include "tsSection.h"
-#include "tsIPAddress.h"
+#include "tsSocketAddress.h"
 #include "tsMACAddress.h"
 
 namespace ts {
@@ -112,6 +112,12 @@ namespace ts {
         //! @return A reference to this object.
         //!
         MPEPacket& copy(const Section& section);
+
+        //!
+        //! Create a DSM-CC MPE section containing the MPE packet.
+        //! @param [out] section A binary DSM-CC MPE section to create.
+        //!
+        void createSection(Section& section) const;
 
         //!
         //! Check if the packet has valid content.
@@ -192,6 +198,30 @@ namespace ts {
         void setDestinationUDPPort(uint16_t port);
 
         //!
+        //! Get the source socket address.
+        //! @return The source socket address.
+        //!
+        SocketAddress sourceSocket() const;
+
+        //!
+        //! Set the source socket address.
+        //! @param [in] sock The source socket address.
+        //!
+        void setSourceSocket(const SocketAddress& sock);
+
+        //!
+        //! Get the destination socket address.
+        //! @return The destination socket address.
+        //!
+        SocketAddress destinationSocket() const;
+
+        //!
+        //! Set the destination socket address.
+        //! @param [in] sock The destination socket address.
+        //!
+        void setDestinationSocket(const SocketAddress& sock);
+
+        //!
         //! Access to the binary content of the UDP message.
         //! Do not modify content.
         //! @return Address of the binary content of the UDP message payload.
@@ -204,6 +234,20 @@ namespace ts {
         //! @return Size of the binary content of the UDP message.
         //!
         size_t udpMessageSize() const;
+
+        //!
+        //! Access to the binary content of the complete network datagram.
+        //! Do not modify content.
+        //! @return Address of the binary content of the complete network datagram.
+        //! May be invalidated after modification in section.
+        //!
+        const uint8_t* datagram() const { return _is_valid && !_datagram.isNull() ? _datagram->data() : 0; }
+
+        //!
+        //! Size of the binary content of the complete network datagram.
+        //! @return Size of the binary content of the complete network datagram.
+        //!
+        size_t datagramSize() const { return _is_valid && !_datagram.isNull() ? _datagram->size() : 0; }
 
         //!
         //! Replace the binary content of the UDP message.

@@ -465,6 +465,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tsp_static", "tsp_static.vc
 		{25A6CE1B-83F7-4859-A1EA-B7A8EAFFD2C6} = {25A6CE1B-83F7-4859-A1EA-B7A8EAFFD2C6}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tsplugin_mpe", "tsplugin_mpe.vcxproj", "{5E225996-0B6C-43C2-B786-30AB5FEE8096}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -1129,6 +1131,14 @@ Global
 		{0305170C-F14D-4812-8B14-1468D6607794}.Release|Win32.Build.0 = Release|Win32
 		{0305170C-F14D-4812-8B14-1468D6607794}.Release|x64.ActiveCfg = Release|x64
 		{0305170C-F14D-4812-8B14-1468D6607794}.Release|x64.Build.0 = Release|x64
+		{5E225996-0B6C-43C2-B786-30AB5FEE8096}.Debug|Win32.ActiveCfg = Debug|Win32
+		{5E225996-0B6C-43C2-B786-30AB5FEE8096}.Debug|Win32.Build.0 = Debug|Win32
+		{5E225996-0B6C-43C2-B786-30AB5FEE8096}.Debug|x64.ActiveCfg = Debug|x64
+		{5E225996-0B6C-43C2-B786-30AB5FEE8096}.Debug|x64.Build.0 = Debug|x64
+		{5E225996-0B6C-43C2-B786-30AB5FEE8096}.Release|Win32.ActiveCfg = Release|Win32
+		{5E225996-0B6C-43C2-B786-30AB5FEE8096}.Release|Win32.Build.0 = Release|Win32
+		{5E225996-0B6C-43C2-B786-30AB5FEE8096}.Release|x64.ActiveCfg = Release|x64
+		{5E225996-0B6C-43C2-B786-30AB5FEE8096}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

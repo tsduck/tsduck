@@ -226,7 +226,7 @@ ts::IPOutput::IPOutput(TSP* tsp_) :
     option(u"",               0,  STRING, 1, 1);
     option(u"local-address", 'l', STRING);
     option(u"packet-burst",  'p', INTEGER, 0, 1, 1, MAX_PACKET_BURST);
-    option(u"ttl",           't', POSITIVE);
+    option(u"ttl",           't', INTEGER, 0, 1, 1, 255);
 
     setHelp(u"Parameter:\n"
             u"  The parameter address:port describes the destination for UDP packets.\n"
@@ -463,7 +463,7 @@ size_t ts::IPInput::receive(TSPacket* buffer, size_t max_packets)
         }
 
         // Filter packets based on source address if requested.
-        if ((_use_source.hasAddress() && _use_source.address() != sender.address()) || (_use_source.hasPort() && _use_source.port() != sender.port())) {
+        if (!sender.match(_use_source)) {
             // Not the expected source, this is a spurious packet.
             continue;
         }

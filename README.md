@@ -17,7 +17,7 @@ In practice, TSDuck is used for:
 - Use specialized hardware such as cheap DVB tuners (USB, PCI) or professional Dektec devices.
 - Re-route transport streams to other applications.
 - Emulate a CAS head-end using DVB SimulCrypt interfaces to ECMG or EMMG.
-- Extract specific encapsulated data (Teletext, T2-MI, SCTE 35 cues).
+- Extract specific encapsulated data (Teletext, MPE, T2-MI, SCTE 35 cues).
 - And more...
 
 TSDuck is developed in C++ in a modular architecture. It is easy to extend

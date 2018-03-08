@@ -125,4 +125,20 @@ void MPEPacketTest::testBuild()
     CPPUNIT_ASSERT_EQUAL(sizeof(ref), mpe.udpMessageSize());
     CPPUNIT_ASSERT(mpe.udpMessage() != 0);
     CPPUNIT_ASSERT_EQUAL(0, ::memcmp(mpe.udpMessage(), ref, mpe.udpMessageSize()));
+
+    ts::Section sect;
+    mpe.createSection(sect);
+    CPPUNIT_ASSERT(sect.isValid());
+
+    ts::MPEPacket mpe2(sect);
+    CPPUNIT_ASSERT(mpe2.isValid());
+    CPPUNIT_ASSERT_EQUAL(ts::PID(765), mpe2.sourcePID());
+    CPPUNIT_ASSERT(mpe2.destinationMACAddress() == ts::MACAddress(6, 7, 8, 9, 10, 11));
+    CPPUNIT_ASSERT(mpe2.sourceIPAddress() == ts::IPAddress(54, 59, 197, 201));
+    CPPUNIT_ASSERT(mpe2.destinationIPAddress() == ts::IPAddress(123, 34, 45, 78));
+    CPPUNIT_ASSERT_EQUAL(uint16_t(7920), mpe2.sourceUDPPort());
+    CPPUNIT_ASSERT_EQUAL(uint16_t(4654), mpe2.destinationUDPPort());
+    CPPUNIT_ASSERT_EQUAL(sizeof(ref), mpe2.udpMessageSize());
+    CPPUNIT_ASSERT(mpe2.udpMessage() != 0);
+    CPPUNIT_ASSERT_EQUAL(0, ::memcmp(mpe2.udpMessage(), ref, mpe2.udpMessageSize()));
 }

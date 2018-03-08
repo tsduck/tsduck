@@ -97,6 +97,16 @@ bool ts::SocketAddress::resolve(const UString& name, Report& report)
 
 
 //----------------------------------------------------------------------------
+// Check if this address "matches" another one.
+//----------------------------------------------------------------------------
+
+bool ts::SocketAddress::match(const SocketAddress& other) const
+{
+    return IPAddress::match(other) && (_port == AnyPort || other._port == AnyPort || _port == other._port);
+}
+
+
+//----------------------------------------------------------------------------
 // Convert to a string object
 //----------------------------------------------------------------------------
 

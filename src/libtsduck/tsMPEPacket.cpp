@@ -241,6 +241,54 @@ ts::MPEPacket& ts::MPEPacket::copy(const Section& section)
     return *this;
 }
 
+
+//----------------------------------------------------------------------------
+// Create a DSM-CC MPE section containing the MPE packet.
+//----------------------------------------------------------------------------
+
+void ts::MPEPacket::createSection(Section& section) const
+{
+    // Clear previous content of section object.
+    section.clear();
+
+    // Leaave an empty section if this packet is invalid.
+    if (!_is_valid) {
+        return;
+    }
+
+    // Create a buffer for the section content.
+    // The allocated area will be directly used by the section object.
+    // The initial size is the fixed part of the section, before the datagram.
+    ByteBlockPtr bbp(new ByteBlock(12));
+    ByteBlock& data(*bbp);
+
+    // Section is a DSM-CC Private Data.
+    data[0] = TID_DSMCC_PD;
+    // Size in bytes 1-2 will be filled later.
+    // Get the MAC address bytes.
+    _dest_mac.getAddress(data[11], data[10], data[9], data[8], data[4], data[3]);
+    // Clear datagram, current section.
+    data[5] = 0xC1;
+    // Current section number
+    data[6] = 0;
+    // Last section number
+    data[7] = 0;
+
+    // Append datagram.
+    data.append(*_datagram);
+
+    // Reserve 4 bytes for the CRC32.
+    data.enlarge(4);
+
+    // Update size fields.
+    // We set section_syntax_indicator=1 and private_indicator=0.
+    PutUInt16(data.data() + 1, uint16_t(0xB000 | ((data.size() - 3) & 0x0FFF)));
+
+    // Set the section content and recompute CRC32.
+    section.reload(bbp, _source_pid, CRC32::COMPUTE);
+}
+
+
 //----------------------------------------------------------------------------
 // Make sure the UDP datagram is valid.
 //----------------------------------------------------------------------------
@@ -377,6 +425,41 @@ void ts::MPEPacket::setDestinationUDPPort(uint16_t port)
         PutUInt16(udpHeader + 2, port);
         // Force UDP header checksum to zero, meaning unused.
         udpHeader[6] = udpHeader[7] = 0;
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Get/set the source/destination socket address.
+//----------------------------------------------------------------------------
+
+ts::SocketAddress ts::MPEPacket::sourceSocket() const
+{
+    return SocketAddress(sourceIPAddress(), sourceUDPPort());
+}
+
+void ts::MPEPacket::setSourceSocket(const SocketAddress& sock)
+{
+    if (sock.hasAddress()) {
+        setSourceIPAddress(sock);
+    }
+    if (sock.hasPort()) {
+        setSourceUDPPort(sock.port());
+    }
+}
+
+ts::SocketAddress ts::MPEPacket::destinationSocket() const
+{
+    return SocketAddress(destinationIPAddress(), destinationUDPPort());
+}
+
+void ts::MPEPacket::setDestinationSocket(const SocketAddress& sock)
+{
+    if (sock.hasAddress()) {
+        setDestinationIPAddress(sock);
+    }
+    if (sock.hasPort()) {
+        setDestinationUDPPort(sock.port());
     }
 }
 

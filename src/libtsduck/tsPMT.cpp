@@ -34,6 +34,7 @@
 #include "tsPMT.h"
 #include "tsNames.h"
 #include "tsBinaryTable.h"
+#include "tsStreamIdentifierDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsTablesFactory.h"
 #include "tsxmlElement.h"
@@ -265,6 +266,46 @@ bool ts::PMT::Stream::isSubtitles() const
     }
     // After all, no subtitle here...
     return false;
+}
+
+
+//----------------------------------------------------------------------------
+// Look for a component tag in a stream_identifier_descriptor.
+//----------------------------------------------------------------------------
+
+bool ts::PMT::Stream::getComponentTag(uint8_t& tag) const
+{
+    // Loop on all stream_identifier_descriptors until a valid one is found.
+    for (size_t i = descs.search(DID_STREAM_ID); i < descs.count(); i = descs.search(DID_STREAM_ID, i + 1)) {
+        const StreamIdentifierDescriptor sid(*descs[i]);
+        if (sid.isValid()) {
+            tag = sid.component_tag;
+            return true;
+        }
+    }
+    return false;
+}
+
+
+//----------------------------------------------------------------------------
+// Search the component PID for a given component tag.
+//----------------------------------------------------------------------------
+
+ts::PID ts::PMT::componentTagToPID(uint8_t tag) const
+{
+    // Loop on all components of the service.
+    for (StreamMap::const_iterator it = streams.begin(); it != streams.end(); ++it) {
+        const PID pid = it->first;
+        const PMT::Stream& stream(it->second);
+        // Loop on all stream_identifier_descriptors.
+        for (size_t i = stream.descs.search(DID_STREAM_ID); i < stream.descs.count(); i = stream.descs.search(DID_STREAM_ID, i + 1)) {
+            const StreamIdentifierDescriptor sid(*stream.descs[i]);
+            if (sid.isValid() && sid.component_tag == tag) {
+                return pid;
+            }
+        }
+    }
+    return PID_NULL; // not found
 }
 
 

@@ -130,6 +130,17 @@ namespace ts {
         void setAddress(uint8_t b1, uint8_t b2, uint8_t b3, uint8_t b4, uint8_t b5, uint8_t b6);
 
         //!
+        //! Get the MAC address as 6 bytes.
+        //! @param [out] b1 First address byte.
+        //! @param [out] b2 Second address byte.
+        //! @param [out] b3 Third address byte.
+        //! @param [out] b4 Fourth address byte.
+        //! @param [out] b5 Fifth address byte.
+        //! @param [out] b6 Sixth address byte.
+        //!
+        void getAddress(uint8_t& b1, uint8_t& b2, uint8_t& b3, uint8_t& b4, uint8_t& b5, uint8_t& b6) const;
+
+        //!
         //! Check if the address is a multicast address for IPv4.
         //! @return True if the address is a multicast address, false otherwise.
         //!

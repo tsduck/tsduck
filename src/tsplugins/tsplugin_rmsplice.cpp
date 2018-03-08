@@ -37,7 +37,6 @@
 #include "tsServiceDiscovery.h"
 #include "tsSectionDemux.h"
 #include "tsSpliceInfoTable.h"
-#include "tsStreamIdentifierDescriptor.h"
 TSDUCK_SOURCE;
 
 
@@ -252,13 +251,10 @@ void ts::RMSplicePlugin::handlePMT(const PMT& pmt)
             }
 
             // Look for an optional stream_identifier_descriptor for this component.
-            const size_t index = stream.descs.search(DID_STREAM_ID);
-            if (index < stream.descs.count() && !stream.descs[index].isNull()) {
-                const StreamIdentifierDescriptor sid(*stream.descs[index]);
-                if (sid.isValid()) {
-                    // We have found a component tag for this PID.
-                    _tagsByPID[pid] = sid.component_tag;
-                }
+            uint8_t ctag = 0;
+            if (stream.getComponentTag(ctag)) {
+                // We have found a component tag for this PID.
+                _tagsByPID[pid] = ctag;
             }
         }
     }

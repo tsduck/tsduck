@@ -116,6 +116,14 @@ foreach ($sect in $doc.Sections) {
     [void]$sect.Footers.Item(1).Range.Fields.Update()
 }
 
+# Update tables of contents.
+foreach ($table in $doc.TablesOfContents) {
+    [void]$table.Update()
+}
+foreach ($table in $doc.TablesOfFigures) {
+    [void]$table.Update()
+}
+
 # Save as PDF. Make sure true type fonts are embedded in the document.
 $doc.EmbedTrueTypeFonts = $true
 Write-Output "Saving $DocOut"

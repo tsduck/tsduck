@@ -253,6 +253,14 @@ namespace ts {
         bool resolve(const UString& name, Report& report = CERR);
 
         //!
+        //! Check if this socket address "matches" another one.
+        //! @param [in] other Another instance to compare.
+        //! @return False if this and @a other addresses are both specified and
+        //! are different or if the two ports are specified and different. True otherwise.
+        //!
+        bool match(const SocketAddress& other) const;
+
+        //!
         //! Convert to a string object in numeric format "a.b.c.d[:port]".
         //! @return This object, converted as a string.
         //!

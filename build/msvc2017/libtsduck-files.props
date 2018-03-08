@@ -148,7 +148,9 @@
     <ClInclude Include="..\..\src\libtsduck\tsMJD.h" />
     <ClInclude Include="..\..\src\libtsduck\tsModulation.h" />
     <ClInclude Include="..\..\src\libtsduck\tsMonotonic.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsMPEDemux.h" />
     <ClInclude Include="..\..\src\libtsduck\tsMPEG.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsMPEHandlerInterface.h" />
     <ClInclude Include="..\..\src\libtsduck\tsMPEPacket.h" />
     <ClInclude Include="..\..\src\libtsduck\tsMutex.h" />
     <ClInclude Include="..\..\src\libtsduck\tsMutexInterface.h" />
@@ -457,6 +459,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsMJD.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsModulation.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsMonotonic.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsMPEDemux.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsMPEG.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsMPEPacket.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsMutex.cpp" />
