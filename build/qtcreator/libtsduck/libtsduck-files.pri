@@ -146,7 +146,9 @@ HEADERS += \
     ../../../src/libtsduck/tsMJD.h \
     ../../../src/libtsduck/tsModulation.h \
     ../../../src/libtsduck/tsMonotonic.h \
+    ../../../src/libtsduck/tsMPEDemux.h \
     ../../../src/libtsduck/tsMPEG.h \
+    ../../../src/libtsduck/tsMPEHandlerInterface.h \
     ../../../src/libtsduck/tsMPEPacket.h \
     ../../../src/libtsduck/tsMutex.h \
     ../../../src/libtsduck/tsMutexInterface.h \
@@ -445,6 +447,7 @@ SOURCES += \
     ../../../src/libtsduck/tsMJD.cpp \
     ../../../src/libtsduck/tsModulation.cpp \
     ../../../src/libtsduck/tsMonotonic.cpp \
+    ../../../src/libtsduck/tsMPEDemux.cpp \
     ../../../src/libtsduck/tsMPEG.cpp \
     ../../../src/libtsduck/tsMPEPacket.cpp \
     ../../../src/libtsduck/tsMutex.cpp \

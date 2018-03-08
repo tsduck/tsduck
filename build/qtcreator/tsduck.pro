@@ -57,6 +57,7 @@ SUBDIRS += \
     tsplugin_history \
     tsplugin_inject \
     tsplugin_ip \
+    tsplugin_mpe  \
     tsplugin_mux \
     tsplugin_nit \
     tsplugin_nitscan \

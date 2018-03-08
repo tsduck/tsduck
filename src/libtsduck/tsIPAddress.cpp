@@ -176,6 +176,16 @@ bool ts::IPAddress::resolve(const UString& name, Report& report)
 
 
 //----------------------------------------------------------------------------
+// Check if this address "matches" another one.
+//----------------------------------------------------------------------------
+
+bool ts::IPAddress::match(const IPAddress& other) const
+{
+    return _addr == AnyAddress || other._addr == AnyAddress || _addr == other._addr;
+}
+
+
+//----------------------------------------------------------------------------
 // Convert to a string object
 //----------------------------------------------------------------------------
 

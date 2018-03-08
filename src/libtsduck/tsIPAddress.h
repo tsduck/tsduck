@@ -212,6 +212,14 @@ namespace ts {
         bool resolve(const UString& name, Report& report = CERR);
 
         //!
+        //! Check if this address "matches" another one.
+        //! @param [in] other Another instance to compare.
+        //! @return False if this and @a other addresses are both specified and
+        //! are different. True otherwise.
+        //!
+        bool match(const IPAddress& other) const;
+
+        //!
         //! Convert to a string object in numeric format "a.b.c.d".
         //! @return This object, converted as a string.
         //!

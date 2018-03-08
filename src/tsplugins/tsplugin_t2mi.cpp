@@ -71,7 +71,7 @@ namespace ts {
         TSFileOutput  _outfile;         // Output file for extracted stream.
         PacketCounter _t2mi_count;      // Number of input T2-MI packets.
         PacketCounter _ts_count;        // Number of extracted TS packets.
-        T2MIDemux     _demux;           // Demux for PSI parsing.
+        T2MIDemux     _demux;           // T2-MI demux.
         std::deque<TSPacket> _ts_queue; // Queue of demuxed TS packets.
 
         // Inherited methods.

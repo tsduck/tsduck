@@ -28,20 +28,46 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Version identification of TSDuck.
+//!  MPE demux handler interface.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 9
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 583
+#include "tsMPEG.h"
+
+namespace ts {
+
+    class MPEDemux;
+    class MPEPacket;
+    class PMT;
+
+    //!
+    //! MPE (Multi-Protocol Encapsulation) demux handler interface.
+    //!
+    //! This abstract interface must be implemented by classes which need to be
+    //! notified of PID's and packets using a MPEDemux.
+    //!
+    class TSDUCKDLL MPEHandlerInterface
+    {
+    public:
+        //!
+        //! This hook is invoked when a new PID carrying MPE is available.
+        //! @param [in,out] demux A reference to the MPE demux.
+        //! @param [in] pmt The PMT of the service describing this PID.
+        //! @param [in] pid The PID carrying MPE sections.
+        //!
+        virtual void handleMPENewPID(MPEDemux& demux, const PMT& pmt, PID pid) = 0;
+
+        //!
+        //! This hook is invoked when a new MPE packet is available.
+        //! @param [in,out] demux A reference to the MPE demux.
+        //! @param [in] mpe The MPE packet.
+        //!
+        virtual void handleMPEPacket(MPEDemux& demux, const MPEPacket& mpe) = 0;
+
+        //!
+        //! Virtual destructor.
+        //!
+        virtual ~MPEHandlerInterface() {}
+    };
+}

@@ -88,6 +88,13 @@ namespace ts {
             //!
             bool isSubtitles() const;
 
+            //!
+            //! Look for a component tag in a stream_identifier_descriptor.
+            //! @param [out] tag First component tag found, unmodified if none found.
+            //! @return True if a component tag was found.
+            //!
+            bool getComponentTag(uint8_t& tag) const;
+
         private:
             // Inaccessible operations.
             Stream() = delete;
@@ -129,6 +136,13 @@ namespace ts {
         //! @param [in] charset If not zero, character set to use without explicit table code.
         //!
         PMT(const BinaryTable& table, const DVBCharset* charset = 0);
+
+        //!
+        //! Search the component PID for a given component tag.
+        //! @param [in] tag Component tag to search.
+        //! @return The PID of the corresponding component of PID_NULL if not found.
+        //!
+        PID componentTagToPID(uint8_t tag) const;
 
         // Inherited methods
         virtual void serialize(BinaryTable& table, const DVBCharset* = 0) const override;

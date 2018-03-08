@@ -43,12 +43,22 @@ ts::MACAddress::MACAddress(uint8_t b1, uint8_t b2, uint8_t b3, uint8_t b4, uint8
 
 
 //----------------------------------------------------------------------------
-// Set address
+// Set/get address
 //----------------------------------------------------------------------------
 
 void ts::MACAddress::setAddress(uint8_t b1, uint8_t b2, uint8_t b3, uint8_t b4, uint8_t b5, uint8_t b6)
 {
     _addr = (uint64_t(b1) << 40) | (uint64_t(b2) << 32) | (uint64_t(b3) << 24) | (uint64_t(b4) << 16) | (uint64_t(b5) << 8) | uint64_t(b6);
+}
+
+void ts::MACAddress::getAddress(uint8_t& b1, uint8_t& b2, uint8_t& b3, uint8_t& b4, uint8_t& b5, uint8_t& b6) const
+{
+    b1 = uint8_t(_addr >> 40);
+    b2 = uint8_t(_addr >> 32);
+    b3 = uint8_t(_addr >> 24);
+    b4 = uint8_t(_addr >> 16);
+    b5 = uint8_t(_addr >> 8);
+    b6 = uint8_t(_addr);
 }
 
 
