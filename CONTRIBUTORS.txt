@@ -4,3 +4,4 @@ Thierry Lelégard (original author, current maintainer)
 Jérôme Lévèque
 Frédéric Peignot
 Tristan Claverie
+Harald Jordan
