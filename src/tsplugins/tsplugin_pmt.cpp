@@ -68,6 +68,18 @@ namespace ts {
             {
             }
         };
+        
+        struct NewStreamDescriptor {
+             uint8_t     descriptor;
+             uint8_t     tag;
+
+             // Constructor.
+             NewStreamDescriptor(uint8_t desc_ = 0, uint8_t tag_ = 0) :
+                 descriptor(desc_),
+                 tag(tag_)
+             {
+             }
+         };
 
         // PMTPlugin instance fields
         bool                _abort;             // Error (service not found, etc)
@@ -93,6 +105,8 @@ namespace ts {
         AudioLanguageOptionsVector _languages;  // Audio languages to set
         SectionDemux        _demux;             // Section demux
         CyclingPacketizer   _pzer;              // Packetizer for modified PMT
+        std::vector<NewStreamDescriptor>    _added_pid_id;      // List of identifiers/descriptors for PID to add
+        uint32_t                            _added_programinfo_id;// Adds a programinfo section to PMT with specified identifier
 
         // Invoked by the demux when a complete table is available.
         virtual void handleTable (SectionDemux&, const BinaryTable&) override;
@@ -120,6 +134,8 @@ ts::PMTPlugin::PMTPlugin(TSP* tsp_) :
     _removed_pid(),
     _removed_desc(),
     _added_pid(),
+    _added_pid_id(),
+    _added_programinfo_id(),
     _moved_pid(),
     _set_servid(false),
     _new_servid(0),
@@ -133,7 +149,7 @@ ts::PMTPlugin::PMTPlugin(TSP* tsp_) :
     _ac3_atsc2dvb(false),
     _eac3_atsc2dvb(false),
     _cleanup_priv_desc(false),
-    _add_descs(0),
+    _add_descs(),
     _languages(),
     _demux(this),
     _pzer()
@@ -141,6 +157,8 @@ ts::PMTPlugin::PMTPlugin(TSP* tsp_) :
     option(u"ac3-atsc2dvb",                0);
     option(u"add-ca-descriptor",           0,  STRING, 0, UNLIMITED_COUNT);
     option(u"add-pid",                    'a', STRING, 0, UNLIMITED_COUNT);
+    option(u"add-pid-id",                  0,  STRING, 0, UNLIMITED_COUNT);
+    option(u"add-programinfo-id",          0,  UINT32, 0, UNLIMITED_COUNT);
     option(u"add-stream-identifier",       0);
     option(u"audio-language",              0,  STRING, 0, UNLIMITED_COUNT);
     option(u"cleanup-private-descriptors", 0);
@@ -174,6 +192,19 @@ ts::PMTPlugin::PMTPlugin(TSP* tsp_) :
             u"  --add-pid pid/stream_type\n"
             u"      Add the specified PID / stream-type component in the PMT. Several\n"
             u"      --add-pid options may be specified to add several components.\n"
+            u"\n"
+            u"  --add-pid-id value/value\n"
+            u"      Add an Identifier (Descriptor) to the added PID\n"
+            u"      After the slash, you can specify the stream type or Component tag.\n"
+            u"      Only one --add-pid command can be specified when using --add-pid-id\n"
+            u"      Currently supports only 0x8a and 0x56 (SCTE 35 Cue Identifier and \n"
+            u"      Stream Identifier), but at leat the stream type/component tag is open\n"
+            u"      for any 32bit int input\n"
+            u"      Example: 0x8A/0x02 for SCTE35 Cue Identifier plus Cue stream type 0x02.\n"
+            u"      Example: 0x52/0x56 adds a Stream Identifier with Component tag 0x56\n"
+            u"\n"
+            u"  --add-programinfo-id value\n"
+            u"      Adds Programinfo section to PMT, the value is the identifier, e.g. 0x43554549 (for CUEI)\n"
             u"\n"
             u"  --add-stream-identifier\n"
             u"      Add a stream_identifier_descriptor on all components. The component_tag\n"
@@ -265,7 +296,8 @@ bool ts::PMTPlugin::start()
     _moved_pid.clear();
     _demux.reset();
     _pzer.reset();
-
+    _added_pid_id.clear();
+    _added_programinfo_id = 0;
     // Get option values
     _set_servid = present(u"new-service-id");
     _new_servid = intValue<uint16_t>(u"new-service-id");
@@ -281,8 +313,9 @@ bool ts::PMTPlugin::start()
     _cleanup_priv_desc = present(u"cleanup-private-descriptors");
     getIntValues(_removed_pid, u"remove-pid");
     getIntValues(_removed_desc, u"remove-descriptor");
-
+    _added_programinfo_id = intValue<uint32_t>(u"add-programinfo-id");
     // Get list of components to add
+
     const size_t add_count = count(u"add-pid");
     for (size_t n = 0; n < add_count; n++) {
         const UString s(value(u"add-pid", u"", n));
@@ -296,6 +329,20 @@ bool ts::PMTPlugin::start()
         }
     }
 
+    //Get suboptions for component to add, type of identifier and tag
+    const size_t add_pid_id_count = count(u"add-pid-id");
+    for (size_t n = 0; n < add_pid_id_count; n++) {
+        const UString s(value(u"add-pid-id", u"", n));
+        uint8_t descriptor = 0, tag = 0;
+        if (s.scan(u"%i/%i", { &descriptor, &tag }) && descriptor >= 0 && descriptor <= 0xFF && tag >= 0 && tag <= 0xFF) {
+            _added_pid_id.push_back(NewStreamDescriptor(descriptor, tag));
+        }
+        else {
+            error(u"invalid \"Identifier/Descriptor or tag\" value \"%s\", expected was 0 to 0xFF for both", { s });
+            return false;
+        }
+    }
+    
     // Get list of components to move
     const size_t move_count = count(u"move-pid");
     for (size_t n = 0; n < move_count; n++) {
@@ -458,6 +505,14 @@ void ts::PMTPlugin::handleTable (SectionDemux& demux, const BinaryTable& table)
             _languages.apply(pmt, *tsp);
             // Add CA descriptors
             pmt.descs.add(_add_descs);
+            
+            //add programinfo section
+            if (_added_programinfo_id > 0) {
+                RegistrationDescriptor programinfo;
+                programinfo.format_identifier = _added_programinfo_id;
+                pmt.descs.add(programinfo);
+            }
+
             // Remove components
             for (std::vector<PID>::const_iterator it = _removed_pid.begin(); it != _removed_pid.end(); ++it) {
                 pmt.streams.erase(*it);
@@ -466,6 +521,22 @@ void ts::PMTPlugin::handleTable (SectionDemux& demux, const BinaryTable& table)
             for (std::list<NewPID>::const_iterator it = _added_pid.begin(); it != _added_pid.end(); ++it) {
                 PMT::Stream& ps(pmt.streams[it->pid]);
                 ps.stream_type = it->stream_type;
+                            //add identifiers/descriptors if any
+                if (_added_pid_id.size() > 0) {
+                    for (std::vector<NewStreamDescriptor>::const_iterator it1 = _added_pid_id.begin(); it1 != _added_pid_id.end(); ++it1) {
+                        if (it1->descriptor == 0x8A) {
+                            CueIdentifierDescriptor descriptor;
+                            descriptor.cue_stream_type = uint8_t(it1->tag);
+                            ps.descs.add(descriptor);
+                        }
+                        if (it1->descriptor == 0x52) {
+                            StreamIdentifierDescriptor descriptor;
+                            descriptor.component_tag = uint8_t(it1->tag);
+                            ps.descs.add(descriptor);
+
+                        }
+                    }
+                }
             }
             // Change the PID of components
             for (std::map<PID, PID>::const_iterator it = _moved_pid.begin(); it != _moved_pid.end(); ++it) {
