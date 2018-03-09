@@ -59,43 +59,54 @@ namespace ts {
         // Description of a new component to add
         struct NewPID {
             PID     pid;
-            uint8_t stream_type;
+            uint8_t type;
 
             // Constructor.
             NewPID(PID pid_ = PID_NULL, uint8_t stype_ = 0) :
                 pid(pid_),
-                stream_type(stype_)
+                type(stype_)
             {
             }
         };
 
+        // Map of new descriptors to add per component.
+        typedef std::map<PID, SafePtr<DescriptorList>> DescriptorListByPID;
+
         // PMTPlugin instance fields
-        bool                _abort;             // Error (service not found, etc)
-        bool                _ready;             // Ready to perform transformation
-        Service             _service;           // Service of PMT to modify
-        std::vector<PID>    _removed_pid;       // Set of PIDs to remove from PMT
-        std::vector<DID>    _removed_desc;      // Set of descriptor tags to remove
-        std::list<NewPID>   _added_pid;         // List of PID to add
-        std::map<PID,PID>   _moved_pid;         // List of renamed PID's in PMT (key=old, value=new)
-        bool                _set_servid;        // Set a new service id
-        uint16_t            _new_servid;        // New service id
-        bool                _set_pcrpid;        // Set a new PCR PID
-        PID                 _new_pcrpid;        // New PCR PID
-        bool                _incr_version;      // Increment table version
-        bool                _set_version;       // Set a new table version
-        uint8_t             _new_version;       // New table version
-        PDS                 _pds;               // Private data specifier for removed descriptors
-        bool                _add_stream_id;     // Add stream_identifier_descriptor on all components
-        bool                _ac3_atsc2dvb;      // Modify AC-3 signaling from ATSC to DVB method
-        bool                _eac3_atsc2dvb;     // Modify Enhanced-AC-3 signaling from ATSC to DVB method
-        bool                _cleanup_priv_desc; // Remove private desc without preceding PDS desc
-        DescriptorList      _add_descs;         // List of descriptors to add
-        AudioLanguageOptionsVector _languages;  // Audio languages to set
-        SectionDemux        _demux;             // Section demux
-        CyclingPacketizer   _pzer;              // Packetizer for modified PMT
+        bool                _abort;                // Error (service not found, etc)
+        bool                _ready;                // Ready to perform transformation
+        Service             _service;              // Service of PMT to modify
+        std::vector<PID>    _removed_pid;          // Set of PIDs to remove from PMT
+        std::vector<DID>    _removed_desc;         // Set of descriptor tags to remove
+        std::list<NewPID>   _added_pid;            // List of PID to add
+        std::map<PID,PID>   _moved_pid;            // List of renamed PID's in PMT (key=old, value=new)
+        bool                _set_servid;           // Set a new service id
+        uint16_t            _new_servid;           // New service id
+        bool                _set_pcrpid;           // Set a new PCR PID
+        PID                 _new_pcrpid;           // New PCR PID
+        bool                _incr_version;         // Increment table version
+        bool                _set_version;          // Set a new table version
+        uint8_t             _new_version;          // New table version
+        PDS                 _pds;                  // Private data specifier for removed descriptors
+        bool                _add_stream_id;        // Add stream_identifier_descriptor on all components
+        bool                _ac3_atsc2dvb;         // Modify AC-3 signaling from ATSC to DVB method
+        bool                _eac3_atsc2dvb;        // Modify Enhanced-AC-3 signaling from ATSC to DVB method
+        bool                _cleanup_priv_desc;    // Remove private desc without preceding PDS desc
+        DescriptorList      _add_descs;            // List of descriptors to add at program level
+        DescriptorListByPID _add_pid_descs;        // Lists of descriptors to add by PID
+        AudioLanguageOptionsVector _languages;     // Audio languages to set
+        SectionDemux        _demux;                // Section demux
+        CyclingPacketizer   _pzer;                 // Packetizer for modified PMT
 
         // Invoked by the demux when a complete table is available.
         virtual void handleTable (SectionDemux&, const BinaryTable&) override;
+
+        // Process all PMT modifications.
+        void processPMT(PMT& pmt);
+
+        // Decode options like --set-stream-identifier which add a simple descriptor in a component.
+        template<typename DESCRIPTOR, typename INT>
+        bool decodeComponentDescOption(const UChar* parameter_name);
 
         // Inaccessible operations
         PMTPlugin() = delete;
@@ -134,6 +145,7 @@ ts::PMTPlugin::PMTPlugin(TSP* tsp_) :
     _eac3_atsc2dvb(false),
     _cleanup_priv_desc(false),
     _add_descs(0),
+    _add_pid_descs(),
     _languages(),
     _demux(this),
     _pzer()
@@ -141,6 +153,7 @@ ts::PMTPlugin::PMTPlugin(TSP* tsp_) :
     option(u"ac3-atsc2dvb",                0);
     option(u"add-ca-descriptor",           0,  STRING, 0, UNLIMITED_COUNT);
     option(u"add-pid",                    'a', STRING, 0, UNLIMITED_COUNT);
+    option(u"add-programinfo-id",          0,  UINT32);
     option(u"add-stream-identifier",       0);
     option(u"audio-language",              0,  STRING, 0, UNLIMITED_COUNT);
     option(u"cleanup-private-descriptors", 0);
@@ -154,6 +167,8 @@ ts::PMTPlugin::PMTPlugin(TSP* tsp_) :
     option(u"remove-descriptor",           0,  UINT8,  0, UNLIMITED_COUNT);
     option(u"remove-pid",                 'r', PIDVAL, 0, UNLIMITED_COUNT);
     option(u"service",                    's', STRING);
+    option(u"set-cue-type",                0,  STRING, 0, UNLIMITED_COUNT);
+    option(u"set-stream-identifier",       0,  STRING, 0, UNLIMITED_COUNT);
     option(u"new-version",                'v', INTEGER, 0, 1, 0, 31);
 
     setHelp(u"Options:\n"
@@ -174,6 +189,11 @@ ts::PMTPlugin::PMTPlugin(TSP* tsp_) :
             u"  --add-pid pid/stream_type\n"
             u"      Add the specified PID / stream-type component in the PMT. Several\n"
             u"      --add-pid options may be specified to add several components.\n"
+            u"\n"
+            u"  --add-programinfo-id value\n"
+            u"      Add a registration_descriptor in the program-level descriptor list in the\n"
+            u"      PMT. The value is the format_identifier in registration_descriptor, e.g.\n"
+            u"      0x43554549 for CUEI.\n"
             u"\n"
             u"  --add-stream-identifier\n"
             u"      Add a stream_identifier_descriptor on all components. The component_tag\n"
@@ -243,12 +263,55 @@ ts::PMTPlugin::PMTPlugin(TSP* tsp_) :
             u"      Options --pmt-pid and --service are mutually exclusive. If neither are\n"
             u"      specified, the first service in the PAT is used.\n"
             u"\n"
+            u"  --set-cue-type pid/type\n"
+            u"      In the component with the specified PID, add an SCTE 35 cue_identifier\n"
+            u"      descriptor with the specified cue stream type. Several --set-cue-type\n"
+            u"      options may be specified.\n"
+            u"\n"
+            u"  --set-stream-identifier pid/id\n"
+            u"      In the component with the specified PID, add a stream_identifier_descriptor\n"
+            u"      with the specified id. Several --set-stream-identifier options may be\n"
+            u"      specified.\n"
+            u"\n"
             u"  -v value\n"
             u"  --new-version value\n"
             u"      Specify a new value for the version of the PMT.\n"
             u"\n"
             u"  --version\n"
             u"      Display the version number.\n");
+}
+
+
+//----------------------------------------------------------------------------
+// Decode options like --set-stream-identifier which add a simple descriptor in a component.
+//----------------------------------------------------------------------------
+
+template<typename DESCRIPTOR, typename INT>
+bool ts::PMTPlugin::decodeComponentDescOption(const UChar* parameter_name)
+{
+    // Loop on all option values.
+    const size_t opt_count = count(parameter_name);
+    for (size_t n = 0; n < opt_count; n++) {
+
+        // Get and decode option value.
+        const UString s(value(parameter_name, u"", n));
+        PID pid = PID_NULL;
+        INT param = 0;
+        if (!s.scan(u"%i/%i", {&pid, &param}) || pid >= PID_MAX) {
+            error(u"invalid value \"%s\" for --%s", {s, parameter_name});
+            return false;
+        }
+
+        // Get or create descriptor list for the component.
+        if (_add_pid_descs[pid].isNull()) {
+            _add_pid_descs[pid] = new DescriptorList(0);
+        }
+
+        // Add a new descriptor of the requested type.
+        _add_pid_descs[pid]->add(DESCRIPTOR(param));
+    }
+
+    return true;
 }
 
 
@@ -263,6 +326,8 @@ bool ts::PMTPlugin::start()
     _service.clear();
     _added_pid.clear();
     _moved_pid.clear();
+    _add_descs.clear();
+    _add_pid_descs.clear();
     _demux.reset();
     _pzer.reset();
 
@@ -296,6 +361,13 @@ bool ts::PMTPlugin::start()
         }
     }
 
+    // Get suboptions for component to add, type of identifier and tag
+    if (!decodeComponentDescOption<StreamIdentifierDescriptor, uint8_t>(u"set-stream-identifier") ||
+        !decodeComponentDescOption<CueIdentifierDescriptor, uint8_t>(u"set-cue-type"))
+    {
+        return false;
+    }
+
     // Get list of components to move
     const size_t move_count = count(u"move-pid");
     for (size_t n = 0; n < move_count; n++) {
@@ -316,9 +388,11 @@ bool ts::PMTPlugin::start()
     // Get list of descriptors to add
     UStringVector cadescs;
     getValues(cadescs, u"add-ca-descriptor");
-    _add_descs.clear();
     if (!CADescriptor::AddFromCommandLine(_add_descs, cadescs, *tsp)) {
         return false;
+    }
+    if (present(u"add-programinfo-id")) {
+        _add_descs.add(RegistrationDescriptor(intValue<uint32_t>(u"add-programinfo-id")));
     }
 
     // Get PMT PID or service description
@@ -351,6 +425,150 @@ bool ts::PMTPlugin::start()
     }
 
     return true;
+}
+
+
+//----------------------------------------------------------------------------
+// Process all PMT modifications.
+//----------------------------------------------------------------------------
+
+void ts::PMTPlugin::processPMT(PMT& pmt)
+{
+    // Modify service id
+    if (_set_servid) {
+        pmt.service_id = _new_servid;
+    }
+
+    // Modify table version
+    if (_incr_version) {
+        pmt.version = (pmt.version + 1) & SVERSION_MASK;
+    }
+    else if (_set_version) {
+        pmt.version = _new_version;
+    }
+
+    // Modify PCR PID
+    if (_set_pcrpid) {
+        pmt.pcr_pid = _new_pcrpid;
+    }
+
+    // Modify audio languages
+    _languages.apply(pmt, *tsp);
+
+    // Add new descriptors at program level.
+    pmt.descs.add(_add_descs);
+
+    // Remove components
+    for (std::vector<PID>::const_iterator it = _removed_pid.begin(); it != _removed_pid.end(); ++it) {
+        pmt.streams.erase(*it);
+    }
+
+    // Add new components
+    for (std::list<NewPID>::const_iterator it = _added_pid.begin(); it != _added_pid.end(); ++it) {
+        PMT::Stream& ps(pmt.streams[it->pid]);
+        ps.stream_type = it->type;
+    }
+
+    // Change the PID of components
+    for (std::map<PID, PID>::const_iterator it = _moved_pid.begin(); it != _moved_pid.end(); ++it) {
+        // Check if component exists
+        if (it->first != it->second && pmt.streams.find(it->first) != pmt.streams.end()) {
+            pmt.streams[it->second] = pmt.streams[it->first];
+            pmt.streams.erase(it->first);
+        }
+    }
+
+    // Remove descriptors
+    for (std::vector<DID>::const_iterator it = _removed_desc.begin(); it != _removed_desc.end(); ++it) {
+        pmt.descs.removeByTag(*it, _pds);
+        for (PMT::StreamMap::iterator smi = pmt.streams.begin(); smi != pmt.streams.end(); ++smi) {
+            smi->second.descs.removeByTag(*it, _pds);
+        }
+    }
+
+    // Modify AC-3 signaling from ATSC to DVB method
+    if (_ac3_atsc2dvb) {
+        for (PMT::StreamMap::iterator smi = pmt.streams.begin(); smi != pmt.streams.end(); ++smi) {
+            if (smi->second.stream_type == ST_AC3_AUDIO) {
+                smi->second.stream_type = ST_PES_PRIV;
+                if (smi->second.descs.search(DID_AC3) == smi->second.descs.count()) {
+                    // No AC-3_descriptor present in this component, add one.
+                    smi->second.descs.add(AC3Descriptor());
+                }
+            }
+        }
+    }
+
+    // Modify Enhanced-AC-3 signaling from ATSC to DVB method
+    if (_eac3_atsc2dvb) {
+        for (PMT::StreamMap::iterator smi = pmt.streams.begin(); smi != pmt.streams.end(); ++smi) {
+            if (smi->second.stream_type == ST_EAC3_AUDIO) {
+                smi->second.stream_type = ST_PES_PRIV;
+                if (smi->second.descs.search (DID_ENHANCED_AC3) == smi->second.descs.count()) {
+                    // No enhanced_AC-3_descriptor present in this component, add one.
+                    smi->second.descs.add(EnhancedAC3Descriptor());
+                }
+            }
+        }
+    }
+
+    // Remove private descriptors without preceding PDS descriptor
+    if (_cleanup_priv_desc) {
+        pmt.descs.removeInvalidPrivateDescriptors();
+        for (PMT::StreamMap::iterator smi = pmt.streams.begin(); smi != pmt.streams.end(); ++smi) {
+            smi->second.descs.removeInvalidPrivateDescriptors();
+        }
+    }
+
+    // Add descriptors on components.
+    for (auto it = _add_pid_descs.begin(); it != _add_pid_descs.end(); ++it) {
+        const PID pid = it->first;
+        const DescriptorList& dlist(*it->second);
+
+        auto comp_it = pmt.streams.find(pid);
+        if (comp_it == pmt.streams.end()) {
+            tsp->warning(u"PID 0x%X (%d) not found in PMT", {pid, pid});
+        }
+        else {
+            comp_it->second.descs.add(dlist);
+        }
+    }
+
+    // Add stream_identifier_descriptor on all components.
+    if (_add_stream_id) {
+
+        // First, look for existing descriptors, collect component tags.
+        std::bitset<256> ctags;
+        for (PMT::StreamMap::iterator smi = pmt.streams.begin(); smi != pmt.streams.end(); ++smi) {
+            const DescriptorList& dlist(smi->second.descs);
+            for (size_t i = dlist.search(DID_STREAM_ID); i < dlist.count(); i = dlist.search(DID_STREAM_ID, i + 1)) {
+                const StreamIdentifierDescriptor sid(*dlist[i]);
+                if (sid.isValid()) {
+                    ctags.set(sid.component_tag);
+                }
+            }
+        }
+
+        // Then, add a stream_identifier_descriptor on all components which do not have one.
+        for (PMT::StreamMap::iterator smi = pmt.streams.begin(); smi != pmt.streams.end(); ++smi) {
+            DescriptorList& dlist(smi->second.descs);
+            // Skip components already containing a stream_identifier_descriptor
+            if (dlist.search(DID_STREAM_ID) < dlist.count()) {
+                continue;
+            }
+            // Allocate a new component tag
+            StreamIdentifierDescriptor sid;
+            for (size_t i = 0; i < ctags.size(); i++) {
+                if (!ctags.test(i)) {
+                    sid.component_tag = uint8_t(i);
+                    ctags.set(i);
+                    break;
+                }
+            }
+            // Add the stream_identifier_descriptor in the component
+            dlist.add(sid);
+        }
+    }
 }
 
 
@@ -439,113 +657,8 @@ void ts::PMTPlugin::handleTable (SectionDemux& demux, const BinaryTable& table)
             if (!pmt.isValid()) {
                 return;
             }
-            // Modify service id
-            if (_set_servid) {
-                pmt.service_id = _new_servid;
-            }
-            // Modify table version
-            if (_incr_version) {
-                pmt.version = (pmt.version + 1) & SVERSION_MASK;
-            }
-            else if (_set_version) {
-                pmt.version = _new_version;
-            }
-            // Modify PCR PID
-            if (_set_pcrpid) {
-                pmt.pcr_pid = _new_pcrpid;
-            }
-            // Modify audio languages
-            _languages.apply(pmt, *tsp);
-            // Add CA descriptors
-            pmt.descs.add(_add_descs);
-            // Remove components
-            for (std::vector<PID>::const_iterator it = _removed_pid.begin(); it != _removed_pid.end(); ++it) {
-                pmt.streams.erase(*it);
-            }
-            // Add new components
-            for (std::list<NewPID>::const_iterator it = _added_pid.begin(); it != _added_pid.end(); ++it) {
-                PMT::Stream& ps(pmt.streams[it->pid]);
-                ps.stream_type = it->stream_type;
-            }
-            // Change the PID of components
-            for (std::map<PID, PID>::const_iterator it = _moved_pid.begin(); it != _moved_pid.end(); ++it) {
-                // Check if component exists
-                if (it->first != it->second && pmt.streams.find(it->first) != pmt.streams.end()) {
-                    pmt.streams[it->second] = pmt.streams[it->first];
-                    pmt.streams.erase(it->first);
-                }
-            }
-            // Remove descriptors
-            for (std::vector<DID>::const_iterator it = _removed_desc.begin(); it != _removed_desc.end(); ++it) {
-                pmt.descs.removeByTag(*it, _pds);
-                for (PMT::StreamMap::iterator smi = pmt.streams.begin(); smi != pmt.streams.end(); ++smi) {
-                    smi->second.descs.removeByTag (*it, _pds);
-                }
-            }
-            // Modify AC-3 signaling from ATSC to DVB method
-            if (_ac3_atsc2dvb) {
-                for (PMT::StreamMap::iterator smi = pmt.streams.begin(); smi != pmt.streams.end(); ++smi) {
-                    if (smi->second.stream_type == ST_AC3_AUDIO) {
-                        smi->second.stream_type = ST_PES_PRIV;
-                        if (smi->second.descs.search(DID_AC3) == smi->second.descs.count()) {
-                            // No AC-3_descriptor present in this component, add one.
-                            smi->second.descs.add(AC3Descriptor());
-                        }
-                    }
-                }
-            }
-            // Modify Enhanced-AC-3 signaling from ATSC to DVB method
-            if (_eac3_atsc2dvb) {
-                for (PMT::StreamMap::iterator smi = pmt.streams.begin(); smi != pmt.streams.end(); ++smi) {
-                    if (smi->second.stream_type == ST_EAC3_AUDIO) {
-                        smi->second.stream_type = ST_PES_PRIV;
-                        if (smi->second.descs.search (DID_ENHANCED_AC3) == smi->second.descs.count()) {
-                            // No enhanced_AC-3_descriptor present in this component, add one.
-                            smi->second.descs.add(EnhancedAC3Descriptor());
-                        }
-                    }
-                }
-            }
-            // Remove private descriptors without preceding PDS descriptor
-            if (_cleanup_priv_desc) {
-                pmt.descs.removeInvalidPrivateDescriptors();
-                for (PMT::StreamMap::iterator smi = pmt.streams.begin(); smi != pmt.streams.end(); ++smi) {
-                    smi->second.descs.removeInvalidPrivateDescriptors();
-                }
-            }
-            // Add stream_identifier_descriptor on all components.
-            if (_add_stream_id) {
-                // First, look for existing descriptors, collect component tags.
-                std::bitset<256> ctags;
-                for (PMT::StreamMap::iterator smi = pmt.streams.begin(); smi != pmt.streams.end(); ++smi) {
-                    const DescriptorList& dlist(smi->second.descs);
-                    for (size_t i = dlist.search(DID_STREAM_ID); i < dlist.count(); i = dlist.search(DID_STREAM_ID, i + 1)) {
-                        const StreamIdentifierDescriptor sid(*dlist[i]);
-                        if (sid.isValid()) {
-                            ctags.set(sid.component_tag);
-                        }
-                    }
-                }
-                // Then, add a stream_identifier_descriptor on all components
-                for (PMT::StreamMap::iterator smi = pmt.streams.begin(); smi != pmt.streams.end(); ++smi) {
-                    DescriptorList& dlist(smi->second.descs);
-                    // Skip components already containing a stream_identifier_descriptor
-                    if (dlist.search(DID_STREAM_ID) < dlist.count()) {
-                        continue;
-                    }
-                    // Allocate a new component tag
-                    StreamIdentifierDescriptor sid;
-                    for (size_t i = 0; i < ctags.size(); i++) {
-                        if (!ctags.test(i)) {
-                            sid.component_tag = uint8_t(i);
-                            ctags.set(i);
-                            break;
-                        }
-                    }
-                    // Add the stream_identifier_descriptor in the component
-                    dlist.add(sid);
-                }
-            }
+            // Perform all requested modifications on the PMT.
+            processPMT(pmt);
             // Place modified PMT in the packetizer
             tsp->verbose(u"PMT version %d modified", {pmt.version});
             _pzer.removeSections(TID_PMT, pmt.service_id);
