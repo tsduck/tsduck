@@ -38,6 +38,16 @@
 namespace ts {
 
     //!
+    //! Check if a byte is a valid Binary Coded Decimal (BCD) value.
+    //! @param [in] b A byte containing a BCD-encoded value.
+    //! @return True if the value is valid BCDn false otherwise.
+    //!
+    TSDUCKDLL inline bool IsValidBCD(uint8_t b)
+    {
+        return (b & 0xF0) < 0xA0 && (b & 0x0F) < 0x0A;
+    }
+
+    //!
     //! Return the decimal value of a Binary Coded Decimal (BCD) encoded byte.
     //! @param [in] b A byte containing a BCD-encoded value.
     //! @return The decoded value in the range 0 to 99.

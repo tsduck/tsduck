@@ -40,19 +40,29 @@ TSDUCK_SOURCE;
 const ts::Time ts::Time::Epoch(0);
 const ts::Time ts::Time::Apocalypse(TS_CONST64(0x7FFFFFFFFFFFFFFF));
 
+// Portable representation of the UNIX epoch.
+const ts::Time ts::Time::UnixEpoch
+#if defined(TS_WINDOWS)
+    // Windows epoch is 1 Jan 1601 00:00:00, 134774 days before UNIX epoch.
+    (134774 * MilliSecPerDay * TICKS_PER_MS);
+#elif defined(TS_UNIX)
+    (0);
+#else
+    #error "unsupported operating system"
+#endif
+
 // This constant is: Julian epoch - Time epoch.
 // The Julian epoch is 17 Nov 1858 00:00:00.
 // If negative, the Julian epoch cannot be represented as a Time.
 const ts::MilliSecond ts::Time::JulianEpochOffset =
-#if defined (TS_WINDOWS)
-    // Windows epoch is 1 Jan 1601 00:00:00, 94187 days before Julian epoch
+#if defined(TS_WINDOWS)
+    // Windows epoch is 1 Jan 1601 00:00:00, 94187 days before Julian epoch.
     94187 * MilliSecPerDay;
-#elif defined (__vms)
-    // VMS time uses Julian date as native time
-    0;
-#else
+#elif defined(TS_UNIX)
     // UNIX epoch is 1 Jan 1970 00:00:00, 40587 days after Julian epoch
     -40587 * MilliSecPerDay;
+#else
+    #error "unsupported operating system"
 #endif
 
 

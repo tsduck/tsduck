@@ -589,6 +589,13 @@ namespace ts {
         static const Time Epoch;
 
         //!
+        //! Constant representing the Epoch on UNIX operating systems.
+        //! The UNIX epoch is 1 Jan 1970 00:00:00.
+        //! It is assumed to be representable in all operating systems.
+        //!
+        static const Time UnixEpoch;
+
+        //!
         //! Constant representing the End Of Time (at least on this operating system).
         //!
         static const Time Apocalypse;
