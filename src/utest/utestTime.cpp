@@ -54,6 +54,7 @@ public:
     void testFields();
     void testFieldsValid();
     void testDecode();
+    void testEpoch();
 
     CPPUNIT_TEST_SUITE(TimeTest);
     CPPUNIT_TEST(testTime);
@@ -64,6 +65,7 @@ public:
     CPPUNIT_TEST(testFields);
     CPPUNIT_TEST(testFieldsValid);
     CPPUNIT_TEST(testDecode);
+    CPPUNIT_TEST(testEpoch);
     CPPUNIT_TEST_SUITE_END();
 };
 
@@ -249,4 +251,9 @@ void TimeTest::testDecode()
     CPPUNIT_ASSERT_EQUAL(12, f.minute);
     CPPUNIT_ASSERT_EQUAL(0, f.second);
     CPPUNIT_ASSERT_EQUAL(2, f.millisecond);
+}
+
+void TimeTest::testEpoch()
+{
+    CPPUNIT_ASSERT_USTRINGS_EQUAL(u"1970/01/01 00:00:00.000", ts::Time::UnixEpoch.format());
 }

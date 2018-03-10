@@ -42,24 +42,36 @@ TSDUCK_SOURCE;
 // This routine converts a modified Julian date (MJD) into a base::Time.
 //----------------------------------------------------------------------------
 
-bool ts::DecodeMJD (const uint8_t* mjd, size_t mjd_size, Time& time)
+bool ts::DecodeMJD(const uint8_t* mjd, size_t mjd_size, Time& time)
 {
+    // Default invalid value. We use a portable constant value, not the system Epoch.
+    time = Time::UnixEpoch;
+
     // Check buffer size
-    if (mjd_size < 2 || mjd_size > 5) {
+    if (mjd_size < MJD_MIN_SIZE || mjd_size > MJD_SIZE) {
         return false;
     }
 
+    // Get day since MJD epoch.
+    const uint64_t day = uint64_t(GetUInt16(mjd));
+    bool valid = day != 0xFFFF; // Often used as invalid date.
+
     // Compute milliseconds since MJD epoch
-    const uint64_t day = uint64_t (GetUInt16 (mjd));
     MilliSecond mjd_ms = day * MilliSecPerDay;
-    if (mjd_size >= 3) {
-        mjd_ms += DecodeBCD (mjd[2]) * MilliSecPerHour; // Hours
+    if (mjd_size >= 3 && valid) {
+        valid = IsValidBCD(mjd[2]);
+        mjd_ms += DecodeBCD(mjd[2]) * MilliSecPerHour; // Hours
     }
-    if (mjd_size >= 4) {
-        mjd_ms += DecodeBCD (mjd[3]) * MilliSecPerMin; // Minutes
+    if (mjd_size >= 4 && valid) {
+        valid = IsValidBCD(mjd[3]);
+        mjd_ms += DecodeBCD(mjd[3]) * MilliSecPerMin; // Minutes
     }
-    if (mjd_size >= 5) {
-        mjd_ms += DecodeBCD (mjd[4]) * MilliSecPerSec; // Seconds
+    if (mjd_size >= 5 && valid) {
+        valid = IsValidBCD(mjd[4]);
+        mjd_ms += DecodeBCD(mjd[4]) * MilliSecPerSec; // Seconds
+    }
+    if (!valid) {
+        return false;
     }
 
     // Rebuild time depending on MJD and Time epoch
