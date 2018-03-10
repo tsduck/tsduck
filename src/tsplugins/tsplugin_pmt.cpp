@@ -104,6 +104,13 @@ namespace ts {
         // Process all PMT modifications.
         void processPMT(PMT& pmt);
 
+        // Add a descriptor for a given PID in _add_pid_descs.
+        void addComponentDescriptor(PID pid, const AbstractDescriptor& desc);
+
+        // Decode an option "pid/value[/hexa]". Hexa is allowed only if hexa is non zero.
+        template<typename INT>
+        bool decodeOptionForPID(const UChar* parameter_name, size_t parameter_index, PID& pid, INT& value, ByteBlock* hexa = 0);
+
         // Decode options like --set-stream-identifier which add a simple descriptor in a component.
         template<typename DESCRIPTOR, typename INT>
         bool decodeComponentDescOption(const UChar* parameter_name);
@@ -168,6 +175,7 @@ ts::PMTPlugin::PMTPlugin(TSP* tsp_) :
     option(u"remove-pid",                 'r', PIDVAL, 0, UNLIMITED_COUNT);
     option(u"service",                    's', STRING);
     option(u"set-cue-type",                0,  STRING, 0, UNLIMITED_COUNT);
+    option(u"set-data-broadcast-id",       0,  STRING, 0, UNLIMITED_COUNT);
     option(u"set-stream-identifier",       0,  STRING, 0, UNLIMITED_COUNT);
     option(u"new-version",                'v', INTEGER, 0, 1, 0, 31);
 
@@ -268,6 +276,12 @@ ts::PMTPlugin::PMTPlugin(TSP* tsp_) :
             u"      descriptor with the specified cue stream type. Several --set-cue-type\n"
             u"      options may be specified.\n"
             u"\n"
+            u"  --set-data-broadcast-id pid/id[/selector]\n"
+            u"      In the component with the specified PID, add a data_broadcast_id_descriptor\n"
+            u"      with the specified data_broadcast_id. The optional selector is a suite of\n"
+            u"      hexadecimal characters representing the content of the selector bytes.\n"
+            u"      Several --set-data-broadcast-id options may be specified.\n"
+            u"\n"
             u"  --set-stream-identifier pid/id\n"
             u"      In the component with the specified PID, add a stream_identifier_descriptor\n"
             u"      with the specified id. Several --set-stream-identifier options may be\n"
@@ -283,6 +297,71 @@ ts::PMTPlugin::PMTPlugin(TSP* tsp_) :
 
 
 //----------------------------------------------------------------------------
+// Add a descriptor for a given PID in _add_pid_descs.
+//----------------------------------------------------------------------------
+
+void ts::PMTPlugin::addComponentDescriptor(PID pid, const AbstractDescriptor& desc)
+{
+    // Get or create descriptor list for the component.
+    if (_add_pid_descs[pid].isNull()) {
+        _add_pid_descs[pid] = new DescriptorList(0);
+    }
+
+    // Add the new descriptor.
+    _add_pid_descs[pid]->add(desc);
+}
+
+
+//----------------------------------------------------------------------------
+// Decode an option "pid/param[/hexa]".
+//----------------------------------------------------------------------------
+
+template<typename INT>
+bool ts::PMTPlugin::decodeOptionForPID(const UChar* parameter_name, size_t parameter_index, PID& pid, INT& param, ByteBlock* hexa)
+{
+    // Get the parameter string value.
+    const UString str(value(parameter_name, u"", parameter_index));
+
+    // Get slash-separated fields.
+    UStringVector fields;
+    str.split(fields, u'/');
+
+    // Check number of fields.
+    const size_t count = fields.size();
+    bool ok = (hexa == 0 && count == 2) || (hexa != 0 && (count == 2 || count == 3));
+
+    // Get first two parameters.
+    if (ok) {
+        uint64_t v1 = 0, v2 = 0;
+        ok = fields[0].toInteger(v1, u",") &&
+             fields[1].toInteger(v2, u",") &&
+             v1 < uint64_t(PID_MAX) &&
+             v2 <= uint64_t(std::numeric_limits<INT>::max());
+        if (ok) {
+            pid = PID(v1);
+            param = INT(v2);
+        }
+    }
+
+    // Get third parameter.
+    if (ok && hexa != 0) {
+        if (count < 3) {
+            hexa->clear();
+        }
+        else {
+            ok = fields[2].hexaDecode(*hexa);
+        }
+    }
+
+    // Process errors.
+    if (!ok) {
+        error(u"invalid value \"%s\" for --%s", {str, parameter_name});
+    }
+    return ok;
+}
+
+
+//----------------------------------------------------------------------------
 // Decode options like --set-stream-identifier which add a simple descriptor in a component.
 //----------------------------------------------------------------------------
 
@@ -292,25 +371,16 @@ bool ts::PMTPlugin::decodeComponentDescOption(const UChar* parameter_name)
     // Loop on all option values.
     const size_t opt_count = count(parameter_name);
     for (size_t n = 0; n < opt_count; n++) {
-
-        // Get and decode option value.
-        const UString s(value(parameter_name, u"", n));
         PID pid = PID_NULL;
         INT param = 0;
-        if (!s.scan(u"%i/%i", {&pid, &param}) || pid >= PID_MAX) {
-            error(u"invalid value \"%s\" for --%s", {s, parameter_name});
+        if (decodeOptionForPID(parameter_name, n, pid, param)) {
+            // Add a new descriptor of the requested type.
+            addComponentDescriptor(pid, DESCRIPTOR(param));
+        }
+        else {
             return false;
         }
-
-        // Get or create descriptor list for the component.
-        if (_add_pid_descs[pid].isNull()) {
-            _add_pid_descs[pid] = new DescriptorList(0);
-        }
-
-        // Add a new descriptor of the requested type.
-        _add_pid_descs[pid]->add(DESCRIPTOR(param));
     }
-
     return true;
 }
 
@@ -348,15 +418,14 @@ bool ts::PMTPlugin::start()
     getIntValues(_removed_desc, u"remove-descriptor");
 
     // Get list of components to add
-    const size_t add_count = count(u"add-pid");
-    for (size_t n = 0; n < add_count; n++) {
-        const UString s(value(u"add-pid", u"", n));
-        int pid = 0, stype = 0;
-        if (s.scan(u"%i/%i", {&pid, &stype}) && pid >= 0 && pid < PID_MAX && stype >= 0 && stype <= 0xFF) {
-            _added_pid.push_back(NewPID(PID(pid), uint8_t(stype)));
+    size_t opt_count = count(u"add-pid");
+    for (size_t n = 0; n < opt_count; n++) {
+        PID pid = PID_NULL;
+        uint8_t stype = 0;
+        if (decodeOptionForPID(u"add-pid", n, pid, stype)) {
+            _added_pid.push_back(NewPID(pid, stype));
         }
         else {
-            error(u"invalid \"PID/stream-type\" value \"%s\"", {s});
             return false;
         }
     }
@@ -368,9 +437,22 @@ bool ts::PMTPlugin::start()
         return false;
     }
 
+    // Get list of data_broadcast_id_descriptors to add
+    opt_count = count(u"set-data-broadcast-id");
+    for (size_t n = 0; n < opt_count; n++) {
+        PID pid = PID_NULL;
+        DataBroadcastIdDescriptor desc;
+        if (decodeOptionForPID(u"set-data-broadcast-id", n, pid, desc.data_broadcast_id, &desc.private_data)) {
+            addComponentDescriptor(pid, desc);
+        }
+        else {
+            return false;
+        }
+    }
+
     // Get list of components to move
-    const size_t move_count = count(u"move-pid");
-    for (size_t n = 0; n < move_count; n++) {
+    opt_count = count(u"move-pid");
+    for (size_t n = 0; n < opt_count; n++) {
         const UString s(value(u"move-pid", u"", n));
         int opid = 0, npid = 0;
         if (!s.scan(u"%i/%i", {&opid, &npid}) || opid < 0 || opid >= PID_MAX || npid < 0 || npid >= PID_MAX) {
@@ -434,6 +516,8 @@ bool ts::PMTPlugin::start()
 
 void ts::PMTPlugin::processPMT(PMT& pmt)
 {
+    // ---- Global non-descriptor data
+
     // Modify service id
     if (_set_servid) {
         pmt.service_id = _new_servid;
@@ -452,30 +536,11 @@ void ts::PMTPlugin::processPMT(PMT& pmt)
         pmt.pcr_pid = _new_pcrpid;
     }
 
-    // Modify audio languages
-    _languages.apply(pmt, *tsp);
-
-    // Add new descriptors at program level.
-    pmt.descs.add(_add_descs);
+    // ---- Do removal first (otherwise it could remove things we add...)
 
     // Remove components
     for (std::vector<PID>::const_iterator it = _removed_pid.begin(); it != _removed_pid.end(); ++it) {
         pmt.streams.erase(*it);
-    }
-
-    // Add new components
-    for (std::list<NewPID>::const_iterator it = _added_pid.begin(); it != _added_pid.end(); ++it) {
-        PMT::Stream& ps(pmt.streams[it->pid]);
-        ps.stream_type = it->type;
-    }
-
-    // Change the PID of components
-    for (std::map<PID, PID>::const_iterator it = _moved_pid.begin(); it != _moved_pid.end(); ++it) {
-        // Check if component exists
-        if (it->first != it->second && pmt.streams.find(it->first) != pmt.streams.end()) {
-            pmt.streams[it->second] = pmt.streams[it->first];
-            pmt.streams.erase(it->first);
-        }
     }
 
     // Remove descriptors
@@ -485,6 +550,42 @@ void ts::PMTPlugin::processPMT(PMT& pmt)
             smi->second.descs.removeByTag(*it, _pds);
         }
     }
+
+    // Remove private descriptors without preceding PDS descriptor
+    if (_cleanup_priv_desc) {
+        pmt.descs.removeInvalidPrivateDescriptors();
+        for (PMT::StreamMap::iterator smi = pmt.streams.begin(); smi != pmt.streams.end(); ++smi) {
+            smi->second.descs.removeInvalidPrivateDescriptors();
+        }
+    }
+
+    // ---- Add components and descriptors
+
+    // Add new components
+    for (std::list<NewPID>::const_iterator it = _added_pid.begin(); it != _added_pid.end(); ++it) {
+        PMT::Stream& ps(pmt.streams[it->pid]);
+        ps.stream_type = it->type;
+    }
+
+    // Add new descriptors at program level.
+    pmt.descs.add(_add_descs);
+
+    // Add descriptors on components.
+    for (auto it = _add_pid_descs.begin(); it != _add_pid_descs.end(); ++it) {
+        const PID pid = it->first;
+        const DescriptorList& dlist(*it->second);
+
+        auto comp_it = pmt.streams.find(pid);
+        if (comp_it == pmt.streams.end()) {
+            tsp->warning(u"PID 0x%X (%d) not found in PMT", {pid, pid});
+        }
+        else {
+            comp_it->second.descs.add(dlist);
+        }
+    }
+
+    // Modify audio languages
+    _languages.apply(pmt, *tsp);
 
     // Modify AC-3 signaling from ATSC to DVB method
     if (_ac3_atsc2dvb) {
@@ -512,29 +613,8 @@ void ts::PMTPlugin::processPMT(PMT& pmt)
         }
     }
 
-    // Remove private descriptors without preceding PDS descriptor
-    if (_cleanup_priv_desc) {
-        pmt.descs.removeInvalidPrivateDescriptors();
-        for (PMT::StreamMap::iterator smi = pmt.streams.begin(); smi != pmt.streams.end(); ++smi) {
-            smi->second.descs.removeInvalidPrivateDescriptors();
-        }
-    }
-
-    // Add descriptors on components.
-    for (auto it = _add_pid_descs.begin(); it != _add_pid_descs.end(); ++it) {
-        const PID pid = it->first;
-        const DescriptorList& dlist(*it->second);
-
-        auto comp_it = pmt.streams.find(pid);
-        if (comp_it == pmt.streams.end()) {
-            tsp->warning(u"PID 0x%X (%d) not found in PMT", {pid, pid});
-        }
-        else {
-            comp_it->second.descs.add(dlist);
-        }
-    }
-
     // Add stream_identifier_descriptor on all components.
+    // Do this late to avoid clashing with descriptors we added.
     if (_add_stream_id) {
 
         // First, look for existing descriptors, collect component tags.
@@ -567,6 +647,16 @@ void ts::PMTPlugin::processPMT(PMT& pmt)
             }
             // Add the stream_identifier_descriptor in the component
             dlist.add(sid);
+        }
+    }
+
+    // ---- Finally, do PID remapping
+
+    for (std::map<PID, PID>::const_iterator it = _moved_pid.begin(); it != _moved_pid.end(); ++it) {
+        // Check if component exists
+        if (it->first != it->second && pmt.streams.find(it->first) != pmt.streams.end()) {
+            pmt.streams[it->second] = pmt.streams[it->first];
+            pmt.streams.erase(it->first);
         }
     }
 }
