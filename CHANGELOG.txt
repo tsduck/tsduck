@@ -8,8 +8,8 @@ Version 3.9
 
 - Added options --sei-avc and --uuid-sei to plugin pes.
 
-- Added options --add-programinfo-id, --set-stream-identifier and --set-cue-type
-  to plugin pmt.
+- Added options --add-programinfo-id, --set-stream-identifier, --set-cue-type
+  and --set-data-broadcast-id to plugin pmt.
 
 - Added signalization for data broadcast and MPE.
 
