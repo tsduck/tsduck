@@ -41,6 +41,7 @@ ts::UDPReceiver::UDPReceiver(ts::Report& report) :
     _local_address(),
     _reuse_port(false),
     _use_first_source(false),
+    _recv_bufsize(0),
     _use_source(),
     _first_source(),
     _sources()
