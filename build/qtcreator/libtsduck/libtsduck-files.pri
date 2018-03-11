@@ -310,6 +310,7 @@ HEADERS += \
     ../../../src/libtsduck/tsTunerParametersDVBT.h \
     ../../../src/libtsduck/tsTunerUtils.h \
     ../../../src/libtsduck/tsUChar.h \
+    ../../../src/libtsduck/tsUDPReceiver.h \
     ../../../src/libtsduck/tsUDPSocket.h \
     ../../../src/libtsduck/tsUID.h \
     ../../../src/libtsduck/tsUserInterrupt.h \
@@ -575,6 +576,7 @@ SOURCES += \
     ../../../src/libtsduck/tsTunerParametersDVBT.cpp \
     ../../../src/libtsduck/tsTunerUtils.cpp \
     ../../../src/libtsduck/tsUChar.cpp \
+    ../../../src/libtsduck/tsUDPReceiver.cpp \
     ../../../src/libtsduck/tsUDPSocket.cpp \
     ../../../src/libtsduck/tsUID.cpp \
     ../../../src/libtsduck/tsUserInterrupt.cpp \

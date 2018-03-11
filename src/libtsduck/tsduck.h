@@ -316,6 +316,7 @@
 #include "tsTunerParametersDVBT.h"
 #include "tsTunerUtils.h"
 #include "tsUChar.h"
+#include "tsUDPReceiver.h"
 #include "tsUDPSocket.h"
 #include "tsUID.h"
 #include "tsUserInterrupt.h"
