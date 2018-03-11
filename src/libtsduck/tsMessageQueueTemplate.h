@@ -200,3 +200,19 @@ bool ts::MessageQueue<MSG, MUTEX>::dequeue(MessagePtr& msg, MilliSecond timeout)
         return true;
     }
 }
+
+
+//----------------------------------------------------------------------------
+// Clear the queue.
+//----------------------------------------------------------------------------
+
+template <typename MSG, class MUTEX>
+void ts::MessageQueue<MSG, MUTEX>::clear()
+{
+    Guard lock(_mutex);
+    if (!_queue.empty()) {
+        _queue.clear();
+        // Signal that messages have been dequeued (dropped in fact).
+        _dequeued.signal();
+    }
+}

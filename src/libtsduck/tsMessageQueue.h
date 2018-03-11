@@ -135,6 +135,11 @@ namespace ts {
         //!
         bool dequeue(MessagePtr& msg, MilliSecond timeout = Infinite);
 
+        //!
+        //! Clear the content of the queue.
+        //!
+        void clear();
+
     private:
         MessageQueue(const MessageQueue&) = delete;
         MessageQueue& operator=(const MessageQueue&) = delete;

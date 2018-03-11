@@ -244,6 +244,7 @@ bool ts::UDPReceiver::receive(void* data,
 
         if (destination.hasAddress() && ((_dest_addr.hasAddress() && destination != _dest_addr) || (!_dest_addr.hasAddress() && destination.isMulticast()))) {
             // This is a spurious packet.
+            report.debug(u"rejecting packet, destination: %s, expecting: %s", {destination.toString(), _dest_addr.toString()});
             continue;
         }
 
@@ -267,8 +268,8 @@ bool ts::UDPReceiver::receive(void* data,
             // If no source filtering is applied, this is a warning since this may affect the resulting stream.
             // With source filtering, this is just an informational verbose-level message.
             const int level = _use_source.hasAddress() ? Severity::Verbose : Severity::Warning;
-            report.log(level, u"detected multiple sources for the same destination %s with potentially distinct streams", {destination.toString()});
             if (_sources.size() == 1) {
+                report.log(level, u"detected multiple sources for the same destination %s with potentially distinct streams", {destination.toString()});
                 report.log(level, u"detected source: %s", {_first_source.toString()});
             }
             report.log(level, u"detected source: %s", {sender.toString()});
@@ -278,6 +279,7 @@ bool ts::UDPReceiver::receive(void* data,
         // Filter packets based on source address if requested.
         if (!sender.match(_use_source)) {
             // Not the expected source, this is a spurious packet.
+            report.debug(u"rejecting packet, source: %s, expecting: %s", {sender.toString(), _use_source.toString()});
             continue;
         }
 
