@@ -312,6 +312,7 @@
     <ClInclude Include="..\..\src\libtsduck\tsTunerParametersDVBT.h" />
     <ClInclude Include="..\..\src\libtsduck\tsTunerUtils.h" />
     <ClInclude Include="..\..\src\libtsduck\tsUChar.h" />
+    <ClInclude Include="..\..\src\libtsduck\tsUDPReceiver.h" />
     <ClInclude Include="..\..\src\libtsduck\tsUDPSocket.h" />
     <ClInclude Include="..\..\src\libtsduck\tsUID.h" />
     <ClInclude Include="..\..\src\libtsduck\tsUserInterrupt.h" />
@@ -587,6 +588,7 @@
     <ClCompile Include="..\..\src\libtsduck\tsTunerParametersDVBT.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsTunerUtils.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsUChar.cpp" />
+    <ClCompile Include="..\..\src\libtsduck\tsUDPReceiver.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsUDPSocket.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsUID.cpp" />
     <ClCompile Include="..\..\src\libtsduck\tsUserInterrupt.cpp" />

@@ -218,7 +218,7 @@ namespace ts {
         //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
-        bool send(const void* data, size_t size, const SocketAddress& destination, Report& report = CERR);
+        virtual bool send(const void* data, size_t size, const SocketAddress& destination, Report& report = CERR);
 
         //!
         //! Send a message to the default destination address and port.
@@ -228,7 +228,7 @@ namespace ts {
         //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
-        bool send(const void* data, size_t size, Report& report = CERR)
+        virtual bool send(const void* data, size_t size, Report& report = CERR)
         {
             return send(data, size, _default_destination, report);
         }
@@ -248,13 +248,13 @@ namespace ts {
         //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
-        bool receive(void* data,
-                     size_t max_size,
-                     size_t& ret_size,
-                     SocketAddress& sender,
-                     SocketAddress& destination,
-                     const AbortInterface* abort = 0,
-                     Report& report = CERR);
+        virtual bool receive(void* data,
+                             size_t max_size,
+                             size_t& ret_size,
+                             SocketAddress& sender,
+                             SocketAddress& destination,
+                             const AbortInterface* abort = 0,
+                             Report& report = CERR);
 
         // Implementation of Socket interface.
         virtual bool open(Report& report = CERR) override;
