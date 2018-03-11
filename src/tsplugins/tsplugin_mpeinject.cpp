@@ -44,6 +44,7 @@ TSDUCK_SOURCE;
 #define MAX_IP_SIZE                 65536
 #define DEFAULT_MAX_QUEUED_SECTION  32
 #define SERVER_THREAD_STACK_SIZE    (128 * 1024)
+#define OVERFLOW_MSG_GROUP_COUNT    1000
 
 
 //----------------------------------------------------------------------------
@@ -64,6 +65,7 @@ namespace ts {
         typedef MessageQueue<Section, Mutex> SectionQueue;
 
         // Plugin private fields.
+        volatile bool  _terminate;      // Force termination flag for thread.
         PID            _mpe_pid;        // PID into insert the MPE datagrams.
         bool           _replace;        // Replace incoming PID if it exists.
         size_t         _max_queued;     // Max number of queued sections.
@@ -96,6 +98,7 @@ TSPLUGIN_DECLARE_PROCESSOR(mpeinject, ts::MPEInjectPlugin)
 
 ts::MPEInjectPlugin::MPEInjectPlugin(TSP* tsp_) :
     ProcessorPlugin(tsp_, u"Inject an incoming UDP stream into MPE (Multi-Protocol Encapsulation).", u"[options] [address:]port"),
+    _terminate(false),
     _mpe_pid(PID_NULL),
     _replace(false),
     _max_queued(DEFAULT_MAX_QUEUED_SECTION),
@@ -199,6 +202,7 @@ bool ts::MPEInjectPlugin::start()
     _next_cc = 0;
 
     // Start the internal thread which listens to incoming UDP packet.
+    _terminate = false;
     Thread::start();
 
     return true;
@@ -213,6 +217,8 @@ bool ts::MPEInjectPlugin::stop()
 {
     // Close the UDP socket.
     // This will force the server thread to terminate on receive error.
+    // In case the server does not properly notify the error, set a flag.
+    _terminate = true;
     _sock.close(*tsp);
 
     // Wait for actual thread termination
@@ -273,13 +279,16 @@ void ts::MPEInjectPlugin::main()
 {
     tsp->debug(u"server thread started");
 
+    // Try to cumlate "UDP overflow" messages.
+    size_t overflow_count = 0;
+
     size_t insize;
     SocketAddress sender;
     SocketAddress destination;
     ByteBlock buffer(MAX_IP_SIZE);
 
     // Loop on message reception until a receive error (probably an end of execution).
-    while (_sock.receive(buffer.data(), buffer.size(), insize, sender, destination, tsp, *tsp)) {
+    while (!_terminate && _sock.receive(buffer.data(), buffer.size(), insize, sender, destination, tsp, *tsp)) {
 
         // Rebuild source and destination addresses if required.
         if (_new_source.hasAddress()) {
@@ -318,8 +327,15 @@ void ts::MPEInjectPlugin::main()
             tsp->error(u"error creating MPE section from UDP datagram, source: %s, destination: %s, size: %d bytes",
                        {sender.toString(), destination.toString(), insize});
         }
-        else if (!_section_queue.enqueue(section, 0)) {
-            tsp->warning(u"incoming UDP buffer overflow, try option --max-queue");
+        else {
+            const bool queued = _section_queue.enqueue(section, 0);
+            if (!queued) {
+                overflow_count++;
+            }
+            if ((queued && overflow_count > 0) || overflow_count >= OVERFLOW_MSG_GROUP_COUNT) {
+                tsp->warning(u"incoming UDP overflow, dropped %d datagrams", {overflow_count});
+                overflow_count = 0;
+            }
         }
     }
 
