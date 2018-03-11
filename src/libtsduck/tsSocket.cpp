@@ -97,6 +97,13 @@ void ts::Socket::declareOpened(TS_SOCKET_T sock, Report& report)
 bool ts::Socket::close(Report& report)
 {
     if (_sock != TS_SOCKET_T_INVALID) {
+        // Shutdown should not be necessary here. However, on Linux, no using
+        // shutdown makes a blocking receive hangs forever when close() is
+        // invoked by another thread. By using shutdown() before close(),
+        // the blocking call is released. This is especially true on UDP sockets
+        // where shutdown() is normally meaningless.
+        ::shutdown(_sock, TS_SOCKET_SHUT_RDWR);
+        // Actually close the socket.
         TS_SOCKET_CLOSE(_sock);
         _sock = TS_SOCKET_T_INVALID;
     }
