@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="PropertySheets">
+    <Import Project="msvc-common-begin.props" />
+  </ImportGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\src\tsplugins\tsplugin_mpeinject.cpp" />
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{894E6C03-6398-4EFB-950E-1CF0DAD7844B}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>tsplugin_mpeinject</RootNamespace>
+  </PropertyGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="msvc-target-dll.props" />
+    <Import Project="msvc-use-tsduckdll.props" />
+    <Import Project="msvc-common-end.props" />
+  </ImportGroup>
+</Project>

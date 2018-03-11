@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26430.14
+VisualStudioVersion = 15.0.26403.7
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "utests-tsduckdll", "utests-tsduckdll.vcxproj", "{A5E2A70F-CA57-460C-9BE0-473BD61DF467}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -466,6 +466,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tsp_static", "tsp_static.vc
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tsplugin_mpe", "tsplugin_mpe.vcxproj", "{5E225996-0B6C-43C2-B786-30AB5FEE8096}"
+	ProjectSection(ProjectDependencies) = postProject
+		{1AD31049-26B0-4922-89CF-778040DFC51E} = {1AD31049-26B0-4922-89CF-778040DFC51E}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tsplugin_mpeinject", "tsplugin_mpeinject.vcxproj", "{894E6C03-6398-4EFB-950E-1CF0DAD7844B}"
 	ProjectSection(ProjectDependencies) = postProject
 		{1AD31049-26B0-4922-89CF-778040DFC51E} = {1AD31049-26B0-4922-89CF-778040DFC51E}
 	EndProjectSection
@@ -1142,6 +1147,14 @@ Global
 		{5E225996-0B6C-43C2-B786-30AB5FEE8096}.Release|Win32.Build.0 = Release|Win32
 		{5E225996-0B6C-43C2-B786-30AB5FEE8096}.Release|x64.ActiveCfg = Release|x64
 		{5E225996-0B6C-43C2-B786-30AB5FEE8096}.Release|x64.Build.0 = Release|x64
+		{894E6C03-6398-4EFB-950E-1CF0DAD7844B}.Debug|Win32.ActiveCfg = Debug|Win32
+		{894E6C03-6398-4EFB-950E-1CF0DAD7844B}.Debug|Win32.Build.0 = Debug|Win32
+		{894E6C03-6398-4EFB-950E-1CF0DAD7844B}.Debug|x64.ActiveCfg = Debug|x64
+		{894E6C03-6398-4EFB-950E-1CF0DAD7844B}.Debug|x64.Build.0 = Debug|x64
+		{894E6C03-6398-4EFB-950E-1CF0DAD7844B}.Release|Win32.ActiveCfg = Release|Win32
+		{894E6C03-6398-4EFB-950E-1CF0DAD7844B}.Release|Win32.Build.0 = Release|Win32
+		{894E6C03-6398-4EFB-950E-1CF0DAD7844B}.Release|x64.ActiveCfg = Release|x64
+		{894E6C03-6398-4EFB-950E-1CF0DAD7844B}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
