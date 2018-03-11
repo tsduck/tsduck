@@ -169,7 +169,7 @@ namespace ts {
         // Private members:
         SectionProviderInterface* _provider;
         PID            _pid;
-        uint8_t          _continuity;        // Continuity counter for next packet
+        uint8_t        _continuity;        // Continuity counter for next packet
         SectionPtr     _section;           // Current section to insert
         size_t         _next_byte;         // Next byte to insert in current section
         PacketCounter  _packet_count;      // Number of generated packets

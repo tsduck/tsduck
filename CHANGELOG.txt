@@ -4,7 +4,8 @@ TSDuck Change Log and Release Notes
 
 Version 3.9
 
-- Added plugin mpe to extract MPE (Multi-Protocol Encapsulation) datagrams.
+- Added plugins mpe and mpeinject to respectively extract and inject MPE
+  (Multi-Protocol Encapsulation) datagrams to/from UDP/IP.
 
 - Added options --sei-avc and --uuid-sei to plugin pes.
 
