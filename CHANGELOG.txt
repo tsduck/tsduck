@@ -5,18 +5,19 @@ TSDuck Change Log and Release Notes
 Version 3.9
 
 - Added plugins mpe and mpeinject to respectively extract and inject MPE
-  (Multi-Protocol Encapsulation) datagrams to/from UDP/IP.
+  (Multi-Protocol Encapsulation) datagrams to/from UDP/IP. A complete example
+  is provided in the user's guide.
 
 - Added options --sei-avc and --uuid-sei to plugin pes.
 
 - Added options --add-programinfo-id, --set-stream-identifier, --set-cue-type
   and --set-data-broadcast-id to plugin pmt.
 
+- Added option --default-charset to tsanalyze and plugin analyze.
+
 - Added signalization for data broadcast and MPE.
 
 - Improved display of Dektec devices capabilities.
-
-- Added option --default-charset to tsanalyze and plugin analyze.
 
 - In all TSDuck commands, parameters can be read from a file using the syntax
   "@filename" anywhere in the command line. See the user's guide for details.
