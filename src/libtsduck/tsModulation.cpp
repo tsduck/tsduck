@@ -147,11 +147,13 @@ const ts::Enumeration ts::RollOffEnum({
 });
 
 const ts::Enumeration ts::BandWidthEnum({
-    {u"auto",  ts::BW_AUTO},
-    {u"8-MHz", ts::BW_8_MHZ},
-    {u"7-MHz", ts::BW_7_MHZ},
-    {u"6-MHz", ts::BW_6_MHZ},
-    {u"5-MHz", ts::BW_5_MHZ},
+    {u"auto",      ts::BW_AUTO},
+    {u"1.712-MHz", ts::BW_1_712_MHZ},
+    {u"5-MHz",     ts::BW_5_MHZ},
+    {u"6-MHz",     ts::BW_6_MHZ},
+    {u"7-MHz",     ts::BW_7_MHZ},
+    {u"8-MHz",     ts::BW_8_MHZ},
+    {u"10-MHz",    ts::BW_10_MHZ},
 });
 
 const ts::Enumeration ts::TransmissionModeEnum({
@@ -290,13 +292,23 @@ uint32_t ts::GuardIntervalDivider(GuardInterval guard)
 
 uint32_t ts::BandWidthValueHz(BandWidth bandwidth)
 {
+#if defined(TS_LINUX)
+    // values in Hz, not enum
+    return int(bandwidth) < 0 ? 0 : uint32_t(bandwidth);
+#elif defined(TS_WINDOWS)
+    // values in MHz, not enum
+    return int(bandwidth) < 0 ? 0 : 1000000 * uint32_t(bandwidth);
+#else
     switch (bandwidth) {
-        case BW_8_MHZ: return 8000000;
-        case BW_7_MHZ: return 7000000;
-        case BW_6_MHZ: return 6000000;
-        case BW_5_MHZ: return 5000000;
-        default:       return 0; // unknown
+        case BW_1_712_MHZ: return 1712000;
+        case BW_5_MHZ:     return 5000000;
+        case BW_6_MHZ:     return 6000000;
+        case BW_7_MHZ:     return 7000000;
+        case BW_8_MHZ:     return 8000000;
+        case BW_10_MHZ:    return 10000000;
+        default:           return 0; // unknown
     }
+#endif
 }
 
 
@@ -308,11 +320,13 @@ uint32_t ts::BandWidthValueHz(BandWidth bandwidth)
 ts::BandWidth ts::BandWidthCodeFromHz(uint32_t hz)
 {
     switch (hz) {
-        case 8000000: return BW_8_MHZ;
-        case 7000000: return BW_7_MHZ;
-        case 6000000: return BW_6_MHZ;
-        case 5000000: return BW_5_MHZ;
-        default:      return BW_AUTO;
+        case  1712000: return BW_1_712_MHZ;
+        case  5000000: return BW_5_MHZ;
+        case  6000000: return BW_6_MHZ;
+        case  7000000: return BW_7_MHZ;
+        case  8000000: return BW_8_MHZ;
+        case 10000000: return BW_10_MHZ;
+        default:       return BW_AUTO;
     }
 }
 

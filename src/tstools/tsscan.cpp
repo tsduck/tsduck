@@ -393,22 +393,11 @@ OffsetScanner::OffsetScanner(Options& opt, ts::Tuner& tuner, int channel) :
 // Tune to specified offset. Return false on error.
 bool OffsetScanner::tune(int offset)
 {
-    // Default tuning parameters
+    // Force frequency in tuning parameters.
+    // Other tuning parameters from command line (or default values).
+    _opt.tuner.frequency = ts::UHF::Frequency(_channel, offset);
     ts::TunerParametersDVBT tparams;
-    tparams.frequency = ts::UHF::Frequency(_channel, offset);
-    tparams.inversion = ts::SPINV_AUTO;
-#if defined(TS_WINDOWS)
-    tparams.bandwidth = ts::BW_8_MHZ; // BW_AUTO not supported
-#else
-    tparams.bandwidth = ts::BW_AUTO;
-#endif
-    tparams.fec_hp = ts::FEC_AUTO;
-    tparams.fec_lp = ts::FEC_AUTO;
-    tparams.modulation = ts::QAM_AUTO;
-    tparams.transmission_mode = ts::TM_AUTO;
-    tparams.guard_interval = ts::GUARD_AUTO;
-    tparams.hierarchy = ts::HIERARCHY_AUTO;
-    return _tuner.tune(tparams, _opt);
+    return tparams.fromTunerArgs(_opt.tuner, _opt) && _tuner.tune(tparams, _opt);
 }
 
 

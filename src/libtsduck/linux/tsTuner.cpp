@@ -348,6 +348,26 @@ bool ts::Tuner::close(Report& report)
 
 
 //-----------------------------------------------------------------------------
+// Get frontend status, encapsulate weird error management.
+//-----------------------------------------------------------------------------
+
+bool ts::Tuner::getFrontendStatus(::fe_status_t& status, Report& report)
+{
+    status = ::FE_NONE;
+    errno = 0;
+    bool ok = ::ioctl(_frontend_fd, FE_READ_STATUS, &status) == 0;
+    int err = errno;
+    if (ok || (!ok && err == EBUSY && status != ::FE_NONE)) {
+        return true;
+    }
+    else {
+        report.error(u"error reading status on %s: %s", {_frontend_name, ErrorCodeMessage(err)});
+        return false;
+    }
+}
+
+
+//-----------------------------------------------------------------------------
 // Check if a signal is present and locked
 //-----------------------------------------------------------------------------
 
@@ -357,14 +377,11 @@ bool ts::Tuner::signalLocked(Report& report)
         report.error(u"DVB tuner not open");
         return false;
     }
-
-    ::fe_status_t status;
-    if (::ioctl(_frontend_fd, FE_READ_STATUS, &status) < 0) {
-        report.error(u"error reading status on %s: %s", {_frontend_name, ErrorCodeMessage()});
-        return false;
+    else {
+        ::fe_status_t status = ::FE_NONE;
+        getFrontendStatus(status, report);
+        return (status & ::FE_HAS_LOCK) != 0;
     }
-
-    return (status & ::FE_HAS_LOCK) != 0;
 }
 
 
@@ -976,11 +993,8 @@ bool ts::Tuner::start(Report& report)
     for (MilliSecond remain_ms = _signal_timeout; remain_ms > 0; remain_ms -= _signal_poll) {
 
         // Read the frontend status
-        ::fe_status_t status;
-        if (::ioctl(_frontend_fd, FE_READ_STATUS, &status) < 0) {
-            report.error(u"error reading status of %s: %s", {_frontend_name, ErrorCodeMessage()});
-            return false;
-        }
+        ::fe_status_t status = ::FE_NONE;
+        getFrontendStatus(status, report);
 
         // If the input signal is locked, cool...
         signal_ok = (status & FE_HAS_LOCK) != 0;
@@ -995,9 +1009,8 @@ bool ts::Tuner::start(Report& report)
     // If the timeout has expired, error
 
     if (!signal_ok) {
-        if (!_signal_timeout_silent) {
-            report.error(u"no input DVB signal after %d milliseconds", {_signal_timeout});
-        }
+        report.log(_signal_timeout_silent ? Severity::Debug : Severity::Error,
+                   u"no input DVB signal lock after %d milliseconds", {_signal_timeout});
         return false;
     }
 
@@ -1389,20 +1402,21 @@ std::ostream& ts::Tuner::displayStatus(std::ostream& strm, const ts::UString& ma
         {u"needs bending",          ::FE_NEEDS_BENDING},
         {u"recover",                ::FE_CAN_RECOVER},
         {u"mute TS",                int(::FE_CAN_MUTE_TS)},
-#if TS_DVB_API_VERSION >= 502
-        {u"turbo FEC",              ::FE_CAN_TURBO_FEC},
-#endif
 #if TS_DVB_API_VERSION >= 501
         {u"2nd generation",         ::FE_CAN_2G_MODULATION},
 #endif
+#if TS_DVB_API_VERSION >= 502
+        {u"turbo FEC",              ::FE_CAN_TURBO_FEC},
+#endif
+#if TS_DVB_API_VERSION >= 508
+        {u"extended caps",          ::FE_HAS_EXTENDED_CAPS},
+        {u"multistream",            ::FE_CAN_MULTISTREAM},
+#endif
     });
 
-    // Read current status
-    ::fe_status_t status;
-    if (::ioctl(_frontend_fd, FE_READ_STATUS, &status) < 0) {
-        report.error(u"ioctl FE_READ_STATUS on %s: %s", {_frontend_name, ErrorCodeMessage()});
-        status = ::fe_status_t(0);
-    }
+    // Read current status, ignore errors.
+    ::fe_status_t status = ::FE_NONE;
+    getFrontendStatus(status, report);
 
     // Read current tuning parameters
     TunerParameters* params = TunerParameters::Factory(_tuner_type);
@@ -1415,28 +1429,28 @@ std::ostream& ts::Tuner::displayStatus(std::ostream& strm, const ts::UString& ma
     const TunerParametersATSC* params_atsc = dynamic_cast <const TunerParametersATSC*>(params);
 
     // Read Bit Error Rate
-    uint32_t ber;
+    uint32_t ber = 0;
     if (::ioctl(_frontend_fd, FE_READ_BER, &ber) < 0) {
         report.error(u"ioctl FE_READ_BER on %s: %s", {_frontend_name, ErrorCodeMessage()});
         ber = 0;
     }
 
     // Read Signal/Noise Ratio
-    uint16_t snr;
+    uint16_t snr = 0;
     if (::ioctl(_frontend_fd, FE_READ_SNR, &snr) < 0) {
         report.error(u"ioctl FE_READ_SNR on %s: %s", {_frontend_name, ErrorCodeMessage()});
         snr = 0;
     }
 
     // Read signal strength
-    uint16_t strength;
+    uint16_t strength = 0;
     if (::ioctl(_frontend_fd, FE_READ_SIGNAL_STRENGTH, &strength) < 0) {
         report.error(u"ioctl FE_READ_SIGNAL_STRENGTH on %s: %s", {_frontend_name, ErrorCodeMessage()});
         strength = 0;
     }
 
     // Read uncorrected blocks
-    uint32_t ublocks;
+    uint32_t ublocks = 0;
     if (::ioctl(_frontend_fd, FE_READ_UNCORRECTED_BLOCKS, &ublocks) < 0) {
         report.error(u"ioctl FE_READ_UNCORRECTED_BLOCKS on %s: %s", {_frontend_name, ErrorCodeMessage()});
         ublocks = 0;

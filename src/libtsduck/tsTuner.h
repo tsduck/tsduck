@@ -432,6 +432,9 @@ namespace ts {
         bool tuneDVBT(const TunerParametersDVBT&, Report&);
         bool tuneATSC(const TunerParametersATSC&, Report&);
 
+        // Get frontend status, encapsulate weird error management.
+        bool getFrontendStatus(::fe_status_t&, Report&);
+
         // Convert between TSDuck and Linux delivery systems.
         DeliverySystem fromLinuxDeliverySystem(::fe_delivery_system);
         ::fe_delivery_system toLinuxDeliverySystem(DeliverySystem);
