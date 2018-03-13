@@ -360,27 +360,33 @@ namespace ts {
     TSDUCKDLL extern const Enumeration RollOffEnum;
 
     //!
-    //! Bandwidth (OFDM)
+    //! Bandwidth (OFDM, DVB-T/T2)
     //!
     enum BandWidth {
 #if defined(TS_LINUX) && !defined(DOXYGEN)
-        BW_AUTO  = ::BANDWIDTH_AUTO,
-        BW_8_MHZ = ::BANDWIDTH_8_MHZ,
-        BW_7_MHZ = ::BANDWIDTH_7_MHZ,
-        BW_6_MHZ = ::BANDWIDTH_6_MHZ,
-        BW_5_MHZ = -10,
+        BW_AUTO      =        0,  // values in Hz, not enum
+        BW_1_712_MHZ =  1712000,
+        BW_5_MHZ     =  5000000,
+        BW_6_MHZ     =  6000000,
+        BW_7_MHZ     =  7000000,
+        BW_8_MHZ     =  8000000,
+        BW_10_MHZ    = 10000000,
 #elif defined(TS_WINDOWS) && !defined(DOXYGEN)
-        BW_AUTO  = -10,
-        BW_8_MHZ = 8,  // values in MHz, not enum
-        BW_7_MHZ = 7,
-        BW_6_MHZ = 6,
-        BW_5_MHZ = 5,
+        BW_AUTO      = -10,
+        BW_1_712_MHZ = -11,
+        BW_5_MHZ     =   5,  // values in MHz, not enum
+        BW_6_MHZ     =   6,
+        BW_7_MHZ     =   7,
+        BW_8_MHZ     =   8,
+        BW_10_MHZ    =  10,
 #else
-        BW_AUTO,   //!< Bandwidth automatically set.
-        BW_8_MHZ,  //!< 8 MHz bandwidth.
-        BW_7_MHZ,  //!< 7 MHz bandwidth.
-        BW_6_MHZ,  //!< 6 MHz bandwidth.
-        BW_5_MHZ,  //!< 5 MHz bandwidth.
+        BW_AUTO,      //!< Bandwidth automatically set.
+        BW_1_712_MHZ, //!< 1.712 MHz bandwidth (DVB-T2 only).
+        BW_5_MHZ,     //!< 5 MHz bandwidth (DVB-T2 only).
+        BW_6_MHZ,     //!< 6 MHz bandwidth.
+        BW_7_MHZ,     //!< 7 MHz bandwidth.
+        BW_8_MHZ,     //!< 8 MHz bandwidth.
+        BW_10_MHZ,    //!< 10 MHz bandwidth (DVB-T2 only).
 #endif
     };
 

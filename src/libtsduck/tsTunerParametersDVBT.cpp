@@ -130,9 +130,11 @@ namespace {
 
     const ts::Enumeration ZapBandWidthEnum({
          {u"BANDWIDTH_AUTO",  ts::BW_AUTO},
-         {u"BANDWIDTH_8_MHZ", ts::BW_8_MHZ},
-         {u"BANDWIDTH_7_MHZ", ts::BW_7_MHZ},
+         {u"BANDWIDTH_5_MHZ", ts::BW_5_MHZ},
          {u"BANDWIDTH_6_MHZ", ts::BW_6_MHZ},
+         {u"BANDWIDTH_7_MHZ", ts::BW_7_MHZ},
+         {u"BANDWIDTH_8_MHZ", ts::BW_8_MHZ},
+         {u"BANDWIDTH_10_MHZ", ts::BW_10_MHZ},
     });
 
     const ts::Enumeration ZapTransmissionModeEnum({

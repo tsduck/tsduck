@@ -29,6 +29,9 @@ Version 3.9
 - Bug fix on Windows: Command "tsversion --upgrade" failed because tsversion.exe
   and tsduck.dll were locked by upgrade command.
 
+- Bug fix on Linux: With DVB-T tuners which do not support "auto bandwidth"
+  (PCTV 492e for instance), tscan failed to scan the UHF band.
+
 - Added possibility to specify a GitHub authentication token in tsversion to
   avoid "API rate limit exceeded" errors.
 
