@@ -2,6 +2,7 @@
 .gitignore text
 .gitattributes text
 Makefile* text
+*.mk text
 *.txt text
 *.dox text
 *.md text
@@ -13,6 +14,7 @@ Makefile* text
 *.pro text
 *.pri text
 *.control text
+*.names text
 
 # Text files that will always have CRLF line endings on checkout.
 *.ps1 text eol=crlf

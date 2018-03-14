@@ -872,10 +872,18 @@ void ts::TSAnalyzer::analyzeDescriptors(const DescriptorList& descs, ServiceCont
                 }
                 break;
             }
+            case DID_APPLI_SIGNALLING: {
+                if (ps != 0) {
+                    // The presence of this descriptor indicates a PID carrying an AIT.
+                    ps->comment = u"AIT";
+                }
+                break;
+            }
             case DID_DATA_BROADCAST_ID: {
                 if (size >= 2) {
                     // Get the data broadcast id.
-                    switch (GetUInt16(data)) {
+                    const uint16_t dbid = GetUInt16(data);
+                    switch (dbid) {
                         case 0x000A: {
                             // System Software Update(SSU, ETSI TS 102 006)
                             // Skip data_broadcast_id, already checked == 0x000A
@@ -919,11 +927,21 @@ void ts::TSAnalyzer::analyzeDescriptors(const DescriptorList& descs, ServiceCont
                         case 0x000B: {
                             // IP/MAC Notification Table.
                             if (ps != 0) {
-                                ps->comment = u"INT, IP/MAC Notification";
+                                ps->comment = u"INT";
+                            }
+                            break;
+                        }
+                        case 0x0123: {
+                            // HbbTV data carousel.
+                            if (ps != 0) {
+                                ps->comment = u"HbbTV";
                             }
                             break;
                         }
                         default: {
+                            if (ps != 0) {
+                                ps->comment =  names::DataBroadcastId(dbid);
+                            }
                             break;
                         }
                     }
