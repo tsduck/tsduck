@@ -1,5 +1,9 @@
 /* Doxygen style customization, coming after standard Doxygen styles. */
 
+:root {
+    --main-font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol";
+    --code-font-family: consolas,monospace,fixed;
+}
 h1 {
     font-size: 1.6em;
 }
@@ -13,10 +17,29 @@ a {
     font-weight: bold;
 }
 code, fragment, pre.fragment, div.line {
-    font-family: consolas,monospace,fixed;
+    font-family: var(--code-font-family);
 }
 .overload {
-    font-family: consolas,"courier new",courier,monospace;
+    font-family: var(--code-font-family);
+}
+body, table, div, p, dl, h1, h2, h3, h4, h5, h6, .title {
+    font-family: var(--main-font-family);
+}
+div.toc, div.toc li, div.toc h1, div.toc h2, div.toc h3, div.toc h4 {
+    font-family: var(--main-font-family);
+}
+.SRPage .SRSymbol, .SelectItem {
+    font-family: var(--main-font-family);
+}
+.memname, .memname tr td, .memname tr {
+    padding: 0px 2px 0px 0px;
+    border-spacing: 0px;
+}
+#nav-tree .label {
+    font-family: var(--main-font-family);
+}
+#MSearchField {
+    font-family: var(--main-font-family);
 }
 #headertitle {
     font-size: 1.6em;
@@ -32,16 +55,16 @@ code, fragment, pre.fragment, div.line {
 #projectname {
     font-size: 200%;
     font-weight: bold;
-    font-family: Roboto,Arial,sans-serif;
+    font-family: var(--main-font-family);
     padding: 0px;
 }
 #projectnumber {
     font-size: 100%;
-    font-family: Roboto,Arial,sans-serif;
+    font-family: var(--main-font-family);
     padding-left: 0.5em;
 }
 #projectbrief {
     font-size: 100%;
-    font-family: Roboto,Arial,sans-serif;
+    font-family: var(--main-font-family);
     padding-left: 0.5em;
 }
