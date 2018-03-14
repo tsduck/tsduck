@@ -57,12 +57,20 @@ namespace ts {
         virtual Status processPacket(TSPacket&, bool&, bool&) override;
 
     private:
+        // Set of identified PLP's in a PID (with --identify).
+        typedef std::bitset<256> PLPSet;
+
+        // Set of identified T2-MI PID's with their PLP's (with --identify).
+        typedef std::map<PID, PLPSet> IdentifiedSet;
+
         // Plugin private fields.
         bool          _abort;           // Error, abort asap.
         bool          _extract;         // Extract encapsulated TS.
         bool          _replace_ts;      // Replace transferred TS.
         bool          _log;             // Log T2-MI packets.
-        PID           _pid;             // PID carrying the T2-MI encapsulation.
+        bool          _identify;        // Identify T2-MI PID's and PLP's in the TS or PID.
+        PID           _original_pid;    // Original value for --pid.
+        PID           _extract_pid;     // PID carrying the T2-MI encapsulation.
         uint8_t       _plp;             // The PLP to extract in _pid.
         bool          _plp_valid;       // False if PLP not yet known.
         bool          _outfile_append;  // Append file.
@@ -72,6 +80,7 @@ namespace ts {
         PacketCounter _t2mi_count;      // Number of input T2-MI packets.
         PacketCounter _ts_count;        // Number of extracted TS packets.
         T2MIDemux     _demux;           // T2-MI demux.
+        IdentifiedSet _identified;      // Map of identified PID's and PLP's.
         std::deque<TSPacket> _ts_queue; // Queue of demuxed TS packets.
 
         // Inherited methods.
@@ -101,7 +110,9 @@ ts::T2MIPlugin::T2MIPlugin(TSP* tsp_) :
     _extract(false),
     _replace_ts(false),
     _log(false),
-    _pid(PID_NULL),
+    _identify(false),
+    _original_pid(PID_NULL),
+    _extract_pid(PID_NULL),
     _plp(0),
     _plp_valid(false),
     _outfile_append(false),
@@ -111,10 +122,12 @@ ts::T2MIPlugin::T2MIPlugin(TSP* tsp_) :
     _t2mi_count(0),
     _ts_count(0),
     _demux(this),
+    _identified(),
     _ts_queue()
 {
     option(u"append",      'a');
     option(u"extract",     'e');
+    option(u"identify",    'i');
     option(u"keep",        'k');
     option(u"log",         'l');
     option(u"output-file", 'o', STRING);
@@ -131,12 +144,18 @@ ts::T2MIPlugin::T2MIPlugin(TSP* tsp_) :
             u"  -e\n"
             u"  --extract\n"
             u"      Extract encapsulated TS packets from one PLP of a T2-MI stream.\n"
-            u"      This is the default if neither --extract nor --log is specified.\n"
-            u"      By default, the transport stream is completely replaced by the extracted\n"
-            u"      stream. See option --output-file.\n"
+            u"      This is the default if neither --extract nor --log nor --identify is\n"
+            u"      specified. By default, the transport stream is completely replaced by\n"
+            u"      the extracted stream. See option --output-file.\n"
             u"\n"
             u"  --help\n"
             u"      Display this help text.\n"
+            u"\n"
+            u"  -i\n"
+            u"  --identify\n"
+            u"      Identify all T2-MI PID's and PLP's. If --pid is specified, only identify\n"
+            u"      PLP's in this PID. If --pid is not specified, identify all PID's carrying\n"
+            u"      T2-MI and their PLP's (require a fully compliant T2-MI signalization).\n"
             u"\n"
             u"  -k\n"
             u"  --keep\n"
@@ -176,33 +195,38 @@ bool ts::T2MIPlugin::start()
     // Get command line arguments
     _extract = present(u"extract");
     _log = present(u"log");
-    getIntValue<PID>(_pid, u"pid", PID_NULL);
-    getIntValue<uint8_t>(_plp, u"plp");
+    _identify = present(u"identify");
+    _extract_pid = _original_pid = intValue<PID>(u"pid", PID_NULL);
+    _plp = intValue<uint8_t>(u"plp");
     _plp_valid = present(u"plp");
     _outfile_append = present(u"append");
     _outfile_keep = present(u"keep");
     getValue(_outfile_name, u"output-file");
-    _replace_ts = _outfile_name.empty();
 
     // Extract is the default operation.
-    if (!_extract && !_log) {
+    // It is also implicit if an output file is specified.
+    if ((!_extract && !_log && !_identify) || !_outfile_name.empty()) {
         _extract = true;
     }
 
+    // Replace the TS if no output file is present.
+    _replace_ts = _extract && _outfile_name.empty();
+
     // Initialize the demux.
     _demux.reset();
-    if (_pid != PID_NULL) {
-        _demux.addPID(_pid);
+    if (_extract_pid != PID_NULL) {
+        _demux.addPID(_extract_pid);
     }
 
     // Reset the packet output.
+    _identified.clear();
     _ts_queue.clear();
     _t2mi_count = 0;
     _ts_count = 0;
     _abort = false;
 
     // Open output file if present.
-    return _replace_ts || _outfile.open(_outfile_name, _outfile_append, _outfile_keep, *tsp);
+    return _outfile_name.empty() || _outfile.open(_outfile_name, _outfile_append, _outfile_keep, *tsp);
 }
 
 
@@ -212,10 +236,38 @@ bool ts::T2MIPlugin::start()
 
 bool ts::T2MIPlugin::stop()
 {
+    // Close extracted TS file.
+    if (_outfile.isOpen()) {
+        _outfile.close(*tsp);
+    }
+
+    // With --extract, display a summary.
     if (_extract) {
         tsp->verbose(u"extracted %'d TS packets from %'d T2-MI packets", {_ts_count, _t2mi_count});
     }
-    return _replace_ts || _outfile.close(*tsp);
+
+    // With --identify, display a summary.
+    if (_identify) {
+        tsp->info(u"summary: found %d PID's with T2-MI", {_identified.size()});
+        for (IdentifiedSet::const_iterator it = _identified.begin(); it != _identified.end(); ++it) {
+            const PID pid = it->first;
+            const PLPSet& plps(it->second);
+            UString line(UString::Format(u"PID 0x%X (%d): ", {pid, pid}));
+            bool first = true;
+            for (size_t plp = 0; plp < plps.size(); ++plp) {
+                if (plps.test(plp)) {
+                    line.append(UString::Format(u"%s%d", {first ? u"PLP " : u", ", plp}));
+                    first = false;
+                }
+            }
+            if (first) {
+                line.append(u"no PLP found");
+            }
+            tsp->info(line);
+        }
+    }
+
+    return true;
 }
 
 
@@ -225,11 +277,23 @@ bool ts::T2MIPlugin::stop()
 
 void ts::T2MIPlugin::handleT2MINewPID(T2MIDemux& demux, const PMT& pmt, PID pid, const T2MIDescriptor& desc)
 {
-    // Found a new PID carrying T2-MI. Use it by default.
-    if (_pid == PID_NULL && pid != PID_NULL) {
-        tsp->verbose(u"using PID 0x%X (%d) to extract T2-MI stream", {pid, pid});
-        _pid = pid;
-        _demux.addPID(_pid);
+    // Found a new PID carrying T2-MI.
+    // Use it by default for extraction.
+    if (_extract_pid == PID_NULL && pid != PID_NULL) {
+        if (_extract || _log) {
+            tsp->verbose(u"using PID 0x%X (%d) to extract T2-MI stream", {pid, pid});
+        }
+        _extract_pid = pid;
+        _demux.addPID(_extract_pid);
+    }
+
+    // Report all new PID's with --identify.
+    if (_identify) {
+        tsp->info(u"found T2-MI PID 0x%X (%d)", {pid, pid});
+        // Demux all T2-MI PID's to identify all PLP's.
+        _demux.addPID(pid);
+        // Make sure the PID is identified, even if no PLP is found.
+        _identified[pid];
     }
 }
 
@@ -240,29 +304,42 @@ void ts::T2MIPlugin::handleT2MINewPID(T2MIDemux& demux, const PMT& pmt, PID pid,
 
 void ts::T2MIPlugin::handleT2MIPacket(T2MIDemux& demux, const T2MIPacket& pkt)
 {
+    const PID pid = pkt.getSourcePID();
+    const bool hasPLP = pkt.plpValid();
+    const uint8_t plp = hasPLP ? pkt.plp() : 0;
+
     // Log T2-MI packets.
-    if (_log) {
+    if (_log && pid == _extract_pid) {
         UString plpInfo;
-        if (pkt.plpValid()) {
-            plpInfo = UString::Format(u", PLP: 0x%X (%d)", {pkt.plp(), pkt.plp()});
+        if (hasPLP) {
+            plpInfo = UString::Format(u", PLP: 0x%X (%d)", {plp, plp});
         }
         tsp->info(u"PID 0x%X (%d), packet type: %s, size: %d bytes, packet count: %d, superframe index: %d, frame index: %d%s",
-                  {pkt.getSourcePID(), pkt.getSourcePID(),
+                  {pid, pid,
                    names::T2MIPacketType(pkt.packetType(), names::HEXA_FIRST),
                    pkt.size(), pkt.packetCount(), pkt.superframeIndex(), pkt.frameIndex(), plpInfo});
     }
 
     // Select PLP when extraction is requested.
-    if (_extract && pkt.plpValid()) {
+    if (_extract && pid == _extract_pid && hasPLP) {
         if (!_plp_valid) {
             // The PLP was not yet specified, use this one by default.
-            _plp = pkt.plp();
+            _plp = plp;
             _plp_valid = true;
             tsp->verbose(u"extracting PLP 0x%X (%d)", {_plp, _plp});
         }
-        if (pkt.plp() == _plp) {
+        if (plp == _plp) {
             // Count input T2-MI packets.
             _t2mi_count++;
+        }
+    }
+
+    // Identify new PLP's.
+    if (_identify && hasPLP) {
+        PLPSet& plps(_identified[pid]);
+        if (!plps.test(plp)) {
+            plps.set(plp);
+            tsp->info(u"PID 0x%X (%d), found PLP %d", {pid, pid, plp});
         }
     }
 }
@@ -274,17 +351,8 @@ void ts::T2MIPlugin::handleT2MIPacket(T2MIDemux& demux, const T2MIPacket& pkt)
 
 void ts::T2MIPlugin::handleTSPacket(T2MIDemux& demux, const T2MIPacket& t2mi, const TSPacket& ts)
 {
-    // Nothing to do if no TS extraction is requested.
-    if (!_extract) {
-        return;
-    }
-
-    // PLP must be known since handleT2MIPacket() is always called before handleTSPacket().
-    assert(_plp_valid);
-
     // Keep packet from the filtered PLP only.
-    if (t2mi.plp() == _plp) {
-
+    if (_extract && _plp_valid && t2mi.plp() == _plp) {
         if (_replace_ts) {
             // Enqueue the TS packet for replacement later.
             // We do not really care about queue size because an overflow is not possible.
@@ -313,8 +381,8 @@ ts::ProcessorPlugin::Status ts::T2MIPlugin::processPacket(TSPacket& pkt, bool& f
     if (_abort) {
         return TSP_END;
     }
-    else if (!_extract || !_replace_ts) {
-        // Without TS extraction or replacement, we simply pass all packets, unchanged.
+    else if (!_extract) {
+        // Without TS replacement, we simply pass all packets, unchanged.
         return TSP_OK;
     }
     else if (_ts_queue.empty()) {

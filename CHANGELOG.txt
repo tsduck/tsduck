@@ -13,6 +13,8 @@ Version 3.9
 - Added options --add-programinfo-id, --set-stream-identifier, --set-cue-type
   and --set-data-broadcast-id to plugin pmt.
 
+- Added option --identify to plugin t2mi.
+
 - Added option --default-charset to tsanalyze and plugin analyze.
 
 - Added signalization for data broadcast and MPE.
