@@ -55,6 +55,8 @@ ts::tsp::InputExecutor::InputExecutor(Options* options,
     _max_input_pkt(options->max_input_pkt),
     _total_in_packets(0),
     _in_sync_lost(false),
+    _instuff_start_remain(options->instuff_start),
+    _instuff_stop_remain(options->instuff_stop),
     _instuff_nullpkt_remain(0),
     _instuff_inpkt_remain(0)
 {
@@ -204,61 +206,71 @@ size_t ts::tsp::InputExecutor::receiveAndValidate(TSPacket* buffer, size_t max_p
 
 size_t ts::tsp::InputExecutor::receiveAndStuff(TSPacket* buffer, size_t max_packets)
 {
-    // If there is no --add-input-stuffing option, simply call the plugin
-    if (_instuff_inpkt == 0) {
-        const size_t count = receiveAndValidate(buffer, max_packets);
-        addTotalPackets(count);
-        return count;
+    size_t pkt_done = 0;              // Number of received packets in buffer
+    size_t pkt_remain = max_packets;  // Remaining number of packets to read
+    size_t pkt_from_input = 0;        // Number of packets actually read from plugin
+
+    // If initial stuffing not yet completed, add initial stuffing.
+    while (_instuff_start_remain > 0 && pkt_remain > 0) {
+        *buffer++ = NullPacket;
+        _instuff_start_remain--;
+        pkt_remain--;
+        pkt_done++;
     }
 
-    // Otherwise, we have to alternate input packets and null packets.
-    size_t pkt_done = 0;              // Number of packets in buffer
-    size_t pkt_from_input = 0;        // Number of packets actually read from plugin
-    size_t pkt_remain = max_packets;  // Remaining number of packets
+    // Now read real packets.
+    if (_instuff_inpkt == 0) {
+        // There is no --add-input-stuffing option, simply call the plugin
+        pkt_from_input = receiveAndValidate(buffer, pkt_remain);
+        pkt_done += pkt_from_input;
+    }
+    else {
+        // Otherwise, we have to alternate input packets and null packets.
 
-    while (pkt_remain > 0) {
+        while (pkt_remain > 0) {
 
-        // Stuff null packets.
-        while (_instuff_nullpkt_remain > 0 && pkt_remain > 0) {
-            *buffer++ = NullPacket;
-            _instuff_nullpkt_remain--;
-            pkt_remain--;
-            pkt_done++;
-        }
+            // Stuff null packets.
+            while (_instuff_nullpkt_remain > 0 && pkt_remain > 0) {
+                *buffer++ = NullPacket;
+                _instuff_nullpkt_remain--;
+                pkt_remain--;
+                pkt_done++;
+            }
 
-        if (pkt_remain == 0) {
-            break;
-        }
+            if (pkt_remain == 0) {
+                break;
+            }
 
-        if (_instuff_nullpkt_remain == 0 && _instuff_inpkt_remain == 0) {
-            _instuff_inpkt_remain = _instuff_inpkt;
-        }
+            if (_instuff_nullpkt_remain == 0 && _instuff_inpkt_remain == 0) {
+                _instuff_inpkt_remain = _instuff_inpkt;
+            }
 
-        // Read input packets from the plugin
-        max_packets = pkt_remain < _instuff_inpkt_remain ? pkt_remain : _instuff_inpkt_remain;
+            // Read input packets from the plugin
+            max_packets = pkt_remain < _instuff_inpkt_remain ? pkt_remain : _instuff_inpkt_remain;
 
-        size_t pkt_in = receiveAndValidate(buffer, max_packets);
+            size_t pkt_in = receiveAndValidate(buffer, max_packets);
 
-        assert(pkt_in <= pkt_remain);
-        assert(pkt_in <= _instuff_inpkt_remain);
-        assert(pkt_in <= max_packets);
+            assert(pkt_in <= pkt_remain);
+            assert(pkt_in <= _instuff_inpkt_remain);
+            assert(pkt_in <= max_packets);
 
-        buffer += pkt_in;
-        pkt_remain -= pkt_in;
-        pkt_done += pkt_in;
-        pkt_from_input += pkt_in;
-        _instuff_inpkt_remain -= pkt_in;
+            buffer += pkt_in;
+            pkt_remain -= pkt_in;
+            pkt_done += pkt_in;
+            pkt_from_input += pkt_in;
+            _instuff_inpkt_remain -= pkt_in;
 
-        if (_instuff_nullpkt_remain == 0 && _instuff_inpkt_remain == 0) {
-            _instuff_nullpkt_remain = _instuff_nullpkt;
-        }
+            if (_instuff_nullpkt_remain == 0 && _instuff_inpkt_remain == 0) {
+                _instuff_nullpkt_remain = _instuff_nullpkt;
+            }
 
-        // If input plugin returned less than expected, exit now
-        if (pkt_from_input == 0) {
-            return 0; // end of input, no need to return null packets
-        }
-        else if (pkt_in < max_packets) {
-            break;
+            // If input plugin returned less than expected, exit now
+            if (pkt_from_input == 0) {
+                return 0; // end of input, no need to return null packets
+            }
+            else if (pkt_in < max_packets) {
+                break;
+            }
         }
     }
 
@@ -277,36 +289,48 @@ void ts::tsp::InputExecutor::main()
 
     Time current_time(Time::CurrentUTC());
     Time bitrate_due_time(current_time + _bitrate_adj);
-    bool input_end, aborted;
+    bool plugin_completed = false;
+    bool input_end = false;
+    bool aborted = false;
 
     do {
+        size_t pkt_first = 0;
+        size_t pkt_max = 0;
+        BitRate bitrate = 0;
+
         // Wait for space in the input buffer.
         // Ignore input_end and bitrate from previous, we are the input processor.
-
-        size_t pkt_first, pkt_max;
-        BitRate bitrate;
-
         waitWork(pkt_first, pkt_max, bitrate, input_end, aborted);
 
         // If the next thread has given up, give up too since our packets are now useless.
-
+        // Do not even try to add trailing stuffing (--add-stop-stuffing).
         if (aborted) {
             break;
         }
 
         // Do not read more packets than request by --max-input-packets
-
         if (_max_input_pkt > 0 && pkt_max > _max_input_pkt) {
             pkt_max = _max_input_pkt;
         }
 
-        // Now read at most the specified number of packets
+        // Now read at most the specified number of packets (pkt_max).
+        size_t pkt_read = 0;
 
-        size_t pkt_read = receiveAndStuff(_buffer->base() + pkt_first, pkt_max);
-
-        if (pkt_read == 0) {
-            input_end = true;
+        // Read from the plugin if not already terminated.
+        if (!plugin_completed) {
+            pkt_read = receiveAndStuff(_buffer->base() + pkt_first, pkt_max);
+            plugin_completed = pkt_read == 0;
         }
+
+        // Read additional trailing stuffing after completion of the input plugin.
+        while (plugin_completed && _instuff_stop_remain > 0 && pkt_read < pkt_max) {
+            *(_buffer->base() + pkt_first + pkt_read) = NullPacket;
+            pkt_read++;
+            _instuff_stop_remain--;
+        }
+
+        // Overall input is completed when input plugin and trailing stuffing are completed.
+        input_end = plugin_completed && _instuff_stop_remain == 0;
 
         // Process periodic bitrate adjustment: get current input bitrate.
         if (_input_bitrate == 0 && (current_time = Time::CurrentUTC()) > bitrate_due_time) {

@@ -78,6 +78,8 @@ namespace ts {
             const size_t      _max_input_pkt;     // Max packets per input operation
             PacketCounter     _total_in_packets;  // Total packets from plugin (exclude added stuffing)
             bool              _in_sync_lost;      // Input synchronization lost (no 0x47 at start of packet)
+            size_t            _instuff_start_remain;
+            size_t            _instuff_stop_remain;
             size_t            _instuff_nullpkt_remain;
             size_t            _instuff_inpkt_remain;
 

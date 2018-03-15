@@ -105,8 +105,10 @@ namespace ts {
             size_t        log_msg_count;   //!< Maximum buffered log messages.
             size_t        max_flush_pkt;   //!< Max processed packets before flush.
             size_t        max_input_pkt;   //!< Max packets per input operation.
-            size_t        instuff_nullpkt; //!< Add input stuffing: add @a nullpkt null packets every @a inpkt input packets.
-            size_t        instuff_inpkt;   //!< Add input stuffing: add @a nullpkt null packets every @a inpkt input packets.
+            size_t        instuff_nullpkt; //!< Add input stuffing: add @a instuff_nullpkt null packets every @a instuff_inpkt input packets.
+            size_t        instuff_inpkt;   //!< Add input stuffing: add @a instuff_nullpkt null packets every @a instuff_inpkt input packets.
+            size_t        instuff_start;   //!< Add input stuffing: add @a instuff_start null packets before actual input.
+            size_t        instuff_stop;    //!< Add input stuffing: add @a instuff_end null packets after end of actual input.
             BitRate       bitrate;         //!< Fixed input bitrate.
             MilliSecond   bitrate_adj;     //!< Bitrate adjust interval.
             PluginOptions input;           //!< Input plugin.

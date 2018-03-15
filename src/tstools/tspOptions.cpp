@@ -64,6 +64,8 @@ ts::tsp::Options::Options(int argc, char *argv[]) :
     max_input_pkt(0),
     instuff_nullpkt(0),
     instuff_inpkt(0),
+    instuff_start(0),
+    instuff_stop(0),
     bitrate(0),
     bitrate_adj(0),
     input(),
@@ -71,6 +73,8 @@ ts::tsp::Options::Options(int argc, char *argv[]) :
     plugins()
 {
     option(u"add-input-stuffing",       'a', Args::STRING);
+    option(u"add-start-stuffing",        0,  Args::UNSIGNED);
+    option(u"add-stop-stuffing",         0,  Args::UNSIGNED);
     option(u"bitrate",                  'b', Args::POSITIVE);
     option(u"bitrate-adjust-interval",   0,  Args::POSITIVE);
     option(u"buffer-size-mb",            0,  Args::POSITIVE);
@@ -120,6 +124,14 @@ ts::tsp::Options::Options(int argc, char *argv[]) :
             u"      \"-a 14/24\" adds 14 null packets every 24 input packets, effectively\n"
             u"      turning a 24 Mb/s input stream (terrestrial) into a 38 Mb/s stream\n"
             u"      (satellite).\n"
+            u"\n"
+            u"  --add-start-stuffing count\n"
+            u"      Specify that <count> null TS packets must be automatically inserted\n"
+            u"      at the start of the processing, before what comes from the input plugin.\n"
+            u"\n"
+            u"  --add-stop-stuffing count\n"
+            u"      Specify that <count> null TS packets must be automatically inserted\n"
+            u"      at the end of the processing, after what comes from the input plugin.\n"
             u"\n"
             u"  -b value\n"
             u"  --bitrate value\n"
@@ -271,6 +283,8 @@ ts::tsp::Options::Options(int argc, char *argv[]) :
     bitrate_adj = MilliSecPerSec * intValue(u"bitrate-adjust-interval", DEF_BITRATE_INTERVAL);
     max_flush_pkt = intValue<size_t>(u"max-flushed-packets", DEF_MAX_FLUSH_PKT);
     max_input_pkt = intValue<size_t>(u"max-input-packets", 0);
+    instuff_start = intValue<size_t>(u"add-start-stuffing", 0);
+    instuff_stop = intValue<size_t>(u"add-stop-stuffing", 0);
     log_msg_count = intValue<size_t>(u"log-message-count", AsyncReport::MAX_LOG_MESSAGES);
     ignore_jt = present(u"ignore-joint-termination");
 
