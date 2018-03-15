@@ -126,7 +126,7 @@ ts::SectionDemux::ETIDContext::ETIDContext() :
 void ts::SectionDemux::ETIDContext::init(uint8_t new_version, uint8_t last_section)
 {
     notified = false;
-    version = version;
+    version = new_version;
     sect_expected = size_t(last_section) + 1;
     sect_received = 0;
     sects.resize(sect_expected);
