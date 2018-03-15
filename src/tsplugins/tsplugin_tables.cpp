@@ -107,6 +107,7 @@ bool ts::TablesPlugin::start()
 
 bool ts::TablesPlugin::stop()
 {
+    _logger->close();
     _logger.clear();
     return true;
 }

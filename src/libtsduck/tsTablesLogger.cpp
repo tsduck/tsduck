@@ -62,7 +62,8 @@ ts::TablesLogger::TablesLogger(const TablesLoggerArgs& opt, TablesDisplay& displ
     _xmlOpen(false),
     _binfile(),
     _sock(false, report),
-    _shortSections()
+    _shortSections(),
+    _sectionsOnce()
 {
     // Set either a table or section handler, depending on --all-sections
     if (_opt.all_sections) {
@@ -127,13 +128,38 @@ ts::TablesLogger::TablesLogger(const TablesLoggerArgs& opt, TablesDisplay& displ
 
 ts::TablesLogger::~TablesLogger()
 {
-    // Close the XML document if needed.
-    if (_xmlOpen) {
-        _xmlDoc.printClose(_xmlOut);
-        _xmlOpen = false;
-    }
+    close();
+}
 
-    // Other files and sockets are automatically closed by their destructors.
+
+//----------------------------------------------------------------------------
+// Close all operations, flush tables if required, close files and sockets.
+//----------------------------------------------------------------------------
+
+void ts::TablesLogger::close()
+{
+    if (!completed()) {
+
+        // Pack sections in incomplete tables if required.
+        if (_opt.pack_and_flush) {
+            _demux.packAndFlushSections();
+        }
+
+        // Close files and documents.
+        if (_xmlOpen) {
+            _xmlDoc.printClose(_xmlOut);
+            _xmlOpen = false;
+        }
+        if (_binfile.is_open()) {
+            _binfile.close();
+        }
+        if (_sock.isOpen()) {
+            _sock.close(_report);
+        }
+
+        // Now completed.
+        _exit = true;
+    }
 }
 
 
@@ -143,9 +169,11 @@ ts::TablesLogger::~TablesLogger()
 
 void ts::TablesLogger::feedPacket(const TSPacket& pkt)
 {
-    _demux.feedPacket(pkt);
-    _cas_mapper.feedPacket(pkt);
-    _packet_count++;
+    if (!completed()) {
+        _demux.feedPacket(pkt);
+        _cas_mapper.feedPacket(pkt);
+        _packet_count++;
+    }
 }
 
 
@@ -281,8 +309,38 @@ void ts::TablesLogger::handleTable(SectionDemux&, const BinaryTable& table)
 // Only used with option --all-sections
 //----------------------------------------------------------------------------
 
-void ts::TablesLogger::handleSection(SectionDemux&, const Section& sect)
+void ts::TablesLogger::handleSection(SectionDemux& demux, const Section& sect)
 {
+    // With option --all-once, track duplicate PID/TID/TDIext/secnum/version.
+    if (_opt.all_once) {
+        // Pack PID/TID/TDIext/secnum/version into one single 64-bit integer.
+        const uint64_t id = 
+            (uint64_t(sect.sourcePID()) << 40) |
+            (uint64_t(sect.tableId()) << 32) |
+            (uint64_t(sect.tableIdExtension()) << 16) |
+            (uint64_t(sect.sectionNumber()) << 8) |
+            uint64_t(sect.version());
+        if (_sectionsOnce.count(id) != 0) {
+            // Already found this one, give up.
+            return;
+        }
+        else {
+            // Remember this combination.
+            _sectionsOnce.insert(id);
+        }
+    }
+
+    // With option --pack-all-sections, force the processing of a complete table.
+    if (_opt.pack_all_sections) {
+        BinaryTable table;
+        table.addSection(new Section(sect, SHARE));
+        table.packSections();
+        if (table.isValid()) {
+            handleTable(demux, table);
+        }
+        return;
+    }
+
     // Give up if completed.
     if (completed()) {
         return;

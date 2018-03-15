@@ -68,6 +68,7 @@ namespace ts {
         int      udp_ttl;           //!< Time-to-live socket option.
         bool     udp_raw;           //!< UDP messages contain raw sections, not structured messages.
         bool     all_sections;      //!< Collect all sections, as they appear.
+        bool     all_once;          //!< Collect all sections but only once per PID/TID/TDIext/secnum/version.
         uint32_t max_tables;        //!< Max number of tables to dump.
         bool     time_stamp;        //!< Display time stamps with each table.
         bool     packet_index;      //!< Display packet index with each table.
@@ -79,6 +80,8 @@ namespace ts {
         PIDSet   pid;               //!< PID values to filter.
         bool     add_pmt_pids;      //!< Add PMT PID's when one is found.
         bool     no_duplicate;      //!< Exclude duplicated short sections on a PID.
+        bool     pack_all_sections; //!< Pack all sections as if they were one table.
+        bool     pack_and_flush;    //!< Pack and flush incomplete tables before exiting.
         std::set<uint8_t>  tid;     //!< TID values to filter.
         std::set<uint16_t> tidext;  //!< TID-ext values to filter.
 

@@ -47,7 +47,7 @@ ts::BinaryTable::BinaryTable() :
     _is_valid(false),
     _tid(0xFF),
     _tid_ext(0),
-    _version (0),
+    _version(0),
     _source_pid(PID_NULL),
     _missing_count(0),
     _sections()
@@ -75,7 +75,7 @@ ts::BinaryTable::BinaryTable(const BinaryTable& table, CopyShare mode) :
             _sections = table._sections;
             break;
         case COPY:
-            _sections.resize (table._sections.size());
+            _sections.resize(table._sections.size());
             for (size_t i = 0; i < _sections.size(); ++i) {
                 if (table._sections[i].isNull()) {
                     _sections[i].clear();
@@ -105,7 +105,7 @@ ts::BinaryTable::BinaryTable(const SectionPtrVector& sections, bool replace, boo
     _missing_count(0),
     _sections()
 {
-    if (!addSections (sections, replace, grow)) {
+    if (!addSections(sections, replace, grow)) {
         clear();
     }
 }
@@ -116,7 +116,7 @@ ts::BinaryTable::BinaryTable(const SectionPtrVector& sections, bool replace, boo
 // between the two table objects.
 //----------------------------------------------------------------------------
 
-ts::BinaryTable& ts::BinaryTable::operator= (const BinaryTable& table)
+ts::BinaryTable& ts::BinaryTable::operator=(const BinaryTable& table)
 {
     if (&table != this) {
         _is_valid = table._is_valid;
@@ -143,7 +143,7 @@ ts::BinaryTable& ts::BinaryTable::copy(const BinaryTable& table)
     _version = table._version;
     _source_pid = table._source_pid;
     _missing_count = table._missing_count;
-    _sections.resize (table._sections.size());
+    _sections.resize(table._sections.size());
     for (size_t i = 0; i < _sections.size(); ++i) {
         if (table._sections[i].isNull()) {
             _sections[i].clear();
@@ -160,7 +160,7 @@ ts::BinaryTable& ts::BinaryTable::copy(const BinaryTable& table)
 // Comparison. Note: Invalid tables are never identical
 //----------------------------------------------------------------------------
 
-bool ts::BinaryTable::operator== (const BinaryTable& table) const
+bool ts::BinaryTable::operator==(const BinaryTable& table) const
 {
     bool equal =
         _is_valid &&
@@ -218,7 +218,7 @@ ts::PacketCounter ts::BinaryTable::getFirstTSPacketIndex() const
     for (SectionPtrVector::const_iterator it = _sections.begin(); it != _sections.end(); ++it) {
         if (!it->isNull()) {
             found = true;
-            first = std::min (first, (*it)->getFirstTSPacketIndex());
+            first = std::min(first, (*it)->getFirstTSPacketIndex());
         }
     }
     return found ? first : 0;
@@ -241,7 +241,7 @@ ts::PacketCounter ts::BinaryTable::getLastTSPacketIndex() const
 // using calls to addSection.
 //----------------------------------------------------------------------------
 
-void ts::BinaryTable::clear ()
+void ts::BinaryTable::clear()
 {
     _is_valid = false;
     _tid = 0xFF;
@@ -249,7 +249,7 @@ void ts::BinaryTable::clear ()
     _version = 0;
     _source_pid = PID_NULL;
     _missing_count = 0;
-    _sections.clear ();
+    _sections.clear();
 }
 
 
@@ -294,7 +294,7 @@ bool ts::BinaryTable::addSection(const SectionPtr& sect, bool replace, bool grow
 {
     // Reject invalid sections
 
-    if (!sect->isValid()) {
+    if (sect.isNull() || !sect->isValid()) {
         return false;
     }
 
@@ -362,6 +362,47 @@ bool ts::BinaryTable::addSection(const SectionPtr& sect, bool replace, bool grow
     assert(_missing_count >= 0);
 
     return true;
+}
+
+
+//----------------------------------------------------------------------------
+// Pack all sections in a table, removing references to missing sections.
+//----------------------------------------------------------------------------
+
+bool ts::BinaryTable::packSections()
+{
+    // There is nothing to do if no section is missing.
+    if (_missing_count > 0) {
+        assert(!_is_valid);
+        assert(!_sections.empty());
+
+        // Next section number to copy.
+        size_t next_section = 0;
+
+        // Pack all section pointers.
+        for (size_t n = 0; n < _sections.size(); ++n) {
+            if (!_sections[n].isNull()) {
+                if (next_section != n) {
+                    _sections[next_section] = _sections[n];
+                }
+                ++next_section;
+            }
+        }
+
+        // Resize to new number of sections.
+        _sections.resize(next_section);
+        _missing_count = 0;
+        _is_valid = !_sections.empty();
+
+        // Now patch section numbers.
+        for (size_t n = 0; n < _sections.size(); ++n) {
+            assert(!_sections[n].isNull());
+            assert(next_section > 0);
+            _sections[n]->setSectionNumber(uint8_t(n), false);
+            _sections[n]->setLastSectionNumber(uint8_t(next_section - 1), true);
+        }
+    }
+    return _is_valid;
 }
 
 

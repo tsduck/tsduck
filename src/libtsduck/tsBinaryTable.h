@@ -162,6 +162,17 @@ namespace ts {
         bool addSections(SectionPtrVector::const_iterator first, SectionPtrVector::const_iterator last, bool replace = true, bool grow = true);
 
         //!
+        //! Pack all sections in a table, removing references to missing sections.
+        //! As an example, if a table expects 5 sections (numbered 0 to 4) but only
+        //! sections numbered 1 and 3 are present, the table is packed with the
+        //! two existing sections renumbered 0 and 1 and the last section number
+        //! is set to 2 in the existing sections. The table becomes valid if at least
+        //! one section was present.
+        //! @return True on succes, false if the table is empty.
+        //!
+        bool packSections();
+
+        //!
         //! Check if the table is valid.
         //! @return True if the table is valid (all consistent sections are present with same
         //! table id, same version, same "last_section_number").

@@ -15,6 +15,9 @@ Version 3.9
 
 - Added option --identify to plugin t2mi.
 
+- Added options --all-once, --pack-all-sections and --pack-and-flush to tstables
+  and plugin tables.
+
 - Added option --default-charset to tsanalyze and plugin analyze.
 
 - Added signalization for data broadcast and MPE.
