@@ -8,6 +8,8 @@ Version 3.9
   (Multi-Protocol Encapsulation) datagrams to/from UDP/IP. A complete example
   is provided in the user's guide.
 
+- Added options --add-start-stuffing and --add-stop-stuffing to tsp.
+
 - Added options --sei-avc and --uuid-sei to plugin pes.
 
 - Added options --add-programinfo-id, --set-stream-identifier, --set-cue-type
