@@ -59,6 +59,7 @@ ts::TablesLoggerArgs::TablesLoggerArgs() :
     udp_ttl(0),
     udp_raw(false),
     all_sections(false),
+    all_once(false),
     max_tables(0),
     time_stamp(false),
     packet_index(false),
@@ -70,6 +71,8 @@ ts::TablesLoggerArgs::TablesLoggerArgs() :
     pid(),
     add_pmt_pids(false),
     no_duplicate(false),
+    pack_all_sections(false),
+    pack_and_flush(false),
     tid(),
     tidext()
 {
@@ -89,6 +92,10 @@ void ts::TablesLoggerArgs::addHelp(Args& args) const
         u"  By default, the tables are interpreted and formatted as text on the standard\n"
         u"  output. Several destinations can be specified at the same time: human-readable\n"
         u"  text output, binary output, UDP/IP messages.\n"
+        u"\n"
+        u"  --all-once\n"
+        u"      Same as --all-sections but collect each section only once per combination of\n"
+        u"      PID, table id, table id extension, section number and version.\n"
         u"\n"
         u"  -a\n"
         u"  --all-sections\n"
@@ -186,6 +193,19 @@ void ts::TablesLoggerArgs::addHelp(Args& args) const
         u"      addition to other output like binary files or UPD/IP, explicitly specify\n"
         u"      this option with \"-\" as output file name.\n"
         u"\n"
+        u"  --pack-all-sections\n"
+        u"      Same as --all-sections but also modify each long section so that it becomes a\n"
+        u"      valid complete table. Its section_number and last_section_number are forced\n"
+        u"      to zero. Use with care because this may create inconsistent tables. This\n"
+        u"      option can be useful with tables with sparse sections such as EIT's to save\n"
+        u"      them in XML format.\n"
+        u"\n"
+        u"  --pack-and-flush\n"
+        u"      Before exiting, pack incomplete tables, ignoring missing sections, and flush\n"
+        u"      them. Use with care because this may create inconsistent tables. Unlike option\n"
+        u"      --pack-all-sections, --pack-and-flush does not force --all-sections because it\n"
+        u"      only applies to the last incomplete tables before exiting.\n"
+        u"\n"
         u"  --packet-index\n"
         u"      Display the index of the first and last TS packet of each displayed\n"
         u"      section or table.\n"
@@ -247,6 +267,7 @@ void ts::TablesLoggerArgs::addHelp(Args& args) const
 
 void ts::TablesLoggerArgs::defineOptions(Args& args) const
 {
+    args.option(u"all-once",             0);
     args.option(u"all-sections",        'a');
     args.option(u"binary-output",       'b', Args::STRING);
     args.option(u"diversified-payload", 'd');
@@ -263,6 +284,8 @@ void ts::TablesLoggerArgs::defineOptions(Args& args) const
     args.option(u"no-duplicate",         0);
     args.option(u"no-encapsulation",     0);
     args.option(u"output-file",         'o', Args::STRING);
+    args.option(u"pack-all-sections",    0);
+    args.option(u"pack-and-flush",       0);
     args.option(u"packet-index",         0);
     args.option(u"pid",                 'p', Args::PIDVAL, 0, Args::UNLIMITED_COUNT);
     args.option(u"psi-si",               0);
@@ -311,7 +334,10 @@ void ts::TablesLoggerArgs::load(Args& args)
     flush = args.present(u"flush");
     udp_local = args.value(u"local-udp");
     udp_ttl = args.intValue(u"ttl", 0);
-    all_sections = args.present(u"all-sections");
+    pack_all_sections = args.present(u"pack-all-sections");
+    pack_and_flush = args.present(u"pack-and-flush");
+    all_once = args.present(u"all-once");
+    all_sections = all_once || pack_all_sections || args.present(u"all-sections");
     max_tables = args.intValue<uint32_t>(u"max-tables", 0);
     time_stamp = args.present(u"time-stamp");
     packet_index = args.present(u"packet-index");

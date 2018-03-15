@@ -104,6 +104,7 @@ int main(int argc, char *argv[])
     while (!logger.completed() && pkt.read(std::cin, true, opt)) {
         logger.feedPacket(pkt);
     }
+    logger.close();
 
     // Report errors
     if (opt.verbose() && !logger.hasErrors()) {

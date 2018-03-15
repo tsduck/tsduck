@@ -36,7 +36,7 @@ TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------
-// Demux status information - Default constructor
+// Demux status information.
 //----------------------------------------------------------------------------
 
 ts::SectionDemux::Status::Status() :
@@ -49,28 +49,12 @@ ts::SectionDemux::Status::Status() :
 {
 }
 
-
-//----------------------------------------------------------------------------
-// Demux status information
-// Constructor from the current status of SectionDemux
-//----------------------------------------------------------------------------
-
-ts::SectionDemux::Status::Status(const SectionDemux& demux) :
-    invalid_ts(0),
-    discontinuities(0),
-    scrambled(0),
-    inv_sect_length(0),
-    inv_sect_index(0),
-    wrong_crc(0)
+ts::SectionDemux::Status::Status(const SectionDemux& demux) : Status()
 {
     demux.getStatus(*this);
 }
 
-
-//----------------------------------------------------------------------------
-// Demux status information - Reset content
-//----------------------------------------------------------------------------
-
+// Reset the content of the demux status.
 void ts::SectionDemux::Status::reset()
 {
     invalid_ts = 0;
@@ -81,11 +65,7 @@ void ts::SectionDemux::Status::reset()
     wrong_crc = 0;
 }
 
-
-//----------------------------------------------------------------------------
-// Demux status information - Check if any counter is non zero
-//----------------------------------------------------------------------------
-
+// Check if any counter is non zero.
 bool ts::SectionDemux::Status::hasErrors() const
 {
     return
@@ -100,8 +80,6 @@ bool ts::SectionDemux::Status::hasErrors() const
 
 //----------------------------------------------------------------------------
 // Display content of a status block.
-// Indent indicates the base indentation of lines.
-// If errors_only is true, don't report zero counters.
 //----------------------------------------------------------------------------
 
 std::ostream& ts::SectionDemux::Status::display(std::ostream& strm, int indent, bool errors_only) const
@@ -132,7 +110,81 @@ std::ostream& ts::SectionDemux::Status::display(std::ostream& strm, int indent, 
 
 
 //----------------------------------------------------------------------------
-// SectionDemux constructor.
+// Analysis context for one TID/TIDext into one PID.
+//----------------------------------------------------------------------------
+
+ts::SectionDemux::ETIDContext::ETIDContext() :
+    notified(false),
+    version(0),
+    sect_expected(0),
+    sect_received(0),
+    sects()
+{
+}
+
+// Init for a new table.
+void ts::SectionDemux::ETIDContext::init(uint8_t new_version, uint8_t last_section)
+{
+    notified = false;
+    version = version;
+    sect_expected = size_t(last_section) + 1;
+    sect_received = 0;
+    sects.resize(sect_expected);
+
+    // Mark all section entries as unused
+    for (size_t i = 0; i < sect_expected; i++) {
+        sects[i].reset();
+    }
+}
+
+// Notify the application if the table is complete.
+void ts::SectionDemux::ETIDContext::notify(SectionDemux& demux, bool force)
+{
+    if (!notified && (sect_received == sect_expected || force) && demux._table_handler != 0) {
+
+        // Build the table
+        BinaryTable table;
+        for (size_t i = 0; i < sects.size(); ++i) {
+            table.addSection(sects[i]);
+        }
+
+        // Pack incomplete table with force.
+        if (force) {
+            table.packSections();
+        }
+
+        // Invoke the table handler.
+        if (table.isValid()) {
+            notified = true;
+            demux._table_handler->handleTable(demux, table);
+        }
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Analysis context for one PID.
+//----------------------------------------------------------------------------
+
+ts::SectionDemux::PIDContext::PIDContext() :
+    continuity(0),
+    sync(false),
+    ts(),
+    tids(),
+    pusi_pkt_index(0)
+{
+}
+
+// Called when packet synchronization is lost on the pid.
+void ts::SectionDemux::PIDContext::syncLost()
+{
+    sync = false;
+    ts.clear();
+}
+
+
+//----------------------------------------------------------------------------
+// SectionDemux constructor and destructor.
 //----------------------------------------------------------------------------
 
 ts::SectionDemux::SectionDemux(TableHandlerInterface* table_handler,
@@ -145,11 +197,6 @@ ts::SectionDemux::SectionDemux(TableHandlerInterface* table_handler,
     _status()
 {
 }
-
-
-//----------------------------------------------------------------------------
-// Destructor.
-//----------------------------------------------------------------------------
 
 ts::SectionDemux::~SectionDemux ()
 {
@@ -395,16 +442,9 @@ void ts::SectionDemux::processPacket(const TSPacket& pkt)
 
             if (!long_header ||             // short section
                 tc.sect_expected == 0 ||    // new TID on this PID
-                tc.version != version) {    // new version
-
-                tc.version = version;
-                tc.sect_expected = size_t (last_section_number) + 1;
-                tc.sect_received = 0;
-                tc.sects.resize (tc.sect_expected);
-                // Mark all section entries as unused
-                for (size_t si = 0; si < tc.sect_expected; si++) {
-                    tc.sects[si].reset();
-                }
+                tc.version != version)      // new version
+            {
+                tc.init(version, last_section_number);
             }
 
             // Check that the total number of sections in the table
@@ -421,9 +461,9 @@ void ts::SectionDemux::processPacket(const TSPacket& pkt)
             SectionPtr sect_ptr;
 
             if (section_ok && (_section_handler != 0 || tc.sects[section_number].isNull())) {
-                sect_ptr = new Section (ts_start, section_length, pid, CRC32::CHECK);
-                sect_ptr->setFirstTSPacketIndex (pusi_pkt_index);
-                sect_ptr->setLastTSPacketIndex (_packet_count);
+                sect_ptr = new Section(ts_start, section_length, pid, CRC32::CHECK);
+                sect_ptr->setFirstTSPacketIndex(pusi_pkt_index);
+                sect_ptr->setLastTSPacketIndex(_packet_count);
                 if (!sect_ptr->isValid()) {
                     _status.wrong_crc++;  // only possible error (hum?)
                     section_ok = false;
@@ -437,7 +477,7 @@ void ts::SectionDemux::processPacket(const TSPacket& pkt)
             try {
                 // If a handler is defined for sections, invoke it.
                 if (section_ok && _section_handler != 0) {
-                    _section_handler->handleSection (*this, *sect_ptr);
+                    _section_handler->handleSection(*this, *sect_ptr);
                 }
 
                 // Save the section in the TID context if this is a new one.
@@ -448,17 +488,7 @@ void ts::SectionDemux::processPacket(const TSPacket& pkt)
                     tc.sect_received++;
 
                     // If the table is completed and a handler is present, build the table.
-                    if (tc.sect_received == tc.sect_expected && _table_handler != 0) {
-
-                        // Build the table
-                        BinaryTable table;
-                        for (size_t i = 0; i < tc.sects.size(); ++i) {
-                            table.addSection (tc.sects[i]);
-                        }
-
-                        // Invoke the table handler
-                        _table_handler->handleTable (*this, table);
-                    }
+                    tc.notify(*this, false);
                 }
             }
             catch (...) {
@@ -496,5 +526,36 @@ void ts::SectionDemux::processPacket(const TSPacket& pkt)
     else if (ts_start > pc.ts.data()) {
         // Remove start of TS buffer
         pc.ts.erase(0, ts_start - pc.ts.data());
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Pack sections and in all incomplete tables and notify these rebuilt tables.
+//----------------------------------------------------------------------------
+
+void ts::SectionDemux::packAndFlushSections()
+{
+    // Loop on all PID's.
+    for (auto it1 = _pids.begin(); it1 != _pids.end(); ++it1) {
+        const PID pid = it1->first;
+        PIDContext& pc(it1->second);
+
+        // Mark that we are in the context of a table or section handler.
+        // This is used to prevent the destruction of PID contexts during
+        // the execution of a handler.
+        beforeCallingHandler(pid);
+        try {
+            // Loop on all TID's currently found in the PID.
+            for (auto it2 = pc.tids.begin(); it2 != pc.tids.end(); ++it2) {
+                // Force a notification of the partial table, if any.
+                it2->second.notify(*this, true);
+            }
+        }
+        catch (...) {
+            afterCallingHandler(false);
+            throw;
+        }
+        afterCallingHandler(true);
     }
 }

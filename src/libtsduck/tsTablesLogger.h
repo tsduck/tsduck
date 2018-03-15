@@ -72,6 +72,12 @@ namespace ts {
         void feedPacket(const TSPacket& pkt);
 
         //!
+        //! Close all operations, flush tables if required, close files and sockets.
+        //! No longer accept packets. Automatically done in destructor.
+        //!
+        void close();
+
+        //!
         //! Check if an error was found.
         //! @return True when an error was found.
         //!
@@ -131,6 +137,7 @@ namespace ts {
         std::ofstream            _binfile;         // Binary output file.
         UDPSocket                _sock;            // Output socket.
         std::map<PID,SectionPtr> _shortSections;   // Tracking duplicate short sections by PID.
+        std::set<uint64_t>       _sectionsOnce;    // Tracking sets of PID/TID/TDIext/secnum/version with --all-once.
 
         // Save a section in a binary file
         void saveSection(const Section&);

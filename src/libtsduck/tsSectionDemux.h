@@ -73,6 +73,22 @@ namespace ts {
         virtual void feedPacket(const TSPacket& pkt) override;
 
         //!
+        //! Pack sections and in all incomplete tables and notify these rebuilt tables.
+        //!
+        //! All incomplete tables which have not yet been notified are packed.
+        //! This means that missing sections are ignored and the tables are
+        //! built from existing sections only, as if they were contiguous.
+        //! Then, the table handler is invoked for each table.
+        //!
+        //! This may create inconsistent tables since sections are missing.
+        //! But this may me useful at the end of a table collecting sessions
+        //! to grab incomplete EIT's.
+        //!
+        //! @see BinaryTable::packSections()
+        //!
+        void packAndFlushSections();
+
+        //!
         //! Replace the table handler.
         //! @param [in] h The new handler.
         //!
@@ -166,46 +182,38 @@ namespace ts {
         // This internal structure contains the analysis context for one TID/TIDext into one PID.
         struct ETIDContext
         {
-            uint8_t  version;        // Version of this table
-            size_t   sect_expected;  // Number of expected sections in table
-            size_t   sect_received;  // Number of received sections in table
-            SectionPtrVector sects;  // Array of sections
+            bool    notified;       // The table was reported to application through a handler
+            uint8_t version;        // Version of this table
+            size_t  sect_expected;  // Number of expected sections in table
+            size_t  sect_received;  // Number of received sections in table
+            SectionPtrVector sects; // Array of sections
 
-            // Default constructor:
-            ETIDContext() :
-                version(0),
-                sect_expected(0),
-                sect_received(0),
-                sects()
-            {
-            }
+            // Default constructor.
+            ETIDContext();
+
+            // Init for a new table.
+            void init(uint8_t new_version, uint8_t last_section);
+
+            // Notify the application if the table is complete.
+            // Do not notify twice the same table.
+            // If force is true, build a packed version of the table and report it.
+            void notify(SectionDemux& demux, bool force);
         };
 
         // This internal structure contains the analysis context for one PID.
         struct PIDContext
         {
-            uint8_t continuity;                // Last continuity counter
-            bool sync;                         // We are synchronous in this PID
-            ByteBlock ts;                      // TS payload buffer
-            std::map <ETID, ETIDContext> tids; // TID analysis contexts
-            PacketCounter pusi_pkt_index;      // Index of last PUSI packet in this PID
+            uint8_t continuity;               // Last continuity counter
+            bool sync;                        // We are synchronous in this PID
+            ByteBlock ts;                     // TS payload buffer
+            std::map<ETID, ETIDContext> tids; // TID analysis contexts
+            PacketCounter pusi_pkt_index;     // Index of last PUSI packet in this PID
 
-            // Default constructor:
-            PIDContext() :
-                continuity(0),
-                sync(false),
-                ts(),
-                tids(),
-                pusi_pkt_index(0)
-            {
-            }
+            // Default constructor.
+            PIDContext();
 
-            // Called when packet synchronization is lost on the pid
-            void syncLost()
-            {
-                sync = false;
-                ts.clear();
-            }
+            // Called when packet synchronization is lost on the pid.
+            void syncLost();
         };
 
         // Private members:

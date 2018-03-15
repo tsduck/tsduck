@@ -32,6 +32,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsSection.h"
+#include "tsBinaryTable.h"
 #include "tsNames.h"
 #include "utestCppUnitTest.h"
 TSDUCK_SOURCE;
@@ -56,13 +57,15 @@ public:
     void testNIT();
     void testReload();
     void testAssign();
+    void testPackSections();
 
     CPPUNIT_TEST_SUITE(SectionTest);
     CPPUNIT_TEST(testTOT);
     CPPUNIT_TEST(testBAT);
     CPPUNIT_TEST(testNIT);
     CPPUNIT_TEST(testReload);
-    CPPUNIT_TEST(testReload);
+    CPPUNIT_TEST(testAssign);
+    CPPUNIT_TEST(testPackSections);
     CPPUNIT_TEST_SUITE_END();
 };
 
@@ -157,4 +160,85 @@ void SectionTest::testAssign()
     CPPUNIT_ASSERT_EQUAL(ts::TID(ts::TID_NIT_ACT), sec.tableId());
     CPPUNIT_ASSERT_EQUAL(ts::PID(ts::PID_NIT), sec.sourcePID());
     CPPUNIT_ASSERT(sec.isLongSection());
+}
+
+void SectionTest::testPackSections()
+{
+    ts::BinaryTable table;
+    CPPUNIT_ASSERT(!table.isValid());
+
+    static const uint8_t data[] = {0, 1, 2, 3, 4, 5, 6, 7};
+
+    table.addSection(new ts::Section(150, true, 102, 12, true, 3, 7, data + 1, 2, 2000));
+    CPPUNIT_ASSERT(!table.isValid());
+
+    table.addSection(new ts::Section(150, true, 102, 12, true, 5, 7, data + 3, 3, 2000));
+    CPPUNIT_ASSERT(!table.isValid());
+
+    table.addSection(new ts::Section(150, true, 102, 12, true, 6, 7, data + 4, 4, 2000));
+    CPPUNIT_ASSERT(!table.isValid());
+
+    table.packSections();
+
+    CPPUNIT_ASSERT(table.isValid());
+    CPPUNIT_ASSERT(!table.isShortSection());
+    CPPUNIT_ASSERT_EQUAL(ts::TID(150), table.tableId());
+    CPPUNIT_ASSERT_EQUAL(uint16_t(102), table.tableIdExtension());
+    CPPUNIT_ASSERT_EQUAL(uint8_t(12), table.version());
+    CPPUNIT_ASSERT_EQUAL(ts::PID(2000), table.sourcePID());
+    CPPUNIT_ASSERT_EQUAL(size_t(3), table.sectionCount());
+
+    ts::SectionPtr sec(table.sectionAt(0));
+    CPPUNIT_ASSERT(!sec.isNull());
+    CPPUNIT_ASSERT(sec->isValid());
+    CPPUNIT_ASSERT(sec->isLongSection());
+    CPPUNIT_ASSERT(!sec->isShortSection());
+    CPPUNIT_ASSERT(sec->isPrivateSection());
+    CPPUNIT_ASSERT(sec->isCurrent());
+    CPPUNIT_ASSERT(!sec->isNext());
+    CPPUNIT_ASSERT_EQUAL(ts::TID(150), sec->tableId());
+    CPPUNIT_ASSERT_EQUAL(uint16_t(102), sec->tableIdExtension());
+    CPPUNIT_ASSERT_EQUAL(uint8_t(12), sec->version());
+    CPPUNIT_ASSERT_EQUAL(ts::PID(2000), sec->sourcePID());
+    CPPUNIT_ASSERT_EQUAL(uint8_t(0), sec->sectionNumber());
+    CPPUNIT_ASSERT_EQUAL(uint8_t(2), sec->lastSectionNumber());
+    CPPUNIT_ASSERT_EQUAL(size_t(2), sec->payloadSize());
+    CPPUNIT_ASSERT(sec->payload() != 0);
+    CPPUNIT_ASSERT_EQUAL(uint8_t(1), *sec->payload());
+
+    sec = table.sectionAt(1);
+    CPPUNIT_ASSERT(!sec.isNull());
+    CPPUNIT_ASSERT(sec->isValid());
+    CPPUNIT_ASSERT(sec->isLongSection());
+    CPPUNIT_ASSERT(!sec->isShortSection());
+    CPPUNIT_ASSERT(sec->isPrivateSection());
+    CPPUNIT_ASSERT(sec->isCurrent());
+    CPPUNIT_ASSERT(!sec->isNext());
+    CPPUNIT_ASSERT_EQUAL(ts::TID(150), sec->tableId());
+    CPPUNIT_ASSERT_EQUAL(uint16_t(102), sec->tableIdExtension());
+    CPPUNIT_ASSERT_EQUAL(uint8_t(12), sec->version());
+    CPPUNIT_ASSERT_EQUAL(ts::PID(2000), sec->sourcePID());
+    CPPUNIT_ASSERT_EQUAL(uint8_t(1), sec->sectionNumber());
+    CPPUNIT_ASSERT_EQUAL(uint8_t(2), sec->lastSectionNumber());
+    CPPUNIT_ASSERT_EQUAL(size_t(3), sec->payloadSize());
+    CPPUNIT_ASSERT(sec->payload() != 0);
+    CPPUNIT_ASSERT_EQUAL(uint8_t(3), *sec->payload());
+
+    sec = table.sectionAt(2);
+    CPPUNIT_ASSERT(!sec.isNull());
+    CPPUNIT_ASSERT(sec->isValid());
+    CPPUNIT_ASSERT(sec->isLongSection());
+    CPPUNIT_ASSERT(!sec->isShortSection());
+    CPPUNIT_ASSERT(sec->isPrivateSection());
+    CPPUNIT_ASSERT(sec->isCurrent());
+    CPPUNIT_ASSERT(!sec->isNext());
+    CPPUNIT_ASSERT_EQUAL(ts::TID(150), sec->tableId());
+    CPPUNIT_ASSERT_EQUAL(uint16_t(102), sec->tableIdExtension());
+    CPPUNIT_ASSERT_EQUAL(uint8_t(12), sec->version());
+    CPPUNIT_ASSERT_EQUAL(ts::PID(2000), sec->sourcePID());
+    CPPUNIT_ASSERT_EQUAL(uint8_t(2), sec->sectionNumber());
+    CPPUNIT_ASSERT_EQUAL(uint8_t(2), sec->lastSectionNumber());
+    CPPUNIT_ASSERT_EQUAL(size_t(4), sec->payloadSize());
+    CPPUNIT_ASSERT(sec->payload() != 0);
+    CPPUNIT_ASSERT_EQUAL(uint8_t(4), *sec->payload());
 }
